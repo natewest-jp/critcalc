@@ -88,7 +88,8 @@ check(
 );
 
 // Save → the bank copy freezes the resolved con for every slot (Furina 2, Bennett 1).
-await page.locator('.tb-btn', { hasText: 'Save' }).click();
+// (.tb-btn was the pre-styleguide tab-bar family — chunk 3 folded it into .btn.)
+await page.locator('.rp-tab-bar-actions .btn', { hasText: 'Save' }).click();
 await wait(500);
 const bank = JSON.parse((await ls('critcalc:savedNotations')) || '[]');
 check(
@@ -116,8 +117,8 @@ check(
 );
 
 // Load the saved rotation → its frozen tabCon pins Bennett at C1 despite roster C6.
-await page.locator('.tb-btn', { hasText: 'Load' }).click();
-await page.locator('.action-btn--primary').first().click();
+await page.locator('.rp-tab-bar-actions .btn', { hasText: 'Load' }).click();
+await page.locator('.btn--primary', { hasText: 'Load' }).first().click();
 await wait(700);
 check(
 	'loading a saved rotation restores the frozen con (Bennett C1, not C6)',

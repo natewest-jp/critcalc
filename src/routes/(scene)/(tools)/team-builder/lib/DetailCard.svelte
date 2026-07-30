@@ -18,7 +18,8 @@
 		onClose,
 		teamState,
 		onToggleTeam,
-		docked = false
+		compareState,
+		onToggleCompare
 	}: {
 		id: string;
 		conMode: ConMode;
@@ -26,9 +27,10 @@
 		/** Slot membership for the team strip; undefined hides the button. */
 		teamState?: 'in' | 'out' | 'full';
 		onToggleTeam?: (id: string) => void;
-		/** Placed in the Stage column: dock in-flow on wide screens (overlay on
-		 *  narrow). Without it the card is always a centered overlay. */
-		docked?: boolean;
+		/** Compare membership — mirrors the card hover action's silent add; the
+		 *  Compare tab's avatar stack is the feedback. Undefined hides the button. */
+		compareState?: 'in' | 'out' | 'full';
+		onToggleCompare?: (id: string) => void;
 	} = $props();
 
 	const entry = $derived(getCharacterIndexEntry(id));
@@ -94,8 +96,7 @@
 	}
 
 	function handleBackdropClick(e: MouseEvent) {
-		// When docked in-flow, there's no scrim to click out of — close via ✕/Esc.
-		if (!docked && (e.target as HTMLElement).classList.contains('dc-backdrop')) onClose();
+		if ((e.target as HTMLElement).classList.contains('dc-backdrop')) onClose();
 	}
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') onClose();
@@ -104,18 +105,15 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div
-	class="dc-backdrop"
-	class:dc-backdrop--docked={docked}
-	onclick={handleBackdropClick}
-	role="presentation"
->
+<!-- The Team Builder's one deliberate modal (documented exception to the
+     non-modal principle): a focused single-character read, where covering the
+     workspace is the point. Esc / backdrop / ✕ all dismiss. -->
+<div class="dc-backdrop" onclick={handleBackdropClick} role="presentation">
 	<div
 		class="dc-panel"
-		class:dc-panel--docked={docked}
 		style:--el-color={color}
 		role="dialog"
-		aria-modal={!docked}
+		aria-modal="true"
 		aria-label="{entry?.displayName ?? id} details"
 	>
 		<!-- ── Header ─────────────────────────────────────────── -->
@@ -139,20 +137,43 @@
 					<span style:color>{entry?.element ?? '?'}</span>
 					· {entry?.weapon ?? '?'} · {entry?.rarity}★{entry?.region ? ` · ${entry.region}` : ''}
 				</p>
-				{#if onToggleTeam && teamState}
-					<button
-						class="dc-team"
-						class:dc-team--in={teamState === 'in'}
-						disabled={teamState === 'full'}
-						onclick={() => onToggleTeam(id)}
-						title={teamState === 'full' ? 'All four team slots are filled' : undefined}
-					>
-						{teamState === 'in'
-							? '✓ In team — remove'
-							: teamState === 'full'
-								? 'Team full'
-								: '+ Add to team'}
-					</button>
+				{#if (onToggleTeam && teamState) || (onToggleCompare && compareState)}
+					<div class="dc-actions">
+						{#if onToggleTeam && teamState}
+							<button
+								class="dc-team"
+								class:dc-team--in={teamState === 'in'}
+								disabled={teamState === 'full'}
+								onclick={() => onToggleTeam(id)}
+								title={teamState === 'full' ? 'All four team slots are filled' : undefined}
+							>
+								{teamState === 'in'
+									? '✓ In team — remove'
+									: teamState === 'full'
+										? 'Team full'
+										: '+ Add to team'}
+							</button>
+						{/if}
+						{#if onToggleCompare && compareState}
+							<button
+								class="dc-compare"
+								class:dc-team--in={compareState === 'in'}
+								disabled={compareState === 'full'}
+								onclick={() => onToggleCompare(id)}
+								title={compareState === 'in'
+									? 'Remove from the comparison'
+									: compareState === 'full'
+										? 'Comparison is full (4)'
+										: 'Add to the comparison — it loads into the Compare tab'}
+							>
+								{compareState === 'in'
+									? '✓ Comparing — remove'
+									: compareState === 'full'
+										? 'Compare full'
+										: '→ Compare'}
+							</button>
+						{/if}
+					</div>
 				{/if}
 			</div>
 			<button class="btn btn--icon dc-close" onclick={onClose} aria-label="Close">✕</button>
@@ -313,25 +334,6 @@
 		color: var(--text);
 	}
 
-	/* Docked in the Stage column (wide screens only): the scrim dissolves and the
-	   panel sits in normal flow, filling the sticky column. Below the breakpoint
-	   the `docked` flag is inert and the card stays a centered overlay. */
-	@media (min-width: 1200px) {
-		.dc-backdrop--docked {
-			position: static;
-			inset: auto;
-			z-index: auto;
-			display: block;
-			padding: 0;
-			background: none;
-		}
-		.dc-panel--docked {
-			max-width: none;
-			max-height: none;
-			border-radius: 6px;
-		}
-	}
-
 	/* ── Header ───────────────────────────────────────────────── */
 	.dc-header {
 		display: flex;
@@ -367,8 +369,16 @@
 		flex: 1;
 		min-width: 0;
 	}
-	.dc-team {
+	.dc-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
 		margin-top: 0.45rem;
+	}
+	/* Two names, one register: .dc-compare is .dc-team's twin, kept distinct so
+	   probes/tests can target each action unambiguously. */
+	.dc-team,
+	.dc-compare {
 		padding: 0.3rem 0.6rem;
 		border: 1px solid color-mix(in srgb, var(--el-color) 45%, var(--border));
 		border-radius: 3px;
@@ -383,13 +393,15 @@
 			background 150ms ease,
 			border-color 150ms ease;
 	}
-	.dc-team:hover:not(:disabled) {
+	.dc-team:hover:not(:disabled),
+	.dc-compare:hover:not(:disabled) {
 		background: color-mix(in srgb, var(--el-color) 14%, transparent);
 	}
 	.dc-team--in {
 		background: color-mix(in srgb, var(--el-color) 18%, transparent);
 	}
-	.dc-team:disabled {
+	.dc-team:disabled,
+	.dc-compare:disabled {
 		opacity: 0.5;
 		cursor: default;
 	}

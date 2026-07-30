@@ -4,9 +4,11 @@
  * Headless verification of the Team Builder Layer 1 surface against a served
  * build (default http://localhost:4998). Drives: roster grid render, capability
  * facet filtering (AND semantics), the uncurated bucket, constellation modes
- * (C0 / My roster / C6), detail-card lazy load + provenance + constellation
- * stepper persistence, stacked-bar Compare docked into the widened Stage, and
- * Audition (pin the incumbent, pre-seed the Source, commit a slot swap).
+ * (C0 / My roster / C6), detail-card (modal) lazy load + provenance +
+ * constellation stepper persistence, the Compare tab-as-accumulator (silent
+ * add → avatar stack in the tab → center view with Timing ruler + Facts
+ * table), and Audition (pin the incumbent, in-view candidates strip, commit
+ * a slot swap).
  *
  *   npm run preview -- --port 4998 --strictPort &
  *   node scripts/probe-team-builder.mjs [--headed]
@@ -132,15 +134,10 @@ check(
 	chunkRequests.length > 0,
 	'no chunk request seen'
 );
-// Wide viewport (1600px) → the card docks into the Stage column (in-flow, no scrim).
-const dockPos = await page
-	.locator('.dc-backdrop--docked')
-	.evaluate((el) => getComputedStyle(el).position);
-check(
-	'detail card docks into the stage on a wide viewport',
-	(await page.locator('.tb-stage').count()) === 1 && dockPos === 'static',
-	`stage=${await page.locator('.tb-stage').count()} pos=${dockPos}`
-);
+// The detail card is a modal at every width (the Stage column is retired) —
+// a fixed scrim, and the source grid never reflows underneath it.
+const dockPos = await page.locator('.dc-backdrop').evaluate((el) => getComputedStyle(el).position);
+check('detail card opens as a modal (fixed scrim)', dockPos === 'fixed', `pos=${dockPos}`);
 const capsText = await page.locator('.dc-caps').innerText();
 check(
 	'Gorou card shows C4 heal provenance',
@@ -178,61 +175,71 @@ await page.locator('.tb-conmode .btn', { hasText: 'My roster' }).click();
 const reloadNames = await page.locator('.tb-grid').first().locator('.cc-name').allInnerTexts();
 check('constellation survives reload (Gorou still matches)', reloadNames.includes('Gorou'), '');
 
-// ── 6. Compare: tray, aligned view, remove/close ───────────────────────────
+// ── 6. Compare: the tab IS the accumulator ─────────────────────────────────
 await facetChip('Heals').click(); // clear facet → full grid
 const addToCompare = async (name) => {
 	const tile = page.locator('.cc', { hasText: name }).first();
-	// The action bar reveals on hover, and the fixed nav (top) / Compare tray
-	// (bottom) overlap tiles at the viewport edges — dispatch the click directly
-	// to exercise the handler without fighting hit-testing (the hover reveal is
-	// verified visually, not here).
+	// The action bar reveals on hover, and the fixed nav overlaps tiles at the
+	// viewport edges — dispatch the click directly to exercise the handler
+	// without fighting hit-testing (the hover reveal is verified visually).
 	await tile.locator('.tb-act--compare').dispatchEvent('click');
 };
-await addToCompare('Bennett');
-check('tray appears after first pick', (await page.locator('.tray').count()) === 1);
+const compareTab = page.locator('.tb-tabs .tab', { hasText: 'Compare' });
 check(
-	'compare disabled below two picks',
-	await page.locator('.tray-go').isDisabled(),
-	'button enabled with 1 pick'
+	'compare tab starts with no avatar stack',
+	(await page.locator('.tb-tabstack').count()) === 0
+);
+await addToCompare('Bennett');
+// The add is SILENT: the roster stays put; the tab grows an avatar.
+check(
+	'first pick lands in the tab avatar stack without navigating',
+	(await page.locator('.tb-tabstack-circle').count()) === 1 &&
+		(await page.locator('.tb-grid').first().isVisible()),
+	`circles=${await page.locator('.tb-tabstack-circle').count()}`
 );
 await addToCompare('Jean');
 await addToCompare('Diona');
-await page.locator('.tray-go').click();
-await page.locator('.cmp-panel').waitFor({ timeout: 5000 });
+check(
+	'tab stack tracks every pick (3 circles)',
+	(await page.locator('.tb-tabstack-circle').count()) === 3,
+	String(await page.locator('.tb-tabstack-circle').count())
+);
+await compareTab.click();
+await page.locator('.cmp').waitFor({ timeout: 5000 });
 await page.locator('.cmp-dim-label').first().waitFor({ timeout: 5000 });
 
-// Compare now docks into a widened Stage column rather than floating as a modal
-// — mirror the DetailCard dock check (scrim dissolves, panel sits in-flow).
-const cmpDockPos = await page
-	.locator('.cmp-backdrop--docked')
-	.evaluate((el) => getComputedStyle(el).position)
-	.catch(() => 'missing');
-check(
-	'compare docks into the stage on a wide viewport',
-	(await page.locator('.tb-stage .cmp-panel').count()) === 1 && cmpDockPos === 'static',
-	`stage=${await page.locator('.tb-stage .cmp-panel').count()} pos=${cmpDockPos}`
-);
-check(
-	'comparing widens the stage (.tb--compare)',
-	(await page.locator('.tb--compare').count()) === 1
-);
+// Compare is a center Source view — in normal flow, no scrim, no dock rules.
+const cmpPos = await page.locator('.cmp').evaluate((el) => getComputedStyle(el).position);
+check('compare renders in-flow in the center (no modal)', cmpPos === 'static', `pos=${cmpPos}`);
 
 check('compare view shows all three characters', (await page.locator('.cmp-chip').count()) === 3);
 const dimLabels = await page.locator('.cmp-dim-label').allInnerTexts();
 check(
-	'timing dimensions present (E cooldown / Q cooldown / Q energy)',
-	['E cooldown', 'Q cooldown', 'Q energy'].every((l) => dimLabels.includes(l)),
+	'timing ruler lanes present (E cooldown / Q cooldown)',
+	['E cooldown', 'Q cooldown'].every((l) => dimLabels.includes(l)),
 	dimLabels.join(',')
 );
-check('heal dimension present for three healers', dimLabels.includes('Heal'), dimLabels.join(','));
+check('heal lane present for three healers', dimLabels.includes('Heal'), dimLabels.join(','));
 
 // Shared ruler renders ticks for the one common time scale.
 check('shared ruler renders ticks', (await page.locator('.cmp-ruler .cmp-rtick').count()) > 0);
 
-// Every capability lane carries a constellation gate chip.
+// The Facts table: one column per character, Q energy now a table row, and
+// every capability cell carries a constellation gate chip.
+const factLabels = await page.locator('.cmp-table .cmp-td-label').allInnerTexts();
 check(
-	'capability lanes show constellation gates',
-	(await page.locator('.cmp-lane .cmp-gate').count()) >= 3,
+	'facts table aligns timing rows (Q energy lives here now)',
+	factLabels.includes('Q energy'),
+	factLabels.join(',')
+);
+check(
+	'facts table has one column per character',
+	(await page.locator('.cmp-table thead th').count()) === 4, // label col + 3
+	String(await page.locator('.cmp-table thead th').count())
+);
+check(
+	'capability cells show constellation gates',
+	(await page.locator('.cmp-cell .cmp-gate').count()) >= 3,
 	''
 );
 
@@ -256,14 +263,19 @@ check(
 );
 await page.screenshot({ path: 'probe-team-builder-compare.png', fullPage: false });
 
-// Removing a character from inside the view
+// Removing a character from inside the view syncs the tab stack.
 await page.locator('.cmp-chip-remove').first().click();
 check('character remove drops to two', (await page.locator('.cmp-chip').count()) === 2);
-await page.keyboard.press('Escape');
-check('Escape closes compare view', (await page.locator('.cmp-panel').count()) === 0);
-check('tray survives with remaining picks', (await page.locator('.tray-pick').count()) === 2);
-await page.locator('.tray .btn', { hasText: 'Clear' }).click();
-check('clear empties the tray', (await page.locator('.tray').count()) === 0);
+check(
+	'tab stack syncs the removal (2 circles)',
+	(await page.locator('.tb-tabstack-circle').count()) === 2
+);
+// Clear from the view header → the taught empty state; the stack empties.
+await page.locator('.cmp-headact').click();
+check('clear drops to the empty state', (await page.locator('.tb-cmp-empty').count()) === 1);
+check('clear empties the tab stack', (await page.locator('.tb-tabstack').count()) === 0);
+await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
+await page.locator('.tb-grid').first().waitFor({ timeout: 5000 });
 
 // ── 7. Team strip: slots, facts, checklist, ?team= URL ─────────────────────
 check(
@@ -333,13 +345,15 @@ check(
 );
 await page.screenshot({ path: 'probe-team-builder-team.png', fullPage: false });
 
-// ── 7b. Audition: pin the incumbent, pre-seed the Source, commit a swap ─────
-// Bennett holds slot 0 — audition replacements for him from the Bench.
+// ── 7b. Audition: pin the incumbent, in-view candidates, commit a swap ─────
+// Bennett holds slot 0 — audition replacements for him from the Bench. This
+// navigates to the Compare tab (an explicit "start comparing" action, unlike
+// a card's silent add) with the candidates strip rendered inside the view.
 await page.locator('.bn-act', { hasText: 'Audition' }).first().click();
-await page.locator('.tb-stage .cmp-panel').waitFor({ timeout: 5000 });
+await page.locator('.cmp').waitFor({ timeout: 5000 });
 await page.locator('.cmp-chip--anchor').first().waitFor({ timeout: 5000 });
 check(
-	'audition docks Compare into the Stage with the incumbent anchored',
+	'audition opens the Compare tab with the incumbent anchored',
 	(await page.locator('.cmp-chip--anchor').count()) === 1 &&
 		(await page.locator('.cmp-chip-current').count()) === 1,
 	`anchor=${await page.locator('.cmp-chip--anchor').count()} current=${await page
@@ -350,24 +364,42 @@ check(
 	'the audition anchor has no remove control (it stays pinned)',
 	(await page.locator('.cmp-chip--anchor .cmp-chip-remove').count()) === 0
 );
+// The in-view candidates strip: the incumbent's facets as toggleable chips
+// (all active at open), suggesting who covers the same ground.
 check(
-	'audition pre-seeds the Source with the incumbent’s facets',
-	(await page.locator('.tb-chips .chip.active').count()) > 0,
-	`active chips=${await page.locator('.tb-chips .chip.active').count()}`
+	'candidates strip renders with the incumbent’s facet chips active',
+	(await page.locator('.tb-aud').count()) === 1 &&
+		(await page.locator('.tb-aud-facets .chip.active').count()) > 0,
+	`strip=${await page.locator('.tb-aud').count()} active=${await page
+		.locator('.tb-aud-facets .chip.active')
+		.count()}`
 );
-// Clear the seed to browse the full roster, then add a candidate to the audition.
-await page.locator('.btn', { hasText: 'Clear filters' }).click();
-const furina = page.locator('.tb-grid').first().locator('.cc', { hasText: 'Furina' }).first();
-await furina.locator('.tb-act--compare').dispatchEvent('click');
+// Toggling every seed chip off broadens the strip to the whole roster minus
+// the team (122 − 4) — the deterministic bound, and the AND-relax escape hatch.
+while ((await page.locator('.tb-aud-facets .chip.active').count()) > 0) {
+	await page.locator('.tb-aud-facets .chip.active').first().click();
+}
+check(
+	'relaxing every facet broadens candidates to roster minus team',
+	(await page.locator('.tb-cand').count()) === 118,
+	String(await page.locator('.tb-cand').count())
+);
+// Add Furina from the strip → she joins the comparison with a commit control.
+await page.locator('.tb-cand', { hasText: 'Furina' }).first().click();
 await page.locator('.cmp-chip-commit').first().waitFor({ timeout: 5000 });
 check(
 	'a candidate joins the audition with a commit control',
-	(await page.locator('.cmp-chip-commit').count()) >= 1
+	(await page.locator('.cmp-chip').count()) === 2 &&
+		(await page.locator('.cmp-chip-commit').count()) >= 1
 );
-// Commit Furina → she replaces Bennett in slot 0 and the Stage closes.
+// Commit Furina → she replaces Bennett in slot 0 and the view returns whence
+// the audition began (the Atlas, on this ?team= arrival).
 await page.locator('.cmp-chip-commit').first().click();
-await page.locator('.cmp-panel').waitFor({ state: 'detached', timeout: 5000 });
-check('committing an audition closes the Stage', (await page.locator('.cmp-panel').count()) === 0);
+await page.locator('.cmp').waitFor({ state: 'detached', timeout: 5000 });
+check(
+	'committing returns to the originating tab',
+	(await page.locator('.tb-atlas').count()) === 1 && (await page.locator('.cmp').count()) === 0
+);
 const auditionedNames = await page.locator('.bn-slot--filled .sp-char-name').allInnerTexts();
 check(
 	'committing swaps the slot (Furina replaces Bennett)',
@@ -378,6 +410,10 @@ check(
 	'the swap is mirrored to ?team=',
 	page.url().includes('furina') && !/\bbennett\b/.test(page.url()),
 	page.url()
+);
+check(
+	'the audition-scoped picks are cleared (no leftover tab stack)',
+	(await page.locator('.tb-tabstack').count()) === 0
 );
 await page.screenshot({ path: 'probe-team-builder-audition.png', fullPage: false });
 

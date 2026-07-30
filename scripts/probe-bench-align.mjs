@@ -15,7 +15,7 @@ const box = async (sel) => {
 await page.goto(`${BASE}/rotation-planner`, { waitUntil: 'networkidle' });
 console.log('RP frame       ', await box('.rp-frame'));
 console.log('RP first card  ', await box('.rp-frame .sp-card'));
-console.log('RP tab bar     ', await box('.tab-bar'));
+console.log('RP tab bar     ', await box('.rp-tab-bar'));
 
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 console.log('TB bench       ', await box('.bn'));

@@ -809,7 +809,7 @@
 			<strong>What deliberately did NOT migrate</strong>, so the line stays visible: whole-card
 			click targets (<code>.cc-main</code>, <code>.rolecard</code>, <code>.ar-slot</code>), the
 			chrome hit targets (bare by design), dropdown menu items, the value wheel, the row-edge delete
-			zone, element-tinted pills (<code>.tray-pick</code>, <code>.dc-team</code>) and the meta
+			zone, element-tinted pills (<code>.tb-cand</code>, <code>.dc-team</code>) and the meta
 			overlay's filled close disc. These are their own idioms, not text buttons wearing a different
 			skin — forcing them onto <code>.btn</code> would lose meaning, not gain consistency.
 		</p>

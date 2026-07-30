@@ -22,7 +22,6 @@
 	import { afterNavigate, replaceState } from '$app/navigation';
 	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
-	import CompareTray from './lib/CompareTray.svelte';
 	import CompareView from './lib/CompareView.svelte';
 	import Bench from './lib/Bench.svelte';
 	import AtlasView from './lib/AtlasView.svelte';
@@ -100,10 +99,10 @@
 	const traveler = $derived(mounted ? $siteSettings.travelerVariant : 'aether');
 
 	// ---------------------------------------------------------------------------
-	// Source panel: Atlas (question-indexed cards) ⇄ Roster (grid)
+	// Source panel: Atlas (question-indexed cards) ⇄ Roster (grid) ⇄ Compare
 	// ---------------------------------------------------------------------------
 
-	let sourceTab = $state<'atlas' | 'roster'>('atlas');
+	let sourceTab = $state<'atlas' | 'roster' | 'compare'>('atlas');
 	// Sticky: flips true on first Roster visit and stays — the roster grid is
 	// then kept mounted (CSS-hidden) across tab toggles. See the template note.
 	let rosterEverShown = $state(false);
@@ -172,6 +171,8 @@
 		if (set.has(val)) set.delete(val);
 		else set.add(val);
 	}
+
+	const facetMeta = (key: FacetKey) => FACETS.find((f) => f.key === key);
 
 	// Filtering is a Roster-tab activity — any filter action lands you there.
 	function toggleFacet(f: FacetKey): void {
@@ -317,7 +318,9 @@
 	];
 
 	// ---------------------------------------------------------------------------
-	// Detail card
+	// Detail card — a focused single-character modal (the tool's one deliberate
+	// modal: an isolated read where focus is a feature, unlike the in-frame
+	// Compare workspace that reasons against the roster/team around it).
 	// ---------------------------------------------------------------------------
 
 	let selectedId = $state<string | null>(null);
@@ -326,60 +329,53 @@
 		return (elementColors[(element ?? 'none') as ElementKey] ?? elementColors.none).main;
 	}
 
+	function openDetail(id: string): void {
+		selectedId = id;
+	}
+
 	// ---------------------------------------------------------------------------
-	// Stage inspector (Layer 2) — Detail OR Compare, one at a time. Compare docks
-	// into a widened Stage on wide screens; Audition is Compare with a pinned
-	// anchor (the incumbent) and a commit that swaps the slot.
+	// Compare (Layer 2) — the Compare tab itself is the accumulator: a card's
+	// "→ Compare" silently adds the character here (the tab's avatar stack is
+	// the feedback), and clicking the tab lands on an already-loaded view.
+	// Audition is Compare with a pinned anchor (the incumbent), an in-view
+	// candidates strip, and a commit that swaps the slot.
 	// ---------------------------------------------------------------------------
 
 	const compareIds = new SvelteSet<string>();
-	let compareOpen = $state(false);
 	/** Audition: the pinned incumbent + the slot it holds (null = plain compare). */
 	let anchorId = $state<string | null>(null);
 	let auditionSlot = $state<number | null>(null);
-
-	const stageMode = $derived<'compare' | 'detail' | null>(
-		compareOpen ? 'compare' : selectedId ? 'detail' : null
-	);
-
-	function openDetail(id: string): void {
-		// Opening a detail leaves any in-progress audition — one Stage, one view.
-		if (anchorId !== null) {
-			compareIds.clear();
-			anchorId = null;
-			auditionSlot = null;
-		}
-		selectedId = id;
-		compareOpen = false;
-	}
-
-	function openCompareView(): void {
-		anchorId = null;
-		auditionSlot = null;
-		selectedId = null;
-		compareOpen = true;
-	}
-
-	function closeCompare(): void {
-		if (anchorId !== null) compareIds.clear(); // the audition selection is scoped
-		compareOpen = false;
-		anchorId = null;
-		auditionSlot = null;
-	}
+	/** The facets the incumbent provides — the candidate strip's chip row. */
+	let auditionSeedFacets = $state<FacetKey[]>([]);
+	/** The currently-active subset (toggleable, so an over-narrow AND of every
+	 *  seed facet can be relaxed chip by chip). */
+	const auditionFacets = new SvelteSet<FacetKey>();
+	/** Where commit/cancel returns to — the tab active when the audition began. */
+	let auditionReturnTab = $state<'atlas' | 'roster'>('atlas');
 
 	function toggleCompare(id: string): void {
 		if (id === anchorId) return; // the audition anchor stays pinned
 		if (compareIds.has(id)) {
 			compareIds.delete(id);
-			if (compareIds.size < 2 && anchorId === null) compareOpen = false;
 		} else if (compareIds.size < MAX_COMPARE) {
 			compareIds.add(id);
 		}
 	}
 
-	/** Audition replacements for a filled slot: pin the incumbent as the anchor,
-	 *  pre-seed the Source with the facets it provides ("find someone who does
-	 *  what this character does"), and open Compare in the Stage. */
+	const compareStateOf = (id: string): 'in' | 'out' | 'full' =>
+		compareIds.has(id) ? 'in' : compareIds.size >= MAX_COMPARE ? 'full' : 'out';
+
+	function endAudition(): void {
+		compareIds.clear(); // the audition selection is scoped
+		anchorId = null;
+		auditionSlot = null;
+		auditionSeedFacets = [];
+		auditionFacets.clear();
+	}
+
+	/** Audition replacements for a filled slot: pin the incumbent as the anchor
+	 *  and open the Compare tab, whose in-view candidates strip suggests
+	 *  characters covering the facets the incumbent provides. */
 	function openAudition(index: number, incumbentId: string): void {
 		compareIds.clear();
 		compareIds.add(incumbentId);
@@ -387,19 +383,46 @@
 		auditionSlot = index;
 		const cap = conCapFor(conMode, mounted ? ($constellations[incumbentId] ?? 0) : 0);
 		const entry = getCharacterIndexEntry(incumbentId);
-		activeFacets.clear();
-		filterElements.clear();
-		if (entry) for (const f of facetsProvidedBy(entry, cap)) activeFacets.add(f);
-		sourceTab = 'roster';
+		auditionSeedFacets = entry ? [...facetsProvidedBy(entry, cap)] : [];
+		auditionFacets.clear();
+		for (const f of auditionSeedFacets) auditionFacets.add(f);
+		auditionReturnTab = sourceTab === 'compare' ? 'atlas' : sourceTab;
 		selectedId = null;
-		compareOpen = true;
+		sourceTab = 'compare';
 	}
 
-	/** Commit an audition candidate into its slot, then close the Stage. */
+	/** Commit an audition candidate into its slot, then return whence you came. */
 	function commitAudition(candidateId: string): void {
 		if (auditionSlot !== null) teamSlots[auditionSlot] = candidateId;
-		closeCompare();
+		endAudition();
+		sourceTab = auditionReturnTab;
 	}
+
+	function cancelAudition(): void {
+		endAudition();
+		sourceTab = auditionReturnTab;
+	}
+
+	/** Candidates for the audition strip: everyone (outside the team) who covers
+	 *  ALL currently-active seed facets at the mode's constellation cap. */
+	const auditionCandidates = $derived.by(() => {
+		if (anchorId === null) return [] as CharacterIndexEntry[];
+		const cons = mounted ? $constellations : {};
+		const wanted = [...auditionFacets];
+		return roster.filter((e) => {
+			if (e.id === anchorId || teamSlots.includes(e.id)) return false;
+			const provided = facetsProvidedBy(e, conCapFor(conMode, cons[e.id]));
+			return wanted.every((f) => provided.includes(f));
+		});
+	});
+
+	// The tab's avatar stack — insertion order, the anchor first when auditioning.
+	const compareStack = $derived(
+		[...compareIds].map((id) => {
+			const entry = getCharacterIndexEntry(id);
+			return { id, entry, color: elColor(entry?.element) };
+		})
+	);
 
 	// ---------------------------------------------------------------------------
 	// Team slots (Layer 3) — positional, mirrored into the ?team= URL param
@@ -525,11 +548,59 @@
 	</button>
 {/snippet}
 
-<div
-	class="tb"
-	class:tb--inspect={stageMode === 'detail'}
-	class:tb--compare={stageMode === 'compare'}
->
+<!-- Audition candidates — rendered inside CompareView (below its legend): who
+     else covers the facets the incumbent provides, chips toggleable so an
+     over-narrow AND can be relaxed. Handlers live here with the other tiles'. -->
+{#snippet auditionStrip()}
+	<div class="tb-aud">
+		{#if auditionSeedFacets.length > 0}
+			<div class="tb-aud-facets">
+				<span class="tb-aud-label">covers</span>
+				{#each auditionSeedFacets as f (f)}
+					<button
+						class="chip"
+						class:active={auditionFacets.has(f)}
+						aria-pressed={auditionFacets.has(f)}
+						title={facetMeta(f)?.hint}
+						onclick={() => toggleSet(auditionFacets, f)}>{facetMeta(f)?.label ?? f}</button
+					>
+				{/each}
+			</div>
+		{/if}
+		<div class="tb-aud-cands">
+			{#each auditionCandidates as entry (entry.id)}
+				{@const on = compareIds.has(entry.id)}
+				<button
+					class="tb-cand"
+					class:tb-cand--on={on}
+					style:--el-color={elColor(entry.element)}
+					disabled={!on && compareIds.size >= MAX_COMPARE}
+					onclick={() => toggleCompare(entry.id)}
+					title={on
+						? `Remove ${entry.displayName} from the comparison`
+						: `Add ${entry.displayName} to the comparison`}
+				>
+					<span class="tb-cand-avatar">
+						{#if hasAvatar(entry.id)}
+							<img src={getAvatarFallback(entry.id, 'circle', traveler)} alt="" />
+						{:else}
+							<span class="tb-cand-initials">{entry.displayName.slice(0, 2).toUpperCase()}</span>
+						{/if}
+					</span>
+					<span class="tb-cand-name">{entry.displayName}</span>
+					{#if on}<span class="tb-cand-mark">✓</span>{/if}
+				</button>
+			{/each}
+			{#if auditionCandidates.length === 0}
+				<p class="note tb-aud-none">
+					No one covers all of these at once — toggle a chip off to broaden the search.
+				</p>
+			{/if}
+		</div>
+	</div>
+{/snippet}
+
+<div class="tb">
 	<!-- ── Source (Atlas ⇄ Roster) ────────────────────────────── -->
 	<section class="tb-source">
 		<div class="tb-tabs">
@@ -548,6 +619,42 @@
 					aria-selected={sourceTab === 'roster'}
 					onclick={() => (sourceTab = 'roster')}>Roster</button
 				>
+				<!-- The Compare tab IS the accumulator: a card's "→ Compare" lands
+				     its pick here as a mini avatar (the Saved-Rotations stack
+				     grammar) — no tray, no navigation; click when ready. -->
+				<button
+					class="tab tb-tab--compare"
+					class:active={sourceTab === 'compare'}
+					role="tab"
+					aria-selected={sourceTab === 'compare'}
+					onclick={() => (sourceTab = 'compare')}
+				>
+					Compare
+					{#if compareStack.length > 0}
+						<span
+							class="tb-tabstack"
+							style:width="{18 + (compareStack.length - 1) * 12}px"
+							aria-label="{compareStack.length} in comparison"
+						>
+							{#each compareStack as pick, i (pick.id)}
+								<span
+									class="tb-tabstack-circle"
+									style:left="{i * 12}px"
+									style:z-index={i + 1}
+									style:border-color={pick.color}
+								>
+									{#if hasAvatar(pick.id)}
+										<img src={getAvatarFallback(pick.id, 'circle', traveler)} alt="" />
+									{:else}
+										<span class="tb-tabstack-initials"
+											>{(pick.entry?.displayName ?? pick.id).slice(0, 1).toUpperCase()}</span
+										>
+									{/if}
+								</span>
+							{/each}
+						</span>
+					{/if}
+				</button>
 			</div>
 			<div class="segment tb-conmode" role="radiogroup" aria-label="Constellation mode">
 				{#each CON_MODES as m (m.key)}
@@ -665,6 +772,32 @@
 					</p>
 				{/if}
 			</div>
+		{/if}
+
+		<!-- ── Compare — a first-class center view, not an inspector: the shared
+		     ruler gets the Source's full width, and the view works at every
+		     viewport (no dock breakpoint, no modal fallback). -->
+		{#if sourceTab === 'compare'}
+			{#if compareIds.size === 0}
+				<div class="panel tb-cmp-empty">
+					<p class="tb-cmp-empty-title">Nothing to compare yet.</p>
+					<p class="note">
+						Hover a character card in the Roster and press <strong>→ Compare</strong> — up to four characters
+						line up here on one shared time ruler.
+					</p>
+				</div>
+			{:else}
+				<CompareView
+					ids={[...compareIds]}
+					{conMode}
+					anchorId={anchorId ?? undefined}
+					onRemove={toggleCompare}
+					onCommit={anchorId ? commitAudition : undefined}
+					onClear={anchorId ? undefined : () => compareIds.clear()}
+					onCancelAudition={anchorId ? cancelAudition : undefined}
+					candidatesArea={anchorId ? auditionStrip : undefined}
+				/>
+			{/if}
 		{/if}
 
 		<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
@@ -878,32 +1011,6 @@
 		{/if}
 	</section>
 
-	<!-- ── Stage (docked inspector — Detail or Compare) ───────── -->
-	{#if stageMode === 'compare'}
-		<aside class="tb-stage">
-			<CompareView
-				ids={[...compareIds]}
-				{conMode}
-				docked
-				anchorId={anchorId ?? undefined}
-				onClose={closeCompare}
-				onRemove={toggleCompare}
-				onCommit={anchorId ? commitAudition : undefined}
-			/>
-		</aside>
-	{:else if stageMode === 'detail' && selectedId}
-		<aside class="tb-stage">
-			<DetailCard
-				id={selectedId}
-				docked
-				{conMode}
-				onClose={() => (selectedId = null)}
-				teamState={teamStateOf(selectedId)}
-				onToggleTeam={toggleTeam}
-			/>
-		</aside>
-	{/if}
-
 	<!-- ── Bench (the team) — the right edge, facing the Rotation
 	     Planner it sends to; on narrow screens it reorders to the top. -->
 	<Bench
@@ -917,19 +1024,25 @@
 	/>
 </div>
 
-{#if compareIds.size > 0 && !compareOpen}
-	<CompareTray
-		ids={[...compareIds]}
-		onRemove={toggleCompare}
-		onClear={() => compareIds.clear()}
-		onCompare={openCompareView}
+<!-- The one deliberate modal: a focused single-character read. -->
+{#if selectedId}
+	<DetailCard
+		id={selectedId}
+		{conMode}
+		onClose={() => (selectedId = null)}
+		teamState={teamStateOf(selectedId)}
+		onToggleTeam={toggleTeam}
+		compareState={compareStateOf(selectedId)}
+		onToggleCompare={toggleCompare}
 	/>
 {/if}
 
 <style>
-	/* Source | (Stage) | Bench — the Bench holds the RIGHT edge, facing the
-	   Rotation Planner it sends to (the planner's "Explore alternatives" mirror
-	   sits on ITS left edge, facing back). */
+	/* Source | Bench — one static grid at every width. The Bench holds the RIGHT
+	   edge, facing the Rotation Planner it sends to (the planner's "Explore
+	   alternatives" mirror sits on ITS left edge, facing back). Compare is a
+	   Source VIEW (full center width) and Detail is a modal, so nothing ever
+	   reflows this grid. */
 	.tb {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) 210px;
@@ -937,59 +1050,9 @@
 		align-items: start;
 	}
 
-	/* Inspecting a character slides a Stage column in BETWEEN Source and Bench
-	   on wide screens (the Source reflows to make room; the Bench keeps the true
-	   edge); below the breakpoint the Detail/Compare overlays. */
-	@media (min-width: 1200px) {
-		.tb--inspect {
-			grid-template-columns: minmax(0, 1fr) minmax(360px, 400px) 210px;
-		}
-	}
-	/* Compare's stacked bars need more room than the Detail card (520–600px vs
-	   360–400px), which at 1200px would squeeze the Source to ~3 tiles — so
-	   Compare docks only from 1400px (the Source keeps ~600px) and stays a
-	   centered overlay below that. CompareView's docked media query matches. */
-	@media (min-width: 1400px) {
-		.tb--compare {
-			grid-template-columns: minmax(0, 1fr) minmax(520px, 600px) 210px;
-		}
-	}
-
 	@media (max-width: 900px) {
 		.tb {
 			grid-template-columns: minmax(0, 1fr);
-		}
-	}
-
-	/* Below its docking breakpoint the Stage box dissolves (its docked child
-	   overlays via its own fixed positioning); at/above it, it's a sticky
-	   inspector column. Detail docks from 1200px, Compare from 1400px — each
-	   child's own docked media query agrees. */
-	.tb-stage {
-		display: contents;
-	}
-	@media (min-width: 1200px) {
-		.tb--inspect .tb-stage {
-			display: block;
-			position: sticky;
-			/* Sticky pins to the scrollport edge — the fixed chrome sits over the
-			   top of it, so the pin point clears the strip. */
-			top: calc(var(--chrome-h, 64px) + var(--tool-pad-top, 0.5rem));
-			max-height: calc(
-				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
-			);
-			overflow-y: auto;
-		}
-	}
-	@media (min-width: 1400px) {
-		.tb--compare .tb-stage {
-			display: block;
-			position: sticky;
-			top: calc(var(--chrome-h, 64px) + var(--tool-pad-top, 0.5rem));
-			max-height: calc(
-				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem)
-			);
-			overflow-y: auto;
 		}
 	}
 
@@ -1038,6 +1101,138 @@
 	.tb-tabgroup {
 		display: flex;
 		gap: 0.3rem;
+	}
+
+	/* ── Compare tab's avatar stack (the accumulator's live feedback) ──
+	   Mini circles overlapping 6px, the Saved-Rotations stack at tab scale;
+	   border tinted per element, width set inline from the pick count. */
+	.tb-tab--compare {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
+	.tb-tabstack {
+		position: relative;
+		height: 18px;
+		flex-shrink: 0;
+	}
+	.tb-tabstack-circle {
+		position: absolute;
+		top: 0;
+		width: 18px;
+		height: 18px;
+		border-radius: 50%;
+		border: 1.5px solid var(--border);
+		background: #131c30;
+		overflow: hidden;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.tb-tabstack-circle img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.tb-tabstack-initials {
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
+		color: var(--muted);
+	}
+
+	/* ── Compare empty state (0 picks) — teaches the flow ────── */
+	.tb-cmp-empty {
+		align-items: flex-start;
+	}
+	.tb-cmp-empty-title {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: var(--fs-xl);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
+	}
+
+	/* ── Audition candidates strip (rendered inside CompareView) ── */
+	.tb-aud {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.tb-aud-facets {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.3rem;
+	}
+	.tb-aud-label {
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.tb-aud-cands {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3rem;
+	}
+	.tb-aud-none {
+		font-size: var(--fs-xs);
+	}
+	.tb-cand {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.18rem 0.5rem 0.18rem 0.22rem;
+		border: 1px solid color-mix(in srgb, var(--el-color) 40%, var(--border));
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--el-color) 8%, transparent);
+		color: var(--text);
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			background 150ms ease;
+	}
+	.tb-cand:hover:not(:disabled) {
+		border-color: color-mix(in srgb, var(--el-color) 80%, var(--border));
+	}
+	.tb-cand--on {
+		background: color-mix(in srgb, var(--el-color) 22%, transparent);
+		border-color: color-mix(in srgb, var(--el-color) 70%, var(--border));
+	}
+	.tb-cand:disabled {
+		opacity: 0.4;
+		cursor: default;
+	}
+	.tb-cand-avatar {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		overflow: hidden;
+		background: rgba(0, 0, 0, 0.5);
+		flex-shrink: 0;
+	}
+	.tb-cand-avatar img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.tb-cand-initials {
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-bold);
+		color: var(--el-color);
+	}
+	.tb-cand-name {
+		white-space: nowrap;
+	}
+	.tb-cand-mark {
+		font-weight: var(--fw-bold);
+		color: var(--el-color);
 	}
 
 	/* ── Atlas ────────────────────────────────────────────────── */

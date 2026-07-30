@@ -60,19 +60,17 @@ check(
 );
 await page.screenshot({ path: `${SHOTS}/tb-1600.png` });
 
-// ── 1b: detail docks BETWEEN source and bench at 1600 ────────────────────
+// ── 1b: detail is a MODAL — opening it never reflows the source grid ─────
+const sxBefore = await page.locator('.tb-source').boundingBox();
 await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
 await page.locator('.dc-panel').waitFor({ timeout: 5000 });
-const dcPos = await page
-	.locator('.dc-backdrop--docked')
-	.evaluate((el) => getComputedStyle(el).position);
-const dcBox = await page.locator('.dc-panel').boundingBox();
-const bx2 = await page.locator('.bn').boundingBox();
-check('detail docks @1600', dcPos === 'static', `pos=${dcPos}`);
+const dcPos = await page.locator('.dc-backdrop').evaluate((el) => getComputedStyle(el).position);
+const sxAfter = await page.locator('.tb-source').boundingBox();
+check('detail is a modal @1600 (fixed scrim)', dcPos === 'fixed', `pos=${dcPos}`);
 check(
-	'stage sits between source and bench @1600',
-	dcBox && bx2 && dcBox.x + dcBox.width <= bx2.x + 1,
-	`dc right=${dcBox ? dcBox.x + dcBox.width : '?'} bn.x=${bx2?.x}`
+	'opening detail does not reflow the source',
+	sxBefore && sxAfter && Math.abs(sxBefore.width - sxAfter.width) < 1,
+	`before=${sxBefore?.width} after=${sxAfter?.width}`
 );
 await page.screenshot({ path: `${SHOTS}/tb-1600-detail.png` });
 await page
@@ -80,38 +78,42 @@ await page
 	.click()
 	.catch(() => {});
 
-// ── 1b: compare docks at 1600, overlays at 1280 ──────────────────────────
+// ── 1b: compare is a center Source VIEW — in-flow at every width ─────────
 async function openCompare(p) {
 	for (const name of ['Bennett', 'Jean']) {
 		const card = p.locator('.cc', { hasText: name }).first();
 		await card.hover();
 		await card.locator('.tb-act--compare').click();
 	}
-	await p.locator('.tray-go').click();
-	await p.locator('.cmp-panel').waitFor({ timeout: 5000 });
+	await p.locator('.tb-tabs .tab', { hasText: 'Compare' }).click();
+	await p.locator('.cmp').waitFor({ timeout: 5000 });
 }
 await openCompare(page);
-const cmpPos1600 = await page
-	.locator('.cmp-backdrop--docked')
-	.evaluate((el) => getComputedStyle(el).position);
-check('compare docks @1600', cmpPos1600 === 'static', `pos=${cmpPos1600}`);
+const cmpPos1600 = await page.locator('.cmp').evaluate((el) => getComputedStyle(el).position);
+const cmpBox1600 = await page.locator('.cmp').boundingBox();
+const bnBox1600 = await page.locator('.bn').boundingBox();
+check('compare renders in-flow @1600', cmpPos1600 === 'static', `pos=${cmpPos1600}`);
+check(
+	'compare fills the center, left of the bench @1600',
+	cmpBox1600 && bnBox1600 && cmpBox1600.x + cmpBox1600.width <= bnBox1600.x + 1,
+	`cmp right=${cmpBox1600 ? cmpBox1600.x + cmpBox1600.width : '?'} bn.x=${bnBox1600?.x}`
+);
 await page.screenshot({ path: `${SHOTS}/tb-1600-compare.png` });
 
 await page.setViewportSize({ width: 1280, height: 1000 });
 await page.waitForTimeout(200);
-const cmpPos1280 = await page
-	.locator('.cmp-backdrop--docked')
-	.evaluate((el) => getComputedStyle(el).position);
-check('compare overlays (fixed) @1280', cmpPos1280 === 'fixed', `pos=${cmpPos1280}`);
+const cmpPos1280 = await page.locator('.cmp').evaluate((el) => getComputedStyle(el).position);
+check('compare stays in-flow @1280 (no overlay fallback)', cmpPos1280 === 'static', cmpPos1280);
 await page.screenshot({ path: `${SHOTS}/tb-1280-compare.png` });
-// Close the overlay, then confirm detail still docks at 1280 (its breakpoint stays 1200).
-await page.locator('.cmp-close').click();
+// Back to the roster; detail stays a modal at 1280 too.
+await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
 await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
 await page.locator('.dc-panel').waitFor({ timeout: 5000 });
 const dcPos1280 = await page
-	.locator('.dc-backdrop--docked')
+	.locator('.dc-backdrop')
 	.evaluate((el) => getComputedStyle(el).position);
-check('detail still docks @1280', dcPos1280 === 'static', `pos=${dcPos1280}`);
+check('detail is a modal @1280', dcPos1280 === 'fixed', `pos=${dcPos1280}`);
+await page.keyboard.press('Escape');
 const bx1280 = await page.locator('.bn').boundingBox();
 const sx1280 = await page.locator('.tb-source').boundingBox();
 check(

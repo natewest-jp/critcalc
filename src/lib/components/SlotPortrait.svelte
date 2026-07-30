@@ -120,13 +120,23 @@
 	let conOpen = $state(false);
 	let conX = $state(0);
 	let conY = $state(0);
+	let conFlip = $state(false);
 	let refOpen = $state(false);
 	let refX = $state(0);
 	let refY = $state(0);
+	let refFlip = $state(false);
 
-	function anchorTo(e: MouseEvent): { x: number; y: number } {
+	// The widest picker (the 7-pip constellation row) — the flip decision's
+	// estimate, since the popover hasn't rendered when the side is chosen.
+	const POPOVER_W = 220;
+
+	function anchorTo(e: MouseEvent): { x: number; y: number; flip: boolean } {
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		return { x: rect.right + 8, y: rect.top + rect.height / 2 };
+		// Default opens to the chip's right (the planner's left-edge portrait
+		// column); the TB Bench holds the RIGHT viewport edge, where that side
+		// can't fit — flip to the chip's left when it would overflow.
+		const flip = rect.right + 8 + POPOVER_W > window.innerWidth;
+		return { x: flip ? rect.left - 8 : rect.right + 8, y: rect.top + rect.height / 2, flip };
 	}
 
 	function openConstellation(e: MouseEvent) {
@@ -136,7 +146,7 @@
 			conOpen = false;
 			return;
 		}
-		({ x: conX, y: conY } = anchorTo(e));
+		({ x: conX, y: conY, flip: conFlip } = anchorTo(e));
 		conOpen = true;
 	}
 	function chooseCon(level: number) {
@@ -151,7 +161,7 @@
 			refOpen = false;
 			return;
 		}
-		({ x: refX, y: refY } = anchorTo(e));
+		({ x: refX, y: refY, flip: refFlip } = anchorTo(e));
 		refOpen = true;
 	}
 	function chooseRefinement(r: 1 | 2 | 3 | 4 | 5) {
@@ -265,7 +275,13 @@
 	></div>
 {/if}
 {#if conOpen}
-	<div class="sp-popover" use:portal style:left="{conX}px" style:top="{conY}px">
+	<div
+		class="sp-popover"
+		class:sp-popover--flip={conFlip}
+		use:portal
+		style:left="{conX}px"
+		style:top="{conY}px"
+	>
 		{#each [0, 1, 2, 3, 4, 5, 6] as level (level)}
 			<button
 				class="sp-pip"
@@ -278,7 +294,13 @@
 	</div>
 {/if}
 {#if refOpen}
-	<div class="sp-popover" use:portal style:left="{refX}px" style:top="{refY}px">
+	<div
+		class="sp-popover"
+		class:sp-popover--flip={refFlip}
+		use:portal
+		style:left="{refX}px"
+		style:top="{refY}px"
+	>
 		{#each [1, 2, 3, 4, 5] as r (r)}
 			<button
 				class="sp-pip"
@@ -510,6 +532,13 @@
 	.sp-popover {
 		position: fixed;
 		transform: translateY(-50%);
+	}
+	/* Anchored at the chip's LEFT edge when the right side can't fit it (the
+	   TB Bench holds the right viewport edge) — same vertical centering. */
+	.sp-popover--flip {
+		transform: translate(-100%, -50%);
+	}
+	.sp-popover {
 		z-index: 950;
 		background: var(--surface-raised);
 		border: none;

@@ -56,10 +56,11 @@
 <section>
 	<h2 id="compare">Comparing and assembling</h2>
 	<p>
-		Add characters to <strong>Compare</strong> to line them up row by row on one ruler — cooldowns on
-		one line, burst costs on the next, then the capabilities themselves. The small three-phase bars show
-		each effect's window against its cooldown, all on a shared time scale, so you can see at a glance
-		who covers the gap.
+		Press <strong>→ Compare</strong> on a character card and it loads into the
+		<strong>Compare</strong> tab — its portrait appears right in the tab, and you keep browsing. Open
+		the tab when you're ready: the three-phase bars line every pick up on one shared time ruler (each
+		effect's window against its cooldown), and below them a side-by-side table aligns the facts — cooldowns
+		on one row, burst costs on the next, then the capabilities with their constellation gates.
 	</p>
 	<p>
 		Fill the team slots and the panel reports what the composition <em>is</em> — elemental
