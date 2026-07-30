@@ -945,7 +945,6 @@
 						roster={split.matches}
 						{filters}
 						railSide="left"
-						railFlat
 						searchPlaceholder="Search characters…"
 						tile={rosterTile}
 						railStart={rosterFacetRail}

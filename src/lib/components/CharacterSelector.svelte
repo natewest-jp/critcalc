@@ -130,7 +130,6 @@
 	<CharacterGrid
 		roster={allCharacters}
 		{filters}
-		railFlat
 		tile={charTile}
 		extraFilter={matchesActiveFacets}
 		railStart={facetRail}

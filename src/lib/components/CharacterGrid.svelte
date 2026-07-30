@@ -36,7 +36,6 @@
 		filters,
 		showFilterRail = true,
 		railSide = 'right',
-		railFlat = false,
 		extraFilter,
 		emptyMessage = 'No characters match these filters.',
 		tile,
@@ -58,9 +57,6 @@
 		 *  planner's picker keeps it right, the Team Builder puts it left so
 		 *  both filter columns sit on the OUTER edges of the slide seam. */
 		railSide?: 'left' | 'right';
-		/** Drop the rail's .panel shell — for consumers whose own frame is
-		 *  already the surface (the Team Builder's one-frame layout). */
-		railFlat?: boolean;
 		/** Extra predicate ANDed after the identity match (facets, ownership, …). */
 		extraFilter?: (entry: CharacterIndexEntry) => boolean;
 		emptyMessage?: string;
@@ -155,7 +151,7 @@
 	</div>
 
 	{#if showFilterRail}
-		<aside class="cg-rail" class:panel={!railFlat} class:cg-rail--left={railSide === 'left'}>
+		<aside class="cg-rail" class:cg-rail--left={railSide === 'left'}>
 			{#if headerEnd}
 				<div class="cg-rail-head">{@render headerEnd()}</div>
 			{/if}
@@ -241,9 +237,21 @@
 
 <style>
 	.cg {
+		/* A scroll container clips everything that paints outside its content
+		   box, and `overflow-y: auto` forces `overflow-x` to `auto` too — so a
+		   vertical scroller clips on all FOUR edges. Two things here paint
+		   outside their element: the shared focus ring (2px outline at 2px
+		   offset = 4px past a .field or .chip) and a card's 1px hover rise.
+		   Without a gutter the rail ate the ring's left and right edges and the
+		   grid's top row lost its top border on hover.
+		   The gutter also SUPPLIES the rail↔grid separation (hence gap: 0):
+		   6px + 6px is the 12px that used to be a gap, so tuning this knob
+		   keeps the interior breathing room self-consistent. */
+		--cg-gutter: 6px;
+
 		display: flex;
 		flex-direction: row;
-		gap: 12px;
+		gap: 0;
 		flex: 1;
 		min-width: 0;
 		min-height: 0;
@@ -257,6 +265,8 @@
 		min-width: 0;
 		min-height: 0;
 		overflow-y: auto;
+		/* Clearance for the cards' hover rise — see --cg-gutter on .cg. */
+		padding: var(--cg-gutter);
 		display: flex;
 		flex-direction: column;
 		gap: var(--cg-stack-gap, 8px);
@@ -285,21 +295,23 @@
 	/* ── Filter rail ─────────────────────────────────────────────── */
 	/* Right by default (the planner's picker); the Team Builder flips it left
 	   with `order`, so the DOM stays grid-first either way. */
+	/* Flat by design — both tools put this on a .frame ground, which IS the
+	   surface (nothing inside a frame wears .panel). The width stays the
+	   CONTENT column: the gutter is added on top, so the focus rings get their
+	   room without the chip rows reflowing narrower. */
 	.cg-rail {
 		flex-shrink: 0;
-		width: var(--cg-rail-w, 210px);
+		width: calc(var(--cg-rail-w, 210px) + 2 * var(--cg-gutter));
 		align-self: stretch;
 		overflow-y: auto;
+		/* Clearance for the focus ring — see --cg-gutter on .cg. */
+		padding: var(--cg-gutter);
+		display: grid;
+		align-content: start;
 		gap: 1rem;
 	}
 	.cg-rail--left {
 		order: -1;
-	}
-	/* .panel supplies these when the rail wears its shell; flat rails need them
-	   spelled out. */
-	.cg-rail:not(.panel) {
-		display: grid;
-		align-content: start;
 	}
 	.cg-rail-head {
 		display: flex;
