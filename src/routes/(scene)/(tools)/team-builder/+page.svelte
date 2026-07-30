@@ -608,439 +608,453 @@
 {/snippet}
 
 <div class="tb">
-	<!-- ── Source (Atlas ⇄ Roster) ────────────────────────────── -->
-	<section class="tb-source">
-		<div class="tb-tabs">
-			<div class="tb-tabgroup" role="tablist" aria-label="Source view">
-				<button
-					class="tab tab--lg"
-					class:active={sourceTab === 'atlas'}
-					role="tab"
-					aria-selected={sourceTab === 'atlas'}
-					onclick={() => (sourceTab = 'atlas')}>Atlas</button
-				>
-				<button
-					class="tab tab--lg"
-					class:active={sourceTab === 'roster'}
-					role="tab"
-					aria-selected={sourceTab === 'roster'}
-					onclick={() => (sourceTab = 'roster')}>Roster</button
-				>
-				<!-- The Compare tab IS the accumulator: a card's "→ Compare" lands
+	<!-- Tab strip rides OUTSIDE the frame — the Rotation Planner's document tabs
+	     sit the same way, and the two strips are what set the frame tops the
+	     mirrored surfaces align on. -->
+	<div class="tb-tabs">
+		<div class="tb-tabgroup" role="tablist" aria-label="Source view">
+			<button
+				class="tab tab--lg"
+				class:active={sourceTab === 'atlas'}
+				role="tab"
+				aria-selected={sourceTab === 'atlas'}
+				onclick={() => (sourceTab = 'atlas')}>Atlas</button
+			>
+			<button
+				class="tab tab--lg"
+				class:active={sourceTab === 'roster'}
+				role="tab"
+				aria-selected={sourceTab === 'roster'}
+				onclick={() => (sourceTab = 'roster')}>Roster</button
+			>
+			<!-- The Compare tab IS the accumulator: a card's "→ Compare" lands
 				     its pick here as a mini side avatar (the Saved-Rotations stack
 				     grammar) — no tray, no navigation; click when ready. -->
-				<button
-					class="tab tab--lg tb-tab--compare"
-					class:active={sourceTab === 'compare'}
-					role="tab"
-					aria-selected={sourceTab === 'compare'}
-					onclick={() => (sourceTab = 'compare')}
-				>
-					Compare
-					{#if compareStack.length > 0}
-						<span
-							class="tb-tabstack"
-							style:width="{24 + (compareStack.length - 1) * 16}px"
-							aria-label="{compareStack.length} in comparison"
-						>
-							{#each compareStack as pick, i (pick.id)}
-								<span
-									class="tb-tabstack-circle"
-									style:left="{i * 16}px"
-									style:z-index={i + 1}
-									style:border-color={pick.color}
-								>
-									{#if hasAvatar(pick.id)}
-										<img
-											src={getAvatar(pick.id, preferNewfit, 'side', traveler)}
-											alt=""
-											onerror={(e) => {
-												const img = e.currentTarget as HTMLImageElement;
-												if (!img.dataset.triedFallback) {
-													img.dataset.triedFallback = '1';
-													img.src = getAvatarFallback(pick.id, 'side', traveler);
-												} else {
-													img.style.display = 'none';
-												}
-											}}
-										/>
-									{:else}
-										<span class="tb-tabstack-initials"
-											>{(pick.entry?.displayName ?? pick.id).slice(0, 1).toUpperCase()}</span
-										>
-									{/if}
-								</span>
-							{/each}
-						</span>
-					{/if}
-				</button>
-			</div>
-			<div class="segment tb-conmode" role="radiogroup" aria-label="Constellation mode">
-				{#each CON_MODES as m (m.key)}
-					<button
-						class="btn"
-						class:is-active={conMode === m.key}
-						role="radio"
-						aria-checked={conMode === m.key}
-						title={m.hint}
-						onclick={() => (conMode = m.key)}>{m.label}</button
+			<button
+				class="tab tab--lg tb-tab--compare"
+				class:active={sourceTab === 'compare'}
+				role="tab"
+				aria-selected={sourceTab === 'compare'}
+				onclick={() => (sourceTab = 'compare')}
+			>
+				Compare
+				{#if compareStack.length > 0}
+					<span
+						class="tb-tabstack"
+						style:width="{24 + (compareStack.length - 1) * 16}px"
+						aria-label="{compareStack.length} in comparison"
 					>
-				{/each}
-			</div>
-		</div>
-
-		{#if sourceTab === 'atlas'}
-			<div class="tb-atlas">
-				{#if atlasMode === 'slots' && slotRows.length > 0}
-					<div class="tb-atlas-head">
-						<p class="tb-atlas-lead">
-							Alternatives for each character on your team — same element and role.
-						</p>
-						<button class="btn" onclick={backToCards}>Browse all roles →</button>
-					</div>
-					{#each slotRows as row (row.slotEntry.id)}
-						<section class="tb-slotrow">
-							<header class="tb-slotrow-head">
-								{#if hasAvatar(row.slotEntry.id)}
+						{#each compareStack as pick, i (pick.id)}
+							<span
+								class="tb-tabstack-circle"
+								style:left="{i * 16}px"
+								style:z-index={i + 1}
+								style:border-color={pick.color}
+							>
+								{#if hasAvatar(pick.id)}
 									<img
-										class="tb-slotrow-avatar"
-										src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
+										src={getAvatar(pick.id, preferNewfit, 'side', traveler)}
 										alt=""
-										loading="lazy"
+										onerror={(e) => {
+											const img = e.currentTarget as HTMLImageElement;
+											if (!img.dataset.triedFallback) {
+												img.dataset.triedFallback = '1';
+												img.src = getAvatarFallback(pick.id, 'side', traveler);
+											} else {
+												img.style.display = 'none';
+											}
+										}}
 									/>
 								{:else}
-									<span class="tb-slotrow-initials"
-										>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
+									<span class="tb-tabstack-initials"
+										>{(pick.entry?.displayName ?? pick.id).slice(0, 1).toUpperCase()}</span
 									>
 								{/if}
-								<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
-								{#if row.slotRoles}
-									<span class="tb-slotrow-roles">
-										{#each row.slotRoles.position as p (p)}
-											<img
-												src={positionIcon(p, 'color')}
-												alt={POSITION_LABEL[p]}
-												title={POSITION_LABEL[p]}
-											/>
+							</span>
+						{/each}
+					</span>
+				{/if}
+			</button>
+		</div>
+		<div class="segment tb-conmode" role="radiogroup" aria-label="Constellation mode">
+			{#each CON_MODES as m (m.key)}
+				<button
+					class="btn"
+					class:is-active={conMode === m.key}
+					role="radio"
+					aria-checked={conMode === m.key}
+					title={m.hint}
+					onclick={() => (conMode = m.key)}>{m.label}</button
+				>
+			{/each}
+		</div>
+	</div>
+
+	<!-- ── The tool frame: filter/center/bench zones inside ONE surface, the
+	     Rotation Planner's frame mirrored (its bench holds the LEFT edge, ours
+	     the right, so the two meet at the tool-slide seam). Viewport-fit — the
+	     views scroll INSIDE it, the page never does. -->
+	<div class="tb-frame frame">
+		<section class="tb-source">
+			{#if sourceTab === 'atlas'}
+				<div class="tb-atlas">
+					{#if atlasMode === 'slots' && slotRows.length > 0}
+						<div class="tb-atlas-head">
+							<p class="tb-atlas-lead">
+								Alternatives for each character on your team — same element and role.
+							</p>
+							<button class="btn" onclick={backToCards}>Browse all roles →</button>
+						</div>
+						{#each slotRows as row (row.slotEntry.id)}
+							<section class="tb-slotrow">
+								<header class="tb-slotrow-head">
+									{#if hasAvatar(row.slotEntry.id)}
+										<img
+											class="tb-slotrow-avatar"
+											src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
+											alt=""
+											loading="lazy"
+										/>
+									{:else}
+										<span class="tb-slotrow-initials"
+											>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
+										>
+									{/if}
+									<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
+									{#if row.slotRoles}
+										<span class="tb-slotrow-roles">
+											{#each row.slotRoles.position as p (p)}
+												<img
+													src={positionIcon(p, 'color')}
+													alt={POSITION_LABEL[p]}
+													title={POSITION_LABEL[p]}
+												/>
+											{/each}
+											{#each row.slotRoles.function as f (f)}
+												<img
+													src={functionIcon(f, 'color')}
+													alt={FUNCTION_LABEL[f]}
+													title={FUNCTION_LABEL[f]}
+												/>
+											{/each}
+										</span>
+									{/if}
+									<span class="tb-slotrow-count"
+										>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
+									>
+								</header>
+								{#if row.alternatives.length > 0}
+									<div class="tb-grid">
+										{#each row.alternatives as entry (entry.id)}
+											{@render charTile(entry, false)}
 										{/each}
-										{#each row.slotRoles.function as f (f)}
-											<img
-												src={functionIcon(f, 'color')}
-												alt={FUNCTION_LABEL[f]}
-												title={FUNCTION_LABEL[f]}
-											/>
-										{/each}
-									</span>
+									</div>
+								{:else}
+									<p class="note tb-note">No same-element alternative in this role yet.</p>
 								{/if}
-								<span class="tb-slotrow-count"
-									>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
-								>
-							</header>
-							{#if row.alternatives.length > 0}
+							</section>
+						{/each}
+					{:else if atlasMode === 'drill' && drilledCategory}
+						<div class="tb-atlas-head">
+							<button class="btn" onclick={backToCards}>← All roles</button>
+							<div class="tb-drill-title">
+								{#if drilledCategory.position}
+									<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
+								{/if}
+								<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
+								<span>{drilledCategory.label}</span>
+							</div>
+						</div>
+						{#each drillRows as row (row.key)}
+							<section class="tb-slotrow">
+								<header class="tb-slotrow-head">
+									{#if row.kind === 'element'}
+										<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
+										<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
+									{:else}
+										<span class="tb-slotrow-name">{row.label}</span>
+									{/if}
+									<span class="tb-slotrow-count"
+										>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
+									>
+								</header>
 								<div class="tb-grid">
-									{#each row.alternatives as entry (entry.id)}
+									{#each row.entries as entry (entry.id)}
 										{@render charTile(entry, false)}
 									{/each}
 								</div>
-							{:else}
-								<p class="note tb-note">No same-element alternative in this role yet.</p>
-							{/if}
-						</section>
-					{/each}
-				{:else if atlasMode === 'drill' && drilledCategory}
-					<div class="tb-atlas-head">
-						<button class="btn" onclick={backToCards}>← All roles</button>
-						<div class="tb-drill-title">
-							{#if drilledCategory.position}
-								<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
-							{/if}
-							<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
-							<span>{drilledCategory.label}</span>
-						</div>
-					</div>
-					{#each drillRows as row (row.key)}
-						<section class="tb-slotrow">
-							<header class="tb-slotrow-head">
-								{#if row.kind === 'element'}
-									<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
-									<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
-								{:else}
-									<span class="tb-slotrow-name">{row.label}</span>
-								{/if}
-								<span class="tb-slotrow-count"
-									>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
-								>
-							</header>
-							<div class="tb-grid">
-								{#each row.entries as entry (entry.id)}
-									{@render charTile(entry, false)}
-								{/each}
-							</div>
-						</section>
-					{/each}
-					{#if drillRows.length === 0}
-						<p class="note tb-note">No curated providers in this role yet.</p>
+							</section>
+						{/each}
+						{#if drillRows.length === 0}
+							<p class="note tb-note">No curated providers in this role yet.</p>
+						{/if}
+					{:else}
+						<p class="tb-atlas-lead">
+							Browse by role — from Genshin's Imaginarium Theater classification.
+						</p>
+						<AtlasView {roleCards} onSelectCategory={openCategory} />
+						<p class="tb-atlas-cite">
+							Roles: Genshin Impact — Imaginarium Theater. A presence classification, not a ranking.
+						</p>
 					{/if}
-				{:else}
-					<p class="tb-atlas-lead">
-						Browse by role — from Genshin's Imaginarium Theater classification.
-					</p>
-					<AtlasView {roleCards} onSelectCategory={openCategory} />
-					<p class="tb-atlas-cite">
-						Roles: Genshin Impact — Imaginarium Theater. A presence classification, not a ranking.
-					</p>
-				{/if}
-			</div>
-		{/if}
+				</div>
+			{/if}
 
-		<!-- ── Compare — a first-class center view, not an inspector: the shared
+			<!-- ── Compare — a first-class center view, not an inspector: the shared
 		     ruler gets the Source's full width, and the view works at every
 		     viewport (no dock breakpoint, no modal fallback). -->
-		{#if sourceTab === 'compare'}
-			{#if compareIds.size === 0}
-				<div class="panel tb-cmp-empty">
-					<p class="tb-cmp-empty-title">Nothing to compare yet.</p>
-					<p class="note">
-						Hover a character card in the Roster and press <strong>→ Compare</strong> — up to four characters
-						line up here on one shared time ruler.
-					</p>
-				</div>
-			{:else}
-				<CompareView
-					ids={[...compareIds]}
-					{conMode}
-					anchorId={anchorId ?? undefined}
-					onRemove={toggleCompare}
-					onCommit={anchorId ? commitAudition : undefined}
-					onClear={anchorId ? undefined : () => compareIds.clear()}
-					onCancelAudition={anchorId ? cancelAudition : undefined}
-					candidatesArea={anchorId ? auditionStrip : undefined}
-				/>
+			{#if sourceTab === 'compare'}
+				{#if compareIds.size === 0}
+					<div class="tb-cmp-empty">
+						<p class="tb-cmp-empty-title">Nothing to compare yet.</p>
+						<p class="note">
+							Hover a character card in the Roster and press <strong>→ Compare</strong> — up to four characters
+							line up here on one shared time ruler.
+						</p>
+					</div>
+				{:else}
+					<CompareView
+						ids={[...compareIds]}
+						{conMode}
+						anchorId={anchorId ?? undefined}
+						onRemove={toggleCompare}
+						onCommit={anchorId ? commitAudition : undefined}
+						onClear={anchorId ? undefined : () => compareIds.clear()}
+						onCancelAudition={anchorId ? cancelAudition : undefined}
+						candidatesArea={anchorId ? auditionStrip : undefined}
+					/>
+				{/if}
 			{/if}
-		{/if}
 
-		<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
+			<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
 		     remounting ~122 cards on every Atlas⇄Roster toggle was a visible
 		     stall in Safari 26.x, and keeping it warm makes the toggle instant
 		     in every browser. -->
-		{#if rosterEverShown}
-			<div class="tb-roster" hidden={sourceTab !== 'roster'}>
-				<aside class="tb-rail panel">
-					<input
-						class="field"
-						type="text"
-						placeholder="Search characters…"
-						bind:value={search}
-						autocomplete="off"
-						autocorrect="off"
-						spellcheck={false}
-					/>
+			{#if rosterEverShown}
+				<div class="tb-roster" hidden={sourceTab !== 'roster'}>
+					<aside class="tb-rail">
+						<input
+							class="field"
+							type="text"
+							placeholder="Search characters…"
+							bind:value={search}
+							autocomplete="off"
+							autocorrect="off"
+							spellcheck={false}
+						/>
 
-					<div>
-						<p class="kicker">Roster</p>
-						<div class="segment tb-seg" role="radiogroup" aria-label="Roster view">
-							{#each OWNERSHIP_VIEWS as v (v.key)}
-								<button
-									class="btn"
-									class:is-active={ownershipView === v.key}
-									role="radio"
-									aria-checked={ownershipView === v.key}
-									title={v.hint}
-									onclick={() => (ownershipView = v.key)}>{v.label}</button
-								>
-							{/each}
-						</div>
-						<button
-							class="btn tb-edit-toggle"
-							class:active={editRoster}
-							aria-pressed={editRoster}
-							onclick={() => (editRoster = !editRoster)}
-							title="Click tiles to mark which characters you own"
-							>{editRoster ? 'Done editing' : 'Edit roster…'}</button
-						>
-					</div>
-
-					<div>
-						<p class="kicker">Role</p>
-						<div class="chips tb-chips">
-							{#each POSITIONS as p (p)}
-								<button
-									class="chip tb-chip--role"
-									class:active={rolePosition.has(p)}
-									aria-pressed={rolePosition.has(p)}
-									onclick={() => toggleRolePosition(p)}
-								>
-									<img class="tb-chip-icon" src={positionIcon(p, 'color')} alt="" />{POSITION_LABEL[
-										p
-									]}
-								</button>
-							{/each}
-							{#each FUNCTIONS as f (f)}
-								<button
-									class="chip tb-chip--role"
-									class:active={roleFunction.has(f)}
-									aria-pressed={roleFunction.has(f)}
-									onclick={() => toggleRoleFunction(f)}
-								>
-									<img class="tb-chip-icon" src={functionIcon(f, 'color')} alt="" />{FUNCTION_LABEL[
-										f
-									]}
-								</button>
-							{/each}
-						</div>
-					</div>
-
-					<div>
-						<p class="kicker">Factions / Buffs</p>
-						<div class="chips tb-chips">
-							{#each FACTION_BUFFS as fb (fb.key)}
-								<button
-									class="chip"
-									class:active={filterFactionBuffs.has(fb.key)}
-									title={fb.hint}
-									aria-pressed={filterFactionBuffs.has(fb.key)}
-									onclick={() => toggleFilter(filterFactionBuffs, fb.key)}>{fb.label}</button
-								>
-							{/each}
-						</div>
-					</div>
-
-					<div>
-						<p class="kicker">Can provide</p>
-						<div class="chips tb-chips">
-							{#each FACETS as facet (facet.key)}
-								<button
-									class="chip"
-									class:active={activeFacets.has(facet.key)}
-									title={facet.hint}
-									aria-pressed={activeFacets.has(facet.key)}
-									onclick={() => toggleFacet(facet.key)}>{facet.label}</button
-								>
-							{/each}
-						</div>
-						{#if activeFacets.size > 1}
-							<p class="note tb-note">Matching characters provide all of these.</p>
-						{/if}
-					</div>
-
-					<div>
-						<p class="kicker">Element</p>
-						<div class="chips tb-chips">
-							{#each ELEMENTS as el (el)}
-								<button
-									class="chip chip--element"
-									class:active={filterElements.has(el)}
-									style:--chip-color={elColor(el)}
-									aria-pressed={filterElements.has(el)}
-									onclick={() => toggleFilter(filterElements, el)}>{el}</button
-								>
-							{/each}
-						</div>
-					</div>
-
-					<div>
-						<p class="kicker">Weapon</p>
-						<div class="chips tb-chips">
-							{#each WEAPONS as w (w)}
-								<button
-									class="chip"
-									class:active={filterWeapons.has(w)}
-									aria-pressed={filterWeapons.has(w)}
-									onclick={() => toggleFilter(filterWeapons, w)}>{w}</button
-								>
-							{/each}
-						</div>
-					</div>
-
-					<div>
-						<p class="kicker">Rarity</p>
-						<div class="chips tb-chips">
-							{#each RARITIES as r (r)}
-								<button
-									class="chip"
-									class:active={filterRarities.has(r)}
-									aria-pressed={filterRarities.has(r)}
-									onclick={() => toggleFilter(filterRarities, r)}>{r}★</button
-								>
-							{/each}
-						</div>
-					</div>
-
-					<div>
-						<p class="kicker">Region</p>
-						<div class="chips tb-chips">
-							{#each allRegions as region (region)}
-								<button
-									class="chip"
-									class:active={filterRegion === region}
-									aria-pressed={filterRegion === region}
-									onclick={() => pickRegion(region)}>{region}</button
-								>
-							{/each}
-						</div>
-					</div>
-
-					{#if anyFilterActive}
-						<button class="btn" onclick={clearAll}>Clear filters</button>
-					{/if}
-				</aside>
-
-				<div class="tb-content">
-					<p class="tb-count" role="status">
-						{split.matches.length} character{split.matches.length === 1 ? '' : 's'}
-						{#if activeFacets.size > 0 && conMode === 'mine'}
-							<span class="tb-count-mode">at your constellations</span>
-						{:else if activeFacets.size > 0 && conMode !== 'c0'}
-							<span class="tb-count-mode">at {conMode.toUpperCase()}</span>
-						{/if}
-					</p>
-
-					<div class="tb-grid">
-						{#each shownMatches as entry (entry.id)}
-							{@render charTile(entry, false)}
-						{/each}
-					</div>
-
-					{#if split.matches.length === 0}
-						<p class="tb-empty">
-							No curated character matches.
-							{#if conMode === 'c0' && activeFacets.size > 0}
-								Some kits unlock these capabilities at higher constellations — try “My roster” or
-								“C6”.
-							{/if}
-						</p>
-					{/if}
-
-					{#if split.uncurated.length > 0}
-						<section class="tb-stubs">
-							<p class="kicker">Not yet curated</p>
-							<p class="note tb-note">
-								These kits have no capability data yet — they may well do what you’re filtering for.
-								Absence of a badge here means “unknown”, not “no”.
-							</p>
-							<div class="tb-grid">
-								{#each split.uncurated as entry (entry.id)}
-									{@render charTile(entry, true)}
+						<div>
+							<p class="kicker">Roster</p>
+							<div class="segment tb-seg" role="radiogroup" aria-label="Roster view">
+								{#each OWNERSHIP_VIEWS as v (v.key)}
+									<button
+										class="btn"
+										class:is-active={ownershipView === v.key}
+										role="radio"
+										aria-checked={ownershipView === v.key}
+										title={v.hint}
+										onclick={() => (ownershipView = v.key)}>{v.label}</button
+									>
 								{/each}
 							</div>
-						</section>
-					{/if}
-				</div>
-			</div>
-		{/if}
-	</section>
+							<button
+								class="btn tb-edit-toggle"
+								class:active={editRoster}
+								aria-pressed={editRoster}
+								onclick={() => (editRoster = !editRoster)}
+								title="Click tiles to mark which characters you own"
+								>{editRoster ? 'Done editing' : 'Edit roster…'}</button
+							>
+						</div>
 
-	<!-- ── Bench (the team) — the right edge, facing the Rotation
-	     Planner it sends to; on narrow screens it reorders to the top. -->
-	<Bench
-		slots={teamSlots}
-		conCapOf={(id) => conCapFor(conMode, mounted ? ($constellations[id] ?? 0) : 0)}
-		onRemove={(i) => (teamSlots[i] = null)}
-		onClear={() => (teamSlots = [null, null, null, null])}
-		onOpen={openDetail}
-		onFilterFacet={(f) => selectCapability(f)}
-		onAudition={openAudition}
-	/>
+						<div>
+							<p class="kicker">Role</p>
+							<div class="chips tb-chips">
+								{#each POSITIONS as p (p)}
+									<button
+										class="chip tb-chip--role"
+										class:active={rolePosition.has(p)}
+										aria-pressed={rolePosition.has(p)}
+										onclick={() => toggleRolePosition(p)}
+									>
+										<img
+											class="tb-chip-icon"
+											src={positionIcon(p, 'color')}
+											alt=""
+										/>{POSITION_LABEL[p]}
+									</button>
+								{/each}
+								{#each FUNCTIONS as f (f)}
+									<button
+										class="chip tb-chip--role"
+										class:active={roleFunction.has(f)}
+										aria-pressed={roleFunction.has(f)}
+										onclick={() => toggleRoleFunction(f)}
+									>
+										<img
+											class="tb-chip-icon"
+											src={functionIcon(f, 'color')}
+											alt=""
+										/>{FUNCTION_LABEL[f]}
+									</button>
+								{/each}
+							</div>
+						</div>
+
+						<div>
+							<p class="kicker">Factions / Buffs</p>
+							<div class="chips tb-chips">
+								{#each FACTION_BUFFS as fb (fb.key)}
+									<button
+										class="chip"
+										class:active={filterFactionBuffs.has(fb.key)}
+										title={fb.hint}
+										aria-pressed={filterFactionBuffs.has(fb.key)}
+										onclick={() => toggleFilter(filterFactionBuffs, fb.key)}>{fb.label}</button
+									>
+								{/each}
+							</div>
+						</div>
+
+						<div>
+							<p class="kicker">Can provide</p>
+							<div class="chips tb-chips">
+								{#each FACETS as facet (facet.key)}
+									<button
+										class="chip"
+										class:active={activeFacets.has(facet.key)}
+										title={facet.hint}
+										aria-pressed={activeFacets.has(facet.key)}
+										onclick={() => toggleFacet(facet.key)}>{facet.label}</button
+									>
+								{/each}
+							</div>
+							{#if activeFacets.size > 1}
+								<p class="note tb-note">Matching characters provide all of these.</p>
+							{/if}
+						</div>
+
+						<div>
+							<p class="kicker">Element</p>
+							<div class="chips tb-chips">
+								{#each ELEMENTS as el (el)}
+									<button
+										class="chip chip--element"
+										class:active={filterElements.has(el)}
+										style:--chip-color={elColor(el)}
+										aria-pressed={filterElements.has(el)}
+										onclick={() => toggleFilter(filterElements, el)}>{el}</button
+									>
+								{/each}
+							</div>
+						</div>
+
+						<div>
+							<p class="kicker">Weapon</p>
+							<div class="chips tb-chips">
+								{#each WEAPONS as w (w)}
+									<button
+										class="chip"
+										class:active={filterWeapons.has(w)}
+										aria-pressed={filterWeapons.has(w)}
+										onclick={() => toggleFilter(filterWeapons, w)}>{w}</button
+									>
+								{/each}
+							</div>
+						</div>
+
+						<div>
+							<p class="kicker">Rarity</p>
+							<div class="chips tb-chips">
+								{#each RARITIES as r (r)}
+									<button
+										class="chip"
+										class:active={filterRarities.has(r)}
+										aria-pressed={filterRarities.has(r)}
+										onclick={() => toggleFilter(filterRarities, r)}>{r}★</button
+									>
+								{/each}
+							</div>
+						</div>
+
+						<div>
+							<p class="kicker">Region</p>
+							<div class="chips tb-chips">
+								{#each allRegions as region (region)}
+									<button
+										class="chip"
+										class:active={filterRegion === region}
+										aria-pressed={filterRegion === region}
+										onclick={() => pickRegion(region)}>{region}</button
+									>
+								{/each}
+							</div>
+						</div>
+
+						{#if anyFilterActive}
+							<button class="btn" onclick={clearAll}>Clear filters</button>
+						{/if}
+					</aside>
+
+					<div class="tb-content">
+						<p class="tb-count" role="status">
+							{split.matches.length} character{split.matches.length === 1 ? '' : 's'}
+							{#if activeFacets.size > 0 && conMode === 'mine'}
+								<span class="tb-count-mode">at your constellations</span>
+							{:else if activeFacets.size > 0 && conMode !== 'c0'}
+								<span class="tb-count-mode">at {conMode.toUpperCase()}</span>
+							{/if}
+						</p>
+
+						<div class="tb-grid">
+							{#each shownMatches as entry (entry.id)}
+								{@render charTile(entry, false)}
+							{/each}
+						</div>
+
+						{#if split.matches.length === 0}
+							<p class="tb-empty">
+								No curated character matches.
+								{#if conMode === 'c0' && activeFacets.size > 0}
+									Some kits unlock these capabilities at higher constellations — try “My roster” or
+									“C6”.
+								{/if}
+							</p>
+						{/if}
+
+						{#if split.uncurated.length > 0}
+							<section class="tb-stubs">
+								<p class="kicker">Not yet curated</p>
+								<p class="note tb-note">
+									These kits have no capability data yet — they may well do what you’re filtering
+									for. Absence of a badge here means “unknown”, not “no”.
+								</p>
+								<div class="tb-grid">
+									{#each split.uncurated as entry (entry.id)}
+										{@render charTile(entry, true)}
+									{/each}
+								</div>
+							</section>
+						{/if}
+					</div>
+				</div>
+			{/if}
+		</section>
+
+		<!-- ── Bench (the team) — the frame's RIGHT zone, facing the Rotation
+		     Planner it sends to. Side-locked at every width: the planner's
+		     portrait column never moves either, and the two reading as one
+		     mirrored surface is the point. -->
+		<Bench
+			slots={teamSlots}
+			conCapOf={(id) => conCapFor(conMode, mounted ? ($constellations[id] ?? 0) : 0)}
+			onRemove={(i) => (teamSlots[i] = null)}
+			onClear={() => (teamSlots = [null, null, null, null])}
+			onOpen={openDetail}
+			onFilterFacet={(f) => selectCapability(f)}
+			onAudition={openAudition}
+		/>
+	</div>
 </div>
 
 <!-- The one deliberate modal: a focused single-character read. -->
@@ -1057,56 +1071,68 @@
 {/if}
 
 <style>
-	/* Source | Bench — one static grid at every width. The Bench holds the RIGHT
-	   edge, facing the Rotation Planner it sends to (the planner's "Explore
-	   alternatives" mirror sits on ITS left edge, facing back). Compare is a
-	   Source VIEW (full center width) and Detail is a modal, so nothing ever
-	   reflows this grid. */
+	/* Tab strip, then ONE frame holding every zone. The page itself never
+	   scrolls: .tb fills the viewport budget exactly and the frame's zones
+	   scroll internally — which is what lets the bench hold the right edge at
+	   a fixed height instead of stickily chasing the scroll position.
+	   --tb-tabrow-gap is the alignment knob: the frame top = tab-row height +
+	   this gap, and it is tuned against the planner's so the two frames' top
+	   edges meet across the tool-slide seam (probe-bench-align.mjs measures
+	   both). It replaces the old --bn-drop, which faked the same alignment by
+	   pushing the bench down inside an unframed page. */
 	.tb {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) 210px;
-		gap: 1.1rem;
-		align-items: start;
-	}
+		--tb-tabrow-gap: 0.65rem;
+		/* Bench width. Per-tool for now (the planner's portrait column is 145px)
+		   — Nate's bench-card redesign sets the converged value. */
+		--tb-bench-w: 210px;
+		/* Interior hairline between frame zones, mirroring the planner's
+		   --rp-line over the same #081225 frame ground. */
+		--tb-line: #1c2a4a;
 
-	@media (max-width: 900px) {
-		.tb {
-			grid-template-columns: minmax(0, 1fr);
-		}
-	}
-
-	/* Bench sticks; on narrow it flows back into the column — reordered to the
-	   TOP (order: -1), where its compact horizontal strip belongs.
-	   --bn-drop: the planner's frame starts below its tab bar (27px + 0.6rem
-	   gap ≈ 37px); the bench takes the same head start so the two frames' top
-	   edges align across the RP↔TB shared edge (probe-bench-align.mjs measures
-	   this). The sticky pin includes it so the bench never shifts on scroll. */
-	.tb :global(.bn) {
-		--bn-drop: 37px;
-		margin-top: var(--bn-drop);
-		position: sticky;
-		top: calc(var(--chrome-h, 64px) + var(--tool-pad-top, 0.5rem) + var(--bn-drop));
-		max-height: calc(
-			100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem) -
-				var(--bn-drop)
+		display: flex;
+		flex-direction: column;
+		gap: var(--tb-tabrow-gap);
+		height: calc(
+			100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 0.5rem) - var(--tool-pad-bottom, 3rem)
 		);
-		overflow-y: auto;
 	}
-	@media (max-width: 900px) {
-		.tb :global(.bn) {
-			order: -1;
-			margin-top: 0;
-			position: static;
-			max-height: none;
-		}
+
+	/* Radius per the 3/6/9 scale, matching .rp-frame. overflow:hidden clips the
+	   zones' square scroll boxes to the rounded corners; the SlotPortrait
+	   popovers are position:fixed, which a plain overflow clip does not catch. */
+	.tb-frame {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: row;
+		align-items: stretch;
+		border-radius: 9px;
+		overflow: hidden;
+	}
+
+	/* The bench is a frame ZONE now, not an island: no shell of its own, a
+	   hairline where it meets the center, and its own scroll. Side-locked at
+	   every width (the ≤900px flip-to-top is gone). */
+	.tb-frame :global(.bn) {
+		flex: none;
+		width: var(--tb-bench-w);
+		border-left: 1px solid var(--tb-line);
+		overflow-y: auto;
 	}
 
 	/* ── Source ───────────────────────────────────────────────── */
+	/* The center zone: the scroll container all three views live in. Padding
+	   echoes .rp-frame's (10px 14px) — it belongs to the zone, not the frame,
+	   so the bench hairline can run the frame's full height. */
 	.tb-source {
+		flex: 1;
+		min-width: 0;
+		min-height: 0;
+		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
 		gap: 0.8rem;
-		min-width: 0;
+		padding: 10px 14px;
 	}
 
 	.tb-tabs {
@@ -1163,8 +1189,12 @@
 	}
 
 	/* ── Compare empty state (0 picks) — teaches the flow ────── */
+	/* Flat: a plain section on the frame fill, like every other inner panel. */
 	.tb-cmp-empty {
+		display: flex;
+		flex-direction: column;
 		align-items: flex-start;
+		gap: 0.5rem;
 	}
 	.tb-cmp-empty-title {
 		margin: 0;
@@ -1400,18 +1430,15 @@
 		}
 	}
 
+	/* Flat now (no .panel shell): the frame IS the surface, and the kickers do
+	   the separating over its fill. Not sticky either — the rail is taller than
+	   the frame, and a sticky element taller than its scrollport pins at the top
+	   with its own tail unreachable. It scrolls with the roster until Phase 2
+	   gives it a bounded column of its own. */
 	.tb-rail {
+		display: grid;
 		gap: 1rem;
-		position: sticky;
-		top: 0;
-		max-height: calc(100svh - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem));
-		overflow-y: auto;
-	}
-	@media (max-width: 720px) {
-		.tb-rail {
-			position: static;
-			max-height: none;
-		}
+		align-content: start;
 	}
 
 	.tb-seg {

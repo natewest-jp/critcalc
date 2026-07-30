@@ -54,12 +54,12 @@
 	}
 </script>
 
-<!-- frame, NOT panel: the bench wears the Rotation Planner frame's
-     shell (dire border + #081225 fill) — it's the planner's portrait
-     column's mirror image at the shared edge, and the chunk-3 slide leans on
-     the two reading as the same object. No kicker, no empty-state copy: four
-     empty slot cards ARE the explanation, same as the planner's. -->
-<section class="bn frame" aria-label="Team">
+<!-- A ZONE of the Team Builder's frame, not a framed island of its own: the
+     page owns the surface, this owns its column. Exactly how the planner's
+     portrait column sits inside .rp-frame — the two are mirror images at the
+     tool-slide seam. No kicker, no empty-state copy: four empty slot cards
+     ARE the explanation, same as the planner's. -->
+<section class="bn" aria-label="Team">
 	<div class="bn-slots">
 		{#each slots as id, i (i)}
 			{@const entry = members[i]}
@@ -153,14 +153,13 @@
 </section>
 
 <style>
-	/* Shell layout (the frame class only paints border + fill). Radius
-	   and padding echo .rp-frame (9px / 10px 14px 4px) so the two frames read
-	   as siblings across the shared edge. */
+	/* Zone layout only — border, fill and radius belong to the containing
+	   .tb-frame; the padding echoes .rp-frame's so the column sits at the same
+	   inset as the planner's portraits. */
 	.bn {
 		display: grid;
 		gap: 0.7rem;
 		padding: 10px 12px 10px;
-		border-radius: 9px;
 		align-content: start;
 	}
 
@@ -303,25 +302,8 @@
 	.bn-send:hover {
 		background: color-mix(in srgb, var(--accent) 22%, transparent);
 	}
-
-	/* Narrow screens: the Bench flattens from a right-edge column into a compact
-	   horizontal strip above the Source (the page grid reorders it to the top),
-	   so it doesn't eat a screenful before the roster. The taller portrait cards
-	   wrap side by side. */
-	@media (max-width: 900px) {
-		.bn-slots {
-			flex-direction: row;
-			flex-wrap: wrap;
-			gap: 0.4rem;
-		}
-		.bn-slot {
-			flex: 1 1 170px;
-			min-width: 170px;
-			border-radius: 6px;
-			border: 1px solid var(--border);
-		}
-		.bn-slot + .bn-slot {
-			border-top: 1px solid var(--border);
-		}
-	}
+	/* No narrow-screen flip: the bench holds its edge at every width, as the
+	   planner's portrait column always has. A real mobile treatment is the
+	   mobile usability pass's job, not a breakpoint that moves the one thing
+	   the two tools mirror each other on. */
 </style>

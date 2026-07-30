@@ -123,13 +123,22 @@ check(
 );
 await page.screenshot({ path: `${SHOTS}/tb-1280-detail.png` });
 
-// ── 1b: mobile — bench on TOP of the single column ───────────────────────
-await page.setViewportSize({ width: 760, height: 1000 });
-await page.waitForTimeout(200);
-const bxM = await page.locator('.bn').boundingBox();
-const sxM = await page.locator('.tb-source').boundingBox();
-check('bench above source @760', bxM && sxM && bxM.y < sxM.y, `bn.y=${bxM?.y} source.y=${sxM?.y}`);
-await page.screenshot({ path: `${SHOTS}/tb-760.png` });
+// ── mirrored surfaces: the bench is SIDE-LOCKED at every width ───────────
+// It is a zone of the one tool frame now, the mirror of the planner's portrait
+// column — so the old ≤900px flip-to-top is gone and the bench holds the right
+// edge even where it crowds. (A real narrow treatment is the mobile pass's.)
+for (const w of [1040, 760]) {
+	await page.setViewportSize({ width: w, height: 1000 });
+	await page.waitForTimeout(200);
+	const bxN = await page.locator('.bn').boundingBox();
+	const sxN = await page.locator('.tb-source').boundingBox();
+	check(
+		`bench stays right of source @${w} (no flip-to-top)`,
+		bxN && sxN && bxN.x > sxN.x && Math.abs(bxN.y - sxN.y) < 2,
+		`bn=(${bxN?.x},${bxN?.y}) source=(${sxN?.x},${sxN?.y})`
+	);
+	await page.screenshot({ path: `${SHOTS}/tb-${w}.png` });
+}
 
 // ── send affordance: arrow points right toward the planner ───────────────
 await page.setViewportSize({ width: 1600, height: 1000 });

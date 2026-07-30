@@ -426,16 +426,15 @@
 </section>
 
 <style>
-	/* A center view in normal flow — the page scrolls, nothing docks or overlays.
-	   Shell echoes the old panel chrome (surface, hairline, 9px radius). */
+	/* A center view in normal flow — nothing docks or overlays; it scrolls with
+	   the frame's center zone.
+	   Flat: the Team Builder's frame is the surface this view sits on, so the
+	   old panel chrome (fill, border, radius, inset padding) is gone and the
+	   two § kickers carry the structure on their own. */
 	.cmp {
 		display: flex;
 		flex-direction: column;
 		gap: 0.9rem;
-		padding: 1.2rem 1.3rem 1.1rem;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: 9px;
 		font-family: var(--font-body);
 		color: var(--text);
 		min-width: 0;
