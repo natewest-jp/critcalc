@@ -34,7 +34,7 @@
 	import type { RoleCategory, RoleFilter } from './lib/roles';
 	import { characterRoles } from '$lib/data/characterRoles.generated';
 	import type { RolePosition, RoleFunction, CharacterIndexEntry } from '$lib/types/character';
-	import { getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
+	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { positionIcon, functionIcon, POSITION_LABEL, FUNCTION_LABEL } from '$lib/utils/roleIcons';
 	import { MAX_COMPARE } from './lib/compare';
 	import { facetsProvidedBy, parseTeamParam, serializeTeamParam, type TeamSlot } from './lib/team';
@@ -301,14 +301,21 @@
 		return ownsAny && ownershipView === 'all' && notOwned;
 	}
 
+	// The full stepper (Nate 2026-07-30): every fixed step so "who can do this
+	// at exactly C2" is answerable, with the roster mode alongside.
 	const CON_MODES: { key: ConMode; label: string; hint: string }[] = [
 		{ key: 'c0', label: 'C0', hint: 'Base kits only — what every copy of the character can do' },
+		...([1, 2, 3, 4, 5] as const).map((n) => ({
+			key: `c${n}` as ConMode,
+			label: `C${n}`,
+			hint: `Everything a kit unlocks through C${n}`
+		})),
+		{ key: 'c6', label: 'C6', hint: 'Everything the kit can ever do' },
 		{
 			key: 'mine',
 			label: 'My roster',
 			hint: 'Uses your saved constellations (set them in a character’s details)'
-		},
-		{ key: 'max', label: 'C6', hint: 'Everything the kit can ever do' }
+		}
 	];
 
 	const OWNERSHIP_VIEWS: { key: OwnershipView; label: string; hint: string }[] = [
@@ -606,24 +613,24 @@
 		<div class="tb-tabs">
 			<div class="tb-tabgroup" role="tablist" aria-label="Source view">
 				<button
-					class="tab"
+					class="tab tab--lg"
 					class:active={sourceTab === 'atlas'}
 					role="tab"
 					aria-selected={sourceTab === 'atlas'}
 					onclick={() => (sourceTab = 'atlas')}>Atlas</button
 				>
 				<button
-					class="tab"
+					class="tab tab--lg"
 					class:active={sourceTab === 'roster'}
 					role="tab"
 					aria-selected={sourceTab === 'roster'}
 					onclick={() => (sourceTab = 'roster')}>Roster</button
 				>
 				<!-- The Compare tab IS the accumulator: a card's "→ Compare" lands
-				     its pick here as a mini avatar (the Saved-Rotations stack
+				     its pick here as a mini side avatar (the Saved-Rotations stack
 				     grammar) — no tray, no navigation; click when ready. -->
 				<button
-					class="tab tb-tab--compare"
+					class="tab tab--lg tb-tab--compare"
 					class:active={sourceTab === 'compare'}
 					role="tab"
 					aria-selected={sourceTab === 'compare'}
@@ -633,18 +640,30 @@
 					{#if compareStack.length > 0}
 						<span
 							class="tb-tabstack"
-							style:width="{18 + (compareStack.length - 1) * 12}px"
+							style:width="{24 + (compareStack.length - 1) * 16}px"
 							aria-label="{compareStack.length} in comparison"
 						>
 							{#each compareStack as pick, i (pick.id)}
 								<span
 									class="tb-tabstack-circle"
-									style:left="{i * 12}px"
+									style:left="{i * 16}px"
 									style:z-index={i + 1}
 									style:border-color={pick.color}
 								>
 									{#if hasAvatar(pick.id)}
-										<img src={getAvatarFallback(pick.id, 'circle', traveler)} alt="" />
+										<img
+											src={getAvatar(pick.id, preferNewfit, 'side', traveler)}
+											alt=""
+											onerror={(e) => {
+												const img = e.currentTarget as HTMLImageElement;
+												if (!img.dataset.triedFallback) {
+													img.dataset.triedFallback = '1';
+													img.src = getAvatarFallback(pick.id, 'side', traveler);
+												} else {
+													img.style.display = 'none';
+												}
+											}}
+										/>
 									{:else}
 										<span class="tb-tabstack-initials"
 											>{(pick.entry?.displayName ?? pick.id).slice(0, 1).toUpperCase()}</span
@@ -971,8 +990,8 @@
 						{split.matches.length} character{split.matches.length === 1 ? '' : 's'}
 						{#if activeFacets.size > 0 && conMode === 'mine'}
 							<span class="tb-count-mode">at your constellations</span>
-						{:else if activeFacets.size > 0 && conMode === 'max'}
-							<span class="tb-count-mode">at C6</span>
+						{:else if activeFacets.size > 0 && conMode !== 'c0'}
+							<span class="tb-count-mode">at {conMode.toUpperCase()}</span>
 						{/if}
 					</p>
 
@@ -1104,8 +1123,9 @@
 	}
 
 	/* ── Compare tab's avatar stack (the accumulator's live feedback) ──
-	   Mini circles overlapping 6px, the Saved-Rotations stack at tab scale;
-	   border tinted per element, width set inline from the pick count. */
+	   Side avatars in 24px circles overlapping 8px, the Saved-Rotations stack
+	   at promoted-tab scale; border tinted per element, width set inline from
+	   the pick count. */
 	.tb-tab--compare {
 		display: inline-flex;
 		align-items: center;
@@ -1113,14 +1133,14 @@
 	}
 	.tb-tabstack {
 		position: relative;
-		height: 18px;
+		height: 24px;
 		flex-shrink: 0;
 	}
 	.tb-tabstack-circle {
 		position: absolute;
 		top: 0;
-		width: 18px;
-		height: 18px;
+		width: 24px;
+		height: 24px;
 		border-radius: 50%;
 		border: 1.5px solid var(--border);
 		background: #131c30;
@@ -1133,6 +1153,8 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		/* The side-crop framing every circular side avatar on the site uses. */
+		transform: scale(1.333) translateY(-14%);
 	}
 	.tb-tabstack-initials {
 		font-size: var(--fs-2xs);

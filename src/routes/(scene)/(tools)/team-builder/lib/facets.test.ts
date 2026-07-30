@@ -40,7 +40,8 @@ const IDENTITY = {
 describe('conCapFor', () => {
 	it('maps modes to caps', () => {
 		expect(conCapFor('c0', 4)).toBe(0);
-		expect(conCapFor('max', 0)).toBe(6);
+		expect(conCapFor('c2', 0)).toBe(2);
+		expect(conCapFor('c6', 0)).toBe(6);
 		expect(conCapFor('mine', 4)).toBe(4);
 		expect(conCapFor('mine', undefined)).toBe(0);
 	});

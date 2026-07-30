@@ -761,6 +761,13 @@ img {
 	box-shadow: inset 0 0 0 1px var(--sel-ring);
 	color: var(--text);
 }
+/* Promoted scale for a primary surface switcher (the TB's Atlas/Roster/Compare
+   row) — same system one step up; document tabs stay at base size. */
+.tab--lg {
+	padding: 0.45rem 0.9rem;
+	font-size: var(--fs-md);
+	max-width: none;
+}
 .tab--closeable {
 	padding-right: 0.35rem;
 }

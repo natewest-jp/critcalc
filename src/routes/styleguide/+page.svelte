@@ -632,9 +632,9 @@
 
 			<div class="sg-cell">
 				<div class="sg-stage">
-					<div class="tab active">Roster</div>
-					<div class="tab">Atlas</div>
-					<div class="tab">Compare</div>
+					<div class="tab tab--lg active">Roster</div>
+					<div class="tab tab--lg">Atlas</div>
+					<div class="tab tab--lg">Compare</div>
 				</div>
 				<div class="sg-stage">
 					<div class="tab tab--closeable active">
@@ -646,8 +646,8 @@
 					<button class="btn btn--sm btn--icon">+</button>
 				</div>
 				{@render spec(
-					'.tab · .active · .tab--closeable',
-					'ONE tab system, body face — the Team Builder view switch and the planner document tabs. Drops Bitter and the 5px radius'
+					'.tab · .active · .tab--lg · .tab--closeable',
+					'ONE tab system, body face — drops Bitter and the 5px radius. --lg promotes a primary surface switcher (the TB Source row); document tabs stay base'
 				)}
 			</div>
 		</div>

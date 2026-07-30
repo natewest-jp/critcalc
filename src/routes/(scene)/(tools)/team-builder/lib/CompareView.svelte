@@ -142,7 +142,7 @@
 	}
 
 	const modeLine = $derived.by(() => {
-		const con = conMode === 'c0' ? 'at C0' : conMode === 'max' ? 'at C6' : 'at your constellations';
+		const con = conMode === 'mine' ? 'at your constellations' : `at ${conMode.toUpperCase()}`;
 		return anchorId ? `pick one to replace the current member · ${con}` : con;
 	});
 

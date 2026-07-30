@@ -37,13 +37,15 @@ export type { IdentityFilters };
 // Constellation mode
 // ---------------------------------------------------------------------------
 
-export type ConMode = 'c0' | 'mine' | 'max';
+/** Every fixed constellation step, plus the user's own roster levels — a
+ *  fixed subset (C1/C2/C4) would encode a guess about which gates matter;
+ *  the full stepper mirrors the DetailCard's C0–C6 stepper grammar. */
+export type ConMode = 'mine' | 'c0' | 'c1' | 'c2' | 'c3' | 'c4' | 'c5' | 'c6';
 
 /** The constellation cap a capability's gate must clear under the mode. */
 export function conCapFor(mode: ConMode, myConstellation: number | undefined): number {
-	if (mode === 'c0') return 0;
-	if (mode === 'max') return 6;
-	return myConstellation ?? 0;
+	if (mode === 'mine') return myConstellation ?? 0;
+	return Number(mode.slice(1));
 }
 
 // ---------------------------------------------------------------------------
