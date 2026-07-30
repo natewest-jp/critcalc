@@ -78,21 +78,30 @@
 					onSetRefinement={(r) => id && loadout.setWeapon(id, $loadout[id]?.weaponId, r)}
 					onPortraitClick={id ? () => onOpen(id) : undefined}
 					portraitLabel={entry ? `Open ${entry.displayName}` : undefined}
-				/>
-				{#if id !== null}
-					<div class="bn-slot-actions">
-						<button
-							class="btn bn-act"
-							onclick={() => onAudition(i, id)}
-							title="Compare {entry?.displayName ?? id} against replacements">⇄ Audition</button
-						>
-						<button
-							class="btn btn--danger bn-act"
-							onclick={() => onRemove(i)}
-							aria-label="Remove {entry?.displayName ?? id} from team">✕ Remove</button
-						>
-					</div>
-				{/if}
+					emptyLabel=""
+				>
+					{#snippet actions()}
+						{#if id !== null}
+							<!-- SlotPortrait pins the first action to the portrait's left
+							     margin and the last to its right. They lived in the identity
+							     row briefly and starved the name to five letters; a footer band
+							     would cost the bench ~30px per card in the tool with the least
+							     height to spare. -->
+							<button
+								class="bn-act"
+								onclick={() => onAudition(i, id)}
+								title="Compare {entry?.displayName ?? id} against replacements"
+								aria-label="Audition replacements for {entry?.displayName ?? id}">⇄</button
+							>
+							<button
+								class="bn-act bn-act--remove"
+								onclick={() => onRemove(i)}
+								title="Remove {entry?.displayName ?? id} from team"
+								aria-label="Remove {entry?.displayName ?? id} from team">✕</button
+							>
+						{/if}
+					{/snippet}
+				</SlotPortrait>
 			</div>
 		{/each}
 	</div>
@@ -163,21 +172,46 @@
 		align-content: start;
 	}
 
-	/* Quiet footer action — the old header chip's register, demoted below the
-	   send link now that the bench has no header row. */
-	/* .btn at bench scale — the row is tight, so these run one step
-	   smaller than --sm and keep the mid tracking. */
+	/* Slot actions — SlotPortrait seats these either side of the loadout pill, so
+	   they wear the card's shared capsule treatment (--sp-pill-*, which inherits
+	   through the snippet) at the pill's own height. Round, not capsule: they are
+	   square, and --r-round is the token for that. Glyph-only — title/aria carry
+	   the meaning. */
 	.bn-act {
-		padding: 0.22rem 0.4rem;
+		box-sizing: border-box;
+		flex-shrink: 0;
+		width: var(--sp-pill-h);
+		height: var(--sp-pill-h);
+		display: grid;
+		place-items: center;
+		padding: 0;
+		border: var(--sp-pill-border);
+		border-radius: var(--r-round);
+		background: var(--sp-pill-fill);
+		color: var(--muted);
+		font-family: var(--font-body);
 		font-size: var(--fs-2xs);
-		letter-spacing: var(--ls-mid);
+		line-height: var(--lh-none);
+		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			background 150ms ease,
+			color 150ms ease;
+	}
+	.bn-act:hover {
+		border-color: color-mix(in srgb, var(--el) 45%, var(--frame-line));
+		color: var(--text);
+	}
+	.bn-act--remove:hover {
+		border-color: color-mix(in srgb, var(--ui-danger) 55%, var(--frame-line));
+		color: color-mix(in srgb, var(--ui-danger) 45%, var(--text));
 	}
 
 	.bn-clear {
 		justify-self: center;
 		padding: 0.15rem 0.5rem;
 		border: none;
-		border-radius: 3px;
+		border-radius: var(--r-sm);
 		background: none;
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
 		font-family: var(--font-body);
@@ -207,13 +241,6 @@
 		border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 	}
 
-	.bn-slot-actions {
-		display: flex;
-		gap: 0.3rem;
-		padding: 0 10px 8px 8px;
-		margin-top: -2px;
-	}
-
 	/* ── Facts ────────────────────────────────────────────────── */
 	.bn-factrow {
 		display: flex;
@@ -222,7 +249,7 @@
 	}
 	.bn-res {
 		padding: 0.2rem 0.45rem;
-		border-radius: 3px;
+		border-radius: var(--r-sm);
 		border: 1px solid color-mix(in srgb, var(--el-color) 50%, transparent);
 		background: color-mix(in srgb, var(--el-color) 10%, transparent);
 		font-size: var(--fs-xs);
@@ -237,7 +264,7 @@
 	}
 	.bn-fact {
 		padding: 0.2rem 0.45rem;
-		border-radius: 3px;
+		border-radius: var(--r-sm);
 		border: 1px solid var(--border);
 		background: rgba(255, 255, 255, 0.04);
 		font-size: var(--fs-xs);
@@ -253,7 +280,7 @@
 	.bn-cov {
 		padding: 0.18rem 0.4rem;
 		border: none;
-		border-radius: 3px;
+		border-radius: var(--r-sm);
 		font-family: var(--font-body);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
@@ -288,7 +315,7 @@
 		margin-top: 0.15rem;
 		padding: 0.45rem 0.55rem;
 		border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
-		border-radius: 3px;
+		border-radius: var(--r-sm);
 		background: color-mix(in srgb, var(--accent) 12%, transparent);
 		color: var(--text);
 		font-family: var(--font-body);

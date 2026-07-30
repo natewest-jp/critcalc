@@ -102,7 +102,26 @@
 	// Layout constants (px)
 	// ---------------------------------------------------------------------------
 
-	const LABEL_W = 145;
+	/** Portrait-column width — and the CONVERGED SLOT-CARD width, which is the
+	 *  thing the two tools actually share. The planner's column IS the card (no
+	 *  zone padding), so this number is the card. The Team Builder reaches the
+	 *  same card through a wider bench: its `.bn` is a scroll zone that also
+	 *  holds the team facts and footer links, so it adds 12px per side plus a
+	 *  1px border-left — `--tb-bench-w` is therefore 160 + 25 = 185. Equalizing
+	 *  the other way (padding the planner out to 185) was the first fix and it
+	 *  was backwards: it spent 25px of timeline to match chrome the planner has
+	 *  no use for.
+	 *
+	 *  160 is set by the Bench's base row, the card's widest band:
+	 *      action 26 + gap 4 + pill 76 + gap 4 + action 26 = 136
+	 *      + 18 card padding = 154, leaving ~6px of slack.
+	 *  Undershoot it and the TB card silently OVERFLOWS its grid track rather
+	 *  than clipping — the bench keeps its width while the portrait drifts
+	 *  right. probe-bench-align asserts both that and cross-tool card parity.
+	 *
+	 *  Move this and `--tb-bench-w` together, then re-run probe-bench-align /
+	 *  probe-frame-rework. */
+	const LABEL_W = 160;
 	const RULER_H = 28;
 	const CHAR_PAD_TOP = 10;
 	const E_ROW_H = 20;
@@ -1715,7 +1734,7 @@
 		   color-mix in the markup, so the ghost tint stays anchored to the
 		   surface it actually sits on. The old local --bg/--card/--border
 		   redefinitions are gone; this component reads global app.css tokens. */
-		--rp-chart-bg: #081225;
+		--rp-chart-bg: var(--frame-bg);
 		/* Structural lines inside the chart, hue-consistent with the ground:
 		   grid = faint vertical second-lines; line = lane separators, zone
 		   splits and the Source overlay's edge — the same role the Team
@@ -2004,7 +2023,12 @@
 
 	/* ── Character label cell — hosts the shared SlotPortrait card ─── */
 	/* The cell supplies the fixed row height (inline style) + the bottom
-	   separator; the SlotPortrait card fills it (its .sp-card is flex:1). */
+	   separator; the SlotPortrait card fills it (its .sp-card is flex:1).
+
+	   No inset: the column IS the card here, which is why LABEL_W is the shared
+	   CARD width rather than a bench width (the TB adds its zone chrome on top
+	   to reach the same card). Padding this out to match the TB's bench would
+	   cost 25px of timeline for chrome the planner does not have. */
 	.char-label {
 		flex-direction: column;
 		align-items: stretch;

@@ -349,7 +349,7 @@ await page.screenshot({ path: 'probe-team-builder-team.png', fullPage: false });
 // Bennett holds slot 0 — audition replacements for him from the Bench. This
 // navigates to the Compare tab (an explicit "start comparing" action, unlike
 // a card's silent add) with the candidates strip rendered inside the view.
-await page.locator('.bn-act', { hasText: 'Audition' }).first().click();
+await page.locator('.bn-act[aria-label^="Audition"]').first().click();
 await page.locator('.cmp').waitFor({ timeout: 5000 });
 await page.locator('.cmp-chip--anchor').first().waitFor({ timeout: 5000 });
 check(

@@ -13,7 +13,7 @@
 	something to show.
 
 	⚠ Rail width mirrors the frame's internal geometry (1px border + 14px
-	frame padding + 145px LABEL_W, lane-label text inset 10px) — keep in
+	frame padding + 160px LABEL_W, lane-label text inset 10px) — keep in
 	lockstep with RotationTimeline's LABEL_W / .rp-frame padding.
 -->
 <script lang="ts">
@@ -202,10 +202,10 @@
 	}
 
 	/* Label rail — mirrors the frame's lane-label geometry: text right edge
-	   at 1 + 14 + 145 − 10 = 150px from the section's left edge. */
+	   at 1 + 14 + 160 − 10 = 165px from the section's left edge. */
 	.tb-key {
 		flex-shrink: 0;
-		width: 150px;
+		width: 165px;
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-widest);

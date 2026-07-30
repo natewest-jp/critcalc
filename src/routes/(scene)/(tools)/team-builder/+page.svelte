@@ -1003,9 +1003,12 @@
 		   is 0.65rem — 0.5rem here puts both frame tops at y=109 @1600
 		   (probe-bench-align asserts it). Nate's to retune. */
 		--tb-tabrow-gap: 0.5rem;
-		/* Bench width. Per-tool for now (the planner's portrait column is 145px)
-		   — Nate's bench-card redesign sets the converged value. */
-		--tb-bench-w: 210px;
+		/* Bench width = the converged SLOT-CARD width (RotationTimeline's
+		   LABEL_W, 160) + this zone's own chrome: 12px padding per side and the
+		   1px border-left. The planner's column carries no chrome, so its 160 is
+		   the card directly — the shared thing is the CARD, not the bench.
+		   probe-bench-align asserts the two cards match. Move with LABEL_W. */
+		--tb-bench-w: 185px; /* 160 + 12 + 12 + 1 */
 		display: flex;
 		flex-direction: column;
 		gap: var(--tb-tabrow-gap);

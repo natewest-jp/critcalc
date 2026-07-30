@@ -154,10 +154,12 @@ check(
 );
 
 // Set an artifact loadout from the Bench (Layer-1 loadout is net-new here).
-await page.locator('.bn .sp-card').first().locator('.ld-trigger').first().click();
+// The loadout pill's first zone is artifact; it opens the combined panel led
+// by that section.
+await page.locator('.bn .sp-card').first().locator('.sp-lo-zone').first().click();
 await wait(250);
-// .ld-item index 0 is the "None" option — pick the first real artifact set.
-await page.locator('.ld-dropdown .ld-item').nth(1).click();
+// .lp-tile index 0 is the "None" tile — pick the first real artifact set.
+await page.locator('.sp-popover--panel .lp-tile').nth(1).click();
 await wait(300);
 const benchLoadout = JSON.parse((await ls('critcalc:loadout')) || '{}');
 check(

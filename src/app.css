@@ -41,10 +41,16 @@
 	--surface: #12192b; /* panel on page          h224 s42 l12 */
 	--surface-raised: #1c273f; /* panel on panel         h222 s38 l18 */
 	--border: #2d3b58; /* dividers, hairlines    h220 s32 l26 */
+	/* A frame's own ground — darker than --surface, which is what makes the
+	   frame read as a well rather than a raised panel. Its own member for the
+	   same reason --frame-line is: it was declared as a bare hex in .frame,
+	   --rp-chart-bg and the SlotPortrait card fill, and anything that mixes
+	   against a frame's ground needs to name it. */
+	--frame-bg: #081225; /* frame ground           h218 s65 l9  */
 	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
-	   composer's well. Its own member because a frame's ground (#081225) is
-	   darker than --surface, so --border reads too hot on it. Both tools used
-	   to declare this hex privately (--rp-line / --tb-line). */
+	   composer's well. Its own member because a frame's ground is darker than
+	   --surface, so --border reads too hot on it. Both tools used to declare
+	   this hex privately (--rp-line / --tb-line). */
 	--frame-line: #1c2a4a; /* lines on frame ground  h220 s45 l20 */
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
@@ -154,12 +160,18 @@
 
 	/* ══ GEOMETRY ══════════════════════════════════════════════════════════════
 	   Odd radii, 3/6/9 — long-standing house style, finally a token. Plus 50%
-	   for genuinely round elements. These four are the ONLY legal radii; no
+	   for genuinely round elements. These five are the ONLY legal radii; no
 	   0.3rem / 4px / 5px / 7px / 8px / 11px exceptions. */
 	--r-sm: 3px; /* controls, chips, tabs — the default */
 	--r-md: 6px; /* panels, icon chips */
 	--r-lg: 9px; /* large cards */
-	--r-round: 50%; /* circles: thumbs, dots */
+	/* Fully round: circles on square boxes, capsules on oblong ones. It is a
+	   large ABSOLUTE radius, not 50%, and that is load-bearing — 50% is
+	   per-axis, so the moment a box is wider than it is tall it draws an
+	   ELLIPSE. A radius the browser clamps to half the short side draws the
+	   shape we actually mean either way, so there is one token here instead of a
+	   circle/capsule pair nobody could tell apart on the squares. */
+	--r-round: 999px; /* circles + capsules: thumbs, dots, pills */
 
 	/* ══ MOTION ════════════════════════════════════════════════════════════════
 	   One interaction duration. (It was already one duration — `150ms ease`
@@ -929,8 +941,8 @@ img {
    animate the OPACITY of a stacked static ring (compositor-only), never a
    paint property (border-color, gradient angle) — those repaint per frame. */
 .frame {
-	border: 1px solid color-mix(in srgb, var(--dire) 40%, #081225);
-	background: #081225;
+	border: 1px solid color-mix(in srgb, var(--dire) 40%, var(--frame-bg));
+	background: var(--frame-bg);
 }
 
 /* ── Headings, labels, notes ──────────────────────────────────────────── */

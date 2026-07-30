@@ -2,28 +2,44 @@
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	/**
 	 * SlotPortrait — the roster card shared by the Rotation Planner's timeline
-	 * label column and the Team Builder's Bench. One character slot: element glyph
-	 * + name + constellation chip on top, the circular side-portrait centered in
-	 * the middle, and the artifact/weapon loadout rows grounded at the base. Empty
-	 * slots render honestly (blank portrait, "Empty", disabled chips), matching the
-	 * planner exactly.
+	 * label column and the Team Builder's Bench. Three horizontal bands:
+	 *
+	 *   1. identity — element glyph + name, then the constellation chip.
+	 *   2. portrait — the circular side-avatar, alone, dominating the card.
+	 *   3. base — ONE loadout pill (artifact · weapon · refinement), flanked by
+	 *      whatever slot actions the host supplies (the Bench's audition/remove;
+	 *      the planner supplies none). They ride this band rather than the
+	 *      identity row, where they starved the name to five letters, and rather
+	 *      than a footer band, which would cost height four times over.
+	 *
+	 * The constellation chip and the loadout pill wear the same inset capsule
+	 * (--sp-pill-*): one height, fill, border and radius, so the card's two value
+	 * controls read as a family. Only the VALUE takes the element color when set.
+	 *
+	 * The pill is a single shape with three hit zones: each opens the same
+	 * LoadoutPanel, leading with the section you clicked. That keeps "change
+	 * only the weapon" a one-click move while presenting the build as the one
+	 * decision it actually is. Empty slots render honestly (blank portrait,
+	 * "Empty", dimmed generic loadout art).
 	 *
 	 * Purely presentational: it displays the resolved (effective) constellation +
 	 * loadout it's handed and reports edits through callbacks. Each host decides
 	 * which layer those writes land in — the planner writes the tab (Layer 2), the
 	 * Team Builder writes the roster (Layer 1) — so this component never touches a
-	 * store or knows about layers. The constellation/refinement popovers and their
-	 * viewport-fixed positioning live here (a full-screen backdrop guarantees only
-	 * one is ever open, so per-instance state is safe).
+	 * store or knows about layers. The popovers and their viewport-fixed
+	 * positioning live here (a full-screen backdrop guarantees only one is ever
+	 * open, so per-instance state is safe).
 	 */
+	import type { Snippet } from 'svelte';
 	import { siteSettings, type LoadoutEntry } from '$lib/stores';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
 	import { elementPalette } from '$lib/utils/elementColors';
-	import { getAllArtifactSets, artifactImagePath } from '$lib/data/artifactLookup';
-	import { getWeaponsByType, getAllWeapons, weaponImagePath } from '$lib/data/weaponLookup';
-	import type { WeaponType } from '$lib/types/weapon';
-	import LoadoutDropdown from '$lib/components/LoadoutDropdown.svelte';
-	import type { DropdownItem } from '$lib/components/LoadoutDropdown.svelte';
+	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { artifactImagePath } from '$lib/data/artifactLookup';
+	import { weaponImagePath } from '$lib/data/weaponLookup';
+	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
+	import LoadoutPanel from '$lib/components/LoadoutPanel.svelte';
+	import type { LoadoutSection } from '$lib/components/LoadoutPanel.svelte';
 	// Popovers + backdrops are viewport-fixed but must clear ANY host stacking
 	// context (the Team Builder Bench is `position: sticky`) — see $lib/actions/portal
 	import { portal } from '$lib/actions/portal';
@@ -43,7 +59,8 @@
 		onSetRefinement,
 		onPortraitClick,
 		portraitLabel = 'Open character selector',
-		emptyLabel = 'Empty'
+		emptyLabel = 'Empty',
+		actions
 	}: {
 		/** Raw avatar id (the character id, or 'blank' for an empty slot). */
 		slotId: string;
@@ -61,12 +78,32 @@
 		 *  selector; Bench: open the character / add). Omit for a static portrait. */
 		onPortraitClick?: () => void;
 		portraitLabel?: string;
-		/** Text shown in the name area for an empty (char===null) slot. The planner
-		 *  passes '' so a default empty timeline reads clean; the Bench keeps 'Empty'. */
+		/** Text shown in the name area for an empty (char===null) slot. Both tools
+		 *  pass '' — four blank portraits ARE the empty state, and a column of
+		 *  "Empty" labels only adds noise. Kept as a prop for a host that wants one. */
 		emptyLabel?: string;
+		/** Host-supplied slot actions, seated either side of the loadout pill
+		 *  (first left, last right). The Bench passes audition/remove; the planner
+		 *  passes nothing. */
+		actions?: Snippet;
 	} = $props();
 
 	const p = $derived(elementPalette(char?.element));
+
+	// Frame-timing-not-curated mark. `curated` lives on the INDEX entry, not on
+	// the loaded payload the planner hands us, so it is looked up here rather
+	// than threaded through two hosts that carry different shapes — one source,
+	// both tools correct.
+	//
+	// `blank` is excluded even though it is genuinely curated:false. The mark
+	// promises "not curated YET — timing is approximate for now", and that is a
+	// claim about pending work. Blank is the generic placeholder: approximate
+	// timing is the whole point of it, permanently. The roster surfaces never
+	// had to say this because they filter blank out of the corpus entirely; the
+	// slot card is the one place it renders.
+	const uncurated = $derived(
+		!!char && char.id !== 'blank' && getCharacterIndexEntry(char.id)?.curated === false
+	);
 
 	function slotLabel(c: NonNullable<SlotChar>): string {
 		return c.id.startsWith('traveler') ? 'Traveler' : c.displayName;
@@ -90,44 +127,31 @@
 		}
 	}
 
-	const artifactItems: DropdownItem[] = getAllArtifactSets().map((a) => ({
-		id: a.id,
-		label: a.shortName ?? a.name,
-		menuLabel: a.name,
-		iconSrc: artifactImagePath(a.id)
-	}));
+	// ── Loadout pill state ───────────────────────────────────────────────────
+	const currentRef = $derived(loadoutEntry?.weaponRefinement ?? 1);
+	const hasWeapon = $derived(!!loadoutEntry?.weaponId);
+	const artifactIcon = $derived(
+		loadoutEntry?.artifactSetId
+			? artifactImagePath(loadoutEntry.artifactSetId)
+			: GENERIC_ARTIFACT_ICON
+	);
+	const weaponIcon = $derived(
+		loadoutEntry?.weaponId ? weaponImagePath(loadoutEntry.weaponId) : weaponTypeIcon(char?.weapon)
+	);
 
-	function weaponItemsForType(weaponType: string): DropdownItem[] {
-		return getWeaponsByType(weaponType as WeaponType).map((w) => ({
-			id: w.id,
-			label: w.shortName ?? w.name,
-			menuLabel: w.name,
-			iconSrc: weaponImagePath(w.id)
-		}));
-	}
-
-	// Blank (the generic placeholder) has no weapon type, so it offers EVERY
-	// authored weapon — users can sketch "a generic character running Sacrificial
-	// / TTDS / …" regardless of type.
-	const allWeaponItems: DropdownItem[] = getAllWeapons().map((w) => ({
-		id: w.id,
-		label: w.shortName ?? w.name,
-		menuLabel: w.name,
-		iconSrc: weaponImagePath(w.id)
-	}));
-
-	// ── Popovers (constellation + weapon refinement) ─────────────────────────
+	// ── Popovers (constellation pips + the loadout panel) ────────────────────
 	let conOpen = $state(false);
 	let conX = $state(0);
 	let conY = $state(0);
 	let conFlip = $state(false);
-	let refOpen = $state(false);
-	let refX = $state(0);
-	let refY = $state(0);
-	let refFlip = $state(false);
+	let loadoutOpen = $state(false);
+	let loadoutX = $state(0);
+	let loadoutY = $state(0);
+	let loadoutFlip = $state(false);
+	let loadoutSection = $state<LoadoutSection>('artifact');
 
-	// The widest picker (the 7-pip constellation row) — the flip decision's
-	// estimate, since the popover hasn't rendered when the side is chosen.
+	// The widest picker (the loadout panel) — the flip decision's estimate, since
+	// the popover hasn't rendered when the side is chosen.
 	const POPOVER_W = 220;
 
 	function anchorTo(e: MouseEvent): { x: number; y: number; flip: boolean } {
@@ -141,7 +165,7 @@
 
 	function openConstellation(e: MouseEvent) {
 		e.stopPropagation();
-		refOpen = false;
+		loadoutOpen = false;
 		if (conOpen) {
 			conOpen = false;
 			return;
@@ -154,31 +178,29 @@
 		conOpen = false;
 	}
 
-	function openRefinement(e: MouseEvent) {
+	function openLoadout(e: MouseEvent, section: LoadoutSection) {
 		e.stopPropagation();
 		conOpen = false;
-		if (refOpen) {
-			refOpen = false;
+		// Re-clicking the zone that opened the panel closes it; clicking a
+		// DIFFERENT zone re-leads the open panel rather than dismissing it.
+		if (loadoutOpen && loadoutSection === section) {
+			loadoutOpen = false;
 			return;
 		}
-		({ x: refX, y: refY, flip: refFlip } = anchorTo(e));
-		refOpen = true;
-	}
-	function chooseRefinement(r: 1 | 2 | 3 | 4 | 5) {
-		onSetRefinement(r);
-		refOpen = false;
+		loadoutSection = section;
+		({ x: loadoutX, y: loadoutY, flip: loadoutFlip } = anchorTo(e));
+		loadoutOpen = true;
 	}
 
 	function closePopovers() {
 		conOpen = false;
-		refOpen = false;
+		loadoutOpen = false;
 	}
-
-	const currentRef = $derived(loadoutEntry?.weaponRefinement ?? 1);
 </script>
 
 <div class="sp-card" style:--el={p.main}>
-	<!-- Name row: element glyph + name ranged left, constellation chip ranged right. -->
+	<!-- Identity row: element glyph + name ranged left, constellation chip right.
+	     Slot actions do NOT live here — they ride the base band. -->
 	<div class="sp-id-row">
 		<span class="sp-id-name">
 			{#if char?.element}
@@ -188,8 +210,15 @@
 				>{char ? slotLabel(char) : emptyLabel}</span
 			>
 		</span>
+		{#if uncurated}
+			<span
+				class="sp-namemark"
+				title="Frame timing not curated yet — capabilities are complete, but Planner timing is approximate"
+				aria-label="Frame timing not curated yet">∅</span
+			>
+		{/if}
 		<button
-			class="chip sp-cons-chip"
+			class="sp-cons-chip"
 			class:sp-cons-chip--set={conLevel > 0}
 			disabled={!char}
 			onclick={openConstellation}
@@ -228,40 +257,50 @@
 		</div>
 	</div>
 
-	<div class="sp-loadout-rows">
-		<LoadoutDropdown
-			items={artifactItems}
-			selected={loadoutEntry?.artifactSetId}
-			placeholder="Artifact"
-			disabled={!char}
-			onSelect={(id) => char && onSetArtifact(id)}
-		/>
-		<div class="sp-weapon-group">
-			<div class="sp-weapon-dd">
-				<LoadoutDropdown
-					items={char
-						? char.id === 'blank'
-							? allWeaponItems
-							: weaponItemsForType(char.weapon ?? '')
-						: []}
-					selected={loadoutEntry?.weaponId}
-					placeholder="Weapon"
-					disabled={!char || char.weapon === 'polearm'}
-					title={char?.weapon === 'polearm' ? 'No polearm-type weapons available' : undefined}
-					onSelect={(id) => char && onSetWeapon(id, currentRef)}
+	<!-- Base band: the loadout pill, flanked by any host slot actions. The
+	     actions wrapper is `display: contents`, so the buttons become flex items
+	     of THIS row and `order` seats the first left of the pill and the last
+	     right of it — one `actions` snippet, two sides. -->
+	<div class="sp-loadout-row">
+		{#if actions}<span class="sp-actions">{@render actions()}</span>{/if}
+		<div class="sp-loadout" class:sp-loadout--disabled={!char}>
+			<button
+				class="sp-lo-zone"
+				disabled={!char}
+				onclick={(e) => openLoadout(e, 'artifact')}
+				title={char ? 'Artifact set' : undefined}
+				aria-label="Choose artifact set"
+			>
+				<img
+					class="sp-lo-icon"
+					class:sp-lo-icon--unset={!loadoutEntry?.artifactSetId}
+					src={artifactIcon}
+					alt=""
 				/>
-			</div>
-			{#if loadoutEntry?.weaponId}
-				<button class="sp-ref-badge" onclick={openRefinement} aria-label="Set refinement for weapon"
-					>R{currentRef}</button
-				>
-			{/if}
+			</button>
+			<button
+				class="sp-lo-zone"
+				disabled={!char}
+				onclick={(e) => openLoadout(e, 'weapon')}
+				title={char ? 'Weapon' : undefined}
+				aria-label="Choose weapon"
+			>
+				<img class="sp-lo-icon" class:sp-lo-icon--unset={!hasWeapon} src={weaponIcon} alt="" />
+			</button>
+			<button
+				class="sp-lo-zone sp-lo-ref"
+				class:sp-lo-ref--set={hasWeapon}
+				disabled={!char}
+				onclick={(e) => openLoadout(e, 'refinement')}
+				title={char ? 'Weapon refinement' : undefined}
+				aria-label="Set weapon refinement">R{currentRef}</button
+			>
 		</div>
 	</div>
 </div>
 
-<!-- ── Constellation + refinement popovers ─────────────────────────────────── -->
-{#if conOpen || refOpen}
+<!-- ── Constellation + loadout popovers ────────────────────────────────────── -->
+{#if conOpen || loadoutOpen}
 	<div
 		class="sp-popover-backdrop"
 		role="button"
@@ -293,33 +332,33 @@
 		{/each}
 	</div>
 {/if}
-{#if refOpen}
+{#if loadoutOpen && char}
 	<div
-		class="sp-popover"
-		class:sp-popover--flip={refFlip}
+		class="sp-popover sp-popover--panel"
+		class:sp-popover--flip={loadoutFlip}
 		use:portal
-		style:left="{refX}px"
-		style:top="{refY}px"
+		style:left="{loadoutX}px"
+		style:top="{loadoutY}px"
 	>
-		{#each [1, 2, 3, 4, 5] as r (r)}
-			<button
-				class="sp-pip"
-				class:sp-pip--filled={r <= currentRef}
-				class:sp-pip--current={r === currentRef}
-				style:--pip-color={p.main}
-				onclick={() => chooseRefinement(r as 1 | 2 | 3 | 4 | 5)}>R{r}</button
-			>
-		{/each}
+		<LoadoutPanel
+			{loadoutEntry}
+			weaponType={char.weapon}
+			elementColor={p.main}
+			section={loadoutSection}
+			onSetArtifact={(id) => onSetArtifact(id)}
+			onSetWeapon={(id, r) => onSetWeapon(id, r)}
+			onSetRefinement={(r) => onSetRefinement(r)}
+		/>
 	</div>
 {/if}
 
 <style>
 	/* ── Card ─────────────────────────────────────────────────────────────────
-	   Three zones: identity header (glyph + name + constellation) across the top,
-	   the portrait centered — alone — in the middle space, and the loadout rows
-	   grounded at the base. `flex: 1` lets the card fill a host cell of fixed
-	   height (the planner's timeline row); with no such height (the Bench) it
-	   collapses to content. */
+	   Three bands: identity header across the top, the portrait centered — alone —
+	   in the middle space, and the loadout pill grounded at the base. `flex: 1`
+	   lets the card fill a host cell of fixed height (the planner's timeline row,
+	   whose height varies per slot); with no such height (the Bench) it collapses
+	   to content, which is what keeps four cards inside the viewport-fit frame. */
 	.sp-card {
 		box-sizing: border-box;
 		flex: 1;
@@ -330,6 +369,36 @@
 		align-items: stretch;
 		padding: 8px 10px 10px 8px;
 		gap: 8px;
+
+		/* The two controls that wear the inset-capsule treatment — the
+		   constellation chip and the loadout pill — share every one of these, so
+		   they read as one family. Change them here, never on one alone. */
+		--sp-pill-h: 26px;
+		--sp-pill-border: 1.5px solid var(--frame-line);
+		/* Page ground at the top falling to the FRAME's ground below — lighter
+		   stop low, the reverse of the roster cards' portrait gradient, which is
+		   what gives these an INSET read rather than a raised one. No element
+		   tint: these are chrome, and the element already speaks through the
+		   glyph, the portrait ring and the set values.
+		
+		   ⚠ THE STOP POSITION IS THE WEIGHT KNOB. At 100% the gradient is still
+		   climbing when it runs out of pill, so every pixel is darker than the
+		   frame it sits on and the control reads heavy. Landing the frame-ground
+		   stop early concentrates the dark into a band under the TOP edge — an
+		   inner shadow — and lets the rest sit flush with its surroundings. Lower
+		   = tighter, heavier shadow; higher = softer but darker overall. */
+		--sp-pill-stop: 50%;
+		--sp-pill-fill: linear-gradient(180deg, var(--bg) 0%, var(--frame-bg) var(--sp-pill-stop));
+
+		/* The portrait keeps the ELEMENT wash the roster cards use — a portrait
+		   wants a lit backing, not the chrome fill the controls wear, and the art
+		   sits far better on it. Same reversed direction as the pills (tint at the
+		   BOTTOM), so the card still reads as one surface. */
+		--sp-avatar-fill: linear-gradient(
+			180deg,
+			var(--frame-bg) 0%,
+			color-mix(in srgb, var(--el, var(--neutral)) 14%, var(--bg)) 100%
+		);
 	}
 
 	.sp-portrait-area {
@@ -340,7 +409,29 @@
 		justify-content: center;
 	}
 
-	/* Name row: glyph+name ranged left, constellation selector ranged right. */
+	/* ── Base band ────────────────────────────────────────────────────────────
+	   The loadout pill, centered, flanked by any host slot actions. `contents`
+	   dissolves the actions wrapper so its buttons become flex items of this row;
+	   `order` then seats the first one left of the pill and the last one right,
+	   which is how ONE snippet fills both sides. */
+	.sp-loadout-row {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		min-width: 0;
+	}
+	.sp-actions {
+		display: contents;
+	}
+	.sp-actions :global(> *:first-child) {
+		order: -1;
+	}
+	.sp-actions :global(> *:last-child) {
+		order: 1;
+	}
+
+	/* Identity row: glyph+name ranged left, constellation + host actions right. */
 	.sp-id-row {
 		display: flex;
 		align-items: center;
@@ -348,10 +439,12 @@
 		gap: 6px;
 		min-width: 0;
 	}
+	/* Glyph + name metrics are the roster card's (CharacterCard's comfortable
+	   band, --fs-md): 15px glyph, 0.3rem gap, ranged left. */
 	.sp-id-name {
 		display: flex;
 		align-items: center;
-		gap: 1px;
+		gap: 0.3rem;
 		min-width: 0;
 	}
 	/* Sized as large as the longest roster names allow: single-word names sit on
@@ -376,35 +469,69 @@
 		opacity: 0.55;
 	}
 
-	/* Element glyph inline with the name — the in-game card language. */
+	/* Frame-timing-not-curated mark — mirrors CharacterCard's .cc-namemark
+	   exactly (bold dire ∅, --fs-2xl, the same em-based lift for the glyph's low
+	   line-box seat, cursor:help). Capability data is complete; only Planner
+	   timing is approximate. No chip — it sits on the card surface. The card
+	   pins it far right; here the constellation chip is last, so it seats just
+	   left of that. */
+	.sp-namemark {
+		/* margin-RIGHT auto, not left: the auto margin swallows the row's free
+		   space on the mark's far side, so the mark stays snug against the name
+		   and the constellation chip keeps the right edge. (The roster card pins
+		   its mark right with margin-left because there it IS the last item.) */
+		margin-right: auto;
+		flex-shrink: 0;
+		color: color-mix(in srgb, var(--dire) 80%, white);
+		font-size: var(--fs-2xl);
+		font-weight: var(--fw-bold);
+		line-height: var(--lh-none);
+		/* In `em` so the lift scales with the glyph's own font-size. Nate's
+		   measured value at this card's scale — the roster card's -0.1em sits
+		   the glyph slightly low here. */
+		transform: translateY(-0.08em);
+		cursor: help;
+	}
+
+	/* Element glyph inline with the name — the in-game card language, at the
+	   roster card's .cc-el size. */
 	.sp-el-badge {
 		flex-shrink: 0;
-		width: 20px;
-		height: 20px;
-		padding: 1px;
+		width: 15px;
+		height: 15px;
 		background: none;
 		pointer-events: none;
 	}
 
-	/* Constellation selector: rides the name row, ranged right. It is a .chip at
-	   micro scale — the global class carries the fill, color, radius and
-	   transition; only the fixed 20x18 footprint and the element-tinted "set"
-	   state (which .chip can't know) are local. */
+	/* Constellation selector: the loadout pill's twin — identical height, fill,
+	   border and radius, so the card's two value controls are one family. It is
+	   no longer a global .chip; that class carried a different fill and radius,
+	   all of which this overrode. Only the VALUE changes with state: gray unset,
+	   element-tinted when set — the same contract the refinement zone follows. */
 	.sp-cons-chip {
+		box-sizing: border-box;
 		flex-shrink: 0;
-		width: 20px;
-		height: 18px;
+		height: var(--sp-pill-h);
+		width: var(--sp-pill-h);
 		display: grid;
 		place-items: center;
-		padding: 0;
+		border: var(--sp-pill-border);
+		border-radius: var(--r-round);
+		background: var(--sp-pill-fill);
+		color: var(--muted);
+		font-family: var(--font-body);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-wide);
 		line-height: var(--lh-none);
+		cursor: pointer;
+		transition:
+			border-color 150ms ease,
+			color 150ms ease;
 		z-index: 1;
 	}
-	.sp-cons-chip:hover {
-		background: rgba(255, 255, 255, 0.13);
+	.sp-cons-chip:hover:not(:disabled) {
+		border-color: color-mix(in srgb, var(--el) 45%, var(--frame-line));
 		color: var(--text);
 	}
 	.sp-cons-chip:disabled {
@@ -413,84 +540,136 @@
 		pointer-events: none;
 	}
 	.sp-cons-chip--set {
-		background: color-mix(in srgb, var(--el) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el) 50%, transparent);
 		color: color-mix(in srgb, var(--el) 75%, white);
 	}
-	.sp-cons-chip--set:hover {
-		background: color-mix(in srgb, var(--el) 30%, transparent);
-	}
 
-	/* ── Loadout rows (artifact + weapon stacked) ─────────────────────────────
-	   4px gap: the 26px equipment icons overhang their 18px chips by 4px per edge,
-	   so this is the minimum that keeps neighboring icons clear. */
-	.sp-loadout-rows {
+	/* ── Loadout pill ─────────────────────────────────────────────────────────
+	   One shape, three zones (artifact · weapon · refinement), each opening the
+	   same panel led by its own section. Wears the shared inset capsule
+	   treatment (--sp-pill-*) with the constellation chip, and the same fill the
+	   portrait sits on, so the bands read as one surface rather than as a chip
+	   stuck under a picture. */
+	.sp-loadout {
+		/* Hugs its content and centers under the portrait rather than spanning the
+		   card: a compact capsule reads as one object you click, where a
+		   full-width bar read as a third structural band competing with the
+		   portrait. */
+		box-sizing: border-box;
+		max-width: 100%;
+		height: var(--sp-pill-h);
 		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		width: 100%;
-	}
-	.sp-weapon-group {
-		display: flex;
-		flex-direction: row;
 		align-items: center;
-		gap: 2px;
-		width: 100%;
+		gap: 1px;
+		padding: 0;
+		border: var(--sp-pill-border);
+		border-radius: var(--r-round);
+		background: var(--sp-pill-fill);
 	}
-	.sp-weapon-dd {
-		flex: 1;
-		min-width: 0;
+	.sp-loadout--disabled {
+		opacity: 0.35;
 	}
-	.sp-ref-badge {
-		flex-shrink: 0;
-		display: inline-flex;
-		align-items: center;
-		/* Same rendered height as the loadout chips beside it (.ld-trigger:
-		   17px min-height + 1px padding top/bottom → 19px box) */
-		min-height: 19px;
-		background: rgba(255, 255, 255, 0.07);
+	.sp-lo-zone {
+		display: grid;
+		place-items: center;
+		flex: 0 0 auto;
+		width: 24px;
+		height: 100%;
+		padding: 0;
 		border: none;
-		border-radius: 3px;
+		/* Fully round so the end zones stay inside the pill's rounded ends. */
+		border-radius: var(--r-round);
+		background: none;
+		cursor: pointer;
+		transition: background 150ms ease;
+	}
+	/* Hover brightens the CONTENT, it does not fill the zone — the same move the
+	   constellation chip and the slot actions make, and the only one that keeps
+	   the pill reading as ONE shape. A filled disc inside the capsule fragments
+	   it, and lands on the same circle silhouette as the action chips flanking
+	   it. To go back to a fill, this rule is the whole change. */
+	.sp-lo-zone:hover:not(:disabled) .sp-lo-icon {
+		opacity: 1;
+	}
+	/* ⚠ An unset icon must stay visibly BELOW a set one even while hovered —
+	   opacity is this card's signal for "nothing equipped", so hover must not
+	   push an empty slot into looking filled. 0.65 hovered < 0.85 at rest. */
+	.sp-lo-zone:hover:not(:disabled) .sp-lo-icon--unset {
+		opacity: 0.65;
+	}
+	.sp-lo-zone:disabled {
+		cursor: default;
+	}
+	.sp-lo-icon {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		/* Held just below full so hover has somewhere to go. (Element `opacity`
+		   is safe here — the WebKit transparency-layer jitter documented for the
+		   chrome needs an element at FRACTIONAL coordinates that MOVE; these sit
+		   in a static card, and the unset state already ships this property.) */
+		opacity: 0.85;
+		transition: opacity 150ms ease;
+	}
+	/* An empty slot wears generic art dimmed — still legibly a thing you click,
+	   never a hole. */
+	.sp-lo-icon--unset {
+		opacity: 0.4;
+	}
+	/* Refinement rides the pill as a third zone. Weapons are always R1–R5, so it
+	   is never absent — gray until a weapon is equipped, element-tinted after,
+	   mirroring the constellation chip exactly. */
+	.sp-lo-ref {
+		width: auto;
+		min-width: 24px;
+		padding: 0 5px;
 		color: var(--muted);
 		font-family: var(--font-body);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-mid);
-		cursor: pointer;
-		padding: 0 4px;
 		line-height: var(--lh-none);
 		white-space: nowrap;
 		transition:
 			background 150ms ease,
 			color 150ms ease;
 	}
-	.sp-ref-badge:hover {
-		background: rgba(255, 255, 255, 0.12);
+	.sp-lo-ref--set {
+		color: color-mix(in srgb, var(--el) 75%, white);
+	}
+	/* Exactly the constellation chip's hover: the value goes to --text. */
+	.sp-lo-ref:hover:not(:disabled) {
 		color: var(--text);
 	}
 
 	/* ── Portrait ─────────────────────────────────────────────────────────────
 	   Circular — the side-avatar art is cropped to a circle in-game, so the
-	   portrait honours that shape. Neutral backing (no element tint on the art);
-	   element identity rides on the small glyph badge in the name row, and the
-	   clip border picks up --el. */
+	   portrait honours that shape. Backed by --sp-avatar-fill: the roster cards'
+	   element wash, flipped so the tint sits at the BOTTOM like everything else
+	   on this card. Element identity also rides the small glyph badge in the
+	   identity row and the clip border. */
 	.sp-avatar-chip {
 		position: relative;
-		width: 54px;
-		height: 54px;
-		border-radius: 50%;
+		/* THE portrait-size knob. Nate's concepts drew 68; the art's framing is
+		   independent of it (see .sp-avatar-img), so this is free to retune and
+		   only the bench width tokens need to follow. */
+		width: 68px;
+		height: 68px;
+		border-radius: var(--r-round);
 		flex-shrink: 0;
 	}
 	.sp-avatar-clip {
 		position: absolute;
 		inset: 0;
-		border-radius: 50%;
+		border-radius: var(--r-round);
 		overflow: hidden;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: #131c30;
-		border: 1.5px solid var(--el, #6a7080);
+		background: var(--sp-avatar-fill);
+		/* Resting is the RECEDED edge; hover brings it up to full element. The
+		   two used to be the other way round, which left hover with nowhere to
+		   go — it dimmed on interaction. */
+		border: 1.5px solid color-mix(in srgb, var(--el, #6a7080) 85%, transparent);
 		transition: box-shadow 150ms ease;
 	}
 	.sp-avatar-clickable {
@@ -500,15 +679,18 @@
 	   ("same recipe as the chrome ?/gear buttons") outlived its own reference:
 	   the chrome dropped its halo, and so has everything else. */
 	.sp-avatar-clickable:hover .sp-avatar-clip {
-		border-color: color-mix(in srgb, var(--el, #9eacc8) 85%, transparent);
+		border-color: var(--el, #9eacc8);
 	}
 	.sp-avatar-img {
 		/* Side avatars are 128×128 with the character positioned toward the
-		   center/bottom. Scale up and translate upward within the clipping circle. */
+		   center/bottom. This scale+offset is the correct framing of that art in
+		   a circle, measured by Nate in the inspector — it is INDEPENDENT of the
+		   circle's diameter (the transform rides along), so the size knob above
+		   can move without retuning these two numbers. */
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		transform: scale(1.333) translateY(-14%);
+		transform: scale(1.25) translateY(-12%);
 	}
 	.sp-avatar-initials {
 		font-size: var(--fs-xs);
@@ -517,10 +699,10 @@
 		color: var(--text);
 	}
 
-	/* ── Popovers (constellation + refinement pip pickers) ────────────────────
-	   Full-screen backdrop (z 49) captures the dismiss click and guarantees only
-	   one popover is open at a time; the picker (z 50) is viewport-fixed to the
-	   right of the chip that opened it. */
+	/* ── Popovers (constellation pips + the loadout panel) ────────────────────
+	   Full-screen backdrop (z 949) captures the dismiss click and guarantees only
+	   one popover is open at a time; the picker (z 950) is viewport-fixed beside
+	   the zone that opened it. */
 	.sp-popover-backdrop {
 		position: fixed;
 		inset: 0;
@@ -542,7 +724,7 @@
 		z-index: 950;
 		background: var(--surface-raised);
 		border: none;
-		border-radius: 6px;
+		border-radius: var(--r-md);
 		padding: 7px 9px;
 		display: flex;
 		align-items: center;
@@ -551,10 +733,17 @@
 			inset 0 1px 0 rgba(255, 255, 255, 0.06),
 			0 4px 16px rgba(0, 0, 0, 0.5);
 	}
+	/* The loadout panel is taller than a pip row, so it is clamped to the
+	   viewport rather than centered on its anchor when it would overflow. */
+	.sp-popover--panel {
+		padding: 10px 11px;
+		max-height: calc(100vh - 16px);
+		overflow-y: auto;
+	}
 	.sp-pip {
 		width: 24px;
 		height: 24px;
-		border-radius: 50%;
+		border-radius: var(--r-round);
 		border: none;
 		background: rgba(255, 255, 255, 0.06);
 		color: var(--muted);
