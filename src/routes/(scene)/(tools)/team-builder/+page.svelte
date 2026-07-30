@@ -1007,10 +1007,6 @@
 		/* Bench width. Per-tool for now (the planner's portrait column is 145px)
 		   — Nate's bench-card redesign sets the converged value. */
 		--tb-bench-w: 210px;
-		/* Interior hairline between frame zones, mirroring the planner's
-		   --rp-line over the same #081225 frame ground. */
-		--tb-line: #1c2a4a;
-
 		display: flex;
 		flex-direction: column;
 		gap: var(--tb-tabrow-gap);
@@ -1038,7 +1034,7 @@
 	.tb-frame :global(.bn) {
 		flex: none;
 		width: var(--tb-bench-w);
-		border-left: 1px solid var(--tb-line);
+		border-left: 1px solid var(--frame-line);
 		overflow-y: auto;
 	}
 

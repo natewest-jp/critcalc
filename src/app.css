@@ -41,6 +41,11 @@
 	--surface: #12192b; /* panel on page          h224 s42 l12 */
 	--surface-raised: #1c273f; /* panel on panel         h222 s38 l18 */
 	--border: #2d3b58; /* dividers, hairlines    h220 s32 l26 */
+	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
+	   composer's well. Its own member because a frame's ground (#081225) is
+	   darker than --surface, so --border reads too hot on it. Both tools used
+	   to declare this hex privately (--rp-line / --tb-line). */
+	--frame-line: #1c2a4a; /* lines on frame ground  h220 s45 l20 */
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (SiteChrome.svelte),

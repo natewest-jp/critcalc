@@ -1717,9 +1717,12 @@
 		   redefinitions are gone; this component reads global app.css tokens. */
 		--rp-chart-bg: #081225;
 		/* Structural lines inside the chart, hue-consistent with the ground:
-		   grid = faint vertical second-lines; line = lane separators. */
+		   grid = faint vertical second-lines; line = lane separators, zone
+		   splits and the Source overlay's edge — the same role the Team
+		   Builder's frame gives it, so it reads the shared --frame-line now.
+		   The local name stays: the planner's markup uses it in color-mixes. */
 		--rp-grid: #13203a;
-		--rp-line: #1c2a4a;
+		--rp-line: var(--frame-line);
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all
 		   share it (the elemental block mix in the markup references it too).

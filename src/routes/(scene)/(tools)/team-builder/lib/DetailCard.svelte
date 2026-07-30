@@ -3,6 +3,7 @@
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
 	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
+	import CloseMark from '$lib/components/CloseMark.svelte';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import {
 		deriveCharacterCapabilities,
@@ -176,7 +177,9 @@
 					</div>
 				{/if}
 			</div>
-			<button class="btn btn--icon dc-close" onclick={onClose} aria-label="Close">✕</button>
+			<button class="dc-close" onclick={onClose} aria-label="Close">
+				<CloseMark />
+			</button>
 		</header>
 
 		{#if entry && !entry.curated}
@@ -407,10 +410,21 @@
 	}
 
 	/* Local bits only. The wishlist variant keeps its geo tint. */
+	/* A bare hit target around Nate's close mark — the same treatment the meta
+	   overlays' close wears. Deliberately not .btn--icon: the mark is already a
+	   disc, and a bordered box around it reads as two shapes. */
 	.dc-close {
 		align-self: flex-start;
-		font-size: var(--fs-lg);
-		line-height: var(--lh-none);
+		display: grid;
+		place-items: center;
+		width: 30px;
+		height: 30px;
+		flex: none;
+		padding: 0;
+		border: none;
+		background: none;
+		color: var(--text);
+		cursor: pointer;
 	}
 	.dc-own-btn--wish.is-active {
 		border-color: color-mix(in srgb, var(--el-geo-main) 65%, var(--border));

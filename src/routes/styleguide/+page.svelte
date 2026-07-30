@@ -47,7 +47,7 @@
 		ns.map((n) => tokens.find((t) => t.name === n)).filter((t): t is Token => !!t);
 
 	const structure = exact('--bg', '--text', '--muted', '--neutral');
-	const calmSurfaces = exact('--surface', '--surface-raised', '--border');
+	const calmSurfaces = exact('--surface', '--surface-raised', '--border', '--frame-line');
 	const metrics = exact('--chrome-h', '--site-footer-h');
 	const famDire = exact('--dire', '--dire-fill');
 	const famCalm = exact('--calm', '--calm-fill');
@@ -1029,13 +1029,15 @@
 						forgets it desyncs exported images silently.
 					</li>
 					<li>
-						<strong>The frame's interior hairline has two names.</strong> The planner calls it
-						<code>--rp-line</code> and the Team Builder <code>--tb-line</code>, both
-						<code>#1c2a4a</code> over the same <code>#081225</code> frame ground. Now that
-						<code>.frame</code> is a global pattern with two zone-splitting consumers, this probably
-						wants to be one token beside it (<code>--frame-line</code>) — but
-						<code>--rp-line</code> also does duty as the planner's lane separator, so promoting it is
-						not a rename.
+						<strong>Resolved 2026-07-30 — <code>--frame-line</code>.</strong> The frame's interior
+						hairline was declared privately by both tools as <code>#1c2a4a</code> (<code
+							>--rp-line</code
+						>
+						/ <code>--tb-line</code>). It is one <code>:root</code> token now — a frame's ground is
+						darker than <code>--surface</code>, so <code>--border</code> reads too hot on it, which
+						is what earns it a separate member. <code>--rp-line</code> survives as a local alias
+						because the planner's markup reads it inside <code>color-mix</code>es. Kept here as the
+						record; delete once it stops being news.
 					</li>
 				</ul>
 			</div>
