@@ -999,7 +999,11 @@
 	   both). It replaces the old --bn-drop, which faked the same alignment by
 	   pushing the bench down inside an unframed page. */
 	.tb {
-		--tb-tabrow-gap: 0.65rem;
+		/* Tuned so the TB frame top lands on the planner's: the TB tab row is
+		   29px (.tab--lg) against the planner's 27px, and the planner's own gap
+		   is 0.65rem — 0.5rem here puts both frame tops at y=109 @1600
+		   (probe-bench-align asserts it). Nate's to retune. */
+		--tb-tabrow-gap: 0.5rem;
 		/* Bench width. Per-tool for now (the planner's portrait column is 145px)
 		   — Nate's bench-card redesign sets the converged value. */
 		--tb-bench-w: 210px;

@@ -967,6 +967,23 @@
 						<strong>tool</strong> feature is a docked panel or an in-frame overlay.
 					</li>
 					<li>In-frame overlays can't paint above the top border — portal to <code>body</code>.</li>
+					<li>
+						<strong>One <code>.frame</code> per tool, and the two tools mirror each other.</strong>
+						The Team Builder and the Rotation Planner are each a single full-screen
+						<code>.frame</code> below the tab strip, holding zones rather than nested islands: a
+						bench on one edge (planner LEFT, Team Builder RIGHT, so they meet at the tool-slide
+						seam), a filter column on the opposite OUTER edge, work in the middle. Zones separate
+						with a 1px interior hairline over the frame's own fill — never a gap, never a second
+						box. Nothing inside a frame wears <code>.panel</code>; the kickers do the separating.
+					</li>
+					<li>
+						<strong>A tool frame is viewport-fit; its zones scroll, the page doesn't.</strong>
+						Height is
+						<code>calc(100svh − --chrome-h − --tool-pad-top − --tool-pad-bottom)</code> minus the
+						tab strip, and a bounded scroll needs <code>min-height: 0</code> at every flex level below
+						it — break one and the column grows instead of scrolling. The benches are side-locked at every
+						width; narrow viewports are the mobile pass's problem, not a breakpoint's.
+					</li>
 					<li>Chrome marks must be geometry, never <code>&lt;text&gt;</code>.</li>
 					<li>The brand string is <code>critcalc.app</code> — the full domain, everywhere.</li>
 					<li>Only four radii exist: <code>--r-sm/md/lg/round</code>. No exceptions.</li>
@@ -1010,6 +1027,15 @@
 						resolve <code>var()</code>, so <code>timelineExport.ts</code> duplicates every token it paints
 						as a literal. It was re-cut with this pass, but nothing enforces it — a token change that
 						forgets it desyncs exported images silently.
+					</li>
+					<li>
+						<strong>The frame's interior hairline has two names.</strong> The planner calls it
+						<code>--rp-line</code> and the Team Builder <code>--tb-line</code>, both
+						<code>#1c2a4a</code> over the same <code>#081225</code> frame ground. Now that
+						<code>.frame</code> is a global pattern with two zone-splitting consumers, this probably
+						wants to be one token beside it (<code>--frame-line</code>) — but
+						<code>--rp-line</code> also does duty as the planner's lane separator, so promoting it is
+						not a rename.
 					</li>
 				</ul>
 			</div>
