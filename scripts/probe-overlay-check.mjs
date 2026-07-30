@@ -1,9 +1,11 @@
 import { chromium } from 'playwright';
-const OUT =
-	'/private/tmp/claude-501/-Users-producer-Code-critcalc/28011385-68cc-461f-b2a7-1f521f59a67c/scratchpad';
+// Both were hardcoded to one session's scratchpad + a 4999 preview; every other
+// probe takes them from the environment, so this one does too.
+const OUT = process.env.SHOTS_DIR ?? '.';
+const BASE = process.env.BASE ?? 'http://localhost:4998';
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-await page.goto('http://localhost:4999/rotation-planner', { waitUntil: 'networkidle' });
+await page.goto(`${BASE}/rotation-planner`, { waitUntil: 'networkidle' });
 await page.click('.cm-content');
 await page.keyboard.type('Furina E Q > Bennett E Q > Xingqiu E Q > Kazuha E Q', { delay: 25 });
 await page.keyboard.press('Escape');

@@ -2,9 +2,10 @@
 // mid-scroll, and the Team Builder sticky columns, under the raised dire border.
 import { chromium } from 'playwright';
 
-const OUT =
-	'/private/tmp/claude-501/-Users-producer-Code-critcalc/28011385-68cc-461f-b2a7-1f521f59a67c/scratchpad';
-const BASE = 'http://localhost:4999';
+// Both were hardcoded to one session's scratchpad + a 4999 preview; every other
+// probe takes them from the environment, so this one does too.
+const OUT = process.env.SHOTS_DIR ?? '.';
+const BASE = process.env.BASE ?? 'http://localhost:4998';
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -40,7 +41,12 @@ await page.screenshot({ path: `${OUT}/rp-mid.png` });
 await scrollTo(-1);
 await page.screenshot({ path: `${OUT}/rp-bottom.png` });
 
-// ── Team builder (sticky bench under fixed chrome) ────────────────────────
+// ── Team builder ─────────────────────────────────────────────────────────
+// NOTE: since the mirrored-surfaces round the TB is viewport-FIT — its frame
+// scrolls internally and the page does not scroll at all, so there is no
+// scroll-under to observe here any more (the second shot equals the first).
+// Kept as a top-edge reference; the scroll-under behavior is the planner's and
+// the Visualizers'. Nothing below asserts, so a non-scrolling TB can't fail it.
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(1200);
 await scrollTo(0);

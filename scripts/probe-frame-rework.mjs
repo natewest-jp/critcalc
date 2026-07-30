@@ -145,8 +145,10 @@ check('total chip shows key+value', /^Total[\d.]+s$/.test(cluster.total ?? ''), 
 check('NOTES in cluster, PNG not', cluster.notes && !cluster.pngInCluster);
 
 // 4. Tab strip = document chrome only
+// (.tab-bar-actions/.tb-btn were retired by the design-system migration —
+// the strip is .rp-tab-bar-actions with global .btn children now.)
 const strip = await page.evaluate(() =>
-	[...document.querySelectorAll('.tab-bar-actions .tb-btn')].map((b) => b.textContent.trim())
+	[...document.querySelectorAll('.rp-tab-bar-actions .btn')].map((b) => b.textContent.trim())
 );
 check(
 	'tab strip = Save/Load/Share only',

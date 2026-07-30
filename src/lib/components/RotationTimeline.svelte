@@ -973,21 +973,24 @@
 <!-- ============================================================ -->
 <!--  Root                                                        -->
 <!-- ============================================================ -->
-<div class="rp-root">
+<!-- --rp-bench-w is set from the JS constant, not duplicated as a CSS literal:
+     LABEL_W stays the single source (the PNG export reads it too), and the five
+     places that used to carry it as an inline style now read the variable. -->
+<div class="rp-root" style:--rp-bench-w="{LABEL_W}px">
 	<!-- ── Timeline chart frame ──────────────────────────────── -->
 	<!-- The frame is ONE instrument with a fixed grammar: time axis (ruler +
 	     view controls) on the TOP edge per DAW/NLE convention, rendered tracks
 	     in the middle, and the notation COMPOSER (input + its KQM/PNG submit
 	     pair) on the BOTTOM edge — the chat-app register: you write at the
 	     bottom, the conversation renders above. -->
-	<div class="rp-frame frame">
+	<div class="rp-frame frame" class:rp-frame--picking={sourceOpen}>
 		<!-- ── Ruler strip (full frame width, ABOVE the track area) ── -->
 		<!-- Its own row so the notes panel can never push it: the ruler
 		     viewport is a scroll FOLLOWER (overflow hidden, mirrored from the
 		     track/ext scrollers), and the view cluster stays pinned to the
 		     frame's right edge. -->
 		<div class="rp-ruler-strip">
-			<div class="rp-ruler-spacer" style:width="{LABEL_W}px"></div>
+			<div class="rp-ruler-spacer"></div>
 			<div class="rp-ruler-scroll" bind:this={rulerScrollEl}>
 				<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
 				     rise to the seam, labels above them. -->
@@ -1058,14 +1061,10 @@
 				>
 			</div>
 		</div>
-		<div
-			class="rp-timeline-area"
-			class:rp-timeline-area--notes={showNotes && hasCaveats}
-			class:rp-timeline-area--picking={sourceOpen}
-		>
+		<div class="rp-timeline-area" class:rp-timeline-area--notes={showNotes && hasCaveats}>
 			<div class="rp-scroll-wrapper">
 				<!-- Left label column (sticky, non-scrolling) -->
-				<div class="rp-label-col" style:width="{LABEL_W}px">
+				<div class="rp-label-col">
 					<!-- Character slot labels (always 4) -->
 					{#each characterSlots as slotId, i (i)}
 						{@const loadedChar = slotCharacters[i]}
@@ -1617,26 +1616,12 @@
 					{/each}
 				</div>
 			{/if}
-
-			<!-- ── Character Source overlay ─────────────────────────────
-			     Non-modal: layers over the track area from the portrait
-			     column's right edge (the 4 live portraits stay the team
-			     display). Positioning is ours; the content is the planner
-			     page's CharacterSelector, handed in as a snippet. Kept
-			     MOUNTED after the first open (hidden, not destroyed) so
-			     reopening skips the ~122-card remount — a visible stall in
-			     Safari 26.x, and free even where mounts are fast. -->
-			{#if sourceEverOpened && sourceOverlay}
-				<div class="rp-source-overlay" hidden={!sourceOpen} style:left="{LABEL_W}px">
-					{@render sourceOverlay()}
-				</div>
-			{/if}
 		</div>
 		<!-- /rp-timeline-area -->
 
 		<!-- ── External scrollbar (below timeline, synced to track) ─ -->
 		<div class="rp-ext-scroll-wrap">
-			<div class="rp-ext-scroll-spacer" style:width="{LABEL_W}px"></div>
+			<div class="rp-ext-scroll-spacer"></div>
 			<div class="rp-ext-scroll" bind:this={extScrollEl} onscroll={onExtScroll}>
 				<div style:width="{totalWidth}px" style:height="1px"></div>
 			</div>
@@ -1648,7 +1633,7 @@
 		     KQM/PNG pair sits just outside the box on the right — the
 		     "submit/send" position for a finished rotation. Left margin aligns
 		     the box with the track area (right edge of portraits). -->
-		<div class="rp-composer" style:margin-left="{LABEL_W}px">
+		<div class="rp-composer">
 			<div class="rp-notation-wrap">
 				<div class="rp-notation" use:mountEditor={notation}></div>
 			</div>
@@ -1693,6 +1678,24 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- ── Character Source overlay ─────────────────────────────
+		     Non-modal, and a sibling of the frame's own rows so it covers
+		     EVERYTHING right of the portrait column — ruler strip, view
+		     cluster, tracks, external scrollbar, composer — instead of the
+		     track area alone. That makes the planner in picking mode the
+		     mirror of the Team Builder at rest: bench on one edge, grid and
+		     filters filling the rest of one frame. The 4 live portraits stay
+		     visible on the left as the team display. The content is the
+		     planner page's CharacterSelector, handed in as a snippet. Kept
+		     MOUNTED after the first open (hidden, not destroyed) so reopening
+		     skips the ~122-card remount — a visible stall in Safari 26.x, and
+		     free even where mounts are fast. -->
+		{#if sourceEverOpened && sourceOverlay}
+			<div class="rp-source-overlay" hidden={!sourceOpen}>
+				{@render sourceOverlay()}
+			</div>
+		{/if}
 	</div>
 	<!-- /rp-frame -->
 
@@ -1738,11 +1741,22 @@
 	/* .frame (app.css) supplies the 1px dire border + #081225
 	   fill; this only shapes it. Radius 9 per the 3/6/9 scale. */
 	.rp-frame {
+		--rp-frame-pad-x: 14px;
 		border-radius: 9px;
-		padding: 10px 14px 4px;
+		padding: 10px var(--rp-frame-pad-x) 4px;
 		display: flex;
 		flex-direction: column;
 		min-width: 0;
+		/* The Source overlay's containing block: it insets to the frame's
+		   padding box, so it covers every row right of the portrait column. */
+		position: relative;
+	}
+	/* Picking: guarantee the Source overlay a usable height even when the
+	   rotation is short (an empty timeline is just 4 slot cards tall). Lives on
+	   the FRAME now that the overlay bounds to the frame rather than the track
+	   area. Knob — the picker gets this minus the frame's padding. */
+	.rp-frame--picking {
+		min-height: 26rem;
 	}
 
 	/* Track/thumb styling comes from the shared .slider (app.css). */
@@ -1763,23 +1777,23 @@
 	.rp-timeline-area--notes .rp-scroll-wrapper {
 		margin-right: 240px;
 	}
-	/* Picking: guarantee the Source overlay a usable height even when the
-	   rotation is short (an empty timeline is just 4 slot cards tall). The
-	   composer stays visible below. */
-	.rp-timeline-area--picking {
-		min-height: 24rem;
-	}
-
 	/* ── Character Source overlay ─────────────────────────────── */
-	/* Non-modal: opaque panel over the track area only, from the portrait
-	   column's right edge (left set inline = LABEL_W). The 4 live portraits
-	   stay visible on the left as the team display. Locked to the track area's
-	   box like the caveat panel — it never grows the frame past its min-height. */
+	/* Non-modal: an opaque panel over the whole frame right of the portrait
+	   column — ruler, view cluster, tracks, external scrollbar and composer.
+	   The 4 live portraits stay visible on the left as the team display, and
+	   the frame's own --picking min-height keeps the panel usable under a
+	   short rotation. */
 	.rp-source-overlay {
 		position: absolute;
 		top: 0;
 		right: 0;
 		bottom: 0;
+		/* Absolute insets resolve against the frame's PADDING box, so the left
+		   edge has to clear the frame's own left padding as well as the
+		   portrait column — otherwise the panel clips the portraits' right
+		   edge. This lands the hairline exactly on the column's edge, the
+		   mirror of the Team Builder bench's. */
+		left: calc(var(--rp-bench-w) + var(--rp-frame-pad-x));
 		z-index: 6;
 		display: flex;
 		flex-direction: column;
@@ -1948,8 +1962,11 @@
 	}
 
 	/* ── Label column ─────────────────────────────────────────── */
+	/* The portrait column and the three spacers that align to its right edge
+	   all read --rp-bench-w (set on .rp-root from the LABEL_W constant). */
 	.rp-label-col {
 		flex-shrink: 0;
+		width: var(--rp-bench-w);
 		display: flex;
 		flex-direction: column;
 	}
@@ -2010,6 +2027,7 @@
 	}
 	.rp-ext-scroll-spacer {
 		flex-shrink: 0;
+		width: var(--rp-bench-w);
 	}
 	.rp-ext-scroll {
 		flex: 1;
@@ -2036,6 +2054,7 @@
 	}
 	.rp-ruler-spacer {
 		flex-shrink: 0;
+		width: var(--rp-bench-w);
 	}
 	.rp-ruler-scroll {
 		flex: 1;
@@ -2602,14 +2621,14 @@
 	   textfield signal; bg/border styling lives in notationTheme — keep in
 	   lockstep), with the export pair (KQM, PNG) side-by-side just OUTSIDE
 	   it on the right — the send/submit position. The box starts at the
-	   portrait column's right edge (margin-left = LABEL_W, inline) rather
-	   than the frame's left edge; the vertical margins are its breathing
-	   room, deliberately more below. */
+	   portrait column's right edge (--rp-bench-w) rather than the frame's
+	   left edge; the vertical margins are its breathing room, deliberately
+	   more below. */
 	.rp-composer {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		margin: 12px 0 14px;
+		margin: 12px 0 14px var(--rp-bench-w);
 	}
 	/* ← Explore alternatives docks in the label column beneath the portraits
 	   while the Source picker is open (the mirror of the Bench's "Send to
