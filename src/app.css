@@ -7,7 +7,7 @@
 	   CALM note) and a saturation curve that FALLS as lightness rises — a
 	   near-white carrying s60 (which --text used to) tints the entire UI blue and
 	   fights the gilt voice. */
-	--bg: #060914;
+	--bg: #060816; /* page ground — deepest point of the arc: oklch L.14 C.030 H274 */
 	--text: #e8ecf3; /* cool near-white  16.8:1 on --bg */
 	--muted: #9baabf; /* secondary text    8.4:1 */
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
@@ -24,39 +24,43 @@
 	   `var(--calm-surface)`. The family is the tuning unit; the names stay
 	   semantic.
 
-	   Two things make this a ramp rather than a pile:
+	   ↻ RE-CUT 2026-07-31 ("depth-lit indigo") — the stack now sits on ONE
+	   DESIGNED SYSTEM in OKLCH; annotations below are oklch L/C/H. The old
+	   values had drifted from their Genshin-picked origins into incoherence
+	   (hue wandered with no relation to lightness; structure GAINED chroma as
+	   it lifted). Two rules now generate every surface:
 
-	   1. ONE HUE WITH A DELIBERATE DRIFT — 224° at the darkest easing to 210° at
-	      the brightest. Deep shadow reads slightly violet, lit surface slightly
-	      cyan, which is how atmosphere actually behaves; it stops the stack
-	      looking like a flat opacity ladder. The old values wandered 209–228°
-	      with no pattern, which is what made them read muddy.
+	   1. HUE IS A FUNCTION OF LIGHTNESS — one atmospheric arc from H274 at
+	      the darkest (deep water reads violet) to H251 at the brightest (lit
+	      water reads cyan) — the blue hue shift applied deliberately, so the
+	      stack reads as one material under different light and the members
+	      CANNOT fail to coordinate. Two tokens at the same depth share a hue.
 
-	   2. SATURATION ENCODES ROLE — structure members are LOW saturation,
-	      content members are HIGH. This is what finally separates --calm-fill
-	      from --border: they used to sit at l22 vs l23 with similar chroma and
-	      were effectively the same color. Now the buff bar is both lighter and
-	      far more chromatic than a divider, so a filled bar can never read as a
-	      structural line. */
-	--surface: #12192b; /* panel on page          h224 s42 l12 */
-	--surface-raised: #1c273f; /* panel on panel         h222 s38 l18 */
-	--border: #2d3b58; /* dividers, hairlines    h220 s32 l26 */
-	/* A frame's own ground — darker than --surface, which is what makes the
-	   frame read as a well rather than a raised panel. Its own member for the
-	   same reason --frame-line is: it was declared as a bare hex in .frame,
-	   --rp-chart-bg and the SlotPortrait card fill, and anything that mixes
-	   against a frame's ground needs to name it.
-	   ↻ Brightened 2026-07-31 (was #081225, l9) — sampled from Nate's +30%
-	   reference; the tool scenes read too dim. Mirrors: timelineExport
-	   CHART_BG + the frame-ground cutout strokes in the viz instruments. */
-	--frame-bg: #0b1933; /* frame ground           h219 s65 l12 */
+	   2. CHROMA ENCODES FAMILY, AND THINS WITH HEIGHT — the frame "wells"
+	      (--frame-bg / --rp-grid / --frame-line) carry the rich indigo
+	      (C .058–.070); the panel "air" (--surface / -raised / --border)
+	      stays gray-blue (C .030–.038) and desaturates as it rises, so
+	      borders draw lines rather than attention, and a chromatic buff fill
+	      can never read as structure. Lightnesses are UNCHANGED from the
+	      2026-07-31 brightness calibration — this pass moves only hue/chroma. */
+	--surface: #11192b; /* panel on page          L.22 C.038 H266 */
+	--surface-raised: #1d2838; /* panel on panel         L.28 C.034 H259 */
+	--border: #303d4b; /* dividers, hairlines    L.35 C.030 H251 */
+	/* A frame's own ground — same DEPTH as --surface but far richer (the
+	   well-vs-air chroma split above is what makes a frame read as a well
+	   rather than a raised panel). Its own member for the same reason
+	   --frame-line is: it was declared as a bare hex in .frame, --rp-chart-bg
+	   and the SlotPortrait card fill, and anything that mixes against a
+	   frame's ground needs to name it.
+	   ↻ Lightness sampled from Nate's +30% reference (brightness round
+	   2026-07-31). Mirrors: timelineExport CHART_BG + the frame-ground
+	   cutout strokes in the viz instruments. */
+	--frame-bg: #0a173a; /* frame ground           L.22 C.070 H266 */
 	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
 	   composer's well. Its own member because a frame's ground is darker than
 	   --surface, so --border reads too hot on it. Both tools used to declare
-	   this hex privately (--rp-line / --tb-line).
-	   ↻ 2026-07-31: scaled with --frame-bg (same ×1.33 lightness) so lines
-	   keep the same weight against the brighter ground. */
-	--frame-line: #253862; /* lines on frame ground  h221 s45 l26 */
+	   this hex privately (--rp-line / --tb-line). */
+	--frame-line: #223b57; /* lines on frame ground  L.35 C.058 H252 */
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (SiteChrome.svelte),

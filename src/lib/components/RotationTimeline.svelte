@@ -1762,7 +1762,7 @@
 		   splits and the Source overlay's edge — the same role the Team
 		   Builder's frame gives it, so it reads the shared --frame-line now.
 		   The local name stays: the planner's markup uses it in color-mixes. */
-		--rp-grid: #192b4d; /* ↻ 2026-07-31: scaled with the brightened --frame-bg (was #13203a) */
+		--rp-grid: #172c4a; /* well-family member: oklch L.29 C.062 H257 (see app.css surface arc) */
 		--rp-line: var(--frame-line);
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all

@@ -367,7 +367,7 @@
 		height: 28px;
 		border-radius: 50%;
 		border: 1.5px solid var(--surface-raised);
-		background: #131c30;
+		background: var(--surface); /* was a drifted stray #131c30 */
 		overflow: hidden;
 		display: flex;
 		align-items: center;

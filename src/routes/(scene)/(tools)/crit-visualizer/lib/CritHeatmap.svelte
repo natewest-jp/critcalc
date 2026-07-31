@@ -196,7 +196,7 @@
 		const ph = Math.max(1, Math.round(plotH));
 
 		// Fill background, then write each plot pixel directly via ImageData
-		context.fillStyle = '#0b1933'; // --frame-bg mirror (canvas can't resolve var())
+		context.fillStyle = '#0a173a'; // --frame-bg mirror (canvas can't resolve var())
 		context.fillRect(0, 0, boxW, boxH);
 
 		const image = context.createImageData(pw, ph);
