@@ -241,7 +241,7 @@ const notationTheme = EditorView.theme({
 	// RotationTimeline.svelte (the pre-chunk-load stand-in) — keep in
 	// lockstep.
 	'&': {
-		background: 'color-mix(in srgb, #000 40%, var(--rp-chart-bg, #001a38))',
+		background: 'color-mix(in srgb, #000 40%, var(--rp-chart-bg, #101a35))',
 		border: '1px solid var(--rp-line, #1c2a4a)',
 		borderRadius: '6px',
 		fontSize: '13px',

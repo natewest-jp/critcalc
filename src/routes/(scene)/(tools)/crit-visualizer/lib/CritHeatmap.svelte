@@ -195,8 +195,14 @@
 		const pw = Math.max(1, Math.round(plotW));
 		const ph = Math.max(1, Math.round(plotH));
 
-		// Fill background, then write each plot pixel directly via ImageData
-		context.fillStyle = '#001a38'; // --frame-bg mirror (canvas can't resolve var())
+		// Fill background, then write each plot pixel directly via ImageData.
+		// The ground is READ FROM THE CASCADE, not hardcoded — this canvas
+		// paints opaquely over .frame, and a literal here silently detaches
+		// the heatmap from --frame-bg tuning (it was the one frame that
+		// didn't follow devtools edits — Nate 2026-07-31). Re-read per draw;
+		// a live var edit lands on the next redraw (resize or remount).
+		const frameBg = getComputedStyle(canvasEl).getPropertyValue('--frame-bg').trim() || '#101a35';
+		context.fillStyle = frameBg;
 		context.fillRect(0, 0, boxW, boxH);
 
 		const image = context.createImageData(pw, ph);
