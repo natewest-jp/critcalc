@@ -38,7 +38,7 @@ const LANE_LINE = '#2c3a58'; // --frame-line = mix(border 90%, frame-bg), resolv
 // a literal. When a token value changes in app.css, change it here too or the
 // exported PNG silently stops matching what the user saw. Re-cut 2026-07-27
 // with the dire/calm/gilt palette pass.
-const ACTIVE = '#768093'; // --neutral
+const ACTIVE = '#757f93'; // --rp-active (Nate-sampled 2026-07-31; no longer the --neutral alias)
 const TEXT = '#e8ecf3'; // --text
 const MUTED = '#9baabf'; // --muted
 // Paired tool tints — mirror app.css :root. --dire = hsl(340,85%,46%) =
@@ -596,9 +596,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						ctx!.fillStyle = grad;
 					} else if (kind === 'skill' || kind === 'burst' || kind === 'elemental-normal') {
 						ctx!.fillStyle = mix(p.main, ACTIVE, 50);
-					} else if (kind === 'movement') {
-						ctx!.fillStyle = 'rgba(113, 120, 152, 0.45)';
 					} else {
+						// Movement and every other non-infused input: the active strip's
+						// own color, no extra fill (mirrors the on-screen rule — only
+						// elemental infusion may overlay the strip).
 						ctx!.fillStyle = ACTIVE;
 					}
 					ctx!.fillRect(bx, rowTop + 1, bw, snap.activeRowH - 2);

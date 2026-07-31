@@ -1775,7 +1775,12 @@
 		   #717898 that turned out to be the codebase's universal "inactive /
 		   unknown" gray, so it was promoted rather than duplicated. Keep the
 		   local name — the planner's markup reads it in a color-mix. */
-		--rp-active: var(--neutral);
+		/* No longer the --neutral alias: Nate sampled this from the happy
+		   accident where the movement blocks' leftover translucent #717898
+		   composited over the neutral strip (2026-07-31) — the blended color
+		   read better than the strip itself, so it IS the strip now. Swap
+		   connectors ride the same var. */
+		--rp-active: #757f93;
 
 		font-family: var(--font-body);
 		font-size: var(--fs-md);
@@ -2684,8 +2689,13 @@
 	.rp-input-block--normal {
 		background: var(--rp-active);
 	}
+	/* Movement (dash/jump) and other non-infused inputs carry NO fill of
+	   their own — the active strip's color IS the token surface; only an
+	   elemental infusion may overlay it (the inline elemental-normal mix).
+	   The old translucent fill here was the accident --rp-active's value
+	   was sampled from. */
 	.rp-input-block--movement {
-		background: rgba(113, 120, 152, 0.45);
+		background: transparent;
 		box-shadow: none;
 	}
 	.rp-input-block--unset {
