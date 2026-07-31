@@ -219,8 +219,10 @@
 		container: charcard / inline-size;
 		display: flex;
 		flex-direction: column;
-		background: var(--surface);
-		border: 1px solid color-mix(in srgb, var(--el-color) 22%, var(--border));
+		background: var(--surface-raised); /* in-page panel role (Nate 2026-07-31) */
+		/* The one raised panel that keeps an ELEMENT border — brightened from
+		   the old 22% mix so the element actually reads at rest. */
+		border: 1px solid color-mix(in srgb, var(--el-color) 42%, var(--border));
 		border-radius: 6px;
 		overflow: hidden;
 		transition:
@@ -480,7 +482,7 @@
 		align-items: stretch;
 		gap: 4px;
 		padding: 0.3rem 0.4rem;
-		background: color-mix(in srgb, var(--surface) 90%, transparent);
+		background: color-mix(in srgb, var(--surface-raised) 90%, transparent);
 		opacity: 0;
 		pointer-events: none;
 		transition: opacity 120ms ease;

@@ -93,10 +93,9 @@
 		overflow-y: auto;
 		padding: 1.4rem 1.6rem 1.6rem;
 		border-radius: var(--r-lg);
-		background: var(--surface-raised);
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.07),
-			0 18px 60px rgba(0, 0, 0, 0.55);
+		background: var(--surface); /* modal role (Nate 2026-07-31) */
+		border: 1px solid var(--border);
+		box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
 	}
 
 	/* Wide: a fixed-height panel that does NOT scroll itself — the body row

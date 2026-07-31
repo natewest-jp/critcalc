@@ -78,7 +78,8 @@
 		position: fixed;
 		z-index: 100;
 		transform: translateX(-50%);
-		background: var(--surface-raised);
+		background: var(--surface); /* modal role (Nate 2026-07-31) */
+		border: 1px solid var(--border);
 		border: none;
 		border-radius: 6px;
 		padding: 8px 11px;
@@ -87,9 +88,7 @@
 		/* No max-width: content self-regulates (a source label + short stat
 		   rows) and the old 230px cap made long ability names wrap awkwardly.
 		   The viewport still constrains naturally near screen edges. */
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.06),
-			0 4px 16px rgba(0, 0, 0, 0.55);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
 		display: flex;
 		flex-direction: column;
 		gap: 4px;

@@ -345,7 +345,9 @@
 		gap: 1.1rem;
 		padding: 1.2rem 1.3rem 1.4rem;
 		background: var(--surface);
-		border: 1px solid color-mix(in srgb, var(--el-color) 35%, var(--border));
+		/* Modal role: the quiet shared border (Nate 2026-07-31) — element
+		   identity stays on the avatar ring and header, not the panel edge. */
+		border: 1px solid var(--border);
 		border-radius: 9px;
 		font-family: var(--font-body);
 		color: var(--text);

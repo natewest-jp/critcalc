@@ -1983,11 +1983,10 @@
 		z-index: 50;
 		display: flex;
 		flex-direction: column;
-		background: var(--surface-raised);
+		background: var(--surface); /* modal role (Nate 2026-07-31) */
+		border: 1px solid var(--border);
 		border-radius: 6px;
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.06),
-			0 4px 16px rgba(0, 0, 0, 0.5);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 		padding: 2px 0;
 		min-width: 124px;
 	}

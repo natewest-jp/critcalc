@@ -8,7 +8,7 @@
 	   and fights the gilt voice. */
 	--bg: #050b19; /* page ground — deepest rung: L.15 C.032 H264 */
 	--text: #e8ecf3; /* cool near-white  16.8:1 on --bg */
-	--muted: #9baabf; /* secondary text    8.4:1 */
+	--muted: #a3b1c3; /* secondary text    8.4:1 */
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are
@@ -40,17 +40,24 @@
 	      air" concept — the frame ground is the calmest member now, and
 	      panels above it carry the color.)
 
-	   3. SURFACE == SURFACE-RAISED (both #1c2844, Nate's unification) — the
-	      base/raised distinction now rides on borders and hairlines, not
-	      fill steps. BOTH TOKENS STAY: they are different roles that happen
-	      to share a value; if a nested overlay ever melts into its host
-	      panel, nudge --surface-raised alone (+.02 L) and the roles resume.
+	   3. THE TWO SURFACE TOKENS ARE ROLES, NOT DEPTHS (Nate 2026-07-31; they
+	      currently share one value, which is fine — tune either freely):
+	      · --surface        = MODAL surfaces — anything overlaying content:
+	        the pages panel, the chrome overlay pane, the TB detail modal,
+	        loadout/constellation popovers, the load-rotations modal, bar
+	        tooltips, dropdown menus. All wear border: 1px solid --border.
+	      · --surface-raised = IN-PAGE panels that aren't a frame ground:
+	        the shared .panel (viz side panels), Atlas category cards,
+	        character cards. Also border: 1px solid --border — EXCEPT the
+	        character cards, which keep their element-mixed border.
+	      The old top-light hairline highlight on panels is RETIRED — the
+	      border carries the separation everywhere now.
 
 	   Lightness rungs keep the brightness-round ladder, re-anchored through
 	   the two picked values. Derivation: scratchpad palette5.mjs pattern —
 	   anchors in, remaining rungs out. */
-	--surface: #1c2844; /* panel on page   ⚓ NATE  L.28 C.054 H265 */
-	--surface-raised: #1c2844; /* panel on panel  ⚓ NATE  L.28 C.054 H265 */
+	--surface: #1c2844; /* modal surface   ⚓ NATE  L.28 C.054 H265 */
+	--surface-raised: #1c2844; /* in-page panel   ⚓ NATE  L.28 C.054 H265 */
 	--border: #2f3d5d; /* dividers, hairlines    L.36 C.060 H266 */
 	/* A frame's own ground — DARKER and QUIETER than the panels (rule 2):
 	   the well is the calm deep the tool's content sits in. Its own member
@@ -936,13 +943,16 @@ img {
 }
 
 /* ── Surfaces ─────────────────────────────────────────────────────────── */
+/* In-page panel (the --surface-raised role): a bordered card lifting off the
+   page/frame ground. The old top-light hairline highlight is RETIRED
+   (Nate 2026-07-31) — separation is the border's job now, everywhere. */
 .panel {
 	display: grid;
 	gap: 0.7rem;
 	padding: 1.1rem 1.2rem;
 	border-radius: var(--r-md);
 	background: var(--surface-raised);
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	border: 1px solid var(--border);
 	align-content: start;
 }
 /* ── Chart-frame border (shared: Icd / Gauge / Reaction / Artifact / Heatmap) ─

@@ -730,16 +730,14 @@
 	}
 	.sp-popover {
 		z-index: 950;
-		background: var(--surface-raised);
-		border: none;
+		background: var(--surface); /* modal role (Nate 2026-07-31) */
+		border: 1px solid var(--border);
 		border-radius: var(--r-md);
 		padding: 7px 9px;
 		display: flex;
 		align-items: center;
 		gap: 4px;
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.06),
-			0 4px 16px rgba(0, 0, 0, 0.5);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 	}
 	/* The loadout panel is taller than a pip row, so it is clamped to the
 	   viewport rather than centered on its anchor when it would overflow. */

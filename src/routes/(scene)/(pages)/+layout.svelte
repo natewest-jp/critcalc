@@ -83,13 +83,11 @@
 		width: min(860px, calc(100% - 2.5rem));
 		margin: 0 auto;
 		overflow-y: auto;
-		background: var(--surface-raised);
+		background: var(--surface); /* modal role (Nate 2026-07-31) */
 		border: 1px solid var(--border);
 		border-radius: var(--r-lg);
 		padding: clamp(1.4rem, 3vw, 2.4rem);
-		box-shadow:
-			0 18px 50px rgba(0, 0, 0, 0.45),
-			inset 0 1px 0 rgba(255, 255, 255, 0.05);
+		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 		will-change: transform;
 	}
 
