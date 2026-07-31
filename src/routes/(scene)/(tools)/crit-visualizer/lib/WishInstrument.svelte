@@ -211,7 +211,7 @@
 					cy={yOfC(chanceWithin)}
 					r="4.5"
 					fill="var(--accent)"
-					stroke="#05183a"
+					stroke="#001a38"
 					stroke-width="1.5"
 				/>
 				<text
