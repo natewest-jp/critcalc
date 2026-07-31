@@ -1762,7 +1762,7 @@
 		   splits and the Source overlay's edge — the same role the Team
 		   Builder's frame gives it, so it reads the shared --frame-line now.
 		   The local name stays: the planner's markup uses it in color-mixes. */
-		--rp-grid: #13203a;
+		--rp-grid: #192b4d; /* ↻ 2026-07-31: scaled with the brightened --frame-bg (was #13203a) */
 		--rp-line: var(--frame-line);
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all
@@ -1782,7 +1782,7 @@
 	}
 
 	/* ── Chart frame (timeline + external scrollbar) ─────────── */
-	/* .frame (app.css) supplies the 1px dire border + #081225
+	/* .frame (app.css) supplies the 1px dire border + --frame-bg
 	   fill; this only shapes it. Radius 9 per the 3/6/9 scale. */
 	.rp-frame {
 		--rp-frame-pad-x: 14px;

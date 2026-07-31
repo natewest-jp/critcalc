@@ -419,8 +419,14 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
 
 	// Fill stops: the layer's lightness against the tint's hue/sat — the
 	// browser does the relative-color math, so --dire keeps cascading.
+	// --dire-edge-boost multiplies the pinned lightnesses (plain JS arithmetic,
+	// no calc-in-relative-color — that syntax would break older Safari); the
+	// twin --dire-edge literal carries the same boost to the CSS gradients and
+	// the ember glow below. See the knob block in the tools layout.
+	const edgeBoost = num('--dire-edge-boost', 1);
 	const stop = (lightness: number) => {
-		probe.style.color = `hsl(from var(--dire, hsl(342 85% 46%)) h s ${lightness}%)`;
+		const l = Math.min(100, lightness * edgeBoost);
+		probe.style.color = `hsl(from var(--dire, hsl(342 85% 46%)) h s ${l}%)`;
 		const css = getComputedStyle(probe).color;
 		return { rgb: resolveColor(css), css };
 	};
@@ -429,7 +435,7 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
 		edge: stop(layer.edgeL)
 	}));
 
-	probe.style.color = 'var(--dire, hsl(342 85% 46%))';
+	probe.style.color = 'var(--dire-edge, var(--dire, hsl(342 85% 46%)))';
 	const emberCss = getComputedStyle(probe).color;
 
 	return {

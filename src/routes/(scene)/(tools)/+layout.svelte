@@ -408,6 +408,20 @@
 		   paddings below are independent of them now (see the note there).
 		   --dire (the edge hue) now lives in app.css :root so it can double as
 		   the shared --accent; it cascades in here, so the border still reads it. */
+		/* Border brightness (2026-07-31, sampled from Nate's +30% reference —
+		   the border read too dim). TWO values representing ONE ×1.35 boost;
+		   tune them TOGETHER:
+		   · --dire-edge — the border tint: --dire with lightness ×1.35
+		     (hsl 342 85% 46% → 62%). A precomputed literal, NOT
+		     calc-in-relative-color: an unsupported calc there would invalidate
+		     the gradient backgrounds outright on older Safari. Read by the CSS
+		     gradients (DireBorder --tint) and the GL ember glow.
+		   · --dire-edge-boost — multiplies the GL wave stops' pinned
+		     lightnesses (crestL/edgeL in direBorderGL.ts layer defs).
+		   Border-only on purpose: --dire itself is the tool-zone accent (~148
+		   call sites) and stays untouched. */
+		--dire-edge: hsl(342 85% 62%);
+		--dire-edge-boost: 1.35;
 		--dire-top-h: 100px;
 		--dire-top-grad-h: 200px;
 		--dire-bottom-h: 200px;

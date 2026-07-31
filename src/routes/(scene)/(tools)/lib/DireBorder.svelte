@@ -95,7 +95,10 @@
 		inset: 0;
 		overflow: hidden;
 		pointer-events: none;
-		--tint: var(--dire, hsl(342 85% 46%));
+		/* --dire-edge = the brightened border tint (see the knob block in the
+		   tools layout); falls back through --dire for any host that doesn't
+		   set it. */
+		--tint: var(--dire-edge, var(--dire, hsl(342 85% 46%)));
 		--top-h: var(--dire-top-h, 100px);
 		--top-grad-h: var(--dire-top-grad-h, 200px);
 		--bottom-h: var(--dire-bottom-h, 200px);

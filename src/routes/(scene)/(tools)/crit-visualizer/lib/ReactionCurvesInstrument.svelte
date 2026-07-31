@@ -298,7 +298,7 @@
 						cy={yOf(c.value(em, level))}
 						r="3.5"
 						fill={c.color}
-						stroke="#081225"
+						stroke="#0b1933"
 						stroke-width="1.5"
 					/>
 				{/each}

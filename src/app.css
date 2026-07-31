@@ -45,13 +45,18 @@
 	   frame read as a well rather than a raised panel. Its own member for the
 	   same reason --frame-line is: it was declared as a bare hex in .frame,
 	   --rp-chart-bg and the SlotPortrait card fill, and anything that mixes
-	   against a frame's ground needs to name it. */
-	--frame-bg: #081225; /* frame ground           h218 s65 l9  */
+	   against a frame's ground needs to name it.
+	   ↻ Brightened 2026-07-31 (was #081225, l9) — sampled from Nate's +30%
+	   reference; the tool scenes read too dim. Mirrors: timelineExport
+	   CHART_BG + the frame-ground cutout strokes in the viz instruments. */
+	--frame-bg: #0b1933; /* frame ground           h219 s65 l12 */
 	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
 	   composer's well. Its own member because a frame's ground is darker than
 	   --surface, so --border reads too hot on it. Both tools used to declare
-	   this hex privately (--rp-line / --tb-line). */
-	--frame-line: #1c2a4a; /* lines on frame ground  h220 s45 l20 */
+	   this hex privately (--rp-line / --tb-line).
+	   ↻ 2026-07-31: scaled with --frame-bg (same ×1.33 lightness) so lines
+	   keep the same weight against the brighter ground. */
+	--frame-line: #253862; /* lines on frame ground  h221 s45 l26 */
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (SiteChrome.svelte),

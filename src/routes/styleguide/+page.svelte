@@ -780,7 +780,7 @@
 				</div>
 				{@render spec(
 					'.frame',
-					'1px dire @40% over #081225 — static. NEVER animate a paint property here (retired 2026-07-10, perf). Stays dire: it is a tool-interior surface'
+					'1px dire @40% over --frame-bg — static. NEVER animate a paint property here (retired 2026-07-10, perf). Stays dire: it is a tool-interior surface'
 				)}
 			</div>
 		</div>

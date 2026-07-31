@@ -30,9 +30,9 @@ import type {
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
-const CHART_BG = '#081225';
-const GRID = '#13203a';
-const LANE_LINE = '#1c2a4a';
+const CHART_BG = '#0b1933'; // --frame-bg (brightened 2026-07-31)
+const GRID = '#192b4d'; // --rp-grid (scaled with the ground)
+const LANE_LINE = '#253862'; // --frame-line
 // ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css :root. Canvas can't
 // resolve var(), so every token the export paints has to be duplicated here as
 // a literal. When a token value changes in app.css, change it here too or the
