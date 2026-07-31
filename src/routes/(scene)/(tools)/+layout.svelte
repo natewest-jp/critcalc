@@ -408,24 +408,26 @@
 		   paddings below are independent of them now (see the note there).
 		   --dire (the edge hue) now lives in app.css :root so it can double as
 		   the shared --accent; it cascades in here, so the border still reads it. */
-		/* Border brightness (2026-07-31, sampled from Nate's +30% reference —
-		   the border read too dim). TWO values representing ONE ×1.35 boost;
-		   tune them TOGETHER:
-		   · --dire-edge — the border tint: --dire with lightness ×1.35
-		     (hsl 342 85% 46% → 62%). A precomputed literal, NOT
-		     calc-in-relative-color: an unsupported calc there would invalidate
-		     the gradient backgrounds outright on older Safari. Read by the CSS
-		     gradients (DireBorder --tint) and the GL ember glow.
+		/* Border brightness + tint — HAND-TUNED BY NATE 2026-07-31; treat the
+		   numbers as design, not derivation.
+		   · --dire-edge — THE border tint: the CSS gradients, the GL ember
+		     glow, the fade-top seam, AND the GL waves' hue/sat all derive from
+		     it (wave lightnesses stay pinned in direBorderGL's layer defs). A
+		     literal, NOT calc-in-relative-color — an unsupported calc would
+		     invalidate the gradient backgrounds on older Safari. The first cut
+		     was --dire at lightness ×1.35 (l62), but HSL trades chroma for
+		     whiteness above l50 and it read washed/pale — the tune sits at the
+		     chroma peak instead (s100 l50), hue nudged 340→336.
 		   · --dire-edge-boost — multiplies the GL wave stops' pinned
 		     lightnesses (crestL/edgeL in direBorderGL.ts layer defs).
 		   Border-only on purpose: --dire itself is the tool-zone accent (~148
 		   call sites) and stays untouched. */
-		--dire-edge: hsl(342 85% 62%);
-		--dire-edge-boost: 1.35;
+		--dire-edge: hsl(336, 100%, 50%);
+		--dire-edge-boost: 1.25;
 		--dire-top-h: 100px;
-		--dire-top-grad-h: 200px;
+		--dire-top-grad-h: 250px;
 		--dire-bottom-h: 200px;
-		--dire-bottom-grad-h: 300px;
+		--dire-bottom-grad-h: 350px;
 		--dire-halftone-h: 200px;
 		/* Scroll-under: per-layer wave opacity — how firmly each wave body
 		   occludes content passing beneath (three layers stack, so the deep

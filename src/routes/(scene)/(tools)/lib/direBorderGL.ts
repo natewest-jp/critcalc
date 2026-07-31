@@ -426,7 +426,7 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
 	const edgeBoost = num('--dire-edge-boost', 1);
 	const stop = (lightness: number) => {
 		const l = Math.min(100, lightness * edgeBoost);
-		probe.style.color = `hsl(from var(--dire, hsl(342 85% 46%)) h s ${l}%)`;
+		probe.style.color = `hsl(from var(--dire-edge, var(--dire, hsl(342 85% 46%))) h s ${l}%)`;
 		const css = getComputedStyle(probe).color;
 		return { rgb: resolveColor(css), css };
 	};

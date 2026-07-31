@@ -25,7 +25,8 @@
 	// Knobs (set on any ancestor — .tool-shell in practice — defaults below;
 	// read by the GL module from the live cascade at mount/resize, or on demand
 	// via window.__dire.retune() after a devtools edit):
-	//   --dire            edge hue (slightly red-leaning magenta)
+	//   --dire-edge            border tint (gradients, ember, fade seam, wave
+	//                          hue/sat) — falls back to --dire when unset
 	//   --dire-top-h           top wave line: crest tops out at this mark
 	//   --dire-top-grad-h      top gradient reach
 	//   --dire-bottom-h        bottom wave line: crest tops out at this mark
@@ -126,7 +127,7 @@
 		height: var(--top-grad-h);
 		background: linear-gradient(
 			to bottom,
-			color-mix(in srgb, var(--tint) 30%, transparent),
+			color-mix(in srgb, var(--tint) 31%, transparent),
 			transparent
 		);
 	}
@@ -139,7 +140,7 @@
 		height: var(--bottom-grad-h);
 		background: linear-gradient(
 			to top,
-			color-mix(in srgb, var(--tint) 32%, transparent),
+			color-mix(in srgb, var(--tint) 34%, transparent),
 			transparent
 		);
 	}
@@ -165,7 +166,7 @@
 		left: 0;
 		right: 0;
 		height: min(calc(var(--dire-tile-w, 220vw) / 17), calc(var(--top-h) * 0.7));
-		background: linear-gradient(to bottom, hsl(from var(--tint) h s 10%), transparent);
+		background: linear-gradient(to bottom, hsl(from var(--tint) h s 13%), transparent);
 	}
 
 	/* ── Animated bands (WebGL) ────────────────────────────────────────────── */
