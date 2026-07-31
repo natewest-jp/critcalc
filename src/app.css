@@ -1,15 +1,14 @@
 :root {
 	/* ══ STRUCTURE ═════════════════════════════════════════════════════════════
 	   The page ground and the text ramp — the pieces that aren't a color family.
-	   --bg is the ANCHOR: unchanged since the scene was tuned against it, and the
-	   whole calm surface ramp below is built up from it. Everything else in this
-	   block was re-cut 2026-07-27 onto one hue with a deliberate drift (see the
-	   CALM note) and a saturation curve that FALLS as lightness rises — a
-	   near-white carrying s60 (which --text used to) tints the entire UI blue and
-	   fights the gilt voice. */
-	--bg: #060914;
+	   --bg is the surface system's deepest rung (derived with the stack from
+	   Nate's anchors 2026-07-31; a whisker up from the scene-era L.14). The
+	   text ramp keeps a saturation curve that FALLS as lightness rises — a
+	   near-white carrying s60 (which --text used to) tints the entire UI blue
+	   and fights the gilt voice. */
+	--bg: #050b19; /* page ground — deepest rung: L.15 C.032 H264 */
 	--text: #e8ecf3; /* cool near-white  16.8:1 on --bg */
-	--muted: #9baabf; /* secondary text    8.4:1 */
+	--muted: #a3b1c3; /* secondary text    8.4:1 */
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are
@@ -24,34 +23,62 @@
 	   `var(--calm-surface)`. The family is the tuning unit; the names stay
 	   semantic.
 
-	   Two things make this a ramp rather than a pile:
+	   ↻ RE-CUT 2026-07-31 — the stack is DERIVED from two hand-picked anchors
+	   (Nate's, from a long color-picker session; annotations are oklch
+	   L/C/H): the frame ground #121b2f and the unified panel #1c2844. What
+	   the session settled, after compensation-arc experiments in both
+	   directions and at two magnitudes:
 
-	   1. ONE HUE WITH A DELIBERATE DRIFT — 224° at the darkest easing to 210° at
-	      the brightest. Deep shadow reads slightly violet, lit surface slightly
-	      cyan, which is how atmosphere actually behaves; it stops the stack
-	      looking like a flat opacity ladder. The old values wandered 209–228°
-	      with no pattern, which is what made them read muddy.
+	   1. HUE IS CONSTANT (H≈265, ±1°) — the arcs all read as two families;
+	      hue unity is what reads as ONE. The blue-defect compensation the
+	      arcs chased turned out to need at most a point or two, absorbed in
+	      the anchors themselves.
 
-	   2. SATURATION ENCODES ROLE — structure members are LOW saturation,
-	      content members are HIGH. This is what finally separates --calm-fill
-	      from --border: they used to sit at l22 vs l23 with similar chroma and
-	      were effectively the same color. Now the buff bar is both lighter and
-	      far more chromatic than a divider, so a filled bar can never read as a
-	      structural line. */
-	--surface: #12192b; /* panel on page          h224 s42 l12 */
-	--surface-raised: #1c273f; /* panel on panel         h222 s38 l18 */
-	--border: #2d3b58; /* dividers, hairlines    h220 s32 l26 */
-	/* A frame's own ground — darker than --surface, which is what makes the
-	   frame read as a well rather than a raised panel. Its own member for the
-	   same reason --frame-line is: it was declared as a bare hex in .frame,
-	   --rp-chart-bg and the SlotPortrait card fill, and anything that mixes
-	   against a frame's ground needs to name it. */
-	--frame-bg: #081225; /* frame ground           h218 s65 l9  */
+	   2. CHROMA RISES WITH LIGHTNESS (C .032 ground → .041 frame → .054
+	      panels → .060 lines) — a QUIET deep ground with RICHER panels and
+	      lines lifting off it. (This inverted the earlier "rich wells, gray
+	      air" concept — the frame ground is the calmest member now, and
+	      panels above it carry the color.)
+
+	   3. THE TWO SURFACE TOKENS ARE ROLES, NOT DEPTHS (Nate 2026-07-31; they
+	      currently share one value, which is fine — tune either freely):
+	      · --surface        = MODAL surfaces — anything overlaying content:
+	        the pages panel, the chrome overlay pane, the TB detail modal,
+	        loadout/constellation popovers, the load-rotations modal, bar
+	        tooltips, dropdown menus. All wear border: 1px solid --border.
+	      · --surface-raised = IN-PAGE panels that aren't a frame ground:
+	        the shared .panel (viz side panels), Atlas category cards,
+	        character cards. Also border: 1px solid --border — EXCEPT the
+	        character cards, which keep their element-mixed border.
+	      The old top-light hairline highlight on panels is RETIRED — the
+	      border carries the separation everywhere now.
+
+	   Lightness rungs keep the brightness-round ladder, re-anchored through
+	   the two picked values. Derivation: scratchpad palette5.mjs pattern —
+	   anchors in, remaining rungs out. */
+	--surface: #1c2844; /* modal surface   ⚓ NATE  L.28 C.054 H265 */
+	--surface-raised: #1c2844; /* in-page panel   ⚓ NATE  L.28 C.054 H265 */
+	--border: #2f3d5d; /* dividers, hairlines    L.36 C.060 H266 */
+	/* A frame's own ground — DARKER and QUIETER than the panels (rule 2):
+	   the well is the calm deep the tool's content sits in. Its own member
+	   for the same reason --frame-line is: it was declared as a bare hex in
+	   .frame, --rp-chart-bg and the SlotPortrait card fill, and anything
+	   that mixes against a frame's ground needs to name it.
+	   ↻ Lightness from Nate's +30% reference (brightness round 2026-07-31).
+	   Mirrors: timelineExport CHART_BG + the frame-ground cutout strokes in
+	   the viz instruments. */
+	--frame-bg: #121b2f; /* frame ground  ⚓ NATE   L.23 C.041 H265 */
 	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
-	   composer's well. Its own member because a frame's ground is darker than
-	   --surface, so --border reads too hot on it. Both tools used to declare
-	   this hex privately (--rp-line / --tb-line). */
-	--frame-line: #1c2a4a; /* lines on frame ground  h220 s45 l20 */
+	   composer's well. Both tools used to declare this hex privately
+	   (--rp-line / --tb-line).
+	   ↻ 2026-07-31: DERIVED from --border — one line color drives both
+	   grounds now, softened toward the frame ground it sits on. Mixed
+	   against --frame-bg (opaque), NOT transparent: an alpha line's
+	   rendered color depends on the compositor (the dire-gradient lesson),
+	   and frame lines always sit on --frame-bg anyway. Resolves ≈ #2c3a58.
+	   ⚠ timelineExport mirrors the RESOLVED literal — recompute it if
+	   --border, --frame-bg or the 90% move. */
+	--frame-line: color-mix(in srgb, var(--border) 90%, var(--frame-bg));
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (SiteChrome.svelte),
@@ -184,9 +211,21 @@
 	   already converged in practice (rgba white .06/.07 and accent 20%/55% were
 	   the two spikes across the whole codebase) — naming them is what stops the
 	   next control from inventing a 25th alpha. --accent is ZONED (see below),
-	   so selection reads gilt outside the portal and dire inside, for free. */
-	--fill-rest: rgba(255, 255, 255, 0.06);
-	--fill-hover: rgba(255, 255, 255, 0.1);
+	   so selection reads gilt outside the portal and dire inside, for free.
+
+	   ↻ 2026-07-31: fills are TINTED, not white — a white alpha overlay
+	   desaturates whatever it covers (washed-out buttons, Nate). Calm-blue
+	   here (controls overwhelmingly sit on the blue surface world); the
+	   DIRE-tinted grounds (chrome bar, tool tab rows / toolbars) RE-DECLARE
+	   both fills with dire — see the rule beside the accent zoning, and
+	   note the same substituted-at-declaration law that forces --sel-fill's
+	   re-declaration applies here (a --fill-tint indirection would bake in
+	   calm at :root and never re-resolve). Deliberately NOT a blend mode:
+	   mix-blend-mode per control would mint a stacking context + compositor
+	   work on hundreds of elements (WebKit scar tissue); per-ground tints
+	   are deterministic. */
+	--fill-rest: color-mix(in srgb, var(--calm) 13%, transparent);
+	--fill-hover: color-mix(in srgb, var(--calm) 20%, transparent);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
@@ -348,6 +387,19 @@
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 	--knob: var(--dire);
+}
+
+/* DIRE-tinted grounds: the chrome bar and the tool tab rows / toolbars sit
+   on the maroon band, where the calm-blue control fills would gray the
+   ground instead of lifting it. Re-declared (not routed through a tint
+   variable) per the substituted-at-declaration law documented above. */
+.site-chrome,
+.rp-tab-bar,
+.tb-tabs,
+.ws-toolbar,
+.ws-bar {
+	--fill-rest: color-mix(in srgb, var(--dire) 13%, transparent);
+	--fill-hover: color-mix(in srgb, var(--dire) 20%, transparent);
 }
 
 *,
@@ -922,13 +974,16 @@ img {
 }
 
 /* ── Surfaces ─────────────────────────────────────────────────────────── */
+/* In-page panel (the --surface-raised role): a bordered card lifting off the
+   page/frame ground. The old top-light hairline highlight is RETIRED
+   (Nate 2026-07-31) — separation is the border's job now, everywhere. */
 .panel {
 	display: grid;
 	gap: 0.7rem;
 	padding: 1.1rem 1.2rem;
 	border-radius: var(--r-md);
 	background: var(--surface-raised);
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	border: 1px solid var(--border);
 	align-content: start;
 }
 /* ── Chart-frame border (shared: Icd / Gauge / Reaction / Artifact / Heatmap) ─

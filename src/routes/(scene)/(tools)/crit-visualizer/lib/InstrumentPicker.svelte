@@ -191,10 +191,9 @@
 		min-width: 240px;
 		padding: 0.35rem;
 		border-radius: 6px;
-		background: color-mix(in srgb, var(--surface, #0b1430) 92%, black);
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.06),
-			0 10px 30px rgba(0, 0, 0, 0.5);
+		background: var(--surface); /* modal role (Nate 2026-07-31) */
+		border: 1px solid var(--border);
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 		outline: none;
 	}
 

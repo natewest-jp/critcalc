@@ -345,6 +345,9 @@
 		gap: 1.1rem;
 		padding: 1.2rem 1.3rem 1.4rem;
 		background: var(--surface);
+		/* The ONE modal that keeps an element-tinted border (Nate 2026-07-31):
+		   a single-character read earns the identity edge; every other modal
+		   wears the plain --border. */
 		border: 1px solid color-mix(in srgb, var(--el-color) 35%, var(--border));
 		border-radius: 9px;
 		font-family: var(--font-body);

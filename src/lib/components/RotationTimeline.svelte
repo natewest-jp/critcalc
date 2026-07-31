@@ -1762,7 +1762,11 @@
 		   splits and the Source overlay's edge — the same role the Team
 		   Builder's frame gives it, so it reads the shared --frame-line now.
 		   The local name stays: the planner's markup uses it in color-mixes. */
-		--rp-grid: #13203a;
+		/* Derived from --border like --frame-line (app.css), just fainter —
+		   the grid is the quietest line on the frame ground. Opaque mix, not
+		   alpha (the dire-gradient lesson). Resolves ≈ #222e48; the export
+		   mirrors that literal. */
+		--rp-grid: color-mix(in srgb, var(--border) 55%, var(--frame-bg));
 		--rp-line: var(--frame-line);
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all
@@ -1771,7 +1775,12 @@
 		   #717898 that turned out to be the codebase's universal "inactive /
 		   unknown" gray, so it was promoted rather than duplicated. Keep the
 		   local name — the planner's markup reads it in a color-mix. */
-		--rp-active: var(--neutral);
+		/* No longer the --neutral alias: Nate sampled this from the happy
+		   accident where the movement blocks' leftover translucent #717898
+		   composited over the neutral strip (2026-07-31) — the blended color
+		   read better than the strip itself, so it IS the strip now. Swap
+		   connectors ride the same var. */
+		--rp-active: #757f93;
 
 		font-family: var(--font-body);
 		font-size: var(--fs-md);
@@ -1782,7 +1791,7 @@
 	}
 
 	/* ── Chart frame (timeline + external scrollbar) ─────────── */
-	/* .frame (app.css) supplies the 1px dire border + #081225
+	/* .frame (app.css) supplies the 1px dire border + --frame-bg
 	   fill; this only shapes it. Radius 9 per the 3/6/9 scale. */
 	.rp-frame {
 		--rp-frame-pad-x: 14px;
@@ -1918,6 +1927,8 @@
 	/* ── View cluster (over the top ruler's right end) ─────────── */
 	/* The frame's "view controls" corner: total · zoom · Notes. */
 	.rp-view-cluster {
+		/* Shared control height for the whole cluster (total / zoom / NOTES). */
+		--rp-cluster-h: 20px;
 		position: absolute;
 		top: 0;
 		right: 0;
@@ -1937,11 +1948,15 @@
 		width: 88px;
 	}
 	/* Total-length readout — chip backing separates it from the ruler's tick
-	   numbers; the TOTAL key says what it is. */
+	   numbers; the TOTAL key says what it is. Same fill and height as the
+	   rest of the view cluster (zoom / NOTES) so the row reads as one rail. */
 	.rp-ruler-total {
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--fill-rest);
 		border-radius: 3px;
-		padding: 2px 7px;
+		display: inline-flex;
+		align-items: center;
+		height: var(--rp-cluster-h);
+		padding: 0 7px;
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
@@ -1983,11 +1998,10 @@
 		z-index: 50;
 		display: flex;
 		flex-direction: column;
-		background: var(--surface-raised);
+		background: var(--surface); /* modal role (Nate 2026-07-31) */
+		border: 1px solid var(--border);
 		border-radius: 6px;
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.06),
-			0 4px 16px rgba(0, 0, 0, 0.5);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 		padding: 2px 0;
 		min-width: 124px;
 	}
@@ -2221,8 +2235,14 @@
 	.rp-composer-btn {
 		background: var(--fill-rest);
 	}
+	/* One height for the whole view cluster (total readout, − / + zoom,
+	   NOTES) — the row used to mix 18px buttons with padding-derived
+	   neighbors (Nate 2026-07-31). */
+	.rp-zoom-btn,
+	.rp-notes-btn {
+		height: var(--rp-cluster-h);
+	}
 	.rp-zoom-btn {
-		height: 18px;
 		font-size: var(--fs-md);
 		user-select: none;
 	}
@@ -2669,8 +2689,13 @@
 	.rp-input-block--normal {
 		background: var(--rp-active);
 	}
+	/* Movement (dash/jump) and other non-infused inputs carry NO fill of
+	   their own — the active strip's color IS the token surface; only an
+	   elemental infusion may overlay it (the inline elemental-normal mix).
+	   The old translucent fill here was the accident --rp-active's value
+	   was sampled from. */
 	.rp-input-block--movement {
-		background: rgba(113, 120, 152, 0.45);
+		background: transparent;
 		box-shadow: none;
 	}
 	.rp-input-block--unset {

@@ -78,9 +78,9 @@
 		gap: 0.55rem;
 		min-height: 210px;
 		padding: 1.4rem 1.5rem 1.2rem;
-		border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+		border: 1px solid var(--border);
 		border-radius: var(--r-lg);
-		background: var(--surface);
+		background: var(--surface-raised); /* in-page panel role (Nate 2026-07-31) */
 		text-align: left;
 		cursor: pointer;
 		color: inherit;

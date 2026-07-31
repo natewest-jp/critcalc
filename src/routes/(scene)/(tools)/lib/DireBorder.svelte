@@ -25,7 +25,10 @@
 	// Knobs (set on any ancestor — .tool-shell in practice — defaults below;
 	// read by the GL module from the live cascade at mount/resize, or on demand
 	// via window.__dire.retune() after a devtools edit):
-	//   --dire            edge hue (slightly red-leaning magenta)
+	//   --dire-edge            border tint (ember, fade seam, wave hue/sat) —
+	//                          falls back to --dire when unset
+	//   --dire-grad-top-l      opaque top gradient's starting lightness
+	//   --dire-grad-bottom-l   opaque bottom gradient's starting lightness
 	//   --dire-top-h           top wave line: crest tops out at this mark
 	//   --dire-top-grad-h      top gradient reach
 	//   --dire-bottom-h        bottom wave line: crest tops out at this mark
@@ -95,7 +98,10 @@
 		inset: 0;
 		overflow: hidden;
 		pointer-events: none;
-		--tint: var(--dire, hsl(342 85% 46%));
+		/* --dire-edge = the brightened border tint (see the knob block in the
+		   tools layout); falls back through --dire for any host that doesn't
+		   set it. */
+		--tint: var(--dire-edge, var(--dire, hsl(342 85% 46%)));
 		--top-h: var(--dire-top-h, 100px);
 		--top-grad-h: var(--dire-top-grad-h, 200px);
 		--bottom-h: var(--dire-bottom-h, 200px);
@@ -115,6 +121,13 @@
 
 	/* ── Gradients (static, under content) ─────────────────────────────────── */
 
+	/* OPAQUE, deliberately: these fade to solid #000 (the shell ground they
+	   sit on), never to transparent. Semi-transparent CSS over black proved
+	   display-dependent — on a P3 Mac the alpha path rendered hue-shifted and
+	   under-saturated vs the identical opaque color, so the gradients could
+	   never match the wave canvases (Nate isolated this 2026-07-31). The
+	   starting lightnesses are the --dire-grad-*-l knobs in the tools
+	   layout; hue/sat ride the tint. */
 	.grad-top {
 		position: absolute;
 		top: 0;
@@ -123,8 +136,8 @@
 		height: var(--top-grad-h);
 		background: linear-gradient(
 			to bottom,
-			color-mix(in srgb, var(--tint) 30%, transparent),
-			transparent
+			hsl(from var(--tint) h s var(--dire-grad-top-l, 17%)),
+			#000
 		);
 	}
 
@@ -136,20 +149,22 @@
 		height: var(--bottom-grad-h);
 		background: linear-gradient(
 			to top,
-			color-mix(in srgb, var(--tint) 32%, transparent),
-			transparent
+			hsl(from var(--tint) h s var(--dire-grad-bottom-l, 19%)),
+			#000
 		);
 	}
 
 	/* ── Fade overlays (static, over content, under the waves) ─────────────── */
 
 	/* Nate's stack layer 5: a single-color transparency fade over the top of
-	   the wave band. Lightness 10% against the tint — dim on purpose: it
-	   SHADOWS content as it scrolls under rather than tinting it, and at 10%
-	   over grad-top's 30% the overlay's lower edge disappears into the
-	   gradient — the inspector-tuned invisible seam (Nate, retuned
-	   2026-07-26; measured: no step >1/255 across the terminator, over bare
-	   background and over scrolled content alike).
+	   the wave band. Lightness pinned LOW against the tint (l13, retuned with
+	   the 2026-07-31 brightness round) — dim on purpose: it SHADOWS content
+	   as it scrolls under rather than tinting it, and its lower edge
+	   disappears into grad-top — the inspector-tuned invisible seam (Nate;
+	   originally measured: no step >1/255 across the terminator, over bare
+	   background and over scrolled content alike). This overlay sits OVER
+	   content, so it is the one border layer that must stay semi-transparent
+	   — its alpha ramp is unavoidable, and the seam tune absorbs it.
 	   HEIGHT: the tallest wave's own height (tile-w / hDiv — keep the divisor
 	   in lockstep with the GL module's layer defs) is the ceiling, but the
 	   fade stops at 70% of the crest mark, i.e. ABOVE where the deepest wave
@@ -162,7 +177,7 @@
 		left: 0;
 		right: 0;
 		height: min(calc(var(--dire-tile-w, 220vw) / 17), calc(var(--top-h) * 0.7));
-		background: linear-gradient(to bottom, hsl(from var(--tint) h s 10%), transparent);
+		background: linear-gradient(to bottom, hsl(from var(--tint) h s 13%), transparent);
 	}
 
 	/* ── Animated bands (WebGL) ────────────────────────────────────────────── */

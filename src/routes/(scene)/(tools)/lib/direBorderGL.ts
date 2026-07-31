@@ -199,8 +199,10 @@ void main() {
  *  - u: `fract(x/tileW + signedPhase)` — the infinite scroll. The sign folds
  *    `animation-direction: reverse` in JS.
  *  - The tile texture holds the authored silhouette × alpha ramp as its alpha
- *    channel; tint (JS-resolved, hue-rotated per layer) × slot alpha applies
- *    here, so one tile serves all six layers and every hue.
+ *    channel; the JS-resolved tint × slot alpha applies here, so one tile
+ *    serves all six layers. (The old CSS border's ±3–5° per-wave hue
+ *    rotation did NOT survive the GL conversion — every layer rides the one
+ *    tint's hue now; only the crest/edge lightness pair varies per layer.)
  *
  * SCROLL-UNDER: each layer is an opaque analytic gradient (crest color →
  * edge color over the authored span, mixed in-shader — no ramp texture),
@@ -419,8 +421,14 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
 
 	// Fill stops: the layer's lightness against the tint's hue/sat — the
 	// browser does the relative-color math, so --dire keeps cascading.
+	// --dire-edge-boost multiplies the pinned lightnesses (plain JS arithmetic,
+	// no calc-in-relative-color — that syntax would break older Safari); the
+	// twin --dire-edge literal carries the same boost to the CSS gradients and
+	// the ember glow below. See the knob block in the tools layout.
+	const edgeBoost = num('--dire-edge-boost', 1);
 	const stop = (lightness: number) => {
-		probe.style.color = `hsl(from var(--dire, hsl(342 85% 46%)) h s ${lightness}%)`;
+		const l = Math.min(100, lightness * edgeBoost);
+		probe.style.color = `hsl(from var(--dire-edge, var(--dire, hsl(342 85% 46%))) h s ${l}%)`;
 		const css = getComputedStyle(probe).color;
 		return { rgb: resolveColor(css), css };
 	};
@@ -429,7 +437,7 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
 		edge: stop(layer.edgeL)
 	}));
 
-	probe.style.color = 'var(--dire, hsl(342 85% 46%))';
+	probe.style.color = 'var(--dire-edge, var(--dire, hsl(342 85% 46%)))';
 	const emberCss = getComputedStyle(probe).color;
 
 	return {
@@ -613,6 +621,14 @@ export function createDireBorder(
 			premultipliedAlpha: true, // matches the shaders' premultiplied output
 			powerPreference: 'low-power'
 		});
+		// Pin the buffer's color space to sRGB — the spec default, asserted
+		// explicitly because a compositor that treats the buffer as DEVICE
+		// space on a P3 display reinterprets our sRGB numbers as P3
+		// coordinates: waves render punchier + hue-rotated vs the identical
+		// CSS gradient color, a gap no gradient alpha can close (it is
+		// outside the sRGB gamut). Guarded: engines without the property
+		// just gain an inert JS field.
+		if (gl && 'drawingBufferColorSpace' in gl) gl.drawingBufferColorSpace = 'srgb';
 		const band: Band = {
 			canvas,
 			layers,

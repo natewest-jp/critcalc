@@ -258,8 +258,11 @@
 		z-index: 61;
 		width: min(600px, calc(100vw - 32px));
 		max-height: min(72vh, 640px);
-		background: var(--surface-raised);
-		border: 1px solid color-mix(in srgb, var(--dire, #c2185b) 40%, var(--frame-bg));
+		/* Modal surface (the --surface role) — quiet border, not dire: the
+		   dire-tinted frame border grammar belongs to tool frames, and this
+		   is an overlay (Nate 2026-07-31). */
+		background: var(--surface);
+		border: 1px solid var(--border);
 		border-radius: 9px;
 		box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
 		display: flex;
@@ -366,8 +369,8 @@
 		width: 28px;
 		height: 28px;
 		border-radius: 50%;
-		border: 1.5px solid var(--surface-raised);
-		background: #131c30;
+		border: 1px solid var(--border);
+		background: var(--surface-raised); /* panel-in-modal (raised role) */
 		overflow: hidden;
 		display: flex;
 		align-items: center;

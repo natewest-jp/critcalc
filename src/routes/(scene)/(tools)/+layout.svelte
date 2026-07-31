@@ -408,10 +408,35 @@
 		   paddings below are independent of them now (see the note there).
 		   --dire (the edge hue) now lives in app.css :root so it can double as
 		   the shared --accent; it cascades in here, so the border still reads it. */
+		/* Border brightness + tint — HAND-TUNED BY NATE 2026-07-31; treat the
+		   numbers as design, not derivation.
+		   · --dire-edge — the border's BRIGHT identity color: the GL ember
+		     glow, the fade-top seam, and the GL waves' hue/sat derive from it
+		     (wave lightnesses stay pinned in direBorderGL's layer defs). A
+		     literal at the HSL chroma peak (s100 l50) — above l50 HSL trades
+		     chroma for whiteness and it reads washed; hue nudged 340→338 by
+		     eye.
+		   · --dire-grad-top-l / --dire-grad-bottom-l — the OPAQUE gradients'
+		     starting lightnesses (the tint's hue/sat at these l values,
+		     fading to solid #000). Opaque on purpose: semi-transparent CSS
+		     over black proved display-dependent — on a P3 Mac the alpha
+		     compositing path rendered hue-shifted and under-saturated vs the
+		     mathematically identical opaque color, a seam no alpha value
+		     could close (Nate isolated this 2026-07-31 by pushing the old
+		     color-mix to ~100%). Values are the opaque equivalents of that
+		     tune (90%/100% of l19 over black).
+		   · --dire-edge-boost — multiplies the GL wave stops' pinned
+		     lightnesses (crestL/edgeL in direBorderGL.ts layer defs).
+		   Border-only on purpose: --dire itself is the tool-zone accent (~148
+		   call sites) and stays untouched. */
+		--dire-edge: hsl(341, 86%, 50%);
+		--dire-grad-top-l: 18%;
+		--dire-grad-bottom-l: 20%;
+		--dire-edge-boost: 1.33;
 		--dire-top-h: 100px;
-		--dire-top-grad-h: 200px;
+		--dire-top-grad-h: 250px;
 		--dire-bottom-h: 200px;
-		--dire-bottom-grad-h: 300px;
+		--dire-bottom-grad-h: 350px;
 		--dire-halftone-h: 200px;
 		/* Scroll-under: per-layer wave opacity — how firmly each wave body
 		   occludes content passing beneath (three layers stack, so the deep

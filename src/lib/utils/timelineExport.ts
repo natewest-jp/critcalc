@@ -30,15 +30,15 @@ import type {
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
-const CHART_BG = '#081225';
-const GRID = '#13203a';
-const LANE_LINE = '#1c2a4a';
+const CHART_BG = '#121b2f'; // --frame-bg (depth-lit indigo re-cut 2026-07-31)
+const GRID = '#222e48'; // --rp-grid = mix(border 55%, frame-bg), resolved
+const LANE_LINE = '#2c3a58'; // --frame-line = mix(border 90%, frame-bg), resolved
 // ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css :root. Canvas can't
 // resolve var(), so every token the export paints has to be duplicated here as
 // a literal. When a token value changes in app.css, change it here too or the
 // exported PNG silently stops matching what the user saw. Re-cut 2026-07-27
 // with the dire/calm/gilt palette pass.
-const ACTIVE = '#768093'; // --neutral
+const ACTIVE = '#757f93'; // --rp-active (Nate-sampled 2026-07-31; no longer the --neutral alias)
 const TEXT = '#e8ecf3'; // --text
 const MUTED = '#9baabf'; // --muted
 // Paired tool tints — mirror app.css :root. --dire = hsl(340,85%,46%) =
@@ -65,7 +65,7 @@ const DEBUFF_LABEL = 'rgba(255,255,255,0.85)';
 const PROC_FILL = DIRE_FILL;
 const PROC_EDGE = DIRE_TINT;
 const PROC_LABEL = 'rgba(255,255,255,0.85)';
-const PORTRAIT_BG = '#131c30';
+const PORTRAIT_BG = '#1c2844'; // --surface (was a drifted stray #131c30)
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 // Chart text follows the site's Sans-default (body font). Only the notation
@@ -596,9 +596,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						ctx!.fillStyle = grad;
 					} else if (kind === 'skill' || kind === 'burst' || kind === 'elemental-normal') {
 						ctx!.fillStyle = mix(p.main, ACTIVE, 50);
-					} else if (kind === 'movement') {
-						ctx!.fillStyle = 'rgba(113, 120, 152, 0.45)';
 					} else {
+						// Movement and every other non-infused input: the active strip's
+						// own color, no extra fill (mirrors the on-screen rule — only
+						// elemental infusion may overlay the strip).
 						ctx!.fillStyle = ACTIVE;
 					}
 					ctx!.fillRect(bx, rowTop + 1, bw, snap.activeRowH - 2);
