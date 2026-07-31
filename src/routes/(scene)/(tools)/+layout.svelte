@@ -429,10 +429,10 @@
 		     lightnesses (crestL/edgeL in direBorderGL.ts layer defs).
 		   Border-only on purpose: --dire itself is the tool-zone accent (~148
 		   call sites) and stays untouched. */
-		--dire-edge: hsl(338, 100%, 50%);
-		--dire-grad-top-l: 17%;
-		--dire-grad-bottom-l: 19%;
-		--dire-edge-boost: 1.25;
+		--dire-edge: hsl(341, 86%, 50%);
+		--dire-grad-top-l: 18%;
+		--dire-grad-bottom-l: 20%;
+		--dire-edge-boost: 1.33;
 		--dire-top-h: 100px;
 		--dire-top-grad-h: 250px;
 		--dire-bottom-h: 200px;
