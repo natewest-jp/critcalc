@@ -6,7 +6,7 @@
 	   text ramp keeps a saturation curve that FALLS as lightness rises — a
 	   near-white carrying s60 (which --text used to) tints the entire UI blue
 	   and fights the gilt voice. */
-	--bg: #030a1e; /* page ground — deepest rung: L.15 C.045 H264 */
+	--bg: #050b19; /* page ground — deepest rung: L.15 C.032 H264 */
 	--text: #e8ecf3; /* cool near-white  16.8:1 on --bg */
 	--muted: #9baabf; /* secondary text    8.4:1 */
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
@@ -24,44 +24,48 @@
 	   semantic.
 
 	   ↻ RE-CUT 2026-07-31 — the stack is DERIVED from two hand-picked anchors
-	   (Nate's --frame-bg #101a35 and --surface-raised #1e2846, chosen in a
-	   long color-picker session; annotations are oklch L/C/H). What the
-	   session settled, after arc experiments in both directions:
+	   (Nate's, from a long color-picker session; annotations are oklch
+	   L/C/H): the frame ground #121b2f and the unified panel #1c2844. What
+	   the session settled, after compensation-arc experiments in both
+	   directions and at two magnitudes:
 
-	   1. HUE IS NEAR-CONSTANT — the family sits at H≈267 with only a GENTLE
-	      drift fitted through the anchors (+2°/rung toward violet as members
-	      lighten, ~7° across the whole stack). The big compensation arcs
-	      (34° cyan-dark take 3, and the 23° atmosphere arc of take 1) both
-	      read as two families; "a few hue points" is all the blue defect
-	      needs here.
+	   1. HUE IS CONSTANT (H≈265, ±1°) — the arcs all read as two families;
+	      hue unity is what reads as ONE. The blue-defect compensation the
+	      arcs chased turned out to need at most a point or two, absorbed in
+	      the anchors themselves.
 
-	   2. CHROMA IS NEAR-FLAT AND RICH (C .042–.057) — the anchors carry well
-	      -level richness even on the raised panel, so the old air/well split
-	      survives only as --surface sitting quieter (C .042) than the
-	      equal-depth --frame-bg (C .055): that difference alone is what
-	      keeps a frame reading as a well beside a panel.
+	   2. CHROMA RISES WITH LIGHTNESS (C .032 ground → .041 frame → .054
+	      panels → .060 lines) — a QUIET deep ground with RICHER panels and
+	      lines lifting off it. (This inverted the earlier "rich wells, gray
+	      air" concept — the frame ground is the calmest member now, and
+	      panels above it carry the color.)
+
+	   3. SURFACE == SURFACE-RAISED (both #1c2844, Nate's unification) — the
+	      base/raised distinction now rides on borders and hairlines, not
+	      fill steps. BOTH TOKENS STAY: they are different roles that happen
+	      to share a value; if a nested overlay ever melts into its host
+	      panel, nudge --surface-raised alone (+.02 L) and the roles resume.
 
 	   Lightness rungs keep the brightness-round ladder, re-anchored through
-	   the two picked values. Derivation script:
-	   scratchpad palette4b.mjs pattern — anchors in, five members out. */
-	--surface: #121b2f; /* panel on page          L.22 C.042 H267 */
-	--surface-raised: #1e2846; /* panel on panel  ⚓ NATE  L.28 C.057 H269 */
-	--border: #353d57; /* dividers, hairlines    L.36 C.046 H271 */
-	/* A frame's own ground — same DEPTH as --surface but far richer (the
-	   well-vs-air chroma split above is what makes a frame read as a well
-	   rather than a raised panel). Its own member for the same reason
-	   --frame-line is: it was declared as a bare hex in .frame, --rp-chart-bg
-	   and the SlotPortrait card fill, and anything that mixes against a
-	   frame's ground needs to name it.
-	   ↻ Lightness sampled from Nate's +30% reference (brightness round
-	   2026-07-31). Mirrors: timelineExport CHART_BG + the frame-ground
-	   cutout strokes in the viz instruments. */
-	--frame-bg: #101a35; /* frame ground  ⚓ NATE   L.23 C.055 H267 */
+	   the two picked values. Derivation: scratchpad palette5.mjs pattern —
+	   anchors in, remaining rungs out. */
+	--surface: #1c2844; /* panel on page   ⚓ NATE  L.28 C.054 H265 */
+	--surface-raised: #1c2844; /* panel on panel  ⚓ NATE  L.28 C.054 H265 */
+	--border: #2f3d5d; /* dividers, hairlines    L.36 C.060 H266 */
+	/* A frame's own ground — DARKER and QUIETER than the panels (rule 2):
+	   the well is the calm deep the tool's content sits in. Its own member
+	   for the same reason --frame-line is: it was declared as a bare hex in
+	   .frame, --rp-chart-bg and the SlotPortrait card fill, and anything
+	   that mixes against a frame's ground needs to name it.
+	   ↻ Lightness from Nate's +30% reference (brightness round 2026-07-31).
+	   Mirrors: timelineExport CHART_BG + the frame-ground cutout strokes in
+	   the viz instruments. */
+	--frame-bg: #121b2f; /* frame ground  ⚓ NATE   L.23 C.041 H265 */
 	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
 	   composer's well. Its own member because a frame's ground is darker than
 	   --surface, so --border reads too hot on it. Both tools used to declare
 	   this hex privately (--rp-line / --tb-line). */
-	--frame-line: #313a5a; /* lines on frame ground  L.36 C.056 H271 */
+	--frame-line: #2d3b5b; /* lines on frame ground  L.36 C.060 H266 */
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (SiteChrome.svelte),

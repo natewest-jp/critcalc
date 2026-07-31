@@ -201,7 +201,7 @@
 		// the heatmap from --frame-bg tuning (it was the one frame that
 		// didn't follow devtools edits — Nate 2026-07-31). Re-read per draw;
 		// a live var edit lands on the next redraw (resize or remount).
-		const frameBg = getComputedStyle(canvasEl).getPropertyValue('--frame-bg').trim() || '#101a35';
+		const frameBg = getComputedStyle(canvasEl).getPropertyValue('--frame-bg').trim() || '#121b2f';
 		context.fillStyle = frameBg;
 		context.fillRect(0, 0, boxW, boxH);
 
