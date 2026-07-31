@@ -350,6 +350,10 @@
 		padding: 0;
 		border-radius: 0;
 		background: none;
+		border: none; /* the chart's OWN .frame carries the dire border — a
+		   panel border here double-framed it (the heatmap is the one
+		   instrument whose frame sits inside a .panel wrapper, kept only
+		   for its grid behavior) */
 		box-shadow: none;
 		align-content: stretch;
 	}

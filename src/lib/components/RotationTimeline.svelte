@@ -1762,7 +1762,11 @@
 		   splits and the Source overlay's edge — the same role the Team
 		   Builder's frame gives it, so it reads the shared --frame-line now.
 		   The local name stays: the planner's markup uses it in color-mixes. */
-		--rp-grid: #202d4b; /* lines rung: oklch L.30 C.059 H266 (see app.css surface system) */
+		/* Derived from --border like --frame-line (app.css), just fainter —
+		   the grid is the quietest line on the frame ground. Opaque mix, not
+		   alpha (the dire-gradient lesson). Resolves ≈ #222e48; the export
+		   mirrors that literal. */
+		--rp-grid: color-mix(in srgb, var(--border) 55%, var(--frame-bg));
 		--rp-line: var(--frame-line);
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all

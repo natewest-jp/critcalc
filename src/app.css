@@ -69,10 +69,16 @@
 	   the viz instruments. */
 	--frame-bg: #121b2f; /* frame ground  ⚓ NATE   L.23 C.041 H265 */
 	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
-	   composer's well. Its own member because a frame's ground is darker than
-	   --surface, so --border reads too hot on it. Both tools used to declare
-	   this hex privately (--rp-line / --tb-line). */
-	--frame-line: #2d3b5b; /* lines on frame ground  L.36 C.060 H266 */
+	   composer's well. Both tools used to declare this hex privately
+	   (--rp-line / --tb-line).
+	   ↻ 2026-07-31: DERIVED from --border — one line color drives both
+	   grounds now, softened toward the frame ground it sits on. Mixed
+	   against --frame-bg (opaque), NOT transparent: an alpha line's
+	   rendered color depends on the compositor (the dire-gradient lesson),
+	   and frame lines always sit on --frame-bg anyway. Resolves ≈ #2c3a58.
+	   ⚠ timelineExport mirrors the RESOLVED literal — recompute it if
+	   --border, --frame-bg or the 90% move. */
+	--frame-line: color-mix(in srgb, var(--border) 90%, var(--frame-bg));
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (SiteChrome.svelte),
@@ -205,9 +211,21 @@
 	   already converged in practice (rgba white .06/.07 and accent 20%/55% were
 	   the two spikes across the whole codebase) — naming them is what stops the
 	   next control from inventing a 25th alpha. --accent is ZONED (see below),
-	   so selection reads gilt outside the portal and dire inside, for free. */
-	--fill-rest: rgba(255, 255, 255, 0.06);
-	--fill-hover: rgba(255, 255, 255, 0.1);
+	   so selection reads gilt outside the portal and dire inside, for free.
+
+	   ↻ 2026-07-31: fills are TINTED, not white — a white alpha overlay
+	   desaturates whatever it covers (washed-out buttons, Nate). Calm-blue
+	   here (controls overwhelmingly sit on the blue surface world); the
+	   DIRE-tinted grounds (chrome bar, tool tab rows / toolbars) RE-DECLARE
+	   both fills with dire — see the rule beside the accent zoning, and
+	   note the same substituted-at-declaration law that forces --sel-fill's
+	   re-declaration applies here (a --fill-tint indirection would bake in
+	   calm at :root and never re-resolve). Deliberately NOT a blend mode:
+	   mix-blend-mode per control would mint a stacking context + compositor
+	   work on hundreds of elements (WebKit scar tissue); per-ground tints
+	   are deterministic. */
+	--fill-rest: color-mix(in srgb, var(--calm) 13%, transparent);
+	--fill-hover: color-mix(in srgb, var(--calm) 20%, transparent);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
@@ -369,6 +387,19 @@
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 	--knob: var(--dire);
+}
+
+/* DIRE-tinted grounds: the chrome bar and the tool tab rows / toolbars sit
+   on the maroon band, where the calm-blue control fills would gray the
+   ground instead of lifting it. Re-declared (not routed through a tint
+   variable) per the substituted-at-declaration law documented above. */
+.site-chrome,
+.rp-tab-bar,
+.tb-tabs,
+.ws-toolbar,
+.ws-bar {
+	--fill-rest: color-mix(in srgb, var(--dire) 13%, transparent);
+	--fill-hover: color-mix(in srgb, var(--dire) 20%, transparent);
 }
 
 *,
