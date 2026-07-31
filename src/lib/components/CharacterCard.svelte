@@ -146,7 +146,7 @@
 					style:background-image="url('/assets/weapon-types/{entry.weapon}.webp')"
 				></span>
 			{/if}
-			{#if con !== undefined}
+			{#if con !== undefined && !entry.noConstellations}
 				<span class="cc-con" class:cc-con--set={con > 0} title="Your constellation">C{con}</span>
 			{/if}
 			{#if slotNumber !== undefined}

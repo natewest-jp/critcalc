@@ -26,6 +26,7 @@ const INDEX_FIELDS = [
 	'affiliation',
 	'region',
 	'rarity',
+	'noConstellations',
 	'factions',
 	'enablesReactions'
 ] as const;

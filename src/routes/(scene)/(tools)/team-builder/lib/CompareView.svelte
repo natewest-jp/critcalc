@@ -12,7 +12,8 @@
 	import type { Ability } from '$lib/types/ability';
 	import { conCapFor, type ConMode } from './facets';
 	import { buildCompareModel, glyphScaleSeconds, type CapCell } from './compare';
-	import { TARGET_SHORT, caveatText } from './capabilityText';
+	import { TARGET_SHORT, capDetailText, caveatText } from './capabilityText';
+	import type { CapabilityKind } from '$lib/capabilities/deriveCapabilities';
 	import CompareBar from './CompareBar.svelte';
 
 	let {
@@ -397,9 +398,14 @@
 														class="cmp-cond"
 														title={cell.caveats.map(caveatText).join(' · ')}>~</span
 													>{/if}
-												{#if cell.details.length > 0}<span class="cmp-details"
-														>{cell.details.join(' · ')}</span
-													>{/if}
+												{#if cell.details.length > 0}
+													{@const kind = row.key.startsWith('buff:') ? 'buff' : row.key}
+													<span class="cmp-details"
+														>{cell.details
+															.map((d) => capDetailText(kind as CapabilityKind, d))
+															.join(' · ')}</span
+													>
+												{/if}
 												{#if cell.also}
 													{@const alsoLocked = cell.also.minCon > viewCons[i]}
 													<span class="cmp-also" class:cmp-cell--locked={alsoLocked}

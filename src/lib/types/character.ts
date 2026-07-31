@@ -52,6 +52,10 @@ export type CharacterData = {
 	affiliation?: string;
 	region?: string;
 	rarity: Rarity;
+	/** True for characters whose in-game constellations are permanently locked
+	 *  (Aloy: "The time has not yet come…"). Constellation steppers and badges
+	 *  don't render for these — there is nothing to set. */
+	noConstellations?: true;
 	/** Gameplay-mechanic faction memberships. Known values: "moonsign", "hexerei". Distinct from lore affiliation. */
 	factions?: string[];
 	/** Extra contribution this character makes to a faction's *level*, beyond the
@@ -98,6 +102,7 @@ export type CharacterIndexEntry = Pick<
 	| 'affiliation'
 	| 'region'
 	| 'rarity'
+	| 'noConstellations'
 	| 'factions'
 	| 'enablesReactions'
 > & {

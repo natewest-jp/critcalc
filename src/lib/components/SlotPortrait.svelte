@@ -105,6 +105,10 @@
 		!!char && char.id !== 'blank' && getCharacterIndexEntry(char.id)?.curated === false
 	);
 
+	// Constellation-locked characters (Aloy) have nothing to set — the chip
+	// stays for layout but renders inert.
+	const noCons = $derived(!!char && getCharacterIndexEntry(char.id)?.noConstellations === true);
+
 	function slotLabel(c: NonNullable<SlotChar>): string {
 		return c.id.startsWith('traveler') ? 'Traveler' : c.displayName;
 	}
@@ -220,10 +224,14 @@
 		<button
 			class="sp-cons-chip"
 			class:sp-cons-chip--set={conLevel > 0}
-			disabled={!char}
+			disabled={!char || noCons}
 			onclick={openConstellation}
-			aria-label={char ? `Set constellation for ${char.displayName}` : 'Constellation (empty slot)'}
-			>C{conLevel}</button
+			title={noCons ? 'Constellations can’t be unlocked for this character' : undefined}
+			aria-label={char
+				? noCons
+					? `${char.displayName} has no constellations`
+					: `Set constellation for ${char.displayName}`
+				: 'Constellation (empty slot)'}>C{conLevel}</button
 		>
 	</div>
 

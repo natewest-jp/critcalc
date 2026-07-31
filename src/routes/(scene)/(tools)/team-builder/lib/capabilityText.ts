@@ -6,6 +6,8 @@
  */
 
 import type { CapabilityKind } from '$lib/capabilities/deriveCapabilities';
+import type { Stat } from '$lib/types/ability';
+import { BUFF_STAT_LABEL } from '$lib/timeline/buffStatMaps';
 
 export const KIND_LABEL: Record<CapabilityKind, string> = {
 	heal: 'Heal',
@@ -37,6 +39,21 @@ export const TARGET_SHORT: Record<string, string> = {
 	self: 'self',
 	enemy: 'enemies'
 };
+
+/** Shred-stat / element detail words that aren't plain capitalizations. */
+const DETAIL_WORD: Record<string, string> = {
+	def: 'DEF',
+	all: 'all elements'
+};
+
+/** Human label for a capability's `detail` — buff stats via the planner's
+ *  shared stat map, shred/infuse elements capitalized. */
+export function capDetailText(kind: CapabilityKind, detail: string): string {
+	if (kind === 'buff') return BUFF_STAT_LABEL[detail as Stat] ?? detail;
+	if (kind === 'resShred' || kind === 'infuse')
+		return DETAIL_WORD[detail] ?? detail.charAt(0).toUpperCase() + detail.slice(1);
+	return detail;
+}
 
 export function caveatText(caveat: string): string {
 	const [key, arg] = caveat.split(':');

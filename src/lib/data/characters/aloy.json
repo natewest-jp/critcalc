@@ -8,6 +8,7 @@
 	"affiliation": "Wandering Heroine",
 	"region": "",
 	"rarity": 5,
+	"noConstellations": true,
 	"abilities": [
 		{
 			"id": "aloy__normal__rapid_fire",
@@ -121,26 +122,21 @@
 						"type": "manual"
 					},
 					"durationType": "fixed",
+					"duration": 10,
 					"source": "character",
 					"stat": "cryoDmgBonus",
-					"value": 3.5,
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
+					"value": {
+						"type": "ramping",
+						"startValue": 3.5,
+						"stepValue": 3.5,
+						"stepInterval": 1,
+						"cap": 35
 					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "cryoDmgBonus",
-					"value": 35,
 					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
-				"Inherited manual triggers (both effects). gcsim a4() fires from rushingIce() when 4th Coil stack activates Rushing Ice; condition: ascension >= 4. The buff is a ramping Cryo DMG Bonus: starts at 3.5%, adds +3.5%/s over 10s (cap 35%, 10 ticks). These two skeletons represent start-value (3.5) and cap (35) separately; reviewer should consolidate into a single 'ramping' BuffValue { startValue: 3.5, stepValue: 3.5, stepInterval: 1, cap: 35 } and add duration: 10. Probable trigger: fires on Rushing Ice activation (4th Coil stack); custom condition or onStack at coil=4. No `duration` field on either effect; reviewer to add."
+				"Consolidated from two start/cap skeleton effects into one ramping BuffValue (gcsim a4: +3.5%/s over the 10s Rushing Ice window, cap 35%). Trigger stays manual — a4 actually fires when the 4th Coil stack activates Rushing Ice, which needs a coil-stack condition the schema doesn't gate yet."
 			],
 			"description": "When Aloy is in the Rushing Ice state conferred by Frozen Wilds, her Cryo DMG Bonus increases by 3.5% every 1s. A maximum Cryo DMG Bonus increase of 35% can be gained in this way."
 		}

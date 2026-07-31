@@ -11,7 +11,13 @@
 	} from '$lib/capabilities/deriveCapabilities';
 	import type { ConMode } from './facets';
 	import { conCapFor } from './facets';
-	import { KIND_LABEL, KIND_ORDER, TARGET_LABEL, caveatText } from './capabilityText';
+	import {
+		KIND_LABEL,
+		KIND_ORDER,
+		TARGET_LABEL,
+		capDetailText,
+		caveatText
+	} from './capabilityText';
 
 	let {
 		id,
@@ -215,21 +221,28 @@
 					>★ Wishlist</button
 				>
 			</div>
-			<div class="segment dc-constepper" role="radiogroup" aria-label="Your constellation">
-				{#each [0, 1, 2, 3, 4, 5, 6] as level (level)}
-					<button
-						class="btn dc-con-btn"
-						class:is-active={myCon === level}
-						role="radio"
-						aria-checked={myCon === level}
-						onclick={() => setCon(level)}>C{level}</button
-					>
-				{/each}
-			</div>
-			<p class="note dc-note">
-				Saved to your roster — “My roster” filtering across the site uses it. Setting a
-				constellation marks the character owned.
-			</p>
+			{#if entry?.noConstellations}
+				<p class="note dc-note">
+					{entry.displayName}’s constellations can’t be unlocked, so there is no level to set —
+					owning the character is the whole story.
+				</p>
+			{:else}
+				<div class="segment dc-constepper" role="radiogroup" aria-label="Your constellation">
+					{#each [0, 1, 2, 3, 4, 5, 6] as level (level)}
+						<button
+							class="btn dc-con-btn"
+							class:is-active={myCon === level}
+							role="radio"
+							aria-checked={myCon === level}
+							onclick={() => setCon(level)}>C{level}</button
+						>
+					{/each}
+				</div>
+				<p class="note dc-note">
+					Saved to your roster — “My roster” filtering across the site uses it. Setting a
+					constellation marks the character owned.
+				</p>
+			{/if}
 		</section>
 
 		<!-- ── Capabilities ───────────────────────────────────── -->
@@ -248,11 +261,12 @@
 					{#each sortedCaps as cap, i (i)}
 						<li class="dc-cap" class:dc-cap--locked={locked(cap)}>
 							<span class="dc-cap-kind"
-								>{KIND_LABEL[cap.kind] ?? cap.kind}{cap.kind === 'buff' && cap.detail
-									? `: ${cap.detail}`
-									: cap.kind === 'resShred' || cap.kind === 'infuse'
-										? `: ${cap.detail}`
-										: ''}</span
+								>{KIND_LABEL[cap.kind] ?? cap.kind}{(cap.kind === 'buff' ||
+									cap.kind === 'resShred' ||
+									cap.kind === 'infuse') &&
+								cap.detail
+									? `: ${capDetailText(cap.kind, cap.detail)}`
+									: ''}</span
 							>
 							<span class="dc-cap-src">
 								{sectionLabel(cap)}
