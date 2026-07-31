@@ -1,13 +1,12 @@
 :root {
 	/* ══ STRUCTURE ═════════════════════════════════════════════════════════════
 	   The page ground and the text ramp — the pieces that aren't a color family.
-	   --bg is the ANCHOR: unchanged since the scene was tuned against it, and the
-	   whole calm surface ramp below is built up from it. Everything else in this
-	   block was re-cut 2026-07-27 onto one hue with a deliberate drift (see the
-	   CALM note) and a saturation curve that FALLS as lightness rises — a
-	   near-white carrying s60 (which --text used to) tints the entire UI blue and
-	   fights the gilt voice. */
-	--bg: #060816; /* page ground — deepest point of the arc: oklch L.14 C.030 H274 */
+	   --bg is the ANCHOR of the surface arc (re-cut with it 2026-07-31, same
+	   lightness as the value the scene was tuned against — only hue/chroma
+	   moved onto the arc). The text ramp keeps a saturation curve that FALLS
+	   as lightness rises — a near-white carrying s60 (which --text used to)
+	   tints the entire UI blue and fights the gilt voice. */
+	--bg: #030a16; /* page ground — deepest point of the arc: oklch L.14 C.030 H256 */
 	--text: #e8ecf3; /* cool near-white  16.8:1 on --bg */
 	--muted: #9baabf; /* secondary text    8.4:1 */
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
@@ -30,11 +29,15 @@
 	   (hue wandered with no relation to lightness; structure GAINED chroma as
 	   it lifted). Two rules now generate every surface:
 
-	   1. HUE IS A FUNCTION OF LIGHTNESS — one atmospheric arc from H274 at
-	      the darkest (deep water reads violet) to H251 at the brightest (lit
-	      water reads cyan) — the blue hue shift applied deliberately, so the
-	      stack reads as one material under different light and the members
-	      CANNOT fail to coordinate. Two tokens at the same depth share a hue.
+	   1. HUE IS A FUNCTION OF LIGHTNESS — a COMPENSATION arc (Nate's call,
+	      take 2): darker members lean toward green/cyan (H256 at the
+	      deepest), lighter members away from it (H268 at the brightest).
+	      This counteracts the blue hue-constancy defect — a constant-hue
+	      blue reads increasingly VIOLET as it darkens ("dark blue turns
+	      purple"), and lightening a blue inherently adds green — so the
+	      compensated ramp is what actually READS as one family. (Take 1
+	      ran the arc the other way for atmosphere; it read as two-tone.)
+	      Two tokens at the same depth share a hue.
 
 	   2. CHROMA ENCODES FAMILY, AND THINS WITH HEIGHT — the frame "wells"
 	      (--frame-bg / --rp-grid / --frame-line) carry the rich indigo
@@ -43,9 +46,9 @@
 	      borders draw lines rather than attention, and a chromatic buff fill
 	      can never read as structure. Lightnesses are UNCHANGED from the
 	      2026-07-31 brightness calibration — this pass moves only hue/chroma. */
-	--surface: #11192b; /* panel on page          L.22 C.038 H266 */
-	--surface-raised: #1d2838; /* panel on panel         L.28 C.034 H259 */
-	--border: #303d4b; /* dividers, hairlines    L.35 C.030 H251 */
+	--surface: #0f1a2b; /* panel on page          L.22 C.038 H260 */
+	--surface-raised: #1f2839; /* panel on panel         L.28 C.034 H263 */
+	--border: #353b4c; /* dividers, hairlines    L.35 C.030 H268 */
 	/* A frame's own ground — same DEPTH as --surface but far richer (the
 	   well-vs-air chroma split above is what makes a frame read as a well
 	   rather than a raised panel). Its own member for the same reason
@@ -55,12 +58,12 @@
 	   ↻ Lightness sampled from Nate's +30% reference (brightness round
 	   2026-07-31). Mirrors: timelineExport CHART_BG + the frame-ground
 	   cutout strokes in the viz instruments. */
-	--frame-bg: #0a173a; /* frame ground           L.22 C.070 H266 */
+	--frame-bg: #05183a; /* frame ground           L.22 C.070 H260 */
 	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
 	   composer's well. Its own member because a frame's ground is darker than
 	   --surface, so --border reads too hot on it. Both tools used to declare
 	   this hex privately (--rp-line / --tb-line). */
-	--frame-line: #223b57; /* lines on frame ground  L.35 C.058 H252 */
+	--frame-line: #2c3858; /* lines on frame ground  L.35 C.058 H267 */
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (SiteChrome.svelte),

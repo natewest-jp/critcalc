@@ -30,9 +30,9 @@ import type {
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
-const CHART_BG = '#0a173a'; // --frame-bg (depth-lit indigo re-cut 2026-07-31)
-const GRID = '#172c4a'; // --rp-grid
-const LANE_LINE = '#223b57'; // --frame-line
+const CHART_BG = '#05183a'; // --frame-bg (depth-lit indigo re-cut 2026-07-31)
+const GRID = '#1c2b4b'; // --rp-grid
+const LANE_LINE = '#2c3858'; // --frame-line
 // ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css :root. Canvas can't
 // resolve var(), so every token the export paints has to be duplicated here as
 // a literal. When a token value changes in app.css, change it here too or the
@@ -65,7 +65,7 @@ const DEBUFF_LABEL = 'rgba(255,255,255,0.85)';
 const PROC_FILL = DIRE_FILL;
 const PROC_EDGE = DIRE_TINT;
 const PROC_LABEL = 'rgba(255,255,255,0.85)';
-const PORTRAIT_BG = '#11192b'; // --surface (was a drifted stray #131c30)
+const PORTRAIT_BG = '#0f1a2b'; // --surface (was a drifted stray #131c30)
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 // Chart text follows the site's Sans-default (body font). Only the notation
