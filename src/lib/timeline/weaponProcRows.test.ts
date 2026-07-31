@@ -21,12 +21,12 @@ describe('computeWeaponProcRows', () => {
 		expect(computeWeaponProcRows(windows, {})).toEqual([]);
 	});
 
-	it('labels rows with the equipped weapon shortName ?? name', () => {
+	it('labels rows with the equipped weapon full name', () => {
 		const rows = computeWeaponProcRows([procWindow('ganyu', 0.45, 10.45)], {
 			ganyu: { weaponId: 'sacrificial_bow', weaponRefinement: 1 }
 		});
 		expect(rows).toEqual([
-			{ characterId: 'ganyu', label: 'Sac Bow', bars: [{ start: 0.45, end: 10.45 }] }
+			{ characterId: 'ganyu', label: 'Sacrificial Bow', bars: [{ start: 0.45, end: 10.45 }] }
 		]);
 	});
 

@@ -857,48 +857,41 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	if (snap.moonsignTop !== null) {
 		snap.moonsignRows.forEach((row, ri) => {
 			const rowTop = oy + snap.rulerH + snap.moonsignTop! + 2 + ri * snap.buffRowStride;
-			for (const win of row.windows) {
+			// Per-window lunar glyph + label in the buff-bar grammar, clipped to
+			// the span the NEXT window doesn't cover — mirrors the on-screen
+			// per-window label cap (the old single first-window label bled
+			// across seams; retired 2026-07-31). Icon inset and 15px step as in
+			// drawLaneBar.
+			row.windows.forEach((win, wi) => {
 				const wx = x(win.start);
 				const ww = barGeomW(win.start, win.duration);
 				paintMoonsignBar(wx, rowTop, ww, snap.buffRowH);
-				// Centered duration — full-strength like the NB bar's
-				if (ww > 40) {
-					ctx.fillStyle = '#fff';
-					ctx.font = `600 9px ${SANS}`;
-					ctx.textAlign = 'center';
-					haloText(
-						`${win.duration}s`,
-						wx + ww / 2,
-						rowTop + snap.buffRowH / 2 + 3,
-						MOONSIGN_HALO_TIGHT,
-						MOONSIGN_HALO_WIDE
-					);
-				}
-			}
-			// Lunar glyph + label on the first window — mirrors
-			// .rp-moonsign-label (near-white with the shared halo, like every
-			// other bar label; icon inset and 15px step as in drawLaneBar)
-			const first = row.windows[0];
-			if (first) {
-				ctx.fillStyle = '#fff';
-				ctx.font = `600 9px ${SANS}`;
-				ctx.textAlign = 'left';
+				const next = row.windows[wi + 1];
+				const visW = next ? Math.min(ww, x(next.start) - wx) : ww;
+				if (visW <= 24) return;
 				const name = snap.slots[row.slotIdx]?.displayName ?? '';
-				let tx = x(first.start) + 7;
+				ctx!.save();
+				ctx!.beginPath();
+				ctx!.rect(wx, rowTop, visW - 2, snap.buffRowH);
+				ctx!.clip();
+				ctx!.fillStyle = '#fff';
+				ctx!.font = `600 9px ${SANS}`;
+				ctx!.textAlign = 'left';
+				let tx = wx + 5;
 				const lunar = lunarIconSrc ? images.get(lunarIconSrc) : undefined;
 				if (lunar) {
 					// Same two-pass halo the label text gets — canvas shadows apply
 					// to drawImage exactly as they do to fillText.
 					const iy = rowTop + (snap.buffRowH - 11) / 2;
-					ctx.save();
-					ctx.shadowColor = MOONSIGN_HALO_WIDE;
-					ctx.shadowBlur = 6;
-					ctx.drawImage(lunar, tx, iy, 11, 11);
-					ctx.shadowColor = MOONSIGN_HALO_TIGHT;
-					ctx.shadowBlur = 2;
-					ctx.shadowOffsetY = 1;
-					ctx.drawImage(lunar, tx, iy, 11, 11);
-					ctx.restore();
+					ctx!.save();
+					ctx!.shadowColor = MOONSIGN_HALO_WIDE;
+					ctx!.shadowBlur = 6;
+					ctx!.drawImage(lunar, tx, iy, 11, 11);
+					ctx!.shadowColor = MOONSIGN_HALO_TIGHT;
+					ctx!.shadowBlur = 2;
+					ctx!.shadowOffsetY = 1;
+					ctx!.drawImage(lunar, tx, iy, 11, 11);
+					ctx!.restore();
 					tx += 15;
 				}
 				haloText(
@@ -908,7 +901,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					MOONSIGN_HALO_TIGHT,
 					MOONSIGN_HALO_WIDE
 				);
-			}
+				ctx!.restore();
+			});
 		});
 	}
 

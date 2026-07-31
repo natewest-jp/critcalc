@@ -36,7 +36,9 @@ export function computeWeaponProcRows(
 	for (const [charId, bars] of barsByChar) {
 		const weaponId = loadoutMap[charId]?.weaponId;
 		const weapon = weaponId ? getWeaponById(weaponId) : null;
-		const label = weapon ? (weapon.shortName ?? weapon.name) : 'E reset';
+		// Full weapon name (shortName retired for display 2026-07-31 — the JSONs
+		// keep the field for future use; truncating bars fade instead of slicing).
+		const label = weapon ? weapon.name : 'E reset';
 		rows.push({ characterId: charId, label, bars });
 	}
 	return rows;

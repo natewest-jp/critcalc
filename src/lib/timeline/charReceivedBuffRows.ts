@@ -41,7 +41,7 @@ export function projectCharReceivedBuffRows(
 		let sourceLabel: string;
 		if (src.type === 'weapon') {
 			const weapon = getWeaponById(src.weaponId);
-			sourceLabel = weapon?.shortName ?? weapon?.name ?? src.weaponId;
+			sourceLabel = weapon?.name ?? src.weaponId;
 		} else if (src.type === 'character' && src.trigger === 'nightsoulBurst') {
 			const char = getCharacter(w.characterId);
 			sourceLabel = `${char?.displayName ?? w.characterId} NB`;

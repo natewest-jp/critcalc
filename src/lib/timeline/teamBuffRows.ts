@@ -91,7 +91,7 @@ export function projectTeamBuffRows(
 			}
 		} else {
 			const set = getArtifactSetById(src.setId);
-			sourceLabel = set?.shortName ?? set?.name ?? src.setId;
+			sourceLabel = set?.name ?? src.setId;
 			if (src.trigger === 'cast') {
 				const lbl = AB_LABEL[src.abilityClass!];
 				rowKey = `${w.characterId}::artifact::${src.setId}::${src.triggerKey}::${lbl}`;

@@ -595,6 +595,23 @@
 		return projectBar(start, span, scale);
 	}
 
+	/** Cap a buff-bar label's width at the NEXT bar's left edge when two bars in
+	 *  the same subrow overlap — the neighbour paints over this bar's tail, so
+	 *  without the cap the label never truncates and its fade mask never engages
+	 *  (the neighbour just occludes it mid-glyph). Inset = bar padding (5) +
+	 *  icon 11 + gap 4 when an icon leads, plus 2px for the neighbour's edge
+	 *  line. Null (no cap) when the bars don't overlap. */
+	function labelCapPx(
+		g: { left: number; width: number },
+		next: { start: number } | undefined,
+		hasIcon: boolean
+	): string | null {
+		if (!next) return null;
+		const nextLeft = barGeom(next.start, 0).left;
+		if (nextLeft >= g.left + g.width) return null;
+		return `${Math.max(0, nextLeft - g.left - (hasIcon ? 20 : 5) - 2)}px`;
+	}
+
 	/**
 	 * Swap connector between two consecutive notation segments, as an SVG path.
 	 * Spans vertically from the active row of the 'from' slot to the active row
@@ -1485,7 +1502,11 @@
 												onmouseleave={hideTooltip}
 											>
 												{#if icon}<img src={icon} alt="" class="rp-buff-icon" />{/if}
-												<span class="rp-buff-label">{bar.sourceLabel}</span>
+												<span
+													class="rp-buff-label"
+													style:max-width={labelCapPx(g, recRow.bars[bi + 1], !!icon)}
+													>{bar.sourceLabel}</span
+												>
 											</div>
 										{/each}
 									</div>
@@ -1523,7 +1544,11 @@
 													{#if icon}
 														<img src={icon} alt="" class="rp-buff-icon" />
 													{/if}
-													<span class="rp-buff-label">{subrow.sourceLabel}</span>
+													<span
+														class="rp-buff-label"
+														style:max-width={labelCapPx(g, subrow.bars[bi + 1], !!icon)}
+														>{subrow.sourceLabel}</span
+													>
 												</div>
 											{/each}
 										</div>
@@ -1558,6 +1583,14 @@
 									{#each moonsignRows as row (row.slotIdx)}
 										{@const msChar = slotCharacters[row.slotIdx]}
 										<div class="rp-moonsign-subrow">
+											<!-- Windows overlap freely, so each carries ITS OWN label in the
+											     buff-bar grammar — icon + "name · Ascendant Gleam", capped at
+											     the next window's edge so it dissolves at the seam instead of
+											     running under the neighbour. (Replaces the old single floating
+											     row label, which read as one label bleeding across the seams —
+											     Nate 2026-07-31.) The lunar glyph rides each bar the way a buff
+											     bar carries its stat icon — what Ascendant Gleam grants IS a
+											     Lunar DMG bonus. Duration lives in the tooltip, like buff bars. -->
 											{#each row.windows as win, wi (wi)}
 												{@const g = barGeom(win.start, win.duration)}
 												<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -1574,25 +1607,14 @@
 														})}
 													onmouseleave={hideTooltip}
 												>
-													{#if g.width > 40}
-														<span class="rp-bar-cd-label">{win.duration}s</span>
-													{/if}
+													{#if LUNAR_ICON}<img src={LUNAR_ICON} alt="" class="rp-buff-icon" />{/if}
+													<span
+														class="rp-buff-label"
+														style:max-width={labelCapPx(g, row.windows[wi + 1], !!LUNAR_ICON)}
+														>{msChar?.displayName} · Ascendant Gleam</span
+													>
 												</div>
 											{/each}
-											<!-- Row label floats above the (freely overlapping) windows so
-											     later windows can't paint over it. It carries the lunar
-											     glyph the same way a buff bar carries its stat icon —
-											     what Ascendant Gleam grants IS a Lunar DMG bonus. The
-											     +7px clears the bar's 2px left edge and then matches the
-											     buff bar's own 5px padding, so the two lanes' icons line
-											     up at the same inset from their bar. -->
-											{#if row.windows.length > 0}
-												{@const fg = barGeom(row.windows[0].start, 0)}
-												<span class="rp-moonsign-label" style:left="{fg.left + 7}px">
-													{#if LUNAR_ICON}<img src={LUNAR_ICON} alt="" class="rp-buff-icon" />{/if}
-													{msChar?.displayName} · Ascendant Gleam
-												</span>
-											{/if}
 										</div>
 									{/each}
 								</div>
@@ -2067,6 +2089,9 @@
 	/* ── Track area ───────────────────────────────────────────── */
 	.rp-tracks {
 		position: relative;
+		/* Fade width for truncating bar labels (buff chips, cd/cast labels) —
+		   clipped text dissolves over this many px instead of slicing mid-glyph. */
+		--buff-label-fade: 12px;
 	}
 
 	/* ── Ruler strip (top time axis, DAW convention) ──────────── */
@@ -2219,6 +2244,10 @@
 		opacity: 0.85;
 	}
 	.rp-buff-label {
+		/* Truncation fade (--buff-label-fade, set on .rp-tracks): the mask's
+		   transparent tail lines up with the padding, so a label that FITS shows
+		   no fade — only clipped text runs under it and dissolves instead of
+		   slicing mid-glyph. */
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
 		color: rgba(255, 255, 255, 0.85);
@@ -2226,6 +2255,15 @@
 		letter-spacing: var(--ls-mid);
 		pointer-events: none;
 		line-height: var(--lh-none);
+		min-width: 0;
+		overflow: hidden;
+		padding-right: var(--buff-label-fade);
+		-webkit-mask-image: linear-gradient(
+			to right,
+			#000 calc(100% - var(--buff-label-fade)),
+			transparent
+		);
+		mask-image: linear-gradient(to right, #000 calc(100% - var(--buff-label-fade)), transparent);
 	}
 
 	/* Sacrificial-proc rows share the debuff bars' register (Nate 2026-07-18;
@@ -2324,6 +2362,20 @@
 		position: absolute;
 		left: 5px;
 		font-weight: var(--fw-semibold);
+		/* Dissolve on narrow bars instead of hard-clipping at the bar edge. */
+		max-width: calc(100% - 5px);
+		overflow: hidden;
+		padding-right: var(--buff-label-fade, 12px);
+		-webkit-mask-image: linear-gradient(
+			to right,
+			#000 calc(100% - var(--buff-label-fade, 12px)),
+			transparent
+		);
+		mask-image: linear-gradient(
+			to right,
+			#000 calc(100% - var(--buff-label-fade, 12px)),
+			transparent
+		);
 	}
 	.rp-nb-bar {
 		--label-halo: #f85b21;
@@ -2362,9 +2414,11 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
+		/* Buff-bar label grammar: icon + label ranged left, same inset. */
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		gap: 4px;
+		padding: 0 5px;
 		overflow: hidden;
 		background-color: #b0a9ff;
 		/* Two tiled layers, top then bottom. Top: occasional soft cyan + coral
@@ -2400,23 +2454,10 @@
 		border-radius: 1px;
 		z-index: 2;
 	}
-	/* Near-white + shared halo like every other bar label (Nate 2026-07-18).
-	   Absolutely positioned above the windows (z:2) so overlapping later
-	   windows can't paint over it. */
-	.rp-moonsign-label {
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
-		z-index: 2;
-		display: flex;
-		align-items: center;
-		gap: 4px;
-		font-size: var(--fs-2xs);
-		font-weight: var(--fw-semibold);
+	/* Full-opacity white on the light moonlight fill (the buff bars' 0.85 white
+	   washes out here) + the shared halo, matching every other bar label. */
+	.rp-moonsign-bar .rp-buff-label {
 		color: #fff;
-		white-space: nowrap;
-		pointer-events: none;
-		letter-spacing: var(--ls-tight);
 	}
 
 	/* ── Character block ──────────────────────────────────────── */
@@ -2497,11 +2538,27 @@
 		color: rgba(255, 255, 255, 0.4);
 		white-space: nowrap;
 		pointer-events: none;
+		/* Same dissolve-not-slice treatment as .rp-buff-label. Symmetric padding
+		   keeps the flex-centered label centered; the fade zone lives in the
+		   right padding, so it only touches glyphs when the label is actually
+		   clipped (narrow bar, or a moonsign window's visible sliver). */
+		min-width: 0;
+		overflow: hidden;
+		padding: 0 var(--buff-label-fade, 12px);
+		-webkit-mask-image: linear-gradient(
+			to right,
+			#000 calc(100% - var(--buff-label-fade, 12px)),
+			transparent
+		);
+		mask-image: linear-gradient(
+			to right,
+			#000 calc(100% - var(--buff-label-fade, 12px)),
+			transparent
+		);
 	}
-	/* NB + moonsign lane durations stay full-strength — their bright fills
-	   swallow the quiet 0.4 used on the element ghost tracks */
-	.rp-nb-bar .rp-bar-cd-label,
-	.rp-moonsign-bar .rp-bar-cd-label {
+	/* NB lane durations stay full-strength — the bright fill swallows the
+	   quiet 0.4 used on the element ghost tracks */
+	.rp-nb-bar .rp-bar-cd-label {
 		color: #fff;
 	}
 	/* Shared label halo (Nate 2026-07-18): white text on light element fills
@@ -2516,7 +2573,7 @@
 	.rp-bar-cd-label,
 	.rp-bar-row-badge,
 	.rp-summon-label,
-	.rp-moonsign-label {
+	.rp-moonsign-bar .rp-buff-label {
 		text-shadow:
 			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
 			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
@@ -2526,7 +2583,7 @@
 	   the same standard-deviation semantics, so the two stack identically.
 	   Safe as a filter here where the chrome marks were not: this paints once
 	   and never hovers, transforms or sits over the parallaxed scene. */
-	.rp-moonsign-label .rp-buff-icon {
+	.rp-moonsign-bar .rp-buff-icon {
 		filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--label-halo, #081225) 25%, transparent))
 			drop-shadow(0 0 6px color-mix(in srgb, var(--label-halo, #081225) 50%, transparent));
 	}
