@@ -396,7 +396,13 @@
 		   inner shadow — and lets the rest sit flush with its surroundings. Lower
 		   = tighter, heavier shadow; higher = softer but darker overall. */
 		--sp-pill-stop: 50%;
-		--sp-pill-fill: linear-gradient(180deg, var(--bg) 0%, var(--frame-bg) var(--sp-pill-stop));
+		/* Dark end pulled toward --frame-bg (was raw --bg — too deep a well
+		   since the surface re-cut; Nate 2026-07-31). */
+		--sp-pill-fill: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--frame-bg) 55%, var(--bg)) 0%,
+			var(--frame-bg) var(--sp-pill-stop)
+		);
 
 		/* The portrait keeps the ELEMENT wash the roster cards use — a portrait
 		   wants a lit backing, not the chrome fill the controls wear, and the art

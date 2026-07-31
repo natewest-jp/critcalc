@@ -1922,6 +1922,8 @@
 	/* ── View cluster (over the top ruler's right end) ─────────── */
 	/* The frame's "view controls" corner: total · zoom · Notes. */
 	.rp-view-cluster {
+		/* Shared control height for the whole cluster (total / zoom / NOTES). */
+		--rp-cluster-h: 20px;
 		position: absolute;
 		top: 0;
 		right: 0;
@@ -1941,11 +1943,15 @@
 		width: 88px;
 	}
 	/* Total-length readout — chip backing separates it from the ruler's tick
-	   numbers; the TOTAL key says what it is. */
+	   numbers; the TOTAL key says what it is. Same fill and height as the
+	   rest of the view cluster (zoom / NOTES) so the row reads as one rail. */
 	.rp-ruler-total {
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--fill-rest);
 		border-radius: 3px;
-		padding: 2px 7px;
+		display: inline-flex;
+		align-items: center;
+		height: var(--rp-cluster-h);
+		padding: 0 7px;
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
@@ -2224,8 +2230,14 @@
 	.rp-composer-btn {
 		background: var(--fill-rest);
 	}
+	/* One height for the whole view cluster (total readout, − / + zoom,
+	   NOTES) — the row used to mix 18px buttons with padding-derived
+	   neighbors (Nate 2026-07-31). */
+	.rp-zoom-btn,
+	.rp-notes-btn {
+		height: var(--rp-cluster-h);
+	}
 	.rp-zoom-btn {
-		height: 18px;
 		font-size: var(--fs-md);
 		user-select: none;
 	}
