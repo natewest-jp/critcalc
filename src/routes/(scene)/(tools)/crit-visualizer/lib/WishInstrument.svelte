@@ -162,13 +162,7 @@
 						{Math.round(p * 100)}%
 					</text>
 				{/each}
-				<text
-					x={PADL - 7}
-					y={TOP - 4}
-					fill="rgba(255,255,255,0.35)"
-					font-size="10"
-					text-anchor="end"
-				>
+				<text x="4" y={TOP - 4} fill="rgba(255,255,255,0.35)" font-size="10" text-anchor="start">
 					chance by then
 				</text>
 
