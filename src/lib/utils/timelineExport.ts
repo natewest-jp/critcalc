@@ -36,9 +36,9 @@ import type {
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
-const CHART_BG = '#121b2f'; // --frame-bg (depth-lit indigo re-cut 2026-07-31)
-const GRID = '#222e48'; // --rp-grid = mix(border 55%, frame-bg), resolved
-const LANE_LINE = '#2c3a58'; // --frame-line = mix(border 90%, frame-bg), resolved
+const CHART_BG = '#2b2d43'; // --frame-bg (Nate's lavender-slate ground, 2026-08-01)
+const GRID = '#383a54'; // --rp-grid = mix(border 55%, frame-bg), resolved
+const LANE_LINE = '#40425f'; // --frame-line = mix(border 90%, frame-bg), resolved
 // ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css :root. Canvas can't
 // resolve var(), so every token the export paints has to be duplicated here as
 // a literal. When a token value changes in app.css, change it here too or the

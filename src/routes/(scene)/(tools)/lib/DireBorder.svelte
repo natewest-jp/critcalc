@@ -136,8 +136,8 @@
 		height: var(--top-grad-h);
 		background: linear-gradient(
 			to bottom,
-			hsl(from var(--tint) h s var(--dire-grad-top-l, 17%)),
-			#000
+			hsl(from var(--tint) h 25% var(--dire-grad-top-l, 17%)),
+			#0e0c0f
 		);
 	}
 
@@ -149,8 +149,8 @@
 		height: var(--bottom-grad-h);
 		background: linear-gradient(
 			to top,
-			hsl(from var(--tint) h s var(--dire-grad-bottom-l, 19%)),
-			#000
+			hsl(from var(--tint) h 25% var(--dire-grad-bottom-l, 19%)),
+			#0e0c0f
 		);
 	}
 

@@ -63,8 +63,11 @@
 	   the two picked values. Derivation: scratchpad palette5.mjs pattern —
 	   anchors in, remaining rungs out. */
 	--surface: #1c2844; /* modal surface   ⚓ NATE  L.28 C.054 H265 */
-	--surface-raised: #1c2844; /* in-page panel   ⚓ NATE  L.28 C.054 H265 */
-	--border: #2f3d5d; /* dividers, hairlines    L.36 C.060 H266 */
+	/* ↻ 2026-08-01 (Nate): surface-raised takes the BEIGE (= --gilt-soft) —
+	   in-page panels go light with dark ink, the Genshin two-polarity move.
+	   Border/frame rotated onto the twilight ramp's violet station (H≈280). */
+	--surface-raised: #ede8de; /* in-page panel   ⚓ NATE  beige, L.93 C.014 H85 */
+	--border: #424462; /* dividers, hairlines    ⚓ NATE  L.40 C.051 H281 */
 	/* A frame's own ground — DARKER and QUIETER than the panels (rule 2):
 	   the well is the calm deep the tool's content sits in. Its own member
 	   for the same reason --frame-line is: it was declared as a bare hex in
@@ -73,7 +76,7 @@
 	   ↻ Lightness from Nate's +30% reference (brightness round 2026-07-31).
 	   Mirrors: timelineExport CHART_BG + the frame-ground cutout strokes in
 	   the viz instruments. */
-	--frame-bg: #121b2f; /* frame ground  ⚓ NATE   L.23 C.041 H265 */
+	--frame-bg: #2b2d43; /* frame ground  ⚓ NATE   L.31 C.040 H280 (the lit lavender-slate, 2026-08-01) */
 	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
 	   composer's well. Both tools used to declare this hex privately
 	   (--rp-line / --tb-line).
@@ -81,9 +84,9 @@
 	   grounds now, softened toward the frame ground it sits on. Mixed
 	   against --frame-bg (opaque), NOT transparent: an alpha line's
 	   rendered color depends on the compositor (the dire-gradient lesson),
-	   and frame lines always sit on --frame-bg anyway. Resolves ≈ #2c3a58.
+	   and frame lines always sit on --frame-bg anyway. Resolves ≈ #40425f.
 	   ⚠ timelineExport mirrors the RESOLVED literal — recompute it if
-	   --border, --frame-bg or the 90% move. */
+	   --border, --frame-bg or the 90% move (the mirror test enforces). */
 	--frame-line: color-mix(in srgb, var(--border) 90%, var(--frame-bg));
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the

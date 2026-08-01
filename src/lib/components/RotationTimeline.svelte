@@ -1795,7 +1795,7 @@
 		   The local name stays: the planner's markup uses it in color-mixes. */
 		/* Derived from --border like --frame-line (app.css), just fainter —
 		   the grid is the quietest line on the frame ground. Opaque mix, not
-		   alpha (the dire-gradient lesson). Resolves ≈ #222e48; the export
+		   alpha (the dire-gradient lesson). Resolves ≈ #383a54; the export
 		   mirrors that literal. */
 		--rp-grid: color-mix(in srgb, var(--border) 55%, var(--frame-bg));
 		--rp-line: var(--frame-line);

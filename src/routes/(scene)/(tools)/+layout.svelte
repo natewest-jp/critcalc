@@ -402,7 +402,7 @@
 		/* Tool background: plain black base under the Dire border edge treatment.
 		   Opaque, so it covers the cosmic scene behind — the portal's black fades
 		   out onto this (dark-to-dark) and the tool reads as fading in from black. */
-		background: #000;
+		background: #0e0c0f;
 
 		/* Dire border knobs. These size the edge treatment ONLY — the content
 		   paddings below are independent of them now (see the note there).
@@ -429,10 +429,10 @@
 		     lightnesses (crestL/edgeL in direBorderGL.ts layer defs).
 		   Border-only on purpose: --dire itself is the tool-zone accent (~148
 		   call sites) and stays untouched. */
-		--dire-edge: hsl(341, 86%, 50%);
-		--dire-grad-top-l: 18%;
-		--dire-grad-bottom-l: 20%;
-		--dire-edge-boost: 1.33;
+		--dire-edge: hsl(337, 77%, 53%);
+		--dire-grad-top-l: 10%;
+		--dire-grad-bottom-l: 10%;
+		--dire-edge-boost: 3.2;
 		--dire-top-h: 100px;
 		--dire-top-grad-h: 250px;
 		--dire-bottom-h: 200px;
@@ -442,7 +442,7 @@
 		   occludes content passing beneath (three layers stack, so the deep
 		   body is effectively opaque). 0.9 is Nate's editor-tuned value; the
 		   fill gradients live in the GL module's layer defs. */
-		--dire-wave-cover: 0.9;
+		--dire-wave-cover: 0.1;
 		/* Wave tile width: smaller = smaller waves but MUCH lighter compositor
 		   textures (memory ∝ tile-w²), which is what curbs the eviction-flash +
 		   scroll judder. Dial to taste (down from the 220vw default). */
