@@ -1248,9 +1248,10 @@
 												{:else if seg.role === 'uptimeDim'}
 													<!-- Sac proc: bar spans duration only (CD reset to 0), dim
 											     continuation tone. Opaque mix, never alpha — connectors
-											     pass behind these bars. -->
+											     pass behind these bars. --dim keeps the badge white+halo:
+											     ink only sits on full-strength fills. -->
 													<div
-														class="rp-bar-uptime"
+														class="rp-bar-uptime rp-bar-uptime--dim"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
 														style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
@@ -1358,7 +1359,7 @@
 													</div>
 												{:else if seg.role === 'uptimeDim'}
 													<div
-														class="rp-bar-uptime"
+														class="rp-bar-uptime rp-bar-uptime--dim"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
 														style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
@@ -2597,22 +2598,28 @@
 	.rp-nb-bar .rp-bar-cd-label {
 		color: #fff;
 	}
-	/* Shared label halo (Nate 2026-07-18): white text on light element fills
-	   needs separation, and dark text didn't sit right — a soft shadow in a
-	   DARK SHADE OF THE BAR'S OWN ELEMENT COLOR (--label-halo, set on each
+	/* Label halo (Nate 2026-07-18), ↻ 2026-08-01 lightness-structure round:
+	   full-strength castFill fills now carry DARK INK (--ink) with no halo —
+	   the bright-chip idiom (Genshin's Lv-chips; GaugeInstrument's badge was
+	   the codebase precedent). The halo is the crutch for white-on-mid, so
+	   this list ENUMERATES the labels that stay white — a soft shadow in a
+	   dark shade of the bar's own element color (--label-halo, set on each
 	   char block via shiftHue lightness −30; NB/moonsign lanes pin their
-	   darkest palette color) keeps the labels white without reading as an
-	   effect. Text must be FULL-opacity white: alpha-reduced white lets the
-	   shadow bleed through the glyphs and muddies them. Small blur radii
-	   only; static, so paint cost is negligible. */
+	   darkest palette color). White text must be FULL-opacity: alpha-reduced
+	   white lets the shadow bleed through the glyphs. Small blur radii only;
+	   static, so paint cost is negligible. */
 	.rp-bar-cast-label,
 	.rp-bar-cd-label,
-	.rp-bar-row-badge,
-	.rp-summon-label,
+	.rp-bar-uptime--dim .rp-bar-row-badge,
 	.rp-moonsign-bar .rp-buff-label {
 		text-shadow:
 			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
 			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
+	}
+	/* The dim (sac-proc) continuation drops back to the mid band — its badge
+	   keeps the white+halo treatment above. */
+	.rp-bar-uptime--dim .rp-bar-row-badge {
+		color: #fff;
 	}
 	/* The moonsign lane's lunar glyph is part of that label, so it takes the
 	   same halo — text-shadow can't reach an <img>, and drop-shadow's blur is
@@ -2643,7 +2650,8 @@
 	.rp-summon-label {
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
-		color: #fff;
+		/* Summon bars are always full-strength castFill → ink, no halo. */
+		color: var(--ink);
 		white-space: nowrap;
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
@@ -2730,12 +2738,14 @@
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */
+	/* Ink on the full-strength castFill pill (the bright-chip idiom); the
+	   --dim variant overrides back to white+halo above. */
 	.rp-bar-row-badge {
 		position: absolute;
 		left: 4px;
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
-		color: #fff;
+		color: var(--ink);
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
 	}

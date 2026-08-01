@@ -41,6 +41,7 @@ const LANE_LINE = '#2c3a58'; // --frame-line = mix(border 90%, frame-bg), resolv
 const ACTIVE = '#757f93'; // --rp-active (Nate-sampled 2026-07-31; no longer the --neutral alias)
 const TEXT = '#e8ecf3'; // --text
 const MUTED = '#9baabf'; // --muted
+const INK = '#081225'; // --ink (dark ink on bright fills — lightness-structure round 2026-08-01)
 // Paired tool tints — mirror app.css :root. --dire = hsl(340,85%,46%) =
 // #d91254; --calm-fill = #224577 (buff body/fill — the time-scaling ramp's full
 // end); --calm = #6b99c7 (bright accent stripe). Buff bars fill solid
@@ -514,17 +515,22 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			solids.push(() => {
 				const px = x(start);
 				const pw = barGeomW(start, span);
+				ctx!.font = `700 9px ${SANS}`;
+				ctx!.textAlign = 'left';
 				if (dim) {
 					ctx!.fillStyle = mix(main, CHART_BG, 65);
 					rr(px, py, pw, ph, 1);
 					ctx!.fill();
+					// Dim continuation keeps the white+halo treatment.
+					ctx!.fillStyle = '#fff';
+					haloText(badge, px + 4, py + ph / 2 + 3, ...elementHalo(main));
 				} else {
 					paintCastFill(px, py, pw, ph, main);
+					// Full-strength castFill carries dark ink, no halo — mirrors
+					// .rp-bar-row-badge (bright-chip idiom, 2026-08-01).
+					ctx!.fillStyle = INK;
+					ctx!.fillText(badge, px + 4, py + ph / 2 + 3);
 				}
-				ctx!.fillStyle = '#fff';
-				ctx!.font = `700 9px ${SANS}`;
-				ctx!.textAlign = 'left';
-				haloText(badge, px + 4, py + ph / 2 + 3, ...elementHalo(main));
 			});
 		};
 		const pushGhost = (start: number, span: number, cd: number) => {
@@ -626,18 +632,13 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					const px = x(sbar.start);
 					const pw = barGeomW(sbar.start, sbar.end - sbar.start);
 					// Full-strength castFill — same finish as the E/Q pills;
-					// full row height (matches the buff bars — no inset)
+					// full row height (matches the buff bars — no inset).
+					// Dark ink, no halo — mirrors .rp-summon-label (2026-08-01).
 					paintCastFill(px, rowTop, pw, snap.summonRowH, p.main);
-					ctx!.fillStyle = '#fff';
+					ctx!.fillStyle = INK;
 					ctx!.font = `700 9px ${SANS}`;
 					ctx!.textAlign = 'left';
-					haloText(
-						srow.label,
-						px + 4,
-						rowTop + snap.summonRowH / 2 + 3,
-						...elementHalo(p.main),
-						Math.max(pw - 6, 8)
-					);
+					ctx!.fillText(srow.label, px + 4, rowTop + snap.summonRowH / 2 + 3, Math.max(pw - 6, 8));
 					// Bottom-anchored tick stubs — mirror .rp-summon-tick
 					ctx!.fillStyle = p.hi;
 					ctx!.globalAlpha = 0.92;

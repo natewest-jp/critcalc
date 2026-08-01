@@ -46,7 +46,7 @@
 	const exact = (...ns: string[]) =>
 		ns.map((n) => tokens.find((t) => t.name === n)).filter((t): t is Token => !!t);
 
-	const structure = exact('--bg', '--text', '--muted', '--neutral');
+	const structure = exact('--bg', '--text', '--muted', '--ink', '--neutral');
 	const calmSurfaces = exact('--surface', '--surface-raised', '--border', '--frame-line');
 	const metrics = exact('--chrome-h', '--site-footer-h');
 	const famDire = exact('--dire', '--dire-fill');
@@ -876,6 +876,12 @@
 						clothing — if a surface reads as mud with hue removed, its structure is riding on hue.
 						<kbd>Cmd/Ctrl+Shift+G</kbd> in dev toggles a grayscale overlay on every route (root layout;
 						ships nothing to prod). Run it before approving any color work.
+					</li>
+					<li>
+						<strong>Bright fill carries dark ink and no halo.</strong> A full-strength element fill
+						(the castFill pills, summon bars, gauge badges) takes <code>--ink</code>, flat — the
+						label halo is the crutch for white-on-mid, not a universal. Dim continuations and ghost
+						tracks keep white + halo. Genshin's Lv-chip idiom; GaugeInstrument was the precedent.
 					</li>
 				</ul>
 			</div>

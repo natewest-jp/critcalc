@@ -528,7 +528,7 @@
 					<text
 						x={m.x}
 						y={13}
-						fill="#081225"
+						style="fill: var(--ink)"
 						font-size="9.5"
 						font-weight="700"
 						text-anchor="middle"
@@ -1022,7 +1022,7 @@
 		width: 15px;
 		height: 15px;
 		border-radius: 50%;
-		color: #081225;
+		color: var(--ink);
 		font-family: var(--font-body);
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);

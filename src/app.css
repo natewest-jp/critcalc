@@ -9,6 +9,12 @@
 	--bg: #050b19; /* page ground — deepest rung: L.15 C.032 H264 */
 	--text: #e8ecf3; /* cool near-white  16.8:1 on --bg */
 	--muted: #a3b1c3; /* secondary text    8.4:1 */
+	/* ↻ 2026-08-01 lightness-structure round: dark INK for text sitting ON
+	   bright fills — the counterpart of --text, promoted from the literal
+	   GaugeInstrument has carried since the badges were built. Bright chip +
+	   dark ink is the sanctioned idiom now (Genshin's Lv-chips); a bright
+	   fill needs no halo. ≥4.5:1 against every element main and --gilt-soft. */
+	--ink: #081225; /* dark ink on bright fills  L.16 */
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are
