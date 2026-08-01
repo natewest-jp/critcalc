@@ -399,49 +399,51 @@
 		   containers), so nothing is lost. */
 		overflow-x: hidden;
 		overflow-y: auto;
-		/* Tool background: plain black base under the Dire border edge treatment.
-		   Opaque, so it covers the cosmic scene behind — the portal's black fades
-		   out onto this (dark-to-dark) and the tool reads as fading in from black. */
-		background: #0e0c0f;
+		/* Tool background: the twilight ramp's BASE — the near-black the whole
+		   edge treatment fades into. Opaque, so it covers the cosmic scene
+		   behind — the portal's black fades out onto this (dark-to-dark) and
+		   the tool reads as fading in from black. */
+		background: var(--dire-base);
 
-		/* Dire border knobs. These size the edge treatment ONLY — the content
-		   paddings below are independent of them now (see the note there).
-		   --dire (the edge hue) now lives in app.css :root so it can double as
-		   the shared --accent; it cascades in here, so the border still reads it. */
-		/* Border brightness + tint — HAND-TUNED BY NATE 2026-07-31; treat the
-		   numbers as design, not derivation.
-		   · --dire-edge — the border's BRIGHT identity color: the GL ember
-		     glow, the fade-top seam, and the GL waves' hue/sat derive from it
-		     (wave lightnesses stay pinned in direBorderGL's layer defs). A
-		     literal at the HSL chroma peak (s100 l50) — above l50 HSL trades
-		     chroma for whiteness and it reads washed; hue nudged 340→338 by
-		     eye.
-		   · --dire-grad-top-l / --dire-grad-bottom-l — the OPAQUE gradients'
-		     starting lightnesses (the tint's hue/sat at these l values,
-		     fading to solid #000). Opaque on purpose: semi-transparent CSS
-		     over black proved display-dependent — on a P3 Mac the alpha
-		     compositing path rendered hue-shifted and under-saturated vs the
-		     mathematically identical opaque color, a seam no alpha value
-		     could close (Nate isolated this 2026-07-31 by pushing the old
-		     color-mix to ~100%). Values are the opaque equivalents of that
-		     tune (90%/100% of l19 over black).
-		   · --dire-edge-boost — multiplies the GL wave stops' pinned
-		     lightnesses (crestL/edgeL in direBorderGL.ts layer defs).
+		/* ══ THE TWILIGHT RAMP — dire border color model, rebuilt 2026-08-01 ══
+		   The old model (one tint × nine scattered lightness scalars:
+		   --dire-grad-*-l, --dire-edge-boost, six crestL/edgeL layer constants)
+		   is RETIRED — it had accreted into unreadable lightness algebra. The
+		   new model is EXPLICIT COLOR STATIONS on the twilight ramp measured
+		   from Genshin's Arlecchino wallpaper + the Stygian waves (2026-08-01
+		   analysis): hue rotates navy→violet→magenta→dire as the eye travels
+		   from content toward the viewport edge, chroma peaking in small
+		   bright accents. Every station is just a color — tune by picking
+		   colors, not by chasing multipliers. oklch annotations per station.
+		   All OPAQUE (the P3 alpha-compositing law); the GL module resolves
+		   them from the cascade (window.__dire.retune() after devtools edits).
 		   Border-only on purpose: --dire itself is the tool-zone accent (~148
 		   call sites) and stays untouched. */
-		--dire-edge: hsl(337, 77%, 53%);
-		--dire-grad-top-l: 10%;
-		--dire-grad-bottom-l: 10%;
-		--dire-edge-boost: 3.2;
+		--dire-base: #0e0c0f; /* the shell ground ⚓ NATE 2026-08-01 — warm off-black */
+		--dire-sky: #1c152f; /* gradient far end — dark violet-navy    L.22 C.050 H295 */
+		--dire-horizon: #491740; /* gradient edge end — the magenta glow   L.30 C.095 H335 */
+		--dire-wave-far: #482f62; /* tallest, deepest wave — violet station L.36 C.090 H305 */
+		--dire-wave-mid: #703879; /* middle wave — purple station           L.44 C.120 H322 */
+		--dire-wave-near: #9c3774; /* front wave — the dire station          L.50 C.150 H347 */
+		--dire-crest: #e57db1; /* thin crest-line highlight (the "white ring" move:
+		   brightest thing on the edge is a LINE, not a band)   L.72 C.140 H350 */
+		--dire-crest-w: 2.5px; /* crest line thickness */
+		--dire-crest-a: 0.85; /* crest line opacity (independent of --dire-wave-cover,
+		   so the crests survive even when the wave bodies run as faint washes) */
+		--dire-ember: #e14660; /* ember dot glow — the chroma peak       L.62 C.190 H15 */
 		--dire-top-h: 100px;
 		--dire-top-grad-h: 250px;
 		--dire-bottom-h: 200px;
 		--dire-bottom-grad-h: 350px;
 		--dire-halftone-h: 200px;
 		/* Scroll-under: per-layer wave opacity — how firmly each wave body
-		   occludes content passing beneath (three layers stack, so the deep
-		   body is effectively opaque). 0.9 is Nate's editor-tuned value; the
-		   fill gradients live in the GL module's layer defs. */
+		   occludes content passing beneath. ⚓ NATE 2026-08-01: pulled 0.9 →
+		   0.1 — the waves run as faint luminous washes now. ⚠ At this cover
+		   the top-edge occlusion the scroll-under design assumed is gone
+		   (content ghosts through the crests as it scrolls under); the
+		   fade-top overlay and the crest lines (--dire-crest-a, cover-
+		   independent) carry the edge instead. Raise toward 0.9 to restore
+		   solid-body occlusion. */
 		--dire-wave-cover: 0.1;
 		/* Wave tile width: smaller = smaller waves but MUCH lighter compositor
 		   textures (memory ∝ tile-w²), which is what curbs the eviction-flash +

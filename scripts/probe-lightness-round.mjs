@@ -10,16 +10,26 @@
  * Usage: build + serve on :4998 first (see .claude/skills/verify), then
  *   node scripts/probe-lightness-round.mjs
  */
+import { readFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 import { desaturate, elementColors } from '../src/lib/utils/elementColors.ts';
 import { GHOST_FILL_MIX, GHOST_CHROMA_KEEP } from '../src/lib/timeline/barMix.ts';
 import { hexToOklch } from './oklch.mjs';
 
-const INK = 'rgb(8, 18, 37)'; // --ink
-const CONTROL_FACE = 'rgb(88, 96, 113)'; // --control-face #586071
+// Ground truths read from app.css itself — no hand-mirrored literals here
+// (the probe once carried a stale CHART_BG; never again).
+const appCss = readFileSync(new URL('../src/app.css', import.meta.url), 'utf8');
+const cssToken = (name) => new RegExp(`^\\s*${name}:\\s*([^;]+);`, 'm').exec(appCss)[1].trim();
+const hexToRgbStr = (hex) => {
+	const n = parseInt(hex.slice(1), 16);
+	return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
+};
+
+const INK = hexToRgbStr(cssToken('--ink'));
+const CONTROL_FACE = hexToRgbStr(cssToken('--control-face'));
 const SEL_SURFACE = 'rgb(237, 232, 222)'; // --sel-surface = --gilt-soft #ede8de
-const CALM_FILL = 'rgb(43, 85, 144)'; // --calm-fill #2b5590
-const CHART_BG = '#121b2f';
+const CALM_FILL = hexToRgbStr(cssToken('--calm-fill'));
+const CHART_BG = cssToken('--frame-bg');
 
 const failures = [];
 const check = (label, ok, detail = '') => {
