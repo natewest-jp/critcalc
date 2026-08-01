@@ -119,22 +119,27 @@ interface WaveLayer {
  *  Applied in-shader (vertical), composing with the horizontal hue gradient. */
 const WAVE_DEPTH_SHADE = 0.62;
 
+/* ↻ 2026-08-01 (Nate's alignment pass): the two BODIES counter-flow (near
+ * reversed against far on both edges) and both crest out at the edge mark —
+ * far exactly at --dire-top-h/--dire-bottom-h (margin 0), near shallower by
+ * the --dire-near-drop knob (applied in geometry, not here). The line weaves
+ * between them at a small fixed offset. */
 const BOTTOM_LAYERS: WaveLayer[] = [
-	// tallest — deepest body (violet→purple)
+	// deepest body (violet→crimson sweep), crest at the mark
 	{ flowDur: 30, hDiv: 15, role: 'far', marginPx: 0, delayS: 0, reverse: false },
-	// mid slot — the breathing edge line
-	{ flowDur: 46, hDiv: 15, role: 'line', marginPx: -36, delayS: -13, reverse: true },
-	// shortest — front body (purple→crimson), on top
-	{ flowDur: 38, hDiv: 15, role: 'near', marginPx: -64, delayS: -7, reverse: false }
+	// the breathing edge line, weaving between the bodies
+	{ flowDur: 46, hDiv: 15, role: 'line', marginPx: -8, delayS: -13, reverse: true },
+	// front body — counter-flows the far body, --dire-near-drop shallower
+	{ flowDur: 38, hDiv: 15, role: 'near', marginPx: 0, delayS: -7, reverse: true }
 ];
 
 const TOP_LAYERS: WaveLayer[] = [
-	// tallest — deepest body (violet→purple)
+	// deepest body (violet→crimson sweep), crest at the mark
 	{ flowDur: 34, hDiv: 17, role: 'far', marginPx: 0, delayS: 0, reverse: true },
-	// mid slot — the breathing edge line
-	{ flowDur: 50, hDiv: 17, role: 'line', marginPx: -21, delayS: -17, reverse: false },
-	// shortest — front body (purple→crimson), on top
-	{ flowDur: 42, hDiv: 17, role: 'near', marginPx: -42, delayS: -5, reverse: true }
+	// the breathing edge line, weaving between the bodies
+	{ flowDur: 50, hDiv: 17, role: 'line', marginPx: -8, delayS: -17, reverse: false },
+	// front body — counter-flows the far body, --dire-near-drop shallower
+	{ flowDur: 42, hDiv: 17, role: 'near', marginPx: 0, delayS: -5, reverse: false }
 ];
 
 /** Native size of the noise asset, CSS px. */
@@ -232,17 +237,22 @@ const WAVE_FRAGMENT_SRC = `
 precision highp float;
 varying vec2 v_css;
 uniform sampler2D u_shape; // silhouette solid (alpha) — antialiased coverage mask
+uniform sampler2D u_haze;  // pre-blurred silhouette — the outer glow source
 uniform vec2 u_size;       // canvas CSS size (px) — .x spans the viewport
 uniform float u_tileW;
 uniform vec4 u_geom[3];   // slotTopY, waveH, signedPhase, flip
 uniform vec3 u_colorL[3]; // body fill at the viewport's LEFT edge
 uniform vec3 u_colorR[3]; // body fill at the viewport's RIGHT edge
 uniform vec3 u_role;      // 0 = body, 1 = line
-uniform float u_cover;    // body opacity
+uniform float u_cover;    // body opacity at the viewport edge
+uniform float u_topA;     // body alpha multiplier at the crest side (--dire-wave-top-a)
+uniform float u_hazeA;    // outer haze strength (--dire-haze-a)
 uniform vec3 u_crestCol;  // line color (--dire-crest)
 uniform float u_crestA;   // line peak opacity (--dire-crest-a)
 uniform vec3 u_crestV;    // per-layer line thickness, tile-v units
-uniform vec3 u_fade;      // line fade: cycles per tile, drift phase, floor
+uniform vec4 u_fade;      // line fade: cycles per tile, drift phase, floor, bias exponent
+uniform float u_fade2;    // twin line's fade phase (opposite drift, JS-side)
+uniform vec3 u_crest2V;   // twin line's vertical offset, tile-v units
 void main() {
 	vec4 acc = vec4(0.0);
 	float x01 = clamp(v_css.x / u_size.x, 0.0, 1.0);
@@ -252,18 +262,37 @@ void main() {
 		if (v > 0.0 && v < 1.0) {
 			float u = fract(v_css.x / u_tileW + u_geom[i].z);
 			float shape = texture2D(u_shape, vec2(u, v)).a;
+			vec3 grad = mix(u_colorL[i], u_colorR[i], x01);
 			if (u_role[i] < 0.5) {
-				float body = shape * u_cover;
+				// Outer haze: the blurred silhouette minus the sharp one is a
+				// soft band hugging the OUTSIDE of the edge — the Stygian
+				// "slight soft haze past the crest". Painted first (it never
+				// overlaps the body), in the body's own gradient color.
+				float haze = clamp(texture2D(u_haze, vec2(u, v)).a - shape, 0.0, 1.0) * u_hazeA;
+				acc = vec4(grad, 1.0) * haze + acc * (1.0 - haze);
 				float g = clamp(
 					(v * 200.0 - ${GRAD_Y_CREST.toFixed(2)}) / ${(GRAD_Y_EDGE - GRAD_Y_CREST).toFixed(2)},
 					0.0, 1.0);
-				vec3 col = mix(u_colorL[i], u_colorR[i], x01) * mix(${WAVE_DEPTH_SHADE.toFixed(2)}, 1.0, g);
+				// Body: opaque-most at the viewport edge, easing toward the
+				// crest (u_topA), on top of the depth shade.
+				float body = shape * u_cover * mix(u_topA, 1.0, g);
+				vec3 col = grad * mix(${WAVE_DEPTH_SHADE.toFixed(2)}, 1.0, g);
 				acc = vec4(col, 1.0) * body + acc * (1.0 - body);
 			} else {
-				float above = texture2D(u_shape, vec2(u, v - u_crestV[i])).a;
-				float breathe = mix(u_fade.z, 1.0, 0.5 + 0.5 * sin(6.28318 * (u * u_fade.x + u_fade.y)));
-				float line = shape * (1.0 - above) * u_crestA * breathe;
-				acc = vec4(u_crestCol, 1.0) * line + acc * (1.0 - line);
+				// Twin breathing lines: same stroke, the second offset deeper
+				// into the body (u_crest2V) with its fade drifting the OTHER
+				// way — segments cross and pass each other. The bias exponent
+				// narrows the bright segments (more of the line spends its
+				// time transparent).
+				float above1 = texture2D(u_shape, vec2(u, v - u_crestV[i])).a;
+				float bright1 = pow(0.5 + 0.5 * sin(6.28318 * (u * u_fade.x + u_fade.y)), u_fade.w);
+				float line1 = shape * (1.0 - above1) * u_crestA * mix(u_fade.z, 1.0, bright1);
+				float s2 = texture2D(u_shape, vec2(u, v - u_crest2V[i])).a;
+				float a2 = texture2D(u_shape, vec2(u, v - u_crest2V[i] - u_crestV[i])).a;
+				float bright2 = pow(0.5 + 0.5 * sin(6.28318 * (u * u_fade.x + u_fade2)), u_fade.w);
+				float line2 = s2 * (1.0 - a2) * u_crestA * mix(u_fade.z, 1.0, bright2);
+				acc = vec4(u_crestCol, 1.0) * line1 + acc * (1.0 - line1);
+				acc = vec4(u_crestCol, 1.0) * line2 + acc * (1.0 - line2);
 			}
 		}
 	}
@@ -385,6 +414,36 @@ function rasterizeWaveShape(): HTMLCanvasElement {
 	return canvas;
 }
 
+/** Outer-haze reach, tile px (two tap rings). ~10 tile px ≈ 6 CSS px at the
+ *  shipped tile size — "not very far, and not very much" (Nate). */
+const HAZE_R1 = 5;
+const HAZE_R2 = 10;
+
+/** Blurred copy of the silhouette, built ONCE at raster time by multi-tap
+ *  stamping (two rings of offsets, x-wrapped so the tile stays seamless) —
+ *  no ctx.filter, so pre-18 Safari renders it identically, and the blur
+ *  costs nothing per frame. The shader subtracts the sharp silhouette from
+ *  this, leaving a soft band hugging the OUTSIDE of the wave edge. */
+function rasterizeWaveHaze(shape: HTMLCanvasElement): HTMLCanvasElement {
+	const canvas = document.createElement('canvas');
+	canvas.width = TILE_W;
+	canvas.height = TILE_H;
+	const ctx = canvas.getContext('2d')!;
+	ctx.globalAlpha = 1 / 6; // taps accumulate: saturated core, soft skirt
+	for (let k = 0; k < 8; k++) {
+		const a = (k / 8) * Math.PI * 2;
+		for (const [dx, dy] of [
+			[Math.cos(a) * HAZE_R1, Math.sin(a) * HAZE_R1],
+			[Math.cos(a + Math.PI / 8) * HAZE_R2, Math.sin(a + Math.PI / 8) * HAZE_R2]
+		]) {
+			for (const wrap of [-TILE_W, 0, TILE_W]) {
+				ctx.drawImage(shape, dx + wrap, dy);
+			}
+		}
+	}
+	return canvas;
+}
+
 // --- Knobs from computed style ---------------------------------------------------
 
 interface ResolvedColor {
@@ -402,6 +461,11 @@ interface Knobs {
 	fadeN: number; // line fade cycles per tile (--dire-crest-fade-n)
 	fadeDur: number; // s per fade drift cycle (--dire-crest-fade-dur)
 	fadeMin: number; // fade trough floor 0–1 (--dire-crest-fade-min)
+	fadeBias: number; // bright-segment narrowing exponent (--dire-crest-fade-bias)
+	crest2Off: number; // twin line's vertical offset, CSS px (--dire-crest2-off)
+	nearDrop: number; // near body's crest drop below the mark, CSS px (--dire-near-drop)
+	bodyTopA: number; // body alpha multiplier at the crest side (--dire-wave-top-a)
+	hazeA: number; // outer haze strength (--dire-haze-a)
 	/** The two body waves' horizontal gradient endpoints (viewport left →
 	 *  right). Both the parsed 0–1 RGB (GL) and a css string (2D fallback).
 	 *  Shared by both edges. */
@@ -486,6 +550,11 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
 		fadeN: num('--dire-crest-fade-n', 2),
 		fadeDur: dur('--dire-crest-fade-dur', 8),
 		fadeMin: num('--dire-crest-fade-min', 0),
+		fadeBias: num('--dire-crest-fade-bias', 2.5),
+		crest2Off: num('--dire-crest2-off', 6),
+		nearDrop: num('--dire-near-drop', 15),
+		bodyTopA: num('--dire-wave-top-a', 0.8),
+		hazeA: num('--dire-haze-a', 0.2),
 		far,
 		near,
 		crest,
@@ -501,10 +570,17 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
  *  Bottom: `bottom: min(0px, mark − waveH)` + margin-bottom, measured up from
  *  the canvas bottom. Top: `top: min(0px, mark − waveH)` + margin-top. The
  *  min() clamp keeps shrinking waves pinned to the edge (crest rides lower
- *  instead of opening a gap). */
-function slotTopY(layer: WaveLayer, isTop: boolean, canvasH: number, waveH: number): number {
+ *  instead of opening a gap). `marginPx` = the layer's def margin plus any
+ *  dynamic drop (--dire-near-drop for the near body); negative = shallower. */
+function slotTopY(marginPx: number, isTop: boolean, canvasH: number, waveH: number): number {
 	const clamp = Math.min(0, canvasH - waveH);
-	return isTop ? clamp + layer.marginPx : canvasH - (clamp + layer.marginPx) - waveH;
+	return isTop ? clamp + marginPx : canvasH - (clamp + marginPx) - waveH;
+}
+
+/** A layer's effective margin: the near body carries the --dire-near-drop
+ *  knob on top of its def margin. */
+function layerMargin(layer: WaveLayer, nearDrop: number): number {
+	return layer.role === 'near' ? layer.marginPx - nearDrop : layer.marginPx;
 }
 
 const fract = (x: number) => ((x % 1) + 1) % 1;
@@ -543,10 +619,14 @@ interface WavePipeline {
 	uColorR: WebGLUniformLocation;
 	uRole: WebGLUniformLocation;
 	uCover: WebGLUniformLocation;
+	uTopA: WebGLUniformLocation;
+	uHazeA: WebGLUniformLocation;
 	uCrestCol: WebGLUniformLocation;
 	uCrestA: WebGLUniformLocation;
 	uCrestV: WebGLUniformLocation;
 	uFade: WebGLUniformLocation;
+	uFade2: WebGLUniformLocation;
+	uCrest2V: WebGLUniformLocation;
 }
 
 interface NoisePipeline {
@@ -600,6 +680,7 @@ export function createDireBorder(
 	let knobs = measureKnobs(host, probe);
 
 	const waveShape = rasterizeWaveShape();
+	const waveHaze = rasterizeWaveHaze(waveShape);
 
 	// The noise image: loaded once (AVIF, WebP on decode failure), uploaded to
 	// the noise context and/or drawn by the 2D fallback when it arrives.
@@ -626,6 +707,11 @@ export function createDireBorder(
 			const program = buildProgram(gl, WAVE_FRAGMENT_SRC);
 			uploadTexture(gl, waveShape, gl.CLAMP_TO_EDGE);
 			gl.uniform1i(u(program, 'u_shape'), 0);
+			// The pre-blurred haze silhouette rides texture unit 1.
+			gl.activeTexture(gl.TEXTURE1);
+			uploadTexture(gl, waveHaze, gl.CLAMP_TO_EDGE);
+			gl.uniform1i(u(program, 'u_haze'), 1);
+			gl.activeTexture(gl.TEXTURE0);
 			return {
 				kind: 'waves',
 				program,
@@ -636,10 +722,14 @@ export function createDireBorder(
 				uColorR: u(program, 'u_colorR'),
 				uRole: u(program, 'u_role'),
 				uCover: u(program, 'u_cover'),
+				uTopA: u(program, 'u_topA'),
+				uHazeA: u(program, 'u_hazeA'),
 				uCrestCol: u(program, 'u_crestCol'),
 				uCrestA: u(program, 'u_crestA'),
 				uCrestV: u(program, 'u_crestV'),
-				uFade: u(program, 'u_fade')
+				uFade: u(program, 'u_fade'),
+				uFade2: u(program, 'u_fade2'),
+				uCrest2V: u(program, 'u_crest2V')
 			};
 		}
 		const program = buildProgram(gl, NOISE_FRAGMENT_SRC);
@@ -794,6 +884,7 @@ export function createDireBorder(
 	const colorRArr = new Float32Array(9);
 	const roleArr = new Float32Array(3);
 	const crestVArr = new Float32Array(3);
+	const crest2VArr = new Float32Array(3);
 
 	function renderWavesGL(band: Band, t: number, staticFrame: boolean): void {
 		const gl = band.gl!;
@@ -801,7 +892,7 @@ export function createDireBorder(
 		for (let i = 0; i < 3; i++) {
 			const layer = band.layers![i];
 			const waveH = knobs.tileW / layer.hDiv;
-			geom[i * 4] = slotTopY(layer, band.isTop, band.cssH, waveH);
+			geom[i * 4] = slotTopY(layerMargin(layer, knobs.nearDrop), band.isTop, band.cssH, waveH);
 			geom[i * 4 + 1] = waveH;
 			geom[i * 4 + 2] = staticFrame ? 0 : wavePhase(layer, t, knobs.speed);
 			geom[i * 4 + 3] = band.isTop ? 1 : 0;
@@ -809,8 +900,9 @@ export function createDireBorder(
 			const body = layer.role === 'near' ? knobs.near : knobs.far; // line entries unused
 			colorLArr.set(body.l.rgb, i * 3);
 			colorRArr.set(body.r.rgb, i * 3);
-			// Line thickness in tile-v units: v spans waveH CSS px.
+			// Line thickness / twin offset in tile-v units: v spans waveH CSS px.
 			crestVArr[i] = knobs.crestW / waveH;
+			crest2VArr[i] = knobs.crest2Off / waveH;
 		}
 		gl.viewport(0, 0, band.canvas.width, band.canvas.height);
 		gl.uniform2f(p.uSize, band.cssW, band.cssH);
@@ -820,13 +912,19 @@ export function createDireBorder(
 		gl.uniform3fv(p.uColorR, colorRArr);
 		gl.uniform3fv(p.uRole, roleArr);
 		gl.uniform1f(p.uCover, knobs.waveCover);
+		gl.uniform1f(p.uTopA, knobs.bodyTopA);
+		gl.uniform1f(p.uHazeA, knobs.hazeA);
 		gl.uniform3f(p.uCrestCol, knobs.crest.rgb[0], knobs.crest.rgb[1], knobs.crest.rgb[2]);
 		gl.uniform1f(p.uCrestA, knobs.crestA);
 		gl.uniform3fv(p.uCrestV, crestVArr);
-		// Fade drift phase rides its own clock (fadeDur per cycle); static
-		// frames (reduced motion) pin it to the brightest alignment.
+		gl.uniform3fv(p.uCrest2V, crest2VArr);
+		// Fade drift phases ride their own clock (fadeDur per cycle); the twin
+		// drifts the OPPOSITE way, offset so the two never breathe in unison.
+		// Static frames (reduced motion) pin both at bright alignments.
 		const fadePhase = staticFrame ? 0.25 : fract(t / knobs.fadeDur);
-		gl.uniform3f(p.uFade, knobs.fadeN, fadePhase, knobs.fadeMin);
+		const fadePhase2 = staticFrame ? 0.6 : 0.35 - fract(t / knobs.fadeDur);
+		gl.uniform4f(p.uFade, knobs.fadeN, fadePhase, knobs.fadeMin, knobs.fadeBias);
+		gl.uniform1f(p.uFade2, fadePhase2);
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
 	}
 
@@ -869,7 +967,7 @@ export function createDireBorder(
 		band.layers.forEach((layer) => {
 			if (layer.role === 'line') return; // GL-only (see paintBodyBand)
 			const waveH = knobs.tileW / layer.hDiv;
-			const top = slotTopY(layer, band.isTop, band.cssH, waveH);
+			const top = slotTopY(layerMargin(layer, knobs.nearDrop), band.isTop, band.cssH, waveH);
 			paintBodyBand(ctx, band, layer, waveH, top);
 		});
 	}
