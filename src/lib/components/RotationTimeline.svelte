@@ -2134,6 +2134,7 @@
 	/* ── Track area ───────────────────────────────────────────── */
 	.rp-tracks {
 		position: relative;
+		background-color: #15151c;
 		/* Fade width for truncating bar labels (buff chips, cd/cast labels) —
 		   clipped text dissolves over this many px instead of slicing mid-glyph. */
 		--buff-label-fade: 12px;
