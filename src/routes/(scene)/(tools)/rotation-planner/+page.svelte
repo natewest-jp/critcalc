@@ -937,6 +937,14 @@
 		outline: none;
 		flex-shrink: 0;
 	}
+	/* Renaming happens inside the ACTIVE tab — which is beige now (the
+	   --sel-surface pilot). White-on-beige would vanish; flip to ink and a
+	   slightly-recessed opaque well (mixed against the known beige ground,
+	   never alpha — the compositing law). */
+	.tab.active .rp-tab-rename {
+		color: var(--sel-ink);
+		background: color-mix(in srgb, var(--sel-surface) 94%, black);
+	}
 	.rp-tab-rename:focus {
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 80%, transparent);
 	}

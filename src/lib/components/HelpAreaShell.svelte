@@ -183,10 +183,13 @@
 	}
 
 	/* "You are here" is the fill alone — the accent edge was a second signal
-	   doing the same job, and the fill already reads. */
+	   doing the same job, and the fill already reads.
+	   ↻ 2026-08-01: the beige selected-state pilot (Stygian selected-row
+	   idiom) — the current chapter is the nav's one bright plate, dark ink.
+	   Independently revertable to --sel-fill if the pilot stays tool-only. */
 	.area-chapter.is-current {
-		color: var(--text);
-		background: var(--sel-fill);
+		color: var(--sel-ink);
+		background: var(--sel-surface);
 	}
 
 	.area-toc {

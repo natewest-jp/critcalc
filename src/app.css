@@ -254,6 +254,16 @@
 	--control-face: #586071; /* control face  L.49 C.029 H265 */
 	--control-face-hover: color-mix(in srgb, var(--control-face) 86%, white);
 
+	/* ↻ 2026-08-01 lightness-structure round: the TOP of the selection ladder.
+	   Genshin's Stygian sidebar selects its row with a beige plate + dark ink
+	   on an otherwise dark screen — the selected thing is the BRIGHTEST thing.
+	   --sel-surface/--sel-ink are that idiom, piloted on the top-level tool
+	   tab strips (rule beside the dire-grounds block below) and the Help
+	   chapter nav; selection stays accent everywhere else. Neither side is
+	   --accent-derived, so no tool-zone re-declaration is needed. */
+	--sel-surface: var(--gilt-soft);
+	--sel-ink: var(--ink);
+
 	/* The slider knob is deliberately NOT --accent. Measured against the panel
 	   it sits on, --gilt is 8.09:1 while --dire is 2.95:1 — the two zones were
 	   never symmetric, so dimming both would have pushed dire out of sight
@@ -428,6 +438,18 @@
 .ws-bar {
 	--fill-rest: color-mix(in srgb, var(--dire) 13%, transparent);
 	--fill-hover: color-mix(in srgb, var(--dire) 20%, transparent);
+}
+
+/* Beige selected-state pilot (lightness-structure E, 2026-08-01): the two
+   top-level tool tab strips select with --sel-surface + --sel-ink — the
+   Stygian selected-row idiom, deliberately scoped to these grounds while
+   the idiom is on trial. (0,3,0 beats .tab.active's 0,2,0 — no !important.)
+   NO beige panels; extent is a Nate knob. */
+.rp-tab-bar .tab.active,
+.tb-tabs .tab.active {
+	background: var(--sel-surface);
+	box-shadow: none;
+	color: var(--sel-ink);
 }
 
 *,

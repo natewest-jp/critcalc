@@ -65,6 +65,8 @@
 		'--accent-hover-fill',
 		'--control-face',
 		'--control-face-hover',
+		'--sel-surface',
+		'--sel-ink',
 		'--knob',
 		'--accent'
 	);
@@ -893,6 +895,15 @@
 						desaturating, so grayscale never mistakes it for content. The ratios are knobs in
 						<code>src/lib/timeline/barMix.ts</code>, shared by the DOM and the PNG exporter;
 						<code>timelineExport.mirror.test.ts</code> makes mirror drift a test failure.
+					</li>
+					<li>
+						<strong>Selection is accent — except at the very top of the ladder.</strong> The
+						top-level tool tab strips and the Help chapter nav select with
+						<code>--sel-surface</code> (beige) + <code>--sel-ink</code>: the selected thing is the
+						screen's one bright plate, Genshin's Stygian selected-row idiom. Everywhere else
+						selection remains <code>--sel-fill</code>/<code>--sel-ring</code>. NO beige panels — the
+						pilot's extent is a deliberate knob. (Amends 2026-08-01: gray AND beige are both freely
+						available to this site; the old "beige belongs to the sister site" split is retired.)
 					</li>
 				</ul>
 			</div>
