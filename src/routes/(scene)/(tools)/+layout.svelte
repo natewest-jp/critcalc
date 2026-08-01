@@ -455,15 +455,14 @@
 		   fade drifts the OPPOSITE way (segments cross and pass — flip lives in
 		   direBorderGL's fadePhase2 if the counter-drift reads wrong). 0 stacks
 		   it on the first line (effectively one line again). */
-		/* ── Wave geometry / atmosphere (2026-08-01, Nate's alignment asks) ── */
+		/* ── Wave geometry (2026-08-01, Nate's alignment asks; the outer-haze
+		   experiment was tried and REMOVED same day — without was better) ── */
 		--dire-near-drop: 15px; /* how much shallower the near body crests vs the
 		   far body (which sits exactly at the --dire-*-h marks) */
-		--dire-wave-top-a: 0.8; /* body opacity multiplier at the CREST side —
-		   bodies stay opaque-most at the viewport edge and ease off toward
-		   their crest (1 = flat, the pre-ask behavior) */
-		--dire-haze-a: 0.2; /* outer haze: the soft glow hugging the outside of
-		   each body's edge (a pre-blurred silhouette in the shader — costs
-		   nothing per frame). 0 = off; reach is baked (~6 CSS px). */
+		--dire-wave-base-a: 0.8; /* body opacity multiplier at the viewport-edge
+		   side — the CREST is fully opaque (× --dire-wave-cover) and the body
+		   eases off toward its base, dissolving into the horizon glow behind
+		   it (1 = flat) */
 		--dire-ember: #e14660; /* ember dot glow — the chroma peak       L.62 C.190 H15 */
 		--dire-top-h: 100px;
 		--dire-top-grad-h: 150px;

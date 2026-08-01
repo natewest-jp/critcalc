@@ -237,16 +237,14 @@ const WAVE_FRAGMENT_SRC = `
 precision highp float;
 varying vec2 v_css;
 uniform sampler2D u_shape; // silhouette solid (alpha) — antialiased coverage mask
-uniform sampler2D u_haze;  // pre-blurred silhouette — the outer glow source
 uniform vec2 u_size;       // canvas CSS size (px) — .x spans the viewport
 uniform float u_tileW;
 uniform vec4 u_geom[3];   // slotTopY, waveH, signedPhase, flip
 uniform vec3 u_colorL[3]; // body fill at the viewport's LEFT edge
 uniform vec3 u_colorR[3]; // body fill at the viewport's RIGHT edge
 uniform vec3 u_role;      // 0 = body, 1 = line
-uniform float u_cover;    // body opacity at the viewport edge
-uniform float u_topA;     // body alpha multiplier at the crest side (--dire-wave-top-a)
-uniform float u_hazeA;    // outer haze strength (--dire-haze-a)
+uniform float u_cover;    // body opacity at the crest
+uniform float u_baseA;    // body alpha multiplier at the viewport-edge side (--dire-wave-base-a)
 uniform vec3 u_crestCol;  // line color (--dire-crest)
 uniform float u_crestA;   // line peak opacity (--dire-crest-a)
 uniform vec3 u_crestV;    // per-layer line thickness, tile-v units
@@ -264,18 +262,13 @@ void main() {
 			float shape = texture2D(u_shape, vec2(u, v)).a;
 			vec3 grad = mix(u_colorL[i], u_colorR[i], x01);
 			if (u_role[i] < 0.5) {
-				// Outer haze: the blurred silhouette minus the sharp one is a
-				// soft band hugging the OUTSIDE of the edge — the Stygian
-				// "slight soft haze past the crest". Painted first (it never
-				// overlaps the body), in the body's own gradient color.
-				float haze = clamp(texture2D(u_haze, vec2(u, v)).a - shape, 0.0, 1.0) * u_hazeA;
-				acc = vec4(grad, 1.0) * haze + acc * (1.0 - haze);
 				float g = clamp(
 					(v * 200.0 - ${GRAD_Y_CREST.toFixed(2)}) / ${(GRAD_Y_EDGE - GRAD_Y_CREST).toFixed(2)},
 					0.0, 1.0);
-				// Body: opaque-most at the viewport edge, easing toward the
-				// crest (u_topA), on top of the depth shade.
-				float body = shape * u_cover * mix(u_topA, 1.0, g);
+				// Body: fully opaque (× cover) at the CREST, easing toward the
+				// viewport-edge side (u_baseA) — the crest is the hard line,
+				// the base dissolves into the horizon glow behind it.
+				float body = shape * u_cover * mix(1.0, u_baseA, g);
 				vec3 col = grad * mix(${WAVE_DEPTH_SHADE.toFixed(2)}, 1.0, g);
 				acc = vec4(col, 1.0) * body + acc * (1.0 - body);
 			} else {
@@ -414,36 +407,6 @@ function rasterizeWaveShape(): HTMLCanvasElement {
 	return canvas;
 }
 
-/** Outer-haze reach, tile px (two tap rings). ~10 tile px ≈ 6 CSS px at the
- *  shipped tile size — "not very far, and not very much" (Nate). */
-const HAZE_R1 = 5;
-const HAZE_R2 = 10;
-
-/** Blurred copy of the silhouette, built ONCE at raster time by multi-tap
- *  stamping (two rings of offsets, x-wrapped so the tile stays seamless) —
- *  no ctx.filter, so pre-18 Safari renders it identically, and the blur
- *  costs nothing per frame. The shader subtracts the sharp silhouette from
- *  this, leaving a soft band hugging the OUTSIDE of the wave edge. */
-function rasterizeWaveHaze(shape: HTMLCanvasElement): HTMLCanvasElement {
-	const canvas = document.createElement('canvas');
-	canvas.width = TILE_W;
-	canvas.height = TILE_H;
-	const ctx = canvas.getContext('2d')!;
-	ctx.globalAlpha = 1 / 6; // taps accumulate: saturated core, soft skirt
-	for (let k = 0; k < 8; k++) {
-		const a = (k / 8) * Math.PI * 2;
-		for (const [dx, dy] of [
-			[Math.cos(a) * HAZE_R1, Math.sin(a) * HAZE_R1],
-			[Math.cos(a + Math.PI / 8) * HAZE_R2, Math.sin(a + Math.PI / 8) * HAZE_R2]
-		]) {
-			for (const wrap of [-TILE_W, 0, TILE_W]) {
-				ctx.drawImage(shape, dx + wrap, dy);
-			}
-		}
-	}
-	return canvas;
-}
-
 // --- Knobs from computed style ---------------------------------------------------
 
 interface ResolvedColor {
@@ -464,8 +427,7 @@ interface Knobs {
 	fadeBias: number; // bright-segment narrowing exponent (--dire-crest-fade-bias)
 	crest2Off: number; // twin line's vertical offset, CSS px (--dire-crest2-off)
 	nearDrop: number; // near body's crest drop below the mark, CSS px (--dire-near-drop)
-	bodyTopA: number; // body alpha multiplier at the crest side (--dire-wave-top-a)
-	hazeA: number; // outer haze strength (--dire-haze-a)
+	bodyBaseA: number; // body alpha multiplier at the viewport-edge side (--dire-wave-base-a)
 	/** The two body waves' horizontal gradient endpoints (viewport left →
 	 *  right). Both the parsed 0–1 RGB (GL) and a css string (2D fallback).
 	 *  Shared by both edges. */
@@ -553,8 +515,7 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
 		fadeBias: num('--dire-crest-fade-bias', 2.5),
 		crest2Off: num('--dire-crest2-off', 6),
 		nearDrop: num('--dire-near-drop', 15),
-		bodyTopA: num('--dire-wave-top-a', 0.8),
-		hazeA: num('--dire-haze-a', 0.2),
+		bodyBaseA: num('--dire-wave-base-a', 0.8),
 		far,
 		near,
 		crest,
@@ -619,8 +580,7 @@ interface WavePipeline {
 	uColorR: WebGLUniformLocation;
 	uRole: WebGLUniformLocation;
 	uCover: WebGLUniformLocation;
-	uTopA: WebGLUniformLocation;
-	uHazeA: WebGLUniformLocation;
+	uBaseA: WebGLUniformLocation;
 	uCrestCol: WebGLUniformLocation;
 	uCrestA: WebGLUniformLocation;
 	uCrestV: WebGLUniformLocation;
@@ -680,7 +640,6 @@ export function createDireBorder(
 	let knobs = measureKnobs(host, probe);
 
 	const waveShape = rasterizeWaveShape();
-	const waveHaze = rasterizeWaveHaze(waveShape);
 
 	// The noise image: loaded once (AVIF, WebP on decode failure), uploaded to
 	// the noise context and/or drawn by the 2D fallback when it arrives.
@@ -707,11 +666,6 @@ export function createDireBorder(
 			const program = buildProgram(gl, WAVE_FRAGMENT_SRC);
 			uploadTexture(gl, waveShape, gl.CLAMP_TO_EDGE);
 			gl.uniform1i(u(program, 'u_shape'), 0);
-			// The pre-blurred haze silhouette rides texture unit 1.
-			gl.activeTexture(gl.TEXTURE1);
-			uploadTexture(gl, waveHaze, gl.CLAMP_TO_EDGE);
-			gl.uniform1i(u(program, 'u_haze'), 1);
-			gl.activeTexture(gl.TEXTURE0);
 			return {
 				kind: 'waves',
 				program,
@@ -722,8 +676,7 @@ export function createDireBorder(
 				uColorR: u(program, 'u_colorR'),
 				uRole: u(program, 'u_role'),
 				uCover: u(program, 'u_cover'),
-				uTopA: u(program, 'u_topA'),
-				uHazeA: u(program, 'u_hazeA'),
+				uBaseA: u(program, 'u_baseA'),
 				uCrestCol: u(program, 'u_crestCol'),
 				uCrestA: u(program, 'u_crestA'),
 				uCrestV: u(program, 'u_crestV'),
@@ -912,8 +865,7 @@ export function createDireBorder(
 		gl.uniform3fv(p.uColorR, colorRArr);
 		gl.uniform3fv(p.uRole, roleArr);
 		gl.uniform1f(p.uCover, knobs.waveCover);
-		gl.uniform1f(p.uTopA, knobs.bodyTopA);
-		gl.uniform1f(p.uHazeA, knobs.hazeA);
+		gl.uniform1f(p.uBaseA, knobs.bodyBaseA);
 		gl.uniform3f(p.uCrestCol, knobs.crest.rgb[0], knobs.crest.rgb[1], knobs.crest.rgb[2]);
 		gl.uniform1f(p.uCrestA, knobs.crestA);
 		gl.uniform3fv(p.uCrestV, crestVArr);
