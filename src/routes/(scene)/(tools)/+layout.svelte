@@ -419,22 +419,22 @@
 		   them from the cascade (window.__dire.retune() after devtools edits).
 		   Border-only on purpose: --dire itself is the tool-zone accent (~148
 		   call sites) and stays untouched. */
-		--dire-base: #0e0c0f; /* the shell ground ⚓ NATE 2026-08-01 — warm off-black */
-		--dire-sky: #1c152f; /* gradient far end — dark violet-navy    L.22 C.050 H295 */
-		--dire-horizon: #491740; /* gradient edge end — the magenta glow   L.30 C.095 H335 */
-		--dire-wave-far: #482f62; /* tallest, deepest wave — violet station L.36 C.090 H305 */
-		--dire-wave-mid: #703879; /* middle wave — purple station           L.44 C.120 H322 */
-		--dire-wave-near: #9c3774; /* front wave — the dire station          L.50 C.150 H347 */
+		--dire-base: #121216; /* the shell ground ⚓ NATE 2026-08-01 — warm off-black */
+		--dire-sky: #1b1620; /* gradient far end — dark violet-navy    L.22 C.050 H295 */
+		--dire-horizon: #2f1e2f; /* gradient edge end — the magenta glow   L.30 C.095 H335 */
+		--dire-wave-far: #562974; /* tallest, deepest wave — violet station L.36 C.090 H305 */
+		--dire-wave-mid: #86306f; /* middle wave — purple station           L.44 C.120 H322 */
+		--dire-wave-near: #9e2952; /* front wave — the dire station          L.50 C.150 H347 */
 		--dire-crest: #e57db1; /* thin crest-line highlight (the "white ring" move:
 		   brightest thing on the edge is a LINE, not a band)   L.72 C.140 H350 */
 		--dire-crest-w: 2.5px; /* crest line thickness */
-		--dire-crest-a: 0.85; /* crest line opacity (independent of --dire-wave-cover,
+		--dire-crest-a: 0.0; /* crest line opacity (independent of --dire-wave-cover,
 		   so the crests survive even when the wave bodies run as faint washes) */
 		--dire-ember: #e14660; /* ember dot glow — the chroma peak       L.62 C.190 H15 */
 		--dire-top-h: 100px;
-		--dire-top-grad-h: 250px;
+		--dire-top-grad-h: 150px;
 		--dire-bottom-h: 200px;
-		--dire-bottom-grad-h: 350px;
+		--dire-bottom-grad-h: 200px;
 		--dire-halftone-h: 200px;
 		/* Scroll-under: per-layer wave opacity — how firmly each wave body
 		   occludes content passing beneath. ⚓ NATE 2026-08-01: pulled 0.9 →
@@ -444,7 +444,7 @@
 		   fade-top overlay and the crest lines (--dire-crest-a, cover-
 		   independent) carry the edge instead. Raise toward 0.9 to restore
 		   solid-body occlusion. */
-		--dire-wave-cover: 0.1;
+		--dire-wave-cover: 0.5;
 		/* Wave tile width: smaller = smaller waves but MUCH lighter compositor
 		   textures (memory ∝ tile-w²), which is what curbs the eviction-flash +
 		   scroll judder. Dial to taste (down from the 220vw default). */
