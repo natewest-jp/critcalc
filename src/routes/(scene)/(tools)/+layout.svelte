@@ -419,17 +419,35 @@
 		   them from the cascade (window.__dire.retune() after devtools edits).
 		   Border-only on purpose: --dire itself is the tool-zone accent (~148
 		   call sites) and stays untouched. */
-		--dire-base: #121216; /* the shell ground ⚓ NATE 2026-08-01 — warm off-black */
-		--dire-sky: #1b1620; /* gradient far end — dark violet-navy    L.22 C.050 H295 */
-		--dire-horizon: #2f1e2f; /* gradient edge end — the magenta glow   L.30 C.095 H335 */
-		--dire-wave-far: #562974; /* tallest, deepest wave — violet station L.36 C.090 H305 */
-		--dire-wave-mid: #86306f; /* middle wave — purple station           L.44 C.120 H322 */
-		--dire-wave-near: #9e2952; /* front wave — the dire station          L.50 C.150 H347 */
-		--dire-crest: #e57db1; /* thin crest-line highlight (the "white ring" move:
-		   brightest thing on the edge is a LINE, not a band)   L.72 C.140 H350 */
-		--dire-crest-w: 2.5px; /* crest line thickness */
-		--dire-crest-a: 0.0; /* crest line opacity (independent of --dire-wave-cover,
-		   so the crests survive even when the wave bodies run as faint washes) */
+		--dire-base: #121216; /* the shell ground ⚓ NATE — near-neutral off-black  L.18 C.008 */
+		--dire-sky: #1b1620; /* gradient far end ⚓ NATE — dusk violet     L.21 C.021 H307 */
+		--dire-horizon: #2f1e2f; /* gradient edge end ⚓ NATE — quiet magenta  L.26 C.039 H327 */
+		/* Wave BODIES (↻ 2026-08-01 line-layer redesign — two bodies + one line,
+		   was three bodies): each body is a HORIZONTAL screen-space gradient,
+		   left → right — the Stygian strip's own hue drift (measured H292→H329
+		   across one band). A crest travels through the hues as it crosses the
+		   viewport. Defaults chain Nate's three tuned stations: far runs
+		   violet→purple, near runs purple→crimson — the retired mid station
+		   lives on as the shared middle hue. */
+		--dire-wave-far-l: #562974; /* far body, left   ⚓ NATE  L.38 C.127 H309 */
+		--dire-wave-far-r: #86306f; /* far body, right  ⚓ NATE  L.46 C.139 H340 */
+		--dire-wave-near-l: #86306f; /* near body, left  ⚓ NATE  (shared middle) */
+		--dire-wave-near-r: #9e2952; /* near body, right ⚓ NATE  L.48 C.155 H4 */
+		/* The LINE wave — the old mid layer reborn as a stroke-only silhouette:
+		   no body fill, just the thin bright edge line riding its own motion
+		   between the two bodies. Its opacity BREATHES: a slow modulation
+		   drifts along the line so segments fade to transparent and back
+		   (shader-side — the SVG limitation doesn't apply). */
+		--dire-crest: #e57db1; /* line color   L.72 C.140 H350 */
+		--dire-crest-w: 2.5px; /* line thickness */
+		--dire-crest-a: 0.85; /* line PEAK opacity (0 hides the line layer entirely;
+		   independent of --dire-wave-cover) */
+		--dire-crest-fade-n: 2; /* fade cycles along one tile — how many bright
+		   segments the line carries at once */
+		--dire-crest-fade-dur: 8s; /* one full fade-through (drifts along the line,
+		   so segments continuously dissolve and re-emerge) */
+		--dire-crest-fade-min: 0; /* opacity floor of the fade troughs (0 = fully
+		   transparent; raise toward 1 for a steadier line) */
 		--dire-ember: #e14660; /* ember dot glow — the chroma peak       L.62 C.190 H15 */
 		--dire-top-h: 100px;
 		--dire-top-grad-h: 150px;

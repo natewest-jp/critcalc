@@ -22,15 +22,18 @@
 	// inside it can paint above .dire-over — overlays that may reach the edge
 	// zones must portal to <body> (the notation editor's tooltips do).
 	//
-	// COLOR MODEL (rebuilt 2026-08-01 — the twilight ramp): every color is an
-	// explicit STATION knob on .tool-shell in the tools layout; the old
-	// one-tint × lightness-scalar plumbing (--dire-edge / --dire-grad-*-l /
-	// --dire-edge-boost / crestL–edgeL) is retired. Stations, content-side →
-	// viewport edge: --dire-base (shell ground) → --dire-sky (violet-navy) →
-	// --dire-horizon (magenta glow behind the waves) → the three wave
-	// stations (--dire-wave-far/-mid/-near: violet → purple → dire) →
-	// --dire-crest (thin bright crest line) → --dire-ember (chroma-peak
-	// glow dots). Geometry/speed knobs unchanged:
+	// COLOR MODEL (rebuilt 2026-08-01 — the twilight ramp; line-layer redesign
+	// same day): every color is an explicit knob on .tool-shell in the tools
+	// layout; the old one-tint × lightness-scalar plumbing (--dire-edge /
+	// --dire-grad-*-l / --dire-edge-boost / crestL–edgeL) is retired.
+	// Content-side → viewport edge: --dire-base (shell ground) → --dire-sky →
+	// --dire-horizon (glow behind the waves) → TWO body waves, each a
+	// horizontal screen-space gradient (--dire-wave-far-l/-r behind,
+	// --dire-wave-near-l/-r in front — a crest travels through the hues as it
+	// crosses) → the LINE wave between them (--dire-crest: stroke-only
+	// silhouette whose opacity breathes in and out of transparency —
+	// --dire-crest-fade-n/-dur/-min) → --dire-ember (chroma-peak glow dots).
+	// Geometry/speed knobs unchanged:
 	//   --dire-top-h           top wave line: crest tops out at this mark
 	//   --dire-top-grad-h      top gradient reach
 	//   --dire-bottom-h        bottom wave line: crest tops out at this mark

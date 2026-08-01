@@ -94,45 +94,47 @@ const GRAD_Y_CREST = 35.92;
 const GRAD_Y_EDGE = 200;
 
 /** Per-layer params. Motion (flowDur/delayS/reverse/marginPx/hDiv) is verbatim
- *  from the shipped CSS strips. ↻ 2026-08-01 twilight ramp: the fills are no
- *  longer lightness pairs against one tint — each layer points at a RAMP
- *  STATION knob (--dire-wave-far/-mid/-near), and its two gradient stops are
- *  derived from that one color (edge stop = the station; crest-side stop =
- *  the station shaded by WAVE_DEPTH_SHADE, the depth cue). Array order is
- *  PAINT order: TALLEST layer (margin 0, crests highest) painted deepest and
- *  wears the FAR station (violet); SHORTEST painted last, on top, wears the
- *  NEAR station (dire) — the Stygian hue journey, violet in the distance
- *  arriving at dire up front. */
+ *  from the shipped CSS strips. ↻ 2026-08-01 line-layer redesign (Nate): two
+ *  BODY waves + one LINE wave, replacing three bodies —
+ *    · body layers ('far' behind, 'near' in front) fill with a HORIZONTAL
+ *      screen-space gradient (--dire-wave-*-l → -r): a crest travels through
+ *      the hues as it crosses the viewport (the Stygian strip's measured
+ *      H292→H329 drift). Bodies carry NO edge line.
+ *    · the 'line' layer (the old mid slot, its motion kept) is a stroke-only
+ *      silhouette: no fill, just the thin --dire-crest edge line, breathing
+ *      in and out of transparency via a drifting opacity modulation.
+ *  Array order is PAINT order: far body deepest, line between, near body on
+ *  top. */
 interface WaveLayer {
 	flowDur: number; // s, before the --dire-speed divide
 	hDiv: number;
-	station: 0 | 1 | 2; // index into the resolved far/mid/near station colors
+	role: 'far' | 'line' | 'near';
 	marginPx: number;
 	delayS: number; // the CSS animation-delay (negative = started that long ago)
 	reverse: boolean;
 }
 
-/** Crest-side shade factor: each wave's gradient darkens toward its crest by
- *  this multiple of the station color — ONE depth constant where six pinned
- *  lightnesses used to live. */
+/** Crest-side shade factor: each body's fill darkens toward its crest by this
+ *  multiple — ONE depth constant where six pinned lightnesses used to live.
+ *  Applied in-shader (vertical), composing with the horizontal hue gradient. */
 const WAVE_DEPTH_SHADE = 0.62;
 
 const BOTTOM_LAYERS: WaveLayer[] = [
-	// tallest — deepest — violet (far station)
-	{ flowDur: 30, hDiv: 15, station: 0, marginPx: 0, delayS: 0, reverse: false },
-	// mid — purple (mid station)
-	{ flowDur: 46, hDiv: 15, station: 1, marginPx: -36, delayS: -13, reverse: true },
-	// shortest — on top — dire (near station)
-	{ flowDur: 38, hDiv: 15, station: 2, marginPx: -64, delayS: -7, reverse: false }
+	// tallest — deepest body (violet→purple)
+	{ flowDur: 30, hDiv: 15, role: 'far', marginPx: 0, delayS: 0, reverse: false },
+	// mid slot — the breathing edge line
+	{ flowDur: 46, hDiv: 15, role: 'line', marginPx: -36, delayS: -13, reverse: true },
+	// shortest — front body (purple→crimson), on top
+	{ flowDur: 38, hDiv: 15, role: 'near', marginPx: -64, delayS: -7, reverse: false }
 ];
 
 const TOP_LAYERS: WaveLayer[] = [
-	// tallest — deepest — violet (far station)
-	{ flowDur: 34, hDiv: 17, station: 0, marginPx: 0, delayS: 0, reverse: true },
-	// mid — purple (mid station)
-	{ flowDur: 50, hDiv: 17, station: 1, marginPx: -21, delayS: -17, reverse: false },
-	// shortest — on top — dire (near station)
-	{ flowDur: 42, hDiv: 17, station: 2, marginPx: -42, delayS: -5, reverse: true }
+	// tallest — deepest body (violet→purple)
+	{ flowDur: 34, hDiv: 17, role: 'far', marginPx: 0, delayS: 0, reverse: true },
+	// mid slot — the breathing edge line
+	{ flowDur: 50, hDiv: 17, role: 'line', marginPx: -21, delayS: -17, reverse: false },
+	// shortest — front body (purple→crimson), on top
+	{ flowDur: 42, hDiv: 17, role: 'near', marginPx: -42, delayS: -5, reverse: true }
 ];
 
 /** Native size of the noise asset, CSS px. */
@@ -203,23 +205,25 @@ void main() {
  *  - u: `fract(x/tileW + signedPhase)` — the infinite scroll. The sign folds
  *    `animation-direction: reverse` in JS.
  *  - The tile texture holds the authored silhouette × alpha ramp as its alpha
- *    channel; one tile serves all six layers. ↻ 2026-08-01: each layer's fill
- *    is its RAMP STATION (deep = shaded station at the crest side, edge = the
- *    station), so per-wave hue variation is back — by station color, not a
- *    filter (the Stygian violet→dire journey).
- *  - THE CREST LINE: a second sample of the silhouette mask, offset toward
- *    the boundary by the layer's crest thickness (u_crestV, tile-v units) —
- *    fragments inside the body whose offset sample falls OUTSIDE it are
- *    within the crest band. Composited source-over ABOVE the body at its own
- *    u_crestA (independent of u_cover, so the thin bright line survives even
- *    when the bodies run as faint washes) — the "brightest thing on the edge
- *    is a LINE, not a band" move from the Arlecchino-wallpaper analysis.
+ *    channel; one tile serves all six layers.
+ *  - BODY layers (u_role 0): fill = the layer's horizontal screen-space
+ *    gradient (u_colorL → u_colorR over the viewport width — a crest travels
+ *    through the hues as it crosses), shaded toward the crest side by
+ *    WAVE_DEPTH_SHADE (the vertical depth cue). No edge line.
+ *  - The LINE layer (u_role 1): no fill — only the silhouette-edge stroke,
+ *    found by a second mask sample offset toward the boundary (u_crestV,
+ *    tile-v units): fragments inside the shape whose offset sample falls
+ *    outside it are within the line. Its opacity BREATHES: a sinusoidal
+ *    modulation over tile-u with its own clock (u_fade = cycles, phase,
+ *    floor) drifts along the line, so segments dissolve to transparent and
+ *    re-emerge — the fade Nate asked for, trivial in a shader where SVG
+ *    strokes would fight it.
  *
- * SCROLL-UNDER: each layer is an opaque analytic gradient masked by u_shape
+ * SCROLL-UNDER: body fills are opaque analytic gradients masked by u_shape
  * (the silhouette rastered SOLID, so the boundary keeps its raster
- * antialiasing) and composited source-over at u_cover opacity. At cover ~0.9
- * the bodies occlude content scrolling behind the waves; at Nate's current
- * 0.1 they are luminous washes and the crest lines carry the edge.
+ * antialiasing) and composited source-over at u_cover opacity — at ~0.9 they
+ * occlude content scrolling behind the waves, at low cover they run as
+ * luminous washes and the line carries the edge.
  *
  * highp: v_css spans the viewport width — mediump (fp16 floor) would quantize
  * the scroll to visible ~2px steps on mobile GPUs.
@@ -228,35 +232,40 @@ const WAVE_FRAGMENT_SRC = `
 precision highp float;
 varying vec2 v_css;
 uniform sampler2D u_shape; // silhouette solid (alpha) — antialiased coverage mask
+uniform vec2 u_size;       // canvas CSS size (px) — .x spans the viewport
 uniform float u_tileW;
-uniform vec4 u_geom[3];      // slotTopY, waveH, signedPhase, flip
-uniform vec3 u_colorDeep[3]; // fill stop at the crest / UI-facing side (shaded station)
-uniform vec3 u_colorEdge[3]; // fill stop at the viewport edge (the station)
-uniform float u_cover;       // per-layer body opacity
-uniform vec3 u_crestCol;     // crest line color (--dire-crest)
-uniform float u_crestA;      // crest line opacity (--dire-crest-a)
-uniform vec3 u_crestV;       // per-layer crest thickness, tile-v units
+uniform vec4 u_geom[3];   // slotTopY, waveH, signedPhase, flip
+uniform vec3 u_colorL[3]; // body fill at the viewport's LEFT edge
+uniform vec3 u_colorR[3]; // body fill at the viewport's RIGHT edge
+uniform vec3 u_role;      // 0 = body, 1 = line
+uniform float u_cover;    // body opacity
+uniform vec3 u_crestCol;  // line color (--dire-crest)
+uniform float u_crestA;   // line peak opacity (--dire-crest-a)
+uniform vec3 u_crestV;    // per-layer line thickness, tile-v units
+uniform vec3 u_fade;      // line fade: cycles per tile, drift phase, floor
 void main() {
 	vec4 acc = vec4(0.0);
+	float x01 = clamp(v_css.x / u_size.x, 0.0, 1.0);
 	for (int i = 0; i < 3; i++) {
 		float v = (v_css.y - u_geom[i].x) / u_geom[i].y;
 		v = mix(v, 1.0 - v, u_geom[i].w);
-		float body = 0.0;
-		float crest = 0.0;
-		vec3 col = vec3(0.0);
 		if (v > 0.0 && v < 1.0) {
 			float u = fract(v_css.x / u_tileW + u_geom[i].z);
 			float shape = texture2D(u_shape, vec2(u, v)).a;
-			float above = texture2D(u_shape, vec2(u, v - u_crestV[i])).a;
-			body = shape * u_cover;
-			crest = shape * (1.0 - above) * u_crestA;
-			float g = clamp(
-				(v * 200.0 - ${GRAD_Y_CREST.toFixed(2)}) / ${(GRAD_Y_EDGE - GRAD_Y_CREST).toFixed(2)},
-				0.0, 1.0);
-			col = mix(u_colorDeep[i], u_colorEdge[i], g);
+			if (u_role[i] < 0.5) {
+				float body = shape * u_cover;
+				float g = clamp(
+					(v * 200.0 - ${GRAD_Y_CREST.toFixed(2)}) / ${(GRAD_Y_EDGE - GRAD_Y_CREST).toFixed(2)},
+					0.0, 1.0);
+				vec3 col = mix(u_colorL[i], u_colorR[i], x01) * mix(${WAVE_DEPTH_SHADE.toFixed(2)}, 1.0, g);
+				acc = vec4(col, 1.0) * body + acc * (1.0 - body);
+			} else {
+				float above = texture2D(u_shape, vec2(u, v - u_crestV[i])).a;
+				float breathe = mix(u_fade.z, 1.0, 0.5 + 0.5 * sin(6.28318 * (u * u_fade.x + u_fade.y)));
+				float line = shape * (1.0 - above) * u_crestA * breathe;
+				acc = vec4(u_crestCol, 1.0) * line + acc * (1.0 - line);
+			}
 		}
-		acc = vec4(col, 1.0) * body + acc * (1.0 - body);
-		acc = vec4(u_crestCol, 1.0) * crest + acc * (1.0 - crest);
 	}
 	gl_FragColor = acc;
 }
@@ -378,25 +387,30 @@ function rasterizeWaveShape(): HTMLCanvasElement {
 
 // --- Knobs from computed style ---------------------------------------------------
 
+interface ResolvedColor {
+	rgb: [number, number, number];
+	css: string;
+}
+
 interface Knobs {
 	tileW: number; // px (resolved from the vw-typed knob)
-	waveCover: number; // per-layer wave body opacity, --dire-wave-cover
+	waveCover: number; // body opacity, --dire-wave-cover
 	speed: number;
 	noiseDur: number; // s
-	crestW: number; // crest line thickness, CSS px (--dire-crest-w)
-	crestA: number; // crest line opacity (--dire-crest-a)
-	/** The three resolved wave stations (far/mid/near), each expanded to its
-	 *  two gradient stops: edge = the station; deep = the station shaded by
-	 *  WAVE_DEPTH_SHADE. Both the parsed 0–1 RGB (GL) and a css string (the
-	 *  2D fallback's gradient stops). Shared by both edges. */
-	stations: {
-		deep: { rgb: [number, number, number]; css: string };
-		edge: { rgb: [number, number, number]; css: string };
-	}[];
-	/** Crest line color (--dire-crest). */
-	crest: { rgb: [number, number, number]; css: string };
+	crestW: number; // line thickness, CSS px (--dire-crest-w)
+	crestA: number; // line peak opacity (--dire-crest-a)
+	fadeN: number; // line fade cycles per tile (--dire-crest-fade-n)
+	fadeDur: number; // s per fade drift cycle (--dire-crest-fade-dur)
+	fadeMin: number; // fade trough floor 0–1 (--dire-crest-fade-min)
+	/** The two body waves' horizontal gradient endpoints (viewport left →
+	 *  right). Both the parsed 0–1 RGB (GL) and a css string (2D fallback).
+	 *  Shared by both edges. */
+	far: { l: ResolvedColor; r: ResolvedColor };
+	near: { l: ResolvedColor; r: ResolvedColor };
+	/** Line color (--dire-crest). */
+	crest: ResolvedColor;
 	/** Ember glow color (--dire-ember). */
-	ember: { rgb: [number, number, number]; css: string };
+	ember: ResolvedColor;
 }
 
 /** Resolve ANY serialized color to sRGB bytes via a 1×1 canvas fill — engines
@@ -442,30 +456,23 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
 		return raw.endsWith('ms') ? v / 1000 : v;
 	};
 
-	// Ramp stations: each resolved through the probe's `color` (the browser
+	// Ramp colors: each resolved through the probe's `color` (the browser
 	// handles whatever color syntax the knob holds — hex, hsl, relative
-	// color), then expanded to its two gradient stops in JS. Fallbacks match
-	// the tools-layout defaults so a knob-less host stays on the ramp.
-	const resolve = (cssVar: string) => {
+	// color). Fallbacks match the tools-layout defaults so a knob-less host
+	// stays on the ramp.
+	const resolve = (cssVar: string): ResolvedColor => {
 		probe.style.color = cssVar;
 		const css = getComputedStyle(probe).color;
 		return { rgb: resolveColor(css), css };
 	};
-	const shade = (c: { rgb: [number, number, number] }) => {
-		const rgb: [number, number, number] = [
-			c.rgb[0] * WAVE_DEPTH_SHADE,
-			c.rgb[1] * WAVE_DEPTH_SHADE,
-			c.rgb[2] * WAVE_DEPTH_SHADE
-		];
-		const to255 = (v: number) => Math.round(v * 255);
-		return { rgb, css: `rgb(${to255(rgb[0])}, ${to255(rgb[1])}, ${to255(rgb[2])})` };
+	const far = {
+		l: resolve('var(--dire-wave-far-l, #562974)'),
+		r: resolve('var(--dire-wave-far-r, #86306f)')
 	};
-	const stations = [
-		resolve('var(--dire-wave-far, #482f62)'),
-		resolve('var(--dire-wave-mid, #703879)'),
-		resolve('var(--dire-wave-near, #9c3774)')
-	].map((edge) => ({ deep: shade(edge), edge }));
-
+	const near = {
+		l: resolve('var(--dire-wave-near-l, #86306f)'),
+		r: resolve('var(--dire-wave-near-r, #9e2952)')
+	};
 	const crest = resolve('var(--dire-crest, #e57db1)');
 	const ember = resolve('var(--dire-ember, var(--dire, hsl(342 85% 46%)))');
 
@@ -476,7 +483,11 @@ function measureKnobs(host: HTMLElement, probe: HTMLElement): Knobs {
 		noiseDur: dur('--dire-noise-dur', 8),
 		crestW: num('--dire-crest-w', 2.5),
 		crestA: num('--dire-crest-a', 0.85),
-		stations,
+		fadeN: num('--dire-crest-fade-n', 2),
+		fadeDur: dur('--dire-crest-fade-dur', 8),
+		fadeMin: num('--dire-crest-fade-min', 0),
+		far,
+		near,
 		crest,
 		ember
 	};
@@ -528,12 +539,14 @@ interface WavePipeline {
 	uSize: WebGLUniformLocation;
 	uTileW: WebGLUniformLocation;
 	uGeom: WebGLUniformLocation;
-	uColorDeep: WebGLUniformLocation;
-	uColorEdge: WebGLUniformLocation;
+	uColorL: WebGLUniformLocation;
+	uColorR: WebGLUniformLocation;
+	uRole: WebGLUniformLocation;
 	uCover: WebGLUniformLocation;
 	uCrestCol: WebGLUniformLocation;
 	uCrestA: WebGLUniformLocation;
 	uCrestV: WebGLUniformLocation;
+	uFade: WebGLUniformLocation;
 }
 
 interface NoisePipeline {
@@ -587,9 +600,6 @@ export function createDireBorder(
 	let knobs = measureKnobs(host, probe);
 
 	const waveShape = rasterizeWaveShape();
-	/** Per-layer gradient-filled tiles for the 2D fallback, keyed by the
-	 *  resolved crest|edge stop pair. */
-	const tintedTiles = new Map<string, HTMLCanvasElement>();
 
 	// The noise image: loaded once (AVIF, WebP on decode failure), uploaded to
 	// the noise context and/or drawn by the 2D fallback when it arrives.
@@ -622,12 +632,14 @@ export function createDireBorder(
 				uSize: u(program, 'u_size'),
 				uTileW: u(program, 'u_tileW'),
 				uGeom: u(program, 'u_geom'),
-				uColorDeep: u(program, 'u_colorDeep'),
-				uColorEdge: u(program, 'u_colorEdge'),
+				uColorL: u(program, 'u_colorL'),
+				uColorR: u(program, 'u_colorR'),
+				uRole: u(program, 'u_role'),
 				uCover: u(program, 'u_cover'),
 				uCrestCol: u(program, 'u_crestCol'),
 				uCrestA: u(program, 'u_crestA'),
-				uCrestV: u(program, 'u_crestV')
+				uCrestV: u(program, 'u_crestV'),
+				uFade: u(program, 'u_fade')
 			};
 		}
 		const program = buildProgram(gl, NOISE_FRAGMENT_SRC);
@@ -714,29 +726,42 @@ export function createDireBorder(
 		if (!raf) renderAll(now());
 	}
 
-	/** Gradient-filled copy of the silhouette for the 2D fallback: the shape
-	 *  mask × the layer's deep→edge station fill (same span the shader mixes
-	 *  over). The crest LINE is GL-only — a static fallback frame doesn't
-	 *  earn the extra offset-mask pass. */
-	function tintedTile(deepCss: string, edgeCss: string): HTMLCanvasElement {
-		const key = `${deepCss}|${edgeCss}`;
-		let tile = tintedTiles.get(key);
-		if (!tile) {
-			tile = document.createElement('canvas');
-			tile.width = TILE_W;
-			tile.height = TILE_H;
-			const ctx = tile.getContext('2d')!;
-			ctx.drawImage(waveShape, 0, 0);
-			ctx.globalCompositeOperation = 'source-in';
-			const scale = TILE_H / 200;
-			const grad = ctx.createLinearGradient(0, GRAD_Y_CREST * scale, 0, GRAD_Y_EDGE * scale);
-			grad.addColorStop(0, deepCss);
-			grad.addColorStop(1, edgeCss);
-			ctx.fillStyle = grad;
-			ctx.fillRect(0, 0, TILE_W, TILE_H);
-			tintedTiles.set(key, tile);
+	/** 2D-fallback band painter: the tiled silhouette mask × the body's
+	 *  HORIZONTAL viewport-wide gradient (source-in). The line layer and the
+	 *  vertical depth shade are GL-only — one static fallback frame doesn't
+	 *  earn the extra passes. */
+	function paintBodyBand(
+		ctx: CanvasRenderingContext2D,
+		band: Band,
+		layer: WaveLayer,
+		waveH: number,
+		top: number
+	): void {
+		const off = document.createElement('canvas');
+		off.width = Math.max(1, Math.ceil(band.cssW));
+		off.height = Math.max(1, Math.ceil(waveH));
+		const octx = off.getContext('2d')!;
+		for (let x = 0; x < band.cssW; x += knobs.tileW) {
+			octx.drawImage(waveShape, x, 0, knobs.tileW, waveH);
 		}
-		return tile;
+		octx.globalCompositeOperation = 'source-in';
+		const body = layer.role === 'near' ? knobs.near : knobs.far;
+		const grad = octx.createLinearGradient(0, 0, band.cssW, 0);
+		grad.addColorStop(0, body.l.css);
+		grad.addColorStop(1, body.r.css);
+		octx.fillStyle = grad;
+		octx.fillRect(0, 0, off.width, off.height);
+		ctx.save();
+		if (band.isTop) {
+			// scaleY(-1) — tile body hangs down from the slot top
+			ctx.translate(0, top + waveH);
+			ctx.scale(1, -1);
+		} else {
+			ctx.translate(0, top);
+		}
+		ctx.globalAlpha = knobs.waveCover;
+		ctx.drawImage(off, 0, 0);
+		ctx.restore();
 	}
 
 	/** Sync a band's backing store to its CSS box. True if it changed. */
@@ -765,8 +790,9 @@ export function createDireBorder(
 	}
 
 	const geom = new Float32Array(12);
-	const colorDeepArr = new Float32Array(9);
-	const colorEdgeArr = new Float32Array(9);
+	const colorLArr = new Float32Array(9);
+	const colorRArr = new Float32Array(9);
+	const roleArr = new Float32Array(3);
 	const crestVArr = new Float32Array(3);
 
 	function renderWavesGL(band: Band, t: number, staticFrame: boolean): void {
@@ -779,22 +805,28 @@ export function createDireBorder(
 			geom[i * 4 + 1] = waveH;
 			geom[i * 4 + 2] = staticFrame ? 0 : wavePhase(layer, t, knobs.speed);
 			geom[i * 4 + 3] = band.isTop ? 1 : 0;
-			const station = knobs.stations[layer.station];
-			colorDeepArr.set(station.deep.rgb, i * 3);
-			colorEdgeArr.set(station.edge.rgb, i * 3);
-			// Crest thickness in tile-v units: v spans waveH CSS px.
+			roleArr[i] = layer.role === 'line' ? 1 : 0;
+			const body = layer.role === 'near' ? knobs.near : knobs.far; // line entries unused
+			colorLArr.set(body.l.rgb, i * 3);
+			colorRArr.set(body.r.rgb, i * 3);
+			// Line thickness in tile-v units: v spans waveH CSS px.
 			crestVArr[i] = knobs.crestW / waveH;
 		}
 		gl.viewport(0, 0, band.canvas.width, band.canvas.height);
 		gl.uniform2f(p.uSize, band.cssW, band.cssH);
 		gl.uniform1f(p.uTileW, knobs.tileW);
 		gl.uniform4fv(p.uGeom, geom);
-		gl.uniform3fv(p.uColorDeep, colorDeepArr);
-		gl.uniform3fv(p.uColorEdge, colorEdgeArr);
+		gl.uniform3fv(p.uColorL, colorLArr);
+		gl.uniform3fv(p.uColorR, colorRArr);
+		gl.uniform3fv(p.uRole, roleArr);
 		gl.uniform1f(p.uCover, knobs.waveCover);
 		gl.uniform3f(p.uCrestCol, knobs.crest.rgb[0], knobs.crest.rgb[1], knobs.crest.rgb[2]);
 		gl.uniform1f(p.uCrestA, knobs.crestA);
 		gl.uniform3fv(p.uCrestV, crestVArr);
+		// Fade drift phase rides its own clock (fadeDur per cycle); static
+		// frames (reduced motion) pin it to the brightest alignment.
+		const fadePhase = staticFrame ? 0.25 : fract(t / knobs.fadeDur);
+		gl.uniform3f(p.uFade, knobs.fadeN, fadePhase, knobs.fadeMin);
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
 	}
 
@@ -835,25 +867,10 @@ export function createDireBorder(
 			return;
 		}
 		band.layers.forEach((layer) => {
+			if (layer.role === 'line') return; // GL-only (see paintBodyBand)
 			const waveH = knobs.tileW / layer.hDiv;
 			const top = slotTopY(layer, band.isTop, band.cssH, waveH);
-			ctx.save();
-			if (band.isTop) {
-				// scaleY(-1) — tile body hangs down from the slot top
-				ctx.translate(0, top + waveH);
-				ctx.scale(1, -1);
-			} else {
-				ctx.translate(0, top);
-			}
-			// One draw per layer: the gradient-filled tile at the layer opacity —
-			// exactly the GL composite (opaque fill × u_cover, source-over).
-			ctx.globalAlpha = knobs.waveCover;
-			const station = knobs.stations[layer.station];
-			const tile = tintedTile(station.deep.css, station.edge.css);
-			for (let x = 0; x < band.cssW; x += knobs.tileW) {
-				ctx.drawImage(tile, x, 0, knobs.tileW, waveH);
-			}
-			ctx.restore();
+			paintBodyBand(ctx, band, layer, waveH, top);
 		});
 	}
 
@@ -907,7 +924,6 @@ export function createDireBorder(
 
 	function remeasure(): void {
 		knobs = measureKnobs(host, probe);
-		tintedTiles.clear();
 		for (const band of bands) sizeBacking(band);
 		if (!raf) renderAll(now());
 	}
