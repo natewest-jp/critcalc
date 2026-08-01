@@ -19,8 +19,15 @@
 		elementPalette,
 		shiftHue,
 		castFill,
+		desaturate,
 		type ElementPalette
 	} from '$lib/utils/elementColors';
+	import {
+		UPTIME_DIM_MIX,
+		GHOST_FILL_MIX,
+		GHOST_EDGE_MIX,
+		GHOST_CHROMA_KEEP
+	} from '$lib/timeline/barMix';
 	import {
 		xForTime as projectX,
 		barGeom as projectBar,
@@ -182,11 +189,14 @@
 	// finish. Its Safari-revert history travelled with it.
 
 	// One gradient stop for the time-scaling buff envelope: --calm-fill (the buff
-	// body/fill) at the given alpha. color-mix with transparent ≡ rgba(calm-fill,
-	// alpha), so ramp/decay bars track any future --calm-fill change and stay in
-	// sync with the flat buff bars (which fill solid --calm-fill).
+	// body/fill) mixed toward the chart ground, so ramp/decay bars track any
+	// future --calm-fill change and stay in sync with the flat buff bars (which
+	// fill solid --calm-fill). ↻ 2026-08-01: mixes against --rp-chart-bg, NOT
+	// transparent — these bars always sit on the chart ground, and the alpha-
+	// compositing law says a fill on a known ground mixes opaquely against it
+	// (semi-transparent CSS renders display-dependently on P3).
 	function calmStop(alpha: number): string {
-		return `color-mix(in srgb, var(--calm-fill) ${(alpha * 100).toFixed(1)}%, transparent)`;
+		return `color-mix(in srgb, var(--calm-fill) ${(alpha * 100).toFixed(1)}%, var(--rp-chart-bg))`;
 	}
 
 	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)
@@ -1254,7 +1264,8 @@
 														class="rp-bar-uptime rp-bar-uptime--dim"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+														style:background="color-mix(in srgb, {p.main}
+														{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
@@ -1265,7 +1276,8 @@
 															class="rp-bar-cd rp-bar-cd--overflow"
 															style:left="{g.left}px"
 															style:width="{g.width}px"
-															style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+															style:background="color-mix(in srgb, {p.main}
+															{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														></div>
 													{/if}
 												{:else if seg.role === 'ghost'}
@@ -1273,8 +1285,16 @@
 														class="rp-bar-cd rp-bar-cd--ghost"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
-														style:border-color="color-mix(in srgb, {p.main} 25%, var(--rp-chart-bg))"
+														style:background="color-mix(in srgb, {desaturate(
+															p.main,
+															GHOST_CHROMA_KEEP
+														)}
+														{GHOST_FILL_MIX}%, var(--rp-chart-bg))"
+														style:border-color="color-mix(in srgb, {desaturate(
+															p.main,
+															GHOST_CHROMA_KEEP
+														)}
+														{GHOST_EDGE_MIX}%, var(--rp-chart-bg))"
 													>
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
@@ -1362,7 +1382,8 @@
 														class="rp-bar-uptime rp-bar-uptime--dim"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+														style:background="color-mix(in srgb, {p.main}
+														{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
@@ -1373,7 +1394,8 @@
 															class="rp-bar-cd rp-bar-cd--overflow"
 															style:left="{g.left}px"
 															style:width="{g.width}px"
-															style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+															style:background="color-mix(in srgb, {p.main}
+															{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														></div>
 													{/if}
 												{:else if seg.role === 'ghost'}
@@ -1381,8 +1403,16 @@
 														class="rp-bar-cd rp-bar-cd--ghost"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
-														style:border-color="color-mix(in srgb, {p.main} 25%, var(--rp-chart-bg))"
+														style:background="color-mix(in srgb, {desaturate(
+															p.main,
+															GHOST_CHROMA_KEEP
+														)}
+														{GHOST_FILL_MIX}%, var(--rp-chart-bg))"
+														style:border-color="color-mix(in srgb, {desaturate(
+															p.main,
+															GHOST_CHROMA_KEEP
+														)}
+														{GHOST_EDGE_MIX}%, var(--rp-chart-bg))"
 													>
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label"

@@ -883,6 +883,17 @@
 						label halo is the crutch for white-on-mid, not a universal. Dim continuations and ghost
 						tracks keep white + halo. Genshin's Lv-chip idiom; GaugeInstrument was the precedent.
 					</li>
+					<li>
+						<strong
+							>The lightness contract: content-bearing fills earn ΔL over their ground; recessive
+							fills drop chroma.</strong
+						>
+						A fill the eye should find (buff strips, dim continuations) sits measurably lighter than
+						<code>--frame-bg</code>; a fill that is structure (ghost CD tracks) recedes by
+						desaturating, so grayscale never mistakes it for content. The ratios are knobs in
+						<code>src/lib/timeline/barMix.ts</code>, shared by the DOM and the PNG exporter;
+						<code>timelineExport.mirror.test.ts</code> makes mirror drift a test failure.
+					</li>
 				</ul>
 			</div>
 

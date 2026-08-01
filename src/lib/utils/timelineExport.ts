@@ -17,8 +17,14 @@
  * color changes there, change it here.
  */
 
-import { elementPalette, shiftHue } from '$lib/utils/elementColors';
+import { elementPalette, shiftHue, desaturate } from '$lib/utils/elementColors';
 import { barPhases } from '$lib/timeline/barPhases';
+import {
+	UPTIME_DIM_MIX,
+	GHOST_FILL_MIX,
+	GHOST_EDGE_MIX,
+	GHOST_CHROMA_KEEP
+} from '$lib/timeline/barMix';
 import type { TimelineBar, InputBlock } from '$lib/utils/notationParser';
 import type {
 	CharReceivedBuffSubrow,
@@ -40,25 +46,26 @@ const LANE_LINE = '#2c3a58'; // --frame-line = mix(border 90%, frame-bg), resolv
 // with the dire/calm/gilt palette pass.
 const ACTIVE = '#757f93'; // --rp-active (Nate-sampled 2026-07-31; no longer the --neutral alias)
 const TEXT = '#e8ecf3'; // --text
-const MUTED = '#9baabf'; // --muted
+const MUTED = '#a3b1c3'; // --muted (drift caught by the mirror test 2026-08-01 — was the pre-recut #9baabf)
 const INK = '#081225'; // --ink (dark ink on bright fills — lightness-structure round 2026-08-01)
 // Paired tool tints — mirror app.css :root. --dire = hsl(340,85%,46%) =
-// #d91254; --calm-fill = #224577 (buff body/fill — the time-scaling ramp's full
-// end); --calm = #6b99c7 (bright accent stripe). Buff bars fill solid
-// calm-fill with a calm stripe; debuff/proc bars fill solid --dire-fill with a
-// dire stripe — the exact counterpart pairing. mix()/hexToRgb hoist.
+// #d91254; --calm-fill = #2b5590 (buff body/fill — the time-scaling ramp's full
+// end; lifted l30→l37 in the 2026-08-01 lightness round); --calm = #6b99c7
+// (bright accent stripe). Buff bars fill solid calm-fill with a calm stripe;
+// debuff/proc bars fill solid --dire-fill with a dire stripe — the exact
+// counterpart pairing. mix()/hexToRgb hoist.
 // (Ramping/decaying received buffs paint flat here — the on-screen opacity
 // envelope isn't reproduced; the flat fill matches their full end.)
 const DIRE_TINT = '#d91254';
-const CALM_TINT = '#224577';
+const CALM_TINT = '#2b5590';
 const CALM_EDGE = '#6b99c7';
 const TEAM_BUFF_FILL = CALM_TINT;
 const TEAM_BUFF_EDGE = CALM_EDGE;
 const TEAM_BUFF_LABEL = 'rgba(255,255,255,0.85)';
 // --dire-fill. The CSS computes this with relative-color syntax
-// (hsl(from var(--dire) h 56% 30%)); canvas can't resolve that, so it is
+// (hsl(from var(--dire) h 56% 37%)); canvas can't resolve that, so it is
 // pinned here as the literal that expression evaluates to.
-const DIRE_FILL = '#77223e';
+const DIRE_FILL = '#932a4d';
 const DEBUFF_FILL = DIRE_FILL;
 const DEBUFF_EDGE = DIRE_TINT;
 const DEBUFF_LABEL = 'rgba(255,255,255,0.85)';
@@ -67,6 +74,25 @@ const PROC_FILL = DIRE_FILL;
 const PROC_EDGE = DIRE_TINT;
 const PROC_LABEL = 'rgba(255,255,255,0.85)';
 const PORTRAIT_BG = '#1c2844'; // --surface (was a drifted stray #131c30)
+
+/** Test-only: the hand-maintained mirror, exported so
+ *  timelineExport.mirror.test.ts can assert it against app.css /
+ *  RotationTimeline.svelte. The mirror stops being trust-based — if a token
+ *  moves without this block, vitest fails. Not for runtime use. */
+export const PALETTE_MIRROR = {
+	CHART_BG,
+	GRID,
+	LANE_LINE,
+	ACTIVE,
+	TEXT,
+	MUTED,
+	INK,
+	DIRE_TINT,
+	CALM_TINT,
+	CALM_EDGE,
+	DIRE_FILL,
+	PORTRAIT_BG
+} as const;
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 // Chart text follows the site's Sans-default (body font). Only the notation
@@ -518,7 +544,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				ctx!.font = `700 9px ${SANS}`;
 				ctx!.textAlign = 'left';
 				if (dim) {
-					ctx!.fillStyle = mix(main, CHART_BG, 65);
+					ctx!.fillStyle = mix(main, CHART_BG, UPTIME_DIM_MIX);
 					rr(px, py, pw, ph, 1);
 					ctx!.fill();
 					// Dim continuation keeps the white+halo treatment.
@@ -753,14 +779,15 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		hline(oy + snap.rulerH + snap.nbTop + snap.nbH);
 	}
 
-	// z:0 — ghosts
+	// z:0 — ghosts (chroma-dropped before mixing — recessive structure; the
+	// desaturate/mix pairing mirrors the DOM's ghost rules exactly)
 	for (const g of ghosts) {
-		ctx.fillStyle = mix(g.main, CHART_BG, 20);
+		ctx.fillStyle = mix(desaturate(g.main, GHOST_CHROMA_KEEP), CHART_BG, GHOST_FILL_MIX);
 		rr(g.px, g.py, g.pw, g.ph, 1);
 		ctx.fill();
 		// 1px outline on top/right/bottom (left stays open — the track flows out
 		// of the cast pill); the right edge still marks the exact ready moment.
-		ctx.fillStyle = mix(g.main, CHART_BG, 25);
+		ctx.fillStyle = mix(desaturate(g.main, GHOST_CHROMA_KEEP), CHART_BG, GHOST_EDGE_MIX);
 		ctx.fillRect(g.px, g.py, g.pw, 1); // top
 		ctx.fillRect(g.px + g.pw - 1, g.py, 1, g.ph); // right
 		ctx.fillRect(g.px, g.py + g.ph - 1, g.pw, 1); // bottom

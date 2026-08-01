@@ -130,15 +130,20 @@
 	   Relative color is already proven in this codebase (direBorderGL's probe).
 	   ⚠ Canvas can't resolve it — timelineExport.ts mirrors it as a literal. */
 	--dire: hsl(340, 85%, 46%);
-	--dire-fill: hsl(from var(--dire) h 56% 30%);
+	--dire-fill: hsl(from var(--dire) h 56% 37%);
 
 	/* CALM — content register. These are the HIGH-saturation members of the
 	   family whose structural members are --surface / --surface-raised /
 	   --border above. --calm is the bright stripe / identity; --calm-fill is the
 	   buff bar BODY: the deep blue a time-scaling buff (Yelan Q, Mavuika Q)
-	   ramps up to at full, so flat and ramping buffs share one color. */
+	   ramps up to at full, so flat and ramping buffs share one color.
+	   ↻ 2026-08-01 lightness-structure: --calm-fill lifted l30 → l37 (oklch
+	   L.39 → L.45) — buff strips are content and earn real ΔL over --frame-bg
+	   (L.23) instead of hovering at the dire scene's lightness. --dire-fill's
+	   pinned l moves with it (30% → 37%), per the counterpart coupling above.
+	   ⚠ both mirrored as literals in timelineExport.ts. */
 	--calm: #6b99c7; /* bright stripe / identity  h210 s45 l60 */
-	--calm-fill: #224577; /* buff bar body             h215 s55 l30 */
+	--calm-fill: #2b5590; /* buff bar body             h215 s54 l37 */
 
 	/* GILT — the third family, added 2026-07-27. Genshin's own navy panels use
 	   gold for headings and cream for body; this is that voice. It follows the
@@ -290,10 +295,15 @@
 	/* Hydro is the one element whose token and icon deliberately DISAGREE: the
 	   token runs royal (205° → 208°, Nate 2026-07-28) so it separates from cryo
 	   in a dense timeline, and the icon runs cyan by an explicit offset in
-	   scripts/generate-element-icons.mjs. Change one, read the other. */
-	--el-hydro-main: #1b8cee;
-	--el-hydro-border: rgba(27, 140, 238, 0.5);
-	--el-hydro-hi: #8dc6f7;
+	   scripts/generate-element-icons.mjs. Change one, read the other.
+	   ↻ 2026-08-01 lightness-structure: dropped L.632 → L.58 — hydro sat at
+	   EXACTLY pyro's oklch lightness, so the two most common elements were one
+	   gray under the grayscale gate. Knob: the deeper #0f74c8 (L.55, ΔL .08)
+	   reads even better in grayscale but puts --ink under 4:1 on the main —
+	   pair it with white badge ink if chosen. */
+	--el-hydro-main: #0b7cd7;
+	--el-hydro-border: rgba(11, 124, 215, 0.5);
+	--el-hydro-hi: #85beeb;
 
 	--el-anemo-main: #4ecbb4;
 	--el-anemo-border: rgba(78, 203, 180, 0.5);
