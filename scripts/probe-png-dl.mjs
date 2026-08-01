@@ -1,4 +1,19 @@
+/**
+ * probe-png-dl.mjs — connector/active-strip alignment at an odd zoom, then
+ * the PNG export menu → Download flow, on a seeded 4-character share URL.
+ *
+ * ↻ Repaired 2026-08-01 (lightness-structure round): the zoom slider
+ * (.rp-zoom-inline) became − / + buttons in the frame-grammar rework, the
+ * menu items are .rp-png-item (not .tb-png-item), and downloads land in
+ * os.tmpdir() instead of a dead session path.
+ *
+ * Usage: build + serve on :4998 first (see .claude/skills/verify), then
+ *   node scripts/probe-png-dl.mjs
+ */
 import { chromium } from 'playwright';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 const SHARE =
 	'1~bY4xawJBEIX_yjKVwjUiWGwhxOSKEBDFSkI4xr0Xb3Gdhd25Kzzuv2fVJoFUwzePb-aNNJBdVCRRWX0UsvSSApzrvEQzq_dzU5u1OSKwmHpvtotCG4hA9c5r88G3vuN70NW7wr_0V7P63C7fvqgiBV_JSh9CRS5KVoTweJjJjnR6HiS7mioKkdvY65_9SJzUf7PTA_S9LS0lngJyRlOmP4OKeGG06Dhxc3l0-k8bfPItsoNoM0CQkGiaph8';
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -8,13 +23,12 @@ page.on('pageerror', (e) => errs.push(e.message));
 await page.goto(`http://localhost:4998/rotation-planner?r=${SHARE}`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(2200);
 
-// 1. Alignment check at an odd zoom (55 px/s)
-await page.evaluate(() => {
-	const s = document.querySelector('.rp-zoom-inline input');
-	s.value = '55';
-	s.dispatchEvent(new Event('input', { bubbles: true }));
-});
-await page.waitForTimeout(500);
+// 1. Alignment check at a non-default zoom (three + steps)
+for (let i = 0; i < 3; i++) {
+	await page.click('.rp-zoom-btn:has-text("+")');
+	await page.waitForTimeout(120);
+}
+await page.waitForTimeout(400);
 const misalign = await page.evaluate(() => {
 	const paths = [...document.querySelectorAll('.rp-svg--connectors path')].map((p) =>
 		p.getBoundingClientRect()
@@ -29,18 +43,17 @@ const misalign = await page.evaluate(() => {
 	}
 	return worst;
 });
-console.log('worst connector↔active gap @55px/s:', misalign, 'px');
+console.log('worst connector↔active gap at zoomed scale:', misalign, 'px');
 
-// 2. PNG menu → Download flow (clipboard removed to force download visibility later)
+// 2. PNG menu → Download flow
 await page.click('button[title="Export the timeline as an image"]');
 await page.waitForTimeout(300);
-await page.screenshot({
-	path: '/Users/producer/.claude/jobs/cd9dcc54/tmp/png-menu.png',
-	clip: { x: 1150, y: 0, width: 570, height: 140 }
-});
 const dl = page.waitForEvent('download', { timeout: 15000 });
-await page.click('.tb-png-item:has-text("Download")');
+await page.click('.rp-png-item:has-text("Download")');
 const download = await dl;
-await download.saveAs('/Users/producer/.claude/jobs/cd9dcc54/tmp/export2.png');
-console.log('downloaded:', download.suggestedFilename(), '| errors:', errs.length ? errs : 'none');
+const out = join(tmpdir(), 'critcalc-probe-export.png');
+await download.saveAs(out);
+console.log('downloaded:', download.suggestedFilename(), '→', out);
+console.log('errors:', errs.length ? errs : 'none');
 await browser.close();
+process.exit(errs.length ? 1 : 0);
