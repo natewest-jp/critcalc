@@ -419,9 +419,9 @@
 		   them from the cascade (window.__dire.retune() after devtools edits).
 		   Border-only on purpose: --dire itself is the tool-zone accent (~148
 		   call sites) and stays untouched. */
-		--dire-base: #121216; /* the shell ground ⚓ NATE — near-neutral off-black  L.18 C.008 */
-		--dire-sky: #1b1620; /* gradient far end ⚓ NATE — dusk violet     L.21 C.021 H307 */
-		--dire-horizon: #2f1e2f; /* gradient edge end ⚓ NATE — quiet magenta  L.26 C.039 H327 */
+		--dire-base: #110f15; /* the shell ground ⚓ NATE — near-neutral off-black  L.17 C.013 */
+		--dire-sky: #1a0e18; /* gradient far end ⚓ NATE — dusk plum       L.19 C.028 H333 */
+		--dire-horizon: #2b091f; /* gradient edge end ⚓ NATE — quiet magenta  L.21 C.064 H344 */
 		/* Wave BODIES (↻ 2026-08-01 line-layer redesign — two bodies + one line,
 		   was three bodies): each body is a HORIZONTAL screen-space gradient,
 		   left → right — the Stygian strip's own hue drift (measured H292→H329
@@ -429,20 +429,20 @@
 		   viewport. Defaults chain Nate's three tuned stations: far runs
 		   violet→purple, near runs purple→crimson — the retired mid station
 		   lives on as the shared middle hue. */
-		--dire-wave-far-l: #562974; /* far body, left   ⚓ NATE  L.38 C.127 H309 */
-		--dire-wave-far-r: #86306f; /* far body, right  ⚓ NATE  L.46 C.139 H340 */
-		--dire-wave-near-l: #86306f; /* near body, left  ⚓ NATE  (shared middle) */
-		--dire-wave-near-r: #9e2952; /* near body, right ⚓ NATE  L.48 C.155 H4 */
+		--dire-wave-far-l: #6f2ebe; /* far body, left   ⚓ NATE  L.47 C.208 H299 */
+		--dire-wave-far-r: #b92534; /* far body, right  ⚓ NATE  L.51 C.182 H22 */
+		--dire-wave-near-l: #8445bf; /* near body, left  ⚓ NATE  L.53 C.185 H305 */
+		--dire-wave-near-r: #cc425e; /* near body, right ⚓ NATE  L.58 C.174 H13 */
 		/* The LINE wave — the old mid layer reborn as a stroke-only silhouette:
 		   no body fill, just the thin bright edge line riding its own motion
 		   between the two bodies. Its opacity BREATHES: a slow modulation
 		   drifts along the line so segments fade to transparent and back
 		   (shader-side — the SVG limitation doesn't apply). */
-		--dire-crest: #e57db1; /* line color   L.72 C.140 H350 */
-		--dire-crest-w: 2.5px; /* line thickness */
-		--dire-crest-a: 0.85; /* line PEAK opacity (0 hides the line layer entirely;
+		--dire-crest: #e57da1; /* line color ⚓ NATE  L.72 C.134 H359 */
+		--dire-crest-w: 1.5px; /* line thickness */
+		--dire-crest-a: 0.3; /* line PEAK opacity (0 hides the line layer entirely;
 		   independent of --dire-wave-cover) */
-		--dire-crest-fade-n: 2; /* fade cycles along one tile — how many bright
+		--dire-crest-fade-n: 1; /* fade cycles along one tile — how many bright
 		   segments the line carries at once */
 		--dire-crest-fade-dur: 8s; /* one full fade-through (drifts along the line,
 		   so segments continuously dissolve and re-emerge) */
@@ -462,14 +462,14 @@
 		   fade-top overlay and the crest lines (--dire-crest-a, cover-
 		   independent) carry the edge instead. Raise toward 0.9 to restore
 		   solid-body occlusion. */
-		--dire-wave-cover: 0.5;
+		--dire-wave-cover: 0.3;
 		/* Wave tile width: smaller = smaller waves but MUCH lighter compositor
 		   textures (memory ∝ tile-w²), which is what curbs the eviction-flash +
 		   scroll judder. Dial to taste (down from the 220vw default). */
 		--dire-tile-w: 130vw;
 		/* Wave speed: 1 = the tuned feel (the ×10 tuning is baked into the base
 		   durations). Noise pace is its own knob — they never tune well together. */
-		--dire-speed: 0.5;
+		--dire-speed: 0.7;
 		--dire-noise-dur: 9.9s;
 		/* Scroll-under geometry: the chrome is fixed again, backed by the TOP
 		   waves painting over content (DireBorder's over-stratum, z2) — the top

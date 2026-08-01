@@ -147,7 +147,7 @@
 		left: 0;
 		right: 0;
 		height: var(--top-grad-h);
-		background: linear-gradient(to bottom, var(--horizon) 0%, var(--sky) 55%, var(--base) 100%);
+		background: linear-gradient(to bottom, var(--horizon) 0%, var(--sky) 50%, var(--base) 100%);
 	}
 
 	.grad-bottom {
@@ -156,7 +156,7 @@
 		left: 0;
 		right: 0;
 		height: var(--bottom-grad-h);
-		background: linear-gradient(to top, var(--horizon) 0%, var(--sky) 55%, var(--base) 100%);
+		background: linear-gradient(to top, var(--horizon) 0%, var(--sky) 50%, var(--base) 100%);
 	}
 
 	/* ── Fade overlays (static, over content, under the waves) ─────────────── */
