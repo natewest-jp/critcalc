@@ -124,7 +124,11 @@ check('team-buff strip = lifted --calm-fill', rp.buffBg === CALM_FILL, rp.buffBg
 check('composer button face = --control-face', rp.composerBg === CONTROL_FACE, rp.composerBg);
 check('planner active tab is beige', rp.activeTabBg === SEL_SURFACE, rp.activeTabBg);
 check('planner active tab ink', rp.activeTabColor === INK, rp.activeTabColor);
-check('--control-face token present', rp.controlFaceVar === '#586071', rp.controlFaceVar);
+check(
+	'--control-face token present',
+	rp.controlFaceVar === cssToken('--control-face'),
+	rp.controlFaceVar
+);
 
 // ── Team builder tabs ───────────────────────────────────────────────────────
 await page.goto('http://localhost:4998/team-builder', { waitUntil: 'networkidle' });

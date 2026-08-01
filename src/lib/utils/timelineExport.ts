@@ -36,9 +36,9 @@ import type {
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
-const CHART_BG = '#2b2d43'; // --frame-bg (Nate's lavender-slate ground, 2026-08-01)
-const GRID = '#383a54'; // --rp-grid = mix(border 55%, frame-bg), resolved
-const LANE_LINE = '#40425f'; // --frame-line = mix(border 90%, frame-bg), resolved
+const CHART_BG = '#23232d'; // --frame-bg (Nate's whisper-law anchor, 2026-08-01)
+const GRID = '#30303d'; // --rp-grid = mix(border 55%, frame-bg), resolved
+const LANE_LINE = '#383847'; // --frame-line = mix(border 90%, frame-bg), resolved
 // ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css :root. Canvas can't
 // resolve var(), so every token the export paints has to be duplicated here as
 // a literal. When a token value changes in app.css, change it here too or the
@@ -73,7 +73,7 @@ const DEBUFF_LABEL = 'rgba(255,255,255,0.85)';
 const PROC_FILL = DIRE_FILL;
 const PROC_EDGE = DIRE_TINT;
 const PROC_LABEL = 'rgba(255,255,255,0.85)';
-const PORTRAIT_BG = '#1c2844'; // --surface (was a drifted stray #131c30)
+const PORTRAIT_BG = '#2f2f3b'; // --surface (whisper-law modal, 2026-08-01)
 
 /** Test-only: the hand-maintained mirror, exported so
  *  timelineExport.mirror.test.ts can assert it against app.css /

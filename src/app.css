@@ -62,12 +62,26 @@
 	   Lightness rungs keep the brightness-round ladder, re-anchored through
 	   the two picked values. Derivation: scratchpad palette5.mjs pattern —
 	   anchors in, remaining rungs out. */
-	--surface: #1c2844; /* modal surface   ⚓ NATE  L.28 C.054 H265 */
+	/* ↻↻ 2026-08-01 THE WHISPER LAW — the structural stack re-anchored on
+	   Nate's Stygian-sampled ground: STRUCTURE IS A NEAR-NEUTRAL LIT BY THE
+	   SCENE. C 0.010–0.025, hue borrowed from the scene family (H≈285, the
+	   anchor's), lightness by the ladder — never an identity color. The
+	   ground is FIELD, not figure: real chroma on it white-balances every
+	   element bar (simultaneous contrast) and fights the border. Measured
+	   basis: every reference ground that works (Stygian C .010–.033,
+	   Training-Guide navy C .034, Nate's pick C .019) vs every critcalc
+	   ground that fought (C ≥ .040). Identity chroma belongs to CONTENT
+	   (element bars, calm/dire fills) — those keep their color. The old
+	   "chroma rises with lightness" rule is superseded for structure.
+	   --bg deliberately NOT re-anchored: it grounds the landing/meta world,
+	   which stays calm cosmic blue — the whisper law governs TOOL-world
+	   structure and the shared surfaces below. */
+	--surface: #2f2f3b; /* modal surface — one rung over the frame  L.31 C.022 H285 */
 	/* ↻ 2026-08-01 (Nate): surface-raised takes the BEIGE (= --gilt-soft) —
-	   in-page panels go light with dark ink, the Genshin two-polarity move.
-	   Border/frame rotated onto the twilight ramp's violet station (H≈280). */
+	   in-page panels go light with dark ink, the Genshin two-polarity move. */
 	--surface-raised: #ede8de; /* in-page panel   ⚓ NATE  beige, L.93 C.014 H85 */
-	--border: #424462; /* dividers, hairlines    ⚓ NATE  L.40 C.051 H281 */
+	--border: #3a3a4a; /* dividers, hairlines  ⚓ NATE  L.36 C.028 H285 — same hue as
+	   the ground, ΔL .09 over it: the derivation rule, satisfied by his pick */
 	/* A frame's own ground — DARKER and QUIETER than the panels (rule 2):
 	   the well is the calm deep the tool's content sits in. Its own member
 	   for the same reason --frame-line is: it was declared as a bare hex in
@@ -76,7 +90,8 @@
 	   ↻ Lightness from Nate's +30% reference (brightness round 2026-07-31).
 	   Mirrors: timelineExport CHART_BG + the frame-ground cutout strokes in
 	   the viz instruments. */
-	--frame-bg: #2b2d43; /* frame ground  ⚓ NATE   L.31 C.040 H280 (the lit lavender-slate, 2026-08-01) */
+	--frame-bg: #23232d; /* frame ground  ⚓ NATE — the whisper-law ANCHOR, sampled
+	   off the Stygian screen. L.26 C.019 H285 */
 	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
 	   composer's well. Both tools used to declare this hex privately
 	   (--rp-line / --tb-line).
@@ -84,7 +99,7 @@
 	   grounds now, softened toward the frame ground it sits on. Mixed
 	   against --frame-bg (opaque), NOT transparent: an alpha line's
 	   rendered color depends on the compositor (the dire-gradient lesson),
-	   and frame lines always sit on --frame-bg anyway. Resolves ≈ #40425f.
+	   and frame lines always sit on --frame-bg anyway. Resolves ≈ #383847.
 	   ⚠ timelineExport mirrors the RESOLVED literal — recompute it if
 	   --border, --frame-bg or the 90% move (the mirror test enforces). */
 	--frame-line: color-mix(in srgb, var(--border) 90%, var(--frame-bg));
@@ -228,18 +243,21 @@
 	   so selection reads gilt outside the portal and dire inside, for free.
 
 	   ↻ 2026-07-31: fills are TINTED, not white — a white alpha overlay
-	   desaturates whatever it covers (washed-out buttons, Nate). Calm-blue
-	   here (controls overwhelmingly sit on the blue surface world); the
-	   DIRE-tinted grounds (chrome bar, tool tab rows / toolbars) RE-DECLARE
-	   both fills with dire — see the rule beside the accent zoning, and
-	   note the same substituted-at-declaration law that forces --sel-fill's
-	   re-declaration applies here (a --fill-tint indirection would bake in
-	   calm at :root and never re-resolve). Deliberately NOT a blend mode:
+	   desaturates whatever it covers (washed-out buttons, Nate). The tint
+	   follows the GROUND FAMILY: ↻ 2026-08-01 whisper-law re-anchor — the
+	   surface world went scene-neutral, so the fills ride --neutral now
+	   (the calm tint read as blue objects on the neutral ground; revert to
+	   var(--calm) here if the neutral lift feels flat). The DIRE-tinted
+	   grounds (chrome bar, tool tab rows / toolbars) RE-DECLARE both fills
+	   with dire — see the rule beside the accent zoning, and note the same
+	   substituted-at-declaration law that forces --sel-fill's re-declaration
+	   applies here (a --fill-tint indirection would bake in the value at
+	   :root and never re-resolve). Deliberately NOT a blend mode:
 	   mix-blend-mode per control would mint a stacking context + compositor
 	   work on hundreds of elements (WebKit scar tissue); per-ground tints
 	   are deterministic. */
-	--fill-rest: color-mix(in srgb, var(--calm) 13%, transparent);
-	--fill-hover: color-mix(in srgb, var(--calm) 20%, transparent);
+	--fill-rest: color-mix(in srgb, var(--neutral) 13%, transparent);
+	--fill-hover: color-mix(in srgb, var(--neutral) 20%, transparent);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
@@ -254,7 +272,8 @@
 	   tool-zone re-declaration — it is deliberately ground-agnostic, the same
 	   slate on calm frames and dire toolbars, exactly as Genshin lays it on
 	   beige and navy alike. */
-	--control-face: #586071; /* control face  L.49 C.029 H265 */
+	--control-face: #5e5e70; /* control face  L.49 C.029 H285 — Genshin's slate
+	   lightness/chroma, hue re-anchored onto the whisper axis 2026-08-01 */
 	--control-face-hover: color-mix(in srgb, var(--control-face) 86%, white);
 
 	/* ↻ 2026-08-01 lightness-structure round: the TOP of the selection ladder.
