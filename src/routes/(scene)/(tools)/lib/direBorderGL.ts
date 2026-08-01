@@ -240,8 +240,8 @@ uniform sampler2D u_shape; // silhouette solid (alpha) — antialiased coverage 
 uniform vec2 u_size;       // canvas CSS size (px) — .x spans the viewport
 uniform float u_tileW;
 uniform vec4 u_geom[3];   // slotTopY, waveH, signedPhase, flip
-uniform vec3 u_colorL[3]; // body fill at the viewport's LEFT edge
-uniform vec3 u_colorR[3]; // body fill at the viewport's RIGHT edge
+uniform vec3 u_colorL[3]; // body hue cycle, pole A
+uniform vec3 u_colorR[3]; // body hue cycle, pole B
 uniform vec3 u_role;      // 0 = body, 1 = line
 uniform float u_cover;    // body opacity at the crest
 uniform float u_baseA;    // body alpha multiplier at the viewport-edge side (--dire-wave-base-a)
@@ -253,15 +253,20 @@ uniform float u_fade2;    // twin line's fade phase (opposite drift, JS-side)
 uniform vec3 u_crest2V;   // twin line's vertical offset, tile-v units
 void main() {
 	vec4 acc = vec4(0.0);
-	float x01 = clamp(v_css.x / u_size.x, 0.0, 1.0);
 	for (int i = 0; i < 3; i++) {
 		float v = (v_css.y - u_geom[i].x) / u_geom[i].y;
 		v = mix(v, 1.0 - v, u_geom[i].w);
 		if (v > 0.0 && v < 1.0) {
 			float u = fract(v_css.x / u_tileW + u_geom[i].z);
 			float shape = texture2D(u_shape, vec2(u, v)).a;
-			vec3 grad = mix(u_colorL[i], u_colorR[i], x01);
 			if (u_role[i] < 0.5) {
+				// The hue gradient rides tile space (u carries the layer's own
+				// scroll phase), so the colors TRAVEL WITH the wave — and the
+				// counter-flowing bodies carry theirs in opposite directions.
+				// Cosine cycle (pole A → pole B → pole A per tile) so the
+				// tile seam wraps with no color jump.
+				float w = 0.5 - 0.5 * cos(6.28318 * u);
+				vec3 grad = mix(u_colorL[i], u_colorR[i], w);
 				float g = clamp(
 					(v * 200.0 - ${GRAD_Y_CREST.toFixed(2)}) / ${(GRAD_Y_EDGE - GRAD_Y_CREST).toFixed(2)},
 					0.0, 1.0);
@@ -769,10 +774,11 @@ export function createDireBorder(
 		if (!raf) renderAll(now());
 	}
 
-	/** 2D-fallback band painter: the tiled silhouette mask × the body's
-	 *  HORIZONTAL viewport-wide gradient (source-in). The line layer and the
-	 *  vertical depth shade are GL-only — one static fallback frame doesn't
-	 *  earn the extra passes. */
+	/** 2D-fallback band painter: the silhouette tile × the body's CYCLIC hue
+	 *  gradient (pole A → B → A per tile, linear stops standing in for the
+	 *  shader's cosine — close enough for one static frame). Tile-space like
+	 *  the shader, so the fallback matches the GL frame at phase 0. The line
+	 *  layer and the vertical depth shade stay GL-only. */
 	function paintBodyBand(
 		ctx: CanvasRenderingContext2D,
 		band: Band,
@@ -780,20 +786,19 @@ export function createDireBorder(
 		waveH: number,
 		top: number
 	): void {
-		const off = document.createElement('canvas');
-		off.width = Math.max(1, Math.ceil(band.cssW));
-		off.height = Math.max(1, Math.ceil(waveH));
-		const octx = off.getContext('2d')!;
-		for (let x = 0; x < band.cssW; x += knobs.tileW) {
-			octx.drawImage(waveShape, x, 0, knobs.tileW, waveH);
-		}
-		octx.globalCompositeOperation = 'source-in';
+		const tile = document.createElement('canvas');
+		tile.width = TILE_W;
+		tile.height = TILE_H;
+		const tctx = tile.getContext('2d')!;
+		tctx.drawImage(waveShape, 0, 0);
+		tctx.globalCompositeOperation = 'source-in';
 		const body = layer.role === 'near' ? knobs.near : knobs.far;
-		const grad = octx.createLinearGradient(0, 0, band.cssW, 0);
+		const grad = tctx.createLinearGradient(0, 0, TILE_W, 0);
 		grad.addColorStop(0, body.l.css);
-		grad.addColorStop(1, body.r.css);
-		octx.fillStyle = grad;
-		octx.fillRect(0, 0, off.width, off.height);
+		grad.addColorStop(0.5, body.r.css);
+		grad.addColorStop(1, body.l.css);
+		tctx.fillStyle = grad;
+		tctx.fillRect(0, 0, TILE_W, TILE_H);
 		ctx.save();
 		if (band.isTop) {
 			// scaleY(-1) — tile body hangs down from the slot top
@@ -803,7 +808,9 @@ export function createDireBorder(
 			ctx.translate(0, top);
 		}
 		ctx.globalAlpha = knobs.waveCover;
-		ctx.drawImage(off, 0, 0);
+		for (let x = 0; x < band.cssW; x += knobs.tileW) {
+			ctx.drawImage(tile, x, 0, knobs.tileW, waveH);
+		}
 		ctx.restore();
 	}
 

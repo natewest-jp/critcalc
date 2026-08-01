@@ -423,16 +423,16 @@
 		--dire-sky: #1a0e18; /* gradient far end ⚓ NATE — dusk plum       L.19 C.028 H333 */
 		--dire-horizon: #2b091f; /* gradient edge end ⚓ NATE — quiet magenta  L.21 C.064 H344 */
 		/* Wave BODIES (↻ 2026-08-01 line-layer redesign — two bodies + one line,
-		   was three bodies): each body is a HORIZONTAL screen-space gradient,
-		   left → right — the Stygian strip's own hue drift (measured H292→H329
-		   across one band). A crest travels through the hues as it crosses the
-		   viewport. Defaults chain Nate's three tuned stations: far runs
-		   violet→purple, near runs purple→crimson — the retired mid station
-		   lives on as the shared middle hue. */
-		--dire-wave-far-l: #6f2ebe; /* far body, left   ⚓ NATE  L.47 C.208 H299 */
-		--dire-wave-far-r: #b92534; /* far body, right  ⚓ NATE  L.51 C.182 H22 */
-		--dire-wave-near-l: #8445bf; /* near body, left  ⚓ NATE  L.53 C.185 H305 */
-		--dire-wave-near-r: #cc425e; /* near body, right ⚓ NATE  L.58 C.174 H13 */
+		   was three bodies): each body's hue gradient RIDES ITS WAVE (↻ same
+		   day, Nate: the colors travel with the motion, and the counter-
+		   flowing bodies carry theirs in opposite directions). The two knobs
+		   are the CYCLE'S POLES — the fill runs A → B → A across one tile
+		   (cosine, so the tile seam never jumps), one full cycle per
+		   --dire-tile-w. The Stygian strip's own hue drift, now in motion. */
+		--dire-wave-far-l: #6f2ebe; /* far body, pole A  ⚓ NATE  L.47 C.208 H299 */
+		--dire-wave-far-r: #b92534; /* far body, pole B  ⚓ NATE  L.51 C.182 H22 */
+		--dire-wave-near-l: #8445bf; /* near body, pole A ⚓ NATE  L.53 C.185 H305 */
+		--dire-wave-near-r: #cc425e; /* near body, pole B ⚓ NATE  L.58 C.174 H13 */
 		/* The LINE wave — the old mid layer reborn as a stroke-only silhouette:
 		   no body fill, just the thin bright edge line riding its own motion
 		   between the two bodies. Its opacity BREATHES: a slow modulation
