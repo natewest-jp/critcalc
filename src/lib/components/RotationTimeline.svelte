@@ -2228,12 +2228,28 @@
 		color: rgba(255, 255, 255, 0.85);
 	}
 	/* Planner toolbar buttons are .btn--sm now; these keep only the geometry the
-	   global class can't know. The toolbar's resting fill is applied to the
-	   CLUSTER rather than each button — one rule instead of three. */
+	   global class can't know.
+	   ↻ 2026-08-01 lightness-structure: the cluster rides the mid rung
+	   (--control-face, opaque slate) instead of the translucent resting fill —
+	   these are the planner's promoted controls. The local :hover is REQUIRED:
+	   the global .btn:hover (0,2,0) would otherwise win and drop hover BELOW
+	   rest. Ink lifts to --text for the solid face. */
 	.rp-zoom-btn,
 	.rp-notes-btn,
 	.rp-composer-btn {
-		background: var(--fill-rest);
+		background: var(--control-face);
+		color: var(--text);
+	}
+	.rp-zoom-btn:hover,
+	.rp-notes-btn:hover,
+	.rp-composer-btn:hover {
+		background: var(--control-face-hover);
+	}
+	/* Opaque active mix for NOTES (knob: the accent share). The global
+	   .btn.is-active --sel-fill is translucent — alpha law says mix against
+	   the known face instead. */
+	.rp-notes-btn.is-active {
+		background: color-mix(in srgb, var(--accent) 20%, var(--control-face));
 	}
 	/* One height for the whole view cluster (total readout, − / + zoom,
 	   NOTES) — the row used to mix 18px buttons with padding-derived
@@ -2753,20 +2769,21 @@
 		min-height: 36px;
 		padding: 6px 10px;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.05);
+		/* ↻ 2026-08-01: same mid-rung register as the KQM/PNG buttons (the
+		   comment above always claimed it — now the fill agrees). */
+		background: var(--control-face);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 		text-decoration: none;
-		color: var(--muted);
+		color: var(--text);
 		transition:
 			background 150ms ease,
 			color 150ms ease;
 	}
 	.rp-explore-link:hover {
-		background: rgba(255, 255, 255, 0.1);
-		color: var(--text);
+		background: var(--control-face-hover);
 	}
 	/* Ragged-right wrapped text (the arrow stays attached to the last word),
 	   the whole block centered in the button by the grid above. */

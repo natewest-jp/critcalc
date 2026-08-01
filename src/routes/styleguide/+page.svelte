@@ -63,6 +63,8 @@
 		'--sel-fill-hover',
 		'--sel-ring',
 		'--accent-hover-fill',
+		'--control-face',
+		'--control-face-hover',
 		'--knob',
 		'--accent'
 	);
