@@ -438,9 +438,9 @@
 		   between the two bodies. Its opacity BREATHES: a slow modulation
 		   drifts along the line so segments fade to transparent and back
 		   (shader-side — the SVG limitation doesn't apply). */
-		--dire-crest: #e57da1; /* line color ⚓ NATE  L.72 C.134 H359 */
+		--dire-crest: #e57f7d; /* line color ⚓ NATE  L.72 C.134 H359 */
 		--dire-crest-w: 1.5px; /* line thickness */
-		--dire-crest-a: 0.3; /* line PEAK opacity (0 hides the line layer entirely;
+		--dire-crest-a: 0.2; /* line PEAK opacity (0 hides the line layer entirely;
 		   independent of --dire-wave-cover) */
 		--dire-crest-fade-n: 1; /* fade cycles along one tile — how many bright
 		   segments the line carries at once */
@@ -448,10 +448,10 @@
 		   so segments continuously dissolve and re-emerge) */
 		--dire-crest-fade-min: 0; /* opacity floor of the fade troughs (0 = fully
 		   transparent; raise toward 1 for a steadier line) */
-		--dire-crest-fade-bias: 2.5; /* bright-segment narrowing exponent (1 = the
+		--dire-crest-fade-bias: 5; /* bright-segment narrowing exponent (1 = the
 		   old even sine; higher = more of the line spends its time transparent,
 		   shorter brighter segments) */
-		--dire-crest2-off: 6px; /* the TWIN line's offset below the edge line. Its
+		--dire-crest2-off: 50px; /* the TWIN line's offset below the edge line. Its
 		   fade drifts the OPPOSITE way (segments cross and pass — flip lives in
 		   direBorderGL's fadePhase2 if the counter-drift reads wrong). 0 stacks
 		   it on the first line (effectively one line again). */
