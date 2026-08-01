@@ -68,7 +68,9 @@ function hslToHex(h: number, s: number, l: number): string {
 
 describe('timelineExport palette mirror ↔ app.css', () => {
 	it('plain hex tokens match', () => {
-		expect(PALETTE_MIRROR.CHART_BG).toBe(cssToken('--frame-bg'));
+		// The chart ground is planner-local since 2026-08-01 (Nate's darker
+		// well), declared in RotationTimeline rather than app.css.
+		expect(PALETTE_MIRROR.CHART_BG).toBe(cssToken('--rp-chart-bg', timelineSvelte));
 		expect(PALETTE_MIRROR.TEXT).toBe(cssToken('--text'));
 		expect(PALETTE_MIRROR.MUTED).toBe(cssToken('--muted'));
 		expect(PALETTE_MIRROR.INK).toBe(cssToken('--ink'));
@@ -93,15 +95,19 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 
 	it('resolved color-mix lines match (GRID, LANE_LINE)', () => {
 		const border = cssToken('--border');
-		const frameBg = cssToken('--frame-bg');
-		const frameLine = /var\(--border\) (\d+)%, var\(--frame-bg\)/.exec(cssToken('--frame-line'));
-		expect(frameLine).not.toBeNull();
-		expect(PALETTE_MIRROR.LANE_LINE).toBe(mix(border, frameBg, +frameLine![1]));
-		const rpGrid = /var\(--border\) (\d+)%, var\(--frame-bg\)/.exec(
+		// Both planner lines derive from --border toward the planner-local
+		// chart ground (2026-08-01).
+		const chartBg = cssToken('--rp-chart-bg', timelineSvelte);
+		const rpLine = /var\(--border\) (\d+)%, var\(--rp-chart-bg\)/.exec(
+			cssToken('--rp-line', timelineSvelte)
+		);
+		expect(rpLine).not.toBeNull();
+		expect(PALETTE_MIRROR.LANE_LINE).toBe(mix(border, chartBg, +rpLine![1]));
+		const rpGrid = /var\(--border\) (\d+)%, var\(--rp-chart-bg\)/.exec(
 			cssToken('--rp-grid', timelineSvelte)
 		);
 		expect(rpGrid).not.toBeNull();
-		expect(PALETTE_MIRROR.GRID).toBe(mix(border, frameBg, +rpGrid![1]));
+		expect(PALETTE_MIRROR.GRID).toBe(mix(border, chartBg, +rpGrid![1]));
 	});
 
 	it('ACTIVE matches the planner-local --rp-active', () => {

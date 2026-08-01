@@ -1782,23 +1782,21 @@
 <style>
 	/* ── Root ─────────────────────────────────────────────────── */
 	.rp-root {
-		/* Chart ground — the canonical instrument-frame fill, shared with the
-		   Visualizers chart frames. Also read by the Phase-3 ghost-bar
-		   color-mix in the markup, so the ghost tint stays anchored to the
-		   surface it actually sits on. The old local --bg/--card/--border
-		   redefinitions are gone; this component reads global app.css tokens. */
-		--rp-chart-bg: var(--frame-bg);
-		/* Structural lines inside the chart, hue-consistent with the ground:
-		   grid = faint vertical second-lines; line = lane separators, zone
-		   splits and the Source overlay's edge — the same role the Team
-		   Builder's frame gives it, so it reads the shared --frame-line now.
-		   The local name stays: the planner's markup uses it in color-mixes. */
-		/* Derived from --border like --frame-line (app.css), just fainter —
-		   the grid is the quietest line on the frame ground. Opaque mix, not
-		   alpha (the dire-gradient lesson). Resolves ≈ #30303d; the export
-		   mirrors that literal. */
-		--rp-grid: color-mix(in srgb, var(--border) 55%, var(--frame-bg));
-		--rp-line: var(--frame-line);
+		/* Chart ground — ⚓ NATE 2026-08-01: the notation well's resolved shade
+		   (mix(#000 40%, the old #23232d frame ground)), sampled back out and
+		   adopted as the track area's own ground — DARKER than --frame-bg, so
+		   the chart reads as a well cut into the frame. No longer the
+		   --frame-bg alias; every derived mix below (ghosts, dims, calmStop,
+		   grid/lane lines) follows it. ⚠ the exporter mirrors this literal. */
+		--rp-chart-bg: #15151c;
+		/* Structural lines inside the chart, derived from --border toward the
+		   CHART ground (not the frame's) so they blend with the darker well.
+		   grid = faint vertical second-lines (resolves ≈ #262631); line = lane
+		   separators, zone splits, the ruler seam (resolves ≈ #343443). Opaque
+		   mixes, not alpha (the dire-gradient lesson); the export mirrors the
+		   resolved literals (the mirror test enforces). */
+		--rp-grid: color-mix(in srgb, var(--border) 45%, var(--rp-chart-bg));
+		--rp-line: color-mix(in srgb, var(--border) 85%, var(--rp-chart-bg));
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all
 		   share it (the elemental block mix in the markup references it too).
@@ -1970,9 +1968,12 @@
 		   frame edge; bottom padding lifts the controls off the tick strip. */
 		padding: 0 8px 6px 48px;
 		/* Fade the ruler out under the controls: a fixed 40px ramp to solid
-		   chart ground, with the contents starting past it (padding-left) so
-		   ticks never show through the translucent chips. */
-		background: linear-gradient(to right, transparent, var(--rp-chart-bg) 40px);
+		   FRAME ground (the ruler strip sits on --frame-bg — since the chart
+		   ground went darker 2026-08-01 the two diverged, and a chart-ground
+		   fade here read as a dark slab over the lighter strip), with the
+		   contents starting past it (padding-left) so ticks never show
+		   through the translucent chips. */
+		background: linear-gradient(to right, transparent, var(--frame-bg) 40px);
 		z-index: 5;
 	}
 	.rp-view-cluster .rp-zoom-slider {
@@ -2134,7 +2135,7 @@
 	/* ── Track area ───────────────────────────────────────────── */
 	.rp-tracks {
 		position: relative;
-		background-color: #15151c;
+		background-color: var(--rp-chart-bg);
 		/* Fade width for truncating bar labels (buff chips, cd/cast labels) —
 		   clipped text dissolves over this many px instead of slicing mid-glyph. */
 		--buff-label-fade: 12px;
@@ -2163,16 +2164,18 @@
 		position: relative;
 		border-bottom: 1px solid var(--rp-line);
 	}
+	/* Ruler ticks ride the line tokens (they were stranded pre-token navy
+	   literals until 2026-08-01 — the "showing a little blue" Nate spotted). */
 	.rp-tick {
 		position: absolute;
 		bottom: 0;
 		width: 1px;
-		background: #22304c;
+		background: var(--rp-grid);
 		height: 4px;
 	}
 	.rp-tick.major {
 		height: 8px;
-		background: #35486e;
+		background: var(--border);
 	}
 	.rp-tick-label {
 		position: absolute;

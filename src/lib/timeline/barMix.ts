@@ -18,14 +18,18 @@
  *  eye should still find, just demoted. */
 export const UPTIME_DIM_MIX = 65;
 
-/** Ghost CD-track fill: % main into chart ground. Recessive structure. */
-export const GHOST_FILL_MIX = 20;
+/** Ghost CD-track fill: % main into chart ground.
+ *  ↻ 2026-08-01 (Nate): lifted 20 → 30 — on the darker #15151c chart ground
+ *  the old mix read muddy; a cooldown clock is content-adjacent, not pure
+ *  structure. */
+export const GHOST_FILL_MIX = 30;
 
-/** Ghost CD-track outline: % main into chart ground. */
-export const GHOST_EDGE_MIX = 25;
+/** Ghost CD-track outline: % main into chart ground. (↻ 25 → 40, with the
+ *  fill lift.) */
+export const GHOST_EDGE_MIX = 40;
 
 /** % of the element's saturation the ghost track keeps before mixing (100 =
- *  the pre-round behavior). The "reads as structure" knob: a ghost is a
- *  cooldown clock, not content — dropping its chroma stops hue from
- *  pretending to carry information the lightness doesn't. */
-export const GHOST_CHROMA_KEEP = 40;
+ *  no drop). ↻ 2026-08-01 (Nate): 40 → 75 — the full drop desaturated the
+ *  CD bars into mud; they keep most of their element identity now and
+ *  recede mainly by the mix ratio. */
+export const GHOST_CHROMA_KEEP = 75;

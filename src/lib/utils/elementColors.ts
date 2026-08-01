@@ -27,18 +27,15 @@ export type ElementKey =
 // and RES debuffs, not character UI), and the bar needs a recognizable but
 // understated tone.
 export const elementColors = {
-	pyro: { main: '#e2543e', border: 'rgba(226, 84, 62, 0.5)', hi: '#f0aa9f' },
-	// ↻ 2026-08-01 lightness-structure: hydro dropped from L.632 (where it sat
-	// EXACTLY on pyro's lightness — the two most common elements were identical
-	// in grayscale) to L.58. Knob: Nate may prefer the deeper #0f74c8 (L.55,
-	// ΔL .08 vs pyro) — that cut puts --ink below 4:1 on the main, so pair it
-	// with white badge ink if chosen.
-	hydro: { main: '#0b7cd7', border: 'rgba(11, 124, 215, 0.5)', hi: '#85beeb' },
-	anemo: { main: '#4ecbb4', border: 'rgba(78, 203, 180, 0.5)', hi: '#a7e5da' },
-	electro: { main: '#c070f0', border: 'rgba(192, 112, 240, 0.5)', hi: '#e0b8f8' },
-	cryo: { main: '#97d4e6', border: 'rgba(151, 212, 230, 0.5)', hi: '#cbeaf3' },
-	geo: { main: '#e7b236', border: 'rgba(231, 178, 54, 0.5)', hi: '#f3d99b' },
-	dendro: { main: '#80c840', border: 'rgba(128, 200, 64, 0.5)', hi: '#c0e4a0' },
+	pyro: { main: '#f9563e', border: 'rgba(249, 86, 62, 0.5)', hi: '#fcaa9e' },
+	// Hydro runs below pyro's oklch lightness on purpose (grayscale gate);
+	// the 2026-08-01 whole-palette boost preserved the gap.
+	hydro: { main: '#1c88e8', border: 'rgba(28, 136, 232, 0.5)', hi: '#8ec4f4' },
+	anemo: { main: '#47dbc1', border: 'rgba(71, 219, 193, 0.5)', hi: '#a3ede0' },
+	electro: { main: '#cd7cfe', border: 'rgba(205, 124, 254, 0.5)', hi: '#e6befe' },
+	cryo: { main: '#9de2f7', border: 'rgba(157, 226, 247, 0.5)', hi: '#cef0fb' },
+	geo: { main: '#fabd22', border: 'rgba(250, 189, 34, 0.5)', hi: '#fcde90' },
+	dendro: { main: '#85d736', border: 'rgba(133, 215, 54, 0.5)', hi: '#c2eb9a' },
 	physical: { main: '#9ea4b3' },
 	none: { main: '#6a7080' }
 } as const;

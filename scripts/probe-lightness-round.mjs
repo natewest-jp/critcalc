@@ -29,7 +29,13 @@ const INK = hexToRgbStr(cssToken('--ink'));
 const CONTROL_FACE = hexToRgbStr(cssToken('--control-face'));
 const SEL_SURFACE = 'rgb(237, 232, 222)'; // --sel-surface = --gilt-soft #ede8de
 const CALM_FILL = hexToRgbStr(cssToken('--calm-fill'));
-const CHART_BG = cssToken('--frame-bg');
+const timelineSvelte = readFileSync(
+	new URL('../src/lib/components/RotationTimeline.svelte', import.meta.url),
+	'utf8'
+);
+const CHART_BG = new RegExp(String.raw`^\s*--rp-chart-bg:\s*([^;]+);`, 'm')
+	.exec(timelineSvelte)[1]
+	.trim();
 
 const failures = [];
 const check = (label, ok, detail = '') => {

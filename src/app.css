@@ -320,42 +320,41 @@
 	   the in-game icons (assets/elements/tcg): pyro toward the icon's richer
 	   orange-red, cryo from sky-blue to pale ice-teal (also separates it from
 	   hydro), geo brightened from amber-brown to clean gold. */
-	--el-pyro-main: #e2543e;
-	--el-pyro-border: rgba(226, 84, 62, 0.5);
-	--el-pyro-hi: #f0aa9f;
+	--el-pyro-main: #f9563e;
+	--el-pyro-border: rgba(249, 86, 62, 0.5);
+	--el-pyro-hi: #fcaa9e;
 
 	/* Hydro is the one element whose token and icon deliberately DISAGREE: the
 	   token runs royal (205° → 208°, Nate 2026-07-28) so it separates from cryo
 	   in a dense timeline, and the icon runs cyan by an explicit offset in
 	   scripts/generate-element-icons.mjs. Change one, read the other.
-	   ↻ 2026-08-01 lightness-structure: dropped L.632 → L.58 — hydro sat at
-	   EXACTLY pyro's oklch lightness, so the two most common elements were one
-	   gray under the grayscale gate. Knob: the deeper #0f74c8 (L.55, ΔL .08)
-	   reads even better in grayscale but puts --ink under 4:1 on the main —
-	   pair it with white badge ink if chosen. */
-	--el-hydro-main: #0b7cd7;
-	--el-hydro-border: rgba(11, 124, 215, 0.5);
-	--el-hydro-hi: #85beeb;
+	   ↻ 2026-08-01 lightness-structure: hydro runs BELOW pyro's oklch lightness
+	   on purpose (ΔL ≥ .05 — they were one gray under the grayscale gate
+	   before the round). The whole-palette brightness boost (+.04 L, ~×1.12 C,
+	   Nate) preserved the gap; --ink holds ≥5:1 on the main. */
+	--el-hydro-main: #1c88e8;
+	--el-hydro-border: rgba(28, 136, 232, 0.5);
+	--el-hydro-hi: #8ec4f4;
 
-	--el-anemo-main: #4ecbb4;
-	--el-anemo-border: rgba(78, 203, 180, 0.5);
-	--el-anemo-hi: #a7e5da;
+	--el-anemo-main: #47dbc1;
+	--el-anemo-border: rgba(71, 219, 193, 0.5);
+	--el-anemo-hi: #a3ede0;
 
-	--el-electro-main: #c070f0;
-	--el-electro-border: rgba(192, 112, 240, 0.5);
-	--el-electro-hi: #e0b8f8;
+	--el-electro-main: #cd7cfe;
+	--el-electro-border: rgba(205, 124, 254, 0.5);
+	--el-electro-hi: #e6befe;
 
-	--el-cryo-main: #97d4e6;
-	--el-cryo-border: rgba(151, 212, 230, 0.5);
-	--el-cryo-hi: #cbeaf3;
+	--el-cryo-main: #9de2f7;
+	--el-cryo-border: rgba(157, 226, 247, 0.5);
+	--el-cryo-hi: #cef0fb;
 
-	--el-geo-main: #e7b236;
-	--el-geo-border: rgba(231, 178, 54, 0.5);
-	--el-geo-hi: #f3d99b;
+	--el-geo-main: #fabd22;
+	--el-geo-border: rgba(250, 189, 34, 0.5);
+	--el-geo-hi: #fcde90;
 
-	--el-dendro-main: #80c840;
-	--el-dendro-border: rgba(128, 200, 64, 0.5);
-	--el-dendro-hi: #c0e4a0;
+	--el-dendro-main: #85d736;
+	--el-dendro-border: rgba(133, 215, 54, 0.5);
+	--el-dendro-hi: #c2eb9a;
 
 	--el-none-main: #6a7080;
 	/* `none` only has `main` today — do not invent `border` / `hi` */
