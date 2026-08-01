@@ -869,6 +869,12 @@
 					<li>
 						<code>app.css</code> and <code>src/lib/utils/elementColors.ts</code> are a mirrored pair.
 					</li>
+					<li>
+						<strong>Hierarchy must survive grayscale.</strong> Lightness is the skeleton, hue is the
+						clothing — if a surface reads as mud with hue removed, its structure is riding on hue.
+						<kbd>Cmd/Ctrl+Shift+G</kbd> in dev toggles a grayscale overlay on every route (root layout;
+						ships nothing to prod). Run it before approving any color work.
+					</li>
 				</ul>
 			</div>
 

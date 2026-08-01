@@ -24,8 +24,23 @@
 	import monoRegularUrl from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
 	import favicon from '$lib/assets/favicon.svg';
 	import '../app.css';
+	import { dev } from '$app/environment';
 
 	let { children } = $props();
+
+	// Dev-only grayscale review toggle (Cmd/Ctrl+Shift+G): hierarchy must
+	// survive grayscale — if a surface reads as mud with the toggle on, its
+	// structure is riding on hue, not lightness. Documented in /styleguide
+	// § Laws. `dev` is statically false in prod, so the whole branch
+	// tree-shakes out of the build.
+	let devGray = $state(false);
+	function onDevGrayKey(e: KeyboardEvent) {
+		if (!dev) return;
+		if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'g') {
+			e.preventDefault();
+			devGray = !devGray;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -41,4 +56,18 @@
 	<meta name="description" content="Genshin Impact tools for planning and theorycrafting." />
 </svelte:head>
 
+<svelte:window onkeydown={onDevGrayKey} />
+
 {@render children()}
+
+{#if dev && devGray}
+	<!-- backdrop-filter overlay, NOT filter on the root: a root filter creates
+	     a containing block and re-anchors position:fixed chrome/portals. The
+	     overlay touches zero layout and grays the WebGL canvases too. Inline
+	     style so no scoped CSS can leak into the prod bundle. z-index above
+	     everything (codebase max is 1000). -->
+	<div
+		aria-hidden="true"
+		style="position:fixed;inset:0;z-index:2147483647;pointer-events:none;-webkit-backdrop-filter:grayscale(1);backdrop-filter:grayscale(1)"
+	></div>
+{/if}
