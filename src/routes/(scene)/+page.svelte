@@ -92,19 +92,21 @@
 		preloadData(resolve(path)).catch(() => {});
 	}
 
-	// Ascend-pan probe trigger (branch experiment/ascend-pan — NEVER MERGE
-	// AS-IS). Bare `p`, deliberately unmodified: Cmd/Ctrl+Shift combos collide
+	// Ascend-pan probe triggers (branch experiment/ascend-pan — NEVER MERGE
+	// AS-IS). Bare keys, deliberately unmodified: Cmd/Ctrl+Shift combos collide
 	// with browser chrome in the very browser under test (Firefox private
 	// window), and the landing has no text inputs to swallow a bare key. Judge
-	// on `npm run preview` — the probe must live in the production build, so it
-	// carries no DEV gate; the branch itself is the containment.
+	// on `npm run preview` — the probes must live in the production build, so
+	// they carry no DEV gate; the branch itself is the containment.
+	//   p — DOM/WAAPI pan (stage 1: Firefox verdict "still jerky", 2026-08-02)
+	//   g — scene-in-WebGL pan (stage 2: camera as a uniform, lazy-loaded)
 	function onProbeKey(event: KeyboardEvent) {
-		if (event.key !== 'p' || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
-			return;
-		}
+		if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+		if (event.key !== 'p' && event.key !== 'g') return;
 		const t = event.target as HTMLElement | null;
 		if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
-		runScenePanProbe();
+		if (event.key === 'p') runScenePanProbe();
+		else void import('$lib/landing/scenePanGLProbe').then((m) => m.runScenePanProbeGL());
 	}
 </script>
 

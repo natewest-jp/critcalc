@@ -25,7 +25,7 @@ const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 const logs = [];
 const errors = [];
 page.on('console', (m) => {
-	if (m.text().includes('[ascend-pan probe]')) logs.push(m.text());
+	if (m.text().includes('[ascend-pan probe')) logs.push(m.text());
 	if (m.type() === 'error') errors.push(m.text());
 });
 page.on('pageerror', (e) => errors.push(String(e)));
@@ -124,6 +124,52 @@ await page.keyboard.press('p');
 await page.waitForTimeout(PAN_MS + 300);
 const endY = await skyY();
 check('end: back at rest', endY !== null && Math.abs(endY - restY) < 5, `y=${endY}`);
+
+// --- GL legs: `g` — scene-in-WebGL pan (stage 2) ---
+const glState = () => page.evaluate(() => globalThis.__ascendGL ?? null);
+await page.keyboard.press('g');
+// First press lazy-loads the module + decodes textures, then pans up.
+await page.waitForTimeout(1500 + PAN_MS + 300);
+const glUp = await glState();
+const vh = 1000;
+check('GL up: state exposed', glUp !== null, JSON.stringify(glUp));
+check(
+	'GL up: camera at crest',
+	glUp !== null && glUp.settled && Math.abs(glUp.cam.y - vh * 0.75) < 2,
+	`camY=${glUp?.cam.y?.toFixed(1)} (expected ~${vh * 0.75})`
+);
+check(
+	'GL up: DOM scene hidden',
+	await page.evaluate(() => document.querySelector('.scene')?.style.visibility === 'hidden')
+);
+await page.keyboard.press('g');
+await page.waitForTimeout(PAN_MS + 300);
+const glDown = await glState();
+check(
+	'GL down: camera at rest',
+	glDown !== null && glDown.settled && Math.abs(glDown.cam.y) < 2,
+	`camY=${glDown?.cam.y?.toFixed(1)}`
+);
+check(
+	'GL down: DOM scene restored',
+	await page.evaluate(() => document.querySelector('.scene')?.style.visibility === '')
+);
+// Second up-leg cycles to the left-tool crane: camX shifts positive (world right).
+await page.keyboard.press('g');
+await page.waitForTimeout(PAN_MS + 300);
+const glCrane = await glState();
+check(
+	'GL crane: world shifted right',
+	glCrane !== null && glCrane.settled && glCrane.cam.x > 20,
+	`camX=${glCrane?.cam.x?.toFixed(1)}`
+);
+await page.keyboard.press('g'); // back to rest for a clean end state
+await page.waitForTimeout(PAN_MS + 300);
+check(
+	'GL log lines present',
+	logs.some((l) => l.includes('probe GL] renderer ready')) &&
+		logs.some((l) => l.includes('probe GL] up — straight tilt-up'))
+);
 
 check('no console/page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
 
