@@ -10,10 +10,9 @@
 		sceneLayer,
 		startSceneTransition,
 		startPortalTransition,
-		setHeroOrigin,
-		runScenePanProbe
+		setHeroOrigin
 	} from '$lib/landing/transition';
-	import { parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
+	import { scenePanProbeToggle } from '$lib/landing/sceneGL';
 
 	// Card order = the task narrative (build team → plan rotation → reference
 	// shelf), matching the chrome switcher in toolChrome.ts left to right.
@@ -92,21 +91,19 @@
 		preloadData(resolve(path)).catch(() => {});
 	}
 
-	// Ascend-pan probe triggers (branch experiment/ascend-pan — NEVER MERGE
-	// AS-IS). Bare keys, deliberately unmodified: Cmd/Ctrl+Shift combos collide
+	// Ascend-pan probe trigger (branch experiment/ascend-pan — NEVER MERGE
+	// AS-IS). Bare `g`, deliberately unmodified: Cmd/Ctrl+Shift combos collide
 	// with browser chrome in the very browser under test (Firefox private
 	// window), and the landing has no text inputs to swallow a bare key. Judge
-	// on `npm run preview` — the probes must live in the production build, so
-	// they carry no DEV gate; the branch itself is the containment.
-	//   p — DOM/WAAPI pan (stage 1: Firefox verdict "still jerky", 2026-08-02)
-	//   g — scene-in-WebGL pan (stage 2: camera as a uniform, lazy-loaded)
+	// on `npm run preview` — the probe must live in the production build, so it
+	// carries no DEV gate; the branch itself is the containment. (The old `p`
+	// DOM-pan probe died with the DOM plate layers — verdict recorded.)
 	function onProbeKey(event: KeyboardEvent) {
 		if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
-		if (event.key !== 'p' && event.key !== 'g') return;
+		if (event.key !== 'g') return;
 		const t = event.target as HTMLElement | null;
 		if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
-		if (event.key === 'p') runScenePanProbe();
-		else void import('$lib/landing/scenePanGLProbe').then((m) => m.runScenePanProbeGL());
+		scenePanProbeToggle();
 	}
 </script>
 
@@ -125,13 +122,7 @@
 	}}
 	out:fade|global={{ duration: FADE_OUT_MS }}
 >
-	<!-- Counter-parallax layer: shifts opposite the world (and less) so the
-		foreground reads as nearer than the scene. Transform written directly by
-		the parallax controller; identity when parallax is off. -->
-	<div
-		class="composition-inner"
-		use:parallaxLayer={{ x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR }}
-	>
+	<div class="composition-inner">
 		<!-- Gradients live once, here, and every card's plate references them by
 			 id. Three cards × two paths would otherwise mean three identical
 			 <defs> blocks and three sets of colliding ids.

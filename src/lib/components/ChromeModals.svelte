@@ -10,20 +10,20 @@
 	// for why it cannot be a child of it on the scene.
 
 	let {
-		/** Drift the panel with the cursor. On, wherever the scene is visible. */
-		parallax = false
-	}: { parallax?: boolean } = $props();
+		/** Lighter backdrop for overlays floating over the visible scene. */
+		onScene = false
+	}: { onScene?: boolean } = $props();
 
 	const state = $derived(chromeModal.current);
 </script>
 
 {#if state?.kind === 'settings'}
-	<ChromeOverlay title="Settings" onClose={closeChromeModal} {parallax}>
+	<ChromeOverlay title="Settings" onClose={closeChromeModal} {onScene}>
 		<SettingsPanel />
 	</ChromeOverlay>
 {:else if state?.kind === 'area'}
 	{@const area = AREAS[state.area]}
-	<ChromeOverlay title={area.title} onClose={closeChromeModal} size="wide" {parallax}>
+	<ChromeOverlay title={area.title} onClose={closeChromeModal} size="wide" {onScene}>
 		<HelpAreaShell {area} chapter={state.chapter} mode="modal" />
 	</ChromeOverlay>
 {/if}

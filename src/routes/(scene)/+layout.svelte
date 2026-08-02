@@ -18,14 +18,8 @@
 		isToolPath,
 		sceneOccluded
 	} from '$lib/landing/transition';
-	import { startParallax, parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
-	import {
-		SCENE_SKY,
-		SCENE_FLOOR,
-		SCENE_GRAIN,
-		SCENE_SKY_OVERLAP_SRC,
-		srcsetFor
-	} from '$lib/data/sceneAssets.generated';
+	import { mountSceneGL, type SceneGLHandle } from '$lib/landing/sceneGL';
+	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 
 	let { children } = $props();
 
@@ -33,25 +27,6 @@
 	// the tool routes (they carry their own chrome). Reactive so they appear/clear
 	// as you navigate.
 	const pathname = $derived(page.url.pathname);
-
-	// Cursor parallax is driven from HERE — the scene layout persists across
-	// landing↔pages, so the controller (and its eased position) never tears down
-	// on those navigations. That's what stops the scene snapping back to center
-	// when you click into a page. No-op on touch / reduced motion / SSR.
-	onMount(() => startParallax());
-
-	// Base paths and tier list both come from the generated manifest — they used
-	// to be hand-written here with a "must match scripts/optimize-bg.js" comment,
-	// and the basenames now carry the master's content hash (see the note in that
-	// script: /assets/* is immutable for a year, so a new plate has to arrive
-	// under new URLs or cached browsers never see it).
-	const FLOOR = SCENE_FLOOR;
-	const SKY = SCENE_SKY;
-	const srcset = (base: string, ext: 'avif' | 'webp') => srcsetFor(base, ext);
-	// Displayed image width = the plate. The frame is 100dvh×21/9 wide; the plate
-	// is wider by the L/R bleed ratio (plate_w_src / frame_w_src = 5340/5120), so
-	// the browser picks the tier against the actual rendered plate width.
-	const SIZES = 'calc(100dvh * 21 / 9 * 5340 / 5120)';
 
 	// Set the baseline path once so cold loads on a tool URL snap layers to
 	// tool rest state on mount (no entry animation from landing → tool).
@@ -77,8 +52,50 @@
 	// strings stay in lockstep with the sceneLayer action, including the side-
 	// tool horizontal crane on a direct hit to /crit-visualizer or /team-builder.
 	const initialDim = dimTarget(initialPath);
-	const initialSkyBgTransform = restTransform('sky-bg', initialPath)!;
-	const initialSceneTransform = restTransform('sky', initialPath)!; // shared by sky/twinkle/floor
+	const initialSceneTransform = restTransform('twinkle', initialPath)!;
+
+	// The GL scene world (sceneGL.ts): plates + gradient in one canvas, camera
+	// as a uniform — the DOM plate layers are gone (the ascend rebuild; a slow
+	// eased DOM pan is unfixable on Firefox/WebRender). The renderer finishes
+	// asynchronously (texture decode), so on a scene-visible cold load it
+	// claims the veil and releases after its first presented frame. On a tool
+	// cold load the scene is occluded: skip the claim (the tool holds its own)
+	// and defer the whole GL mount — textures shouldn't compete with the tool's
+	// hydration — until the first navigation back to a scene-visible route.
+	let sceneCanvas: HTMLCanvasElement;
+	const releaseVeil = !isToolPath(initialPath) ? claimVeilReady() : () => {};
+	onMount(() => {
+		let handle: SceneGLHandle | null = null;
+		let disposed = false;
+		let started = false;
+		const initGL = async () => {
+			try {
+				const h = await mountSceneGL(sceneCanvas);
+				if (disposed) {
+					h.destroy();
+					return;
+				}
+				handle = h;
+				afterPaint(releaseVeil);
+			} catch (err) {
+				// No WebGL → no scene (deliberately no DOM fallback: two scene
+				// implementations is how parity rots). The site itself still works.
+				console.error('scene: GL mount failed', err);
+				releaseVeil();
+			}
+		};
+		const unsubOcc = sceneOccluded.subscribe((occ) => {
+			if (!occ && !started) {
+				started = true;
+				void initGL();
+			}
+		});
+		return () => {
+			disposed = true;
+			unsubOcc();
+			handle?.destroy();
+		};
+	});
 
 	// Catch-all transition kickoff for navigations not started by a hero click
 	// (brand-return, browser back/forward, direct nav). Hero clicks pre-start
@@ -99,60 +116,24 @@
 	});
 </script>
 
-<!-- The scene is composed from five layers stacked back-to-front:
-	  sky-bg  →  CSS gradient + noise overlay (fills ultrawide gutters)
-	  sky     →  baked sky image (gradient + galaxy dust + band + anchor stars)
-	  twinkle →  WebGL starfield canvas (live twinkle over the baked anchors)
-	  floor   →  baked floor image (ground + reflections)
-	  dim     →  opacity overlay applied when in a tool state
+<!-- The scene is composed from three layers stacked back-to-front:
+	  scene-canvas →  the GL world (sky-bg gradient + sky/floor plates + grain,
+	                  camera as a uniform — sceneGL.ts; the old DOM plate layers
+	                  are retired with the ascend rebuild)
+	  twinkle      →  WebGL starfield canvas (live twinkle over the baked
+	                  anchors; joins the scene canvas with the choreography
+	                  chunk — a DOM-translating star canvas can't ride the pan)
+	  dim          →  opacity overlay applied when in a tool state
 
-	  All scene layers pan in lockstep via WAAPI animations on each leaf
-	  element; transforms are written directly to el.style by the sceneLayer
-	  action. .scene-stack carries the horizon-line coordinate system in
-	  source-image pixel space — derived CSS values flow from there. -->
-<div
-	class="scene-stack"
-	style:--grain-tile="url({SCENE_GRAIN})"
-	style:--sky-overlap-src={SCENE_SKY_OVERLAP_SRC}
->
+	  .scene-stack still carries the horizon-line coordinate system in
+	  source-image pixel space — the starfield and meteors size to it. -->
+<div class="scene-stack">
 	<div class="scene" class:occluded={$sceneOccluded}>
-		<div class="sky-bg" style:transform={initialSkyBgTransform} use:sceneLayer={'sky-bg'}></div>
+		<canvas class="scene-canvas" bind:this={sceneCanvas}></canvas>
 
-		<!-- Cursor-parallax group: sky + stars + floor shift together as one rigid
-			unit. sky-bg is intentionally OUTSIDE so it stays a fixed full-viewport
-			backdrop — any edge revealed by the shift shows the sky gradient, not raw
-			--bg. The parallax controller writes this element's transform directly. -->
-		<div class="parallax-world" use:parallaxLayer={{ x: 1, y: 1 }}>
-			<picture class="sky" style:transform={initialSceneTransform} use:sceneLayer={'sky'}>
-				<source type="image/avif" srcset={srcset(SKY, 'avif')} sizes={SIZES} />
-				<source type="image/webp" srcset={srcset(SKY, 'webp')} sizes={SIZES} />
-				<img
-					class="sky__img"
-					src="{SKY}-2000w.webp"
-					srcset={srcset(SKY, 'webp')}
-					sizes={SIZES}
-					alt=""
-					fetchpriority="high"
-				/>
-			</picture>
+		<TwinkleStars initialTransform={initialSceneTransform} />
 
-			<TwinkleStars initialTransform={initialSceneTransform} />
-
-			<ShootingStars />
-
-			<picture class="floor" style:transform={initialSceneTransform} use:sceneLayer={'floor'}>
-				<source type="image/avif" srcset={srcset(FLOOR, 'avif')} sizes={SIZES} />
-				<source type="image/webp" srcset={srcset(FLOOR, 'webp')} sizes={SIZES} />
-				<img
-					class="floor__img"
-					src="{FLOOR}-2000w.webp"
-					srcset={srcset(FLOOR, 'webp')}
-					sizes={SIZES}
-					alt=""
-					fetchpriority="high"
-				/>
-			</picture>
-		</div>
+		<ShootingStars />
 	</div>
 
 	<div
@@ -171,29 +152,22 @@
 			 position shift, identical everywhere) while the content between them
 			 crossfades. -->
 		{#if !isToolPath(pathname)}
-			<div
-				class="scene-chrome"
-				use:parallaxLayer={{ x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR }}
-			>
+			<div class="scene-chrome">
 				<SiteChrome />
 			</div>
 			<div class="scene-footer-gradient"></div>
-			<div
-				class="scene-footer"
-				use:parallaxLayer={{ x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR }}
-			>
+			<div class="scene-footer">
 				<SiteFooter />
 			</div>
 
 			<!-- Meta overlays (help / about / settings), a SIBLING of the chrome
-				 rather than a child of it: .scene-chrome carries a parallax
-				 transform, and a transform is a containing block for
-				 position:fixed descendants — an overlay nested under it would
-				 size itself to a 64px bar. Rendered only off the tool routes
+				 rather than a child of it (historically the chrome carried a
+				 parallax transform, which is a containing block for
+				 position:fixed descendants). Rendered only off the tool routes
 				 because the tools layout hosts its own copy (it is the one
-				 painting over this scene). parallax: the panel drifts with the
-				 cursor like the hero cards and the pages panel do. -->
-			<ChromeModals parallax />
+				 painting over this scene). onScene keeps the translucent
+				 over-the-starfield panel styling. -->
+			<ChromeModals onScene />
 		{/if}
 	</div>
 
@@ -261,21 +235,21 @@
 		/* THE grain knobs (Nate 2026-07-28, tuned by eye from 0.55/0.35).
 		   Dithers the plates' smooth sky gradient, which bands — measured, 84%
 		   of sampled sky rows sat in a flat luminance plateau up to 28px tall.
-		   The banding is in the MASTER, not the encoder: an 8-bit resize of the
-		   16-bit master measures 78.6% banded before anything is compressed, and
-		   raising AVIF quality to q90 moved it by about a point (see the note on
-		   REGIONS in scripts/optimize-bg.js). Quality cannot buy this back;
-		   dither can, and it costs 14KB once instead of bytes on every tier.
-		   Sky runs hotter than floor — the floor's reflections give it detail to
-		   hide steps behind, while the sky is the smooth region that bands. */
+		   The banding is in the MASTER, not the encoder (see the note on
+		   REGIONS in scripts/optimize-bg.js); quality cannot buy this back,
+		   dither can. Sky runs hotter than floor — the floor's reflections give
+		   it detail to hide steps behind.
+		   ↻ Ascend rebuild: grain is applied IN the scene renderer's plate
+		   shader now (sceneGL.ts) — same mid-grey tile, same overlay blend,
+		   one texel per DEVICE pixel via gl_FragCoord (the old per-dppx
+		   background-size ladder, for free). These knobs and the gradient
+		   stops below are read from computed style at renderer init; after a
+		   devtools edit call window.__scene.retune(). */
 		--sky-grain: 0.45;
 		--floor-grain: 0.3;
-		/* Tile edge in CSS px at 1x; the media queries below keep one texel on
-		   one DEVICE pixel as the ratio climbs. */
-		--grain-tile-size: 128px;
 
 		/* Sky gradient stops. Picked to match the baked sky image's edge tone
-		   near the gutter (where this CSS sky shows through on ultrawide). */
+		   near the gutter (where the gradient shows through on ultrawide). */
 		--sky-top: #0a0e1a;
 		--sky-bottom: #1f2a48;
 	}
@@ -305,17 +279,14 @@
 		visibility: hidden;
 	}
 
-	/* Cursor-parallax group. Holds sky + stars + floor; the parallax controller
-	   writes a small translate here each frame (direct style.transform, never an
-	   inherited custom property — so no child ever restyles).
-	   position/inset:0 makes it the containing block for its absolutely-
-	   positioned children, so their bottom/left anchors resolve exactly as they
-	   did against .scene. Default transform is identity (parallax off → flat). */
-	.parallax-world {
+	/* The GL scene world — one static-size canvas; all motion is the camera
+	   uniform inside it (sceneGL.ts). First child of .scene, so the starfield
+	   and meteors paint above it. */
+	.scene-canvas {
 		position: absolute;
 		inset: 0;
-		transform: translate3d(0, 0, 0);
-		will-change: transform;
+		width: 100%;
+		height: 100%;
 	}
 
 	.dim {
@@ -374,150 +345,5 @@
 		pointer-events: none;
 		z-index: 1;
 		background: linear-gradient(to top, rgba(2, 9, 31, 1), rgba(3, 6, 16, 0));
-	}
-
-	/* Layer 0: CSS sky gradient — fills ultrawide gutters where the baked sky
-	   image doesn't reach. On 21:9-and-narrower viewports, fully covered by
-	   .sky and visually invisible. Noise tile blended in for banding mitigation;
-	   the tile is small (~5KB) and amortizes across the whole sky region. */
-	.sky-bg {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		width: 100dvw;
-		height: var(--scene-h);
-		background:
-			url('/assets/landing/noise-128.webp') repeat,
-			linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
-		background-blend-mode: overlay, normal;
-		z-index: 0;
-		will-change: transform;
-	}
-
-	/* Layer 1: Baked sky image (gradient + dust + band + anchor stars). Sized to
-	   the plate width (frame + L/R bleed) and the sky's source-px height. Bottom
-	   edge sits at the horizon line; the top carries the upper bleed off-screen.
-	   left:50% + translate(-50%) centers the plate on the frame (symmetric bleed). */
-	.sky {
-		position: absolute;
-		/* Runs --sky-overlap-src source rows PAST the horizon, under the floor
-		   (z:3 over this z:1), so the two layers overlap instead of abutting.
-		   They used to meet exactly — measured at 0.000px of gap across every
-		   viewport height — and an exact meeting is precisely what produces a
-		   sub-pixel hairline: two separately-composited layers landing on a
-		   fractional device row, each antialiasing its own edge against
-		   transparency (Nate 2026-07-28).
-
-		   The overlap rows are REAL master content that the pipeline now
-		   includes in the sky slice, so the box grows by exactly the rows the
-		   image gained: nothing is stretched and no content moves. The top edge
-		   is unchanged because bottom drops and height grows by the same amount.
-
-		   ⚠️ --sky-h itself is untouched — TwinkleStars and ShootingStars size
-		   their host to it and place stars as a percentage of it, so folding the
-		   overlap in there would shift the whole field. */
-		bottom: calc(var(--horizon-y) - var(--sky-overlap-src) * var(--px));
-		left: 50%;
-		width: var(--scene-w);
-		height: calc(var(--sky-h) + var(--sky-overlap-src) * var(--px));
-		display: block;
-		z-index: 1;
-		will-change: transform;
-	}
-
-	.sky__img {
-		width: 100%;
-		height: 100%;
-		display: block;
-		max-width: none;
-	}
-
-	/* Grain over the BAKED PLATES. The scene has carried a noise tile since the
-	   beginning, but only on .sky-bg (z:0) — which the sky image (z:1) covers
-	   completely at 21:9 and narrower, as that rule's own comment says. So on
-	   every ordinary viewport the dithering was painting behind the very thing
-	   that bands, and contributed nothing. These two pseudo-elements put it in
-	   front of the plates, where the banding actually is.
-
-	   ⚠️ NOT the noise-128 tile .sky-bg uses. That one is near-WHITE (mean 249)
-	   and is meant to haze a gradient; under `overlay` a near-white blend layer
-	   roughly doubles a dark base, so pointing this at it lifted the sky ~25
-	   levels and broke no plateaus at all (measured). Overlay's identity value
-	   is mid-grey, so dithering needs a tile centred on 128 — which is what
-	   scripts/optimize-bg.js generates, lossless, alongside the plates.
-
-	   The tile is per-pixel white noise, which also means no visible wrap seam:
-	   seams come from low-frequency structure mismatching at the edges, and
-	   there is none. (The loading veil makes the opposite trade — it composites
-	   plainly over near-black, where the haze tile's seam WOULD show, so it uses
-	   feTurbulence; see LoadingVeil.svelte.)
-
-	   Static: no animation, no filter, one small texture the GPU repeats. That
-	   is the whole reason this is a tile and not an feTurbulence — see the note
-	   in scripts/optimize-bg.js. */
-	.sky::after,
-	.floor::after {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background: var(--grain-tile) repeat;
-		background-size: var(--grain-tile-size);
-		mix-blend-mode: overlay;
-		pointer-events: none;
-	}
-
-	/* Grain is sized in DEVICE pixels, not CSS pixels (Nate 2026-07-28 — it read
-	   coarse on a retina display, correctly). The tile is 128 texels; drawn at
-	   128 CSS px, a 2dppx screen stretches every texel across a 2x2 block of
-	   device pixels, so the grain is literally twice as chunky there as on a 1x
-	   monitor — the opposite of what a denser screen should give you. Dividing
-	   the background-size by the device ratio maps one texel to one device pixel
-	   at every scale: same apparent fineness everywhere, and the finest dither
-	   the display can actually resolve.
-	   The tile itself never resamples — at 64 CSS px on a 2dppx screen it paints
-	   at its native 128 device px, so it stays crisp rather than being smoothed
-	   into a blur that would dither nothing. */
-	@media (min-resolution: 2dppx) {
-		.scene-stack {
-			--grain-tile-size: calc(128px / 2);
-		}
-	}
-
-	@media (min-resolution: 3dppx) {
-		.scene-stack {
-			--grain-tile-size: calc(128px / 3);
-		}
-	}
-
-	.sky::after {
-		opacity: var(--sky-grain);
-	}
-
-	.floor::after {
-		opacity: var(--floor-grain);
-	}
-
-	/* Layer 3 (TwinkleStars is layer 2, defined in TwinkleStars.svelte):
-	   Baked floor image. Above everything else in the scene so the reflections
-	   feel "in front" and occlude any layer that should sit below the horizon.
-	   Sized to the plate width (frame + L/R bleed). The bottom bleed hangs
-	   --bleed-v below the viewport bottom so the frame's bottom edge lands exactly
-	   at the viewport bottom and the lower parallax reserve sits off-screen. */
-	.floor {
-		position: absolute;
-		bottom: calc(-1 * var(--bleed-v-src) * var(--px));
-		left: 50%;
-		width: var(--scene-w);
-		height: var(--floor-h);
-		display: block;
-		z-index: 3;
-		will-change: transform;
-	}
-
-	.floor__img {
-		width: 100%;
-		height: 100%;
-		display: block;
-		max-width: none;
 	}
 </style>

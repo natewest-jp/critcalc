@@ -3,7 +3,6 @@
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
-	import { parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
 	import {
 		FADE_DURATION_MS,
 		FADE_OUT_MS,
@@ -50,10 +49,7 @@
 	     in both cases and leaked prose typography onto the chapter NAV and the
 	     settings rows; it only became visible when links gained a resting
 	     underline and the nav sprouted full-width rules. -->
-	<main
-		class="pages-panel"
-		use:parallaxLayer={{ x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR }}
-	>
+	<main class="pages-panel">
 		{#key pathname}
 			<div in:fade={{ duration: 150 }}>
 				{@render children()}
@@ -71,9 +67,8 @@
 	}
 
 	/* Fixed panel between the chrome (top) and footer (bottom); its own content
-	   scrolls internally so the frame — and the scene behind it — stay put. The
-	   parallax transform (written by parallaxLayer) rides on top of the margin
-	   centering. Above the footer gradient (z:1), below the chrome/footer. */
+	   scrolls internally so the frame — and the scene behind it — stay put.
+	   Above the footer gradient (z:1), below the chrome/footer. */
 	.pages-panel {
 		position: fixed;
 		top: calc(var(--chrome-h) + clamp(0.75rem, 2vh, 1.5rem));

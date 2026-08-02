@@ -1,27 +1,36 @@
-// Probe: the ascend-pan probe itself (branch experiment/ascend-pan).
+// Probe: the GL scene world + ascend-pan probe (branch experiment/ascend-pan).
 // Headless FUNCTIONAL check only — headless rendering can't judge frame
 // pacing (the dire-border lesson); real smoothness verdicts are Nate's eyes
 // on headed Firefox/Chrome/Safari against `npm run preview`.
 //
-// Asserts, against http://localhost:4998/:
-//   1. pressing `p` logs "[ascend-pan probe] up — straight tilt-up"
-//   2. the scene world layers (.sky, .floor, .twinkle, .composition) move:
-//      translateY goes from ~0 to +75dvh (bottom-anchored plate pushes DOWN
-//      to reveal the upper sky — the camera tilts up)
-//   3. pressing `p` again logs "return to rest" and the layers come back to ~0
-//   4. a second up-leg cycles to the left-tool crane variant
-//   5. no page errors / console errors throughout
+// Asserts, against http://localhost:4998:
+//   1. the landing scene renders via the GL canvas (pixel samples match the
+//      old DOM plate rendering within grain tolerance) and the veil lifts
+//   2. the starfield canvas still paints above it
+//   3. bare `g` pans the camera up/back (crest pose, DOM overlays hidden and
+//      restored, crane variant on the second up-leg)
+//   4. a cold load on a tool route defers the scene entirely (no plate
+//      fetches, no renderer) until navigation back to a scene route
+//   5. no console/page errors throughout
 //
 // Run: node scripts/probe-ascend-pan.mjs   (preview server on 4998 first)
 
 import { chromium } from 'playwright';
 
-const URL = 'http://localhost:4998/';
+const ORIGIN = 'http://localhost:4998';
 const PAN_MS = 2400;
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
-const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 
+let failures = 0;
+const check = (name, ok, detail = '') => {
+	console.log(`${ok ? '  ok ' : 'FAIL '} ${name}${detail ? ` — ${detail}` : ''}`);
+	if (!ok) failures++;
+};
+
+// --- Landing: GL scene + probe -----------------------------------------------
+
+const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 const logs = [];
 const errors = [];
 page.on('console', (m) => {
@@ -30,148 +39,104 @@ page.on('console', (m) => {
 });
 page.on('pageerror', (e) => errors.push(String(e)));
 
-await page.goto(URL, { waitUntil: 'networkidle' });
-await page.waitForTimeout(500);
+await page.goto(`${ORIGIN}/`, { waitUntil: 'networkidle' });
+await page.waitForTimeout(3500); // veil lift + renderer first frame
 
-// translateY of the .sky layer in device px, from its computed matrix.
-const skyY = () =>
-	page.evaluate(() => {
-		const el = document.querySelector('.sky');
-		if (!el) return null;
-		const t = getComputedStyle(el).transform;
-		if (t === 'none') return 0;
-		return new DOMMatrixReadOnly(t).m42;
-	});
+check(
+	'veil lifted',
+	await page.evaluate(() => document.getElementById('loading-veil') === null)
+);
+check('renderer mounted', await page.evaluate(() => typeof globalThis.__scene?.retune === 'function'));
 
-const layerYs = () =>
-	page.evaluate(() =>
-		Object.fromEntries(
-			['.sky', '.floor', '.twinkle', '.composition', '.sky-bg'].map((sel) => {
-				const el = document.querySelector(sel);
-				if (!el) return [sel, null];
-				const t = getComputedStyle(el).transform;
-				return [sel, t === 'none' ? 0 : new DOMMatrixReadOnly(t).m42];
-			})
-		)
-	);
-
-let failures = 0;
-const check = (name, ok, detail = '') => {
-	console.log(`${ok ? '  ok ' : 'FAIL '} ${name}${detail ? ` — ${detail}` : ''}`);
-	if (!ok) failures++;
-};
-
-const restY = await skyY();
-check('sky layer present at rest', restY !== null, `y=${restY}`);
-
-// --- Leg 1: up (straight tilt-up) ---
-await page.keyboard.press('p');
-await page.waitForTimeout(PAN_MS / 2);
-const midY = await skyY();
-// The plate is bottom-anchored with its top overflowing above the viewport;
-// POSITIVE translateY pushes the world down, revealing the upper sky (the
-// camera tilts up). 75dvh of a 1000px viewport = +750px.
-check('mid-pan: world descending', midY !== null && midY > restY + 50, `y=${midY}`);
-await page.waitForTimeout(PAN_MS / 2 + 300);
-const upYs = await layerYs();
-const expected = 750;
-for (const sel of ['.sky', '.floor', '.twinkle', '.composition', '.sky-bg']) {
-	const y = upYs[sel];
-	check(
-		`up: ${sel} at crest`,
-		y !== null && Math.abs(y - (restY + expected)) < 5,
-		`y=${y?.toFixed(1)} (expected ~${(restY + expected).toFixed(1)})`
-	);
+// Pixel parity vs the retired DOM plates (reference sampled 2026-08-02 from
+// the last DOM build at 1600×1000). Grain dithers ±a few levels; ±14 keeps the
+// check meaningful while tolerating it.
+const REF = [
+	[100, 550, [111, 120, 175]],
+	[800, 100, [10, 36, 94]],
+	[400, 820, [40, 48, 98]],
+	[1300, 300, [76, 87, 149]]
+];
+const shot = await page.screenshot();
+const png = await import('sharp').then((m) => m.default(shot).raw().toBuffer({ resolveWithObject: true }));
+for (const [x, y, [r, g, b]] of REF) {
+	const i = (y * png.info.width + x) * png.info.channels;
+	const got = [png.data[i], png.data[i + 1], png.data[i + 2]];
+	const ok = Math.abs(got[0] - r) <= 14 && Math.abs(got[1] - g) <= 14 && Math.abs(got[2] - b) <= 14;
+	check(`scene pixel (${x},${y})`, ok, `got ${got.join(',')} want ~${r},${g},${b}`);
 }
+
 check(
-	'log: up straight',
-	logs.some((l) => l.includes('straight tilt-up'))
+	'starfield canvas above the scene',
+	await page.evaluate(() => {
+		const t = document.querySelector('.twinkle');
+		const c = document.querySelector('.scene-canvas');
+		return !!t && !!c && !!(c.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING);
+	})
 );
 
-// --- Leg 2: return to rest ---
-await page.keyboard.press('p');
-await page.waitForTimeout(PAN_MS + 300);
-const downY = await skyY();
-check('down: sky back at rest', downY !== null && Math.abs(downY - restY) < 5, `y=${downY}`);
-check(
-	'log: return to rest',
-	logs.some((l) => l.includes('return to rest'))
-);
-
-// --- Leg 3: up again → left-tool crane variant, X shifts right ---
-const restX = await page.evaluate(() => {
-	const t = getComputedStyle(document.querySelector('.sky')).transform;
-	return t === 'none' ? 0 : new DOMMatrixReadOnly(t).m41;
-});
-await page.keyboard.press('p');
-await page.waitForTimeout(PAN_MS + 300);
-const craneX = await page.evaluate(() => {
-	const t = getComputedStyle(document.querySelector('.sky')).transform;
-	return t === 'none' ? 0 : new DOMMatrixReadOnly(t).m41;
-});
-check(
-	'crane: world shifted right vs rest',
-	craneX > restX + 20,
-	`x ${restX.toFixed(1)} → ${craneX.toFixed(1)}`
-);
-check(
-	'log: left-tool crane',
-	logs.some((l) => l.includes('left-tool crane'))
-);
-
-// --- Leg 4: back to rest for a clean end state ---
-await page.keyboard.press('p');
-await page.waitForTimeout(PAN_MS + 300);
-const endY = await skyY();
-check('end: back at rest', endY !== null && Math.abs(endY - restY) < 5, `y=${endY}`);
-
-// --- GL legs: `g` — scene-in-WebGL pan (stage 2) ---
+// g: up (straight) → down → up (left crane) → down
 const glState = () => page.evaluate(() => globalThis.__ascendGL ?? null);
 await page.keyboard.press('g');
-// First press lazy-loads the module + decodes textures, then pans up.
-await page.waitForTimeout(1500 + PAN_MS + 300);
-const glUp = await glState();
-const vh = 1000;
-check('GL up: state exposed', glUp !== null, JSON.stringify(glUp));
+await page.waitForTimeout(PAN_MS + 400);
+const up = await glState();
+check('g up: camera at crest', up?.settled && Math.abs(up.cam.y - 750) < 2, `camY=${up?.cam.y}`);
 check(
-	'GL up: camera at crest',
-	glUp !== null && glUp.settled && Math.abs(glUp.cam.y - vh * 0.75) < 2,
-	`camY=${glUp?.cam.y?.toFixed(1)} (expected ~${vh * 0.75})`
-);
-check(
-	'GL up: DOM scene hidden',
-	await page.evaluate(() => document.querySelector('.scene')?.style.visibility === 'hidden')
+	'g up: DOM overlays hidden',
+	await page.evaluate(() => document.querySelector('.twinkle')?.style.visibility === 'hidden')
 );
 await page.keyboard.press('g');
-await page.waitForTimeout(PAN_MS + 300);
-const glDown = await glState();
+await page.waitForTimeout(PAN_MS + 400);
+const down = await glState();
+check('g down: camera at rest', down?.settled && Math.abs(down.cam.y) < 2, `camY=${down?.cam.y}`);
 check(
-	'GL down: camera at rest',
-	glDown !== null && glDown.settled && Math.abs(glDown.cam.y) < 2,
-	`camY=${glDown?.cam.y?.toFixed(1)}`
+	'g down: DOM overlays restored',
+	await page.evaluate(() => document.querySelector('.twinkle')?.style.visibility === '')
 );
-check(
-	'GL down: DOM scene restored',
-	await page.evaluate(() => document.querySelector('.scene')?.style.visibility === '')
-);
-// Second up-leg cycles to the left-tool crane: camX shifts positive (world right).
 await page.keyboard.press('g');
-await page.waitForTimeout(PAN_MS + 300);
-const glCrane = await glState();
-check(
-	'GL crane: world shifted right',
-	glCrane !== null && glCrane.settled && glCrane.cam.x > 20,
-	`camX=${glCrane?.cam.x?.toFixed(1)}`
-);
-await page.keyboard.press('g'); // back to rest for a clean end state
-await page.waitForTimeout(PAN_MS + 300);
-check(
-	'GL log lines present',
-	logs.some((l) => l.includes('probe GL] renderer ready')) &&
-		logs.some((l) => l.includes('probe GL] up — straight tilt-up'))
-);
+await page.waitForTimeout(PAN_MS + 400);
+const crane = await glState();
+check('g crane: world shifted right', crane?.settled && crane.cam.x > 20, `camX=${crane?.cam.x}`);
+await page.keyboard.press('g');
+await page.waitForTimeout(PAN_MS + 400);
 
-check('no console/page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
+check('probe logs present', logs.some((l) => l.includes('straight tilt-up')));
+check('no console/page errors (landing)', errors.length === 0, errors.slice(0, 3).join(' | '));
+await page.close();
+
+// --- Tool cold load: scene fully deferred ------------------------------------
+
+const tool = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+const plateFetches = [];
+const toolErrors = [];
+tool.on('request', (r) => {
+	if (/assets\/landing\/(sky|floor)-/.test(r.url())) plateFetches.push(r.url());
+});
+tool.on('pageerror', (e) => toolErrors.push(String(e)));
+await tool.goto(`${ORIGIN}/rotation-planner`, { waitUntil: 'networkidle' });
+await tool.waitForTimeout(2500);
+check('tool cold load: no plate fetches', plateFetches.length === 0, plateFetches[0] ?? '');
+check(
+	'tool cold load: renderer deferred',
+	await tool.evaluate(() => globalThis.__scene === undefined)
+);
+// Return to the landing (brand mark, reverse portal) → renderer must init.
+await tool.click('.tool-brand, a[aria-label*="critcalc"], .brand-return').catch(() => {});
+await tool.evaluate(() => history.pushState({}, '', '/')).catch(() => {});
+// Fallback: drive an SPA nav via the SvelteKit router regardless of chrome markup.
+await tool.evaluate(() => {
+	const a = document.createElement('a');
+	a.href = '/';
+	document.body.appendChild(a);
+	a.click();
+});
+await tool.waitForTimeout(3000);
+check(
+	'return to landing: renderer initialized',
+	await tool.evaluate(() => typeof globalThis.__scene?.retune === 'function'),
+	'after SPA navigation home'
+);
+check('no page errors (tool leg)', toolErrors.length === 0, toolErrors.slice(0, 2).join(' | '));
 
 await browser.close();
 console.log(failures === 0 ? '\nPROBE PASS' : `\nPROBE FAIL (${failures})`);
