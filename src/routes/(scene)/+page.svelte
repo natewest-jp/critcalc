@@ -10,7 +10,8 @@
 		sceneLayer,
 		startSceneTransition,
 		startPortalTransition,
-		setHeroOrigin
+		setHeroOrigin,
+		runScenePanProbe
 	} from '$lib/landing/transition';
 	import { parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
 
@@ -90,7 +91,24 @@
 	function warmTool(path: (typeof tools)[number]['path']) {
 		preloadData(resolve(path)).catch(() => {});
 	}
+
+	// Ascend-pan probe trigger (branch experiment/ascend-pan — NEVER MERGE
+	// AS-IS). Bare `p`, deliberately unmodified: Cmd/Ctrl+Shift combos collide
+	// with browser chrome in the very browser under test (Firefox private
+	// window), and the landing has no text inputs to swallow a bare key. Judge
+	// on `npm run preview` — the probe must live in the production build, so it
+	// carries no DEV gate; the branch itself is the containment.
+	function onProbeKey(event: KeyboardEvent) {
+		if (event.key !== 'p' || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
+			return;
+		}
+		const t = event.target as HTMLElement | null;
+		if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+		runScenePanProbe();
+	}
 </script>
+
+<svelte:window onkeydown={onProbeKey} />
 
 <!-- in: has a delay so the composition only fades in once the outgoing tool
 	 has cleared the screen; out: starts immediately so the composition is

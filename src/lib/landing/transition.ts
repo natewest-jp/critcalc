@@ -588,6 +588,82 @@ export function startSceneTransition(toPath: string): void {
 	}, TRANSITION_MS + 50);
 }
 
+// --- Ascend-pan probe (branch experiment/ascend-pan — NEVER MERGE AS-IS) -----
+//
+// Perf instrument for the ascend-concept revival: replays the retired tilt-up
+// pan (+ side crane) on the live scene layers so the 2026-06 Firefox verdict
+// ("even a static placeholder trundles") can be re-tested against today's
+// scene — the span twinkle field is now one WebGL canvas, which is exactly the
+// variable that changed. Purely additive: it drives its own WAAPI animations
+// under a separate id and never touches the portal, `currentPath` or `active`.
+//
+// Known visual artifact, not a failure: the shipped lean plates have no sky
+// headroom, so near the crest the viewport top shows the .sky-bg gradient /
+// --bg. Only frame pacing is under test.
+
+/** Historical cinematic pan duration — the slow eased move Firefox choked on. */
+export const PROBE_PAN_MS = 2400;
+const PROBE_ANIM_ID = 'ascend-pan-probe';
+/** Up-leg crane cycle: straight tilt-up, then the two side-tool cranes. */
+const PROBE_LEANS: Array<-1 | 0 | 1> = [0, 1, -1];
+
+let probeUp = false;
+let probeLeanIdx = 0;
+
+function probeTransform(kind: SceneLayerKind, up: boolean, lean: -1 | 0 | 1): string | null {
+	if (kind === 'dim') return null;
+	const panY = up ? PAN_TARGET_DVH : 0;
+	if (kind === 'sky-bg') return `translateY(${panY}dvh)`;
+	// Mirrors restTransform's non-FADE_ONLY geometry: -50% centering plus the
+	// signed crane term while panned up; plain rest transform on the way down.
+	const x = up && lean !== 0 ? `${lean > 0 ? '+' : '-'} ${SIDE_X_CALC}` : '';
+	const tx = x ? `calc(-50% ${x})` : '-50%';
+	return `translate(${tx}, ${panY}dvh)`;
+}
+
+/**
+ * Toggle the probe pan. Odd presses pan the world up (cycling the crane
+ * variant per round trip), even presses return it to rest. Interruptible
+ * mid-flight — commitStyles + cancel gives "from wherever you are", same as
+ * the real transition machinery.
+ */
+export function runScenePanProbe(): void {
+	if (!browser) return;
+	const goingUp = !probeUp;
+	const lean = PROBE_LEANS[probeLeanIdx];
+	const startTime = (document.timeline.currentTime as number) ?? performance.now();
+	for (const [el, kind] of layers) {
+		const target = probeTransform(kind, goingUp, lean);
+		if (target === null) continue;
+		for (const a of el.getAnimations()) {
+			if (a.id !== PROBE_ANIM_ID) continue;
+			try {
+				a.commitStyles();
+			} catch {
+				// Element detached or value non-interpolable — safe to skip.
+			}
+			a.cancel();
+		}
+		const anim = el.animate([{ transform: target }], {
+			duration: PROBE_PAN_MS,
+			easing: TILT_EASING_CSS,
+			fill: 'forwards',
+			id: PROBE_ANIM_ID
+		});
+		anim.startTime = startTime;
+	}
+	probeUp = goingUp;
+	if (!goingUp) probeLeanIdx = (probeLeanIdx + 1) % PROBE_LEANS.length;
+	const label = !goingUp
+		? 'return to rest'
+		: lean === 0
+			? 'up — straight tilt-up'
+			: lean === 1
+				? 'up — left-tool crane (world shifts right)'
+				: 'up — right-tool crane (world shifts left)';
+	console.log(`[ascend-pan probe] ${label}, ${PROBE_PAN_MS}ms`);
+}
+
 /**
  * Svelte action: register a DOM element as a scene layer of the given kind.
  * Sets its initial transform/opacity for the current path. If a transition
