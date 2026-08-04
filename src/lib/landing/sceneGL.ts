@@ -32,26 +32,40 @@
  *
  * Known interim diffs vs the DOM scene (accepted for the structure round):
  * the near-white noise haze on the gradient region is omitted (visible only
- * in ultrawide gutters; the gradient may band there until the color session),
- * and grain is screen-fixed rather than riding the plates (arguably more
- * correct for dither; identical at rest).
+ * in ultrawide gutters; the gradient may band there until the color session).
+ * Grain rides the WORLD (uGrainOff) as of 2026-08-04 — screen-fixed grain
+ * read as a static noise curtain during the pan.
  */
 
-import { SCENE_SKY, SCENE_FLOOR, SCENE_GRAIN, SCENE_TIERS } from '$lib/data/sceneAssets.generated';
+import {
+	SCENE_SKY,
+	SCENE_FLOOR,
+	SCENE_GRAIN,
+	SCENE_GRAIN_SIGMA,
+	SCENE_TIERS
+} from '$lib/data/sceneAssets.generated';
 
 // --- Geometry constants -----------------------------------------------------
 // Mirror the --*-src vars on .scene-stack in (scene)/+layout.svelte AND the
 // REGIONS in scripts/optimize-bg.js — the three move together when a new
-// master lands (the taller ascend plate is inbound from Nate's Blender).
+// master lands.
+//
+// The 6400×4000 ascend master (Nate's Blender re-export, plate v3
+// 2026-08-04): 5120 frame + 640px bleed per side; horizon at row 2675; the
+// ~1740 rows above the rest frame are the ascend sky the camera tilts up into.
 
 const FRAME_W_SRC = 5120;
-const PLATE_W_SRC = 5340;
-const SKY_H_SRC = 1451;
-const FLOOR_H_SRC = 875;
+const PLATE_W_SRC = 6400;
+const SKY_H_SRC = 2675;
+const FLOOR_H_SRC = 1325;
 const BLEED_V_SRC = 66;
 const MASTER_H_SRC = SKY_H_SRC + FLOOR_H_SRC;
 const SKY_OVERLAP_SRC = 4;
 const VIEWPORT_ASPECT = 21 / 9;
+
+/** Viewport height in source rows — the frame maps to vh × 21/9 wide, so one
+ *  viewport is FRAME_W/(21/9) ≈ 2194 src rows regardless of aspect. */
+const VIEWPORT_H_SRC = FRAME_W_SRC / VIEWPORT_ASPECT;
 
 /** Backing-store DPR cap (dire-border precedent — crest softness vs memory). */
 const MAX_BACKING_DPR = 2;
@@ -61,9 +75,13 @@ const MAX_BACKING_DPR = 2;
  *  gl_FragCoord, which is already device-space). */
 const GRAIN_TILE_PX = 128;
 
-// Historical cinematic move, used by the dev probe toggle (choreography
-// proper lands with the transition rebuild).
-const PAN_DVH = 75;
+// Cinematic tilt-up, used by the dev probe toggle (choreography proper lands
+// with the transition rebuild). The crest MIRRORS the rest pose: rest leaves
+// 66 src rows of bleed below the viewport, the crest leaves 66 above it, so
+// the pan is everything between — (master − 2·bleed − viewport) src rows,
+// ≈76.3dvh on the 6400×4000 master. The plate was composed to this crest
+// (Nate's destination guide frame); tune the ART, derive the pan.
+const PAN_DVH = ((MASTER_H_SRC - 2 * BLEED_V_SRC - VIEWPORT_H_SRC) / VIEWPORT_H_SRC) * 100;
 const PAN_MS = 2400;
 const SIDE_LEAN_DEG = 16;
 const TILT_BEZ = [0.58, 0, 0.42, 1] as const;
@@ -143,11 +161,27 @@ void main() { gl_FragColor = vec4(vAux, 1.0); }`;
 // .sky::after/.floor::after — mid-grey tile, overlay blend, opacity knob.
 // gl_FragCoord is device px, so uv = fragcoord/128 maps one texel to one
 // device pixel exactly as the old per-dppx background-size ladder did.
+//
+// uDither is a separate ADDITIVE dither term (same tile, luminance-
+// independent). It exists because overlay's dark branch is 2·b·g — the grain's
+// perturbation scales with base brightness and all but vanishes in the darkest
+// sky rows, which is exactly where a smooth 16-bit gradient quantised to 8-bit
+// bands hardest (measured 95.9% plateau on the v2 sky's top half, 2026-08-04).
+// An additive ±few-levels term breaks those contours at any brightness; the
+// tile is grayscale so this is pure luminance dither, no chroma noise.
+// uGrainOff pins the tile to the WORLD rather than the viewport: it is the
+// camera pose in device px (x negated, y as-is — gl_FragCoord is y-up), so
+// during a pan the grain translates with the plate instead of reading as a
+// static noise curtain the art slides beneath (Nate caught this on the v2
+// pan, 2026-08-04). Still exactly one texel per device pixel at rest and in
+// motion — only the tile's phase moves.
 const FS_PLATE = `
 precision mediump float;
 uniform sampler2D uTex;
 uniform sampler2D uGrain;
 uniform float uGrainAmt;
+uniform float uDither;
+uniform vec2 uGrainOff;
 varying vec3 vAux;
 vec3 overlay(vec3 b, vec3 g) {
 	vec3 lo = 2.0 * b * g;
@@ -156,8 +190,10 @@ vec3 overlay(vec3 b, vec3 g) {
 }
 void main() {
 	vec3 base = texture2D(uTex, vAux.xy).rgb;
-	vec3 g = texture2D(uGrain, gl_FragCoord.xy / ${GRAIN_TILE_PX}.0).rgb;
-	gl_FragColor = vec4(mix(base, overlay(base, g), uGrainAmt), 1.0);
+	vec3 g = texture2D(uGrain, (gl_FragCoord.xy + uGrainOff) / ${GRAIN_TILE_PX}.0).rgb;
+	vec3 col = mix(base, overlay(base, g), uGrainAmt);
+	col += (g - 128.0 / 255.0) * uDither;
+	gl_FragColor = vec4(col, 1.0);
 }`;
 
 type Quad = { buf: WebGLBuffer; count: number };
@@ -231,6 +267,20 @@ async function decodeImage(url: string): Promise<HTMLImageElement> {
 	return img;
 }
 
+/** Decode a plate at `base` (no extension): AVIF first — the shipped format,
+ *  better gradient fidelity per byte — falling back to WebP where the browser
+ *  can't decode AVIF (pre-16.4 Safari). `img.decode()` rejects on an
+ *  unsupported format, so the fallback costs nothing when AVIF works. The GL
+ *  texture upload takes the DECODED bitmap, so the renderer is format-
+ *  agnostic; this choice is purely about what travels the wire. */
+async function decodePlate(base: string): Promise<HTMLImageElement> {
+	try {
+		return await decodeImage(`${base}.avif`);
+	} catch {
+		return await decodeImage(`${base}.webp`);
+	}
+}
+
 function uploadTexture(
 	gl: WebGLRenderingContext,
 	img: HTMLImageElement | HTMLCanvasElement,
@@ -262,12 +312,16 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 	// Knobs off .scene-stack (the canvas's parent chain).
 	const knobs = () => {
 		const cs = getComputedStyle(canvas);
+		const dither = parseFloat(cs.getPropertyValue('--scene-dither'));
 		return {
 			skyTop: resolveColor(cs.getPropertyValue('--sky-top') || '#0a0e1a'),
 			skyBottom: resolveColor(cs.getPropertyValue('--sky-bottom') || '#1f2a48'),
 			bg: resolveColor(cs.getPropertyValue('--bg') || '#060914'),
 			skyGrain: parseFloat(cs.getPropertyValue('--sky-grain')) || 0,
-			floorGrain: parseFloat(cs.getPropertyValue('--floor-grain')) || 0
+			floorGrain: parseFloat(cs.getPropertyValue('--floor-grain')) || 0,
+			// Additive dither σ in 8-bit levels (see FS_PLATE). Defaults on: the
+			// darkest sky rows band without it even at high encode quality.
+			dither: Number.isFinite(dither) ? dither : 1
 		};
 	};
 	let k = knobs();
@@ -280,8 +334,8 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 	const tier = pickTier(plateCssW() * dpr, maxTex);
 	// Keep the decoded images for context-restore re-uploads.
 	const [skyImg, floorImg, grainImg] = await Promise.all([
-		decodeImage(`${SCENE_SKY}-${tier}w.webp`),
-		decodeImage(`${SCENE_FLOOR}-${tier}w.webp`),
+		decodePlate(`${SCENE_SKY}-${tier}w`),
+		decodePlate(`${SCENE_FLOOR}-${tier}w`),
 		decodeImage(SCENE_GRAIN)
 	]);
 	let skyTex = uploadTexture(gl, skyImg);
@@ -346,6 +400,12 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 				gl.uniform1i(uTex, 0);
 				gl.uniform1i(gl.getUniformLocation(prog, 'uGrain'), 1);
 				gl.uniform1f(gl.getUniformLocation(prog, 'uGrainAmt'), grainAmt);
+				// (grain − mid) has σ = SCENE_GRAIN_SIGMA levels; scale so the
+				// additive term's σ is the knob's value in levels.
+				gl.uniform1f(gl.getUniformLocation(prog, 'uDither'), k.dither / SCENE_GRAIN_SIGMA);
+				// World-pinned grain: this quad's camera offset in device px
+				// (see the FS_PLATE note on signs).
+				gl.uniform2f(gl.getUniformLocation(prog, 'uGrainOff'), -camX * dpr, cam.y * dpr);
 			}
 			gl.drawArrays(gl.TRIANGLES, 0, q.count);
 		};

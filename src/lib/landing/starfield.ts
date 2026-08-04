@@ -47,6 +47,34 @@ const FLICKER = 0.4;
  *  2D fallback). Matches the old reduced-motion CSS (`opacity: 0.8`). */
 const STATIC_ALPHA = 0.8;
 
+/** Hero-star ✦ tuning. The spark is rendered as LIGHT — two crossed soft
+ *  arms + a gaussian core — not as a filled silhouette. (A superellipse SDF
+ *  was tried first and RETIRED: its gradient diverges along the arm axes for
+ *  n < 1, and the regularized AA produced sub-pixel axis smears whose length
+ *  depended on pixel-grid phase — heroes rendered with visibly unequal arms,
+ *  Chrome and Safari alike, and center/size snapping couldn't fully fix it.
+ *  The intensity model has no singular axes and is symmetric by
+ *  construction.) Star.size is the spark's ARM-SPAN in CSS px.
+ *
+ *  HERO_ARM_W: arm gaussian half-width across, as a fraction of arm length
+ *  (floored at ~1 device px in-shader so arms never sub-pixel).
+ *  HERO_CORE: core gaussian radius as a fraction of arm length.
+ *  HERO_ARM_REACH: how far the needles run past the nominal arm length —
+ *  the visual arm-span is size × HERO_ARM_REACH (the sprite has 3.4× of
+ *  room). Lengthens the needles without growing the core. */
+const HERO_ARM_W = 0.14;
+const HERO_CORE = 0.22;
+const HERO_ARM_REACH = 1.5;
+
+/** Hero flicker depth relative to the field's FLICKER — heroes peak at full
+ *  brightness (base = 1 from the generator) and dip only subtly. */
+const HERO_FLICKER_SCALE = 0.5;
+
+/** Peak intensity of the soft additive glow beneath a hero spark — same
+ *  (1 − r)² falloff as the disc halo, dimmer so the needle arms stay the
+ *  star of the show (at 0.4 the glow rounded the whole spark into a blob). */
+const HERO_GLOW_INTENSITY = 0.32;
+
 /** Backing-store resolution cap, in device px per CSS px.
  *
  *  This was 1, on the reasoning that glowy points survive a half-resolution
@@ -57,8 +85,9 @@ const STATIC_ALPHA = 0.8;
  *  be drawn at half the display's resolution.
  *
  *  The 1× cap was really a MEMORY lever, though, and that concern is real: this
- *  layer is sized to the scene plate, so it grows with the viewport, and a flat
- *  2× on a 5K ultrawide would ask for ~120MB of texture. So the budget is
+ *  layer is sized to the scene plate (now 6400 src px wide), so it grows with
+ *  the viewport, and a flat 2× on a 5K ultrawide would ask for well over 100MB
+ *  of texture. So the budget is
  *  expressed where it belongs — in total backing PIXELS — and the ratio is
  *  derived from it. Ordinary retina viewports get a full 2× (a 1600×900 CSS
  *  viewport lands at ~5.2Mpx ≈ 20MB); very large ones scale back toward 1×
@@ -176,7 +205,7 @@ precision highp float;
 attribute vec2 a_pos;      // star position, % of the sky region (box top-left, like the old left/top)
 attribute vec2 a_sizeBase; // x: core diameter (CSS px)   y: resting opacity floor
 attribute vec2 a_timing;   // x: cycle duration (s)       y: phase offset (s, the old negative delay)
-attribute vec3 a_kind;     // x: anim family 0|1|2   y: jitter variant 0|1|2   z: halo 0|1
+attribute vec3 a_kind;     // x: anim family 0|1|2   y: jitter variant 0|1|2   z: shape 0 bare | 1 halo | 2 hero ✦
 attribute vec3 a_color;    // resolved tint, 0-1
 
 uniform vec2 u_res;     // canvas CSS size (px)
@@ -194,6 +223,7 @@ varying float v_aa;   // one device px in point-coord r units (AA edge width)
 
 const float TAU = 6.28318530718;
 const float FLICKER = ${FLICKER};
+const float HERO_FLICKER = ${HERO_FLICKER_SCALE};
 const float HALO_SCALE = ${HALO_SCALE};
 
 float jitterK(float phase, int variant) {
@@ -219,20 +249,38 @@ void main() {
 		float pulse = 0.5 - 0.5 * cos(TAU * phase);
 		alpha = mix(a_sizeBase.y * 0.2, 1.0, pulse);
 	} else if (a_kind.x < 1.5) { // jitter
-		alpha = a_sizeBase.y * (1.0 - FLICKER * jitterK(phase, int(a_kind.y + 0.5)));
+		// Heroes (shape 2) flicker at half depth — they peak at base = 1 and
+		// should only shimmer, not strobe.
+		float flick = FLICKER * mix(1.0, HERO_FLICKER, step(1.5, a_kind.z));
+		alpha = a_sizeBase.y * (1.0 - flick * jitterK(phase, int(a_kind.y + 0.5)));
 	} else {                     // dramatic
 		float pulse = 0.5 - 0.5 * cos(TAU * phase);
 		alpha = mix(a_sizeBase.y * 0.15, 1.0, pulse);
 		scale = 1.0 + 0.15 * pulse;
 	}
 
-	float haloMul = mix(1.0, HALO_SCALE, a_kind.z);
+	// Halo stars AND heroes get the enlarged sprite (heroes need the room for
+	// their glow); step() because a_kind.z = 2.0 must not extrapolate the mix.
+	float haloMul = mix(1.0, HALO_SCALE, step(0.5, a_kind.z));
 	float spritePx = a_sizeBase.x * haloMul * scale * u_dpr;
+	// Heroes: round the sprite to the nearest ODD device-pixel size. Their
+	// centers are snapped to pixel centers (below), and a pixel-centered
+	// square with an even (or driver-rounded) size shifts half a pixel to one
+	// side — re-biasing the ✦ arms the snap exists to symmetrize.
+	spritePx = mix(spritePx, floor(spritePx * 0.5) * 2.0 + 1.0, step(1.5, a_kind.z));
 	gl_PointSize = max(spritePx, 1.0);
 
 	// The old spans were positioned by their top-left corner (left/top = x/y %),
 	// so the disc center sits half a core-size beyond that.
-	vec2 clip = (a_pos * 0.01 * u_res + a_sizeBase.x * 0.5) / u_res * 2.0 - 1.0;
+	vec2 cCss = a_pos * 0.01 * u_res + a_sizeBase.x * 0.5;
+	// Heroes snap to DEVICE-PIXEL CENTERS: a fractional center splits a
+	// sub-pixel-wide ✦ arm across two columns/rows, so one axis renders
+	// dimmer and reads shorter — which axis varies per star (Nate saw
+	// per-star elongation). Centered on a pixel, both arms rasterize
+	// symmetrically. Discs are radially symmetric and don't care.
+	vec2 cDev = cCss * u_dpr;
+	cCss = mix(cCss, (floor(cDev) + 0.5) / u_dpr, step(1.5, a_kind.z));
+	vec2 clip = cCss / u_res * 2.0 - 1.0;
 	gl_Position = vec4(clip.x, -clip.y, 0.0, 1.0);
 
 	v_color = a_color;
@@ -254,6 +302,12 @@ void main() {
  * approximation. Both ride the star's animated opacity, composited
  * source-over like the span + pseudo-element did.
  *
+ * Hero stars (shape code 2) swap the disc for a four-point ✦ superellipse
+ * with an additive glow — same program, a per-sprite-coherent branch; with a
+ * couple dozen heroes a second draw call would be structure without benefit.
+ * Sprite sizes stay ~30 device px, far under any ALIASED_POINT_SIZE_RANGE
+ * floor (Safari's historically stingy limit starts to matter around 64+).
+ *
  * Output is PREMULTIPLIED: (color·a, a) with a (ONE, ONE_MINUS_SRC_ALPHA)
  * blend. Writing straight alpha with (SRC_ALPHA, …) into a transparent canvas
  * double-attenuates — the blend stores color·a WITH alpha a², so each star
@@ -266,17 +320,46 @@ precision mediump float;
 varying vec3 v_color;
 varying float v_alpha;
 varying float v_core;
-varying float v_halo;
+varying float v_halo; // shape code: 0 bare disc, 1 disc + halo, 2 hero ✦
 varying float v_aa;
 
 const float HALO_INTENSITY = ${HALO_INTENSITY};
+const float HERO_ARM_W = ${HERO_ARM_W};
+const float HERO_CORE = ${HERO_CORE};
+const float HERO_REACH = ${HERO_ARM_REACH};
+const float HERO_GLOW = ${HERO_GLOW_INTENSITY};
 
 void main() {
-	float r = length(gl_PointCoord * 2.0 - 1.0);
-	float core = clamp((v_core - r) / v_aa + 0.5, 0.0, 1.0);
+	vec2 p = gl_PointCoord * 2.0 - 1.0;
+	float r = length(p);
 	float fall = max(1.0 - r, 0.0); // clamp: r > 1 in sprite corners, (1-r)² would re-brighten
-	float halo = v_halo * HALO_INTENSITY * fall * fall;
-	float a = (core + halo * (1.0 - core)) * v_alpha;
+	float a;
+	if (v_halo > 1.5) {
+		// Hero ✦ as LIGHT, not silhouette (see the constants' note): each arm
+		// is a gaussian across its width times a t^1.5 taper along its length
+		// (cubed taper died inside the core and the spark read as a round
+		// blob), plus a gaussian core knot and the soft radial glow beneath.
+		// Smooth analytic falloffs everywhere — nothing to antialias, no
+		// singular axes, x/y symmetric by construction. v_core is the arm
+		// length in sprite units; the arm width floors at ~one device px
+		// (v_aa) so the needles never alias away.
+		vec2 q = abs(p);
+		float w = max(HERO_ARM_W * v_core, v_aa);
+		float armLen = v_core * HERO_REACH;
+		float tY = max(1.0 - q.y / armLen, 0.0);
+		float tX = max(1.0 - q.x / armLen, 0.0);
+		float arms = exp(-(q.x * q.x) / (w * w)) * tY * sqrt(tY)
+		           + exp(-(q.y * q.y) / (w * w)) * tX * sqrt(tX);
+		float c = HERO_CORE * v_core;
+		float core = exp(-dot(p, p) / (c * c));
+		float i = clamp(core + arms, 0.0, 1.0);
+		float glow = HERO_GLOW * fall * fall;
+		a = (i + glow * (1.0 - i)) * v_alpha;
+	} else {
+		float core = clamp((v_core - r) / v_aa + 0.5, 0.0, 1.0);
+		float halo = v_halo * HALO_INTENSITY * fall * fall;
+		a = (core + halo * (1.0 - core)) * v_alpha;
+	}
 	gl_FragColor = vec4(v_color * a, a);
 }
 `;
@@ -315,7 +398,7 @@ function buildVertexData(): Float32Array {
 		data[o++] = s.delay;
 		data[o++] = ANIM_INDEX[s.animation];
 		data[o++] = s.variant ? VARIANT_ORDER.indexOf(s.variant) : 0;
-		data[o++] = s.halo ? 1 : 0;
+		data[o++] = s.hero ? 2 : s.halo ? 1 : 0;
 		data[o++] = r;
 		data[o++] = g;
 		data[o++] = b;
@@ -482,7 +565,23 @@ export function createStarfield(canvas: HTMLCanvasElement): StarfieldHandle {
 			}
 			ctx.fillStyle = rgba(tint, STATIC_ALPHA);
 			ctx.beginPath();
-			ctx.arc(cx, cy, s.size / 2, 0, Math.PI * 2);
+			if (s.hero) {
+				// Static ✦ approximation: 4 tips + 4 waist points (the GL path's
+				// superellipse, straight-edged — fine for a frozen fallback frame).
+				const tip = s.size / 2;
+				const waist = tip * 0.25;
+				ctx.moveTo(cx, cy - tip);
+				ctx.lineTo(cx + waist, cy - waist);
+				ctx.lineTo(cx + tip, cy);
+				ctx.lineTo(cx + waist, cy + waist);
+				ctx.lineTo(cx, cy + tip);
+				ctx.lineTo(cx - waist, cy + waist);
+				ctx.lineTo(cx - tip, cy);
+				ctx.lineTo(cx - waist, cy - waist);
+				ctx.closePath();
+			} else {
+				ctx.arc(cx, cy, s.size / 2, 0, Math.PI * 2);
+			}
 			ctx.fill();
 		}
 	}

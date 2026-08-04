@@ -42,23 +42,28 @@ page.on('pageerror', (e) => errors.push(String(e)));
 await page.goto(`${ORIGIN}/`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(3500); // veil lift + renderer first frame
 
+check('veil lifted', await page.evaluate(() => document.getElementById('loading-veil') === null));
 check(
-	'veil lifted',
-	await page.evaluate(() => document.getElementById('loading-veil') === null)
+	'renderer mounted',
+	await page.evaluate(() => typeof globalThis.__scene?.retune === 'function')
 );
-check('renderer mounted', await page.evaluate(() => typeof globalThis.__scene?.retune === 'function'));
 
-// Pixel parity vs the retired DOM plates (reference sampled 2026-08-02 from
-// the last DOM build at 1600×1000). Grain dithers ±a few levels; ±14 keeps the
-// check meaningful while tolerating it.
+// Scene-render regression pins (re-sampled 2026-08-04 from the first verified
+// build of the v3 ascend master — horizon 2675 — with AVIF-first plates + σ1
+// additive dither, at 1600×1000; the DOM-parity role of the original refs
+// ended when the art changed). Guards the geometry + color pipeline: a plate
+// mis-crop, wrong tier, or broken shader shifts these far beyond grain
+// dither. ±14 tolerates the dither.
 const REF = [
-	[100, 550, [111, 120, 175]],
-	[800, 100, [10, 36, 94]],
-	[400, 820, [40, 48, 98]],
-	[1300, 300, [76, 87, 149]]
+	[100, 550, [84, 76, 136]],
+	[800, 100, [42, 61, 129]],
+	[400, 820, [25, 40, 99]],
+	[1300, 300, [109, 98, 157]]
 ];
 const shot = await page.screenshot();
-const png = await import('sharp').then((m) => m.default(shot).raw().toBuffer({ resolveWithObject: true }));
+const png = await import('sharp').then((m) =>
+	m.default(shot).raw().toBuffer({ resolveWithObject: true })
+);
 for (const [x, y, [r, g, b]] of REF) {
 	const i = (y * png.info.width + x) * png.info.channels;
 	const got = [png.data[i], png.data[i + 1], png.data[i + 2]];
@@ -80,7 +85,9 @@ const glState = () => page.evaluate(() => globalThis.__ascendGL ?? null);
 await page.keyboard.press('g');
 await page.waitForTimeout(PAN_MS + 400);
 const up = await glState();
-check('g up: camera at crest', up?.settled && Math.abs(up.cam.y - 750) < 2, `camY=${up?.cam.y}`);
+// Crest = the mirror pose: (master − 2·bleed − viewport) src rows ≈ 76.28dvh
+// of the 1000px viewport (PAN_DVH is derived in sceneGL.ts — keep in step).
+check('g up: camera at crest', up?.settled && Math.abs(up.cam.y - 762.76) < 2, `camY=${up?.cam.y}`);
 check(
 	'g up: DOM overlays hidden',
 	await page.evaluate(() => document.querySelector('.twinkle')?.style.visibility === 'hidden')
@@ -100,7 +107,10 @@ check('g crane: world shifted right', crane?.settled && crane.cam.x > 20, `camX=
 await page.keyboard.press('g');
 await page.waitForTimeout(PAN_MS + 400);
 
-check('probe logs present', logs.some((l) => l.includes('straight tilt-up')));
+check(
+	'probe logs present',
+	logs.some((l) => l.includes('straight tilt-up'))
+);
 check('no console/page errors (landing)', errors.length === 0, errors.slice(0, 3).join(' | '));
 await page.close();
 

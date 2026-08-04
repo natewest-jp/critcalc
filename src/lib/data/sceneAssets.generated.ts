@@ -8,7 +8,7 @@
 // stale in a second location.
 
 /** Plate tier widths, in source px — full plate (frame + L/R bleed). */
-export const SCENE_TIERS = [2000, 2670, 3585, 5340] as const;
+export const SCENE_TIERS = [2400, 3200, 4300, 6400] as const;
 
 /** Source rows the sky slice continues past the horizon, to run UNDER the
  *  floor and kill the rasterisation hairline where the two layers meet. The
@@ -16,13 +16,18 @@ export const SCENE_TIERS = [2000, 2670, 3585, 5340] as const;
  *  script. */
 export const SCENE_SKY_OVERLAP_SRC = 4;
 
-export const SCENE_SKY = '/assets/landing/sky-1a8517ad';
-export const SCENE_FLOOR = '/assets/landing/floor-1a8517ad';
+export const SCENE_SKY = '/assets/landing/sky-ad7659a5';
+export const SCENE_FLOOR = '/assets/landing/floor-ad7659a5';
 
 /** Mid-grey dither tile laid over the plates to break encode banding.
  *  Lossless PNG — see the note in the script; a lossy re-encode dithers
  *  nothing. Distinct from the near-white noise-128 haze on .sky-bg. */
 export const SCENE_GRAIN = '/assets/landing/grain-fde816d1-128.png';
+
+/** The grain tile's gaussian σ, in 8-bit levels. The scene shader's additive
+ *  dither term divides by this to express its strength in levels — keep it in
+ *  step with the tile above. */
+export const SCENE_GRAIN_SIGMA = 6;
 
 /** `srcset` for one region base, e.g. srcsetFor(SCENE_SKY, 'avif'). */
 export function srcsetFor(base: string, ext: 'avif' | 'webp'): string {

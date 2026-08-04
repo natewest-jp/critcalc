@@ -196,23 +196,24 @@
 		   (--px) converts source px to CSS, so swapping the master only means
 		   updating the *-src values; all dependent positions flow automatically.
 
-		   The master is the 21:9 design FRAME (5120×2194) plus cursor-parallax
-		   BLEED on every edge so a shift never pulls a gutter into view: 110px
-		   left/right, 66px top/bottom → 5340×2326. Two width concepts matter:
+		   The master is the 6400×4000 ascend plate: the 21:9 design FRAME (5120
+		   wide) plus 640px of bleed left/right (full 16° crane + parallax
+		   reserve on every viewport). Two width concepts matter:
 		     --frame-w-src  the 21:9 frame — maps 1:1 to the viewport (the basis
 		                    for --px). At a 21:9 viewport the frame fills it exactly.
 		     --plate-w-src  the full image (frame + L/R bleed). The image is this
-		                    wide, so it overflows the frame by 110px×--px ≈ 5dvh per
-		                    side — the horizontal parallax reserve.
-		   Vertically the floor image carries the 66px bottom bleed BELOW the frame
-		   and the sky image the 66px top bleed ABOVE it (≈3dvh each — the vertical
-		   reserve). The horizon (sky/floor contact) is master row 1451, so the sky
-		   image is the top 1451 rows and the floor image the bottom 875. */
+		                    wide, so it overflows the frame by 640px×--px per side.
+		   Vertically the floor image carries the 66px bottom bleed BELOW the
+		   frame; ABOVE the rest frame the sky carries the full ascend headroom
+		   (~1740 src rows) the camera tilts up into — the crest pose mirrors
+		   rest with 66px of bleed above the viewport. The horizon (sky/floor
+		   contact) is master row 2675, so the sky image is the top 2675 rows
+		   and the floor image the bottom 1325. */
 		--frame-w-src: 5120;
-		--plate-w-src: 5340;
-		--master-h-src: 2326;
-		--sky-h-src: 1451;
-		--floor-h-src: 875;
+		--plate-w-src: 6400;
+		--master-h-src: 4000;
+		--sky-h-src: 2675;
+		--floor-h-src: 1325;
 		--bleed-v-src: 66;
 
 		--viewport-aspect: calc(21 / 9);
@@ -247,6 +248,18 @@
 		   devtools edit call window.__scene.retune(). */
 		--sky-grain: 0.45;
 		--floor-grain: 0.3;
+
+		/* Additive dither σ (8-bit levels) in the plate shader — breaks the
+		   quantisation contours the overlay-blend grain can't reach: overlay's
+		   dark branch scales with base brightness, so in the near-black top of
+		   the ascend sky the grain does ~nothing and the smooth gradient bands
+		   (measured 2026-08-04). Luminance-only, per device px. Measured
+		   sweep on the rendered crest: σ0 = 30.2% plateau, σ0.75 = 1.5%,
+		   σ1 = 0.6%, σ3 = 0.0% but reads heavy (Nate). Raise if the dark sky
+		   still bands on a real display, lower if the top looks noisy; 0
+		   disables. Read at renderer init — window.__scene.retune() after
+		   devtools edits. */
+		--scene-dither: 1;
 
 		/* Sky gradient stops. Picked to match the baked sky image's edge tone
 		   near the gutter (where the gradient shows through on ultrawide). */
