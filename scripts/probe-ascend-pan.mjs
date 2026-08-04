@@ -6,7 +6,8 @@
 // Asserts, against http://localhost:4998:
 //   1. the landing scene renders via the GL canvas (pixel samples match the
 //      old DOM plate rendering within grain tolerance) and the veil lifts
-//   2. the starfield canvas still paints above it
+//   2. the twinkle field renders INSIDE the scene canvas (the DOM .twinkle
+//      element is retired by the starfield merge)
 //   3. bare `g` pans the camera up/back (crest pose, DOM overlays hidden and
 //      restored, crane variant on the second up-leg)
 //   4. a cold load on a tool route defers the scene entirely (no plate
@@ -49,16 +50,16 @@ check(
 );
 
 // Scene-render regression pins (re-sampled 2026-08-04 from the first verified
-// build of the v4 ascend master — horizon 3026 — with AVIF-first plates + σ1
-// additive dither, at 1600×1000; the DOM-parity role of the original refs
-// ended when the art changed). Guards the geometry + color pipeline: a plate
-// mis-crop, wrong tier, or broken shader shifts these far beyond grain
-// dither. ±14 tolerates the dither.
+// build of the ART-PASS master — the 8-bit Blender export, horizon 3026 —
+// with AVIF-first plates + σ1 additive dither, at 1600×1000; the DOM-parity
+// role of the original refs ended when the art changed). Guards the geometry
+// + color pipeline: a plate mis-crop, wrong tier, or broken shader shifts
+// these far beyond grain dither. ±14 tolerates the dither.
 const REF = [
-	[100, 550, [145, 125, 165]],
-	[800, 100, [42, 64, 139]],
-	[400, 820, [50, 50, 107]],
-	[1300, 300, [69, 76, 146]]
+	[100, 550, [148, 122, 171]],
+	[800, 100, [43, 74, 177]],
+	[400, 820, [50, 51, 113]],
+	[1300, 300, [61, 71, 147]]
 ];
 const shot = await page.screenshot();
 const png = await import('sharp').then((m) =>
@@ -72,12 +73,27 @@ for (const [x, y, [r, g, b]] of REF) {
 }
 
 check(
-	'starfield canvas above the scene',
-	await page.evaluate(() => {
-		const t = document.querySelector('.twinkle');
-		const c = document.querySelector('.scene-canvas');
-		return !!t && !!c && !!(c.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING);
-	})
+	'DOM twinkle element retired',
+	await page.evaluate(() => document.querySelector('.twinkle') === null)
+);
+// Stars render in-canvas: an upper-sky patch must contain bright star pixels
+// well above the plate's own luminance range (stars peak near-white; the sky
+// plate tops out far darker). Counted on the live screenshot, so any twinkle
+// phase passes — the field has hundreds of stars in this patch.
+{
+	let starPx = 0;
+	for (let y = 40; y < 400; y += 2) {
+		for (let x = 200; x < 1400; x += 2) {
+			const i = (y * png.info.width + x) * png.info.channels;
+			if (png.data[i] > 190 && png.data[i + 1] > 190 && png.data[i + 2] > 190) starPx++;
+		}
+	}
+	check('stars render in the scene canvas', starPx > 40, `bright px: ${starPx}`);
+}
+
+check(
+	'twinkle loop live on the landing',
+	await page.evaluate(() => globalThis.__scene?.twinkling?.() === true)
 );
 
 // g: up (straight) → down → up (left crane) → down
@@ -90,7 +106,7 @@ const up = await glState();
 check('g up: camera at crest', up?.settled && Math.abs(up.cam.y - 762.76) < 2, `camY=${up?.cam.y}`);
 check(
 	'g up: DOM overlays hidden',
-	await page.evaluate(() => document.querySelector('.twinkle')?.style.visibility === 'hidden')
+	await page.evaluate(() => document.querySelector('.meteors')?.style.visibility === 'hidden')
 );
 await page.keyboard.press('g');
 await page.waitForTimeout(PAN_MS + 400);
@@ -98,7 +114,7 @@ const down = await glState();
 check('g down: camera at rest', down?.settled && Math.abs(down.cam.y) < 2, `camY=${down?.cam.y}`);
 check(
 	'g down: DOM overlays restored',
-	await page.evaluate(() => document.querySelector('.twinkle')?.style.visibility === '')
+	await page.evaluate(() => document.querySelector('.meteors')?.style.visibility === '')
 );
 await page.keyboard.press('g');
 await page.waitForTimeout(PAN_MS + 400);
@@ -145,6 +161,19 @@ check(
 	'return to landing: renderer initialized',
 	await tool.evaluate(() => typeof globalThis.__scene?.retune === 'function'),
 	'after SPA navigation home'
+);
+// SPA-nav BACK to a tool: the twinkle loop must stop (zero rAF work behind
+// the opaque tool shell — the scene-occlusion constraint).
+await tool.evaluate(() => {
+	const a = document.createElement('a');
+	a.href = '/rotation-planner';
+	document.body.appendChild(a);
+	a.click();
+});
+await tool.waitForTimeout(2000);
+check(
+	'SPA nav to tool: twinkle loop stopped',
+	await tool.evaluate(() => globalThis.__scene?.twinkling?.() === false)
 );
 check('no page errors (tool leg)', toolErrors.length === 0, toolErrors.slice(0, 2).join(' | '));
 

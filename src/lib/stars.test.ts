@@ -7,20 +7,20 @@ import { stars } from './stars';
 // can't ship silently.
 describe('packed star field', () => {
 	it('decodes the full committed composition', () => {
-		expect(stars.length).toBe(4774);
+		expect(stars.length).toBe(3578);
 		const count = (pred: (s: (typeof stars)[number]) => boolean) => stars.filter(pred).length;
-		expect(count((s) => s.animation === 'gentle')).toBe(3548);
-		expect(count((s) => s.animation === 'jitter')).toBe(1226);
+		expect(count((s) => s.animation === 'gentle')).toBe(2651);
+		expect(count((s) => s.animation === 'jitter')).toBe(927);
 		expect(count((s) => s.animation === 'dramatic')).toBe(0);
-		expect(count((s) => s.color === 'white')).toBe(3288);
-		expect(count((s) => s.color === 'warm')).toBe(707);
-		expect(count((s) => s.color === 'cool')).toBe(516);
-		expect(count((s) => s.color === 'yellow')).toBe(217);
-		expect(count((s) => s.color === 'amber')).toBe(46);
-		expect(count((s) => s.halo)).toBe(1080);
+		expect(count((s) => s.color === 'white')).toBe(2490);
+		expect(count((s) => s.color === 'warm')).toBe(525);
+		expect(count((s) => s.color === 'cool')).toBe(385);
+		expect(count((s) => s.color === 'yellow')).toBe(148);
+		expect(count((s) => s.color === 'amber')).toBe(30);
+		expect(count((s) => s.halo)).toBe(817);
 		// Hero stars: the ✦ sparks — a scattered handful, all flickering, all
 		// glowing (their fragment path draws the glow beneath the spark).
-		expect(count((s) => s.hero === true)).toBe(24);
+		expect(count((s) => s.hero === true)).toBe(18);
 		expect(stars.filter((s) => s.hero).every((s) => s.animation === 'jitter' && s.halo)).toBe(true);
 	});
 

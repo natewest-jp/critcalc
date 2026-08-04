@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
-	import TwinkleStars from '$lib/components/landing/TwinkleStars.svelte';
 	import ShootingStars from '$lib/components/landing/ShootingStars.svelte';
 	import PortalTransition from '$lib/components/landing/PortalTransition.svelte';
 	import LoadingVeil from '$lib/components/landing/LoadingVeil.svelte';
@@ -14,7 +13,6 @@
 		startSceneTransition,
 		sceneLayer,
 		dimTarget,
-		restTransform,
 		isToolPath,
 		sceneOccluded
 	} from '$lib/landing/transition';
@@ -52,7 +50,6 @@
 	// strings stay in lockstep with the sceneLayer action, including the side-
 	// tool horizontal crane on a direct hit to /crit-visualizer or /team-builder.
 	const initialDim = dimTarget(initialPath);
-	const initialSceneTransform = restTransform('twinkle', initialPath)!;
 
 	// The GL scene world (sceneGL.ts): plates + gradient in one canvas, camera
 	// as a uniform — the DOM plate layers are gone (the ascend rebuild; a slow
@@ -63,6 +60,7 @@
 	// and defer the whole GL mount — textures shouldn't compete with the tool's
 	// hydration — until the first navigation back to a scene-visible route.
 	let sceneCanvas: HTMLCanvasElement;
+	let sceneHandle = $state<SceneGLHandle | null>(null);
 	const releaseVeil = !isToolPath(initialPath) ? claimVeilReady() : () => {};
 	onMount(() => {
 		let handle: SceneGLHandle | null = null;
@@ -76,6 +74,7 @@
 					return;
 				}
 				handle = h;
+				sceneHandle = h;
 				afterPaint(releaseVeil);
 			} catch (err) {
 				// No WebGL → no scene (deliberately no DOM fallback: two scene
@@ -97,6 +96,18 @@
 		};
 	});
 
+	// The twinkle loop lives in the scene renderer now (the starfield-merge
+	// chunk — the DOM TwinkleStars canvas retired; a DOM-translating star
+	// canvas can't ride the camera pan). Tool routes fully occlude the scene
+	// and the scene-occlusion constraint demands ZERO live animation work
+	// behind them; the landing AND the static pages keep the field live.
+	// Resume is pop-free — star phases derive from absolute time.
+	$effect(() => {
+		if (!sceneHandle) return;
+		if (isToolPath(pathname)) sceneHandle.stop();
+		else sceneHandle.start();
+	});
+
 	// Catch-all transition kickoff for navigations not started by a hero click
 	// (brand-return, browser back/forward, direct nav). Hero clicks pre-start
 	// the transition and defer the navigation a couple frames (see the landing
@@ -116,22 +127,18 @@
 	});
 </script>
 
-<!-- The scene is composed from three layers stacked back-to-front:
-	  scene-canvas →  the GL world (sky-bg gradient + sky/floor plates + grain,
-	                  camera as a uniform — sceneGL.ts; the old DOM plate layers
-	                  are retired with the ascend rebuild)
-	  twinkle      →  WebGL starfield canvas (live twinkle over the baked
-	                  anchors; joins the scene canvas with the choreography
-	                  chunk — a DOM-translating star canvas can't ride the pan)
+<!-- The scene is composed from two layers stacked back-to-front:
+	  scene-canvas →  the GL world (sky-bg gradient + sky/floor plates + grain
+	                  + the twinkle starfield, camera as a uniform — sceneGL.ts;
+	                  the DOM plate layers AND the DOM twinkle canvas are
+	                  retired with the ascend rebuild)
 	  dim          →  opacity overlay applied when in a tool state
 
 	  .scene-stack still carries the horizon-line coordinate system in
-	  source-image pixel space — the starfield and meteors size to it. -->
+	  source-image pixel space — the meteors size to it. -->
 <div class="scene-stack">
 	<div class="scene" class:occluded={$sceneOccluded}>
 		<canvas class="scene-canvas" bind:this={sceneCanvas}></canvas>
-
-		<TwinkleStars initialTransform={initialSceneTransform} />
 
 		<ShootingStars />
 	</div>

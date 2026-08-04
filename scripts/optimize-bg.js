@@ -8,7 +8,15 @@ const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 // Raw master lives OUTSIDE static/ (in assets-src/, gitignored) so it is never
 // copied into the build output; only the encoded tiers written to OUT_DIR ship.
-const INPUT = join(PROJECT_ROOT, 'assets-src/landing/scene-6400.png');
+// The 8-bit Blender export IS the master (Nate's call, measured 2026-08-04):
+// Blender dithers at export time, so its 8-bit sky measures 59.4% plateau
+// where our own 16->8 conversion of the same art measured 96.1% — the
+// correct place to quantize. (The AVIF encoder smooths sub-level dither
+// either way — both masters ship identical bytes and ~90% plateau — so the
+// on-screen fix stays the scene shader's --scene-dither; the 8-bit master is
+// simply 5x smaller and strictly >= at the source. Keep Blender's Dither
+// setting ON in the export preset.)
+const INPUT = join(PROJECT_ROOT, 'assets-src/landing/scene-6400-8bit.png');
 const OUT_DIR = join(PROJECT_ROOT, 'static/assets/landing');
 const MANIFEST = join(PROJECT_ROOT, 'src/lib/data/sceneAssets.generated.ts');
 

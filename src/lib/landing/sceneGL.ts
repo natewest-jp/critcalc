@@ -44,6 +44,7 @@ import {
 	SCENE_GRAIN_SIGMA,
 	SCENE_TIERS
 } from '$lib/data/sceneAssets.generated';
+import { createStarPass, STAR_STATIC_ALPHA, type StarPass } from '$lib/landing/starPass';
 
 // --- Geometry constants -----------------------------------------------------
 // Mirror the --*-src vars on .scene-stack in (scene)/+layout.svelte AND the
@@ -242,6 +243,14 @@ export interface SceneGLHandle {
 	camera(): { x: number; y: number };
 	/** True while a camera animation is in flight. */
 	animating(): boolean;
+	/** Allow the twinkle loop (the starfield lives in this canvas). Actual
+	 *  looping still gates on document visibility, reduced motion (one static
+	 *  frame instead) and GL health. */
+	start(): void;
+	/** Stop the twinkle loop — the scene-occlusion constraint: zero rAF work
+	 *  behind tools. The last frame stays; resume is pop-free (star phases
+	 *  are absolute-time). */
+	stop(): void;
 	/** Re-read the CSS knobs (gradient stops, grain opacities) and redraw. */
 	retune(): void;
 	destroy(): void;
@@ -328,6 +337,11 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 
 	const progColor = link(gl, VS, FS_COLOR);
 	const progPlate = link(gl, VS, FS_PLATE);
+	// The twinkle field, drawn between the sky and floor plates (the
+	// starfield-merge chunk): stars ride the camera and the floor occludes
+	// them at the horizon. Rebuilt on context restore.
+	let starPass: StarPass = createStarPass(gl);
+	const reducedMq = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 	const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
 	const plateCssW = () => window.innerHeight * VIEWPORT_ASPECT * (PLATE_W_SRC / FRAME_W_SRC);
@@ -343,6 +357,9 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 	let grainTex = uploadTexture(gl, grainImg, { repeat: true, nearest: true });
 
 	let quads: { skyBg: Quad; sky: Quad; floor: Quad } | null = null;
+	// The sky REGION (the old .twinkle geometry): plate-wide, bottomed at the
+	// horizon, --sky-h tall. Star positions are % of this rect.
+	const starRegion = { x: 0, y: 0, w: 0, h: 0 };
 
 	const cam = { x: 0, y: 0 };
 	let raf = 0;
@@ -368,6 +385,10 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		const skyTop = vh - horizonY + SKY_OVERLAP_SRC * px - skyH;
 		const floorH = FLOOR_H_SRC * px;
 		const floorTop = vh + BLEED_V_SRC * px - floorH;
+		starRegion.x = plateX;
+		starRegion.y = vh - horizonY - SKY_H_SRC * px;
+		starRegion.w = plateW;
+		starRegion.h = SKY_H_SRC * px;
 		if (quads) for (const q of Object.values(quads)) gl.deleteBuffer(q.buf);
 		quads = {
 			skyBg: gradQuad(gl, 0, vh - sceneH, vw, sceneH, k.skyTop, k.skyBottom),
@@ -376,7 +397,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		};
 	}
 
-	function drawNow() {
+	function drawNow(timeMs: number = performance.now()) {
 		if (destroyed || lost || !quads) return;
 		const vw = window.innerWidth;
 		const vh = window.innerHeight;
@@ -418,6 +439,16 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, skyTex);
 		bind(progPlate, quads.sky, cam.x, k.skyGrain);
+		// Stars between sky and floor: the floor pass painted after occludes
+		// stars (and their halos) at the horizon.
+		starPass.draw({
+			timeMs,
+			view: { w: vw, h: vh },
+			cam: { x: cam.x, y: cam.y },
+			region: starRegion,
+			dpr,
+			staticAlpha: reducedMq.matches ? STAR_STATIC_ALPHA : -1
+		});
 		gl.bindTexture(gl.TEXTURE_2D, floorTex);
 		bind(progPlate, quads.floor, cam.x, k.floorGrain);
 	}
@@ -438,6 +469,37 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 	}
 	window.addEventListener('resize', onResize);
 
+	// --- The twinkle loop (ported from the retired starfield controller) ----
+	// While the scene is visible on a scene route, one rAF loop redraws the
+	// whole frame so the field twinkles; star phases are absolute-time, so
+	// stop/start (tool-route occlusion — the scene-occlusion constraint
+	// demands ZERO rAF work behind tools) resumes pop-free. Gates: document
+	// visibility and reduced motion (which instead paints ONE static frame at
+	// STAR_STATIC_ALPHA). During a camera animation the animation's own loop
+	// draws — the twinkle loop keeps scheduling but skips its draw.
+	let wantRun = false;
+	let loopRaf = 0;
+	const loopShould = () => wantRun && !destroyed && !lost && !document.hidden && !reducedMq.matches;
+	function loopFrame(now: number) {
+		loopRaf = 0;
+		if (!loopShould()) return;
+		if (!animPending) drawNow(now);
+		loopRaf = requestAnimationFrame(loopFrame);
+	}
+	function syncLoop() {
+		const should = loopShould();
+		if (should && !loopRaf) loopRaf = requestAnimationFrame(loopFrame);
+		if (!should && loopRaf) {
+			cancelAnimationFrame(loopRaf);
+			loopRaf = 0;
+		}
+		if (!should && wantRun && !destroyed && !lost && !document.hidden && reducedMq.matches) {
+			requestDraw(); // reduced motion: settle on one static frame
+		}
+	}
+	document.addEventListener('visibilitychange', syncLoop);
+	reducedMq.addEventListener('change', syncLoop);
+
 	function onContextLost(e: Event) {
 		e.preventDefault();
 		lost = true;
@@ -447,8 +509,10 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		skyTex = uploadTexture(gl, skyImg);
 		floorTex = uploadTexture(gl, floorImg);
 		grainTex = uploadTexture(gl, grainImg, { repeat: true, nearest: true });
+		starPass = createStarPass(gl); // GL resources died with the context
 		buildQuads();
 		requestDraw();
+		syncLoop();
 	}
 	canvas.addEventListener('webglcontextlost', onContextLost);
 	canvas.addEventListener('webglcontextrestored', onContextRestored);
@@ -470,7 +534,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 					const e = bezierEase(t);
 					cam.x = from.x + (to.x - from.x) * e;
 					cam.y = from.y + (to.y - from.y) * e;
-					drawNow();
+					drawNow(now);
 					if (t < 1) {
 						requestAnimationFrame(step);
 					} else {
@@ -490,6 +554,14 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		},
 		camera: () => ({ ...cam }),
 		animating: () => animPending,
+		start() {
+			wantRun = true;
+			syncLoop();
+		},
+		stop() {
+			wantRun = false;
+			syncLoop();
+		},
 		retune() {
 			k = knobs();
 			buildQuads();
@@ -499,6 +571,9 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 			destroyed = true;
 			animTag++;
 			if (raf) cancelAnimationFrame(raf);
+			if (loopRaf) cancelAnimationFrame(loopRaf);
+			document.removeEventListener('visibilitychange', syncLoop);
+			reducedMq.removeEventListener('change', syncLoop);
 			window.removeEventListener('resize', onResize);
 			canvas.removeEventListener('webglcontextlost', onContextLost);
 			canvas.removeEventListener('webglcontextrestored', onContextRestored);
@@ -511,7 +586,12 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 	buildQuads();
 	drawNow();
 	current = handle;
-	(window as unknown as Record<string, unknown>).__scene = { retune: handle.retune };
+	(window as unknown as Record<string, unknown>).__scene = {
+		retune: handle.retune,
+		// Probe surface: is the twinkle loop live? (The scene-occlusion
+		// constraint: must be false whenever a tool covers the scene.)
+		twinkling: () => loopRaf !== 0
+	};
 	return handle;
 }
 
@@ -522,10 +602,11 @@ let probeLeanIdx = 0;
 const PROBE_LEANS: Array<-1 | 0 | 1> = [0, 1, -1];
 
 function setDomHidden(hidden: boolean): void {
-	// Interim: the DOM starfield/meteors and the composition can't ride the GL
-	// camera yet (they convert with the choreography chunk), so the probe pans
-	// a pure scene. Restored at rest.
-	for (const sel of ['.twinkle', '.meteors', '.composition']) {
+	// Interim: the DOM meteors and the composition can't ride the GL camera
+	// yet (they convert with the choreography chunk), so the probe hides them
+	// during the pan. The twinkle field is IN the scene canvas now and rides
+	// the camera. Restored at rest.
+	for (const sel of ['.meteors', '.composition']) {
 		const el = document.querySelector<HTMLElement>(sel);
 		if (el) el.style.visibility = hidden ? 'hidden' : '';
 	}

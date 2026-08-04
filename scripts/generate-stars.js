@@ -21,10 +21,12 @@ const SEED = 0x6e617465;
 // the retired 5340×1451 sky ran 400 (~5.2e-5 /px²); plate v1 (6400×3184) ran
 // 1200 (~5.9e-5, "a little sparse" — Nate); plate v2 (6400×2671) ran 1400
 // (~8.2e-5), then DOUBLED to 2800 (~1.64e-4) per Nate's 2026-08-04
-// composition call — the ratified density. Plate v4's sky is 6400×3026
-// (~19.4Mpx²), so 3150 holds it. WebGL point sprites make count nearly free
-// — the knob is taste, not perf.
-const SKY_COUNT = 3150;
+// composition call. Plate v4's sky is 6400×3026 (~19.4Mpx²), where 3150
+// held that density — then Nate took ALL THREE counts (sky/band/hero) to
+// 75% after seeing the merged field in the scene (2026-08-04): the ratified
+// sky density is now ~1.22e-4 /px². WebGL point sprites make count nearly
+// free — the knob is taste, not perf.
+const SKY_COUNT = 2360;
 // Pull the bottom edge of the whole starfield up off the horizon so no star
 // sits on — or gets clipped by — the horizon line. BOTTOM_MARGIN is in
 // twinkle-element % (100 = horizon = top of floor); HORIZON_CUTOFF is the
@@ -79,11 +81,11 @@ const BAND_BOTTOM_SRC = [
 	[2782, 3025],
 	[5333, 0]
 ];
-// Area-scaled like SKY_COUNT: the ratified band density is ~3.9e-4 /px²
-// (v1's 3200 over ~8.2Mpx², "pretty good" — Nate); this trapezoid is
-// (560+2167)/2 × 3025 ≈ 4.1Mpx², so 1600 holds it (small+medium; heroes
-// ride on top).
-const BAND_COUNT = 1600;
+// Area-scaled like SKY_COUNT: the band ran ~3.9e-4 /px² ("pretty good" —
+// Nate, pre-merge) — 1600 on this ~4.1Mpx² trapezoid — then the 75% pass
+// (2026-08-04) set the ratified density to ~2.9e-4 /px² (small+medium;
+// heroes ride on top).
+const BAND_COUNT = 1200;
 // Density falloff inset from the band's top and bottom edges. Stars are
 // sampled within the band quad (no outer buffer) and accepted with
 // probability that tapers linearly from 0 at each edge to 1 BAND_FALLOFF %
@@ -94,9 +96,10 @@ const BAND_COUNT = 1600;
 // sections feel washed out, dial BAND_FALLOFF down. 0 = hard edges again.
 const BAND_FALLOFF = 10;
 // Hero stars scattered through the band — "only a few, maybe 20 or 30
-// overall" (Nate 2026-08-04). Placed with a high best-candidate count so the
-// handful spreads evenly along the band instead of clumping.
-const HERO_COUNT = 24;
+// overall" (Nate 2026-08-04), trimmed to 18 in the 75% pass. Placed with a
+// high best-candidate count so the handful spreads evenly along the band
+// instead of clumping.
+const HERO_COUNT = 18;
 const HERO_SPREAD_CANDIDATES = 12;
 
 // Animation split (Nate 2026-08-04): small/medium stars are 25% flicker
