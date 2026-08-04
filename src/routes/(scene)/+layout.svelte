@@ -207,13 +207,13 @@
 		   frame; ABOVE the rest frame the sky carries the full ascend headroom
 		   (~1740 src rows) the camera tilts up into — the crest pose mirrors
 		   rest with 66px of bleed above the viewport. The horizon (sky/floor
-		   contact) is master row 2675, so the sky image is the top 2675 rows
-		   and the floor image the bottom 1325. */
+		   contact) is master row 3026, so the sky image is the top 3026 rows
+		   and the floor image the bottom 974. */
 		--frame-w-src: 5120;
 		--plate-w-src: 6400;
 		--master-h-src: 4000;
-		--sky-h-src: 2675;
-		--floor-h-src: 1325;
+		--sky-h-src: 3026;
+		--floor-h-src: 974;
 		--bleed-v-src: 66;
 
 		--viewport-aspect: calc(21 / 9);

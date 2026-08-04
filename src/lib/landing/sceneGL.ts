@@ -50,14 +50,14 @@ import {
 // REGIONS in scripts/optimize-bg.js — the three move together when a new
 // master lands.
 //
-// The 6400×4000 ascend master (Nate's Blender re-export, plate v3
-// 2026-08-04): 5120 frame + 640px bleed per side; horizon at row 2675; the
+// The 6400×4000 ascend master (Nate's Blender re-export, plate v4
+// 2026-08-04): 5120 frame + 640px bleed per side; horizon at row 3026; the
 // ~1740 rows above the rest frame are the ascend sky the camera tilts up into.
 
 const FRAME_W_SRC = 5120;
 const PLATE_W_SRC = 6400;
-const SKY_H_SRC = 2675;
-const FLOOR_H_SRC = 1325;
+const SKY_H_SRC = 3026;
+const FLOOR_H_SRC = 974;
 const BLEED_V_SRC = 66;
 const MASTER_H_SRC = SKY_H_SRC + FLOOR_H_SRC;
 const SKY_OVERLAP_SRC = 4;

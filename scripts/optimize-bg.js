@@ -36,8 +36,8 @@ const HASH = createHash('sha256').update(MASTER).digest('hex').slice(0, 8);
 // pose is bottom-anchored (66px of bleed below the viewport), and everything
 // above the rest frame — ~1740 rows — is the sky the camera tilts up into,
 // whose top ~2194 rows must compose as a standalone full-viewport tool-state
-// backdrop. The horizon (sky/floor contact) is at row 2675, so the sky
-// occupies the top 2675 rows and the floor the bottom 1325. Both regions are
+// backdrop. The horizon (sky/floor contact) is at row 3026, so the sky
+// occupies the top 3026 rows and the floor the bottom 974. Both regions are
 // cropped from the same source image so the horizon alignment is mechanical —
 // no drift between them.
 //
@@ -57,7 +57,7 @@ const HASH = createHash('sha256').update(MASTER).digest('hex').slice(0, 8);
 // by the GPU, free per frame, and tunable from CSS.
 const MASTER_W = 6400;
 const MASTER_H = 4000;
-const HORIZON_Y = 2675; // sky height; floor height = MASTER_H − HORIZON_Y
+const HORIZON_Y = 3026; // sky height; floor height = MASTER_H − HORIZON_Y
 
 // Source rows the SKY crop continues PAST the horizon, to be covered by the
 // floor (z:3 over sky's z:1). Nate saw a hairline at the junction on a real

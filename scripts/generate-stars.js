@@ -20,10 +20,11 @@ const SEED = 0x6e617465;
 // Count is AREA-SCALED so DENSITY is the yardstick, not raw count. History:
 // the retired 5340×1451 sky ran 400 (~5.2e-5 /px²); plate v1 (6400×3184) ran
 // 1200 (~5.9e-5, "a little sparse" — Nate); plate v2 (6400×2671) ran 1400
-// (~8.2e-5), then DOUBLED to 2800 (~1.6e-4) per Nate's 2026-08-04 composition
-// call. WebGL point sprites make count nearly free — the knob is taste, not
-// perf.
-const SKY_COUNT = 2800;
+// (~8.2e-5), then DOUBLED to 2800 (~1.64e-4) per Nate's 2026-08-04
+// composition call — the ratified density. Plate v4's sky is 6400×3026
+// (~19.4Mpx²), so 3150 holds it. WebGL point sprites make count nearly free
+// — the knob is taste, not perf.
+const SKY_COUNT = 3150;
 // Pull the bottom edge of the whole starfield up off the horizon so no star
 // sits on — or gets clipped by — the horizon line. BOTTOM_MARGIN is in
 // twinkle-element % (100 = horizon = top of floor); HORIZON_CUTOFF is the
@@ -59,25 +60,30 @@ const pickTier = () => (rand() < SMALL_SHARE ? 'small' : 'medium');
 // the 6400×4000 ascend master (2026-08-04). Source-pixel values for direct
 // measurement against the plate; converted to % below.
 const SKY_SRC_WIDTH = 6400; // sky image's source-px width (the full plate)
-const SKY_SRC_HEIGHT = 2675; // sky image's source-px height (rows 0..2674)
-// Plate v3's band (Nate's four points, 2026-08-04): a wedge that pinches to a
-// point at the bottom-left corner of the sky box, runs along the horizon out
-// to x 2964, and exits the right edge between y 382 and 1570. TOP is the
-// zenith-side edge, BOTTOM the horizon-side edge; each is piecewise-linear
-// through its points, ordered by ascending x and spanning 0..SKY_SRC_WIDTH.
+const SKY_SRC_HEIGHT = 3026; // sky image's source-px height (rows 0..3025)
+// Plate v4's band (Nate's four points, 2026-08-04): a VERTICAL trapezoid
+// wedge — narrow base on the horizon (x 2222–2782), widening to the plate
+// top (x 3166–5333). Its left/right edges still decompose into per-column
+// TOP/BOTTOM polylines: the left edge (2222,3025)→(3166,0) bounds the top
+// (zenith-side) until the band reaches the plate top; the right edge
+// (2782,3025)→(5333,0) bounds the bottom (horizon-side). Columns outside
+// x 2222–5333 fall out naturally (top extrapolates below the horizon on the
+// left, bottom below zero on the right → bandDensity 0).
 const BAND_TOP_SRC = [
-	[0, 2674],
-	[6400, 382]
+	[2222, 3025],
+	[3166, 0],
+	[5333, 0]
 ];
 const BAND_BOTTOM_SRC = [
-	[0, 2674],
-	[2964, 2674],
-	[6400, 1570]
+	[2222, 3025],
+	[2782, 3025],
+	[5333, 0]
 ];
-// Area-scaled like SKY_COUNT: plate v1's band ran 3200 over ~8.2Mpx²
-// (~3.9e-4 /px²), which Nate judged "pretty good" — this wedge is ~5.4Mpx²,
-// so 2100 holds that density (small+medium; heroes ride on top).
-const BAND_COUNT = 2100;
+// Area-scaled like SKY_COUNT: the ratified band density is ~3.9e-4 /px²
+// (v1's 3200 over ~8.2Mpx², "pretty good" — Nate); this trapezoid is
+// (560+2167)/2 × 3025 ≈ 4.1Mpx², so 1600 holds it (small+medium; heroes
+// ride on top).
+const BAND_COUNT = 1600;
 // Density falloff inset from the band's top and bottom edges. Stars are
 // sampled within the band quad (no outer buffer) and accepted with
 // probability that tapers linearly from 0 at each edge to 1 BAND_FALLOFF %

@@ -49,16 +49,16 @@ check(
 );
 
 // Scene-render regression pins (re-sampled 2026-08-04 from the first verified
-// build of the v3 ascend master — horizon 2675 — with AVIF-first plates + σ1
+// build of the v4 ascend master — horizon 3026 — with AVIF-first plates + σ1
 // additive dither, at 1600×1000; the DOM-parity role of the original refs
 // ended when the art changed). Guards the geometry + color pipeline: a plate
 // mis-crop, wrong tier, or broken shader shifts these far beyond grain
 // dither. ±14 tolerates the dither.
 const REF = [
-	[100, 550, [84, 76, 136]],
-	[800, 100, [42, 61, 129]],
-	[400, 820, [25, 40, 99]],
-	[1300, 300, [109, 98, 157]]
+	[100, 550, [145, 125, 165]],
+	[800, 100, [42, 64, 139]],
+	[400, 820, [50, 50, 107]],
+	[1300, 300, [69, 76, 146]]
 ];
 const shot = await page.screenshot();
 const png = await import('sharp').then((m) =>
