@@ -14,8 +14,9 @@
 //      to rest and brings the composition + twinkle back; a side-tool hero
 //      click cranes the world toward its card (the bare-`g` probe toggle was
 //      stripped at merge prep — the choreography IS the pan now)
-//   4. a cold load on a tool route defers the scene entirely (no plate
-//      fetches, no renderer) until navigation back to a scene route
+//   4. a cold load on a tool route still initializes the scene — the shell is
+//      transparent (tools-over-scene, 2026-08-05) and the world stays live
+//      beneath every tool
 //   5. no console/page errors throughout
 //
 // Run: node scripts/probe-ascend-pan.mjs   (preview server on 4998 first)
@@ -133,15 +134,18 @@ check(
 		() => document.querySelector('.tool-shell')?.classList.contains('revealed') === true
 	)
 );
+// Tools-over-scene (dire-retirement round, 2026-08-05): the shell is
+// transparent and the scene stays LIVE beneath the tools — the occlusion
+// handshake retired with the shell's opacity.
 check(
-	'ascend settled: scene occluded',
+	'ascend settled: scene stays live (tools-over-scene)',
 	await page.evaluate(
-		() => document.querySelector('.scene')?.classList.contains('occluded') === true
+		() => document.querySelector('.scene')?.classList.contains('occluded') !== true
 	)
 );
 check(
-	'ascend settled: twinkle loop stopped',
-	await page.evaluate(() => globalThis.__scene?.twinkling?.() === false)
+	'ascend settled: twinkle loop keeps running',
+	await page.evaluate(() => globalThis.__scene?.twinkling?.() === true)
 );
 
 // Brand-mark return: plain link → beforeNavigate starts the descend.
@@ -197,10 +201,13 @@ tool.on('request', (r) => {
 tool.on('pageerror', (e) => toolErrors.push(String(e)));
 await tool.goto(`${ORIGIN}/rotation-planner`, { waitUntil: 'networkidle' });
 await tool.waitForTimeout(2500);
-check('tool cold load: no plate fetches', plateFetches.length === 0, plateFetches[0] ?? '');
+// Tools-over-scene (2026-08-05): the shell is transparent, so a cold tool
+// load MUST paint the live scene beneath it — plates fetch and the renderer
+// initializes (the old full-deferral contract retired with the opaque shell).
+check('tool cold load: plates fetch (scene lives under the tools)', plateFetches.length > 0);
 check(
-	'tool cold load: renderer deferred',
-	await tool.evaluate(() => globalThis.__scene === undefined)
+	'tool cold load: renderer initialized',
+	await tool.evaluate(() => typeof globalThis.__scene?.retune === 'function')
 );
 // Return to the landing (SPA navigation home) → renderer must init.
 await tool.click('.tool-brand, a[aria-label*="critcalc"], .brand-return').catch(() => {});
@@ -218,9 +225,9 @@ check(
 	await tool.evaluate(() => typeof globalThis.__scene?.retune === 'function'),
 	'after SPA navigation home'
 );
-// SPA-nav BACK to a tool: the twinkle loop must stop (zero rAF work behind
-// the opaque tool shell — the scene-occlusion constraint). Occlusion now
-// waits for the full ascend + reveal fade (~2800ms), so give it headroom.
+// SPA-nav BACK to a tool: tools-over-scene keeps the scene animating beneath
+// the transparent shell — the twinkle loop must KEEP running (the old
+// occlusion stop retired with the dire-retirement round, 2026-08-05).
 await tool.evaluate(() => {
 	const a = document.createElement('a');
 	a.href = '/rotation-planner';
@@ -229,8 +236,8 @@ await tool.evaluate(() => {
 });
 await tool.waitForTimeout(3600);
 check(
-	'SPA nav to tool: twinkle loop stopped',
-	await tool.evaluate(() => globalThis.__scene?.twinkling?.() === false)
+	'SPA nav to tool: twinkle loop keeps running',
+	await tool.evaluate(() => globalThis.__scene?.twinkling?.() === true)
 );
 check('no page errors (tool leg)', toolErrors.length === 0, toolErrors.slice(0, 2).join(' | '));
 

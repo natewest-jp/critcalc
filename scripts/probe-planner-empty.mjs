@@ -8,10 +8,10 @@ page.on('pageerror', (e) => errs.push(e.message));
 await page.goto(`http://localhost:4998/rotation-planner?r=${SHARE}`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(2200);
 const section = await page.$('.timeline-section');
-await section.screenshot({ path: '/Users/producer/.claude/jobs/cd9dcc54/tmp/r2-loaded.png' });
+await section.screenshot({ path: `${process.env.SHOTS_DIR ?? '/tmp'}/r2-loaded.png` });
 // New empty tab: placeholder + blank slots
-await page.click('.tab-add');
+await page.click('.rp-tab-add');
 await page.waitForTimeout(600);
-await section.screenshot({ path: '/Users/producer/.claude/jobs/cd9dcc54/tmp/r2-empty.png' });
+await section.screenshot({ path: `${process.env.SHOTS_DIR ?? '/tmp'}/r2-empty.png` });
 console.log('errors:', errs.length ? errs : 'none');
 await browser.close();

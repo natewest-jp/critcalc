@@ -277,11 +277,14 @@ check('clear empties the tab stack', (await page.locator('.tb-tabstack').count()
 await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
 await page.locator('.cg-grid').first().waitFor({ timeout: 5000 });
 
-// ── 7. Team strip: slots, facts, checklist, ?team= URL ─────────────────────
-check(
-	'team strip renders with four empty slots',
-	(await page.locator('.bn-slot--empty').count()) === 4
-);
+// ── 7. Team strip: slots, facts, checklist ─────────────────────────────────
+// The slot cards are the layout-level bench band now (bench-band round): a
+// filled slot is a band card with a non-empty name; empties render blank.
+const filledSlots = async () =>
+	(await page.locator('.bench-band-mount .sp-char-name').allInnerTexts()).filter(
+		(t) => t.trim() !== ''
+	).length;
+check('team strip renders with four empty slots', (await filledSlots()) === 0);
 
 const addToTeam = async (name) => {
 	await page.locator('.cc', { hasText: name }).first().locator('.cc-main').click();
@@ -290,11 +293,12 @@ const addToTeam = async (name) => {
 	await page.keyboard.press('Escape');
 };
 await addToTeam('Bennett');
+check('first slot fills from the detail card', (await filledSlots()) === 1);
 check(
-	'first slot fills from the detail card',
-	(await page.locator('.bn-slot--filled').count()) === 1
+	'the slots→URL mirror is retired (working team lives in tab state)',
+	!page.url().includes('team='),
+	page.url()
 );
-check('?team= mirrors the slot state', page.url().includes('team=bennett'), page.url());
 check(
 	'partial team: resonance withheld (needs full party)',
 	(await page.locator('.bn-resnote').count()) === 1
@@ -335,21 +339,20 @@ await page.locator('.dc-panel').waitFor({ timeout: 5000 });
 check('full team disables adding a fifth', await page.locator('.dc-team').isDisabled());
 await page.keyboard.press('Escape');
 
-// URL round-trip: cold load with ?team= restores the slots
+// Deep link: cold load with ?team= imports the team into a tab (the inbound
+// half of ?team= survives the mirror's retirement) and strips the param.
 await page.goto(`${BASE}/team-builder?team=bennett,jean,diona,gorou`, {
 	waitUntil: 'networkidle'
 });
-check(
-	'?team= cold load restores four slots',
-	(await page.locator('.bn-slot--filled').count()) === 4
-);
+check('?team= cold load imports four slots', (await filledSlots()) === 4);
+check('?team= is stripped after import', !page.url().includes('team='), page.url());
 await page.screenshot({ path: 'probe-team-builder-team.png', fullPage: false });
 
 // ── 7b. Audition: pin the incumbent, in-view candidates, commit a swap ─────
 // Bennett holds slot 0 — audition replacements for him from the Bench. This
 // navigates to the Compare tab (an explicit "start comparing" action, unlike
 // a card's silent add) with the candidates strip rendered inside the view.
-await page.locator('.bn-act[aria-label^="Audition"]').first().click();
+await page.locator('.bb-act[aria-label^="Audition"]').first().click();
 await page.locator('.cmp').waitFor({ timeout: 5000 });
 await page.locator('.cmp-chip--anchor').first().waitFor({ timeout: 5000 });
 check(
@@ -400,15 +403,15 @@ check(
 	'committing returns to the originating tab',
 	(await page.locator('.tb-atlas').count()) === 1 && (await page.locator('.cmp').count()) === 0
 );
-const auditionedNames = await page.locator('.bn-slot--filled .sp-char-name').allInnerTexts();
+const auditionedNames = await page.locator('.bench-band-mount .sp-char-name').allInnerTexts();
 check(
 	'committing swaps the slot (Furina replaces Bennett)',
 	auditionedNames.includes('Furina') && !auditionedNames.includes('Bennett'),
 	auditionedNames.join(',')
 );
 check(
-	'the swap is mirrored to ?team=',
-	page.url().includes('furina') && !/\bbennett\b/.test(page.url()),
+	'the swap does not touch the URL (mirror retired)',
+	!page.url().includes('team='),
 	page.url()
 );
 check(
@@ -418,29 +421,28 @@ check(
 await page.screenshot({ path: 'probe-team-builder-audition.png', fullPage: false });
 
 await page.locator('.bn-clear').click();
-check('clear team empties slots', (await page.locator('.bn-slot--empty').count()) === 4);
-check('clear team strips the URL param', !page.url().includes('team='), page.url());
+check('clear team empties slots', (await filledSlots()) === 0);
 
-// ── 8. Cross-injection: TB → planner → TB round trip ───────────────────────
-// TB → planner: strip link carries the team; planner consumes ?team= into slots.
+// ── 8. One working team: TB ⇄ planner share the slots through tab state ────
+// The old ?team= cross-injection is retired — navigating to the planner finds
+// the SAME team already in the slots, because both tools edit the active
+// rotation tab. (The bench band itself glides across during the pan.)
 await page.goto(`${BASE}/team-builder?team=bennett,jean,diona,gorou`, {
 	waitUntil: 'networkidle'
 });
-const plannerHref = await page.locator('.bn-send').getAttribute('href');
 check(
-	'team strip links to the planner with the team',
-	plannerHref === '/rotation-planner?team=bennett,jean,diona,gorou',
-	plannerHref
+	'send-to-planner link is retired (the shared team travels by itself)',
+	(await page.locator('.bn-send').count()) === 0
 );
-await page.locator('.bn-send').click();
-await page.locator('.sp-char-name').first().waitFor({ timeout: 10000 });
-const plannerNames = await page.locator('.sp-char-name').allInnerTexts();
+await page.locator('.chrome-nav a[href*="rotation-planner"]').click();
+await page.waitForTimeout(1400); // the pan + band travel
+const plannerNames = await page.locator('.bench-band-mount .sp-char-name').allInnerTexts();
 check(
-	'planner slots populated from ?team=',
+	'planner slots hold the SAME working team (no URL hand-off needed)',
 	['Bennett', 'Jean', 'Diona', 'Gorou'].every((n) => plannerNames.includes(n)),
 	plannerNames.join(',')
 );
-check('planner strips ?team= after consuming it', !page.url().includes('team='), page.url());
+check('no ?team= appears anywhere in the trip', !page.url().includes('team='), page.url());
 
 // Planner → TB: the in-frame Source overlay + the whole-team "Explore
 // alternatives →" hand-off (the retired ?replace= single-char pre-seed).
@@ -480,22 +482,33 @@ check(
 );
 
 // Re-open the picker — the Explore hand-off docks in the label column beneath
-// the portraits while you're choosing team members.
+// the portraits while you're choosing team members. The team no longer rides
+// the URL (it IS the shared working team); ?alts=1 just requests the per-slot
+// alternatives view.
 await page.locator('.sp-avatar-chip').first().click();
 await page.locator('.rp-explore-link').waitFor({ timeout: 5000 });
 const exploreHref = await page.locator('.rp-explore-link').getAttribute('href');
 check(
-	'Explore alternatives → carries the whole team to the Team Builder',
-	exploreHref === '/team-builder?team=bennett,jean,diona,gorou',
+	'Explore alternatives → asks for the alternatives view (team already shared)',
+	exploreHref === '/team-builder?alts=1',
 	exploreHref
 );
 await page.locator('.rp-explore-link').click();
 await page.locator('.tb-source').waitFor({ timeout: 10000 });
+await page.waitForTimeout(1400); // the pan + band travel
 check(
-	'Team Builder receives the whole team into the slots (four filled)',
-	(await page.locator('.bn-slot--filled').count()) === 4,
-	String(await page.locator('.bn-slot--filled').count())
+	'Team Builder shows the same working team (four filled)',
+	(await filledSlots()) === 4,
+	String(await filledSlots())
 );
+check(
+	'arrival opens the per-slot alternatives view',
+	(await page.locator('.tb-slotrow').count()) > 0,
+	String(await page.locator('.tb-slotrow').count())
+);
+// Let the outgoing planner layer finish its retention hold (HOLD_MAX_MS 2500)
+// before counting chips — its Source rail duplicates rail selectors until then.
+await page.waitForTimeout(1800);
 await page.screenshot({ path: 'probe-team-builder-explore.png', fullPage: false });
 
 // ── 8b. Ownership ledger: mark, filter, persist ────────────────────────────

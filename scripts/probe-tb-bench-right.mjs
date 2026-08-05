@@ -140,7 +140,8 @@ for (const w of [1040, 760]) {
 	await page.screenshot({ path: `${SHOTS}/tb-${w}.png` });
 }
 
-// ── send affordance: arrow points right toward the planner ───────────────
+// ── team add lands on the bench band (the send link retired with the
+//    bench-band round — the band itself glides to the planner now) ─────────
 await page.setViewportSize({ width: 1600, height: 1000 });
 // Tiles near the viewport edges sit under the fixed chrome — dispatch the
 // click directly rather than fighting hit-testing (same move as
@@ -151,8 +152,20 @@ await page
 	.locator('.tb-act')
 	.first()
 	.dispatchEvent('click');
-const sendText = (await page.locator('.bn-send').innerText()).trim();
-check('bench send label ends with →', sendText.endsWith('→'), sendText);
+await page.waitForTimeout(200);
+const bandNames = await page
+	.locator('.bench-band-mount .sp-char-name')
+	.allInnerTexts()
+	.catch(() => []);
+check(
+	'team add lands on the bench band',
+	bandNames.some((n) => n.includes('Bennett')),
+	bandNames.join(',')
+);
+check(
+	'send-to-planner link is retired (the band travels instead)',
+	(await page.locator('.bn-send').count()) === 0
+);
 
 // ── RP: explore link leads with ← under the left portrait column ─────────
 const rp = await browser.newPage({ viewport: { width: 1600, height: 1000 } });

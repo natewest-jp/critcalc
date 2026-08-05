@@ -44,7 +44,9 @@ await page.goto(`${BASE}/rotation-planner`, { waitUntil: 'networkidle' });
 const rpTabs = await box('.rp-tab-bar');
 const rpFrame = await box('.rp-frame');
 const rpBench = await box('.rp-label-col');
-const rpCard = await box('.rp-frame .sp-card');
+// The cards live in the layout-level bench band now (bench-band round),
+// docked over the label column — same geometry, different owner.
+const rpCard = await box('.bench-band-mount .sp-card');
 console.log('RP tab bar     ', rpTabs);
 console.log('RP frame       ', rpFrame);
 console.log('RP portrait col', rpBench);
@@ -55,7 +57,7 @@ await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 const tbTabs = await box('.tb-tabs');
 const tbFrame = await box('.tb-frame');
 const tbBench = await box('.bn');
-const tbCard = await box('.bn .sp-card');
+const tbCard = await box('.bench-band-mount .sp-card');
 console.log('\nTB tab row     ', tbTabs);
 console.log('TB frame       ', tbFrame);
 console.log('TB bench       ', tbBench);
@@ -121,14 +123,18 @@ check(
 const cardBox = async () =>
 	await page.evaluate(() => {
 		const bn = document.querySelector('.bn');
-		const card = document.querySelector('.bn .sp-card');
+		const card = document.querySelector('.bench-band-mount .sp-card');
 		const cs = getComputedStyle(bn);
 		const inner = bn.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
 		return { card: Math.round(card.getBoundingClientRect().width), inner: Math.round(inner) };
 	});
 const emptyCard = await cardBox();
 await page.goto(`${BASE}/team-builder?team=bennett`, { waitUntil: 'networkidle' });
-await page.waitForSelector('.bn-slot--filled');
+await page.waitForFunction(() =>
+	[...document.querySelectorAll('.bench-band-mount .sp-char-name')].some((n) =>
+		n.textContent?.includes('Bennett')
+	)
+);
 const filledCard = await cardBox();
 console.log('TB card empty  ', emptyCard);
 console.log('TB card filled ', filledCard);

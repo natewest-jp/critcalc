@@ -1,16 +1,21 @@
 /**
- * Probe: the two-layer constellation + loadout model (2026-07-21).
+ * Probe: the two-layer constellation + loadout model (2026-07-21; write-routing
+ * re-drawn by the bench-band round 2026-08-05).
  *
- * Layer 1 = the roster (global `constellations` + `loadout` stores), edited ONLY
- * in the Team Builder; setting a constellation there implies ownership. Layer 2 =
- * the planner tab (`tabCon` + `tabLoadout`), which shadows Layer 1 field-by-field,
- * never touches the roster, and never marks ownership. A tab's effective value is
- * `tabX[id] ?? layer1[id]`. Saving a rotation DENSIFIES (freezes) the resolved
- * con + loadout for all slots so a saved artifact stays faithful even if the
- * roster changes later; an OPEN tab keeps live-falling-back to the roster.
+ * Layer 1 = the roster (global `constellations` + `loadout` stores), edited in
+ * the Team Builder's ROSTER surfaces (Detail card; edit-roster grid); setting a
+ * constellation there implies ownership. Layer 2 = the active tab (`tabCon` +
+ * `tabLoadout` in the shared rotationTabs module), which shadows Layer 1
+ * field-by-field, never touches the roster, and never marks ownership. A tab's
+ * effective value is `tabX[id] ?? layer1[id]`. Saving a rotation DENSIFIES
+ * (freezes) the resolved con + loadout for all slots so a saved artifact stays
+ * faithful even if the roster changes later; an OPEN tab keeps
+ * live-falling-back to the roster.
  *
- * Both tools render the SAME SlotPortrait card (.sp-*), so the constellation chip
- * and loadout chips are identical — only the layer their writes land in differs.
+ * THE BENCH BAND — the one slot-card column both tools dock — ALWAYS writes
+ * Layer 2: it is the plan's team editor everywhere. (Pre-band, the TB bench
+ * wrote Layer 1; one shared control routing differently per tool would be
+ * incoherent, so the roster surfaces alone own Layer 1 now.)
  *
  * Run: start `npm run preview -- --port 4998 --strictPort`, then
  *      `node scripts/probe-loadout-con-layers.mjs`
@@ -126,46 +131,86 @@ check(
 	await chip(1)
 );
 
-// ── 3. Team Builder Bench con/loadout write Layer 1 (roster) + imply owned ──
+// ── 3. The bench band on the TB writes Layer 2 (the tab), same as on the RP ──
 await page.goto(`${BASE}/team-builder?team=nahida,furina`, { waitUntil: 'networkidle' });
 await wait(1000);
 check(
-	'Bench renders the shared SlotPortrait cards',
-	(await page.locator('.bn .sp-card').count()) === 4,
-	String(await page.locator('.bn .sp-card').count())
+	'the bench band renders the shared SlotPortrait cards on the TB',
+	(await page.locator('.bench-band-mount .sp-card').count()) === 4,
+	String(await page.locator('.bench-band-mount .sp-card').count())
 );
+const rosterConsBefore = (await ls('critcalc:constellations')) || '{}';
 
-// Set Nahida (slot 0) to C4 from the Bench con chip.
-await page.locator('.bn .sp-cons-chip').first().click();
+// Set Nahida (slot 0) to C4 from the band's con chip.
+await page.locator('.bench-band-mount .sp-cons-chip').first().click();
 await wait(250);
 await page.locator('.sp-popover .sp-pip').nth(4).click();
 await wait(300);
-const benchCons = JSON.parse((await ls('critcalc:constellations')) || '{}');
+const tabsAfterBandCon = JSON.parse((await ls('critcalc:rotationTabs')) || '{}');
+const activeTabAfter = tabsAfterBandCon?.tabs?.find((t) => t.id === tabsAfterBandCon.activeTabId);
 check(
-	'Bench con chip writes the roster (Layer 1 constellations)',
-	benchCons.nahida === 4,
-	JSON.stringify(benchCons)
+	'band con chip writes tabCon (Layer 2) — the plan, not the roster',
+	activeTabAfter?.tabCon?.nahida === 4,
+	JSON.stringify(activeTabAfter?.tabCon)
 );
-const benchOwn = JSON.parse((await ls('critcalc:ownership')) || '{}');
 check(
-	'Bench con implies ownership (roster rule)',
-	benchOwn.nahida === 'owned',
-	JSON.stringify(benchOwn)
+	'band con does NOT touch the roster constellations',
+	((await ls('critcalc:constellations')) || '{}') === rosterConsBefore,
+	String(await ls('critcalc:constellations'))
+);
+const bandOwn = JSON.parse((await ls('critcalc:ownership')) || '{}');
+check(
+	'band con does NOT mark ownership (plan ≠ ownership)',
+	bandOwn.nahida === undefined,
+	JSON.stringify(bandOwn)
 );
 
-// Set an artifact loadout from the Bench (Layer-1 loadout is net-new here).
-// The loadout pill's first zone is artifact; it opens the combined panel led
-// by that section.
-await page.locator('.bn .sp-card').first().locator('.sp-lo-zone').first().click();
+// Set an artifact from the band → tabLoadout (Layer 2), never the roster loadout.
+await page.locator('.bench-band-mount .sp-card').first().locator('.sp-lo-zone').first().click();
 await wait(250);
 // .lp-tile index 0 is the "None" tile — pick the first real artifact set.
 await page.locator('.sp-popover--panel .lp-tile').nth(1).click();
 await wait(300);
-const benchLoadout = JSON.parse((await ls('critcalc:loadout')) || '{}');
+const tabsAfterBandLo = JSON.parse((await ls('critcalc:rotationTabs')) || '{}');
+const activeTabLo = tabsAfterBandLo?.tabs?.find((t) => t.id === tabsAfterBandLo.activeTabId);
 check(
-	'Bench loadout chip writes the roster loadout (Layer 1)',
-	!!benchLoadout.nahida?.artifactSetId,
-	JSON.stringify(benchLoadout.nahida)
+	'band loadout writes tabLoadout (Layer 2)',
+	!!activeTabLo?.tabLoadout?.nahida?.artifactSetId,
+	JSON.stringify(activeTabLo?.tabLoadout?.nahida)
+);
+check(
+	'band loadout does NOT touch the roster loadout',
+	(await ls('critcalc:loadout')) === null,
+	String(await ls('critcalc:loadout'))
+);
+
+// ── 4. Layer 1 still has its editor: the Detail card's con stepper ──────────
+// The loadout panel stays open after a pick (re-leading is a feature) — close
+// it before driving the Detail card.
+await page.locator('.sp-popover-backdrop').click();
+await wait(200);
+await page.locator('.bench-band-mount .sp-avatar-clickable').first().dispatchEvent('click');
+await page.locator('.dc-panel').waitFor({ timeout: 5000 });
+await page.locator('.dc-constepper .dc-con-btn', { hasText: 'C2' }).click();
+await wait(300);
+const rosterConsDetail = JSON.parse((await ls('critcalc:constellations')) || '{}');
+check(
+	'Detail card con stepper writes the roster (Layer 1)',
+	rosterConsDetail.nahida === 2,
+	JSON.stringify(rosterConsDetail)
+);
+const detailOwn = JSON.parse((await ls('critcalc:ownership')) || '{}');
+check(
+	'Detail card con implies ownership (roster rule)',
+	detailOwn.nahida === 'owned',
+	JSON.stringify(detailOwn)
+);
+await page.keyboard.press('Escape');
+// The band still shows Nahida at its own Layer-2 override (C4), not the roster C2.
+check(
+	'band keeps showing the Layer-2 override over the new roster value',
+	(await page.locator('.bench-band-mount .sp-cons-chip').first().innerText()) === 'C4',
+	await page.locator('.bench-band-mount .sp-cons-chip').first().innerText()
 );
 
 check('no unexpected console/page errors', errors.length === 0, errors.join(' | '));

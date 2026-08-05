@@ -53,7 +53,10 @@ const CASES = [
 	{
 		notation: 'Bennett E Q > Xiangling E Q > Bennett E > Xiangling E',
 		why: 'TTDS swap-out + Widsith swap-in received rows',
-		check: (s) => s.buffLabels.includes('TTDS') && s.buffLabels.includes('Widsith')
+		// Full names: weapon shortName retired from display (legibility fixes 2026-07-31).
+		check: (s) =>
+			s.buffLabels.includes('Thrilling Tales of Dragon Slayers') &&
+			s.buffLabels.includes('The Widsith')
 	},
 	{
 		notation: 'Mavuika E Q > Xilonen E Q',
