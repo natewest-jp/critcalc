@@ -202,7 +202,7 @@
 	}
 </script>
 
-<div class="sp-card" style:--el={p.main}>
+<div class="sp-card ctx-light" style:--el={p.main}>
 	<!-- Identity row: element glyph + name ranged left, constellation chip right.
 	     Slot actions do NOT live here — they ride the base band. -->
 	<div class="sp-id-row">
@@ -496,7 +496,9 @@
 		   its mark right with margin-left because there it IS the last item.) */
 		margin-right: auto;
 		flex-shrink: 0;
-		color: color-mix(in srgb, var(--dire) 80%, white);
+		/* --ui-danger, not a domain color — a data-quality consequence, not a
+		   game fact (dire-retirement round, 2026-08-05; mirrors .cc-namemark). */
+		color: var(--ui-danger);
 		font-size: var(--fs-2xl);
 		font-weight: var(--fw-bold);
 		line-height: var(--lh-none);

@@ -28,6 +28,22 @@ function cssToken(name: string, src = appCss): string {
 	return m[1].trim();
 }
 
+/** A declaration inside a specific context block (`.ctx-dark` / `.ctx-light`,
+ *  2026-08-05 Genshin-UI archetype): the timeline runs dark and the portrait
+ *  cards light, so their mirrored tokens must be sourced from the context
+ *  re-declarations, not :root. */
+function ctxToken(selector: string, name: string): string {
+	// ^-anchored: the selector's rule starts at column 0; unanchored matching
+	// would hit prose mentions of the class in comments first.
+	const block = new RegExp(`^${selector.replace(/\./g, '\\.')}[^{]*\\{([^}]*)\\}`, 'm').exec(
+		appCss
+	);
+	if (!block) throw new Error(`context block ${selector} not found`);
+	const m = new RegExp(`^\\s*${name}:\\s*([^;]+);`, 'm').exec(block[1]);
+	if (!m) throw new Error(`token ${name} not found in ${selector}`);
+	return m[1].trim();
+}
+
 function hexToRgb(hex: string): [number, number, number] {
 	const n = parseInt(hex.replace('#', ''), 16);
 	return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
@@ -45,56 +61,32 @@ function mix(a: string, b: string, pctA: number): string {
 	return `#${to(ar, br)}${to(ag, bg)}${to(ab, bb)}`;
 }
 
-function hslToHex(h: number, s: number, l: number): string {
-	s /= 100;
-	l /= 100;
-	const c = (1 - Math.abs(2 * l - 1)) * s;
-	const hp = h / 60;
-	const x = c * (1 - Math.abs((hp % 2) - 1));
-	const m = l - c / 2;
-	let rgb: [number, number, number];
-	if (hp < 1) rgb = [c, x, 0];
-	else if (hp < 2) rgb = [x, c, 0];
-	else if (hp < 3) rgb = [0, c, x];
-	else if (hp < 4) rgb = [0, x, c];
-	else if (hp < 5) rgb = [x, 0, c];
-	else rgb = [c, 0, x];
-	const to = (v: number) =>
-		Math.round((v + m) * 255)
-			.toString(16)
-			.padStart(2, '0');
-	return `#${to(rgb[0])}${to(rgb[1])}${to(rgb[2])}`;
-}
-
 describe('timelineExport palette mirror ↔ app.css', () => {
 	it('plain hex tokens match', () => {
 		// The chart ground is planner-local since 2026-08-01 (Nate's darker
 		// well), declared in RotationTimeline rather than app.css.
 		expect(PALETTE_MIRROR.CHART_BG).toBe(cssToken('--rp-chart-bg', timelineSvelte));
-		expect(PALETTE_MIRROR.TEXT).toBe(cssToken('--text'));
-		expect(PALETTE_MIRROR.MUTED).toBe(cssToken('--muted'));
+		// The timeline root is .ctx-dark; its text tokens mirror that block.
+		expect(PALETTE_MIRROR.TEXT).toBe(ctxToken('.ctx-dark', '--text'));
+		expect(PALETTE_MIRROR.MUTED).toBe(ctxToken('.ctx-dark', '--muted'));
 		expect(PALETTE_MIRROR.INK).toBe(cssToken('--ink'));
-		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(cssToken('--surface'));
+		// Character cards are intrinsically .ctx-light (Genshin renders theirs
+		// light) — the portrait column mirrors that block's surface.
+		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(ctxToken('.ctx-light', '--surface'));
 		expect(PALETTE_MIRROR.CALM_TINT).toBe(cssToken('--calm-fill'));
 		expect(PALETTE_MIRROR.CALM_EDGE).toBe(cssToken('--calm'));
 	});
 
-	it('--dire (hsl) resolves to DIRE_TINT', () => {
-		const m = /^hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)$/.exec(cssToken('--dire'));
-		expect(m).not.toBeNull();
-		expect(PALETTE_MIRROR.DIRE_TINT).toBe(hslToHex(+m![1], +m![2], +m![3]));
-	});
-
-	it('--dire-fill (relative color, hue from --dire) resolves to DIRE_FILL', () => {
-		const dire = /^hsl\((\d+),/.exec(cssToken('--dire'));
-		const fill = /^hsl\(from var\(--dire\) h (\d+)% (\d+)%\)$/.exec(cssToken('--dire-fill'));
-		expect(dire).not.toBeNull();
-		expect(fill).not.toBeNull();
-		expect(PALETTE_MIRROR.DIRE_FILL).toBe(hslToHex(+dire![1], +fill![1], +fill![2]));
+	it('--debuff / --debuff-fill match (dire successors, 2026-08-05)', () => {
+		expect(PALETTE_MIRROR.DEBUFF_EDGE).toBe(cssToken('--debuff'));
+		expect(PALETTE_MIRROR.DEBUFF_FILL).toBe(cssToken('--debuff-fill'));
 	});
 
 	it('resolved color-mix lines match (GRID, LANE_LINE)', () => {
-		const border = cssToken('--border');
+		// The lines derive from the DARK context's border — the timeline root
+		// is .ctx-dark, so that re-declaration is what var(--border) resolves
+		// to at the .rp-root declarations.
+		const border = ctxToken('.ctx-dark', '--border');
 		// Both planner lines derive from --border toward the planner-local
 		// chart ground (2026-08-01).
 		const chartBg = cssToken('--rp-chart-bg', timelineSvelte);

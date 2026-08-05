@@ -36,44 +36,44 @@ import type {
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
-const CHART_BG = '#15151c'; // --rp-chart-bg (⚓ NATE — the chart's own darker well, 2026-08-01)
-const GRID = '#262631'; // --rp-grid = mix(border 45%, rp-chart-bg), resolved
-const LANE_LINE = '#343443'; // --rp-line = mix(border 85%, rp-chart-bg), resolved
-// ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css :root. Canvas can't
-// resolve var(), so every token the export paints has to be duplicated here as
-// a literal. When a token value changes in app.css, change it here too or the
-// exported PNG silently stops matching what the user saw. Re-cut 2026-07-27
-// with the dire/calm/gilt palette pass.
+const CHART_BG = '#242c40'; // --rp-chart-bg (↻ 2026-08-05 Genshin-UI archetype: the dark context surface)
+const GRID = '#504f56'; // --rp-grid = mix(ctx-dark border 45%, rp-chart-bg), resolved
+const LANE_LINE = '#766d6a'; // --rp-line = mix(ctx-dark border 85%, rp-chart-bg), resolved
+// ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css. Canvas can't resolve
+// var(), so every token the export paints has to be duplicated here as a
+// literal. When a token value changes in app.css, change it here too or the
+// exported PNG silently stops matching what the user saw. ↻ 2026-08-05: the
+// timeline runs in the DARK context (.ctx-dark) and the portrait cards in the
+// LIGHT one (.ctx-light), so the context-sensitive tokens here mirror those
+// blocks, not :root — the mirror test sources them the same way.
 const ACTIVE = '#757f93'; // --rp-active (Nate-sampled 2026-07-31; no longer the --neutral alias)
-const TEXT = '#e8ecf3'; // --text
-const MUTED = '#a3b1c3'; // --muted (drift caught by the mirror test 2026-08-01 — was the pre-recut #9baabf)
-const INK = '#081225'; // --ink (dark ink on bright fills — lightness-structure round 2026-08-01)
-// Paired tool tints — mirror app.css :root. --dire = hsl(340,85%,46%) =
-// #d91254; --calm-fill = #2b5590 (buff body/fill — the time-scaling ramp's full
-// end; lifted l30→l37 in the 2026-08-01 lightness round); --calm = #6b99c7
-// (bright accent stripe). Buff bars fill solid calm-fill with a calm stripe;
-// debuff/proc bars fill solid --dire-fill with a dire stripe — the exact
-// counterpart pairing. mix()/hexToRgb hoist.
+const TEXT = '#e5d9c3'; // --text (ctx-dark — parchment on dark)
+const MUTED = '#857971'; // --muted (ctx-dark dim)
+const INK = '#0d0d0f'; // --ink (⚓ NATE 2026-08-05, Genshin-UI archetype)
+// Paired tool tints — mirror app.css. --calm-fill = #2b5590 (buff body/fill —
+// the time-scaling ramp's full end); --calm = #6b99c7 (bright accent stripe).
+// Buff bars fill solid calm-fill with a calm stripe; debuff/proc bars fill
+// solid --debuff-fill with a --debuff stripe — the exact counterpart pairing
+// (↻ 2026-08-05: the dire family retired; --debuff/--debuff-fill are its
+// enemy-facing successors, interim values). mix()/hexToRgb hoist.
 // (Ramping/decaying received buffs paint flat here — the on-screen opacity
 // envelope isn't reproduced; the flat fill matches their full end.)
-const DIRE_TINT = '#d91254';
 const CALM_TINT = '#2b5590';
 const CALM_EDGE = '#6b99c7';
 const TEAM_BUFF_FILL = CALM_TINT;
 const TEAM_BUFF_EDGE = CALM_EDGE;
 const TEAM_BUFF_LABEL = 'rgba(255,255,255,0.85)';
-// --dire-fill. The CSS computes this with relative-color syntax
-// (hsl(from var(--dire) h 56% 37%)); canvas can't resolve that, so it is
-// pinned here as the literal that expression evaluates to.
-const DIRE_FILL = '#932a4d';
-const DEBUFF_FILL = DIRE_FILL;
-const DEBUFF_EDGE = DIRE_TINT;
+const DEBUFF_FILL = '#6e332d'; // --debuff-fill
+const DEBUFF_EDGE = '#c9524a'; // --debuff
 const DEBUFF_LABEL = 'rgba(255,255,255,0.85)';
 // Sacrificial-proc rows share the debuff register (Nate 2026-07-18)
-const PROC_FILL = DIRE_FILL;
-const PROC_EDGE = DIRE_TINT;
+const PROC_FILL = DEBUFF_FILL;
+const PROC_EDGE = DEBUFF_EDGE;
 const PROC_LABEL = 'rgba(255,255,255,0.85)';
-const PORTRAIT_BG = '#2f2f3b'; // --surface (whisper-law modal, 2026-08-01)
+// Generic-timing (no-frame-map) marks are a DATA-QUALITY state, not a domain
+// color — they ride --ui-danger (the marks left dire 2026-08-05).
+const UI_DANGER = '#e63946';
+const PORTRAIT_BG = '#f2f2ec'; // --surface (ctx-light — cards render light, 2026-08-05)
 
 /** Test-only: the hand-maintained mirror, exported so
  *  timelineExport.mirror.test.ts can assert it against app.css /
@@ -87,10 +87,10 @@ export const PALETTE_MIRROR = {
 	TEXT,
 	MUTED,
 	INK,
-	DIRE_TINT,
+	DEBUFF_EDGE,
 	CALM_TINT,
 	CALM_EDGE,
-	DIRE_FILL,
+	DEBUFF_FILL,
 	PORTRAIT_BG
 } as const;
 
@@ -615,13 +615,13 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					const bx = x(block.start);
 					const bw = barGeomW(block.start, block.duration);
 					const kind = block.kind;
-					// No-frame-map N/C/P (everything but E/Q): dire gradient fill
+					// No-frame-map N/C/P (everything but E/Q): danger gradient fill
 					// left→right, mirroring the on-screen linear-gradient.
-					const direToken = slot.isApprox && kind !== 'skill' && kind !== 'burst';
+					const approxToken = slot.isApprox && kind !== 'skill' && kind !== 'burst';
 					if (kind === 'unset') {
 						return;
-					} else if (direToken) {
-						const [dr, dg, db] = hexToRgb(DIRE_TINT);
+					} else if (approxToken) {
+						const [dr, dg, db] = hexToRgb(UI_DANGER);
 						const grad = ctx!.createLinearGradient(bx, 0, bx + bw, 0);
 						grad.addColorStop(0, `rgba(${dr}, ${dg}, ${db}, 0.25)`);
 						grad.addColorStop(1, `rgba(${dr}, ${dg}, ${db}, 0)`);
@@ -641,8 +641,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						ctx!.fillStyle = 'rgba(8, 18, 37, 0.2)';
 						ctx!.fillRect(bx + bw - 1, rowTop + 1, 1, snap.activeRowH - 2);
 					}
-					// label — dire tinted on no-frame-map N/C/P tokens
-					ctx!.fillStyle = direToken ? mix('#ffffff', DIRE_TINT, 50) : 'rgba(255,255,255,0.85)';
+					// label — danger tinted on no-frame-map N/C/P tokens (mirrors
+					// .rp-active-text--danger)
+					ctx!.fillStyle = approxToken ? mix('#ffffff', UI_DANGER, 50) : 'rgba(255,255,255,0.85)';
 					ctx!.font = `600 10px ${SANS}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);

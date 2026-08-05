@@ -262,7 +262,7 @@
 		</button>
 	</div>
 
-	<div class="an-frame frame">
+	<div class="an-frame frame ctx-dark">
 		<div class="chips an-reactions">
 			{#each REACTIONS[family] as r (r.id)}
 				<button

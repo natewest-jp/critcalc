@@ -132,10 +132,13 @@ export const sceneOccluded = writable(false);
 
 export type SceneLayerKind = 'composition' | 'dim';
 
-/** Dim overlay opacity. Dormant at 0 everywhere (dire retirement) — the
- *  tool-over-scene treatment is the color session's to design. The layer and
- *  its WAAPI plumbing stay so that session only has to turn a knob. */
-export const dimTarget = (_path: string) => 0;
+/** Dim overlay opacity — the tool-over-scene treatment (⚓ NATE 2026-08-05):
+ *  the scene dims under the tools through a semi-transparent INK wash (the
+ *  .dim layer's background is var(--ink)); the world stays visible in the
+ *  panel gaps, just receded. 0 on the landing and static pages — the open
+ *  world stays undimmed. The WAAPI ride animates this during ascend/descend. */
+export const TOOL_DIM = 0.75;
+export const dimTarget = (path: string) => (isToolPath(path) ? TOOL_DIM : 0);
 
 // --- Transition clock --------------------------------------------------------
 

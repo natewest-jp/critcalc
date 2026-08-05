@@ -46,13 +46,11 @@
 	const exact = (...ns: string[]) =>
 		ns.map((n) => tokens.find((t) => t.name === n)).filter((t): t is Token => !!t);
 
-	const structure = exact('--bg', '--text', '--muted', '--ink', '--neutral');
+	const structure = exact('--bg', '--text', '--muted', '--ink', '--chrome', '--neutral');
 	const calmSurfaces = exact('--surface', '--surface-raised', '--border', '--frame-line');
 	const metrics = exact('--chrome-h', '--site-footer-h');
-	const famDire = exact('--dire', '--dire-fill');
+	const famDebuff = exact('--debuff', '--debuff-fill');
 	const famCalm = exact('--calm', '--calm-fill');
-	const famGilt = exact('--gilt-soft', '--gilt-hi', '--gilt', '--gilt-dim', '--gilt-fill');
-	const aliases = exact('--dire-tint', '--calm-tint', '--calm-edge');
 	const uiStates = pre('--ui-');
 	const geometry = pre('--r-');
 	const motion = exact('--t-quick');
@@ -84,11 +82,9 @@
 		[
 			structure,
 			metrics,
-			famDire,
+			famDebuff,
 			famCalm,
 			calmSurfaces,
-			famGilt,
-			aliases,
 			uiStates,
 			geometry,
 			motion,
@@ -198,31 +194,36 @@
 
 	<!-- ════════════════════════════════════════════════════════════ FAMILIES ══ -->
 	<section id="families">
-		<h2>The three families <span class="sg-badge sg-badge--live">live</span></h2>
+		<h2>The color architecture <span class="sg-badge sg-badge--live">live</span></h2>
 		<p class="sg-note">
-			The site's color identity is a triad. Each family <em>means</em> something — they are not interchangeable
-			palettes, and the rule for which one to reach for is semantic, not aesthetic.
+			↻ 2026-08-05 (Genshin-UI archetype, Nate's values): the palette's primary axis is
+			<strong>CONTEXT</strong> — dark areas and light areas, each a ground plus its own text and
+			border rules (<code>.ctx-dark</code> / <code>.ctx-light</code> in app.css; dark = chart-like
+			panels, light = most other panels and character cards always). <code>--chrome</code> white is
+			the over-the-world voice; <code>--ink</code> the universal dark ink. The dire and gilt
+			families are <strong>RETIRED</strong> — what remains below are the semantic survivors. ⚠ This page
+			still documents the old world in places; the full context rewrite is queued.
 		</p>
 
 		<div class="sg-fams">
 			<div class="sg-fam">
-				<h3>dire</h3>
+				<h3>debuff</h3>
 				<p class="sg-note">
-					Magenta. <strong>Enemy-facing</strong> — debuffs, res shred, the adversarial side of the
-					game model. <strong>Lives past the portal:</strong> dire must never appear on the landing
-					scene or the static pages. <code>--dire-fill</code> is the debuff bar body — the exact
-					counterpart of <code>--calm-fill</code>, inheriting dire's hue via relative color while
-					pinning saturation and lightness to the buff bar's weight.
+					<strong>Enemy-facing</strong> — debuffs, res shred, sacrificial procs: dire's semantic
+					successor. ⚠ Interim values (the destination color is still Nate's to choose).
+					<code>--debuff-fill</code> is the debuff bar body — the exact counterpart of
+					<code>--calm-fill</code>, pinned near its weight; <code>--debuff</code> is the bright
+					edge, exactly <code>--calm</code>'s role on buff bars.
 				</p>
 				<div class="sg-swatches">
-					{#each famDire as t (t.name)}{@render swatch(t)}{/each}
+					{#each famDebuff as t (t.name)}{@render swatch(t)}{/each}
 				</div>
 			</div>
 			<div class="sg-fam">
 				<h3>calm</h3>
 				<p class="sg-note">
 					Blue/navy. <strong>Ally-facing</strong> — team buffs, the ambient world, the scene.
-					Site-wide, allowed on both sides of the portal.
+					Site-wide — in the world and at the crest alike.
 					<strong>The surface stack is part of this family</strong>
 					— the panels, the raised panels and the dividers are all calm, tuned as one ramp. They keep
 					role names because <code>var(--surface)</code> reads better at a call site than
@@ -249,30 +250,32 @@
 				</p>
 			</div>
 			<div class="sg-fam">
-				<h3>gilt <span class="sg-badge sg-badge--new">new</span></h3>
+				<h3>gilt <span class="sg-badge sg-badge--warn">retired</span></h3>
 				<p class="sg-note">
-					Gold/beige. <strong>Light, structure, guidance</strong> — chrome, headings, kickers, links,
-					input text. Site-wide. Follows the type law's chrome axis: gilt dresses chrome, the cool ramp
-					dresses data.
+					Retired 2026-08-05: the chrome role went to <code>--chrome</code> white, the heading/label
+					roles to the contexts' <code>--text</code>/<code>--muted</code>, the beige surfaces to the
+					light context. (For the record: soft #ede8de · hi #e1d4b7 · gilt #d2bd90 · dim #a19378 ·
+					fill #3e331e.)
 				</p>
-				<div class="sg-swatches">
-					{#each famGilt as t (t.name)}{@render swatch(t)}{/each}
-				</div>
 			</div>
 		</div>
 
-		<h3>Accent zoning — dire stays past the portal</h3>
+		<h3>Accent zoning — the world and the crest</h3>
 		<p class="sg-note">
-			<code>--accent</code> is a single alias read <strong>148× across 26 files</strong>, so scoping
-			it re-themes the entire control layer on both sides of the portal at no further cost. Outside
-			the portal it resolves to gilt; inside <code>.tool-shell</code> it resolves to dire. Both panels
-			below are the same markup — only the zone differs.
+			The site has two zones, named for the ascend: <strong>in the world</strong> (the landing
+			scene, static pages, chrome, meta modals — at rest, choices ahead) and
+			<strong>at the crest</strong> (inside a tool — picking a path is the moment you ascend, and a
+			tool is where you land). <code>--accent</code> is a single alias read
+			<strong>148× across 26 files</strong>, so scoping it re-themes the entire control layer in
+			both zones at no further cost. ↻ 2026-08-05 (interim — the accent story is open): in the world
+			it resolves to <code>--chrome</code> white; at the crest the CONTEXTS carry it —
+			<code>.ctx-dark</code> parchment, <code>.ctx-light</code> slate — with the
+			<code>.tool-shell</code> rung (also white) covering the over-scene strips. Both panels below are
+			the same markup — only the zone differs.
 		</p>
 		<div class="sg-zones">
 			<div class="sg-zone">
-				<span class="sg-zone-tag"
-					>outside the portal — landing, static pages, chrome, meta modals</span
-				>
+				<span class="sg-zone-tag">in the world — landing, static pages, chrome, meta modals</span>
 				<div class="sg-stage">
 					<button class="chip active">Selected</button>
 					<button class="chip">Resting</button>
@@ -281,7 +284,7 @@
 				</div>
 			</div>
 			<div class="sg-zone" data-zone="tool">
-				<span class="sg-zone-tag">inside a tool — past the portal</span>
+				<span class="sg-zone-tag">at the crest — inside a tool</span>
 				<div class="sg-stage">
 					<button class="chip active">Selected</button>
 					<button class="chip">Resting</button>
@@ -293,21 +296,11 @@
 		<p class="sg-note">
 			Portalled popovers (<code>$lib/actions/portal</code>) are appended to
 			<code>&lt;body&gt;</code>, which severs <code>.tool-shell</code> ancestry — the action stamps
-			<code>data-zone="tool"</code> on the way out so a tool popover keeps its dire accent.
+			<code>data-zone="tool"</code> on the way out so a tool popover keeps its tool accent.
 			<code>ChromeModals</code> is mounted outside <code>.tool-shell</code> deliberately, so
-			Help/About/Settings inherit gilt in <em>both</em> zones. That is intended: they are meta surfaces,
-			not tool surfaces.
+			Help/About/Settings read the world's voice in <em>both</em> zones. That is intended: they are meta
+			surfaces, not tool surfaces.
 		</p>
-
-		{#if aliases.length}
-			<h3>Legacy aliases <span class="sg-badge sg-badge--warn">remove on migration</span></h3>
-			<p class="sg-note">
-				Kept only so the token pass stayed purely additive. New code must use the canonical names.
-			</p>
-			<div class="sg-swatches">
-				{#each aliases as t (t.name)}{@render swatch(t)}{/each}
-			</div>
-		{/if}
 	</section>
 
 	<!-- ══════════════════════════════════════════════════════════════ TOKENS ══ -->
@@ -320,7 +313,7 @@
 			used to live here moved into <a href="#families">calm</a>. <code>--bg</code> is the anchor and
 			is deliberately unchanged; the rest were re-cut so saturation <em>falls</em> as lightness
 			rises — a near-white carrying s60 (which <code>--text</code> did) tints the whole UI blue and
-			fights the gilt voice. <code>--neutral</code> is the universal "inactive / unknown" gray,
+			fights the warm text voice. <code>--neutral</code> is the universal "inactive / unknown" gray,
 			promoted from the planner's local <code>--rp-active</code>.
 		</p>
 		<div class="sg-swatches">
@@ -332,12 +325,13 @@
 			Generic, deliberately boring, <strong>interface-only</strong>. The test:
 			<em>is this color describing the game, or describing a consequence to the user's data?</em>
 			Game → a domain family. Consequence → here. A UI state color must never appear inside a visualization;
-			a domain color must never appear on a control's destructive state. So: debuff bars are dire, but
+			a domain color must never appear on a control's destructive state. So: debuff bars are --debuff,
+			but
 			<em>Reset all</em>
 			is <code>--ui-danger</code>.
-			<br />⚠ <code>--ui-warning</code> sits between <code>--ui-danger</code> (h8) and
-			<code>--gilt</code> (h38) with ~30° of room, so it takes the center at h25 — restrict it to small
-			markers and underlines, never a large fill.
+			<br />⚠ <code>--ui-warning</code> sits between <code>--ui-danger</code> (h8) and the old gilt (h38)
+			with ~30° of room, so it takes the center at h25 — restrict it to small markers and underlines,
+			never a large fill.
 		</p>
 		<div class="sg-swatches">
 			{#each uiStates as t (t.name)}{@render swatch(t)}{/each}
@@ -442,7 +436,7 @@
 		</p>
 		<div class="sg-voices">
 			<div class="sg-voice">
-				<span class="sg-zone-tag">gilt voice — chrome</span>
+				<span class="sg-zone-tag">chrome voice — white</span>
 				<p class="sg-voice-sample sg-voice-sample--gilt">
 					Team Builder · Roster · Filter by capability · Search characters…
 				</p>
@@ -720,7 +714,7 @@
 		<h2>Surfaces & text <span class="sg-badge sg-badge--ship">shipped</span></h2>
 		<p class="sg-note">
 			The panel shells were already global and already good — they only gain the radius token and
-			the gilt kicker. The note family collapses six rules into one.
+			the kicker. The note family collapses six rules into one.
 		</p>
 
 		<div class="sg-specimens">
@@ -739,7 +733,7 @@
 				</div>
 				{@render spec(
 					'.panel · .kicker · .chips · .note',
-					'6px · --surface-raised · inset top edge. The kicker is now GILT, and its trailing rule is --gilt-dim'
+					'6px · --surface-raised · inset top edge. The kicker is --muted (context label voice), trailing rule --muted @22%'
 				)}
 			</div>
 
@@ -755,7 +749,7 @@
 				</div>
 				{@render spec(
 					'.kicker · .title · .subtitle · .note',
-					'kicker = gilt UPPER ls-widest + rule · title = gilt, body face (NOT Bitter) · note = cool, it is data-adjacent'
+					'kicker = --muted UPPER ls-widest + rule · title = --text, body face (NOT Bitter) · note = --muted, it is data-adjacent'
 				)}
 			</div>
 
@@ -769,12 +763,13 @@
 						value="Nahida"
 					/>
 					<p class="note">
-						Input text is chrome, not data — this is where the gilt voice was first noticed.
+						Input text is chrome, not data — this is where the (now retired) gilt voice was first
+						noticed.
 					</p>
 				</div>
 				{@render spec(
 					'.field · .field-label',
-					'input text = --gilt-soft · placeholder = --gilt-dim · label = --gilt UPPER. The origin story of the third family'
+					'input text = --text · placeholder = --muted · label = --muted UPPER (contexts, 2026-08-05)'
 				)}
 			</div>
 
@@ -784,7 +779,7 @@
 				</div>
 				{@render spec(
 					'.frame',
-					'1px dire @40% over --frame-bg — static. NEVER animate a paint property here (retired 2026-07-10, perf). Stays dire: it is a tool-interior surface'
+					'1px var(--border) over --frame-bg — the context border (2026-08-05). NEVER animate a paint property here (retired 2026-07-10, perf)'
 				)}
 			</div>
 		</div>
@@ -832,21 +827,19 @@
 				<h3>Color</h3>
 				<ul>
 					<li>
-						<strong>dire = enemy-facing · calm = ally-facing · gilt = chrome.</strong> Don't cross them.
+						<strong
+							>debuff = enemy-facing · calm = ally-facing · chrome = the over-world white.</strong
+						> Don't cross them.
 					</li>
 					<li>
-						<strong>Dire never leaves the tools.</strong> No magenta on the landing scene or the
-						static pages. <code>--accent</code> is zoned; don't hard-code dire outside a tool.
+						<strong>The crest accent never leaves the crest.</strong> <code>--accent</code> is zoned;
+						don't hard-code a context's accent in the world (landing scene, static pages). The contexts
+						carry the crest accent now (interim values) — the law outlives any value.
 					</li>
 					<li>
-						<strong>Nothing in gilt goes above <code>#d2bd90</code></strong> — the most saturated gold
-						in Genshin's own UI. Above that it stops reading as chrome and starts competing with the elements.
-					</li>
-					<li>
-						<strong>Gilt fills only at the ends of its ramp</strong> —
-						<code>--gilt-fill</code> (deep bronze) or <code>--gilt-soft</code>/<code>-hi</code>
-						(bright). The mid-tones stay text and hairlines. At s41 against geo's s68 there is no real
-						risk of reading as an element.
+						<strong>(Gilt retired 2026-08-05.)</strong> Its ceiling law's spirit survives: nothing structural
+						gets more saturated than Genshin's own UI would allow — the contexts are near-neutral warm;
+						identity chroma belongs to content.
 					</li>
 					<li>
 						<strong>Within a family, saturation encodes role.</strong> Structure members are low
@@ -1002,7 +995,10 @@
 						Modals are for <strong>meta</strong> only (settings, help, static pages). Every
 						<strong>tool</strong> feature is a docked panel or an in-frame overlay.
 					</li>
-					<li>In-frame overlays can't paint above the top border — portal to <code>body</code>.</li>
+					<li>
+						In-frame overlays can't paint above the fixed chrome strip (<code>.tool-main</code> is
+						its own stacking context below it) — portal to <code>body</code>.
+					</li>
 					<li>
 						<strong>One <code>.frame</code> per tool, and the two tools mirror each other.</strong>
 						The Team Builder and the Rotation Planner are each a single full-screen
@@ -1204,11 +1200,6 @@
 	.sg-badge--warn {
 		background: var(--ui-danger-soft);
 		color: var(--ui-danger);
-	}
-
-	.sg-badge--new {
-		background: var(--ui-positive-soft);
-		color: var(--ui-positive);
 	}
 
 	.sg-note {

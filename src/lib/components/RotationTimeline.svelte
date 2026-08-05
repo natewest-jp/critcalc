@@ -1022,7 +1022,7 @@
 <!-- --rp-bench-w is set from the JS constant, not duplicated as a CSS literal:
      LABEL_W stays the single source (the PNG export reads it too), and the five
      places that used to carry it as an inline style now read the variable. -->
-<div class="rp-root" style:--rp-bench-w="{LABEL_W}px">
+<div class="rp-root ctx-dark" style:--rp-bench-w="{LABEL_W}px">
 	<!-- ── Timeline chart frame ──────────────────────────────── -->
 	<!-- The frame is ONE instrument with a fixed grammar: time axis (ruler +
 	     view controls) on the TOP edge per DAW/NLE convention, rendered tracks
@@ -1093,7 +1093,7 @@
 							><g transform="matrix(1,0,0,1,-273.029018,-202.228283)">
 								<g>
 									<g transform="matrix(0.575277,0,0,0.575277,146.251428,151.449127)">
-										<circle cx="241.236" cy="109.129" r="20.86" fill="var(--dire)" />
+										<circle cx="241.236" cy="109.129" r="20.86" fill="var(--ui-danger)" />
 									</g>
 									<g transform="matrix(1,0,0,1,-2.378613,7.691546)">
 										<path
@@ -1458,7 +1458,7 @@
 												style:background={isApprox &&
 												block.kind !== 'skill' &&
 												block.kind !== 'burst'
-													? 'linear-gradient(to right, color-mix(in srgb, var(--dire) 20%, transparent), transparent)'
+													? 'linear-gradient(to right, color-mix(in srgb, var(--ui-danger) 20%, transparent), transparent)'
 													: block.kind === 'skill' ||
 														  block.kind === 'burst' ||
 														  block.kind === 'elemental-normal'
@@ -1474,7 +1474,7 @@
 												{#each block.parts as part (part)}
 													<span
 														class="rp-active-text"
-														class:rp-active-text--dire={isApprox &&
+														class:rp-active-text--danger={isApprox &&
 															block.kind !== 'skill' &&
 															block.kind !== 'burst'}>{part}</span
 													>
@@ -1782,13 +1782,15 @@
 <style>
 	/* ── Root ─────────────────────────────────────────────────── */
 	.rp-root {
-		/* Chart ground — ⚓ NATE 2026-08-01: the notation well's resolved shade
-		   (mix(#000 40%, the old #23232d frame ground)), sampled back out and
-		   adopted as the track area's own ground — DARKER than --frame-bg, so
-		   the chart reads as a well cut into the frame. No longer the
-		   --frame-bg alias; every derived mix below (ghosts, dims, calmStop,
-		   grid/lane lines) follows it. ⚠ the exporter mirrors this literal. */
-		--rp-chart-bg: #15151c;
+		/* Chart ground — ↻ 2026-08-05 (Genshin-UI archetype): the dark
+		   context's SURFACE (#1c1a1a). The well-cut-into-the-frame idiom
+		   (⚓ NATE 2026-08-01, then #15151c = mix(#000 40%, the old frame))
+		   survives with the roles the archetype gives them: the frame wears
+		   the RAISED rung (#212121, see .rp-frame) and the chart sits one
+		   rung deeper on the surface. Every derived mix below (ghosts, dims,
+		   calmStop, grid/lane lines) follows it. ⚠ the exporter mirrors this
+		   literal. */
+		--rp-chart-bg: #242c40;
 		/* Structural lines inside the chart, derived from --border toward the
 		   CHART ground (not the frame's) so they blend with the darker well.
 		   grid = faint vertical second-lines (resolves ≈ #262631); line = lane
@@ -1824,6 +1826,10 @@
 	   fill; this only shapes it. Radius 9 per the 3/6/9 scale. */
 	.rp-frame {
 		--rp-frame-pad-x: 14px;
+		/* The frame wears the dark context's RAISED rung; the chart well sits
+		   one rung deeper on --rp-chart-bg (= the context surface). Overrides
+		   the shared .frame background (Genshin-UI archetype, 2026-08-05). */
+		background: var(--surface-raised);
 		border-radius: 9px;
 		padding: 10px var(--rp-frame-pad-x) 4px;
 		display: flex;
@@ -2256,8 +2262,8 @@
 	   class of thing. Fill + bright edge, mirroring the buff bar's
 	   --calm-fill + --calm pairing. */
 	.rp-team-buff-bar.rp-team-debuff-bar {
-		background: var(--dire-fill);
-		border-left-color: var(--dire);
+		background: var(--debuff-fill);
+		border-left-color: var(--debuff);
 	}
 	.rp-team-buff-bar.rp-team-debuff-bar .rp-buff-label {
 		color: rgba(255, 255, 255, 0.85);
@@ -2343,9 +2349,9 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: var(--dire-fill);
+		background: var(--debuff-fill);
 		border: none;
-		border-left: 2px solid var(--dire);
+		border-left: 2px solid var(--debuff);
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 		border-radius: 1px;
 		display: flex;
@@ -2765,10 +2771,12 @@
 		font-weight: var(--fw-semibold);
 		color: rgba(255, 255, 255, 0.85);
 	}
-	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: dire tinted
-	   text, marking the actions whose timing is generic. */
-	.rp-active-text--dire {
-		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--dire));
+	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: warning-
+	   tinted text, marking the actions whose timing is generic. --ui-danger,
+	   not a domain color — approximate timing is a consequence to the user's
+	   data, not a game fact (dire-retirement round, 2026-08-05). */
+	.rp-active-text--danger {
+		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--ui-danger));
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */

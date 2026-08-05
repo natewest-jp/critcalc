@@ -14,7 +14,12 @@
 	   GaugeInstrument has carried since the badges were built. Bright chip +
 	   dark ink is the sanctioned idiom now (Genshin's Lv-chips); a bright
 	   fill needs no halo. ≥4.5:1 against every element main and --gilt-soft. */
-	--ink: #081225; /* dark ink on bright fills  L.16 */
+	--ink: #0d0d0f; /* dark ink on bright fills ⚓ NATE 2026-08-05 (Genshin-UI
+	   archetype; #081225 → #03020c → #0d0d0f — the saturated black read too
+	   hard; this is the neutral near-black) */
+	--chrome: #ffffff; /* site chrome, branding, and the biggest headers ⚓ NATE
+	   2026-08-05 — pure white, the over-the-world voice. NOT for body text or
+	   data; the contexts below own those. */
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are
@@ -115,40 +120,28 @@
 	   one clearance to eyeball if this number ever moves again. */
 	--chrome-h: 64px;
 	--site-footer-h: 64px;
-	/* ══ THE THREE FAMILIES — dire / calm / gilt ═══════════════════════════════
-	   The site's whole color identity is a triad. Each family means something;
-	   they are not interchangeable palettes. Full reference: /styleguide (dev).
+	/* ══ COLOR ARCHITECTURE (Genshin-UI archetype, Nate 2026-08-05) ═════════════
+	   The palette's primary axis is CONTEXT — dark areas and light areas, each
+	   a ground plus its own text and border rules (the .ctx-dark / .ctx-light
+	   blocks below the interaction tokens). --chrome white is the
+	   over-the-world voice (site chrome, branding, biggest headers); --ink is
+	   the universal dark ink. The dire and gilt FAMILIES are RETIRED
+	   (2026-08-05, dire-retirement round) — dire's enemy-facing semantic
+	   survives as --debuff below; gilt's chrome role went to --chrome and its
+	   text roles to the contexts. CALM remains the ally-facing content
+	   register (buff bars); the element palette is untouched. */
 
-	     DIRE  magenta — enemy-facing. Debuffs, res shred, the adversarial side
-	           of the game model. Lives PAST THE PORTAL: dire must never appear
-	           on the landing scene or the static pages (see the accent zoning
-	           at the bottom of this block).
-	     CALM  blue/navy — ally-facing. Team buffs, the ambient world, the scene.
-	           Site-wide; allowed on both sides of the portal.
-	     GILT  gold/beige — light, structure, guidance. Branding, chrome,
-	           headings, links, kickers, input text. Site-wide.
-
-	   Slot vocabulary is shared: bare name = the family's identity hue;
-	   -hi = brighter; -soft = the readable text weight; -dim = receded;
-	   -fill = a deep body fill. Not every family needs every slot. */
-
-	/* DIRE — enemy-facing. Also the Dire border's edge hue (direBorderGL reads
-	   it live via a relative-color probe, so value tweaks keep cascading).
-	   --dire-fill is the debuff bar BODY, the exact counterpart of --calm-fill:
-	   debuff and buff bars sit in the same timeline and should carry the same
-	   weight. They didn't — the debuff bar was color-mix(dire 24%, chart-bg),
-	   which landed at l15 against the buff bar's l30 (half the lightness) and
-	   dragged the hue 25° toward purple on the way. This fixes both.
-
-	   The coupling level is deliberate: HUE is inherited from --dire via
-	   relative-color syntax, so a retune of dire carries through; saturation and
-	   lightness are pinned to --calm-fill's weight, because those two numbers
-	   are about balance against the buff bar, not about dire's own identity
-	   (dire is a bright l46 EDGE color — a fill needs different weight).
-	   Relative color is already proven in this codebase (direBorderGL's probe).
-	   ⚠ Canvas can't resolve it — timelineExport.ts mirrors it as a literal. */
-	--dire: hsl(340, 85%, 46%);
-	--dire-fill: hsl(from var(--dire) h 56% 37%);
+	/* DEBUFF — the enemy-facing semantic (debuffs, res shred, sacrificial
+	   procs): dire's successor. ⚠ INTERIM VALUES (dire+gilt cleanup,
+	   2026-08-05) — a warm red picked to sit in the archetype while staying
+	   off pyro (#f9563e) and --ui-danger (#e63946); the destination color is
+	   still Nate's to choose. --debuff is the bright EDGE/stripe, exactly
+	   --calm's role on buff bars; --debuff-fill is the bar BODY, pinned near
+	   --calm-fill's weight (L≈.35) so debuff and buff bars carry the same
+	   presence in the timeline.
+	   ⚠ Canvas can't resolve var() — timelineExport.ts mirrors both. */
+	--debuff: #c9524a;
+	--debuff-fill: #6e332d;
 
 	/* CALM — content register. These are the HIGH-saturation members of the
 	   family whose structural members are --surface / --surface-raised /
@@ -163,25 +156,10 @@
 	--calm: #6b99c7; /* bright stripe / identity  h210 s45 l60 */
 	--calm-fill: #2b5590; /* buff bar body             h215 s54 l37 */
 
-	/* GILT — the third family, added 2026-07-27. Genshin's own navy panels use
-	   gold for headings and cream for body; this is that voice. It follows the
-	   TYPE law's chrome axis: gilt dresses branding, nav, headings, kickers,
-	   panel titles, links and input text — never data, values or timeline text,
-	   which stay on the cool --text/--muted ramp.
-
-	   SATURATION CEILING: --gilt is exactly #d2bd90 — the most-saturated gold in
-	   Genshin's own UI (Nate's reference). Nothing in this family goes above it.
-	   The first cut ran s62–s77 and read garish in context; anchoring the
-	   workhorse on the reference and keeping the rest below it is the rule.
-
-	   Gilt MAY be a fill, but only at the ends of the ramp — --gilt-fill (deep
-	   bronze) or --gilt-soft/-hi (bright). The mid-tones stay text and hairlines.
-	   At s41 vs geo's s68 there is no real risk of reading as an element. */
-	--gilt-soft: #ede8de; /* cream body / input text        16.3:1 on --bg */
-	--gilt-hi: #e1d4b7; /* the rare brightest — NO standing consumer yet  13.5:1 */
-	--gilt: #d2bd90; /* headings, kickers, titles, links  10.8:1 — THE ceiling */
-	--gilt-dim: #a19378; /* dividers, disabled, receded        6.6:1 */
-	--gilt-fill: #3e331e; /* deep bronze, for when gilt must fill */
+	/* (GILT RETIRED 2026-08-05 — the family's chrome role went to --chrome,
+	   its heading/label roles to the contexts' --text/--muted, its beige
+	   surfaces to the light context. Values for the record: soft #ede8de ·
+	   hi #e1d4b7 · gilt #d2bd90 · dim #a19378 · fill #3e331e.) */
 
 	/* ══ UI STATE COLORS ══════════════════════════════════════════════════════
 	   Generic, deliberately boring, and STRICTLY interface-only. These describe
@@ -239,23 +217,19 @@
 	   The resting/hover/selected ladder every control shares. These were also
 	   already converged in practice (rgba white .06/.07 and accent 20%/55% were
 	   the two spikes across the whole codebase) — naming them is what stops the
-	   next control from inventing a 25th alpha. --accent is ZONED (see below),
-	   so selection reads gilt outside the portal and dire inside, for free.
+	   next control from inventing a 25th alpha. --accent is ZONED per context
+	   (the .ctx-* blocks re-declare it and its derived tokens — the
+	   substituted-at-declaration law).
 
 	   ↻ 2026-07-31: fills are TINTED, not white — a white alpha overlay
 	   desaturates whatever it covers (washed-out buttons, Nate). The tint
-	   follows the GROUND FAMILY: ↻ 2026-08-01 whisper-law re-anchor — the
-	   surface world went scene-neutral, so the fills ride --neutral now
-	   (the calm tint read as blue objects on the neutral ground; revert to
-	   var(--calm) here if the neutral lift feels flat). The DIRE-tinted
-	   grounds (chrome bar, tool tab rows / toolbars) RE-DECLARE both fills
-	   with dire — see the rule beside the accent zoning, and note the same
-	   substituted-at-declaration law that forces --sel-fill's re-declaration
-	   applies here (a --fill-tint indirection would bake in the value at
-	   :root and never re-resolve). Deliberately NOT a blend mode:
-	   mix-blend-mode per control would mint a stacking context + compositor
-	   work on hundreds of elements (WebKit scar tissue); per-ground tints
-	   are deterministic. */
+	   follows the GROUND: fills ride --neutral at root; the over-scene
+	   chrome strips (chrome bar, tool tab rows / toolbars) re-declare both
+	   fills with --chrome white — see the rule beside the accent zoning
+	   (a --fill-tint indirection would bake in the value at :root and never
+	   re-resolve). Deliberately NOT a blend mode: mix-blend-mode per control
+	   would mint a stacking context + compositor work on hundreds of
+	   elements (WebKit scar tissue); per-ground tints are deterministic. */
 	--fill-rest: color-mix(in srgb, var(--neutral) 13%, transparent);
 	--fill-hover: color-mix(in srgb, var(--neutral) 20%, transparent);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
@@ -280,33 +254,35 @@
 	   Genshin's Stygian sidebar selects its row with a beige plate + dark ink
 	   on an otherwise dark screen — the selected thing is the BRIGHTEST thing.
 	   --sel-surface/--sel-ink are that idiom, piloted on the top-level tool
-	   tab strips (rule beside the dire-grounds block below) and the Help
-	   chapter nav; selection stays accent everywhere else. Neither side is
-	   --accent-derived, so no tool-zone re-declaration is needed. */
-	--sel-surface: var(--gilt-soft);
+	   tab strips and the Help chapter nav; selection stays accent everywhere
+	   else. ↻ 2026-08-05: the plate is the archetype's hinge beige (was
+	   gilt-soft #ede8de — gilt retired). Neither side is --accent-derived,
+	   so no per-context re-declaration is needed. */
+	--sel-surface: #e5d9c3;
 	--sel-ink: var(--ink);
 
-	/* The slider knob is deliberately NOT --accent. Measured against the panel
-	   it sits on, --gilt is 8.09:1 while --dire is 2.95:1 — the two zones were
-	   never symmetric, so dimming both would have pushed dire out of sight
-	   (--dire-fill, the only existing dimmer dire, measures 1.48:1 and is a bar
-	   fill, not a control colour). Dimming only the gilt side to the toggle
-	   thumb's --gilt-dim (4.93:1) brings the two zones TOGETHER instead. */
-	--knob: var(--gilt-dim);
+	/* Slider/toggle knob. Rides the context's dim voice — the contexts
+	   re-declare it against their own --muted (interim, dire+gilt cleanup
+	   2026-08-05; the old gilt-dim/dire zone-contrast rationale retired with
+	   both families). */
+	--knob: var(--muted);
 
-	/* ══ ACCENT ZONING — dire stays past the portal ════════════════════════════
-	   ONE alias, read 148× across 26 files, so scoping it here re-themes the
-	   entire control layer on both sides of the portal at no further cost.
-	     outside the portal (landing, static pages, site chrome, meta modals) → gilt
-	     inside a tool                                                        → dire
+	/* ══ ACCENT ZONING — the world and the crest ═══════════════════════════════
+	   ONE alias, read 148× across 26 files. Zone names ride the ascend:
+	   picking a path is the moment you ascend, and a tool is where you land.
+	   ↻ 2026-08-05 (dire+gilt cleanup, INTERIM): the world's accent is
+	   --chrome white (gilt retired); at the crest the CONTEXTS carry the
+	   accent instead (.ctx-dark parchment / .ctx-light slate — see those
+	   blocks), with the .tool-shell rung below covering over-scene chrome
+	   strips. The real accent story is still open.
 	   The [data-zone='tool'] half is for PORTALLED nodes: $lib/actions/portal
-	   appends popovers to <body>, which drops them out of .tool-shell and would
-	   otherwise flip a tool popover to gilt. The action stamps the zone on the
-	   way out — see the comment there.
-	   Meta overlays (ChromeModals) are mounted OUTSIDE .tool-shell deliberately,
-	   so Help/About/Settings inherit gilt in BOTH zones. That is intended: they
-	   are meta surfaces, not tool surfaces. */
-	--accent: var(--gilt);
+	   appends popovers to <body>, which drops them out of .tool-shell and
+	   would otherwise flip a tool popover to the world accent. The action
+	   stamps the zone on the way out — see the comment there.
+	   Meta overlays (ChromeModals) are mounted OUTSIDE .tool-shell
+	   deliberately, so Help/About/Settings read the world's voice in BOTH
+	   zones. That is intended: they are meta surfaces, not tool surfaces. */
+	--accent: var(--chrome);
 
 	/* Element palette — single source of truth.
 	   Three slots per element: main / border (main @ 0.5α) / hi (main mixed 50/50 white). */
@@ -429,36 +405,114 @@
    $lib/actions/portal has lifted to <body> and out of that ancestry. */
 .tool-shell,
 [data-zone='tool'] {
-	--accent: var(--dire);
+	/* ↻ 2026-08-05 (dire+gilt cleanup): the shell rung is CHROME white — it
+	   governs what sits directly over the scene (tab strips, toolbars); the
+	   .ctx-* blocks re-declare the accent again inside panels. Portalled
+	   nodes ([data-zone]) land here too — a popover raised from a panel
+	   loses its context classes with its ancestry, so it reads the shell
+	   rung until the portal action learns to carry contexts (open item).
 
-	/* ⚠ THE DERIVED TOKENS MUST BE RE-DECLARED HERE, NOT JUST --accent.
+	   ⚠ THE DERIVED TOKENS MUST BE RE-DECLARED HERE, NOT JUST --accent.
 	   A custom property whose value contains var() is substituted at
 	   computed-value time ON THE ELEMENT WHERE IT IS DECLARED, and the RESULT
-	   inherits. So --sel-fill declared in :root bakes in :root's --accent (gilt)
-	   and keeps that value inside .tool-shell no matter what --accent says here.
-	   Re-declaring them in this block re-runs the color-mix against the dire
-	   --accent above.
-	   This was a live bug: selected chips in the Visualizers silently turned
-	   gold the moment they started reading --sel-fill (migration chunk 2). If
-	   another --accent-derived token is ever added to :root, add it here too. */
+	   inherits. So --sel-fill declared in :root bakes in :root's --accent
+	   and keeps that value inside .tool-shell no matter what --accent says
+	   here. Re-declaring them re-runs the color-mix against the accent
+	   above. This was a live bug: selected chips in the Visualizers silently
+	   turned gold the moment they started reading --sel-fill (migration
+	   chunk 2). If another --accent-derived token is ever added to :root,
+	   add it here AND to the .ctx-* blocks. */
+	--accent: var(--chrome);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
-	--knob: var(--dire);
 }
 
-/* DIRE-tinted grounds: the chrome bar and the tool tab rows / toolbars sit
-   on the maroon band, where the calm-blue control fills would gray the
-   ground instead of lifting it. Re-declared (not routed through a tint
-   variable) per the substituted-at-declaration law documented above. */
+/* Over-scene chrome strips: the chrome bar and the tool tab rows / toolbars
+   float directly over the live scene, so their control fills lift with
+   CHROME white rather than the neutral tint (a neutral wash grays out over
+   the cosmic ground). Re-declared (not routed through a tint variable) per
+   the substituted-at-declaration law documented above. */
 .site-chrome,
 .rp-tab-bar,
 .tb-tabs,
 .ws-toolbar,
 .ws-bar {
-	--fill-rest: color-mix(in srgb, var(--dire) 13%, transparent);
-	--fill-hover: color-mix(in srgb, var(--dire) 20%, transparent);
+	--fill-rest: color-mix(in srgb, var(--chrome) 13%, transparent);
+	--fill-hover: color-mix(in srgb, var(--chrome) 20%, transparent);
+}
+
+/* ══ THE TWO CONTEXTS — dark and light (Genshin UI archetype) ═══════════════
+   Nate 2026-08-05, values pulled from Genshin's own UI. The primary axis of
+   the tool palette is no longer a hue family but a CONTEXT: a ground plus its
+   text and border rules. Components keep consuming the ROLE tokens
+   (--frame-bg / --surface / --surface-raised / --text / --muted / --border);
+   a context class re-declares the whole set, and everything inside follows.
+
+     DARK  — chart-like panels (timelines, plots, gauge wells). Parchment
+             text on near-black warm neutral.
+     LIGHT — most other panels, and character cards always (Genshin renders
+             theirs light). Warm gray text on warm paper; the slate
+             --label voice for labels and controls.
+
+   Two values pull double duty across the axis, deliberately (they are what
+   binds the two contexts into one system): #E5D9C3 is dark-context TEXT and
+   the light-context RIBBON surface + BORDER; #857971 is dark-context dim
+   text/borders and light-context DEFAULT text.
+
+   Contexts NEST: a dark chart well inside a light panel re-declares on the
+   inner element and wins by inheritance. The alpha-compositing law stands —
+   every context ground is opaque; only the shell between panels is
+   transparent (the scene shows in the gaps, never through a surface. Mix
+   fills against the context's own ground, never against transparent). */
+.ctx-dark {
+	--frame-bg: #242c40; /* surface — the panel/chart ground ⚓ NATE 2026-08-05
+	   (#1c1a1a read too gray; the cool navy-slate is the chart dark) */
+	--surface: #242c40;
+	--surface-raised: #212121; /* raised surface */
+	--text: #e5d9c3; /* default text — parchment on dark */
+	--muted: #857971; /* dim text */
+	--border: #857971; /* borders share the dim rung */
+	/* The context's emphasis voice: its own bright text color. Interim
+	   (dire+gilt cleanup 2026-08-05) — the accent story is still open. The
+	   derived sel-* tokens re-declare per the substituted-at-declaration
+	   law; --knob re-bakes against this context's --muted. */
+	--accent: #e5d9c3;
+	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
+	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
+	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
+	--knob: var(--muted);
+	/* color, not just tokens: descendants inherit the COLOR PROPERTY from
+	   wherever it was last set (body, near-white) — re-declaring --text
+	   alone doesn't re-color text that never reads it below this element. */
+	color: var(--text);
+}
+
+.ctx-light,
+.panel {
+	--frame-bg: #f2f2ec; /* surface — the paper ground */
+	--surface: #f2f2ec;
+	--surface-raised: #e9e5dc; /* raised surface */
+	--text: #857971; /* default text — warm gray on paper */
+	--muted: #495366; /* the gray LABEL voice (labels + controls) ⚓ NATE —
+	   note it is DARKER than --text here: labels are the anchored voice on
+	   paper, prose recedes. Deliberate inversion of the dark-context order. */
+	--border: #e5d9c3; /* ⚓ NATE 2026-08-05 — borders wear the ribbon color */
+	/* The ribbon — Genshin's banded section-header surface, light context
+	   only. --ribbon-ink is used ONLY on the ribbon surface. */
+	--ribbon: #e5d9c3;
+	--ribbon-ink: #765f4d;
+	/* Emphasis voice = the label slate (interim, dire+gilt cleanup
+	   2026-08-05); same re-declaration set as .ctx-dark, same reasons. */
+	--accent: #495366;
+	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
+	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
+	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
+	--knob: var(--muted);
+	color: var(--text);
 }
 
 /* Beige selected-state pilot (lightness-structure E, 2026-08-01): the two
@@ -558,7 +612,7 @@ img {
 	font-size: var(--fs-4xl);
 	font-weight: var(--fw-bold);
 	letter-spacing: var(--ls-tight);
-	color: var(--gilt);
+	color: var(--chrome);
 }
 
 .prose h2 {
@@ -566,14 +620,14 @@ img {
 	font-size: var(--fs-2xl);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-tight);
-	color: var(--gilt);
+	color: var(--chrome);
 }
 
 .prose h3 {
 	margin: 1.4rem 0 0.5rem;
 	font-size: var(--fs-lg);
 	font-weight: var(--fw-semibold);
-	color: var(--gilt);
+	color: var(--text);
 }
 
 .prose p {
@@ -974,7 +1028,7 @@ img {
 	width: 0.85rem;
 	height: 0.85rem;
 	border-radius: var(--r-sm);
-	background: var(--gilt-dim);
+	background: var(--knob);
 	transition:
 		transform var(--t-quick),
 		background var(--t-quick);
@@ -1070,7 +1124,10 @@ img {
    animate the OPACITY of a stacked static ring (compositor-only), never a
    paint property (border-color, gradient angle) — those repaint per frame. */
 .frame {
-	border: 1px solid color-mix(in srgb, var(--dire) 40%, var(--frame-bg));
+	/* Context border (Genshin-UI archetype, 2026-08-05): the frame wears its
+	   context's border rule — #857971 dim in dark, #E5D9C3 ribbon in light.
+	   The dire 40% mix retired with the dire family's exit from the tools. */
+	border: 1px solid var(--border);
 	background: var(--frame-bg);
 }
 
@@ -1084,7 +1141,7 @@ img {
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-widest);
 	text-transform: uppercase;
-	color: var(--gilt-dim);
+	color: var(--muted);
 }
 /* Solid and faint, not a gradient (Nate 2026-07-27). The fading gradient
    always read as an unfinished stroke; a single quiet rule at low alpha
@@ -1093,7 +1150,7 @@ img {
 	content: '';
 	flex: 1;
 	height: 2px;
-	background: color-mix(in srgb, var(--gilt-dim) 22%, transparent);
+	background: color-mix(in srgb, var(--muted) 22%, transparent);
 }
 .title {
 	margin: 0;
@@ -1101,7 +1158,7 @@ img {
 	font-size: var(--fs-2xl);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-tight);
-	color: var(--gilt);
+	color: var(--text);
 }
 .subtitle {
 	margin: 0.15rem 0 0;
@@ -1130,7 +1187,7 @@ img {
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
-	color: var(--gilt);
+	color: var(--muted);
 }
 .field {
 	width: 100%;
@@ -1139,7 +1196,7 @@ img {
 	border-radius: var(--r-sm);
 	background: var(--fill-rest);
 	box-shadow: inset 0 0 0 1px var(--border);
-	color: var(--gilt-soft);
+	color: var(--text);
 	font-family: var(--font-body);
 	font-size: var(--fs-lg);
 	transition:
@@ -1147,7 +1204,7 @@ img {
 		box-shadow var(--t-quick);
 }
 .field::placeholder {
-	color: var(--gilt-dim);
+	color: var(--muted);
 }
 .field:hover {
 	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, var(--border));

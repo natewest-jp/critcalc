@@ -109,7 +109,7 @@
 </script>
 
 <div
-	class="cc"
+	class="cc ctx-light"
 	class:cc--accent={accent}
 	class:cc--dimmed={dimmed}
 	class:cc--faded={faded}
@@ -412,14 +412,15 @@
 		text-overflow: ellipsis;
 		min-width: 0;
 	}
-	/* Frame-timing-not-curated mark — a bold dire ∅ ("no frame data") at the
+	/* Frame-timing-not-curated mark — a bold warning ∅ ("no frame data") at the
 	   right of the name row (all cards): capability data is complete, only Planner
-	   timing is approximate. No chip — it sits on the card surface. Scales up with
-	   the card (fs-xl → fs-3xl). */
+	   timing is approximate. --ui-danger, not a domain color — a data-quality
+	   consequence, not a game fact (dire-retirement round, 2026-08-05). No chip —
+	   it sits on the card surface. Scales up with the card (fs-xl → fs-3xl). */
 	.cc-namemark {
 		margin-left: auto;
 		flex-shrink: 0;
-		color: color-mix(in srgb, var(--dire) 80%, white);
+		color: var(--ui-danger);
 		font-size: var(--fs-xl);
 		font-weight: var(--fw-bold);
 		line-height: var(--lh-none);

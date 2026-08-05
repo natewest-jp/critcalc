@@ -19,6 +19,6 @@
 		font-size: var(--fs-4xl);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-tight);
-		color: var(--gilt);
+		color: var(--chrome);
 	}
 </style>

@@ -8,10 +8,8 @@
 		FADE_OUT_MS,
 		hasActiveSceneTransition,
 		revealDelayMs,
-		prefersReducedMotion,
-		sceneOccluded
+		prefersReducedMotion
 	} from '$lib/landing/transition';
-	import DireBorder from './lib/DireBorder.svelte';
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import { TOOLS } from './lib/toolChrome';
@@ -30,48 +28,29 @@
 	// were the sole source of pan judder. Near settle `revealed` flips, which
 	// makes the shell visible and runs a plain LINEAR CSS-opacity fade-in over
 	// the crest sky, ending FADE_OVERLAP_MS past settle (the shared fade law —
-	// the landing composition mirrors it on the way down). `covered` flips at
-	// fade end and gates the scene occlusion below. Cold load / reduced motion
-	// / no transition → visible immediately.
+	// the landing composition mirrors it on the way down). Cold load / reduced
+	// motion / no transition → visible immediately.
+	//
+	// ⚠ TOOLS-OVER-SCENE EXPERIMENT (dire-retirement round, Nate 2026-08-05):
+	// the shell is TRANSPARENT now — the live scene stays painted and animating
+	// beneath the tools, so the scene-occlusion report (perf audit F4: two rAFs
+	// after `covered`, sceneOccluded.set(true), scene releases ~90MB of
+	// textures) is retired along with the `covered` state that gated it. The
+	// precedent that says this is affordable: the previous setup ran the dire
+	// border's three live GL canvases under every tool while the (occluded)
+	// starfield merely paused. If tool-route perf regresses on real hardware,
+	// this report is the first thing to bring back — transition.ts still
+	// exports the store and the scene layout still honors it.
 	let revealed = $state(!hasActiveSceneTransition());
-	let covered = $state(!hasActiveSceneTransition());
 
 	onMount(() => {
 		if (revealed) return; // cold load — already visible
 		if (prefersReducedMotion()) {
 			revealed = true;
-			covered = true;
 			return;
 		}
-		const timers: ReturnType<typeof setTimeout>[] = [];
-		timers.push(
-			setTimeout(() => {
-				revealed = true;
-				// The fade-in is a CSS transition on .revealed; consider the shell
-				// opaque a beat after it ends (transitionend is not worth the
-				// listener — a fixed margin over a fixed duration is exact enough).
-				timers.push(setTimeout(() => (covered = true), FADE_DURATION_MS + 80));
-			}, revealDelayMs())
-		);
-		return () => timers.forEach(clearTimeout);
-	});
-
-	// Scene occlusion report (perf audit F4): two rAFs after the reveal fade
-	// completes the shell is PAINTED opaque (#000, inset:0) over the scene —
-	// the double-frame guarantee the tool cross-fade also uses — so the scene
-	// layout can unpaint its layers and release their textures. Re-asserted on
-	// every completed navigation within the tools layout (the path dependency),
-	// which re-hides the scene if a cancelled exit to the landing restored it;
-	// a cancelled exit with no follow-up nav just leaves the scene rastered
-	// behind the opaque shell — correct, merely not minimal. The scene layout
-	// itself flips this false on the way back to any non-tool route.
-	$effect(() => {
-		void page.url.pathname;
-		if (!covered) return;
-		let raf = requestAnimationFrame(() => {
-			raf = requestAnimationFrame(() => sceneOccluded.set(true));
-		});
-		return () => cancelAnimationFrame(raf);
+		const timer = setTimeout(() => (revealed = true), revealDelayMs());
+		return () => clearTimeout(timer);
 	});
 
 	// Exit: a plain opacity fade on any departure to a non-tool route. The
@@ -84,11 +63,11 @@
 	}
 
 	// Tool→tool cross-fade. Rather than the View Transitions API (which snapshots
-	// the whole viewport — and WebKit chokes on snapshotting the heavy, animated
-	// Dire border, freezing then hard-cutting), we key the routed page on its path
-	// and cross-fade the two page layers. The Dire border lives OUTSIDE .tool-main,
-	// so it keeps animating live throughout — nothing is snapshotted, so every
-	// engine behaves identically.
+	// the whole viewport — WebKit choked on snapshotting the heavy animated Dire
+	// border, the original disqualifier; retired 2026-08-05, but the snapshot
+	// model stays wrong for us: nothing here should freeze mid-transition), we
+	// key the routed page on its path and cross-fade the two page layers —
+	// nothing is snapshotted, so every engine behaves identically.
 	//
 	// The fade is PAINT-GATED, not wall-clock. Svelte's fade() starts its clock at
 	// mount, so a heavy mount (the planner's ~200ms instantiation block on WebKit)
@@ -225,8 +204,9 @@
 		// instead of at fade start — measured 2026-07-10: starting the opacity
 		// transition on unpromoted layers cost WebKit 60–90ms of layerization
 		// right as the fade opened, stuttering it. Cleared after the fade (the
-		// full-viewport retina layers are ~25MB each — the Dire-border texture
-		// lesson says don't keep those alive).
+		// full-viewport retina layers are ~25MB each — the retired Dire border
+		// taught that oversized live compositor textures get Safari-evicted;
+		// don't keep them alive).
 		// 0.001, not 0: WebKit skips rasterizing a fully-transparent layer until
 		// its opacity goes nonzero, which would land the raster cost (~40ms) at
 		// fade start anyway. An imperceptible epsilon forces the raster to happen
@@ -334,11 +314,9 @@
 	style:--tool-fade="{FADE_DURATION_MS}ms"
 	out:plainExit|global
 >
-	<DireBorder />
-
 	<!-- Tool chrome strip: the shared site chrome, with the tool switcher in its
-	     center slot, riding the border's quiet top zone. Identical across all
-	     tools — and, apart from the switcher, identical to the landing's. -->
+	     center slot. Identical across all tools — and, apart from the switcher,
+	     identical to the landing's. -->
 	<div class="tool-chrome-mount">
 		<SiteChrome>
 			{#snippet center()}
@@ -399,108 +377,18 @@
 		   containers), so nothing is lost. */
 		overflow-x: hidden;
 		overflow-y: auto;
-		/* Tool background: the twilight ramp's BASE — the near-black the whole
-		   edge treatment fades into. Opaque, so it covers the cosmic scene
-		   behind once the ascend's reveal fade completes (the occlusion
-		   handshake depends on this shell being fully opaque). */
-		background: var(--dire-base);
+		/* TRANSPARENT — the tools float over the live scene (tools-over-scene
+		   experiment, Nate 2026-08-05: no shell ground, no dim overlay; the
+		   PANELS are what's opaque). The occlusion handshake retired with the
+		   opacity — see the script comment. */
+		background: transparent;
 
-		/* ══ THE TWILIGHT RAMP — dire border color model, rebuilt 2026-08-01 ══
-		   The old model (one tint × nine scattered lightness scalars:
-		   --dire-grad-*-l, --dire-edge-boost, six crestL/edgeL layer constants)
-		   is RETIRED — it had accreted into unreadable lightness algebra. The
-		   new model is EXPLICIT COLOR STATIONS on the twilight ramp measured
-		   from Genshin's Arlecchino wallpaper + the Stygian waves (2026-08-01
-		   analysis): hue rotates navy→violet→magenta→dire as the eye travels
-		   from content toward the viewport edge, chroma peaking in small
-		   bright accents. Every station is just a color — tune by picking
-		   colors, not by chasing multipliers. oklch annotations per station.
-		   All OPAQUE (the P3 alpha-compositing law); the GL module resolves
-		   them from the cascade (window.__dire.retune() after devtools edits).
-		   Border-only on purpose: --dire itself is the tool-zone accent (~148
-		   call sites) and stays untouched. */
-		--dire-base: #131518; /* the shell ground ⚓ NATE — near-neutral off-black  L.17 C.013 */
-		--dire-sky: #1d171e; /* gradient far end ⚓ NATE — dusk plum       L.19 C.028 H333 */
-		--dire-horizon: #341d27; /* gradient edge end ⚓ NATE — quiet magenta  L.21 C.064 H344 */
-		/* Wave BODIES (↻ 2026-08-01 line-layer redesign — two bodies + one line,
-		   was three bodies): each body's hue gradient RIDES ITS WAVE (↻ same
-		   day, Nate: the colors travel with the motion, and the counter-
-		   flowing bodies carry theirs in opposite directions). The two knobs
-		   are the CYCLE'S POLES — the fill runs A → B → A across one tile
-		   (cosine, so the tile seam never jumps), one full cycle per
-		   --dire-tile-w. The Stygian strip's own hue drift, now in motion. */
-		--dire-wave-far-l: #633156; /* far body, pole A  ⚓ NATE  L.47 C.208 H299 */
-		--dire-wave-far-r: #6c314e; /* far body, pole B  ⚓ NATE  L.51 C.182 H22 */
-		--dire-wave-near-l: #e23c8f; /* near body, pole A ⚓ NATE  L.53 C.185 H305 */
-		--dire-wave-near-r: #f13352; /* near body, pole B ⚓ NATE  L.58 C.174 H13 */
-		/* The LINE wave — the old mid layer reborn as a stroke-only silhouette:
-		   no body fill, just the thin bright edge line riding its own motion
-		   between the two bodies. Its opacity BREATHES: a slow modulation
-		   drifts along the line so segments fade to transparent and back
-		   (shader-side — the SVG limitation doesn't apply). */
-		--dire-crest: #e57d7d; /* line color ⚓ NATE  L.72 C.134 H359 */
-		--dire-crest-w: 2px; /* line thickness */
-		--dire-crest-a: 0.3; /* line PEAK opacity (0 hides the line layer entirely;
-		   independent of --dire-wave-cover) */
-		--dire-crest-fade-n: 1; /* fade cycles along one tile — how many bright
-		   segments the line carries at once */
-		--dire-crest-fade-dur: 8s; /* one full fade-through (drifts along the line,
-		   so segments continuously dissolve and re-emerge) */
-		--dire-crest-fade-min: 0; /* opacity floor of the fade troughs (0 = fully
-		   transparent; raise toward 1 for a steadier line) */
-		--dire-crest-fade-bias: 6; /* bright-segment narrowing exponent (1 = the
-		   old even sine; higher = more of the line spends its time transparent,
-		   shorter brighter segments) */
-		--dire-crest2-off: 40px; /* the TWIN line's offset below the edge line. Its
-		   fade drifts the OPPOSITE way (segments cross and pass — flip lives in
-		   direBorderGL's fadePhase2 if the counter-drift reads wrong). 0 stacks
-		   it on the first line (effectively one line again). */
-		/* ── Wave geometry (2026-08-01, Nate's alignment asks; the outer-haze
-		   experiment was tried and REMOVED same day — without was better) ── */
-		--dire-near-drop: 10px; /* how much shallower the near body crests vs the
-		   far body (which sits exactly at the --dire-*-h marks) */
-		--dire-wave-base-a: 0; /* body opacity multiplier at the viewport-edge
-		   side — the CREST is fully opaque (× --dire-wave-cover) and the body
-		   eases off toward its base, dissolving into the horizon glow behind
-		   it (1 = flat) */
-		--dire-ember: #e14660; /* ember dot glow — the chroma peak       L.62 C.190 H15 */
-		--dire-top-h: 100px;
-		--dire-top-grad-h: 100px;
-		--dire-bottom-h: 150px;
-		--dire-bottom-grad-h: 170px;
-		--dire-halftone-h: 200px;
-		/* Scroll-under: per-layer wave opacity — how firmly each wave body
-		   occludes content passing beneath. ⚓ NATE 2026-08-01: pulled 0.9 →
-		   0.1 — the waves run as faint luminous washes now. ⚠ At this cover
-		   the top-edge occlusion the scroll-under design assumed is gone
-		   (content ghosts through the crests as it scrolls under); the
-		   fade-top overlay and the crest lines (--dire-crest-a, cover-
-		   independent) carry the edge instead. Raise toward 0.9 to restore
-		   solid-body occlusion. */
-		--dire-wave-cover: 0.6;
-		/* Wave tile width: smaller = smaller waves but MUCH lighter compositor
-		   textures (memory ∝ tile-w²), which is what curbs the eviction-flash +
-		   scroll judder. Dial to taste (down from the 220vw default). */
-		--dire-tile-w: 200vw;
-		/* Wave speed: 1 = the tuned feel (the ×10 tuning is baked into the base
-		   durations). Noise pace is its own knob — they never tune well together. */
-		--dire-speed: 0.5;
-		--dire-noise-dur: 10s;
-		/* Scroll-under geometry: the chrome is fixed again, backed by the TOP
-		   waves painting over content (DireBorder's over-stratum, z2) — the top
-		   pad parks rest content just clear of the top fade's terminator (that
-		   lands at 70px; --chrome-h + 0.5rem puts content at 72px), and
-		   mid-scroll it passes under the wave silhouettes. --tool-pad-top stays
-		   "breathing room below the chrome" (.tool-main adds --chrome-h itself;
-		   viewport-height workspaces subtract both, unchanged). It clears the
-		   FADE, not the waves: the tallest wave's crests bottom out at ~75–79px
-		   where its height meets its canvas mark (viewports ~1250–1450px), so a
-		   passing crest can still tint the top few px of the first content row
-		   there — measured 2026-07-26. The pad tracks --chrome-h: when the bar
-		   grew 56 → 64px (one chrome site-wide) the pad halved 1rem → 0.5rem to
-		   hold that same 72px content top. The BOTTOM edge does not occlude
-		   (content draws over it, as ever), so its pad is just breathing room
-		   that lets some of the border show beneath content. */
+		/* Layout pads. --tool-pad-top is breathing room below the fixed chrome
+		   (.tool-main adds --chrome-h itself; viewport-height workspaces
+		   subtract both). 0.5rem holds content at the 72px top the site-chrome
+		   probe pins; the dire border's fade-terminator rationale for that
+		   number retired with the border — retune freely. The bottom pad lets
+		   content end clear of the viewport edge. */
 		--tool-pad-top: 0.5rem;
 		--tool-pad-bottom: 3rem;
 		--tool-pad-x: clamp(1rem, 2vw, 2rem);
@@ -524,11 +412,12 @@
 
 	/* Fixed mount for the shared chrome (SiteChrome renders in flow; every host
 	   pins it — the scene layout's .scene-chrome is the counterpart).
-	   Fixed strip, take two (scroll-under round): content now scrolls UNDER the
-	   dire border's raised edge treatment and fades into the top scrim before it
-	   reaches this strip, so the two obstruction complaints that un-fixed it
-	   (Nate 2026-07-21) are both addressed — the scrim keeps the strip legible,
-	   and the chrome's own pointer-events pass-through keeps it
+	   Fixed strip, take two (scroll-under round, 2026-07-24): originally backed
+	   by the dire border's top waves + scrim; the border retired 2026-08-05, so
+	   content now scrolls directly beneath the strip. ⚠ Strip legibility over
+	   scrolled content was the complaint that un-fixed it once before (Nate
+	   2026-07-21) — if it recurs, the fix is a chrome backing on the new
+	   ground, not un-fixing. Pointer-events pass-through keeps it
 	   click-transparent. */
 	.tool-chrome-mount {
 		position: fixed;
@@ -551,26 +440,30 @@
 		pointer-events: auto;
 	}
 
+	/* Chrome voice (Genshin-UI archetype): the switcher is site chrome, so it
+	   speaks --chrome white and follows the chrome state contract (SiteChrome:
+	   rest 0.85-translucent, hover/current opaque). Alpha on TEXT is fine —
+	   the alpha law governs surfaces. */
 	.chrome-nav-link {
 		position: relative;
 		font-family: var(--font-display);
 		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-tight);
-		color: var(--muted);
+		color: color-mix(in srgb, var(--chrome) 85%, transparent);
 		padding: 0.15rem 0;
 		transition: color 150ms ease;
 	}
 
 	a.chrome-nav-link:hover,
 	a.chrome-nav-link:focus-visible {
-		color: var(--text);
+		color: var(--chrome);
 	}
 
 	/* The page you're on: brighter, non-interactive, and set apart from the
 	   navigable tools by an accent underline — "you are here", not a link. */
 	.chrome-nav-link.is-current {
-		color: var(--text);
+		color: var(--chrome);
 		cursor: default;
 	}
 
