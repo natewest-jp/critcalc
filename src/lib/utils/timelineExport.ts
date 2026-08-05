@@ -36,9 +36,9 @@ import type {
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
-const CHART_BG = '#1c1a1a'; // --rp-chart-bg (↻ 2026-08-05 Genshin-UI archetype: the dark context surface)
-const GRID = '#4b4541'; // --rp-grid = mix(ctx-dark border 45%, rp-chart-bg), resolved
-const LANE_LINE = '#756b64'; // --rp-line = mix(ctx-dark border 85%, rp-chart-bg), resolved
+const CHART_BG = '#242c40'; // --rp-chart-bg (↻ 2026-08-05 Genshin-UI archetype: the dark context surface)
+const GRID = '#504f56'; // --rp-grid = mix(ctx-dark border 45%, rp-chart-bg), resolved
+const LANE_LINE = '#766d6a'; // --rp-line = mix(ctx-dark border 85%, rp-chart-bg), resolved
 // ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css. Canvas can't resolve
 // var(), so every token the export paints has to be duplicated here as a
 // literal. When a token value changes in app.css, change it here too or the
@@ -49,7 +49,7 @@ const LANE_LINE = '#756b64'; // --rp-line = mix(ctx-dark border 85%, rp-chart-bg
 const ACTIVE = '#757f93'; // --rp-active (Nate-sampled 2026-07-31; no longer the --neutral alias)
 const TEXT = '#e5d9c3'; // --text (ctx-dark — parchment on dark)
 const MUTED = '#857971'; // --muted (ctx-dark dim)
-const INK = '#03020c'; // --ink (⚓ NATE 2026-08-05, Genshin-UI archetype)
+const INK = '#0d0d0f'; // --ink (⚓ NATE 2026-08-05, Genshin-UI archetype)
 // Paired tool tints — mirror app.css. --calm-fill = #2b5590 (buff body/fill —
 // the time-scaling ramp's full end); --calm = #6b99c7 (bright accent stripe).
 // Buff bars fill solid calm-fill with a calm stripe; debuff/proc bars fill

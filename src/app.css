@@ -14,8 +14,9 @@
 	   GaugeInstrument has carried since the badges were built. Bright chip +
 	   dark ink is the sanctioned idiom now (Genshin's Lv-chips); a bright
 	   fill needs no halo. ≥4.5:1 against every element main and --gilt-soft. */
-	--ink: #03020c; /* dark ink on bright fills ⚓ NATE 2026-08-05 (Genshin-UI
-	   archetype; was #081225 — the near-black loses its navy cast) */
+	--ink: #0d0d0f; /* dark ink on bright fills ⚓ NATE 2026-08-05 (Genshin-UI
+	   archetype; #081225 → #03020c → #0d0d0f — the saturated black read too
+	   hard; this is the neutral near-black) */
 	--chrome: #ffffff; /* site chrome, branding, and the biggest headers ⚓ NATE
 	   2026-08-05 — pure white, the over-the-world voice. NOT for body text or
 	   data; the contexts below own those. */
@@ -466,8 +467,9 @@
    transparent (the scene shows in the gaps, never through a surface. Mix
    fills against the context's own ground, never against transparent). */
 .ctx-dark {
-	--frame-bg: #1c1a1a; /* surface — the panel/chart ground */
-	--surface: #1c1a1a;
+	--frame-bg: #242c40; /* surface — the panel/chart ground ⚓ NATE 2026-08-05
+	   (#1c1a1a read too gray; the cool navy-slate is the chart dark) */
+	--surface: #242c40;
 	--surface-raised: #212121; /* raised surface */
 	--text: #e5d9c3; /* default text — parchment on dark */
 	--muted: #857971; /* dim text */

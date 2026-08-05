@@ -1790,7 +1790,7 @@
 		   rung deeper on the surface. Every derived mix below (ghosts, dims,
 		   calmStop, grid/lane lines) follows it. ⚠ the exporter mirrors this
 		   literal. */
-		--rp-chart-bg: #1c1a1a;
+		--rp-chart-bg: #242c40;
 		/* Structural lines inside the chart, derived from --border toward the
 		   CHART ground (not the frame's) so they blend with the darker well.
 		   grid = faint vertical second-lines (resolves ≈ #262631); line = lane

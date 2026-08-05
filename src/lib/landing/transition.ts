@@ -137,7 +137,7 @@ export type SceneLayerKind = 'composition' | 'dim';
  *  .dim layer's background is var(--ink)); the world stays visible in the
  *  panel gaps, just receded. 0 on the landing and static pages — the open
  *  world stays undimmed. The WAAPI ride animates this during ascend/descend. */
-export const TOOL_DIM = 0.25;
+export const TOOL_DIM = 0.75;
 export const dimTarget = (path: string) => (isToolPath(path) ? TOOL_DIM : 0);
 
 // --- Transition clock --------------------------------------------------------
