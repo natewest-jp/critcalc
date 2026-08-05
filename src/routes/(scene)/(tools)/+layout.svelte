@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { resolve } from '$app/paths';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
@@ -14,8 +14,44 @@
 	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import { TOOLS } from './lib/toolChrome';
 	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
+	import { rotationTabs } from '$lib/rotationTabs.svelte';
+	import { savedNotations } from '$lib/stores';
 
 	let { children } = $props();
+
+	// ---------------------------------------------------------------------------
+	// Working-team lifecycle (bench-band round). The tab model lives in the
+	// shared rotationTabs module; its restore + persistence belong HERE — the
+	// layout stays mounted across every tool, and the Team Builder edits the
+	// working team while the planner page is unmounted. Restore runs in onMount
+	// (after hydration, before the next paint) so SSR markup and first client
+	// paint stay deterministic.
+	// ---------------------------------------------------------------------------
+
+	onMount(() => {
+		rotationTabs.restore();
+	});
+
+	// Auto-persist: persist() reads every persisted field, so this effect
+	// re-runs on any tab-state change. Writes only to localStorage — never to
+	// $state — so there's no circular reactivity.
+	$effect(() => {
+		rotationTabs.persist();
+	});
+
+	// Sync tab labels when save-bank entries are renamed from the overlay.
+	// untrack() on the tabs read means only $savedNotations is a reactive
+	// dependency, so a tab rename (which also calls savedNotations.rename)
+	// doesn't re-enter this.
+	$effect(() => {
+		const bank = $savedNotations;
+		rotationTabs.tabs = untrack(() => rotationTabs.tabs).map((t) => {
+			if (!t.savedId) return t;
+			const entry = bank.find((e) => e.id === t.savedId);
+			if (!entry || entry.name === t.label) return t;
+			return { ...t, label: entry.name };
+		});
+	});
 
 	// Chrome identity derives from the route; the nav lists every tool and marks
 	// the current one (see the centered switcher in the chrome strip).
