@@ -18,6 +18,7 @@
 	} from './lib/facets';
 	import { afterNavigate } from '$app/navigation';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
+	import { benchBand } from '$lib/benchBand.svelte';
 	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
 	import CharacterGrid, { type GridFilters } from '$lib/components/CharacterGrid.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
@@ -62,6 +63,14 @@
 		mounted = true;
 		warmAvatars();
 		afterPaint(releaseVeil);
+		// Bench-band affordances for this tool: a filled card's portrait opens
+		// the Detail card; ⇄ auditions the slot. (Remove/edit writes go straight
+		// to the shared tab state inside the band.)
+		return benchBand.registerHost({
+			tool: 'tb',
+			onOpenDetail: openDetail,
+			onAudition: openAudition
+		});
 	});
 
 	// URL param consumption lives in afterNavigate, NOT onMount: on chained SPA
@@ -959,15 +968,14 @@
 		     mirrored surface is the point. -->
 		<!-- Coverage judges at the working team's EFFECTIVE constellations (the
 		     tab's Layer-2 override, else the roster) — the bench is the plan's
-		     team, so its facts read at the plan's levels, not the browse mode's. -->
+		     team, so its facts read at the plan's levels, not the browse mode's.
+		     The slot cards themselves are the layout-level bench band, docked
+		     over this zone's spacer. -->
 		<Bench
 			slots={teamSlots}
 			conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
-			onRemove={(i) => rt.setSlot(i, null)}
 			onClear={() => rt.clearTeam()}
-			onOpen={openDetail}
 			onFilterFacet={(f) => selectCapability(f)}
-			onAudition={openAudition}
 		/>
 	</div>
 </div>

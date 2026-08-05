@@ -1,34 +1,23 @@
 <script lang="ts">
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { constellations, loadout } from '$lib/stores';
-	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import { deriveCoverage, deriveResonances, type TeamSlot } from './team';
 	import type { FacetKey } from './facets';
-	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
-	import type { LoadoutEntry } from '$lib/stores';
+	import { BENCH_COLUMN_H } from '$lib/benchBand.svelte';
 
 	let {
 		slots,
 		conCapOf,
-		onRemove,
 		onClear,
-		onOpen,
-		onFilterFacet,
-		onAudition
+		onFilterFacet
 	}: {
 		slots: TeamSlot[];
 		/** Constellation cap per character under the active con mode. */
 		conCapOf: (id: string) => number;
-		onRemove: (index: number) => void;
 		onClear: () => void;
-		onOpen: (id: string) => void;
 		/** A coverage gap was clicked — drive the Source filter to fill it. */
 		onFilterFacet: (facet: FacetKey) => void;
-		/** Audition replacements for a filled slot — opens Compare with the
-		 *  incumbent pinned as anchor. */
-		onAudition: (index: number, incumbentId: string) => void;
 	} = $props();
 
 	const members = $derived(slots.map((id) => (id ? getCharacterIndexEntry(id) : null)));
@@ -46,18 +35,6 @@
 		if (state === 'unknown') return `${label} — unknown (an uncurated kit is in the team)`;
 		return `${label} — no slotted character provides this. Click to find one.`;
 	}
-
-	// The bench is the PLAN's team editor everywhere (bench-band round): its
-	// constellation/loadout edits write Layer 2 — the active tab's overrides —
-	// never the roster, and never mark ownership. The roster grid + Detail card
-	// remain the Layer-1 editors. Display resolves L2 ⇒ L1, exactly as the
-	// planner's column always has.
-	function effectiveCon(id: string): number {
-		return rt.tabCon[id] ?? $constellations[id] ?? 0;
-	}
-	function effectiveLoadout(id: string): LoadoutEntry {
-		return { ...($loadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
-	}
 </script>
 
 <!-- A ZONE of the Team Builder's frame, not a framed island of its own: the
@@ -66,53 +43,11 @@
      tool-slide seam. No kicker, no empty-state copy: four empty slot cards
      ARE the explanation, same as the planner's. -->
 <section class="bn" aria-label="Team">
-	<div class="bn-slots">
-		{#each slots as id, i (i)}
-			{@const entry = members[i]}
-			<div class="bn-slot" class:bn-slot--filled={id !== null} class:bn-slot--empty={id === null}>
-				<!-- The shared roster card (identical to the Rotation Planner's slot).
-				     Constellation/loadout edits here are Layer-2 (the tab) writes —
-				     the bench is the plan's team editor in both tools; the roster
-				     grid + Detail card own Layer 1. -->
-				<SlotPortrait
-					slotId={id ?? 'blank'}
-					char={entry ?? null}
-					conLevel={id ? effectiveCon(id) : 0}
-					loadoutEntry={id ? effectiveLoadout(id) : {}}
-					onSetCon={(level) => id && rt.setTabCon(id, level)}
-					onSetArtifact={(artId) => id && rt.setTabLoadout(id, { artifactSetId: artId })}
-					onSetWeapon={(wid, ref) =>
-						id && rt.setTabLoadout(id, { weaponId: wid, weaponRefinement: ref })}
-					onSetRefinement={(r) => id && rt.setTabLoadout(id, { weaponRefinement: r })}
-					onPortraitClick={id ? () => onOpen(id) : undefined}
-					portraitLabel={entry ? `Open ${entry.displayName}` : undefined}
-					emptyLabel=""
-				>
-					{#snippet actions()}
-						{#if id !== null}
-							<!-- SlotPortrait pins the first action to the portrait's left
-							     margin and the last to its right. They lived in the identity
-							     row briefly and starved the name to five letters; a footer band
-							     would cost the bench ~30px per card in the tool with the least
-							     height to spare. -->
-							<button
-								class="bn-act"
-								onclick={() => onAudition(i, id)}
-								title="Compare {entry?.displayName ?? id} against replacements"
-								aria-label="Audition replacements for {entry?.displayName ?? id}">⇄</button
-							>
-							<button
-								class="bn-act bn-act--remove"
-								onclick={() => onRemove(i)}
-								title="Remove {entry?.displayName ?? id} from team"
-								aria-label="Remove {entry?.displayName ?? id} from team">✕</button
-							>
-						{/if}
-					{/snippet}
-				</SlotPortrait>
-			</div>
-		{/each}
-	</div>
+	<!-- The bench band's DOCK: the shared slot-card column (BenchBand, rendered
+	     at the tools-layout level) floats exactly over this spacer — the cards
+	     left this component in the bench-band round. The spacer reserves the
+	     band's resting footprint so the facts below flow under the cards. -->
+	<div class="bn-dock" data-bench-anchor style:height="{BENCH_COLUMN_H}px"></div>
 
 	{#if filledCount > 0}
 		<div class="bn-factrow">
@@ -178,39 +113,9 @@
 		align-content: start;
 	}
 
-	/* Slot actions — SlotPortrait seats these either side of the loadout pill, so
-	   they wear the card's shared capsule treatment (--sp-pill-*, which inherits
-	   through the snippet) at the pill's own height. Round, not capsule: they are
-	   square, and --r-round is the token for that. Glyph-only — title/aria carry
-	   the meaning. */
-	.bn-act {
-		box-sizing: border-box;
+	/* The dock is pure reserved space — the band paints the cards. */
+	.bn-dock {
 		flex-shrink: 0;
-		width: var(--sp-pill-h);
-		height: var(--sp-pill-h);
-		display: grid;
-		place-items: center;
-		padding: 0;
-		border: var(--sp-pill-border);
-		border-radius: var(--r-round);
-		background: var(--sp-pill-fill);
-		color: var(--muted);
-		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
-		line-height: var(--lh-none);
-		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			background 150ms ease,
-			color 150ms ease;
-	}
-	.bn-act:hover {
-		border-color: color-mix(in srgb, var(--el) 45%, var(--frame-line));
-		color: var(--text);
-	}
-	.bn-act--remove:hover {
-		border-color: color-mix(in srgb, var(--ui-danger) 55%, var(--frame-line));
-		color: color-mix(in srgb, var(--ui-danger) 45%, var(--text));
 	}
 
 	.bn-clear {
@@ -228,23 +133,6 @@
 	}
 	.bn-clear:hover {
 		color: var(--text);
-	}
-
-	/* ── Slots (stacked SlotPortrait cards) ───────────────────────────────────
-	   The same roster card the planner uses, stacked with a faint divider between
-	   them (the planner's slot-separator language). Filled slots gain an actions
-	   footer (audition / remove) the planner doesn't need. */
-	.bn-slots {
-		display: flex;
-		flex-direction: column;
-	}
-	.bn-slot {
-		display: flex;
-		flex-direction: column;
-		min-width: 0;
-	}
-	.bn-slot + .bn-slot {
-		border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 	}
 
 	/* ── Facts ────────────────────────────────────────────────── */

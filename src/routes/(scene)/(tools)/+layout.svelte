@@ -12,6 +12,7 @@
 	} from '$lib/landing/transition';
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import ChromeModals from '$lib/components/ChromeModals.svelte';
+	import BenchBand from '$lib/components/BenchBand.svelte';
 	import { TOOLS } from './lib/toolChrome';
 	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
 	import { rotationTabs } from '$lib/rotationTabs.svelte';
@@ -163,6 +164,101 @@
 
 	let toolMain: HTMLDivElement | undefined = $state();
 
+	// ---------------------------------------------------------------------------
+	// The bench band (bench-band round): ONE slot-card column for both benched
+	// tools, rendered here — OUTSIDE the keyed page layers — so it survives
+	// navigation and TRAVELS across the screen on the pan clock instead of
+	// panning away with its tool. It docks over a [data-bench-anchor] gutter
+	// each benched page reserves (planner: the label column's card cells; TB:
+	// the bench zone's spacer). Position is measured from the real anchor and
+	// applied as a transform in .tool-main coordinates — the band lives inside
+	// the scrolled subtree, so it rides page scroll exactly like the gutter
+	// beneath it (the planner's page scrolls; alignment under scroll is free).
+	// ---------------------------------------------------------------------------
+
+	const benchMode = $derived(
+		tool?.path === '/rotation-planner' ? 'rp' : tool?.path === '/team-builder' ? 'tb' : null
+	);
+
+	let benchMount: HTMLDivElement | undefined = $state();
+	let benchVisible = $state(false);
+	let benchTraveling = $state(false);
+	let benchTravelTimer: ReturnType<typeof setTimeout> | undefined;
+
+	/** The current anchor position for `path`, in .tool-main coordinates,
+	 *  compensating the page layer's own pan transform (a parked or mid-slide
+	 *  layer measures displaced by exactly its translateX). */
+	function measureBenchAnchor(path: string): { x: number; y: number } | null {
+		if (!toolMain) return null;
+		const pages = [...toolMain.querySelectorAll<HTMLElement>(':scope > .tool-page')];
+		// Latest layer stamped with this path wins (matches the pan's own rule).
+		const layer = pages.filter((p) => p.dataset.page === path).pop();
+		const anchor = layer?.querySelector<HTMLElement>('[data-bench-anchor]');
+		if (!layer || !anchor) return null;
+		const ar = anchor.getBoundingClientRect();
+		const mr = toolMain.getBoundingClientRect();
+		const cs = getComputedStyle(layer).transform;
+		const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
+		return { x: ar.left - mr.left - tx, y: ar.top - mr.top };
+	}
+
+	/** Park the band on the current page's anchor, untransitioned. The no-anchor
+	 *  case (Visualizers, or a page that hasn't rendered yet) hides it. */
+	function snapBench() {
+		if (!benchMount) return;
+		const a = measureBenchAnchor(page.url.pathname);
+		if (!a) {
+			benchVisible = false;
+			return;
+		}
+		benchMount.style.transition = 'none';
+		benchMount.style.transform = `translate(${a.x}px, ${a.y}px)`;
+		benchVisible = true;
+	}
+
+	function benchCurrentXY(): { x: number; y: number } {
+		if (!benchMount) return { x: 0, y: 0 };
+		const cs = getComputedStyle(benchMount).transform;
+		if (cs === 'none') return { x: 0, y: 0 };
+		const parts = cs.split(',');
+		return { x: parseFloat(parts[4]) || 0, y: parseFloat(parts[5]) || 0 };
+	}
+
+	/** The band's leg of a tool pan — called from startFade so it rides the
+	 *  exact same clock as the page layers.
+	 *  - both tools benched → glide from the current dock to the new one
+	 *  - into a benched tool → enter glued to the incoming page's motion
+	 *  - out of benched tools → exit glued to the outgoing page's motion */
+	function travelBench(dir: number, path: string) {
+		if (!benchMount) return;
+		const target = measureBenchAnchor(path);
+		const glide = `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
+		clearTimeout(benchTravelTimer);
+		if (target) {
+			if (!benchVisible) {
+				// Enter riding the incoming layer: park at the dock displaced by the
+				// layer's own parked offset, then release on the shared clock.
+				benchMount.style.transition = 'none';
+				benchMount.style.transform = `translate(${target.x + dir * window.innerWidth}px, ${target.y}px)`;
+				void benchMount.getBoundingClientRect(); // flush the park before transitioning
+				benchVisible = true;
+			}
+			benchMount.style.transition = dir ? glide : 'none';
+			benchMount.style.transform = `translate(${target.x}px, ${target.y}px)`;
+			benchTraveling = true;
+			benchTravelTimer = setTimeout(() => (benchTraveling = false), SLIDE_MS + 100);
+		} else if (benchVisible) {
+			// Exit with the pan: the same delta the outgoing layer travels, so the
+			// band reads as still docked to its departing frame.
+			const cur = benchCurrentXY();
+			benchMount.style.transition = dir ? glide : 'none';
+			benchMount.style.transform = `translate(${cur.x - dir * window.innerWidth}px, ${cur.y}px)`;
+			benchTravelTimer = setTimeout(() => {
+				if (!measureBenchAnchor(page.url.pathname)) benchVisible = false;
+			}, SLIDE_MS + 100);
+		}
+	}
+
 	// Sliding nav underline: the current link's position within the nav, kept
 	// fresh per route (and after webfont load — Bitter's metrics shift the
 	// offsets). w=0 until first measurement → the bar is invisible and the
@@ -188,8 +284,15 @@
 	});
 
 	onMount(() => {
-		// Font swap after hydration re-metrics the labels; re-measure once settled.
-		document.fonts?.ready.then(measureUnderline);
+		// First bench-band placement — the page subtree mounted before us, so
+		// the anchor is measurable; this runs pre-paint.
+		snapBench();
+		// Font swap after hydration re-metrics the labels; re-measure once
+		// settled (Bitter's metrics shift both the underline and the frame top).
+		document.fonts?.ready.then(() => {
+			measureUnderline();
+			snapBench();
+		});
 	});
 
 	// out: keeps the outgoing page in the DOM (Svelte marks it inert) under the
@@ -216,10 +319,17 @@
 	afterNavigate((nav) => {
 		// 'enter' = initial load (cold load / ascend reveal owns that path). A lone
 		// page layer means nothing to cross-fade (e.g. landing→tool, where the old
-		// DOM lives outside this layout).
-		if (nav.type === 'enter' || prefersReducedMotion() || !toolMain) return;
+		// DOM lives outside this layout). Whenever the pan orchestration doesn't
+		// run, the bench band just snaps to the new page's dock post-render.
+		if (nav.type === 'enter' || prefersReducedMotion() || !toolMain) {
+			requestAnimationFrame(snapBench);
+			return;
+		}
 		const pages = [...toolMain.querySelectorAll<HTMLElement>(':scope > .tool-page')];
-		if (pages.length < 2) return;
+		if (pages.length < 2) {
+			requestAnimationFrame(snapBench);
+			return;
+		}
 		const path = page.url.pathname;
 		const matches = pages.filter((p) => p.dataset.page === path);
 		const incoming = matches[matches.length - 1] ?? pages[pages.length - 1];
@@ -276,6 +386,8 @@
 		let lastTs = 0;
 		let quietFrames = 0;
 		const startFade = () => {
+			// The bench band's leg rides the exact same clock as the layers.
+			travelBench(dir, path);
 			if (dir) {
 				// The pan. Opacity JUMPS to 1 untransitioned — the layer is still
 				// off-screen (or mid-slide) when it happens, so there's no pop;
@@ -392,8 +504,27 @@
 				{@render children()}
 			</div>
 		{/key}
+
+		<!-- The bench band — one slot-card column, docked over the current
+		     tool's [data-bench-anchor] gutter and gliding between docks on the
+		     pan clock. Inside .tool-main so it scrolls with the page it's
+		     docked to; above the page layers so it stays interactive. -->
+		<div
+			class="bench-band-mount"
+			bind:this={benchMount}
+			style:visibility={benchVisible ? 'visible' : 'hidden'}
+		>
+			<BenchBand
+				mode={benchMode}
+				traveling={benchTraveling}
+				travelMs={SLIDE_MS}
+				travelEase={SLIDE_EASE}
+			/>
+		</div>
 	</div>
 </div>
+
+<svelte:window onresize={snapBench} />
 
 <!-- Meta overlays. Outside .tool-shell deliberately: the shell is the thing
      the ascend reveals and fades, and nothing about a settings panel belongs
@@ -550,6 +681,17 @@
 	.tool-page {
 		grid-area: 1 / 1;
 		min-width: 0;
+	}
+
+	/* The bench band's mount: absolutely positioned in .tool-main coordinates
+	   (the scrolled subtree), placed purely by transform so the travel stays
+	   compositor-side. Above the page layers — it is the interactive bench;
+	   the pages only reserve its footprint. */
+	.bench-band-mount {
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 3;
 	}
 
 	/* Narrow: the switcher tightens on the same breakpoint where the shared

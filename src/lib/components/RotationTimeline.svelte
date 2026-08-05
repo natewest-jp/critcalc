@@ -12,8 +12,9 @@
 	import type { CharacterTrack } from '$lib/utils/notationParser';
 	import { artifactImagePath } from '$lib/data/artifactLookup';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
-	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
+	import { benchBand } from '$lib/benchBand.svelte';
+	import { onDestroy } from 'svelte';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
 	import {
 		elementPalette,
@@ -61,9 +62,6 @@
 		notation = $bindable(''),
 		tabLoadout = {} as Record<string, LoadoutEntry>,
 		tabCon = {} as Record<string, number>,
-		onOpenSelector,
-		onTabLoadoutChange,
-		onTabConChange,
 		sourceOpen = false,
 		sourceOverlay
 	}: {
@@ -71,14 +69,10 @@
 		notation?: string;
 		tabLoadout?: Record<string, LoadoutEntry>;
 		/** Per-tab constellation overrides (Layer 2). Shadows the roster's global
-		 *  `constellations` field-by-field, exactly like tabLoadout shadows loadout. */
+		 *  `constellations` field-by-field, exactly like tabLoadout shadows loadout.
+		 *  The slot cards themselves live in the layout-level bench band now —
+		 *  these props feed the parser's effective-con and the PNG export. */
 		tabCon?: Record<string, number>;
-		onOpenSelector?: () => void;
-		onTabLoadoutChange?: (charId: string, update: Partial<LoadoutEntry>) => void;
-		/** A constellation chip was set in the planner — writes Layer 2 (the tab),
-		 *  never the roster, and never marks the character owned (theorycraft ≠
-		 *  ownership). */
-		onTabConChange?: (charId: string, level: number) => void;
 		/** When true, the character Source panel is layered over the track area. */
 		sourceOpen?: boolean;
 		/** Source panel content (the planner page's CharacterSelector), rendered
@@ -453,6 +447,20 @@
 	let tracksBySlot = $derived(
 		Array.from({ length: 4 }, (_, i) => annotatedTracks.filter((t) => t.slotIdx === i))
 	);
+
+	// Publish per-slot block heights + blank-usage to the bench band (bench-band
+	// round): the band's cards align to their track groups through this DATA
+	// channel, never by reading each other's DOM. Ownership-guarded in the
+	// module so this instance's retention-delayed teardown can't stomp a newer
+	// timeline's metrics.
+	const publishBenchMetrics = benchBand.claimMetrics();
+	$effect(() => {
+		publishBenchMetrics(
+			characterSlots.map((_, i) => slotBlockH(i)),
+			characterSlots.map((id, i) => id === 'blank' && tracksBySlot[i].length > 0)
+		);
+	});
+	onDestroy(() => publishBenchMetrics(null));
 
 	// ---------------------------------------------------------------------------
 	// Derived: timeline dimensions
@@ -1114,36 +1122,17 @@
 			<div class="rp-scroll-wrapper">
 				<!-- Left label column (sticky, non-scrolling) -->
 				<div class="rp-label-col">
-					<!-- Character slot labels (always 4) -->
-					{#each characterSlots as slotId, i (i)}
-						{@const loadedChar = slotCharacters[i]}
-						<!-- A `blank` slot reads as a real "Blank" generic card only when it's
-						     actually used in the notation (has tracks). An unused blank stays
-						     an "Empty" add-slot, so the default four-empty-slot layout and the
-						     click-to-add affordance are unchanged. -->
-						{@const char =
-							loadedChar?.id === 'blank' && tracksBySlot[i].length === 0 ? null : loadedChar}
-						<!-- The per-slot roster card (shared with the Team Builder Bench).
-							     Constellation/loadout edits here are Layer-2 (the tab) writes —
-							     the callbacks route to onTabConChange / onTabLoadoutChange, which
-							     never touch the roster or mark ownership. -->
-						<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px">
-							<SlotPortrait
-								{slotId}
-								{char}
-								emptyLabel=""
-								conLevel={char ? effectiveConLevel(char.id) : 0}
-								loadoutEntry={char ? effectiveLoadoutEntry(char.id) : {}}
-								onSetCon={(level) => char && onTabConChange?.(char.id, level)}
-								onSetArtifact={(id) => char && onTabLoadoutChange?.(char.id, { artifactSetId: id })}
-								onSetWeapon={(id, ref) =>
-									char && onTabLoadoutChange?.(char.id, { weaponId: id, weaponRefinement: ref })}
-								onSetRefinement={(r) =>
-									char && onTabLoadoutChange?.(char.id, { weaponRefinement: r })}
-								onPortraitClick={onOpenSelector}
-							/>
-						</div>
-					{/each}
+					<!-- The bench band's DOCK (bench-band round): the shared slot-card
+					     column renders at the (tools) layout level and floats exactly
+					     over these cells, which only reserve its footprint — per-slot
+					     heights so the anchor's geometry IS the track groups'. The band
+					     reads the same heights from the published slot metrics; both
+					     sides derive from slotBlockH, never from each other's DOM. -->
+					<div class="rp-bench-anchor" data-bench-anchor>
+						{#each characterSlots as _slotId, i (i)}
+							<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px"></div>
+						{/each}
+					</div>
 
 					{#if sourceOpen}
 						<!-- ← Explore alternatives is tied to the picker, not the main
@@ -2098,9 +2087,11 @@
 		line-height: var(--lh-snug);
 	}
 
-	/* ── Character label cell — hosts the shared SlotPortrait card ─── */
-	/* The cell supplies the fixed row height (inline style) + the bottom
-	   separator; the SlotPortrait card fills it (its .sp-card is flex:1).
+	/* ── Character label cell — the bench band's reserved footprint ─── */
+	/* The cells only reserve the slot-card geometry now (the cards render in
+	   the layout-level bench band, floating exactly here); each cell keeps the
+	   fixed row height (inline style) + the bottom separator so the column
+	   still reads as structure while the band is mid-travel.
 
 	   No inset: the column IS the card here, which is why LABEL_W is the shared
 	   CARD width rather than a bench width (the TB adds its zone chrome on top

@@ -19,6 +19,7 @@
 	import { afterNavigate } from '$app/navigation';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { rotationTabs as rt, TAB_LIMIT, type RotationTab } from '$lib/rotationTabs.svelte';
+	import { benchBand } from '$lib/benchBand.svelte';
 
 	// ---------------------------------------------------------------------------
 	// Tab state — hoisted to the shared working-team module (bench-band round):
@@ -231,10 +232,17 @@
 		);
 	}
 
-	// On first load: warm the avatar cache. Tab restore lives in the (tools)
-	// layout now — it must run for every tool, not just the planner.
+	// On first load: warm the avatar cache and register this tool's bench-band
+	// affordances (a bench portrait click opens the character Source). Tab
+	// restore lives in the (tools) layout now — it must run for every tool.
 	onMount(() => {
 		warmAvatars();
+		return benchBand.registerHost({
+			tool: 'rp',
+			onPortraitClick: () => {
+				selectorOpen = true;
+			}
+		});
 	});
 
 	// Import a rotation carried in `?r=` — or a Team Builder hand-off in `?team=`
@@ -594,11 +602,6 @@
 			tabLoadout={rt.tabLoadout}
 			tabCon={rt.tabCon}
 			sourceOpen={selectorOpen}
-			onOpenSelector={() => {
-				selectorOpen = true;
-			}}
-			onTabLoadoutChange={(charId, update) => rt.setTabLoadout(charId, update)}
-			onTabConChange={(charId, level) => rt.setTabCon(charId, level)}
 		>
 			<!-- The character Source, layered over the track area from the portrait
 			     edge (non-modal). Edits are live: each add/remove sets manualSlots,
