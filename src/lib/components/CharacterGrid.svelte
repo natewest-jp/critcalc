@@ -53,9 +53,10 @@
 		/** Render the identity-filter rail. Off = grid only (consumer supplies
 		 *  its own filter chrome). */
 		showFilterRail?: boolean;
-		/** Which edge the rail holds. The two tools mirror each other: the
-		 *  planner's picker keeps it right, the Team Builder puts it left so
-		 *  both filter columns sit on the OUTER edges of the slide seam. */
+		/** Which edge the rail holds. Both tools keep it RIGHT — one filter-column
+		 *  grammar site-wide (bench left · work center · filters right). The prop
+		 *  survives the retired mirrored arrangement, which put the Team Builder's
+		 *  rail left to face the old tool-slide seam. */
 		railSide?: 'left' | 'right';
 		/** Extra predicate ANDed after the identity match (facets, ownership, …). */
 		extraFilter?: (entry: CharacterIndexEntry) => boolean;

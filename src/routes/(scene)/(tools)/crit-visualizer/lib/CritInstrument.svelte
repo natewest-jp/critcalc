@@ -308,14 +308,17 @@
 
 <style>
 	/* The instrument adapts to its TILE via container queries (not the viewport
-	   — a half-width tile on a wide monitor gets the narrow layout). inline-size
-	   containment only: size containment would collapse indefinite heights. */
+	   — a half-width tile on a wide monitor gets the narrow layout). The tile
+	   itself is that container now (.ws-tile in the workspace page), so the
+	   @container rules below resolve one level up; declaring it here as well
+	   would shadow the tile with this element's own width.
+	   A bespoke root rather than the shared .instrument: this is the one
+	   instrument with its own two-column layout, and .instrument's stacking grid
+	   would fight .cv-layout for the height. */
 	.cv-instrument {
 		height: 100%;
 		min-height: 0;
 		overflow-y: auto;
-		container-type: inline-size;
-		container-name: instrument;
 	}
 
 	/* ── Layout ────────────────────────────────────────────────────────────── */
@@ -356,6 +359,11 @@
 		   for its grid behavior) */
 		box-shadow: none;
 		align-content: stretch;
+		/* Carries the shell's shrinkability up to .cv-layout — the chart sets its
+		   drawn box's width inline in px, and any grid item between that box and
+		   the tile that keeps min-width: auto re-imposes the stale wide box as a
+		   floor when the lineup narrows. */
+		min-width: 0;
 	}
 
 	.cv-slider-panel {

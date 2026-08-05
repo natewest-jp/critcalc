@@ -1277,6 +1277,23 @@ img {
 	cursor: pointer;
 }
 
+/* The root of a Visualizers instrument: fills its workspace tile and scrolls
+   internally, stacking its sections (chart, then .panels) from the top. Was
+   SEVEN byte-identical copies before the slot-count round — the same
+   promote-the-duplicate move that produced .panels below, and it lives here
+   for the same reason. The Crit instrument keeps a bespoke root: it is the one
+   instrument with its own two-column layout, so the grid here would fight it.
+   NOT a container — the TILE owns `container-name: instrument`, so an
+   instrument sizes to the slot it's in, not to itself. */
+.instrument {
+	height: 100%;
+	min-height: 0;
+	overflow-y: auto;
+	display: grid;
+	gap: 1rem;
+	align-content: start;
+}
+
 /* Instrument control panels pack into balanced columns (CSS multicolumn) —
    unlike a wrapping flex row, a tall panel (gauge Applications) doesn't hold
    a whole row hostage: short panels stack above/below it with no dead space.

@@ -995,11 +995,6 @@
 				</div>
 			{/if}
 		</section>
-
-		<!-- ── Bench (the team) — the frame's RIGHT zone, facing the Rotation
-		     Planner it sends to. Side-locked at every width: the planner's
-		     portrait column never moves either, and the two reading as one
-		     mirrored surface is the point. -->
 	</div>
 </div>
 

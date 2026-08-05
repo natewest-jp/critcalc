@@ -106,7 +106,7 @@
 	);
 </script>
 
-<div class="dr-instrument">
+<div class="instrument">
 	<div class="dr-frame frame ctx-dark">
 		<div class="dr-graph" bind:clientWidth={graphW}>
 			<svg
@@ -403,17 +403,6 @@
 </div>
 
 <style>
-	.dr-instrument {
-		height: 100%;
-		min-height: 0;
-		overflow-y: auto;
-		container-type: inline-size;
-		container-name: defres;
-		display: grid;
-		gap: 1rem;
-		align-content: start;
-	}
-
 	.dr-frame {
 		padding: 0.4rem 0.6rem 0.2rem;
 		border-radius: 9px;

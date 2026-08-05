@@ -65,7 +65,7 @@
 	const el = $derived(`var(--el-${element}-main)`);
 </script>
 
-<div class="icd-instrument">
+<div class="instrument">
 	<!-- Hit timeline: which hits actually apply their element -->
 	<div class="icd-frame frame ctx-dark">
 		<div class="icd-graph" bind:clientWidth={graphW}>
@@ -366,17 +366,6 @@
 </div>
 
 <style>
-	.icd-instrument {
-		height: 100%;
-		min-height: 0;
-		overflow-y: auto;
-		container-type: inline-size;
-		container-name: icd;
-		display: grid;
-		gap: 1rem;
-		align-content: start;
-	}
-
 	/* Chart frame: same treatment as the heatmap — dark chart field, Dire-tinted
 	   border, tight radius */
 	.icd-frame {

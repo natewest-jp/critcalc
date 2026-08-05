@@ -41,7 +41,42 @@ export const DEFAULT_ASSIGNMENT: InstrumentId[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Slot-assignment persistence
+// Slot count: capacity vs preference
+// ---------------------------------------------------------------------------
+
+/** The widest lineup any viewport serves — the ceiling a preference clamps to. */
+export const MAX_SLOTS = 3;
+
+/**
+ * How many instruments the viewport can hold side by side. The thresholds are
+ * width-of-the-window, not a media query, because the count also drives JS
+ * (which instruments mount, where a handoff lands).
+ */
+export function viewportCapacity(vw: number): number {
+	return vw >= 2200 ? 3 : vw >= 1360 ? 2 : 1;
+}
+
+/**
+ * The user's lineup preference: 'auto' follows the viewport, a number CAPS it.
+ * Never a floor — asking for 3 on a laptop still yields what fits, so the
+ * control can't promise a layout the window can't paint.
+ */
+export type SlotPref = 'auto' | number;
+
+/** Repair a stored preference: anything that isn't a whole 1..MAX_SLOTS is 'auto'. */
+export function normalizeSlots(stored: unknown): SlotPref {
+	if (typeof stored !== 'number' || !Number.isInteger(stored)) return 'auto';
+	if (stored < 1 || stored > MAX_SLOTS) return 'auto';
+	return stored;
+}
+
+/** The lineup actually rendered: the preference clamped by what fits. */
+export function effectiveSlots(pref: SlotPref, capacity: number): number {
+	return Math.min(INSTRUMENTS.length, capacity, pref === 'auto' ? capacity : pref);
+}
+
+// ---------------------------------------------------------------------------
+// Workspace persistence
 // ---------------------------------------------------------------------------
 
 const STORAGE_KEY = 'critcalc:vizWorkspace';
@@ -68,24 +103,35 @@ export function normalizeAssignment(stored: unknown): InstrumentId[] {
 	return out;
 }
 
-/** Read the persisted assignment (already normalized), or null when absent. */
-export function loadAssignment(): InstrumentId[] | null {
+/** Everything the workspace persists: which instruments, and how many at once. */
+export type StoredWorkspace = { assignment: InstrumentId[]; slots: SlotPref };
+
+/**
+ * Read the persisted workspace (already normalized), or null when absent.
+ * No version bump for `slots`: a v1 payload written before the slot control
+ * existed simply has no `slots` key and normalizes to 'auto' — which IS the
+ * pre-control behavior, so old layouts restore unchanged.
+ */
+export function loadWorkspace(): StoredWorkspace | null {
 	try {
 		const raw = localStorage.getItem(STORAGE_KEY);
 		if (!raw) return null;
 		const parsed: unknown = JSON.parse(raw);
 		if (typeof parsed !== 'object' || parsed === null) return null;
-		const data = parsed as { v?: unknown; assignment?: unknown };
+		const data = parsed as { v?: unknown; assignment?: unknown; slots?: unknown };
 		if (data.v !== 1) return null;
-		return normalizeAssignment(data.assignment);
+		return {
+			assignment: normalizeAssignment(data.assignment),
+			slots: normalizeSlots(data.slots)
+		};
 	} catch {
 		return null;
 	}
 }
 
-export function saveAssignment(assignment: InstrumentId[]): void {
+export function saveWorkspace(assignment: InstrumentId[], slots: SlotPref): void {
 	try {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 1, assignment }));
+		localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 1, assignment, slots }));
 	} catch {
 		// storage full / privacy mode — layout just won't persist
 	}

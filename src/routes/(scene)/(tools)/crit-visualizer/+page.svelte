@@ -15,23 +15,35 @@
 	import {
 		DEFAULT_ASSIGNMENT,
 		INSTRUMENTS,
-		loadAssignment,
+		MAX_SLOTS,
+		effectiveSlots,
+		loadWorkspace,
 		normalizeAssignment,
-		saveAssignment,
+		saveWorkspace,
+		viewportCapacity,
 		type HandoffMessage,
 		type InstrumentHandle,
-		type InstrumentId
+		type InstrumentId,
+		type SlotPref
 	} from './lib/workspace';
 	import { decodeInstrumentParam, encodeInstrumentParam } from '$lib/utils/instrumentUrl';
 
-	// The Visualizers workspace: N side-by-side instrument slots, N derived from
-	// viewport width. Every instrument mounts exactly once and hides via
-	// display:none when unslotted, so its state (sliders, pins, presets)
-	// survives swaps and slot-count changes. At one slot the picker behaves as
-	// a tab-switcher — same model, no separate mobile mode.
+	// The Visualizers workspace: N side-by-side instrument slots. Every
+	// instrument mounts exactly once and hides via display:none when unslotted,
+	// so its state (sliders, pins, presets) survives swaps and slot-count
+	// changes. At one slot the picker behaves as a tab-switcher — same model, no
+	// separate mobile mode.
+	//
+	// N is capacity ∩ preference: the viewport says how many FIT, the reader says
+	// how many they WANT (fewer, bigger instruments is a legitimate taste on a
+	// wide monitor). The preference only ever caps — it can't promise a lineup
+	// the window can't paint, which is why the over-capacity options disable
+	// rather than silently doing nothing.
 
 	let vw = $state(0);
-	const slotCount = $derived(Math.min(INSTRUMENTS.length, vw >= 2200 ? 3 : vw >= 1360 ? 2 : 1));
+	const capacity = $derived(viewportCapacity(vw));
+	let slotPref = $state<SlotPref>('auto');
+	const slotCount = $derived(effectiveSlots(slotPref, capacity));
 
 	// Benched instruments don't mount until first slotted (then stay mounted so
 	// their state keeps surviving swaps — the keep-alive model is unchanged;
@@ -60,13 +72,15 @@
 	const releaseVeil = claimVeilReady();
 
 	onMount(() => {
-		assignment = normalizeAssignment(loadAssignment() ?? DEFAULT_ASSIGNMENT);
+		const stored = loadWorkspace();
+		assignment = normalizeAssignment(stored?.assignment ?? DEFAULT_ASSIGNMENT);
+		slotPref = stored?.slots ?? 'auto';
 		restored = true;
 		afterPaint(releaseVeil);
 	});
 
 	$effect(() => {
-		if (restored) saveAssignment(assignment);
+		if (restored) saveWorkspace(assignment, slotPref);
 	});
 
 	const slotOf = (id: InstrumentId) => {
@@ -85,10 +99,15 @@
 	}
 
 	// Layout only — instrument-internal state is deliberately untouched
-	// (nothing internal is persisted)
+	// (nothing internal is persisted). The lineup size is layout too, so it
+	// goes back to following the viewport.
 	function resetWorkspace() {
 		assignment = [...DEFAULT_ASSIGNMENT];
+		slotPref = 'auto';
 	}
+
+	/** The lineup control's options: follow the viewport, or cap at 1..MAX_SLOTS. */
+	const SLOT_OPTIONS: SlotPref[] = ['auto', ...Array.from({ length: MAX_SLOTS }, (_, i) => i + 1)];
 
 	// ── Instrument handles ─────────────────────────────────────────────────
 	// Optional per-instrument capabilities (share state in/out, handoff intake)
@@ -150,6 +169,29 @@
 </svelte:head>
 
 <div class="ws-toolbar">
+	<!-- Lineup size. Options wider than the window DISABLE rather than silently
+	     clamping — a control that accepts a press and does nothing reads as
+	     broken. "Auto" is the resting state and the pre-control behavior. -->
+	<div class="segment ws-slots" role="radiogroup" aria-label="Instruments shown">
+		{#each SLOT_OPTIONS as opt (opt)}
+			{@const tooWide = opt !== 'auto' && opt > capacity}
+			<button
+				class="btn"
+				class:is-active={slotPref === opt}
+				role="radio"
+				aria-checked={slotPref === opt}
+				disabled={tooWide}
+				title={tooWide
+					? `The window is too narrow for ${opt} instruments side by side`
+					: opt === 'auto'
+						? 'Show as many instruments as the window fits'
+						: `Show ${opt} instrument${opt === 1 ? '' : 's'} at a time`}
+				onclick={() => (slotPref = opt)}
+			>
+				{opt === 'auto' ? 'Auto' : opt}
+			</button>
+		{/each}
+	</div>
 	<button class="btn ws-reset" onclick={resetWorkspace}>Reset workspace</button>
 </div>
 
@@ -215,8 +257,24 @@
 <style>
 	.ws-toolbar {
 		display: flex;
+		align-items: center;
 		justify-content: flex-end;
+		gap: 0.5rem;
 		margin-bottom: 0.55rem;
+	}
+
+	/* The numerals are single characters; without a floor they'd render three
+	   noticeably narrower targets than "Auto". */
+	.ws-slots .btn {
+		min-width: 1.9rem;
+	}
+
+	/* Over-capacity options explain themselves on hover, but the global
+	   .btn:disabled kills pointer-events, which swallows the title tooltip.
+	   The `disabled` attribute still blocks activation on its own. */
+	.ws-slots .btn:disabled {
+		pointer-events: auto;
+		cursor: not-allowed;
 	}
 
 	.ws {
@@ -237,11 +295,20 @@
 		padding: 0.38rem 0.85rem;
 	}
 
+	/* The TILE is the query container every instrument sizes against — not the
+	   instrument's own root, and never the viewport: a half-width tile on a wide
+	   monitor must get the narrow layout. With the lineup control this is load
+	   bearing, since the same window now yields 1-, 2- or 3-up tiles. Only the
+	   generic name `instrument` exists; the per-instrument container names were
+	   declared but never queried, and retired with the slot-count round.
+	   inline-size only — size containment would collapse indefinite heights. */
 	.ws-tile {
 		display: grid;
 		grid-template-rows: auto minmax(0, 1fr);
 		gap: 0.7rem;
 		min-width: 0;
+		container-type: inline-size;
+		container-name: instrument;
 	}
 
 	.ws-hidden {
@@ -265,8 +332,16 @@
 		background: color-mix(in srgb, var(--accent) 20%, transparent);
 	}
 
+	/* Both minimums are load-bearing, and min-width is the one that bites.
+	   A grid item's automatic minimum is its MIN-CONTENT size, and the heatmap
+	   sets its drawn frame's width inline in px — so after a wide lineup the
+	   body's min-content is that stale wide box and the body refuses to shrink
+	   with the tile, spilling over the neighbouring instrument. Zero here lets
+	   the tile drive the width; the chart's ResizeObserver then refits into it.
+	   Same law as the frames' min-height chain, one axis over. */
 	.ws-body {
 		min-height: 0;
+		min-width: 0;
 	}
 
 	@media (min-width: 1024px) {

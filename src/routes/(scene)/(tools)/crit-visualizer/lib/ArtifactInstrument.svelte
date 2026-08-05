@@ -363,7 +363,7 @@
 	}
 </script>
 
-<div class="ar-instrument">
+<div class="instrument">
 	<!-- View switch -->
 	<div class="ar-views">
 		<button
@@ -948,17 +948,6 @@
 </div>
 
 <style>
-	.ar-instrument {
-		height: 100%;
-		min-height: 0;
-		overflow-y: auto;
-		container-type: inline-size;
-		container-name: rolls;
-		display: grid;
-		gap: 1rem;
-		align-content: start;
-	}
-
 	.ar-views {
 		display: flex;
 		flex-wrap: wrap;

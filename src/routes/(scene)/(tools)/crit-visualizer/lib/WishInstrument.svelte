@@ -106,7 +106,7 @@
 	}
 </script>
 
-<div class="wi-instrument">
+<div class="instrument">
 	<div class="wi-frame frame ctx-dark">
 		<div class="wi-graph" bind:clientWidth={graphW}>
 			<svg
@@ -326,17 +326,6 @@
 </div>
 
 <style>
-	.wi-instrument {
-		height: 100%;
-		min-height: 0;
-		overflow-y: auto;
-		container-type: inline-size;
-		container-name: wish;
-		display: grid;
-		gap: 1rem;
-		align-content: start;
-	}
-
 	.wi-frame {
 		padding: 0.4rem 0.6rem 0.2rem;
 		border-radius: 9px;
