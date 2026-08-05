@@ -93,3 +93,6 @@ frame-rework-*.png
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Probe screenshot output (probes default SHOTS_DIR to the repo root)
+/*.png
