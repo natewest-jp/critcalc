@@ -21,12 +21,9 @@
 	// parallax transform on the wrapper without this component caring.
 
 	let {
-		center,
-		onBrandClick
+		center
 	}: {
 		center?: Snippet;
-		/** Tools pass their reverse-portal handler; elsewhere the brand is a plain link. */
-		onBrandClick?: (event: MouseEvent) => void;
 	} = $props();
 
 	// The "?" is contextual: inside a tool it opens that tool's chapter, and
@@ -35,7 +32,7 @@
 </script>
 
 <header class="site-chrome">
-	<a class="chrome-brand" href={resolve('/')} onclick={onBrandClick} aria-label="critcalc.app home">
+	<a class="chrome-brand" href={resolve('/')} aria-label="critcalc.app home">
 		<img src="/critcalc-logo-white.svg" alt="" />
 		<span class="chrome-wordmark">critcalc.app</span>
 	</a>

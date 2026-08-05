@@ -3,7 +3,6 @@
 	import type { Snippet } from 'svelte';
 	import HRule from '$lib/components/HRule.svelte';
 	import CloseMark from '$lib/components/CloseMark.svelte';
-	import { parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
 
 	// The shell every meta overlay wears — settings, help, about — on every
 	// surface. Presentational only: the host decides when it exists and what
@@ -13,22 +12,22 @@
 	// content areas: a fixed height with its own internal scroll regions, so a
 	// sidebar can stay put while a chapter scrolls beside it.
 	//
-	// `parallax` drifts the PANEL with the cursor — never the backdrop, which
-	// must stay pinned to the viewport. Transforming an already-fixed element
-	// is fine (it is positioned first, then transformed); transforming an
-	// ancestor is what would break the fixed positioning.
+	// `onScene` marks an overlay floating over the live scene (landing/pages):
+	// the backdrop lightens so the starfield stays visible behind the panel.
+	// (It used to also drift the panel with the cursor — parallax was retired
+	// with the ascend rebuild, 2026-08-02.)
 
 	let {
 		title,
 		onClose,
 		size = 'compact',
-		parallax = false,
+		onScene = false,
 		children
 	}: {
 		title: string;
 		onClose: () => void;
 		size?: 'compact' | 'wide';
-		parallax?: boolean;
+		onScene?: boolean;
 		children: Snippet;
 	} = $props();
 
@@ -42,7 +41,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div
 	class="overlay-backdrop"
-	class:on-scene={parallax}
+	class:on-scene={onScene}
 	transition:fade={{ duration: 140 }}
 	onclick={(event) => {
 		if (event.target === event.currentTarget) onClose();
@@ -54,7 +53,6 @@
 		role="dialog"
 		aria-modal="true"
 		aria-label={title}
-		use:parallaxLayer={parallax ? { x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR } : null}
 	>
 		<header class="overlay-header">
 			<h2 class="overlay-title">{title}</h2>
@@ -81,8 +79,8 @@
 	}
 
 	/* Over the live scene the backdrop only has to separate the panel from the
-	   starfield, not black it out — the whole point of keeping the parallax is
-	   that you can still see what you are floating above. */
+	   starfield, not black it out — you can still see what you are floating
+	   above. */
 	.overlay-backdrop.on-scene {
 		background: rgba(3, 6, 14, 0.45);
 	}

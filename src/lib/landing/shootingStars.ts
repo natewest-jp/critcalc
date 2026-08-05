@@ -11,8 +11,7 @@ import { prefersReducedMotion } from './transition';
  * Only ~one meteor exists at a time, created on fire and removed on finish —
  * fire-and-forget, no reactive churn.
  *
- * Lives inside `.parallax-world`, so meteors drift with the sky under cursor
- * parallax for free. The host element is clipped to the sky region so a meteor
+ * The host element is clipped to the sky region so a meteor
  * never streaks across the floor.
  *
  * Why it's cross-browser cheap (where the camera pan was not): a single small

@@ -5,14 +5,10 @@
 	import {
 		FADE_DURATION_MS,
 		FADE_OUT_MS,
-		FADE_OVERLAP_MS,
-		timeUntilSettle,
+		revealDelayMs,
 		sceneLayer,
-		startSceneTransition,
-		startPortalTransition,
-		setHeroOrigin
+		startSceneTransition
 	} from '$lib/landing/transition';
-	import { parallaxLayer, PARALLAX_CONTENT_FACTOR } from '$lib/landing/parallax';
 
 	// Card order = the task narrative (build team → plan rotation → reference
 	// shelf), matching the chrome switcher in toolChrome.ts left to right.
@@ -53,14 +49,16 @@
 	const PLATE_PATH =
 		'M477 382.22V381c0-41.28 22.22-79.58 58.65-101.1L702 181.62l166.35 98.26C904.78 301.42 927 339.72 927 381l-.01 1.22V1106c0 41.28-22.22 79.58-58.65 101.1L702 1305.39l-166.35-98.27C499.22 1185.58 477 1147.28 477 1106l.01-1.22z';
 
-	// Start the tilt-up pan immediately on click, then defer the actual
-	// navigation by two animation frames. The pan runs on the compositor via
-	// WAAPI, but its *first* frame can't commit until the main thread yields —
-	// and a normal click commits the navigation in the same task, so the
-	// destination tool's mount/hydration floods the main thread on frame 0 and
-	// the pan visibly jerks before it gets going. Letting the compositor commit
-	// a frame first means the heavy mount work lands after the animation is
-	// already running on its own thread, where it can no longer stall it.
+	// Start the ascend immediately on click, then defer the actual navigation
+	// by two animation frames. The camera runs its own rAF loop, and a normal
+	// click would commit the navigation in the same task — the destination
+	// tool's mount/hydration flooding the main thread on frame 0 before the
+	// climb even starts. Deferring lets the first camera frames present before
+	// the mount work lands. (Open question, Nate judges on real hardware: the
+	// GL camera IS main-thread rAF now, so a heavy-enough mount block mid-pan
+	// can still drop frames — the shell stays unpainted through the climb,
+	// which removed the dominant cost; OffscreenCanvas-in-a-worker is the
+	// escalation if the residual mount flood reads as stutter.)
 	function navigateToTool(event: MouseEvent, path: (typeof tools)[number]['path']) {
 		// Leave modified clicks (open-in-new-tab/window, middle-click) to the
 		// browser — only intercept a plain primary-button click.
@@ -68,17 +66,7 @@
 			return;
 		}
 		event.preventDefault();
-
-		// The portal spirals open from the clicked card's center, so capture its
-		// viewport-space center as the origin point. Also stash it keyed by the
-		// destination path so the reverse transition can collapse back to this exact
-		// card later, when the landing is no longer mounted to be measured.
-		const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-		const origin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-		setHeroOrigin(resolve(path), origin);
-
-		startSceneTransition(resolve(path)); // no-op while PORTAL is on
-		startPortalTransition(resolve(path), origin);
+		startSceneTransition(resolve(path));
 		requestAnimationFrame(() => requestAnimationFrame(() => goto(resolve(path))));
 	}
 
@@ -92,26 +80,19 @@
 	}
 </script>
 
-<!-- in: has a delay so the composition only fades in once the outgoing tool
-	 has cleared the screen; out: starts immediately so the composition is
-	 gone before the descending pan finishes (more pure-sky time, less UI
-	 contributing to judder). -->
+<!-- in: delayed to end just past camera settle on the descend (the shared
+	 reveal timing — the returning world arrives, then its UI does); out:
+	 starts immediately on the ascend so the cards clear during the gentle
+	 first leg and only sky is on screen through the fast frames. Through
+	 both, the sceneLayer WAAPI ride keeps the composition world-locked to
+	 the camera, so the fade happens on a surface moving WITH the scene. -->
 <div
 	class="composition"
 	use:sceneLayer={'composition'}
-	in:fade|global={{
-		duration: FADE_DURATION_MS,
-		delay: Math.max(0, timeUntilSettle() - FADE_DURATION_MS + FADE_OVERLAP_MS)
-	}}
+	in:fade|global={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
 	out:fade|global={{ duration: FADE_OUT_MS }}
 >
-	<!-- Counter-parallax layer: shifts opposite the world (and less) so the
-		foreground reads as nearer than the scene. Transform written directly by
-		the parallax controller; identity when parallax is off. -->
-	<div
-		class="composition-inner"
-		use:parallaxLayer={{ x: PARALLAX_CONTENT_FACTOR, y: PARALLAX_CONTENT_FACTOR }}
-	>
+	<div class="composition-inner">
 		<!-- Gradients live once, here, and every card's plate references them by
 			 id. Three cards × two paths would otherwise mean three identical
 			 <defs> blocks and three sets of colliding ids.

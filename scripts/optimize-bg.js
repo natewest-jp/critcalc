@@ -8,7 +8,15 @@ const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 // Raw master lives OUTSIDE static/ (in assets-src/, gitignored) so it is never
 // copied into the build output; only the encoded tiers written to OUT_DIR ship.
-const INPUT = join(PROJECT_ROOT, 'assets-src/landing/scene-5340.png');
+// The 8-bit Blender export IS the master (Nate's call, measured 2026-08-04):
+// Blender dithers at export time, so its 8-bit sky measures 59.4% plateau
+// where our own 16->8 conversion of the same art measured 96.1% — the
+// correct place to quantize. (The AVIF encoder smooths sub-level dither
+// either way — both masters ship identical bytes and ~90% plateau — so the
+// on-screen fix stays the scene shader's --scene-dither; the 8-bit master is
+// simply 5x smaller and strictly >= at the source. Keep Blender's Dither
+// setting ON in the export preset.)
+const INPUT = join(PROJECT_ROOT, 'assets-src/landing/scene-6400-8bit.png');
 const OUT_DIR = join(PROJECT_ROOT, 'static/assets/landing');
 const MANIFEST = join(PROJECT_ROOT, 'src/lib/data/sceneAssets.generated.ts');
 
@@ -29,12 +37,17 @@ const MANIFEST = join(PROJECT_ROOT, 'src/lib/data/sceneAssets.generated.ts');
 const MASTER = await readFile(INPUT);
 const HASH = createHash('sha256').update(MASTER).digest('hex').slice(0, 8);
 
-// Master dimensions and split, in source pixels. The master is the 21:9 design
-// frame (5120×2194) plus parallax bleed on every edge so a cursor shift never
-// pulls a gutter into view: 110px left/right, 66px top/bottom → 5340×2326. The
-// horizon (sky/floor contact) is at row 1451, so the sky occupies the top 1451
-// rows and the floor the bottom 875. Both regions are cropped from the same
-// source image so the horizon alignment is mechanical — no drift between them.
+// Master dimensions and split, in source pixels. The ascend master (Nate's
+// Blender re-export, 2026-08-04) is the 21:9 design frame (5120 wide) plus
+// 640px of bleed left/right (full 16° crane ≈472px + parallax reserve on every
+// viewport) → 6400 wide. Vertically it carries the full ascend sky: the rest
+// pose is bottom-anchored (66px of bleed below the viewport), and everything
+// above the rest frame — ~1740 rows — is the sky the camera tilts up into,
+// whose top ~2194 rows must compose as a standalone full-viewport tool-state
+// backdrop. The horizon (sky/floor contact) is at row 3026, so the sky
+// occupies the top 3026 rows and the floor the bottom 974. Both regions are
+// cropped from the same source image so the horizon alignment is mechanical —
+// no drift between them.
 //
 // No noise is baked INTO the plates: it is high-entropy and inflates AVIF/WebP
 // badly, and baking it would also fix its strength at encode time. Banding is
@@ -50,9 +63,9 @@ const HASH = createHash('sha256').update(MASTER).digest('hex').slice(0, 8);
 // already been bitten by filters over the parallaxed scene (see the WebKit note
 // in SiteChrome.svelte). A tile is one small texture uploaded once and repeated
 // by the GPU, free per frame, and tunable from CSS.
-const MASTER_W = 5340;
-const MASTER_H = 2326;
-const HORIZON_Y = 1451; // sky height; floor height = MASTER_H − HORIZON_Y
+const MASTER_W = 6400;
+const MASTER_H = 4000;
+const HORIZON_Y = 3026; // sky height; floor height = MASTER_H − HORIZON_Y
 
 // Source rows the SKY crop continues PAST the horizon, to be covered by the
 // floor (z:3 over sky's z:1). Nate saw a hairline at the junction on a real
@@ -74,33 +87,34 @@ const HORIZON_Y = 1451; // sky height; floor height = MASTER_H − HORIZON_Y
 // would shift every star.
 const SKY_OVERLAP_SRC = 4;
 
-// Quality re-tuned 2026-07-28 against measured PSNR + a banding probe, after
-// establishing there was ample size headroom (the whole AVIF pair was 27-86KB
-// per tier, a fifth of a normal hero budget). The two regions want opposite
-// things, and the measurements say so clearly:
+// Quality re-tuned 2026-08-04 for the ascend master, with AVIF now the
+// SHIPPED format: sceneGL.ts decodes `.avif` first and falls back to `.webp`
+// only where the browser can't decode AVIF (pre-16.4 Safari) — WebP is a
+// compatibility fallback, not a co-equal.
 //
-//   FLOOR is where the bytes belong. It carries the reflections and the thin
-//   ground lines, and it was the region the encoder was actually degrading —
-//   at q70/e6 it measured MORE banded than its own 8-bit reference (61.9% vs
-//   48.9%), i.e. artifacts, not source. q80 -> q90 buys +1.8dB PSNR and visibly
-//   cleaner line edges.
+//   SKY: the v2 sky's 8-bit reference measures 95.9% plateaued (runs to 68
+//   rows) — the banding is born at 16→8-bit quantisation, NOT in the 16-bit
+//   master (Nate verified) and NOT in the encoder. Measured 2026-08-04:
+//   encode-side dither does not survive lossy encoding at sane bytes (TPDF ±1
+//   pre-encode hits 35.6%, but AVIF's loop filter smooths it back to ~90%
+//   until q98/1.1MB), so banding is killed at DISPLAY time instead — the
+//   additive dither term in sceneGL's plate shader (--scene-dither), which
+//   unlike the overlay-blend grain does not vanish in the darkest rows. Sky
+//   quality q78→q90 anyway: it keeps the encoder's quantisation steps at 1
+//   level so the display dither can mask them, and the smooth sky is so
+//   cheap (tens of KB at full res) that q90 costs nothing.
 //
-//   SKY barely responds. Its 8-bit reference is ALREADY 78.6% banded before any
-//   encoder touches it — the banding is quantisation of a smooth gradient in
-//   the master, not compression — and encoded output measures marginally BETTER
-//   than the reference because encoder noise breaks a few plateaus. Going
-//   q70 -> q90 moved banding by ~1 point for 2.8x the bytes. It is already at
-//   ~50dB, so it gets a small bump for the nebula's gradients and nothing more;
-//   the banding is dithered at composite time instead (see the grain tile).
+//   FLOOR is where the bytes belong (reflections, thin ground lines), but the
+//   v2 floor had headroom by eye (Nate 2026-08-04): avif q90→q85. WebP floor
+//   stays q94 — it is the old shipped setting and fallback-only now.
 //
-// effort 9 (was 6) throughout: encoding is offline, so the slower search is
-// free and pays for part of the quality raise.
+// effort 9 throughout: encoding is offline, so the slower search is free.
 const REGIONS = [
 	{
 		name: 'floor',
 		// Floor occupies rows HORIZON_Y..MASTER_H-1 (the bottom 875).
 		crop: { left: 0, top: HORIZON_Y, width: MASTER_W, height: MASTER_H - HORIZON_Y },
-		avifQuality: 90,
+		avifQuality: 85,
 		webpQuality: 94
 	},
 	{
@@ -108,8 +122,8 @@ const REGIONS = [
 		// Sky/dust/band region, rows 0..HORIZON_Y-1 (the top 1451), plus the
 		// overlap rows that run under the floor.
 		crop: { left: 0, top: 0, width: MASTER_W, height: HORIZON_Y + SKY_OVERLAP_SRC },
-		avifQuality: 78,
-		webpQuality: 88
+		avifQuality: 90,
+		webpQuality: 94
 	}
 ];
 
@@ -117,14 +131,15 @@ const REGIONS = [
 const AVIF_EFFORT = 9;
 
 // Tier widths cover the common hardware resolutions. These are PLATE widths
-// (the full bleed-inclusive image), each ≈1.043× its target viewport width
-// since the plate is 5340 wide for a 5120-wide visible frame. The top tier
-// equals the master width so we never upscale:
-//   2000 → ~1920 16:9 viewport (1080p) + bleed
-//   2670 → ~2560 viewport (1080p ultrawide / 1440p 16:9) + bleed
-//   3585 → ~3440 viewport (1440p ultrawide) + bleed
-//   5340 → ~5120 viewport (4K ultrawide / 5K2K) + bleed, = master width
-const TIERS = [2000, 2670, 3585, 5340];
+// (the full bleed-inclusive image), each 1.25× its target FRAME width since
+// the plate is 6400 wide for a 5120-wide visible frame (the frame maps to
+// vh × 21/9, so the target is set by viewport HEIGHT, not width). The top
+// tier equals the master width so we never upscale:
+//   2400 → ~1920-wide frame (vh ≤ ~823 @1×)
+//   3200 → ~2560 frame (1080p 16:9 @1×)
+//   4300 → ~3440 frame (1440p @1×)
+//   6400 → ~5120 frame (4K/5K, retina laptops @2×), = master width
+const TIERS = [2400, 3200, 4300, 6400];
 
 await mkdir(OUT_DIR, { recursive: true });
 
@@ -253,6 +268,11 @@ export const SCENE_FLOOR = '/assets/landing/floor-${HASH}';
  *  Lossless PNG — see the note in the script; a lossy re-encode dithers
  *  nothing. Distinct from the near-white noise-128 haze on .sky-bg. */
 export const SCENE_GRAIN = '/assets/landing/${GRAIN_FILE}';
+
+/** The grain tile's gaussian σ, in 8-bit levels. The scene shader's additive
+ *  dither term divides by this to express its strength in levels — keep it in
+ *  step with the tile above. */
+export const SCENE_GRAIN_SIGMA = ${GRAIN_SIGMA};
 
 /** \`srcset\` for one region base, e.g. srcsetFor(SCENE_SKY, 'avif'). */
 export function srcsetFor(base: string, ext: 'avif' | 'webp'): string {

@@ -13,10 +13,20 @@ const SEED = 0x6e617465;
 
 // --- Whole-sky distribution ---
 // Stars scattered uniformly across the entire .twinkle element (the sky
-// region above the horizon, in source coords rows 0..2767 of the 5120×3840
-// master). The same density is applied inside and outside the band — band
-// stars from the second pass below stack additively on top.
-const SKY_COUNT = 400;
+// region above the horizon — rows 0..2674 of the 6400×4000 ascend master).
+// The same density is applied inside and outside the band — band stars from
+// the second pass below stack additively on top.
+//
+// Count is AREA-SCALED so DENSITY is the yardstick, not raw count. History:
+// the retired 5340×1451 sky ran 400 (~5.2e-5 /px²); plate v1 (6400×3184) ran
+// 1200 (~5.9e-5, "a little sparse" — Nate); plate v2 (6400×2671) ran 1400
+// (~8.2e-5), then DOUBLED to 2800 (~1.64e-4) per Nate's 2026-08-04
+// composition call. Plate v4's sky is 6400×3026 (~19.4Mpx²), where 3150
+// held that density — then Nate took ALL THREE counts (sky/band/hero) to
+// 75% after seeing the merged field in the scene (2026-08-04): the ratified
+// sky density is now ~1.22e-4 /px². WebGL point sprites make count nearly
+// free — the knob is taste, not perf.
+const SKY_COUNT = 2360;
 // Pull the bottom edge of the whole starfield up off the horizon so no star
 // sits on — or gets clipped by — the horizon line. BOTTOM_MARGIN is in
 // twinkle-element % (100 = horizon = top of floor); HORIZON_CUTOFF is the
@@ -25,29 +35,57 @@ const SKY_COUNT = 400;
 const BOTTOM_MARGIN = 1;
 const HORIZON_CUTOFF = 100 - BOTTOM_MARGIN;
 const SKY = { xMin: 0, xMax: 100, yMin: 0, yMax: HORIZON_CUTOFF };
-const SKY_PARAMS = {
-	sizeMin: 2.0,
-	sizeMax: 2.6,
-	haloBaseProb: 0.22,
-	haloSizeBoost: 0.18
+
+// --- Size tiers (Nate's 2026-08-04 composition) ---
+// DISCRETE small/medium tiers replace the old continuous size ramp, mixed
+// 2:1 small:medium in BOTH distributions; a little per-star spread keeps a
+// tier from reading as one exact pixel size. HERO stars exist only in the
+// galaxy band: four-point ✦ sparks with an additive glow (rendered by their
+// own fragment path in starfield.ts — `size` is the spark's ARM-SPAN, and
+// per Nate it stays only slightly larger than a medium star's disc).
+const SIZE_TIERS = {
+	small: { min: 1.8, max: 2.2, haloProb: 0.15 },
+	medium: { min: 2.4, max: 2.8, haloProb: 0.35 },
+	// Hero arm-span: first cut was 3.9–4.5 ("not much larger than medium") but
+	// at that size the ✦ silhouette reads as a dot — the spikes are thinner
+	// than a device pixel (Nate, on-display 2026-08-04). The spark needs
+	// roughly 2.5× a medium disc before the points survive antialiasing;
+	// sized up in two Nate passes (→6–7 → this).
+	hero: { min: 6.8, max: 7.8, haloProb: 1 }
 };
+const SMALL_SHARE = 2 / 3; // small : medium = 2 : 1
+const pickTier = () => (rand() < SMALL_SHARE ? 'small' : 'medium');
 
 // --- Galaxy band distribution ---
-// Denser starfield concentrated within a quadrilateral defined by the band's
-// Y extents at the left and right edges of the source image. Source-pixel
-// values for direct measurement against the master; converted to %.
-const SKY_SRC_HEIGHT = 1451; // sky image's source-px height (rows 0..1450 of the 5340×2326 master)
-// Band corners in whole-scene Y (master rows). The sky crop starts at master
-// row 0, so these map 1:1 to sky-crop pixel space. The band now leans steeply:
-// it hugs the top-right (topRight = 0, the very top of the sky plate) and dips
-// to the bottom-left (bottomLeft = 1451, the horizon) — a near-diagonal sweep.
-const BAND_SRC = {
-	topLeft: 725,
-	topRight: 0,
-	bottomLeft: 1451,
-	bottomRight: 725
-};
-const BAND_COUNT = 1000;
+// Denser starfield concentrated within the galaxy band, defined by its top
+// and bottom edges as POLYLINES in master source px — measured by Nate off
+// the 6400×4000 ascend master (2026-08-04). Source-pixel values for direct
+// measurement against the plate; converted to % below.
+const SKY_SRC_WIDTH = 6400; // sky image's source-px width (the full plate)
+const SKY_SRC_HEIGHT = 3026; // sky image's source-px height (rows 0..3025)
+// Plate v4's band (Nate's four points, 2026-08-04): a VERTICAL trapezoid
+// wedge — narrow base on the horizon (x 2222–2782), widening to the plate
+// top (x 3166–5333). Its left/right edges still decompose into per-column
+// TOP/BOTTOM polylines: the left edge (2222,3025)→(3166,0) bounds the top
+// (zenith-side) until the band reaches the plate top; the right edge
+// (2782,3025)→(5333,0) bounds the bottom (horizon-side). Columns outside
+// x 2222–5333 fall out naturally (top extrapolates below the horizon on the
+// left, bottom below zero on the right → bandDensity 0).
+const BAND_TOP_SRC = [
+	[2222, 3025],
+	[3166, 0],
+	[5333, 0]
+];
+const BAND_BOTTOM_SRC = [
+	[2222, 3025],
+	[2782, 3025],
+	[5333, 0]
+];
+// Area-scaled like SKY_COUNT: the band ran ~3.9e-4 /px² ("pretty good" —
+// Nate, pre-merge) — 1600 on this ~4.1Mpx² trapezoid — then the 75% pass
+// (2026-08-04) set the ratified density to ~2.9e-4 /px² (small+medium;
+// heroes ride on top).
+const BAND_COUNT = 1200;
 // Density falloff inset from the band's top and bottom edges. Stars are
 // sampled within the band quad (no outer buffer) and accepted with
 // probability that tapers linearly from 0 at each edge to 1 BAND_FALLOFF %
@@ -57,22 +95,21 @@ const BAND_COUNT = 1000;
 // zones approach each other and the full-density core shrinks; if narrow
 // sections feel washed out, dial BAND_FALLOFF down. 0 = hard edges again.
 const BAND_FALLOFF = 10;
-// Band stars are slightly smaller-biased and less halo-prone — the baked
-// galaxy dust already supplies ambient glow inside the band, so big haloed
-// stars on top would over-stack. Smaller pinpoints in a dense cluster read
-// more naturally as a starcloud.
-const BAND_PARAMS = {
-	sizeMin: 2.0,
-	sizeMax: 3.0,
-	haloBaseProb: 0.22,
-	haloSizeBoost: 0.18
-};
+// Hero stars scattered through the band — "only a few, maybe 20 or 30
+// overall" (Nate 2026-08-04), trimmed to 18 in the 75% pass. Placed with a
+// high best-candidate count so the handful spreads evenly along the band
+// instead of clumping.
+const HERO_COUNT = 18;
+const HERO_SPREAD_CANDIDATES = 12;
 
-// Animation mix (must sum to 1) — shared across both distributions.
-// jitter = the fast-flicker stars; bumped from 0.05, taken from gentle so
-// dramatic is unchanged. Count is stochastic per regen, so the weight is
-// tuned by checking the resulting count rather than by arithmetic.
-const ANIM_MIX = { gentle: 0.88, jitter: 0.07, dramatic: 0.05 };
+// Animation split (Nate 2026-08-04): small/medium stars are 25% flicker
+// (jitter) / 75% pulse (gentle) — his first spec was 50/50, dialed down after
+// an on-display look ("a little too much flicker"). Heroes are ALL flicker —
+// flagged test-and-see — on a slower clock than the field (1.1–2.0s vs
+// 0.7–1.4s) and at HALF depth (HERO_FLICKER_SCALE in starfield.ts), peaking
+// at base = 1 so every ✦ hits full brightness. `dramatic` is retired from
+// generation (the decoder and shader still support it).
+const FLICKER_SHARE = 0.25;
 
 // Color mix (must sum to 1). Biased white per Nate's brighter/whiter preference.
 const COLOR_MIX = { white: 0.7, warm: 0.15, cool: 0.1, yellow: 0.04, amber: 0.01 };
@@ -86,24 +123,32 @@ const CANDIDATE_COUNT = 1.2;
 
 // --- Derived band geometry ----------------------------------------------
 
-// Band corners in twinkle-element % (linearly interpolated along X to get
-// the band's local top/bottom Y at any column).
-const BAND = {
-	topLeft: (BAND_SRC.topLeft / SKY_SRC_HEIGHT) * 100,
-	topRight: (BAND_SRC.topRight / SKY_SRC_HEIGHT) * 100,
-	bottomLeft: (BAND_SRC.bottomLeft / SKY_SRC_HEIGHT) * 100,
-	bottomRight: (BAND_SRC.bottomRight / SKY_SRC_HEIGHT) * 100
-};
+// Band edges in twinkle-element % (x: % of plate width, y: % of sky height).
+const toPct = (points) =>
+	points.map(([x, y]) => [(x / SKY_SRC_WIDTH) * 100, (y / SKY_SRC_HEIGHT) * 100]);
+const BAND_TOP = toPct(BAND_TOP_SRC);
+const BAND_BOTTOM = toPct(BAND_BOTTOM_SRC);
+
+// Piecewise-linear interpolation along an edge polyline (points ordered by
+// ascending x, spanning 0..100).
+function edgeY(edge, x) {
+	for (let i = 1; i < edge.length; i++) {
+		const [x0, y0] = edge[i - 1];
+		const [x1, y1] = edge[i];
+		if (x <= x1 || i === edge.length - 1) {
+			return y0 + ((y1 - y0) * (x - x0)) / Math.max(x1 - x0, 1e-6);
+		}
+	}
+}
 
 function bandTopY(x) {
-	return BAND.topLeft + (BAND.topRight - BAND.topLeft) * (x / 100);
+	return edgeY(BAND_TOP, x);
 }
 function bandBottomY(x) {
-	const y = BAND.bottomLeft + (BAND.bottomRight - BAND.bottomLeft) * (x / 100);
 	// Clamp the band's lower edge to the same horizon margin as the whole-sky
-	// pass — its bottom-left corner otherwise dips to ~99.6% (right on the
-	// horizon). Density still tapers to 0 across BAND_FALLOFF inside this.
-	return Math.min(y, HORIZON_CUTOFF);
+	// pass — its bottom-left run sits ON the horizon row otherwise. Density
+	// still tapers to 0 across BAND_FALLOFF inside this.
+	return Math.min(edgeY(BAND_BOTTOM, x), HORIZON_CUTOFF);
 }
 
 // Acceptance probability at (x, y) for the band distribution: 0 outside
@@ -190,9 +235,10 @@ function pickPosition(stars) {
 // band's center and tapering to 0 at the edges. Rejected candidates are
 // replaced with new draws until k acceptances accumulate. Distance check is
 // against ALL existing stars (whole-sky + band) so band stars don't bunch up
-// next to whole-sky stars at the band's edges.
-function pickBandPosition(stars) {
-	const k = _kFrac > 0 ? _kFloor + (rand() < _kFrac ? 1 : 0) : _kFloor;
+// next to whole-sky stars at the band's edges. `kOverride` forces a higher
+// candidate count — the hero pass uses it to spread its handful evenly.
+function pickBandPosition(stars, kOverride) {
+	const k = kOverride ?? (_kFrac > 0 ? _kFloor + (rand() < _kFrac ? 1 : 0) : _kFloor);
 	let bestX = 0;
 	let bestY = 0;
 	let bestDist = -1;
@@ -225,37 +271,41 @@ function pickBandPosition(stars) {
 
 // --- Star factory --------------------------------------------------------
 
-function generateStar(x, y, params) {
-	// Quadratic-weighted size — small bias.
-	const sizeRoll = rand();
-	const size = params.sizeMin + sizeRoll * sizeRoll * (params.sizeMax - params.sizeMin);
+function generateStar(x, y, tierName) {
+	const tier = SIZE_TIERS[tierName];
+	const hero = tierName === 'hero';
+	// Uniform within the tier's narrow range — the tiers themselves carry the
+	// size structure now, so no small-bias curve.
+	const size = tier.min + rand() * (tier.max - tier.min);
 
-	const animation = pickWeighted(rand(), ANIM_MIX);
+	const animation = hero || rand() < FLICKER_SHARE ? 'jitter' : 'gentle';
 	const color = pickWeighted(rand(), COLOR_MIX);
 
-	const sizeFraction = (size - params.sizeMin) / (params.sizeMax - params.sizeMin);
-	const haloProb = params.haloBaseProb + sizeFraction * params.haloSizeBoost;
-	// Halo is purely probabilistic, independent of animation type. Jitter
-	// (flicker) stars are therefore drawn from the whole field — a flickering
-	// no-halo pinpoint is allowed and reads nicely. The flicker itself is a
-	// subtle opacity-only animation (no box-shadow), so it costs nothing extra
-	// to paint on a non-halo star.
-	const halo = rand() < haloProb;
+	// Halo is probabilistic per tier, independent of animation type — a
+	// flickering no-halo pinpoint is allowed and reads nicely. Heroes always
+	// glow (their fragment path draws the glow beneath the spark).
+	const halo = rand() < tier.haloProb;
 
-	// Animation timing.
-	// Jitter is fast (rapid flicker); gentle/dramatic are slow pulses.
+	// Animation timing. Jitter is a rapid flicker (heroes run a statelier
+	// clock — see the note on FLICKER_SHARE); gentle is a slow pulse.
 	const duration =
 		animation === 'jitter'
-			? 0.7 + rand() * 0.7 // 0.7–1.4s
-			: animation === 'dramatic'
-				? 4 + rand() * 5 // 4–9s
-				: 3.5 + rand() * 4.5; // 3.5–8s
+			? hero
+				? 1.1 + rand() * 0.9 // 1.1–2.0s
+				: 0.7 + rand() * 0.7 // 0.7–1.4s
+			: 3.5 + rand() * 4.5; // 3.5–8s
 
 	// Negative delay desynchronizes the cycle start.
 	const delay = rand() * Math.max(duration, 4);
 
-	// Each star has its own resting opacity floor.
-	const base = 0.3 + rand() * 0.5; // 0.3–0.8
+	// Each star has its own resting opacity floor — which for jitter stars is
+	// also the PEAK (the flicker only dips below it). Heroes pin base = 1 so
+	// every ✦ peaks at full brightness (Nate 2026-08-04); their flicker depth
+	// is additionally halved in the shader (HERO_FLICKER_SCALE). The roll is
+	// consumed either way to keep the PRNG stream — and every star position —
+	// stable across this knob.
+	const baseRoll = rand();
+	const base = hero ? 1 : 0.3 + baseRoll * 0.5; // 0.3–0.8
 
 	const star = {
 		x: round(x),
@@ -273,6 +323,7 @@ function generateStar(x, y, params) {
 		// Three keyframe variants prevent visible synchronization across jitter stars.
 		star.variant = ['a', 'b', 'c'][Math.floor(rand() * 3)];
 	}
+	if (hero) star.hero = true;
 
 	return star;
 }
@@ -284,7 +335,7 @@ const stars = [];
 // Pass 1: whole-sky distribution. Uniform-ish across the full sky region.
 for (let i = 0; i < SKY_COUNT; i++) {
 	const { x, y } = pickPosition(stars);
-	stars.push(generateStar(x, y, SKY_PARAMS));
+	stars.push(generateStar(x, y, pickTier()));
 }
 
 // Track where pass 1 ends so the summary can break down counts per distribution.
@@ -295,7 +346,14 @@ const skyEnd = stars.length;
 // avoid co-locating with them at the edges of the band.
 for (let i = 0; i < BAND_COUNT; i++) {
 	const { x, y } = pickBandPosition(stars);
-	stars.push(generateStar(x, y, BAND_PARAMS));
+	stars.push(generateStar(x, y, pickTier()));
+}
+
+// Pass 3: hero stars — a handful of ✦ sparks scattered through the band,
+// spread by a high best-candidate count against every star placed so far.
+for (let i = 0; i < HERO_COUNT; i++) {
+	const { x, y } = pickBandPosition(stars, HERO_SPREAD_CANDIDATES);
+	stars.push(generateStar(x, y, 'hero'));
 }
 
 // --- Write --------------------------------------------------------------
@@ -303,7 +361,12 @@ for (let i = 0; i < BAND_COUNT; i++) {
 const summary = {
 	count: stars.length,
 	sky: skyEnd,
-	band: stars.length - skyEnd,
+	band: stars.length - skyEnd - HERO_COUNT,
+	hero: HERO_COUNT,
+	tier: {
+		small: stars.filter((s) => !s.hero && s.size <= SIZE_TIERS.small.max).length,
+		medium: stars.filter((s) => !s.hero && s.size > SIZE_TIERS.small.max).length
+	},
 	animation: Object.fromEntries(
 		['gentle', 'jitter', 'dramatic'].map((k) => [k, stars.filter((s) => s.animation === k).length])
 	),
@@ -346,6 +409,9 @@ export interface Star {
 	base: number;
 	/** Sub-variant keyframe (jitter only). */
 	variant?: JitterVariant;
+	/** Galaxy-band hero star: rendered as a four-point ✦ spark with an
+	 *  additive glow instead of a disc. \`size\` is the spark's arm-span. */
+	hero?: boolean;
 }
 `;
 
@@ -383,7 +449,8 @@ const packed = stars
 				ANIMS.indexOf(s.animation) +
 					COLORS.indexOf(s.color) * 3 +
 					(s.halo ? 15 : 0) +
-					VARIANTS.indexOf(s.variant) * 30,
+					VARIANTS.indexOf(s.variant) * 30 +
+					(s.hero ? 120 : 0),
 				2
 			)
 	)
@@ -400,7 +467,7 @@ const data = `
 // ~23KB and ~1ms of decode). Field layout per star:
 //   [0,3)  x·100     [3,6)  y·100     [6,8)  size·100
 //   [8,10) duration·100   [10,12) delay·100   [12,14) base·100
-//   [14,16) flags = animIdx + colorIdx·3 + halo·15 + variantIdx·30
+//   [14,16) flags = animIdx + colorIdx·3 + halo·15 + variantIdx·30 + hero·120
 // All source values are exactly 2-decimal (the generator rounds), so ·100
 // round-trips losslessly and the decoded numbers are byte-identical to the old
 // literals (verified at conversion, 2026-07-10). The encoder lives in
@@ -428,8 +495,9 @@ function decodeStars(packed: string): Star[] {
 			delay: n(10, 2) / 100,
 			base: n(12, 2) / 100
 		};
-		const variant = VARIANTS[Math.floor(flags / 30)];
+		const variant = VARIANTS[Math.floor(flags / 30) % 4];
 		if (variant) star.variant = variant;
+		if (Math.floor(flags / 120) === 1) star.hero = true;
 		out.push(star);
 	}
 	return out;

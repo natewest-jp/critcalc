@@ -10,7 +10,7 @@
 	// miss), on EVERY surface: the starfield paints late on the scene, and a
 	// tool restores its saved state after hydration. Detection: during
 	// hydration the SSR-rendered veil is findable in the DOM, so we keep it; a
-	// fresh client-side mount (any SPA nav, including a hero-card portal into a
+	// fresh client-side mount (any SPA nav, including a hero-card ascend into a
 	// tool) finds nothing and renders nothing. No flags, no store.
 	let show = $state(browser ? document.getElementById('loading-veil') !== null : true);
 	let leaving = $state(false);
@@ -203,8 +203,8 @@
 		position: fixed;
 		inset: 0;
 		/* Above everything: the veil renders from the scene layout as a sibling
-		   of .content (z:2) and the portal cover (z:3), and it has to cover the
-		   opaque tool shell inside .content too. */
+		   of .content (z:2), and it has to cover the opaque tool shell inside
+		   .content too. */
 		z-index: 20;
 		display: grid;
 		place-items: center;

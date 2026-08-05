@@ -13,9 +13,12 @@
 	// churn plus one more live WAAPI animation in Safari's per-gesture
 	// animation sync (the TwinkleStars suspension rationale; see memory
 	// scene-occlusion-perf). Suspend by tearing the scheduler down entirely on
-	// tool routes and restarting it on return — the route flips under the
-	// portal's black cover, and the first meteor after a restart waits 4–12s,
-	// so nothing visibly pops either way. Only TOOL routes suspend — the landing
+	// tool routes and restarting it on return. With the ascend choreography the
+	// route flips right at pan start: a mid-flight meteor pops off then (faint,
+	// rare, against a sky already in motion — accepted; meteors are DOM and
+	// can't ride the GL camera anyway, which is also why they must not fire
+	// DURING a pan). The first meteor after a restart waits 4–12s, so the
+	// descend is always clear of them. Only TOOL routes suspend — the landing
 	// AND the static pages keep the scene (and its meteors) live.
 	const suspended = $derived(isToolPath(page.url.pathname));
 
