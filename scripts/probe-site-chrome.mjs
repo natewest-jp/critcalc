@@ -147,8 +147,13 @@ check(
 		(await page.locator('.chrome-nav-link.is-current').innerText()) === 'Planner'
 );
 
-// ── 4: parallax follows the scene, never the backdrop ─────────────────────
-console.log('\n4. Overlay parallax');
+// ── 4: overlays carry no stray transforms ──────────────────────────────────
+// (Was "parallax follows the scene": cursor parallax retired with the ascend
+// rebuild — docs/archive/parallax-handoff.md. What remains load-bearing is
+// the NEGATIVE space: neither the panel nor the backdrop may carry a
+// transform, because a transformed ancestor becomes a containing block and
+// traps the position:fixed panel.)
+console.log('\n4. Overlay transforms');
 
 async function overlayTransforms(url) {
 	await page.goto(url, { waitUntil: 'networkidle' });
@@ -166,19 +171,15 @@ async function overlayTransforms(url) {
 
 const onLanding = await overlayTransforms(`${BASE}/`);
 const inTool = await overlayTransforms(`${BASE}/rotation-planner`);
+const untransformed = (t) => t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)';
 check(
-	'landing: the panel drifts with the cursor',
-	onLanding.panel !== 'none' && onLanding.panel !== 'matrix(1, 0, 0, 1, 0, 0)',
-	onLanding.panel
+	'landing: panel + backdrop untransformed (cursor moves must not drift them)',
+	untransformed(onLanding.panel) && untransformed(onLanding.backdrop),
+	`panel=${onLanding.panel} backdrop=${onLanding.backdrop}`
 );
 check(
-	'landing: the backdrop stays pinned (a transform there would trap the fixed panel)',
-	onLanding.backdrop === 'none',
-	onLanding.backdrop
-);
-check(
-	'tool: no drift — the scene is occluded there',
-	inTool.panel === 'none' && inTool.backdrop === 'none',
+	'tool: panel + backdrop untransformed',
+	untransformed(inTool.panel) && untransformed(inTool.backdrop),
 	`panel=${inTool.panel} backdrop=${inTool.backdrop}`
 );
 await page.keyboard.press('Escape');
