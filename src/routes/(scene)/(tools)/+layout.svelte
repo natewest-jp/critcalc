@@ -6,6 +6,8 @@
 	import {
 		FADE_DURATION_MS,
 		FADE_OUT_MS,
+		TRANSITION_MS,
+		TILT_EASING_CSS,
 		hasActiveSceneTransition,
 		revealDelayMs,
 		prefersReducedMotion
@@ -140,29 +142,31 @@
 	// [atlas | ribbon | timeline], so ribbon and both tools pan as one rigid
 	// body (see the panDist derivation in afterNavigate). Legs to/from the
 	// Visualizers (no ribbon) ride the full viewport width as before.
-	// A full-viewport pan wants to read as a camera move, not a snap — but the
-	// first tuning (1200ms, a gentler in-out) overshot into sluggish, so the
-	// retune (Nate 2026-07-26) cut a third off the clock AND front-loaded the
-	// curve: ~80% of the distance is covered in the first half of the run, so
-	// the pan arrives early and settles quietly instead of cruising. Duration
-	// AND curve are Nate's, hand-tuned in the inspector over several rounds
-	// (quintInOut: too much build-up; sineInOut: a touch flat). Treat the
-	// numbers as design, not derivation.
+	// The pan rides the SCENE's clock now (Nate 2026-08-05): with the world
+	// live beneath transparent tools, the tools' slide and the GL camera's
+	// crest-to-crest crane are the same motion seen at two depths — running
+	// them on different clocks read as a tear. Duration and curve import from
+	// the transition module (TRANSITION_MS = sceneGL's PAN_MS 2400;
+	// TILT_EASING_CSS — the camera's own bezier), so retuning the overall
+	// transition time in ONE place moves the camera, the tool slide, the
+	// underline glide and every dependent timer together. (The previous
+	// 800ms/0.33-0-0.18-1 tuning was Nate's for the occluded-scene era —
+	// superseded, not wrong; see git history.)
 	// EVERYTHING keyed to this motion derives from these two constants — the
 	// layer transitions, the nav underline's glide, the de-promote timer. Only
 	// probe-tool-slide.mjs samples the pan from the outside, and it polls for
 	// the mid-flight state rather than assuming a wall-clock offset.
-	const SLIDE_MS = 800;
-	const SLIDE_EASE = 'cubic-bezier(0.33, 0, 0.18, 1)'; // Nate's hand-tuned in-out
+	const SLIDE_MS = TRANSITION_MS;
+	const SLIDE_EASE = TILT_EASING_CSS;
 	const toolIndex = (path: string | null | undefined) =>
 		path == null ? -1 : TOOLS.findIndex((t) => path.startsWith(t.path));
 	// Retention budget for the outgoing layer: it must outlast worst-case
-	// mount-block hold (settle cap 450ms) + the longest motion (the slide), and
-	// it doubles as the A→B→A revival window. Deliberately left at 2500 through
-	// the slide retune — the motion now finishes by ~1250ms worst case, so the
-	// surplus is pure revival headroom. Only delays teardown of the (inert,
-	// off-screen) old subtree — not user-visible.
-	const HOLD_MAX_MS = 2500;
+	// mount-block hold (settle cap 450ms) + the longest motion (the slide,
+	// 2400ms on the scene clock) + the settle pass (+100), and it doubles as
+	// the A→B→A revival window. The surplus past ~2950 is pure revival
+	// headroom. Only delays teardown of the (inert, off-screen) old subtree —
+	// not user-visible.
+	const HOLD_MAX_MS = 4000;
 
 	let toolMain: HTMLDivElement | undefined = $state();
 
@@ -254,6 +258,16 @@
 				benchMount.style.transform = `translate(${target.x + dir * panDist}px, ${target.y}px)`;
 				void benchMount.getBoundingClientRect(); // flush the park before transitioning
 				benchVisible = true;
+			} else {
+				// FREEZE-then-go (see the outgoing-layer note in startFade): bake
+				// the current position and flush so the glide below is a FRESH
+				// full-duration transition — an interrupted ribbon would otherwise
+				// reverse on the CSS reversing-shortened clock while the layers
+				// run full ones, tearing the sheet.
+				const cur = benchCurrentXY();
+				benchMount.style.transition = 'none';
+				benchMount.style.transform = `translate(${cur.x}px, ${cur.y}px)`;
+				void benchMount.getBoundingClientRect();
 			}
 			benchMount.style.transition = dir ? glide : 'none';
 			benchMount.style.transform = `translate(${target.x}px, ${target.y}px)`;
@@ -265,8 +279,12 @@
 			}, SLIDE_MS + 100);
 		} else if (benchVisible) {
 			// Exit with the pan: the same delta the outgoing layer travels, so the
-			// ribbon reads as still docked to its departing frame.
+			// ribbon reads as still docked to its departing frame. Freeze-flush
+			// first (same reversing-shortening defense as the dock-to-dock glide).
 			const cur = benchCurrentXY();
+			benchMount.style.transition = 'none';
+			benchMount.style.transform = `translate(${cur.x}px, ${cur.y}px)`;
+			void benchMount.getBoundingClientRect();
 			benchMount.style.transition = dir ? glide : 'none';
 			benchMount.style.transform = `translate(${cur.x - dir * panDist}px, ${cur.y}px)`;
 			benchTravelTimer = setTimeout(() => {
@@ -392,15 +410,25 @@
 		incoming.style.willChange = dir ? 'transform, opacity' : 'opacity';
 		incoming.style.transition = 'none';
 		if (dir) {
-			// Slide mode: a fresh mount parks off-screen (or, on a rigid-sheet
-			// leg, at the sheet distance — its dock strip pre-overlaps the
-			// outgoing page, invisible at opacity 0.001) on its entry side; a
-			// revived layer (caught mid-slide-out) resumes from wherever its
-			// matrix is right now instead of teleporting to the edge.
-			incoming.style.transform =
-				incoming.style.transform === ''
-					? `translateX(${dir * panDist}px)`
-					: getComputedStyle(incoming).transform;
+			// Park position. On a rigid-sheet leg the incoming parks by the GLUE
+			// FORMULA — ribbon's current x minus the destination dock's resting
+			// x — which is the one rule that covers every shape at once: a fresh
+			// mount (ribbon at the outgoing dock → tx = ±panDist), a parked
+			// revival (same), and a MID-FLIGHT revival (ribbon mid-travel → the
+			// layer parks exactly where the sheet is right now). The revived
+			// layer's own computed transform can NOT be trusted for this:
+			// Svelte's revival reinserts the element, which kills its CSS
+			// transition, so computed style reports the stale inline TARGET —
+			// the interrupted-return "flies in unglued" bug (Nate 2026-08-05).
+			// Non-sheet legs keep the old rules: fresh mounts park a viewport
+			// out; revived layers resume from their (target) position.
+			if (fromDock && toDock && benchVisible && benchMount) {
+				incoming.style.transform = `translateX(${benchCurrentXY().x - toDock.x}px)`;
+			} else if (incoming.style.transform === '') {
+				incoming.style.transform = `translateX(${dir * panDist}px)`;
+			} else {
+				incoming.style.transform = getComputedStyle(incoming).transform;
+			}
 			// Rigid-sheet legs OVERLAP the layers mid-pan; the incoming page
 			// rides above so the shared dock region reads as one surface.
 			incoming.style.zIndex = '2';
@@ -429,6 +457,16 @@
 			// The ribbon's leg rides the exact same clock + distance as the layers.
 			travelBench(dir, path, panDist);
 			if (dir) {
+				// Re-glue the incoming at the TRUE start instant: the ribbon kept
+				// moving through the settle-gate frames, so the afterNavigate park
+				// is a frame or two stale. travelBench just froze the ribbon (its
+				// transition starts next frame), so benchCurrentXY() here reads
+				// exactly the position the glide departs from.
+				if (fromDock && toDock && benchVisible && benchMount) {
+					incoming.style.transition = 'none';
+					incoming.style.transform = `translateX(${benchCurrentXY().x - toDock.x}px)`;
+					void incoming.getBoundingClientRect();
+				}
 				// The pan. Opacity JUMPS to 1 untransitioned — the layer is still
 				// off-screen (or mid-slide) when it happens, so there's no pop;
 				// only transform animates. The outgoing layers stay fully opaque
@@ -459,6 +497,17 @@
 					const cs = getComputedStyle(o).transform;
 					const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
 					const offscreen = Math.abs(tx) >= window.innerWidth - 1;
+					// FREEZE-then-go: bake the current matrix untransitioned, flush,
+					// then start a FRESH full-duration transition. This defeats the
+					// CSS "faster reversing of interrupted transitions" adjustment,
+					// which would shorten a reversed leg's clock while a revived
+					// layer (fresh transition) runs the full one — three movers on
+					// two clocks, the sheet visibly tearing on interrupts. A fresh
+					// clock everywhere also matches the GL camera, whose WAAPI
+					// retarget always runs the full PAN_MS.
+					o.style.transition = 'none';
+					o.style.transform = cs === 'none' ? 'translateX(0px)' : cs;
+					void o.getBoundingClientRect();
 					o.style.transition = offscreen ? 'none' : `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
 					o.style.transform = `translateX(${side * dist}px)`;
 					if (offscreen) o.style.willChange = '';
@@ -499,6 +548,9 @@
 							o.style.transition = 'none';
 							o.style.transform = `translateX(${side * window.innerWidth}px)`;
 						}
+						// Fully parked now — release the compositor promotion (the
+						// ~25MB retina layer has no motion left to serve).
+						o.style.willChange = '';
 						o.style.zIndex = '';
 					}
 				},

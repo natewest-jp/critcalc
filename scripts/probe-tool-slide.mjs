@@ -60,8 +60,8 @@ async function sampleNav(linkText, midShot) {
 		);
 		await page.screenshot({ path: `${SHOTS}/${midShot}` });
 	}
-	// Settle hold (≤450ms) + the slide + margin past the retention window.
-	await page.waitForTimeout(2600);
+	// Settle hold (≤450ms) + the slide (2400 on the scene clock) + settle pass.
+	await page.waitForTimeout(3300);
 	return page.evaluate(() => window.__samples);
 }
 
@@ -79,8 +79,10 @@ await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 let s = await sampleNav('Planner', 'slide-tb-to-rp-mid.png');
 let { out, inc } = analyze(s, '/team-builder', '/rotation-planner');
 check(
-	'TB→RP: outgoing TB exits LEFT a full layer width',
-	Math.min(...out.map((p) => p.tx)) < -(VW - 100),
+	// Rigid-sheet exit: the outgoing leaves by the dock-to-dock distance; the
+	// settle pass parks it the rest of the way out afterwards.
+	'TB→RP: outgoing TB exits LEFT by at least the sheet distance',
+	Math.min(...out.map((p) => p.tx)) < -VW * 0.75,
 	`min tx=${Math.min(...out.map((p) => p.tx))}`
 );
 check(
@@ -107,8 +109,8 @@ check(
 s = await sampleNav('Teams', 'slide-rp-to-tb-mid.png');
 ({ out, inc } = analyze(s, '/rotation-planner', '/team-builder'));
 check(
-	'RP→TB: outgoing RP exits RIGHT',
-	Math.max(...out.map((p) => p.tx)) > VW - 100,
+	'RP→TB: outgoing RP exits RIGHT by at least the sheet distance',
+	Math.max(...out.map((p) => p.tx)) > VW * 0.75,
 	`max tx=${Math.max(...out.map((p) => p.tx))}`
 );
 check(
@@ -123,7 +125,7 @@ check(
 // the viewport — it gets re-parked instantly on its order-relative side.
 await page.goto(`${BASE}/rotation-planner`, { waitUntil: 'networkidle' });
 await page.locator('.chrome-nav a', { hasText: 'Teams' }).click();
-await page.waitForTimeout(1600); // slide done, RP layer still retained
+await page.waitForTimeout(3300); // slide + settle pass done, RP layer still retained (HOLD 4000)
 s = await sampleNav('Visualizers');
 const staleRp = analyze(s, '/rotation-planner', '/crit-visualizer').out;
 check(
@@ -173,7 +175,7 @@ await page.evaluate(() => {
 	requestAnimationFrame(rec);
 });
 await page.locator('.chrome-nav a', { hasText: 'Planner' }).click();
-await page.waitForTimeout(2700);
+await page.waitForTimeout(3300);
 const barSamples = await page.evaluate(() => window.__bar);
 const between = barSamples.filter((x) => x > barBefore.x + 2 && x < destLink.x - 2);
 check(
@@ -192,7 +194,11 @@ check(
 
 // ── settle hygiene ──────────────────────────────────────────────────────────
 const residue = await page.evaluate(() => {
-	const p = document.querySelector('.tool-main > .tool-page');
+	// The CURRENT page's layer — the retained outgoing (HOLD 4000) is parked
+	// with an inline transform by design.
+	const p = [...document.querySelectorAll('.tool-main > .tool-page')].find(
+		(el) => el.dataset.page === location.pathname
+	);
 	return { transform: p.style.transform, willChange: p.style.willChange };
 });
 check(

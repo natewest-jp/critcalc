@@ -506,9 +506,9 @@ check(
 	(await page.locator('.tb-slotrow').count()) > 0,
 	String(await page.locator('.tb-slotrow').count())
 );
-// Let the outgoing planner layer finish its retention hold (HOLD_MAX_MS 2500)
+// Let the outgoing planner layer finish its retention hold (HOLD_MAX_MS 4000)
 // before counting chips — its Source rail duplicates rail selectors until then.
-await page.waitForTimeout(1800);
+await page.waitForTimeout(4400);
 await page.screenshot({ path: 'probe-team-builder-explore.png', fullPage: false });
 
 // ── 8b. Ownership ledger: mark, filter, persist ────────────────────────────

@@ -96,7 +96,7 @@ await page.screenshot({ path: `${SHOTS}/band-rp.png` });
 // ── Travel RP → TB ─────────────────────────────────────────────────────────
 const rpDockX = rp.bandRect?.x ?? 0;
 await page.click('.chrome-nav a[href*="team-builder"]');
-await page.waitForTimeout(300); // mid-flight
+await page.waitForTimeout(1200); // mid-flight (scene-clock slide: 2400ms)
 const mid = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
 	const b = band.getBoundingClientRect();
@@ -111,7 +111,7 @@ const mid = await page.evaluate(() => {
 	return { x: b.x, tx, visible: getComputedStyle(band).visibility === 'visible' };
 });
 await page.screenshot({ path: `${SHOTS}/band-midflight.png` });
-await page.waitForTimeout(1200); // settle
+await page.waitForTimeout(2400); // settle (slide 2400 + settle pass)
 
 const tb = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
@@ -201,7 +201,7 @@ check(
 
 // ── Travel TB → RP (back) ─────────────────────────────────────────────────
 await page.click('.chrome-nav a[href*="rotation-planner"]');
-await page.waitForTimeout(1500);
+await page.waitForTimeout(3400);
 const rp2 = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
 	const anchor = document.querySelector('.rp-ribbon-dock');
@@ -227,7 +227,7 @@ check('ribbon keeps its own dark context on RP', (rp2.ctx ?? '').includes('ctx-d
 
 // ── Travel RP → Visualizers (band exits) ──────────────────────────────────
 await page.click('.chrome-nav a[href*="crit-visualizer"]');
-await page.waitForTimeout(1500);
+await page.waitForTimeout(3400);
 const viz = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
 	return { visibility: getComputedStyle(band).visibility };
@@ -237,7 +237,7 @@ check('band hidden on Visualizers', viz.visibility === 'hidden', viz.visibility)
 
 // ── Back from Visualizers (band re-enters) ────────────────────────────────
 await page.click('.chrome-nav a[href*="rotation-planner"]');
-await page.waitForTimeout(1500);
+await page.waitForTimeout(3400);
 const rp3 = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
 	const anchor = document.querySelector('.rp-ribbon-dock');
@@ -249,6 +249,79 @@ check(
 	'band re-enters from Visualizers and docks',
 	rp3.visible && rp3.b && rp3.a && Math.abs(rp3.b.x - rp3.a.x) <= 1,
 	JSON.stringify({ b: rp3.b, a: rp3.a })
+);
+
+// ── Interrupted navigation: revived layers stay glued to the ribbon ────────
+// (a) PARKED revival — settle fully, return inside the retention window. The
+// settle pass parks the outgoing layer at ±100vw; on revival it must re-park
+// at the sheet distance (≈1372 @1600), not fly in from 1600 (Nate's repro).
+await page.click('.chrome-nav a[href*="team-builder"]');
+await page.waitForTimeout(3400); // settled + parked, RP still retained
+await page.evaluate(() => {
+	window.__rpTxs = [];
+	window.__txstop = false;
+	const rec = () => {
+		const el = [...document.querySelectorAll('.tool-page')].find(
+			(p) => p.dataset.page === '/rotation-planner'
+		);
+		if (el) {
+			const cs = getComputedStyle(el).transform;
+			window.__rpTxs.push(cs === 'none' ? 0 : Math.abs(parseFloat(cs.split(',')[4]) || 0));
+		}
+		if (!window.__txstop) requestAnimationFrame(rec);
+	};
+	requestAnimationFrame(rec);
+});
+await page.click('.chrome-nav a[href*="rotation-planner"]');
+await page.waitForTimeout(3400);
+const revived = await page.evaluate(() => {
+	window.__txstop = true;
+	return window.__rpTxs;
+});
+// Ignore any pre-re-park frame still at the full park (offscreen, invisible);
+// the visible entry must start at the sheet distance.
+const entryTxs = revived.filter((t) => t > 5 && t < 1590);
+console.log('Interrupted navigation:');
+check(
+	'parked revival re-enters from the sheet distance (no 100vw fly-in)',
+	entryTxs.length > 0 && Math.max(...entryTxs) <= 1400,
+	`max visible tx=${entryTxs.length ? Math.max(...entryTxs) : 'n/a'}`
+);
+
+// (b) MID-FLIGHT interrupt — reverse the pan halfway; the resumed leg must
+// stay rigid (ribbon x − incoming translateX = dock x, the glue invariant).
+await page.click('.chrome-nav a[href*="team-builder"]');
+await page.waitForTimeout(1200); // mid-flight
+await page.click('.chrome-nav a[href*="rotation-planner"]'); // interrupt: back
+await page.waitForTimeout(900); // mid resumed leg
+const glued = await page.evaluate(() => {
+	const band = document.querySelector('.bench-band-mount');
+	const b = band.getBoundingClientRect();
+	const incoming = [...document.querySelectorAll('.tool-page')].find(
+		(p) => p.dataset.page === '/rotation-planner'
+	);
+	const cs = incoming ? getComputedStyle(incoming).transform : 'none';
+	const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
+	return { x: b.x, tx };
+});
+check(
+	'mid-flight interrupt: resumed leg stays glued to the ribbon',
+	Math.abs(glued.x - glued.tx - rpDockX) <= 2,
+	JSON.stringify({ ...glued, rpDockX })
+);
+await page.waitForTimeout(2600);
+const reDocked = await page.evaluate(() => {
+	const band = document.querySelector('.bench-band-mount');
+	const anchor = document.querySelector('.rp-ribbon-dock');
+	return {
+		bx: band?.getBoundingClientRect().x,
+		ax: anchor?.getBoundingClientRect().x
+	};
+});
+check(
+	'after the interrupt storm the ribbon re-docks exactly',
+	reDocked.bx != null && Math.abs(reDocked.bx - reDocked.ax) <= 1,
+	JSON.stringify(reDocked)
 );
 
 // ── Short viewport: ribbon is fixed; the TB facts scroll BELOW it ──────────
