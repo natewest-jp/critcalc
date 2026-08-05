@@ -64,7 +64,8 @@
 	</p>
 	<p>
 		Fill the team slots and the panel reports what the composition <em>is</em> — elemental
-		resonance, Natlan count, Moonsign — plus a coverage checklist. Facts, never a score. From there,
-		send the team to the <a href={resolve('/rotation-planner')}>Rotation Planner</a> to actually run it.
+		resonance, Natlan count, Moonsign — plus a coverage checklist. Facts, never a score. The bench
+		is the same team the <a href={resolve('/rotation-planner')}>Rotation Planner</a> runs — switch tools
+		and it glides across with you, slots and all, ready to rotate.
 	</p>
 </section>

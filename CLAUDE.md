@@ -6,7 +6,7 @@ A **Genshin Impact tooling site** built with **SvelteKit + TypeScript**. Three t
 
 - **Crit Visualizer** ("Visualizers") — complete: five graph instruments (crit heatmap, ICD timeline, artifact rolls, gauge explorer, reaction curves)
 - **Rotation Planner** — the flagship: KQM-notation → frame-accurate Gantt timeline. The visual redesign (SVG overlay, cN rows, controls relocation, PNG export) merged to main 2026-07-13 (`80da4f5`); remaining is a Nate-directed cleanup round + real-Safari pass
-- **Team Builder** — feature-complete 2026-07-13 (`3742300`): capability-faceted roster ("who can heal/shield/buff, at which constellation") with provenance detail cards, aligned comparison + uptime glyphs, team slots, and `?team=`/`?replace=` cross-injection. Design thesis: `docs/archive/team-builder-brief.md`
+- **Team Builder** — feature-complete 2026-07-13 (`3742300`): capability-faceted roster ("who can heal/shield/buff, at which constellation") with provenance detail cards, aligned comparison + uptime glyphs, and team slots. Design thesis: `docs/archive/team-builder-brief.md`. Since the bench-band round (2026-08-05): team composition is ONE working team — the planner's active tab (`src/lib/rotationTabs.svelte.ts`), edited by both tools; the slot cards are the layout-level **bench band** (`BenchBand.svelte`, docked over per-tool `[data-bench-anchor]` gutters, gliding across the tool pan), which always writes Layer 2; the `?team=` cross-injection retired (inbound deep link only)
 
 ---
 

@@ -59,8 +59,10 @@
 		for what they change.
 	</p>
 	<p>
-		Constellations set here apply to the planner tab you're in; your saved roster stays untouched
-		unless you change it in the Team Builder.
+		Constellations and loadouts set on the bench apply to the plan (the tab you're in); your saved
+		roster stays untouched unless you change it in the Team Builder's roster or a character's
+		details. The bench is one and the same team in both tools — each planner tab is its own team,
+		and the active tab is the one the Team Builder edits.
 	</p>
 </section>
 
