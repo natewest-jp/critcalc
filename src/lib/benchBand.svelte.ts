@@ -56,6 +56,58 @@ export const BENCH_SLOT_H = 158;
 /** Full resting column height (borders live INSIDE the border-box heights). */
 export const BENCH_COLUMN_H = 4 * BENCH_SLOT_H;
 
+// ---------------------------------------------------------------------------
+// The RIBBON (Nate's mockup, 2026-08-05): the band is a SELF-CONTAINED box —
+// its own ground, border and radius, ONE identity in both tools (always the
+// dark context; the per-tool ctx flip is retired). The tool frames are loose
+// siblings that tuck UNDERNEATH its edges: the planner's timeline extends out
+// from under its right edge, the TB's atlas/roster from under its left.
+// All knobs — Nate tunes these in the inspector.
+// ---------------------------------------------------------------------------
+
+/** Interior padding between the ribbon's border and the card column. */
+export const RIBBON_PAD = 12;
+/** The ribbon's own border width. */
+export const RIBBON_BORDER = 1;
+/** Full ribbon width — the dock anchors and the TB zone math read this. */
+export const RIBBON_W = BENCH_CARD_W + 2 * (RIBBON_PAD + RIBBON_BORDER);
+/** Ribbon chrome above/below the card column (pad + border, each side). */
+export const RIBBON_CHROME_Y = RIBBON_PAD + RIBBON_BORDER;
+/** Resting ribbon height (TB / even rhythm). On the planner the column part
+ *  grows with the published slot metrics. */
+export const RIBBON_RESTING_H = BENCH_COLUMN_H + 2 * RIBBON_CHROME_Y;
+
+/**
+ * How far the ribbon's outer edge overhangs its tool frame's outer edge
+ * (planner: past the frame's LEFT; TB: past the frame's RIGHT). The tuck-under
+ * read: the frame's edge region slides beneath the ribbon; the ribbon's far
+ * edge stands proud of the frame by this much.
+ */
+export const RIBBON_OVERHANG = RIBBON_PAD;
+
+/**
+ * The ribbon's top, measured from its tool frame's PADDING-box top (both
+ * frames wear a 1px border; absolute insets resolve against the padding box)
+ * — THE no-vertical-travel contract: both tools place their dock at this same
+ * offset, and the frame tops already align across the pan seam
+ * (probe-bench-align), so the ribbon's y never changes between tools.
+ * Derivation: the planner's track rows start frame-pad 10 + ruler 28 below
+ * the frame's padding box; the card column must land exactly there, so the
+ * ribbon box starts RIBBON_CHROME_Y higher. (10/28 mirror .rp-frame's
+ * padding-top and RULER_H — the planner derives its dock from its own
+ * constants, and probe-bench-band asserts the two docks' y-equality, so a
+ * drift here is caught, not silent.)
+ */
+export const RIBBON_TOP_OFFSET = 10 + 28 - RIBBON_CHROME_Y;
+
+/**
+ * Clearance the planner inserts between the slot tracks and the
+ * below-timeline lanes (team buffs / NB / moonsign) so the ribbon's bottom
+ * chrome never shaves the lane labels: the ribbon ends RIBBON_CHROME_Y below
+ * the 4th track group, and the lanes start after this gap.
+ */
+export const RIBBON_LANES_CLEAR = RIBBON_CHROME_Y + 1;
+
 class BenchBandState {
 	host = $state<BenchHostRegistration | null>(null);
 

@@ -18,7 +18,13 @@
 	} from './lib/facets';
 	import { afterNavigate } from '$app/navigation';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
-	import { benchBand } from '$lib/benchBand.svelte';
+	import {
+		benchBand,
+		RIBBON_W,
+		RIBBON_OVERHANG,
+		RIBBON_TOP_OFFSET,
+		RIBBON_RESTING_H
+	} from '$lib/benchBand.svelte';
 	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
 	import CharacterGrid, { type GridFilters } from '$lib/components/CharacterGrid.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
@@ -803,6 +809,20 @@
 	     the right, so the two meet at the tool-slide seam). Viewport-fit — the
 	     views scroll INSIDE it, the page never does. -->
 	<div class="tb-frame frame ctx-light">
+		<!-- The RIBBON's dock: invisible, ribbon-sized, measured by the tools
+		     layout. Right edge overhangs the frame by RIBBON_OVERHANG (the
+		     atlas/roster extends out from underneath the ribbon's left edge —
+		     the .bn zone is the tucked-under region); top offset is the shared
+		     RIBBON_TOP_OFFSET, the same line the planner's dock sits on, so the
+		     ribbon never travels vertically between tools. -->
+		<div
+			class="tb-ribbon-dock"
+			data-bench-anchor
+			style:right="-{RIBBON_OVERHANG}px"
+			style:top="{RIBBON_TOP_OFFSET}px"
+			style:width="{RIBBON_W}px"
+			style:height="{RIBBON_RESTING_H}px"
+		></div>
 		<section class="tb-source">
 			{#if sourceTab === 'atlas'}
 				<div class="tb-atlas">
@@ -1009,12 +1029,13 @@
 		   is 0.65rem — 0.5rem here puts both frame tops at y=109 @1600
 		   (probe-bench-align asserts it). Nate's to retune. */
 		--tb-tabrow-gap: 0.5rem;
-		/* Bench width = the converged SLOT-CARD width (RotationTimeline's
-		   LABEL_W, 160) + this zone's own chrome: 12px padding per side and the
-		   1px border-left. The planner's column carries no chrome, so its 160 is
-		   the card directly — the shared thing is the CARD, not the bench.
-		   probe-bench-align asserts the two cards match. Move with LABEL_W. */
-		--tb-bench-w: 185px; /* 160 + 12 + 12 + 1 */
+		/* The under-ribbon zone width = RIBBON_W − RIBBON_OVERHANG (ribbon round:
+		   the ribbon overhangs the frame's right edge by RIBBON_OVERHANG, and
+		   the zone is exactly the part of the frame tucked beneath it — its
+		   left hairline lands under the ribbon's left border). Mirrors the
+		   planner, whose pad 14 + column 160 = the same 174 under-ribbon reach.
+		   Move with the RIBBON_* knobs in $lib/benchBand.svelte.ts. */
+		--tb-bench-w: 174px; /* RIBBON_W 186 − RIBBON_OVERHANG 12 */
 		display: flex;
 		flex-direction: column;
 		gap: var(--tb-tabrow-gap);
@@ -1034,6 +1055,17 @@
 		align-items: stretch;
 		border-radius: 9px;
 		overflow: hidden;
+		/* The ribbon dock positions against this frame. overflow:hidden clips
+		   the dock's overhang VISUALLY (it's invisible anyway) but not its
+		   measured rect, which is all the layout reads. */
+		position: relative;
+	}
+
+	/* The ribbon's dock — measured by the tools layout, never painted. */
+	.tb-ribbon-dock {
+		position: absolute;
+		pointer-events: none;
+		visibility: hidden;
 	}
 
 	/* The bench is a frame ZONE now, not an island: no shell of its own, a

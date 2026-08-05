@@ -51,9 +51,10 @@ const rp = await page.evaluate(() => {
 		slotHeights: [...document.querySelectorAll('.bench-band-mount .bb-slot')].map(
 			(el) => el.getBoundingClientRect().height
 		),
-		anchorCellHeights: [...document.querySelectorAll('.rp-bench-anchor .char-label')].map(
+		anchorCellHeights: [...document.querySelectorAll('.rp-label-col .char-label')].map(
 			(el) => el.getBoundingClientRect().height
-		)
+		),
+		tracksTop: document.querySelector('.rp-char-block')?.getBoundingClientRect().top ?? null
 	};
 });
 console.log('RP:');
@@ -68,9 +69,16 @@ check(
 	JSON.stringify({ band: rp.bandRect, anchor: rp.anchorRect })
 );
 check(
-	'band width = 160',
-	rp.bandRect && Math.abs(rp.bandRect.w - 160) <= 1,
+	'ribbon width = RIBBON_W (186)',
+	rp.bandRect && Math.abs(rp.bandRect.w - 186) <= 1,
 	String(rp.bandRect?.w)
+);
+// The ribbon's card column must land exactly on the track rows (the RIBBON
+// geometry contract: dock top + chrome = tracks top).
+check(
+	'card column top = track rows top (ribbon chrome accounted)',
+	rp.bandRect && rp.tracksTop != null && Math.abs(rp.bandRect.y + 13 - rp.tracksTop) <= 1,
+	JSON.stringify({ bandY: rp.bandRect?.y, tracksTop: rp.tracksTop })
 );
 check(
 	'slot heights mirror anchor cells',
@@ -86,19 +94,28 @@ check(
 await page.screenshot({ path: `${SHOTS}/band-rp.png` });
 
 // ── Travel RP → TB ─────────────────────────────────────────────────────────
+const rpDockX = rp.bandRect?.x ?? 0;
 await page.click('.chrome-nav a[href*="team-builder"]');
 await page.waitForTimeout(300); // mid-flight
 const mid = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
 	const b = band.getBoundingClientRect();
-	return { x: b.x, visible: getComputedStyle(band).visibility === 'visible' };
+	// Rigid-sheet assert: (ribbon x) − (incoming layer's translateX) must equal
+	// the destination dock's resting x for the WHOLE flight — the ribbon is
+	// rigidly attached to the sheet, no relative motion.
+	const incoming = [...document.querySelectorAll('.tool-page')].find(
+		(p) => p.dataset.page === '/team-builder'
+	);
+	const cs = incoming ? getComputedStyle(incoming).transform : 'none';
+	const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
+	return { x: b.x, tx, visible: getComputedStyle(band).visibility === 'visible' };
 });
 await page.screenshot({ path: `${SHOTS}/band-midflight.png` });
 await page.waitForTimeout(1200); // settle
 
 const tb = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
-	const anchor = document.querySelector('.bn [data-bench-anchor]');
+	const anchor = document.querySelector('.tb-frame [data-bench-anchor]');
 	const b = band?.getBoundingClientRect();
 	const a = anchor?.getBoundingClientRect();
 	const names = [...document.querySelectorAll('.bench-band-mount .sp-char-name')].map(
@@ -113,12 +130,28 @@ const tb = await page.evaluate(() => {
 			(el) => el.getBoundingClientRect().height
 		),
 		hasAuditionAct: !!document.querySelector('.bench-band-mount .bb-act'),
-		ctx: band?.querySelector('.bb')?.className
+		ctx: band?.querySelector('.bb')?.className,
+		factsTop: document.querySelector('.bn-factrow')?.getBoundingClientRect().top ?? null
 	};
 });
 console.log('TB (after travel):');
 check('band visible on TB', !!tb.visible);
 check('band traveled (mid-flight x between docks)', mid.visible && mid.x > 100, String(mid.x));
+check(
+	'rigid sheet: ribbon glued to the incoming layer mid-flight',
+	tb.bandRect && Math.abs(mid.x - mid.tx - tb.bandRect.x) <= 2,
+	JSON.stringify({ midX: mid.x, midTx: mid.tx, dockX: tb.bandRect?.x })
+);
+check(
+	'no vertical travel: RP dock y == TB dock y',
+	rp.bandRect && tb.bandRect && Math.abs(rp.bandRect.y - tb.bandRect.y) <= 1,
+	JSON.stringify({ rpY: rp.bandRect?.y, tbY: tb.bandRect?.y })
+);
+check(
+	'pan distance = dock-to-dock (not 100vw)',
+	tb.bandRect && Math.abs(tb.bandRect.x - rpDockX) < 1500,
+	String(tb.bandRect ? tb.bandRect.x - rpDockX : NaN)
+);
 check(
 	'band docks on TB anchor',
 	tb.bandRect &&
@@ -139,7 +172,16 @@ check(
 	tb.names.join(',')
 );
 check('TB actions (audition/remove) present', tb.hasAuditionAct);
-check('ctx-light on TB', (tb.ctx ?? '').includes('ctx-light'), tb.ctx);
+// ONE identity in both tools now (the ribbon is self-contained, always dark).
+check('ribbon keeps its own dark context on TB', (tb.ctx ?? '').includes('ctx-dark'), tb.ctx);
+check(
+	'TB facts strip clears the ribbon bottom',
+	tb.factsTop != null && tb.bandRect && tb.factsTop >= tb.bandRect.y + tb.bandRect.h - 1,
+	JSON.stringify({
+		factsTop: tb.factsTop,
+		ribbonBottom: tb.bandRect ? tb.bandRect.y + tb.bandRect.h : null
+	})
+);
 await page.screenshot({ path: `${SHOTS}/band-tb.png` });
 
 // ── TB edits flow back to the shared team ─────────────────────────────────
@@ -162,7 +204,7 @@ await page.click('.chrome-nav a[href*="rotation-planner"]');
 await page.waitForTimeout(1500);
 const rp2 = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
-	const anchor = document.querySelector('.rp-bench-anchor');
+	const anchor = document.querySelector('.rp-ribbon-dock');
 	const b = band?.getBoundingClientRect();
 	const a = anchor?.getBoundingClientRect();
 	const names = [...document.querySelectorAll('.bench-band-mount .sp-char-name')].map(
@@ -181,7 +223,7 @@ check(
 	!rp2.names.join(',').includes('Furina'),
 	rp2.names.join(',')
 );
-check('ctx-dark on RP', (rp2.ctx ?? '').includes('ctx-dark'), rp2.ctx);
+check('ribbon keeps its own dark context on RP', (rp2.ctx ?? '').includes('ctx-dark'), rp2.ctx);
 
 // ── Travel RP → Visualizers (band exits) ──────────────────────────────────
 await page.click('.chrome-nav a[href*="crit-visualizer"]');
@@ -198,7 +240,7 @@ await page.click('.chrome-nav a[href*="rotation-planner"]');
 await page.waitForTimeout(1500);
 const rp3 = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
-	const anchor = document.querySelector('.rp-bench-anchor');
+	const anchor = document.querySelector('.rp-ribbon-dock');
 	const b = band?.getBoundingClientRect();
 	const a = anchor?.getBoundingClientRect();
 	return { visible: getComputedStyle(band).visibility === 'visible', b, a };
@@ -209,41 +251,35 @@ check(
 	JSON.stringify({ b: rp3.b, a: rp3.a })
 );
 
-// ── Short viewport: the TB bench zone scrolls; the band mirrors + clips ────
+// ── Short viewport: ribbon is fixed; the TB facts scroll BELOW it ──────────
 const page2 = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 await page2.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 await page2.waitForTimeout(600);
-// Fill the team so facts render below the dock and force zone overflow.
-await page2.evaluate(() => {
-	const zone = document.querySelector('[data-bench-scroll]');
-	if (zone) zone.scrollTop = 60;
-});
-await page2.waitForTimeout(300);
-const scrolled = await page2.evaluate(() => {
-	const zone = document.querySelector('[data-bench-scroll]');
+const short = await page2.evaluate(() => {
+	const zone = document.querySelector('.bn');
 	const band = document.querySelector('.bench-band-mount');
-	const anchor = document.querySelector('.bn [data-bench-anchor]');
 	const b = band?.getBoundingClientRect();
+	const anchor = document.querySelector('.tb-frame [data-bench-anchor]');
 	const a = anchor?.getBoundingClientRect();
 	return {
-		scrollTop: zone?.scrollTop ?? 0,
-		scrollable: zone ? zone.scrollHeight > zone.clientHeight : false,
 		bandY: b?.y,
 		anchorY: a?.y,
-		clip: band?.style.clipPath ?? ''
+		clip: band?.style.clipPath ?? '',
+		zonePadTop: zone ? parseFloat(getComputedStyle(zone).paddingTop) : 0
 	};
 });
 console.log('Short viewport (720p) TB:');
-if (scrolled.scrollable) {
-	check(
-		'band follows the zone scroll',
-		Math.abs((scrolled.bandY ?? 0) - (scrolled.anchorY ?? 1)) <= 1,
-		JSON.stringify(scrolled)
-	);
-	check('band clips to the zone viewport', scrolled.clip.includes('inset'), scrolled.clip);
-} else {
-	check('zone scrollable at 720p (precondition)', false, JSON.stringify(scrolled));
-}
+check(
+	'ribbon stays docked (no scroll coupling)',
+	Math.abs((short.bandY ?? 0) - (short.anchorY ?? 1)) <= 1,
+	JSON.stringify(short)
+);
+check('no clip-path on the ribbon (machinery retired)', short.clip === '', short.clip);
+check(
+	'TB zone scroll viewport starts below the ribbon',
+	short.zonePadTop >= 680,
+	String(short.zonePadTop)
+);
 
 await browser.close();
 console.log(failures === 0 ? '\nALL PASSED' : `\n${failures} FAILURES`);

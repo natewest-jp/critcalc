@@ -120,12 +120,15 @@ check(
 // keeps its width, so the only visible symptom is the portrait drifting right
 // the moment a slot is filled. Measure empty vs filled and require both to
 // match the zone.
+// The card's container is the RIBBON now (ribbon round) — its content box is
+// what the card must fit, not the TB zone (which is just the tucked-under
+// region beneath the ribbon).
 const cardBox = async () =>
 	await page.evaluate(() => {
-		const bn = document.querySelector('.bn');
+		const ribbon = document.querySelector('.bench-band-mount .bb');
 		const card = document.querySelector('.bench-band-mount .sp-card');
-		const cs = getComputedStyle(bn);
-		const inner = bn.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+		const cs = getComputedStyle(ribbon);
+		const inner = ribbon.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
 		return { card: Math.round(card.getBoundingClientRect().width), inner: Math.round(inner) };
 	});
 const emptyCard = await cardBox();

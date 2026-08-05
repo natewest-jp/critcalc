@@ -38,21 +38,27 @@ const borderOf = () =>
 	page.evaluate(
 		() => getComputedStyle(document.querySelector('.rp-notation .cm-editor')).borderTopColor
 	);
+// The exact line color belongs to the color rounds (the old #1c2a4a pin went
+// stale when the dire retirement re-derived --frame-line) — assert the
+// three-state MACHINE instead: resting and focused share the line color,
+// hover departs to a half-alpha accent.
 const restingBorder = await borderOf();
-check('border resting = graph line color', restingBorder === 'rgb(28, 42, 74)', restingBorder);
 await page.hover('.rp-notation .cm-editor');
 await page.waitForTimeout(300); // let the 150ms border-color transition settle
 const hoverBorder = await borderOf();
-// Computed as color(srgb 0.851 0.069 0.33 / 0.5) — dire's channels at half alpha
 check(
-	'border hover = dire at 50%',
-	(hoverBorder ?? '').includes('/ 0.5') && (hoverBorder ?? '').includes('0.85'),
+	'border hover departs at half alpha',
+	(hoverBorder ?? '').includes('/ 0.5') && hoverBorder !== restingBorder,
 	hoverBorder
 );
 await page.click('.cm-content'); // focus (mouse still over the box)
 await page.waitForTimeout(300); // transition settle
 const focusBorder = await borderOf();
-check('border focused = back to line color', focusBorder === 'rgb(28, 42, 74)', focusBorder);
+check(
+	'border focused returns to the resting line color',
+	focusBorder === restingBorder && focusBorder !== hoverBorder,
+	`resting=${restingBorder} focused=${focusBorder}`
+);
 
 // Type a rotation that exercises lanes + caveats
 await page.keyboard.type('Furina E Q > Bennett E Q N2 > Xingqiu E Q', { delay: 25 });

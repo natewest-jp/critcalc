@@ -89,8 +89,11 @@ check(
 	''
 );
 check(
-	'TB→RP: incoming RP entered from the RIGHT',
-	Math.max(...inc.map((p) => p.tx)) > VW - 100,
+	// Rigid-sheet legs (ribbon round): RP↔TB pans the dock-to-dock distance
+	// (< 100vw — the ribbon + tools move as one body), so the entry offset is
+	// the sheet distance, not the full viewport.
+	'TB→RP: incoming RP entered from the RIGHT (sheet distance)',
+	Math.max(...inc.map((p) => p.tx)) > VW * 0.75,
 	`max tx=${Math.max(...inc.map((p) => p.tx))}`
 );
 const rpFinal = inc[inc.length - 1];
@@ -109,8 +112,8 @@ check(
 	`max tx=${Math.max(...out.map((p) => p.tx))}`
 );
 check(
-	'RP→TB: incoming TB entered from the LEFT',
-	Math.min(...inc.map((p) => p.tx)) < -(VW - 100),
+	'RP→TB: incoming TB entered from the LEFT (sheet distance)',
+	Math.min(...inc.map((p) => p.tx)) < -VW * 0.75,
 	`min tx=${Math.min(...inc.map((p) => p.tx))}`
 );
 

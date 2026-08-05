@@ -1,27 +1,35 @@
 <script lang="ts">
 	/**
-	 * BenchBand — THE bench: the four slot cards of the working team, rendered
-	 * ONCE at the (tools) layout level and docked over each tool's reserved
-	 * gutter (planner LEFT, Team Builder RIGHT). The layout owns its position
-	 * and travel; this component owns its content.
+	 * BenchBand — THE bench RIBBON: a self-contained box holding the four slot
+	 * cards of the working team, rendered ONCE at the (tools) layout level and
+	 * docked over each tool's [data-bench-anchor] (planner LEFT, Team Builder
+	 * RIGHT — the tool frames tuck beneath its edges as loose siblings). The
+	 * layout owns its position and travel; this component owns its content.
 	 *
 	 * - The team is the shared working team (rotationTabs.slots — the
 	 *   planner's active tab). Constellation/loadout edits here ALWAYS write
 	 *   Layer 2 (the tab's overrides): the bench is the plan's team editor in
 	 *   both tools. The TB roster grid + Detail card remain the Layer-1
 	 *   editors.
-	 * - `mode` is the tool the band is (or is becoming) docked to. It sets the
-	 *   color context (the planner frame is ctx-dark, the TB frame ctx-light),
+	 * - ONE identity everywhere: always the dark context, its own ground and
+	 *   border (the per-tool ctx flip retired with the ribbon round).
+	 * - `mode` is the tool the ribbon is (or is becoming) docked to. It sets
 	 *   the card heights (planner: coupled to the timeline's published slot
-	 *   metrics; TB: the even resting rhythm) and the per-tool affordances
-	 *   (TB: audition/remove actions; planner: portrait opens the Source).
+	 *   metrics; TB: the even resting rhythm) and the ⇄ action's meaning
+	 *   (audition on the TB; open the Source on the planner).
 	 * - Height changes animate only while `traveling` (the layout flips it for
 	 *   the pan's duration, passing the shared clock in) — mid-session metric
 	 *   changes on the planner snap, so cards never lag their track groups.
 	 */
 	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
-	import { benchBand, BENCH_CARD_W, BENCH_SLOT_H } from '$lib/benchBand.svelte';
+	import {
+		benchBand,
+		BENCH_SLOT_H,
+		RIBBON_PAD,
+		RIBBON_BORDER,
+		RIBBON_W
+	} from '$lib/benchBand.svelte';
 	import { constellations, loadout, type LoadoutEntry } from '$lib/stores';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 
@@ -88,13 +96,16 @@
 	}
 </script>
 
-<!-- The band paints its docked frame's own ground (per context), so at rest
-     it is indistinguishable from the frame zone beneath it and mid-flight it
-     carries its surface with it. -->
+<!-- The RIBBON: a self-contained box with its own ground, border and radius —
+     ONE identity in both tools (always the dark context; the per-tool ctx
+     flip retired with the frame-zone model). The tool frames are loose
+     siblings tucked under its edges. Interior styling is interim — the card
+     redesign (Nate's mockup) is its own follow-up round. -->
 <div
-	class="bb {mode === 'rp' ? 'ctx-dark' : 'ctx-light'}"
-	class:bb--rp={mode === 'rp'}
-	style:width="{BENCH_CARD_W}px"
+	class="bb ctx-dark"
+	style:width="{RIBBON_W}px"
+	style:padding="{RIBBON_PAD}px"
+	style:border-width="{RIBBON_BORDER}px"
 	style:--bb-height-transition={traveling ? `height ${travelMs}ms ${travelEase}` : 'none'}
 >
 	{#each rt.slots as _id, i (i)}
@@ -115,14 +126,23 @@
 				emptyLabel=""
 			>
 				{#snippet actions()}
-					{#if mode === 'tb' && tbHost && char && char.id !== 'blank'}
-						<!-- SlotPortrait pins the first action to the pill's left and the
-						     last to its right (display:contents + order). -->
+					{#if char && char.id !== 'blank'}
+						<!-- Uniform action set (Nate 2026-08-05): ✕ removes everywhere;
+						     ⇄ auditions on the TB but opens the character Source on the
+						     planner (stays in-tool). SlotPortrait pins the first action
+						     to the pill's left and the last to its right
+						     (display:contents + order). -->
 						<button
 							class="bb-act"
-							onclick={() => char && tbHost?.onAudition(i, char.id)}
-							title="Compare {char.displayName} against replacements"
-							aria-label="Audition replacements for {char.displayName}">⇄</button
+							onclick={() =>
+								char &&
+								(mode === 'rp' ? rpHost?.onPortraitClick() : tbHost?.onAudition(i, char.id))}
+							title={mode === 'rp'
+								? 'Change who fills this slot'
+								: `Compare ${char.displayName} against replacements`}
+							aria-label={mode === 'rp'
+								? 'Change who fills this slot'
+								: `Audition replacements for ${char.displayName}`}>⇄</button
 						>
 						<button
 							class="bb-act bb-act--remove"
@@ -138,15 +158,19 @@
 </div>
 
 <style>
+	/* The ribbon box: its OWN surface — the dark context's panel ground, a
+	   frame-line border and the 9px radius — one identity everywhere. Width,
+	   padding and border-width come inline from the RIBBON_* knobs so the dock
+	   math and the box always agree. INTERIM styling: the mockup's interior
+	   (ringed portrait, chip row) is the follow-up card round's. */
 	.bb {
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		/* The TB frame's ground (ctx-light --frame-bg) — overridden for the
-		   planner below, whose frame wears the dark context's raised rung. */
 		background: var(--frame-bg);
-	}
-	.bb--rp {
-		background: var(--surface-raised);
+		border-style: solid;
+		border-color: var(--frame-line);
+		border-radius: 9px;
 	}
 
 	.bb-slot {
@@ -157,17 +181,12 @@
 		box-sizing: border-box;
 		transition: var(--bb-height-transition, none);
 	}
-	/* Dividers ride the frame-line token in both contexts. TB look: between
-	   cards only; planner look: under every card (the 4th separates the cards
-	   from the lane labels sliding beneath), mirroring the chart's row
-	   separators. Borders paint INSIDE the border-box heights, so the column
-	   total equals the sum the anchors reserve. */
+	/* Dividers between cards only — the ribbon's own bottom chrome closes the
+	   box (no trailing separator toward lane labels; the ribbon is
+	   self-contained now). Borders paint INSIDE the border-box heights, so
+	   card k's top stays at the cumulative sum the track groups use. */
 	.bb-slot + .bb-slot {
 		border-top: 1px solid var(--frame-line);
-	}
-	.bb--rp .bb-slot {
-		border-top: none;
-		border-bottom: 1px solid var(--frame-line);
 	}
 
 	/* Slot actions (audition/remove) — the card's shared capsule treatment at

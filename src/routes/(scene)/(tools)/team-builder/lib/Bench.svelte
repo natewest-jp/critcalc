@@ -4,7 +4,10 @@
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import { deriveCoverage, deriveResonances, type TeamSlot } from './team';
 	import type { FacetKey } from './facets';
-	import { BENCH_COLUMN_H } from '$lib/benchBand.svelte';
+	import { RIBBON_TOP_OFFSET, RIBBON_RESTING_H } from '$lib/benchBand.svelte';
+
+	/** Breathing room between the ribbon's bottom edge and the facts strip. */
+	const RIBBON_FACTS_GAP = 9;
 
 	let {
 		slots,
@@ -42,16 +45,17 @@
      portrait column sits inside .rp-frame — the two are mirror images at the
      tool-slide seam. No kicker, no empty-state copy: four empty slot cards
      ARE the explanation, same as the planner's. -->
-<!-- data-bench-scroll: this zone scrolls internally at short viewports; the
-     layout mirrors its scroll into the floating band and clips the band to
-     this zone's viewport. -->
-<section class="bn" aria-label="Team" data-bench-scroll>
-	<!-- The bench band's DOCK: the shared slot-card column (BenchBand, rendered
-	     at the tools-layout level) floats exactly over this spacer — the cards
-	     left this component in the bench-band round. The spacer reserves the
-	     band's resting footprint so the facts below flow under the cards. -->
-	<div class="bn-dock" data-bench-anchor style:height="{BENCH_COLUMN_H}px"></div>
-
+<!-- The RIBBON (the self-contained bench box) floats over this zone; its dock
+     anchor lives on .tb-frame now, not in here. The zone's own scroll
+     viewport starts BELOW the ribbon's resting extent (padding-top from the
+     ribbon constants), so the facts scroll in the visible strip beneath it
+     and never disappear under the opaque box — which is also what retired the
+     old scroll-mirror/clip machinery. -->
+<section
+	class="bn"
+	aria-label="Team"
+	style:padding-top="{RIBBON_TOP_OFFSET + RIBBON_RESTING_H + RIBBON_FACTS_GAP}px"
+>
 	{#if filledCount > 0}
 		<div class="bn-factrow">
 			{#if resonance.needsFullTeam}
@@ -114,11 +118,6 @@
 		gap: 0.7rem;
 		padding: 10px 12px 10px;
 		align-content: start;
-	}
-
-	/* The dock is pure reserved space — the band paints the cards. */
-	.bn-dock {
-		flex-shrink: 0;
 	}
 
 	.bn-clear {

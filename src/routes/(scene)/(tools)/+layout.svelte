@@ -133,11 +133,13 @@
 	// TOOLS order (TB / RP / Visualizers), so a tool→tool navigation PANS the
 	// page-layer pair sideways instead of cross-fading — the outgoing page exits
 	// toward its own side of the order and the incoming one sweeps in from the
-	// other, edges passing at the seam (the TB bench and the RP portrait column
-	// mirror each other there — the continuity the pan implies). Same paint/
+	// other, edges passing at the seam. Same paint/
 	// settle gating as the fade; transform-only, so it stays compositor-side.
-	// Both layers ride 100vw (the layer width), leaving a constant 2×pad gutter
-	// between them mid-pan — reads as panels with a gap, by design.
+	// Distances (ribbon round, 2026-08-05): RP↔TB legs ride the RIBBON's
+	// dock-to-dock distance — the ribbon sits at the seam of the virtual sheet
+	// [atlas | ribbon | timeline], so ribbon and both tools pan as one rigid
+	// body (see the panDist derivation in afterNavigate). Legs to/from the
+	// Visualizers (no ribbon) ride the full viewport width as before.
 	// A full-viewport pan wants to read as a camera move, not a snap — but the
 	// first tuning (1200ms, a gentler in-out) overshot into sluggish, so the
 	// retune (Nate 2026-07-26) cut a third off the clock AND front-loaded the
@@ -206,51 +208,21 @@
 		return { x: ar.left - mr.left - tx, y: ar.top - mr.top, anchorEl: anchor };
 	}
 
-	// The dock's own scroll container (the TB bench zone scrolls internally at
-	// short viewports; the planner's dock rides the page scroll and has none).
-	// A scroll only re-runs snapBench — the anchor rect carries the offset.
-	let benchScroller: HTMLElement | null = null;
-	let benchScrollRaf = 0;
-	function onBenchScroll() {
-		if (benchScrollRaf) return;
-		benchScrollRaf = requestAnimationFrame(() => {
-			benchScrollRaf = 0;
-			snapBench();
-		});
-	}
-	function bindBenchScroller(anchorEl: HTMLElement | null) {
-		const next = anchorEl?.closest<HTMLElement>('[data-bench-scroll]') ?? null;
-		if (next === benchScroller) return;
-		benchScroller?.removeEventListener('scroll', onBenchScroll);
-		benchScroller = next;
-		benchScroller?.addEventListener('scroll', onBenchScroll, { passive: true });
-	}
-
-	/** Park the band on the current page's anchor, untransitioned. The no-anchor
-	 *  case (Visualizers, or a page that hasn't rendered yet) hides it. When the
-	 *  dock lives in a scrolling zone, clip the band to the zone's viewport —
-	 *  the band floats OVER the zone, so it must not poke past the frame edges
-	 *  the zone's own overflow would have clipped it to. */
+	/** Park the ribbon on the current page's dock, untransitioned. The no-dock
+	 *  case (Visualizers, or a page that hasn't rendered yet) hides it. The
+	 *  ribbon is a self-contained sibling now — it never scrolls or clips with
+	 *  a frame zone (the TB zone starts its own scroll viewport BELOW the
+	 *  ribbon instead; the old scroll-mirror/clip machinery retired with the
+	 *  ribbon round). */
 	function snapBench() {
 		if (!benchMount) return;
 		const a = measureBenchAnchor(page.url.pathname);
 		if (!a) {
-			bindBenchScroller(null);
 			benchVisible = false;
 			return;
 		}
-		bindBenchScroller(a.anchorEl);
 		benchMount.style.transition = 'none';
 		benchMount.style.transform = `translate(${a.x}px, ${a.y}px)`;
-		let clip = '';
-		if (benchScroller) {
-			const sr = benchScroller.getBoundingClientRect();
-			const ar = a.anchorEl.getBoundingClientRect();
-			const clipTop = Math.max(0, sr.top - ar.top);
-			const clipBottom = Math.max(0, ar.top + benchMount.offsetHeight - sr.bottom);
-			if (clipTop > 0 || clipBottom > 0) clip = `inset(${clipTop}px 0 ${clipBottom}px 0)`;
-		}
-		benchMount.style.clipPath = clip;
 		benchVisible = true;
 	}
 
@@ -262,25 +234,24 @@
 		return { x: parseFloat(parts[4]) || 0, y: parseFloat(parts[5]) || 0 };
 	}
 
-	/** The band's leg of a tool pan — called from startFade so it rides the
-	 *  exact same clock as the page layers.
-	 *  - both tools benched → glide from the current dock to the new one
-	 *  - into a benched tool → enter glued to the incoming page's motion
-	 *  - out of benched tools → exit glued to the outgoing page's motion */
-	function travelBench(dir: number, path: string) {
+	/** The ribbon's leg of a tool pan — called from startFade so it rides the
+	 *  exact same clock AND the same distance as the page layers (the rigid
+	 *  sheet: on RP↔TB legs `panDist` is the dock-to-dock distance, so the
+	 *  ribbon has zero motion relative to either tool).
+	 *  - both tools docked → glide from the current dock to the new one
+	 *  - into a docked tool → enter glued to the incoming page's motion
+	 *  - out of docked tools → exit glued to the outgoing page's motion */
+	function travelBench(dir: number, path: string, panDist: number) {
 		if (!benchMount) return;
 		const target = measureBenchAnchor(path);
 		const glide = `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
 		clearTimeout(benchTravelTimer);
-		// The band flies free of any zone clip; snapBench restores it on arrival.
-		benchMount.style.clipPath = '';
-		bindBenchScroller(null);
 		if (target) {
 			if (!benchVisible) {
 				// Enter riding the incoming layer: park at the dock displaced by the
 				// layer's own parked offset, then release on the shared clock.
 				benchMount.style.transition = 'none';
-				benchMount.style.transform = `translate(${target.x + dir * window.innerWidth}px, ${target.y}px)`;
+				benchMount.style.transform = `translate(${target.x + dir * panDist}px, ${target.y}px)`;
 				void benchMount.getBoundingClientRect(); // flush the park before transitioning
 				benchVisible = true;
 			}
@@ -289,16 +260,15 @@
 			benchTraveling = true;
 			benchTravelTimer = setTimeout(() => {
 				benchTraveling = false;
-				// Re-dock precisely (layout may have settled further) and restore
-				// the zone clip + scroll binding at the new dock.
+				// Re-dock precisely (layout may have settled further).
 				snapBench();
 			}, SLIDE_MS + 100);
 		} else if (benchVisible) {
 			// Exit with the pan: the same delta the outgoing layer travels, so the
-			// band reads as still docked to its departing frame.
+			// ribbon reads as still docked to its departing frame.
 			const cur = benchCurrentXY();
 			benchMount.style.transition = dir ? glide : 'none';
-			benchMount.style.transform = `translate(${cur.x - dir * window.innerWidth}px, ${cur.y}px)`;
+			benchMount.style.transform = `translate(${cur.x - dir * panDist}px, ${cur.y}px)`;
 			benchTravelTimer = setTimeout(() => {
 				if (!measureBenchAnchor(page.url.pathname)) benchVisible = false;
 			}, SLIDE_MS + 100);
@@ -384,9 +354,25 @@
 		// Pan direction from the tool order: +1 = destination lies to the RIGHT
 		// (content sweeps left), −1 mirrored, 0 = either side unknown → the
 		// plain cross-fade handles it.
-		const fromIdx = toolIndex(nav.from?.url.pathname);
+		const fromPath = nav.from?.url.pathname ?? '';
+		const fromIdx = toolIndex(fromPath);
 		const toIdx = toolIndex(path);
 		const dir = fromIdx >= 0 && toIdx >= 0 ? Math.sign(toIdx - fromIdx) : 0;
+
+		// Pan distance (ribbon round): when BOTH legs dock the ribbon (RP↔TB),
+		// the pages translate by the dock-to-dock distance instead of 100vw —
+		// the ribbon sits at the SEAM of the virtual sheet [atlas|ribbon|
+		// timeline], so ribbon and both tools move as ONE rigid body and the
+		// ribbon lands with zero motion relative to its siblings. The price is
+		// a deliberate overlap: each page carries its own copy of the
+		// under-ribbon dock region, so mid-pan the incoming page's dock strip
+		// rides above the outgoing's (z below) — both are tucked-under frame
+		// edges, and the ribbon covers most of the overlap. Legs to/from
+		// Visualizers (no dock) keep the full-viewport distance. Docks are
+		// measured BEFORE any parking so both layers read untransformed.
+		const fromDock = dir ? measureBenchAnchor(fromPath) : null;
+		const toDock = dir ? measureBenchAnchor(path) : null;
+		const panDist = dir && fromDock && toDock ? Math.abs(toDock.x - fromDock.x) : window.innerWidth;
 
 		// Freeze the incoming layer BEFORE the first paint of the new route: a
 		// fresh mount starts hidden; a revived layer (caught mid-fade-out) holds
@@ -406,17 +392,25 @@
 		incoming.style.willChange = dir ? 'transform, opacity' : 'opacity';
 		incoming.style.transition = 'none';
 		if (dir) {
-			// Slide mode: a fresh mount parks off-screen on its entry side; a
+			// Slide mode: a fresh mount parks off-screen (or, on a rigid-sheet
+			// leg, at the sheet distance — its dock strip pre-overlaps the
+			// outgoing page, invisible at opacity 0.001) on its entry side; a
 			// revived layer (caught mid-slide-out) resumes from wherever its
 			// matrix is right now instead of teleporting to the edge.
 			incoming.style.transform =
 				incoming.style.transform === ''
-					? `translateX(${dir * 100}vw)`
+					? `translateX(${dir * panDist}px)`
 					: getComputedStyle(incoming).transform;
+			// Rigid-sheet legs OVERLAP the layers mid-pan; the incoming page
+			// rides above so the shared dock region reads as one surface.
+			incoming.style.zIndex = '2';
 		}
 		incoming.style.opacity =
 			incoming.style.opacity === '' ? '0.001' : getComputedStyle(incoming).opacity;
-		for (const o of outgoing) o.style.willChange = dir ? 'transform' : 'opacity';
+		for (const o of outgoing) {
+			o.style.willChange = dir ? 'transform' : 'opacity';
+			if (dir) o.style.zIndex = '1';
+		}
 
 		// Paint-gate + settle-gate. The first rAF ticks put us past the new
 		// route's first paint; then keep watching frame gaps until the main
@@ -432,8 +426,8 @@
 		let lastTs = 0;
 		let quietFrames = 0;
 		const startFade = () => {
-			// The bench band's leg rides the exact same clock as the layers.
-			travelBench(dir, path);
+			// The ribbon's leg rides the exact same clock + distance as the layers.
+			travelBench(dir, path, panDist);
 			if (dir) {
 				// The pan. Opacity JUMPS to 1 untransitioned — the layer is still
 				// off-screen (or mid-slide) when it happens, so there's no pop;
@@ -454,13 +448,19 @@
 					// layer where a later revival would correctly enter from.
 					const oIdx = toolIndex(o.dataset.page);
 					const side = (oIdx >= 0 ? Math.sign(oIdx - toIdx) : 0) || -dir;
+					// The TRUE outgoing page exits by the sheet distance (it stays
+					// rigid with the ribbon; on a rigid-sheet leg its dock strip
+					// remains under the ribbon at settle, parked out fully by the
+					// settle pass below). Stale third layers park at the full
+					// viewport width — they must actually leave.
+					const dist = o.dataset.page === fromPath ? panDist : window.innerWidth;
 					// Already off-screen → park instantly; only layers currently
 					// in (or partway across) the viewport get the animated exit.
 					const cs = getComputedStyle(o).transform;
 					const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
 					const offscreen = Math.abs(tx) >= window.innerWidth - 1;
 					o.style.transition = offscreen ? 'none' : `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
-					o.style.transform = `translateX(${side * 100}vw)`;
+					o.style.transform = `translateX(${side * dist}px)`;
 					if (offscreen) o.style.willChange = '';
 				}
 			} else {
@@ -475,13 +475,31 @@
 			// De-promote the settled layer once the motion is over — but only if
 			// this navigation still owns it (a newer pass re-promotes and
 			// re-times). The transform/transition also clear so the settled page
-			// is a plain static layer again.
+			// is a plain static layer again. On rigid-sheet legs the outgoing
+			// page only traveled the sheet distance — its dock strip is still
+			// on-screen beneath the ribbon — so the settle pass parks every
+			// outgoing layer the rest of the way out (untransitioned; the strip
+			// it vacates is covered by the incoming page's own dock).
 			setTimeout(
 				() => {
 					if (page.url.pathname === path && incoming.isConnected) {
 						incoming.style.willChange = '';
 						incoming.style.transform = '';
 						incoming.style.transition = '';
+						incoming.style.zIndex = '';
+					}
+					if (page.url.pathname !== path) return;
+					for (const o of outgoing) {
+						if (!o.isConnected) continue;
+						const oIdx = toolIndex(o.dataset.page);
+						const side = (oIdx >= 0 ? Math.sign(oIdx - toIdx) : 0) || -dir;
+						const cs = getComputedStyle(o).transform;
+						const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
+						if (dir && Math.abs(tx) < window.innerWidth - 1) {
+							o.style.transition = 'none';
+							o.style.transform = `translateX(${side * window.innerWidth}px)`;
+						}
+						o.style.zIndex = '';
 					}
 				},
 				(dir ? SLIDE_MS : XFADE_MS) + 100

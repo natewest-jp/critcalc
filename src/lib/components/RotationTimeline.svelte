@@ -13,7 +13,7 @@
 	import { artifactImagePath } from '$lib/data/artifactLookup';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
-	import { benchBand } from '$lib/benchBand.svelte';
+	import { benchBand, RIBBON_W, RIBBON_CHROME_Y, RIBBON_LANES_CLEAR } from '$lib/benchBand.svelte';
 	import { onDestroy } from 'svelte';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
 	import {
@@ -680,11 +680,12 @@
 		return `left:${x}px;top:${yTop}px;width:${w}px;height:${yBottom - yTop}px;border-radius:${radius}`;
 	}
 
-	// Full content height of the track area (ruler + slots + lanes) — sizes
-	// the PNG export canvas.
+	// Full content height of the track area (ruler + slots + ribbon clearance +
+	// lanes) — sizes the PNG export canvas.
 	let contentH = $derived(
 		RULER_H +
 			characterSlots.reduce((acc, _id, i) => acc + slotBlockH(i), 0) +
+			RIBBON_LANES_CLEAR +
 			teamBuffsH +
 			(teamComp.natlanCount >= 1 ? nbLaneH : 0) +
 			(teamComp.hasAscendantGleam ? moonsignLaneH : 0)
@@ -698,7 +699,9 @@
 
 	function buildSnapshot(): TimelineSnapshot {
 		const laneStride = AUX_LANE_BAR_STRIDE;
-		const slotsBottom = slotTopOffsets[3] + slotBlockH(3);
+		// Lanes sit below the ribbon-clearance gap (the DOM inserts the same
+		// spacer between the 4th track group and the team-buffs lane).
+		const slotsBottom = slotTopOffsets[3] + slotBlockH(3) + RIBBON_LANES_CLEAR;
 		const nbVisible = teamComp.natlanCount >= 1;
 		const moonVisible = teamComp.hasAscendantGleam;
 		const teamNames = slotCharacters
@@ -1041,6 +1044,26 @@
 	     pair) on the BOTTOM edge — the chat-app register: you write at the
 	     bottom, the conversation renders above. -->
 	<div class="rp-frame frame" class:rp-frame--picking={sourceOpen}>
+		<!-- The RIBBON's dock: an invisible, ribbon-sized anchor the tools
+		     layout measures to place the bench box. Geometry contract:
+		     · right edge = the track area's left edge (the timeline extends
+		       out from underneath the ribbon — the frame's label column is
+		       tucked fully beneath it, and the ribbon overhangs the frame's
+		       left edge by its own chrome)
+		     · card column top (dock top + RIBBON_CHROME_Y) = the track rows'
+		       top, so cards align to their track groups
+		     · top offset from the frame is the SAME constant the TB uses
+		       (RIBBON_TOP_OFFSET) — zero vertical travel across the pan.
+		     Absolute insets resolve against the frame's PADDING box (the
+		     documented trap), and the 10px matches .rp-frame's padding-top. -->
+		<div
+			class="rp-ribbon-dock"
+			data-bench-anchor
+			style:left="calc(var(--rp-frame-pad-x) + var(--rp-bench-w) - {RIBBON_W}px)"
+			style:top="{10 + RULER_H - RIBBON_CHROME_Y}px"
+			style:width="{RIBBON_W}px"
+			style:height="{2 * RIBBON_CHROME_Y + slotTopOffsets[3] + slotBlockH(3)}px"
+		></div>
 		<!-- ── Ruler strip (full frame width, ABOVE the track area) ── -->
 		<!-- Its own row so the notes panel can never push it: the ruler
 		     viewport is a scroll FOLLOWER (overflow hidden, mirrored from the
@@ -1122,17 +1145,19 @@
 			<div class="rp-scroll-wrapper">
 				<!-- Left label column (sticky, non-scrolling) -->
 				<div class="rp-label-col">
-					<!-- The bench band's DOCK (bench-band round): the shared slot-card
-					     column renders at the (tools) layout level and floats exactly
-					     over these cells, which only reserve its footprint — per-slot
-					     heights so the anchor's geometry IS the track groups'. The band
-					     reads the same heights from the published slot metrics; both
-					     sides derive from slotBlockH, never from each other's DOM. -->
-					<div class="rp-bench-anchor" data-bench-anchor>
-						{#each characterSlots as _slotId, i (i)}
-							<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px"></div>
-						{/each}
-					</div>
+					<!-- The label cells only reserve the track groups' vertical rhythm
+					     now — the RIBBON (the self-contained bench box at the tools
+					     layout level) floats over this column, its dock positioned by
+					     the absolute anchor below the timeline area. Both derive from
+					     slotBlockH, never from each other's DOM. -->
+					{#each characterSlots as _slotId, i (i)}
+						<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px"></div>
+					{/each}
+
+					<!-- Ribbon bottom-chrome clearance: the lanes (and their labels)
+					     start below the ribbon's closing edge. Mirrors the tracks-side
+					     spacer. -->
+					<div class="rp-lane-clear" style:height="{RIBBON_LANES_CLEAR}px"></div>
 
 					{#if sourceOpen}
 						<!-- ← Explore alternatives is tied to the picker, not the main
@@ -1536,6 +1561,10 @@
 								{/each}
 							</div>
 						{/each}
+
+						<!-- Ribbon bottom-chrome clearance (mirrors the label column's) —
+							 the lanes start below the ribbon box's closing edge. -->
+						<div class="rp-lane-clear" style:height="{RIBBON_LANES_CLEAR}px"></div>
 
 						<!-- Team buffs row. When there are no buffs the lane stays present
 							 (same height) but renders nothing — the hidden header carries
@@ -2085,6 +2114,18 @@
 		color: var(--muted);
 		text-align: right;
 		line-height: var(--lh-snug);
+	}
+
+	/* The ribbon's dock — measured by the tools layout, never painted. */
+	.rp-ribbon-dock {
+		position: absolute;
+		pointer-events: none;
+		visibility: hidden;
+	}
+
+	/* Ribbon-clearance spacer (label column + tracks both carry one). */
+	.rp-lane-clear {
+		flex-shrink: 0;
 	}
 
 	/* ── Character label cell — the bench band's reserved footprint ─── */
