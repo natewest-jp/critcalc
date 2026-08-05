@@ -95,23 +95,25 @@ await page.screenshot({ path: `${SHOTS}/band-rp.png` });
 
 // ── Travel RP → TB ─────────────────────────────────────────────────────────
 const rpDockX = rp.bandRect?.x ?? 0;
+// Record the ribbon's x every frame across the navigation: screen-locked HUD —
+// it must NEVER move between two docked tools (world-locked fade round).
+await page.evaluate(() => {
+	window.__bandXs = [];
+	const rec = () => {
+		window.__bandXs.push(document.querySelector('.bench-band-mount').getBoundingClientRect().x);
+		if (!window.__bandStop) requestAnimationFrame(rec);
+	};
+	requestAnimationFrame(rec);
+});
 await page.click('.chrome-nav a[href*="team-builder"]');
-await page.waitForTimeout(1200); // mid-flight (scene-clock slide: 2400ms)
+await page.waitForTimeout(1200); // mid-transition (world clock: 2400ms)
 const mid = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
 	const b = band.getBoundingClientRect();
-	// Rigid-sheet assert: (ribbon x) − (incoming layer's translateX) must equal
-	// the destination dock's resting x for the WHOLE flight — the ribbon is
-	// rigidly attached to the sheet, no relative motion.
-	const incoming = [...document.querySelectorAll('.tool-page')].find(
-		(p) => p.dataset.page === '/team-builder'
-	);
-	const cs = incoming ? getComputedStyle(incoming).transform : 'none';
-	const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
-	return { x: b.x, tx, visible: getComputedStyle(band).visibility === 'visible' };
+	return { x: b.x, visible: getComputedStyle(band).visibility === 'visible' };
 });
 await page.screenshot({ path: `${SHOTS}/band-midflight.png` });
-await page.waitForTimeout(2400); // settle (slide 2400 + settle pass)
+await page.waitForTimeout(2600); // settle (world clock 2400 + fade tail + settle pass)
 
 const tb = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
@@ -134,23 +136,27 @@ const tb = await page.evaluate(() => {
 		factsTop: document.querySelector('.bn-factrow')?.getBoundingClientRect().top ?? null
 	};
 });
-console.log('TB (after travel):');
+const bandXs = await page.evaluate(() => {
+	window.__bandStop = true;
+	return window.__bandXs;
+});
+console.log('TB (after the fade):');
 check('band visible on TB', !!tb.visible);
-check('band traveled (mid-flight x between docks)', mid.visible && mid.x > 100, String(mid.x));
 check(
-	'rigid sheet: ribbon glued to the incoming layer mid-flight',
-	tb.bandRect && Math.abs(mid.x - mid.tx - tb.bandRect.x) <= 2,
-	JSON.stringify({ midX: mid.x, midTx: mid.tx, dockX: tb.bandRect?.x })
+	'ribbon NEVER moves across RP↔TB (screen-locked HUD)',
+	mid.visible && bandXs.length > 0 && bandXs.every((x) => Math.abs(x - rpDockX) <= 1),
+	`x range ${Math.min(...bandXs)}..${Math.max(...bandXs)} vs dock ${rpDockX}`
 );
 check(
-	'no vertical travel: RP dock y == TB dock y',
-	rp.bandRect && tb.bandRect && Math.abs(rp.bandRect.y - tb.bandRect.y) <= 1,
-	JSON.stringify({ rpY: rp.bandRect?.y, tbY: tb.bandRect?.y })
-);
-check(
-	'pan distance = dock-to-dock (not 100vw)',
-	tb.bandRect && Math.abs(tb.bandRect.x - rpDockX) < 1500,
-	String(tb.bandRect ? tb.bandRect.x - rpDockX : NaN)
+	'both tools dock the ribbon at the SAME screen spot',
+	tb.bandRect &&
+		Math.abs(tb.bandRect.x - rpDockX) <= 1 &&
+		rp.bandRect &&
+		Math.abs(rp.bandRect.y - tb.bandRect.y) <= 1,
+	JSON.stringify({
+		rp: { x: rpDockX, y: rp.bandRect?.y },
+		tb: { x: tb.bandRect?.x, y: tb.bandRect?.y }
+	})
 );
 check(
 	'band docks on TB anchor',
@@ -160,7 +166,11 @@ check(
 		Math.abs(tb.bandRect.y - tb.anchorRect.y) <= 1,
 	JSON.stringify({ band: tb.bandRect, anchor: tb.anchorRect })
 );
-check('band on the RIGHT half on TB', tb.bandRect && tb.bandRect.x > 800, String(tb.bandRect?.x));
+check(
+	'band on the LEFT on TB (bench-left grammar)',
+	tb.bandRect && tb.bandRect.x < 400,
+	String(tb.bandRect?.x)
+);
 check(
 	'even rhythm on TB (all 158)',
 	tb.slotHeights.every((h) => Math.abs(h - 158) <= 1),
@@ -251,77 +261,53 @@ check(
 	JSON.stringify({ b: rp3.b, a: rp3.a })
 );
 
-// ── Interrupted navigation: revived layers stay glued to the ribbon ────────
-// (a) PARKED revival — settle fully, return inside the retention window. The
-// settle pass parks the outgoing layer at ±100vw; on revival it must re-park
-// at the sheet distance (≈1372 @1600), not fly in from 1600 (Nate's repro).
+// ── Interrupted navigation: the ribbon holds its spot; layers re-settle ─────
 await page.click('.chrome-nav a[href*="team-builder"]');
-await page.waitForTimeout(3400); // settled + parked, RP still retained
+await page.waitForTimeout(3600); // settled
 await page.evaluate(() => {
-	window.__rpTxs = [];
-	window.__txstop = false;
+	window.__bandXs2 = [];
+	window.__bandStop2 = false;
 	const rec = () => {
-		const el = [...document.querySelectorAll('.tool-page')].find(
-			(p) => p.dataset.page === '/rotation-planner'
-		);
-		if (el) {
-			const cs = getComputedStyle(el).transform;
-			window.__rpTxs.push(cs === 'none' ? 0 : Math.abs(parseFloat(cs.split(',')[4]) || 0));
-		}
-		if (!window.__txstop) requestAnimationFrame(rec);
+		window.__bandXs2.push(document.querySelector('.bench-band-mount').getBoundingClientRect().x);
+		if (!window.__bandStop2) requestAnimationFrame(rec);
 	};
 	requestAnimationFrame(rec);
 });
 await page.click('.chrome-nav a[href*="rotation-planner"]');
-await page.waitForTimeout(3400);
-const revived = await page.evaluate(() => {
-	window.__txstop = true;
-	return window.__rpTxs;
+await page.waitForTimeout(1100); // mid-transition
+await page.click('.chrome-nav a[href*="team-builder"]'); // interrupt: back
+await page.waitForTimeout(3600);
+const intXs = await page.evaluate(() => {
+	window.__bandStop2 = true;
+	return window.__bandXs2;
 });
-// Ignore any pre-re-park frame still at the full park (offscreen, invisible);
-// the visible entry must start at the sheet distance.
-const entryTxs = revived.filter((t) => t > 5 && t < 1590);
 console.log('Interrupted navigation:');
 check(
-	'parked revival re-enters from the sheet distance (no 100vw fly-in)',
-	entryTxs.length > 0 && Math.max(...entryTxs) <= 1400,
-	`max visible tx=${entryTxs.length ? Math.max(...entryTxs) : 'n/a'}`
+	'ribbon holds its spot through the interrupt storm',
+	intXs.length > 0 && intXs.every((x) => Math.abs(x - rpDockX) <= 1),
+	`x range ${Math.min(...intXs)}..${Math.max(...intXs)}`
 );
-
-// (b) MID-FLIGHT interrupt — reverse the pan halfway; the resumed leg must
-// stay rigid (ribbon x − incoming translateX = dock x, the glue invariant).
-await page.click('.chrome-nav a[href*="team-builder"]');
-await page.waitForTimeout(1200); // mid-flight
-await page.click('.chrome-nav a[href*="rotation-planner"]'); // interrupt: back
-await page.waitForTimeout(900); // mid resumed leg
-const glued = await page.evaluate(() => {
+const afterInt = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
-	const b = band.getBoundingClientRect();
-	const incoming = [...document.querySelectorAll('.tool-page')].find(
-		(p) => p.dataset.page === '/rotation-planner'
+	const anchor = document.querySelector('.tb-frame [data-bench-anchor]');
+	const cur = [...document.querySelectorAll('.tool-page')].find(
+		(p) => p.dataset.page === '/team-builder'
 	);
-	const cs = incoming ? getComputedStyle(incoming).transform : 'none';
-	const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
-	return { x: b.x, tx };
-});
-check(
-	'mid-flight interrupt: resumed leg stays glued to the ribbon',
-	Math.abs(glued.x - glued.tx - rpDockX) <= 2,
-	JSON.stringify({ ...glued, rpDockX })
-);
-await page.waitForTimeout(2600);
-const reDocked = await page.evaluate(() => {
-	const band = document.querySelector('.bench-band-mount');
-	const anchor = document.querySelector('.rp-ribbon-dock');
+	const cs = cur ? getComputedStyle(cur) : null;
 	return {
 		bx: band?.getBoundingClientRect().x,
-		ax: anchor?.getBoundingClientRect().x
+		ax: anchor?.getBoundingClientRect().x,
+		o: cs ? parseFloat(cs.opacity) : null,
+		t: cs?.transform
 	};
 });
 check(
-	'after the interrupt storm the ribbon re-docks exactly',
-	reDocked.bx != null && Math.abs(reDocked.bx - reDocked.ax) <= 1,
-	JSON.stringify(reDocked)
+	'after the interrupt the page settles opaque at rest under the docked ribbon',
+	afterInt.bx != null &&
+		Math.abs(afterInt.bx - afterInt.ax) <= 1 &&
+		afterInt.o === 1 &&
+		(afterInt.t === 'none' || Math.abs(parseFloat(afterInt.t.split(',')[4]) || 0) < 1),
+	JSON.stringify(afterInt)
 );
 
 // ── Short viewport: ribbon is fixed; the TB facts scroll BELOW it ──────────

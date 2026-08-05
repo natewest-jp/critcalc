@@ -1,4 +1,6 @@
-// Chunk 2 verification: tool order TB/RP/Viz + TB bench on the right edge.
+// Tool order TB/RP/Viz + TB bench zone on the LEFT edge (world-locked fade
+// round 2026-08-05: bench left · work center · filters right, one grammar in
+// both tools — the ribbon docks at the same screen spot everywhere).
 import { chromium } from 'playwright';
 
 const BASE = 'http://localhost:4998';
@@ -45,19 +47,15 @@ check(
 );
 await landing.close();
 
-// ── 1b: bench sits on the RIGHT of the source at 1600px ──────────────────
+// ── 1b: bench zone sits on the LEFT of the source at 1600px ───────────────
 const bx = await page.locator('.bn').boundingBox();
 const sx = await page.locator('.tb-source').boundingBox();
 check(
-	'bench right of source @1600',
-	bx && sx && bx.x > sx.x + sx.width - 1,
-	`bn.x=${bx?.x} source right=${sx ? sx.x + sx.width : '?'}`
+	'bench left of source @1600',
+	bx && sx && bx.x + bx.width <= sx.x + 1,
+	`bn right=${bx ? bx.x + bx.width : '?'} source.x=${sx?.x}`
 );
-check(
-	'bench holds the right edge @1600',
-	bx && Math.abs(1600 - (bx.x + bx.width)) < 80,
-	`bn right edge=${bx ? bx.x + bx.width : '?'}`
-);
+check('bench holds the left edge @1600', bx && bx.x < 80, `bn.x=${bx?.x}`);
 await page.screenshot({ path: `${SHOTS}/tb-1600.png` });
 
 // ── 1b: detail is a MODAL — opening it never reflows the source grid ─────
@@ -94,9 +92,9 @@ const cmpBox1600 = await page.locator('.cmp').boundingBox();
 const bnBox1600 = await page.locator('.bn').boundingBox();
 check('compare renders in-flow @1600', cmpPos1600 === 'static', `pos=${cmpPos1600}`);
 check(
-	'compare fills the center, left of the bench @1600',
-	cmpBox1600 && bnBox1600 && cmpBox1600.x + cmpBox1600.width <= bnBox1600.x + 1,
-	`cmp right=${cmpBox1600 ? cmpBox1600.x + cmpBox1600.width : '?'} bn.x=${bnBox1600?.x}`
+	'compare fills the center, right of the bench @1600',
+	cmpBox1600 && bnBox1600 && cmpBox1600.x >= bnBox1600.x + bnBox1600.width - 1,
+	`cmp.x=${cmpBox1600?.x} bn right=${bnBox1600 ? bnBox1600.x + bnBox1600.width : '?'}`
 );
 await page.screenshot({ path: `${SHOTS}/tb-1600-compare.png` });
 
@@ -117,8 +115,8 @@ await page.keyboard.press('Escape');
 const bx1280 = await page.locator('.bn').boundingBox();
 const sx1280 = await page.locator('.tb-source').boundingBox();
 check(
-	'bench still right of source @1280',
-	bx1280 && sx1280 && bx1280.x > sx1280.x,
+	'bench still left of source @1280',
+	bx1280 && sx1280 && bx1280.x < sx1280.x,
 	`bn.x=${bx1280?.x} source.x=${sx1280?.x}`
 );
 await page.screenshot({ path: `${SHOTS}/tb-1280-detail.png` });
@@ -133,8 +131,8 @@ for (const w of [1040, 760]) {
 	const bxN = await page.locator('.bn').boundingBox();
 	const sxN = await page.locator('.tb-source').boundingBox();
 	check(
-		`bench stays right of source @${w} (no flip-to-top)`,
-		bxN && sxN && bxN.x > sxN.x && Math.abs(bxN.y - sxN.y) < 2,
+		`bench stays left of source @${w} (no flip-to-top)`,
+		bxN && sxN && bxN.x < sxN.x && Math.abs(bxN.y - sxN.y) < 2,
 		`bn=(${bxN?.x},${bxN?.y}) source=(${sxN?.x},${sxN?.y})`
 	);
 	await page.screenshot({ path: `${SHOTS}/tb-${w}.png` });

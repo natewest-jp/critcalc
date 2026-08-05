@@ -810,19 +810,33 @@
 	     views scroll INSIDE it, the page never does. -->
 	<div class="tb-frame frame ctx-light">
 		<!-- The RIBBON's dock: invisible, ribbon-sized, measured by the tools
-		     layout. Right edge overhangs the frame by RIBBON_OVERHANG (the
-		     atlas/roster extends out from underneath the ribbon's left edge —
-		     the .bn zone is the tucked-under region); top offset is the shared
-		     RIBBON_TOP_OFFSET, the same line the planner's dock sits on, so the
-		     ribbon never travels vertically between tools. -->
+		     layout. On the frame's LEFT edge now (world-locked fade round,
+		     2026-08-05): both tools dock the ribbon at the SAME screen spot —
+		     bench left, work center, filters right, site-wide — so during the
+		     fade transition the ribbon simply never moves. Left edge overhangs
+		     the frame by RIBBON_OVERHANG (the atlas/roster extends out from
+		     underneath the ribbon's right edge; the .bn zone is the
+		     tucked-under region); top offset is the shared RIBBON_TOP_OFFSET,
+		     the same line the planner's dock sits on. -->
 		<div
 			class="tb-ribbon-dock"
 			data-bench-anchor
-			style:right="-{RIBBON_OVERHANG}px"
+			style:left="-{RIBBON_OVERHANG}px"
 			style:top="{RIBBON_TOP_OFFSET}px"
 			style:width="{RIBBON_W}px"
 			style:height="{RIBBON_RESTING_H}px"
 		></div>
+
+		<!-- ── Bench zone (the team) — the frame's LEFT zone beneath the
+		     ribbon, mirroring the planner's column exactly. Coverage judges at
+		     the working team's EFFECTIVE constellations (Layer-2 override,
+		     else the roster) — the bench is the plan's team. -->
+		<Bench
+			slots={teamSlots}
+			conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
+			onClear={() => rt.clearTeam()}
+			onFilterFacet={(f) => selectCapability(f)}
+		/>
 		<section class="tb-source">
 			{#if sourceTab === 'atlas'}
 				<div class="tb-atlas">
@@ -960,15 +974,15 @@
 			     in every browser.
 			     The shared CharacterGrid owns the search field, the identity chip
 			     groups and the Clear button; the TB's own filters ride in via the
-			     rail slot below it. The rail sits LEFT here and RIGHT in the
-			     planner's picker — the two filter columns hold the outer edges of
-			     the tool-slide seam, with the benches meeting in the middle. -->
+			     rail slot below it. The rail sits RIGHT — the same side as the
+			     planner's picker, one filter-column grammar site-wide (the old
+			     mirrored arrangement served the retired slide seam). -->
 			{#if rosterEverShown}
 				<div class="tb-roster" hidden={sourceTab !== 'roster'}>
 					<CharacterGrid
 						roster={split.matches}
 						{filters}
-						railSide="left"
+						railSide="right"
 						searchPlaceholder="Search characters…"
 						tile={rosterTile}
 						railStart={rosterFacetRail}
@@ -986,17 +1000,6 @@
 		     Planner it sends to. Side-locked at every width: the planner's
 		     portrait column never moves either, and the two reading as one
 		     mirrored surface is the point. -->
-		<!-- Coverage judges at the working team's EFFECTIVE constellations (the
-		     tab's Layer-2 override, else the roster) — the bench is the plan's
-		     team, so its facts read at the plan's levels, not the browse mode's.
-		     The slot cards themselves are the layout-level bench band, docked
-		     over this zone's spacer. -->
-		<Bench
-			slots={teamSlots}
-			conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
-			onClear={() => rt.clearTeam()}
-			onFilterFacet={(f) => selectCapability(f)}
-		/>
 	</div>
 </div>
 
@@ -1068,13 +1071,14 @@
 		visibility: hidden;
 	}
 
-	/* The bench is a frame ZONE now, not an island: no shell of its own, a
-	   hairline where it meets the center, and its own scroll. Side-locked at
-	   every width (the ≤900px flip-to-top is gone). */
+	/* The bench is a frame ZONE, not an island: no shell of its own, a
+	   hairline where it meets the center, and its own scroll. On the LEFT
+	   edge now, mirroring the planner — one layout grammar site-wide (bench
+	   left · work center · filters right). Side-locked at every width. */
 	.tb-frame :global(.bn) {
 		flex: none;
 		width: var(--tb-bench-w);
-		border-left: 1px solid var(--frame-line);
+		border-right: 1px solid var(--frame-line);
 		overflow-y: auto;
 	}
 

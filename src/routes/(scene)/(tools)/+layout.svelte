@@ -8,6 +8,8 @@
 		FADE_OUT_MS,
 		TRANSITION_MS,
 		TILT_EASING_CSS,
+		toolPoseShift,
+		sceneTransitionStart,
 		hasActiveSceneTransition,
 		revealDelayMs,
 		prefersReducedMotion
@@ -101,82 +103,83 @@
 		return { duration: FADE_OUT_MS, css: (t: number) => `opacity: ${t}` };
 	}
 
-	// Tool→tool cross-fade. Rather than the View Transitions API (which snapshots
-	// the whole viewport — WebKit choked on snapshotting the heavy animated Dire
-	// border, the original disqualifier; retired 2026-08-05, but the snapshot
-	// model stays wrong for us: nothing here should freeze mid-transition), we
-	// key the routed page on its path and cross-fade the two page layers —
-	// nothing is snapshotted, so every engine behaves identically.
+	// Tool→tool transition — WORLD-LOCKED FADE (Nate 2026-08-05, replacing the
+	// full-width slide). The scene is the one reference frame: on a tool→tool
+	// navigation the GL camera cranes between the tools' crest poses (a couple
+	// hundred px of world on screen — the scene doesn't hold three tool-widths
+	// of terrain, and a full-viewport slide sheared against it), and each tool
+	// surface is LOCKED to the world: it drifts by exactly the camera's
+	// screen-space pose delta (toolPoseShift) while fading out/in. Two layers
+	// site-wide: world-locked things (the tool frames) and screen-locked HUD
+	// (the ribbon, chrome, underline). Continuity across the fade is the
+	// RIBBON, which simply never moves — both tools dock it at the same screen
+	// spot (bench left · work center · filters right, one grammar) and the
+	// working team persists opaque while the world sweeps behind it.
 	//
-	// The fade is PAINT-GATED, not wall-clock. Svelte's fade() starts its clock at
-	// mount, so a heavy mount (the planner's ~200ms instantiation block on WebKit)
-	// silently eats the first chunk of the fade and the content snaps in at partial
-	// opacity. Instead the incoming page mounts at opacity 0, waits for its first
-	// real paint (the double-rAF painted-frame trick), and only then
-	// do both layers cross-fade via CSS transitions. The mount block plays out
-	// behind the old page at full opacity (a brief hold that reads as "loading"),
-	// and the fade always runs its full arc. Skipping fade() also skips its
-	// getComputedStyle(node).opacity read, which forced a synchronous style recalc
-	// of the freshly-mounted planner subtree (42ms of the Chrome nav block in the
-	// 2026-07-10 profile).
+	// Mechanics:
+	// - Transforms ride WAAPI with startTime pinned to the SCENE transition's
+	//   own start (sceneTransitionStart — the camera kicked off at
+	//   beforeNavigate), so the drift is glued to the terrain regardless of
+	//   when each layer's animation is created. Curve + duration are the
+	//   camera's (TILT_EASING_CSS / TRANSITION_MS).
+	// - The outgoing fade starts immediately (it is already painted). The
+	//   incoming fade is PAINT-GATED as ever: a heavy mount (the planner's
+	//   ~200ms WebKit block) must not eat the fade's first frames — the layer
+	//   holds at opacity 0 until two quiet frames (cap 450ms), then fades on
+	//   the shared clock, never earlier than TOOL_FADE_IN_DELAY_MS after it.
+	// - Fades are LINEAR (the sitewide fade law) and faster than the pan, so
+	//   surfaces clear during the gentle first leg of the camera's ease.
 	//
 	// ⚠️ Orchestration lives in afterNavigate, NOT in per-element actions/module
 	// state, because outroing keyed blocks can be REVIVED: navigate A→B→A within
 	// the retention window and Svelte cancels A's outro and reinserts the SAME
-	// element — still carrying whatever inline styles it faded out with, and
-	// without re-running `use:` actions. A one-shot action scheme left revived
-	// pages stuck at opacity 0 (the "navigates to an empty shell" bug).
-	// afterNavigate runs on every navigation regardless of element freshness, so
-	// every pass re-derives each layer's role (incoming = data-page matches the
-	// new pathname; everything else outgoing) and restyles all of them.
-	const XFADE_MS = 500;
-	const XFADE_EASE = 'cubic-bezier(0.65, 0, 0.35, 1)'; // cubicInOut
-	// Directional slide (simplification chunk 3): the tools sit left-to-right in
-	// TOOLS order (TB / RP / Visualizers), so a tool→tool navigation PANS the
-	// page-layer pair sideways instead of cross-fading — the outgoing page exits
-	// toward its own side of the order and the incoming one sweeps in from the
-	// other, edges passing at the seam. Same paint/
-	// settle gating as the fade; transform-only, so it stays compositor-side.
-	// Distances (ribbon round, 2026-08-05): RP↔TB legs ride the RIBBON's
-	// dock-to-dock distance — the ribbon sits at the seam of the virtual sheet
-	// [atlas | ribbon | timeline], so ribbon and both tools pan as one rigid
-	// body (see the panDist derivation in afterNavigate). Legs to/from the
-	// Visualizers (no ribbon) ride the full viewport width as before.
-	// The pan rides the SCENE's clock now (Nate 2026-08-05): with the world
-	// live beneath transparent tools, the tools' slide and the GL camera's
-	// crest-to-crest crane are the same motion seen at two depths — running
-	// them on different clocks read as a tear. Duration and curve import from
-	// the transition module (TRANSITION_MS = sceneGL's PAN_MS 2400;
-	// TILT_EASING_CSS — the camera's own bezier), so retuning the overall
-	// transition time in ONE place moves the camera, the tool slide, the
-	// underline glide and every dependent timer together. (The previous
-	// 800ms/0.33-0-0.18-1 tuning was Nate's for the occluded-scene era —
-	// superseded, not wrong; see git history.)
-	// EVERYTHING keyed to this motion derives from these two constants — the
-	// layer transitions, the nav underline's glide, the de-promote timer. Only
-	// probe-tool-slide.mjs samples the pan from the outside, and it polls for
-	// the mid-flight state rather than assuming a wall-clock offset.
+	// element — which KILLS its CSS transitions/animations and keeps its inline
+	// styles. afterNavigate runs on every navigation regardless of element
+	// freshness, so every pass re-derives each layer's role and re-animates.
+	const TOOL_NAV_ANIM = 'tool-nav';
+	// Fade knobs (Nate tunes): both default to the sitewide fade-law durations
+	// (TRANSITION_MS / FADE_SPEED_MULTIPLIER = 600ms); the incoming begins as
+	// the outgoing ends.
+	const TOOL_FADE_OUT_MS = FADE_OUT_MS;
+	const TOOL_FADE_IN_MS = FADE_DURATION_MS;
+	const TOOL_FADE_IN_DELAY_MS = TOOL_FADE_OUT_MS;
+	// The world clock — the underline glide and the ribbon's height relaxation
+	// ride it too, so retuning PAN_MS moves everything together.
 	const SLIDE_MS = TRANSITION_MS;
 	const SLIDE_EASE = TILT_EASING_CSS;
-	const toolIndex = (path: string | null | undefined) =>
-		path == null ? -1 : TOOLS.findIndex((t) => path.startsWith(t.path));
-	// Retention budget for the outgoing layer: it must outlast worst-case
-	// mount-block hold (settle cap 450ms) + the longest motion (the slide,
-	// 2400ms on the scene clock) + the settle pass (+100), and it doubles as
-	// the A→B→A revival window. The surplus past ~2950 is pure revival
-	// headroom. Only delays teardown of the (inert, off-screen) old subtree —
-	// not user-visible.
+	// Retention budget for the outgoing layer: outlasts the transition window
+	// (camera 2400 + fade-in tail + settle pass) and doubles as the A→B→A
+	// revival window. Only delays teardown of the (inert, invisible) old
+	// subtree — not user-visible.
 	const HOLD_MAX_MS = 4000;
+
+	/** Cancel this layout's WAAPI animations on a layer, optionally baking the
+	 *  current values into inline style first (transition.ts's pattern). */
+	function cancelToolNavAnims(el: HTMLElement, commit = false) {
+		for (const a of el.getAnimations()) {
+			if (a.id !== TOOL_NAV_ANIM) continue;
+			if (commit) {
+				try {
+					a.commitStyles();
+				} catch {
+					// Element detached or value non-interpolable — safe to skip.
+				}
+			}
+			a.cancel();
+		}
+	}
 
 	let toolMain: HTMLDivElement | undefined = $state();
 
 	// ---------------------------------------------------------------------------
-	// The bench band (bench-band round): ONE slot-card column for both benched
-	// tools, rendered here — OUTSIDE the keyed page layers — so it survives
-	// navigation and TRAVELS across the screen on the pan clock instead of
-	// panning away with its tool. It docks over a [data-bench-anchor] gutter
+	// The bench RIBBON: ONE slot-card box for both benched tools, rendered
+	// here — OUTSIDE the keyed page layers — as screen-locked HUD. Both tools
+	// dock it at the SAME screen spot (bench left, one grammar), so across a
+	// tool navigation it simply persists, opaque and motionless, while the
+	// world-locked frames fade beneath it — the continuity of the transition.
+	// It docks over a [data-bench-anchor] gutter
 	// each benched page reserves (planner: the label column's card cells; TB:
-	// the bench zone's spacer). Position is measured from the real anchor and
+	// the bench zone's left edge). Position is measured from the real anchor and
 	// applied as a transform in .tool-main coordinates — the band lives inside
 	// the scrolled subtree, so it rides page scroll exactly like the gutter
 	// beneath it (the planner's page scrolls; alignment under scroll is free).
@@ -227,69 +230,55 @@
 		}
 		benchMount.style.transition = 'none';
 		benchMount.style.transform = `translate(${a.x}px, ${a.y}px)`;
+		benchMount.style.opacity = '';
 		benchVisible = true;
 	}
 
-	function benchCurrentXY(): { x: number; y: number } {
-		if (!benchMount) return { x: 0, y: 0 };
-		const cs = getComputedStyle(benchMount).transform;
-		if (cs === 'none') return { x: 0, y: 0 };
-		const parts = cs.split(',');
-		return { x: parseFloat(parts[4]) || 0, y: parseFloat(parts[5]) || 0 };
-	}
-
-	/** The ribbon's leg of a tool pan — called from startFade so it rides the
-	 *  exact same clock AND the same distance as the page layers (the rigid
-	 *  sheet: on RP↔TB legs `panDist` is the dock-to-dock distance, so the
-	 *  ribbon has zero motion relative to either tool).
-	 *  - both tools docked → glide from the current dock to the new one
-	 *  - into a docked tool → enter glued to the incoming page's motion
-	 *  - out of docked tools → exit glued to the outgoing page's motion */
-	function travelBench(dir: number, path: string, panDist: number) {
+	/** The ribbon during a tool navigation (world-locked fade round): it is
+	 *  screen-locked HUD, so between two docked tools it simply DOES NOT MOVE
+	 *  — both docks share one screen spot, and the persistent opaque ribbon
+	 *  (same place, same team) IS the continuity across the fade. Its card
+	 *  heights still relax between the tools' rhythms on the world clock. For
+	 *  legs where one side has no dock (Visualizers), it fades in place. */
+	function benchNavTransition(fromPath: string, toPath: string, clock: number) {
 		if (!benchMount) return;
-		const target = measureBenchAnchor(path);
-		const glide = `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
+		const target = measureBenchAnchor(toPath);
 		clearTimeout(benchTravelTimer);
 		if (target) {
 			if (!benchVisible) {
-				// Enter riding the incoming layer: park at the dock displaced by the
-				// layer's own parked offset, then release on the shared clock.
+				// Entering from a dockless tool: dock instantly (hidden), then
+				// fade in alongside the incoming page's sequenced fade.
 				benchMount.style.transition = 'none';
-				benchMount.style.transform = `translate(${target.x + dir * panDist}px, ${target.y}px)`;
-				void benchMount.getBoundingClientRect(); // flush the park before transitioning
-				benchVisible = true;
-			} else {
-				// FREEZE-then-go (see the outgoing-layer note in startFade): bake
-				// the current position and flush so the glide below is a FRESH
-				// full-duration transition — an interrupted ribbon would otherwise
-				// reverse on the CSS reversing-shortened clock while the layers
-				// run full ones, tearing the sheet.
-				const cur = benchCurrentXY();
-				benchMount.style.transition = 'none';
-				benchMount.style.transform = `translate(${cur.x}px, ${cur.y}px)`;
+				benchMount.style.transform = `translate(${target.x}px, ${target.y}px)`;
+				benchMount.style.opacity = '0';
 				void benchMount.getBoundingClientRect();
+				const delay = Math.max(0, clock + TOOL_FADE_IN_DELAY_MS - performance.now());
+				benchMount.style.transition = `opacity ${TOOL_FADE_IN_MS}ms linear ${delay}ms`;
+				benchMount.style.opacity = '1';
+				benchVisible = true;
 			}
-			benchMount.style.transition = dir ? glide : 'none';
-			benchMount.style.transform = `translate(${target.x}px, ${target.y}px)`;
+			// Docked→docked: nothing to move — let the card heights relax on the
+			// world clock, then re-dock to sub-pixel precision at settle.
 			benchTraveling = true;
-			benchTravelTimer = setTimeout(() => {
-				benchTraveling = false;
-				// Re-dock precisely (layout may have settled further).
-				snapBench();
-			}, SLIDE_MS + 100);
+			benchTravelTimer = setTimeout(
+				() => {
+					benchTraveling = false;
+					snapBench();
+				},
+				Math.max(0, clock + SLIDE_MS - performance.now()) + 100
+			);
 		} else if (benchVisible) {
-			// Exit with the pan: the same delta the outgoing layer travels, so the
-			// ribbon reads as still docked to its departing frame. Freeze-flush
-			// first (same reversing-shortening defense as the dock-to-dock glide).
-			const cur = benchCurrentXY();
-			benchMount.style.transition = 'none';
-			benchMount.style.transform = `translate(${cur.x}px, ${cur.y}px)`;
-			void benchMount.getBoundingClientRect();
-			benchMount.style.transition = dir ? glide : 'none';
-			benchMount.style.transform = `translate(${cur.x - dir * panDist}px, ${cur.y}px)`;
+			// Exiting toward a dockless tool: fade out in place on the world
+			// clock's fade-out leg.
+			benchMount.style.transition = `opacity ${TOOL_FADE_OUT_MS}ms linear`;
+			benchMount.style.opacity = '0';
 			benchTravelTimer = setTimeout(() => {
-				if (!measureBenchAnchor(page.url.pathname)) benchVisible = false;
-			}, SLIDE_MS + 100);
+				if (!measureBenchAnchor(page.url.pathname)) {
+					benchVisible = false;
+					benchMount!.style.opacity = '';
+					benchMount!.style.transition = 'none';
+				}
+			}, TOOL_FADE_OUT_MS + 100);
 		}
 	}
 
@@ -368,202 +357,125 @@
 		const matches = pages.filter((p) => p.dataset.page === path);
 		const incoming = matches[matches.length - 1] ?? pages[pages.length - 1];
 		const outgoing = pages.filter((p) => p !== incoming);
-
-		// Pan direction from the tool order: +1 = destination lies to the RIGHT
-		// (content sweeps left), −1 mirrored, 0 = either side unknown → the
-		// plain cross-fade handles it.
 		const fromPath = nav.from?.url.pathname ?? '';
-		const fromIdx = toolIndex(fromPath);
-		const toIdx = toolIndex(path);
-		const dir = fromIdx >= 0 && toIdx >= 0 ? Math.sign(toIdx - fromIdx) : 0;
 
-		// Pan distance (ribbon round): when BOTH legs dock the ribbon (RP↔TB),
-		// the pages translate by the dock-to-dock distance instead of 100vw —
-		// the ribbon sits at the SEAM of the virtual sheet [atlas|ribbon|
-		// timeline], so ribbon and both tools move as ONE rigid body and the
-		// ribbon lands with zero motion relative to its siblings. The price is
-		// a deliberate overlap: each page carries its own copy of the
-		// under-ribbon dock region, so mid-pan the incoming page's dock strip
-		// rides above the outgoing's (z below) — both are tucked-under frame
-		// edges, and the ribbon covers most of the overlap. Legs to/from
-		// Visualizers (no dock) keep the full-viewport distance. Docks are
-		// measured BEFORE any parking so both layers read untransformed.
-		const fromDock = dir ? measureBenchAnchor(fromPath) : null;
-		const toDock = dir ? measureBenchAnchor(path) : null;
-		const panDist = dir && fromDock && toDock ? Math.abs(toDock.x - fromDock.x) : window.innerWidth;
+		// The world's screen-space delta for this leg, and the scene's own
+		// clock (the camera started at beforeNavigate). Pinning every WAAPI
+		// startTime to `clock` glues the drift to the terrain regardless of
+		// when each animation is created; if no scene transition is in flight
+		// (edge cases), the drift just runs on its own matching clock.
+		const shift = toolPoseShift(fromPath, path);
+		const clock = sceneTransitionStart() ?? performance.now();
 
-		// Freeze the incoming layer BEFORE the first paint of the new route: a
-		// fresh mount starts hidden; a revived layer (caught mid-fade-out) holds
-		// its current opacity so the fade-in resumes from there, not from a pop.
-		// will-change promotes both layers NOW, so WebKit builds/rasters their
-		// compositor layers during the mount paint (behind the held old page)
-		// instead of at fade start — measured 2026-07-10: starting the opacity
-		// transition on unpromoted layers cost WebKit 60–90ms of layerization
-		// right as the fade opened, stuttering it. Cleared after the fade (the
-		// full-viewport retina layers are ~25MB each — the retired Dire border
-		// taught that oversized live compositor textures get Safari-evicted;
-		// don't keep them alive).
-		// 0.001, not 0: WebKit skips rasterizing a fully-transparent layer until
-		// its opacity goes nonzero, which would land the raster cost (~40ms) at
-		// fade start anyway. An imperceptible epsilon forces the raster to happen
-		// here, pre-paint, with the layerization.
-		incoming.style.willChange = dir ? 'transform, opacity' : 'opacity';
-		incoming.style.transition = 'none';
-		if (dir) {
-			// Park position. On a rigid-sheet leg the incoming parks by the GLUE
-			// FORMULA — ribbon's current x minus the destination dock's resting
-			// x — which is the one rule that covers every shape at once: a fresh
-			// mount (ribbon at the outgoing dock → tx = ±panDist), a parked
-			// revival (same), and a MID-FLIGHT revival (ribbon mid-travel → the
-			// layer parks exactly where the sheet is right now). The revived
-			// layer's own computed transform can NOT be trusted for this:
-			// Svelte's revival reinserts the element, which kills its CSS
-			// transition, so computed style reports the stale inline TARGET —
-			// the interrupted-return "flies in unglued" bug (Nate 2026-08-05).
-			// Non-sheet legs keep the old rules: fresh mounts park a viewport
-			// out; revived layers resume from their (target) position.
-			if (fromDock && toDock && benchVisible && benchMount) {
-				incoming.style.transform = `translateX(${benchCurrentXY().x - toDock.x}px)`;
-			} else if (incoming.style.transform === '') {
-				incoming.style.transform = `translateX(${dir * panDist}px)`;
-			} else {
-				incoming.style.transform = getComputedStyle(incoming).transform;
-			}
-			// Rigid-sheet legs OVERLAP the layers mid-pan; the incoming page
-			// rides above so the shared dock region reads as one surface.
-			incoming.style.zIndex = '2';
-		}
-		incoming.style.opacity =
-			incoming.style.opacity === '' ? '0.001' : getComputedStyle(incoming).opacity;
+		// Interrupts: bake whatever the previous leg left mid-flight, then
+		// re-animate from there. (A REVIVED layer's animations died with its
+		// reinsertion and its inline styles hold the old leg's baked values —
+		// the two-keyframe drift below repositions it regardless.)
+		for (const p of pages) cancelToolNavAnims(p, true);
+
+		// ── Outgoing: starts NOW. It is already painted and the camera is
+		// already moving — waiting for the incoming's paint gate would visibly
+		// detach it from the world. World-locked drift to its pose delta +
+		// linear fade-out (the fade law: clears during the ease's gentle first
+		// leg). Stale third layers (already invisible) are left as baked.
 		for (const o of outgoing) {
-			o.style.willChange = dir ? 'transform' : 'opacity';
-			if (dir) o.style.zIndex = '1';
+			if (!o.isConnected || o.dataset.page !== fromPath) continue;
+			o.style.willChange = 'transform, opacity';
+			o.style.zIndex = '1';
+			const drift = o.animate([{ transform: `translateX(${shift}px)` }], {
+				duration: TRANSITION_MS,
+				easing: TILT_EASING_CSS,
+				fill: 'forwards',
+				id: TOOL_NAV_ANIM
+			});
+			drift.startTime = clock;
+			const fade = o.animate([{ opacity: 0 }], {
+				duration: TOOL_FADE_OUT_MS,
+				fill: 'forwards',
+				id: TOOL_NAV_ANIM
+			});
+			fade.startTime = clock;
 		}
 
-		// Paint-gate + settle-gate. The first rAF ticks put us past the new
-		// route's first paint; then keep watching frame gaps until the main
-		// thread has produced two consecutive clean frames before starting the
-		// fade. WebKit runs 60–90ms of post-mount work (CodeMirror measure, the
-		// timeline's first full style pass) 1–3 frames AFTER first paint —
-		// starting the fade on paint alone let those blocks stutter its opening.
-		// Capped so a persistently-busy page still fades. Chrome/FF settle on
-		// the first ticks, so this adds ~1 extra frame of hold there.
+		// ── Incoming: world-locked from the start (it drifts −shift → 0 on the
+		// pinned clock so its position is correct the moment it becomes
+		// visible), but INVISIBLE until the paint gate below opens its fade.
+		// will-change promotes it NOW so WebKit builds/rasters the compositor
+		// layer during the mount paint instead of at fade start (measured
+		// 2026-07-10: unpromoted layers cost 60–90ms of layerization right as
+		// the fade opened). Cleared at settle — the full-viewport retina
+		// layers are ~25MB each; don't keep them promoted.
+		incoming.style.willChange = 'transform, opacity';
+		incoming.style.zIndex = '2';
+		incoming.style.transition = 'none';
+		incoming.style.opacity = '0';
+		incoming.style.transform = '';
+		const drift = incoming.animate(
+			[{ transform: `translateX(${-shift}px)` }, { transform: 'translateX(0px)' }],
+			{
+				duration: TRANSITION_MS,
+				easing: TILT_EASING_CSS,
+				fill: 'forwards',
+				id: TOOL_NAV_ANIM
+			}
+		);
+		drift.startTime = clock;
+
+		// The ribbon: persists in place across docked↔docked legs (both tools
+		// dock it at the same screen spot); fades in place at the world clock
+		// for legs where one side has no dock.
+		benchNavTransition(fromPath, path, clock);
+
+		// Paint-gate + settle-gate for the INCOMING's fade-in. The first rAF
+		// ticks put us past the new route's first paint; then keep watching
+		// frame gaps until the main thread has produced two consecutive clean
+		// frames. WebKit runs 60–90ms of post-mount work (CodeMirror measure,
+		// the timeline's first full style pass) 1–3 frames AFTER first paint —
+		// fading on paint alone let those blocks stutter its opening. Capped so
+		// a persistently-busy page still fades.
 		const SETTLE_GAP_MS = 24;
 		const SETTLE_CAP_MS = 450;
 		const t0 = performance.now();
 		let lastTs = 0;
 		let quietFrames = 0;
-		const startFade = () => {
-			// The ribbon's leg rides the exact same clock + distance as the layers.
-			travelBench(dir, path, panDist);
-			if (dir) {
-				// Re-glue the incoming at the TRUE start instant: the ribbon kept
-				// moving through the settle-gate frames, so the afterNavigate park
-				// is a frame or two stale. travelBench just froze the ribbon (its
-				// transition starts next frame), so benchCurrentXY() here reads
-				// exactly the position the glide departs from.
-				if (fromDock && toDock && benchVisible && benchMount) {
-					incoming.style.transition = 'none';
-					incoming.style.transform = `translateX(${benchCurrentXY().x - toDock.x}px)`;
-					void incoming.getBoundingClientRect();
-				}
-				// The pan. Opacity JUMPS to 1 untransitioned — the layer is still
-				// off-screen (or mid-slide) when it happens, so there's no pop;
-				// only transform animates. The outgoing layers stay fully opaque
-				// and exit toward their own side: panels passing, not fading.
-				incoming.style.transition = `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
-				incoming.style.opacity = '1';
-				incoming.style.transform = 'translateX(0)';
+		const startFadeIn = () => {
+			const fade = incoming.animate([{ opacity: 0 }, { opacity: 1 }], {
+				duration: TOOL_FADE_IN_MS,
+				fill: 'forwards',
+				id: TOOL_NAV_ANIM
+			});
+			// Sequenced on the shared clock (begin as the outgoing ends), but
+			// never before the page has actually painted — the gate that got us
+			// here. A future startTime simply waits.
+			fade.startTime = Math.max(performance.now(), clock + TOOL_FADE_IN_DELAY_MS);
+			const settleAt =
+				Math.max(clock + TRANSITION_MS, fade.startTime + TOOL_FADE_IN_MS) - performance.now() + 100;
+			// Settle: bake + release. The incoming rests at natural layout; the
+			// outgoing stays baked invisible through its retention window.
+			setTimeout(() => {
+				if (page.url.pathname !== path || !incoming.isConnected) return;
+				cancelToolNavAnims(incoming, true);
+				incoming.style.willChange = '';
+				incoming.style.zIndex = '';
+				incoming.style.transition = '';
+				incoming.style.transform = '';
+				incoming.style.opacity = '';
 				for (const o of outgoing) {
 					if (!o.isConnected) continue;
-					// Exit side is ORDER-relative per layer, not one side for all:
-					// besides the true outgoing page, `outgoing` can hold a STALE
-					// third page from an earlier nav still inside its retention
-					// window, parked off-screen. Blanket-animating everything to
-					// the new exit side sent that layer streaking across the
-					// viewport at double speed (RP→TB→Viz showed RP flying past —
-					// Nate, 2026-07-25). Order-relative sides also park a stale
-					// layer where a later revival would correctly enter from.
-					const oIdx = toolIndex(o.dataset.page);
-					const side = (oIdx >= 0 ? Math.sign(oIdx - toIdx) : 0) || -dir;
-					// The TRUE outgoing page exits by the sheet distance (it stays
-					// rigid with the ribbon; on a rigid-sheet leg its dock strip
-					// remains under the ribbon at settle, parked out fully by the
-					// settle pass below). Stale third layers park at the full
-					// viewport width — they must actually leave.
-					const dist = o.dataset.page === fromPath ? panDist : window.innerWidth;
-					// Already off-screen → park instantly; only layers currently
-					// in (or partway across) the viewport get the animated exit.
-					const cs = getComputedStyle(o).transform;
-					const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
-					const offscreen = Math.abs(tx) >= window.innerWidth - 1;
-					// FREEZE-then-go: bake the current matrix untransitioned, flush,
-					// then start a FRESH full-duration transition. This defeats the
-					// CSS "faster reversing of interrupted transitions" adjustment,
-					// which would shorten a reversed leg's clock while a revived
-					// layer (fresh transition) runs the full one — three movers on
-					// two clocks, the sheet visibly tearing on interrupts. A fresh
-					// clock everywhere also matches the GL camera, whose WAAPI
-					// retarget always runs the full PAN_MS.
-					o.style.transition = 'none';
-					o.style.transform = cs === 'none' ? 'translateX(0px)' : cs;
-					void o.getBoundingClientRect();
-					o.style.transition = offscreen ? 'none' : `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
-					o.style.transform = `translateX(${side * dist}px)`;
-					if (offscreen) o.style.willChange = '';
+					cancelToolNavAnims(o, true);
+					o.style.willChange = '';
+					o.style.zIndex = '';
 				}
-			} else {
-				incoming.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
-				incoming.style.opacity = '1';
-				for (const o of outgoing) {
-					if (!o.isConnected) continue;
-					o.style.transition = `opacity ${XFADE_MS}ms ${XFADE_EASE}`;
-					o.style.opacity = '0';
-				}
-			}
-			// De-promote the settled layer once the motion is over — but only if
-			// this navigation still owns it (a newer pass re-promotes and
-			// re-times). The transform/transition also clear so the settled page
-			// is a plain static layer again. On rigid-sheet legs the outgoing
-			// page only traveled the sheet distance — its dock strip is still
-			// on-screen beneath the ribbon — so the settle pass parks every
-			// outgoing layer the rest of the way out (untransitioned; the strip
-			// it vacates is covered by the incoming page's own dock).
-			setTimeout(
-				() => {
-					if (page.url.pathname === path && incoming.isConnected) {
-						incoming.style.willChange = '';
-						incoming.style.transform = '';
-						incoming.style.transition = '';
-						incoming.style.zIndex = '';
-					}
-					if (page.url.pathname !== path) return;
-					for (const o of outgoing) {
-						if (!o.isConnected) continue;
-						const oIdx = toolIndex(o.dataset.page);
-						const side = (oIdx >= 0 ? Math.sign(oIdx - toIdx) : 0) || -dir;
-						const cs = getComputedStyle(o).transform;
-						const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
-						if (dir && Math.abs(tx) < window.innerWidth - 1) {
-							o.style.transition = 'none';
-							o.style.transform = `translateX(${side * window.innerWidth}px)`;
-						}
-						// Fully parked now — release the compositor promotion (the
-						// ~25MB retina layer has no motion left to serve).
-						o.style.willChange = '';
-						o.style.zIndex = '';
-					}
-				},
-				(dir ? SLIDE_MS : XFADE_MS) + 100
-			);
+				snapBench();
+			}, settleAt);
 		};
 		const tick = (ts: number) => {
-			// A newer navigation owns the layers now — its own pass restyled them.
+			// A newer navigation owns the layers now — its own pass re-animates.
 			if (page.url.pathname !== path || !incoming.isConnected) return;
 			quietFrames = lastTs !== 0 && ts - lastTs < SETTLE_GAP_MS ? quietFrames + 1 : 0;
 			lastTs = ts;
 			if (quietFrames >= 2 || ts - t0 > SETTLE_CAP_MS) {
-				startFade();
+				startFadeIn();
 				return;
 			}
 			requestAnimationFrame(tick);

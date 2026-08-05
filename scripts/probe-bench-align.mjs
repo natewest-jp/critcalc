@@ -2,9 +2,9 @@
 // full-screen frame each, mirror images across the tool-slide seam (RP bench
 // LEFT / TB bench RIGHT, filter columns on the two outer edges). This measures
 // and ASSERTS the geometry that has to agree between them — above all the two
-// frame TOPS, which the eye reads as continuity when the slide pans one into
-// the other. The old --bn-drop faked that alignment by pushing an unframed
-// bench down a page; --tb-tabrow-gap is the real knob now.
+// frame TOPS and the shared ribbon dock spot (the ribbon persists motionless
+// across the world-locked fade; both tools must dock it identically).
+// --tb-tabrow-gap is the frame-top knob.
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE ?? 'http://localhost:4998';
@@ -74,14 +74,14 @@ check(
 // Benches meet AT the seam: the planner's holds the left edge of its frame,
 // the Team Builder's the right edge of its own.
 check(
-	'RP bench holds its frame’s LEFT edge',
+	'RP portrait column holds its frame’s LEFT edge',
 	rpFrame && rpBench && rpBench.x - rpFrame.x < 20,
 	`bench.x=${rpBench?.x} frame.x=${rpFrame?.x}`
 );
 check(
-	'TB bench holds its frame’s RIGHT edge',
-	tbFrame && tbBench && tbFrame.right - tbBench.right < 20,
-	`bench.right=${tbBench?.right} frame.right=${tbFrame?.right}`
+	'TB bench holds its frame’s LEFT edge (bench-left grammar, both tools)',
+	tbFrame && tbBench && tbBench.x - tbFrame.x < 20,
+	`bench.x=${tbBench?.x} frame.x=${tbFrame?.x}`
 );
 // The bench is a zone of the frame, not a framed island of its own — the
 // tell is that it has no border/radius while the frame has both.

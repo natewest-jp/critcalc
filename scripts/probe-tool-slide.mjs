@@ -1,8 +1,9 @@
-// Directional tool→tool slide (simplification chunk 3): assert that a
-// tool-switcher navigation PANS the page layers sideways per the TOOLS order —
-// outgoing exits toward its own side at full opacity, incoming sweeps in from
-// the other — and that the pair settles clean (no transform residue, no
-// horizontal scroll).
+// Tool→tool WORLD-LOCKED FADE (2026-08-05, replacing the slide): a
+// tool-switcher navigation drifts each page layer by the GL camera's pose
+// delta (~±219px @1600×1000 — toolPoseShift) while cross-fading — outgoing
+// clears during the ease's gentle first leg, incoming fades in sequenced
+// after it — and the pair settles clean (no transform residue, no horizontal
+// scroll). The nav underline still glides on the same world clock.
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE ?? 'http://localhost:4998';
@@ -42,26 +43,21 @@ async function sampleNav(linkText, midShot) {
 	});
 	await page.locator('.chrome-nav a', { hasText: linkText }).click();
 	if (midShot) {
-		// Catch the pan actually mid-flight. A wall-clock offset can't do this:
-		// the settle gate delays the start by anywhere from ~30ms to 450ms, and
-		// the offset goes stale every time SLIDE_MS moves (a 700ms sample was
-		// mid-pan at 1200ms, ~95% done at 800ms). Poll for a layer parked in the
-		// middle band instead — at rest every layer is at 0 or ±100vw, so this
-		// is only ever true during the pan.
+		// Catch the transition mid-FADE: some layer at intermediate opacity.
+		// (At rest every layer is at opacity 0 or 1.)
 		await page.waitForFunction(
 			() =>
 				[...document.querySelectorAll('.tool-main > .tool-page')].some((el) => {
-					const m = getComputedStyle(el).transform.match(/matrix\(([^)]+)\)/);
-					const tx = m ? Math.abs(parseFloat(m[1].split(',')[4])) : 0;
-					return tx > window.innerWidth * 0.3 && tx < window.innerWidth * 0.7;
+					const o = parseFloat(getComputedStyle(el).opacity);
+					return o > 0.2 && o < 0.8;
 				}),
 			null,
 			{ timeout: 3000, polling: 'raf' }
 		);
 		await page.screenshot({ path: `${SHOTS}/${midShot}` });
 	}
-	// Settle hold (≤450ms) + the slide (2400 on the scene clock) + settle pass.
-	await page.waitForTimeout(3300);
+	// Settle hold (≤450ms) + the world clock (2400) + fade tail + settle pass.
+	await page.waitForTimeout(3600);
 	return page.evaluate(() => window.__samples);
 }
 
@@ -74,70 +70,73 @@ function analyze(samples, fromPath, toPath) {
 	return { out: track(fromPath), inc: track(toPath) };
 }
 
-// ── TB → RP: dir=+1, content sweeps LEFT (TB exits leftward, RP from right) ──
+// ── TB → RP: world-locked fade (camera crane TB pose → RP pose) ─────────────
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 let s = await sampleNav('Planner', 'slide-tb-to-rp-mid.png');
 let { out, inc } = analyze(s, '/team-builder', '/rotation-planner');
+// The camera's pose delta at 1600×1000 is ~219px; world-locked layers drift by
+// exactly that (never a viewport-scale slide).
+const DRIFT_MIN = 100;
+const DRIFT_MAX = 500;
+const outDrift = Math.max(...out.map((p) => Math.abs(p.tx)));
 check(
-	// Rigid-sheet exit: the outgoing leaves by the dock-to-dock distance; the
-	// settle pass parks it the rest of the way out afterwards.
-	'TB→RP: outgoing TB exits LEFT by at least the sheet distance',
-	Math.min(...out.map((p) => p.tx)) < -VW * 0.75,
-	`min tx=${Math.min(...out.map((p) => p.tx))}`
+	'TB→RP: outgoing drifts with the world (pose delta, not a slide)',
+	outDrift > DRIFT_MIN && outDrift < DRIFT_MAX,
+	`max |tx|=${outDrift}`
 );
 check(
-	'TB→RP: outgoing stays opaque while moving (pan, not fade)',
-	out.filter((p) => p.tx < -50).every((p) => p.o > 0.99),
-	''
+	'TB→RP: outgoing fades OUT (world-locked fade, not the old opaque pan)',
+	Math.min(...out.map((p) => p.o)) < 0.05,
+	`min o=${Math.min(...out.map((p) => p.o))}`
 );
+const incStart = inc.find((p) => p.o > 0.05);
 check(
-	// Rigid-sheet legs (ribbon round): RP↔TB pans the dock-to-dock distance
-	// (< 100vw — the ribbon + tools move as one body), so the entry offset is
-	// the sheet distance, not the full viewport.
-	'TB→RP: incoming RP entered from the RIGHT (sheet distance)',
-	Math.max(...inc.map((p) => p.tx)) > VW * 0.75,
-	`max tx=${Math.max(...inc.map((p) => p.tx))}`
+	'TB→RP: incoming fades in while world-locked (drift < pose delta ceiling)',
+	inc.some((p) => p.o > 0.2 && p.o < 0.8) &&
+		Math.max(...inc.map((p) => Math.abs(p.tx))) < DRIFT_MAX,
+	`first visible tx=${incStart ? incStart.tx : 'n/a'}`
 );
 const rpFinal = inc[inc.length - 1];
 check(
-	'TB→RP: incoming settles at rest, transform cleared',
+	'TB→RP: incoming settles at rest, fully opaque',
 	Math.abs(rpFinal.tx) < 1 && rpFinal.o === 1,
 	`tx=${rpFinal.tx} o=${rpFinal.o}`
 );
 
-// ── RP → TB: mirrored (RP exits rightward revealing TB from the left) ───────
+// ── RP → TB: mirrored ───────────────────────────────────────────────────────
 s = await sampleNav('Teams', 'slide-rp-to-tb-mid.png');
 ({ out, inc } = analyze(s, '/rotation-planner', '/team-builder'));
+const outDrift2 = Math.max(...out.map((p) => Math.abs(p.tx)));
 check(
-	'RP→TB: outgoing RP exits RIGHT by at least the sheet distance',
-	Math.max(...out.map((p) => p.tx)) > VW * 0.75,
-	`max tx=${Math.max(...out.map((p) => p.tx))}`
+	'RP→TB: outgoing drifts with the world and fades',
+	outDrift2 > DRIFT_MIN && outDrift2 < DRIFT_MAX && Math.min(...out.map((p) => p.o)) < 0.05,
+	`max |tx|=${outDrift2} min o=${Math.min(...out.map((p) => p.o))}`
 );
 check(
-	'RP→TB: incoming TB entered from the LEFT (sheet distance)',
-	Math.min(...inc.map((p) => p.tx)) < -VW * 0.75,
-	`min tx=${Math.min(...inc.map((p) => p.tx))}`
+	'RP→TB: incoming fades in world-locked',
+	inc.some((p) => p.o > 0.2 && p.o < 0.8) &&
+		Math.max(...inc.map((p) => Math.abs(p.tx))) < DRIFT_MAX,
+	''
 );
 
-// ── stale third layer must not streak (Nate's RP→TB→Viz repro) ──────────────
-// After RP→TB, the RP layer sits parked off-screen inside its retention
-// window. Navigating TB→Viz before it tears down must NOT animate it across
-// the viewport — it gets re-parked instantly on its order-relative side.
+// ── stale third layer stays invisible (the old streak repro, fade edition) ──
+// After RP→TB, the RP layer sits baked invisible inside its retention window.
+// Navigating TB→Viz before it tears down must never let it reappear.
 await page.goto(`${BASE}/rotation-planner`, { waitUntil: 'networkidle' });
 await page.locator('.chrome-nav a', { hasText: 'Teams' }).click();
-await page.waitForTimeout(3300); // slide + settle pass done, RP layer still retained (HOLD 4000)
+await page.waitForTimeout(3300); // transition done, RP layer still retained (HOLD 4000)
 s = await sampleNav('Visualizers');
 const staleRp = analyze(s, '/rotation-planner', '/crit-visualizer').out;
 check(
-	'stale RP layer stays off-screen during TB→Viz',
-	staleRp.length > 0 && staleRp.every((p) => Math.abs(p.tx) >= VW - 1),
-	`min |tx|=${staleRp.length ? Math.min(...staleRp.map((p) => Math.abs(p.tx))) : 'n/a'}`
+	'stale RP layer stays invisible during TB→Viz',
+	staleRp.length > 0 && staleRp.every((p) => p.o < 0.05),
+	`max o=${staleRp.length ? Math.max(...staleRp.map((p) => p.o)) : 'n/a'}`
 );
 ({ out, inc } = analyze(s, '/team-builder', '/crit-visualizer'));
 check(
-	'TB→Viz: the real outgoing still animates out LEFT',
-	Math.min(...out.map((p) => p.tx)) < -(VW - 100),
-	`min tx=${Math.min(...out.map((p) => p.tx))}`
+	'TB→Viz: the real outgoing fades out',
+	Math.min(...out.map((p) => p.o)) < 0.05,
+	`min o=${Math.min(...out.map((p) => p.o))}`
 );
 
 // ── nav underline glides between links with the pan ─────────────────────────

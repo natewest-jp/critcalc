@@ -107,6 +107,30 @@ function poseForPath(path: string): { x: number; y: number } {
 	return crestPose(sideSign(path), window.innerWidth, window.innerHeight);
 }
 
+/**
+ * Screen-space drift a WORLD-LOCKED tool surface undergoes when the camera
+ * moves between two paths' poses (the tools layout's fade transition): a
+ * surface anchored at `fromPath`'s pose ends displaced by exactly this many
+ * px, and one anchored at `toPath` starts displaced by its negation. Sign
+ * follows the composition's world-lock convention (screen offset = camera.x −
+ * anchor pose.x). 0 when either pose is unknown, off-browser, or the crane is
+ * clamped away (ultrawide) — the transition degrades to a plain crossfade.
+ */
+export function toolPoseShift(fromPath: string, toPath: string): number {
+	if (!browser) return 0;
+	return poseForPath(toPath).x - poseForPath(fromPath).x;
+}
+
+/**
+ * The in-flight scene transition's WAAPI-comparable start timestamp
+ * (performance.now() clock), or null when nothing is in flight. The tools
+ * layout pins its world-locked drift animations to this so tool surfaces
+ * stay glued to the terrain no matter when each animation is created.
+ */
+export function sceneTransitionStart(): number | null {
+	return browser && active ? active.startTime : null;
+}
+
 export function prefersReducedMotion(): boolean {
 	if (typeof window === 'undefined') return false;
 	return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
