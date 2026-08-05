@@ -487,11 +487,11 @@
 			>
 				<!-- Time grid -->
 				{#each ticks as s (s)}
-					<line x1={xOf(s)} y1={TOP} x2={xOf(s)} y2={plotY1} stroke="rgba(255,255,255,0.07)" />
+					<line x1={xOf(s)} y1={TOP} x2={xOf(s)} y2={plotY1} stroke="var(--chart-grid)" />
 					<text
 						x={xOf(s)}
 						y={plotY1 + 14}
-						fill="rgba(255,255,255,0.5)"
+						fill="var(--chart-ink)"
 						font-size="10"
 						text-anchor="middle"
 					>
@@ -512,7 +512,7 @@
 						<text
 							x={PADL - 7}
 							y={yOf(u) + 3.5}
-							fill="rgba(255,255,255,0.5)"
+							fill="var(--chart-ink)"
 							font-size="10"
 							text-anchor="end"
 						>
@@ -543,7 +543,7 @@
 							class="gx-word"
 							x={m.x}
 							y={39 + li * 11}
-							fill="rgba(255,255,255,0.62)"
+							fill="var(--chart-ink)"
 							font-size="10"
 							text-anchor="middle"
 						>
@@ -620,7 +620,7 @@
 						y1={TOP}
 						x2={xOf(displayT)}
 						y2={stripY0 + stripRows.length * ROW_H}
-						stroke="rgba(255,255,255,0.75)"
+						stroke="var(--chart-ink)"
 						stroke-width="1.5"
 					/>
 				{/if}
@@ -885,7 +885,7 @@
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) auto;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.04);
+		background: var(--fill-rest);
 		overflow: hidden;
 	}
 

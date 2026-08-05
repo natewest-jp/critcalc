@@ -228,6 +228,20 @@ function characterCompletionSource(context: CompletionContext): CompletionResult
 // Structural styles mirror the old .rp-notation textarea exactly.
 // ---------------------------------------------------------------------------
 
+/** The composer's own ground — the chart well sunk one step darker. Every
+ *  dimmed token below mixes against THIS, not against transparent: an alpha
+ *  text color renders display-dependently on P3 (the alpha-compositing law,
+ *  brightness round 2026-07-31). */
+const COMPOSER_BG = 'color-mix(in srgb, #000 40%, var(--rp-chart-bg, #15151c))';
+/** A dimmed rung of the context's secondary voice, on the composer ground.
+ *  ↻ 2026-08-05 (archetype consistency pass): these were `rgba(255,255,255,α)`
+ *  and a literal cool near-white (#e8e8f0) — the last of the pre-archetype
+ *  palette inside the planner. The composer sat in a parchment-on-navy frame
+ *  rendering its text in cool white, which read as a different application.
+ *  The alphas map 1:1 onto mixes of --muted so the token hierarchy is
+ *  unchanged; only the hue allegiance moved. */
+const dim = (pct: number) => `color-mix(in srgb, var(--muted) ${pct}%, ${COMPOSER_BG})`;
+
 const notationTheme = EditorView.theme({
 	// Container — the notation COMPOSER on the planner frame's bottom edge:
 	// its own inset box (radius 6 per the 3/6/9 scale) sunk darker than the
@@ -241,7 +255,7 @@ const notationTheme = EditorView.theme({
 	// RotationTimeline.svelte (the pre-chunk-load stand-in) — keep in
 	// lockstep.
 	'&': {
-		background: 'color-mix(in srgb, #000 40%, var(--rp-chart-bg, #15151c))',
+		background: COMPOSER_BG,
 		border: '1px solid var(--rp-line, #1c2a4a)',
 		borderRadius: '6px',
 		fontSize: '13px',
@@ -261,7 +275,7 @@ const notationTheme = EditorView.theme({
 		borderColor: 'var(--rp-line, #1c2a4a)'
 	},
 	'.cm-placeholder': {
-		color: 'rgba(158,172,200,0.45)'
+		color: dim(55)
 	},
 	// Inner scroller / content
 	'.cm-scroller': {
@@ -271,11 +285,11 @@ const notationTheme = EditorView.theme({
 	},
 	'.cm-content': {
 		padding: '10px 12px',
-		caretColor: 'rgba(255,255,255,0.85)'
+		caretColor: 'var(--text)'
 	},
 	'.cm-line': { padding: '0' },
 	'.cm-cursor, .cm-dropCursor': {
-		borderLeftColor: 'rgba(255,255,255,0.7)',
+		borderLeftColor: 'var(--text)',
 		borderLeftWidth: '2px'
 	},
 	'&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, ::selection':
@@ -288,7 +302,7 @@ const notationTheme = EditorView.theme({
 		background: 'var(--surface-raised)',
 		border: 'none',
 		borderRadius: '6px',
-		boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.5)',
+		boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
 		padding: '2px 0',
 		marginTop: '2px',
 		minWidth: '200px'
@@ -312,8 +326,8 @@ const notationTheme = EditorView.theme({
 	// concatenated tokens (e.g. QEN1N2) without inserting actual spaces.
 	// character: no padding — always followed by a real space.
 	// separator: symmetric padding — may appear with no spaces either side.
-	'.rp-tok-char': { color: '#e8e8f0', fontWeight: '500' },
-	'.rp-tok-sep': { color: 'rgba(255,255,255,0.22)', padding: '0 3px' },
+	'.rp-tok-char': { color: 'var(--text)', fontWeight: '500' },
+	'.rp-tok-sep': { color: dim(30), padding: '0 3px' },
 	// E/Q — and any elemental/infused N/C/P — are tinted the CASTER'S element
 	// (bright shade), applied inline per token by the highlight plugin
 	// (elementTintForToken). These class colors are only the fallback for a
@@ -324,24 +338,24 @@ const notationTheme = EditorView.theme({
 	// element, so we imply none. E and Q stay distinguishable by their glyph.
 	'.rp-tok-Q': { color: 'var(--el-none-main)', paddingRight: '2px' },
 	'.rp-tok-E': { color: 'var(--el-none-main)', paddingRight: '2px' },
-	'.rp-tok-time': { color: 'rgba(255,255,255,0.62)', paddingRight: '2px' },
+	'.rp-tok-time': { color: 'var(--muted)', paddingRight: '2px' },
 	// ~?s is a time token with unknown value — an honest data gap, not an error.
 	// Same family as .rp-tok-time, subordinated (dimmed), so it never borrows
 	// the warning register.
-	'.rp-tok-unset': { color: 'rgba(255,255,255,0.4)', paddingRight: '2px' },
-	'.rp-tok-optional': { color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
-	'.rp-tok-label': { color: 'rgba(255,255,255,0.62)', paddingRight: '2px' },
+	'.rp-tok-unset': { color: dim(52), paddingRight: '2px' },
+	'.rp-tok-optional': { color: dim(50), paddingRight: '2px' },
+	'.rp-tok-label': { color: 'var(--muted)', paddingRight: '2px' },
 	// stack-assert: neutral gray, italic — visually subordinate to action tokens
 	// since the assertion itself is metadata (no timeline event). Time (~Xs) and
 	// stacks are held to the same non-infused gray so element tint stays the sole
 	// signal of "this hits with an element" (Nate 2026-07-22).
 	'.rp-tok-stack': {
-		color: 'rgba(255,255,255,0.55)',
+		color: dim(70),
 		paddingRight: '2px',
 		fontStyle: 'italic',
 		fontSize: '0.92em'
 	},
-	'.rp-tok-or-alt': { color: 'rgba(255,255,255,0.38)', paddingRight: '2px' },
+	'.rp-tok-or-alt': { color: dim(50), paddingRight: '2px' },
 	// Unknown tokens speak --ui-warning (Nate 2026-07-27). They used to speak
 	// dire, but only because a separate error red sat too close to the Q coral
 	// — that constraint died with the coral's retirement, and an unrecognized

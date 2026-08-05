@@ -338,7 +338,7 @@
 		place-items: center;
 		padding: 0 4px;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.08);
+		background: var(--fill-rest);
 		color: var(--muted);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
@@ -457,7 +457,7 @@
 		letter-spacing: var(--ls-mid);
 		text-transform: uppercase;
 		color: var(--muted);
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--fill-rest);
 		white-space: nowrap;
 	}
 	.cc-tag--active {

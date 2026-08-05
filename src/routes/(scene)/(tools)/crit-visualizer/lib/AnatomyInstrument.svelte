@@ -656,7 +656,7 @@
 		padding: 0.24rem 0.45rem;
 		border: none;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.07);
+		background: var(--fill-rest);
 		color: var(--text);
 		/* Input field — a sanctioned Mono home */
 		font-family: var(--font-mono);
@@ -695,7 +695,7 @@
 	.an-lab-track {
 		height: 11px;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--fill-rest);
 		overflow: hidden;
 	}
 

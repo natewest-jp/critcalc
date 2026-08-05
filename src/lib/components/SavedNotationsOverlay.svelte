@@ -278,7 +278,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 14px 16px 12px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+		border-bottom: 1px solid var(--frame-line);
 		flex-shrink: 0;
 	}
 	/* The two icon buttons are .btn--icon; only their glyph size and resting
@@ -330,7 +330,7 @@
 		background: transparent;
 	}
 	.entry-list::-webkit-scrollbar-thumb {
-		background: rgba(255, 255, 255, 0.12);
+		background: var(--fill-hover);
 		border-radius: 3px;
 	}
 
@@ -339,14 +339,14 @@
 		align-items: center;
 		gap: 14px;
 		padding: 12px 16px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		border-bottom: 1px solid var(--frame-line);
 		transition: background 150ms ease;
 	}
 	.entry:last-child {
 		border-bottom: none;
 	}
 	.entry:hover {
-		background: rgba(255, 255, 255, 0.025);
+		background: var(--fill-rest);
 	}
 	.entry--deleting {
 		background: rgba(200, 60, 60, 0.04);
@@ -377,7 +377,7 @@
 		justify-content: center;
 	}
 	.avatar-blank {
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--fill-rest);
 		border-color: var(--surface-raised);
 	}
 	.avatar-img {
@@ -422,7 +422,7 @@
 	.rename-input {
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
-		background: rgba(255, 255, 255, 0.08);
+		background: var(--fill-rest);
 		border: none;
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
 		border-radius: 3px;

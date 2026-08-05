@@ -385,7 +385,7 @@
 		padding: 0.14rem 0.4rem;
 		border: none;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.07);
+		background: var(--fill-rest);
 		color: var(--text);
 		font-family: var(--font-mono);
 		font-size: var(--fs-lg);
@@ -460,7 +460,7 @@
 		width: 11px;
 		height: 11px;
 		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.14);
+		background: var(--fill-hover);
 		animation: cv-dot-in 260ms ease-out backwards;
 	}
 

@@ -203,14 +203,14 @@
 		padding: 2px;
 		border: none;
 		border-radius: var(--r-sm);
-		background: rgba(255, 255, 255, 0.045);
+		background: var(--fill-rest);
 		cursor: pointer;
 		transition:
 			background 150ms ease,
 			box-shadow 150ms ease;
 	}
 	.lp-tile:hover {
-		background: rgba(255, 255, 255, 0.12);
+		background: var(--fill-hover);
 	}
 	.lp-tile--current {
 		background: color-mix(in srgb, var(--el) 20%, transparent);
@@ -248,7 +248,7 @@
 		height: 24px;
 		border-radius: var(--r-sm);
 		border: none;
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--fill-rest);
 		color: var(--muted);
 		font-family: var(--font-body);
 		font-size: var(--fs-2xs);
@@ -272,7 +272,7 @@
 		box-shadow: inset 0 0 0 1.5px var(--el);
 	}
 	.lp-pip:hover {
-		background: rgba(255, 255, 255, 0.12);
+		background: var(--fill-hover);
 		color: var(--el, var(--text));
 	}
 </style>

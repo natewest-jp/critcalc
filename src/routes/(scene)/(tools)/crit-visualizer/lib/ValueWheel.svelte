@@ -118,7 +118,7 @@
 		padding: 0.3rem 0.45rem;
 		border: none;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.07);
+		background: var(--fill-rest);
 		color: var(--text);
 		/* Input field — one of the two sanctioned Mono homes (Nate 2026-07-24) */
 		font-family: var(--font-mono);
@@ -130,7 +130,7 @@
 	}
 
 	.vw-field:hover {
-		background: rgba(255, 255, 255, 0.11);
+		background: var(--fill-hover);
 	}
 
 	.vw-field.open,

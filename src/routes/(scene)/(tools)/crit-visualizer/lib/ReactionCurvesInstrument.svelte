@@ -219,11 +219,11 @@
 			>
 				<!-- EM grid -->
 				{#each X_TICKS as t (t)}
-					<line x1={xOf(t)} y1={TOP} x2={xOf(t)} y2={plotY1} stroke="rgba(255,255,255,0.07)" />
+					<line x1={xOf(t)} y1={TOP} x2={xOf(t)} y2={plotY1} stroke="var(--chart-grid)" />
 					<text
 						x={xOf(t)}
 						y={plotY1 + 15}
-						fill="rgba(255,255,255,0.5)"
+						fill="var(--chart-ink)"
 						font-size="10"
 						text-anchor="middle"
 					>
@@ -233,7 +233,7 @@
 				<text
 					x={graphW - PADR}
 					y={plotY1 + 26}
-					fill="rgba(255,255,255,0.35)"
+					fill="var(--chart-dim)"
 					font-size="10"
 					text-anchor="end"
 				>
@@ -242,30 +242,18 @@
 
 				<!-- Value grid -->
 				{#each yTicks as v (v)}
-					<line
-						x1={PADL}
-						y1={yOf(v)}
-						x2={graphW - PADR}
-						y2={yOf(v)}
-						stroke="rgba(255,255,255,0.07)"
-					/>
+					<line x1={PADL} y1={yOf(v)} x2={graphW - PADR} y2={yOf(v)} stroke="var(--chart-grid)" />
 					<text
 						x={PADL - 7}
 						y={yOf(v) + 3.5}
-						fill="rgba(255,255,255,0.5)"
+						fill="var(--chart-ink)"
 						font-size="10"
 						text-anchor="end"
 					>
 						{fmtTick(v)}
 					</text>
 				{/each}
-				<text
-					x={PADL - 7}
-					y={TOP - 4}
-					fill="rgba(255,255,255,0.35)"
-					font-size="10"
-					text-anchor="end"
-				>
+				<text x={PADL - 7} y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="end">
 					{family.yLabel}
 				</text>
 
@@ -289,7 +277,7 @@
 					y1={TOP}
 					x2={xOf(em)}
 					y2={plotY1}
-					stroke="rgba(255,255,255,0.4)"
+					stroke="var(--chart-dim)"
 					stroke-dasharray="2 3"
 				/>
 				{#each family.curves as c (c.label)}

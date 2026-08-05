@@ -122,11 +122,11 @@
 			>
 				<!-- X grid (pulls from now) -->
 				{#each xTicks as t (t)}
-					<line x1={xOf(t)} y1={TOP} x2={xOf(t)} y2={plotY1} stroke="rgba(255,255,255,0.07)" />
+					<line x1={xOf(t)} y1={TOP} x2={xOf(t)} y2={plotY1} stroke="var(--chart-grid)" />
 					<text
 						x={xOf(t)}
 						y={plotY1 + 15}
-						fill="rgba(255,255,255,0.5)"
+						fill="var(--chart-ink)"
 						font-size="10"
 						text-anchor="middle"
 					>
@@ -136,7 +136,7 @@
 				<text
 					x={graphW - PADR}
 					y={plotY1 + 27}
-					fill="rgba(255,255,255,0.35)"
+					fill="var(--chart-dim)"
 					font-size="10"
 					text-anchor="end"
 				>
@@ -155,14 +155,14 @@
 					<text
 						x={PADL - 7}
 						y={yOfC(p) + 3.5}
-						fill="rgba(255,255,255,0.5)"
+						fill="var(--chart-ink)"
 						font-size="10"
 						text-anchor="end"
 					>
 						{Math.round(p * 100)}%
 					</text>
 				{/each}
-				<text x="4" y={TOP - 4} fill="rgba(255,255,255,0.35)" font-size="10" text-anchor="start">
+				<text x="4" y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="start">
 					chance by then
 				</text>
 
@@ -173,14 +173,14 @@
 						y1={TOP}
 						x2={xOf(softAt)}
 						y2={plotY1}
-						stroke="rgba(255,255,255,0.28)"
+						stroke="var(--chart-rule)"
 						stroke-dasharray="4 4"
 					/>
 					<text
 						class="wi-word"
 						x={xOf(softAt) + 5}
 						y={TOP + 11}
-						fill="rgba(255,255,255,0.45)"
+						fill="var(--chart-dim)"
 						font-size="10"
 					>
 						soft pity
@@ -203,7 +203,7 @@
 					y1={TOP}
 					x2={xOf(clampedPulls)}
 					y2={plotY1}
-					stroke="rgba(255,255,255,0.75)"
+					stroke="var(--chart-ink)"
 					stroke-width="1.5"
 				/>
 				<circle
@@ -218,7 +218,7 @@
 					class="wi-word"
 					x={xOf(clampedPulls) + (clampedPulls > horizon * 0.7 ? -8 : 8)}
 					y={Math.max(TOP + 12, yOfC(chanceWithin) - 10)}
-					fill="rgba(255,255,255,0.85)"
+					fill="var(--text)"
 					font-size="11"
 					font-weight="600"
 					text-anchor={clampedPulls > horizon * 0.7 ? 'end' : 'start'}
