@@ -4,8 +4,12 @@ import {
 	INSTRUMENTS,
 	MAX_GAUGE_APPS,
 	MAX_GAUGE_TIME,
+	MAX_SLOTS,
+	effectiveSlots,
 	icdHitsToGaugeApps,
-	normalizeAssignment
+	normalizeAssignment,
+	normalizeSlots,
+	viewportCapacity
 } from './workspace';
 import { simulateIcd, uniformHitTimes, STANDARD_ICD } from './icd';
 
@@ -58,6 +62,64 @@ describe('normalizeAssignment', () => {
 
 	it('always returns a permutation of the current roster', () => {
 		expect([...normalizeAssignment([])].sort()).toEqual([...ALL].sort());
+	});
+});
+
+describe('normalizeSlots', () => {
+	it('accepts whole counts within range', () => {
+		for (let n = 1; n <= MAX_SLOTS; n++) expect(normalizeSlots(n)).toBe(n);
+	});
+
+	it("keeps 'auto' as 'auto'", () => {
+		expect(normalizeSlots('auto')).toBe('auto');
+	});
+
+	it("falls back to 'auto' for anything else", () => {
+		for (const bad of [null, undefined, 0, -1, MAX_SLOTS + 1, 1.5, NaN, '2', {}, [], () => {}]) {
+			expect(normalizeSlots(bad)).toBe('auto');
+		}
+	});
+
+	it("treats a payload written before the control existed as 'auto'", () => {
+		// The v1 envelope gained `slots` without a version bump: an older record
+		// has no such key, and must restore to the pre-control behavior.
+		const legacy = { v: 1, assignment: [...DEFAULT_ASSIGNMENT] } as { slots?: unknown };
+		expect(normalizeSlots(legacy.slots)).toBe('auto');
+	});
+});
+
+describe('viewportCapacity', () => {
+	it('steps 1 → 2 → 3 at the layout thresholds', () => {
+		expect(viewportCapacity(1359)).toBe(1);
+		expect(viewportCapacity(1360)).toBe(2);
+		expect(viewportCapacity(2199)).toBe(2);
+		expect(viewportCapacity(2200)).toBe(3);
+	});
+
+	it('never exceeds MAX_SLOTS, including the SSR zero width', () => {
+		expect(viewportCapacity(0)).toBe(1);
+		expect(viewportCapacity(99999)).toBe(MAX_SLOTS);
+	});
+});
+
+describe('effectiveSlots', () => {
+	it("follows the viewport under 'auto'", () => {
+		expect(effectiveSlots('auto', 1)).toBe(1);
+		expect(effectiveSlots('auto', 3)).toBe(3);
+	});
+
+	it('caps a roomy viewport down to the preference', () => {
+		expect(effectiveSlots(1, 3)).toBe(1);
+		expect(effectiveSlots(2, 3)).toBe(2);
+	});
+
+	it('never promises more than the viewport can hold', () => {
+		expect(effectiveSlots(3, 1)).toBe(1);
+		expect(effectiveSlots(2, 1)).toBe(1);
+	});
+
+	it('never exceeds the instrument roster', () => {
+		expect(effectiveSlots(MAX_SLOTS, 99)).toBeLessThanOrEqual(INSTRUMENTS.length);
 	});
 });
 

@@ -1000,21 +1000,57 @@
 						its own stacking context below it) — portal to <code>body</code>.
 					</li>
 					<li>
-						<strong>One <code>.frame</code> per tool, and the two tools mirror each other.</strong>
-						The Team Builder and the Rotation Planner are each a single full-screen
-						<code>.frame</code> below the tab strip, holding zones rather than nested islands: a
-						bench on one edge (planner LEFT, Team Builder RIGHT, so they meet at the tool-slide
-						seam), a filter column on the opposite OUTER edge, work in the middle. Zones separate
-						with a 1px interior hairline over the frame's own fill — never a gap, never a second
-						box. Nothing inside a frame wears <code>.panel</code>; the kickers do the separating.
+						<strong>One <code>.frame</code> per tool, and one grammar site-wide:</strong>
+						<strong>bench LEFT · work CENTER · filters RIGHT.</strong> The Team Builder and the
+						Rotation Planner are each a single full-screen <code>.frame</code> below the tab strip,
+						holding zones rather than nested islands. Zones separate with a 1px interior hairline
+						over the frame's own fill — never a gap, never a second box. Nothing inside a frame
+						wears <code>.panel</code>; the kickers do the separating. (↻ 2026-08-05: the old
+						mirrored arrangement — planner LEFT, Team Builder RIGHT — existed for the tool-slide
+						seam and retired with it.)
 					</li>
 					<li>
-						<strong>A tool frame is viewport-fit; its zones scroll, the page doesn't.</strong>
-						Height is
+						<strong>The bench is not a zone either tool owns.</strong> It is the layout-level ribbon
+						(<code>BenchBand</code>, rendered once by the tools layout outside the page layers),
+						docked over a <code>[data-bench-anchor]</code> gutter each benched tool reserves. Both
+						tools dock it at the <em>same</em> screen spot, so across a tool navigation it persists opaque
+						and motionless — that persistence is the continuity. The Visualizers have no dock, and the
+						ribbon fades in place.
+					</li>
+					<li>
+						<strong
+							>The filter column is <code>CharacterGrid</code>'s rail, not a frame zone.</strong
+						>
+						Both tools reach it through the shared grid (<code>railSide</code>, plus the
+						<code>railStart</code>/<code>aboveGrid</code>/<code>belowGrid</code> snippets and the
+						<code>--cg-*</code> knobs) — the planner via its Source overlay, the Team Builder in its roster
+						view. Per-tool sizing rides the knobs; don't fork the component.
+					</li>
+					<li>
+						<strong
+							>Viewport-fit is the Team Builder and the Visualizers — the planner page-scrolls.</strong
+						>
+						For the fitted two, height is
 						<code>calc(100svh − --chrome-h − --tool-pad-top − --tool-pad-bottom)</code> minus the
-						tab strip, and a bounded scroll needs <code>min-height: 0</code> at every flex level below
-						it — break one and the column grows instead of scrolling. The benches are side-locked at every
-						width; narrow viewports are the mobile pass's problem, not a breakpoint's.
+						tab strip, their zones scroll internally, and a bounded scroll needs
+						<code>min-height: 0</code> at every flex level below it — break one and the column grows instead
+						of scrolling. The planner is the deliberate exception: its frame is a flex column of rows
+						that grows with the rotation. The benches are side-locked at every width; narrow viewports
+						are the mobile pass's problem, not a breakpoint's.
+					</li>
+					<li>
+						<strong>The Visualizers are an N-slot workspace, not a page of panels.</strong> Every
+						instrument mounts once and hides with <code>display: none</code> when unslotted, so its
+						state survives swaps; the lineup size is viewport capacity capped by the reader's
+						preference. The <em>tile</em> owns <code>container-name: instrument</code> — instruments
+						size to the slot they're in, never to the viewport — and their control panels flow in
+						<code>.panels</code> multicolumn.
+					</li>
+					<li>
+						⚠️ <strong><code>.frame</code> means two different things.</strong> In the Planner and
+						Team Builder it is the tool's outer frame; in every Visualizers instrument it is a
+						<em>chart interior</em> (the specimen above). Same class, same border-and-ground job, two
+						scales — read the context before reusing it.
 					</li>
 					<li>Chrome marks must be geometry, never <code>&lt;text&gt;</code>.</li>
 					<li>The brand string is <code>critcalc.app</code> — the full domain, everywhere.</li>

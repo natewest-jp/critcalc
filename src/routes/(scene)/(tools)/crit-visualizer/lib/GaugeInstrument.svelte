@@ -451,7 +451,7 @@
 	);
 </script>
 
-<div class="gx-instrument">
+<div class="instrument">
 	<div class="gx-frame frame ctx-dark">
 		<div class="gx-transport">
 			<button
@@ -812,17 +812,6 @@
 </div>
 
 <style>
-	.gx-instrument {
-		height: 100%;
-		min-height: 0;
-		overflow-y: auto;
-		container-type: inline-size;
-		container-name: gauge;
-		display: grid;
-		gap: 1rem;
-		align-content: start;
-	}
-
 	.gx-frame {
 		padding: 0.4rem 0.6rem 0.2rem;
 		border-radius: 9px;

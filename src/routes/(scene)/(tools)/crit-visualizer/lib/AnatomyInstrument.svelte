@@ -236,7 +236,7 @@
 	</span>
 {/snippet}
 
-<div class="an-instrument">
+<div class="instrument">
 	<!-- Family switch -->
 	<div class="an-views">
 		<button
@@ -517,17 +517,6 @@
 </div>
 
 <style>
-	.an-instrument {
-		height: 100%;
-		min-height: 0;
-		overflow-y: auto;
-		container-type: inline-size;
-		container-name: anatomy;
-		display: grid;
-		gap: 1rem;
-		align-content: start;
-	}
-
 	.an-views {
 		display: flex;
 		flex-wrap: wrap;

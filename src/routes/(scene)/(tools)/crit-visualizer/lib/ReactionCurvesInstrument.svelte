@@ -207,7 +207,7 @@
 	}
 </script>
 
-<div class="rx-instrument">
+<div class="instrument">
 	<div class="rx-frame frame ctx-dark">
 		<div class="rx-graph" bind:clientWidth={graphW}>
 			<svg
@@ -390,17 +390,6 @@
 </div>
 
 <style>
-	.rx-instrument {
-		height: 100%;
-		min-height: 0;
-		overflow-y: auto;
-		container-type: inline-size;
-		container-name: rxcurves;
-		display: grid;
-		gap: 1rem;
-		align-content: start;
-	}
-
 	.rx-frame {
 		padding: 0.4rem 0.6rem 0.2rem;
 		border-radius: 9px;

@@ -180,7 +180,9 @@ await page.goto(`${BASE}/crit-visualizer?i=icd`, { waitUntil: 'networkidle' });
 		rows === Math.min(applying, 8),
 		`rows=${rows} applying=${applying}`
 	);
-	const note = await page.$eval('.gx-note', (el) => el.textContent);
+	// `.gx-note` retired in the styleguide migration (the seven per-instrument
+	// *-note copies folded into the global .note); scope to the gauge tile.
+	const note = await page.$eval('.gx-panels .note', (el) => el.textContent);
 	check('gauge shows the custom-sequence note', note.includes('Custom sequence'), note.trim());
 }
 
@@ -207,7 +209,7 @@ await page.goto(`${BASE}/crit-visualizer`, { waitUntil: 'networkidle' });
 	const live = await page.$eval('.gx-panels', (el) => el.textContent);
 	check('Enemy Status follows playback', /at \d/.test(live), '');
 	await page.click('.gx-play'); // pause
-	const speeds = await page.$$eval('.gx-transport .vz-chip', (els) =>
+	const speeds = await page.$$eval('.gx-transport .chip', (els) =>
 		els.map((e) => e.textContent.trim())
 	);
 	check('speed chips 0.25/0.5/1', JSON.stringify(speeds) === '["0.25×","0.5×","1×"]');
@@ -224,7 +226,7 @@ await page.goto(`${BASE}/crit-visualizer`, { waitUntil: 'networkidle' });
 // ICD: anchors (ghost-compare feature removed by Nate's call)
 await page.goto(`${BASE}/crit-visualizer?i=icd`, { waitUntil: 'networkidle' });
 {
-	const anchors = await page.$$eval('.icd-anchors .vz-chip', (els) => els.length);
+	const anchors = await page.$$eval('.icd-anchors .chip', (els) => els.length);
 	check('ICD interval anchor chips render', anchors === 3, String(anchors));
 	check('ghost-compare feature removed', (await page.$$('.icd-ghost-toggle')).length === 0);
 }
@@ -232,22 +234,23 @@ await page.goto(`${BASE}/crit-visualizer?i=icd`, { waitUntil: 'networkidle' });
 // Rolls: Sanctifying Elixir
 await page.goto(`${BASE}/crit-visualizer?i=rolls`, { waitUntil: 'networkidle' });
 {
-	const sources = await page.$$eval('.ar-panels .vz-chip', (els) =>
+	const sources = await page.$$eval('.ar-panels .chip', (els) =>
 		els.map((e) => e.textContent.trim())
 	);
 	check(
 		'Sanctifying Elixir listed as a source',
 		sources.some((t) => t.includes('Elixir'))
 	);
-	await page.click('.ar-views .vz-chip:nth-child(2)'); // Upgrade Rolls
-	const chips = await page.$$('.ar-panels .vz-chip');
+	await page.click('.ar-views .chip:nth-child(2)'); // Upgrade Rolls
+	const chips = await page.$$('.ar-panels .chip');
 	let crafted = null;
 	for (const c of chips) {
 		if ((await c.textContent()).includes('Elixir-crafted')) crafted = c;
 	}
 	check('Elixir-crafted mode chip in Upgrade view', Boolean(crafted));
 	await crafted?.click();
-	const note = await page.$eval('.ar-frame .ar-note', (el) => el.textContent);
+	// `.ar-note` retired with the other six per-instrument note copies (→ .note).
+	const note = await page.$eval('.ar-frame .note', (el) => el.textContent);
 	check('crafted caption states the ≥2 guarantee', note.includes('≥2 guaranteed into the pair'));
 }
 
@@ -265,7 +268,7 @@ await page.goto(`${BASE}/crit-visualizer?i=defres`, { waitUntil: 'networkidle' }
 	});
 	const after = await page.$eval('.dr-panels', (el) => el.textContent);
 	check('below-zero halving: 10% − 40% → ×1.150', after.includes('×1.150'));
-	await page.click('.dr-panels .vz-chip:nth-child(2)'); // Enemy DEF view
+	await page.click('.dr-panels .chip:nth-child(2)'); // Enemy DEF view
 	const def = await page.$eval('.dr-panels', (el) => el.textContent);
 	check('DEF view renders (90 vs 100 baseline)', def.includes('×0.487'));
 }
@@ -282,7 +285,7 @@ await page.goto(`${BASE}/crit-visualizer?i=wish`, { waitUntil: 'networkidle' });
 		el.value = '89';
 		el.dispatchEvent(new Event('input', { bubbles: true }));
 	});
-	await page.click('.wi-toggle input');
+	await page.click('.wi-panels .check .check-box');
 	const certain = await page.$eval('.wi-panels', (el) => el.textContent);
 	check('pity 89 + guarantee = certain next pull', certain.includes('by 1 pulls'), '');
 }
@@ -298,7 +301,7 @@ await page.goto(`${BASE}/crit-visualizer?i=anatomy`, { waitUntil: 'networkidle' 
 	check('direct equation has 5 terms at No Reaction', terms === 5, String(terms));
 	const labRows = await page.$$eval('.an-lab-row', (els) => els.length);
 	check('stat lab shows roll rows', labRows === 5, String(labRows));
-	await page.click('.an-views .vz-chip:nth-child(3)'); // Transformative
+	await page.click('.an-views .chip:nth-child(3)'); // Transformative
 	const tFrame = await page.$eval('.an-frame', (el) => el.textContent);
 	check('transformative prints exact damage', tFrame.includes('damage, exactly'));
 	const tLab = await page.$$eval('.an-lab-row', (els) => els.length);
