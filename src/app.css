@@ -120,11 +120,13 @@
 	   they are not interchangeable palettes. Full reference: /styleguide (dev).
 
 	     DIRE  magenta — enemy-facing. Debuffs, res shred, the adversarial side
-	           of the game model. Lives PAST THE PORTAL: dire must never appear
-	           on the landing scene or the static pages (see the accent zoning
-	           at the bottom of this block).
+	           of the game model. TOOL-ZONE ONLY: dire must never appear on the
+	           landing scene or the static pages (see the accent zoning at the
+	           bottom of this block). ⚠ RETIREMENT-BOUND (dire-retirement
+	           round): dire leaves the tool scene; only the enemy-facing
+	           semantic (debuff bars) is guaranteed a successor color.
 	     CALM  blue/navy — ally-facing. Team buffs, the ambient world, the scene.
-	           Site-wide; allowed on both sides of the portal.
+	           Site-wide — in the world and at the crest alike.
 	     GILT  gold/beige — light, structure, guidance. Branding, chrome,
 	           headings, links, kickers, input text. Site-wide.
 
@@ -132,8 +134,8 @@
 	   -hi = brighter; -soft = the readable text weight; -dim = receded;
 	   -fill = a deep body fill. Not every family needs every slot. */
 
-	/* DIRE — enemy-facing. Also the Dire border's edge hue (direBorderGL reads
-	   it live via a relative-color probe, so value tweaks keep cascading).
+	/* DIRE — enemy-facing. (Until 2026-08-05 also the Dire border's edge hue;
+	   the border is retired — docs/archive/dire-border-handoff.md.)
 	   --dire-fill is the debuff bar BODY, the exact counterpart of --calm-fill:
 	   debuff and buff bars sit in the same timeline and should carry the same
 	   weight. They didn't — the debuff bar was color-mix(dire 24%, chart-bg),
@@ -240,7 +242,7 @@
 	   already converged in practice (rgba white .06/.07 and accent 20%/55% were
 	   the two spikes across the whole codebase) — naming them is what stops the
 	   next control from inventing a 25th alpha. --accent is ZONED (see below),
-	   so selection reads gilt outside the portal and dire inside, for free.
+	   so selection reads gilt in the world and dire at the crest, for free.
 
 	   ↻ 2026-07-31: fills are TINTED, not white — a white alpha overlay
 	   desaturates whatever it covers (washed-out buttons, Nate). The tint
@@ -294,11 +296,14 @@
 	   thumb's --gilt-dim (4.93:1) brings the two zones TOGETHER instead. */
 	--knob: var(--gilt-dim);
 
-	/* ══ ACCENT ZONING — dire stays past the portal ════════════════════════════
+	/* ══ ACCENT ZONING — the world and the crest ═══════════════════════════════
 	   ONE alias, read 148× across 26 files, so scoping it here re-themes the
-	   entire control layer on both sides of the portal at no further cost.
-	     outside the portal (landing, static pages, site chrome, meta modals) → gilt
-	     inside a tool                                                        → dire
+	   entire control layer in both zones at no further cost. Zone names ride
+	   the ascend (the portal that once named them is retired): picking a path
+	   is the moment you ascend, and a tool is where you land.
+	     in the world (landing, static pages, site chrome, meta modals) → gilt
+	     at the crest (inside a tool) → dire (VALUE retirement-bound; the
+	     zoning mechanism stays)
 	   The [data-zone='tool'] half is for PORTALLED nodes: $lib/actions/portal
 	   appends popovers to <body>, which drops them out of .tool-shell and would
 	   otherwise flip a tool popover to gilt. The action stamps the zone on the

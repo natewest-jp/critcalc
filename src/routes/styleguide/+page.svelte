@@ -209,8 +209,10 @@
 				<h3>dire</h3>
 				<p class="sg-note">
 					Magenta. <strong>Enemy-facing</strong> — debuffs, res shred, the adversarial side of the
-					game model. <strong>Lives past the portal:</strong> dire must never appear on the landing
-					scene or the static pages. <code>--dire-fill</code> is the debuff bar body — the exact
+					game model. <strong>Tool-zone only:</strong> dire must never appear on the landing scene
+					or the static pages. ⚠ <strong>Retirement-bound</strong> (dire-retirement round): dire
+					leaves the tool scene entirely; only the enemy-facing semantic — the debuff bars — is
+					guaranteed a successor color. <code>--dire-fill</code> is the debuff bar body — the exact
 					counterpart of <code>--calm-fill</code>, inheriting dire's hue via relative color while
 					pinning saturation and lightness to the buff bar's weight.
 				</p>
@@ -222,7 +224,7 @@
 				<h3>calm</h3>
 				<p class="sg-note">
 					Blue/navy. <strong>Ally-facing</strong> — team buffs, the ambient world, the scene.
-					Site-wide, allowed on both sides of the portal.
+					Site-wide — in the world and at the crest alike.
 					<strong>The surface stack is part of this family</strong>
 					— the panels, the raised panels and the dividers are all calm, tuned as one ramp. They keep
 					role names because <code>var(--surface)</code> reads better at a call site than
@@ -261,18 +263,21 @@
 			</div>
 		</div>
 
-		<h3>Accent zoning — dire stays past the portal</h3>
+		<h3>Accent zoning — the world and the crest</h3>
 		<p class="sg-note">
-			<code>--accent</code> is a single alias read <strong>148× across 26 files</strong>, so scoping
-			it re-themes the entire control layer on both sides of the portal at no further cost. Outside
-			the portal it resolves to gilt; inside <code>.tool-shell</code> it resolves to dire. Both panels
-			below are the same markup — only the zone differs.
+			The site has two zones, named for the ascend: <strong>in the world</strong> (the landing
+			scene, static pages, chrome, meta modals — at rest, choices ahead) and
+			<strong>at the crest</strong> (inside a tool — picking a path is the moment you ascend, and a
+			tool is where you land). <code>--accent</code> is a single alias read
+			<strong>148× across 26 files</strong>, so scoping it re-themes the entire control layer in
+			both zones at no further cost. In the world it resolves to gilt; at the crest (<code
+				>.tool-shell</code
+			>) it currently resolves to dire — the VALUE is retirement-bound, the zoning mechanism stays.
+			Both panels below are the same markup — only the zone differs.
 		</p>
 		<div class="sg-zones">
 			<div class="sg-zone">
-				<span class="sg-zone-tag"
-					>outside the portal — landing, static pages, chrome, meta modals</span
-				>
+				<span class="sg-zone-tag">in the world — landing, static pages, chrome, meta modals</span>
 				<div class="sg-stage">
 					<button class="chip active">Selected</button>
 					<button class="chip">Resting</button>
@@ -281,7 +286,7 @@
 				</div>
 			</div>
 			<div class="sg-zone" data-zone="tool">
-				<span class="sg-zone-tag">inside a tool — past the portal</span>
+				<span class="sg-zone-tag">at the crest — inside a tool</span>
 				<div class="sg-stage">
 					<button class="chip active">Selected</button>
 					<button class="chip">Resting</button>
@@ -293,7 +298,7 @@
 		<p class="sg-note">
 			Portalled popovers (<code>$lib/actions/portal</code>) are appended to
 			<code>&lt;body&gt;</code>, which severs <code>.tool-shell</code> ancestry — the action stamps
-			<code>data-zone="tool"</code> on the way out so a tool popover keeps its dire accent.
+			<code>data-zone="tool"</code> on the way out so a tool popover keeps its tool accent.
 			<code>ChromeModals</code> is mounted outside <code>.tool-shell</code> deliberately, so
 			Help/About/Settings inherit gilt in <em>both</em> zones. That is intended: they are meta surfaces,
 			not tool surfaces.
@@ -835,8 +840,9 @@
 						<strong>dire = enemy-facing · calm = ally-facing · gilt = chrome.</strong> Don't cross them.
 					</li>
 					<li>
-						<strong>Dire never leaves the tools.</strong> No magenta on the landing scene or the
-						static pages. <code>--accent</code> is zoned; don't hard-code dire outside a tool.
+						<strong>The tool accent never leaves the crest.</strong> <code>--accent</code> is zoned; don't
+						hard-code the tool-zone value in the world (landing scene, static pages). Today that value
+						is dire — retirement-bound, but the law outlives it.
 					</li>
 					<li>
 						<strong>Nothing in gilt goes above <code>#d2bd90</code></strong> — the most saturated gold
@@ -1002,7 +1008,10 @@
 						Modals are for <strong>meta</strong> only (settings, help, static pages). Every
 						<strong>tool</strong> feature is a docked panel or an in-frame overlay.
 					</li>
-					<li>In-frame overlays can't paint above the top border — portal to <code>body</code>.</li>
+					<li>
+						In-frame overlays can't paint above the fixed chrome strip (<code>.tool-main</code> is
+						its own stacking context below it) — portal to <code>body</code>.
+					</li>
 					<li>
 						<strong>One <code>.frame</code> per tool, and the two tools mirror each other.</strong>
 						The Team Builder and the Rotation Planner are each a single full-screen
