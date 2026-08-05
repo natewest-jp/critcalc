@@ -429,7 +429,7 @@
 							y1={M.top + plotH}
 							x2={graphW - M.right}
 							y2={M.top + plotH}
-							stroke="rgba(255,255,255,0.2)"
+							stroke="var(--chart-rule)"
 						/>
 						<line
 							x1={apXOf(apPieceValue)}
@@ -453,7 +453,7 @@
 							<text
 								x={apXOf(bin.x)}
 								y={H - 14}
-								fill="rgba(255,255,255,0.5)"
+								fill="var(--chart-ink)"
 								font-size="10"
 								text-anchor="middle"
 							>
@@ -515,7 +515,7 @@
 						y1={M.top + plotH}
 						x2={graphW - M.right}
 						y2={M.top + plotH}
-						stroke="rgba(255,255,255,0.2)"
+						stroke="var(--chart-rule)"
 					/>
 					{#each [cvStats.p10, cvStats.median, cvStats.p90] as mark, i (i)}
 						<line
@@ -523,13 +523,13 @@
 							y1={M.top - 2}
 							x2={cvXOf(mark)}
 							y2={M.top + plotH}
-							stroke="rgba(255,255,255,0.55)"
+							stroke="var(--chart-ink)"
 							stroke-dasharray="3 4"
 						/>
 						<text
 							x={cvXOf(mark)}
 							y={M.top - 6}
-							fill="rgba(255,255,255,0.7)"
+							fill="var(--chart-ink)"
 							font-size="10"
 							text-anchor="middle"
 						>
@@ -542,7 +542,7 @@
 							<text
 								x={cvXOf(tick)}
 								y={H - 14}
-								fill="rgba(255,255,255,0.5)"
+								fill="var(--chart-ink)"
 								font-size="10"
 								text-anchor="middle"
 							>
@@ -575,7 +575,7 @@
 								y={M.top + plotH * (1 - (barsGhost[k] ?? 0) / barsMax)}
 								width={band * 0.64}
 								height={plotH * ((barsGhost[k] ?? 0) / barsMax)}
-								fill="rgba(255,255,255,0.16)"
+								fill="var(--chart-grid)"
 							/>
 						{/if}
 						<rect
@@ -590,7 +590,7 @@
 							<text
 								x={M.left + k * band + band * 0.5}
 								y={M.top + plotH * (1 - p / barsMax) - 6}
-								fill="rgba(255,255,255,0.7)"
+								fill="var(--chart-ink)"
 								font-size="10"
 								text-anchor="middle"
 							>
@@ -600,7 +600,7 @@
 						<text
 							x={M.left + k * band + band * 0.5}
 							y={H - 14}
-							fill="rgba(255,255,255,0.55)"
+							fill="var(--chart-ink)"
 							font-size="11"
 							text-anchor="middle"
 						>
@@ -612,7 +612,7 @@
 						y1={M.top + plotH}
 						x2={graphW - M.right}
 						y2={M.top + plotH}
-						stroke="rgba(255,255,255,0.2)"
+						stroke="var(--chart-rule)"
 					/>
 					{#if view === 'reshape'}
 						<line
@@ -1001,7 +1001,7 @@
 	.ar-ladder-track {
 		height: 12px;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--fill-rest);
 		overflow: hidden;
 	}
 
@@ -1037,13 +1037,20 @@
 		gap: 0.5rem;
 	}
 
+	/* ↻ 2026-08-05 (archetype consistency pass): a SOLID face, not --fill-rest.
+	   The five piece glyphs are white line-art .webp assets (the shared
+	   generic-full-set art) — they assume a dark chip, and on this panel's paper
+	   ground a 10% wash left them white-on-near-white, effectively invisible.
+	   --control-face is the one deliberately ground-agnostic surface in the
+	   system (Genshin lays the same slate on beige and navy alike), so it gives
+	   the art the dark chip it needs without nesting a context here. */
 	.ar-slot {
 		width: 46px;
 		height: 46px;
 		padding: 4px;
 		border: none;
 		border-radius: 6px;
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--control-face);
 		cursor: pointer;
 		opacity: 0.55;
 		transition:
@@ -1062,9 +1069,13 @@
 		opacity: 0.85;
 	}
 
+	/* Selection is carried by full opacity + the ring, NOT by lightening the
+	   face: mixing the accent into --surface (as this did) resolved to a PAPER
+	   chip in the light context and re-hid the white glyph on the one piece the
+	   reader had actually chosen. The face stays dark in every context. */
 	.ar-slot.active {
 		opacity: 1;
-		background: color-mix(in srgb, var(--accent) 20%, var(--surface));
+		background: color-mix(in srgb, var(--accent) 20%, var(--control-face));
 		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 65%, transparent);
 	}
 
@@ -1094,7 +1105,7 @@
 		padding: 0.32rem 0.5rem;
 		border: none;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.07);
+		background: var(--fill-rest);
 		color: var(--text);
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
@@ -1157,7 +1168,7 @@
 	.ar-odds {
 		padding: 0.3rem 0.6rem;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--fill-rest);
 		font-family: var(--font-body);
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);

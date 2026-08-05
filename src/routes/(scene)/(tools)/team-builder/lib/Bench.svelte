@@ -162,7 +162,7 @@
 		padding: 0.2rem 0.45rem;
 		border-radius: var(--r-sm);
 		border: 1px solid var(--border);
-		background: rgba(255, 255, 255, 0.04);
+		background: var(--fill-rest);
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
@@ -190,7 +190,7 @@
 	}
 	.bn-cov--no {
 		color: color-mix(in srgb, var(--muted) 75%, transparent);
-		background: rgba(255, 255, 255, 0.04);
+		background: var(--fill-rest);
 		cursor: pointer;
 		transition:
 			background 150ms ease,

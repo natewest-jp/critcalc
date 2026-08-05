@@ -102,7 +102,7 @@
 		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
 		color: var(--muted);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+		border-bottom: 1px solid var(--frame-line);
 		padding-bottom: 4px;
 		margin-bottom: 1px;
 	}
@@ -139,7 +139,7 @@
 		font-size: var(--fs-2xs);
 		color: var(--muted);
 		letter-spacing: var(--ls-mid);
-		border-top: 1px solid rgba(255, 255, 255, 0.08);
+		border-top: 1px solid var(--frame-line);
 		padding-top: 3px;
 		margin-top: 1px;
 	}

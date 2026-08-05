@@ -489,7 +489,7 @@
 		align-items: baseline;
 		padding: 0.45rem 0.6rem;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.04);
+		background: var(--fill-rest);
 		font-size: var(--fs-md);
 	}
 	.dc-cap--locked {
@@ -510,7 +510,7 @@
 		margin-left: 0.35rem;
 		padding: 0 4px;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.07);
+		background: var(--fill-rest);
 		font-size: var(--fs-2xs);
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
@@ -528,11 +528,11 @@
 		background: color-mix(in srgb, var(--el-color) 18%, transparent);
 	}
 	.dc-gate-chip--base {
-		background: rgba(255, 255, 255, 0.07);
+		background: var(--fill-rest);
 		color: var(--muted);
 	}
 	.dc-gate-chip--locked {
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--fill-rest);
 		color: var(--muted);
 	}
 

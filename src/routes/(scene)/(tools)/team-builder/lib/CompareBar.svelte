@@ -79,7 +79,7 @@
 		height: 16px;
 		flex-shrink: 0;
 		/* Recessed ground the bars sit in — the shared time field. */
-		background: rgba(255, 255, 255, 0.04);
+		background: var(--fill-rest);
 		border-radius: 2px;
 	}
 	.cb-locked {

@@ -702,7 +702,7 @@
 	}
 
 	.rp-tab-rename {
-		background: rgba(255, 255, 255, 0.08);
+		background: var(--fill-rest);
 		border: none;
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
 		border-radius: 3px;

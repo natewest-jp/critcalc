@@ -27,7 +27,13 @@ const hexToRgbStr = (hex) => {
 
 const INK = hexToRgbStr(cssToken('--ink'));
 const CONTROL_FACE = hexToRgbStr(cssToken('--control-face'));
-const SEL_SURFACE = 'rgb(237, 232, 222)'; // --sel-surface = --gilt-soft #ede8de
+// ↻ 2026-08-05: read from the token, not pinned. This was the literal
+// rgb(237, 232, 222) (= the retired --gilt-soft #ede8de), which went stale the
+// moment --sel-surface moved to the archetype's hinge beige #E5D9C3 — three
+// checks failing for a value that had been correct for a day. The IDIOM is what
+// this probe is guarding (selected row = the screen's one bright plate + dark
+// ink); the plate's hex is Nate's to retune.
+const SEL_SURFACE = hexToRgbStr(cssToken('--sel-surface'));
 const CALM_FILL = hexToRgbStr(cssToken('--calm-fill'));
 const timelineSvelte = readFileSync(
 	new URL('../src/lib/components/RotationTimeline.svelte', import.meta.url),

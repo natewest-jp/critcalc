@@ -41,13 +41,47 @@
 		return out;
 	}
 
+	/** The same trick for a context block (`.ctx-dark` / `.ctx-light`). The
+	 *  contexts are the palette's PRIMARY axis now, so they have to be live on
+	 *  this page too — reading them from :root would show the safety net rather
+	 *  than the thing components actually resolve. ^-anchored: the rule starts
+	 *  at column 0, and unanchored matching hits prose mentions in comments. */
+	function parseContextTokens(css: string, selector: string): Token[] {
+		const block = new RegExp(`^${selector.replace(/\./g, '\\.')}[^{]*\\{([^}]*)\\}`, 'm').exec(css);
+		if (!block) return [];
+		const body = block[1].replace(/\/\*[\s\S]*?\*\//g, '');
+		const out: Token[] = [];
+		const re = /(--[a-z0-9-]+)\s*:\s*([^;]+);/g;
+		let m: RegExpExecArray | null;
+		while ((m = re.exec(body))) out.push({ name: m[1], value: m[2].trim(), resolved: m[2].trim() });
+		return out;
+	}
+
 	const tokens = parseRootTokens(appCss);
 	const pre = (...ps: string[]) => tokens.filter((t) => ps.some((p) => t.name.startsWith(p)));
 	const exact = (...ns: string[]) =>
 		ns.map((n) => tokens.find((t) => t.name === n)).filter((t): t is Token => !!t);
 
+	/** The four ground roles + the two text rungs, in each context's own words.
+	 *  Order is deliberate: it reads as the ladder, deepest ground first. */
+	const CTX_ORDER = [
+		'--frame-bg',
+		'--surface',
+		'--surface-raised',
+		'--border',
+		'--text',
+		'--muted'
+	];
+	const ctxRow = (sel: string) => {
+		const found = parseContextTokens(appCss, sel);
+		return CTX_ORDER.map((n) => found.find((t) => t.name === n)).filter((t): t is Token => !!t);
+	};
+	const ctxDark = ctxRow('.ctx-dark');
+	const ctxLight = ctxRow('.ctx-light');
+
 	const structure = exact('--bg', '--text', '--muted', '--ink', '--chrome', '--neutral');
-	const calmSurfaces = exact('--surface', '--surface-raised', '--border', '--frame-line');
+	const roleNet = exact('--surface', '--surface-raised', '--border', '--frame-bg', '--frame-line');
+	const chartInk = pre('--chart-');
 	const metrics = exact('--chrome-h', '--site-footer-h');
 	const famDebuff = exact('--debuff', '--debuff-fill');
 	const famCalm = exact('--calm', '--calm-fill');
@@ -63,6 +97,8 @@
 		'--accent-hover-fill',
 		'--control-face',
 		'--control-face-hover',
+		'--control-ink',
+		'--ink-active',
 		'--sel-surface',
 		'--sel-ink',
 		'--knob',
@@ -84,7 +120,8 @@
 			metrics,
 			famDebuff,
 			famCalm,
-			calmSurfaces,
+			roleNet,
+			chartInk,
 			uiStates,
 			geometry,
 			motion,
@@ -112,39 +149,8 @@
 		['chips', 'Chips & tabs'],
 		['booleans', 'Toggles'],
 		['surfaces', 'Surfaces & text'],
-		['migration', 'Migration'],
+		['migration', 'Exceptions'],
 		['laws', 'Laws']
-	];
-
-	/** Old class → new class. This IS the migration work list. */
-	const migration: [string, string, string][] = [
-		['.sp-btn / .sp-reset', '.btn / .btn--danger / .is-confirming', '✅ chunk 3'],
-		['.tb-btn + 3 modifiers', '.btn, .btn--danger, .rp-btn-linked', '✅ chunk 3'],
-		['.action-btn + 4 modifiers', '.btn--sm + --primary/--danger', '✅ chunk 3'],
-		['.rp-composer-btn', '.btn--sm (+ local geometry)', '✅ chunk 3'],
-		['.rp-notes-btn, --active', '.btn--sm, .is-active', '✅ chunk 3'],
-		['.rp-zoom-btn', '.btn--sm .btn--icon', '✅ chunk 3'],
-		['.cv-pin-button', '.btn--primary', '✅ chunk 3'],
-		['.tb-edit-toggle', '.btn, .is-active', '✅ chunk 3'],
-		['.tb-conmode-btn ×2 groups', '.segment > .btn', '✅ chunk 3'],
-		['.close-btn, .icon-btn, .rp-tab-add', '.btn--icon', '✅ chunk 3'],
-		['.vz-chip / -sm / -sub', '.chip--control, .chip--sm, .chip-sub', '✅ chunk 2'],
-		['.tb-chip / --element / --role', '.chip, .chip--element', '✅ chunk 4'],
-		['.cg-chip / --active / --element', '.chip, .active, .chip--element', '✅ chunk 4'],
-		['.gx-el / .icd-el', '.chip--icon', '✅ chunk 4'],
-		['.rp-tab (+ close)', '.tab, .tab--closeable, .tab-close', '✅ chunk 4'],
-		['.tb-tab', '.tab — DROPPED Bitter + 5px', '✅ chunk 4'],
-		['.sp-toggle (button[role=switch])', '.toggle — now a native input', '✅ chunk 5'],
-		['.cv-variance-toggle / .wi-toggle', '.check', '✅ chunk 5'],
-		['.vz-panel / .vz-panels', '.panel / .panels', '✅ chunk 2'],
-		['.vz-kicker', '.kicker — now gilt', '✅ chunk 2'],
-		['.vz-anim-frame / .vz-slider* / .vz-value', '.frame / .slider* / .readout', '✅ chunk 2'],
-		['.sn-panel-title / .dc-title h2', '.title', '✅ chunk 5'],
-		['.dc-subtitle', '.subtitle', '✅ chunk 5'],
-		['.ar/dr/rx/an/gx/wi/icd-note', '.note — SEVEN copies of one rule', '✅ chunk 5'],
-		['.tb-note .dc-note .cv-toggle-sub', '.note + local offset', '✅ chunk 5'],
-		['.sp-section-title', '.kicker + local framing', '✅ chunk 5'],
-		['.tb-search ≡ .cg-search', '.field — byte-identical pair', '✅ chunk 5']
 	];
 </script>
 
@@ -178,7 +184,7 @@
 			The central authority for color, type and patterns. Dev-only — this route never ships.
 		</p>
 		<p class="sg-meta">
-			<strong>The unified system — 2026-07-27, migration complete.</strong> Two states on this page:
+			<strong>Two states on this page, and the labels are load-bearing:</strong>
 			<span class="sg-badge sg-badge--live">live</span> is parsed from <code>src/app.css</code> at
 			build time and cannot drift ·
 			<span class="sg-badge sg-badge--ship">shipped</span> is a real global class in
@@ -196,68 +202,63 @@
 	<section id="families">
 		<h2>The color architecture <span class="sg-badge sg-badge--live">live</span></h2>
 		<p class="sg-note">
-			↻ 2026-08-05 (Genshin-UI archetype, Nate's values): the palette's primary axis is
-			<strong>CONTEXT</strong> — dark areas and light areas, each a ground plus its own text and
-			border rules (<code>.ctx-dark</code> / <code>.ctx-light</code> in app.css; dark = chart-like
-			panels, light = most other panels and character cards always). <code>--chrome</code> white is
-			the over-the-world voice; <code>--ink</code> the universal dark ink. The dire and gilt
-			families are <strong>RETIRED</strong> — what remains below are the semantic survivors. ⚠ This page
-			still documents the old world in places; the full context rewrite is queued.
+			<strong>The palette's primary axis is CONTEXT</strong> (Genshin-UI archetype, Nate's values
+			2026-08-05) — not a hue family. A context is
+			<em>a ground plus its own text and border rules</em>. Components never name a color; they name
+			a ROLE (<code>--frame-bg</code> /
+			<code>--surface</code> / <code>--surface-raised</code> / <code>--text</code> /
+			<code>--muted</code> / <code>--border</code>), a context class re-declares the whole set, and
+			everything inside follows. Contexts <strong>nest</strong>: a dark chart well inside a light
+			panel re-declares on the inner element and wins by inheritance.
 		</p>
 
-		<div class="sg-fams">
+		<div class="sg-ctx-pair">
 			<div class="sg-fam">
-				<h3>debuff</h3>
+				<h3><code>.ctx-dark</code></h3>
 				<p class="sg-note">
-					<strong>Enemy-facing</strong> — debuffs, res shred, sacrificial procs: dire's semantic
-					successor. ⚠ Interim values (the destination color is still Nate's to choose).
-					<code>--debuff-fill</code> is the debuff bar body — the exact counterpart of
-					<code>--calm-fill</code>, pinned near its weight; <code>--debuff</code> is the bright
-					edge, exactly <code>--calm</code>'s role on buff bars.
+					Chart-like panels — timelines, plots, gauge wells — and the bench ribbon. Parchment on
+					navy. Also the <strong>root safety net</strong>: a surface that forgets to declare a
+					context lands here rather than on an orphan hue.
 				</p>
 				<div class="sg-swatches">
-					{#each famDebuff as t (t.name)}{@render swatch(t)}{/each}
+					{#each ctxDark as t (t.name)}{@render swatch(t)}{/each}
 				</div>
 			</div>
 			<div class="sg-fam">
-				<h3>calm</h3>
+				<h3><code>.ctx-light</code></h3>
 				<p class="sg-note">
-					Blue/navy. <strong>Ally-facing</strong> — team buffs, the ambient world, the scene.
-					Site-wide — in the world and at the crest alike.
-					<strong>The surface stack is part of this family</strong>
-					— the panels, the raised panels and the dividers are all calm, tuned as one ramp. They keep
-					role names because <code>var(--surface)</code> reads better at a call site than
-					<code>var(--calm-surface)</code>.
+					Most other panels, and character cards <em>always</em> (Genshin renders theirs light).
+					Warm brown prose on paper, with the slate <code>--muted</code> as the anchored LABEL voice
+					— note it is <strong>darker</strong> than <code>--text</code> here, a deliberate inversion of
+					the dark context's order: labels anchor, prose recedes.
 				</p>
-				<span class="sg-zone-tag"
-					>structure register — saturation steps DOWN as lightness rises</span
-				>
 				<div class="sg-swatches">
-					{#each calmSurfaces as t (t.name)}{@render swatch(t)}{/each}
+					{#each ctxLight as t (t.name)}{@render swatch(t)}{/each}
 				</div>
-				<span class="sg-zone-tag"
-					>content register — saturation steps UP: content, not structure</span
-				>
-				<div class="sg-swatches">
-					{#each famCalm as t (t.name)}{@render swatch(t)}{/each}
-				</div>
-				<p class="sg-note">
-					That split is what finally separates <code>--calm-fill</code> from
-					<code>--border</code>: they used to sit at l22 and l23 with similar chroma and were
-					effectively one color. A buff bar is <em>content</em> and a divider is
-					<em>structure</em>, so the bar is now both lighter and far more chromatic — it can never
-					read as a structural line.
-				</p>
 			</div>
-			<div class="sg-fam">
-				<h3>gilt <span class="sg-badge sg-badge--warn">retired</span></h3>
-				<p class="sg-note">
-					Retired 2026-08-05: the chrome role went to <code>--chrome</code> white, the heading/label
-					roles to the contexts' <code>--text</code>/<code>--muted</code>, the beige surfaces to the
-					light context. (For the record: soft #ede8de · hi #e1d4b7 · gilt #d2bd90 · dim #a19378 ·
-					fill #3e331e.)
-				</p>
-			</div>
+		</div>
+
+		<p class="sg-note">
+			<strong>Two values pull double duty, and that is what binds the axis into one system.</strong>
+			<code>#E5D9C3</code> is dark-context TEXT and the light context's RIBBON surface + BORDER.
+			<code>#857971</code> is the dark context's dim rung — its borders — and was its
+			<code>--muted</code> until 2026-08-05, when that rung failed the body-text floor (3.29:1) and
+			the text voice lifted to <code>mix(--text 30%, #857971)</code>, a blend of the two hinges
+			rather than a new hue.
+		</p>
+
+		<h3>The content registers — what a context does NOT own</h3>
+		<p class="sg-note">
+			A context owns <em>structure</em>. Identity chroma belongs to CONTENT, which keeps its color
+			on either ground: the element palette, and this pair. <code>--debuff</code> is
+			<strong>enemy-facing</strong> (debuffs, res shred, sacrificial procs — dire's semantic
+			successor); <code>--calm</code> is <strong>ally-facing</strong> (team buffs). Each is a bright EDGE
+			plus a bar-BODY fill, pinned to the same weight so buff and debuff bars carry equal presence in
+			the timeline. ⚠ The debuff values are interim — the destination color is still Nate's to choose.
+		</p>
+		<div class="sg-swatches">
+			{#each famDebuff as t (t.name)}{@render swatch(t)}{/each}
+			{#each famCalm as t (t.name)}{@render swatch(t)}{/each}
 		</div>
 
 		<h3>Accent zoning — the world and the crest</h3>
@@ -307,17 +308,52 @@
 	<section id="tokens">
 		<h2>Tokens <span class="sg-badge sg-badge--live">live</span></h2>
 
-		<h3>Structure</h3>
+		<h3>The world's ramp</h3>
 		<p class="sg-note">
-			The page ground and the text ramp — the pieces that aren't a color family. The surfaces that
-			used to live here moved into <a href="#families">calm</a>. <code>--bg</code> is the anchor and
-			is deliberately unchanged; the rest were re-cut so saturation <em>falls</em> as lightness
-			rises — a near-white carrying s60 (which <code>--text</code> did) tints the whole UI blue and
-			fights the warm text voice. <code>--neutral</code> is the universal "inactive / unknown" gray,
-			promoted from the planner's local <code>--rp-active</code>.
+			What the site wears <em>outside</em> a panel. <code>--bg</code> is the anchor and is
+			deliberately unchanged — it grounds the landing scene, which stays cosmic blue while
+			everything else moved onto the archetype. <code>--text</code>/<code>--muted</code> are the
+			over-the-scene voice and are <strong>neutral</strong> (C.004): a blue-tinted near-white was
+			the last surviving member of the pre-archetype navy family and it fought the warm parchment
+			the moment a panel sat beside it. <code>--chrome</code> white is the promoted register above
+			them (branding, site chrome, the biggest headers — never body copy or data);
+			<code>--ink</code>
+			is the universal dark ink for text sitting ON a bright fill; <code>--neutral</code> is the
+			universal "inactive / unknown" gray, promoted from the planner's local
+			<code>--rp-active</code>.
 		</p>
 		<div class="sg-swatches">
 			{#each structure as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
+		<h3>The surface roles — and their safety net</h3>
+		<p class="sg-note">
+			These four have <strong>no values of their own</strong>; a
+			<a href="#families">context</a> supplies them. What you see here is the net — identical to
+			<code>.ctx-dark</code>, so a surface that never declared a context still lands inside the
+			archetype. <code>--surface</code> is the MODAL role (overlay panes, popovers, tooltips,
+			dropdown menus); <code>--surface-raised</code> is an IN-PAGE panel lifting off a ground;
+			<code>--frame-bg</code> is a tool frame's own ground; <code>--frame-line</code> is interior
+			structure inside a frame, derived from <code>--border</code> toward the ground it sits on (opaque
+			mix, never alpha — the compositing law below).
+		</p>
+		<div class="sg-swatches">
+			{#each roleNet as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
+		<h3>Chart ink</h3>
+		<p class="sg-note">
+			The inside of an instrument: axis labels, tick text, gridlines, rules. Derived from the
+			context, so an instrument dropped onto a light panel inverts for free instead of vanishing.
+			Not a new idea — the planner has had this pair privately since 2026-08-01 (<code
+				>--rp-grid</code
+			>/<code>--rp-line</code>); the eight Visualizer instruments hand-rolled the same three jobs as
+			literal <code>rgba(255,255,255,α)</code> about seventy times, which is why the charts still
+			read cool white inside frames whose every other surface had gone parchment.
+			<strong>White is not a member of either context.</strong>
+		</p>
+		<div class="sg-swatches">
+			{#each chartInk as t (t.name)}{@render swatch(t)}{/each}
 		</div>
 
 		<h3>UI state colors</h3>
@@ -329,9 +365,9 @@
 			but
 			<em>Reset all</em>
 			is <code>--ui-danger</code>.
-			<br />⚠ <code>--ui-warning</code> sits between <code>--ui-danger</code> (h8) and the old gilt (h38)
-			with ~30° of room, so it takes the center at h25 — restrict it to small markers and underlines,
-			never a large fill.
+			<br />⚠ These are the loudest values in the system by a wide margin (C.15+ against a structure
+			that whispers at C.04), which is the point — and the reason <code>--ui-warning</code> stays on small
+			markers and underlines rather than large fills.
 		</p>
 		<div class="sg-swatches">
 			{#each uiStates as t (t.name)}{@render swatch(t)}{/each}
@@ -429,21 +465,30 @@
 			body voice. Never re-declare a font stack locally.
 		</p>
 
-		<h3>The two voices</h3>
+		<h3>The three voices</h3>
 		<p class="sg-note">
-			Gilt maps onto a distinction that already exists, so there is no new rule to memorise —
-			<strong>the chrome axis wears gilt, the data axis stays cool.</strong>
+			The old chrome/data split survives the archetype — it just gained a rung and lost its hue
+			names. <code>--chrome</code> white sits <em>over the world</em>; inside a panel the context
+			supplies the other two, so the same markup speaks parchment-on-navy or brown-on-paper without
+			knowing which.
 		</p>
 		<div class="sg-voices">
 			<div class="sg-voice">
-				<span class="sg-zone-tag">chrome voice — white</span>
-				<p class="sg-voice-sample sg-voice-sample--gilt">
-					Team Builder · Roster · Filter by capability · Search characters…
+				<span class="sg-zone-tag">chrome — over the world</span>
+				<p class="sg-voice-sample sg-voice-sample--chrome">
+					critcalc.app · Teams · Planner · Visualizers
 				</p>
-				<span class="sg-val">brand · nav · headings · kickers · titles · links · input text</span>
+				<span class="sg-val">brand · site nav · the biggest headers — never body copy or data</span>
 			</div>
 			<div class="sg-voice">
-				<span class="sg-zone-tag">cool voice — data</span>
+				<span class="sg-zone-tag">label — <code>--muted</code></span>
+				<p class="sg-voice-sample sg-voice-sample--label">
+					ROSTER · CAN PROVIDE · ELEMENT · Search characters…
+				</p>
+				<span class="sg-val">kickers · field labels · section heads · resting control text</span>
+			</div>
+			<div class="sg-voice">
+				<span class="sg-zone-tag">prose — <code>--text</code></span>
 				<p class="sg-voice-sample sg-voice-sample--cool">
 					Nahida · E 5.0s CD · 46.6% CRIT Rate · 12 hits · 4.2s
 				</p>
@@ -763,8 +808,8 @@
 						value="Nahida"
 					/>
 					<p class="note">
-						Input text is chrome, not data — this is where the (now retired) gilt voice was first
-						noticed.
+						Input text is chrome, not data — the label above it is the anchored voice, the value
+						inside it is prose.
 					</p>
 				</div>
 				{@render spec(
@@ -787,23 +832,15 @@
 
 	<!-- ═══════════════════════════════════════════════════════════ MIGRATION ══ -->
 	<section id="migration">
-		<h2>Migration <span class="sg-badge sg-badge--live">complete</span></h2>
+		<h2>The exceptions <span class="sg-badge sg-badge--live">complete</span></h2>
 		<p class="sg-note">
-			Every per-tool family now reads one definition. This is the record, not a work list — if a row
-			here stops being true, the code has drifted back.
+			The six-chunk pattern migration finished 2026-07-27: every per-tool button, chip, tab, toggle,
+			note and field family — twenty-seven of them, including
+			<em>seven</em> byte-similar copies of one <code>.note</code> rule — now reads a single
+			definition in <code>app.css</code>. That table has served its purpose and is retired from this
+			page; the git history holds it. What is still load-bearing is the other list — the things that
+			deliberately did NOT migrate, so the line stays visible:
 		</p>
-		<div class="sg-table">
-			<div class="sg-tr sg-tr--head">
-				<span>Was</span><span>Is</span><span>Landed</span>
-			</div>
-			{#each migration as [from, to, note] (from)}
-				<div class="sg-tr">
-					<span><code>{from}</code></span>
-					<span><code class="sg-name">{to}</code></span>
-					<span class="sg-src">{note}</span>
-				</div>
-			{/each}
-		</div>
 		<p class="sg-note">
 			<strong>What deliberately did NOT migrate</strong>, so the line stays visible: whole-card
 			click targets (<code>.cc-main</code>, <code>.rolecard</code>, <code>.ar-slot</code>), the
@@ -827,24 +864,55 @@
 				<h3>Color</h3>
 				<ul>
 					<li>
+						<strong>A context class comes with its ground.</strong> Declaring
+						<code>.ctx-light</code> re-points <em>every</em> role token, including
+						<code>--text</code> — so a component that declares a context and then paints no
+						background renders that context's ink straight onto whatever it happens to be sitting
+						on. The bench slot card did exactly this and put warm-brown text on the ribbon's navy at
+						<strong>2.33:1</strong>, the worst contrast in the app, while
+						<code>--frame-bg</code> resolved to paper and blew its inset pills out to near-white. If you
+						cannot paint the ground, inherit the context — don't claim one.
+					</li>
+					<li>
+						<strong>Re-declaring <code>--accent</code> is never enough.</strong> A custom property
+						whose value contains <code>var()</code> is substituted at computed-value time
+						<em>on the element where it is declared</em>, and the RESULT inherits. So
+						<code>--sel-fill</code> declared at <code>:root</code> bakes in root's accent and keeps
+						it inside every context no matter what that context says. Every accent-derived token has
+						to be re-declared alongside it — in <code>.tool-shell</code> AND both
+						<code>.ctx-*</code> blocks. This was a live bug (chips silently turned gold).
+					</li>
+					<li>
+						<strong>The promoted control ink is per-context.</strong> Chips, tabs and buttons rest
+						on
+						<code>--muted</code> and promote on hover/selection to <code>--ink-active</code>, NOT to
+						<code>--text</code>. The light context deliberately inverts its two inks (labels anchor,
+						prose recedes), so <code>--text</code> is the <em>lighter</em> of them there and every
+						selected chip came out weaker than the unselected ones beside it. Each context points
+						<code>--ink-active</code> at whichever of its inks is most emphatic.
+					</li>
+					<li>
+						<strong>White is not a member of either context.</strong> An
+						<code>rgba(255,255,255,α)</code> is the tell that a surface was authored before the
+						archetype. Chart interiors take the <a href="#tokens"><code>--chart-*</code></a> rungs;
+						control fills take <code>--fill-rest</code>/<code>--fill-hover</code>, which tint with
+						the GROUND. The exceptions are legitimate and narrow: ink sitting ON a saturated element
+						bar, and <code>rgba(0,0,0,α)</code> drop shadows.
+					</li>
+					<li>
 						<strong
 							>debuff = enemy-facing · calm = ally-facing · chrome = the over-world white.</strong
-						> Don't cross them.
+						>
+						Don't cross them. <code>--accent</code> is zoned and never leaves its zone — don't hard-code
+						a context's accent in the world (landing scene, static pages).
 					</li>
 					<li>
-						<strong>The crest accent never leaves the crest.</strong> <code>--accent</code> is zoned;
-						don't hard-code a context's accent in the world (landing scene, static pages). The contexts
-						carry the crest accent now (interim values) — the law outlives any value.
-					</li>
-					<li>
-						<strong>(Gilt retired 2026-08-05.)</strong> Its ceiling law's spirit survives: nothing structural
-						gets more saturated than Genshin's own UI would allow — the contexts are near-neutral warm;
-						identity chroma belongs to content.
-					</li>
-					<li>
-						<strong>Within a family, saturation encodes role.</strong> Structure members are low
-						saturation, content members are high. That is what keeps <code>--calm-fill</code> from
-						reading as <code>--border</code>.
+						<strong>Structure whispers; content carries the chroma.</strong> A ground is a
+						near-neutral LIT by the scene (C .010–.040) — real chroma on it white-balances every
+						element bar sitting on it by simultaneous contrast, and fights the border. Identity
+						chroma belongs to CONTENT (element bars, calm/debuff fills), which is exactly what keeps
+						<code>--calm-fill</code> from reading as <code>--border</code>. Nothing structural gets
+						more saturated than Genshin's own UI would allow.
 					</li>
 					<li>
 						UI state colors never appear inside a visualization; domain colors never appear on a
@@ -912,8 +980,10 @@
 						<strong>Mono = KQM notation and input fields only</strong> (Nate 2026-07-24).
 					</li>
 					<li>
-						<strong>Chrome axis wears gilt, data axis stays cool.</strong> Headings, kickers, titles,
-						links, input text → gilt. Values, cells, timeline text, character names → cool.
+						<strong>Three voices, and they don't swap.</strong> <code>--chrome</code> white is
+						branding, site chrome and the biggest headers — never body copy or data. Inside a panel,
+						<code>--text</code> is prose and <code>--muted</code> is the label voice (kickers, field labels,
+						section heads). Both come from the context, never from a literal.
 					</li>
 					<li>
 						<strong>Verbs shout, nouns don't.</strong> Buttons and instrument controls are uppercase +
@@ -938,7 +1008,8 @@
 					</li>
 					<li>
 						<strong>Slider knobs are flat.</strong> Their analogue is the toggle thumb — also a
-						marker in a track — which is flat and shares <code>--gilt-dim</code>.
+						marker in a track — which is flat and shares <code>--knob</code>, the context's dim
+						voice.
 					</li>
 					<li>
 						<strong>Rules are 2px, section dividers 1px.</strong> The kicker rule and the ornamental HRule
@@ -1091,21 +1162,37 @@
 						or document that physical is runtime-only.
 					</li>
 					<li>
-						<strong>The PNG export palette is a hand-maintained mirror.</strong> Canvas can't
-						resolve <code>var()</code>, so <code>timelineExport.ts</code> duplicates every token it paints
-						as a literal. It was re-cut with this pass, but nothing enforces it — a token change that
-						forgets it desyncs exported images silently.
+						<strong>The accent story.</strong> Both contexts currently borrow one of their own inks
+						as
+						<code>--accent</code> (parchment in dark, slate in light), and the world borrows
+						<code>--chrome</code> white. That is a placeholder, not a decision — the system has no accent
+						of its own yet. Every consumer already reads the alias, so picking one is a value change,
+						not a refactor.
 					</li>
 					<li>
-						<strong>Resolved 2026-07-30 — <code>--frame-line</code>.</strong> The frame's interior
-						hairline was declared privately by both tools as <code>#1c2a4a</code> (<code
-							>--rp-line</code
-						>
-						/ <code>--tb-line</code>). It is one <code>:root</code> token now — a frame's ground is
-						darker than <code>--surface</code>, so <code>--border</code> reads too hot on it, which
-						is what earns it a separate member. <code>--rp-line</code> survives as a local alias
-						because the planner's markup reads it inside <code>color-mix</code>es. Kept here as the
-						record; delete once it stops being news.
+						<strong><code>--debuff</code> / <code>--debuff-fill</code> are interim.</strong> Picked
+						to sit in the archetype while staying clear of pyro and <code>--ui-danger</code>. They
+						are the loudest chroma in the app (C.154) and the enemy-facing semantic has no settled
+						color yet.
+					</li>
+					<li>
+						<strong>The element icons are tuned for dark grounds.</strong> They are a build artifact
+						of the
+						<code>--el-*</code> tokens (never hand-recolored), and on <code>.ctx-light</code> panels
+						they read pale. Same class of problem as the artifact piece glyphs, which were solved by
+						giving them the ground-agnostic <code>--control-face</code> chip — the icons need their own
+						answer.
+					</li>
+					<li>
+						<strong>Meta overlays read the WORLD's voice, not a context.</strong> Help / About /
+						Settings mount outside <code>.tool-shell</code> deliberately, so they inherit the root net
+						— the dark context's grounds carrying the world's neutral ink. It coheres, but it is inherited
+						rather than chosen. Genshin's own menus are light; flipping them is one class.
+					</li>
+					<li>
+						<strong>The bench's coverage block has no home.</strong> The facts and capability chips below
+						the ribbon fall outside it — onto paper in the Team Builder, onto the bare scene in the planner.
+						Legible now, but housed by neither. A layout question, not a color one.
 					</li>
 				</ul>
 			</div>
@@ -1134,7 +1221,7 @@
 		font-size: var(--fs-5xl);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-tight);
-		color: var(--gilt);
+		color: var(--text);
 	}
 
 	.sg-lede {
@@ -1193,7 +1280,7 @@
 		letter-spacing: var(--ls-tight);
 		padding-bottom: 0.5rem;
 		border-bottom: 1px solid var(--border);
-		color: var(--gilt);
+		color: var(--text);
 	}
 
 	.sg > section > h3,
@@ -1204,7 +1291,7 @@
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
-		color: var(--gilt);
+		color: var(--text);
 	}
 
 	.sg-fam h3:first-child,
@@ -1230,7 +1317,7 @@
 
 	.sg-badge--ship {
 		background: var(--sel-fill);
-		color: var(--gilt);
+		color: var(--text);
 	}
 
 	.sg-badge--warn {
@@ -1265,15 +1352,12 @@
 		opacity: 0.6;
 	}
 
-	.sg-src {
-		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
-		color: color-mix(in srgb, var(--muted) 70%, transparent);
-	}
+	/* ── contexts / zones ─────────────────────────────────────────────────── */
 
-	/* ── families / zones ─────────────────────────────────────────────────── */
-
-	.sg-fams {
+	/* The two contexts stand SIDE BY SIDE, always — the page's job here is to
+	   let you read one against the other, so this deliberately does not collapse
+	   to one column the way the old family grid did. */
+	.sg-ctx-pair {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
 		gap: 0.8rem;
@@ -1340,8 +1424,12 @@
 		font-size: var(--fs-xl);
 	}
 
-	.sg-voice-sample--gilt {
-		color: var(--gilt-soft);
+	.sg-voice-sample--chrome {
+		color: var(--chrome);
+	}
+
+	.sg-voice-sample--label {
+		color: var(--muted);
 	}
 
 	.sg-voice-sample--cool {
@@ -1458,34 +1546,7 @@
 		font-size: var(--fs-md);
 	}
 
-	/* ── tables / radii ───────────────────────────────────────────────────── */
-
-	.sg-table {
-		display: grid;
-		gap: 1px;
-		border-radius: var(--r-md);
-		overflow: hidden;
-		background: var(--border);
-	}
-
-	.sg-tr {
-		display: grid;
-		grid-template-columns: 1.2fr 1fr 0.9fr;
-		gap: 1rem;
-		align-items: center;
-		padding: 0.45rem 0.7rem;
-		background: var(--surface);
-		font-size: var(--fs-md);
-	}
-
-	.sg-tr--head {
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		font-size: var(--fs-xs);
-		color: var(--muted);
-		background: var(--surface-raised);
-	}
+	/* ── radii ────────────────────────────────────────────────────────────── */
 
 	.sg-radii {
 		display: grid;

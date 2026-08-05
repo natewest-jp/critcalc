@@ -144,7 +144,7 @@
 
 	/** Element-tinted badge colors; Protective Canopy gets the neutral pair. */
 	function resonanceBadgeStyle(res: Resonance): string {
-		if (!res.element) return 'color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.12);';
+		if (!res.element) return 'color: var(--muted); background: var(--fill-hover);';
 		const p = elementPalette(res.element);
 		return `color: ${p.hi}; background: color-mix(in srgb, ${p.main} 16%, transparent);`;
 	}
@@ -255,8 +255,8 @@
 		border-left: 2px solid transparent;
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-medium);
-		background: rgba(255, 255, 255, 0.06);
-		color: rgba(255, 255, 255, 0.75);
+		background: var(--fill-rest);
+		color: var(--muted);
 		white-space: nowrap;
 	}
 
@@ -265,6 +265,6 @@
 	   the buff name stays the primary term. */
 	.bonus-chip-owner {
 		font-weight: var(--fw-semibold);
-		color: rgba(255, 255, 255, 0.92);
+		color: var(--text);
 	}
 </style>

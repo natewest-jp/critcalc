@@ -120,11 +120,11 @@
 			>
 				<!-- X grid -->
 				{#each view === 'def' ? X_TICKS_DEF : X_TICKS_RES as t (t)}
-					<line x1={xOf(t)} y1={TOP} x2={xOf(t)} y2={plotY1} stroke="rgba(255,255,255,0.07)" />
+					<line x1={xOf(t)} y1={TOP} x2={xOf(t)} y2={plotY1} stroke="var(--chart-grid)" />
 					<text
 						x={xOf(t)}
 						y={plotY1 + 15}
-						fill="rgba(255,255,255,0.5)"
+						fill="var(--chart-ink)"
 						font-size="10"
 						text-anchor="middle"
 					>
@@ -134,7 +134,7 @@
 				<text
 					x={graphW - PADR}
 					y={plotY1 + 27}
-					fill="rgba(255,255,255,0.35)"
+					fill="var(--chart-dim)"
 					font-size="10"
 					text-anchor="end"
 				>
@@ -153,14 +153,14 @@
 					<text
 						x={PADL - 7}
 						y={yOf(m) + 3.5}
-						fill="rgba(255,255,255,0.5)"
+						fill="var(--chart-ink)"
 						font-size="10"
 						text-anchor="end"
 					>
 						×{m}
 					</text>
 				{/each}
-				<text x="4" y={TOP - 4} fill="rgba(255,255,255,0.35)" font-size="10" text-anchor="start">
+				<text x="4" y={TOP - 4} fill="var(--chart-dim)" font-size="10" text-anchor="start">
 					damage kept
 				</text>
 
@@ -171,7 +171,7 @@
 						y1={TOP}
 						x2={xOf(0)}
 						y2={plotY1}
-						stroke="rgba(255,255,255,0.28)"
+						stroke="var(--chart-rule)"
 						stroke-dasharray="4 4"
 					/>
 					<line
@@ -179,19 +179,19 @@
 						y1={TOP}
 						x2={xOf(0.75)}
 						y2={plotY1}
-						stroke="rgba(255,255,255,0.28)"
+						stroke="var(--chart-rule)"
 						stroke-dasharray="4 4"
 					/>
 					<text
 						x={xOf(0) - 5}
 						y={TOP + 11}
-						fill="rgba(255,255,255,0.45)"
+						fill="var(--chart-dim)"
 						font-size="10"
 						text-anchor="end"
 					>
 						negative counts half
 					</text>
-					<text x={xOf(0.75) + 5} y={TOP + 11} fill="rgba(255,255,255,0.45)" font-size="10">
+					<text x={xOf(0.75) + 5} y={TOP + 11} fill="var(--chart-dim)" font-size="10">
 						diminishing
 					</text>
 				{/if}
@@ -201,7 +201,7 @@
 					<path
 						d={ghostPath}
 						fill="none"
-						stroke="rgba(255,255,255,0.25)"
+						stroke="var(--chart-rule)"
 						stroke-width="1.5"
 						stroke-dasharray="5 4"
 					/>
@@ -220,7 +220,7 @@
 					y1={TOP}
 					x2={markerX}
 					y2={plotY1}
-					stroke="rgba(255,255,255,0.4)"
+					stroke="var(--chart-dim)"
 					stroke-dasharray="2 3"
 				/>
 				<circle

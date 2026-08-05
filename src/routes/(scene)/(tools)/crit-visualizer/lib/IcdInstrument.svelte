@@ -77,12 +77,12 @@
 						y1={M.top}
 						x2={xOf(s)}
 						y2={ROW.bandTop + ROW.bandH + 6}
-						stroke="rgba(255,255,255,0.07)"
+						stroke="var(--chart-grid)"
 					/>
 					<text
 						x={xOf(s)}
 						y={M.top - 8}
-						fill="rgba(255,255,255,0.5)"
+						fill="var(--chart-ink)"
 						font-size="10"
 						text-anchor="middle"
 					>
@@ -121,7 +121,7 @@
 					y1={ROW.hitBottom}
 					x2={graphW - M.right}
 					y2={ROW.hitBottom}
-					stroke="rgba(255,255,255,0.16)"
+					stroke="var(--chart-grid)"
 				/>
 
 				<!-- Hits: applying hits get the element color + a dot; blocked hits are
@@ -149,14 +149,14 @@
 							y1={ROW.hitTop + 18}
 							x2={xOf(h.time)}
 							y2={ROW.hitBottom}
-							stroke="rgba(255,255,255,0.3)"
+							stroke="var(--chart-rule)"
 							stroke-width="1.5"
 						/>
 					{/if}
 					<text
 						x={xOf(h.time)}
 						y={ROW.counterY}
-						fill={h.applies ? el : 'rgba(255,255,255,0.42)'}
+						fill={h.applies ? el : 'var(--chart-dim)'}
 						font-size="10"
 						font-weight={h.applies ? 700 : 400}
 						text-anchor="middle"
@@ -167,7 +167,7 @@
 
 				<!-- Legend -->
 				<image href={elementIcon(element)} x={M.left} y={ROW.legendY - 6} width="12" height="12" />
-				<text x={M.left + 16} y={ROW.legendY + 3.5} fill="rgba(255,255,255,0.55)" font-size="10">
+				<text x={M.left + 16} y={ROW.legendY + 3.5} fill="var(--chart-ink)" font-size="10">
 					applies element
 				</text>
 				<line
@@ -175,13 +175,13 @@
 					y1={ROW.legendY - 5}
 					x2={M.left + 122}
 					y2={ROW.legendY + 5}
-					stroke="rgba(255,255,255,0.3)"
+					stroke="var(--chart-rule)"
 					stroke-width="1.5"
 				/>
-				<text x={M.left + 131} y={ROW.legendY + 3.5} fill="rgba(255,255,255,0.55)" font-size="10">
+				<text x={M.left + 131} y={ROW.legendY + 3.5} fill="var(--chart-ink)" font-size="10">
 					blocked hit
 				</text>
-				<text x={M.left + 214} y={ROW.legendY + 3.5} fill="rgba(255,255,255,0.55)" font-size="10">
+				<text x={M.left + 214} y={ROW.legendY + 3.5} fill="var(--chart-ink)" font-size="10">
 					1 2 3 = hit counter
 				</text>
 				{#if params.timer > 0}
@@ -194,7 +194,7 @@
 						fill={el}
 						opacity="0.22"
 					/>
-					<text x={M.left + 378} y={ROW.legendY + 3.5} fill="rgba(255,255,255,0.55)" font-size="10">
+					<text x={M.left + 378} y={ROW.legendY + 3.5} fill="var(--chart-ink)" font-size="10">
 						ICD timer window
 					</text>
 				{/if}

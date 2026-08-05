@@ -70,9 +70,10 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		expect(PALETTE_MIRROR.TEXT).toBe(ctxToken('.ctx-dark', '--text'));
 		expect(PALETTE_MIRROR.MUTED).toBe(ctxToken('.ctx-dark', '--muted'));
 		expect(PALETTE_MIRROR.INK).toBe(cssToken('--ink'));
-		// Character cards are intrinsically .ctx-light (Genshin renders theirs
-		// light) — the portrait column mirrors that block's surface.
-		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(ctxToken('.ctx-light', '--surface'));
+		// ↻ 2026-08-05: the bench card renders in the ribbon's DARK context (the
+		// `ctx-light` class it used to carry painted no ground of its own — see
+		// SlotPortrait), so the avatar disc mirrors that block's surface.
+		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(ctxToken('.ctx-dark', '--surface'));
 		expect(PALETTE_MIRROR.CALM_TINT).toBe(cssToken('--calm-fill'));
 		expect(PALETTE_MIRROR.CALM_EDGE).toBe(cssToken('--calm'));
 	});

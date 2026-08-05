@@ -202,7 +202,21 @@
 	}
 </script>
 
-<div class="sp-card ctx-light" style:--el={p.main}>
+<!-- ↻ 2026-08-05 (archetype consistency pass): the `ctx-light` class that used
+     to sit here is REMOVED, and the card inherits the ribbon's dark context.
+     It was declaring a context it never painted — .sp-card has no background
+     of its own, so the light context's warm-brown --text was rendering
+     straight onto BenchBand's navy at 2.33:1, the worst contrast in the app,
+     while --frame-bg resolved to paper and blew the inset pills and the
+     avatar disc out to near-white (the three brightest objects in the planner
+     were the ⇄ / loadout / ✕ chips). A context class has to come with its
+     ground; this component is used only inside the always-dark ribbon, so the
+     ground is dark. Almost certainly a leftover from when these cards lived in
+     the Team Builder's light bench zone.
+     ⚠ NOT a redesign — the card-interior restyle to Nate's mockup (ringed
+     portrait, circular chips) is its own queued round. This only makes the
+     card legible on the ground it actually sits on. -->
+<div class="sp-card" style:--el={p.main}>
 	<!-- Identity row: element glyph + name ranged left, constellation chip right.
 	     Slot actions do NOT live here — they ride the base band. -->
 	<div class="sp-id-row">
@@ -759,7 +773,7 @@
 		height: 24px;
 		border-radius: var(--r-round);
 		border: none;
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--fill-rest);
 		color: var(--muted);
 		font-family: var(--font-body);
 		font-size: var(--fs-xs);
@@ -783,7 +797,7 @@
 		box-shadow: inset 0 0 0 1.5px var(--pip-color);
 	}
 	.sp-pip:hover {
-		background: rgba(255, 255, 255, 0.12);
+		background: var(--fill-hover);
 		color: var(--pip-color, var(--text));
 	}
 </style>

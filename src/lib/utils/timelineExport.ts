@@ -48,7 +48,12 @@ const LANE_LINE = '#766d6a'; // --rp-line = mix(ctx-dark border 85%, rp-chart-bg
 // blocks, not :root — the mirror test sources them the same way.
 const ACTIVE = '#757f93'; // --rp-active (Nate-sampled 2026-07-31; no longer the --neutral alias)
 const TEXT = '#e5d9c3'; // --text (ctx-dark — parchment on dark)
-const MUTED = '#857971'; // --muted (ctx-dark dim)
+// ↻ 2026-08-05 (archetype consistency pass): the dark context's --muted lifted
+// off the #857971 dim rung — at 3.29:1 on the chart it was under the body-text
+// floor. It is now mix(--text 30%, #857971), the blend of the archetype's own
+// two hinge values. #857971 keeps its structural job as --border, so GRID and
+// LANE_LINE above are unaffected.
+const MUTED = '#a2968a'; // --muted (ctx-dark dim)
 const INK = '#0d0d0f'; // --ink (⚓ NATE 2026-08-05, Genshin-UI archetype)
 // Paired tool tints — mirror app.css. --calm-fill = #2b5590 (buff body/fill —
 // the time-scaling ramp's full end); --calm = #6b99c7 (bright accent stripe).
@@ -73,7 +78,13 @@ const PROC_LABEL = 'rgba(255,255,255,0.85)';
 // Generic-timing (no-frame-map) marks are a DATA-QUALITY state, not a domain
 // color — they ride --ui-danger (the marks left dire 2026-08-05).
 const UI_DANGER = '#e63946';
-const PORTRAIT_BG = '#f2f2ec'; // --surface (ctx-light — cards render light, 2026-08-05)
+// The circular backing behind a (transparent-background) avatar in the label
+// column. ↻ 2026-08-05 (archetype consistency pass): was the LIGHT context's
+// #f2f2ec, mirroring the `ctx-light` class SlotPortrait used to carry. That
+// class is gone — the bench card renders in the ribbon's DARK context, where
+// --sp-avatar-fill starts at --frame-bg — and the export's own label column has
+// always been painted CHART_BG, so a paper disc was drift in both directions.
+const PORTRAIT_BG = '#242c40'; // --surface (ctx-dark — the bench card's ground)
 
 /** Test-only: the hand-maintained mirror, exported so
  *  timelineExport.mirror.test.ts can assert it against app.css /

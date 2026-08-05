@@ -714,7 +714,7 @@
 		background: color-mix(in srgb, var(--el-color) 18%, transparent);
 	}
 	.cmp-gate--base {
-		background: rgba(255, 255, 255, 0.07);
+		background: var(--fill-rest);
 		color: var(--muted);
 	}
 	.cmp-target {
