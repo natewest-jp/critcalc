@@ -1458,7 +1458,7 @@
 												style:background={isApprox &&
 												block.kind !== 'skill' &&
 												block.kind !== 'burst'
-													? 'linear-gradient(to right, color-mix(in srgb, var(--dire) 20%, transparent), transparent)'
+													? 'linear-gradient(to right, color-mix(in srgb, var(--ui-danger) 20%, transparent), transparent)'
 													: block.kind === 'skill' ||
 														  block.kind === 'burst' ||
 														  block.kind === 'elemental-normal'
@@ -2262,8 +2262,8 @@
 	   class of thing. Fill + bright edge, mirroring the buff bar's
 	   --calm-fill + --calm pairing. */
 	.rp-team-buff-bar.rp-team-debuff-bar {
-		background: var(--dire-fill);
-		border-left-color: var(--dire);
+		background: var(--debuff-fill);
+		border-left-color: var(--debuff);
 	}
 	.rp-team-buff-bar.rp-team-debuff-bar .rp-buff-label {
 		color: rgba(255, 255, 255, 0.85);
@@ -2349,9 +2349,9 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: var(--dire-fill);
+		background: var(--debuff-fill);
 		border: none;
-		border-left: 2px solid var(--dire);
+		border-left: 2px solid var(--debuff);
 		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 		border-radius: 1px;
 		display: flex;

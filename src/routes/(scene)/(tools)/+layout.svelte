@@ -441,16 +441,16 @@
 	}
 
 	/* Chrome voice (Genshin-UI archetype): the switcher is site chrome, so it
-	   speaks --chrome white — resting links at 70% white (text over the live
-	   scene; alpha on TEXT is fine, the alpha law governs surfaces), the
-	   current page at full white. */
+	   speaks --chrome white and follows the chrome state contract (SiteChrome:
+	   rest 0.85-translucent, hover/current opaque). Alpha on TEXT is fine —
+	   the alpha law governs surfaces. */
 	.chrome-nav-link {
 		position: relative;
 		font-family: var(--font-display);
 		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-tight);
-		color: color-mix(in srgb, var(--chrome) 70%, transparent);
+		color: color-mix(in srgb, var(--chrome) 85%, transparent);
 		padding: 0.15rem 0;
 		transition: color 150ms ease;
 	}

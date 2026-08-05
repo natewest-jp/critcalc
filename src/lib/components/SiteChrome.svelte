@@ -168,7 +168,12 @@
 		font-weight: var(--fw-medium);
 		letter-spacing: var(--ls-tight);
 		color: var(--chrome);
-		opacity: 0.9;
+		/* THE CHROME STATE CONTRACT (Nate 2026-08-05): every chrome mark rests
+		   slightly translucent at 0.85 and hovers to opaque white — logo img,
+		   wordmark, glyph cluster (fill-opacity, WebKit — see below) and the
+		   tool switcher links (color-mix 85%, in the tools layout) all share
+		   the same pair. Change one, change all. */
+		opacity: 0.85;
 		transition: opacity 200ms ease;
 	}
 

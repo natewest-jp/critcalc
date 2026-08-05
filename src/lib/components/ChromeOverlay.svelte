@@ -148,7 +148,7 @@
 	   caps' 1–2px overlaps (see HRule). */
 	.overlay-rule {
 		margin: 0.85rem 0 1rem;
-		--rule-tint: var(--gilt-dim);
+		--rule-tint: var(--muted);
 		--rule-opacity: 0.35;
 	}
 

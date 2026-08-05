@@ -33,7 +33,11 @@ function cssToken(name: string, src = appCss): string {
  *  cards light, so their mirrored tokens must be sourced from the context
  *  re-declarations, not :root. */
 function ctxToken(selector: string, name: string): string {
-	const block = new RegExp(`${selector.replace(/\./g, '\\.')}[^{]*\\{([^}]*)\\}`).exec(appCss);
+	// ^-anchored: the selector's rule starts at column 0; unanchored matching
+	// would hit prose mentions of the class in comments first.
+	const block = new RegExp(`^${selector.replace(/\./g, '\\.')}[^{]*\\{([^}]*)\\}`, 'm').exec(
+		appCss
+	);
 	if (!block) throw new Error(`context block ${selector} not found`);
 	const m = new RegExp(`^\\s*${name}:\\s*([^;]+);`, 'm').exec(block[1]);
 	if (!m) throw new Error(`token ${name} not found in ${selector}`);
@@ -57,27 +61,6 @@ function mix(a: string, b: string, pctA: number): string {
 	return `#${to(ar, br)}${to(ag, bg)}${to(ab, bb)}`;
 }
 
-function hslToHex(h: number, s: number, l: number): string {
-	s /= 100;
-	l /= 100;
-	const c = (1 - Math.abs(2 * l - 1)) * s;
-	const hp = h / 60;
-	const x = c * (1 - Math.abs((hp % 2) - 1));
-	const m = l - c / 2;
-	let rgb: [number, number, number];
-	if (hp < 1) rgb = [c, x, 0];
-	else if (hp < 2) rgb = [x, c, 0];
-	else if (hp < 3) rgb = [0, c, x];
-	else if (hp < 4) rgb = [0, x, c];
-	else if (hp < 5) rgb = [x, 0, c];
-	else rgb = [c, 0, x];
-	const to = (v: number) =>
-		Math.round((v + m) * 255)
-			.toString(16)
-			.padStart(2, '0');
-	return `#${to(rgb[0])}${to(rgb[1])}${to(rgb[2])}`;
-}
-
 describe('timelineExport palette mirror ↔ app.css', () => {
 	it('plain hex tokens match', () => {
 		// The chart ground is planner-local since 2026-08-01 (Nate's darker
@@ -94,18 +77,9 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		expect(PALETTE_MIRROR.CALM_EDGE).toBe(cssToken('--calm'));
 	});
 
-	it('--dire (hsl) resolves to DIRE_TINT', () => {
-		const m = /^hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)$/.exec(cssToken('--dire'));
-		expect(m).not.toBeNull();
-		expect(PALETTE_MIRROR.DIRE_TINT).toBe(hslToHex(+m![1], +m![2], +m![3]));
-	});
-
-	it('--dire-fill (relative color, hue from --dire) resolves to DIRE_FILL', () => {
-		const dire = /^hsl\((\d+),/.exec(cssToken('--dire'));
-		const fill = /^hsl\(from var\(--dire\) h (\d+)% (\d+)%\)$/.exec(cssToken('--dire-fill'));
-		expect(dire).not.toBeNull();
-		expect(fill).not.toBeNull();
-		expect(PALETTE_MIRROR.DIRE_FILL).toBe(hslToHex(+dire![1], +fill![1], +fill![2]));
+	it('--debuff / --debuff-fill match (dire successors, 2026-08-05)', () => {
+		expect(PALETTE_MIRROR.DEBUFF_EDGE).toBe(cssToken('--debuff'));
+		expect(PALETTE_MIRROR.DEBUFF_FILL).toBe(cssToken('--debuff-fill'));
 	});
 
 	it('resolved color-mix lines match (GRID, LANE_LINE)', () => {
