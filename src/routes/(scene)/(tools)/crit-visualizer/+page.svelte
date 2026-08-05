@@ -332,8 +332,16 @@
 		background: color-mix(in srgb, var(--accent) 20%, transparent);
 	}
 
+	/* Both minimums are load-bearing, and min-width is the one that bites.
+	   A grid item's automatic minimum is its MIN-CONTENT size, and the heatmap
+	   sets its drawn frame's width inline in px — so after a wide lineup the
+	   body's min-content is that stale wide box and the body refuses to shrink
+	   with the tile, spilling over the neighbouring instrument. Zero here lets
+	   the tile drive the width; the chart's ResizeObserver then refits into it.
+	   Same law as the frames' min-height chain, one axis over. */
 	.ws-body {
 		min-height: 0;
+		min-width: 0;
 	}
 
 	@media (min-width: 1024px) {

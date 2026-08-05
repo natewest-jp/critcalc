@@ -101,6 +101,86 @@ try {
 	await page.waitForTimeout(120);
 	check('picking 2 renders two columns', (await columnCount(page)) === 2);
 
+	// ── Shrinking back ─────────────────────────────────────────────────────
+	// Regression: the heatmap sets its drawn box's width inline in px, so any
+	// grid item between that box and the tile that keeps `min-width: auto`
+	// takes the stale WIDE box as its min-content and refuses to shrink when
+	// the lineup narrows — the chart then spills over the next instrument.
+	// Cycle the lineup both ways and assert nothing ever leaves its tile.
+	console.log('\nShrinking back');
+	const geom = () =>
+		page.evaluate(() => {
+			const tiles = [...document.querySelectorAll('.ws-tile:not(.ws-hidden)')].sort(
+				(a, b) => Number(a.style.order) - Number(b.style.order)
+			);
+			const f = tiles[0].querySelector('.cv-map-frame');
+			const t0 = tiles[0].getBoundingClientRect();
+			return {
+				spill: f ? Math.round(f.getBoundingClientRect().right - t0.right) : 0,
+				overlap:
+					f && tiles[1]
+						? Math.round(f.getBoundingClientRect().right - tiles[1].getBoundingClientRect().left)
+						: -1,
+				hScroll: document.documentElement.scrollWidth > document.documentElement.clientWidth
+			};
+		});
+
+	let worstSpill = -Infinity;
+	let overlapped = false;
+	let hScroll = false;
+	for (const nth of [2, 4, 3, 2, 1, 3, 2, 4]) {
+		await page.click(`.ws-slots button:nth-child(${nth})`);
+		await page.waitForTimeout(400);
+		const g = await geom();
+		worstSpill = Math.max(worstSpill, g.spill);
+		if (g.overlap > 0) overlapped = true;
+		if (g.hScroll) hScroll = true;
+	}
+	check('the chart never spills past its own tile', worstSpill <= 1, `worst +${worstSpill}px`);
+	check('the chart never overlaps the next instrument', !overlapped);
+	check('no horizontal page scroll at any lineup size', !hScroll);
+
+	// Same failure reachable by resizing the window rather than the control.
+	for (const w of [2400, 1300, 2400, 1366, 1200]) {
+		await page.setViewportSize({ width: w, height: 1200 });
+		await page.waitForTimeout(400);
+		const g = await geom();
+		if (g.spill > 1) overlapped = true;
+	}
+	check('window resize shrinks the chart back too', !overlapped);
+	await page.setViewportSize({ width: 2400, height: 1200 });
+	await page.waitForTimeout(300);
+
+	// The real invariant behind both bugs: the chart's geometry must depend on
+	// the lineup size ALONE, never on the route taken to it. The width axis
+	// failed loudly (spill); the height axis failed SILENTLY — a stale inline
+	// px height outvoted `aspect-ratio: 1`, and 765²/765×875 are both
+	// self-consistent, so the chart just kept the wide aspect forever.
+	const frameBox = (pg) =>
+		pg.evaluate(() => {
+			const f = document.querySelector('.cv-map-frame').getBoundingClientRect();
+			return [Math.round(f.width), Math.round(f.height)];
+		});
+	await page.click('.ws-slots button:nth-child(4)'); // 3-up, arrived at via cycling
+	await page.waitForTimeout(600);
+	const cycled = await frameBox(page);
+
+	const fresh = await browser.newPage({ viewport: { width: 2400, height: 1200 } });
+	await fresh.goto(`${BASE}/crit-visualizer`, { waitUntil: 'networkidle' });
+	await fresh.waitForTimeout(700); // restores the stored 3-up straight from cold
+	const freshBox = await frameBox(fresh);
+	await fresh.close();
+
+	check(
+		'chart geometry is path-independent (same lineup ⇒ same box)',
+		cycled[0] === freshBox[0] && cycled[1] === freshBox[1],
+		`cycled ${cycled} vs fresh ${freshBox}`
+	);
+	check('the narrow-lineup chart stays square', cycled[0] === cycled[1], `${cycled}`);
+
+	await page.click('.ws-slots button:nth-child(3)'); // back to "2" for the reload check
+	await page.waitForTimeout(200);
+
 	// ── Keep-alive across slot-count changes ───────────────────────────────
 	console.log('\nKeep-alive');
 	check(

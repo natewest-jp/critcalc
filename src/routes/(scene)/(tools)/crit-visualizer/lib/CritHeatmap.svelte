@@ -698,6 +698,18 @@
 		max-height: 70svh;
 		display: grid;
 		place-items: center;
+		/* The shell is sized BY the layout, never by the box it contains — on
+		   BOTH axes. JS sets the drawn frame's width AND height inline in px, so
+		   the shell's automatic minimums (min-width/min-height: auto = the
+		   content's min-content) resolve to whatever the box measured LAST time.
+		   Coming back from a wide lineup that stale box then wins: horizontally
+		   the shell refuses to shrink and spills over the next instrument, and
+		   vertically the stale height beats `aspect-ratio` — 765 and 875 are
+		   both self-consistent, so the chart silently keeps the wide aspect.
+		   Zeroing both lets width flow from the tile and height from the ratio;
+		   the ResizeObserver below then refits the box into the result. */
+		min-width: 0;
+		min-height: 0;
 	}
 
 	/* The drawn rectangle. Its pixel size (boxW × boxH) is set inline by JS to fill

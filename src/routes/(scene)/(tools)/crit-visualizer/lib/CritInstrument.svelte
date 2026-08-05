@@ -359,6 +359,11 @@
 		   for its grid behavior) */
 		box-shadow: none;
 		align-content: stretch;
+		/* Carries the shell's shrinkability up to .cv-layout — the chart sets its
+		   drawn box's width inline in px, and any grid item between that box and
+		   the tile that keeps min-width: auto re-imposes the stale wide box as a
+		   floor when the lineup narrows. */
+		min-width: 0;
 	}
 
 	.cv-slider-panel {
