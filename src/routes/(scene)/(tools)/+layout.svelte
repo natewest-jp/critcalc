@@ -1,15 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
+		FADE_DURATION_MS,
 		FADE_OUT_MS,
-		hasActivePortal,
-		portalTimeUntilBlackout,
-		registerToolReveal,
-		startPortalTransition,
-		getHeroOrigin,
+		hasActiveSceneTransition,
+		revealDelayMs,
 		prefersReducedMotion,
 		sceneOccluded
 	} from '$lib/landing/transition';
@@ -25,64 +23,62 @@
 	// the current one (see the centered switcher in the chrome strip).
 	const tool = $derived(TOOLS.find((t) => page.url.pathname.startsWith(t.path)));
 
-	// Reveal state. While the portal spins, the shell stays visibility:hidden —
-	// laid out (so editors still measure) but UNPAINTED — so it never shows at the
-	// portal's growing edges and its own entry animations play unseen under the
-	// black. The portal DRIVES the reveal: at full black it calls our registered
-	// callback, waits until we're painted opaque, then fades its backing off us —
-	// that backing fade is the single tool fade-in (dark-to-dark). Cold load /
-	// reduced motion / no portal → visible immediately.
-	let revealed = $state(!hasActivePortal());
+	// Reveal state (ascend choreography v2). Arriving via the camera pan, the
+	// shell stays visibility:hidden — laid out (so editors still measure) but
+	// UNPAINTED, off the raster pipeline — through most of the climb: a DevTools
+	// trace (2026-06) showed the tool's one-time raster + its old entry fade
+	// were the sole source of pan judder. Near settle `revealed` flips, which
+	// makes the shell visible and runs a plain LINEAR CSS-opacity fade-in over
+	// the crest sky, ending FADE_OVERLAP_MS past settle (the shared fade law —
+	// the landing composition mirrors it on the way down). `covered` flips at
+	// fade end and gates the scene occlusion below. Cold load / reduced motion
+	// / no transition → visible immediately.
+	let revealed = $state(!hasActiveSceneTransition());
+	let covered = $state(!hasActiveSceneTransition());
 
 	onMount(() => {
 		if (revealed) return; // cold load — already visible
 		if (prefersReducedMotion()) {
 			revealed = true;
+			covered = true;
 			return;
 		}
-		// Mounted after the portal already blacked out (very slow mount) → just show.
-		if (portalTimeUntilBlackout() <= 0) {
-			revealed = true;
-			return;
-		}
-		// Otherwise let the portal un-suppress us at full black (handshake).
-		return registerToolReveal(() => (revealed = true));
+		const timers: ReturnType<typeof setTimeout>[] = [];
+		timers.push(
+			setTimeout(() => {
+				revealed = true;
+				// The fade-in is a CSS transition on .revealed; consider the shell
+				// opaque a beat after it ends (transitionend is not worth the
+				// listener — a fixed margin over a fixed duration is exact enough).
+				timers.push(setTimeout(() => (covered = true), FADE_DURATION_MS + 80));
+			}, revealDelayMs())
+		);
+		return () => timers.forEach(clearTimeout);
 	});
 
-	// Scene occlusion report (perf audit F4): two rAFs after the shell is
-	// revealed it is PAINTED opaque (#000, inset:0) over the scene — the same
-	// double-frame guarantee the portal reveal handshake uses — so the scene
+	// Scene occlusion report (perf audit F4): two rAFs after the reveal fade
+	// completes the shell is PAINTED opaque (#000, inset:0) over the scene —
+	// the double-frame guarantee the tool cross-fade also uses — so the scene
 	// layout can unpaint its layers and release their textures. Re-asserted on
 	// every completed navigation within the tools layout (the path dependency),
 	// which re-hides the scene if a cancelled exit to the landing restored it;
 	// a cancelled exit with no follow-up nav just leaves the scene rastered
 	// behind the opaque shell — correct, merely not minimal. The scene layout
-	// itself flips this false on the way back to the landing.
+	// itself flips this false on the way back to any non-tool route.
 	$effect(() => {
 		void page.url.pathname;
-		if (!revealed) return;
+		if (!covered) return;
 		let raf = requestAnimationFrame(() => {
 			raf = requestAnimationFrame(() => sceneOccluded.set(true));
 		});
 		return () => cancelAnimationFrame(raf);
 	});
 
-	// Return to the landing via the reverse portal: the spiral collapses back down
-	// to THIS tool's hero card (wherever the click happened), then the navigation
-	// runs at full black so the landing swaps in unseen. The card center was
-	// captured on the forward click; a cold load straight into the tool has none,
-	// so the portal falls back to screen-center.
-	function returnToLanding(event: MouseEvent) {
-		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-			return;
-		}
-		event.preventDefault();
-		const origin = getHeroOrigin(page.url.pathname);
-		startPortalTransition('/', origin, () => goto(resolve('/')));
-	}
-
-	// Exit fallback: a plain opacity fade for any non-portal departure (the portal
-	// owns the reverse and covers the swap, so this is effectively invisible then).
+	// Exit: a plain opacity fade on any departure to a non-tool route. The
+	// scene layout's beforeNavigate has already restored the scene and started
+	// the camera descend by the time this outro runs, so the shell fades out
+	// onto the moving world — the descend plays behind it. (The brand mark is
+	// a plain link now; no interception needed.)
 	function plainExit(_node: HTMLElement) {
 		return { duration: FADE_OUT_MS, css: (t: number) => `opacity: ${t}` };
 	}
@@ -332,14 +328,19 @@
 	});
 </script>
 
-<div class="tool-shell" class:revealed out:plainExit|global>
+<div
+	class="tool-shell"
+	class:revealed
+	style:--tool-fade="{FADE_DURATION_MS}ms"
+	out:plainExit|global
+>
 	<DireBorder />
 
 	<!-- Tool chrome strip: the shared site chrome, with the tool switcher in its
 	     center slot, riding the border's quiet top zone. Identical across all
 	     tools — and, apart from the switcher, identical to the landing's. -->
 	<div class="tool-chrome-mount">
-		<SiteChrome onBrandClick={returnToLanding}>
+		<SiteChrome>
 			{#snippet center()}
 				<nav
 					class="chrome-nav"
@@ -469,9 +470,12 @@
 		--tool-pad-top: 0.5rem;
 		--tool-pad-bottom: 3rem;
 		--tool-pad-x: clamp(1rem, 2vw, 2rem);
-		/* Suppressed during the portal spin: laid out (editors measure correctly)
-		   but visibility:hidden → UNPAINTED, off the raster pipeline and invisible
-		   at the portal's edges. .revealed flips it visible at full black. */
+		/* Suppressed through the ascend: laid out (editors measure correctly)
+		   but visibility:hidden → UNPAINTED, off the raster pipeline, so the
+		   shell's one-time raster never competes with the camera pan. .revealed
+		   flips near settle and runs the fade-in (duration set inline from
+		   FADE_DURATION_MS; linear per the shared fade law). Cold loads render
+		   with .revealed already set — no transition runs on initial paint. */
 		visibility: hidden;
 		opacity: 0;
 	}
@@ -479,6 +483,7 @@
 	.tool-shell.revealed {
 		visibility: visible;
 		opacity: 1;
+		transition: opacity var(--tool-fade, 0ms) linear;
 	}
 
 	/* ── Chrome strip ──────────────────────────────────────────────────────── */

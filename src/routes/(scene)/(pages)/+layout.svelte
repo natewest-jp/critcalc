@@ -3,12 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
-	import {
-		FADE_DURATION_MS,
-		FADE_OUT_MS,
-		FADE_OVERLAP_MS,
-		timeUntilSettle
-	} from '$lib/landing/transition';
+	import { FADE_DURATION_MS, FADE_OUT_MS, revealDelayMs } from '$lib/landing/transition';
 
 	let { children } = $props();
 	const pathname = $derived(page.url.pathname);
@@ -37,10 +32,7 @@
 <div
 	class="pages-shell"
 	onclick={onBackdropClick}
-	in:fade|global={{
-		duration: FADE_DURATION_MS,
-		delay: Math.max(0, timeUntilSettle() - FADE_DURATION_MS + FADE_OVERLAP_MS)
-	}}
+	in:fade|global={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
 	out:fade|global={{ duration: FADE_OUT_MS }}
 >
 	<!-- NOT .prose. Every route in this group renders either HelpAreaShell —

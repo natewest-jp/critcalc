@@ -102,10 +102,11 @@ let toolGoneAt = Infinity;
 	const veilAfterSpaNav = await page.evaluate(() => !!document.getElementById('loading-veil'));
 	check('no veil after SPA nav back to /', !veilAfterSpaNav);
 
-	// Starfield sanity: the canvas is actually animating after all this.
+	// Starfield sanity: the field lives inside the GL scene canvas now (the
+	// starfield merge) — the canvas must be sized and the twinkle loop live.
 	const starfieldRunning = await page.evaluate(() => {
-		const c = document.querySelector('.twinkle canvas');
-		return !!c && c.width > 0;
+		const c = document.querySelector('.scene-canvas');
+		return !!c && c.width > 0 && globalThis.__scene?.twinkling?.() === true;
 	});
 	check('starfield canvas sized after veil flow', starfieldRunning);
 	await page.close();

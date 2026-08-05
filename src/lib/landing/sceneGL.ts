@@ -76,16 +76,36 @@ const MAX_BACKING_DPR = 2;
  *  gl_FragCoord, which is already device-space). */
 const GRAIN_TILE_PX = 128;
 
-// Cinematic tilt-up, used by the dev probe toggle (choreography proper lands
-// with the transition rebuild). The crest MIRRORS the rest pose: rest leaves
-// 66 src rows of bleed below the viewport, the crest leaves 66 above it, so
-// the pan is everything between — (master − 2·bleed − viewport) src rows,
-// ≈76.3dvh on the 6400×4000 master. The plate was composed to this crest
-// (Nate's destination guide frame); tune the ART, derive the pan.
-const PAN_DVH = ((MASTER_H_SRC - 2 * BLEED_V_SRC - VIEWPORT_H_SRC) / VIEWPORT_H_SRC) * 100;
-const PAN_MS = 2400;
+// The cinematic tilt-up. The crest MIRRORS the rest pose: rest leaves 66 src
+// rows of bleed below the viewport, the crest leaves 66 above it, so the pan
+// is everything between — (master − 2·bleed − viewport) src rows, ≈76.3dvh on
+// the 6400×4000 master. The plate was composed to this crest (Nate's
+// destination guide frame); tune the ART, derive the pan.
+export const PAN_DVH = ((MASTER_H_SRC - 2 * BLEED_V_SRC - VIEWPORT_H_SRC) / VIEWPORT_H_SRC) * 100;
+/** Duration of the tilt-up, ms — the ascend clock every fade keys off (the
+ *  transition module re-exports it as TRANSITION_MS). */
+export const PAN_MS = 2400;
 const SIDE_LEAN_DEG = 16;
 const TILT_BEZ = [0.58, 0, 0.42, 1] as const;
+
+/**
+ * Camera pose for a crest (tool-state) stop, in CSS px at the current
+ * viewport. `lean` cranes the camera toward a side tool's hero: +1 shifts the
+ * world right (left tool), −1 left (right tool), 0 = straight tilt-up. The
+ * horizontal travel is tan(SIDE_LEAN_DEG) × pan distance, clamped to 0.9 × the
+ * plate's per-side overflow beyond the viewport so the plate edge never enters
+ * frame — on ultrawide the overflow shrinks and the crane degrades gracefully
+ * to a straight tilt-up. Poses are point-in-time px: recompute, don't cache,
+ * across viewport resizes.
+ */
+export function crestPose(lean: -1 | 0 | 1, vw: number, vh: number): { x: number; y: number } {
+	const panPx = (PAN_DVH / 100) * vh;
+	if (lean === 0) return { x: 0, y: panPx };
+	const frameW = vh * VIEWPORT_ASPECT;
+	const overflow = Math.max(0, (frameW - vw) / 2) * 0.9;
+	const mag = Math.min(Math.tan((SIDE_LEAN_DEG * Math.PI) / 180) * panPx, overflow);
+	return { x: lean * mag, y: panPx };
+}
 
 // --- Small helpers ----------------------------------------------------------
 
@@ -590,7 +610,10 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		retune: handle.retune,
 		// Probe surface: is the twinkle loop live? (The scene-occlusion
 		// constraint: must be false whenever a tool covers the scene.)
-		twinkling: () => loopRaf !== 0
+		twinkling: () => loopRaf !== 0,
+		// Probe surface: current camera pose — the choreography probe asserts
+		// crest/rest poses through real hero-click navigations.
+		camera: () => handle.camera()
 	};
 	return handle;
 }
@@ -637,13 +660,7 @@ export function scenePanProbeToggle(): void {
 	let target = { x: 0, y: 0 };
 	if (goingUp) {
 		setDomHidden(true);
-		const frameW = vh * VIEWPORT_ASPECT;
-		const overflow = Math.max(0, (frameW - vw) / 2) * 0.9;
-		const mag = Math.min(
-			Math.tan((SIDE_LEAN_DEG * Math.PI) / 180) * (PAN_DVH / 100) * vh,
-			overflow
-		);
-		target = { x: lean === 0 ? 0 : lean * mag, y: (PAN_DVH / 100) * vh };
+		target = crestPose(lean, vw, vh);
 	}
 	expose();
 	const tick = setInterval(expose, 100);

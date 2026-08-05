@@ -8,9 +8,8 @@
  * this exists to hide (Nate, 2026-07-26).
  *
  * So a surface that finishes asynchronously CLAIMS the veil at component init
- * and releases it when its real content is on screen. Same shape as the
- * portal's registerToolReveal handshake. Surfaces that are ready at first
- * paint claim nothing and get the original behavior.
+ * and releases it when its real content is on screen. Surfaces that are ready
+ * at first paint claim nothing and get the original behavior.
  *
  * Claims are free when there is no veil to hold: claimVeilReady() hands back a
  * no-op unless the SSR-rendered veil is actually in the DOM, which is the same
@@ -63,7 +62,7 @@ export function onVeilReady(fn: () => void): () => void {
 /**
  * Run `fn` after the browser has actually presented a frame. Two rAFs: the
  * first lands before the pending paint, the second after it — the same
- * double-frame guarantee the portal reveal and the tool cross-fade use.
+ * double-frame guarantee the scene-occlusion report and tool cross-fade use.
  */
 export function afterPaint(fn: () => void): () => void {
 	let inner = 0;

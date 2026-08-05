@@ -10,9 +10,13 @@
 //      element is retired by the starfield merge)
 //   3. bare `g` pans the camera up/back (crest pose, DOM overlays hidden and
 //      restored, crane variant on the second up-leg)
-//   4. a cold load on a tool route defers the scene entirely (no plate
+//   4. the ASCEND CHOREOGRAPHY: a real hero click drives the camera to the
+//      crest with the tool shell suppressed mid-climb, reveals it near settle,
+//      then occludes the scene (twinkle stopped); a brand-mark return descends
+//      to rest and brings the composition + twinkle back
+//   5. a cold load on a tool route defers the scene entirely (no plate
 //      fetches, no renderer) until navigation back to a scene route
-//   5. no console/page errors throughout
+//   6. no console/page errors throughout
 //
 // Run: node scripts/probe-ascend-pan.mjs   (preview server on 4998 first)
 
@@ -127,6 +131,69 @@ check(
 	'probe logs present',
 	logs.some((l) => l.includes('straight tilt-up'))
 );
+
+// --- Ascend choreography: hero click → crest → reveal → occlusion ------------
+// Timing map (transition.ts): pan 2400ms; tool reveal fade starts at
+// settle − 600 + 300 = 1900…2100ms and ends ~2700ms; `covered` +80ms; the
+// occlusion report two rAFs later. So mid-climb is < 1900ms and the settled
+// tool state is safely in place by ~3400ms.
+const camY = () => page.evaluate(() => globalThis.__scene?.camera?.().y ?? null);
+await page.click('a[href="/rotation-planner"].hero');
+await page.waitForTimeout(1000);
+const midY = await camY();
+check(
+	'hero click: camera climbing mid-pan',
+	midY !== null && midY > 20 && midY < 740,
+	`camY=${midY}`
+);
+check(
+	'hero click: tool shell suppressed mid-pan',
+	await page.evaluate(() => {
+		const shell = document.querySelector('.tool-shell');
+		return shell !== null && !shell.classList.contains('revealed');
+	})
+);
+await page.waitForTimeout(2400);
+const crestY = await camY();
+check(
+	'ascend settled: camera at crest',
+	crestY !== null && Math.abs(crestY - 762.76) < 2,
+	`camY=${crestY}`
+);
+check(
+	'ascend settled: tool shell revealed',
+	await page.evaluate(
+		() => document.querySelector('.tool-shell')?.classList.contains('revealed') === true
+	)
+);
+check(
+	'ascend settled: scene occluded',
+	await page.evaluate(
+		() => document.querySelector('.scene')?.classList.contains('occluded') === true
+	)
+);
+check(
+	'ascend settled: twinkle loop stopped',
+	await page.evaluate(() => globalThis.__scene?.twinkling?.() === false)
+);
+
+// Brand-mark return: plain link → beforeNavigate starts the descend.
+await page.click('.chrome-brand');
+await page.waitForTimeout(3400);
+const restY = await camY();
+check('descend settled: camera at rest', restY !== null && Math.abs(restY) < 2, `camY=${restY}`);
+check(
+	'descend settled: composition back',
+	await page.evaluate(() => {
+		const c = document.querySelector('.composition');
+		return c !== null && getComputedStyle(c).opacity === '1';
+	})
+);
+check(
+	'descend settled: twinkle loop live',
+	await page.evaluate(() => globalThis.__scene?.twinkling?.() === true)
+);
+
 check('no console/page errors (landing)', errors.length === 0, errors.slice(0, 3).join(' | '));
 await page.close();
 
@@ -146,7 +213,7 @@ check(
 	'tool cold load: renderer deferred',
 	await tool.evaluate(() => globalThis.__scene === undefined)
 );
-// Return to the landing (brand mark, reverse portal) → renderer must init.
+// Return to the landing (SPA navigation home) → renderer must init.
 await tool.click('.tool-brand, a[aria-label*="critcalc"], .brand-return').catch(() => {});
 await tool.evaluate(() => history.pushState({}, '', '/')).catch(() => {});
 // Fallback: drive an SPA nav via the SvelteKit router regardless of chrome markup.
@@ -163,14 +230,15 @@ check(
 	'after SPA navigation home'
 );
 // SPA-nav BACK to a tool: the twinkle loop must stop (zero rAF work behind
-// the opaque tool shell — the scene-occlusion constraint).
+// the opaque tool shell — the scene-occlusion constraint). Occlusion now
+// waits for the full ascend + reveal fade (~2800ms), so give it headroom.
 await tool.evaluate(() => {
 	const a = document.createElement('a');
 	a.href = '/rotation-planner';
 	document.body.appendChild(a);
 	a.click();
 });
-await tool.waitForTimeout(2000);
+await tool.waitForTimeout(3600);
 check(
 	'SPA nav to tool: twinkle loop stopped',
 	await tool.evaluate(() => globalThis.__scene?.twinkling?.() === false)

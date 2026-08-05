@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import ShootingStars from '$lib/components/landing/ShootingStars.svelte';
-	import PortalTransition from '$lib/components/landing/PortalTransition.svelte';
 	import LoadingVeil from '$lib/components/landing/LoadingVeil.svelte';
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
@@ -11,10 +11,14 @@
 	import {
 		initScenePath,
 		startSceneTransition,
+		syncSceneCamera,
 		sceneLayer,
 		dimTarget,
 		isToolPath,
-		sceneOccluded
+		sceneOccluded,
+		revealDelayMs,
+		FADE_DURATION_MS,
+		FADE_OUT_MS
 	} from '$lib/landing/transition';
 	import { mountSceneGL, type SceneGLHandle } from '$lib/landing/sceneGL';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
@@ -75,6 +79,9 @@
 				}
 				handle = h;
 				sceneHandle = h;
+				// Land on the current path's pose (rest, or a crest crane after a
+				// deferred mount) before the first presented frame is relied on.
+				syncSceneCamera();
 				afterPaint(releaseVeil);
 			} catch (err) {
 				// No WebGL → no scene (deliberately no DOM fallback: two scene
@@ -98,13 +105,18 @@
 
 	// The twinkle loop lives in the scene renderer now (the starfield-merge
 	// chunk — the DOM TwinkleStars canvas retired; a DOM-translating star
-	// canvas can't ride the camera pan). Tool routes fully occlude the scene
-	// and the scene-occlusion constraint demands ZERO live animation work
-	// behind them; the landing AND the static pages keep the field live.
-	// Resume is pop-free — star phases derive from absolute time.
+	// canvas can't ride the camera pan). Keyed off OCCLUSION, not the route:
+	// during the ascend the route is already a tool while the world is still
+	// on screen (stars must keep twinkling through the pan and the shell's
+	// fade-in); occlusion flips only once the shell is painted opaque — the
+	// scene-occlusion constraint's ZERO-rAF-behind-tools moment. On the
+	// descend, occlusion lifts at beforeNavigate, so the field is live for the
+	// whole ride down. Resume is pop-free — star phases derive from absolute
+	// time. (During a camera animation the animation loop draws and the
+	// twinkle loop skips — no double-draw; sceneGL coordinates the two.)
 	$effect(() => {
 		if (!sceneHandle) return;
-		if (isToolPath(pathname)) sceneHandle.stop();
+		if ($sceneOccluded) sceneHandle.stop();
 		else sceneHandle.start();
 	});
 
@@ -117,10 +129,10 @@
 		if (!nav.to) return;
 		// Restore the scene BEFORE any departure choreography runs whenever the
 		// destination is NOT a tool (the landing or a content page): heading back
-		// to the landing this fires under the reverse portal's black cover (its
-		// goto runs at full black) or before a non-portal exit's shell fade-out
-		// begins, so the one-time re-raster is never visible; heading to a content
-		// page there is no shell to hide behind, but the scene simply needs to be
+		// from a tool this fires before the shell's fade-out starts, so the
+		// one-time re-raster happens while the scene is still covered — and the
+		// descend then plays behind the fading shell; heading to a content page
+		// there is no shell to hide behind, but the scene simply needs to be
 		// painted for it.
 		if (!isToolPath(nav.to.url.pathname)) sceneOccluded.set(false);
 		startSceneTransition(nav.to.url.pathname);
@@ -157,13 +169,29 @@
 			 on the landing + static pages, never on tools. Live in the scene layout
 			 so they're single persistent bars across landing↔pages (no remount, no
 			 position shift, identical everywhere) while the content between them
-			 crossfades. -->
+			 crossfades. They ride the shared ascend clock: fade out quickly as the
+			 camera starts its climb, fade back in near settle on the descend
+			 (revealDelayMs = 0 when there's no transition, e.g. hydration).
+			 Transitions are LOCAL on purpose — they play only when this {#if}
+			 toggles, never on the layout's initial mount. -->
 		{#if !isToolPath(pathname)}
-			<div class="scene-chrome">
+			<div
+				class="scene-chrome"
+				in:fade={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
+				out:fade={{ duration: FADE_OUT_MS }}
+			>
 				<SiteChrome />
 			</div>
-			<div class="scene-footer-gradient"></div>
-			<div class="scene-footer">
+			<div
+				class="scene-footer-gradient"
+				in:fade={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
+				out:fade={{ duration: FADE_OUT_MS }}
+			></div>
+			<div
+				class="scene-footer"
+				in:fade={{ duration: FADE_DURATION_MS, delay: revealDelayMs() }}
+				out:fade={{ duration: FADE_OUT_MS }}
+			>
 				<SiteFooter />
 			</div>
 
@@ -178,16 +206,12 @@
 		{/if}
 	</div>
 
-	<!-- Portal transition overlay (z:3, above content). Self-contained: idle and
-		hidden until a hero click triggers it via startPortalTransition. -->
-	<PortalTransition />
-
 	<!-- Abyssal-script loading veil (z:20, above everything). Lives here rather
 		 than on the landing page so EVERY surface gets it: the scene's starfield
 		 and a tool's localStorage-restored state both arrive after first paint,
 		 and either one blinking into existence is the same defect. It renders
 		 only into server-rendered HTML, so SPA navigations — including a
-		 hero-card portal into a tool — never see it. Tools hold it until their
+		 hero-card ascend into a tool — never see it. Tools hold it until their
 		 real content is on screen (see veilReady.ts). -->
 	<LoadingVeil />
 </div>
@@ -322,18 +346,14 @@
 		z-index: 2;
 	}
 
-	/* Site-frame chrome: fixed full-width top bar, above the content but within
-	   .content's z:2 stacking context, so the portal cover (z:3, a sibling of
-	   .content) still hides it during tool transitions. */
+	/* Site-frame chrome: fixed full-width top bar, above the content within
+	   .content's z:2 stacking context. */
 	.scene-chrome {
 		position: fixed;
 		top: 0;
 		left: 0;
 		right: 0;
 		z-index: 3;
-		/* Parallax transform (written by parallaxLayer) — the bar drifts with the
-		   scene like the heroes/panel do. */
-		will-change: transform;
 	}
 
 	/* Footer pinned to the bottom edge, centered within its reserved height.
@@ -350,7 +370,6 @@
 		justify-content: center;
 		z-index: 4;
 		pointer-events: none;
-		will-change: transform;
 	}
 
 	/* Full-frame dark gradient beneath the footer (very dark blue → transparent),
