@@ -19,8 +19,15 @@
 		elementPalette,
 		shiftHue,
 		castFill,
+		desaturate,
 		type ElementPalette
 	} from '$lib/utils/elementColors';
+	import {
+		UPTIME_DIM_MIX,
+		GHOST_FILL_MIX,
+		GHOST_EDGE_MIX,
+		GHOST_CHROMA_KEEP
+	} from '$lib/timeline/barMix';
 	import {
 		xForTime as projectX,
 		barGeom as projectBar,
@@ -182,11 +189,14 @@
 	// finish. Its Safari-revert history travelled with it.
 
 	// One gradient stop for the time-scaling buff envelope: --calm-fill (the buff
-	// body/fill) at the given alpha. color-mix with transparent ≡ rgba(calm-fill,
-	// alpha), so ramp/decay bars track any future --calm-fill change and stay in
-	// sync with the flat buff bars (which fill solid --calm-fill).
+	// body/fill) mixed toward the chart ground, so ramp/decay bars track any
+	// future --calm-fill change and stay in sync with the flat buff bars (which
+	// fill solid --calm-fill). ↻ 2026-08-01: mixes against --rp-chart-bg, NOT
+	// transparent — these bars always sit on the chart ground, and the alpha-
+	// compositing law says a fill on a known ground mixes opaquely against it
+	// (semi-transparent CSS renders display-dependently on P3).
 	function calmStop(alpha: number): string {
-		return `color-mix(in srgb, var(--calm-fill) ${(alpha * 100).toFixed(1)}%, transparent)`;
+		return `color-mix(in srgb, var(--calm-fill) ${(alpha * 100).toFixed(1)}%, var(--rp-chart-bg))`;
 	}
 
 	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)
@@ -1248,12 +1258,14 @@
 												{:else if seg.role === 'uptimeDim'}
 													<!-- Sac proc: bar spans duration only (CD reset to 0), dim
 											     continuation tone. Opaque mix, never alpha — connectors
-											     pass behind these bars. -->
+											     pass behind these bars. --dim keeps the badge white+halo:
+											     ink only sits on full-strength fills. -->
 													<div
-														class="rp-bar-uptime"
+														class="rp-bar-uptime rp-bar-uptime--dim"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+														style:background="color-mix(in srgb, {p.main}
+														{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
@@ -1264,7 +1276,8 @@
 															class="rp-bar-cd rp-bar-cd--overflow"
 															style:left="{g.left}px"
 															style:width="{g.width}px"
-															style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+															style:background="color-mix(in srgb, {p.main}
+															{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														></div>
 													{/if}
 												{:else if seg.role === 'ghost'}
@@ -1272,8 +1285,16 @@
 														class="rp-bar-cd rp-bar-cd--ghost"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
-														style:border-color="color-mix(in srgb, {p.main} 25%, var(--rp-chart-bg))"
+														style:background="color-mix(in srgb, {desaturate(
+															p.main,
+															GHOST_CHROMA_KEEP
+														)}
+														{GHOST_FILL_MIX}%, var(--rp-chart-bg))"
+														style:border-color="color-mix(in srgb, {desaturate(
+															p.main,
+															GHOST_CHROMA_KEEP
+														)}
+														{GHOST_EDGE_MIX}%, var(--rp-chart-bg))"
 													>
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
@@ -1358,10 +1379,11 @@
 													</div>
 												{:else if seg.role === 'uptimeDim'}
 													<div
-														class="rp-bar-uptime"
+														class="rp-bar-uptime rp-bar-uptime--dim"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+														style:background="color-mix(in srgb, {p.main}
+														{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
@@ -1372,7 +1394,8 @@
 															class="rp-bar-cd rp-bar-cd--overflow"
 															style:left="{g.left}px"
 															style:width="{g.width}px"
-															style:background="color-mix(in srgb, {p.main} 65%, var(--rp-chart-bg))"
+															style:background="color-mix(in srgb, {p.main}
+															{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														></div>
 													{/if}
 												{:else if seg.role === 'ghost'}
@@ -1380,8 +1403,16 @@
 														class="rp-bar-cd rp-bar-cd--ghost"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background="color-mix(in srgb, {p.main} 20%, var(--rp-chart-bg))"
-														style:border-color="color-mix(in srgb, {p.main} 25%, var(--rp-chart-bg))"
+														style:background="color-mix(in srgb, {desaturate(
+															p.main,
+															GHOST_CHROMA_KEEP
+														)}
+														{GHOST_FILL_MIX}%, var(--rp-chart-bg))"
+														style:border-color="color-mix(in srgb, {desaturate(
+															p.main,
+															GHOST_CHROMA_KEEP
+														)}
+														{GHOST_EDGE_MIX}%, var(--rp-chart-bg))"
 													>
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
@@ -1751,23 +1782,21 @@
 <style>
 	/* ── Root ─────────────────────────────────────────────────── */
 	.rp-root {
-		/* Chart ground — the canonical instrument-frame fill, shared with the
-		   Visualizers chart frames. Also read by the Phase-3 ghost-bar
-		   color-mix in the markup, so the ghost tint stays anchored to the
-		   surface it actually sits on. The old local --bg/--card/--border
-		   redefinitions are gone; this component reads global app.css tokens. */
-		--rp-chart-bg: var(--frame-bg);
-		/* Structural lines inside the chart, hue-consistent with the ground:
-		   grid = faint vertical second-lines; line = lane separators, zone
-		   splits and the Source overlay's edge — the same role the Team
-		   Builder's frame gives it, so it reads the shared --frame-line now.
-		   The local name stays: the planner's markup uses it in color-mixes. */
-		/* Derived from --border like --frame-line (app.css), just fainter —
-		   the grid is the quietest line on the frame ground. Opaque mix, not
-		   alpha (the dire-gradient lesson). Resolves ≈ #222e48; the export
-		   mirrors that literal. */
-		--rp-grid: color-mix(in srgb, var(--border) 55%, var(--frame-bg));
-		--rp-line: var(--frame-line);
+		/* Chart ground — ⚓ NATE 2026-08-01: the notation well's resolved shade
+		   (mix(#000 40%, the old #23232d frame ground)), sampled back out and
+		   adopted as the track area's own ground — DARKER than --frame-bg, so
+		   the chart reads as a well cut into the frame. No longer the
+		   --frame-bg alias; every derived mix below (ghosts, dims, calmStop,
+		   grid/lane lines) follows it. ⚠ the exporter mirrors this literal. */
+		--rp-chart-bg: #15151c;
+		/* Structural lines inside the chart, derived from --border toward the
+		   CHART ground (not the frame's) so they blend with the darker well.
+		   grid = faint vertical second-lines (resolves ≈ #262631); line = lane
+		   separators, zone splits, the ruler seam (resolves ≈ #343443). Opaque
+		   mixes, not alpha (the dire-gradient lesson); the export mirrors the
+		   resolved literals (the mirror test enforces). */
+		--rp-grid: color-mix(in srgb, var(--border) 45%, var(--rp-chart-bg));
+		--rp-line: color-mix(in srgb, var(--border) 85%, var(--rp-chart-bg));
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all
 		   share it (the elemental block mix in the markup references it too).
@@ -1939,9 +1968,12 @@
 		   frame edge; bottom padding lifts the controls off the tick strip. */
 		padding: 0 8px 6px 48px;
 		/* Fade the ruler out under the controls: a fixed 40px ramp to solid
-		   chart ground, with the contents starting past it (padding-left) so
-		   ticks never show through the translucent chips. */
-		background: linear-gradient(to right, transparent, var(--rp-chart-bg) 40px);
+		   FRAME ground (the ruler strip sits on --frame-bg — since the chart
+		   ground went darker 2026-08-01 the two diverged, and a chart-ground
+		   fade here read as a dark slab over the lighter strip), with the
+		   contents starting past it (padding-left) so ticks never show
+		   through the translucent chips. */
+		background: linear-gradient(to right, transparent, var(--frame-bg) 40px);
 		z-index: 5;
 	}
 	.rp-view-cluster .rp-zoom-slider {
@@ -2103,6 +2135,7 @@
 	/* ── Track area ───────────────────────────────────────────── */
 	.rp-tracks {
 		position: relative;
+		background-color: var(--rp-chart-bg);
 		/* Fade width for truncating bar labels (buff chips, cd/cast labels) —
 		   clipped text dissolves over this many px instead of slicing mid-glyph. */
 		--buff-label-fade: 12px;
@@ -2131,16 +2164,18 @@
 		position: relative;
 		border-bottom: 1px solid var(--rp-line);
 	}
+	/* Ruler ticks ride the line tokens (they were stranded pre-token navy
+	   literals until 2026-08-01 — the "showing a little blue" Nate spotted). */
 	.rp-tick {
 		position: absolute;
 		bottom: 0;
 		width: 1px;
-		background: #22304c;
+		background: var(--rp-grid);
 		height: 4px;
 	}
 	.rp-tick.major {
 		height: 8px;
-		background: #35486e;
+		background: var(--border);
 	}
 	.rp-tick-label {
 		position: absolute;
@@ -2228,12 +2263,28 @@
 		color: rgba(255, 255, 255, 0.85);
 	}
 	/* Planner toolbar buttons are .btn--sm now; these keep only the geometry the
-	   global class can't know. The toolbar's resting fill is applied to the
-	   CLUSTER rather than each button — one rule instead of three. */
+	   global class can't know.
+	   ↻ 2026-08-01 lightness-structure: the cluster rides the mid rung
+	   (--control-face, opaque slate) instead of the translucent resting fill —
+	   these are the planner's promoted controls. The local :hover is REQUIRED:
+	   the global .btn:hover (0,2,0) would otherwise win and drop hover BELOW
+	   rest. Ink lifts to --text for the solid face. */
 	.rp-zoom-btn,
 	.rp-notes-btn,
 	.rp-composer-btn {
-		background: var(--fill-rest);
+		background: var(--control-face);
+		color: var(--text);
+	}
+	.rp-zoom-btn:hover,
+	.rp-notes-btn:hover,
+	.rp-composer-btn:hover {
+		background: var(--control-face-hover);
+	}
+	/* Opaque active mix for NOTES (knob: the accent share). The global
+	   .btn.is-active --sel-fill is translucent — alpha law says mix against
+	   the known face instead. */
+	.rp-notes-btn.is-active {
+		background: color-mix(in srgb, var(--accent) 20%, var(--control-face));
 	}
 	/* One height for the whole view cluster (total readout, − / + zoom,
 	   NOTES) — the row used to mix 18px buttons with padding-derived
@@ -2581,22 +2632,28 @@
 	.rp-nb-bar .rp-bar-cd-label {
 		color: #fff;
 	}
-	/* Shared label halo (Nate 2026-07-18): white text on light element fills
-	   needs separation, and dark text didn't sit right — a soft shadow in a
-	   DARK SHADE OF THE BAR'S OWN ELEMENT COLOR (--label-halo, set on each
+	/* Label halo (Nate 2026-07-18), ↻ 2026-08-01 lightness-structure round:
+	   full-strength castFill fills now carry DARK INK (--ink) with no halo —
+	   the bright-chip idiom (Genshin's Lv-chips; GaugeInstrument's badge was
+	   the codebase precedent). The halo is the crutch for white-on-mid, so
+	   this list ENUMERATES the labels that stay white — a soft shadow in a
+	   dark shade of the bar's own element color (--label-halo, set on each
 	   char block via shiftHue lightness −30; NB/moonsign lanes pin their
-	   darkest palette color) keeps the labels white without reading as an
-	   effect. Text must be FULL-opacity white: alpha-reduced white lets the
-	   shadow bleed through the glyphs and muddies them. Small blur radii
-	   only; static, so paint cost is negligible. */
+	   darkest palette color). White text must be FULL-opacity: alpha-reduced
+	   white lets the shadow bleed through the glyphs. Small blur radii only;
+	   static, so paint cost is negligible. */
 	.rp-bar-cast-label,
 	.rp-bar-cd-label,
-	.rp-bar-row-badge,
-	.rp-summon-label,
+	.rp-bar-uptime--dim .rp-bar-row-badge,
 	.rp-moonsign-bar .rp-buff-label {
 		text-shadow:
 			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
 			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
+	}
+	/* The dim (sac-proc) continuation drops back to the mid band — its badge
+	   keeps the white+halo treatment above. */
+	.rp-bar-uptime--dim .rp-bar-row-badge {
+		color: #fff;
 	}
 	/* The moonsign lane's lunar glyph is part of that label, so it takes the
 	   same halo — text-shadow can't reach an <img>, and drop-shadow's blur is
@@ -2627,7 +2684,8 @@
 	.rp-summon-label {
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
-		color: #fff;
+		/* Summon bars are always full-strength castFill → ink, no halo. */
+		color: var(--ink);
 		white-space: nowrap;
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
@@ -2714,12 +2772,14 @@
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */
+	/* Ink on the full-strength castFill pill (the bright-chip idiom); the
+	   --dim variant overrides back to white+halo above. */
 	.rp-bar-row-badge {
 		position: absolute;
 		left: 4px;
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
-		color: #fff;
+		color: var(--ink);
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
 	}
@@ -2753,20 +2813,21 @@
 		min-height: 36px;
 		padding: 6px 10px;
 		border-radius: 3px;
-		background: rgba(255, 255, 255, 0.05);
+		/* ↻ 2026-08-01: same mid-rung register as the KQM/PNG buttons (the
+		   comment above always claimed it — now the fill agrees). */
+		background: var(--control-face);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 		text-decoration: none;
-		color: var(--muted);
+		color: var(--text);
 		transition:
 			background 150ms ease,
 			color 150ms ease;
 	}
 	.rp-explore-link:hover {
-		background: rgba(255, 255, 255, 0.1);
-		color: var(--text);
+		background: var(--control-face-hover);
 	}
 	/* Ragged-right wrapped text (the arrow stays attached to the last word),
 	   the whole block centered in the button by the grid above. */

@@ -7,13 +7,13 @@
 // hand, so the hash is never stale.
 
 export const ELEMENT_ICONS: Record<string, string> = {
-	pyro: '/assets/elements/tinted/pyro-c45367a6.png',
-	hydro: '/assets/elements/tinted/hydro-0b69f677.png',
-	anemo: '/assets/elements/tinted/anemo-6442ea65.png',
+	pyro: '/assets/elements/tinted/pyro-712fbb66.png',
+	hydro: '/assets/elements/tinted/hydro-471982d1.png',
+	anemo: '/assets/elements/tinted/anemo-1fd6a876.png',
 	electro: '/assets/elements/tinted/electro-271324b3.png',
-	cryo: '/assets/elements/tinted/cryo-8ba40f89.png',
-	geo: '/assets/elements/tinted/geo-952ebb6a.png',
-	dendro: '/assets/elements/tinted/dendro-87695516.png'
+	cryo: '/assets/elements/tinted/cryo-4a604948.png',
+	geo: '/assets/elements/tinted/geo-f3d793b3.png',
+	dendro: '/assets/elements/tinted/dendro-6d98570b.png'
 };
 
 /** Icon URL for an element, or null when it has none (physical, none). */

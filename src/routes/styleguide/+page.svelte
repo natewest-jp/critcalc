@@ -46,7 +46,7 @@
 	const exact = (...ns: string[]) =>
 		ns.map((n) => tokens.find((t) => t.name === n)).filter((t): t is Token => !!t);
 
-	const structure = exact('--bg', '--text', '--muted', '--neutral');
+	const structure = exact('--bg', '--text', '--muted', '--ink', '--neutral');
 	const calmSurfaces = exact('--surface', '--surface-raised', '--border', '--frame-line');
 	const metrics = exact('--chrome-h', '--site-footer-h');
 	const famDire = exact('--dire', '--dire-fill');
@@ -63,6 +63,10 @@
 		'--sel-fill-hover',
 		'--sel-ring',
 		'--accent-hover-fill',
+		'--control-face',
+		'--control-face-hover',
+		'--sel-surface',
+		'--sel-ink',
 		'--knob',
 		'--accent'
 	);
@@ -868,6 +872,38 @@
 					</li>
 					<li>
 						<code>app.css</code> and <code>src/lib/utils/elementColors.ts</code> are a mirrored pair.
+					</li>
+					<li>
+						<strong>Hierarchy must survive grayscale.</strong> Lightness is the skeleton, hue is the
+						clothing — if a surface reads as mud with hue removed, its structure is riding on hue.
+						<kbd>Cmd/Ctrl+Shift+G</kbd> in dev toggles a grayscale overlay on every route (root layout;
+						ships nothing to prod). Run it before approving any color work.
+					</li>
+					<li>
+						<strong>Bright fill carries dark ink and no halo.</strong> A full-strength element fill
+						(the castFill pills, summon bars, gauge badges) takes <code>--ink</code>, flat — the
+						label halo is the crutch for white-on-mid, not a universal. Dim continuations and ghost
+						tracks keep white + halo. Genshin's Lv-chip idiom; GaugeInstrument was the precedent.
+					</li>
+					<li>
+						<strong
+							>The lightness contract: content-bearing fills earn ΔL over their ground; recessive
+							fills drop chroma.</strong
+						>
+						A fill the eye should find (buff strips, dim continuations) sits measurably lighter than
+						<code>--frame-bg</code>; a fill that is structure (ghost CD tracks) recedes by
+						desaturating, so grayscale never mistakes it for content. The ratios are knobs in
+						<code>src/lib/timeline/barMix.ts</code>, shared by the DOM and the PNG exporter;
+						<code>timelineExport.mirror.test.ts</code> makes mirror drift a test failure.
+					</li>
+					<li>
+						<strong>Selection is accent — except at the very top of the ladder.</strong> The
+						top-level tool tab strips and the Help chapter nav select with
+						<code>--sel-surface</code> (beige) + <code>--sel-ink</code>: the selected thing is the
+						screen's one bright plate, Genshin's Stygian selected-row idiom. Everywhere else
+						selection remains <code>--sel-fill</code>/<code>--sel-ring</code>. NO beige panels — the
+						pilot's extent is a deliberate knob. (Amends 2026-08-01: gray AND beige are both freely
+						available to this site; the old "beige belongs to the sister site" split is retired.)
 					</li>
 				</ul>
 			</div>

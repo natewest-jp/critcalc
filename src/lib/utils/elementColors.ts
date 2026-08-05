@@ -27,13 +27,15 @@ export type ElementKey =
 // and RES debuffs, not character UI), and the bar needs a recognizable but
 // understated tone.
 export const elementColors = {
-	pyro: { main: '#e2543e', border: 'rgba(226, 84, 62, 0.5)', hi: '#f0aa9f' },
-	hydro: { main: '#1b8cee', border: 'rgba(27, 140, 238, 0.5)', hi: '#8dc6f7' },
-	anemo: { main: '#4ecbb4', border: 'rgba(78, 203, 180, 0.5)', hi: '#a7e5da' },
-	electro: { main: '#c070f0', border: 'rgba(192, 112, 240, 0.5)', hi: '#e0b8f8' },
-	cryo: { main: '#97d4e6', border: 'rgba(151, 212, 230, 0.5)', hi: '#cbeaf3' },
-	geo: { main: '#e7b236', border: 'rgba(231, 178, 54, 0.5)', hi: '#f3d99b' },
-	dendro: { main: '#80c840', border: 'rgba(128, 200, 64, 0.5)', hi: '#c0e4a0' },
+	pyro: { main: '#f9563e', border: 'rgba(249, 86, 62, 0.5)', hi: '#fcaa9e' },
+	// Hydro runs below pyro's oklch lightness on purpose (grayscale gate);
+	// the 2026-08-01 whole-palette boost preserved the gap.
+	hydro: { main: '#1c88e8', border: 'rgba(28, 136, 232, 0.5)', hi: '#8ec4f4' },
+	anemo: { main: '#47dbc1', border: 'rgba(71, 219, 193, 0.5)', hi: '#a3ede0' },
+	electro: { main: '#cd7cfe', border: 'rgba(205, 124, 254, 0.5)', hi: '#e6befe' },
+	cryo: { main: '#9de2f7', border: 'rgba(157, 226, 247, 0.5)', hi: '#cef0fb' },
+	geo: { main: '#fabd22', border: 'rgba(250, 189, 34, 0.5)', hi: '#fcde90' },
+	dendro: { main: '#85d736', border: 'rgba(133, 215, 54, 0.5)', hi: '#c2eb9a' },
 	physical: { main: '#9ea4b3' },
 	none: { main: '#6a7080' }
 } as const;
@@ -62,6 +64,48 @@ export function shiftHue(hex: string, deg: number, dl: number, alpha: number): s
 	const ss = Math.round(s * 100);
 	const ll = Math.max(0, Math.min(100, Math.round(l * 100) + dl));
 	return `hsla(${hh}, ${ss}%, ${ll}%, ${alpha})`;
+}
+
+/** Scale a #rrggbb color's saturation to `keepPct` % of itself, returned as
+ *  #rrggbb (hex in, hex out — consumable by CSS color-mix AND the exporter's
+ *  own hex-only mix()). The ghost CD tracks' chroma drop
+ *  (barMix.GHOST_CHROMA_KEEP) — same HSL derivation as shiftHue so the two
+ *  stay consistent. */
+export function desaturate(hex: string, keepPct: number): string {
+	const n = parseInt(hex.slice(1), 16);
+	const r = ((n >> 16) & 255) / 255;
+	const g = ((n >> 8) & 255) / 255;
+	const b = (n & 255) / 255;
+	const max = Math.max(r, g, b);
+	const min = Math.min(r, g, b);
+	const l = (max + min) / 2;
+	const d = max - min;
+	let h = 0;
+	let s = 0;
+	if (d !== 0) {
+		s = d / (1 - Math.abs(2 * l - 1));
+		if (max === r) h = 60 * (((g - b) / d + 6) % 6);
+		else if (max === g) h = 60 * ((b - r) / d + 2);
+		else h = 60 * ((r - g) / d + 4);
+	}
+	const ss = s * (keepPct / 100);
+	// HSL → RGB (standard formulation)
+	const c = (1 - Math.abs(2 * l - 1)) * ss;
+	const hp = h / 60;
+	const xx = c * (1 - Math.abs((hp % 2) - 1));
+	const m = l - c / 2;
+	let rgb: [number, number, number];
+	if (hp < 1) rgb = [c, xx, 0];
+	else if (hp < 2) rgb = [xx, c, 0];
+	else if (hp < 3) rgb = [0, c, xx];
+	else if (hp < 4) rgb = [0, xx, c];
+	else if (hp < 5) rgb = [xx, 0, c];
+	else rgb = [c, 0, xx];
+	const to = (v: number) =>
+		Math.round((v + m) * 255)
+			.toString(16)
+			.padStart(2, '0');
+	return `#${to(rgb[0])}${to(rgb[1])}${to(rgb[2])}`;
 }
 
 export function elementPalette(element: string | undefined): ElementPalette {

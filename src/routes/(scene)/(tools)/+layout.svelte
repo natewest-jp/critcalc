@@ -399,58 +399,93 @@
 		   containers), so nothing is lost. */
 		overflow-x: hidden;
 		overflow-y: auto;
-		/* Tool background: plain black base under the Dire border edge treatment.
-		   Opaque, so it covers the cosmic scene behind — the portal's black fades
-		   out onto this (dark-to-dark) and the tool reads as fading in from black. */
-		background: #000;
+		/* Tool background: the twilight ramp's BASE — the near-black the whole
+		   edge treatment fades into. Opaque, so it covers the cosmic scene
+		   behind — the portal's black fades out onto this (dark-to-dark) and
+		   the tool reads as fading in from black. */
+		background: var(--dire-base);
 
-		/* Dire border knobs. These size the edge treatment ONLY — the content
-		   paddings below are independent of them now (see the note there).
-		   --dire (the edge hue) now lives in app.css :root so it can double as
-		   the shared --accent; it cascades in here, so the border still reads it. */
-		/* Border brightness + tint — HAND-TUNED BY NATE 2026-07-31; treat the
-		   numbers as design, not derivation.
-		   · --dire-edge — the border's BRIGHT identity color: the GL ember
-		     glow, the fade-top seam, and the GL waves' hue/sat derive from it
-		     (wave lightnesses stay pinned in direBorderGL's layer defs). A
-		     literal at the HSL chroma peak (s100 l50) — above l50 HSL trades
-		     chroma for whiteness and it reads washed; hue nudged 340→338 by
-		     eye.
-		   · --dire-grad-top-l / --dire-grad-bottom-l — the OPAQUE gradients'
-		     starting lightnesses (the tint's hue/sat at these l values,
-		     fading to solid #000). Opaque on purpose: semi-transparent CSS
-		     over black proved display-dependent — on a P3 Mac the alpha
-		     compositing path rendered hue-shifted and under-saturated vs the
-		     mathematically identical opaque color, a seam no alpha value
-		     could close (Nate isolated this 2026-07-31 by pushing the old
-		     color-mix to ~100%). Values are the opaque equivalents of that
-		     tune (90%/100% of l19 over black).
-		   · --dire-edge-boost — multiplies the GL wave stops' pinned
-		     lightnesses (crestL/edgeL in direBorderGL.ts layer defs).
+		/* ══ THE TWILIGHT RAMP — dire border color model, rebuilt 2026-08-01 ══
+		   The old model (one tint × nine scattered lightness scalars:
+		   --dire-grad-*-l, --dire-edge-boost, six crestL/edgeL layer constants)
+		   is RETIRED — it had accreted into unreadable lightness algebra. The
+		   new model is EXPLICIT COLOR STATIONS on the twilight ramp measured
+		   from Genshin's Arlecchino wallpaper + the Stygian waves (2026-08-01
+		   analysis): hue rotates navy→violet→magenta→dire as the eye travels
+		   from content toward the viewport edge, chroma peaking in small
+		   bright accents. Every station is just a color — tune by picking
+		   colors, not by chasing multipliers. oklch annotations per station.
+		   All OPAQUE (the P3 alpha-compositing law); the GL module resolves
+		   them from the cascade (window.__dire.retune() after devtools edits).
 		   Border-only on purpose: --dire itself is the tool-zone accent (~148
 		   call sites) and stays untouched. */
-		--dire-edge: hsl(341, 86%, 50%);
-		--dire-grad-top-l: 18%;
-		--dire-grad-bottom-l: 20%;
-		--dire-edge-boost: 1.33;
+		--dire-base: #131518; /* the shell ground ⚓ NATE — near-neutral off-black  L.17 C.013 */
+		--dire-sky: #1d171e; /* gradient far end ⚓ NATE — dusk plum       L.19 C.028 H333 */
+		--dire-horizon: #341d27; /* gradient edge end ⚓ NATE — quiet magenta  L.21 C.064 H344 */
+		/* Wave BODIES (↻ 2026-08-01 line-layer redesign — two bodies + one line,
+		   was three bodies): each body's hue gradient RIDES ITS WAVE (↻ same
+		   day, Nate: the colors travel with the motion, and the counter-
+		   flowing bodies carry theirs in opposite directions). The two knobs
+		   are the CYCLE'S POLES — the fill runs A → B → A across one tile
+		   (cosine, so the tile seam never jumps), one full cycle per
+		   --dire-tile-w. The Stygian strip's own hue drift, now in motion. */
+		--dire-wave-far-l: #633156; /* far body, pole A  ⚓ NATE  L.47 C.208 H299 */
+		--dire-wave-far-r: #6c314e; /* far body, pole B  ⚓ NATE  L.51 C.182 H22 */
+		--dire-wave-near-l: #e23c8f; /* near body, pole A ⚓ NATE  L.53 C.185 H305 */
+		--dire-wave-near-r: #f13352; /* near body, pole B ⚓ NATE  L.58 C.174 H13 */
+		/* The LINE wave — the old mid layer reborn as a stroke-only silhouette:
+		   no body fill, just the thin bright edge line riding its own motion
+		   between the two bodies. Its opacity BREATHES: a slow modulation
+		   drifts along the line so segments fade to transparent and back
+		   (shader-side — the SVG limitation doesn't apply). */
+		--dire-crest: #e57d7d; /* line color ⚓ NATE  L.72 C.134 H359 */
+		--dire-crest-w: 2px; /* line thickness */
+		--dire-crest-a: 0.3; /* line PEAK opacity (0 hides the line layer entirely;
+		   independent of --dire-wave-cover) */
+		--dire-crest-fade-n: 1; /* fade cycles along one tile — how many bright
+		   segments the line carries at once */
+		--dire-crest-fade-dur: 8s; /* one full fade-through (drifts along the line,
+		   so segments continuously dissolve and re-emerge) */
+		--dire-crest-fade-min: 0; /* opacity floor of the fade troughs (0 = fully
+		   transparent; raise toward 1 for a steadier line) */
+		--dire-crest-fade-bias: 6; /* bright-segment narrowing exponent (1 = the
+		   old even sine; higher = more of the line spends its time transparent,
+		   shorter brighter segments) */
+		--dire-crest2-off: 40px; /* the TWIN line's offset below the edge line. Its
+		   fade drifts the OPPOSITE way (segments cross and pass — flip lives in
+		   direBorderGL's fadePhase2 if the counter-drift reads wrong). 0 stacks
+		   it on the first line (effectively one line again). */
+		/* ── Wave geometry (2026-08-01, Nate's alignment asks; the outer-haze
+		   experiment was tried and REMOVED same day — without was better) ── */
+		--dire-near-drop: 10px; /* how much shallower the near body crests vs the
+		   far body (which sits exactly at the --dire-*-h marks) */
+		--dire-wave-base-a: 0; /* body opacity multiplier at the viewport-edge
+		   side — the CREST is fully opaque (× --dire-wave-cover) and the body
+		   eases off toward its base, dissolving into the horizon glow behind
+		   it (1 = flat) */
+		--dire-ember: #e14660; /* ember dot glow — the chroma peak       L.62 C.190 H15 */
 		--dire-top-h: 100px;
-		--dire-top-grad-h: 250px;
-		--dire-bottom-h: 200px;
-		--dire-bottom-grad-h: 350px;
+		--dire-top-grad-h: 100px;
+		--dire-bottom-h: 150px;
+		--dire-bottom-grad-h: 170px;
 		--dire-halftone-h: 200px;
 		/* Scroll-under: per-layer wave opacity — how firmly each wave body
-		   occludes content passing beneath (three layers stack, so the deep
-		   body is effectively opaque). 0.9 is Nate's editor-tuned value; the
-		   fill gradients live in the GL module's layer defs. */
-		--dire-wave-cover: 0.9;
+		   occludes content passing beneath. ⚓ NATE 2026-08-01: pulled 0.9 →
+		   0.1 — the waves run as faint luminous washes now. ⚠ At this cover
+		   the top-edge occlusion the scroll-under design assumed is gone
+		   (content ghosts through the crests as it scrolls under); the
+		   fade-top overlay and the crest lines (--dire-crest-a, cover-
+		   independent) carry the edge instead. Raise toward 0.9 to restore
+		   solid-body occlusion. */
+		--dire-wave-cover: 0.6;
 		/* Wave tile width: smaller = smaller waves but MUCH lighter compositor
 		   textures (memory ∝ tile-w²), which is what curbs the eviction-flash +
 		   scroll judder. Dial to taste (down from the 220vw default). */
-		--dire-tile-w: 130vw;
+		--dire-tile-w: 200vw;
 		/* Wave speed: 1 = the tuned feel (the ×10 tuning is baked into the base
 		   durations). Noise pace is its own knob — they never tune well together. */
 		--dire-speed: 0.5;
-		--dire-noise-dur: 9.9s;
+		--dire-noise-dur: 10s;
 		/* Scroll-under geometry: the chrome is fixed again, backed by the TOP
 		   waves painting over content (DireBorder's over-stratum, z2) — the top
 		   pad parks rest content just clear of the top fade's terminator (that

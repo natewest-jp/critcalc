@@ -228,7 +228,7 @@
 					cy={markerY}
 					r="4"
 					fill="var(--accent)"
-					stroke="#121b2f"
+					style="stroke: var(--frame-bg)"
 					stroke-width="1.5"
 				/>
 			</svg>
