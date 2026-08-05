@@ -8,22 +8,21 @@
 //      old DOM plate rendering within grain tolerance) and the veil lifts
 //   2. the twinkle field renders INSIDE the scene canvas (the DOM .twinkle
 //      element is retired by the starfield merge)
-//   3. bare `g` pans the camera up/back (crest pose, DOM overlays hidden and
-//      restored, crane variant on the second up-leg)
-//   4. the ASCEND CHOREOGRAPHY: a real hero click drives the camera to the
+//   3. the ASCEND CHOREOGRAPHY: a real hero click drives the camera to the
 //      crest with the tool shell suppressed mid-climb, reveals it near settle,
 //      then occludes the scene (twinkle stopped); a brand-mark return descends
-//      to rest and brings the composition + twinkle back
-//   5. a cold load on a tool route defers the scene entirely (no plate
+//      to rest and brings the composition + twinkle back; a side-tool hero
+//      click cranes the world toward its card (the bare-`g` probe toggle was
+//      stripped at merge prep — the choreography IS the pan now)
+//   4. a cold load on a tool route defers the scene entirely (no plate
 //      fetches, no renderer) until navigation back to a scene route
-//   6. no console/page errors throughout
+//   5. no console/page errors throughout
 //
 // Run: node scripts/probe-ascend-pan.mjs   (preview server on 4998 first)
 
 import { chromium } from 'playwright';
 
 const ORIGIN = 'http://localhost:4998';
-const PAN_MS = 2400;
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 
@@ -36,10 +35,8 @@ const check = (name, ok, detail = '') => {
 // --- Landing: GL scene + probe -----------------------------------------------
 
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
-const logs = [];
 const errors = [];
 page.on('console', (m) => {
-	if (m.text().includes('[ascend-pan probe')) logs.push(m.text());
 	if (m.type() === 'error') errors.push(m.text());
 });
 page.on('pageerror', (e) => errors.push(String(e)));
@@ -100,38 +97,6 @@ check(
 	await page.evaluate(() => globalThis.__scene?.twinkling?.() === true)
 );
 
-// g: up (straight) → down → up (left crane) → down
-const glState = () => page.evaluate(() => globalThis.__ascendGL ?? null);
-await page.keyboard.press('g');
-await page.waitForTimeout(PAN_MS + 400);
-const up = await glState();
-// Crest = the mirror pose: (master − 2·bleed − viewport) src rows ≈ 76.28dvh
-// of the 1000px viewport (PAN_DVH is derived in sceneGL.ts — keep in step).
-check('g up: camera at crest', up?.settled && Math.abs(up.cam.y - 762.76) < 2, `camY=${up?.cam.y}`);
-check(
-	'g up: DOM overlays hidden',
-	await page.evaluate(() => document.querySelector('.meteors')?.style.visibility === 'hidden')
-);
-await page.keyboard.press('g');
-await page.waitForTimeout(PAN_MS + 400);
-const down = await glState();
-check('g down: camera at rest', down?.settled && Math.abs(down.cam.y) < 2, `camY=${down?.cam.y}`);
-check(
-	'g down: DOM overlays restored',
-	await page.evaluate(() => document.querySelector('.meteors')?.style.visibility === '')
-);
-await page.keyboard.press('g');
-await page.waitForTimeout(PAN_MS + 400);
-const crane = await glState();
-check('g crane: world shifted right', crane?.settled && crane.cam.x > 20, `camX=${crane?.cam.x}`);
-await page.keyboard.press('g');
-await page.waitForTimeout(PAN_MS + 400);
-
-check(
-	'probe logs present',
-	logs.some((l) => l.includes('straight tilt-up'))
-);
-
 // --- Ascend choreography: hero click → crest → reveal → occlusion ------------
 // Timing map (transition.ts): pan 2400ms; tool reveal fade starts at
 // settle − 600 + 300 = 1900…2100ms and ends ~2700ms; `covered` +80ms; the
@@ -154,6 +119,8 @@ check(
 	})
 );
 await page.waitForTimeout(2400);
+// Crest = the mirror pose: (master − 2·bleed − viewport) src rows ≈ 76.28dvh
+// of the 1000px viewport (PAN_DVH is derived in sceneGL.ts — keep in step).
 const crestY = await camY();
 check(
 	'ascend settled: camera at crest',
@@ -192,6 +159,28 @@ check(
 check(
 	'descend settled: twinkle loop live',
 	await page.evaluate(() => globalThis.__scene?.twinkling?.() === true)
+);
+
+// Side-tool crane through the real choreography: Team Builder is the LEFT
+// hero, so its ascend cranes the camera toward it — the world shifts RIGHT
+// (camX > 0; tan 16° × pan ≈ 219px at this viewport) while climbing to the
+// same crest height. The return descends back to a centered rest.
+const cam = () => page.evaluate(() => globalThis.__scene?.camera?.() ?? null);
+await page.click('a[href="/team-builder"].hero');
+await page.waitForTimeout(3400);
+const crane = await cam();
+check(
+	'TB ascend: crane shifts the world right at the crest',
+	crane !== null && crane.x > 20 && Math.abs(crane.y - 762.76) < 2,
+	`cam=${crane && `${crane.x.toFixed(1)},${crane.y.toFixed(1)}`}`
+);
+await page.click('.chrome-brand');
+await page.waitForTimeout(3400);
+const rest2 = await cam();
+check(
+	'TB descend: camera back to centered rest',
+	rest2 !== null && Math.abs(rest2.x) < 2 && Math.abs(rest2.y) < 2,
+	`cam=${rest2 && `${rest2.x.toFixed(1)},${rest2.y.toFixed(1)}`}`
 );
 
 check('no console/page errors (landing)', errors.length === 0, errors.slice(0, 3).join(' | '));

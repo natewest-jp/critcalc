@@ -618,63 +618,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 	return handle;
 }
 
-// --- Dev probe toggle (branch artifact — bare `g` on the landing) -----------
-
-let probeUp = false;
-let probeLeanIdx = 0;
-const PROBE_LEANS: Array<-1 | 0 | 1> = [0, 1, -1];
-
-function setDomHidden(hidden: boolean): void {
-	// Interim: the DOM meteors and the composition can't ride the GL camera
-	// yet (they convert with the choreography chunk), so the probe hides them
-	// during the pan. The twinkle field is IN the scene canvas now and rides
-	// the camera. Restored at rest.
-	for (const sel of ['.meteors', '.composition']) {
-		const el = document.querySelector<HTMLElement>(sel);
-		if (el) el.style.visibility = hidden ? 'hidden' : '';
-	}
-}
-
-/** Toggle the historical 75dvh move on the live renderer, cycling crane
- *  variants — Nate's cross-browser smoothness instrument. */
-export function scenePanProbeToggle(): void {
-	const s = getSceneGL();
-	if (!s) {
-		console.warn('[ascend-pan probe GL] no scene renderer mounted');
-		return;
-	}
-	const goingUp = !probeUp;
-	probeUp = goingUp;
-	const lean = PROBE_LEANS[probeLeanIdx];
-	if (!goingUp) probeLeanIdx = (probeLeanIdx + 1) % PROBE_LEANS.length;
-
-	const vh = window.innerHeight;
-	const vw = window.innerWidth;
-	const expose = () => {
-		(window as unknown as Record<string, unknown>).__ascendGL = {
-			up: probeUp,
-			settled: !s.animating(),
-			cam: s.camera()
-		};
-	};
-	let target = { x: 0, y: 0 };
-	if (goingUp) {
-		setDomHidden(true);
-		target = crestPose(lean, vw, vh);
-	}
-	expose();
-	const tick = setInterval(expose, 100);
-	void s.animateCamera(target).then(() => {
-		clearInterval(tick);
-		expose();
-		if (!probeUp) setDomHidden(false);
-	});
-	const label = !goingUp
-		? 'return to rest'
-		: lean === 0
-			? 'up — straight tilt-up'
-			: lean === 1
-				? 'up — left-tool crane (world shifts right)'
-				: 'up — right-tool crane (world shifts left)';
-	console.log(`[ascend-pan probe GL] ${label}, ${PAN_MS}ms`);
-}
+// (The bare-`g` pan probe toggle — the experiment branch's containment — was
+// stripped at merge prep 2026-08-05: the real choreography now drives the
+// same camera moves through hero clicks / brand returns, which is also what
+// probe-ascend-pan.mjs and Nate's headed smoothness checks exercise.)
