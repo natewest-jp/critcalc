@@ -187,8 +187,12 @@
 
 	/** The current anchor position for `path`, in .tool-main coordinates,
 	 *  compensating the page layer's own pan transform (a parked or mid-slide
-	 *  layer measures displaced by exactly its translateX). */
-	function measureBenchAnchor(path: string): { x: number; y: number } | null {
+	 *  layer measures displaced by exactly its translateX). The rect already
+	 *  reflects any internal scroll of the anchor's zone — measuring IS the
+	 *  scroll mirror; the zone's scroll events just ask for a re-measure. */
+	function measureBenchAnchor(
+		path: string
+	): { x: number; y: number; anchorEl: HTMLElement } | null {
 		if (!toolMain) return null;
 		const pages = [...toolMain.querySelectorAll<HTMLElement>(':scope > .tool-page')];
 		// Latest layer stamped with this path wins (matches the pan's own rule).
@@ -199,20 +203,54 @@
 		const mr = toolMain.getBoundingClientRect();
 		const cs = getComputedStyle(layer).transform;
 		const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
-		return { x: ar.left - mr.left - tx, y: ar.top - mr.top };
+		return { x: ar.left - mr.left - tx, y: ar.top - mr.top, anchorEl: anchor };
+	}
+
+	// The dock's own scroll container (the TB bench zone scrolls internally at
+	// short viewports; the planner's dock rides the page scroll and has none).
+	// A scroll only re-runs snapBench — the anchor rect carries the offset.
+	let benchScroller: HTMLElement | null = null;
+	let benchScrollRaf = 0;
+	function onBenchScroll() {
+		if (benchScrollRaf) return;
+		benchScrollRaf = requestAnimationFrame(() => {
+			benchScrollRaf = 0;
+			snapBench();
+		});
+	}
+	function bindBenchScroller(anchorEl: HTMLElement | null) {
+		const next = anchorEl?.closest<HTMLElement>('[data-bench-scroll]') ?? null;
+		if (next === benchScroller) return;
+		benchScroller?.removeEventListener('scroll', onBenchScroll);
+		benchScroller = next;
+		benchScroller?.addEventListener('scroll', onBenchScroll, { passive: true });
 	}
 
 	/** Park the band on the current page's anchor, untransitioned. The no-anchor
-	 *  case (Visualizers, or a page that hasn't rendered yet) hides it. */
+	 *  case (Visualizers, or a page that hasn't rendered yet) hides it. When the
+	 *  dock lives in a scrolling zone, clip the band to the zone's viewport —
+	 *  the band floats OVER the zone, so it must not poke past the frame edges
+	 *  the zone's own overflow would have clipped it to. */
 	function snapBench() {
 		if (!benchMount) return;
 		const a = measureBenchAnchor(page.url.pathname);
 		if (!a) {
+			bindBenchScroller(null);
 			benchVisible = false;
 			return;
 		}
+		bindBenchScroller(a.anchorEl);
 		benchMount.style.transition = 'none';
 		benchMount.style.transform = `translate(${a.x}px, ${a.y}px)`;
+		let clip = '';
+		if (benchScroller) {
+			const sr = benchScroller.getBoundingClientRect();
+			const ar = a.anchorEl.getBoundingClientRect();
+			const clipTop = Math.max(0, sr.top - ar.top);
+			const clipBottom = Math.max(0, ar.top + benchMount.offsetHeight - sr.bottom);
+			if (clipTop > 0 || clipBottom > 0) clip = `inset(${clipTop}px 0 ${clipBottom}px 0)`;
+		}
+		benchMount.style.clipPath = clip;
 		benchVisible = true;
 	}
 
@@ -234,6 +272,9 @@
 		const target = measureBenchAnchor(path);
 		const glide = `transform ${SLIDE_MS}ms ${SLIDE_EASE}`;
 		clearTimeout(benchTravelTimer);
+		// The band flies free of any zone clip; snapBench restores it on arrival.
+		benchMount.style.clipPath = '';
+		bindBenchScroller(null);
 		if (target) {
 			if (!benchVisible) {
 				// Enter riding the incoming layer: park at the dock displaced by the
@@ -246,7 +287,12 @@
 			benchMount.style.transition = dir ? glide : 'none';
 			benchMount.style.transform = `translate(${target.x}px, ${target.y}px)`;
 			benchTraveling = true;
-			benchTravelTimer = setTimeout(() => (benchTraveling = false), SLIDE_MS + 100);
+			benchTravelTimer = setTimeout(() => {
+				benchTraveling = false;
+				// Re-dock precisely (layout may have settled further) and restore
+				// the zone clip + scroll binding at the new dock.
+				snapBench();
+			}, SLIDE_MS + 100);
 		} else if (benchVisible) {
 			// Exit with the pan: the same delta the outgoing layer travels, so the
 			// band reads as still docked to its departing frame.

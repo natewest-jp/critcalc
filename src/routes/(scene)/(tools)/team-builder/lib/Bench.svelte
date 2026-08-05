@@ -42,7 +42,10 @@
      portrait column sits inside .rp-frame — the two are mirror images at the
      tool-slide seam. No kicker, no empty-state copy: four empty slot cards
      ARE the explanation, same as the planner's. -->
-<section class="bn" aria-label="Team">
+<!-- data-bench-scroll: this zone scrolls internally at short viewports; the
+     layout mirrors its scroll into the floating band and clips the band to
+     this zone's viewport. -->
+<section class="bn" aria-label="Team" data-bench-scroll>
 	<!-- The bench band's DOCK: the shared slot-card column (BenchBand, rendered
 	     at the tools-layout level) floats exactly over this spacer — the cards
 	     left this component in the bench-band round. The spacer reserves the
