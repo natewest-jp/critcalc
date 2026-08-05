@@ -1,14 +1,21 @@
 :root {
 	/* ══ STRUCTURE ═════════════════════════════════════════════════════════════
-	   The page ground and the text ramp — the pieces that aren't a color family.
-	   --bg is the surface system's deepest rung (derived with the stack from
-	   Nate's anchors 2026-07-31; a whisker up from the scene-era L.14). The
-	   text ramp keeps a saturation curve that FALLS as lightness rises — a
-	   near-white carrying s60 (which --text used to) tints the entire UI blue
-	   and fights the gilt voice. */
+	   The page ground and the WORLD's text ramp — what the site wears outside a
+	   panel. --bg is the deepest rung (derived from Nate's anchors 2026-07-31; a
+	   whisker up from the scene-era L.14) and grounds the landing scene, so it
+	   stays cosmic blue while everything else moved onto the archetype. */
 	--bg: #050b19; /* page ground — deepest rung: L.15 C.032 H264 */
-	--text: #e8ecf3; /* cool near-white  16.8:1 on --bg */
-	--muted: #a3b1c3; /* secondary text    8.4:1 */
+	/* ↻ 2026-08-05 (archetype consistency pass): the ramp is NEUTRAL now, not
+	   cool. Root text is the WORLD's voice — it renders over the scene, where
+	   --chrome white is the promoted register; a blue-tinted near-white
+	   (#e8ecf3 C.010 H262 / #a3b1c3 C.030 H255) was the last surviving member
+	   of the pre-archetype navy family, and it fought the warm parchment the
+	   moment a panel sat next to it. Same LIGHTNESS as before, chroma dropped
+	   to a whisper (C.004), so nothing in the world changed weight — only its
+	   hue allegiance. Panels do NOT use these: a panel declares a context and
+	   the context re-declares --text/--muted (see the .ctx-* blocks). */
+	--text: #edece9; /* neutral near-white  16.6:1 on --bg */
+	--muted: #b0afad; /* secondary text      9.0:1 */
 	/* ↻ 2026-08-01 lightness-structure round: dark INK for text sitting ON
 	   bright fills — the counterpart of --text, promoted from the literal
 	   GaugeInstrument has carried since the badges were built. Bright chip +
@@ -27,76 +34,44 @@
 	   member so it is left alone for now. */
 	--neutral: #768093; /* 5.0:1 */
 
-	/* ══ CALM — the navy family ════════════════════════════════════════════════
-	   The surface stack IS the calm family (Nate 2026-07-27): --surface,
-	   --surface-raised and --border are calm members that keep ROLE names,
-	   because `var(--surface)` reads better at a call site than
-	   `var(--calm-surface)`. The family is the tuning unit; the names stay
-	   semantic.
+	/* ══ THE SURFACE ROLES ═════════════════════════════════════════════════════
+	   Four role tokens name every ground in the app. THEY HAVE NO VALUES OF
+	   THEIR OWN — a context supplies them (the .ctx-dark / .ctx-light blocks
+	   below). The values here are the SAFETY NET, identical to .ctx-dark, so
+	   that a surface which forgot to declare a context still lands inside the
+	   archetype instead of on some orphan hue.
 
-	   ↻ RE-CUT 2026-07-31 — the stack is DERIVED from two hand-picked anchors
-	   (Nate's, from a long color-picker session; annotations are oklch
-	   L/C/H): the frame ground #121b2f and the unified panel #1c2844. What
-	   the session settled, after compensation-arc experiments in both
-	   directions and at two magnitudes:
+	     · --frame-bg      = a tool frame's own ground (the well content sits in)
+	     · --surface       = MODAL / overlay grounds — the chrome overlay pane,
+	                         the TB detail modal, loadout + constellation
+	                         popovers, the load-rotations modal, bar tooltips,
+	                         dropdown menus. All wear border: 1px solid --border.
+	     · --surface-raised= an IN-PAGE panel LIFTING OFF that ground — the
+	                         shared .panel, Atlas category cards, character
+	                         cards, the planner's chart frame. Also bordered,
+	                         except character cards (element-mixed border).
+	     · --border        = dividers and hairlines
 
-	   1. HUE IS CONSTANT (H≈265, ±1°) — the arcs all read as two families;
-	      hue unity is what reads as ONE. The blue-defect compensation the
-	      arcs chased turned out to need at most a point or two, absorbed in
-	      the anchors themselves.
+	   ↻ 2026-08-05 (archetype consistency pass) — WHAT CHANGED AND WHY. Until
+	   now these carried the pre-archetype navy family (#2f2f3b / #ede8de /
+	   #3a3a4a / #23232d, H285). Nothing retired them when the contexts landed,
+	   so every surface that never got a .ctx-* class — which is EVERY modal and
+	   overlay in the app — was still painting a third palette that belongs to
+	   no context: purple-slate grounds and blue-white text floating over navy
+	   tools and paper panels. Pointing the root net at .ctx-dark's values
+	   collapses those three palettes back to two.
 
-	   2. CHROMA RISES WITH LIGHTNESS (C .032 ground → .041 frame → .054
-	      panels → .060 lines) — a QUIET deep ground with RICHER panels and
-	      lines lifting off it. (This inverted the earlier "rich wells, gray
-	      air" concept — the frame ground is the calmest member now, and
-	      panels above it carry the color.)
-
-	   3. THE TWO SURFACE TOKENS ARE ROLES, NOT DEPTHS (Nate 2026-07-31; they
-	      currently share one value, which is fine — tune either freely):
-	      · --surface        = MODAL surfaces — anything overlaying content:
-	        the pages panel, the chrome overlay pane, the TB detail modal,
-	        loadout/constellation popovers, the load-rotations modal, bar
-	        tooltips, dropdown menus. All wear border: 1px solid --border.
-	      · --surface-raised = IN-PAGE panels that aren't a frame ground:
-	        the shared .panel (viz side panels), Atlas category cards,
-	        character cards. Also border: 1px solid --border — EXCEPT the
-	        character cards, which keep their element-mixed border.
-	      The old top-light hairline highlight on panels is RETIRED — the
-	      border carries the separation everywhere now.
-
-	   Lightness rungs keep the brightness-round ladder, re-anchored through
-	   the two picked values. Derivation: scratchpad palette5.mjs pattern —
-	   anchors in, remaining rungs out. */
-	/* ↻↻ 2026-08-01 THE WHISPER LAW — the structural stack re-anchored on
-	   Nate's Stygian-sampled ground: STRUCTURE IS A NEAR-NEUTRAL LIT BY THE
-	   SCENE. C 0.010–0.025, hue borrowed from the scene family (H≈285, the
-	   anchor's), lightness by the ladder — never an identity color. The
-	   ground is FIELD, not figure: real chroma on it white-balances every
-	   element bar (simultaneous contrast) and fights the border. Measured
-	   basis: every reference ground that works (Stygian C .010–.033,
-	   Training-Guide navy C .034, Nate's pick C .019) vs every critcalc
-	   ground that fought (C ≥ .040). Identity chroma belongs to CONTENT
-	   (element bars, calm/dire fills) — those keep their color. The old
-	   "chroma rises with lightness" rule is superseded for structure.
-	   --bg deliberately NOT re-anchored: it grounds the landing/meta world,
-	   which stays calm cosmic blue — the whisper law governs TOOL-world
-	   structure and the shared surfaces below. */
-	--surface: #2f2f3b; /* modal surface — one rung over the frame  L.31 C.022 H285 */
-	/* ↻ 2026-08-01 (Nate): surface-raised takes the BEIGE (= --gilt-soft) —
-	   in-page panels go light with dark ink, the Genshin two-polarity move. */
-	--surface-raised: #ede8de; /* in-page panel   ⚓ NATE  beige, L.93 C.014 H85 */
-	--border: #3a3a4a; /* dividers, hairlines  ⚓ NATE  L.36 C.028 H285 — same hue as
-	   the ground, ΔL .09 over it: the derivation rule, satisfied by his pick */
-	/* A frame's own ground — DARKER and QUIETER than the panels (rule 2):
-	   the well is the calm deep the tool's content sits in. Its own member
-	   for the same reason --frame-line is: it was declared as a bare hex in
-	   .frame, --rp-chart-bg and the SlotPortrait card fill, and anything
-	   that mixes against a frame's ground needs to name it.
-	   ↻ Lightness from Nate's +30% reference (brightness round 2026-07-31).
-	   Mirrors: timelineExport CHART_BG + the frame-ground cutout strokes in
-	   the viz instruments. */
-	--frame-bg: #23232d; /* frame ground  ⚓ NATE — the whisper-law ANCHOR, sampled
-	   off the Stygian screen. L.26 C.019 H285 */
+	   The whisper law (2026-08-01) still governs: structure is a near-neutral
+	   LIT by the scene (C .010–.040), never an identity color — simultaneous
+	   contrast from a chromatic ground white-balances every element bar sitting
+	   on it. The archetype's #242c40 (C.038) satisfies it; identity chroma
+	   stays with CONTENT (element bars, calm/debuff fills). --bg is exempt and
+	   deliberately NOT re-pointed: it grounds the landing world, which stays
+	   cosmic blue. */
+	--surface: #242c40;
+	--surface-raised: #2e364b;
+	--border: #857971;
+	--frame-bg: #242c40;
 	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
 	   composer's well. Both tools used to declare this hex privately
 	   (--rp-line / --tb-line).
@@ -108,6 +83,30 @@
 	   ⚠ timelineExport mirrors the RESOLVED literal — recompute it if
 	   --border, --frame-bg or the 90% move (the mirror test enforces). */
 	--frame-line: color-mix(in srgb, var(--border) 90%, var(--frame-bg));
+
+	/* ══ CHART INK ═════════════════════════════════════════════════════════════
+	   The inside of an instrument: axis labels, tick text, gridlines, axis
+	   rules, baselines. NOT a new idea — the planner has had exactly this pair
+	   privately since 2026-08-01 (--rp-grid / --rp-line, derived from --border
+	   toward the chart ground). The eight Visualizer instruments hand-rolled the
+	   same three jobs as literal `rgba(255,255,255,α)` instead, ~70 times, which
+	   is why the charts still read COOL WHITE inside frames whose every other
+	   surface had gone parchment: white is not a member of either context.
+
+	   Derived from the context, so an instrument dropped into a light panel
+	   inverts for free instead of vanishing. Opaque mixes against --frame-bg,
+	   never onto transparent — the alpha-compositing law (a semi-transparent
+	   line renders display-dependently on P3).
+
+	   SVG presentation attributes take these directly: fill="var(--chart-ink)".
+	   Three rungs, matching what the instruments actually drew:
+	     · ink  = readable label text (was white .45–.62)
+	     · dim  = de-emphasized labels, legend text (was white .28–.42)
+	     · grid = gridlines and hairlines (was white .04–.16) */
+	--chart-ink: var(--muted);
+	--chart-dim: color-mix(in srgb, var(--muted) 62%, var(--frame-bg));
+	--chart-grid: color-mix(in srgb, var(--border) 26%, var(--frame-bg));
+	--chart-rule: color-mix(in srgb, var(--border) 55%, var(--frame-bg));
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (SiteChrome.svelte),
@@ -232,6 +231,16 @@
 	   elements (WebKit scar tissue); per-ground tints are deterministic. */
 	--fill-rest: color-mix(in srgb, var(--neutral) 13%, transparent);
 	--fill-hover: color-mix(in srgb, var(--neutral) 20%, transparent);
+	/* The control ladder's INK. Every chip / tab / button rests on --muted and
+	   promotes on hover + selection, and until now the promoted rung was
+	   --text — which is only correct on a dark ground. The light context
+	   deliberately inverts the two (Nate: labels anchor, prose recedes), so
+	   --muted #495366 measures 6.9:1 on paper while --text measures 5.3:1, and
+	   every selected chip in the Team Builder and the Visualizers came out
+	   LIGHTER than the unselected ones beside it. Naming the promoted rung lets
+	   each context point it at whichever of its inks is the most emphatic:
+	   parchment on dark, near-black on paper. */
+	--ink-active: var(--text);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
@@ -246,9 +255,25 @@
 	   tool-zone re-declaration — it is deliberately ground-agnostic, the same
 	   slate on calm frames and dire toolbars, exactly as Genshin lays it on
 	   beige and navy alike. */
-	--control-face: #5e5e70; /* control face  L.49 C.029 H285 — Genshin's slate
-	   lightness/chroma, hue re-anchored onto the whisper axis 2026-08-01 */
+	/* ↻ 2026-08-05 (archetype consistency pass): BACK to Genshin's literal
+	   sample. The 2026-08-01 note above records that their button face landed on
+	   our hue constant "unprompted" — then the whisper re-anchor moved it to
+	   H285 (#5e5e70) to match a structural family that has since been retired.
+	   The archetype Nate pulled sits at H267, i.e. back where Genshin's own
+	   slate was, so the detour costs nothing to undo: the value below is
+	   #586071 as sampled, no derivation in between. It is the one control
+	   color that is deliberately GROUND-AGNOSTIC — the same slate on navy
+	   frames and paper panels, exactly as Genshin lays it on both — so it is
+	   not --accent-derived and needs no per-context re-declaration. */
+	--control-face: #586071; /* control face  ⚓ GENSHIN  L.488 C.029 H265 */
 	--control-face-hover: color-mix(in srgb, var(--control-face) 86%, white);
+	/* Ink ON that face. Ground-agnostic like the face itself, so it can NOT be
+	   --text: in the light context that resolved to the warm-brown prose ink
+	   and put 1.06:1 brown-on-slate on every promoted button ("Fill a 5★
+	   flower" in the Artifact instrument was the visible one). Parchment — the
+	   archetype's own light-on-dark ink, reused rather than invented — at
+	   4.52:1. */
+	--control-ink: #e5d9c3;
 
 	/* ↻ 2026-08-01 lightness-structure round: the TOP of the selection ladder.
 	   Genshin's Stygian sidebar selects its row with a beige plate + dark ink
@@ -470,10 +495,24 @@
 	--frame-bg: #242c40; /* surface — the panel/chart ground ⚓ NATE 2026-08-05
 	   (#1c1a1a read too gray; the cool navy-slate is the chart dark) */
 	--surface: #242c40;
-	--surface-raised: #212121; /* raised surface */
-	--text: #e5d9c3; /* default text — parchment on dark */
-	--muted: #857971; /* dim text */
-	--border: #857971; /* borders share the dim rung */
+	/* ↻ 2026-08-05 (archetype consistency pass): was #212121 — a pure NEUTRAL
+	   near-black (C.000) left behind when Nate re-cut the surface from the warm
+	   #1c1a1a to the navy #242c40. It sat 177° off the ground it had to pair
+	   with and only ΔL.047 from it, so the planner read as two unrelated darks
+	   with no depth between them. Re-cut onto the surface's own axis (C.038
+	   H267) one clean rung ABOVE it — which also restores the well idiom the
+	   planner is built on: a lighter FRAME with a darker chart cut into it.
+	   (It had inverted — the "deeper" well was the lighter of the two.) */
+	--surface-raised: #2e364b; /* raised panel — L.335, ΔL .040 over the surface */
+	--text: #e5d9c3; /* default text — parchment on dark  9.97:1 */
+	/* ↻ 2026-08-05: --muted is the secondary TEXT voice and #857971 measured
+	   3.29:1 here — under the 4.5:1 body-text floor, which is why every .note
+	   and .subtitle in a dark panel read as a smudge. The dim rung keeps its
+	   STRUCTURAL job below (--border); the text voice lifts to a blend of the
+	   archetype's own two hinge values — mix(--text 30%, #857971) — so it
+	   introduces no new hue, just the missing rung. 4.81:1. */
+	--muted: #a2968a; /* dim text — the hinge blend */
+	--border: #857971; /* borders keep the dim rung ⚓ NATE */
 	/* The context's emphasis voice: its own bright text color. Interim
 	   (dire+gilt cleanup 2026-08-05) — the accent story is still open. The
 	   derived sel-* tokens re-declare per the substituted-at-declaration
@@ -495,7 +534,18 @@
 	--frame-bg: #f2f2ec; /* surface — the paper ground */
 	--surface: #f2f2ec;
 	--surface-raised: #e9e5dc; /* raised surface */
-	--text: #857971; /* default text — warm gray on paper */
+	/* ↻ 2026-08-05 (archetype consistency pass): was #857971, the dark
+	   context's dim rung doing double duty. On paper it measures 3.76:1 — and
+	   3.36:1 on the raised rung — so ALL body copy in the Team Builder, every
+	   .panel in the Visualizers, and every character card was under the
+	   4.5:1 floor while the LABELS beside it sat at 6.9:1. Genshin uses that
+	   gray as its secondary/disabled voice on light panels, not its prose.
+	   Prose moves down to #765f4d — already in the palette as --ribbon-ink, so
+	   the double-duty pattern is kept, just re-pointed at the value that can
+	   carry it (5.32:1 on paper, 4.75:1 on the raised rung). Nate's deliberate
+	   inversion SURVIVES: --muted is still darker than --text here, labels
+	   still anchor and prose still recedes. */
+	--text: #765f4d; /* default text — warm brown on paper  5.32:1 */
 	--muted: #495366; /* the gray LABEL voice (labels + controls) ⚓ NATE —
 	   note it is DARKER than --text here: labels are the anchored voice on
 	   paper, prose recedes. Deliberate inversion of the dark-context order. */
@@ -512,6 +562,19 @@
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 	--knob: var(--muted);
+	/* The promoted control ink flips to the DARKEST thing this context owns —
+	   see --ink-active at :root for why it can't stay --text here. */
+	--ink-active: var(--ink);
+	/* ↻ 2026-08-05 (archetype consistency pass): the control fills follow the
+	   GROUND (the rule beside the accent zoning), and on paper they were still
+	   riding :root's --neutral #768093 — a mid COOL gray, which on a warm
+	   near-white ground reads as a dirty smudge rather than a press. Re-declared
+	   here against the light context's own label slate, the darkest thing it
+	   owns: same hue as --neutral (H263, they converge) but deep enough that
+	   13% actually registers on #f2f2ec. Re-declared, not routed through a tint
+	   variable — the substituted-at-declaration law again. */
+	--fill-rest: color-mix(in srgb, var(--muted) 10%, transparent);
+	--fill-hover: color-mix(in srgb, var(--muted) 17%, transparent);
 	color: var(--text);
 }
 
@@ -755,7 +818,7 @@ img {
 }
 .btn:hover {
 	background: var(--fill-hover);
-	color: var(--text);
+	color: var(--ink-active);
 }
 .btn:disabled {
 	opacity: 0.3;
@@ -764,7 +827,7 @@ img {
 }
 .btn.is-active {
 	background: var(--sel-fill);
-	color: var(--text);
+	color: var(--ink-active);
 }
 .btn--sm {
 	padding: 0.25rem 0.5rem;
@@ -781,7 +844,7 @@ img {
    action is a control, not a selection. --text on the face is 5.3:1. */
 .btn--primary {
 	background: var(--control-face);
-	color: var(--text);
+	color: var(--control-ink);
 }
 .btn--primary:hover {
 	background: var(--control-face-hover);
@@ -839,7 +902,7 @@ img {
 .segment > .btn.is-active {
 	background: var(--sel-fill);
 	box-shadow: inset 0 0 0 1px var(--sel-ring);
-	color: var(--text);
+	color: var(--ink-active);
 }
 /* ── Chips ────────────────────────────────────────────────────────────── */
 .chips {
@@ -871,12 +934,12 @@ img {
 }
 .chip:hover {
 	background: var(--accent-hover-fill);
-	color: var(--text);
+	color: var(--ink-active);
 }
 .chip.active {
 	background: var(--sel-fill);
 	box-shadow: inset 0 0 0 1px var(--sel-ring);
-	color: var(--text);
+	color: var(--ink-active);
 }
 /* Instrument voice — a setting, so it shouts like a button. */
 .chip--control {
@@ -951,12 +1014,12 @@ img {
 }
 .tab:hover:not(.active) {
 	background: var(--accent-hover-fill);
-	color: var(--text);
+	color: var(--ink-active);
 }
 .tab.active {
 	background: var(--sel-fill);
 	box-shadow: inset 0 0 0 1px var(--sel-ring);
-	color: var(--text);
+	color: var(--ink-active);
 }
 /* Promoted scale for a primary surface switcher (the TB's Atlas/Roster/Compare
    row) — same system one step up; document tabs stay at base size. */
