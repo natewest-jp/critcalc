@@ -1093,7 +1093,7 @@
 							><g transform="matrix(1,0,0,1,-273.029018,-202.228283)">
 								<g>
 									<g transform="matrix(0.575277,0,0,0.575277,146.251428,151.449127)">
-										<circle cx="241.236" cy="109.129" r="20.86" fill="var(--dire)" />
+										<circle cx="241.236" cy="109.129" r="20.86" fill="var(--ui-danger)" />
 									</g>
 									<g transform="matrix(1,0,0,1,-2.378613,7.691546)">
 										<path
@@ -1474,7 +1474,7 @@
 												{#each block.parts as part (part)}
 													<span
 														class="rp-active-text"
-														class:rp-active-text--dire={isApprox &&
+														class:rp-active-text--danger={isApprox &&
 															block.kind !== 'skill' &&
 															block.kind !== 'burst'}>{part}</span
 													>
@@ -2765,10 +2765,12 @@
 		font-weight: var(--fw-semibold);
 		color: rgba(255, 255, 255, 0.85);
 	}
-	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: dire tinted
-	   text, marking the actions whose timing is generic. */
-	.rp-active-text--dire {
-		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--dire));
+	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: warning-
+	   tinted text, marking the actions whose timing is generic. --ui-danger,
+	   not a domain color — approximate timing is a consequence to the user's
+	   data, not a game fact (dire-retirement round, 2026-08-05). */
+	.rp-active-text--danger {
+		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--ui-danger));
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */
