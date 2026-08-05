@@ -14,7 +14,7 @@ A **Genshin Impact tooling site** built with **SvelteKit + TypeScript**. Three t
 
 - **Framework:** SvelteKit (Svelte 5 runes), `adapter-static`, deployed via Cloudflare Pages
 - **Language:** TypeScript (strict); **Node ≥22.18** (`.nvmrc` pins 22) — scripts import TS modules via native type stripping
-- **Styling:** CSS custom properties, no UI framework. Design language: Commit Mono + Bitter, `vz-panel`/`vz-kicker` shells, `--accent` (dire tint), odd radii
+- **Styling:** CSS custom properties, no UI framework. Design language (Genshin-UI archetype, 2026-08-05): **two CONTEXTS** — `.ctx-dark` (chart panels, parchment-on-navy) / `.ctx-light` (most panels + character cards, paper with slate labels) — floating over the live GL scene (transparent tool shell + ink dim); `--chrome` white for site chrome/branding; `--accent` is context-borne (interim). The dire and gilt families are retired; `--debuff` carries the enemy-facing semantic. `/styleguide` is the reference (its full context rewrite is queued)
 
 ---
 
