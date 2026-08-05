@@ -22,18 +22,26 @@ import { getSceneGL, crestPose, PAN_MS } from '$lib/landing/sceneGL';
  * clock via revealDelayMs().
  */
 
-/** Duration of the ascend/descend transition window, ms. Re-exported from the
- *  scene renderer so the camera's clock and every fade share one number. */
+/** Duration of the ascend/descend transition window, ms (landing ↔ tool).
+ *  Re-exported from the scene renderer so the camera's clock and every fade
+ *  share one number. */
 export const TRANSITION_MS = PAN_MS;
 
-/** Fade speed multiplier vs. the transition itself. >1 means fades are
- *  faster than the pan. With strong ease-in-out the velocity peaks sharply
- *  in the middle; pushing fades to ~4× means UI chrome clears during the
- *  slow ease-in and only the scene is on screen through the fast frames. */
-export const FADE_SPEED_MULTIPLIER = 4;
+/**
+ * Duration of a TOOL ↔ TOOL transition, ms (⚓ NATE 2026-08-05: slightly
+ * brisker than the full ascend). This clock drives BOTH the camera's
+ * crest-to-crest crane and the tools layout's world-locked drift/underline —
+ * they are one motion at two depths, so the number lives here, once.
+ */
+export const TOOL_NAV_MS = 2000;
 
-/** Fade-IN duration for landing + tool elements (the "pleasing" landing fade). */
-export const FADE_DURATION_MS = Math.round(TRANSITION_MS / FADE_SPEED_MULTIPLIER);
+/** Fade-IN duration for landing + tool elements — THE site-wide fade length
+ *  (⚓ NATE 2026-08-05: 700ms, a touch longer than the old TRANSITION_MS/4
+ *  derivation's 600). Kept well under the pans on purpose: with strong
+ *  ease-in-out the velocity peaks sharply in the middle, so a fade this much
+ *  shorter than the transition clears UI during the slow ease-in and only
+ *  the scene is on screen through the fast frames. */
+export const FADE_DURATION_MS = 700;
 
 /** Fade-OUT duration — the outgoing surface's exit, quick enough to clear the
  *  screen during the pan's slow ease-in. */
@@ -264,11 +272,15 @@ export function startSceneTransition(toPath: string): void {
 
 	const fromPose = poseForPath(fromPath);
 	const cameraMoves = fromPose.x !== pose.x || fromPose.y !== pose.y || scene.animating();
-	const duration = cameraMoves ? TRANSITION_MS : XFADE_TRANSITION_MS;
+	// Tool↔tool legs ride the brisker TOOL_NAV_MS; the full ascend/descend
+	// (a landing endpoint) keeps TRANSITION_MS; no camera motion at all keeps
+	// the plain content-crossfade clock.
+	const toolLeg = isToolPath(fromPath) && isToolPath(toPath);
+	const duration = cameraMoves ? (toolLeg ? TOOL_NAV_MS : TRANSITION_MS) : XFADE_TRANSITION_MS;
 	const startTime = performance.now();
 	active = { fromPath, toPath, startTime, duration };
 
-	if (cameraMoves) void scene.animateCamera(pose, TRANSITION_MS);
+	if (cameraMoves) void scene.animateCamera(pose, duration);
 
 	for (const [el, kind] of layers) {
 		cancelSceneAnimations(el);

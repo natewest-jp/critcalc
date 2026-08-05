@@ -6,7 +6,7 @@
 	import {
 		FADE_DURATION_MS,
 		FADE_OUT_MS,
-		TRANSITION_MS,
+		TOOL_NAV_MS,
 		TILT_EASING_CSS,
 		toolPoseShift,
 		sceneTransitionStart,
@@ -121,7 +121,7 @@
 	//   own start (sceneTransitionStart — the camera kicked off at
 	//   beforeNavigate), so the drift is glued to the terrain regardless of
 	//   when each layer's animation is created. Curve + duration are the
-	//   camera's (TILT_EASING_CSS / TRANSITION_MS).
+	//   camera's (TILT_EASING_CSS / TOOL_NAV_MS — the tool-leg clock).
 	// - The outgoing fade starts immediately (it is already painted). The
 	//   incoming fade is PAINT-GATED as ever: a heavy mount (the planner's
 	//   ~200ms WebKit block) must not eat the fade's first frames — the layer
@@ -137,15 +137,16 @@
 	// styles. afterNavigate runs on every navigation regardless of element
 	// freshness, so every pass re-derives each layer's role and re-animates.
 	const TOOL_NAV_ANIM = 'tool-nav';
-	// Fade knobs (Nate tunes): both default to the sitewide fade-law durations
-	// (TRANSITION_MS / FADE_SPEED_MULTIPLIER = 600ms); the incoming begins as
-	// the outgoing ends.
+	// Fade knobs — the sitewide 700ms fade law (FADE_DURATION_MS, ⚓ NATE
+	// 2026-08-05), plus a 150ms beat of pure world between the outgoing
+	// clearing and the incoming's entrance (also Nate's, tuned in the browser).
 	const TOOL_FADE_OUT_MS = FADE_OUT_MS;
 	const TOOL_FADE_IN_MS = FADE_DURATION_MS;
-	const TOOL_FADE_IN_DELAY_MS = TOOL_FADE_OUT_MS;
-	// The world clock — the underline glide and the ribbon's height relaxation
-	// ride it too, so retuning PAN_MS moves everything together.
-	const SLIDE_MS = TRANSITION_MS;
+	const TOOL_FADE_IN_DELAY_MS = TOOL_FADE_OUT_MS + 150;
+	// The world clock for tool↔tool legs (TOOL_NAV_MS in transition.ts — it
+	// drives the camera's crane on these legs too; retune it there and the
+	// camera, drift, underline and dependent timers all move together).
+	const SLIDE_MS = TOOL_NAV_MS;
 	const SLIDE_EASE = TILT_EASING_CSS;
 	// Retention budget for the outgoing layer: outlasts the transition window
 	// (camera 2400 + fade-in tail + settle pass) and doubles as the A→B→A
@@ -383,7 +384,7 @@
 			o.style.willChange = 'transform, opacity';
 			o.style.zIndex = '1';
 			const drift = o.animate([{ transform: `translateX(${shift}px)` }], {
-				duration: TRANSITION_MS,
+				duration: SLIDE_MS,
 				easing: TILT_EASING_CSS,
 				fill: 'forwards',
 				id: TOOL_NAV_ANIM
@@ -413,7 +414,7 @@
 		const drift = incoming.animate(
 			[{ transform: `translateX(${-shift}px)` }, { transform: 'translateX(0px)' }],
 			{
-				duration: TRANSITION_MS,
+				duration: SLIDE_MS,
 				easing: TILT_EASING_CSS,
 				fill: 'forwards',
 				id: TOOL_NAV_ANIM
@@ -449,7 +450,7 @@
 			// here. A future startTime simply waits.
 			fade.startTime = Math.max(performance.now(), clock + TOOL_FADE_IN_DELAY_MS);
 			const settleAt =
-				Math.max(clock + TRANSITION_MS, fade.startTime + TOOL_FADE_IN_MS) - performance.now() + 100;
+				Math.max(clock + SLIDE_MS, fade.startTime + TOOL_FADE_IN_MS) - performance.now() + 100;
 			// Settle: bake + release. The incoming rests at natural layout; the
 			// outgoing stays baked invisible through its retention window.
 			setTimeout(() => {
