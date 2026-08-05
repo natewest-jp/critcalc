@@ -36,18 +36,20 @@ import type {
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
-const CHART_BG = '#15151c'; // --rp-chart-bg (⚓ NATE — the chart's own darker well, 2026-08-01)
-const GRID = '#262631'; // --rp-grid = mix(border 45%, rp-chart-bg), resolved
-const LANE_LINE = '#343443'; // --rp-line = mix(border 85%, rp-chart-bg), resolved
-// ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css :root. Canvas can't
-// resolve var(), so every token the export paints has to be duplicated here as
-// a literal. When a token value changes in app.css, change it here too or the
-// exported PNG silently stops matching what the user saw. Re-cut 2026-07-27
-// with the dire/calm/gilt palette pass.
+const CHART_BG = '#1c1a1a'; // --rp-chart-bg (↻ 2026-08-05 Genshin-UI archetype: the dark context surface)
+const GRID = '#4b4541'; // --rp-grid = mix(ctx-dark border 45%, rp-chart-bg), resolved
+const LANE_LINE = '#756b64'; // --rp-line = mix(ctx-dark border 85%, rp-chart-bg), resolved
+// ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css. Canvas can't resolve
+// var(), so every token the export paints has to be duplicated here as a
+// literal. When a token value changes in app.css, change it here too or the
+// exported PNG silently stops matching what the user saw. ↻ 2026-08-05: the
+// timeline runs in the DARK context (.ctx-dark) and the portrait cards in the
+// LIGHT one (.ctx-light), so the context-sensitive tokens here mirror those
+// blocks, not :root — the mirror test sources them the same way.
 const ACTIVE = '#757f93'; // --rp-active (Nate-sampled 2026-07-31; no longer the --neutral alias)
-const TEXT = '#e8ecf3'; // --text
-const MUTED = '#a3b1c3'; // --muted (drift caught by the mirror test 2026-08-01 — was the pre-recut #9baabf)
-const INK = '#081225'; // --ink (dark ink on bright fills — lightness-structure round 2026-08-01)
+const TEXT = '#e5d9c3'; // --text (ctx-dark — parchment on dark)
+const MUTED = '#857971'; // --muted (ctx-dark dim)
+const INK = '#03020c'; // --ink (⚓ NATE 2026-08-05, Genshin-UI archetype)
 // Paired tool tints — mirror app.css :root. --dire = hsl(340,85%,46%) =
 // #d91254; --calm-fill = #2b5590 (buff body/fill — the time-scaling ramp's full
 // end; lifted l30→l37 in the 2026-08-01 lightness round); --calm = #6b99c7
@@ -73,7 +75,7 @@ const DEBUFF_LABEL = 'rgba(255,255,255,0.85)';
 const PROC_FILL = DIRE_FILL;
 const PROC_EDGE = DIRE_TINT;
 const PROC_LABEL = 'rgba(255,255,255,0.85)';
-const PORTRAIT_BG = '#2f2f3b'; // --surface (whisper-law modal, 2026-08-01)
+const PORTRAIT_BG = '#f2f2ec'; // --surface (ctx-light — cards render light, 2026-08-05)
 
 /** Test-only: the hand-maintained mirror, exported so
  *  timelineExport.mirror.test.ts can assert it against app.css /

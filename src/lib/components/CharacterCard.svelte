@@ -109,7 +109,7 @@
 </script>
 
 <div
-	class="cc"
+	class="cc ctx-light"
 	class:cc--accent={accent}
 	class:cc--dimmed={dimmed}
 	class:cc--faded={faded}

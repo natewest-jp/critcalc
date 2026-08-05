@@ -440,26 +440,30 @@
 		pointer-events: auto;
 	}
 
+	/* Chrome voice (Genshin-UI archetype): the switcher is site chrome, so it
+	   speaks --chrome white — resting links at 70% white (text over the live
+	   scene; alpha on TEXT is fine, the alpha law governs surfaces), the
+	   current page at full white. */
 	.chrome-nav-link {
 		position: relative;
 		font-family: var(--font-display);
 		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-tight);
-		color: var(--muted);
+		color: color-mix(in srgb, var(--chrome) 70%, transparent);
 		padding: 0.15rem 0;
 		transition: color 150ms ease;
 	}
 
 	a.chrome-nav-link:hover,
 	a.chrome-nav-link:focus-visible {
-		color: var(--text);
+		color: var(--chrome);
 	}
 
 	/* The page you're on: brighter, non-interactive, and set apart from the
 	   navigable tools by an accent underline — "you are here", not a link. */
 	.chrome-nav-link.is-current {
-		color: var(--text);
+		color: var(--chrome);
 		cursor: default;
 	}
 

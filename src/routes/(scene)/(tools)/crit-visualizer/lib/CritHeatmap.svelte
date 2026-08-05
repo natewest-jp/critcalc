@@ -435,7 +435,7 @@
 </script>
 
 <div class="cv-heatmap-shell" bind:this={shellEl}>
-	<div class="cv-map-frame frame" style:width={`${boxW}px`} style:height={`${boxH}px`}>
+	<div class="cv-map-frame frame ctx-dark" style:width={`${boxW}px`} style:height={`${boxH}px`}>
 		<!-- Layer 1: heatmap field (redrawn on resize via canvas 2D API). The buffer
 		     size is set imperatively inside drawHeatmap, not via a reactive width=. -->
 		<canvas bind:this={canvasEl} aria-hidden="true"></canvas>

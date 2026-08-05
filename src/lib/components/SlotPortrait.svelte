@@ -202,7 +202,7 @@
 	}
 </script>
 
-<div class="sp-card" style:--el={p.main}>
+<div class="sp-card ctx-light" style:--el={p.main}>
 	<!-- Identity row: element glyph + name ranged left, constellation chip right.
 	     Slot actions do NOT live here — they ride the base band. -->
 	<div class="sp-id-row">

@@ -452,7 +452,7 @@
 </script>
 
 <div class="gx-instrument">
-	<div class="gx-frame frame">
+	<div class="gx-frame frame ctx-dark">
 		<div class="gx-transport">
 			<button
 				class="btn btn--primary btn--icon gx-play"

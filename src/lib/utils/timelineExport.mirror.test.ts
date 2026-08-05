@@ -28,6 +28,18 @@ function cssToken(name: string, src = appCss): string {
 	return m[1].trim();
 }
 
+/** A declaration inside a specific context block (`.ctx-dark` / `.ctx-light`,
+ *  2026-08-05 Genshin-UI archetype): the timeline runs dark and the portrait
+ *  cards light, so their mirrored tokens must be sourced from the context
+ *  re-declarations, not :root. */
+function ctxToken(selector: string, name: string): string {
+	const block = new RegExp(`${selector.replace(/\./g, '\\.')}[^{]*\\{([^}]*)\\}`).exec(appCss);
+	if (!block) throw new Error(`context block ${selector} not found`);
+	const m = new RegExp(`^\\s*${name}:\\s*([^;]+);`, 'm').exec(block[1]);
+	if (!m) throw new Error(`token ${name} not found in ${selector}`);
+	return m[1].trim();
+}
+
 function hexToRgb(hex: string): [number, number, number] {
 	const n = parseInt(hex.replace('#', ''), 16);
 	return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
@@ -71,10 +83,13 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		// The chart ground is planner-local since 2026-08-01 (Nate's darker
 		// well), declared in RotationTimeline rather than app.css.
 		expect(PALETTE_MIRROR.CHART_BG).toBe(cssToken('--rp-chart-bg', timelineSvelte));
-		expect(PALETTE_MIRROR.TEXT).toBe(cssToken('--text'));
-		expect(PALETTE_MIRROR.MUTED).toBe(cssToken('--muted'));
+		// The timeline root is .ctx-dark; its text tokens mirror that block.
+		expect(PALETTE_MIRROR.TEXT).toBe(ctxToken('.ctx-dark', '--text'));
+		expect(PALETTE_MIRROR.MUTED).toBe(ctxToken('.ctx-dark', '--muted'));
 		expect(PALETTE_MIRROR.INK).toBe(cssToken('--ink'));
-		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(cssToken('--surface'));
+		// Character cards are intrinsically .ctx-light (Genshin renders theirs
+		// light) — the portrait column mirrors that block's surface.
+		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(ctxToken('.ctx-light', '--surface'));
 		expect(PALETTE_MIRROR.CALM_TINT).toBe(cssToken('--calm-fill'));
 		expect(PALETTE_MIRROR.CALM_EDGE).toBe(cssToken('--calm'));
 	});
@@ -94,7 +109,10 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 	});
 
 	it('resolved color-mix lines match (GRID, LANE_LINE)', () => {
-		const border = cssToken('--border');
+		// The lines derive from the DARK context's border — the timeline root
+		// is .ctx-dark, so that re-declaration is what var(--border) resolves
+		// to at the .rp-root declarations.
+		const border = ctxToken('.ctx-dark', '--border');
 		// Both planner lines derive from --border toward the planner-local
 		// chart ground (2026-08-01).
 		const chartBg = cssToken('--rp-chart-bg', timelineSvelte);

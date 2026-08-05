@@ -798,7 +798,7 @@
 	     Rotation Planner's frame mirrored (its bench holds the LEFT edge, ours
 	     the right, so the two meet at the tool-slide seam). Viewport-fit — the
 	     views scroll INSIDE it, the page never does. -->
-	<div class="tb-frame frame">
+	<div class="tb-frame frame ctx-light">
 		<section class="tb-source">
 			{#if sourceTab === 'atlas'}
 				<div class="tb-atlas">

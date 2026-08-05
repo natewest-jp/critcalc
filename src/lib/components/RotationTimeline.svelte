@@ -1022,7 +1022,7 @@
 <!-- --rp-bench-w is set from the JS constant, not duplicated as a CSS literal:
      LABEL_W stays the single source (the PNG export reads it too), and the five
      places that used to carry it as an inline style now read the variable. -->
-<div class="rp-root" style:--rp-bench-w="{LABEL_W}px">
+<div class="rp-root ctx-dark" style:--rp-bench-w="{LABEL_W}px">
 	<!-- ── Timeline chart frame ──────────────────────────────── -->
 	<!-- The frame is ONE instrument with a fixed grammar: time axis (ruler +
 	     view controls) on the TOP edge per DAW/NLE convention, rendered tracks
@@ -1782,13 +1782,15 @@
 <style>
 	/* ── Root ─────────────────────────────────────────────────── */
 	.rp-root {
-		/* Chart ground — ⚓ NATE 2026-08-01: the notation well's resolved shade
-		   (mix(#000 40%, the old #23232d frame ground)), sampled back out and
-		   adopted as the track area's own ground — DARKER than --frame-bg, so
-		   the chart reads as a well cut into the frame. No longer the
-		   --frame-bg alias; every derived mix below (ghosts, dims, calmStop,
-		   grid/lane lines) follows it. ⚠ the exporter mirrors this literal. */
-		--rp-chart-bg: #15151c;
+		/* Chart ground — ↻ 2026-08-05 (Genshin-UI archetype): the dark
+		   context's SURFACE (#1c1a1a). The well-cut-into-the-frame idiom
+		   (⚓ NATE 2026-08-01, then #15151c = mix(#000 40%, the old frame))
+		   survives with the roles the archetype gives them: the frame wears
+		   the RAISED rung (#212121, see .rp-frame) and the chart sits one
+		   rung deeper on the surface. Every derived mix below (ghosts, dims,
+		   calmStop, grid/lane lines) follows it. ⚠ the exporter mirrors this
+		   literal. */
+		--rp-chart-bg: #1c1a1a;
 		/* Structural lines inside the chart, derived from --border toward the
 		   CHART ground (not the frame's) so they blend with the darker well.
 		   grid = faint vertical second-lines (resolves ≈ #262631); line = lane
@@ -1824,6 +1826,10 @@
 	   fill; this only shapes it. Radius 9 per the 3/6/9 scale. */
 	.rp-frame {
 		--rp-frame-pad-x: 14px;
+		/* The frame wears the dark context's RAISED rung; the chart well sits
+		   one rung deeper on --rp-chart-bg (= the context surface). Overrides
+		   the shared .frame background (Genshin-UI archetype, 2026-08-05). */
+		background: var(--surface-raised);
 		border-radius: 9px;
 		padding: 10px var(--rp-frame-pad-x) 4px;
 		display: flex;

@@ -107,7 +107,7 @@
 </script>
 
 <div class="dr-instrument">
-	<div class="dr-frame frame">
+	<div class="dr-frame frame ctx-dark">
 		<div class="dr-graph" bind:clientWidth={graphW}>
 			<svg
 				width={graphW}

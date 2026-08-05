@@ -159,17 +159,15 @@
 		transition: opacity 200ms ease;
 	}
 
-	/* The wordmark stays on --text. Both --gilt-hi (too hot at h1 size) and the
-	   wordmark were tried as homes for the family's brightest slot and Nate
-	   rejected both — the brand reads better cool against the warm chrome than
-	   as the warmest thing in it. --gilt-hi currently has no standing consumer;
-	   don't reach for it without a reason. */
+	/* The wordmark speaks --chrome (Genshin-UI archetype, Nate 2026-08-05:
+	   site chrome + branding are pure white, the over-the-world voice). The
+	   earlier gilt-hi/cool debate is superseded by the archetype. */
 	.chrome-wordmark {
 		font-family: var(--font-display);
 		font-size: 1.33rem;
 		font-weight: var(--fw-medium);
 		letter-spacing: var(--ls-tight);
-		color: var(--text);
+		color: var(--chrome);
 		opacity: 0.9;
 		transition: opacity 200ms ease;
 	}
@@ -224,7 +222,7 @@
 		padding: 0;
 		border: none;
 		background: none;
-		color: var(--text);
+		color: var(--chrome);
 		cursor: pointer;
 	}
 

@@ -397,7 +397,7 @@
 	</div>
 
 	<!-- Graph frame -->
-	<div class="ar-frame frame">
+	<div class="ar-frame frame ctx-dark">
 		{#if !pairValid}
 			<p class="ar-empty">Pick two target substats below.</p>
 		{:else if view === 'appraise'}

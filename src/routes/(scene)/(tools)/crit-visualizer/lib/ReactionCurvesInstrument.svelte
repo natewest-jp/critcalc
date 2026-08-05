@@ -208,7 +208,7 @@
 </script>
 
 <div class="rx-instrument">
-	<div class="rx-frame frame">
+	<div class="rx-frame frame ctx-dark">
 		<div class="rx-graph" bind:clientWidth={graphW}>
 			<svg
 				width={graphW}

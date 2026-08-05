@@ -67,7 +67,7 @@
 
 <div class="icd-instrument">
 	<!-- Hit timeline: which hits actually apply their element -->
-	<div class="icd-frame frame">
+	<div class="icd-frame frame ctx-dark">
 		<div class="icd-graph" bind:clientWidth={graphW}>
 			<svg width={graphW} height={H} role="img" aria-label="ICD hit timeline">
 				<!-- Second grid -->

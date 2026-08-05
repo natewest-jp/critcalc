@@ -107,7 +107,7 @@
 </script>
 
 <div class="wi-instrument">
-	<div class="wi-frame frame">
+	<div class="wi-frame frame ctx-dark">
 		<div class="wi-graph" bind:clientWidth={graphW}>
 			<svg
 				width={graphW}

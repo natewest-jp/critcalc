@@ -14,7 +14,11 @@
 	   GaugeInstrument has carried since the badges were built. Bright chip +
 	   dark ink is the sanctioned idiom now (Genshin's Lv-chips); a bright
 	   fill needs no halo. ≥4.5:1 against every element main and --gilt-soft. */
-	--ink: #081225; /* dark ink on bright fills  L.16 */
+	--ink: #03020c; /* dark ink on bright fills ⚓ NATE 2026-08-05 (Genshin-UI
+	   archetype; was #081225 — the near-black loses its navy cast) */
+	--chrome: #ffffff; /* site chrome, branding, and the biggest headers ⚓ NATE
+	   2026-08-05 — pure white, the over-the-world voice. NOT for body text or
+	   data; the contexts below own those. */
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are
@@ -464,6 +468,54 @@
 .ws-bar {
 	--fill-rest: color-mix(in srgb, var(--dire) 13%, transparent);
 	--fill-hover: color-mix(in srgb, var(--dire) 20%, transparent);
+}
+
+/* ══ THE TWO CONTEXTS — dark and light (Genshin UI archetype) ═══════════════
+   Nate 2026-08-05, values pulled from Genshin's own UI. The primary axis of
+   the tool palette is no longer a hue family but a CONTEXT: a ground plus its
+   text and border rules. Components keep consuming the ROLE tokens
+   (--frame-bg / --surface / --surface-raised / --text / --muted / --border);
+   a context class re-declares the whole set, and everything inside follows.
+
+     DARK  — chart-like panels (timelines, plots, gauge wells). Parchment
+             text on near-black warm neutral.
+     LIGHT — most other panels, and character cards always (Genshin renders
+             theirs light). Warm gray text on warm paper; the slate
+             --label voice for labels and controls.
+
+   Two values pull double duty across the axis, deliberately (they are what
+   binds the two contexts into one system): #E5D9C3 is dark-context TEXT and
+   the light-context RIBBON surface + BORDER; #857971 is dark-context dim
+   text/borders and light-context DEFAULT text.
+
+   Contexts NEST: a dark chart well inside a light panel re-declares on the
+   inner element and wins by inheritance. The alpha-compositing law stands —
+   every context ground is opaque; only the shell between panels is
+   transparent (the scene shows in the gaps, never through a surface. Mix
+   fills against the context's own ground, never against transparent). */
+.ctx-dark {
+	--frame-bg: #1c1a1a; /* surface — the panel/chart ground */
+	--surface: #1c1a1a;
+	--surface-raised: #212121; /* raised surface */
+	--text: #e5d9c3; /* default text — parchment on dark */
+	--muted: #857971; /* dim text */
+	--border: #857971; /* borders share the dim rung */
+}
+
+.ctx-light,
+.panel {
+	--frame-bg: #f2f2ec; /* surface — the paper ground */
+	--surface: #f2f2ec;
+	--surface-raised: #e9e5dc; /* raised surface */
+	--text: #857971; /* default text — warm gray on paper */
+	--muted: #495366; /* the gray LABEL voice (labels + controls) ⚓ NATE —
+	   note it is DARKER than --text here: labels are the anchored voice on
+	   paper, prose recedes. Deliberate inversion of the dark-context order. */
+	--border: #e5d9c3; /* ⚓ NATE 2026-08-05 — borders wear the ribbon color */
+	/* The ribbon — Genshin's banded section-header surface, light context
+	   only. --ribbon-ink is used ONLY on the ribbon surface. */
+	--ribbon: #e5d9c3;
+	--ribbon-ink: #765f4d;
 }
 
 /* Beige selected-state pilot (lightness-structure E, 2026-08-01): the two
@@ -1075,7 +1127,10 @@ img {
    animate the OPACITY of a stacked static ring (compositor-only), never a
    paint property (border-color, gradient angle) — those repaint per frame. */
 .frame {
-	border: 1px solid color-mix(in srgb, var(--dire) 40%, var(--frame-bg));
+	/* Context border (Genshin-UI archetype, 2026-08-05): the frame wears its
+	   context's border rule — #857971 dim in dark, #E5D9C3 ribbon in light.
+	   The dire 40% mix retired with the dire family's exit from the tools. */
+	border: 1px solid var(--border);
 	background: var(--frame-bg);
 }
 
