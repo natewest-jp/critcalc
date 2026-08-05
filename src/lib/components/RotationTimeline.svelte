@@ -102,8 +102,11 @@
 	// relationship: frames ≈ ping × 2 × 60 / 1000 = ping × 0.12.
 	let swapFrames = $derived(Math.round($siteSettings.swapPing * 0.12));
 
-	// "Explore alternatives →" hands the whole current team to the Team Builder.
-	const exploreTeamParam = $derived(characterSlots.filter((id) => id && id !== 'blank').join(','));
+	// "Explore alternatives →" opens the Team Builder's per-slot alternatives
+	// view. The team itself no longer travels by URL — it IS the shared working
+	// team (bench-band round); ?alts=1 only asks for the view. Sent only when a
+	// slot is filled, so an empty team lands on the Atlas cards as usual.
+	const exploreHasTeam = $derived(characterSlots.some((id) => id && id !== 'blank'));
 
 	// ---------------------------------------------------------------------------
 	// Layout constants (px)
@@ -1151,7 +1154,7 @@
 						     order, hence the leading arrow. -->
 						<a
 							class="rp-explore-link"
-							href="{resolve('/team-builder')}{exploreTeamParam ? `?team=${exploreTeamParam}` : ''}"
+							href="{resolve('/team-builder')}{exploreHasTeam ? '?alts=1' : ''}"
 							title="Open the current team in the Team Builder to compare alternatives"
 						>
 							<span class="rp-explore-inner"

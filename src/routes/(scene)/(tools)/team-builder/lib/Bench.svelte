@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { constellations, loadout, ownership } from '$lib/stores';
+	import { constellations, loadout } from '$lib/stores';
+	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
-	import { deriveCoverage, deriveResonances, serializeTeamParam, type TeamSlot } from './team';
+	import { deriveCoverage, deriveResonances, type TeamSlot } from './team';
 	import type { FacetKey } from './facets';
 	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
+	import type { LoadoutEntry } from '$lib/stores';
 
 	let {
 		slots,
@@ -46,11 +47,16 @@
 		return `${label} — no slotted character provides this. Click to find one.`;
 	}
 
-	// Layer-1 (roster) constellation write. Setting a constellation implies you own
-	// the character — the same rule the Detail card enforces at its call site.
-	function setCon(id: string, level: number): void {
-		constellations.setLevel(id, level);
-		if (!$ownership[id]) ownership.setMark(id, 'owned');
+	// The bench is the PLAN's team editor everywhere (bench-band round): its
+	// constellation/loadout edits write Layer 2 — the active tab's overrides —
+	// never the roster, and never mark ownership. The roster grid + Detail card
+	// remain the Layer-1 editors. Display resolves L2 ⇒ L1, exactly as the
+	// planner's column always has.
+	function effectiveCon(id: string): number {
+		return rt.tabCon[id] ?? $constellations[id] ?? 0;
+	}
+	function effectiveLoadout(id: string): LoadoutEntry {
+		return { ...($loadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
 	}
 </script>
 
@@ -65,17 +71,19 @@
 			{@const entry = members[i]}
 			<div class="bn-slot" class:bn-slot--filled={id !== null} class:bn-slot--empty={id === null}>
 				<!-- The shared roster card (identical to the Rotation Planner's slot).
-				     Constellation/loadout edits here write Layer 1 (the roster) — the
-				     "Bennett always runs Noblesse at C1" defaults the whole site reads. -->
+				     Constellation/loadout edits here are Layer-2 (the tab) writes —
+				     the bench is the plan's team editor in both tools; the roster
+				     grid + Detail card own Layer 1. -->
 				<SlotPortrait
 					slotId={id ?? 'blank'}
 					char={entry ?? null}
-					conLevel={id ? ($constellations[id] ?? 0) : 0}
-					loadoutEntry={id ? ($loadout[id] ?? {}) : {}}
-					onSetCon={(level) => id && setCon(id, level)}
-					onSetArtifact={(artId) => id && loadout.setArtifact(id, artId)}
-					onSetWeapon={(wid, ref) => id && loadout.setWeapon(id, wid, ref)}
-					onSetRefinement={(r) => id && loadout.setWeapon(id, $loadout[id]?.weaponId, r)}
+					conLevel={id ? effectiveCon(id) : 0}
+					loadoutEntry={id ? effectiveLoadout(id) : {}}
+					onSetCon={(level) => id && rt.setTabCon(id, level)}
+					onSetArtifact={(artId) => id && rt.setTabLoadout(id, { artifactSetId: artId })}
+					onSetWeapon={(wid, ref) =>
+						id && rt.setTabLoadout(id, { weaponId: wid, weaponRefinement: ref })}
+					onSetRefinement={(r) => id && rt.setTabLoadout(id, { weaponRefinement: r })}
 					onPortraitClick={id ? () => onOpen(id) : undefined}
 					portraitLabel={entry ? `Open ${entry.displayName}` : undefined}
 					emptyLabel=""
@@ -151,12 +159,10 @@
 		</div>
 	{/if}
 
+	<!-- The "Send to Rotation Planner" link is retired: the team IS the
+	     planner's — it's already there. The bench band gliding across the
+	     tool pan is the affordance that used to be this link. -->
 	{#if filledCount > 0}
-		<a
-			class="bn-send"
-			href="{resolve('/rotation-planner')}?team={serializeTeamParam(slots)}"
-			title="Open the Rotation Planner with this team in the slots">Send to Rotation Planner →</a
-		>
 		<button class="btn bn-clear" onclick={onClear}>✕ Clear team</button>
 	{/if}
 </section>
@@ -310,25 +316,6 @@
 		cursor: help;
 	}
 
-	.bn-send {
-		display: block;
-		margin-top: 0.15rem;
-		padding: 0.45rem 0.55rem;
-		border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
-		border-radius: var(--r-sm);
-		background: color-mix(in srgb, var(--accent) 12%, transparent);
-		color: var(--text);
-		font-family: var(--font-body);
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		text-align: center;
-		text-decoration: none;
-		transition: background 150ms ease;
-	}
-	.bn-send:hover {
-		background: color-mix(in srgb, var(--accent) 22%, transparent);
-	}
 	/* No narrow-screen flip: the bench holds its edge at every width, as the
 	   planner's portrait column always has. A real mobile treatment is the
 	   mobile usability pass's job, not a breakpoint that moves the one thing

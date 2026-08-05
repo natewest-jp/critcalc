@@ -16,7 +16,8 @@
 		type FacetKey,
 		type OwnershipView
 	} from './lib/facets';
-	import { afterNavigate, replaceState } from '$app/navigation';
+	import { afterNavigate } from '$app/navigation';
+	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
 	import CharacterGrid, { type GridFilters } from '$lib/components/CharacterGrid.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
@@ -35,7 +36,7 @@
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { positionIcon, functionIcon, POSITION_LABEL, FUNCTION_LABEL } from '$lib/utils/roleIcons';
 	import { MAX_COMPARE } from './lib/compare';
-	import { facetsProvidedBy, parseTeamParam, serializeTeamParam, type TeamSlot } from './lib/team';
+	import { facetsProvidedBy, parseTeamParam, type TeamSlot } from './lib/team';
 
 	// ---------------------------------------------------------------------------
 	// Roster (eager index; full payloads stay lazy behind the detail card)
@@ -71,27 +72,33 @@
 	//   with nav.to pointing at the OTHER page — consuming its params here
 	//   strips them before the destination can read them. Guard on nav.to.
 	// - read nav.to.url, never window.location — location can lag the router.
+	//
+	// The team itself is the shared WORKING TEAM now (the planner's active
+	// tab) — no URL mirroring, no cross-tool injection. Two inbound params
+	// remain, both stripped after reading:
+	// - ?team=a,b,c,d — an external deep link: imports the team into a tab
+	//   (pristine-tab reuse rules), same as the planner's own ?team=.
+	// - ?alts=1 — the planner's "← Explore alternatives" hand-off: the team is
+	//   already here, so the link only asks for the per-slot alternatives view.
 	afterNavigate((nav) => {
 		const url = nav.to?.url;
 		if (!url || !url.pathname.endsWith('/team-builder')) return;
-		// ?team= is the shareable slot state — and the planner's hand-off: the
-		// Rotation Planner's "Explore alternatives →" sends the whole team here,
-		// where Atlas surfaces what those four characters collectively touch. (The
-		// old single-character ?replace= pre-seed is retired — a whole-team payload
-		// covers "swap to cover a gap" and "swap to clone a role" alike.)
-		teamSlots = parseTeamParam(url.searchParams.get('team'), (id) => rosterIds.has(id));
-		urlSynced = true;
-		// Arriving from the planner with a team → open the Atlas on the per-slot
-		// "alternatives" view (the reason the hand-off exists).
+		const teamParam = url.searchParams.get('team');
+		const altsParam = url.searchParams.get('alts');
+		if (!teamParam && !altsParam) return;
+		history.replaceState(history.state, '', url.pathname + url.hash);
+		if (teamParam) {
+			const imported = parseTeamParam(teamParam, (id) => rosterIds.has(id));
+			const ids = imported.filter((s): s is string => s !== null);
+			if (ids.length > 0) rt.importTeam(ids, 'Imported team');
+		}
+		// A team arrival (either param) opens the Atlas on the per-slot
+		// "alternatives" view — the reason both hand-offs exist.
 		if (teamSlots.some((s) => s !== null)) {
 			atlasMode = 'slots';
 			sourceTab = 'atlas';
 		}
 	});
-
-	/** Flips once afterNavigate has parsed the real URL — gates the mirror
-	 *  effect so a pre-sync teamSlots default can't strip a param first. */
-	let urlSynced = $state(false);
 
 	const preferNewfit = $derived(mounted && $siteSettings.useNewOutfits);
 	const traveler = $derived(mounted ? $siteSettings.travelerVariant : 'aether');
@@ -378,7 +385,7 @@
 
 	/** Commit an audition candidate into its slot, then return whence you came. */
 	function commitAudition(candidateId: string): void {
-		if (auditionSlot !== null) teamSlots[auditionSlot] = candidateId;
+		if (auditionSlot !== null) rt.setSlot(auditionSlot, candidateId);
 		endAudition();
 		sourceTab = auditionReturnTab;
 	}
@@ -410,11 +417,14 @@
 	);
 
 	// ---------------------------------------------------------------------------
-	// Team slots (Layer 3) — positional, mirrored into the ?team= URL param
+	// Team slots — THE working team (the planner's active tab), read from the
+	// shared rotationTabs module. This tool edits it directly; the planner and
+	// the bench band see every change live. The module speaks the planner's
+	// representation ('blank' = empty); this tool's TeamSlot uses null.
 	// ---------------------------------------------------------------------------
 
 	const rosterIds = new Set(roster.map((c) => c.id));
-	let teamSlots = $state<TeamSlot[]>([null, null, null, null]);
+	const teamSlots = $derived<TeamSlot[]>(rt.slots.map((id) => (id === 'blank' ? null : id)));
 
 	// Rotation-Planner arrival: one alternatives row per filled slot.
 	const slotRows = $derived.by(() => buildSlotAlternativeRows(teamSlots, roster, rolesOf));
@@ -423,13 +433,8 @@
 		teamSlots.includes(id) ? 'in' : teamSlots.every((s) => s !== null) ? 'full' : 'out';
 
 	function toggleTeam(id: string): void {
-		const at = teamSlots.indexOf(id);
-		if (at >= 0) {
-			teamSlots[at] = null;
-			return;
-		}
-		const empty = teamSlots.indexOf(null);
-		if (empty >= 0) teamSlots[empty] = id;
+		if (teamSlots.includes(id)) rt.removeFromTeam(id);
+		else rt.addToTeam(id);
 	}
 
 	// Capability badges → the card's ordered tag chips: active facets first, then
@@ -458,20 +463,10 @@
 		}
 	}
 
-	// Mirror slots → URL (replace, not push — slot edits aren't nav history).
-	// The query is built by hand so commas stay literal (searchParams.set would
-	// %2C-encode them — legal but ugly in a URL meant to be shared).
-	$effect(() => {
-		const serialized = serializeTeamParam(teamSlots);
-		if (!urlSynced) return;
-		const current = new URLSearchParams(window.location.search).get('team') ?? '';
-		if (current === serialized) return;
-		const target =
-			window.location.pathname + (serialized ? `?team=${serialized}` : '') + window.location.hash;
-		// Query-string update on the CURRENT location, not a route navigation — no path to resolve.
-		// eslint-disable-next-line svelte/no-navigation-without-resolve
-		replaceState(target, {});
-	});
+	// The old slots→URL mirror is retired with the ?team= injection: the
+	// working team lives in the shared tab state (persisted there), and a URL
+	// that silently tracked it would imply a share mechanism this page no
+	// longer owns. Shareable teams travel through the planner's ⤴ Share link.
 </script>
 
 <svelte:head>
@@ -962,11 +957,14 @@
 		     Planner it sends to. Side-locked at every width: the planner's
 		     portrait column never moves either, and the two reading as one
 		     mirrored surface is the point. -->
+		<!-- Coverage judges at the working team's EFFECTIVE constellations (the
+		     tab's Layer-2 override, else the roster) — the bench is the plan's
+		     team, so its facts read at the plan's levels, not the browse mode's. -->
 		<Bench
 			slots={teamSlots}
-			conCapOf={(id) => conCapFor(conMode, mounted ? ($constellations[id] ?? 0) : 0)}
-			onRemove={(i) => (teamSlots[i] = null)}
-			onClear={() => (teamSlots = [null, null, null, null])}
+			conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
+			onRemove={(i) => rt.setSlot(i, null)}
+			onClear={() => rt.clearTeam()}
 			onOpen={openDetail}
 			onFilterFacet={(f) => selectCapability(f)}
 			onAudition={openAudition}
