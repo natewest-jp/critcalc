@@ -137,11 +137,14 @@
 	// styles. afterNavigate runs on every navigation regardless of element
 	// freshness, so every pass re-derives each layer's role and re-animates.
 	const TOOL_NAV_ANIM = 'tool-nav';
-	// Fade knobs — the sitewide 700ms fade law (FADE_DURATION_MS, ⚓ NATE
-	// 2026-08-05), plus a 150ms beat of pure world between the outgoing
-	// clearing and the incoming's entrance (also Nate's, tuned in the browser).
-	const TOOL_FADE_OUT_MS = FADE_OUT_MS;
-	const TOOL_FADE_IN_MS = FADE_DURATION_MS;
+	// Fade knobs — RATIO-derived from the tool-leg clock (⚓ NATE 2026-08-05:
+	// TOOL_NAV_MS/3 ≈ 667ms, landing where his 700ms browser tune sat; the
+	// ascend's fades stay TRANSITION_MS/4 = 600 — up to ~100ms of cross-leg
+	// fade disparity is accepted, and dropping TOOL_NAV_MS to 1800 would
+	// restore parity if it ever grates). Plus a 150ms beat of pure world
+	// between the outgoing clearing and the incoming's entrance.
+	const TOOL_FADE_OUT_MS = Math.round(TOOL_NAV_MS / 3);
+	const TOOL_FADE_IN_MS = Math.round(TOOL_NAV_MS / 3);
 	const TOOL_FADE_IN_DELAY_MS = TOOL_FADE_OUT_MS + 150;
 	// The world clock for tool↔tool legs (TOOL_NAV_MS in transition.ts — it
 	// drives the camera's crane on these legs too; retune it there and the

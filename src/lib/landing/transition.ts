@@ -35,13 +35,17 @@ export const TRANSITION_MS = PAN_MS;
  */
 export const TOOL_NAV_MS = 2000;
 
-/** Fade-IN duration for landing + tool elements — THE site-wide fade length
- *  (⚓ NATE 2026-08-05: 700ms, a touch longer than the old TRANSITION_MS/4
- *  derivation's 600). Kept well under the pans on purpose: with strong
- *  ease-in-out the velocity peaks sharply in the middle, so a fade this much
- *  shorter than the transition clears UI during the slow ease-in and only
- *  the scene is on screen through the fast frames. */
-export const FADE_DURATION_MS = 700;
+/** Fade speed multiplier vs. the transition itself. >1 means fades are
+ *  faster than the pan. With strong ease-in-out the velocity peaks sharply
+ *  in the middle; pushing fades to ~4× means UI chrome clears during the
+ *  slow ease-in and only the scene is on screen through the fast frames.
+ *  ⚓ NATE 2026-08-05: fades stay RATIO-derived from their clocks (this /4
+ *  for the ascend, TOOL_NAV_MS/3 for tool legs in the tools layout) so
+ *  retuning a transition duration keeps its fades locked in step. */
+export const FADE_SPEED_MULTIPLIER = 4;
+
+/** Fade-IN duration for landing + tool elements (the "pleasing" landing fade). */
+export const FADE_DURATION_MS = Math.round(TRANSITION_MS / FADE_SPEED_MULTIPLIER);
 
 /** Fade-OUT duration — the outgoing surface's exit, quick enough to clear the
  *  screen during the pan's slow ease-in. */
