@@ -35,14 +35,14 @@
 	const initialPath = page.url.pathname;
 	initScenePath(initialPath);
 
-	// Seed the occlusion state from the cold-load path: a direct hit on a tool
-	// URL renders the scene unpainted from the first frame (the tool shell SSRs
-	// revealed + opaque above it), so its textures are never rasterized. Only the
-	// TOOL routes occlude — the landing and the static content pages render over a
-	// visible scene. The tools layout flips this true after its reveal paints; our
-	// beforeNavigate below flips it false on the way to any non-tool route. See
-	// sceneOccluded in transition.ts for the full handshake contract.
-	sceneOccluded.set(isToolPath(initialPath));
+	// ⚠ TOOLS-OVER-SCENE EXPERIMENT (Nate 2026-08-05): the tool shell is
+	// transparent now, so NO route occludes — the scene stays painted and
+	// live everywhere, including behind the tools. The handshake machinery
+	// (this store, the .occluded unpaint below, the tools layout's old
+	// report) is kept wired but never asserted; if tool-route perf regresses
+	// on real hardware, re-seeding this from isToolPath + restoring the
+	// report in the tools layout brings perf-audit-F4 behavior back.
+	sceneOccluded.set(false);
 
 	// Snapshot the cold-load rest state. Rendered as inline style attributes
 	// below so the SSR HTML already carries the right rest-state transform/
@@ -58,14 +58,19 @@
 	// The GL scene world (sceneGL.ts): plates + gradient in one canvas, camera
 	// as a uniform — the DOM plate layers are gone (the ascend rebuild; a slow
 	// eased DOM pan is unfixable on Firefox/WebRender). The renderer finishes
-	// asynchronously (texture decode), so on a scene-visible cold load it
-	// claims the veil and releases after its first presented frame. On a tool
-	// cold load the scene is occluded: skip the claim (the tool holds its own)
-	// and defer the whole GL mount — textures shouldn't compete with the tool's
-	// hydration — until the first navigation back to a scene-visible route.
+	// asynchronously (texture decode) and releases its veil claim after its
+	// first presented frame. The occlusion-deferred mount path (skip GL until
+	// navigating off a tool) is dormant while nothing occludes — with the
+	// transparent shell the scene mounts immediately on every cold load,
+	// including tool routes, where its texture decode now overlaps the tool's
+	// hydration (accepted by the tools-over-scene experiment; revisit here if
+	// tool cold loads feel heavier).
 	let sceneCanvas: HTMLCanvasElement;
 	let sceneHandle = $state<SceneGLHandle | null>(null);
-	const releaseVeil = !isToolPath(initialPath) ? claimVeilReady() : () => {};
+	// The scene is part of first paint on EVERY route now (tools-over-scene),
+	// so it claims the veil on tool cold loads too — the tool's own claim
+	// still gates its content; the veil lifts when both have painted.
+	const releaseVeil = claimVeilReady();
 	onMount(() => {
 		let handle: SceneGLHandle | null = null;
 		let disposed = false;

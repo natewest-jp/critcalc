@@ -8,8 +8,7 @@
 		FADE_OUT_MS,
 		hasActiveSceneTransition,
 		revealDelayMs,
-		prefersReducedMotion,
-		sceneOccluded
+		prefersReducedMotion
 	} from '$lib/landing/transition';
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import ChromeModals from '$lib/components/ChromeModals.svelte';
@@ -29,48 +28,29 @@
 	// were the sole source of pan judder. Near settle `revealed` flips, which
 	// makes the shell visible and runs a plain LINEAR CSS-opacity fade-in over
 	// the crest sky, ending FADE_OVERLAP_MS past settle (the shared fade law —
-	// the landing composition mirrors it on the way down). `covered` flips at
-	// fade end and gates the scene occlusion below. Cold load / reduced motion
-	// / no transition → visible immediately.
+	// the landing composition mirrors it on the way down). Cold load / reduced
+	// motion / no transition → visible immediately.
+	//
+	// ⚠ TOOLS-OVER-SCENE EXPERIMENT (dire-retirement round, Nate 2026-08-05):
+	// the shell is TRANSPARENT now — the live scene stays painted and animating
+	// beneath the tools, so the scene-occlusion report (perf audit F4: two rAFs
+	// after `covered`, sceneOccluded.set(true), scene releases ~90MB of
+	// textures) is retired along with the `covered` state that gated it. The
+	// precedent that says this is affordable: the previous setup ran the dire
+	// border's three live GL canvases under every tool while the (occluded)
+	// starfield merely paused. If tool-route perf regresses on real hardware,
+	// this report is the first thing to bring back — transition.ts still
+	// exports the store and the scene layout still honors it.
 	let revealed = $state(!hasActiveSceneTransition());
-	let covered = $state(!hasActiveSceneTransition());
 
 	onMount(() => {
 		if (revealed) return; // cold load — already visible
 		if (prefersReducedMotion()) {
 			revealed = true;
-			covered = true;
 			return;
 		}
-		const timers: ReturnType<typeof setTimeout>[] = [];
-		timers.push(
-			setTimeout(() => {
-				revealed = true;
-				// The fade-in is a CSS transition on .revealed; consider the shell
-				// opaque a beat after it ends (transitionend is not worth the
-				// listener — a fixed margin over a fixed duration is exact enough).
-				timers.push(setTimeout(() => (covered = true), FADE_DURATION_MS + 80));
-			}, revealDelayMs())
-		);
-		return () => timers.forEach(clearTimeout);
-	});
-
-	// Scene occlusion report (perf audit F4): two rAFs after the reveal fade
-	// completes the shell is PAINTED opaque (#000, inset:0) over the scene —
-	// the double-frame guarantee the tool cross-fade also uses — so the scene
-	// layout can unpaint its layers and release their textures. Re-asserted on
-	// every completed navigation within the tools layout (the path dependency),
-	// which re-hides the scene if a cancelled exit to the landing restored it;
-	// a cancelled exit with no follow-up nav just leaves the scene rastered
-	// behind the opaque shell — correct, merely not minimal. The scene layout
-	// itself flips this false on the way back to any non-tool route.
-	$effect(() => {
-		void page.url.pathname;
-		if (!covered) return;
-		let raf = requestAnimationFrame(() => {
-			raf = requestAnimationFrame(() => sceneOccluded.set(true));
-		});
-		return () => cancelAnimationFrame(raf);
+		const timer = setTimeout(() => (revealed = true), revealDelayMs());
+		return () => clearTimeout(timer);
 	});
 
 	// Exit: a plain opacity fade on any departure to a non-tool route. The
@@ -397,14 +377,11 @@
 		   containers), so nothing is lost. */
 		overflow-x: hidden;
 		overflow-y: auto;
-		/* Tool background: the tool scene's opaque ground. Opaque is LOAD-BEARING —
-		   it covers the cosmic scene behind once the ascend's reveal fade
-		   completes (the occlusion handshake below depends on this shell being
-		   fully opaque). The VALUE is the dire-retirement placeholder: the
-		   twilight ramp's base, held verbatim until Nate picks the cool-dark
-		   ground (dire-retirement round; the ramp itself is archived at
-		   docs/archive/dire-border-handoff.md). */
-		background: #131518;
+		/* TRANSPARENT — the tools float over the live scene (tools-over-scene
+		   experiment, Nate 2026-08-05: no shell ground, no dim overlay; the
+		   PANELS are what's opaque). The occlusion handshake retired with the
+		   opacity — see the script comment. */
+		background: transparent;
 
 		/* Layout pads. --tool-pad-top is breathing room below the fixed chrome
 		   (.tool-main adds --chrome-h itself; viewport-height workspaces
