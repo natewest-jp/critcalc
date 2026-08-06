@@ -198,6 +198,11 @@
 	let benchTraveling = $state(false);
 	let benchHeight = $state(0);
 	let benchTravelTimer: ReturnType<typeof setTimeout> | undefined;
+	// Set by benchNavTransition on a dockless→docked leg; fired from startFadeIn
+	// with the incoming PAGE fade's actual startTime, so the ribbon's entrance
+	// fade shares the page's paint gate — a slow planner mount delays both
+	// together instead of the ribbon appearing before its tool.
+	let benchGatedFadeIn: ((startTime: number) => void) | null = null;
 
 	/** The current anchor rect for `path`, in .tool-main coordinates,
 	 *  compensating the page layer's own pan transform (a parked or mid-slide
@@ -262,57 +267,126 @@
 		observeBenchAnchor(a.anchorEl);
 	}
 
-	/** The ribbon during a tool navigation (world-locked fade round): it is
-	 *  screen-locked HUD, so between two docked tools it simply DOES NOT MOVE
-	 *  — both docks share one screen spot, and the persistent opaque ribbon
-	 *  (same place, same team) IS the continuity across the fade. Its card
-	 *  heights still relax between the tools' rhythms on the world clock. For
-	 *  legs where one side has no dock (Visualizers), it fades in place. */
+	/** The ribbon during a tool navigation. Between two DOCKED tools it is
+	 *  screen-locked HUD: it simply DOES NOT MOVE — both docks share one screen
+	 *  spot, and the persistent opaque ribbon (same place, same team) IS the
+	 *  continuity across the fade. Its card heights still relax between the
+	 *  tools' rhythms on the world clock.
+	 *
+	 *  On a leg where one side has no dock (Visualizers), the ribbon is part of
+	 *  the TOOL SURFACE instead (Nate 2026-08-06, replacing the fade-in-place):
+	 *  it drifts by the camera's pose delta while fading, glued to the
+	 *  departing/arriving frame — the page layers' exact recipe, WAAPI with
+	 *  startTime pinned to the scene clock.
+	 *
+	 *  Everything here rides WAAPI (id TOOL_NAV_ANIM) rather than CSS
+	 *  transitions, and that is ALSO the pop-in fix: a running animation
+	 *  outranks inline style, so the ResizeObserver's snapBench — which fires
+	 *  on observe() of a fresh anchor and again on every mount-time frame
+	 *  resize — can no longer stomp an entrance fade to full opacity. */
 	function benchNavTransition(fromPath: string, toPath: string, clock: number) {
 		if (!benchMount) return;
-		const target = measureBenchAnchor(toPath);
+		const mount = benchMount;
 		clearTimeout(benchTravelTimer);
+		benchGatedFadeIn = null;
+		const target = measureBenchAnchor(toPath);
+		const shift = toolPoseShift(fromPath, toPath);
+		// Interrupts: bake whatever the previous leg left mid-flight, then
+		// re-animate from there on a fresh full clock (the layers' own pattern).
+		cancelToolNavAnims(mount, true);
 		if (target) {
 			const wasDocked = benchVisible;
+			const dock = `translate(${target.x}px, ${target.y}px)`;
 			if (!wasDocked) {
-				// Entering from a dockless tool: dock instantly (hidden), then
-				// fade in alongside the incoming page's sequenced fade.
-				benchMount.style.transition = 'none';
-				benchMount.style.transform = `translate(${target.x}px, ${target.y}px)`;
-				benchMount.style.opacity = '0';
-				void benchMount.getBoundingClientRect();
-				const delay = Math.max(0, clock + TOOL_FADE_IN_DELAY_MS - performance.now());
-				benchMount.style.transition = `opacity ${TOOL_FADE_IN_MS}ms linear ${delay}ms`;
-				benchMount.style.opacity = '1';
+				// Entering from a dockless tool: dock hidden, drift in glued to
+				// the incoming frame (−shift → 0 on the pinned clock), and fade
+				// on the incoming PAGE's own gated fade-in (benchGatedFadeIn).
+				// The 0-duration fill:forwards animation is a stomp-proof
+				// opacity floor for the paint-gate window before the fade exists.
+				mount.style.transform = dock;
+				mount.style.opacity = '0';
 				benchVisible = true;
+				mount.animate([{ opacity: 0 }], { duration: 0, fill: 'forwards', id: TOOL_NAV_ANIM });
+				const drift = mount.animate(
+					[{ transform: `translate(${target.x - shift}px, ${target.y}px)` }, { transform: dock }],
+					{ duration: SLIDE_MS, easing: SLIDE_EASE, fill: 'both', id: TOOL_NAV_ANIM }
+				);
+				drift.startTime = clock;
+				benchGatedFadeIn = (startTime) => {
+					const fade = mount.animate([{ opacity: 0 }, { opacity: 1 }], {
+						duration: TOOL_FADE_IN_MS,
+						fill: 'both',
+						id: TOOL_NAV_ANIM
+					});
+					fade.startTime = startTime;
+				};
+			} else {
+				// Docked→docked: nothing moves — both one-keyframe animations run
+				// current→current in the normal case. They exist for interrupts:
+				// a Viz leg cut short leaves the ribbon baked mid-drift/mid-fade,
+				// and these glide it back to dock and back to opaque on the world
+				// clock instead of stranding it there until settle.
+				const drift = mount.animate([{ transform: dock }], {
+					duration: SLIDE_MS,
+					easing: SLIDE_EASE,
+					fill: 'forwards',
+					id: TOOL_NAV_ANIM
+				});
+				drift.startTime = clock;
+				const fade = mount.animate([{ opacity: 1 }], {
+					duration: TOOL_FADE_IN_MS,
+					fill: 'forwards',
+					id: TOOL_NAV_ANIM
+				});
+				fade.startTime = clock;
 			}
-			// Docked→docked: nothing to move — let the STRIP and the card heights
-			// relax between the two tools' rhythms on the world clock, then
-			// re-dock to sub-pixel precision at settle. Arriving from a DOCKLESS
-			// tool the size just snaps: the strip is fading in at its new height,
-			// and growing it mid-fade would read as the box inflating.
+			// Heights: relax between the tools' rhythms on the world clock when
+			// docked throughout; snap when arriving from a DOCKLESS tool — the
+			// strip is fading in at its new height, and growing it mid-fade
+			// would read as the box inflating.
 			benchTraveling = wasDocked;
 			benchHeight = target.h;
 			observeBenchAnchor(target.anchorEl);
 			benchTravelTimer = setTimeout(
 				() => {
 					benchTraveling = false;
+					cancelToolNavAnims(mount, false);
+					mount.style.opacity = '';
 					snapBench();
 				},
 				Math.max(0, clock + SLIDE_MS - performance.now()) + 100
 			);
 		} else if (benchVisible) {
-			// Exiting toward a dockless tool: fade out in place on the world
-			// clock's fade-out leg.
-			benchMount.style.transition = `opacity ${TOOL_FADE_OUT_MS}ms linear`;
-			benchMount.style.opacity = '0';
-			benchTravelTimer = setTimeout(() => {
-				if (!measureBenchAnchor(page.url.pathname)) {
-					benchVisible = false;
-					benchMount!.style.opacity = '';
-					benchMount!.style.transition = 'none';
-				}
-			}, TOOL_FADE_OUT_MS + 100);
+			// Exiting toward a dockless tool: world-locked drift by the pose
+			// delta + the linear fade-out, glued to the departing frame.
+			const t = getComputedStyle(mount).transform;
+			const m = t === 'none' ? new DOMMatrixReadOnly() : new DOMMatrixReadOnly(t);
+			const drift = mount.animate([{ transform: `translate(${m.e + shift}px, ${m.f}px)` }], {
+				duration: SLIDE_MS,
+				easing: SLIDE_EASE,
+				fill: 'forwards',
+				id: TOOL_NAV_ANIM
+			});
+			drift.startTime = clock;
+			const fade = mount.animate([{ opacity: 0 }], {
+				duration: TOOL_FADE_OUT_MS,
+				fill: 'forwards',
+				id: TOOL_NAV_ANIM
+			});
+			fade.startTime = clock;
+			benchTravelTimer = setTimeout(
+				() => {
+					if (!measureBenchAnchor(page.url.pathname)) {
+						benchVisible = false;
+						cancelToolNavAnims(mount, false);
+						mount.style.opacity = '';
+					} else {
+						// A newer nav re-docked us before this fired — defensive.
+						snapBench();
+					}
+				},
+				Math.max(0, clock + TOOL_FADE_OUT_MS - performance.now()) + 100
+			);
 		}
 	}
 
@@ -509,9 +583,14 @@
 			// Sequenced on the shared clock (begin as the outgoing ends), but
 			// never before the page has actually painted — the gate that got us
 			// here. A future startTime simply waits.
-			fade.startTime = Math.max(performance.now(), clock + TOOL_FADE_IN_DELAY_MS);
+			const fadeStart = Math.max(performance.now(), clock + TOOL_FADE_IN_DELAY_MS);
+			fade.startTime = fadeStart;
+			// The ribbon's entrance fade (dockless→docked legs) shares this exact
+			// startTime — the band and its tool clear the paint gate together.
+			benchGatedFadeIn?.(fadeStart);
+			benchGatedFadeIn = null;
 			const settleAt =
-				Math.max(clock + SLIDE_MS, fade.startTime + TOOL_FADE_IN_MS) - performance.now() + 100;
+				Math.max(clock + SLIDE_MS, fadeStart + TOOL_FADE_IN_MS) - performance.now() + 100;
 			// Settle: bake + release. The incoming rests at natural layout; the
 			// outgoing stays baked invisible through its retention window.
 			setTimeout(() => {

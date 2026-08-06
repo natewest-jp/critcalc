@@ -285,19 +285,80 @@ check(
 );
 check('ribbon keeps its own dark context on RP', (rp2.ctx ?? '').includes('ctx-dark'), rp2.ctx);
 
-// ── Travel RP → Visualizers (band exits) ──────────────────────────────────
+// ── Travel RP → Visualizers (the ribbon rides the world out) ──────────────
+// Viz-leg rework (2026-08-06): on a leg where one side has no dock, the
+// ribbon is part of the TOOL SURFACE, not screen-locked HUD — it drifts by
+// the camera's pose delta while fading, glued to the departing frame,
+// instead of fading in place.
+await page.evaluate(() => {
+	window.__exitFrames = [];
+	window.__exitStop = false;
+	const rec = () => {
+		const band = document.querySelector('.bench-band-mount');
+		const cs = getComputedStyle(band);
+		window.__exitFrames.push({
+			x: band.getBoundingClientRect().x,
+			o: parseFloat(cs.opacity),
+			v: cs.visibility
+		});
+		if (!window.__exitStop) requestAnimationFrame(rec);
+	};
+	requestAnimationFrame(rec);
+});
 await page.click('.chrome-nav a[href*="crit-visualizer"]');
-await page.waitForTimeout(3400);
+// Outlive the outgoing layer's retention (HOLD_MAX_MS 4000) so the return
+// below mounts a FRESH planner layer. A revived layer keeps its anchor
+// element, so the ResizeObserver never re-fires — the pop-in bug only bites
+// on fresh mounts, which is the human-timescale case.
+await page.waitForTimeout(4600);
+const exitFrames = await page.evaluate(() => {
+	window.__exitStop = true;
+	return window.__exitFrames;
+});
 const viz = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
 	return { visibility: getComputedStyle(band).visibility };
 });
 console.log('Visualizers:');
 check('band hidden on Visualizers', viz.visibility === 'hidden', viz.visibility);
+const exitVisible = exitFrames.filter((f) => f.v === 'visible');
+const exitFading = exitVisible.filter((f) => f.o > 0.05 && f.o < 0.95);
+check(
+	'ribbon fades out across the exit leg (intermediate opacity frames)',
+	exitFading.length >= 3,
+	`${exitFading.length} fading frames of ${exitVisible.length} visible`
+);
+const exitDrift = Math.max(...exitVisible.map((f) => Math.abs(f.x - rpDockX)));
+check(
+	'ribbon drifts with the world on the way out (world-locked, not in place)',
+	exitDrift > 8,
+	`max displacement ${exitDrift.toFixed(1)}px`
+);
 
-// ── Back from Visualizers (band re-enters) ────────────────────────────────
+// ── Back from Visualizers (the ribbon rides the world in, FADING with the
+// incoming page — the pop-in bug's regression guard: the ResizeObserver's
+// snapBench used to stomp the entrance fade to full opacity) ──────────────
+await page.evaluate(() => {
+	window.__enterFrames = [];
+	window.__enterStop = false;
+	const rec = () => {
+		const band = document.querySelector('.bench-band-mount');
+		const cs = getComputedStyle(band);
+		window.__enterFrames.push({
+			x: band.getBoundingClientRect().x,
+			o: parseFloat(cs.opacity),
+			v: cs.visibility
+		});
+		if (!window.__enterStop) requestAnimationFrame(rec);
+	};
+	requestAnimationFrame(rec);
+});
 await page.click('.chrome-nav a[href*="rotation-planner"]');
 await page.waitForTimeout(3400);
+const enterFrames = await page.evaluate(() => {
+	window.__enterStop = true;
+	return window.__enterFrames;
+});
 const rp3 = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
 	const anchor = document.querySelector('.rp-ribbon-dock');
@@ -309,6 +370,22 @@ check(
 	'band re-enters from Visualizers and docks',
 	rp3.visible && rp3.b && rp3.a && Math.abs(rp3.b.x - rp3.a.x) <= 1,
 	JSON.stringify({ b: rp3.b, a: rp3.a })
+);
+const enterVisible = enterFrames.filter((f) => f.v === 'visible');
+const enterFading = enterVisible.filter((f) => f.o > 0.05 && f.o < 0.95);
+check(
+	'ribbon FADES in from Visualizers (never pops in)',
+	enterFading.length >= 3,
+	`${enterFading.length} fading frames of ${enterVisible.length} visible`
+);
+const enterDrift = Math.max(
+	0,
+	...enterVisible.filter((f) => f.o < 0.95).map((f) => Math.abs(f.x - (rp3.a?.x ?? 0)))
+);
+check(
+	'ribbon drifts in glued to the incoming frame (offset from dock while fading)',
+	enterDrift > 8,
+	`max offset while fading ${enterDrift.toFixed(1)}px`
 );
 
 // ── Interrupted navigation: the ribbon holds its spot; layers re-settle ─────
