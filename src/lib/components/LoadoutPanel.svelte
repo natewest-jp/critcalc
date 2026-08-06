@@ -251,7 +251,9 @@
 		background: var(--fill-rest);
 		color: var(--muted);
 		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
+		/* --fs-xs with the card's R value and the constellation pips (⚓ NATE
+		   2026-08-06) — the value text family moves together. */
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-mid);
 		cursor: pointer;

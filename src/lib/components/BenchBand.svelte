@@ -299,7 +299,11 @@
 		border: var(--sp-pill-border);
 		border-radius: var(--r-round);
 		background: var(--sp-pill-fill);
-		color: var(--muted);
+		/* The card's dimmed-white ladder (inherited from .sp-card — these
+		   buttons render inside it via the actions snippet), not --muted: the
+		   beige glyphs sat oddly against the white-mix C/R values and icons
+		   (Nate 2026-08-06). Rest 40% → hover 65%, like every unset value. */
+		color: var(--sp-unset-ink);
 		cursor: pointer;
 		transition:
 			border-color 150ms ease,
@@ -337,10 +341,12 @@
 	}
 	.bb-act:hover:not(:disabled) {
 		border-color: color-mix(in srgb, var(--el) 45%, var(--frame-line-quiet));
-		color: var(--text);
+		color: var(--sp-unset-ink-hover);
 	}
 	.bb-act--remove:hover:not(:disabled) {
 		border-color: color-mix(in srgb, var(--ui-danger) 55%, var(--frame-line));
-		color: color-mix(in srgb, var(--ui-danger) 45%, var(--text));
+		/* Danger mixes into WHITE, not --text — the beige base would pull the
+		   red warm against the card's white-mix ladder. */
+		color: color-mix(in srgb, var(--ui-danger) 45%, white);
 	}
 </style>

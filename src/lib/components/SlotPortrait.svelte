@@ -572,7 +572,10 @@
 		background: var(--sp-pill-fill);
 		color: var(--sp-unset-ink);
 		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
+		/* --fs-xs, not the chip-label 2xs — sized up alongside the SVG action
+		   glyphs (⚓ NATE 2026-08-06); the refinement value and both pickers'
+		   pips move together. */
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-wide);
 		line-height: var(--lh-none);
@@ -641,27 +644,30 @@
 		transition: background 150ms ease;
 	}
 	/* ── Icon dimming = a GROUND-COLORED WASH over a full-opacity icon ────────
-	   Never element `opacity` on the icon. The ribbon is transform-placed at
-	   measured (fractional) coordinates, and WebKit rasterizes any opacity<1
-	   subtree into a transparency layer at ROUNDED device coordinates — the
-	   icons visibly "danced" on hover in real Safari (the chrome ⓘ bug's exact
-	   mechanism; the earlier claim here that a "static card" was safe did not
-	   survive the ribbon). Painting the pill's own gradient OVER the icon at
-	   the inverse alpha is the same arithmetic as dimming the icon toward its
-	   local ground — the zone spans the pill's full height, so the gradient
-	   stops line up — but the only element that can subpixel-snap is a soft
-	   translucent wash, which has no edge to catch on. The wash sits on the
-	   icon zones only (:not(.sp-lo-ref)) — the R value is text, and color is
-	   plain paint. Equivalences to the old icon opacities: cover 0.15 ≈ icon
-	   0.85 · 0 ≈ 1 · 0.6 ≈ 0.4 · 0.35 ≈ 0.65. */
+	   Never element `opacity` on the icon — and the alpha must live IN THE
+	   PAINT (a translucent background-color), never as `opacity` on the wash
+	   element either. The ribbon is transform-placed at measured (fractional)
+	   coordinates, and WebKit rasterizes any element-opacity<1 subtree into a
+	   transparency layer at ROUNDED device coordinates — the icons visibly
+	   "danced" on hover in real Safari (the chrome ⓘ bug's exact mechanism).
+	   Two hard-won rungs of this lesson (both Nate-observed in real Safari,
+	   2026-08-06): the icons' own opacity danced, and so did v2's
+	   gradient-wash pseudo carrying `opacity` — element opacity is the trigger
+	   wherever it sits. background-color alpha is plain paint (the chrome
+	   fix's fill-opacity analog): no layer, no rounding, and it transitions.
+	   The wash is FLAT --frame-bg rather than the pill's gradient (Nate's
+	   call — a flat dim over the gradient ground isn't detectable at these
+	   alphas), sits on the icon zones only (:not(.sp-lo-ref); the R value is
+	   text, and `color` is already paint), and steps the old icon-opacity
+	   ladder: wash α 0.85→0 ≈ icon 0.15→1 … i.e. α = 1 − old icon opacity:
+	   0.15/0/0.6/0.35 for set-rest/set-hover/unset-rest/unset-hover. */
 	.sp-lo-zone:not(.sp-lo-ref)::after {
 		content: '';
 		position: absolute;
 		inset: 0;
 		border-radius: inherit;
-		background: var(--sp-pill-fill);
-		opacity: 0.15;
-		transition: opacity 150ms ease;
+		background-color: color-mix(in srgb, var(--frame-bg) 15%, transparent);
+		transition: background-color 150ms ease;
 		pointer-events: none;
 	}
 	/* Hover brightens the CONTENT, it does not fill the zone — the same move the
@@ -670,18 +676,20 @@
 	   it, and lands on the same circle silhouette as the action chips flanking
 	   it. To go back to a fill, a background on the zone is the whole change. */
 	.sp-lo-zone:hover:not(:disabled)::after {
-		opacity: 0;
+		background-color: color-mix(in srgb, var(--frame-bg) 0%, transparent);
 	}
 	/* An empty slot wears generic art dimmed — still legibly a thing you click,
 	   never a hole. ⚠ An unset icon must stay visibly BELOW a set one even
 	   while hovered — the dim is this card's signal for "nothing equipped", so
-	   hover must not push an empty slot into looking filled. 0.35 wash hovered
-	   > 0.15 wash at rest. */
-	.sp-lo-zone--unset::after {
-		opacity: 0.6;
+	   hover must not push an empty slot into looking filled. 35% wash hovered
+	   > 15% wash at rest. */
+	/* Doubled class = specificity over the base rule's `.sp-lo-zone:not(...)`
+	   (two class-level simple selectors each; source order alone loses). */
+	.sp-lo-zone.sp-lo-zone--unset::after {
+		background-color: color-mix(in srgb, var(--frame-bg) 60%, transparent);
 	}
-	.sp-lo-zone--unset:hover:not(:disabled)::after {
-		opacity: 0.35;
+	.sp-lo-zone.sp-lo-zone--unset:hover:not(:disabled)::after {
+		background-color: color-mix(in srgb, var(--frame-bg) 35%, transparent);
 	}
 	.sp-lo-zone:disabled {
 		cursor: default;
@@ -700,7 +708,7 @@
 		padding: 0 5px;
 		color: var(--sp-unset-ink);
 		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-mid);
 		line-height: var(--lh-none);
