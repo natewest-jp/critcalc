@@ -54,7 +54,15 @@ const rp = await page.evaluate(() => {
 		anchorCellHeights: [...document.querySelectorAll('.rp-label-col .char-label')].map(
 			(el) => el.getBoundingClientRect().height
 		),
-		tracksTop: document.querySelector('.rp-char-block')?.getBoundingClientRect().top ?? null
+		tracksTop: document.querySelector('.rp-char-block')?.getBoundingClientRect().top ?? null,
+		frameRect: (() => {
+			const r = document.querySelector('.rp-frame')?.getBoundingClientRect();
+			return r ? { x: r.x, y: r.y, w: r.width, h: r.height } : null;
+		})(),
+		laneNames: [...document.querySelectorAll('.rp-lane-name')].map((el) => ({
+			text: el.textContent.trim(),
+			x: Math.round(el.getBoundingClientRect().x)
+		}))
 	};
 });
 console.log('RP:');
@@ -69,16 +77,33 @@ check(
 	JSON.stringify({ band: rp.bandRect, anchor: rp.anchorRect })
 );
 check(
-	'ribbon width = RIBBON_W (186)',
-	rp.bandRect && Math.abs(rp.bandRect.w - 186) <= 1,
+	'ribbon width = RIBBON_W (190: card 160 + 15 chrome per side)',
+	rp.bandRect && Math.abs(rp.bandRect.w - 190) <= 1,
 	String(rp.bandRect?.w)
 );
 // The ribbon's card column must land exactly on the track rows (the RIBBON
-// geometry contract: dock top + chrome = tracks top).
+// geometry contract: dock top + chrome 15 + head 36 = tracks top).
 check(
-	'card column top = track rows top (ribbon chrome accounted)',
-	rp.bandRect && rp.tracksTop != null && Math.abs(rp.bandRect.y + 13 - rp.tracksTop) <= 1,
+	'card column top = track rows top (ribbon chrome + head accounted)',
+	rp.bandRect && rp.tracksTop != null && Math.abs(rp.bandRect.y + 51 - rp.tracksTop) <= 1,
 	JSON.stringify({ bandY: rp.bandRect?.y, tracksTop: rp.tracksTop })
+);
+// The tall-bench contract on the planner side: the strip stands 12px proud of
+// the frame at BOTH ends, whatever height the rotation gives it.
+check(
+	'ribbon overhangs the RP frame top and bottom',
+	rp.frameRect &&
+		rp.bandRect &&
+		Math.abs(rp.frameRect.y - rp.bandRect.y - 12) <= 1 &&
+		Math.abs(rp.bandRect.y + rp.bandRect.h - (rp.frameRect.y + rp.frameRect.h) - 12) <= 1,
+	JSON.stringify({ frame: rp.frameRect, band: rp.bandRect })
+);
+// The lane names moved INTO their lanes (the label column is under the strip
+// at every height now).
+check(
+	'lane names ride their lanes, right of the ribbon',
+	rp.laneNames.length > 0 && rp.laneNames.every((n) => n.x >= rp.bandRect.x + rp.bandRect.w - 1),
+	JSON.stringify(rp.laneNames)
 );
 check(
 	'slot heights mirror anchor cells',
@@ -127,13 +152,23 @@ const tb = await page.evaluate(() => {
 		visible: band && getComputedStyle(band).visibility === 'visible',
 		bandRect: b ? { x: b.x, y: b.y, w: b.width, h: b.height } : null,
 		anchorRect: a ? { x: a.x, y: a.y, w: a.width, h: a.height } : null,
+		frameRect: (() => {
+			const r = document.querySelector('.tb-frame')?.getBoundingClientRect();
+			return r ? { x: r.x, y: r.y, w: r.width, h: r.height } : null;
+		})(),
 		names,
 		slotHeights: [...document.querySelectorAll('.bench-band-mount .bb-slot')].map(
 			(el) => el.getBoundingClientRect().height
 		),
 		hasAuditionAct: !!document.querySelector('.bench-band-mount .bb-act'),
 		ctx: band?.querySelector('.bb')?.className,
-		factsTop: document.querySelector('.bn-factrow')?.getBoundingClientRect().top ?? null
+		// Tall-bench round: the team readout left the bench column for the
+		// TeamStrip above the work zone (the ribbon spans the whole frame now).
+		stripRect: (() => {
+			const r = document.querySelector('.ts')?.getBoundingClientRect();
+			return r ? { x: r.x, y: r.y, w: r.width } : null;
+		})(),
+		benchZoneChildren: document.querySelector('.bn')?.childElementCount ?? -1
 	};
 });
 const bandXs = await page.evaluate(() => {
@@ -184,12 +219,27 @@ check(
 check('TB actions (audition/remove) present', tb.hasAuditionAct);
 // ONE identity in both tools now (the ribbon is self-contained, always dark).
 check('ribbon keeps its own dark context on TB', (tb.ctx ?? '').includes('ctx-dark'), tb.ctx);
+// The strip stands proud of its frame at BOTH ends — the tall-bench contract.
 check(
-	'TB facts strip clears the ribbon bottom',
-	tb.factsTop != null && tb.bandRect && tb.factsTop >= tb.bandRect.y + tb.bandRect.h - 1,
+	'ribbon overhangs the TB frame top and bottom',
+	tb.frameRect &&
+		tb.bandRect &&
+		Math.abs(tb.frameRect.y - tb.bandRect.y - 12) <= 1 &&
+		Math.abs(tb.bandRect.y + tb.bandRect.h - (tb.frameRect.y + tb.frameRect.h) - 12) <= 1,
+	JSON.stringify({ frame: tb.frameRect, band: tb.bandRect })
+);
+// The bench zone is pure width reservation now; the readout lives right of it.
+check(
+	'TB bench zone holds nothing but its width',
+	tb.benchZoneChildren === 0,
+	String(tb.benchZoneChildren)
+);
+check(
+	'TB team strip sits right of the ribbon',
+	tb.stripRect && tb.bandRect && tb.stripRect.x >= tb.bandRect.x + tb.bandRect.w - 1,
 	JSON.stringify({
-		factsTop: tb.factsTop,
-		ribbonBottom: tb.bandRect ? tb.bandRect.y + tb.bandRect.h : null
+		strip: tb.stripRect,
+		ribbonRight: tb.bandRect ? tb.bandRect.x + tb.bandRect.w : null
 	})
 );
 await page.screenshot({ path: `${SHOTS}/band-tb.png` });
@@ -310,7 +360,8 @@ check(
 	JSON.stringify(afterInt)
 );
 
-// ── Short viewport: ribbon is fixed; the TB facts scroll BELOW it ──────────
+// ── Short viewport: the strip still spans its frame, and the work zone (not
+// the bench column) carries the team readout ─────────────────────────────
 const page2 = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 await page2.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 await page2.waitForTimeout(600);
@@ -320,11 +371,18 @@ const short = await page2.evaluate(() => {
 	const b = band?.getBoundingClientRect();
 	const anchor = document.querySelector('.tb-frame [data-bench-anchor]');
 	const a = anchor?.getBoundingClientRect();
+	const f = document.querySelector('.tb-frame')?.getBoundingClientRect();
 	return {
 		bandY: b?.y,
+		bandH: b?.height,
 		anchorY: a?.y,
+		frameY: f?.y,
+		frameH: f?.height,
 		clip: band?.style.clipPath ?? '',
-		zonePadTop: zone ? parseFloat(getComputedStyle(zone).paddingTop) : 0
+		lastCardBottom: [...document.querySelectorAll('.bench-band-mount .bb-slot')]
+			.pop()
+			?.getBoundingClientRect().bottom,
+		zoneScrolls: zone ? getComputedStyle(zone).overflowY : ''
 	};
 });
 console.log('Short viewport (720p) TB:');
@@ -334,10 +392,23 @@ check(
 	JSON.stringify(short)
 );
 check('no clip-path on the ribbon (machinery retired)', short.clip === '', short.clip);
+// Short viewport: the TB frame is viewport-fit and can be SHORTER than four
+// cards. The strip opens on the same line (frame top − 12) but floors at its
+// own content rather than clipping the fourth card inside the frame.
 check(
-	'TB zone scroll viewport starts below the ribbon',
-	short.zonePadTop >= 680,
-	String(short.zonePadTop)
+	'ribbon opens 12px above the frame even when the frame is shorter than the cards',
+	short.frameY != null && Math.abs(short.frameY - short.bandY - 12) <= 1,
+	JSON.stringify(short)
+);
+check(
+	'ribbon never clips a card on a short viewport (content floor)',
+	short.lastCardBottom != null && short.lastCardBottom <= short.bandY + short.bandH,
+	JSON.stringify({ lastCardBottom: short.lastCardBottom, stripBottom: short.bandY + short.bandH })
+);
+check(
+	'bench zone owns no scroll of its own (nothing left in it to scroll)',
+	short.zoneScrolls !== 'auto' && short.zoneScrolls !== 'scroll',
+	short.zoneScrolls
 );
 
 await browser.close();

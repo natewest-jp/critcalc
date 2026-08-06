@@ -12,12 +12,18 @@
 	element-color identity the timeline bars use. Only renders when there is
 	something to show.
 
-	⚠ Rail width mirrors the frame's internal geometry (1px border + 14px
-	frame padding + 160px LABEL_W, lane-label text inset 10px) — keep in
-	lockstep with RotationTimeline's LABEL_W / .rp-frame padding.
+	⚠ Rail width mirrors the frame's internal geometry — DERIVED now (2026-08-06)
+	rather than kept in lockstep by hand: the chips start where the timeline's
+	tracks start, which is where the bench strip ends (FRAME_BORDER +
+	RIBBON_UNDER), less the lane-label text inset.
 -->
 <script lang="ts">
 	import { getLoadedCharacter } from '$lib/data/characterData';
+	import { FRAME_BORDER, RIBBON_UNDER } from '$lib/benchBand.svelte';
+
+	/** How far the rail's text stops short of the tracks — the lane-label inset
+	 *  the timeline's own labels used. */
+	const KEY_INSET = 10;
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import { deriveResonances, type Resonance } from '$lib/utils/resonance';
@@ -151,7 +157,7 @@
 </script>
 
 {#if visible}
-	<div class="team-bonuses">
+	<div class="team-bonuses" style:--tb-key-w="{FRAME_BORDER + RIBBON_UNDER - KEY_INSET}px">
 		<span class="tb-key">Always-on buffs</span>
 		<div class="tb-flow">
 			{#each resonance.active as res (res.key)}
@@ -201,11 +207,13 @@
 		font-family: var(--font-body);
 	}
 
-	/* Label rail — mirrors the frame's lane-label geometry: text right edge
-	   at 1 + 14 + 160 − 10 = 165px from the section's left edge. */
+	/* Label rail — its text's right edge lands KEY_INSET short of the tracks'
+	   left edge, the lane-label inset. Width comes inline from the derivation
+	   (see the top comment); a literal here would drift the moment the strip's
+	   geometry moves, which is exactly what happened on 2026-08-06. */
 	.tb-key {
 		flex-shrink: 0;
-		width: 165px;
+		width: var(--tb-key-w);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-widest);

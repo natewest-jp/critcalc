@@ -83,6 +83,16 @@
 	   ⚠ timelineExport mirrors the RESOLVED literal — recompute it if
 	   --border, --frame-bg or the 90% move (the mirror test enforces). */
 	--frame-line: color-mix(in srgb, var(--border) 90%, var(--frame-bg));
+	/* The QUIET structure line — same job, one register down, for strokes that
+	   are 1.5–2px wide or repeat several times in one object. ⚓ NATE sampled
+	   #383943 for the bench strip's double frame (2026-08-06); --frame-line at
+	   2px read as a lit warm edge rather than a frame. Same derivation, same
+	   opaque-mix law, so it inverts with the context like its sibling. It now
+	   carries the bench strip's frame + card dividers AND the slot card's
+	   control borders (constellation chip, loadout pill, ⇄/✕), so those read as
+	   one family with the box around them. Resolves ≈ #393d4b on the dark
+	   context. */
+	--frame-line-quiet: color-mix(in srgb, var(--border) 22%, var(--frame-bg));
 
 	/* ══ CHART INK ═════════════════════════════════════════════════════════════
 	   The inside of an instrument: axis labels, tick text, gridlines, axis

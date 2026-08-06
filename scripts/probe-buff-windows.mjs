@@ -81,7 +81,9 @@ for (const c of CASES) {
 			el.textContent?.trim()
 		),
 		debuffBars: document.querySelectorAll('.rp-team-debuff-bar').length,
-		laneLabels: [...document.querySelectorAll('.rp-label-text')].map((el) => el.textContent?.trim())
+		// The lane names ride their own lanes now (tall-bench round: the bench
+		// strip stands over the label column at every height).
+		laneLabels: [...document.querySelectorAll('.rp-lane-name')].map((el) => el.textContent?.trim())
 	}));
 	const ok = c.check(state);
 	if (!ok) failures++;

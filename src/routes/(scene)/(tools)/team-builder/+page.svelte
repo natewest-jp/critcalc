@@ -18,18 +18,12 @@
 	} from './lib/facets';
 	import { afterNavigate } from '$app/navigation';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
-	import {
-		benchBand,
-		RIBBON_W,
-		RIBBON_OVERHANG,
-		RIBBON_TOP_OFFSET,
-		RIBBON_RESTING_H
-	} from '$lib/benchBand.svelte';
+	import { benchBand, RIBBON_W, RIBBON_OVERHANG, RIBBON_OVERHANG_Y } from '$lib/benchBand.svelte';
 	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
 	import CharacterGrid, { type GridFilters } from '$lib/components/CharacterGrid.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
 	import CompareView from './lib/CompareView.svelte';
-	import Bench from './lib/Bench.svelte';
+	import TeamStrip from './lib/TeamStrip.svelte';
 	import AtlasView from './lib/AtlasView.svelte';
 	import {
 		buildRoleCards,
@@ -810,191 +804,201 @@
 	     views scroll INSIDE it, the page never does. -->
 	<div class="tb-frame frame ctx-light">
 		<!-- The RIBBON's dock: invisible, ribbon-sized, measured by the tools
-		     layout. On the frame's LEFT edge now (world-locked fade round,
+		     layout. On the frame's LEFT edge (world-locked fade round,
 		     2026-08-05): both tools dock the ribbon at the SAME screen spot —
 		     bench left, work center, filters right, site-wide — so during the
 		     fade transition the ribbon simply never moves. Left edge overhangs
 		     the frame by RIBBON_OVERHANG (the atlas/roster extends out from
 		     underneath the ribbon's right edge; the .bn zone is the
-		     tucked-under region); top offset is the shared RIBBON_TOP_OFFSET,
-		     the same line the planner's dock sits on. -->
+		     tucked-under region). ↻ Tall-bench round: it STRETCHES with the
+		     frame — top/bottom insets, no height — so the strip stands
+		     RIBBON_OVERHANG_Y proud at both ends, exactly as the planner's
+		     does. Insets resolve against the padding box, hence the frame's
+		     own 1px border at each end. -->
 		<div
 			class="tb-ribbon-dock"
 			data-bench-anchor
 			style:left="-{RIBBON_OVERHANG}px"
-			style:top="{RIBBON_TOP_OFFSET}px"
+			style:top="-{1 + RIBBON_OVERHANG_Y}px"
+			style:bottom="-{1 + RIBBON_OVERHANG_Y}px"
 			style:width="{RIBBON_W}px"
-			style:height="{RIBBON_RESTING_H}px"
 		></div>
 
-		<!-- ── Bench zone (the team) — the frame's LEFT zone beneath the
-		     ribbon, mirroring the planner's column exactly. Coverage judges at
-		     the working team's EFFECTIVE constellations (Layer-2 override,
-		     else the roster) — the bench is the plan's team. -->
-		<Bench
-			slots={teamSlots}
-			conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
-			onClear={() => rt.clearTeam()}
-			onFilterFacet={(f) => selectCapability(f)}
-		/>
-		<section class="tb-source">
-			{#if sourceTab === 'atlas'}
-				<div class="tb-atlas">
-					{#if atlasMode === 'slots' && slotRows.length > 0}
-						<div class="tb-atlas-head">
-							<p class="tb-atlas-lead">
-								Alternatives for each character on your team — same element and role.
-							</p>
-							<button class="btn" onclick={backToCards}>Browse all roles →</button>
-						</div>
-						{#each slotRows as row (row.slotEntry.id)}
-							<section class="tb-slotrow">
-								<header class="tb-slotrow-head">
-									{#if hasAvatar(row.slotEntry.id)}
-										<img
-											class="tb-slotrow-avatar"
-											src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
-											alt=""
-											loading="lazy"
-										/>
-									{:else}
-										<span class="tb-slotrow-initials"
-											>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
+		<!-- ── Bench zone: pure reservation. The ribbon stands over this column
+		     at its full height now, so the zone holds nothing but the width the
+		     strip tucks over — the team facts and coverage moved to the TeamStrip
+		     above the work zone (tall-bench round, 2026-08-06). -->
+		<div class="bn" aria-hidden="true"></div>
+
+		<div class="tb-work">
+			<!-- What the team IS and what it COVERS — one horizontal readout above
+			     the roster the coverage gaps filter. -->
+			<TeamStrip
+				slots={teamSlots}
+				conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
+				onClear={() => rt.clearTeam()}
+				onFilterFacet={(f) => selectCapability(f)}
+			/>
+			<section class="tb-source">
+				{#if sourceTab === 'atlas'}
+					<div class="tb-atlas">
+						{#if atlasMode === 'slots' && slotRows.length > 0}
+							<div class="tb-atlas-head">
+								<p class="tb-atlas-lead">
+									Alternatives for each character on your team — same element and role.
+								</p>
+								<button class="btn" onclick={backToCards}>Browse all roles →</button>
+							</div>
+							{#each slotRows as row (row.slotEntry.id)}
+								<section class="tb-slotrow">
+									<header class="tb-slotrow-head">
+										{#if hasAvatar(row.slotEntry.id)}
+											<img
+												class="tb-slotrow-avatar"
+												src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
+												alt=""
+												loading="lazy"
+											/>
+										{:else}
+											<span class="tb-slotrow-initials"
+												>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
+											>
+										{/if}
+										<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
+										{#if row.slotRoles}
+											<span class="tb-slotrow-roles">
+												{#each row.slotRoles.position as p (p)}
+													<img
+														src={positionIcon(p, 'color')}
+														alt={POSITION_LABEL[p]}
+														title={POSITION_LABEL[p]}
+													/>
+												{/each}
+												{#each row.slotRoles.function as f (f)}
+													<img
+														src={functionIcon(f, 'color')}
+														alt={FUNCTION_LABEL[f]}
+														title={FUNCTION_LABEL[f]}
+													/>
+												{/each}
+											</span>
+										{/if}
+										<span class="tb-slotrow-count"
+											>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
 										>
-									{/if}
-									<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
-									{#if row.slotRoles}
-										<span class="tb-slotrow-roles">
-											{#each row.slotRoles.position as p (p)}
-												<img
-													src={positionIcon(p, 'color')}
-													alt={POSITION_LABEL[p]}
-													title={POSITION_LABEL[p]}
-												/>
+									</header>
+									{#if row.alternatives.length > 0}
+										<div class="tb-grid">
+											{#each row.alternatives as entry (entry.id)}
+												{@render charTile(entry, false)}
 											{/each}
-											{#each row.slotRoles.function as f (f)}
-												<img
-													src={functionIcon(f, 'color')}
-													alt={FUNCTION_LABEL[f]}
-													title={FUNCTION_LABEL[f]}
-												/>
-											{/each}
-										</span>
+										</div>
+									{:else}
+										<p class="note tb-note">No same-element alternative in this role yet.</p>
 									{/if}
-									<span class="tb-slotrow-count"
-										>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
-									>
-								</header>
-								{#if row.alternatives.length > 0}
+								</section>
+							{/each}
+						{:else if atlasMode === 'drill' && drilledCategory}
+							<div class="tb-atlas-head">
+								<button class="btn" onclick={backToCards}>← All roles</button>
+								<div class="tb-drill-title">
+									{#if drilledCategory.position}
+										<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
+									{/if}
+									<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
+									<span>{drilledCategory.label}</span>
+								</div>
+							</div>
+							{#each drillRows as row (row.key)}
+								<section class="tb-slotrow">
+									<header class="tb-slotrow-head">
+										{#if row.kind === 'element'}
+											<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
+											<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
+										{:else}
+											<span class="tb-slotrow-name">{row.label}</span>
+										{/if}
+										<span class="tb-slotrow-count"
+											>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
+										>
+									</header>
 									<div class="tb-grid">
-										{#each row.alternatives as entry (entry.id)}
+										{#each row.entries as entry (entry.id)}
 											{@render charTile(entry, false)}
 										{/each}
 									</div>
-								{:else}
-									<p class="note tb-note">No same-element alternative in this role yet.</p>
-								{/if}
-							</section>
-						{/each}
-					{:else if atlasMode === 'drill' && drilledCategory}
-						<div class="tb-atlas-head">
-							<button class="btn" onclick={backToCards}>← All roles</button>
-							<div class="tb-drill-title">
-								{#if drilledCategory.position}
-									<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
-								{/if}
-								<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
-								<span>{drilledCategory.label}</span>
-							</div>
-						</div>
-						{#each drillRows as row (row.key)}
-							<section class="tb-slotrow">
-								<header class="tb-slotrow-head">
-									{#if row.kind === 'element'}
-										<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
-										<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
-									{:else}
-										<span class="tb-slotrow-name">{row.label}</span>
-									{/if}
-									<span class="tb-slotrow-count"
-										>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
-									>
-								</header>
-								<div class="tb-grid">
-									{#each row.entries as entry (entry.id)}
-										{@render charTile(entry, false)}
-									{/each}
-								</div>
-							</section>
-						{/each}
-						{#if drillRows.length === 0}
-							<p class="note tb-note">No curated providers in this role yet.</p>
+								</section>
+							{/each}
+							{#if drillRows.length === 0}
+								<p class="note tb-note">No curated providers in this role yet.</p>
+							{/if}
+						{:else}
+							<p class="tb-atlas-lead">
+								Browse by role — from Genshin's Imaginarium Theater classification.
+							</p>
+							<AtlasView {roleCards} onSelectCategory={openCategory} />
+							<p class="tb-atlas-cite">
+								Roles: Genshin Impact — Imaginarium Theater. A presence classification, not a
+								ranking.
+							</p>
 						{/if}
-					{:else}
-						<p class="tb-atlas-lead">
-							Browse by role — from Genshin's Imaginarium Theater classification.
-						</p>
-						<AtlasView {roleCards} onSelectCategory={openCategory} />
-						<p class="tb-atlas-cite">
-							Roles: Genshin Impact — Imaginarium Theater. A presence classification, not a ranking.
-						</p>
-					{/if}
-				</div>
-			{/if}
-
-			<!-- ── Compare — a first-class center view, not an inspector: the shared
-		     ruler gets the Source's full width, and the view works at every
-		     viewport (no dock breakpoint, no modal fallback). -->
-			{#if sourceTab === 'compare'}
-				{#if compareIds.size === 0}
-					<div class="tb-cmp-empty">
-						<p class="tb-cmp-empty-title">Nothing to compare yet.</p>
-						<p class="note">
-							Hover a character card in the Roster and press <strong>→ Compare</strong> — up to four characters
-							line up here on one shared time ruler.
-						</p>
 					</div>
-				{:else}
-					<CompareView
-						ids={[...compareIds]}
-						{conMode}
-						anchorId={anchorId ?? undefined}
-						onRemove={toggleCompare}
-						onCommit={anchorId ? commitAudition : undefined}
-						onClear={anchorId ? undefined : () => compareIds.clear()}
-						onCancelAudition={anchorId ? cancelAudition : undefined}
-						candidatesArea={anchorId ? auditionStrip : undefined}
-					/>
 				{/if}
-			{/if}
 
-			<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
-			     remounting ~122 cards on every Atlas⇄Roster toggle was a visible
-			     stall in Safari 26.x, and keeping it warm makes the toggle instant
-			     in every browser.
-			     The shared CharacterGrid owns the search field, the identity chip
-			     groups and the Clear button; the TB's own filters ride in via the
-			     rail slot below it. The rail sits RIGHT — the same side as the
-			     planner's picker, one filter-column grammar site-wide (the old
-			     mirrored arrangement served the retired slide seam). -->
-			{#if rosterEverShown}
-				<div class="tb-roster" hidden={sourceTab !== 'roster'}>
-					<CharacterGrid
-						roster={split.matches}
-						{filters}
-						railSide="right"
-						searchPlaceholder="Search characters…"
-						tile={rosterTile}
-						railStart={rosterFacetRail}
-						aboveGrid={rosterCount}
-						belowGrid={rosterStubs}
-						{extraFiltersActive}
-						onClearExtras={clearExtraFilters}
-						emptyMessage={rosterEmptyMessage}
-					/>
-				</div>
-			{/if}
-		</section>
+				<!-- ── Compare — a first-class center view, not an inspector: the shared
+			     ruler gets the Source's full width, and the view works at every
+			     viewport (no dock breakpoint, no modal fallback). -->
+				{#if sourceTab === 'compare'}
+					{#if compareIds.size === 0}
+						<div class="tb-cmp-empty">
+							<p class="tb-cmp-empty-title">Nothing to compare yet.</p>
+							<p class="note">
+								Hover a character card in the Roster and press <strong>→ Compare</strong> — up to four
+								characters line up here on one shared time ruler.
+							</p>
+						</div>
+					{:else}
+						<CompareView
+							ids={[...compareIds]}
+							{conMode}
+							anchorId={anchorId ?? undefined}
+							onRemove={toggleCompare}
+							onCommit={anchorId ? commitAudition : undefined}
+							onClear={anchorId ? undefined : () => compareIds.clear()}
+							onCancelAudition={anchorId ? cancelAudition : undefined}
+							candidatesArea={anchorId ? auditionStrip : undefined}
+						/>
+					{/if}
+				{/if}
+
+				<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
+				     remounting ~122 cards on every Atlas⇄Roster toggle was a visible
+				     stall in Safari 26.x, and keeping it warm makes the toggle instant
+				     in every browser.
+				     The shared CharacterGrid owns the search field, the identity chip
+				     groups and the Clear button; the TB's own filters ride in via the
+				     rail slot below it. The rail sits RIGHT — the same side as the
+				     planner's picker, one filter-column grammar site-wide (the old
+				     mirrored arrangement served the retired slide seam). -->
+				{#if rosterEverShown}
+					<div class="tb-roster" hidden={sourceTab !== 'roster'}>
+						<CharacterGrid
+							roster={split.matches}
+							{filters}
+							railSide="right"
+							searchPlaceholder="Search characters…"
+							tile={rosterTile}
+							railStart={rosterFacetRail}
+							aboveGrid={rosterCount}
+							belowGrid={rosterStubs}
+							{extraFiltersActive}
+							onClearExtras={clearExtraFilters}
+							emptyMessage={rosterEmptyMessage}
+						/>
+					</div>
+				{/if}
+			</section>
+		</div>
 	</div>
 </div>
 
@@ -1027,13 +1031,12 @@
 		   is 0.65rem — 0.5rem here puts both frame tops at y=109 @1600
 		   (probe-bench-align asserts it). Nate's to retune. */
 		--tb-tabrow-gap: 0.5rem;
-		/* The under-ribbon zone width = RIBBON_W − RIBBON_OVERHANG (ribbon round:
-		   the ribbon overhangs the frame's right edge by RIBBON_OVERHANG, and
-		   the zone is exactly the part of the frame tucked beneath it — its
-		   left hairline lands under the ribbon's left border). Mirrors the
-		   planner, whose pad 14 + column 160 = the same 174 under-ribbon reach.
-		   Move with the RIBBON_* knobs in $lib/benchBand.svelte.ts. */
-		--tb-bench-w: 174px; /* RIBBON_W 186 − RIBBON_OVERHANG 12 */
+		/* The under-ribbon zone width = RIBBON_UNDER: the strip's outer edge sits
+		   on the CONTENT MARGIN now (⚓ NATE 2026-08-06 — the logo's left edge),
+		   so it reaches all the way across this zone bar the frame's own 1px
+		   border. Mirrors the planner, whose frame pad + gutter meet the same
+		   line. Move with the RIBBON_* knobs in $lib/benchBand.svelte.ts. */
+		--tb-bench-w: 189px; /* = RIBBON_UNDER (RIBBON_W 190 − the frame's 1px border) */
 		display: flex;
 		flex-direction: column;
 		gap: var(--tb-tabrow-gap);
@@ -1066,15 +1069,25 @@
 		visibility: hidden;
 	}
 
-	/* The bench is a frame ZONE, not an island: no shell of its own, a
-	   hairline where it meets the center, and its own scroll. On the LEFT
-	   edge now, mirroring the planner — one layout grammar site-wide (bench
-	   left · work center · filters right). Side-locked at every width. */
-	.tb-frame :global(.bn) {
+	/* The bench zone: the strip of frame that tucks UNDER the ribbon. Nothing
+	   renders in it — the ribbon is opaque and spans the frame's full height
+	   (tall-bench round) — so it is width reservation and nothing else. Its
+	   old hairline is gone with it: a line no one can ever see. Side-locked at
+	   every width, mirroring the planner's label column. */
+	.bn {
 		flex: none;
 		width: var(--tb-bench-w);
-		border-right: 1px solid var(--frame-line);
-		overflow-y: auto;
+	}
+
+	/* The work column: the team strip, then the browse zone under it. The
+	   strip must NOT scroll with the roster (its coverage chips drive the
+	   filters), so the scroll lives one level down, on .tb-source. */
+	.tb-work {
+		flex: 1;
+		min-width: 0;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
 	}
 
 	/* ── Source ───────────────────────────────────────────────── */

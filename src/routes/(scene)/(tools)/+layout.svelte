@@ -196,16 +196,20 @@
 	let benchMount: HTMLDivElement | undefined = $state();
 	let benchVisible = $state(false);
 	let benchTraveling = $state(false);
+	let benchHeight = $state(0);
 	let benchTravelTimer: ReturnType<typeof setTimeout> | undefined;
 
-	/** The current anchor position for `path`, in .tool-main coordinates,
+	/** The current anchor rect for `path`, in .tool-main coordinates,
 	 *  compensating the page layer's own pan transform (a parked or mid-slide
 	 *  layer measures displaced by exactly its translateX). The rect already
 	 *  reflects any internal scroll of the anchor's zone — measuring IS the
-	 *  scroll mirror; the zone's scroll events just ask for a re-measure. */
+	 *  scroll mirror; the zone's scroll events just ask for a re-measure.
+	 *  HEIGHT is part of the contract now (tall-bench round): each dock
+	 *  stretches with its tool frame, so the strip's height is measured, never
+	 *  summed from the cards. */
 	function measureBenchAnchor(
 		path: string
-	): { x: number; y: number; anchorEl: HTMLElement } | null {
+	): { x: number; y: number; h: number; anchorEl: HTMLElement } | null {
 		if (!toolMain) return null;
 		const pages = [...toolMain.querySelectorAll<HTMLElement>(':scope > .tool-page')];
 		// Latest layer stamped with this path wins (matches the pan's own rule).
@@ -216,7 +220,25 @@
 		const mr = toolMain.getBoundingClientRect();
 		const cs = getComputedStyle(layer).transform;
 		const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
-		return { x: ar.left - mr.left - tx, y: ar.top - mr.top, anchorEl: anchor };
+		return { x: ar.left - mr.left - tx, y: ar.top - mr.top, h: ar.height, anchorEl: anchor };
+	}
+
+	/** The dock grows and shrinks with its tool WITHOUT a window resize — the
+	 *  planner's frame changes height on every notation edit, zoom, notes
+	 *  toggle and tab-bar wrap. One observer, re-pointed whenever the docked
+	 *  anchor changes. (Re-measuring can't resize the anchor — the strip is
+	 *  absolutely positioned, out of the page's flow — so there is no loop.) */
+	let benchRO: ResizeObserver | undefined;
+	let benchROTarget: HTMLElement | undefined;
+	function observeBenchAnchor(el: HTMLElement) {
+		if (benchROTarget === el) return;
+		if (typeof ResizeObserver === 'undefined') return;
+		benchRO ??= new ResizeObserver(() => {
+			if (!benchTraveling) snapBench();
+		});
+		benchRO.disconnect();
+		benchRO.observe(el);
+		benchROTarget = el;
 	}
 
 	/** Park the ribbon on the current page's dock, untransitioned. The no-dock
@@ -235,7 +257,9 @@
 		benchMount.style.transition = 'none';
 		benchMount.style.transform = `translate(${a.x}px, ${a.y}px)`;
 		benchMount.style.opacity = '';
+		benchHeight = a.h;
 		benchVisible = true;
+		observeBenchAnchor(a.anchorEl);
 	}
 
 	/** The ribbon during a tool navigation (world-locked fade round): it is
@@ -249,7 +273,8 @@
 		const target = measureBenchAnchor(toPath);
 		clearTimeout(benchTravelTimer);
 		if (target) {
-			if (!benchVisible) {
+			const wasDocked = benchVisible;
+			if (!wasDocked) {
 				// Entering from a dockless tool: dock instantly (hidden), then
 				// fade in alongside the incoming page's sequenced fade.
 				benchMount.style.transition = 'none';
@@ -261,9 +286,14 @@
 				benchMount.style.opacity = '1';
 				benchVisible = true;
 			}
-			// Docked→docked: nothing to move — let the card heights relax on the
-			// world clock, then re-dock to sub-pixel precision at settle.
-			benchTraveling = true;
+			// Docked→docked: nothing to move — let the STRIP and the card heights
+			// relax between the two tools' rhythms on the world clock, then
+			// re-dock to sub-pixel precision at settle. Arriving from a DOCKLESS
+			// tool the size just snaps: the strip is fading in at its new height,
+			// and growing it mid-fade would read as the box inflating.
+			benchTraveling = wasDocked;
+			benchHeight = target.h;
+			observeBenchAnchor(target.anchorEl);
 			benchTravelTimer = setTimeout(
 				() => {
 					benchTraveling = false;
@@ -320,6 +350,11 @@
 			measureUnderline();
 			snapBench();
 		});
+		return () => {
+			benchRO?.disconnect();
+			benchRO = undefined;
+			benchROTarget = undefined;
+		};
 	});
 
 	// out: keeps the outgoing page in the DOM (Svelte marks it inert) under the
@@ -548,6 +583,7 @@
 		>
 			<BenchBand
 				mode={benchMode}
+				height={benchHeight}
 				traveling={benchTraveling}
 				travelMs={SLIDE_MS}
 				travelEase={SLIDE_EASE}

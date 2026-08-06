@@ -13,7 +13,13 @@
 	import { artifactImagePath } from '$lib/data/artifactLookup';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
-	import { benchBand, RIBBON_W, RIBBON_CHROME_Y, RIBBON_LANES_CLEAR } from '$lib/benchBand.svelte';
+	import {
+		benchBand,
+		RIBBON_W,
+		RIBBON_UNDER,
+		RIBBON_OVERHANG_Y,
+		FRAME_BORDER
+	} from '$lib/benchBand.svelte';
 	import { onDestroy } from 'svelte';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
 	import {
@@ -126,6 +132,19 @@
 	 *  Move this and `--tb-bench-w` together, then re-run probe-bench-align /
 	 *  probe-frame-rework. */
 	const LABEL_W = 160;
+	/** The chart frame's horizontal padding — JS-side because the gutter below
+	 *  derives from it; .rp-frame reads it back as --rp-frame-pad-x. */
+	const FRAME_PAD_X = 14;
+	/**
+	 * The gutter left of the tracks — everything the bench STRIP stands over.
+	 * ↻ 2026-08-06: no longer the same number as the card. The strip's outer
+	 * edge sits on the content margin now (⚓ NATE: the logo's left edge), so it
+	 * reaches RIBBON_UNDER into the frame's padding box, and the gutter has to
+	 * meet it exactly or the timeline runs under the strip. The card inside it
+	 * is still LABEL_W — the PNG export, which draws its own label column with
+	 * no strip over it, keeps reading that.
+	 */
+	const GUTTER_W = RIBBON_UNDER - FRAME_PAD_X;
 	const RULER_H = 28;
 	const CHAR_PAD_TOP = 10;
 	const E_ROW_H = 20;
@@ -680,12 +699,11 @@
 		return `left:${x}px;top:${yTop}px;width:${w}px;height:${yBottom - yTop}px;border-radius:${radius}`;
 	}
 
-	// Full content height of the track area (ruler + slots + ribbon clearance +
-	// lanes) — sizes the PNG export canvas.
+	// Full content height of the track area (ruler + slots + lanes) — sizes the
+	// PNG export canvas.
 	let contentH = $derived(
 		RULER_H +
 			characterSlots.reduce((acc, _id, i) => acc + slotBlockH(i), 0) +
-			RIBBON_LANES_CLEAR +
 			teamBuffsH +
 			(teamComp.natlanCount >= 1 ? nbLaneH : 0) +
 			(teamComp.hasAscendantGleam ? moonsignLaneH : 0)
@@ -699,9 +717,10 @@
 
 	function buildSnapshot(): TimelineSnapshot {
 		const laneStride = AUX_LANE_BAR_STRIDE;
-		// Lanes sit below the ribbon-clearance gap (the DOM inserts the same
-		// spacer between the 4th track group and the team-buffs lane).
-		const slotsBottom = slotTopOffsets[3] + slotBlockH(3) + RIBBON_LANES_CLEAR;
+		// Lanes open directly under the 4th track group (the ribbon-clearance
+		// gap retired with the tall bench — the strip clears the lanes by
+		// standing over the whole label column instead).
+		const slotsBottom = slotTopOffsets[3] + slotBlockH(3);
 		const nbVisible = teamComp.natlanCount >= 1;
 		const moonVisible = teamComp.hasAscendantGleam;
 		const teamNames = slotCharacters
@@ -1034,9 +1053,13 @@
 <!--  Root                                                        -->
 <!-- ============================================================ -->
 <!-- --rp-bench-w is set from the JS constant, not duplicated as a CSS literal:
-     LABEL_W stays the single source (the PNG export reads it too), and the five
-     places that used to carry it as an inline style now read the variable. -->
-<div class="rp-root ctx-dark" style:--rp-bench-w="{LABEL_W}px">
+     GUTTER_W stays the single source for the five places that align to the
+     tracks' left edge, and it is derived from the bench strip's own reach. -->
+<div
+	class="rp-root ctx-dark"
+	style:--rp-bench-w="{GUTTER_W}px"
+	style:--rp-frame-pad-x="{FRAME_PAD_X}px"
+>
 	<!-- ── Timeline chart frame ──────────────────────────────── -->
 	<!-- The frame is ONE instrument with a fixed grammar: time axis (ruler +
 	     view controls) on the TOP edge per DAW/NLE convention, rendered tracks
@@ -1045,24 +1068,27 @@
 	     bottom, the conversation renders above. -->
 	<div class="rp-frame frame" class:rp-frame--picking={sourceOpen}>
 		<!-- The RIBBON's dock: an invisible, ribbon-sized anchor the tools
-		     layout measures to place the bench box. Geometry contract:
+		     layout measures to place the bench strip. Geometry contract:
 		     · right edge = the track area's left edge (the timeline extends
 		       out from underneath the ribbon — the frame's label column is
 		       tucked fully beneath it, and the ribbon overhangs the frame's
 		       left edge by its own chrome)
-		     · card column top (dock top + RIBBON_CHROME_Y) = the track rows'
-		       top, so cards align to their track groups
-		     · top offset from the frame is the SAME constant the TB uses
-		       (RIBBON_TOP_OFFSET) — zero vertical travel across the pan.
+		     · it STRETCHES with the frame (top/bottom insets, no height):
+		       the strip spans the whole tool surface and stands
+		       RIBBON_OVERHANG_Y proud at each end — ⚓ NATE's tall bench.
+		       Both tools use the same overhang against frame tops that
+		       already align (probe-bench-align), so the strip's y and the
+		       card column's y never change across the tool fade.
 		     Absolute insets resolve against the frame's PADDING box (the
-		     documented trap), and the 10px matches .rp-frame's padding-top. -->
+		     documented trap), which is inset from the border box by the frame's
+		     own 1px border — hence the extra pixel at each end. -->
 		<div
 			class="rp-ribbon-dock"
 			data-bench-anchor
 			style:left="calc(var(--rp-frame-pad-x) + var(--rp-bench-w) - {RIBBON_W}px)"
-			style:top="{10 + RULER_H - RIBBON_CHROME_Y}px"
+			style:top="-{FRAME_BORDER + RIBBON_OVERHANG_Y}px"
+			style:bottom="-{FRAME_BORDER + RIBBON_OVERHANG_Y}px"
 			style:width="{RIBBON_W}px"
-			style:height="{2 * RIBBON_CHROME_Y + slotTopOffsets[3] + slotBlockH(3)}px"
 		></div>
 		<!-- ── Ruler strip (full frame width, ABOVE the track area) ── -->
 		<!-- Its own row so the notes panel can never push it: the ruler
@@ -1143,69 +1169,15 @@
 		</div>
 		<div class="rp-timeline-area" class:rp-timeline-area--notes={showNotes && hasCaveats}>
 			<div class="rp-scroll-wrapper">
-				<!-- Left label column (sticky, non-scrolling) -->
+				<!-- Left label column (sticky, non-scrolling) — pure reservation now.
+				     The RIBBON stands over its FULL height (tall-bench round), so
+				     nothing rendered here could be seen: the cells only hold the
+				     track groups' vertical rhythm, and the lane labels moved into
+				     their own lanes (see .rp-lane-name). -->
 				<div class="rp-label-col">
-					<!-- The label cells only reserve the track groups' vertical rhythm
-					     now — the RIBBON (the self-contained bench box at the tools
-					     layout level) floats over this column, its dock positioned by
-					     the absolute anchor below the timeline area. Both derive from
-					     slotBlockH, never from each other's DOM. -->
 					{#each characterSlots as _slotId, i (i)}
 						<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px"></div>
 					{/each}
-
-					<!-- Ribbon bottom-chrome clearance: the lanes (and their labels)
-					     start below the ribbon's closing edge. Mirrors the tracks-side
-					     spacer. -->
-					<div class="rp-lane-clear" style:height="{RIBBON_LANES_CLEAR}px"></div>
-
-					{#if sourceOpen}
-						<!-- ← Explore alternatives is tied to the picker, not the main
-						     surface: while you're choosing team members it docks under the
-						     portraits (over the now-irrelevant lane labels, which the Source
-						     overlay covers on the right anyway) and hands the whole team to
-						     the Team Builder — which sits to the planner's LEFT in the tool
-						     order, hence the leading arrow. -->
-						<a
-							class="rp-explore-link"
-							href="{resolve('/team-builder')}{exploreHasTeam ? '?alts=1' : ''}"
-							title="Open the current team in the Team Builder to compare alternatives"
-						>
-							<span class="rp-explore-inner"
-								><span class="rp-explore-tail"><span class="rp-explore-arrow">←</span> Explore</span
-								> alternatives</span
-							>
-						</a>
-					{:else}
-						<!-- Team buffs label (lane cells: border-top separators only).
-							 The header hides when the lane is empty — the row itself stays
-							 (unchanged height) so nothing below it shifts. -->
-						<div class="rp-label-cell rp-label-cell--lane" style:height="{teamBuffsH}px">
-							{#if teamBuffRows.length > 0}
-								<span class="rp-label-text">TEAM BUFFS</span>
-							{/if}
-						</div>
-
-						<!-- NB lane label -->
-						{#if teamComp.natlanCount >= 1}
-							<div
-								class="rp-label-cell rp-label-cell--lane rp-label-cell--lane-sep"
-								style:height="{nbLaneH}px"
-							>
-								<span class="rp-label-text">NIGHTSOUL BURSTS</span>
-							</div>
-						{/if}
-
-						<!-- Moonsign lane label -->
-						{#if teamComp.hasAscendantGleam}
-							<div
-								class="rp-label-cell rp-label-cell--lane rp-label-cell--lane-sep"
-								style:height="{moonsignLaneH}px"
-							>
-								<span class="rp-label-text">ASCENDANT GLEAM</span>
-							</div>
-						{/if}
-					{/if}
 				</div>
 
 				<!-- Right scrollable track area -->
@@ -1562,15 +1534,18 @@
 							</div>
 						{/each}
 
-						<!-- Ribbon bottom-chrome clearance (mirrors the label column's) —
-							 the lanes start below the ribbon box's closing edge. -->
-						<div class="rp-lane-clear" style:height="{RIBBON_LANES_CLEAR}px"></div>
-
 						<!-- Team buffs row. When there are no buffs the lane stays present
-							 (same height) but renders nothing — the hidden header carries
-							 the "empty" signal, no placeholder text. -->
+							 (same height) but renders nothing — the hidden name carries
+							 the "empty" signal, no placeholder text.
+							 ↻ Tall-bench round: the lane NAME rides the lane itself, pinned
+							 to the track viewport's left edge and painted UNDER the bars —
+							 the ribbon owns the label column at every height now, so there
+							 is no column left to name a lane from. A bar that starts at 0s
+							 covers it, which is the intended trade: the bar says what it is
+							 (label + tooltip) better than the lane's name does. -->
 						<div class="rp-team-buffs" style:height="{teamBuffsH}px">
 							{#if teamBuffRows.length > 0}
+								<span class="rp-lane-name">TEAM BUFFS</span>
 								<div class="rp-team-buff-rows">
 									{#each teamBuffRows as subrow (subrow.key)}
 										<div class="rp-team-buff-subrow">
@@ -1612,6 +1587,7 @@
 						<!-- NB (Nightsoul Burst) lane -->
 						{#if teamComp.natlanCount >= 1}
 							<div class="rp-nb-lane" style:height="{nbLaneH}px">
+								<span class="rp-lane-name">NIGHTSOUL BURSTS</span>
 								<div class="rp-nb-rows">
 									<div class="rp-nb-subrow">
 										{#each nbBars as ev, i (i)}
@@ -1631,6 +1607,7 @@
 						<!-- Moonsign lane -->
 						{#if teamComp.hasAscendantGleam}
 							<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
+								<span class="rp-lane-name">ASCENDANT GLEAM</span>
 								<div class="rp-moonsign-rows">
 									{#each moonsignRows as row (row.slotIdx)}
 										{@const msChar = slotCharacters[row.slotIdx]}
@@ -1787,6 +1764,19 @@
 		{#if sourceEverOpened && sourceOverlay}
 			<div class="rp-source-overlay" hidden={!sourceOpen}>
 				{@render sourceOverlay()}
+				<!-- ← Explore alternatives is tied to the picker, not the main
+				     surface, and it lives INSIDE the picker now (tall-bench round:
+				     the ribbon owns the label column it used to dock in). Bottom
+				     edge, leading arrow — the Team Builder sits to the planner's
+				     LEFT in the tool order — and it hands over the whole team,
+				     which is already shared. -->
+				<a
+					class="rp-explore-link"
+					href="{resolve('/team-builder')}{exploreHasTeam ? '?alts=1' : ''}"
+					title="Open the current team in the Team Builder to compare alternatives"
+				>
+					<span class="rp-explore-arrow">←</span> Explore alternatives
+				</a>
 			</div>
 		{/if}
 	</div>
@@ -1846,12 +1836,13 @@
 	/* .frame (app.css) supplies the 1px dire border + --frame-bg
 	   fill; this only shapes it. Radius 9 per the 3/6/9 scale. */
 	.rp-frame {
-		--rp-frame-pad-x: 14px;
 		/* The frame wears the dark context's RAISED rung; the chart well sits
 		   one rung deeper on --rp-chart-bg (= the context surface). Overrides
 		   the shared .frame background (Genshin-UI archetype, 2026-08-05). */
 		background: var(--surface-raised);
 		border-radius: 9px;
+		/* --rp-frame-pad-x comes inline from FRAME_PAD_X (the gutter derives from
+		   it, so it can't be a second literal here). */
 		padding: 10px var(--rp-frame-pad-x) 4px;
 		display: flex;
 		flex-direction: column;
@@ -2098,22 +2089,30 @@
 		border-bottom: 1px solid var(--rp-line);
 		flex-shrink: 0;
 	}
-	/* Lane label cells mirror the track-side lane borders: top-only
-	   separators, nothing after the bottom-most lane. */
-	.rp-label-cell--lane {
-		border-bottom: none;
-	}
-	.rp-label-cell--lane-sep {
-		border-top: 1px solid var(--rp-line);
-	}
-	.rp-label-text {
+	/* ── Lane names (tall-bench round) ───────────────────────────
+	   The label column is under the ribbon at every height now, so each aux
+	   lane carries its OWN name: pinned to the track viewport's left edge
+	   (sticky, so horizontal scroll never takes it away) and painted UNDER
+	   the bars, which are free to cover it — Nate's call, and the honest one:
+	   a bar states what it is more precisely than the lane's name does. Dimmed
+	   to the chart's receding ink so it reads as ground, not content. */
+	.rp-lane-name {
+		position: sticky;
+		left: 0;
+		z-index: 0;
+		display: flex;
+		align-items: center;
+		width: max-content;
+		height: 100%;
+		padding-left: 8px;
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;
-		color: var(--muted);
-		text-align: right;
-		line-height: var(--lh-snug);
+		color: var(--chart-dim);
+		white-space: nowrap;
+		line-height: var(--lh-none);
+		pointer-events: none;
 	}
 
 	/* The ribbon's dock — measured by the tools layout, never painted. */
@@ -2121,11 +2120,6 @@
 		position: absolute;
 		pointer-events: none;
 		visibility: hidden;
-	}
-
-	/* Ribbon-clearance spacer (label column + tracks both carry one). */
-	.rp-lane-clear {
-		flex-shrink: 0;
 	}
 
 	/* ── Character label cell — the bench band's reserved footprint ─── */
@@ -2842,48 +2836,32 @@
 		gap: 8px;
 		margin: 12px 0 14px var(--rp-bench-w);
 	}
-	/* ← Explore alternatives docks in the label column beneath the portraits
-	   while the Source picker is open (the mirror of the Bench's "Send to
-	   Rotation Planner →" on the Team Builder's right edge). Same chip register
-	   as the KQM/PNG export buttons — a solid quiet fill, brightening on hover —
-	   with the 2-line label centered. */
+	/* ← Explore alternatives — the picker's own footer chip (tall-bench round:
+	   it used to dock in the label column, which the ribbon now owns at every
+	   height). Same chip register as the KQM/PNG export buttons — a solid quiet
+	   fill, brightening on hover. align-self keeps it hugging its text at the
+	   overlay's bottom-left; the picker above it takes the remaining height. */
 	.rp-explore-link {
 		flex-shrink: 0;
+		align-self: flex-start;
 		box-sizing: border-box;
-		display: grid;
-		place-items: center;
-		margin: 6px 8px 0;
-		min-height: 36px;
+		margin-top: 8px;
 		padding: 6px 10px;
-		border-radius: 3px;
-		/* ↻ 2026-08-01: same mid-rung register as the KQM/PNG buttons (the
-		   comment above always claimed it — now the fill agrees). */
+		border-radius: var(--r-sm);
 		background: var(--control-face);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 		text-decoration: none;
-		color: var(--text);
+		white-space: nowrap;
+		color: var(--control-ink);
 		transition:
 			background 150ms ease,
 			color 150ms ease;
 	}
 	.rp-explore-link:hover {
 		background: var(--control-face-hover);
-	}
-	/* Ragged-right wrapped text (the arrow stays attached to the last word),
-	   the whole block centered in the button by the grid above. */
-	/* Centered (not right-aligned) so the button reads as belonging to the
-	   portrait column beneath it, not to the notation box on its right. */
-	.rp-explore-inner {
-		text-align: center;
-		line-height: var(--lh-snug);
-	}
-	/* Keep "← Explore" together so the arrow never orphans onto its own
-	   line — the break falls before "alternatives". */
-	.rp-explore-tail {
-		white-space: nowrap;
 	}
 	.rp-explore-arrow {
 		display: inline-block;

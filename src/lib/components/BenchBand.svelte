@@ -12,11 +12,17 @@
 	 *   both tools. The TB roster grid + Detail card remain the Layer-1
 	 *   editors.
 	 * - ONE identity everywhere: always the dark context, its own ground and
-	 *   border (the per-tool ctx flip retired with the ribbon round).
+	 *   double frame (the per-tool ctx flip retired with the ribbon round).
 	 * - `mode` is the tool the ribbon is (or is becoming) docked to. It sets
 	 *   the card heights (planner: coupled to the timeline's published slot
 	 *   metrics; TB: the even resting rhythm) and the ⇄ action's meaning
 	 *   (audition on the TB; open the Source on the planner).
+	 * - `height` is MEASURED by the layout from the dock, which stretches with
+	 *   its tool frame (tall-bench round): the strip spans the frame and stands
+	 *   RIBBON_OVERHANG_Y proud at both ends. The cards keep their track-group
+	 *   alignment at the top (RIBBON_HEAD below the strip's interior top) and
+	 *   the tail beneath them is deliberately empty — a container slightly
+	 *   taller than its contents.
 	 * - Height changes animate only while `traveling` (the layout flips it for
 	 *   the pan's duration, passing the shared clock in) — mid-session metric
 	 *   changes on the planner snap, so cards never lag their track groups.
@@ -27,7 +33,15 @@
 		benchBand,
 		BENCH_SLOT_H,
 		RIBBON_PAD,
-		RIBBON_BORDER,
+		RIBBON_EDGE,
+		RIBBON_FRAME_BORDER,
+		RIBBON_DIVIDER_H,
+		RIBBON_FRAME_R_TIGHT,
+		RIBBON_FRAME_R_WIDE,
+		RIBBON_RADIUS,
+		RIBBON_CHROME,
+		RIBBON_HEAD,
+		RIBBON_RESTING_H,
 		RIBBON_W
 	} from '$lib/benchBand.svelte';
 	import { constellations, loadout, type LoadoutEntry } from '$lib/stores';
@@ -35,12 +49,17 @@
 
 	let {
 		mode,
+		height = 0,
 		traveling = false,
 		travelMs = 0,
 		travelEase = 'ease'
 	}: {
 		/** The tool the band is docked to (or traveling toward). */
 		mode: 'rp' | 'tb' | null;
+		/** The strip's full height, measured by the layout from the dock (the
+		 *  tool frame + RIBBON_OVERHANG_Y at each end). 0 = not yet measured;
+		 *  the resting height carries the first paint. */
+		height?: number;
 		/** True for the duration of a tool pan — heights animate on the shared
 		 *  clock; at rest they snap with the timeline. */
 		traveling?: boolean;
@@ -56,6 +75,14 @@
 			? benchBand.slotHeights
 			: [BENCH_SLOT_H, BENCH_SLOT_H, BENCH_SLOT_H, BENCH_SLOT_H]
 	);
+
+	// The strip spans its tool frame (+ the overhang at each end) — but never
+	// shrinks below its own cards. On a short viewport the Team Builder's frame
+	// is viewport-fit and can be shorter than four cards; clamping to it would
+	// slice the fourth card off inside the frame. Standing proud of a short
+	// tool is exactly what this strip is for.
+	const contentH = $derived(2 * RIBBON_CHROME + RIBBON_HEAD + heights.reduce((a, b) => a + b, 0));
+	const boxH = $derived(Math.max(height || RIBBON_RESTING_H, contentH));
 
 	// Resolved card characters. Index entries satisfy SlotPortrait's SlotChar
 	// shape and are available eagerly (no payload wait). A 'blank' slot shows
@@ -96,18 +123,32 @@
 	}
 </script>
 
-<!-- The RIBBON: a self-contained box with its own ground, border and radius —
-     ONE identity in both tools (always the dark context; the per-tool ctx
-     flip retired with the frame-zone model). The tool frames are loose
-     siblings tucked under its edges. Interior styling is interim — the card
-     redesign (Nate's mockup) is its own follow-up round. -->
+<!-- The RIBBON: a self-contained STRIP with its own ground, double frame and
+     radius — ONE identity in both tools (always the dark context; the
+     per-tool ctx flip retired with the frame-zone model). The tool frames are
+     loose siblings tucked under its edges, and it stands proud of them at top
+     and bottom. Interior styling is interim — the card redesign (Nate's
+     mockup) is its own follow-up round. -->
 <div
 	class="bb ctx-dark"
 	style:width="{RIBBON_W}px"
-	style:padding="{RIBBON_PAD}px"
-	style:border-width="{RIBBON_BORDER}px"
+	style:height="{boxH}px"
+	style:padding="{RIBBON_CHROME + RIBBON_HEAD}px {RIBBON_CHROME}px {RIBBON_CHROME}px"
+	style:border-radius="{RIBBON_RADIUS}px"
+	style:--bb-pad="{RIBBON_PAD}px"
+	style:--bb-frame-inset="{RIBBON_EDGE}px"
+	style:--bb-frame-border="{RIBBON_FRAME_BORDER}px"
+	style:--bb-divider-h="{RIBBON_DIVIDER_H}px"
+	style:--bb-frame-r-tight="{RIBBON_FRAME_R_TIGHT}px"
+	style:--bb-frame-r-wide="{RIBBON_FRAME_R_WIDE}px"
 	style:--bb-height-transition={traveling ? `height ${travelMs}ms ${travelEase}` : 'none'}
 >
+	<!-- The double frame: two strokes on ONE box, differing only in corner
+	     radius, so the wide arc cuts across the tight corner (Nate's mockup).
+	     Pseudo-elements, not wrappers — they must not affect the card column's
+	     box, and the strip has to clip them at its own rounded edge. -->
+	<span class="bb-frame bb-frame--tight" aria-hidden="true"></span>
+	<span class="bb-frame bb-frame--wide" aria-hidden="true"></span>
 	{#each rt.slots as _id, i (i)}
 		{@const char = chars[i]}
 		<div class="bb-slot" style:height="{heights[i]}px">
@@ -158,22 +199,44 @@
 </div>
 
 <style>
-	/* The ribbon box: its OWN surface — the dark context's panel ground, a
-	   frame-line border and the 9px radius — one identity everywhere. Width,
-	   padding and border-width come inline from the RIBBON_* knobs so the dock
-	   math and the box always agree. INTERIM styling: the mockup's interior
-	   (ringed portrait, chip row) is the follow-up card round's. */
+	/* The ribbon box: its OWN surface — the dark context's panel ground and
+	   radius — one identity everywhere. Width, height, padding and radius come
+	   inline from the RIBBON_* knobs so the dock math and the box always agree.
+	   The ground carries NO stroke of its own (the mockup's outer "border" is
+	   the ground's edge against whatever it floats over); the two strokes below
+	   are the frame. overflow:hidden keeps a card column that outgrows a short
+	   frame inside the strip — SlotPortrait's popovers are position:fixed and
+	   escape it. INTERIM styling: the mockup's interior (ringed portrait, chip
+	   row) is the follow-up card round's. */
 	.bb {
+		position: relative;
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		background: var(--frame-bg);
-		border-style: solid;
-		border-color: var(--frame-line);
-		border-radius: 9px;
+		overflow: hidden;
+		transition: var(--bb-height-transition, none);
+	}
+
+	/* The two frame strokes: same box, same inset, same color — only the corner
+	   radius differs, which is the whole trick. They sit ABOVE the ground and
+	   BELOW the cards (the cards start RIBBON_PAD inside them, so nothing
+	   overlaps in practice). */
+	.bb-frame {
+		position: absolute;
+		inset: var(--bb-frame-inset);
+		border: var(--bb-frame-border) solid var(--frame-line-quiet);
+		pointer-events: none;
+	}
+	.bb-frame--tight {
+		border-radius: var(--bb-frame-r-tight);
+	}
+	.bb-frame--wide {
+		border-radius: var(--bb-frame-r-wide);
 	}
 
 	.bb-slot {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		min-width: 0;
@@ -181,12 +244,19 @@
 		box-sizing: border-box;
 		transition: var(--bb-height-transition, none);
 	}
-	/* Dividers between cards only — the ribbon's own bottom chrome closes the
-	   box (no trailing separator toward lane labels; the ribbon is
-	   self-contained now). Borders paint INSIDE the border-box heights, so
-	   card k's top stays at the cumulative sum the track groups use. */
-	.bb-slot + .bb-slot {
-		border-top: 1px solid var(--frame-line);
+	/* Dividers between cards only — the strip's own frame closes the box (no
+	   trailing separator; the ribbon is self-contained). Drawn as a pseudo so
+	   it can run the full width INSIDE the frame (the mockup's shelf line,
+	   wider than the card) while taking no height: card k's top has to stay at
+	   the cumulative sum the planner's track groups use. */
+	.bb-slot + .bb-slot::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: calc(-1 * var(--bb-pad));
+		right: calc(-1 * var(--bb-pad));
+		height: var(--bb-divider-h);
+		background: var(--frame-line-quiet);
 	}
 
 	/* Slot actions (audition/remove) — the card's shared capsule treatment at
@@ -214,7 +284,7 @@
 			color 150ms ease;
 	}
 	.bb-act:hover {
-		border-color: color-mix(in srgb, var(--el) 45%, var(--frame-line));
+		border-color: color-mix(in srgb, var(--el) 45%, var(--frame-line-quiet));
 		color: var(--text);
 	}
 	.bb-act--remove:hover {

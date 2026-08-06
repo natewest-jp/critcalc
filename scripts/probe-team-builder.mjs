@@ -301,20 +301,20 @@ check(
 );
 check(
 	'partial team: resonance withheld (needs full party)',
-	(await page.locator('.bn-resnote').count()) === 1
+	(await page.locator('.ts-resnote').count()) === 1
 );
 
 await addToTeam('Jean');
 await addToTeam('Diona');
 await addToTeam('Gorou');
 // pyro + anemo + cryo + geo = four distinct elements → Protective Canopy
-const resLabels = await page.locator('.bn-res').allInnerTexts();
+const resLabels = await page.locator('.ts-res').allInnerTexts();
 check(
 	'four distinct elements → Protective Canopy',
 	resLabels.length === 1 && /Protective Canopy/.test(resLabels[0]),
 	resLabels.join(',')
 );
-const covYes = await page.locator('.bn-cov--yes').allInnerTexts();
+const covYes = await page.locator('.ts-cov--yes').allInnerTexts();
 check(
 	'coverage checklist marks Heals ✓',
 	// innerText arrives uppercased (chip CSS text-transform) — case-insensitive.
@@ -323,7 +323,7 @@ check(
 );
 check(
 	'coverage checklist keeps absent capabilities visible as ✗',
-	(await page.locator('.bn-cov--no').count()) > 0
+	(await page.locator('.ts-cov--no').count()) > 0
 );
 
 // Detail card of a slotted character offers removal; a fifth character sees "full"
@@ -420,7 +420,7 @@ check(
 );
 await page.screenshot({ path: 'probe-team-builder-audition.png', fullPage: false });
 
-await page.locator('.bn-clear').click();
+await page.locator('.ts-clear').click();
 check('clear team empties slots', (await filledSlots()) === 0);
 
 // ── 8. One working team: TB ⇄ planner share the slots through tab state ────
@@ -432,7 +432,7 @@ await page.goto(`${BASE}/team-builder?team=bennett,jean,diona,gorou`, {
 });
 check(
 	'send-to-planner link is retired (the shared team travels by itself)',
-	(await page.locator('.bn-send').count()) === 0
+	(await page.locator('.ts-send').count()) === 0
 );
 await page.locator('.chrome-nav a[href*="rotation-planner"]').click();
 await page.waitForTimeout(1400); // the pan + band travel
@@ -477,12 +477,15 @@ await page.locator('.cs-close-btn').click();
 // closed now means hidden, not removed from the DOM.
 check('close button dismisses the overlay', !(await page.locator('.cs-panel').isVisible()));
 check(
-	'"Explore alternatives →" is tied to the picker (absent from the main surface)',
-	(await page.locator('.rp-explore-link').count()) === 0
+	'"Explore alternatives →" is tied to the picker (unreachable from the main surface)',
+	// It lives INSIDE the Source overlay now (tall-bench round: the ribbon owns
+	// the label column it used to dock in), and the overlay stays MOUNTED but
+	// [hidden] after first open — so this is a visibility check, not a count.
+	!(await page.locator('.rp-explore-link').isVisible())
 );
 
-// Re-open the picker — the Explore hand-off docks in the label column beneath
-// the portraits while you're choosing team members. The team no longer rides
+// Re-open the picker — the Explore hand-off rides the picker's own bottom edge
+// while you're choosing team members. The team no longer rides
 // the URL (it IS the shared working team); ?alts=1 just requests the per-slot
 // alternatives view.
 await page.locator('.sp-avatar-chip').first().click();

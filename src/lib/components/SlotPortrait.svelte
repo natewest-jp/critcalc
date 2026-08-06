@@ -396,7 +396,12 @@
 		   constellation chip and the loadout pill — share every one of these, so
 		   they read as one family. Change them here, never on one alone. */
 		--sp-pill-h: 26px;
-		--sp-pill-border: 1.5px solid var(--frame-line);
+		/* ↻ 2026-08-06 (⚓ NATE): the quiet line, so the constellation chip, the
+		   loadout pill and the ⇄/✕ slot controls wear the SAME stroke as the
+		   strip's own double frame around them. --frame-line is the lit warm
+		   rule; at 1.5px on three controls per card it read as the brightest
+		   thing in the ribbon. */
+		--sp-pill-border: 1.5px solid var(--frame-line-quiet);
 		/* Page ground at the top falling to the FRAME's ground below — lighter
 		   stop low, the reverse of the roster cards' portrait gradient, which is
 		   what gives these an INSET read rather than a raised one. No element
@@ -561,7 +566,7 @@
 		z-index: 1;
 	}
 	.sp-cons-chip:hover:not(:disabled) {
-		border-color: color-mix(in srgb, var(--el) 45%, var(--frame-line));
+		border-color: color-mix(in srgb, var(--el) 45%, var(--frame-line-quiet));
 		color: var(--text);
 	}
 	.sp-cons-chip:disabled {

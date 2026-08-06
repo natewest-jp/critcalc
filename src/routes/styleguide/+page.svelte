@@ -1089,6 +1089,25 @@
 						ribbon fades in place.
 					</li>
 					<li>
+						<strong>The bench ribbon is TALLER than the tool beside it</strong> (↻ 2026-08-06). Each
+						dock stretches with its frame — top/bottom insets, never a height — and the strip stands
+						<code>RIBBON_OVERHANG_Y</code> (12px) proud at <em>both</em> ends, so it always reads as
+						the object in front. Consequences to respect: nothing may live in the column beneath it
+						(the planner's lane names moved into their own lanes; the Team Builder's team readout
+						moved to the work zone's top strip), the cards stay aligned to the planner's track
+						groups via
+						<code>RIBBON_HEAD</code>, and the tail below the fourth card is <em>deliberately</em> empty
+						— a container slightly taller than its contents.
+					</li>
+					<li>
+						<strong>The ribbon's frame is TWO strokes on one box</strong> — same inset, same color,
+						differing only in corner radius (<code>RIBBON_FRAME_R_TIGHT</code> /
+						<code>RIBBON_FRAME_R_WIDE</code>), so the straight runs coincide and the wide arc cuts
+						across the tight corner. That "extra corner inside" is the Genshin frame idiom; the
+						ground's own edge (<code>RIBBON_RADIUS</code>) is the third line and carries no stroke
+						of its own.
+					</li>
+					<li>
 						<strong
 							>The filter column is <code>CharacterGrid</code>'s rail, not a frame zone.</strong
 						>
@@ -1190,9 +1209,10 @@
 						rather than chosen. Genshin's own menus are light; flipping them is one class.
 					</li>
 					<li>
-						<strong>The bench's coverage block has no home.</strong> The facts and capability chips below
-						the ribbon fall outside it — onto paper in the Team Builder, onto the bare scene in the planner.
-						Legible now, but housed by neither. A layout question, not a color one.
+						<strong>✅ Closed 2026-08-06 — the bench's coverage block found its home.</strong> The
+						facts and capability chips used to fall below the ribbon, housed by neither. They are
+						the Team Builder's <code>TeamStrip</code> now: one horizontal readout across the top of the
+						work zone, on the frame's own paper, directly above the roster its coverage gaps filter.
 					</li>
 				</ul>
 			</div>
