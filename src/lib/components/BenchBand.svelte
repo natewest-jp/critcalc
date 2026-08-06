@@ -192,8 +192,19 @@
 							? mode === 'rp'
 								? 'Change who fills this slot'
 								: `Audition replacements for ${char.displayName}`
-							: 'Swap (empty slot)'}>⇄</button
+							: 'Swap (empty slot)'}
 					>
+						<!-- Inline GEOMETRY, not unicode: the ⇄/✕ code points aren't in
+					     IBM Plex, so each engine drew its own fallback font at its own
+					     size (Safari's ✕ came out visibly smaller) — the chrome's
+					     marks-must-be-geometry law applies here too. Strokes ride
+					     currentColor, so the button's color states apply unchanged. To
+					     restyle, swap the path d (and viewBox); sizing lives in
+					     .bb-glyph--*. -->
+						<svg class="bb-glyph bb-glyph--swap" viewBox="0 0 14 12" aria-hidden="true">
+							<path d="M1 3.5h12M10 0.9 13 3.5 10 6.1M13 8.5H1M4 5.9 1 8.5l3 2.6" />
+						</svg>
+					</button>
 					<button
 						class="bb-act bb-act--remove"
 						disabled={!live}
@@ -201,8 +212,12 @@
 						title={live && char ? `Remove ${char.displayName} from team` : undefined}
 						aria-label={live && char
 							? `Remove ${char.displayName} from team`
-							: 'Remove (empty slot)'}>✕</button
+							: 'Remove (empty slot)'}
 					>
+						<svg class="bb-glyph bb-glyph--x" viewBox="0 0 9 9" aria-hidden="true">
+							<path d="M0.7 0.7 8.3 8.3M8.3 0.7 0.7 8.3" />
+						</svg>
+					</button>
 				{/snippet}
 			</SlotPortrait>
 		</div>
@@ -285,26 +300,33 @@
 		border-radius: var(--r-round);
 		background: var(--sp-pill-fill);
 		color: var(--muted);
-		font-family: var(--font-body);
-		/* THE GLYPH-SIZE KNOBS (this rule + the --remove override below).
-		   ⇄/✕ are unicode text and draw well under their em-box, so at the
-		   chip-label size (--fs-2xs) they were specks. ⚓ NATE 2026-08-06: ⇄ at
-		   --fs-xl, ✕ at --fs-md — the ✕ glyph draws larger within its em-box
-		   than the ⇄ does, so equal font-sizes read unequal. The grid centering
-		   above centers the line box at any size (line-height 1 = the em-box);
-		   if a glyph still sits optically off, nudge with a translateY on it.
-		   If cross-platform rendering diverges (both code points can fall back
-		   to system symbol fonts), the durable fix is inline SVGs. */
-		font-size: var(--fs-xl);
-		line-height: var(--lh-none);
 		cursor: pointer;
 		transition:
 			border-color 150ms ease,
 			background 150ms ease,
 			color 150ms ease;
 	}
-	.bb-act--remove {
-		font-size: var(--fs-md);
+	/* THE GLYPH-SIZE KNOBS. The marks were unicode ⇄/✕ once (sized ⚓ NATE
+	   2026-08-06: ⇄ --fs-xl, ✕ --fs-md) — but neither code point is in IBM
+	   Plex, and Safari's fallback drew the ✕ visibly smaller than Chrome's, so
+	   they're inline stroke geometry now. These widths/heights are the same
+	   ink sizes the chosen font-sizes produced in Chrome; the grid centering
+	   on the button centers them exactly. */
+	.bb-glyph {
+		display: block;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.4;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+	.bb-glyph--swap {
+		width: 14px;
+		height: 12px;
+	}
+	.bb-glyph--x {
+		width: 9px;
+		height: 9px;
 	}
 	/* Disabled = the card's shared dim (the constellation chip's exact recipe),
 	   so an empty slot's four stations fade as one family. */

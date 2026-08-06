@@ -288,26 +288,23 @@
 		<div class="sp-loadout" class:sp-loadout--disabled={!char}>
 			<button
 				class="sp-lo-zone"
+				class:sp-lo-zone--unset={!loadoutEntry?.artifactSetId}
 				disabled={!char}
 				onclick={(e) => openLoadout(e, 'artifact')}
 				title={char ? 'Artifact set' : undefined}
 				aria-label="Choose artifact set"
 			>
-				<img
-					class="sp-lo-icon"
-					class:sp-lo-icon--unset={!loadoutEntry?.artifactSetId}
-					src={artifactIcon}
-					alt=""
-				/>
+				<img class="sp-lo-icon" src={artifactIcon} alt="" />
 			</button>
 			<button
 				class="sp-lo-zone"
+				class:sp-lo-zone--unset={!hasWeapon}
 				disabled={!char}
 				onclick={(e) => openLoadout(e, 'weapon')}
 				title={char ? 'Weapon' : undefined}
 				aria-label="Choose weapon"
 			>
-				<img class="sp-lo-icon" class:sp-lo-icon--unset={!hasWeapon} src={weaponIcon} alt="" />
+				<img class="sp-lo-icon" src={weaponIcon} alt="" />
 			</button>
 			<button
 				class="sp-lo-zone sp-lo-ref"
@@ -629,6 +626,7 @@
 		opacity: 0.35;
 	}
 	.sp-lo-zone {
+		position: relative;
 		display: grid;
 		place-items: center;
 		flex: 0 0 auto;
@@ -642,19 +640,48 @@
 		cursor: pointer;
 		transition: background 150ms ease;
 	}
+	/* ── Icon dimming = a GROUND-COLORED WASH over a full-opacity icon ────────
+	   Never element `opacity` on the icon. The ribbon is transform-placed at
+	   measured (fractional) coordinates, and WebKit rasterizes any opacity<1
+	   subtree into a transparency layer at ROUNDED device coordinates — the
+	   icons visibly "danced" on hover in real Safari (the chrome ⓘ bug's exact
+	   mechanism; the earlier claim here that a "static card" was safe did not
+	   survive the ribbon). Painting the pill's own gradient OVER the icon at
+	   the inverse alpha is the same arithmetic as dimming the icon toward its
+	   local ground — the zone spans the pill's full height, so the gradient
+	   stops line up — but the only element that can subpixel-snap is a soft
+	   translucent wash, which has no edge to catch on. The wash sits on the
+	   icon zones only (:not(.sp-lo-ref)) — the R value is text, and color is
+	   plain paint. Equivalences to the old icon opacities: cover 0.15 ≈ icon
+	   0.85 · 0 ≈ 1 · 0.6 ≈ 0.4 · 0.35 ≈ 0.65. */
+	.sp-lo-zone:not(.sp-lo-ref)::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: var(--sp-pill-fill);
+		opacity: 0.15;
+		transition: opacity 150ms ease;
+		pointer-events: none;
+	}
 	/* Hover brightens the CONTENT, it does not fill the zone — the same move the
 	   constellation chip and the slot actions make, and the only one that keeps
 	   the pill reading as ONE shape. A filled disc inside the capsule fragments
 	   it, and lands on the same circle silhouette as the action chips flanking
-	   it. To go back to a fill, this rule is the whole change. */
-	.sp-lo-zone:hover:not(:disabled) .sp-lo-icon {
-		opacity: 1;
+	   it. To go back to a fill, a background on the zone is the whole change. */
+	.sp-lo-zone:hover:not(:disabled)::after {
+		opacity: 0;
 	}
-	/* ⚠ An unset icon must stay visibly BELOW a set one even while hovered —
-	   opacity is this card's signal for "nothing equipped", so hover must not
-	   push an empty slot into looking filled. 0.65 hovered < 0.85 at rest. */
-	.sp-lo-zone:hover:not(:disabled) .sp-lo-icon--unset {
-		opacity: 0.65;
+	/* An empty slot wears generic art dimmed — still legibly a thing you click,
+	   never a hole. ⚠ An unset icon must stay visibly BELOW a set one even
+	   while hovered — the dim is this card's signal for "nothing equipped", so
+	   hover must not push an empty slot into looking filled. 0.35 wash hovered
+	   > 0.15 wash at rest. */
+	.sp-lo-zone--unset::after {
+		opacity: 0.6;
+	}
+	.sp-lo-zone--unset:hover:not(:disabled)::after {
+		opacity: 0.35;
 	}
 	.sp-lo-zone:disabled {
 		cursor: default;
@@ -663,17 +690,6 @@
 		width: 100%;
 		height: 100%;
 		object-fit: contain;
-		/* Held just below full so hover has somewhere to go. (Element `opacity`
-		   is safe here — the WebKit transparency-layer jitter documented for the
-		   chrome needs an element at FRACTIONAL coordinates that MOVE; these sit
-		   in a static card, and the unset state already ships this property.) */
-		opacity: 0.85;
-		transition: opacity 150ms ease;
-	}
-	/* An empty slot wears generic art dimmed — still legibly a thing you click,
-	   never a hole. */
-	.sp-lo-icon--unset {
-		opacity: 0.4;
 	}
 	/* Refinement rides the pill as a third zone. Weapons are always R1–R5, so it
 	   is never absent — dimmed white until a weapon is equipped (the icons'
