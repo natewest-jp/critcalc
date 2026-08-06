@@ -372,6 +372,15 @@
 {/if}
 
 <style>
+	/* Registered so the icon wash's alpha INTERPOLATES (the hover ease) — an
+	   unregistered custom property snaps between values. Registration is
+	   page-global by nature; the sp- prefix keeps it this card's. */
+	@property --sp-wash-a {
+		syntax: '<percentage>';
+		inherits: false;
+		initial-value: 0%;
+	}
+
 	/* ── Card ─────────────────────────────────────────────────────────────────
 	   Three bands: identity header across the top, the portrait centered — alone —
 	   in the middle space, and the loadout pill grounded at the base. `flex: 1`
@@ -416,10 +425,12 @@
 		   page's deep ground) — lower % = darker top. Raw --bg was too deep a
 		   well since the surface re-cut (Nate 2026-07-31); 55 → 45 for a touch
 		   more shadow under the top edge (Nate 2026-08-06). The light end stays
-		   plain --frame-bg — the surface the pill sits on. */
+		   plain --frame-bg — the surface the pill sits on. Named so the icon
+		   wash can rebuild this exact ramp with alpha in its stops. */
+		--sp-pill-dark: color-mix(in srgb, var(--frame-bg) 45%, var(--bg));
 		--sp-pill-fill: linear-gradient(
 			180deg,
-			color-mix(in srgb, var(--frame-bg) 45%, var(--bg)) 0%,
+			var(--sp-pill-dark) 0%,
 			var(--frame-bg) var(--sp-pill-stop)
 		);
 
@@ -578,6 +589,12 @@
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-wide);
+		/* letter-spacing lands AFTER the last glyph too, so the layout box the
+		   grid centers is one tracking unit wider than the ink — measured: the
+		   C-value's ink sat 0.24px left of center, which Nate could see at
+		   zoom (the popover pips carry no tracking, which is why they center).
+		   An indent of the same unit pads the ink's left flank to match. */
+		text-indent: var(--ls-wide);
 		line-height: var(--lh-none);
 		cursor: pointer;
 		transition:
@@ -653,21 +670,35 @@
 	   Two hard-won rungs of this lesson (both Nate-observed in real Safari,
 	   2026-08-06): the icons' own opacity danced, and so did v2's
 	   gradient-wash pseudo carrying `opacity` — element opacity is the trigger
-	   wherever it sits. background-color alpha is plain paint (the chrome
-	   fix's fill-opacity analog): no layer, no rounding, and it transitions.
-	   The wash is FLAT --frame-bg rather than the pill's gradient (Nate's
-	   call — a flat dim over the gradient ground isn't detectable at these
-	   alphas), sits on the icon zones only (:not(.sp-lo-ref); the R value is
-	   text, and `color` is already paint), and steps the old icon-opacity
-	   ladder: wash α 0.85→0 ≈ icon 0.15→1 … i.e. α = 1 − old icon opacity:
-	   0.15/0/0.6/0.35 for set-rest/set-hover/unset-rest/unset-hover. */
+	   wherever it sits. Paint alpha (the chrome fix's fill-opacity analog) has
+	   no layer and no rounding.
+
+	   The wash is THE PILL'S OWN GRADIENT with the alpha in its color stops.
+	   v3 was a flat translucent --frame-bg, and Nate spotted the zones as
+	   lighter DISCS punched in the pill's gradient — a flat wash can't hide on
+	   a ramp. The same ramp × α over the same ramp is invisible wherever the
+	   icon isn't (α·g + (1−α)·g = g) and dims icon pixels toward their exact
+	   local ground; the zones span the pill's full interior height, so the
+	   stops line up with the ground's.
+
+	   The hover ease rides the REGISTERED property --sp-wash-a (@property
+	   below): the percentage interpolates and the stops re-resolve per frame.
+	   Engines without @property keep correct per-state values and merely snap.
+	   Ladder: α = 1 − old icon opacity → 15/0/60/35% for set-rest/set-hover/
+	   unset-rest/unset-hover. Icon zones only (:not(.sp-lo-ref)) — the R value
+	   is text, and `color` is already paint. */
 	.sp-lo-zone:not(.sp-lo-ref)::after {
 		content: '';
 		position: absolute;
 		inset: 0;
 		border-radius: inherit;
-		background-color: color-mix(in srgb, var(--frame-bg) 15%, transparent);
-		transition: background-color 150ms ease;
+		--sp-wash-a: 15%;
+		background: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--sp-pill-dark) var(--sp-wash-a), transparent) 0%,
+			color-mix(in srgb, var(--frame-bg) var(--sp-wash-a), transparent) var(--sp-pill-stop)
+		);
+		transition: --sp-wash-a 150ms ease;
 		pointer-events: none;
 	}
 	/* Hover brightens the CONTENT, it does not fill the zone — the same move the
@@ -676,7 +707,7 @@
 	   it, and lands on the same circle silhouette as the action chips flanking
 	   it. To go back to a fill, a background on the zone is the whole change. */
 	.sp-lo-zone:hover:not(:disabled)::after {
-		background-color: color-mix(in srgb, var(--frame-bg) 0%, transparent);
+		--sp-wash-a: 0%;
 	}
 	/* An empty slot wears generic art dimmed — still legibly a thing you click,
 	   never a hole. ⚠ An unset icon must stay visibly BELOW a set one even
@@ -686,10 +717,10 @@
 	/* Doubled class = specificity over the base rule's `.sp-lo-zone:not(...)`
 	   (two class-level simple selectors each; source order alone loses). */
 	.sp-lo-zone.sp-lo-zone--unset::after {
-		background-color: color-mix(in srgb, var(--frame-bg) 60%, transparent);
+		--sp-wash-a: 60%;
 	}
 	.sp-lo-zone.sp-lo-zone--unset:hover:not(:disabled)::after {
-		background-color: color-mix(in srgb, var(--frame-bg) 35%, transparent);
+		--sp-wash-a: 35%;
 	}
 	.sp-lo-zone:disabled {
 		cursor: default;
