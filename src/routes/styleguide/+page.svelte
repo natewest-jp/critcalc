@@ -990,6 +990,24 @@
 						ls-wide; content chips are sentence case.
 					</li>
 					<li>Never re-declare a font stack locally.</li>
+					<li>
+						<strong>Centering a label centers its BOX; what you see is its INK.</strong> The two
+						differ by the glyphs' side bearings, and by any
+						<code>letter-spacing</code>, which lands after the <em>last</em> glyph too and shifts a
+						short label off-center. So: no tracking on a value in a round control, and a lone digit
+						is already perfect (tabular figures are drawn centered in a uniform advance — which is
+						why the picker pips never needed a nudge, while <code>C0</code> did). A letter beside a
+						digit needs a measured optical nudge; the bench card's is
+						<code>text-indent: -0.07em</code>.
+					</li>
+					<li>
+						⛔ <strong><code>text-box-trim</code> is not the answer to that</strong> — checked 2026-08-06.
+						Both engines support it and it really does shrink a text box (10px → 6.98 at our size), but
+						Plex Sans already seats cap-height ink on center under ordinary centering (ascent − cap ≈
+						descent), so it moves the box and not the ink; measured ON vs OFF, byte-identical. It also
+						can't reach a grid or flex control's text at all — it isn't inherited, and the text there
+						lives in an anonymous item.
+					</li>
 				</ul>
 			</div>
 
@@ -1029,6 +1047,25 @@
 						<strong>No filters.</strong> Dimming is <code>fill-opacity</code> on the glyph, never
 						<code>opacity</code> on the element — element opacity creates a WebKit transparency layer,
 						which shows as 1px jitter under parallax.
+					</li>
+					<li>
+						<strong>Alpha lives in the PAINT.</strong> The rule above is not about glyphs, it is
+						about element <code>opacity</code> — the trigger, <em>wherever it sits</em>. The bench
+						cards dimmed their loadout icons with it and the icons danced on hover; moving the dim
+						to an overlay that carried <code>opacity</code> danced identically. What fixed it was a
+						translucent <em>background-color</em> (a
+						<code>color-mix(… , transparent)</code> gradient, transitioned as color). Any subtree at opacity
+						&lt; 1 rasterizes at rounded device coordinates, and anything transform-placed from a measured
+						rect sits at fractional ones.
+					</li>
+					<li>
+						<strong>Text sits on whole pixels here, boxes don't.</strong> WebKit snaps glyphs to
+						integer positions on both axes while boxes keep sub-pixel ones, so a label's offset
+						<em>inside</em> its own control varies with wherever that control lands — measured as a
+						full pixel of range across one pixel of container offset, where Chrome held constant.
+						Tune optical nudges against <strong>Chrome</strong> (its offset is a property of the
+						font and the CSS); treat a Safari reading as true only for the position it was taken at.
+						Method and numbers: <code>scripts/probe-ink-centering.mjs</code>.
 					</li>
 					<li><strong>No tiled backgrounds on timeline bars</strong> (2026-07-18 veto).</li>
 					<li>

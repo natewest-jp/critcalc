@@ -225,6 +225,18 @@
 		const mr = toolMain.getBoundingClientRect();
 		const cs = getComputedStyle(layer).transform;
 		const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
+		// TODO: rendering — these are FRACTIONAL, and the ribbon carries text.
+		// WebKit snaps glyphs to whole pixels while boxes keep sub-pixel
+		// positions, so every label inside the strip sits up to a pixel off its
+		// own control in Safari, varying with wherever the dock lands (measured:
+		// a full pixel of range across one pixel of dock offset — see
+		// scripts/probe-ink-centering.mjs for the numbers and the method).
+		// Rounding x/y at REST would make Safari deterministic and let the
+		// card's optical nudges be tuned to the font alone. Deliberately not
+		// done yet: this feeds the tool-transition machinery, whose probes
+		// assert sub-pixel dock equalities (probe-bench-align's frame-top and
+		// dock-spot checks, probe-bench-band's glued-to-incoming ≤0.03px), so
+		// it needs those re-pinned and the drift path left un-rounded.
 		return { x: ar.left - mr.left - tx, y: ar.top - mr.top, h: ar.height, anchorEl: anchor };
 	}
 

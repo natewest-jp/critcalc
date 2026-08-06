@@ -77,6 +77,7 @@ localStorage-backed, shared across tools: `constellations` (characterId → 0–
 
 - **No speculative abstractions**; flag data gaps with `// TODO: data gap — [field]`
 - SSR/hydration safety: deterministic default first paint → onMount restore (pattern in memory `project_rotation_planner_ssr_fix`)
+- **Sub-pixel rendering laws (2026-08-06 — /styleguide § Laws holds the full text):** alpha belongs in the **paint** (translucent `background-color`/`fill-opacity`), never element `opacity`, on anything transform-placed — WebKit rasterizes an opacity subtree at rounded coordinates and it visibly dances. Symbol marks are **inline geometry**, never unicode characters (engines pick different fallback faces at different sizes). Centering a label centers its **box**, not its **ink** — measure with `scripts/probe-ink-centering.mjs` and tune optical nudges against **Chrome**, since WebKit snaps glyphs to whole pixels and its offset moves with layout position
 - Avatars: `getAvatar(id, preferNewfit, size, traveler)` — availability manifest (`hasAvatar`) prevents SSR'd 404 imgs (prerender fails on them); regenerate via `npm run generate-newfit`
 - Gates before any commit: `npx vitest run` (lint/parse/derivation/index-drift), `npm run check`, `npm run lint`
 
