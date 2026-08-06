@@ -51,17 +51,20 @@ check(
 	await page.evaluate(() => typeof globalThis.__scene?.retune === 'function')
 );
 
-// Scene-render regression pins (re-sampled 2026-08-04 from the first verified
-// build of the ART-PASS master — the 8-bit Blender export, horizon 3026 —
-// with AVIF-first plates + σ1 additive dither, at 1600×1000; the DOM-parity
-// role of the original refs ended when the art changed). Guards the geometry
-// + color pipeline: a plate mis-crop, wrong tier, or broken shader shifts
-// these far beyond grain dither. ±14 tolerates the dither.
+// Scene-render regression pins. Guards the geometry + color pipeline: a plate
+// mis-crop, wrong tier, or broken shader shifts these far beyond grain dither.
+// ±14 tolerates the dither.
+// ↻ RE-SAMPLED 2026-08-06 against the RELIT master (83079da7 — same
+// composition and horizon, adjusted lighting/white balance/saturation;
+// measured 0px vertical lag vs the previous plate, so nothing structural
+// moved). Sampled from `npm run preview` at 1600×1000, as always: a new plate
+// re-pins these, and they are the ONLY checks here that a relight is expected
+// to move — every geometry assertion below must keep passing untouched.
 const REF = [
-	[100, 550, [148, 122, 171]],
-	[800, 100, [43, 74, 177]],
-	[400, 820, [50, 51, 113]],
-	[1300, 300, [61, 71, 147]]
+	[100, 550, [180, 149, 173]],
+	[800, 100, [58, 78, 159]],
+	[400, 820, [37, 44, 89]],
+	[1300, 300, [85, 86, 150]]
 ];
 const shot = await page.screenshot();
 const png = await import('sharp').then((m) =>
