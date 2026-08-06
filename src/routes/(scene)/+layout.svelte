@@ -340,10 +340,13 @@
 
 	.dim {
 		z-index: 1;
-		/* INK, not --bg (⚓ NATE 2026-08-05): the tool-route wash is the
-		   archetype's near-black — see TOOL_DIM in transition.ts for the
-		   opacity knob. */
-		background: var(--ink);
+		/* The world's own wash (⚓ NATE 2026-08-06): --scene-dim, a warm
+		   near-black that desaturates the backdrop so the panels' chroma reads
+		   as separation — see the token's note in app.css for the measurement,
+		   and TOOL_DIM in transition.ts for the opacity knob. It was --ink
+		   until this round; --ink is ink on BRIGHT fills and only looked
+		   alike. */
+		background: var(--scene-dim);
 		pointer-events: none;
 		/* Initial opacity is set inline at SSR time (style:opacity above);
 		   WAAPI takes over via the sceneLayer action after hydration. */

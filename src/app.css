@@ -27,6 +27,26 @@
 	--chrome: #ffffff; /* site chrome, branding, and the biggest headers ⚓ NATE
 	   2026-08-05 — pure white, the over-the-world voice. NOT for body text or
 	   data; the contexts below own those. */
+	/* The world's WASH: the .dim layer that recedes the live scene under a tool
+	   route (opacity = TOOL_DIM in transition.ts). World-level like --chrome,
+	   outside both contexts — it paints over the scene, never inside a panel.
+	   ⚓ NATE 2026-08-06: #0d0d0f (--ink) → #0b0902, a warm near-black, for
+	   SEPARATION between the backdrop and the panels floating on it. Measured
+	   at TOOL_DIM 0.75 over the relit plates: the old ink wash left the
+	   backdrop at C 0.0383 / h 267° against --frame-bg's C 0.0383 / h 267° —
+	   the same hue at the same chroma, so ONLY 0.072 of lightness separated a
+	   panel from the world behind it. The warm wash drops backdrop chroma to
+	   0.0251 (−34%) while the panels keep theirs, which buys a second
+	   separation channel; ΔE panel↔backdrop 0.0736 → 0.0895.
+	   ⚠ It reads as "white balance" but at this alpha it cannot warm the
+	   backdrop — a composite that neutral would need a NEGATIVE blue channel
+	   (#150b00). What it actually does is kill chroma, and it sits near that
+	   lever's floor: B=0 would gain only another 0.003. More separation than
+	   this wants TOOL_DIM, not a warmer wash.
+	   ⚠ NOT --ink. That token is dark ink on BRIGHT fills (8 other consumers,
+	   incl. the light context's promoted control ink); the two only looked
+	   alike. */
+	--scene-dim: #0b0902;
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are
