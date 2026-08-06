@@ -25,6 +25,27 @@
 //         wider pill it is not, and the pill's clipped bbox reads ~1.5px off.
 //         The script detects that and says so rather than reporting it.
 //
+// ⚠ HOW TO READ THE TWO ENGINES — they are not measuring the same thing.
+// Chrome positions glyphs at sub-pixel precision, so its offset is a stable
+// property of the font and the CSS: nudge against Chrome. WebKit SNAPS text to
+// whole pixels on both axes while boxes are placed at sub-pixel precision, so
+// its offset is a function of where the control happens to land. Measured by
+// sweeping a control 0→0.875px sub-pixel (2026-08-06): Chrome held dx −0.313
+// and dy −0.484 at every offset, while WebKit's marched linearly with it —
+// dx +0.063→+0.813, dy −0.234→+0.641, a full pixel of range. Consequences:
+//   · No CSS constant can center text in Safari for every layout position. A
+//     WebKit reading is only valid for the position it was taken at.
+//   · The durable fix is to place the container on whole pixels (the bench
+//     ribbon is transform-placed from a MEASURED, fractional rect — rounding
+//     that dock would make Safari deterministic and let the nudge be tuned to
+//     Chrome's constant alone). Not done: it lives in the tool-transition
+//     machinery, whose probes assert sub-pixel dock equalities.
+//   · text-box-trim / text-box-edge do NOT help. Both engines support them and
+//     they demonstrably shrink a text box (10px → 6.98px at our size), but
+//     Plex Sans's metrics already seat cap-height ink on center under ordinary
+//     centering (ascent − cap ≈ descent), so trimming moves the box and not
+//     the ink. Verified as a no-op here, ON vs OFF, in Chrome and WebKit.
+//
 // Reports the ink bbox center and the mass CENTROID (per-row background
 // subtracted, so a vertical gradient ground can't bias the horizontal reading);
 // bbox predicts perceived centering for short labels, mass catches a string
