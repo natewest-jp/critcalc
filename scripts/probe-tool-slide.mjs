@@ -291,6 +291,32 @@ check(
 	JSON.stringify(finalLayers)
 );
 
+// ── Tool-rest pause (2026-08-06): the twinkle loop stops once a tool leg ────
+// settles (zero rAF behind tools — the scene-occlusion property, restored),
+// runs during any leg (the world must be alive while it sweeps), and runs on
+// the landing. Probed via the renderer's own __scene.twinkling() surface.
+// We are settled on a tool after the storm above.
+const restAtTool = await page.evaluate(() => window.__scene?.twinkling());
+check('twinkle loop RESTS on a settled tool route', restAtTool === false, String(restAtTool));
+await page.click('.chrome-nav a[href*="rotation-planner"]');
+await page.waitForTimeout(800); // mid-leg (world clock 2000)
+const midLeg = await page.evaluate(() => window.__scene?.twinkling());
+check('twinkle loop LIVE mid tool→tool leg', midLeg === true, String(midLeg));
+await page.waitForTimeout(3000); // settle + rest margin
+const restAgain = await page.evaluate(() => window.__scene?.twinkling());
+check('twinkle loop rests again after the leg settles', restAgain === false, String(restAgain));
+await page.click('a.chrome-brand');
+await page.waitForTimeout(3400); // descend (2400) + margin
+const atLanding = await page.evaluate(() => ({
+	twinkling: window.__scene?.twinkling(),
+	path: location.pathname
+}));
+check(
+	'twinkle loop LIVE on the landing',
+	atLanding.path === '/' && atLanding.twinkling === true,
+	JSON.stringify(atLanding)
+);
+
 await browser.close();
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

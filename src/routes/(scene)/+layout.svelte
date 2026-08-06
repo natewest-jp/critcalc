@@ -17,8 +17,10 @@
 		isToolPath,
 		sceneOccluded,
 		revealDelayMs,
+		timeUntilSettle,
 		FADE_DURATION_MS,
-		FADE_OUT_MS
+		FADE_OUT_MS,
+		FADE_OVERLAP_MS
 	} from '$lib/landing/transition';
 	import { mountSceneGL, type SceneGLHandle } from '$lib/landing/sceneGL';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
@@ -108,20 +110,57 @@
 		};
 	});
 
+	// TOOL-REST PAUSE (Nate 2026-08-06): once a tool leg SETTLES, stop the
+	// twinkle loop. Behind the dim with a tool in front the twinkle is barely
+	// perceptible, and the loop is a full-viewport GL redraw at refresh rate —
+	// the only continuous cost on tool routes (ShootingStars already
+	// suspends). This is deliberately NARROWER than sceneOccluded: the scene
+	// stays PAINTED (occlusion also unpaints via .occluded, which would blank
+	// the world behind the transparent shell — never assert it for this). The
+	// camera's own animation loop draws independently of the twinkle loop, so
+	// tool→tool cranes still sweep the world (twinkling en route — drawNow
+	// gets real timestamps) and freeze only at rest. Resume is pop-free (star
+	// phases are absolute-time). Restores the scene-occlusion constraint's
+	// zero-rAF-behind-tools property, which the tools-over-scene experiment
+	// had dropped wholesale.
+	let sceneResting = $state(false);
+	let restTimer: ReturnType<typeof setTimeout> | undefined;
+	// Margin past camera settle before freezing: the ascend reveal's fade tail
+	// ends FADE_OVERLAP_MS after settle, and the tool legs' fades are inside
+	// their own settle windows — freeze only once everything visual has ended.
+	const REST_AFTER_SETTLE_MS = FADE_OVERLAP_MS + 100;
+	function scheduleRest(toPath: string) {
+		clearTimeout(restTimer);
+		sceneResting = false;
+		if (!isToolPath(toPath)) return;
+		restTimer = setTimeout(() => {
+			// A newer navigation re-scheduled (and un-rested) already; its own
+			// timer owns the decision — this check just guards the stale fire.
+			if (isToolPath(page.url.pathname)) sceneResting = true;
+		}, timeUntilSettle() + REST_AFTER_SETTLE_MS);
+	}
+
+	onMount(() => {
+		// Cold load on a tool route: no transition in flight, so this rests the
+		// loop right after the margin (the mount's first frame is painted; on-
+		// demand draws — resize, retune — run regardless of the loop).
+		scheduleRest(initialPath);
+		return () => clearTimeout(restTimer);
+	});
+
 	// The twinkle loop lives in the scene renderer now (the starfield-merge
 	// chunk — the DOM TwinkleStars canvas retired; a DOM-translating star
-	// canvas can't ride the camera pan). Keyed off OCCLUSION, not the route:
-	// during the ascend the route is already a tool while the world is still
-	// on screen (stars must keep twinkling through the pan and the shell's
-	// fade-in); occlusion flips only once the shell is painted opaque — the
-	// scene-occlusion constraint's ZERO-rAF-behind-tools moment. On the
-	// descend, occlusion lifts at beforeNavigate, so the field is live for the
-	// whole ride down. Resume is pop-free — star phases derive from absolute
-	// time. (During a camera animation the animation loop draws and the
+	// canvas can't ride the camera pan). Keyed off occlusion (kept wired,
+	// never asserted under tools-over-scene) and the tool-rest pause above.
+	// During the ascend the route is already a tool while the world is still
+	// in motion — rest flips only past settle, so stars keep twinkling through
+	// the pan and the shell's fade-in. On the descend, beforeNavigate un-rests
+	// before the choreography starts, so the field is live for the whole ride
+	// down. (During a camera animation the animation loop draws and the
 	// twinkle loop skips — no double-draw; sceneGL coordinates the two.)
 	$effect(() => {
 		if (!sceneHandle) return;
-		if ($sceneOccluded) sceneHandle.stop();
+		if ($sceneOccluded || sceneResting) sceneHandle.stop();
 		else sceneHandle.start();
 	});
 
@@ -141,6 +180,8 @@
 		// painted for it.
 		if (!isToolPath(nav.to.url.pathname)) sceneOccluded.set(false);
 		startSceneTransition(nav.to.url.pathname);
+		// After the kickoff, so timeUntilSettle() sees this leg's fresh clock.
+		scheduleRest(nav.to.url.pathname);
 	});
 </script>
 

@@ -146,9 +146,12 @@ check(
 		() => document.querySelector('.scene')?.classList.contains('occluded') !== true
 	)
 );
+// Tool-rest pause (2026-08-06): past settle the twinkle loop RESTS — the
+// scene stays painted (unoccluded, checked above) but stops burning frames
+// behind the tool. Zero rAF at tool rest is the restored occlusion property.
 check(
-	'ascend settled: twinkle loop keeps running',
-	await page.evaluate(() => globalThis.__scene?.twinkling?.() === true)
+	'ascend settled: twinkle loop rests behind the tool',
+	await page.evaluate(() => globalThis.__scene?.twinkling?.() === false)
 );
 
 // Brand-mark return: plain link → beforeNavigate starts the descend.
@@ -228,9 +231,9 @@ check(
 	await tool.evaluate(() => typeof globalThis.__scene?.retune === 'function'),
 	'after SPA navigation home'
 );
-// SPA-nav BACK to a tool: tools-over-scene keeps the scene animating beneath
-// the transparent shell — the twinkle loop must KEEP running (the old
-// occlusion stop retired with the dire-retirement round, 2026-08-05).
+// SPA-nav BACK to a tool: the scene stays painted beneath the transparent
+// shell, and past settle the twinkle loop RESTS (tool-rest pause, 2026-08-06
+// — the loop runs through the leg itself and stops once everything settles).
 await tool.evaluate(() => {
 	const a = document.createElement('a');
 	a.href = '/rotation-planner';
@@ -239,8 +242,8 @@ await tool.evaluate(() => {
 });
 await tool.waitForTimeout(3600);
 check(
-	'SPA nav to tool: twinkle loop keeps running',
-	await tool.evaluate(() => globalThis.__scene?.twinkling?.() === true)
+	'SPA nav to tool: twinkle loop rests past settle',
+	await tool.evaluate(() => globalThis.__scene?.twinkling?.() === false)
 );
 check('no page errors (tool leg)', toolErrors.length === 0, toolErrors.slice(0, 2).join(' | '));
 
