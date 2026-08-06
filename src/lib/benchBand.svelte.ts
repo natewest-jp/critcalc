@@ -86,7 +86,7 @@ export const BENCH_COLUMN_H = 4 * BENCH_SLOT_H;
  * tight (RIBBON_FRAME_R_TIGHT), one wide (RIBBON_FRAME_R_WIDE) sweeping
  * across it — that arc is the "extra rounded corner inside".
  */
-export const RIBBON_EDGE = 4;
+export const RIBBON_EDGE = 5;
 /** Each of the two stacked frame strokes. */
 export const RIBBON_FRAME_BORDER = 2;
 /**
@@ -115,7 +115,7 @@ export const RIBBON_FRAME_R_TIGHT = 3;
  * double frame is ever reused, promote the TECHNIQUE (inset + two strokes +
  * this radius pair + --frame-line-quiet) as one unit, not the number alone.
  */
-export const RIBBON_FRAME_R_WIDE = 27;
+export const RIBBON_FRAME_R_WIDE = 30;
 
 /** Total chrome per side: bare ground + stroke + interior pad. */
 export const RIBBON_CHROME = RIBBON_EDGE + RIBBON_FRAME_BORDER + RIBBON_PAD;

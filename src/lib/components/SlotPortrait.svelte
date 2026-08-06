@@ -415,13 +415,28 @@
 		   inner shadow — and lets the rest sit flush with its surroundings. Lower
 		   = tighter, heavier shadow; higher = softer but darker overall. */
 		--sp-pill-stop: 50%;
-		/* Dark end pulled toward --frame-bg (was raw --bg — too deep a well
-		   since the surface re-cut; Nate 2026-07-31). */
+		/* THE DARK-END KNOB: the dark stop is --frame-bg pulled toward --bg (the
+		   page's deep ground) — lower % = darker top. Raw --bg was too deep a
+		   well since the surface re-cut (Nate 2026-07-31); 55 → 45 for a touch
+		   more shadow under the top edge (Nate 2026-08-06). The light end stays
+		   plain --frame-bg — the surface the pill sits on. */
 		--sp-pill-fill: linear-gradient(
 			180deg,
-			color-mix(in srgb, var(--frame-bg) 55%, var(--bg)) 0%,
+			color-mix(in srgb, var(--frame-bg) 45%, var(--bg)) 0%,
 			var(--frame-bg) var(--sp-pill-stop)
 		);
+
+		/* Unset-VALUE ink: dimmed WHITE, stepped to the unset loadout icons'
+		   opacity ladder (0.4 rest → 0.65 hover) so an unset C0/R1 and the
+		   generic artifact/weapon art speak one "nothing here yet" voice —
+		   --muted beside the white-art icons read as a different (beige) state
+		   (Nate 2026-08-06). Mixed against --frame-bg — the pill fill's light
+		   end, i.e. the ground the values actually sit on — per the
+		   alpha-compositing law, never transparent white. Disabled needs no
+		   rung of its own: the shared 0.35 element dim multiplies this ink and
+		   the icons identically. */
+		--sp-unset-ink: color-mix(in srgb, white 40%, var(--frame-bg));
+		--sp-unset-ink-hover: color-mix(in srgb, white 65%, var(--frame-bg));
 
 		/* The portrait keeps the ELEMENT wash the roster cards use — a portrait
 		   wants a lit backing, not the chrome fill the controls wear, and the art
@@ -443,14 +458,18 @@
 	}
 
 	/* ── Base band ────────────────────────────────────────────────────────────
-	   The loadout pill, centered, flanked by any host slot actions. `contents`
-	   dissolves the actions wrapper so its buttons become flex items of this row;
-	   `order` then seats the first one left of the pill and the last one right,
-	   which is how ONE snippet fills both sides. */
+	   The loadout pill between the host slot actions. `contents` dissolves the
+	   actions wrapper so its buttons become flex items of this row; `order` then
+	   seats the first one left of the pill and the last one right, which is how
+	   ONE snippet fills both sides. space-between ranges the outer actions to
+	   the card's padding edges — the ✕ sits on the constellation chip's exact
+	   vertical (same circle, same edge), the ⇄ on the name's — and splits the
+	   leftover space evenly either side of the pill. The gap is only the
+	   crush floor for a hairline card. */
 	.sp-loadout-row {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: space-between;
 		gap: 4px;
 		min-width: 0;
 	}
@@ -541,8 +560,9 @@
 	/* Constellation selector: the loadout pill's twin — identical height, fill,
 	   border and radius, so the card's two value controls are one family. It is
 	   no longer a global .chip; that class carried a different fill and radius,
-	   all of which this overrode. Only the VALUE changes with state: gray unset,
-	   element-tinted when set — the same contract the refinement zone follows. */
+	   all of which this overrode. Only the VALUE changes with state: dimmed
+	   white unset (the icons' ladder), element-tinted when set — the same
+	   contract the refinement zone follows. */
 	.sp-cons-chip {
 		box-sizing: border-box;
 		flex-shrink: 0;
@@ -553,7 +573,7 @@
 		border: var(--sp-pill-border);
 		border-radius: var(--r-round);
 		background: var(--sp-pill-fill);
-		color: var(--muted);
+		color: var(--sp-unset-ink);
 		font-family: var(--font-body);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
@@ -565,8 +585,13 @@
 			color 150ms ease;
 		z-index: 1;
 	}
+	/* Unset hover climbs the icons' ladder (0.4 → 0.65 white); a SET value
+	   hovers to --text, exactly as before. */
 	.sp-cons-chip:hover:not(:disabled) {
 		border-color: color-mix(in srgb, var(--el) 45%, var(--frame-line-quiet));
+		color: var(--sp-unset-ink-hover);
+	}
+	.sp-cons-chip--set:hover:not(:disabled) {
 		color: var(--text);
 	}
 	.sp-cons-chip:disabled {
@@ -651,13 +676,13 @@
 		opacity: 0.4;
 	}
 	/* Refinement rides the pill as a third zone. Weapons are always R1–R5, so it
-	   is never absent — gray until a weapon is equipped, element-tinted after,
-	   mirroring the constellation chip exactly. */
+	   is never absent — dimmed white until a weapon is equipped (the icons'
+	   ladder), element-tinted after, mirroring the constellation chip exactly. */
 	.sp-lo-ref {
 		width: auto;
 		min-width: 24px;
 		padding: 0 5px;
-		color: var(--muted);
+		color: var(--sp-unset-ink);
 		font-family: var(--font-body);
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
@@ -671,8 +696,12 @@
 	.sp-lo-ref--set {
 		color: color-mix(in srgb, var(--el) 75%, white);
 	}
-	/* Exactly the constellation chip's hover: the value goes to --text. */
+	/* Exactly the constellation chip's hover: unset climbs the icon ladder,
+	   a set value goes to --text. */
 	.sp-lo-ref:hover:not(:disabled) {
+		color: var(--sp-unset-ink-hover);
+	}
+	.sp-lo-ref--set:hover:not(:disabled) {
 		color: var(--text);
 	}
 

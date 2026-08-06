@@ -167,31 +167,42 @@
 				emptyLabel=""
 			>
 				{#snippet actions()}
-					{#if char && char.id !== 'blank'}
-						<!-- Uniform action set (Nate 2026-08-05): ✕ removes everywhere;
-						     ⇄ auditions on the TB but opens the character Source on the
-						     planner (stays in-tool). SlotPortrait pins the first action
-						     to the pill's left and the last to its right
-						     (display:contents + order). -->
-						<button
-							class="bb-act"
-							onclick={() =>
-								char &&
-								(mode === 'rp' ? rpHost?.onPortraitClick() : tbHost?.onAudition(i, char.id))}
-							title={mode === 'rp'
+					<!-- Uniform action set (Nate 2026-08-05): ✕ removes everywhere;
+					     ⇄ auditions on the TB but opens the character Source on the
+					     planner (stays in-tool). SlotPortrait pins the first action
+					     to the pill's left and the last to its right
+					     (display:contents + order). Always rendered — an EMPTY slot
+					     shows them disabled, like the card's own controls, so the
+					     base row keeps its full four-station rhythm on every slot.
+					     The generic-Blank card gets LIVE actions (Nate 2026-08-06):
+					     a deliberately-typed Blank is a placeholder the user may
+					     well want to swap a real character into. -->
+					{@const live = !!char}
+					<button
+						class="bb-act"
+						disabled={!live}
+						onclick={() =>
+							char && (mode === 'rp' ? rpHost?.onPortraitClick() : tbHost?.onAudition(i, char.id))}
+						title={live && char
+							? mode === 'rp'
 								? 'Change who fills this slot'
-								: `Compare ${char.displayName} against replacements`}
-							aria-label={mode === 'rp'
+								: `Compare ${char.displayName} against replacements`
+							: undefined}
+						aria-label={live && char
+							? mode === 'rp'
 								? 'Change who fills this slot'
-								: `Audition replacements for ${char.displayName}`}>⇄</button
-						>
-						<button
-							class="bb-act bb-act--remove"
-							onclick={() => rt.setSlot(i, null)}
-							title="Remove {char.displayName} from team"
-							aria-label="Remove {char.displayName} from team">✕</button
-						>
-					{/if}
+								: `Audition replacements for ${char.displayName}`
+							: 'Swap (empty slot)'}>⇄</button
+					>
+					<button
+						class="bb-act bb-act--remove"
+						disabled={!live}
+						onclick={() => rt.setSlot(i, null)}
+						title={live && char ? `Remove ${char.displayName} from team` : undefined}
+						aria-label={live && char
+							? `Remove ${char.displayName} from team`
+							: 'Remove (empty slot)'}>✕</button
+					>
 				{/snippet}
 			</SlotPortrait>
 		</div>
@@ -275,7 +286,16 @@
 		background: var(--sp-pill-fill);
 		color: var(--muted);
 		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
+		/* THE GLYPH-SIZE KNOBS (this rule + the --remove override below).
+		   ⇄/✕ are unicode text and draw well under their em-box, so at the
+		   chip-label size (--fs-2xs) they were specks. ⚓ NATE 2026-08-06: ⇄ at
+		   --fs-xl, ✕ at --fs-md — the ✕ glyph draws larger within its em-box
+		   than the ⇄ does, so equal font-sizes read unequal. The grid centering
+		   above centers the line box at any size (line-height 1 = the em-box);
+		   if a glyph still sits optically off, nudge with a translateY on it.
+		   If cross-platform rendering diverges (both code points can fall back
+		   to system symbol fonts), the durable fix is inline SVGs. */
+		font-size: var(--fs-xl);
 		line-height: var(--lh-none);
 		cursor: pointer;
 		transition:
@@ -283,11 +303,21 @@
 			background 150ms ease,
 			color 150ms ease;
 	}
-	.bb-act:hover {
+	.bb-act--remove {
+		font-size: var(--fs-md);
+	}
+	/* Disabled = the card's shared dim (the constellation chip's exact recipe),
+	   so an empty slot's four stations fade as one family. */
+	.bb-act:disabled {
+		opacity: 0.35;
+		cursor: default;
+		pointer-events: none;
+	}
+	.bb-act:hover:not(:disabled) {
 		border-color: color-mix(in srgb, var(--el) 45%, var(--frame-line-quiet));
 		color: var(--text);
 	}
-	.bb-act--remove:hover {
+	.bb-act--remove:hover:not(:disabled) {
 		border-color: color-mix(in srgb, var(--ui-danger) 55%, var(--frame-line));
 		color: color-mix(in srgb, var(--ui-danger) 45%, var(--text));
 	}
