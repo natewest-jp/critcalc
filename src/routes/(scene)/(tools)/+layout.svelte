@@ -416,18 +416,41 @@
 		// already moving — waiting for the incoming's paint gate would visibly
 		// detach it from the world. World-locked drift to its pose delta +
 		// linear fade-out (the fade law: clears during the ease's gentle first
-		// leg). Stale third layers (already invisible) are left as baked.
+		// leg).
+		//
+		// ⚠ EVERY non-incoming layer gets the fade, not just the one we came
+		// from (bug, 2026-08-06). The bake pass above writes each layer's
+		// MID-FLIGHT opacity into its inline style; a third layer — one whose
+		// own fade-out was interrupted by this navigation before it finished —
+		// used to be skipped here as "already invisible", which is only true if
+		// it had time to finish. Interrupt a leg ~300ms in and the previous
+		// tool stayed pinned at its baked opacity (measured: 0.24) until
+		// Svelte's HOLD_MAX_MS retention finally removed it — a ghost tool
+		// hanging over/under the new one for a second or two, with no pattern
+		// the user could pin down because it needs two fast navigations in a
+		// row. z-index goes on every outgoing layer too: a stale one could
+		// still be carrying the '2' it was given while it was the incoming, and
+		// paint OVER the tool that replaced it.
 		for (const o of outgoing) {
-			if (!o.isConnected || o.dataset.page !== fromPath) continue;
+			if (!o.isConnected) continue;
 			o.style.willChange = 'transform, opacity';
 			o.style.zIndex = '1';
-			const drift = o.animate([{ transform: `translateX(${shift}px)` }], {
-				duration: SLIDE_MS,
-				easing: TILT_EASING_CSS,
-				fill: 'forwards',
-				id: TOOL_NAV_ANIM
-			});
-			drift.startTime = clock;
+			// Drift belongs to the leg being left: only the layer we came FROM
+			// is world-locked to this pose delta. A stale layer already carries
+			// a baked transform from an older leg, and re-targeting it to this
+			// leg's shift would jump it sideways on its way out.
+			if (o.dataset.page === fromPath) {
+				const drift = o.animate([{ transform: `translateX(${shift}px)` }], {
+					duration: SLIDE_MS,
+					easing: TILT_EASING_CSS,
+					fill: 'forwards',
+					id: TOOL_NAV_ANIM
+				});
+				drift.startTime = clock;
+			}
+			// One-keyframe fade: the implicit start is the layer's underlying
+			// value, so a stale layer resumes from whatever it was baked at
+			// rather than flashing back to full.
 			const fade = o.animate([{ opacity: 0 }], {
 				duration: TOOL_FADE_OUT_MS,
 				fill: 'forwards',

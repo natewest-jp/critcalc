@@ -211,6 +211,86 @@ const hScroll = await page.evaluate(() => {
 });
 check('no horizontal scroll after slides', hScroll.sw <= hScroll.cw, JSON.stringify(hScroll));
 
+// ── Interrupted legs leave no GHOST layer ───────────────────────────────────
+// Regression, 2026-08-06. Three navigations faster than the fade-out (~667ms)
+// put THREE layers on screen at once. The bake-then-re-animate pass used to
+// re-animate only the layer we came from, so the one before it kept the
+// MID-FLIGHT opacity the bake had written into its inline style — a ghost tool
+// hanging over the new one until Svelte's HOLD_MAX_MS retention removed it,
+// ~1-2s later. Measured at 0.24 opacity for 139 consecutive frames. It needs
+// three fast legs in a row, which is why it reads as random in use; a
+// randomized walk mostly misses it, so this sequence is deliberate and fixed.
+await page.goto(`${BASE}/rotation-planner`, { waitUntil: 'networkidle' });
+await page.waitForTimeout(1500);
+await page.evaluate(() => {
+	window.__ghostCensus = [];
+	const t0 = performance.now();
+	const tick = () => {
+		window.__ghostCensus.push({
+			t: Math.round(performance.now() - t0),
+			path: location.pathname,
+			rows: [...document.querySelectorAll('.tool-main > .tool-page')].map((p) => ({
+				page: p.dataset.page,
+				op: +(+getComputedStyle(p).opacity).toFixed(3)
+			}))
+		});
+		requestAnimationFrame(tick);
+	};
+	requestAnimationFrame(tick);
+});
+// ⚠ The tail matters: a leg allowed to SETTLE (3500) followed by two fast ones
+// is what produced the measured ghost. Trimming this sequence makes the check
+// pass against the unfixed layout — verified.
+for (const [route, wait] of [
+	['team-builder', 300],
+	['rotation-planner', 350],
+	['team-builder', 250],
+	['crit-visualizer', 400],
+	['rotation-planner', 300],
+	['team-builder', 3500],
+	['rotation-planner', 450],
+	['crit-visualizer', 5000]
+]) {
+	await page.click(`.chrome-nav a[href*="${route}"]`);
+	await page.waitForTimeout(wait);
+}
+await page.waitForTimeout(4000);
+const census = await page.evaluate(() => window.__ghostCensus);
+let cur = null,
+	since = 0;
+const ghosts = [];
+const missing = [];
+for (const f of census) {
+	if (f.path !== cur) {
+		cur = f.path;
+		since = f.t;
+	}
+	const age = f.t - since;
+	// Every clock that should have hidden a departed layer is long done by
+	// 2.3s (fade-out 667 + settle ≈ 2100).
+	if (age <= 2300) continue;
+	for (const r of f.rows)
+		if (r.page !== cur && r.op > 0.02) ghosts.push({ t: f.t, ghost: r.page, op: r.op });
+	const own = f.rows.filter((r) => r.page === cur);
+	if (own.length && own.every((r) => r.op < 0.9)) missing.push({ t: f.t, current: cur });
+}
+check(
+	'interrupted legs leave no ghost layer painting',
+	ghosts.length === 0,
+	ghosts.length ? `${ghosts.length} frames, e.g. ${JSON.stringify(ghosts[0])}` : ''
+);
+check(
+	'the destination never goes invisible after settling',
+	missing.length === 0,
+	missing.length ? `${missing.length} frames, e.g. ${JSON.stringify(missing[0])}` : ''
+);
+const finalLayers = census[census.length - 1];
+check(
+	'one layer left at rest, and it is the current route',
+	finalLayers.rows.length === 1 && finalLayers.rows[0].page === finalLayers.path,
+	JSON.stringify(finalLayers)
+);
+
 await browser.close();
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
