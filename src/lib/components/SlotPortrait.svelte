@@ -588,13 +588,26 @@
 		   pips move together. */
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-wide);
-		/* letter-spacing lands AFTER the last glyph too, so the layout box the
-		   grid centers is one tracking unit wider than the ink — measured: the
-		   C-value's ink sat 0.24px left of center, which Nate could see at
-		   zoom (the popover pips carry no tracking, which is why they center).
-		   An indent of the same unit pads the ink's left flank to match. */
-		text-indent: var(--ls-wide);
+		/* ── Centering the C value in its ring (⚓ NATE 2026-08-06) ────────────
+		   Two corrections, both measured against the ring's own rendered center
+		   (pixel-analysed at 8× in Chrome AND WebKit — font metrics were too
+		   coarse to see this, and a screenshot of the chip alone can't: its clip
+		   rect rounds to whole device pixels, so the ring has to be in frame as
+		   the reference):
+
+		   1. NO letter-spacing. Tracking lands after the LAST glyph too, so the
+		      advance box the grid centers is one unit wider than the ink.
+		   2. This optical nudge. Even untracked, "C"+digit ink sits RIGHT of
+		      the advance box's center (bearings, plus the open C carrying less
+		      mass than the digit) — measured +0.25px in Chrome and +0.81px in
+		      WebKit, which is why Safari looked worse. Safe for every value:
+		      C0–C6 are all C + one tabular digit, one constant offset.
+
+		   In em so it tracks font-size. Swept 0 → −1px: −0.07em lands both
+		   engines inside ±0.32px by ink-bbox and by mass centroid (−1px
+		   over-corrects Chrome, −0.5 leaves WebKit at +0.5). Tune it here; the
+		   probe is scratch/chip-nudge-sweep.mjs. */
+		text-indent: -0.07em;
 		line-height: var(--lh-none);
 		cursor: pointer;
 		transition:
