@@ -100,9 +100,10 @@ interface Meteor {
 /**
  * Build one meteor element pre-styled for a single flight, plus the screen-space
  * travel vector and rotation. Caller appends it, runs the WAAPI animation with
- * the literal rotation baked in, and removes it on finish.
+ * the literal rotation baked in, and removes it on finish. Returns null when the
+ * host has no on-screen area to play in (nothing to see — skip the fire).
  */
-function buildMeteor(rng: RNG): Meteor {
+function buildMeteor(rng: RNG, host: HTMLElement): Meteor | null {
 	const mirror = rng() < MIRROR_PROB;
 	const angleDeg = between(rng, ANGLE_MIN_DEG, ANGLE_MAX_DEG);
 	const length = between(rng, LENGTH_MIN_PX, LENGTH_MAX_PX);
@@ -122,15 +123,26 @@ function buildMeteor(rng: RNG): Meteor {
 	const dy = Math.sin(rad) * dist;
 	const rotateDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
 
-	// Spawn point as a % of the sky-region host. Bias toward the top, and toward
-	// the entering edge, so the whole streak plays on-screen.
-	const sx = mirror ? between(rng, 30, 100) : between(rng, 0, 70);
-	const sy = between(rng, 2, 38);
+	// Spawn point: inside the VISIBLE slice of the sky region, measured per
+	// fire. Since the ascend GL rebuild the world sky is ~2.3× taller than the
+	// viewport and extends well past both side edges — a spawn band expressed
+	// as % of the HOST put every meteor above the screen (found 2026-08-06:
+	// meteors had been firing off-screen since the rebuild). Same intent as the
+	// old band — bias toward the top, and toward the entering edge, so the
+	// whole streak plays on-screen — but in the viewport∩host rect.
+	const hr = host.getBoundingClientRect();
+	const visTop = Math.max(hr.top, 0);
+	const visLeft = Math.max(hr.left, 0);
+	const visH = Math.min(hr.bottom, window.innerHeight) - visTop;
+	const visW = Math.min(hr.right, window.innerWidth) - visLeft;
+	if (visH < 80 || visW < 200) return null;
+	const sy = visTop + between(rng, 0.02, 0.38) * visH - hr.top;
+	const sx = visLeft + (mirror ? between(rng, 0.3, 1) : between(rng, 0, 0.7)) * visW - hr.left;
 
 	const el = document.createElement('span');
 	el.className = 'meteor';
-	el.style.left = `${sx.toFixed(2)}%`;
-	el.style.top = `${sy.toFixed(2)}%`;
+	el.style.left = `${sx.toFixed(1)}px`;
+	el.style.top = `${sy.toFixed(1)}px`;
 	el.style.width = `${length.toFixed(1)}px`;
 	el.style.setProperty('--c', tint);
 	// Static base transform so the pre-animation frame is already oriented (the
@@ -166,7 +178,9 @@ export function startShootingStars(host: HTMLElement): () => void {
 	let disposed = false;
 
 	function fire() {
-		const { el, dx, dy, rotateDeg, durationMs } = buildMeteor(rng);
+		const meteor = buildMeteor(rng, host);
+		if (!meteor) return; // host off-screen — nothing to see; next fire re-checks
+		const { el, dx, dy, rotateDeg, durationMs } = meteor;
 		host.appendChild(el);
 		const r = `rotate(${rotateDeg.toFixed(2)}deg)`;
 		const anim = el.animate(
