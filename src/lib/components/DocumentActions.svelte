@@ -48,7 +48,7 @@
 			: 'Save this team and rotation to your bank'}
 		onclick={() => db.save()}
 	>
-		<Mark name={db.linked ? 'reset' : 'save'} />
+		<Mark name={db.linked ? 'update' : 'save'} />
 		{db.linked ? 'Update' : 'Save'}
 	</button>
 

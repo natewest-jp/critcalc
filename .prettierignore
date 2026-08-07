@@ -16,6 +16,10 @@ src/lib/stars.ts
 src/lib/data/characterIndex.generated.ts
 # Generated — scripts/generate-character-roles.mjs, one role entry per line.
 src/lib/data/characterRoles.generated.ts
+# Generated — scripts/generate-marks.mjs, one MARK per line. Prettier would
+# explode each icon's node array across a dozen lines, so a Lucide bump that
+# redraws one glyph would read as a hundred-line diff instead of one.
+src/lib/marks.generated.ts
 docs/curation/capability-audit.md
 
 # Generated — scripts/audit-genshin-db-diff.mjs and audit-data-outliers.mjs.

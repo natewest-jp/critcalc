@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { portal } from '$lib/actions/portal';
 	import Mark from './Mark.svelte';
-	import type { MarkName } from '$lib/marks';
+	import type { MarkName } from '$lib/marks.generated';
 
 	// ---------------------------------------------------------------------------
 	// A dropdown for a band control (toolbar round, 2026-08-07).

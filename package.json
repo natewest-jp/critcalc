@@ -4,9 +4,9 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"predev": "node scripts/generate-newfit.js && node scripts/generate-character-roles.mjs && node scripts/generate-character-index.mjs && node scripts/generate-element-icons.mjs",
+		"predev": "node scripts/generate-newfit.js && node scripts/generate-character-roles.mjs && node scripts/generate-character-index.mjs && node scripts/generate-element-icons.mjs && node scripts/generate-marks.mjs",
 		"dev": "vite dev",
-		"prebuild": "node scripts/generate-newfit.js && node scripts/generate-character-roles.mjs && node scripts/generate-character-index.mjs && node scripts/generate-element-icons.mjs",
+		"prebuild": "node scripts/generate-newfit.js && node scripts/generate-character-roles.mjs && node scripts/generate-character-index.mjs && node scripts/generate-element-icons.mjs && node scripts/generate-marks.mjs",
 		"build": "vite build",
 		"preview": "vite preview",
 		"optimize-bg": "node scripts/optimize-bg.js",
@@ -23,7 +23,8 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"generate-marks": "node scripts/generate-marks.mjs"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.2",
@@ -38,6 +39,7 @@
 		"genshin-db": "^5.2.12",
 		"globals": "^17.3.0",
 		"jsonc-parser": "^3.3.1",
+		"lucide": "^1.30.0",
 		"playwright": "^1.61.1",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.4.1",
