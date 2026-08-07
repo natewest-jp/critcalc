@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
+	import Mark from '$lib/components/Mark.svelte';
 	import { simulateIcd, uniformHitTimes, STANDARD_ICD, type IcdParams } from './icd';
 	import { icdHitsToGaugeApps, type HandoffMessage } from './workspace';
 
@@ -358,7 +359,7 @@
 							payload: icdHitsToGaugeApps(sim, element)
 						})}
 				>
-					Send to Gauge Explorer →
+					Send to Gauge Explorer <Mark name="forward" size={12} />
 				</button>
 			{/if}
 		</div>

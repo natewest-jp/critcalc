@@ -38,18 +38,25 @@
 		<span class="doc-notice" transition:fade={{ duration: 180 }}>{db.notice}</span>
 	{/if}
 
+	<!-- ONE button, one identity. It used to swap its mark from the floppy to a
+	     circular-arrows glyph the moment the document linked, which made it look
+	     like a different control — and paired with "Update" it read as a software
+	     update rather than "write this over the entry you opened". The action
+	     never changed: it is Save either way, so it keeps the save mark and only
+	     the word grows. The object of the sentence is the tab label two zones to
+	     the left; the title spells it out. -->
 	<button
 		class="btn"
 		class:doc-btn-linked={db.linked}
 		type="button"
 		disabled={!db.hasContent}
 		title={db.linked
-			? 'Update this rotation in your saved bank'
+			? `Save changes to “${rt.activeTab.label}”`
 			: 'Save this team and rotation to your bank'}
 		onclick={() => db.save()}
 	>
-		<Mark name={db.linked ? 'update' : 'save'} />
-		{db.linked ? 'Update' : 'Save'}
+		<Mark name="save" />
+		{db.linked ? 'Save changes' : 'Save'}
 	</button>
 
 	<button
@@ -119,6 +126,22 @@
 
 	<BandMenu compact mark="more" ariaLabel="More rotation actions">
 		{#snippet items(close)}
+			<!-- The escape hatch from an overwrite. Only meaningful once linked —
+			     an unlinked Save already makes a new entry. -->
+			{#if db.linked}
+				<button
+					class="band-menu-item"
+					role="menuitem"
+					onclick={() => {
+						close();
+						db.saveAsNew();
+					}}
+				>
+					<Mark name="copy" />
+					Save as new
+				</button>
+				<div class="band-menu-rule"></div>
+			{/if}
 			<button
 				class="band-menu-item band-menu-item--danger"
 				role="menuitem"
@@ -158,7 +181,7 @@
 			onclick={(e) => {
 				e.stopPropagation();
 				db.resetDocument();
-			}}>Reset?</button
+			}}><Mark name="warn" /> Reset?</button
 		>
 	{/if}
 </div>
@@ -178,8 +201,8 @@
 		white-space: nowrap;
 	}
 
-	/* The document is linked to a bank entry — the Update variant reads in the
-	   band's accent. Kept local on top of .btn: the global set is
+	/* The document is linked to a bank entry — the "Save changes" variant reads
+	   in the band's accent. Kept local on top of .btn: the global set is
 	   base/primary/danger, and "linked" is a document semantic, not a fourth
 	   button variant. */
 	.doc-btn-linked {

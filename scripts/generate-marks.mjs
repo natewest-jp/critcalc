@@ -48,18 +48,19 @@ const LICENSE = join(ROOT, 'node_modules/lucide/LICENSE');
  * OUR semantic name → Lucide's export name.
  *
  * The indirection is the point. Call sites say what the control DOES
- * (`<Mark name="update" />`), not what the library happens to call the picture
- * (`RefreshCw`), so re-picking a glyph — or swapping icon sets entirely — is a
- * one-line change here and touches nothing else.
+ * (`<Mark name="uncurated" />`), not what the library happens to call the
+ * picture (`CircleSlash2`), so re-picking a glyph — or swapping icon sets
+ * entirely — is a one-line change here and touches nothing else.
  *
  * Keep this list SMALL. Lucide ships 2,021 icons and this design language is
  * restrained; add on demand, never speculatively.
  */
 const MARKS = {
 	// ── Band A: the document ────────────────────────────────────────────────
+	/** ONE save mark in BOTH states. The linked document used to swap this for
+	 *  RefreshCw — the universal reload/sync glyph — which is half of why
+	 *  "Update" read as a software update. Same action, same mark. */
 	save: 'Save',
-	/** Save, when the document is already linked to a bank entry. */
-	update: 'RefreshCw',
 	load: 'FolderOpen',
 	/** `Share`, not `Share2`: the node-graph glyph is three circles and two
 	 *  lines, which silts up at 14px. The arrow-out-of-box reads at any size. */
@@ -72,13 +73,62 @@ const MARKS = {
 	copy: 'Copy',
 	image: 'Image',
 
+	// ── The bank's entry rows ───────────────────────────────────────────────
+	rename: 'Pencil',
+	delete: 'Trash2',
+	/** Settings' backup pair. Two identical-shaped word buttons otherwise —
+	 *  the arrow is the only thing that says which direction the data moves. */
+	download: 'Download',
+	upload: 'Upload',
+
 	// ── Band B and general controls ─────────────────────────────────────────
 	note: 'FileText',
 	plus: 'Plus',
 	minus: 'Minus',
 	close: 'X',
 	check: 'Check',
-	chevron: 'ChevronDown'
+	chevron: 'ChevronDown',
+	search: 'Search',
+	/** The Visualizers' workspace reset, against a tile's own `reset`: same
+	 *  word ("reset") at two scopes, so the MARK has to carry the scope. */
+	layout: 'LayoutGrid',
+	/** Two things exchange places — a bench slot's occupant, an instrument's
+	 *  column. NOT a document action; nothing is saved or reloaded. */
+	swap: 'ArrowLeftRight',
+
+	// ── State badges ────────────────────────────────────────────────────────
+	/**
+	 * A capability behind a constellation you don't own.
+	 *
+	 * ⚓ NATE 2026-08-07, after three rounds. NOT a padlock, and the name is
+	 * `gated` rather than `locked` so nobody puts one back. A constellation
+	 * gate involves no permission and no secrecy — you are simply not at C6
+	 * yet — so the padlock was a borrowed software metaphor, and it was ALSO
+	 * illegible: at the 10px these chips run, Lucide's shackle is ~2px and no
+	 * padlock can resolve. `LockOpen` reads better and says the opposite of
+	 * the truth; `StarX` loses its X into the wishlist star; `StarOff` reads
+	 * as a rendering fault in a column of rows; `Ban` is a circle-and-diagonal
+	 * one seat away from `uncurated`.
+	 *
+	 * Astroid is a four-cusped star: ONE path, no enclosed counters, no slash.
+	 * It's a constellation node — the game's own vocabulary — and its concave
+	 * points separate cleanly from `star`'s five straight ones at every size,
+	 * which is why wishlist did not have to move.
+	 */
+	gated: 'Astroid',
+	star: 'Star',
+	/** A character whose frame timing isn't curated yet (⚓ NATE: CircleSlash2,
+	 *  which matches the ∅ it replaces). */
+	uncurated: 'CircleSlash2',
+	/** The armed half of the two-step danger idiom (.btn--danger.is-confirming)
+	 *  — the one place a mark buys safety rather than decoration. */
+	warn: 'TriangleAlert',
+
+	// ── Going somewhere / handing off ───────────────────────────────────────
+	/** Named for the DIRECTION of travel, not the picture: "→ Compare" sends a
+	 *  card onward, "← All roles" comes back. Both are navigation. */
+	forward: 'ArrowRight',
+	back: 'ArrowLeft'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');

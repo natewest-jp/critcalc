@@ -7,6 +7,7 @@
 	import type { Element } from '$lib/types/ability';
 	import type { WeaponType } from '$lib/types/weapon';
 	import type { SvelteSet } from 'svelte/reactivity';
+	import Mark from './Mark.svelte';
 
 	// ---------------------------------------------------------------------------
 	// Shared roster grid: a scrolling character grid beside a vertical identity
@@ -157,15 +158,22 @@
 				<div class="cg-rail-head">{@render headerEnd()}</div>
 			{/if}
 
-			<input
-				class="field"
-				type="text"
-				placeholder={searchPlaceholder}
-				bind:value={filters.search}
-				autocomplete="off"
-				autocorrect="off"
-				spellcheck={false}
-			/>
+			<!-- The rail's search box used to be a bare .field whose only affordance
+			     was its placeholder, sitting in a column of chips and kickers that
+			     look much like it. The mark is what says "type here to filter"
+			     before anyone reads a word. -->
+			<div class="cg-search">
+				<Mark name="search" size={13} />
+				<input
+					class="field cg-search-field"
+					type="text"
+					placeholder={searchPlaceholder}
+					bind:value={filters.search}
+					autocomplete="off"
+					autocorrect="off"
+					spellcheck={false}
+				/>
+			</div>
 
 			{#if railStart}{@render railStart()}{/if}
 
@@ -319,6 +327,25 @@
 		align-items: center;
 		justify-content: flex-end;
 		gap: 8px;
+	}
+
+	/* The mark is painted OVER the field rather than inside a bordered wrapper,
+	   so .field keeps owning its own inset stroke and focus ring — the ring
+	   still traces the input, not a box drawn around it. pointer-events:none so
+	   a click on the mark lands in the field. */
+	.cg-search {
+		position: relative;
+		display: flex;
+		align-items: center;
+	}
+	.cg-search :global(.mark) {
+		position: absolute;
+		left: 0.6rem;
+		color: var(--muted);
+		pointer-events: none;
+	}
+	.cg-search-field {
+		padding-left: calc(0.6rem + 13px + 0.4rem);
 	}
 
 	.cg-sec .kicker {

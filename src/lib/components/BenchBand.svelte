@@ -28,6 +28,7 @@
 	 *   changes on the planner snap, so cards never lag their track groups.
 	 */
 	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
+	import Mark from '$lib/components/Mark.svelte';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import {
 		benchBand,
@@ -45,6 +46,7 @@
 		RIBBON_W
 	} from '$lib/benchBand.svelte';
 	import { constellations, loadout, type LoadoutEntry } from '$lib/stores';
+
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 
 	let {
@@ -194,16 +196,16 @@
 								: `Audition replacements for ${char.displayName}`
 							: 'Swap (empty slot)'}
 					>
-						<!-- Inline GEOMETRY, not unicode: the ⇄/✕ code points aren't in
-					     IBM Plex, so each engine drew its own fallback font at its own
-					     size (Safari's ✕ came out visibly smaller) — the chrome's
-					     marks-must-be-geometry law applies here too. Strokes ride
-					     currentColor, so the button's color states apply unchanged. To
-					     restyle, swap the path d (and viewBox); sizing lives in
-					     .bb-glyph--*. -->
-						<svg class="bb-glyph bb-glyph--swap" viewBox="0 0 14 12" aria-hidden="true">
-							<path d="M1 3.5h12M10 0.9 13 3.5 10 6.1M13 8.5H1M4 5.9 1 8.5l3 2.6" />
-						</svg>
+						<!-- The shared mark set (Lucide via the generator), not hand-cut
+					     paths and certainly not the ⇄/✕ code points — those aren't in
+					     IBM Plex, so each engine drew its own fallback at its own size
+					     (Safari's ✕ came out visibly smaller than Chrome's). Strokes
+					     ride currentColor, so the button's color states apply
+					     unchanged. NO size override — MARK_SIZE (14) is the standard,
+					     and it lands the ✕'s ink at 7px: exactly the height of the C0 /
+					     R1 digits beside it (--fs-xs, 10px). ⚓ NATE 2026-08-07; the
+					     hand-cut 14×12 / 9×9 they replaced were never a tuned target. -->
+						<Mark name="swap" />
 					</button>
 					<button
 						class="bb-act bb-act--remove"
@@ -214,9 +216,7 @@
 							? `Remove ${char.displayName} from team`
 							: 'Remove (empty slot)'}
 					>
-						<svg class="bb-glyph bb-glyph--x" viewBox="0 0 9 9" aria-hidden="true">
-							<path d="M0.7 0.7 8.3 8.3M8.3 0.7 0.7 8.3" />
-						</svg>
+						<Mark name="close" />
 					</button>
 				{/snippet}
 			</SlotPortrait>
@@ -310,28 +310,10 @@
 			background 150ms ease,
 			color 150ms ease;
 	}
-	/* THE GLYPH-SIZE KNOBS. The marks were unicode ⇄/✕ once (sized ⚓ NATE
-	   2026-08-06: ⇄ --fs-xl, ✕ --fs-md) — but neither code point is in IBM
-	   Plex, and Safari's fallback drew the ✕ visibly smaller than Chrome's, so
-	   they're inline stroke geometry now. These widths/heights are the same
-	   ink sizes the chosen font-sizes produced in Chrome; the grid centering
-	   on the button centers them exactly. */
-	.bb-glyph {
-		display: block;
-		fill: none;
-		stroke: currentColor;
-		stroke-width: 1.4;
-		stroke-linecap: round;
-		stroke-linejoin: round;
-	}
-	.bb-glyph--swap {
-		width: 14px;
-		height: 12px;
-	}
-	.bb-glyph--x {
-		width: 9px;
-		height: 9px;
-	}
+	/* The glyph size, weight and joins come from Mark.svelte's MARK_SIZE /
+	   MARK_STROKE — the .bb-glyph rules that used to set them here are gone,
+	   which is the point of a shared set. The button's grid still centers
+	   them, and the size knob is site-wide now rather than local. */
 	/* Disabled = the card's shared dim (the constellation chip's exact recipe),
 	   so an empty slot's four stations fade as one family. */
 	.bb-act:disabled {

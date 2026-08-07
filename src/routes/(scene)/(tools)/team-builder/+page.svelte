@@ -345,7 +345,7 @@
 
 	// ---------------------------------------------------------------------------
 	// Compare (Layer 2) — the Compare tab itself is the accumulator: a card's
-	// "→ Compare" silently adds the character here (the tab's avatar stack is
+	// "Compare" silently adds the character here (the tab's avatar stack is
 	// the feedback), and clicking the tab lands on an already-loaded view.
 	// Audition is Compare with a pinned anchor (the incumbent), an in-view
 	// candidates strip, and a commit that swaps the slot.
@@ -526,7 +526,7 @@
 				? 'Team is full (4)'
 				: 'Add to team'}
 	>
-		<span class="tb-act-glyph">{teamState === 'in' ? '✓' : '+'}</span>
+		<span class="tb-act-glyph"><Mark name={teamState === 'in' ? 'check' : 'plus'} /></span>
 		<span class="tb-act-label">{teamState === 'full' ? 'Full' : 'Team'}</span>
 	</button>
 	<button
@@ -541,7 +541,7 @@
 				? 'Comparison is full (4)'
 				: 'Add to comparison'}
 	>
-		<span class="tb-act-glyph">{compared ? '✓' : '→'}</span>
+		<span class="tb-act-glyph"><Mark name={compared ? 'check' : 'forward'} /></span>
 		<span class="tb-act-label">Compare</span>
 	</button>
 {/snippet}
@@ -586,7 +586,7 @@
 						{/if}
 					</span>
 					<span class="tb-cand-name">{entry.displayName}</span>
-					{#if on}<span class="tb-cand-mark">✓</span>{/if}
+					{#if on}<span class="tb-cand-mark"><Mark name="check" size={12} /></span>{/if}
 				</button>
 			{/each}
 			{#if auditionCandidates.length === 0}
@@ -754,7 +754,7 @@
 				aria-selected={sourceTab === 'roster'}
 				onclick={() => (sourceTab = 'roster')}>Roster</button
 			>
-			<!-- The Compare tab IS the accumulator: a card's "→ Compare" lands
+			<!-- The Compare tab IS the accumulator: a card's "Compare" lands
 			     its pick here as a mini side avatar (the Saved-Rotations stack
 			     grammar) — no tray, no navigation; click when ready. -->
 			<button
@@ -855,7 +855,9 @@
 									<p class="tb-atlas-lead">
 										Alternatives for each character on your team — same element and role.
 									</p>
-									<button class="btn" onclick={backToCards}>Browse all roles →</button>
+									<button class="btn" onclick={backToCards}
+										>Browse all roles <Mark name="forward" /></button
+									>
 								</div>
 								{#each slotRows as row (row.slotEntry.id)}
 									<section class="tb-slotrow">
@@ -910,7 +912,7 @@
 								{/each}
 							{:else if atlasMode === 'drill' && drilledCategory}
 								<div class="tb-atlas-head">
-									<button class="btn" onclick={backToCards}>← All roles</button>
+									<button class="btn" onclick={backToCards}><Mark name="back" /> All roles</button>
 									<div class="tb-drill-title">
 										{#if drilledCategory.position}
 											<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
@@ -963,7 +965,7 @@
 							<div class="tb-cmp-empty">
 								<p class="tb-cmp-empty-title">Nothing to compare yet.</p>
 								<p class="note">
-									Hover a character card in the Roster and press <strong>→ Compare</strong> — up to four
+									Hover a character card in the Roster and press <strong>Compare</strong> — up to four
 									characters line up here on one shared time ruler.
 								</p>
 							</div>
@@ -1226,7 +1228,7 @@
 		white-space: nowrap;
 	}
 	.tb-cand-mark {
-		font-weight: var(--fw-bold);
+		display: flex;
 		color: var(--el-color);
 	}
 
@@ -1494,9 +1496,7 @@
 			color 150ms ease;
 	}
 	.tb-act-glyph {
-		font-size: var(--fs-2xl);
-		font-weight: var(--fw-bold);
-		line-height: 1;
+		display: flex;
 	}
 	.tb-act-label {
 		font-size: var(--fs-2xs);

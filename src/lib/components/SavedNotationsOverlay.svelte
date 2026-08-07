@@ -3,6 +3,7 @@
 	import { getIndexEntryByDisplayName, getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getAvatar } from '$lib/utils/getAvatar';
 	import { elementColors } from '$lib/utils/elementColors';
+	import Mark from './Mark.svelte';
 
 	function elementBorderColor(charId: string): string {
 		if (charId === 'blank') return '#17213a';
@@ -112,7 +113,9 @@
 <div class="sn-panel" role="dialog" aria-modal="true" aria-label="Saved rotations">
 	<div class="sn-panel-header">
 		<h2 class="title">Saved Rotations</h2>
-		<button class="btn btn--icon sn-close" onclick={onClose} aria-label="Close">&#xD7;</button>
+		<button class="btn btn--icon sn-close" onclick={onClose} aria-label="Close">
+			<Mark name="close" size={16} />
+		</button>
 	</div>
 
 	{#if entries.length === 0}
@@ -190,7 +193,7 @@
 									class="btn btn--icon sn-icon"
 									onclick={() => startRename(entry)}
 									title="Rename"
-									aria-label="Rename {entry.name}">&#x270E;</button
+									aria-label="Rename {entry.name}"><Mark name="rename" size={12} /></button
 								>
 							{/if}
 							<span class="entry-date">{formatDate(entry.savedAt)}</span>
@@ -200,7 +203,10 @@
 						</div>
 					</div>
 
-					<!-- Load / New tab / Delete actions -->
+					<!-- Load / New tab / Delete actions. Every one carries its mark: the
+					     row used to be three bare words next to a glyph-only Rename, so
+					     Delete — the only irreversible control in the overlay — read with
+					     exactly as much weight as "New tab". -->
 					<div class="entry-actions">
 						{#if canAddTab}
 							<button
@@ -210,7 +216,7 @@
 									editingId = null;
 									onLoadNewTab(entry);
 								}}
-								title="Open in a new tab">New tab</button
+								title="Open in a new tab"><Mark name="plus" size={12} /> New tab</button
 							>
 						{/if}
 						<button
@@ -219,18 +225,19 @@
 								deletingId = null;
 								editingId = null;
 								onLoad(entry);
-							}}>Load</button
+							}}><Mark name="load" size={12} /> Load</button
 						>
 						{#if isDeleting}
 							<button
 								class="btn btn--sm btn--danger is-confirming"
-								onclick={() => confirmDelete(entry.id)}>Confirm?</button
+								onclick={() => confirmDelete(entry.id)}
+								><Mark name="warn" size={12} /> Confirm?</button
 							>
 						{:else}
 							<button
 								class="btn btn--sm btn--danger"
 								onclick={() => requestDelete(entry.id)}
-								aria-label="Delete {entry.name}">Delete</button
+								aria-label="Delete {entry.name}"><Mark name="delete" size={12} /> Delete</button
 							>
 						{/if}
 					</div>
@@ -283,15 +290,12 @@
 		border-bottom: 1px solid var(--frame-line);
 		flex-shrink: 0;
 	}
-	/* The two icon buttons are .btn--icon; only their glyph size and resting
-	   weight are local — a close X wants to be big, a row affordance small. */
-	.sn-close {
-		font-size: var(--fs-2xl);
-		line-height: var(--lh-none);
-	}
+	/* The two icon buttons are .btn--icon. Their glyphs are Marks now, so the
+	   size is a PROP on the mark (16 for the panel's close, 12 for the row's
+	   rename) — the --fs-2xl / --fs-xs that used to live here were sizing the
+	   × and ✎ code points as type, which is the thing the marks-are-geometry
+	   law exists to stop. */
 	.sn-icon {
-		font-size: var(--fs-xs);
-		line-height: var(--lh-none);
 		flex-shrink: 0;
 	}
 

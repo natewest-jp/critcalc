@@ -6,6 +6,7 @@
 	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
+	import Mark from '$lib/components/Mark.svelte';
 	import { deriveCharacterCapabilities } from '$lib/capabilities/deriveCapabilities';
 	import { rulerTicks } from '$lib/timeline/barGeometry';
 	import { barPhases, type BarPhaseSegment } from '$lib/timeline/barPhases';
@@ -166,9 +167,13 @@
 		<h2>{anchorId ? 'Audition' : 'Compare'}</h2>
 		<p class="cmp-mode">{modeLine}</p>
 		{#if onCancelAudition}
-			<button class="btn cmp-headact" onclick={onCancelAudition}>✕ Cancel audition</button>
+			<button class="btn cmp-headact" onclick={onCancelAudition}>
+				<Mark name="close" /> Cancel audition
+			</button>
 		{:else if onClear}
-			<button class="btn cmp-headact" onclick={onClear}>✕ Clear</button>
+			<button class="btn cmp-headact" onclick={onClear}>
+				<Mark name="close" /> Clear
+			</button>
 		{/if}
 	</header>
 
@@ -202,7 +207,7 @@
 					<span class="cmp-chip-name"
 						>{col.entry?.displayName ?? col.id}{#if $ownership[col.id] === 'wishlist'}<span
 								class="cmp-chip-wish"
-								title="Wishlisted">★</span
+								title="Wishlisted"><Mark name="star" size={11} /></span
 							>{/if}</span
 					>
 					<span class="cmp-chip-meta">
@@ -222,14 +227,14 @@
 							class="cmp-chip-commit"
 							onclick={() => onCommit(col.id)}
 							title="Replace the current member with {col.entry?.displayName ?? col.id}"
-							>Use →</button
+							>Use <Mark name="forward" size={12} /></button
 						>
 					{/if}
 					<button
 						class="cmp-chip-remove"
 						onclick={() => onRemove(col.id)}
 						aria-label="Remove {col.entry?.displayName ?? col.id} from comparison"
-						title="Remove from comparison">✕</button
+						title="Remove from comparison"><Mark name="close" size={12} /></button
 					>
 				{/if}
 			</div>
@@ -313,7 +318,10 @@
 									{locked}
 								/>
 								<span class="cmp-lane-fact" title={cellTitle(cell)}
-									>{cell.glyph.uptime}s / {cell.glyph.cooldown}s{locked ? ' 🔒' : ''}</span
+									>{cell.glyph.uptime}s / {cell.glyph.cooldown}s{#if locked}<Mark
+											name="gated"
+											size={11}
+										/>{/if}</span
 								>
 							</div>
 						{/if}
@@ -389,7 +397,7 @@
 												title={cellTitle(cell)}
 											>
 												<span class="cmp-gate" class:cmp-gate--base={cell.minCon === 0}
-													>C{cell.minCon}{locked ? ' 🔒' : ''}</span
+													>C{cell.minCon}{#if locked}<Mark name="gated" size={11} />{/if}</span
 												>
 												{#if cell.target}<span class="cmp-target"
 														>{TARGET_SHORT[cell.target] ?? cell.target}</span
@@ -409,9 +417,8 @@
 												{#if cell.also}
 													{@const alsoLocked = cell.also.minCon > viewCons[i]}
 													<span class="cmp-also" class:cmp-cell--locked={alsoLocked}
-														>{TARGET_SHORT[cell.also.target]} from C{cell.also.minCon}{alsoLocked
-															? ' 🔒'
-															: ''}</span
+														>{TARGET_SHORT[cell.also.target]} from C{cell.also
+															.minCon}{#if alsoLocked}<Mark name="gated" size={11} />{/if}</span
 													>
 												{/if}
 											</span>
@@ -650,7 +657,12 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
+	/* inline-flex on all three: the locked state's Mark is a block-level <svg>,
+	   which would otherwise break the surrounding inline box. */
 	.cmp-lane-fact {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
 		font-size: var(--fs-xs);
 		font-variant-numeric: tabular-nums;
 		color: var(--muted);
@@ -707,6 +719,9 @@
 		font-variant-numeric: tabular-nums;
 	}
 	.cmp-gate {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
 		padding: 1px 6px;
 		border-radius: 3px;
 		font-size: var(--fs-2xs);
@@ -729,6 +744,9 @@
 		color: var(--muted);
 	}
 	.cmp-also {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
 		font-style: italic;
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
 	}

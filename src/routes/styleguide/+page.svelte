@@ -642,8 +642,8 @@
 
 			<div class="sg-cell">
 				<div class="sg-stage">
-					<button class="btn btn--danger">Delete</button>
-					<button class="btn btn--danger is-confirming">Sure?</button>
+					<button class="btn btn--danger"><Mark name="delete" /> Delete</button>
+					<button class="btn btn--danger is-confirming"><Mark name="warn" /> Sure?</button>
 					<div class="segment">
 						<button class="btn is-active">My roster</button>
 						<button class="btn">All C0</button>
@@ -651,7 +651,7 @@
 				</div>
 				{@render spec(
 					'the two surviving ghosts',
-					'--danger stays text-only until hover: a destructive action must not sit on screen looking pressable. .segment > .btn stays transparent because the recessed track behind it IS the affordance — opaque plates would fill the track in and leave three buttons in a row with no group'
+					'--danger stays text-only until hover: a destructive action must not sit on screen looking pressable. ↻ 2026-08-07: the ARMED half wears the warning mark — the one place a mark buys safety rather than decoration. .segment > .btn stays transparent because the recessed track behind it IS the affordance — opaque plates would fill the track in and leave three buttons in a row with no group'
 				)}
 			</div>
 
@@ -749,12 +749,16 @@
 				</div>
 				<div class="sg-stage">
 					<div class="tab tab--closeable active">
-						Vape Hu Tao <button class="tab-close" aria-label="close">×</button>
+						Vape Hu Tao <button class="tab-close" aria-label="close"
+							><Mark name="close" size={11} /></button
+						>
 					</div>
 					<div class="tab tab--closeable">
-						Aggravate <button class="tab-close" aria-label="close">×</button>
+						Aggravate <button class="tab-close" aria-label="close"
+							><Mark name="close" size={11} /></button
+						>
 					</div>
-					<button class="btn btn--sm btn--icon">+</button>
+					<button class="btn btn--sm btn--icon"><Mark name="plus" /></button>
 				</div>
 				{@render spec(
 					'.tab · .active · .tab--lg · .tab--closeable',
@@ -939,9 +943,10 @@
 					<li>
 						<strong>Add a mark by naming the JOB, not the picture.</strong> One line in the
 						generator's <code>MARKS</code> map — our semantic name → Lucide's export (<code
-							>update: 'RefreshCw'</code
+							>uncurated: 'CircleSlash2'</code
 						>). The indirection is the point: call sites say what the control DOES, so re-picking a
-						glyph is a one-line change.
+						glyph is a one-line change — and <code>forward</code>/<code>back</code> beat
+						<code>arrowRight</code>/<code>arrowLeft</code> for exactly that reason.
 					</li>
 					<li>
 						<strong>Keep the set small.</strong> 2,021 icons is an invitation to over-icon a restrained
@@ -969,10 +974,55 @@
 						<strong>Chrome</strong> (the sub-pixel law).
 					</li>
 					<li>
-						<strong>~40 control glyphs elsewhere are still unicode</strong> (SlotPortrait,
-						InstrumentPicker, CloseMark, the TB cards, the instruments) — the sweep is unbuilt. ⚠ Do
-						not do it blind: most unicode in <code>.svelte</code> files is arrows in comments and prose,
-						which are typography, not marks.
+						<strong>The sweep is DONE</strong> (↻ 2026-08-07). The ~40 control glyphs that were
+						still typeset — the saved bank's <code>&amp;#xD7;</code>/<code>&amp;#x270E;</code>
+						entities, the instrument picker's <code>▾ ⇄ ●</code>, the Team Builder's
+						<code>✓ ✗ ✕ → ★ ●</code>, the not-yet-curated <code>∅</code>, and a
+						<strong>color-emoji 🔒</strong> that ignored <code>currentColor</code> outright — all
+						render through <code>&lt;Mark&gt;</code> now.
+					</li>
+					<li>
+						⚠ <strong>A mark has to survive its own SIZE, and its NEIGHBOURS.</strong> Two failure
+						modes that cost three rounds on one glyph (⚓ NATE, the constellation gate).
+						<em>Size:</em>
+						at the 10–11px these chips run, anything with a small enclosed counter closes up — a padlock's
+						shackle lands at ~2px and no padlock can resolve. Prefer ONE path, no counters.
+						<em>Neighbours:</em>
+						the mark shares a card with <code>uncurated</code>,
+						<code>star</code> and <code>check</code>, so a base-shape-plus-modifier (<code
+							>StarX</code
+						>, <code>Ban</code>) collapses into the base shape it borrowed. Test in a real row, not
+						in isolation.
+					</li>
+					<li>
+						<strong>Prefer the game's vocabulary to software's.</strong> <code>gated</code> is
+						<code>Astroid</code> — a four-cusped star, i.e. a constellation node — and it is named
+						<code>gated</code>, not <code>locked</code>, on purpose. A constellation gate involves
+						no permission and no secrecy; you are simply not at C6 yet. The padlock was a borrowed
+						metaphor that was also unreadable, and <code>LockOpen</code> reads more clearly while
+						saying the opposite of the truth.
+						<strong>Legibility bought with a lie is not a trade.</strong>
+					</li>
+					<li>
+						⚠ <strong>Three things stay typeset ON PURPOSE.</strong> Rarity stars (<code>5★</code>
+						is Genshin's own notation, and it sits inline with a numeral); the <code>?</code> on a
+						maybe-coverage chip (a hedge, and <code>?</code> is a real glyph in the body face); and
+						every <code>× · → ⁄</code> in prose and formulas. The law is about code points the text
+						font doesn't cover — <strong>not about punctuation</strong>. A blind find-and-replace
+						mangles copy.
+					</li>
+					<li>
+						<strong>Two marks are deliberately NOT in the set.</strong>
+						<code>CloseMark</code> is Nate's filled disc-with-a-hole artwork for the heavy overlay
+						dismiss — a different role from the inline stroke <code>close</code>, not a duplicate of
+						it. The planner's notes badge is two-fill artwork rather than a
+						<code>currentColor</code> stroke.
+					</li>
+					<li>
+						<code>scripts/probe-marks.mjs</code> is the guard.
+						<code>marks.test.ts</code> proves the SET is coherent; it cannot prove the site stopped typesetting,
+						and a static grep can't tell a control glyph from prose. The probe walks the RENDERED text
+						of every tool surface — it caught one the grep missed.
 					</li>
 				</ul>
 			</div>

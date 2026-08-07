@@ -215,9 +215,11 @@
 		<!-- "Reset workspace" and the per-tile "Reset" were two buttons, one word,
 		     two levels — you could not tell from the label which one you were
 		     about to press. This one resets the LAYOUT (which instruments, how
-		     many); the tile's resets that instrument's CONTROLS. -->
+		     many); the tile's resets that instrument's CONTROLS. The rename fixed
+		     the words; the marks finish the job — a GRID for the layout, the
+		     rotate-back for a tile's own defaults. -->
 		<button class="btn ws-reset" onclick={resetWorkspace}>
-			<Mark name="reset" />
+			<Mark name="layout" />
 			Reset layout
 		</button>
 	{/snippet}

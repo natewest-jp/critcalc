@@ -2,6 +2,7 @@
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
+	import Mark from '$lib/components/Mark.svelte';
 	import { deriveCoverage, deriveResonances, type TeamSlot } from './team';
 	import type { FacetKey } from './facets';
 
@@ -77,19 +78,22 @@
 					<button
 						class="ts-cov ts-cov--no"
 						title={coverageTitle(c.providers, c.state, c.label)}
-						onclick={() => onFilterFacet(c.facet)}>{c.label} ✗</button
+						onclick={() => onFilterFacet(c.facet)}>{c.label} <Mark name="close" size={11} /></button
 					>
 				{:else}
 					<span
 						class="ts-cov ts-cov--{c.state}"
 						title={coverageTitle(c.providers, c.state, c.label)}
-						>{c.label} {c.state === 'yes' ? '✓' : '?'}</span
+						>{c.label}
+						{#if c.state === 'yes'}<Mark name="check" size={11} />{:else}?{/if}</span
 					>
 				{/if}
 			{/each}
 		</div>
 
-		<button class="btn ts-clear" onclick={onClear}>✕ Clear team</button>
+		<button class="btn ts-clear" onclick={onClear}>
+			<Mark name="close" /> Clear team
+		</button>
 	</div>
 {/if}
 

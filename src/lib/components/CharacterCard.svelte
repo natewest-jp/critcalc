@@ -7,6 +7,7 @@
 
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
+	import Mark from './Mark.svelte';
 	import type { Snippet } from 'svelte';
 	import type { CharacterIndexEntry } from '$lib/types/character';
 	import { getAvatar, hasAvatar, type TravelerVariant } from '$lib/utils/getAvatar';
@@ -153,7 +154,7 @@
 				<span class="cc-slot">{slotNumber}</span>
 			{/if}
 			{#if wishlist}
-				<span class="cc-wish" title="Wishlisted">★</span>
+				<span class="cc-wish" title="Wishlisted"><Mark name="star" size={11} /></span>
 			{/if}
 		</div>
 
@@ -171,7 +172,7 @@
 				<span
 					class="cc-namemark"
 					title="Frame timing not curated yet — capabilities are complete, but Planner timing is approximate"
-					aria-label="Frame timing not curated yet">∅</span
+					aria-label="Frame timing not curated yet"><Mark name="uncurated" size={11} /></span
 				>
 			{/if}
 		</span>

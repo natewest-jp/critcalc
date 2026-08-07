@@ -56,7 +56,7 @@
 <section>
 	<h2 id="compare">Comparing and assembling</h2>
 	<p>
-		Press <strong>→ Compare</strong> on a character card and it loads into the
+		Press <strong>Compare</strong> on a character card and it loads into the
 		<strong>Compare</strong> tab — its portrait appears right in the tab, and you keep browsing. Open
 		the tab when you're ready: the three-phase bars line every pick up on one shared time ruler (each
 		effect's window against its cooldown), and below them a side-by-side table aligns the facts — cooldowns

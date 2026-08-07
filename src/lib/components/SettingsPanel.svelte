@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { constellations, loadout, ownership, savedNotations, siteSettings } from '$lib/stores';
+	import Mark from './Mark.svelte';
 	import {
 		downloadBackup,
 		parseBackup,
@@ -133,7 +134,9 @@
 					this browser. Download a file to back them up or move them to another device.
 				</span>
 			</span>
-			<button class="btn btn--primary" onclick={() => downloadBackup()}>Export…</button>
+			<button class="btn btn--primary" onclick={() => downloadBackup()}>
+				<Mark name="download" /> Export…
+			</button>
 		</div>
 
 		<div class="sp-row">
@@ -141,7 +144,9 @@
 				<span class="sp-name">Restore</span>
 				<span class="sp-desc">Load a backup file. This replaces everything on this device.</span>
 			</span>
-			<button class="btn btn--primary" onclick={() => fileInput?.click()}>Import…</button>
+			<button class="btn btn--primary" onclick={() => fileInput?.click()}>
+				<Mark name="upload" /> Import…
+			</button>
 			<input
 				bind:this={fileInput}
 				type="file"
@@ -167,9 +172,9 @@
 						<strong>{pending.counts.rotations}</strong> saved rotations. Replace your current data?
 					</p>
 					<div class="sp-import-actions">
-						<button class="btn btn--danger is-confirming" onclick={confirmImport}
-							>Replace &amp; reload</button
-						>
+						<button class="btn btn--danger is-confirming" onclick={confirmImport}>
+							<Mark name="warn" /> Replace &amp; reload
+						</button>
 						<button class="btn" onclick={cancelImport}>Cancel</button>
 					</div>
 				</div>
@@ -192,6 +197,7 @@
 					onclick={() => reset(key, fn)}
 					onblur={() => armedReset === key && (armedReset = null)}
 				>
+					{#if armedReset === key}<Mark name="warn" />{/if}
 					{armedReset === key ? 'Confirm' : 'Clear'}
 				</button>
 			</div>
@@ -208,6 +214,7 @@
 				onclick={() => reset('all', clearEverything)}
 				onblur={() => armedReset === 'all' && (armedReset = null)}
 			>
+				{#if armedReset === 'all'}<Mark name="warn" />{/if}
 				{armedReset === 'all' ? 'Confirm clear all' : 'Clear all'}
 			</button>
 		</div>
