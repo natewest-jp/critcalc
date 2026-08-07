@@ -1,26 +1,22 @@
 <script lang="ts">
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
-	import { TOOL_INSET } from '$lib/benchBand.svelte';
+	import ToolStack from '$lib/components/ToolStack.svelte';
+	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
+	import DocumentActions from '$lib/components/DocumentActions.svelte';
+	import Mark from '$lib/components/Mark.svelte';
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
 	import CharacterSelector from '$lib/components/CharacterSelector.svelte';
-	import SavedNotationsOverlay from '$lib/components/SavedNotationsOverlay.svelte';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { loadCharacter } from '$lib/data/characterData';
-	import {
-		savedNotations,
-		loadout,
-		constellations,
-		type SavedNotation,
-		type LoadoutEntry
-	} from '$lib/stores';
-	import { encodeRotation, decodeRotation, type SharedRotation } from '$lib/utils/rotationUrl';
+	import { decodeRotation, type SharedRotation } from '$lib/utils/rotationUrl';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
-	import { fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
-	import { rotationTabs as rt, TAB_LIMIT, type RotationTab } from '$lib/rotationTabs.svelte';
+	import { rotationTabs as rt, TAB_LIMIT } from '$lib/rotationTabs.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
+	import { documentBar as db } from '$lib/documentBar.svelte';
+	import { plannerView as pv, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from '$lib/plannerView.svelte';
 
 	// ---------------------------------------------------------------------------
 	// Tab state — hoisted to the shared working-team module (bench-band round):
@@ -38,167 +34,12 @@
 	// payload effect below.
 	const releaseVeil = claimVeilReady();
 
-	// ---------------------------------------------------------------------------
-	// Tab operations — thin wrappers that clear this page's confirm UI before
-	// delegating to the shared module.
-	// ---------------------------------------------------------------------------
-
-	function switchTab(id: string) {
-		if (id === rt.activeTabId) return;
-		clearResetConfirm();
-		rt.switchTab(id);
-	}
-
-	function addTab() {
-		rt.addTab();
-	}
-
-	function closeTab(id: string) {
-		clearResetConfirm();
-		rt.closeTab(id);
-	}
-
-	function renameTab(id: string, label: string) {
-		const tab = rt.renameTab(id, label);
-		// Propagate rename to save bank if this tab is linked to a saved entry
-		if (tab?.savedId) savedNotations.rename(tab.savedId, label.trim());
-	}
-
-	// ---------------------------------------------------------------------------
-	// Save / load
-	// ---------------------------------------------------------------------------
-
-	/** Whether the active tab is linked to a saved bank entry. */
-	let activeTabSavedId = $derived(rt.activeTab.savedId);
-
-	let saveNotice = $state<string | null>(null);
-	let _saveTimer: ReturnType<typeof setTimeout> | undefined;
-
-	function showSaveNotice(msg: string) {
-		clearTimeout(_saveTimer);
-		saveNotice = msg;
-		_saveTimer = setTimeout(() => {
-			saveNotice = null;
-		}, 2200);
-	}
-
-	/**
-	 * Freeze the resolved effective loadout + constellation for every slotted
-	 * character. Saved rotations are meant to stay faithful even if the roster
-	 * (Layer 1) changes later, so un-overridden fields are captured densely at
-	 * save time rather than re-resolving to the current roster on load. Existing
-	 * tab overrides for non-slotted characters are preserved as-is. Only the bank
-	 * copy is densified — the open tab keeps its sparse live-fallback state.
-	 */
-	function densifiedSnapshot(): {
-		tabLoadout: Record<string, LoadoutEntry>;
-		tabCon: Record<string, number>;
-	} {
-		const denseLoadout: Record<string, LoadoutEntry> = { ...rt.tabLoadout };
-		const denseCon: Record<string, number> = { ...rt.tabCon };
-		for (const id of slots) {
-			if (id === 'blank') continue;
-			const merged: LoadoutEntry = { ...($loadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
-			if (merged.weaponId || merged.artifactSetId || merged.weaponRefinement) {
-				denseLoadout[id] = merged;
-			}
-			// Always a number (incl. an explicit 0) so the level is pinned against
-			// later roster edits — the whole point of the freeze.
-			denseCon[id] = rt.tabCon[id] ?? $constellations[id] ?? 0;
-		}
-		return { tabLoadout: denseLoadout, tabCon: denseCon };
-	}
-
-	function handleSave() {
-		if (!rt.notation.trim()) return;
-		const activeTab = rt.activeTab;
-		const dense = densifiedSnapshot();
-		if (activeTab.savedId) {
-			savedNotations.update(activeTab.savedId, {
-				name: activeTab.label,
-				notation: rt.notation,
-				manualSlots: rt.manualSlots,
-				tabLoadout: dense.tabLoadout,
-				tabCon: dense.tabCon
-			});
-			showSaveNotice('Updated');
-		} else {
-			const newId = savedNotations.save({
-				name: activeTab.label,
-				notation: rt.notation,
-				manualSlots: rt.manualSlots,
-				tabLoadout: dense.tabLoadout,
-				tabCon: dense.tabCon
-			});
-			rt.tabs = rt.tabs.map((t) => (t.id === rt.activeTabId ? { ...t, savedId: newId } : t));
-			showSaveNotice('Saved');
-		}
-	}
-
-	function handleLoad(entry: SavedNotation) {
-		rt.tabs = rt.tabs.map((t) =>
-			t.id === rt.activeTabId ? { ...t, label: entry.name, savedId: entry.id } : t
-		);
-		rt.notation = entry.notation;
-		rt.manualSlots = entry.manualSlots;
-		rt.tabLoadout = entry.tabLoadout ?? {};
-		rt.tabCon = entry.tabCon ?? {};
-		loadOverlayOpen = false;
-	}
-
-	function handleLoadNewTab(entry: SavedNotation) {
-		if (rt.tabs.length >= TAB_LIMIT) return;
-		rt.openTab({
-			label: entry.name,
-			notation: entry.notation,
-			manualSlots: entry.manualSlots,
-			tabLoadout: entry.tabLoadout ?? {},
-			tabCon: entry.tabCon ?? {},
-			savedId: entry.id
-		});
-		loadOverlayOpen = false;
-	}
-
-	// ---------------------------------------------------------------------------
-	// Share via URL (?r= — deflate-raw base64url of the active tab)
-	// ---------------------------------------------------------------------------
-
-	async function handleShare() {
-		if (!rt.notation.trim()) return;
-		// Scope the build snapshot to the resolved team (this handles inferred
-		// slots too), plus any character carrying a tab-level loadout override.
-		const teamIds = new Set<string>([
-			...slots.filter((id) => id !== 'blank'),
-			...Object.keys(rt.tabLoadout)
-		]);
-		const cons: Record<string, number> = {};
-		const lo: Record<string, LoadoutEntry> = {};
-		for (const id of teamIds) {
-			// Effective constellation: the tab's Layer-2 override wins over the
-			// roster default, so a shared link carries what the rotation actually
-			// ran at, not the sharer's roster.
-			const level = rt.tabCon[id] ?? $constellations[id];
-			if (typeof level === 'number' && level > 0) cons[id] = level;
-			// Mirror RotationTimeline's effective-loadout merge so a shared link
-			// renders identically regardless of the recipient's own defaults.
-			const entry: LoadoutEntry = { ...($loadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
-			if (entry.weaponId || entry.artifactSetId || entry.weaponRefinement) lo[id] = entry;
-		}
-		const shared: SharedRotation = {
-			notation: rt.notation,
-			team: rt.manualSlots,
-			constellations: cons,
-			loadout: lo
-		};
-		try {
-			const param = await encodeRotation(shared);
-			const url = `${location.origin}${location.pathname}?r=${param}`;
-			await navigator.clipboard.writeText(url);
-			showSaveNotice('Link copied');
-		} catch {
-			showSaveNotice('Share failed');
-		}
-	}
+	// Tab operations, save/load, share links and the reset confirm all moved out
+	// in the toolbar round: the tab strip is <DocumentTabs>, the actions are
+	// <DocumentActions>, and the flows behind them live in $lib/documentBar —
+	// because they act on the shared working DOCUMENT, which the Team Builder
+	// edits too. What is left here is the planner-only part: importing a `?r=`
+	// link, and the character Source.
 
 	/** Apply a decoded shared rotation: cons + loadout → the tab (Layer 2), build+notation → a tab. */
 	function importShared(shared: SharedRotation) {
@@ -228,7 +69,7 @@
 				tabCon: importedCon
 			});
 		}
-		showSaveNotice(
+		db.showNotice(
 			atLimit && !pristine ? 'Loaded — tab replaced (limit reached)' : 'Loaded shared rotation'
 		);
 	}
@@ -267,7 +108,7 @@
 		if (param) {
 			const shared = await decodeRotation(param);
 			if (!shared) {
-				showSaveNotice('Invalid share link');
+				db.showNotice('Invalid share link');
 				return;
 			}
 			importShared(shared);
@@ -283,73 +124,9 @@
 		].slice(0, 4);
 		if (ids.length > 0) {
 			const { replacedTab } = rt.importTeam(ids);
-			showSaveNotice(replacedTab ? 'Team loaded — tab replaced (limit reached)' : 'Team loaded');
+			db.showNotice(replacedTab ? 'Team loaded — tab replaced (limit reached)' : 'Team loaded');
 		}
 	});
-
-	let loadOverlayOpen = $state(false);
-
-	// ---------------------------------------------------------------------------
-	// Drag-to-reorder state
-	// ---------------------------------------------------------------------------
-
-	let draggedId = $state<string | null>(null);
-	let dragOverId = $state<string | null>(null);
-	let dragSide = $state<'left' | 'right' | null>(null);
-
-	function reorderTabs(fromId: string, toId: string, side: 'left' | 'right') {
-		rt.reorderTabs(fromId, toId, side);
-	}
-
-	// ---------------------------------------------------------------------------
-	// Reset
-	// ---------------------------------------------------------------------------
-
-	let resetTabConfirm = $state(false);
-	let resetAllConfirm = $state(false);
-
-	function clearResetConfirm() {
-		resetTabConfirm = false;
-		resetAllConfirm = false;
-	}
-
-	function doResetTab() {
-		rt.resetActiveTab();
-		clearResetConfirm();
-	}
-
-	function doResetAll() {
-		rt.resetAll();
-		clearResetConfirm();
-	}
-
-	// ---------------------------------------------------------------------------
-	// Rename UI state
-	// ---------------------------------------------------------------------------
-
-	let editingTabId = $state<string | null>(null);
-	let editingLabel = $state('');
-
-	function startRename(tab: RotationTab, e: MouseEvent) {
-		e.stopPropagation();
-		editingTabId = tab.id;
-		editingLabel = tab.label;
-	}
-
-	function commitRename() {
-		if (editingTabId) renameTab(editingTabId, editingLabel);
-		editingTabId = null;
-	}
-
-	function cancelRename() {
-		editingTabId = null;
-	}
-
-	/** Svelte action: focus + select the input on mount. */
-	function focusInput(node: HTMLInputElement) {
-		node.focus();
-		node.select();
-	}
 
 	// ---------------------------------------------------------------------------
 	// Slot resolution — the shared module's now (notation-driven + manual
@@ -381,266 +158,134 @@
 	});
 
 	// ---------------------------------------------------------------------------
-	// Window-level keyboard / click handlers
-	// ---------------------------------------------------------------------------
-
-	function handlePageKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape' && (resetTabConfirm || resetAllConfirm)) {
-			clearResetConfirm();
-		}
-	}
-
-	// ---------------------------------------------------------------------------
 	// UI state
 	// ---------------------------------------------------------------------------
 
 	let selectorOpen = $state(false);
-
-	function handleWindowClick() {
-		clearResetConfirm();
-	}
 </script>
 
 <svelte:head>
 	<title>Team rotation planner | critcalc.app</title>
 </svelte:head>
 
-<svelte:window onkeydown={handlePageKeydown} onclick={handleWindowClick} />
-
 <section class="rotation-page">
-	<!-- --rp-tool-inset: the bench ribbon owns the column at the content margin,
-	     so the tool's own surfaces start after it. Set here because BOTH the tab
-	     bar (this file) and the frame (RotationTimeline) carry it, and they must
-	     not drift apart. TeamBonusesBlock is deliberately left at the margin —
-	     it sits below the strip and keys its rail to the same seam. -->
-	<section class="timeline-section" style:--rp-tool-inset="{TOOL_INSET}px">
-		<!-- ── Tab bar ──────────────────────────────────────────────── -->
-		<div
-			class="rp-tab-bar"
-			role="tablist"
-			tabindex="-1"
-			ondragleave={(e) => {
-				// Clear drop indicator when pointer leaves the bar entirely
-				if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-					dragOverId = null;
-					dragSide = null;
-				}
-			}}
-		>
-			{#each rt.tabs as tab (tab.id)}
-				<!--
-					Outer element is a div[role=button] to avoid nesting <button>
-					inside <button> (the close button). Keyboard: Enter = switch.
-				-->
-				<div
-					class="tab tab--closeable rp-tab"
-					class:active={tab.id === rt.activeTabId}
-					class:rp-tab--drag-over-left={dragOverId === tab.id && dragSide === 'left'}
-					class:rp-tab--drag-over-right={dragOverId === tab.id && dragSide === 'right'}
-					class:rp-tab--dragging={draggedId === tab.id}
-					role="button"
-					tabindex="0"
-					draggable={editingTabId !== tab.id}
-					onclick={() => switchTab(tab.id)}
-					ondblclick={(e) => startRename(tab, e)}
-					onkeydown={(e) => {
-						if (e.key === 'Enter') switchTab(tab.id);
-					}}
-					ondragstart={(e) => {
-						draggedId = tab.id;
-						// Required for Firefox; content doesn't matter
-						e.dataTransfer?.setData('text/plain', tab.id);
-						if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
-					}}
-					ondragend={() => {
-						draggedId = null;
-						dragOverId = null;
-						dragSide = null;
-					}}
-					ondragover={(e) => {
-						if (!draggedId || draggedId === tab.id) return;
-						e.preventDefault();
-						if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-						const rect = e.currentTarget.getBoundingClientRect();
-						dragOverId = tab.id;
-						dragSide = e.clientX < rect.left + rect.width / 2 ? 'left' : 'right';
-					}}
-					ondrop={(e) => {
-						e.preventDefault();
-						if (draggedId && dragOverId && dragSide) {
-							reorderTabs(draggedId, dragOverId, dragSide);
-						}
-						draggedId = null;
-						dragOverId = null;
-						dragSide = null;
-					}}
-				>
-					{#if editingTabId === tab.id}
-						<input
-							class="rp-tab-rename"
-							bind:value={editingLabel}
-							use:focusInput
-							onclick={(e) => e.stopPropagation()}
-							ondblclick={(e) => e.stopPropagation()}
-							onblur={commitRename}
-							onkeydown={(e) => {
-								if (e.key === 'Enter') {
-									e.preventDefault();
-									commitRename();
-								} else if (e.key === 'Escape') {
-									e.preventDefault();
-									cancelRename();
-								}
-							}}
-						/>
-					{:else}
-						<span class="rp-tab-label">{tab.label}</span>
-					{/if}
+	<!-- The tool stack: bands + surface, with the bench ribbon's dock spanning
+	     both (toolbar round). The tab bar that used to float above the frame is
+	     band A's left zone now, and the view controls that rode the ruler's
+	     right end are band B. TeamBonusesBlock stays OUTSIDE the stack, at the
+	     content margin below the strip's bottom end. -->
+	<ToolStack benched>
+		{#snippet bandALeft()}
+			<DocumentTabs />
+		{/snippet}
 
-					{#if rt.tabs.length > 1}
-						<button
-							class="tab-close"
-							tabindex="-1"
-							aria-label="Close {tab.label}"
-							onclick={(e) => {
-								e.stopPropagation();
-								closeTab(tab.id);
-							}}>×</button
-						>
-					{/if}
-				</div>
-			{/each}
+		{#snippet bandARight()}
+			<DocumentActions />
+		{/snippet}
 
-			{#if rt.tabs.length < TAB_LIMIT}
-				<button class="btn btn--icon rp-tab-add" onclick={addTab} aria-label="New tab">+</button>
+		{#snippet bandBLeft()}
+			<!-- What the chart is showing: how long the rotation runs. A readout,
+			     not a control — it leads band B the way the tabs lead band A. -->
+			{#if pv.totalDuration > 0}
+				<span class="rp-total">
+					<span class="rp-total-key">Total</span>
+					{Math.round(pv.totalDuration * 10) / 10}s
+				</span>
 			{/if}
+		{/snippet}
 
-			<div class="rp-tab-bar-spacer"></div>
-
-			<!-- Reset actions -->
-			<div class="rp-tab-bar-actions">
-				{#if resetTabConfirm}
-					<button
-						class="btn btn--danger is-confirming"
-						onclick={(e) => {
-							e.stopPropagation();
-							doResetTab();
-						}}
-						title="Confirm: clear this tab">Confirm?</button
-					>
-				{:else}
-					<button
-						class="btn btn--danger"
-						onclick={(e) => {
-							e.stopPropagation();
-							resetAllConfirm = false;
-							resetTabConfirm = true;
-						}}
-						title="Clear this tab's notation and unlink from save bank">Reset</button
-					>
-				{/if}
-				{#if rt.tabs.length > 1}
-					{#if resetAllConfirm}
-						<button
-							class="btn btn--danger is-confirming"
-							onclick={(e) => {
-								e.stopPropagation();
-								doResetAll();
-							}}
-							title="Confirm: close all tabs and reset">Confirm?</button
-						>
-					{:else}
-						<button
-							class="btn btn--danger"
-							onclick={(e) => {
-								e.stopPropagation();
-								resetTabConfirm = false;
-								resetAllConfirm = true;
-							}}
-							title="Close all tabs and start fresh">Reset all</button
-						>
-					{/if}
-				{/if}
-			</div>
-
-			<div class="rp-tab-bar-divider"></div>
-
-			<!-- Save / Load actions -->
-			<div class="rp-tab-bar-actions">
-				{#if saveNotice}
-					<span class="save-notice" transition:fade={{ duration: 180 }}>{saveNotice}</span>
-				{/if}
+		{#snippet bandBRight()}
+			<div class="rp-zoom" role="group" aria-label="Zoom">
 				<button
-					class="btn"
-					class:rp-btn-linked={!!activeTabSavedId}
-					onclick={() => {
-						clearResetConfirm();
-						handleSave();
-					}}
-					disabled={!rt.notation.trim()}
-					title={activeTabSavedId ? 'Update saved rotation' : 'Save rotation to bank'}
-					>{activeTabSavedId ? '↺ Update' : '↑ Save'}</button
+					class="btn btn--sm btn--icon"
+					type="button"
+					aria-label="Zoom out"
+					disabled={pv.scale <= ZOOM_MIN}
+					onclick={() => pv.zoomBy(-ZOOM_STEP)}><Mark name="minus" /></button
 				>
-				<button
-					class="btn"
-					onclick={() => {
-						clearResetConfirm();
-						loadOverlayOpen = true;
-					}}
-					title="Load a saved rotation">↓ Load</button
-				>
-				<button
-					class="btn"
-					onclick={() => {
-						clearResetConfirm();
-						handleShare();
-					}}
-					disabled={!rt.notation.trim()}
-					title="Copy a shareable link to this rotation">⤴ Share</button
-				>
-			</div>
-		</div>
-
-		<!-- ── Timeline ─────────────────────────────────────────────── -->
-		<RotationTimeline
-			bind:notation={rt.notation}
-			characterSlots={slots}
-			tabLoadout={rt.tabLoadout}
-			tabCon={rt.tabCon}
-			sourceOpen={selectorOpen}
-		>
-			<!-- The character Source, layered over the track area from the portrait
-			     edge (non-modal). Edits are live: each add/remove sets manualSlots,
-			     which flows back down as the portraits' team. -->
-			{#snippet sourceOverlay()}
-				<CharacterSelector
-					currentSlots={slots}
-					onChange={(chosen) => (rt.manualSlots = chosen)}
-					onClose={() => {
-						selectorOpen = false;
-					}}
+				<input
+					type="range"
+					min={ZOOM_MIN}
+					max={ZOOM_MAX}
+					step={ZOOM_STEP}
+					bind:value={pv.scale}
+					class="slider rp-zoom-slider"
+					aria-label="Zoom"
+					title="Zoom — pixels per second"
 				/>
-			{/snippet}
-		</RotationTimeline>
+				<button
+					class="btn btn--sm btn--icon"
+					type="button"
+					aria-label="Zoom in"
+					disabled={pv.scale >= ZOOM_MAX}
+					onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="plus" /></button
+				>
+			</div>
+			<button
+				class="btn btn--sm rp-notes-btn"
+				class:is-active={pv.showNotes}
+				type="button"
+				aria-label="Toggle notes panel"
+				disabled={!pv.hasCaveats}
+				onclick={() => (pv.showNotes = !pv.showNotes)}
+			>
+				<Mark name="note" />
+				Notes
+				{#if pv.hasCaveats}
+					<!-- Notification mark: notes exist for the loaded characters.
+					     Nate's artwork (assets-src/tools/notification.svg) — a disc
+					     with a glyph, drawn rather than typeset. The two fills are
+					     wired to tokens rather than the SVG's baked hexes so a
+					     palette change carries through. -->
+					<svg class="rp-notes-badge" viewBox="0 0 24 24" aria-hidden="true"
+						><g transform="matrix(1,0,0,1,-273.029018,-202.228283)">
+							<g>
+								<g transform="matrix(0.575277,0,0,0.575277,146.251428,151.449127)">
+									<circle cx="241.236" cy="109.129" r="20.86" fill="var(--ui-danger)" />
+								</g>
+								<g transform="matrix(1,0,0,1,-2.378613,7.691546)">
+									<path
+										d="M287.339,210.822L287.495,210.822C287.975,210.822 288.411,210.985 288.799,211.317C289.203,211.663 289.404,212.098 289.404,212.623L289.404,212.775L289.396,212.852C289.39,212.885 289.384,212.909 289.384,212.925C289.384,213.273 289.218,213.648 288.84,214.026C288.478,214.387 288.083,214.562 287.662,214.57L287.535,214.589L287.271,214.589C287.246,214.589 287.222,214.587 287.197,214.582C287.165,214.576 287.141,214.57 287.124,214.57C286.714,214.57 286.319,214.399 285.951,214.03C285.591,213.67 285.412,213.239 285.412,212.739L285.412,212.683L285.427,212.698C285.423,212.677 285.421,212.655 285.421,212.632L285.421,212.61L285.419,212.607L285.422,212.593C285.432,212.155 285.613,211.749 285.98,211.381C286.353,211.009 286.805,210.822 287.339,210.822ZM285.538,200.334L285.538,199.894C285.538,199.03 286.205,198.484 287.681,198.484L287.715,198.486L287.827,198.494C287.827,198.494 288.021,198.509 287.827,198.494C288.334,198.5 288.685,198.655 288.898,198.903C289.103,199.141 289.228,199.513 289.228,200.031L289.228,200.479L289.226,200.527L289.218,200.619L289.217,200.629L289.208,200.842L289.207,200.863C289.202,200.93 289.199,200.995 289.199,201.056L289.197,201.094L289.178,201.322C289.165,201.472 289.16,201.722 289.16,202.072C289.16,202.444 289.098,203.162 288.971,204.225C288.848,205.262 288.753,206.181 288.685,206.982C288.614,207.812 288.546,208.359 288.486,208.621C288.395,209.014 288.053,209.293 287.369,209.293L287.242,209.293C287.009,209.293 286.817,209.224 286.662,209.099C286.463,208.939 286.315,208.67 286.264,208.271C285.779,204.394 285.538,201.748 285.538,200.334Z"
+										fill="var(--text)"
+									/>
+								</g>
+							</g>
+						</g></svg
+					>
+				{/if}
+			</button>
+		{/snippet}
 
-		<!-- Always-on bonuses caption, directly under the frame (the
-		     per-character ability panels are gone — the timeline itself is the
-		     timing reference for slotted characters, and the Team Builder is
-		     the deep ability reference) -->
-		<TeamBonusesBlock {slots} />
-	</section>
+		{#snippet surface()}
+			<RotationTimeline
+				bind:notation={rt.notation}
+				characterSlots={slots}
+				tabLoadout={rt.tabLoadout}
+				tabCon={rt.tabCon}
+				sourceOpen={selectorOpen}
+			>
+				<!-- The character Source, layered over the track area from the portrait
+				     edge (non-modal). Edits are live: each add/remove sets manualSlots,
+				     which flows back down as the portraits' team. -->
+				{#snippet sourceOverlay()}
+					<CharacterSelector
+						currentSlots={slots}
+						onChange={(chosen) => (rt.manualSlots = chosen)}
+						onClose={() => {
+							selectorOpen = false;
+						}}
+					/>
+				{/snippet}
+			</RotationTimeline>
+		{/snippet}
+	</ToolStack>
+
+	<!-- Always-on bonuses caption, directly under the frame (the per-character
+	     ability panels are gone — the timeline itself is the timing reference
+	     for slotted characters, and the Team Builder is the deep ability
+	     reference) -->
+	<TeamBonusesBlock {slots} />
 </section>
-
-{#if loadOverlayOpen}
-	<SavedNotationsOverlay
-		canAddTab={rt.tabs.length < TAB_LIMIT}
-		onLoad={handleLoad}
-		onLoadNewTab={handleLoadNewTab}
-		onClose={() => {
-			loadOverlayOpen = false;
-		}}
-	/>
-{/if}
 
 <style>
 	.rotation-page {
@@ -649,129 +294,56 @@
 		gap: clamp(16px, 2.5vw, 32px);
 	}
 
-	/* ── Timeline section (tab strip + timeline stacked) ─────────── */
+	/* ── Band B: the planner's VIEW controls ─────────────────────
+	   Total · zoom · Notes. They used to ride the ruler strip's right end
+	   inside the frame, over a gradient that faded the ticks out beneath
+	   them; on the band they sit on an opaque ground and need none of that.
+	   The controls are the shared .btn/.slider — only the pieces the global
+	   classes can't know are local. */
 
-	.timeline-section {
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-		gap: 0.65rem;
-	}
-
-	/* ── Tab strip ───────────────────────────────────────────────
-	   Tabs are chips floating on the tool black — the selected-state
-	   idiom shared with .chip (accent-tinted fill + inset ring). */
-
-	.rp-tab-bar {
-		display: flex;
-		align-items: center;
-		gap: 0.35rem;
-		/* Rides with the frame it labels — see --rp-tool-inset above. */
-		margin-left: var(--rp-tool-inset);
-	}
-
-	/* .tab .tab--closeable now. Only the drag affordances and the width clamp
-	   are local — the global class can't know about reorderable documents. */
-	.rp-tab {
-		position: relative;
-		max-width: 180px;
-		min-width: 0;
-	}
-
-	.rp-tab--dragging {
-		opacity: 0.35;
-	}
-
-	/* Drop indicator: a 2px vertical line on the left or right edge of the target tab */
-	.rp-tab--drag-over-left::before,
-	.rp-tab--drag-over-right::after {
-		content: '';
-		position: absolute;
-		top: 2px;
-		bottom: 2px;
-		width: 2px;
-		border-radius: 1px;
-		background: var(--accent);
-		pointer-events: none;
-	}
-	.rp-tab--drag-over-left::before {
-		left: -2px;
-	}
-	.rp-tab--drag-over-right::after {
-		right: -2px;
-	}
-
-	.rp-tab-label {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		flex: 1;
-		min-width: 0;
-	}
-
-	.rp-tab-rename {
-		background: var(--fill-rest);
-		border: none;
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
-		border-radius: 3px;
-		color: var(--text);
+	/* Total-length readout: the LED-style key/value pair that led the old view
+	   cluster, minus its chip backing — band B is its own surface now, and a
+	   fill inside a fill read as a control the reader could press. */
+	.rp-total {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.45rem;
 		font-size: var(--fs-sm);
-		padding: 0.1rem 0.3rem;
-		width: 92px;
-		outline: none;
-		flex-shrink: 0;
-	}
-	/* Renaming happens inside the ACTIVE tab — which is beige now (the
-	   --sel-surface pilot). White-on-beige would vanish; flip to ink and a
-	   slightly-recessed opaque well (mixed against the known beige ground,
-	   never alpha — the compositing law). */
-	.tab.active .rp-tab-rename {
-		color: var(--sel-ink);
-		background: color-mix(in srgb, var(--sel-surface) 94%, black);
-	}
-	.rp-tab-rename:focus {
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 80%, transparent);
-	}
-
-	/* The + is a .btn--icon; only its glyph size and resting weight are local. */
-	.rp-tab-add {
-		font-size: var(--fs-xl);
-		line-height: var(--lh-none);
-		opacity: 0.5;
-	}
-	.rp-tab-add:hover {
-		opacity: 1;
-	}
-
-	/* ── Tab strip: spacer + actions ────────────────────────────── */
-
-	.rp-tab-bar-spacer {
-		flex: 1;
-	}
-
-	.rp-tab-bar-actions {
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
-		flex-shrink: 0;
-	}
-
-	.save-notice {
-		font-size: var(--fs-xs);
-		letter-spacing: var(--ls-wide);
-		color: color-mix(in srgb, var(--accent) 55%, var(--text));
-		padding: 0 0.4rem;
+		font-weight: var(--fw-semibold);
 		white-space: nowrap;
 	}
-
-	/* Tab is linked to a save-bank entry — the Update variant reads in accent.
-	   Kept local on top of .btn: the global set is base/primary/danger, and
-	   "linked" is a planner-specific semantic, not a fourth button variant. */
-	.rp-btn-linked {
-		color: color-mix(in srgb, var(--accent) 55%, var(--text));
+	.rp-total-key {
+		font-size: var(--fs-2xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-widest);
+		text-transform: uppercase;
+		opacity: 0.75;
 	}
-	.rp-btn-linked:hover {
-		background: color-mix(in srgb, var(--accent) 14%, transparent);
-		color: color-mix(in srgb, var(--accent) 35%, var(--text));
+
+	.rp-zoom {
+		display: flex;
+		align-items: center;
+		gap: 0.2rem;
+	}
+
+	/* Track/thumb styling comes from the shared .slider (app.css). */
+	.rp-zoom-slider {
+		width: 88px;
+	}
+
+	.rp-notes-btn {
+		/* positions the unread badge */
+		position: relative;
+	}
+
+	.rp-notes-badge {
+		position: absolute;
+		top: -4px;
+		right: -5px;
+		/* 12px renders a 12px disc: the circle fills the 24x24 viewBox
+		   edge-to-edge (centre 12,12, r 12 after the artwork's transforms). */
+		width: 12px;
+		height: 12px;
+		pointer-events: none;
 	}
 </style>

@@ -17,9 +17,11 @@
 	import SiteChrome from '$lib/components/SiteChrome.svelte';
 	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import BenchBand from '$lib/components/BenchBand.svelte';
+	import SavedNotationsOverlay from '$lib/components/SavedNotationsOverlay.svelte';
 	import { TOOLS } from './lib/toolChrome';
 	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
-	import { rotationTabs } from '$lib/rotationTabs.svelte';
+	import { rotationTabs, TAB_LIMIT } from '$lib/rotationTabs.svelte';
+	import { documentBar } from '$lib/documentBar.svelte';
 	import { savedNotations } from '$lib/stores';
 
 	let { children } = $props();
@@ -851,7 +853,25 @@
 	</div>
 </div>
 
-<svelte:window onresize={snapBench} />
+<svelte:window
+	onresize={snapBench}
+	onclick={() => (documentBar.resetConfirm = false)}
+	onkeydown={(e) => {
+		if (e.key === 'Escape') documentBar.resetConfirm = false;
+	}}
+/>
+
+<!-- The saved-team bank. Rendered by the LAYOUT, not by a tool (toolbar round):
+     band A's Load is in both benched tools now, and the bank it opens is the
+     document's, not the planner's. -->
+{#if documentBar.loadOpen}
+	<SavedNotationsOverlay
+		canAddTab={rotationTabs.tabs.length < TAB_LIMIT}
+		onLoad={(entry) => documentBar.load(entry)}
+		onLoadNewTab={(entry) => documentBar.loadNewTab(entry)}
+		onClose={() => (documentBar.loadOpen = false)}
+	/>
+{/if}
 
 <!-- Meta overlays. Outside .tool-shell deliberately: the shell is the thing
      the ascend reveals and fades, and nothing about a settings panel belongs

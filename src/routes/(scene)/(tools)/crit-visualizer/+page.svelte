@@ -12,6 +12,8 @@
 	import WishInstrument from './lib/WishInstrument.svelte';
 	import AnatomyInstrument from './lib/AnatomyInstrument.svelte';
 	import InstrumentPicker from './lib/InstrumentPicker.svelte';
+	import ToolStack from '$lib/components/ToolStack.svelte';
+	import Mark from '$lib/components/Mark.svelte';
 	import {
 		DEFAULT_ASSIGNMENT,
 		INSTRUMENTS,
@@ -168,99 +170,141 @@
 	<title>Visualizers | critcalc.app</title>
 </svelte:head>
 
-<div class="ws-toolbar">
-	<!-- Lineup size. Options wider than the window DISABLE rather than silently
-	     clamping — a control that accepts a press and does nothing reads as
-	     broken. "Auto" is the resting state and the pre-control behavior. -->
-	<div class="segment ws-slots" role="radiogroup" aria-label="Instruments shown">
-		{#each SLOT_OPTIONS as opt (opt)}
-			{@const tooWide = opt !== 'auto' && opt > capacity}
-			<button
-				class="btn"
-				class:is-active={slotPref === opt}
-				role="radio"
-				aria-checked={slotPref === opt}
-				disabled={tooWide}
-				title={tooWide
-					? `The window is too narrow for ${opt} instruments side by side`
-					: opt === 'auto'
-						? 'Show as many instruments as the window fits'
-						: `Show ${opt} instrument${opt === 1 ? '' : 's'} at a time`}
-				onclick={() => (slotPref = opt)}
-			>
-				{opt === 'auto' ? 'Auto' : opt}
-			</button>
-		{/each}
-	</div>
-	<button class="btn ws-reset" onclick={resetWorkspace}>Reset workspace</button>
-</div>
+<!-- The tool stack (toolbar round). The Visualizers is the one UNBENCHED tool
+     — no working team, so no ribbon and no inset: its stack starts at the
+     content margin. It still wears the same two bands as the others, which is
+     what finally stops the toolbar jumping 192px sideways across a tool→tool
+     fade.
 
-<div class="ws" style:--ws-slots={slotCount}>
-	{#each INSTRUMENTS as inst (inst.id)}
-		{@const slot = slotOf(inst.id)}
-		<section class="ws-tile" class:ws-hidden={slot === -1} style:order={slot}>
-			<nav class="ws-bar" aria-label="Instrument picker">
-				<InstrumentPicker
-					current={inst.id}
-					{assignment}
-					{slotCount}
-					{slot}
-					onPick={(id) => pick(slot, id)}
-				/>
-				<span class="ws-bar-actions">
-					{#if handles[inst.id]?.reset}
-						<button
-							class="btn ws-share"
-							onclick={() => handles[inst.id]?.reset?.()}
-							title="Reset this instrument's controls to their defaults"
-						>
-							↺ Reset
-						</button>
-					{/if}
-					{#if handles[inst.id]?.getShareState}
-						<button
-							class="btn ws-share"
-							class:ws-share-copied={copiedTile === inst.id}
-							onclick={() => shareTile(inst.id)}
-							title="Copy a link that reopens this instrument as it looks now"
-						>
-							{copiedTile === inst.id ? '✓ Copied' : '⤴ Share'}
-						</button>
-					{/if}
-				</span>
-			</nav>
-			<div class="ws-body">
-				{#if slot !== -1 || everSlotted.has(inst.id)}
-					{#if inst.id === 'crit'}
-						<CritInstrument bind:this={handles.crit} />
-					{:else if inst.id === 'icd'}
-						<IcdInstrument bind:this={handles.icd} onHandoff={(msg) => deliverHandoff(msg, slot)} />
-					{:else if inst.id === 'rolls'}
-						<ArtifactInstrument bind:this={handles.rolls} />
-					{:else if inst.id === 'gauge'}
-						<GaugeInstrument bind:this={handles.gauge} active={slotOf('gauge') !== -1} />
-					{:else if inst.id === 'curves'}
-						<ReactionCurvesInstrument bind:this={handles.curves} />
-					{:else if inst.id === 'defres'}
-						<DefResInstrument bind:this={handles.defres} />
-					{:else if inst.id === 'wish'}
-						<WishInstrument bind:this={handles.wish} />
-					{:else if inst.id === 'anatomy'}
-						<AnatomyInstrument bind:this={handles.anatomy} />
-					{/if}
-				{/if}
-			</div>
-		</section>
-	{/each}
-</div>
+     Band A is this tool's DOCUMENT row: the workspace is what you'd save and
+     reset, and the lineup size is a property of the workspace, not of any one
+     instrument. Band B is the VIEW row — and here it was already right: the
+     per-tile picker bar predates the round and is the shape the other two
+     tools were rebuilt toward. It subdivides by the tile grid instead of
+     splitting left/right, which is what bandBFull is for. -->
+<ToolStack>
+	{#snippet bandALeft()}
+		<span class="kicker ws-title">Workspace</span>
+	{/snippet}
+
+	{#snippet bandARight()}
+		<!-- Lineup size. Options wider than the window DISABLE rather than
+		     silently clamping — a control that accepts a press and does nothing
+		     reads as broken. "Auto" is the resting state and the pre-control
+		     behavior. -->
+		<div class="segment ws-slots" role="radiogroup" aria-label="Instruments shown">
+			{#each SLOT_OPTIONS as opt (opt)}
+				{@const tooWide = opt !== 'auto' && opt > capacity}
+				<button
+					class="btn"
+					class:is-active={slotPref === opt}
+					role="radio"
+					aria-checked={slotPref === opt}
+					disabled={tooWide}
+					title={tooWide
+						? `The window is too narrow for ${opt} instruments side by side`
+						: opt === 'auto'
+							? 'Show as many instruments as the window fits'
+							: `Show ${opt} instrument${opt === 1 ? '' : 's'} at a time`}
+					onclick={() => (slotPref = opt)}
+				>
+					{opt === 'auto' ? 'Auto' : opt}
+				</button>
+			{/each}
+		</div>
+		<!-- "Reset workspace" and the per-tile "Reset" were two buttons, one word,
+		     two levels — you could not tell from the label which one you were
+		     about to press. This one resets the LAYOUT (which instruments, how
+		     many); the tile's resets that instrument's CONTROLS. -->
+		<button class="btn ws-reset" onclick={resetWorkspace}>
+			<Mark name="reset" />
+			Reset layout
+		</button>
+	{/snippet}
+
+	{#snippet bandBFull()}
+		<!-- One row of cells on the tile grid's own columns, so each picker sits
+		     over the instrument it switches. -->
+		<div class="ws-band" style:--ws-slots={slotCount}>
+			{#each assignment.slice(0, slotCount) as id, slot (id)}
+				<div class="ws-band-cell">
+					<InstrumentPicker
+						current={id}
+						{assignment}
+						{slotCount}
+						{slot}
+						onPick={(next) => pick(slot, next)}
+					/>
+					<span class="ws-band-actions">
+						{#if handles[id]?.reset}
+							<button
+								class="btn btn--sm"
+								onclick={() => handles[id]?.reset?.()}
+								title="Reset this instrument's controls to their defaults"
+							>
+								<Mark name="reset" size={12} />
+								Defaults
+							</button>
+						{/if}
+						{#if handles[id]?.getShareState}
+							<button
+								class="btn btn--sm"
+								class:ws-share-copied={copiedTile === id}
+								onclick={() => shareTile(id)}
+								title="Copy a link that reopens this instrument as it looks now"
+							>
+								<Mark name={copiedTile === id ? 'check' : 'share'} size={12} />
+								{copiedTile === id ? 'Copied' : 'Share'}
+							</button>
+						{/if}
+					</span>
+				</div>
+			{/each}
+		</div>
+	{/snippet}
+
+	{#snippet surface()}
+		<div class="ws" style:--ws-slots={slotCount}>
+			{#each INSTRUMENTS as inst (inst.id)}
+				{@const slot = slotOf(inst.id)}
+				<section class="ws-tile" class:ws-hidden={slot === -1} style:order={slot}>
+					<div class="ws-body">
+						{#if slot !== -1 || everSlotted.has(inst.id)}
+							{#if inst.id === 'crit'}
+								<CritInstrument bind:this={handles.crit} />
+							{:else if inst.id === 'icd'}
+								<IcdInstrument
+									bind:this={handles.icd}
+									onHandoff={(msg) => deliverHandoff(msg, slot)}
+								/>
+							{:else if inst.id === 'rolls'}
+								<ArtifactInstrument bind:this={handles.rolls} />
+							{:else if inst.id === 'gauge'}
+								<GaugeInstrument bind:this={handles.gauge} active={slotOf('gauge') !== -1} />
+							{:else if inst.id === 'curves'}
+								<ReactionCurvesInstrument bind:this={handles.curves} />
+							{:else if inst.id === 'defres'}
+								<DefResInstrument bind:this={handles.defres} />
+							{:else if inst.id === 'wish'}
+								<WishInstrument bind:this={handles.wish} />
+							{:else if inst.id === 'anatomy'}
+								<AnatomyInstrument bind:this={handles.anatomy} />
+							{/if}
+						{/if}
+					</div>
+				</section>
+			{/each}
+		</div>
+	{/snippet}
+</ToolStack>
 
 <style>
-	.ws-toolbar {
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		gap: 0.5rem;
-		margin-bottom: 0.55rem;
+	/* Band A's left zone: the workspace's name. It is the one tool whose band A
+	   has no document tabs — there is nothing to switch between — so the kicker
+	   holds the zone rather than leaving the band lopsided, the way an empty
+	   left half read before. */
+	.ws-title {
+		font-size: var(--fs-xs);
 	}
 
 	/* The numerals are single characters; without a floor they'd render three
@@ -277,22 +321,48 @@
 		cursor: not-allowed;
 	}
 
+	/* The quieter of band A's two actions — resetting a layout is not what you
+	   came for. */
+	.ws-reset {
+		color: color-mix(in srgb, var(--muted) 75%, transparent);
+	}
+
+	/* ── Band B: one row of cells on the TILE GRID's own columns ──
+	   Same track definition and same gap as .ws below, inside the same band
+	   padding, so cell N sits exactly over tile N at every lineup size. That
+	   alignment is the reason the workspace grid took the band's padding: the
+	   picker has to look like it belongs to the instrument beneath it. */
+	.ws-band,
 	.ws {
 		display: grid;
 		grid-template-columns: repeat(var(--ws-slots, 1), minmax(0, 1fr));
 		gap: 1.25rem;
 	}
 
-	/* Both are .btn; the workspace bar's own weighting is what's local — reset
-	   is deliberately the quieter of the two, share carries a resting fill. */
-	.ws-reset {
-		color: color-mix(in srgb, var(--muted) 75%, transparent);
+	.ws-band-cell {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.4rem;
+		min-width: 0;
 	}
-	.ws-share {
-		background: var(--fill-rest);
-		font-size: var(--fs-md);
-		letter-spacing: var(--ls-wider);
-		padding: 0.38rem 0.85rem;
+
+	.ws-band-actions {
+		display: flex;
+		gap: 0.3rem;
+		flex-shrink: 0;
+	}
+
+	.ws-share-copied {
+		color: var(--ink-active);
+		background: var(--sel-fill);
+	}
+
+	/* The workspace takes the bands' own horizontal padding — without it the
+	   tiles would sit --band-pad-x left of the pickers that switch them.
+	   (.ws-band needs none: the band it fills already supplies it.) */
+	.ws {
+		padding: 0 var(--band-pad-x);
 	}
 
 	/* The TILE is the query container every instrument sizes against — not the
@@ -303,9 +373,8 @@
 	   declared but never queried, and retired with the slot-count round.
 	   inline-size only — size containment would collapse indefinite heights. */
 	.ws-tile {
-		display: grid;
-		grid-template-rows: auto minmax(0, 1fr);
-		gap: 0.7rem;
+		display: flex;
+		flex-direction: column;
 		min-width: 0;
 		container-type: inline-size;
 		container-name: instrument;
@@ -313,23 +382,6 @@
 
 	.ws-hidden {
 		display: none;
-	}
-
-	.ws-bar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.4rem;
-	}
-
-	.ws-bar-actions {
-		display: flex;
-		gap: 0.4rem;
-	}
-
-	.ws-share-copied {
-		color: var(--text);
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
 	}
 
 	/* Both minimums are load-bearing, and min-width is the one that bites.
@@ -340,17 +392,19 @@
 	   the tile drive the width; the chart's ResizeObserver then refits into it.
 	   Same law as the frames' min-height chain, one axis over. */
 	.ws-body {
+		flex: 1;
 		min-height: 0;
 		min-width: 0;
 	}
 
 	@media (min-width: 1024px) {
-		/* Fill the viewport between the Dire edge paddings; instruments manage
-		   their own internal scroll */
+		/* Fill the viewport below the bands; instruments manage their own
+		   internal scroll. The band stack and its gap come out of the budget —
+		   BAND_STACK_TO_SURFACE, passed down by ToolStack. */
 		.ws {
 			height: calc(
-				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 2rem) - var(--tool-pad-bottom, 2rem) -
-					1.9rem
+				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 0.5rem) -
+					var(--tool-pad-bottom, 3rem) - var(--band-a-h) - var(--band-b-h) - var(--band-stack-gap)
 			);
 		}
 	}

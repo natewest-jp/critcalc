@@ -20,7 +20,7 @@ const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 page.on('pageerror', (e) => console.log('  pageerror:', e.message));
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 // The card checks below need the full grid — the Atlas role cards are the default.
-await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
+await page.locator('.band-b .tab', { hasText: 'Roster' }).click();
 await page.locator('.cg-grid').first().waitFor({ timeout: 5000 });
 // .chrome-nav-link only: the gliding underline is an empty sibling <span> that
 // mounts post-hydration (whether it's present at sample time is timing luck).
@@ -85,7 +85,7 @@ async function openCompare(p) {
 		await card.hover();
 		await card.locator('.tb-act--compare').click();
 	}
-	await p.locator('.tb-tabs .tab', { hasText: 'Compare' }).click();
+	await p.locator('.band-b .tab', { hasText: 'Compare' }).click();
 	await p.locator('.cmp').waitFor({ timeout: 5000 });
 }
 await openCompare(page);
@@ -106,7 +106,7 @@ const cmpPos1280 = await page.locator('.cmp').evaluate((el) => getComputedStyle(
 check('compare stays in-flow @1280 (no overlay fallback)', cmpPos1280 === 'static', cmpPos1280);
 await page.screenshot({ path: `${SHOTS}/tb-1280-compare.png` });
 // Back to the roster; detail stays a modal at 1280 too.
-await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
+await page.locator('.band-b .tab', { hasText: 'Roster' }).click();
 await page.locator('.cc', { hasText: 'Bennett' }).first().locator('.cc-main').click();
 await page.locator('.dc-panel').waitFor({ timeout: 5000 });
 const dcPos1280 = await page

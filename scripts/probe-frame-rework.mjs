@@ -1,11 +1,20 @@
 /**
  * Probe: rotation-planner frame grammar (2026-07-19, round 3 — the flip)
- *  - ruler + view cluster (Total/zoom/NOTES) on the TOP edge (DAW convention)
+ *  - ruler on the TOP edge (DAW convention)
  *  - notation COMPOSER on the BOTTOM edge (chat-app register): inset box with
- *    a permanent --rp-line border, darker well, KQM/PNG "send" column on its
- *    right, heights matched (54px single-line)
- *  - PNG menu opens UPWARD from the composer
- *  - tab strip = document chrome only (no PNG/KQM/Notes)
+ *    a permanent --rp-line border, darker well
+ *
+ * ↻ TOOLBAR ROUND 2026-08-07 — three of this probe's subjects moved OUT of the
+ * frame, which is the point of that round rather than a regression:
+ *  - the view cluster (Total · zoom · Notes) is BAND B. It is view state, and
+ *    view state lives in the bands in every tool now.
+ *  - KQM and PNG left the composer's right-hand "send" column for band A's
+ *    single Share menu — they are exports, one family with the share link, and
+ *    they had been split across the top and bottom corners of one tool.
+ *  - the tab strip is band A.
+ * What this probe still owns is the FRAME's own grammar: ruler above tracks,
+ * composer on the bottom edge, the notes panel pushing only the tracks, and the
+ * ruler viewport following the track scroll.
  *
  * Run: start `npm run preview -- --port 4998 --strictPort`, then
  *      `node scripts/probe-frame-rework.mjs`
@@ -72,7 +81,7 @@ const geo = await page.evaluate(() => {
 		charBlock: r('.rp-char-block'),
 		ext: r('.rp-ext-scroll-wrap'),
 		composer: r('.rp-composer'),
-		cluster: r('.rp-view-cluster'),
+		bands: r('.bands'),
 		tickLabel: r('.rp-tick-label'),
 		gridline: r('.rp-gridline')
 	};
@@ -88,8 +97,9 @@ check(
 	`composer.top=${geo.composer?.top?.toFixed(0)} ext.bottom=${geo.ext?.bottom?.toFixed(0)}`
 );
 check(
-	'view cluster rides the top ruler',
-	geo.cluster && geo.ruler && Math.abs(geo.cluster.top - geo.ruler.top) <= 1.5
+	'view controls sit ABOVE the frame, in band B (not on the ruler)',
+	geo.bands && geo.ruler && geo.bands.bottom <= geo.ruler.top,
+	`bands.bottom=${geo.bands?.bottom?.toFixed(0)} ruler.top=${geo.ruler?.top?.toFixed(0)}`
 );
 check(
 	'tick labels inside top ruler band',
@@ -108,7 +118,6 @@ const composer = await page.evaluate(() => {
 	// Abutting round: the portrait column is gone (the ribbon holds the cards
 	// OUTSIDE the frame), so the composer starts at the frame's padding box.
 	const frameEl = document.querySelector('.rp-frame');
-	const btns = [...document.querySelectorAll('.rp-composer-actions .rp-composer-btn')];
 	const cs = cm ? getComputedStyle(cm) : null;
 	return {
 		borderW: cs?.borderTopWidth,
@@ -116,13 +125,13 @@ const composer = await page.evaluate(() => {
 		frameBg: frame ? getComputedStyle(frame).backgroundColor : null,
 		boxH: cm?.getBoundingClientRect().height,
 		boxL: cm?.getBoundingClientRect().left,
+		boxW: cm?.getBoundingClientRect().width,
 		framePadL: frameEl
 			? frameEl.getBoundingClientRect().left +
 				parseFloat(getComputedStyle(frameEl).borderLeftWidth) +
 				parseFloat(getComputedStyle(frameEl).paddingLeft)
 			: null,
-		btnRects: btns.map((b) => b.getBoundingClientRect()),
-		btnLabels: btns.map((b) => b.textContent.trim())
+		composerW: document.querySelector('.rp-composer')?.getBoundingClientRect().width ?? null
 	};
 });
 check('notation box border is 1px', composer.borderW === '1px', composer.borderW);
@@ -139,31 +148,32 @@ check(
 		Math.abs(composer.boxL - composer.framePadL) <= 2,
 	`box.left=${composer.boxL?.toFixed(0)} frame.padL=${composer.framePadL?.toFixed(0)}`
 );
+// The export column is gone from the composer (toolbar round) — the notation
+// box now takes the composer's whole width.
 check(
-	'KQM + PNG side-by-side beside the box',
-	composer.btnLabels.join('/') === '⎘ KQM/⧉ PNG' &&
-		composer.btnRects.length === 2 &&
-		composer.btnRects[1].left >= composer.btnRects[0].right,
-	composer.btnLabels.join('/')
+	'notation box fills the composer (no export column beside it)',
+	composer.boxH != null &&
+		composer.composerW != null &&
+		Math.abs(composer.composerW - (composer.boxW ?? 0)) <= 2,
+	`composer=${composer.composerW?.toFixed(0)} box=${composer.boxW?.toFixed(0)}`
 );
 
-// 3. Cluster contents + no PNG there
-const cluster = await page.evaluate(() => ({
-	total: document.querySelector('.rp-ruler-total')?.textContent.trim() ?? null,
-	notes: !!document.querySelector('.rp-notes-btn'),
-	pngInCluster: !!document.querySelector('.rp-view-cluster .rp-png-wrap')
+// 3. Band B = this tool's VIEW controls; band A = the DOCUMENT.
+const bandB = await page.evaluate(() => ({
+	total: document.querySelector('.rp-total')?.textContent.replace(/\s+/g, '') ?? null,
+	notes: !!document.querySelector('.band-b .rp-notes-btn'),
+	zoom: !!document.querySelector('.band-b .rp-zoom-slider')
 }));
-check('total chip shows key+value', /^Total[\d.]+s$/.test(cluster.total ?? ''), cluster.total);
-check('NOTES in cluster, PNG not', cluster.notes && !cluster.pngInCluster);
+check('total readout shows key+value', /^Total[\d.]+s$/.test(bandB.total ?? ''), bandB.total);
+check('band B holds the zoom + Notes pair', bandB.zoom && bandB.notes);
 
-// 4. Tab strip = document chrome only
-// (.tab-bar-actions/.tb-btn were retired by the design-system migration —
-// the strip is .rp-tab-bar-actions with global .btn children now.)
+// 4. Band A = document chrome only. The exports are behind ONE Share menu, so
+// no KQM/PNG/Notes control is loose in the band.
 const strip = await page.evaluate(() =>
-	[...document.querySelectorAll('.rp-tab-bar-actions .btn')].map((b) => b.textContent.trim())
+	[...document.querySelectorAll('.band-a .btn')].map((b) => b.textContent.trim())
 );
 check(
-	'tab strip = Save/Load/Share only',
+	'band A = Save/Load/Share only',
 	strip.join('|').includes('Share') && !/PNG|KQM|Notes/i.test(strip.join('|')),
 	strip.join(' · ')
 );
@@ -173,16 +183,14 @@ check(
 const beforeNotes = await page.evaluate(() => ({
 	frameH: document.querySelector('.rp-frame').getBoundingClientRect().height,
 	rulerW: document.querySelector('.rp-ruler-scroll').getBoundingClientRect().width,
-	clusterR: document.querySelector('.rp-view-cluster').getBoundingClientRect().right,
 	trackW: document.querySelector('.rp-track-scroll').getBoundingClientRect().width
 }));
-await page.click('.rp-notes-btn');
+await page.click('.band-b .rp-notes-btn');
 await page.waitForTimeout(300);
 const afterNotes = await page.evaluate(() => ({
 	panel: !!document.querySelector('.rp-caveat-panel'),
 	frameH: document.querySelector('.rp-frame').getBoundingClientRect().height,
 	rulerW: document.querySelector('.rp-ruler-scroll').getBoundingClientRect().width,
-	clusterR: document.querySelector('.rp-view-cluster').getBoundingClientRect().right,
 	trackW: document.querySelector('.rp-track-scroll').getBoundingClientRect().width,
 	panelScrolls: (() => {
 		const p = document.querySelector('.rp-caveat-panel');
@@ -197,7 +205,7 @@ check(
 );
 check(
 	'ruler strip NOT pushed by notes',
-	beforeNotes.rulerW === afterNotes.rulerW && beforeNotes.clusterR === afterNotes.clusterR,
+	beforeNotes.rulerW === afterNotes.rulerW,
 	`rulerW ${beforeNotes.rulerW.toFixed(0)} → ${afterNotes.rulerW.toFixed(0)}`
 );
 check(
@@ -210,11 +218,11 @@ check(
 	afterNotes.panelScrolls !== null && afterNotes.panelScrolls.ch > 0,
 	JSON.stringify(afterNotes.panelScrolls)
 );
-await page.click('.rp-notes-btn');
+await page.click('.band-b .rp-notes-btn');
 
 // 5b. Ruler follows track scroll (follower viewport, zoomed in far enough
 //     to guarantee overflow)
-await page.click('.rp-zoom-btn[aria-label="Zoom in"]', { clickCount: 6 });
+await page.click('.rp-zoom .btn[aria-label="Zoom in"]', { clickCount: 6 });
 await page.waitForTimeout(200);
 await page.evaluate(() => {
 	document.querySelector('.rp-track-scroll').scrollLeft = 300;
@@ -234,42 +242,34 @@ await page.evaluate(() => {
 	document.querySelector('.rp-track-scroll').scrollLeft = 0;
 	document.querySelector('.rp-track-scroll').dispatchEvent(new Event('scroll'));
 });
-await page.click('.rp-zoom-btn[aria-label="Zoom out"]', { clickCount: 6 });
+await page.click('.rp-zoom .btn[aria-label="Zoom out"]', { clickCount: 6 });
 await page.waitForTimeout(300);
 
-// 6. PNG menu opens UPWARD from the composer
-await page.click('.rp-composer-actions .rp-png-wrap .rp-composer-btn');
+// 6/7. The exports: ONE Share menu in band A, offering the link plus the two
+// chart-bound exports the timeline registers. (The PNG pop-out that used to
+// open UPWARD from the composer is gone with the composer's action column.)
+await page.click('.band-a .band-menu-trigger');
 await page.waitForTimeout(200);
-const menuGeo = await page.evaluate(() => {
-	const m = document.querySelector('.rp-png-menu')?.getBoundingClientRect();
-	const b = document
-		.querySelector('.rp-composer-actions .rp-png-wrap .rp-composer-btn')
-		?.getBoundingClientRect();
-	return { m, b };
-});
-check(
-	'PNG menu opens upward',
-	menuGeo.m && menuGeo.b && menuGeo.m.bottom <= menuGeo.b.top,
-	`menu.bottom=${menuGeo.m?.bottom?.toFixed(0)} btn.top=${menuGeo.b?.top?.toFixed(0)}`
+const menu = await page.evaluate(() =>
+	[...document.querySelectorAll('.band-menu-item')].map((b) => b.textContent.trim())
 );
-await page.mouse.click(10, 10); // dismiss via backdrop
-await page.waitForTimeout(200);
-
-// 7. KQM copy → transient feedback + clipboard content
-const kqmSel = '.rp-composer-actions > .rp-composer-btn';
-await page.click(kqmSel);
-await page.waitForTimeout(300);
 check(
-	'KQM feedback flips',
-	(await page.evaluate((s) => document.querySelector(s)?.textContent.trim(), kqmSel)) === '✓ Copied'
+	'Share menu offers the link and both chart exports',
+	menu.some((t) => /link/i.test(t)) &&
+		menu.some((t) => /KQM/i.test(t)) &&
+		menu.filter((t) => /image/i.test(t)).length === 2,
+	menu.join(' · ')
+);
+const kqmIdx = menu.findIndex((t) => /KQM/i.test(t));
+await page.locator('.band-menu-item').nth(kqmIdx).click();
+await page.waitForTimeout(400);
+check(
+	'KQM copy reports through the band notice',
+	(await page.evaluate(() => document.querySelector('.doc-notice')?.textContent.trim())) ===
+		'KQM copied'
 );
 const clipText = await page.evaluate(() => navigator.clipboard.readText().catch(() => null));
 check('clipboard holds KQM text', (clipText ?? '').includes('Furina'), JSON.stringify(clipText));
-await page.waitForTimeout(1700);
-check(
-	'KQM label reverts',
-	(await page.evaluate((s) => document.querySelector(s)?.textContent.trim(), kqmSel)) === '⎘ KQM'
-);
 
 // Screenshots
 await page.locator('.rp-frame').screenshot({ path: `${SHOT_DIR}/frame-rework-full.png` });

@@ -224,7 +224,7 @@ try {
 	console.log('\nReset workspace');
 	await page.setViewportSize({ width: 2400, height: 1200 });
 	await page.waitForTimeout(150);
-	await page.click('.ws-reset');
+	await page.click('.ws-reset'); // 'Reset layout'
 	await page.waitForTimeout(120);
 	check('reset returns the lineup to Auto', (await columnCount(page)) === 3);
 

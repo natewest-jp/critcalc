@@ -13,14 +13,9 @@
 	import { artifactImagePath } from '$lib/data/artifactLookup';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
-	import {
-		benchBand,
-		RIBBON_W,
-		RIBBON_DOCK_LEFT,
-		RIBBON_OVERHANG_Y,
-		TOOL_INSET,
-		FRAME_BORDER
-	} from '$lib/benchBand.svelte';
+	import { benchBand } from '$lib/benchBand.svelte';
+	import { documentBar } from '$lib/documentBar.svelte';
+	import { plannerView as pv } from '$lib/plannerView.svelte';
 	import { onDestroy } from 'svelte';
 	import { BUFF_STAT_ICON } from '$lib/timeline/buffStatMaps';
 	import {
@@ -90,7 +85,11 @@
 	// ---------------------------------------------------------------------------
 	// State
 	// ---------------------------------------------------------------------------
-	let scale = $state(60); // px per second
+	// Zoom and the notes panel are VIEW controls and live in band B now (toolbar
+	// round, 2026-08-07) — the shared module is where the band and this chart
+	// meet. Aliased locally because the geometry below reads `scale` dozens of
+	// times and `pv.scale` at every site would bury it.
+	const scale = $derived(pv.scale);
 
 	// Sticky: true after the Source overlay first opens — from then on it stays
 	// mounted (CSS-hidden when closed) so reopening skips the grid remount.
@@ -800,49 +799,46 @@
 		};
 	}
 
-	// PNG export lives on the chart it renders (bottom view cluster). The
-	// button's own label carries the outcome feedback — no page-level notice.
-	let pngMenuOpen = $state(false);
-	let pngBusy = $state(false);
-	let pngFeedback = $state<string | null>(null);
-	let pngFeedbackTimer: ReturnType<typeof setTimeout> | undefined;
+	// ── Chart-bound exports ────────────────────────────────────────────────
+	// Both exports need THIS component: the PNG renders a snapshot of the chart
+	// as drawn, and the KQM copy canonicalizes the notation the composer holds.
+	// The buttons, though, belong with the share link in band A — one family,
+	// one menu (toolbar round). So the timeline REGISTERS them, exactly as it
+	// registers its bench-slot metrics, and the band offers them only while a
+	// planner is mounted to serve them.
+	let pngBusy = false;
 
 	async function runPng(mode: 'copy' | 'download') {
-		pngMenuOpen = false;
 		if (pngBusy) return;
 		pngBusy = true;
-		let result: 'copied' | 'downloaded' | 'failed';
 		try {
 			const blob = await renderTimelinePng(buildSnapshot());
-			result = await deliverPng(blob, 'critcalc-rotation.png', mode);
+			const result = await deliverPng(blob, 'critcalc-rotation.png', mode);
+			documentBar.showNotice(
+				result === 'copied'
+					? 'Image copied'
+					: result === 'downloaded'
+						? 'Image saved'
+						: 'Export failed'
+			);
 		} catch (e) {
 			console.error('PNG export failed:', e);
-			result = 'failed';
+			documentBar.showNotice('Export failed');
 		}
 		pngBusy = false;
-		pngFeedback =
-			result === 'copied' ? '✓ Copied' : result === 'downloaded' ? '✓ Saved' : '✗ Failed';
-		clearTimeout(pngFeedbackTimer);
-		pngFeedbackTimer = setTimeout(() => (pngFeedback = null), 1600);
 	}
-
-	// KQM copy lives on the notation head — it copies the canonical form of
-	// exactly the text it sits on. Same transient in-label feedback idiom.
-	let kqmFeedback = $state<string | null>(null);
-	let kqmFeedbackTimer: ReturnType<typeof setTimeout> | undefined;
 
 	async function copyKqm() {
-		if (!notation.trim()) return;
-		let ok = true;
+		if (!notation.trim()) return false;
 		try {
 			await navigator.clipboard.writeText(toKqmNotation(notation));
+			return true;
 		} catch {
-			ok = false;
+			return false;
 		}
-		kqmFeedback = ok ? '✓ Copied' : '✗ Failed';
-		clearTimeout(kqmFeedbackTimer);
-		kqmFeedbackTimer = setTimeout(() => (kqmFeedback = null), 1600);
 	}
+
+	$effect(() => documentBar.registerExporters({ kqm: copyKqm, png: runPng }));
 
 	// ---------------------------------------------------------------------------
 	// Connection info per track (arrival/departure of swap connectors)
@@ -934,7 +930,7 @@
 	// Caveat panel
 	// ---------------------------------------------------------------------------
 
-	let showNotes = $state(false);
+	const showNotes = $derived(pv.showNotes);
 
 	let slotCaveats = $derived.by(() => {
 		const seen = new SvelteSet<string>();
@@ -965,8 +961,18 @@
 
 	let hasCaveats = $derived(slotCaveats.length > 0);
 
+	// Publish what band B needs to render its half: the notes gate and the
+	// total-length readout. Written here because only the chart knows them —
+	// see plannerView.svelte.ts for the direction-of-flow contract.
 	$effect(() => {
-		if (!hasCaveats) showNotes = false;
+		pv.hasCaveats = hasCaveats;
+		// A rebuild that leaves nothing to annotate closes the panel; the band's
+		// own button is disabled in the same breath by the flag above.
+		if (!hasCaveats) pv.showNotes = false;
+	});
+
+	$effect(() => {
+		pv.totalDuration = rotation.totalDuration;
 	});
 
 	// ---------------------------------------------------------------------------
@@ -1038,16 +1044,12 @@
 <!-- ============================================================ -->
 <!--  Root                                                        -->
 <!-- ============================================================ -->
-<!-- --rp-tool-inset: how far the frame starts from the content margin — the
-     ribbon's column, which the frame no longer reaches into (abutting round).
-     The tab bar in the planner PAGE reads the same constant, so the two move
-     together; TeamBonusesBlock deliberately does not — it sits below the
-     strip and keys its rail to the same seam. -->
-<div
-	class="rp-root ctx-dark"
-	style:--rp-tool-inset="{TOOL_INSET}px"
-	style:--rp-frame-pad-x="{FRAME_PAD_X}px"
->
+<!-- ↻ TOOLBAR ROUND: the frame no longer insets ITSELF past the ribbon's
+     column. It is rendered inside a ToolStack, whose padding-left holds the
+     bands AND the surface off the strip together — one declaration instead of
+     the three that had to agree. (TeamBonusesBlock still sits outside the
+     stack at the content margin, below the strip's bottom end.) -->
+<div class="rp-root ctx-dark" style:--rp-frame-pad-x="{FRAME_PAD_X}px">
 	<!-- ── Timeline chart frame ──────────────────────────────── -->
 	<!-- The frame is ONE instrument with a fixed grammar: time axis (ruler +
 	     view controls) on the TOP edge per DAW/NLE convention, rendered tracks
@@ -1055,29 +1057,11 @@
 	     pair) on the BOTTOM edge — the chat-app register: you write at the
 	     bottom, the conversation renders above. -->
 	<div class="rp-frame frame" class:rp-frame--picking={sourceOpen}>
-		<!-- The RIBBON's dock: an invisible, ribbon-sized anchor the tools
-		     layout measures to place the bench strip. Geometry contract:
-		     · it hangs entirely OUTSIDE the frame, RIBBON_GAP left of it, so
-		       its right edge lands on the frame's outer edge and the two
-		       surfaces tile instead of overlapping (abutting round — two
-		       things that fade together must not stack)
-		     · it STRETCHES with the frame (top/bottom insets, no height):
-		       the strip spans the whole tool surface and stands
-		       RIBBON_OVERHANG_Y proud at each end — ⚓ NATE's tall bench.
-		       Both tools use the same overhang against frame tops that
-		       already align (probe-bench-align), so the strip's y and the
-		       card column's y never change across the tool fade.
-		     Absolute insets resolve against the frame's PADDING box (the
-		     documented trap), which is inset from the border box by the frame's
-		     own border — RIBBON_DOCK_LEFT and the ends both carry it. -->
-		<div
-			class="rp-ribbon-dock"
-			data-bench-anchor
-			style:left="{RIBBON_DOCK_LEFT}px"
-			style:top="-{FRAME_BORDER + RIBBON_OVERHANG_Y}px"
-			style:bottom="-{FRAME_BORDER + RIBBON_OVERHANG_Y}px"
-			style:width="{RIBBON_W}px"
-		></div>
+		<!-- The RIBBON's dock used to live here, hanging off this frame's padding
+		     box. It moved up to the TOOL STACK in the toolbar round: the strip
+		     now stands proud of the BANDS as well as the surface, so its anchor
+		     has to span both — and one dock definition, shared by both benched
+		     tools, replaces the two that had silently drifted apart. -->
 		<!-- ── Ruler strip (full frame width, ABOVE the track area) ── -->
 		<!-- Its own row so the notes panel can never push it: the ruler
 		     viewport is a scroll FOLLOWER (overflow hidden, mirrored from the
@@ -1097,62 +1081,10 @@
 					{/each}
 				</div>
 			</div>
-			<!-- View cluster — rides the strip's right end (the frame's "view
-			     controls" corner), fading in over the scrolling tick strip:
-			     total · zoom · Notes. -->
-			<div class="rp-view-cluster" style:height="{RULER_H}px">
-				{#if rotation.totalDuration > 0}
-					<span class="rp-ruler-total" title="Total rotation length"
-						><span class="rp-ruler-total-key">Total</span>{Math.round(rotation.totalDuration * 10) /
-							10}s</span
-					>
-				{/if}
-				<button
-					class="btn btn--sm btn--icon rp-zoom-btn"
-					type="button"
-					aria-label="Zoom out"
-					onclick={() => (scale = Math.max(20, scale - 5))}>−</button
-				>
-				<input
-					type="range"
-					min={20}
-					max={120}
-					step={5}
-					bind:value={scale}
-					class="slider rp-zoom-slider"
-					aria-label="Zoom"
-					title="Zoom — pixels per second"
-				/>
-				<button
-					class="btn btn--sm btn--icon rp-zoom-btn"
-					type="button"
-					aria-label="Zoom in"
-					onclick={() => (scale = Math.min(120, scale + 5))}>+</button
-				>
-				<button
-					class="btn btn--sm rp-notes-btn"
-					class:is-active={showNotes}
-					type="button"
-					aria-label="Toggle notes panel"
-					disabled={!hasCaveats}
-					onclick={() => (showNotes = !showNotes)}
-					>NOTES{#if hasCaveats}<svg class="rp-notes-badge" viewBox="0 0 24 24" aria-hidden="true"
-							><g transform="matrix(1,0,0,1,-273.029018,-202.228283)">
-								<g>
-									<g transform="matrix(0.575277,0,0,0.575277,146.251428,151.449127)">
-										<circle cx="241.236" cy="109.129" r="20.86" fill="var(--ui-danger)" />
-									</g>
-									<g transform="matrix(1,0,0,1,-2.378613,7.691546)">
-										<path
-											d="M287.339,210.822L287.495,210.822C287.975,210.822 288.411,210.985 288.799,211.317C289.203,211.663 289.404,212.098 289.404,212.623L289.404,212.775L289.396,212.852C289.39,212.885 289.384,212.909 289.384,212.925C289.384,213.273 289.218,213.648 288.84,214.026C288.478,214.387 288.083,214.562 287.662,214.57L287.535,214.589L287.271,214.589C287.246,214.589 287.222,214.587 287.197,214.582C287.165,214.576 287.141,214.57 287.124,214.57C286.714,214.57 286.319,214.399 285.951,214.03C285.591,213.67 285.412,213.239 285.412,212.739L285.412,212.683L285.427,212.698C285.423,212.677 285.421,212.655 285.421,212.632L285.421,212.61L285.419,212.607L285.422,212.593C285.432,212.155 285.613,211.749 285.98,211.381C286.353,211.009 286.805,210.822 287.339,210.822ZM285.538,200.334L285.538,199.894C285.538,199.03 286.205,198.484 287.681,198.484L287.715,198.486L287.827,198.494C287.827,198.494 288.021,198.509 287.827,198.494C288.334,198.5 288.685,198.655 288.898,198.903C289.103,199.141 289.228,199.513 289.228,200.031L289.228,200.479L289.226,200.527L289.218,200.619L289.217,200.629L289.208,200.842L289.207,200.863C289.202,200.93 289.199,200.995 289.199,201.056L289.197,201.094L289.178,201.322C289.165,201.472 289.16,201.722 289.16,202.072C289.16,202.444 289.098,203.162 288.971,204.225C288.848,205.262 288.753,206.181 288.685,206.982C288.614,207.812 288.546,208.359 288.486,208.621C288.395,209.014 288.053,209.293 287.369,209.293L287.242,209.293C287.009,209.293 286.817,209.224 286.662,209.099C286.463,208.939 286.315,208.67 286.264,208.271C285.779,204.394 285.538,201.748 285.538,200.334Z"
-											fill="var(--text)"
-										/>
-									</g>
-								</g>
-							</g></svg
-						>{/if}</button
-				>
-			</div>
+			<!-- The view cluster (total · zoom · Notes) used to ride this strip's
+			     right end. It moved to BAND B in the toolbar round: it is view
+			     state, and the bands are where view state lives now, in every
+			     tool. The ruler keeps the full frame width it always wanted. -->
 		</div>
 		<div class="rp-timeline-area" class:rp-timeline-area--notes={showNotes && hasCaveats}>
 			<div class="rp-scroll-wrapper">
@@ -1681,53 +1613,17 @@
 
 		<!-- ── Composer (bottom edge) ────────────────────────────── -->
 		<!-- The notation input rides the frame's bottom like a chat composer:
-		     you write the rotation here, the timeline renders it above. The
-		     KQM/PNG pair sits just outside the box on the right — the
-		     "submit/send" position for a finished rotation. Left margin aligns
-		     the box with the track area (right edge of portraits). -->
+		     you write the rotation here, the timeline renders it above. Left
+		     margin aligns the box with the track area (right edge of portraits).
+		     ↻ TOOLBAR ROUND: the KQM/PNG pair that used to sit just outside the
+		     box is gone from here. Both are EXPORTS, and exports are one family
+		     with the share link — they live in band A's Share menu now, which
+		     reaches them through documentBar's exporter registration below.
+		     Splitting one family across the top and bottom corners of the same
+		     tool was the thing the round set out to stop. -->
 		<div class="rp-composer">
 			<div class="rp-notation-wrap">
 				<div class="rp-notation" use:mountEditor={notation}></div>
-			</div>
-			<div class="rp-composer-actions">
-				<button
-					class="btn btn--sm rp-composer-btn"
-					type="button"
-					disabled={!notation.trim()}
-					onclick={copyKqm}
-					title="Copy this rotation as KQM combat notation">{kqmFeedback ?? '⎘ KQM'}</button
-				>
-				<div class="rp-png-wrap">
-					<button
-						class="btn btn--sm rp-composer-btn"
-						type="button"
-						disabled={!notation.trim() || pngBusy}
-						aria-haspopup="menu"
-						aria-expanded={pngMenuOpen}
-						onclick={() => (pngMenuOpen = !pngMenuOpen)}
-						title="Export the timeline as an image">{pngFeedback ?? '⧉ PNG'}</button
-					>
-					{#if pngMenuOpen}
-						<div
-							class="rp-popover-backdrop"
-							role="button"
-							tabindex="-1"
-							aria-label="Close export menu"
-							onclick={() => (pngMenuOpen = false)}
-							onkeydown={(e) => {
-								if (e.key === 'Escape') pngMenuOpen = false;
-							}}
-						></div>
-						<div class="rp-png-menu" role="menu">
-							<button class="rp-png-item" role="menuitem" onclick={() => runPng('copy')}
-								>Copy image</button
-							>
-							<button class="rp-png-item" role="menuitem" onclick={() => runPng('download')}
-								>Download</button
-							>
-						</div>
-					{/if}
-				</div>
 			</div>
 		</div>
 
@@ -1826,11 +1722,10 @@
 		/* --rp-frame-pad-x comes inline from FRAME_PAD_X (the dock's inset is
 		   measured against it, so it can't be a second literal here). */
 		padding: 10px var(--rp-frame-pad-x) 4px;
-		/* The frame BEGINS at the ribbon's right edge — it no longer runs
-		   beneath the strip (abutting round). The tab bar above carries the
-		   same inset from the planner page; TeamBonusesBlock below deliberately
-		   does not, since it sits clear of the strip's bottom. */
-		margin-left: var(--rp-tool-inset);
+		/* The frame BEGINS at the ribbon's right edge — but it is the TOOL
+		   STACK that puts it there now (toolbar round), so the bands above and
+		   the frame share one inset by construction rather than by two
+		   declarations agreeing. */
 		display: flex;
 		flex-direction: column;
 		min-width: 0;
@@ -1844,11 +1739,6 @@
 	   area. Knob — the picker gets this minus the frame's padding. */
 	.rp-frame--picking {
 		min-height: 26rem;
-	}
-
-	/* Track/thumb styling comes from the shared .slider (app.css). */
-	.rp-zoom-slider {
-		width: 96px;
 	}
 
 	/* ── Timeline area (scroll + optional caveat panel) ──────── */
@@ -1956,104 +1846,6 @@
 		min-width: 0;
 	}
 
-	/* ── View cluster (over the top ruler's right end) ─────────── */
-	/* The frame's "view controls" corner: total · zoom · Notes. */
-	.rp-view-cluster {
-		/* Shared control height for the whole cluster (total / zoom / NOTES). */
-		--rp-cluster-h: 20px;
-		position: absolute;
-		top: 0;
-		right: 0;
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		/* Right padding keeps the NOTES badge (the last item) clear of the
-		   frame edge; bottom padding lifts the controls off the tick strip. */
-		padding: 0 8px 6px 48px;
-		/* Fade the ruler out under the controls: a fixed 40px ramp to solid
-		   FRAME ground (the ruler strip sits on --frame-bg — since the chart
-		   ground went darker 2026-08-01 the two diverged, and a chart-ground
-		   fade here read as a dark slab over the lighter strip), with the
-		   contents starting past it (padding-left) so ticks never show
-		   through the translucent chips. */
-		background: linear-gradient(to right, transparent, var(--frame-bg) 40px);
-		z-index: 5;
-	}
-	.rp-view-cluster .rp-zoom-slider {
-		width: 88px;
-	}
-	/* Total-length readout — chip backing separates it from the ruler's tick
-	   numbers; the TOTAL key says what it is. Same fill and height as the
-	   rest of the view cluster (zoom / NOTES) so the row reads as one rail. */
-	.rp-ruler-total {
-		background: var(--fill-rest);
-		border-radius: 3px;
-		display: inline-flex;
-		align-items: center;
-		height: var(--rp-cluster-h);
-		padding: 0 7px;
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		color: var(--text);
-		white-space: nowrap;
-	}
-	.rp-ruler-total-key {
-		font-size: var(--fs-2xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-widest);
-		text-transform: uppercase;
-		color: var(--muted);
-		margin-right: 6px;
-	}
-
-	/* Notification mark: notes exist for the loaded characters. Nate's artwork
-	   (assets-src/tools/notification.svg) — a dire disc with a --text glyph,
-	   drawn rather than typeset. The two fills are wired to the tokens instead
-	   of the SVG's baked hexes so a palette change carries through. */
-	.rp-notes-badge {
-		position: absolute;
-		top: -5px;
-		right: -6px;
-		/* 12px renders a 12px disc: the circle fills the 24x24 viewBox
-		   edge-to-edge (centre 12,12, r 12 after the artwork's transforms). */
-		width: 12px;
-		height: 12px;
-		pointer-events: none;
-	}
-
-	/* ── PNG pop-out (composer) ───────────────────────────────── */
-	.rp-png-wrap {
-		position: relative;
-	}
-	/* Opens upward — the button rides the composer at the frame's bottom. */
-	.rp-png-menu {
-		position: absolute;
-		bottom: calc(100% + 4px);
-		right: 0;
-		z-index: 50;
-		display: flex;
-		flex-direction: column;
-		background: var(--surface); /* modal role (Nate 2026-07-31) */
-		border: 1px solid var(--border);
-		border-radius: 6px;
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-		padding: 2px 0;
-		min-width: 124px;
-	}
-	.rp-png-item {
-		background: transparent;
-		border: none;
-		padding: 6px 12px;
-		font-size: var(--fs-xs);
-		color: var(--text);
-		text-align: left;
-		cursor: pointer;
-		white-space: nowrap;
-	}
-	.rp-png-item:hover {
-		background: color-mix(in srgb, var(--accent) 16%, transparent);
-	}
-
 	/* ── Lane names (tall-bench round) ───────────────────────────
 	   The label column is under the ribbon at every height now, so each aux
 	   lane carries its OWN name: pinned to the track viewport's left edge
@@ -2078,13 +1870,6 @@
 		white-space: nowrap;
 		line-height: var(--lh-none);
 		pointer-events: none;
-	}
-
-	/* The ribbon's dock — measured by the tools layout, never painted. */
-	.rp-ribbon-dock {
-		position: absolute;
-		pointer-events: none;
-		visibility: hidden;
 	}
 
 	/* ── Track scroll container ───────────────────────────────── */
@@ -2237,50 +2022,6 @@
 	}
 	.rp-team-buff-bar.rp-team-debuff-bar .rp-buff-label {
 		color: rgba(255, 255, 255, 0.85);
-	}
-	/* Planner toolbar buttons are .btn--sm now; these keep only the geometry the
-	   global class can't know.
-	   ↻ 2026-08-01 lightness-structure: the cluster rides the mid rung
-	   (--control-face, opaque slate) instead of the translucent resting fill —
-	   these are the planner's promoted controls. The local :hover is REQUIRED:
-	   the global .btn:hover (0,2,0) would otherwise win and drop hover BELOW
-	   rest. Ink lifts to --text for the solid face. */
-	.rp-zoom-btn,
-	.rp-notes-btn,
-	.rp-composer-btn {
-		background: var(--control-face);
-		color: var(--text);
-	}
-	.rp-zoom-btn:hover,
-	.rp-notes-btn:hover,
-	.rp-composer-btn:hover {
-		background: var(--control-face-hover);
-	}
-	/* Opaque active mix for NOTES (knob: the accent share). The global
-	   .btn.is-active --sel-fill is translucent — alpha law says mix against
-	   the known face instead. */
-	.rp-notes-btn.is-active {
-		background: color-mix(in srgb, var(--accent) 20%, var(--control-face));
-	}
-	/* One height for the whole view cluster (total readout, − / + zoom,
-	   NOTES) — the row used to mix 18px buttons with padding-derived
-	   neighbors (Nate 2026-07-31). */
-	.rp-zoom-btn,
-	.rp-notes-btn {
-		height: var(--rp-cluster-h);
-	}
-	.rp-zoom-btn {
-		font-size: var(--fs-md);
-		user-select: none;
-	}
-	.rp-notes-btn {
-		/* positions the unread badge */
-		position: relative;
-	}
-	/* Fixed min-width so the transient "✓ Copied" label doesn't reflow the row */
-	.rp-composer-btn {
-		min-width: 84px;
-		height: 24px;
 	}
 
 	.rp-buff-icon {
@@ -2817,12 +2558,6 @@
 		flex: 1;
 		min-width: 0;
 	}
-	.rp-composer-actions {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		flex-shrink: 0;
-	}
 	/* .rp-notation is the CodeMirror host div — structural only; all visual
 	   styling (background, border, font, colors) is injected by notationTheme
 	   inside buildNotationExtensions so it bypasses Svelte's CSS scoping. */
@@ -2847,13 +2582,5 @@
 		color: var(--text);
 		white-space: pre;
 		overflow: auto;
-	}
-
-	/* Full-screen backdrop for the PNG export menu (the constellation /
-	   refinement popovers moved into SlotPortrait with their own backdrop). */
-	.rp-popover-backdrop {
-		position: fixed;
-		inset: 0;
-		z-index: 49;
 	}
 </style>

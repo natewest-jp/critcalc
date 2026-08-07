@@ -10,6 +10,12 @@ const check = (name, ok, detail = '') => {
 	if (!ok) failures++;
 };
 
+// The dock lives on the shared <ToolStack> now, so BOTH page layers carry one
+// during a navigation (the outgoing layer is retained, mid-drift, for a few
+// seconds). Every anchor lookup below mirrors the layout's own rule — the
+// LATEST layer stamped with the current path is the real one — instead of
+// relying on the old per-tool selectors to disambiguate by accident.
+
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
 page.on('pageerror', (e) => console.log('  pageerror:', e.message));
@@ -34,7 +40,13 @@ await page.waitForTimeout(800);
 
 const rp = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
-	const anchor = document.querySelector('[data-bench-anchor]');
+	const anchor = (() => {
+		const layers = [...document.querySelectorAll('.tool-main > .tool-page')].filter(
+			(p) => p.dataset.page === location.pathname
+		);
+		const layer = layers[layers.length - 1] ?? document;
+		return layer.querySelector('[data-bench-anchor]');
+	})();
 	const cards = document.querySelectorAll('.bench-band-mount .sp-card, .bench-band-mount .bb-slot');
 	const names = [...document.querySelectorAll('.bench-band-mount .sp-char-name')].map(
 		(n) => n.textContent
@@ -59,6 +71,12 @@ const rp = await page.evaluate(() => {
 			(el) => el.getBoundingClientRect().height
 		),
 		tracksTop: document.querySelector('.rp-char-block')?.getBoundingClientRect().top ?? null,
+		firstCardTop:
+			document.querySelector('.bench-band-mount .sp-card')?.getBoundingClientRect().top ?? null,
+		bandsRect: (() => {
+			const r = document.querySelector('.bands')?.getBoundingClientRect();
+			return r ? { x: r.x, y: r.y, w: r.width, h: r.height } : null;
+		})(),
 		frameRect: (() => {
 			const r = document.querySelector('.rp-frame')?.getBoundingClientRect();
 			return r ? { x: r.x, y: r.y, w: r.width, h: r.height } : null;
@@ -87,22 +105,27 @@ check(
 	rp.bandRect && Math.abs(rp.bandRect.w - 192) <= 1,
 	String(rp.bandRect?.w)
 );
-// The ribbon's card column must land exactly on the track rows (the RIBBON
-// geometry contract: dock top + chrome 15 + head 36 = tracks top).
+// The ribbon's card column must land exactly on the track rows. Measured card
+// against measured row, rather than the old `bandY + 51` hand-sum: RIBBON_HEAD
+// gained BAND_STACK_TO_SURFACE in the toolbar round (the strip now opens above
+// the BANDS), and a probe that re-derives the sum only re-states the code.
 check(
-	'card column top = track rows top (ribbon chrome + head accounted)',
-	rp.bandRect && rp.tracksTop != null && Math.abs(rp.bandRect.y + 51 - rp.tracksTop) <= 1,
-	JSON.stringify({ bandY: rp.bandRect?.y, tracksTop: rp.tracksTop })
+	'card column top = track rows top',
+	rp.firstCardTop != null && rp.tracksTop != null && Math.abs(rp.firstCardTop - rp.tracksTop) <= 1,
+	JSON.stringify({ firstCardTop: rp.firstCardTop, tracksTop: rp.tracksTop })
 );
-// The tall-bench contract on the planner side: the strip stands 12px proud of
-// the frame at BOTH ends, whatever height the rotation gives it.
+// The tall-bench contract, ↻ toolbar round: the strip stands 12px proud of the
+// whole TOOL STACK — bands at the top, frame at the bottom — not of the frame
+// alone. That is the round's headline: the toolbar is inside the object the
+// ribbon flanks, instead of floating unattached beside its shoulder.
 check(
-	'ribbon overhangs the RP frame top and bottom',
+	'ribbon overhangs the RP band stack (top) and frame (bottom)',
 	rp.frameRect &&
+		rp.bandsRect &&
 		rp.bandRect &&
-		Math.abs(rp.frameRect.y - rp.bandRect.y - 12) <= 1 &&
+		Math.abs(rp.bandsRect.y - rp.bandRect.y - 12) <= 1 &&
 		Math.abs(rp.bandRect.y + rp.bandRect.h - (rp.frameRect.y + rp.frameRect.h) - 12) <= 1,
-	JSON.stringify({ frame: rp.frameRect, band: rp.bandRect })
+	JSON.stringify({ frame: rp.frameRect, bands: rp.bandsRect, band: rp.bandRect })
 );
 // The lane names moved INTO their lanes (the label column is under the strip
 // at every height now).
@@ -148,7 +171,13 @@ await page.waitForTimeout(2600); // settle (world clock 2400 + fade tail + settl
 
 const tb = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
-	const anchor = document.querySelector('.tb-frame [data-bench-anchor]');
+	const anchor = (() => {
+		const layers = [...document.querySelectorAll('.tool-main > .tool-page')].filter(
+			(p) => p.dataset.page === location.pathname
+		);
+		const layer = layers[layers.length - 1] ?? document;
+		return layer.querySelector('[data-bench-anchor]');
+	})();
 	const b = band?.getBoundingClientRect();
 	const a = anchor?.getBoundingClientRect();
 	const names = [...document.querySelectorAll('.bench-band-mount .sp-char-name')].map(
@@ -160,6 +189,10 @@ const tb = await page.evaluate(() => {
 		anchorRect: a ? { x: a.x, y: a.y, w: a.width, h: a.height } : null,
 		frameRect: (() => {
 			const r = document.querySelector('.tb-frame')?.getBoundingClientRect();
+			return r ? { x: r.x, y: r.y, w: r.width, h: r.height } : null;
+		})(),
+		bandsRect: (() => {
+			const r = document.querySelector('.bands')?.getBoundingClientRect();
 			return r ? { x: r.x, y: r.y, w: r.width, h: r.height } : null;
 		})(),
 		names,
@@ -228,12 +261,13 @@ check('TB actions (audition/remove) present', tb.hasAuditionAct);
 check('ribbon keeps its own dark context on TB', (tb.ctx ?? '').includes('ctx-dark'), tb.ctx);
 // The strip stands proud of its frame at BOTH ends — the tall-bench contract.
 check(
-	'ribbon overhangs the TB frame top and bottom',
+	'ribbon overhangs the TB band stack (top) and frame (bottom)',
 	tb.frameRect &&
+		tb.bandsRect &&
 		tb.bandRect &&
-		Math.abs(tb.frameRect.y - tb.bandRect.y - 12) <= 1 &&
+		Math.abs(tb.bandsRect.y - tb.bandRect.y - 12) <= 1 &&
 		Math.abs(tb.bandRect.y + tb.bandRect.h - (tb.frameRect.y + tb.frameRect.h) - 12) <= 1,
-	JSON.stringify({ frame: tb.frameRect, band: tb.bandRect })
+	JSON.stringify({ frame: tb.frameRect, bands: tb.bandsRect, band: tb.bandRect })
 );
 // The tuck-under zone is gone entirely (abutting round) — the frame starts at
 // the ribbon's right edge, so there is no column left inside it to reserve.
@@ -276,7 +310,13 @@ await page.click('.chrome-nav a[href*="rotation-planner"]');
 await page.waitForTimeout(3400);
 const rp2 = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
-	const anchor = document.querySelector('.rp-ribbon-dock');
+	const anchor = (() => {
+		const layers = [...document.querySelectorAll('.tool-main > .tool-page')].filter(
+			(p) => p.dataset.page === location.pathname
+		);
+		const layer = layers[layers.length - 1] ?? document;
+		return layer.querySelector('[data-bench-anchor]');
+	})();
 	const b = band?.getBoundingClientRect();
 	const a = anchor?.getBoundingClientRect();
 	const names = [...document.querySelectorAll('.bench-band-mount .sp-char-name')].map(
@@ -373,7 +413,13 @@ const enterFrames = await page.evaluate(() => {
 });
 const rp3 = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
-	const anchor = document.querySelector('.rp-ribbon-dock');
+	const anchor = (() => {
+		const layers = [...document.querySelectorAll('.tool-main > .tool-page')].filter(
+			(p) => p.dataset.page === location.pathname
+		);
+		const layer = layers[layers.length - 1] ?? document;
+		return layer.querySelector('[data-bench-anchor]');
+	})();
 	const b = band?.getBoundingClientRect();
 	const a = anchor?.getBoundingClientRect();
 	return { visible: getComputedStyle(band).visibility === 'visible', b, a };
@@ -428,7 +474,13 @@ check(
 );
 const afterInt = await page.evaluate(() => {
 	const band = document.querySelector('.bench-band-mount');
-	const anchor = document.querySelector('.tb-frame [data-bench-anchor]');
+	const anchor = (() => {
+		const layers = [...document.querySelectorAll('.tool-main > .tool-page')].filter(
+			(p) => p.dataset.page === location.pathname
+		);
+		const layer = layers[layers.length - 1] ?? document;
+		return layer.querySelector('[data-bench-anchor]');
+	})();
 	const cur = [...document.querySelectorAll('.tool-page')].find(
 		(p) => p.dataset.page === '/team-builder'
 	);
@@ -476,15 +528,23 @@ const short = await page2.evaluate(() => {
 	const zone = document.querySelector('.bn');
 	const band = document.querySelector('.bench-band-mount');
 	const b = band?.getBoundingClientRect();
-	const anchor = document.querySelector('.tb-frame [data-bench-anchor]');
+	const anchor = (() => {
+		const layers = [...document.querySelectorAll('.tool-main > .tool-page')].filter(
+			(p) => p.dataset.page === location.pathname
+		);
+		const layer = layers[layers.length - 1] ?? document;
+		return layer.querySelector('[data-bench-anchor]');
+	})();
 	const a = anchor?.getBoundingClientRect();
 	const f = document.querySelector('.tb-frame')?.getBoundingClientRect();
+	const bands = document.querySelector('.bands')?.getBoundingClientRect();
 	return {
 		bandY: b?.y,
 		bandH: b?.height,
 		anchorY: a?.y,
 		frameY: f?.y,
 		frameH: f?.height,
+		bandsY: bands?.y,
 		clip: band?.style.clipPath ?? '',
 		lastCardBottom: [...document.querySelectorAll('.bench-band-mount .bb-slot')]
 			.pop()
@@ -500,11 +560,11 @@ check(
 );
 check('no clip-path on the ribbon (machinery retired)', short.clip === '', short.clip);
 // Short viewport: the TB frame is viewport-fit and can be SHORTER than four
-// cards. The strip opens on the same line (frame top − 12) but floors at its
-// own content rather than clipping the fourth card inside the frame.
+// cards. The strip opens on the same line (band stack top − 12) but floors at
+// its own content rather than clipping the fourth card inside the frame.
 check(
-	'ribbon opens 12px above the frame even when the frame is shorter than the cards',
-	short.frameY != null && Math.abs(short.frameY - short.bandY - 12) <= 1,
+	'ribbon opens 12px above the BAND STACK even when the frame is shorter than the cards',
+	short.bandsY != null && Math.abs(short.bandsY - short.bandY - 12) <= 1,
 	JSON.stringify(short)
 );
 check(

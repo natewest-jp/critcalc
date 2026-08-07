@@ -33,17 +33,14 @@ function check(name, ok, detail = '') {
 	}
 }
 
-// Tiles keep registry DOM order and place visually via CSS `order` — sort by
-// the slot order so names[] reads left→right as the user sees it.
+// ↻ TOOLBAR ROUND: the pickers left the tiles for BAND B, whose cells are laid
+// out on the tile grid's own columns in slot order — so the band IS the
+// left→right reading, and the old sort-by-CSS-order dance is gone. (The tiles
+// still keep registry DOM order and place visually via `order`; only the
+// switcher moved.)
 const visibleTriggers = (page) =>
-	page.$$eval('.ws-tile:not(.ws-hidden)', (tiles) =>
-		tiles
-			.map((t) => ({
-				order: Number(t.style.order ?? 0),
-				name: t.querySelector('.ip-trigger').textContent.trim().replace(/\s*▾$/, '')
-			}))
-			.sort((a, b) => a.order - b.order)
-			.map((t) => t.name)
+	page.$$eval('.ws-band-cell .ip-trigger', (els) =>
+		els.map((e) => e.textContent.trim().replace(/\s*▾$/, ''))
 	);
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -61,20 +58,22 @@ await page.goto(`${BASE}/crit-visualizer`, { waitUntil: 'networkidle' });
 		JSON.stringify(names)
 	);
 	const share = await page.$$eval(
-		'.ws-share',
+		'.ws-band-actions .btn',
 		(els) => els.filter((e) => e.textContent.includes('Share')).length
 	);
+	// "Reset" → "Defaults" (toolbar round): it sat one word away from the
+	// workspace-level "Reset workspace", with no way to tell them apart.
 	const resets = await page.$$eval(
-		'.ws-share',
-		(els) => els.filter((e) => e.textContent.includes('Reset')).length
+		'.ws-band-actions .btn',
+		(els) => els.filter((e) => e.textContent.includes('Defaults')).length
 	);
 	check('share buttons render on handle-capable tiles', share === 2, String(share));
-	check('reset buttons render on both tiles', resets === 2, String(resets));
+	check('per-instrument Defaults renders on both cells', resets === 2, String(resets));
 }
 
 // ── 2. Picker: open, swap semantics ────────────────────────────────────────
 {
-	await page.click('.ws-tile:not(.ws-hidden) .ip-trigger'); // slot 0 picker
+	await page.click('.ws-band-cell:first-child .ip-trigger'); // slot 0 picker
 	const optCount = await page.$$eval('.ip-menu .ip-option', (els) => els.length);
 	check('picker lists all eight instruments', optCount === 8, String(optCount));
 	const badge = await page.$$eval('.ip-menu .ip-option', (els) =>
@@ -105,7 +104,7 @@ await page.reload({ waitUntil: 'networkidle' });
 
 // ── 4. Reset workspace ─────────────────────────────────────────────────────
 {
-	await page.click('.ws-reset');
+	await page.click('.ws-reset'); // 'Reset layout'
 	const names = await visibleTriggers(page);
 	check(
 		'reset restores the default lineup',
@@ -148,11 +147,10 @@ await page.goto(`${BASE}/crit-visualizer?i=rolls`, { waitUntil: 'networkidle' })
 	check('stateful link slots Crit Heatmap first', names[0] === 'Crit Heatmap', names[0]);
 	const cr = await page.$eval('.cv-value-input', (el) => el.value);
 	check('shared CR applied (90%)', cr === '90', cr);
-	// per-tile reset restores the instrument's defaults
-	await page.$$eval('.ws-tile:not(.ws-hidden)', (tiles) => {
-		const t = tiles.find((x) => x.style.order === '0');
-		t.querySelectorAll('.ws-share').forEach((b) => {
-			if (b.textContent.includes('Reset')) b.click();
+	// per-instrument Defaults restores that instrument's own controls
+	await page.$$eval('.ws-band-cell:first-child .ws-band-actions .btn', (els) => {
+		els.forEach((b) => {
+			if (b.textContent.includes('Defaults')) b.click();
 		});
 	});
 	const crReset = await page.$eval('.cv-value-input', (el) => el.value);

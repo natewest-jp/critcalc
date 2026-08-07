@@ -59,7 +59,7 @@ check('roster grid hidden on the atlas tab', (await page.locator('.cg-grid').cou
 // from the 2026-07-22 role redesign and needs dedicated atlas-probe coverage; it
 // is intentionally not asserted here (the prior facet-card pivot assertion was
 // stale against the current `.rolecard` model).
-await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
+await page.locator('.band-b .tab', { hasText: 'Roster' }).click();
 await page.locator('.cg-grid').first().waitFor({ timeout: 5000 });
 const total = await tileCount();
 // 122 = 123 character JSONs minus the 'blank' placeholder the grid filters out.
@@ -99,10 +99,23 @@ check(
 );
 await facetChip('ATK buff').click(); // off
 
+// ↻ TOOLBAR ROUND 2026-08-07: the constellation lens moved from an eight-segment
+// C0…C6 + My roster rail into a band-B MENU (it was 356px of band for a setting
+// you touch once). Open, pick, done — the menu is portalled to <body>, so the
+// item selector is deliberately not scoped to the band.
+const setConMode = async (label) => {
+	await page.locator('.band-b .band-menu-trigger').click();
+	await page
+		.locator('.band-menu-item', {
+			has: page.locator('.tb-conmode-label', { hasText: new RegExp(`^${label}$`) })
+		})
+		.click();
+};
+
 // ── 4. Constellation modes: C0 vs C6 widen gates ───────────────────────────
-await page.locator('.tb-conmode .btn', { hasText: 'C0' }).click();
+await setConMode('C0');
 const atC0 = await matchCount();
-await page.locator('.tb-conmode .btn', { hasText: 'C6' }).click();
+await setConMode('C6');
 const atC6 = await matchCount();
 check(
 	'C6 unlocks more healers than C0 (Gorou C4, Xianyun C4…)',
@@ -114,7 +127,7 @@ check('Gorou appears at C6 (C4-gated heal)', c6Names.includes('Gorou'), '');
 check(
 	'Gorou absent at C0',
 	!(await (async () => {
-		await page.locator('.tb-conmode .btn', { hasText: 'C0' }).click();
+		await setConMode('C0');
 		const n = await page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 		return n.includes('Gorou');
 	})())
@@ -159,7 +172,7 @@ await page.keyboard.press('Escape');
 check('Escape closes the card', (await page.locator('.dc-panel').count()) === 0);
 
 await facetChip('Heals').click();
-await page.locator('.tb-conmode .btn', { hasText: 'My roster' }).click();
+await setConMode('My roster');
 const mineNames = await page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 check('My roster mode: Gorou (your C4) now matches heal', mineNames.includes('Gorou'), '');
 // Dori & Gaming graduated to C0 healers when their base heals were authored;
@@ -169,9 +182,9 @@ check('My roster mode: C-gated healers still absent (Lauma C1)', !mineNames.incl
 
 // Persistence across reload (cold load lands on Atlas → switch to Roster)
 await page.reload({ waitUntil: 'networkidle' });
-await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
+await page.locator('.band-b .tab', { hasText: 'Roster' }).click();
 await facetChip('Heals').click();
-await page.locator('.tb-conmode .btn', { hasText: 'My roster' }).click();
+await setConMode('My roster');
 const reloadNames = await page.locator('.cg-grid').first().locator('.cc-name').allInnerTexts();
 check('constellation survives reload (Gorou still matches)', reloadNames.includes('Gorou'), '');
 
@@ -184,7 +197,7 @@ const addToCompare = async (name) => {
 	// without fighting hit-testing (the hover reveal is verified visually).
 	await tile.locator('.tb-act--compare').dispatchEvent('click');
 };
-const compareTab = page.locator('.tb-tabs .tab', { hasText: 'Compare' });
+const compareTab = page.locator('.band-b .tab', { hasText: 'Compare' });
 check(
 	'compare tab starts with no avatar stack',
 	(await page.locator('.tb-tabstack').count()) === 0
@@ -274,7 +287,7 @@ check(
 await page.locator('.cmp-headact').click();
 check('clear drops to the empty state', (await page.locator('.tb-cmp-empty').count()) === 1);
 check('clear empties the tab stack', (await page.locator('.tb-tabstack').count()) === 0);
-await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
+await page.locator('.band-b .tab', { hasText: 'Roster' }).click();
 await page.locator('.cg-grid').first().waitFor({ timeout: 5000 });
 
 // ── 7. Team strip: slots, facts, checklist ─────────────────────────────────
@@ -516,7 +529,7 @@ await page.screenshot({ path: 'probe-team-builder-explore.png', fullPage: false 
 
 // ── 8b. Ownership ledger: mark, filter, persist ────────────────────────────
 // Arriving via ?team= lands on Atlas — switch to the Roster grid to mark owners.
-await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
+await page.locator('.band-b .tab', { hasText: 'Roster' }).click();
 await page.locator('.cg-grid').first().waitFor({ timeout: 10000 });
 
 // Wishlist Bennett via the detail card's ownership toggle.

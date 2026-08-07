@@ -25,6 +25,8 @@
  * band's footprint with them, and the band uses them as its resting rhythm.
  */
 
+import { BAND_STACK_TO_SURFACE } from './toolBands';
+
 export type BenchHostRegistration =
 	| {
 			tool: 'rp';
@@ -168,6 +170,13 @@ export const TOOL_INSET = RIBBON_W + RIBBON_GAP;
  * is TOOL_INSET + FRAME_BORDER right of the content margin — so this walks
  * back out to it. Negative by construction; the strip hangs entirely outside
  * the frame it measures.
+ *
+ * ↻ TOOLBAR ROUND 2026-08-07: no longer used by either tool. The dock moved
+ * OUT of the frame and onto the tool STACK (bands + surface — see ToolStack),
+ * whose padding box already starts at the content margin, so the anchor sits
+ * at left: 0 and this walk-back has nothing to correct. Kept only because the
+ * derivation is the record of why the anchor used to need it; delete once
+ * nothing cites it.
  */
 export const RIBBON_DOCK_LEFT = -(TOOL_INSET + FRAME_BORDER);
 
@@ -194,8 +203,16 @@ export const RIBBON_FRAME_TOP_INSET = 1 + 10 + 28;
  * it. Shared by both tools (the TB has no ruler, but its cards must land on
  * the same screen y or they'd jump across the tool fade), and the frame tops
  * already align across the seam (probe-bench-align).
+ *
+ * ↻ TOOLBAR ROUND 2026-08-07: the ribbon now stands proud of the BAND STACK,
+ * not of the frame — its dock spans bands + surface — so the head grows by
+ * exactly the distance from the stack's top to the surface's. The card column
+ * has not moved relative to the timeline's track rows; there is simply more
+ * ribbon above it. ⚓ NATE: that new emptiness is where the decorative motif
+ * goes.
  */
-export const RIBBON_HEAD = RIBBON_FRAME_TOP_INSET + RIBBON_OVERHANG_Y - RIBBON_CHROME;
+export const RIBBON_HEAD =
+	BAND_STACK_TO_SURFACE + RIBBON_FRAME_TOP_INSET + RIBBON_OVERHANG_Y - RIBBON_CHROME;
 
 /** Resting ribbon interior above/below the card column — the TB's dock height
  *  is measured, so this only seeds the pre-measure paint. */

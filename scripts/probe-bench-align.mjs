@@ -1,10 +1,15 @@
-// Mirrored tool surfaces: the Rotation Planner and the Team Builder are one
-// full-screen frame each, mirror images across the tool-slide seam (RP bench
-// LEFT / TB bench RIGHT, filter columns on the two outer edges). This measures
-// and ASSERTS the geometry that has to agree between them — above all the two
-// frame TOPS and the shared ribbon dock spot (the ribbon persists motionless
-// across the world-locked fade; both tools must dock it identically).
-// --tb-tabrow-gap is the frame-top knob.
+// Tool-stack geometry: the Rotation Planner and the Team Builder are one
+// full-screen frame each, headed by the two-tier BAND stack, with the bench
+// ribbon standing proud of the whole object. This measures and ASSERTS the
+// geometry that has to agree between them — above all the two frame TOPS and
+// the shared ribbon dock spot (the ribbon persists motionless across the
+// world-locked fade; both tools must dock it identically).
+//
+// ↻ TOOLBAR ROUND 2026-08-07: the frame top is no longer a hand-tuned knob.
+// Both tools render the same <ToolStack>, so their frame tops are
+// BAND_STACK_TO_SURFACE below the stack top BY CONSTRUCTION — this probe now
+// guards that the construction holds rather than that two numbers were tuned
+// to match. The old --tb-tabrow-gap is gone.
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE ?? 'http://localhost:4998';
@@ -41,7 +46,9 @@ const box = async (sel) => {
 
 // ── Rotation Planner ─────────────────────────────────────────────────────
 await page.goto(`${BASE}/rotation-planner`, { waitUntil: 'networkidle' });
-const rpTabs = await box('.rp-tab-bar');
+const rpBands = await box('.bands');
+const rpBandA = await box('.band-a');
+const rpBandB = await box('.band-b');
 const rpFrame = await box('.rp-frame');
 // Abutting round: the bench IS the ribbon, standing beside the frame rather
 // than over a reserved column inside it. Both tools are measured the same way.
@@ -49,18 +56,20 @@ const rpBench = await box('.bench-band-mount .bb');
 // The cards live in the layout-level bench band now (bench-band round),
 // docked over the label column — same geometry, different owner.
 const rpCard = await box('.bench-band-mount .sp-card');
-console.log('RP tab bar     ', rpTabs);
+console.log('RP bands       ', rpBands);
 console.log('RP frame       ', rpFrame);
 console.log('RP ribbon      ', rpBench);
 console.log('RP first card  ', rpCard);
 
 // ── Team Builder ─────────────────────────────────────────────────────────
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
-const tbTabs = await box('.tb-tabs');
+const tbBands = await box('.bands');
+const tbBandA = await box('.band-a');
+const tbBandB = await box('.band-b');
 const tbFrame = await box('.tb-frame');
 const tbBench = await box('.bench-band-mount .bb');
 const tbCard = await box('.bench-band-mount .sp-card');
-console.log('\nTB tab row     ', tbTabs);
+console.log('\nTB bands       ', tbBands);
 console.log('TB frame       ', tbFrame);
 console.log('TB ribbon      ', tbBench);
 console.log('TB first card  ', tbCard);
@@ -71,7 +80,7 @@ console.log('');
 check(
 	'frame tops align across the RP↔TB seam',
 	rpFrame && tbFrame && Math.abs(rpFrame.y - tbFrame.y) <= 1,
-	`rp=${rpFrame?.y} tb=${tbFrame?.y} (tune --tb-tabrow-gap)`
+	`rp=${rpFrame?.y} tb=${tbFrame?.y}`
 );
 // ABUTTING (⚓ NATE 2026-08-07): the ribbon ends exactly where the frame
 // begins — RIBBON_GAP apart, 0 by default. They must TILE, never overlap: on a
@@ -88,15 +97,51 @@ check(
 	tbFrame && tbBench && Math.abs(tbBench.right - tbFrame.x) <= 1,
 	`ribbon.right=${tbBench?.right} frame.x=${tbFrame?.x}`
 );
+// The bands carry the same inset as the frame they head — one padding-left on
+// the shared stack, so this guards the stack rather than reconciling two
+// declarations.
 check(
-	'RP tab bar starts on its frame’s left edge',
-	rpFrame && rpTabs && Math.abs(rpTabs.x - rpFrame.x) <= 1,
-	`tabs.x=${rpTabs?.x} frame.x=${rpFrame?.x}`
+	'RP band stack starts on its frame’s left edge',
+	rpFrame && rpBands && Math.abs(rpBands.x - rpFrame.x) <= 1,
+	`bands.x=${rpBands?.x} frame.x=${rpFrame?.x}`
 );
 check(
-	'TB tab row starts on its frame’s left edge',
-	tbFrame && tbTabs && Math.abs(tbTabs.x - tbFrame.x) <= 1,
-	`tabs.x=${tbTabs?.x} frame.x=${tbFrame?.x}`
+	'TB band stack starts on its frame’s left edge',
+	tbFrame && tbBands && Math.abs(tbBands.x - tbFrame.x) <= 1,
+	`bands.x=${tbBands?.x} frame.x=${tbFrame?.x}`
+);
+// ABUTTING TIERS: band B begins exactly where band A ends. They are ONE object
+// — the outer radius is clipped on the stack, and any gap between them would
+// show the scene through the middle of it.
+for (const [tool, a, b] of [
+	['RP', rpBandA, rpBandB],
+	['TB', tbBandA, tbBandB]
+]) {
+	check(
+		`${tool}: band B abuts band A (no seam)`,
+		a && b && a.bottom === b.y,
+		`bandA.bottom=${a?.bottom} bandB.y=${b?.y}`
+	);
+}
+// THE ROUND'S HEADLINE: the ribbon stands proud of the BAND STACK, not of the
+// frame. It used to hang off the frame alone, which left the toolbar floating
+// unattached in a strip of bare scene beside the strip's shoulder.
+for (const [tool, bands, bench] of [
+	['RP', rpBands, rpBench],
+	['TB', tbBands, tbBench]
+]) {
+	check(
+		`${tool}: ribbon stands proud ABOVE the band stack`,
+		bands && bench && bench.y < bands.y && bands.y - bench.y <= 24,
+		`ribbon.y=${bench?.y} bands.y=${bands?.y} (RIBBON_OVERHANG_Y)`
+	);
+}
+// Both tools' stacks must be identical in height above the surface, or the
+// ribbon's head (RIBBON_HEAD) is right for one tool and wrong for the other.
+check(
+	'both tools put the same distance between the stack top and the surface',
+	rpBands && tbBands && rpFrame && tbFrame && rpFrame.y - rpBands.y === tbFrame.y - tbBands.y,
+	`rp=${rpFrame && rpBands ? rpFrame.y - rpBands.y : '?'} tb=${tbFrame && tbBands ? tbFrame.y - tbBands.y : '?'}`
 );
 // The SHARED card must render at the SAME width in both tools — one component
 // in one strip now, so this is a regression guard rather than a reconciliation.

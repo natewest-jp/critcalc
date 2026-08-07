@@ -484,16 +484,19 @@
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
-/* Over-scene chrome strips: the chrome bar and the tool tab rows / toolbars
-   float directly over the live scene, so their control fills lift with
-   CHROME white rather than the neutral tint (a neutral wash grays out over
-   the cosmic ground). Re-declared (not routed through a tint variable) per
-   the substituted-at-declaration law documented above. */
-.site-chrome,
-.rp-tab-bar,
-.tb-tabs,
-.ws-toolbar,
-.ws-bar {
+/* Over-scene chrome strips: the site chrome floats directly over the live
+   scene, so its control fills lift with CHROME white rather than the neutral
+   tint (a neutral wash grays out over the cosmic ground). Re-declared (not
+   routed through a tint variable) per the substituted-at-declaration law
+   documented above.
+
+   ↻ TOOLBAR ROUND 2026-08-07: the four tool toolbars (.rp-tab-bar, .tb-tabs,
+   .ws-toolbar, .ws-bar) left this list. They are no longer over-scene — each
+   is a zone of a BAND now, and a band has its own opaque ground and its own
+   context, so its controls must lift with the CONTEXT's fills. Leaving them
+   here would have painted chrome-white fills onto a beige band. The site
+   chrome is the only genuinely groundless strip left. */
+.site-chrome {
 	--fill-rest: color-mix(in srgb, var(--chrome) 13%, transparent);
 	--fill-hover: color-mix(in srgb, var(--chrome) 20%, transparent);
 }
@@ -608,13 +611,20 @@
 	color: var(--text);
 }
 
-/* Beige selected-state pilot (lightness-structure E, 2026-08-01): the two
+/* Beige selected-state pilot (lightness-structure E, 2026-08-01): the
    top-level tool tab strips select with --sel-surface + --sel-ink — the
    Stygian selected-row idiom, deliberately scoped to these grounds while
    the idiom is on trial. (0,3,0 beats .tab.active's 0,2,0 — no !important.)
-   NO beige panels; extent is a Nate knob. */
-.rp-tab-bar .tab.active,
-.tb-tabs .tab.active {
+   NO beige panels; extent is a Nate knob.
+
+   ↻ TOOLBAR ROUND 2026-08-07: re-pointed at the bands. The document tabs
+   (band A) are the pilot's original subject under a new class; the Team
+   Builder's source tabs moved down to band B, where the ground is ALREADY
+   the beige — a beige plate on a beige band is invisible, so band B selects
+   with the ordinary .tab.active ring instead. The pilot is therefore now
+   exactly what Genshin does with it: the bright plate marks the selected row
+   on the DARK strip. */
+.band-a .tab.active {
 	background: var(--sel-surface);
 	box-shadow: none;
 	color: var(--sel-ink);
