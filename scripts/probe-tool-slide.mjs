@@ -291,6 +291,73 @@ check(
 	JSON.stringify(finalLayers)
 );
 
+// ── The STALE SETTLE (2026-08-07): A→B→A→B, paced so pass 1's settle timer ──
+// fires while pass 3 is still in flight AND the pathname is back to pass 1's
+// own path. The settle used to guard on `pathname !== path`, which is only the
+// question we meant while paths are unique — here it passes, and the old pass
+// runs with STALE captures: it cancels pass 3's in-flight animations, bakes a
+// mid-flight opacity onto a layer, and clears everything except opacity,
+// stranding it partly visible with nothing left to fade it. Guarding on pass
+// IDENTITY is the fix. (Distinct from the Chrome-only stuck-layer bug — this
+// one is ours and shows in every engine.)
+//
+// TIMING IS THE WHOLE CHECK. Settle lands ≈2.1s after its own pass, so pass 3
+// must START late enough that its own fade-out (667ms) is STILL RUNNING when
+// pass 1's timer fires — otherwise the stale settle only bakes values that were
+// already final and strands nothing. Two legs of ~850ms puts pass 3 at ~1.7s
+// and pass 1's settle at ~2.1s, 400ms into pass 3's fade. At 600ms legs this
+// check passes against the BROKEN code, which is worth nothing.
+// Verified BOTH directions before landing, per the repo rule.
+await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
+await page.waitForTimeout(3000);
+await page.evaluate(() => {
+	window.__staleCensus = [];
+	const rec = () => {
+		window.__staleCensus.push({
+			t: Math.round(performance.now()),
+			path: location.pathname,
+			rows: [...document.querySelectorAll('.tool-main > .tool-page')].map((p) => ({
+				page: p.dataset.page,
+				op: parseFloat(getComputedStyle(p).opacity)
+			}))
+		});
+		if (!window.__staleStop) requestAnimationFrame(rec);
+	};
+	requestAnimationFrame(rec);
+});
+await page.click('.chrome-nav a[href*="rotation-planner"]');
+await page.waitForTimeout(850);
+await page.click('.chrome-nav a[href*="team-builder"]');
+await page.waitForTimeout(850);
+await page.click('.chrome-nav a[href*="rotation-planner"]');
+await page.waitForTimeout(4200); // outlive every pass's settle
+const stale = await page.evaluate(() => {
+	window.__staleStop = true;
+	return { census: window.__staleCensus, wd: { ...window.__toolWatchdog } };
+});
+const settled = stale.census.filter((f) => f.t > stale.census[stale.census.length - 1].t - 1200);
+const stranded = settled.flatMap((f) =>
+	f.rows
+		.filter((r) => (r.page === f.path ? r.op < 0.99 : r.op > 0.01))
+		.map((r) => ({ t: f.t, ...r }))
+);
+check(
+	'a stale settle from an earlier pass cannot strand a layer',
+	stranded.length === 0,
+	stranded.length ? `${stranded.length} frames, e.g. ${JSON.stringify(stranded[0])}` : ''
+);
+check(
+	'the watchdog stayed silent through the stale-settle storm',
+	stale.wd.hits === 0,
+	`${stale.wd.hits} hit(s): ${stale.wd.last ?? ''}`
+);
+
+// Leave the page where the next section expects it: settled on a tool OTHER
+// than the planner, so its switcher link is still an <a> (the current tool
+// renders a <span>).
+await page.click('.chrome-nav a[href*="team-builder"]');
+await page.waitForTimeout(3600);
+
 // ── Tool-rest pause (2026-08-06): the twinkle loop stops once a tool leg ────
 // settles (zero rAF behind tools — the scene-occlusion property, restored),
 // and runs on the landing. Probed via the renderer's own __scene.twinkling()

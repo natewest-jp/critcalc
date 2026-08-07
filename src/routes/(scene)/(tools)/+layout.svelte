@@ -540,6 +540,16 @@
 		Math.max(clock + SLIDE_MS, performance.now() + SETTLE_CAP_MS + TOOL_FADE_IN_MS) + 400;
 	let navSettleDeadline = 0;
 	let lastNavAt = 0;
+	// Pass identity. Every deferred callback below (the paint gate, the settle)
+	// captures its own pass and bails if a newer one has taken over. It used to
+	// ask `page.url.pathname !== path` instead — which is only the same question
+	// while paths are unique. A storm produces A→B→A→B, and there the OLDER
+	// pass's settle timer passes that guard and runs with STALE captures: it
+	// cancels the newer pass's in-flight animations, bakes a mid-flight opacity
+	// onto a layer, and clears everything except opacity — stranding it partly
+	// visible with nothing left to fade it. That is a ghost, and unlike the
+	// Chrome-only stuck-layer bug it is ours and it is engine-independent.
+	let navPass = 0;
 	// `hits` is what probes assert on (must stay 0). `log` is what a human reads
 	// afterwards — a hit with no context is just as unpatternable as the bug
 	// reports were, so each one carries the layer roster and how long after the
@@ -628,6 +638,7 @@
 		// startTime to `clock` glues the drift to the terrain regardless of
 		// when each animation is created; if no scene transition is in flight
 		// (edge cases), the drift just runs on its own matching clock.
+		const myPass = ++navPass;
 		const shift = toolPoseShift(fromPath, path);
 		const clock = sceneTransitionStart() ?? performance.now();
 
@@ -740,7 +751,7 @@
 			// Settle: bake + release. The incoming rests at natural layout; the
 			// outgoing stays baked invisible through its retention window.
 			setTimeout(() => {
-				if (page.url.pathname !== path || !incoming.isConnected) return;
+				if (myPass !== navPass || !incoming.isConnected) return;
 				cancelToolNavAnims(incoming, true);
 				incoming.style.willChange = '';
 				incoming.style.zIndex = '';
@@ -758,7 +769,7 @@
 		};
 		const tick = (ts: number) => {
 			// A newer navigation owns the layers now — its own pass re-animates.
-			if (page.url.pathname !== path || !incoming.isConnected) return;
+			if (myPass !== navPass || !incoming.isConnected) return;
 			quietFrames = lastTs !== 0 && ts - lastTs < SETTLE_GAP_MS ? quietFrames + 1 : 0;
 			lastTs = ts;
 			if (quietFrames >= 2 || ts - t0 > SETTLE_CAP_MS) {
