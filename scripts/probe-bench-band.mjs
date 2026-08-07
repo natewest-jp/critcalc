@@ -51,7 +51,11 @@ const rp = await page.evaluate(() => {
 		slotHeights: [...document.querySelectorAll('.bench-band-mount .bb-slot')].map(
 			(el) => el.getBoundingClientRect().height
 		),
-		anchorCellHeights: [...document.querySelectorAll('.rp-label-col .char-label')].map(
+		// The band's cards mirror the TRACK GROUPS. They used to be compared
+		// against a shadow label column inside the frame; the abutting round
+		// deleted it, so this now checks the thing the contract was always
+		// about — the published slot metrics land the cards on the real rows.
+		anchorCellHeights: [...document.querySelectorAll('.rp-tracks .rp-char-block')].map(
 			(el) => el.getBoundingClientRect().height
 		),
 		tracksTop: document.querySelector('.rp-char-block')?.getBoundingClientRect().top ?? null,
@@ -77,8 +81,10 @@ check(
 	JSON.stringify({ band: rp.bandRect, anchor: rp.anchorRect })
 );
 check(
-	'ribbon width = RIBBON_W (190: card 160 + 15 chrome per side)',
-	rp.bandRect && Math.abs(rp.bandRect.w - 190) <= 1,
+	// RIBBON_W = BENCH_CARD_W 160 + 2 × RIBBON_CHROME (edge 5 + frame 2 + pad 9
+	// = 16). Move with those knobs in $lib/benchBand.svelte.ts.
+	'ribbon width = RIBBON_W (192: card 160 + 16 chrome per side)',
+	rp.bandRect && Math.abs(rp.bandRect.w - 192) <= 1,
 	String(rp.bandRect?.w)
 );
 // The ribbon's card column must land exactly on the track rows (the RIBBON
@@ -168,7 +174,8 @@ const tb = await page.evaluate(() => {
 			const r = document.querySelector('.ts')?.getBoundingClientRect();
 			return r ? { x: r.x, y: r.y, w: r.width } : null;
 		})(),
-		benchZoneChildren: document.querySelector('.bn')?.childElementCount ?? -1
+		// Abutting round: the tuck-under zone is GONE, not merely empty.
+		benchZoneExists: !!document.querySelector('.bn')
 	};
 });
 const bandXs = await page.evaluate(() => {
@@ -228,12 +235,17 @@ check(
 		Math.abs(tb.bandRect.y + tb.bandRect.h - (tb.frameRect.y + tb.frameRect.h) - 12) <= 1,
 	JSON.stringify({ frame: tb.frameRect, band: tb.bandRect })
 );
-// The bench zone is pure width reservation now; the readout lives right of it.
+// The tuck-under zone is gone entirely (abutting round) — the frame starts at
+// the ribbon's right edge, so there is no column left inside it to reserve.
+check('TB bench zone is gone (no .bn)', tb.benchZoneExists === false, String(tb.benchZoneExists));
 check(
-	'TB bench zone holds nothing but its width',
-	tb.benchZoneChildren === 0,
-	String(tb.benchZoneChildren)
+	'TB frame begins at the ribbon’s right edge',
+	tb.frameRect && tb.bandRect && Math.abs(tb.frameRect.x - (tb.bandRect.x + tb.bandRect.w)) <= 1,
+	JSON.stringify({ frameX: tb.frameRect?.x, ribbonRight: tb.bandRect?.x + tb.bandRect?.w })
 );
+// The readout now picks up the frame's own left edge — the 2px it used to sit
+// UNDER the strip by (the .bn zone was pinned at 189 while RIBBON_CHROME went
+// 15 → 16) closes structurally rather than by re-tuning a literal.
 check(
 	'TB team strip sits right of the ribbon',
 	tb.stripRect && tb.bandRect && tb.stripRect.x >= tb.bandRect.x + tb.bandRect.w - 1,
@@ -443,6 +455,8 @@ const page2 = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 await page2.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 await page2.waitForTimeout(600);
 const short = await page2.evaluate(() => {
+	// .bn retired with the abutting round; nothing in the frame scrolls under
+	// the strip because nothing is under the strip.
 	const zone = document.querySelector('.bn');
 	const band = document.querySelector('.bench-band-mount');
 	const b = band?.getBoundingClientRect();
@@ -483,9 +497,9 @@ check(
 	JSON.stringify({ lastCardBottom: short.lastCardBottom, stripBottom: short.bandY + short.bandH })
 );
 check(
-	'bench zone owns no scroll of its own (nothing left in it to scroll)',
-	short.zoneScrolls !== 'auto' && short.zoneScrolls !== 'scroll',
-	short.zoneScrolls
+	'bench zone is gone at 720p too (nothing under the strip to scroll)',
+	short.zoneScrolls === '',
+	`expected no .bn at all, got overflowY=${short.zoneScrolls}`
 );
 
 await browser.close();

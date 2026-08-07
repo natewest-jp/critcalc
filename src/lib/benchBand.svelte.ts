@@ -59,16 +59,27 @@ export const BENCH_COLUMN_H = 4 * BENCH_SLOT_H;
 // ---------------------------------------------------------------------------
 // The RIBBON (Nate's mockup, 2026-08-05): the band is a SELF-CONTAINED box —
 // its own ground, frame and radius, ONE identity in both tools (always the
-// dark context; the per-tool ctx flip is retired). The tool frames are loose
-// siblings that tuck UNDERNEATH its edges: the planner's timeline extends out
-// from under its right edge, the TB's atlas/roster from under its left.
+// dark context; the per-tool ctx flip is retired).
 //
-// ↻ TALL-BENCH ROUND (Nate's mockup #2, 2026-08-06): the ribbon is now a full
+// ↻ TALL-BENCH ROUND (Nate's mockup #2, 2026-08-06): the ribbon is a full
 // STRIP — it spans its tool frame's whole height and stands RIBBON_OVERHANG_Y
 // proud at BOTH ends, so it always reads as slightly taller than the surface
 // beside it. Its height is therefore MEASURED from the dock (which stretches
 // with the frame), not summed from the cards; the cards keep their track-group
 // alignment at the top and the tail below them is deliberately empty.
+//
+// ↻ ABUTTING ROUND (⚓ NATE 2026-08-07): the tools no longer TUCK UNDER the
+// strip — each begins at its right edge, and the strip stands alone on the
+// scene. The old arrangement (frame ground running the strip's full width
+// beneath it) was invisible at rest but wrong in motion: on a Visualizers leg
+// the ribbon is part of the tool surface and fades in exact lockstep with the
+// frame, so across the overlap you saw the tool THROUGH the bench — two
+// layers of tool ground compositing where there should be one
+// (`0.42·ribbon + 0.24·frame + 0.34·scene` at mid-fade, measured). Two
+// surfaces that fade together must not overlap. Now they tile: the ribbon
+// owns the column at the content margin, the tool starts after it, and both
+// fade over the bare scene.
+//
 // All knobs — Nate tunes these in the inspector.
 // ---------------------------------------------------------------------------
 
@@ -124,25 +135,41 @@ export const RIBBON_W = BENCH_CARD_W + 2 * RIBBON_CHROME;
 
 /**
  * ⚓ NATE 2026-08-06 — the strip's outer edge sits on the CONTENT MARGIN: the
- * same left edge as the logo, the tab row and the tool frame. It stands proud
- * of its tool VERTICALLY (see RIBBON_OVERHANG_Y) and nowhere else; horizontally
- * everything on the page starts on one line.
+ * same left edge as the logo and the site chrome. It stands proud of its tool
+ * VERTICALLY (see RIBBON_OVERHANG_Y) and nowhere else.
  *
- * So the frame tucks under the strip for its whole width bar its own 1px
- * border, and each tool spends the difference on its gutter rather than on an
- * overhang: the planner's frame padding + label column, and the Team Builder's
- * bench zone, both measure RIBBON_UNDER from their frame's padding box.
+ * The tool frame's own edge stroke. Both docks position THROUGH it (absolute
+ * insets resolve against the padding box, which the border insets from the
+ * border box), so it is named rather than inlined — the edge-border retirement
+ * that is coming for the frame family changes this one number to 0 and the
+ * docks stay put.
  */
 export const FRAME_BORDER = 1;
-export const RIBBON_UNDER = RIBBON_W - FRAME_BORDER;
 
 /**
- * How far the ribbon's outer edge stands past its tool frame's outer edge —
- * now exactly the frame's border, i.e. flush. Kept as the named derivation
- * because both docks position through it, and because a future re-tune of the
- * left edge is this one number.
+ * ⚓ NATE 2026-08-07 — bare scene between the strip's right edge and the tool
+ * beside it. 0 = they tile exactly, which is what the tuck-under used to look
+ * like at rest. Raise it to let the world through between the two surfaces;
+ * everything that aligns to the seam derives from TOOL_INSET, so this is the
+ * only number to move.
  */
-export const RIBBON_OVERHANG = RIBBON_W - RIBBON_UNDER;
+export const RIBBON_GAP = 0;
+
+/**
+ * How far a benched tool's own surfaces — its tab row and its frame — start
+ * from the content margin. The strip's column plus the gap: the tool begins
+ * exactly where the ribbon ends and never runs beneath it (see the abutting
+ * round above).
+ */
+export const TOOL_INSET = RIBBON_W + RIBBON_GAP;
+
+/**
+ * The dock anchors' `left`: each sits inside its own frame, whose padding box
+ * is TOOL_INSET + FRAME_BORDER right of the content margin — so this walks
+ * back out to it. Negative by construction; the strip hangs entirely outside
+ * the frame it measures.
+ */
+export const RIBBON_DOCK_LEFT = -(TOOL_INSET + FRAME_BORDER);
 
 /**
  * ⚓ NATE 2026-08-06 — how far the strip stands proud of its tool frame at the

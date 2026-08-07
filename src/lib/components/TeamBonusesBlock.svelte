@@ -12,14 +12,16 @@
 	element-color identity the timeline bars use. Only renders when there is
 	something to show.
 
-	⚠ Rail width mirrors the frame's internal geometry — DERIVED now (2026-08-06)
-	rather than kept in lockstep by hand: the chips start where the timeline's
-	tracks start, which is where the bench strip ends (FRAME_BORDER +
-	RIBBON_UNDER), less the lane-label text inset.
+	⚠ Rail width is DERIVED, never kept in lockstep by hand: the chips start
+	where the timeline's tracks start, which is where the bench strip ends
+	(TOOL_INSET), less the lane-label text inset. This block deliberately keeps
+	the CONTENT MARGIN while the tab bar and frame above it are inset by the
+	strip's column — it sits clear of the strip's bottom edge, so its rail can
+	use that column and its chips still land on the frame's left edge.
 -->
 <script lang="ts">
 	import { getLoadedCharacter } from '$lib/data/characterData';
-	import { FRAME_BORDER, RIBBON_UNDER } from '$lib/benchBand.svelte';
+	import { TOOL_INSET } from '$lib/benchBand.svelte';
 
 	/** How far the rail's text stops short of the tracks — the lane-label inset
 	 *  the timeline's own labels used. */
@@ -157,7 +159,7 @@
 </script>
 
 {#if visible}
-	<div class="team-bonuses" style:--tb-key-w="{FRAME_BORDER + RIBBON_UNDER - KEY_INSET}px">
+	<div class="team-bonuses" style:--tb-key-w="{TOOL_INSET - KEY_INSET}px">
 		<span class="tb-key">Always-on buffs</span>
 		<div class="tb-flow">
 			{#each resonance.active as res (res.key)}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
+	import { TOOL_INSET } from '$lib/benchBand.svelte';
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
 	import CharacterSelector from '$lib/components/CharacterSelector.svelte';
 	import SavedNotationsOverlay from '$lib/components/SavedNotationsOverlay.svelte';
@@ -407,7 +408,12 @@
 <svelte:window onkeydown={handlePageKeydown} onclick={handleWindowClick} />
 
 <section class="rotation-page">
-	<section class="timeline-section">
+	<!-- --rp-tool-inset: the bench ribbon owns the column at the content margin,
+	     so the tool's own surfaces start after it. Set here because BOTH the tab
+	     bar (this file) and the frame (RotationTimeline) carry it, and they must
+	     not drift apart. TeamBonusesBlock is deliberately left at the margin —
+	     it sits below the strip and keys its rail to the same seam. -->
+	<section class="timeline-section" style:--rp-tool-inset="{TOOL_INSET}px">
 		<!-- ── Tab bar ──────────────────────────────────────────────── -->
 		<div
 			class="rp-tab-bar"
@@ -660,6 +666,8 @@
 		display: flex;
 		align-items: center;
 		gap: 0.35rem;
+		/* Rides with the frame it labels — see --rp-tool-inset above. */
+		margin-left: var(--rp-tool-inset);
 	}
 
 	/* .tab .tab--closeable now. Only the drag affordances and the width clamp

@@ -101,11 +101,13 @@ check(
 	`grid.top=${geo.gridline?.top?.toFixed(0)} ruler.bottom=${geo.ruler?.bottom?.toFixed(0)}`
 );
 
-// 2. Composer box: single-line, darker well, portrait-aligned, chips beside
+// 2. Composer box: single-line, darker well, frame-aligned, chips beside
 const composer = await page.evaluate(() => {
 	const cm = document.querySelector('.rp-notation .cm-editor');
 	const frame = document.querySelector('.rp-frame');
-	const labelCol = document.querySelector('.rp-label-col');
+	// Abutting round: the portrait column is gone (the ribbon holds the cards
+	// OUTSIDE the frame), so the composer starts at the frame's padding box.
+	const frameEl = document.querySelector('.rp-frame');
 	const btns = [...document.querySelectorAll('.rp-composer-actions .rp-composer-btn')];
 	const cs = cm ? getComputedStyle(cm) : null;
 	return {
@@ -114,7 +116,11 @@ const composer = await page.evaluate(() => {
 		frameBg: frame ? getComputedStyle(frame).backgroundColor : null,
 		boxH: cm?.getBoundingClientRect().height,
 		boxL: cm?.getBoundingClientRect().left,
-		labelR: labelCol?.getBoundingClientRect().right,
+		framePadL: frameEl
+			? frameEl.getBoundingClientRect().left +
+				parseFloat(getComputedStyle(frameEl).borderLeftWidth) +
+				parseFloat(getComputedStyle(frameEl).paddingLeft)
+			: null,
 		btnRects: btns.map((b) => b.getBoundingClientRect()),
 		btnLabels: btns.map((b) => b.textContent.trim())
 	};
@@ -127,11 +133,11 @@ check(
 	`box=${composer.boxH?.toFixed(0)}`
 );
 check(
-	'box starts at portrait-column right edge',
+	'box starts at the frame’s left content edge',
 	composer.boxL != null &&
-		composer.labelR != null &&
-		Math.abs(composer.boxL - composer.labelR) <= 2,
-	`box.left=${composer.boxL?.toFixed(0)} portraits.right=${composer.labelR?.toFixed(0)}`
+		composer.framePadL != null &&
+		Math.abs(composer.boxL - composer.framePadL) <= 2,
+	`box.left=${composer.boxL?.toFixed(0)} frame.padL=${composer.framePadL?.toFixed(0)}`
 );
 check(
 	'KQM + PNG side-by-side beside the box',

@@ -16,8 +16,9 @@
 	import {
 		benchBand,
 		RIBBON_W,
-		RIBBON_UNDER,
+		RIBBON_DOCK_LEFT,
 		RIBBON_OVERHANG_Y,
+		TOOL_INSET,
 		FRAME_BORDER
 	} from '$lib/benchBand.svelte';
 	import { onDestroy } from 'svelte';
@@ -112,15 +113,8 @@
 	// Layout constants (px)
 	// ---------------------------------------------------------------------------
 
-	/** Portrait-column width — and the CONVERGED SLOT-CARD width, which is the
-	 *  thing the two tools actually share. The planner's column IS the card (no
-	 *  zone padding), so this number is the card. The Team Builder reaches the
-	 *  same card through a wider bench: its `.bn` is a scroll zone that also
-	 *  holds the team facts and footer links, so it adds 12px per side plus a
-	 *  1px border-left — `--tb-bench-w` is therefore 160 + 25 = 185. Equalizing
-	 *  the other way (padding the planner out to 185) was the first fix and it
-	 *  was backwards: it spent 25px of timeline to match chrome the planner has
-	 *  no use for.
+	/** The CONVERGED SLOT-CARD width — the thing the two tools actually share,
+	 *  and the width the ribbon is built around (RIBBON_W = this + chrome).
 	 *
 	 *  160 is set by the Bench's base row, the card's widest band:
 	 *      action 26 + gap 4 + pill 76 + gap 4 + action 26 = 136
@@ -129,22 +123,14 @@
 	 *  than clipping — the bench keeps its width while the portrait drifts
 	 *  right. probe-bench-align asserts both that and cross-tool card parity.
 	 *
-	 *  Move this and `--tb-bench-w` together, then re-run probe-bench-align /
-	 *  probe-frame-rework. */
+	 *  The planner reads it for ONE thing now: the PNG export, which draws its
+	 *  own label column with no strip standing over it. The on-screen gutter
+	 *  retired with the abutting round — the frame starts at the ribbon's right
+	 *  edge, so the tracks begin at the frame's own padding box. */
 	const LABEL_W = 160;
-	/** The chart frame's horizontal padding — JS-side because the gutter below
-	 *  derives from it; .rp-frame reads it back as --rp-frame-pad-x. */
+	/** The chart frame's horizontal padding — JS-side because .rp-frame reads it
+	 *  back as --rp-frame-pad-x and the dock's inset is measured against it. */
 	const FRAME_PAD_X = 14;
-	/**
-	 * The gutter left of the tracks — everything the bench STRIP stands over.
-	 * ↻ 2026-08-06: no longer the same number as the card. The strip's outer
-	 * edge sits on the content margin now (⚓ NATE: the logo's left edge), so it
-	 * reaches RIBBON_UNDER into the frame's padding box, and the gutter has to
-	 * meet it exactly or the timeline runs under the strip. The card inside it
-	 * is still LABEL_W — the PNG export, which draws its own label column with
-	 * no strip over it, keeps reading that.
-	 */
-	const GUTTER_W = RIBBON_UNDER - FRAME_PAD_X;
 	const RULER_H = 28;
 	const CHAR_PAD_TOP = 10;
 	const E_ROW_H = 20;
@@ -1052,12 +1038,14 @@
 <!-- ============================================================ -->
 <!--  Root                                                        -->
 <!-- ============================================================ -->
-<!-- --rp-bench-w is set from the JS constant, not duplicated as a CSS literal:
-     GUTTER_W stays the single source for the five places that align to the
-     tracks' left edge, and it is derived from the bench strip's own reach. -->
+<!-- --rp-tool-inset: how far the frame starts from the content margin — the
+     ribbon's column, which the frame no longer reaches into (abutting round).
+     The tab bar in the planner PAGE reads the same constant, so the two move
+     together; TeamBonusesBlock deliberately does not — it sits below the
+     strip and keys its rail to the same seam. -->
 <div
 	class="rp-root ctx-dark"
-	style:--rp-bench-w="{GUTTER_W}px"
+	style:--rp-tool-inset="{TOOL_INSET}px"
 	style:--rp-frame-pad-x="{FRAME_PAD_X}px"
 >
 	<!-- ── Timeline chart frame ──────────────────────────────── -->
@@ -1069,10 +1057,10 @@
 	<div class="rp-frame frame" class:rp-frame--picking={sourceOpen}>
 		<!-- The RIBBON's dock: an invisible, ribbon-sized anchor the tools
 		     layout measures to place the bench strip. Geometry contract:
-		     · right edge = the track area's left edge (the timeline extends
-		       out from underneath the ribbon — the frame's label column is
-		       tucked fully beneath it, and the ribbon overhangs the frame's
-		       left edge by its own chrome)
+		     · it hangs entirely OUTSIDE the frame, RIBBON_GAP left of it, so
+		       its right edge lands on the frame's outer edge and the two
+		       surfaces tile instead of overlapping (abutting round — two
+		       things that fade together must not stack)
 		     · it STRETCHES with the frame (top/bottom insets, no height):
 		       the strip spans the whole tool surface and stands
 		       RIBBON_OVERHANG_Y proud at each end — ⚓ NATE's tall bench.
@@ -1081,11 +1069,11 @@
 		       card column's y never change across the tool fade.
 		     Absolute insets resolve against the frame's PADDING box (the
 		     documented trap), which is inset from the border box by the frame's
-		     own 1px border — hence the extra pixel at each end. -->
+		     own border — RIBBON_DOCK_LEFT and the ends both carry it. -->
 		<div
 			class="rp-ribbon-dock"
 			data-bench-anchor
-			style:left="calc(var(--rp-frame-pad-x) + var(--rp-bench-w) - {RIBBON_W}px)"
+			style:left="{RIBBON_DOCK_LEFT}px"
 			style:top="-{FRAME_BORDER + RIBBON_OVERHANG_Y}px"
 			style:bottom="-{FRAME_BORDER + RIBBON_OVERHANG_Y}px"
 			style:width="{RIBBON_W}px"
@@ -1096,7 +1084,6 @@
 		     track/ext scrollers), and the view cluster stays pinned to the
 		     frame's right edge. -->
 		<div class="rp-ruler-strip">
-			<div class="rp-ruler-spacer"></div>
 			<div class="rp-ruler-scroll" bind:this={rulerScrollEl}>
 				<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
 				     rise to the seam, labels above them. -->
@@ -1169,18 +1156,14 @@
 		</div>
 		<div class="rp-timeline-area" class:rp-timeline-area--notes={showNotes && hasCaveats}>
 			<div class="rp-scroll-wrapper">
-				<!-- Left label column (sticky, non-scrolling) — pure reservation now.
-				     The RIBBON stands over its FULL height (tall-bench round), so
-				     nothing rendered here could be seen: the cells only hold the
-				     track groups' vertical rhythm, and the lane labels moved into
-				     their own lanes (see .rp-lane-name). -->
-				<div class="rp-label-col">
-					{#each characterSlots as _slotId, i (i)}
-						<div class="rp-label-cell char-label" style:height="{slotBlockH(i)}px"></div>
-					{/each}
-				</div>
-
-				<!-- Right scrollable track area -->
+				<!-- The label column is GONE (abutting round). It was already pure
+				     reservation — the ribbon stood over its full height, so nothing
+				     in it could be seen — and now the frame starts where the ribbon
+				     ends, leaving no width for it to reserve. The band's cards align
+				     to the track groups through the published slot metrics
+				     (benchBand.claimMetrics), which was always the real contract;
+				     the shadow column never carried it. -->
+				<!-- Scrollable track area -->
 				<div
 					class="rp-track-scroll"
 					bind:this={trackScrollEl}
@@ -1691,7 +1674,6 @@
 
 		<!-- ── External scrollbar (below timeline, synced to track) ─ -->
 		<div class="rp-ext-scroll-wrap">
-			<div class="rp-ext-scroll-spacer"></div>
 			<div class="rp-ext-scroll" bind:this={extScrollEl} onscroll={onExtScroll}>
 				<div style:width="{totalWidth}px" style:height="1px"></div>
 			</div>
@@ -1841,9 +1823,14 @@
 		   the shared .frame background (Genshin-UI archetype, 2026-08-05). */
 		background: var(--surface-raised);
 		border-radius: 9px;
-		/* --rp-frame-pad-x comes inline from FRAME_PAD_X (the gutter derives from
-		   it, so it can't be a second literal here). */
+		/* --rp-frame-pad-x comes inline from FRAME_PAD_X (the dock's inset is
+		   measured against it, so it can't be a second literal here). */
 		padding: 10px var(--rp-frame-pad-x) 4px;
+		/* The frame BEGINS at the ribbon's right edge — it no longer runs
+		   beneath the strip (abutting round). The tab bar above carries the
+		   same inset from the planner page; TeamBonusesBlock below deliberately
+		   does not, since it sits clear of the strip's bottom. */
+		margin-left: var(--rp-tool-inset);
 		display: flex;
 		flex-direction: column;
 		min-width: 0;
@@ -1878,22 +1865,20 @@
 		margin-right: 240px;
 	}
 	/* ── Character Source overlay ─────────────────────────────── */
-	/* Non-modal: an opaque panel over the whole frame right of the portrait
-	   column — ruler, view cluster, tracks, external scrollbar and composer.
-	   The 4 live portraits stay visible on the left as the team display, and
-	   the frame's own --picking min-height keeps the panel usable under a
-	   short rotation. */
+	/* Non-modal: an opaque panel over the whole frame — ruler, view cluster,
+	   tracks, external scrollbar and composer. The 4 live portraits stay
+	   visible in the RIBBON beside the frame as the team display (they are no
+	   longer inside it to be covered), and the frame's own --picking
+	   min-height keeps the panel usable under a short rotation. */
 	.rp-source-overlay {
 		position: absolute;
 		top: 0;
 		right: 0;
 		bottom: 0;
-		/* Absolute insets resolve against the frame's PADDING box, so the left
-		   edge has to clear the frame's own left padding as well as the
-		   portrait column — otherwise the panel clips the portraits' right
-		   edge. This lands the hairline exactly on the column's edge, the
-		   mirror of the Team Builder bench's. */
-		left: calc(var(--rp-bench-w) + var(--rp-frame-pad-x));
+		/* The panel fills the frame's padding box. It used to stop short of the
+		   portrait column; the ribbon holds the portraits outside the frame
+		   now, so there is nothing left inside for it to clear. */
+		left: 0;
 		z-index: 6;
 		display: flex;
 		flex-direction: column;
@@ -2069,26 +2054,6 @@
 		background: color-mix(in srgb, var(--accent) 16%, transparent);
 	}
 
-	/* ── Label column ─────────────────────────────────────────── */
-	/* The portrait column and the three spacers that align to its right edge
-	   all read --rp-bench-w (set on .rp-root from the LABEL_W constant). */
-	.rp-label-col {
-		flex-shrink: 0;
-		width: var(--rp-bench-w);
-		display: flex;
-		flex-direction: column;
-	}
-	.rp-label-spacer {
-		flex-shrink: 0;
-	}
-	.rp-label-cell {
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		padding-right: 10px;
-		border-bottom: 1px solid var(--rp-line);
-		flex-shrink: 0;
-	}
 	/* ── Lane names (tall-bench round) ───────────────────────────
 	   The label column is under the ribbon at every height now, so each aux
 	   lane carries its OWN name: pinned to the track viewport's left edge
@@ -2122,22 +2087,6 @@
 		visibility: hidden;
 	}
 
-	/* ── Character label cell — the bench band's reserved footprint ─── */
-	/* The cells only reserve the slot-card geometry now (the cards render in
-	   the layout-level bench band, floating exactly here); each cell keeps the
-	   fixed row height (inline style) + the bottom separator so the column
-	   still reads as structure while the band is mid-travel.
-
-	   No inset: the column IS the card here, which is why LABEL_W is the shared
-	   CARD width rather than a bench width (the TB adds its zone chrome on top
-	   to reach the same card). Padding this out to match the TB's bench would
-	   cost 25px of timeline for chrome the planner does not have. */
-	.char-label {
-		flex-direction: column;
-		align-items: stretch;
-		padding: 0;
-	}
-
 	/* ── Track scroll container ───────────────────────────────── */
 	.rp-track-scroll {
 		flex: 1;
@@ -2154,10 +2103,6 @@
 	.rp-ext-scroll-wrap {
 		display: flex;
 		flex-shrink: 0;
-	}
-	.rp-ext-scroll-spacer {
-		flex-shrink: 0;
-		width: var(--rp-bench-w);
 	}
 	.rp-ext-scroll {
 		flex: 1;
@@ -2185,10 +2130,6 @@
 	.rp-ruler-strip {
 		position: relative;
 		display: flex;
-	}
-	.rp-ruler-spacer {
-		flex-shrink: 0;
-		width: var(--rp-bench-w);
 	}
 	.rp-ruler-scroll {
 		flex: 1;
@@ -2826,15 +2767,15 @@
 	   well (darker-than-chart-ground + 1px three-state border = the
 	   textfield signal; bg/border styling lives in notationTheme — keep in
 	   lockstep), with the export pair (KQM, PNG) side-by-side just OUTSIDE
-	   it on the right — the send/submit position. The box starts at the
-	   portrait column's right edge (--rp-bench-w) rather than the frame's
-	   left edge; the vertical margins are its breathing room, deliberately
+	   it on the right — the send/submit position. It spans the frame's full
+	   width: the inset to the portrait column's right edge retired with the
+	   column itself. The vertical margins are its breathing room, deliberately
 	   more below. */
 	.rp-composer {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		margin: 12px 0 14px var(--rp-bench-w);
+		margin: 12px 0 14px;
 	}
 	/* ← Explore alternatives — the picker's own footer chip (tall-bench round:
 	   it used to dock in the label column, which the ribbon now owns at every

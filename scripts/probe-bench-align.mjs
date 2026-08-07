@@ -43,24 +43,26 @@ const box = async (sel) => {
 await page.goto(`${BASE}/rotation-planner`, { waitUntil: 'networkidle' });
 const rpTabs = await box('.rp-tab-bar');
 const rpFrame = await box('.rp-frame');
-const rpBench = await box('.rp-label-col');
+// Abutting round: the bench IS the ribbon, standing beside the frame rather
+// than over a reserved column inside it. Both tools are measured the same way.
+const rpBench = await box('.bench-band-mount .bb');
 // The cards live in the layout-level bench band now (bench-band round),
 // docked over the label column — same geometry, different owner.
 const rpCard = await box('.bench-band-mount .sp-card');
 console.log('RP tab bar     ', rpTabs);
 console.log('RP frame       ', rpFrame);
-console.log('RP portrait col', rpBench);
+console.log('RP ribbon      ', rpBench);
 console.log('RP first card  ', rpCard);
 
 // ── Team Builder ─────────────────────────────────────────────────────────
 await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 const tbTabs = await box('.tb-tabs');
 const tbFrame = await box('.tb-frame');
-const tbBench = await box('.bn');
+const tbBench = await box('.bench-band-mount .bb');
 const tbCard = await box('.bench-band-mount .sp-card');
 console.log('\nTB tab row     ', tbTabs);
 console.log('TB frame       ', tbFrame);
-console.log('TB bench       ', tbBench);
+console.log('TB ribbon      ', tbBench);
 console.log('TB first card  ', tbCard);
 
 console.log('');
@@ -71,36 +73,37 @@ check(
 	rpFrame && tbFrame && Math.abs(rpFrame.y - tbFrame.y) <= 1,
 	`rp=${rpFrame?.y} tb=${tbFrame?.y} (tune --tb-tabrow-gap)`
 );
-// Benches meet AT the seam: the planner's holds the left edge of its frame,
-// the Team Builder's the right edge of its own.
+// ABUTTING (⚓ NATE 2026-08-07): the ribbon ends exactly where the frame
+// begins — RIBBON_GAP apart, 0 by default. They must TILE, never overlap: on a
+// Visualizers leg the two fade in lockstep, and any overlap composites the
+// tool's ground twice (that is the bug this arrangement fixes). The tab bar
+// carries the same inset, so it starts on the frame's edge too.
 check(
-	'RP portrait column holds its frame’s LEFT edge',
-	rpFrame && rpBench && rpBench.x - rpFrame.x < 20,
-	`bench.x=${rpBench?.x} frame.x=${rpFrame?.x}`
+	'RP: ribbon’s right edge meets its frame’s left edge',
+	rpFrame && rpBench && Math.abs(rpBench.right - rpFrame.x) <= 1,
+	`ribbon.right=${rpBench?.right} frame.x=${rpFrame?.x}`
 );
 check(
-	'TB bench holds its frame’s LEFT edge (bench-left grammar, both tools)',
-	tbFrame && tbBench && tbBench.x - tbFrame.x < 20,
-	`bench.x=${tbBench?.x} frame.x=${tbFrame?.x}`
+	'TB: ribbon’s right edge meets its frame’s left edge',
+	tbFrame && tbBench && Math.abs(tbBench.right - tbFrame.x) <= 1,
+	`ribbon.right=${tbBench?.right} frame.x=${tbFrame?.x}`
 );
-// The bench is a zone of the frame, not a framed island of its own — the
-// tell is that it has no border/radius while the frame has both.
-// The SHARED card must render at the SAME width in both tools. The bench token
-// means "card width" in the planner but "card + zone chrome" in the TB (whose
-// .bn adds 12px per side + a 1px border-left), so the two drifted 185 vs 160
-// and names wrapped at different points. .char-label's inset is what closes it.
+check(
+	'RP tab bar starts on its frame’s left edge',
+	rpFrame && rpTabs && Math.abs(rpTabs.x - rpFrame.x) <= 1,
+	`tabs.x=${rpTabs?.x} frame.x=${rpFrame?.x}`
+);
+check(
+	'TB tab row starts on its frame’s left edge',
+	tbFrame && tbTabs && Math.abs(tbTabs.x - tbFrame.x) <= 1,
+	`tabs.x=${tbTabs?.x} frame.x=${tbFrame?.x}`
+);
+// The SHARED card must render at the SAME width in both tools — one component
+// in one strip now, so this is a regression guard rather than a reconciliation.
 check(
 	'shared slot card is the same width in both tools',
 	rpCard && tbCard && rpCard.w === tbCard.w,
 	`rp=${rpCard?.w} tb=${tbCard?.w} (tune .char-label's padding in RotationTimeline)`
-);
-check(
-	'TB bench wears no frame shell of its own',
-	await page.locator('.bn').evaluate((el) => {
-		const cs = getComputedStyle(el);
-		return cs.borderTopWidth === '0px' && cs.borderTopLeftRadius === '0px';
-	}),
-	'the bench should be a zone, not an island'
 );
 // Viewport-fit: the TB frame ends inside the viewport and the page never
 // scrolls (its zones scroll instead).
@@ -145,7 +148,7 @@ check(
 	'TB slot card fits its zone — no overflow when slot actions appear',
 	filledCard.card <= filledCard.inner && emptyCard.card === filledCard.card,
 	`empty=${emptyCard.card} filled=${filledCard.card} zone=${filledCard.inner} ` +
-		`(widen --tb-bench-w / LABEL_W, or shrink the base row)`
+		`(widen LABEL_W / RIBBON_PAD, or shrink the base row)`
 );
 
 await page.screenshot({ path: `${SHOTS}/bench-align-tb.png` });

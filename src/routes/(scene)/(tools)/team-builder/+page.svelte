@@ -18,7 +18,14 @@
 	} from './lib/facets';
 	import { afterNavigate } from '$app/navigation';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
-	import { benchBand, RIBBON_W, RIBBON_OVERHANG, RIBBON_OVERHANG_Y } from '$lib/benchBand.svelte';
+	import {
+		benchBand,
+		RIBBON_W,
+		RIBBON_DOCK_LEFT,
+		RIBBON_OVERHANG_Y,
+		TOOL_INSET,
+		FRAME_BORDER
+	} from '$lib/benchBand.svelte';
 	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
 	import CharacterGrid, { type GridFilters } from '$lib/components/CharacterGrid.svelte';
 	import DetailCard from './lib/DetailCard.svelte';
@@ -715,7 +722,10 @@
 	</div>
 {/snippet}
 
-<div class="tb">
+<!-- --tb-tool-inset: the bench ribbon owns the column at the content margin,
+     so the tool starts after it. Applied to .tb rather than the frame alone so
+     the tab row above travels with the frame it labels. -->
+<div class="tb" style:--tb-tool-inset="{TOOL_INSET}px">
 	<!-- Tab strip rides OUTSIDE the frame — the Rotation Planner's document tabs
 	     sit the same way, and the two strips are what set the frame tops the
 	     mirrored surfaces align on. -->
@@ -804,31 +814,25 @@
 	     views scroll INSIDE it, the page never does. -->
 	<div class="tb-frame frame ctx-light">
 		<!-- The RIBBON's dock: invisible, ribbon-sized, measured by the tools
-		     layout. On the frame's LEFT edge (world-locked fade round,
+		     layout. Beside the frame's LEFT edge (world-locked fade round,
 		     2026-08-05): both tools dock the ribbon at the SAME screen spot —
 		     bench left, work center, filters right, site-wide — so during the
-		     fade transition the ribbon simply never moves. Left edge overhangs
-		     the frame by RIBBON_OVERHANG (the atlas/roster extends out from
-		     underneath the ribbon's right edge; the .bn zone is the
-		     tucked-under region). ↻ Tall-bench round: it STRETCHES with the
-		     frame — top/bottom insets, no height — so the strip stands
-		     RIBBON_OVERHANG_Y proud at both ends, exactly as the planner's
-		     does. Insets resolve against the padding box, hence the frame's
-		     own 1px border at each end. -->
+		     fade transition the ribbon simply never moves. ↻ Abutting round: it
+		     hangs entirely OUTSIDE the frame (RIBBON_DOCK_LEFT), which begins
+		     at its right edge — the old .bn tuck-under zone is gone, because a
+		     surface that fades in lockstep with the strip must not lie beneath
+		     it. ↻ Tall-bench round: it STRETCHES with the frame — top/bottom
+		     insets, no height — so the strip stands RIBBON_OVERHANG_Y proud at
+		     both ends, exactly as the planner's does. Insets resolve against
+		     the padding box, hence FRAME_BORDER at each end. -->
 		<div
 			class="tb-ribbon-dock"
 			data-bench-anchor
-			style:left="-{RIBBON_OVERHANG}px"
-			style:top="-{1 + RIBBON_OVERHANG_Y}px"
-			style:bottom="-{1 + RIBBON_OVERHANG_Y}px"
+			style:left="{RIBBON_DOCK_LEFT}px"
+			style:top="-{FRAME_BORDER + RIBBON_OVERHANG_Y}px"
+			style:bottom="-{FRAME_BORDER + RIBBON_OVERHANG_Y}px"
 			style:width="{RIBBON_W}px"
 		></div>
-
-		<!-- ── Bench zone: pure reservation. The ribbon stands over this column
-		     at its full height now, so the zone holds nothing but the width the
-		     strip tucks over — the team facts and coverage moved to the TeamStrip
-		     above the work zone (tall-bench round, 2026-08-06). -->
-		<div class="bn" aria-hidden="true"></div>
 
 		<div class="tb-work">
 			<!-- What the team IS and what it COVERS — one horizontal readout above
@@ -1031,12 +1035,12 @@
 		   is 0.65rem — 0.5rem here puts both frame tops at y=109 @1600
 		   (probe-bench-align asserts it). Nate's to retune. */
 		--tb-tabrow-gap: 0.5rem;
-		/* The under-ribbon zone width = RIBBON_UNDER: the strip's outer edge sits
-		   on the CONTENT MARGIN now (⚓ NATE 2026-08-06 — the logo's left edge),
-		   so it reaches all the way across this zone bar the frame's own 1px
-		   border. Mirrors the planner, whose frame pad + gutter meet the same
-		   line. Move with the RIBBON_* knobs in $lib/benchBand.svelte.ts. */
-		--tb-bench-w: 189px; /* = RIBBON_UNDER (RIBBON_W 190 − the frame's 1px border) */
+		/* Both rows start where the ribbon ends (abutting round) — the strip's
+		   outer edge sits on the CONTENT MARGIN (⚓ NATE 2026-08-06 — the logo's
+		   left edge) and the tool begins after its column. Mirrors the planner,
+		   whose tab bar and frame carry the same inset. Move with the RIBBON_*
+		   knobs in $lib/benchBand.svelte.ts. */
+		padding-left: var(--tb-tool-inset);
 		display: flex;
 		flex-direction: column;
 		gap: var(--tb-tabrow-gap);
@@ -1069,15 +1073,13 @@
 		visibility: hidden;
 	}
 
-	/* The bench zone: the strip of frame that tucks UNDER the ribbon. Nothing
-	   renders in it — the ribbon is opaque and spans the frame's full height
-	   (tall-bench round) — so it is width reservation and nothing else. Its
-	   old hairline is gone with it: a line no one can ever see. Side-locked at
-	   every width, mirroring the planner's label column. */
-	.bn {
-		flex: none;
-		width: var(--tb-bench-w);
-	}
+	/* The .bn bench zone is GONE (abutting round). It was the strip of frame
+	   that tucked under the ribbon — width reservation and nothing else once
+	   the tall-bench round moved the team facts out to the TeamStrip. The frame
+	   now starts where the ribbon ends, so there is no column to reserve, and
+	   the TeamStrip picks up the frame's own left edge. That also closes the
+	   2px the zone had silently drifted out of step by: it was pinned at 189
+	   while RIBBON_CHROME went 15 → 16, so the strip overhung it. */
 
 	/* The work column: the team strip, then the browse zone under it. The
 	   strip must NOT scroll with the roster (its coverage chips drive the

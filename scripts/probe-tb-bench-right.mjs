@@ -47,8 +47,10 @@ check(
 );
 await landing.close();
 
-// ── 1b: bench zone sits on the LEFT of the source at 1600px ───────────────
-const bx = await page.locator('.bn').boundingBox();
+// ── 1b: the bench sits on the LEFT of the source at 1600px ───────────────
+// Abutting round: the bench IS the ribbon, standing beside the frame rather
+// than inside it as a reserved .bn column.
+const bx = await page.locator('.bench-band-mount .bb').boundingBox();
 const sx = await page.locator('.tb-source').boundingBox();
 check(
 	'bench left of source @1600',
@@ -89,7 +91,7 @@ async function openCompare(p) {
 await openCompare(page);
 const cmpPos1600 = await page.locator('.cmp').evaluate((el) => getComputedStyle(el).position);
 const cmpBox1600 = await page.locator('.cmp').boundingBox();
-const bnBox1600 = await page.locator('.bn').boundingBox();
+const bnBox1600 = await page.locator('.bench-band-mount .bb').boundingBox();
 check('compare renders in-flow @1600', cmpPos1600 === 'static', `pos=${cmpPos1600}`);
 check(
 	'compare fills the center, right of the bench @1600',
@@ -112,7 +114,7 @@ const dcPos1280 = await page
 	.evaluate((el) => getComputedStyle(el).position);
 check('detail is a modal @1280', dcPos1280 === 'fixed', `pos=${dcPos1280}`);
 await page.keyboard.press('Escape');
-const bx1280 = await page.locator('.bn').boundingBox();
+const bx1280 = await page.locator('.bench-band-mount .bb').boundingBox();
 const sx1280 = await page.locator('.tb-source').boundingBox();
 check(
 	'bench still left of source @1280',
@@ -122,18 +124,21 @@ check(
 await page.screenshot({ path: `${SHOTS}/tb-1280-detail.png` });
 
 // ── mirrored surfaces: the bench is SIDE-LOCKED at every width ───────────
-// It is a zone of the one tool frame now, the mirror of the planner's portrait
-// column — so the old ≤900px flip-to-top is gone and the bench holds the right
-// edge even where it crowds. (A real narrow treatment is the mobile pass's.)
+// It is the ribbon standing beside the one tool frame now — so the old ≤900px
+// flip-to-top is gone and the bench holds the left edge even where it crowds.
+// (A real narrow treatment is the mobile pass's.)
 for (const w of [1040, 760]) {
 	await page.setViewportSize({ width: w, height: 1000 });
 	await page.waitForTimeout(200);
-	const bxN = await page.locator('.bn').boundingBox();
+	const bxN = await page.locator('.bench-band-mount .bb').boundingBox();
 	const sxN = await page.locator('.tb-source').boundingBox();
+	// Beside, not stacked: left of the source AND vertically overlapping it.
+	// (Their TOPS no longer coincide — the tall-bench round stands the strip
+	// RIBBON_OVERHANG_Y proud of the frame, so it opens above the source zone.)
 	check(
 		`bench stays left of source @${w} (no flip-to-top)`,
-		bxN && sxN && bxN.x < sxN.x && Math.abs(bxN.y - sxN.y) < 2,
-		`bn=(${bxN?.x},${bxN?.y}) source=(${sxN?.x},${sxN?.y})`
+		bxN && sxN && bxN.x < sxN.x && bxN.y < sxN.y + 2 && bxN.y + bxN.height > sxN.y + 20,
+		`bn=(${bxN?.x},${bxN?.y},h${bxN?.height}) source=(${sxN?.x},${sxN?.y})`
 	);
 	await page.screenshot({ path: `${SHOTS}/tb-${w}.png` });
 }
