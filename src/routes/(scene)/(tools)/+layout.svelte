@@ -156,6 +156,25 @@
 	// revival window. Only delays teardown of the (inert, invisible) old
 	// subtree — not user-visible.
 	const HOLD_MAX_MS = 4000;
+	// Paint gate for the INCOMING layer's fade-in (used in afterNavigate, and by
+	// the watchdog to bound how late a leg can legitimately still be fading).
+	// The first rAF ticks put us past the new route's first paint; then frame
+	// gaps are watched until the main thread has produced two consecutive clean
+	// frames. WebKit runs 60–90ms of post-mount work (CodeMirror measure, the
+	// timeline's first full style pass) 1–3 frames AFTER first paint — fading on
+	// paint alone let those blocks stutter its opening. Capped so a
+	// persistently-busy page still fades.
+	const SETTLE_GAP_MS = 24;
+	const SETTLE_CAP_MS = 450;
+
+	/** Release a watchdog correction so this leg's fades can drive the layer
+	 *  again — an `!important` pin outranks the animations the orchestration
+	 *  runs on. Every pass calls this before it animates anything. */
+	function clearWatchdogPin(el: HTMLElement) {
+		if (el.style.getPropertyPriority('opacity') === 'important') {
+			el.style.removeProperty('opacity');
+		}
+	}
 
 	/** Cancel this layout's WAAPI animations on a layer, optionally baking the
 	 *  current values into inline style first (transition.ts's pattern). */
@@ -478,9 +497,113 @@
 	// (see prewarmPlanner.ts).
 	beforeNavigate((nav) => {
 		if (nav.to?.url.pathname.startsWith('/rotation-planner')) prewarmPlannerCharacters();
+		// Cover the URL-flip → afterNavigate window (see the watchdog note).
+		lastNavAt = performance.now();
+		navSettleDeadline = watchdogDeadline(performance.now());
+	});
+
+	// ── Stale-layer watchdog (transition hardening, 2026-08-07) ───────────────
+	// Defense in depth for the interrupt class this orchestration keeps
+	// producing — the ghost layer (`47dfe8b`) and a tool settling INVISIBLE
+	// after a nav storm were both the same shape: a pass that didn't drive
+	// every live layer, leaving one pinned at a value nothing would ever come
+	// back to correct.
+	//
+	// It prevents nothing. What it buys is the difference between "wrong for
+	// seconds, reported as 'sometimes a tool pops in and hangs', no pattern
+	// findable" and "corrected within the period, and LOUD in the console".
+	// ⚠ It must NEVER heal silently: the warning is the sensor that feeds the
+	// storm probe its next pattern, and probes assert `hits` stayed at 0 rather
+	// than assert the geometry the heal would have hidden. If this ever fires
+	// in normal use, the orchestration has a bug — go find it, don't raise the
+	// period.
+	//
+	// Judged only PAST the leg's settle deadline: mid-flight every opacity is
+	// legitimate (the incoming deliberately sits at 0 through its paint gate),
+	// so there is nothing to judge until the choreography has had its say.
+	//
+	// ⚠ The deadline is armed in beforeNavigate, NOT just afterNavigate. There
+	// is a real window between the URL flipping and afterNavigate running its
+	// pass — the new route's module loads and its subtree mounts in there — and
+	// during it the departing layer is legitimately still fully opaque while
+	// `page.url.pathname` already names the destination. Arming only on the way
+	// out let the watchdog judge inside that window and "correct" the outgoing
+	// layer to 0 before its fade was ever created: a self-inflicted pop, and a
+	// false positive convincing enough to send a bug hunt after it (it did).
+	// A timestamp, not a flag — a cancelled or aborted navigation just lets it
+	// expire instead of disabling the watchdog forever.
+	const WATCHDOG_PERIOD_MS = 1500;
+	/** Upper bound on when this leg's settle pass can still be running: the
+	 *  world clock's own end, or a fade that starts as late as the paint gate's
+	 *  cap allows — whichever lands later — plus the settle pass's margin. */
+	const watchdogDeadline = (clock: number) =>
+		Math.max(clock + SLIDE_MS, performance.now() + SETTLE_CAP_MS + TOOL_FADE_IN_MS) + 400;
+	let navSettleDeadline = 0;
+	let lastNavAt = 0;
+	// `hits` is what probes assert on (must stay 0). `log` is what a human reads
+	// afterwards — a hit with no context is just as unpatternable as the bug
+	// reports were, so each one carries the layer roster and how long after the
+	// navigation it was caught.
+	const watchdog = { hits: 0, last: null as string | null, log: [] as unknown[] };
+
+	function auditLayers() {
+		if (!toolMain || document.hidden || performance.now() < navSettleDeadline) return;
+		const path = page.url.pathname;
+		const pages = [...toolMain.querySelectorAll<HTMLElement>(':scope > .tool-page')];
+		// Same rule the pan and the dock measurement use: the latest layer
+		// stamped with the current path is the real one.
+		const current = pages.filter((p) => p.dataset.page === path).pop();
+		for (const p of pages) {
+			const o = parseFloat(getComputedStyle(p).opacity);
+			const shouldShow = p === current;
+			if (shouldShow ? o > 0.99 : o < 0.01) continue;
+			watchdog.hits++;
+			watchdog.last = `${p.dataset.page} at opacity ${o.toFixed(3)} (current route ${path})`;
+			watchdog.log.push({
+				at: Math.round(performance.now()),
+				sinceNav: Math.round(performance.now() - lastNavAt),
+				path,
+				layer: p.dataset.page,
+				o,
+				inline: p.style.opacity,
+				z: p.style.zIndex,
+				anims: p.getAnimations().map((a) => `${a.id || 'svelte'}:${a.playState}`),
+				roster: pages.map((q) => `${q.dataset.page}@${getComputedStyle(q).opacity}`)
+			});
+			console.warn(
+				`[tools] stale layer watchdog: ${shouldShow ? 'the CURRENT route is not visible' : 'a departed layer is still painting'} — ${watchdog.last}. This is an orchestration bug; the layer has been corrected. Detail: window.__toolWatchdog.log`
+			);
+			// Heal — and NOT by clearing the inline style. Measured on the live
+			// bug: once a layer is in this state, its computed opacity ignores
+			// normal inline declarations AND new WAAPI animations, and only an
+			// `!important` declaration moves it (see the memory note). So the
+			// correction is asserted at the one priority that is known to land,
+			// and the next navigation's pass removes it before animating.
+			p.style.setProperty('opacity', shouldShow ? '1' : '0', 'important');
+			// Verify on the next frame — a heal that silently fails is worse
+			// than none, because it makes `hits` look like a handled problem.
+			const entry = watchdog.log[watchdog.log.length - 1] as Record<string, unknown>;
+			const want = shouldShow ? 1 : 0;
+			requestAnimationFrame(() => {
+				const got = parseFloat(getComputedStyle(p).opacity);
+				entry.healed = Math.abs(got - want) < 0.01;
+				if (!entry.healed) {
+					console.warn(`[tools] stale layer watchdog: the correction did NOT take (still ${got}).`);
+				}
+			});
+		}
+	}
+
+	onMount(() => {
+		(window as unknown as Record<string, unknown>).__toolWatchdog = watchdog;
+		const timer = setInterval(auditLayers, WATCHDOG_PERIOD_MS);
+		return () => clearInterval(timer);
 	});
 
 	afterNavigate((nav) => {
+		// Nothing is judgeable until this leg has settled, whichever branch
+		// below runs — the early returns still reveal a page.
+		navSettleDeadline = watchdogDeadline(sceneTransitionStart() ?? performance.now());
 		// 'enter' = initial load (cold load / ascend reveal owns that path). A lone
 		// page layer means nothing to cross-fade (e.g. landing→tool, where the old
 		// DOM lives outside this layout). Whenever the pan orchestration doesn't
@@ -512,7 +635,10 @@
 		// re-animate from there. (A REVIVED layer's animations died with its
 		// reinsertion and its inline styles hold the old leg's baked values —
 		// the two-keyframe drift below repositions it regardless.)
-		for (const p of pages) cancelToolNavAnims(p, true);
+		for (const p of pages) {
+			clearWatchdogPin(p);
+			cancelToolNavAnims(p, true);
+		}
 
 		// ── Outgoing: starts NOW. It is already painted and the camera is
 		// already moving — waiting for the incoming's paint gate would visibly
@@ -590,15 +716,7 @@
 		// for legs where one side has no dock.
 		benchNavTransition(fromPath, path, clock);
 
-		// Paint-gate + settle-gate for the INCOMING's fade-in. The first rAF
-		// ticks put us past the new route's first paint; then keep watching
-		// frame gaps until the main thread has produced two consecutive clean
-		// frames. WebKit runs 60–90ms of post-mount work (CodeMirror measure,
-		// the timeline's first full style pass) 1–3 frames AFTER first paint —
-		// fading on paint alone let those blocks stutter its opening. Capped so
-		// a persistently-busy page still fades.
-		const SETTLE_GAP_MS = 24;
-		const SETTLE_CAP_MS = 450;
+		// Paint-gate + settle-gate for the INCOMING's fade-in (knobs above).
 		const t0 = performance.now();
 		let lastTs = 0;
 		let quietFrames = 0;

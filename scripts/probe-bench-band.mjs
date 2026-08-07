@@ -449,6 +449,22 @@ check(
 	JSON.stringify(afterInt)
 );
 
+// The watchdog must have stayed silent. This is asserted INSTEAD OF trusting
+// the geometry check above on its own: the watchdog CORRECTS a mis-set layer,
+// so a run where the orchestration went wrong can still settle looking right.
+// ⚠️ KNOWN INTERMITTENT (~1 run in 6, 2026-08-07): the tool→tool orchestration
+// can leave a layer's computed opacity pinned — invisible current tool, or a
+// departed layer painting at full strength — in a state where normal inline
+// declarations and new WAAPI animations are both ignored. Screenshot-confirmed
+// user-visible. The watchdog heals it within its period; the root cause is
+// open. If this check is red, that is the bug, not a flaky probe.
+const wd = await page.evaluate(() => ({ ...window.__toolWatchdog }));
+check(
+	'the stale-layer watchdog never fired (no layer was left mis-set)',
+	wd.hits === 0,
+	`${wd.hits} hit(s): ${wd.last ?? ''}`
+);
+
 // ── Short viewport: the strip still spans its frame, and the work zone (not
 // the bench column) carries the team readout ─────────────────────────────
 const page2 = await browser.newPage({ viewport: { width: 1280, height: 720 } });
