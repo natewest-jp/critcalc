@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
+	import Mark from './Mark.svelte';
 	/**
 	 * SlotPortrait — the roster card shared by the Rotation Planner's timeline
 	 * label column and the Team Builder's Bench. Three horizontal bands:
@@ -232,7 +233,7 @@
 			<span
 				class="sp-namemark"
 				title="Frame timing not curated yet — capabilities are complete, but Planner timing is approximate"
-				aria-label="Frame timing not curated yet">∅</span
+				aria-label="Frame timing not curated yet"><Mark name="uncurated" size={11} /></span
 			>
 		{/if}
 		<button

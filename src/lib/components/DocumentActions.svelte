@@ -158,7 +158,7 @@
 			onclick={(e) => {
 				e.stopPropagation();
 				db.resetDocument();
-			}}>Reset?</button
+			}}><Mark name="warn" /> Reset?</button
 		>
 	{/if}
 </div>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
+	import Mark from './Mark.svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 	import type { Stat } from '$lib/types/ability';
@@ -1653,7 +1654,7 @@
 					href="{resolve('/team-builder')}{exploreHasTeam ? '?alts=1' : ''}"
 					title="Open the current team in the Team Builder to compare alternatives"
 				>
-					<span class="rp-explore-arrow">←</span> Explore alternatives
+					<span class="rp-explore-arrow"><Mark name="back" size={12} /></span> Explore alternatives
 				</a>
 			</div>
 		{/if}
@@ -2546,7 +2547,8 @@
 		background: var(--control-face-hover);
 	}
 	.rp-explore-arrow {
-		display: inline-block;
+		display: inline-flex;
+		vertical-align: -2px;
 		transition: transform 150ms ease;
 	}
 	.rp-explore-link:hover .rp-explore-arrow {

@@ -4,6 +4,7 @@
 	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import CloseMark from '$lib/components/CloseMark.svelte';
+	import Mark from '$lib/components/Mark.svelte';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import {
 		deriveCharacterCapabilities,
@@ -154,11 +155,12 @@
 								onclick={() => onToggleTeam(id)}
 								title={teamState === 'full' ? 'All four team slots are filled' : undefined}
 							>
+								<Mark name={teamState === 'in' ? 'check' : 'plus'} />
 								{teamState === 'in'
-									? '✓ In team — remove'
+									? 'In team — remove'
 									: teamState === 'full'
 										? 'Team full'
-										: '+ Add to team'}
+										: 'Add to team'}
 							</button>
 						{/if}
 						{#if onToggleCompare && compareState}
@@ -173,11 +175,12 @@
 										? 'Comparison is full (4)'
 										: 'Add to the comparison — it loads into the Compare tab'}
 							>
+								<Mark name={compareState === 'in' ? 'check' : 'forward'} />
 								{compareState === 'in'
-									? '✓ Comparing — remove'
+									? 'Comparing — remove'
 									: compareState === 'full'
 										? 'Compare full'
-										: '→ Compare'}
+										: 'Compare'}
 							</button>
 						{/if}
 					</div>
@@ -211,14 +214,14 @@
 					class:is-active={myOwnership === 'owned'}
 					aria-pressed={myOwnership === 'owned'}
 					onclick={() => ownership.setMark(id, myOwnership === 'owned' ? null : 'owned')}
-					>● Owned</button
+					><Mark name="check" /> Owned</button
 				>
 				<button
 					class="btn dc-own-btn--wish"
 					class:is-active={myOwnership === 'wishlist'}
 					aria-pressed={myOwnership === 'wishlist'}
 					onclick={() => ownership.setMark(id, myOwnership === 'wishlist' ? null : 'wishlist')}
-					>★ Wishlist</button
+					><Mark name="star" /> Wishlist</button
 				>
 			</div>
 			{#if entry?.noConstellations}
@@ -281,7 +284,10 @@
 							<span class="dc-cap-gate">
 								{#if cap.minConstellation > 0}
 									<span class="dc-gate-chip" class:dc-gate-chip--locked={locked(cap)}
-										>C{cap.minConstellation}{locked(cap) ? ' 🔒' : ''}</span
+										>C{cap.minConstellation}{#if locked(cap)}<Mark
+												name="locked"
+												size={10}
+											/>{/if}</span
 									>
 								{:else}
 									<span class="dc-gate-chip dc-gate-chip--base">C0</span>
@@ -399,6 +405,9 @@
 	   probes/tests can target each action unambiguously. */
 	.dc-team,
 	.dc-compare {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
 		padding: 0.3rem 0.6rem;
 		border: 1px solid color-mix(in srgb, var(--el-color) 45%, var(--border));
 		border-radius: 3px;
@@ -520,7 +529,12 @@
 		justify-self: end;
 	}
 
+	/* inline-flex, because the locked state's Mark is a block-level <svg> and a
+	   block child would break the chip's inline box. */
 	.dc-gate-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
 		padding: 1px 6px;
 		border-radius: 3px;
 		font-size: var(--fs-xs);

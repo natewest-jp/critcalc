@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { portal } from '$lib/actions/portal';
+	import Mark from '$lib/components/Mark.svelte';
 	import { INSTRUMENTS, type InstrumentId } from './workspace';
 
 	// Per-tile instrument switcher: the chip row didn't scale past five
@@ -103,7 +104,7 @@
 	onkeydown={onTriggerKeydown}
 >
 	{currentName}
-	<span class="ip-caret" aria-hidden="true">▾</span>
+	<span class="ip-caret"><Mark name="chevron" size={12} /></span>
 </button>
 
 {#if open}
@@ -138,9 +139,11 @@
 			>
 				<span class="ip-name" class:ip-current={inst.id === current}>{inst.name}</span>
 				{#if at !== -1 && at !== slot}
-					<span class="ip-badge">Slot {at + 1} ⇄</span>
+					<!-- Picking this one SWAPS the two tiles — the same exchange the
+					     bench slots make, so it wears the same mark. -->
+					<span class="ip-badge">Slot {at + 1} <Mark name="swap" size={12} /></span>
 				{:else if inst.id === current}
-					<span class="ip-badge ip-badge-here">●</span>
+					<span class="ip-badge ip-badge-here"><Mark name="check" size={12} /></span>
 				{/if}
 			</div>
 		{/each}
@@ -173,9 +176,14 @@
 		background: color-mix(in srgb, var(--accent) 30%, transparent);
 	}
 
+	/* Alpha in the PAINT, not element opacity: the whole Viz surface is
+	   transform-placed while a tool transition glides it, and an opacity
+	   subtree rasterizes at rounded coordinates (/styleguide § Laws). Mixing
+	   into `color` works because the mark strokes currentColor — and
+	   currentColor inside `color` itself resolves to the INHERITED value. */
 	.ip-caret {
-		font-size: var(--fs-xs);
-		opacity: 0.7;
+		display: flex;
+		color: color-mix(in srgb, currentColor 70%, transparent);
 	}
 
 	.ip-backdrop {
@@ -223,6 +231,9 @@
 	}
 
 	.ip-badge {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
 		font-family: var(--font-condensed);
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-normal);

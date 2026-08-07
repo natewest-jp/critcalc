@@ -17,13 +17,13 @@
 	<h2 id="workspace">The workspace</h2>
 	<p>
 		Use the dropdown above each tile to choose which instrument lives in that slot. Your layout is
-		remembered between visits; <strong>Reset workspace</strong> restores the default, and each tile can
-		be reset on its own without disturbing the others.
+		remembered between visits; <strong>Reset layout</strong> restores the default, and each tile can be
+		reset on its own without disturbing the others.
 	</p>
 	<p>
-		<strong>⤴ Share</strong> copies a link that reopens an instrument exactly as it looks, inputs and
-		all. Some instruments can also hand off to each other — the ICD Timeline can send its applying hits
-		straight to the Gauge Explorer, for instance.
+		<strong>Share</strong> copies a link that reopens an instrument exactly as it looks, inputs and all.
+		Some instruments can also hand off to each other — the ICD Timeline can send its applying hits straight
+		to the Gauge Explorer, for instance.
 	</p>
 </section>
 

@@ -72,13 +72,47 @@ const MARKS = {
 	copy: 'Copy',
 	image: 'Image',
 
+	// ── The bank's entry rows ───────────────────────────────────────────────
+	rename: 'Pencil',
+	delete: 'Trash2',
+	/** Settings' backup pair. Two identical-shaped word buttons otherwise —
+	 *  the arrow is the only thing that says which direction the data moves. */
+	download: 'Download',
+	upload: 'Upload',
+
 	// ── Band B and general controls ─────────────────────────────────────────
 	note: 'FileText',
 	plus: 'Plus',
 	minus: 'Minus',
 	close: 'X',
 	check: 'Check',
-	chevron: 'ChevronDown'
+	chevron: 'ChevronDown',
+	search: 'Search',
+	/** The Visualizers' workspace reset, against a tile's own `reset`: same
+	 *  word ("reset") at two scopes, so the MARK has to carry the scope. */
+	layout: 'LayoutGrid',
+	/** Two things exchange places — a bench slot's occupant, an instrument's
+	 *  column. NOT a document action; nothing is saved or reloaded. */
+	swap: 'ArrowLeftRight',
+
+	// ── State badges ────────────────────────────────────────────────────────
+	/** Gated behind a constellation you don't have. Replaces 🔒, which was a
+	 *  COLOR emoji: it ignored `currentColor` outright, so a locked chip kept
+	 *  its blue-and-gold padlock through every ink state the chip has. */
+	locked: 'Lock',
+	star: 'Star',
+	/** A character whose frame timing isn't curated yet (⚓ NATE: CircleSlash2,
+	 *  which matches the ∅ it replaces). */
+	uncurated: 'CircleSlash2',
+	/** The armed half of the two-step danger idiom (.btn--danger.is-confirming)
+	 *  — the one place a mark buys safety rather than decoration. */
+	warn: 'TriangleAlert',
+
+	// ── Going somewhere / handing off ───────────────────────────────────────
+	/** Named for the DIRECTION of travel, not the picture: "→ Compare" sends a
+	 *  card onward, "← All roles" comes back. Both are navigation. */
+	forward: 'ArrowRight',
+	back: 'ArrowLeft'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');
