@@ -319,8 +319,8 @@
 								/>
 								<span class="cmp-lane-fact" title={cellTitle(cell)}
 									>{cell.glyph.uptime}s / {cell.glyph.cooldown}s{#if locked}<Mark
-											name="locked"
-											size={10}
+											name="gated"
+											size={11}
 										/>{/if}</span
 								>
 							</div>
@@ -397,7 +397,7 @@
 												title={cellTitle(cell)}
 											>
 												<span class="cmp-gate" class:cmp-gate--base={cell.minCon === 0}
-													>C{cell.minCon}{#if locked}<Mark name="locked" size={10} />{/if}</span
+													>C{cell.minCon}{#if locked}<Mark name="gated" size={11} />{/if}</span
 												>
 												{#if cell.target}<span class="cmp-target"
 														>{TARGET_SHORT[cell.target] ?? cell.target}</span
@@ -418,7 +418,7 @@
 													{@const alsoLocked = cell.also.minCon > viewCons[i]}
 													<span class="cmp-also" class:cmp-cell--locked={alsoLocked}
 														>{TARGET_SHORT[cell.also.target]} from C{cell.also
-															.minCon}{#if alsoLocked}<Mark name="locked" size={10} />{/if}</span
+															.minCon}{#if alsoLocked}<Mark name="gated" size={11} />{/if}</span
 													>
 												{/if}
 											</span>

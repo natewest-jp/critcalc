@@ -47,19 +47,6 @@
 	} from '$lib/benchBand.svelte';
 	import { constellations, loadout, type LoadoutEntry } from '$lib/stores';
 
-	/**
-	 * ⚓ NATE — the slot-action glyph size, one number for BOTH marks.
-	 *
-	 * These two were hand-cut path data (a 14×12 ⇄ and a 9×9 ✕) from the round
-	 * that replaced the unicode code points. They come from the shared Lucide
-	 * set now, so there is one weight and one grid across the whole site — but
-	 * that means the proportions are Lucide's, not the hand-cut ones. At 17 the
-	 * landed ink is ~11.3×12.8 for the swap and ~8.5×8.5 for the close, against
-	 * the 12×10.2 and 9×9 they were; stroke lands at 1.9 × 17/24 ≈ 1.35 against
-	 * the 1.4 they carried. Nudge this one constant if the pair reads heavy or
-	 * light against the card's C/R values.
-	 */
-	const BB_GLYPH = 17;
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 
 	let {
@@ -214,8 +201,11 @@
 					     IBM Plex, so each engine drew its own fallback at its own size
 					     (Safari's ✕ came out visibly smaller than Chrome's). Strokes
 					     ride currentColor, so the button's color states apply
-					     unchanged. Size: BB_GLYPH. -->
-						<Mark name="swap" size={BB_GLYPH} />
+					     unchanged. NO size override — MARK_SIZE (14) is the standard,
+					     and it lands the ✕'s ink at 7px: exactly the height of the C0 /
+					     R1 digits beside it (--fs-xs, 10px). ⚓ NATE 2026-08-07; the
+					     hand-cut 14×12 / 9×9 they replaced were never a tuned target. -->
+						<Mark name="swap" />
 					</button>
 					<button
 						class="bb-act bb-act--remove"
@@ -226,7 +216,7 @@
 							? `Remove ${char.displayName} from team`
 							: 'Remove (empty slot)'}
 					>
-						<Mark name="close" size={BB_GLYPH} />
+						<Mark name="close" />
 					</button>
 				{/snippet}
 			</SlotPortrait>
@@ -320,9 +310,10 @@
 			background 150ms ease,
 			color 150ms ease;
 	}
-	/* The glyph size, weight and joins come from Mark.svelte and BB_GLYPH now —
-	   the .bb-glyph rules that used to set them here are gone, which is the
-	   point of a shared set. The button's grid still centers them. */
+	/* The glyph size, weight and joins come from Mark.svelte's MARK_SIZE /
+	   MARK_STROKE — the .bb-glyph rules that used to set them here are gone,
+	   which is the point of a shared set. The button's grid still centers
+	   them, and the size knob is site-wide now rather than local. */
 	/* Disabled = the card's shared dim (the constellation chip's exact recipe),
 	   so an empty slot's four stations fade as one family. */
 	.bb-act:disabled {

@@ -97,10 +97,25 @@ const MARKS = {
 	swap: 'ArrowLeftRight',
 
 	// ── State badges ────────────────────────────────────────────────────────
-	/** Gated behind a constellation you don't have. Replaces 🔒, which was a
-	 *  COLOR emoji: it ignored `currentColor` outright, so a locked chip kept
-	 *  its blue-and-gold padlock through every ink state the chip has. */
-	locked: 'Lock',
+	/**
+	 * A capability behind a constellation you don't own.
+	 *
+	 * ⚓ NATE 2026-08-07, after three rounds. NOT a padlock, and the name is
+	 * `gated` rather than `locked` so nobody puts one back. A constellation
+	 * gate involves no permission and no secrecy — you are simply not at C6
+	 * yet — so the padlock was a borrowed software metaphor, and it was ALSO
+	 * illegible: at the 10px these chips run, Lucide's shackle is ~2px and no
+	 * padlock can resolve. `LockOpen` reads better and says the opposite of
+	 * the truth; `StarX` loses its X into the wishlist star; `StarOff` reads
+	 * as a rendering fault in a column of rows; `Ban` is a circle-and-diagonal
+	 * one seat away from `uncurated`.
+	 *
+	 * Astroid is a four-cusped star: ONE path, no enclosed counters, no slash.
+	 * It's a constellation node — the game's own vocabulary — and its concave
+	 * points separate cleanly from `star`'s five straight ones at every size,
+	 * which is why wishlist did not have to move.
+	 */
+	gated: 'Astroid',
 	star: 'Star',
 	/** A character whose frame timing isn't curated yet (⚓ NATE: CircleSlash2,
 	 *  which matches the ∅ it replaces). */

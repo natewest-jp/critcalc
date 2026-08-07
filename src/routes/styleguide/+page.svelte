@@ -982,6 +982,28 @@
 						render through <code>&lt;Mark&gt;</code> now.
 					</li>
 					<li>
+						⚠ <strong>A mark has to survive its own SIZE, and its NEIGHBOURS.</strong> Two failure
+						modes that cost three rounds on one glyph (⚓ NATE, the constellation gate).
+						<em>Size:</em>
+						at the 10–11px these chips run, anything with a small enclosed counter closes up — a padlock's
+						shackle lands at ~2px and no padlock can resolve. Prefer ONE path, no counters.
+						<em>Neighbours:</em>
+						the mark shares a card with <code>uncurated</code>,
+						<code>star</code> and <code>check</code>, so a base-shape-plus-modifier (<code
+							>StarX</code
+						>, <code>Ban</code>) collapses into the base shape it borrowed. Test in a real row, not
+						in isolation.
+					</li>
+					<li>
+						<strong>Prefer the game's vocabulary to software's.</strong> <code>gated</code> is
+						<code>Astroid</code> — a four-cusped star, i.e. a constellation node — and it is named
+						<code>gated</code>, not <code>locked</code>, on purpose. A constellation gate involves
+						no permission and no secrecy; you are simply not at C6 yet. The padlock was a borrowed
+						metaphor that was also unreadable, and <code>LockOpen</code> reads more clearly while
+						saying the opposite of the truth.
+						<strong>Legibility bought with a lie is not a trade.</strong>
+					</li>
+					<li>
 						⚠ <strong>Three things stay typeset ON PURPOSE.</strong> Rarity stars (<code>5★</code>
 						is Genshin's own notation, and it sits inline with a numeral); the <code>?</code> on a
 						maybe-coverage chip (a hedge, and <code>?</code> is a real glyph in the body face); and

@@ -285,8 +285,8 @@
 								{#if cap.minConstellation > 0}
 									<span class="dc-gate-chip" class:dc-gate-chip--locked={locked(cap)}
 										>C{cap.minConstellation}{#if locked(cap)}<Mark
-												name="locked"
-												size={10}
+												name="gated"
+												size={11}
 											/>{/if}</span
 									>
 								{:else}
