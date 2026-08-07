@@ -293,15 +293,19 @@ check(
 
 // ── Tool-rest pause (2026-08-06): the twinkle loop stops once a tool leg ────
 // settles (zero rAF behind tools — the scene-occlusion property, restored),
-// runs during any leg (the world must be alive while it sweeps), and runs on
-// the landing. Probed via the renderer's own __scene.twinkling() surface.
-// We are settled on a tool after the storm above.
+// and runs on the landing. Probed via the renderer's own __scene.twinkling()
+// surface. We are settled on a tool after the storm above.
+// ↻ RE-PINNED 2026-08-07 (⚓ Nate): the loop no longer wakes mid tool→tool
+// leg. The crest is ONE rest — the field holds the frame it froze on for the
+// whole time you're in tool space, whichever tool you're on. (Waking it made
+// the stars flash into a different stage of their cycle as the camera craned.)
+// probe-star-freeze owns the full invariant; this is the local guard.
 const restAtTool = await page.evaluate(() => window.__scene?.twinkling());
 check('twinkle loop RESTS on a settled tool route', restAtTool === false, String(restAtTool));
 await page.click('.chrome-nav a[href*="rotation-planner"]');
 await page.waitForTimeout(800); // mid-leg (world clock 2000)
 const midLeg = await page.evaluate(() => window.__scene?.twinkling());
-check('twinkle loop LIVE mid tool→tool leg', midLeg === true, String(midLeg));
+check('twinkle loop STAYS RESTED mid tool→tool leg', midLeg === false, String(midLeg));
 await page.waitForTimeout(3000); // settle + rest margin
 const restAgain = await page.evaluate(() => window.__scene?.twinkling());
 check('twinkle loop rests again after the leg settles', restAgain === false, String(restAgain));

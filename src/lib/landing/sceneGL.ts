@@ -263,13 +263,15 @@ export interface SceneGLHandle {
 	camera(): { x: number; y: number };
 	/** True while a camera animation is in flight. */
 	animating(): boolean;
-	/** Allow the twinkle loop (the starfield lives in this canvas). Actual
-	 *  looping still gates on document visibility, reduced motion (one static
-	 *  frame instead) and GL health. */
+	/** Run the twinkle field: the loop resumes AND the star clock thaws from
+	 *  where it froze. Actual looping still gates on document visibility,
+	 *  reduced motion (one static frame instead) and GL health. */
 	start(): void;
-	/** Stop the twinkle loop — the scene-occlusion constraint: zero rAF work
-	 *  behind tools. The last frame stays; resume is pop-free (star phases
-	 *  are absolute-time). */
+	/** Freeze the twinkle field — the scene-occlusion constraint: zero rAF work
+	 *  behind tools. The loop stops and the STAR CLOCK holds, so the frozen
+	 *  frame survives draws driven by anything else (the camera's own loop
+	 *  during a tool→tool crane). Resume is pop-free: paused time accumulates,
+	 *  so the field picks up at the phase it stopped on. */
 	stop(): void;
 	/** Re-read the CSS knobs (gradient stops, grain opacities) and redraw. */
 	retune(): void;
@@ -417,6 +419,26 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		};
 	}
 
+	// --- The star clock -----------------------------------------------------
+	// Star phases run on their OWN clock rather than raw performance.now(),
+	// because freezing the twinkle has to freeze a FRAME, not just a loop
+	// (⚓ Nate 2026-08-07: "the stars flash into a different stage of
+	// animation" when moving between tools). Stopping the loop leaves the last
+	// frame on screen, but the camera's animation loop draws every frame of a
+	// tool→tool crane — with absolute time those draws jump the field to the
+	// phase it "should" be at seconds later, which reads as a flash. Holding
+	// the clock makes any draw during a freeze reproduce the frozen frame, and
+	// accumulating the paused time makes the eventual thaw (the descend to the
+	// landing) continuous instead of a second jump.
+	let starPausedMs = 0; // total time spent frozen
+	let starFrozenAt = 0; // performance.now() at freeze; 0 = running
+	// The phase the field was last DRAWN at — the probe surface reads this
+	// rather than recomputing the clock, so it senses what actually reached
+	// the shader (a probe that recomputes would report a frozen clock while
+	// the draw call happily passed the raw timestamp).
+	let starDrawnAtMs = 0;
+	const starTime = (nowMs: number) => (starFrozenAt || nowMs) - starPausedMs;
+
 	function drawNow(timeMs: number = performance.now()) {
 		if (destroyed || lost || !quads) return;
 		const vw = window.innerWidth;
@@ -461,8 +483,9 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		bind(progPlate, quads.sky, cam.x, k.skyGrain);
 		// Stars between sky and floor: the floor pass painted after occludes
 		// stars (and their halos) at the horizon.
+		starDrawnAtMs = starTime(timeMs);
 		starPass.draw({
-			timeMs,
+			timeMs: starDrawnAtMs,
 			view: { w: vw, h: vh },
 			cam: { x: cam.x, y: cam.y },
 			region: starRegion,
@@ -491,9 +514,9 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 
 	// --- The twinkle loop (ported from the retired starfield controller) ----
 	// While the scene is visible on a scene route, one rAF loop redraws the
-	// whole frame so the field twinkles; star phases are absolute-time, so
-	// stop/start (tool-route occlusion — the scene-occlusion constraint
-	// demands ZERO rAF work behind tools) resumes pop-free. Gates: document
+	// whole frame so the field twinkles; star phases ride the star clock above,
+	// so stop/start (tool-route rest — the scene-occlusion constraint demands
+	// ZERO rAF work behind tools) freezes and resumes pop-free. Gates: document
 	// visibility and reduced motion (which instead paints ONE static frame at
 	// STAR_STATIC_ALPHA). During a camera animation the animation's own loop
 	// draws — the twinkle loop keeps scheduling but skips its draw.
@@ -575,11 +598,26 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		camera: () => ({ ...cam }),
 		animating: () => animPending,
 		start() {
+			// Thaw first: the loop's very next frame must already read the
+			// resumed clock, and the paused span must not leak into the phase.
+			if (starFrozenAt) {
+				starPausedMs += performance.now() - starFrozenAt;
+				starFrozenAt = 0;
+			}
 			wantRun = true;
 			syncLoop();
 		},
 		stop() {
 			wantRun = false;
+			// Freeze on the frame currently PRESENTED, not on this instant: the
+			// last loop frame drew a moment before stop() was called, and taking
+			// performance.now() here would hold a phase a millisecond or two past
+			// what's on screen — imperceptible, but it makes the freeze a
+			// near-equality instead of an equality, and a probe can only pin what
+			// is exact. Invert starTime() to recover that draw's raw timestamp.
+			if (!starFrozenAt) {
+				starFrozenAt = starDrawnAtMs ? starDrawnAtMs + starPausedMs : performance.now();
+			}
 			syncLoop();
 		},
 		retune() {
@@ -613,7 +651,12 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		twinkling: () => loopRaf !== 0,
 		// Probe surface: current camera pose — the choreography probe asserts
 		// crest/rest poses through real hero-click navigations.
-		camera: () => handle.camera()
+		camera: () => handle.camera(),
+		// Probe surface: the phase the field was last drawn at (ms). Every star
+		// phase is a pure function of it, so "the field is frozen on one frame"
+		// is exactly "this value does not move" — what probe-star-freeze
+		// asserts across a whole tool→tool leg.
+		starTime: () => starDrawnAtMs
 	};
 	return handle;
 }

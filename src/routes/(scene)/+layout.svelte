@@ -118,20 +118,30 @@
 	// stays PAINTED (occlusion also unpaints via .occluded, which would blank
 	// the world behind the transparent shell — never assert it for this). The
 	// camera's own animation loop draws independently of the twinkle loop, so
-	// tool→tool cranes still sweep the world (twinkling en route — drawNow
-	// gets real timestamps) and freeze only at rest. Resume is pop-free (star
-	// phases are absolute-time). Restores the scene-occlusion constraint's
-	// zero-rAF-behind-tools property, which the tools-over-scene experiment
-	// had dropped wholesale.
+	// the world still sweeps under a frozen field: the ascend twinkles the
+	// whole way up and freezes at settle, and a leg BETWEEN tools stays frozen
+	// throughout (scheduleRest below). Resume is pop-free — sceneGL's star
+	// clock holds the presented frame and banks the paused span. Restores the
+	// scene-occlusion constraint's zero-rAF-behind-tools property, which the
+	// tools-over-scene experiment had dropped wholesale.
 	let sceneResting = $state(false);
 	let restTimer: ReturnType<typeof setTimeout> | undefined;
 	// Margin past camera settle before freezing: the ascend reveal's fade tail
 	// ends FADE_OVERLAP_MS after settle, and the tool legs' fades are inside
 	// their own settle windows — freeze only once everything visual has ended.
 	const REST_AFTER_SETTLE_MS = FADE_OVERLAP_MS + 100;
-	function scheduleRest(toPath: string) {
+	// ⚓ NATE 2026-08-07: the crest tool space is ONE rest. A leg that starts
+	// and ends on a tool route must NOT wake the field — the world stays
+	// frozen on the same frame for as long as you're up here, whichever tool
+	// you're on. Only a leg that leaves tool space (the descend, or a static
+	// page) thaws it. Waking mid-leg was visible: the field resumed at its
+	// absolute-time phase, a whole different stage of the twinkle, flashing in
+	// as the camera craned. (The clock half of this lives in sceneGL's star
+	// clock — the camera's own loop draws every frame of that crane, so the
+	// loop flag alone can't hold the frame.)
+	function scheduleRest(toPath: string, fromPath?: string) {
 		clearTimeout(restTimer);
-		sceneResting = false;
+		if (!(isToolPath(toPath) && !!fromPath && isToolPath(fromPath))) sceneResting = false;
 		if (!isToolPath(toPath)) return;
 		restTimer = setTimeout(() => {
 			// A newer navigation re-scheduled (and un-rested) already; its own
@@ -181,7 +191,7 @@
 		if (!isToolPath(nav.to.url.pathname)) sceneOccluded.set(false);
 		startSceneTransition(nav.to.url.pathname);
 		// After the kickoff, so timeUntilSettle() sees this leg's fresh clock.
-		scheduleRest(nav.to.url.pathname);
+		scheduleRest(nav.to.url.pathname, nav.from?.url.pathname);
 	});
 </script>
 
