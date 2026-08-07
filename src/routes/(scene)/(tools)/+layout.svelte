@@ -225,19 +225,35 @@
 		const mr = toolMain.getBoundingClientRect();
 		const cs = getComputedStyle(layer).transform;
 		const tx = cs === 'none' ? 0 : parseFloat(cs.split(',')[4]) || 0;
-		// TODO: rendering — these are FRACTIONAL, and the ribbon carries text.
-		// WebKit snaps glyphs to whole pixels while boxes keep sub-pixel
-		// positions, so every label inside the strip sits up to a pixel off its
-		// own control in Safari, varying with wherever the dock lands (measured:
-		// a full pixel of range across one pixel of dock offset — see
-		// scripts/probe-ink-centering.mjs for the numbers and the method).
-		// Rounding x/y at REST would make Safari deterministic and let the
-		// card's optical nudges be tuned to the font alone. Deliberately not
-		// done yet: this feeds the tool-transition machinery, whose probes
-		// assert sub-pixel dock equalities (probe-bench-align's frame-top and
-		// dock-spot checks, probe-bench-band's glued-to-incoming ≤0.03px), so
-		// it needs those re-pinned and the drift path left un-rounded.
-		return { x: ar.left - mr.left - tx, y: ar.top - mr.top, h: ar.height, anchorEl: anchor };
+		// ROUNDED to whole pixels — the ribbon carries text, and WebKit snaps
+		// glyphs to whole pixels while boxes keep sub-pixel positions, so every
+		// label inside the strip sits up to a pixel off its own control in
+		// Safari and by a DIFFERENT amount wherever the dock happens to land
+		// (measured: a full pixel of glyph range across one pixel of dock
+		// offset — scripts/probe-ink-centering.mjs has the numbers and the
+		// method). Rounding makes that deterministic, so the cards' optical
+		// nudges can be tuned to the font alone.
+		//
+		// The X axis is already whole by construction — --tool-pad-x rounds in
+		// the layout, which is strictly better because the dock stays exactly
+		// co-located with the frame it measures. This is the guard for any
+		// future fractional layout, and it is the REAL fix on Y, where the
+		// fraction comes from the text line boxes above the frame and can't be
+		// rounded at the source (RP measured 97.109 against the TB's 97.375 —
+		// a quarter pixel that WebKit could turn into a whole-pixel glyph jump
+		// on arrival; rounding lands both docks on the same integer).
+		//
+		// Rounded HERE, at the one measurement boundary, so the WAAPI drift
+		// target and the rest position are the same number — round only at rest
+		// and the strip lands, then ticks by up to half a pixel at settle.
+		// Nothing abuts the strip vertically (it stands RIBBON_OVERHANG_Y proud
+		// at both ends), so Y and H have no seam to break.
+		return {
+			x: Math.round(ar.left - mr.left - tx),
+			y: Math.round(ar.top - mr.top),
+			h: Math.round(ar.height),
+			anchorEl: anchor
+		};
 	}
 
 	/** The dock grows and shrinks with its tool WITHOUT a window resize — the
@@ -740,7 +756,22 @@
 		   content end clear of the viewport edge. */
 		--tool-pad-top: 0.5rem;
 		--tool-pad-bottom: 3rem;
+		/* ROUNDED to whole pixels, deliberately. This pad is the tool frames'
+		   left edge, and the bench ribbon docks by measuring an anchor inside
+		   that frame — so a fractional pad puts the whole strip at a fractional
+		   x, and WebKit snaps glyphs to whole pixels while boxes keep sub-pixel
+		   positions. Every label inside the ribbon then sits up to a pixel off
+		   its own control in Safari, and by a DIFFERENT amount at every window
+		   width (measured: 2vw gave 27.313 @1366, 28.797 @1440, 30.234 @1512 —
+		   a full pixel of glyph range across one pixel of dock offset; see
+		   scripts/probe-ink-centering.mjs). Rounding HERE rather than at the
+		   ribbon's transform is what makes it free: the dock stays exactly
+		   co-located with the frame it measures, so nothing in the tool-
+		   transition machinery changes and no probe moves. Only widths under
+		   1600 were ever affected — above that the clamp pins it at 2rem.
+		   First declaration is the fallback for engines without round(). */
 		--tool-pad-x: clamp(1rem, 2vw, 2rem);
+		--tool-pad-x: clamp(1rem, round(2vw, 1px), 2rem);
 		/* Suppressed through the ascend: laid out (editors measure correctly)
 		   but visibility:hidden → UNPAINTED, off the raster pipeline, so the
 		   shell's one-time raster never competes with the camera pan. .revealed
