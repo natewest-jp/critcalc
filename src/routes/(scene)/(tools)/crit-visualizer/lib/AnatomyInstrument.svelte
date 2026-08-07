@@ -527,7 +527,7 @@
 		display: grid;
 		gap: 0.7rem;
 		padding: 0.9rem 1rem 0.8rem;
-		border-radius: 9px;
+		border-radius: var(--r-sm);
 	}
 
 	.an-reactions :global(.chip) {
@@ -552,7 +552,7 @@
 		justify-items: center;
 		gap: 0.1rem;
 		padding: 0.5rem 0.55rem 0.45rem;
-		border-radius: 6px;
+		border-radius: var(--r-sm);
 		background: color-mix(in srgb, var(--c) 10%, transparent);
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent);
 		transition: flex-grow 220ms ease;

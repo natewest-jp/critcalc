@@ -158,13 +158,16 @@
 		flex-shrink: 0;
 	}
 
-	/* Each tier is a plain two-zone rail. The contexts supply the grounds:
-	   band A wears the dark context's SURFACE (the navy chart ground), band B
-	   the light context's --ribbon — the banded-section-header value that has
-	   been sitting in the palette unused since the archetype pass, declared for
-	   exactly this and nothing else. Using --ribbon rather than --surface is
-	   what keeps band B legible as a HEADER over the Team Builder, whose frame
-	   is itself light: header beige on tool paper, not paper on paper. */
+	/* Each tier is a plain two-zone rail. The contexts supply the grounds: band A
+	   wears the dark context's SURFACE (the navy chart ground), band B the light
+	   context's SURFACE (paper).
+
+	   ↻ 2026-08-07 (⚓ NATE): band B was --ribbon, the beige. That was a
+	   misreading of what the token is for — the ribbon is meant to be a slightly
+	   DARKER band laid ON a ctx-light fill, a section header inside a light
+	   surface. A whole toolbar painted in it made the beige the band's identity
+	   rather than an accent within it. Band B is paper now, and --ribbon goes
+	   back to being unused until something wants a header stripe. */
 	.band {
 		display: flex;
 		align-items: center;
@@ -181,13 +184,14 @@
 
 	.band-b {
 		height: var(--band-b-h);
-		background: var(--ribbon);
-		/* Band B is a CONTROL band — labels and buttons, never prose. Its
-		   controls read --muted (the light context's label slate) at 5.55:1 on
-		   the beige, but --text (the warm prose brown) measures 4.28:1 there and
-		   must not carry body copy. --text is re-pointed at the slate so a
-		   stray label can't land under the floor; prose belongs in the surface
-		   below, on paper, where the context's own ladder applies. */
+		background: var(--surface);
+		/* Band B is a CONTROL band — labels and buttons, never prose. --text is
+		   re-pointed at --muted, the light context's label slate, so everything
+		   in the band speaks the label voice by default; prose belongs in the
+		   surface below, where the context's own ladder applies. (This mattered
+		   more when the ground was the beige, where --text measured 4.28:1 —
+		   under the floor. On paper it clears at 5.32:1, so the rule is now
+		   about VOICE rather than contrast, and it stands for that reason.) */
 		--text: var(--muted);
 		color: var(--text);
 	}

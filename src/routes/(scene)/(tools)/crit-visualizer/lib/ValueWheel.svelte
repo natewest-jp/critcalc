@@ -146,7 +146,8 @@
 		z-index: 30;
 		width: max(100%, 5.4rem);
 		height: calc(var(--item-h) * (var(--pad-rows) * 2 + 1));
-		border-radius: 6px;
+		/* A popover over the instrument — the MODAL role, softer corner. */
+		border-radius: var(--r-md);
 		background: var(--surface); /* modal role (Nate 2026-07-31) */
 		border: 1px solid var(--border);
 		box-shadow: 0 10px 32px rgba(0, 0, 0, 0.55);

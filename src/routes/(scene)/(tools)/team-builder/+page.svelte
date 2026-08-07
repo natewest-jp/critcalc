@@ -1049,7 +1049,7 @@
 		display: flex;
 		flex-direction: row;
 		align-items: stretch;
-		border-radius: 9px;
+		border-radius: var(--r-sm);
 		overflow: hidden;
 		position: relative;
 	}

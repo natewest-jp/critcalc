@@ -65,12 +65,16 @@
 	     · --surface       = MODAL / overlay grounds — the chrome overlay pane,
 	                         the TB detail modal, loadout + constellation
 	                         popovers, the load-rotations modal, bar tooltips,
-	                         dropdown menus. All wear border: 1px solid --border.
+	                         dropdown menus. These KEEP an edge border (↻
+	                         2026-08-07): a modal is the one surface with no
+	                         ground to belong to, so it needs its own outline —
+	                         which is also why it keeps the softer --r-md corner.
 	     · --surface-raised= an IN-PAGE panel LIFTING OFF that ground — the
 	                         shared .panel, Atlas category cards, character
-	                         cards, the planner's chart frame. Also bordered,
-	                         except character cards (element-mixed border).
-	     · --border        = dividers and hairlines
+	                         cards, the planner's chart frame. NO edge border
+	                         (↻ 2026-08-07): these have a ground to lift off, and
+	                         the lightness step is what draws them.
+	     · --border        = dividers, hairlines, and modal outlines
 
 	   ↻ 2026-08-05 (archetype consistency pass) — WHAT CHANGED AND WHY. Until
 	   now these carried the pre-archetype navy family (#2f2f3b / #ede8de /
@@ -222,12 +226,28 @@
 	--ui-warning-soft: color-mix(in srgb, var(--ui-warning) 18%, transparent);
 
 	/* ══ GEOMETRY ══════════════════════════════════════════════════════════════
-	   Odd radii, 3/6/9 — long-standing house style, finally a token. Plus 50%
-	   for genuinely round elements. These five are the ONLY legal radii; no
-	   0.3rem / 4px / 5px / 7px / 8px / 11px exceptions. */
-	--r-sm: 3px; /* controls, chips, tabs — the default */
-	--r-md: 6px; /* panels, icon chips */
-	--r-lg: 9px; /* large cards */
+	   ↻ 2026-08-07 (⚓ NATE — TEST VALUES, not law yet): the scale collapses from
+	   3/6/9 to a near-universal 3, with 6 held for MODALS and a new 1 for the
+	   tool bands. The old scale spent a decision on every surface ("is this a
+	   panel or a large card?") for a distinction nobody could name; the new one
+	   answers with the surface's JOB instead:
+
+	     --r-xs   the tool bands, and nothing else yet — a barely-broken corner,
+	              the "slightly dulled box". Being tried on the toolbar to see
+	              how it reads; BAND_RADIUS in src/lib/toolBands.ts is its knob.
+	     --r-sm   EVERYTHING else. Controls, chips, tabs, panels, cards.
+	     --r-md   MODALS ONLY — the meta overlays that float free of the page
+	              (Help / About / Settings, the pages panel). A modal is the one
+	              surface with no ground to belong to, so it keeps the softer
+	              corner that says "this is lifted off".
+	     --r-round genuinely round things.
+
+	   Still the ONLY legal radii; no 0.3rem / 4px / 5px / 7px / 8px / 11px
+	   exceptions. (--r-lg 9px retired here — its three real callers were two
+	   modals and one tool surface, i.e. exactly the split above.) */
+	--r-xs: 1px; /* the tool bands — the dulled box ⚓ NATE, on trial */
+	--r-sm: 3px; /* the default: controls, chips, tabs, panels, cards */
+	--r-md: 6px; /* modals only — Help / About / Settings / pages */
 	/* Fully round: circles on square boxes, capsules on oblong ones. It is a
 	   large ABSOLUTE radius, not 50%, and that is load-bearing — 50% is
 	   per-axis, so the moment a box is wider than it is tall it draws an
@@ -235,6 +255,18 @@
 	   shape we actually mean either way, so there is one token here instead of a
 	   circle/capsule pair nobody could tell apart on the squares. */
 	--r-round: 999px; /* circles + capsules: thumbs, dots, pills */
+
+	/* ⚓ NATE 2026-08-07 — THE INSET BORDER IS THE BENCH RIBBON'S ALONE, for now.
+	   Genshin puts almost no line on the OUTSIDE of a panel: the line lives
+	   inside, set in from the edge, reading as ornament rather than as the box's
+	   own outline. It was briefly promoted here as a global `.inset-frame` and
+	   put on the two tool frames, and that was premature — the direction is real,
+	   but WHICH surfaces earn it is undecided, and it may not turn out to be the
+	   same two-stroke frame the ribbon carries. So it stays where it is
+	   (benchBand.svelte.ts + BenchBand.svelte, RIBBON_EDGE / RIBBON_FRAME_* ),
+	   and every other edge border retires to NOTHING. No speculative
+	   abstraction: promote the technique when a second surface actually wants
+	   it, and let that surface's needs shape it. */
 
 	/* ══ MOTION ════════════════════════════════════════════════════════════════
 	   One interaction duration. (It was already one duration — `150ms ease`
@@ -304,6 +336,24 @@
 	   archetype's own light-on-dark ink, reused rather than invented — at
 	   4.52:1. */
 	--control-ink: #e5d9c3;
+
+	/* ↻ 2026-08-07 (⚓ NATE — TEST VALUES): the RESTING button plate. Buttons
+	   move off the ghost idiom — a button should look like a thing you press
+	   before you hover it, which is how Genshin draws every one of theirs.
+
+	   This is the quiet rung BELOW --control-face: the base button is a plate
+	   that belongs to its ground, the promoted one is the slate that stands off
+	   it. Unlike --control-face it is therefore per-CONTEXT and OPAQUE (mixed
+	   against the context's own --surface, never onto transparent — the
+	   compositing law), so the .ctx-* blocks re-declare it. The root pair below
+	   is the safety net, matching .ctx-dark.
+
+	   ⚠ Two deliberate survivors of the ghost idiom, both documented at their
+	   rules: .segment > .btn (the track behind it IS the affordance — an opaque
+	   segment would hide the recess) and .btn--danger (text-only until hover, so
+	   a destructive action never sits on screen looking pressable). */
+	--btn-face: color-mix(in srgb, var(--neutral) 18%, var(--surface));
+	--btn-face-hover: color-mix(in srgb, var(--neutral) 28%, var(--surface));
 
 	/* ↻ 2026-08-01 lightness-structure round: the TOP of the selection ladder.
 	   Genshin's Stygian sidebar selects its row with a beige plate + dark ink
@@ -556,6 +606,12 @@
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 	--knob: var(--muted);
+	/* The resting button plate, re-mixed against THIS context's ground — same
+	   reason as the accent-derived tokens above, but a different mechanism:
+	   --btn-face's var() is substituted where declared, so :root's copy would
+	   carry the dark ground's plate onto paper. */
+	--btn-face: color-mix(in srgb, var(--neutral) 18%, var(--surface));
+	--btn-face-hover: color-mix(in srgb, var(--neutral) 28%, var(--surface));
 	/* color, not just tokens: descendants inherit the COLOR PROPERTY from
 	   wherever it was last set (body, near-white) — re-declaring --text
 	   alone doesn't re-color text that never reads it below this element. */
@@ -608,6 +664,12 @@
 	   variable — the substituted-at-declaration law again. */
 	--fill-rest: color-mix(in srgb, var(--muted) 10%, transparent);
 	--fill-hover: color-mix(in srgb, var(--muted) 17%, transparent);
+	/* The resting button plate, on the light context's own tint for the same
+	   reason the fills are: --neutral is a COOL gray and smudges on warm paper.
+	   Percentages are a touch above the fills' because this one is opaque and
+	   has to hold an edge on its own, with no hover to announce it. */
+	--btn-face: color-mix(in srgb, var(--muted) 12%, var(--surface));
+	--btn-face-hover: color-mix(in srgb, var(--muted) 20%, var(--surface));
 	color: var(--text);
 }
 
@@ -842,7 +904,15 @@ img {
 	padding: 0.32rem 0.65rem;
 	border: none;
 	border-radius: var(--r-sm);
-	background: transparent;
+	/* ↻ 2026-08-07 (⚓ NATE): OPAQUE, not a ghost. The base button used to be
+	   transparent and only grew a fill on hover, which meant a resting toolbar
+	   read as a row of words — the "quiet ghost needs a CLUSTER to read as a
+	   control" finding from migration chunk 3 was a symptom of this, and
+	   --primary was being reached for as the cure. A plate at rest removes the
+	   problem instead of routing around it. The face is per-context and mixed
+	   against that context's ground; --primary keeps the ground-agnostic slate
+	   above it, so the two rungs stay legible as base and promoted. */
+	background: var(--btn-face);
 	color: var(--muted);
 	font-family: var(--font-body);
 	font-size: var(--fs-sm);
@@ -857,7 +927,7 @@ img {
 		box-shadow var(--t-quick);
 }
 .btn:hover {
-	background: var(--fill-hover);
+	background: var(--btn-face-hover);
 	color: var(--ink-active);
 }
 .btn:disabled {
@@ -865,8 +935,15 @@ img {
 	cursor: default;
 	pointer-events: none;
 }
+/* Selection on an opaque plate is the SAME mix, composited: --sel-fill is
+   accent-at-20%-onto-transparent, so laying it over the face by hand keeps the
+   selected button identical to every other selected control while staying
+   opaque (the compositing law — mix against a known ground, never transparent).
+   Reading --sel-fill directly here would have replaced the plate rather than
+   sat on it, and the selected button would have come out quieter than its
+   neighbours. */
 .btn.is-active {
-	background: var(--sel-fill);
+	background: color-mix(in srgb, var(--accent) 20%, var(--btn-face));
 	color: var(--ink-active);
 }
 .btn--sm {
@@ -889,7 +966,12 @@ img {
 .btn--primary:hover {
 	background: var(--control-face-hover);
 }
+/* ⚠ A SURVIVING GHOST, deliberately (2026-08-07). Everything else went opaque;
+   a destructive action must not sit on screen looking pressable, so it stays
+   text-only until you hover it — the button equivalent of putting Delete at the
+   bottom of the menu. */
 .btn--danger {
+	background: transparent;
 	color: color-mix(in srgb, var(--ui-danger) 65%, var(--muted));
 }
 .btn--danger:hover {
@@ -924,17 +1006,22 @@ img {
    outline wrapped around a gilt/dire fill, two families fighting over one
    small object (Nate: "a bit rough"). This drops the outline and the
    dividers entirely: the group is a recessed TRACK and the active segment is
-   a raised pill inside it, so only one family is ever on screen. Radii are
-   concentric and both legal — 6px outer, 3px inner, 2px of padding between. */
+   a raised pill inside it, so only one family is ever on screen. Radii stay
+   concentric on the new scale — 3px outer, 1px inner, 2px of padding between
+   (was 6/3, and 6 is modals-only since 2026-08-07). */
 .segment {
 	display: inline-flex;
 	gap: 2px;
 	padding: 2px;
-	border-radius: var(--r-md);
+	border-radius: var(--r-sm);
 	background: var(--fill-rest);
 }
+/* ⚠ THE OTHER SURVIVING GHOST (2026-08-07). The recessed track behind these IS
+   the affordance — it is what says "one of these is chosen". Opaque plates
+   would fill the track in and leave three buttons in a row with no group. */
 .segment > .btn {
-	border-radius: var(--r-sm);
+	border-radius: var(--r-xs);
+	background: transparent;
 }
 .segment > .btn:hover {
 	background: var(--fill-hover);
@@ -1205,32 +1292,40 @@ img {
 }
 
 /* ── Surfaces ─────────────────────────────────────────────────────────── */
-/* In-page panel (the --surface-raised role): a bordered card lifting off the
-   page/frame ground. The old top-light hairline highlight is RETIRED
-   (Nate 2026-07-31) — separation is the border's job now, everywhere. */
+/* In-page panel (the --surface-raised role): a card lifting off the page/frame
+   ground.
+
+   ↻ 2026-08-07 (⚓ NATE): NO EDGE BORDER. Genshin draws almost nothing on the
+   outside of a panel — a surface is separated by being a different ground. The
+   2026-07-31 note this replaces said "separation is the border's job now,
+   everywhere",
+   which retired a top-light highlight in favour of an outline; the outline goes
+   the same way, and separation is the GROUND's job. A panel that disappears
+   without its border was never lifting off anything.
+
+   Radius drops 6 → 3 with the scale re-cut; 6 is modals only now. */
 .panel {
 	display: grid;
 	gap: 0.7rem;
 	padding: 1.1rem 1.2rem;
-	border-radius: var(--r-md);
+	border-radius: var(--r-sm);
 	background: var(--surface-raised);
-	border: 1px solid var(--border);
 	align-content: start;
 }
-/* ── Chart-frame border (shared: Icd / Gauge / Reaction / Artifact / Heatmap) ─
-   Static 1px border at the brightest stop of the retired animated conic (the
-   40% Dire mix), over each frame's interior fill. The animated version is
-   preserved at the bottom of this file in comments — retired 2026-07-10
-   (Nate): the rotation invalidated paint every frame, forever, re-rasterizing
-   tiles of the 32MB .tool-main layer ~100x/s even at rest (perf audit, F6) —
-   and read as a touch too visually busy anyway. If a pulse is ever wanted,
-   animate the OPACITY of a stacked static ring (compositor-only), never a
-   paint property (border-color, gradient angle) — those repaint per frame. */
+
+/* ── The tool frame / chart interior ──────────────────────────────────────
+   ↻ 2026-08-07 (⚓ NATE): the edge border retires at both of this class's
+   scales, and nothing replaces it. A chart interior is a well cut into a
+   lighter frame — the lightness step is what draws it. A tool frame is the
+   surface everything else sits on and had nothing to be outlined against.
+
+   (This is where the dire-tinted animated conic border used to live, retired
+   2026-07-10 on perf: the rotation invalidated paint every frame, forever,
+   re-rasterizing tiles of the 32MB .tool-main layer ~100×/s even at rest —
+   perf audit F6. The lesson outlives the border: NEVER animate a paint
+   property on a persistent surface. If a pulse is ever wanted here, animate
+   the OPACITY of a stacked static ring, which is compositor-only.) */
 .frame {
-	/* Context border (Genshin-UI archetype, 2026-08-05): the frame wears its
-	   context's border rule — #857971 dim in dark, #E5D9C3 ribbon in light.
-	   The dire 40% mix retired with the dire family's exit from the tools. */
-	border: 1px solid var(--border);
 	background: var(--frame-bg);
 }
 

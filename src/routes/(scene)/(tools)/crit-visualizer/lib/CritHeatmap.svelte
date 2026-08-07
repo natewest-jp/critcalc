@@ -718,7 +718,7 @@
 	   the heatmap canvas fills the padding box opaquely, so no interior bg is needed. */
 	.cv-map-frame {
 		position: relative;
-		border-radius: 9px;
+		border-radius: var(--r-sm);
 		overflow: hidden;
 		user-select: none;
 		-webkit-user-select: none;

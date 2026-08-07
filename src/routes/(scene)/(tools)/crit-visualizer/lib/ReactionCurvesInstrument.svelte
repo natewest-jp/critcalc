@@ -380,7 +380,7 @@
 <style>
 	.rx-frame {
 		padding: 0.4rem 0.6rem 0.2rem;
-		border-radius: 9px;
+		border-radius: var(--r-sm);
 	}
 
 	.rx-graph svg {

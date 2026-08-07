@@ -959,7 +959,7 @@
 		display: grid;
 		gap: 0.5rem;
 		padding: 0.9rem 1rem 0.7rem;
-		border-radius: 9px;
+		border-radius: var(--r-sm);
 	}
 
 	.ar-graph svg {
@@ -1049,7 +1049,7 @@
 		height: 46px;
 		padding: 4px;
 		border: none;
-		border-radius: 6px;
+		border-radius: var(--r-sm);
 		background: var(--control-face);
 		cursor: pointer;
 		opacity: 0.55;
