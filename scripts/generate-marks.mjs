@@ -48,18 +48,19 @@ const LICENSE = join(ROOT, 'node_modules/lucide/LICENSE');
  * OUR semantic name → Lucide's export name.
  *
  * The indirection is the point. Call sites say what the control DOES
- * (`<Mark name="update" />`), not what the library happens to call the picture
- * (`RefreshCw`), so re-picking a glyph — or swapping icon sets entirely — is a
- * one-line change here and touches nothing else.
+ * (`<Mark name="uncurated" />`), not what the library happens to call the
+ * picture (`CircleSlash2`), so re-picking a glyph — or swapping icon sets
+ * entirely — is a one-line change here and touches nothing else.
  *
  * Keep this list SMALL. Lucide ships 2,021 icons and this design language is
  * restrained; add on demand, never speculatively.
  */
 const MARKS = {
 	// ── Band A: the document ────────────────────────────────────────────────
+	/** ONE save mark in BOTH states. The linked document used to swap this for
+	 *  RefreshCw — the universal reload/sync glyph — which is half of why
+	 *  "Update" read as a software update. Same action, same mark. */
 	save: 'Save',
-	/** Save, when the document is already linked to a bank entry. */
-	update: 'RefreshCw',
 	load: 'FolderOpen',
 	/** `Share`, not `Share2`: the node-graph glyph is three circles and two
 	 *  lines, which silts up at 14px. The arrow-out-of-box reads at any size. */

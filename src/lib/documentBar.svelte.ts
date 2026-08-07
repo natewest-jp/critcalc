@@ -41,6 +41,26 @@ export type DocumentExporters = {
 	png: (mode: 'copy' | 'download') => Promise<void>;
 };
 
+/**
+ * The name a fork takes: "Vape Hu Tao" → "Vape Hu Tao copy" → "… copy 2".
+ *
+ * The bank is a flat list a person reads, so two identical names help nobody.
+ * ⚠ The suffix is STRIPPED before it is re-applied — forking a FORK has to
+ * number rather than stack, or you arrive at "copy copy copy". It stacked
+ * until a probe forked twice; hence this being a pure exported function with
+ * a test rather than a private line inside saveAsNew().
+ */
+export function copyName(label: string, taken: readonly string[]): string {
+	// A plain array scan, not a Set: the bank is a short hand-written list, and
+	// the repo's svelte/prefer-svelte-reactivity rule would rather see a
+	// SvelteSet — which would be wrong here, since nothing about this is state.
+	const base = `${label.replace(/ copy(?: \d+)?$/, '')} copy`;
+	if (!taken.includes(base)) return base;
+	for (let n = 2; ; n++) {
+		if (!taken.includes(`${base} ${n}`)) return `${base} ${n}`;
+	}
+}
+
 class DocumentBarState {
 	/** Transient outcome message, shown in band A beside the actions. */
 	notice = $state<string | null>(null);
@@ -53,7 +73,8 @@ class DocumentBarState {
 
 	#noticeTimer: ReturnType<typeof setTimeout> | undefined;
 
-	/** Whether the active document is linked to a bank entry (Save → Update). */
+	/** Whether the active document is linked to a bank entry (Save → Save changes,
+	 *  and "Save as new" appears in the overflow). */
 	get linked() {
 		return !!rt.activeTab.savedId;
 	}
@@ -109,31 +130,66 @@ class DocumentBarState {
 		return { tabLoadout: denseLoadout, tabCon: denseCon };
 	}
 
-	save() {
-		if (!this.hasContent) return;
-		const activeTab = rt.activeTab;
+	/** Everything the bank stores about the working document, right now. */
+	#payload(name: string) {
 		const dense = this.#densifiedSnapshot();
-		const payload = {
-			name: activeTab.label,
+		return {
+			name,
 			notation: rt.notation,
 			manualSlots: rt.manualSlots,
 			tabLoadout: dense.tabLoadout,
 			tabCon: dense.tabCon
 		};
+	}
+
+	/** Link the active tab to a bank entry (and take that entry's name). */
+	#link(savedId: string, label: string) {
+		rt.tabs = rt.tabs.map((t) => (t.id === rt.activeTabId ? { ...t, label, savedId } : t));
+	}
+
+	/**
+	 * Save the working document. Once it is linked to a bank entry, saving
+	 * writes over that entry — the button says "Save changes" and the notice
+	 * says "Saved" in both cases, because nothing about the ACTION differs.
+	 *
+	 * It used to say "Update", which named no object and read like a software
+	 * update. The object was never missing, though: the entry's name IS the
+	 * active tab's label, sitting one zone to the left in the same band. So
+	 * the button doesn't have to carry it — the title does, and the tab shows it.
+	 */
+	save() {
+		if (!this.hasContent) return;
+		const activeTab = rt.activeTab;
+		const payload = this.#payload(activeTab.label);
 		if (activeTab.savedId) {
 			savedNotations.update(activeTab.savedId, payload);
-			this.showNotice('Updated');
 		} else {
-			const newId = savedNotations.save(payload);
-			rt.tabs = rt.tabs.map((t) => (t.id === rt.activeTabId ? { ...t, savedId: newId } : t));
-			this.showNotice('Saved');
+			this.#link(savedNotations.save(payload), activeTab.label);
 		}
+		this.showNotice('Saved');
+	}
+
+	/**
+	 * Fork the working document into a NEW bank entry, leaving the one it came
+	 * from untouched, and continue on the fork.
+	 *
+	 * Without this there was no way out of an overwrite: once a tab carried a
+	 * savedId, every Save wrote over that entry and the original was gone. That
+	 * — not the word on the button — is what made saving feel like something to
+	 * be careful about.
+	 */
+	saveAsNew() {
+		if (!this.hasContent) return;
+		const name = copyName(
+			rt.activeTab.label,
+			get(savedNotations).map((e) => e.name)
+		);
+		this.#link(savedNotations.save(this.#payload(name)), name);
+		this.showNotice('Saved as new');
 	}
 
 	load(entry: SavedNotation) {
-		rt.tabs = rt.tabs.map((t) =>
-			t.id === rt.activeTabId ? { ...t, label: entry.name, savedId: entry.id } : t
-		);
+		this.#link(entry.id, entry.name);
 		rt.notation = entry.notation;
 		rt.manualSlots = entry.manualSlots;
 		rt.tabLoadout = entry.tabLoadout ?? {};
