@@ -2,24 +2,26 @@
 	/**
 	 * critcalc.app — Style Reference (dev-only, /styleguide)
 	 *
-	 * The unified system — 2026-07-27, decisions by Nate. The six-chunk migration
-	 * is complete: every per-tool button, chip, tab, toggle, note and field
-	 * family now reads one definition in app.css.
+	 * THE STYLE AUTHORITY. The pages themselves can't be it: the same idiom once
+	 * had eleven parallel implementations, so "copy the nearest neighbour" is
+	 * exactly how the drift happened.
 	 *
 	 * TWO STATES on this page, and the labels are load-bearing:
 	 *
 	 *   LIVE    — parsed from src/app.css at build time (?raw). Cannot drift.
-	 *             Everything in Families / Tokens / Typography.
-	 *
-	 *   SHIPPED — a global class that lives in app.css. Chunk 1 of the migration
-	 *             promoted the whole pattern layer there, so every specimen below
-	 *             is the REAL class, not a copy. Nothing in this file styles a
-	 *             control any more.
+	 *   SHIPPED — a real global class in app.css. Every specimen below is that
+	 *             class, not a copy; nothing in this file styles a control.
 	 *
 	 * Do not "fix" a pattern by editing a component — edit app.css, once, and
 	 * every caller follows.
+	 *
+	 * ⚓ A third label, ON TRIAL, marks a value Nate is testing rather than a
+	 * decision that has landed. It is shipped and real, and it may still move.
 	 */
 	import appCss from '../../app.css?raw';
+	import Mark from '$lib/components/Mark.svelte';
+	import { MARK_NODES, type MarkName } from '$lib/marks.generated';
+	import { BAND_A_H, BAND_B_H, BAND_STACK_GAP, BAND_RADIUS } from '$lib/toolBands';
 
 	type Token = { name: string; value: string; resolved: string };
 
@@ -95,6 +97,8 @@
 		'--sel-fill-hover',
 		'--sel-ring',
 		'--accent-hover-fill',
+		'--btn-face',
+		'--btn-face-hover',
 		'--control-face',
 		'--control-face-hover',
 		'--control-ink',
@@ -141,6 +145,10 @@
 
 	const ELEMENTS = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro', 'none'];
 
+	/** Every mark the generator produced — so this page cannot fall behind the
+	 *  set, and an unused glyph is visible rather than quietly accumulating. */
+	const MARKS = Object.keys(MARK_NODES) as MarkName[];
+
 	const sections = [
 		['families', 'Families'],
 		['tokens', 'Tokens'],
@@ -148,7 +156,9 @@
 		['buttons', 'Buttons'],
 		['chips', 'Chips & tabs'],
 		['booleans', 'Toggles'],
-		['surfaces', 'Surfaces & text'],
+		['surfaces', 'Surfaces'],
+		['marks', 'Marks'],
+		['bands', 'Tool bands'],
 		['migration', 'Exceptions'],
 		['laws', 'Laws']
 	];
@@ -184,12 +194,14 @@
 			The central authority for color, type and patterns. Dev-only — this route never ships.
 		</p>
 		<p class="sg-meta">
-			<strong>Two states on this page, and the labels are load-bearing:</strong>
+			<strong>The labels are load-bearing.</strong>
 			<span class="sg-badge sg-badge--live">live</span> is parsed from <code>src/app.css</code> at
 			build time and cannot drift ·
 			<span class="sg-badge sg-badge--ship">shipped</span> is a real global class in
-			<code>app.css</code>, and every per-tool family now reads it — so this page cannot show you
-			something the code doesn't have, and the code has nowhere else to get its styling from.
+			<code>app.css</code>, and every per-tool family reads it — so this page cannot show you
+			something the code doesn't have, and the code has nowhere else to get its styling from ·
+			<span class="sg-badge sg-badge--trial">on trial</span> is shipped and real, but it is a value Nate
+			is testing, not a decision that has landed. Expect it to move.
 		</p>
 		<nav class="sg-nav">
 			{#each sections as [id, label] (id)}
@@ -373,10 +385,36 @@
 			{#each uiStates as t (t.name)}{@render swatch(t)}{/each}
 		</div>
 
-		<h3>Geometry</h3>
+		<h3>Geometry <span class="sg-badge sg-badge--trial">on trial</span></h3>
 		<p class="sg-note">
-			Odd radii 3/6/9 was long-standing house style with no token, which is how
-			<code>0.3rem / 4px / 5px / 7px / 8px / 11px</code> crept in. These four are now the only legal radii.
+			↻ 2026-08-07. The scale was 3/6/9 — a rung for controls, one for panels, one for "large cards"
+			— and it spent a decision on every surface for a distinction nobody could name. It collapses
+			to <strong>one near-universal radius</strong>, with the other two rungs answering a question
+			about the surface's JOB rather than its size:
+		</p>
+		<ul class="sg-list">
+			<li>
+				<code>--r-xs</code> — <strong>the tool bands, and nothing else yet.</strong> A corner just
+				broken enough not to be sharp; the "slightly dulled box". On trial there because the bands
+				are the site's most machined-looking object and the least like a card, so they are the
+				honest test of whether 1px reads as anything at all. Knob:
+				<code>BAND_RADIUS</code> in <code>src/lib/toolBands.ts</code>.
+			</li>
+			<li>
+				<code>--r-sm</code> — <strong>everything else.</strong> Controls, chips, tabs, panels, cards,
+				both tool frames.
+			</li>
+			<li>
+				<code>--r-md</code> — <strong>modals only.</strong> Help / About / Settings and the pages panel.
+				A modal is the one surface with no ground to belong to, so it keeps the softer corner that says
+				"lifted off" — the same reason it is also the one surface that keeps an edge border.
+			</li>
+			<li><code>--r-round</code> — genuinely round things: thumbs, dots, capsules.</li>
+		</ul>
+		<p class="sg-note">
+			Still the only legal radii — no <code>0.3rem / 4px / 5px / 7px / 8px / 9px / 11px</code>. (
+			<code>--r-lg</code> 9px retired with the re-cut; its three real callers turned out to be two modals
+			and one tool surface, which is exactly the split above.)
 		</p>
 		<div class="sg-radii">
 			{#each geometry as t (t.name)}
@@ -386,6 +424,25 @@
 				</div>
 			{/each}
 		</div>
+
+		<h3>The inset border — ⚓ the bench ribbon's alone, for now</h3>
+		<p class="sg-note">
+			↻ 2026-08-07. <strong>Genshin puts almost no line on the OUTSIDE of a panel.</strong> The line
+			lives inside, set in from the edge, and reads as ornament rather than as the box's own
+			outline. The bench ribbon is the site's one example, and it stays the only one:
+			<strong>the direction is real, but which surfaces earn it is undecided</strong> — and it may
+			not turn out to be the same two-stroke frame the ribbon carries. It was briefly promoted to a
+			global and put on both tool frames; that was premature, and it has been taken back out. Every
+			other edge border retires to <strong>nothing</strong>.
+		</p>
+		<p class="sg-note">
+			So there are deliberately no tokens for it here. The geometry lives with the object that uses
+			it — <code>RIBBON_EDGE</code> · <code>RIBBON_FRAME_BORDER</code> ·
+			<code>RIBBON_FRAME_R_TIGHT</code> · <code>RIBBON_FRAME_R_WIDE</code> in
+			<code>src/lib/benchBand.svelte.ts</code>, drawn by <code>BenchBand.svelte</code>. When a
+			second surface actually wants an inset border, promote the technique then and let that
+			surface's needs shape it.
+		</p>
 
 		<h3>Motion & interaction surfaces</h3>
 		<p class="sg-note">
@@ -548,11 +605,25 @@
 
 	<!-- ═════════════════════════════════════════════════════════════ BUTTONS ══ -->
 	<section id="buttons">
-		<h2>Buttons <span class="sg-badge sg-badge--ship">shipped</span></h2>
+		<h2>
+			Buttons <span class="sg-badge sg-badge--ship">shipped</span>
+			<span class="sg-badge sg-badge--trial">on trial</span>
+		</h2>
 		<p class="sg-note">
-			One base, three variants, two sizes — replacing eleven families. The base is a quiet ghost;
-			<code>--primary</code> and <code>--danger</code> are the only variants.
-			<strong>Buttons are verbs, so they shout:</strong> uppercase + wide tracking throughout.
+			One base, two variants, two sizes. <strong>Buttons are verbs, so they shout:</strong> uppercase
+			+ wide tracking throughout.
+		</p>
+		<p class="sg-note">
+			↻ 2026-08-07 — <strong>the base button is OPAQUE.</strong> It used to be a transparent ghost
+			that only grew a fill on hover, which meant a resting toolbar read as a row of words. The old
+			rule "a quiet ghost needs a CLUSTER to read as a control" was a symptom of that, and
+			<code>--primary</code> was being reached for as the cure; a plate at rest removes the problem
+			rather than routing around it. The base face is
+			<strong>per-context</strong> (<code>--btn-face</code>, mixed against that context's own
+			ground);
+			<code>--primary</code> keeps the ground-agnostic slate above it, so the two rungs stay legible
+			as base and promoted. <strong>Prefer opaque going forward</strong> — the two survivors below are
+			the whole list, and each is on the page because it earns it.
 		</p>
 
 		<div class="sg-specimens">
@@ -560,51 +631,48 @@
 				<div class="sg-stage">
 					<button class="btn">Save</button>
 					<button class="btn btn--primary">Load</button>
-					<button class="btn btn--danger">Delete</button>
-					<button class="btn btn--danger is-confirming">Sure?</button>
+					<button class="btn is-active">Notes</button>
 					<button class="btn" disabled>Undo</button>
 				</div>
 				{@render spec(
-					'.btn · --primary · --danger · :disabled · .is-confirming',
-					'3px · 0.32/0.65rem · fs-sm · UPPER · ls-wide · ghost, fills on hover. A lone action with no controls around it takes --primary; there is no outline variant'
+					'.btn · --primary · .is-active · :disabled',
+					'3px · 0.32/0.65rem · fs-sm · UPPER · ls-wide · opaque --btn-face at rest, --btn-face-hover on hover. .is-active mixes --sel-fill INTO the face rather than replacing it — a selected button that swapped its plate for a translucent accent came out quieter than its neighbours'
 				)}
 			</div>
 
 			<div class="sg-cell">
 				<div class="sg-stage">
-					<button class="btn btn--sm">Copy PNG</button>
-					<button class="btn btn--sm btn--primary">Export</button>
-					<button class="btn btn--sm is-active">Notes</button>
-					<button class="btn btn--sm btn--icon">−</button>
-					<button class="btn btn--sm btn--icon">+</button>
-					<button class="btn btn--sm btn--icon">×</button>
-				</div>
-				{@render spec(
-					'.btn--sm · .btn--icon · .is-active',
-					'dense toolbars — fs-xs, tighter padding. --icon is square, for glyph-only targets'
-				)}
-			</div>
-
-			<div class="sg-cell">
-				<div class="sg-stage">
+					<button class="btn btn--danger">Delete</button>
+					<button class="btn btn--danger is-confirming">Sure?</button>
 					<div class="segment">
 						<button class="btn is-active">My roster</button>
 						<button class="btn">All C0</button>
-						<button class="btn">All C6</button>
 					</div>
 				</div>
 				{@render spec(
-					'.segment > .btn',
-					'segmented group — the wrapper owns the radius and the 1px dividers, the buttons stay plain'
+					'the two surviving ghosts',
+					'--danger stays text-only until hover: a destructive action must not sit on screen looking pressable. .segment > .btn stays transparent because the recessed track behind it IS the affordance — opaque plates would fill the track in and leave three buttons in a row with no group'
+				)}
+			</div>
+
+			<div class="sg-cell">
+				<div class="sg-stage">
+					<button class="btn btn--sm"><Mark name="image" />Copy PNG</button>
+					<button class="btn btn--sm btn--primary"><Mark name="share" />Export</button>
+					<button class="btn btn--sm btn--icon"><Mark name="minus" /></button>
+					<button class="btn btn--sm btn--icon"><Mark name="plus" /></button>
+					<button class="btn btn--sm btn--icon"><Mark name="close" /></button>
+				</div>
+				{@render spec(
+					'.btn--sm · .btn--icon',
+					'dense toolbars — fs-xs, tighter padding. --icon is square, for glyph-only targets; it still needs an aria-label, since a mark is always decorative'
 				)}
 			</div>
 
 			<div class="sg-cell">
 				<div class="sg-stage">
 					<button class="btn sg-focus-demo">Focus ring</button>
-					<span class="sg-val sg-val--dim"
-						>every control gets a visible :focus-visible ring — most don't today</span
-					>
+					<span class="sg-val sg-val--dim">one ring for every control, no exceptions</span>
 				</div>
 				{@render spec(
 					':focus-visible',
@@ -756,10 +824,21 @@
 
 	<!-- ═══════════════════════════════════════════════════ SURFACES & TEXT ══ -->
 	<section id="surfaces">
-		<h2>Surfaces & text <span class="sg-badge sg-badge--ship">shipped</span></h2>
+		<h2>
+			Surfaces <span class="sg-badge sg-badge--ship">shipped</span>
+			<span class="sg-badge sg-badge--trial">on trial</span>
+		</h2>
 		<p class="sg-note">
-			The panel shells were already global and already good — they only gain the radius token and
-			the kicker. The note family collapses six rules into one.
+			↻ 2026-08-07 — <strong>edge borders are retiring, and nothing replaces them.</strong> A
+			surface is separated by being a different GROUND. Two things drove it: Genshin draws almost
+			nothing on the outside of a panel, and a surface that disappears without its outline was never
+			lifting off anything to begin with. <strong>The one deliberate survivor is the modal</strong>,
+			which floats with no ground to belong to and so needs its own outline — and keeps the softer
+			<code>--r-md</code> corner for the same reason.
+		</p>
+		<p class="sg-note">
+			⚓ The <a href="#tokens">inset border</a> is <strong>not</strong> the replacement, and is not a
+			pattern here yet — it belongs to the bench ribbon alone until a surface earns it.
 		</p>
 
 		<div class="sg-specimens">
@@ -778,7 +857,7 @@
 				</div>
 				{@render spec(
 					'.panel · .kicker · .chips · .note',
-					'6px · --surface-raised · inset top edge. The kicker is --muted (context label voice), trailing rule --muted @22%'
+					'3px · --surface-raised · NO border (2026-08-07). The kicker is --muted (context label voice), trailing rule --muted @22%. A .panel is also a .ctx-light — declaring one paints the other'
 				)}
 			</div>
 
@@ -824,30 +903,208 @@
 				</div>
 				{@render spec(
 					'.frame',
-					'1px var(--border) over --frame-bg — the context border (2026-08-05). NEVER animate a paint property here (retired 2026-07-10, perf)'
+					'--frame-bg, no border (2026-08-07). ⚠️ This class covers TWO scales: a chart interior (here) is a well cut into a lighter frame, and a tool frame is the surface everything else sits on — neither had anything to be outlined against. NEVER animate a paint property on either (retired 2026-07-10, perf)'
 				)}
+			</div>
+		</div>
+	</section>
+
+	<!-- ═══════════════════════════════════════════════════════════════ MARKS ══ -->
+	<section id="marks">
+		<h2>Marks <span class="sg-badge sg-badge--ship">shipped</span></h2>
+		<p class="sg-note">
+			Control glyphs come from <strong>Lucide</strong> (ISC) — but nothing from Lucide ships. It is
+			a
+			<strong>devDependency feeding a generator</strong>:
+			<code>scripts/generate-marks.mjs</code> → <code>src/lib/marks.generated.ts</code> →
+			<code>$lib/components/Mark.svelte</code>, wired into <code>predev</code>/<code>prebuild</code
+			>. The site's standing pattern (same shape as the element icons and the character index).
+			<strong>The only API is <code>&lt;Mark name="…" /&gt;</code></strong>; the
+			<code>MarkName</code> union is generated, so a typo is a type error rather than an empty box.
+		</p>
+		<div class="sg-mark-grid">
+			{#each MARKS as m (m)}
+				<div class="sg-mark"><Mark name={m} /><span class="sg-val">{m}</span></div>
+			{/each}
+		</div>
+		<div class="sg-laws sg-laws--tight">
+			<div class="sg-law">
+				<h3>Rules</h3>
+				<ul>
+					<li>
+						<strong>Marks are geometry, never a unicode character.</strong> Engines pick different
+						fallback faces at different sizes, so <code>↑ ⤴ ⧉ ✓ ×</code> in a control is a cross-engine
+						rendering bug waiting to happen. This is the reason the set exists.
+					</li>
+					<li>
+						<strong>Add a mark by naming the JOB, not the picture.</strong> One line in the
+						generator's <code>MARKS</code> map — our semantic name → Lucide's export (<code
+							>update: 'RefreshCw'</code
+						>). The indirection is the point: call sites say what the control DOES, so re-picking a
+						glyph is a one-line change.
+					</li>
+					<li>
+						<strong>Keep the set small.</strong> 2,021 icons is an invitation to over-icon a restrained
+						design language. Add on demand, never speculatively.
+					</li>
+					<li>
+						<strong>Marks are decorative WITHOUT EXCEPTION</strong> — <code>aria-hidden</code>, ink
+						from <code>currentColor</code>, so disabled and active states come free. A glyph-only
+						control needs its own label; the mark can never be it.
+					</li>
+					<li>
+						⛔ <strong>Do not install <code>@lucide/svelte</code></strong>, and do not hand-copy
+						SVGs off the site. Both were considered and rejected — a component per icon is hundreds
+						of instances at roster scale, and a downloaded file has no provenance, no version and no
+						licence trail. <code>src/lib/marks.test.ts</code> guards the generated artifact against all
+						of it.
+					</li>
+					<li>
+						⛔ <strong>Not for the element icons or the brand mark.</strong> Those are build
+						artifacts of the <code>--el-*</code> tokens and of <code>build-logo</code>.
+					</li>
+					<li>
+						<code>MARK_SIZE</code> (14) and <code>MARK_STROKE</code> (1.9) are the two knobs, in
+						Lucide's 24-unit grid — landed ink is <code>stroke × size / 24</code>. ⚠ Tune against
+						<strong>Chrome</strong> (the sub-pixel law).
+					</li>
+					<li>
+						<strong>~40 control glyphs elsewhere are still unicode</strong> (SlotPortrait,
+						InstrumentPicker, CloseMark, the TB cards, the instruments) — the sweep is unbuilt. ⚠ Do
+						not do it blind: most unicode in <code>.svelte</code> files is arrows in comments and prose,
+						which are typography, not marks.
+					</li>
+				</ul>
+			</div>
+		</div>
+	</section>
+
+	<!-- ═══════════════════════════════════════════════════════════════ BANDS ══ -->
+	<section id="bands">
+		<h2>Tool bands <span class="sg-badge sg-badge--ship">shipped</span></h2>
+		<p class="sg-note">
+			Every tool renders a <code>ToolStack</code>: <strong>two ABUTTING bands</strong> over its
+			surface, free of the tool frame, with the bench ribbon proud of the whole stack. This replaced
+			a bare row of chips floating on the scene — three competing top edges within 38px, and a row
+			that jumped 192px sideways between the benched tools and the Visualizers on every tool→tool
+			fade. Geometry knobs: <code>src/lib/toolBands.ts</code>. Document flows:
+			<code>src/lib/documentBar.svelte.ts</code>.
+		</p>
+		<div class="sg-band-demo">
+			<div
+				class="sg-band sg-band--a"
+				style:height="{BAND_A_H}px"
+				style:border-radius="{BAND_RADIUS}px"
+			>
+				<span class="sg-zone-tag">band A — <code>ctx-dark</code>, {BAND_A_H}px</span>
+				<span class="sg-val">the DOCUMENT</span>
+			</div>
+			<div
+				class="sg-band sg-band--b"
+				style:height="{BAND_B_H}px"
+				style:border-radius="{BAND_RADIUS}px"
+			>
+				<span class="sg-zone-tag">band B — <code>ctx-light</code>, {BAND_B_H}px</span>
+				<span class="sg-val">the VIEW</span>
+			</div>
+			<div class="sg-band-gap" style:height="{BAND_STACK_GAP}px">
+				<span class="sg-val">{BAND_STACK_GAP}px of bare scene, then the tool surface</span>
+			</div>
+		</div>
+		<div class="sg-laws sg-laws--tight">
+			<div class="sg-law">
+				<h3>Rules</h3>
+				<ul>
+					<li>
+						<strong>THE TAXONOMY IS THE POINT.</strong> Which band a control goes in is a rule, not
+						a preference. <strong>Band A = the DOCUMENT</strong> — which working team am I editing,
+						and what can I do to it whole (tabs · save · load · share · reset). It is
+						<em>identical</em> in the planner and the Team Builder, because they edit ONE document.
+						<strong>Band B = the VIEW</strong> — what am I looking at inside this tool, and how (planner
+						zoom/notes, TB Atlas/Roster/Compare + con lens, Viz per-tile pickers).
+					</li>
+					<li>
+						⚠️ <strong>The bands TRAVEL WITH THEIR TOOL.</strong> Band A was going to be a
+						screen-locked HUD beside the ribbon — it is document-scoped, and the ribbon is the
+						persistent document HUD. But the moment A and B <em>abut</em> they are one object, and a screen-locked
+						A over a world-locked B tears at their shared seam on every tool→tool leg. Abutting tiers
+						cannot have different lock frames. Continuity across the fade stays the ribbon's job; band
+						A merely cross-dissolves into an identical band A.
+					</li>
+					<li>
+						<strong>Band B's ground is the light context's own paper</strong> (↻ 2026-08-07). It was
+						<code>--ribbon</code>, the beige — a misreading of that token, which is meant to be a
+						slightly darker band laid ON a light fill, a section header inside a surface. A whole
+						toolbar painted in it made the beige the band's identity rather than an accent within
+						it. <code>--ribbon</code> is unused again until something wants a header stripe.
+					</li>
+					<li>
+						<strong>Band B re-points <code>--text</code> at <code>--muted</code>.</strong> It is a CONTROL
+						band — labels and buttons, never prose — so everything in it speaks the label voice by default.
+						Prose belongs in the surface below.
+					</li>
+					<li>
+						<strong
+							>The beige selected-plate pilot lives on <code>.band-a .tab.active</code>.</strong
+						>
+						That is exactly Genshin's idiom: the bright plate marks the selected row on the DARK strip.
+						Band B selects with the ordinary ring.
+					</li>
+					<li>
+						<strong>The A/B seam is SQUARE.</strong> They abut and the stack clips its children, so
+						only the four outer corners round — currently <code>--r-xs</code>, on trial.
+					</li>
+					<li>
+						<code>BandMenu</code> is <strong>portalled, not optionally</strong>: the stack clips to
+						its own radius, so an in-place menu would be cut off.
+					</li>
+				</ul>
 			</div>
 		</div>
 	</section>
 
 	<!-- ═══════════════════════════════════════════════════════════ MIGRATION ══ -->
 	<section id="migration">
-		<h2>The exceptions <span class="sg-badge sg-badge--live">complete</span></h2>
+		<h2>The exceptions</h2>
 		<p class="sg-note">
-			The six-chunk pattern migration finished 2026-07-27: every per-tool button, chip, tab, toggle,
-			note and field family — twenty-seven of them, including
-			<em>seven</em> byte-similar copies of one <code>.note</code> rule — now reads a single
-			definition in <code>app.css</code>. That table has served its purpose and is retired from this
-			page; the git history holds it. What is still load-bearing is the other list — the things that
-			deliberately did NOT migrate, so the line stays visible:
+			<code>app.css</code> is the only place a button, chip, tab, toggle, note or field is defined,
+			and components keep locals only for geometry or semantics a global cannot know. These are the
+			things that deliberately <strong>did not</strong> join it — kept on the page so the line stays visible,
+			and so nobody re-opens the argument every six months:
 		</p>
+		<ul class="sg-list">
+			<li>
+				<strong>Whole-card click targets</strong> (<code>.cc-main</code>, <code>.rolecard</code>,
+				<code>.ar-slot</code>), <strong>chrome hit targets</strong> (bare by design),
+				<strong>dropdown menu items</strong>, the <strong>value wheel</strong>, the
+				<strong>row-edge delete zone</strong>, <strong>element-tinted pills</strong> and the meta
+				overlay's <strong>filled close disc</strong>. These are their own idioms, not text buttons
+				wearing a different skin — forcing them onto <code>.btn</code> would lose meaning, not gain consistency.
+			</li>
+			<li>
+				<strong
+					>The bench ribbon's inset border is not a global, and its numbers are not tokens.</strong
+				>
+				They live in <code>benchBand.svelte.ts</code> because the ribbon's chrome participates in
+				LAYOUT arithmetic — <code>RIBBON_CHROME</code> feeds <code>RIBBON_W</code>, which the tool
+				docks and the Team Builder's zone widths are measured against, and a CSS variable cannot be
+				read by that math. It also has exactly one consumer, and ⚓ Nate has not decided which other
+				surfaces earn an inset border or what form theirs takes.
+			</li>
+			<li>
+				<code>RIBBON_FRAME_R_WIDE</code> (30) is deliberately NOT in the <code>--r-*</code> scale. That
+				scale is the BOX vocabulary — "what shape is this container's corner". 30 answers a different
+				question: it is an ornamental arc that only means anything inside the two-stroke technique, and
+				dropping it into the scale would invite it onto a card.
+			</li>
+		</ul>
 		<p class="sg-note">
-			<strong>What deliberately did NOT migrate</strong>, so the line stays visible: whole-card
-			click targets (<code>.cc-main</code>, <code>.rolecard</code>, <code>.ar-slot</code>), the
-			chrome hit targets (bare by design), dropdown menu items, the value wheel, the row-edge delete
-			zone, element-tinted pills (<code>.tb-cand</code>, <code>.dc-team</code>) and the meta
-			overlay's filled close disc. These are their own idioms, not text buttons wearing a different
-			skin — forcing them onto <code>.btn</code> would lose meaning, not gain consistency.
+			<strong>The lesson that produced most of this list:</strong> a CSS-selector scan under-counts.
+			The original migration table was built that way and missed every button that had no named
+			family — ~25 genuine one-off text buttons appeared in no plan at all. Audit the
+			<code>&lt;button&gt;</code> elements directly, and beware two false-positive traps:
+			<code>&lt;button&gt;</code> inside HTML comments, and regexes that stop at the
+			<code>&gt;</code> in an <code>=&gt;</code> arrow.
 		</p>
 	</section>
 
@@ -1034,8 +1291,14 @@
 						share a weight.
 					</li>
 					<li>
-						A quiet ghost button needs a CLUSTER to read as a control. A lone action with nothing
-						around it takes <code>--primary</code>; there is no middle tier.
+						<strong>Buttons are opaque</strong> (↻ 2026-08-07). Two rungs, both solid:
+						<code>--btn-face</code> for the base, the ground-agnostic <code>--control-face</code>
+						slate for <code>--primary</code>. The old rule this replaces — "a quiet ghost needs a
+						CLUSTER to read as a control, so a lone action takes --primary" — was a workaround for
+						the ghost, and it went with it. <code>--primary</code> now means
+						<em>promoted</em>, not <em>lonely</em>. The only ghosts left are
+						<code>.btn--danger</code> and <code>.segment > .btn</code>, and each is documented at
+						its rule.
 					</li>
 				</ul>
 			</div>
@@ -1108,14 +1371,23 @@
 						its own stacking context below it) — portal to <code>body</code>.
 					</li>
 					<li>
+						<strong>An edge border retires to NOTHING</strong> (↻ 2026-08-07). Genshin puts almost
+						no stroke on the outside of a panel, and the site follows: the ground does the
+						separating. The one deliberate survivor is the <strong>modal</strong>, which floats with
+						no ground to belong to. Test before reaching for a border:
+						<em>would this surface disappear without it?</em> If yes, the ground is wrong — fix that
+						instead. ⚓ The <strong>inset</strong> border (a line set in from the edge, Genshin's
+						real idiom) is the likely eventual answer for select surfaces, but it is
+						<strong>the bench ribbon's alone for now</strong>. Don't reach for it, and don't assume
+						the ribbon's exact two-stroke frame is the form it will take.
+					</li>
+					<li>
 						<strong>One <code>.frame</code> per tool, and one grammar site-wide:</strong>
 						<strong>bench LEFT · work CENTER · filters RIGHT.</strong> The Team Builder and the
-						Rotation Planner are each a single full-screen <code>.frame</code> below the tab strip,
+						Rotation Planner are each a single full-screen <code>.frame</code> below the band stack,
 						holding zones rather than nested islands. Zones separate with a 1px interior hairline
 						over the frame's own fill — never a gap, never a second box. Nothing inside a frame
-						wears <code>.panel</code>; the kickers do the separating. (↻ 2026-08-05: the old
-						mirrored arrangement — planner LEFT, Team Builder RIGHT — existed for the tool-slide
-						seam and retired with it.)
+						wears <code>.panel</code>; the kickers do the separating.
 					</li>
 					<li>
 						<strong>The bench is not a zone either tool owns.</strong> It is the layout-level ribbon
@@ -1179,9 +1451,15 @@
 						<em>chart interior</em> (the specimen above). Same class, same border-and-ground job, two
 						scales — read the context before reusing it.
 					</li>
-					<li>Chrome marks must be geometry, never <code>&lt;text&gt;</code>.</li>
+					<li>
+						Control glyphs are <strong>geometry</strong>, never a unicode character and never
+						<code>&lt;text&gt;</code> — see <a href="#marks">Marks</a>.
+					</li>
 					<li>The brand string is <code>critcalc.app</code> — the full domain, everywhere.</li>
-					<li>Only four radii exist: <code>--r-sm/md/lg/round</code>. No exceptions.</li>
+					<li>
+						Only four radii exist: <code>--r-xs/sm/md/round</code>. No exceptions — see
+						<a href="#tokens">Geometry</a> for which is which.
+					</li>
 				</ul>
 			</div>
 
@@ -1246,10 +1524,26 @@
 						rather than chosen. Genshin's own menus are light; flipping them is one class.
 					</li>
 					<li>
-						<strong>✅ Closed 2026-08-06 — the bench's coverage block found its home.</strong> The
-						facts and capability chips used to fall below the ribbon, housed by neither. They are
-						the Team Builder's <code>TeamStrip</code> now: one horizontal readout across the top of the
-						work zone, on the frame's own paper, directly above the roster its coverage gaps filter.
+						<strong>The border sweep is unfinished.</strong> The pattern layer is done —
+						<code>.panel</code>, <code>.frame</code> and the Atlas cards. Roughly
+						<strong>70 bespoke edge borders</strong> remain in components, concentrated in
+						<code>RotationTimeline</code> (28), <code>SavedNotationsOverlay</code> (8) and
+						<code>CharacterCard</code> (6). Most should simply go; several are structural hairlines that
+						are a different thing entirely and should stay.
+					</li>
+					<li>
+						<strong
+							><code>--ribbon</code> / <code>--ribbon-ink</code> have no consumer again.</strong
+						>
+						They are Genshin's banded section-header surface: a slightly darker stripe laid ON a light
+						fill. The tool bands borrowed the beige for a day and gave it back — a whole toolbar in it
+						made the accent the identity. Keep them for a real header stripe, or delete them if nothing
+						wants one.
+					</li>
+					<li>
+						<strong>Is 1px a rung, or is it 3px?</strong> <code>--r-xs</code> exists to answer that on
+						the bands. If the dulled box doesn't read as anything, the token should go rather than drift
+						onto a second surface.
 					</li>
 				</ul>
 			</div>
@@ -1382,6 +1676,24 @@
 		color: var(--ui-danger);
 	}
 
+	.sg-badge--trial {
+		background: var(--ui-warning-soft);
+		color: var(--ui-warning);
+	}
+
+	/* Prose lists in the doc chrome. Same voice as .sg-note, which is what most
+	   of these were before they earned bullets. */
+	.sg-list {
+		max-width: 82ch;
+		margin: 0 0 1.1rem;
+		padding-left: 1.1rem;
+		display: grid;
+		gap: 0.5rem;
+		font-size: var(--fs-md);
+		line-height: var(--lh-relaxed);
+		color: var(--muted);
+	}
+
 	.sg-note {
 		max-width: 82ch;
 		margin: 0 0 1.1rem;
@@ -1422,7 +1734,7 @@
 
 	.sg-fam {
 		padding: 1rem 1.2rem;
-		border-radius: var(--r-lg);
+		border-radius: var(--r-sm);
 		background: var(--surface);
 		box-shadow: inset 0 0 0 1px var(--border);
 	}
@@ -1440,7 +1752,7 @@
 
 	.sg-zone {
 		padding: 0.9rem 1rem;
-		border-radius: var(--r-lg);
+		border-radius: var(--r-sm);
 		background: var(--surface);
 		box-shadow: inset 0 0 0 1px var(--border);
 	}
@@ -1471,7 +1783,7 @@
 
 	.sg-voice {
 		padding: 0.9rem 1rem;
-		border-radius: var(--r-lg);
+		border-radius: var(--r-sm);
 		background: var(--surface);
 		box-shadow: inset 0 0 0 1px var(--border);
 	}
@@ -1641,7 +1953,7 @@
 		grid-template-rows: 1fr auto;
 		gap: 0.7rem;
 		padding: 1rem;
-		border-radius: var(--r-lg);
+		border-radius: var(--r-sm);
 		background: var(--surface);
 		box-shadow: inset 0 0 0 1px var(--border);
 	}
@@ -1692,6 +2004,63 @@
 		color: var(--muted);
 	}
 
+	/* ── marks ────────────────────────────────────────────────────────────── */
+
+	.sg-mark-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+		gap: 0.4rem;
+		margin-bottom: 1.1rem;
+	}
+
+	.sg-mark {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.55rem 0.7rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+		color: var(--text);
+	}
+
+	/* ── tool bands ───────────────────────────────────────────────────────── */
+
+	/* The stack, at its real heights and its real radius — read straight off
+	   toolBands.ts, so this diagram cannot fall out of step with the object. */
+	.sg-band-demo {
+		max-width: 46rem;
+		margin-bottom: 1.1rem;
+		overflow: hidden;
+	}
+
+	.sg-band {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0 14px;
+	}
+
+	.sg-band--a {
+		background: var(--surface);
+	}
+
+	.sg-band--b {
+		background: #f2f2ec; /* .ctx-light --surface; this page has no context */
+		color: #495366;
+	}
+
+	.sg-band--b .sg-zone-tag,
+	.sg-band--b .sg-val {
+		color: #495366;
+	}
+
+	.sg-band-gap {
+		display: flex;
+		align-items: center;
+		padding: 0 14px;
+	}
+
 	.sg-focus-demo {
 		outline: 2px solid var(--accent);
 		outline-offset: 2px;
@@ -1703,9 +2072,15 @@
 		gap: 0.8rem;
 	}
 
+	/* A single law card inside a section, rather than the Laws wall — it should
+	   run the section's full width instead of leaving a 340px column of air. */
+	.sg-laws--tight {
+		grid-template-columns: 1fr;
+	}
+
 	.sg-law {
 		padding: 1rem 1.2rem;
-		border-radius: var(--r-lg);
+		border-radius: var(--r-sm);
 		background: var(--surface);
 		box-shadow: inset 0 0 0 1px var(--border);
 	}

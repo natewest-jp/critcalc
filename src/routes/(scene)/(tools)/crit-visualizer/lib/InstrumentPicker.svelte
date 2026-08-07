@@ -190,7 +190,8 @@
 		z-index: 91;
 		min-width: 240px;
 		padding: 0.35rem;
-		border-radius: 6px;
+		/* A portalled popover — the MODAL role, so it keeps the softer corner. */
+		border-radius: var(--r-md);
 		background: var(--surface); /* modal role (Nate 2026-07-31) */
 		border: 1px solid var(--border);
 		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);

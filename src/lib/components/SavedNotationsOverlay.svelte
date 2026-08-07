@@ -262,8 +262,10 @@
 		   dire-tinted frame border grammar belongs to tool frames, and this
 		   is an overlay (Nate 2026-07-31). */
 		background: var(--surface);
+		/* Modals keep their edge border and the softer corner — they float with
+		   no ground to belong to. See the GEOMETRY block in app.css. */
 		border: 1px solid var(--border);
-		border-radius: 9px;
+		border-radius: var(--r-md);
 		box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
 		display: flex;
 		flex-direction: column;

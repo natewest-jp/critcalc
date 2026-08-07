@@ -90,7 +90,7 @@
 		max-height: min(80svh, 40rem);
 		overflow-y: auto;
 		padding: 1.4rem 1.6rem 1.6rem;
-		border-radius: var(--r-lg);
+		border-radius: var(--r-md); /* modals keep the softer corner — see the geometry block */
 		background: var(--surface); /* modal role (Nate 2026-07-31) */
 		border: 1px solid var(--border);
 		box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);

@@ -78,8 +78,9 @@
 		gap: 0.55rem;
 		min-height: 210px;
 		padding: 1.4rem 1.5rem 1.2rem;
-		border: 1px solid var(--border);
-		border-radius: var(--r-lg);
+		/* Edge border retired 2026-08-07 — the raised ground is the separation. */
+		border: none;
+		border-radius: var(--r-sm);
 		background: var(--surface-raised); /* in-page panel role (Nate 2026-07-31) */
 		text-align: left;
 		cursor: pointer;

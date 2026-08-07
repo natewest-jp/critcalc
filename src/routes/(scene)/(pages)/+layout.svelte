@@ -72,7 +72,7 @@
 		overflow-y: auto;
 		background: var(--surface); /* modal role (Nate 2026-07-31) */
 		border: 1px solid var(--border);
-		border-radius: var(--r-lg);
+		border-radius: var(--r-md); /* modals keep the softer corner — see the geometry block */
 		padding: clamp(1.4rem, 3vw, 2.4rem);
 		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 		will-change: transform;

@@ -1718,7 +1718,7 @@
 		   one rung deeper on --rp-chart-bg (= the context surface). Overrides
 		   the shared .frame background (Genshin-UI archetype, 2026-08-05). */
 		background: var(--surface-raised);
-		border-radius: 9px;
+		border-radius: var(--r-sm);
 		/* --rp-frame-pad-x comes inline from FRAME_PAD_X (the dock's inset is
 		   measured against it, so it can't be a second literal here). */
 		padding: 10px var(--rp-frame-pad-x) 4px;

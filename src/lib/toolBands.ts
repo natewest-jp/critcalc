@@ -63,12 +63,19 @@ export const BAND_STACK_GAP = 8;
 export const BAND_PAD_X = 14;
 
 /**
- * The stack's outer radius. One step tighter than the tool frame's 9 (the
- * 3/6/9 scale): the bands are a header over the surface, so they read as the
- * smaller-cornered object sitting on it. The A/B seam is SQUARE — they abut,
- * and the stack clips its children, so only the four outer corners round.
+ * The stack's outer radius — `--r-xs`.
+ *
+ * ⚓ NATE 2026-08-07, ON TRIAL: 6 → 1. The radius scale collapsed to a
+ * near-universal 3 (see the GEOMETRY block in app.css) and the bands are where
+ * the new 1px is being tried — "a slightly dulled box", a corner just broken
+ * enough not to be sharp. The bands are the site's most machined-looking object
+ * and the least like a card, so they are the honest test of whether that reads.
+ * If it does, 1px is a real rung; if it doesn't, this goes back to 3.
+ *
+ * The A/B seam is SQUARE — they abut, and the stack clips its children, so only
+ * the four outer corners round.
  */
-export const BAND_RADIUS = 6;
+export const BAND_RADIUS = 1;
 
 /** Full height of the two-tier object. */
 export const BAND_STACK_H = BAND_A_H + BAND_B_H;
