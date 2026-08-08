@@ -178,7 +178,20 @@ await rp.locator('.sp-avatar-clickable').first().dispatchEvent('click');
 const explore = rp.locator('.rp-explore-link');
 await explore.waitFor({ timeout: 5000 });
 const exploreText = (await explore.innerText()).replace(/\s+/g, ' ').trim();
-check('RP explore label leads with ←', exploreText.startsWith('←'), exploreText);
+// ↻ MARKS SWEEP 2026-08-07 (b552ede): the leading arrow is INLINE GEOMETRY
+// (<Mark name="back">), not a typeset ←, so it is no longer in innerText —
+// see memory reference_icon_set. Assert the mark leads the label instead;
+// checking for the character would now demand the sweep be undone.
+const exploreLeads = await explore.evaluate(
+	(el) =>
+		el.firstElementChild?.classList.contains('rp-explore-arrow') === true &&
+		!!el.firstElementChild?.querySelector('.mark')
+);
+check(
+	'RP explore label leads with the back mark (geometry, not a typeset arrow)',
+	exploreLeads && exploreText.toLowerCase().includes('explore alternatives'),
+	exploreText
+);
 const exBox = await explore.boundingBox();
 check('RP explore link docks on the left edge', exBox && exBox.x < 400, `x=${exBox?.x}`);
 await rp.screenshot({ path: `${SHOTS}/rp-explore.png` });

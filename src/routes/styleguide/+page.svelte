@@ -1486,12 +1486,19 @@
 							>Viewport-fit is the Team Builder and the Visualizers — the planner page-scrolls.</strong
 						>
 						For the fitted two, height is
-						<code>calc(100svh − --chrome-h − --tool-pad-top − --tool-pad-bottom)</code> minus the
-						tab strip, their zones scroll internally, and a bounded scroll needs
-						<code>min-height: 0</code> at every flex level below it — break one and the column grows instead
-						of scrolling. The planner is the deliberate exception: its frame is a flex column of rows
-						that grows with the rotation. The benches are side-locked at every width; narrow viewports
-						are the mobile pass's problem, not a breakpoint's.
+						<code>calc(100svh − --chrome-h − --tool-pad-top − --tool-pad-bottom)</code>, less the
+						band stack; their zones scroll internally, and a bounded scroll needs
+						<code>min-height: 0</code> at every flex level below it — break one and the column grows
+						instead of scrolling. ⚠ It must be that calc and not
+						<code>height: 100%</code>: a percentage needs a DEFINITE parent height, and
+						<code>.tool-main</code> is <code>min-height: 100%</code> so page-scrolling tools can
+						grow — so a percentage silently falls back to <code>auto</code> and the tool renders at
+						full content height while the SHELL scrolls, which looks nearly identical until you
+						notice the filter column scrolling away with the tiles. <code>ToolStack</code>'s
+						<code>fill</code> owns the calc; the Visualizers computes its own because it fits only above
+						1024px. The planner is the deliberate exception: its frame is a flex column of rows that grows
+						with the rotation. The benches are side-locked at every width; narrow viewports are the mobile
+						pass's problem, not a breakpoint's.
 					</li>
 					<li>
 						<strong>The Visualizers are an N-slot workspace, not a page of panels.</strong> Every

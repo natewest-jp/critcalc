@@ -127,9 +127,28 @@
 	}
 
 	/* Viewport-fit tools (the Team Builder): the surface takes whatever the
-	   bands leave. min-height:0 so its own internal scrollers can shrink. */
+	   bands leave. min-height:0 so its own internal scrollers can shrink.
+
+	   ↻ 2026-08-08: this was `height: 100%`, which SILENTLY never resolved. A
+	   percentage height needs a definite height on the parent, and the chain
+	   above is `.tool-shell` (definite) → `.tool-main` (min-height: 100%, so
+	   the tool can page-scroll — deliberately NOT definite) → `.tool-page` (a
+	   grid item, auto row). So `fill` fell back to `auto` and the Team Builder
+	   was never viewport-fit: its Roster rendered all ~122 cards at full height
+	   (~5.8k px), the grid's own bounded scroller never engaged, and the SHELL
+	   scrolled instead — which reads almost the same until you notice the
+	   filter column scrolling away with the tiles. (probe-bench-align's
+	   "page does not scroll" check missed it because the page genuinely does
+	   not: the shell is what scrolls.)
+
+	   Derived from the viewport instead — the formula the Visualizers already
+	   computes for its own workspace, minus the band terms, since the stack
+	   INCLUDES the bands and .tool-surface's flex:1 takes them off. The pads
+	   are .tool-shell's, inherited; the fallbacks match its declarations. */
 	.tool-stack--fill {
-		height: 100%;
+		height: calc(
+			100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 0.5rem) - var(--tool-pad-bottom, 3rem)
+		);
 	}
 	.tool-stack--fill .tool-surface {
 		flex: 1;
