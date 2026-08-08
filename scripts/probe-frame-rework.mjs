@@ -12,9 +12,12 @@
  *    single Share menu — they are exports, one family with the share link, and
  *    they had been split across the top and bottom corners of one tool.
  *  - the tab strip is band A.
+ * ↻ ASIDE-COLUMN ROUND 2026-08-08 — the notes left the frame too: they are the
+ * surface's aside COLUMN, a box beside the frame. See check 5.
+ *
  * What this probe still owns is the FRAME's own grammar: ruler above tracks,
- * composer on the bottom edge, the notes panel pushing only the tracks, and the
- * ruler viewport following the track scroll.
+ * composer on the bottom edge, the whole instrument narrowing together when the
+ * aside opens, and the ruler viewport following the track scroll.
  *
  * Run: start `npm run preview -- --port 4998 --strictPort`, then
  *      `node scripts/probe-frame-rework.mjs`
@@ -41,6 +44,11 @@ await page.goto('http://localhost:4998/rotation-planner', { waitUntil: 'networki
 const results = [];
 const check = (name, ok, extra = '') =>
 	results.push(`${ok ? 'PASS' : 'FAIL'}  ${name}${extra ? ` — ${extra}` : ''}`);
+
+// The notation editor is lazy-loaded (never statically imported from
+// planner-reachable code — see the perf audit), so `networkidle` can resolve
+// before its chunk has mounted and every check below would race it.
+await page.waitForSelector('.rp-notation .cm-editor', { timeout: 15000 });
 
 // 0. Border three-state machine (before typing: resting → hover → focused)
 const borderOf = () =>
@@ -178,8 +186,14 @@ check(
 	strip.join(' · ')
 );
 
-// 5. Notes panel: pushes only the tracks — never the ruler strip, never the
-//    frame height; long caveats scroll in place.
+// 5. Notes: the surface's ASIDE COLUMN (aside-column round, 2026-08-08).
+//    ↻ This used to assert "notes push the tracks but NOT the ruler strip" —
+//    which was the old arrangement's WART written down as a requirement. The
+//    panel lived below the ruler row, so the ruler kept its full width and drew
+//    ticks for time the narrowed track viewport could no longer reach. The
+//    notes are their own box beside the frame now, so the whole instrument
+//    narrows TOGETHER: ruler and tracks yield the same width. The frame height
+//    is still untouched — long caveats scroll in place, as before.
 const beforeNotes = await page.evaluate(() => ({
 	frameH: document.querySelector('.rp-frame').getBoundingClientRect().height,
 	rulerW: document.querySelector('.rp-ruler-scroll').getBoundingClientRect().width,
@@ -189,6 +203,7 @@ await page.click('.band-b .rp-notes-btn');
 await page.waitForTimeout(300);
 const afterNotes = await page.evaluate(() => ({
 	panel: !!document.querySelector('.rp-caveat-panel'),
+	inAside: !!document.querySelector('.tc-aside .rp-caveat-panel'),
 	frameH: document.querySelector('.rp-frame').getBoundingClientRect().height,
 	rulerW: document.querySelector('.rp-ruler-scroll').getBoundingClientRect().width,
 	trackW: document.querySelector('.rp-track-scroll').getBoundingClientRect().width,
@@ -197,16 +212,17 @@ const afterNotes = await page.evaluate(() => ({
 		return p ? { sh: p.scrollHeight, ch: p.clientHeight } : null;
 	})()
 }));
-check('Notes opens caveat panel', afterNotes.panel);
+check('Notes opens the caveat panel', afterNotes.panel);
+check('the caveat panel is the surface aside column, not a panel in the frame', afterNotes.inAside);
 check(
-	'notes push tracks only (~240px)',
-	beforeNotes.trackW - afterNotes.trackW >= 230,
+	'notes narrow the tracks (~262px + the column gap)',
+	beforeNotes.trackW - afterNotes.trackW >= 260,
 	`trackW ${beforeNotes.trackW.toFixed(0)} → ${afterNotes.trackW.toFixed(0)}`
 );
 check(
-	'ruler strip NOT pushed by notes',
-	beforeNotes.rulerW === afterNotes.rulerW,
-	`rulerW ${beforeNotes.rulerW.toFixed(0)} → ${afterNotes.rulerW.toFixed(0)}`
+	'the ruler strip narrows WITH the tracks (one instrument, one width)',
+	Math.abs(beforeNotes.rulerW - afterNotes.rulerW - (beforeNotes.trackW - afterNotes.trackW)) <= 1,
+	`rulerW ${beforeNotes.rulerW.toFixed(0)} → ${afterNotes.rulerW.toFixed(0)} · trackW ${beforeNotes.trackW.toFixed(0)} → ${afterNotes.trackW.toFixed(0)}`
 );
 check(
 	'frame height unchanged by notes (scroll-in-place)',

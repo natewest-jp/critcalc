@@ -1468,12 +1468,18 @@
 					</li>
 					<li>
 						<strong
-							>The filter column is <code>CharacterGrid</code>'s rail, not a frame zone.</strong
+							>A tool surface is a MAIN box and an optional ASIDE box, never one box with a sidebar
+							zone.</strong
 						>
-						Both tools reach it through the shared grid (<code>railSide</code>, plus the
-						<code>railStart</code>/<code>aboveGrid</code>/<code>belowGrid</code> snippets and the
-						<code>--cg-*</code> knobs) — the planner via its Source overlay, the Team Builder in its roster
-						view. Per-tool sizing rides the knobs; don't fork the component.
+						<code>ToolColumns</code> owns the pair (<code>ASIDE_W</code> · <code>COLUMN_GAP</code>
+						in
+						<code>$lib/toolColumns</code>); the bands above span both. The aside is always the DARK
+						column and holds ONE occupant at a time, which each tool decides in a single expression
+						— the planner's notes, or its Source's filters covering them; the Team Builder's filters
+						on the Roster only. The filter column itself is <code>CharacterFilterRail</code> and the
+						tiles are <code>CharacterGrid</code>: two siblings that meet on the consumer's
+						<code>filters</code> object, not one component with a private layout. Per-tool sizing
+						rides the <code>--cg-*</code> knobs; don't fork either.
 					</li>
 					<li>
 						<strong

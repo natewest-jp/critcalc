@@ -1,13 +1,17 @@
 <script lang="ts">
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
+	import ToolColumns from '$lib/components/ToolColumns.svelte';
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
 	import DocumentActions from '$lib/components/DocumentActions.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
 	import CharacterSelector from '$lib/components/CharacterSelector.svelte';
+	import CharacterSelectorFilters from '$lib/components/CharacterSelectorFilters.svelte';
+	import RotationNotes from '$lib/components/RotationNotes.svelte';
+	import { collectSlotCaveats } from '$lib/timeline/slotCaveats';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { loadCharacter } from '$lib/data/characterData';
+	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
 	import { decodeRotation, type SharedRotation } from '$lib/utils/rotationUrl';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
 	import { onMount } from 'svelte';
@@ -162,7 +166,45 @@
 	// ---------------------------------------------------------------------------
 
 	let selectorOpen = $state(false);
+
+	/** How many of the four slots are filled — the picker column's readout. */
+	let chosenCount = $derived(slots.filter((id) => id && id !== 'blank').length);
+
+	// Escape closes the Source. It lives here rather than in the picker because
+	// the page owns `selectorOpen` — and since the aside-column round the picker
+	// is TWO components, so neither half could own the key on its own.
+	function onWindowKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape' && selectorOpen) selectorOpen = false;
+	}
+
+	// ---------------------------------------------------------------------------
+	// The ASIDE COLUMN (aside-column round, 2026-08-08)
+	//
+	// One slot, one occupant, decided in one expression — see $lib/toolColumns.
+	// The picker's filters WIN over the notes: opening the Source covers the
+	// whole surface, cards over the timeline and filters over the notes, and
+	// closing it puts back whatever was there. Before the round this collision
+	// was three unrelated booleans and the winner was an accident of z-index.
+	// ---------------------------------------------------------------------------
+
+	/** Caveats for the slotted kits. Computed HERE, not in the timeline and not
+	 *  in the notes column, because band B's Notes button has to know whether any
+	 *  exist before the column is on screen to say so. */
+	let slotCaveats = $derived(collectSlotCaveats(slots.map((id) => getLoadedCharacter(id))));
+
+	$effect(() => {
+		pv.hasCaveats = slotCaveats.length > 0;
+		// A rebuild that leaves nothing to annotate closes the panel; the band's
+		// own button is disabled in the same breath by the flag above.
+		if (slotCaveats.length === 0) pv.showNotes = false;
+	});
+
+	let asideOccupant = $derived(
+		selectorOpen ? 'filters' : pv.showNotes && slotCaveats.length > 0 ? 'notes' : null
+	);
 </script>
+
+<svelte:window onkeydown={onWindowKeydown} />
 
 <svelte:head>
 	<title>Team rotation planner | critcalc.app</title>
@@ -257,26 +299,10 @@
 		{/snippet}
 
 		{#snippet surface()}
-			<RotationTimeline
-				bind:notation={rt.notation}
-				characterSlots={slots}
-				tabLoadout={rt.tabLoadout}
-				tabCon={rt.tabCon}
-				sourceOpen={selectorOpen}
-			>
-				<!-- The character Source, layered over the track area from the portrait
-				     edge (non-modal). Edits are live: each add/remove sets manualSlots,
-				     which flows back down as the portraits' team. -->
-				{#snippet sourceOverlay()}
-					<CharacterSelector
-						currentSlots={slots}
-						onChange={(chosen) => (rt.manualSlots = chosen)}
-						onClose={() => {
-							selectorOpen = false;
-						}}
-					/>
-				{/snippet}
-			</RotationTimeline>
+			<!-- The surface is TWO BOXES with a gap (aside-column round): the
+			     timeline, and — when something occupies it — the aside column. The
+			     bands above span both. -->
+			<ToolColumns {main} aside={asideOccupant ? asideColumn : undefined} />
 		{/snippet}
 	</ToolStack>
 
@@ -286,6 +312,34 @@
 	     reference) -->
 	<TeamBonusesBlock {slots} />
 </section>
+
+<!-- ── The main column: the timeline instrument ───────────────────────────── -->
+{#snippet main()}
+	<RotationTimeline
+		bind:notation={rt.notation}
+		characterSlots={slots}
+		tabLoadout={rt.tabLoadout}
+		tabCon={rt.tabCon}
+		sourceOpen={selectorOpen}
+	>
+		<!-- The character Source's CARDS, layered over the timeline frame
+		     (non-modal). Its filter column is the other half, in the aside below.
+		     Edits are live: each add/remove sets manualSlots, which flows back
+		     down as the bench portraits' team. -->
+		{#snippet sourceOverlay()}
+			<CharacterSelector currentSlots={slots} onChange={(chosen) => (rt.manualSlots = chosen)} />
+		{/snippet}
+	</RotationTimeline>
+{/snippet}
+
+<!-- ── The aside column: notes, or the Source's filters over them ─────────── -->
+{#snippet asideColumn()}
+	{#if asideOccupant === 'filters'}
+		<CharacterSelectorFilters {chosenCount} onClose={() => (selectorOpen = false)} />
+	{:else}
+		<RotationNotes entries={slotCaveats} />
+	{/if}
+{/snippet}
 
 <style>
 	.rotation-page {

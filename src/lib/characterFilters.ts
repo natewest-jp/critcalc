@@ -16,6 +16,7 @@
  */
 
 import type { CharacterIndexEntry } from '$lib/types/character';
+import type { SvelteSet } from 'svelte/reactivity';
 
 export type IdentityFilters = {
 	elements: ReadonlySet<string>;
@@ -29,6 +30,28 @@ export type IdentityFilters = {
 	 *  carrier of Stellar-gated buffs (`gatedReactions`). Optional so
 	 *  callers without the group (planner selector) are untouched. */
 	factionBuffs?: ReadonlySet<string>;
+};
+
+/**
+ * The MUTABLE form of the above: what a tool holds as $state, the filter column
+ * (<CharacterFilterRail>) edits in place, and <CharacterGrid> reads through
+ * `matchesIdentity`. The sets are SvelteSets so a toggle is reactive without
+ * reassigning the object.
+ *
+ * It lives here rather than on either component because since the aside-column
+ * round (2026-08-08) the two are SIBLINGS in a ToolColumns surface — the object
+ * is the only thing they share, so it belongs to neither.
+ */
+export type GridFilters = {
+	elements: SvelteSet<string>;
+	weapons: SvelteSet<string>;
+	rarities: SvelteSet<number>;
+	region: string;
+	search: string;
+	/** The Team Builder's Factions/Buffs group. The shared identity chips don't
+	 *  render it (the TB supplies those chips via railStart); it rides along so
+	 *  `matchesIdentity` sees the same object both halves bind to. */
+	factionBuffs?: SvelteSet<string>;
 };
 
 /** True when the entry is Stellar-linked — enables a Stellar reaction or

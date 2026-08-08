@@ -20,12 +20,15 @@
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
+	import ToolColumns from '$lib/components/ToolColumns.svelte';
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
 	import DocumentActions from '$lib/components/DocumentActions.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import CharacterCard, { type TagChip } from '$lib/components/CharacterCard.svelte';
-	import CharacterGrid, { type GridFilters } from '$lib/components/CharacterGrid.svelte';
+	import CharacterGrid from '$lib/components/CharacterGrid.svelte';
+	import CharacterFilterRail from '$lib/components/CharacterFilterRail.svelte';
+	import type { GridFilters } from '$lib/characterFilters';
 	import DetailCard from './lib/DetailCard.svelte';
 	import CompareView from './lib/CompareView.svelte';
 	import TeamStrip from './lib/TeamStrip.svelte';
@@ -835,185 +838,206 @@
 	{/snippet}
 
 	{#snippet surface()}
-		<!-- ── The tool frame: filter/center zones inside ONE surface. Viewport-fit
-		     — the views scroll INSIDE it, the page never does. -->
-		<div class="tb-frame frame ctx-light">
-			<div class="tb-work">
-				<!-- What the team IS and what it COVERS — one horizontal readout above
+		<!-- Two boxes with a gap (aside-column round): the work frame, and — on
+		     the Roster only — the filter column beside it. Atlas and Compare have
+		     nothing to filter, so they get the full width. -->
+		<ToolColumns {main} aside={sourceTab === 'roster' ? rosterRail : undefined} />
+	{/snippet}
+</ToolStack>
+
+<!-- ── The main column: the work frame ────────────────────────────────────── -->
+{#snippet main()}
+	<!-- ── The tool frame: the browse zones inside ONE surface. Viewport-fit
+	     — the views scroll INSIDE it, the page never does. -->
+	<div class="tb-frame frame ctx-light">
+		<div class="tb-work">
+			<!-- What the team IS and what it COVERS — one horizontal readout above
 			     the roster the coverage gaps filter. -->
-				<TeamStrip
-					slots={teamSlots}
-					conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
-					onClear={() => rt.clearTeam()}
-					onFilterFacet={(f) => selectCapability(f)}
-				/>
-				<section class="tb-source">
-					{#if sourceTab === 'atlas'}
-						<div class="tb-atlas">
-							{#if atlasMode === 'slots' && slotRows.length > 0}
-								<div class="tb-atlas-head">
-									<p class="tb-atlas-lead">
-										Alternatives for each character on your team — same element and role.
-									</p>
-									<button class="btn" onclick={backToCards}
-										>Browse all roles <Mark name="forward" /></button
-									>
-								</div>
-								{#each slotRows as row (row.slotEntry.id)}
-									<section class="tb-slotrow">
-										<header class="tb-slotrow-head">
-											{#if hasAvatar(row.slotEntry.id)}
-												<img
-													class="tb-slotrow-avatar"
-													src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
-													alt=""
-													loading="lazy"
-												/>
-											{:else}
-												<span class="tb-slotrow-initials"
-													>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
-												>
-											{/if}
-											<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
-											{#if row.slotRoles}
-												<span class="tb-slotrow-roles">
-													{#each row.slotRoles.position as p (p)}
-														<img
-															src={positionIcon(p, 'color')}
-															alt={POSITION_LABEL[p]}
-															title={POSITION_LABEL[p]}
-														/>
-													{/each}
-													{#each row.slotRoles.function as f (f)}
-														<img
-															src={functionIcon(f, 'color')}
-															alt={FUNCTION_LABEL[f]}
-															title={FUNCTION_LABEL[f]}
-														/>
-													{/each}
-												</span>
-											{/if}
-											<span class="tb-slotrow-count"
-												>{row.alternatives.length} alt{row.alternatives.length === 1
-													? ''
-													: 's'}</span
-											>
-										</header>
-										{#if row.alternatives.length > 0}
-											<div class="tb-grid">
-												{#each row.alternatives as entry (entry.id)}
-													{@render charTile(entry, false)}
-												{/each}
-											</div>
+			<TeamStrip
+				slots={teamSlots}
+				conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
+				onClear={() => rt.clearTeam()}
+				onFilterFacet={(f) => selectCapability(f)}
+			/>
+			<section class="tb-source">
+				{#if sourceTab === 'atlas'}
+					<div class="tb-atlas">
+						{#if atlasMode === 'slots' && slotRows.length > 0}
+							<div class="tb-atlas-head">
+								<p class="tb-atlas-lead">
+									Alternatives for each character on your team — same element and role.
+								</p>
+								<button class="btn" onclick={backToCards}
+									>Browse all roles <Mark name="forward" /></button
+								>
+							</div>
+							{#each slotRows as row (row.slotEntry.id)}
+								<section class="tb-slotrow">
+									<header class="tb-slotrow-head">
+										{#if hasAvatar(row.slotEntry.id)}
+											<img
+												class="tb-slotrow-avatar"
+												src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
+												alt=""
+												loading="lazy"
+											/>
 										{:else}
-											<p class="note tb-note">No same-element alternative in this role yet.</p>
-										{/if}
-									</section>
-								{/each}
-							{:else if atlasMode === 'drill' && drilledCategory}
-								<div class="tb-atlas-head">
-									<button class="btn" onclick={backToCards}><Mark name="back" /> All roles</button>
-									<div class="tb-drill-title">
-										{#if drilledCategory.position}
-											<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
-										{/if}
-										<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
-										<span>{drilledCategory.label}</span>
-									</div>
-								</div>
-								{#each drillRows as row (row.key)}
-									<section class="tb-slotrow">
-										<header class="tb-slotrow-head">
-											{#if row.kind === 'element'}
-												<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
-												<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
-											{:else}
-												<span class="tb-slotrow-name">{row.label}</span>
-											{/if}
-											<span class="tb-slotrow-count"
-												>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
+											<span class="tb-slotrow-initials"
+												>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
 											>
-										</header>
+										{/if}
+										<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
+										{#if row.slotRoles}
+											<span class="tb-slotrow-roles">
+												{#each row.slotRoles.position as p (p)}
+													<img
+														src={positionIcon(p, 'color')}
+														alt={POSITION_LABEL[p]}
+														title={POSITION_LABEL[p]}
+													/>
+												{/each}
+												{#each row.slotRoles.function as f (f)}
+													<img
+														src={functionIcon(f, 'color')}
+														alt={FUNCTION_LABEL[f]}
+														title={FUNCTION_LABEL[f]}
+													/>
+												{/each}
+											</span>
+										{/if}
+										<span class="tb-slotrow-count"
+											>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
+										>
+									</header>
+									{#if row.alternatives.length > 0}
 										<div class="tb-grid">
-											{#each row.entries as entry (entry.id)}
+											{#each row.alternatives as entry (entry.id)}
 												{@render charTile(entry, false)}
 											{/each}
 										</div>
-									</section>
-								{/each}
-								{#if drillRows.length === 0}
-									<p class="note tb-note">No curated providers in this role yet.</p>
-								{/if}
-							{:else}
-								<p class="tb-atlas-lead">
-									Browse by role — from Genshin's Imaginarium Theater classification.
-								</p>
-								<AtlasView {roleCards} onSelectCategory={openCategory} />
-								<p class="tb-atlas-cite">
-									Roles: Genshin Impact — Imaginarium Theater. A presence classification, not a
-									ranking.
-								</p>
+									{:else}
+										<p class="note tb-note">No same-element alternative in this role yet.</p>
+									{/if}
+								</section>
+							{/each}
+						{:else if atlasMode === 'drill' && drilledCategory}
+							<div class="tb-atlas-head">
+								<button class="btn" onclick={backToCards}><Mark name="back" /> All roles</button>
+								<div class="tb-drill-title">
+									{#if drilledCategory.position}
+										<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
+									{/if}
+									<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
+									<span>{drilledCategory.label}</span>
+								</div>
+							</div>
+							{#each drillRows as row (row.key)}
+								<section class="tb-slotrow">
+									<header class="tb-slotrow-head">
+										{#if row.kind === 'element'}
+											<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
+											<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
+										{:else}
+											<span class="tb-slotrow-name">{row.label}</span>
+										{/if}
+										<span class="tb-slotrow-count"
+											>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
+										>
+									</header>
+									<div class="tb-grid">
+										{#each row.entries as entry (entry.id)}
+											{@render charTile(entry, false)}
+										{/each}
+									</div>
+								</section>
+							{/each}
+							{#if drillRows.length === 0}
+								<p class="note tb-note">No curated providers in this role yet.</p>
 							{/if}
-						</div>
-					{/if}
+						{:else}
+							<p class="tb-atlas-lead">
+								Browse by role — from Genshin's Imaginarium Theater classification.
+							</p>
+							<AtlasView {roleCards} onSelectCategory={openCategory} />
+							<p class="tb-atlas-cite">
+								Roles: Genshin Impact — Imaginarium Theater. A presence classification, not a
+								ranking.
+							</p>
+						{/if}
+					</div>
+				{/if}
 
-					<!-- ── Compare — a first-class center view, not an inspector: the shared
+				<!-- ── Compare — a first-class center view, not an inspector: the shared
 			     ruler gets the Source's full width, and the view works at every
 			     viewport (no dock breakpoint, no modal fallback). -->
-					{#if sourceTab === 'compare'}
-						{#if compareIds.size === 0}
-							<div class="tb-cmp-empty">
-								<p class="tb-cmp-empty-title">Nothing to compare yet.</p>
-								<p class="note">
-									Hover a character card in the Roster and press <strong>Compare</strong> — up to four
-									characters line up here on one shared time ruler.
-								</p>
-							</div>
-						{:else}
-							<CompareView
-								ids={[...compareIds]}
-								{conMode}
-								anchorId={anchorId ?? undefined}
-								onRemove={toggleCompare}
-								onCommit={anchorId ? commitAudition : undefined}
-								onClear={anchorId ? undefined : () => compareIds.clear()}
-								onCancelAudition={anchorId ? cancelAudition : undefined}
-								candidatesArea={anchorId ? auditionStrip : undefined}
-							/>
-						{/if}
+				{#if sourceTab === 'compare'}
+					{#if compareIds.size === 0}
+						<div class="tb-cmp-empty">
+							<p class="tb-cmp-empty-title">Nothing to compare yet.</p>
+							<p class="note">
+								Hover a character card in the Roster and press <strong>Compare</strong> — up to four characters
+								line up here on one shared time ruler.
+							</p>
+						</div>
+					{:else}
+						<CompareView
+							ids={[...compareIds]}
+							{conMode}
+							anchorId={anchorId ?? undefined}
+							onRemove={toggleCompare}
+							onCommit={anchorId ? commitAudition : undefined}
+							onClear={anchorId ? undefined : () => compareIds.clear()}
+							onCancelAudition={anchorId ? cancelAudition : undefined}
+							candidatesArea={anchorId ? auditionStrip : undefined}
+						/>
 					{/if}
+				{/if}
 
-					<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
+				<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
 				     remounting ~122 cards on every Atlas⇄Roster toggle was a visible
 				     stall in Safari 26.x, and keeping it warm makes the toggle instant
 				     in every browser.
-				     The shared CharacterGrid owns the search field, the identity chip
-				     groups and the Clear button; the TB's own filters ride in via the
-				     rail slot below it. The rail sits RIGHT — the same side as the
-				     planner's picker, one filter-column grammar site-wide (the old
-				     mirrored arrangement served the retired slide seam). -->
-					{#if rosterEverShown}
-						<div class="tb-roster" hidden={sourceTab !== 'roster'}>
-							<CharacterGrid
-								roster={split.matches}
-								{filters}
-								railSide="right"
-								searchPlaceholder="Search characters…"
-								tile={rosterTile}
-								railStart={rosterFacetRail}
-								aboveGrid={rosterCount}
-								belowGrid={rosterStubs}
-								{extraFiltersActive}
-								onClearExtras={clearExtraFilters}
-								emptyMessage={rosterEmptyMessage}
-							/>
-						</div>
-					{/if}
-				</section>
-			</div>
+				     ↻ ASIDE-COLUMN ROUND 2026-08-08: the filter column left this box.
+				     It is the surface's ASIDE now — its own dark box beside the frame
+				     with bare scene between them (see the rosterRail snippet below).
+				     What is left in here is the grid proper. -->
+				{#if rosterEverShown}
+					<div class="tb-roster" hidden={sourceTab !== 'roster'}>
+						<CharacterGrid
+							roster={split.matches}
+							{filters}
+							tile={rosterTile}
+							aboveGrid={rosterCount}
+							belowGrid={rosterStubs}
+							emptyMessage={rosterEmptyMessage}
+						/>
+					</div>
+				{/if}
+			</section>
 		</div>
-	{/snippet}
-</ToolStack>
+	</div>
+{/snippet}
+
+<!-- ── The aside column: the filter column ────────────────────────────────
+     The shared identity groups (search · element · weapon · rarity · region ·
+     Clear) come from <CharacterFilterRail>; the TB's own groups — the roster
+     ledger, the editorial roles, factions/buffs and the capability facets —
+     ride in through railStart, and reach the same Clear.
+
+     The rail is handed the UNFILTERED roster, not split.matches: its Region
+     chips are drawn from whatever it is given, and from the filtered list
+     choosing a region collapsed the group to the one chip you had just
+     pressed. (Live before this round; the extraction is where it surfaced.) -->
+{#snippet rosterRail()}
+	<CharacterFilterRail
+		{roster}
+		{filters}
+		searchPlaceholder="Search characters…"
+		railStart={rosterFacetRail}
+		{extraFiltersActive}
+		onClearExtras={clearExtraFilters}
+	/>
+{/snippet}
 
 <!-- The one deliberate modal: a focused single-character read. -->
 {#if selectedId}
@@ -1346,14 +1370,14 @@
 	/* Fills the center zone and bounds the grid's internal scroll — the chain
 	   needs min-height:0 at every level, or the grid grows instead of
 	   scrolling. Sizing knobs are custom properties CharacterGrid reads, which
-	   is how the TB keeps its own tile scale and a wider rail without the
-	   planner's picker changing. */
+	   is how the TB keeps its own tile scale without the planner's picker
+	   changing. (--cg-rail-w went with the rail: the filter column's width is
+	   ASIDE_W, one knob for both tools, in $lib/toolColumns.) */
 	.tb-roster {
 		display: flex;
 		flex: 1;
 		min-height: 0;
 		min-width: 0;
-		--cg-rail-w: 250px;
 		--cg-tile-min: 118px;
 		--cg-gap: 0.6rem;
 		--cg-stack-gap: 0.7rem;

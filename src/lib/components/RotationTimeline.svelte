@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import Mark from './Mark.svelte';
-	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { SvelteMap } from 'svelte/reactivity';
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 	import type { Stat } from '$lib/types/ability';
 	import type { NotationEditor } from '$lib/utils/notationEditor';
@@ -927,50 +927,13 @@
 		return tabCon[charId] ?? $constellations[charId] ?? 0;
 	}
 
-	// ---------------------------------------------------------------------------
-	// Caveat panel
-	// ---------------------------------------------------------------------------
-
-	const showNotes = $derived(pv.showNotes);
-
-	let slotCaveats = $derived.by(() => {
-		const seen = new SvelteSet<string>();
-		return slotCharacters
-			.filter((c): c is NonNullable<typeof c> => c != null)
-			.filter((c) => {
-				const fresh = !seen.has(c.id);
-				seen.add(c.id);
-				return fresh;
-			})
-			.map((char) => ({
-				id: char.id,
-				displayName: char.displayName,
-				element: char.element,
-				caveats: [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])]
-					.filter((a) => a.caveat)
-					.map((a) => ({
-						name: a.name,
-						caveat: a.caveat!,
-						kind:
-							a.abilityType === 'constellation'
-								? `C${a.constellationLevel}`
-								: a.abilityType.charAt(0).toUpperCase() + a.abilityType.slice(1)
-					}))
-			}))
-			.filter((entry) => entry.caveats.length > 0);
-	});
-
-	let hasCaveats = $derived(slotCaveats.length > 0);
-
-	// Publish what band B needs to render its half: the notes gate and the
-	// total-length readout. Written here because only the chart knows them —
-	// see plannerView.svelte.ts for the direction-of-flow contract.
-	$effect(() => {
-		pv.hasCaveats = hasCaveats;
-		// A rebuild that leaves nothing to annotate closes the panel; the band's
-		// own button is disabled in the same breath by the flag above.
-		if (!hasCaveats) pv.showNotes = false;
-	});
+	// The caveat panel left in the aside-column round (2026-08-08): the notes are
+	// the surface's ASIDE COLUMN now — <RotationNotes>, a box beside this one,
+	// fed by the planner page. Nothing about them was ever chart geometry, and
+	// keeping them here is what forced the panel to be an absolute overlay with
+	// a matching margin on the tracks. The only publication left is the readout
+	// below, which genuinely is the chart's to make (see plannerView for the
+	// direction-of-flow contract).
 
 	$effect(() => {
 		pv.totalDuration = rotation.totalDuration;
@@ -1087,7 +1050,7 @@
 			     state, and the bands are where view state lives now, in every
 			     tool. The ruler keeps the full frame width it always wanted. -->
 		</div>
-		<div class="rp-timeline-area" class:rp-timeline-area--notes={showNotes && hasCaveats}>
+		<div class="rp-timeline-area">
 			<div class="rp-scroll-wrapper">
 				<!-- The label column is GONE (abutting round). It was already pure
 				     reservation — the ribbon stood over its full height, so nothing
@@ -1582,26 +1545,6 @@
 				<!-- /rp-track-scroll -->
 			</div>
 			<!-- /rp-scroll-wrapper -->
-
-			{#if showNotes && hasCaveats}
-				<div class="rp-caveat-panel">
-					{#each slotCaveats as entry (entry.id)}
-						<div class="rp-caveat-char">
-							<div class="rp-caveat-char-name" style:color={pal(entry.element).main}>
-								{entry.displayName}
-							</div>
-							{#each entry.caveats as item, ci (ci)}
-								<div class="rp-caveat-item">
-									<span class="rp-caveat-ability"
-										><span class="rp-caveat-kind">{item.kind}</span>{item.name}</span
-									>
-									<p class="rp-caveat-text">{item.caveat}</p>
-								</div>
-							{/each}
-						</div>
-					{/each}
-				</div>
-			{/if}
 		</div>
 		<!-- /rp-timeline-area -->
 
@@ -1742,18 +1685,15 @@
 		min-height: 26rem;
 	}
 
-	/* ── Timeline area (scroll + optional caveat panel) ──────── */
+	/* ── Timeline area (the track scroller) ──────────────────── */
+	/* The notes panel used to be the second child here, pushing the tracks with
+	   a margin. It is the surface's ASIDE COLUMN now (aside-column round), which
+	   narrows the whole frame — ruler included — instead of this one row. */
 	.rp-timeline-area {
 		position: relative;
 		display: flex;
 		flex-direction: row;
 		align-items: stretch;
-	}
-	/* Notes open: the tracks yield the panel's width (the "push"); the panel
-	   itself is an absolute overlay so its height is LOCKED to the track
-	   area's — long caveats scroll in place and can never grow the frame. */
-	.rp-timeline-area--notes .rp-scroll-wrapper {
-		margin-right: 240px;
 	}
 	/* ── Character Source overlay ─────────────────────────────── */
 	/* Non-modal: an opaque panel over the whole frame — ruler, view cluster,
@@ -1782,61 +1722,6 @@
 	/* The explicit display:flex above would beat the UA's [hidden] rule. */
 	.rp-source-overlay[hidden] {
 		display: none;
-	}
-
-	/* ── Caveat panel ─────────────────────────────────────────── */
-	.rp-caveat-panel {
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		width: 240px;
-		border-left: 1px solid var(--rp-line);
-		overflow-y: auto;
-		padding: 8px 12px;
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-	}
-	.rp-caveat-char {
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
-	}
-	.rp-caveat-char-name {
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-widest);
-		text-transform: uppercase;
-	}
-	.rp-caveat-item {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-	.rp-caveat-ability {
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
-		color: var(--muted);
-		letter-spacing: var(--ls-mid);
-	}
-	.rp-caveat-kind {
-		display: inline-block;
-		margin-right: 6px;
-		padding: 0 4px;
-		border: 1px solid var(--rp-line);
-		border-radius: 3px;
-		font-size: var(--fs-xs);
-		text-transform: uppercase;
-		letter-spacing: var(--ls-widest);
-		opacity: 0.8;
-	}
-	.rp-caveat-text {
-		margin: 0;
-		font-size: var(--fs-xs);
-		color: var(--text);
-		line-height: var(--lh-normal);
-		opacity: 0.75;
 	}
 
 	/* ── Scroll wrapper ───────────────────────────────────────── */
