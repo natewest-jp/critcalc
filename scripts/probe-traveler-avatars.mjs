@@ -12,7 +12,10 @@ const fails = [];
 await page.goto('http://localhost:4998/team-builder', { waitUntil: 'networkidle' });
 // The Atlas front door is the default view (2026-07-22 redesign); the roster
 // grid + search live under the Roster tab.
-await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
+// ↻ The source tabs moved to BAND B in the toolbar round (bf964ad) — `.tb-tabs`
+// stopped existing then, and this probe had been failing on it ever since. The
+// checks below were fine; only the way in had gone stale.
+await page.locator('.band-b .tab', { hasText: 'Roster' }).click();
 await page.locator('.cg-rail .field').fill('traveler');
 // Portrait class only (each card also renders weapon + element glyphs).
 // Portraits are background-image divs since the Safari-26 img-regression fix —
@@ -28,7 +31,7 @@ await page.evaluate(() =>
 	localStorage.setItem('critcalc:siteSettings', JSON.stringify({ travelerVariant: 'lumine' }))
 );
 await page.reload({ waitUntil: 'networkidle' });
-await page.locator('.tb-tabs .tab', { hasText: 'Roster' }).click();
+await page.locator('.band-b .tab', { hasText: 'Roster' }).click();
 await page.locator('.cg-rail .field').fill('traveler');
 const srcs2 = await page
 	.locator('.cg-grid .cc-img')
