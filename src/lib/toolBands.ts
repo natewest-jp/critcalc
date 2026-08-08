@@ -38,6 +38,8 @@
  *
  * All knobs — Nate tunes these in the inspector.
  */
+// ⚠ The .ts extension is load-bearing — see toolGutter.ts's note on it.
+import { TOOL_GUTTER } from './toolGutter.ts';
 
 /**
  * The DOCUMENT band's height. Sized to seat a `.tab--lg` (29px) with a little
@@ -52,8 +54,14 @@ export const BAND_A_H = 36;
  */
 export const BAND_B_H = 32;
 
-/** Bare scene between the band stack's bottom and the tool surface's top. */
-export const BAND_STACK_GAP = 8;
+/**
+ * Bare scene between the band stack's bottom and the tool surface's top.
+ *
+ * ↻ 2026-08-08 (breathing-room round): derived from TOOL_GUTTER rather than
+ * declared. This is the VERTICAL face of a tool's one interior rhythm; the
+ * horizontal face is COLUMN_GAP, and both now move together.
+ */
+export const BAND_STACK_GAP = TOOL_GUTTER;
 
 /**
  * Interior padding at each end of a band. Matches the planner frame's own
