@@ -77,8 +77,14 @@ const rp = await page.evaluate(() => {
 			const r = document.querySelector('.bands')?.getBoundingClientRect();
 			return r ? { x: r.x, y: r.y, w: r.width, h: r.height } : null;
 		})(),
+		// ↻ Breathing-room round 2026-08-08: `.tool-surface`, not `.rp-frame`.
+		// The ribbon stands proud of the whole TOOL STACK, and the planner's
+		// surface is two panels now (timeline, then composer) — so the frame
+		// stopped being the object's bottom edge. Same invariant, the element
+		// that actually carries it. (Both tools measure the surface now; see
+		// probe-bench-align, which re-anchored the same way.)
 		frameRect: (() => {
-			const r = document.querySelector('.rp-frame')?.getBoundingClientRect();
+			const r = document.querySelector('.tool-surface')?.getBoundingClientRect();
 			return r ? { x: r.x, y: r.y, w: r.width, h: r.height } : null;
 		})(),
 		laneNames: [...document.querySelectorAll('.rp-lane-name')].map((el) => ({

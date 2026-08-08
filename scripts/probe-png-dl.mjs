@@ -25,7 +25,12 @@ await page.waitForTimeout(2200);
 
 // 1. Alignment check at a non-default zoom (three + steps)
 for (let i = 0; i < 3; i++) {
-	await page.click('.rp-zoom-btn:has-text("+")');
+	// ⚠ Was `.rp-zoom-btn:has-text("+")`, which had been dead since the mark
+	// sweep (2026-08-07) made every control glyph inline geometry — there is no
+	// typeset "+" left to match, so this probe threw a TimeoutError before it
+	// asserted anything. Match the accessible name instead: it survives a glyph
+	// becoming an SVG, which is exactly the change that broke the old one.
+	await page.click('[aria-label="Zoom in"]');
 	await page.waitForTimeout(120);
 }
 await page.waitForTimeout(400);
@@ -45,11 +50,16 @@ const misalign = await page.evaluate(() => {
 });
 console.log('worst connector↔active gap at zoomed scale:', misalign, 'px');
 
-// 2. PNG menu → Download flow
-await page.click('button[title="Export the timeline as an image"]');
+// 2. Share menu → Download flow
+// ⚠ Both selectors were stale from the TOOLBAR ROUND (2026-08-07), which
+// folded the frame's own ⧉ PNG button into band A's single Share menu — one
+// family (link · KQM · image) in one place, instead of split across the top and
+// bottom corners of the same tool. The probe has been throwing on the first
+// click ever since, so nothing below it was running.
+await page.click('button:has-text("Share")');
 await page.waitForTimeout(300);
 const dl = page.waitForEvent('download', { timeout: 15000 });
-await page.click('.rp-png-item:has-text("Download")');
+await page.click('.band-menu-item:has-text("Download timeline image")');
 const download = await dl;
 const out = join(tmpdir(), 'critcalc-probe-export.png');
 await download.saveAs(out);

@@ -14,15 +14,28 @@
  *  - the tab strip is band A.
  * ↻ ASIDE-COLUMN ROUND 2026-08-08 — the notes left the frame too: they are the
  * surface's aside COLUMN, a box beside the frame. See check 5.
+ * ↻ BREATHING-ROOM ROUND 2026-08-08 — and so did the COMPOSER. It is its own
+ * panel below the frame, one TOOL_GUTTER of bare scene away: the timeline is
+ * where you READ and the composer is where you WRITE, and the planner had
+ * exactly one honest split available (its lanes must share a coordinate
+ * system, so the instrument itself cannot come apart).
+ *   Two checks change character rather than subject. "Composer on the bottom
+ * edge" became true trivially, so it asserts the SEAM instead — against the
+ * imported TOOL_GUTTER. And "box starts at the frame's left content edge" was
+ * very nearly a tautology while both lived in one box; with them in separate
+ * panels it is a genuine CROSS-PANEL alignment check, which is the thing that
+ * would actually regress if the composer's padding drifted from FRAME_PAD_X.
+ * It is deliberately left pointing at .rp-frame for that reason.
  *
  * What this probe still owns is the FRAME's own grammar: ruler above tracks,
- * composer on the bottom edge, the whole instrument narrowing together when the
+ * the composer panel below it, the whole instrument narrowing together when the
  * aside opens, and the ruler viewport following the track scroll.
  *
  * Run: start `npm run preview -- --port 4998 --strictPort`, then
  *      `node scripts/probe-frame-rework.mjs`
  */
 import { chromium } from 'playwright';
+import { TOOL_GUTTER } from '../src/lib/toolGutter.ts';
 
 const SHOT_DIR = process.env.PROBE_SHOT_DIR ?? '.';
 
@@ -89,6 +102,7 @@ const geo = await page.evaluate(() => {
 		charBlock: r('.rp-char-block'),
 		ext: r('.rp-ext-scroll-wrap'),
 		composer: r('.rp-composer'),
+		frame: r('.rp-frame'),
 		bands: r('.bands'),
 		tickLabel: r('.rp-tick-label'),
 		gridline: r('.rp-gridline')
@@ -99,10 +113,19 @@ check(
 	geo.ruler && geo.charBlock && geo.ruler.bottom <= geo.charBlock.top + 1,
 	`ruler.bottom=${geo.ruler?.bottom?.toFixed(0)} charBlock.top=${geo.charBlock?.top?.toFixed(0)}`
 );
+// ↻ BREATHING-ROOM ROUND 2026-08-08: the composer is its own PANEL below the
+// frame, so "below the scrub strip" is now true trivially. Assert the thing
+// that can actually regress instead — the seam between the two panels is
+// exactly TOOL_GUTTER of bare scene, imported rather than written down here.
 check(
-	'composer on the BOTTOM edge (below scrub strip)',
-	geo.composer && geo.ext && geo.composer.top >= geo.ext.bottom - 1,
-	`composer.top=${geo.composer?.top?.toFixed(0)} ext.bottom=${geo.ext?.bottom?.toFixed(0)}`
+	'composer is its own panel, TOOL_GUTTER below the frame',
+	geo.composer &&
+		geo.frame &&
+		Math.abs(geo.composer.top - geo.frame.bottom - TOOL_GUTTER) <= 1 &&
+		geo.ext &&
+		geo.composer.top >= geo.ext.bottom - 1,
+	`composer.top=${geo.composer?.top?.toFixed(0)} frame.bottom=${geo.frame?.bottom?.toFixed(0)} ` +
+		`gap=${geo.composer && geo.frame ? (geo.composer.top - geo.frame.bottom).toFixed(1) : '?'} expected=${TOOL_GUTTER}`
 );
 check(
 	'view controls sit ABOVE the frame, in band B (not on the ruler)',
@@ -122,15 +145,21 @@ check(
 // 2. Composer box: single-line, darker well, frame-aligned, chips beside
 const composer = await page.evaluate(() => {
 	const cm = document.querySelector('.rp-notation .cm-editor');
-	const frame = document.querySelector('.rp-frame');
+	const composerEl = document.querySelector('.rp-composer');
 	// Abutting round: the portrait column is gone (the ribbon holds the cards
 	// OUTSIDE the frame), so the composer starts at the frame's padding box.
+	// ⚠ Still .rp-frame, deliberately — see the header. Cross-PANEL alignment
+	// is what this measures now, and that is worth more than it was.
 	const frameEl = document.querySelector('.rp-frame');
 	const cs = cm ? getComputedStyle(cm) : null;
 	return {
 		borderW: cs?.borderTopWidth,
 		bg: cs?.backgroundColor,
-		frameBg: frame ? getComputedStyle(frame).backgroundColor : null,
+		// ↻ 2026-08-08: the composer has its own panel, so "darker than the
+		// ground it sits on" has to compare against THAT panel, not the frame
+		// it used to live in. Same invariant (the well reads as an inset
+		// textfield), correct surface.
+		frameBg: composerEl ? getComputedStyle(composerEl).backgroundColor : null,
 		boxH: cm?.getBoundingClientRect().height,
 		boxL: cm?.getBoundingClientRect().left,
 		boxW: cm?.getBoundingClientRect().width,
@@ -139,7 +168,15 @@ const composer = await page.evaluate(() => {
 				parseFloat(getComputedStyle(frameEl).borderLeftWidth) +
 				parseFloat(getComputedStyle(frameEl).paddingLeft)
 			: null,
-		composerW: document.querySelector('.rp-composer')?.getBoundingClientRect().width ?? null
+		// The CONTENT width, not the border box. The composer carries its own
+		// horizontal padding since it became a panel (2026-08-08); comparing
+		// the box against the border box would just be re-measuring that
+		// padding, which the left-edge check above already covers.
+		composerW: composerEl
+			? composerEl.getBoundingClientRect().width -
+				parseFloat(getComputedStyle(composerEl).paddingLeft) -
+				parseFloat(getComputedStyle(composerEl).paddingRight)
+			: null
 	};
 });
 check('notation box border is 1px', composer.borderW === '1px', composer.borderW);
@@ -288,7 +325,9 @@ const clipText = await page.evaluate(() => navigator.clipboard.readText().catch(
 check('clipboard holds KQM text', (clipText ?? '').includes('Furina'), JSON.stringify(clipText));
 
 // Screenshots
-await page.locator('.rp-frame').screenshot({ path: `${SHOT_DIR}/frame-rework-full.png` });
+// .rp-root, not .rp-frame — the reference shot has to keep containing the
+// composer, which is a sibling of the frame now rather than a child.
+await page.locator('.rp-root').screenshot({ path: `${SHOT_DIR}/frame-rework-full.png` });
 await page.screenshot({ path: `${SHOT_DIR}/frame-rework-page.png`, fullPage: false });
 
 console.log(results.join('\n'));

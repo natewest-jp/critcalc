@@ -7,10 +7,14 @@ const errs = [];
 page.on('pageerror', (e) => errs.push(e.message));
 await page.goto(`http://localhost:4998/rotation-planner?r=${SHARE}`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(2200);
-const section = await page.$('.timeline-section');
+// ⚠ Was `.timeline-section`, a class that has not existed in src/ for several
+// rounds — the probe threw on a null locator before taking either shot.
+const section = await page.$('.rotation-page');
 await section.screenshot({ path: `${process.env.SHOTS_DIR ?? '/tmp'}/r2-loaded.png` });
 // New empty tab: placeholder + blank slots
-await page.click('.rp-tab-add');
+// ⚠ Was `.rp-tab-add` — the tab strip became band A's shared DocumentTabs in
+// the toolbar round, and the class went with it.
+await page.click('.doc-tab-add');
 await page.waitForTimeout(600);
 await section.screenshot({ path: `${process.env.SHOTS_DIR ?? '/tmp'}/r2-empty.png` });
 console.log('errors:', errs.length ? errs : 'none');

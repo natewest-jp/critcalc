@@ -1555,22 +1555,6 @@
 			</div>
 		</div>
 
-		<!-- ── Composer (bottom edge) ────────────────────────────── -->
-		<!-- The notation input rides the frame's bottom like a chat composer:
-		     you write the rotation here, the timeline renders it above. Left
-		     margin aligns the box with the track area (right edge of portraits).
-		     ↻ TOOLBAR ROUND: the KQM/PNG pair that used to sit just outside the
-		     box is gone from here. Both are EXPORTS, and exports are one family
-		     with the share link — they live in band A's Share menu now, which
-		     reaches them through documentBar's exporter registration below.
-		     Splitting one family across the top and bottom corners of the same
-		     tool was the thing the round set out to stop. -->
-		<div class="rp-composer">
-			<div class="rp-notation-wrap">
-				<div class="rp-notation" use:mountEditor={notation}></div>
-			</div>
-		</div>
-
 		<!-- ── Character Source overlay ─────────────────────────────
 		     Non-modal, and a sibling of the frame's own rows so it covers
 		     EVERYTHING right of the portrait column — ruler strip, view
@@ -1603,6 +1587,40 @@
 		{/if}
 	</div>
 	<!-- /rp-frame -->
+
+	<!-- ── Composer ─────────────────────────────────────────────
+	     The notation input: you write the rotation here, the timeline renders
+	     it above.
+
+	     ↻ BREATHING-ROOM ROUND 2026-08-08: it is its own PANEL below the frame
+	     now, not the frame's bottom edge. The planner measured 2.1% bare scene
+	     inside its own bounding box — the tightest of the three tools — and it
+	     had exactly one honest split available, because the timeline really is
+	     one instrument and its lanes have to share a coordinate system. The
+	     composer was never part of that instrument: it is where you WRITE, and
+	     the frame is where you READ. Giving the seam TOOL_GUTTER of scene says
+	     so.
+
+	     It stays inside RotationTimeline rather than being hoisted to the page.
+	     Two things live up in .rp-root that it needs — --rp-chart-bg and
+	     --rp-line, which both the placeholder and the CodeMirror theme read —
+	     and the bench ribbon's dock spans the whole .tool-stack, so a composer
+	     outside the stack would stop the strip standing beside the whole tool
+	     object, which is the toolbar round's headline.
+
+	     `inert` while picking: the Source overlay bounds to the frame and used
+	     to cover the composer as part of it. It no longer reaches, so the
+	     "picking takes over the instrument" reading is asserted directly rather
+	     than by an accident of geometry.
+
+	     ↻ TOOLBAR ROUND: the KQM/PNG pair that used to sit just outside the box
+	     is gone from here. Both are EXPORTS, and exports are one family with the
+	     share link — they live in band A's Share menu now. -->
+	<div class="rp-composer frame" class:rp-composer--picking={sourceOpen} inert={sourceOpen}>
+		<div class="rp-notation-wrap">
+			<div class="rp-notation" use:mountEditor={notation}></div>
+		</div>
+	</div>
 
 	<!-- Constellation + refinement popovers now live inside SlotPortrait. -->
 
@@ -1651,7 +1669,11 @@
 		color: var(--text);
 		display: flex;
 		flex-direction: column;
-		gap: 0.6rem;
+		/* The tool's one interior rhythm ($lib/toolGutter). Was 0.6rem, back
+		   when the only thing this gap separated was the frame from a caption;
+		   the composer became a sibling panel in the breathing-room round and
+		   this is now a seam the reader actually looks at. */
+		gap: var(--tool-gutter);
 	}
 
 	/* ── Chart frame (timeline + external scrollbar) ─────────── */
@@ -1664,8 +1686,12 @@
 		background: var(--surface-raised);
 		border-radius: var(--r-sm);
 		/* --rp-frame-pad-x comes inline from FRAME_PAD_X (the dock's inset is
-		   measured against it, so it can't be a second literal here). */
-		padding: 10px var(--rp-frame-pad-x) 4px;
+		   measured against it, so it can't be a second literal here).
+		   ↻ 2026-08-08: the bottom goes 4px → 10px, symmetric with the top. The
+		   asymmetry existed only because the composer sat inside and brought its
+		   own 12/14px margins; with it out, 4px left the external scrollbar
+		   almost touching the frame's edge. */
+		padding: 10px var(--rp-frame-pad-x);
 		/* The frame BEGINS at the ribbon's right edge — but it is the TOOL
 		   STACK that puts it there now (toolbar round), so the bands above and
 		   the frame share one inset by construction rather than by two
@@ -2389,20 +2415,36 @@
 		letter-spacing: var(--ls-tight);
 	}
 
-	/* ── Composer (in-frame, bottom edge) ─────────────────────── */
-	/* Chat-composer register: a single-line notation box as its own inset
-	   well (darker-than-chart-ground + 1px three-state border = the
-	   textfield signal; bg/border styling lives in notationTheme — keep in
-	   lockstep), with the export pair (KQM, PNG) side-by-side just OUTSIDE
-	   it on the right — the send/submit position. It spans the frame's full
-	   width: the inset to the portrait column's right edge retired with the
-	   column itself. The vertical margins are its breathing room, deliberately
-	   more below. */
+	/* ── Composer (its own panel, below the frame) ────────────── */
+	/* Chat-composer register: a single-line notation box as its own inset well
+	   (darker-than-its-ground + 1px three-state border = the textfield signal;
+	   bg/border styling lives in notationTheme — keep in lockstep).
+
+	   ↻ 2026-08-08: a PANEL, not the frame's bottom edge. Its own ground, its
+	   own padding, TOOL_GUTTER of bare scene above it (.rp-root's gap). The
+	   12px/14px vertical margins are gone — they were breathing room improvised
+	   inside a box that had none to give, and the gutter is the spacing now. It
+	   takes the frame's own horizontal padding so the notation box still starts
+	   on the same x as the timeline's content above it (probe-frame-rework
+	   asserts that, and post-split it is a genuine CROSS-PANEL alignment check
+	   rather than the near-tautology it used to be). */
 	.rp-composer {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		margin: 12px 0 14px;
+		padding: 10px var(--rp-frame-pad-x);
+		border-radius: var(--r-sm);
+	}
+	/* Picking takes over the instrument. The Source overlay bounds to the frame
+	   and used to cover this as part of it; it no longer reaches, so the state
+	   is asserted rather than implied — `inert` in the markup kills interaction,
+	   this says so. Paint alpha, never element opacity (the WebKit law): the
+	   composer sits over the live scene. */
+	.rp-composer--picking {
+		background: color-mix(in srgb, var(--surface-raised) 45%, transparent);
+	}
+	.rp-composer--picking .rp-notation-wrap {
+		visibility: hidden;
 	}
 	/* ← Explore alternatives — the picker's own footer chip (tall-bench round:
 	   it used to dock in the label column, which the ribbon now owns at every
