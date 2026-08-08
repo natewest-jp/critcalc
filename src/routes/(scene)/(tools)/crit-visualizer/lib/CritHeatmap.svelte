@@ -716,7 +716,23 @@
 	   the shell at a clamped aspect; grid-centered so any letterbox is symmetric.
 	   Interior fill + the animated Dire conic border both come from .frame;
 	   the heatmap canvas fills the padding box opaquely, so no interior bg is needed. */
+	/* ⛔ THE ONE OPT-OUT FROM THE SHEER GROUND (2026-08-08). Every other .frame
+	   on the site paints --sheer-frame; this one stays opaque, for two reasons
+	   that both only apply here:
+
+	   1. It is the only .frame NESTED INSIDE A .panel (CritInstrument's
+	      .cv-heatmap-panel). Sheer would reveal that panel's paper ground, not
+	      the scene — a translucent dark over near-white, which is a muddy
+	      version of neither.
+	   2. The canvas below fillRects --frame-bg over this box every draw. So the
+	      plot area would stay solid while only the 1px of frame around it went
+	      translucent, which reads as a mis-drawn edge rather than as depth.
+
+	   Declared with the same specificity the global rule has, and it wins on
+	   source order via Svelte's scoping — but state it explicitly rather than
+	   relying on that. */
 	.cv-map-frame {
+		background: var(--frame-bg);
 		position: relative;
 		border-radius: var(--r-sm);
 		overflow: hidden;

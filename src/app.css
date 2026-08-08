@@ -45,7 +45,19 @@
 	   this wants TOOL_DIM, not a warmer wash.
 	   ⚠ NOT --ink. That token is dark ink on BRIGHT fills (8 other consumers,
 	   incl. the light context's promoted control ink); the two only looked
-	   alike. */
+	   alike.
+	   ↻ 2026-08-08 (breathing-room round): TOOL_DIM moved 0.75 → 0.85, so the
+	   measurements above are the 0.75 record and the CURRENT numbers are these.
+	   The wash's JOB changed — it no longer only recedes a backdrop the panels
+	   hide, it flattens one the panels now SHOW. A sheer frame inherits
+	   (1−--sheer-a) of the backdrop's own variation as variation in its own
+	   ground, and the composited backdrop spans ~9× in luminance across one
+	   viewport (deep sky 0.0095 vs. a lit plate 0.0867 at the old 0.75). At
+	   85% alpha over 0.75 that put ΔL 0.023 INSIDE a single panel — past the
+	   0.020 the probe allows, and within sight of the 0.040 that separates
+	   --surface from --surface-raised, i.e. a visible zone in one box. 0.85
+	   brings it under. Measured by scripts/probe-sheer-contrast.mjs, which is
+	   where to re-read these figures rather than trusting this comment. */
 	--scene-dim: #0b0902;
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
@@ -96,6 +108,45 @@
 	--surface-raised: #2e364b;
 	--border: #857971;
 	--frame-bg: #242c40;
+	/* ══ THE SHEER GROUND (⚓ NATE 2026-08-08 — breathing-room round) ═════════
+	   A frame's ground, gone translucent, so the world's texture comes through
+	   the surfaces that carry the least — Genshin lets text and banners sit
+	   right on its backdrop, and the tool frames are where we can afford it.
+
+	   ⚠ THE REFERENCE / PAINT SPLIT, which is the whole design of this token:
+	   --frame-bg stays OPAQUE and is what the frame READS AS; --sheer-frame is
+	   what the frame PAINTS. They are not the same job, and three consumers
+	   need the reference in a way a translucent value cannot serve —
+	     · CritHeatmap fillRects --frame-bg into a CANVAS. A canvas is opaque
+	       bitmap pixels; there is nothing behind it to show through.
+	     · timelineExport mirrors the resolved literal into the PNG, which has
+	       no scene behind it at all (and the mirror test enforces it).
+	     · --frame-line / --frame-line-quiet / --chart-* / --rp-grid / --rp-line
+	       all color-mix against it. A hairline mixed toward a TRANSLUCENT
+	       ground becomes a translucent hairline, which renders
+	       display-dependently on P3 — the dire-gradient lesson, restated as
+	       the compositing law below.
+	   So every derivation keeps mixing against --frame-bg and none of them
+	   change. What the knobs are tuned FOR is that the sheer paint composites
+	   to approximately --frame-bg anyway: the world adds GRAIN, not a color
+	   shift. If that stops being true — probe-sheer-contrast measures it — the
+	   answer is a new --frame-ground literal for the mixes, not alpha in this
+	   one.
+
+	   ⚠ alpha and TOOL_DIM MULTIPLY. The scene's share of the light behind a
+	   panel is (1−a)(1−dim) ≈ 2–3% at any pair that survives the probe's
+	   uniformity check. This is a texture in the ground, never a view through
+	   it, and that is the intent: "faded more so the stars aren't distracting."
+
+	   ⚠ It is PER CONTEXT, like --btn-face and for the same kind of reason. On
+	   paper the floor is hard: --text #765f4d over the darkest composited
+	   backdrop measures 4.51:1 at 83% and 4.37:1 at 80%, and buying 2% of
+	   contrast costs 17% of alpha. Paper's whole identity is being near-white;
+	   a 15% near-black wash walks it toward the gray the archetype pass
+	   deliberately abandoned. Light sits high and is nearly a no-op. */
+	--sheer-a: 85%; /* ⚓ NATE — the knob. Pair it with TOOL_DIM (transition.ts) */
+	--sheer-frame: color-mix(in srgb, var(--frame-bg) var(--sheer-a), transparent);
+	--sheer-raised: color-mix(in srgb, var(--surface-raised) var(--sheer-a), transparent);
 	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
 	   composer's well. Both tools used to declare this hex privately
 	   (--rp-line / --tb-line).
@@ -570,10 +621,25 @@
    text/borders and light-context DEFAULT text.
 
    Contexts NEST: a dark chart well inside a light panel re-declares on the
-   inner element and wins by inheritance. The alpha-compositing law stands —
-   every context ground is opaque; only the shell between panels is
-   transparent (the scene shows in the gaps, never through a surface. Mix
-   fills against the context's own ground, never against transparent). */
+   inner element and wins by inheritance.
+
+   THE ALPHA-COMPOSITING LAW, as amended 2026-08-08 (breathing-room round).
+   It used to read: "every context ground is opaque; only the shell between
+   panels is transparent (the scene shows in the gaps, never through a
+   surface)." One carve-out now, and it is deliberately narrow:
+
+     A FRAME'S GROUND MAY BE SHEER — the --sheer-* tokens, and nothing else.
+     Every mix DERIVED from that ground is still computed against the OPAQUE
+     --frame-bg, never against the sheer token.
+
+   That second sentence is the load-bearing half. --frame-bg remains the
+   REFERENCE ground (what a frame reads as) while --sheer-frame is only its
+   PAINT, so --frame-line, the chart inks, the canvas fill and the PNG mirror
+   are all untouched and the original reason for the law — a semi-transparent
+   line renders display-dependently on P3 — still holds everywhere it applied.
+   Nothing else moves: fills mix against the context's own ground as before,
+   panels and cards stay opaque, and alpha still lives in the PAINT and never
+   in element opacity. */
 .ctx-dark {
 	--frame-bg: #242c40; /* surface — the panel/chart ground ⚓ NATE 2026-08-05
 	   (#1c1a1a read too gray; the cool navy-slate is the chart dark) */
@@ -612,6 +678,13 @@
 	   carry the dark ground's plate onto paper. */
 	--btn-face: color-mix(in srgb, var(--neutral) 18%, var(--surface));
 	--btn-face-hover: color-mix(in srgb, var(--neutral) 28%, var(--surface));
+	/* Re-declared for the substituted-at-declaration law — :root's copies baked
+	   against :root's grounds, and while those happen to match this context's
+	   today, an unpinned derivation is exactly the bug that turned the
+	   Visualizers' chips gold. See the token block at :root for the design. */
+	--sheer-a: 85%; /* ⚓ NATE */
+	--sheer-frame: color-mix(in srgb, var(--frame-bg) var(--sheer-a), transparent);
+	--sheer-raised: color-mix(in srgb, var(--surface-raised) var(--sheer-a), transparent);
 	/* color, not just tokens: descendants inherit the COLOR PROPERTY from
 	   wherever it was last set (body, near-white) — re-declaring --text
 	   alone doesn't re-color text that never reads it below this element. */
@@ -654,6 +727,16 @@
 	/* The promoted control ink flips to the DARKEST thing this context owns —
 	   see --ink-active at :root for why it can't stay --text here. */
 	--ink-active: var(--ink);
+	/* PAPER SITS HIGH — the light context is nearly a no-op on purpose (see the
+	   token block at :root). --text #765f4d over the darkest composited backdrop
+	   measures 5.35:1 opaque, 4.94:1 here, and 4.51:1 at 83% — the floor. Below
+	   that it fails outright, and between 83% and 92% you buy 2% of contrast for
+	   17% of alpha. Paper's identity is being NEAR-WHITE; a heavier wash walks
+	   it toward the gray the archetype pass moved prose off. Character cards and
+	   .panel are always light, so this is also what keeps the roster solid. */
+	--sheer-a: 92%; /* ⚓ NATE — the floor is 83%, and 100% opts the context out */
+	--sheer-frame: color-mix(in srgb, var(--frame-bg) var(--sheer-a), transparent);
+	--sheer-raised: color-mix(in srgb, var(--surface-raised) var(--sheer-a), transparent);
 	/* ↻ 2026-08-05 (archetype consistency pass): the control fills follow the
 	   GROUND (the rule beside the accent zoning), and on paper they were still
 	   riding :root's --neutral #768093 — a mid COOL gray, which on a warm
@@ -1325,8 +1408,24 @@ img {
    perf audit F6. The lesson outlives the border: NEVER animate a paint
    property on a persistent surface. If a pulse is ever wanted here, animate
    the OPACITY of a stacked static ring, which is compositor-only.) */
+/* ⚠ THE SHEER GROUND (breathing-room round 2026-08-08). Two declarations, not
+   one: an engine without var() in color-mix()'s percentage slot drops the
+   second and paints TRANSPARENT rather than falling back to opaque. Same
+   fallback idiom --tool-pad-x uses for round(). See the --sheer-* block at
+   :root for the reference/paint split and the alpha↔TOOL_DIM pairing.
+
+   WHY THIS IS SAFE TO LEAVE ON EVERY .frame: any child that paints its own
+   ground covers it. Character cards, .panel, the chart wells, the atlas cards
+   are all opaque, so the world shows exactly where the frame is EMPTY — which
+   is where it was doing nothing anyway. The planner's frame is ~98% bare
+   ground; the Team Builder's roster is wall-to-wall cards and barely changes.
+   The effect sizes itself to how much of a surface was empty in the first
+   place, which is why it needs no per-surface tuning.
+
+   ⛔ ONE OPT-OUT: .cv-map-frame. See CritHeatmap. */
 .frame {
 	background: var(--frame-bg);
+	background: var(--sheer-frame);
 }
 
 /* ── Headings, labels, notes ──────────────────────────────────────────── */
@@ -1348,7 +1447,13 @@ img {
 	content: '';
 	flex: 1;
 	height: 2px;
-	background: color-mix(in srgb, var(--muted) 22%, transparent);
+	/* ↻ 2026-08-08: mixed against --frame-bg, not transparent. A kicker can now
+	   sit in a SHEER panel, where a 22%-alpha rule would composite against the
+	   scene instead of a ground — and the scene varies ~9× in luminance across
+	   one viewport, so the rule would shimmer along its own length. This is the
+	   compositing law's original clause doing exactly the job it was written
+	   for; it just had nothing to bite on until a ground went translucent. */
+	background: color-mix(in srgb, var(--muted) 22%, var(--frame-bg));
 }
 .title {
 	margin: 0;

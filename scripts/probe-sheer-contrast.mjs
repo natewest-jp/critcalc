@@ -79,8 +79,12 @@ const SEPARATION_MIN = 0.03;
  * whichever entry has cleared.
  */
 const KNOWN_SHORTFALL = {
-	'.rp-tick-label': '4.16:1 — --muted #a2968a on --surface-raised #2e364b (the ruler strip)',
-	'.rp-lane-name': '3.38:1 — the neutral lane ink on --rp-chart-bg #242c40'
+	// ✅ .rp-tick-label CLEARED by the sheer round itself — it measured 4.16:1
+	//    on the opaque tree and 4.55:1 once .rp-frame went sheer, because the
+	//    composited backdrop is darker than --surface-raised was. Entry deleted
+	//    rather than kept as a passing exception; that is the contract.
+	'.rp-lane-name':
+		'3.38:1 — the neutral lane ink on --rp-chart-bg #242c40 (an OPAQUE well, so sheer does not reach it)'
 };
 
 // ── colour helpers ────────────────────────────────────────────────────────

@@ -907,7 +907,7 @@
 				</div>
 				{@render spec(
 					'.frame',
-					'--frame-bg, no border (2026-08-07). ⚠️ This class covers TWO scales: a chart interior (here) is a well cut into a lighter frame, and a tool frame is the surface everything else sits on — neither had anything to be outlined against. NEVER animate a paint property on either (retired 2026-07-10, perf)'
+					'--sheer-frame, no border. ⚠️ SHEER since 2026-08-08 — it paints --frame-bg at --sheer-a over the live scene, so on a tool route the world grains through wherever the frame is empty (any child painting its own ground covers it, which is why panels and cards are unaffected). Here on the styleguide there is no scene behind it, so it reads as a slightly lighter frame — that is the specimen being honest, not a bug. ⚠️ This class covers TWO scales: a chart interior (here) is a well cut into a lighter frame, and a tool frame is the surface everything else sits on. NEVER animate a paint property on either (retired 2026-07-10, perf)'
 				)}
 			</div>
 		</div>
@@ -1170,6 +1170,34 @@
 			<div class="sg-law">
 				<h3>Color</h3>
 				<ul>
+					<li>
+						<strong
+							>A frame's ground may be SHEER; everything derived from it still mixes against the
+							opaque one.</strong
+						>
+						<span class="sg-badge sg-badge--trial">on trial</span> The alpha-compositing law used to
+						read "every context ground is opaque; the scene shows in the gaps, never through a
+						surface." One carve-out since 2026-08-08: a <code>.frame</code> paints
+						<code>--sheer-frame</code>, so the world's texture comes through the surfaces carrying
+						the least — the planner's frame is ~98% bare ground. The second half is the load-bearing
+						one. <code>--frame-bg</code> stays the <em>reference</em> ground (what a frame reads as)
+						and the sheer token is only its <em>paint</em>, so
+						<code>--frame-line</code>, the chart inks, CritHeatmap's canvas fill and the PNG
+						export's mirrored literal are all untouched — and the law's original reason, that a
+						semi-transparent line renders display-dependently on P3, still holds everywhere it
+						applied. Alpha still lives in the PAINT, never in element opacity.
+						<br />⚠ <code>--sheer-a</code> and <code>TOOL_DIM</code> are ONE decision. They
+						multiply: the scene's share of the light behind a panel is (1−a)(1−dim) ≈ 2–3%, a grain
+						in the ground rather than a view through it. And a sheer panel inherits (1−a) of the
+						backdrop's ~9× luminance spread as variation in its <em>own</em> ground — which is what
+						the dim exists to flatten, and what
+						<code>scripts/probe-sheer-contrast.mjs</code> fails on first. Contrast is not the gate;
+						uniformity is.
+						<br />⛔ One opt-out: <code>.cv-map-frame</code>. It is the only
+						<code>.frame</code> nested inside a <code>.panel</code>, so sheer would reveal paper
+						rather than scene — and its canvas paints the ground opaquely anyway, so only the 1px
+						around the plot would have gone translucent.
+					</li>
 					<li>
 						<strong>A context class comes with its ground.</strong> Declaring
 						<code>.ctx-light</code> re-points <em>every</em> role token, including

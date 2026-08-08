@@ -169,11 +169,32 @@ export const sceneOccluded = writable(false);
 export type SceneLayerKind = 'composition' | 'dim';
 
 /** Dim overlay opacity — the tool-over-scene treatment (⚓ NATE 2026-08-05):
- *  the scene dims under the tools through a semi-transparent INK wash (the
- *  .dim layer's background is var(--ink)); the world stays visible in the
+ *  the scene dims under the tools through a semi-transparent wash (the .dim
+ *  layer's background is var(--scene-dim)); the world stays visible in the
  *  panel gaps, just receded. 0 on the landing and static pages — the open
- *  world stays undimmed. The WAAPI ride animates this during ascend/descend. */
-export const TOOL_DIM = 0.75;
+ *  world stays undimmed. The WAAPI ride animates this during ascend/descend.
+ *
+ *  ↻ 2026-08-08 (breathing-room round, ⚓ NATE): 0.75 → 0.82, and it is now
+ *  HALF OF A PAIR — turn it together with --sheer-a in app.css.
+ *
+ *  The tool frames' grounds went sheer, so what is behind them stopped being
+ *  hidden and started being part of them. The composited backdrop spans ~9× in
+ *  luminance across one viewport (deep sky vs. a lit plate), and a sheer panel
+ *  inherits (1−alpha) of that spread as variation in its OWN ground: at alpha
+ *  0.80 over the old 0.75 that measured ΔL 0.040 — the same step that
+ *  separates --surface from --surface-raised, i.e. a visible zone inside a
+ *  single panel. Raising the dim flattens the backdrop before the panel
+ *  samples it.
+ *
+ *  ⚠ The cost is real and it is the gaps: bare scene between panels goes
+ *  darker in the same move, which is the thing the round is trying to reveal.
+ *  0.82/85% is the opening pair, not a settled answer.
+ *  ⚠ Raising this WITHOUT sheer just dims the world for nothing. They are one
+ *  decision.
+ *
+ *  probe-sheer-contrast measures the trade — its UNIFORMITY check is what
+ *  fails first, and it is the number this knob exists to move. */
+export const TOOL_DIM = 0.85;
 export const dimTarget = (path: string) => (isToolPath(path) ? TOOL_DIM : 0);
 
 // --- Transition clock --------------------------------------------------------
