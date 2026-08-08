@@ -62,3 +62,26 @@
  * two boxes of the same tool, and the two must not collapse to equal.
  */
 export const TOOL_GUTTER = 16;
+
+/**
+ * Bare scene between the bench ribbon's right edge and the tool beside it.
+ * ⚓ NATE — its own knob, because the ribbon is a different KIND of neighbour
+ * (site-persistent HUD, not part of this tool), but it starts on the rhythm.
+ *
+ * ↻ 2026-08-08: was 0 and lived in benchBand.svelte.ts. It shipped at 0 in the
+ * abutting round because the job there was to stop the two surfaces
+ * OVERLAPPING — two things that fade together must not composite the tool's
+ * ground twice — and tiling was the conservative way to prove they no longer
+ * did. Once a tool became a set of objects with the world running between them,
+ * the bench being the one seam with no world in it made it read as glued to the
+ * tool rather than standing beside it: the last edge of the upside-down U.
+ *
+ * ⚠ IT MOVED HERE BECAUSE PROBES HAVE TO READ IT. benchBand.svelte.ts is a
+ * RUNES module — Node's type stripping happily loads it and then dies on
+ * `$state is not defined`, so no probe can import anything from it, transitively
+ * or otherwise. A pure spacing number had no business living in a reactive-state
+ * module; the probe hitting that wall is the signal, not the problem.
+ * TOOL_INSET and everything that aligns to the seam still derive from it in
+ * benchBand, so this remains the only number to move.
+ */
+export const RIBBON_GAP = TOOL_GUTTER;

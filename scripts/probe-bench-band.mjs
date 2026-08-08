@@ -1,6 +1,7 @@
 // Bench-band smoke probe: docking geometry on RP + TB, the travel, and the
 // shared working team. Run from project root: node <path>/probe-band.mjs
 import { chromium } from 'playwright';
+import { RIBBON_GAP } from '../src/lib/toolGutter.ts';
 
 const BASE = 'http://localhost:4998';
 const SHOTS = process.env.SHOTS_DIR ?? '/tmp';
@@ -289,10 +290,17 @@ check(
 // The tuck-under zone is gone entirely (abutting round) — the frame starts at
 // the ribbon's right edge, so there is no column left inside it to reserve.
 check('TB bench zone is gone (no .bn)', tb.benchZoneExists === false, String(tb.benchZoneExists));
+// ↻ 2026-08-08: RIBBON_GAP of world between them, not adjacency — see the same
+// re-point in probe-bench-align. Asserting the gap against the constant still
+// catches an overlap (it would read negative) and additionally catches the seam
+// drifting off the tool's rhythm.
 check(
-	'TB frame begins at the ribbon’s right edge',
-	tb.frameRect && tb.bandRect && Math.abs(tb.frameRect.x - (tb.bandRect.x + tb.bandRect.w)) <= 1,
-	JSON.stringify({ frameX: tb.frameRect?.x, ribbonRight: tb.bandRect?.x + tb.bandRect?.w })
+	'TB surface begins exactly RIBBON_GAP right of the ribbon',
+	tb.frameRect && tb.bandRect && tb.frameRect.x - (tb.bandRect.x + tb.bandRect.w) === RIBBON_GAP,
+	JSON.stringify({
+		gap: tb.frameRect && tb.bandRect ? tb.frameRect.x - (tb.bandRect.x + tb.bandRect.w) : null,
+		expected: RIBBON_GAP
+	})
 );
 // The readout now picks up the frame's own left edge — the 2px it used to sit
 // UNDER the strip by (the .bn zone was pinned at 189 while RIBBON_CHROME went

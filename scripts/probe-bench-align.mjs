@@ -25,6 +25,7 @@
 // against the other tool. The zero tolerance is earned rather than inherited.
 import { chromium } from 'playwright';
 import { BAND_STACK_GAP } from '../src/lib/toolBands.ts';
+import { RIBBON_GAP } from '../src/lib/toolGutter.ts';
 
 const BASE = process.env.BASE ?? 'http://localhost:4998';
 const SHOTS = process.env.SHOTS_DIR ?? '.';
@@ -101,16 +102,23 @@ check(
 // Visualizers leg the two fade in lockstep, and any overlap composites the
 // tool's ground twice (that is the bug this arrangement fixes). The tab bar
 // carries the same inset, so it starts on the frame's edge too.
-check(
-	'RP: ribbon’s right edge meets its surface’s left edge',
-	rpSurface && rpBench && Math.abs(rpBench.right - rpSurface.x) <= 1,
-	`ribbon.right=${rpBench?.right} surface.x=${rpSurface?.x}`
-);
-check(
-	'TB: ribbon’s right edge meets its surface’s left edge',
-	tbSurface && tbBench && Math.abs(tbBench.right - tbSurface.x) <= 1,
-	`ribbon.right=${tbBench?.right} surface.x=${tbSurface?.x}`
-);
+// ↻ 2026-08-08: they no longer TOUCH. RIBBON_GAP shipped at 0 in the abutting
+// round because the job there was to stop the two surfaces overlapping, and
+// tiling was the conservative proof; it joins the tool's own rhythm now. So
+// assert the gap against the constant rather than asserting adjacency — which
+// is strictly stronger, since it still catches an overlap (negative gap) AND
+// catches the seam drifting off the rhythm in either direction.
+for (const [tool, bench, surface] of [
+	['RP', rpBench, rpSurface],
+	['TB', tbBench, tbSurface]
+]) {
+	check(
+		`${tool}: surface begins exactly RIBBON_GAP right of the ribbon`,
+		bench && surface && surface.x - bench.right === RIBBON_GAP,
+		`gap=${bench && surface ? surface.x - bench.right : '?'} expected=${RIBBON_GAP} ` +
+			`(ribbon.right=${bench?.right} surface.x=${surface?.x})`
+	);
+}
 // The bands carry the same inset as the frame they head — one padding-left on
 // the shared stack, so this guards the stack rather than reconciling two
 // declarations.

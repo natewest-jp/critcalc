@@ -137,7 +137,15 @@ const parseColor = (s) => {
 const SUBJECTS = [
 	['/rotation-planner', '.rp-frame', ['.rp-tick-label', '.rp-lane-name'], 'panel'],
 	['/rotation-planner', '.rp-composer', ['.cm-content'], 'panel'],
-	['/team-builder', '.tb-stack', ['.tb-atlas-lead', '.tb-atlas-cite'], 'scene']
+	['/team-builder', '.tb-stack', ['.tb-atlas-lead', '.tb-atlas-cite'], 'scene'],
+	// The band stack's tabs. Added while trialling a translucent band ground —
+	// which was reverted pending a mockup, but the SUBJECTS are worth keeping,
+	// because the trial found a 1.69:1 tab the moment band B's context flipped
+	// (near-white ink over a plate that stayed light) and nothing was watching
+	// this before. 'panel' while the bands are opaque; flip to 'scene' if a
+	// translucent ground lands.
+	['/team-builder', '.band-a', ['.tab'], 'panel'],
+	['/team-builder', '.band-b', ['.tab'], 'panel']
 ];
 // The crest pose is width-dependent (crestPose reads innerWidth) and
 // sideSign() puts the two tools over opposite sides of the world, so a
@@ -201,8 +209,22 @@ for (const width of WIDTHS) {
 			// ⚠ Descendants too: CodeMirror colours its own token spans, so
 			// transparent-ing the container alone leaves the glyphs painted and
 			// the probe measures the ink against itself at a convincing 1.00:1.
+			//
+			// ⚠ AND TRANSITIONS OFF, which is the subtler half. Controls animate
+			// `color` on hover/active, so the hide rule does not APPLY instantly —
+			// it starts a transition. Screenshot mid-flight and the computed
+			// colour is still rgba(13,13,15,0.98): the glyphs are painted, and the
+			// probe reads its own ink as ground. That is a tab's text baseline
+			// showing up as a "worst ground" of rgb(37,37,39) on a PAPER band, and
+			// a confident 1.27:1 for a run that actually measures ~19:1. Text with
+			// no transition (prose, CodeMirror) hides instantly, which is why this
+			// only surfaced once controls became subjects.
 			const hide = await page.addStyleTag({
-				content: `${scopeSel} ${ink.sel}, ${scopeSel} ${ink.sel} * { color: transparent !important }`
+				content:
+					`${scopeSel} ${ink.sel}, ${scopeSel} ${ink.sel} * {` +
+					` color: transparent !important;` +
+					` transition: none !important;` +
+					` animation: none !important; }`
 			});
 			const png = await raw(page);
 			await hide.evaluate((n) => n.remove());

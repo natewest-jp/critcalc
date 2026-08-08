@@ -25,7 +25,11 @@
  * band's footprint with them, and the band uses them as its resting rhythm.
  */
 
-import { BAND_STACK_TO_SURFACE } from './toolBands';
+// ⚠ Extensions are load-bearing on these two — see toolGutter.ts. This file is
+// a geometry module in the same family, and Node's native type stripping (what
+// scripts/probe-*.mjs run under) does no extension inference.
+import { BAND_STACK_TO_SURFACE } from './toolBands.ts';
+import { RIBBON_GAP } from './toolGutter.ts';
 
 export type BenchHostRegistration =
 	| {
@@ -149,13 +153,12 @@ export const RIBBON_W = BENCH_CARD_W + 2 * RIBBON_CHROME;
 export const FRAME_BORDER = 1;
 
 /**
- * ⚓ NATE 2026-08-07 — bare scene between the strip's right edge and the tool
- * beside it. 0 = they tile exactly, which is what the tuck-under used to look
- * like at rest. Raise it to let the world through between the two surfaces;
- * everything that aligns to the seam derives from TOOL_INSET, so this is the
- * only number to move.
+ * Bare scene between the strip's right edge and the tool beside it.
+ * ↻ 2026-08-08: the knob LIVES IN $lib/toolGutter now (a pure spacing number
+ * had no business in a runes module, and probes cannot import one at all —
+ * see the note there). Re-exported so existing callers are unaffected.
  */
-export const RIBBON_GAP = 0;
+export { RIBBON_GAP };
 
 /**
  * How far a benched tool's own surfaces — its tab row and its frame — start
