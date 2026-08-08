@@ -74,7 +74,9 @@ export function computeTeamFactionCounts(
  * Slots with no character (undefined) are skipped.
  */
 export function deriveTeamComposition(
-	chars: (CompositionFields | null | undefined)[]
+	// readonly: a pure derivation has no business demanding a mutable array,
+	// and its sibling deriveCoverage already takes one.
+	chars: readonly (CompositionFields | null | undefined)[]
 ): TeamComposition {
 	let natlanCount = 0;
 	let moonsignCount = 0;

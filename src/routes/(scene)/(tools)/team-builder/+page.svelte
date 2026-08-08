@@ -31,7 +31,8 @@
 	import type { GridFilters } from '$lib/characterFilters';
 	import DetailCard from './lib/DetailCard.svelte';
 	import CompareView from './lib/CompareView.svelte';
-	import TeamStrip from './lib/TeamStrip.svelte';
+	import TeamFacts from './lib/TeamFacts.svelte';
+	import CoveragePanel from './lib/CoveragePanel.svelte';
 	import AtlasView from './lib/AtlasView.svelte';
 	import {
 		buildRoleCards,
@@ -447,6 +448,19 @@
 	const rosterIds = new Set(roster.map((c) => c.id));
 	const teamSlots = $derived<TeamSlot[]>(rt.slots.map((id) => (id === 'blank' ? null : id)));
 
+	// The resolved team, and whether there IS one. Both used to live inside the
+	// TeamStrip; the breathing-room round split that component into two panels,
+	// and the presence test has to sit above BOTH of them — otherwise an empty
+	// team leaves two empty boxes and a gutter between them. Deriving `members`
+	// here also means the two panels share one lookup pass instead of each
+	// mapping the slots themselves.
+	// `?? null` normalizes the lookup's `undefined` (an id with no index entry)
+	// into the empty-slot representation, so the panels take one clean type.
+	const members = $derived<(CharacterIndexEntry | null)[]>(
+		teamSlots.map((id) => (id ? (getCharacterIndexEntry(id) ?? null) : null))
+	);
+	const filledCount = $derived(members.filter((m) => m != null).length);
+
 	// Rotation-Planner arrival: one alternatives row per filled slot.
 	const slotRows = $derived.by(() => buildSlotAlternativeRows(teamSlots, roster, rolesOf));
 
@@ -849,16 +863,23 @@
 {#snippet main()}
 	<!-- ── The tool frame: the browse zones inside ONE surface. Viewport-fit
 	     — the views scroll INSIDE it, the page never does. -->
-	<div class="tb-frame frame ctx-light">
-		<div class="tb-work">
-			<!-- What the team IS and what it COVERS — one horizontal readout above
-			     the roster the coverage gaps filter. -->
-			<TeamStrip
-				slots={teamSlots}
-				conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
-				onClear={() => rt.clearTeam()}
-				onFilterFacet={(f) => selectCapability(f)}
-			/>
+	<div class="tb-stack">
+		<!-- WHAT THE TEAM IS and WHAT IT COVERS — two panels, above the roster
+		     the coverage gaps filter. The gate is HERE rather than inside either
+		     component so an empty team costs no boxes and no gutter: four blank
+		     cards in the ribbon already say there is no team. -->
+		{#if filledCount > 0}
+			<div class="tb-head">
+				<TeamFacts {members} onClear={() => rt.clearTeam()} />
+				<CoveragePanel
+					{members}
+					conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
+					onFilterFacet={(f) => selectCapability(f)}
+				/>
+			</div>
+		{/if}
+
+		<div class="tb-frame frame ctx-light">
 			<section class="tb-source">
 				{#if sourceTab === 'atlas'}
 					<div class="tb-atlas">
@@ -1066,35 +1087,64 @@
 	   bench hold its edge at a fixed height instead of stickily chasing the
 	   scroll position. */
 
-	/* Radius per the 3/6/9 scale, matching .rp-frame. overflow:hidden clips the
-	   zones' square scroll boxes to the rounded corners; the SlotPortrait
-	   popovers are position:fixed, which a plain overflow clip does not catch. */
-	.tb-frame {
-		flex: 1;
-		min-height: 0;
-		display: flex;
-		flex-direction: row;
-		align-items: stretch;
-		border-radius: var(--r-sm);
-		overflow: hidden;
-		position: relative;
-	}
+	/* ── The surface: a COLUMN OF BOXES (breathing-room round 2026-08-08) ──
+	   The Team Builder used to be ONE frame with every zone packed inside it,
+	   which measured 6.7% bare scene inside its own bounding box against the
+	   Visualizers' 11.5% — the difference the round exists to close. It is a
+	   stack now: the team panels, then the browse frame, with TOOL_GUTTER of
+	   scene running between them.
 
-	/* The .bn bench zone is GONE (abutting round). It was the strip of frame
-	   that tucked under the ribbon — width reservation and nothing else once
-	   the tall-bench round moved the team facts out to the TeamStrip. The frame
-	   now starts where the ribbon ends, so there is no column to reserve, and
-	   the TeamStrip picks up the frame's own left edge. */
-
-	/* The work column: the team strip, then the browse zone under it. The
-	   strip must NOT scroll with the roster (its coverage chips drive the
-	   filters), so the scroll lives one level down, on .tb-source. */
-	.tb-work {
+	   ⚠ min-height: 0 IS LOAD-BEARING. This inserts a level into the fill chain
+	   (.tool-stack--fill → .tool-surface → .tool-columns → .tc-main → HERE →
+	   .tb-frame → .tb-source → .tb-roster → .cg-scroll), and a flex column that
+	   forgets it refuses to shrink below its content — which reproduces the
+	   2026-08-08 break exactly: the roster renders all ~122 cards at full
+	   height, .cg-scroll never bounds, and the SHELL scrolls instead. It reads
+	   almost right until you notice the filter column scrolling away with the
+	   tiles. probe-bench-align's bounded-scroller check is what catches it. */
+	.tb-stack {
 		flex: 1;
 		min-width: 0;
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
+		gap: var(--tool-gutter);
+	}
+
+	/* The team row: what the team IS (narrow) beside what it COVERS (wide).
+	   Content-height and never shrinks — the coverage chips wrap to a second
+	   line rather than squeezing, and the frame below takes the remainder.
+
+	   flex-start, not stretch: the two panels share a top edge and their bottoms
+	   are deliberately RAGGED. See TeamFacts for why — a one-chip panel
+	   stretched to a fifteen-chip one is three quarters hole. */
+	.tb-head {
+		flex-shrink: 0;
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		gap: var(--tool-gutter);
+	}
+
+	/* Radius per the 3/6/9 scale, matching .rp-frame. overflow:hidden clips the
+	   zones' square scroll boxes to the rounded corners; the SlotPortrait
+	   popovers are position:fixed, which a plain overflow clip does not catch.
+
+	   ↻ 2026-08-08: flex-direction row → COLUMN. The row was a leftover from the
+	   .bn bench zone, deleted in the abutting round; with the team panels gone
+	   from inside it the frame holds exactly one child, and .tb-work — a column
+	   wrapper that existed only to stack the strip above the source — went with
+	   them. Net depth is unchanged: this round adds .tb-stack and removes
+	   .tb-work, which is what keeps the fill chain the length it was. */
+	.tb-frame {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		border-radius: var(--r-sm);
+		overflow: hidden;
+		position: relative;
 	}
 
 	/* ── Source ───────────────────────────────────────────────── */
