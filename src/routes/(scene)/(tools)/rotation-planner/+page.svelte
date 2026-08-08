@@ -342,10 +342,16 @@
 {/snippet}
 
 <style>
+	/* Stack ↔ TeamBonusesBlock. DOUBLE the tool gutter, deliberately: this seam
+	   separates the tool from a caption ABOUT the tool, which is a bigger break
+	   than the one between two boxes of the same tool, and the hierarchy dies
+	   if the two land equal. It was clamp(16px, 2.5vw, 32px), which at wide
+	   widths already resolved to exactly this — the clamp only ever bit below
+	   ~1280, where it would now be tied with the gutter. */
 	.rotation-page {
 		display: flex;
 		flex-direction: column;
-		gap: clamp(16px, 2.5vw, 32px);
+		gap: calc(var(--tool-gutter) * 2);
 	}
 
 	/* ── Band B: the planner's VIEW controls ─────────────────────

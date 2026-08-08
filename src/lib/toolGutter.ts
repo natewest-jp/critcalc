@@ -61,4 +61,4 @@
  * tool from a caption about it, which is a bigger break than the one between
  * two boxes of the same tool, and the two must not collapse to equal.
  */
-export const TOOL_GUTTER = 8;
+export const TOOL_GUTTER = 16;
