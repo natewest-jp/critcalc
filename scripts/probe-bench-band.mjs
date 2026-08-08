@@ -214,12 +214,14 @@ const tb = await page.evaluate(() => {
 		ctx: band?.querySelector('.bb')?.className,
 		// Tall-bench round: the team readout left the bench column for a strip
 		// above the work zone (the ribbon spans the whole frame now).
-		// ↻ Breathing-room round 2026-08-08: that strip is `.tb-head`, a ROW OF
-		// TWO PANELS (what the team is · what it covers) sitting above the
-		// browse frame rather than inside it. Same invariant, same place on
-		// screen — only the box that carries it changed.
+		// ↻ 2026-08-08: the readout is `.tb-cover` — a full-width BANNER naming
+		// the coverage run, with the team's identity facts riding its far end,
+		// and the chips bare on the world beneath it. Same invariant and the
+		// same place on screen; the box that carries it has changed twice in a
+		// day (`.ts` → `.tb-head` → here) because the boxes are what the round
+		// keeps removing.
 		stripRect: (() => {
-			const r = document.querySelector('.tb-head')?.getBoundingClientRect();
+			const r = document.querySelector('.tb-cover')?.getBoundingClientRect();
 			return r ? { x: r.x, y: r.y, w: r.width } : null;
 		})(),
 		// Abutting round: the tuck-under zone is GONE, not merely empty.

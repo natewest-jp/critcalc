@@ -25,8 +25,15 @@
 
 <div class="rolecards">
 	{#each roleCards as card (card.category.key)}
+		<!-- ctx-light is CLAIMED now, not inherited. It used to come from the
+		     tool frame this sat inside; that frame is gone (2026-08-08) and the
+		     surface is the dark world, so a card that only painted
+		     --surface-raised would have flipped to navy. Cards stay light —
+		     Genshin's do — and a card is exactly the kind of small opaque object
+		     light is FOR on a dark ground. It paints its own ground below, which
+		     is what earns it the right to declare the context. -->
 		<button
-			class="rolecard"
+			class="rolecard ctx-light"
 			style:--role-bg="url({functionIcon(card.category.function, 'monotone')})"
 			onclick={() => onSelectCategory(card.category)}
 			aria-label="{card.category.label}: {card.providerCount} characters, {card.ownedCount} owned"

@@ -863,169 +863,188 @@
 
 <!-- ── The main column: the work frame ────────────────────────────────────── -->
 {#snippet main()}
-	<!-- ── The tool frame: the browse zones inside ONE surface. Viewport-fit
-	     — the views scroll INSIDE it, the page never does. -->
-	<div class="tb-stack">
+	<!-- ── THE SURFACE HAS NO FRAME (⚓ NATE 2026-08-08).
+	     The Team Builder used to be a full-width, full-height sheet of PAPER —
+	     the largest surface on the site wearing the treatment that, on a dark
+	     world, belongs to the narrowest. Genshin's rule, read off its own
+	     screens: light is for banners, buttons and cards; a field is the world
+	     itself. So the frame is gone and the content sits on the dimmed scene,
+	     with light kept for the character cards (which stay light — Genshin's
+	     are too) and for the section banners that name each run.
+
+	     .ctx-dark is CLAIMED rather than inherited, and that is honest here:
+	     at TOOL_DIM the crest is a dark ground, painted by the scene layer
+	     instead of by this element. See the amended law in app.css — the
+	     exception cuts one way only, because there is no light ground anywhere
+	     to inherit from. -->
+	<div class="tb-stack ctx-dark">
 		<!-- WHAT THE TEAM IS and WHAT IT COVERS — two panels, above the roster
 		     the coverage gaps filter. The gate is HERE rather than inside either
 		     component so an empty team costs no boxes and no gutter: four blank
 		     cards in the ribbon already say there is no team. -->
 		{#if filledCount > 0}
-			<div class="tb-head">
-				<TeamFacts {members} onClear={() => rt.clearTeam()} />
-				<CoveragePanel
-					{members}
-					conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
-					onFilterFacet={(f) => selectCapability(f)}
-				/>
-			</div>
+			<!-- ONE full-width banner, with the team's identity facts riding its
+			     far end — Genshin's "Opposing Lineup … [View Details]" shape. The
+			     two were side-by-side boxes for about an hour; with the boxes
+			     gone, a facts run capped at a third of the row just left the
+			     banner starting a third of the way in with dead scene beside it.
+			     A banner spans its column, or it isn't a banner. -->
+			<CoveragePanel
+				{members}
+				conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
+				onFilterFacet={(f) => selectCapability(f)}
+			>
+				{#snippet trailing()}
+					<TeamFacts {members} onClear={() => rt.clearTeam()} />
+				{/snippet}
+			</CoveragePanel>
 		{/if}
 
-		<!-- FILLS on Roster and Compare, ends at its content on the Atlas. The
-		     Atlas is four role cards (or ≤4 slot rows) and was running to the
-		     viewport floor with ~50px of dead paper under its own caption; the
-		     other two can be arbitrarily long AND the Roster's bounded scroller
-		     depends on this box having a definite height. So it is per-VIEW, not
-		     per-tool. ⚠ Never `max-height: 100%` here — a percentage against a
-		     flex-derived height is exactly the shape that silently failed on
-		     2026-08-08, and probe-bench-align's bounded-scroller check is what
-		     would catch it. -->
-		<div class="tb-frame frame ctx-light" class:tb-frame--fill={sourceTab !== 'atlas'}>
-			<section class="tb-source">
-				{#if sourceTab === 'atlas'}
-					<div class="tb-atlas">
-						{#if atlasMode === 'slots' && slotRows.length > 0}
-							<div class="tb-atlas-head">
-								<p class="tb-atlas-lead">
-									Alternatives for each character on your team — same element and role.
-								</p>
-								<button class="btn" onclick={backToCards}
-									>Browse all roles <Mark name="forward" /></button
-								>
-							</div>
-							{#each slotRows as row (row.slotEntry.id)}
-								<section class="tb-slotrow">
-									<header class="tb-slotrow-head">
-										{#if hasAvatar(row.slotEntry.id)}
-											<img
-												class="tb-slotrow-avatar"
-												src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
-												alt=""
-												loading="lazy"
-											/>
-										{:else}
-											<span class="tb-slotrow-initials"
-												>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
-											>
-										{/if}
-										<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
-										{#if row.slotRoles}
-											<span class="tb-slotrow-roles">
-												{#each row.slotRoles.position as p (p)}
-													<img
-														src={positionIcon(p, 'color')}
-														alt={POSITION_LABEL[p]}
-														title={POSITION_LABEL[p]}
-													/>
-												{/each}
-												{#each row.slotRoles.function as f (f)}
-													<img
-														src={functionIcon(f, 'color')}
-														alt={FUNCTION_LABEL[f]}
-														title={FUNCTION_LABEL[f]}
-													/>
-												{/each}
-											</span>
-										{/if}
-										<span class="tb-slotrow-count"
-											>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
-										>
-									</header>
-									{#if row.alternatives.length > 0}
-										<div class="tb-grid">
-											{#each row.alternatives as entry (entry.id)}
-												{@render charTile(entry, false)}
-											{/each}
-										</div>
+		<!-- .tb-frame is GONE — it existed only to supply a ground, a radius and
+		     a clip, and with no ground there is nothing to round or clip. The
+		     scroll zone below is the box now, one level shallower.
+
+		     FILLS on Roster and Compare, ends at its content on the Atlas. The
+		     Atlas is four role cards (or ≤4 slot rows); the other two can be
+		     arbitrarily long AND the Roster's bounded scroller depends on this
+		     having a definite height. So it is per-VIEW. ⚠ Never
+		     `max-height: 100%` here — a percentage against a flex-derived
+		     height is exactly the shape that silently failed on 2026-08-08, and
+		     probe-bench-align's bounded-scroller check is what catches it. -->
+		<section class="tb-source" class:tb-source--fill={sourceTab !== 'atlas'}>
+			{#if sourceTab === 'atlas'}
+				<div class="tb-atlas">
+					{#if atlasMode === 'slots' && slotRows.length > 0}
+						<div class="tb-atlas-head">
+							<p class="tb-atlas-lead">
+								Alternatives for each character on your team — same element and role.
+							</p>
+							<button class="btn" onclick={backToCards}
+								>Browse all roles <Mark name="forward" /></button
+							>
+						</div>
+						{#each slotRows as row (row.slotEntry.id)}
+							<section class="tb-slotrow">
+								<header class="tb-slotrow-head">
+									{#if hasAvatar(row.slotEntry.id)}
+										<img
+											class="tb-slotrow-avatar"
+											src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
+											alt=""
+											loading="lazy"
+										/>
 									{:else}
-										<p class="note tb-note">No same-element alternative in this role yet.</p>
-									{/if}
-								</section>
-							{/each}
-						{:else if atlasMode === 'drill' && drilledCategory}
-							<div class="tb-atlas-head">
-								<button class="btn" onclick={backToCards}><Mark name="back" /> All roles</button>
-								<div class="tb-drill-title">
-									{#if drilledCategory.position}
-										<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
-									{/if}
-									<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
-									<span>{drilledCategory.label}</span>
-								</div>
-							</div>
-							{#each drillRows as row (row.key)}
-								<section class="tb-slotrow">
-									<header class="tb-slotrow-head">
-										{#if row.kind === 'element'}
-											<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
-											<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
-										{:else}
-											<span class="tb-slotrow-name">{row.label}</span>
-										{/if}
-										<span class="tb-slotrow-count"
-											>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
+										<span class="tb-slotrow-initials"
+											>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
 										>
-									</header>
+									{/if}
+									<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
+									{#if row.slotRoles}
+										<span class="tb-slotrow-roles">
+											{#each row.slotRoles.position as p (p)}
+												<img
+													src={positionIcon(p, 'color')}
+													alt={POSITION_LABEL[p]}
+													title={POSITION_LABEL[p]}
+												/>
+											{/each}
+											{#each row.slotRoles.function as f (f)}
+												<img
+													src={functionIcon(f, 'color')}
+													alt={FUNCTION_LABEL[f]}
+													title={FUNCTION_LABEL[f]}
+												/>
+											{/each}
+										</span>
+									{/if}
+									<span class="tb-slotrow-count"
+										>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
+									>
+								</header>
+								{#if row.alternatives.length > 0}
 									<div class="tb-grid">
-										{#each row.entries as entry (entry.id)}
+										{#each row.alternatives as entry (entry.id)}
 											{@render charTile(entry, false)}
 										{/each}
 									</div>
-								</section>
-							{/each}
-							{#if drillRows.length === 0}
-								<p class="note tb-note">No curated providers in this role yet.</p>
-							{/if}
-						{:else}
-							<p class="tb-atlas-lead">
-								Browse by role — from Genshin's Imaginarium Theater classification.
-							</p>
-							<AtlasView {roleCards} onSelectCategory={openCategory} />
-							<p class="tb-atlas-cite">
-								Roles: Genshin Impact — Imaginarium Theater. A presence classification, not a
-								ranking.
-							</p>
+								{:else}
+									<p class="note tb-note">No same-element alternative in this role yet.</p>
+								{/if}
+							</section>
+						{/each}
+					{:else if atlasMode === 'drill' && drilledCategory}
+						<div class="tb-atlas-head">
+							<button class="btn" onclick={backToCards}><Mark name="back" /> All roles</button>
+							<div class="tb-drill-title">
+								{#if drilledCategory.position}
+									<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
+								{/if}
+								<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
+								<span>{drilledCategory.label}</span>
+							</div>
+						</div>
+						{#each drillRows as row (row.key)}
+							<section class="tb-slotrow">
+								<header class="tb-slotrow-head">
+									{#if row.kind === 'element'}
+										<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
+										<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
+									{:else}
+										<span class="tb-slotrow-name">{row.label}</span>
+									{/if}
+									<span class="tb-slotrow-count"
+										>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
+									>
+								</header>
+								<div class="tb-grid">
+									{#each row.entries as entry (entry.id)}
+										{@render charTile(entry, false)}
+									{/each}
+								</div>
+							</section>
+						{/each}
+						{#if drillRows.length === 0}
+							<p class="note tb-note">No curated providers in this role yet.</p>
 						{/if}
-					</div>
-				{/if}
+					{:else}
+						<p class="tb-atlas-lead">
+							Browse by role — from Genshin's Imaginarium Theater classification.
+						</p>
+						<AtlasView {roleCards} onSelectCategory={openCategory} />
+						<p class="tb-atlas-cite">
+							Roles: Genshin Impact — Imaginarium Theater. A presence classification, not a ranking.
+						</p>
+					{/if}
+				</div>
+			{/if}
 
-				<!-- ── Compare — a first-class center view, not an inspector: the shared
+			<!-- ── Compare — a first-class center view, not an inspector: the shared
 			     ruler gets the Source's full width, and the view works at every
 			     viewport (no dock breakpoint, no modal fallback). -->
-				{#if sourceTab === 'compare'}
-					{#if compareIds.size === 0}
-						<div class="tb-cmp-empty">
-							<p class="tb-cmp-empty-title">Nothing to compare yet.</p>
-							<p class="note">
-								Hover a character card in the Roster and press <strong>Compare</strong> — up to four characters
-								line up here on one shared time ruler.
-							</p>
-						</div>
-					{:else}
-						<CompareView
-							ids={[...compareIds]}
-							{conMode}
-							anchorId={anchorId ?? undefined}
-							onRemove={toggleCompare}
-							onCommit={anchorId ? commitAudition : undefined}
-							onClear={anchorId ? undefined : () => compareIds.clear()}
-							onCancelAudition={anchorId ? cancelAudition : undefined}
-							candidatesArea={anchorId ? auditionStrip : undefined}
-						/>
-					{/if}
+			{#if sourceTab === 'compare'}
+				{#if compareIds.size === 0}
+					<div class="tb-cmp-empty">
+						<p class="tb-cmp-empty-title">Nothing to compare yet.</p>
+						<p class="note">
+							Hover a character card in the Roster and press <strong>Compare</strong> — up to four characters
+							line up here on one shared time ruler.
+						</p>
+					</div>
+				{:else}
+					<CompareView
+						ids={[...compareIds]}
+						{conMode}
+						anchorId={anchorId ?? undefined}
+						onRemove={toggleCompare}
+						onCommit={anchorId ? commitAudition : undefined}
+						onClear={anchorId ? undefined : () => compareIds.clear()}
+						onCancelAudition={anchorId ? cancelAudition : undefined}
+						candidatesArea={anchorId ? auditionStrip : undefined}
+					/>
 				{/if}
+			{/if}
 
-				<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
+			<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
 				     remounting ~122 cards on every Atlas⇄Roster toggle was a visible
 				     stall in Safari 26.x, and keeping it warm makes the toggle instant
 				     in every browser.
@@ -1033,20 +1052,19 @@
 				     It is the surface's ASIDE now — its own dark box beside the frame
 				     with bare scene between them (see the rosterRail snippet below).
 				     What is left in here is the grid proper. -->
-				{#if rosterEverShown}
-					<div class="tb-roster" hidden={sourceTab !== 'roster'}>
-						<CharacterGrid
-							roster={split.matches}
-							{filters}
-							tile={rosterTile}
-							aboveGrid={rosterCount}
-							belowGrid={rosterStubs}
-							emptyMessage={rosterEmptyMessage}
-						/>
-					</div>
-				{/if}
-			</section>
-		</div>
+			{#if rosterEverShown}
+				<div class="tb-roster" hidden={sourceTab !== 'roster'}>
+					<CharacterGrid
+						roster={split.matches}
+						{filters}
+						tile={rosterTile}
+						aboveGrid={rosterCount}
+						belowGrid={rosterStubs}
+						emptyMessage={rosterEmptyMessage}
+					/>
+				</div>
+			{/if}
+		</section>
 	</div>
 {/snippet}
 
@@ -1122,60 +1140,28 @@
 		gap: var(--tool-gutter);
 	}
 
-	/* The team row: what the team IS (narrow) beside what it COVERS (wide).
-	   Content-height and never shrinks — the coverage chips wrap to a second
-	   line rather than squeezing, and the frame below takes the remainder.
-
-	   flex-start, not stretch: the two panels share a top edge and their bottoms
-	   are deliberately RAGGED. See TeamFacts for why — a one-chip panel
-	   stretched to a fifteen-chip one is three quarters hole. */
-	.tb-head {
-		flex-shrink: 0;
-		display: flex;
-		flex-direction: row;
-		align-items: flex-start;
-		gap: var(--tool-gutter);
-	}
-
-	/* Radius per the 3/6/9 scale, matching .rp-frame. overflow:hidden clips the
-	   zones' square scroll boxes to the rounded corners; the SlotPortrait
-	   popovers are position:fixed, which a plain overflow clip does not catch.
-
-	   ↻ 2026-08-08: flex-direction row → COLUMN. The row was a leftover from the
-	   .bn bench zone, deleted in the abutting round; with the team panels gone
-	   from inside it the frame holds exactly one child, and .tb-work — a column
-	   wrapper that existed only to stack the strip above the source — went with
-	   them. Net depth is unchanged: this round adds .tb-stack and removes
-	   .tb-work, which is what keeps the fill chain the length it was. */
-	.tb-frame {
-		min-height: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		border-radius: var(--r-sm);
-		overflow: hidden;
-		position: relative;
-	}
-	/* Roster + Compare only. The Roster's .cg-scroll resolves its bounds through
-	   this flex:1 — see the note at the markup, and the bounded-scroller check
-	   in probe-bench-align. */
-	.tb-frame--fill {
-		flex: 1;
-	}
-
 	/* ── Source ───────────────────────────────────────────────── */
-	/* The center zone: the scroll container all three views live in. Padding
-	   echoes .rp-frame's (10px 14px) — it belongs to the zone, not the frame,
-	   so the bench hairline can run the frame's full height. */
+	/* The scroll container all three views live in — and, since the frame went,
+	   the only box left in the main column. It has no ground: the content sits
+	   on the dimmed world.
+	   No horizontal padding either. That padding existed to hold content off a
+	   frame's edge; with no frame there is no edge, and zeroing it lines the
+	   cards and banners up with the band stack above rather than insetting them
+	   14px from it for no reason anyone could see. */
 	.tb-source {
-		flex: 1;
 		min-width: 0;
 		min-height: 0;
 		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
 		gap: 0.8rem;
-		padding: 10px 14px;
+		padding: 0;
+	}
+	/* Roster + Compare only. The Roster's .cg-scroll resolves its bounds through
+	   this flex:1 — see the note at the markup, and the bounded-scroller check
+	   in probe-bench-align. */
+	.tb-source--fill {
+		flex: 1;
 	}
 
 	.tb-tabgroup {
@@ -1328,10 +1314,19 @@
 		flex-direction: column;
 		gap: 0.8rem;
 	}
+	/* ⚠ ON THE SCENE, PROSE TAKES THE BRIGHT INK — not the muted rung.
+	   This was --muted, which is right for secondary text INSIDE a panel: the
+	   panel supplies a flat ground and its own hierarchy to be secondary within.
+	   On open ground there is neither. Measured, --muted's WORST pixel under
+	   this run came to 4.70:1 — it passes 4.5:1, with 0.2 to spare, against a
+	   backdrop that varies by ΔL 0.15 along the line. Genshin's on-backdrop
+	   prose is bright for exactly this reason; the dim rung is a panel
+	   affordance. Size comes up a step too: text on open ground carries no box
+	   to lend it presence, so it has to carry its own. */
 	.tb-atlas-lead {
 		margin: 0;
-		font-size: var(--fs-sm);
-		color: var(--muted);
+		font-size: var(--fs-md);
+		color: var(--text);
 	}
 	.tb-atlas-head {
 		display: flex;
@@ -1340,11 +1335,14 @@
 		gap: 1rem;
 		flex-wrap: wrap;
 	}
+	/* The citation stays the quiet voice — but --muted at 9px with an extra 0.8
+	   opacity on top was a footnote to a footnote, and none of that survives
+	   contact with a varying ground. Keeps --muted (it IS secondary), drops the
+	   opacity, and comes up to the smallest size that holds its own out here. */
 	.tb-atlas-cite {
 		margin: 0.2rem 0 0;
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-sm);
 		color: var(--muted);
-		opacity: 0.8;
 	}
 
 	/* ── RP-arrival slot rows ─────────────────────────────────── */

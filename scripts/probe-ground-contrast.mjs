@@ -119,13 +119,25 @@ const parseColor = (s) => {
 	return rgb;
 };
 
-// ── the subjects: [route, scope selector, text selectors within it] ───────
-// The scope is only a disambiguator for the text selectors — it is NOT assumed
-// to be a panel, which is the point: a scope may be a box or bare scene.
+// ── the subjects: [route, scope, text selectors, what the text sits ON] ───
+// The scope only disambiguates the text selectors; it is NOT assumed to be a
+// panel, which is the point — a run may sit on a box or on bare world.
+//
+// ⚠ `on` decides whether UNIFORMITY is a GATE or a READING, and the difference
+// is real rather than a convenience. A panel is a manufactured surface: it is
+// supposed to be flat, so any spread is a defect and ΔL .02 is a bug threshold.
+// The scene is terrain — it has stars in it, and a run laid across open ground
+// measures ΔL .10–.15 no matter what we do. Gating that would fail every scene
+// run forever, which is the same as having no probe.
+//
+// What actually protects legibility out there is CONTRAST, and it is already
+// the right shape for it: worst-PIXEL, not average, so "one word landed on a
+// star" is precisely what it catches. Uniformity on the scene is printed as a
+// reading because it is the number that says whether the dim wants shaping.
 const SUBJECTS = [
-	['/rotation-planner', '.rp-frame', ['.rp-tick-label', '.rp-lane-name']],
-	['/rotation-planner', '.rp-composer', ['.cm-content']],
-	['/team-builder', '.tb-stack', ['.tb-atlas-lead', '.tb-atlas-cite']]
+	['/rotation-planner', '.rp-frame', ['.rp-tick-label', '.rp-lane-name'], 'panel'],
+	['/rotation-planner', '.rp-composer', ['.cm-content'], 'panel'],
+	['/team-builder', '.tb-stack', ['.tb-atlas-lead', '.tb-atlas-cite'], 'scene']
 ];
 // The crest pose is width-dependent (crestPose reads innerWidth) and
 // sideSign() puts the two tools over opposite sides of the world, so a
@@ -140,7 +152,7 @@ for (const width of WIDTHS) {
 	page.on('pageerror', (e) => errs.push(e.message));
 	console.log(`\n── ${width}×1000 ───────────────────────────────────────────`);
 
-	for (const [route, scopeSel, textSels] of SUBJECTS) {
+	for (const [route, scopeSel, textSels, on] of SUBJECTS) {
 		await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle' });
 		// Past the tool-rest settle: the star clock is frozen and the dim has
 		// reached its resting opacity.
@@ -220,12 +232,21 @@ for (const width of WIDTHS) {
 
 			const Ls = under.map(okL);
 			const spread = Math.max(...Ls) - Math.min(...Ls);
-			check(
-				`${route} ${ink.sel}: ground under the run is UNIFORM (ΔL ≤ ${UNIFORMITY_MAX})`,
-				spread <= UNIFORMITY_MAX,
-				`ΔL=${spread.toFixed(4)} — some glyphs sit on a materially different colour ` +
-					`(on the scene: raise TOOL_DIM in transition.ts, or shape the scrim)`
-			);
+			if (on === 'panel') {
+				check(
+					`${route} ${ink.sel}: panel ground under the run is FLAT (ΔL ≤ ${UNIFORMITY_MAX})`,
+					spread <= UNIFORMITY_MAX,
+					`ΔL=${spread.toFixed(4)} — a panel is a manufactured surface; this is a defect in it`
+				);
+			} else {
+				// A reading, not a gate — see the SUBJECTS note. Worth watching: it
+				// is the number that says whether the dim wants shaping, and a
+				// sharp rise means new terrain has come up under a run.
+				console.log(
+					`  · ${route} ${ink.sel}: scene ground varies ΔL ${spread.toFixed(3)} under the run` +
+						` (contrast is the gate out here)`
+				);
+			}
 		}
 	}
 	await page.close();

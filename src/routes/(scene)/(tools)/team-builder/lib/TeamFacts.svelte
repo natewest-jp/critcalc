@@ -32,7 +32,7 @@
      the tool's whole thesis, had to shrink to 9px to fit beside them. They are
      two panels now (see CoveragePanel), and this is the narrow one: it sizes to
      its own content instead of competing for the row. -->
-<div class="tb-team frame ctx-light" aria-label="Team summary">
+<div class="tb-team" aria-label="Team summary">
 	<div class="ts-facts">
 		{#if resonance.needsFullTeam}
 			<span class="ts-resnote">resonance needs a full party of 4</span>
@@ -64,31 +64,22 @@
 </div>
 
 <style>
-	/* A panel now, not a strip: it wears .frame for its ground (and, from the
-	   sheer round, for the world's grain through it) instead of seaming itself
-	   to the zone below with a hairline.
+	/* ↻ 2026-08-08: NO BOX. These are two or three chips and a text button —
+	   the chips already carry their own fills, so a panel behind them was
+	   wrapping objects that did not need wrapping. They sit on the world now.
+	   (It was briefly a light panel; on a dark world, light belongs to banners,
+	   buttons and cards, never to a field — see app.css's amended law.)
 
-	   ONE ROW, HUGGING ITS CONTENT — not a column, and NOT stretched to the
-	   coverage panel's height. A full team usually has one or two resonance
-	   chips; stretched to match fifteen chips over two rows, this box was three
-	   quarters empty, and a mostly-empty box reads as a failed column rather
-	   than as air. Hugging turns the same emptiness into bare scene BELOW the
-	   panel, where it is slack in the composition instead of a hole in an
-	   object — which is the whole distinction the round is built on. (`.tb-head`
-	   aligns its children to flex-start for this; the two panels' tops line up,
-	   their bottoms are deliberately ragged.) */
+	   Still hugging its content, still capped at a third of the row: the
+	   coverage run beside it is the headline and must keep the width. */
+	/* Rides the coverage banner's far end, so it takes no width of its own and
+	   never wraps — the banner is one line. */
 	.tb-team {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		gap: 0.75rem;
-		/* Sizes to content, but never wider than a third of the row: the
-		   coverage panel beside it is the headline and must keep the width. */
-		flex: 0 1 auto;
-		max-width: 33%;
+		gap: 0.6rem;
 		min-width: 0;
-		padding: 0.6rem 0.75rem;
-		border-radius: var(--r-sm);
 	}
 
 	.ts-facts {

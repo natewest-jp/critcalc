@@ -7,8 +7,11 @@
 	let {
 		members,
 		conCapOf,
-		onFilterFacet
+		onFilterFacet,
+		trailing
 	}: {
+		/** Rides the banner's far end — the team's identity facts and Clear. */
+		trailing?: import('svelte').Snippet;
 		/** The working team, slot order preserved; null = an empty slot. */
 		members: readonly (CharacterIndexEntry | null)[];
 		/** Constellation cap per character under the active con mode. */
@@ -40,8 +43,11 @@
      The gaps are still FILTER DRIVERS — a `no` chip is a <button> that points
      the roster at whatever would fill it — which is why the panel wants to be
      directly above the roster rather than tucked into a band. -->
-<div class="tb-cover frame ctx-light">
-	<p class="kicker">Team covers</p>
+<div class="tb-cover">
+	<p class="banner">
+		Team covers
+		{#if trailing}<span class="banner-end">{@render trailing()}</span>{/if}
+	</p>
 	<div class="ts-coverage">
 		{#each coverage as c (c.facet)}
 			{#if c.state === 'no'}
@@ -61,16 +67,22 @@
 </div>
 
 <style>
+	/* ↻ 2026-08-08: NO BOX — a BANNER and then bare chips, which is the grammar
+	   the tools are moving to. The banner NAMES the run; the run sits on the
+	   world. Fifteen chips that each carry their own fill never needed a
+	   surface behind them, and putting one there is what made this read as a
+	   slab rather than as a list of states. */
 	.tb-cover {
 		display: flex;
 		flex-direction: column;
-		gap: 0.45rem;
-		/* Takes the row's slack — this is the wide one, and the reason
-		   TeamFacts caps itself at a third. */
-		flex: 1;
+		gap: 0.5rem;
+		/* ⚠ CONTENT HEIGHT. This was `flex: 1` to take the slack when it sat in
+		   a ROW beside TeamFacts; as a full-width child of the stack's COLUMN
+		   the same declaration made it grow vertically instead, swallowing
+		   175px of nothing between the chips and the Atlas. The axis changed
+		   under the property. */
+		flex: 0 0 auto;
 		min-width: 0;
-		padding: 0.6rem 0.75rem;
-		border-radius: var(--r-sm);
 	}
 
 	.ts-coverage {
@@ -94,17 +106,25 @@
 		letter-spacing: var(--ls-mid);
 		text-transform: uppercase;
 	}
-	/* Covered recedes, a GAP anchors: in the light context --text is the
-	   recessive prose voice and --muted the label anchor, so this pairing puts
-	   the actionable chip forward without a second color. */
+	/* COVERED RECEDES, A GAP ANCHORS — the intent is unchanged; the tokens had
+	   to flip to keep it.
+	   ⚠ 2026-08-08: this run moved from a light panel onto the dark world, and
+	   the old pairing INVERTED on the way. In .ctx-light, --text is the
+	   recessive prose brown and --muted the anchoring slate, so "covered =
+	   --text, gap = --muted" put the actionable chip forward. In .ctx-dark the
+	   ladder is the other way up: --text is bright parchment and --muted is the
+	   dim rung. Kept as-was, the checkmarks shouted and the gaps — the only
+	   chips you can click — sank into the scene.
+	   So: covered takes the DIM ink and barely any fill; a gap takes the bright
+	   ink on a parchment wash that reads as a plate against near-black. */
 	.ts-cov--yes {
-		color: var(--text);
-		background: color-mix(in srgb, var(--accent) 18%, transparent);
+		color: var(--muted);
+		background: var(--fill-rest);
 		cursor: help;
 	}
 	.ts-cov--no {
-		color: var(--muted);
-		background: var(--fill-rest);
+		color: var(--text);
+		background: color-mix(in srgb, var(--accent) 16%, transparent);
 		cursor: pointer;
 		transition:
 			background 150ms ease,
@@ -112,7 +132,7 @@
 	}
 	.ts-cov--no:hover {
 		color: var(--ink-active);
-		background: color-mix(in srgb, var(--accent) 16%, transparent);
+		background: color-mix(in srgb, var(--accent) 28%, transparent);
 	}
 	.ts-cov--unknown {
 		color: var(--el-geo-main, #ddb04a);
