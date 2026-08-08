@@ -193,8 +193,13 @@ const tb = await page.evaluate(() => {
 		visible: band && getComputedStyle(band).visibility === 'visible',
 		bandRect: b ? { x: b.x, y: b.y, w: b.width, h: b.height } : null,
 		anchorRect: a ? { x: a.x, y: a.y, w: a.width, h: a.height } : null,
+		// `.tool-surface`, not `.tb-frame` — same re-anchor as the RP block
+		// above, and the Atlas is what forces it: the browse frame ends at its
+		// CONTENT on that view (breathing-room round), so it is no longer the
+		// bottom of the tool object. The ribbon's dock spans the whole
+		// ToolStack, which is what the overhang is measured against.
 		frameRect: (() => {
-			const r = document.querySelector('.tb-frame')?.getBoundingClientRect();
+			const r = document.querySelector('.tool-surface')?.getBoundingClientRect();
 			return r ? { x: r.x, y: r.y, w: r.width, h: r.height } : null;
 		})(),
 		bandsRect: (() => {

@@ -302,7 +302,14 @@
 			<!-- The surface is TWO BOXES with a gap (aside-column round): the
 			     timeline, and — when something occupies it — the aside column. The
 			     bands above span both. -->
-			<ToolColumns {main} aside={asideOccupant ? asideColumn : undefined} />
+			<!-- asideBare only for the FILTERS: the rail paints its own groups, so
+			     the column is a gutter of objects. The NOTES keep the box — they
+			     are one continuous reading and would look shredded in rows. -->
+			<ToolColumns
+				{main}
+				aside={asideOccupant ? asideColumn : undefined}
+				asideBare={asideOccupant === 'filters'}
+			/>
 		{/snippet}
 	</ToolStack>
 

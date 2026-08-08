@@ -14,7 +14,8 @@
 
 	let {
 		main,
-		aside
+		aside,
+		asideBare = false
 	}: {
 		main: Snippet;
 		/**
@@ -23,6 +24,17 @@
 		 * visibility toggle, so a tool must not pass an empty snippet to "hide" it.
 		 */
 		aside?: Snippet;
+		/**
+		 * The aside is a GROUNDLESS gutter rather than a box (breathing-room
+		 * round, 2026-08-08). For occupants that are a LIST OF GROUPS rather than
+		 * one continuous reading: the filter rails paint their own sections, so
+		 * the column becomes objects-on-the-scene instead of sections-in-a-box.
+		 *
+		 * The planner's NOTES keep the box — they are one continuous reading and
+		 * would look shredded chopped into rows. So this is the occupant's call,
+		 * which is why it is a prop and not a rule.
+		 */
+		asideBare?: boolean;
 	} = $props();
 </script>
 
@@ -43,7 +55,9 @@
 		     A plain stretched flex child would do neither: its content height
 		     joins the row's max() and the surface grows to fit the notes. -->
 		<div class="tc-aside">
-			<div class="tc-aside-box ctx-dark">{@render aside()}</div>
+			<div class="tc-aside-box ctx-dark" class:tc-aside-box--bare={asideBare}>
+				{@render aside()}
+			</div>
 		</div>
 	{/if}
 </div>
@@ -90,5 +104,18 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
+	}
+
+	/* Groundless: the column stops being a box and becomes a gutter its occupant
+	   fills with its own objects. Keeps the context (the sections inside still
+	   read the dark palette) and keeps min-height/flex — it loses only the paint
+	   and the corner, since there is no longer an edge for a radius to round. */
+	.tc-aside-box--bare {
+		background: none;
+		border-radius: 0;
+		/* The clip existed to round the occupant's square scroll box. With no
+		   ground there is nothing to clip TO, and clipping here would eat the
+		   focus rings the rail's own gutter is there to protect. */
+		overflow: visible;
 	}
 </style>

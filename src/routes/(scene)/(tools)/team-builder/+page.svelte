@@ -855,7 +855,9 @@
 		<!-- Two boxes with a gap (aside-column round): the work frame, and — on
 		     the Roster only — the filter column beside it. Atlas and Compare have
 		     nothing to filter, so they get the full width. -->
-		<ToolColumns {main} aside={sourceTab === 'roster' ? rosterRail : undefined} />
+		<!-- asideBare: the rail paints its own groups, so the column is a gutter
+		     of objects rather than one box of sections. -->
+		<ToolColumns {main} aside={sourceTab === 'roster' ? rosterRail : undefined} asideBare />
 	{/snippet}
 </ToolStack>
 
@@ -879,7 +881,16 @@
 			</div>
 		{/if}
 
-		<div class="tb-frame frame ctx-light">
+		<!-- FILLS on Roster and Compare, ends at its content on the Atlas. The
+		     Atlas is four role cards (or ≤4 slot rows) and was running to the
+		     viewport floor with ~50px of dead paper under its own caption; the
+		     other two can be arbitrarily long AND the Roster's bounded scroller
+		     depends on this box having a definite height. So it is per-VIEW, not
+		     per-tool. ⚠ Never `max-height: 100%` here — a percentage against a
+		     flex-derived height is exactly the shape that silently failed on
+		     2026-08-08, and probe-bench-align's bounded-scroller check is what
+		     would catch it. -->
+		<div class="tb-frame frame ctx-light" class:tb-frame--fill={sourceTab !== 'atlas'}>
 			<section class="tb-source">
 				{#if sourceTab === 'atlas'}
 					<div class="tb-atlas">
@@ -1137,7 +1148,6 @@
 	   them. Net depth is unchanged: this round adds .tb-stack and removes
 	   .tb-work, which is what keeps the fill chain the length it was. */
 	.tb-frame {
-		flex: 1;
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
@@ -1145,6 +1155,12 @@
 		border-radius: var(--r-sm);
 		overflow: hidden;
 		position: relative;
+	}
+	/* Roster + Compare only. The Roster's .cg-scroll resolves its bounds through
+	   this flex:1 — see the note at the markup, and the bounded-scroller check
+	   in probe-bench-align. */
+	.tb-frame--fill {
+		flex: 1;
 	}
 
 	/* ── Source ───────────────────────────────────────────────── */
