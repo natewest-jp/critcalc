@@ -174,26 +174,23 @@ export type SceneLayerKind = 'composition' | 'dim';
  *  panel gaps, just receded. 0 on the landing and static pages — the open
  *  world stays undimmed. The WAAPI ride animates this during ascend/descend.
  *
- *  ↻ 2026-08-08 (breathing-room round, ⚓ NATE): 0.75 → 0.82, and it is now
- *  HALF OF A PAIR — turn it together with --sheer-a in app.css.
+ *  ↻ 2026-08-08 (⚓ NATE): 0.75 → 0.85, and the reason is a CHANGE OF JOB
+ *  rather than a tuning. This wash used to recede a backdrop the panels hid.
+ *  It is becoming the PAGE GROUND — the surface content sits directly on, with
+ *  no box between (Genshin's own idiom: a section banner, then bare text on
+ *  the world). 0.85 is where the crest reads as a ground rather than as
+ *  scenery: quiet enough to carry text, still plainly the world.
  *
- *  The tool frames' grounds went sheer, so what is behind them stopped being
- *  hidden and started being part of them. The composited backdrop spans ~9× in
- *  luminance across one viewport (deep sky vs. a lit plate), and a sheer panel
- *  inherits (1−alpha) of that spread as variation in its OWN ground: at alpha
- *  0.80 over the old 0.75 that measured ΔL 0.040 — the same step that
- *  separates --surface from --surface-raised, i.e. a visible zone inside a
- *  single panel. Raising the dim flattens the backdrop before the panel
- *  samples it.
+ *  ⚠ It arrived during the sheer-ground experiment, which is retired — sheer
+ *  panels were a middle that turned out not to be a place (2–3% of scene light
+ *  through a surface reads as a duller colour, not as translucency). The DIM
+ *  survives that retirement on its own merit, which is why it is declared here
+ *  with its own rationale instead of riding along with a token that is gone.
  *
- *  ⚠ The cost is real and it is the gaps: bare scene between panels goes
- *  darker in the same move, which is the thing the round is trying to reveal.
- *  0.82/85% is the opening pair, not a settled answer.
- *  ⚠ Raising this WITHOUT sheer just dims the world for nothing. They are one
- *  decision.
- *
- *  probe-sheer-contrast measures the trade — its UNIFORMITY check is what
- *  fails first, and it is the number this knob exists to move. */
+ *  ⚠ Uniform, for now. Genshin vignettes hard — darkest exactly where the text
+ *  is, decoration pushed to the edges — and once content lives on the world
+ *  that shaping is what buys legibility. A shaped scrim is the open question
+ *  here, not a higher number. */
 export const TOOL_DIM = 0.85;
 export const dimTarget = (path: string) => (isToolPath(path) ? TOOL_DIM : 0);
 

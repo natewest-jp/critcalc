@@ -1682,14 +1682,8 @@
 	.rp-frame {
 		/* The frame wears the dark context's RAISED rung; the chart well sits
 		   one rung deeper on --rp-chart-bg (= the context surface). Overrides
-		   the shared .frame background (Genshin-UI archetype, 2026-08-05).
-		   ↻ 2026-08-08: and therefore has to opt INTO sheer itself. A Svelte
-		   scoped selector resolves at (0,2,0) and beats the global .frame at
-		   (0,1,0) regardless of source order — so a component that declares its
-		   own background silently keeps it while every other .frame goes sheer.
-		   The --raised rung, matching the ground this overrides to. */
+		   the shared .frame background (Genshin-UI archetype, 2026-08-05). */
 		background: var(--surface-raised);
-		background: var(--sheer-raised);
 		border-radius: var(--r-sm);
 		/* --rp-frame-pad-x comes inline from FRAME_PAD_X (the dock's inset is
 		   measured against it, so it can't be a second literal here).
