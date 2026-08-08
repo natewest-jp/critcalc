@@ -10,7 +10,21 @@
 // BAND_STACK_TO_SURFACE below the stack top BY CONSTRUCTION — this probe now
 // guards that the construction holds rather than that two numbers were tuned
 // to match. The old --tb-tabrow-gap is gone.
+//
+// ↻ BREATHING-ROOM ROUND 2026-08-08: every geometry assertion re-anchors from
+// `.rp-frame`/`.tb-frame` onto `.tool-SURFACE`. The invariant was never about
+// the frames — the note above says so: what ToolStack guarantees is where the
+// SURFACE begins, and the frame merely happened to be the surface's only
+// child. It isn't any more (the TB's surface leads with a panel row), so a
+// frame-anchored check would silently start measuring a different distance.
+// `.tool-surface` is the element the construction actually owns.
+//
+// The stack-top→surface check is also STRONGER now: with both sides anchored
+// on ToolStack's own elements it reduces to `surface.y - bands.bottom ===
+// BAND_STACK_GAP` per tool, asserted against the constant itself rather than
+// against the other tool. The zero tolerance is earned rather than inherited.
 import { chromium } from 'playwright';
+import { BAND_STACK_GAP } from '../src/lib/toolBands.ts';
 
 const BASE = process.env.BASE ?? 'http://localhost:4998';
 const SHOTS = process.env.SHOTS_DIR ?? '.';
@@ -49,7 +63,7 @@ await page.goto(`${BASE}/rotation-planner`, { waitUntil: 'networkidle' });
 const rpBands = await box('.bands');
 const rpBandA = await box('.band-a');
 const rpBandB = await box('.band-b');
-const rpFrame = await box('.rp-frame');
+const rpSurface = await box('.tool-surface');
 // Abutting round: the bench IS the ribbon, standing beside the frame rather
 // than over a reserved column inside it. Both tools are measured the same way.
 const rpBench = await box('.bench-band-mount .bb');
@@ -57,7 +71,7 @@ const rpBench = await box('.bench-band-mount .bb');
 // docked over the label column — same geometry, different owner.
 const rpCard = await box('.bench-band-mount .sp-card');
 console.log('RP bands       ', rpBands);
-console.log('RP frame       ', rpFrame);
+console.log('RP surface     ', rpSurface);
 console.log('RP ribbon      ', rpBench);
 console.log('RP first card  ', rpCard);
 
@@ -66,21 +80,21 @@ await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
 const tbBands = await box('.bands');
 const tbBandA = await box('.band-a');
 const tbBandB = await box('.band-b');
-const tbFrame = await box('.tb-frame');
+const tbSurface = await box('.tool-surface');
 const tbBench = await box('.bench-band-mount .bb');
 const tbCard = await box('.bench-band-mount .sp-card');
 console.log('\nTB bands       ', tbBands);
-console.log('TB frame       ', tbFrame);
+console.log('TB surface     ', tbSurface);
 console.log('TB ribbon      ', tbBench);
 console.log('TB first card  ', tbCard);
 
 console.log('');
-// The headline: the two frames start at the same y, so the pan reads as one
-// surface sliding past another rather than two panels at different heights.
+// The headline: both tools' surfaces start at the same y, so the pan reads as
+// one surface sliding past another rather than two panels at different heights.
 check(
-	'frame tops align across the RP↔TB seam',
-	rpFrame && tbFrame && Math.abs(rpFrame.y - tbFrame.y) <= 1,
-	`rp=${rpFrame?.y} tb=${tbFrame?.y}`
+	'surface tops align across the RP↔TB seam',
+	rpSurface && tbSurface && Math.abs(rpSurface.y - tbSurface.y) <= 1,
+	`rp=${rpSurface?.y} tb=${tbSurface?.y}`
 );
 // ABUTTING (⚓ NATE 2026-08-07): the ribbon ends exactly where the frame
 // begins — RIBBON_GAP apart, 0 by default. They must TILE, never overlap: on a
@@ -88,27 +102,27 @@ check(
 // tool's ground twice (that is the bug this arrangement fixes). The tab bar
 // carries the same inset, so it starts on the frame's edge too.
 check(
-	'RP: ribbon’s right edge meets its frame’s left edge',
-	rpFrame && rpBench && Math.abs(rpBench.right - rpFrame.x) <= 1,
-	`ribbon.right=${rpBench?.right} frame.x=${rpFrame?.x}`
+	'RP: ribbon’s right edge meets its surface’s left edge',
+	rpSurface && rpBench && Math.abs(rpBench.right - rpSurface.x) <= 1,
+	`ribbon.right=${rpBench?.right} surface.x=${rpSurface?.x}`
 );
 check(
-	'TB: ribbon’s right edge meets its frame’s left edge',
-	tbFrame && tbBench && Math.abs(tbBench.right - tbFrame.x) <= 1,
-	`ribbon.right=${tbBench?.right} frame.x=${tbFrame?.x}`
+	'TB: ribbon’s right edge meets its surface’s left edge',
+	tbSurface && tbBench && Math.abs(tbBench.right - tbSurface.x) <= 1,
+	`ribbon.right=${tbBench?.right} surface.x=${tbSurface?.x}`
 );
 // The bands carry the same inset as the frame they head — one padding-left on
 // the shared stack, so this guards the stack rather than reconciling two
 // declarations.
 check(
-	'RP band stack starts on its frame’s left edge',
-	rpFrame && rpBands && Math.abs(rpBands.x - rpFrame.x) <= 1,
-	`bands.x=${rpBands?.x} frame.x=${rpFrame?.x}`
+	'RP band stack starts on its surface’s left edge',
+	rpSurface && rpBands && Math.abs(rpBands.x - rpSurface.x) <= 1,
+	`bands.x=${rpBands?.x} surface.x=${rpSurface?.x}`
 );
 check(
-	'TB band stack starts on its frame’s left edge',
-	tbFrame && tbBands && Math.abs(tbBands.x - tbFrame.x) <= 1,
-	`bands.x=${tbBands?.x} frame.x=${tbFrame?.x}`
+	'TB band stack starts on its surface’s left edge',
+	tbSurface && tbBands && Math.abs(tbBands.x - tbSurface.x) <= 1,
+	`bands.x=${tbBands?.x} surface.x=${tbSurface?.x}`
 );
 // ABUTTING TIERS: band B begins exactly where band A ends. They are ONE object
 // — the outer radius is clipped on the stack, and any gap between them would
@@ -138,11 +152,20 @@ for (const [tool, bands, bench] of [
 }
 // Both tools' stacks must be identical in height above the surface, or the
 // ribbon's head (RIBBON_HEAD) is right for one tool and wrong for the other.
-check(
-	'both tools put the same distance between the stack top and the surface',
-	rpBands && tbBands && rpFrame && tbFrame && rpFrame.y - rpBands.y === tbFrame.y - tbBands.y,
-	`rp=${rpFrame && rpBands ? rpFrame.y - rpBands.y : '?'} tb=${tbFrame && tbBands ? tbFrame.y - tbBands.y : '?'}`
-);
+// Asserted against the CONSTANT rather than against the other tool: with both
+// sides anchored on ToolStack's own elements, "the same distance" reduces to
+// "exactly BAND_STACK_GAP", and checking the source of truth catches the case
+// where both tools drift together.
+for (const [tool, bands, surface] of [
+	['RP', rpBands, rpSurface],
+	['TB', tbBands, tbSurface]
+]) {
+	check(
+		`${tool}: surface begins exactly BAND_STACK_GAP below the band stack`,
+		bands && surface && surface.y - bands.bottom === BAND_STACK_GAP,
+		`gap=${bands && surface ? surface.y - bands.bottom : '?'} expected=${BAND_STACK_GAP}`
+	);
+}
 // The SHARED card must render at the SAME width in both tools — one component
 // in one strip now, so this is a regression guard rather than a reconciliation.
 check(
@@ -160,7 +183,6 @@ check(
 	}),
 	'the TB page should not scroll'
 );
-
 // The slot card must FIT its zone. `.bn` is a grid, so `.bn-slots` carries
 // min-width:auto and cannot shrink below min-content — if the card's widest
 // band (the base row: action · loadout pill · action) outgrows the content
@@ -194,6 +216,43 @@ check(
 	filledCard.card <= filledCard.inner && emptyCard.card === filledCard.card,
 	`empty=${emptyCard.card} filled=${filledCard.card} zone=${filledCard.inner} ` +
 		`(widen LABEL_W / RIBBON_PAD, or shrink the base row)`
+);
+
+// ⚠ THE FILL CHAIN, ASSERTED DIRECTLY (breathing-room round 2026-08-08).
+//
+// The viewport-fit check above is NECESSARY BUT NOT SUFFICIENT, and we know
+// that the hard way: on 2026-08-08 `.tool-stack--fill` was `height: 100%`,
+// which silently never resolved (a percentage height needs a definite parent,
+// and `.tool-main` is min-height). The Roster rendered all ~122 cards at full
+// height (~5.8k px), `.cg-scroll` never engaged, and the SHELL scrolled
+// instead — which reads almost the same until you notice the filter column
+// scrolling away with the tiles. The check above passed throughout, because
+// the PAGE genuinely does not scroll in that state. See ToolStack.svelte's
+// --fill comment for the full post-mortem.
+//
+// So assert the chain's OUTCOME instead of its symptom. With 122 characters a
+// RESOLVED bounded scroller MUST overflow its own box and MUST end inside the
+// viewport; an unresolved one grows to fit its content and does neither. Every
+// link from `.tool-stack--fill` down to `.cg-scroll` is covered by this one
+// check, which is why it is worth more than any assertion about a single
+// element's computed height. Any round that inserts a level into that chain
+// (this one inserts `.tb-stack`) is exactly what it exists to catch.
+await page.goto(`${BASE}/team-builder`, { waitUntil: 'networkidle' });
+await page.click('.band-b .tab:has-text("Roster")');
+await page.waitForSelector('.cg-scroll');
+await page.waitForTimeout(400);
+check(
+	'TB roster scroller is BOUNDED (the whole fill chain resolved)',
+	await page.evaluate(() => {
+		const s = document.querySelector('.cg-scroll');
+		if (!s) return false;
+		return (
+			s.scrollHeight > s.clientHeight + 1 &&
+			s.getBoundingClientRect().bottom <= window.innerHeight + 1
+		);
+	}),
+	'the roster grew instead of scrolling — a min-height:0 / flex:1 link is missing ' +
+		'somewhere between .tool-stack--fill and .cg-scroll'
 );
 
 await page.screenshot({ path: `${SHOTS}/bench-align-tb.png` });
