@@ -625,9 +625,16 @@
 	/* ↻ 2026-08-01 lightness-structure round: the TOP of the selection ladder.
 	   Genshin's Stygian sidebar selects its row with a beige plate + dark ink
 	   on an otherwise dark screen — the selected thing is the BRIGHTEST thing.
-	   --sel-surface/--sel-ink are that idiom, piloted on the top-level tool
-	   tab strips and the Help chapter nav; selection stays accent everywhere
-	   else. ↻ 2026-08-05: the plate is the archetype's hinge beige (was
+	   --sel-surface/--sel-ink are that idiom; selection stays accent everywhere
+	   else.
+	   ↻ 2026-08-10: the pilot MOVED rather than grew. It left the document tabs
+	   (band A), where every neighbour became glass and the one lit plate pulled
+	   the eye off the tool — those select by DENSITY now, an opaque slate among
+	   panes. It landed on the Team Builder's Atlas/Roster/Compare plate, which
+	   is a better fit for what the idiom is FOR: Genshin lights the selected
+	   row of a NAVIGATION, not of a document list. Two consumers now, both
+	   navigations — this and the Help chapter nav.
+	   ↻ 2026-08-05: the plate is the archetype's hinge beige (was
 	   gilt-soft #ede8de — gilt retired). Neither side is --accent-derived,
 	   so no per-context re-declaration is needed.
 	   ↻ 2026-08-09: onto the ramp as --gold-300, which is where the hinge beige
