@@ -157,6 +157,7 @@
 		['chips', 'Chips & tabs'],
 		['booleans', 'Toggles'],
 		['surfaces', 'Surfaces'],
+		['insets', 'Inset borders'],
 		['marks', 'Marks'],
 		['bands', 'Tool bands'],
 		['migration', 'Exceptions'],
@@ -910,6 +911,49 @@
 					'--frame-bg, no border (2026-08-07). ⚠️ This class covers TWO scales: a chart interior (here) is a well cut into a lighter frame, and a tool frame is the surface everything else sits on — neither had anything to be outlined against. NEVER animate a paint property on either (retired 2026-07-10, perf)'
 				)}
 			</div>
+		</div>
+	</section>
+
+	<!-- ══════════════════════════════════════════════════════ INSET BORDERS ══ -->
+	<section id="insets">
+		<h2>Inset borders <span class="sg-badge sg-badge--trial">on trial</span></h2>
+		<p class="sg-note">
+			⚓ <strong>Nate asked to see options.</strong> Genshin puts almost no line on the
+			<em>outside</em>
+			of a panel — the line lives inside, set in from the edge, reading as ornament rather than as the
+			box's own outline. That is why our
+			<a href="#laws">edge borders could retire to nothing</a> without the surfaces falling apart.
+			Until now the bench ribbon had the only inset border in the system; these are four more to
+			reach for. <strong>Nothing wears one yet</strong> — pick, and they get applied.
+		</p>
+		<p class="sg-note">
+			Each is a single <code>::after</code> on the host (<code>--double</code> also uses
+			<code>::before</code>) — no wrapper elements, no layout cost. Add
+			<code>.inset .inset--x</code>; the host needs <code>position: relative</code> and a free
+			pseudo. Inset distance is <code>--frame-inset</code> (7px); each variant exposes its own shape knob.
+		</p>
+		<p class="sg-note">
+			⛔ Fable's reference pairs the inset with <em>edge borders reserved for SELECTION</em> (gold =
+			selected, green = confirmed). <strong>Not adopted</strong> — ⚓ Nate: edge borders retire almost
+			entirely unless something compelling turns up. Recorded here so the idea isn't lost.
+		</p>
+
+		<div class="sg-grid sg-grid--insets">
+			{#each [['plain', 'plain', 'One hairline, set in. The undecorated baseline — if only one of these survives, it should probably be this.'], ['corners', 'corners', 'Four L-brackets, the runs left open. Genshin’s most common ornament, and the least ink for the most "framed". Arm length = --inset-arm (18px).'], ['notched', 'notched', 'Bevelled octagon — corners cut, not rounded. The only one that is PAINTED rather than bordered (a clip-path over a bordered box leaves the diagonals unstroked). Bevel = --inset-notch (10px).'], ['capped', 'capped', 'The line breaks across the top for a title to sit in. The one structural member: it lets a heading belong to the frame instead of floating above it. Gap = --inset-cap (16% each side).'], ['double', 'double', '⚓ Nate’s mockup — two strokes on ONE box, differing only in corner radius, so the wide arc cuts the tight corner. Already shipped on the bench ribbon, which keeps its own copy (its radii are tuned to its geometry).']] as [mod, label, blurb] (mod)}
+				<div class="sg-cell">
+					<div class="sg-stage sg-stage--block">
+						<div class="sg-inset-demo ctx-dark inset inset--{mod}">
+							<span>ctx-dark</span>
+						</div>
+					</div>
+					<div class="sg-stage sg-stage--block sg-stage--world">
+						<div class="sg-inset-demo ctx-glass inset inset--{mod}">
+							<span>ctx-glass</span>
+						</div>
+					</div>
+					{@render spec(`.inset.inset--${label}`, blurb)}
+				</div>
+			{/each}
 		</div>
 	</section>
 
@@ -2046,6 +2090,36 @@
 
 	.sg-stage--block {
 		display: block;
+	}
+
+	/* A stand-in for the world behind a glass surface. This page renders on the
+	   bare root layout — no scene, no scrim — so the translucency would read as
+	   "slightly wrong navy" with nothing behind it. The gradient plus a sparse
+	   dot field is enough to see THROUGH the material, which is the only thing
+	   this stage has to prove. It is not a preview of the real backdrop. */
+	.sg-stage--world {
+		background:
+			radial-gradient(circle at 22% 34%, #fff 0 0.7px, transparent 1px),
+			radial-gradient(circle at 63% 18%, #ffd8a8 0 0.9px, transparent 1.2px),
+			radial-gradient(circle at 81% 72%, #c0d8ff 0 0.8px, transparent 1.1px),
+			radial-gradient(circle at 41% 81%, #fff 0 0.6px, transparent 1px),
+			linear-gradient(160deg, #1f2a48 0%, #0a0e1a 70%);
+	}
+
+	.sg-grid--insets {
+		grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+	}
+
+	.sg-inset-demo {
+		display: grid;
+		place-items: center;
+		height: 104px;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+		color: var(--muted);
+		font-size: var(--fs-xs);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
 	}
 
 	.sg-spec {
