@@ -1,17 +1,17 @@
 <script lang="ts">
 	import Mark from '$lib/components/Mark.svelte';
-	import { deriveCoverage } from './team';
+	import { elementIcon } from '$lib/data/elementIcons.generated';
+	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
+	import { deriveTeamComposition } from '$lib/utils/teamComposition';
+	import { deriveCoverage, deriveResonances } from './team';
 	import type { FacetKey } from './facets';
 	import type { CharacterIndexEntry } from '$lib/types/character';
 
 	let {
 		members,
 		conCapOf,
-		onFilterFacet,
-		trailing
+		onFilterFacet
 	}: {
-		/** Rides the banner's far end — the team's identity facts and Clear. */
-		trailing?: import('svelte').Snippet;
 		/** The working team, slot order preserved; null = an empty slot. */
 		members: readonly (CharacterIndexEntry | null)[];
 		/** Constellation cap per character under the active con mode. */
@@ -21,6 +21,77 @@
 	} = $props();
 
 	const coverage = $derived(deriveCoverage(members, conCapOf));
+	const resonance = $derived(deriveResonances(members.map((m) => m?.element ?? null)));
+	const comp = $derived(deriveTeamComposition(members));
+
+	const colorOf = (element: string | undefined) =>
+		(elementColors[(element ?? 'none') as ElementKey] ?? elementColors.none).main;
+
+	/**
+	 * THE LEAD CLUSTER — what the TEAM is, as opposed to what it covers.
+	 *
+	 * ⚓ NATE 2026-08-09: resonance and the faction buffs move IN with the
+	 * capabilities "but just slightly kept distinct from them by always appearing
+	 * on the left". They were their own component (TeamFacts) riding the end of
+	 * the banner; that banner is a bare header now, with no end to ride.
+	 *
+	 * ⚠ HOW MANY CAN LAND HERE. Nate's estimate — "two elemental resonances and
+	 * two faction buffs … that should probably be the max" — is the right shape
+	 * but one short: a four-Natlan party can hold two resonances, Ascendant
+	 * Gleam, Secret Rite AND the Nightsoul count, so FIVE is the real ceiling.
+	 * The cluster is laid out two-to-a-column for exactly this reason (see the
+	 * CSS): it grows sideways, and the block stays two rows tall no matter what.
+	 */
+	/** `kind` separates the two families inside one cluster: a RESONANCE is an
+	 *  elemental fact of the party's composition, a FACT is a faction/count gate.
+	 *  They look alike on purpose, but they are not the same claim. */
+	type LeadPill = {
+		key: string;
+		kind: 'res' | 'fact';
+		label: string;
+		element?: string;
+		title?: string;
+	};
+
+	const lead = $derived.by(() => {
+		const pills: LeadPill[] = [];
+		if (!resonance.needsFullTeam) {
+			for (const res of resonance.active) {
+				pills.push({
+					key: res.key,
+					kind: 'res',
+					label: res.label,
+					element: res.element,
+					title: res.effect
+				});
+			}
+		}
+		if (comp.natlanCount > 0) {
+			pills.push({
+				key: 'nb',
+				kind: 'fact',
+				label: `${comp.natlanCount} Natlan`,
+				title: 'Nightsoul Burst triggers scale with Natlan members in the team'
+			});
+		}
+		if (comp.hasAscendantGleam) {
+			pills.push({
+				key: 'gleam',
+				kind: 'fact',
+				label: 'Ascendant Gleam',
+				title: 'Two or more Moonsign characters — the Lunar reactions are enabled'
+			});
+		}
+		if (comp.hasSecretRite) {
+			pills.push({
+				key: 'rite',
+				kind: 'fact',
+				label: 'Secret Rite',
+				title: 'Two or more Hexerei characters — Hexerei: Secret Rite is enabled'
+			});
+		}
+		return pills;
+	});
 
 	function coverageTitle(providers: string[], state: string, label: string): string {
 		if (state === 'yes') return `${label} — provided by ${providers.join(', ')}`;
@@ -29,60 +100,113 @@
 	}
 </script>
 
-<!-- WHAT THE TEAM COVERS — the tool's thesis object, and now the headline of
-     its own panel.
-
-     ↻ BREATHING-ROOM ROUND 2026-08-08. These fifteen chips used to share one
-     wrapping row with the resonance and composition facts, at --fs-2xs: 9px,
-     the smallest type token on the site. That size was never a decision — it
-     was what fit once the facts and Clear had taken their share of the row.
-     Given the width back, they sit at the chip register the type scale already
-     names (--fs-sm, 11px), which is also where every other chip in the app
-     lives.
-
-     The gaps are still FILTER DRIVERS — a `no` chip is a <button> that points
-     the roster at whatever would fill it — which is why the panel wants to be
-     directly above the roster rather than tucked into a band. -->
+<!-- WHAT THE TEAM IS AND WHAT IT COVERS — the tool's thesis object.
+     The gaps are FILTER DRIVERS — a `no` chip is a <button> that points the
+     roster at whatever would fill it — which is why this wants to be directly
+     above the roster rather than tucked into a band. -->
 <div class="tb-cover">
-	<p class="banner">
-		Team covers
-		{#if trailing}<span class="banner-end">{@render trailing()}</span>{/if}
-	</p>
-	<div class="ts-coverage">
-		{#each coverage as c (c.facet)}
-			{#if c.state === 'no'}
-				<button
-					class="ts-cov ts-cov--no"
-					title={coverageTitle(c.providers, c.state, c.label)}
-					onclick={() => onFilterFacet(c.facet)}>{c.label} <Mark name="close" size={12} /></button
-				>
-			{:else}
-				<span class="ts-cov ts-cov--{c.state}" title={coverageTitle(c.providers, c.state, c.label)}
-					>{c.label}
-					{#if c.state === 'yes'}<Mark name="check" size={12} />{:else}?{/if}</span
-				>
-			{/if}
-		{/each}
+	<h2 class="cover-head">Team covers</h2>
+
+	<div class="cover-run">
+		{#if lead.length > 0}
+			<div class="ts-lead">
+				{#each lead as pill (pill.key)}
+					<span
+						class="ts-pill ts-lead-pill ts-lead-pill--{pill.kind}"
+						style:--pill-color={pill.element ? colorOf(pill.element) : 'var(--accent)'}
+						title={pill.title}
+					>
+						{#if pill.element}
+							<img class="ts-lead-icon" src={elementIcon(pill.element)} alt="" />
+						{/if}
+						{pill.label}
+					</span>
+				{/each}
+			</div>
+		{:else if resonance.needsFullTeam}
+			<div class="ts-lead">
+				<span class="ts-resnote">resonance needs a full party of 4</span>
+			</div>
+		{/if}
+
+		<div class="ts-coverage">
+			{#each coverage as c (c.facet)}
+				{#if c.state === 'no'}
+					<button
+						class="ts-pill ts-cov ts-cov--no"
+						title={coverageTitle(c.providers, c.state, c.label)}
+						onclick={() => onFilterFacet(c.facet)}>{c.label} <Mark name="close" size={12} /></button
+					>
+				{:else}
+					<span
+						class="ts-pill ts-cov ts-cov--{c.state}"
+						title={coverageTitle(c.providers, c.state, c.label)}
+						>{c.label}
+						{#if c.state === 'yes'}<Mark name="check" size={12} />{:else}?{/if}</span
+					>
+				{/if}
+			{/each}
+		</div>
 	</div>
 </div>
 
 <style>
-	/* ↻ 2026-08-08: NO BOX — a BANNER and then bare chips, which is the grammar
-	   the tools are moving to. The banner NAMES the run; the run sits on the
-	   world. Fifteen chips that each carry their own fill never needed a
-	   surface behind them, and putting one there is what made this read as a
-	   slab rather than as a list of states. */
+	/* ↻ ⚓ NATE 2026-08-09: NO BANNER EITHER. This was a banner — a narrow filled
+	   strip naming a bare run — and it is now a HEADER SET DIRECTLY ON THE
+	   SCENE. It is the first surface to try that, and it is the reason the
+	   heading face moved back to Bitter this round: a header out here carries no
+	   box to lend it presence, so it has to carry its own. */
 	.tb-cover {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
-		/* ⚠ CONTENT HEIGHT. This was `flex: 1` to take the slack when it sat in
-		   a ROW beside TeamFacts; as a full-width child of the stack's COLUMN
-		   the same declaration made it grow vertically instead, swallowing
-		   175px of nothing between the chips and the Atlas. The axis changed
-		   under the property. */
+		gap: 0.7rem;
+		/* ⚠ CONTENT HEIGHT. This was `flex: 1` back when it sat in a ROW beside
+		   TeamFacts; as a full-width child of the stack's COLUMN the same
+		   declaration grew it vertically instead, swallowing 175px of nothing
+		   between the chips and the Atlas. The axis changed under the property. */
 		flex: 0 0 auto;
 		min-width: 0;
+	}
+
+	/* ⚠ ON THE SCENE, PROSE TAKES THE BRIGHT INK, and a heading all the more:
+	   --text, not --muted. The dim rung is a panel affordance and there is no
+	   panel here. Size is a full step above anything else in the run for the
+	   same reason — presence has to come from the type itself. */
+	.cover-head {
+		margin: 0;
+		text-align: center;
+		font-family: var(--font-display);
+		font-size: var(--fs-4xl);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-tight);
+		color: var(--text);
+	}
+
+	/* The lead cluster and the capability run, side by side and centred as one
+	   block. The gap between them is deliberately ~3× the gap WITHIN either —
+	   that is the whole of "kept distinct", and it needs no rule, no ground and
+	   no divider to do its job. */
+	.cover-run {
+		display: flex;
+		align-items: flex-start;
+		justify-content: center;
+		gap: 1.1rem;
+		min-width: 0;
+	}
+
+	/* ⚠ TWO ROWS, THEN A NEW COLUMN — never a third row. `grid-auto-flow: column`
+	   with two explicit rows fills top-to-bottom and then moves right, so one
+	   lead pill is one cell, two stack, and three-to-five become a second column.
+	   A plain wrapping row would put a fifth pill on a third line and make the
+	   whole block taller than the fifteen capabilities beside it. */
+	.ts-lead {
+		display: grid;
+		grid-auto-flow: column;
+		grid-template-rows: repeat(2, auto);
+		align-content: start;
+		justify-items: start;
+		gap: 0.35rem;
+		flex-shrink: 0;
 	}
 
 	.ts-coverage {
@@ -90,33 +214,59 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: 0.35rem;
+		min-width: 0;
 	}
 
-	/* ⚓ NATE — the chip register. Was --fs-2xs (9px) at 0.18/0.4 padding when
-	   this run had to share a row; --fs-sm is what app.css's type scale calls
-	   the chip size, and the Marks beside the labels move 11 → 12 to match (they
-	   are inline geometry, so they do not scale with the font on their own). */
-	.ts-cov {
-		padding: 0.3rem 0.55rem;
+	/* ⚓ NATE: PILLS (--r-round). One shape for both families — the cluster is
+	   distinguished by POSITION and fill, not by silhouette, which is what keeps
+	   it reading as part of the same run rather than as a different control. */
+	.ts-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0.3rem 0.65rem;
 		border: none;
-		border-radius: var(--r-sm);
+		border-radius: var(--r-round);
 		font-family: var(--font-body);
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		text-transform: uppercase;
+		white-space: nowrap;
 	}
-	/* COVERED RECEDES, A GAP ANCHORS — the intent is unchanged; the tokens had
-	   to flip to keep it.
-	   ⚠ 2026-08-08: this run moved from a light panel onto the dark world, and
-	   the old pairing INVERTED on the way. In .ctx-light, --text is the
-	   recessive prose brown and --muted the anchoring slate, so "covered =
-	   --text, gap = --muted" put the actionable chip forward. In .ctx-dark the
-	   ladder is the other way up: --text is bright parchment and --muted is the
-	   dim rung. Kept as-was, the checkmarks shouted and the gaps — the only
-	   chips you can click — sank into the scene.
-	   So: covered takes the DIM ink and barely any fill; a gap takes the bright
-	   ink on a parchment wash that reads as a plate against near-black. */
+
+	/* The lead pills carry their own hue: the element's for a resonance, the
+	   accent for a faction fact that has no element behind it. Ground and ring
+	   both mix from it, so the cluster is the only coloured thing in the run. */
+	.ts-lead-pill {
+		padding-left: 0.4rem;
+		background: color-mix(in srgb, var(--pill-color) 22%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pill-color) 45%, transparent);
+		color: var(--text);
+		cursor: help;
+	}
+	.ts-lead-pill:not(:has(.ts-lead-icon)) {
+		padding-left: 0.65rem;
+	}
+	.ts-lead-icon {
+		width: 17px;
+		height: 17px;
+		object-fit: contain;
+		flex: none;
+	}
+	.ts-resnote {
+		font-size: var(--fs-xs);
+		font-style: italic;
+		color: var(--muted);
+	}
+
+	/* COVERED RECEDES, A GAP ANCHORS — the intent is unchanged; the tokens flipped
+	   when this run moved from a light panel onto the dark world (2026-08-08). In
+	   .ctx-light, --text is the recessive prose ink and --muted the anchoring
+	   slate; in .ctx-dark the ladder is the other way up. Kept as-was, the
+	   checkmarks shouted and the gaps — the only chips you can click — sank into
+	   the scene. So: covered takes the DIM ink and barely any fill; a gap takes
+	   the bright ink on an accent wash that reads as a plate against near-black. */
 	.ts-cov--yes {
 		color: var(--muted);
 		background: var(--fill-rest);

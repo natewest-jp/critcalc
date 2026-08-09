@@ -36,6 +36,7 @@
 		bandALeft,
 		bandARight,
 		bandBLeft,
+		bandBCenter,
 		bandBRight,
 		bandBFull,
 		surface
@@ -52,6 +53,12 @@
 		bandALeft?: Snippet;
 		bandARight?: Snippet;
 		bandBLeft?: Snippet;
+		/**
+		 * A middle zone for band B, centred against the BAND rather than between
+		 * its neighbours. Opting in switches the band to a three-track grid; the
+		 * Team Builder's Atlas/Roster/Compare navigation is its one caller.
+		 */
+		bandBCenter?: Snippet;
 		bandBRight?: Snippet;
 		/**
 		 * Band B as ONE full-width run instead of the left/right pair — the
@@ -91,18 +98,17 @@
 		></div>
 	{/if}
 
-	<!-- The band header: TWO SEPARATE bands, no stroke on either — the tool
-	     surface below carries the family's structure and the bands read as
-	     glass rails floating over it. ↻ ⚓ NATE 2026-08-09: they used to abut
-	     inside one clipped box (Genshin's banded section header, a navy run
-	     with a cream tier); they are split by --band-gap now, so each is its
-	     own object and rounds its own four corners. -->
+	<!-- The band header. ↻ ⚓ NATE 2026-08-09 (second move of the day): band A
+	     LOSES ITS BAND. The document controls stop being contents of a rail and
+	     become free glass objects standing on the scene; band B keeps its rail
+	     and becomes the tool's one banded row. See the CSS for why the class
+	     stays even though the ground goes. -->
 	<div class="bands">
 		<div class="band band-a ctx-glass">
 			<div class="band-zone">{@render bandALeft?.()}</div>
 			<div class="band-zone band-zone--end">{@render bandARight?.()}</div>
 		</div>
-		<div class="band band-b ctx-glass">
+		<div class="band band-b ctx-glass" class:band--3up={!!bandBCenter}>
 			{#if bandBFull}
 				<!-- The full-width variant is one flex child that must actually FILL
 				     the band: the Visualizers lays a grid in here whose columns have
@@ -111,6 +117,15 @@
 				<div class="band-full">{@render bandBFull()}</div>
 			{:else}
 				<div class="band-zone">{@render bandBLeft?.()}</div>
+				{#if bandBCenter}
+					<!-- ⚠ Centred against the BAND, not against its neighbours. This is
+					     why the 3-up variant is a grid with equal outer tracks rather
+					     than `justify-content: center` on a flex row: the Team Builder
+					     puts one word on the left and a menu whose label changes width
+					     ("C0" … "My roster") on the right, and with flex the nav would
+					     slide sideways every time that reading changed. -->
+					<div class="band-zone band-zone--center">{@render bandBCenter()}</div>
+				{/if}
 				<div class="band-zone band-zone--end">{@render bandBRight?.()}</div>
 			{/if}
 		</div>
@@ -218,9 +233,30 @@
 		border-radius: var(--band-radius);
 	}
 
+	/* ── BAND A HAS NO BAND (⚓ NATE 2026-08-09) ────────────────────────────
+	   "It loses its backing band, and instead the buttons themselves become
+	   glass over the scene."
+
+	   So this is a bare 36px row that positions things and nothing else: no
+	   ground, no radius that matters, and NO HORIZONTAL PADDING — the padding
+	   existed to hold controls off a rail's ends, and with no rail an inset is
+	   just the document tabs failing to line up with the tool surface below
+	   them. Save/Load/Share now touch the same right edge the surface does.
+
+	   ⚠ THE CLASS STAYS, THE FILTER DOESN'T. `ctx-glass` is still worn because
+	   it is what re-points --surface/--fill-rest/the lines at the translucent
+	   stops, and the CONTROLS need those values to paint themselves as glass
+	   (see the .band-a rules in app.css). But the material's own
+	   `backdrop-filter` has to come off: a filter on a box with no background
+	   still blurs its whole rectangle, which would draw a ghost of the band we
+	   just removed. The blur moves down to the controls, which is where the
+	   glass now is. */
 	.band-a {
 		height: var(--band-a-h);
-		background: var(--surface);
+		padding: 0;
+		background: none;
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
 	}
 
 	.band-b {
@@ -249,6 +285,23 @@
 	.band-zone--end {
 		justify-content: flex-end;
 		flex-shrink: 0;
+	}
+
+	/* Three equal outer tracks, so the middle zone is centred on the BAND. The
+	   outer two are `1fr` and may be wider than their content; `minmax(0, 1fr)`
+	   lets them shrink past it rather than push the centre off true. */
+	.band--3up {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		gap: 0.75rem;
+	}
+	.band-zone--center {
+		justify-content: center;
+		flex-shrink: 0;
+		/* The selected plate stands PROUD of the band (Genshin's own tab strip
+		   does this — see the Team Builder's nav). Nothing here clips, but the
+		   zone must not be the thing that decides the band's height either. */
+		overflow: visible;
 	}
 
 	.band-full {

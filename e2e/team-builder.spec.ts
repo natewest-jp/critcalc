@@ -186,7 +186,7 @@ test.describe('compare — the tab is the accumulator', () => {
 		await openRoster(page);
 		for (const n of ['Bennett', 'Jean', 'Diona']) await addToCompare(page, n);
 
-		await page.locator('.band-b .tab', { hasText: 'Compare' }).click();
+		await page.locator('.band-b .tb-nav-item', { hasText: 'Compare' }).click();
 		await page.locator('.cmp-dim-label').first().waitFor();
 
 		// A center Source view in normal flow — no scrim, no dock rules.
@@ -222,16 +222,23 @@ test.describe('compare — the tab is the accumulator', () => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
 		for (const n of ['Bennett', 'Jean', 'Diona']) await addToCompare(page, n);
-		await page.locator('.band-b .tab', { hasText: 'Compare' }).click();
+		await page.locator('.band-b .tb-nav-item', { hasText: 'Compare' }).click();
 		await page.locator('.cmp-dim-label').first().waitFor();
 
 		await page.locator('.cmp-chip-remove').first().click();
 		await expect(page.locator('.cmp-chip')).toHaveCount(2);
 		await expect(page.locator('.tb-tabstack-circle'), 'the stack syncs').toHaveCount(2);
 
+		// ↻ 2026-08-09: clearing no longer lands on a "nothing to compare" page.
+		// Compare is unreachable without picks, so emptying it bounces back to the
+		// Roster and the nav plate goes disabled.
 		await page.locator('.cmp-headact').click();
-		await expect(page.locator('.tb-cmp-empty'), 'the taught empty state').toHaveCount(1);
 		await expect(page.locator('.tb-tabstack')).toHaveCount(0);
+		await expect(
+			page.locator('.band-b .tb-nav-item', { hasText: 'Compare' }),
+			'unreachable with nothing in it'
+		).toBeDisabled();
+		await expect(page.locator('.cg-grid').first(), 'bounced to the Roster').toBeVisible();
 	});
 });
 
@@ -258,9 +265,11 @@ test.describe('team slots', () => {
 		await seed({ team: { slots: TEAM } });
 		await openTool(page, '/team-builder');
 
-		const res = await page.locator('.ts-res').allInnerTexts();
+		// innerText arrives uppercased (pill text-transform, as of 2026-08-09 when
+		// the resonance chips joined the coverage run) — match case-insensitively.
+		const res = await page.locator('.ts-lead-pill--res').allInnerTexts();
 		expect(res).toHaveLength(1);
-		expect(res[0]).toMatch(/Protective Canopy/);
+		expect(res[0]).toMatch(/Protective Canopy/i);
 
 		// innerText arrives uppercased (chip text-transform) — match case-insensitively.
 		const covered = await page.locator('.ts-cov--yes').allInnerTexts();

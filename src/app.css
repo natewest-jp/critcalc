@@ -747,9 +747,11 @@
 	--rx-burning-fuel: #84b46a;
 	--rx-dendro-core: #e2ec6f;
 
-	/* Typography — single source of truth. Bitter for display/branding; IBM Plex
-	   Sans is the DEFAULT for almost everything (body, UI chrome, data labels,
-	   values). Mono (IBM Plex Mono) is deliberately reserved — pull on it only
+	/* Typography — single source of truth. Bitter is display/branding AND every
+	   MAIN HEADER (⚓ Nate 2026-08-09 — see the h1–h6 rule for the split that
+	   keeps section headings, the ones with a rule out of their side, on the
+	   sans). IBM Plex Sans is the DEFAULT for everything else (body, UI chrome,
+	   data labels, values). Mono (IBM Plex Mono) is deliberately reserved — pull on it only
 	   where it earns a visual-identity benefit; right now that's just KQM
 	   notation (the editor, saved-notation strings, the PNG notation header). Sans-by-default also helps dense labels fit their
 	   bounds. IBM Plex Sans Condensed (--font-condensed) is available for tight
@@ -1126,6 +1128,62 @@
 	color: var(--sel-ink);
 }
 
+/* ══ BAND A'S CONTROLS ARE THE GLASS (⚓ NATE 2026-08-09) ═══════════════════
+   The band's ground came off (ToolStack) and moved here, onto the controls
+   themselves: each document button is now its own pane of glass floating on
+   the scene rather than a fill inside a rail.
+
+   Why the paint lives at app.css rather than in ToolStack: these are the
+   pattern layer's own `.tab` / `.btn`, rendered by DocumentTabs and
+   DocumentActions, and a scoped rule in ToolStack could not reach them without
+   :global — which is the same thing as this, spelled worse.
+
+   ⚠ EACH ONE CARRIES ITS OWN BLUR, and that is a real cost the band used to
+   pay once. It is bounded by what band A holds — at most 5 tabs, a +, and four
+   actions — and by the star freeze, which holds one scene frame at rest so
+   these rasterize once. If band A ever grows a roster-scale run, this is the
+   line that has to change.
+
+   ⚠ NOT the active tab. It wears the opaque parchment plate (the --sel-surface
+   pilot, above) — blurring a backdrop nothing can see through is pure cost,
+   and the plate is what marks the selected document. */
+.band-a .tab:not(.active),
+.band-a .btn {
+	background: var(--surface); /* = --glass-panel, via .ctx-glass */
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	backdrop-filter: blur(var(--glass-blur));
+}
+/* Hover/active states re-declare the ground, so they need the glass stops too
+   — otherwise touching a control turns opaque under the cursor.
+
+   ⚠ THE DOUBLE-GRADIENT IS THE NESTING LAW, not a flourish. The wash has to sit
+   OVER the pane rather than replace it, and the obvious spelling —
+   color-mix(--accent-hover-fill …) — is a color-mix fed by a color-mix, which
+   CRASHES WEBKIT. A one-stop linear-gradient is a background LAYER, so the two
+   composite at paint time with no colour arithmetic at all. */
+.band-a .tab:not(.active):hover {
+	background: linear-gradient(var(--accent-hover-fill), var(--accent-hover-fill)), var(--surface);
+}
+.band-a .btn:hover:not(:disabled) {
+	background: var(--surface-well);
+}
+.band-a .btn.is-active {
+	background: linear-gradient(var(--sel-fill), var(--sel-fill)), var(--surface);
+}
+/* The surviving ghost stays a ghost — a destructive control must not sit on
+   screen looking pressable, glass or not. */
+.band-a .btn--danger {
+	background: none;
+	-webkit-backdrop-filter: none;
+	backdrop-filter: none;
+}
+/* :not(:disabled) only to out-specify the .band-a .btn hover above it — a
+   danger button that lit up glass-well would lose its ghost on hover. */
+.band-a .btn--danger:hover:not(:disabled),
+.band-a .btn--danger.is-confirming {
+	background: var(--ui-danger-soft);
+}
+
 *,
 *::before,
 *::after {
@@ -1155,10 +1213,25 @@ h3,
 h4,
 h5,
 h6 {
-	/* Headings default to the body face (IBM Plex Sans). Bitter (--font-display)
-	   is reserved for branding (wordmarks) and chrome-level navigation, which
-	   opt in explicitly. */
-	font-family: var(--font-body);
+	/* ↻ ⚓ NATE 2026-08-09: HEADINGS ARE BITTER AGAIN, reversing the 2026-07-22
+	   sans-everywhere call. The split is no longer "branding vs content" but
+	   WHAT KIND OF HEADING it is:
+
+	     A MAIN HEADER — the thing that names a whole surface — is Bitter. It is
+	     the one place on the page that gets to be a voice rather than a label,
+	     and the round that prompted this is preparing for LARGE headings set
+	     directly on the scene, where a header carries no box to lend it
+	     presence and has to carry its own.
+
+	     A SECTION HEADING — the small, tracked, uppercase kind with a rule
+	     running out of its side — stays IBM Plex Sans. That is `.kicker`, which
+	     re-declares the body face below precisely because it can be worn by an
+	     <h2> and must not follow this rule. A rule out of the side is the tell:
+	     it reads as structure, not as a title.
+
+	   Everything with its own explicit font-family is unaffected (LoadoutPanel's
+	   .lp-hd, HelpAreaShell's chapter nav — both deliberately body-face). */
+	font-family: var(--font-display);
 	font-weight: var(--fw-semibold);
 	line-height: var(--lh-tight);
 	margin: 0;
@@ -1188,10 +1261,10 @@ img {
    Every Help / About chapter renders in two places — as a prerendered route
    inside the pages panel, and as a pane inside the chrome overlay — so this
    lives here rather than scoped to either host. Chapters emit plain semantic
-   HTML and this styles it; that is the whole contract. Headings use the body
-   face (IBM Plex Sans) per the 2026-07-22 reversal; Bitter stays branding and
-   chrome. Components with their own scoped classes (SettingsPanel) out-specify
-   these and are unaffected. */
+   HTML and this styles it; that is the whole contract. Headings inherit the
+   Bitter face from the h1–h6 rule above (⚓ Nate 2026-08-09) — a chapter title
+   is a main header. Components with their own scoped classes (SettingsPanel)
+   out-specify these and are unaffected. */
 
 /* Headings are CHROME (Nate 2026-07-27) — the chrome axis and the data axis are
    different voices, and a heading belongs to the first. ALL heading levels take
@@ -1880,8 +1953,14 @@ img {
 }
 
 /* ── Headings, labels, notes ──────────────────────────────────────────── */
+/* ⚠ THE FACE IS DECLARED, not inherited (2026-08-09). A .kicker is often an
+   <h2>, and headings are Bitter now — but the kicker is the SECTION-heading
+   idiom, the one with a rule running out of its side, and Nate's rule puts
+   those on the body face. Removing this line silently flips every section
+   label on the site to serif. */
 .kicker {
 	margin: 0;
+	font-family: var(--font-body);
 	display: flex;
 	align-items: center;
 	gap: 0.65rem;
@@ -1900,9 +1979,11 @@ img {
 	height: 2px;
 	background: color-mix(in srgb, var(--muted) 22%, transparent);
 }
+/* A main header — Bitter, per the heading rule above. It only declares the
+   face because two of its three callers are <h2>s and one is a <p>. */
 .title {
 	margin: 0;
-	font-family: var(--font-body);
+	font-family: var(--font-display);
 	font-size: var(--fs-2xl);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-tight);
