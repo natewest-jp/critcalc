@@ -78,8 +78,6 @@
 		<div
 			class="tab tab--closeable doc-tab"
 			class:active={tab.id === rt.activeTabId}
-			class:inset={tab.id === rt.activeTabId}
-			class:inset--plain={tab.id === rt.activeTabId}
 			class:doc-tab--drag-over-left={dragOverId === tab.id && dragSide === 'left'}
 			class:doc-tab--drag-over-right={dragOverId === tab.id && dragSide === 'right'}
 			class:doc-tab--dragging={draggedId === tab.id}
@@ -192,10 +190,11 @@
 	/* Drop indicator: a 2px vertical line on the left or right edge of the
 	   target tab.
 
-	   ⚠ BOTH SIDES USE ::before (2026-08-10). The right-hand one was ::after,
-	   and the active tab now wears `.inset--plain`, whose stroke IS an ::after —
-	   one of them would have silently won. The two states are mutually exclusive
-	   (dragSide is left XOR right), so one pseudo serves both. */
+	   Both sides use ::before. It was ::after on the right until the active tab
+	   briefly wore `.inset--plain`, whose stroke is an ::after — one would have
+	   silently won. The inset came back off the same day, but the two states are
+	   mutually exclusive (dragSide is left XOR right) so one pseudo serves both
+	   perfectly well, and leaving ::after free costs nothing. */
 	.doc-tab--drag-over-left::before,
 	.doc-tab--drag-over-right::before {
 		content: '';

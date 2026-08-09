@@ -159,7 +159,14 @@
 	.tb-cover {
 		display: flex;
 		flex-direction: column;
-		gap: 0.7rem;
+		/* ⚓ NATE 2026-08-10 — "just enough to let them breathe". Two moves, not
+		   one: the block gets air ABOVE and BELOW itself (padding-block, so the
+		   header clears band B rather than hanging off it), and the header gets
+		   air under it before the chips. A run of pills on open ground reads as
+		   crowded long before a boxed one does — there is no edge doing the work
+		   that space has to do here. */
+		padding-block: 0.5rem 0.75rem;
+		gap: 1rem;
 		/* ⚠ CONTENT HEIGHT. This was `flex: 1` back when it sat in a ROW beside
 		   TeamFacts; as a full-width child of the stack's COLUMN the same
 		   declaration grew it vertically instead, swallowing 175px of nothing

@@ -1196,26 +1196,24 @@
    the Stygian selected-row idiom): a parchment plate marked the selected
    document loudly enough, but with every other control in the row now made of
    glass it was the one lit object in the header and it pulled the eye off the
-   tool. Density marks it instead of brightness — the only opaque thing among
-   panes of glass — and the inset line says "selected" without adding light.
+   tool. DENSITY marks it instead of brightness — the only opaque thing among
+   panes of glass.
 
    It paints --frame-bg, which in .ctx-glass IS slate-800: the material's
    reference ground, the same value .ctx-dark paints as --surface, and
    therefore literally the bench ribbon's shade rather than a match for it.
 
-   ⚠ The line has to be OPAQUE here, against the compositing law's default for
-   this context. .ctx-glass carries alpha in its lines because the ground behind
-   a pane is unknown — but this tab's ground is known, it is the value on the
-   line above, so the stop resolves against it exactly as the dark context's
-   does. --line-strong's own recipe, mixed against the tab's own ground.
-   (--frame-inset is pulled in from the family's 7px, which is tuned for a frame
-   around a surface and would put the stroke through a 36px tab's type.) */
+   ↻ ⚓ NATE, same day: the --plain inset line came back OFF. It shipped for a
+   few hours on the reasoning that the line would say "selected" without adding
+   light — but opacity was already saying it, and a stroke on a 36px tab in a
+   row of ten controls is ornament competing with the navigation one row down.
+   The nav plate keeps its line; this one does not need to be a second
+   decorated object. (Its markup classes went too, so the tab's ::after is free
+   again — see DocumentTabs' note on the drag indicators.) */
 .band-a .tab.active {
 	background: var(--frame-bg);
 	box-shadow: none;
 	color: var(--text);
-	--frame-inset: 3px;
-	--frame-line: color-mix(in srgb, var(--parchment-100) 30%, var(--frame-bg));
 }
 
 *,

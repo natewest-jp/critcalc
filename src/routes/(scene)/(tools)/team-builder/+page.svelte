@@ -1066,13 +1066,18 @@
 							<p class="note tb-note">No curated providers in this role yet.</p>
 						{/if}
 					{:else}
-						<p class="tb-atlas-lead">
-							Browse by role — from Genshin's Imaginarium Theater classification.
-						</p>
+						<!-- ⚓ NATE 2026-08-10: the lead line and the citation that used to
+						     bracket these cards are GONE — "they're just clutter". Four
+						     cards that each name a role and count its characters do not
+						     need a sentence telling you they are roles.
+						     ⚠ WHAT WENT WITH THEM: the only user-facing statement of where
+						     these roles come from (Genshin's Imaginarium Theater) and the
+						     only place the surface said "a presence classification, not a
+						     ranking". The second is a constitution line — no tier lists —
+						     and it now lives nowhere a reader can see it. If it belongs
+						     anywhere it is the Team Builder's Help chapter, not wrapped
+						     around the cards. -->
 						<AtlasView {roleCards} onSelectCategory={openCategory} />
-						<p class="tb-atlas-cite">
-							Roles: Genshin Impact — Imaginarium Theater. A presence classification, not a ranking.
-						</p>
 					{/if}
 				</div>
 			{/if}
@@ -1190,13 +1195,21 @@
 	   height, .cg-scroll never bounds, and the SHELL scrolls instead. It reads
 	   almost right until you notice the filter column scrolling away with the
 	   tiles. probe-bench-align's bounded-scroller check is what catches it. */
+	/* ⚓ NATE 2026-08-10: the SECTION rhythm is its own knob now, and it is wider
+	   than the gutter. TOOL_GUTTER is the rhythm BETWEEN BOXES — bands to
+	   surface, main column to aside — and it was doing double duty here as the
+	   rhythm between two runs of bare content on open ground. Boxes carry their
+	   own edges and can sit close; bare runs have nothing but the space around
+	   them to say where one ends, so they need more of it. Two knobs because
+	   they answer two questions. */
 	.tb-stack {
+		--tb-section-gap: 2rem;
 		flex: 1;
 		min-width: 0;
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
-		gap: var(--tool-gutter);
+		gap: var(--tb-section-gap);
 	}
 
 	/* ── Source ───────────────────────────────────────────────── */
@@ -1228,8 +1241,9 @@
 
 	   --nav-plate-h: the selected plate is TALLER THAN THE RAIL on purpose —
 	   that overhang is most of what makes it read as a plate laid on the strip
-	   rather than a selected cell inside it. The rail is BAND_B_H (36px), so 42
-	   stands 3px proud at each end. Move one, look at the other.
+	   rather than a selected cell inside it. The rail is BAND_B_H (36px), so 40
+	   stands 2px proud at each end (⚓ Nate 2026-08-10, down from 3). Move one,
+	   look at the other.
 
 	   --nav-fill: how much of the rail the three items take between them.
 	   ⚓ NATE: "make the buttons wider than their text requires… not entirely
@@ -1238,7 +1252,7 @@
 	   from the rail, never from their labels. Rail visible at both ends is what
 	   keeps the group reading as three plates ON a strip. */
 	.tb-nav {
-		--nav-plate-h: 42px;
+		--nav-plate-h: 40px;
 		--nav-fill: 76%;
 		width: var(--nav-fill);
 		display: flex;
@@ -1304,7 +1318,7 @@
 		background: var(--sel-surface);
 		color: var(--sel-ink);
 		/* .inset--plain's stroke, pulled in from the family's 7px — that distance
-		   is tuned for a frame around a surface, and on a 42px plate it would put
+		   is tuned for a frame around a surface, and on a 40px plate it would put
 		   the line through the middle of the type. */
 		--frame-inset: 3px;
 		--frame-line: color-mix(in srgb, var(--accent) 42%, var(--sel-surface));
@@ -1435,9 +1449,15 @@
 	}
 
 	/* ── Atlas ────────────────────────────────────────────────── */
+	/* ⚓ NATE 2026-08-10: the Atlas breathes too. With the lead line and the
+	   citation gone the four cards were the section's whole content and they
+	   started flush against the band above and the scroller's edge below —
+	   sentences had been doing the spacing's job. padding-block does it now,
+	   and the same 0.8rem still separates the drill's rows from each other. */
 	.tb-atlas {
 		display: flex;
 		flex-direction: column;
+		padding-block: 0.5rem 0.75rem;
 		gap: 0.8rem;
 	}
 	/* ⚠ ON THE SCENE, PROSE TAKES THE BRIGHT INK — not the muted rung.
@@ -1461,16 +1481,6 @@
 		gap: 1rem;
 		flex-wrap: wrap;
 	}
-	/* The citation stays the quiet voice — but --muted at 9px with an extra 0.8
-	   opacity on top was a footnote to a footnote, and none of that survives
-	   contact with a varying ground. Keeps --muted (it IS secondary), drops the
-	   opacity, and comes up to the smallest size that holds its own out here. */
-	.tb-atlas-cite {
-		margin: 0.2rem 0 0;
-		font-size: var(--fs-sm);
-		color: var(--muted);
-	}
-
 	/* ── RP-arrival slot rows ─────────────────────────────────── */
 	.tb-slotrow {
 		display: flex;
