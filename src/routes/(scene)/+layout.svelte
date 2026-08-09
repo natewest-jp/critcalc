@@ -14,6 +14,7 @@
 		syncSceneCamera,
 		sceneLayer,
 		dimTarget,
+		SCRIM_EDGE,
 		isToolPath,
 		sceneOccluded,
 		revealDelayMs,
@@ -215,6 +216,7 @@
 		class="dim"
 		class:occluded={$sceneOccluded}
 		style:opacity={initialDim}
+		style:--scrim-edge={SCRIM_EDGE}
 		use:sceneLayer={'dim'}
 	></div>
 
@@ -391,13 +393,32 @@
 
 	.dim {
 		z-index: 1;
-		/* The world's own wash (⚓ NATE 2026-08-06): --scene-dim, a warm
-		   near-black that desaturates the backdrop so the panels' chroma reads
-		   as separation — see the token's note in app.css for the measurement,
-		   and TOOL_DIM in transition.ts for the opacity knob. It was --ink
-		   until this round; --ink is ink on BRIGHT fills and only looked
-		   alike. */
+		/* The world's own wash: --scene-dim — see the token's note in app.css
+		   for its colour, and TOOL_DIM in transition.ts for the density. */
 		background: var(--scene-dim);
+		/* ↻ 2026-08-09 (Genshin Night): THE SCRIM IS SHAPED. Dense over the
+		   centre column where bare content lives, falling to SCRIM_EDGE at the
+		   rim where the glass furniture sits — the full argument, with the star
+		   measurements that forced it, is on TOOL_DIM in transition.ts.
+
+		   Done as a MASK rather than by painting alphas into the background,
+		   deliberately: element opacity still rides the ascend clock 0 → TOOL_DIM
+		   through the sceneLayer WAAPI action, so the mask only has to carry the
+		   SHAPE and every existing note about the ride stays true. It also keeps
+		   the alpha out of a color-mix percentage, which would have needed a
+		   var() in a position Safari support is thin on.
+
+		   The ellipse is wider than tall and sits slightly above centre because
+		   that is where a tool's content column actually is: the bands take the
+		   top, the footer-ward space is emptier. */
+		--scrim-shape: radial-gradient(
+			ellipse 105% 95% at 50% 44%,
+			#000 0%,
+			#000 38%,
+			rgb(0 0 0 / var(--scrim-edge)) 100%
+		);
+		-webkit-mask-image: var(--scrim-shape);
+		mask-image: var(--scrim-shape);
 		pointer-events: none;
 		/* Initial opacity is set inline at SSR time (style:opacity above);
 		   WAAPI takes over via the sceneLayer action after hydration. */

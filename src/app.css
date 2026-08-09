@@ -155,10 +155,25 @@
 	   (#150b00). What it actually does is kill chroma, and it sits near that
 	   lever's floor: B=0 would gain only another 0.003. More separation than
 	   this wants TOOL_DIM, not a warmer wash.
-	   ⚠ NOT --ink. That token is dark ink on BRIGHT fills (8 other consumers,
-	   incl. the light context's promoted control ink); the two only looked
-	   alike. */
-	--scene-dim: #0b0902;
+	   ⚠ NOT --bright-ink. That token is dark ink on BRIGHT fills; the two only
+	   looked alike.
+
+	   ↻ 2026-08-09 (Genshin Night) ⚓ NATE: warm near-black → NEUTRAL near-black.
+	   His mockups ran a lighter gray wash because "the backdrop was getting too
+	   black", and that is a different axis from the density — the COLOUR sets
+	   how black the floor of the composite is, the alpha sets how much world
+	   survives. Both moved this round (density is TOOL_DIM, now shaped).
+	   What this costs, measured: the warm wash's whole argument above was that
+	   it kills backdrop CHROMA and buys a second separation channel against the
+	   panels. A neutral wash gives that back — but the premise changed
+	   underneath it. That measurement was taken when panels were opaque plates
+	   floating on a backdrop they had to be told apart from; the furniture is
+	   GLASS now and deliberately shares the backdrop's light, so "separate the
+	   panel from the world" is no longer the job this token is doing.
+	   It also costs a little worst-pixel contrast — parchment over a star reads
+	   6.26:1 here vs 7.20:1 warm, both clear of the floor.
+	   ⚓ Revert to #0b0902 on this one line if the neutral reads dead. */
+	--scene-dim: #15161a;
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are
@@ -919,6 +934,82 @@
 	   has to hold an edge on its own, with no hover to announce it. */
 	--btn-face: color-mix(in srgb, var(--muted) 12%, var(--surface));
 	--btn-face-hover: color-mix(in srgb, var(--muted) 20%, var(--surface));
+	color: var(--text);
+}
+
+/* ══ THE THIRD MATERIAL — .ctx-glass (Genshin Night, 2026-08-09) ═══════════
+   A dark context that is TRANSLUCENT. It is a material, not a third palette:
+   the ink, the accent and every rung come straight from .ctx-dark — only the
+   GROUNDS and the LINES differ, because they are the two things that have to
+   know whether there is a world behind them.
+
+   WHO WEARS IT. ⚓ NATE: bare-on-the-scene stays the default for CONTENT; glass
+   is for the FURNITURE — the bands, the bench ribbon, menus, modals. The things
+   that sit ON the page rather than being it. A tool's content does not go back
+   into a box because glass exists.
+
+   ⚠ THERE IS NO LIGHT GLASS, and this is a law rather than an omission.
+   Translucent paper over a near-black world is the muddy middle by another
+   route — it was the surviving finding of the reverted toolbar-translucency
+   trial, which concluded that "band B being paper is the constraint". Anything
+   that wants to be glass has to stop being light first.
+
+   ⚠ AND IT IS NOT `sheer`. That experiment was built, measured, shipped and
+   reverted, and the rule that came out of it stands: opaque, or OBVIOUSLY
+   translucent — the middle is not a place. Sheer let 2–3% of scene light
+   through, which reads as a duller colour. Glass at .70 lets 15–30% through at
+   the shaped scrim's rim density, which is the far side of that same rule.
+   The number that makes this true is SCRIM_EDGE, not the alpha alone: at the
+   old uniform dim .85 a .70 glass delivered 4.5%, i.e. sheer again.
+
+   ⚠ NO BACKDROP BLUR ANYWHERE. ⚓ NATE. Perf was not the reason to skip it —
+   the star-freeze round means the scene holds one frame at rest, so a blur
+   would rasterize once — but it buys little over a near-uniform backdrop and
+   backdrop-filter mints a stacking context and a containing block, which is
+   real risk next to the portalled popovers and the transform-placed tool pan.
+   ⚠ Consequence to LOOK at (not measurable): frozen stars read as sharp points
+   THROUGH the glass. Deliberate texture, or dirt on the panel — Nate's eyes. */
+.ctx-glass {
+	/* ⚠ PAINT --surface, MIX AGAINST --frame-bg. In the opaque contexts those
+	   two are the same value and the distinction never had teeth; here they
+	   deliberately diverge, and it is the one thing to get right when moving a
+	   surface onto glass. --frame-bg stays a REAL, opaque colour because it is
+	   the REFERENCE ground (the breathing-room rule: it is the colour even
+	   where nothing paints it) — every color-mix, canvas fill and PNG export
+	   still needs something to resolve against. Painting it would just give you
+	   an opaque panel that thinks it is glass. */
+	--surface: var(--glass-panel);
+	--surface-raised: var(--glass-panel);
+	--surface-well: var(--glass-well);
+	--frame-bg: var(--slate-800);
+	--text: var(--parchment-100);
+	--muted: color-mix(in srgb, var(--parchment-100) 72%, var(--slate-800));
+	/* ⚠ THE LINES CARRY ALPHA HERE, and only here. The compositing law says a
+	   line mixes OPAQUELY against a known ground, because a 1px alpha line
+	   renders display-dependently (the dire-gradient lesson). On glass the
+	   ground is not known — it is whatever the world is doing behind it — so an
+	   opaque line would be a stripe of the wrong colour. The law refines: mix
+	   opaque against a KNOWN ground; where the ground is unknown, carry alpha.
+	   These are Fable's recovered stops used as themselves. */
+	--line-faint: rgb(236 229 216 / 0.1);
+	--line-soft: rgb(236 229 216 / 0.18);
+	--line-strong: rgb(236 229 216 / 0.3);
+	--line-edge: rgb(236 229 216 / 0.42);
+	--border: var(--line-edge);
+	--frame-line: var(--line-strong);
+	--frame-line-quiet: var(--line-faint);
+	--accent: var(--gold-400);
+	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
+	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
+	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
+	--knob: var(--muted);
+	/* The hover wash is the parchment frost, not a neutral tint — on glass a
+	   neutral fill greys the world showing through it. */
+	--fill-rest: var(--glass-parch);
+	--fill-hover: color-mix(in srgb, var(--parchment-100) 17%, transparent);
+	--btn-face: color-mix(in srgb, var(--neutral) 18%, var(--slate-800));
+	--btn-face-hover: color-mix(in srgb, var(--neutral) 28%, var(--slate-800));
 	color: var(--text);
 }
 

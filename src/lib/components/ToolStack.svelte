@@ -90,11 +90,11 @@
 	     clips both tiers to the outer radius; the A/B seam is square because
 	     they ABUT — one object, not two stacked ones. -->
 	<div class="bands">
-		<div class="band band-a ctx-dark">
+		<div class="band band-a ctx-glass">
 			<div class="band-zone">{@render bandALeft?.()}</div>
 			<div class="band-zone band-zone--end">{@render bandARight?.()}</div>
 		</div>
-		<div class="band band-b ctx-light">
+		<div class="band band-b ctx-glass">
 			{#if bandBFull}
 				<!-- The full-width variant is one flex child that must actually FILL
 				     the band: the Visualizers lays a grid in here whose columns have
@@ -177,16 +177,25 @@
 		flex-shrink: 0;
 	}
 
-	/* Each tier is a plain two-zone rail. The contexts supply the grounds: band A
-	   wears the dark context's SURFACE (the navy chart ground), band B the light
-	   context's SURFACE (paper).
+	/* Each tier is a plain two-zone rail; the contexts supply the grounds.
 
-	   ↻ 2026-08-07 (⚓ NATE): band B was --ribbon, the beige. That was a
-	   misreading of what the token is for — the ribbon is meant to be a slightly
-	   DARKER band laid ON a ctx-light fill, a section header inside a light
-	   surface. A whole toolbar painted in it made the beige the band's identity
-	   rather than an accent within it. Band B is paper now, and --ribbon goes
-	   back to being unused until something wants a header stripe. */
+	   ↻ 2026-08-09 (Genshin Night): BOTH BANDS ARE GLASS. The bands are exactly
+	   what the glass material is for — furniture sitting ON the page rather than
+	   being it — and they live at the top rim, where the shaped scrim is at its
+	   thinnest and there is actually a world to see.
+
+	   ⚠ Band B stopped being ctx-light, and it had no choice: there is no light
+	   glass. Translucent paper over a near-black world is the muddy middle by
+	   another route, which is the one finding that survived the reverted
+	   toolbar-translucency trial ("band B being paper is the constraint"). This
+	   is the round where that constraint got paid.
+
+	   The A/B distinction is unchanged and does not need a ground to carry it —
+	   A is the DOCUMENT (the shared tabs, Save/Load/Share), B is the VIEW. What
+	   separates them now is the same thing that separates a well from a surface:
+	   one rung, plus the seam between them. Prior art at 2026-08-07 (⚓ NATE),
+	   when band B stopped being the beige for the same class of reason — a whole
+	   toolbar painted in an accent makes the accent the band's identity. */
 	.band {
 		display: flex;
 		align-items: center;
@@ -203,14 +212,15 @@
 
 	.band-b {
 		height: var(--band-b-h);
-		background: var(--surface);
+		/* One rung down from band A — the VIEW band reads as recessed under the
+		   DOCUMENT band, which is the relationship the two grounds used to carry
+		   by being different materials entirely. */
+		background: var(--surface-well);
 		/* Band B is a CONTROL band — labels and buttons, never prose. --text is
-		   re-pointed at --muted, the light context's label slate, so everything
-		   in the band speaks the label voice by default; prose belongs in the
-		   surface below, where the context's own ladder applies. (This mattered
-		   more when the ground was the beige, where --text measured 4.28:1 —
-		   under the floor. On paper it clears at 5.32:1, so the rule is now
-		   about VOICE rather than contrast, and it stands for that reason.) */
+		   re-pointed at --muted so everything in the band speaks the label voice
+		   by default; prose belongs in the surface below, where the context's own
+		   ladder applies. The rule is about VOICE, not contrast, and survives the
+		   material change unchanged. */
 		--text: var(--muted);
 		color: var(--text);
 	}

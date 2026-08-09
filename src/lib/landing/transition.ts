@@ -187,11 +187,45 @@ export type SceneLayerKind = 'composition' | 'dim';
  *  survives that retirement on its own merit, which is why it is declared here
  *  with its own rationale instead of riding along with a token that is gone.
  *
- *  ⚠ Uniform, for now. Genshin vignettes hard — darkest exactly where the text
- *  is, decoration pushed to the edges — and once content lives on the world
- *  that shaping is what buys legibility. A shaped scrim is the open question
- *  here, not a higher number. */
-export const TOOL_DIM = 0.85;
+ *  ✅ ↻ 2026-08-09 (Genshin Night): NO LONGER UNIFORM, and no longer one number.
+ *  The note below used to end "a shaped scrim is the open question here, not a
+ *  higher number" — this is that answer.
+ *
+ *  WHAT FORCED IT. Glass panels and bare text want opposite things from this
+ *  wash, and at a single uniform value one of them always loses. Measured:
+ *
+ *    · The wash's real job is suppressing STARS, not darkening the sky. The sky
+ *      average is fine at any alpha in range (parchment reads 15.4:1 at .85 and
+ *      13.2:1 at .35). A star behind that same text goes 11.6:1 → 2.4:1 across
+ *      the same span. Worst-pixel is what legibility actually costs, so a
+ *      uniform drop breaks bare prose exactly where a star happens to land —
+ *      unpredictable, and therefore not fixable by tuning.
+ *    · Glass and the wash MULTIPLY. Scene light reaching the eye through a .70
+ *      ribbon is (1 − .70)(1 − dim): 4.5% at dim .85, which is the 2–3% that
+ *      killed `sheer`; 15% at dim .50. Genshin's glass alphas assume the panel
+ *      IS the dimming and there is no scrim underneath. Ours had both, stacked.
+ *
+ *  They stop competing once you notice they happen in different PLACES. Bare
+ *  content lives in the centre column; the glass furniture (bands, ribbon,
+ *  menus) lives at the edges. So the wash is dense where content sits and falls
+ *  off outward — which is also just what Genshin does, vignetting hard behind
+ *  the text and pushing decoration to the rim.
+ *
+ *  TOOL_DIM keeps its meaning as the CENTRE density; SCRIM_EDGE is the fraction
+ *  of it left at the rim. The shaping is a mask on the .dim layer (see the
+ *  scene layout), so element opacity still rides the ascend clock 0 → TOOL_DIM
+ *  exactly as before and every note above still holds.
+ *
+ *  ⚓ NATE — all three of these are yours to drive:
+ *    TOOL_DIM    .85 → .70   centre. Floor is ~.60: that is where parchment
+ *                            over a star still clears 4.5:1 (measured 5.14:1
+ *                            at .60, 7.20:1 at .70, so .70 keeps headroom).
+ *    SCRIM_EDGE  .50         rim = .35 absolute, where a star reads through
+ *                            glass at ΔL .133 instead of .033 — i.e. visibly.
+ *    --scene-dim in app.css  the wash COLOUR, a separate axis from either. */
+export const TOOL_DIM = 0.7;
+/** Rim density as a fraction of TOOL_DIM. 1 = the old uniform wash. */
+export const SCRIM_EDGE = 0.5;
 export const dimTarget = (path: string) => (isToolPath(path) ? TOOL_DIM : 0);
 
 // --- Transition clock --------------------------------------------------------

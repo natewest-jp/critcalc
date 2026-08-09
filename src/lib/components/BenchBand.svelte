@@ -11,8 +11,10 @@
 	 *   Layer 2 (the tab's overrides): the bench is the plan's team editor in
 	 *   both tools. The TB roster grid + Detail card remain the Layer-1
 	 *   editors.
-	 * - ONE identity everywhere: always the dark context, its own ground and
-	 *   double frame (the per-tool ctx flip retired with the ribbon round).
+	 * - ONE identity everywhere: its own ground and double frame (the per-tool
+	 *   ctx flip retired with the ribbon round). GLASS since 2026-08-09 — the
+	 *   strip is furniture, and it lives at the shaped scrim's thin edge where
+	 *   there is actually a world to see through it.
 	 * - `mode` is the tool the ribbon is (or is becoming) docked to. It sets
 	 *   the card heights (planner: coupled to the timeline's published slot
 	 *   metrics; TB: the even resting rhythm) and the ⇄ action's meaning
@@ -126,13 +128,13 @@
 </script>
 
 <!-- The RIBBON: a self-contained STRIP with its own ground, double frame and
-     radius — ONE identity in both tools (always the dark context; the
-     per-tool ctx flip retired with the frame-zone model). The tool frames are
+     radius — ONE identity in both tools (the per-tool ctx flip retired with
+     the frame-zone model; the ground is GLASS since 2026-08-09). The tool frames are
      loose siblings tucked under its edges, and it stands proud of them at top
      and bottom. Interior styling is interim — the card redesign (Nate's
      mockup) is its own follow-up round. -->
 <div
-	class="bb ctx-dark"
+	class="bb ctx-glass"
 	style:width="{RIBBON_W}px"
 	style:height="{boxH}px"
 	style:padding="{RIBBON_CHROME + RIBBON_HEAD}px {RIBBON_CHROME}px {RIBBON_CHROME}px"
@@ -225,7 +227,7 @@
 </div>
 
 <style>
-	/* The ribbon box: its OWN surface — the dark context's panel ground and
+	/* The ribbon box: its OWN surface — the GLASS material's ground and its
 	   radius — one identity everywhere. Width, height, padding and radius come
 	   inline from the RIBBON_* knobs so the dock math and the box always agree.
 	   The ground carries NO stroke of its own (the mockup's outer "border" is
@@ -239,7 +241,12 @@
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		background: var(--frame-bg);
+		/* ↻ 2026-08-09 (Genshin Night): --frame-bg → --surface, because the strip
+		   is .ctx-glass now and in that material the two diverge — --surface is
+		   what you PAINT, --frame-bg is the opaque reference everything MIXES
+		   against. Painting the reference would have left the ribbon opaque
+		   while every derived value behaved as though it were not. */
+		background: var(--surface);
 		overflow: hidden;
 		transition: var(--bb-height-transition, none);
 	}

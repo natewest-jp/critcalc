@@ -91,7 +91,7 @@
 	<div class="band-menu-backdrop" use:portal onclick={() => close(false)} aria-hidden="true"></div>
 	<div
 		bind:this={menuEl}
-		class="band-menu ctx-dark"
+		class="band-menu ctx-glass"
 		use:portal
 		style:left="{menuX}px"
 		style:top="{menuY}px"
