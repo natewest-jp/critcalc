@@ -21,7 +21,7 @@
 	import appCss from '../../app.css?raw';
 	import Mark from '$lib/components/Mark.svelte';
 	import { MARK_NODES, type MarkName } from '$lib/marks.generated';
-	import { BAND_A_H, BAND_B_H, BAND_STACK_GAP, BAND_RADIUS } from '$lib/toolBands';
+	import { BAND_A_H, BAND_B_H, BAND_GAP, BAND_STACK_GAP, BAND_RADIUS } from '$lib/toolBands';
 
 	type Token = { name: string; value: string; resolved: string };
 
@@ -363,10 +363,34 @@
 			muddy middle by another route, the one finding that survived the reverted toolbar-translucency
 			trial; band B had to stop being <code>ctx-light</code> to wear it.
 			<strong>And it is not <code>sheer</code></strong>: that experiment let 2–3% of scene light
-			through, which reads as a duller colour. Glass at .70 lets 15–30% through
-			<em>at the shaped scrim's rim density</em> — and it is
-			<code>SCRIM_EDGE</code>, not the alpha alone, that makes this true. At the old uniform dim of
-			.85, a .70 glass delivered 4.5%: sheer again.
+			through, which reads as a duller colour. These stops let <strong>~17%</strong> through at
+			<code>TOOL_DIM</code> .65 — six times sheer, and plainly the far side of
+			<em>opaque or obviously translucent</em>. ⚠ The alpha alone does not decide it: glass and the
+			wash <strong>multiply</strong>, so what reaches the eye is
+			<code>(1 − glass)(1 − TOOL_DIM)</code>. At the old dim of .85 these same stops would deliver
+			7%, i.e. sheer again. <strong>Move one, check the other.</strong>
+		</p>
+		<p class="sg-note">
+			⚠️ <strong>What sets the floor on a glass stop is a STAR.</strong> Text on glass is limited by
+			the worst pixel behind it, never the average, and the worst pixel is always a star — a tiny,
+			very bright point. Both stops clear 4.5:1 for <code>--muted</code> (the dimmer of the two band
+			voices) against a star <strong>unblurred</strong>: panel 4.92:1, well 5.37:1.
+		</p>
+		<p class="sg-note">
+			⚠️ <strong
+				>At <code>--glass-blur</code> 2px (⚓ Nate) the blur is aesthetic, not load-bearing</strong
+			>
+			— and that is a real change of role. At 4–8px a blur <em>solves</em>
+			the star problem: it spreads the point over its own radius, the peak contribution collapses, and
+			the effective backdrop becomes the local average, which would let the stops go far thinner (even
+			.40 holds 5.37:1 at 4px). At 2px a star is only slightly softened, so the alphas carry legibility
+			on their own and are chosen so they do.
+			<strong
+				>If the blur ever goes back up, the stops may follow it down; if it goes to 0, they must
+				not.</strong
+			>
+			Applied by <code>.ctx-glass</code> itself, because it is part of what the material
+			<em>is</em>.
 		</p>
 
 		<h3>The content registers — what a context does NOT own</h3>
@@ -1264,11 +1288,14 @@
 	<section id="bands">
 		<h2>Tool bands <span class="sg-badge sg-badge--ship">shipped</span></h2>
 		<p class="sg-note">
-			Every tool renders a <code>ToolStack</code>: <strong>two ABUTTING bands</strong> over its
-			surface, free of the tool frame, with the bench ribbon proud of the whole stack. This replaced
-			a bare row of chips floating on the scene — three competing top edges within 38px, and a row
-			that jumped 192px sideways between the benched tools and the Visualizers on every tool→tool
-			fade. Geometry knobs: <code>src/lib/toolBands.ts</code>. Document flows:
+			Every tool renders a <code>ToolStack</code>: <strong>two SEPARATE bands</strong> over its
+			surface, free of the tool frame, with the bench ribbon proud of the whole stack. ↻ ⚓ Nate
+			2026-08-09 — they used to abut inside one clipped box; they are split by
+			<code>BAND_GAP</code> now, the same gutter as everything else, so each is its own object and
+			rounds its own four corners. This replaced a bare row of chips floating on the scene — three
+			competing top edges within 38px, and a row that jumped 192px sideways between the benched
+			tools and the Visualizers on every tool→tool fade. Geometry knobs:
+			<code>src/lib/toolBands.ts</code>. Document flows:
 			<code>src/lib/documentBar.svelte.ts</code>.
 		</p>
 		<div class="sg-band-demo">
@@ -1277,15 +1304,18 @@
 				style:height="{BAND_A_H}px"
 				style:border-radius="{BAND_RADIUS}px"
 			>
-				<span class="sg-zone-tag">band A — <code>ctx-dark</code>, {BAND_A_H}px</span>
+				<span class="sg-zone-tag">band A — <code>ctx-glass</code>, {BAND_A_H}px</span>
 				<span class="sg-val">the DOCUMENT</span>
+			</div>
+			<div class="sg-band-gap" style:height="{BAND_GAP}px">
+				<span class="sg-val">{BAND_GAP}px — BAND_GAP, ⚓ Nate 2026-08-09</span>
 			</div>
 			<div
 				class="sg-band sg-band--b"
 				style:height="{BAND_B_H}px"
 				style:border-radius="{BAND_RADIUS}px"
 			>
-				<span class="sg-zone-tag">band B — <code>ctx-light</code>, {BAND_B_H}px</span>
+				<span class="sg-zone-tag">band B — <code>ctx-glass</code>, {BAND_B_H}px</span>
 				<span class="sg-val">the VIEW</span>
 			</div>
 			<div class="sg-band-gap" style:height="{BAND_STACK_GAP}px">
@@ -1305,19 +1335,22 @@
 						zoom/notes, TB Atlas/Roster/Compare + con lens, Viz per-tile pickers).
 					</li>
 					<li>
-						⚠️ <strong>The bands TRAVEL WITH THEIR TOOL.</strong> Band A was going to be a
-						screen-locked HUD beside the ribbon — it is document-scoped, and the ribbon is the
-						persistent document HUD. But the moment A and B <em>abut</em> they are one object, and a screen-locked
-						A over a world-locked B tears at their shared seam on every tool→tool leg. Abutting tiers
-						cannot have different lock frames. Continuity across the fade stays the ribbon's job; band
-						A merely cross-dissolves into an identical band A.
+						<strong>The bands travel with their tool</strong> — but the reason changed. It used to
+						be structural: A and B abutted, so they were one object, and a screen-locked A over a
+						world-locked B would tear at their shared seam on every tool→tool leg. ↻ 2026-08-09
+						<strong>there is no shared seam any more</strong>, so that constraint is GONE — if band
+						A is ever to become the screen-locked HUD beside the ribbon, the split is what unblocks
+						it. They still travel together today; nothing has asked them not to. Continuity across
+						the fade stays the ribbon's job.
 					</li>
 					<li>
-						<strong>Band B's ground is the light context's own paper</strong> (↻ 2026-08-07). It was
-						<code>--ribbon</code>, the beige — a misreading of that token, which is meant to be a
-						slightly darker band laid ON a light fill, a section header inside a surface. A whole
-						toolbar painted in it made the beige the band's identity rather than an accent within
-						it. <code>--ribbon</code> is unused again until something wants a header stripe.
+						<strong>Both bands are <code>ctx-glass</code></strong> (↻ 2026-08-09). Band B's ground
+						has now been three things: the beige <code>--ribbon</code> (a misreading — that token is
+						a darker band laid ON a light fill, not a whole toolbar), then the light context's
+						paper, now glass. It had no choice on the last one:
+						<strong>there is no light glass.</strong> The A/B distinction never depended on the grounds
+						anyway, and depends on them even less now that the two are separate objects with air between
+						them.
 					</li>
 					<li>
 						<strong>Band B re-points <code>--text</code> at <code>--muted</code>.</strong> It is a CONTROL
@@ -1332,12 +1365,19 @@
 						Band B selects with the ordinary ring.
 					</li>
 					<li>
-						<strong>The A/B seam is SQUARE.</strong> They abut and the stack clips its children, so
-						only the four outer corners round — currently <code>--r-xs</code>, on trial.
+						<strong>Each band rounds its own four corners</strong> (↻ 2026-08-09). When they
+						abutted, the stack clipped its children and only the four <em>outer</em> corners
+						rounded, with the seam square. Split, there is nothing to clip and both boxes round
+						fully — which gives
+						<code>--r-xs</code> twice the evidence while it is on trial.
 					</li>
 					<li>
-						<code>BandMenu</code> is <strong>portalled, not optionally</strong>: the stack clips to
-						its own radius, so an in-place menu would be cut off.
+						<code>BandMenu</code> is <strong>portalled, not optionally</strong>. The reason changed
+						with the split: it used to be the stack's clip. Now it is
+						<code>backdrop-filter</code> — that property mints a <em>containing block</em> as well
+						as a stacking context, so an absolutely-positioned menu inside a glass band would
+						resolve against the band instead of the page. ⚠
+						<strong>Anything else that must escape a band has to portal too.</strong>
 					</li>
 				</ul>
 			</div>
@@ -1797,17 +1837,20 @@
 						at once, which is more gold than Genshin spends on a screen. Ration is the open half.
 					</li>
 					<li>
-						<strong>The scrim's SHAPE, now that it has one.</strong> The ellipse (<code
-							>105% 95% at 50% 44%</code
-						>) is a first cut chosen to sit dense over the centre column and thin at the rim where
-						the glass furniture lives. It is not tuned against any particular tool's layout, and the
-						planner page-scrolls while the other two are viewport-fit — so the "centre column" is
-						not in the same place on all three.
+						⛔ <strong>CLOSED: the shaped scrim.</strong> Built (ellipse, then a soft rounded box
+						from two intersected 1-D falloffs) and scrapped by ⚓ Nate after driving it — "it
+						doesn't really buy us anything meaningful compared to a plain dim".
+						<strong>Don't rebuild it.</strong>
+						The coupling it was solving — glass and bare text wanting opposite things from one wash —
+						dissolves once the glass stops are chosen to clear their own contrast floor: two constraints,
+						two knobs, no geometry. <code>TOOL_DIM</code> is one uniform number again (.65; the floor
+						is .60, set by stars).
 					</li>
 					<li>
-						<strong>Do frozen stars read as texture, or as dirt?</strong> The glass carries no backdrop
-						blur (⚓ Nate), so the starfield shows through the bands and the ribbon as sharp points. Nothing
-						measurable decides this one.
+						<strong>Do frozen stars read as texture, or as dirt?</strong> At
+						<code>--glass-blur</code> 2px the starfield still shows through the bands as near-sharp points.
+						Nothing measurable decides this one — and the stops don't depend on the blur, so it can move
+						either way.
 					</li>
 					<li>
 						<strong>Modals are still opaque.</strong> They mount outside <code>.tool-shell</code>

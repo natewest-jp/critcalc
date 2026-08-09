@@ -14,7 +14,6 @@
 		syncSceneCamera,
 		sceneLayer,
 		dimTarget,
-		SCRIM_EDGE,
 		isToolPath,
 		sceneOccluded,
 		revealDelayMs,
@@ -216,7 +215,6 @@
 		class="dim"
 		class:occluded={$sceneOccluded}
 		style:opacity={initialDim}
-		style:--scrim-edge={SCRIM_EDGE}
 		use:sceneLayer={'dim'}
 	></div>
 
@@ -396,59 +394,12 @@
 		/* The world's own wash: --scene-dim — see the token's note in app.css
 		   for its colour, and TOOL_DIM in transition.ts for the density. */
 		background: var(--scene-dim);
-		/* ↻ 2026-08-09 (Genshin Night): THE SCRIM IS SHAPED. Dense over the
-		   centre where bare content lives, falling off toward the rim where the
-		   glass furniture sits — the full argument, with the star measurements
-		   that forced it, is on TOOL_DIM in transition.ts.
-
-		   Done as a MASK rather than by painting alphas into the background,
-		   deliberately: element opacity still rides the ascend clock 0 → TOOL_DIM
-		   through the sceneLayer WAAPI action, so the mask only has to carry the
-		   SHAPE and every existing note about the ride stays true. It also keeps
-		   the alpha out of a color-mix percentage, which would have needed a
-		   var() in a position Safari support is thin on.
-
-		   ↻ ⚓ NATE 2026-08-09: ELLIPSE → SOFT ROUNDED BOX. He asked whether the
-		   shape could follow the viewport instead of being an ellipse. It can,
-		   and it does not need a rounded-rect gradient (CSS has no such thing) —
-		   it falls out of intersecting two ONE-DIMENSIONAL falloffs. `intersect`
-		   MULTIPLIES the two mask alphas, and the iso-density contours of a
-		   product of two axis-aligned falloffs are rounded rectangles. So the
-		   shape is a soft-cornered box in the viewport's own proportions, for
-		   free, and each axis is independently tunable.
-
-		   ⚠ THE CONSEQUENCE OF MULTIPLYING: an edge MIDPOINT gets SCRIM_EDGE
-		   (one axis at its floor, the other still 1), but a CORNER gets
-		   SCRIM_EDGE SQUARED — at .5 that is .25, so corners keep only a quarter
-		   of the wash. That is the right way round (corners are where the least
-		   content and the most decoration live, which is exactly Genshin's
-		   vignette) but it means SCRIM_EDGE reads as "at the middle of an edge",
-		   not "everywhere around the rim". Worth knowing before tuning it.
-
-		   The plateau is wider than tall and sits slightly above centre because
-		   that is where a tool's content column actually is: the bands take the
-		   top, the footer-ward space is emptier. */
-		--scrim-hold-x: 30%; /* half-width of the full-density plateau */
-		--scrim-hold-y: 26%; /* half-height, measured from --scrim-origin-y */
-		--scrim-origin-y: 46%;
-		--scrim-x: linear-gradient(
-			to right,
-			rgb(0 0 0 / var(--scrim-edge)) 0%,
-			#000 calc(50% - var(--scrim-hold-x)),
-			#000 calc(50% + var(--scrim-hold-x)),
-			rgb(0 0 0 / var(--scrim-edge)) 100%
-		);
-		--scrim-y: linear-gradient(
-			to bottom,
-			rgb(0 0 0 / var(--scrim-edge)) 0%,
-			#000 calc(var(--scrim-origin-y) - var(--scrim-hold-y)),
-			#000 calc(var(--scrim-origin-y) + var(--scrim-hold-y)),
-			rgb(0 0 0 / var(--scrim-edge)) 100%
-		);
-		-webkit-mask-image: var(--scrim-x), var(--scrim-y);
-		mask-image: var(--scrim-x), var(--scrim-y);
-		-webkit-mask-composite: source-in;
-		mask-composite: intersect;
+		/* ⛔ NO MASK. A shaped scrim was built here (ellipse, then a soft rounded
+		   box from two intersected 1-D falloffs) and ⚓ NATE scrapped it after
+		   driving it: "it doesn't really buy us anything meaningful compared to
+		   a plain dim." One uniform wash — don't rebuild the shape. What made
+		   glass and bare text stop competing turned out to be BLUR, not
+		   geometry; the argument is on TOOL_DIM in transition.ts. */
 		pointer-events: none;
 		/* Initial opacity is set inline at SSR time (style:opacity above);
 		   WAAPI takes over via the sceneLayer action after hydration. */

@@ -187,56 +187,41 @@ export type SceneLayerKind = 'composition' | 'dim';
  *  survives that retirement on its own merit, which is why it is declared here
  *  with its own rationale instead of riding along with a token that is gone.
  *
- *  ✅ ↻ 2026-08-09 (Genshin Night): NO LONGER UNIFORM, and no longer one number.
- *  The note below used to end "a shaped scrim is the open question here, not a
- *  higher number" — this is that answer.
+ *  ⛔ THE SHAPED SCRIM IS SCRAPPED (⚓ NATE 2026-08-09, after driving it): "it
+ *  doesn't really buy us anything meaningful compared to a plain dim." Built as
+ *  a mask on the .dim layer (an ellipse first, then a soft rounded box made by
+ *  intersecting two 1-D falloffs), measured, shipped, and taken back out the
+ *  same day. The wash is ONE UNIFORM NUMBER again — don't rebuild it.
  *
- *  WHAT FORCED IT. Glass panels and bare text want opposite things from this
- *  wash, and at a single uniform value one of them always loses. Measured:
+ *  ⚠ And the problem it was built to solve turned out not to need solving. The
+ *  premise was that glass and bare text want opposite things from one wash, so
+ *  the wash had to vary by PLACE. What actually happened is that the two are
+ *  governed independently: text on a GLASS band is limited by the glass stop
+ *  (whose alphas are chosen to clear 4.5:1 against a star on their own — see
+ *  --glass-panel), and text on the OPEN scene is limited by this number. Two
+ *  constraints, two knobs, no geometry required. The shaped scrim was solving a
+ *  coupling that a correctly-chosen glass alpha dissolves.
  *
- *    · The wash's real job is suppressing STARS, not darkening the sky. The sky
- *      average is fine at any alpha in range (parchment reads 15.4:1 at .85 and
- *      13.2:1 at .35). A star behind that same text goes 11.6:1 → 2.4:1 across
- *      the same span. Worst-pixel is what legibility actually costs, so a
- *      uniform drop breaks bare prose exactly where a star happens to land —
- *      unpredictable, and therefore not fixable by tuning.
- *    · Glass and the wash MULTIPLY. Scene light reaching the eye through a .70
- *      ribbon is (1 − .70)(1 − dim): 4.5% at dim .85, which is the 2–3% that
- *      killed `sheer`; 15% at dim .50. Genshin's glass alphas assume the panel
- *      IS the dimming and there is no scrim underneath. Ours had both, stacked.
+ *  ↻ ⚓ NATE 2026-08-09: .85 → .65. He wanted the world lighter than the old
+ *  .85–.9 and named .6–.7; .65 is the pick inside it, and the reason to prefer
+ *  it over .60 is measured rather than aesthetic:
  *
- *  They stop competing once you notice they happen in different PLACES. Bare
- *  content lives in the centre column; the glass furniture (bands, ribbon,
- *  menus) lives at the edges. So the wash is dense where content sits and falls
- *  off outward — which is also just what Genshin does, vignetting hard behind
- *  the text and pushing decoration to the rim.
+ *    THE FLOOR ON THIS NUMBER IS .60, AND IT IS SET BY STARS, NOT BY SKY. Sky
+ *    average is fine anywhere in range — parchment reads 13.4:1 over it at .65.
+ *    A STAR behind that same text is the worst pixel, and it goes 9.96:1 at .85
+ *    → 5.33:1 at .65 → 4.56:1 at .60 → 3.97:1 at .55. So .60 is the last legal
+ *    value and has no headroom at all; .65 keeps a rung in hand for content
+ *    that is dimmer than --text.
  *
- *  TOOL_DIM keeps its meaning as the CENTRE density; SCRIM_EDGE is the fraction
- *  of it left at the rim. The shaping is a mask on the .dim layer (see the
- *  scene layout), so element opacity still rides the ascend clock 0 → TOOL_DIM
- *  exactly as before and every note above still holds.
+ *  ⚠ This floor only binds where text sits DIRECTLY on the world. Text on a
+ *  glass band is governed by the blur instead, which is why glass could get
+ *  meaningfully more transparent in the same round the wash got lighter.
  *
- *  ⚓ NATE — all three of these are yours to drive:
- *    TOOL_DIM    .85 → .70   centre. Floor is ~.60: that is where parchment
- *                            over a star still clears 4.5:1 (measured 5.14:1
- *                            at .60, 7.20:1 at .70, so .70 keeps headroom).
- *    SCRIM_EDGE  .50         rim = .35 absolute, where a star reads through
- *                            glass at ΔL .133 instead of .033 — i.e. visibly.
- *    --scene-dim in app.css  the wash COLOUR, a separate axis from either.
- *
- *  ⚠ SCRIM_EDGE IS THE DENSITY AT THE MIDDLE OF AN EDGE, NOT EVERYWHERE ON THE
- *  RIM. ↻ ⚓ NATE 2026-08-09: the shape became a soft rounded BOX following the
- *  viewport rather than an ellipse, and the way you get a rounded rect out of
- *  CSS gradients (there is no rounded-rect gradient) is to INTERSECT two
- *  one-dimensional falloffs — which multiplies their alphas. So a corner lands
- *  at SCRIM_EDGE², i.e. .25 rather than .5. That is the right way round (the
- *  corners are where the least content and the most decoration live, which is
- *  Genshin's own vignette), but it is a surprise if you tune this expecting a
- *  uniform rim. The plateau half-extents live with the shape in the scene
- *  layout, since they are geometry rather than density. */
-export const TOOL_DIM = 0.7;
-/** Rim density as a fraction of TOOL_DIM. 1 = the old uniform wash. */
-export const SCRIM_EDGE = 0.5;
+ *  ⚓ NATE — the two knobs, and they are independent:
+ *    TOOL_DIM               how much world survives.       Floor .60.
+ *    --scene-dim in app.css the wash COLOUR — how black the floor of the
+ *                           composite is. A different axis entirely. */
+export const TOOL_DIM = 0.65;
 export const dimTarget = (path: string) => (isToolPath(path) ? TOOL_DIM : 0);
 
 // --- Transition clock --------------------------------------------------------

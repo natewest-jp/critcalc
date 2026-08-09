@@ -6,16 +6,26 @@
  * edges (toolbar 72, ribbon 98, frame 109) within 38px of each other, and the
  * row jumped 192px sideways between the benched tools and the Visualizers.
  *
- * They are now TWO ABUTTING BANDS — one object, its own ground, standing clear
- * of the tool surface, with the bench ribbon proud of the whole stack:
+ * They are TWO SEPARATE BANDS standing clear of the tool surface, with the
+ * bench ribbon proud of the whole stack:
  *
  *     ▓▓▓▓▓▓▓▓                          ← ribbon, RIBBON_OVERHANG_Y proud
- *     ▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒    ← band A   (ctx-dark)   BAND_A_H
- *     ▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░    ← band B   (ctx-light)  BAND_B_H
+ *     ▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒    ← band A   (glass)  BAND_A_H
+ *     ▓▓▓▓▓▓▓▓                          ← BAND_GAP of bare scene
+ *     ▓▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒    ← band B   (glass)  BAND_B_H
  *     ▓▓▓▓▓▓▓▓                          ← BAND_STACK_GAP of bare scene
  *     ▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░    ← the tool surface
  *     ▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░
  *     ▓▓▓▓▓▓▓▓
+ *
+ * ↻ ⚓ NATE 2026-08-09: THEY NO LONGER ABUT. "Band A and Band B of the toolbar
+ * need to be split by the same gap as everywhere else" — he has a purpose in
+ * mind for the two bands that he'll share later; this is the structural half of
+ * it landing early. One consequence is already banked: the note below about the
+ * bands having to travel together, because a screen-locked A abutting a
+ * world-locked B would tear at their shared seam, no longer applies — THERE IS
+ * NO SHARED SEAM. If band A is ever to become screen-locked HUD beside the
+ * ribbon, this is the change that unblocks it.
  *
  * The split is a RULE about what a control is, not a place to put things:
  *
@@ -64,6 +74,16 @@ export const BAND_B_H = 32;
 export const BAND_STACK_GAP = TOOL_GUTTER;
 
 /**
+ * Bare scene BETWEEN the two bands (⚓ NATE 2026-08-09).
+ *
+ * The same gutter as everything else, which is the point of it — "split by the
+ * same gap as everywhere else". It is a separate constant from BAND_STACK_GAP
+ * only so the two can be told apart when reading the stack; they are the same
+ * rhythm and should move together unless there is a reason not to.
+ */
+export const BAND_GAP = TOOL_GUTTER;
+
+/**
  * Interior padding at each end of a band. Matches the planner frame's own
  * horizontal padding (FRAME_PAD_X = 14) so a control at a band's left edge
  * lines up with the surface content below it.
@@ -71,7 +91,7 @@ export const BAND_STACK_GAP = TOOL_GUTTER;
 export const BAND_PAD_X = 14;
 
 /**
- * The stack's outer radius — `--r-xs`.
+ * A band's radius — `--r-xs`.
  *
  * ⚓ NATE 2026-08-07, ON TRIAL: 6 → 1. The radius scale collapsed to a
  * near-universal 3 (see the GEOMETRY block in app.css) and the bands are where
@@ -80,13 +100,15 @@ export const BAND_PAD_X = 14;
  * and the least like a card, so they are the honest test of whether that reads.
  * If it does, 1px is a real rung; if it doesn't, this goes back to 3.
  *
- * The A/B seam is SQUARE — they abut, and the stack clips its children, so only
- * the four outer corners round.
+ * ↻ 2026-08-09: now applied per BAND rather than to a clipping wrapper. When
+ * they abutted, only the four outer corners rounded and the seam stayed square;
+ * split, each band rounds all four of its own. The trial gets twice the
+ * evidence, which is a small bonus of the split.
  */
 export const BAND_RADIUS = 1;
 
-/** Full height of the two-tier object. */
-export const BAND_STACK_H = BAND_A_H + BAND_B_H;
+/** Full height of the two-tier object, INCLUDING the gap between the tiers. */
+export const BAND_STACK_H = BAND_A_H + BAND_GAP + BAND_B_H;
 
 /**
  * How far a tool's SURFACE starts below the top of its band stack — the number

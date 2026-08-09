@@ -1,6 +1,13 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { BAND_A_H, BAND_B_H, BAND_PAD_X, BAND_RADIUS, BAND_STACK_GAP } from '$lib/toolBands';
+	import {
+		BAND_A_H,
+		BAND_B_H,
+		BAND_GAP,
+		BAND_PAD_X,
+		BAND_RADIUS,
+		BAND_STACK_GAP
+	} from '$lib/toolBands';
 	import { RIBBON_OVERHANG_Y, RIBBON_W, TOOL_INSET } from '$lib/benchBand.svelte';
 
 	// ---------------------------------------------------------------------------
@@ -63,6 +70,7 @@
 	style:--band-b-h="{BAND_B_H}px"
 	style:--band-pad-x="{BAND_PAD_X}px"
 	style:--band-radius="{BAND_RADIUS}px"
+	style:--band-gap="{BAND_GAP}px"
 	style:--band-stack-gap="{BAND_STACK_GAP}px"
 	style:--stack-inset="{benched ? TOOL_INSET : 0}px"
 >
@@ -83,12 +91,12 @@
 		></div>
 	{/if}
 
-	<!-- The band header: ONE box, two tiers, no stroke — the tool frame below
-	     carries the family's border and the bands read as the solid two-tone
-	     plate sitting on it (Genshin's banded section header, and its BP bar:
-	     a navy run with a cream tier, no outer edge of its own). overflow
-	     clips both tiers to the outer radius; the A/B seam is square because
-	     they ABUT — one object, not two stacked ones. -->
+	<!-- The band header: TWO SEPARATE bands, no stroke on either — the tool
+	     surface below carries the family's structure and the bands read as
+	     glass rails floating over it. ↻ ⚓ NATE 2026-08-09: they used to abut
+	     inside one clipped box (Genshin's banded section header, a navy run
+	     with a cream tier); they are split by --band-gap now, so each is its
+	     own object and rounds its own four corners. -->
 	<div class="bands">
 		<div class="band band-a ctx-glass">
 			<div class="band-zone">{@render bandALeft?.()}</div>
@@ -165,24 +173,29 @@
 		visibility: hidden;
 	}
 
+	/* ↻ ⚓ NATE 2026-08-09: THE BANDS NO LONGER ABUT — they are split by
+	   --band-gap, the same gutter as everything else. So this is a flex column
+	   of two independent boxes rather than one clipped object: no shared
+	   border-radius, no overflow:hidden, each band rounding its own four
+	   corners. (The clip had a second job — keeping the two tiers inside one
+	   outer radius — which simply stops existing.) */
 	.bands {
-		border-radius: var(--band-radius);
-		overflow: hidden;
-		/* Its own stacking/clipping context. The bands sit ABOVE the surface in
-		   source order and must not be overlapped by anything the surface
-		   raises (the planner's Source overlay bounds to its frame, so this is
+		display: flex;
+		flex-direction: column;
+		gap: var(--band-gap);
+		/* Its own stacking context. The bands sit ABOVE the surface in source
+		   order and must not be overlapped by anything the surface raises (the
+		   planner's Source overlay bounds to its frame, so this is
 		   belt-and-braces). */
 		position: relative;
 		z-index: 1;
 		flex-shrink: 0;
 	}
 
-	/* Each tier is a plain two-zone rail; the contexts supply the grounds.
+	/* Each band is a plain two-zone rail; the context supplies the ground.
 
-	   ↻ 2026-08-09 (Genshin Night): BOTH BANDS ARE GLASS. The bands are exactly
-	   what the glass material is for — furniture sitting ON the page rather than
-	   being it — and they live at the top rim, where the shaped scrim is at its
-	   thinnest and there is actually a world to see.
+	   ↻ 2026-08-09 (Genshin Night): BOTH BANDS ARE GLASS — furniture sitting ON
+	   the page rather than being it, which is exactly what the material is for.
 
 	   ⚠ Band B stopped being ctx-light, and it had no choice: there is no light
 	   glass. Translucent paper over a near-black world is the muddy middle by
@@ -190,12 +203,11 @@
 	   toolbar-translucency trial ("band B being paper is the constraint"). This
 	   is the round where that constraint got paid.
 
-	   The A/B distinction is unchanged and does not need a ground to carry it —
-	   A is the DOCUMENT (the shared tabs, Save/Load/Share), B is the VIEW. What
-	   separates them now is the same thing that separates a well from a surface:
-	   one rung, plus the seam between them. Prior art at 2026-08-07 (⚓ NATE),
-	   when band B stopped being the beige for the same class of reason — a whole
-	   toolbar painted in an accent makes the accent the band's identity. */
+	   The A/B distinction is unchanged — A is the DOCUMENT (the shared tabs,
+	   Save/Load/Share), B is the VIEW — and now that they are separate objects
+	   it needs no ground trick to carry it at all: two boxes with air between
+	   them are already two things. B keeps the quieter ground anyway, so the
+	   VIEW band reads as the second tier rather than a peer. */
 	.band {
 		display: flex;
 		align-items: center;
@@ -203,6 +215,7 @@
 		gap: 1rem;
 		padding: 0 var(--band-pad-x);
 		min-width: 0;
+		border-radius: var(--band-radius);
 	}
 
 	.band-a {
@@ -212,9 +225,8 @@
 
 	.band-b {
 		height: var(--band-b-h);
-		/* One rung down from band A — the VIEW band reads as recessed under the
-		   DOCUMENT band, which is the relationship the two grounds used to carry
-		   by being different materials entirely. */
+		/* One rung down from band A — the VIEW band reads as recessed relative to
+		   the DOCUMENT band. */
 		background: var(--surface-well);
 		/* Band B is a CONTROL band — labels and buttons, never prose. --text is
 		   re-pointed at --muted so everything in the band speaks the label voice

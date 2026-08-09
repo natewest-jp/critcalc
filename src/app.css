@@ -98,10 +98,38 @@
 	   ↻ The law refines this round: a line mixes opaquely against a KNOWN
 	   ground. On a glass surface the ground is unknown, so THERE the line
 	   carries alpha. .ctx-glass is the one context that declares alpha lines. */
-	--glass-ribbon: rgb(46 53 67 / 0.7); /* slate-800 — bands, ribbon */
-	--glass-panel: rgb(46 53 67 / 0.85); /* panels floating on the scene */
-	--glass-well: rgb(28 33 43 / 0.72); /* slate-950 — recessed fields */
+	/* ↻ ⚓ NATE 2026-08-09: MORE TRANSPARENT. Fable's stops were .85 / .72; these
+	   are .68 / .55, which lets meaningfully more world through a band — 11%
+	   and 16% at the new TOOL_DIM .65, against 9% before.
+
+	   ⚠ WHAT SETS THE FLOOR HERE IS A STAR. Text on glass is limited by the
+	   WORST pixel behind it, never the average, and the worst pixel is always a
+	   star — a tiny, very bright point. Both stops clear 4.5:1 for --muted (the
+	   dimmer of the two band voices) against a star, UNBLURRED: panel 4.92:1,
+	   well 5.37:1. That is deliberate — see --glass-blur for why they cannot be
+	   allowed to depend on the blur.
+
+	   ⚠ Glass and the wash MULTIPLY: what reaches the eye is
+	   (1 − glass)(1 − TOOL_DIM). At the old dim of .85 these same stops would
+	   deliver 5% and 7%, i.e. `sheer` again. Move one, check the other.
+
+	   ⛔ --glass-ribbon is DELETED. It was Fable's stop for the bench ribbon,
+	   and the bench went back to opaque slate the same day (⚓ NATE). Nothing
+	   painted it; the bands take --glass-panel and --glass-well. */
+	--glass-panel: rgb(46 53 67 / 0.68); /* slate-800 — band A, menus, panels */
+	--glass-well: rgb(28 33 43 / 0.55); /* slate-950 — band B, recessed fields */
 	--glass-parch: rgb(236 229 216 / 0.1); /* parchment frost — hover on glass */
+	/* ⚓ NATE: 6px → 2px, "very minimal is fine".
+	   ⚠ AT 2px THE BLUR IS AESTHETIC, NOT LOAD-BEARING, and that is a real
+	   change of role worth stating. At 4–8px a blur SOLVES the star problem
+	   above: it spreads a bright point over its own radius, the peak
+	   contribution collapses, and the effective backdrop becomes the local
+	   average — which would have let the stops go far thinner (even .40 holds
+	   5.37:1 at 4px). At 2px a star is only slightly softened, so the ALPHAS
+	   have to carry legibility on their own, and the values above are chosen so
+	   they do. ⚠ If this ever goes back up, the stops may follow it down; if it
+	   goes to 0, they must not. */
+	--glass-blur: 2px;
 
 	/* ══ STRUCTURE ═════════════════════════════════════════════════════════════
 	   The page ground and the WORLD's text ramp — what the site wears outside a
@@ -979,9 +1007,13 @@
    know whether there is a world behind them.
 
    WHO WEARS IT. ⚓ NATE: bare-on-the-scene stays the default for CONTENT; glass
-   is for the FURNITURE — the bands, the bench ribbon, menus, modals. The things
-   that sit ON the page rather than being it. A tool's content does not go back
-   into a box because glass exists.
+   is for the FURNITURE — the bands and the band menus. The things that sit ON
+   the page rather than being it. A tool's content does not go back into a box
+   because glass exists.
+   ⚠ NOT the bench ribbon (⚓ NATE 2026-08-09: "the bench is the thing I'm sure
+   should be opaque slate the most"), not the aside/filter column, and not
+   modals — they float over the UNDIMMED landing too, where glass is nearly
+   transparent.
 
    ⚠ THERE IS NO LIGHT GLASS, and this is a law rather than an omission.
    Translucent paper over a near-black world is the muddy middle by another
@@ -992,19 +1024,28 @@
    ⚠ AND IT IS NOT `sheer`. That experiment was built, measured, shipped and
    reverted, and the rule that came out of it stands: opaque, or OBVIOUSLY
    translucent — the middle is not a place. Sheer let 2–3% of scene light
-   through, which reads as a duller colour. Glass at .70 lets 15–30% through at
-   the shaped scrim's rim density, which is the far side of that same rule.
-   The number that makes this true is SCRIM_EDGE, not the alpha alone: at the
-   old uniform dim .85 a .70 glass delivered 4.5%, i.e. sheer again.
+   through, which reads as a duller colour. These stops let ~17% through at
+   TOOL_DIM .65 — the far side of that same rule, and several times sheer.
+   ⚠ The alpha alone does not decide it: glass and the wash MULTIPLY, so the
+   world reaching the eye is (1 − glass)(1 − TOOL_DIM). At the old dim of .85
+   these same stops would deliver 5–7%, which is sheer again. Move one, check
+   the other.
 
-   ⚠ NO BACKDROP BLUR ANYWHERE. ⚓ NATE. Perf was not the reason to skip it —
-   the star-freeze round means the scene holds one frame at rest, so a blur
-   would rasterize once — but it buys little over a near-uniform backdrop and
-   backdrop-filter mints a stacking context and a containing block, which is
-   real risk next to the portalled popovers and the transform-placed tool pan.
-   ⚠ Consequence to LOOK at (not measurable): frozen stars read as sharp points
-   THROUGH the glass. Deliberate texture, or dirt on the panel — Nate's eyes. */
+   ↻ 2026-08-09 — THE BLUR IS ON (⚓ NATE), reversing the note that stood here
+   for a few hours. It is applied BY THIS CLASS rather than per surface, because
+   it is part of what the material IS, not a finish on top of it. ⚠ At the 2px
+   Nate settled on it is AESTHETIC — the stops clear their contrast floor
+   without it, deliberately, so nothing here depends on the blur staying. See
+   --glass-blur, which carries the full argument and the numbers.
+   ⚠ Perf was never the objection: the star-freeze round holds one scene frame
+   at rest, so the blur rasterizes once and is reused. The real risks are
+   WebKit-shaped — backdrop-filter mints a stacking context AND a containing
+   block. The band menus portal to <body> and so escape this element entirely,
+   which is what keeps that safe; anything absolutely-positioned that must
+   escape a band has to portal too. */
 .ctx-glass {
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	backdrop-filter: blur(var(--glass-blur));
 	/* ⚠ PAINT --surface, MIX AGAINST --frame-bg. In the opaque contexts those
 	   two are the same value and the distinction never had teeth; here they
 	   deliberately diverge, and it is the one thing to get right when moving a
