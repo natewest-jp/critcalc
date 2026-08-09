@@ -83,6 +83,14 @@ localStorage-backed, shared across tools: `constellations` (characterId → 0–
 - Avatars: `getAvatar(id, preferNewfit, size, traveler)` — availability manifest (`hasAvatar`) prevents SSR'd 404 imgs (prerender fails on them); regenerate via `npm run generate-newfit`
 - Gates before any commit: `npx vitest run` (lint/parse/derivation/index-drift), `npm run check`, `npm run lint`
 
+### Commits
+
+- **The type vocabulary extends conventional commits.** Standard: `feat` `fix` `refactor` `perf` `test` `docs` `chore` `revert`. Three are ours and are NOT interchangeable with `feat`/`chore`: **`tune`** — adjusting hand-tuned VALUES, not behavior; **`polish`** — refining an existing surface, no new capability; **`experiment`** — exploratory direction work, usually on an `experiment/` branch. Scope names the area: `(tools)` `(bench)` `(planner)` `(landing)` `(color)` `(probe)` …
+- **`tune(nate)` means Nate's own value pass, landed verbatim.** Those numbers are his measurements, not derivations — never "correct" or regenerate them (memory `feedback_expose_tuning_knobs`).
+- The subject names the change in the project's voice; **the body says WHY**, including what was tried and rejected.
+- **Feature branches merge with `--no-ff`**, message `Merge <branch> — <summary>`. ⚠️ The MERGE commit is the hash worth citing later, not the branch tip — that is what memory notes reference.
+- **Push only when asked**, and never commit straight to `main` for feature work.
+
 ---
 
 ## Verification Policy
