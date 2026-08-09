@@ -36,9 +36,13 @@ import type {
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
-const CHART_BG = '#242c40'; // --rp-chart-bg (↻ 2026-08-05 Genshin-UI archetype: the dark context surface)
-const GRID = '#504f56'; // --rp-grid = mix(ctx-dark border 45%, rp-chart-bg), resolved
-const LANE_LINE = '#766d6a'; // --rp-line = mix(ctx-dark border 85%, rp-chart-bg), resolved
+// ↻ 2026-08-09 (Genshin Night): every value below is now the RESOLVED end of a
+// chain — app.css grew a primitive layer, so --rp-chart-bg is --surface-well is
+// --slate-900. The mirror test resolves the chain itself rather than comparing
+// declaration text, so these stay literals and stay checked.
+const CHART_BG = '#262c38'; // --rp-chart-bg → --surface-well → --slate-900
+const GRID = '#4e5159'; // --rp-grid = mix(ctx-dark --border 45%, chart-bg), resolved
+const LANE_LINE = '#717377'; // --rp-line = mix(ctx-dark --border 85%, chart-bg), resolved
 // ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css. Canvas can't resolve
 // var(), so every token the export paints has to be duplicated here as a
 // literal. When a token value changes in app.css, change it here too or the
@@ -47,14 +51,11 @@ const LANE_LINE = '#766d6a'; // --rp-line = mix(ctx-dark border 85%, rp-chart-bg
 // LIGHT one (.ctx-light), so the context-sensitive tokens here mirror those
 // blocks, not :root — the mirror test sources them the same way.
 const ACTIVE = '#757f93'; // --rp-active (Nate-sampled 2026-07-31; no longer the --neutral alias)
-const TEXT = '#e5d9c3'; // --text (ctx-dark — parchment on dark)
-// ↻ 2026-08-05 (archetype consistency pass): the dark context's --muted lifted
-// off the #857971 dim rung — at 3.29:1 on the chart it was under the body-text
-// floor. It is now mix(--text 30%, #857971), the blend of the archetype's own
-// two hinge values. #857971 keeps its structural job as --border, so GRID and
-// LANE_LINE above are unaffected.
-const MUTED = '#a2968a'; // --muted (ctx-dark dim)
-const INK = '#0d0d0f'; // --ink (⚓ NATE 2026-08-05, Genshin-UI archetype)
+const TEXT = '#ece5d8'; // --text (ctx-dark) → --parchment-100
+// ↻ 2026-08-09: the dark context's --muted stopped being an invented blend and
+// became what Genshin actually does — the ink laid on the ground at .72.
+const MUTED = '#b7b4ae'; // --muted (ctx-dark) = mix(parchment-100 72%, slate-800)
+const INK = '#0d0d0f'; // --bright-ink → --ink-950 (⚓ NATE 2026-08-05)
 // Paired tool tints — mirror app.css. --calm-fill = #2b5590 (buff body/fill —
 // the time-scaling ramp's full end); --calm = #6b99c7 (bright accent stripe).
 // Buff bars fill solid calm-fill with a calm stripe; debuff/proc bars fill
@@ -84,7 +85,7 @@ const UI_DANGER = '#e63946';
 // class is gone — the bench card renders in the ribbon's DARK context, where
 // --sp-avatar-fill starts at --frame-bg — and the export's own label column has
 // always been painted CHART_BG, so a paper disc was drift in both directions.
-const PORTRAIT_BG = '#242c40'; // --surface (ctx-dark — the bench card's ground)
+const PORTRAIT_BG = '#2e3543'; // --surface (ctx-dark) → --slate-800
 
 /** Test-only: the hand-maintained mirror, exported so
  *  timelineExport.mirror.test.ts can assert it against app.css /
