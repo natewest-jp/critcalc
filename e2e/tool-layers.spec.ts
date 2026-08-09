@@ -20,6 +20,14 @@ import { test, expect } from './fixtures/critcalc';
  *
  * Tagged @storm: a nav storm takes minutes, so it is opt-in
  * (`npm run test:e2e:storm`) rather than part of the default gate.
+ *
+ * ⚠ MEASURED 2026-08-09, 6 cycles × 3 engines: watchdog hits = 0 EVERYWHERE,
+ * Chrome included. Nate reproduces Bug 2 in real, headed Chrome within seconds,
+ * so headless Chrome evidently does not exercise whatever triggers it. Until
+ * that changes, a green run here means "no engine is dirty right now" — it is
+ * NOT evidence that Bug 2 is fixed, and this file does not yet deliver the
+ * automatic cross-engine record it was written for. Judge the bug in a real
+ * browser.
  */
 
 declare global {

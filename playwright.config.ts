@@ -63,17 +63,25 @@ export default defineConfig({
 	 * run exit 1, and `&&` would then skip WebKit entirely. Both engines must
 	 * always report.
 	 *
-	 * 🐛 OPEN — intermittent worker-teardown hang. Every test passes, then some
-	 * workers fail to exit; Playwright waits out its full 5-minute force-kill
-	 * timeout and the process exits 1. A clean run is ~2.5 min, a hung one ~5.6.
-	 * It appeared once the suite passed ~60 tests / 9 spec files (the 7-spec set
-	 * never showed it). Ruled OUT by bisect — each on a single observation, and
-	 * three of those single observations later proved false, so treat the list
-	 * as "unlikely", not "eliminated": the `browser` fixture, the `request`
-	 * fixture, the JS-disabled context, the live GL scene, tracing, and the
-	 * project switch. ⚠ ONE clean run proves nothing here — it flips run to run
-	 * on identical input. The tests themselves are trustworthy; the EXIT CODE is
-	 * not, so read the "N passed" line rather than `$?` until this is fixed.
+	 * 🐛 UPSTREAM, NOT OURS — intermittent worker-teardown hang. Every test
+	 * passes, then some workers fail to exit; Playwright waits out its full
+	 * 5-minute force-kill timeout and the process exits 1. Clean run ~2.5 min,
+	 * hung one ~5.6.
+	 *
+	 * Root cause: Chrome occasionally does not exit after Playwright sends
+	 * `Browser.close` over CDP, so the worker's connection stays open. That is a
+	 * Chrome shutdown bug surfacing through the runner —
+	 * https://github.com/microsoft/playwright/issues/39753 — and as of 1.62.1
+	 * NO released version contains a fix (we are on 1.61.1; upgrading does not
+	 * help). It is per-browser-close probability, which is why it only showed up
+	 * once the suite passed ~60 tests, and why it lands on Chrome far more than
+	 * WebKit.
+	 *
+	 * ⚠ DO NOT BISECT OUR SPECS FOR THIS. It is random, so a single clean run
+	 * "confirms" whatever you just changed — that produced three false fixes
+	 * (chrome-only, the `request` fixture, tracing) before the cause was found by
+	 * simply reading the upstream issue. The tests are trustworthy; the EXIT CODE
+	 * is not, so read the "N passed" line rather than `$?`.
 	 */
 	projects: [
 		{
