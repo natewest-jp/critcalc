@@ -73,14 +73,36 @@ export const BAND_A_H = 36;
 /**
  * The VIEW band's height.
  *
- * ↻ ⚓ NATE 2026-08-09: 32 → 38, and the reasoning inverted with it. It used to
- * be deliberately SHORTER than band A so it read as a second tier. Band A has
- * since lost its ground, so band B is the tool's ONE banded row — there is no
- * second tier to be — and the Team Builder's navigation moved into it after
- * Nate's read that the in-tool nav was "too small and inconspicuous". A band
- * that carries a tool's primary navigation has to be able to seat it.
+ * ↻ ⚓ NATE, twice in two days: 32 → 38 (the Team Builder's navigation moved in,
+ * and a band carrying a tool's primary navigation has to seat it) → 36, which
+ * is BAND_A_H. The two rows are one rhythm now — "let's make all of the Band A
+ * / Band B items 36px". The original reason B was shorter, so it would read as
+ * a second tier under A, died when A stopped being a band at all.
  */
-export const BAND_B_H = 38;
+export const BAND_B_H = 36;
+
+/**
+ * The height of a BAND CONTROL — every glass plate standing in either row
+ * (⚓ NATE 2026-08-10). Equal to both band heights on purpose: a control fills
+ * its row exactly, so the two bands read as a run of objects at one height
+ * rather than as rails with things floating inside them.
+ *
+ * ⚠ The icon-only controls are the stated exception — "except for their
+ * slightly smaller + and ... buttons". Those are `.btn--icon`; see app.css.
+ */
+export const BAND_CTRL_H = 36;
+
+/**
+ * The gap BETWEEN CONTROLS inside a band row — tab to tab, button to button,
+ * and (2026-08-10) the Team Builder's Clear-team · navigation rail · con-lens
+ * split.
+ *
+ * ⚓ NATE: "make it the same as the gap between band A buttons." It was two
+ * near-identical values before this — .25rem in the actions zone, .35rem in the
+ * tab strip — which is the kind of drift a named constant exists to stop. Both
+ * moved onto this.
+ */
+export const BAND_ITEM_GAP = 4;
 
 /**
  * Bare scene between the band stack's bottom and the tool surface's top.
@@ -92,14 +114,21 @@ export const BAND_B_H = 38;
 export const BAND_STACK_GAP = TOOL_GUTTER;
 
 /**
- * Bare scene BETWEEN the two bands (⚓ NATE 2026-08-09).
+ * Bare scene BETWEEN the two bands.
  *
- * The same gutter as everything else, which is the point of it — "split by the
- * same gap as everywhere else". It is a separate constant from BAND_STACK_GAP
- * only so the two can be told apart when reading the stack; they are the same
- * rhythm and should move together unless there is a reason not to.
+ * ↻ ⚓ NATE 2026-08-10: HALF the gutter, and the reason it stopped being the
+ * full one is that the two bands stopped being two tiers. It landed at
+ * TOOL_GUTTER the day they were split, when the point being made was that they
+ * are separate objects; now that band A is a run of loose plates and band B is
+ * a run of loose plates, a full gutter between them read as two unrelated rows
+ * rather than as one header with two lines in it. Half is enough to keep them
+ * apart and not enough to divorce them.
+ *
+ * ⚠ It is a HALF of the rhythm, not a new number. BAND_STACK_GAP (band stack →
+ * tool surface) stays the full gutter, so the header still separates from the
+ * content more than it separates from itself.
  */
-export const BAND_GAP = TOOL_GUTTER;
+export const BAND_GAP = TOOL_GUTTER / 2;
 
 /**
  * Interior padding at each end of a band. Matches the planner frame's own

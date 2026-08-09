@@ -78,6 +78,8 @@
 		<div
 			class="tab tab--closeable doc-tab"
 			class:active={tab.id === rt.activeTabId}
+			class:inset={tab.id === rt.activeTabId}
+			class:inset--plain={tab.id === rt.activeTabId}
 			class:doc-tab--drag-over-left={dragOverId === tab.id && dragSide === 'left'}
 			class:doc-tab--drag-over-right={dragOverId === tab.id && dragSide === 'right'}
 			class:doc-tab--dragging={draggedId === tab.id}
@@ -162,10 +164,13 @@
 </div>
 
 <style>
+	/* gap: BAND_ITEM_GAP, shared with the actions zone across the row (⚓ Nate
+	   2026-08-10 — these were .35rem and .25rem, two values that meant the same
+	   thing and had drifted apart). */
 	.doc-tabs {
 		display: flex;
 		align-items: center;
-		gap: 0.35rem;
+		gap: var(--band-item-gap, 4px);
 		min-width: 0;
 		/* The strip is the flexible half of band A: many documents ellipsize
 		   inside it rather than pushing the actions off the band's end. */
@@ -185,9 +190,14 @@
 	}
 
 	/* Drop indicator: a 2px vertical line on the left or right edge of the
-	   target tab. --accent inside band A is the dark context's parchment. */
+	   target tab.
+
+	   ⚠ BOTH SIDES USE ::before (2026-08-10). The right-hand one was ::after,
+	   and the active tab now wears `.inset--plain`, whose stroke IS an ::after —
+	   one of them would have silently won. The two states are mutually exclusive
+	   (dragSide is left XOR right), so one pseudo serves both. */
 	.doc-tab--drag-over-left::before,
-	.doc-tab--drag-over-right::after {
+	.doc-tab--drag-over-right::before {
 		content: '';
 		position: absolute;
 		top: 2px;
@@ -200,7 +210,7 @@
 	.doc-tab--drag-over-left::before {
 		left: -2px;
 	}
-	.doc-tab--drag-over-right::after {
+	.doc-tab--drag-over-right::before {
 		right: -2px;
 	}
 
@@ -224,13 +234,14 @@
 		outline: none;
 		flex-shrink: 0;
 	}
-	/* Renaming happens inside the ACTIVE tab — the beige selected plate (the
-	   --sel-surface pilot). White-on-beige would vanish; flip to ink and a
-	   slightly-recessed opaque well (mixed against the known beige ground,
-	   never alpha — the compositing law). */
+	/* ↻ 2026-08-10: the active tab stopped being a beige plate and went opaque
+	   slate, so the ink-on-beige flip this used to need is gone with it. The
+	   base rule above already reads correctly on that ground; only the well
+	   stays local, mixed against the tab's own KNOWN opaque ground rather than
+	   carried as alpha (the compositing law — and .ctx-glass's alpha lines do
+	   not apply to a surface that is not glass). */
 	.doc-tab.active .doc-tab-rename {
-		color: var(--sel-ink);
-		background: color-mix(in srgb, var(--sel-surface) 94%, black);
+		background: color-mix(in srgb, var(--frame-bg) 88%, black);
 	}
 	.doc-tab-rename:focus {
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 80%, transparent);

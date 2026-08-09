@@ -1109,29 +1109,13 @@
 	color: var(--text);
 }
 
-/* Beige selected-state pilot (lightness-structure E, 2026-08-01): the
-   top-level tool tab strips select with --sel-surface + --sel-ink — the
-   Stygian selected-row idiom, deliberately scoped to these grounds while
-   the idiom is on trial. (0,3,0 beats .tab.active's 0,2,0 — no !important.)
-   NO beige panels; extent is a Nate knob.
-
-   ↻ TOOLBAR ROUND 2026-08-07: re-pointed at the bands. The document tabs
-   (band A) are the pilot's original subject under a new class; the Team
-   Builder's source tabs moved down to band B, where the ground is ALREADY
-   the beige — a beige plate on a beige band is invisible, so band B selects
-   with the ordinary .tab.active ring instead. The pilot is therefore now
-   exactly what Genshin does with it: the bright plate marks the selected row
-   on the DARK strip. */
-.band-a .tab.active {
-	background: var(--sel-surface);
-	box-shadow: none;
-	color: var(--sel-ink);
-}
-
-/* ══ BAND A'S CONTROLS ARE THE GLASS (⚓ NATE 2026-08-09) ═══════════════════
-   The band's ground came off (ToolStack) and moved here, onto the controls
-   themselves: each document button is now its own pane of glass floating on
-   the scene rather than a fill inside a rail.
+/* ══ THE BAND PLATES (⚓ NATE 2026-08-09, extended 08-10) ═══════════════════
+   The bands' grounds came off (ToolStack) and moved onto the CONTROLS: each
+   one is its own pane of glass standing on the scene rather than a fill inside
+   a rail. Band A is all of them; in band B it is the two controls a 3-up split
+   detaches from the rail. (A control that still sits ON a rail — the planner's
+   and the Visualizers' band B — keeps --btn-face: glass on glass would double
+   the alpha and read as one of the two panes being dirty.)
 
    Why the paint lives at app.css rather than in ToolStack: these are the
    pattern layer's own `.tab` / `.btn`, rendered by DocumentTabs and
@@ -1139,16 +1123,16 @@
    :global — which is the same thing as this, spelled worse.
 
    ⚠ EACH ONE CARRIES ITS OWN BLUR, and that is a real cost the band used to
-   pay once. It is bounded by what band A holds — at most 5 tabs, a +, and four
-   actions — and by the star freeze, which holds one scene frame at rest so
-   these rasterize once. If band A ever grows a roster-scale run, this is the
-   line that has to change.
+   pay once. It is bounded by what the bands hold — at most 5 tabs, a +, four
+   actions, two band-B controls — and by the star freeze, which holds one scene
+   frame at rest so these rasterize once. If a band ever grows a roster-scale
+   run, this is the line that has to change.
 
-   ⚠ NOT the active tab. It wears the opaque parchment plate (the --sel-surface
-   pilot, above) — blurring a backdrop nothing can see through is pure cost,
-   and the plate is what marks the selected document. */
+   ⚠ NOT the active tab: it is opaque (below), and blurring a backdrop nothing
+   can see through is pure cost. */
 .band-a .tab:not(.active),
-.band-a .btn {
+.band-a .btn,
+.band--3up > .band-zone .btn {
 	background: var(--surface); /* = --glass-panel, via .ctx-glass */
 	-webkit-backdrop-filter: blur(var(--glass-blur));
 	backdrop-filter: blur(var(--glass-blur));
@@ -1164,24 +1148,74 @@
 .band-a .tab:not(.active):hover {
 	background: linear-gradient(var(--accent-hover-fill), var(--accent-hover-fill)), var(--surface);
 }
-.band-a .btn:hover:not(:disabled) {
-	background: var(--surface-well);
+.band-a .btn:hover:not(:disabled),
+.band--3up > .band-zone .btn:hover:not(:disabled) {
+	background: linear-gradient(var(--fill-hover), var(--fill-hover)), var(--surface);
 }
-.band-a .btn.is-active {
+.band-a .btn.is-active,
+.band--3up > .band-zone .btn.is-active {
 	background: linear-gradient(var(--sel-fill), var(--sel-fill)), var(--surface);
 }
-/* The surviving ghost stays a ghost — a destructive control must not sit on
-   screen looking pressable, glass or not. */
+/* The surviving ghost stays a ghost — a destructive control INSIDE A RUN of
+   other controls must not sit on screen looking pressable. Scoped to band A,
+   which is where the Reset confirm arms itself mid-row; a standalone plate at
+   the end of a band-B row is not in that situation. */
 .band-a .btn--danger {
 	background: none;
 	-webkit-backdrop-filter: none;
 	backdrop-filter: none;
 }
 /* :not(:disabled) only to out-specify the .band-a .btn hover above it — a
-   danger button that lit up glass-well would lose its ghost on hover. */
+   danger button that lit up would lose its ghost on hover. */
 .band-a .btn--danger:hover:not(:disabled),
 .band-a .btn--danger.is-confirming {
 	background: var(--ui-danger-soft);
+}
+
+/* ── ONE HEIGHT ACROSS BOTH ROWS (⚓ NATE 2026-08-10) ───────────────────────
+   "Let's make all of the Band A / Band B items 36px" — a control fills its row
+   exactly, so a band reads as a run of objects at one height. --band-ctrl-h is
+   set on .tool-stack from BAND_CTRL_H and inherits down.
+
+   ⚠ THE ICON-ONLY CONTROLS ARE THE STATED EXCEPTION — "except for their
+   slightly smaller + and ... buttons". A square 36px plate holding one 14px
+   glyph reads as a missing label, not as a peer; these two are punctuation in
+   the row, not members of it. */
+.band .tab,
+.band .btn {
+	height: var(--band-ctrl-h);
+}
+.band .btn--icon {
+	height: calc(var(--band-ctrl-h) - 10px);
+	min-width: calc(var(--band-ctrl-h) - 10px);
+}
+
+/* ── THE SELECTED DOCUMENT TAB ─────────────────────────────────────────────
+   ↻ ⚓ NATE 2026-08-10: OPAQUE SLATE, THE BENCH'S OWN SHADE, with a --plain
+   inset border. This retires the beige selected-state pilot here (2026-08-01,
+   the Stygian selected-row idiom): a parchment plate marked the selected
+   document loudly enough, but with every other control in the row now made of
+   glass it was the one lit object in the header and it pulled the eye off the
+   tool. Density marks it instead of brightness — the only opaque thing among
+   panes of glass — and the inset line says "selected" without adding light.
+
+   It paints --frame-bg, which in .ctx-glass IS slate-800: the material's
+   reference ground, the same value .ctx-dark paints as --surface, and
+   therefore literally the bench ribbon's shade rather than a match for it.
+
+   ⚠ The line has to be OPAQUE here, against the compositing law's default for
+   this context. .ctx-glass carries alpha in its lines because the ground behind
+   a pane is unknown — but this tab's ground is known, it is the value on the
+   line above, so the stop resolves against it exactly as the dark context's
+   does. --line-strong's own recipe, mixed against the tab's own ground.
+   (--frame-inset is pulled in from the family's 7px, which is tuned for a frame
+   around a surface and would put the stroke through a 36px tab's type.) */
+.band-a .tab.active {
+	background: var(--frame-bg);
+	box-shadow: none;
+	color: var(--text);
+	--frame-inset: 3px;
+	--frame-line: color-mix(in srgb, var(--parchment-100) 30%, var(--frame-bg));
 }
 
 *,

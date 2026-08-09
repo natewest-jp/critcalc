@@ -117,18 +117,6 @@ const MARKS = {
 	 */
 	gated: 'Astroid',
 	star: 'Star',
-	/**
-	 * ORNAMENT, not state — the flanking flourish on the Team Builder's selected
-	 * navigation plate (Genshin's own tab strip does exactly this).
-	 *
-	 * ⚠ DELIBERATELY THE SAME PICTURE AS `gated`, and the duplicate is the point
-	 * of this map's indirection rather than a violation of it: call sites say
-	 * what a mark DOES. One of these two will get re-picked one day — a state
-	 * badge and a decoration have no reason to move together — and when that
-	 * happens it is a one-line change here instead of an audit of every
-	 * `<Mark name="gated">` on the site asking which of the two jobs it meant.
-	 */
-	sparkle: 'Astroid',
 	/** A character whose frame timing isn't curated yet (⚓ NATE: CircleSlash2,
 	 *  which matches the ∅ it replaces). */
 	uncurated: 'CircleSlash2',

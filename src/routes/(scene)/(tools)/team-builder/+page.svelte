@@ -790,27 +790,38 @@
 		<!-- The team's one destructive action, moved out of the coverage read-out
 		     (⚓ NATE 2026-08-09) — that run is now a bare header on the scene with
 		     nowhere to hang a control, and a team action belongs in the band with
-		     the other team controls anyway. Left end, mirroring the con lens at
-		     the right so the navigation sits centred between two peers. -->
+		     the other team controls anyway.
+		     ↻ 2026-08-10: a PLATE at the row's height, detached from the band and
+		     mirroring the con lens at the far end, so the navigation rail sits
+		     between two peers. It is a plain .btn rather than .btn--danger: the
+		     danger variant is a deliberate ghost (it must not sit on screen
+		     looking pressable) and Nate asked for a solid ████ here. The
+		     destructive reading moves to the hover, which is where the hand
+		     actually is when it matters. -->
 		<button
-			class="btn btn--danger"
+			class="btn tb-clear"
 			disabled={filledCount === 0}
 			title="Empty every slot in the working team"
 			onclick={() => rt.clearTeam()}><Mark name="close" /> Clear team</button
 		>
 	{/snippet}
 
-	<!-- ── THE IN-TOOL NAVIGATION (⚓ NATE 2026-08-09) ────────────────────────
-	     Three plates in Bitter, the selected one on a parchment ground flanked
-	     by ornaments — Genshin's own three-part tab strip, which is the shape
-	     this navigation always was without ever looking like it. It used to be
-	     three 11px .tab chips in the band's left corner: "too small and
-	     inconspicuous" for the control that decides what the whole tool is
-	     showing you.
+	<!-- ── THE IN-TOOL NAVIGATION (⚓ NATE 2026-08-09, tuned 08-10) ───────────
+	     Three plates in Bitter on their own glass rail, the selected one on a
+	     parchment ground with a --plain inset border — Genshin's own three-part
+	     tab strip, which is the shape this navigation always was without ever
+	     looking like it. It used to be three 11px .tab chips in the band's left
+	     corner: "too small and inconspicuous" for the control that decides what
+	     the whole tool is showing you.
 
-	     The selected plate stands PROUD of the band at both ends (--nav-plate-h
-	     against BAND_B_H), which is what makes it read as a thing sitting on the
-	     strip rather than a fill inside it. -->
+	     ↻ ⚓ NATE 2026-08-10, three tweaks: the flanking star ornaments are OUT
+	     (the `sparkle` mark went with them — nothing else used it), the plate's
+	     border is a GOLD mix rather than the light context's slate line, and the
+	     items are sized from the rail rather than from their text.
+
+	     The selected plate still stands PROUD of the rail at both ends
+	     (--nav-plate-h against BAND_B_H), which is what makes it read as a thing
+	     sitting on the strip rather than a fill inside it. -->
 	{#snippet bandBCenter()}
 		<div class="tb-nav" role="tablist" aria-label="Source view">
 			{#each SOURCES as s (s.key)}
@@ -830,7 +841,6 @@
 						: undefined}
 					onclick={() => (sourceTab = s.key)}
 				>
-					{#if on}<span class="tb-nav-orn"><Mark name="sparkle" size={13} /></span>{/if}
 					<span class="tb-nav-label">{s.label}</span>
 					<!-- The Compare plate IS the accumulator: a card's "Compare" lands
 					     its pick here as a mini side avatar (the Saved-Rotations stack
@@ -871,7 +881,6 @@
 							{/each}
 						</span>
 					{/if}
-					{#if on}<span class="tb-nav-orn"><Mark name="sparkle" size={13} /></span>{/if}
 				</button>
 			{/each}
 		</div>
@@ -1214,34 +1223,54 @@
 		flex: 1;
 	}
 
-	/* ── The in-tool navigation (band B's centre zone) ─────────────────────
-	   ⚓ NATE's knobs. The plate is TALLER THAN THE BAND on purpose — that
-	   overhang is most of what makes it read as a plate laid on the strip
-	   rather than a selected cell inside it. Band B is 38px (toolBands.ts), so
-	   44 stands 3px proud at each end. Move one, look at the other. */
+	/* ── The in-tool navigation (band B's centre zone, i.e. the rail) ───────
+	   ⚓ NATE's knobs, both of them.
+
+	   --nav-plate-h: the selected plate is TALLER THAN THE RAIL on purpose —
+	   that overhang is most of what makes it read as a plate laid on the strip
+	   rather than a selected cell inside it. The rail is BAND_B_H (36px), so 42
+	   stands 3px proud at each end. Move one, look at the other.
+
+	   --nav-fill: how much of the rail the three items take between them.
+	   ⚓ NATE: "make the buttons wider than their text requires… not entirely
+	   filling up the space… but maybe filling at least 50%." A PERCENTAGE rather
+	   than a width, so it stays true at every viewport — the items are sized
+	   from the rail, never from their labels. Rail visible at both ends is what
+	   keeps the group reading as three plates ON a strip. */
 	.tb-nav {
-		--nav-plate-h: 44px;
+		--nav-plate-h: 42px;
+		--nav-fill: 76%;
+		width: var(--nav-fill);
 		display: flex;
 		align-items: center;
-		gap: 0.15rem;
+		gap: var(--band-item-gap, 4px);
 	}
 
-	/* Bitter, and a full step up from the .tab it replaces (11px → 14px). The
-	   face is the whole point of the change: this is the tool's main navigation,
-	   and Nate's heading rule puts a voice like that on the display face. */
+	/* Bitter, a full step up from the .tab it replaces (11px → 14px), and BOLD
+	   (⚓ Nate 2026-08-10 — semibold did not carry at this size against the
+	   parchment plate beside it). The face is the whole point of the change:
+	   this is the tool's main navigation, and Nate's heading rule puts a voice
+	   like that on the display face.
+
+	   `flex: 1 1 0` with a zero basis is what makes the three EQUAL rather than
+	   proportional to their words — "Atlas" and "Compare" get the same plate,
+	   which is what a three-part navigation looks like. */
 	.tb-nav-item {
+		flex: 1 1 0;
+		min-width: 0;
 		display: inline-flex;
 		align-items: center;
+		justify-content: center;
 		gap: 0.5rem;
 		height: var(--nav-plate-h);
-		padding: 0 0.95rem;
+		padding: 0 0.6rem;
 		border: none;
 		border-radius: var(--r-sm);
 		background: none;
 		color: var(--muted);
 		font-family: var(--font-display);
 		font-size: var(--fs-lg);
-		font-weight: var(--fw-semibold);
+		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-tight);
 		white-space: nowrap;
 		cursor: pointer;
@@ -1259,21 +1288,32 @@
 
 	/* THE SELECTED PLATE. It CLAIMS .ctx-light rather than naming a light token,
 	   which is the same move AtlasView's cards make and for the same reason: it
-	   paints its own opaque light ground, so the ink ladder and — the part that
-	   matters here — the ACCENT RUNG have to flip with it. gold-400 measures
-	   1.48:1 on this beige; the ornaments would simply not be there. Under
-	   .ctx-light --accent is gold-700 and they read. */
+	   paints its own opaque light ground, so the ink ladder and the ACCENT RUNG
+	   flip with it — gold-400 measures 1.48:1 on this beige, gold-700 is what
+	   .ctx-light resolves --accent to, and the border below depends on that.
+
+	   ⚠ THE BORDER IS A GOLD MIX, not the context's line (⚓ Nate 2026-08-10:
+	   "right now its border is some kind of slate mix, which it shouldn't be —
+	   borders like this are some kind of gold mix usually"). .ctx-light's
+	   --frame-line is a neutral rule meant for dividing a paper panel; an
+	   ornamental edge on a beige plate is jewelry, and Genshin's jewelry is
+	   gold. Mixed OPAQUELY against the plate's own known ground (the compositing
+	   law) and only one level deep (the nesting law) — both inputs are aliases
+	   of primitives, never of each other. */
 	.tb-nav-item.active {
 		background: var(--sel-surface);
 		color: var(--sel-ink);
 		/* .inset--plain's stroke, pulled in from the family's 7px — that distance
-		   is tuned for a frame around a surface, and on a 44px plate it would put
+		   is tuned for a frame around a surface, and on a 42px plate it would put
 		   the line through the middle of the type. */
 		--frame-inset: 3px;
+		--frame-line: color-mix(in srgb, var(--accent) 42%, var(--sel-surface));
 	}
-	.tb-nav-orn {
-		display: flex;
-		color: var(--accent);
+
+	/* Rests as a peer of every other band plate and only announces itself under
+	   the hand — see the markup note on why this is not .btn--danger. */
+	.tb-clear:hover:not(:disabled) {
+		color: var(--ui-danger);
 	}
 
 	/* ── Compare plate's avatar stack (the accumulator's live feedback) ──

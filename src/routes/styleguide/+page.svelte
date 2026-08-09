@@ -1305,15 +1305,15 @@
 	<section id="bands">
 		<h2>Tool bands <span class="sg-badge sg-badge--ship">shipped</span></h2>
 		<p class="sg-note">
-			Every tool renders a <code>ToolStack</code>: <strong>two tiers</strong> over its surface, free
-			of the tool frame, with the bench ribbon proud of the whole stack. ↻ ⚓ Nate 2026-08-09, in
-			two moves — first they stopped abutting (split by <code>BAND_GAP</code>, the same gutter as
-			everything else), then
-			<strong>band A stopped being a band at all</strong>: its document controls are free glass
-			objects standing on the scene, each carrying the material itself, with no container ground and
-			no container padding insetting them from the surface below. Band B kept its rail, and having
-			become the tool's ONE banded row it grew 32 → 38px to seat a tool's navigation. Geometry
-			knobs:
+			Every tool renders a <code>ToolStack</code>: <strong>two rows</strong> over its surface, free
+			of the tool frame, with the bench ribbon proud of the whole stack. ↻ ⚓ Nate, over three days
+			— first they stopped abutting, then
+			<strong>band A stopped being a band at all</strong>, and then band B stopped being one
+			wherever a tool splits it. What is left of "a band" is a height and a gap: both rows are runs
+			of glass PLATES standing on the scene, all at <code>BAND_CTRL_H</code> (36px, icon-only
+			controls excepted) on <em>one</em> glass stop — band B's darker well retired with the tier it
+			was marking. The only rail left is the one a tool asks for by filling
+			<code>bandBCenter</code>, and that rail is a plate like the others. Geometry knobs:
 			<code>src/lib/toolBands.ts</code>. Document flows:
 			<code>src/lib/documentBar.svelte.ts</code>.
 		</p>
@@ -1323,14 +1323,14 @@
 				<span class="sg-val">the DOCUMENT · controls are the glass</span>
 			</div>
 			<div class="sg-band-gap" style:height="{BAND_GAP}px">
-				<span class="sg-val">{BAND_GAP}px — BAND_GAP, ⚓ Nate 2026-08-09</span>
+				<span class="sg-val">{BAND_GAP}px — BAND_GAP, half the gutter (⚓ Nate 2026-08-10)</span>
 			</div>
 			<div
 				class="sg-band sg-band--b"
 				style:height="{BAND_B_H}px"
 				style:border-radius="{BAND_RADIUS}px"
 			>
-				<span class="sg-zone-tag">band B — <code>ctx-glass</code>, {BAND_B_H}px</span>
+				<span class="sg-zone-tag">band B — {BAND_B_H}px, rail only when split</span>
 				<span class="sg-val">the VIEW</span>
 			</div>
 			<div class="sg-band-gap" style:height="{BAND_STACK_GAP}px">

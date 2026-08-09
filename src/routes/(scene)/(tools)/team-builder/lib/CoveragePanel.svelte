@@ -185,8 +185,21 @@
 	/* The lead cluster and the capability run, side by side and centred as one
 	   block. The gap between them is deliberately ~3× the gap WITHIN either —
 	   that is the whole of "kept distinct", and it needs no rule, no ground and
-	   no divider to do its job. */
+	   no divider to do its job.
+
+	   ⚠ THE MEASURE IS CAPPED, and this is the one place on the surface where
+	   that is right (⚓ Nate 2026-08-10, who measured it at ~1000px). Everything
+	   else here fills the column, but fifteen chips given 1600px stop being a
+	   block and become a rule across the top of the tool — three or four to a
+	   line, four lines deep, nothing clustered. Capped, they hold the two rows
+	   they were designed as at every width above the cap, and the block stays
+	   under its own centred header instead of running out from under it.
+	   ⚠ It is a MAX, not a width: below the cap this shrinks and the run wraps
+	   to three rows, which is correct — the alternative is a scrollbar. */
 	.cover-run {
+		--cover-measure: 1000px;
+		max-width: var(--cover-measure);
+		margin-inline: auto;
 		display: flex;
 		align-items: flex-start;
 		justify-content: center;
@@ -209,10 +222,14 @@
 		flex-shrink: 0;
 	}
 
+	/* Centred like its header (⚓ Nate). With a capped measure the last row is
+	   always short, and a short row left-aligned under two full ones is what
+	   made this read as a list that ran out rather than as a block. */
 	.ts-coverage {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
+		justify-content: center;
 		gap: 0.35rem;
 		min-width: 0;
 	}

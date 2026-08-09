@@ -113,15 +113,14 @@
 		background: linear-gradient(var(--accent-hover-fill), var(--accent-hover-fill)), var(--surface);
 		transform: translateY(-2px);
 	}
-	/* The role glyph as a large, faint backdrop.
-	   ⚠ MASKED, NOT DRAWN (2026-08-09). The monotone asset is navy ink — it was
-	   authored to sit on parchment, and on the glass ground it became a dark
-	   shape on a dark ground, i.e. nothing. Using it as a MASK over a painted
-	   fill takes its silhouette and leaves its colour behind, so the ink follows
-	   whatever context the card is wearing. The alternative — recolouring the
-	   asset, or inverting it with a filter — breaks the standing rule that a
-	   generated icon is never hand-recoloured.
-	   Alpha lives in the PAINT (§ Laws), not in element opacity. */
+	/* The monotone role glyph as a large, faint backdrop.
+	   ↻ ⚓ NATE 2026-08-10: DRAWN, not masked. It was briefly re-published as a
+	   mask over a painted fill, on the reasoning that navy ink authored for
+	   parchment would vanish on a dark ground. That was the wrong end of the
+	   problem — these assets were drawn to be exactly this: a slightly
+	   transparent overlay on dark slate, where the near-black of the glyph
+	   reads as a deeper pool in the card rather than as a lit shape on it. The
+	   card going glass changed nothing about that; it is still dark slate. */
 	.rolecard::before {
 		content: '';
 		position: absolute;
@@ -129,9 +128,11 @@
 		bottom: -20%;
 		width: 64%;
 		height: 120%;
-		background-color: color-mix(in srgb, var(--text) 20%, transparent);
-		-webkit-mask: var(--role-bg) no-repeat bottom right / contain;
-		mask: var(--role-bg) no-repeat bottom right / contain;
+		background-image: var(--role-bg);
+		background-repeat: no-repeat;
+		background-position: bottom right;
+		background-size: contain;
+		opacity: 0.2;
 		pointer-events: none;
 	}
 	.rolecard > * {
