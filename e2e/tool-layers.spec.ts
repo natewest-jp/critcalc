@@ -4,7 +4,8 @@ import { test, expect } from './fixtures/critcalc';
  * CROSS-ENGINE: does the tool→tool orchestration ever leave a page layer
  * mis-set?
  *
- * ⚓ Nate 2026-08-07: reproducible in Chrome within seconds; NOT reproducible in
+ * ⚓ Nate 2026-08-07 (SUPERSEDED — see the dormancy note below, but the
+ * cross-engine lesson stands): reproducible in Chrome within seconds; NOT reproducible in
  * real Safari or Firefox under the most extensive click gymnastics he could
  * manage. This keeps that observation on the record automatically, because the
  * same report was once dismissed as impossible ("the transition math is the
@@ -21,13 +22,17 @@ import { test, expect } from './fixtures/critcalc';
  * Tagged @storm: a nav storm takes minutes, so it is opt-in
  * (`npm run test:e2e:storm`) rather than part of the default gate.
  *
- * ⚠ MEASURED 2026-08-09, 6 cycles × 3 engines: watchdog hits = 0 EVERYWHERE,
- * Chrome included. Nate reproduces Bug 2 in real, headed Chrome within seconds,
- * so headless Chrome evidently does not exercise whatever triggers it. Until
- * that changes, a green run here means "no engine is dirty right now" — it is
- * NOT evidence that Bug 2 is fixed, and this file does not yet deliver the
- * automatic cross-engine record it was written for. Judge the bug in a real
- * browser.
+ * ⚠ BUG 2 IS DORMANT, NOT FIXED. Both Nate and Claude could provoke it on
+ * demand early on; partway through debugging it stopped appearing for either of
+ * them, with no change that explains why, and it has not been seen since.
+ * Nothing was identified as the fix.
+ *
+ * Measured 2026-08-09, 6 cycles × 3 engines: watchdog hits = 0 everywhere. That
+ * is consistent with dormancy and is NOT evidence of a fix — which is exactly
+ * why this file exists. It is a SENTINEL: if the defect resurfaces, this prints
+ * the watchdog record automatically, in whichever engines show it, without
+ * anyone having to be at a console at the right moment. A green run here means
+ * "nothing dirty today", nothing more.
  */
 
 declare global {
