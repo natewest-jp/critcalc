@@ -25,15 +25,18 @@
 
 <div class="rolecards">
 	{#each roleCards as card (card.category.key)}
-		<!-- ctx-light is CLAIMED now, not inherited. It used to come from the
-		     tool frame this sat inside; that frame is gone (2026-08-08) and the
-		     surface is the dark world, so a card that only painted
-		     --surface-raised would have flipped to navy. Cards stay light —
-		     Genshin's do — and a card is exactly the kind of small opaque object
-		     light is FOR on a dark ground. It paints its own ground below, which
-		     is what earns it the right to declare the context. -->
+		<!-- ↻ ⚓ NATE 2026-08-09: THESE ARE GLASS NOW, not parchment. They were
+		     ctx-light on the reasoning that a card is the small opaque object
+		     light is for — true as far as it went, but four of them at 210px
+		     tall are not a small object, they are the Atlas's entire front door,
+		     and Nate's read is that the parchment "is distracting me too much to
+		     judge other things". Glass is what the round is for: furniture that
+		     sits ON the world without becoming a second page.
+		     The context is still CLAIMED rather than inherited (the tool frame
+		     that used to supply one went in 2026-08-08) — it just claims a
+		     different material. -->
 		<button
-			class="rolecard ctx-light"
+			class="rolecard ctx-glass"
 			style:--role-bg="url({functionIcon(card.category.function, 'monotone')})"
 			onclick={() => onSelectCategory(card.category)}
 			aria-label="{card.category.label}: {card.providerCount} characters, {card.ownedCount} owned"
@@ -88,20 +91,36 @@
 		/* Edge border retired 2026-08-07 — the raised ground is the separation. */
 		border: none;
 		border-radius: var(--r-sm);
-		background: var(--surface-raised); /* in-page panel role (Nate 2026-07-31) */
+		/* ⚠ --surface, not --surface-raised. On glass the two resolve to the same
+		   stop (there is no "raised" through a translucent material — depth here
+		   comes from alpha, and the well is the only other rung), and --surface is
+		   the honest name for the ground a card paints. */
+		background: var(--surface);
 		text-align: left;
 		cursor: pointer;
 		color: inherit;
 		font: inherit;
 		transition:
-			border-color 150ms ease,
+			background 150ms ease,
 			transform 150ms ease;
 	}
+	/* Was a border-color change on a card that has had `border: none` since the
+	   edge borders retired — a hover state that could not paint. On glass the
+	   honest answer is to thicken the pane: the accent wash laid OVER the panel
+	   stop as a second background layer, never mixed into it (a color-mix fed by
+	   a color-mix crashes WebKit, and --accent-hover-fill is already one). */
 	.rolecard:hover {
-		border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+		background: linear-gradient(var(--accent-hover-fill), var(--accent-hover-fill)), var(--surface);
 		transform: translateY(-2px);
 	}
-	/* Monotone role glyph as a large, faint backdrop over the navy surface. */
+	/* The monotone role glyph as a large, faint backdrop.
+	   ↻ ⚓ NATE 2026-08-10: DRAWN, not masked. It was briefly re-published as a
+	   mask over a painted fill, on the reasoning that navy ink authored for
+	   parchment would vanish on a dark ground. That was the wrong end of the
+	   problem — these assets were drawn to be exactly this: a slightly
+	   transparent overlay on dark slate, where the near-black of the glyph
+	   reads as a deeper pool in the card rather than as a lit shape on it. The
+	   card going glass changed nothing about that; it is still dark slate. */
 	.rolecard::before {
 		content: '';
 		position: absolute;
@@ -154,8 +173,12 @@
 		color: var(--text);
 		font-variant-numeric: tabular-nums;
 	}
+	/* ⚠ The white lift is gone with the light ground. It existed to pull gold-700
+	   forward off parchment; on glass the accent is already gold-400, the
+	   brightest thing on the card, and mixing white into it only desaturates the
+	   one figure the card exists to state. */
 	.rolecard-count--owned {
-		color: color-mix(in srgb, var(--accent) 85%, white);
+		color: var(--accent);
 	}
 
 	.rolecard-elements {

@@ -625,9 +625,16 @@
 	/* ↻ 2026-08-01 lightness-structure round: the TOP of the selection ladder.
 	   Genshin's Stygian sidebar selects its row with a beige plate + dark ink
 	   on an otherwise dark screen — the selected thing is the BRIGHTEST thing.
-	   --sel-surface/--sel-ink are that idiom, piloted on the top-level tool
-	   tab strips and the Help chapter nav; selection stays accent everywhere
-	   else. ↻ 2026-08-05: the plate is the archetype's hinge beige (was
+	   --sel-surface/--sel-ink are that idiom; selection stays accent everywhere
+	   else.
+	   ↻ 2026-08-10: the pilot MOVED rather than grew. It left the document tabs
+	   (band A), where every neighbour became glass and the one lit plate pulled
+	   the eye off the tool — those select by DENSITY now, an opaque slate among
+	   panes. It landed on the Team Builder's Atlas/Roster/Compare plate, which
+	   is a better fit for what the idiom is FOR: Genshin lights the selected
+	   row of a NAVIGATION, not of a document list. Two consumers now, both
+	   navigations — this and the Help chapter nav.
+	   ↻ 2026-08-05: the plate is the archetype's hinge beige (was
 	   gilt-soft #ede8de — gilt retired). Neither side is --accent-derived,
 	   so no per-context re-declaration is needed.
 	   ↻ 2026-08-09: onto the ramp as --gold-300, which is where the hinge beige
@@ -747,9 +754,11 @@
 	--rx-burning-fuel: #84b46a;
 	--rx-dendro-core: #e2ec6f;
 
-	/* Typography — single source of truth. Bitter for display/branding; IBM Plex
-	   Sans is the DEFAULT for almost everything (body, UI chrome, data labels,
-	   values). Mono (IBM Plex Mono) is deliberately reserved — pull on it only
+	/* Typography — single source of truth. Bitter is display/branding AND every
+	   MAIN HEADER (⚓ Nate 2026-08-09 — see the h1–h6 rule for the split that
+	   keeps section headings, the ones with a rule out of their side, on the
+	   sans). IBM Plex Sans is the DEFAULT for everything else (body, UI chrome,
+	   data labels, values). Mono (IBM Plex Mono) is deliberately reserved — pull on it only
 	   where it earns a visual-identity benefit; right now that's just KQM
 	   notation (the editor, saved-notation strings, the PNG notation header). Sans-by-default also helps dense labels fit their
 	   bounds. IBM Plex Sans Condensed (--font-condensed) is available for tight
@@ -1107,23 +1116,111 @@
 	color: var(--text);
 }
 
-/* Beige selected-state pilot (lightness-structure E, 2026-08-01): the
-   top-level tool tab strips select with --sel-surface + --sel-ink — the
-   Stygian selected-row idiom, deliberately scoped to these grounds while
-   the idiom is on trial. (0,3,0 beats .tab.active's 0,2,0 — no !important.)
-   NO beige panels; extent is a Nate knob.
+/* ══ THE BAND PLATES (⚓ NATE 2026-08-09, extended 08-10) ═══════════════════
+   The bands' grounds came off (ToolStack) and moved onto the CONTROLS: each
+   one is its own pane of glass standing on the scene rather than a fill inside
+   a rail. Band A is all of them; in band B it is the two controls a 3-up split
+   detaches from the rail. (A control that still sits ON a rail — the planner's
+   and the Visualizers' band B — keeps --btn-face: glass on glass would double
+   the alpha and read as one of the two panes being dirty.)
 
-   ↻ TOOLBAR ROUND 2026-08-07: re-pointed at the bands. The document tabs
-   (band A) are the pilot's original subject under a new class; the Team
-   Builder's source tabs moved down to band B, where the ground is ALREADY
-   the beige — a beige plate on a beige band is invisible, so band B selects
-   with the ordinary .tab.active ring instead. The pilot is therefore now
-   exactly what Genshin does with it: the bright plate marks the selected row
-   on the DARK strip. */
+   Why the paint lives at app.css rather than in ToolStack: these are the
+   pattern layer's own `.tab` / `.btn`, rendered by DocumentTabs and
+   DocumentActions, and a scoped rule in ToolStack could not reach them without
+   :global — which is the same thing as this, spelled worse.
+
+   ⚠ EACH ONE CARRIES ITS OWN BLUR, and that is a real cost the band used to
+   pay once. It is bounded by what the bands hold — at most 5 tabs, a +, four
+   actions, two band-B controls — and by the star freeze, which holds one scene
+   frame at rest so these rasterize once. If a band ever grows a roster-scale
+   run, this is the line that has to change.
+
+   ⚠ NOT the active tab: it is opaque (below), and blurring a backdrop nothing
+   can see through is pure cost. */
+.band-a .tab:not(.active),
+.band-a .btn,
+.band--3up > .band-zone .btn {
+	background: var(--surface); /* = --glass-panel, via .ctx-glass */
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	backdrop-filter: blur(var(--glass-blur));
+}
+/* Hover/active states re-declare the ground, so they need the glass stops too
+   — otherwise touching a control turns opaque under the cursor.
+
+   ⚠ THE DOUBLE-GRADIENT IS THE NESTING LAW, not a flourish. The wash has to sit
+   OVER the pane rather than replace it, and the obvious spelling —
+   color-mix(--accent-hover-fill …) — is a color-mix fed by a color-mix, which
+   CRASHES WEBKIT. A one-stop linear-gradient is a background LAYER, so the two
+   composite at paint time with no colour arithmetic at all. */
+.band-a .tab:not(.active):hover {
+	background: linear-gradient(var(--accent-hover-fill), var(--accent-hover-fill)), var(--surface);
+}
+.band-a .btn:hover:not(:disabled),
+.band--3up > .band-zone .btn:hover:not(:disabled) {
+	background: linear-gradient(var(--fill-hover), var(--fill-hover)), var(--surface);
+}
+.band-a .btn.is-active,
+.band--3up > .band-zone .btn.is-active {
+	background: linear-gradient(var(--sel-fill), var(--sel-fill)), var(--surface);
+}
+/* The surviving ghost stays a ghost — a destructive control INSIDE A RUN of
+   other controls must not sit on screen looking pressable. Scoped to band A,
+   which is where the Reset confirm arms itself mid-row; a standalone plate at
+   the end of a band-B row is not in that situation. */
+.band-a .btn--danger {
+	background: none;
+	-webkit-backdrop-filter: none;
+	backdrop-filter: none;
+}
+/* :not(:disabled) only to out-specify the .band-a .btn hover above it — a
+   danger button that lit up would lose its ghost on hover. */
+.band-a .btn--danger:hover:not(:disabled),
+.band-a .btn--danger.is-confirming {
+	background: var(--ui-danger-soft);
+}
+
+/* ── ONE HEIGHT ACROSS BOTH ROWS (⚓ NATE 2026-08-10) ───────────────────────
+   "Let's make all of the Band A / Band B items 36px" — a control fills its row
+   exactly, so a band reads as a run of objects at one height. --band-ctrl-h is
+   set on .tool-stack from BAND_CTRL_H and inherits down.
+
+   ⚠ THE ICON-ONLY CONTROLS ARE THE STATED EXCEPTION — "except for their
+   slightly smaller + and ... buttons". A square 36px plate holding one 14px
+   glyph reads as a missing label, not as a peer; these two are punctuation in
+   the row, not members of it. */
+.band .tab,
+.band .btn {
+	height: var(--band-ctrl-h);
+}
+.band .btn--icon {
+	height: calc(var(--band-ctrl-h) - 10px);
+	min-width: calc(var(--band-ctrl-h) - 10px);
+}
+
+/* ── THE SELECTED DOCUMENT TAB ─────────────────────────────────────────────
+   ↻ ⚓ NATE 2026-08-10: OPAQUE SLATE, THE BENCH'S OWN SHADE, with a --plain
+   inset border. This retires the beige selected-state pilot here (2026-08-01,
+   the Stygian selected-row idiom): a parchment plate marked the selected
+   document loudly enough, but with every other control in the row now made of
+   glass it was the one lit object in the header and it pulled the eye off the
+   tool. DENSITY marks it instead of brightness — the only opaque thing among
+   panes of glass.
+
+   It paints --frame-bg, which in .ctx-glass IS slate-800: the material's
+   reference ground, the same value .ctx-dark paints as --surface, and
+   therefore literally the bench ribbon's shade rather than a match for it.
+
+   ↻ ⚓ NATE, same day: the --plain inset line came back OFF. It shipped for a
+   few hours on the reasoning that the line would say "selected" without adding
+   light — but opacity was already saying it, and a stroke on a 36px tab in a
+   row of ten controls is ornament competing with the navigation one row down.
+   The nav plate keeps its line; this one does not need to be a second
+   decorated object. (Its markup classes went too, so the tab's ::after is free
+   again — see DocumentTabs' note on the drag indicators.) */
 .band-a .tab.active {
-	background: var(--sel-surface);
+	background: var(--frame-bg);
 	box-shadow: none;
-	color: var(--sel-ink);
+	color: var(--text);
 }
 
 *,
@@ -1155,10 +1252,25 @@ h3,
 h4,
 h5,
 h6 {
-	/* Headings default to the body face (IBM Plex Sans). Bitter (--font-display)
-	   is reserved for branding (wordmarks) and chrome-level navigation, which
-	   opt in explicitly. */
-	font-family: var(--font-body);
+	/* ↻ ⚓ NATE 2026-08-09: HEADINGS ARE BITTER AGAIN, reversing the 2026-07-22
+	   sans-everywhere call. The split is no longer "branding vs content" but
+	   WHAT KIND OF HEADING it is:
+
+	     A MAIN HEADER — the thing that names a whole surface — is Bitter. It is
+	     the one place on the page that gets to be a voice rather than a label,
+	     and the round that prompted this is preparing for LARGE headings set
+	     directly on the scene, where a header carries no box to lend it
+	     presence and has to carry its own.
+
+	     A SECTION HEADING — the small, tracked, uppercase kind with a rule
+	     running out of its side — stays IBM Plex Sans. That is `.kicker`, which
+	     re-declares the body face below precisely because it can be worn by an
+	     <h2> and must not follow this rule. A rule out of the side is the tell:
+	     it reads as structure, not as a title.
+
+	   Everything with its own explicit font-family is unaffected (LoadoutPanel's
+	   .lp-hd, HelpAreaShell's chapter nav — both deliberately body-face). */
+	font-family: var(--font-display);
 	font-weight: var(--fw-semibold);
 	line-height: var(--lh-tight);
 	margin: 0;
@@ -1188,10 +1300,10 @@ img {
    Every Help / About chapter renders in two places — as a prerendered route
    inside the pages panel, and as a pane inside the chrome overlay — so this
    lives here rather than scoped to either host. Chapters emit plain semantic
-   HTML and this styles it; that is the whole contract. Headings use the body
-   face (IBM Plex Sans) per the 2026-07-22 reversal; Bitter stays branding and
-   chrome. Components with their own scoped classes (SettingsPanel) out-specify
-   these and are unaffected. */
+   HTML and this styles it; that is the whole contract. Headings inherit the
+   Bitter face from the h1–h6 rule above (⚓ Nate 2026-08-09) — a chapter title
+   is a main header. Components with their own scoped classes (SettingsPanel)
+   out-specify these and are unaffected. */
 
 /* Headings are CHROME (Nate 2026-07-27) — the chrome axis and the data axis are
    different voices, and a heading belongs to the first. ALL heading levels take
@@ -1880,8 +1992,14 @@ img {
 }
 
 /* ── Headings, labels, notes ──────────────────────────────────────────── */
+/* ⚠ THE FACE IS DECLARED, not inherited (2026-08-09). A .kicker is often an
+   <h2>, and headings are Bitter now — but the kicker is the SECTION-heading
+   idiom, the one with a rule running out of its side, and Nate's rule puts
+   those on the body face. Removing this line silently flips every section
+   label on the site to serif. */
 .kicker {
 	margin: 0;
+	font-family: var(--font-body);
 	display: flex;
 	align-items: center;
 	gap: 0.65rem;
@@ -1900,9 +2018,11 @@ img {
 	height: 2px;
 	background: color-mix(in srgb, var(--muted) 22%, transparent);
 }
+/* A main header — Bitter, per the heading rule above. It only declares the
+   face because two of its three callers are <h2>s and one is a <p>. */
 .title {
 	margin: 0;
-	font-family: var(--font-body);
+	font-family: var(--font-display);
 	font-size: var(--fs-2xl);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-tight);

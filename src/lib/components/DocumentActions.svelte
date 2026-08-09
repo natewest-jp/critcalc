@@ -187,10 +187,12 @@
 </div>
 
 <style>
+	/* gap: BAND_ITEM_GAP — one value across the whole row, shared with the tab
+	   strip (⚓ Nate 2026-08-10). */
 	.doc-actions {
 		display: flex;
 		align-items: center;
-		gap: 0.25rem;
+		gap: var(--band-item-gap, 4px);
 	}
 
 	.doc-notice {

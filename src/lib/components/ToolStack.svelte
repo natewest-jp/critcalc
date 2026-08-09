@@ -3,7 +3,9 @@
 	import {
 		BAND_A_H,
 		BAND_B_H,
+		BAND_CTRL_H,
 		BAND_GAP,
+		BAND_ITEM_GAP,
 		BAND_PAD_X,
 		BAND_RADIUS,
 		BAND_STACK_GAP
@@ -36,6 +38,7 @@
 		bandALeft,
 		bandARight,
 		bandBLeft,
+		bandBCenter,
 		bandBRight,
 		bandBFull,
 		surface
@@ -52,6 +55,13 @@
 		bandALeft?: Snippet;
 		bandARight?: Snippet;
 		bandBLeft?: Snippet;
+		/**
+		 * A middle RAIL for band B. Opting in splits the band into three separate
+		 * plates — control · rail · control — and moves the ground off the band
+		 * onto this zone. The Team Builder's Atlas/Roster/Compare navigation is
+		 * its one caller.
+		 */
+		bandBCenter?: Snippet;
 		bandBRight?: Snippet;
 		/**
 		 * Band B as ONE full-width run instead of the left/right pair — the
@@ -68,6 +78,8 @@
 	class:tool-stack--fill={fill}
 	style:--band-a-h="{BAND_A_H}px"
 	style:--band-b-h="{BAND_B_H}px"
+	style:--band-ctrl-h="{BAND_CTRL_H}px"
+	style:--band-item-gap="{BAND_ITEM_GAP}px"
 	style:--band-pad-x="{BAND_PAD_X}px"
 	style:--band-radius="{BAND_RADIUS}px"
 	style:--band-gap="{BAND_GAP}px"
@@ -91,18 +103,18 @@
 		></div>
 	{/if}
 
-	<!-- The band header: TWO SEPARATE bands, no stroke on either — the tool
-	     surface below carries the family's structure and the bands read as
-	     glass rails floating over it. ↻ ⚓ NATE 2026-08-09: they used to abut
-	     inside one clipped box (Genshin's banded section header, a navy run
-	     with a cream tier); they are split by --band-gap now, so each is its
-	     own object and rounds its own four corners. -->
+	<!-- The band header. ↻ ⚓ NATE 2026-08-09/10, over two rounds: band A LOSES
+	     ITS BAND, and band B loses it too WHEREVER A TOOL SPLITS IT. Both rows
+	     are runs of glass plates on the scene; the only rail left is the one a
+	     tool asks for by filling bandBCenter, and that rail is a plate like the
+	     others. See the CSS for why the ctx-glass class stays on rows that no
+	     longer paint. -->
 	<div class="bands">
 		<div class="band band-a ctx-glass">
 			<div class="band-zone">{@render bandALeft?.()}</div>
 			<div class="band-zone band-zone--end">{@render bandARight?.()}</div>
 		</div>
-		<div class="band band-b ctx-glass">
+		<div class="band band-b ctx-glass" class:band--3up={!!bandBCenter}>
 			{#if bandBFull}
 				<!-- The full-width variant is one flex child that must actually FILL
 				     the band: the Visualizers lays a grid in here whose columns have
@@ -111,6 +123,14 @@
 				<div class="band-full">{@render bandBFull()}</div>
 			{:else}
 				<div class="band-zone">{@render bandBLeft?.()}</div>
+				{#if bandBCenter}
+					<!-- THE RAIL. In the 3-up split this zone is the only thing in either
+					     band that still paints a ground: the two flanking controls became
+					     their own plates (⚓ Nate 2026-08-10 — "separate them from their
+					     parent band"), so what is left of the band is the strip its
+					     navigation sits on, and that strip is now a plate too. -->
+					<div class="band-zone band-zone--center">{@render bandBCenter()}</div>
+				{/if}
 				<div class="band-zone band-zone--end">{@render bandBRight?.()}</div>
 			{/if}
 		</div>
@@ -204,10 +224,12 @@
 	   is the round where that constraint got paid.
 
 	   The A/B distinction is unchanged — A is the DOCUMENT (the shared tabs,
-	   Save/Load/Share), B is the VIEW — and now that they are separate objects
-	   it needs no ground trick to carry it at all: two boxes with air between
-	   them are already two things. B keeps the quieter ground anyway, so the
-	   VIEW band reads as the second tier rather than a peer. */
+	   Save/Load/Share), B is the VIEW — and it needs no ground trick to carry it
+	   at all: two rows with air between them are already two things.
+
+	   ↻ 2026-08-10: there is ONE glass stop across both rows now, and most of
+	   what is left of "a band" is this box's height and gap. Band A paints
+	   nothing; band B paints only when a tool has not split it. */
 	.band {
 		display: flex;
 		align-items: center;
@@ -218,16 +240,40 @@
 		border-radius: var(--band-radius);
 	}
 
+	/* ── BAND A HAS NO BAND (⚓ NATE 2026-08-09) ────────────────────────────
+	   "It loses its backing band, and instead the buttons themselves become
+	   glass over the scene."
+
+	   So this is a bare 36px row that positions things and nothing else: no
+	   ground, no radius that matters, and NO HORIZONTAL PADDING — the padding
+	   existed to hold controls off a rail's ends, and with no rail an inset is
+	   just the document tabs failing to line up with the tool surface below
+	   them. Save/Load/Share now touch the same right edge the surface does.
+
+	   ⚠ THE CLASS STAYS, THE FILTER DOESN'T. `ctx-glass` is still worn because
+	   it is what re-points --surface/--fill-rest/the lines at the translucent
+	   stops, and the CONTROLS need those values to paint themselves as glass
+	   (see the .band-a rules in app.css). But the material's own
+	   `backdrop-filter` has to come off: a filter on a box with no background
+	   still blurs its whole rectangle, which would draw a ghost of the band we
+	   just removed. The blur moves down to the controls, which is where the
+	   glass now is. */
 	.band-a {
 		height: var(--band-a-h);
-		background: var(--surface);
+		padding: 0;
+		background: none;
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
 	}
 
+	/* ↻ ⚓ NATE 2026-08-10: the SAME glass as band A — "the lighter of the two".
+	   It was --surface-well, one rung down, on the reasoning that the VIEW band
+	   should read as recessed relative to the DOCUMENT band. There is no
+	   DOCUMENT band any more to be recessed from, and two different glass stops
+	   in one header only read as one of them being dirty. */
 	.band-b {
 		height: var(--band-b-h);
-		/* One rung down from band A — the VIEW band reads as recessed relative to
-		   the DOCUMENT band. */
-		background: var(--surface-well);
+		background: var(--surface);
 		/* Band B is a CONTROL band — labels and buttons, never prose. --text is
 		   re-pointed at --muted so everything in the band speaks the label voice
 		   by default; prose belongs in the surface below, where the context's own
@@ -242,13 +288,59 @@
 	.band-zone {
 		display: flex;
 		align-items: center;
-		gap: 0.35rem;
+		gap: var(--band-item-gap, 4px);
 		min-width: 0;
 	}
 
 	.band-zone--end {
 		justify-content: flex-end;
 		flex-shrink: 0;
+	}
+
+	/* ── THE 3-UP SPLIT (⚓ NATE 2026-08-10) ────────────────────────────────
+	       ████ ███████████████████████████████████ ████
+	   Three objects on one row: a control, the navigation RAIL, a control —
+	   "separate them from their parent band", split by --band-item-gap, the same
+	   gap band A puts between its buttons.
+
+	   So the BAND stops painting and the CENTRE zone starts. What used to be one
+	   rail with things sitting in it is now three plates of the same glass, and
+	   the row itself is only a layout.
+
+	   ⚠ THE RAIL IS NOT CENTRED ON THE BAND, and it cannot be while the two
+	   flanking controls have their own widths (Clear team ≈ 110px, a con lens
+	   that reads "C0" or "My roster"). What IS centred is the navigation inside
+	   the rail, and the rail is the object the eye measures — the few pixels
+	   between the rail's centre and the band's do not read. Forcing them equal
+	   would mean pinning both flanks to a hand-tuned width that the con lens's
+	   own label would then break. */
+	.band--3up {
+		background: none;
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+		padding: 0;
+		gap: var(--band-item-gap, 4px);
+	}
+	.band--3up > .band-zone {
+		flex: 0 0 auto;
+	}
+	/* The rail takes everything the two controls leave. */
+	.band--3up > .band-zone--center {
+		flex: 1 1 auto;
+		justify-content: center;
+		min-width: 0;
+		/* stretch, not height:100% — the band centres its children, and a
+		   percentage height on a flex item is the shape that has silently failed
+		   in this stack before (see .tool-stack--fill). */
+		align-self: stretch;
+		padding: 0 var(--band-pad-x);
+		border-radius: var(--band-radius);
+		background: var(--surface);
+		-webkit-backdrop-filter: blur(var(--glass-blur));
+		backdrop-filter: blur(var(--glass-blur));
+		/* The selected plate stands PROUD of the rail (Genshin's own tab strip
+		   does this — see the Team Builder's nav), so nothing here may clip. */
+		overflow: visible;
 	}
 
 	.band-full {

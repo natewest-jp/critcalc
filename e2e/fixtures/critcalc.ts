@@ -140,7 +140,7 @@ export async function openTool(page: Page, path: string) {
 
 /** Switch the Team Builder to its Roster tab and wait for the grid. */
 export async function openRoster(page: Page) {
-	await page.locator('.band-b .tab', { hasText: 'Roster' }).click();
+	await page.locator('.band-b .tb-nav-item', { hasText: 'Roster' }).click();
 	await page.locator('.cg-grid').first().waitFor();
 }
 
