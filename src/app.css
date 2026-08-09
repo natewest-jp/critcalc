@@ -119,17 +119,34 @@
 	--glass-panel: rgb(46 53 67 / 0.68); /* slate-800 — band A, menus, panels */
 	--glass-well: rgb(28 33 43 / 0.55); /* slate-950 — band B, recessed fields */
 	--glass-parch: rgb(236 229 216 / 0.1); /* parchment frost — hover on glass */
-	/* ⚓ NATE: 6px → 2px, "very minimal is fine".
-	   ⚠ AT 2px THE BLUR IS AESTHETIC, NOT LOAD-BEARING, and that is a real
-	   change of role worth stating. At 4–8px a blur SOLVES the star problem
-	   above: it spreads a bright point over its own radius, the peak
+	/* ⚓ NATE — ON PROBATION, 2026-08-09. Tuned 6 → 2 → 1px and still under
+	   test; it may yet go to 0. Nothing is allowed to depend on it (see below),
+	   so removing it is a one-line change with no knock-on.
+
+	   ⚠ WHY IT CANNOT JUST BE TURNED UP — NATE'S FINDING, and it is a mechanism
+	   rather than a taste: A BIGGER BLUR BANDS. Blurring a backdrop is exactly
+	   how you MANUFACTURE a smooth gradient, and a smooth gradient across a
+	   near-black ground in 8-bit sRGB is the textbook banding case — adjacent
+	   output levels are far enough apart down here that the eye sees the steps
+	   as contours. Small radii escape it for the same reason the scene does:
+	   the starfield and the GL dither leave enough per-pixel variation to act
+	   as noise, and noise is what breaks a band. So the blur is caught between
+	   two floors — big enough to soften a star, small enough not to smooth the
+	   backdrop into a ramp — and 1px is Nate's current read of that gap.
+	   ⚠ Same family as the hero-card veto (gradients band in Safari, grain
+	   rejected as the fix) and the reason --scene-dither exists at all.
+
+	   ⚠ ITS ROLE CHANGED ON THE WAY DOWN. At 4–8px a blur SOLVES the star
+	   problem above: it spreads a bright point over its own radius, the peak
 	   contribution collapses, and the effective backdrop becomes the local
 	   average — which would have let the stops go far thinner (even .40 holds
-	   5.37:1 at 4px). At 2px a star is only slightly softened, so the ALPHAS
-	   have to carry legibility on their own, and the values above are chosen so
-	   they do. ⚠ If this ever goes back up, the stops may follow it down; if it
-	   goes to 0, they must not. */
-	--glass-blur: 2px;
+	   5.37:1 at 4px). At 1–2px a star is barely softened, so the ALPHAS carry
+	   legibility on their own, and the values above are chosen so they do,
+	   measured UNBLURRED. That independence is deliberate and is what keeps
+	   this on probation cheaply.
+	   ⚠ If it ever goes back up, the stops may follow it down. If it goes to 0,
+	   they must not. */
+	--glass-blur: 1px;
 
 	/* ══ STRUCTURE ═════════════════════════════════════════════════════════════
 	   The page ground and the WORLD's text ramp — what the site wears outside a

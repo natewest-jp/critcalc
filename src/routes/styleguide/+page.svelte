@@ -377,17 +377,30 @@
 			voices) against a star <strong>unblurred</strong>: panel 4.92:1, well 5.37:1.
 		</p>
 		<p class="sg-note">
-			⚠️ <strong
-				>At <code>--glass-blur</code> 2px (⚓ Nate) the blur is aesthetic, not load-bearing</strong
+			⚓ <code>--glass-blur</code> is <strong>1px and ON PROBATION</strong> (Nate, 2026-08-09 —
+			tuned 6 → 2 → 1, may yet go to 0). ⚠️ <strong>A bigger blur BANDS</strong>, and that is a
+			mechanism rather than a preference: blurring a backdrop is precisely how you
+			<em>manufacture</em> a smooth gradient, and a smooth gradient across a near-black ground in
+			8-bit sRGB is the textbook banding case — output levels are far enough apart down here that
+			the eye reads the steps as contours. Small radii escape it for the same reason the scene does:
+			the starfield and the GL dither leave enough per-pixel variation to act as noise, and noise is
+			what breaks a band. So the blur is caught between two floors — big enough to soften a star,
+			small enough not to smooth the backdrop into a ramp.
+			<em
+				>Same family as the hero-card gradient veto, and the reason <code>--scene-dither</code>
+				exists.</em
 			>
-			— and that is a real change of role. At 4–8px a blur <em>solves</em>
-			the star problem: it spreads the point over its own radius, the peak contribution collapses, and
-			the effective backdrop becomes the local average, which would let the stops go far thinner (even
-			.40 holds 5.37:1 at 4px). At 2px a star is only slightly softened, so the alphas carry legibility
-			on their own and are chosen so they do.
+		</p>
+		<p class="sg-note">
+			⚠️ <strong>Its role changed on the way down, and nothing is allowed to depend on it.</strong>
+			At 4–8px a blur <em>solves</em> the star problem above — it spreads the point over its radius,
+			the peak collapses, and the effective backdrop becomes the local average, which would let the
+			stops go far thinner (even .40 holds 5.37:1 at 4px). At 1–2px a star is barely softened, so
+			the alphas carry legibility on their own and are chosen so they do,
+			<strong>measured unblurred</strong>. That is what makes probation cheap: removing the blur is
+			one line with no knock-on.
 			<strong
-				>If the blur ever goes back up, the stops may follow it down; if it goes to 0, they must
-				not.</strong
+				>If it goes back up the stops may follow it down; if it goes to 0, they must not.</strong
 			>
 			Applied by <code>.ctx-glass</code> itself, because it is part of what the material
 			<em>is</em>.
@@ -1847,8 +1860,15 @@
 						is .60, set by stars).
 					</li>
 					<li>
+						⚓ <strong><code>--glass-blur</code> is ON PROBATION at 1px.</strong> Tuned 6 → 2 → 1
+						and may yet go to 0. It is squeezed between two floors: big enough to soften a star,
+						small enough not to smooth the backdrop into a <strong>banded</strong> ramp (Nate's finding
+						— blurring a backdrop is how you manufacture a gradient, and a gradient over near-black in
+						8-bit sRGB bands). Nothing depends on it staying, by construction.
+					</li>
+					<li>
 						<strong>Do frozen stars read as texture, or as dirt?</strong> At
-						<code>--glass-blur</code> 2px the starfield still shows through the bands as near-sharp points.
+						<code>--glass-blur</code> 1px the starfield still shows through the bands as near-sharp points.
 						Nothing measurable decides this one — and the stops don't depend on the blur, so it can move
 						either way.
 					</li>
