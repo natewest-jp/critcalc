@@ -1,0 +1,133 @@
+import { test, expect, openTool, KEYS } from './fixtures/critcalc';
+import type { Page } from '@playwright/test';
+
+/**
+ * THE TWO-LAYER MODEL — constellations and loadouts.
+ *
+ * Layer 1 = the roster (global `constellations` + `loadout` stores), edited in
+ * the Team Builder's ROSTER surfaces (detail card, edit-roster grid); setting a
+ * constellation there implies OWNERSHIP. Layer 2 = the active tab (`tabCon` +
+ * `tabLoadout`), which shadows Layer 1 field-by-field, never touches the roster
+ * and never marks ownership. A tab's effective value is `tabX[id] ?? layer1[id]`.
+ *
+ * Saving a rotation DENSIFIES (freezes) the resolved values for every slot so a
+ * saved artifact stays faithful when the roster changes later; an OPEN tab keeps
+ * live-falling-back to the roster.
+ *
+ * The BENCH BAND — the one slot-card column both tools dock — ALWAYS writes
+ * Layer 2: it is the plan's team editor everywhere. One shared control routing
+ * differently per tool would be incoherent, so the roster surfaces alone own
+ * Layer 1. That routing is what these tests pin.
+ */
+
+const conChip = (page: Page, i: number) => page.locator('.sp-cons-chip').nth(i);
+const readStore = (page: Page, key: string) => page.evaluate((k) => localStorage.getItem(k), key);
+
+/** Set a slot's constellation from its bench card chip. */
+async function setBenchCon(page: Page, slot: number, pip: number) {
+	await page.locator('.bench-band-mount .sp-cons-chip').nth(slot).click();
+	await page.locator('.sp-popover .sp-pip').nth(pip).click();
+}
+
+test('the planner con chip writes the plan, never the roster', async ({ page }) => {
+	await openTool(page, '/rotation-planner');
+	await page.locator('.cm-content').first().click();
+	await page.keyboard.type('Furina E Q > Bennett E Q');
+	await expect(conChip(page, 0), 'a fresh tab starts at C0').toHaveText('C0');
+
+	await conChip(page, 0).click();
+	await page.locator('.sp-popover .sp-pip').nth(2).click();
+	await expect(conChip(page, 0), 'the chip reflects the tab override').toHaveText('C2');
+
+	const tabs = JSON.parse((await readStore(page, KEYS.tabs)) ?? '{}');
+	expect(tabs?.tabs?.[0]?.tabCon?.furina, 'written to tabCon, keyed by character').toBe(2);
+	expect(await readStore(page, KEYS.constellations), 'Layer 1 untouched').toBeNull();
+	expect(await readStore(page, KEYS.ownership), 'theorycraft is not ownership').toBeNull();
+});
+
+test('an open tab falls back live; saving freezes the resolved values', async ({ page, seed }) => {
+	// Bennett owned at C1 on the roster, Furina explicitly overridden to C2 in the
+	// plan — the two layers in their two states.
+	await seed({
+		team: { slots: ['furina', 'bennett'], notation: 'Furina E Q > Bennett E Q' },
+		constellations: { bennett: 1 }
+	});
+	await openTool(page, '/rotation-planner');
+	await conChip(page, 0).click();
+	await page.locator('.sp-popover .sp-pip').nth(2).click();
+
+	await expect(conChip(page, 1), 'an un-overridden slot falls back to the roster').toHaveText('C1');
+
+	// Save → the bank copy freezes BOTH slots' effective values.
+	// ⚠ Unanchored on purpose: `hasText` matches textContent, and the button
+	// leads with a <Mark> SVG, so `/^Save/` never matches. (The rendered "SAVE"
+	// is CSS text-transform — a second, separate trap for anyone matching case.)
+	await page.locator('.doc-actions button').filter({ hasText: /Save/ }).first().click();
+	await expect
+		.poll(
+			async () => {
+				const bank = JSON.parse((await readStore(page, KEYS.saved)) ?? '[]');
+				return bank[0]?.tabCon;
+			},
+			{ message: 'save densifies every slot' }
+		)
+		.toMatchObject({ furina: 2, bennett: 1 });
+
+	// The roster changes underneath. The OPEN tab keeps its sparse tabCon for
+	// Bennett, so he live-falls-back to the NEW value; Furina's override holds.
+	await page.evaluate(
+		(k) => localStorage.setItem(k, JSON.stringify({ bennett: 6 })),
+		KEYS.constellations
+	);
+	await page.reload({ waitUntil: 'networkidle' });
+	await expect(conChip(page, 1), 'the open tab tracks the roster change').toHaveText('C6');
+	await expect(conChip(page, 0), 'the explicit override survives it').toHaveText('C2');
+});
+
+test('the bench band writes Layer 2 on the Team Builder too', async ({ page, seed }) => {
+	await seed({ team: { slots: ['nahida', 'furina', 'bennett', 'xingqiu'] } });
+	await openTool(page, '/team-builder');
+	// One SlotPortrait per FILLED slot — empty slots render no card. (The old
+	// probe asserted a flat 4 against a two-character team; it had been dying
+	// earlier on a dead selector, so that assertion never actually ran.)
+	await expect(page.locator('.bench-band-mount .sp-card'), 'the shared slot cards').toHaveCount(4);
+
+	await setBenchCon(page, 0, 4);
+	const tabs = JSON.parse((await readStore(page, KEYS.tabs)) ?? '{}');
+	const active = tabs?.tabs?.find((t: { id: string }) => t.id === tabs.activeTabId);
+	expect(active?.tabCon?.nahida, 'the band writes the plan, not the roster').toBe(4);
+	expect(await readStore(page, KEYS.constellations), 'roster constellations untouched').toBeNull();
+	expect(await readStore(page, KEYS.ownership), 'plan is not ownership').toBeNull();
+
+	// An artifact set from the band lands in tabLoadout, never the roster loadout.
+	await page.locator('.bench-band-mount .sp-card').first().locator('.sp-lo-zone').first().click();
+	// Tile 0 is the "None" tile — pick the first real set.
+	await page.locator('.sp-popover--panel .lp-tile').nth(1).click();
+	const tabs2 = JSON.parse((await readStore(page, KEYS.tabs)) ?? '{}');
+	const active2 = tabs2?.tabs?.find((t: { id: string }) => t.id === tabs2.activeTabId);
+	expect(active2?.tabLoadout?.nahida?.artifactSetId).toBeTruthy();
+	expect(await readStore(page, 'critcalc:loadout'), 'roster loadout untouched').toBeNull();
+});
+
+test('the detail card owns Layer 1, and the plan keeps shadowing it', async ({ page, seed }) => {
+	await seed({ team: { slots: ['nahida', 'furina'] } });
+	await openTool(page, '/team-builder');
+	// The CON popover closes on pick (unlike the loadout panel, which stays open
+	// so you can re-lead) — so there is no backdrop left to dismiss here.
+	await setBenchCon(page, 0, 4);
+
+	await page.locator('.bench-band-mount .sp-avatar-clickable').first().dispatchEvent('click');
+	await page.locator('.dc-panel').waitFor();
+	await page.locator('.dc-constepper .dc-con-btn', { hasText: 'C2' }).click();
+
+	const roster = JSON.parse((await readStore(page, KEYS.constellations)) ?? '{}');
+	expect(roster.nahida, 'the stepper writes the roster').toBe(2);
+	const own = JSON.parse((await readStore(page, KEYS.ownership)) ?? '{}');
+	expect(own.nahida, 'a roster constellation implies ownership').toBe('owned');
+
+	await page.keyboard.press('Escape');
+	await expect(
+		page.locator('.bench-band-mount .sp-cons-chip').first(),
+		'the plan keeps shadowing the new roster value'
+	).toHaveText('C4');
+});

@@ -24,11 +24,18 @@
 		"format": "prettier --write .",
 		"test": "vitest run",
 		"test:watch": "vitest",
+		"test:e2e": "npm run test:e2e:chrome; npm run test:e2e:webkit",
+		"test:e2e:chrome": "playwright test --project=chrome --grep-invert @storm",
+		"test:e2e:webkit": "playwright test --project=webkit --grep-invert @storm",
+		"test:e2e:ui": "playwright test --project=chrome --ui",
+		"test:e2e:storm": "playwright test --grep @storm --workers=1 --retries=0",
+		"test:e2e:report": "playwright show-report",
 		"generate-marks": "node scripts/generate-marks.mjs"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.2",
 		"@eslint/js": "^9.39.2",
+		"@playwright/test": "^1.61.1",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",

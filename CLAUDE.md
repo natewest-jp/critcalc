@@ -85,6 +85,42 @@ localStorage-backed, shared across tools: `constellations` (characterId → 0–
 
 ---
 
+## Verification Policy
+
+**Prefer running existing checks over writing new verification code.**
+
+- `npm run check` — svelte-check
+- `npm run test` — Vitest (parser/IR, capability derivation, character lint, codec roundtrips, timeline projections)
+- `npm run lint` — prettier + eslint (incl. the `condition-shape` and caveat-style rules)
+- `npm run build` — the production build is the real gate; **never verify against dev only**
+- `npm run test:e2e` — Playwright at the browser surface, Chrome + WebKit (`e2e/`, 68 tests per engine). Builds and serves its own preview every run, so it cannot measure a stale server. Variants: `test:e2e:chrome`, `test:e2e:webkit`, `test:e2e:ui`, `test:e2e:storm` (the slow cross-engine nav storm, `@storm`-tagged and excluded from the default run), `test:e2e:report`. 🐛 **Read the "N passed" line, not the exit code** — an UPSTREAM Chrome shutdown bug ([playwright#39753](https://github.com/microsoft/playwright/issues/39753), unfixed through 1.62.1) intermittently hangs worker teardown, so the process exits 1 with everything green. Don't bisect our specs for it (details in `playwright.config.ts`)
+- Data validation lives in Vitest (`characterLint.test.ts`, `characterIndex.test.ts`) plus the `scripts/audit-*.mjs` reports — there is **no** `validate:data` script
+
+Do not write a script to answer something readable in the source, documented in the SvelteKit/Vite docs, or already covered above.
+
+If you need to observe runtime state, use an inline command (`node -e`, `curl | grep`, `npm run build && grep build/`) rather than creating a file. If a file is genuinely unavoidable, write it to `scratch/` (gitignored), run it, report the finding, and **delete it in the same turn. Never commit a one-off probe** — `scripts/probe-*.mjs` is a retired pattern, not a place to add to.
+
+**Promote to a permanent check only when:**
+
+- it caught a real, observed bug, AND
+- the assertion survives unrelated refactors.
+
+Propose the promotion and wait for approval; don't add spec or test files unprompted. When a promotion IS approved, it goes in `e2e/` (browser-level) or beside the module as a Vitest file — never back into `scripts/`.
+
+**Writing an e2e spec** — three traps that have each cost real time, all documented at their site in `e2e/fixtures/critcalc.ts`:
+
+- `addInitScript` re-runs on **every** navigation including `reload()`, so the `seed` fixture only fills keys that are absent. Seeding unconditionally makes a reload-then-assert test measure the seed instead of the app.
+- `hasText` matches `textContent`, not rendered text: a button leading with a `<Mark>` SVG has whitespace first, so `/^Save/` never matches — and the uppercase you see is CSS `text-transform`, a separate trap.
+- The nav-storm spec needs `--workers=1`. Concurrent headless browsers each driving the GL scene starve each other's rAF, which looks exactly like the transition bug it hunts.
+
+**Calculation work:** when verifying a damage or buff figure, add it to the regression fixtures rather than checking it once and discarding the script.
+
+**Visual and rendering work** (canvas instruments, the WebGL scene, gradients, SVG filters, typography): do not write verification scripts. Build it, describe what changed, and let Nate look at it.
+
+**Safari: assume nothing is verified until Nate has checked it manually.** Playwright WebKit catches thrown errors, not rendering or performance differences.
+
+---
+
 ## Roadmap Snapshot (2026-07-15)
 
 All three tools are built and merged to `main`; launch is a **readiness decision** (connect the domain), not a build gate. Prioritization SoT is the **Launch Roadmap** in project memory — remaining work grouped by model-fit (🟣 Opus-friendly / 🔵 Fable-led).

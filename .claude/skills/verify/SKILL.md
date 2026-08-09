@@ -5,15 +5,39 @@ description: Build, serve, and drive critcalc in headless Chrome to verify chang
 
 # Verifying critcalc changes
 
-The tools (rotation planner, crit visualizer) SSR a default shell but all
-real state is client-side (localStorage, restored post-hydration), so
-verification means driving a real browser. **Playwright is a devDependency
-(since 2026-07-11, Nate's call)** — import it directly in probe scripts run
-from the project root; no scratch-dir install. Use system Chrome via
-`channel: 'chrome'` (no binary download). Prefer keeping reusable probe
-scripts in the repo over scratch dirs — they die with the session otherwise.
+> ⚠️ **Read CLAUDE.md § Verification Policy first.** Driving a browser is the
+> LAST resort, not the first: run `npm run test` / `check` / `lint` / `build`,
+> and answer from source or docs where you can. Visual/rendering judgments are
+> Nate's eyes, not a script's, and nothing Safari-facing counts as verified
+> until he has looked at it in real Safari.
 
-## Build + serve
+## The suite comes first
+
+Browser-surface checks live in **`e2e/`** and run as `npm run test:e2e`
+(Chrome + WebKit). It builds and serves its own preview each run, so it cannot
+measure a stale server. Start here — if a behavior you care about is already
+covered, run the suite instead of writing anything.
+
+```bash
+npm run test:e2e                     # the gate: chrome + webkit, ~2 min
+npm run test:e2e:chrome              # faster inner loop
+npx playwright test e2e/marks.spec.ts --project=chrome   # one spec
+npm run test:e2e:ui                  # pick and step through tests interactively
+npm run test:e2e:storm               # the slow cross-engine nav storm (opt-in)
+```
+
+**Adding a spec needs Nate's approval** (it is a promotion — see the policy).
+When approved, extend `e2e/` using `e2e/fixtures/critcalc.ts`; the three traps
+that have cost real time are documented at their site in that file.
+`scripts/probe-*.mjs` is a **retired pattern** — 28 of them were deleted on
+2026-08-09. Do not recreate it. The one survivor, `probe-ink-centering.mjs`, is
+a measuring instrument (it reports numbers), not a pass/fail check.
+
+## One-off investigation
+
+For a question the suite doesn't answer and that doesn't warrant a spec, drive
+Playwright inline — `node -e "..."` against a running preview — then report and
+move on. Nothing to commit, nothing to clean up.
 
 ```bash
 npm run build                      # prebuild regenerates newfit + character index

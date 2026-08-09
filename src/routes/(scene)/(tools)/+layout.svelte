@@ -23,6 +23,7 @@
 	import { rotationTabs, TAB_LIMIT } from '$lib/rotationTabs.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { savedNotations } from '$lib/stores';
+	import { TOOL_GUTTER } from '$lib/toolGutter';
 
 	let { children } = $props();
 
@@ -788,6 +789,7 @@
 	class="tool-shell"
 	class:revealed
 	style:--tool-fade="{FADE_DURATION_MS}ms"
+	style:--tool-gutter="{TOOL_GUTTER}px"
 	out:plainExit|global
 >
 	<!-- Tool chrome strip: the shared site chrome, with the tool switcher in its
@@ -896,6 +898,14 @@
 		   PANELS are what's opaque). The occlusion handshake retired with the
 		   opacity — see the script comment. */
 		background: transparent;
+
+		/* --tool-gutter comes inline from TOOL_GUTTER ($lib/toolGutter) and is
+		   declared HERE so every tool inherits one interior rhythm without
+		   importing the constant itself. The band stack and the aside column
+		   still take their gaps as inline px from BAND_STACK_GAP / COLUMN_GAP
+		   (both derived from the same constant) because those components own
+		   their own geometry; this is for the tools' own stylesheets, which
+		   have no other way to reach a TypeScript number. */
 
 		/* Layout pads. --tool-pad-top is breathing room below the fixed chrome
 		   (.tool-main adds --chrome-h itself; viewport-height workspaces

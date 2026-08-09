@@ -169,11 +169,29 @@ export const sceneOccluded = writable(false);
 export type SceneLayerKind = 'composition' | 'dim';
 
 /** Dim overlay opacity — the tool-over-scene treatment (⚓ NATE 2026-08-05):
- *  the scene dims under the tools through a semi-transparent INK wash (the
- *  .dim layer's background is var(--ink)); the world stays visible in the
+ *  the scene dims under the tools through a semi-transparent wash (the .dim
+ *  layer's background is var(--scene-dim)); the world stays visible in the
  *  panel gaps, just receded. 0 on the landing and static pages — the open
- *  world stays undimmed. The WAAPI ride animates this during ascend/descend. */
-export const TOOL_DIM = 0.75;
+ *  world stays undimmed. The WAAPI ride animates this during ascend/descend.
+ *
+ *  ↻ 2026-08-08 (⚓ NATE): 0.75 → 0.85, and the reason is a CHANGE OF JOB
+ *  rather than a tuning. This wash used to recede a backdrop the panels hid.
+ *  It is becoming the PAGE GROUND — the surface content sits directly on, with
+ *  no box between (Genshin's own idiom: a section banner, then bare text on
+ *  the world). 0.85 is where the crest reads as a ground rather than as
+ *  scenery: quiet enough to carry text, still plainly the world.
+ *
+ *  ⚠ It arrived during the sheer-ground experiment, which is retired — sheer
+ *  panels were a middle that turned out not to be a place (2–3% of scene light
+ *  through a surface reads as a duller colour, not as translucency). The DIM
+ *  survives that retirement on its own merit, which is why it is declared here
+ *  with its own rationale instead of riding along with a token that is gone.
+ *
+ *  ⚠ Uniform, for now. Genshin vignettes hard — darkest exactly where the text
+ *  is, decoration pushed to the edges — and once content lives on the world
+ *  that shaping is what buys legibility. A shaped scrim is the open question
+ *  here, not a higher number. */
+export const TOOL_DIM = 0.85;
 export const dimTarget = (path: string) => (isToolPath(path) ? TOOL_DIM : 0);
 
 // --- Transition clock --------------------------------------------------------

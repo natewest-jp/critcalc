@@ -573,7 +573,21 @@
    inner element and wins by inheritance. The alpha-compositing law stands —
    every context ground is opaque; only the shell between panels is
    transparent (the scene shows in the gaps, never through a surface. Mix
-   fills against the context's own ground, never against transparent). */
+   fills against the context's own ground, never against transparent).
+
+   ↻ 2026-08-08 — THE SCENE IS A GROUND. The companion law says "if you cannot
+   paint the ground, inherit the context, don't claim one", and it was written
+   about a card that put warm-brown ink on the ribbon's navy. There is one
+   honest exception, and the tools are moving toward it: a groundless element
+   over the DIMMED WORLD may claim .ctx-dark, because at TOOL_DIM the crest IS
+   a dark ground — painted by the scene layer instead of by the element. That
+   is the premise of putting content on the backdrop at all.
+   ⚠ It cuts one way only. Nothing may claim .ctx-light without painting,
+   because there is no light ground anywhere to inherit from — and on a dark
+   world, light belongs to narrow banners, buttons and cards, never to fields.
+   ⚠ And the fills still need a real ground to mix against: --frame-bg remains
+   the REFERENCE even where nothing paints it. A fill mixed toward transparent
+   over the scene composites against whatever terrain is behind it. */
 .ctx-dark {
 	--frame-bg: #242c40; /* surface — the panel/chart ground ⚓ NATE 2026-08-05
 	   (#1c1a1a read too gray; the cool navy-slate is the chart dark) */
@@ -1327,6 +1341,58 @@ img {
    the OPACITY of a stacked static ring, which is compositor-only.) */
 .frame {
 	background: var(--frame-bg);
+}
+
+/* ── The BANNER — a section label, not a container ────────────────────────
+   ⚓ NATE 2026-08-08, ON TRIAL. The structural primitive of the Genshin screens
+   the tools are moving toward: a narrow bar that NAMES the content below it,
+   with that content sitting bare on the world. It is the inverse of a panel —
+   a panel wraps content in a ground; a banner labels content that has none.
+
+   Look at the reference and it is the only surface on the screen: "Challenge
+   Criteria", "Challenge Objective", "Special Rules" are three narrow bars, and
+   every word beneath each of them is on the backdrop.
+
+   ⚠ OPAQUE, deliberately, even though Genshin's read as translucent. Theirs sit
+   over painted, varied art where a scrim obviously reads as a scrim; ours sit
+   over a scene dimmed to near-uniform near-black, where a half-alpha bar is
+   indistinguishable from an opaque darker one — the exact ambiguous middle the
+   sheer round proved is not a place. Opaque, or obviously see-through; a banner
+   this narrow has nothing to gain from see-through, so it is opaque.
+
+   ⚠ NARROW, and that is what separates it from a panel. If it starts holding
+   content rather than naming it, it has become a panel and should say so.
+
+   Sits a rung ABOVE the dimmed scene rather than below it — --surface on
+   near-black reads as Genshin's "stripe of slightly different value carrying a
+   label", which is the whole effect. Type is a rung up from .kicker (the
+   companion idiom for when a hairline is enough): content on open ground can
+   afford, and needs, more voice than content inside a box. */
+.banner {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	min-height: 28px;
+	padding: 0.3rem 0.7rem;
+	border-radius: var(--r-sm);
+	background: var(--surface);
+	font-size: var(--fs-lg);
+	font-weight: var(--fw-semibold);
+	letter-spacing: var(--ls-wide);
+	text-transform: uppercase;
+	color: var(--text);
+}
+/* Trailing content — a count, a control — rides the far end. */
+.banner-end {
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	text-transform: none;
+	letter-spacing: normal;
+	font-size: var(--fs-md);
+	font-weight: var(--fw-regular);
+	color: var(--muted);
 }
 
 /* ── Headings, labels, notes ──────────────────────────────────────────── */

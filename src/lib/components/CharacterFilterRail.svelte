@@ -232,7 +232,39 @@
 		padding-left: calc(0.6rem + 13px + 0.4rem);
 	}
 
-	.cg-sec .kicker {
+	/* ── A GROUP IS AN OBJECT (breathing-room round, 2026-08-08) ──
+	   Eight labelled groups — search · roster · role · factions · can-provide ·
+	   element · weapon · rarity · region — used to be eight sections of one
+	   continuous box, separated by nothing but a 1rem gap. That made the
+	   densest column on the site read as a single wall of chips: the eye had
+	   nothing to rest on between "Element" and "Weapon" except a label.
+	   Genshin's mission lists do the opposite — every row is its own small
+	   plate on the backdrop — and that is what this is.
+
+	   Each group now paints its own ground, so the aside can go GROUNDLESS
+	   (ToolColumns' asideBare) and the column becomes objects with scene
+	   between them. Costs ~9 × padding of scroll height in a column that
+	   already scrolls; buys the whole rail a rhythm.
+
+	   ⚠ The RAISED rung, not --surface: with the box gone there is no ground
+	   for these to lift off, so they take the value the box itself had — the
+	   groups inherit the column's old weight rather than stacking a second
+	   rung on top of it.
+
+	   ⚠ :global, and it has to be. FOUR of the eight groups are injected by the
+	   Team Builder through the railStart snippet, so their markup is authored in
+	   that page and Svelte scopes styles to where markup lives, not where it
+	   renders. A plain `.cg-sec` rule here would paint the rail's own four and
+	   silently skip the tool's — which is the same trap the TB's local
+	   `.tb-chips { margin-top }` was already working around. Scoped under
+	   `.cg-rail` so it cannot escape this column. */
+	.cg-rail :global(.cg-sec) {
+		padding: 0.55rem 0.6rem;
+		border-radius: var(--r-sm);
+		background: var(--surface-raised);
+	}
+
+	.cg-rail :global(.cg-sec .kicker) {
 		margin-bottom: 0.5rem;
 	}
 </style>

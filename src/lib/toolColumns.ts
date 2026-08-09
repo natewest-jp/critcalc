@@ -46,6 +46,8 @@
  *
  * All knobs — Nate tunes these in the inspector.
  */
+// ⚠ The .ts extension is load-bearing — see toolGutter.ts's note on it.
+import { TOOL_GUTTER } from './toolGutter.ts';
 
 /**
  * The aside column's width, in px. 262 is what both existing filter rails
@@ -56,8 +58,20 @@
 export const ASIDE_W = 262;
 
 /**
- * Bare scene between the two boxes. Matches BAND_STACK_GAP so a tool's
- * interior rhythm is one number horizontally and vertically; they are separate
- * knobs on purpose, in case that stops being true.
+ * Bare scene between the two boxes — the HORIZONTAL face of a tool's one
+ * interior rhythm, BAND_STACK_GAP being the vertical one.
+ *
+ * ↻ 2026-08-08 (breathing-room round): DERIVED from TOOL_GUTTER now. This
+ * reverses the note that stood here eight days — "they are separate knobs on
+ * purpose, in case that stops being true" — and the reversal is deliberate
+ * rather than an oversight, so it is recorded rather than quietly dropped.
+ *
+ * What changed is that the rhythm became the POINT. When these were two 8s
+ * that happened to agree, keeping them independent cost nothing. Once the
+ * round's whole thesis is that a tool needs air running through it at a
+ * consistent measure, two knobs that could drift apart is precisely the bug —
+ * an aside 8px from its main box beside a band stack 16px above it does not
+ * read as one rhythm, it reads as a mistake. If a genuine reason to split them
+ * ever appears, split them THEN, with the reason written down.
  */
-export const COLUMN_GAP = 8;
+export const COLUMN_GAP = TOOL_GUTTER;
