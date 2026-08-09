@@ -391,13 +391,15 @@
 
 	.dim {
 		z-index: 1;
-		/* The world's own wash (⚓ NATE 2026-08-06): --scene-dim, a warm
-		   near-black that desaturates the backdrop so the panels' chroma reads
-		   as separation — see the token's note in app.css for the measurement,
-		   and TOOL_DIM in transition.ts for the opacity knob. It was --ink
-		   until this round; --ink is ink on BRIGHT fills and only looked
-		   alike. */
+		/* The world's own wash: --scene-dim — see the token's note in app.css
+		   for its colour, and TOOL_DIM in transition.ts for the density. */
 		background: var(--scene-dim);
+		/* ⛔ NO MASK. A shaped scrim was built here (ellipse, then a soft rounded
+		   box from two intersected 1-D falloffs) and ⚓ NATE scrapped it after
+		   driving it: "it doesn't really buy us anything meaningful compared to
+		   a plain dim." One uniform wash — don't rebuild the shape. What made
+		   glass and bare text stop competing turned out to be BLUR, not
+		   geometry; the argument is on TOOL_DIM in transition.ts. */
 		pointer-events: none;
 		/* Initial opacity is set inline at SSR time (style:opacity above);
 		   WAAPI takes over via the sceneLayer action after hydration. */

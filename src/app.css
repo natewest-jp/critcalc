@@ -1,4 +1,153 @@
 :root {
+	/* ══ L0 · PRIMITIVES ═══════════════════════════════════════════════════════
+	   THE LAW OF THIS FILE: a NUMBER means a PRIMITIVE, and no component may
+	   ever name one. No number means a ROLE, and a role is the only thing a
+	   component is allowed to name. Every rung below exists to be pointed AT by
+	   a role or a context — if you find yourself writing var(--slate-700) in a
+	   .svelte file, the answer is a new role, not a reach past the layer.
+
+	   WHERE THESE CAME FROM (2026-08-09, the Genshin Night round). Fable read a
+	   large set of Genshin UI screenshots and found the thing this system had
+	   been missing: their shades are not hand-picked hexes, they are a SMALL
+	   PALETTE LAYERED WITH TRANSPARENCY. One slate, one parchment, one gold,
+	   composited at a handful of alphas, produces every surface in their
+	   interface. The ramps below are that reverse-engineering, nudged slightly
+	   to be ours; assets-src/genshin-night.css is the sourced reference.
+
+	   Until this round we had NO primitive layer at all — every role was its own
+	   hand-picked hex, which is why there was never anywhere to go when a
+	   surface needed "one rung lighter", why --control-face had to be sampled
+	   off a screenshot twice, and why two values (#e5d9c3 / #857971) ended up
+	   doing double duty just to bind the two contexts into one system. */
+
+	/* NIGHT — the world's own darks. Backdrop only; never a component fill. */
+	--night-975: #14161e;
+	--night-950: #191c26;
+
+	/* SLATE — every structural surface in the dark context. Hue holds 262–269°
+	   across the ramp (the site's long-standing hue constant, which Genshin's
+	   own control slate landed on unprompted back in 2026-08-01), chroma stays
+	   inside the whisper band C .020–.031, and each rung steps ΔL .034–.056. */
+	--slate-300: #6b7284;
+	--slate-400: #5c6375;
+	--slate-500: #50596b; /* ANCHOR: slate element on parchment (menu tiles) */
+	--slate-600: #414a5a;
+	--slate-700: #363e4d;
+	--slate-800: #2e3543; /* ANCHOR: the dark context's ground */
+	--slate-900: #262c38;
+	--slate-950: #1c212b;
+
+	/* PARCHMENT — the inversion family. Doing double duty is the POINT here,
+	   not an accident: parchment is the light context's SURFACE and the dark
+	   context's INK and the source of every hairline on dark. One family
+	   binding both halves is what makes the axis a system rather than two
+	   palettes. Hue 83–86°, chroma rising as it darkens. */
+	--parchment-50: #f7f2e8;
+	--parchment-100: #ece5d8; /* ANCHOR: canonical parchment */
+	--parchment-200: #dfd5c2;
+	--parchment-300: #cfc2a6;
+
+	/* GOLD — ornament, emphasis, and (as of this round) THE ACCENT. Genshin's
+	   jewelry: ration it. Same hue family as parchment (82–88°) pulled up in
+	   chroma, so gold reads as parchment WEARING something rather than as a
+	   separate hue.
+	   ⚠ --gold-700 is OURS, not Fable's — the reference ramp stops at 600, and
+	   600 measures 3.31:1 on parchment-100, which cannot carry ink. 700 is the
+	   ramp continued on its own hue (L.50 C.058 H82) to reach 4.82:1, and it is
+	   what .ctx-light's accent resolves to. Without it the accent decision
+	   simply does not survive a light panel. */
+	--gold-300: #e4d4ae;
+	--gold-400: #d3bc8e; /* ANCHOR: the accent, on dark */
+	--gold-500: #b49b6c;
+	--gold-600: #8e7a55;
+	--gold-700: #74603c; /* the accent, on light — ours, see above */
+
+	/* INK — the dark ramp: Genshin's navy ink on parchment, continued down to
+	   the near-black that goes on a bright fill. 500/700/900 are theirs; 950 is
+	   the value this system already carried (⚓ NATE 2026-08-05, the neutral
+	   near-black that replaced a saturated one that read too hard). */
+	--ink-500: #6e7789;
+	--ink-700: #495366; /* ANCHOR: body on parchment */
+	--ink-900: #3b4255; /* labels/headers on parchment — the anchoring rung */
+	--ink-950: #0d0d0f; /* ink on a BRIGHT fill (element bars, gauge badges) */
+
+	/* RED — the enemy-facing chroma. ⚓ NATE's interim --debuff pick from
+	   2026-08-05, PROMOTED TO FINAL here rather than replaced, and the reason
+	   is evidence rather than deference: Fable's independent reverse-engineering
+	   landed on #C1584B, ~ΔE 3 away, which is the confirmation the value was
+	   waiting for. Measured head to head, Nate's is the better of the two — it
+	   sits FURTHER off pyro (ΔH 4.6° vs 2.1°), which was the constraint it was
+	   picked under. Swapping it would have cost separation to gain nothing. */
+	--red-500: #c9524a;
+	--red-400: #d26a5c;
+
+	/* ══ L1 · COMPOSITING ══════════════════════════════════════════════════════
+	   The alphas Fable recovered. Two different fates, and the split is a law:
+
+	   GLASS stays genuinely translucent. Resolving it against a ground would
+	   produce an opaque color, which is not glass — the whole point is that you
+	   see the world through it. Note this does NOT re-open the retired `sheer`
+	   experiment: sheer let 2–3% of scene light through, which reads as a duller
+	   colour; glass at .70 lets 15–30% through, which is the "obviously
+	   translucent" side of the rule sheer failed. Consumed by .ctx-glass.
+
+	   LINES resolve OPAQUE, because a 1px alpha line renders display-dependently
+	   (the alpha-compositing law, paid for by the dire gradient). They are
+	   declared per CONTEXT, not here, since each mixes its own ink source
+	   against its own ground — see the .ctx-* blocks.
+	   ↻ The law refines this round: a line mixes opaquely against a KNOWN
+	   ground. On a glass surface the ground is unknown, so THERE the line
+	   carries alpha. .ctx-glass is the one context that declares alpha lines. */
+	/* ↻ ⚓ NATE 2026-08-09: MORE TRANSPARENT. Fable's stops were .85 / .72; these
+	   are .68 / .55, which lets meaningfully more world through a band — 11%
+	   and 16% at the new TOOL_DIM .65, against 9% before.
+
+	   ⚠ WHAT SETS THE FLOOR HERE IS A STAR. Text on glass is limited by the
+	   WORST pixel behind it, never the average, and the worst pixel is always a
+	   star — a tiny, very bright point. Both stops clear 4.5:1 for --muted (the
+	   dimmer of the two band voices) against a star, UNBLURRED: panel 4.92:1,
+	   well 5.37:1. That is deliberate — see --glass-blur for why they cannot be
+	   allowed to depend on the blur.
+
+	   ⚠ Glass and the wash MULTIPLY: what reaches the eye is
+	   (1 − glass)(1 − TOOL_DIM). At the old dim of .85 these same stops would
+	   deliver 5% and 7%, i.e. `sheer` again. Move one, check the other.
+
+	   ⛔ --glass-ribbon is DELETED. It was Fable's stop for the bench ribbon,
+	   and the bench went back to opaque slate the same day (⚓ NATE). Nothing
+	   painted it; the bands take --glass-panel and --glass-well. */
+	--glass-panel: rgb(46 53 67 / 0.68); /* slate-800 — band A, menus, panels */
+	--glass-well: rgb(28 33 43 / 0.55); /* slate-950 — band B, recessed fields */
+	--glass-parch: rgb(236 229 216 / 0.1); /* parchment frost — hover on glass */
+	/* ⚓ NATE — ON PROBATION, 2026-08-09. Tuned 6 → 2 → 1px and still under
+	   test; it may yet go to 0. Nothing is allowed to depend on it (see below),
+	   so removing it is a one-line change with no knock-on.
+
+	   ⚠ WHY IT CANNOT JUST BE TURNED UP — NATE'S FINDING, and it is a mechanism
+	   rather than a taste: A BIGGER BLUR BANDS. Blurring a backdrop is exactly
+	   how you MANUFACTURE a smooth gradient, and a smooth gradient across a
+	   near-black ground in 8-bit sRGB is the textbook banding case — adjacent
+	   output levels are far enough apart down here that the eye sees the steps
+	   as contours. Small radii escape it for the same reason the scene does:
+	   the starfield and the GL dither leave enough per-pixel variation to act
+	   as noise, and noise is what breaks a band. So the blur is caught between
+	   two floors — big enough to soften a star, small enough not to smooth the
+	   backdrop into a ramp — and 1px is Nate's current read of that gap.
+	   ⚠ Same family as the hero-card veto (gradients band in Safari, grain
+	   rejected as the fix) and the reason --scene-dither exists at all.
+
+	   ⚠ ITS ROLE CHANGED ON THE WAY DOWN. At 4–8px a blur SOLVES the star
+	   problem above: it spreads a bright point over its own radius, the peak
+	   contribution collapses, and the effective backdrop becomes the local
+	   average — which would have let the stops go far thinner (even .40 holds
+	   5.37:1 at 4px). At 1–2px a star is barely softened, so the ALPHAS carry
+	   legibility on their own, and the values above are chosen so they do,
+	   measured UNBLURRED. That independence is deliberate and is what keeps
+	   this on probation cheaply.
+	   ⚠ If it ever goes back up, the stops may follow it down. If it goes to 0,
+	   they must not. */
+	--glass-blur: 1px;
+
 	/* ══ STRUCTURE ═════════════════════════════════════════════════════════════
 	   The page ground and the WORLD's text ramp — what the site wears outside a
 	   panel. --bg is the deepest rung (derived from Nate's anchors 2026-07-31; a
@@ -20,10 +169,18 @@
 	   bright fills — the counterpart of --text, promoted from the literal
 	   GaugeInstrument has carried since the badges were built. Bright chip +
 	   dark ink is the sanctioned idiom now (Genshin's Lv-chips); a bright
-	   fill needs no halo. ≥4.5:1 against every element main and --gilt-soft. */
-	--ink: #0d0d0f; /* dark ink on bright fills ⚓ NATE 2026-08-05 (Genshin-UI
-	   archetype; #081225 → #03020c → #0d0d0f — the saturated black read too
-	   hard; this is the neutral near-black) */
+	   fill needs no halo.
+	   ↻ 2026-08-09 (Genshin Night): RENAMED --ink → --bright-ink and its value
+	   moved into the ink ramp as --ink-950. ⚓ NATE: "--ink doesn't need to be
+	   saved for anything in and of itself, and perhaps it confuses with the
+	   other ink values" — correct, and the numbered/unnumbered law made the
+	   collision unavoidable once the navy ramp arrived. The new name states the
+	   job (ink for a BRIGHT ground) and matches the two roles that already
+	   named their surface: --control-ink, --sel-ink.
+	   Measured against every ground it actually lands on: pyro 5.94:1, hydro
+	   5.30:1, anemo 11.25:1, electro 7.31:1, cryo 13.55:1, geo 11.43:1,
+	   dendro 10.88:1, --sel-surface 13.25:1. */
+	--bright-ink: var(--ink-950);
 	--chrome: #ffffff; /* site chrome, branding, and the biggest headers ⚓ NATE
 	   2026-08-05 — pure white, the over-the-world voice. NOT for body text or
 	   data; the contexts below own those. */
@@ -43,10 +200,25 @@
 	   (#150b00). What it actually does is kill chroma, and it sits near that
 	   lever's floor: B=0 would gain only another 0.003. More separation than
 	   this wants TOOL_DIM, not a warmer wash.
-	   ⚠ NOT --ink. That token is dark ink on BRIGHT fills (8 other consumers,
-	   incl. the light context's promoted control ink); the two only looked
-	   alike. */
-	--scene-dim: #0b0902;
+	   ⚠ NOT --bright-ink. That token is dark ink on BRIGHT fills; the two only
+	   looked alike.
+
+	   ↻ 2026-08-09 (Genshin Night) ⚓ NATE: warm near-black → NEUTRAL near-black.
+	   His mockups ran a lighter gray wash because "the backdrop was getting too
+	   black", and that is a different axis from the density — the COLOUR sets
+	   how black the floor of the composite is, the alpha sets how much world
+	   survives. Both moved this round (density is TOOL_DIM, now shaped).
+	   What this costs, measured: the warm wash's whole argument above was that
+	   it kills backdrop CHROMA and buys a second separation channel against the
+	   panels. A neutral wash gives that back — but the premise changed
+	   underneath it. That measurement was taken when panels were opaque plates
+	   floating on a backdrop they had to be told apart from; the furniture is
+	   GLASS now and deliberately shares the backdrop's light, so "separate the
+	   panel from the world" is no longer the job this token is doing.
+	   It also costs a little worst-pixel contrast — parchment over a star reads
+	   6.26:1 here vs 7.20:1 warm, both clear of the floor.
+	   ⚓ Revert to #0b0902 on this one line if the neutral reads dead. */
+	--scene-dim: #15161a;
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are
@@ -91,32 +263,95 @@
 	   on it. The archetype's #242c40 (C.038) satisfies it; identity chroma
 	   stays with CONTENT (element bars, calm/debuff fills). --bg is exempt and
 	   deliberately NOT re-pointed: it grounds the landing world, which stays
-	   cosmic blue. */
-	--surface: #242c40;
-	--surface-raised: #2e364b;
-	--border: #857971;
-	--frame-bg: #242c40;
+	   cosmic blue.
+
+	   ↻ 2026-08-09 (Genshin Night): the grounds stop being hand-picked hexes and
+	   become RUNGS. --surface/--frame-bg = slate-800, --surface-raised =
+	   slate-700 one rung up. The lines stop being derived from --border and
+	   become the four STOPS below, which is the actual Genshin mechanism: a
+	   hairline is parchment laid on the ground at a low alpha, not a separate
+	   colour that happens to be greyish. */
+	--surface: var(--slate-800);
+	--surface-raised: var(--slate-700);
+	--frame-bg: var(--slate-800);
+	/* --surface-well = a ground CUT INTO another ground: the planner's chart,
+	   an input field, a recessed track. New this round, and it is a role the
+	   system was already using without a name — the planner declared its own
+	   --rp-chart-bg literal for exactly this, which is why the well idiom kept
+	   inverting whenever --surface moved (2026-08-05 fixed it once already).
+	   One rung DOWN from --surface, where raised is one rung up. */
+	--surface-well: var(--slate-900);
+
+	/* ── THE LINE STOPS ──────────────────────────────────────────────────────
+	   Four rungs of one idea: the context's INK laid on the context's GROUND at
+	   .10 / .18 / .30 / .42, resolved opaque. Every structural line in the app
+	   is one of these. Declared per context (each mixes its own ink against its
+	   own ground) and therefore RE-DECLARED in every .ctx-* block — a custom
+	   property containing var() is substituted where it is DECLARED, so
+	   inheriting these would bake in the dark context's parchment.
+
+	   The three roles below are the names components actually use; the stops are
+	   what they point at, so a surface can move one rung without a new colour.
+
+	   ⚠⚠ THE STOPS SHIP AS RESOLVED LITERALS, AND THAT IS NOT LAZINESS — IT IS
+	   THE ONE HARD CONSTRAINT THIS ROUND HIT. Written as color-mix they CRASHED
+	   WEBKIT: `page crashed` on every tool route, 12 e2e failures, bisected to
+	   the palette commit and confirmed by flattening these five values and
+	   watching 18/18 come back. See THE NESTING LAW below.
+
+	   The derivation is not lost — it moved from runtime to TEST TIME.
+	   timelineExport.mirror.test.ts recomputes every stop from its recipe and
+	   fails if a literal drifts, which makes the relationship a CHECKED
+	   invariant instead of one the browser re-evaluates on every element. That
+	   is strictly stronger than what a color-mix gave us, and it is the pattern
+	   this codebase already trusts for the canvas palette.
+
+	   ⚠ --line-edge (.42) is OURS, not Fable's — the reference stops at .30.
+	   --border carries modal outlines, and .30 measures 2.27:1 against the dark
+	   ground where today's --border measures 3.29:1; dropping a modal's only
+	   outline by a third of its presence is not a thing to do silently inside a
+	   palette migration. .42 lands at 3.07:1, i.e. today's border strength.
+	   Measured on the dark ground: faint 1.32:1 · soft 1.64:1 · strong 2.27:1 ·
+	   edge 3.07:1. On paper every rung is quieter (1.15 → 1.90:1), which matches
+	   what the light context already shipped (1.24:1).
+
+	   ══ THE NESTING LAW ═══════════════════════════════════════════════════════
+	   A color-mix may take LITERALS and PRIMITIVE ALIASES as inputs. A color-mix
+	   result may NEVER feed another color-mix.
+
+	   WebKit crashes the renderer when it does — not slowly, not visibly, it
+	   drops the page. Every tool route died on this branch until the five
+	   derived values were flattened. The trigger is nesting × ELEMENT COUNT: one
+	   nested mix on one element at :root is survivable, the same construct
+	   inherited by a timeline's thousands of nodes is not. What made it easy to
+	   walk into is that the pre-round system never nested by accident — --border
+	   was a literal, so --frame-line and --rp-grid mixing it were one level
+	   deep. Deriving --border is what pushed everything downstream to two.
+
+	   So: derive the value, RESOLVE it, ship the literal, and let the test hold
+	   the recipe. Anything that mixes --border, --muted or a line stop is
+	   relying on this. ══════════════════════════════════════════════════════ */
+	--line-faint: #414752; /* = parchment-100 @ .10 over the ground */
+	--line-soft: #50555e; /* = parchment-100 @ .18 */
+	--line-strong: #676a70; /* = parchment-100 @ .30 */
+	--line-edge: #7e7f82; /* = parchment-100 @ .42 */
+
+	/* --border = dividers, hairlines, modal outlines. The loudest stop. */
+	--border: var(--line-edge);
 	/* Interior structure INSIDE a .frame — zone splits, lane separators, the
 	   composer's well. Both tools used to declare this hex privately
-	   (--rp-line / --tb-line).
-	   ↻ 2026-07-31: DERIVED from --border — one line color drives both
-	   grounds now, softened toward the frame ground it sits on. Mixed
-	   against --frame-bg (opaque), NOT transparent: an alpha line's
-	   rendered color depends on the compositor (the dire-gradient lesson),
-	   and frame lines always sit on --frame-bg anyway. Resolves ≈ #383847.
-	   ⚠ timelineExport mirrors the RESOLVED literal — recompute it if
-	   --border, --frame-bg or the 90% move (the mirror test enforces). */
-	--frame-line: color-mix(in srgb, var(--border) 90%, var(--frame-bg));
+	   (--rp-line / --tb-line); 2026-07-31 unified them onto one derivation.
+	   ⚠ timelineExport mirrors the RESOLVED literal — recompute it if the stop
+	   or the ground moves (the mirror test enforces this). */
+	--frame-line: var(--line-strong);
 	/* The QUIET structure line — same job, one register down, for strokes that
 	   are 1.5–2px wide or repeat several times in one object. ⚓ NATE sampled
 	   #383943 for the bench strip's double frame (2026-08-06); --frame-line at
-	   2px read as a lit warm edge rather than a frame. Same derivation, same
-	   opaque-mix law, so it inverts with the context like its sibling. It now
-	   carries the bench strip's frame + card dividers AND the slot card's
-	   control borders (constellation chip, loadout pill, ⇄/✕), so those read as
-	   one family with the box around them. Resolves ≈ #393d4b on the dark
-	   context. */
-	--frame-line-quiet: color-mix(in srgb, var(--border) 22%, var(--frame-bg));
+	   2px read as a lit warm edge rather than a frame. It carries the bench
+	   strip's frame + card dividers AND the slot card's control borders
+	   (constellation chip, loadout pill, ⇄/✕), so those read as one family with
+	   the box around them. */
+	--frame-line-quiet: var(--line-faint);
 
 	/* ══ CHART INK ═════════════════════════════════════════════════════════════
 	   The inside of an instrument: axis labels, tick text, gridlines, axis
@@ -165,15 +400,18 @@
 	   register (buff bars); the element palette is untouched. */
 
 	/* DEBUFF — the enemy-facing semantic (debuffs, res shred, sacrificial
-	   procs): dire's successor. ⚠ INTERIM VALUES (dire+gilt cleanup,
-	   2026-08-05) — a warm red picked to sit in the archetype while staying
-	   off pyro (#f9563e) and --ui-danger (#e63946); the destination color is
-	   still Nate's to choose. --debuff is the bright EDGE/stripe, exactly
+	   procs): dire's successor. --debuff is the bright EDGE/stripe, exactly
 	   --calm's role on buff bars; --debuff-fill is the bar BODY, pinned near
 	   --calm-fill's weight (L≈.35) so debuff and buff bars carry the same
 	   presence in the timeline.
+	   ✅ 2026-08-09 (Genshin Night): NO LONGER INTERIM. The value did not change
+	   — it was promoted into the ramp as --red-500 and the open question closed.
+	   The evidence is in the primitive's comment: Fable's independent
+	   reverse-engineering landed ~ΔE 3 away, and measured head to head Nate's
+	   pick separates BETTER from pyro (ΔH 4.6° vs 2.1°), which is the constraint
+	   it was chosen under in the first place.
 	   ⚠ Canvas can't resolve var() — timelineExport.ts mirrors both. */
-	--debuff: #c9524a;
+	--debuff: var(--red-500);
 	--debuff-fill: #6e332d;
 
 	/* CALM — content register. These are the HIGH-saturation members of the
@@ -217,7 +455,23 @@
 	   adjacency turns out not to matter in practice.
 	   ⚠ --ui-warning is close to --rx-burning (#ef7d3c). That one is an encoding
 	   color that never leaves the gauge/reaction instruments, so the rule
-	   "encoding colors never leave their instrument" already covers it. */
+	   "encoding colors never leave their instrument" already covers it.
+
+	   ↻ 2026-08-09 (Genshin Night): this family stays OURS. ⚓ NATE kept our UI
+	   palette over Genshin's highlighter colours and asked me to borrow from
+	   theirs only where we had a gap. Two were considered:
+
+	   ⛔ --ui-value (Genshin's numeric blue, #7CCFF0) — REJECTED, and the reason
+	   generalises: WE HAVE NO FREE BLUE. Measured, #7CCFF0 sits ΔH 6.8° / ΔC
+	   .019 from --el-cryo-main, i.e. it IS cryo; the next blue over, our own
+	   --calm, sits ΔH 2.2° from --el-hydro-main. The blue neighbourhood is
+	   fully spoken for by the element palette, and a "this is a number" colour
+	   that reads as an element inside a Genshin tool is worse than no colour at
+	   all. If value-emphasis is ever wanted, it has to come from weight or the
+	   accent, not from hue.
+	   ⛔ --ui-keyword (Genshin's orange keyword emphasis, #E8A33D) — held back:
+	   real as a semantic (§ Laws forbids spending a STATE colour on prose
+	   emphasis) but it has no consumer, and no speculative abstractions. */
 	--ui-danger: #e63946; /* destroy · discard · invalid input */
 	--ui-warning: #f4a261; /* parse warning · unknown token · not yet curated */
 	--ui-positive: #51c89a; /* saved · on · valid */
@@ -255,6 +509,12 @@
 	   shape we actually mean either way, so there is one token here instead of a
 	   circle/capsule pair nobody could tell apart on the squares. */
 	--r-round: 999px; /* circles + capsules: thumbs, dots, pills */
+
+	/* How far an inset border sits in from its box's edge — Fable's read of the
+	   Genshin screens puts it at 6–8px, and the bench ribbon (the only surface
+	   wearing one before this round) independently landed on 5. See the inset
+	   border family further down for the recipes this feeds. */
+	--frame-inset: 7px;
 
 	/* ⚓ NATE 2026-08-07 — THE INSET BORDER IS THE BENCH RIBBON'S ALONE, for now.
 	   Genshin puts almost no line on the OUTSIDE of a panel: the line lives
@@ -304,7 +564,6 @@
 	   parchment on dark, near-black on paper. */
 	--ink-active: var(--text);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
-	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 
@@ -326,16 +585,24 @@
 	   #586071 as sampled, no derivation in between. It is the one control
 	   color that is deliberately GROUND-AGNOSTIC — the same slate on navy
 	   frames and paper panels, exactly as Genshin lays it on both — so it is
-	   not --accent-derived and needs no per-context re-declaration. */
-	--control-face: #586071; /* control face  ⚓ GENSHIN  L.488 C.029 H265 */
+	   not --accent-derived and needs no per-context re-declaration.
+
+	   ↻ 2026-08-09 (Genshin Night): SNAPPED TO THE RAMP, #586071 → --slate-500
+	   #50596B. Both are Genshin samples — ours off a button face, Fable's off a
+	   menu tile — and they are ~ΔL .025 apart, so this costs nothing visually
+	   and buys the thing the round is for: no orphan rung sitting a whisker off
+	   a ladder it belongs to. Still ground-agnostic, still not accent-derived.
+	   ⚓ Revert by putting the literal back on this one line if the button face
+	   reads differently than the menu tile in situ. */
+	--control-face: var(--slate-500); /* ⚓ GENSHIN  L.463 C.031 H264 */
 	--control-face-hover: color-mix(in srgb, var(--control-face) 86%, white);
 	/* Ink ON that face. Ground-agnostic like the face itself, so it can NOT be
 	   --text: in the light context that resolved to the warm-brown prose ink
 	   and put 1.06:1 brown-on-slate on every promoted button ("Fill a 5★
 	   flower" in the Artifact instrument was the visible one). Parchment — the
-	   archetype's own light-on-dark ink, reused rather than invented — at
-	   4.52:1. */
-	--control-ink: #e5d9c3;
+	   archetype's own light-on-dark ink, reused rather than invented — 5.62:1
+	   on the snapped face. */
+	--control-ink: var(--parchment-100);
 
 	/* ↻ 2026-08-07 (⚓ NATE — TEST VALUES): the RESTING button plate. Buttons
 	   move off the ghost idiom — a button should look like a thing you press
@@ -362,9 +629,12 @@
 	   tab strips and the Help chapter nav; selection stays accent everywhere
 	   else. ↻ 2026-08-05: the plate is the archetype's hinge beige (was
 	   gilt-soft #ede8de — gilt retired). Neither side is --accent-derived,
-	   so no per-context re-declaration is needed. */
-	--sel-surface: #e5d9c3;
-	--sel-ink: var(--ink);
+	   so no per-context re-declaration is needed.
+	   ↻ 2026-08-09: onto the ramp as --gold-300, which is where the hinge beige
+	   was always standing — the plate is the brightest thing on the screen and
+	   gold-300 is the ramp's brightest rung. --bright-ink on it: 13.25:1. */
+	--sel-surface: var(--gold-300);
+	--sel-ink: var(--bright-ink);
 
 	/* Slider/toggle knob. Rides the context's dim voice — the contexts
 	   re-declare it against their own --muted (interim, dire+gilt cleanup
@@ -372,22 +642,45 @@
 	   both families). */
 	--knob: var(--muted);
 
-	/* ══ ACCENT ZONING — the world and the crest ═══════════════════════════════
-	   ONE alias, read 148× across 26 files. Zone names ride the ascend:
-	   picking a path is the moment you ascend, and a tool is where you land.
-	   ↻ 2026-08-05 (dire+gilt cleanup, INTERIM): the world's accent is
-	   --chrome white (gilt retired); at the crest the CONTEXTS carry the
-	   accent instead (.ctx-dark parchment / .ctx-light slate — see those
-	   blocks), with the .tool-shell rung below covering over-scene chrome
-	   strips. The real accent story is still open.
-	   The [data-zone='tool'] half is for PORTALLED nodes: $lib/actions/portal
-	   appends popovers to <body>, which drops them out of .tool-shell and
-	   would otherwise flip a tool popover to the world accent. The action
-	   stamps the zone on the way out — see the comment there.
+	/* ══ THE ACCENT ════════════════════════════════════════════════════════════
+	   ✅ 2026-08-09 (Genshin Night) — THE ACCENT STORY IS CLOSED. It had been
+	   open since the archetype landed: every context BORROWED one of its own
+	   inks (parchment on dark, slate on light) and the world borrowed --chrome
+	   white, which was recorded at the time as "a placeholder, not a decision —
+	   the system has no accent of its own". It has one now, and it is GOLD:
+	   Genshin's own ornament and selection colour, and the one family in their
+	   palette that exists to do nothing but emphasise. ⚓ NATE.
+
+	   Because every consumer already reads this one alias, picking it was a
+	   value change and not a refactor — which is exactly why the alias was
+	   worth keeping through three rounds of not knowing the answer.
+
+	   ⚠ THE ACCENT IS ONE HUE AT TWO RUNGS, NOT ONE VALUE. gold-400 measures
+	   1.48:1 on parchment — unusable as ink on a light panel — so .ctx-light
+	   takes --gold-700 (4.82:1) instead. Same hue, same family, different rung;
+	   the accent does not change identity when a surface flips, it changes
+	   weight. This is the general shape for anything chromatic that has to live
+	   in both contexts.
+
+	   ⚠ WHAT STAYS WHITE: branding and top-level chrome — the site nav, the
+	   ?/i/gear glyphs. ⚓ NATE. Those are the site speaking as itself rather
+	   than the tool speaking, and --chrome is that voice; see .site-chrome
+	   below, which re-declares --accent (and must re-declare the derived
+	   tokens with it — the substituted-at-declaration law).
+
+	   ⚠ gold sits ΔH 0.5° from --el-geo-main. That is fine and deliberate:
+	   geo is an identity colour at C.150 while the accent is ornament at C.066,
+	   so chroma is what separates them — the same way Genshin can put gold
+	   trim on a geo icon without the two reading as one thing. Do not "fix"
+	   this by rotating the accent off geo; it would rotate it off parchment.
+
+	   The [data-zone='tool'] rung below is for PORTALLED nodes:
+	   $lib/actions/portal appends popovers to <body>, which drops them out of
+	   .tool-shell and would otherwise flip a tool popover to the world accent.
 	   Meta overlays (ChromeModals) are mounted OUTSIDE .tool-shell
 	   deliberately, so Help/About/Settings read the world's voice in BOTH
 	   zones. That is intended: they are meta surfaces, not tool surfaces. */
-	--accent: var(--chrome);
+	--accent: var(--gold-400);
 
 	/* Element palette — single source of truth.
 	   Three slots per element: main / border (main @ 0.5α) / hi (main mixed 50/50 white). */
@@ -526,10 +819,15 @@
 	   above. This was a live bug: selected chips in the Visualizers silently
 	   turned gold the moment they started reading --sel-fill (migration
 	   chunk 2). If another --accent-derived token is ever added to :root,
-	   add it here AND to the .ctx-* blocks. */
-	--accent: var(--chrome);
+	   add it here AND to the .ctx-* blocks.
+
+	   ↻ 2026-08-09 (Genshin Night): this rung is GOLD now, like the root. It
+	   governs what sits directly over the scene and what portals out of a tool;
+	   both are tool voice, not site voice, and only the site chrome stayed
+	   white. The block survives the accent decision because the DERIVED tokens
+	   still have to be re-declared wherever --accent is — see the law above. */
+	--accent: var(--gold-400);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
-	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 }
@@ -545,10 +843,22 @@
    is a zone of a BAND now, and a band has its own opaque ground and its own
    context, so its controls must lift with the CONTEXT's fills. Leaving them
    here would have painted chrome-white fills onto a beige band. The site
-   chrome is the only genuinely groundless strip left. */
+   chrome is the only genuinely groundless strip left.
+
+   ↻ 2026-08-09 (Genshin Night): this is also where the accent STAYS WHITE.
+   ⚓ NATE: gold everywhere except branding and top-level chrome — the site nav,
+   the ?/i/gear. The site chrome is the site speaking as itself, and --chrome is
+   that voice; the accent is the TOOL's emphasis and has no business in it.
+   ⚠ The derived tokens are re-declared with it (substituted-at-declaration).
+   Note this block is INSIDE .tool-shell on tool routes, so without these four
+   lines the chrome bar would inherit the shell's gold. */
 .site-chrome {
 	--fill-rest: color-mix(in srgb, var(--chrome) 13%, transparent);
 	--fill-hover: color-mix(in srgb, var(--chrome) 20%, transparent);
+	--accent: var(--chrome);
+	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
+	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 /* ══ THE TWO CONTEXTS — dark and light (Genshin UI archetype) ═══════════════
@@ -589,34 +899,43 @@
    the REFERENCE even where nothing paints it. A fill mixed toward transparent
    over the scene composites against whatever terrain is behind it. */
 .ctx-dark {
-	--frame-bg: #242c40; /* surface — the panel/chart ground ⚓ NATE 2026-08-05
-	   (#1c1a1a read too gray; the cool navy-slate is the chart dark) */
-	--surface: #242c40;
-	/* ↻ 2026-08-05 (archetype consistency pass): was #212121 — a pure NEUTRAL
-	   near-black (C.000) left behind when Nate re-cut the surface from the warm
-	   #1c1a1a to the navy #242c40. It sat 177° off the ground it had to pair
-	   with and only ΔL.047 from it, so the planner read as two unrelated darks
-	   with no depth between them. Re-cut onto the surface's own axis (C.038
-	   H267) one clean rung ABOVE it — which also restores the well idiom the
-	   planner is built on: a lighter FRAME with a darker chart cut into it.
-	   (It had inverted — the "deeper" well was the lighter of the two.) */
-	--surface-raised: #2e364b; /* raised panel — L.335, ΔL .040 over the surface */
-	--text: #e5d9c3; /* default text — parchment on dark  9.97:1 */
-	/* ↻ 2026-08-05: --muted is the secondary TEXT voice and #857971 measured
-	   3.29:1 here — under the 4.5:1 body-text floor, which is why every .note
-	   and .subtitle in a dark panel read as a smudge. The dim rung keeps its
-	   STRUCTURAL job below (--border); the text voice lifts to a blend of the
-	   archetype's own two hinge values — mix(--text 30%, #857971) — so it
-	   introduces no new hue, just the missing rung. 4.81:1. */
-	--muted: #a2968a; /* dim text — the hinge blend */
-	--border: #857971; /* borders keep the dim rung ⚓ NATE */
-	/* The context's emphasis voice: its own bright text color. Interim
-	   (dire+gilt cleanup 2026-08-05) — the accent story is still open. The
-	   derived sel-* tokens re-declare per the substituted-at-declaration
-	   law; --knob re-bakes against this context's --muted. */
-	--accent: #e5d9c3;
+	/* ↻ 2026-08-09 (Genshin Night): every value here is now a RUNG. The ground
+	   is slate-800, raised is one rung up at slate-700, the ink is parchment,
+	   and the lines are parchment laid on the ground at four alphas. Nothing in
+	   this block is a hex any more, which is the point of the round: a dark
+	   surface that needs to move goes up or down the ramp instead of being
+	   re-picked by eye.
+	   Measured on this ground: --text 9.82:1 · --muted 5.95:1 · --accent 6.65:1
+	   (and on --surface-raised: 8.58 · 5.20). */
+	--frame-bg: var(--slate-800);
+	--surface: var(--slate-800);
+	--surface-raised: var(--slate-700); /* ΔL .035 over the ground */
+	--surface-well: var(--slate-900); /* ΔL .035 under it — the chart, a field */
+	--text: var(--parchment-100);
+	/* The secondary TEXT voice. It used to be a blend of two hinge values,
+	   invented because the structural rung (#857971) measured 3.29:1 and could
+	   not carry body copy. The layering model makes it fall out instead: it is
+	   simply the ink at .72, which is where Genshin's own dimmed text sits.
+	   ⚠ Literal, per THE NESTING LAW at :root — --chart-dim mixes this, and a
+	   mix of a mix crashes WebKit. The mirror test holds the recipe. */
+	--muted: #b7b4ae; /* = parchment-100 @ .72 over the ground */
+	/* The line stops, re-declared against THIS ground. Two reasons, and both
+	   still apply now that they are literals: a custom property containing
+	   var() is substituted where it is DECLARED (so inheriting :root's copies
+	   would work here by luck and break the moment this ground moved), and a
+	   context's structure should be readable in one block. */
+	--line-faint: #414752; /* = parchment-100 @ .10 over the ground */
+	--line-soft: #50555e; /* = parchment-100 @ .18 */
+	--line-strong: #676a70; /* = parchment-100 @ .30 */
+	--line-edge: #7e7f82; /* = parchment-100 @ .42 */
+	--border: var(--line-edge);
+	--frame-line: var(--line-strong);
+	--frame-line-quiet: var(--line-faint);
+	/* ✅ The accent is gold now, not this context's own borrowed ink — see the
+	   accent block at :root. The derived sel-* tokens re-declare per the
+	   substituted-at-declaration law; --knob re-bakes against this --muted. */
+	--accent: var(--gold-400);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
-	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 	--knob: var(--muted);
@@ -634,40 +953,51 @@
 
 .ctx-light,
 .panel {
-	--frame-bg: #f2f2ec; /* surface — the paper ground */
-	--surface: #f2f2ec;
-	--surface-raised: #e9e5dc; /* raised surface */
-	/* ↻ 2026-08-05 (archetype consistency pass): was #857971, the dark
-	   context's dim rung doing double duty. On paper it measures 3.76:1 — and
-	   3.36:1 on the raised rung — so ALL body copy in the Team Builder, every
-	   .panel in the Visualizers, and every character card was under the
-	   4.5:1 floor while the LABELS beside it sat at 6.9:1. Genshin uses that
-	   gray as its secondary/disabled voice on light panels, not its prose.
-	   Prose moves down to #765f4d — already in the palette as --ribbon-ink, so
-	   the double-duty pattern is kept, just re-pointed at the value that can
-	   carry it (5.32:1 on paper, 4.75:1 on the raised rung). Nate's deliberate
-	   inversion SURVIVES: --muted is still darker than --text here, labels
-	   still anchor and prose still recedes. */
-	--text: #765f4d; /* default text — warm brown on paper  5.32:1 */
-	--muted: #495366; /* the gray LABEL voice (labels + controls) ⚓ NATE —
-	   note it is DARKER than --text here: labels are the anchored voice on
-	   paper, prose recedes. Deliberate inversion of the dark-context order. */
-	--border: #e5d9c3; /* ⚓ NATE 2026-08-05 — borders wear the ribbon color */
-	/* The ribbon — Genshin's banded section-header surface, light context
-	   only. --ribbon-ink is used ONLY on the ribbon surface. */
-	--ribbon: #e5d9c3;
-	--ribbon-ink: #765f4d;
-	/* Emphasis voice = the label slate (interim, dire+gilt cleanup
-	   2026-08-05); same re-declaration set as .ctx-dark, same reasons. */
-	--accent: #495366;
+	/* ↻ 2026-08-09 (Genshin Night): the paper is parchment and the ink is the
+	   NAVY RAMP. ⚓ NATE chose the reference's ink over the warm brown, and the
+	   thing worth recording is that his inversion survived the swap intact:
+	   ink-900 is DARKER than ink-700, so labels still anchor and prose still
+	   recedes — the rule was never about the hues, it was about which rung
+	   carries which voice. What the swap removes is the second hue. The warm
+	   brown #765f4d and the navy #495366 were fighting each other on the same
+	   surface; one family at two rungs does the same job without the argument.
+	   Measured: --text 6.18:1 (6.94 raised) · --muted 8.00:1 (8.98 raised) —
+	   both up from 5.32 / 6.9. */
+	--frame-bg: var(--parchment-100);
+	--surface: var(--parchment-100);
+	/* ⚠ RAISED NOW LIFTS. It used to be #e9e5dc, DARKER than the surface — a
+	   raised panel that sank. Genshin's cream cards are the lighter thing on
+	   parchment, so this is parchment-50 and the light context's depth now
+	   reads the same direction as the dark context's. */
+	--surface-raised: var(--parchment-50);
+	/* A field cut into paper goes DOWN the parchment ramp, mirroring the dark
+	   context's well. Genshin's own info/time bars on parchment sit here. */
+	--surface-well: var(--parchment-200);
+	--text: var(--ink-700); /* prose — the receding rung */
+	--muted: var(--ink-900); /* labels + controls — the ANCHORING rung ⚓ NATE */
+	/* The line stops on paper: the ink laid on the parchment. Every rung is
+	   quieter here than on dark (1.15 → 1.90:1), which is what the light
+	   context already shipped (its old border measured 1.24:1) and what
+	   Genshin does — paper structure is a whisper.
+	   ⚠ Literals, per THE NESTING LAW at :root. */
+	--line-faint: #dcd6cd; /* = ink-700 @ .10 over the ground */
+	--line-soft: #cfcbc3; /* = ink-700 @ .18 */
+	--line-strong: #bbb9b6; /* = ink-700 @ .30 */
+	--line-edge: #a8a8a8; /* = ink-700 @ .42 */
+	--border: var(--line-edge);
+	--frame-line: var(--line-strong);
+	--frame-line-quiet: var(--line-faint);
+	/* ⚠ THE ACCENT CHANGES RUNG, NOT HUE. gold-400 measures 1.48:1 on this
+	   ground — it would be invisible as ink and illegible as a link. gold-700
+	   is the same hue carried down to 4.82:1. See the accent block at :root. */
+	--accent: var(--gold-700);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
-	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 	--knob: var(--muted);
 	/* The promoted control ink flips to the DARKEST thing this context owns —
 	   see --ink-active at :root for why it can't stay --text here. */
-	--ink-active: var(--ink);
+	--ink-active: var(--bright-ink);
 	/* ↻ 2026-08-05 (archetype consistency pass): the control fills follow the
 	   GROUND (the rule beside the accent zoning), and on paper they were still
 	   riding :root's --neutral #768093 — a mid COOL gray, which on a warm
@@ -684,6 +1014,96 @@
 	   has to hold an edge on its own, with no hover to announce it. */
 	--btn-face: color-mix(in srgb, var(--muted) 12%, var(--surface));
 	--btn-face-hover: color-mix(in srgb, var(--muted) 20%, var(--surface));
+	color: var(--text);
+}
+
+/* ══ THE THIRD MATERIAL — .ctx-glass (Genshin Night, 2026-08-09) ═══════════
+   A dark context that is TRANSLUCENT. It is a material, not a third palette:
+   the ink, the accent and every rung come straight from .ctx-dark — only the
+   GROUNDS and the LINES differ, because they are the two things that have to
+   know whether there is a world behind them.
+
+   WHO WEARS IT. ⚓ NATE: bare-on-the-scene stays the default for CONTENT; glass
+   is for the FURNITURE — the bands and the band menus. The things that sit ON
+   the page rather than being it. A tool's content does not go back into a box
+   because glass exists.
+   ⚠ NOT the bench ribbon (⚓ NATE 2026-08-09: "the bench is the thing I'm sure
+   should be opaque slate the most"), not the aside/filter column, and not
+   modals — they float over the UNDIMMED landing too, where glass is nearly
+   transparent.
+
+   ⚠ THERE IS NO LIGHT GLASS, and this is a law rather than an omission.
+   Translucent paper over a near-black world is the muddy middle by another
+   route — it was the surviving finding of the reverted toolbar-translucency
+   trial, which concluded that "band B being paper is the constraint". Anything
+   that wants to be glass has to stop being light first.
+
+   ⚠ AND IT IS NOT `sheer`. That experiment was built, measured, shipped and
+   reverted, and the rule that came out of it stands: opaque, or OBVIOUSLY
+   translucent — the middle is not a place. Sheer let 2–3% of scene light
+   through, which reads as a duller colour. These stops let ~17% through at
+   TOOL_DIM .65 — the far side of that same rule, and several times sheer.
+   ⚠ The alpha alone does not decide it: glass and the wash MULTIPLY, so the
+   world reaching the eye is (1 − glass)(1 − TOOL_DIM). At the old dim of .85
+   these same stops would deliver 5–7%, which is sheer again. Move one, check
+   the other.
+
+   ↻ 2026-08-09 — THE BLUR IS ON (⚓ NATE), reversing the note that stood here
+   for a few hours. It is applied BY THIS CLASS rather than per surface, because
+   it is part of what the material IS, not a finish on top of it. ⚠ At the 2px
+   Nate settled on it is AESTHETIC — the stops clear their contrast floor
+   without it, deliberately, so nothing here depends on the blur staying. See
+   --glass-blur, which carries the full argument and the numbers.
+   ⚠ Perf was never the objection: the star-freeze round holds one scene frame
+   at rest, so the blur rasterizes once and is reused. The real risks are
+   WebKit-shaped — backdrop-filter mints a stacking context AND a containing
+   block. The band menus portal to <body> and so escape this element entirely,
+   which is what keeps that safe; anything absolutely-positioned that must
+   escape a band has to portal too. */
+.ctx-glass {
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	backdrop-filter: blur(var(--glass-blur));
+	/* ⚠ PAINT --surface, MIX AGAINST --frame-bg. In the opaque contexts those
+	   two are the same value and the distinction never had teeth; here they
+	   deliberately diverge, and it is the one thing to get right when moving a
+	   surface onto glass. --frame-bg stays a REAL, opaque colour because it is
+	   the REFERENCE ground (the breathing-room rule: it is the colour even
+	   where nothing paints it) — every color-mix, canvas fill and PNG export
+	   still needs something to resolve against. Painting it would just give you
+	   an opaque panel that thinks it is glass. */
+	--surface: var(--glass-panel);
+	--surface-raised: var(--glass-panel);
+	--surface-well: var(--glass-well);
+	--frame-bg: var(--slate-800);
+	--text: var(--parchment-100);
+	--muted: #b7b4ae; /* = parchment-100 @ .72 over slate-800; literal per THE
+	   NESTING LAW — same value the dark context uses, since the ink and the
+	   reference ground are the same. */
+	/* ⚠ THE LINES CARRY ALPHA HERE, and only here. The compositing law says a
+	   line mixes OPAQUELY against a known ground, because a 1px alpha line
+	   renders display-dependently (the dire-gradient lesson). On glass the
+	   ground is not known — it is whatever the world is doing behind it — so an
+	   opaque line would be a stripe of the wrong colour. The law refines: mix
+	   opaque against a KNOWN ground; where the ground is unknown, carry alpha.
+	   These are Fable's recovered stops used as themselves. */
+	--line-faint: rgb(236 229 216 / 0.1);
+	--line-soft: rgb(236 229 216 / 0.18);
+	--line-strong: rgb(236 229 216 / 0.3);
+	--line-edge: rgb(236 229 216 / 0.42);
+	--border: var(--line-edge);
+	--frame-line: var(--line-strong);
+	--frame-line-quiet: var(--line-faint);
+	--accent: var(--gold-400);
+	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
+	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
+	--knob: var(--muted);
+	/* The hover wash is the parchment frost, not a neutral tint — on glass a
+	   neutral fill greys the world showing through it. */
+	--fill-rest: var(--glass-parch);
+	--fill-hover: color-mix(in srgb, var(--parchment-100) 17%, transparent);
+	--btn-face: color-mix(in srgb, var(--neutral) 18%, var(--slate-800));
+	--btn-face-hover: color-mix(in srgb, var(--neutral) 28%, var(--slate-800));
 	color: var(--text);
 }
 
@@ -773,11 +1193,10 @@ img {
    chrome. Components with their own scoped classes (SettingsPanel) out-specify
    these and are unaffected. */
 
-/* Headings speak GILT (Nate 2026-07-27): headings are chrome, and the chrome
-   axis wears gilt while the data axis stays cool. ALL heading levels take the
-   workhorse --gilt; --gilt-hi read too bright at h1's size (Nate 2026-07-27),
-   and was rejected on the brand wordmark too — it has no standing consumer
-   today. Body copy stays on --text. */
+/* Headings are CHROME (Nate 2026-07-27) — the chrome axis and the data axis are
+   different voices, and a heading belongs to the first. ALL heading levels take
+   one value; the rule survived the gilt family's retirement unchanged, it just
+   points at --chrome now. Body copy stays on --text. */
 /* Body copy is --fs-lg. Nothing used to set it, so it fell through to the
    browser's 16px — which happens to equal --fs-xl and made the running text a
    step larger than intended (Nate 2026-07-27). Headings set their own sizes, so
@@ -828,13 +1247,15 @@ img {
 	line-height: var(--lh-normal);
 }
 
-/* Links carry a RESTING underline. Headings and links share --gilt and no
-   colour change can separate them: the family is capped at #d2bd90, and moving
-   links to --gilt-hi measures 1.24 against --text (vs --gilt's 1.55), so it
-   would make a link HARDER to spot in a paragraph while barely separating it
-   from a heading. Hue was being asked to carry two distinctions at once.
-   The underline carries one of them instead — no heading will ever have one —
-   which leaves colour free to mean "this is chrome" for both. */
+/* Links carry a RESTING underline, and the reason generalises past the family
+   that prompted it. Headings and links were both chrome-coloured, and no colour
+   change could separate them: every candidate that made a link more distinct
+   from a heading made it LESS distinct from the paragraph around it. Hue was
+   being asked to carry two distinctions at once. The underline carries one of
+   them instead — no heading will ever have one — which leaves colour free to
+   mean "this is chrome" for both. Still true now that links are the accent and
+   headings are --chrome: those two are much further apart than the old pair,
+   but the underline is what makes a link findable in a paragraph, not the hue. */
 .prose a {
 	color: var(--accent);
 	text-decoration: none;
@@ -1343,6 +1764,69 @@ img {
 	background: var(--frame-bg);
 }
 
+/* ══ THE INSET BORDER FAMILY (Genshin Night, 2026-08-09) ═══════════════════
+   ⚓ NATE picked TWO and discarded three (2026-08-09 feedback round): --plain
+   and --double stay; --corners, --notched and --capped are gone. "We'll stick
+   with these two for now, and if I feel the need for more I'll come up with a
+   concept and propose it" — so this is a CLOSED set, not a starter set. Don't
+   propose additions.
+
+   WHY THE INSET AT ALL. Genshin puts almost no line on the OUTSIDE of a panel.
+   The line lives INSIDE, set in from the edge, where it reads as ornament
+   rather than as the box's own outline — which is exactly why our edge borders
+   could retire to nothing without the surfaces falling apart.
+
+   HOW TO USE ONE. Add `.inset .inset--x`; the host needs `position: relative`
+   and a free ::after (::before too, for --double). No wrapper elements, no
+   layout cost. Inset distance is --frame-inset.
+
+   ⚓ STROKES ARE 2px (NATE). It also puts the family on the rule rung the
+   system already had — § Laws: "rules are 2px, section dividers 1px" — so an
+   inset frame reads as a RULE around a surface rather than as a hairline. */
+.inset {
+	position: relative;
+}
+.inset::after {
+	content: '';
+	position: absolute;
+	inset: var(--frame-inset);
+	border-radius: inherit;
+	pointer-events: none;
+}
+
+/* 1 · PLAIN — the undecorated baseline. One stroke, set in. Safe everywhere,
+   including on glass: a single stroke composites exactly once. */
+.inset--plain::after {
+	border: 2px solid var(--frame-line);
+}
+
+/* 2 · DOUBLE — two strokes on ONE box, differing only in corner radius, so the
+   wide arc cuts across the tight corner. ⚓ NATE's mockup, and the member
+   already shipped: the bench ribbon has worn it since 2026-08-06. Promoted here
+   so a second surface can reach for it; the ribbon keeps its own copy, because
+   its radii are tuned to its geometry (RIBBON_FRAME_R_WIDE is 30, not this 22)
+   and generalising them belongs to the card round.
+
+   ⚠⚠ OPAQUE SURFACES ONLY — NEVER ON .ctx-glass (⚓ NATE, observed). The two
+   strokes CROSS, and on glass the line colour carries alpha (that context's
+   lines have to, since the ground behind them is unknown — see .ctx-glass).
+   Alpha composites twice where they overlap, so every crossing paints a
+   visibly darker segment and the frame reads as four smudges instead of two
+   arcs. Nothing warns you: it is correct CSS doing exactly what it was asked.
+   On an opaque ground the strokes are opaque and the overlap is invisible. */
+.inset--double::after {
+	border: 2px solid var(--frame-line-quiet);
+	border-radius: 2px;
+}
+.inset--double::before {
+	content: '';
+	position: absolute;
+	inset: var(--frame-inset);
+	border: 2px solid var(--frame-line-quiet);
+	border-radius: 22px;
+	pointer-events: none;
+}
+
 /* ── The BANNER — a section label, not a container ────────────────────────
    ⚓ NATE 2026-08-08, ON TRIAL. The structural primitive of the Genshin screens
    the tools are moving toward: a narrow bar that NAMES the content below it,
@@ -1391,7 +1875,7 @@ img {
 	text-transform: none;
 	letter-spacing: normal;
 	font-size: var(--fs-md);
-	font-weight: var(--fw-regular);
+	font-weight: var(--fw-normal);
 	color: var(--muted);
 }
 
@@ -1443,7 +1927,7 @@ img {
 	color: var(--muted);
 }
 
-/* ── Fields — input text is chrome, so it speaks gilt ─────────────────── */
+/* ── Fields — the label speaks the LABEL voice, the input speaks prose ─── */
 .field-label {
 	display: block;
 	margin-bottom: 0.3rem;
@@ -1516,8 +2000,8 @@ img {
 
 /* FLAT — no ring. The knob's closest analogue in the system is the toggle
    THUMB, which is also a solid marker riding inside a track, and that is flat
-   too; the two now share both their color (--gilt-dim) and their treatment, so
-   a slider and a switch read as one family. The ring this replaced was a 2px
+   too; the two now share both their color (--knob, the context's dim voice) and
+   their treatment, so a slider and a switch read as one family. The ring this replaced was a 2px
    semi-transparent BLACK halo — a "pop on any background" trick that matched
    nothing else here: every other ring in the product is an inset 1px in
    --border or an accent mix. The knob does not need the help either; it is

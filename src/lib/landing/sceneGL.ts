@@ -347,7 +347,7 @@ export async function mountSceneGL(canvas: HTMLCanvasElement): Promise<SceneGLHa
 		return {
 			skyTop: resolveColor(cs.getPropertyValue('--sky-top') || '#0a0e1a'),
 			skyBottom: resolveColor(cs.getPropertyValue('--sky-bottom') || '#1f2a48'),
-			bg: resolveColor(cs.getPropertyValue('--bg') || '#060914'),
+			bg: resolveColor(cs.getPropertyValue('--bg') || '#050b19'),
 			skyGrain: parseFloat(cs.getPropertyValue('--sky-grain')) || 0,
 			floorGrain: parseFloat(cs.getPropertyValue('--floor-grain')) || 0,
 			// Additive dither σ in 8-bit levels (see FS_PLATE). Defaults on: the

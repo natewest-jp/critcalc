@@ -1641,7 +1641,14 @@
 		   rung deeper on the surface. Every derived mix below (ghosts, dims,
 		   calmStop, grid/lane lines) follows it. ⚠ the exporter mirrors this
 		   literal. */
-		--rp-chart-bg: #242c40;
+		/* ↻ 2026-08-09 (Genshin Night): this is --surface-well now, a role that
+		   exists BECAUSE of this declaration. The well used to be the literal
+		   #242c40, which was also the old --surface — the two were the same
+		   colour, and the well idiom survived only because the FRAME sat on the
+		   raised rung above it. That is why it silently inverted in 2026-08-05
+		   when the surface moved. Naming the ground "one rung below the surface"
+		   makes the relationship hold on its own. */
+		--rp-chart-bg: var(--surface-well);
 		/* Structural lines inside the chart, derived from --border toward the
 		   CHART ground (not the frame's) so they blend with the darker well.
 		   grid = faint vertical second-lines (resolves ≈ #262631); line = lane
@@ -1923,8 +1930,8 @@
 		min-width: 2px;
 	}
 	/* Debuff variant — applied to enemy resShred bars. Same geometry AND now the
-	   same weight as the buff bar: --dire-fill is the exact counterpart of
-	   --calm-fill (see app.css). It used to be color-mix(dire 24%, chart-bg),
+	   same weight as the buff bar: --debuff-fill is the exact counterpart of
+	   --calm-fill (see app.css). It used to be color-mix(the retired dire 24%,
 	   which sat at half the buff bar's lightness and read as a different, dimmer
 	   class of thing. Fill + bright edge, mirroring the buff bar's
 	   --calm-fill + --calm pairing. */
@@ -2314,7 +2321,7 @@
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
 		/* Summon bars are always full-strength castFill → ink, no halo. */
-		color: var(--ink);
+		color: var(--bright-ink);
 		white-space: nowrap;
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
@@ -2410,7 +2417,7 @@
 		left: 4px;
 		font-size: var(--fs-2xs);
 		font-weight: var(--fw-bold);
-		color: var(--ink);
+		color: var(--bright-ink);
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
 	}

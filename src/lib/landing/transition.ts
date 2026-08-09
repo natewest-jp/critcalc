@@ -187,11 +187,41 @@ export type SceneLayerKind = 'composition' | 'dim';
  *  survives that retirement on its own merit, which is why it is declared here
  *  with its own rationale instead of riding along with a token that is gone.
  *
- *  ⚠ Uniform, for now. Genshin vignettes hard — darkest exactly where the text
- *  is, decoration pushed to the edges — and once content lives on the world
- *  that shaping is what buys legibility. A shaped scrim is the open question
- *  here, not a higher number. */
-export const TOOL_DIM = 0.85;
+ *  ⛔ THE SHAPED SCRIM IS SCRAPPED (⚓ NATE 2026-08-09, after driving it): "it
+ *  doesn't really buy us anything meaningful compared to a plain dim." Built as
+ *  a mask on the .dim layer (an ellipse first, then a soft rounded box made by
+ *  intersecting two 1-D falloffs), measured, shipped, and taken back out the
+ *  same day. The wash is ONE UNIFORM NUMBER again — don't rebuild it.
+ *
+ *  ⚠ And the problem it was built to solve turned out not to need solving. The
+ *  premise was that glass and bare text want opposite things from one wash, so
+ *  the wash had to vary by PLACE. What actually happened is that the two are
+ *  governed independently: text on a GLASS band is limited by the glass stop
+ *  (whose alphas are chosen to clear 4.5:1 against a star on their own — see
+ *  --glass-panel), and text on the OPEN scene is limited by this number. Two
+ *  constraints, two knobs, no geometry required. The shaped scrim was solving a
+ *  coupling that a correctly-chosen glass alpha dissolves.
+ *
+ *  ↻ ⚓ NATE 2026-08-09: .85 → .65. He wanted the world lighter than the old
+ *  .85–.9 and named .6–.7; .65 is the pick inside it, and the reason to prefer
+ *  it over .60 is measured rather than aesthetic:
+ *
+ *    THE FLOOR ON THIS NUMBER IS .60, AND IT IS SET BY STARS, NOT BY SKY. Sky
+ *    average is fine anywhere in range — parchment reads 13.4:1 over it at .65.
+ *    A STAR behind that same text is the worst pixel, and it goes 9.96:1 at .85
+ *    → 5.33:1 at .65 → 4.56:1 at .60 → 3.97:1 at .55. So .60 is the last legal
+ *    value and has no headroom at all; .65 keeps a rung in hand for content
+ *    that is dimmer than --text.
+ *
+ *  ⚠ This floor only binds where text sits DIRECTLY on the world. Text on a
+ *  glass band is governed by the blur instead, which is why glass could get
+ *  meaningfully more transparent in the same round the wash got lighter.
+ *
+ *  ⚓ NATE — the two knobs, and they are independent:
+ *    TOOL_DIM               how much world survives.       Floor .60.
+ *    --scene-dim in app.css the wash COLOUR — how black the floor of the
+ *                           composite is. A different axis entirely. */
+export const TOOL_DIM = 0.65;
 export const dimTarget = (path: string) => (isToolPath(path) ? TOOL_DIM : 0);
 
 // --- Transition clock --------------------------------------------------------

@@ -9,7 +9,7 @@
  * (MUTED still carried the pre-recut #9baabf).
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { PALETTE_MIRROR } from './timelineExport';
 import { elementColors } from './elementColors';
@@ -61,36 +61,90 @@ function mix(a: string, b: string, pctA: number): string {
 	return `#${to(ar, br)}${to(ag, bg)}${to(ab, bb)}`;
 }
 
+/**
+ * Resolve a token VALUE down to a literal hex.
+ *
+ * ↻ 2026-08-09 (Genshin Night): app.css grew a primitive layer, so a role no
+ * longer holds a hex — `--text` is `var(--parchment-100)` and `--border` is
+ * `var(--line-edge)`, itself a color-mix of two more vars. The guard's job is
+ * unchanged (catch drift between the CSS and the canvas mirror); its INPUT
+ * changed, so it has to follow the aliases the browser follows.
+ *
+ * `scope` is the context selector a reference should be looked up in FIRST —
+ * the substituted-at-declaration law means `.ctx-dark`'s `--border` resolves
+ * against `.ctx-dark`'s own `--line-edge` and ground, not :root's.
+ */
+function resolve(value: string, scope?: string, depth = 0): string {
+	if (depth > 12) throw new Error(`token resolution did not terminate: ${value}`);
+	const v = value.trim();
+
+	if (/^#[0-9a-f]{6}$/i.test(v)) return v.toLowerCase();
+
+	const varRef = /^var\(\s*(--[a-z0-9-]+)\s*\)$/i.exec(v);
+	if (varRef) {
+		const name = varRef[1];
+		const lookup = scope ? tryCtxToken(scope, name) : null;
+		return resolve(lookup ?? cssToken(name), scope, depth + 1);
+	}
+
+	const cm = /^color-mix\(\s*in srgb,\s*(.+?)\s+(\d+)%\s*,\s*(.+?)\s*\)$/i.exec(v);
+	if (cm) {
+		return mix(resolve(cm[1], scope, depth + 1), resolve(cm[3], scope, depth + 1), +cm[2]);
+	}
+
+	throw new Error(`cannot resolve token value: ${value}`);
+}
+
+/** ctxToken, but null instead of throwing — the scope-then-root lookup order. */
+function tryCtxToken(selector: string, name: string): string | null {
+	try {
+		return ctxToken(selector, name);
+	} catch {
+		return null;
+	}
+}
+
+/** cssToken, but null instead of throwing (walking an alias chain that may
+ *  dead-end on a primitive or on a token declared only in a context). */
+function tryCssToken(name: string): string | null {
+	try {
+		return cssToken(name);
+	} catch {
+		return null;
+	}
+}
+
 describe('timelineExport palette mirror ↔ app.css', () => {
 	it('plain hex tokens match', () => {
 		// The chart ground is planner-local since 2026-08-01 (Nate's darker
 		// well), declared in RotationTimeline rather than app.css.
-		expect(PALETTE_MIRROR.CHART_BG).toBe(cssToken('--rp-chart-bg', timelineSvelte));
+		expect(PALETTE_MIRROR.CHART_BG).toBe(resolve(cssToken('--rp-chart-bg', timelineSvelte)));
 		// The timeline root is .ctx-dark; its text tokens mirror that block.
-		expect(PALETTE_MIRROR.TEXT).toBe(ctxToken('.ctx-dark', '--text'));
-		expect(PALETTE_MIRROR.MUTED).toBe(ctxToken('.ctx-dark', '--muted'));
-		expect(PALETTE_MIRROR.INK).toBe(cssToken('--ink'));
+		expect(PALETTE_MIRROR.TEXT).toBe(resolve(ctxToken('.ctx-dark', '--text'), '.ctx-dark'));
+		expect(PALETTE_MIRROR.MUTED).toBe(resolve(ctxToken('.ctx-dark', '--muted'), '.ctx-dark'));
+		expect(PALETTE_MIRROR.INK).toBe(resolve(cssToken('--bright-ink')));
 		// ↻ 2026-08-05: the bench card renders in the ribbon's DARK context (the
 		// `ctx-light` class it used to carry painted no ground of its own — see
 		// SlotPortrait), so the avatar disc mirrors that block's surface.
-		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(ctxToken('.ctx-dark', '--surface'));
-		expect(PALETTE_MIRROR.CALM_TINT).toBe(cssToken('--calm-fill'));
-		expect(PALETTE_MIRROR.CALM_EDGE).toBe(cssToken('--calm'));
+		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(resolve(ctxToken('.ctx-dark', '--surface')));
+		expect(PALETTE_MIRROR.CALM_TINT).toBe(resolve(cssToken('--calm-fill')));
+		expect(PALETTE_MIRROR.CALM_EDGE).toBe(resolve(cssToken('--calm')));
 	});
 
 	it('--debuff / --debuff-fill match (dire successors, 2026-08-05)', () => {
-		expect(PALETTE_MIRROR.DEBUFF_EDGE).toBe(cssToken('--debuff'));
-		expect(PALETTE_MIRROR.DEBUFF_FILL).toBe(cssToken('--debuff-fill'));
+		expect(PALETTE_MIRROR.DEBUFF_EDGE).toBe(resolve(cssToken('--debuff')));
+		expect(PALETTE_MIRROR.DEBUFF_FILL).toBe(resolve(cssToken('--debuff-fill')));
 	});
 
 	it('resolved color-mix lines match (GRID, LANE_LINE)', () => {
 		// The lines derive from the DARK context's border — the timeline root
 		// is .ctx-dark, so that re-declaration is what var(--border) resolves
-		// to at the .rp-root declarations.
-		const border = ctxToken('.ctx-dark', '--border');
+		// to at the .rp-root declarations. Since 2026-08-09 --border is itself
+		// an alias of that context's --line-edge, hence the scoped resolve.
+		const border = resolve(ctxToken('.ctx-dark', '--border'), '.ctx-dark');
 		// Both planner lines derive from --border toward the planner-local
 		// chart ground (2026-08-01).
-		const chartBg = cssToken('--rp-chart-bg', timelineSvelte);
+		const chartBg = resolve(cssToken('--rp-chart-bg', timelineSvelte));
 		const rpLine = /var\(--border\) (\d+)%, var\(--rp-chart-bg\)/.exec(
 			cssToken('--rp-line', timelineSvelte)
 		);
@@ -104,7 +158,94 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 	});
 
 	it('ACTIVE matches the planner-local --rp-active', () => {
-		expect(PALETTE_MIRROR.ACTIVE).toBe(cssToken('--rp-active', timelineSvelte));
+		expect(PALETTE_MIRROR.ACTIVE).toBe(resolve(cssToken('--rp-active', timelineSvelte)));
+	});
+
+	// ↻ 2026-08-09 (Genshin Night): the line stops and --muted are DERIVED
+	// values that ship as resolved literals, because writing them as color-mix
+	// crashed WebKit — a color-mix result feeding another color-mix drops the
+	// renderer once it is inherited by a large tree (THE NESTING LAW, app.css).
+	//
+	// So the derivation lives HERE instead of in the browser. This is not a
+	// consolation prize: a checked recipe is stronger than a runtime one,
+	// because it cannot silently re-resolve to something nobody looked at.
+	it('the derived stops match their recipes (THE NESTING LAW)', () => {
+		const RECIPES: [string, string, number[]][] = [
+			// [context, ink, stops] — each mixed against that context's --frame-bg
+			['.ctx-dark', '--parchment-100', [10, 18, 30, 42]],
+			['.ctx-light', '--ink-700', [10, 18, 30, 42]]
+		];
+		const NAMES = ['--line-faint', '--line-soft', '--line-strong', '--line-edge'];
+		for (const [ctx, ink, pcts] of RECIPES) {
+			const ground = resolve(ctxToken(ctx, '--frame-bg'), ctx);
+			const inkHex = resolve(cssToken(ink));
+			pcts.forEach((pct, i) => {
+				expect(resolve(ctxToken(ctx, NAMES[i]), ctx), `${ctx} ${NAMES[i]}`).toBe(
+					mix(inkHex, ground, pct)
+				);
+			});
+		}
+		// --muted is the ink at .72 wherever the ground is slate-800.
+		const slate800 = resolve(cssToken('--slate-800'));
+		const parch = resolve(cssToken('--parchment-100'));
+		for (const ctx of ['.ctx-dark', '.ctx-glass']) {
+			expect(resolve(ctxToken(ctx, '--muted'), ctx), `${ctx} --muted`).toBe(
+				mix(parch, slate800, 72)
+			);
+		}
+	});
+
+	// The law itself: nothing may put a color-mix inside a color-mix. Written
+	// as a grep rather than an evaluation because the failure is a CRASH, not a
+	// wrong colour — by the time you can measure it the page is gone.
+	it('no color-mix takes a derived value as an input (THE NESTING LAW)', () => {
+		const derived = new Set<string>();
+		for (const m of appCss.matchAll(/^\s*(--[a-z0-9-]+):\s*(color-mix\([^;]+);/gm)) {
+			derived.add(m[1]);
+		}
+		const offenders: string[] = [];
+		for (const m of appCss.matchAll(/^\s*(--[a-z0-9-]+):\s*color-mix\(([^;]+)\);/gm)) {
+			for (const ref of m[2].matchAll(/var\(\s*(--[a-z0-9-]+)/g)) {
+				// An alias OF a color-mix counts too: --border is var(--line-edge).
+				let name: string | null = ref[1];
+				for (let i = 0; name && i < 8; i++) {
+					if (derived.has(name)) {
+						offenders.push(`${m[1]} mixes ${ref[1]} (derived via ${name})`);
+						break;
+					}
+					const v: string | null = tryCtxToken('.ctx-dark', name) ?? tryCssToken(name);
+					const alias: RegExpExecArray | null = v
+						? /^var\(\s*(--[a-z0-9-]+)\s*\)$/.exec(v.trim())
+						: null;
+					name = alias ? alias[1] : null;
+				}
+			}
+		}
+		expect(offenders, 'a mix of a mix crashes WebKit — resolve it to a literal').toEqual([]);
+	});
+
+	// ↻ 2026-08-09 (Genshin Night): the primitive layer is only worth having if
+	// nothing reaches past it, so the guard also polices the LAW — a NUMBER
+	// means a primitive, and only app.css (which defines the roles) may name
+	// one. The failure this prevents is the quiet one: a component grabs
+	// --slate-700 because it happens to look right, and then a context flip
+	// leaves it painting a dark rung on a paper panel with no way to notice.
+	it('no component names a primitive rung directly (the L0 law)', () => {
+		const RAMPS = 'night|slate|parchment|gold|ink|red';
+		const re = new RegExp(`var\\(\\s*--(?:${RAMPS})-\\d+`, 'g');
+		const root = fileURLToPath(new URL('../..', import.meta.url));
+		const offenders: string[] = [];
+		for (const rel of readdirSync(root, { recursive: true }) as string[]) {
+			if (!/\.(svelte|css|ts)$/.test(rel)) continue;
+			// app.css DEFINES the ramps and the roles that point at them; the
+			// styleguide RENDERS the ramps, which means naming them.
+			if (rel === 'app.css' || rel.includes('styleguide')) continue;
+			if (rel.endsWith('.test.ts')) continue;
+			for (const m of readFileSync(root + rel, 'utf8').matchAll(re)) {
+				offenders.push(`${rel}: ${m[0]})`);
+			}
+		}
+		expect(offenders, 'reach for a ROLE, or add one — see the L0 law in app.css').toEqual([]);
 	});
 });
 

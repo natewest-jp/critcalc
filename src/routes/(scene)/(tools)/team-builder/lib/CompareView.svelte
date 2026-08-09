@@ -543,7 +543,7 @@
 	.cmp-chip-stub {
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
-		color: color-mix(in srgb, var(--el-geo-main, #ddb04a) 90%, var(--muted));
+		color: color-mix(in srgb, var(--el-geo-main) 90%, var(--muted));
 	}
 	.cmp-chip-remove {
 		background: none;
