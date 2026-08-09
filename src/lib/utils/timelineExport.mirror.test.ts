@@ -104,6 +104,16 @@ function tryCtxToken(selector: string, name: string): string | null {
 	}
 }
 
+/** cssToken, but null instead of throwing (walking an alias chain that may
+ *  dead-end on a primitive or on a token declared only in a context). */
+function tryCssToken(name: string): string | null {
+	try {
+		return cssToken(name);
+	} catch {
+		return null;
+	}
+}
+
 describe('timelineExport palette mirror ↔ app.css', () => {
 	it('plain hex tokens match', () => {
 		// The chart ground is planner-local since 2026-08-01 (Nate's darker
@@ -149,6 +159,69 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 
 	it('ACTIVE matches the planner-local --rp-active', () => {
 		expect(PALETTE_MIRROR.ACTIVE).toBe(resolve(cssToken('--rp-active', timelineSvelte)));
+	});
+
+	// ↻ 2026-08-09 (Genshin Night): the line stops and --muted are DERIVED
+	// values that ship as resolved literals, because writing them as color-mix
+	// crashed WebKit — a color-mix result feeding another color-mix drops the
+	// renderer once it is inherited by a large tree (THE NESTING LAW, app.css).
+	//
+	// So the derivation lives HERE instead of in the browser. This is not a
+	// consolation prize: a checked recipe is stronger than a runtime one,
+	// because it cannot silently re-resolve to something nobody looked at.
+	it('the derived stops match their recipes (THE NESTING LAW)', () => {
+		const RECIPES: [string, string, number[]][] = [
+			// [context, ink, stops] — each mixed against that context's --frame-bg
+			['.ctx-dark', '--parchment-100', [10, 18, 30, 42]],
+			['.ctx-light', '--ink-700', [10, 18, 30, 42]]
+		];
+		const NAMES = ['--line-faint', '--line-soft', '--line-strong', '--line-edge'];
+		for (const [ctx, ink, pcts] of RECIPES) {
+			const ground = resolve(ctxToken(ctx, '--frame-bg'), ctx);
+			const inkHex = resolve(cssToken(ink));
+			pcts.forEach((pct, i) => {
+				expect(resolve(ctxToken(ctx, NAMES[i]), ctx), `${ctx} ${NAMES[i]}`).toBe(
+					mix(inkHex, ground, pct)
+				);
+			});
+		}
+		// --muted is the ink at .72 wherever the ground is slate-800.
+		const slate800 = resolve(cssToken('--slate-800'));
+		const parch = resolve(cssToken('--parchment-100'));
+		for (const ctx of ['.ctx-dark', '.ctx-glass']) {
+			expect(resolve(ctxToken(ctx, '--muted'), ctx), `${ctx} --muted`).toBe(
+				mix(parch, slate800, 72)
+			);
+		}
+	});
+
+	// The law itself: nothing may put a color-mix inside a color-mix. Written
+	// as a grep rather than an evaluation because the failure is a CRASH, not a
+	// wrong colour — by the time you can measure it the page is gone.
+	it('no color-mix takes a derived value as an input (THE NESTING LAW)', () => {
+		const derived = new Set<string>();
+		for (const m of appCss.matchAll(/^\s*(--[a-z0-9-]+):\s*(color-mix\([^;]+);/gm)) {
+			derived.add(m[1]);
+		}
+		const offenders: string[] = [];
+		for (const m of appCss.matchAll(/^\s*(--[a-z0-9-]+):\s*color-mix\(([^;]+)\);/gm)) {
+			for (const ref of m[2].matchAll(/var\(\s*(--[a-z0-9-]+)/g)) {
+				// An alias OF a color-mix counts too: --border is var(--line-edge).
+				let name: string | null = ref[1];
+				for (let i = 0; name && i < 8; i++) {
+					if (derived.has(name)) {
+						offenders.push(`${m[1]} mixes ${ref[1]} (derived via ${name})`);
+						break;
+					}
+					const v: string | null = tryCtxToken('.ctx-dark', name) ?? tryCssToken(name);
+					const alias: RegExpExecArray | null = v
+						? /^var\(\s*(--[a-z0-9-]+)\s*\)$/.exec(v.trim())
+						: null;
+					name = alias ? alias[1] : null;
+				}
+			}
+		}
+		expect(offenders, 'a mix of a mix crashes WebKit — resolve it to a literal').toEqual([]);
 	});
 
 	// ↻ 2026-08-09 (Genshin Night): the primitive layer is only worth having if

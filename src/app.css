@@ -248,6 +248,19 @@
 	   The three roles below are the names components actually use; the stops are
 	   what they point at, so a surface can move one rung without a new colour.
 
+	   ⚠⚠ THE STOPS SHIP AS RESOLVED LITERALS, AND THAT IS NOT LAZINESS — IT IS
+	   THE ONE HARD CONSTRAINT THIS ROUND HIT. Written as color-mix they CRASHED
+	   WEBKIT: `page crashed` on every tool route, 12 e2e failures, bisected to
+	   the palette commit and confirmed by flattening these five values and
+	   watching 18/18 come back. See THE NESTING LAW below.
+
+	   The derivation is not lost — it moved from runtime to TEST TIME.
+	   timelineExport.mirror.test.ts recomputes every stop from its recipe and
+	   fails if a literal drifts, which makes the relationship a CHECKED
+	   invariant instead of one the browser re-evaluates on every element. That
+	   is strictly stronger than what a color-mix gave us, and it is the pattern
+	   this codebase already trusts for the canvas palette.
+
 	   ⚠ --line-edge (.42) is OURS, not Fable's — the reference stops at .30.
 	   --border carries modal outlines, and .30 measures 2.27:1 against the dark
 	   ground where today's --border measures 3.29:1; dropping a modal's only
@@ -255,11 +268,28 @@
 	   palette migration. .42 lands at 3.07:1, i.e. today's border strength.
 	   Measured on the dark ground: faint 1.32:1 · soft 1.64:1 · strong 2.27:1 ·
 	   edge 3.07:1. On paper every rung is quieter (1.15 → 1.90:1), which matches
-	   what the light context already shipped (1.24:1). */
-	--line-faint: color-mix(in srgb, var(--parchment-100) 10%, var(--frame-bg));
-	--line-soft: color-mix(in srgb, var(--parchment-100) 18%, var(--frame-bg));
-	--line-strong: color-mix(in srgb, var(--parchment-100) 30%, var(--frame-bg));
-	--line-edge: color-mix(in srgb, var(--parchment-100) 42%, var(--frame-bg));
+	   what the light context already shipped (1.24:1).
+
+	   ══ THE NESTING LAW ═══════════════════════════════════════════════════════
+	   A color-mix may take LITERALS and PRIMITIVE ALIASES as inputs. A color-mix
+	   result may NEVER feed another color-mix.
+
+	   WebKit crashes the renderer when it does — not slowly, not visibly, it
+	   drops the page. Every tool route died on this branch until the five
+	   derived values were flattened. The trigger is nesting × ELEMENT COUNT: one
+	   nested mix on one element at :root is survivable, the same construct
+	   inherited by a timeline's thousands of nodes is not. What made it easy to
+	   walk into is that the pre-round system never nested by accident — --border
+	   was a literal, so --frame-line and --rp-grid mixing it were one level
+	   deep. Deriving --border is what pushed everything downstream to two.
+
+	   So: derive the value, RESOLVE it, ship the literal, and let the test hold
+	   the recipe. Anything that mixes --border, --muted or a line stop is
+	   relying on this. ══════════════════════════════════════════════════════ */
+	--line-faint: #414752; /* = parchment-100 @ .10 over the ground */
+	--line-soft: #50555e; /* = parchment-100 @ .18 */
+	--line-strong: #676a70; /* = parchment-100 @ .30 */
+	--line-edge: #7e7f82; /* = parchment-100 @ .42 */
 
 	/* --border = dividers, hairlines, modal outlines. The loudest stop. */
 	--border: var(--line-edge);
@@ -840,16 +870,19 @@
 	/* The secondary TEXT voice. It used to be a blend of two hinge values,
 	   invented because the structural rung (#857971) measured 3.29:1 and could
 	   not carry body copy. The layering model makes it fall out instead: it is
-	   simply the ink at .72, which is where Genshin's own dimmed text sits. */
-	--muted: color-mix(in srgb, var(--parchment-100) 72%, var(--frame-bg));
-	/* The line stops, re-declared against THIS ground — a custom property
-	   containing var() is substituted where it is declared, so inheriting
-	   :root's copies would work here by luck (same ground) and break the moment
-	   this block's ground moved. Declare them where the ground is declared. */
-	--line-faint: color-mix(in srgb, var(--parchment-100) 10%, var(--frame-bg));
-	--line-soft: color-mix(in srgb, var(--parchment-100) 18%, var(--frame-bg));
-	--line-strong: color-mix(in srgb, var(--parchment-100) 30%, var(--frame-bg));
-	--line-edge: color-mix(in srgb, var(--parchment-100) 42%, var(--frame-bg));
+	   simply the ink at .72, which is where Genshin's own dimmed text sits.
+	   ⚠ Literal, per THE NESTING LAW at :root — --chart-dim mixes this, and a
+	   mix of a mix crashes WebKit. The mirror test holds the recipe. */
+	--muted: #b7b4ae; /* = parchment-100 @ .72 over the ground */
+	/* The line stops, re-declared against THIS ground. Two reasons, and both
+	   still apply now that they are literals: a custom property containing
+	   var() is substituted where it is DECLARED (so inheriting :root's copies
+	   would work here by luck and break the moment this ground moved), and a
+	   context's structure should be readable in one block. */
+	--line-faint: #414752; /* = parchment-100 @ .10 over the ground */
+	--line-soft: #50555e; /* = parchment-100 @ .18 */
+	--line-strong: #676a70; /* = parchment-100 @ .30 */
+	--line-edge: #7e7f82; /* = parchment-100 @ .42 */
 	--border: var(--line-edge);
 	--frame-line: var(--line-strong);
 	--frame-line-quiet: var(--line-faint);
@@ -900,11 +933,12 @@
 	/* The line stops on paper: the ink laid on the parchment. Every rung is
 	   quieter here than on dark (1.15 → 1.90:1), which is what the light
 	   context already shipped (its old border measured 1.24:1) and what
-	   Genshin does — paper structure is a whisper. */
-	--line-faint: color-mix(in srgb, var(--ink-700) 10%, var(--frame-bg));
-	--line-soft: color-mix(in srgb, var(--ink-700) 18%, var(--frame-bg));
-	--line-strong: color-mix(in srgb, var(--ink-700) 30%, var(--frame-bg));
-	--line-edge: color-mix(in srgb, var(--ink-700) 42%, var(--frame-bg));
+	   Genshin does — paper structure is a whisper.
+	   ⚠ Literals, per THE NESTING LAW at :root. */
+	--line-faint: #dcd6cd; /* = ink-700 @ .10 over the ground */
+	--line-soft: #cfcbc3; /* = ink-700 @ .18 */
+	--line-strong: #bbb9b6; /* = ink-700 @ .30 */
+	--line-edge: #a8a8a8; /* = ink-700 @ .42 */
 	--border: var(--line-edge);
 	--frame-line: var(--line-strong);
 	--frame-line-quiet: var(--line-faint);
@@ -984,7 +1018,9 @@
 	--surface-well: var(--glass-well);
 	--frame-bg: var(--slate-800);
 	--text: var(--parchment-100);
-	--muted: color-mix(in srgb, var(--parchment-100) 72%, var(--slate-800));
+	--muted: #b7b4ae; /* = parchment-100 @ .72 over slate-800; literal per THE
+	   NESTING LAW — same value the dark context uses, since the ink and the
+	   reference ground are the same. */
 	/* ⚠ THE LINES CARRY ALPHA HERE, and only here. The compositing law says a
 	   line mixes OPAQUELY against a known ground, because a 1px alpha line
 	   renders display-dependently (the dire-gradient lesson). On glass the
