@@ -12,9 +12,12 @@
 	 *   both tools. The TB roster grid + Detail card remain the Layer-1
 	 *   editors.
 	 * - ONE identity everywhere: its own ground and double frame (the per-tool
-	 *   ctx flip retired with the ribbon round). GLASS since 2026-08-09 — the
-	 *   strip is furniture, and it lives at the shaped scrim's thin edge where
-	 *   there is actually a world to see through it.
+	 *   ctx flip retired with the ribbon round). ⚓ NATE 2026-08-09: the strip is
+	 *   OPAQUE SLATE and stays that way — "the bench is the thing I'm sure
+	 *   should be opaque slate the most". It was glass for part of the Genshin
+	 *   Night round and reverted the same day. Its double frame could not have
+	 *   survived the move regardless: two crossing strokes over alpha lines
+	 *   double-composite at every crossing (see .inset--double in app.css).
 	 * - `mode` is the tool the ribbon is (or is becoming) docked to. It sets
 	 *   the card heights (planner: coupled to the timeline's published slot
 	 *   metrics; TB: the even resting rhythm) and the ⇄ action's meaning
@@ -129,12 +132,12 @@
 
 <!-- The RIBBON: a self-contained STRIP with its own ground, double frame and
      radius — ONE identity in both tools (the per-tool ctx flip retired with
-     the frame-zone model; the ground is GLASS since 2026-08-09). The tool frames are
-     loose siblings tucked under its edges, and it stands proud of them at top
+     the frame-zone model; the ground is OPAQUE SLATE, ⚓ NATE). The tool frames
+     are loose siblings tucked under its edges, and it stands proud of them at top
      and bottom. Interior styling is interim — the card redesign (Nate's
      mockup) is its own follow-up round. -->
 <div
-	class="bb ctx-glass"
+	class="bb ctx-dark"
 	style:width="{RIBBON_W}px"
 	style:height="{boxH}px"
 	style:padding="{RIBBON_CHROME + RIBBON_HEAD}px {RIBBON_CHROME}px {RIBBON_CHROME}px"
@@ -227,7 +230,7 @@
 </div>
 
 <style>
-	/* The ribbon box: its OWN surface — the GLASS material's ground and its
+	/* The ribbon box: its OWN surface — the dark context's ground and its
 	   radius — one identity everywhere. Width, height, padding and radius come
 	   inline from the RIBBON_* knobs so the dock math and the box always agree.
 	   The ground carries NO stroke of its own (the mockup's outer "border" is
@@ -241,11 +244,12 @@
 		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
-		/* ↻ 2026-08-09 (Genshin Night): --frame-bg → --surface, because the strip
-		   is .ctx-glass now and in that material the two diverge — --surface is
-		   what you PAINT, --frame-bg is the opaque reference everything MIXES
-		   against. Painting the reference would have left the ribbon opaque
-		   while every derived value behaved as though it were not. */
+		/* ↻ 2026-08-09: --frame-bg → --surface. Identical here (the dark context
+		   declares both as slate-800), but --surface is the token you PAINT and
+		   --frame-bg is the reference everything MIXES against — a distinction
+		   with no teeth in the opaque contexts and real teeth in .ctx-glass.
+		   Naming the right one costs nothing and stops this from being a trap if
+		   the strip's material is ever revisited. */
 		background: var(--surface);
 		overflow: hidden;
 		transition: var(--bb-height-transition, none);

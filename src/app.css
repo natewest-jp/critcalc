@@ -1707,30 +1707,24 @@ img {
 }
 
 /* ══ THE INSET BORDER FAMILY (Genshin Night, 2026-08-09) ═══════════════════
-   ⚓ NATE asked to SEE options — "at least one very simple inset border with no
-   decoration, and maybe one or two other simple decorative ones". These are
-   that; /styleguide § Inset borders shows all five over both dark grounds.
-   Nothing in the app wears one yet except the bench ribbon, which has carried
-   the only inset border in the system since 2026-08-06.
+   ⚓ NATE picked TWO and discarded three (2026-08-09 feedback round): --plain
+   and --double stay; --corners, --notched and --capped are gone. "We'll stick
+   with these two for now, and if I feel the need for more I'll come up with a
+   concept and propose it" — so this is a CLOSED set, not a starter set. Don't
+   propose additions.
 
    WHY THE INSET AT ALL. Genshin puts almost no line on the OUTSIDE of a panel.
    The line lives INSIDE, set in from the edge, where it reads as ornament
    rather than as the box's own outline — which is exactly why our edge borders
-   could retire to nothing without the surfaces falling apart. Fable's read of
-   the screenshots says the same thing and adds the other half: an edge border
-   that TOUCHES the edge is reserved for SELECTION. We are not taking that half
-   (⚓ NATE: "edge borders retire almost entirely, unless we find really
-   compelling evidence"), so for now the inset is simply the only frame there is.
+   could retire to nothing without the surfaces falling apart.
 
-   HOW TO USE ONE. Add the class; the host needs `position: relative` and must
-   not already use ::after (::before too, for --double). They cost no elements
-   and no layout — every one is a single absolutely-positioned pseudo.
+   HOW TO USE ONE. Add `.inset .inset--x`; the host needs `position: relative`
+   and a free ::after (::before too, for --double). No wrapper elements, no
+   layout cost. Inset distance is --frame-inset.
 
-   THE KNOBS, all overridable per surface:
-     --frame-inset   how far in from the edge the line sits
-     --inset-arm     bracket arm length      (--corners)
-     --inset-notch   bevel size              (--notched)
-     --inset-cap     the gap's half-width    (--capped) */
+   ⚓ STROKES ARE 2px (NATE). It also puts the family on the rule rung the
+   system already had — § Laws: "rules are 2px, section dividers 1px" — so an
+   inset frame reads as a RULE around a surface rather than as a hairline. */
 .inset {
 	position: relative;
 }
@@ -1742,108 +1736,35 @@ img {
 	pointer-events: none;
 }
 
-/* 1 · PLAIN — the undecorated baseline. One hairline, set in. */
+/* 1 · PLAIN — the undecorated baseline. One stroke, set in. Safe everywhere,
+   including on glass: a single stroke composites exactly once. */
 .inset--plain::after {
-	border: 1px solid var(--frame-line);
+	border: 2px solid var(--frame-line);
 }
 
-/* 2 · CORNERS — four L-brackets, the runs left open. Genshin's most common
-   ornament, and the one that reads as "framed" while costing the least ink.
-   The trick is the INTERSECTION of two band masks: a full-height mask showing
-   only the left and right arms, and a full-width one showing only the top and
-   bottom arms. Where both are opaque is precisely the four corners. */
-.inset--corners::after {
-	border: 1px solid var(--frame-line);
-	--inset-arm: 18px;
-	--mask-x: linear-gradient(
-		to right,
-		#000 0 var(--inset-arm),
-		transparent var(--inset-arm) calc(100% - var(--inset-arm)),
-		#000 calc(100% - var(--inset-arm)) 100%
-	);
-	--mask-y: linear-gradient(
-		to bottom,
-		#000 0 var(--inset-arm),
-		transparent var(--inset-arm) calc(100% - var(--inset-arm)),
-		#000 calc(100% - var(--inset-arm)) 100%
-	);
-	-webkit-mask-image: var(--mask-x), var(--mask-y);
-	mask-image: var(--mask-x), var(--mask-y);
-	-webkit-mask-composite: source-in;
-	mask-composite: intersect;
-}
+/* 2 · DOUBLE — two strokes on ONE box, differing only in corner radius, so the
+   wide arc cuts across the tight corner. ⚓ NATE's mockup, and the member
+   already shipped: the bench ribbon has worn it since 2026-08-06. Promoted here
+   so a second surface can reach for it; the ribbon keeps its own copy, because
+   its radii are tuned to its geometry (RIBBON_FRAME_R_WIDE is 30, not this 22)
+   and generalising them belongs to the card round.
 
-/* 3 · NOTCHED — the bevelled octagon, corners cut rather than rounded. The
-   border property can't draw this (a clip-path over a bordered box leaves the
-   diagonals unstroked), so it is painted: a solid fill, masked down to a 1px
-   ring by XOR-ing the padding box against the border box, then clipped to the
-   octagon. The diagonals come out stroked because they are cut from a shape
-   that was already only a ring. */
-.inset--notched::after {
-	--inset-notch: 10px;
-	background: var(--frame-line);
-	padding: 1px;
-	border-radius: 0;
-	-webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-	mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-	-webkit-mask-clip: content-box, border-box;
-	mask-clip: content-box, border-box;
-	-webkit-mask-composite: xor;
-	mask-composite: exclude;
-	clip-path: polygon(
-		var(--inset-notch) 0,
-		calc(100% - var(--inset-notch)) 0,
-		100% var(--inset-notch),
-		100% calc(100% - var(--inset-notch)),
-		calc(100% - var(--inset-notch)) 100%,
-		var(--inset-notch) 100%,
-		0 calc(100% - var(--inset-notch)),
-		0 var(--inset-notch)
-	);
-}
-
-/* 4 · CAPPED — the line breaks across the top for a title or a banner to sit
-   in. Genshin's title-plate idiom, and the one member of the family that is
-   structural rather than decorative: it is what lets a heading belong to the
-   frame instead of floating above it. Union of two masks (no compositing
-   keyword needed): everything below the top edge, plus the top edge minus a
-   centred span. */
-.inset--capped::after {
-	border: 1px solid var(--frame-line);
-	--inset-cap: 16%;
-	-webkit-mask-image:
-		linear-gradient(to bottom, transparent 0 2px, #000 2px 100%),
-		linear-gradient(
-			to right,
-			#000 0 calc(50% - var(--inset-cap)),
-			transparent calc(50% - var(--inset-cap)) calc(50% + var(--inset-cap)),
-			#000 calc(50% + var(--inset-cap)) 100%
-		);
-	mask-image:
-		linear-gradient(to bottom, transparent 0 2px, #000 2px 100%),
-		linear-gradient(
-			to right,
-			#000 0 calc(50% - var(--inset-cap)),
-			transparent calc(50% - var(--inset-cap)) calc(50% + var(--inset-cap)),
-			#000 calc(50% + var(--inset-cap)) 100%
-		);
-}
-
-/* 5 · DOUBLE — two strokes on ONE box, differing only in corner radius, so the
-   wide arc cuts across the tight corner. ⚓ NATE's mockup, and the one member
-   already shipped: the bench ribbon has worn it since 2026-08-06. Promoted
-   here so a second surface can reach for it, but the ribbon deliberately KEEPS
-   its own copy — its numbers are tuned to its geometry (RIBBON_FRAME_R_WIDE is
-   30, not this 22) and the round that generalises them is the card round. */
+   ⚠⚠ OPAQUE SURFACES ONLY — NEVER ON .ctx-glass (⚓ NATE, observed). The two
+   strokes CROSS, and on glass the line colour carries alpha (that context's
+   lines have to, since the ground behind them is unknown — see .ctx-glass).
+   Alpha composites twice where they overlap, so every crossing paints a
+   visibly darker segment and the frame reads as four smudges instead of two
+   arcs. Nothing warns you: it is correct CSS doing exactly what it was asked.
+   On an opaque ground the strokes are opaque and the overlap is invisible. */
 .inset--double::after {
-	border: 1px solid var(--frame-line-quiet);
+	border: 2px solid var(--frame-line-quiet);
 	border-radius: 2px;
 }
 .inset--double::before {
 	content: '';
 	position: absolute;
 	inset: var(--frame-inset);
-	border: 1px solid var(--frame-line-quiet);
+	border: 2px solid var(--frame-line-quiet);
 	border-radius: 22px;
 	pointer-events: none;
 }

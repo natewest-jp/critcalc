@@ -25,38 +25,77 @@
 
 	type Token = { name: string; value: string; resolved: string };
 
+	const DECL = /(--[a-z0-9-]+)\s*:\s*([^;]+);/g;
+	/** Every `--x: value;` in a rule body, comments stripped. Built as entries
+	 *  and handed to the Map constructor rather than `.set()` in a loop — this
+	 *  is a build-time parse of a static string, and `prefer-svelte-reactivity`
+	 *  (correctly) flags any Map that gets mutated after construction. */
+	const declsIn = (body: string): Map<string, string> => {
+		const clean = body.replace(/\/\*[\s\S]*?\*\//g, '');
+		const entries: [string, string][] = [...clean.matchAll(new RegExp(DECL.source, 'g'))].map(
+			(m) => [m[1], m[2].trim()]
+		);
+		return new Map(entries);
+	};
+
+	/**
+	 * Follow an alias chain to something paintable.
+	 *
+	 * ↻ 2026-08-09 (Genshin Night): this used to be a SINGLE hop, and a single
+	 * hop used to be enough — every role held a literal, so `var(--x)` always
+	 * landed on a hex in one step. The primitive layer broke both halves of that
+	 * assumption at once: roles now point at rungs (`--text` is
+	 * `var(--parchment-100)`), and some chains are two deep (`--sel-ink` →
+	 * `--bright-ink` → `--ink-950`). The context parser had it worse — it did no
+	 * resolution AT ALL, which was invisible while every context value was a
+	 * literal and blanked every swatch in Families the moment they weren't.
+	 *
+	 * `local` is consulted before `root`: a context re-declares its own ground,
+	 * so `.ctx-light`'s `--border` must resolve against ITS `--line-edge`.
+	 * Depth-capped rather than cycle-tracked — a cycle in app.css is a bug we
+	 * want to see as an unresolved value, not paper over.
+	 */
+	function resolveToken(
+		value: string,
+		local: Map<string, string>,
+		root: Map<string, string>,
+		depth = 0
+	): string {
+		const alias = /^var\((--[a-z0-9-]+)\)$/.exec(value.trim());
+		if (!alias || depth > 8) return value;
+		const next = local.get(alias[1]) ?? root.get(alias[1]);
+		return next === undefined ? value : resolveToken(next, local, root, depth + 1);
+	}
+
 	/** Parse the :root block of app.css. The block ends at the first column-0
 	 *  `}` — every line inside it is tab-indented. */
 	function parseRootTokens(css: string): Token[] {
 		const start = css.indexOf(':root {');
 		const end = css.indexOf('\n}', start);
-		const block = css.slice(start + ':root {'.length, end).replace(/\/\*[\s\S]*?\*\//g, '');
-		const out: Token[] = [];
-		const re = /(--[a-z0-9-]+)\s*:\s*([^;]+);/g;
-		let m: RegExpExecArray | null;
-		while ((m = re.exec(block))) out.push({ name: m[1], value: m[2].trim(), resolved: '' });
-		const byName = new Map(out.map((t) => [t.name, t]));
-		for (const t of out) {
-			const alias = /^var\((--[a-z0-9-]+)\)$/.exec(t.value);
-			t.resolved = alias ? (byName.get(alias[1])?.value ?? t.value) : t.value;
-		}
-		return out;
+		const decls = declsIn(css.slice(start + ':root {'.length, end));
+		return [...decls].map(([name, value]) => ({
+			name,
+			value,
+			resolved: resolveToken(value, decls, decls)
+		}));
 	}
 
-	/** The same trick for a context block (`.ctx-dark` / `.ctx-light`). The
-	 *  contexts are the palette's PRIMARY axis now, so they have to be live on
-	 *  this page too — reading them from :root would show the safety net rather
-	 *  than the thing components actually resolve. ^-anchored: the rule starts
-	 *  at column 0, and unanchored matching hits prose mentions in comments. */
+	/** The same trick for a context block (`.ctx-dark` / `.ctx-light` /
+	 *  `.ctx-glass`). The contexts are the palette's PRIMARY axis, so they have
+	 *  to be live on this page too — reading them from :root would show the
+	 *  safety net rather than the thing components actually resolve.
+	 *  ^-anchored: the rule starts at column 0, and unanchored matching hits
+	 *  prose mentions in comments. */
 	function parseContextTokens(css: string, selector: string): Token[] {
 		const block = new RegExp(`^${selector.replace(/\./g, '\\.')}[^{]*\\{([^}]*)\\}`, 'm').exec(css);
 		if (!block) return [];
-		const body = block[1].replace(/\/\*[\s\S]*?\*\//g, '');
-		const out: Token[] = [];
-		const re = /(--[a-z0-9-]+)\s*:\s*([^;]+);/g;
-		let m: RegExpExecArray | null;
-		while ((m = re.exec(body))) out.push({ name: m[1], value: m[2].trim(), resolved: m[2].trim() });
-		return out;
+		const local = declsIn(block[1]);
+		const root = declsIn(css.slice(css.indexOf(':root {') + 7, css.indexOf('\n}')));
+		return [...local].map(([name, value]) => ({
+			name,
+			value,
+			resolved: resolveToken(value, local, root)
+		}));
 	}
 
 	const tokens = parseRootTokens(appCss);
@@ -175,6 +214,22 @@
 	/** Every mark the generator produced — so this page cannot fall behind the
 	 *  set, and an unused glyph is visible rather than quietly accumulating. */
 	const MARKS = Object.keys(MARK_NODES) as MarkName[];
+
+	/** The inset border family — CLOSED at two (⚓ Nate, 2026-08-09). */
+	const INSETS: { mod: string; blurb: string; glassOk: boolean }[] = [
+		{
+			mod: 'plain',
+			blurb:
+				'One stroke, set in. The undecorated baseline, and safe everywhere — a single stroke composites exactly once, so it works on glass too.',
+			glassOk: true
+		},
+		{
+			mod: 'double',
+			blurb:
+				'⚓ Nate’s mockup — two strokes on ONE box, differing only in corner radius, so the wide arc cuts across the tight corner. Already shipped on the bench ribbon, which keeps its own copy (its radii are tuned to its geometry: RIBBON_FRAME_R_WIDE is 30, not 22). ⚠ OPAQUE GROUNDS ONLY.',
+			glassOk: false
+		}
+	];
 
 	const sections = [
 		['families', 'Families'],
@@ -1047,40 +1102,43 @@
 	<section id="insets">
 		<h2>Inset borders <span class="sg-badge sg-badge--trial">on trial</span></h2>
 		<p class="sg-note">
-			⚓ <strong>Nate asked to see options.</strong> Genshin puts almost no line on the
-			<em>outside</em>
-			of a panel — the line lives inside, set in from the edge, reading as ornament rather than as the
-			box's own outline. That is why our
+			Genshin puts almost no line on the <em>outside</em> of a panel — the line lives inside, set in
+			from the edge, reading as ornament rather than as the box's own outline. That is why our
 			<a href="#laws">edge borders could retire to nothing</a> without the surfaces falling apart.
-			Until now the bench ribbon had the only inset border in the system; these are four more to
-			reach for. <strong>Nothing wears one yet</strong> — pick, and they get applied.
 		</p>
 		<p class="sg-note">
-			Each is a single <code>::after</code> on the host (<code>--double</code> also uses
-			<code>::before</code>) — no wrapper elements, no layout cost. Add
-			<code>.inset .inset--x</code>; the host needs <code>position: relative</code> and a free
-			pseudo. Inset distance is <code>--frame-inset</code> (7px); each variant exposes its own shape knob.
+			⚓ <strong>Two, and this is a closed set.</strong> Nate picked <code>--plain</code> and
+			<code>--double</code> and discarded three others (corners, notched, capped) in the 2026-08-09
+			feedback round — "we'll stick with these two for now, and if I feel the need for more I'll
+			come up with a concept and propose it". <strong>Don't propose additions.</strong> Strokes are
+			<strong>2px</strong> (⚓ Nate), which also puts the family on the rule rung the system already
+			had: <em>rules are 2px, section dividers 1px</em>.
 		</p>
 		<p class="sg-note">
-			⛔ Fable's reference pairs the inset with <em>edge borders reserved for SELECTION</em> (gold =
-			selected, green = confirmed). <strong>Not adopted</strong> — ⚓ Nate: edge borders retire almost
-			entirely unless something compelling turns up. Recorded here so the idea isn't lost.
+			⚠️ <strong
+				><code>--double</code> is for OPAQUE surfaces only — never on
+				<code>.ctx-glass</code>.</strong
+			>
+			⚓ Nate observed it: the two strokes CROSS, and on glass the line colour carries alpha (that context's
+			lines have to — the ground behind them is unknown). Alpha composites twice at each crossing, so
+			the frame reads as four dark smudges instead of two arcs. Nothing warns you; it is correct CSS doing
+			exactly what it was asked. The glass sample below is kept deliberately, as the evidence.
 		</p>
 
 		<div class="sg-grid sg-grid--insets">
-			{#each [['plain', 'plain', 'One hairline, set in. The undecorated baseline — if only one of these survives, it should probably be this.'], ['corners', 'corners', 'Four L-brackets, the runs left open. Genshin’s most common ornament, and the least ink for the most "framed". Arm length = --inset-arm (18px).'], ['notched', 'notched', 'Bevelled octagon — corners cut, not rounded. The only one that is PAINTED rather than bordered (a clip-path over a bordered box leaves the diagonals unstroked). Bevel = --inset-notch (10px).'], ['capped', 'capped', 'The line breaks across the top for a title to sit in. The one structural member: it lets a heading belong to the frame instead of floating above it. Gap = --inset-cap (16% each side).'], ['double', 'double', '⚓ Nate’s mockup — two strokes on ONE box, differing only in corner radius, so the wide arc cuts the tight corner. Already shipped on the bench ribbon, which keeps its own copy (its radii are tuned to its geometry).']] as [mod, label, blurb] (mod)}
+			{#each INSETS as { mod, blurb, glassOk } (mod)}
 				<div class="sg-cell">
 					<div class="sg-stage sg-stage--block">
 						<div class="sg-inset-demo ctx-dark inset inset--{mod}">
-							<span>ctx-dark</span>
+							<span>ctx-dark — opaque</span>
 						</div>
 					</div>
 					<div class="sg-stage sg-stage--block sg-stage--world">
 						<div class="sg-inset-demo ctx-glass inset inset--{mod}">
-							<span>ctx-glass</span>
+							<span>{glassOk ? 'ctx-glass — fine' : 'ctx-glass — ⚠ overlaps'}</span>
 						</div>
 					</div>
-					{@render spec(`.inset.inset--${label}`, blurb)}
+					{@render spec(`.inset.inset--${mod}`, blurb)}
 				</div>
 			{/each}
 		</div>

@@ -222,7 +222,18 @@ export type SceneLayerKind = 'composition' | 'dim';
  *                            at .60, 7.20:1 at .70, so .70 keeps headroom).
  *    SCRIM_EDGE  .50         rim = .35 absolute, where a star reads through
  *                            glass at ΔL .133 instead of .033 — i.e. visibly.
- *    --scene-dim in app.css  the wash COLOUR, a separate axis from either. */
+ *    --scene-dim in app.css  the wash COLOUR, a separate axis from either.
+ *
+ *  ⚠ SCRIM_EDGE IS THE DENSITY AT THE MIDDLE OF AN EDGE, NOT EVERYWHERE ON THE
+ *  RIM. ↻ ⚓ NATE 2026-08-09: the shape became a soft rounded BOX following the
+ *  viewport rather than an ellipse, and the way you get a rounded rect out of
+ *  CSS gradients (there is no rounded-rect gradient) is to INTERSECT two
+ *  one-dimensional falloffs — which multiplies their alphas. So a corner lands
+ *  at SCRIM_EDGE², i.e. .25 rather than .5. That is the right way round (the
+ *  corners are where the least content and the most decoration live, which is
+ *  Genshin's own vignette), but it is a surprise if you tune this expecting a
+ *  uniform rim. The plateau half-extents live with the shape in the scene
+ *  layout, since they are geometry rather than density. */
 export const TOOL_DIM = 0.7;
 /** Rim density as a fraction of TOOL_DIM. 1 = the old uniform wash. */
 export const SCRIM_EDGE = 0.5;
