@@ -135,8 +135,8 @@
 		background: color-mix(in srgb, var(--accent) 28%, transparent);
 	}
 	.ts-cov--unknown {
-		color: var(--el-geo-main, #ddb04a);
-		background: color-mix(in srgb, var(--el-geo-main, #ddb04a) 8%, transparent);
+		color: var(--el-geo-main);
+		background: color-mix(in srgb, var(--el-geo-main) 8%, transparent);
 		cursor: help;
 	}
 </style>

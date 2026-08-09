@@ -489,7 +489,6 @@
 	   parchment on dark, near-black on paper. */
 	--ink-active: var(--text);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
-	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 
@@ -754,7 +753,6 @@
 	   still have to be re-declared wherever --accent is — see the law above. */
 	--accent: var(--gold-400);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
-	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 }
@@ -784,7 +782,6 @@
 	--fill-hover: color-mix(in srgb, var(--chrome) 20%, transparent);
 	--accent: var(--chrome);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
-	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 }
@@ -861,7 +858,6 @@
 	   substituted-at-declaration law; --knob re-bakes against this --muted. */
 	--accent: var(--gold-400);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
-	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 	--knob: var(--muted);
@@ -917,7 +913,6 @@
 	   is the same hue carried down to 4.82:1. See the accent block at :root. */
 	--accent: var(--gold-700);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
-	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 	--knob: var(--muted);
@@ -1006,7 +1001,6 @@
 	--frame-line-quiet: var(--line-faint);
 	--accent: var(--gold-400);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
-	--sel-fill-hover: color-mix(in srgb, var(--accent) 32%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 	--knob: var(--muted);
@@ -1105,11 +1099,10 @@ img {
    chrome. Components with their own scoped classes (SettingsPanel) out-specify
    these and are unaffected. */
 
-/* Headings speak GILT (Nate 2026-07-27): headings are chrome, and the chrome
-   axis wears gilt while the data axis stays cool. ALL heading levels take the
-   workhorse --gilt; --gilt-hi read too bright at h1's size (Nate 2026-07-27),
-   and was rejected on the brand wordmark too — it has no standing consumer
-   today. Body copy stays on --text. */
+/* Headings are CHROME (Nate 2026-07-27) — the chrome axis and the data axis are
+   different voices, and a heading belongs to the first. ALL heading levels take
+   one value; the rule survived the gilt family's retirement unchanged, it just
+   points at --chrome now. Body copy stays on --text. */
 /* Body copy is --fs-lg. Nothing used to set it, so it fell through to the
    browser's 16px — which happens to equal --fs-xl and made the running text a
    step larger than intended (Nate 2026-07-27). Headings set their own sizes, so
@@ -1160,13 +1153,15 @@ img {
 	line-height: var(--lh-normal);
 }
 
-/* Links carry a RESTING underline. Headings and links share --gilt and no
-   colour change can separate them: the family is capped at #d2bd90, and moving
-   links to --gilt-hi measures 1.24 against --text (vs --gilt's 1.55), so it
-   would make a link HARDER to spot in a paragraph while barely separating it
-   from a heading. Hue was being asked to carry two distinctions at once.
-   The underline carries one of them instead — no heading will ever have one —
-   which leaves colour free to mean "this is chrome" for both. */
+/* Links carry a RESTING underline, and the reason generalises past the family
+   that prompted it. Headings and links were both chrome-coloured, and no colour
+   change could separate them: every candidate that made a link more distinct
+   from a heading made it LESS distinct from the paragraph around it. Hue was
+   being asked to carry two distinctions at once. The underline carries one of
+   them instead — no heading will ever have one — which leaves colour free to
+   mean "this is chrome" for both. Still true now that links are the accent and
+   headings are --chrome: those two are much further apart than the old pair,
+   but the underline is what makes a link findable in a paragraph, not the hue. */
 .prose a {
 	color: var(--accent);
 	text-decoration: none;
@@ -1865,7 +1860,7 @@ img {
 	text-transform: none;
 	letter-spacing: normal;
 	font-size: var(--fs-md);
-	font-weight: var(--fw-regular);
+	font-weight: var(--fw-normal);
 	color: var(--muted);
 }
 
@@ -1917,7 +1912,7 @@ img {
 	color: var(--muted);
 }
 
-/* ── Fields — input text is chrome, so it speaks gilt ─────────────────── */
+/* ── Fields — the label speaks the LABEL voice, the input speaks prose ─── */
 .field-label {
 	display: block;
 	margin-bottom: 0.3rem;
@@ -1990,8 +1985,8 @@ img {
 
 /* FLAT — no ring. The knob's closest analogue in the system is the toggle
    THUMB, which is also a solid marker riding inside a track, and that is flat
-   too; the two now share both their color (--gilt-dim) and their treatment, so
-   a slider and a switch read as one family. The ring this replaced was a 2px
+   too; the two now share both their color (--knob, the context's dim voice) and
+   their treatment, so a slider and a switch read as one family. The ring this replaced was a 2px
    semi-transparent BLACK halo — a "pop on any background" trick that matched
    nothing else here: every other ring in the product is an inset 1px in
    --border or an accent mix. The knob does not need the help either; it is

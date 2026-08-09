@@ -1930,8 +1930,8 @@
 		min-width: 2px;
 	}
 	/* Debuff variant — applied to enemy resShred bars. Same geometry AND now the
-	   same weight as the buff bar: --dire-fill is the exact counterpart of
-	   --calm-fill (see app.css). It used to be color-mix(dire 24%, chart-bg),
+	   same weight as the buff bar: --debuff-fill is the exact counterpart of
+	   --calm-fill (see app.css). It used to be color-mix(the retired dire 24%,
 	   which sat at half the buff bar's lightness and read as a different, dimmer
 	   class of thing. Fill + bright edge, mirroring the buff bar's
 	   --calm-fill + --calm pairing. */

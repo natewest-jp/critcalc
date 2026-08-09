@@ -64,12 +64,13 @@
 	const exact = (...ns: string[]) =>
 		ns.map((n) => tokens.find((t) => t.name === n)).filter((t): t is Token => !!t);
 
-	/** The four ground roles + the two text rungs, in each context's own words.
+	/** The ground roles + the two text rungs, in each context's own words.
 	 *  Order is deliberate: it reads as the ladder, deepest ground first. */
 	const CTX_ORDER = [
 		'--frame-bg',
 		'--surface',
 		'--surface-raised',
+		'--surface-well',
 		'--border',
 		'--text',
 		'--muted'
@@ -80,21 +81,45 @@
 	};
 	const ctxDark = ctxRow('.ctx-dark');
 	const ctxLight = ctxRow('.ctx-light');
+	const ctxGlass = ctxRow('.ctx-glass');
 
-	const structure = exact('--bg', '--text', '--muted', '--ink', '--chrome', '--neutral');
-	const roleNet = exact('--surface', '--surface-raised', '--border', '--frame-bg', '--frame-line');
+	/** L0 — the primitive ramps (Genshin Night, 2026-08-09). A NUMBER means a
+	 *  primitive and no component may name one; these exist to be pointed AT. */
+	const ramps = ['night', 'slate', 'parchment', 'gold', 'ink', 'red'].map((name) => ({
+		name,
+		rungs: tokens.filter((t) => new RegExp(`^--${name}-\\d+$`).test(t.name))
+	}));
+	const rampNames = new Set(ramps.flatMap((r) => r.rungs.map((t) => t.name)));
+	/** L1 — the compositing stops. Glass stays translucent; lines resolve
+	 *  opaque per context (so they live in the .ctx-* blocks, not here). */
+	const glass = pre('--glass-');
+
+	const structure = exact('--bg', '--text', '--muted', '--bright-ink', '--chrome', '--neutral');
+	const roleNet = exact(
+		'--surface',
+		'--surface-raised',
+		'--surface-well',
+		'--border',
+		'--frame-bg',
+		'--frame-line',
+		'--frame-line-quiet',
+		'--line-faint',
+		'--line-soft',
+		'--line-strong',
+		'--line-edge',
+		'--scene-dim'
+	);
 	const chartInk = pre('--chart-');
 	const metrics = exact('--chrome-h', '--site-footer-h');
 	const famDebuff = exact('--debuff', '--debuff-fill');
 	const famCalm = exact('--calm', '--calm-fill');
 	const uiStates = pre('--ui-');
-	const geometry = pre('--r-');
+	const geometry = [...pre('--r-'), ...exact('--frame-inset')];
 	const motion = exact('--t-quick');
 	const interaction = exact(
 		'--fill-rest',
 		'--fill-hover',
 		'--sel-fill',
-		'--sel-fill-hover',
 		'--sel-ring',
 		'--accent-hover-fill',
 		'--btn-face',
@@ -120,6 +145,8 @@
 	 *  added without surfacing here. */
 	const claimed = new Set(
 		[
+			[...rampNames].map((name) => ({ name })) as Token[],
+			glass,
 			structure,
 			metrics,
 			famDebuff,
@@ -241,23 +268,50 @@
 				<h3><code>.ctx-light</code></h3>
 				<p class="sg-note">
 					Most other panels, and character cards <em>always</em> (Genshin renders theirs light).
-					Warm brown prose on paper, with the slate <code>--muted</code> as the anchored LABEL voice
-					— note it is <strong>darker</strong> than <code>--text</code> here, a deliberate inversion of
-					the dark context's order: labels anchor, prose recedes.
+					<strong>The navy ink ramp on parchment</strong> since 2026-08-09 — ⚓ Nate took the
+					reference's ink over the warm brown, and his inversion survived the swap intact:
+					<code>--muted</code>
+					(ink-900) is still <strong>darker</strong> than <code>--text</code> (ink-700), so labels
+					still anchor and prose still recedes. The rule was never about hue, only about which rung
+					carries which voice. What the swap removes is the <em>second hue</em> — brown and navy were
+					fighting each other on one surface. Both rungs measure better than what they replaced (6.18
+					/ 8.00 vs 5.32 / 6.9).
 				</p>
 				<div class="sg-swatches">
 					{#each ctxLight as t (t.name)}{@render swatch(t)}{/each}
 				</div>
 			</div>
+			<div class="sg-fam">
+				<h3><code>.ctx-glass</code> <span class="sg-badge sg-badge--trial">on trial</span></h3>
+				<p class="sg-note">
+					<strong>The third material</strong> (2026-08-09) — a dark context that is translucent. Not
+					a third palette: ink, accent and every rung come straight from
+					<code>.ctx-dark</code>; only the GROUNDS and the LINES differ, because those are the two
+					things that have to know whether there is a world behind them. Worn by the
+					<strong>furniture</strong> — bands, bench ribbon, band menus. ⚓ Nate: bare-on-the-scene stays
+					the default for CONTENT; a tool's content does not go back into a box because glass exists.
+				</p>
+				<div class="sg-swatches">
+					{#each ctxGlass as t (t.name)}{@render swatch(t)}{/each}
+				</div>
+			</div>
 		</div>
 
 		<p class="sg-note">
-			<strong>Two values pull double duty, and that is what binds the axis into one system.</strong>
-			<code>#E5D9C3</code> is dark-context TEXT and the light context's RIBBON surface + BORDER.
-			<code>#857971</code> is the dark context's dim rung — its borders — and was its
-			<code>--muted</code> until 2026-08-05, when that rung failed the body-text floor (3.29:1) and
-			the text voice lifted to <code>mix(--text 30%, #857971)</code>, a blend of the two hinges
-			rather than a new hue.
+			<strong>⚠ Three rules the glass material added, each paid for while building it.</strong>
+			<strong>Paint <code>--surface</code>, mix against <code>--frame-bg</code></strong> — in the
+			opaque contexts those are the same value and the distinction had no teeth; here they diverge
+			on purpose, because every <code>color-mix</code>, canvas fill and PNG export still needs a
+			real opaque colour to resolve against. (The bench ribbon painted <code>--frame-bg</code> and
+			would have come out opaque while everything derived from it behaved otherwise.)
+			<strong>There is no light glass</strong> — translucent paper over a near-black world is the
+			muddy middle by another route, the one finding that survived the reverted toolbar-translucency
+			trial; band B had to stop being <code>ctx-light</code> to wear it.
+			<strong>And it is not <code>sheer</code></strong>: that experiment let 2–3% of scene light
+			through, which reads as a duller colour. Glass at .70 lets 15–30% through
+			<em>at the shaped scrim's rim density</em> — and it is
+			<code>SCRIM_EDGE</code>, not the alpha alone, that makes this true. At the old uniform dim of
+			.85, a .70 glass delivered 4.5%: sheer again.
 		</p>
 
 		<h3>The content registers — what a context does NOT own</h3>
@@ -265,27 +319,52 @@
 			A context owns <em>structure</em>. Identity chroma belongs to CONTENT, which keeps its color
 			on either ground: the element palette, and this pair. <code>--debuff</code> is
 			<strong>enemy-facing</strong> (debuffs, res shred, sacrificial procs — dire's semantic
-			successor); <code>--calm</code> is <strong>ally-facing</strong> (team buffs). Each is a bright EDGE
-			plus a bar-BODY fill, pinned to the same weight so buff and debuff bars carry equal presence in
-			the timeline. ⚠ The debuff values are interim — the destination color is still Nate's to choose.
+			successor); <code>--calm</code> is <strong>ally-facing</strong> (team buffs). Each is a bright
+			EDGE plus a bar-BODY fill, pinned to the same weight so buff and debuff bars carry equal
+			presence in the timeline. ✅ <code>--debuff</code> is <strong>no longer interim</strong>
+			(2026-08-09) and its value did not change: Fable's independent pass landed ~ΔE 3 away, which is
+			the confirmation it was waiting for, and measured head to head Nate's pick sits
+			<em>further</em>
+			off pyro (ΔH 4.6° vs 2.1°) — the constraint it was chosen under. It is <code>--red-500</code> in
+			the ramp now.
 		</p>
 		<div class="sg-swatches">
 			{#each famDebuff as t (t.name)}{@render swatch(t)}{/each}
 			{#each famCalm as t (t.name)}{@render swatch(t)}{/each}
 		</div>
 
-		<h3>Accent zoning — the world and the crest</h3>
+		<h3>The accent <span class="sg-badge sg-badge--ship">shipped</span></h3>
 		<p class="sg-note">
-			The site has two zones, named for the ascend: <strong>in the world</strong> (the landing
-			scene, static pages, chrome, meta modals — at rest, choices ahead) and
-			<strong>at the crest</strong> (inside a tool — picking a path is the moment you ascend, and a
-			tool is where you land). <code>--accent</code> is a single alias read
-			<strong>148× across 26 files</strong>, so scoping it re-themes the entire control layer in
-			both zones at no further cost. ↻ 2026-08-05 (interim — the accent story is open): in the world
-			it resolves to <code>--chrome</code> white; at the crest the CONTEXTS carry it —
-			<code>.ctx-dark</code> parchment, <code>.ctx-light</code> slate — with the
-			<code>.tool-shell</code> rung (also white) covering the over-scene strips. Both panels below are
-			the same markup — only the zone differs.
+			✅ <strong>Closed 2026-08-09</strong>, and it had been open since the archetype landed: every
+			context BORROWED one of its own inks and the world borrowed <code>--chrome</code> white, with
+			the note "a placeholder, not a decision — the system has no accent of its own". It has one
+			now, and it is <strong>gold</strong> — Genshin's ornament and selection colour, the one family
+			in their palette that exists to do nothing but emphasise. Because every consumer already read
+			this one alias, picking it was a <em>value change and not a refactor</em>, which is exactly
+			why the alias was worth keeping through three rounds of not knowing the answer.
+		</p>
+		<p class="sg-note">
+			⚠ <strong>The accent is one hue at TWO RUNGS, not one value.</strong>
+			<code>--gold-400</code> measures 1.48:1 on parchment — invisible as ink, illegible as a link —
+			so <code>.ctx-light</code> takes <code>--gold-700</code> at 4.82:1. Same hue, same family,
+			different rung: the accent changes <em>weight</em> when a surface flips, never identity. That is
+			the general shape for anything chromatic that has to live in both contexts.
+		</p>
+		<p class="sg-note">
+			⚠ <strong>What stays white:</strong> branding and top-level chrome — the site nav, the
+			<code>?</code>/<code>i</code>/gear. ⚓ Nate. Those are the site speaking as itself rather than
+			the tool speaking, and <code>--chrome</code> is that voice. <code>.site-chrome</code>
+			re-declares the accent
+			<em>and its four derived tokens</em> — it sits inside <code>.tool-shell</code> on tool routes,
+			so without them the chrome bar would inherit the shell's gold. ⚠ Gold sits ΔH 0.5° from
+			<code>--el-geo-main</code>, which is fine and deliberate: geo is identity chroma at C.150, the
+			accent is ornament at C.066, so <em>chroma</em> is what separates them. Don't "fix" it by rotating
+			off geo — that rotates it off parchment.
+		</p>
+		<p class="sg-note">
+			The two zones are named for the ascend: <strong>in the world</strong> (landing, static pages,
+			chrome, meta modals) and <strong>at the crest</strong> (inside a tool). Both panels below are the
+			same markup — only the zone differs.
 		</p>
 		<div class="sg-zones">
 			<div class="sg-zone">
@@ -321,6 +400,53 @@
 	<section id="tokens">
 		<h2>Tokens <span class="sg-badge sg-badge--live">live</span></h2>
 
+		<h3>L0 — the ramps</h3>
+		<p class="sg-note">
+			<strong
+				>The law: a <em>number</em> means a primitive, and no component may name one. No number means
+				a role, and a role is the only thing a component may name.</strong
+			>
+			(Enforced — <code>timelineExport.mirror.test.ts</code> fails the build if a
+			<code>.svelte</code> reaches past the layer.) Everything below exists to be pointed
+			<em>at</em>, by a role or by a context.
+		</p>
+		<p class="sg-note">
+			Genshin Night, 2026-08-09. Fable read a large set of Genshin UI screenshots and found the
+			thing this system never had: their shades are not hand-picked hexes, they are
+			<strong>a small palette layered with transparency</strong>. Until this round every role here
+			was its own hand-picked hex — which is why there was never anywhere to go when a surface
+			needed "one rung lighter", why <code>--control-face</code> had to be sampled off a screenshot
+			twice, and why two values ended up doing double duty purely to bind the two contexts into one
+			system. <code>assets-src/genshin-night.css</code> is the sourced reference.
+		</p>
+		<p class="sg-note">
+			Parchment doing double duty is <em>the point</em>, not an accident: it is the light context's
+			SURFACE, the dark context's INK, and the source of every hairline on dark. One family binding
+			both halves is what makes the axis a system rather than two palettes. ⚠
+			<code>--gold-700</code> is ours, not Fable's — the reference ramp stops at 600, and 600 measures
+			3.31:1 on parchment, which cannot carry ink.
+		</p>
+		{#each ramps as r (r.name)}
+			<div class="sg-swatches">
+				{#each r.rungs as t (t.name)}{@render swatch(t)}{/each}
+			</div>
+		{/each}
+
+		<h3>L1 — the glass stops</h3>
+		<p class="sg-note">
+			The alphas Fable recovered, and the only translucent tokens in the system. Two fates, and the
+			split is a law: <strong>glass stays genuinely translucent</strong> (resolving it against a
+			ground would produce an opaque colour, which is not glass), while
+			<strong>lines resolve opaque</strong>, because a 1px alpha line renders display-dependently —
+			so the line stops live in the <code>.ctx-*</code> blocks, mixed against each context's own
+			ground, and appear under the surface roles below. ⚠ On <code>.ctx-glass</code> the ground is
+			unknown, so <em>there</em> the lines carry alpha too. See
+			<a href="#families">the third material</a>.
+		</p>
+		<div class="sg-swatches">
+			{#each glass as t (t.name)}{@render swatch(t)}{/each}
+		</div>
+
 		<h3>The world's ramp</h3>
 		<p class="sg-note">
 			What the site wears <em>outside</em> a panel. <code>--bg</code> is the anchor and is
@@ -330,9 +456,12 @@
 			the last surviving member of the pre-archetype navy family and it fought the warm parchment
 			the moment a panel sat beside it. <code>--chrome</code> white is the promoted register above
 			them (branding, site chrome, the biggest headers — never body copy or data);
-			<code>--ink</code>
-			is the universal dark ink for text sitting ON a bright fill; <code>--neutral</code> is the
-			universal "inactive / unknown" gray, promoted from the planner's local
+			<code>--bright-ink</code>
+			is the dark ink for text sitting ON a bright fill (renamed from <code>--ink</code> in the
+			Genshin Night round — ⚓ Nate, it collided with the new ink ramp, and the name states the job
+			now, matching <code>--control-ink</code> / <code>--sel-ink</code>);
+			<code>--neutral</code> is the universal "inactive / unknown" gray, promoted from the planner's
+			local
 			<code>--rp-active</code>.
 		</p>
 		<div class="sg-swatches">
@@ -1603,18 +1732,29 @@
 						or document that physical is runtime-only.
 					</li>
 					<li>
-						<strong>The accent story.</strong> Both contexts currently borrow one of their own inks
-						as
-						<code>--accent</code> (parchment in dark, slate in light), and the world borrows
-						<code>--chrome</code> white. That is a placeholder, not a decision — the system has no accent
-						of its own yet. Every consumer already reads the alias, so picking one is a value change,
-						not a refactor.
+						<strong>Where does the accent actually get SPENT?</strong> (The accent story itself is
+						<a href="#families">closed</a> — it is gold.) Picking the colour was a value change;
+						deciding which affordances earn it is not. Right now every
+						<code>--accent</code>-derived selection ring, hover wash and link in the app turned gold
+						at once, which is more gold than Genshin spends on a screen. Ration is the open half.
 					</li>
 					<li>
-						<strong><code>--debuff</code> / <code>--debuff-fill</code> are interim.</strong> Picked
-						to sit in the archetype while staying clear of pyro and <code>--ui-danger</code>. They
-						are the loudest chroma in the app (C.154) and the enemy-facing semantic has no settled
-						color yet.
+						<strong>The scrim's SHAPE, now that it has one.</strong> The ellipse (<code
+							>105% 95% at 50% 44%</code
+						>) is a first cut chosen to sit dense over the centre column and thin at the rim where
+						the glass furniture lives. It is not tuned against any particular tool's layout, and the
+						planner page-scrolls while the other two are viewport-fit — so the "centre column" is
+						not in the same place on all three.
+					</li>
+					<li>
+						<strong>Do frozen stars read as texture, or as dirt?</strong> The glass carries no backdrop
+						blur (⚓ Nate), so the starfield shows through the bands and the ribbon as sharp points. Nothing
+						measurable decides this one.
+					</li>
+					<li>
+						<strong>Modals are still opaque.</strong> They mount outside <code>.tool-shell</code>
+						and float over the <em>undimmed</em> landing as well as the crest, where glass would be nearly
+						transparent. Deliberately left out of the glass round; they may want a material of their own.
 					</li>
 					<li>
 						<strong>The element icons are tuned for dark grounds.</strong> They are a build artifact
@@ -1639,13 +1779,9 @@
 						are a different thing entirely and should stay.
 					</li>
 					<li>
-						<strong
-							><code>--ribbon</code> / <code>--ribbon-ink</code> have no consumer again.</strong
-						>
-						They are Genshin's banded section-header surface: a slightly darker stripe laid ON a light
-						fill. The tool bands borrowed the beige for a day and gave it back — a whole toolbar in it
-						made the accent the identity. Keep them for a real header stripe, or delete them if nothing
-						wants one.
+						<strong>Which surfaces earn an inset border?</strong> There are
+						<a href="#insets">five to choose from</a> now instead of one, which turns the question from
+						"invent something" into "pick". Nothing wears one yet except the bench ribbon.
 					</li>
 					<li>
 						<strong>Is 1px a rung, or is it 3px?</strong> <code>--r-xs</code> exists to answer that on

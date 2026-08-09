@@ -461,8 +461,8 @@
 		margin: 0;
 		padding: 0.55rem 0.7rem;
 		border-radius: 3px;
-		border: 1px solid color-mix(in srgb, var(--el-geo-main, #ddb04a) 40%, transparent);
-		background: color-mix(in srgb, var(--el-geo-main, #ddb04a) 8%, transparent);
+		border: 1px solid color-mix(in srgb, var(--el-geo-main) 40%, transparent);
+		background: color-mix(in srgb, var(--el-geo-main) 8%, transparent);
 		font-size: var(--fs-sm);
 		line-height: var(--lh-normal);
 		color: var(--text);
