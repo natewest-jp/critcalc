@@ -249,7 +249,27 @@
 		   --frame-bg is the reference everything MIXES against — a distinction
 		   with no teeth in the opaque contexts and real teeth in .ctx-glass.
 		   Naming the right one costs nothing and stops this from being a trap if
-		   the strip's material is ever revisited. */
+		   the strip's material is ever revisited.
+
+		   ── THE SHADE, AND WHY IT STAYS HERE (⚓ NATE asked, 2026-08-11) ───────
+		   ⚠ THE STRIP IS LIGHTER THAN THE GLASS BESIDE IT, AND THAT IS THE
+		   SEPARATION. Composited properly — --glass-panel .58 over the scene
+		   under the wash (--scene-dim at TOOL_DIM .75) — a band lands around
+		   #262b36…#293040 depending on what the world is doing behind it, i.e.
+		   essentially ON slate-900. The strip at slate-800 is therefore one rung
+		   ABOVE its neighbours, which is what makes it read as the solid lit
+		   object standing among translucent panes.
+		   Moving it one darker to --surface-well would put it AT the glass's own
+		   average, and then the only thing distinguishing opaque from glass is
+		   whether stars swim through it — the middle the "opaque or obviously
+		   translucent" law exists to keep empty.
+		   ⚠ It also costs the card its ladder: the controls are --surface-well
+		   (see --sp-pill-fill), so a strip on that same rung would have the well
+		   collapse into the ground it is cut into — and slate-900 is now the
+		   ramp's BOTTOM rung, with nothing below to fall back to (⚓ Nate merged
+		   it with slate-950 on 2026-08-11).
+		   ⚓ SETTLED: it stays at --surface. /lab § "The bench, on the scene"
+		   holds the comparison against a real band. */
 		background: var(--surface);
 		overflow: hidden;
 		transition: var(--bb-height-transition, none);
@@ -307,7 +327,11 @@
 		display: grid;
 		place-items: center;
 		padding: 0;
-		border: var(--sp-pill-border);
+		/* ↻ 2026-08-11: flat and borderless with the card's other two controls —
+		   see --sp-pill-fill in SlotPortrait for the whole argument. These
+		   buttons render inside .sp-card via the actions snippet, so they
+		   inherit the change rather than restating it. */
+		border: none;
 		border-radius: var(--r-round);
 		background: var(--sp-pill-fill);
 		/* The card's dimmed-white ladder (inherited from .sp-card — these
@@ -316,10 +340,7 @@
 		   (Nate 2026-08-06). Rest 40% → hover 65%, like every unset value. */
 		color: var(--sp-unset-ink);
 		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			background 150ms ease,
-			color 150ms ease;
+		transition: color 150ms ease;
 	}
 	/* The glyph size, weight and joins come from Mark.svelte's MARK_SIZE /
 	   MARK_STROKE — the .bb-glyph rules that used to set them here are gone,
@@ -332,12 +353,14 @@
 		cursor: default;
 		pointer-events: none;
 	}
+	/* Hover brightens the GLYPH — the card's rule, and now its only hover
+	   channel (the element-tinted / danger-tinted border-color rings went with
+	   the stroke, 2026-08-11). They were the second half of a two-channel hover;
+	   the ink was always the half you actually read. */
 	.bb-act:hover:not(:disabled) {
-		border-color: color-mix(in srgb, var(--el) 45%, var(--frame-line-quiet));
 		color: var(--sp-unset-ink-hover);
 	}
 	.bb-act--remove:hover:not(:disabled) {
-		border-color: color-mix(in srgb, var(--ui-danger) 55%, var(--frame-line));
 		/* Danger mixes into WHITE, not --text — the beige base would pull the
 		   red warm against the card's white-mix ladder. */
 		color: color-mix(in srgb, var(--ui-danger) 45%, white);
