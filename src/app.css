@@ -27,15 +27,49 @@
 	/* SLATE — every structural surface in the dark context. Hue holds 262–269°
 	   across the ramp (the site's long-standing hue constant, which Genshin's
 	   own control slate landed on unprompted back in 2026-08-01), chroma stays
-	   inside the whisper band C .020–.031, and each rung steps ΔL .034–.056. */
+	   inside the whisper band C .026–.031, and each rung steps ΔL .034–.060.
+
+	   ↻ ⚓ NATE 2026-08-11 — THE BOTTOM TWO RUNGS MERGED INTO ONE. 900 and 950
+	   both go; what replaces them is a single rung at their midpoint lightness,
+	   put back on the ramp's chroma plateau.
+
+	   ⚠ HIS READ WAS "900 IS LESS SATURATED THAN ITS SIBLINGS", AND THE CURVE
+	   SAYS EXACTLY THAT. Two measurements, and they agree from opposite ends:
+	     · ABSOLUTE chroma sits on a plateau of C .028 ±.0015 across 600/700/800
+	       (.0294 · .0282 · .0267) and then falls off a cliff — .0236 at 900,
+	       .0205 at 950. The old bottom of the ramp was desaturating.
+	     · SATURATION (C/L) climbs monotonically from 300 to 800 — .0529 · .0600
+	       · .0680 · .0722 · .0776 · .0813 — and 900 is THE ONLY RUNG THAT
+	       BREAKS IT, dipping to .0805 before 950 jumps again. One rung off a
+	       seven-rung trend is not a ramp, it is a rung that got hand-picked.
+	   So the fix is to hold the plateau: L .269 with C back at .030 gives C/L
+	   .1111, which continues the climb instead of interrupting it.
+
+	   ⚠ AT THIS DEPTH THE CHROMA DECISION IS NEARLY MOOT AND THE LIGHTNESS ONE
+	   IS NOT. 8-bit quantization down here is coarse enough that "hold the
+	   plateau" (#1f2635) and "continue the gentle 600→800 taper" (#202633) are
+	   two blue units apart. What the eye actually gets from this change is the
+	   DEPTH: ΔL from slate-800 goes .0358 → .0595.
+
+	   ✅ AND THAT DEPTH SETTLES AN OPEN QUESTION rather than just answering
+	   this one. The flat borderless controls shipped the day before at a
+	   one-rung well and were flagged as a soft step (ΔL .027) that might need
+	   the stroke back. At .0595 the well reads on its own, which is what a
+	   depth ladder is supposed to do.
+
+	   Every contrast figure moved the safe way (darker ground, lighter ink):
+	   --glass-well over a star 5.22 → 5.44:1 for --muted, and --text on the
+	   opaque well 11.18 → 12.09:1. */
 	--slate-300: #6b7284;
 	--slate-400: #5c6375;
 	--slate-500: #50596b; /* ANCHOR: slate element on parchment (menu tiles) */
 	--slate-600: #414a5a;
 	--slate-700: #363e4d;
 	--slate-800: #2e3543; /* ANCHOR: the dark context's ground */
-	--slate-900: #262c38;
-	--slate-950: #1c212b;
+	/* The merged rung — L .269 C .030 H 265. ⚠ Anything derived from it carries
+	   its rgb as a literal (--glass-well below, CHART_BG in timelineExport):
+	   move this and grep 31 38 53 / #1f2635. */
+	--slate-900: #1f2635;
 
 	/* PARCHMENT — the inversion family. Doing double duty is the POINT here,
 	   not an accident: parchment is the light context's SURFACE and the dark
@@ -113,8 +147,10 @@
 	   WORST pixel behind it, never the average, and the worst pixel is always a
 	   star — a tiny, very bright point. Both stops clear 4.5:1 for --muted (the
 	   dimmer of the two band voices) against a star, UNBLURRED: panel 4.74:1,
-	   well 5.22:1. That is deliberate — see --glass-blur for why they cannot be
-	   allowed to depend on the blur.
+	   well 5.44:1. Measuring them unblurred was deliberate — a probationary
+	   property may never carry legibility — and on 2026-08-11 it paid: the blur
+	   was struck outright and NOT ONE STOP HAD TO MOVE. ⛔ They must not follow
+	   it down now that it is gone.
 
 	   ⚠⚠ THESE FIGURES MOVED FOR TWO REASONS AT ONCE ON 2026-08-10, and only one
 	   of them is a design change. THE MEASUREMENT WAS WRONG: every star figure
@@ -154,7 +190,10 @@
 	   and /styleguide's census computes both from these tokens, so it is the
 	   number to trust if this comment ever drifts. */
 	--glass-panel: rgb(54 62 77 / 0.58); /* slate-700 — band A, menus, panels */
-	--glass-well: rgb(38 44 56 / 0.45); /* slate-900 — band B, recessed fields */
+	/* ↻ 2026-08-11: follows slate-900's merge (rgb 38 44 56 → 31 38 53) — the
+	   stop IS that rung at an alpha, so it has to move with it or the well
+	   silently stops being the well. Star figure improved, 5.22 → 5.44:1. */
+	--glass-well: rgb(31 38 53 / 0.45); /* slate-900 — band B, recessed fields */
 	/* HOVER IS DENSITY, NOT TINT (⚓ NATE 2026-08-10). The same rung as the panel
 	   with the alpha driven hard up, so hovering makes a pane MORE MATERIAL
 	   rather than washing it with a colour. Two things fall out that no tint can
@@ -166,34 +205,42 @@
 	   without looking for it. */
 	--glass-hover: rgb(54 62 77 / 0.8);
 	--glass-parch: rgb(236 229 216 / 0.1); /* parchment frost — a resting fill */
-	/* ⚓ NATE — ON PROBATION, 2026-08-09. Tuned 6 → 2 → 1px and still under
-	   test; it may yet go to 0. Nothing is allowed to depend on it (see below),
-	   so removing it is a one-line change with no knock-on.
+	/* ⛔ --glass-blur IS RETIRED — ⚓ NATE 2026-08-11, THE PROBATION IS OVER.
+	   "We're starting to get a little performance lag on things like Atlas card
+	   lifts on hover and cross-tool pans. I tested without it in the inspector,
+	   and it's really not changing much." Both halves of that are the verdict:
+	   it cost real WebKit frames and bought almost nothing at 1px.
 
-	   ⚠ WHY IT CANNOT JUST BE TURNED UP — NATE'S FINDING, and it is a mechanism
-	   rather than a taste: A BIGGER BLUR BANDS. Blurring a backdrop is exactly
-	   how you MANUFACTURE a smooth gradient, and a smooth gradient across a
-	   near-black ground in 8-bit sRGB is the textbook banding case — adjacent
-	   output levels are far enough apart down here that the eye sees the steps
-	   as contours. Small radii escape it for the same reason the scene does:
-	   the starfield and the GL dither leave enough per-pixel variation to act
-	   as noise, and noise is what breaks a band. So the blur is caught between
-	   two floors — big enough to soften a star, small enough not to smooth the
-	   backdrop into a ramp — and 1px is Nate's current read of that gap.
-	   ⚠ Same family as the hero-card veto (gradients band in Safari, grain
-	   rejected as the fix) and the reason --scene-dither exists at all.
+	   ⚠ THE DECLARATIONS WERE STRUCK, NOT ZEROED, and that distinction IS the
+	   perf fix. `blur(0px)` is not free — `backdrop-filter` at ANY value still
+	   promotes the element to its own composited layer, makes it read back the
+	   backdrop every frame, and mints a stacking context AND a containing
+	   block. Setting the token to 0 would have kept every one of those costs
+	   and removed only the visual effect. So if this ever comes back, it comes
+	   back as declarations, not as a number.
 
-	   ⚠ ITS ROLE CHANGED ON THE WAY DOWN. At 4–8px a blur SOLVES the star
-	   problem above: it spreads a bright point over its own radius, the peak
-	   contribution collapses, and the effective backdrop becomes the local
-	   average — which would have let the stops go far thinner (even .40 holds
-	   5.37:1 at 4px). At 1–2px a star is barely softened, so the ALPHAS carry
-	   legibility on their own, and the values above are chosen so they do,
-	   measured UNBLURRED. That independence is deliberate and is what keeps
-	   this on probation cheaply.
-	   ⚠ If it ever goes back up, the stops may follow it down. If it goes to 0,
-	   they must not. */
-	--glass-blur: 1px;
+	   ⚠ NOTHING DEPENDED ON IT, which is why this was a clean removal rather
+	   than a re-tune: the glass alphas were deliberately measured UNBLURRED
+	   (panel 4.74:1, well 5.44:1 against a star), on the standing rule that a
+	   probationary property may never carry legibility. That rule is what made
+	   today a one-line decision instead of a round. ⛔ THE STOPS MUST NOT NOW
+	   FOLLOW IT DOWN — the note that used to stand here said exactly this
+	   against the day it went to 0, and today is that day.
+
+	   ⚠ ⚓ NATE'S SECOND ARGUMENT IS THE DURABLE ONE: "we already have elements
+	   that are transparent over the background and not getting blur". A material
+	   is defined by being consistent, and glass that blurred in the bands while
+	   the rest of the translucent furniture did not was not one material.
+
+	   📌 THE BANDING FINDING SURVIVES ITS OWN TOKEN, because it will decide the
+	   answer if anyone proposes bringing this back BIGGER: a bigger blur BANDS.
+	   Blurring a backdrop is how you manufacture a smooth gradient, and a smooth
+	   gradient across a near-black ground in 8-bit sRGB is the textbook banding
+	   case. Small radii escape it only because the starfield and the GL dither
+	   supply the noise that breaks a band. Same family as the hero-card veto
+	   and the reason --scene-dither exists. So the blur was always caught
+	   between two floors — big enough to soften a star, small enough not to
+	   ramp the backdrop — and the gap between them was never worth its cost. */
 
 	/* ══ STRUCTURE ═════════════════════════════════════════════════════════════
 	   The page ground and the WORLD's text ramp — what the site wears outside a
@@ -429,6 +476,20 @@
 	   until something groundless asks for it.) */
 	--inset-line: rgb(211 188 142 / 0.18); /* = gold-400 @ .18 */
 	--inset-line-quiet: rgb(211 188 142 / 0.1);
+	/* THE GROUND-SPANNING STOP — gold-600 @ .42, for an inset that crosses a
+	   SEAM between two grounds and so cannot take either one's zoned rung. The
+	   full derivation, the measurements and the rule that it is never
+	   re-declared per context live at .inset--plain in § THE INSET FRAME.
+	   ↻ ⚓ NATE 2026-08-11: .80 → .42, "the highest opacity stop token that we
+	   hung onto but didn't use" — which is --line-edge's alpha. The line ROLES
+	   dropped to the two most transparent stops on 2026-08-10 and left .30 and
+	   .42 declared-but-unclaimed against a future ornament; this is that
+	   ornament, and it takes the top one. A rung the census reports as free now
+	   has a job.
+	   ⚠ Literal, not a mix: --chart-* and friends prove the hazard — a mix fed
+	   by a mix crashes WebKit, and this one is reached from inside .ctx-glass
+	   and .ctx-light alike. = color-mix(gold-600 42%, transparent). */
+	--inset-line-mid: rgb(142 122 85 / 0.42);
 
 	/* ══ CHART INK ═════════════════════════════════════════════════════════════
 	   The inside of an instrument: axis labels, tick text, gridlines, axis
@@ -1237,21 +1298,23 @@
    these same stops would deliver 5–7%, which is sheer again. Move one, check
    the other.
 
-   ↻ 2026-08-09 — THE BLUR IS ON (⚓ NATE), reversing the note that stood here
-   for a few hours. It is applied BY THIS CLASS rather than per surface, because
-   it is part of what the material IS, not a finish on top of it. ⚠ At the 2px
-   Nate settled on it is AESTHETIC — the stops clear their contrast floor
-   without it, deliberately, so nothing here depends on the blur staying. See
-   --glass-blur, which carries the full argument and the numbers.
-   ⚠ Perf was never the objection: the star-freeze round holds one scene frame
-   at rest, so the blur rasterizes once and is reused. The real risks are
-   WebKit-shaped — backdrop-filter mints a stacking context AND a containing
-   block. The band menus portal to <body> and so escape this element entirely,
-   which is what keeps that safe; anything absolutely-positioned that must
-   escape a band has to portal too. */
+   ⛔ 2026-08-11 — THE BLUR IS GONE (⚓ NATE; see --glass-blur's retirement note
+   for the full verdict). GLASS IS NOW PURELY AN ALPHA, which is what it always
+   measured as: the stops were chosen unblurred and never depended on it.
+   ⚠ PERF WAS THE REASON, and the note that stood here — "perf was never the
+   objection: the star freeze holds one frame at rest, so the blur rasterizes
+   once" — is the thing that turned out to be wrong. It is right about the
+   RESTING case and irrelevant to the moving one: an Atlas card lifting on hover
+   and a cross-tool pan both change what is behind the glass every frame, so the
+   backdrop had to be re-read and re-blurred every frame, on the two interactions
+   Nate actually felt. A cache argument only ever covers the state where nothing
+   is happening.
+   ✅ ONE CONSTRAINT LIFTED WITH IT: backdrop-filter minted a stacking context
+   AND a containing block, which is why anything absolutely-positioned inside a
+   band had to portal out. Glass no longer imposes that. The band menus keep
+   portaling anyway — they must clear the band's bounds regardless — so nothing
+   moved; the trap simply stopped existing. */
 .ctx-glass {
-	-webkit-backdrop-filter: blur(var(--glass-blur));
-	backdrop-filter: blur(var(--glass-blur));
 	/* ⚠ PAINT --surface, MIX AGAINST --frame-bg. In the opaque contexts those
 	   two are the same value and the distinction never had teeth; here they
 	   deliberately diverge, and it is the one thing to get right when moving a
@@ -1348,20 +1411,33 @@
    DocumentActions, and a scoped rule in ToolStack could not reach them without
    :global — which is the same thing as this, spelled worse.
 
-   ⚠ EACH ONE CARRIES ITS OWN BLUR, and that is a real cost the band used to
-   pay once. It is bounded by what the bands hold — at most 5 tabs, a +, four
-   actions, two band-B controls — and by the star freeze, which holds one scene
-   frame at rest so these rasterize once. If a band ever grows a roster-scale
-   run, this is the line that has to change.
-
-   ⚠ NOT the active tab: it is opaque (below), and blurring a backdrop nothing
-   can see through is pure cost. */
+   ⛔ 2026-08-11: the per-control BLUR is gone with the property (see
+   --glass-blur). The note that stood here — "each one carries its own blur, and
+   that is a real cost the band used to pay once, bounded by what the bands
+   hold" — was the early warning, and the bill came due somewhere else entirely:
+   not from the count, but from every one of these becoming a composited layer
+   that re-read its backdrop on any frame where the world behind it moved.
+   These are now plain translucent plates, which is all they ever needed to be. */
+/* ⚓ NATE 2026-08-11: `.btn--glass` joins the list rather than copying it — a
+   button OUTSIDE a band that wants the band's plate (the Atlas drill's "← All
+   roles"). One declaration, three homes; if the plate ever moves, it moves for
+   all of them.
+   ⚠ IT NEEDS `.ctx-glass` ON ITSELF. The band members inherit the context from
+   the band; a lone button has no such ancestor, so the markup carries both
+   classes. Without it --surface is the opaque slate and the button is a plate,
+   not a pane.
+   ⚠ AND IT IS WRITTEN `.btn.btn--glass`, NOT `.btn--glass` — the band selectors
+   are two-deep and beat plain `.btn` for free, but a lone modifier is one class
+   against one class, so `.btn`'s own `background: var(--btn-face)` further down
+   the file wins on source order alone. Measured: the button rendered opaque at
+   rest while its HOVER worked, because the hover selector happened to carry
+   enough pseudo-classes to get over the line. A treatment that is right only on
+   hover is the signature of exactly this. */
 .band-a .tab:not(.active),
 .band-a .btn,
-.band--3up > .band-zone .btn {
+.band--3up > .band-zone .btn,
+.btn.btn--glass {
 	background: var(--surface); /* = --glass-panel, via .ctx-glass */
-	-webkit-backdrop-filter: blur(var(--glass-blur));
-	backdrop-filter: blur(var(--glass-blur));
 }
 /* ── HOVERING A PANE OF GLASS (⚓ NATE 2026-08-10) ──────────────────────────
    A RING AND A DENSITY, and no wash at all. This replaces three different
@@ -1390,7 +1466,8 @@
    no arithmetic at all, so the hazard simply leaves. */
 .band-a .tab:not(.active):hover,
 .band-a .btn:hover:not(:disabled),
-.band--3up > .band-zone .btn:hover:not(:disabled) {
+.band--3up > .band-zone .btn:hover:not(:disabled),
+.btn.btn--glass:hover:not(:disabled) {
 	background: var(--surface-hover);
 	box-shadow: inset 0 0 0 1px var(--glass-ring);
 }
@@ -1414,26 +1491,25 @@
    from the density round; what the accent WASH gave up is its job, since the
    ring says it better without lifting the ground.
 
-   ⚠ IT IS BLURRED AGAIN. The base glass rule excludes `.tab.active`, so the tab
-   needs its own copy — and now that a selected pane is translucent, a pane
-   without the blur would be the one place the world came through sharp. */
+   ⛔ 2026-08-11: the blur is gone here too, and the reason it once needed its
+   OWN copy is instructive enough to keep — the base glass rule excludes
+   `.tab.active`, so a selected pane would have been the one plate the world came
+   through sharp. Every exclusion like that is a rule you have to remember to
+   mirror; deleting the property deleted the obligation. */
 .band-a .tab.active,
 .band-a .btn.is-active,
 .band--3up > .band-zone .btn.is-active {
 	background: var(--surface-hover);
 	box-shadow: inset 0 0 0 1px var(--sel-ring);
 	color: var(--text);
-	-webkit-backdrop-filter: blur(var(--glass-blur));
-	backdrop-filter: blur(var(--glass-blur));
 }
 /* The surviving ghost stays a ghost — a destructive control INSIDE A RUN of
    other controls must not sit on screen looking pressable. Scoped to band A,
    which is where the Reset confirm arms itself mid-row; a standalone plate at
-   the end of a band-B row is not in that situation. */
+   the end of a band-B row is not in that situation.
+   ↻ Its `backdrop-filter: none` went with the property it was cancelling. */
 .band-a .btn--danger {
 	background: none;
-	-webkit-backdrop-filter: none;
-	backdrop-filter: none;
 }
 /* :not(:disabled) only to out-specify the .band-a .btn hover above it — a
    danger button that lit up would lose its ghost on hover. */
@@ -2167,6 +2243,88 @@ img {
    RIBBON_FRAME_BORDER (= 2), because its radii are tuned to its geometry and it
    predates this family. The two numbers agreeing is the point — if one moves,
    move the other. */
+/* ══ THE SCROLL FADE ═══════════════════════════════════════════════════════
+   A soft roll-off at a scroller's LIVE edges — ⚓ NATE 2026-08-11: "cards and
+   filter column get cut off sharp at their top and bottom edges."
+
+   It is polish on the roster and INFORMATION on the filter rail. That column is
+   a stack of separate groups with scene between them, so a group cut off at the
+   viewport edge is indistinguishable from a column that ended — the gaps that
+   give the rail its rhythm are exactly what destroy its "there is more below"
+   signal. A fading edge says "cut off" in a way a hard edge cannot.
+
+   ⚠ IT IS A MASK BECAUSE THERE IS NO GROUND TO FADE INTO. The usual gradient
+   scrim needs the container's own colour; both consumers sit on the bare dimmed
+   scene, so any colour a scrim picked would be a smear over the live world.
+   ⛔ Don't convert this to a ::before gradient — it will look right only until
+   someone sees it over a bright part of the sky.
+
+   ⚠ A MASK MAKES A STACKING CONTEXT (it does not make a containing block — that
+   is `filter` and `backdrop-filter`). Both current consumers portal their
+   popovers to <body> already, so nothing needed to move; a future consumer with
+   an in-flow overlay does.
+
+   THE TWO CUSTOM PROPERTIES ARE WRITTEN BY $lib/actions/scrollFade, which is
+   where the "only at an edge with content beyond it" logic lives. Without the
+   action the element is simply unmasked (both default to 0), so the class is
+   inert on its own rather than wrong — which is the failure mode you want.
+
+   🎛️ --scroll-fade is THE KNOB and is meant to be overridden per consumer: the
+   roster's cards carry more roll-off than the rail's small groups. The action
+   reads this same property, so the clamp and the gradient cannot disagree. */
+.scroll-fade {
+	--scroll-fade: 32px;
+	/* Unprefixed is Safari 15.4+ and every current engine; the prefix is kept as
+	   free insurance because a missing mask is invisible, not loud. */
+	-webkit-mask-image: linear-gradient(
+		to bottom,
+		transparent 0,
+		#000 var(--scroll-fade-top, 0px),
+		#000 calc(100% - var(--scroll-fade-bottom, 0px)),
+		transparent 100%
+	);
+	mask-image: linear-gradient(
+		to bottom,
+		transparent 0,
+		#000 var(--scroll-fade-top, 0px),
+		#000 calc(100% - var(--scroll-fade-bottom, 0px)),
+		transparent 100%
+	);
+}
+
+/* ── THE GROUND-SPANNING INSET STOP (⚓ NATE 2026-08-11) ────────────────────
+   For an inset that crosses a SEAM — the Atlas card's frame runs over its glass
+   half and its parchment half in one stroke, so it cannot take either context's
+   zoned rung. ⚓ "We need a middle-value gold, and we might need to make it the
+   more opaque stop so that it shows up on both surfaces." Both halves of that
+   are right, and the ramp says exactly where the middle is.
+
+   MEASURED against the two real grounds (glass-panel .58 composited over the
+   dimmed scene ≈ rgb(38,43,54), and parchment-100), at full strength:
+
+     gold-400 (the dark accent)   7.70:1 on glass · 1.48:1 on paper
+     gold-600                     3.43:1 on glass · 3.31:1 on paper   ← balanced
+     gold-700 (the light accent)  2.36:1 on glass · 4.82:1 on paper
+
+   ⚠ gold-600 IS THE BALANCE POINT, AND NOT BY COINCIDENCE — it is the rung
+   sitting between the two zoned accents, so a value that has to serve both
+   grounds lands exactly halfway between the two that each serve one. The
+   zoning rule and this token are the same fact read from two ends.
+
+   ⚠ IT IS GROUND-AGNOSTIC BY CONSTRUCTION, so — like --control-face — it is
+   declared ONCE and must NOT be re-declared per context. A context override
+   would defeat the only thing it is for. Nothing derives from it either: it is
+   an ornament stop, not a structural line.
+
+   🎛️ THE ALPHA IS THE KNOB, and it landed on .42 — ⚓ Nate, after seeing .80 in
+   place: "the inset light is too opaque." .42 is the top of the four line stops
+   (--line-edge's alpha), giving 1.67:1 on glass / 1.56:1 on paper at 2px: read
+   as jewelry rather than as structure, which is the whole point of the inset
+   family. The stops either side, if it wants moving: .30 → 1.43/1.36,
+   .80 → 2.71/2.50.
+
+   Declared at :root beside the other inset stops — see --inset-line-mid there. */
+
 .inset {
 	position: relative;
 }
@@ -2264,6 +2422,68 @@ img {
 	font-size: var(--fs-lg);
 	font-weight: var(--fw-normal);
 	color: var(--muted);
+}
+
+/* ══ THE NIGHT RIBBON ══════════════════════════════════════════════════════
+   A header that sits DIRECTLY ON THE SCENE — the translucent sibling of
+   .banner. Promoted here from /lab § "What may paint on the night", where it
+   was drawn as a proposal; the board renders this class now instead of its own
+   copy.
+
+   ⏸ DECLARED BUT UNCLAIMED, deliberately (⚓ NATE 2026-08-11). It nearly got its
+   first consumer — the Atlas drill's row headers — and he sent it back: "the
+   dark panel is interesting and may get a use somewhere, but this one doesn't
+   quite cut it." Those headers took --glass-panel instead, which is the same
+   register with a ladder. Kept declared for the same reason --line-strong and
+   --line-edge were: a value the system has decided it wants is worth holding
+   even before something asks for it, and deleting it would lose the argument
+   below along with the class.
+   ⚠ SO THE DIFFERENCE THAT DECIDED IT IS THE THING TO REMEMBER: a night paint
+   conditions the WORLD and carries no ink ladder; glass is a MATERIAL and does.
+   Reach for this when a header genuinely wants to belong to the sky, not when
+   it merely sits on it.
+
+   ⚠ IT DOES NOT BECOME A GROUND, and that is the rule that keeps "night has no
+   rungs" intact. It CONDITIONS the world — enough scrim to hold a header across
+   whatever the sky is doing behind it — and carries no ink ladder of its own.
+   Text on it is still night text: --text and nothing quieter.
+
+   ⚠ AND THAT IS A DESIGN RULE, NOT A CONTRAST FLOOR — the numbers say the
+   opposite of what you would guess. A scrim DARKENS the worst pixel behind it:
+   a star goes rgb(76,76,78) → rgb(45,46,51) under this stop, which puts --muted
+   at 6.17:1 on the ribbon against 3.92:1 on bare night. So the one place on the
+   world where a second ink voice WOULD be legible is inside these. The rule
+   holds anyway, because "no rungs" is about what the night IS, not about what it
+   can get away with — but anyone reversing it should know they are overruling a
+   decision rather than fixing a defect.
+
+   ⚠ IT REVERSES .banner's ARGUMENT, deliberately and only here. That comment
+   says a half-alpha bar over a near-uniform dim is indistinguishable from an
+   opaque darker one, so banners went opaque. True of the AVERAGE pixel and
+   false of the interesting ones: what survives a .55 scrim is the STARS, and a
+   ribbon you can see the world through is doing something an opaque plate
+   cannot. Opaque stays right for a banner that has to carry a run of content;
+   this is for a header that wants to belong to the sky it is lying on.
+
+   ⚠ NO HAIRLINE ANYWHERE NEAR IT (⚓ Nate). A ribbon already declares where a
+   section starts; a rule above it says the same thing twice, and on the open
+   scene two weak signals read worse than one clear one.
+
+   The stop is a literal, not a mix: over the scene the ground is unknown, so
+   this composites like a glass stop and has to carry its own alpha. */
+.night-ribbon {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.45rem 0.8rem;
+	border-radius: var(--r-sm);
+	background: rgb(20 22 28 / 0.55);
+	color: var(--text);
+}
+/* STATE, never decoration — blocked / unavailable / criteria not met. The one
+   night paint that must not be reached for because it looks good. */
+.night-ribbon--danger {
+	background: color-mix(in srgb, var(--ui-danger) 38%, transparent);
 }
 
 /* ── Headings, labels, notes ──────────────────────────────────────────── */

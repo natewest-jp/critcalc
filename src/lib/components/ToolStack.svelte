@@ -250,20 +250,20 @@
 	   just the document tabs failing to line up with the tool surface below
 	   them. Save/Load/Share now touch the same right edge the surface does.
 
-	   ⚠ THE CLASS STAYS, THE FILTER DOESN'T. `ctx-glass` is still worn because
-	   it is what re-points --surface/--fill-rest/the lines at the translucent
-	   stops, and the CONTROLS need those values to paint themselves as glass
-	   (see the .band-a rules in app.css). But the material's own
-	   `backdrop-filter` has to come off: a filter on a box with no background
-	   still blurs its whole rectangle, which would draw a ghost of the band we
-	   just removed. The blur moves down to the controls, which is where the
-	   glass now is. */
+	   ⚠ THE CLASS STAYS, THE GROUND DOESN'T. `ctx-glass` is still worn because it
+	   is what re-points --surface/--fill-rest/the lines at the translucent stops,
+	   and the CONTROLS need those values to paint themselves as glass (see the
+	   .band-a rules in app.css). The band itself paints nothing.
+	   ⛔ 2026-08-11: the `backdrop-filter: none` that used to sit here went with
+	   the property it was cancelling (⚓ Nate retired --glass-blur). The hazard it
+	   guarded is worth keeping though, because it is not obvious and it will
+	   apply to any filter this box ever gets: A FILTER ON A BOX WITH NO
+	   BACKGROUND STILL AFFECTS ITS WHOLE RECTANGLE — it would have drawn a ghost
+	   of exactly the band we removed. */
 	.band-a {
 		height: var(--band-a-h);
 		padding: 0;
 		background: none;
-		-webkit-backdrop-filter: none;
-		backdrop-filter: none;
 	}
 
 	/* ↻ ⚓ NATE 2026-08-10: the SAME glass as band A — "the lighter of the two".
@@ -316,8 +316,6 @@
 	   own label would then break. */
 	.band--3up {
 		background: none;
-		-webkit-backdrop-filter: none;
-		backdrop-filter: none;
 		padding: 0;
 		gap: var(--band-item-gap, 4px);
 	}
@@ -336,8 +334,6 @@
 		padding: 0 var(--band-pad-x);
 		border-radius: var(--band-radius);
 		background: var(--surface);
-		-webkit-backdrop-filter: blur(var(--glass-blur));
-		backdrop-filter: blur(var(--glass-blur));
 		/* The selected plate stands PROUD of the rail (Genshin's own tab strip
 		   does this — see the Team Builder's nav), so nothing here may clip. */
 		overflow: visible;

@@ -625,8 +625,17 @@
 			4.27:1 even after the dim correction. <a href="#palette">The census</a> computes the whole grid.
 		</p>
 		<p class="sg-note">
-			⚓ <code>--glass-blur</code> is <strong>1px and ON PROBATION</strong> (Nate, 2026-08-09 —
-			tuned 6 → 2 → 1, may yet go to 0). ⚠️ <strong>A bigger blur BANDS</strong>, and that is a
+			⛔ <code>--glass-blur</code> is <strong>RETIRED</strong> (⚓ Nate, 2026-08-11 — tuned 6 → 2 →
+			1 and then struck). It cost real WebKit frames on Atlas hover-lifts and cross-tool pans and
+			bought almost nothing at 1px, and his durable argument is the one to keep:
+			<em>we already had translucent elements over the backdrop that never got a blur</em>, so glass
+			that blurred only in the bands was not one material. ⚠️
+			<strong>The declarations were struck, not zeroed</strong> — <code>backdrop-filter</code> at
+			<em>any</em> value still promotes a composited layer that re-reads its backdrop every frame
+			the world moves, so <code>blur(0px)</code> would have kept the whole cost. ✅
+			<strong>Not one stop had to move</strong>, because the alphas below were always measured
+			unblurred. The finding below survives its token, since it decides the answer if anyone
+			proposes bringing it back bigger. ⚠️ <strong>A bigger blur BANDS</strong>, and that is a
 			mechanism rather than a preference: blurring a backdrop is precisely how you
 			<em>manufacture</em> a smooth gradient, and a smooth gradient across a near-black ground in
 			8-bit sRGB is the textbook banding case — output levels are far enough apart down here that
@@ -823,10 +832,10 @@
 			<code>--muted</code>
 			(the dimmer of the two band voices) against that stop composited over a blank-white star dimmed
 			by
-			<code>TOOL_DIM</code> ({TOOL_DIM}), <strong>unblurred</strong>: nothing is allowed to depend
-			on
-			<code>--glass-blur</code>, which is on probation and may go to 0. Under 4.5:1 is not a stop we
-			can use at the band voices, whatever it looks like.
+			<code>TOOL_DIM</code> ({TOOL_DIM}), <strong>unblurred</strong> — which was the rule when the blur
+			was on probation (nothing may depend on a probationary property) and is simply the truth now that
+			it is retired. That rule is what let the blur be struck on 2026-08-11 without a single stop moving.
+			Under 4.5:1 is not a stop we can use at the band voices, whatever it looks like.
 		</p>
 		<div class="sg-glassgrid sg-stage--world">
 			<div class="sg-glassgrid-head">
@@ -1772,12 +1781,15 @@
 						<code>--r-xs</code> twice the evidence while it is on trial.
 					</li>
 					<li>
-						<code>BandMenu</code> is <strong>portalled, not optionally</strong>. The reason changed
-						with the split: it used to be the stack's clip. Now it is
-						<code>backdrop-filter</code> — that property mints a <em>containing block</em> as well
-						as a stacking context, so an absolutely-positioned menu inside a glass band would
-						resolve against the band instead of the page. ⚠
-						<strong>Anything else that must escape a band has to portal too.</strong>
+						<code>BandMenu</code> is <strong>portalled</strong>, and the reason has now changed
+						twice. It was the stack's clip; then it was <code>backdrop-filter</code>, which mints a
+						<em>containing block</em> as well as a stacking context, so an absolutely-positioned
+						menu inside a glass band resolved against the band instead of the page. ⛔ That second
+						reason expired on 2026-08-11 with the blur, and
+						<strong>the constraint went with it</strong> — glass no longer contains anything. The
+						menu still portals because it has to clear the band's bounds regardless, which was
+						always the first reason. ⚠ Worth knowing as a general shape:
+						<em>a hazard can outlive the property that caused it in the comments alone</em>.
 					</li>
 				</ul>
 			</div>
@@ -2253,17 +2265,18 @@
 						is .60, set by stars).
 					</li>
 					<li>
-						⚓ <strong><code>--glass-blur</code> is ON PROBATION at 1px.</strong> Tuned 6 → 2 → 1
-						and may yet go to 0. It is squeezed between two floors: big enough to soften a star,
-						small enough not to smooth the backdrop into a <strong>banded</strong> ramp (Nate's finding
-						— blurring a backdrop is how you manufacture a gradient, and a gradient over near-black in
-						8-bit sRGB bands). Nothing depends on it staying, by construction.
+						⛔ <strong>CLOSED: <code>--glass-blur</code> is RETIRED.</strong> ⚓ Nate 2026-08-11,
+						ending the probation it had been on since it was built — it cost WebKit frames on
+						hover-lifts and pans, and at 1px changed almost nothing.
+						<strong>Struck, not zeroed</strong>: <code>backdrop-filter</code> at any value keeps the composited
+						layer and the backdrop read-back, so a 0 would have paid the whole bill for none of the effect.
+						Not one stop moved, because nothing was allowed to depend on it — which is the case for building
+						probationary properties that way.
 					</li>
 					<li>
-						<strong>Do frozen stars read as texture, or as dirt?</strong> At
-						<code>--glass-blur</code> 1px the starfield still shows through the bands as near-sharp points.
-						Nothing measurable decides this one — and the stops don't depend on the blur, so it can move
-						either way.
+						<strong>Do frozen stars read as texture, or as dirt?</strong> Still open, and now asked
+						of a <em>sharp</em> starfield: with the blur retired the bands show the frozen stars as points,
+						with nothing softening them. Nothing measurable decides this one.
 					</li>
 					<li>
 						<strong>Modals are still opaque.</strong> They mount outside <code>.tool-shell</code>
@@ -2693,8 +2706,9 @@
 
 	/* ⚠ NO backdrop-filter on these cells, and that is not an oversight: the
 	   grid is showing the STOPS, and a blur would let a cell borrow legibility
-	   the shipped rule is deliberately not allowed to depend on (--glass-blur is
-	   on probation and may go to 0). What you see is what the alpha alone does. */
+	   the shipped rule is not allowed to depend on. That was written while
+	   --glass-blur was on probation; it retired 2026-08-11 and the grid was
+	   already showing the truth. */
 	.sg-glasscell {
 		display: flex;
 		align-items: center;
