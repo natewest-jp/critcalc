@@ -17,9 +17,10 @@
 	// The one square-portrait character tile, shared by the Team Builder roster
 	// and the Rotation Planner's picker. Purely presentational + callback-driven
 	// (never touches a store — the host wires meaning). LAYOUT adapts to the width
-	// it's handed via three CSS container-query bands (compact / comfortable /
-	// roomy); CONTENT sections are prop-gated. See `SlotPortrait` for the sibling
-	// (circular loadout) card — deliberately separate.
+	// it's handed via a CSS container band (base, and roomy at ≥150px — the
+	// compact band was deleted 2026-08-11 as unreachable); CONTENT sections are
+	// prop-gated. See `SlotPortrait` for the sibling (circular loadout) card —
+	// deliberately separate.
 	// ---------------------------------------------------------------------------
 
 	let {
@@ -396,7 +397,7 @@
 
 	/* ── Corner marks ─────────────────────────────────────────────
 	   TL weapon · TR constellation · BL wishlist(TB) / slot(planner).
-	   Compact sizes are the base; comfortable+ bumps them (see @container).
+	   The base sizes serve every grid that ships; the roomy band bumps them.
 
 	   ⚓ NATE 2026-08-11: "the constellation pip and the element-type pip are
 	   really outdated styling — reference the bench's, and I'm not sure round is
@@ -419,8 +420,8 @@
 		position: absolute;
 		top: 5px;
 		left: 5px;
-		width: 19px;
-		height: 19px;
+		width: 22px;
+		height: 22px;
 		background-size: contain;
 		background-position: center;
 		background-repeat: no-repeat;
@@ -436,8 +437,8 @@
 	.cc-con,
 	.cc-slot {
 		position: absolute;
-		width: 20px;
-		height: 20px;
+		width: 23px;
+		height: 23px;
 		display: grid;
 		place-items: center;
 		border-radius: var(--r-round);
@@ -446,7 +447,6 @@
 		   is a control, not part of the picture"; the direction flips because
 		   there the surrounding ground was the card and here it is the well. */
 		background: var(--surface);
-		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		line-height: var(--lh-none);
 		z-index: 1;
@@ -455,6 +455,7 @@
 		top: 5px;
 		right: 5px;
 		color: var(--muted);
+		font-size: var(--fs-sm);
 		/* No tracking inside a circle: the trailing letter-space lands after the
 		   last glyph too, so the advance box the grid centres is a unit wider
 		   than the ink. Same correction the bench chip carries, same reason. */
@@ -472,7 +473,7 @@
 		bottom: 5px;
 		left: 5px;
 		color: var(--text);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		z-index: 2;
 	}
@@ -490,15 +491,13 @@
 		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
 		z-index: 1;
 	}
-	/* ── Name row ────────────────────────────────────────────────
-	   Base (compact) centers the name, no element glyph. Comfortable+ shows the
-	   glyph and left-aligns (see @container). */
+	/* ── Name row ──────────────────────────────────────────────── */
 	.cc-namerow {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start;
 		gap: 0.3rem;
-		padding: 4px 4px 5px;
+		padding: 0.25rem 0.5rem;
 		min-width: 0;
 		width: 100%;
 		box-sizing: border-box;
@@ -509,7 +508,7 @@
 	   ratio is 1.25 × the name's size — glyph a touch taller than the cap, which
 	   is how the in-game cards draw it — so 14px name → 18, 16px name → 20. */
 	.cc-el {
-		display: none;
+		display: inline-block;
 		width: 18px;
 		height: 18px;
 		flex-shrink: 0;
@@ -518,10 +517,10 @@
 		background-repeat: no-repeat;
 	}
 	.cc-name {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
-		text-align: center;
+		text-align: left;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -556,7 +555,7 @@
 	   The element glyph runs 1.25× the name instead, because identity outranks
 	   annotation and gets to be the one bigger than the words. */
 	.cc-namemark {
-		--cc-mark: 12px;
+		--cc-mark: 14px;
 		margin-left: auto;
 		flex-shrink: 0;
 		display: flex;
@@ -569,12 +568,13 @@
 	}
 
 	/* ── Body: capability tags + hover action overlay ────────────
-	   Hidden at compact (planner passes neither, so it isn't rendered there).
-	   Fixed height at comfortable+ keeps grid rows even and the hover bar in a
-	   constant place regardless of tag count. */
+	   The whole block is prop-gated, so the planner (which passes neither tags nor
+	   actions) never renders it. Fixed height keeps grid rows even and the hover
+	   bar in a constant place regardless of tag count. */
 	.cc-body {
 		position: relative;
-		display: none;
+		display: block;
+		height: 3.7rem;
 	}
 	.cc-tags {
 		display: flex;
@@ -611,8 +611,7 @@
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 
-	/* Hover action bar — covers the tags with the consumer's buttons. Reveal is
-	   disabled at compact (no room); enabled comfortable+ via @container.
+	/* Hover action bar — covers the tags with the consumer's buttons.
 	   ↻ 2026-08-11: OPAQUE --surface, not 90% of --surface-raised. Two problems
 	   in one declaration: --surface-raised has no meaning on paper (ctx-light has
 	   no raised rung — it aliases to --surface, so the name was promising a lift
@@ -632,51 +631,36 @@
 		pointer-events: none;
 		transition: opacity 120ms ease;
 	}
-
-	/* ── Comfortable band (TB default ~118px, picker ~130px) ────── */
-	@container charcard (min-width: 104px) {
-		.cc-namerow {
-			justify-content: flex-start;
-			gap: 0.3rem;
-			padding: 0.25rem 0.5rem;
-		}
-		.cc-el {
-			display: inline-block;
-		}
-		.cc-name {
-			font-size: var(--fs-lg);
-			text-align: left;
-		}
-		.cc-weapon {
-			width: 22px;
-			height: 22px;
-		}
-		.cc-con,
-		.cc-slot {
-			width: 23px;
-			height: 23px;
-		}
-		.cc-con {
-			font-size: var(--fs-sm);
-		}
-		.cc-slot {
-			font-size: var(--fs-lg);
-		}
-		.cc-namemark {
-			--cc-mark: 14px;
-		}
-		.cc-body {
-			display: block;
-			height: 3.7rem;
-		}
-		.cc:hover .cc-actions,
-		.cc-actions:focus-within {
-			opacity: 1;
-			pointer-events: auto;
-		}
+	.cc:hover .cc-actions,
+	.cc-actions:focus-within {
+		opacity: 1;
+		pointer-events: auto;
 	}
 
-	/* ── Roomy band (wide screens, ~150px+) ────────────────────── */
+	/* ── The ROOMY band — the only container query left ───────────────────────
+	   ⛔ THE COMPACT BAND IS DELETED (⚓ Nate approved 2026-08-11). It was the
+	   base, gated below 104px — centred name, no element glyph, no body — and it
+	   was UNREACHABLE. The smallest minimum any grid hands a card is 118px
+	   (.tb-grid and .tb-roster's --cg-tile-min; the planner picker's is 128), and
+	   `auto-fill` at a 320px viewport still yields one ~280px column. Everything
+	   the 104px query used to set is now simply the base.
+	   ⛔ Do not restore it as a mobile safety net: the mobile round is survey-first
+	   by its own plan, and a band nothing can reach is the speculative
+	   abstraction the conventions forbid.
+
+	   📌 150 IS NOT A FREE NUMBER — IT IS COUPLED TO .tb-grid's 1500px BUMP, and
+	   until now nothing said so. With `auto-fill` + `1fr` a track sits just above
+	   its minimum (118 → ~118–133 · 150 → ~150–168), so this band fires at exactly
+	   the moment the media query raises the minimum to 150. Move one and you must
+	   move the other; a value in 134–149 would separate the two regimes with
+	   margin, at the cost of the picker (128 min, tracks to ~146) crossing it.
+
+	   ⚓ NATE'S CALIBRATION, 2026-08-11: seven across on a 16" MacBook Pro "feels
+	   very nice, very comfortable — if it were a lot more than that, it would
+	   start to get too wide." That is this band, at the 150px minimum. The answer
+	   to bigger-vs-more is BOTH, IN STEP: the ladder raises the minimum (bigger)
+	   while auto-fill adds columns (more), and 7-at-150 is the point it is tuned
+	   through. Any change to the 1500/1900 bumps has to keep landing near it. */
 	@container charcard (min-width: 150px) {
 		.cc-namerow {
 			padding: 0.45rem 0.6rem 0.2rem;

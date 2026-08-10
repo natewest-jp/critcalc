@@ -870,11 +870,15 @@
 							aria-label="{compareStack.length} in comparison"
 						>
 							{#each compareStack as pick, i (pick.id)}
+								<!-- ctx-dark: this disc must not follow the plate it rides on.
+								     The Compare plate is glass when unselected and PARCHMENT when
+								     selected, and a portrait backing has to be one opaque thing
+								     in both. See the note at .tb-tabstack-circle. -->
 								<span
-									class="tb-tabstack-circle"
+									class="tb-tabstack-circle ctx-dark"
 									style:left="{i * 16}px"
 									style:z-index={i + 1}
-									style:border-color={pick.color}
+									style:--el-color={pick.color}
 								>
 									{#if hasAvatar(pick.id)}
 										<img
@@ -1433,14 +1437,33 @@
 		height: 24px;
 		flex-shrink: 0;
 	}
+	/* ⚓ NATE 2026-08-11, with screenshots: transparent avatars on the Compare TAB
+	   — and the same disc turning parchment once the tab is selected. One root
+	   cause, and it is the sharpest example in the codebase of why a portrait
+	   backing may not name a context-following role.
+
+	   It was `background: var(--surface)`, itself a fix (the comment records the
+	   stray #131c30 it replaced). Right instinct, wrong role: --surface FOLLOWS
+	   its context, and this disc rides a plate that changes context underneath
+	   it. In band B's .ctx-glass, --surface is --glass-panel at .58 — hence stars
+	   through the avatars. Selected, the plate CLAIMS .ctx-light for --sel-surface
+	   (see THE SELECTED PLATE below), so --surface becomes parchment-100 — hence
+	   the light disc. Two symptoms, one token, and the hex it replaced was
+	   accidentally righter than the role that replaced it.
+
+	   ⚠ THE RULE THIS SETTLES: a portrait backing is an OPAQUE OBJECT, not a
+	   layer of its surroundings. It claims .ctx-dark and takes the element wash,
+	   like every other character portrait on the site. The context claim is the
+	   load-bearing half — without it this disc would resolve to --glass-well and
+	   parchment-200 in exactly the same two places. */
 	.tb-tabstack-circle {
 		position: absolute;
 		top: 0;
 		width: 24px;
 		height: 24px;
 		border-radius: 50%;
-		border: 1.5px solid var(--border);
-		background: var(--surface); /* was a drifted stray #131c30 */
+		border: 1.5px solid var(--el-color, var(--border));
+		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
 		overflow: hidden;
 		display: flex;
 		align-items: center;
