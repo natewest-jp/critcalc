@@ -82,10 +82,17 @@ export const BAND_A_H = 36;
 export const BAND_B_H = 36;
 
 /**
- * The height of a BAND CONTROL — every glass plate standing in either row
- * (⚓ NATE 2026-08-10). Equal to both band heights on purpose: a control fills
- * its row exactly, so the two bands read as a run of objects at one height
- * rather than as rails with things floating inside them.
+ * The height of a BAND CONTROL — every glass plate standing in BAND B
+ * (⚓ NATE 2026-08-10). Equal to BAND_B_H on purpose: a control fills its row
+ * exactly, so band B reads as a run of objects at one height rather than as a
+ * rail with things floating inside it.
+ *
+ * ⚠ BAND A IS NOT ON THIS, and was only briefly. It matched for one evening and
+ * Nate undid it the next morning: band A's controls are ~27px of type and
+ * padding, and stretching them to fill BAND_A_H made the DOCUMENT row read as
+ * the heavier of the two, which is backwards — band B is the one carrying a
+ * tool's navigation. Band A's controls take their natural height and centre in
+ * their row. See app.css's `.band-b .tab, .band-b .btn` rule.
  *
  * ⚠ The icon-only controls are the stated exception — "except for their
  * slightly smaller + and ... buttons". Those are `.btn--icon`; see app.css.

@@ -202,15 +202,38 @@
 	   they were designed as at every width above the cap, and the block stays
 	   under its own centred header instead of running out from under it.
 	   ⚠ It is a MAX, not a width: below the cap this shrinks and the run wraps
-	   to three rows, which is correct — the alternative is a scrollbar. */
+	   to three rows, which is correct — the alternative is a scrollbar.
+
+	   ↻ ⚓ NATE 2026-08-10, THE SAME DAY: THE CAP MOVED OFF THE RUN AND ONTO THE
+	   CAPABILITIES. Nate's 1000px is unchanged and still the number this is built
+	   from — but capping the whole ROW meant the lead cluster and the capability
+	   run were competing for one measure, and the lead cluster wins, because it
+	   is flex-shrink: 0. A third lead pill starts a second lead COLUMN (see
+	   .ts-lead), that column ate ~175px of the 1000, and fifteen capability chips
+	   with 175px less went to three rows — the exact thing the cap exists to
+	   prevent, triggered by a change on the other side of the gap.
+
+	   So the capabilities now hold their own measure (--cover-measure minus one
+	   lead column and the gap) no matter how wide the cluster beside them gets,
+	   and the ROW grows past 1000px instead of squeezing them. At one lead column
+	   this is pixel-for-pixel what shipped; at two or three the block simply gets
+	   wider, which is what there is room for at these viewports. Narrow screens
+	   are unaffected: a max-width does not stop a flex item shrinking, so the run
+	   still wraps to three rows when the column genuinely cannot hold two. */
 	.cover-run {
 		--cover-measure: 1000px;
-		max-width: var(--cover-measure);
-		margin-inline: auto;
+		/* 🎛️ One column of lead pills, at the width the longest of them takes —
+		   "Sprawling Greenery" with its element icon, the widest label either
+		   family can produce. A RESERVATION, not a width: the cluster is still
+		   sized by its own content, and this only decides how much of the measure
+		   the capabilities keep. Raise it and the capability run narrows (and will
+		   eventually go to three rows on its own); lower it and the run widens. */
+		--lead-column: 175px;
+		--cover-gap: 1.1rem;
 		display: flex;
 		align-items: flex-start;
 		justify-content: center;
-		gap: 1.1rem;
+		gap: var(--cover-gap);
 		min-width: 0;
 	}
 
@@ -231,13 +254,19 @@
 
 	/* Centred like its header (⚓ Nate). With a capped measure the last row is
 	   always short, and a short row left-aligned under two full ones is what
-	   made this read as a list that ran out rather than as a block. */
+	   made this read as a list that ran out rather than as a block.
+
+	   THE MEASURE LIVES HERE now, not on the row — see .cover-run. Fifteen chips
+	   in a wrapping flex have a max-content width of one very long line, so
+	   without the cap this would ask for the whole column; with it, it takes
+	   exactly the space the two-row layout was tuned against and no more. */
 	.ts-coverage {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
 		justify-content: center;
 		gap: 0.35rem;
+		max-width: calc(var(--cover-measure) - var(--lead-column) - var(--cover-gap));
 		min-width: 0;
 	}
 

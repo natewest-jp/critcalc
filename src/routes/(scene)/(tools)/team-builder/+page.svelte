@@ -1317,10 +1317,13 @@
 	.tb-nav-item.active {
 		background: var(--sel-surface);
 		color: var(--sel-ink);
-		/* .inset--plain's stroke, pulled in from the family's 7px — that distance
-		   is tuned for a frame around a surface, and on a 40px plate it would put
-		   the line through the middle of the type. */
+		/* .inset--plain's two knobs, both pulled off the family's panel defaults
+		   for the same reason: they are tuned for a frame around a SURFACE, and
+		   this is a 40px plate. 7px of inset would put the line through the middle
+		   of the type; a 2px stroke at that scale stops reading as jewelry and
+		   starts reading as the plate's own border (⚓ Nate 2026-08-10 — 1.5px). */
 		--frame-inset: 3px;
+		--inset-stroke: 1.5px;
 		--frame-line: color-mix(in srgb, var(--accent) 42%, var(--sel-surface));
 	}
 

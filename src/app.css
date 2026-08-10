@@ -102,12 +102,23 @@
 	   are .68 / .55, which lets meaningfully more world through a band — 11%
 	   and 16% at the new TOOL_DIM .65, against 9% before.
 
+	   ↻ ⚓ NATE 2026-08-10: ONE RUNG LIGHTER, both of them — slate-800 → slate-700
+	   and slate-950 → slate-900, at the SAME alphas. The tint is what moved, not
+	   the transparency: glass this dark over a dimmed world was reading as a hole
+	   cut in the scene rather than as a pane laid on it, and a rung of lift is
+	   what separates the two. The ramp already had both rungs; nothing new was
+	   minted for this.
+
 	   ⚠ WHAT SETS THE FLOOR HERE IS A STAR. Text on glass is limited by the
 	   WORST pixel behind it, never the average, and the worst pixel is always a
 	   star — a tiny, very bright point. Both stops clear 4.5:1 for --muted (the
-	   dimmer of the two band voices) against a star, UNBLURRED: panel 4.92:1,
-	   well 5.37:1. That is deliberate — see --glass-blur for why they cannot be
+	   dimmer of the two band voices) against a star, UNBLURRED: panel 4.54:1,
+	   well 5.01:1. That is deliberate — see --glass-blur for why they cannot be
 	   allowed to depend on the blur.
+	   ⚠ THE PANEL STOP IS NOW CLOSE TO THE FLOOR — it was 4.92:1 a rung ago, and
+	   a third rung of lift (slate-600) would take --muted under 4.5:1 against a
+	   star. If this is ever asked to go lighter again, the alpha has to come UP
+	   with it, or --muted has to.
 
 	   ⚠ Glass and the wash MULTIPLY: what reaches the eye is
 	   (1 − glass)(1 − TOOL_DIM). At the old dim of .85 these same stops would
@@ -116,9 +127,9 @@
 	   ⛔ --glass-ribbon is DELETED. It was Fable's stop for the bench ribbon,
 	   and the bench went back to opaque slate the same day (⚓ NATE). Nothing
 	   painted it; the bands take --glass-panel and --glass-well. */
-	--glass-panel: rgb(46 53 67 / 0.68); /* slate-800 — band A, menus, panels */
-	--glass-well: rgb(28 33 43 / 0.55); /* slate-950 — band B, recessed fields */
-	--glass-parch: rgb(236 229 216 / 0.1); /* parchment frost — hover on glass */
+	--glass-panel: rgb(54 62 77 / 0.68); /* slate-700 — band A, menus, panels */
+	--glass-well: rgb(38 44 56 / 0.55); /* slate-900 — band B, recessed fields */
+	--glass-parch: rgb(236 229 216 / 0.1); /* parchment frost — a resting fill */
 	/* ⚓ NATE — ON PROBATION, 2026-08-09. Tuned 6 → 2 → 1px and still under
 	   test; it may yet go to 0. Nothing is allowed to depend on it (see below),
 	   so removing it is a one-line change with no knock-on.
@@ -1105,12 +1116,34 @@
 	--accent: var(--gold-400);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
-	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 	--knob: var(--muted);
-	/* The hover wash is the parchment frost, not a neutral tint — on glass a
-	   neutral fill greys the world showing through it. */
 	--fill-rest: var(--glass-parch);
-	--fill-hover: color-mix(in srgb, var(--parchment-100) 17%, transparent);
+	/* ══ ON GLASS THERE IS ONE HOVER, AND IT IS SLATE (⚓ NATE 2026-08-10) ═════
+	   "Slate panels should always be some form of slate — including glass slate
+	   panels." Both hover roles resolve to the SAME neutral wash here, which is
+	   the dark context's own hover recipe (--neutral at 20%) used unchanged, so
+	   every hoverable pane on the site lifts identically whether it is glass or
+	   opaque slate.
+
+	   ⚠ --accent-hover-fill CARRIES A NON-ACCENT VALUE IN THIS CONTEXT, and that
+	   is the point rather than an oversight. The role means "the wash a hover
+	   lays down where the accent idiom applies"; on glass the accent idiom does
+	   not apply, because a gold or parchment tint over a translucent pane stains
+	   the world showing through it — which is what made a hovered tab and a
+	   hovered Atlas card read as a different material from their neighbours.
+	   Accent stays the mark of SELECTION here (--sel-fill, --sel-ring, untouched):
+	   hover is a lift, selection is a colour.
+
+	   ↻ This reverses the note that stood here for a day — "the hover wash is the
+	   parchment frost, not a neutral tint, because on glass a neutral fill greys
+	   the world showing through it." The greying is real and it is what a hover
+	   on a slate pane should do; the alternative was two different tints in one
+	   band, which is what Nate actually saw.
+
+	   ⚠ Spelled out twice rather than aliased — the nesting law: each is one
+	   level deep off a primitive, never an alias of the other. */
+	--fill-hover: color-mix(in srgb, var(--neutral) 20%, transparent);
+	--accent-hover-fill: color-mix(in srgb, var(--neutral) 20%, transparent);
 	--btn-face: color-mix(in srgb, var(--neutral) 18%, var(--slate-800));
 	--btn-face-hover: color-mix(in srgb, var(--neutral) 28%, var(--slate-800));
 	color: var(--text);
@@ -1147,14 +1180,18 @@
 /* Hover/active states re-declare the ground, so they need the glass stops too
    — otherwise touching a control turns opaque under the cursor.
 
+   ↻ ⚓ NATE 2026-08-10: A TAB AND A BUTTON HOVER THE SAME. They were two
+   different washes (the tab took the accent one, the button the neutral one) on
+   two rules that were otherwise identical, which is how a run of plates ended up
+   with two materials in it. One rule, one wash — see .ctx-glass, where both
+   roles now resolve to the same slate lift.
+
    ⚠ THE DOUBLE-GRADIENT IS THE NESTING LAW, not a flourish. The wash has to sit
    OVER the pane rather than replace it, and the obvious spelling —
-   color-mix(--accent-hover-fill …) — is a color-mix fed by a color-mix, which
-   CRASHES WEBKIT. A one-stop linear-gradient is a background LAYER, so the two
+   color-mix(--fill-hover …) — is a color-mix fed by a color-mix, which CRASHES
+   WEBKIT. A one-stop linear-gradient is a background LAYER, so the two
    composite at paint time with no colour arithmetic at all. */
-.band-a .tab:not(.active):hover {
-	background: linear-gradient(var(--accent-hover-fill), var(--accent-hover-fill)), var(--surface);
-}
+.band-a .tab:not(.active):hover,
 .band-a .btn:hover:not(:disabled),
 .band--3up > .band-zone .btn:hover:not(:disabled) {
 	background: linear-gradient(var(--fill-hover), var(--fill-hover)), var(--surface);
@@ -1179,20 +1216,29 @@
 	background: var(--ui-danger-soft);
 }
 
-/* ── ONE HEIGHT ACROSS BOTH ROWS (⚓ NATE 2026-08-10) ───────────────────────
-   "Let's make all of the Band A / Band B items 36px" — a control fills its row
-   exactly, so a band reads as a run of objects at one height. --band-ctrl-h is
-   set on .tool-stack from BAND_CTRL_H and inherits down.
+/* ── ONE HEIGHT, IN BAND B ONLY (⚓ NATE 2026-08-10, then again) ────────────
+   The row height is filled by the controls that stand ON a rail — band B's
+   navigation and the two plates flanking it — so that row reads as a run of
+   objects at one height. --band-ctrl-h is set on .tool-stack from BAND_CTRL_H
+   and inherits down.
 
-   ⚠ THE ICON-ONLY CONTROLS ARE THE STATED EXCEPTION — "except for their
-   slightly smaller + and ... buttons". A square 36px plate holding one 14px
-   glyph reads as a missing label, not as a peer; these two are punctuation in
-   the row, not members of it. */
-.band .tab,
-.band .btn {
+   ↻ BAND A IS BACK TO ITS NATURAL HEIGHT. It was pulled up to 36px the same day
+   to match band B, and Nate undid it the next morning: the document tabs and
+   Save/Load/Share are ~27px of type and padding, and stretching them to fill a
+   row they merely sit in made them read as the heavier row of the two — which
+   is backwards, since band B carries the tool's navigation. They centre in
+   BAND_A_H again, exactly as they did before the match.
+   ⚠ So --band-ctrl-h is a BAND B number now, not a stack-wide one. BAND_A_H is
+   still 36 and deliberately so: it is the ROW, not the control.
+
+   ⚠ THE ICON-ONLY CONTROLS ARE THE STATED EXCEPTION in band B — "except for
+   their slightly smaller + and ... buttons". A square 36px plate holding one
+   14px glyph reads as a missing label, not as a peer. */
+.band-b .tab,
+.band-b .btn {
 	height: var(--band-ctrl-h);
 }
-.band .btn--icon {
+.band-b .btn--icon {
 	height: calc(var(--band-ctrl-h) - 10px);
 	min-width: calc(var(--band-ctrl-h) - 10px);
 }
@@ -1894,7 +1940,12 @@ img {
 
    ⚓ STROKES ARE 2px (NATE). It also puts the family on the rule rung the
    system already had — § Laws: "rules are 2px, section dividers 1px" — so an
-   inset frame reads as a RULE around a surface rather than as a hairline. */
+   inset frame reads as a RULE around a surface rather than as a hairline.
+   ⚠ --inset-stroke is a per-HOST override of that default, not a second rung in
+   the scale. It exists because a frame's right weight is a function of the box
+   it goes round: 2px reads as a rule on a panel and as a border on a 40px
+   plate. The Team Builder's selected navigation item is the one caller so far,
+   at 1.5px (⚓ Nate 2026-08-10). Anything panel-sized leaves it alone. */
 .inset {
 	position: relative;
 }
@@ -1909,7 +1960,10 @@ img {
 /* 1 · PLAIN — the undecorated baseline. One stroke, set in. Safe everywhere,
    including on glass: a single stroke composites exactly once. */
 .inset--plain::after {
-	border: 2px solid var(--frame-line);
+	/* The fallback, not a declared default: --inset-stroke is a host override
+	   (see above), and a declaration on `.inset` would have to out-specify every
+	   host that sets it. */
+	border: var(--inset-stroke, 2px) solid var(--frame-line);
 }
 
 /* 2 · DOUBLE — two strokes on ONE box, differing only in corner radius, so the

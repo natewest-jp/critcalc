@@ -374,7 +374,15 @@
 			⚠️ <strong>What sets the floor on a glass stop is a STAR.</strong> Text on glass is limited by
 			the worst pixel behind it, never the average, and the worst pixel is always a star — a tiny,
 			very bright point. Both stops clear 4.5:1 for <code>--muted</code> (the dimmer of the two band
-			voices) against a star <strong>unblurred</strong>: panel 4.92:1, well 5.37:1.
+			voices) against a star <strong>unblurred</strong>: panel 4.54:1, well 5.01:1.
+		</p>
+		<p class="sg-note">
+			↻ ⚓ Nate 2026-08-10: <strong>both stops went one rung lighter</strong> — slate-800 →
+			slate-700 and slate-950 → slate-900, at the same alphas. The tint moved, not the transparency:
+			glass this dark over a dimmed world read as a hole cut in the scene rather than a pane laid on
+			it. ⚠️ <strong>The panel stop is now close to its floor</strong> (4.92:1 → 4.54:1). A third
+			rung would take <code>--muted</code> under 4.5:1 against a star, so if this is asked to
+			lighten again, the alpha has to come up with it — or <code>--muted</code> does.
 		</p>
 		<p class="sg-note">
 			⚓ <code>--glass-blur</code> is <strong>1px and ON PROBATION</strong> (Nate, 2026-08-09 —
@@ -1153,7 +1161,10 @@
 			feedback round — "we'll stick with these two for now, and if I feel the need for more I'll
 			come up with a concept and propose it". <strong>Don't propose additions.</strong> Strokes are
 			<strong>2px</strong> (⚓ Nate), which also puts the family on the rule rung the system already
-			had: <em>rules are 2px, section dividers 1px</em>.
+			had: <em>rules are 2px, section dividers 1px</em>. ⚠️ A host may override that with
+			<code>--inset-stroke</code> — a per-box knob, <em>not</em> a second rung: 2px reads as a rule round
+			a panel and as a border round a 40px plate. One caller so far, the Team Builder's selected navigation
+			item at 1.5px (⚓ Nate 2026-08-10).
 		</p>
 		<p class="sg-note">
 			⚠️ <strong
@@ -1310,9 +1321,12 @@
 			— first they stopped abutting, then
 			<strong>band A stopped being a band at all</strong>, and then band B stopped being one
 			wherever a tool splits it. What is left of "a band" is a height and a gap: both rows are runs
-			of glass PLATES standing on the scene, all at <code>BAND_CTRL_H</code> (36px, icon-only
-			controls excepted) on <em>one</em> glass stop — band B's darker well retired with the tier it
-			was marking. The only rail left is the one a tool asks for by filling
+			of glass PLATES standing on the scene, on <em>one</em> glass stop — band B's darker well
+			retired with the tier it was marking. ⚠️ <code>BAND_CTRL_H</code> (36px, icon-only controls
+			excepted) is a <strong>band B</strong> number: its plates fill their row, band A's take their
+			natural ~27px and centre in theirs (⚓ Nate 2026-08-10, undoing the one-evening match — band A
+			filling its row made the DOCUMENT row read as the heavier of the two, which is backwards). The
+			only rail left is the one a tool asks for by filling
 			<code>bandBCenter</code>, and that rail is a plate like the others. Geometry knobs:
 			<code>src/lib/toolBands.ts</code>. Document flows:
 			<code>src/lib/documentBar.svelte.ts</code>.
