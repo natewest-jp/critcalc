@@ -154,6 +154,68 @@
 			ring: 'color-mix(in srgb, var(--slate-300) 75%, transparent)'
 		}
 	];
+
+	/**
+	 * THE BENCH STRIP — two coupled questions, forced side by side (⚓ NATE
+	 * 2026-08-11): what shade is the strip against the glass, and how deep do its
+	 * controls sit in it.
+	 *
+	 * ↻ BOTH SETTLED THE SAME DAY, so this board is now a RECORD rather than a
+	 * question — and it is kept for the same reason the gold-border grid above
+	 * is: the reason is visible in it. ⚓ The strip stays at slate-800 (it stands
+	 * one rung ABOVE the glass, which is what makes it read as the solid object
+	 * among panes), and the well moved by MERGING the ramp's bottom two rungs
+	 * instead of by picking a different one.
+	 *
+	 * ⚠ THE MIDDLE COLUMN NO LONGER EXISTS AS A SEPARATE VALUE. "well 900" and
+	 * "well 950" were the same question asked twice — how deep — and the answer
+	 * was that the ramp had two rungs where it needed one. The old pair is drawn
+	 * from LITERALS here (/lab is exempt from the L0 law, so it can show a value
+	 * nothing points at) precisely because they are no longer tokens: this is the
+	 * only surface in the app that can still render the before.
+	 */
+	/** The seven-element pip row both Atlas specimens carry — every real card has
+	 *  all seven, so the row's true width is what the layout has to survive. */
+	const ATLAS_PIPS = [
+		{ el: 'pyro', n: 9, color: 'var(--el-pyro-main)' },
+		{ el: 'hydro', n: 7, color: 'var(--el-hydro-main)' },
+		{ el: 'electro', n: 8, color: 'var(--el-electro-main)' },
+		{ el: 'cryo', n: 6, color: 'var(--el-cryo-main)' },
+		{ el: 'dendro', n: 5, color: 'var(--el-dendro-main)' },
+		{ el: 'anemo', n: 7, color: 'var(--el-anemo-main)' },
+		{ el: 'geo', n: 6, color: 'var(--el-geo-main)' }
+	];
+
+	const BENCH_VARIANTS = [
+		{
+			key: 'shipped',
+			label: 'strip 800 · the merged well — shipped',
+			ground: 'var(--surface)',
+			fill: 'var(--surface-well)',
+			border: 'none'
+		},
+		{
+			key: 'was-900',
+			label: 'the old 900 — desaturated',
+			ground: 'var(--surface)',
+			fill: '#262c38',
+			border: 'none'
+		},
+		{
+			key: 'was-950',
+			label: 'the old 950 — too deep',
+			ground: 'var(--surface)',
+			fill: '#1c212b',
+			border: 'none'
+		},
+		{
+			key: 'was',
+			label: 'gradient + 1.5px stroke — was',
+			ground: 'var(--surface)',
+			fill: 'linear-gradient(180deg, color-mix(in srgb, var(--slate-800) 45%, var(--bg)) 0%, var(--slate-800) 50%)',
+			border: '1.5px solid var(--frame-line-quiet)'
+		}
+	];
 </script>
 
 <svelte:head><title>Specimen Board — critcalc.app</title></svelte:head>
@@ -505,6 +567,156 @@
 			</div>
 		</div>
 	</section>
+
+	<!-- ══════════════════════════════════ 7 · THE BENCH, ON THE SCENE ══ -->
+	<section>
+		<h2 class="lab-h">
+			The bench, on the scene <span class="lab-badge">shipped</span>
+		</h2>
+		<p class="lab-note">
+			Two questions the tools cannot answer, because in a tool you only ever see one answer at a
+			time: <strong>what shade the strip is next to the glass</strong>, and
+			<strong>how deep its controls sit in it</strong>. Both settled here, and the row is kept
+			because the reason is visible in it.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>The band is not slate — it is slate composited over a dimmed world.</strong>
+			<code>--glass-panel</code> at .58 over
+			<code>--scene-dim</code> at <code>TOOL_DIM</code> lands around
+			<strong>#262b36…#293040</strong>, and it MOVES with whatever the world is doing behind it. So
+			the strip at <code>--surface</code> stands one rung ABOVE its neighbours, which is what makes
+			it read as the solid object among panes. ⚓ <strong>It stays there.</strong> One darker would put
+			it ON the glass's own average, and then the only thing separating opaque from translucent is whether
+			stars swim through it.
+		</p>
+		<p class="lab-note">
+			On the controls: the gradient-plus-stroke on the right is what shipped before this round. The
+			gradient manufactured an inner shadow and the 1.5px stroke drew the shape the gradient was too
+			faint to draw alone — <strong>one idea in two parts</strong>, and both predate the depth
+			ladder. A flat rung states it directly.
+		</p>
+		<p class="lab-note">
+			⚓ <strong>"How deep" turned out to be a question about the RAMP, not about the card.</strong>
+			The two middle columns are the old <code>slate-900</code> and <code>slate-950</code>, drawn
+			from literals because they are no longer tokens: 900 was the one rung that broke the ramp's
+			saturation curve (C/L climbs .053 → .081 from 300 to 800 and then dips at 900), and 950 was
+			deeper than a well needs. <strong>They merged into one rung at their midpoint</strong> — L
+			.269, chroma back on the .028–.030 plateau. What the eye gets is the depth: the well's step
+			below the card ground went <strong>ΔL .027 → .060</strong>, which is what lets it read with no
+			stroke at all.
+		</p>
+		<div class="lab-row lab-row--bench">
+			{#each BENCH_VARIANTS as v (v.key)}
+				<div class="cand">
+					<span class="cand-tag">{v.label}</span>
+					<div
+						class="benchstrip ctx-dark"
+						style:background={v.ground}
+						style:--bx-fill={v.fill}
+						style:--bx-border={v.border}
+					>
+						<span class="bx-frame bx-frame--tight" aria-hidden="true"></span>
+						<span class="bx-frame bx-frame--wide" aria-hidden="true"></span>
+						<div class="bx-card">
+							<div class="bx-id">
+								<span class="bx-el" aria-hidden="true"></span>
+								<span class="bx-name">Furina</span>
+								<span class="bx-ctl bx-ctl--chip">C2</span>
+							</div>
+							<div class="bx-portrait"></div>
+							<div class="bx-base">
+								<span class="bx-ctl bx-ctl--act"><Mark name="swap" /></span>
+								<span class="bx-pill">
+									<span class="bx-zone"></span>
+									<span class="bx-zone"></span>
+									<span class="bx-zone bx-zone--ref">R1</span>
+								</span>
+								<span class="bx-ctl bx-ctl--act"><Mark name="close" /></span>
+							</div>
+						</div>
+						<div class="bx-divider" aria-hidden="true"></div>
+					</div>
+				</div>
+			{/each}
+			<div class="cand">
+				<span class="cand-tag">a real band, for reference</span>
+				<div class="ctx-glass benchband">Rotation · Save · Share</div>
+				<div class="ctx-glass benchband benchband--well">zoom · notes</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- ════════════════════════════════ 8 · THE ATLAS CARD, AS A BLOCK ══ -->
+	<section>
+		<h2 class="lab-h">
+			The Atlas card, as a block <span class="lab-badge">proposal</span>
+		</h2>
+		<p class="lab-note">
+			⚓ Nate: <em>"the cards are reading really wide, almost like fat banners."</em> Measured at
+			1600×1000, the card is <strong>656 × 210 — a ratio of 3.12:1</strong>, wider than the monitor
+			it is drawn on. And the shape is not even stable: it is 2.39:1 at 1280, because the WIDTH is
+			given by the column while the HEIGHT is asserted by a <code>min-height: 210px</code> nothing needs.
+			A card whose proportions change with the window is not an object yet.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>The 2×2 grid uses 436px of a 795px column.</strong> That 359px is not breathing
+			room, it is dead — the drill-down <em>replaces</em> the cards rather than opening beneath them,
+			so nothing ever uses it. The height is already paid for; the cards simply decline to take it.
+		</p>
+		<p class="lab-note">
+			So: <strong>cap the measure and fix the ratio.</strong> A centred cap does the "more space
+			around them" directly (189px of scene either side at 1600) and, because the cap holds below
+			1600 too, <strong>the card becomes the same object at every width</strong>. The height then
+			follows from <code>aspect-ratio</code> rather than from a floor — one knob, and the card stops arguing
+			with the viewport.
+		</p>
+		<p class="lab-note">
+			⚠ On the gap: <strong>yes, raise it — but keep it well under the outer margin.</strong> Four cards
+			read as one object only while the space between them is clearly smaller than the space around them.
+			16 → 20 against a 189px margin is about 1:9, which is comfortably a cluster. Take the gap much past
+			that and you get four unrelated cards.
+		</p>
+		<div class="lab-row lab-row--atlas">
+			<div class="cand">
+				<span class="cand-tag">now · 656 × 210 · 3.12:1</span>
+				<div class="ctx-glass atlasnow">
+					<div class="an-art" aria-hidden="true"></div>
+					<div class="an-glyphs"><span></span><b>+</b><span></span></div>
+					<span class="an-label">On-Field DPS</span>
+					<span class="an-counts"><b>48</b> provides · <b class="an-owned">12</b> owned</span>
+					<div class="an-pips">
+						{#each ATLAS_PIPS as pip (pip.el)}<span class="an-pip"
+								><i style:background={pip.color}></i>{pip.n}</span
+							>{/each}
+					</div>
+				</div>
+			</div>
+			<div class="cand">
+				<span class="cand-tag">proposed · 465 × 388 · 6:5</span>
+				<div class="atlasblock">
+					<!-- THE DARK HALF — identity. Glass, because it is the same pane the
+					     card has been since 2026-08-09; only the light half is new. -->
+					<div class="ab-id ctx-glass">
+						<div class="ab-glyphs"><span></span><b>+</b><span></span></div>
+						<span class="ab-label">On-Field DPS</span>
+					</div>
+					<!-- THE PARCHMENT HALF — content. ⚓ Nate's SVG covers this. -->
+					<div class="ab-body ctx-light">
+						<div class="ab-art" aria-hidden="true">your SVG</div>
+						<div class="ab-readout">
+							<span class="ab-fig"><b>48</b><small>provides</small></span>
+							<span class="ab-fig ab-fig--owned"><b>12</b><small>owned</small></span>
+						</div>
+						<div class="ab-pips">
+							{#each ATLAS_PIPS as pip (pip.el)}<span class="ab-pip"
+									><i style:background={pip.color}></i>{pip.n}</span
+								>{/each}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
 </div>
 
 <style>
@@ -603,10 +815,10 @@
 	.spec--bare {
 		background: none;
 	}
-	.spec.ctx-glass {
-		-webkit-backdrop-filter: blur(var(--glass-blur));
-		backdrop-filter: blur(var(--glass-blur));
-	}
+	/* ↻ 2026-08-11: the glass specimen has no rule of its own any more. It held
+	   exactly the blur, and with that retired the panel is just .spec — whose
+	   `background: var(--surface)` resolves to --glass-panel under .ctx-glass,
+	   which is the whole of what the material now is. */
 
 	.spec-tag {
 		font-family: var(--font-mono);
@@ -843,19 +1055,11 @@
 	/* ── candidates: the night paints ─────────────────────────────────────
 	   Local styling, deliberately — these have no home in app.css yet. When one
 	   is adopted it moves there and this block shrinks. */
-	.night-ribbon {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.5rem 1rem;
-		border-radius: var(--r-sm);
-		background: rgb(20 22 28 / 0.55);
-		color: var(--text);
-		font-weight: var(--fw-semibold);
-	}
-	.night-ribbon--danger {
-		background: color-mix(in srgb, var(--ui-danger) 38%, transparent);
-	}
+	/* ✅ ADOPTED 2026-08-11 — .night-ribbon and its --danger variant live in
+	   app.css now (the Atlas drill's row headers are the first consumer), so the
+	   local copies that used to sit here are gone and this board renders the REAL
+	   class. That is the board's own law: a proposal is drawn locally only until
+	   it has a home. */
 	.night-fade {
 		display: grid;
 		place-items: end center;
@@ -887,8 +1091,6 @@
 		height: 62px;
 		border-radius: var(--r-sm);
 		background: var(--surface);
-		-webkit-backdrop-filter: blur(var(--glass-blur));
-		backdrop-filter: blur(var(--glass-blur));
 		color: var(--muted);
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
@@ -1022,8 +1224,6 @@
 	}
 	.atlas--glass {
 		background: var(--surface);
-		-webkit-backdrop-filter: blur(var(--glass-blur));
-		backdrop-filter: blur(var(--glass-blur));
 	}
 	.atlas-id {
 		display: grid;
@@ -1051,5 +1251,373 @@
 	}
 	.atlas--glass .atlas-body {
 		background: none;
+	}
+
+	/* ── the bench strip (proposal) ───────────────────────────────────────────
+	   A FRAGMENT of the real ribbon at true scale: the strip's own geometry
+	   (RIBBON_* in $lib/benchBand.svelte.ts — card 160 inside 16 of chrome per
+	   side, the two-stroke double frame, the 1.5px shelf line) carrying one slot
+	   card's three bands. Drawn locally because SlotPortrait's styles are scoped
+	   to it and there is no way to render the real card here without the store,
+	   the roster and a host registration — so this is a proposal board, and it
+	   is labelled as one.
+	   ⚠ KEEP THE NUMBERS IN STEP BY HAND if the strip's constants move. They are
+	   duplicated here on purpose: the point of the board is to show a candidate
+	   the components do NOT have yet, which is exactly what importing the real
+	   values would prevent. */
+	.lab-row--bench {
+		gap: 1.6rem;
+	}
+	.benchstrip {
+		position: relative;
+		box-sizing: border-box;
+		width: 192px; /* card 160 + 16 chrome per side */
+		padding: 16px;
+		border-radius: 3px;
+	}
+	/* The double frame: two strokes on ONE box at ONE inset, differing only in
+	   corner radius, so the straight runs coincide and only the corners split. */
+	.bx-frame {
+		position: absolute;
+		inset: 5px;
+		border: 2px solid var(--frame-line-quiet);
+		pointer-events: none;
+	}
+	.bx-frame--tight {
+		border-radius: 3px;
+	}
+	.bx-frame--wide {
+		border-radius: 30px;
+	}
+	.bx-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 8px 10px 10px 8px;
+	}
+	.bx-id {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 6px;
+	}
+	/* The element glyph at its NEW size — 18px, the name's 1.25×. A flat disc
+	   stands in for the generated element art; what is being judged here is the
+	   glyph's WEIGHT against the name beside it, not its drawing. */
+	.bx-el {
+		flex: none;
+		width: 18px;
+		height: 18px;
+		border-radius: var(--r-round);
+		background: var(--el-hydro-main, var(--neutral));
+	}
+	.bx-name {
+		margin-right: auto;
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-tight);
+		color: var(--text);
+	}
+	.bx-portrait {
+		width: 68px;
+		height: 68px;
+		align-self: center;
+		border-radius: var(--r-round);
+		border: 1.5px solid color-mix(in srgb, var(--el-hydro-main, var(--neutral)) 85%, transparent);
+		background: var(--surface-well);
+	}
+	.bx-base {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 4px;
+	}
+	/* The four stations — con chip, ⇄, the pill, ✕ — all wearing the variant's
+	   fill and border, which is the whole comparison. */
+	.bx-ctl,
+	.bx-pill {
+		box-sizing: border-box;
+		height: 26px;
+		background: var(--bx-fill);
+		border: var(--bx-border);
+		border-radius: var(--r-round);
+		color: color-mix(in srgb, white 40%, var(--frame-bg));
+	}
+	.bx-ctl {
+		flex: none;
+		width: 26px;
+		display: grid;
+		place-items: center;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-bold);
+		line-height: var(--lh-none);
+	}
+	.bx-ctl--chip {
+		text-indent: -0.07em;
+		color: color-mix(in srgb, var(--el-hydro-main, var(--neutral)) 75%, white);
+	}
+	.bx-pill {
+		display: flex;
+		align-items: center;
+		gap: 1px;
+	}
+	.bx-zone {
+		width: 24px;
+		height: 100%;
+		display: grid;
+		place-items: center;
+	}
+	/* Stand-ins for the artifact / weapon art, at the wash's resting alpha. */
+	.bx-zone:not(.bx-zone--ref)::after {
+		content: '';
+		width: 15px;
+		height: 15px;
+		border-radius: 2px;
+		background: color-mix(in srgb, white 34%, var(--frame-bg));
+	}
+	.bx-zone--ref {
+		width: auto;
+		min-width: 24px;
+		padding: 0 5px;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-mid);
+		line-height: var(--lh-none);
+		color: color-mix(in srgb, var(--el-hydro-main, var(--neutral)) 75%, white);
+	}
+	/* The shelf line between cards, running past the card into the frame. */
+	.bx-divider {
+		height: 1.5px;
+		margin: 0 -9px;
+		background: var(--frame-line-quiet);
+	}
+	/* A real band, at the real band height, for the shade comparison. */
+	.benchband {
+		display: grid;
+		place-items: center;
+		width: 190px;
+		height: 36px;
+		border-radius: 1px;
+		background: var(--surface);
+		color: var(--muted);
+		font-size: var(--fs-md);
+	}
+	.benchband--well {
+		background: var(--surface-well);
+	}
+
+	/* ── the Atlas card, as a block (proposal) ────────────────────────────────
+	   Both specimens are drawn at the size the real grid computes, so the
+	   comparison is of PROPORTION and not of scale:
+	     now      656 × 210  (1328px column, 2 cols, 16px gap, min-height 210)
+	     proposed 465 × 388  (950px cap,     2 cols, 20px gap, aspect-ratio 6/5)
+	   ⚠ Hand-pinned, like everything else on this board. If the real card adopts
+	   these, the numbers move to AtlasView and this section renders the record. */
+	.lab-row--atlas {
+		gap: 1.6rem;
+		align-items: flex-start;
+	}
+
+	/* ── what it is now: one left-ranged column in a 3:1 box ──
+	   The failure is visible in the specimen: every row is a ~200px thing on a
+	   608px line, so the content occupies a third of its own card and the rest is
+	   a long empty runway. That is the "fat banner" read — not the height, the
+	   MEASURE. */
+	.atlasnow {
+		position: relative;
+		overflow: hidden;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		gap: 0.55rem;
+		width: 656px;
+		height: 210px;
+		padding: 1.4rem 1.5rem 1.2rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+	}
+	.an-art {
+		position: absolute;
+		right: -6%;
+		bottom: -20%;
+		width: 46%;
+		height: 120%;
+		border-radius: var(--r-round);
+		background: rgb(0 0 0 / 0.16);
+	}
+	.atlasnow > *,
+	.atlasblock :not(.ab-art) {
+		position: relative;
+		z-index: 1;
+	}
+	.an-glyphs,
+	.ab-glyphs {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
+	.an-glyphs span,
+	.ab-glyphs span {
+		width: 42px;
+		height: 42px;
+		border-radius: var(--r-sm);
+		background: color-mix(in srgb, var(--el-hydro-main) 55%, transparent);
+	}
+	.an-glyphs b,
+	.ab-glyphs b {
+		font-size: var(--fs-xl);
+		font-weight: var(--fw-semibold);
+		color: var(--muted);
+	}
+	.an-label {
+		font-family: var(--font-display);
+		font-size: var(--fs-2xl);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		color: var(--text);
+	}
+	.an-counts {
+		font-size: var(--fs-md);
+		color: var(--muted);
+	}
+	.an-counts b {
+		color: var(--text);
+	}
+	.an-owned {
+		color: var(--accent);
+	}
+	.an-pips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+		margin-top: auto;
+	}
+	.an-pip,
+	.ab-pip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
+	}
+	.an-pip i,
+	.ab-pip i {
+		width: 18px;
+		height: 18px;
+		border-radius: var(--r-round);
+	}
+
+	/* ── the proposal: a split block ──
+	   ⚠ THE SEAM IS HORIZONTAL, WHICH REVERSES THE /lab PROTOTYPE ABOVE. That one
+	   splits left/right, and it was right for what it was drawn on — a 480 × 132
+	   banner, where a top/bottom seam would leave two letterbox slots. Rotate the
+	   card to a block and the same split starves the identity half: "SURVIVABILITY"
+	   sets ~169px at --fs-2xl, and a 38%-wide dark column leaves ~144px of measure,
+	   so the longest label wraps on the one card that can least afford it. A
+	   horizontal seam gives the label the card's full width and reads as Genshin's
+	   own structure — a titled plate over a content area. */
+	.atlasblock {
+		display: grid;
+		/* 37 / 63. The dark half is sized by its content (48 glyph + label + pad);
+		   the light half takes the rest, and the rest is what the art wants. */
+		grid-template-rows: 145px 1fr;
+		width: 465px;
+		height: 388px;
+		border-radius: var(--r-sm);
+		/* The halves are opaque and translucent respectively, so the CARD must
+		   clip them — there is no ground behind the seam to hide a mismatch. */
+		overflow: hidden;
+	}
+	.ab-id {
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 0.5rem;
+		padding: 0 1.3rem;
+		background: var(--surface);
+	}
+	.ab-label {
+		font-family: var(--font-display);
+		font-size: var(--fs-2xl);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		color: var(--text);
+	}
+	.ab-body {
+		position: relative;
+		overflow: hidden;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		padding: 1.1rem 1.3rem 1.2rem;
+		background: var(--surface-broad);
+	}
+	/* ⚓ NATE'S ASSET GOES HERE — anchored bottom-right and BLEEDING off both
+	   edges, which is the grammar the card already uses for its monotone role
+	   backdrop. Text ranges from the top-left, so the two never fight: the
+	   readout owns the top edge, the pips the bottom-LEFT, the art the
+	   bottom-right corner and everything behind it. */
+	.ab-art {
+		position: absolute;
+		right: -8%;
+		bottom: -14%;
+		display: grid;
+		place-items: center;
+		width: 62%;
+		height: 78%;
+		border-radius: var(--r-round);
+		background: color-mix(in srgb, var(--ink-700) 12%, transparent);
+		font-size: var(--fs-sm);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		color: color-mix(in srgb, var(--ink-700) 45%, transparent);
+	}
+	/* THE NUMBERS BECOME A READOUT. On the current card they are one --fs-md
+	   line — "48 provides · 12 owned" — which states the card's whole point in
+	   its quietest voice. A block card has the room to promote them, and OWNED is
+	   the figure the user came for: it is the only personal fact on the surface. */
+	.ab-readout {
+		display: flex;
+		gap: 1.4rem;
+	}
+	.ab-fig {
+		display: flex;
+		flex-direction: column;
+		line-height: var(--lh-tight);
+	}
+	.ab-fig b {
+		font-size: var(--fs-5xl);
+		font-weight: var(--fw-bold);
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
+	}
+	.ab-fig small {
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.ab-fig--owned b {
+		color: var(--accent);
+	}
+	/* Two rows of four-ish, ranged bottom-left, clear of the art's corner. The
+	   pip row is 7 wide and ~300px on one line; wrapping it is not a compromise
+	   here, it is what turns a list into a block. */
+	.ab-pips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem 0.7rem;
+		margin-top: auto;
+		max-width: 62%;
+	}
+	.ab-pip {
+		color: var(--text);
 	}
 </style>

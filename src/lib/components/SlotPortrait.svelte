@@ -403,49 +403,53 @@
 		   constellation chip and the loadout pill — share every one of these, so
 		   they read as one family. Change them here, never on one alone. */
 		--sp-pill-h: 26px;
-		/* ↻ 2026-08-06 (⚓ NATE): the quiet line, so the constellation chip, the
-		   loadout pill and the ⇄/✕ slot controls wear the SAME stroke as the
-		   strip's own double frame around them. --frame-line is the lit warm
-		   rule; at 1.5px on three controls per card it read as the brightest
-		   thing in the ribbon. */
-		--sp-pill-border: 1.5px solid var(--frame-line-quiet);
-		/* Page ground at the top falling to the FRAME's ground below — lighter
-		   stop low, the reverse of the roster cards' portrait gradient, which is
-		   what gives these an INSET read rather than a raised one. No element
-		   tint: these are chrome, and the element already speaks through the
-		   glyph, the portrait ring and the set values.
-		
-		   ⚠ THE STOP POSITION IS THE WEIGHT KNOB. At 100% the gradient is still
-		   climbing when it runs out of pill, so every pixel is darker than the
-		   frame it sits on and the control reads heavy. Landing the frame-ground
-		   stop early concentrates the dark into a band under the TOP edge — an
-		   inner shadow — and lets the rest sit flush with its surroundings. Lower
-		   = tighter, heavier shadow; higher = softer but darker overall. */
-		--sp-pill-stop: 50%;
-		/* THE DARK-END KNOB: the dark stop is --frame-bg pulled toward --bg (the
-		   page's deep ground) — lower % = darker top. Raw --bg was too deep a
-		   well since the surface re-cut (Nate 2026-07-31); 55 → 45 for a touch
-		   more shadow under the top edge (Nate 2026-08-06). The light end stays
-		   plain --frame-bg — the surface the pill sits on. Named so the icon
-		   wash can rebuild this exact ramp with alpha in its stops. */
-		--sp-pill-dark: color-mix(in srgb, var(--frame-bg) 45%, var(--bg));
-		--sp-pill-fill: linear-gradient(
-			180deg,
-			var(--sp-pill-dark) 0%,
-			var(--frame-bg) var(--sp-pill-stop)
-		);
+		/* ── THE CONTROLS ARE FLAT WELLS (⚓ NATE 2026-08-11) ──────────────────
+		   Both halves of the old treatment are gone, and they went together
+		   because they were one idea: a GRADIENT that manufactured an inner
+		   shadow, plus a 1.5px STROKE that drew the shape the gradient was too
+		   subtle to draw on its own. That idea predates the palette-definition
+		   round, which settled a real depth ladder (ground · raised · well) and
+		   a rule about what a border is for — structure, i.e. where a surface
+		   ENDS. A recessed control's extent is not in doubt; its DEPTH is the
+		   whole message, and a ground one rung down states that directly.
+
+		   So: ONE FLAT ROLE, no stroke. --surface-well is not a new value for
+		   this card, it is the role that already means "a ground cut into
+		   another ground" — the planner's chart and every input field wear it.
+		   The card's ground is --frame-bg (slate-800) and the controls are
+		   slate-900, the same one-rung step the rest of the system spends on a
+		   well.
+
+		   ↻ AND THEN THE RUNG MOVED UNDER IT, same day. This shipped at ΔL .027
+		   with a note that it might be too soft a step for a control with no
+		   stroke — and the fix landed in the RAMP rather than here: ⚓ Nate
+		   merged slate-900 and slate-950 into one rung at their midpoint (his
+		   read: 900 was desaturated against its siblings; the curve agreed and
+		   showed it was also the only rung breaking the ramp's C/L trend).
+		   ΔL is .060 now. ⚠ THE DECLARATION BELOW DID NOT CHANGE — it names the
+		   role, the role names the rung, and the rung moved. That is the layer
+		   law paying for itself; do not re-point this at a value.
+
+		   ⚠ HOVER DOES NOT TOUCH THIS. The card's rule since 2026-07-30 is that
+		   hover BRIGHTENS THE CONTENT and never fills — the con chip's ink, the
+		   R value's ink and the icons' wash all already move. Losing the stroke
+		   removed a second hover channel that was only ever doubling them. */
+		--sp-pill-fill: var(--surface-well);
 
 		/* Unset-VALUE ink: dimmed WHITE, stepped to the unset loadout icons'
 		   opacity ladder (0.4 rest → 0.65 hover) so an unset C0/R1 and the
 		   generic artifact/weapon art speak one "nothing here yet" voice —
 		   --muted beside the white-art icons read as a different (beige) state
-		   (Nate 2026-08-06). Mixed against --frame-bg — the pill fill's light
-		   end, i.e. the ground the values actually sit on — per the
-		   alpha-compositing law, never transparent white. Disabled needs no
-		   rung of its own: the shared 0.35 element dim multiplies this ink and
-		   the icons identically. */
-		--sp-unset-ink: color-mix(in srgb, white 40%, var(--frame-bg));
-		--sp-unset-ink-hover: color-mix(in srgb, white 65%, var(--frame-bg));
+		   (Nate 2026-08-06). Mixed against the ground the values ACTUALLY sit on
+		   per the alpha-compositing law, never transparent white. Disabled needs
+		   no rung of its own: the shared 0.35 element dim multiplies this ink and
+		   the icons identically.
+		   ↻ 2026-08-11: that ground is --sp-pill-fill, not --frame-bg. It used to
+		   be the gradient's LIGHT END, which was --frame-bg — a coincidence that
+		   stopped being true the moment the controls became a rung of their own.
+		   Reading the fill token keeps the mix correct through any depth change. */
+		--sp-unset-ink: color-mix(in srgb, white 40%, var(--sp-pill-fill));
+		--sp-unset-ink-hover: color-mix(in srgb, white 65%, var(--sp-pill-fill));
 
 		/* The portrait keeps the ELEMENT wash the roster cards use — a portrait
 		   wants a lit backing, not the chrome fill the controls wear, and the art
@@ -556,12 +560,20 @@
 		cursor: help;
 	}
 
-	/* Element glyph inline with the name — the in-game card language, at the
-	   roster card's .cc-el size. */
+	/* Element glyph inline with the name — the in-game card language.
+	   ↻ 2026-08-11 (⚓ NATE): 15 → 18px. It had been pinned to the roster card's
+	   .cc-el and both were sized against a --fs-md (12px) name; the size-up took
+	   the name to --fs-lg (14px) and left the glyph where it was, so the badge
+	   quietly stopped being the name's peer. 18 restores the ratio it was built
+	   at (1.25 × the name's size — glyph a touch taller than the cap, which is
+	   how the in-game cards draw it).
+	   ⚠ The roster card's .cc-el has the SAME staleness at both of its bands
+	   (14px and 16px names, still a 15px glyph) and is deliberately NOT swept
+	   here — that's a roster-card call, not a bench one. */
 	.sp-el-badge {
 		flex-shrink: 0;
-		width: 15px;
-		height: 15px;
+		width: 18px;
+		height: 18px;
 		background: none;
 		pointer-events: none;
 	}
@@ -579,7 +591,7 @@
 		width: var(--sp-pill-h);
 		display: grid;
 		place-items: center;
-		border: var(--sp-pill-border);
+		border: none;
 		border-radius: var(--r-round);
 		background: var(--sp-pill-fill);
 		color: var(--sp-unset-ink);
@@ -611,15 +623,15 @@
 		text-indent: -0.07em;
 		line-height: var(--lh-none);
 		cursor: pointer;
-		transition:
-			border-color 150ms ease,
-			color 150ms ease;
+		transition: color 150ms ease;
 		z-index: 1;
 	}
 	/* Unset hover climbs the icons' ladder (0.4 → 0.65 white); a SET value
-	   hovers to --text, exactly as before. */
+	   hovers to --text, exactly as before. ↻ 2026-08-11: the element-tinted
+	   border-color that used to ride along went with the stroke. The ink was
+	   always the louder half of this hover, and the element already speaks
+	   through the glyph, the portrait ring and the set value. */
 	.sp-cons-chip:hover:not(:disabled) {
-		border-color: color-mix(in srgb, var(--el) 45%, var(--frame-line-quiet));
 		color: var(--sp-unset-ink-hover);
 	}
 	.sp-cons-chip--set:hover:not(:disabled) {
@@ -652,7 +664,7 @@
 		align-items: center;
 		gap: 1px;
 		padding: 0;
-		border: var(--sp-pill-border);
+		border: none;
 		border-radius: var(--r-round);
 		background: var(--sp-pill-fill);
 	}
@@ -687,13 +699,16 @@
 	   wherever it sits. Paint alpha (the chrome fix's fill-opacity analog) has
 	   no layer and no rounding.
 
-	   The wash is THE PILL'S OWN GRADIENT with the alpha in its color stops.
-	   v3 was a flat translucent --frame-bg, and Nate spotted the zones as
-	   lighter DISCS punched in the pill's gradient — a flat wash can't hide on
-	   a ramp. The same ramp × α over the same ramp is invisible wherever the
-	   icon isn't (α·g + (1−α)·g = g) and dims icon pixels toward their exact
-	   local ground; the zones span the pill's full interior height, so the
-	   stops line up with the ground's.
+	   The wash is THE PILL'S OWN GROUND at an alpha. The rule it has to satisfy
+	   is that the wash is invisible wherever the icon ISN'T (α·g + (1−α)·g = g),
+	   so it must be the same paint as the ground beneath it — which is why the
+	   v3 flat --frame-bg failed in 2026-08-06: the pill was a GRADIENT then, and
+	   a flat wash punched lighter DISCS into it (Nate spotted them at zoom).
+	   ↻ 2026-08-11: the pill went FLAT (see --sp-pill-fill), so the gradient
+	   this rebuilt is gone and the wash is a flat colour again — the failed v3,
+	   made correct by the ground finally being flat too. It now reads
+	   --sp-pill-fill ITSELF rather than a parallel copy of the ramp, so the two
+	   cannot desync: change the ground and the wash follows by construction.
 
 	   The hover ease rides the REGISTERED property --sp-wash-a (@property
 	   below): the percentage interpolates and the stops re-resolve per frame.
@@ -707,11 +722,7 @@
 		inset: 0;
 		border-radius: inherit;
 		--sp-wash-a: 15%;
-		background: linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--sp-pill-dark) var(--sp-wash-a), transparent) 0%,
-			color-mix(in srgb, var(--frame-bg) var(--sp-wash-a), transparent) var(--sp-pill-stop)
-		);
+		background: color-mix(in srgb, var(--sp-pill-fill) var(--sp-wash-a), transparent);
 		transition: --sp-wash-a 150ms ease;
 		pointer-events: none;
 	}

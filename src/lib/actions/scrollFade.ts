@@ -1,0 +1,119 @@
+/**
+ * scrollFade — a soft roll-off at a scroller's live edges.
+ *
+ * ⚓ NATE 2026-08-11: "right now, if we switch to the roster, cards and filter
+ * column get cut off sharp at their top and bottom edges." And the filter rail
+ * has a second, sharper problem: it is a column of SEPARATE groups with scene
+ * between them, so a group cut off at the viewport edge looks exactly like a
+ * column that ended. A hard cut carries no information; a fade does.
+ *
+ * ⚠ WHY THIS IS A MASK AND NOT A GRADIENT SCRIM. The usual trick — an overlay
+ * fading from the container's ground to transparent — needs a ground to fade
+ * FROM. Both consumers sit on the bare dimmed scene (the Team Builder's main
+ * box has no frame, and its aside is `asideBare`, a gutter of self-painting
+ * groups), so there is no colour a scrim could be. A scrim in ANY colour would
+ * be a smear of that colour over the live world. The mask removes the content's
+ * own alpha instead, which is the only version of this that works over a scene.
+ * ⛔ So do not "simplify" this into a ::before gradient later — it will look
+ * right only until someone looks at it over a bright part of the sky.
+ *
+ * WHAT IT DOES NOT DO, ON PURPOSE: a fade only appears at an edge that has
+ * content beyond it, and it GROWS over the first `--scroll-fade` pixels of
+ * travel rather than snapping on. A permanent top fade dims the first row for
+ * no reason and reads as a rendering bug; a fade that pops the instant you
+ * nudge the wheel reads as a flicker. A scroller with nothing to scroll gets no
+ * edges at all — which is what makes this safe to attach unconditionally.
+ *
+ * ⚠ THE LENGTH LIVES IN CSS, NOT HERE. `--scroll-fade` on the element is the
+ * knob (see .scroll-fade in app.css); this reads it so the clamp and the
+ * gradient can never disagree. Tune it per consumer — the roster's cards want
+ * more roll-off than the rail's small groups.
+ *
+ * ⚠ REAL-SAFARI WATCH ITEM. A mask makes the scroller a composited layer, and
+ * these scrollers live inside .tool-page, which is WAAPI-transform-animated
+ * during a tool nav — the exact shape the sub-pixel laws warn about (WebKit
+ * rasterizes such a subtree at rounded device coordinates). The whole page is
+ * moving during that window, so a pixel of edge jitter should be invisible; if
+ * it is not, the fix is to drop the mask for the duration of the drift, not to
+ * retune the gradient.
+ */
+import type { Action } from 'svelte/action';
+
+/** Fallback when the element declares no `--scroll-fade` (it always should). */
+const DEFAULT_LENGTH = 32;
+
+/**
+ * Sub-pixel scroll offsets and fractional layout mean `scrollHeight` and
+ * `clientHeight` can differ by a hair on a scroller with nothing to scroll.
+ * Below this, an edge is AT the end.
+ */
+const EPSILON = 1;
+
+export const scrollFade: Action<HTMLElement> = (node) => {
+	let length = DEFAULT_LENGTH;
+	let frame = 0;
+
+	function readLength(): void {
+		const declared = parseFloat(getComputedStyle(node).getPropertyValue('--scroll-fade'));
+		if (Number.isFinite(declared) && declared > 0) length = declared;
+	}
+
+	function apply(top: number, bottom: number): void {
+		node.style.setProperty('--scroll-fade-top', `${top.toFixed(2)}px`);
+		node.style.setProperty('--scroll-fade-bottom', `${bottom.toFixed(2)}px`);
+	}
+
+	function measure(): void {
+		frame = 0;
+		const travel = node.scrollHeight - node.clientHeight;
+		if (travel <= EPSILON) {
+			apply(0, 0);
+			return;
+		}
+		// Each edge's fade is its DISTANCE from that end, capped at the full
+		// length — so it ramps in over the first (and last) `length` px of
+		// travel and is exactly 0 when the edge is the end of the content.
+		apply(
+			Math.max(0, Math.min(node.scrollTop, length)),
+			Math.max(0, Math.min(travel - node.scrollTop, length))
+		);
+	}
+
+	/** Scroll fires per frame; coalesce so a fling does one measure per paint. */
+	function schedule(): void {
+		if (!frame) frame = requestAnimationFrame(measure);
+	}
+
+	// The content's height changes with no scroll and no window resize — a facet
+	// filter re-cuts the grid, the progressive reveal appends tiles in rAF
+	// batches, a chip row rewraps. Observing the node alone would miss all of it
+	// (a scroller's own content box excludes its overflow), so the CHILDREN are
+	// observed too, and a childList watcher keeps that set current. childList
+	// only, never subtree: the roster appends over a hundred tiles a few at a
+	// time, and each one is a subtree mutation we would otherwise re-handle.
+	const ro = new ResizeObserver(() => {
+		readLength();
+		schedule();
+	});
+	function observeChildren(): void {
+		for (const child of node.children) ro.observe(child);
+	}
+	const mo = new MutationObserver(observeChildren);
+
+	ro.observe(node);
+	observeChildren();
+	mo.observe(node, { childList: true });
+	node.addEventListener('scroll', schedule, { passive: true });
+
+	readLength();
+	measure();
+
+	return {
+		destroy() {
+			if (frame) cancelAnimationFrame(frame);
+			node.removeEventListener('scroll', schedule);
+			ro.disconnect();
+			mo.disconnect();
+		}
+	};
+};

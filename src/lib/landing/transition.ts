@@ -238,6 +238,11 @@ export type SceneLayerKind = 'composition' | 'dim';
  *      glass well  (slate-900)    4.52 → 5.48:1
  *    So this is a correction as much as a preference, and it restores real
  *    headroom rather than just clearing the bar.
+ *    ⏱ Those three are a SNAPSHOT of what .75 bought on 2026-08-10, kept as
+ *    the record of this decision — they are not live figures. Both glass
+ *    alphas moved later that day (.68/.55 → .58/.45) and slate-900 itself
+ *    moved on 2026-08-11 (merged with slate-950). /styleguide § Palette census
+ *    computes all of it from the tokens and is the number to trust.
  *
  *  ⚠ --muted IS STILL NOT LEGAL ON THE OPEN SCENE: 2.71 → 4.16:1, better but
  *  under 4.5. Text directly on the world gets --text and nothing quieter. If

@@ -105,7 +105,7 @@
      roster at whatever would fill it — which is why this wants to be directly
      above the roster rather than tucked into a band. -->
 <div class="tb-cover">
-	<h2 class="cover-head">Team covers</h2>
+	<h2 class="cover-head">This team covers</h2>
 
 	<div class="cover-run">
 		{#if lead.length > 0}
@@ -226,7 +226,25 @@
 	   are unaffected: a max-width does not stop a flex item shrinking, so the run
 	   still wraps to three rows when the column genuinely cannot hold two. */
 	.cover-run {
-		--cover-measure: 1000px;
+		/* ↻ ⚓ NATE 2026-08-11: 1000 → 1040, and the reason is the TYPE SIZE-UP,
+		   not the layout. The chips went --fs-sm → --fs-md with everything else,
+		   ~9% wider each across fifteen of them, and the run tipped into a third
+		   row — the exact failure this cap exists to prevent, caused this time by
+		   a change nowhere near it.
+		   MEASURED rather than estimated: the run needs 826px to hold two rows at
+		   12px, and 1000 was giving it 807.4 (= 1000 − 175 − 17.6). 1040 gives it
+		   847.4, so there is ~21px of slack — enough that a label edit or a font
+		   metric shift does not tip it again, without widening the block enough
+		   to change its character.
+		   ⚠ RE-MEASURE THIS IF THE CHIP TYPE MOVES AGAIN. The relationship is
+		   cap = required + --lead-column + --cover-gap, and only the first term
+		   depends on the font.
+
+		   ↻ 2026-08-11: THE NUMBER MOVED UP A LEVEL. It is --tb-measure on
+		   .tb-stack now — the Atlas grid below is centred on the same column and
+		   has to agree with this to the pixel (⚓ Nate spotted the ~86px it was
+		   out by). The local fallback keeps this component honest in isolation. */
+		--cover-measure: var(--tb-measure, 1040px);
 		/* 🎛️ One column of lead pills, at the width the longest of them takes —
 		   "Sprawling Greenery" with its element icon, the widest label either
 		   family can produce. A RESERVATION, not a width: the cluster is still

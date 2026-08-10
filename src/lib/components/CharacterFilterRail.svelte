@@ -7,6 +7,7 @@
 	import type { SvelteSet } from 'svelte/reactivity';
 	import type { GridFilters } from '$lib/characterFilters';
 	import Mark from './Mark.svelte';
+	import { scrollFade } from '$lib/actions/scrollFade';
 
 	// ---------------------------------------------------------------------------
 	// THE FILTER COLUMN — search + the identity chip groups (element / weapon /
@@ -96,7 +97,7 @@
 	}
 </script>
 
-<aside class="cg-rail" aria-label="Filters">
+<aside class="cg-rail scroll-fade" aria-label="Filters" use:scrollFade>
 	{#if headerEnd}
 		<div class="cg-rail-head">{@render headerEnd()}</div>
 	{/if}
@@ -196,6 +197,14 @@
 	   the rings' left and right edges. */
 	.cg-rail {
 		--cg-gutter: 6px;
+		/* 🎛️ The roll-off (.scroll-fade + use:scrollFade), and here it is doing a
+		   JOB rather than a polish: ⚓ NATE — because the column is SEGMENTED with
+		   gaps, a group clipped at the viewport edge reads as the column simply
+		   ending, so the rail never signalled that there was more below. A fading
+		   edge is the signal.
+		   Shorter than the grid's 36: these groups are ~60–100px tall, and a fade
+		   long enough for a card would dissolve half a filter section. */
+		--scroll-fade: 24px;
 
 		flex: 1;
 		min-height: 0;

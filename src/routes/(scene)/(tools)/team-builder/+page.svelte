@@ -21,6 +21,11 @@
 	import { benchBand } from '$lib/benchBand.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import ToolColumns from '$lib/components/ToolColumns.svelte';
+	// The Atlas cards fill their column now, so on a short viewport they CLIP —
+	// which is exactly the case the fade exists for. Harmless on Roster/Compare:
+	// their inner scroller does the travelling, so this one measures none and
+	// paints no edges.
+	import { scrollFade } from '$lib/actions/scrollFade';
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
 	import DocumentActions from '$lib/components/DocumentActions.svelte';
 	import BandMenu from '$lib/components/BandMenu.svelte';
@@ -970,7 +975,19 @@
 		     `max-height: 100%` here — a percentage against a flex-derived
 		     height is exactly the shape that silently failed on 2026-08-08, and
 		     probe-bench-align's bounded-scroller check is what catches it. -->
-		<section class="tb-source" class:tb-source--fill={sourceTab !== 'atlas'}>
+		<!-- ↻ 2026-08-11: THE ATLAS CARDS VIEW FILLS TOO. It was content-height on
+		     the reasoning that four cards are a short, known thing — true while
+		     the cards asserted their own height, and false the moment they had to
+		     FIT the column instead (⚓ Nate: "the cards aren't fitting on the
+		     screen vertically"). A grid can only size itself to the space left
+		     over if something gives it a definite one. The drill and slots views
+		     keep the old behaviour: those are lists, and a list should end where
+		     its content does. -->
+		<section
+			class="tb-source scroll-fade"
+			class:tb-source--fill={sourceTab !== 'atlas' || atlasMode === 'cards'}
+			use:scrollFade
+		>
 			{#if sourceTab === 'atlas'}
 				<div class="tb-atlas">
 					{#if atlasMode === 'slots' && slotRows.length > 0}
@@ -978,13 +995,13 @@
 							<p class="tb-atlas-lead">
 								Alternatives for each character on your team — same element and role.
 							</p>
-							<button class="btn" onclick={backToCards}
+							<button class="btn btn--glass ctx-glass" onclick={backToCards}
 								>Browse all roles <Mark name="forward" /></button
 							>
 						</div>
 						{#each slotRows as row (row.slotEntry.id)}
 							<section class="tb-slotrow">
-								<header class="tb-slotrow-head">
+								<header class="tb-slotrow-head ctx-glass">
 									{#if hasAvatar(row.slotEntry.id)}
 										<img
 											class="tb-slotrow-avatar"
@@ -1033,7 +1050,9 @@
 						{/each}
 					{:else if atlasMode === 'drill' && drilledCategory}
 						<div class="tb-atlas-head">
-							<button class="btn" onclick={backToCards}><Mark name="back" /> All roles</button>
+							<button class="btn btn--glass ctx-glass" onclick={backToCards}
+								><Mark name="back" /> All roles</button
+							>
 							<div class="tb-drill-title">
 								{#if drilledCategory.position}
 									<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
@@ -1044,7 +1063,7 @@
 						</div>
 						{#each drillRows as row (row.key)}
 							<section class="tb-slotrow">
-								<header class="tb-slotrow-head">
+								<header class="tb-slotrow-head ctx-glass">
 									{#if row.kind === 'element'}
 										<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
 										<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
@@ -1204,6 +1223,17 @@
 	   they answer two questions. */
 	.tb-stack {
 		--tb-section-gap: 2rem;
+		/* 🎛️ THE SURFACE'S CENTRED MEASURE — how wide a centred block on this
+		   column is allowed to get. One consumer today: the capability run's cap
+		   (CoveragePanel reads it with a local fallback).
+		   ↻ It briefly had two. The Atlas grid was aligned to it on 2026-08-11
+		   so the cards would match the chips above them, and then released the
+		   same day when the cards went to a full-width row of four (⚓ Nate: "they
+		   can use all the space available to them, not just the chip area"). Kept
+		   at this level rather than pushed back down because the question it
+		   answers — what is a centred block's measure HERE — belongs to the
+		   surface, and the next centred block will want the same answer. */
+		--tb-measure: 1040px;
 		flex: 1;
 		min-width: 0;
 		min-height: 0;
@@ -1297,10 +1327,19 @@
 		color: var(--ink-active);
 	}
 	/* Unreachable, not merely unpressed — see `compareReady`. Kept legible
-	   enough to read as a place you could get to, unlike .btn:disabled's 0.3. */
+	   enough to read as a place you could get to, unlike .btn:disabled's 0.3.
+	   ↻ ⚓ NATE 2026-08-11: the cursor goes to HELP, not default. The `title`
+	   already explains why you can't get here; `default` is the cursor for dead
+	   space and gives no reason to wait for it, where a question mark says "this
+	   has an explanation" the instant you arrive. Same idiom as the coverage
+	   chips and the lead pills — cursor:help wherever the answer is in a tooltip.
+	   ⚠ This works only because .tb-nav-item is NOT a .btn. The global
+	   `.btn:disabled` sets `pointer-events: none`, which would kill the cursor
+	   AND the title together — so if this ever adopts .btn, the tooltip goes
+	   with it and the affordance has to move to a wrapper. */
 	.tb-nav-item:disabled {
 		opacity: 0.45;
-		cursor: default;
+		cursor: help;
 	}
 
 	/* THE SELECTED PLATE. It CLAIMS .ctx-light rather than naming a light token,
@@ -1463,9 +1502,15 @@
 	   started flush against the band above and the scroller's edge below —
 	   sentences had been doing the spacing's job. padding-block does it now,
 	   and the same 0.8rem still separates the drill's rows from each other. */
+	/* flex:1 + min-height:0 so the cards view can hand its grid a definite
+	   height to fill (see the markup note). Inert on the drill and slots views —
+	   their .tb-source is content-height, and flex:1 against an indefinite
+	   parent grows nothing. */
 	.tb-atlas {
 		display: flex;
 		flex-direction: column;
+		flex: 1;
+		min-height: 0;
 		padding-block: 0.5rem 0.75rem;
 		gap: 0.8rem;
 	}
@@ -1491,22 +1536,42 @@
 		flex-wrap: wrap;
 	}
 	/* ── RP-arrival slot rows ─────────────────────────────────── */
+	/* ⛔ THE HAIRLINE IS GONE (⚓ NATE 2026-08-11). It marked where a row began;
+	   the header plate now does that far more plainly, and a rule above a plate
+	   says the same thing twice. On the open scene two weak signals read worse
+	   than one clear one. */
 	.tb-slotrow {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
-		padding-top: 0.6rem;
-		border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+		gap: 0.6rem;
 	}
+	/* ⚓ NATE 2026-08-11 — A GLASS PANE, not a night scrim. These row headers sit
+	   directly on the dimmed scene (the TB surface has had no frame since
+	   2026-08-08), and the first attempt made them the debut consumer of
+	   `.night-ribbon` — which was the right FAMILY and the wrong member: ⚓ "the
+	   dark panel is interesting and may get a use somewhere, but this one doesn't
+	   quite cut it." So they take --glass-panel, the same material as the band
+	   plates above them, which also makes the tool read as one set of surfaces
+	   rather than two.
+	   ✅ AND IT SETTLES THE INK QUESTION THE SCRIM LEFT OPEN. A night paint
+	   carries no ink ladder by law, so the count had to sit at --text and recede
+	   by size alone. Glass is a MATERIAL WITH A LADDER — --muted clears its floor
+	   on the panel stop (4.74:1 against a star, measured in app.css) — so the
+	   second voice comes back, and by the right mechanism. */
 	.tb-slotrow-head {
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
+		gap: 0.55rem;
+		padding: 0.45rem 0.8rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
 	}
+	/* Up with the name — an 18px heading beside a 30px portrait read as a label
+	   stuck to a chip; 34 keeps the portrait the row's anchor. */
 	.tb-slotrow-avatar,
 	.tb-slotrow-initials {
-		width: 30px;
-		height: 30px;
+		width: 34px;
+		height: 34px;
 		border-radius: 50%;
 		flex: none;
 	}
@@ -1520,12 +1585,19 @@
 		justify-content: center;
 		background: var(--bg);
 		color: var(--muted);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 	}
+	/* ↻ ⚓ NATE 2026-08-11: --fs-lg → --fs-2xl. "The font sizes in those headers
+	   can probably go up" — and two rungs rather than one, because the job
+	   changed with the ground. This was dense-body-sized when it labelled a row
+	   inside a framed panel; it is now the heading of a block standing on the
+	   world, and content on open ground has to carry its own presence (the same
+	   argument .banner makes for sitting a rung above .kicker). It still lands a
+	   clear step below the Atlas header above it at 4xl. */
 	.tb-slotrow-name {
 		font-family: var(--font-display);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-2xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		color: var(--text);
@@ -1540,9 +1612,15 @@
 		height: 18px;
 		object-fit: contain;
 	}
+	/* ↻ 2026-08-11: --fs-xs → --fs-md with the header. The ink stays --muted, and
+	   the reason is worth a line because it briefly wasn't: while the header was
+	   a night scrim this had to be --text, since a night paint carries no ink
+	   ladder by law. On glass it does — the panel stop clears 4.74:1 for --muted
+	   against a star — so the count can recede by INK again rather than by size
+	   alone. Choosing the material chose the ladder. */
 	.tb-slotrow-count {
 		margin-left: auto;
-		font-size: var(--fs-xs);
+		font-size: var(--fs-md);
 		color: var(--muted);
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
@@ -1551,8 +1629,8 @@
 		text-transform: capitalize;
 	}
 	.tb-drill-elicon {
-		width: 18px;
-		height: 18px;
+		width: 22px;
+		height: 22px;
 		object-fit: contain;
 		flex: none;
 	}
