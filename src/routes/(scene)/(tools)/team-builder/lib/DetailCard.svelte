@@ -452,17 +452,26 @@
 		color: var(--text);
 		cursor: pointer;
 	}
+	/* ↻ 2026-08-11: --accent, not --el-geo-main. A wishlist is not a Geo fact —
+	   that token was borrowed for being the gold-coloured one, which is exactly
+	   the drift the layer law exists to catch. Same correction .cc-wish took on
+	   the roster card (it had borrowed --el-geo-HI for the same reason). */
 	.dc-own-btn--wish.is-active {
-		border-color: color-mix(in srgb, var(--el-geo-main) 65%, var(--border));
-		background: color-mix(in srgb, var(--el-geo-main) 18%, transparent);
+		border-color: var(--sel-ring);
+		background: var(--sel-fill);
 	}
 
 	.dc-stub-note {
 		margin: 0;
 		padding: 0.55rem 0.7rem;
 		border-radius: 3px;
-		border: 1px solid color-mix(in srgb, var(--el-geo-main) 40%, transparent);
-		background: color-mix(in srgb, var(--el-geo-main) 8%, transparent);
+		/* ↻ 2026-08-11: --ui-danger, not --el-geo-main. This note reports the SAME
+		   fact the ∅ marker does — frame timing isn't curated — and the
+		   dire-retirement round settled that as a DATA-QUALITY state rather than a
+		   domain colour. It was wearing a borrowed element token; now the note and
+		   the mark that summarises it speak with one voice. */
+		border: 1px solid color-mix(in srgb, var(--ui-danger) 40%, transparent);
+		background: var(--ui-danger-soft);
 		font-size: var(--fs-md);
 		line-height: var(--lh-normal);
 		color: var(--text);

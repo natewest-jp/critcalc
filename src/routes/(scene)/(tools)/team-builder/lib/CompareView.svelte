@@ -543,7 +543,13 @@
 	.cmp-chip-stub {
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
-		color: color-mix(in srgb, var(--el-geo-main) 90%, var(--muted));
+		/* ↻ 2026-08-11: --ui-danger, not --el-geo-main. The "stub" label reports
+		   uncurated frame timing, the same fact as the ∅ marker and DetailCard's
+		   stub note — a data-quality state, not a domain colour. A TOKEN
+		   correction only; the Compare view's own restyle is deliberately parked
+		   until after the Rotation Planner round (⚓ Nate), and this leaves it one
+		   less inherited bug to carry into it. */
+		color: color-mix(in srgb, var(--ui-danger) 80%, var(--muted));
 	}
 	.cmp-chip-remove {
 		background: none;

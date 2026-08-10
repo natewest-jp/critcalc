@@ -1034,16 +1034,19 @@
 						{#if atlasMode === 'slots' && slotRows.length > 0}
 							{#each slotRows as row (row.slotEntry.id)}
 								<section class="tb-slotrow">
-									<header class="tb-slotrow-head ctx-glass">
+									<header
+										class="tb-slotrow-head ctx-glass"
+										style:--el-color={elColor(row.slotEntry.element)}
+									>
 										{#if hasAvatar(row.slotEntry.id)}
 											<img
-												class="tb-slotrow-avatar"
+												class="tb-slotrow-avatar ctx-dark"
 												src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
 												alt=""
 												loading="lazy"
 											/>
 										{:else}
-											<span class="tb-slotrow-initials"
+											<span class="tb-slotrow-initials ctx-dark"
 												>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
 											>
 										{/if}
@@ -1508,6 +1511,10 @@
 		opacity: 0.4;
 		cursor: default;
 	}
+	/* Same correction as .tb-slotrow-avatar, from a different starting point: a
+	   raw rgba(0,0,0,.5) rather than a token. Half-black over an unknown ground
+	   is the alpha-compositing law's own counter-example — the result depended on
+	   whatever the audition strip happened to be sitting on. */
 	.tb-cand-avatar {
 		display: flex;
 		align-items: center;
@@ -1516,7 +1523,7 @@
 		height: 22px;
 		border-radius: 50%;
 		overflow: hidden;
-		background: rgba(0, 0, 0, 0.5);
+		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
 		flex-shrink: 0;
 	}
 	.tb-cand-avatar img {
@@ -1622,15 +1629,34 @@
 		border-radius: 50%;
 		flex: none;
 	}
+	/* ── The disc behind these avatars ────────────────────────────────────────
+	   ↻ 2026-08-11: they were `background: var(--bg)` — the PAGE ground, and the
+	   last two instances of the reach this round set out to remove (the bench's
+	   backing and the roster card's portrait were the other two). Here it was
+	   worse than off-ramp: these sit ON A GLASS PLATE, so a disc borrowing the
+	   colour of the world outside the tools was painting a hole through a pane.
+
+	   They take the element wash instead, which makes EVERY character portrait
+	   on the site one recipe — the bench's 68px disc, the roster card's square,
+	   and these. Flat rather than a gradient: at 34px a two-stop ramp has ~17px
+	   to travel in and reads as a single muddy tone, so this is just the wash's
+	   tinted end.
+	   ⚠ .ctx-dark is CLAIMED on the disc, and it is doing real work: --surface-
+	   well in ctx-glass is --glass-well, i.e. TRANSLUCENT, and the band-plates
+	   round's rule is that alpha stacks — glass on glass is not a ground. The
+	   flip gives the mix a real opaque rung to sit on, which is the same reason
+	   .cc-portrait claims it. */
+	.tb-slotrow-avatar,
+	.tb-slotrow-initials {
+		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
+	}
 	.tb-slotrow-avatar {
 		object-fit: cover;
-		background: var(--bg);
 	}
 	.tb-slotrow-initials {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--bg);
 		color: var(--muted);
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
