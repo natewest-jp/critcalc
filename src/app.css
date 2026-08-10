@@ -112,13 +112,17 @@
 	   ⚠ WHAT SETS THE FLOOR HERE IS A STAR. Text on glass is limited by the
 	   WORST pixel behind it, never the average, and the worst pixel is always a
 	   star — a tiny, very bright point. Both stops clear 4.5:1 for --muted (the
-	   dimmer of the two band voices) against a star, UNBLURRED: panel 4.54:1,
-	   well 5.01:1. That is deliberate — see --glass-blur for why they cannot be
+	   dimmer of the two band voices) against a star, UNBLURRED: panel 4.53:1,
+	   well 5.00:1. That is deliberate — see --glass-blur for why they cannot be
 	   allowed to depend on the blur.
-	   ⚠ THE PANEL STOP IS NOW CLOSE TO THE FLOOR — it was 4.92:1 a rung ago, and
-	   a third rung of lift (slate-600) would take --muted under 4.5:1 against a
-	   star. If this is ever asked to go lighter again, the alpha has to come UP
+	   ⚠ THE PANEL STOP IS NOW ALL BUT ON THE FLOOR — it was 4.98:1 a rung ago,
+	   and slate-600 at this alpha measures 3.99:1. There is no third rung of
+	   lift: if this is ever asked to go lighter again, the alpha has to come UP
 	   with it, or --muted has to.
+	   ⚠ AND THE TWO STOPS ARE NOT INTERCHANGEABLE. slate-700 at the WELL's .55
+	   is 4.29:1 — under the floor — so the well cannot follow the panel up the
+	   ramp. /styleguide § Palette census computes the whole grid; read it before
+	   moving either of these.
 
 	   ⚠ Glass and the wash MULTIPLY: what reaches the eye is
 	   (1 − glass)(1 − TOOL_DIM). At the old dim of .85 these same stops would

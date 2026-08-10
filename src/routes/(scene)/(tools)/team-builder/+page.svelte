@@ -1241,9 +1241,12 @@
 
 	   --nav-plate-h: the selected plate is TALLER THAN THE RAIL on purpose —
 	   that overhang is most of what makes it read as a plate laid on the strip
-	   rather than a selected cell inside it. The rail is BAND_B_H (36px), so 40
-	   stands 2px proud at each end (⚓ Nate 2026-08-10, down from 3). Move one,
-	   look at the other.
+	   rather than a selected cell inside it. The rail is BAND_B_H (36px), so 38
+	   stands 1px proud at each end (⚓ Nate 2026-08-10, walked down 42 → 40 → 38
+	   across the day). Move one, look at the other.
+	   ⚠ 1px is the floor for this idiom, not a waypoint on the way to 0: at 36
+	   the plate stops being proud of anything and becomes a selected cell inside
+	   the rail, which is the shape this whole treatment exists to avoid.
 
 	   --nav-fill: how much of the rail the three items take between them.
 	   ⚓ NATE: "make the buttons wider than their text requires… not entirely
@@ -1252,7 +1255,7 @@
 	   from the rail, never from their labels. Rail visible at both ends is what
 	   keeps the group reading as three plates ON a strip. */
 	.tb-nav {
-		--nav-plate-h: 40px;
+		--nav-plate-h: 38px;
 		--nav-fill: 76%;
 		width: var(--nav-fill);
 		display: flex;

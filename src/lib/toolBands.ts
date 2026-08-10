@@ -60,15 +60,26 @@
 import { TOOL_GUTTER } from './toolGutter.ts';
 
 /**
- * The DOCUMENT band's height. Sized to seat a `.tab--lg` (29px) with a little
- * air, since the document tabs are the tallest thing it carries.
+ * The DOCUMENT band's height — ⚓ NATE 2026-08-10: "only the height of its
+ * tallest buttons". It is a MEASURED number, not a designed one: 26.72px is
+ * what a `.tab` comes out at (0.32rem of padding top and bottom around an 11px
+ * line at 1.5), and it is the tallest thing band A carries — the `.btn`s are
+ * 24.22 and the icon-only ones 22. Rounded up to 27 so nothing is clipped by a
+ * fraction of a pixel.
  *
- * ↻ 2026-08-09: band A no longer PAINTS anything (see ToolStack) — this is now
- * just the row its free-standing glass controls are centred in. The number is
- * unchanged on purpose: the controls kept their size, so the row they need did
- * too, and every downstream offset stays where it was.
+ * ↻ It was 36 from the toolbar round until now, which was right while band A
+ * was a RAIL that seated its controls with air around them. Band A stopped
+ * being a rail on 2026-08-09 (see ToolStack) and the air went on being reserved
+ * anyway — 9px of nothing that read as the document row hanging away from the
+ * view row. With no ground there is nothing for a control to be inset from, so
+ * the row is exactly its contents.
+ *
+ * ⚠ RE-MEASURE THIS IF A BAND A CONTROL'S TYPE OR PADDING MOVES. The row no
+ * longer has slack to absorb a taller control: it would simply overflow, and
+ * the first thing you would see is the bench ribbon's head landing 1–2px off
+ * (RIBBON_HEAD derives from BAND_STACK_TO_SURFACE, below).
  */
-export const BAND_A_H = 36;
+export const BAND_A_H = 27;
 
 /**
  * The VIEW band's height.
@@ -123,19 +134,19 @@ export const BAND_STACK_GAP = TOOL_GUTTER;
 /**
  * Bare scene BETWEEN the two bands.
  *
- * ↻ ⚓ NATE 2026-08-10: HALF the gutter, and the reason it stopped being the
- * full one is that the two bands stopped being two tiers. It landed at
- * TOOL_GUTTER the day they were split, when the point being made was that they
- * are separate objects; now that band A is a run of loose plates and band B is
- * a run of loose plates, a full gutter between them read as two unrelated rows
- * rather than as one header with two lines in it. Half is enough to keep them
- * apart and not enough to divorce them.
+ * ↻ ⚓ NATE 2026-08-10, TWICE IN A DAY: TOOL_GUTTER → half of it → this, the gap
+ * BETWEEN BUTTONS. The two bands are no longer two tiers with a rhythm between
+ * them; they are one grid of plates that happens to be two rows deep, and the
+ * distance between two plates in that grid should not depend on whether they
+ * are side by side or stacked. So the header spaces itself the way its own
+ * contents do.
  *
- * ⚠ It is a HALF of the rhythm, not a new number. BAND_STACK_GAP (band stack →
- * tool surface) stays the full gutter, so the header still separates from the
- * content more than it separates from itself.
+ * ⚠ It is BAND_ITEM_GAP, not a number of its own — move that and this moves.
+ * BAND_STACK_GAP (band stack → tool surface) stays the full gutter, which is
+ * what now carries the whole of the separation between the header and the
+ * content: the header no longer separates from itself at all.
  */
-export const BAND_GAP = TOOL_GUTTER / 2;
+export const BAND_GAP = BAND_ITEM_GAP;
 
 /**
  * Interior padding at each end of a band. Matches the planner frame's own

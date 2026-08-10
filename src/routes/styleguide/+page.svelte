@@ -22,6 +22,7 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import { MARK_NODES, type MarkName } from '$lib/marks.generated';
 	import { BAND_A_H, BAND_B_H, BAND_GAP, BAND_STACK_GAP, BAND_RADIUS } from '$lib/toolBands';
+	import { TOOL_DIM } from '$lib/landing/transition';
 
 	type Token = { name: string; value: string; resolved: string };
 
@@ -231,8 +232,167 @@
 		}
 	];
 
+	// ═══════════════════════════════════════════════════════════════════════════
+	// THE PALETTE CENSUS (⚓ NATE 2026-08-10) — "we have this great palette that
+	// we worked to define, but we don't have any settled decisions about how we
+	// use them."
+	//
+	// This is not another swatch chart; #tokens already lists every rung. It
+	// answers the question a swatch chart can't: FOR EACH RUNG, WHO IS ALREADY
+	// SPEAKING FOR IT — and therefore which rungs are free, which are doing
+	// several jobs at once, and which exist only because a ramp is a ramp.
+	//
+	// Everything here is COMPUTED from app.css, never listed by hand. A census
+	// maintained by hand is wrong within a week and worse than none, because it
+	// reads as authoritative; this one cannot drift for the same reason the rest
+	// of the page cannot.
+	//
+	// ⚠ WHY app.css IS THE WHOLE SEARCH SPACE. The layer law — a NUMBER means a
+	// primitive and no component may name one — is grep-enforced in
+	// timelineExport.mirror.test.ts. So every consumer of a rung is in this one
+	// file by construction. If that test is ever relaxed, this census silently
+	// stops being complete.
+	// ═══════════════════════════════════════════════════════════════════════════
+
+	/** Where a declaration lives. The contexts matter as much as the value: the
+	 *  same rung can be a ground in one and an ink in another, which is exactly
+	 *  the double duty the parchment family was chosen for. */
+	const CTX_SELECTORS = ['.ctx-dark', '.ctx-light', '.ctx-glass'];
+
+	type Claim = { role: string; where: string };
+
+	const allDecls = [
+		...tokens.map((t) => ({ ...t, where: ':root' })),
+		...CTX_SELECTORS.flatMap((sel) =>
+			parseContextTokens(appCss, sel).map((t) => ({ ...t, where: sel }))
+		)
+	].filter((d) => !rampNames.has(d.name) && !d.name.startsWith('--glass-'));
+
+	const sameColor = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+	/**
+	 * Two kinds of claim, and the difference is the point.
+	 *
+	 *   IS   — a role that resolves TO this rung. `--surface: var(--slate-800)`.
+	 *          The rung is painted as itself; move it and the role moves with it.
+	 *   MIX  — a role that names the rung inside an expression and comes out
+	 *          somewhere else. `--btn-face: color-mix(… var(--slate-800))`. The
+	 *          rung is an INGREDIENT, and a role like that is the reason a rung
+	 *          can look unused while being load-bearing.
+	 */
+	function claimsFor(rung: Token): { is: Claim[]; mix: Claim[]; loose: number } {
+		const mention = `var(${rung.name})`;
+		const is: Claim[] = [];
+		const mix: Claim[] = [];
+		for (const d of allDecls) {
+			if (sameColor(d.resolved, rung.resolved)) is.push({ role: d.name, where: d.where });
+			else if (d.value.includes(mention)) mix.push({ role: d.name, where: d.where });
+		}
+		// Everything else in app.css that names the rung directly — the rule-level
+		// overrides (`.tb-nav-item.active { --frame-line: … }` and friends). Not
+		// attributed to a role, but counted, so a rung is never reported free
+		// while a rule somewhere is leaning on it.
+		const total = appCss.split(mention).length - 1;
+		return { is, mix, loose: Math.max(0, total - is.length - mix.length) };
+	}
+
+	const census = (name: string) =>
+		tokens
+			.filter((t) => new RegExp(`^--${name}-\\d+$`).test(t.name))
+			.map((rung) => ({ rung, ...claimsFor(rung) }));
+
+	const isFree = (r: { is: Claim[]; mix: Claim[]; loose: number }) =>
+		r.is.length === 0 && r.mix.length === 0 && r.loose === 0;
+
+	const slateCensus = census('slate');
+	const parchmentCensus = census('parchment');
+	const freeRungs = [...slateCensus, ...parchmentCensus].filter(isFree);
+
+	/** The ramps this section does NOT lay out row by row — Nate asked for the
+	 *  two grounds and the glass, which is where the open questions are. Counted
+	 *  anyway, so "we censused the palette" cannot quietly mean "we censused most
+	 *  of it", and so a ramp that has gone slack shows up without being expanded. */
+	const otherRamps = ['night', 'gold', 'ink', 'red'].map((name) => {
+		const rows = census(name);
+		return { name, total: rows.length, free: rows.filter(isFree).map((r) => r.rung.name) };
+	});
+
+	// ── GLASS: what is available, and what a star does to it ───────────────────
+	// Glass is the one material whose viability is a MEASUREMENT rather than a
+	// preference, so the grid carries the measurement. See --glass-panel in
+	// app.css for the law: text on glass is limited by the WORST pixel behind it,
+	// and the worst pixel is always a star.
+
+	const rgb = (hex: string): [number, number, number] => {
+		const h = hex.trim().replace('#', '');
+		const full =
+			h.length === 3
+				? h
+						.split('')
+						.map((c) => c + c)
+						.join('')
+				: h;
+		return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16)) as [number, number, number];
+	};
+	const lin = (c: number) => {
+		const s = c / 255;
+		return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+	};
+	const luminance = (c: [number, number, number]) =>
+		0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
+	const contrast = (a: [number, number, number], b: [number, number, number]) => {
+		const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+		return (hi + 0.05) / (lo + 0.05);
+	};
+	const composite = (
+		fg: [number, number, number],
+		alpha: number,
+		bg: [number, number, number]
+	): [number, number, number] =>
+		[0, 1, 2].map((i) => alpha * fg[i] + (1 - alpha) * bg[i]) as [number, number, number];
+
+	/** The worst pixel: a blank-white star, dimmed by the tool scrim. Every glass
+	 *  stop in the system is judged against this and nothing else — an average
+	 *  backdrop has never been the binding case. */
+	const STAR: [number, number, number] = [255, 255, 255].map((c) => c * (1 - TOOL_DIM)) as [
+		number,
+		number,
+		number
+	];
+	/** The dimmer of the two voices a band speaks in — see .band-b's --text
+	 *  re-point. If --muted clears the floor, --text has already cleared it. */
+	const GLASS_INK = rgb(
+		parseContextTokens(appCss, '.ctx-glass').find((t) => t.name === '--muted')?.resolved ??
+			'#b7b4ae'
+	);
+
+	const GLASS_ALPHAS = [
+		{ a: 0.68, label: 'panel', note: 'the shipped --glass-panel alpha' },
+		{ a: 0.55, label: 'well', note: 'the shipped --glass-well alpha' }
+	];
+
+	/** Every slate rung as a candidate glass stop, at both shipped alphas. This
+	 *  is the answer to "which glass shades are available to us": glass is a rung
+	 *  plus an alpha, so the available set is the ramp times the two alphas — and
+	 *  the ratio column is what decides which of them we are allowed to want. */
+	const glassGrid = tokens
+		.filter((t) => /^--slate-\d+$/.test(t.name))
+		.map((rung) => ({
+			rung,
+			stops: GLASS_ALPHAS.map(({ a, label }) => ({
+				alpha: a,
+				label,
+				css: `rgb(${rgb(rung.resolved).join(' ')} / ${a})`,
+				ratio: contrast(GLASS_INK, composite(rgb(rung.resolved), a, STAR)),
+				shipped:
+					(label === 'panel' && rung.name === '--slate-700') ||
+					(label === 'well' && rung.name === '--slate-900')
+			}))
+		}));
+
 	const sections = [
 		['families', 'Families'],
+		['palette', 'Palette census'],
 		['tokens', 'Tokens'],
 		['type', 'Typography'],
 		['buttons', 'Buttons'],
@@ -260,6 +420,39 @@
 			<code class="sg-name">{t.name}</code>
 			<span class="sg-val">{t.value}{t.value !== t.resolved ? ` → ${t.resolved}` : ''}</span>
 		</div>
+	</div>
+{/snippet}
+
+{#snippet censusTable(rows: { rung: Token; is: Claim[]; mix: Claim[]; loose: number }[])}
+	<div class="sg-census">
+		{#each rows as row (row.rung.name)}
+			{@const free = row.is.length === 0 && row.mix.length === 0 && row.loose === 0}
+			<div class="sg-census-row" class:is-free={free}>
+				<div class="sg-census-chip" style:background={row.rung.resolved}></div>
+				<div class="sg-census-id">
+					<code class="sg-name">{row.rung.name}</code>
+					<span class="sg-val">{row.rung.resolved}</span>
+				</div>
+				<div class="sg-census-claims">
+					{#if free}
+						<span class="sg-claim sg-claim--free">free</span>
+					{/if}
+					{#each row.is as c (c.role + c.where)}
+						<span class="sg-claim sg-claim--is"
+							>{c.role}{#if c.where !== ':root'}<em>{c.where}</em>{/if}</span
+						>
+					{/each}
+					{#each row.mix as c (c.role + c.where)}
+						<span class="sg-claim sg-claim--mix"
+							>{c.role}{#if c.where !== ':root'}<em>{c.where}</em>{/if}</span
+						>
+					{/each}
+					{#if row.loose > 0}
+						<span class="sg-claim sg-claim--loose">{row.loose} in rules</span>
+					{/if}
+				</div>
+			</div>
+		{/each}
 	</div>
 {/snippet}
 
@@ -374,15 +567,17 @@
 			⚠️ <strong>What sets the floor on a glass stop is a STAR.</strong> Text on glass is limited by
 			the worst pixel behind it, never the average, and the worst pixel is always a star — a tiny,
 			very bright point. Both stops clear 4.5:1 for <code>--muted</code> (the dimmer of the two band
-			voices) against a star <strong>unblurred</strong>: panel 4.54:1, well 5.01:1.
+			voices) against a star <strong>unblurred</strong>: panel 4.53:1, well 5.00:1.
 		</p>
 		<p class="sg-note">
 			↻ ⚓ Nate 2026-08-10: <strong>both stops went one rung lighter</strong> — slate-800 →
 			slate-700 and slate-950 → slate-900, at the same alphas. The tint moved, not the transparency:
 			glass this dark over a dimmed world read as a hole cut in the scene rather than a pane laid on
-			it. ⚠️ <strong>The panel stop is now close to its floor</strong> (4.92:1 → 4.54:1). A third
-			rung would take <code>--muted</code> under 4.5:1 against a star, so if this is asked to
-			lighten again, the alpha has to come up with it — or <code>--muted</code> does.
+			it. ⚠️ <strong>The panel stop is now all but on its floor</strong> (4.98:1 → 4.53:1), and
+			slate-600 at the same alpha measures 3.99. There is no third rung: if this is asked to lighten
+			again the alpha has to come up with it, or <code>--muted</code> does. ⚠️ The two stops are
+			also not interchangeable — slate-700 at the well's .55 is 4.29:1, under the floor, so the well
+			cannot follow the panel up the ramp. <a href="#palette">The census</a> computes the whole grid.
 		</p>
 		<p class="sg-note">
 			⚓ <code>--glass-blur</code> is <strong>1px and ON PROBATION</strong> (Nate, 2026-08-09 —
@@ -493,6 +688,134 @@
 			<code>ChromeModals</code> is mounted outside <code>.tool-shell</code> deliberately, so
 			Help/About/Settings read the world's voice in <em>both</em> zones. That is intended: they are meta
 			surfaces, not tool surfaces.
+		</p>
+	</section>
+
+	<!-- ═════════════════════════════════════════════════════════════ PALETTE ══ -->
+	<section id="palette">
+		<h2>
+			Palette census <span class="sg-badge sg-badge--live">live</span>
+			<span class="sg-badge sg-badge--trial">deciding</span>
+		</h2>
+		<p class="sg-note">
+			⚓ <strong>Nate 2026-08-10, and this section exists to be argued with.</strong> "We have this
+			great palette that we worked to define, but we don't have any settled decisions about how we
+			use them." <a href="#tokens">Tokens</a> below lists every rung; this asks the question a
+			swatch chart can't — <strong>for each rung, who is already speaking for it.</strong> Which are free,
+			which are doing several jobs at once, and which exist only because a ramp is a ramp.
+		</p>
+		<p class="sg-note">
+			Everything here is <strong>computed from <code>app.css</code></strong>, never listed by hand —
+			a census maintained by hand is wrong within a week and worse than none, because it still reads
+			as authoritative. ⚠️ <code>app.css</code> is the whole search space
+			<em>by construction</em>: the layer law (a number means a primitive; no component may name
+			one) is grep-enforced in <code>timelineExport.mirror.test.ts</code>, so every consumer of a
+			rung is in that one file. Relax that test and this census quietly stops being complete.
+		</p>
+		<div class="sg-legend">
+			<span><b class="sg-claim sg-claim--is">is</b> — a role that resolves TO this rung</span>
+			<span
+				><b class="sg-claim sg-claim--mix">mix</b> — names it inside an expression and comes out elsewhere;
+				the rung is an ingredient</span
+			>
+			<span
+				><b class="sg-claim sg-claim--loose">rule</b> — a direct mention in a rule body, not a role</span
+			>
+			<span><b class="sg-claim sg-claim--free">free</b> — nothing in the system points here</span>
+		</div>
+
+		<h3>Slate — the dark half</h3>
+		<p class="sg-note">
+			The ground family for both dark contexts and the source of every glass stop. ⚓
+			<code>--slate-500</code> is one of Nate's two sampled anchors (the slate element on parchment,
+			menu tiles); <code>--slate-800</code> is the other (the dark context's ground).
+		</p>
+		{@render censusTable(slateCensus)}
+
+		<h3>Parchment — the light half, and the ink on the dark one</h3>
+		<p class="sg-note">
+			<strong>Parchment doing double duty is the point, not an accident.</strong> It is the light context's
+			SURFACE, the dark context's INK, and the source of every hairline on dark — which is why its rungs
+			carry more claims each than slate's, and why a change here travels further than it looks like it
+			should.
+		</p>
+		{@render censusTable(parchmentCensus)}
+
+		{#if freeRungs.length > 0}
+			<p class="sg-note sg-note--flag">
+				<strong>{freeRungs.length} rung{freeRungs.length === 1 ? '' : 's'} unclaimed:</strong>
+				{#each freeRungs as f, i (f.rung.name)}<code>{f.rung.name}</code>{i < freeRungs.length - 1
+						? ', '
+						: ''}{/each}. Unclaimed is <em>not</em> a defect — a ramp is a continuum and a system should
+				have somewhere to go when a surface needs one rung lighter. It is a fact to decide against: either
+				a rung is being kept as headroom on purpose, or it is a gap nobody noticed.
+			</p>
+		{/if}
+
+		<p class="sg-note">
+			<strong>The other four ramps, counted but not laid out</strong> — the open questions are in
+			the two grounds and the glass, and a row-by-row census of a ramp nobody is arguing about is
+			noise. They are computed the same way, so a ramp that goes slack surfaces here without being
+			expanded:
+			{#each otherRamps as r, i (r.name)}<code>--{r.name}-*</code>
+				{r.total - r.free.length}/{r.total} claimed{#if r.free.length > 0}<span class="sg-val">
+						(free: {r.free.join(', ')})</span
+					>{/if}{i < otherRamps.length - 1 ? ' · ' : '.'}{/each}
+		</p>
+
+		<h3>Glass — a rung times an alpha</h3>
+		<p class="sg-note">
+			There is no separate glass ramp and there should not be one: <strong>
+				a glass stop IS a slate rung plus an alpha</strong
+			>, so the available set is the ramp × the two shipped alphas. Every cell below is a stop we
+			could ship today. The two marked <b class="sg-claim sg-claim--is">shipped</b> are what
+			<code>--glass-panel</code> and <code>--glass-well</code> currently hold.
+		</p>
+		<p class="sg-note">
+			⚠️ <strong>The ratio column is what decides which of these we are allowed to want.</strong>
+			Text on glass is limited by the WORST pixel behind it, never the average, and the worst pixel is
+			always a star — a tiny, very bright point. Each figure is
+			<code>--muted</code>
+			(the dimmer of the two band voices) against that stop composited over a blank-white star dimmed
+			by
+			<code>TOOL_DIM</code> ({TOOL_DIM}), <strong>unblurred</strong>: nothing is allowed to depend
+			on
+			<code>--glass-blur</code>, which is on probation and may go to 0. Under 4.5:1 is not a stop we
+			can use at the band voices, whatever it looks like.
+		</p>
+		<div class="sg-glassgrid sg-stage--world">
+			<div class="sg-glassgrid-head">
+				<span></span>
+				{#each GLASS_ALPHAS as g (g.a)}<span class="sg-val">{g.label} · α {g.a}</span>{/each}
+			</div>
+			{#each glassGrid as row (row.rung.name)}
+				<div class="sg-glassgrid-row">
+					<code class="sg-name">{row.rung.name}</code>
+					{#each row.stops as s (s.label)}
+						<div class="sg-glasscell" style:background={s.css} class:is-shipped={s.shipped}>
+							<span class="sg-glasscell-ink">Aa muted</span>
+							<span class="sg-glasscell-ratio" class:is-under={s.ratio < 4.5}
+								>{s.ratio.toFixed(2)}:1</span
+							>
+							{#if s.shipped}<span class="sg-claim sg-claim--is">shipped</span>{/if}
+						</div>
+					{/each}
+				</div>
+			{/each}
+		</div>
+		<p class="sg-note">
+			⚠️ The backdrop here is a <em>stand-in</em> — this page renders on the bare root layout, with
+			no scene and no scrim behind it. It is enough to see THROUGH the material, which is all this
+			grid has to prove; it is not a preview of the real one.
+			<strong>The verdict on any glass stop is Nate's eyes on a tool page, in Safari.</strong>
+		</p>
+		<p class="sg-note sg-note--flag">
+			⛔ <strong>There is no light glass, and this is a law rather than a gap in the grid.</strong>
+			Translucent paper over a near-black world is the muddy middle by another route — it was the surviving
+			finding of the reverted toolbar-translucency trial ("band B being paper is the constraint"). Anything
+			that wants to be glass has to stop being light first, which is why parchment has no row here. ⛔
+			And it is not <code>sheer</code>: that experiment was built, measured, shipped and reverted.
+			<strong>Don't re-propose either.</strong>
 		</p>
 	</section>
 
@@ -1324,8 +1647,11 @@
 			of glass PLATES standing on the scene, on <em>one</em> glass stop — band B's darker well
 			retired with the tier it was marking. ⚠️ <code>BAND_CTRL_H</code> (36px, icon-only controls
 			excepted) is a <strong>band B</strong> number: its plates fill their row, band A's take their
-			natural ~27px and centre in theirs (⚓ Nate 2026-08-10, undoing the one-evening match — band A
-			filling its row made the DOCUMENT row read as the heavier of the two, which is backwards). The
+			natural height and its ROW IS THAT HEIGHT — <code>BAND_A_H</code> is 27px because a
+			<code>.tab</code> measures 26.72 (⚓ Nate 2026-08-10, undoing the one-evening match: band A
+			filling a 36px row made the DOCUMENT row read as the heavier of the two, which is backwards,
+			and with no ground under them there was nothing for the extra 9px to be air <em>inside</em>).
+			⚠️ Re-measure it if a band A control's type or padding moves — the row has no slack left. The
 			only rail left is the one a tool asks for by filling
 			<code>bandBCenter</code>, and that rail is a plate like the others. Geometry knobs:
 			<code>src/lib/toolBands.ts</code>. Document flows:
@@ -1333,11 +1659,11 @@
 		</p>
 		<div class="sg-band-demo">
 			<div class="sg-band sg-band--a" style:height="{BAND_A_H}px">
-				<span class="sg-zone-tag">band A — NO GROUND, {BAND_A_H}px row</span>
+				<span class="sg-zone-tag">band A — NO GROUND, {BAND_A_H}px = its tallest control</span>
 				<span class="sg-val">the DOCUMENT · controls are the glass</span>
 			</div>
 			<div class="sg-band-gap" style:height="{BAND_GAP}px">
-				<span class="sg-val">{BAND_GAP}px — BAND_GAP, half the gutter (⚓ Nate 2026-08-10)</span>
+				<span class="sg-val">{BAND_GAP}px — BAND_GAP, the gap BETWEEN BUTTONS (⚓ Nate)</span>
 			</div>
 			<div
 				class="sg-band sg-band--b"
@@ -2189,6 +2515,173 @@
 
 	.sg-voice-sample--cool {
 		color: var(--text);
+	}
+
+	/* ── the palette census ───────────────────────────────────────────────── */
+
+	/* A note that carries a verdict rather than an explanation — the unclaimed
+	   list and the two ⛔ laws. Ruled on the left rather than filled: a second
+	   filled box inside a section reads as a different KIND of content, and
+	   these are the same kind said louder. */
+	.sg-note--flag {
+		padding-left: 0.9rem;
+		border-left: 2px solid var(--frame-line);
+	}
+
+	.sg-legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem 1.2rem;
+		margin-bottom: 1rem;
+		font-size: var(--fs-sm);
+		color: var(--muted);
+	}
+
+	.sg-census {
+		display: grid;
+		gap: 2px;
+		margin-bottom: 1.4rem;
+	}
+
+	/* One rung per row, and the rows are deliberately DENSE: the census is read
+	   by scanning down a ramp for the sparse rows, not by reading any one entry.
+	   Grid rather than flex so the three columns line up across every row and
+	   the claim runs start on one edge. */
+	.sg-census-row {
+		display: grid;
+		grid-template-columns: 40px 12.5rem 1fr;
+		align-items: center;
+		gap: 0.8rem;
+		padding: 0.35rem 0.6rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+	}
+
+	/* A free rung says so by going quiet, not by lighting up. It is a fact to
+	   decide against, not a defect to fix — the ⛔ styling that would imply. */
+	.sg-census-row.is-free {
+		background: none;
+		box-shadow: inset 0 0 0 1px var(--frame-line-quiet);
+	}
+
+	.sg-census-chip {
+		width: 40px;
+		height: 26px;
+		border-radius: var(--r-sm);
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+	}
+
+	.sg-census-id {
+		display: grid;
+		gap: 0.05rem;
+		min-width: 0;
+	}
+
+	.sg-census-claims {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		min-width: 0;
+	}
+
+	.sg-claim {
+		padding: 0.1rem 0.4rem;
+		border-radius: var(--r-round);
+		font-family: var(--font-mono);
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-normal);
+		white-space: nowrap;
+	}
+	/* The context suffix rides the claim rather than sitting beside it — a role
+	   and the context it was declared in are one fact. */
+	.sg-claim em {
+		opacity: 0.6;
+		font-style: normal;
+	}
+	.sg-claim em::before {
+		content: ' ';
+	}
+	.sg-claim--is {
+		background: color-mix(in srgb, var(--accent) 20%, transparent);
+		color: var(--ink-active);
+	}
+	.sg-claim--mix {
+		background: var(--fill-rest);
+		color: var(--muted);
+	}
+	.sg-claim--loose {
+		background: color-mix(in srgb, var(--calm) 18%, transparent);
+		color: var(--calm);
+	}
+	.sg-claim--free {
+		background: none;
+		box-shadow: inset 0 0 0 1px var(--frame-line);
+		color: var(--muted);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+	}
+
+	/* ── the glass grid ───────────────────────────────────────────────────── */
+
+	.sg-glassgrid {
+		display: grid;
+		gap: 4px;
+		padding: 0.9rem;
+		border-radius: var(--r-md);
+		margin-bottom: 1.1rem;
+	}
+
+	.sg-glassgrid-head,
+	.sg-glassgrid-row {
+		display: grid;
+		grid-template-columns: 8.5rem repeat(2, 1fr);
+		align-items: center;
+		gap: 4px;
+	}
+
+	.sg-glassgrid-head {
+		padding-bottom: 0.2rem;
+	}
+	.sg-glassgrid-head .sg-val {
+		padding-left: 0.6rem;
+	}
+
+	/* ⚠ NO backdrop-filter on these cells, and that is not an oversight: the
+	   grid is showing the STOPS, and a blur would let a cell borrow legibility
+	   the shipped rule is deliberately not allowed to depend on (--glass-blur is
+	   on probation and may go to 0). What you see is what the alpha alone does. */
+	.sg-glasscell {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.5rem 0.6rem;
+		border-radius: var(--r-sm);
+	}
+
+	.sg-glasscell.is-shipped {
+		box-shadow: inset 0 0 0 1px var(--line-edge);
+	}
+
+	.sg-glasscell-ink {
+		flex: 1;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		/* The literal is the point — this specimen must read the glass context's
+		   --muted whatever surface it is dropped on, and the page around it is
+		   .ctx-dark. It is the value under test, not a role reference. */
+		color: #b7b4ae;
+	}
+
+	.sg-glasscell-ratio {
+		font-family: var(--font-mono);
+		font-size: var(--fs-xs);
+		color: #b7b4ae;
+	}
+	.sg-glasscell-ratio.is-under {
+		color: var(--debuff);
+		font-weight: var(--fw-semibold);
 	}
 
 	/* ── swatches ─────────────────────────────────────────────────────────── */
