@@ -51,6 +51,53 @@
 	const LINE_STOPS = ['--line-faint', '--line-soft', '--line-strong', '--line-edge'];
 
 	/**
+	 * THE INK LADDER, rendered identically in every ground — ⚓ Nate 2026-08-10:
+	 * "what are the exact text body sizes, headings, section breaks etc we're
+	 * using right now?"
+	 *
+	 * Every row carries its own size tag, so each panel doubles as a legend for
+	 * the type system ON THAT GROUND. That pairing is the point: the size and the
+	 * ink role are one decision, not two, and the light context INVERTS the ink
+	 * half of it (prose recedes, labels anchor) while keeping the sizes.
+	 *
+	 * ⚠ `role` is what the token's comment in app.css claims the rung is FOR.
+	 * Where the product disagrees with that claim it is noted — the base UI rung
+	 * says 14px and the controls all ship at 11.
+	 */
+	const TYPE_ROWS = [
+		{ cls: 'ty-h2', tag: '3xl · 20', text: 'Section heading' },
+		{ cls: 'ty-h3', tag: '2xl · 18', text: 'Subheading' },
+		{ cls: 'ty-body', tag: 'lg · 14', text: 'Body — the base UI rung.' },
+		{ cls: 'ty-dense', tag: 'md · 12', text: 'Dense body — what prose actually ships at.' },
+		{ cls: 'ty-label', tag: 'sm · 11', text: 'Label · controls' },
+		{ cls: 'ty-caption', tag: 'xs · 10', text: 'Caption / meta' }
+	];
+
+	/**
+	 * THE SIZE-UP, as a ROLE SHIFT rather than a new scale — ⚓ Nate is
+	 * "considering a slight size-up".
+	 *
+	 * The rungs are fine; what is questionable is which rung each role sits on.
+	 * Shifting roles up the existing ladder keeps the ladder a ladder (and keeps
+	 * every rung a number that already exists), where re-cutting the scale would
+	 * mean re-deriving everything that measures against it.
+	 *
+	 * ⚠ IT IS NOT A UNIFORM +1. The bottom of the scale is where the pressure is
+	 * — controls at 11px and prose at 12px against Genshin's much larger UI —
+	 * and the top is already right. So the small end lifts a rung and the
+	 * headings hold, which also closes the gap the product had opened by itself:
+	 * --fs-lg is commented "base UI / body" and almost nothing uses it.
+	 */
+	const SIZE_UP = [
+		{ role: 'section heading', now: '3xl · 20', next: '3xl · 20', moved: false },
+		{ role: 'subheading', now: '2xl · 18', next: '2xl · 18', moved: false },
+		{ role: 'body / prose', now: 'md · 12', next: 'lg · 14', moved: true },
+		{ role: 'controls · tabs · chips', now: 'sm · 11', next: 'md · 12', moved: true },
+		{ role: 'labels · meta', now: 'xs · 10', next: 'sm · 11', moved: true },
+		{ role: 'micro / badges', now: '2xs · 9', next: 'xs · 10', moved: true }
+	];
+
+	/**
 	 * BORDERS IN GOLD — ⚓ Nate 2026-08-10: "I think Genshin uses gold for BOTH
 	 * contexts. I'm not sure which brightness stop."
 	 *
@@ -105,10 +152,24 @@
 			{#each SPECIMEN_GROUNDS as g (g.key)}
 				<div class="spec {g.cls}" class:spec--bare={g.key === 'night'}>
 					<div class="spec-tag">{g.label}</div>
-					<h3 class="spec-title">Fervent Flames</h3>
+
+					<!-- THE TYPE LADDER. Each row is sample + size tag, so the panel is
+					     both a specimen and a legend. -->
+					{#each TYPE_ROWS as t (t.cls)}
+						<div class="ty-row">
+							<span class={t.cls}>{t.text}</span>
+							<span class="ty-tag">{t.tag}</span>
+						</div>
+					{/each}
+
+					<!-- SECTION BREAK — the shipped .kicker: a label whose rule runs out
+					     of its right-hand side. ⚠ It must DECLARE the body face; a
+					     heading face here is the bug that keeps coming back. -->
+					<p class="kicker">Section break</p>
+
 					<p class="spec-prose">
-						Two or more Pyro characters. ATK increased by <b>25%</b> for the whole party, and the
-						<a href="#top">affected-by-Cryo</a> duration is cut.
+						Prose with an <b>accent</b> in it, and a
+						<a href="#top">link</a> to see the two apart.
 					</p>
 					<div class="spec-row">
 						<span class="spec-label">Constellation</span>
@@ -124,7 +185,7 @@
 						<button class="tab active" type="button">Selected</button>
 						<button class="tab" type="button">Resting</button>
 					</div>
-					<div class="spec-inset inset inset--plain">inset · --frame-line</div>
+					<div class="spec-inset inset inset--plain">inset · gold</div>
 					<div class="spec-lines">
 						{#each LINE_STOPS as stop (stop)}
 							<span class="spec-line" style:background="var({stop})"></span>
@@ -136,7 +197,65 @@
 		</div>
 	</section>
 
-	<!-- ═════════════════════════════════════════ 2 · THE NIGHT PAINTS ══ -->
+	<!-- ══════════════════════════════════════════════ 2 · THE SIZE-UP ══ -->
+	<section>
+		<h2 class="lab-h">
+			A size-up, as a role shift <span class="lab-badge">deciding</span>
+		</h2>
+		<p class="lab-note">
+			⚓ Nate is considering "a slight size-up". The proposal is to move ROLES up the existing
+			ladder rather than re-cut the scale — the rungs are fine, what is questionable is which rung
+			each role sits on, and re-cutting would mean re-deriving everything that measures against it.
+			⚠ <strong>Not a uniform +1.</strong> The pressure is all at the bottom (controls at 11px,
+			prose at 12) and the headings are already right, so the small end lifts and the top holds. It
+			also closes a gap the product opened by itself: <code>--fs-lg</code> is commented "base UI / body"
+			and almost nothing uses it.
+		</p>
+		<div class="lab-row">
+			<div class="cand">
+				<span class="cand-tag">today</span>
+				<div class="ctx-dark sizeup">
+					<h3 class="su-h3">Off-field DMG</h3>
+					<p class="su-body su-body--now">
+						Coordinated attacks or damaging summons. Provided by <b>35</b> characters in the roster,
+						of which you own <b>0</b>.
+					</p>
+					<div class="su-row su-row--now"><span>Constellation</span><span>C2</span></div>
+					<div class="spec-controls">
+						<button class="btn" type="button">Filter</button>
+						<button class="tab active" type="button">Atlas</button>
+					</div>
+				</div>
+			</div>
+			<div class="cand">
+				<span class="cand-tag">roles up one rung</span>
+				<div class="ctx-dark sizeup sizeup--next">
+					<h3 class="su-h3">Off-field DMG</h3>
+					<p class="su-body su-body--next">
+						Coordinated attacks or damaging summons. Provided by <b>35</b> characters in the roster,
+						of which you own <b>0</b>.
+					</p>
+					<div class="su-row su-row--next"><span>Constellation</span><span>C2</span></div>
+					<div class="spec-controls">
+						<button class="btn su-ctrl" type="button">Filter</button>
+						<button class="tab active su-ctrl" type="button">Atlas</button>
+					</div>
+				</div>
+			</div>
+			<div class="su-table">
+				{#each SIZE_UP as s (s.role)}
+					<div class="su-trow" class:is-moved={s.moved}>
+						<span class="su-role">{s.role}</span>
+						<span class="ty-tag">{s.now}</span>
+						<span class="su-arrow">{s.moved ? '→' : '·'}</span>
+						<span class="ty-tag su-next">{s.next}</span>
+					</div>
+				{/each}
+			</div>
+		</div>
+	</section>
+
+	<!-- ═════════════════════════════════════════ 3 · THE NIGHT PAINTS ══ -->
 	<section>
 		<h2 class="lab-h">
 			What may paint on the night <span class="lab-badge">proposal</span>
@@ -393,6 +512,151 @@
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-tight);
 		color: var(--text);
+	}
+
+	/* ── the ink ladder ───────────────────────────────────────────────────
+	   Sample on the left, size tag right-aligned. The tag is deliberately the
+	   quietest thing in the panel — it is an annotation on the specimen, not a
+	   member of it, and it must not compete with the rung it is labelling. */
+	.ty-row {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.8rem;
+		min-width: 0;
+	}
+	.ty-tag {
+		flex: none;
+		font-family: var(--font-mono);
+		font-size: var(--fs-2xs);
+		color: var(--muted);
+		opacity: 0.65;
+	}
+	.spec--bare .ty-tag {
+		color: var(--text);
+	}
+	.ty-h2 {
+		font-family: var(--font-display);
+		font-size: var(--fs-3xl);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-tight);
+		color: var(--text);
+	}
+	.ty-h3 {
+		font-family: var(--font-display);
+		font-size: var(--fs-2xl);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
+	}
+	.ty-body {
+		font-size: var(--fs-lg);
+		color: var(--text);
+	}
+	.ty-dense {
+		font-size: var(--fs-md);
+		color: var(--text);
+	}
+	/* ⚠ THE LABEL VOICE IS WHERE THE CONTEXTS DISAGREE. --muted is the DIM rung
+	   on dark and the ANCHORING rung on paper, so this one row inverts while
+	   every other row holds — which is the clearest single demonstration of the
+	   ink ladder flipping, and the reason the ladder is rendered per ground
+	   rather than once. */
+	.ty-label {
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.ty-caption {
+		font-size: var(--fs-xs);
+		color: var(--muted);
+	}
+	.spec--bare .ty-label,
+	.spec--bare .ty-caption {
+		color: var(--text);
+	}
+
+	/* ── the size-up comparison ───────────────────────────────────────────── */
+	.sizeup {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		width: 330px;
+		padding: 1rem 1.1rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+	}
+	.su-h3 {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: var(--fs-2xl);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-tight);
+		color: var(--text);
+	}
+	.su-body {
+		margin: 0;
+		line-height: var(--lh-relaxed);
+		color: var(--text);
+	}
+	.su-body--now {
+		font-size: var(--fs-md);
+	}
+	.su-body--next {
+		font-size: var(--fs-lg);
+	}
+	.su-body b {
+		color: var(--accent);
+	}
+	.su-row {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.su-row--now {
+		font-size: var(--fs-xs);
+	}
+	.su-row--next {
+		font-size: var(--fs-sm);
+	}
+	/* The control rung is the one that has to be overridden rather than swapped:
+	   .btn and .tab hard-code --fs-sm, so the proposal is shown by re-declaring
+	   it here. If the shift is adopted the override moves into app.css and this
+	   class disappears. */
+	.su-ctrl {
+		font-size: var(--fs-md);
+	}
+
+	.su-table {
+		display: grid;
+		gap: 3px;
+		align-content: start;
+		font-family: var(--font-mono);
+	}
+	.su-trow {
+		display: grid;
+		grid-template-columns: 12rem 5rem 1.4rem 5rem;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.25rem 0.5rem;
+		border-radius: var(--r-sm);
+	}
+	.su-trow.is-moved {
+		background: color-mix(in srgb, var(--accent) 12%, transparent);
+	}
+	.su-role {
+		font-family: var(--font-body);
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.su-arrow,
+	.su-next {
+		color: var(--accent);
+		opacity: 1;
 	}
 	.spec-prose {
 		margin: 0;

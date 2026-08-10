@@ -407,6 +407,24 @@
 	   the box around them. */
 	--frame-line-quiet: var(--line-faint);
 
+	/* ══ THE INSET FRAME'S LINE — GOLD (⚓ NATE 2026-08-10) ═══════════════════
+	   Borders stay ink; the inset goes gold, because the inset is the one line
+	   in the system that is ORNAMENT rather than structure. The full argument
+	   and the two context rungs live in .ctx-dark.
+
+	   ⚠ THIS IS NOT A SPARE COPY — IT IS THE VALUE CTX-NIGHT USES. A groundless
+	   element over the world inherits from here, and out there the ground is
+	   unknown (a star, a nebula, nothing at all), so the stop has to CARRY ALPHA
+	   exactly as the glass one does. An opaque mix would be a stripe of the
+	   wrong colour against every backdrop except the one it was mixed for.
+	   ⚠ A literal rather than a color-mix for the same reason: a mix needs a
+	   ground to resolve against, and out here there honestly isn't one.
+	   (Found by the board: the night column's inset fell through to
+	   currentColor and drew a bright box — a missing root net is invisible
+	   until something groundless asks for it.) */
+	--inset-line: rgb(211 188 142 / 0.18); /* = gold-400 @ .18 */
+	--inset-line-quiet: rgb(211 188 142 / 0.1);
+
 	/* ══ CHART INK ═════════════════════════════════════════════════════════════
 	   The inside of an instrument: axis labels, tick text, gridlines, axis
 	   rules, baselines. NOT a new idea — the planner has had exactly this pair
@@ -1001,6 +1019,30 @@
 	--border: var(--line-soft);
 	--frame-line: var(--line-soft);
 	--frame-line-quiet: var(--line-faint);
+	/* ══ THE INSET FRAME IS GOLD (⚓ NATE 2026-08-10) ═══════════════════════
+	   BORDERS STAY INK; THE INSET GOES GOLD, and the split is the whole point.
+	   A border is STRUCTURE — it says where a surface ends, and structure in a
+	   warm hue starts reading as decoration on everything. An inset frame is the
+	   one line in the system that is ORNAMENT: it sits INSIDE the box, set in
+	   from the edge, deliberately not the box's own outline. Genshin's jewelry is
+	   gold, and this is the only place we have jewelry.
+	   (The Team Builder's selected nav plate reached this conclusion alone a day
+	   earlier — ⚓ "borders like this are some kind of gold mix usually" — and
+	   this generalises it. That plate keeps its local override because its ground
+	   is the beige --sel-surface, not a context ground.)
+
+	   ⚠ GOLD CHANGES RUNG WITH THE CONTEXT, exactly as --accent does: gold-400
+	   on dark, gold-700 on light. Measured on the board, they are not
+	   interchangeable — gold-600/700 at this alpha barely lift off slate, and
+	   gold-300/400 all but vanish into parchment. One hue, two rungs, same
+	   zoning the accent already uses.
+
+	   ⚠ color-mix is SAFE here where the line stops above had to be literals:
+	   both inputs are primitives, so this is one level deep, and nothing mixes
+	   the result (the crash is a mix FED BY a mix). Keeping it as a mix means it
+	   follows the ramp instead of drifting off it. */
+	--inset-line: color-mix(in srgb, var(--gold-400) 18%, var(--slate-800));
+	--inset-line-quiet: color-mix(in srgb, var(--gold-400) 10%, var(--slate-800));
 	/* ✅ The accent is gold now, not this context's own borrowed ink — see the
 	   accent block at :root. The derived sel-* tokens re-declare per the
 	   substituted-at-declaration law; --knob re-bakes against this --muted. */
@@ -1061,6 +1103,11 @@
 	--border: var(--line-soft);
 	--frame-line: var(--line-soft);
 	--frame-line-quiet: var(--line-faint);
+	/* The gold inset, at THIS context's rung — see .ctx-dark for the argument.
+	   gold-700 because gold-400 disappears into parchment; same hue, carried
+	   down, exactly the move --accent makes below. */
+	--inset-line: color-mix(in srgb, var(--gold-700) 18%, var(--parchment-100));
+	--inset-line-quiet: color-mix(in srgb, var(--gold-700) 10%, var(--parchment-100));
 	/* ⚠ THE ACCENT CHANGES RUNG, NOT HUE. gold-400 measures 1.48:1 on this
 	   ground — it would be invisible as ink and illegible as a link. gold-700
 	   is the same hue carried down to 4.82:1. See the accent block at :root. */
@@ -1168,6 +1215,12 @@
 	--border: var(--line-soft);
 	--frame-line: var(--line-soft);
 	--frame-line-quiet: var(--line-faint);
+	/* The gold inset. ⚠ CARRIES ALPHA, unlike the opaque contexts' copies —
+	   same reason every line here does: the ground behind a pane is unknown, so
+	   an opaque mix would be a stripe of the wrong colour. gold-400's rung,
+	   since glass is a dark material. */
+	--inset-line: rgb(211 188 142 / 0.18);
+	--inset-line-quiet: rgb(211 188 142 / 0.1);
 	/* THE HOVER RING — see the pane-hover rule below for why glass gets an edge
 	   and nothing else does.
 	   ⚓ ON TRIAL, and the OPEN QUESTION of the round: it is the pane's own ink
@@ -1272,9 +1325,17 @@
 	background: var(--surface-hover);
 	box-shadow: inset 0 0 0 1px var(--glass-ring);
 }
+/* SELECTED GLASS TAKES A GOLD EDGE (⚓ NATE 2026-08-10). Hover and selected both
+   get a ring now, and the pair has to stay legible as two different things —
+   so they differ in HUE, not merely in strength: hover's ring is the pane's own
+   ink and its ground is plain density; selected's ring is gold and its ground
+   carries the accent wash. Colour says "chosen", the neutral edge says only
+   "here". ⚠ This is why the hover ring must NOT go gold if borders ever do —
+   the two states would collapse into one signal. */
 .band-a .btn.is-active,
 .band--3up > .band-zone .btn.is-active {
 	background: linear-gradient(var(--sel-fill), var(--sel-fill)), var(--surface);
+	box-shadow: inset 0 0 0 1px var(--sel-ring);
 }
 /* The surviving ghost stays a ghost — a destructive control INSIDE A RUN of
    other controls must not sit on screen looking pressable. Scoped to band A,
@@ -2039,7 +2100,7 @@ img {
 	/* The fallback, not a declared default: --inset-stroke is a host override
 	   (see above), and a declaration on `.inset` would have to out-specify every
 	   host that sets it. */
-	border: var(--inset-stroke, 2px) solid var(--frame-line);
+	border: var(--inset-stroke, 2px) solid var(--inset-line);
 }
 
 /* 2 · DOUBLE — two strokes on ONE box, differing only in corner radius, so the
@@ -2057,14 +2118,14 @@ img {
    arcs. Nothing warns you: it is correct CSS doing exactly what it was asked.
    On an opaque ground the strokes are opaque and the overlap is invisible. */
 .inset--double::after {
-	border: 2px solid var(--frame-line-quiet);
+	border: 2px solid var(--inset-line-quiet);
 	border-radius: 2px;
 }
 .inset--double::before {
 	content: '';
 	position: absolute;
 	inset: var(--frame-inset);
-	border: 2px solid var(--frame-line-quiet);
+	border: 2px solid var(--inset-line-quiet);
 	border-radius: 22px;
 	pointer-events: none;
 }
