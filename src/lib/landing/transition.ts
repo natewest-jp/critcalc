@@ -102,7 +102,16 @@ function sideSign(path: string): -1 | 0 | 1 {
 
 export const isLandingPath = (path: string) => path === '/';
 
-const TOOL_PATHS = ['/crit-visualizer', '/rotation-planner', '/team-builder'];
+/**
+ * ⚠ /lab IS IN THIS LIST ON PURPOSE (2026-08-10). It is the dev-only specimen
+ * board, and the ONE thing it exists to provide is the real crest under the
+ * real wash — a specimen judged against a simulated backdrop is the reason the
+ * styleguide could not do this job. sideSign returns 0 for it, so it gets the
+ * centre crest rather than either tool's side; nothing sets sceneOccluded for
+ * it (that is the tools layout's doing and /lab is not in that group), so the
+ * world keeps rendering behind it, which is the entire point.
+ */
+const TOOL_PATHS = ['/crit-visualizer', '/rotation-planner', '/team-builder', '/lab'];
 /**
  * True for the three tool routes — the ONLY routes whose opaque shell covers
  * the viewport and occludes the scene. The landing and the static content pages
