@@ -1316,12 +1316,13 @@
 	   selection and jewelry were sharing a hue for no reason. Gold keeps the
 	   EDGE; paper keeps the FILL.
 
-	   ⚠ THE EDGE IS A GOLD MIX — the reasoning that started here generalised
-	   into the whole --inset-line family (see app.css), so this is no longer a
-	   local exception, just a local STRENGTH: 42% where the family default is
-	   18%, because a selected plate is the one place the jewelry should be
-	   emphatic. Mixed opaquely against the plate's own known ground and one
-	   level deep, per the compositing and nesting laws. */
+	   ⚠ THE EDGE IS THE FAMILY'S, WITH NO LOCAL STRENGTH. The gold-edge reasoning
+	   started on this plate and then generalised into the whole --inset-line
+	   family (see app.css), so what is left here is nothing: it takes the
+	   context's own stop. ⚓ Nate on the 42% mix that lived here — "an unwanted
+	   artifact of the development process, not a line strength to be preserved".
+	   It came from a round where this was the only gold edge in the system and
+	   had to carry the idea by itself; it does not any more. */
 	.tb-nav-item.active {
 		background: var(--sel-surface);
 		color: var(--sel-ink);
@@ -1330,7 +1331,6 @@
 		   panels), so the override retired rather than being restated. 7px of
 		   inset is still wrong here — it would put the line through the type. */
 		--frame-inset: 3px;
-		--inset-line: color-mix(in srgb, var(--accent) 42%, var(--sel-surface));
 	}
 
 	/* Rests as a peer of every other band plate and only announces itself under

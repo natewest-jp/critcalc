@@ -133,7 +133,7 @@
 	const PANE_STATES = [
 		{ key: 'rest', label: 'rest · .58', cls: '' },
 		{ key: 'hover', label: 'hover · .80 + ink ring', cls: 'is-dense is-ring' },
-		{ key: 'sel', label: 'selected · opaque + gold ring', cls: 'is-sel' }
+		{ key: 'sel', label: 'selected · .80 + gold ring', cls: 'is-sel' }
 	];
 
 	/** The open question the ring cannot answer on its own — see --glass-ring. */
@@ -347,10 +347,11 @@
 			The three states of a pane <span class="lab-badge">shipped</span>
 		</h2>
 		<p class="lab-note">
-			<strong>rest .58 → hover .80 + an INK ring → selected opaque + a GOLD ring.</strong> Density
-			carries the progression, hue carries the meaning — which is why selected is opaque rather than
-			merely denser: among panes of glass, the one you cannot see through is the chosen one, and it
-			leaves hover a rung of its own to occupy. Forced side by side, because
+			<strong>rest .58 → hover .80 + an INK ring → selected .80 + a GOLD ring.</strong>
+			<strong>Density separates resting from engaged; hue separates the two engaged states.</strong>
+			⚓ Nate, correcting a version that took selected all the way to opaque: three densities meant the
+			eye had to measure how solid a pane was to know what it was looking at, when the ring was already
+			saying it in colour. Forced side by side, because
 			<strong>you cannot judge a hover by hovering</strong>: you never see two states at once.
 		</p>
 		<p class="lab-note">
@@ -419,6 +420,57 @@
 				</p>
 			</div>
 		</div>
+	</section>
+
+	<!-- ══════════════════════════════════════════ 6 · GOLD IN TEXT ══ -->
+	<section>
+		<h2 class="lab-h">
+			Gold in text <span class="lab-badge">proposal</span>
+		</h2>
+		<p class="lab-note">
+			Read off the five Genshin screenshots, the pattern is narrower than "an accent colour" and
+			surprisingly consistent: <strong>gold names a BLOCK; it never emphasises a WORD.</strong> Their
+			section labels — "Opening Characters", "Performance Requirements", "Challenge Criteria", "Special
+			Rules" — are all gold. Their titles are not: those are white on dark, dark ink on light. And inline
+			emphasis inside prose is never gold either — it is a hotter ORANGE, or the element's own hue.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>So gold sits BELOW the title in the hierarchy</strong>, which is the
+			counterintuitive part and the reason it is worth writing down rather than applying by feel:
+			you would expect the accent on the most important thing, and Genshin puts it on the
+			second-most. The title is the loudest by SIZE; gold marks the thing that names a region.
+		</p>
+		<div class="lab-row">
+			{#each [{ k: 'dark', cls: 'ctx-dark', t: 'on slate' }, { k: 'light', cls: 'ctx-light', t: 'on parchment' }] as g (g.k)}
+				<div class="cand">
+					<span class="cand-tag">{g.t} — today</span>
+					<div class="{g.cls} goldspec">
+						<h3 class="ty-h1">Off-field DMG</h3>
+						<p class="kicker">Who provides it</p>
+						<p class="spec-prose">
+							Coordinated attacks or damaging summons, from <b>35</b> characters.
+						</p>
+					</div>
+					<span class="cand-tag">{g.t} — gold names the block</span>
+					<div class="{g.cls} goldspec goldspec--next">
+						<h3 class="ty-h1">Off-field DMG</h3>
+						<p class="kicker">Who provides it</p>
+						<p class="spec-prose">
+							Coordinated attacks or damaging summons, from <b>35</b> characters.
+						</p>
+					</div>
+				</div>
+			{/each}
+		</div>
+		<p class="lab-note sg-note--flag">
+			⚠ <strong>THE GAP THIS OPENS: we have no inline-emphasis colour.</strong> Genshin's is an
+			orange (<code>#f39000</code>) that belongs to no other role — it marks "takes DMG", "bolt of
+			lightning", a level number. Ours is gold today (the bold runs above), and if gold becomes the
+			block label then using it inside prose as well puts one hue on two unrelated jobs, which is
+			exactly the drift the census exists to catch. Three ways out, none chosen: borrow the element
+			hue where the emphasised thing HAS an element, promote a warm rung of our own, or accept that
+			emphasis is weight-only. Worth deciding with the <code>--el-*</code> round, not before it.
+		</p>
 	</section>
 
 	<!-- ══════════════════════════════════════════ 4 · THE SPLIT CARD ══ -->
@@ -849,10 +901,11 @@
 	.glasspane.is-dense {
 		background: var(--surface-hover);
 	}
-	/* Selected: full opacity + the gold ring. The top of the density ladder —
-	   among panes of glass, the thing you cannot see through is the chosen one. */
+	/* Selected: the SAME density as hover, and a gold ring instead of an ink one.
+	   Density separates resting from engaged; hue separates the two engaged
+	   states (⚓ Nate). */
 	.glasspane.is-sel {
-		background: var(--frame-bg);
+		background: var(--surface-hover);
 		box-shadow: inset 0 0 0 1px var(--sel-ring);
 		color: var(--text);
 	}
@@ -901,6 +954,29 @@
 	}
 	.border-rule--quiet {
 		background: var(--frame-line-quiet);
+	}
+
+	/* ── gold in text (proposal) ──────────────────────────────────────────── */
+	.goldspec {
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+		width: 340px;
+		padding: 1rem 1.1rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+	}
+	/* The whole proposal, in one declaration: the KICKER goes gold. Nothing else
+	   moves — the title stays the context's brightest ink, the prose stays body
+	   ink, and the emphasis stays where it is until the --el-* round settles it. */
+	.goldspec--next :global(.kicker) {
+		color: var(--accent);
+	}
+	/* ⚠ ...and its rule with it. The kicker's ::after is a mix of --muted; left
+	   alone it would read as a grey tail on a gold label, which is precisely the
+	   kind of half-applied idiom the board exists to expose before it ships. */
+	.goldspec--next :global(.kicker::after) {
+		background: color-mix(in srgb, var(--accent) 30%, transparent);
 	}
 
 	/* ── the two parchments ───────────────────────────────────────────────── */

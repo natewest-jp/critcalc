@@ -1392,34 +1392,37 @@
 	background: var(--surface-hover);
 	box-shadow: inset 0 0 0 1px var(--glass-ring);
 }
-/* ── SELECTED GLASS: FULL DENSITY + A GOLD EDGE (⚓ NATE 2026-08-10) ────────
-   ONE idiom for every selected pane, and it completes a three-step ladder that
-   reads without a legend:
+/* ── SELECTED GLASS: THE HOVER DENSITY + A GOLD EDGE (⚓ NATE 2026-08-10) ───
+   ONE idiom for every selected pane, and the ladder reads without a legend:
 
      rest      --surface       (.58)  translucent
      hover     --surface-hover (.80)  + an INK ring   — "here"
-     selected  --frame-bg      opaque + a GOLD ring   — "chosen"
+     selected  --surface-hover (.80)  + a GOLD ring   — "chosen"
 
-   Density carries the progression and hue carries the meaning. That is why the
-   selected tab is OPAQUE rather than merely denser: among panes of glass, the
-   thing you can't see through is the thing that is chosen, and it leaves hover
-   a rung of its own to occupy.
+   DENSITY separates resting from engaged; HUE separates the two engaged states.
+   That is a cleaner split than the one shipped an hour earlier, which took
+   selected all the way to opaque: three densities meant the eye had to measure
+   how solid a pane was to know what it was looking at, when the ring was
+   already saying it in colour. ⚓ Nate: "the same .80 opacity as hover, just
+   with the gold ring instead."
 
-   ⚓ This is where the document tab landed too — "make band A's tab buttons
-   follow the new selected dense fill with gold border" — so the tabs and the
-   band-B controls stop being two treatments. The tab kept its opaque slate from
-   the density round; what it gained is the edge, and what the accent wash lost
-   is its job (the ring says it better and does not lift the ground).
+   ⚓ The document tab landed here too — "make band A's tab buttons follow the
+   new selected dense fill with gold border" — so the tabs and the band-B
+   controls stop being two treatments. What the tab gave up is the opaque slate
+   from the density round; what the accent WASH gave up is its job, since the
+   ring says it better without lifting the ground.
 
-   ⚠ NOT blurred: a backdrop nothing can see through is pure cost. */
+   ⚠ IT IS BLURRED AGAIN. The base glass rule excludes `.tab.active`, so the tab
+   needs its own copy — and now that a selected pane is translucent, a pane
+   without the blur would be the one place the world came through sharp. */
 .band-a .tab.active,
 .band-a .btn.is-active,
 .band--3up > .band-zone .btn.is-active {
-	background: var(--frame-bg);
+	background: var(--surface-hover);
 	box-shadow: inset 0 0 0 1px var(--sel-ring);
 	color: var(--text);
-	-webkit-backdrop-filter: none;
-	backdrop-filter: none;
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	backdrop-filter: blur(var(--glass-blur));
 }
 /* The surviving ghost stays a ghost — a destructive control INSIDE A RUN of
    other controls must not sit on screen looking pressable. Scoped to band A,
