@@ -49,6 +49,42 @@
 	];
 
 	const LINE_STOPS = ['--line-faint', '--line-soft', '--line-strong', '--line-edge'];
+
+	/**
+	 * BORDERS IN GOLD — ⚓ Nate 2026-08-10: "I think Genshin uses gold for BOTH
+	 * contexts. I'm not sure which brightness stop."
+	 *
+	 * Every candidate rung against both grounds, at the two alphas that survived
+	 * the cut. Mixed OPAQUELY against each ground (the compositing law) and one
+	 * level deep — both inputs are primitives, never aliases of each other, so
+	 * no color-mix is ever fed a color-mix.
+	 *
+	 * The control row is the shipped ink line, so the question being asked is
+	 * "gold instead of THIS", not "gold in the abstract".
+	 */
+	const BORDER_CANDIDATES = [
+		{ key: 'ink', label: 'ink — shipped', src: null },
+		{ key: 'gold-300', label: '--gold-300', src: 'var(--gold-300)' },
+		{ key: 'gold-400', label: '--gold-400 · the accent', src: 'var(--gold-400)' },
+		{ key: 'gold-500', label: '--gold-500', src: 'var(--gold-500)' },
+		{ key: 'gold-600', label: '--gold-600', src: 'var(--gold-600)' },
+		{ key: 'gold-700', label: '--gold-700', src: 'var(--gold-700)' }
+	];
+
+	/** The open question the ring cannot answer on its own — see --glass-ring. */
+	const RING_CANDIDATES = [
+		{ key: 'ink', label: 'parchment ink — shipped', ring: 'var(--line-edge)' },
+		{
+			key: 'gold',
+			label: 'gold-400 @ .45',
+			ring: 'color-mix(in srgb, var(--gold-400) 45%, transparent)'
+		},
+		{
+			key: 'slate',
+			label: 'brighter slate — slate-300',
+			ring: 'color-mix(in srgb, var(--slate-300) 75%, transparent)'
+		}
+	];
 </script>
 
 <svelte:head><title>Specimen Board — critcalc.app</title></svelte:head>
@@ -131,34 +167,76 @@
 		</div>
 	</section>
 
-	<!-- ══════════════════════════════════════ 3 · GLASS HOVER CANDIDATES ══ -->
+	<!-- ═══════════════════════════════════════════ 3 · BORDERS IN GOLD ══ -->
 	<section>
 		<h2 class="lab-h">
-			Glass hover — ring or wash <span class="lab-badge">proposal</span>
+			Borders — ink or gold <span class="lab-badge">deciding</span>
 		</h2>
 		<p class="lab-note">
-			Both states rendered side by side, forced — <strong
-				>you cannot judge a hover by hovering</strong
-			>, because you never see rest and hover at once. Left pair is today's wash; right pair is the
-			edge ring. Glass is the one material whose EXTENT is not self-evident (at 8% transmission the
-			step against the sky is small, and it varies across the pane's own width), so it is the one
-			material an edge border is not redundant on.
+			⚓ Nate: Genshin appears to use gold on <em>both</em> grounds, and the open question is which
+			rung. Every candidate against both, at the two alphas that survived the cut — mixed opaquely
+			against each ground, so what you see is the line as it would actually resolve. The top row is
+			the shipped ink line, so the question is "gold instead of <em>that</em>".
+			<strong>The inset frame is the load-bearing case</strong>: it is the one place a line is
+			ornament rather than structure, and ornament is where gold has a claim.
+		</p>
+		<div class="border-grid">
+			<div class="border-head">
+				<span></span>
+				<span class="cand-tag">on slate</span>
+				<span class="cand-tag">on parchment</span>
+			</div>
+			{#each BORDER_CANDIDATES as c (c.key)}
+				<div class="border-row">
+					<span class="cand-tag border-name">{c.label}</span>
+					{#each ['ctx-dark', 'ctx-light'] as ground (ground)}
+						<div
+							class="border-cell {ground}"
+							style:--frame-line={c.src
+								? `color-mix(in srgb, ${c.src} 18%, var(--frame-bg))`
+								: null}
+							style:--frame-line-quiet={c.src
+								? `color-mix(in srgb, ${c.src} 10%, var(--frame-bg))`
+								: null}
+						>
+							<div class="border-inset inset inset--plain">inset · α .18</div>
+							<hr class="border-rule" />
+							<hr class="border-rule border-rule--quiet" />
+						</div>
+					{/each}
+				</div>
+			{/each}
+		</div>
+	</section>
+
+	<!-- ══════════════════════════════════════ 4 · GLASS HOVER + THE RING ══ -->
+	<section>
+		<h2 class="lab-h">
+			Glass hover <span class="lab-badge">shipped</span> · the ring colour
+			<span class="lab-badge">deciding</span>
+		</h2>
+		<p class="lab-note">
+			Ring + density is in (⚓ approved), at the new alphas — rest <b>.58</b>, hover <b>.80</b>.
+			Rendered side by side and forced, because
+			<strong>you cannot judge a hover by hovering</strong>: you never see rest and hover at once.
+			What is still open is the ring's colour, and ⚠
+			<strong>it cannot be settled before the row above</strong> — if lines go gold globally, a gold ring
+			stops distinguishing HOVER from SELECTED, which is the one thing it has to do.
 		</p>
 		<div class="lab-row">
+			{#each RING_CANDIDATES as r (r.key)}
+				<div class="cand">
+					<span class="cand-tag">{r.label}</span>
+					<div class="ctx-glass glasspane">rest · .58</div>
+					<div class="ctx-glass glasspane is-dense" style:box-shadow="inset 0 0 0 1px {r.ring}">
+						hover · .80
+					</div>
+				</div>
+			{/each}
 			<div class="cand">
-				<span class="cand-tag">wash — today</span>
+				<span class="cand-tag">wash — retired</span>
 				<div class="ctx-glass glasspane">rest</div>
 				<div class="ctx-glass glasspane is-wash">hover</div>
-			</div>
-			<div class="cand">
-				<span class="cand-tag">ring — proposed</span>
-				<div class="ctx-glass glasspane">rest</div>
-				<div class="ctx-glass glasspane is-ring">hover</div>
-			</div>
-			<div class="cand">
-				<span class="cand-tag">ring + density</span>
-				<div class="ctx-glass glasspane">rest</div>
-				<div class="ctx-glass glasspane is-ring is-dense">hover</div>
 			</div>
 		</div>
 	</section>
@@ -441,22 +519,61 @@
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 	}
-	/* Today: a wash laid OVER the pane (the nesting law — a layer, never a
-	   color-mix fed by a color-mix). */
+	/* The retired wash, kept as the control — a layer over the pane, never a
+	   color-mix fed by a color-mix. */
 	.glasspane.is-wash {
 		background: linear-gradient(var(--fill-hover), var(--fill-hover)), var(--surface);
 	}
-	/* Proposed: the pane's own line stop as an edge ring. inset box-shadow, not
-	   a border — no layout shift, and a single stroke composites exactly once on
-	   glass (the rule that vetoes .inset--double there). */
-	.glasspane.is-ring {
-		box-shadow: inset 0 0 0 1px var(--line-edge);
-	}
-	/* And the third option: the ring announces, the MATERIAL thickens. Density
-	   rather than tint — over dark sky more alpha reads lighter, over a star it
-	   reads darker, and either way the ink's contrast goes UP (4.85 → 4.95:1). */
+	/* The shipped hover: the MATERIAL thickens. Reads --surface-hover so this
+	   specimen tracks the real token rather than restating its value. */
 	.glasspane.is-dense {
-		background: rgb(54 62 77 / 0.78);
+		background: var(--surface-hover);
+	}
+
+	/* ── candidate: borders in gold ───────────────────────────────────────
+	   Each cell re-declares --frame-line / --frame-line-quiet inline and then
+	   renders the SHIPPED .inset--plain and a plain rule, so the specimen is the
+	   real idiom wearing a candidate value — not a drawing of one. */
+	.border-grid {
+		display: grid;
+		gap: 6px;
+		max-width: 1000px;
+	}
+	.border-head,
+	.border-row {
+		display: grid;
+		grid-template-columns: 12rem 1fr 1fr;
+		align-items: center;
+		gap: 10px;
+	}
+	.border-name {
+		color: var(--text);
+	}
+	.border-cell {
+		display: grid;
+		gap: 7px;
+		padding: 0.7rem 0.8rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+	}
+	.border-inset {
+		display: grid;
+		place-items: center;
+		height: 46px;
+		border-radius: var(--r-sm);
+		font-family: var(--font-mono);
+		font-size: var(--fs-xs);
+		color: var(--muted);
+		--frame-inset: 4px;
+	}
+	.border-rule {
+		height: 2px;
+		margin: 0;
+		border: none;
+		background: var(--frame-line);
+	}
+	.border-rule--quiet {
+		background: var(--frame-line-quiet);
 	}
 
 	/* ── candidate: the split Atlas card ──────────────────────────────────── */

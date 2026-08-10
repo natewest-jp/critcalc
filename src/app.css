@@ -140,8 +140,29 @@
 	   ⛔ --glass-ribbon is DELETED. It was Fable's stop for the bench ribbon,
 	   and the bench went back to opaque slate the same day (⚓ NATE). Nothing
 	   painted it; the bands take --glass-panel and --glass-well. */
-	--glass-panel: rgb(54 62 77 / 0.68); /* slate-700 — band A, menus, panels */
-	--glass-well: rgb(38 44 56 / 0.55); /* slate-900 — band B, recessed fields */
+	/* ↻ ⚓ NATE 2026-08-10, third move of the day: THE ALPHAS COME DOWN, .68/.55
+	   → .58/.45. This is the deeper wash's other side. Dimming the world to .75
+	   let more of the pane's own colour dominate, and on the specimen board
+	   glass and opaque slate came out reading as the same material — which is
+	   the failure the whole "obviously translucent" rule exists to prevent. The
+	   transmission numbers say it from the other end: the panel stop had fallen
+	   to 8.0%, the closest we had been to sheer. At .58 it is 10.5%.
+	   ⚠ THE WELL HAD TO MOVE TOO, and not for its own sake: at .58/.55 the two
+	   stops were .03 apart and had stopped being two stops. The gap is what
+	   makes the pair a ladder.
+	   Measured against a star at the new dim: panel 4.73:1, well 5.21:1. */
+	--glass-panel: rgb(54 62 77 / 0.58); /* slate-700 — band A, menus, panels */
+	--glass-well: rgb(38 44 56 / 0.45); /* slate-900 — band B, recessed fields */
+	/* HOVER IS DENSITY, NOT TINT (⚓ NATE 2026-08-10). The same rung as the panel
+	   with the alpha driven hard up, so hovering makes a pane MORE MATERIAL
+	   rather than washing it with a colour. Two things fall out that no tint can
+	   give: the ink's contrast goes UP under the hand (4.73 → 4.97:1) instead of
+	   down, and no foreign hue ever touches a slate pane.
+	   ⚓ .80 rather than the .70 first tried — "I want the separation between
+	   plain glass and hovered glass to be stronger." Against the sky the pair now
+	   reads as translucent → nearly solid, which is a state change you can see
+	   without looking for it. */
+	--glass-hover: rgb(54 62 77 / 0.8);
 	--glass-parch: rgb(236 229 216 / 0.1); /* parchment frost — a resting fill */
 	/* ⚓ NATE — ON PROBATION, 2026-08-09. Tuned 6 → 2 → 1px and still under
 	   test; it may yet go to 0. Nothing is allowed to depend on it (see below),
@@ -970,8 +991,15 @@
 	--line-soft: #50555e; /* = parchment-100 @ .18 */
 	--line-strong: #676a70; /* = parchment-100 @ .30 */
 	--line-edge: #7e7f82; /* = parchment-100 @ .42 */
-	--border: var(--line-edge);
-	--frame-line: var(--line-strong);
+	/* ↻ ⚓ NATE 2026-08-10: THE ROLES DROP TO THE TWO MOST TRANSPARENT STOPS —
+	   "the higher alpha mix borders are probably never going to be used". The
+	   four stops stay declared (they are the ladder, and the .30/.42 rungs are
+	   what a future ornament would climb to), but nothing points at the top two
+	   any more, which is the honest way to retire a value: let the census report
+	   it free and delete it once we are sure. See the .ctx-light block for the
+	   same move on paper, where a whisper was already the intent. */
+	--border: var(--line-soft);
+	--frame-line: var(--line-soft);
 	--frame-line-quiet: var(--line-faint);
 	/* ✅ The accent is gold now, not this context's own borrowed ink — see the
 	   accent block at :root. The derived sel-* tokens re-declare per the
@@ -1026,8 +1054,12 @@
 	--line-soft: #cfcbc3; /* = ink-700 @ .18 */
 	--line-strong: #bbb9b6; /* = ink-700 @ .30 */
 	--line-edge: #a8a8a8; /* = ink-700 @ .42 */
-	--border: var(--line-edge);
-	--frame-line: var(--line-strong);
+	/* ↻ ⚓ NATE 2026-08-10: the roles drop to the two most transparent stops, the
+	   same move as .ctx-dark. On paper it changes least — "paper structure is a
+	   whisper" was already the note here, and the top two rungs were the part
+	   that never sounded like one. */
+	--border: var(--line-soft);
+	--frame-line: var(--line-soft);
 	--frame-line-quiet: var(--line-faint);
 	/* ⚠ THE ACCENT CHANGES RUNG, NOT HUE. gold-400 measures 1.48:1 on this
 	   ground — it would be invisible as ink and illegible as a link. gold-700
@@ -1116,6 +1148,7 @@
 	--surface: var(--glass-panel);
 	--surface-raised: var(--glass-panel);
 	--surface-well: var(--glass-well);
+	--surface-hover: var(--glass-hover);
 	--frame-bg: var(--slate-800);
 	--text: var(--parchment-100);
 	--muted: #b7b4ae; /* = parchment-100 @ .72 over slate-800; literal per THE
@@ -1132,9 +1165,18 @@
 	--line-soft: rgb(236 229 216 / 0.18);
 	--line-strong: rgb(236 229 216 / 0.3);
 	--line-edge: rgb(236 229 216 / 0.42);
-	--border: var(--line-edge);
-	--frame-line: var(--line-strong);
+	--border: var(--line-soft);
+	--frame-line: var(--line-soft);
 	--frame-line-quiet: var(--line-faint);
+	/* THE HOVER RING — see the pane-hover rule below for why glass gets an edge
+	   and nothing else does.
+	   ⚓ ON TRIAL, and the OPEN QUESTION of the round: it is the pane's own ink
+	   here (parchment at alpha, like every other line in this context), and the
+	   two live alternatives — gold, or a brighter slate — are laid out side by
+	   side at /lab § the hover ring. ⚠ It cannot be settled before the border
+	   colour is: if lines go gold globally, a gold ring stops distinguishing
+	   HOVER from SELECTED, which is the one thing it has to do. */
+	--glass-ring: var(--line-edge);
 	--accent: var(--gold-400);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
@@ -1199,24 +1241,36 @@
 	-webkit-backdrop-filter: blur(var(--glass-blur));
 	backdrop-filter: blur(var(--glass-blur));
 }
-/* Hover/active states re-declare the ground, so they need the glass stops too
-   — otherwise touching a control turns opaque under the cursor.
+/* ── HOVERING A PANE OF GLASS (⚓ NATE 2026-08-10) ──────────────────────────
+   A RING AND A DENSITY, and no wash at all. This replaces three different
+   hover treatments that had accumulated on one row of plates (an accent wash on
+   tabs, a neutral wash on buttons, a parchment one before that).
 
-   ↻ ⚓ NATE 2026-08-10: A TAB AND A BUTTON HOVER THE SAME. They were two
-   different washes (the tab took the accent one, the button the neutral one) on
-   two rules that were otherwise identical, which is how a run of plates ended up
-   with two materials in it. One rule, one wash — see .ctx-glass, where both
-   roles now resolve to the same slate lift.
+   WHY A RING IS LEGITIMATE HERE AND NOWHERE ELSE. An edge border says where a
+   surface ENDS, and on an opaque panel the ground already says that — the
+   boundary is a luminance step, which is exactly why edge borders retired.
+   Glass is the one material whose extent is NOT self-evident: at ~10%
+   transmission the step against the sky is small, and it VARIES across the
+   pane's own width depending on whether a star or empty sky is behind it. So
+   the defect is glass's alone and so is the fix. ⚠ Hover and selected only —
+   this is not a licence to put edges back on resting surfaces.
 
-   ⚠ THE DOUBLE-GRADIENT IS THE NESTING LAW, not a flourish. The wash has to sit
-   OVER the pane rather than replace it, and the obvious spelling —
-   color-mix(--fill-hover …) — is a color-mix fed by a color-mix, which CRASHES
-   WEBKIT. A one-stop linear-gradient is a background LAYER, so the two
-   composite at paint time with no colour arithmetic at all. */
+   WHY DENSITY RATHER THAN A WASH. See --glass-hover: the ink's contrast rises
+   under the hand instead of falling, and no foreign hue lands on a slate pane
+   ("slate panels should always be some form of slate — including glass slate
+   panels").
+
+   ⚠ inset box-shadow, never a real border: no layout shift, and a single stroke
+   composites exactly once on glass — the rule that vetoes .inset--double there.
+   ⚠ NO GRADIENT LAYER ANY MORE. The old spelling stacked a wash over the pane
+   with a one-stop linear-gradient, to dodge the color-mix-fed-by-a-color-mix
+   WebKit crash. Replacing the ground outright with a second declared stop needs
+   no arithmetic at all, so the hazard simply leaves. */
 .band-a .tab:not(.active):hover,
 .band-a .btn:hover:not(:disabled),
 .band--3up > .band-zone .btn:hover:not(:disabled) {
-	background: linear-gradient(var(--fill-hover), var(--fill-hover)), var(--surface);
+	background: var(--surface-hover);
+	box-shadow: inset 0 0 0 1px var(--glass-ring);
 }
 .band-a .btn.is-active,
 .band--3up > .band-zone .btn.is-active {

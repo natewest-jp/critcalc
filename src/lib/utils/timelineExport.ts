@@ -41,8 +41,12 @@ import type {
 // --slate-900. The mirror test resolves the chain itself rather than comparing
 // declaration text, so these stay literals and stay checked.
 const CHART_BG = '#262c38'; // --rp-chart-bg → --surface-well → --slate-900
-const GRID = '#4e5159'; // --rp-grid = mix(ctx-dark --border 45%, chart-bg), resolved
-const LANE_LINE = '#717377'; // --rp-line = mix(ctx-dark --border 85%, chart-bg), resolved
+// ↻ 2026-08-10: both moved because --border did — the line roles dropped to the
+// two most transparent stops (--line-edge → --line-soft, ⚓ Nate), and these
+// derive from --border. The mirror test caught it, which is the only reason
+// this pair is right: nothing else compares an exported PNG to the screen.
+const GRID = '#393e49'; // --rp-grid = mix(ctx-dark --border 45%, chart-bg), resolved
+const LANE_LINE = '#4a4f58'; // --rp-line = mix(ctx-dark --border 85%, chart-bg), resolved
 // ⚠ THIS BLOCK IS A HAND-MAINTAINED MIRROR of app.css. Canvas can't resolve
 // var(), so every token the export paints has to be duplicated here as a
 // literal. When a token value changes in app.css, change it here too or the

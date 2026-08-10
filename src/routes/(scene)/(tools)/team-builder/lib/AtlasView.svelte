@@ -104,13 +104,14 @@
 			background 150ms ease,
 			transform 150ms ease;
 	}
-	/* Was a border-color change on a card that has had `border: none` since the
-	   edge borders retired — a hover state that could not paint. On glass the
-	   honest answer is to thicken the pane: the accent wash laid OVER the panel
-	   stop as a second background layer, never mixed into it (a color-mix fed by
-	   a color-mix crashes WebKit, and --accent-hover-fill is already one). */
+	/* ↻ ⚓ NATE 2026-08-10: the glass pane-hover idiom — A RING AND A DENSITY,
+	   no wash. Same treatment as the band plates (see app.css), because this is
+	   the same situation: a pane of glass whose extent the sky behind it will not
+	   reliably declare. The accent wash it replaces was the last place a hovered
+	   slate surface picked up a foreign hue. */
 	.rolecard:hover {
-		background: linear-gradient(var(--accent-hover-fill), var(--accent-hover-fill)), var(--surface);
+		background: var(--surface-hover);
+		box-shadow: inset 0 0 0 1px var(--glass-ring);
 		transform: translateY(-2px);
 	}
 	/* The monotone role glyph as a large, faint backdrop.
