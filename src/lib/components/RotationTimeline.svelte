@@ -1672,7 +1672,7 @@
 		--rp-active: #757f93;
 
 		font-family: var(--font-body);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		color: var(--text);
 		display: flex;
 		flex-direction: column;
@@ -1781,7 +1781,7 @@
 		width: max-content;
 		height: 100%;
 		padding-left: 8px;
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;
@@ -1862,7 +1862,7 @@
 		bottom: 11px;
 		left: 0;
 		transform: translateX(-50%);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		color: var(--muted);
 		white-space: nowrap;
 		pointer-events: none;
@@ -1955,7 +1955,7 @@
 		   transparent tail lines up with the padding, so a label that FITS shows
 		   no fade — only clipped text runs under it and dissolves instead of
 		   slicing mid-glyph. */
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		color: rgba(255, 255, 255, 0.85);
 		white-space: nowrap;
@@ -2231,7 +2231,7 @@
 		z-index: 2;
 	}
 	.rp-bar-cast-label {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		color: #fff;
 		white-space: nowrap;
@@ -2240,7 +2240,7 @@
 		flex-shrink: 0;
 	}
 	.rp-bar-cd-label {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		color: rgba(255, 255, 255, 0.4);
 		white-space: nowrap;
@@ -2318,7 +2318,7 @@
 		overflow: hidden;
 	}
 	.rp-summon-label {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		/* Summon bars are always full-strength castFill → ink, no halo. */
 		color: var(--bright-ink);
@@ -2397,7 +2397,7 @@
 		box-shadow: none;
 	}
 	.rp-active-text {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 		color: rgba(255, 255, 255, 0.85);
 	}
@@ -2415,7 +2415,7 @@
 	.rp-bar-row-badge {
 		position: absolute;
 		left: 4px;
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		color: var(--bright-ink);
 		pointer-events: none;
@@ -2466,7 +2466,7 @@
 		padding: 6px 10px;
 		border-radius: var(--r-sm);
 		background: var(--control-face);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;

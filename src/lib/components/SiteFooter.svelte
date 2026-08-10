@@ -39,7 +39,7 @@
 	.ftr__legal {
 		margin: 0 auto;
 		max-width: 62rem;
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		line-height: var(--lh-snug);
 	}
 </style>

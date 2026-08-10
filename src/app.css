@@ -848,17 +848,45 @@
 	   scattered ad-hoc values the three tools accreted over different eras.
 	   REUSE these tokens; don't reintroduce raw values. Sizes are integer px
 	   @ 16px root. The landing/hero clamp() display sizes stay literal — they're
-	   intentionally fluid, not part of the step scale. */
-	--fs-2xs: 0.5625rem; /* 9px  — micro labels, badges, dense captions */
-	--fs-xs: 0.625rem; /* 10px — small labels, meta, glyph text */
-	--fs-sm: 0.6875rem; /* 11px — chips, secondary labels */
-	--fs-md: 0.75rem; /* 12px — dense body, controls, table cells */
-	--fs-lg: 0.875rem; /* 14px — base UI / body */
-	--fs-xl: 1rem; /* 16px — emphasized body, small headings */
-	--fs-2xl: 1.125rem; /* 18px — subheadings */
-	--fs-3xl: 1.25rem; /* 20px — section headings */
-	--fs-4xl: 1.5rem; /* 24px — panel titles */
-	--fs-5xl: 2rem; /* 32px — page headings */
+	   intentionally fluid, not part of the step scale.
+
+	   ══ THE SIZE-UP (⚓ NATE 2026-08-10) ═══════════════════════════════════
+	   EVERY ROLE MOVED UP ONE RUNG. The RUNGS DID NOT MOVE — every px value in
+	   this block is unchanged, and 208 declarations across 40 files were
+	   re-pointed one step up instead. That direction is deliberate and it is the
+	   part to preserve: the values are quoted in dozens of comments and in the
+	   export mirror, and a scale whose numbers move under fixed names makes
+	   every one of those quietly wrong. A scale is a ladder; you climb it, you
+	   do not slide it.
+
+	   WHY, measured: /lab put our surfaces beside Genshin's and the gap was not
+	   brightness alone — controls sat at 11px and prose at 12 against a UI built
+	   much larger. The pressure was all at the BOTTOM, which is why the top rung
+	   holds (see --fs-5xl).
+
+	   ⚠ THE ROLE COMMENTS BELOW ARE THE NEW ASSIGNMENTS, not the old ones. Each
+	   rung inherited the job of the rung below it. */
+	--fs-2xs: 0.5625rem; /* 9px  — RESERVE. Everything that lived here moved up;
+	                        it is kept as the bottom of the ladder, not deleted,
+	                        because a scale needs somewhere to go. */
+	--fs-xs: 0.625rem; /* 10px — micro labels, badges, dense captions */
+	--fs-sm: 0.6875rem; /* 11px — small labels, meta, glyph text */
+	--fs-md: 0.75rem; /* 12px — chips, controls, tabs, secondary labels */
+	--fs-lg: 0.875rem; /* 14px — dense body, table cells */
+	--fs-xl: 1rem; /* 16px — base UI / body / prose */
+	--fs-2xl: 1.125rem; /* 18px — emphasized body, small headings */
+	--fs-3xl: 1.25rem; /* 20px — subheadings (.title, the workhorse header) */
+	/* ⚠ 24px IS ALSO THE BRAND SIZE (⚓ Nate: "unify Section headings and
+	   branding"). SiteChrome's wordmark was an orphan literal at 1.33rem and now
+	   reads this token through --brand-size. Move this rung and the masthead
+	   moves with it — which is the point, but know it before you do. */
+	--fs-4xl: 1.5rem; /* 24px — section headings · the brand */
+	/* ⚠ THE ONE RUNG THAT DID NOT SHIFT, and it is not an oversight: this is the
+	   INSTRUMENT READOUT size (the Visualizers' big numbers), which was already
+	   as large as it wants to be, and there is nothing above it to climb to.
+	   Page titles moved UP into it, so the two now share — different roles on one
+	   rung is fine; a role with no rung is not. */
+	--fs-5xl: 2rem; /* 32px — page headings · instrument readouts */
 
 	--fw-normal: 400;
 	--fw-medium: 500;
@@ -1497,12 +1525,12 @@ img {
    step larger than intended (Nate 2026-07-27). Headings set their own sizes, so
    putting it on .prose catches paragraphs, lists and anything unstyled. */
 .prose {
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 }
 
 .prose h1 {
 	margin: 0 0 1.2rem;
-	font-size: var(--fs-4xl);
+	font-size: var(--fs-5xl);
 	font-weight: var(--fw-bold);
 	letter-spacing: var(--ls-tight);
 	color: var(--chrome);
@@ -1510,7 +1538,7 @@ img {
 
 .prose h2 {
 	margin: 2rem 0 0.8rem;
-	font-size: var(--fs-2xl);
+	font-size: var(--fs-3xl);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-tight);
 	color: var(--chrome);
@@ -1518,7 +1546,7 @@ img {
 
 .prose h3 {
 	margin: 1.4rem 0 0.5rem;
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 	font-weight: var(--fw-semibold);
 	color: var(--text);
 }
@@ -1573,7 +1601,7 @@ img {
 /* A lede is the one thing in prose that should be LARGER than body copy; it
    was fs-lg against a 16px body, i.e. smaller than what it introduces. */
 .prose .lede {
-	font-size: var(--fs-xl);
+	font-size: var(--fs-2xl);
 	color: var(--muted);
 }
 
@@ -1645,7 +1673,7 @@ img {
 	background: var(--btn-face);
 	color: var(--muted);
 	font-family: var(--font-body);
-	font-size: var(--fs-sm);
+	font-size: var(--fs-md);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
@@ -1678,7 +1706,7 @@ img {
 }
 .btn--sm {
 	padding: 0.25rem 0.5rem;
-	font-size: var(--fs-xs);
+	font-size: var(--fs-sm);
 }
 .btn--icon {
 	padding: 0.25rem;
@@ -1779,7 +1807,7 @@ img {
 	background: var(--fill-rest);
 	color: var(--muted);
 	font-family: var(--font-body);
-	font-size: var(--fs-sm);
+	font-size: var(--fs-md);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-mid);
 	cursor: pointer;
@@ -1801,7 +1829,7 @@ img {
 /* Instrument voice — a setting, so it shouts like a button. */
 .chip--control {
 	padding: 0.35rem 0.75rem;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
 }
@@ -1809,7 +1837,7 @@ img {
    GaugeInstrument's scoped .vz-chip-sm in chunk 2. */
 .chip--sm {
 	padding: 0.25rem 0.5rem;
-	font-size: var(--fs-sm);
+	font-size: var(--fs-md);
 	letter-spacing: var(--ls-tight);
 }
 
@@ -1857,7 +1885,7 @@ img {
 	background: var(--fill-rest);
 	color: var(--muted);
 	font-family: var(--font-body);
-	font-size: var(--fs-sm);
+	font-size: var(--fs-md);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-mid);
 	white-space: nowrap;
@@ -1882,7 +1910,7 @@ img {
    row) — same system one step up; document tabs stay at base size. */
 .tab--lg {
 	padding: 0.45rem 0.9rem;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	max-width: none;
 }
 .tab--closeable {
@@ -1898,7 +1926,7 @@ img {
 	border-radius: var(--r-sm);
 	background: none;
 	color: inherit;
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 	line-height: var(--lh-none);
 	opacity: 0.4;
 	cursor: pointer;
@@ -1962,7 +1990,7 @@ img {
 	background: var(--ui-positive);
 }
 .toggle-label {
-	font-size: var(--fs-sm);
+	font-size: var(--fs-md);
 	font-weight: var(--fw-semibold);
 	color: var(--muted);
 }
@@ -1972,7 +2000,7 @@ img {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.55rem;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	color: var(--muted);
 	cursor: pointer;
 }
@@ -2163,7 +2191,7 @@ img {
 	padding: 0.3rem 0.7rem;
 	border-radius: var(--r-sm);
 	background: var(--surface);
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
@@ -2177,7 +2205,7 @@ img {
 	gap: 0.4rem;
 	text-transform: none;
 	letter-spacing: normal;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	font-weight: var(--fw-normal);
 	color: var(--muted);
 }
@@ -2194,7 +2222,7 @@ img {
 	display: flex;
 	align-items: center;
 	gap: 0.65rem;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-widest);
 	text-transform: uppercase;
@@ -2214,14 +2242,14 @@ img {
 .title {
 	margin: 0;
 	font-family: var(--font-display);
-	font-size: var(--fs-2xl);
+	font-size: var(--fs-3xl);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-tight);
 	color: var(--text);
 }
 .subtitle {
 	margin: 0.15rem 0 0;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	color: var(--muted);
 	text-transform: capitalize;
 }
@@ -2233,7 +2261,7 @@ img {
    explanatory paragraph, not a caption. */
 .note {
 	margin: 0;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	line-height: var(--lh-relaxed);
 	color: var(--muted);
 }
@@ -2242,7 +2270,7 @@ img {
 .field-label {
 	display: block;
 	margin-bottom: 0.3rem;
-	font-size: var(--fs-xs);
+	font-size: var(--fs-sm);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
@@ -2257,7 +2285,7 @@ img {
 	box-shadow: inset 0 0 0 1px var(--border);
 	color: var(--text);
 	font-family: var(--font-body);
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 	transition:
 		background var(--t-quick),
 		box-shadow var(--t-quick);
@@ -2281,7 +2309,7 @@ img {
 	align-items: center;
 	justify-content: space-between;
 	gap: 1rem;
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 }
 
 .slider-label {

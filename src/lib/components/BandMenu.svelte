@@ -153,7 +153,7 @@
 		background: transparent;
 		color: var(--text);
 		font-family: var(--font-body);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		text-align: left;
 		white-space: nowrap;
 		cursor: pointer;

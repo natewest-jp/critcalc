@@ -153,20 +153,20 @@
 	}
 	.rolecard-plus {
 		color: var(--muted);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 	}
 
 	.rolecard-label {
 		font-family: var(--font-display);
-		font-size: var(--fs-xl);
+		font-size: var(--fs-2xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 		color: var(--text);
 	}
 	.rolecard-counts {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: var(--muted);
 	}
 	.rolecard-count {
@@ -193,7 +193,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.25rem;
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 		font-variant-numeric: tabular-nums;
 		color: var(--text);

@@ -278,7 +278,7 @@
 		flex-direction: column;
 		overflow: hidden;
 		font-family: var(--font-body);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		color: var(--text);
 	}
 
@@ -308,12 +308,12 @@
 		gap: 8px;
 	}
 	.empty-title {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		margin: 0;
 	}
 	.empty-hint {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		margin: 0;
 		opacity: 0.7;
 		line-height: var(--lh-relaxed);
@@ -407,7 +407,7 @@
 		min-width: 0;
 	}
 	.entry-name {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 		letter-spacing: var(--ls-tight);
@@ -418,7 +418,7 @@
 		min-width: 0;
 	}
 	.entry-date {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		color: var(--muted);
 		opacity: 0.65;
 		white-space: nowrap;
@@ -426,7 +426,7 @@
 		letter-spacing: var(--ls-mid);
 	}
 	.rename-input {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		background: var(--fill-rest);
 		border: none;
@@ -448,7 +448,7 @@
 		/* KQM notation string stays monospace — the one place Mono is kept in
 		   this overlay after the panel defaulted to Sans. */
 		font-family: var(--font-mono);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		color: rgba(158, 172, 200, 0.7);
 		white-space: nowrap;
 		overflow: hidden;

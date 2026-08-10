@@ -560,7 +560,7 @@
 
 	.an-t-name {
 		font-family: var(--font-condensed);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
 		color: color-mix(in srgb, var(--c) 75%, var(--text));
@@ -568,18 +568,18 @@
 	}
 
 	.an-t-math {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
 		text-align: center;
 	}
 
 	.an-t-real {
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		color: var(--muted);
 	}
 
 	.an-t-factor {
-		font-size: var(--fs-xl);
+		font-size: var(--fs-2xl);
 		font-weight: var(--fw-bold);
 		color: var(--text);
 	}
@@ -587,7 +587,7 @@
 	.an-op {
 		align-self: center;
 		color: var(--muted);
-		font-size: var(--fs-2xl);
+		font-size: var(--fs-3xl);
 	}
 
 	.an-total {
@@ -598,20 +598,20 @@
 	}
 
 	.an-total-big {
-		font-size: var(--fs-4xl);
+		font-size: var(--fs-5xl);
 		font-weight: var(--fw-bold);
 		line-height: var(--lh-tight);
 	}
 
 	.an-total-sub {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: var(--muted);
 	}
 
 	.an-join {
 		margin: -0.2rem 0;
 		font-family: var(--font-condensed);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
@@ -619,7 +619,7 @@
 
 	.an-caption {
 		margin: 0;
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		line-height: 1.35rem;
 		color: var(--muted);
 	}
@@ -634,7 +634,7 @@
 	}
 
 	.an-row-label {
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
@@ -644,7 +644,7 @@
 	.an-fine {
 		display: block;
 		font-family: var(--font-condensed);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-normal);
 		letter-spacing: var(--ls-mid);
 		text-transform: none;
@@ -660,7 +660,7 @@
 		color: var(--text);
 		/* Input field — a sanctioned Mono home */
 		font-family: var(--font-mono);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		text-align: right;
 		appearance: textfield;
@@ -688,7 +688,7 @@
 	}
 
 	.an-lab-name {
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 	}
 
@@ -710,7 +710,7 @@
 	}
 
 	.an-lab-gain {
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		text-align: right;
 	}

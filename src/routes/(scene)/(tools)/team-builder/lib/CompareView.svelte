@@ -462,13 +462,13 @@
 	.cmp-titlebar h2 {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: var(--fs-3xl);
+		font-size: var(--fs-4xl);
 		font-weight: var(--fw-semibold);
 	}
 	.cmp-mode {
 		flex: 1;
 		margin: 0;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: var(--muted);
 	}
 	.cmp-headact {
@@ -477,7 +477,7 @@
 	}
 
 	.cmp-footnote {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
 	}
 
@@ -516,7 +516,7 @@
 		transform: scale(1.333) translateY(-14%);
 	}
 	.cmp-chip-initials {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
@@ -527,16 +527,16 @@
 	}
 	.cmp-chip-name {
 		font-family: var(--font-display);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 	}
 	.cmp-chip-wish {
 		margin-left: 0.25rem;
 		color: var(--el-geo-hi, #eed8a5);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 	}
 	.cmp-chip-meta {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		color: var(--muted);
 		text-transform: capitalize;
 	}
@@ -550,7 +550,7 @@
 		border: none;
 		padding: 2px 3px;
 		color: color-mix(in srgb, var(--muted) 60%, transparent);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		cursor: pointer;
 		transition: color 150ms ease;
 	}
@@ -568,7 +568,7 @@
 		border-radius: 3px;
 		background: color-mix(in srgb, var(--el-color) 20%, transparent);
 		color: var(--text);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
@@ -580,7 +580,7 @@
 		background: color-mix(in srgb, var(--accent) 20%, transparent);
 		color: var(--text);
 		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		cursor: pointer;
@@ -630,14 +630,14 @@
 		bottom: 10px;
 		left: 0;
 		transform: translateX(-50%);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		color: var(--muted);
 		white-space: nowrap;
 	}
 
 	.cmp-dim-label {
 		margin: 0.55rem 0 0.2rem;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		color: var(--text);
@@ -650,7 +650,7 @@
 		opacity: 0.55;
 	}
 	.cmp-lane-name {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 		color: var(--el-color);
 		white-space: nowrap;
@@ -663,7 +663,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 3px;
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-variant-numeric: tabular-nums;
 		color: var(--muted);
 		white-space: nowrap;
@@ -677,13 +677,13 @@
 	.cmp-table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 	}
 	.cmp-table th {
 		padding: 0.3rem 0.6rem 0.3rem 0;
 		text-align: left;
 		font-family: var(--font-display);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		border-bottom: 1px solid var(--border);
 		white-space: nowrap;
@@ -697,7 +697,7 @@
 		width: 110px;
 	}
 	.cmp-td-label {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		color: var(--text);
@@ -709,7 +709,7 @@
 		align-items: baseline;
 		flex-wrap: wrap;
 		gap: 0.35rem;
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		min-width: 0;
 	}
 	.cmp-cell--locked {
@@ -724,7 +724,7 @@
 		gap: 3px;
 		padding: 1px 6px;
 		border-radius: 3px;
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		background: color-mix(in srgb, var(--el-color) 18%, transparent);
 	}

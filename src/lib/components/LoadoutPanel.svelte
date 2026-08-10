@@ -172,7 +172,7 @@
 	.lp-hd {
 		margin: 0;
 		font-family: var(--font-body);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		color: var(--text);
 		letter-spacing: var(--ls-tight);
@@ -231,7 +231,7 @@
 
 	.lp-empty {
 		margin: 0;
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-style: italic;
 		color: var(--muted);
 		line-height: var(--lh-tight);
@@ -253,7 +253,7 @@
 		font-family: var(--font-body);
 		/* --fs-xs with the card's R value and the constellation pips (⚓ NATE
 		   2026-08-06) — the value text family moves together. */
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-mid);
 		cursor: pointer;

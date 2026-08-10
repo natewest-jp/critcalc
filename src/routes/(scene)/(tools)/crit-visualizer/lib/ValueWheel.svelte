@@ -122,7 +122,7 @@
 		color: var(--text);
 		/* Input field — one of the two sanctioned Mono homes (Nate 2026-07-24) */
 		font-family: var(--font-mono);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		text-align: right;
 		cursor: pointer;
@@ -191,7 +191,7 @@
 		padding: 0 0.7rem;
 		scroll-snap-align: center;
 		font-family: var(--font-mono);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
 		cursor: pointer;

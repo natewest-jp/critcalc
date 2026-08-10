@@ -280,12 +280,12 @@
 
 	.sp-name {
 		font-weight: var(--fw-semibold);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		color: var(--text);
 	}
 
 	.sp-desc {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: var(--muted);
 		line-height: var(--lh-snug);
 	}
@@ -303,7 +303,7 @@
 	}
 
 	.sp-slider-value {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
 		min-width: 3.4rem;
@@ -325,7 +325,7 @@
 
 	.sp-import-error {
 		margin: 0;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: var(--ui-danger);
 	}
 
@@ -341,7 +341,7 @@
 
 	.sp-import-summary {
 		margin: 0;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		line-height: var(--lh-snug);
 		color: var(--text);
 	}

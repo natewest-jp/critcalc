@@ -411,12 +411,12 @@
 	}
 
 	.rx-read-label {
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 	}
 
 	.rx-read-detail {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: var(--muted);
 	}
 
@@ -430,12 +430,12 @@
 	.rx-strong {
 		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
-		font-size: var(--fs-xl);
+		font-size: var(--fs-2xl);
 	}
 
 	.rx-gain {
 		font-family: var(--font-body);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		color: color-mix(in srgb, var(--muted) 85%, transparent);
 		white-space: nowrap;
 	}
@@ -444,7 +444,7 @@
 	.rx-formula {
 		display: block;
 		font-family: var(--font-body);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 </style>

@@ -986,7 +986,7 @@
 	.chrome-nav-link {
 		position: relative;
 		font-family: var(--font-display);
-		font-size: var(--fs-xl);
+		font-size: var(--fs-2xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-tight);
 		color: color-mix(in srgb, var(--chrome) 85%, transparent);
@@ -1077,7 +1077,7 @@
 		}
 
 		.chrome-nav-link {
-			font-size: var(--fs-lg);
+			font-size: var(--fs-xl);
 		}
 	}
 

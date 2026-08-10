@@ -356,14 +356,14 @@
 
 	.wi-big-unit {
 		margin-left: 0.4rem;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
 	}
 
 	.wi-meta {
 		margin: 0;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		line-height: 1.5rem;
 		color: var(--muted);
 	}
@@ -376,7 +376,7 @@
 
 	.wi-fine {
 		display: block;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 </style>

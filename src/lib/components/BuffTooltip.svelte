@@ -97,7 +97,7 @@
 		transform: translateX(-50%) translateY(-100%);
 	}
 	.bt-source {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
@@ -107,7 +107,7 @@
 		margin-bottom: 1px;
 	}
 	.bt-mutual {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		color: var(--muted);
 		font-style: italic;
 		letter-spacing: var(--ls-mid);
@@ -125,18 +125,18 @@
 		opacity: 0.8;
 	}
 	.bt-stat {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		color: var(--text);
 		flex: 1;
 	}
 	.bt-value {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		color: #90b4d0;
 		font-weight: var(--fw-semibold);
 		white-space: nowrap;
 	}
 	.bt-footer {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		color: var(--muted);
 		letter-spacing: var(--ls-mid);
 		border-top: 1px solid var(--frame-line);

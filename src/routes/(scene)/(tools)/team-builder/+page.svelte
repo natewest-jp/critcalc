@@ -1286,7 +1286,7 @@
 		background: none;
 		color: var(--muted);
 		font-family: var(--font-display);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-tight);
 		white-space: nowrap;
@@ -1366,7 +1366,7 @@
 		transform: scale(1.333) translateY(-14%);
 	}
 	.tb-tabstack-initials {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		color: var(--muted);
 	}
@@ -1384,7 +1384,7 @@
 		gap: 0.3rem;
 	}
 	.tb-aud-label {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
@@ -1396,7 +1396,7 @@
 		gap: 0.3rem;
 	}
 	.tb-aud-none {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 	}
 	.tb-cand {
 		display: inline-flex;
@@ -1408,7 +1408,7 @@
 		background: color-mix(in srgb, var(--el-color) 8%, transparent);
 		color: var(--text);
 		font-family: var(--font-body);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		cursor: pointer;
 		transition:
 			border-color 150ms ease,
@@ -1442,7 +1442,7 @@
 		object-fit: cover;
 	}
 	.tb-cand-initials {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
@@ -1477,7 +1477,7 @@
 	   to lend it presence, so it has to carry its own. */
 	.tb-atlas-lead {
 		margin: 0;
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		color: var(--text);
 	}
 	.tb-atlas-head {
@@ -1517,12 +1517,12 @@
 		justify-content: center;
 		background: var(--bg);
 		color: var(--muted);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 	}
 	.tb-slotrow-name {
 		font-family: var(--font-display);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		color: var(--text);
@@ -1539,7 +1539,7 @@
 	}
 	.tb-slotrow-count {
 		margin-left: auto;
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		color: var(--muted);
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
@@ -1560,7 +1560,7 @@
 		align-items: center;
 		gap: 0.4rem;
 		font-family: var(--font-display);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
@@ -1637,7 +1637,7 @@
 		min-width: 4.5rem;
 	}
 	.tb-conmode-hint {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		color: var(--muted);
 		white-space: normal;
 		max-width: 22rem;
@@ -1651,7 +1651,7 @@
 	/* .note, plus the offset its container doesn't provide. */
 	.tb-note {
 		margin-top: 0.5rem;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 	}
 
 	.tb-chips {
@@ -1673,7 +1673,7 @@
 	/* ── Content ──────────────────────────────────────────────── */
 	.tb-count {
 		margin: 0;
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
@@ -1729,7 +1729,7 @@
 		display: flex;
 	}
 	.tb-act-label {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;

@@ -350,7 +350,7 @@
 	   out of card somewhere below a ~150px plate. */
 	.hero__kicker {
 		font-family: var(--font-mono);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-normal);
 		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;

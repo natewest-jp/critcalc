@@ -60,41 +60,48 @@
 	 * ink role are one decision, not two, and the light context INVERTS the ink
 	 * half of it (prose recedes, labels anchor) while keeping the sizes.
 	 *
-	 * ⚠ `role` is what the token's comment in app.css claims the rung is FOR.
-	 * Where the product disagrees with that claim it is noted — the base UI rung
-	 * says 14px and the controls all ship at 11.
+	 * ⚠ THE TAGS ARE MAINTAINED BY HAND, and the CSS below is pinned by hand to
+	 * match them — /lab is excluded from the mechanical size sweep on purpose.
+	 * A board that rode the scale would always agree with itself and could never
+	 * show you a rung that had gone missing.
 	 */
 	const TYPE_ROWS = [
-		{ cls: 'ty-h2', tag: '3xl · 20', text: 'Section heading' },
-		{ cls: 'ty-h3', tag: '2xl · 18', text: 'Subheading' },
-		{ cls: 'ty-body', tag: 'lg · 14', text: 'Body — the base UI rung.' },
-		{ cls: 'ty-dense', tag: 'md · 12', text: 'Dense body — what prose actually ships at.' },
-		{ cls: 'ty-label', tag: 'sm · 11', text: 'Label · controls' },
-		{ cls: 'ty-caption', tag: 'xs · 10', text: 'Caption / meta' }
+		{ cls: 'ty-h1', tag: '4xl · 24', text: 'Section heading' },
+		{ cls: 'ty-h2', tag: '3xl · 20', text: 'Subheading · .title' },
+		{ cls: 'ty-h3', tag: '2xl · 18', text: 'Emphasized body' },
+		{ cls: 'ty-body', tag: 'xl · 16', text: 'Body — prose.' },
+		{ cls: 'ty-dense', tag: 'lg · 14', text: 'Dense body — tables, data rows.' },
+		{ cls: 'ty-label', tag: 'md · 12', text: 'Controls · tabs · chips' },
+		{ cls: 'ty-caption', tag: 'sm · 11', text: 'Labels / meta' }
 	];
 
 	/**
-	 * THE SIZE-UP, as a ROLE SHIFT rather than a new scale — ⚓ Nate is
-	 * "considering a slight size-up".
+	 * THE SIZE-UP — ⚓ APPROVED AND SHIPPED 2026-08-10. Kept on the board as the
+	 * record of what moved, because the interesting part is the SHAPE of the
+	 * change rather than the sizes themselves.
 	 *
-	 * The rungs are fine; what is questionable is which rung each role sits on.
-	 * Shifting roles up the existing ladder keeps the ladder a ladder (and keeps
-	 * every rung a number that already exists), where re-cutting the scale would
-	 * mean re-deriving everything that measures against it.
+	 * ROLES MOVED UP A RUNG; THE RUNGS DID NOT MOVE. That direction is the whole
+	 * decision. The px values are quoted in dozens of comments and in the export
+	 * mirror, so a scale re-cut would have made every one of them quietly wrong
+	 * — where re-pointing 208 declarations one step up leaves the ladder exactly
+	 * where it was and just has everything stand higher on it.
 	 *
-	 * ⚠ IT IS NOT A UNIFORM +1. The bottom of the scale is where the pressure is
-	 * — controls at 11px and prose at 12px against Genshin's much larger UI —
-	 * and the top is already right. So the small end lifts a rung and the
-	 * headings hold, which also closes the gap the product had opened by itself:
-	 * --fs-lg is commented "base UI / body" and almost nothing uses it.
+	 * ⚠ TWO ENDS ARE PINNED. 4xl is the section heading AND the brand (Nate's
+	 * unification — SiteChrome reads it through --brand-size), and 5xl held
+	 * because it is the instrument-readout rung with nothing above it to climb
+	 * to. Page titles moved up INTO 5xl, so those two share a rung: different
+	 * roles on one rung is fine, a role with no rung is not.
 	 */
 	const SIZE_UP = [
-		{ role: 'section heading', now: '3xl · 20', next: '3xl · 20', moved: false },
-		{ role: 'subheading', now: '2xl · 18', next: '2xl · 18', moved: false },
-		{ role: 'body / prose', now: 'md · 12', next: 'lg · 14', moved: true },
+		{ role: 'page title', now: '4xl · 24', next: '5xl · 32', moved: true },
+		{ role: 'section heading · brand', now: '3xl · 20', next: '4xl · 24', moved: true },
+		{ role: 'subheading · .title', now: '2xl · 18', next: '3xl · 20', moved: true },
+		{ role: 'body / prose', now: 'lg · 14', next: 'xl · 16', moved: true },
+		{ role: 'dense body', now: 'md · 12', next: 'lg · 14', moved: true },
 		{ role: 'controls · tabs · chips', now: 'sm · 11', next: 'md · 12', moved: true },
 		{ role: 'labels · meta', now: 'xs · 10', next: 'sm · 11', moved: true },
-		{ role: 'micro / badges', now: '2xs · 9', next: 'xs · 10', moved: true }
+		{ role: 'micro / badges', now: '2xs · 9', next: 'xs · 10', moved: true },
+		{ role: 'instrument readout', now: '5xl · 32', next: '5xl · 32', moved: false }
 	];
 
 	/**
@@ -200,48 +207,25 @@
 	<!-- ══════════════════════════════════════════════ 2 · THE SIZE-UP ══ -->
 	<section>
 		<h2 class="lab-h">
-			A size-up, as a role shift <span class="lab-badge">deciding</span>
+			The size-up <span class="lab-badge">shipped</span>
 		</h2>
 		<p class="lab-note">
-			⚓ Nate is considering "a slight size-up". The proposal is to move ROLES up the existing
-			ladder rather than re-cut the scale — the rungs are fine, what is questionable is which rung
-			each role sits on, and re-cutting would mean re-deriving everything that measures against it.
-			⚠ <strong>Not a uniform +1.</strong> The pressure is all at the bottom (controls at 11px,
-			prose at 12) and the headings are already right, so the small end lifts and the top holds. It
-			also closes a gap the product opened by itself: <code>--fs-lg</code> is commented "base UI / body"
-			and almost nothing uses it.
+			⚓ Approved and landed:
+			<strong>every role moved up one rung, and the rungs did not move.</strong> 208 declarations across
+			40 files were re-pointed one step up rather than the scale being re-cut — the direction matters,
+			because those px values are quoted in dozens of comments and in the export mirror, and a scale whose
+			numbers change under fixed names makes every one of them quietly wrong. A ladder is for climbing,
+			not for sliding.
+		</p>
+		<p class="lab-note">
+			Two ends are pinned. <strong>4xl · 24 is now the section heading AND the brand</strong> (⚓
+			"unify Section headings and branding") — the masthead reads <code>--brand-size</code>, which
+			is this token, so the two gain or lose it together. And <strong>5xl · 32 held</strong>: it is
+			the instrument-readout rung, already as large as it wants to be, with nothing above it to
+			climb to. Page titles moved up into it, so the two now share — different roles on one rung is
+			fine, a role with no rung is not.
 		</p>
 		<div class="lab-row">
-			<div class="cand">
-				<span class="cand-tag">today</span>
-				<div class="ctx-dark sizeup">
-					<h3 class="su-h3">Off-field DMG</h3>
-					<p class="su-body su-body--now">
-						Coordinated attacks or damaging summons. Provided by <b>35</b> characters in the roster,
-						of which you own <b>0</b>.
-					</p>
-					<div class="su-row su-row--now"><span>Constellation</span><span>C2</span></div>
-					<div class="spec-controls">
-						<button class="btn" type="button">Filter</button>
-						<button class="tab active" type="button">Atlas</button>
-					</div>
-				</div>
-			</div>
-			<div class="cand">
-				<span class="cand-tag">roles up one rung</span>
-				<div class="ctx-dark sizeup sizeup--next">
-					<h3 class="su-h3">Off-field DMG</h3>
-					<p class="su-body su-body--next">
-						Coordinated attacks or damaging summons. Provided by <b>35</b> characters in the roster,
-						of which you own <b>0</b>.
-					</p>
-					<div class="su-row su-row--next"><span>Constellation</span><span>C2</span></div>
-					<div class="spec-controls">
-						<button class="btn su-ctrl" type="button">Filter</button>
-						<button class="tab active su-ctrl" type="button">Atlas</button>
-					</div>
-				</div>
-			</div>
 			<div class="su-table">
 				{#each SIZE_UP as s (s.role)}
 					<div class="su-trow" class:is-moved={s.moved}>
@@ -251,6 +235,21 @@
 						<span class="ty-tag su-next">{s.next}</span>
 					</div>
 				{/each}
+			</div>
+			<div class="cand">
+				<span class="cand-tag">a panel at the new sizes</span>
+				<div class="ctx-dark sizeup">
+					<h3 class="su-h3">Off-field DMG</h3>
+					<p class="su-body">
+						Coordinated attacks or damaging summons. Provided by <b>35</b> characters in the roster,
+						of which you own <b>0</b>.
+					</p>
+					<div class="su-row"><span>Constellation</span><span>C2</span></div>
+					<div class="spec-controls">
+						<button class="btn" type="button">Filter</button>
+						<button class="tab active" type="button">Atlas</button>
+					</div>
+				</div>
 			</div>
 		</div>
 	</section>
@@ -535,6 +534,18 @@
 	.spec--bare .ty-tag {
 		color: var(--text);
 	}
+	/* ⚠ THESE RUNGS ARE PINNED BY HAND, and /lab is excluded from the mechanical
+	   size-shift for exactly that reason: the ladder here has to SHOW the scale,
+	   not ride it. If a sweep moved these too, the board would always agree with
+	   itself and never reveal a rung that had gone missing. Keep the tags and
+	   the tokens in step by hand — that is the job. */
+	.ty-h1 {
+		font-family: var(--font-display);
+		font-size: var(--fs-4xl);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-tight);
+		color: var(--text);
+	}
 	.ty-h2 {
 		font-family: var(--font-display);
 		font-size: var(--fs-3xl);
@@ -549,11 +560,11 @@
 		color: var(--text);
 	}
 	.ty-body {
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		color: var(--text);
 	}
 	.ty-dense {
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		color: var(--text);
 	}
 	/* ⚠ THE LABEL VOICE IS WHERE THE CONTEXTS DISAGREE. --muted is the DIM rung
@@ -562,14 +573,14 @@
 	   ink ladder flipping, and the reason the ladder is rendered per ground
 	   rather than once. */
 	.ty-label {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 		color: var(--muted);
 	}
 	.ty-caption {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		color: var(--muted);
 	}
 	.spec--bare .ty-label,
@@ -590,21 +601,16 @@
 	.su-h3 {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: var(--fs-2xl);
+		font-size: var(--fs-3xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-tight);
 		color: var(--text);
 	}
 	.su-body {
 		margin: 0;
+		font-size: var(--fs-xl);
 		line-height: var(--lh-relaxed);
 		color: var(--text);
-	}
-	.su-body--now {
-		font-size: var(--fs-md);
-	}
-	.su-body--next {
-		font-size: var(--fs-lg);
 	}
 	.su-body b {
 		color: var(--accent);
@@ -613,22 +619,10 @@
 		display: flex;
 		justify-content: space-between;
 		gap: 1rem;
+		font-size: var(--fs-md);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 		color: var(--muted);
-	}
-	.su-row--now {
-		font-size: var(--fs-xs);
-	}
-	.su-row--next {
-		font-size: var(--fs-sm);
-	}
-	/* The control rung is the one that has to be overridden rather than swapped:
-	   .btn and .tab hard-code --fs-sm, so the proposal is shown by re-declaring
-	   it here. If the shift is adopted the override moves into app.css and this
-	   class disappears. */
-	.su-ctrl {
-		font-size: var(--fs-md);
 	}
 
 	.su-table {

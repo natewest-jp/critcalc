@@ -183,7 +183,7 @@
 		margin: 0;
 		text-align: center;
 		font-family: var(--font-display);
-		font-size: var(--fs-4xl);
+		font-size: var(--fs-5xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-tight);
 		color: var(--text);
@@ -281,7 +281,7 @@
 		border: none;
 		border-radius: var(--r-round);
 		font-family: var(--font-body);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		text-transform: uppercase;
@@ -308,7 +308,7 @@
 		flex: none;
 	}
 	.ts-resnote {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-style: italic;
 		color: var(--muted);
 	}

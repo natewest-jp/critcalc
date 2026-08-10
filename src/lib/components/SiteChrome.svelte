@@ -127,12 +127,37 @@
 		pointer-events: auto;
 	}
 
+	/* ══ THE BRAND IS ONE KNOB (⚓ NATE 2026-08-10) ═════════════════════════
+	   The wordmark used to be an orphan literal (1.33rem) and the mark a second
+	   one (2.09rem) tuned by eye against it, so the two could drift apart and
+	   nothing would notice. They are now both derived from --brand-size, and
+	   --brand-size IS --fs-4xl: ⚓ "unify Section headings and branding" — the
+	   masthead and a section header are the same size, and gain or lose it
+	   together.
+
+	   ⚠ THE TWO RATIOS REPRODUCE NATE'S TUNING EXACTLY at the old brand size:
+	   21.28 × 1.5714 = 33.44px (his 2.09rem) and 21.28 × −0.18 = −3.83px (his
+	   −0.24em at a 16px root). They are his measurements re-expressed, not
+	   re-derived — so the mark's proportion and optical lift survive the size
+	   change instead of needing a fresh pass.
+	   ⚠ The margin had to stop being `em`. On the <img> that resolved against
+	   the INHERITED font-size, which is now the brand size — the lift would have
+	   grown 50% on its own and pulled the mark off the baseline.
+
+	   ⚠ Weight and tracking were ALREADY on tokens (--fw-medium / --ls-tight)
+	   and are untouched: unifying the SIZE does not make the brand a heading. */
 	.chrome-brand {
+		--brand-size: var(--fs-4xl);
+		/* The mark's height as a multiple of the wordmark — Nate's proportion. */
+		--brand-mark: 1.5714;
+		/* Optical lift, as a fraction of the brand size (was −0.24em). */
+		--brand-lift: -0.18;
 		justify-self: start;
 		display: flex;
 		align-items: center;
 		gap: 0.35rem;
 		flex: none;
+		font-size: var(--brand-size);
 	}
 
 	/* Sized by HEIGHT, not width. The mark was redrawn for small sizes
@@ -152,9 +177,9 @@
 	   prints that conversion on every run: if the art or the angle changes, read
 	   it off there rather than re-deriving it here. */
 	.chrome-brand img {
-		height: 2.09rem;
+		height: calc(var(--brand-size) * var(--brand-mark));
 		width: auto;
-		margin-top: -0.24em;
+		margin-top: calc(var(--brand-size) * var(--brand-lift));
 		opacity: 0.85;
 		transition: opacity 200ms ease;
 	}
@@ -164,7 +189,7 @@
 	   earlier gilt-hi/cool debate is superseded by the archetype. */
 	.chrome-wordmark {
 		font-family: var(--font-display);
-		font-size: 1.33rem;
+		font-size: var(--brand-size);
 		font-weight: var(--fw-medium);
 		letter-spacing: var(--ls-tight);
 		color: var(--chrome);

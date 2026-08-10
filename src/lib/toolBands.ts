@@ -61,11 +61,15 @@ import { TOOL_GUTTER } from './toolGutter.ts';
 
 /**
  * The DOCUMENT band's height — ⚓ NATE 2026-08-10: "only the height of its
- * tallest buttons". It is a MEASURED number, not a designed one: 26.72px is
- * what a `.tab` comes out at (0.32rem of padding top and bottom around an 11px
+ * tallest buttons". It is a MEASURED number, not a designed one: 28.22px is
+ * what a `.tab` comes out at (0.32rem of padding top and bottom around a 12px
  * line at 1.5), and it is the tallest thing band A carries — the `.btn`s are
- * 24.22 and the icon-only ones 22. Rounded up to 27 so nothing is clipped by a
+ * 25.22 and the icon-only ones 22. Rounded up to 29 so nothing is clipped by a
  * fraction of a pixel.
+ *
+ * ↻ 27 → 29 the same day, and this is the warning below doing its job: the
+ * type size-up moved controls from 11px to 12px, the tab grew 26.72 → 28.22,
+ * and it began overflowing a row with no slack in it. Re-measured, not guessed.
  *
  * ↻ It was 36 from the toolbar round until now, which was right while band A
  * was a RAIL that seated its controls with air around them. Band A stopped
@@ -79,7 +83,7 @@ import { TOOL_GUTTER } from './toolGutter.ts';
  * the first thing you would see is the bench ribbon's head landing 1–2px off
  * (RIBBON_HEAD derives from BAND_STACK_TO_SURFACE, below).
  */
-export const BAND_A_H = 27;
+export const BAND_A_H = 29;
 
 /**
  * The VIEW band's height.

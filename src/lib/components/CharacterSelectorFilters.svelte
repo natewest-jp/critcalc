@@ -136,7 +136,7 @@
 	}
 
 	.cs-count {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-wide);
 		color: var(--muted);
@@ -146,10 +146,10 @@
 	/* .note, plus the offset the section doesn't provide. */
 	.cs-facet-note {
 		margin-top: 0.5rem;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 	}
 	.cs-facet-mode {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		opacity: 0.75;
 	}
 </style>

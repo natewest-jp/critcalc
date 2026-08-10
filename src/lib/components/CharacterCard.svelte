@@ -305,7 +305,7 @@
 	}
 	.cc-initials {
 		align-self: center;
-		font-size: var(--fs-2xl);
+		font-size: var(--fs-3xl);
 		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
@@ -341,7 +341,7 @@
 		border-radius: 3px;
 		background: var(--fill-rest);
 		color: var(--muted);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-wide);
 		line-height: var(--lh-none);
@@ -366,7 +366,7 @@
 		border-radius: 3px;
 		background: color-mix(in srgb, var(--el-color) 4%, var(--bg));
 		color: #fff;
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		line-height: var(--lh-none);
 		z-index: 2;
@@ -376,7 +376,7 @@
 		bottom: 4px;
 		left: 5px;
 		color: var(--el-geo-hi, #eed8a5);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		line-height: var(--lh-none);
 		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7));
 		z-index: 1;
@@ -404,7 +404,7 @@
 		background-repeat: no-repeat;
 	}
 	.cc-name {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 		text-align: center;
@@ -422,7 +422,7 @@
 		margin-left: auto;
 		flex-shrink: 0;
 		color: var(--ui-danger);
-		font-size: var(--fs-xl);
+		font-size: var(--fs-2xl);
 		font-weight: var(--fw-bold);
 		line-height: var(--lh-none);
 		/* The ∅ glyph sits low in its line box; nudge it up. In `em` so the lift
@@ -453,7 +453,7 @@
 	.cc-tag {
 		padding: 1px 5px;
 		border-radius: 3px;
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		text-transform: uppercase;
@@ -501,7 +501,7 @@
 			display: inline-block;
 		}
 		.cc-name {
-			font-size: var(--fs-md);
+			font-size: var(--fs-lg);
 			text-align: left;
 		}
 		.cc-weapon,
@@ -514,7 +514,7 @@
 			height: 18px;
 		}
 		.cc-namemark {
-			font-size: var(--fs-2xl);
+			font-size: var(--fs-3xl);
 		}
 		.cc-body {
 			display: block;
@@ -533,7 +533,7 @@
 			padding: 0.45rem 0.6rem 0.2rem;
 		}
 		.cc-name {
-			font-size: var(--fs-lg);
+			font-size: var(--fs-xl);
 		}
 		.cc-weapon,
 		.cc-slot {
@@ -541,7 +541,7 @@
 			height: 24px;
 		}
 		.cc-namemark {
-			font-size: var(--fs-3xl);
+			font-size: var(--fs-4xl);
 		}
 		.cc-body {
 			height: 4.4rem;

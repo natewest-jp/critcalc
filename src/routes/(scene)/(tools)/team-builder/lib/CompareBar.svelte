@@ -131,7 +131,7 @@
 		z-index: 0;
 	}
 	.cb-cd-label {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		color: color-mix(in srgb, var(--cb-color) 70%, var(--muted));
 		white-space: nowrap;

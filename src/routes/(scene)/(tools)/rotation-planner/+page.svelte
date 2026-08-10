@@ -375,12 +375,12 @@
 		display: inline-flex;
 		align-items: baseline;
 		gap: 0.45rem;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		white-space: nowrap;
 	}
 	.rp-total-key {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;

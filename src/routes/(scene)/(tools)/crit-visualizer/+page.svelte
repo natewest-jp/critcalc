@@ -306,7 +306,7 @@
 	   holds the zone rather than leaving the band lopsided, the way an empty
 	   left half read before. */
 	.ws-title {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 	}
 
 	/* The numerals are single characters; without a floor they'd render three
