@@ -116,7 +116,7 @@
 	}
 
 	.overlay-title {
-		font-size: var(--fs-3xl);
+		font-size: var(--fs-4xl);
 		font-weight: var(--fw-semibold);
 	}
 
@@ -155,7 +155,7 @@
 	.overlay-body {
 		display: grid;
 		gap: 0.7rem;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		line-height: var(--lh-relaxed);
 		color: var(--muted);
 	}

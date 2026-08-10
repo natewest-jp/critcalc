@@ -60,7 +60,7 @@
 		gap: 5px;
 	}
 	.rp-caveat-char-name {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;
@@ -71,7 +71,7 @@
 		gap: 2px;
 	}
 	.rp-caveat-ability {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-bold);
 		color: var(--muted);
 		letter-spacing: var(--ls-mid);
@@ -82,14 +82,14 @@
 		padding: 0 4px;
 		border: 1px solid var(--border);
 		border-radius: var(--r-sm);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		text-transform: uppercase;
 		letter-spacing: var(--ls-widest);
 		opacity: 0.8;
 	}
 	.rp-caveat-text {
 		margin: 0;
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		color: var(--text);
 		line-height: var(--lh-normal);
 		opacity: 0.75;

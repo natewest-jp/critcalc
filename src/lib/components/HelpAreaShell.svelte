@@ -166,7 +166,7 @@
 		padding: 0.4rem 0.6rem;
 		border-radius: var(--r-sm);
 		font-family: var(--font-body);
-		font-size: var(--fs-xl);
+		font-size: var(--fs-2xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-tight);
 		color: var(--muted);
@@ -202,7 +202,7 @@
 	.area-toc a {
 		display: block;
 		padding: 0.2rem 0.4rem;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		line-height: var(--lh-snug);
 		color: var(--muted);
 		text-decoration: none;
@@ -261,7 +261,7 @@
 			border-left: none;
 			border-radius: 999px;
 			border: 1px solid var(--border);
-			font-size: var(--fs-lg);
+			font-size: var(--fs-xl);
 			white-space: nowrap;
 		}
 

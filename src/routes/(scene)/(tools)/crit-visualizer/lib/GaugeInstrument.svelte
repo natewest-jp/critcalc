@@ -836,7 +836,7 @@
 	.gx-transport-time {
 		margin-left: 0.3rem;
 		font-family: var(--font-body);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: var(--muted);
 	}
 
@@ -918,7 +918,7 @@
 	/* .btn with a resting fill — the Applications list's add affordance. */
 	.gx-add {
 		background: var(--fill-rest);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		padding: 0.45rem 0.7rem;
 		text-transform: none;
 		letter-spacing: normal;
@@ -937,7 +937,7 @@
 		border-radius: 0 3px 3px 0;
 		background: none;
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
-		font-size: var(--fs-xl);
+		font-size: var(--fs-2xl);
 		line-height: var(--lh-none);
 		cursor: pointer;
 		padding: 0;
@@ -956,7 +956,7 @@
 	.gx-value {
 		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		min-width: 3.2em;
 		text-align: right;
 	}
@@ -965,7 +965,7 @@
 
 	.gx-meta {
 		margin: 0;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		line-height: 1.5rem;
 		color: var(--muted);
 	}
@@ -996,7 +996,7 @@
 
 	.gx-log p {
 		margin: 0;
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		line-height: 1.25rem;
 	}
 
@@ -1013,7 +1013,7 @@
 		border-radius: 50%;
 		color: var(--bright-ink);
 		font-family: var(--font-body);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-bold);
 		vertical-align: 1px;
 	}

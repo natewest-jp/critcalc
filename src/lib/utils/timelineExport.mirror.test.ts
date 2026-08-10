@@ -238,8 +238,14 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		for (const rel of readdirSync(root, { recursive: true }) as string[]) {
 			if (!/\.(svelte|css|ts)$/.test(rel)) continue;
 			// app.css DEFINES the ramps and the roles that point at them; the
-			// styleguide RENDERS the ramps, which means naming them.
-			if (rel === 'app.css' || rel.includes('styleguide')) continue;
+			// styleguide RENDERS the ramps, which means naming them. /lab is the
+			// specimen board and is exempt for exactly the same reason — a page
+			// whose job is "show me every candidate rung side by side" cannot ask
+			// for them through roles, because the whole question is which role
+			// each rung should get. ⚠ BOTH EXEMPTIONS ARE DEV-ONLY ROUTES
+			// (prerender false + a dev guard), which is what keeps this from being
+			// a hole in the law: neither page ships.
+			if (rel === 'app.css' || rel.includes('styleguide') || rel.includes('/lab/')) continue;
 			if (rel.endsWith('.test.ts')) continue;
 			for (const m of readFileSync(root + rel, 'utf8').matchAll(re)) {
 				offenders.push(`${rel}: ${m[0]})`);

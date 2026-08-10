@@ -216,7 +216,7 @@
 	.tb-key {
 		flex-shrink: 0;
 		width: var(--tb-key-w);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;
@@ -239,7 +239,7 @@
 		align-items: center;
 		padding: 3px 8px;
 		border-radius: 3px;
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
@@ -263,7 +263,7 @@
 		padding: 2px 6px 3px;
 		border-radius: 0 3px 3px 0;
 		border-left: 2px solid transparent;
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-medium);
 		background: var(--fill-rest);
 		color: var(--muted);

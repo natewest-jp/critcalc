@@ -162,7 +162,7 @@
 		background: color-mix(in srgb, var(--accent) 20%, transparent);
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
 		color: var(--text);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
@@ -214,7 +214,7 @@
 		padding: 0.45rem 0.6rem;
 		border-radius: 3px;
 		color: var(--muted);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
@@ -235,7 +235,7 @@
 		align-items: center;
 		gap: 0.3rem;
 		font-family: var(--font-condensed);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-normal);
 		letter-spacing: var(--ls-mid);
 		text-transform: none;

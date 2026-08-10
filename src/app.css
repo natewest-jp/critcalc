@@ -102,12 +102,36 @@
 	   are .68 / .55, which lets meaningfully more world through a band — 11%
 	   and 16% at the new TOOL_DIM .65, against 9% before.
 
+	   ↻ ⚓ NATE 2026-08-10: ONE RUNG LIGHTER, both of them — slate-800 → slate-700
+	   and slate-950 → slate-900, at the SAME alphas. The tint is what moved, not
+	   the transparency: glass this dark over a dimmed world was reading as a hole
+	   cut in the scene rather than as a pane laid on it, and a rung of lift is
+	   what separates the two. The ramp already had both rungs; nothing new was
+	   minted for this.
+
 	   ⚠ WHAT SETS THE FLOOR HERE IS A STAR. Text on glass is limited by the
 	   WORST pixel behind it, never the average, and the worst pixel is always a
 	   star — a tiny, very bright point. Both stops clear 4.5:1 for --muted (the
-	   dimmer of the two band voices) against a star, UNBLURRED: panel 4.92:1,
-	   well 5.37:1. That is deliberate — see --glass-blur for why they cannot be
+	   dimmer of the two band voices) against a star, UNBLURRED: panel 4.74:1,
+	   well 5.22:1. That is deliberate — see --glass-blur for why they cannot be
 	   allowed to depend on the blur.
+
+	   ⚠⚠ THESE FIGURES MOVED FOR TWO REASONS AT ONCE ON 2026-08-10, and only one
+	   of them is a design change. THE MEASUREMENT WAS WRONG: every star figure
+	   in this system modelled the worst pixel as `white × (1 − TOOL_DIM)`, which
+	   is what you get if the wash is pure black — and --scene-dim is a near-
+	   black COLOUR laid over the scene, so the true composite is lighter and
+	   every published figure was ~0.3–0.4 optimistic. Under the corrected model
+	   the panel stop as shipped that morning was 4.22:1, i.e. UNDER THE FLOOR,
+	   published as 4.53. Nate's dim change (.65 → .75, #15161a → #101013) is
+	   what put it back over the floor. The lesson is the general one: an alpha over an
+	   unknown ground is only as good as the model of the ground.
+
+	   ⚠ STILL NO THIRD RUNG OF LIFT. slate-600 at the panel alpha is 4.27:1 even
+	   after the correction. And the two stops are NOT interchangeable — slate-700
+	   at the WELL's .55 is 5.08:1 only because the well is the lighter-alpha
+	   stop; run the grid before moving either. /styleguide § Palette census
+	   computes all of it live.
 
 	   ⚠ Glass and the wash MULTIPLY: what reaches the eye is
 	   (1 − glass)(1 − TOOL_DIM). At the old dim of .85 these same stops would
@@ -116,9 +140,32 @@
 	   ⛔ --glass-ribbon is DELETED. It was Fable's stop for the bench ribbon,
 	   and the bench went back to opaque slate the same day (⚓ NATE). Nothing
 	   painted it; the bands take --glass-panel and --glass-well. */
-	--glass-panel: rgb(46 53 67 / 0.68); /* slate-800 — band A, menus, panels */
-	--glass-well: rgb(28 33 43 / 0.55); /* slate-950 — band B, recessed fields */
-	--glass-parch: rgb(236 229 216 / 0.1); /* parchment frost — hover on glass */
+	/* ↻ ⚓ NATE 2026-08-10, third move of the day: THE ALPHAS COME DOWN, .68/.55
+	   → .58/.45. This is the deeper wash's other side. Dimming the world to .75
+	   let more of the pane's own colour dominate, and on the specimen board
+	   glass and opaque slate came out reading as the same material — which is
+	   the failure the whole "obviously translucent" rule exists to prevent. The
+	   transmission numbers say it from the other end: the panel stop had fallen
+	   to 8.0%, the closest we had been to sheer. At .58 it is 10.5%.
+	   ⚠ THE WELL HAD TO MOVE TOO, and not for its own sake: at .58/.55 the two
+	   stops were .03 apart and had stopped being two stops. The gap is what
+	   makes the pair a ladder.
+	   Measured against a star at the new dim: panel 4.74:1, well 5.22:1 —
+	   and /styleguide's census computes both from these tokens, so it is the
+	   number to trust if this comment ever drifts. */
+	--glass-panel: rgb(54 62 77 / 0.58); /* slate-700 — band A, menus, panels */
+	--glass-well: rgb(38 44 56 / 0.45); /* slate-900 — band B, recessed fields */
+	/* HOVER IS DENSITY, NOT TINT (⚓ NATE 2026-08-10). The same rung as the panel
+	   with the alpha driven hard up, so hovering makes a pane MORE MATERIAL
+	   rather than washing it with a colour. Two things fall out that no tint can
+	   give: the ink's contrast goes UP under the hand (4.73 → 4.97:1) instead of
+	   down, and no foreign hue ever touches a slate pane.
+	   ⚓ .80 rather than the .70 first tried — "I want the separation between
+	   plain glass and hovered glass to be stronger." Against the sky the pair now
+	   reads as translucent → nearly solid, which is a state change you can see
+	   without looking for it. */
+	--glass-hover: rgb(54 62 77 / 0.8);
+	--glass-parch: rgb(236 229 216 / 0.1); /* parchment frost — a resting fill */
 	/* ⚓ NATE — ON PROBATION, 2026-08-09. Tuned 6 → 2 → 1px and still under
 	   test; it may yet go to 0. Nothing is allowed to depend on it (see below),
 	   so removing it is a one-line change with no knock-on.
@@ -217,8 +264,17 @@
 	   panel from the world" is no longer the job this token is doing.
 	   It also costs a little worst-pixel contrast — parchment over a star reads
 	   6.26:1 here vs 7.20:1 warm, both clear of the floor.
-	   ⚓ Revert to #0b0902 on this one line if the neutral reads dead. */
-	--scene-dim: #15161a;
+	   ⚓ Revert to #0b0902 on this one line if the neutral reads dead.
+
+	   ↻ ⚓ NATE 2026-08-10: #15161a → #101013, moved together with TOOL_DIM
+	   (.65 → .75). Still neutral, a rung deeper — the floor of the composite
+	   goes down while the alpha takes more of the world out, and the two
+	   compound: the worst pixel (a star) lands at rgb(76,76,78) instead of
+	   rgb(103,104,106). ⚠ THIS IS THE TOKEN EVERY STAR MEASUREMENT DEPENDS ON,
+	   and the old figures across the system were computed as if it were pure
+	   black. See TOOL_DIM in landing/transition.ts for the correction and what
+	   it turned out to be hiding. */
+	--scene-dim: #101013;
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are
@@ -273,6 +329,9 @@
 	   colour that happens to be greyish. */
 	--surface: var(--slate-800);
 	--surface-raised: var(--slate-700);
+	/* The EXTENT axis — a paper distinction (see .ctx-light). Netted here so the
+	   role always resolves; on dark it is simply --surface. */
+	--surface-broad: var(--slate-800);
 	--frame-bg: var(--slate-800);
 	/* --surface-well = a ground CUT INTO another ground: the planner's chart,
 	   an input field, a recessed track. New this round, and it is a role the
@@ -352,6 +411,24 @@
 	   (constellation chip, loadout pill, ⇄/✕), so those read as one family with
 	   the box around them. */
 	--frame-line-quiet: var(--line-faint);
+
+	/* ══ THE INSET FRAME'S LINE — GOLD (⚓ NATE 2026-08-10) ═══════════════════
+	   Borders stay ink; the inset goes gold, because the inset is the one line
+	   in the system that is ORNAMENT rather than structure. The full argument
+	   and the two context rungs live in .ctx-dark.
+
+	   ⚠ THIS IS NOT A SPARE COPY — IT IS THE VALUE CTX-NIGHT USES. A groundless
+	   element over the world inherits from here, and out there the ground is
+	   unknown (a star, a nebula, nothing at all), so the stop has to CARRY ALPHA
+	   exactly as the glass one does. An opaque mix would be a stripe of the
+	   wrong colour against every backdrop except the one it was mixed for.
+	   ⚠ A literal rather than a color-mix for the same reason: a mix needs a
+	   ground to resolve against, and out here there honestly isn't one.
+	   (Found by the board: the night column's inset fell through to
+	   currentColor and drew a bright box — a missing root net is invisible
+	   until something groundless asks for it.) */
+	--inset-line: rgb(211 188 142 / 0.18); /* = gold-400 @ .18 */
+	--inset-line-quiet: rgb(211 188 142 / 0.1);
 
 	/* ══ CHART INK ═════════════════════════════════════════════════════════════
 	   The inside of an instrument: axis labels, tick text, gridlines, axis
@@ -638,9 +715,17 @@
 	   gilt-soft #ede8de — gilt retired). Neither side is --accent-derived,
 	   so no per-context re-declaration is needed.
 	   ↻ 2026-08-09: onto the ramp as --gold-300, which is where the hinge beige
-	   was always standing — the plate is the brightest thing on the screen and
-	   gold-300 is the ramp's brightest rung. --bright-ink on it: 13.25:1. */
-	--sel-surface: var(--gold-300);
+	   was always standing.
+	   ↻ ⚓ NATE 2026-08-10: GOLD-300 → PARCHMENT-100, "the unified
+	   character-card-sharing parchment value". The selected plate is now
+	   LITERALLY the same paper a character card is made of, rather than a
+	   near-miss beside it — which is the whole argument for having a small
+	   palette at all. It also takes the last tinted ground out of the light
+	   family: gold-300 is a GOLD rung, and having the one big light plate on the
+	   ornament ramp meant selection and jewelry were sharing a hue for no
+	   reason. Gold keeps the EDGE (see the inset family); paper keeps the FILL.
+	   --bright-ink on it: 15.2:1, up from 13.25. */
+	--sel-surface: var(--parchment-100);
 	--sel-ink: var(--bright-ink);
 
 	/* Slider/toggle knob. Rides the context's dim voice — the contexts
@@ -776,17 +861,45 @@
 	   scattered ad-hoc values the three tools accreted over different eras.
 	   REUSE these tokens; don't reintroduce raw values. Sizes are integer px
 	   @ 16px root. The landing/hero clamp() display sizes stay literal — they're
-	   intentionally fluid, not part of the step scale. */
-	--fs-2xs: 0.5625rem; /* 9px  — micro labels, badges, dense captions */
-	--fs-xs: 0.625rem; /* 10px — small labels, meta, glyph text */
-	--fs-sm: 0.6875rem; /* 11px — chips, secondary labels */
-	--fs-md: 0.75rem; /* 12px — dense body, controls, table cells */
-	--fs-lg: 0.875rem; /* 14px — base UI / body */
-	--fs-xl: 1rem; /* 16px — emphasized body, small headings */
-	--fs-2xl: 1.125rem; /* 18px — subheadings */
-	--fs-3xl: 1.25rem; /* 20px — section headings */
-	--fs-4xl: 1.5rem; /* 24px — panel titles */
-	--fs-5xl: 2rem; /* 32px — page headings */
+	   intentionally fluid, not part of the step scale.
+
+	   ══ THE SIZE-UP (⚓ NATE 2026-08-10) ═══════════════════════════════════
+	   EVERY ROLE MOVED UP ONE RUNG. The RUNGS DID NOT MOVE — every px value in
+	   this block is unchanged, and 208 declarations across 40 files were
+	   re-pointed one step up instead. That direction is deliberate and it is the
+	   part to preserve: the values are quoted in dozens of comments and in the
+	   export mirror, and a scale whose numbers move under fixed names makes
+	   every one of those quietly wrong. A scale is a ladder; you climb it, you
+	   do not slide it.
+
+	   WHY, measured: /lab put our surfaces beside Genshin's and the gap was not
+	   brightness alone — controls sat at 11px and prose at 12 against a UI built
+	   much larger. The pressure was all at the BOTTOM, which is why the top rung
+	   holds (see --fs-5xl).
+
+	   ⚠ THE ROLE COMMENTS BELOW ARE THE NEW ASSIGNMENTS, not the old ones. Each
+	   rung inherited the job of the rung below it. */
+	--fs-2xs: 0.5625rem; /* 9px  — RESERVE. Everything that lived here moved up;
+	                        it is kept as the bottom of the ladder, not deleted,
+	                        because a scale needs somewhere to go. */
+	--fs-xs: 0.625rem; /* 10px — micro labels, badges, dense captions */
+	--fs-sm: 0.6875rem; /* 11px — small labels, meta, glyph text */
+	--fs-md: 0.75rem; /* 12px — chips, controls, tabs, secondary labels */
+	--fs-lg: 0.875rem; /* 14px — dense body, table cells */
+	--fs-xl: 1rem; /* 16px — base UI / body / prose */
+	--fs-2xl: 1.125rem; /* 18px — emphasized body, small headings */
+	--fs-3xl: 1.25rem; /* 20px — subheadings (.title, the workhorse header) */
+	/* ⚠ 24px IS ALSO THE BRAND SIZE (⚓ Nate: "unify Section headings and
+	   branding"). SiteChrome's wordmark was an orphan literal at 1.33rem and now
+	   reads this token through --brand-size. Move this rung and the masthead
+	   moves with it — which is the point, but know it before you do. */
+	--fs-4xl: 1.5rem; /* 24px — section headings · the brand */
+	/* ⚠ THE ONE RUNG THAT DID NOT SHIFT, and it is not an oversight: this is the
+	   INSTRUMENT READOUT size (the Visualizers' big numbers), which was already
+	   as large as it wants to be, and there is nothing above it to climb to.
+	   Page titles moved UP into it, so the two now share — different roles on one
+	   rung is fine; a role with no rung is not. */
+	--fs-5xl: 2rem; /* 32px — page headings · instrument readouts */
 
 	--fw-normal: 400;
 	--fw-medium: 500;
@@ -920,6 +1033,13 @@
 	--surface: var(--slate-800);
 	--surface-raised: var(--slate-700); /* ΔL .035 over the ground */
 	--surface-well: var(--slate-900); /* ΔL .035 under it — the chart, a field */
+	/* ⚠ NO SIZE AXIS ON DARK. --surface-broad is a PAPER distinction (see
+	   .ctx-light): Genshin splits its parchment grounds by extent, and does not
+	   split its dark ones. Aliased to --surface so the role resolves everywhere
+	   and a component never has to ask which context it is in — but if you find
+	   yourself wanting it to differ here, the depth ladder above is the tool you
+	   actually want. */
+	--surface-broad: var(--slate-800);
 	--text: var(--parchment-100);
 	/* The secondary TEXT voice. It used to be a blend of two hinge values,
 	   invented because the structural rung (#857971) measured 3.29:1 and could
@@ -937,9 +1057,40 @@
 	--line-soft: #50555e; /* = parchment-100 @ .18 */
 	--line-strong: #676a70; /* = parchment-100 @ .30 */
 	--line-edge: #7e7f82; /* = parchment-100 @ .42 */
-	--border: var(--line-edge);
-	--frame-line: var(--line-strong);
+	/* ↻ ⚓ NATE 2026-08-10: THE ROLES DROP TO THE TWO MOST TRANSPARENT STOPS —
+	   "the higher alpha mix borders are probably never going to be used". The
+	   four stops stay declared (they are the ladder, and the .30/.42 rungs are
+	   what a future ornament would climb to), but nothing points at the top two
+	   any more, which is the honest way to retire a value: let the census report
+	   it free and delete it once we are sure. See the .ctx-light block for the
+	   same move on paper, where a whisper was already the intent. */
+	--border: var(--line-soft);
+	--frame-line: var(--line-soft);
 	--frame-line-quiet: var(--line-faint);
+	/* ══ THE INSET FRAME IS GOLD (⚓ NATE 2026-08-10) ═══════════════════════
+	   BORDERS STAY INK; THE INSET GOES GOLD, and the split is the whole point.
+	   A border is STRUCTURE — it says where a surface ends, and structure in a
+	   warm hue starts reading as decoration on everything. An inset frame is the
+	   one line in the system that is ORNAMENT: it sits INSIDE the box, set in
+	   from the edge, deliberately not the box's own outline. Genshin's jewelry is
+	   gold, and this is the only place we have jewelry.
+	   (The Team Builder's selected nav plate reached this conclusion alone a day
+	   earlier — ⚓ "borders like this are some kind of gold mix usually" — and
+	   this generalises it. That plate keeps its local override because its ground
+	   is the beige --sel-surface, not a context ground.)
+
+	   ⚠ GOLD CHANGES RUNG WITH THE CONTEXT, exactly as --accent does: gold-400
+	   on dark, gold-700 on light. Measured on the board, they are not
+	   interchangeable — gold-600/700 at this alpha barely lift off slate, and
+	   gold-300/400 all but vanish into parchment. One hue, two rungs, same
+	   zoning the accent already uses.
+
+	   ⚠ color-mix is SAFE here where the line stops above had to be literals:
+	   both inputs are primitives, so this is one level deep, and nothing mixes
+	   the result (the crash is a mix FED BY a mix). Keeping it as a mix means it
+	   follows the ramp instead of drifting off it. */
+	--inset-line: color-mix(in srgb, var(--gold-400) 18%, var(--slate-800));
+	--inset-line-quiet: color-mix(in srgb, var(--gold-400) 10%, var(--slate-800));
 	/* ✅ The accent is gold now, not this context's own borrowed ink — see the
 	   accent block at :root. The derived sel-* tokens re-declare per the
 	   substituted-at-declaration law; --knob re-bakes against this --muted. */
@@ -973,12 +1124,32 @@
 	   Measured: --text 6.18:1 (6.94 raised) · --muted 8.00:1 (8.98 raised) —
 	   both up from 5.32 / 6.9. */
 	--frame-bg: var(--parchment-100);
+	/* ══ ON PAPER, THE AXIS IS SIZE — NOT DEPTH (⚓ NATE 2026-08-10) ══════════
+	   Nate sampled Genshin's two parchment grounds: #F2F1EC for large panels and
+	   #E8E5DD for character cards. Our nearest rungs are parchment-50 (Δ6) and
+	   parchment-100 (Δ6), and — ⚓ his constraint — they are ADJACENT rungs, so
+	   the pair is a half-step apart rather than a jump.
+
+	   THE RULE, in his words: a LARGE parchment panel, a heading ribbon, or
+	   parchment carrying other parchment takes the light one; a SMALLER item —
+	   a character card, a button, a layer sitting on a broad panel — takes the
+	   darker one. So the thing ON the paper is DARKER than the paper.
+
+	   ⚠ THIS REVERSES THE 2026-08-09 NOTE that stood here ("Genshin's cream
+	   cards are the LIGHTER thing on parchment, so raised lifts"). That was
+	   reasoning from the dark context's ladder, where raised does lift. Nate's
+	   sampled values say otherwise, and sampled beats symmetrical.
+
+	   ⚠ SO ctx-light HAS NO RAISED RUNG. --surface-raised resolves to the same
+	   value as --surface here, exactly as it does on glass and for a related
+	   reason: this context does not express depth by lightness at all. What it
+	   expresses is EXTENT, and that is --surface-broad's job. Keeping the alias
+	   rather than deleting it means every dark-context component that reads
+	   --surface-raised still lands somewhere sane if it is ever dropped onto
+	   paper. */
 	--surface: var(--parchment-100);
-	/* ⚠ RAISED NOW LIFTS. It used to be #e9e5dc, DARKER than the surface — a
-	   raised panel that sank. Genshin's cream cards are the lighter thing on
-	   parchment, so this is parchment-50 and the light context's depth now
-	   reads the same direction as the dark context's. */
-	--surface-raised: var(--parchment-50);
+	--surface-broad: var(--parchment-50);
+	--surface-raised: var(--parchment-100);
 	/* A field cut into paper goes DOWN the parchment ramp, mirroring the dark
 	   context's well. Genshin's own info/time bars on parchment sit here. */
 	--surface-well: var(--parchment-200);
@@ -993,9 +1164,18 @@
 	--line-soft: #cfcbc3; /* = ink-700 @ .18 */
 	--line-strong: #bbb9b6; /* = ink-700 @ .30 */
 	--line-edge: #a8a8a8; /* = ink-700 @ .42 */
-	--border: var(--line-edge);
-	--frame-line: var(--line-strong);
+	/* ↻ ⚓ NATE 2026-08-10: the roles drop to the two most transparent stops, the
+	   same move as .ctx-dark. On paper it changes least — "paper structure is a
+	   whisper" was already the note here, and the top two rungs were the part
+	   that never sounded like one. */
+	--border: var(--line-soft);
+	--frame-line: var(--line-soft);
 	--frame-line-quiet: var(--line-faint);
+	/* The gold inset, at THIS context's rung — see .ctx-dark for the argument.
+	   gold-700 because gold-400 disappears into parchment; same hue, carried
+	   down, exactly the move --accent makes below. */
+	--inset-line: color-mix(in srgb, var(--gold-700) 18%, var(--parchment-100));
+	--inset-line-quiet: color-mix(in srgb, var(--gold-700) 10%, var(--parchment-100));
 	/* ⚠ THE ACCENT CHANGES RUNG, NOT HUE. gold-400 measures 1.48:1 on this
 	   ground — it would be invisible as ink and illegible as a link. gold-700
 	   is the same hue carried down to 4.82:1. See the accent block at :root. */
@@ -1082,7 +1262,9 @@
 	   an opaque panel that thinks it is glass. */
 	--surface: var(--glass-panel);
 	--surface-raised: var(--glass-panel);
+	--surface-broad: var(--glass-panel); /* no size axis on glass — see .ctx-light */
 	--surface-well: var(--glass-well);
+	--surface-hover: var(--glass-hover);
 	--frame-bg: var(--slate-800);
 	--text: var(--parchment-100);
 	--muted: #b7b4ae; /* = parchment-100 @ .72 over slate-800; literal per THE
@@ -1099,18 +1281,55 @@
 	--line-soft: rgb(236 229 216 / 0.18);
 	--line-strong: rgb(236 229 216 / 0.3);
 	--line-edge: rgb(236 229 216 / 0.42);
-	--border: var(--line-edge);
-	--frame-line: var(--line-strong);
+	--border: var(--line-soft);
+	--frame-line: var(--line-soft);
 	--frame-line-quiet: var(--line-faint);
+	/* The gold inset. ⚠ CARRIES ALPHA, unlike the opaque contexts' copies —
+	   same reason every line here does: the ground behind a pane is unknown, so
+	   an opaque mix would be a stripe of the wrong colour. gold-400's rung,
+	   since glass is a dark material. */
+	--inset-line: rgb(211 188 142 / 0.18);
+	--inset-line-quiet: rgb(211 188 142 / 0.1);
+	/* THE HOVER RING — see the pane-hover rule below for why glass gets an edge
+	   and nothing else does.
+	   ✅ SETTLED 2026-08-10, and it was settled BY the border decision rather
+	   than beside it: borders stayed ink, which left gold free to mean SELECTED,
+	   so the hover ring keeps the pane's own ink. Had lines gone gold globally a
+	   gold hover ring would have stopped distinguishing hover from selected —
+	   the one thing it has to do. The two rejected candidates (gold, a brighter
+	   slate) stay on /lab as the evidence. */
+	--glass-ring: var(--line-edge);
 	--accent: var(--gold-400);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
-	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
 	--knob: var(--muted);
-	/* The hover wash is the parchment frost, not a neutral tint — on glass a
-	   neutral fill greys the world showing through it. */
 	--fill-rest: var(--glass-parch);
-	--fill-hover: color-mix(in srgb, var(--parchment-100) 17%, transparent);
+	/* ══ ON GLASS THERE IS ONE HOVER, AND IT IS SLATE (⚓ NATE 2026-08-10) ═════
+	   "Slate panels should always be some form of slate — including glass slate
+	   panels." Both hover roles resolve to the SAME neutral wash here, which is
+	   the dark context's own hover recipe (--neutral at 20%) used unchanged, so
+	   every hoverable pane on the site lifts identically whether it is glass or
+	   opaque slate.
+
+	   ⚠ --accent-hover-fill CARRIES A NON-ACCENT VALUE IN THIS CONTEXT, and that
+	   is the point rather than an oversight. The role means "the wash a hover
+	   lays down where the accent idiom applies"; on glass the accent idiom does
+	   not apply, because a gold or parchment tint over a translucent pane stains
+	   the world showing through it — which is what made a hovered tab and a
+	   hovered Atlas card read as a different material from their neighbours.
+	   Accent stays the mark of SELECTION here (--sel-fill, --sel-ring, untouched):
+	   hover is a lift, selection is a colour.
+
+	   ↻ This reverses the note that stood here for a day — "the hover wash is the
+	   parchment frost, not a neutral tint, because on glass a neutral fill greys
+	   the world showing through it." The greying is real and it is what a hover
+	   on a slate pane should do; the alternative was two different tints in one
+	   band, which is what Nate actually saw.
+
+	   ⚠ Spelled out twice rather than aliased — the nesting law: each is one
+	   level deep off a primitive, never an alias of the other. */
+	--fill-hover: color-mix(in srgb, var(--neutral) 20%, transparent);
+	--accent-hover-fill: color-mix(in srgb, var(--neutral) 20%, transparent);
 	--btn-face: color-mix(in srgb, var(--neutral) 18%, var(--slate-800));
 	--btn-face-hover: color-mix(in srgb, var(--neutral) 28%, var(--slate-800));
 	color: var(--text);
@@ -1144,24 +1363,68 @@
 	-webkit-backdrop-filter: blur(var(--glass-blur));
 	backdrop-filter: blur(var(--glass-blur));
 }
-/* Hover/active states re-declare the ground, so they need the glass stops too
-   — otherwise touching a control turns opaque under the cursor.
+/* ── HOVERING A PANE OF GLASS (⚓ NATE 2026-08-10) ──────────────────────────
+   A RING AND A DENSITY, and no wash at all. This replaces three different
+   hover treatments that had accumulated on one row of plates (an accent wash on
+   tabs, a neutral wash on buttons, a parchment one before that).
 
-   ⚠ THE DOUBLE-GRADIENT IS THE NESTING LAW, not a flourish. The wash has to sit
-   OVER the pane rather than replace it, and the obvious spelling —
-   color-mix(--accent-hover-fill …) — is a color-mix fed by a color-mix, which
-   CRASHES WEBKIT. A one-stop linear-gradient is a background LAYER, so the two
-   composite at paint time with no colour arithmetic at all. */
-.band-a .tab:not(.active):hover {
-	background: linear-gradient(var(--accent-hover-fill), var(--accent-hover-fill)), var(--surface);
-}
+   WHY A RING IS LEGITIMATE HERE AND NOWHERE ELSE. An edge border says where a
+   surface ENDS, and on an opaque panel the ground already says that — the
+   boundary is a luminance step, which is exactly why edge borders retired.
+   Glass is the one material whose extent is NOT self-evident: at ~10%
+   transmission the step against the sky is small, and it VARIES across the
+   pane's own width depending on whether a star or empty sky is behind it. So
+   the defect is glass's alone and so is the fix. ⚠ Hover and selected only —
+   this is not a licence to put edges back on resting surfaces.
+
+   WHY DENSITY RATHER THAN A WASH. See --glass-hover: the ink's contrast rises
+   under the hand instead of falling, and no foreign hue lands on a slate pane
+   ("slate panels should always be some form of slate — including glass slate
+   panels").
+
+   ⚠ inset box-shadow, never a real border: no layout shift, and a single stroke
+   composites exactly once on glass — the rule that vetoes .inset--double there.
+   ⚠ NO GRADIENT LAYER ANY MORE. The old spelling stacked a wash over the pane
+   with a one-stop linear-gradient, to dodge the color-mix-fed-by-a-color-mix
+   WebKit crash. Replacing the ground outright with a second declared stop needs
+   no arithmetic at all, so the hazard simply leaves. */
+.band-a .tab:not(.active):hover,
 .band-a .btn:hover:not(:disabled),
 .band--3up > .band-zone .btn:hover:not(:disabled) {
-	background: linear-gradient(var(--fill-hover), var(--fill-hover)), var(--surface);
+	background: var(--surface-hover);
+	box-shadow: inset 0 0 0 1px var(--glass-ring);
 }
+/* ── SELECTED GLASS: THE HOVER DENSITY + A GOLD EDGE (⚓ NATE 2026-08-10) ───
+   ONE idiom for every selected pane, and the ladder reads without a legend:
+
+     rest      --surface       (.58)  translucent
+     hover     --surface-hover (.80)  + an INK ring   — "here"
+     selected  --surface-hover (.80)  + a GOLD ring   — "chosen"
+
+   DENSITY separates resting from engaged; HUE separates the two engaged states.
+   That is a cleaner split than the one shipped an hour earlier, which took
+   selected all the way to opaque: three densities meant the eye had to measure
+   how solid a pane was to know what it was looking at, when the ring was
+   already saying it in colour. ⚓ Nate: "the same .80 opacity as hover, just
+   with the gold ring instead."
+
+   ⚓ The document tab landed here too — "make band A's tab buttons follow the
+   new selected dense fill with gold border" — so the tabs and the band-B
+   controls stop being two treatments. What the tab gave up is the opaque slate
+   from the density round; what the accent WASH gave up is its job, since the
+   ring says it better without lifting the ground.
+
+   ⚠ IT IS BLURRED AGAIN. The base glass rule excludes `.tab.active`, so the tab
+   needs its own copy — and now that a selected pane is translucent, a pane
+   without the blur would be the one place the world came through sharp. */
+.band-a .tab.active,
 .band-a .btn.is-active,
 .band--3up > .band-zone .btn.is-active {
-	background: linear-gradient(var(--sel-fill), var(--sel-fill)), var(--surface);
+	background: var(--surface-hover);
+	box-shadow: inset 0 0 0 1px var(--sel-ring);
+	color: var(--text);
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	backdrop-filter: blur(var(--glass-blur));
 }
 /* The surviving ghost stays a ghost — a destructive control INSIDE A RUN of
    other controls must not sit on screen looking pressable. Scoped to band A,
@@ -1179,49 +1442,41 @@
 	background: var(--ui-danger-soft);
 }
 
-/* ── ONE HEIGHT ACROSS BOTH ROWS (⚓ NATE 2026-08-10) ───────────────────────
-   "Let's make all of the Band A / Band B items 36px" — a control fills its row
-   exactly, so a band reads as a run of objects at one height. --band-ctrl-h is
-   set on .tool-stack from BAND_CTRL_H and inherits down.
+/* ── ONE HEIGHT, IN BAND B ONLY (⚓ NATE 2026-08-10, then again) ────────────
+   The row height is filled by the controls that stand ON a rail — band B's
+   navigation and the two plates flanking it — so that row reads as a run of
+   objects at one height. --band-ctrl-h is set on .tool-stack from BAND_CTRL_H
+   and inherits down.
 
-   ⚠ THE ICON-ONLY CONTROLS ARE THE STATED EXCEPTION — "except for their
-   slightly smaller + and ... buttons". A square 36px plate holding one 14px
-   glyph reads as a missing label, not as a peer; these two are punctuation in
-   the row, not members of it. */
-.band .tab,
-.band .btn {
+   ↻ BAND A IS BACK TO ITS NATURAL HEIGHT. It was pulled up to 36px the same day
+   to match band B, and Nate undid it the next morning: the document tabs and
+   Save/Load/Share are ~27px of type and padding, and stretching them to fill a
+   row they merely sit in made them read as the heavier row of the two — which
+   is backwards, since band B carries the tool's navigation. They centre in
+   BAND_A_H again, exactly as they did before the match.
+   ⚠ So --band-ctrl-h is a BAND B number now, not a stack-wide one. BAND_A_H is
+   still 36 and deliberately so: it is the ROW, not the control.
+
+   ⚠ THE ICON-ONLY CONTROLS ARE THE STATED EXCEPTION in band B — "except for
+   their slightly smaller + and ... buttons". A square 36px plate holding one
+   14px glyph reads as a missing label, not as a peer. */
+.band-b .tab,
+.band-b .btn {
 	height: var(--band-ctrl-h);
 }
-.band .btn--icon {
+.band-b .btn--icon {
 	height: calc(var(--band-ctrl-h) - 10px);
 	min-width: calc(var(--band-ctrl-h) - 10px);
 }
 
-/* ── THE SELECTED DOCUMENT TAB ─────────────────────────────────────────────
-   ↻ ⚓ NATE 2026-08-10: OPAQUE SLATE, THE BENCH'S OWN SHADE, with a --plain
-   inset border. This retires the beige selected-state pilot here (2026-08-01,
-   the Stygian selected-row idiom): a parchment plate marked the selected
-   document loudly enough, but with every other control in the row now made of
-   glass it was the one lit object in the header and it pulled the eye off the
-   tool. DENSITY marks it instead of brightness — the only opaque thing among
-   panes of glass.
-
-   It paints --frame-bg, which in .ctx-glass IS slate-800: the material's
-   reference ground, the same value .ctx-dark paints as --surface, and
-   therefore literally the bench ribbon's shade rather than a match for it.
-
-   ↻ ⚓ NATE, same day: the --plain inset line came back OFF. It shipped for a
-   few hours on the reasoning that the line would say "selected" without adding
-   light — but opacity was already saying it, and a stroke on a 36px tab in a
-   row of ten controls is ornament competing with the navigation one row down.
-   The nav plate keeps its line; this one does not need to be a second
-   decorated object. (Its markup classes went too, so the tab's ::after is free
-   again — see DocumentTabs' note on the drag indicators.) */
-.band-a .tab.active {
-	background: var(--frame-bg);
-	box-shadow: none;
-	color: var(--text);
-}
+/* THE SELECTED DOCUMENT TAB moved UP into the shared selected-glass rule (see
+   "SELECTED GLASS" above) on 2026-08-10 — it is not a special case any more.
+   The history worth keeping: it was the beige --sel-surface plate (the 2026-08-01
+   Stygian pilot), which marked the selected document loudly enough but became
+   the one lit object in a row of glass and pulled the eye off the tool. Density
+   replaced brightness, and then the gold edge joined it when every selected pane
+   got one. The pilot itself did not die — it MOVED to the Team Builder's
+   navigation, which is what Genshin actually uses it for. */
 
 *,
 *::before,
@@ -1314,12 +1569,12 @@ img {
    step larger than intended (Nate 2026-07-27). Headings set their own sizes, so
    putting it on .prose catches paragraphs, lists and anything unstyled. */
 .prose {
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 }
 
 .prose h1 {
 	margin: 0 0 1.2rem;
-	font-size: var(--fs-4xl);
+	font-size: var(--fs-5xl);
 	font-weight: var(--fw-bold);
 	letter-spacing: var(--ls-tight);
 	color: var(--chrome);
@@ -1327,7 +1582,7 @@ img {
 
 .prose h2 {
 	margin: 2rem 0 0.8rem;
-	font-size: var(--fs-2xl);
+	font-size: var(--fs-3xl);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-tight);
 	color: var(--chrome);
@@ -1335,7 +1590,7 @@ img {
 
 .prose h3 {
 	margin: 1.4rem 0 0.5rem;
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 	font-weight: var(--fw-semibold);
 	color: var(--text);
 }
@@ -1390,7 +1645,7 @@ img {
 /* A lede is the one thing in prose that should be LARGER than body copy; it
    was fs-lg against a 16px body, i.e. smaller than what it introduces. */
 .prose .lede {
-	font-size: var(--fs-xl);
+	font-size: var(--fs-2xl);
 	color: var(--muted);
 }
 
@@ -1462,7 +1717,7 @@ img {
 	background: var(--btn-face);
 	color: var(--muted);
 	font-family: var(--font-body);
-	font-size: var(--fs-sm);
+	font-size: var(--fs-md);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
@@ -1495,7 +1750,7 @@ img {
 }
 .btn--sm {
 	padding: 0.25rem 0.5rem;
-	font-size: var(--fs-xs);
+	font-size: var(--fs-sm);
 }
 .btn--icon {
 	padding: 0.25rem;
@@ -1596,7 +1851,7 @@ img {
 	background: var(--fill-rest);
 	color: var(--muted);
 	font-family: var(--font-body);
-	font-size: var(--fs-sm);
+	font-size: var(--fs-md);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-mid);
 	cursor: pointer;
@@ -1618,7 +1873,7 @@ img {
 /* Instrument voice — a setting, so it shouts like a button. */
 .chip--control {
 	padding: 0.35rem 0.75rem;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
 }
@@ -1626,7 +1881,7 @@ img {
    GaugeInstrument's scoped .vz-chip-sm in chunk 2. */
 .chip--sm {
 	padding: 0.25rem 0.5rem;
-	font-size: var(--fs-sm);
+	font-size: var(--fs-md);
 	letter-spacing: var(--ls-tight);
 }
 
@@ -1674,7 +1929,7 @@ img {
 	background: var(--fill-rest);
 	color: var(--muted);
 	font-family: var(--font-body);
-	font-size: var(--fs-sm);
+	font-size: var(--fs-md);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-mid);
 	white-space: nowrap;
@@ -1699,7 +1954,7 @@ img {
    row) — same system one step up; document tabs stay at base size. */
 .tab--lg {
 	padding: 0.45rem 0.9rem;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	max-width: none;
 }
 .tab--closeable {
@@ -1715,7 +1970,7 @@ img {
 	border-radius: var(--r-sm);
 	background: none;
 	color: inherit;
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 	line-height: var(--lh-none);
 	opacity: 0.4;
 	cursor: pointer;
@@ -1779,7 +2034,7 @@ img {
 	background: var(--ui-positive);
 }
 .toggle-label {
-	font-size: var(--fs-sm);
+	font-size: var(--fs-md);
 	font-weight: var(--fw-semibold);
 	color: var(--muted);
 }
@@ -1789,7 +2044,7 @@ img {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.55rem;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	color: var(--muted);
 	cursor: pointer;
 }
@@ -1892,9 +2147,26 @@ img {
    and a free ::after (::before too, for --double). No wrapper elements, no
    layout cost. Inset distance is --frame-inset.
 
-   ⚓ STROKES ARE 2px (NATE). It also puts the family on the rule rung the
-   system already had — § Laws: "rules are 2px, section dividers 1px" — so an
-   inset frame reads as a RULE around a surface rather than as a hairline. */
+   ══ TWO WEIGHTS, AND THE AXIS IS THE BOX'S SIZE (⚓ NATE 2026-08-10) ═══════
+   A frame's right weight is a function of what it goes round, so the family has
+   exactly two:
+
+     1.5px — THE DEFAULT. Buttons, plates, chips, a selected nav item: anything
+             where 2px stops reading as jewelry and starts reading as the box's
+             own border.
+     2px   — LARGE PANELS. The bench ribbon and anything of that scale, where a
+             thinner line reads as a hairline rather than a rule.
+
+   ⚠ THE DEFAULT FLIPPED THIS ROUND (2px → 1.5px), because the small case turned
+   out to be the common one — every caller but the bench is a control. The rule
+   rung in § Laws ("rules are 2px, section dividers 1px") still governs RULES;
+   this family is the ornamental frame, and it now says the smaller thing by
+   default and asks a panel to declare the larger.
+
+   ⚠ The bench ribbon does not read --inset-stroke at all: it carries its own
+   RIBBON_FRAME_BORDER (= 2), because its radii are tuned to its geometry and it
+   predates this family. The two numbers agreeing is the point — if one moves,
+   move the other. */
 .inset {
 	position: relative;
 }
@@ -1909,7 +2181,10 @@ img {
 /* 1 · PLAIN — the undecorated baseline. One stroke, set in. Safe everywhere,
    including on glass: a single stroke composites exactly once. */
 .inset--plain::after {
-	border: 2px solid var(--frame-line);
+	/* The fallback, not a declared default: --inset-stroke is a host override
+	   (see above), and a declaration on `.inset` would have to out-specify every
+	   host that sets it. Large panels declare 2px; everything else takes this. */
+	border: var(--inset-stroke, 1.5px) solid var(--inset-line);
 }
 
 /* 2 · DOUBLE — two strokes on ONE box, differing only in corner radius, so the
@@ -1927,14 +2202,14 @@ img {
    arcs. Nothing warns you: it is correct CSS doing exactly what it was asked.
    On an opaque ground the strokes are opaque and the overlap is invisible. */
 .inset--double::after {
-	border: 2px solid var(--frame-line-quiet);
+	border: 2px solid var(--inset-line-quiet);
 	border-radius: 2px;
 }
 .inset--double::before {
 	content: '';
 	position: absolute;
 	inset: var(--frame-inset);
-	border: 2px solid var(--frame-line-quiet);
+	border: 2px solid var(--inset-line-quiet);
 	border-radius: 22px;
 	pointer-events: none;
 }
@@ -1972,7 +2247,7 @@ img {
 	padding: 0.3rem 0.7rem;
 	border-radius: var(--r-sm);
 	background: var(--surface);
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
@@ -1986,7 +2261,7 @@ img {
 	gap: 0.4rem;
 	text-transform: none;
 	letter-spacing: normal;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	font-weight: var(--fw-normal);
 	color: var(--muted);
 }
@@ -1996,41 +2271,64 @@ img {
    <h2>, and headings are Bitter now — but the kicker is the SECTION-heading
    idiom, the one with a rule running out of its side, and Nate's rule puts
    those on the body face. Removing this line silently flips every section
-   label on the site to serif. */
+   label on the site to serif.
+
+   ══ AND IT IS GOLD (⚓ NATE 2026-08-10) ══════════════════════════════════
+   THE RULE, read off five Genshin screens and consistent in every one: GOLD
+   NAMES A BLOCK; IT NEVER EMPHASISES A WORD. Their section labels are gold —
+   "Opening Characters", "Performance Requirements", "Challenge Criteria",
+   "Special Rules" — while their TITLES are not (white on dark, dark ink on
+   light), and their inline emphasis is a hotter orange or the element's own hue.
+
+   ⚠ SO GOLD SITS BELOW THE TITLE IN THE HIERARCHY. That is the counterintuitive
+   half, and the reason this is written down rather than applied by feel: you
+   would put the accent on the most important thing, and Genshin puts it on the
+   second-most. The title is loudest by SIZE; gold marks the thing that NAMES a
+   region. The kicker is our only section-label idiom, so it is the whole of the
+   rule's surface area today — ⚓ "let's start with that, and see what other gold
+   accents develop from there."
+
+   ⚠ STILL OPEN, DELIBERATELY: inline emphasis. Ours is gold today, and one hue
+   on two unrelated jobs is exactly the drift the census exists to catch. ⚓ Nate
+   parked it for the --el-* round — borrowing the element's own hue is the
+   leading candidate, and it is what Genshin does. Do not settle it here. */
 .kicker {
 	margin: 0;
 	font-family: var(--font-body);
 	display: flex;
 	align-items: center;
 	gap: 0.65rem;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-widest);
 	text-transform: uppercase;
-	color: var(--muted);
+	color: var(--accent);
 }
 /* Solid and faint, not a gradient (Nate 2026-07-27). The fading gradient
    always read as an unfinished stroke; a single quiet rule at low alpha
-   reads as deliberate structure and sits back behind the label. */
+   reads as deliberate structure and sits back behind the label.
+   ⚠ IT GOES GOLD WITH ITS LABEL. A grey tail on a gold label is a half-applied
+   idiom — /lab caught it, and it would not have shown up in a token diff. Only
+   the hue moved; the 22% strength is unchanged. */
 .kicker::after {
 	content: '';
 	flex: 1;
 	height: 2px;
-	background: color-mix(in srgb, var(--muted) 22%, transparent);
+	background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 /* A main header — Bitter, per the heading rule above. It only declares the
    face because two of its three callers are <h2>s and one is a <p>. */
 .title {
 	margin: 0;
 	font-family: var(--font-display);
-	font-size: var(--fs-2xl);
+	font-size: var(--fs-3xl);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-tight);
 	color: var(--text);
 }
 .subtitle {
 	margin: 0.15rem 0 0;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	color: var(--muted);
 	text-transform: capitalize;
 }
@@ -2042,7 +2340,7 @@ img {
    explanatory paragraph, not a caption. */
 .note {
 	margin: 0;
-	font-size: var(--fs-md);
+	font-size: var(--fs-lg);
 	line-height: var(--lh-relaxed);
 	color: var(--muted);
 }
@@ -2051,7 +2349,7 @@ img {
 .field-label {
 	display: block;
 	margin-bottom: 0.3rem;
-	font-size: var(--fs-xs);
+	font-size: var(--fs-sm);
 	font-weight: var(--fw-semibold);
 	letter-spacing: var(--ls-wide);
 	text-transform: uppercase;
@@ -2066,7 +2364,7 @@ img {
 	box-shadow: inset 0 0 0 1px var(--border);
 	color: var(--text);
 	font-family: var(--font-body);
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 	transition:
 		background var(--t-quick),
 		box-shadow var(--t-quick);
@@ -2090,7 +2388,7 @@ img {
 	align-items: center;
 	justify-content: space-between;
 	gap: 1rem;
-	font-size: var(--fs-lg);
+	font-size: var(--fs-xl);
 }
 
 .slider-label {

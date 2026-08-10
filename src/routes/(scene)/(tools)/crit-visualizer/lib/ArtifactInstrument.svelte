@@ -994,7 +994,7 @@
 
 	.ar-ladder-label {
 		font-family: var(--font-condensed);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		color: var(--muted);
 	}
 
@@ -1015,14 +1015,14 @@
 
 	.ar-ladder-value {
 		font-family: var(--font-body);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		text-align: right;
 	}
 
 	.ar-ladder-onein {
 		font-family: var(--font-body);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		color: var(--muted);
 		text-align: right;
 	}
@@ -1107,7 +1107,7 @@
 		border-radius: 3px;
 		background: var(--fill-rest);
 		color: var(--text);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		cursor: pointer;
 	}
@@ -1119,7 +1119,7 @@
 
 	.ar-count-badge {
 		font-family: var(--font-body);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
 		text-align: right;
@@ -1139,14 +1139,14 @@
 
 	.ar-big-unit {
 		margin-left: 0.4rem;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
 	}
 
 	.ar-meta {
 		margin: 0;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		line-height: 1.5rem;
 		color: var(--muted);
 	}
@@ -1170,7 +1170,7 @@
 		border-radius: 3px;
 		background: var(--fill-rest);
 		font-family: var(--font-body);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 	}
 

@@ -112,7 +112,7 @@
 	.cg-empty {
 		grid-column: 1 / -1;
 		margin: 1rem 0;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: var(--muted);
 	}
 </style>

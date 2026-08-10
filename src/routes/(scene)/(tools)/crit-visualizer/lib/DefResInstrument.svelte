@@ -426,14 +426,14 @@
 
 	.dr-big-unit {
 		margin-left: 0.4rem;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
 	}
 
 	.dr-meta {
 		margin: 0;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		line-height: 1.5rem;
 		color: var(--muted);
 	}
@@ -447,7 +447,7 @@
 	/* The receipt: exact formula, tucked after the plain-language line */
 	.dr-formula {
 		display: block;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 </style>

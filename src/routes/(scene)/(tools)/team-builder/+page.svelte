@@ -1241,9 +1241,12 @@
 
 	   --nav-plate-h: the selected plate is TALLER THAN THE RAIL on purpose —
 	   that overhang is most of what makes it read as a plate laid on the strip
-	   rather than a selected cell inside it. The rail is BAND_B_H (36px), so 40
-	   stands 2px proud at each end (⚓ Nate 2026-08-10, down from 3). Move one,
-	   look at the other.
+	   rather than a selected cell inside it. The rail is BAND_B_H (36px), so 38
+	   stands 1px proud at each end (⚓ Nate 2026-08-10, walked down 42 → 40 → 38
+	   across the day). Move one, look at the other.
+	   ⚠ 1px is the floor for this idiom, not a waypoint on the way to 0: at 36
+	   the plate stops being proud of anything and becomes a selected cell inside
+	   the rail, which is the shape this whole treatment exists to avoid.
 
 	   --nav-fill: how much of the rail the three items take between them.
 	   ⚓ NATE: "make the buttons wider than their text requires… not entirely
@@ -1252,7 +1255,7 @@
 	   from the rail, never from their labels. Rail visible at both ends is what
 	   keeps the group reading as three plates ON a strip. */
 	.tb-nav {
-		--nav-plate-h: 40px;
+		--nav-plate-h: 38px;
 		--nav-fill: 76%;
 		width: var(--nav-fill);
 		display: flex;
@@ -1283,7 +1286,7 @@
 		background: none;
 		color: var(--muted);
 		font-family: var(--font-display);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-tight);
 		white-space: nowrap;
@@ -1303,25 +1306,31 @@
 	/* THE SELECTED PLATE. It CLAIMS .ctx-light rather than naming a light token,
 	   which is the same move AtlasView's cards make and for the same reason: it
 	   paints its own opaque light ground, so the ink ladder and the ACCENT RUNG
-	   flip with it — gold-400 measures 1.48:1 on this beige, gold-700 is what
-	   .ctx-light resolves --accent to, and the border below depends on that.
+	   flip with it — gold-400 measures 1.48:1 on this paper, gold-700 is what
+	   .ctx-light resolves --accent to, and the edge below depends on that.
 
-	   ⚠ THE BORDER IS A GOLD MIX, not the context's line (⚓ Nate 2026-08-10:
-	   "right now its border is some kind of slate mix, which it shouldn't be —
-	   borders like this are some kind of gold mix usually"). .ctx-light's
-	   --frame-line is a neutral rule meant for dividing a paper panel; an
-	   ornamental edge on a beige plate is jewelry, and Genshin's jewelry is
-	   gold. Mixed OPAQUELY against the plate's own known ground (the compositing
-	   law) and only one level deep (the nesting law) — both inputs are aliases
-	   of primitives, never of each other. */
+	   ↻ ⚓ NATE 2026-08-10: the plate is PARCHMENT-100 now, via --sel-surface —
+	   "the unified character-card-sharing parchment value". It is literally the
+	   paper a character card is made of rather than a near-miss beside it, and
+	   it takes the light family off the gold ramp: the plate was gold-300, so
+	   selection and jewelry were sharing a hue for no reason. Gold keeps the
+	   EDGE; paper keeps the FILL.
+
+	   ⚠ THE EDGE IS THE FAMILY'S, WITH NO LOCAL STRENGTH. The gold-edge reasoning
+	   started on this plate and then generalised into the whole --inset-line
+	   family (see app.css), so what is left here is nothing: it takes the
+	   context's own stop. ⚓ Nate on the 42% mix that lived here — "an unwanted
+	   artifact of the development process, not a line strength to be preserved".
+	   It came from a round where this was the only gold edge in the system and
+	   had to carry the idea by itself; it does not any more. */
 	.tb-nav-item.active {
 		background: var(--sel-surface);
 		color: var(--sel-ink);
-		/* .inset--plain's stroke, pulled in from the family's 7px — that distance
-		   is tuned for a frame around a surface, and on a 40px plate it would put
-		   the line through the middle of the type. */
+		/* ⚠ --frame-inset only. The 1.5px stroke this used to declare IS the
+		   family default now (⚓ Nate: 1.5px for small elements, 2px for large
+		   panels), so the override retired rather than being restated. 7px of
+		   inset is still wrong here — it would put the line through the type. */
 		--frame-inset: 3px;
-		--frame-line: color-mix(in srgb, var(--accent) 42%, var(--sel-surface));
 	}
 
 	/* Rests as a peer of every other band plate and only announces itself under
@@ -1360,7 +1369,7 @@
 		transform: scale(1.333) translateY(-14%);
 	}
 	.tb-tabstack-initials {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		color: var(--muted);
 	}
@@ -1378,7 +1387,7 @@
 		gap: 0.3rem;
 	}
 	.tb-aud-label {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
@@ -1390,7 +1399,7 @@
 		gap: 0.3rem;
 	}
 	.tb-aud-none {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 	}
 	.tb-cand {
 		display: inline-flex;
@@ -1402,7 +1411,7 @@
 		background: color-mix(in srgb, var(--el-color) 8%, transparent);
 		color: var(--text);
 		font-family: var(--font-body);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		cursor: pointer;
 		transition:
 			border-color 150ms ease,
@@ -1436,7 +1445,7 @@
 		object-fit: cover;
 	}
 	.tb-cand-initials {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
@@ -1471,7 +1480,7 @@
 	   to lend it presence, so it has to carry its own. */
 	.tb-atlas-lead {
 		margin: 0;
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		color: var(--text);
 	}
 	.tb-atlas-head {
@@ -1511,12 +1520,12 @@
 		justify-content: center;
 		background: var(--bg);
 		color: var(--muted);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 	}
 	.tb-slotrow-name {
 		font-family: var(--font-display);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		color: var(--text);
@@ -1533,7 +1542,7 @@
 	}
 	.tb-slotrow-count {
 		margin-left: auto;
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		color: var(--muted);
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
@@ -1554,7 +1563,7 @@
 		align-items: center;
 		gap: 0.4rem;
 		font-family: var(--font-display);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
@@ -1631,7 +1640,7 @@
 		min-width: 4.5rem;
 	}
 	.tb-conmode-hint {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		color: var(--muted);
 		white-space: normal;
 		max-width: 22rem;
@@ -1645,7 +1654,7 @@
 	/* .note, plus the offset its container doesn't provide. */
 	.tb-note {
 		margin-top: 0.5rem;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 	}
 
 	.tb-chips {
@@ -1667,7 +1676,7 @@
 	/* ── Content ──────────────────────────────────────────────── */
 	.tb-count {
 		margin: 0;
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
@@ -1723,7 +1732,7 @@
 		display: flex;
 	}
 	.tb-act-label {
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;

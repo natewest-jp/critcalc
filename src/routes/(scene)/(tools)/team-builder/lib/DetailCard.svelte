@@ -386,7 +386,7 @@
 		transform: scale(1.333) translateY(-14%);
 	}
 	.dc-avatar-initials {
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-bold);
 		color: var(--el-color);
 	}
@@ -414,7 +414,7 @@
 		background: none;
 		color: var(--text);
 		font-family: var(--font-body);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		cursor: pointer;
@@ -463,7 +463,7 @@
 		border-radius: 3px;
 		border: 1px solid color-mix(in srgb, var(--el-geo-main) 40%, transparent);
 		background: color-mix(in srgb, var(--el-geo-main) 8%, transparent);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		line-height: var(--lh-normal);
 		color: var(--text);
 	}
@@ -471,7 +471,7 @@
 	/* ── Ownership toggle ─────────────────────────────────────── */
 	.dc-note {
 		margin-top: 0.5rem;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 	}
 
 	.dc-own {
@@ -499,7 +499,7 @@
 		padding: 0.45rem 0.6rem;
 		border-radius: 3px;
 		background: var(--fill-rest);
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 	}
 	.dc-cap--locked {
 		opacity: 0.5;
@@ -520,7 +520,7 @@
 		padding: 0 4px;
 		border-radius: 3px;
 		background: var(--fill-rest);
-		font-size: var(--fs-2xs);
+		font-size: var(--fs-xs);
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
 	}
@@ -537,7 +537,7 @@
 		gap: 3px;
 		padding: 1px 6px;
 		border-radius: 3px;
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 		background: color-mix(in srgb, var(--el-color) 18%, transparent);
 	}
@@ -552,7 +552,7 @@
 
 	.dc-cap-caveats {
 		grid-column: 1 / -1;
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-style: italic;
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
 	}
@@ -562,7 +562,7 @@
 		margin-top: 0.55rem;
 		width: 100%;
 		border-collapse: collapse;
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 	}
 	.dc-timing td {
 		padding: 0.35rem 0.6rem 0.35rem 0;

@@ -388,7 +388,7 @@
 		background: var(--fill-rest);
 		color: var(--text);
 		font-family: var(--font-mono);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		text-align: right;
 		appearance: textfield;
@@ -408,7 +408,7 @@
 
 	.cv-value-unit {
 		font-family: var(--font-mono);
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		font-weight: var(--fw-semibold);
 		color: var(--muted);
 	}
@@ -429,7 +429,7 @@
 	/* Plain-language second line under a toggle label. */
 	.cv-toggle-sub {
 		display: block;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
 	}
 
@@ -452,7 +452,7 @@
 	.cv-roll-meta {
 		flex-basis: 100%;
 		margin: 0;
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		color: var(--muted);
 	}
 
@@ -495,7 +495,7 @@
 
 	.cv-build-meta {
 		margin: 0;
-		font-size: var(--fs-lg);
+		font-size: var(--fs-xl);
 		line-height: 1.5rem;
 		color: var(--muted);
 	}
@@ -503,7 +503,7 @@
 	/* Plain-language gloss line under a readout value */
 	.cv-build-sub {
 		margin: -0.2rem 0 0;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
 	}
 

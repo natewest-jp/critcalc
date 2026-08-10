@@ -127,7 +127,7 @@
 		min-width: 0;
 		overflow: hidden;
 		font-family: var(--font-body);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		color: var(--text);
 	}
 

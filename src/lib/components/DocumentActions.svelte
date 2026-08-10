@@ -196,7 +196,7 @@
 	}
 
 	.doc-notice {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		letter-spacing: var(--ls-wide);
 		color: var(--accent);
 		padding: 0 0.4rem;

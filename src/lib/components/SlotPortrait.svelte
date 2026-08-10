@@ -512,7 +512,7 @@
 	   one line; multi-word outliers (Sangonomiya Kokomi, Shikanoin Heizou…) wrap
 	   to a second line rather than truncate. */
 	.sp-char-name {
-		font-size: var(--fs-md);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
 		line-height: var(--lh-tight);
@@ -546,7 +546,7 @@
 		/* --ui-danger, not a domain color — a data-quality consequence, not a
 		   game fact (dire-retirement round, 2026-08-05; mirrors .cc-namemark). */
 		color: var(--ui-danger);
-		font-size: var(--fs-2xl);
+		font-size: var(--fs-3xl);
 		font-weight: var(--fw-bold);
 		line-height: var(--lh-none);
 		/* In `em` so the lift scales with the glyph's own font-size. Nate's
@@ -587,7 +587,7 @@
 		/* --fs-xs, not the chip-label 2xs — sized up alongside the SVG action
 		   glyphs (⚓ NATE 2026-08-06); the refinement value and both pickers'
 		   pips move together. */
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-bold);
 		/* ── Centering the C value in its ring (⚓ NATE 2026-08-06) ────────────
 		   Two corrections, both measured against the ring's own rendered center
@@ -753,7 +753,7 @@
 		padding: 0 5px;
 		color: var(--sp-unset-ink);
 		font-family: var(--font-body);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-mid);
 		line-height: var(--lh-none);
@@ -826,7 +826,7 @@
 		transform: scale(1.25) translateY(-12%);
 	}
 	.sp-avatar-initials {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-mid);
 		color: var(--text);
@@ -879,7 +879,7 @@
 		background: var(--fill-rest);
 		color: var(--muted);
 		font-family: var(--font-body);
-		font-size: var(--fs-xs);
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-bold);
 		cursor: pointer;
 		display: flex;

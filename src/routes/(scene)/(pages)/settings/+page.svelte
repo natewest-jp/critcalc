@@ -16,7 +16,7 @@
 	   that also leaked onto everything else in the panel. */
 	h1 {
 		margin: 0 0 1.2rem;
-		font-size: var(--fs-4xl);
+		font-size: var(--fs-5xl);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-tight);
 		color: var(--chrome);

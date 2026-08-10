@@ -227,7 +227,7 @@
 		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
 		border-radius: 3px;
 		color: var(--text);
-		font-size: var(--fs-sm);
+		font-size: var(--fs-md);
 		padding: 0.1rem 0.3rem;
 		width: 92px;
 		outline: none;
