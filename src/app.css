@@ -327,6 +327,9 @@
 	   colour that happens to be greyish. */
 	--surface: var(--slate-800);
 	--surface-raised: var(--slate-700);
+	/* The EXTENT axis — a paper distinction (see .ctx-light). Netted here so the
+	   role always resolves; on dark it is simply --surface. */
+	--surface-broad: var(--slate-800);
 	--frame-bg: var(--slate-800);
 	/* --surface-well = a ground CUT INTO another ground: the planner's chart,
 	   an input field, a recessed track. New this round, and it is a role the
@@ -710,9 +713,17 @@
 	   gilt-soft #ede8de — gilt retired). Neither side is --accent-derived,
 	   so no per-context re-declaration is needed.
 	   ↻ 2026-08-09: onto the ramp as --gold-300, which is where the hinge beige
-	   was always standing — the plate is the brightest thing on the screen and
-	   gold-300 is the ramp's brightest rung. --bright-ink on it: 13.25:1. */
-	--sel-surface: var(--gold-300);
+	   was always standing.
+	   ↻ ⚓ NATE 2026-08-10: GOLD-300 → PARCHMENT-100, "the unified
+	   character-card-sharing parchment value". The selected plate is now
+	   LITERALLY the same paper a character card is made of, rather than a
+	   near-miss beside it — which is the whole argument for having a small
+	   palette at all. It also takes the last tinted ground out of the light
+	   family: gold-300 is a GOLD rung, and having the one big light plate on the
+	   ornament ramp meant selection and jewelry were sharing a hue for no
+	   reason. Gold keeps the EDGE (see the inset family); paper keeps the FILL.
+	   --bright-ink on it: 15.2:1, up from 13.25. */
+	--sel-surface: var(--parchment-100);
 	--sel-ink: var(--bright-ink);
 
 	/* Slider/toggle knob. Rides the context's dim voice — the contexts
@@ -1020,6 +1031,13 @@
 	--surface: var(--slate-800);
 	--surface-raised: var(--slate-700); /* ΔL .035 over the ground */
 	--surface-well: var(--slate-900); /* ΔL .035 under it — the chart, a field */
+	/* ⚠ NO SIZE AXIS ON DARK. --surface-broad is a PAPER distinction (see
+	   .ctx-light): Genshin splits its parchment grounds by extent, and does not
+	   split its dark ones. Aliased to --surface so the role resolves everywhere
+	   and a component never has to ask which context it is in — but if you find
+	   yourself wanting it to differ here, the depth ladder above is the tool you
+	   actually want. */
+	--surface-broad: var(--slate-800);
 	--text: var(--parchment-100);
 	/* The secondary TEXT voice. It used to be a blend of two hinge values,
 	   invented because the structural rung (#857971) measured 3.29:1 and could
@@ -1104,12 +1122,32 @@
 	   Measured: --text 6.18:1 (6.94 raised) · --muted 8.00:1 (8.98 raised) —
 	   both up from 5.32 / 6.9. */
 	--frame-bg: var(--parchment-100);
+	/* ══ ON PAPER, THE AXIS IS SIZE — NOT DEPTH (⚓ NATE 2026-08-10) ══════════
+	   Nate sampled Genshin's two parchment grounds: #F2F1EC for large panels and
+	   #E8E5DD for character cards. Our nearest rungs are parchment-50 (Δ6) and
+	   parchment-100 (Δ6), and — ⚓ his constraint — they are ADJACENT rungs, so
+	   the pair is a half-step apart rather than a jump.
+
+	   THE RULE, in his words: a LARGE parchment panel, a heading ribbon, or
+	   parchment carrying other parchment takes the light one; a SMALLER item —
+	   a character card, a button, a layer sitting on a broad panel — takes the
+	   darker one. So the thing ON the paper is DARKER than the paper.
+
+	   ⚠ THIS REVERSES THE 2026-08-09 NOTE that stood here ("Genshin's cream
+	   cards are the LIGHTER thing on parchment, so raised lifts"). That was
+	   reasoning from the dark context's ladder, where raised does lift. Nate's
+	   sampled values say otherwise, and sampled beats symmetrical.
+
+	   ⚠ SO ctx-light HAS NO RAISED RUNG. --surface-raised resolves to the same
+	   value as --surface here, exactly as it does on glass and for a related
+	   reason: this context does not express depth by lightness at all. What it
+	   expresses is EXTENT, and that is --surface-broad's job. Keeping the alias
+	   rather than deleting it means every dark-context component that reads
+	   --surface-raised still lands somewhere sane if it is ever dropped onto
+	   paper. */
 	--surface: var(--parchment-100);
-	/* ⚠ RAISED NOW LIFTS. It used to be #e9e5dc, DARKER than the surface — a
-	   raised panel that sank. Genshin's cream cards are the lighter thing on
-	   parchment, so this is parchment-50 and the light context's depth now
-	   reads the same direction as the dark context's. */
-	--surface-raised: var(--parchment-50);
+	--surface-broad: var(--parchment-50);
+	--surface-raised: var(--parchment-100);
 	/* A field cut into paper goes DOWN the parchment ramp, mirroring the dark
 	   context's well. Genshin's own info/time bars on parchment sit here. */
 	--surface-well: var(--parchment-200);
@@ -1222,6 +1260,7 @@
 	   an opaque panel that thinks it is glass. */
 	--surface: var(--glass-panel);
 	--surface-raised: var(--glass-panel);
+	--surface-broad: var(--glass-panel); /* no size axis on glass — see .ctx-light */
 	--surface-well: var(--glass-well);
 	--surface-hover: var(--glass-hover);
 	--frame-bg: var(--slate-800);
@@ -1353,17 +1392,34 @@
 	background: var(--surface-hover);
 	box-shadow: inset 0 0 0 1px var(--glass-ring);
 }
-/* SELECTED GLASS TAKES A GOLD EDGE (⚓ NATE 2026-08-10). Hover and selected both
-   get a ring now, and the pair has to stay legible as two different things —
-   so they differ in HUE, not merely in strength: hover's ring is the pane's own
-   ink and its ground is plain density; selected's ring is gold and its ground
-   carries the accent wash. Colour says "chosen", the neutral edge says only
-   "here". ⚠ This is why the hover ring must NOT go gold if borders ever do —
-   the two states would collapse into one signal. */
+/* ── SELECTED GLASS: FULL DENSITY + A GOLD EDGE (⚓ NATE 2026-08-10) ────────
+   ONE idiom for every selected pane, and it completes a three-step ladder that
+   reads without a legend:
+
+     rest      --surface       (.58)  translucent
+     hover     --surface-hover (.80)  + an INK ring   — "here"
+     selected  --frame-bg      opaque + a GOLD ring   — "chosen"
+
+   Density carries the progression and hue carries the meaning. That is why the
+   selected tab is OPAQUE rather than merely denser: among panes of glass, the
+   thing you can't see through is the thing that is chosen, and it leaves hover
+   a rung of its own to occupy.
+
+   ⚓ This is where the document tab landed too — "make band A's tab buttons
+   follow the new selected dense fill with gold border" — so the tabs and the
+   band-B controls stop being two treatments. The tab kept its opaque slate from
+   the density round; what it gained is the edge, and what the accent wash lost
+   is its job (the ring says it better and does not lift the ground).
+
+   ⚠ NOT blurred: a backdrop nothing can see through is pure cost. */
+.band-a .tab.active,
 .band-a .btn.is-active,
 .band--3up > .band-zone .btn.is-active {
-	background: linear-gradient(var(--sel-fill), var(--sel-fill)), var(--surface);
+	background: var(--frame-bg);
 	box-shadow: inset 0 0 0 1px var(--sel-ring);
+	color: var(--text);
+	-webkit-backdrop-filter: none;
+	backdrop-filter: none;
 }
 /* The surviving ghost stays a ghost — a destructive control INSIDE A RUN of
    other controls must not sit on screen looking pressable. Scoped to band A,
@@ -1408,31 +1464,14 @@
 	min-width: calc(var(--band-ctrl-h) - 10px);
 }
 
-/* ── THE SELECTED DOCUMENT TAB ─────────────────────────────────────────────
-   ↻ ⚓ NATE 2026-08-10: OPAQUE SLATE, THE BENCH'S OWN SHADE, with a --plain
-   inset border. This retires the beige selected-state pilot here (2026-08-01,
-   the Stygian selected-row idiom): a parchment plate marked the selected
-   document loudly enough, but with every other control in the row now made of
-   glass it was the one lit object in the header and it pulled the eye off the
-   tool. DENSITY marks it instead of brightness — the only opaque thing among
-   panes of glass.
-
-   It paints --frame-bg, which in .ctx-glass IS slate-800: the material's
-   reference ground, the same value .ctx-dark paints as --surface, and
-   therefore literally the bench ribbon's shade rather than a match for it.
-
-   ↻ ⚓ NATE, same day: the --plain inset line came back OFF. It shipped for a
-   few hours on the reasoning that the line would say "selected" without adding
-   light — but opacity was already saying it, and a stroke on a 36px tab in a
-   row of ten controls is ornament competing with the navigation one row down.
-   The nav plate keeps its line; this one does not need to be a second
-   decorated object. (Its markup classes went too, so the tab's ::after is free
-   again — see DocumentTabs' note on the drag indicators.) */
-.band-a .tab.active {
-	background: var(--frame-bg);
-	box-shadow: none;
-	color: var(--text);
-}
+/* THE SELECTED DOCUMENT TAB moved UP into the shared selected-glass rule (see
+   "SELECTED GLASS" above) on 2026-08-10 — it is not a special case any more.
+   The history worth keeping: it was the beige --sel-surface plate (the 2026-08-01
+   Stygian pilot), which marked the selected document loudly enough but became
+   the one lit object in a row of glass and pulled the eye off the tool. Density
+   replaced brightness, and then the gold edge joined it when every selected pane
+   got one. The pilot itself did not die — it MOVED to the Team Builder's
+   navigation, which is what Genshin actually uses it for. */
 
 *,
 *::before,
@@ -2103,14 +2142,26 @@ img {
    and a free ::after (::before too, for --double). No wrapper elements, no
    layout cost. Inset distance is --frame-inset.
 
-   ⚓ STROKES ARE 2px (NATE). It also puts the family on the rule rung the
-   system already had — § Laws: "rules are 2px, section dividers 1px" — so an
-   inset frame reads as a RULE around a surface rather than as a hairline.
-   ⚠ --inset-stroke is a per-HOST override of that default, not a second rung in
-   the scale. It exists because a frame's right weight is a function of the box
-   it goes round: 2px reads as a rule on a panel and as a border on a 40px
-   plate. The Team Builder's selected navigation item is the one caller so far,
-   at 1.5px (⚓ Nate 2026-08-10). Anything panel-sized leaves it alone. */
+   ══ TWO WEIGHTS, AND THE AXIS IS THE BOX'S SIZE (⚓ NATE 2026-08-10) ═══════
+   A frame's right weight is a function of what it goes round, so the family has
+   exactly two:
+
+     1.5px — THE DEFAULT. Buttons, plates, chips, a selected nav item: anything
+             where 2px stops reading as jewelry and starts reading as the box's
+             own border.
+     2px   — LARGE PANELS. The bench ribbon and anything of that scale, where a
+             thinner line reads as a hairline rather than a rule.
+
+   ⚠ THE DEFAULT FLIPPED THIS ROUND (2px → 1.5px), because the small case turned
+   out to be the common one — every caller but the bench is a control. The rule
+   rung in § Laws ("rules are 2px, section dividers 1px") still governs RULES;
+   this family is the ornamental frame, and it now says the smaller thing by
+   default and asks a panel to declare the larger.
+
+   ⚠ The bench ribbon does not read --inset-stroke at all: it carries its own
+   RIBBON_FRAME_BORDER (= 2), because its radii are tuned to its geometry and it
+   predates this family. The two numbers agreeing is the point — if one moves,
+   move the other. */
 .inset {
 	position: relative;
 }
@@ -2127,8 +2178,8 @@ img {
 .inset--plain::after {
 	/* The fallback, not a declared default: --inset-stroke is a host override
 	   (see above), and a declaration on `.inset` would have to out-specify every
-	   host that sets it. */
-	border: var(--inset-stroke, 2px) solid var(--inset-line);
+	   host that sets it. Large panels declare 2px; everything else takes this. */
+	border: var(--inset-stroke, 1.5px) solid var(--inset-line);
 }
 
 /* 2 · DOUBLE — two strokes on ONE box, differing only in corner radius, so the

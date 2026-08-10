@@ -220,7 +220,12 @@
 		container: charcard / inline-size;
 		display: flex;
 		flex-direction: column;
-		background: var(--surface-raised); /* in-page panel role (Nate 2026-07-31) */
+		/* ↻ ⚓ NATE 2026-08-10: --surface, not --surface-raised. A character card is
+		   the canonical SMALLER light object, and on paper the size axis replaced
+		   the depth one — see .ctx-light. The two resolve to the same parchment-100
+		   now, so this is a naming correction rather than a colour change, but the
+		   name is what stops it drifting when a broad panel appears beside it. */
+		background: var(--surface);
 		/* The one raised panel that keeps an ELEMENT border — brightened from
 		   the old 22% mix so the element actually reads at rest. */
 		border: 1px solid color-mix(in srgb, var(--el-color) 42%, var(--border));

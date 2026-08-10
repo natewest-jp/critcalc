@@ -125,6 +125,17 @@
 		{ key: 'gold-700', label: '--gold-700', src: 'var(--gold-700)' }
 	];
 
+	/**
+	 * THE THREE STATES OF A PANE, side by side and forced. Rendered as one run
+	 * because the ladder is the point — each step is legible only against the
+	 * one before it, and hovering shows you exactly one at a time.
+	 */
+	const PANE_STATES = [
+		{ key: 'rest', label: 'rest · .58', cls: '' },
+		{ key: 'hover', label: 'hover · .80 + ink ring', cls: 'is-dense is-ring' },
+		{ key: 'sel', label: 'selected · opaque + gold ring', cls: 'is-sel' }
+	];
+
 	/** The open question the ring cannot answer on its own — see --glass-ring. */
 	const RING_CANDIDATES = [
 		{ key: 'ink', label: 'parchment ink — shipped', ring: 'var(--line-edge)' },
@@ -288,15 +299,18 @@
 	<!-- ═══════════════════════════════════════════ 3 · BORDERS IN GOLD ══ -->
 	<section>
 		<h2 class="lab-h">
-			Borders — ink or gold <span class="lab-badge">deciding</span>
+			Borders stay ink · the inset went gold <span class="lab-badge">shipped</span>
 		</h2>
 		<p class="lab-note">
-			⚓ Nate: Genshin appears to use gold on <em>both</em> grounds, and the open question is which
-			rung. Every candidate against both, at the two alphas that survived the cut — mixed opaquely
-			against each ground, so what you see is the line as it would actually resolve. The top row is
-			the shipped ink line, so the question is "gold instead of <em>that</em>".
-			<strong>The inset frame is the load-bearing case</strong>: it is the one place a line is
-			ornament rather than structure, and ornament is where gold has a claim.
+			⚓ Settled here: <strong
+				>a border is STRUCTURE and stays ink; the inset is ORNAMENT and went gold</strong
+			>, zoned by context —
+			<code>gold-400</code> on dark, <code>gold-700</code> on light. This grid is what settled it,
+			and it is kept because the reason is visible in it: gold-600/700 barely lift off slate,
+			gold-300/400 all but vanish into parchment. One hue can't serve both grounds, which is the
+			same two-rung zoning
+			<code>--accent</code> already uses. The shipped stop is <strong>α .18</strong>; the quiet stop
+			(<code>--inset-line-quiet</code>, for <code>--double</code>) is .10.
 		</p>
 		<div class="border-grid">
 			<div class="border-head">
@@ -330,31 +344,79 @@
 	<!-- ══════════════════════════════════════ 4 · GLASS HOVER + THE RING ══ -->
 	<section>
 		<h2 class="lab-h">
-			Glass hover <span class="lab-badge">shipped</span> · the ring colour
-			<span class="lab-badge">deciding</span>
+			The three states of a pane <span class="lab-badge">shipped</span>
 		</h2>
 		<p class="lab-note">
-			Ring + density is in (⚓ approved), at the new alphas — rest <b>.58</b>, hover <b>.80</b>.
-			Rendered side by side and forced, because
-			<strong>you cannot judge a hover by hovering</strong>: you never see rest and hover at once.
-			What is still open is the ring's colour, and ⚠
-			<strong>it cannot be settled before the row above</strong> — if lines go gold globally, a gold ring
-			stops distinguishing HOVER from SELECTED, which is the one thing it has to do.
+			<strong>rest .58 → hover .80 + an INK ring → selected opaque + a GOLD ring.</strong> Density
+			carries the progression, hue carries the meaning — which is why selected is opaque rather than
+			merely denser: among panes of glass, the one you cannot see through is the chosen one, and it
+			leaves hover a rung of its own to occupy. Forced side by side, because
+			<strong>you cannot judge a hover by hovering</strong>: you never see two states at once.
+		</p>
+		<p class="lab-note">
+			⚓ The ring's colour settled with the row above. <strong>Borders stayed ink</strong>, which
+			left gold free to mean SELECTED, so the hover ring keeps the pane's own ink. Had lines gone
+			gold globally, a gold hover ring would have stopped distinguishing hover from selected — the
+			one thing it has to do. The two rejected candidates stay below as the evidence.
 		</p>
 		<div class="lab-row">
+			<div class="cand">
+				<span class="cand-tag">the three states, shipped</span>
+				{#each PANE_STATES as st (st.key)}
+					<div class="ctx-glass glasspane {st.cls}">{st.label}</div>
+				{/each}
+			</div>
 			{#each RING_CANDIDATES as r (r.key)}
 				<div class="cand">
-					<span class="cand-tag">{r.label}</span>
+					<span class="cand-tag">hover ring · {r.label}</span>
 					<div class="ctx-glass glasspane">rest · .58</div>
 					<div class="ctx-glass glasspane is-dense" style:box-shadow="inset 0 0 0 1px {r.ring}">
 						hover · .80
 					</div>
 				</div>
 			{/each}
-			<div class="cand">
-				<span class="cand-tag">wash — retired</span>
-				<div class="ctx-glass glasspane">rest</div>
-				<div class="ctx-glass glasspane is-wash">hover</div>
+		</div>
+	</section>
+
+	<!-- ══════════════════════════════════════ 5 · THE TWO PARCHMENTS ══ -->
+	<section>
+		<h2 class="lab-h">
+			The two parchments <span class="lab-badge">shipped</span>
+		</h2>
+		<p class="lab-note">
+			⚓ Nate sampled Genshin's two paper grounds — <code>#F2F1EC</code> for large panels and
+			<code>#E8E5DD</code> for character cards. Our nearest rungs are
+			<code>parchment-50</code> and <code>parchment-100</code>, both at a distance of 6, and — his
+			constraint — <strong>they are ADJACENT rungs</strong>, so the pair is a half-step apart rather
+			than a jump.
+		</p>
+		<p class="lab-note">
+			<strong>The axis is SIZE, not depth.</strong> A large panel, a heading ribbon, or parchment
+			carrying other parchment takes the lighter one (<code>--surface-broad</code>); a smaller item
+			— a card, a button, a layer sitting on a broad panel — takes the darker one (<code
+				>--surface</code
+			>). ⚠ So the thing ON the paper is DARKER than the paper, which reverses what this system
+			assumed a day earlier by reasoning from the dark context's ladder. Sampled beats symmetrical.
+			⚠ And <code>ctx-light</code> therefore has
+			<strong>no raised rung at all</strong> — it does not express depth by lightness, the way glass doesn't
+			either.
+		</p>
+		<div class="lab-row">
+			<div class="ctx-light paper-broad">
+				<span class="paper-tag">--surface-broad · parchment-50 · the panel</span>
+				<h3 class="su-h3">Off-field DMG</h3>
+				<div class="ctx-light paper-object">
+					<span class="paper-tag">--surface · parchment-100 · a card on it</span>
+					<p class="spec-prose">The same paper a character card is made of.</p>
+					<button class="btn" type="button">Filter</button>
+				</div>
+			</div>
+			<div class="ctx-light paper-object paper-object--alone">
+				<span class="paper-tag">--surface · standalone card</span>
+				<p class="spec-prose">
+					A smaller light object on the scene takes the same rung whether or not it sits on a broad
+					panel — which is why this is a TOKEN and not a context modifier.
+				</p>
 			</div>
 		</div>
 	</section>
@@ -787,6 +849,13 @@
 	.glasspane.is-dense {
 		background: var(--surface-hover);
 	}
+	/* Selected: full opacity + the gold ring. The top of the density ladder —
+	   among panes of glass, the thing you cannot see through is the chosen one. */
+	.glasspane.is-sel {
+		background: var(--frame-bg);
+		box-shadow: inset 0 0 0 1px var(--sel-ring);
+		color: var(--text);
+	}
 
 	/* ── candidate: borders in gold ───────────────────────────────────────
 	   Each cell re-declares --frame-line / --frame-line-quiet inline and then
@@ -832,6 +901,34 @@
 	}
 	.border-rule--quiet {
 		background: var(--frame-line-quiet);
+	}
+
+	/* ── the two parchments ───────────────────────────────────────────────── */
+	.paper-broad {
+		display: flex;
+		flex-direction: column;
+		gap: 0.7rem;
+		width: 420px;
+		padding: 1.1rem 1.2rem;
+		border-radius: var(--r-sm);
+		background: var(--surface-broad);
+	}
+	.paper-object {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+		padding: 0.9rem 1rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+	}
+	.paper-object--alone {
+		width: 320px;
+	}
+	.paper-tag {
+		font-family: var(--font-mono);
+		font-size: var(--fs-sm);
+		color: var(--muted);
 	}
 
 	/* ── candidate: the split Atlas card ──────────────────────────────────── */

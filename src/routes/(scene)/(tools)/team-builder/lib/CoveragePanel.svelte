@@ -177,13 +177,18 @@
 
 	/* ⚠ ON THE SCENE, PROSE TAKES THE BRIGHT INK, and a heading all the more:
 	   --text, not --muted. The dim rung is a panel affordance and there is no
-	   panel here. Size is a full step above anything else in the run for the
-	   same reason — presence has to come from the type itself. */
+	   panel here.
+
+	   ↻ ⚓ NATE 2026-08-10: it is a SECTION HEADING (4xl), not a page title. The
+	   uniform size-up carried it to 5xl along with everything else, and 5xl is
+	   the page-title rung — this names one block on a tool surface, not the
+	   tool. It is still a full step above anything else in the run, which was
+	   always the actual requirement. */
 	.cover-head {
 		margin: 0;
 		text-align: center;
 		font-family: var(--font-display);
-		font-size: var(--fs-5xl);
+		font-size: var(--fs-4xl);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-tight);
 		color: var(--text);

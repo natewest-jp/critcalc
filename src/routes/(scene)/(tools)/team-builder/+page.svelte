@@ -1306,28 +1306,31 @@
 	/* THE SELECTED PLATE. It CLAIMS .ctx-light rather than naming a light token,
 	   which is the same move AtlasView's cards make and for the same reason: it
 	   paints its own opaque light ground, so the ink ladder and the ACCENT RUNG
-	   flip with it — gold-400 measures 1.48:1 on this beige, gold-700 is what
-	   .ctx-light resolves --accent to, and the border below depends on that.
+	   flip with it — gold-400 measures 1.48:1 on this paper, gold-700 is what
+	   .ctx-light resolves --accent to, and the edge below depends on that.
 
-	   ⚠ THE BORDER IS A GOLD MIX, not the context's line (⚓ Nate 2026-08-10:
-	   "right now its border is some kind of slate mix, which it shouldn't be —
-	   borders like this are some kind of gold mix usually"). .ctx-light's
-	   --frame-line is a neutral rule meant for dividing a paper panel; an
-	   ornamental edge on a beige plate is jewelry, and Genshin's jewelry is
-	   gold. Mixed OPAQUELY against the plate's own known ground (the compositing
-	   law) and only one level deep (the nesting law) — both inputs are aliases
-	   of primitives, never of each other. */
+	   ↻ ⚓ NATE 2026-08-10: the plate is PARCHMENT-100 now, via --sel-surface —
+	   "the unified character-card-sharing parchment value". It is literally the
+	   paper a character card is made of rather than a near-miss beside it, and
+	   it takes the light family off the gold ramp: the plate was gold-300, so
+	   selection and jewelry were sharing a hue for no reason. Gold keeps the
+	   EDGE; paper keeps the FILL.
+
+	   ⚠ THE EDGE IS A GOLD MIX — the reasoning that started here generalised
+	   into the whole --inset-line family (see app.css), so this is no longer a
+	   local exception, just a local STRENGTH: 42% where the family default is
+	   18%, because a selected plate is the one place the jewelry should be
+	   emphatic. Mixed opaquely against the plate's own known ground and one
+	   level deep, per the compositing and nesting laws. */
 	.tb-nav-item.active {
 		background: var(--sel-surface);
 		color: var(--sel-ink);
-		/* .inset--plain's two knobs, both pulled off the family's panel defaults
-		   for the same reason: they are tuned for a frame around a SURFACE, and
-		   this is a 40px plate. 7px of inset would put the line through the middle
-		   of the type; a 2px stroke at that scale stops reading as jewelry and
-		   starts reading as the plate's own border (⚓ Nate 2026-08-10 — 1.5px). */
+		/* ⚠ --frame-inset only. The 1.5px stroke this used to declare IS the
+		   family default now (⚓ Nate: 1.5px for small elements, 2px for large
+		   panels), so the override retired rather than being restated. 7px of
+		   inset is still wrong here — it would put the line through the type. */
 		--frame-inset: 3px;
-		--inset-stroke: 1.5px;
-		--frame-line: color-mix(in srgb, var(--accent) 42%, var(--sel-surface));
+		--inset-line: color-mix(in srgb, var(--accent) 42%, var(--sel-surface));
 	}
 
 	/* Rests as a peer of every other band plate and only announces itself under
