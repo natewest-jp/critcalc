@@ -112,17 +112,26 @@
 	   ⚠ WHAT SETS THE FLOOR HERE IS A STAR. Text on glass is limited by the
 	   WORST pixel behind it, never the average, and the worst pixel is always a
 	   star — a tiny, very bright point. Both stops clear 4.5:1 for --muted (the
-	   dimmer of the two band voices) against a star, UNBLURRED: panel 4.53:1,
-	   well 5.00:1. That is deliberate — see --glass-blur for why they cannot be
+	   dimmer of the two band voices) against a star, UNBLURRED: panel 4.85:1,
+	   well 5.48:1. That is deliberate — see --glass-blur for why they cannot be
 	   allowed to depend on the blur.
-	   ⚠ THE PANEL STOP IS NOW ALL BUT ON THE FLOOR — it was 4.98:1 a rung ago,
-	   and slate-600 at this alpha measures 3.99:1. There is no third rung of
-	   lift: if this is ever asked to go lighter again, the alpha has to come UP
-	   with it, or --muted has to.
-	   ⚠ AND THE TWO STOPS ARE NOT INTERCHANGEABLE. slate-700 at the WELL's .55
-	   is 4.29:1 — under the floor — so the well cannot follow the panel up the
-	   ramp. /styleguide § Palette census computes the whole grid; read it before
-	   moving either of these.
+
+	   ⚠⚠ THESE FIGURES MOVED FOR TWO REASONS AT ONCE ON 2026-08-10, and only one
+	   of them is a design change. THE MEASUREMENT WAS WRONG: every star figure
+	   in this system modelled the worst pixel as `white × (1 − TOOL_DIM)`, which
+	   is what you get if the wash is pure black — and --scene-dim is a near-
+	   black COLOUR laid over the scene, so the true composite is lighter and
+	   every published figure was ~0.3–0.4 optimistic. Under the corrected model
+	   the panel stop as shipped that morning was 4.22:1, i.e. UNDER THE FLOOR,
+	   published as 4.53. Nate's dim change (.65 → .75, #15161a → #101013) is
+	   what puts it back at 4.85. The lesson is the general one: an alpha over an
+	   unknown ground is only as good as the model of the ground.
+
+	   ⚠ STILL NO THIRD RUNG OF LIFT. slate-600 at the panel alpha is 4.27:1 even
+	   after the correction. And the two stops are NOT interchangeable — slate-700
+	   at the WELL's .55 is 5.08:1 only because the well is the lighter-alpha
+	   stop; run the grid before moving either. /styleguide § Palette census
+	   computes all of it live.
 
 	   ⚠ Glass and the wash MULTIPLY: what reaches the eye is
 	   (1 − glass)(1 − TOOL_DIM). At the old dim of .85 these same stops would
@@ -232,8 +241,17 @@
 	   panel from the world" is no longer the job this token is doing.
 	   It also costs a little worst-pixel contrast — parchment over a star reads
 	   6.26:1 here vs 7.20:1 warm, both clear of the floor.
-	   ⚓ Revert to #0b0902 on this one line if the neutral reads dead. */
-	--scene-dim: #15161a;
+	   ⚓ Revert to #0b0902 on this one line if the neutral reads dead.
+
+	   ↻ ⚓ NATE 2026-08-10: #15161a → #101013, moved together with TOOL_DIM
+	   (.65 → .75). Still neutral, a rung deeper — the floor of the composite
+	   goes down while the alpha takes more of the world out, and the two
+	   compound: the worst pixel (a star) lands at rgb(76,76,78) instead of
+	   rgb(103,104,106). ⚠ THIS IS THE TOKEN EVERY STAR MEASUREMENT DEPENDS ON,
+	   and the old figures across the system were computed as if it were pure
+	   black. See TOOL_DIM in landing/transition.ts for the correction and what
+	   it turned out to be hiding. */
+	--scene-dim: #101013;
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are

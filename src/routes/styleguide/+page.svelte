@@ -351,14 +351,22 @@
 	): [number, number, number] =>
 		[0, 1, 2].map((i) => alpha * fg[i] + (1 - alpha) * bg[i]) as [number, number, number];
 
-	/** The worst pixel: a blank-white star, dimmed by the tool scrim. Every glass
-	 *  stop in the system is judged against this and nothing else — an average
-	 *  backdrop has never been the binding case. */
-	const STAR: [number, number, number] = [255, 255, 255].map((c) => c * (1 - TOOL_DIM)) as [
-		number,
-		number,
-		number
-	];
+	/**
+	 * The worst pixel: a blank-white star with the tool scrim laid OVER it.
+	 * Every glass stop in the system is judged against this and nothing else —
+	 * an average backdrop has never been the binding case.
+	 *
+	 * ⚠⚠ THE SCRIM IS A COLOUR, NOT A MULTIPLIER, and getting that wrong is what
+	 * this line exists to prevent recurring. Every star figure in the system was
+	 * once computed as `white × (1 − TOOL_DIM)` — the answer you get if the wash
+	 * is pure black. --scene-dim is a near-black colour composited over the
+	 * scene, so the real worst pixel is `dim·wash + (1 − dim)·white`, which is
+	 * lighter, which means LESS contrast. Every published figure was ~0.3–0.4
+	 * optimistic in the one direction that matters, and on 2026-08-10 that was
+	 * hiding a shipped glass stop sitting at 4.22:1 under a published 4.53.
+	 */
+	const SCRIM = rgb(tokens.find((t) => t.name === '--scene-dim')?.resolved ?? '#101013');
+	const STAR: [number, number, number] = composite([255, 255, 255], 1 - TOOL_DIM, SCRIM);
 	/** The dimmer of the two voices a band speaks in — see .band-b's --text
 	 *  re-point. If --muted clears the floor, --text has already cleared it. */
 	const GLASS_INK = rgb(
@@ -556,28 +564,41 @@
 			muddy middle by another route, the one finding that survived the reverted toolbar-translucency
 			trial; band B had to stop being <code>ctx-light</code> to wear it.
 			<strong>And it is not <code>sheer</code></strong>: that experiment let 2–3% of scene light
-			through, which reads as a duller colour. These stops let <strong>~17%</strong> through at
-			<code>TOOL_DIM</code> .65 — six times sheer, and plainly the far side of
-			<em>opaque or obviously translucent</em>. ⚠ The alpha alone does not decide it: glass and the
+			through, which reads as a duller colour. ⚠ The alpha alone does not decide it: glass and the
 			wash <strong>multiply</strong>, so what reaches the eye is
-			<code>(1 − glass)(1 − TOOL_DIM)</code>. At the old dim of .85 these same stops would deliver
-			7%, i.e. sheer again. <strong>Move one, check the other.</strong>
+			<code>(1 − glass)(1 − TOOL_DIM)</code> — <strong>8.0%</strong> for the panel stop at
+			<code>TOOL_DIM</code>
+			{TOOL_DIM}, down from 11.2% at .65. That still clears sheer, and it is the closest we have
+			been. <strong>Move one, check the other</strong> — and if glass ever stops reading as glass, this
+			is the number that did it, with a lower glass alpha (not a lower dim) as the fix.
 		</p>
 		<p class="sg-note">
 			⚠️ <strong>What sets the floor on a glass stop is a STAR.</strong> Text on glass is limited by
 			the worst pixel behind it, never the average, and the worst pixel is always a star — a tiny,
 			very bright point. Both stops clear 4.5:1 for <code>--muted</code> (the dimmer of the two band
-			voices) against a star <strong>unblurred</strong>: panel 4.53:1, well 5.00:1.
+			voices) against a star <strong>unblurred</strong>: panel 4.85:1, well 5.48:1.
+		</p>
+		<p class="sg-note sg-note--flag">
+			⚠️⚠️ <strong
+				>Those figures moved for two reasons on 2026-08-10, and only one is a design change.</strong
+			>
+			<strong>The measurement was wrong.</strong> Every star figure in the system modelled the worst
+			pixel as <code>white × (1 − TOOL_DIM)</code> — the answer you get if the wash is pure black.
+			It is a near-black <em>colour</em> laid over the scene, so the real composite is lighter and
+			every published figure was ~0.3–0.4 optimistic, in the one direction that matters. Corrected,
+			the panel stop as shipped that morning was <strong>4.22:1 — under the floor</strong>,
+			published as 4.53. ⚓ Nate's dim change (.65 → .75, <code>#15161a</code> →
+			<code>#101013</code>) is what puts it at 4.85, so it is a correction as much as a preference.
+			The general lesson:
+			<strong>an alpha over an unknown ground is only as good as the model of the ground.</strong> The
+			grid below now composites the scrim properly.
 		</p>
 		<p class="sg-note">
-			↻ ⚓ Nate 2026-08-10: <strong>both stops went one rung lighter</strong> — slate-800 →
+			↻ ⚓ Nate 2026-08-10: <strong>both stops also went one rung lighter</strong> — slate-800 →
 			slate-700 and slate-950 → slate-900, at the same alphas. The tint moved, not the transparency:
 			glass this dark over a dimmed world read as a hole cut in the scene rather than a pane laid on
-			it. ⚠️ <strong>The panel stop is now all but on its floor</strong> (4.98:1 → 4.53:1), and
-			slate-600 at the same alpha measures 3.99. There is no third rung: if this is asked to lighten
-			again the alpha has to come up with it, or <code>--muted</code> does. ⚠️ The two stops are
-			also not interchangeable — slate-700 at the well's .55 is 4.29:1, under the floor, so the well
-			cannot follow the panel up the ramp. <a href="#palette">The census</a> computes the whole grid.
+			it. ⚠️ <strong>There is still no third rung of lift</strong> — slate-600 at the panel alpha is
+			4.27:1 even after the dim correction. <a href="#palette">The census</a> computes the whole grid.
 		</p>
 		<p class="sg-note">
 			⚓ <code>--glass-blur</code> is <strong>1px and ON PROBATION</strong> (Nate, 2026-08-09 —

@@ -202,26 +202,52 @@ export type SceneLayerKind = 'composition' | 'dim';
  *  constraints, two knobs, no geometry required. The shaped scrim was solving a
  *  coupling that a correctly-chosen glass alpha dissolves.
  *
- *  ↻ ⚓ NATE 2026-08-09: .85 → .65. He wanted the world lighter than the old
- *  .85–.9 and named .6–.7; .65 is the pick inside it, and the reason to prefer
- *  it over .60 is measured rather than aesthetic:
+ *  ↻ ⚓ NATE 2026-08-09: .85 → .65, with a floor of .60 claimed here on the
+ *  strength of a star measurement.
  *
- *    THE FLOOR ON THIS NUMBER IS .60, AND IT IS SET BY STARS, NOT BY SKY. Sky
- *    average is fine anywhere in range — parchment reads 13.4:1 over it at .65.
- *    A STAR behind that same text is the worst pixel, and it goes 9.96:1 at .85
- *    → 5.33:1 at .65 → 4.56:1 at .60 → 3.97:1 at .55. So .60 is the last legal
- *    value and has no headroom at all; .65 keeps a rung in hand for content
- *    that is dimmer than --text.
+ *  ↻ ⚓ NATE 2026-08-10: .65 → .75, AND THE MEASUREMENT THAT SET THE OLD FLOOR
+ *  WAS WRONG. Both are worth recording, because the second is why the first is
+ *  not merely a taste change.
  *
- *  ⚠ This floor only binds where text sits DIRECTLY on the world. Text on a
- *  glass band is governed by the blur instead, which is why glass could get
- *  meaningfully more transparent in the same round the wash got lighter.
+ *    THE BUG IN THE OLD NUMBERS: every star figure in this system modelled the
+ *    worst pixel as `white × (1 − TOOL_DIM)` — which is what you get if the
+ *    wash is pure BLACK. It is not: --scene-dim is a near-black COLOUR laid
+ *    over the scene, so the real composite is `dim·wash + (1−dim)·white`, and
+ *    at .65 that is rgb(103,104,106), not rgb(89,89,89). Every published
+ *    contrast figure was therefore ~0.3–0.4 optimistic, in the one direction
+ *    that matters.
+ *
+ *    WHAT IT ACTUALLY MEANT: at .65, --text over a star measured 4.48:1, not
+ *    the 5.33:1 recorded here — i.e. the OPEN SCENE WAS ALREADY UNDER THE
+ *    FLOOR, and the claimed floor of .60 (3.77:1 in truth) was never legal at
+ *    all. The glass panel stop was in the same position after the ramp moved a
+ *    rung lighter that morning: 4.22:1, published as 4.53.
+ *
+ *    WHAT .75 BUYS, measured with the wash composited properly:
+ *      --text on the open scene   4.48 → 6.87:1
+ *      glass panel (slate-700)    4.22 → 4.85:1
+ *      glass well  (slate-900)    4.52 → 5.48:1
+ *    So this is a correction as much as a preference, and it restores real
+ *    headroom rather than just clearing the bar.
+ *
+ *  ⚠ --muted IS STILL NOT LEGAL ON THE OPEN SCENE: 2.71 → 4.16:1, better but
+ *  under 4.5. Text directly on the world gets --text and nothing quieter. If
+ *  the scene ever needs a second ink rung, it has to be a BRIGHTER one, not a
+ *  dimmer one — that is a real structural constraint on treating the world as a
+ *  context, not an oversight.
+ *
+ *  ⚠ THE COST IS ON THE OTHER AXIS: world surviving through glass is
+ *  (1 − glass)(1 − TOOL_DIM), so the panel stop drops 11.2% → 8.0%. The "opaque
+ *  or obviously translucent" rule puts sheer at 5–7%; 8% clears it but is the
+ *  closest we have been. If glass stops reading as glass, this is the number
+ *  that did it, and the fix is a lower glass alpha rather than a lower dim.
  *
  *  ⚓ NATE — the two knobs, and they are independent:
- *    TOOL_DIM               how much world survives.       Floor .60.
+ *    TOOL_DIM               how much world survives.
  *    --scene-dim in app.css the wash COLOUR — how black the floor of the
- *                           composite is. A different axis entirely. */
-export const TOOL_DIM = 0.65;
+ *                           composite is. A different axis entirely. Both moved
+ *                           together on 2026-08-10 (#15161a → #101013). */
+export const TOOL_DIM = 0.75;
 export const dimTarget = (path: string) => (isToolPath(path) ? TOOL_DIM : 0);
 
 // --- Transition clock --------------------------------------------------------
