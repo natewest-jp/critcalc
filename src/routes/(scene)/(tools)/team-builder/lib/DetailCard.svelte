@@ -126,7 +126,7 @@
 	>
 		<!-- ── Header ─────────────────────────────────────────── -->
 		<header class="dc-header">
-			<div class="dc-avatar">
+			<div class="dc-avatar ctx-dark">
 				{#if !avatarFallback}
 					<img
 						src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $siteSettings.travelerVariant)}
@@ -377,7 +377,12 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: rgba(0, 0, 0, 0.5);
+		/* The element wash, pinned to slate by the .ctx-dark on the element — the
+		   same treatment every character portrait on the site wears, and the same
+		   reason it claims a context rather than inheriting one. See the note at
+		   CompareView's .cmp-chip-avatar. Was rgba(0,0,0,.5): a translucent disc
+		   under a cut-out avatar, i.e. a ground nobody had named. */
+		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
 	}
 	.dc-avatar img {
 		width: 100%;

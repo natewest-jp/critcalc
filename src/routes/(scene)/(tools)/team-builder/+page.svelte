@@ -642,7 +642,9 @@
 						? `Remove ${entry.displayName} from the comparison`
 						: `Add ${entry.displayName} to the comparison`}
 				>
-					<span class="tb-cand-avatar">
+					<!-- ctx-dark for the same reason the compare chip's disc claims it:
+					     a portrait backing must not follow its surroundings to paper. -->
+					<span class="tb-cand-avatar ctx-dark">
 						{#if hasAvatar(entry.id)}
 							<img src={getAvatarFallback(entry.id, 'circle', traveler)} alt="" />
 						{:else}
