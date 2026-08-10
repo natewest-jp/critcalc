@@ -451,14 +451,28 @@
 		--sp-unset-ink: color-mix(in srgb, white 40%, var(--sp-pill-fill));
 		--sp-unset-ink-hover: color-mix(in srgb, white 65%, var(--sp-pill-fill));
 
-		/* The portrait keeps the ELEMENT wash the roster cards use — a portrait
-		   wants a lit backing, not the chrome fill the controls wear, and the art
-		   sits far better on it. Same reversed direction as the pills (tint at the
-		   BOTTOM), so the card still reads as one surface. */
+		/* The portrait's backing: a WELL the element lights from below.
+		   ↻ 2026-08-11 (⚓ Nate: the old backing "might be a bit outdated"). It ran
+		   --frame-bg → color-mix(el 14%, --bg), and both ends were the problem.
+		   --bg is the PAGE ground — the deepest rung on the site and not on the
+		   slate ramp at all — so the gradient fell a long way out of the card's own
+		   depth ladder and landed somewhere near black, where 14% of an element
+		   barely registers. Two grounds, one hue-shift and a near-invisible tint.
+		   It is ONE ground now, and the only thing that travels is the element.
+		   --surface-well is the rung the card's own controls wear (--sp-pill-fill),
+		   so the portrait reads as cut into the same card rather than punched
+		   through to the page behind it, and the element gets a lit rung to sit on
+		   instead of a black one. Still tinted at the BOTTOM, like the pills.
+		   ⚠ --surface-well resolves to a LITERAL in every context (slate-900 /
+		   parchment-200 / --glass-well), so the mix below is not a mix of a mix. */
+		/* 🎛️ How much element the bottom stop carries. Up from the old 14%: that
+		   number was picked against a near-black stop, and the same fraction reads
+		   weaker on a ground three rungs lighter. */
+		--sp-avatar-el: 26%;
 		--sp-avatar-fill: linear-gradient(
 			180deg,
-			var(--frame-bg) 0%,
-			color-mix(in srgb, var(--el, var(--neutral)) 14%, var(--bg)) 100%
+			var(--surface-well) 0%,
+			color-mix(in srgb, var(--el, var(--neutral)) var(--sp-avatar-el), var(--surface-well)) 100%
 		);
 	}
 

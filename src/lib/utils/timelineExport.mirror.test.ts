@@ -126,7 +126,9 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		// ↻ 2026-08-05: the bench card renders in the ribbon's DARK context (the
 		// `ctx-light` class it used to carry painted no ground of its own — see
 		// SlotPortrait), so the avatar disc mirrors that block's surface.
-		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(resolve(ctxToken('.ctx-dark', '--surface')));
+		// ↻ 2026-08-11: and that surface is the WELL rung now — --sp-avatar-fill
+		// is one ground with the element travelling down it, and this is its top.
+		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(resolve(ctxToken('.ctx-dark', '--surface-well')));
 		expect(PALETTE_MIRROR.CALM_TINT).toBe(resolve(cssToken('--calm-fill')));
 		expect(PALETTE_MIRROR.CALM_EDGE).toBe(resolve(cssToken('--calm')));
 	});

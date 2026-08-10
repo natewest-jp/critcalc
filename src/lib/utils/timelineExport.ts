@@ -92,10 +92,14 @@ const UI_DANGER = '#e63946';
 // The circular backing behind a (transparent-background) avatar in the label
 // column. ↻ 2026-08-05 (archetype consistency pass): was the LIGHT context's
 // #f2f2ec, mirroring the `ctx-light` class SlotPortrait used to carry. That
-// class is gone — the bench card renders in the ribbon's DARK context, where
-// --sp-avatar-fill starts at --frame-bg — and the export's own label column has
-// always been painted CHART_BG, so a paper disc was drift in both directions.
-const PORTRAIT_BG = '#2e3543'; // --surface (ctx-dark) → --slate-800
+// class is gone — the bench card renders in the ribbon's DARK context, and the
+// export's own label column has always been painted CHART_BG, so a paper disc
+// was drift in both directions.
+// ↻ 2026-08-11: --sp-avatar-fill was re-cut onto ONE ground and that ground is
+// --surface-well, so the flat disc follows it down a rung. The export never
+// carried the element gradient (a PNG label column has no element context to
+// tint with), so it mirrors the gradient's TOP stop, as it always has.
+const PORTRAIT_BG = '#1f2635'; // --surface-well (ctx-dark) → --slate-900
 
 /** Test-only: the hand-maintained mirror, exported so
  *  timelineExport.mirror.test.ts can assert it against app.css /
