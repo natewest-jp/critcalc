@@ -154,6 +154,11 @@
 	let atlasMode = $state<'cards' | 'drill' | 'slots'>('cards');
 	let drilledCategory = $state<RoleCategory | null>(null);
 
+	// Which Source views hand their scroller a definite height to fill, and which
+	// end at their content. Named because it is now asked TWICE — once by the
+	// scroller and once by the box that holds it and the pinned Atlas head.
+	const sourceFills = $derived(sourceTab !== 'atlas' || atlasMode === 'cards');
+
 	// ---------------------------------------------------------------------------
 	// Filters
 	// ---------------------------------------------------------------------------
@@ -983,109 +988,119 @@
 		     over if something gives it a definite one. The drill and slots views
 		     keep the old behaviour: those are lists, and a list should end where
 		     its content does. -->
-		<section
-			class="tb-source scroll-fade"
-			class:tb-source--fill={sourceTab !== 'atlas' || atlasMode === 'cards'}
-			use:scrollFade
-		>
-			{#if sourceTab === 'atlas'}
-				<div class="tb-atlas">
-					{#if atlasMode === 'slots' && slotRows.length > 0}
-						<div class="tb-atlas-head">
-							<p class="tb-atlas-lead">
-								Alternatives for each character on your team — same element and role.
-							</p>
-							<button class="btn btn--glass ctx-glass" onclick={backToCards}
-								>Browse all roles <Mark name="forward" /></button
-							>
-						</div>
-						{#each slotRows as row (row.slotEntry.id)}
-							<section class="tb-slotrow">
-								<header class="tb-slotrow-head ctx-glass">
-									{#if hasAvatar(row.slotEntry.id)}
-										<img
-											class="tb-slotrow-avatar"
-											src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
-											alt=""
-											loading="lazy"
-										/>
-									{:else}
-										<span class="tb-slotrow-initials"
-											>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
+		<!-- ⚓ NATE 2026-08-11: THE ATLAS HEAD IS PINNED — and pinning it meant
+		     lifting it OUT of the scroller, not sticking it inside one. That head
+		     carries the way BACK from a drill-down, and it was scrolling off the
+		     top the moment you went looking through the characters it introduced.
+		     ⚠ WHY NOT `position: sticky`. It would park the head in exactly the
+		     pixels the scroll-fade mask erases: the fade is what tells you there
+		     is more above, so a sticky head sitting at top:0 would dissolve the
+		     instant the content behind it started moving. A mask cannot be told
+		     to spare one child. So the head and the scroller are two boxes, and
+		     only the second one scrolls. -->
+		<div class="tb-sourcebox" class:tb-sourcebox--fill={sourceFills}>
+			{#if sourceTab === 'atlas' && atlasMode === 'slots' && slotRows.length > 0}
+				<div class="tb-atlas-head">
+					<p class="tb-atlas-lead">
+						Alternatives for each character on your team — same element and role.
+					</p>
+					<button class="btn btn--glass ctx-glass" onclick={backToCards}
+						>Browse all roles <Mark name="forward" /></button
+					>
+				</div>
+			{:else if sourceTab === 'atlas' && atlasMode === 'drill' && drilledCategory}
+				<div class="tb-atlas-head">
+					<button class="btn btn--glass ctx-glass" onclick={backToCards}
+						><Mark name="back" /> All roles</button
+					>
+					<div class="tb-drill-title">
+						{#if drilledCategory.position}
+							<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
+						{/if}
+						<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
+						<span>{drilledCategory.label}</span>
+					</div>
+				</div>
+			{/if}
+			<section class="tb-source scroll-fade" class:tb-source--fill={sourceFills} use:scrollFade>
+				{#if sourceTab === 'atlas'}
+					<div class="tb-atlas">
+						{#if atlasMode === 'slots' && slotRows.length > 0}
+							{#each slotRows as row (row.slotEntry.id)}
+								<section class="tb-slotrow">
+									<header class="tb-slotrow-head ctx-glass">
+										{#if hasAvatar(row.slotEntry.id)}
+											<img
+												class="tb-slotrow-avatar"
+												src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
+												alt=""
+												loading="lazy"
+											/>
+										{:else}
+											<span class="tb-slotrow-initials"
+												>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
+											>
+										{/if}
+										<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
+										{#if row.slotRoles}
+											<span class="tb-slotrow-roles">
+												{#each row.slotRoles.position as p (p)}
+													<img
+														src={positionIcon(p, 'color')}
+														alt={POSITION_LABEL[p]}
+														title={POSITION_LABEL[p]}
+													/>
+												{/each}
+												{#each row.slotRoles.function as f (f)}
+													<img
+														src={functionIcon(f, 'color')}
+														alt={FUNCTION_LABEL[f]}
+														title={FUNCTION_LABEL[f]}
+													/>
+												{/each}
+											</span>
+										{/if}
+										<span class="tb-slotrow-count"
+											>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
 										>
-									{/if}
-									<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
-									{#if row.slotRoles}
-										<span class="tb-slotrow-roles">
-											{#each row.slotRoles.position as p (p)}
-												<img
-													src={positionIcon(p, 'color')}
-													alt={POSITION_LABEL[p]}
-													title={POSITION_LABEL[p]}
-												/>
+									</header>
+									{#if row.alternatives.length > 0}
+										<div class="tb-grid">
+											{#each row.alternatives as entry (entry.id)}
+												{@render charTile(entry, false)}
 											{/each}
-											{#each row.slotRoles.function as f (f)}
-												<img
-													src={functionIcon(f, 'color')}
-													alt={FUNCTION_LABEL[f]}
-													title={FUNCTION_LABEL[f]}
-												/>
-											{/each}
-										</span>
+										</div>
+									{:else}
+										<p class="note tb-note">No same-element alternative in this role yet.</p>
 									{/if}
-									<span class="tb-slotrow-count"
-										>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
-									>
-								</header>
-								{#if row.alternatives.length > 0}
+								</section>
+							{/each}
+						{:else if atlasMode === 'drill' && drilledCategory}
+							{#each drillRows as row (row.key)}
+								<section class="tb-slotrow">
+									<header class="tb-slotrow-head ctx-glass">
+										{#if row.kind === 'element'}
+											<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
+											<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
+										{:else}
+											<span class="tb-slotrow-name">{row.label}</span>
+										{/if}
+										<span class="tb-slotrow-count"
+											>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
+										>
+									</header>
 									<div class="tb-grid">
-										{#each row.alternatives as entry (entry.id)}
+										{#each row.entries as entry (entry.id)}
 											{@render charTile(entry, false)}
 										{/each}
 									</div>
-								{:else}
-									<p class="note tb-note">No same-element alternative in this role yet.</p>
-								{/if}
-							</section>
-						{/each}
-					{:else if atlasMode === 'drill' && drilledCategory}
-						<div class="tb-atlas-head">
-							<button class="btn btn--glass ctx-glass" onclick={backToCards}
-								><Mark name="back" /> All roles</button
-							>
-							<div class="tb-drill-title">
-								{#if drilledCategory.position}
-									<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
-								{/if}
-								<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
-								<span>{drilledCategory.label}</span>
-							</div>
-						</div>
-						{#each drillRows as row (row.key)}
-							<section class="tb-slotrow">
-								<header class="tb-slotrow-head ctx-glass">
-									{#if row.kind === 'element'}
-										<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
-										<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
-									{:else}
-										<span class="tb-slotrow-name">{row.label}</span>
-									{/if}
-									<span class="tb-slotrow-count"
-										>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
-									>
-								</header>
-								<div class="tb-grid">
-									{#each row.entries as entry (entry.id)}
-										{@render charTile(entry, false)}
-									{/each}
-								</div>
-							</section>
-						{/each}
-						{#if drillRows.length === 0}
-							<p class="note tb-note">No curated providers in this role yet.</p>
-						{/if}
-					{:else}
-						<!-- ⚓ NATE 2026-08-10: the lead line and the citation that used to
+								</section>
+							{/each}
+							{#if drillRows.length === 0}
+								<p class="note tb-note">No curated providers in this role yet.</p>
+							{/if}
+						{:else}
+							<!-- ⚓ NATE 2026-08-10: the lead line and the citation that used to
 						     bracket these cards are GONE — "they're just clutter". Four
 						     cards that each name a role and count its characters do not
 						     need a sentence telling you they are roles.
@@ -1096,15 +1111,15 @@
 						     and it now lives nowhere a reader can see it. If it belongs
 						     anywhere it is the Team Builder's Help chapter, not wrapped
 						     around the cards. -->
-						<AtlasView {roleCards} onSelectCategory={openCategory} />
-					{/if}
-				</div>
-			{/if}
+							<AtlasView {roleCards} onSelectCategory={openCategory} />
+						{/if}
+					</div>
+				{/if}
 
-			<!-- ── Compare — a first-class center view, not an inspector: the shared
+				<!-- ── Compare — a first-class center view, not an inspector: the shared
 			     ruler gets the Source's full width, and the view works at every
 			     viewport (no dock breakpoint, no modal fallback). -->
-			<!-- ↻ 2026-08-09: THE TAUGHT EMPTY STATE IS GONE, and its absence is the
+				<!-- ↻ 2026-08-09: THE TAUGHT EMPTY STATE IS GONE, and its absence is the
 			     feature. "Nothing to compare yet — hover a card and press Compare"
 			     was a whole view explaining why it had nothing to show; the
 			     navigation says that now, by refusing the click and putting the
@@ -1114,20 +1129,20 @@
 			     the last pick leaves where this branch is still selected. Rendering
 			     nothing for that frame is what keeps the old empty state from
 			     flashing on its way out. -->
-			{#if sourceTab === 'compare' && compareReady}
-				<CompareView
-					ids={[...compareIds]}
-					{conMode}
-					anchorId={anchorId ?? undefined}
-					onRemove={toggleCompare}
-					onCommit={anchorId ? commitAudition : undefined}
-					onClear={anchorId ? undefined : () => compareIds.clear()}
-					onCancelAudition={anchorId ? cancelAudition : undefined}
-					candidatesArea={anchorId ? auditionStrip : undefined}
-				/>
-			{/if}
+				{#if sourceTab === 'compare' && compareReady}
+					<CompareView
+						ids={[...compareIds]}
+						{conMode}
+						anchorId={anchorId ?? undefined}
+						onRemove={toggleCompare}
+						onCommit={anchorId ? commitAudition : undefined}
+						onClear={anchorId ? undefined : () => compareIds.clear()}
+						onCancelAudition={anchorId ? cancelAudition : undefined}
+						candidatesArea={anchorId ? auditionStrip : undefined}
+					/>
+				{/if}
 
-			<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
+				<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
 				     remounting ~122 cards on every Atlas⇄Roster toggle was a visible
 				     stall in Safari 26.x, and keeping it warm makes the toggle instant
 				     in every browser.
@@ -1135,19 +1150,20 @@
 				     It is the surface's ASIDE now — its own dark box beside the frame
 				     with bare scene between them (see the rosterRail snippet below).
 				     What is left in here is the grid proper. -->
-			{#if rosterEverShown}
-				<div class="tb-roster" hidden={sourceTab !== 'roster'}>
-					<CharacterGrid
-						roster={split.matches}
-						{filters}
-						tile={rosterTile}
-						aboveGrid={rosterCount}
-						belowGrid={rosterStubs}
-						emptyMessage={rosterEmptyMessage}
-					/>
-				</div>
-			{/if}
-		</section>
+				{#if rosterEverShown}
+					<div class="tb-roster" hidden={sourceTab !== 'roster'}>
+						<CharacterGrid
+							roster={split.matches}
+							{filters}
+							tile={rosterTile}
+							aboveGrid={rosterCount}
+							belowGrid={rosterStubs}
+							emptyMessage={rosterEmptyMessage}
+						/>
+					</div>
+				{/if}
+			</section>
+		</div>
 	</div>
 {/snippet}
 
@@ -1250,6 +1266,23 @@
 	   frame's edge; with no frame there is no edge, and zeroing it lines the
 	   cards and banners up with the band stack above rather than insetting them
 	   14px from it for no reason anyone could see. */
+	/* The Source BOX: an optional pinned head plus the scroller under it. It
+	   exists so the Atlas head can sit outside the mask (see the markup note) and
+	   still be spaced by the Atlas's own row rhythm rather than the surface's
+	   much wider section gap — a back button and the rows it heads are one
+	   reading, not two runs of content.
+	   ⚠ It inserts a level into the fill chain (.tool-stack--fill →
+	   .tool-surface → .tool-columns → .tc-main → .tb-stack → HERE → .tb-source →
+	   .tb-roster → .cg-scroll), so it needs the same min-height: 0 every other
+	   level needs: a flex column that forgets it refuses to shrink below its
+	   content, and the Roster's bounded scroller silently stops bounding. */
+	.tb-sourcebox {
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+		min-width: 0;
+		min-height: 0;
+	}
 	.tb-source {
 		min-width: 0;
 		min-height: 0;
@@ -1259,9 +1292,11 @@
 		gap: 0.8rem;
 		padding: 0;
 	}
-	/* Roster + Compare only. The Roster's .cg-scroll resolves its bounds through
-	   this flex:1 — see the note at the markup, and the bounded-scroller check
-	   in probe-bench-align. */
+	/* Roster + Compare + the Atlas cards. The Roster's .cg-scroll resolves its
+	   bounds through this flex:1 — see the note at the markup, and the
+	   bounded-scroller check in probe-bench-align. Both levels take it together:
+	   a definite height has to survive the whole way down. */
+	.tb-sourcebox--fill,
 	.tb-source--fill {
 		flex: 1;
 	}
@@ -1528,12 +1563,18 @@
 		font-size: var(--fs-lg);
 		color: var(--text);
 	}
+	/* PINNED — it lives in .tb-sourcebox, above the scroller, not inside it.
+	   flex: none because the box it now sits in is a flex column that shrinks:
+	   without it a tall drill title would be the first thing squeezed when the
+	   window gets short, which is exactly backwards for the row carrying the way
+	   back out. */
 	.tb-atlas-head {
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
 		gap: 1rem;
 		flex-wrap: wrap;
+		flex: none;
 	}
 	/* ── RP-arrival slot rows ─────────────────────────────────── */
 	/* ⛔ THE HAIRLINE IS GONE (⚓ NATE 2026-08-11). It marked where a row began;
