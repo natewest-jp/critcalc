@@ -3,6 +3,7 @@
 	import type { CharacterIndexEntry } from '$lib/types/character';
 	import { matchesIdentity, type GridFilters, type IdentityFilters } from '$lib/characterFilters';
 	import { createProgressiveReveal } from '$lib/utils/progressiveReveal.svelte';
+	import { scrollFade } from '$lib/actions/scrollFade';
 
 	// ---------------------------------------------------------------------------
 	// Shared roster grid: a scrolling, identity-filtered character grid. Tile
@@ -58,7 +59,7 @@
      so a count line and a secondary bucket scroll with the tiles. It IS the
      component root now — the flex row that used to hold grid-plus-rail went
      with the rail (aside-column round). -->
-<div class="cg-scroll">
+<div class="cg-scroll scroll-fade" use:scrollFade>
 	{#if aboveGrid}{@render aboveGrid()}{/if}
 
 	<div class="cg-grid">
@@ -85,6 +86,11 @@
 		   lost its top border on hover. (The filter column keeps its own copy of
 		   the knob for the same reason, one focus ring wider.) */
 		--cg-gutter: 6px;
+		/* 🎛️ The roll-off (.scroll-fade + use:scrollFade). Roughly a third of a
+		   tile — enough that a clipped row of cards reads as continuing rather
+		   than as ending, without dissolving the row you are actually looking at.
+		   The rail runs shorter; its groups are smaller objects. */
+		--scroll-fade: 36px;
 
 		flex: 1;
 		min-width: 0;
