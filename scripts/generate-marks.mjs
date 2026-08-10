@@ -138,16 +138,22 @@ const MARKS = {
 	 * genuinely being sent sideways into it. Compare is a tab in the nav now, so
 	 * the arrow points at nothing.
 	 *
-	 * The replacement names the DESTINATION rather than a direction, which is
-	 * the more durable half: Compare is literally a set of aligned columns
-	 * sharing one ruler, and `Columns3` draws exactly that. An up-arrow (toward
-	 * the tab) was the other candidate and was rejected for making a spatial
-	 * claim that stops being true the moment you scroll.
-	 * ⚠ Its nearest neighbour in this map is `layout` (LayoutGrid, 2×2 squares).
-	 * They never co-occur — LayoutGrid is Visualizers-only — but if one ever
-	 * moves next to the other, this is the pair to re-check.
+	 * There are only two ideas available here, and this is the second.
+	 *   1. Name the DESTINATION — `Columns3`, because Compare is literally a set
+	 *      of aligned columns sharing one ruler. ⚓ Shipped and rejected by Nate.
+	 *      It is also the closest mark in this map to `layout` (LayoutGrid), and
+	 *      at 14px a filled rect with two interior bars reads as a table cell.
+	 *   2. Name the ACT — weighing candidates against each other. `Scale`.
+	 * An up-arrow (toward the tab) was a third and was rejected for making a
+	 * spatial claim that stops being true the moment you scroll.
+	 *
+	 * ⚠ `Scale` is 5 nodes and the busiest mark in this map — the same shape of
+	 * risk that sent `share` from Share2 to Share ("silts up at 14px"). Its two
+	 * pans are open arcs rather than enclosed counters, which is what makes it
+	 * survivable, but it is rendered at 16 in the card's hover bar rather than
+	 * the default 14 so it has room to resolve. If it has to shrink, it fails.
 	 */
-	compare: 'Columns3'
+	compare: 'Scale'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');

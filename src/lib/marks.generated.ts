@@ -46,5 +46,5 @@ export const MARK_NODES: Record<MarkName, MarkNode[]> = {
 	warn: [["path",{"d":"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"}],["path",{"d":"M12 9v4"}],["path",{"d":"M12 17h.01"}]],
 	forward: [["path",{"d":"M5 12h14"}],["path",{"d":"m12 5 7 7-7 7"}]],
 	back: [["path",{"d":"m12 19-7-7 7-7"}],["path",{"d":"M19 12H5"}]],
-	compare: [["rect",{"width":"18","height":"18","x":"3","y":"3","rx":"2"}],["path",{"d":"M9 3v18"}],["path",{"d":"M15 3v18"}]]
+	compare: [["path",{"d":"M12 3v18"}],["path",{"d":"m19 8 3 8a5 5 0 0 1-6 0zV7"}],["path",{"d":"M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"}],["path",{"d":"m5 8 3 8a5 5 0 0 1-6 0zV7"}],["path",{"d":"M7 21h10"}]]
 };

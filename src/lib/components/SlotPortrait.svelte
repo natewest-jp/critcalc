@@ -561,17 +561,30 @@
 		   its mark right with margin-left because there it IS the last item.) */
 		margin-right: auto;
 		flex-shrink: 0;
+		display: flex;
 		/* --ui-danger, not a domain color — a data-quality consequence, not a
 		   game fact (dire-retirement round, 2026-08-05; mirrors .cc-namemark). */
 		color: var(--ui-danger);
-		font-size: var(--fs-3xl);
-		font-weight: var(--fw-bold);
-		line-height: var(--lh-none);
-		/* In `em` so the lift scales with the glyph's own font-size. Nate's
-		   measured value at this card's scale — the roster card's -0.1em sits
-		   the glyph slightly low here. */
-		transform: translateY(-0.08em);
 		cursor: help;
+		/* ↻ 2026-08-11: the type declarations and the -0.08em lift are GONE, for
+		   the reason spelled out at .cc-namemark — they were tuned for a unicode
+		   ∅ and none of them reaches an SVG, except the transform, which was
+		   pushing an already-centred mark off centre. The two cards' marks were
+		   nudged by DIFFERENT amounts (-0.08 here, -0.10 there) precisely because
+		   each was eyeballed against its own font-size; a geometric mark needs
+		   neither number. It aligns like .sp-el-badge does, three items to the
+		   left, and for the same reason: both are blocks in a centred flex row. */
+	}
+	/* 14 — and the rule that picks it is worth stating once, because it is what
+	   keeps the two card families in step without either knowing the other's
+	   numbers: THE MARK MATCHES THE NAME IT ANNOTATES, 1:1 in px. This row's name
+	   is --fs-lg, so 14; the roster card's comfortable band is also --fs-lg and
+	   also lands on 14, and its roomy band moves to 16 with its name.
+	   (The element badge above sits at 1.25× the name instead. Identity outranks
+	   annotation, so it is the one that gets to be bigger than the words.) */
+	.sp-namemark :global(.mark) {
+		width: 14px;
+		height: 14px;
 	}
 
 	/* Element glyph inline with the name — the in-game card language.

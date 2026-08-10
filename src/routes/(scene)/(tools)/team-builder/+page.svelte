@@ -584,7 +584,10 @@
 				? 'Team is full (4)'
 				: 'Add to team'}
 	>
-		<span class="tb-act-glyph"><Mark name={teamState === 'in' ? 'check' : 'plus'} /></span>
+		<!-- 16 to match its peer — see the note on the Compare button. Two glyphs
+		     side by side in one bar have to be one size whatever each needs. -->
+		<span class="tb-act-glyph"><Mark name={teamState === 'in' ? 'check' : 'plus'} size={16} /></span
+		>
 		<span class="tb-act-label">{teamState === 'full' ? 'Full' : 'Team'}</span>
 	</button>
 	<button
@@ -599,7 +602,10 @@
 				? 'Comparison is full (4)'
 				: 'Add to comparison'}
 	>
-		<span class="tb-act-glyph"><Mark name={compared ? 'check' : 'compare'} /></span>
+		<!-- 16, not the default 14: `compare` (Scale) is the busiest mark in the
+		     set and needs the extra two pixels to resolve its pans. `check` rides
+		     along so the button doesn't resize when you press it. -->
+		<span class="tb-act-glyph"><Mark name={compared ? 'check' : 'compare'} size={16} /></span>
 		<span class="tb-act-label">Compare</span>
 	</button>
 {/snippet}

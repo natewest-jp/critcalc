@@ -179,7 +179,11 @@
 				<span
 					class="cc-namemark"
 					title="Frame timing not curated yet — capabilities are complete, but Planner timing is approximate"
-					aria-label="Frame timing not curated yet"><Mark name="uncurated" size={11} /></span
+					aria-label="Frame timing not curated yet"
+					><!-- The rendered size is --cc-mark (CSS wins over the attribute, and
+					     scales the stroke with it); this only has to be in the right
+					     ballpark for the pre-CSS frame. -->
+					<Mark name="uncurated" size={12} /></span
 				>
 			{/if}
 		</span>
@@ -345,24 +349,31 @@
 	   card had a hole punched through it to the page behind, and 14% of an
 	   element over near-black registered as nothing.
 
-	   ⚠ AND THE ELEMENT SITS AT THE TOP HERE, where the bench puts it at the
-	   bottom. Not drift — the art decides it. The bench crops to a circle, so its
-	   visible ground is the bottom arc under the chin; this is a square the art
-	   fills from the shoulders down, so its visible ground is the two top corners
-	   either side of the head. Put the colour where the ground can be seen. (It
-	   also lands on Genshin's own direction: deep at the top, lifting toward the
-	   name plate.) */
+	   ⚠ AND THE ELEMENT SITS AT THE BOTTOM, exactly as it does on the bench.
+	   ↻ ⚓ NATE 2026-08-11 flipped it: the first draft put the element at the TOP,
+	   reasoning that a square filled by the art from the shoulders down leaves
+	   the two upper corners as the only ground you can see, so the colour should
+	   go where the ground is — plus Genshin's own cards run deep-at-top.
+	   His eye says otherwise, and the argument that survives is the simpler one:
+	   the colour belongs BEHIND the character, not around their head. Tinting the
+	   top puts the strongest wash directly behind the face — the one part of the
+	   art that has to hold your attention — and rings every head in its element.
+	   Tinting the bottom lets it rise out of the shoulders instead, and it is
+	   still perfectly visible: the art tapers, so the lower corners are ground
+	   too. The two card families now agree about which way the light falls, which
+	   is worth more than either reading of where the ground is widest. */
 	.cc-portrait {
-		/* 🎛️ How much element the top stop carries. Higher than the bench's 26%
-		   because a corner of sky reads weaker than a disc's whole lower half. */
+		/* 🎛️ How much element the bottom stop carries. Higher than the bench's
+		   26% because this is a big flat square rather than a small disc, and the
+		   same fraction reads weaker spread over the area. */
 		--cc-portrait-el: 32%;
 		position: relative;
 		width: 100%;
 		aspect-ratio: 1;
 		background: linear-gradient(
 			180deg,
-			color-mix(in srgb, var(--el-color) var(--cc-portrait-el), var(--surface-well)) 0%,
-			var(--surface-well) 100%
+			var(--surface-well) 0%,
+			color-mix(in srgb, var(--el-color) var(--cc-portrait-el), var(--surface-well)) 100%
 		);
 		display: flex;
 		align-items: flex-start;
@@ -516,23 +527,45 @@
 		text-overflow: ellipsis;
 		min-width: 0;
 	}
-	/* Frame-timing-not-curated mark — a bold warning ∅ ("no frame data") at the
-	   right of the name row (all cards): capability data is complete, only Planner
-	   timing is approximate. --ui-danger, not a domain color — a data-quality
-	   consequence, not a game fact (dire-retirement round, 2026-08-05). No chip —
-	   it sits on the card surface. Scales up with the card (fs-xl → fs-3xl). */
+	/* Frame-timing-not-curated mark — a warning at the right of the name row (all
+	   cards): capability data is complete, only Planner timing is approximate.
+	   --ui-danger, not a domain color — a data-quality consequence, not a game
+	   fact (dire-retirement round, 2026-08-05). No chip; it sits on the card.
+
+	   ↻ 2026-08-11: THE TYPESET BAGGAGE IS GONE. This was a unicode ∅ until the
+	   icon set replaced it with <Mark name="uncurated">, and four declarations
+	   survived the swap meaning nothing: font-size, font-weight and line-height
+	   do not reach an SVG, and `transform: translateY(-0.1em)` — the optical lift
+	   ⚓ Nate tuned by eye because the ∅ sat low in its line box — was now pushing
+	   a mark that is already centred OFF its own centre. A Mark is `display:
+	   block`, drawn centred in a square viewBox, so it aligns exactly the way
+	   .cc-el (the element glyph two items to the left) does, and neither needs a
+	   nudge. THE FIX FOR A GLYPH SITTING LOW WAS NEVER SUPPOSED TO OUTLIVE THE
+	   GLYPH — this is the second half of the sub-pixel law's marks-are-geometry
+	   rule, and worth remembering wherever else the set replaced a character.
+
+	   🎛️ It also stopped SCALING when it stopped being type. The size prop is a
+	   fixed 11 at every band, so the mark shrank (relatively) as the card grew,
+	   where the ∅ used to climb fs-xl → fs-2xl → fs-3xl. --cc-mark is the knob
+	   that restores it: CSS width/height beat the SVG's own attributes, and
+	   because the stroke is drawn on a 24-unit viewBox it scales with the box —
+	   so one property moves the whole mark, ink weight included.
+
+	   THE SIZE RULE, shared with the bench (.sp-namemark): the mark MATCHES THE
+	   NAME IT ANNOTATES, 1:1 in px — 14 beside a --fs-lg name, 16 beside --fs-xl.
+	   The element glyph runs 1.25× the name instead, because identity outranks
+	   annotation and gets to be the one bigger than the words. */
 	.cc-namemark {
+		--cc-mark: 12px;
 		margin-left: auto;
 		flex-shrink: 0;
+		display: flex;
 		color: var(--ui-danger);
-		font-size: var(--fs-2xl);
-		font-weight: var(--fw-bold);
-		line-height: var(--lh-none);
-		/* The ∅ glyph sits low in its line box; nudge it up. In `em` so the lift
-		   scales with the glyph's own (band-dependent) font-size — ~1.8px at fs-2xl,
-		   ~2px at fs-3xl — one declaration instead of a per-band offset. */
-		transform: translateY(-0.1em);
 		cursor: help;
+	}
+	.cc-namemark :global(.mark) {
+		width: var(--cc-mark);
+		height: var(--cc-mark);
 	}
 
 	/* ── Body: capability tags + hover action overlay ────────────
@@ -630,7 +663,7 @@
 			font-size: var(--fs-lg);
 		}
 		.cc-namemark {
-			font-size: var(--fs-3xl);
+			--cc-mark: 14px;
 		}
 		.cc-body {
 			display: block;
@@ -671,7 +704,7 @@
 			font-size: var(--fs-xl);
 		}
 		.cc-namemark {
-			font-size: var(--fs-4xl);
+			--cc-mark: 16px;
 		}
 		.cc-body {
 			height: 4.4rem;
