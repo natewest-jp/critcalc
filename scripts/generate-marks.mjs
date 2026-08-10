@@ -128,7 +128,26 @@ const MARKS = {
 	/** Named for the DIRECTION of travel, not the picture: "→ Compare" sends a
 	 *  card onward, "← All roles" comes back. Both are navigation. */
 	forward: 'ArrowRight',
-	back: 'ArrowLeft'
+	back: 'ArrowLeft',
+
+	/**
+	 * Add a character to the comparison set.
+	 *
+	 * ⚓ NATE 2026-08-11: "the compare arrow doesn't make sense anymore." It was
+	 * `forward` — right when Compare was a right-hand DOCK and the card was
+	 * genuinely being sent sideways into it. Compare is a tab in the nav now, so
+	 * the arrow points at nothing.
+	 *
+	 * The replacement names the DESTINATION rather than a direction, which is
+	 * the more durable half: Compare is literally a set of aligned columns
+	 * sharing one ruler, and `Columns3` draws exactly that. An up-arrow (toward
+	 * the tab) was the other candidate and was rejected for making a spatial
+	 * claim that stops being true the moment you scroll.
+	 * ⚠ Its nearest neighbour in this map is `layout` (LayoutGrid, 2×2 squares).
+	 * They never co-occur — LayoutGrid is Visualizers-only — but if one ever
+	 * moves next to the other, this is the pair to re-check.
+	 */
+	compare: 'Columns3'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');

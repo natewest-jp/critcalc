@@ -116,10 +116,13 @@
 	/* No backdrop / fixed positioning — RotationTimeline layers this over the
 	   timeline frame. The panel just fills the space it's given. */
 	.cs-panel {
-		/* Picker dim ladder: unselected tiles rest lighter than the TB's not-owned
-		   fade and lift fully on hover — override the CharacterCard defaults. */
-		--cc-faded: 0.6;
-		--cc-faded-hover: 1;
+		/* ↻ 2026-08-11: THE OVERRIDE IS GONE. It existed to rest the picker's
+		   unselected tiles lighter than the TB's not-owned fade (0.6 against
+		   0.46) and lift them fully on hover (1 against 0.92) — and the card's
+		   own ladder moved past both when the cards left their paper frame for
+		   the open scene. 0.62 / 1 is the shared default now, so this block was
+		   asking for a DARKER rest than the base, which is the opposite of what
+		   it was written to do. One ladder, tuned where it is defined. */
 		display: flex;
 		flex-direction: column;
 		flex: 1;

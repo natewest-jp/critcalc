@@ -599,7 +599,7 @@
 				? 'Comparison is full (4)'
 				: 'Add to comparison'}
 	>
-		<span class="tb-act-glyph"><Mark name={compared ? 'check' : 'forward'} /></span>
+		<span class="tb-act-glyph"><Mark name={compared ? 'check' : 'compare'} /></span>
 		<span class="tb-act-label">Compare</span>
 	</button>
 {/snippet}
@@ -1827,19 +1827,37 @@
 	}
 
 	/* Hover action buttons rendered into CharacterCard's overlay shell (Team /
-	   Compare). The card owns the reveal + positioning; these are the contents. */
+	   Compare). The card owns the reveal + positioning; these are the contents.
+
+	   ⚓ NATE 2026-08-11: "the hover buttons are all wrong — wrong colors." They
+	   were, and by one mistake made three times: every state mixed against
+	   `--bg`. That is the PAGE ground, a near-black that belongs to the world
+	   outside the tools — so a control living on a parchment card painted itself
+	   a dark translucent slab, and the accent mixes on top of it ("gold 18% of
+	   near-black") came out as mud rather than gold. The card is ctx-light and
+	   the light context already owns a full set of control roles for exactly
+	   this; they are what it wears now, so the buttons follow the paper through
+	   any future ground change instead of being pinned to a hex three contexts
+	   away.
+	     rest   --fill-rest      + ink border  + --muted ink  (a quiet control)
+	     hover  --accent-hover-fill + gold edge + --ink-active (the promoted ink)
+	     on     --sel-fill       + --sel-ring  + --ink-active (standing state)
+	   ⚠ --fill-rest / --sel-fill / --accent-hover-fill all mix toward
+	   TRANSPARENT, and the alpha-compositing law says a fill needs a real ground:
+	   theirs is .cc-actions, which is opaque --surface. That is why the overlay
+	   had to stop being 90%. */
 	.tb-act {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 1px;
+		gap: 2px;
 		padding: 0.2rem;
-		border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+		border: 1px solid var(--border);
 		border-radius: var(--r-sm);
-		background: color-mix(in srgb, var(--bg) 55%, transparent);
-		color: var(--text);
+		background: var(--fill-rest);
+		color: var(--muted);
 		font-family: var(--font-body);
 		cursor: pointer;
 		transition:
@@ -1857,12 +1875,14 @@
 		text-transform: uppercase;
 	}
 	.tb-act:hover:not(:disabled) {
-		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-		background: color-mix(in srgb, var(--accent) 18%, var(--bg));
+		border-color: var(--sel-ring);
+		background: var(--accent-hover-fill);
+		color: var(--ink-active);
 	}
 	.tb-act--on {
-		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
-		background: color-mix(in srgb, var(--accent) 28%, var(--bg));
+		border-color: var(--sel-ring);
+		background: var(--sel-fill);
+		color: var(--ink-active);
 	}
 	.tb-act:disabled {
 		opacity: 0.4;

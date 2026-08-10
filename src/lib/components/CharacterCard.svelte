@@ -125,7 +125,14 @@
 		aria-pressed={pressed}
 		aria-label={ariaLabel ?? defaultLabel}
 	>
-		<div class="cc-portrait">
+		<!-- ctx-dark is CLAIMED, and legitimately: this element PAINTS its own
+		     ground (the gradient below), which is the one thing the context law
+		     asks of anything declaring a palette. The flip is what lets the
+		     corner marks read — --surface, --muted and --fill-rest inside the
+		     portrait now mean the dark context's rungs, so the chips resolve
+		     against the picture they sit on instead of against the paper card
+		     two levels up. -->
+		<div class="cc-portrait ctx-dark">
 			{#if !fallback}
 				<!-- Decorative (name is in the row below); loads eagerly with the div —
 				     lazy-loading roster grids made them trickle on scroll and during the
@@ -213,10 +220,31 @@
 	   the containing block for abs-positioned descendants — corner chips anchor to
 	   `.cc-portrait` and the action bar to `.cc-body` (both position:relative). */
 	.cc {
-		--cc-faded: 0.46;
-		--cc-faded-hover: 0.92;
-		--cc-dimmed: 0.55;
-		--cc-disabled: 0.32;
+		/* ── THE STATE LADDER (⚓ NATE 2026-08-11: "tuning, now that they're in an
+		   entirely different context — directly on-scene") ─────────────────────
+		   Every rung came up. These were picked when the card sat inside a framed
+		   paper SHEET, where a fade dropped it toward a known, static ground. The
+		   frame went on 2026-08-08 and the card now fades toward the LIVE WORLD:
+		   at 0.46 a parchment card became a haze with stars moving through it,
+		   which is precisely the state the breathing-room round ruled out —
+		   opaque or obviously translucent, the middle is not a place.
+
+		   The floor that sets them: a faded card must still read as an OBJECT
+		   with an edge, not as a smudge over the scene. 0.62 holds the paper's
+		   identity while leaving a clear step to a resting card; below ~0.55 the
+		   scene starts showing through the name plate.
+
+		   ⚠ THIS IS STILL ELEMENT `opacity`, AND THE SUB-PIXEL LAW SAYS IT
+		   SHOULDN'T BE — the card is transform-placed on hover, which is exactly
+		   the shape WebKit rasterizes at rounded coordinates. Converting means
+		   moving the alpha into every child's PAINT (the paper, the gradient, the
+		   art, four chips and a tag row), which is a round of its own. Recorded
+		   here so it is a known debt rather than an oversight; the transform is
+		   1px and only on hover, so any jitter is inside a moving element. */
+		--cc-faded: 0.62;
+		--cc-faded-hover: 1;
+		--cc-dimmed: 0.7;
+		--cc-disabled: 0.42;
 		container: charcard / inline-size;
 		display: flex;
 		flex-direction: column;
@@ -226,9 +254,19 @@
 		   now, so this is a naming correction rather than a colour change, but the
 		   name is what stops it drifting when a broad panel appears beside it. */
 		background: var(--surface);
-		/* The one raised panel that keeps an ELEMENT border — brightened from
-		   the old 22% mix so the element actually reads at rest. */
-		border: 1px solid color-mix(in srgb, var(--el-color) 42%, var(--border));
+		/* ↻ 2026-08-11: THE RESTING BORDER IS INK AGAIN, and hue became a STATE.
+		   An element border at rest was justified while the card had no other
+		   element presence worth the name — a 14% wash over near-black doesn't
+		   count. The portrait carries the element properly now, so a coloured
+		   edge on all 122 cards at once was just a second, quieter copy of the
+		   same fact, and it left hover and "compared" fighting over the only
+		   channel the edge has. Three states, three hues, one at a time:
+		     rest      ink      — structure, per the palette round's border rule
+		     hover     element  — "this one", in the card's own colour
+		     compared  gold     — "chosen", the accent's job everywhere else
+		   Genshin's own cards agree: a plain cream edge, with the element living
+		   in the gradient and the pip. */
+		border: 1px solid var(--border);
 		border-radius: 6px;
 		overflow: hidden;
 		transition:
@@ -237,7 +275,7 @@
 			transform 100ms ease;
 	}
 	.cc:hover:not(.cc--disabled) {
-		border-color: color-mix(in srgb, var(--el-color) 65%, var(--border));
+		border-color: color-mix(in srgb, var(--el-color) 70%, var(--border));
 		transform: translateY(-1px);
 	}
 
@@ -259,8 +297,11 @@
 	.cc--disabled {
 		opacity: var(--cc-disabled);
 	}
-	.cc--accent {
-		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+	/* Compared — the accent wins over hover's element (source order), because
+	   "chosen" is a standing fact and "here" is a passing one. */
+	.cc--accent,
+	.cc--accent:hover:not(.cc--disabled) {
+		border-color: color-mix(in srgb, var(--accent) 75%, var(--border));
 	}
 	.cc--edit {
 		cursor: copy;
@@ -287,14 +328,41 @@
 		cursor: default;
 	}
 
+	/* ── The portrait: a WELL the element lights, on the bench card's recipe ──
+	   ⚓ NATE 2026-08-11 asked whether this should go LIGHT like Genshin's own
+	   character cards (a mid-tone rarity gradient under a cream name plate) or
+	   copy the bench. It copies the bench, and the deciding argument is arithmetic
+	   rather than taste: the palette round measured Genshin's screens at 10–14%
+	   of pixels above L.35 and our TB Roster at 20.8% — this grid is ALREADY the
+	   brightest surface we own, and 122 mid-tone gradients would push it further
+	   past the reference it is imitating. Genshin can afford bright cards because
+	   its party screen shows a dozen; ours shows the whole roster.
+
+	   What DID come across from the reference is the structure, which is the same
+	   correction the bench got that morning: ONE ground, with only the element
+	   travelling across it. The old recipe ran el-14% → --bg — the PAGE ground,
+	   the deepest rung on the site and not on the slate ramp at all — so a paper
+	   card had a hole punched through it to the page behind, and 14% of an
+	   element over near-black registered as nothing.
+
+	   ⚠ AND THE ELEMENT SITS AT THE TOP HERE, where the bench puts it at the
+	   bottom. Not drift — the art decides it. The bench crops to a circle, so its
+	   visible ground is the bottom arc under the chin; this is a square the art
+	   fills from the shoulders down, so its visible ground is the two top corners
+	   either side of the head. Put the colour where the ground can be seen. (It
+	   also lands on Genshin's own direction: deep at the top, lifting toward the
+	   name plate.) */
 	.cc-portrait {
+		/* 🎛️ How much element the top stop carries. Higher than the bench's 26%
+		   because a corner of sky reads weaker than a disc's whole lower half. */
+		--cc-portrait-el: 32%;
 		position: relative;
 		width: 100%;
 		aspect-ratio: 1;
 		background: linear-gradient(
 			180deg,
-			color-mix(in srgb, var(--el-color) 14%, var(--bg)) 0%,
-			var(--bg) 100%
+			color-mix(in srgb, var(--el-color) var(--cc-portrait-el), var(--surface-well)) 0%,
+			var(--surface-well) 100%
 		);
 		display: flex;
 		align-items: flex-start;
@@ -315,75 +383,100 @@
 		color: var(--el-color);
 	}
 
-	/* ── Corner chips ────────────────────────────────────────────
-	   TL weapon · TR constellation · BL wishlist(TB) / slot(planner) · BR frames.
-	   Compact sizes are the base; comfortable+ bumps them (see @container). */
+	/* ── Corner marks ─────────────────────────────────────────────
+	   TL weapon · TR constellation · BL wishlist(TB) / slot(planner).
+	   Compact sizes are the base; comfortable+ bumps them (see @container).
+
+	   ⚓ NATE 2026-08-11: "the constellation pip and the element-type pip are
+	   really outdated styling — reference the bench's, and I'm not sure round is
+	   the right call." It is, and the reason is that ONE question sorts all four
+	   of these: does the mark carry a VALUE, or is it a picture?
+
+	   A VALUE (C4, slot 2) goes in a circle, which is the bench's own idiom for
+	   exactly this — .sp-cons-chip is a --r-round well holding a C-number, and
+	   two families of character card disagreeing about the shape of a
+	   constellation reading would be the drift worth avoiding.
+
+	   A PICTURE (the weapon glyph) gets NO CHIP AT ALL. The chip was scaffolding
+	   for a legibility problem that no longer exists: the art is white line-work
+	   and it used to sit on whatever the gradient's near-black end happened to
+	   be, so it needed a plate under it. On a well one rung down from the card,
+	   at a known slate rung, it simply reads — and Genshin draws its own element
+	   pip the same way, bare on the gradient with a soft shadow. Removing it also
+	   removes the last `--bg` reach in this file. */
 	.cc-weapon {
 		position: absolute;
-		top: 4px;
-		left: 4px;
+		top: 5px;
+		left: 5px;
 		width: 19px;
 		height: 19px;
-		padding: 2px;
-		border-radius: 3px;
-		background-color: color-mix(in srgb, var(--el-color) 4%, var(--bg));
-		/* icon image sits inside the 2px padding, like the old object-fit img */
-		background-origin: content-box;
 		background-size: contain;
 		background-position: center;
 		background-repeat: no-repeat;
+		/* The glyph crosses hair as often as sky. A shadow rather than a plate:
+		   it separates the art from whatever is behind it without adding a second
+		   rectangle to a corner that already has one card edge in it. */
+		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+		z-index: 1;
+	}
+	/* The two VALUE marks — one shape, one size, opposite corners. Shared so a
+	   change to the family cannot land on one of them (the bench learned this
+	   with --sp-pill-*). */
+	.cc-con,
+	.cc-slot {
+		position: absolute;
+		width: 20px;
+		height: 20px;
+		display: grid;
+		place-items: center;
+		border-radius: var(--r-round);
+		/* One rung UP from the well it sits on — the reverse of the bench, where
+		   the chip is one rung DOWN from the card's ground. Same ΔL, same "this
+		   is a control, not part of the picture"; the direction flips because
+		   there the surrounding ground was the card and here it is the well. */
+		background: var(--surface);
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
+		line-height: var(--lh-none);
 		z-index: 1;
 	}
 	.cc-con {
-		position: absolute;
-		top: 4px;
-		right: 4px;
-		min-width: 18px;
-		height: 16px;
-		display: grid;
-		place-items: center;
-		padding: 0 4px;
-		border-radius: 3px;
-		background: var(--fill-rest);
+		top: 5px;
+		right: 5px;
 		color: var(--muted);
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-wide);
-		line-height: var(--lh-none);
-		z-index: 1;
+		/* No tracking inside a circle: the trailing letter-space lands after the
+		   last glyph too, so the advance box the grid centres is a unit wider
+		   than the ink. Same correction the bench chip carries, same reason. */
+		text-indent: -0.06em;
 	}
+	/* Owned — the value goes ELEMENT, the well does not. Ink is the channel that
+	   changes on this family (the bench's rule since it lost its strokes): a
+	   filled chip at 20px reads as a coloured dot before it reads as a number. */
 	.cc-con--set {
-		background: color-mix(in srgb, var(--el-color) 24%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el-color) 55%, transparent);
-		color: color-mix(in srgb, var(--el-color) 75%, white);
+		color: color-mix(in srgb, var(--el-color) 62%, var(--text));
 	}
-	/* Slot-number badge — bottom-left, matching the weapon glyph's chip (same
-	   element-tinted background, radius, and box size; tracks the weapon per band). */
+	/* Slot-number badge — the planner picker's chosen-slot marker. Never
+	   co-occurs with the wishlist star, so bottom-left is unshared. */
 	.cc-slot {
-		position: absolute;
-		bottom: 4px;
-		left: 4px;
-		width: 19px;
-		height: 19px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 3px;
-		background: color-mix(in srgb, var(--el-color) 4%, var(--bg));
-		color: #fff;
-		font-size: var(--fs-lg);
+		bottom: 5px;
+		left: 5px;
+		color: var(--text);
+		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
-		line-height: var(--lh-none);
 		z-index: 2;
 	}
+	/* ↻ 2026-08-11: --accent, not --el-geo-hi. A wishlist star is not a geo fact;
+	   that token was borrowed for being gold-coloured, which is the exact drift
+	   the layer law exists to catch — and it meant every card's star silently
+	   carried an element token into a decision the element has no part in. */
 	.cc-wish {
 		position: absolute;
-		bottom: 4px;
-		left: 5px;
-		color: var(--el-geo-hi, #eed8a5);
+		bottom: 5px;
+		left: 6px;
+		color: var(--accent);
 		font-size: var(--fs-lg);
 		line-height: var(--lh-none);
-		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7));
+		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
 		z-index: 1;
 	}
 	/* ── Name row ────────────────────────────────────────────────
@@ -399,10 +492,15 @@
 		width: 100%;
 		box-sizing: border-box;
 	}
+	/* ↻ 2026-08-11: 15 → 18px, closing the staleness SlotPortrait's .sp-el-badge
+	   comment flagged and deliberately left for "a roster-card call". The glyph
+	   was sized against a smaller name and never followed it up; the bench's
+	   ratio is 1.25 × the name's size — glyph a touch taller than the cap, which
+	   is how the in-game cards draw it — so 14px name → 18, 16px name → 20. */
 	.cc-el {
 		display: none;
-		width: 15px;
-		height: 15px;
+		width: 18px;
+		height: 18px;
 		flex-shrink: 0;
 		background-size: contain;
 		background-position: center;
@@ -481,7 +579,14 @@
 	}
 
 	/* Hover action bar — covers the tags with the consumer's buttons. Reveal is
-	   disabled at compact (no room); enabled comfortable+ via @container. */
+	   disabled at compact (no room); enabled comfortable+ via @container.
+	   ↻ 2026-08-11: OPAQUE --surface, not 90% of --surface-raised. Two problems
+	   in one declaration: --surface-raised has no meaning on paper (ctx-light has
+	   no raised rung — it aliases to --surface, so the name was promising a lift
+	   it could never deliver), and a 90% wash let the tag row ghost through the
+	   buttons that are supposed to replace it. It is the card's own paper now,
+	   which is what makes the bar read as the tag zone TURNING INTO controls
+	   rather than as a scrim laid over them. */
 	.cc-actions {
 		position: absolute;
 		inset: 0;
@@ -489,7 +594,7 @@
 		align-items: stretch;
 		gap: 4px;
 		padding: 0.3rem 0.4rem;
-		background: color-mix(in srgb, var(--surface-raised) 90%, transparent);
+		background: var(--surface);
 		opacity: 0;
 		pointer-events: none;
 		transition: opacity 120ms ease;
@@ -509,14 +614,20 @@
 			font-size: var(--fs-lg);
 			text-align: left;
 		}
-		.cc-weapon,
+		.cc-weapon {
+			width: 22px;
+			height: 22px;
+		}
+		.cc-con,
 		.cc-slot {
-			width: 21px;
-			height: 21px;
+			width: 23px;
+			height: 23px;
 		}
 		.cc-con {
-			min-width: 20px;
-			height: 18px;
+			font-size: var(--fs-sm);
+		}
+		.cc-slot {
+			font-size: var(--fs-lg);
 		}
 		.cc-namemark {
 			font-size: var(--fs-3xl);
@@ -540,10 +651,24 @@
 		.cc-name {
 			font-size: var(--fs-xl);
 		}
-		.cc-weapon,
+		.cc-el {
+			width: 20px;
+			height: 20px;
+		}
+		.cc-weapon {
+			width: 25px;
+			height: 25px;
+		}
+		.cc-con,
 		.cc-slot {
-			width: 24px;
-			height: 24px;
+			width: 26px;
+			height: 26px;
+		}
+		.cc-con {
+			font-size: var(--fs-md);
+		}
+		.cc-slot {
+			font-size: var(--fs-xl);
 		}
 		.cc-namemark {
 			font-size: var(--fs-4xl);
