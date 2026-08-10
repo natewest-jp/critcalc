@@ -185,7 +185,9 @@
 				class:cmp-chip--anchor={col.id === anchorId}
 				style:--el-color={col.color}
 			>
-				<span class="cmp-chip-avatar">
+				<!-- ctx-dark: the portrait backing must not follow the surrounding
+				     context to parchment — see the note at .cmp-chip-avatar. -->
+				<span class="cmp-chip-avatar ctx-dark">
 					{#if !fallbackFor(col.id)}
 						<img
 							src={getAvatar(
@@ -497,6 +499,18 @@
 		border-radius: var(--r-sm);
 		background: color-mix(in srgb, var(--el-color) 7%, transparent);
 	}
+	/* ⚓ NATE 2026-08-11: "they do need to be opaque — they layer and stack, so
+	   they can't be transparent." Exactly right, and this disc was the worst
+	   version of it: a raw rgba(0,0,0,.5), so the ground under a cut-out avatar
+	   was half of whatever happened to be behind the chip. The avatar's own soft
+	   edges then composited onto that unknown, which is the alpha-compositing law
+	   in one line.
+	   It takes the element wash, like every other character portrait on the site.
+	   ⚠ .ctx-dark is claimed on the disc IN THE MARKUP and that is the half that
+	   answers "I don't want the portrait back to be parchment": --surface-well is
+	   a ROLE, so it follows whatever context the chip is dropped into, and a
+	   portrait backing is one of the few things that must NOT. Claiming the
+	   context pins it to slate wherever this view ends up. */
 	.cmp-chip-avatar {
 		display: flex;
 		align-items: center;
@@ -506,7 +520,7 @@
 		border-radius: 50%;
 		border: 1.5px solid var(--el-color);
 		overflow: hidden;
-		background: rgba(0, 0, 0, 0.5);
+		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
 		flex-shrink: 0;
 	}
 	.cmp-chip-avatar img {
@@ -543,7 +557,13 @@
 	.cmp-chip-stub {
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
-		color: color-mix(in srgb, var(--el-geo-main) 90%, var(--muted));
+		/* ↻ 2026-08-11: --ui-danger, not --el-geo-main. The "stub" label reports
+		   uncurated frame timing, the same fact as the ∅ marker and DetailCard's
+		   stub note — a data-quality state, not a domain colour. A TOKEN
+		   correction only; the Compare view's own restyle is deliberately parked
+		   until after the Rotation Planner round (⚓ Nate), and this leaves it one
+		   less inherited bug to carry into it. */
+		color: color-mix(in srgb, var(--ui-danger) 80%, var(--muted));
 	}
 	.cmp-chip-remove {
 		background: none;

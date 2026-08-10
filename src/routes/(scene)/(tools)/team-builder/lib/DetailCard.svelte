@@ -126,7 +126,7 @@
 	>
 		<!-- ── Header ─────────────────────────────────────────── -->
 		<header class="dc-header">
-			<div class="dc-avatar">
+			<div class="dc-avatar ctx-dark">
 				{#if !avatarFallback}
 					<img
 						src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $siteSettings.travelerVariant)}
@@ -377,7 +377,12 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: rgba(0, 0, 0, 0.5);
+		/* The element wash, pinned to slate by the .ctx-dark on the element — the
+		   same treatment every character portrait on the site wears, and the same
+		   reason it claims a context rather than inheriting one. See the note at
+		   CompareView's .cmp-chip-avatar. Was rgba(0,0,0,.5): a translucent disc
+		   under a cut-out avatar, i.e. a ground nobody had named. */
+		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
 	}
 	.dc-avatar img {
 		width: 100%;
@@ -452,17 +457,26 @@
 		color: var(--text);
 		cursor: pointer;
 	}
+	/* ↻ 2026-08-11: --accent, not --el-geo-main. A wishlist is not a Geo fact —
+	   that token was borrowed for being the gold-coloured one, which is exactly
+	   the drift the layer law exists to catch. Same correction .cc-wish took on
+	   the roster card (it had borrowed --el-geo-HI for the same reason). */
 	.dc-own-btn--wish.is-active {
-		border-color: color-mix(in srgb, var(--el-geo-main) 65%, var(--border));
-		background: color-mix(in srgb, var(--el-geo-main) 18%, transparent);
+		border-color: var(--sel-ring);
+		background: var(--sel-fill);
 	}
 
 	.dc-stub-note {
 		margin: 0;
 		padding: 0.55rem 0.7rem;
 		border-radius: 3px;
-		border: 1px solid color-mix(in srgb, var(--el-geo-main) 40%, transparent);
-		background: color-mix(in srgb, var(--el-geo-main) 8%, transparent);
+		/* ↻ 2026-08-11: --ui-danger, not --el-geo-main. This note reports the SAME
+		   fact the ∅ marker does — frame timing isn't curated — and the
+		   dire-retirement round settled that as a DATA-QUALITY state rather than a
+		   domain colour. It was wearing a borrowed element token; now the note and
+		   the mark that summarises it speak with one voice. */
+		border: 1px solid color-mix(in srgb, var(--ui-danger) 40%, transparent);
+		background: var(--ui-danger-soft);
 		font-size: var(--fs-md);
 		line-height: var(--lh-normal);
 		color: var(--text);

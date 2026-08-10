@@ -154,6 +154,11 @@
 	let atlasMode = $state<'cards' | 'drill' | 'slots'>('cards');
 	let drilledCategory = $state<RoleCategory | null>(null);
 
+	// Which Source views hand their scroller a definite height to fill, and which
+	// end at their content. Named because it is now asked TWICE — once by the
+	// scroller and once by the box that holds it and the pinned Atlas head.
+	const sourceFills = $derived(sourceTab !== 'atlas' || atlasMode === 'cards');
+
 	// ---------------------------------------------------------------------------
 	// Filters
 	// ---------------------------------------------------------------------------
@@ -579,7 +584,10 @@
 				? 'Team is full (4)'
 				: 'Add to team'}
 	>
-		<span class="tb-act-glyph"><Mark name={teamState === 'in' ? 'check' : 'plus'} /></span>
+		<!-- 16 to match its peer — see the note on the Compare button. Two glyphs
+		     side by side in one bar have to be one size whatever each needs. -->
+		<span class="tb-act-glyph"><Mark name={teamState === 'in' ? 'check' : 'plus'} size={16} /></span
+		>
 		<span class="tb-act-label">{teamState === 'full' ? 'Full' : 'Team'}</span>
 	</button>
 	<button
@@ -594,7 +602,10 @@
 				? 'Comparison is full (4)'
 				: 'Add to comparison'}
 	>
-		<span class="tb-act-glyph"><Mark name={compared ? 'check' : 'forward'} /></span>
+		<!-- 16, not the default 14: `compare` (Scale) is the busiest mark in the
+		     set and needs the extra two pixels to resolve its pans. `check` rides
+		     along so the button doesn't resize when you press it. -->
+		<span class="tb-act-glyph"><Mark name={compared ? 'check' : 'compare'} size={16} /></span>
 		<span class="tb-act-label">Compare</span>
 	</button>
 {/snippet}
@@ -631,7 +642,9 @@
 						? `Remove ${entry.displayName} from the comparison`
 						: `Add ${entry.displayName} to the comparison`}
 				>
-					<span class="tb-cand-avatar">
+					<!-- ctx-dark for the same reason the compare chip's disc claims it:
+					     a portrait backing must not follow its surroundings to paper. -->
+					<span class="tb-cand-avatar ctx-dark">
 						{#if hasAvatar(entry.id)}
 							<img src={getAvatarFallback(entry.id, 'circle', traveler)} alt="" />
 						{:else}
@@ -857,11 +870,15 @@
 							aria-label="{compareStack.length} in comparison"
 						>
 							{#each compareStack as pick, i (pick.id)}
+								<!-- ctx-dark: this disc must not follow the plate it rides on.
+								     The Compare plate is glass when unselected and PARCHMENT when
+								     selected, and a portrait backing has to be one opaque thing
+								     in both. See the note at .tb-tabstack-circle. -->
 								<span
-									class="tb-tabstack-circle"
+									class="tb-tabstack-circle ctx-dark"
 									style:left="{i * 16}px"
 									style:z-index={i + 1}
-									style:border-color={pick.color}
+									style:--el-color={pick.color}
 								>
 									{#if hasAvatar(pick.id)}
 										<img
@@ -983,109 +1000,122 @@
 		     over if something gives it a definite one. The drill and slots views
 		     keep the old behaviour: those are lists, and a list should end where
 		     its content does. -->
-		<section
-			class="tb-source scroll-fade"
-			class:tb-source--fill={sourceTab !== 'atlas' || atlasMode === 'cards'}
-			use:scrollFade
-		>
-			{#if sourceTab === 'atlas'}
-				<div class="tb-atlas">
-					{#if atlasMode === 'slots' && slotRows.length > 0}
-						<div class="tb-atlas-head">
-							<p class="tb-atlas-lead">
-								Alternatives for each character on your team — same element and role.
-							</p>
-							<button class="btn btn--glass ctx-glass" onclick={backToCards}
-								>Browse all roles <Mark name="forward" /></button
-							>
-						</div>
-						{#each slotRows as row (row.slotEntry.id)}
-							<section class="tb-slotrow">
-								<header class="tb-slotrow-head ctx-glass">
-									{#if hasAvatar(row.slotEntry.id)}
-										<img
-											class="tb-slotrow-avatar"
-											src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
-											alt=""
-											loading="lazy"
-										/>
-									{:else}
-										<span class="tb-slotrow-initials"
-											>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
-										>
-									{/if}
-									<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
-									{#if row.slotRoles}
-										<span class="tb-slotrow-roles">
-											{#each row.slotRoles.position as p (p)}
-												<img
-													src={positionIcon(p, 'color')}
-													alt={POSITION_LABEL[p]}
-													title={POSITION_LABEL[p]}
-												/>
-											{/each}
-											{#each row.slotRoles.function as f (f)}
-												<img
-													src={functionIcon(f, 'color')}
-													alt={FUNCTION_LABEL[f]}
-													title={FUNCTION_LABEL[f]}
-												/>
-											{/each}
-										</span>
-									{/if}
-									<span class="tb-slotrow-count"
-										>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
+		<!-- ⚓ NATE 2026-08-11: THE ATLAS HEAD IS PINNED — and pinning it meant
+		     lifting it OUT of the scroller, not sticking it inside one. That head
+		     carries the way BACK from a drill-down, and it was scrolling off the
+		     top the moment you went looking through the characters it introduced.
+		     ⚠ WHY NOT `position: sticky`. It would park the head in exactly the
+		     pixels the scroll-fade mask erases: the fade is what tells you there
+		     is more above, so a sticky head sitting at top:0 would dissolve the
+		     instant the content behind it started moving. A mask cannot be told
+		     to spare one child. So the head and the scroller are two boxes, and
+		     only the second one scrolls. -->
+		<div class="tb-sourcebox" class:tb-sourcebox--fill={sourceFills}>
+			{#if sourceTab === 'atlas' && atlasMode === 'slots' && slotRows.length > 0}
+				<div class="tb-atlas-head">
+					<p class="tb-atlas-lead">
+						Alternatives for each character on your team — same element and role.
+					</p>
+					<button class="btn btn--glass ctx-glass" onclick={backToCards}
+						>Browse all roles <Mark name="forward" /></button
+					>
+				</div>
+			{:else if sourceTab === 'atlas' && atlasMode === 'drill' && drilledCategory}
+				<div class="tb-atlas-head">
+					<button class="btn btn--glass ctx-glass" onclick={backToCards}
+						><Mark name="back" /> All roles</button
+					>
+					<div class="tb-drill-title">
+						{#if drilledCategory.position}
+							<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
+						{/if}
+						<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
+						<span>{drilledCategory.label}</span>
+					</div>
+				</div>
+			{/if}
+			<section class="tb-source scroll-fade" class:tb-source--fill={sourceFills} use:scrollFade>
+				{#if sourceTab === 'atlas'}
+					<div class="tb-atlas">
+						{#if atlasMode === 'slots' && slotRows.length > 0}
+							{#each slotRows as row (row.slotEntry.id)}
+								<section class="tb-slotrow">
+									<header
+										class="tb-slotrow-head ctx-glass"
+										style:--el-color={elColor(row.slotEntry.element)}
 									>
-								</header>
-								{#if row.alternatives.length > 0}
+										{#if hasAvatar(row.slotEntry.id)}
+											<img
+												class="tb-slotrow-avatar ctx-dark"
+												src={getAvatarFallback(row.slotEntry.id, 'circle', traveler)}
+												alt=""
+												loading="lazy"
+											/>
+										{:else}
+											<span class="tb-slotrow-initials ctx-dark"
+												>{row.slotEntry.displayName.slice(0, 2).toUpperCase()}</span
+											>
+										{/if}
+										<span class="tb-slotrow-name">{row.slotEntry.displayName}</span>
+										{#if row.slotRoles}
+											<span class="tb-slotrow-roles">
+												{#each row.slotRoles.position as p (p)}
+													<img
+														src={positionIcon(p, 'color')}
+														alt={POSITION_LABEL[p]}
+														title={POSITION_LABEL[p]}
+													/>
+												{/each}
+												{#each row.slotRoles.function as f (f)}
+													<img
+														src={functionIcon(f, 'color')}
+														alt={FUNCTION_LABEL[f]}
+														title={FUNCTION_LABEL[f]}
+													/>
+												{/each}
+											</span>
+										{/if}
+										<span class="tb-slotrow-count"
+											>{row.alternatives.length} alt{row.alternatives.length === 1 ? '' : 's'}</span
+										>
+									</header>
+									{#if row.alternatives.length > 0}
+										<div class="tb-grid">
+											{#each row.alternatives as entry (entry.id)}
+												{@render charTile(entry, false)}
+											{/each}
+										</div>
+									{:else}
+										<p class="note tb-note">No same-element alternative in this role yet.</p>
+									{/if}
+								</section>
+							{/each}
+						{:else if atlasMode === 'drill' && drilledCategory}
+							{#each drillRows as row (row.key)}
+								<section class="tb-slotrow">
+									<header class="tb-slotrow-head ctx-glass">
+										{#if row.kind === 'element'}
+											<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
+											<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
+										{:else}
+											<span class="tb-slotrow-name">{row.label}</span>
+										{/if}
+										<span class="tb-slotrow-count"
+											>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
+										>
+									</header>
 									<div class="tb-grid">
-										{#each row.alternatives as entry (entry.id)}
+										{#each row.entries as entry (entry.id)}
 											{@render charTile(entry, false)}
 										{/each}
 									</div>
-								{:else}
-									<p class="note tb-note">No same-element alternative in this role yet.</p>
-								{/if}
-							</section>
-						{/each}
-					{:else if atlasMode === 'drill' && drilledCategory}
-						<div class="tb-atlas-head">
-							<button class="btn btn--glass ctx-glass" onclick={backToCards}
-								><Mark name="back" /> All roles</button
-							>
-							<div class="tb-drill-title">
-								{#if drilledCategory.position}
-									<img src={positionIcon(drilledCategory.position, 'color')} alt="" />
-								{/if}
-								<img src={functionIcon(drilledCategory.function, 'color')} alt="" />
-								<span>{drilledCategory.label}</span>
-							</div>
-						</div>
-						{#each drillRows as row (row.key)}
-							<section class="tb-slotrow">
-								<header class="tb-slotrow-head ctx-glass">
-									{#if row.kind === 'element'}
-										<img class="tb-drill-elicon" src={elementIcon(row.element)} alt="" />
-										<span class="tb-slotrow-name tb-slotrow-name--el">{row.element}</span>
-									{:else}
-										<span class="tb-slotrow-name">{row.label}</span>
-									{/if}
-									<span class="tb-slotrow-count"
-										>{row.entries.length} character{row.entries.length === 1 ? '' : 's'}</span
-									>
-								</header>
-								<div class="tb-grid">
-									{#each row.entries as entry (entry.id)}
-										{@render charTile(entry, false)}
-									{/each}
-								</div>
-							</section>
-						{/each}
-						{#if drillRows.length === 0}
-							<p class="note tb-note">No curated providers in this role yet.</p>
-						{/if}
-					{:else}
-						<!-- ⚓ NATE 2026-08-10: the lead line and the citation that used to
+								</section>
+							{/each}
+							{#if drillRows.length === 0}
+								<p class="note tb-note">No curated providers in this role yet.</p>
+							{/if}
+						{:else}
+							<!-- ⚓ NATE 2026-08-10: the lead line and the citation that used to
 						     bracket these cards are GONE — "they're just clutter". Four
 						     cards that each name a role and count its characters do not
 						     need a sentence telling you they are roles.
@@ -1096,15 +1126,15 @@
 						     and it now lives nowhere a reader can see it. If it belongs
 						     anywhere it is the Team Builder's Help chapter, not wrapped
 						     around the cards. -->
-						<AtlasView {roleCards} onSelectCategory={openCategory} />
-					{/if}
-				</div>
-			{/if}
+							<AtlasView {roleCards} onSelectCategory={openCategory} />
+						{/if}
+					</div>
+				{/if}
 
-			<!-- ── Compare — a first-class center view, not an inspector: the shared
+				<!-- ── Compare — a first-class center view, not an inspector: the shared
 			     ruler gets the Source's full width, and the view works at every
 			     viewport (no dock breakpoint, no modal fallback). -->
-			<!-- ↻ 2026-08-09: THE TAUGHT EMPTY STATE IS GONE, and its absence is the
+				<!-- ↻ 2026-08-09: THE TAUGHT EMPTY STATE IS GONE, and its absence is the
 			     feature. "Nothing to compare yet — hover a card and press Compare"
 			     was a whole view explaining why it had nothing to show; the
 			     navigation says that now, by refusing the click and putting the
@@ -1114,20 +1144,20 @@
 			     the last pick leaves where this branch is still selected. Rendering
 			     nothing for that frame is what keeps the old empty state from
 			     flashing on its way out. -->
-			{#if sourceTab === 'compare' && compareReady}
-				<CompareView
-					ids={[...compareIds]}
-					{conMode}
-					anchorId={anchorId ?? undefined}
-					onRemove={toggleCompare}
-					onCommit={anchorId ? commitAudition : undefined}
-					onClear={anchorId ? undefined : () => compareIds.clear()}
-					onCancelAudition={anchorId ? cancelAudition : undefined}
-					candidatesArea={anchorId ? auditionStrip : undefined}
-				/>
-			{/if}
+				{#if sourceTab === 'compare' && compareReady}
+					<CompareView
+						ids={[...compareIds]}
+						{conMode}
+						anchorId={anchorId ?? undefined}
+						onRemove={toggleCompare}
+						onCommit={anchorId ? commitAudition : undefined}
+						onClear={anchorId ? undefined : () => compareIds.clear()}
+						onCancelAudition={anchorId ? cancelAudition : undefined}
+						candidatesArea={anchorId ? auditionStrip : undefined}
+					/>
+				{/if}
 
-			<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
+				<!-- Roster stays MOUNTED once first shown (hidden, not {#if}-destroyed):
 				     remounting ~122 cards on every Atlas⇄Roster toggle was a visible
 				     stall in Safari 26.x, and keeping it warm makes the toggle instant
 				     in every browser.
@@ -1135,19 +1165,20 @@
 				     It is the surface's ASIDE now — its own dark box beside the frame
 				     with bare scene between them (see the rosterRail snippet below).
 				     What is left in here is the grid proper. -->
-			{#if rosterEverShown}
-				<div class="tb-roster" hidden={sourceTab !== 'roster'}>
-					<CharacterGrid
-						roster={split.matches}
-						{filters}
-						tile={rosterTile}
-						aboveGrid={rosterCount}
-						belowGrid={rosterStubs}
-						emptyMessage={rosterEmptyMessage}
-					/>
-				</div>
-			{/if}
-		</section>
+				{#if rosterEverShown}
+					<div class="tb-roster" hidden={sourceTab !== 'roster'}>
+						<CharacterGrid
+							roster={split.matches}
+							{filters}
+							tile={rosterTile}
+							aboveGrid={rosterCount}
+							belowGrid={rosterStubs}
+							emptyMessage={rosterEmptyMessage}
+						/>
+					</div>
+				{/if}
+			</section>
+		</div>
 	</div>
 {/snippet}
 
@@ -1250,6 +1281,23 @@
 	   frame's edge; with no frame there is no edge, and zeroing it lines the
 	   cards and banners up with the band stack above rather than insetting them
 	   14px from it for no reason anyone could see. */
+	/* The Source BOX: an optional pinned head plus the scroller under it. It
+	   exists so the Atlas head can sit outside the mask (see the markup note) and
+	   still be spaced by the Atlas's own row rhythm rather than the surface's
+	   much wider section gap — a back button and the rows it heads are one
+	   reading, not two runs of content.
+	   ⚠ It inserts a level into the fill chain (.tool-stack--fill →
+	   .tool-surface → .tool-columns → .tc-main → .tb-stack → HERE → .tb-source →
+	   .tb-roster → .cg-scroll), so it needs the same min-height: 0 every other
+	   level needs: a flex column that forgets it refuses to shrink below its
+	   content, and the Roster's bounded scroller silently stops bounding. */
+	.tb-sourcebox {
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+		min-width: 0;
+		min-height: 0;
+	}
 	.tb-source {
 		min-width: 0;
 		min-height: 0;
@@ -1259,9 +1307,11 @@
 		gap: 0.8rem;
 		padding: 0;
 	}
-	/* Roster + Compare only. The Roster's .cg-scroll resolves its bounds through
-	   this flex:1 — see the note at the markup, and the bounded-scroller check
-	   in probe-bench-align. */
+	/* Roster + Compare + the Atlas cards. The Roster's .cg-scroll resolves its
+	   bounds through this flex:1 — see the note at the markup, and the
+	   bounded-scroller check in probe-bench-align. Both levels take it together:
+	   a definite height has to survive the whole way down. */
+	.tb-sourcebox--fill,
 	.tb-source--fill {
 		flex: 1;
 	}
@@ -1387,14 +1437,33 @@
 		height: 24px;
 		flex-shrink: 0;
 	}
+	/* ⚓ NATE 2026-08-11, with screenshots: transparent avatars on the Compare TAB
+	   — and the same disc turning parchment once the tab is selected. One root
+	   cause, and it is the sharpest example in the codebase of why a portrait
+	   backing may not name a context-following role.
+
+	   It was `background: var(--surface)`, itself a fix (the comment records the
+	   stray #131c30 it replaced). Right instinct, wrong role: --surface FOLLOWS
+	   its context, and this disc rides a plate that changes context underneath
+	   it. In band B's .ctx-glass, --surface is --glass-panel at .58 — hence stars
+	   through the avatars. Selected, the plate CLAIMS .ctx-light for --sel-surface
+	   (see THE SELECTED PLATE below), so --surface becomes parchment-100 — hence
+	   the light disc. Two symptoms, one token, and the hex it replaced was
+	   accidentally righter than the role that replaced it.
+
+	   ⚠ THE RULE THIS SETTLES: a portrait backing is an OPAQUE OBJECT, not a
+	   layer of its surroundings. It claims .ctx-dark and takes the element wash,
+	   like every other character portrait on the site. The context claim is the
+	   load-bearing half — without it this disc would resolve to --glass-well and
+	   parchment-200 in exactly the same two places. */
 	.tb-tabstack-circle {
 		position: absolute;
 		top: 0;
 		width: 24px;
 		height: 24px;
 		border-radius: 50%;
-		border: 1.5px solid var(--border);
-		background: var(--surface); /* was a drifted stray #131c30 */
+		border: 1.5px solid var(--el-color, var(--border));
+		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
 		overflow: hidden;
 		display: flex;
 		align-items: center;
@@ -1467,6 +1536,10 @@
 		opacity: 0.4;
 		cursor: default;
 	}
+	/* Same correction as .tb-slotrow-avatar, from a different starting point: a
+	   raw rgba(0,0,0,.5) rather than a token. Half-black over an unknown ground
+	   is the alpha-compositing law's own counter-example — the result depended on
+	   whatever the audition strip happened to be sitting on. */
 	.tb-cand-avatar {
 		display: flex;
 		align-items: center;
@@ -1475,7 +1548,7 @@
 		height: 22px;
 		border-radius: 50%;
 		overflow: hidden;
-		background: rgba(0, 0, 0, 0.5);
+		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
 		flex-shrink: 0;
 	}
 	.tb-cand-avatar img {
@@ -1528,12 +1601,18 @@
 		font-size: var(--fs-lg);
 		color: var(--text);
 	}
+	/* PINNED — it lives in .tb-sourcebox, above the scroller, not inside it.
+	   flex: none because the box it now sits in is a flex column that shrinks:
+	   without it a tall drill title would be the first thing squeezed when the
+	   window gets short, which is exactly backwards for the row carrying the way
+	   back out. */
 	.tb-atlas-head {
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
 		gap: 1rem;
 		flex-wrap: wrap;
+		flex: none;
 	}
 	/* ── RP-arrival slot rows ─────────────────────────────────── */
 	/* ⛔ THE HAIRLINE IS GONE (⚓ NATE 2026-08-11). It marked where a row began;
@@ -1575,15 +1654,34 @@
 		border-radius: 50%;
 		flex: none;
 	}
+	/* ── The disc behind these avatars ────────────────────────────────────────
+	   ↻ 2026-08-11: they were `background: var(--bg)` — the PAGE ground, and the
+	   last two instances of the reach this round set out to remove (the bench's
+	   backing and the roster card's portrait were the other two). Here it was
+	   worse than off-ramp: these sit ON A GLASS PLATE, so a disc borrowing the
+	   colour of the world outside the tools was painting a hole through a pane.
+
+	   They take the element wash instead, which makes EVERY character portrait
+	   on the site one recipe — the bench's 68px disc, the roster card's square,
+	   and these. Flat rather than a gradient: at 34px a two-stop ramp has ~17px
+	   to travel in and reads as a single muddy tone, so this is just the wash's
+	   tinted end.
+	   ⚠ .ctx-dark is CLAIMED on the disc, and it is doing real work: --surface-
+	   well in ctx-glass is --glass-well, i.e. TRANSLUCENT, and the band-plates
+	   round's rule is that alpha stacks — glass on glass is not a ground. The
+	   flip gives the mix a real opaque rung to sit on, which is the same reason
+	   .cc-portrait claims it. */
+	.tb-slotrow-avatar,
+	.tb-slotrow-initials {
+		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
+	}
 	.tb-slotrow-avatar {
 		object-fit: cover;
-		background: var(--bg);
 	}
 	.tb-slotrow-initials {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--bg);
 		color: var(--muted);
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
@@ -1786,19 +1884,37 @@
 	}
 
 	/* Hover action buttons rendered into CharacterCard's overlay shell (Team /
-	   Compare). The card owns the reveal + positioning; these are the contents. */
+	   Compare). The card owns the reveal + positioning; these are the contents.
+
+	   ⚓ NATE 2026-08-11: "the hover buttons are all wrong — wrong colors." They
+	   were, and by one mistake made three times: every state mixed against
+	   `--bg`. That is the PAGE ground, a near-black that belongs to the world
+	   outside the tools — so a control living on a parchment card painted itself
+	   a dark translucent slab, and the accent mixes on top of it ("gold 18% of
+	   near-black") came out as mud rather than gold. The card is ctx-light and
+	   the light context already owns a full set of control roles for exactly
+	   this; they are what it wears now, so the buttons follow the paper through
+	   any future ground change instead of being pinned to a hex three contexts
+	   away.
+	     rest   --fill-rest      + ink border  + --muted ink  (a quiet control)
+	     hover  --accent-hover-fill + gold edge + --ink-active (the promoted ink)
+	     on     --sel-fill       + --sel-ring  + --ink-active (standing state)
+	   ⚠ --fill-rest / --sel-fill / --accent-hover-fill all mix toward
+	   TRANSPARENT, and the alpha-compositing law says a fill needs a real ground:
+	   theirs is .cc-actions, which is opaque --surface. That is why the overlay
+	   had to stop being 90%. */
 	.tb-act {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 1px;
+		gap: 2px;
 		padding: 0.2rem;
-		border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+		border: 1px solid var(--border);
 		border-radius: var(--r-sm);
-		background: color-mix(in srgb, var(--bg) 55%, transparent);
-		color: var(--text);
+		background: var(--fill-rest);
+		color: var(--muted);
 		font-family: var(--font-body);
 		cursor: pointer;
 		transition:
@@ -1816,12 +1932,14 @@
 		text-transform: uppercase;
 	}
 	.tb-act:hover:not(:disabled) {
-		border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-		background: color-mix(in srgb, var(--accent) 18%, var(--bg));
+		border-color: var(--sel-ring);
+		background: var(--accent-hover-fill);
+		color: var(--ink-active);
 	}
 	.tb-act--on {
-		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
-		background: color-mix(in srgb, var(--accent) 28%, var(--bg));
+		border-color: var(--sel-ring);
+		background: var(--sel-fill);
+		color: var(--ink-active);
 	}
 	.tb-act:disabled {
 		opacity: 0.4;

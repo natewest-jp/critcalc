@@ -13,7 +13,7 @@ export type MarkNode = [tag: string, attrs: Record<string, string>];
 
 /** Every mark the site can render. The union is generated, so a typo in a
  *  `<Mark name="...">` is a type error rather than an empty box. */
-export type MarkName = 'save' | 'load' | 'share' | 'more' | 'reset' | 'link' | 'copy' | 'image' | 'rename' | 'delete' | 'download' | 'upload' | 'note' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'gated' | 'star' | 'uncurated' | 'warn' | 'forward' | 'back';
+export type MarkName = 'save' | 'load' | 'share' | 'more' | 'reset' | 'link' | 'copy' | 'image' | 'rename' | 'delete' | 'download' | 'upload' | 'note' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'gated' | 'star' | 'uncurated' | 'warn' | 'forward' | 'back' | 'compare';
 
 /** Lucide's native grid. The wrapper's viewBox — not a knob. */
 export const MARK_VIEWBOX = 24;
@@ -45,5 +45,6 @@ export const MARK_NODES: Record<MarkName, MarkNode[]> = {
 	uncurated: [["circle",{"cx":"12","cy":"12","r":"10"}],["path",{"d":"M22 2 2 22"}]],
 	warn: [["path",{"d":"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"}],["path",{"d":"M12 9v4"}],["path",{"d":"M12 17h.01"}]],
 	forward: [["path",{"d":"M5 12h14"}],["path",{"d":"m12 5 7 7-7 7"}]],
-	back: [["path",{"d":"m12 19-7-7 7-7"}],["path",{"d":"M19 12H5"}]]
+	back: [["path",{"d":"m12 19-7-7 7-7"}],["path",{"d":"M19 12H5"}]],
+	compare: [["path",{"d":"M12 3v18"}],["path",{"d":"m19 8 3 8a5 5 0 0 1-6 0zV7"}],["path",{"d":"M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1"}],["path",{"d":"m5 8 3 8a5 5 0 0 1-6 0zV7"}],["path",{"d":"M7 21h10"}]]
 };

@@ -451,14 +451,28 @@
 		--sp-unset-ink: color-mix(in srgb, white 40%, var(--sp-pill-fill));
 		--sp-unset-ink-hover: color-mix(in srgb, white 65%, var(--sp-pill-fill));
 
-		/* The portrait keeps the ELEMENT wash the roster cards use — a portrait
-		   wants a lit backing, not the chrome fill the controls wear, and the art
-		   sits far better on it. Same reversed direction as the pills (tint at the
-		   BOTTOM), so the card still reads as one surface. */
+		/* The portrait's backing: a WELL the element lights from below.
+		   ↻ 2026-08-11 (⚓ Nate: the old backing "might be a bit outdated"). It ran
+		   --frame-bg → color-mix(el 14%, --bg), and both ends were the problem.
+		   --bg is the PAGE ground — the deepest rung on the site and not on the
+		   slate ramp at all — so the gradient fell a long way out of the card's own
+		   depth ladder and landed somewhere near black, where 14% of an element
+		   barely registers. Two grounds, one hue-shift and a near-invisible tint.
+		   It is ONE ground now, and the only thing that travels is the element.
+		   --surface-well is the rung the card's own controls wear (--sp-pill-fill),
+		   so the portrait reads as cut into the same card rather than punched
+		   through to the page behind it, and the element gets a lit rung to sit on
+		   instead of a black one. Still tinted at the BOTTOM, like the pills.
+		   ⚠ --surface-well resolves to a LITERAL in every context (slate-900 /
+		   parchment-200 / --glass-well), so the mix below is not a mix of a mix. */
+		/* 🎛️ How much element the bottom stop carries. Up from the old 14%: that
+		   number was picked against a near-black stop, and the same fraction reads
+		   weaker on a ground three rungs lighter. */
+		--sp-avatar-el: 26%;
 		--sp-avatar-fill: linear-gradient(
 			180deg,
-			var(--frame-bg) 0%,
-			color-mix(in srgb, var(--el, var(--neutral)) 14%, var(--bg)) 100%
+			var(--surface-well) 0%,
+			color-mix(in srgb, var(--el, var(--neutral)) var(--sp-avatar-el), var(--surface-well)) 100%
 		);
 	}
 
@@ -547,17 +561,30 @@
 		   its mark right with margin-left because there it IS the last item.) */
 		margin-right: auto;
 		flex-shrink: 0;
+		display: flex;
 		/* --ui-danger, not a domain color — a data-quality consequence, not a
 		   game fact (dire-retirement round, 2026-08-05; mirrors .cc-namemark). */
 		color: var(--ui-danger);
-		font-size: var(--fs-3xl);
-		font-weight: var(--fw-bold);
-		line-height: var(--lh-none);
-		/* In `em` so the lift scales with the glyph's own font-size. Nate's
-		   measured value at this card's scale — the roster card's -0.1em sits
-		   the glyph slightly low here. */
-		transform: translateY(-0.08em);
 		cursor: help;
+		/* ↻ 2026-08-11: the type declarations and the -0.08em lift are GONE, for
+		   the reason spelled out at .cc-namemark — they were tuned for a unicode
+		   ∅ and none of them reaches an SVG, except the transform, which was
+		   pushing an already-centred mark off centre. The two cards' marks were
+		   nudged by DIFFERENT amounts (-0.08 here, -0.10 there) precisely because
+		   each was eyeballed against its own font-size; a geometric mark needs
+		   neither number. It aligns like .sp-el-badge does, three items to the
+		   left, and for the same reason: both are blocks in a centred flex row. */
+	}
+	/* 14 — and the rule that picks it is worth stating once, because it is what
+	   keeps the two card families in step without either knowing the other's
+	   numbers: THE MARK MATCHES THE NAME IT ANNOTATES, 1:1 in px. This row's name
+	   is --fs-lg, so 14; the roster card's comfortable band is also --fs-lg and
+	   also lands on 14, and its roomy band moves to 16 with its name.
+	   (The element badge above sits at 1.25× the name instead. Identity outranks
+	   annotation, so it is the one that gets to be bigger than the words.) */
+	.sp-namemark :global(.mark) {
+		width: 14px;
+		height: 14px;
 	}
 
 	/* Element glyph inline with the name — the in-game card language.

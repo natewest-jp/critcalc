@@ -17,9 +17,10 @@
 	// The one square-portrait character tile, shared by the Team Builder roster
 	// and the Rotation Planner's picker. Purely presentational + callback-driven
 	// (never touches a store — the host wires meaning). LAYOUT adapts to the width
-	// it's handed via three CSS container-query bands (compact / comfortable /
-	// roomy); CONTENT sections are prop-gated. See `SlotPortrait` for the sibling
-	// (circular loadout) card — deliberately separate.
+	// it's handed via a CSS container band (base, and roomy at ≥150px — the
+	// compact band was deleted 2026-08-11 as unreachable); CONTENT sections are
+	// prop-gated. See `SlotPortrait` for the sibling (circular loadout) card —
+	// deliberately separate.
 	// ---------------------------------------------------------------------------
 
 	let {
@@ -125,7 +126,14 @@
 		aria-pressed={pressed}
 		aria-label={ariaLabel ?? defaultLabel}
 	>
-		<div class="cc-portrait">
+		<!-- ctx-dark is CLAIMED, and legitimately: this element PAINTS its own
+		     ground (the gradient below), which is the one thing the context law
+		     asks of anything declaring a palette. The flip is what lets the
+		     corner marks read — --surface, --muted and --fill-rest inside the
+		     portrait now mean the dark context's rungs, so the chips resolve
+		     against the picture they sit on instead of against the paper card
+		     two levels up. -->
+		<div class="cc-portrait ctx-dark">
 			{#if !fallback}
 				<!-- Decorative (name is in the row below); loads eagerly with the div —
 				     lazy-loading roster grids made them trickle on scroll and during the
@@ -172,7 +180,11 @@
 				<span
 					class="cc-namemark"
 					title="Frame timing not curated yet — capabilities are complete, but Planner timing is approximate"
-					aria-label="Frame timing not curated yet"><Mark name="uncurated" size={11} /></span
+					aria-label="Frame timing not curated yet"
+					><!-- The rendered size is --cc-mark (CSS wins over the attribute, and
+					     scales the stroke with it); this only has to be in the right
+					     ballpark for the pre-CSS frame. -->
+					<Mark name="uncurated" size={12} /></span
 				>
 			{/if}
 		</span>
@@ -213,10 +225,31 @@
 	   the containing block for abs-positioned descendants — corner chips anchor to
 	   `.cc-portrait` and the action bar to `.cc-body` (both position:relative). */
 	.cc {
-		--cc-faded: 0.46;
-		--cc-faded-hover: 0.92;
-		--cc-dimmed: 0.55;
-		--cc-disabled: 0.32;
+		/* ── THE STATE LADDER (⚓ NATE 2026-08-11: "tuning, now that they're in an
+		   entirely different context — directly on-scene") ─────────────────────
+		   Every rung came up. These were picked when the card sat inside a framed
+		   paper SHEET, where a fade dropped it toward a known, static ground. The
+		   frame went on 2026-08-08 and the card now fades toward the LIVE WORLD:
+		   at 0.46 a parchment card became a haze with stars moving through it,
+		   which is precisely the state the breathing-room round ruled out —
+		   opaque or obviously translucent, the middle is not a place.
+
+		   The floor that sets them: a faded card must still read as an OBJECT
+		   with an edge, not as a smudge over the scene. 0.62 holds the paper's
+		   identity while leaving a clear step to a resting card; below ~0.55 the
+		   scene starts showing through the name plate.
+
+		   ⚠ THIS IS STILL ELEMENT `opacity`, AND THE SUB-PIXEL LAW SAYS IT
+		   SHOULDN'T BE — the card is transform-placed on hover, which is exactly
+		   the shape WebKit rasterizes at rounded coordinates. Converting means
+		   moving the alpha into every child's PAINT (the paper, the gradient, the
+		   art, four chips and a tag row), which is a round of its own. Recorded
+		   here so it is a known debt rather than an oversight; the transform is
+		   1px and only on hover, so any jitter is inside a moving element. */
+		--cc-faded: 0.62;
+		--cc-faded-hover: 1;
+		--cc-dimmed: 0.7;
+		--cc-disabled: 0.42;
 		container: charcard / inline-size;
 		display: flex;
 		flex-direction: column;
@@ -226,9 +259,19 @@
 		   now, so this is a naming correction rather than a colour change, but the
 		   name is what stops it drifting when a broad panel appears beside it. */
 		background: var(--surface);
-		/* The one raised panel that keeps an ELEMENT border — brightened from
-		   the old 22% mix so the element actually reads at rest. */
-		border: 1px solid color-mix(in srgb, var(--el-color) 42%, var(--border));
+		/* ↻ 2026-08-11: THE RESTING BORDER IS INK AGAIN, and hue became a STATE.
+		   An element border at rest was justified while the card had no other
+		   element presence worth the name — a 14% wash over near-black doesn't
+		   count. The portrait carries the element properly now, so a coloured
+		   edge on all 122 cards at once was just a second, quieter copy of the
+		   same fact, and it left hover and "compared" fighting over the only
+		   channel the edge has. Three states, three hues, one at a time:
+		     rest      ink      — structure, per the palette round's border rule
+		     hover     element  — "this one", in the card's own colour
+		     compared  gold     — "chosen", the accent's job everywhere else
+		   Genshin's own cards agree: a plain cream edge, with the element living
+		   in the gradient and the pip. */
+		border: 1px solid var(--border);
 		border-radius: 6px;
 		overflow: hidden;
 		transition:
@@ -237,7 +280,7 @@
 			transform 100ms ease;
 	}
 	.cc:hover:not(.cc--disabled) {
-		border-color: color-mix(in srgb, var(--el-color) 65%, var(--border));
+		border-color: color-mix(in srgb, var(--el-color) 70%, var(--border));
 		transform: translateY(-1px);
 	}
 
@@ -259,8 +302,11 @@
 	.cc--disabled {
 		opacity: var(--cc-disabled);
 	}
-	.cc--accent {
-		border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+	/* Compared — the accent wins over hover's element (source order), because
+	   "chosen" is a standing fact and "here" is a passing one. */
+	.cc--accent,
+	.cc--accent:hover:not(.cc--disabled) {
+		border-color: color-mix(in srgb, var(--accent) 75%, var(--border));
 	}
 	.cc--edit {
 		cursor: copy;
@@ -287,14 +333,48 @@
 		cursor: default;
 	}
 
+	/* ── The portrait: a WELL the element lights, on the bench card's recipe ──
+	   ⚓ NATE 2026-08-11 asked whether this should go LIGHT like Genshin's own
+	   character cards (a mid-tone rarity gradient under a cream name plate) or
+	   copy the bench. It copies the bench, and the deciding argument is arithmetic
+	   rather than taste: the palette round measured Genshin's screens at 10–14%
+	   of pixels above L.35 and our TB Roster at 20.8% — this grid is ALREADY the
+	   brightest surface we own, and 122 mid-tone gradients would push it further
+	   past the reference it is imitating. Genshin can afford bright cards because
+	   its party screen shows a dozen; ours shows the whole roster.
+
+	   What DID come across from the reference is the structure, which is the same
+	   correction the bench got that morning: ONE ground, with only the element
+	   travelling across it. The old recipe ran el-14% → --bg — the PAGE ground,
+	   the deepest rung on the site and not on the slate ramp at all — so a paper
+	   card had a hole punched through it to the page behind, and 14% of an
+	   element over near-black registered as nothing.
+
+	   ⚠ AND THE ELEMENT SITS AT THE BOTTOM, exactly as it does on the bench.
+	   ↻ ⚓ NATE 2026-08-11 flipped it: the first draft put the element at the TOP,
+	   reasoning that a square filled by the art from the shoulders down leaves
+	   the two upper corners as the only ground you can see, so the colour should
+	   go where the ground is — plus Genshin's own cards run deep-at-top.
+	   His eye says otherwise, and the argument that survives is the simpler one:
+	   the colour belongs BEHIND the character, not around their head. Tinting the
+	   top puts the strongest wash directly behind the face — the one part of the
+	   art that has to hold your attention — and rings every head in its element.
+	   Tinting the bottom lets it rise out of the shoulders instead, and it is
+	   still perfectly visible: the art tapers, so the lower corners are ground
+	   too. The two card families now agree about which way the light falls, which
+	   is worth more than either reading of where the ground is widest. */
 	.cc-portrait {
+		/* 🎛️ How much element the bottom stop carries. Higher than the bench's
+		   26% because this is a big flat square rather than a small disc, and the
+		   same fraction reads weaker spread over the area. */
+		--cc-portrait-el: 32%;
 		position: relative;
 		width: 100%;
 		aspect-ratio: 1;
 		background: linear-gradient(
 			180deg,
-			color-mix(in srgb, var(--el-color) 14%, var(--bg)) 0%,
-			var(--bg) 100%
+			var(--surface-well) 0%,
+			color-mix(in srgb, var(--el-color) var(--cc-portrait-el), var(--surface-well)) 100%
 		);
 		display: flex;
 		align-items: flex-start;
@@ -315,135 +395,186 @@
 		color: var(--el-color);
 	}
 
-	/* ── Corner chips ────────────────────────────────────────────
-	   TL weapon · TR constellation · BL wishlist(TB) / slot(planner) · BR frames.
-	   Compact sizes are the base; comfortable+ bumps them (see @container). */
+	/* ── Corner marks ─────────────────────────────────────────────
+	   TL weapon · TR constellation · BL wishlist(TB) / slot(planner).
+	   The base sizes serve every grid that ships; the roomy band bumps them.
+
+	   ⚓ NATE 2026-08-11: "the constellation pip and the element-type pip are
+	   really outdated styling — reference the bench's, and I'm not sure round is
+	   the right call." It is, and the reason is that ONE question sorts all four
+	   of these: does the mark carry a VALUE, or is it a picture?
+
+	   A VALUE (C4, slot 2) goes in a circle, which is the bench's own idiom for
+	   exactly this — .sp-cons-chip is a --r-round well holding a C-number, and
+	   two families of character card disagreeing about the shape of a
+	   constellation reading would be the drift worth avoiding.
+
+	   A PICTURE (the weapon glyph) gets NO CHIP AT ALL. The chip was scaffolding
+	   for a legibility problem that no longer exists: the art is white line-work
+	   and it used to sit on whatever the gradient's near-black end happened to
+	   be, so it needed a plate under it. On a well one rung down from the card,
+	   at a known slate rung, it simply reads — and Genshin draws its own element
+	   pip the same way, bare on the gradient with a soft shadow. Removing it also
+	   removes the last `--bg` reach in this file. */
 	.cc-weapon {
 		position: absolute;
-		top: 4px;
-		left: 4px;
-		width: 19px;
-		height: 19px;
-		padding: 2px;
-		border-radius: 3px;
-		background-color: color-mix(in srgb, var(--el-color) 4%, var(--bg));
-		/* icon image sits inside the 2px padding, like the old object-fit img */
-		background-origin: content-box;
+		top: 5px;
+		left: 5px;
+		width: 22px;
+		height: 22px;
 		background-size: contain;
 		background-position: center;
 		background-repeat: no-repeat;
+		/* The glyph crosses hair as often as sky. A shadow rather than a plate:
+		   it separates the art from whatever is behind it without adding a second
+		   rectangle to a corner that already has one card edge in it. */
+		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+		z-index: 1;
+	}
+	/* The two VALUE marks — one shape, one size, opposite corners. Shared so a
+	   change to the family cannot land on one of them (the bench learned this
+	   with --sp-pill-*). */
+	.cc-con,
+	.cc-slot {
+		position: absolute;
+		width: 23px;
+		height: 23px;
+		display: grid;
+		place-items: center;
+		border-radius: var(--r-round);
+		/* One rung UP from the well it sits on — the reverse of the bench, where
+		   the chip is one rung DOWN from the card's ground. Same ΔL, same "this
+		   is a control, not part of the picture"; the direction flips because
+		   there the surrounding ground was the card and here it is the well. */
+		background: var(--surface);
+		font-weight: var(--fw-bold);
+		line-height: var(--lh-none);
 		z-index: 1;
 	}
 	.cc-con {
-		position: absolute;
-		top: 4px;
-		right: 4px;
-		min-width: 18px;
-		height: 16px;
-		display: grid;
-		place-items: center;
-		padding: 0 4px;
-		border-radius: 3px;
-		background: var(--fill-rest);
+		top: 5px;
+		right: 5px;
 		color: var(--muted);
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
-		letter-spacing: var(--ls-wide);
-		line-height: var(--lh-none);
-		z-index: 1;
+		font-size: var(--fs-sm);
+		/* No tracking inside a circle: the trailing letter-space lands after the
+		   last glyph too, so the advance box the grid centres is a unit wider
+		   than the ink. Same correction the bench chip carries, same reason. */
+		text-indent: -0.06em;
 	}
+	/* Owned — the value goes ELEMENT, the well does not. Ink is the channel that
+	   changes on this family (the bench's rule since it lost its strokes): a
+	   filled chip at 20px reads as a coloured dot before it reads as a number. */
 	.cc-con--set {
-		background: color-mix(in srgb, var(--el-color) 24%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el-color) 55%, transparent);
-		color: color-mix(in srgb, var(--el-color) 75%, white);
+		color: color-mix(in srgb, var(--el-color) 62%, var(--text));
 	}
-	/* Slot-number badge — bottom-left, matching the weapon glyph's chip (same
-	   element-tinted background, radius, and box size; tracks the weapon per band). */
+	/* Slot-number badge — the planner picker's chosen-slot marker. Never
+	   co-occurs with the wishlist star, so bottom-left is unshared. */
 	.cc-slot {
-		position: absolute;
-		bottom: 4px;
-		left: 4px;
-		width: 19px;
-		height: 19px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 3px;
-		background: color-mix(in srgb, var(--el-color) 4%, var(--bg));
-		color: #fff;
+		bottom: 5px;
+		left: 5px;
+		color: var(--text);
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
-		line-height: var(--lh-none);
 		z-index: 2;
 	}
+	/* ↻ 2026-08-11: --accent, not --el-geo-hi. A wishlist star is not a geo fact;
+	   that token was borrowed for being gold-coloured, which is the exact drift
+	   the layer law exists to catch — and it meant every card's star silently
+	   carried an element token into a decision the element has no part in. */
 	.cc-wish {
 		position: absolute;
-		bottom: 4px;
-		left: 5px;
-		color: var(--el-geo-hi, #eed8a5);
+		bottom: 5px;
+		left: 6px;
+		color: var(--accent);
 		font-size: var(--fs-lg);
 		line-height: var(--lh-none);
-		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7));
+		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
 		z-index: 1;
 	}
-	/* ── Name row ────────────────────────────────────────────────
-	   Base (compact) centers the name, no element glyph. Comfortable+ shows the
-	   glyph and left-aligns (see @container). */
+	/* ── Name row ──────────────────────────────────────────────── */
 	.cc-namerow {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start;
 		gap: 0.3rem;
-		padding: 4px 4px 5px;
+		padding: 0.25rem 0.5rem;
 		min-width: 0;
 		width: 100%;
 		box-sizing: border-box;
 	}
+	/* ↻ 2026-08-11: 15 → 18px, closing the staleness SlotPortrait's .sp-el-badge
+	   comment flagged and deliberately left for "a roster-card call". The glyph
+	   was sized against a smaller name and never followed it up; the bench's
+	   ratio is 1.25 × the name's size — glyph a touch taller than the cap, which
+	   is how the in-game cards draw it — so 14px name → 18, 16px name → 20. */
 	.cc-el {
-		display: none;
-		width: 15px;
-		height: 15px;
+		display: inline-block;
+		width: 18px;
+		height: 18px;
 		flex-shrink: 0;
 		background-size: contain;
 		background-position: center;
 		background-repeat: no-repeat;
 	}
 	.cc-name {
-		font-size: var(--fs-xs);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
-		text-align: center;
+		text-align: left;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		min-width: 0;
 	}
-	/* Frame-timing-not-curated mark — a bold warning ∅ ("no frame data") at the
-	   right of the name row (all cards): capability data is complete, only Planner
-	   timing is approximate. --ui-danger, not a domain color — a data-quality
-	   consequence, not a game fact (dire-retirement round, 2026-08-05). No chip —
-	   it sits on the card surface. Scales up with the card (fs-xl → fs-3xl). */
+	/* Frame-timing-not-curated mark — a warning at the right of the name row (all
+	   cards): capability data is complete, only Planner timing is approximate.
+	   --ui-danger, not a domain color — a data-quality consequence, not a game
+	   fact (dire-retirement round, 2026-08-05). No chip; it sits on the card.
+
+	   ↻ 2026-08-11: THE TYPESET BAGGAGE IS GONE. This was a unicode ∅ until the
+	   icon set replaced it with <Mark name="uncurated">, and four declarations
+	   survived the swap meaning nothing: font-size, font-weight and line-height
+	   do not reach an SVG, and `transform: translateY(-0.1em)` — the optical lift
+	   ⚓ Nate tuned by eye because the ∅ sat low in its line box — was now pushing
+	   a mark that is already centred OFF its own centre. A Mark is `display:
+	   block`, drawn centred in a square viewBox, so it aligns exactly the way
+	   .cc-el (the element glyph two items to the left) does, and neither needs a
+	   nudge. THE FIX FOR A GLYPH SITTING LOW WAS NEVER SUPPOSED TO OUTLIVE THE
+	   GLYPH — this is the second half of the sub-pixel law's marks-are-geometry
+	   rule, and worth remembering wherever else the set replaced a character.
+
+	   🎛️ It also stopped SCALING when it stopped being type. The size prop is a
+	   fixed 11 at every band, so the mark shrank (relatively) as the card grew,
+	   where the ∅ used to climb fs-xl → fs-2xl → fs-3xl. --cc-mark is the knob
+	   that restores it: CSS width/height beat the SVG's own attributes, and
+	   because the stroke is drawn on a 24-unit viewBox it scales with the box —
+	   so one property moves the whole mark, ink weight included.
+
+	   THE SIZE RULE, shared with the bench (.sp-namemark): the mark MATCHES THE
+	   NAME IT ANNOTATES, 1:1 in px — 14 beside a --fs-lg name, 16 beside --fs-xl.
+	   The element glyph runs 1.25× the name instead, because identity outranks
+	   annotation and gets to be the one bigger than the words. */
 	.cc-namemark {
+		--cc-mark: 14px;
 		margin-left: auto;
 		flex-shrink: 0;
+		display: flex;
 		color: var(--ui-danger);
-		font-size: var(--fs-2xl);
-		font-weight: var(--fw-bold);
-		line-height: var(--lh-none);
-		/* The ∅ glyph sits low in its line box; nudge it up. In `em` so the lift
-		   scales with the glyph's own (band-dependent) font-size — ~1.8px at fs-2xl,
-		   ~2px at fs-3xl — one declaration instead of a per-band offset. */
-		transform: translateY(-0.1em);
 		cursor: help;
+	}
+	.cc-namemark :global(.mark) {
+		width: var(--cc-mark);
+		height: var(--cc-mark);
 	}
 
 	/* ── Body: capability tags + hover action overlay ────────────
-	   Hidden at compact (planner passes neither, so it isn't rendered there).
-	   Fixed height at comfortable+ keeps grid rows even and the hover bar in a
-	   constant place regardless of tag count. */
+	   The whole block is prop-gated, so the planner (which passes neither tags nor
+	   actions) never renders it. Fixed height keeps grid rows even and the hover
+	   bar in a constant place regardless of tag count. */
 	.cc-body {
 		position: relative;
-		display: none;
+		display: block;
+		height: 3.7rem;
 	}
 	.cc-tags {
 		display: flex;
@@ -480,8 +611,14 @@
 		color: color-mix(in srgb, var(--muted) 70%, transparent);
 	}
 
-	/* Hover action bar — covers the tags with the consumer's buttons. Reveal is
-	   disabled at compact (no room); enabled comfortable+ via @container. */
+	/* Hover action bar — covers the tags with the consumer's buttons.
+	   ↻ 2026-08-11: OPAQUE --surface, not 90% of --surface-raised. Two problems
+	   in one declaration: --surface-raised has no meaning on paper (ctx-light has
+	   no raised rung — it aliases to --surface, so the name was promising a lift
+	   it could never deliver), and a 90% wash let the tag row ghost through the
+	   buttons that are supposed to replace it. It is the card's own paper now,
+	   which is what makes the bar read as the tag zone TURNING INTO controls
+	   rather than as a scrim laid over them. */
 	.cc-actions {
 		position: absolute;
 		inset: 0;
@@ -489,50 +626,41 @@
 		align-items: stretch;
 		gap: 4px;
 		padding: 0.3rem 0.4rem;
-		background: color-mix(in srgb, var(--surface-raised) 90%, transparent);
+		background: var(--surface);
 		opacity: 0;
 		pointer-events: none;
 		transition: opacity 120ms ease;
 	}
-
-	/* ── Comfortable band (TB default ~118px, picker ~130px) ────── */
-	@container charcard (min-width: 104px) {
-		.cc-namerow {
-			justify-content: flex-start;
-			gap: 0.3rem;
-			padding: 0.25rem 0.5rem;
-		}
-		.cc-el {
-			display: inline-block;
-		}
-		.cc-name {
-			font-size: var(--fs-lg);
-			text-align: left;
-		}
-		.cc-weapon,
-		.cc-slot {
-			width: 21px;
-			height: 21px;
-		}
-		.cc-con {
-			min-width: 20px;
-			height: 18px;
-		}
-		.cc-namemark {
-			font-size: var(--fs-3xl);
-		}
-		.cc-body {
-			display: block;
-			height: 3.7rem;
-		}
-		.cc:hover .cc-actions,
-		.cc-actions:focus-within {
-			opacity: 1;
-			pointer-events: auto;
-		}
+	.cc:hover .cc-actions,
+	.cc-actions:focus-within {
+		opacity: 1;
+		pointer-events: auto;
 	}
 
-	/* ── Roomy band (wide screens, ~150px+) ────────────────────── */
+	/* ── The ROOMY band — the only container query left ───────────────────────
+	   ⛔ THE COMPACT BAND IS DELETED (⚓ Nate approved 2026-08-11). It was the
+	   base, gated below 104px — centred name, no element glyph, no body — and it
+	   was UNREACHABLE. The smallest minimum any grid hands a card is 118px
+	   (.tb-grid and .tb-roster's --cg-tile-min; the planner picker's is 128), and
+	   `auto-fill` at a 320px viewport still yields one ~280px column. Everything
+	   the 104px query used to set is now simply the base.
+	   ⛔ Do not restore it as a mobile safety net: the mobile round is survey-first
+	   by its own plan, and a band nothing can reach is the speculative
+	   abstraction the conventions forbid.
+
+	   📌 150 IS NOT A FREE NUMBER — IT IS COUPLED TO .tb-grid's 1500px BUMP, and
+	   until now nothing said so. With `auto-fill` + `1fr` a track sits just above
+	   its minimum (118 → ~118–133 · 150 → ~150–168), so this band fires at exactly
+	   the moment the media query raises the minimum to 150. Move one and you must
+	   move the other; a value in 134–149 would separate the two regimes with
+	   margin, at the cost of the picker (128 min, tracks to ~146) crossing it.
+
+	   ⚓ NATE'S CALIBRATION, 2026-08-11: seven across on a 16" MacBook Pro "feels
+	   very nice, very comfortable — if it were a lot more than that, it would
+	   start to get too wide." That is this band, at the 150px minimum. The answer
+	   to bigger-vs-more is BOTH, IN STEP: the ladder raises the minimum (bigger)
+	   while auto-fill adds columns (more), and 7-at-150 is the point it is tuned
+	   through. Any change to the 1500/1900 bumps has to keep landing near it. */
 	@container charcard (min-width: 150px) {
 		.cc-namerow {
 			padding: 0.45rem 0.6rem 0.2rem;
@@ -540,13 +668,27 @@
 		.cc-name {
 			font-size: var(--fs-xl);
 		}
-		.cc-weapon,
+		.cc-el {
+			width: 20px;
+			height: 20px;
+		}
+		.cc-weapon {
+			width: 25px;
+			height: 25px;
+		}
+		.cc-con,
 		.cc-slot {
-			width: 24px;
-			height: 24px;
+			width: 26px;
+			height: 26px;
+		}
+		.cc-con {
+			font-size: var(--fs-md);
+		}
+		.cc-slot {
+			font-size: var(--fs-xl);
 		}
 		.cc-namemark {
-			font-size: var(--fs-4xl);
+			--cc-mark: 16px;
 		}
 		.cc-body {
 			height: 4.4rem;

@@ -360,9 +360,16 @@
 		color: var(--ink-active);
 		background: color-mix(in srgb, var(--accent) 28%, transparent);
 	}
+	/* ↻ 2026-08-11: --ui-danger, not --el-geo-main. "Unknown" here means an
+	   UNCURATED kit is in the team, which is the same data-quality fact the ∅
+	   marker and DetailCard's stub note report — so it takes the same role, and
+	   the three finally agree. It was on a borrowed element token, and gold was
+	   doubly wrong beside it: --accent already carries "a gap you can click" two
+	   rules up, so the unknown state was wearing the gap's colour while being
+	   the one chip you CAN'T act on. */
 	.ts-cov--unknown {
-		color: var(--el-geo-main);
-		background: color-mix(in srgb, var(--el-geo-main) 8%, transparent);
+		color: color-mix(in srgb, var(--ui-danger) 80%, var(--text));
+		background: var(--ui-danger-soft);
 		cursor: help;
 	}
 </style>
