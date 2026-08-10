@@ -136,7 +136,11 @@
 		{ key: 'sel', label: 'selected · .80 + gold ring', cls: 'is-sel' }
 	];
 
-	/** The open question the ring cannot answer on its own — see --glass-ring. */
+	/**
+	 * THE REJECTED RING COLOURS, kept as evidence rather than as a question.
+	 * Settled by the BORDER decision, not beside it: borders stayed ink, so gold
+	 * was left free to mean SELECTED and the ring kept the pane's own ink.
+	 */
 	const RING_CANDIDATES = [
 		{ key: 'ink', label: 'parchment ink — shipped', ring: 'var(--line-edge)' },
 		{

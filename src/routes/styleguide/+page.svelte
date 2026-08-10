@@ -374,10 +374,32 @@
 			'#b7b4ae'
 	);
 
+	/**
+	 * ⚠ PARSED, NEVER TYPED. These were literals for one day and were stale
+	 * within it — the alphas moved .68/.55 → .58/.45 and the grid went on
+	 * computing ratios for stops we no longer shipped, which is precisely the
+	 * drift this whole section exists to catch. A census that can lie about its
+	 * own subject is worse than none.
+	 */
+	const alphaOf = (name: string) =>
+		Number(/\/\s*([\d.]+)\s*\)/.exec(tokens.find((t) => t.name === name)?.resolved ?? '')?.[1]);
 	const GLASS_ALPHAS = [
-		{ a: 0.68, label: 'panel', note: 'the shipped --glass-panel alpha' },
-		{ a: 0.55, label: 'well', note: 'the shipped --glass-well alpha' }
+		{ a: alphaOf('--glass-panel'), label: 'panel' },
+		{ a: alphaOf('--glass-well'), label: 'well' }
 	];
+	/** Which rung each shipped stop currently stands on — also parsed, so the
+	 *  "shipped" badge can't point at the wrong row. */
+	const shippedRung = (name: string) => {
+		const v = tokens.find((t) => t.name === name)?.resolved ?? '';
+		const m = /rgb\(\s*(\d+)\s+(\d+)\s+(\d+)/.exec(v);
+		if (!m) return null;
+		const hit = tokens.find(
+			(t) => /^--slate-\d+$/.test(t.name) && rgb(t.resolved).every((c, i) => c === Number(m[i + 1]))
+		);
+		return hit?.name ?? null;
+	};
+	const SHIPPED_PANEL = shippedRung('--glass-panel');
+	const SHIPPED_WELL = shippedRung('--glass-well');
 
 	/** Every slate rung as a candidate glass stop, at both shipped alphas. This
 	 *  is the answer to "which glass shades are available to us": glass is a rung
@@ -393,8 +415,8 @@
 				css: `rgb(${rgb(rung.resolved).join(' ')} / ${a})`,
 				ratio: contrast(GLASS_INK, composite(rgb(rung.resolved), a, STAR)),
 				shipped:
-					(label === 'panel' && rung.name === '--slate-700') ||
-					(label === 'well' && rung.name === '--slate-900')
+					(label === 'panel' && rung.name === SHIPPED_PANEL) ||
+					(label === 'well' && rung.name === SHIPPED_WELL)
 			}))
 		}));
 
@@ -566,17 +588,19 @@
 			<strong>And it is not <code>sheer</code></strong>: that experiment let 2–3% of scene light
 			through, which reads as a duller colour. ⚠ The alpha alone does not decide it: glass and the
 			wash <strong>multiply</strong>, so what reaches the eye is
-			<code>(1 − glass)(1 − TOOL_DIM)</code> — <strong>8.0%</strong> for the panel stop at
+			<code>(1 − glass)(1 − TOOL_DIM)</code> — <strong>10.5%</strong> for the panel stop at
 			<code>TOOL_DIM</code>
-			{TOOL_DIM}, down from 11.2% at .65. That still clears sheer, and it is the closest we have
-			been. <strong>Move one, check the other</strong> — and if glass ever stops reading as glass, this
-			is the number that did it, with a lower glass alpha (not a lower dim) as the fix.
+			{TOOL_DIM}. <strong>Move one, check the other</strong>, and this round is the worked example:
+			deepening the wash alone took it to 8.0% — the closest we have been to sheer, and glass
+			started reading as opaque slate — so the ALPHAS came down after it. If glass ever stops
+			reading as glass, this is the number that did it, and a lower glass alpha (never a lower dim)
+			is the fix.
 		</p>
 		<p class="sg-note">
 			⚠️ <strong>What sets the floor on a glass stop is a STAR.</strong> Text on glass is limited by
 			the worst pixel behind it, never the average, and the worst pixel is always a star — a tiny,
 			very bright point. Both stops clear 4.5:1 for <code>--muted</code> (the dimmer of the two band
-			voices) against a star <strong>unblurred</strong>: panel 4.85:1, well 5.48:1.
+			voices) against a star <strong>unblurred</strong>: panel 4.74:1, well 5.22:1.
 		</p>
 		<p class="sg-note sg-note--flag">
 			⚠️⚠️ <strong
@@ -588,8 +612,8 @@
 			every published figure was ~0.3–0.4 optimistic, in the one direction that matters. Corrected,
 			the panel stop as shipped that morning was <strong>4.22:1 — under the floor</strong>,
 			published as 4.53. ⚓ Nate's dim change (.65 → .75, <code>#15161a</code> →
-			<code>#101013</code>) is what puts it at 4.85, so it is a correction as much as a preference.
-			The general lesson:
+			<code>#101013</code>) is what put it back over the floor, so it is a correction as much as a
+			preference. The general lesson:
 			<strong>an alpha over an unknown ground is only as good as the model of the ground.</strong> The
 			grid below now composites the scrim properly.
 		</p>

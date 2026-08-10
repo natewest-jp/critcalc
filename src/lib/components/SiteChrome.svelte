@@ -240,12 +240,18 @@
 	   --chrome-glyph-size is the knob — all three marks share it, so the gear
 	   silhouette and the two discs stay the same size as each other. */
 	.chrome-btn {
-		--chrome-glyph-size: 28px;
-		/* The click target, independent of the art. At 28px the marks all but
-		   fill it (the cog is widest at 29.4px), so raise this alongside the
-		   glyph size if it ever grows again. */
-		width: 30px;
-		height: 30px;
+		/* ↻ ⚓ NATE 2026-08-10: 28 → 30px. The type size-up moved every role up a
+		   rung and the chrome glyphs were not part of it — they are geometry, not
+		   type — so the corner cluster came out reading small beside a wordmark
+		   that had grown to 24px. This is the rebalance, not a size change in its
+		   own right. */
+		--chrome-glyph-size: 30px;
+		/* The click target, independent of the art — and it HAD to grow with the
+		   glyph, per the note that used to stand here: the cog's box is 42:40, so
+		   at 30px tall it is 31.5px WIDE and would have overflowed the old 30px
+		   button. Raise this alongside the glyph size if it ever grows again. */
+		width: 34px;
+		height: 34px;
 		flex: none;
 		display: grid;
 		place-items: center;
