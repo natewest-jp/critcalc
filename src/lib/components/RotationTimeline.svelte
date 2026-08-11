@@ -27,12 +27,7 @@
 		desaturate,
 		type ElementPalette
 	} from '$lib/utils/elementColors';
-	import {
-		UPTIME_DIM_MIX,
-		GHOST_FILL_MIX,
-		GHOST_EDGE_MIX,
-		GHOST_CHROMA_KEEP
-	} from '$lib/timeline/barMix';
+	import { UPTIME_DIM_MIX, GHOST_FILL_MIX, GHOST_CHROMA_KEEP } from '$lib/timeline/barMix';
 	import {
 		xForTime as projectX,
 		barGeom as projectBar,
@@ -166,13 +161,45 @@
 	// ↻ 40 → 28 (round one). It was "exactly 2× E/Q", which is hierarchy
 	// expressed as arithmetic — but the row carries a SINGLE LINE of --fs-sm text
 	// (.rp-input-block is a one-line flex row; nothing in it wraps), so 40px was
-	// 3.6× leading. At 28 over E/Q's 14 the 2:1 is back, at 70% of the old cost.
-	const ACTIVE_ROW_H = 28;
+	// 3.6× leading.
+	//
+	// ↻ 28 → 30 (⚓ NATE 2026-08-11), and the extra 2px is a CORRECTION, not
+	// generosity. He caught that the two rows are not measured the same way:
+	// .rp-bar-uptime is `top: 0; height: 100%`, so an E/Q row PAINTS its full
+	// height, while .rp-active-bg and .rp-input-block are `top: 1px;
+	// height: calc(100% - 2px)` — so a 28px active row painted only 26. The 2:1
+	// we thought we had restored was really 26:14. At 30 the painted heights are
+	// 28:14 and the ratio is true.
+	// ⚠ THE 1px INSET IS LOAD-BEARING, so don't "fix" this the other way by
+	// removing it: connectorGeom aligns swap connectors to the inset bar's
+	// edges (yTop + 1, yBottom − 1) and would need to move with it.
+	const ACTIVE_ROW_H = 30;
 	// The row AND its bar — they are the same number again (see the gap note).
 	// 12 holds --fs-xs with a px of air each side, which is the floor for text.
 	const CHAR_BUFF_ROW_H = 12;
 	const CHAR_PAD_BOTTOM = 8;
-	const ROW_GAP = 4;
+	// ══ 🎛️ THE GAP LADDER (⚓ NATE 2026-08-11) ════════════════════════════════
+	// One ROW_GAP of 4 used to serve every seam in the slot. Nate's spec splits
+	// it in two, and the split says something the single value could not:
+	//
+	//     E bar ───────┐
+	//        2px       │  the ABILITY BLOCK — E, its summons and Q are one
+	//     Summon ──────┤  object, so their seams are the tightest in the slot
+	//        2px       │
+	//     Q bar ───────┘
+	//        3px          ← the active row stands apart from what surrounds it
+	//     ACTIVE ROW
+	//        3px
+	//     Buff bar ────┐
+	//        2px       │  the buff stack, already at its own 2px stride
+	//     Buff bar ────┘
+	//
+	// So gap encodes GROUPING: 2px means "same object", 3px means "next to".
+	// (Nate wrote the block top-down as Q → summon → E; the DOM runs E → summon
+	// → Q. The gaps are symmetric about the summon lane, so the spec is the same
+	// either way round.)
+	const ABILITY_ROW_GAP = 2;
+	const ACTIVE_ROW_GAP = 3;
 	// 2px visual gap between consecutive buff subrows
 	const CHAR_BUFF_ROW_STRIDE = CHAR_BUFF_ROW_H + 2; // = 14
 
@@ -180,12 +207,16 @@
 	// ⚠ SUMMON_ROW_H IS NOT FREE — it is pinned by the invariant below.
 	const SUMMON_ROW_H = 12;
 	const SUMMON_ROW_STRIDE = SUMMON_ROW_H + 2; // = 14
-	// Gap above and below the summon lane. 3px is chosen so adding a summon costs
-	// exactly one CHAR_BUFF_ROW_STRIDE — `3 + SUMMON_ROW_H + 3 - 4(no-summon E↔Q
-	// gap) = CHAR_BUFF_ROW_STRIDE` — which is the same amount the buff
-	// reservation gives back when one of its rows is replaced by a summon. Net
-	// slot-height delta: zero. At 12/14 it still solves: 3 + 12 + 3 − 4 = 14. ✓
-	const SUMMON_LANE_GAP = 3;
+	// Gap above and below the summon lane, chosen so adding a summon costs
+	// exactly one CHAR_BUFF_ROW_STRIDE — `gap + SUMMON_ROW_H + gap −
+	// ABILITY_ROW_GAP(the no-summon E↔Q seam) = CHAR_BUFF_ROW_STRIDE` — which is
+	// the same amount the buff reservation gives back when one of its rows is
+	// replaced by a summon. Net slot-height delta: zero.
+	// ⚠ IT MOVED WITH THE GAP LADDER AND THE INVARIANT STILL SOLVES: the seam it
+	// subtracts went 4 → 2, so this went 3 → 2 to match. 2 + 12 + 2 − 2 = 14 ✓
+	// (and it is the same 2px as the rest of the ability block, which is why the
+	// number Nate asked for and the number the invariant needs are the same one.)
+	const SUMMON_LANE_GAP = 2;
 
 	// ══ THE AUX RESERVE, ADAPTIVE (⚓ NATE 2026-08-11, round two) ══════════════
 	// Summon sub-rows above the Q row and received-buff sub-rows below the active
@@ -436,19 +467,22 @@
 	function qRowTopForSlot(slotIdx: number): number {
 		const summonH = slotSummonLaneHeights[slotIdx];
 		if (summonH === 0) {
-			// E ↔ Q: standard ROW_GAP when no summon lane sits between them.
-			return CHAR_PAD_TOP + E_ROW_H + ROW_GAP;
+			// E ↔ Q direct: the ability block's own seam.
+			return CHAR_PAD_TOP + E_ROW_H + ABILITY_ROW_GAP;
 		}
-		// E ↔ summon ↔ Q: tight 2px gaps on both sides of the summon lane.
+		// E ↔ summon ↔ Q — the same seam either side of the lane.
 		return CHAR_PAD_TOP + E_ROW_H + SUMMON_LANE_GAP + summonH + SUMMON_LANE_GAP;
 	}
 
+	// The two seams that set the active row apart from what surrounds it — see
+	// the gap ladder at ACTIVE_ROW_GAP. Deliberately the SAME constant on both
+	// sides: the row is one object standing clear, not a thing pushed downward.
 	function activeRowOffsetForSlot(slotIdx: number): number {
-		return qRowTopForSlot(slotIdx) + Q_ROW_H + ROW_GAP;
+		return qRowTopForSlot(slotIdx) + Q_ROW_H + ACTIVE_ROW_GAP;
 	}
 
 	function buffRowsTopForSlot(slotIdx: number): number {
-		return activeRowOffsetForSlot(slotIdx) + ACTIVE_ROW_H + ROW_GAP;
+		return activeRowOffsetForSlot(slotIdx) + ACTIVE_ROW_H + ACTIVE_ROW_GAP;
 	}
 
 	/** Aux rows actually used by one slot — summon sub-rows (between E and Q) plus
@@ -1267,11 +1301,6 @@
 															GHOST_CHROMA_KEEP
 														)}
 														{GHOST_FILL_MIX}%, var(--rp-chart-bg))"
-														style:border-color="color-mix(in srgb, {desaturate(
-															p.main,
-															GHOST_CHROMA_KEEP
-														)}
-														{GHOST_EDGE_MIX}%, var(--rp-chart-bg))"
 													>
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
@@ -1385,11 +1414,6 @@
 															GHOST_CHROMA_KEEP
 														)}
 														{GHOST_FILL_MIX}%, var(--rp-chart-bg))"
-														style:border-color="color-mix(in srgb, {desaturate(
-															p.main,
-															GHOST_CHROMA_KEEP
-														)}
-														{GHOST_EDGE_MIX}%, var(--rp-chart-bg))"
 													>
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
@@ -2524,24 +2548,34 @@
 		justify-content: center;
 		min-width: 2px;
 	}
-	/* Ghost CD remainder: a recessed slim track — physically subordinate to
-	   the cast pill — outlined on top/right/bottom (the left edge stays open so
-	   the track reads as flowing out of the pill), the right edge landing on the
-	   exact moment the ability comes back up. Fill + outline colors are opaque
-	   element mixes set inline (border-color per element). */
-	/* The inset that makes a ghost read as RECESSED under its cast pill. It used
-	   to be sized to match the buff row exactly ((E_ROW_H − CHAR_BUFF_ROW_H) / 2,
-	   Nate 2026-07-18), but E_ROW_H came down to 14 in round two and that formula
-	   would leave a 6px track — too short for the CD seconds it carries, which
-	   are the one number here nothing else reports. 2px is the smallest inset
-	   that still reads as recessed, and it leaves 10px: --fs-xs fits. */
+	/* ══ THE GHOST CD TRACK (⚓ NATE 2026-08-11) ═══════════════════════════════
+	   The cooldown remainder: physically subordinate to the cast pill it flows
+	   out of, its right edge landing on the exact moment the ability comes back
+	   up. It used to be a slim track OUTLINED on top/right/bottom (left open, so
+	   it read as flowing out of the pill), with the outline colour an opaque
+	   element mix set inline per bar.
+
+	   ↻ 12px, AND THE OUTLINE IS GONE. ⚓ "Let's change the CD bars to 12px (E/Q
+	   is only 1px proud on each side) and let's remove their edge border.
+	   They're the last things on the chart with an edge border and I tested it —
+	   they don't need it, it cleans it up." Both halves are the same move: the
+	   inset was carrying the recession, the outline was carrying the SHAPE, and
+	   at 1px proud the pill's own edges state where the ghost begins and ends
+	   without help. It is the fill's job now, which is what the ghost mix was
+	   always cut to do.
+
+	   ⚠ THE INLINE `style:border-color` WENT WITH IT at both markup sites — a
+	   border-colour on a border-less element is a value that resolves, paints
+	   nothing, and quietly outlives the reason it existed. GHOST_EDGE_MIX is no
+	   longer imported here; the EXPORT still uses it (its ghosts keep their
+	   outlines — flat paper, no scene, same reasoning as the separators it
+	   kept), so the knob itself stays live in barMix.ts.
+
+	   🎛️ The 1px inset is the knob: it is the whole of the recession now. */
 	.rp-bar-cd--ghost {
-		top: 2px;
-		height: calc(100% - 4px);
+		top: 1px;
+		height: calc(100% - 2px);
 		border: none;
-		border-top: 1px solid transparent;
-		border-right: 1px solid transparent;
-		border-bottom: 1px solid transparent;
 		border-radius: 0 1px 1px 0;
 		z-index: 0;
 	}
