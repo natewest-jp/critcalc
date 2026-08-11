@@ -1,7 +1,27 @@
 <script lang="ts">
 	import '@fontsource-variable/bitter';
-	import '@fontsource/ibm-plex-sans/400.css';
-	import '@fontsource/ibm-plex-sans/600.css';
+	// ══ THE BODY FACE IS VARIABLE (⚓ NATE 2026-08-11) ═════════════════════════
+	// This was `ibm-plex-sans/400.css` + `/600.css`, and those two static faces
+	// were the WHOLE of the body ladder: --fw-medium (500) resolved onto 400 and
+	// --fw-bold (700) onto 600, so four tokens rendered as two weights and any
+	// hierarchy written across them was decorative. Nate spotted the 400/500
+	// half of it by eye.
+	//
+	// ⚠ THE FIX IS CHEAPER THAN THE BUG. The weight-axis latin file is 44.6 KB
+	// and carries 100–700 continuously; the two statics it replaces were 22.1 +
+	// 23.7 = 45.8 KB. So the whole ladder costs 1.2 KB LESS than the two rungs
+	// did, in one request instead of two. Adding statics for 500 and 700 would
+	// have been the obvious move and the wrong one — 91.7 KB for four fixed
+	// rungs and four round trips.
+	//
+	// ⚠ `/wght.css` SPECIFICALLY, not the bare package. The default entry pulls
+	// the `standard` axis file (64.0 KB — it carries width as well), and there
+	// are italic twins beside it we never set. Weight is the only axis this
+	// design uses.
+	// ⚠ The family it registers is 'IBM Plex Sans Variable', NOT 'IBM Plex Sans'
+	// — the same split Bitter already has. Every consumer names it through
+	// --font-body except the PNG exporter, which needs a literal for canvas.
+	import '@fontsource-variable/ibm-plex-sans/wght.css';
 	import '@fontsource/ibm-plex-mono/400.css';
 	import '@fontsource/ibm-plex-mono/600.css';
 	// Condensed is an opt-in layout tool (--font-condensed). Registering its
@@ -11,7 +31,8 @@
 	import '@fontsource/ibm-plex-sans-condensed/400.css';
 	import '@fontsource/ibm-plex-sans-condensed/600.css';
 	// Preload the latin font files used above the fold on every page: Bitter
-	// (display), Plex Sans 400/600 (body), and Plex Mono 400 (the dense data
+	// (display), Plex Sans variable (body — ONE file for every weight now, where
+	// this used to preload a 400 and a 600), and Plex Mono 400 (the dense data
 	// columns every tool renders). Without these the browser only discovers the
 	// fonts after downloading and parsing the bundled CSS — on 3G-class
 	// connections that pushed the swap far into the load (font-display: swap
@@ -19,8 +40,7 @@
 	// @fontsource CSS references, so nothing is fetched twice. crossorigin is
 	// required for font preloads even same-origin.
 	import bitterLatinUrl from '@fontsource-variable/bitter/files/bitter-latin-wght-normal.woff2?url';
-	import bodyRegularUrl from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2?url';
-	import bodySemiboldUrl from '@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2?url';
+	import bodyVariableUrl from '@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2?url';
 	import monoRegularUrl from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
 	import favicon from '$lib/assets/favicon.svg';
 	import '../app.css';
@@ -49,8 +69,7 @@
 	     a raster of the same opaque plate. Both come out of build-logo.mjs. -->
 	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bitterLatinUrl} />
-	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bodyRegularUrl} />
-	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bodySemiboldUrl} />
+	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bodyVariableUrl} />
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={monoRegularUrl} />
 	<title>critcalc.app</title>
 	<meta name="description" content="Genshin Impact tools for planning and theorycrafting." />

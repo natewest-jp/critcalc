@@ -63,6 +63,22 @@ export const BENCH_CARD_W = 160;
  *
  * ⛔ FLIP IT BACK TO `true` TO RESTORE THE BENCH. Nothing else needs touching —
  * the floor, the card and the timeline all follow from here.
+ *
+ * ⚠⚠ IT COSTS AN INTERACTION, WHICH I DID NOT FORESEE AND THE E2E SUITE DID.
+ * THE PORTRAIT IS A BUTTON: `onPortraitClick` on the disc is how the planner
+ * opens its character Source and how the Team Builder opens a Detail card. Take
+ * the disc away and that affordance goes with it — three specs fail on
+ * `.sp-avatar-chip` (cross-tool ×2, loadout-layers ×1), and they pass again the
+ * moment this flips back. Verified both ways.
+ *
+ * Neither tool is a dead end while the experiment runs, which is the only
+ * reason it is safe to leave on: the planner's ⇄ slot action calls the SAME
+ * onPortraitClick, so the Source picker is still one click away, and the TB's
+ * Detail card is reachable from the roster grid. But "click the portrait" is
+ * muscle memory and it will feel broken.
+ *
+ * ⛔ SO THIS MUST NOT OUTLIVE THE LOOK IT WAS BUILT FOR. It is not a candidate
+ * for "leave it, we'll decide later" — a hidden portrait is a hidden button.
  */
 export const BENCH_PORTRAIT_SHOWN = false;
 

@@ -913,9 +913,18 @@
 	   CJK cut but CJK expands less, so that's fine. Components use the vars;
 	   never re-declare font stacks locally. */
 	--font-display: 'Bitter Variable', Bitter, serif;
-	--font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+	/* ⚠ 'IBM Plex Sans Variable' FIRST, and it is a DIFFERENT FAMILY NAME from
+	   the static 'IBM Plex Sans' — same split Bitter above already has. Since
+	   2026-08-11 only the variable face is loaded (see +layout.svelte for why
+	   the whole weight axis is cheaper than the two statics it replaced), so the
+	   static name is a courtesy fallback for a locally-installed copy, not
+	   something we ship. ⛔ Don't reorder these: the static would win where a
+	   user happens to have Plex installed, and take the weight ladder with it. */
+	--font-body: 'IBM Plex Sans Variable', 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-	--font-condensed: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, sans-serif;
+	/* Condensed has no variable cut, so it stays two static weights (400/600)
+	   and its ladder is genuinely two rungs. Nothing reads --fw-medium on it. */
+	--font-condensed: 'IBM Plex Sans Condensed', 'IBM Plex Sans Variable', ui-sans-serif, sans-serif;
 
 	/* ── Type scale ──────────────────────────────────────────────────────────
 	   Codified sizes / weights / tracking / leading, snapped from the ~40
@@ -962,34 +971,32 @@
 	   rung is fine; a role with no rung is not. */
 	--fs-5xl: 2rem; /* 32px — page headings · instrument readouts */
 
-	/* ══ ⚠ FOUR NAMES, TWO REAL WEIGHTS (measured 2026-08-11) ═════════════════
+	/* ══ ALL FOUR ARE REAL (since 2026-08-11) ═════════════════════════════════
 	   ⚓ NATE: "I couldn't see any difference between normal (should be 400) and
 	   medium (should be 500), but then there's a large jump to semibold (600)."
-	   He was seeing the truth. src/routes/+layout.svelte imports exactly two
-	   faces of IBM Plex Sans — 400 and 600 — so the CSS font-matching algorithm
-	   resolves the other two onto them:
+	   He was seeing the truth. The body face was two STATIC weights, 400 and
+	   600, so CSS font-matching folded the other two onto them — 500 landed on
+	   400 and 700 landed on 600, and four tokens rendered as two. Measured at
+	   the time: a 40px string came out 400.844px at both 400 and 500, and
+	   412.563px at 600, 700 AND 800. (CSS Fonts §5.2 — a target ≤500 walks DOWN
+	   the available faces first, ≥600 walks UP first.)
 
-	     --fw-normal   400  →  400  ✅ real
-	     --fw-medium   500  →  400  ⚠ IDENTICAL TO NORMAL
-	     --fw-semibold 600  →  600  ✅ real
-	     --fw-bold     700  →  600  ⚠ IDENTICAL TO SEMIBOLD
+	   The body face is VARIABLE now — 'IBM Plex Sans Variable', one file, the
+	   weight axis continuous from 100 to 700 — so every rung below resolves to
+	   itself and the ladder is four real steps. See +layout.svelte for why that
+	   cost 1.2 KB LESS than the two static weights it replaced.
 
-	   Measured, not inferred: a 40px string renders 400.844px at both 400 and
-	   500, and 412.563px at 600, 700 AND 800. (The rule is CSS Fonts §5.2 — for
-	   a target ≤ 500 the engine walks DOWN first, and for ≥ 600 it walks UP
-	   first, so 500 lands on 400 and 700 lands on 600. No synthetic bolding is
-	   applied while a heavier real face is unnecessary.)
+	   ⚠ TWO THINGS THIS DOES NOT FIX, and both are still traps:
+	   · 700 IS THE CEILING of Plex Sans's axis. 800 and 900 clamp to 700, so
+	     --fw-bold remains the heaviest thing available. Nothing above it.
+	   · --font-mono AND --font-condensed ARE STILL STATIC 400/600 — neither has
+	     a variable cut. Reaching for --fw-medium on mono or condensed text puts
+	     you straight back in the folded-ladder case above.
 
-	   ⚠ SO A `--fw-bold` NEXT TO A `--fw-semibold` IS NOT A CONTRAST — it is the
-	   same pixels with two names, and any hierarchy written that way is
-	   decorative. Check against this table before reaching for a weight.
-
-	   🎛️ THE FIX IS TWO IMPORTS, NOT A TOKEN CHANGE: `@fontsource/ibm-plex-sans/
-	   500.css` and `/700.css` are ~23.6 KB and ~22.3 KB of latin woff2. Whether
-	   the ladder is worth ~46 KB is a payload decision, so the tokens stay as
-	   they are — they describe the intent, and they become true the moment the
-	   faces land. What must NOT happen is quietly renumbering them to 400/600
-	   and losing the distinction the design wants. */
+	   ⚠ AND COMPUTED STYLE CANNOT TELL YOU ANY OF THIS: it reports the weight
+	   you asked for whether or not a face exists to draw it. The only way to see
+	   a fold is to measure the rendered advance width of a string at each
+	   weight, which is how the numbers above were obtained. */
 	--fw-normal: 400;
 	--fw-medium: 500;
 	--fw-semibold: 600;

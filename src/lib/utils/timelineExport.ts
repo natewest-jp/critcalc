@@ -157,7 +157,13 @@ export const PALETTE_MIRROR = {
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 // Chart text follows the site's Sans-default (body font). Only the notation
 // header (KQM notation) keeps MONO — mirrors the on-screen Sans/Mono split.
-const SANS = '"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
+// ⚠ MUST NAME THE VARIABLE FAMILY, and it is the one literal that has to. Every
+// other consumer goes through --font-body, but canvas takes a font STRING and
+// cannot resolve a custom property. Since 2026-08-11 the static 'IBM Plex Sans'
+// is not loaded at all, so leaving the old name here would have silently
+// dropped every exported label onto a system sans — a failure that renders
+// perfectly and is only visible by comparing a PNG to the screen.
+const SANS = '"IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
 
 // ── Color math (stand-ins for CSS color-mix in srgb) ────────────────────────
 
