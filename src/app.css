@@ -219,19 +219,46 @@
 	   opposite things when they disagree: a band should get MORE present under
 	   the hand, a lane of bars should get quieter as it gets denser.
 
-	   ⚠ ALPHA STACKS, AND THESE OVERLAP. Two bars in one subrow can share a span
-	   (it is why the planner caps labels at the neighbour's edge), and where they
-	   do, .58 over .58 composites to .82 — visibly denser. That is arguably
-	   honest (more buff there) but it is the first thing to look at if a lane
-	   reads blotchy.
+	   ↻ ⚓ NATE 2026-08-11, after seeing it: "the opacity should be more like
+	   --glass-hover, maybe 0.8, and I'm wondering if we can try a brighter shade
+	   of slate." Both, so: slate-700 @ .58 → slate-600 @ .8. The rung and the
+	   alpha push the same way, and together they take the composited bar from
+	   ~#292e3a to ~#39404e over the dimmed scene.
 
-	   ⚠ White labels ride these, and white is the WORST case over a bright pixel.
-	   Measured against a star at TOOL_DIM .75 — the corrected model, wash
-	   #101013 rather than pure black — a star behind the tool is rgb(76 76 78)
-	   and this stop composites it to rgb(63 68 78): white lands at 9.3:1. The
-	   dark case is better still. It is the MUTED-on-glass floor that constrains
-	   the bands; nothing here reads --muted. */
-	--glass-bar: rgb(54 62 77 / 0.58);
+	   ⚠ THE ALPHA LIFT FIXES THE STACKING PROBLEM RATHER THAN WORSENING IT, which
+	   is the opposite of the intuition. Bars in one subrow can share a span (it
+	   is why labels cap at the neighbour's edge). At .58 an overlap composited to
+	   .82 — a visibly different material. At .8 it composites to .96, and .8
+	   against .96 is a difference you have to look for. Denser glass hides its
+	   own seams.
+
+	   ⚠ It also moves this OFF "obviously translucent" toward "nearly solid",
+	   which is deliberate and is the same call --glass-hover makes at the same
+	   alpha. The bar still reads as material because the scene moves behind it.
+
+	   ⚠⚠ THE LABELS ON THESE BARS ARE BELOW THE AA FLOOR, AND THAT IS A CHOICE
+	   RATHER THAN AN OVERSIGHT — but it is only a choice if it is written down.
+	   ⚓ Nate asked for the labels and icons at 0.5, which is what recedes them.
+	   Measured (not derived — the first figure written here was hand-arithmetic
+	   and came out 0.6 optimistic, the same trap the star figures fell into):
+
+	     composited bar    white @ 1.0   white @ 0.5   crosses 4.5:1 at
+	     over sky   56 63 77   10.54:1       3.98:1        α ≈ .555
+	     over a star 67 74 88   8.87:1       3.57:1        α ≈ .62
+
+	   So half-strength white is ~4:1 typically and ~3.6:1 against a star: over
+	   the 3:1 large-text floor, under the 4.5:1 small-text one, and these labels
+	   are 10px. It is defensible because the label is SUPPLEMENTARY — every bar
+	   carries its full detail in the tooltip, and the round's whole point was
+	   that dozens of these should not shout. ⚠ But if the labels ever become the
+	   only way to read a window, this is the number that has to move first, and
+	   α .62 is where it clears.
+	   It is the MUTED-on-glass floor that constrains the BANDS; nothing here
+	   reads --muted.
+
+	   🎛️ One rung brighter again is --slate-500 rgb(80 89 107) if this still
+	   wants lifting. */
+	--glass-bar: rgb(65 74 90 / 0.8);
 	/* ⛔ --glass-blur IS RETIRED — ⚓ NATE 2026-08-11, THE PROBATION IS OVER.
 	   "We're starting to get a little performance lag on things like Atlas card
 	   lifts on hover and cross-tool pans. I tested without it in the inspector,

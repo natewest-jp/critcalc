@@ -18,11 +18,22 @@
  *  eye should still find, just demoted. */
 export const UPTIME_DIM_MIX = 65;
 
-/** Ghost CD-track fill: % main into chart ground.
+/** Ghost CD-track fill.
  *  ↻ 2026-08-01 (Nate): lifted 20 → 30 — on the darker #15151c chart ground
  *  the old mix read muddy; a cooldown clock is content-adjacent, not pure
- *  structure. */
-export const GHOST_FILL_MIX = 30;
+ *  structure.
+ *  ↻ ⚓ NATE 2026-08-11: 30 → 40, and the ghost joined the buff bars in mixing
+ *  toward `transparent` instead of toward the chart ground. "The natural next
+ *  conclusion is to mix the CD bars with transparent."
+ *
+ *  ⚠ ONE NUMBER, TWO MEANINGS, AND THEY ARE THE SAME MEANING. On screen this is
+ *  now an ALPHA — the element at 40% over whatever is behind. In the export it
+ *  is still a MIX PERCENTAGE into CHART_BG. Those are arithmetically identical:
+ *  compositing a colour at 40% alpha over a ground IS mixing 40% of it into
+ *  that ground. So the export needed no change at all beyond the number, and
+ *  the two renderers cannot drift on this the way they could on a hand-picked
+ *  literal. */
+export const GHOST_FILL_MIX = 40;
 
 /** Ghost CD-track outline: % main into chart ground. (↻ 25 → 40, with the
  *  fill lift.) */

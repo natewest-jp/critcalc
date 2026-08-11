@@ -1319,7 +1319,7 @@
 															p.main,
 															GHOST_CHROMA_KEEP
 														)}
-														{GHOST_FILL_MIX}%, var(--rp-chart-bg))"
+														{GHOST_FILL_MIX}%, transparent)"
 													>
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
@@ -1432,7 +1432,7 @@
 															p.main,
 															GHOST_CHROMA_KEEP
 														)}
-														{GHOST_FILL_MIX}%, var(--rp-chart-bg))"
+														{GHOST_FILL_MIX}%, transparent)"
 													>
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
@@ -2295,11 +2295,14 @@
 		height: 11px;
 		flex-shrink: 0;
 		object-fit: contain;
-		/* ↻ 2026-08-11: was opacity .85. It is part of the label group and the
-		   labels went full-strength, but the better reason is that this was
-		   ELEMENT opacity on something that now sits over the live scene — the
-		   sub-pixel laws want alpha in the paint, and full strength is the one
-		   value that needs no paint at all. */
+		/* ↻ ⚓ NATE 2026-08-11: half strength, with the labels. ⚠ AND THIS ONE HAS
+		   TO BE ELEMENT OPACITY where the label alongside it uses paint alpha —
+		   an <img> has no colour channel to dim. The sub-pixel laws prefer paint,
+		   but they are about transform-placed subtrees, and these icons are
+		   placed by `left`/`width` in px inside a scroller. If a future round
+		   ever transform-animates the track layer, this is the line that will
+		   shimmer first. */
+		opacity: 0.5;
 	}
 	.rp-buff-label {
 		/* Truncation fade (--buff-label-fade, set on .rp-tracks): the mask's
@@ -2312,10 +2315,19 @@
 		   colour does NOT go back: full white stays. ⚓ Nate: "all labels back to
 		   white, please — especially since we're going right over the scene."
 		   ↻ 2026-08-11: semibold → medium (⚓ Nate), and it is a true 500 — the
-		   body face went variable in the same session, so this rung exists. */
+		   body face went variable in the same session, so this rung exists.
+		   ↻ 2026-08-11, once the bars were glass: HALF-STRENGTH white (⚓ Nate).
+		   Alpha in the PAINT, not element opacity — a colour has a channel for
+		   this and the sub-pixel laws want it used.
+		   ⚠ MEASURED AT ~4:1 ON THE BAR, ~3.6:1 AGAINST A STAR — under the 4.5:1
+		   small-text floor, deliberately. The full table and the reasoning live
+		   at --glass-bar in app.css; the short version is that these labels are
+		   supplementary (the tooltip carries every bar's real detail) and the
+		   point of the round was that dozens of them should not shout. α .62 is
+		   where it would clear AA, if it ever needs to. */
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-medium);
-		color: #fff;
+		color: rgb(255 255 255 / 0.5);
 		white-space: nowrap;
 		letter-spacing: var(--ls-mid);
 		pointer-events: none;
@@ -2573,6 +2585,17 @@
 	   it read as flowing out of the pill), with the outline colour an opaque
 	   element mix set inline per bar.
 
+	   ↻ ⚓ NATE 2026-08-11, once the buff bars became glass: "the natural next
+	   conclusion is to mix the CD bars with transparent." So the fill is the
+	   element at GHOST_FILL_MIX% ALPHA rather than that much element mixed into
+	   the chart ground — the same move the buff bars made, for the same reason:
+	   there is no chart ground to mix into any more.
+	   ⚠ SAFE HERE PRECISELY BECAUSE OF THE Z-ORDER, and this is the one thing to
+	   check before copying it. The dim continuation and overflow bars stay
+	   OPAQUE mixes because swap connectors pass BEHIND them and must not show
+	   through; ghosts sit at z-index 0 and connectors at z-index 1, so a
+	   connector paints OVER a ghost and transparency reveals only the scene.
+
 	   ↻ 12px, AND THE OUTLINE IS GONE. ⚓ "Let's change the CD bars to 12px (E/Q
 	   is only 1px proud on each side) and let's remove their edge border.
 	   They're the last things on the chart with an edge border and I tested it —
@@ -2667,6 +2690,17 @@
 	   used: alpha-reduced white lets the shadow bleed through the glyphs. */
 	.rp-bar-cast-label,
 	.rp-bar-cd-label,
+	/* ⚠ THE MOONSIGN LANE OPTS OUT OF THE DIM, and the reason is a law rather
+	   than taste: its label carries a HALO, and the halo block states that white
+	   text over one must be FULL opacity or the shadow bleeds through the
+	   glyphs. Its bar is also the one bar that never became glass — a pale
+	   moonlight fill needs full-strength ink on it regardless. */
+	.rp-moonsign-bar .rp-buff-label {
+		color: #fff;
+	}
+	.rp-moonsign-bar .rp-buff-icon {
+		opacity: 1;
+	}
 	.rp-moonsign-bar .rp-buff-label {
 		text-shadow:
 			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
