@@ -49,7 +49,21 @@ export type BenchHostRegistration =
 export const BENCH_CARD_W = 160;
 
 /**
- * ⚗️ TEMPORARY — ⚓ NATE 2026-08-11: "Just out of curiosity, I'd like to see
+ * ⚗️ THE EXPERIMENT IS OVER AND THIS IS BACK ON. ⚓ Nate 2026-08-11: "I've had a
+ * chance to see it condensed — we don't need to keep it hidden and constantly
+ * tripping those three errors while we do the other work."
+ *
+ * WHAT IT MEASURED, so nobody has to re-run it: with the portrait gone and the
+ * floor dropped to 86, a four-character rotation using the full aux reserve
+ * gave 122px slots — ROWS-driven, not floored — and a sparse one fell to the
+ * 86 floor where it had been 126. That is the headroom the bench card is
+ * currently holding back, and it is the brief for the bench round.
+ *
+ * ⛔ KEEP THE FLAG. It is two lines of arithmetic and one `{#if}`, and it is the
+ * only way to see the timeline's own height without rebuilding the card first.
+ * ⚠ But do not leave it OFF: a hidden portrait is a hidden BUTTON (see below).
+ *
+ * ⚓ NATE's original ask 2026-08-11: "Just out of curiosity, I'd like to see
  * what we'd have if the bench's card wasn't holding back the sizing — can you
  * make the avatars display:none or something so we can work without being
  * distracted by them and see what it looks like?"
@@ -80,7 +94,7 @@ export const BENCH_CARD_W = 160;
  * ⛔ SO THIS MUST NOT OUTLIVE THE LOOK IT WAS BUILT FOR. It is not a candidate
  * for "leave it, we'll decide later" — a hidden portrait is a hidden button.
  */
-export const BENCH_PORTRAIT_SHOWN = false;
+export const BENCH_PORTRAIT_SHOWN = true;
 
 /**
  * ══ WHAT ONE CARD NEEDS, AND WHY IT IS NOW THE BINDING CONSTRAINT ═══════════
