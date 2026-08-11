@@ -49,15 +49,49 @@ export type BenchHostRegistration =
 export const BENCH_CARD_W = 160;
 
 /**
+ * ══ WHAT ONE CARD NEEDS, AND WHY IT IS NOW THE BINDING CONSTRAINT ═══════════
+ * The card is three stacked bands with fixed outer two:
+ *
+ *     padding 8+10  +  identity row 26  +  gap 8  +  PORTRAIT  +  gap 8
+ *                   +  loadout pill 26                        =  86 + portrait
+ *
+ * At the portrait's full 68px that is 154, which is where BENCH_SLOT_H's old
+ * value of 158 came from — it was the planner's slot height, and the card was
+ * designed to exactly fill it.
+ *
+ * ⚠ THE TIMELINE OUTGREW THAT, DOWNWARD. Two condensing rounds took the
+ * planner's slot to 124 at full aux reserve and 84 with none, and the card
+ * cannot follow: it needs 86px before the portrait gets a single pixel. So the
+ * CARD is what sets the minimum slot height now, not the rows. That is a real
+ * inversion and it is worth stating plainly rather than letting a floor
+ * constant look arbitrary.
+ *
+ * 🎛️ THE FLOOR IS THE SMALLEST PORTRAIT WE ARE WILLING TO SHOW. 40px still
+ * reads as a character — below that the disc stops being a portrait and starts
+ * being a dot — so the floor is 86 + 40. Lower this only together with a
+ * decision about what the card looks like when it can no longer stack three
+ * bands; the honest alternative is restructuring the card (portrait INLINE with
+ * the identity row), which buys ~48px and is a design change, not a number.
+ * ⚠ The disc itself is capped, not floored (--sp-avatar-max in SlotPortrait):
+ * it shrinks to fit whatever it is given. This constant is what stops it being
+ * given too little.
+ */
+export const BENCH_SLOT_MIN_H = 86 + 40;
+
+/**
  * The band's resting rhythm: one card at the planner's BASELINE slot height,
  * so the "even default rhythm" the band relaxes to on the Team Builder is the
- * exact height a no-extra-rows planner slot occupies — the RP↔TB height
- * animation is a no-op for typical rotations and only moves in the extreme
- * many-bars cases, which is Nate's spec. Derivation (RotationTimeline's
- * constants): padTop 10 + E 20 + gap 4 + Q 20 + gap 4 + active 40 + gap 4 +
- * 3 buff rows (3×16−2 = 46) + padBottom 10 = 158.
+ * exact height a typical planner slot occupies — the RP↔TB height animation is
+ * a no-op for typical rotations and only moves in the extreme many-bars cases,
+ * which is Nate's spec.
+ *
+ * ↻ 2026-08-11: was 158, a hand-copied sum of RotationTimeline's constants that
+ * went stale the moment those constants moved — twice in one day. It is the
+ * floor now, which is the same number for every typical rotation (the timeline
+ * asks for less than the card does) and, more to the point, is a number that
+ * cannot drift because it is DERIVED rather than transcribed.
  */
-export const BENCH_SLOT_H = 158;
+export const BENCH_SLOT_H = BENCH_SLOT_MIN_H;
 
 /** Full resting column height (borders live INSIDE the border-box heights). */
 export const BENCH_COLUMN_H = 4 * BENCH_SLOT_H;

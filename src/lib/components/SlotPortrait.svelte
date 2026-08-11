@@ -818,15 +818,42 @@
 	   element wash, flipped so the tint sits at the BOTTOM like everything else
 	   on this card. Element identity also rides the small glyph badge in the
 	   identity row and the clip border. */
+	/* ══ THE DISC FITS ITS CARD (bug fix, 2026-08-11) ═════════════════════════
+	   This was `width: 68px; height: 68px; flex-shrink: 0` — a fixed square that
+	   could not yield. That held for as long as the host cell was 158px tall,
+	   which is what the card was designed against; the timeline's condensing
+	   rounds took the planner's slot to 136 and then lower, and a chip that
+	   cannot shrink does not shrink — IT SPILLS. Measured at an 84px slot the
+	   68px disc ran straight through the identity row above it and the loadout
+	   pill below. ⚠ THE BUG WAS INVISIBLE TO EVERY CHECK WE RUN: it is layout
+	   overflow, not an error, and the round-one probe measured the TRACKS and
+	   never looked at the cards beside them.
+
+	   It is now the AREA that decides. The disc takes its host's height and its
+	   width from the aspect ratio, capped at --sp-avatar-max. So it is 68px
+	   wherever there is room for 68px — the TB bench, a tall planner slot — and
+	   smaller, but never overflowing, wherever there is not. ⚓ Nate asked for
+	   exactly this in round one: "simply adjust the bench's portrait area to
+	   follow this need."
+
+	   ⚠ A CAP IS NOT A FLOOR. Nothing here stops the disc becoming 10px in a
+	   short slot; it only stops it breaking the card. The floor is the SLOT's
+	   (BENCH_SLOT_MIN_H in benchBand.svelte.ts), because that is the side that
+	   knows what a portrait needs to still be a portrait.
+
+	   🎛️ --sp-avatar-max is the size knob Nate's concepts drew at 68. The art's
+	   framing is independent of it (see .sp-avatar-img), so it stays free to
+	   retune; only the bench WIDTH tokens need to follow it now. */
 	.sp-avatar-chip {
 		position: relative;
-		/* THE portrait-size knob. Nate's concepts drew 68; the art's framing is
-		   independent of it (see .sp-avatar-img), so this is free to retune and
-		   only the bench width tokens need to follow. */
-		width: 68px;
-		height: 68px;
+		--sp-avatar-max: 68px;
+		height: 100%;
+		width: auto;
+		aspect-ratio: 1;
+		max-height: var(--sp-avatar-max);
+		max-width: var(--sp-avatar-max);
+		min-height: 0;
 		border-radius: var(--r-round);
-		flex-shrink: 0;
 	}
 	.sp-avatar-clip {
 		position: absolute;

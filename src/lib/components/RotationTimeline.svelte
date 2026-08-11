@@ -15,7 +15,7 @@
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
-	import { benchBand } from '$lib/benchBand.svelte';
+	import { benchBand, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
 	import { onDestroy } from 'svelte';
@@ -133,29 +133,43 @@
 	 *  back as --rp-frame-pad-x and the dock's inset is measured against it. */
 	const FRAME_PAD_X = 14;
 	const RULER_H = 28;
-	// ══ 🎛️ THE VERTICAL BUDGET (⚓ NATE 2026-08-11, the condensing round) ═══════
+	// ══ 🎛️ THE VERTICAL BUDGET (⚓ NATE 2026-08-11, rounds one and two) ═════════
 	// The chart sat too low once bands A and B took their shape above it, and on
-	// a 16:10 screen the fourth slot was near the fold. Measured, the slot block
-	// was 158px and its two fattest parts were both slack rather than content:
+	// a 16:10 screen the fourth slot was near the fold. It began at 158px:
 	//
 	//     pad 10 + E 20 + gap 4 + Q 20 + gap 4 + ACTIVE 40 + gap 4 + aux 46 + pad 10
 	//
-	// These three knobs take it to 136 (−88px over four slots) with no row
-	// removed and nothing hidden — see each one's note. What was deliberately
-	// NOT touched: DEFAULT_RESERVED_AUX_ROWS. Cutting the reserve buys another
-	// 56px, but it buys it by making slots grow unevenly on ordinary rotations,
-	// which is a behaviour trade rather than a density one.
+	// and lands at 124 with the reserve full, ~96 on a typical rotation once the
+	// reserve adapts (see slotBuffRowsReserved). Every row is still there.
+	//
+	// ⚠ THE GAP BETWEEN BARS IS `STRIDE − ROW`, AND THAT IS THE WHOLE STORY.
+	// Round one slimmed the painted bar to 6px inside a 12px row and pushed
+	// consecutive bars 8px apart — ⚓ Nate: "there's no point making them
+	// narrower if we can't also collapse the space between them. The minimal gap
+	// that we have between bars is by design, because otherwise they look more
+	// 'noisy' with more space between them." He is right, and the arithmetic is
+	// blunt: a bar that does not fill its row spends the row's leftover as
+	// whitespace. The bar fills its row again, so the gap is the 2px of stride
+	// and nothing else. ⛔ Don't reintroduce a slim bar inside a taller row —
+	// whatever it buys in daintiness it spends twice over in emptiness.
 	const CHAR_PAD_TOP = 8;
-	const E_ROW_H = 20;
-	const Q_ROW_H = 20;
-	// ↻ 40 → 28. It was "exactly 2× E/Q", which is hierarchy expressed as
-	// arithmetic — but the row carries a SINGLE LINE of --fs-sm text
+	// ↻ 20 → 14 (round two). ⚓ Nate: "when they're at a similar size, it's hard
+	// to tell who you should pay attention to first. The active row needs to
+	// take priority because it is the actual source of truth about what flow of
+	// inputs is going through." Round one had cut ACTIVE 40 → 28, which left
+	// these at 20 and the ratio at 1.4:1 — too close to rank. Restoring 2:1 by
+	// taking the DURATION rows down rather than the input row back up is the
+	// version that pays for itself: E/Q say how long something lasts, the active
+	// row says what is happening.
+	const E_ROW_H = 14;
+	const Q_ROW_H = 14;
+	// ↻ 40 → 28 (round one). It was "exactly 2× E/Q", which is hierarchy
+	// expressed as arithmetic — but the row carries a SINGLE LINE of --fs-sm text
 	// (.rp-input-block is a one-line flex row; nothing in it wraps), so 40px was
-	// 3.6× leading. At 28 it is still the tallest row by 40% and still reads as
-	// the slot's spine, which is the only job the height was doing.
+	// 3.6× leading. At 28 over E/Q's 14 the 2:1 is back, at 70% of the old cost.
 	const ACTIVE_ROW_H = 28;
-	// ↻ 14 → 12, with the label decoupling below: the label no longer has to FIT
-	// INSIDE the bar, so the row's height stopped being set by its text.
+	// The row AND its bar — they are the same number again (see the gap note).
+	// 12 holds --fs-xs with a px of air each side, which is the floor for text.
 	const CHAR_BUFF_ROW_H = 12;
 	const CHAR_PAD_BOTTOM = 8;
 	const ROW_GAP = 4;
@@ -163,8 +177,7 @@
 	const CHAR_BUFF_ROW_STRIDE = CHAR_BUFF_ROW_H + 2; // = 14
 
 	// Summon lane (between E and Q, conditional on summons[].length > 0)
-	// ⚠ SUMMON_ROW_H IS NOT FREE — it is pinned by the invariant below, so it had
-	// to follow CHAR_BUFF_ROW_H down 14 → 12.
+	// ⚠ SUMMON_ROW_H IS NOT FREE — it is pinned by the invariant below.
 	const SUMMON_ROW_H = 12;
 	const SUMMON_ROW_STRIDE = SUMMON_ROW_H + 2; // = 14
 	// Gap above and below the summon lane. 3px is chosen so adding a summon costs
@@ -174,13 +187,23 @@
 	// slot-height delta: zero. At 12/14 it still solves: 3 + 12 + 3 − 4 = 14. ✓
 	const SUMMON_LANE_GAP = 3;
 
-	// Default reservation for the shared aux-row pool — summon sub-rows above the
-	// Q row and received-buff sub-rows below the active row count toward the same
-	// budget. The slot grows only when summon + buff combined exceeds this.
-	// Cut 4 → 3 (Nate 2026-07-19): the reserve is the tool's single largest
-	// vertical investment (one row = 16px × 4 slots = 64px), the typical
-	// rotation fills fewer rows, and overflow already grows the slot safely.
-	const DEFAULT_RESERVED_AUX_ROWS = 3;
+	// ══ THE AUX RESERVE, ADAPTIVE (⚓ NATE 2026-08-11, round two) ══════════════
+	// Summon sub-rows above the Q row and received-buff sub-rows below the active
+	// row draw on one shared budget. This was a FLOOR of 3 applied to each slot
+	// INDEPENDENTLY, and it was wrong in both directions at once: a character who
+	// receives nothing still paid for three empty rows, and because each slot
+	// took its own max, slots ended up DIFFERENT heights anyway — so the floor
+	// bought neither density nor uniformity, which are the only two things a
+	// reservation can buy.
+	//
+	// It reserves the MAXIMUM ACTUAL across the four slots now. Slots come out
+	// uniform (they did not before), a rotation with no received buffs pays
+	// nothing, and the layout still never jumps when one slot gains a row —
+	// which was the floor's real job. The old constant is kept as a CEILING-FREE
+	// minimum of 0: there is no floor any more.
+	// ⚠ This is why the budget note above quotes two slot heights. The 124 is the
+	// worst case, not the common one.
+	const MIN_RESERVED_AUX_ROWS = 0;
 
 	// Below-timeline lanes (team buffs, NB, Moonsign) — shared bar + 2px padding
 	// each side; multi-row lanes grow with row count. ↻ 14 → 12 with the char
@@ -428,27 +451,47 @@
 		return activeRowOffsetForSlot(slotIdx) + ACTIVE_ROW_H + ROW_GAP;
 	}
 
-	// Aux-row budget: summon sub-rows (between E and Q) and received-buff sub-rows
-	// (below the active row) share one DEFAULT_RESERVED_AUX_ROWS reservation.
-	// Examples (rows reserved → buff slots reserved):
-	//   0 summon + 2 buffs  → 3 reserved → buff reserves 3 (slot at baseline)
-	//   1 summon + 0 buffs  → 3 reserved → buff reserves 2 (slot at baseline)
-	//   1 summon + 3 buffs  → 4 reserved → buff reserves 3 (slot grows by stride)
+	/** Aux rows actually used by one slot — summon sub-rows (between E and Q) plus
+	 *  received-buff sub-rows (below the active row), which draw on one budget. */
+	function slotAuxRowsUsed(slotIdx: number): number {
+		return (
+			summonSubrows.filter((r) => r.slotIdx === slotIdx).length +
+			(slotReceivedSubrowCounts[slotIdx] ?? 0)
+		);
+	}
+
+	/** The reservation every slot takes: the BUSIEST slot's actual usage. See the
+	 *  aux-reserve note at MIN_RESERVED_AUX_ROWS for why this replaced a fixed
+	 *  per-slot floor of 3. Uniform across slots by construction — that is half
+	 *  the point — so it takes no slotIdx. */
+	let auxRowsReserved = $derived(
+		Math.max(MIN_RESERVED_AUX_ROWS, ...[0, 1, 2, 3].map(slotAuxRowsUsed))
+	);
+
+	// Reserved rows go to SUMMONS first (they sit in their own lane between E and
+	// Q); what is left is the slot's buff-row allowance. A slot with fewer
+	// summons than the busiest one therefore gets the difference back as buff
+	// rows, which is what keeps every slot the same height.
 	function slotBuffRowsReserved(slotIdx: number): number {
 		const summonCount = summonSubrows.filter((r) => r.slotIdx === slotIdx).length;
-		const buffCount = slotReceivedSubrowCounts[slotIdx] ?? 0;
-		const totalAux = summonCount + buffCount;
-		const reservedAux = Math.max(DEFAULT_RESERVED_AUX_ROWS, totalAux);
-		return Math.max(0, reservedAux - summonCount);
+		return Math.max(0, auxRowsReserved - summonCount);
 	}
 
 	// Block height intentionally excludes LOADOUT_ROWS_H — the loadout panel
 	// in the label column lives within the cell's existing real estate, so the
 	// track column doesn't carry a parallel dead band underneath.
+	// ⚠ FLOORED BY THE BENCH CARD, NOT BY THE ROWS. The card that labels this
+	// slot needs 86px before its portrait gets a pixel (see BENCH_SLOT_MIN_H),
+	// and after two condensing rounds the tracks ask for less than that — so the
+	// CARD sets the minimum now. Without this floor the 68px portrait disc spills
+	// straight through the identity row and the loadout pill; it is capped rather
+	// than floored on its own side, so nothing else would catch it.
+	// The extra height lands as slack BELOW the last aux row (every row is
+	// positioned from the slot's top), which is where it is least noticeable.
 	function slotBlockH(slotIdx: number): number {
 		const buffRows = slotBuffRowsReserved(slotIdx);
 		const buffH = buffRows > 0 ? buffRows * CHAR_BUFF_ROW_STRIDE - 2 : 0;
-		return buffRowsTopForSlot(slotIdx) + buffH + CHAR_PAD_BOTTOM;
+		return Math.max(BENCH_SLOT_MIN_H, buffRowsTopForSlot(slotIdx) + buffH + CHAR_PAD_BOTTOM);
 	}
 
 	// Cumulative Y offsets per slot, accounting for variable block heights.
@@ -1697,6 +1740,10 @@
 		   resolved literals (the mirror test enforces). */
 		--rp-grid: color-mix(in srgb, var(--border) 45%, var(--rp-chart-bg));
 		--rp-line: color-mix(in srgb, var(--border) 85%, var(--rp-chart-bg));
+		/* 🎛️ Where the gridline's downward fade reaches nothing — see
+		   .rp-gridline. 100% = across the whole chart; pull it up to bring the
+		   horizon closer to the ruler. */
+		--rp-grid-fade: 100%;
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all
 		   share it (the elemental block mix in the markup references it too).
@@ -1711,14 +1758,11 @@
 		   connectors ride the same var. */
 		--rp-active: #757f93;
 
-		/* 🎛️ THE SLIM BAR'S HEIGHT (⚓ NATE 2026-08-11). The painted height of a
-		   buff-register bar, centred inside a row that stays CHAR_BUFF_ROW_H /
-		   AUX_LANE_BAR_H tall — see .rp-team-buff-bar for why the two are
-		   separate numbers now. 6 in a 12px row leaves 3px of clear row above
-		   and below the bar for the label to break into. This is the first knob
-		   to move if the lane reads too thin or too heavy; the row height is the
-		   second, and it is a JS constant because the bench aligns to it. */
-		--rp-buff-bar-h: 6px;
+		/* ⛔ --rp-buff-bar-h is DELETED (round two). It was the slim bar's painted
+		   height, separate from its row's; the bar fills its row again, so a
+		   second number could only ever put whitespace back between the bars.
+		   The row height is the knob now, and it lives in JS (CHAR_BUFF_ROW_H /
+		   AUX_LANE_BAR_H) because the bench column aligns to it. */
 
 		font-family: var(--font-body);
 		font-size: var(--fs-lg);
@@ -1960,9 +2004,11 @@
 		   ramp at different rates. A follower needs no scrollbar gutter. */
 		--scroll-fade: 48px;
 	}
+	/* No seam under the ruler (round two, with the slot separators). The ticks
+	   rising to the axis line ARE the axis; a rule beneath them was saying the
+	   same thing a second time, in the heaviest way available. */
 	.rp-ruler {
 		position: relative;
-		border-bottom: 1px solid var(--rp-line);
 	}
 	/* Ruler ticks ride the line tokens (they were stranded pre-token navy
 	   literals until 2026-08-01 — the "showing a little blue" Nate spotted). */
@@ -1993,12 +2039,35 @@
 	   inline-SVG geometry at the exact fractional page offset, so SVG
 	   overlays here sat ~1px off the bars they join (Chrome/Firefox were
 	   flush). See connectorStyle. */
+	/* ══ THE GRIDLINES FADE DOWNWARD (⚓ NATE 2026-08-11, round two) ═══════════
+	   They ran full height at one strength, which on the bare scene made them
+	   the strongest structure on screen — vertical bars of ink from the ruler to
+	   the last lane, holding the chart in a cage. You read time at the TOP, next
+	   to the axis that labels it, so that is where the reference belongs; below
+	   the first slot it is reassurance you have already had.
+
+	   A HORIZON, NOT A CAGE. Full strength at the ruler, gone by
+	   --rp-grid-fade — so the chart is precisely located where you look for a
+	   time and floats where you don't.
+
+	   ⚠ FADING TO THE `transparent` KEYWORD IS NORMALLY A TRAP (WebKit
+	   interpolates through BLACK, which is why the moonsign bar's stops carry
+	   their own hue at alpha 0). It is safe HERE and only here: the ground
+	   behind is the dimmed scene at roughly #12151c–#1e222a, so "through black"
+	   and "through the ground" are the same journey to within a couple of
+	   levels. Do not copy this shortcut onto a light surface.
+	   ⚠ And this is a gradient taking a derived value, NOT a color-mix taking
+	   one — the nesting law is about mix-inside-mix. The NB and moonsign fills
+	   already put color-mix results inside gradients.
+
+	   🎛️ --rp-grid-fade is the knob: 100% fades across the whole chart, smaller
+	   values pull the horizon up. */
 	.rp-gridline {
 		position: absolute;
 		top: 0;
 		bottom: 0;
 		width: 1px;
-		background: var(--rp-grid);
+		background: linear-gradient(to bottom, var(--rp-grid), transparent var(--rp-grid-fade));
 		pointer-events: none;
 		z-index: 0;
 	}
@@ -2029,68 +2098,52 @@
 		height: var(--rp-aux-bar-h);
 		flex-shrink: 0;
 	}
-	/* ══ THE SLIM BAR (⚓ NATE 2026-08-11, from Genshin's own HP bar) ══════════
-	   Genshin sets the HP readout at a size the bar cannot contain and lets the
-	   glyphs break the bar's top and bottom walls. The trick underneath it is
-	   DECOUPLING THE LABEL'S SIZE FROM THE BAR'S: our buff rows were 14px tall
-	   *because* a 10px label had to fit inside, which is the label setting the
-	   row height through the bar. Break that and both halves improve at once —
-	   the bar drops to --rp-buff-bar-h and the label goes UP a step to --fs-sm.
+	/* ══ THE BAR FILLS ITS ROW (⚓ NATE 2026-08-11, round two) ═════════════════
+	   Round one took Genshin's HP-bar idiom — a bar too slim to contain its own
+	   label, with the glyphs breaking its top and bottom walls — and it was the
+	   wrong borrowing. Genshin's bar is ONE bar with nothing stacked under it;
+	   ours is a lane of stacked rows, and there the escape room and the gap
+	   between bars are THE SAME PIXELS. A 6px bar centred in a 12px row put
+	   consecutive bars 8px apart where they had been 2px, which is the noise
+	   Nate called out. Filling the row is the fix, and it is the whole fix.
 
-	   WHAT THE ROW BOX DOES NOT DO IS SHRINK TO THE BAR. The row keeps its
-	   stride and the bar is centred in it, so the escaping label has the row's
-	   full height to occupy and can never reach its neighbour. Vertical
-	   break-out is free; it is only the ROW that would have made it collide.
+	   ⚠ WHAT DIED WITH IT, so nobody re-derives it: the label went back to
+	   --fs-xs (11px does not fit a 12px row with the bar in it), and the bar
+	   clips its own label again, so .rp-buff-label's max-width is once more a
+	   refinement rather than the only bound. labelCapPx still applies whether or
+	   not the bars overlap — that part of round one was right and is worth
+	   keeping: it makes a label dissolve at the neighbour's edge instead of
+	   sliding under it.
 
-	   ⚠ THE IDIOM TRANSFERS ON ONE AXIS ONLY. Genshin's bar is a single bar
-	   filling its width; ours is a lane of many short bars, so a label breaking
-	   out SIDEWAYS stops belonging to any particular one. Horizontal
-	   containment stays — but it is now the NEIGHBOUR that bounds the label
-	   (labelCapPx), not the bar's own right edge, which is where the readability
-	   comes from: a 5px bar with empty lane after it can say its name.
-
-	   ⚠ THE BAR CAN NO LONGER CLIP ITS OWN LABEL, because overflow:hidden clips
-	   both axes and the whole point is escaping the vertical one. .rp-buff-label
-	   carries its own overflow + fade mask and is bounded by its max-width, so
-	   the clipping moved down one level rather than disappearing.
-
-	   ↻ The inset hairline ring is GONE with the height. It existed to lift a
-	   low-luminance fill off the chart ground and to separate overlapping bars;
-	   at 6px a 1px ring top and bottom leaves 4px of fill and the bar reads as
-	   an outline rather than a slab. The brighter left edge still does the
-	   separating, and the scene is darker than the ground the ring was
-	   compensating for. 🎛️ Both the height and the ring are the knobs to try
-	   first if this reads too thin. */
+	   ⚠ WHAT DID NOT COME BACK: the inset hairline ring. It lifted a
+	   low-luminance fill off the chart ground, and there is no chart ground now
+	   — the scene is darker than the ground it compensated for. The 2px bright
+	   left edge went with it in the flattening pass. */
 	.rp-team-buff-bar {
 		position: absolute;
-		/* Centred in the row rather than filling it. Integer arithmetic, no
-		   transform: the sub-pixel laws are explicit that a transform-placed
-		   subtree is where WebKit's rounding shows, and a lane of these is
-		   exactly the tree that would dance. */
-		top: calc((100% - var(--rp-buff-bar-h)) / 2);
-		height: var(--rp-buff-bar-h);
+		top: 0;
+		height: 100%;
 		background: var(--calm-fill);
 		border: none;
-		border-left: 2px solid var(--calm);
 		border-radius: 1px;
 		display: flex;
 		align-items: center;
 		gap: 4px;
 		padding: 0 5px;
-		/* Visible on BOTH axes — see the note above; the label clips itself. */
-		overflow: visible;
+		overflow: hidden;
 		z-index: 2;
 		min-width: 2px;
 	}
-	/* Debuff variant — applied to enemy resShred bars. Same geometry AND now the
-	   same weight as the buff bar: --debuff-fill is the exact counterpart of
-	   --calm-fill (see app.css). It used to be color-mix(the retired dire 24%,
+	/* Debuff variant — applied to enemy resShred bars. Same geometry AND the same
+	   weight as the buff bar: --debuff-fill is the exact counterpart of
+	   --calm-fill (see app.css). It used to be color-mix(the retired dire 24%),
 	   which sat at half the buff bar's lightness and read as a different, dimmer
-	   class of thing. Fill + bright edge, mirroring the buff bar's
-	   --calm-fill + --calm pairing. */
+	   class of thing.
+	   ↻ 2026-08-11: the paired bright edge went with every other bar's in the
+	   flattening pass, so the fill is the whole distinction now — which is what
+	   --debuff-fill was cut to be able to do on its own. */
 	.rp-team-buff-bar.rp-team-debuff-bar {
 		background: var(--debuff-fill);
-		border-left-color: var(--debuff);
 	}
 	.rp-buff-icon {
 		width: 11px;
@@ -2108,15 +2161,12 @@
 		   transparent tail lines up with the padding, so a label that FITS shows
 		   no fade — only clipped text runs under it and dissolves instead of
 		   slicing mid-glyph.
-		   ⚠ THIS ELEMENT'S overflow IS NOW THE ONLY HORIZONTAL CLIP. The bar
-		   around it went overflow:visible so the label could break its walls
-		   vertically, so max-width (labelCapPx) + this overflow are what keep a
-		   label off its neighbour. Don't drop either.
-		   ↻ 2026-08-11: --fs-xs → --fs-sm and 0.85 white → full. ⚓ Nate: "all
-		   labels back to white, please — especially since we're going right over
-		   the scene." The size step is what the decoupling bought: the label is
-		   no longer sized to fit a bar. */
-		font-size: var(--fs-sm);
+		   ↻ 2026-08-11 round two: back to --fs-xs. The bar fills its row again
+		   (see .rp-team-buff-bar), so the label is sized to fit inside one —
+		   --fs-sm was what the slim bar bought and it went back with it. The
+		   colour does NOT go back: full white stays. ⚓ Nate: "all labels back to
+		   white, please — especially since we're going right over the scene." */
+		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		color: #fff;
 		white-space: nowrap;
@@ -2136,29 +2186,29 @@
 
 	/* Sacrificial-proc rows share the debuff bars' register (Nate 2026-07-18;
 	   formerly a gold-tinted look of their own) */
-	/* Same slim treatment as .rp-team-buff-bar — it is the same bar grammar in
-	   the debuff register, so it takes the same height, the same centring and
-	   the same label escape. Its ring went with the buff bar's. */
+	/* The same bar grammar in the debuff register, so it follows
+	   .rp-team-buff-bar exactly — fills its row, ring and left edge gone. */
 	.rp-weapon-proc-bar {
 		position: absolute;
-		top: calc((100% - var(--rp-buff-bar-h)) / 2);
-		height: var(--rp-buff-bar-h);
+		top: 0;
+		height: 100%;
 		background: var(--debuff-fill);
 		border: none;
-		border-left: 2px solid var(--debuff);
 		border-radius: 1px;
 		display: flex;
 		align-items: center;
 		padding: 0 5px;
-		overflow: visible;
+		overflow: hidden;
 		z-index: 2;
 		min-width: 2px;
 	}
 
 	/* ── NB lane ─────────────────────────────────────────────── */
+	/* Border-top gone with the slot separators (round two) — same rule, same
+	   reason. These lanes are already set off by the whole slot stack ending
+	   above them and by their own sticky lane names. */
 	.rp-nb-lane {
 		position: relative;
-		border-top: 1px solid var(--rp-line);
 	}
 	.rp-nb-rows {
 		position: absolute;
@@ -2180,20 +2230,16 @@
 	   at this size), two light-orange blooms, and a drifting linear flow base.
 	   Fixed px tiles keep the density constant at any bar width/zoom.
 
-	   Edge grammar is the BUFF BAR's (Nate 2026-07-28): heavy left border, thin
-	   ring all round, and — Nate's call — the same POLARITY too, edge lighter
-	   than fill, even though these two lanes are the only bright-filled bars on
-	   the chart. The edge is the lane's own hue at the buff pair's own step
-	   (--calm-fill L30 → --calm L60), so the lane still reads as one object:
-	   phlogiston at L55 → a pale ember at L85.
+	   ↻ 2026-08-11 round two: THE EDGE GRAMMAR IS GONE — the heavy left border
+	   and the thin ring both (Nate 2026-07-28 gave them to every bar; the
+	   flattening pass takes them back from every bar). The phlogiston fill was
+	   always the point of this lane, and it carries itself.
 	   ⚠️ Mirrored by paintNbBar() in timelineExport.ts. */
 	.rp-nb-bar {
 		position: absolute;
 		top: 0;
 		height: 100%;
 		border: none;
-		border-left: 2px solid #fdc8b5;
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
 		background-color: #f85b21;
 		background-image:
 			radial-gradient(
@@ -2254,7 +2300,7 @@
 	/* ── Moonsign lane ───────────────────────────────────────── */
 	.rp-moonsign-lane {
 		position: relative;
-		border-top: 1px solid var(--rp-line);
+		/* Border-top gone with the slot separators — see .rp-nb-lane. */
 		/* Halo — a dark indigo shade of the pale moonlight palette, so the white
 		   labels keep separation now that the bar itself is soft/light. */
 		--label-halo: #2b3576;
@@ -2314,13 +2360,8 @@
 			433px 100%,
 			719px 100%;
 		background-repeat: repeat-x;
-		/* Buff-bar edge grammar — see the note on .rp-nb-bar. The moonlight fill
-		   already sits at L83, so its edge is the same lavender taken as far up
-		   as there is room to go rather than the buff pair's full +30.
-		   ⚠️ Mirrored by paintMoonsignBar() in timelineExport.ts. */
+		/* Edge and ring gone in the flattening pass — see .rp-nb-bar. */
 		border: none;
-		border-left: 2px solid #e8e5ff;
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 		border-radius: 1px;
 		z-index: 2;
 	}
@@ -2330,9 +2371,20 @@
 	   bearing rather than ornamental. */
 
 	/* ── Character block ──────────────────────────────────────── */
+	/* ⚓ NATE 2026-08-11, round two — NO SLOT SEPARATOR. There was a full-width
+	   1px rule under every slot. On the old chart ground that was cheap
+	   structure; on the bare scene it was four hard rules across the sky, and
+	   with the ruler seam and the lane border-tops the chart read as a cage
+	   drawn around bars that are supposed to float.
+
+	   The grouping survives without it, which Nate predicted before the frame
+	   came off: bars are element-coloured PER CHARACTER, the active row shows
+	   every swap explicitly, and the bench ribbon's cards label each slot group
+	   from the left edge. Three redundant signals; the rule was a fourth.
+	   The vertical rhythm — CHAR_PAD_TOP/BOTTOM either side of ROW_GAP — is what
+	   separates slots now, and it was already doing most of the work. */
 	.rp-char-block {
 		position: relative;
-		border-bottom: 1px solid var(--rp-line);
 	}
 
 	/* ── Rows ─────────────────────────────────────────────────── */
@@ -2372,13 +2424,15 @@
 	   the track reads as flowing out of the pill), the right edge landing on the
 	   exact moment the ability comes back up. Fill + outline colors are opaque
 	   element mixes set inline (border-color per element). */
-	/* Matches the summon/buff/debuff ROW height (Nate 2026-07-18) — the inset is
-	   (E_ROW_H − CHAR_BUFF_ROW_H) / 2, so it followed that row 14 → 12 in the
-	   condensing round. Note it tracks the row, not the slim bar inside it: a
-	   ghost is a recessed TRACK, not a bar in the buff register. */
+	/* The inset that makes a ghost read as RECESSED under its cast pill. It used
+	   to be sized to match the buff row exactly ((E_ROW_H − CHAR_BUFF_ROW_H) / 2,
+	   Nate 2026-07-18), but E_ROW_H came down to 14 in round two and that formula
+	   would leave a 6px track — too short for the CD seconds it carries, which
+	   are the one number here nothing else reports. 2px is the smallest inset
+	   that still reads as recessed, and it leaves 10px: --fs-xs fits. */
 	.rp-bar-cd--ghost {
-		top: 4px;
-		height: calc(100% - 8px);
+		top: 2px;
+		height: calc(100% - 4px);
 		border: none;
 		border-top: 1px solid transparent;
 		border-right: 1px solid transparent;
@@ -2433,28 +2487,33 @@
 	.rp-nb-bar .rp-bar-cd-label {
 		color: #fff;
 	}
-	/* Label halo (Nate 2026-07-18), ↻ 2026-08-01 lightness-structure round:
-	   full-strength castFill fills now carry DARK INK (--ink) with no halo —
-	   the bright-chip idiom (Genshin's Lv-chips; GaugeInstrument's badge was
-	   the codebase precedent). The halo is the crutch for white-on-mid, so
-	   this list ENUMERATES the labels that stay white — a soft shadow in a
-	   dark shade of the bar's own element color (--label-halo, set on each
-	   char block via shiftHue lightness −30; NB/moonsign lanes pin their
-	   darkest palette color). White text must be FULL-opacity: alpha-reduced
-	   white lets the shadow bleed through the glyphs. Small blur radii only;
-	   static, so paint cost is negligible. */
+	/* Label halo (Nate 2026-07-18). ↻ 2026-08-11 round two: THE BRIGHT-CHIP
+	   IDIOM IS RETIRED FROM THIS CHART. It said full-strength castFill fills
+	   carry DARK INK with no halo (Genshin's Lv-chips) and this list enumerated
+	   the exceptions that stayed white. ⚓ Nate: "all labels back to white" —
+	   so the exception list became the rule, and the E/Q badge and the summon
+	   label joined it below.
+
+	   ⚠ KNOWN DEBT, DEFERRED ON PURPOSE. White on a full-strength element pill
+	   is not legible on the light half of the ramp — cryo #9de2f7 and geo
+	   #fabd22 are around 1.3:1. The halo would fix it and is the obvious reach,
+	   but ⚓ Nate is holding halos until we have looked at the flat bars, and
+	   ⚓ "don't worry about whether white works on E/Q labels — just convert
+	   them. We'll be balancing element colors in the next session." The fix is
+	   the element ramp coming down, not a shadow under the text. Don't
+	   'helpfully' add one here in the meantime.
+
+	   The halo that REMAINS is the load-bearing one: the moonsign lane's fill is
+	   pale by design (L83), so its labels need separation no palette change will
+	   give them. NB and the cast/CD labels keep theirs for the same reason —
+	   bright fills of their own. White text must be FULL-opacity where a halo is
+	   used: alpha-reduced white lets the shadow bleed through the glyphs. */
 	.rp-bar-cast-label,
 	.rp-bar-cd-label,
-	.rp-bar-uptime--dim .rp-bar-row-badge,
 	.rp-moonsign-bar .rp-buff-label {
 		text-shadow:
 			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
 			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
-	}
-	/* The dim (sac-proc) continuation drops back to the mid band — its badge
-	   keeps the white+halo treatment above. */
-	.rp-bar-uptime--dim .rp-bar-row-badge {
-		color: #fff;
 	}
 	/* The moonsign lane's lunar glyph is part of that label, so it takes the
 	   same halo — text-shadow can't reach an <img>, and drop-shadow's blur is
@@ -2485,8 +2544,9 @@
 	.rp-summon-label {
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
-		/* Summon bars are always full-strength castFill → ink, no halo. */
-		color: var(--bright-ink);
+		/* ↻ 2026-08-11 round two: --bright-ink → white with every other label.
+		   See the halo block for the deferred contrast debt this carries. */
+		color: #fff;
 		white-space: nowrap;
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
@@ -2579,14 +2639,16 @@
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */
-	/* Ink on the full-strength castFill pill (the bright-chip idiom); the
-	   --dim variant overrides back to white+halo above. */
+	/* ↻ 2026-08-11 round two: --bright-ink → white. This badge and the summon
+	   label were the last two holdouts of the bright-chip idiom; both convert,
+	   and the --dim variant no longer needs an override because white IS the
+	   base now. See the halo block for the deferred contrast debt. */
 	.rp-bar-row-badge {
 		position: absolute;
 		left: 4px;
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
-		color: var(--bright-ink);
+		color: #fff;
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
 	}

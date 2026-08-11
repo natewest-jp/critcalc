@@ -12,6 +12,37 @@
  * Geometry comes from the caller's xForTime-derived snapshot, so the export
  * can never drift horizontally from the on-screen chart.
  *
+ * ══ THIS IS A PRINT RENDERING, NOT A MIRROR OF THE SCREEN ═══════════════════
+ * ⚓ NATE 2026-08-11 asked whether this file earns its keep at all: it needs
+ * constant maintenance, it can never look as good as the real chart because it
+ * cannot have the night scene behind it, and every Genshin player can already
+ * take a screenshot. Three of the four things it offers — uniform framing, the
+ * watermark, straight-to-clipboard — a screenshot roughly matches.
+ *
+ * THE FOURTH IS WHY IT STAYS: it paints `labelW + totalWidth`, the WHOLE
+ * timeline, not the viewport. A minute-long rotation at working zoom is several
+ * screens wide, and sharing that as one image is the thing a user cannot do for
+ * themselves without scrolling and stitching.
+ *
+ * ⚠ SO THE MAINTENANCE BURDEN WAS NEVER INHERENT — IT CAME FROM THE MIRROR
+ * CLAIM, AND THE CLAIM WAS ALREADY FALSE. This painter draws a portrait label
+ * column the on-screen chart has not had since the tall-bench round, and it
+ * draws the notation itself as a header, which lives in the composer on screen.
+ * It is not a screenshot substitute; it is a DOCUMENT — notation, labelled
+ * timeline, watermark. That divergence went unremarked for weeks.
+ *
+ * WHAT THIS MEANS IN PRACTICE, and it is the whole point of writing it down:
+ *   · COLOUR still tracks. Both sides read the same tokens, the mirror test is
+ *     cheap, and a bar in the wrong hue is a factual error either way.
+ *   · SHAPE, GEOMETRY AND CHROME DO NOT have to track. The screen may drop a
+ *     ground, a border or a separator because it has a live scene behind it;
+ *     this canvas has flat paper behind it and may keep whatever a diagram on
+ *     paper needs. A polish round is NOT obliged to drag this file along.
+ *   · Round two is the first exercise of that: the on-screen chart lost its
+ *     slot separators, its ruler seam and its lane rules; the export KEEPS all
+ *     of them, because without a scene those lines are what stop a flat chart
+ *     reading as soup.
+ *
  * ⚠ Colors here MIRROR the CSS in RotationTimeline.svelte (the same
  * keep-in-lockstep convention as elementColors.ts ↔ app.css). If a bar/lane
  * color changes there, change it here.
@@ -82,14 +113,12 @@ const CALM_EDGE = '#6b99c7';
 // it is a duration on a recessive track, not a label, and it sits on an opaque
 // bar rather than over the scene.
 const TEAM_BUFF_FILL = CALM_TINT;
-const TEAM_BUFF_EDGE = CALM_EDGE;
 const TEAM_BUFF_LABEL = '#fff';
 const DEBUFF_FILL = '#6e332d'; // --debuff-fill
 const DEBUFF_EDGE = '#c9524a'; // --debuff
 const DEBUFF_LABEL = '#fff';
 // Sacrificial-proc rows share the debuff register (Nate 2026-07-18)
 const PROC_FILL = DEBUFF_FILL;
-const PROC_EDGE = DEBUFF_EDGE;
 const PROC_LABEL = '#fff';
 // Generic-timing (no-frame-map) marks are a DATA-QUALITY state, not a domain
 // color — they ride --ui-danger (the marks left dire 2026-08-05).
@@ -105,11 +134,6 @@ const UI_DANGER = '#e63946';
 // carried the element gradient (a PNG label column has no element context to
 // tint with), so it mirrors the gradient's TOP stop, as it always has.
 const PORTRAIT_BG = '#1f2635'; // --surface-well (ctx-dark) → --slate-900
-
-/** The painted height of a buff-register bar, centred in its row — mirrors
- *  --rp-buff-bar-h in RotationTimeline. ⚠ NOT the row height: the row is
- *  snap.buffRowH and stays the caller's business. See drawLaneBar. */
-const LANE_BAR_H = 6;
 
 /** Test-only: the hand-maintained mirror, exported so
  *  timelineExport.mirror.test.ts can assert it against app.css /
@@ -380,15 +404,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// timeline) so adjacent segments telescope at every zoom.
 	const barGeomW = (start: number, span: number) => Math.max(x(start + span) - x(start), 2);
 
-	// Cast pill / summon fill — mirrors castFill(): subtle vertical top-light
-	// over the flat element color. (The 2026-07-18 hue-wave version was
-	// reverted — see the Safari note at castFill in RotationTimeline.)
+	// Cast pill / summon fill — mirrors castFill(), which went FLAT on
+	// 2026-08-11 (the top-light was depth against a raised frame that no longer
+	// exists). Colour is one of the things the export does still track; see the
+	// decoupling note at the top of this file for what it doesn't.
 	function paintCastFill(px: number, py: number, pw: number, ph: number, main: string) {
-		const g = ctx!.createLinearGradient(0, py, 0, py + ph);
-		g.addColorStop(0, mix(main, '#ffffff', 90));
-		g.addColorStop(0.58, main);
-		g.addColorStop(1, main);
-		ctx!.fillStyle = g;
+		ctx!.fillStyle = main;
 		rr(px, py, pw, ph, 1);
 		ctx!.fill();
 	}
@@ -484,25 +505,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		}
 	}
 
-	/** The buff bar's edge grammar for the two bright-filled lanes: 1px ring +
-	 *  2px left edge, both LIGHTER than the fill, painted over an
-	 *  already-filled bar. Mirrors the box-shadow + border-left pair the NB and
-	 *  moonsign bars carry on screen. */
-	function paintBrightBarEdge(
-		px: number,
-		py: number,
-		pw: number,
-		ph: number,
-		edge: string,
-		ring: string
-	) {
-		ctx!.strokeStyle = ring;
-		ctx!.lineWidth = 1;
-		rr(px + 0.5, py + 0.5, pw - 1, ph - 1, 1);
-		ctx!.stroke();
-		ctx!.fillStyle = edge;
-		ctx!.fillRect(px, py, 2, ph);
-	}
+	/* ⛔ paintBrightBarEdge is DELETED (2026-08-11, the flattening pass). It
+	   mirrored the 1px ring + 2px lighter left edge that every bar used to
+	   carry; screen-side those went from the buff, proc, NB and moonsign bars
+	   in one sweep, so there is nothing left for it to mirror. */
 
 	/** Phlogiston NB fill — mirrors .rp-nb-bar */
 	function paintNbBar(px: number, py: number, pw: number, ph: number) {
@@ -523,7 +529,6 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		tileBloom(px, py, pw, ph, 173, 60, 0.75, 34, 12, '#e1a566', 0.72);
 		tileBloom(px, py, pw, ph, 211, 160, 0.3, 24, 12, mix('#70e1c1', '#e1a566', 55), 0.82);
 		ctx!.restore();
-		paintBrightBarEdge(px, py, pw, ph, '#fdc8b5', 'rgba(255,255,255,0.28)');
 	}
 
 	/** Soft moonlight fill — mirrors .rp-moonsign-bar */
@@ -549,7 +554,6 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			[1, alpha('#ef8e91', 0)]
 		]);
 		ctx!.restore();
-		paintBrightBarEdge(px, py, pw, ph, '#e8e5ff', 'rgba(255,255,255,0.35)');
 	}
 
 	// ── Per-slot ghost CD tracks first (z:0), then connectors (z:1),
@@ -727,7 +731,6 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						barGeomW(bar.start, bar.end - bar.start),
 						snap.buffRowH,
 						PROC_FILL,
-						PROC_EDGE,
 						PROC_LABEL,
 						`${row.label} trigger CD`,
 						undefined,
@@ -748,7 +751,6 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						barGeomW(bar.start, bar.end - bar.start),
 						snap.buffRowH,
 						TEAM_BUFF_FILL,
-						TEAM_BUFF_EDGE,
 						TEAM_BUFF_LABEL,
 						bar.sourceLabel,
 						icon ? images.get(icon) : undefined,
@@ -759,37 +761,31 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		});
 	});
 
-	// Lane bar helper (team buff / proc / received): slim fill + 2px left edge +
-	// optional icon + label.
+	// Lane bar helper (team buff / proc / received): flat fill + optional icon +
+	// label, filling its row.
 	//
-	// ↻ 2026-08-11 — MIRRORS THE SLIM BAR. The screen bar is LANE_BAR_H tall,
-	// centred in its row, with the icon and label centred on the ROW and free to
-	// break the bar's top and bottom walls (Genshin's HP-bar idiom — see
-	// .rp-team-buff-bar). `py`/`ph` are still the ROW, exactly as before, so
-	// every caller's arithmetic is untouched; only what gets painted inside it
-	// changed. The hairline ring went with the height on both sides.
-	//
-	// `nextPx` is the next bar's left edge in this subrow, mirroring the DOM's
-	// labelCapPx: the neighbour is what bounds a label now that the bar does not
-	// clip it. Undefined = nothing follows, so the lane's own width bounds it.
+	// ↻ 2026-08-11 round two: the slim bar and its 2px left edge are both gone
+	// (see .rp-team-buff-bar for why the slim bar was the wrong borrowing), so
+	// this is back to painting the full `ph` it is handed. What SURVIVES from
+	// round one is `nextPx` — the next bar's left edge in this subrow, mirroring
+	// the DOM's labelCapPx. The bar clips its own label again, so this is a
+	// refinement rather than the only bound: it makes a label stop at the
+	// neighbour's edge instead of running under it. Undefined = nothing follows,
+	// so the lane's own width bounds it.
 	function drawLaneBar(
 		px: number,
 		py: number,
 		pw: number,
 		ph: number,
 		fill: string,
-		edge: string,
 		labelColor: string,
 		label: string,
 		icon: HTMLImageElement | undefined,
 		nextPx?: number
 	) {
-		const by = py + (ph - LANE_BAR_H) / 2;
 		ctx!.fillStyle = fill;
-		rr(px, by, pw, LANE_BAR_H, 1);
+		rr(px, py, pw, ph, 1);
 		ctx!.fill();
-		ctx!.fillStyle = edge;
-		ctx!.fillRect(px, by, 2, LANE_BAR_H);
 		let tx = px + 5;
 		if (icon) {
 			ctx!.drawImage(icon, tx, py + (ph - 11) / 2, 11, 11);
@@ -797,12 +793,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		}
 		ctx!.save();
 		ctx!.beginPath();
-		// Clip to the ROW's height (the label may exceed the bar's) and, across,
-		// to the neighbour rather than to this bar's own right edge.
-		ctx!.rect(px, py, Math.max(0, (nextPx ?? ox + snap.totalWidth) - px - 2), ph);
+		ctx!.rect(px, py, Math.max(0, Math.min(px + pw, nextPx ?? Infinity) - px - 2), ph);
 		ctx!.clip();
 		ctx!.fillStyle = labelColor;
-		ctx!.font = `600 10px ${SANS}`;
+		ctx!.font = `600 9px ${SANS}`;
 		ctx!.textAlign = 'left';
 		ctx!.fillText(label, tx, py + ph / 2 + 3);
 		ctx!.restore();
@@ -903,7 +897,6 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					barGeomW(bar.start, bar.end - bar.start),
 					snap.buffRowH,
 					isDebuff ? DEBUFF_FILL : TEAM_BUFF_FILL,
-					isDebuff ? DEBUFF_EDGE : TEAM_BUFF_EDGE,
 					isDebuff ? DEBUFF_LABEL : TEAM_BUFF_LABEL,
 					subrow.sourceLabel,
 					icon ? images.get(icon) : undefined,
