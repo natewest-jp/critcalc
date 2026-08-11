@@ -2315,12 +2315,36 @@
 	   low-luminance fill off the chart ground, and there is no chart ground now
 	   — the scene is darker than the ground it compensated for. The 2px bright
 	   left edge went with it in the flattening pass. */
+	/* ══ THE LEFT EDGE COMES BACK (⚓ NATE 2026-08-11) ═════════════════════════
+	   ⚓ "They really are better with a 2px left border — #fff at .3. The main
+	   purpose is to separate stacking buff bars, of course. It also helps
+	   distinguish their look — that they're specifically a different kind of bar
+	   from the others."
+
+	   A deliberate exception to this morning's flattening pass, which took the
+	   2px edge off EVERY bar. That was right as a sweep and wrong for this one
+	   consumer, and the reason is in the material: glass bars in one subrow can
+	   share a span, and where two overlap the alpha stacks into a single
+	   continuous slab with no seam. Every other bar on the chart is opaque, so
+	   the one in front simply covers the one behind and the boundary draws
+	   itself. These need the boundary drawn for them.
+
+	   ⚠ WHITE AT .3, NOT THE BAR'S OWN HUE LIGHTENED. It is the only edge left on
+	   the chart, so it is also doing identity work — a neutral highlight reads as
+	   "a lit edge on this material" rather than as a second colour in the
+	   register, and it survives whatever the element round does around it.
+	   ⚠ Safe against the timing: the global reset is border-box, so the 2px
+	   comes OUT of the bar's computed width rather than adding to it. A
+	   content-box border here would push every bar 2px past its end time.
+	   ⚠ Mirrored in the export as the composited literal — canvas has no
+	   translucency over a scene to resolve. */
 	.rp-team-buff-bar {
 		position: absolute;
 		top: 0;
 		height: 100%;
 		background: var(--glass-bar);
 		border: none;
+		border-left: 2px solid rgb(255 255 255 / 0.3);
 		border-radius: 1px;
 		display: flex;
 		align-items: center;
@@ -2403,6 +2427,7 @@
 		height: 100%;
 		background: var(--glass-bar);
 		border: none;
+		border-left: 2px solid rgb(255 255 255 / 0.3);
 		border-radius: 1px;
 		display: flex;
 		align-items: center;
@@ -2449,6 +2474,30 @@
 		top: 0;
 		height: 100%;
 		border: none;
+		background-color: #f85b21;
+		background-image:
+			radial-gradient(
+				24px 12px at 160px 30%,
+				color-mix(in srgb, #70e1c1 55%, #e1a566) 0%,
+				transparent 82%
+			),
+			radial-gradient(34px 12px at 60px 75%, #e1a566 0%, transparent 72%),
+			radial-gradient(26px 10px at 15px 25%, #e1a566 0%, transparent 70%),
+			linear-gradient(
+				100deg,
+				#f85b21 0%,
+				#e1a566 24%,
+				#f85b21 46%,
+				color-mix(in srgb, #f85b21 55%, #e1a566) 65%,
+				#e1a566 82%,
+				#f85b21 100%
+			);
+		background-size:
+			211px 100%,
+			173px 100%,
+			127px 100%,
+			251px 100%;
+		background-repeat: repeat-x;
 		border-radius: 1px;
 		display: flex;
 		align-items: center;
@@ -2478,54 +2527,23 @@
 			transparent
 		);
 	}
-	/* ══ THE DECORATED LANES SIT AT .9 (⚓ NATE 2026-08-11) ════════════════════
-	   "Can we take their gradients and make them .9 opacity? The text can stay
-	   white — that will help with their apparent contrast too."
+	/* ⏸️ THE .9 DIM IS REVERTED (⚓ NATE 2026-08-11, same day). It shipped for a
+	   few minutes as a ::before at opacity .9 so the labels could stay white.
+	   His own diagnosis is why it went: "the problem is that they're just too
+	   bright right now, and I was trying to solve it with opacity when I should
+	   really be adjusting their colours. Let's hold off until after we adjust
+	   element colours, as that will also affect the brightness/saturation
+	   balance on the timeline."
 
-	   ⚠ WHICH IS WHY THE FILL MOVED TO A ::before. Element opacity on the BAR
-	   would take the label down with it, and the label staying at full white is
-	   half of what he asked for — these are the two brightest fills on the chart
-	   and their text needs every point of separation it can keep. Paint alpha on
-	   the fill itself was the other option and it is not viable here: these are
-	   four and two tiled LAYERS whose stops are hand-tuned and mirrored in the
-	   PNG painter, so putting alpha on each would mean rewriting ~10 colour
-	   stops in two places to express one number.
-	   ⚠ z-index: -1 is load-bearing. A positioned ::before with `auto` paints
-	   ABOVE in-flow text; -1 puts it behind, and it cannot escape the bar
-	   because the bar is itself a stacking context (position + z-index: 2).
-	   ⚠ Mirrored in the export as ctx.globalAlpha inside each painter. */
-	.rp-nb-bar::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-		border-radius: inherit;
-		opacity: 0.9;
-		background-color: #f85b21;
-		background-image:
-			radial-gradient(
-				24px 12px at 160px 30%,
-				color-mix(in srgb, #70e1c1 55%, #e1a566) 0%,
-				transparent 82%
-			),
-			radial-gradient(34px 12px at 60px 75%, #e1a566 0%, transparent 72%),
-			radial-gradient(26px 10px at 15px 25%, #e1a566 0%, transparent 70%),
-			linear-gradient(
-				100deg,
-				#f85b21 0%,
-				#e1a566 24%,
-				#f85b21 46%,
-				color-mix(in srgb, #f85b21 55%, #e1a566) 65%,
-				#e1a566 82%,
-				#f85b21 100%
-			);
-		background-size:
-			211px 100%,
-			173px 100%,
-			127px 100%,
-			251px 100%;
-		background-repeat: repeat-x;
-	}
+	   ⚠ WORTH KEEPING AS A RULE: opacity is not a brightness control. Dimming a
+	   fill to fix "too bright" makes it thinner as well as darker, and on a
+	   translucent chart that reads as a different MATERIAL rather than a
+	   different colour — which is a change nobody asked for, applied to the two
+	   lanes whose fills are the most deliberately authored on the chart. The
+	   fix is the palette, and the palette round is next.
+	   ⛔ So the fill is back on the bar itself and the ::before is gone; the
+	   export's globalAlpha went with it. Don't reintroduce either as a
+	   brightness lever. */
 	.rp-nb-bar {
 		--label-halo: #f85b21;
 	}
@@ -2569,6 +2587,22 @@
 		gap: 4px;
 		padding: 0 5px;
 		overflow: hidden;
+		background-color: #b0a9ff;
+		background-image:
+			linear-gradient(
+				80deg,
+				#69dbf200,
+				#69dbf266 15%,
+				#69dbf200 30%,
+				#ef8e9100,
+				#ef8e9133,
+				#ef8e9100
+			),
+			linear-gradient(100deg, #87b3ff, #b0a9ff 25.21%, #bea1ff, #b0a9ff, #87b3ff);
+		background-size:
+			433px 100%,
+			719px 100%;
+		background-repeat: repeat-x;
 		/* Edge and ring gone in the flattening pass — see .rp-nb-bar. */
 		border: none;
 		border-radius: 1px;
@@ -2769,31 +2803,6 @@
 		text-shadow:
 			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
 			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
-	}
-
-	.rp-moonsign-bar::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-		border-radius: inherit;
-		opacity: 0.9;
-		background-color: #b0a9ff;
-		background-image:
-			linear-gradient(
-				80deg,
-				#69dbf200,
-				#69dbf266 15%,
-				#69dbf200 30%,
-				#ef8e9100,
-				#ef8e9133,
-				#ef8e9100
-			),
-			linear-gradient(100deg, #87b3ff, #b0a9ff 25.21%, #bea1ff, #b0a9ff, #87b3ff);
-		background-size:
-			433px 100%,
-			719px 100%;
-		background-repeat: repeat-x;
 	}
 
 	/* ⚠ THE MOONSIGN LANE OPTS OUT OF THE .5 DIM, by law rather than taste: its

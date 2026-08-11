@@ -114,6 +114,12 @@ const INK = '#0d0d0f'; // --bright-ink → --ink-950 (⚓ NATE 2026-08-05)
 // (Ramping/decaying received buffs paint flat here — the on-screen density
 // envelope isn't reproduced; the flat fill matches their full end.)
 const BAR_FILL = '#293245';
+// ↻ 2026-08-11: the 2px left edge returns to the buff/proc bars alone (⚓ Nate —
+// "the main purpose is to separate stacking buff bars"). On screen it is
+// rgb(255 255 255 / .3); here it is that composited over BAR_FILL, because a
+// canvas has no scene for the alpha to resolve against:
+//     .3 × (255 255 255) + .7 × (41 50 69) = (105 111 125)
+const BAR_EDGE = '#696f7d';
 // ↻ 2026-08-11: every bar label went from .85 white to FULL white on screen
 // (⚓ Nate, "all labels back to white"). The one label deliberately left at
 // partial strength is the ghost track's CD readout — it is a duration on a
@@ -516,17 +522,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	   carry; screen-side those went from the buff, proc, NB and moonsign bars
 	   in one sweep, so there is nothing left for it to mirror. */
 
-	/** ↻ 2026-08-11: the two decorated lanes' FILLS sit at .9 on screen (⚓ Nate —
-	 *  "take their gradients and make them .9 opacity; the text can stay white").
-	 *  There it is a ::before so the labels keep full strength; here globalAlpha
-	 *  does the same job, scoped inside each painter's save/restore so only the
-	 *  tiles are affected and the halo'd text that follows is untouched. */
-	const DECORATED_LANE_ALPHA = 0.9;
-
-	/** Phlogiston NB fill — mirrors .rp-nb-bar::before */
+	/** Phlogiston NB fill — mirrors .rp-nb-bar */
 	function paintNbBar(px: number, py: number, pw: number, ph: number) {
 		ctx!.save();
-		ctx!.globalAlpha = DECORATED_LANE_ALPHA;
 		rr(px, py, pw, ph, 1);
 		ctx!.clip();
 		ctx!.fillStyle = '#f85b21';
@@ -545,10 +543,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.restore();
 	}
 
-	/** Soft moonlight fill — mirrors .rp-moonsign-bar::before */
+	/** Soft moonlight fill — mirrors .rp-moonsign-bar */
 	function paintMoonsignBar(px: number, py: number, pw: number, ph: number) {
 		ctx!.save();
-		ctx!.globalAlpha = DECORATED_LANE_ALPHA;
 		rr(px, py, pw, ph, 1);
 		ctx!.clip();
 		// Base gradient — #87B3FF · #B0A9FF · #BEA1FF, palindromic.
@@ -801,6 +798,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.fillStyle = fill;
 		rr(px, py, pw, ph, 1);
 		ctx!.fill();
+		// The 2px left edge — the one bar edge that survives the flattening pass,
+		// because these bars can overlap and glass gives no seam of its own.
+		ctx!.fillStyle = BAR_EDGE;
+		ctx!.fillRect(px, py, 2, ph);
 		let tx = px + 5;
 		if (icon) {
 			ctx!.drawImage(icon, tx, py + (ph - 11) / 2, 11, 11);
