@@ -468,12 +468,27 @@
 	   aesthetic: they ARE the providers figure decomposed — 9+7+8+6+5+7+6 = 48.
 	   Putting a number and its own breakdown on opposite sides of the card's one
 	   structural seam would split a single fact in half.
-	   ⚠ THEY WILL READ POORLY UNTIL THE --el-* ROUND. Every --el-*-main is under
-	   3:1 on parchment-100 (cryo 1.14:1, geo 1.36, anemo 1.38, dendro 1.42,
-	   electro 2.12, pyro 2.61, hydro 2.92) against 3.36–8.59:1 on slate. ⚓ NATE
-	   2026-08-11 — that round is next and will define light-context element
-	   colors and icons, so this is a scheduled fix and NOT a reason to move them:
-	   "only go for the optimal layout logically."
+	   ⚠⚠ THEY STILL READ POORLY, AND THE FIX IS NOW KNOWN TO BE A MOVE, NOT A
+	   COLOUR. Every --el-*-main is under 3:1 on parchment-100 (cryo 1.14:1, geo
+	   1.36, anemo 1.38, dendro 1.42, electro 2.12, pyro 2.61, hydro 2.92) against
+	   3.36–8.59:1 on slate.
+	   ↻ THIS NOTE USED TO SAY "wait for the --el-* round, which will define
+	   light-context element colours". That round happened (2026-08-11) and
+	   decided the OPPOSITE: there is no light-context element colour, because
+	   Genshin has no light UI and every one of their five icon sets measures
+	   under 3:1 on paper — gilded, the one that sounds like parchment, is nearly
+	   the worst at 1.15–1.19. See the --el-* block in app.css for the law.
+	   ⚓ THE RULE IS: element marks go on DARK contexts. So the fix here is to
+	   move the pip stack to the card's GLASS half, where the palette runs
+	   2.49–5.08:1 untouched — /lab section 9 draws exactly that, beside the
+	   alternatives it beat. The ink fallback (--ink-900 monochrome, 8.00:1,
+	   silhouette carries the element) is the FLOOR for marks that genuinely
+	   cannot move, not the first reach.
+	   ⚠ Nate's layout constraint from the previous round still stands and is why
+	   this has not simply been done: "only go for the optimal layout logically" —
+	   the pips ARE the providers figure decomposed (9+7+8+6+5+7+6 = 48), so
+	   moving them across the seam has to keep the number and its breakdown
+	   together. That is the open design question, not the colour.
 	   ↻ ⚓ NATE 2026-08-11: THE ART RESERVATION IS GONE. It capped this row at
 	   `100% - --atlas-art-w` to keep a corner clear, and the cost was a row that
 	   wrapped to two lines with the space to sit on one — ⚓ "they're wrapping to

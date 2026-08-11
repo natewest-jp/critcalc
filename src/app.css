@@ -687,13 +687,25 @@
 	   saturation is plenty of separation, so warning is no longer restricted to
 	   small marks.
 
-	   ⚠ --ui-positive is nudged to h157. The gradient's own teal (#4ecca3) is
-	   within 5° of --el-anemo-main (#4ecbb4) — effectively the same color — so
-	   it was pushed greener to buy separation. Revert to #4ecca3 if the anemo
-	   adjacency turns out not to matter in practice.
-	   ⚠ --ui-warning is close to --rx-burning (#ef7d3c). That one is an encoding
-	   color that never leaves the gauge/reaction instruments, so the rule
-	   "encoding colors never leave their instrument" already covers it.
+	   ⚠⚠ --ui-positive's ANEMO NOTE HAS INVERTED, and the value has NOT been
+	   changed to match — ⚓ this family is Nate's and a re-tune is his call.
+	   The note used to read: the gradient's own teal (#4ecca3) sat within 5° of
+	   --el-anemo-main (then #4ecbb4), so it was pushed greener to h157 to buy
+	   separation. The 2026-08-11 palette swap moved anemo to Genshin's spring
+	   green (#33d7a0) — which is the direction the nudge went. Measured now:
+
+	     #4ecca3 (the un-nudged teal) vs new anemo   Δhue  3.1°   ΔE .034
+	     #51c89a (SHIPPED, the nudge)  vs new anemo   Δhue  0.4°   ΔE .041
+
+	   So the push no longer buys separation, it COSTS it, and the shipped value
+	   now sits below the ~.05 line where two colours stop reading as two. Both
+	   candidates are close; neither escapes by hue any more, because anemo now
+	   owns that hue. If this matters in practice the axis to spend is
+	   LIGHTNESS, not hue — the same move --rx-quicken just made for the same
+	   reason. Flagged, measured, and left alone.
+	   ✅ --ui-warning vs --rx-burning is RESOLVED, not by touching --ui-warning
+	   but because burning was banked down to an ember in the same round: they
+	   were ΔE .051 and are now .095.
 
 	   ↻ 2026-08-09 (Genshin Night): this family stays OURS. ⚓ NATE kept our UI
 	   palette over Genshin's highlighter colours and asked me to borrow from
@@ -935,68 +947,127 @@
 	   zones. That is intended: they are meta surfaces, not tool surfaces. */
 	--accent: var(--gold-400);
 
-	/* Element palette — single source of truth.
-	   Three slots per element: main / border (main @ 0.5α) / hi (main mixed 50/50 white). */
-	/* Canonical site-wide Genshin element palette — THE single source; the
-	   runtime mirror is src/lib/utils/elementColors.ts (keep in lockstep).
-	   Slots: main = solid identity; border = main at 0.5 alpha (translucent
-	   uses — bars, cast markers); hi = main mixed 50/50 with white (inset
-	   glows, highlights). Translucent/shadow variants are NOT separate hues:
-	   use the border slot, or color-mix main toward the surface (planner
-	   ghost-bar pattern) so hue identity survives. Tuned 2026-07-08 against
-	   the in-game icons (assets/elements/tcg): pyro toward the icon's richer
-	   orange-red, cryo from sky-blue to pale ice-teal (also separates it from
-	   hydro), geo brightened from amber-brown to clean gold. */
-	--el-pyro-main: #f9563e;
-	--el-pyro-border: rgba(249, 86, 62, 0.5);
-	--el-pyro-hi: #fcaa9e;
+	/* ══ ELEMENT PALETTE — GENSHIN'S OWN, TRANSCRIBED ═══════════════════════════
+	   ⚓ NATE 2026-08-11, ending three rounds of drift: "Looking at it straight,
+	   Genshin's palette is superior to ours. We don't need to keep our values for
+	   any particular reason."
 
-	/* Hydro is the one element whose token and icon deliberately DISAGREE: the
-	   token runs royal (205° → 208°, Nate 2026-07-28) so it separates from cryo
-	   in a dense timeline, and the icon runs cyan by an explicit offset in
-	   scripts/generate-element-icons.mjs. Change one, read the other.
-	   ↻ 2026-08-01 lightness-structure: hydro runs BELOW pyro's oklch lightness
-	   on purpose (ΔL ≥ .05 — they were one gray under the grayscale gate
-	   before the round). The whole-palette brightness boost (+.04 L, ~×1.12 C,
-	   Nate) preserved the gap; --ink holds ≥5:1 on the main. */
-	--el-hydro-main: #1c88e8;
-	--el-hydro-border: rgba(28, 136, 232, 0.5);
-	--el-hydro-hi: #8ec4f4;
+	   ⚠⚠ THESE ARE NOT TUNED VALUES AND MUST NOT BE RE-TUNED AS A SET. `main` and
+	   `hi` are two tables copied out of the game. Every previous version of this
+	   block was ours, adjusted by eye, and each adjustment was individually
+	   defensible — that is exactly how it ended up 23° of oklch hue off cryo with
+	   a written rationale that measurement did not support. Transcription is what
+	   stops that recurring.
 
-	--el-anemo-main: #47dbc1;
-	--el-anemo-border: rgba(71, 219, 193, 0.5);
-	--el-anemo-hi: #a3ede0;
+	   THE SLOTS, and what each is FOR:
+	     main   Genshin's ICON palette — measured off the flat-colour source art
+	            (one colour per file, so not an estimate). The identity FILL:
+	            bars, discs, pips, the tinted glyphs.
+	     hi     Genshin's IN-TEXT palette — the `<color=#rrggbbff>` tag the game
+	            wraps elemental words in, counted out of the genshin-db
+	            devDependency (8891 uses of the cryo one alone). The element as
+	            INK or a bright mark on a dark ground.
+	     border main at 0.5 alpha. Translucent uses — bars, cast markers.
 
-	--el-electro-main: #cd7cfe;
-	--el-electro-border: rgba(205, 124, 254, 0.5);
-	--el-electro-hi: #e6befe;
+	   ⚠ `hi` IS NOT "main mixed with white" ANY MORE. It used to be, and the
+	   change is the useful part: Genshin derives their in-text set from their
+	   icon set by carrying each hue up to a LIGHTNESS FLOOR (oklch L ≈ .79) and
+	   leaving it alone if it was already above — pyro climbs .699 → .788 while
+	   cryo barely moves at .892 → .938. A 50/50 white mix instead washes the
+	   pale elements out (old cryo hi sat at L .934 for no reason). Two tiers,
+	   one hue, and they had already drawn both.
 
-	--el-cryo-main: #9de2f7;
-	--el-cryo-border: rgba(157, 226, 247, 0.5);
-	--el-cryo-hi: #cef0fb;
+	   ⛔ DO NOT ADD A THIRD, LIGHT-CONTEXT RUNG. It was designed, measured and
+	   then deliberately not built: every --el-*-main is under 3:1 on
+	   parchment-100 (cryo 1.14:1), and so is every other official icon set —
+	   tcg 1.38–2.14, glow 1.01–1.54, gilded 1.15–1.19. Genshin has no light UI,
+	   so there is no light-ground glyph to borrow and no colour that both keeps
+	   its identity and holds the paper.
+	   ⚓ THE RULE INSTEAD: element marks go on DARK contexts. If one is ever
+	   genuinely needed on parchment, run it in ONE INK (--ink-900, 8.00:1) and
+	   let the SILHOUETTE carry the element — which is Genshin's own answer, see
+	   their `gilded` set, where all seven glyphs are the same gold to within
+	   0.05 of contrast and identity lives entirely in the shape.
 
-	--el-geo-main: #fabd22;
-	--el-geo-border: rgba(250, 189, 34, 0.5);
-	--el-geo-hi: #fcde90;
+	   The runtime mirror is src/lib/utils/elementColors.ts and the two are
+	   locked together by timelineExport.mirror.test.ts. The tinted icons are a
+	   BUILD ARTIFACT of `main` — scripts/generate-element-icons.mjs. */
+	--el-pyro-main: #ff6640;
+	--el-pyro-border: rgba(255, 102, 64, 0.5);
+	--el-pyro-hi: #ff9999;
 
-	--el-dendro-main: #85d736;
-	--el-dendro-border: rgba(133, 215, 54, 0.5);
-	--el-dendro-hi: #c2eb9a;
+	--el-electro-main: #cc80ff;
+	--el-electro-border: rgba(204, 128, 255, 0.5);
+	--el-electro-hi: #ffacff;
+
+	/* ↻ Hydro's token and icon used to DISAGREE by declaration — the token ran
+	   royal (208°) to separate from cryo in a dense timeline, and the glyph ran
+	   cyan via ICON_HUE_OFFSET in the generator. Both are gone, because the
+	   premise was wrong: the pair was never SPREAD, it was ROTATED. In oklch our
+	   hydro/cryo sat 33° apart where Genshin's sit 36° — theirs is the wider of
+	   the two. What actually separated them was LIGHTNESS (ΔL .255 against their
+	   .134), a dimension the rotation never touched. So the hues went home and
+	   the timeline lost nothing. */
+	--el-hydro-main: #00c0ff;
+	--el-hydro-border: rgba(0, 192, 255, 0.5);
+	--el-hydro-hi: #80c0ff;
+
+	/* ↻ And the cryo complaint that started that rotation — ⚓ "too turquoise,
+	   encroaching on anemo territory" — turned out to be mostly OUR ANEMO. Their
+	   anemo is 14° greener than the one we had: a spring green against an exact
+	   cyan, where ours were two teals sitting 40° apart and reading closer than
+	   the number said. Adopting their palette opens the pair by moving anemo. */
+	--el-anemo-main: #33d7a0;
+	--el-anemo-border: rgba(51, 215, 160, 0.5);
+	--el-anemo-hi: #80ffd7;
+
+	--el-geo-main: #ffb00d;
+	--el-geo-border: rgba(255, 176, 13, 0.5);
+	--el-geo-hi: #ffe699;
+
+	--el-dendro-main: #9be53d;
+	--el-dendro-border: rgba(155, 229, 61, 0.5);
+	--el-dendro-hi: #99ff88;
+
+	--el-cryo-main: #7af2f2;
+	--el-cryo-border: rgba(122, 242, 242, 0.5);
+	--el-cryo-hi: #99ffff;
 
 	--el-none-main: #6a7080;
 	/* `none` only has `main` today — do not invent `border` / `hi` */
 
 	/* Reaction/aura-state colors (single slot each). These are states, not
 	   elements — they get one hue and no border/hi ladder. Derivations:
-	   frozen = cryo hi (ice gone pale); burning = pyro pushed to ember orange;
-	   quicken = spring green (still green like its parent aura, but pulled
-	   toward blue-green for clear separation from dendro's yellow-green;
-	   anemo never draws an aura line, so the nearby teal doesn't collide); burning-fuel = sage (muted dendro,
-	   drawn dashed); dendro-core = bright seed-glow so core markers pop off
-	   the dendro line. */
+	   frozen = cryo gone pale; burning = pyro banked down to an ember;
+	   quicken = spring green (still green like its parent aura, but held off
+	   dendro's yellow-green); burning-fuel = sage (muted dendro, drawn dashed);
+	   dendro-core = bright seed-glow so core markers pop off the dendro line.
+
+	   ⚠ THESE ARE DOWNSTREAM OF --el-*, AND THE 2026-08-11 SWAP MOVED TWO OF
+	   THEM. Auras are hand-tuned rather than computed, so nothing propagates on
+	   its own; the separations have to be re-measured whenever an element moves.
+	   Two collided when the palette became Genshin's, and both are instructive:
+
+	   • QUICKEN was boxed in. Its old note read "anemo never draws an aura line,
+	     so the nearby teal doesn't collide" — a rationale that assumed anemo was
+	     TEAL. Genshin's anemo is a spring green, the exact hue quicken had been
+	     pushed to, and the two closed to ΔE .044 (below ~.05 two colours stop
+	     being two colours). It now sits between dendro at 131° and anemo at
+	     165°, so it holds its blue-green hue and buys the gap with LIGHTNESS
+	     instead: L .785 → .740. Spending the free axis keeps the original intent
+	     intact where re-hueing to the midpoint would have thrown it away.
+
+	   • BURNING lost its gap because PYRO moved toward it (ΔE .077 → .052).
+	     Hue held, lightness dropped .708 → .640 — and the metaphor improves with
+	     the measurement, because an ember IS darker than the flame it came from.
+
+	   ⚠ The whole grid is re-measured after both: the closest pair anywhere —
+	   elements, auras and --ui-warning together — is now ΔE .072, which is wider
+	   than the worst pair BEFORE the swap (frozen↔cryo at .059, and
+	   burning↔--ui-warning at .051). Re-measure, do not re-reason. */
 	--rx-frozen: #cbeaf3;
-	--rx-quicken: #3fd97f; /* spring green — same family as dendro but pulled well toward blue-green (lime and citrine both vetoed) */
-	--rx-burning: #ef7d3c;
+	--rx-quicken: #46c865; /* spring green, held off BOTH dendro and Genshin's greener anemo (lime and citrine both vetoed) */
+	--rx-burning: #d76822; /* the ember, banked below pyro's flame */
 	--rx-burning-fuel: #84b46a;
 	--rx-dendro-core: #e2ec6f;
 
