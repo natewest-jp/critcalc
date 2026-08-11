@@ -62,7 +62,8 @@
 		tabLoadout = {} as Record<string, LoadoutEntry>,
 		tabCon = {} as Record<string, number>,
 		sourceOpen = false,
-		sourceOverlay
+		sourceOverlay,
+		underChart
 	}: {
 		characterSlots?: string[];
 		notation?: string;
@@ -77,6 +78,17 @@
 		/** Source panel content (the planner page's CharacterSelector), rendered
 		 *  in-frame from the portrait column's edge. */
 		sourceOverlay?: import('svelte').Snippet;
+		/** Rendered BETWEEN the chart and the composer — the always-on bonuses
+		 *  strip. ⚓ Nate 2026-08-11 moved it here from the page's bottom edge:
+		 *  "sandwiched right in-between the buff bars / nightsoul / moonsign and
+		 *  the notation box." It reads as part of the instrument now rather than
+		 *  a footnote after it, which is what it always was — an always-on buff
+		 *  is the BASELINE the timeline's temporary bars sit on top of, so it
+		 *  belongs beside the lanes that show them.
+		 *  ⚠ A SNIPPET, NOT AN IMPORT, deliberately: the block needs the page's
+		 *  `slots` and the timeline only needs to decide WHERE it goes. Same
+		 *  contract as sourceOverlay. */
+		underChart?: import('svelte').Snippet;
 	} = $props();
 
 	// ---------------------------------------------------------------------------
@@ -1749,6 +1761,22 @@
 	</div>
 	<!-- /rp-frame -->
 
+	<!-- ── Always-on bonuses, sandwiched between chart and composer ──────────
+	     ⚓ NATE 2026-08-11: it used to hang off the bottom of the PAGE, below the
+	     composer, "looking a bit out of place" — and it was: an always-on buff is
+	     the BASELINE every temporary bar above it is measured against, so
+	     reading it is part of reading the chart. Below the composer it read as a
+	     footnote about the tool; here it reads as the last row of it.
+	     ⚠ The seam that separated it from the stack was a DOUBLE tool gutter,
+	     deliberately, on the reasoning that "this separates the tool from a
+	     caption ABOUT the tool". That reasoning inverts with the move — it is
+	     inside the tool now — so it takes the ordinary single gutter that
+	     .rp-root's `gap` already provides, and the page's double-gutter rule
+	     went with the element. -->
+	{#if underChart}
+		<div class="rp-underchart">{@render underChart()}</div>
+	{/if}
+
 	<!-- ── Composer ─────────────────────────────────────────────
 	     The notation input: you write the rotation here, the timeline renders
 	     it above.
@@ -1777,7 +1805,7 @@
 	     ↻ TOOLBAR ROUND: the KQM/PNG pair that used to sit just outside the box
 	     is gone from here. Both are EXPORTS, and exports are one family with the
 	     share link — they live in band A's Share menu now. -->
-	<div class="rp-composer frame" class:rp-composer--picking={sourceOpen} inert={sourceOpen}>
+	<div class="rp-composer" class:rp-composer--picking={sourceOpen} inert={sourceOpen}>
 		<div class="rp-notation-wrap">
 			<div class="rp-notation" use:mountEditor={notation}></div>
 		</div>
@@ -1994,9 +2022,24 @@
 	   the bars, which are free to cover it — Nate's call, and the honest one:
 	   a bar states what it is more precisely than the lane's name does. Dimmed
 	   to the chart's receding ink so it reads as ground, not content. */
+	/* ↻ ⚓ NATE 2026-08-11: THEY SCROLL NOW. "Let's take TEAM BUFFS, NIGHTSOUL
+	   BURST and ASCENDANT GLEAM scroll with the timeline — not fixed. The user
+	   really only needs to see them once; they don't need to hang around."
+
+	   They were `position: sticky; left: 0`, pinned to the viewport's left edge
+	   for the whole rotation. A lane name is an INTRODUCTION, not a legend: once
+	   you have read "TEAM BUFFS" you know what that row is, and re-reading it at
+	   40s costs a permanent obstruction over the one place bars start.
+
+	   ✅ AND IT CLOSES A KNOWN CONFLICT rather than trading one for another. The
+	   horizontal edge fade (round one) is strongest exactly where a sticky name
+	   sat, so scrolling right dissolved these names into the mask — flagged at
+	   the time as the one thing to watch, and now moot: they leave the viewport
+	   with their content long before the fade could eat them. */
 	.rp-lane-name {
-		position: sticky;
+		position: absolute;
 		left: 0;
+		top: 0;
 		z-index: 0;
 		display: flex;
 		align-items: center;
@@ -2884,12 +2927,27 @@
 	   on the same x as the timeline's content above it (probe-frame-rework
 	   asserts that, and post-split it is a genuine CROSS-PANEL alignment check
 	   rather than the near-tautology it used to be). */
+	/* ↻ ⚓ NATE 2026-08-11: NO PANEL. "I'd like to try making the notation box
+	   styled like the search boxes in the character roster filter column — with
+	   no box around it, taking up all of its width, and directly on the scene."
+	   So the `.frame` goes (it was the last opaque panel on this surface) and
+	   what remains is a bare row: the FIELD is the object now, exactly as the
+	   filter rail's search is a bare .field in a column of scene.
+	   ⚠ The horizontal padding stays --rp-frame-pad-x, which is the whole point
+	   of that variable: the notation's left edge and the timeline's tracks have
+	   started on the same x since the breathing-room round, and losing the panel
+	   must not lose the alignment. The vertical padding goes with the panel. */
+	/* Takes the composer's own horizontal inset so the strip, the tracks and the
+	   notation field all start on one x. */
+	.rp-underchart {
+		padding: 0 var(--rp-frame-pad-x);
+	}
+
 	.rp-composer {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		padding: 10px var(--rp-frame-pad-x);
-		border-radius: var(--r-sm);
+		padding: 0 var(--rp-frame-pad-x);
 	}
 	/* Picking takes over the instrument. The Source overlay bounds to the frame
 	   and used to cover this as part of it; it no longer reaches, so the state
@@ -2958,9 +3016,14 @@
 		box-sizing: content-box;
 		min-height: 21px;
 		padding: 10px 12px;
-		background: color-mix(in srgb, #000 40%, var(--rp-chart-bg));
-		border: 1px solid var(--rp-line);
-		border-radius: 6px;
+		/* ↻ 2026-08-11: follows the editor onto the .field treatment (see
+		   notationTheme). If these two drift, the swap-in when the lazy
+		   CodeMirror chunk lands is a visible jump — which is the only reason
+		   this stand-in is styled at all. */
+		background: var(--fill-rest);
+		box-shadow: inset 0 0 0 1px var(--border);
+		border: none;
+		border-radius: var(--r-sm);
 		font-family: var(--font-body);
 		font-size: 13px;
 		line-height: var(--lh-relaxed);

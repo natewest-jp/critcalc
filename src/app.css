@@ -228,12 +228,14 @@
 	   looked right. Can we get there with just colour mixing our current values,
 	   or do we need another glass value?"
 
-	   ⛔ MIXING CANNOT GET THERE, and the measurement says exactly why. In oklch
-	   his pick is L .317 · C .0488 · H 267.5 — the SLATE RAMP'S OWN HUE (the
+	   ⛔ MIXING CANNOT GET THERE, and the measurement says exactly why. His first
+	   pick measured L .317 · C .0488 · H 267.5 — the SLATE RAMP'S OWN HUE (the
 	   site's 262–269° constant) at almost exactly slate-800's lightness (L .328),
-	   carrying 1.8× the chroma:
+	   carrying 1.8× the chroma. The shipped value is one step lighter again and
+	   still 1.7× the ramp:
 
-	     #27314b   L .317  C .0488  H 267.5   ← wanted
+	     #2c374f   L .338  C .0451  H 265.1   ← SHIPPED
+	     #27314b   L .317  C .0488  H 267.5   ← the first pick
 	     slate-800 L .328  C .0267  H 264.1
 	     slate-500 L .463  C .0315  H 264.2   ← the ramp's MAXIMUM chroma
 	     night-950 L .228  C .0200  H 271.7
@@ -276,13 +278,17 @@
 	   deliberately. Going bluer AND darker for aesthetic reasons pulled the
 	   ground down under the text and took the ratio with it:
 
-	     composited bar   white @1.0   white @0.5   clears 4.5:1 at
-	     over sky 35 43 65   14.01:1      4.69:1  ✅   already
-	     over star 46 54 76  11.96:1      4.29:1       α ≈ .55
+	     composited bar   white @1.0   white @0.5
+	     over sky 39 48 69   13.16:1      4.53:1  ✅ clears
+	     over star 50 59 79  11.18:1      4.12:1  ↓ just under
 
-	   So half-strength white now CLEARS AA over ordinary sky and sits just under
-	   it against a star — a tiny, moving worst case, on a label that is
+	   So half-strength white CLEARS AA over ordinary sky and sits just under it
+	   against a star — a tiny, moving worst case, on a label that is
 	   supplementary anyway (every bar carries its full detail in the tooltip).
+	   ⚠ AND THE MARGIN IS NOW THIN: 4.53 against a 4.5 floor. Each step this
+	   stop has taken toward the scene's blue has been LIGHTER than the last, and
+	   lightening the ground under white text is what spends this. One more step
+	   up and the sky case goes under too — measure before taking it.
 	   ⚠ MEASURED, NOT DERIVED. The first figure written into this block was hand
 	   arithmetic and came out 0.6 optimistic — the same trap the star figures
 	   fell into in the palette round. If either the alpha or the rgb moves,
@@ -291,7 +297,7 @@
 	   reads --muted.
 
 	   🎛️ The knobs are the rgb (bluer = raise B against R/G) and the alpha. */
-	--glass-bar: rgb(39 49 75 / 0.8);
+	--glass-bar: rgb(44 55 79 / 0.8);
 	/* ⛔ --glass-blur IS RETIRED — ⚓ NATE 2026-08-11, THE PROBATION IS OVER.
 	   "We're starting to get a little performance lag on things like Atlas card
 	   lifts on hover and cross-tool pans. I tested without it in the inspector,

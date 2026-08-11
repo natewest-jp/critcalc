@@ -102,17 +102,18 @@ const INK = '#0d0d0f'; // --bright-ink → --ink-950 (⚓ NATE 2026-08-05)
 // buff/debuff bars"). app.css holds the reasoning.
 //
 // ⚠ ON SCREEN IT IS GLASS; HERE IT IS THE COMPOSITE. --glass-bar is
-// rgb(39 49 75 / .8) laid on the night scene, and a PNG has no scene — so this
+// rgb(44 55 79 / .8) laid on the night scene, and a PNG has no scene — so this
 // is that material resolved against the only ground the export has, CHART_BG:
-//     .8 × (39 49 75) + .2 × (31 38 53) = (37 47 71)
+//     .8 × (44 55 79) + .2 × (31 38 53) = (41 52 74)
 // That is the decoupling declared at the top of this file doing its job. The
 // screen gets a material; paper gets what the material looks like on paper.
 // ⚠ If --glass-bar's alpha or rung moves, RECOMPUTE — the mirror test does this
 // arithmetic and will fail rather than let the two drift. It has already caught
-// two moves in one day: slate-700 @ .58 → slate-600 @ .8 → an off-ramp blue.
+// three moves in one day: slate-700 @ .58 → slate-600 @ .8 → an off-ramp blue,
+// twice.
 // (Ramping/decaying received buffs paint flat here — the on-screen density
 // envelope isn't reproduced; the flat fill matches their full end.)
-const BAR_FILL = '#252f47';
+const BAR_FILL = '#29344a';
 // ↻ 2026-08-11: every bar label went from .85 white to FULL white on screen
 // (⚓ Nate, "all labels back to white"). The one label deliberately left at
 // partial strength is the ghost track's CD readout — it is a duration on a
