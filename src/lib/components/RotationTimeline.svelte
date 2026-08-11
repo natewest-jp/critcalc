@@ -2638,10 +2638,23 @@
 		letter-spacing: var(--ls-tight);
 		flex-shrink: 0;
 	}
+	/* 🐛 ⚓ NATE: "I noticed their labels somehow got turned white — it's much too
+	   intense. #fff at .5 is probably more right (like the buff bars)." They HAD
+	   been turned white, by me, in 27da633 — a comment inserted into the middle
+	   of the halo selector list re-pointed this selector at a `color: #fff`
+	   body. The full autopsy is at that list; the fix is there too.
+	   ⚠ MY FIRST READ WAS WRONG and is worth recording, because it was the
+	   plausible one: I checked the declared value, saw .4, and concluded the
+	   value had not changed and the CONTEXT had (a darker track under it,
+	   everything else on the chart dimmed around it). That story explained the
+	   symptom perfectly and was false. Reading the declaration is not reading
+	   the cascade.
+	   ⚠ The halo left with the whiteness — see the list — which is also what
+	   "like the buff bars" means: they carry none either. .5, no halo. */
 	.rp-bar-cd-label {
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
-		color: rgba(255, 255, 255, 0.4);
+		color: rgb(255 255 255 / 0.5);
 		white-space: nowrap;
 		pointer-events: none;
 		/* Same dissolve-not-slice treatment as .rp-buff-label. Symmetric padding
@@ -2662,49 +2675,61 @@
 			transparent
 		);
 	}
-	/* NB lane durations stay full-strength — the bright fill swallows the
-	   quiet 0.4 used on the element ghost tracks */
+	/* NB lane durations stay full-strength — the phlogiston fill swallows the
+	   quiet alpha the element ghost tracks use. ⚠ AND THE HALO STAYS HERE, where
+	   it left the ghost track: this lane really does have a bright fill of its
+	   own, which is the condition the halo exists for. Full white + halo is also
+	   the pairing the halo block requires. */
 	.rp-nb-bar .rp-bar-cd-label {
 		color: #fff;
+		text-shadow:
+			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
+			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
 	}
-	/* Label halo (Nate 2026-07-18). ↻ 2026-08-11 round two: THE BRIGHT-CHIP
-	   IDIOM IS RETIRED FROM THIS CHART. It said full-strength castFill fills
-	   carry DARK INK with no halo (Genshin's Lv-chips) and this list enumerated
-	   the exceptions that stayed white. ⚓ Nate: "all labels back to white" —
-	   so the exception list became the rule, and the E/Q badge and the summon
-	   label joined it below.
+	/* ══ THE LABEL HALO — WHO STILL GETS ONE, AND WHY ═════════════════════════
+	   A halo is a soft shadow in a dark shade of the bar's own element colour
+	   (--label-halo). Its ONE job is to hold white text off a BRIGHT fill.
 
-	   ⚠ KNOWN DEBT, DEFERRED ON PURPOSE. White on a full-strength element pill
-	   is not legible on the light half of the ramp — cryo #9de2f7 and geo
-	   #fabd22 are around 1.3:1. The halo would fix it and is the obvious reach,
-	   but ⚓ Nate is holding halos until we have looked at the flat bars, and
-	   ⚓ "don't worry about whether white works on E/Q labels — just convert
-	   them. We'll be balancing element colors in the next session." The fix is
-	   the element ramp coming down, not a shadow under the text. Don't
-	   'helpfully' add one here in the meantime.
+	   ↻ 2026-08-11: the bright-chip idiom is retired from this chart (it said
+	   full-strength castFill carries DARK ink, and this list enumerated the
+	   exceptions that stayed white; ⚓ "all labels back to white" made the
+	   exception the rule). So the question stopped being "who stays white" and
+	   became "who still has a bright fill" — and after the flattening and the
+	   glass rounds, that is only the two decorated lanes.
 
-	   The halo that REMAINS is the load-bearing one: the moonsign lane's fill is
-	   pale by design (L83), so its labels need separation no palette change will
-	   give them. NB and the cast/CD labels keep theirs for the same reason —
-	   bright fills of their own. White text must be FULL-opacity where a halo is
-	   used: alpha-reduced white lets the shadow bleed through the glyphs. */
+	   🐛 AND THIS LIST IS WHERE I BROKE THE CD LABELS. In 27da633 I inserted a
+	   comment and two rules INTO THE MIDDLE of this selector list, between
+	   `.rp-bar-cd-label,` and the moonsign selector. The list silently
+	   re-terminated on the moonsign rule's `color: #fff` body — so every
+	   selector above it, .rp-bar-cd-label included, was assigned FULL WHITE, and
+	   it won on source order over the .4 declared earlier. ⚓ Nate spotted it
+	   from the chart alone: "their labels somehow got turned white — it's much
+	   too intense." He was right and my first reading of it ("the value never
+	   changed, the context did") was wrong.
+	   ⚠ THE LESSON IS MECHANICAL, not aesthetic: never insert into a
+	   comma-separated selector list. A stray rule inside one does not error — it
+	   re-points every selector before it at the next body it finds. Add a
+	   separate rule instead, as the two below now are.
+
+	   ⚠ White text over a halo must be FULL opacity: alpha-reduced white lets the
+	   shadow bleed through the glyphs. That is why nothing dimmed carries one —
+	   and why .rp-bar-cd-label, now at .5, correctly has none. */
 	.rp-bar-cast-label,
-	.rp-bar-cd-label,
-	/* ⚠ THE MOONSIGN LANE OPTS OUT OF THE DIM, and the reason is a law rather
-	   than taste: its label carries a HALO, and the halo block states that white
-	   text over one must be FULL opacity or the shadow bleeds through the
-	   glyphs. Its bar is also the one bar that never became glass — a pale
-	   moonlight fill needs full-strength ink on it regardless. */
+	.rp-moonsign-bar .rp-buff-label {
+		text-shadow:
+			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
+			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
+	}
+
+	/* ⚠ THE MOONSIGN LANE OPTS OUT OF THE .5 DIM, by law rather than taste: its
+	   label carries a halo (above), and halo + alpha-white is the bleed case.
+	   Its bar is also the one bar that never became glass — a pale moonlight
+	   fill needs full-strength ink on it regardless. */
 	.rp-moonsign-bar .rp-buff-label {
 		color: #fff;
 	}
 	.rp-moonsign-bar .rp-buff-icon {
 		opacity: 1;
-	}
-	.rp-moonsign-bar .rp-buff-label {
-		text-shadow:
-			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
-			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
 	}
 	/* The moonsign lane's lunar glyph is part of that label, so it takes the
 	   same halo — text-shadow can't reach an <img>, and drop-shadow's blur is

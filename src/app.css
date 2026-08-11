@@ -221,11 +221,43 @@
 
 	   ↻ ⚓ NATE 2026-08-11, after seeing it: "the opacity should be more like
 	   --glass-hover, maybe 0.8, and I'm wondering if we can try a brighter shade
-	   of slate." Both, so: slate-700 @ .58 → slate-600 @ .8. The rung and the
-	   alpha push the same way, and together they take the composited bar from
-	   ~#292e3a to ~#39404e over the dimmed scene.
+	   of slate." Both, so: slate-700 @ .58 → slate-600 @ .8.
 
-	   ⚠ THE ALPHA LIFT FIXES THE STACKING PROBLEM RATHER THAN WORSENING IT, which
+	   ↻↻ AND THEN, FROM THE INSPECTOR: "what the buff bars actually want to be is
+	   something a little more blue like the backdrop scene — about #27314b at .8
+	   looked right. Can we get there with just colour mixing our current values,
+	   or do we need another glass value?"
+
+	   ⛔ MIXING CANNOT GET THERE, and the measurement says exactly why. In oklch
+	   his pick is L .317 · C .0488 · H 267.5 — the SLATE RAMP'S OWN HUE (the
+	   site's 262–269° constant) at almost exactly slate-800's lightness (L .328),
+	   carrying 1.8× the chroma:
+
+	     #27314b   L .317  C .0488  H 267.5   ← wanted
+	     slate-800 L .328  C .0267  H 264.1
+	     slate-500 L .463  C .0315  H 264.2   ← the ramp's MAXIMUM chroma
+	     night-950 L .228  C .0200  H 271.7
+
+	   A mix never lands above its inputs' chroma, and every neutral in the system
+	   caps at C .0315. There is nothing to mix that reaches .0488. The only
+	   saturated blues we own are hydro and cryo, and reaching into the element
+	   palette for a UI fill is the exact mistake this register was created to
+	   undo. So: a new value.
+
+	   ⚠ IT IS THE ONE GLASS STOP WHOSE RGB IS NOT A RAMP RUNG. Every other stop
+	   here mirrors one (panel = slate-700, well = slate-900). ⛔ Do not "tidy"
+	   this onto the ramp — putting it there would mean either dragging the whole
+	   ramp's chroma up or picking a rung that is not this colour.
+
+	   AND IT DOES NOT BREAK THE WHISPER BAND, because that law is not about this
+	   kind of thing. "Structure whispers; content carries the chroma" governs
+	   GROUNDS — a ground with real chroma white-balances every element bar
+	   sitting on it by simultaneous contrast. A buff bar is not a ground; it is
+	   an OBJECT on one, and objects are what the band exists to protect. Which is
+	   also why it can afford to lean toward the scene's blue: it is the one
+	   surface here that WANTS to look like it belongs to the night behind it.
+
+	   ⚠ THE ALPHA FIXES THE STACKING PROBLEM RATHER THAN WORSENING IT, which
 	   is the opposite of the intuition. Bars in one subrow can share a span (it
 	   is why labels cap at the neighbour's edge). At .58 an overlap composited to
 	   .82 — a visibly different material. At .8 it composites to .96, and .8
@@ -236,29 +268,30 @@
 	   which is deliberate and is the same call --glass-hover makes at the same
 	   alpha. The bar still reads as material because the scene moves behind it.
 
-	   ⚠⚠ THE LABELS ON THESE BARS ARE BELOW THE AA FLOOR, AND THAT IS A CHOICE
-	   RATHER THAN AN OVERSIGHT — but it is only a choice if it is written down.
-	   ⚓ Nate asked for the labels and icons at 0.5, which is what recedes them.
-	   Measured (not derived — the first figure written here was hand-arithmetic
-	   and came out 0.6 optimistic, the same trap the star figures fell into):
+	   ⚠ THE LABEL CONTRAST CAME OUT OF THE COLOUR CHANGE, not out of a decision
+	   about labels — worth recording, because it went the good way by accident.
+	   ⚓ Nate asked for labels and icons at 0.5, which recedes them. On the
+	   previous stop (slate-600 @ .8) that measured 3.98:1 over sky and 3.57:1
+	   against a star — under the 4.5:1 small-text floor, and shipped that way
+	   deliberately. Going bluer AND darker for aesthetic reasons pulled the
+	   ground down under the text and took the ratio with it:
 
-	     composited bar    white @ 1.0   white @ 0.5   crosses 4.5:1 at
-	     over sky   56 63 77   10.54:1       3.98:1        α ≈ .555
-	     over a star 67 74 88   8.87:1       3.57:1        α ≈ .62
+	     composited bar   white @1.0   white @0.5   clears 4.5:1 at
+	     over sky 35 43 65   14.01:1      4.69:1  ✅   already
+	     over star 46 54 76  11.96:1      4.29:1       α ≈ .55
 
-	   So half-strength white is ~4:1 typically and ~3.6:1 against a star: over
-	   the 3:1 large-text floor, under the 4.5:1 small-text one, and these labels
-	   are 10px. It is defensible because the label is SUPPLEMENTARY — every bar
-	   carries its full detail in the tooltip, and the round's whole point was
-	   that dozens of these should not shout. ⚠ But if the labels ever become the
-	   only way to read a window, this is the number that has to move first, and
-	   α .62 is where it clears.
+	   So half-strength white now CLEARS AA over ordinary sky and sits just under
+	   it against a star — a tiny, moving worst case, on a label that is
+	   supplementary anyway (every bar carries its full detail in the tooltip).
+	   ⚠ MEASURED, NOT DERIVED. The first figure written into this block was hand
+	   arithmetic and came out 0.6 optimistic — the same trap the star figures
+	   fell into in the palette round. If either the alpha or the rgb moves,
+	   re-measure rather than re-reason.
 	   It is the MUTED-on-glass floor that constrains the BANDS; nothing here
 	   reads --muted.
 
-	   🎛️ One rung brighter again is --slate-500 rgb(80 89 107) if this still
-	   wants lifting. */
-	--glass-bar: rgb(65 74 90 / 0.8);
+	   🎛️ The knobs are the rgb (bluer = raise B against R/G) and the alpha. */
+	--glass-bar: rgb(39 49 75 / 0.8);
 	/* ⛔ --glass-blur IS RETIRED — ⚓ NATE 2026-08-11, THE PROBATION IS OVER.
 	   "We're starting to get a little performance lag on things like Atlas card
 	   lifts on hover and cross-tool pans. I tested without it in the inspector,
