@@ -26,16 +26,20 @@ export type ElementKey =
 // no character is canonically Physical-aligned (it's used for damage instances
 // and RES debuffs, not character UI), and the bar needs a recognizable but
 // understated tone.
+// ⚠ GENSHIN'S OWN TWO TABLES, TRANSCRIBED — not tuned values, and not to be
+// re-tuned as a set. `main` is their icon palette (measured off the flat-colour
+// source art); `hi` is their in-text `<color=#rrggbbff>` palette, which is that
+// same set carried up to a lightness floor. The full argument, including why
+// there is no third light-context rung, lives at --el-* in app.css. Change one
+// file and the mirror test fails; that is the point.
 export const elementColors = {
-	pyro: { main: '#f9563e', border: 'rgba(249, 86, 62, 0.5)', hi: '#fcaa9e' },
-	// Hydro runs below pyro's oklch lightness on purpose (grayscale gate);
-	// the 2026-08-01 whole-palette boost preserved the gap.
-	hydro: { main: '#1c88e8', border: 'rgba(28, 136, 232, 0.5)', hi: '#8ec4f4' },
-	anemo: { main: '#47dbc1', border: 'rgba(71, 219, 193, 0.5)', hi: '#a3ede0' },
-	electro: { main: '#cd7cfe', border: 'rgba(205, 124, 254, 0.5)', hi: '#e6befe' },
-	cryo: { main: '#9de2f7', border: 'rgba(157, 226, 247, 0.5)', hi: '#cef0fb' },
-	geo: { main: '#fabd22', border: 'rgba(250, 189, 34, 0.5)', hi: '#fcde90' },
-	dendro: { main: '#85d736', border: 'rgba(133, 215, 54, 0.5)', hi: '#c2eb9a' },
+	pyro: { main: '#ff6640', border: 'rgba(255, 102, 64, 0.5)', hi: '#ff9999' },
+	hydro: { main: '#00c0ff', border: 'rgba(0, 192, 255, 0.5)', hi: '#80c0ff' },
+	anemo: { main: '#33d7a0', border: 'rgba(51, 215, 160, 0.5)', hi: '#80ffd7' },
+	electro: { main: '#cc80ff', border: 'rgba(204, 128, 255, 0.5)', hi: '#ffacff' },
+	cryo: { main: '#7af2f2', border: 'rgba(122, 242, 242, 0.5)', hi: '#99ffff' },
+	geo: { main: '#ffb00d', border: 'rgba(255, 176, 13, 0.5)', hi: '#ffe699' },
+	dendro: { main: '#9be53d', border: 'rgba(155, 229, 61, 0.5)', hi: '#99ff88' },
 	physical: { main: '#9ea4b3' },
 	none: { main: '#6a7080' }
 } as const;
