@@ -231,10 +231,14 @@
 	   ⛔ MIXING CANNOT GET THERE, and the measurement says exactly why. His first
 	   pick measured L .317 · C .0488 · H 267.5 — the SLATE RAMP'S OWN HUE (the
 	   site's 262–269° constant) at almost exactly slate-800's lightness (L .328),
-	   carrying 1.8× the chroma. The shipped value is one step lighter again and
-	   still 1.7× the ramp:
+	   carrying 1.8× the chroma. The shipped value is tuned to sit at the NOTATION
+	   FIELD's apparent colour (⚓ Nate: "match them with the apparent colour of
+	   the notation box's fill") — the two translucent surfaces on this tool now
+	   read as one material, which is the point of having a register at all:
 
-	     #2c374f   L .338  C .0451  H 265.1   ← SHIPPED
+	     #2c3549   L .330  C .0377  H 265.6   ← SHIPPED
+	     #2c374f   L .338  C .0451  H 265.1
+	     #27314b   L .317  C .0488  H 267.5   ← the first pick
 	     #27314b   L .317  C .0488  H 267.5   ← the first pick
 	     slate-800 L .328  C .0267  H 264.1
 	     slate-500 L .463  C .0315  H 264.2   ← the ramp's MAXIMUM chroma
@@ -270,34 +274,29 @@
 	   which is deliberate and is the same call --glass-hover makes at the same
 	   alpha. The bar still reads as material because the scene moves behind it.
 
-	   ⚠ THE LABEL CONTRAST CAME OUT OF THE COLOUR CHANGE, not out of a decision
-	   about labels — worth recording, because it went the good way by accident.
-	   ⚓ Nate asked for labels and icons at 0.5, which recedes them. On the
-	   previous stop (slate-600 @ .8) that measured 3.98:1 over sky and 3.57:1
-	   against a star — under the 4.5:1 small-text floor, and shipped that way
-	   deliberately. Going bluer AND darker for aesthetic reasons pulled the
-	   ground down under the text and took the ratio with it:
+	   ⚠ THE LABEL CONTRAST HAS BEEN THE QUIET PASSENGER OF THIS WHOLE ROUND, and
+	   it is worth reading as a sequence rather than a number. ⚓ Nate asked for
+	   labels and icons at 0.5, which recedes them; on the first stop
+	   (slate-600 @ .8) that measured 3.98:1 — under the 4.5:1 small-text floor,
+	   and shipped that way deliberately. Then each aesthetic move happened to
+	   push it around: bluer-and-darker lifted it to 4.69, the next step back up
+	   spent that down to 4.53, and the label bump to 0.65 cleared it outright:
 
-	     composited bar   white @1.0   white @0.5
-	     over sky 39 48 69   13.16:1      4.53:1  ✅ clears
-	     over star 50 59 79  11.18:1      4.12:1  ↓ just under
+	     composited bar   white @.5   white @.65
+	     over sky 39 47 64   4.59:1      6.64:1  ✅
+	     over star 50 58 74  4.18:1      5.89:1  ✅
 
-	   So half-strength white CLEARS AA over ordinary sky and sits just under it
-	   against a star — a tiny, moving worst case, on a label that is
-	   supplementary anyway (every bar carries its full detail in the tooltip).
-	   ⚠ AND THE MARGIN IS NOW THIN: 4.53 against a 4.5 floor. Each step this
-	   stop has taken toward the scene's blue has been LIGHTER than the last, and
-	   lightening the ground under white text is what spends this. One more step
-	   up and the sky case goes under too — measure before taking it.
-	   ⚠ MEASURED, NOT DERIVED. The first figure written into this block was hand
-	   arithmetic and came out 0.6 optimistic — the same trap the star figures
-	   fell into in the palette round. If either the alpha or the rgb moves,
-	   re-measure rather than re-reason.
+	   So both cases now clear AA including the star, with room. ⚠ MEASURED, NOT
+	   DERIVED — the first figure written into this block was hand arithmetic and
+	   came out 0.6 optimistic, the same trap the star figures fell into in the
+	   palette round. If the alpha or the rgb moves, re-measure rather than
+	   re-reason; this stop has moved four times in a day and the ratio went both
+	   directions without anyone aiming it.
 	   It is the MUTED-on-glass floor that constrains the BANDS; nothing here
 	   reads --muted.
 
 	   🎛️ The knobs are the rgb (bluer = raise B against R/G) and the alpha. */
-	--glass-bar: rgb(44 55 79 / 0.8);
+	--glass-bar: rgb(44 53 73 / 0.8);
 	/* ⛔ --glass-blur IS RETIRED — ⚓ NATE 2026-08-11, THE PROBATION IS OVER.
 	   "We're starting to get a little performance lag on things like Atlas card
 	   lifts on hover and cross-tool pans. I tested without it in the inspector,

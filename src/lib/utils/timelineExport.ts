@@ -102,9 +102,9 @@ const INK = '#0d0d0f'; // --bright-ink → --ink-950 (⚓ NATE 2026-08-05)
 // buff/debuff bars"). app.css holds the reasoning.
 //
 // ⚠ ON SCREEN IT IS GLASS; HERE IT IS THE COMPOSITE. --glass-bar is
-// rgb(44 55 79 / .8) laid on the night scene, and a PNG has no scene — so this
+// rgb(44 53 73 / .8) laid on the night scene, and a PNG has no scene — so this
 // is that material resolved against the only ground the export has, CHART_BG:
-//     .8 × (44 55 79) + .2 × (31 38 53) = (41 52 74)
+//     .8 × (44 53 73) + .2 × (31 38 53) = (41 50 69)
 // That is the decoupling declared at the top of this file doing its job. The
 // screen gets a material; paper gets what the material looks like on paper.
 // ⚠ If --glass-bar's alpha or rung moves, RECOMPUTE — the mirror test does this
@@ -113,7 +113,7 @@ const INK = '#0d0d0f'; // --bright-ink → --ink-950 (⚓ NATE 2026-08-05)
 // twice.
 // (Ramping/decaying received buffs paint flat here — the on-screen density
 // envelope isn't reproduced; the flat fill matches their full end.)
-const BAR_FILL = '#29344a';
+const BAR_FILL = '#293245';
 // ↻ 2026-08-11: every bar label went from .85 white to FULL white on screen
 // (⚓ Nate, "all labels back to white"). The one label deliberately left at
 // partial strength is the ghost track's CD readout — it is a duration on a
@@ -516,9 +516,17 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	   carry; screen-side those went from the buff, proc, NB and moonsign bars
 	   in one sweep, so there is nothing left for it to mirror. */
 
-	/** Phlogiston NB fill — mirrors .rp-nb-bar */
+	/** ↻ 2026-08-11: the two decorated lanes' FILLS sit at .9 on screen (⚓ Nate —
+	 *  "take their gradients and make them .9 opacity; the text can stay white").
+	 *  There it is a ::before so the labels keep full strength; here globalAlpha
+	 *  does the same job, scoped inside each painter's save/restore so only the
+	 *  tiles are affected and the halo'd text that follows is untouched. */
+	const DECORATED_LANE_ALPHA = 0.9;
+
+	/** Phlogiston NB fill — mirrors .rp-nb-bar::before */
 	function paintNbBar(px: number, py: number, pw: number, ph: number) {
 		ctx!.save();
+		ctx!.globalAlpha = DECORATED_LANE_ALPHA;
 		rr(px, py, pw, ph, 1);
 		ctx!.clip();
 		ctx!.fillStyle = '#f85b21';
@@ -537,9 +545,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.restore();
 	}
 
-	/** Soft moonlight fill — mirrors .rp-moonsign-bar */
+	/** Soft moonlight fill — mirrors .rp-moonsign-bar::before */
 	function paintMoonsignBar(px: number, py: number, pw: number, ph: number) {
 		ctx!.save();
+		ctx!.globalAlpha = DECORATED_LANE_ALPHA;
 		rr(px, py, pw, ph, 1);
 		ctx!.clip();
 		// Base gradient — #87B3FF · #B0A9FF · #BEA1FF, palindromic.

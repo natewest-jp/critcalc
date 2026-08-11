@@ -1888,6 +1888,13 @@
 		   connectors ride the same var. */
 		--rp-active: #757f93;
 
+		/* 🎛️ How far a lane's NAME is inset from the tracks' left edge. Shared,
+		   because the always-on strip below the chart lines up with it (⚓ Nate
+		   2026-08-11: "snug the Always-on buffs over to the left, to match the
+		   positioning of the Team Buffs label") and two literals would drift the
+		   moment either moved. */
+		--rp-lane-name-inset: 8px;
+
 		/* ⛔ --rp-buff-bar-h is DELETED (round two). It was the slim bar's painted
 		   height, separate from its row's; the bar fills its row again, so a
 		   second number could only ever put whitespace back between the bars.
@@ -2045,7 +2052,7 @@
 		align-items: center;
 		width: max-content;
 		height: 100%;
-		padding-left: 8px;
+		padding-left: var(--rp-lane-name-inset);
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-widest);
@@ -2345,7 +2352,7 @@
 		   placed by `left`/`width` in px inside a scroller. If a future round
 		   ever transform-animates the track layer, this is the line that will
 		   shimmer first. */
-		opacity: 0.5;
+		opacity: 0.65;
 	}
 	.rp-buff-label {
 		/* Truncation fade (--buff-label-fade, set on .rp-tracks): the mask's
@@ -2370,7 +2377,7 @@
 		   where it would clear AA, if it ever needs to. */
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-medium);
-		color: rgb(255 255 255 / 0.5);
+		color: rgb(255 255 255 / 0.65);
 		white-space: nowrap;
 		letter-spacing: var(--ls-mid);
 		pointer-events: none;
@@ -2442,30 +2449,6 @@
 		top: 0;
 		height: 100%;
 		border: none;
-		background-color: #f85b21;
-		background-image:
-			radial-gradient(
-				24px 12px at 160px 30%,
-				color-mix(in srgb, #70e1c1 55%, #e1a566) 0%,
-				transparent 82%
-			),
-			radial-gradient(34px 12px at 60px 75%, #e1a566 0%, transparent 72%),
-			radial-gradient(26px 10px at 15px 25%, #e1a566 0%, transparent 70%),
-			linear-gradient(
-				100deg,
-				#f85b21 0%,
-				#e1a566 24%,
-				#f85b21 46%,
-				color-mix(in srgb, #f85b21 55%, #e1a566) 65%,
-				#e1a566 82%,
-				#f85b21 100%
-			);
-		background-size:
-			211px 100%,
-			173px 100%,
-			127px 100%,
-			251px 100%;
-		background-repeat: repeat-x;
 		border-radius: 1px;
 		display: flex;
 		align-items: center;
@@ -2494,6 +2477,54 @@
 			#000 calc(100% - var(--buff-label-fade, 12px)),
 			transparent
 		);
+	}
+	/* ══ THE DECORATED LANES SIT AT .9 (⚓ NATE 2026-08-11) ════════════════════
+	   "Can we take their gradients and make them .9 opacity? The text can stay
+	   white — that will help with their apparent contrast too."
+
+	   ⚠ WHICH IS WHY THE FILL MOVED TO A ::before. Element opacity on the BAR
+	   would take the label down with it, and the label staying at full white is
+	   half of what he asked for — these are the two brightest fills on the chart
+	   and their text needs every point of separation it can keep. Paint alpha on
+	   the fill itself was the other option and it is not viable here: these are
+	   four and two tiled LAYERS whose stops are hand-tuned and mirrored in the
+	   PNG painter, so putting alpha on each would mean rewriting ~10 colour
+	   stops in two places to express one number.
+	   ⚠ z-index: -1 is load-bearing. A positioned ::before with `auto` paints
+	   ABOVE in-flow text; -1 puts it behind, and it cannot escape the bar
+	   because the bar is itself a stacking context (position + z-index: 2).
+	   ⚠ Mirrored in the export as ctx.globalAlpha inside each painter. */
+	.rp-nb-bar::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		opacity: 0.9;
+		background-color: #f85b21;
+		background-image:
+			radial-gradient(
+				24px 12px at 160px 30%,
+				color-mix(in srgb, #70e1c1 55%, #e1a566) 0%,
+				transparent 82%
+			),
+			radial-gradient(34px 12px at 60px 75%, #e1a566 0%, transparent 72%),
+			radial-gradient(26px 10px at 15px 25%, #e1a566 0%, transparent 70%),
+			linear-gradient(
+				100deg,
+				#f85b21 0%,
+				#e1a566 24%,
+				#f85b21 46%,
+				color-mix(in srgb, #f85b21 55%, #e1a566) 65%,
+				#e1a566 82%,
+				#f85b21 100%
+			);
+		background-size:
+			211px 100%,
+			173px 100%,
+			127px 100%,
+			251px 100%;
+		background-repeat: repeat-x;
 	}
 	.rp-nb-bar {
 		--label-halo: #f85b21;
@@ -2538,30 +2569,6 @@
 		gap: 4px;
 		padding: 0 5px;
 		overflow: hidden;
-		background-color: #b0a9ff;
-		/* Two tiled layers, top then bottom. Top: occasional soft cyan + coral
-		   blooms, semi-transparent, tiled at a different prime width so they land
-		   at varying points along the base; their transparent stops carry the
-		   bloom's OWN hue at alpha 0, not the `transparent` keyword which WebKit
-		   fades through black. Bottom: the base moonlight gradient 87B3FF / B0A9FF
-		   / BEA1FF, palindromic so B0A9FF always sits between the two ends and the
-		   tile loops seamlessly. No gray wash — the tones are soft enough on their
-		   own. Mirror any change in timelineExport.ts. */
-		background-image:
-			linear-gradient(
-				80deg,
-				#69dbf200,
-				#69dbf266 15%,
-				#69dbf200 30%,
-				#ef8e9100,
-				#ef8e9133,
-				#ef8e9100
-			),
-			linear-gradient(100deg, #87b3ff, #b0a9ff 25.21%, #bea1ff, #b0a9ff, #87b3ff);
-		background-size:
-			433px 100%,
-			719px 100%;
-		background-repeat: repeat-x;
 		/* Edge and ring gone in the flattening pass — see .rp-nb-bar. */
 		border: none;
 		border-radius: 1px;
@@ -2764,6 +2771,31 @@
 			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
 	}
 
+	.rp-moonsign-bar::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		opacity: 0.9;
+		background-color: #b0a9ff;
+		background-image:
+			linear-gradient(
+				80deg,
+				#69dbf200,
+				#69dbf266 15%,
+				#69dbf200 30%,
+				#ef8e9100,
+				#ef8e9133,
+				#ef8e9100
+			),
+			linear-gradient(100deg, #87b3ff, #b0a9ff 25.21%, #bea1ff, #b0a9ff, #87b3ff);
+		background-size:
+			433px 100%,
+			719px 100%;
+		background-repeat: repeat-x;
+	}
+
 	/* ⚠ THE MOONSIGN LANE OPTS OUT OF THE .5 DIM, by law rather than taste: its
 	   label carries a halo (above), and halo + alpha-white is the bleed case.
 	   Its bar is also the one bar that never became glass — a pale moonlight
@@ -2937,10 +2969,16 @@
 	   of that variable: the notation's left edge and the timeline's tracks have
 	   started on the same x since the breathing-room round, and losing the panel
 	   must not lose the alignment. The vertical padding goes with the panel. */
-	/* Takes the composer's own horizontal inset so the strip, the tracks and the
-	   notation field all start on one x. */
+	/* ⚓ NATE 2026-08-11: its label lines up with the LANE NAMES above it, not
+	   with the tracks' edge — so it carries the frame's inset PLUS the lane
+	   name's own, and reads as one more lane label at the bottom of the stack.
+	   ⚠ The one thing it does NOT share with them is scrolling: the lane names
+	   travel with the chart now, this strip does not, because it is not on the
+	   time axis at all — an always-on buff has no start. Same x, different
+	   behaviour, and that is correct rather than an oversight. */
 	.rp-underchart {
 		padding: 0 var(--rp-frame-pad-x);
+		padding-left: calc(var(--rp-frame-pad-x) + var(--rp-lane-name-inset));
 	}
 
 	.rp-composer {

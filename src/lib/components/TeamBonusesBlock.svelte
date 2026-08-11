@@ -12,20 +12,17 @@
 	element-color identity the timeline bars use. Only renders when there is
 	something to show.
 
-	⚠ Rail width is DERIVED, never kept in lockstep by hand: the chips start
-	where the timeline's tracks start, which is where the bench strip ends
-	(TOOL_INSET), less the lane-label text inset. This block deliberately keeps
-	the CONTENT MARGIN while the tab bar and frame above it are inset by the
-	strip's column — it sits clear of the strip's bottom edge, so its rail can
-	use that column and its chips still land on the frame's left edge.
+	↻ 2026-08-11: THE RAIL IS GONE and so is the geometry that justified it. This
+	block used to hang below the whole tool stack, where it kept the CONTENT
+	MARGIN and reserved a right-aligned label column derived from TOOL_INSET, so
+	its chips could land on the frame's left edge. It renders INSIDE the timeline
+	now (⚓ Nate — between the lanes and the notation field), so its host does the
+	insetting and the label just starts at the lane names' x. One less derived
+	number, and it can no longer drift when the bench strip's geometry moves —
+	which is exactly what it did on 2026-08-06.
 -->
 <script lang="ts">
 	import { getLoadedCharacter } from '$lib/data/characterData';
-	import { TOOL_INSET } from '$lib/benchBand.svelte';
-
-	/** How far the rail's text stops short of the tracks — the lane-label inset
-	 *  the timeline's own labels used. */
-	const KEY_INSET = 10;
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import { deriveResonances, type Resonance } from '$lib/utils/resonance';
@@ -159,7 +156,7 @@
 </script>
 
 {#if visible}
-	<div class="team-bonuses" style:--tb-key-w="{TOOL_INSET - KEY_INSET}px">
+	<div class="team-bonuses">
 		<span class="tb-key">Always-on buffs</span>
 		<div class="tb-flow">
 			{#each resonance.active as res (res.key)}
@@ -209,19 +206,24 @@
 		font-family: var(--font-body);
 	}
 
-	/* Label rail — its text's right edge lands KEY_INSET short of the tracks'
-	   left edge, the lane-label inset. Width comes inline from the derivation
-	   (see the top comment); a literal here would drift the moment the strip's
-	   geometry moves, which is exactly what happened on 2026-08-06. */
+	/* ↻ ⚓ NATE 2026-08-11: THE LABEL RAIL IS GONE. It was a fixed-width,
+	   RIGHT-aligned column (--tb-key-w) whose text landed KEY_INSET short of the
+	   tracks' start — an alignment that made sense while this strip hung below
+	   the whole tool stack. It sits inside the timeline now, between the lanes
+	   and the notation field, so it lines up with the LANE NAMES instead: the
+	   host pads it to their x (.rp-underchart) and the key simply starts there.
+	   ⚠ Everything else already matched them — size, weight, tracking, uppercase
+	   — so the only other change is the ink: --muted → --chart-dim, the chart's
+	   receding voice, which is what "match its opacity/font-colour to the Team
+	   Buffs" means. It now reads as one more lane label at the bottom of the
+	   stack, which is exactly what it is. */
 	.tb-key {
 		flex-shrink: 0;
-		width: var(--tb-key-w);
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;
-		color: var(--muted);
-		text-align: right;
+		color: var(--chart-dim);
 		line-height: var(--lh-snug);
 	}
 
