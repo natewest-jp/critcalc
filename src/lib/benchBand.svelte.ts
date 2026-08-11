@@ -193,12 +193,19 @@ export const RIBBON_DOCK_LEFT = -(TOOL_INSET + FRAME_BORDER);
 export const RIBBON_OVERHANG_Y = 12;
 
 /**
- * The planner's track rows, measured from its frame's BORDER-box top:
- * border 1 + .rp-frame padding-top 10 + RULER_H 28. The card column must land
- * exactly there (each card labels its track group), which fixes everything
- * below.
+ * The planner's track rows, measured from its surface's top. The card column
+ * must land exactly there (each card labels its track group), which fixes
+ * everything below.
+ *
+ * ↻ 2026-08-11 (the timeline round): was `1 + 10 + 28` — a frame border, the
+ * frame's top padding, and the ruler. The first two left with the frame itself
+ * (the timeline renders straight onto the scene now; see .rp-frame in
+ * RotationTimeline), so this is RULER_H alone and the whole chart, cards
+ * included, rises 11px. That is the cheapest height this round recovers: it
+ * costs nothing and removes two numbers from the sum.
+ * ⚠ Still hand-mirrored from RULER_H. If the ruler's height moves, this moves.
  */
-export const RIBBON_FRAME_TOP_INSET = 1 + 10 + 28;
+export const RIBBON_FRAME_TOP_INSET = 28;
 
 /**
  * Dead space between the ribbon's interior top and the FIRST card — the strip

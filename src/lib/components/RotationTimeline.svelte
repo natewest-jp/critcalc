@@ -14,6 +14,7 @@
 	import { artifactImagePath } from '$lib/data/artifactLookup';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
+	import { scrollFade } from '$lib/actions/scrollFade';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
@@ -132,23 +133,45 @@
 	 *  back as --rp-frame-pad-x and the dock's inset is measured against it. */
 	const FRAME_PAD_X = 14;
 	const RULER_H = 28;
-	const CHAR_PAD_TOP = 10;
+	// ══ 🎛️ THE VERTICAL BUDGET (⚓ NATE 2026-08-11, the condensing round) ═══════
+	// The chart sat too low once bands A and B took their shape above it, and on
+	// a 16:10 screen the fourth slot was near the fold. Measured, the slot block
+	// was 158px and its two fattest parts were both slack rather than content:
+	//
+	//     pad 10 + E 20 + gap 4 + Q 20 + gap 4 + ACTIVE 40 + gap 4 + aux 46 + pad 10
+	//
+	// These three knobs take it to 136 (−88px over four slots) with no row
+	// removed and nothing hidden — see each one's note. What was deliberately
+	// NOT touched: DEFAULT_RESERVED_AUX_ROWS. Cutting the reserve buys another
+	// 56px, but it buys it by making slots grow unevenly on ordinary rotations,
+	// which is a behaviour trade rather than a density one.
+	const CHAR_PAD_TOP = 8;
 	const E_ROW_H = 20;
 	const Q_ROW_H = 20;
-	const ACTIVE_ROW_H = 40; // exactly 2× E/Q row height
-	const CHAR_BUFF_ROW_H = 14; // tightened aux-row convention
-	const CHAR_PAD_BOTTOM = 10;
+	// ↻ 40 → 28. It was "exactly 2× E/Q", which is hierarchy expressed as
+	// arithmetic — but the row carries a SINGLE LINE of --fs-sm text
+	// (.rp-input-block is a one-line flex row; nothing in it wraps), so 40px was
+	// 3.6× leading. At 28 it is still the tallest row by 40% and still reads as
+	// the slot's spine, which is the only job the height was doing.
+	const ACTIVE_ROW_H = 28;
+	// ↻ 14 → 12, with the label decoupling below: the label no longer has to FIT
+	// INSIDE the bar, so the row's height stopped being set by its text.
+	const CHAR_BUFF_ROW_H = 12;
+	const CHAR_PAD_BOTTOM = 8;
 	const ROW_GAP = 4;
 	// 2px visual gap between consecutive buff subrows
-	const CHAR_BUFF_ROW_STRIDE = CHAR_BUFF_ROW_H + 2; // = 16
+	const CHAR_BUFF_ROW_STRIDE = CHAR_BUFF_ROW_H + 2; // = 14
 
 	// Summon lane (between E and Q, conditional on summons[].length > 0)
-	const SUMMON_ROW_H = 14;
-	const SUMMON_ROW_STRIDE = SUMMON_ROW_H + 2; // = 16
+	// ⚠ SUMMON_ROW_H IS NOT FREE — it is pinned by the invariant below, so it had
+	// to follow CHAR_BUFF_ROW_H down 14 → 12.
+	const SUMMON_ROW_H = 12;
+	const SUMMON_ROW_STRIDE = SUMMON_ROW_H + 2; // = 14
 	// Gap above and below the summon lane. 3px is chosen so adding a summon costs
-	// exactly one CHAR_BUFF_ROW_STRIDE (16px) — `3 + 14 + 3 - 4(no-summon E↔Q gap)
-	// = 16` — which is the same amount the buff reservation gives back when one
-	// of its rows is replaced by a summon. Net slot-height delta: zero.
+	// exactly one CHAR_BUFF_ROW_STRIDE — `3 + SUMMON_ROW_H + 3 - 4(no-summon E↔Q
+	// gap) = CHAR_BUFF_ROW_STRIDE` — which is the same amount the buff
+	// reservation gives back when one of its rows is replaced by a summon. Net
+	// slot-height delta: zero. At 12/14 it still solves: 3 + 12 + 3 − 4 = 14. ✓
 	const SUMMON_LANE_GAP = 3;
 
 	// Default reservation for the shared aux-row pool — summon sub-rows above the
@@ -159,11 +182,15 @@
 	// rotation fills fewer rows, and overflow already grows the slot safely.
 	const DEFAULT_RESERVED_AUX_ROWS = 3;
 
-	// Below-timeline lanes (team buffs, NB, Moonsign) — shared 14px bar + 2px
-	// padding each side; multi-row lanes grow with row count.
-	const AUX_LANE_BAR_H = 14;
+	// Below-timeline lanes (team buffs, NB, Moonsign) — shared bar + 2px padding
+	// each side; multi-row lanes grow with row count. ↻ 14 → 12 with the char
+	// buff rows: these lanes carry the same bar grammar, and a lane bar taller
+	// than the identical bar inside a slot would read as a different class of
+	// thing. The CSS subrows read AUX_LANE_BAR_H back as --rp-aux-bar-h rather
+	// than repeating the literal, which is how the two used to drift.
+	const AUX_LANE_BAR_H = 12;
 	const AUX_LANE_PAD_Y = 2;
-	const AUX_LANE_BAR_STRIDE = AUX_LANE_BAR_H + 2; // = 16
+	const AUX_LANE_BAR_STRIDE = AUX_LANE_BAR_H + 2; // = 14
 	function auxLaneH(rowCount: number): number {
 		const rows = Math.max(1, rowCount);
 		return rows * AUX_LANE_BAR_STRIDE - 2 + AUX_LANE_PAD_Y * 2;
@@ -473,47 +500,38 @@
 
 	let trackScrollWidth = $state(0);
 	let trackScrollEl: HTMLDivElement | undefined;
-	let extScrollEl: HTMLDivElement | undefined;
-	// The ruler strip viewport — a pure FOLLOWER of the two real scrollers
-	// (overflow hidden, no user scroll, never a latch source): it only ever
-	// receives programmatic scrollLeft writes, so it can't trigger the
-	// Safari interrupted-momentum jump the latch protects against.
+	// The ruler strip viewport — a pure FOLLOWER of the track scroller (overflow
+	// hidden, no user scroll): it only ever receives programmatic scrollLeft
+	// writes, so it can't be momentum-scrolling when one lands.
 	let rulerScrollEl: HTMLDivElement | undefined;
 
-	// Mirrored-scroll gesture latching. The two scrollers mirror each other,
-	// but a programmatic scrollLeft write onto an element that is momentum-
-	// scrolling breaks the scroll: Chrome/Firefox hitch, and Safari resolves
-	// the interrupted momentum by JUMPING the scroll to its end position
-	// (WebKit's known interrupted-momentum behavior). Echo detection by
-	// expected-value comparison proved fragile against Safari's scroll-event
-	// cadence, so latch instead — mirroring what browsers themselves do with
-	// gestures: whichever element last saw a scroll event while the other was
-	// idle is the SOURCE; the other side's events are ignored wholesale until
-	// the source has been quiet for 150ms. Mirror writes are batched to rAF so
-	// they never run inside the source's scroll-event dispatch, and the
-	// actively-scrolling element never receives a programmatic write.
-	let syncSource: 'track' | 'ext' | null = null;
-	let syncSourceTimer: ReturnType<typeof setTimeout> | undefined;
+	// ↻ 2026-08-11 (the timeline round): THE GESTURE LATCH IS GONE, and it is
+	// worth recording what it was for, because deleting a hard-won workaround
+	// looks reckless without the reason.
+	//
+	// There used to be TWO user-scrollable elements here — the tracks and a
+	// hand-built external scrollbar below them — mirroring each other. A
+	// programmatic scrollLeft write onto an element that is momentum-scrolling
+	// breaks the scroll (Chrome/Firefox hitch; Safari resolves the interrupted
+	// momentum by JUMPING to the end), so each side had to know when the other
+	// was driving, via a 150ms source latch.
+	//
+	// ⚓ NATE 2026-08-11: "the only thing we need [the custom scrollbar] to
+	// avoid" was the native overlay scrollbar drawing on top of the bottom lane's
+	// bars. Styling ::-webkit-scrollbar makes the scrollbar non-overlay — it
+	// takes layout space instead of floating over content — so a bottom gutter
+	// on the scroller solves that directly (see .rp-track-scroll). With the
+	// second scroller gone there is exactly ONE gesture source and one
+	// write-only follower, which is a shape that cannot have the bug the latch
+	// defended against. The whole class of failure left with the DOM node.
 	let mirrorRaf = 0;
-
-	function latchSource(side: 'track' | 'ext') {
-		syncSource = side;
-		clearTimeout(syncSourceTimer);
-		syncSourceTimer = setTimeout(() => (syncSource = null), 150);
-	}
 
 	function scheduleMirror() {
 		if (mirrorRaf) return;
 		mirrorRaf = requestAnimationFrame(() => {
 			mirrorRaf = 0;
-			if (!trackScrollEl || !extScrollEl) return;
-			if (syncSource === 'track') extScrollEl.scrollLeft = trackScrollEl.scrollLeft;
-			else if (syncSource === 'ext') trackScrollEl.scrollLeft = extScrollEl.scrollLeft;
-			// Ruler follows whichever side drove this mirror pass.
-			if (rulerScrollEl && syncSource) {
-				rulerScrollEl.scrollLeft =
-					syncSource === 'track' ? trackScrollEl.scrollLeft : extScrollEl.scrollLeft;
-			}
+			if (!trackScrollEl || !rulerScrollEl) return;
+			rulerScrollEl.scrollLeft = trackScrollEl.scrollLeft;
 		});
 	}
 
@@ -539,20 +557,11 @@
 	}
 	$effect(() => () => {
 		clearTimeout(scrollIdleTimer);
-		clearTimeout(syncSourceTimer);
 		cancelAnimationFrame(mirrorRaf);
 	});
 
 	function onTrackScroll() {
 		markScrolling();
-		if (syncSource === 'ext') return; // echo of our ext-driven mirror write
-		latchSource('track');
-		scheduleMirror();
-	}
-	function onExtScroll() {
-		markScrolling();
-		if (syncSource === 'track') return; // echo of our track-driven mirror write
-		latchSource('ext');
 		scheduleMirror();
 	}
 
@@ -621,12 +630,19 @@
 		return projectBar(start, span, scale);
 	}
 
-	/** Cap a buff-bar label's width at the NEXT bar's left edge when two bars in
-	 *  the same subrow overlap — the neighbour paints over this bar's tail, so
-	 *  without the cap the label never truncates and its fade mask never engages
-	 *  (the neighbour just occludes it mid-glyph). Inset = bar padding (5) +
-	 *  icon 11 + gap 4 when an icon leads, plus 2px for the neighbour's edge
-	 *  line. Null (no cap) when the bars don't overlap. */
+	/** Cap a buff-bar label's width at the NEXT bar's left edge. Inset = bar
+	 *  padding (5) + icon 11 + gap 4 when an icon leads, plus 2px for the
+	 *  neighbour's edge line. Null (no cap) only when nothing follows in this
+	 *  subrow, where the lane's own width is the bound.
+	 *
+	 *  ↻ 2026-08-11 (the label-decoupling round) — THE NEIGHBOUR IS NOW THE ONLY
+	 *  BOUND, so this applies whether or not the two bars overlap. It used to
+	 *  return null for non-overlapping bars because the BAR clipped its own
+	 *  label (overflow:hidden) and the cap was needed only where a neighbour
+	 *  painted over the tail. The label leaves its bar now — vertically by
+	 *  design, and horizontally as the readability win, since a 5px bar with
+	 *  three seconds of empty lane after it can finally say what it is. What it
+	 *  must never do is run under the next bar, which is exactly this. */
 	function labelCapPx(
 		g: { left: number; width: number },
 		next: { start: number } | undefined,
@@ -634,7 +650,6 @@
 	): string | null {
 		if (!next) return null;
 		const nextLeft = barGeom(next.start, 0).left;
-		if (nextLeft >= g.left + g.width) return null;
 		return `${Math.max(0, nextLeft - g.left - (hasIcon ? 20 : 5) - 2)}px`;
 	}
 
@@ -1013,14 +1028,18 @@
      bands AND the surface off the strip together — one declaration instead of
      the three that had to agree. (TeamBonusesBlock still sits outside the
      stack at the content margin, below the strip's bottom end.) -->
-<div class="rp-root ctx-dark" style:--rp-frame-pad-x="{FRAME_PAD_X}px">
+<div
+	class="rp-root ctx-dark"
+	style:--rp-frame-pad-x="{FRAME_PAD_X}px"
+	style:--rp-aux-bar-h="{AUX_LANE_BAR_H}px"
+>
 	<!-- ── Timeline chart frame ──────────────────────────────── -->
 	<!-- The frame is ONE instrument with a fixed grammar: time axis (ruler +
 	     view controls) on the TOP edge per DAW/NLE convention, rendered tracks
 	     in the middle, and the notation COMPOSER (input + its KQM/PNG submit
 	     pair) on the BOTTOM edge — the chat-app register: you write at the
 	     bottom, the conversation renders above. -->
-	<div class="rp-frame frame" class:rp-frame--picking={sourceOpen}>
+	<div class="rp-frame" class:rp-frame--picking={sourceOpen}>
 		<!-- The RIBBON's dock used to live here, hanging off this frame's padding
 		     box. It moved up to the TOOL STACK in the toolbar round: the strip
 		     now stands proud of the BANDS as well as the surface, so its anchor
@@ -1032,7 +1051,16 @@
 		     track/ext scrollers), and the view cluster stays pinned to the
 		     frame's right edge. -->
 		<div class="rp-ruler-strip">
-			<div class="rp-ruler-scroll" bind:this={rulerScrollEl}>
+			<!-- The ruler takes the SAME edge roll-off as the tracks below it
+			     (⚓ NATE 2026-08-11): it is the same instrument seen from the top,
+			     and a faded bar under a hard-cut time axis reads as two objects.
+			     Its scrollLeft is written programmatically, which still fires the
+			     scroll events the action listens for. -->
+			<div
+				class="rp-ruler-scroll scroll-fade-x"
+				bind:this={rulerScrollEl}
+				use:scrollFade={{ axis: 'x' }}
+			>
 				<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
 				     rise to the seam, labels above them. -->
 				<div class="rp-ruler" style:width="{totalWidth}px" style:height="{RULER_H}px">
@@ -1061,10 +1089,11 @@
 				     the shadow column never carried it. -->
 				<!-- Scrollable track area -->
 				<div
-					class="rp-track-scroll"
+					class="rp-track-scroll scroll-fade-x"
 					bind:this={trackScrollEl}
 					bind:clientWidth={trackScrollWidth}
 					onscroll={onTrackScroll}
+					use:scrollFade={{ axis: 'x' }}
 				>
 					<div
 						class="rp-tracks"
@@ -1366,7 +1395,16 @@
 												style:left="{g.left}px"
 												style:width="{g.width}px"
 											>
-												<span class="rp-buff-label">{procRow.label} trigger CD</span>
+												<!-- The cap is not optional here. This row's bar used to clip
+												     its own label (overflow:hidden) and so never needed one;
+												     the slim bar lets the label out on both axes, so without
+												     labelCapPx a long proc name would run straight over the
+												     next trigger window. -->
+												<span
+													class="rp-buff-label"
+													style:max-width={labelCapPx(g, procRow.bars[bi + 1], false)}
+													>{procRow.label} trigger CD</span
+												>
 											</div>
 										{/each}
 									</div>
@@ -1548,12 +1586,14 @@
 		</div>
 		<!-- /rp-timeline-area -->
 
-		<!-- ── External scrollbar (below timeline, synced to track) ─ -->
-		<div class="rp-ext-scroll-wrap">
-			<div class="rp-ext-scroll" bind:this={extScrollEl} onscroll={onExtScroll}>
-				<div style:width="{totalWidth}px" style:height="1px"></div>
-			</div>
-		</div>
+		<!-- The EXTERNAL SCROLLBAR stood here — a second real scroller mirroring
+		     the tracks, built for one reason: the native overlay scrollbar drew
+		     on top of the bottom lane's bars. It is retired (⚓ NATE 2026-08-11).
+		     The track scroller styles its own scrollbar now, which makes it
+		     non-overlay, and reserves a gutter for it — so the bar lands on empty
+		     space by construction rather than by being moved somewhere else. See
+		     .rp-track-scroll, and scheduleMirror for what the second scroller was
+		     costing in sync machinery. -->
 
 		<!-- ── Character Source overlay ─────────────────────────────
 		     Non-modal, and a sibling of the frame's own rows so it covers
@@ -1561,7 +1601,7 @@
 		     cluster, tracks, external scrollbar, composer — instead of the
 		     track area alone. That makes the planner in picking mode the
 		     mirror of the Team Builder at rest: bench on one edge, grid and
-		     filters filling the rest of one frame. The 4 live portraits stay
+		     filters filling the rest of one surface. The 4 live portraits stay
 		     visible on the left as the team display. The content is the
 		     planner page's CharacterSelector, handed in as a snippet. Kept
 		     MOUNTED after the first open (hidden, not destroyed) so reopening
@@ -1671,6 +1711,15 @@
 		   connectors ride the same var. */
 		--rp-active: #757f93;
 
+		/* 🎛️ THE SLIM BAR'S HEIGHT (⚓ NATE 2026-08-11). The painted height of a
+		   buff-register bar, centred inside a row that stays CHAR_BUFF_ROW_H /
+		   AUX_LANE_BAR_H tall — see .rp-team-buff-bar for why the two are
+		   separate numbers now. 6 in a 12px row leaves 3px of clear row above
+		   and below the bar for the label to break into. This is the first knob
+		   to move if the lane reads too thin or too heavy; the row height is the
+		   second, and it is a JS constant because the bench aligns to it. */
+		--rp-buff-bar-h: 6px;
+
 		font-family: var(--font-body);
 		font-size: var(--fs-lg);
 		color: var(--text);
@@ -1683,25 +1732,46 @@
 		gap: var(--tool-gutter);
 	}
 
-	/* ── Chart frame (timeline + external scrollbar) ─────────── */
-	/* .frame (app.css) supplies the 1px dire border + --frame-bg
-	   fill; this only shapes it. Radius 9 per the 3/6/9 scale. */
+	/* ── Chart area (formerly the chart FRAME) ───────────────── */
+	/* ══ ⚓ NATE 2026-08-11: NO FRAME, NO CHART GROUND — THE TIMELINE IS ON THE
+	   SCENE. This element used to be a `.frame`: a 1px border, the dark
+	   context's RAISED rung as fill, a radius and symmetric padding. All of it
+	   is gone. What is left is a layout box that still earns its place three
+	   ways — it is the flex column that stacks ruler over tracks, it is the
+	   Source overlay's containing block (position:relative below), and it is
+	   where the horizontal padding that aligns the tracks with the composer
+	   lives.
+
+	   WHAT SURVIVED THE GROUND, AND WHY EACH ONE DID:
+	   · --rp-chart-bg stays DECLARED and is no longer PAINTED. It is the ground
+	     the bar mixes are composited against, and the PNG exporter still paints
+	     it for real (an exported image has no scene behind it). The
+	     alpha-compositing law wants a KNOWN ground for those mixes; a notional
+	     one that the export makes real is exactly that.
+	   · The grid and lane LINES stay opaque mixes rather than going alpha, which
+	     is the one place this round argued with the night rule and won on
+	     measurement. Composite TOOL_DIM .75 of #101013 over the scene and the
+	     dimmed world lands around #12151c–#1e222a — DARKER than the slate-900
+	     ground these lines were cut against, and only ~12 levels wide. An opaque
+	     line reads identically everywhere across that range; an alpha one would
+	     shimmer with the sky for no gain. (The exception the law is really about
+	     — glass — is a ground that moves a lot more than this.)
+	   · Everything gains contrast rather than losing it, for the same reason:
+	     the scene is darker than the ground we removed.
+
+	   THE HORIZONTAL PADDING STAYS AND THE VERTICAL PADDING GOES. The 14px sides
+	   are not frame inset — they are the clearance from the bench ribbon, which
+	   abuts this surface's left edge, and the alignment contract with the
+	   composer below (both read --rp-frame-pad-x). The 10px top and bottom WERE
+	   frame inset, so they left with the frame — and the 11px the top gives back
+	   (border 1 + padding 10) is the first of the height this round is after.
+	   ⚠ RIBBON_FRAME_TOP_INSET in benchBand.svelte.ts is that same sum; it moved
+	   with this declaration. */
 	.rp-frame {
-		/* The frame wears the dark context's RAISED rung; the chart well sits
-		   one rung deeper on --rp-chart-bg (= the context surface). Overrides
-		   the shared .frame background (Genshin-UI archetype, 2026-08-05). */
-		background: var(--surface-raised);
-		border-radius: var(--r-sm);
-		/* --rp-frame-pad-x comes inline from FRAME_PAD_X (the dock's inset is
-		   measured against it, so it can't be a second literal here).
-		   ↻ 2026-08-08: the bottom goes 4px → 10px, symmetric with the top. The
-		   asymmetry existed only because the composer sat inside and brought its
-		   own 12/14px margins; with it out, 4px left the external scrollbar
-		   almost touching the frame's edge. */
-		padding: 10px var(--rp-frame-pad-x);
-		/* The frame BEGINS at the ribbon's right edge — but it is the TOOL
+		padding: 0 var(--rp-frame-pad-x);
+		/* The surface BEGINS at the ribbon's right edge — but it is the TOOL
 		   STACK that puts it there now (toolbar round), so the bands above and
-		   the frame share one inset by construction rather than by two
+		   the tracks share one inset by construction rather than by two
 		   declarations agreeing. */
 		display: flex;
 		flex-direction: column;
@@ -1749,8 +1819,14 @@
 		min-height: 0;
 		overflow: hidden;
 		padding: 10px 12px 12px;
+		/* Opaque, and now the ONE opaque box on this surface besides the composer
+		   — picking is a takeover, so it should cover. ↻ 2026-08-11: it used to
+		   inherit its edges from the frame it sat inside; with no frame it needs
+		   its own, so the stray border-left (a seam against a portrait column
+		   that has not existed since the tall-bench round) is replaced by the
+		   radius that makes it read as a panel laid on the scene. */
 		background: var(--rp-chart-bg);
-		border-left: 1px solid var(--rp-line);
+		border-radius: var(--r-sm);
 	}
 	/* The explicit display:flex above would beat the UA's [hidden] rule. */
 	.rp-source-overlay[hidden] {
@@ -1792,34 +1868,75 @@
 	}
 
 	/* ── Track scroll container ───────────────────────────────── */
+	/* ⚓ NATE 2026-08-11 — THE ONE JOB THE CUSTOM SCROLLBAR HAD. The native
+	   scrollbar was hidden here and rebuilt as a second scroller below the
+	   timeline for exactly one reason: on macOS the OVERLAY scrollbar floats
+	   over content, so scrolling drew the bar across the bottom lane's buff bars.
+	   Nate: "if there's a way to avoid this, we don't need a custom scroll bar at
+	   all — that's the only thing we need it to avoid."
+
+	   There is, and it is a GUTTER: reserve --rp-scrollbar-gutter of empty space
+	   at the bottom of the scroller, and the bar has somewhere to be that isn't
+	   on top of a bar. Styling ::-webkit-scrollbar additionally opts the element
+	   out of overlay scrollbars in WebKit/Blink (it becomes a classic one that
+	   takes layout space), but THE GUTTER DOES NOT DEPEND ON THAT — which is the
+	   point of the next warning.
+
+	   ⚠ TWO KNOBS ON PURPOSE, AND THEY ARE NOT THE SAME NUMBER. --…-thickness is
+	   how thick the bar is PAINTED; --…-gutter is how much room is RESERVED. The
+	   gutter is the larger of the two because it has to cover the case where the
+	   engine ignores the opt-out and keeps an overlay scrollbar: macOS overlay
+	   bars live in a ~15px band whose thumb sits a few px off the edge, so a
+	   gutter sized to the painted thickness alone would still let the thumb
+	   clip the last lane by a pixel or two. Sized to the band, both readings are
+	   safe. (Headless Chrome reports NO scrollbar at all — offsetHeight ===
+	   clientHeight — so this is one of the few things here that a probe cannot
+	   settle and only a real browser can.)
+
+	   ⚠ THE GUTTER IS NOT DECORATION, IT IS THE FIX. This scroller is height:auto
+	   (stretched by its content), and a classic horizontal scrollbar is placed
+	   INSIDE the padding box — so without the reservation it would clip the
+	   bottom of the last lane rather than overlap it. Either way the lane loses.
+	   ⚠ It reserves the space whether or not the rotation actually overflows.
+	   With no ground left to paint, an unused gutter is invisible scene.
+
+	   🎛️ --scroll-fade at 48 is longer than the roster's 32: the timeline's
+	   content is CONTINUOUS, so unlike a grid of cards there is no gap for a
+	   short roll-off to hide in and the edge stays legible as a hard cut. */
 	.rp-track-scroll {
+		--rp-scrollbar-thickness: 10px;
+		--rp-scrollbar-gutter: 14px;
+		--scroll-fade: 48px;
 		flex: 1;
 		min-width: 0;
 		overflow-x: auto;
 		overflow-y: hidden;
-		scrollbar-width: none;
+		padding-bottom: var(--rp-scrollbar-gutter);
+		/* Firefox has no ::-webkit-scrollbar; this is its whole vocabulary. */
+		scrollbar-width: thin;
+		scrollbar-color: var(--rp-active) transparent;
 	}
 	.rp-track-scroll::-webkit-scrollbar {
-		display: none;
+		height: var(--rp-scrollbar-thickness);
 	}
-
-	/* ── External scrollbar strip ─────────────────────────────── */
-	.rp-ext-scroll-wrap {
-		display: flex;
-		flex-shrink: 0;
+	/* Transparent track — the scene IS the track now. */
+	.rp-track-scroll::-webkit-scrollbar-track {
+		background: transparent;
 	}
-	.rp-ext-scroll {
-		flex: 1;
-		min-width: 0;
-		height: 14px;
-		overflow-x: auto;
-		overflow-y: hidden;
+	.rp-track-scroll::-webkit-scrollbar-thumb {
+		background: color-mix(in srgb, var(--rp-active) 60%, transparent);
+		border-radius: 999px;
+	}
+	.rp-track-scroll::-webkit-scrollbar-thumb:hover {
+		background: var(--rp-active);
 	}
 
 	/* ── Track area ───────────────────────────────────────────── */
+	/* ↻ 2026-08-11: no background-color. The chart ground is gone — see the note
+	   on .rp-frame for what --rp-chart-bg still means now that nothing paints
+	   it. */
 	.rp-tracks {
 		position: relative;
-		background-color: var(--rp-chart-bg);
 		/* Fade width for truncating bar labels (buff chips, cd/cast labels) —
 		   clipped text dissolves over this many px instead of slicing mid-glyph. */
 		--buff-label-fade: 12px;
@@ -1839,6 +1956,9 @@
 		flex: 1;
 		min-width: 0;
 		overflow: hidden;
+		/* Must match .rp-track-scroll's, or the two edges of one instrument would
+		   ramp at different rates. A follower needs no scrollbar gutter. */
+		--scroll-fade: 48px;
 	}
 	.rp-ruler {
 		position: relative;
@@ -1906,26 +2026,59 @@
 	}
 	.rp-team-buff-subrow {
 		position: relative;
-		height: 14px;
+		height: var(--rp-aux-bar-h);
 		flex-shrink: 0;
 	}
-	/* Buff bars overlap and must stay individually readable — solid
-	   low-luminance fill, a hairline ring barely above the fill (the
-	   .panel register), and the brighter left edge as the scan hook. */
+	/* ══ THE SLIM BAR (⚓ NATE 2026-08-11, from Genshin's own HP bar) ══════════
+	   Genshin sets the HP readout at a size the bar cannot contain and lets the
+	   glyphs break the bar's top and bottom walls. The trick underneath it is
+	   DECOUPLING THE LABEL'S SIZE FROM THE BAR'S: our buff rows were 14px tall
+	   *because* a 10px label had to fit inside, which is the label setting the
+	   row height through the bar. Break that and both halves improve at once —
+	   the bar drops to --rp-buff-bar-h and the label goes UP a step to --fs-sm.
+
+	   WHAT THE ROW BOX DOES NOT DO IS SHRINK TO THE BAR. The row keeps its
+	   stride and the bar is centred in it, so the escaping label has the row's
+	   full height to occupy and can never reach its neighbour. Vertical
+	   break-out is free; it is only the ROW that would have made it collide.
+
+	   ⚠ THE IDIOM TRANSFERS ON ONE AXIS ONLY. Genshin's bar is a single bar
+	   filling its width; ours is a lane of many short bars, so a label breaking
+	   out SIDEWAYS stops belonging to any particular one. Horizontal
+	   containment stays — but it is now the NEIGHBOUR that bounds the label
+	   (labelCapPx), not the bar's own right edge, which is where the readability
+	   comes from: a 5px bar with empty lane after it can say its name.
+
+	   ⚠ THE BAR CAN NO LONGER CLIP ITS OWN LABEL, because overflow:hidden clips
+	   both axes and the whole point is escaping the vertical one. .rp-buff-label
+	   carries its own overflow + fade mask and is bounded by its max-width, so
+	   the clipping moved down one level rather than disappearing.
+
+	   ↻ The inset hairline ring is GONE with the height. It existed to lift a
+	   low-luminance fill off the chart ground and to separate overlapping bars;
+	   at 6px a 1px ring top and bottom leaves 4px of fill and the bar reads as
+	   an outline rather than a slab. The brighter left edge still does the
+	   separating, and the scene is darker than the ground the ring was
+	   compensating for. 🎛️ Both the height and the ring are the knobs to try
+	   first if this reads too thin. */
 	.rp-team-buff-bar {
 		position: absolute;
-		top: 0;
-		height: 100%;
+		/* Centred in the row rather than filling it. Integer arithmetic, no
+		   transform: the sub-pixel laws are explicit that a transform-placed
+		   subtree is where WebKit's rounding shows, and a lane of these is
+		   exactly the tree that would dance. */
+		top: calc((100% - var(--rp-buff-bar-h)) / 2);
+		height: var(--rp-buff-bar-h);
 		background: var(--calm-fill);
 		border: none;
 		border-left: 2px solid var(--calm);
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
 		border-radius: 1px;
 		display: flex;
 		align-items: center;
 		gap: 4px;
 		padding: 0 5px;
-		overflow: hidden;
+		/* Visible on BOTH axes — see the note above; the label clips itself. */
+		overflow: visible;
 		z-index: 2;
 		min-width: 2px;
 	}
@@ -1939,25 +2092,33 @@
 		background: var(--debuff-fill);
 		border-left-color: var(--debuff);
 	}
-	.rp-team-buff-bar.rp-team-debuff-bar .rp-buff-label {
-		color: rgba(255, 255, 255, 0.85);
-	}
-
 	.rp-buff-icon {
 		width: 11px;
 		height: 11px;
 		flex-shrink: 0;
 		object-fit: contain;
-		opacity: 0.85;
+		/* ↻ 2026-08-11: was opacity .85. It is part of the label group and the
+		   labels went full-strength, but the better reason is that this was
+		   ELEMENT opacity on something that now sits over the live scene — the
+		   sub-pixel laws want alpha in the paint, and full strength is the one
+		   value that needs no paint at all. */
 	}
 	.rp-buff-label {
 		/* Truncation fade (--buff-label-fade, set on .rp-tracks): the mask's
 		   transparent tail lines up with the padding, so a label that FITS shows
 		   no fade — only clipped text runs under it and dissolves instead of
-		   slicing mid-glyph. */
-		font-size: var(--fs-xs);
+		   slicing mid-glyph.
+		   ⚠ THIS ELEMENT'S overflow IS NOW THE ONLY HORIZONTAL CLIP. The bar
+		   around it went overflow:visible so the label could break its walls
+		   vertically, so max-width (labelCapPx) + this overflow are what keep a
+		   label off its neighbour. Don't drop either.
+		   ↻ 2026-08-11: --fs-xs → --fs-sm and 0.85 white → full. ⚓ Nate: "all
+		   labels back to white, please — especially since we're going right over
+		   the scene." The size step is what the decoupling bought: the label is
+		   no longer sized to fit a bar. */
+		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
-		color: rgba(255, 255, 255, 0.85);
+		color: #fff;
 		white-space: nowrap;
 		letter-spacing: var(--ls-mid);
 		pointer-events: none;
@@ -1975,19 +2136,21 @@
 
 	/* Sacrificial-proc rows share the debuff bars' register (Nate 2026-07-18;
 	   formerly a gold-tinted look of their own) */
+	/* Same slim treatment as .rp-team-buff-bar — it is the same bar grammar in
+	   the debuff register, so it takes the same height, the same centring and
+	   the same label escape. Its ring went with the buff bar's. */
 	.rp-weapon-proc-bar {
 		position: absolute;
-		top: 0;
-		height: 100%;
+		top: calc((100% - var(--rp-buff-bar-h)) / 2);
+		height: var(--rp-buff-bar-h);
 		background: var(--debuff-fill);
 		border: none;
 		border-left: 2px solid var(--debuff);
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 		border-radius: 1px;
 		display: flex;
 		align-items: center;
 		padding: 0 5px;
-		overflow: hidden;
+		overflow: visible;
 		z-index: 2;
 		min-width: 2px;
 	}
@@ -2007,7 +2170,7 @@
 	}
 	.rp-nb-subrow {
 		position: relative;
-		height: 14px;
+		height: var(--rp-aux-bar-h);
 		flex-shrink: 0;
 	}
 	/* Phlogiston fill (Nate 2026-07-18) — static "flowy" fire gradient echoing
@@ -2106,7 +2269,7 @@
 	}
 	.rp-moonsign-subrow {
 		position: relative;
-		height: 14px;
+		height: var(--rp-aux-bar-h);
 		flex-shrink: 0;
 	}
 	/* Moon-gravity-wave fill (Nate 2026-07-18) — same layered-tile technique as
@@ -2161,11 +2324,10 @@
 		border-radius: 1px;
 		z-index: 2;
 	}
-	/* Full-opacity white on the light moonlight fill (the buff bars' 0.85 white
-	   washes out here) + the shared halo, matching every other bar label. */
-	.rp-moonsign-bar .rp-buff-label {
-		color: #fff;
-	}
+	/* This override is a no-op since the buff labels went full white (2026-08-11)
+	   and is kept only as the anchor for the halo selector below — the moonsign
+	   fill is light enough that its labels are the one place the halo is load-
+	   bearing rather than ornamental. */
 
 	/* ── Character block ──────────────────────────────────────── */
 	.rp-char-block {
@@ -2210,10 +2372,13 @@
 	   the track reads as flowing out of the pill), the right edge landing on the
 	   exact moment the ability comes back up. Fill + outline colors are opaque
 	   element mixes set inline (border-color per element). */
-	/* 14px — matches the summon/buff/debuff row height (Nate 2026-07-18) */
+	/* Matches the summon/buff/debuff ROW height (Nate 2026-07-18) — the inset is
+	   (E_ROW_H − CHAR_BUFF_ROW_H) / 2, so it followed that row 14 → 12 in the
+	   condensing round. Note it tracks the row, not the slim bar inside it: a
+	   ghost is a recessed TRACK, not a bar in the buff register. */
 	.rp-bar-cd--ghost {
-		top: 3px;
-		height: calc(100% - 6px);
+		top: 4px;
+		height: calc(100% - 8px);
 		border: none;
 		border-top: 1px solid transparent;
 		border-right: 1px solid transparent;
@@ -2396,10 +2561,14 @@
 		background: transparent;
 		box-shadow: none;
 	}
+	/* ↻ 2026-08-11: 0.85 white → full (⚓ Nate, "all labels back to white"). The
+	   active strip is opaque so this is not a legibility-over-scene fix, but the
+	   token names on it are the chart's most-read text and they now match every
+	   other label rather than sitting a step below them for no reason. */
 	.rp-active-text {
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
-		color: rgba(255, 255, 255, 0.85);
+		color: #fff;
 	}
 	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: warning-
 	   tinted text, marking the actions whose timing is generic. --ui-danger,

@@ -2260,18 +2260,26 @@ img {
    someone sees it over a bright part of the sky.
 
    ⚠ A MASK MAKES A STACKING CONTEXT (it does not make a containing block — that
-   is `filter` and `backdrop-filter`). Both current consumers portal their
-   popovers to <body> already, so nothing needed to move; a future consumer with
-   an in-flow overlay does.
+   is `filter` and `backdrop-filter`). Every current consumer portals its
+   popovers to <body> already (the planner's buff tooltip is position:fixed on
+   <body>), so nothing needed to move; a future consumer with an in-flow overlay
+   does.
 
    THE TWO CUSTOM PROPERTIES ARE WRITTEN BY $lib/actions/scrollFade, which is
    where the "only at an edge with content beyond it" logic lives. Without the
    action the element is simply unmasked (both default to 0), so the class is
    inert on its own rather than wrong — which is the failure mode you want.
 
+   ⚠ THE CLASS AND THE ACTION'S `axis` MUST AGREE. `.scroll-fade` reads the
+   top/bottom pair, `.scroll-fade-x` the left/right pair, and the action writes
+   only its own axis — so a mismatch is an unmasked scroller rather than a
+   sideways-masked one. Same inert-when-wrong posture as above.
+
    🎛️ --scroll-fade is THE KNOB and is meant to be overridden per consumer: the
-   roster's cards carry more roll-off than the rail's small groups. The action
-   reads this same property, so the clamp and the gradient cannot disagree. */
+   roster's cards carry more roll-off than the rail's small groups, and the
+   planner's timeline wants more than either (its content is continuous, so
+   there is no gap for the roll-off to hide in). The action reads this same
+   property, so the clamp and the gradient cannot disagree. */
 .scroll-fade {
 	--scroll-fade: 32px;
 	/* Unprefixed is Safari 15.4+ and every current engine; the prefix is kept as
@@ -2288,6 +2296,27 @@ img {
 		transparent 0,
 		#000 var(--scroll-fade-top, 0px),
 		#000 calc(100% - var(--scroll-fade-bottom, 0px)),
+		transparent 100%
+	);
+}
+/* The sideways twin (⚓ NATE 2026-08-11, the timeline round). Same construction,
+   same knob, `to right` — the planner's ruler and track scrollers both take it
+   so the roll-off is ONE edge across the whole instrument rather than a fade on
+   the bars with a hard-cut time axis above them. */
+.scroll-fade-x {
+	--scroll-fade: 32px;
+	-webkit-mask-image: linear-gradient(
+		to right,
+		transparent 0,
+		#000 var(--scroll-fade-left, 0px),
+		#000 calc(100% - var(--scroll-fade-right, 0px)),
+		transparent 100%
+	);
+	mask-image: linear-gradient(
+		to right,
+		transparent 0,
+		#000 var(--scroll-fade-left, 0px),
+		#000 calc(100% - var(--scroll-fade-right, 0px)),
 		transparent 100%
 	);
 }

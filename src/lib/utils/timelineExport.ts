@@ -76,16 +76,21 @@ const INK = '#0d0d0f'; // --bright-ink → --ink-950 (⚓ NATE 2026-08-05)
 // envelope isn't reproduced; the flat fill matches their full end.)
 const CALM_TINT = '#2b5590';
 const CALM_EDGE = '#6b99c7';
+// ↻ 2026-08-11: every bar label went from .85 white to FULL white on screen
+// (⚓ Nate, "all labels back to white"), and these three mirror it. The one
+// label deliberately left at partial strength is the ghost track's CD readout —
+// it is a duration on a recessive track, not a label, and it sits on an opaque
+// bar rather than over the scene.
 const TEAM_BUFF_FILL = CALM_TINT;
 const TEAM_BUFF_EDGE = CALM_EDGE;
-const TEAM_BUFF_LABEL = 'rgba(255,255,255,0.85)';
+const TEAM_BUFF_LABEL = '#fff';
 const DEBUFF_FILL = '#6e332d'; // --debuff-fill
 const DEBUFF_EDGE = '#c9524a'; // --debuff
-const DEBUFF_LABEL = 'rgba(255,255,255,0.85)';
+const DEBUFF_LABEL = '#fff';
 // Sacrificial-proc rows share the debuff register (Nate 2026-07-18)
 const PROC_FILL = DEBUFF_FILL;
 const PROC_EDGE = DEBUFF_EDGE;
-const PROC_LABEL = 'rgba(255,255,255,0.85)';
+const PROC_LABEL = '#fff';
 // Generic-timing (no-frame-map) marks are a DATA-QUALITY state, not a domain
 // color — they ride --ui-danger (the marks left dire 2026-08-05).
 const UI_DANGER = '#e63946';
@@ -100,6 +105,11 @@ const UI_DANGER = '#e63946';
 // carried the element gradient (a PNG label column has no element context to
 // tint with), so it mirrors the gradient's TOP stop, as it always has.
 const PORTRAIT_BG = '#1f2635'; // --surface-well (ctx-dark) → --slate-900
+
+/** The painted height of a buff-register bar, centred in its row — mirrors
+ *  --rp-buff-bar-h in RotationTimeline. ⚠ NOT the row height: the row is
+ *  snap.buffRowH and stays the caller's business. See drawLaneBar. */
+const LANE_BAR_H = 6;
 
 /** Test-only: the hand-maintained mirror, exported so
  *  timelineExport.mirror.test.ts can assert it against app.css /
@@ -669,7 +679,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					}
 					// label — danger tinted on no-frame-map N/C/P tokens (mirrors
 					// .rp-active-text--danger)
-					ctx!.fillStyle = approxToken ? mix('#ffffff', UI_DANGER, 50) : 'rgba(255,255,255,0.85)';
+					ctx!.fillStyle = approxToken ? mix('#ffffff', UI_DANGER, 50) : '#fff';
 					ctx!.font = `600 10px ${SANS}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);
@@ -709,7 +719,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		slot.procRows.forEach((row, pi) => {
 			const rowTop = buffTop + pi * snap.buffRowStride;
 			solidDraws.push(() => {
-				for (const bar of row.bars) {
+				row.bars.forEach((bar, bi) => {
+					const next = row.bars[bi + 1];
 					drawLaneBar(
 						x(bar.start),
 						rowTop,
@@ -719,16 +730,18 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						PROC_EDGE,
 						PROC_LABEL,
 						`${row.label} trigger CD`,
-						undefined
+						undefined,
+						next ? x(next.start) : undefined
 					);
-				}
+				});
 			});
 		});
 		slot.receivedRows.forEach((row, ri) => {
 			const rowTop = buffTop + (slot.procRows.length + ri) * snap.buffRowStride;
 			const icon = snap.statIconFor(row.primaryStat);
 			solidDraws.push(() => {
-				for (const bar of row.bars) {
+				row.bars.forEach((bar, bi) => {
+					const next = row.bars[bi + 1];
 					drawLaneBar(
 						x(bar.start),
 						rowTop,
@@ -738,15 +751,27 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						TEAM_BUFF_EDGE,
 						TEAM_BUFF_LABEL,
 						bar.sourceLabel,
-						icon ? images.get(icon) : undefined
+						icon ? images.get(icon) : undefined,
+						next ? x(next.start) : undefined
 					);
-				}
+				});
 			});
 		});
 	});
 
-	// Lane bar helper (team buff / proc / received): solid fill + hairline ring
-	// + 2px left edge + optional icon + label
+	// Lane bar helper (team buff / proc / received): slim fill + 2px left edge +
+	// optional icon + label.
+	//
+	// ↻ 2026-08-11 — MIRRORS THE SLIM BAR. The screen bar is LANE_BAR_H tall,
+	// centred in its row, with the icon and label centred on the ROW and free to
+	// break the bar's top and bottom walls (Genshin's HP-bar idiom — see
+	// .rp-team-buff-bar). `py`/`ph` are still the ROW, exactly as before, so
+	// every caller's arithmetic is untouched; only what gets painted inside it
+	// changed. The hairline ring went with the height on both sides.
+	//
+	// `nextPx` is the next bar's left edge in this subrow, mirroring the DOM's
+	// labelCapPx: the neighbour is what bounds a label now that the bar does not
+	// clip it. Undefined = nothing follows, so the lane's own width bounds it.
 	function drawLaneBar(
 		px: number,
 		py: number,
@@ -756,28 +781,28 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		edge: string,
 		labelColor: string,
 		label: string,
-		icon: HTMLImageElement | undefined
+		icon: HTMLImageElement | undefined,
+		nextPx?: number
 	) {
+		const by = py + (ph - LANE_BAR_H) / 2;
 		ctx!.fillStyle = fill;
-		rr(px, py, pw, ph, 1);
+		rr(px, by, pw, LANE_BAR_H, 1);
 		ctx!.fill();
-		ctx!.strokeStyle = 'rgba(255,255,255,0.07)';
-		ctx!.lineWidth = 1;
-		rr(px + 0.5, py + 0.5, pw - 1, ph - 1, 1);
-		ctx!.stroke();
 		ctx!.fillStyle = edge;
-		ctx!.fillRect(px, py, 2, ph);
+		ctx!.fillRect(px, by, 2, LANE_BAR_H);
 		let tx = px + 5;
-		if (icon && pw > 24) {
+		if (icon) {
 			ctx!.drawImage(icon, tx, py + (ph - 11) / 2, 11, 11);
 			tx += 15;
 		}
 		ctx!.save();
 		ctx!.beginPath();
-		ctx!.rect(px, py, pw - 2, ph);
+		// Clip to the ROW's height (the label may exceed the bar's) and, across,
+		// to the neighbour rather than to this bar's own right edge.
+		ctx!.rect(px, py, Math.max(0, (nextPx ?? ox + snap.totalWidth) - px - 2), ph);
 		ctx!.clip();
 		ctx!.fillStyle = labelColor;
-		ctx!.font = `600 9px ${SANS}`;
+		ctx!.font = `600 10px ${SANS}`;
 		ctx!.textAlign = 'left';
 		ctx!.fillText(label, tx, py + ph / 2 + 3);
 		ctx!.restore();
@@ -870,7 +895,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			const rowTop = laneTop + 2 + ri * snap.buffRowStride;
 			const isDebuff = subrow.kind === 'debuff';
 			const icon = snap.statIconFor(subrow.primaryStat);
-			for (const bar of subrow.bars) {
+			subrow.bars.forEach((bar, bi) => {
+				const next = subrow.bars[bi + 1];
 				drawLaneBar(
 					x(bar.start),
 					rowTop,
@@ -880,9 +906,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					isDebuff ? DEBUFF_EDGE : TEAM_BUFF_EDGE,
 					isDebuff ? DEBUFF_LABEL : TEAM_BUFF_LABEL,
 					subrow.sourceLabel,
-					icon ? images.get(icon) : undefined
+					icon ? images.get(icon) : undefined,
+					next ? x(next.start) : undefined
 				);
-			}
+			});
 		});
 	}
 	// NB lane (phlogiston fill, matching on-screen)
