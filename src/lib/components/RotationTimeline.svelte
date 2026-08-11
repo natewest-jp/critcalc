@@ -653,8 +653,9 @@
 	});
 	let totalWidth = $derived(Math.round(totalDuration * scale));
 
+	// ⛔ `majorTicks` is gone (2026-08-11): it existed only to draw gridlines for
+	// the 5s marks, and every tick draws one now.
 	let ticks = $derived(rulerTicks(totalDuration, scale));
-	let majorTicks = $derived(ticks.filter((t) => t.major));
 
 	// ---------------------------------------------------------------------------
 	// Geometry helpers
@@ -1147,9 +1148,14 @@
 						     track area, replacing the old per-container loops. Divs, not
 						     SVG, so Safari pixel-snaps them together with the bars (see
 						     connectorStyle). z:0 + first in DOM keeps them beneath the
-						     ghost CD tracks. -->
-						{#each majorTicks as tick (tick.t)}
-							<div class="rp-gridline" style:left="{tick.x}px"></div>
+						     ghost CD tracks.
+						     ↻ 2026-08-11: EVERY tick draws a line, not just the majors —
+						     the minors are fainter and shorter (see .rp-gridline). The
+						     `major` flag is `t % 5 === 0`, so "minor" is exactly Nate's
+						     sub-5s. This loop is the ruler's ticks one-for-one now, which
+						     is what lets a tick and its line be one stroke. -->
+						{#each ticks as tick (tick.t)}
+							<div class="rp-gridline" class:major={tick.major} style:left="{tick.x}px"></div>
 						{/each}
 
 						<!-- Character slot tracks (always 4 rows) -->
@@ -1740,10 +1746,19 @@
 		   resolved literals (the mirror test enforces). */
 		--rp-grid: color-mix(in srgb, var(--border) 45%, var(--rp-chart-bg));
 		--rp-line: color-mix(in srgb, var(--border) 85%, var(--rp-chart-bg));
-		/* 🎛️ Where the gridline's downward fade reaches nothing — see
-		   .rp-gridline. 100% = across the whole chart; pull it up to bring the
-		   horizon closer to the ruler. */
+		/* The SUB-5s line (⚓ NATE 2026-08-11). Exactly half the major line's ink,
+		   which is the whole derivation — a minor gridline is not a different
+		   kind of line, it is the same line said quieter, and a ratio says that
+		   where a hand-picked hex would only imply it. */
+		--rp-grid-faint: color-mix(in srgb, var(--border) 22%, var(--rp-chart-bg));
+		/* 🎛️ Where each gridline's downward fade reaches nothing — see
+		   .rp-gridline. 100% = across the whole chart. The minor lines are
+		   SHORTER as well as fainter (Nate's spec), which is what keeps a 1s
+		   grid from becoming a comb: they mark the beat near the axis and are
+		   gone before they can add up to texture. Pull either up to bring that
+		   line's horizon closer to the ruler. */
 		--rp-grid-fade: 100%;
+		--rp-grid-fade-minor: 45%;
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all
 		   share it (the elemental block mix in the markup references it too).
@@ -2010,18 +2025,37 @@
 	.rp-ruler {
 		position: relative;
 	}
-	/* Ruler ticks ride the line tokens (they were stranded pre-token navy
-	   literals until 2026-08-01 — the "showing a little blue" Nate spotted). */
+	/* ══ A TICK IS THE TOP OF ITS OWN GRIDLINE (⚓ NATE 2026-08-11) ════════════
+	   ⚓ "Unify the tickmarks with their lines — either remove the tickmarks and
+	   have the lines serve that purpose, or make the tickmark's color at the top
+	   of the gradient blend in."
+
+	   The second reading, and the mismatch he was seeing was real and specific:
+	   a MAJOR tick was painted --border while the line continuing straight down
+	   from it started at --rp-grid, which is that same ink at 45%. So the stroke
+	   got visibly DIMMER at the moment it crossed from ruler into chart — one
+	   line rendered as two objects, with a seam at the join.
+
+	   Each tick now takes exactly its own line's opening stop: majors --rp-grid,
+	   minors --rp-grid-faint. Nothing separates the two elements — .rp-ruler
+	   lost its border-bottom in round two and the ticks sit at bottom: 0 — so a
+	   tick now reads as the part of the gridline that rises INTO the axis, which
+	   is what it always was geometrically. The 8px/4px heights stay: they are
+	   how far up each level reaches, and they are the only thing distinguishing
+	   the two in the ruler now that the labels sit above.
+
+	   ⚠ KEEP THE FOUR VALUES IN TWO PAIRS. tick colour ↔ gradient's first stop,
+	   per level. Change one and the seam comes back. */
 	.rp-tick {
 		position: absolute;
 		bottom: 0;
 		width: 1px;
-		background: var(--rp-grid);
+		background: var(--rp-grid-faint);
 		height: 4px;
 	}
 	.rp-tick.major {
 		height: 8px;
-		background: var(--border);
+		background: var(--rp-grid);
 	}
 	.rp-tick-label {
 		position: absolute;
@@ -2060,16 +2094,30 @@
 	   one — the nesting law is about mix-inside-mix. The NB and moonsign fills
 	   already put color-mix results inside gradients.
 
-	   🎛️ --rp-grid-fade is the knob: 100% fades across the whole chart, smaller
-	   values pull the horizon up. */
+	   ↻ ⚓ NATE 2026-08-11, same day: THE SUB-5s TICKS GET LINES TOO — "fainter
+	   and shorter than the main separators". Two levels of the same idea, and
+	   the pairing matters: fainter alone would still lay a full-height comb
+	   across the chart at 1s zoom. Shorter is what keeps a dense grid from
+	   accumulating into texture — the minors mark the beat next to the axis,
+	   then get out of the way well before the majors do.
+
+	   🎛️ The knobs are --rp-grid-fade / --rp-grid-fade-minor (how far each
+	   reaches) and --rp-grid / --rp-grid-faint (how dark each starts). */
 	.rp-gridline {
 		position: absolute;
 		top: 0;
 		bottom: 0;
 		width: 1px;
-		background: linear-gradient(to bottom, var(--rp-grid), transparent var(--rp-grid-fade));
+		background: linear-gradient(
+			to bottom,
+			var(--rp-grid-faint),
+			transparent var(--rp-grid-fade-minor)
+		);
 		pointer-events: none;
 		z-index: 0;
+	}
+	.rp-gridline.major {
+		background: linear-gradient(to bottom, var(--rp-grid), transparent var(--rp-grid-fade));
 	}
 	.rp-connector {
 		position: absolute;
