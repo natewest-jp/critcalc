@@ -228,11 +228,19 @@ function characterCompletionSource(context: CompletionContext): CompletionResult
 // Structural styles mirror the old .rp-notation textarea exactly.
 // ---------------------------------------------------------------------------
 
-/** The composer's own ground — the chart well sunk one step darker. Every
- *  dimmed token below mixes against THIS, not against transparent: an alpha
- *  text color renders display-dependently on P3 (the alpha-compositing law,
- *  brightness round 2026-07-31). */
-const COMPOSER_BG = 'color-mix(in srgb, #000 40%, var(--rp-chart-bg, #15151c))';
+/** The NOTIONAL ground the editor's dimmed tokens mix against.
+ *
+ *  ↻ 2026-08-11: the composer stopped painting a ground of its own. It used to
+ *  be `mix(#000 40%, --rp-chart-bg)` — the chart well sunk a step darker — back
+ *  when it sat inside an opaque panel; it is a translucent .field on the bare
+ *  scene now (⚓ Nate). So this is a REFERENCE rather than a paint, the same
+ *  role --rp-chart-bg plays for the bars: the dimmed tokens still need a known
+ *  ground because an alpha TEXT colour renders display-dependently on P3 (the
+ *  alpha-compositing law, brightness round 2026-07-31), and a field of
+ *  --fill-rest over the dimmed scene composites to within ~15 levels of this.
+ *  ⚠ If the field's fill ever moves far from the chart ground, re-ground these
+ *  — the tokens will go muddy long before anything errors. */
+const COMPOSER_BG = 'var(--rp-chart-bg, #15151c)';
 /** A dimmed rung of the context's secondary voice, on the composer ground.
  *  ↻ 2026-08-05 (archetype consistency pass): these were `rgba(255,255,255,α)`
  *  and a literal cool near-white (#e8e8f0) — the last of the pre-archetype
@@ -243,21 +251,23 @@ const COMPOSER_BG = 'color-mix(in srgb, #000 40%, var(--rp-chart-bg, #15151c))';
 const dim = (pct: number) => `color-mix(in srgb, var(--muted) ${pct}%, ${COMPOSER_BG})`;
 
 const notationTheme = EditorView.theme({
-	// Container — the notation COMPOSER on the planner frame's bottom edge:
-	// its own inset box (radius 6 per the 3/6/9 scale) sunk darker than the
-	// chart ground — together with the hairline ring, the "this is a
-	// textfield" signal (the old pencil glyph is retired). The border is
-	// ALWAYS 1px, in three states (Nate 2026-07-19): resting = the graph line
-	// color, hover = dire at 50% ("this responds to you" — full-strength dire
-	// was too loud; this matches the old focus ring's softened mix), focused
-	// = back to the resting line color (the caret is the active signal).
-	// Metrics are mirrored by .rp-notation-placeholder in
-	// RotationTimeline.svelte (the pre-chunk-load stand-in) — keep in
-	// lockstep.
+	// Container — the notation field, ⚓ styled as the filter rail's search box
+	// (2026-08-11): --fill-rest over an inset 1px ring, full width, sitting
+	// directly on the scene with no panel around it. That is `.field` in
+	// app.css, transcribed rather than imported because CodeMirror's theme has
+	// to inject its own CSS.
+	// ⛔ It is NOT a bordered box any more: `border` → `box-shadow` inset, which
+	// is what .field uses so the ring traces the input rather than adding a
+	// layout edge. The three-state border (Nate 2026-07-19: resting line, hover
+	// accent 50%, focused back to resting) survives as the ring's colour.
+	// ⚠ Metrics are mirrored by .rp-notation-placeholder in
+	// RotationTimeline.svelte (the pre-chunk-load stand-in) — keep in lockstep,
+	// or the editor visibly jumps when the lazy chunk lands.
 	'&': {
-		background: COMPOSER_BG,
-		border: '1px solid var(--rp-line, #1c2a4a)',
-		borderRadius: '6px',
+		background: 'var(--fill-rest)',
+		border: 'none',
+		boxShadow: 'inset 0 0 0 1px var(--border)',
+		borderRadius: 'var(--r-sm)',
 		fontSize: '13px',
 		fontFamily: 'var(--font-mono)',
 		lineHeight: '1.6',
@@ -265,14 +275,14 @@ const notationTheme = EditorView.theme({
 		width: '100%',
 		boxSizing: 'border-box',
 		cursor: 'text',
-		transition: 'border-color 150ms ease'
+		transition: 'box-shadow 150ms ease, background 150ms ease'
 	},
 	'&:hover': {
-		borderColor: 'color-mix(in srgb, var(--accent) 50%, transparent)'
+		boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent)'
 	},
 	'&.cm-focused, &.cm-focused:hover': {
 		outline: 'none',
-		borderColor: 'var(--rp-line, #1c2a4a)'
+		boxShadow: 'inset 0 0 0 1px var(--border)'
 	},
 	'.cm-placeholder': {
 		color: dim(55)

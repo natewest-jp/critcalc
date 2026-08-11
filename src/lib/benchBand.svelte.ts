@@ -49,15 +49,101 @@ export type BenchHostRegistration =
 export const BENCH_CARD_W = 160;
 
 /**
+ * ⚗️ THE EXPERIMENT IS OVER AND THIS IS BACK ON. ⚓ Nate 2026-08-11: "I've had a
+ * chance to see it condensed — we don't need to keep it hidden and constantly
+ * tripping those three errors while we do the other work."
+ *
+ * WHAT IT MEASURED, so nobody has to re-run it: with the portrait gone and the
+ * floor dropped to 86, a four-character rotation using the full aux reserve
+ * gave 122px slots — ROWS-driven, not floored — and a sparse one fell to the
+ * 86 floor where it had been 126. That is the headroom the bench card is
+ * currently holding back, and it is the brief for the bench round.
+ *
+ * ⛔ KEEP THE FLAG. It is two lines of arithmetic and one `{#if}`, and it is the
+ * only way to see the timeline's own height without rebuilding the card first.
+ * ⚠ But do not leave it OFF: a hidden portrait is a hidden BUTTON (see below).
+ *
+ * ⚓ NATE's original ask 2026-08-11: "Just out of curiosity, I'd like to see
+ * what we'd have if the bench's card wasn't holding back the sizing — can you
+ * make the avatars display:none or something so we can work without being
+ * distracted by them and see what it looks like?"
+ *
+ * ⚠ HIDING THE DISC IS NOT ENOUGH ON ITS OWN, which is the whole reason this is
+ * one flag rather than a line of CSS. The card's portrait is not what holds the
+ * timeline back — BENCH_SLOT_MIN_H is, and it would still floor every slot at
+ * 126px with an invisible disc's worth of space reserved. So this flag does
+ * both: it drops the disc AND drops the floor to what a portrait-less card
+ * needs, which is the two fixed bands and nothing more.
+ *
+ * ⛔ FLIP IT BACK TO `true` TO RESTORE THE BENCH. Nothing else needs touching —
+ * the floor, the card and the timeline all follow from here.
+ *
+ * ⚠⚠ IT COSTS AN INTERACTION, WHICH I DID NOT FORESEE AND THE E2E SUITE DID.
+ * THE PORTRAIT IS A BUTTON: `onPortraitClick` on the disc is how the planner
+ * opens its character Source and how the Team Builder opens a Detail card. Take
+ * the disc away and that affordance goes with it — three specs fail on
+ * `.sp-avatar-chip` (cross-tool ×2, loadout-layers ×1), and they pass again the
+ * moment this flips back. Verified both ways.
+ *
+ * Neither tool is a dead end while the experiment runs, which is the only
+ * reason it is safe to leave on: the planner's ⇄ slot action calls the SAME
+ * onPortraitClick, so the Source picker is still one click away, and the TB's
+ * Detail card is reachable from the roster grid. But "click the portrait" is
+ * muscle memory and it will feel broken.
+ *
+ * ⛔ SO THIS MUST NOT OUTLIVE THE LOOK IT WAS BUILT FOR. It is not a candidate
+ * for "leave it, we'll decide later" — a hidden portrait is a hidden button.
+ */
+export const BENCH_PORTRAIT_SHOWN = true;
+
+/**
+ * ══ WHAT ONE CARD NEEDS, AND WHY IT IS NOW THE BINDING CONSTRAINT ═══════════
+ * The card is three stacked bands with fixed outer two:
+ *
+ *     padding 8+10  +  identity row 26  +  gap 8  +  PORTRAIT  +  gap 8
+ *                   +  loadout pill 26                        =  86 + portrait
+ *
+ * At the portrait's full 68px that is 154, which is where BENCH_SLOT_H's old
+ * value of 158 came from — it was the planner's slot height, and the card was
+ * designed to exactly fill it.
+ *
+ * ⚠ THE TIMELINE OUTGREW THAT, DOWNWARD. Two condensing rounds took the
+ * planner's slot to 124 at full aux reserve and 84 with none, and the card
+ * cannot follow: it needs 86px before the portrait gets a single pixel. So the
+ * CARD is what sets the minimum slot height now, not the rows. That is a real
+ * inversion and it is worth stating plainly rather than letting a floor
+ * constant look arbitrary.
+ *
+ * 🎛️ THE FLOOR IS THE SMALLEST PORTRAIT WE ARE WILLING TO SHOW. 40px still
+ * reads as a character — below that the disc stops being a portrait and starts
+ * being a dot — so the floor is 86 + 40. Lower this only together with a
+ * decision about what the card looks like when it can no longer stack three
+ * bands; the honest alternative is restructuring the card (portrait INLINE with
+ * the identity row), which buys ~48px and is a design change, not a number.
+ * ⚠ The disc itself is capped, not floored (--sp-avatar-max in SlotPortrait):
+ * it shrinks to fit whatever it is given. This constant is what stops it being
+ * given too little.
+ *
+ * ⚗️ The portrait-less arm is the experiment above: with no disc the card is
+ * only its two fixed bands, so 86 is the whole of it and the timeline is free
+ * to show what its rows actually ask for.
+ */
+export const BENCH_SLOT_MIN_H = BENCH_PORTRAIT_SHOWN ? 86 + 40 : 86;
+
+/**
  * The band's resting rhythm: one card at the planner's BASELINE slot height,
  * so the "even default rhythm" the band relaxes to on the Team Builder is the
- * exact height a no-extra-rows planner slot occupies — the RP↔TB height
- * animation is a no-op for typical rotations and only moves in the extreme
- * many-bars cases, which is Nate's spec. Derivation (RotationTimeline's
- * constants): padTop 10 + E 20 + gap 4 + Q 20 + gap 4 + active 40 + gap 4 +
- * 3 buff rows (3×16−2 = 46) + padBottom 10 = 158.
+ * exact height a typical planner slot occupies — the RP↔TB height animation is
+ * a no-op for typical rotations and only moves in the extreme many-bars cases,
+ * which is Nate's spec.
+ *
+ * ↻ 2026-08-11: was 158, a hand-copied sum of RotationTimeline's constants that
+ * went stale the moment those constants moved — twice in one day. It is the
+ * floor now, which is the same number for every typical rotation (the timeline
+ * asks for less than the card does) and, more to the point, is a number that
+ * cannot drift because it is DERIVED rather than transcribed.
  */
-export const BENCH_SLOT_H = 158;
+export const BENCH_SLOT_H = BENCH_SLOT_MIN_H;
 
 /** Full resting column height (borders live INSIDE the border-box heights). */
 export const BENCH_COLUMN_H = 4 * BENCH_SLOT_H;
@@ -193,12 +279,19 @@ export const RIBBON_DOCK_LEFT = -(TOOL_INSET + FRAME_BORDER);
 export const RIBBON_OVERHANG_Y = 12;
 
 /**
- * The planner's track rows, measured from its frame's BORDER-box top:
- * border 1 + .rp-frame padding-top 10 + RULER_H 28. The card column must land
- * exactly there (each card labels its track group), which fixes everything
- * below.
+ * The planner's track rows, measured from its surface's top. The card column
+ * must land exactly there (each card labels its track group), which fixes
+ * everything below.
+ *
+ * ↻ 2026-08-11 (the timeline round): was `1 + 10 + 28` — a frame border, the
+ * frame's top padding, and the ruler. The first two left with the frame itself
+ * (the timeline renders straight onto the scene now; see .rp-frame in
+ * RotationTimeline), so this is RULER_H alone and the whole chart, cards
+ * included, rises 11px. That is the cheapest height this round recovers: it
+ * costs nothing and removes two numbers from the sum.
+ * ⚠ Still hand-mirrored from RULER_H. If the ruler's height moves, this moves.
  */
-export const RIBBON_FRAME_TOP_INSET = 1 + 10 + 28;
+export const RIBBON_FRAME_TOP_INSET = 28;
 
 /**
  * Dead space between the ribbon's interior top and the FIRST card — the strip

@@ -205,6 +205,98 @@
 	   without looking for it. */
 	--glass-hover: rgb(54 62 77 / 0.8);
 	--glass-parch: rgb(236 229 216 / 0.1); /* parchment frost — a resting fill */
+	/* ══ THE BAR STOP (⚓ NATE 2026-08-11) ═════════════════════════════════════
+	   ⚓ "Glass is actually the best fill for the buff/debuff bars." Its own stop
+	   rather than a reuse, because its consumer is unlike every other pane here:
+	   a chart can carry DOZENS of these at once, they are 12px tall, they can
+	   overlap, and they are the only glass that is CONTENT rather than chrome.
+	   Nate asked whether a purpose-built one was needed — this is that, and the
+	   value it starts at is the panel's, so today the answer is "not yet" and
+	   the token exists so the question can be answered by tuning one number
+	   instead of by moving the bands.
+
+	   ⛔ DON'T "SIMPLIFY" THIS BACK TO --glass-panel. The bands and the bars want
+	   opposite things when they disagree: a band should get MORE present under
+	   the hand, a lane of bars should get quieter as it gets denser.
+
+	   ↻ ⚓ NATE 2026-08-11, after seeing it: "the opacity should be more like
+	   --glass-hover, maybe 0.8, and I'm wondering if we can try a brighter shade
+	   of slate." Both, so: slate-700 @ .58 → slate-600 @ .8.
+
+	   ↻↻ AND THEN, FROM THE INSPECTOR: "what the buff bars actually want to be is
+	   something a little more blue like the backdrop scene — about #27314b at .8
+	   looked right. Can we get there with just colour mixing our current values,
+	   or do we need another glass value?"
+
+	   ⛔ MIXING CANNOT GET THERE, and the measurement says exactly why. His first
+	   pick measured L .317 · C .0488 · H 267.5 — the SLATE RAMP'S OWN HUE (the
+	   site's 262–269° constant) at almost exactly slate-800's lightness (L .328),
+	   carrying 1.8× the chroma. The shipped value is tuned to sit at the NOTATION
+	   FIELD's apparent colour (⚓ Nate: "match them with the apparent colour of
+	   the notation box's fill") — the two translucent surfaces on this tool now
+	   read as one material, which is the point of having a register at all:
+
+	     #2c3549   L .330  C .0377  H 265.6   ← SHIPPED
+	     #2c374f   L .338  C .0451  H 265.1
+	     #27314b   L .317  C .0488  H 267.5   ← the first pick
+	     #27314b   L .317  C .0488  H 267.5   ← the first pick
+	     slate-800 L .328  C .0267  H 264.1
+	     slate-500 L .463  C .0315  H 264.2   ← the ramp's MAXIMUM chroma
+	     night-950 L .228  C .0200  H 271.7
+
+	   A mix never lands above its inputs' chroma, and every neutral in the system
+	   caps at C .0315. There is nothing to mix that reaches .0488. The only
+	   saturated blues we own are hydro and cryo, and reaching into the element
+	   palette for a UI fill is the exact mistake this register was created to
+	   undo. So: a new value.
+
+	   ⚠ IT IS THE ONE GLASS STOP WHOSE RGB IS NOT A RAMP RUNG. Every other stop
+	   here mirrors one (panel = slate-700, well = slate-900). ⛔ Do not "tidy"
+	   this onto the ramp — putting it there would mean either dragging the whole
+	   ramp's chroma up or picking a rung that is not this colour.
+
+	   AND IT DOES NOT BREAK THE WHISPER BAND, because that law is not about this
+	   kind of thing. "Structure whispers; content carries the chroma" governs
+	   GROUNDS — a ground with real chroma white-balances every element bar
+	   sitting on it by simultaneous contrast. A buff bar is not a ground; it is
+	   an OBJECT on one, and objects are what the band exists to protect. Which is
+	   also why it can afford to lean toward the scene's blue: it is the one
+	   surface here that WANTS to look like it belongs to the night behind it.
+
+	   ⚠ THE ALPHA FIXES THE STACKING PROBLEM RATHER THAN WORSENING IT, which
+	   is the opposite of the intuition. Bars in one subrow can share a span (it
+	   is why labels cap at the neighbour's edge). At .58 an overlap composited to
+	   .82 — a visibly different material. At .8 it composites to .96, and .8
+	   against .96 is a difference you have to look for. Denser glass hides its
+	   own seams.
+
+	   ⚠ It also moves this OFF "obviously translucent" toward "nearly solid",
+	   which is deliberate and is the same call --glass-hover makes at the same
+	   alpha. The bar still reads as material because the scene moves behind it.
+
+	   ⚠ THE LABEL CONTRAST HAS BEEN THE QUIET PASSENGER OF THIS WHOLE ROUND, and
+	   it is worth reading as a sequence rather than a number. ⚓ Nate asked for
+	   labels and icons at 0.5, which recedes them; on the first stop
+	   (slate-600 @ .8) that measured 3.98:1 — under the 4.5:1 small-text floor,
+	   and shipped that way deliberately. Then each aesthetic move happened to
+	   push it around: bluer-and-darker lifted it to 4.69, the next step back up
+	   spent that down to 4.53, and the label bump to 0.65 cleared it outright:
+
+	     composited bar   white @.5   white @.65
+	     over sky 39 47 64   4.59:1      6.64:1  ✅
+	     over star 50 58 74  4.18:1      5.89:1  ✅
+
+	   So both cases now clear AA including the star, with room. ⚠ MEASURED, NOT
+	   DERIVED — the first figure written into this block was hand arithmetic and
+	   came out 0.6 optimistic, the same trap the star figures fell into in the
+	   palette round. If the alpha or the rgb moves, re-measure rather than
+	   re-reason; this stop has moved four times in a day and the ratio went both
+	   directions without anyone aiming it.
+	   It is the MUTED-on-glass floor that constrains the BANDS; nothing here
+	   reads --muted.
+
+	   🎛️ The knobs are the rgb (bluer = raise B against R/G) and the alpha. */
+	--glass-bar: rgb(44 53 73 / 0.8);
 	/* ⛔ --glass-blur IS RETIRED — ⚓ NATE 2026-08-11, THE PROBATION IS OVER.
 	   "We're starting to get a little performance lag on things like Atlas card
 	   lifts on hover and cross-tool pans. I tested without it in the inspector,
@@ -533,37 +625,45 @@
 	   over-the-world voice (site chrome, branding, biggest headers); --ink is
 	   the universal dark ink. The dire and gilt FAMILIES are RETIRED
 	   (2026-08-05, dire-retirement round) — dire's enemy-facing semantic
-	   survives as --debuff below; gilt's chrome role went to --chrome and its
-	   text roles to the contexts. CALM remains the ally-facing content
-	   register (buff bars); the element palette is untouched. */
+	   survives in the ANNOTATION REGISTER below; gilt's chrome role went to
+	   --chrome and its text roles to the contexts. CALM IS RETIRED TOO
+	   (2026-08-11) — buff and debuff bars stopped being a COLOUR that day and
+	   became a MATERIAL (--glass-bar). The element palette is untouched. */
 
-	/* DEBUFF — the enemy-facing semantic (debuffs, res shred, sacrificial
-	   procs): dire's successor. --debuff is the bright EDGE/stripe, exactly
-	   --calm's role on buff bars; --debuff-fill is the bar BODY, pinned near
-	   --calm-fill's weight (L≈.35) so debuff and buff bars carry the same
-	   presence in the timeline.
-	   ✅ 2026-08-09 (Genshin Night): NO LONGER INTERIM. The value did not change
-	   — it was promoted into the ramp as --red-500 and the open question closed.
-	   The evidence is in the primitive's comment: Fable's independent
-	   reverse-engineering landed ~ΔE 3 away, and measured head to head Nate's
-	   pick separates BETTER from pyro (ΔH 4.6° vs 2.1°), which is the constraint
-	   it was chosen under in the first place.
-	   ⚠ Canvas can't resolve var() — timelineExport.ts mirrors both. */
-	--debuff: var(--red-500);
-	--debuff-fill: #6e332d;
+	/* ══ THE ANNOTATION REGISTER — now a MATERIAL, see --glass-bar ════════════
+	   ⚓ NATE 2026-08-11: "let's rework the buff/debuff colour, they're looking
+	   out of place." Two answers landed the same day and the second one is the
+	   one that shipped; both findings are worth keeping.
 
-	/* CALM — content register. These are the HIGH-saturation members of the
-	   family whose structural members are --surface / --surface-raised /
-	   --border above. --calm is the bright stripe / identity; --calm-fill is the
-	   buff bar BODY: the deep blue a time-scaling buff (Yelan Q, Mavuika Q)
-	   ramps up to at full, so flat and ramping buffs share one color.
-	   ↻ 2026-08-01 lightness-structure: --calm-fill lifted l30 → l37 (oklch
-	   L.39 → L.45) — buff strips are content and earn real ΔL over --frame-bg
-	   (L.23) instead of hovering at the dire scene's lightness. --dire-fill's
-	   pinned l moves with it (30% → 37%), per the counterpart coupling above.
-	   ⚠ both mirrored as literals in timelineExport.ts. */
-	--calm: #6b99c7; /* bright stripe / identity  h210 s45 l60 */
-	--calm-fill: #2b5590; /* buff bar body             h215 s54 l37 */
+	   WHY THE OLD PAIR WAS WRONG (--calm #6b99c7 / --calm-fill #2b5590, and
+	   --debuff = --red-500). The diagnosis was already in this file — read the
+	   --ui-value rejection above: "WE HAVE NO FREE BLUE … --calm sits ΔH 2.2°
+	   from --el-hydro-main." That measurement vetoed a PROPOSED blue while the
+	   shipped one kept its place. A buff bar was a dark hydro bar on a chart
+	   made of element hues. Red sat ΔH 4.6° off pyro — better, still inside
+	   element territory. And red/blue encoded a valence that isn't there: a
+	   res-shred window is BENEFICIAL, just aimed elsewhere.
+
+	   THE PRINCIPLE, WHICH SURVIVED BOTH ATTEMPTS. An E/Q bar is the GAME — a
+	   real ability, element-coloured, saturated. A buff window is our READING of
+	   the game: derived, computed, explanatory. Content gets chroma; annotation
+	   doesn't.
+
+	   ⛔ NOT GOLD, though gold is the obvious reach. --accent already means "a
+	   gap you can click" on the Team Builder's coverage chips (.ts-cov--no takes
+	   an accent wash; .ts-cov--yes RECEDES). One hue cannot mean both "you are
+	   missing something" and "you have something" in two tools a swipe apart.
+
+	   ⛔ AND NOT TWO STOPS. The first answer was a warm/cool pair at s20 —
+	   --buff-fill #71624b, --debuff-fill #4b6271, channel-reversals of each other
+	   so only temperature separated them. Nate tested it and retired it the same
+	   day: "there's really no need to colour-split the buff/debuff bars. They're
+	   both good things to the user. Splitting them only adds complication to the
+	   chart, when we want to go in the opposite direction and simplify." A
+	   two-stop answer to a question with one state. What replaced it is a
+	   MATERIAL rather than a colour, which says "our reading of the chart" more
+	   plainly than any hue could — and being translucent, it also does the other
+	   thing his testing asked for: many bars now cost less. */
 
 	/* (GILT RETIRED 2026-08-05 — the family's chrome role went to --chrome,
 	   its heading/label roles to the contexts' --text/--muted, its beige
@@ -913,9 +1013,18 @@
 	   CJK cut but CJK expands less, so that's fine. Components use the vars;
 	   never re-declare font stacks locally. */
 	--font-display: 'Bitter Variable', Bitter, serif;
-	--font-body: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+	/* ⚠ 'IBM Plex Sans Variable' FIRST, and it is a DIFFERENT FAMILY NAME from
+	   the static 'IBM Plex Sans' — same split Bitter above already has. Since
+	   2026-08-11 only the variable face is loaded (see +layout.svelte for why
+	   the whole weight axis is cheaper than the two statics it replaced), so the
+	   static name is a courtesy fallback for a locally-installed copy, not
+	   something we ship. ⛔ Don't reorder these: the static would win where a
+	   user happens to have Plex installed, and take the weight ladder with it. */
+	--font-body: 'IBM Plex Sans Variable', 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-	--font-condensed: 'IBM Plex Sans Condensed', 'IBM Plex Sans', ui-sans-serif, sans-serif;
+	/* Condensed has no variable cut, so it stays two static weights (400/600)
+	   and its ladder is genuinely two rungs. Nothing reads --fw-medium on it. */
+	--font-condensed: 'IBM Plex Sans Condensed', 'IBM Plex Sans Variable', ui-sans-serif, sans-serif;
 
 	/* ── Type scale ──────────────────────────────────────────────────────────
 	   Codified sizes / weights / tracking / leading, snapped from the ~40
@@ -962,6 +1071,32 @@
 	   rung is fine; a role with no rung is not. */
 	--fs-5xl: 2rem; /* 32px — page headings · instrument readouts */
 
+	/* ══ ALL FOUR ARE REAL (since 2026-08-11) ═════════════════════════════════
+	   ⚓ NATE: "I couldn't see any difference between normal (should be 400) and
+	   medium (should be 500), but then there's a large jump to semibold (600)."
+	   He was seeing the truth. The body face was two STATIC weights, 400 and
+	   600, so CSS font-matching folded the other two onto them — 500 landed on
+	   400 and 700 landed on 600, and four tokens rendered as two. Measured at
+	   the time: a 40px string came out 400.844px at both 400 and 500, and
+	   412.563px at 600, 700 AND 800. (CSS Fonts §5.2 — a target ≤500 walks DOWN
+	   the available faces first, ≥600 walks UP first.)
+
+	   The body face is VARIABLE now — 'IBM Plex Sans Variable', one file, the
+	   weight axis continuous from 100 to 700 — so every rung below resolves to
+	   itself and the ladder is four real steps. See +layout.svelte for why that
+	   cost 1.2 KB LESS than the two static weights it replaced.
+
+	   ⚠ TWO THINGS THIS DOES NOT FIX, and both are still traps:
+	   · 700 IS THE CEILING of Plex Sans's axis. 800 and 900 clamp to 700, so
+	     --fw-bold remains the heaviest thing available. Nothing above it.
+	   · --font-mono AND --font-condensed ARE STILL STATIC 400/600 — neither has
+	     a variable cut. Reaching for --fw-medium on mono or condensed text puts
+	     you straight back in the folded-ladder case above.
+
+	   ⚠ AND COMPUTED STYLE CANNOT TELL YOU ANY OF THIS: it reports the weight
+	   you asked for whether or not a face exists to draw it. The only way to see
+	   a fold is to measure the rendered advance width of a string at each
+	   weight, which is how the numbers above were obtained. */
 	--fw-normal: 400;
 	--fw-medium: 500;
 	--fw-semibold: 600;
@@ -2260,18 +2395,26 @@ img {
    someone sees it over a bright part of the sky.
 
    ⚠ A MASK MAKES A STACKING CONTEXT (it does not make a containing block — that
-   is `filter` and `backdrop-filter`). Both current consumers portal their
-   popovers to <body> already, so nothing needed to move; a future consumer with
-   an in-flow overlay does.
+   is `filter` and `backdrop-filter`). Every current consumer portals its
+   popovers to <body> already (the planner's buff tooltip is position:fixed on
+   <body>), so nothing needed to move; a future consumer with an in-flow overlay
+   does.
 
    THE TWO CUSTOM PROPERTIES ARE WRITTEN BY $lib/actions/scrollFade, which is
    where the "only at an edge with content beyond it" logic lives. Without the
    action the element is simply unmasked (both default to 0), so the class is
    inert on its own rather than wrong — which is the failure mode you want.
 
+   ⚠ THE CLASS AND THE ACTION'S `axis` MUST AGREE. `.scroll-fade` reads the
+   top/bottom pair, `.scroll-fade-x` the left/right pair, and the action writes
+   only its own axis — so a mismatch is an unmasked scroller rather than a
+   sideways-masked one. Same inert-when-wrong posture as above.
+
    🎛️ --scroll-fade is THE KNOB and is meant to be overridden per consumer: the
-   roster's cards carry more roll-off than the rail's small groups. The action
-   reads this same property, so the clamp and the gradient cannot disagree. */
+   roster's cards carry more roll-off than the rail's small groups, and the
+   planner's timeline wants more than either (its content is continuous, so
+   there is no gap for the roll-off to hide in). The action reads this same
+   property, so the clamp and the gradient cannot disagree. */
 .scroll-fade {
 	--scroll-fade: 32px;
 	/* Unprefixed is Safari 15.4+ and every current engine; the prefix is kept as
@@ -2288,6 +2431,27 @@ img {
 		transparent 0,
 		#000 var(--scroll-fade-top, 0px),
 		#000 calc(100% - var(--scroll-fade-bottom, 0px)),
+		transparent 100%
+	);
+}
+/* The sideways twin (⚓ NATE 2026-08-11, the timeline round). Same construction,
+   same knob, `to right` — the planner's ruler and track scrollers both take it
+   so the roll-off is ONE edge across the whole instrument rather than a fade on
+   the bars with a hard-cut time axis above them. */
+.scroll-fade-x {
+	--scroll-fade: 32px;
+	-webkit-mask-image: linear-gradient(
+		to right,
+		transparent 0,
+		#000 var(--scroll-fade-left, 0px),
+		#000 calc(100% - var(--scroll-fade-right, 0px)),
+		transparent 100%
+	);
+	mask-image: linear-gradient(
+		to right,
+		transparent 0,
+		#000 var(--scroll-fade-left, 0px),
+		#000 calc(100% - var(--scroll-fade-right, 0px)),
 		transparent 100%
 	);
 }

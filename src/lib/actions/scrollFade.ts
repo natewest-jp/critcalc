@@ -7,9 +7,15 @@
  * between them, so a group cut off at the viewport edge looks exactly like a
  * column that ended. A hard cut carries no information; a fade does.
  *
+ * ⚓ NATE 2026-08-11, same day: the planner's timeline wants the same roll-off
+ * at its LEFT and RIGHT edges, which is what the `axis` option below is for.
+ * That consumer is the one that proves the mask decision below rather than just
+ * benefiting from it — the timeline round took the planner's frame and chart
+ * ground away entirely, so its scroller has no ground even in principle.
+ *
  * ⚠ WHY THIS IS A MASK AND NOT A GRADIENT SCRIM. The usual trick — an overlay
  * fading from the container's ground to transparent — needs a ground to fade
- * FROM. Both consumers sit on the bare dimmed scene (the Team Builder's main
+ * FROM. Every consumer sits on the bare dimmed scene (the Team Builder's main
  * box has no frame, and its aside is `asideBare`, a gutter of self-painting
  * groups), so there is no colour a scrim could be. A scrim in ANY colour would
  * be a smear of that colour over the live world. The mask removes the content's
@@ -49,7 +55,23 @@ const DEFAULT_LENGTH = 32;
  */
 const EPSILON = 1;
 
-export const scrollFade: Action<HTMLElement> = (node) => {
+/**
+ * Which axis rolls off. 'y' (the default) is the roster/rail case this was
+ * built for; 'x' is the planner's timeline, whose content runs sideways.
+ *
+ * ⚠ THE AXIS MUST AGREE WITH THE CLASS. The action writes the custom
+ * properties for its axis only, and each class reads only its own pair, so a
+ * mismatch leaves both at 0 — an UNMASKED scroller, not a wrongly-masked one.
+ * Inert-when-wrong is the failure mode this whole action is built for, but it
+ * does mean a missing `.scroll-fade-x` shows up as "the fade never appears"
+ * rather than as an error.
+ */
+export interface ScrollFadeOptions {
+	axis?: 'x' | 'y';
+}
+
+export const scrollFade: Action<HTMLElement, ScrollFadeOptions | undefined> = (node, options) => {
+	const horizontal = options?.axis === 'x';
 	let length = DEFAULT_LENGTH;
 	let frame = 0;
 
@@ -58,14 +80,22 @@ export const scrollFade: Action<HTMLElement> = (node) => {
 		if (Number.isFinite(declared) && declared > 0) length = declared;
 	}
 
-	function apply(top: number, bottom: number): void {
-		node.style.setProperty('--scroll-fade-top', `${top.toFixed(2)}px`);
-		node.style.setProperty('--scroll-fade-bottom', `${bottom.toFixed(2)}px`);
+	function apply(start: number, end: number): void {
+		node.style.setProperty(
+			horizontal ? '--scroll-fade-left' : '--scroll-fade-top',
+			`${start.toFixed(2)}px`
+		);
+		node.style.setProperty(
+			horizontal ? '--scroll-fade-right' : '--scroll-fade-bottom',
+			`${end.toFixed(2)}px`
+		);
 	}
 
 	function measure(): void {
 		frame = 0;
-		const travel = node.scrollHeight - node.clientHeight;
+		const travel = horizontal
+			? node.scrollWidth - node.clientWidth
+			: node.scrollHeight - node.clientHeight;
 		if (travel <= EPSILON) {
 			apply(0, 0);
 			return;
@@ -73,10 +103,10 @@ export const scrollFade: Action<HTMLElement> = (node) => {
 		// Each edge's fade is its DISTANCE from that end, capped at the full
 		// length — so it ramps in over the first (and last) `length` px of
 		// travel and is exactly 0 when the edge is the end of the content.
-		apply(
-			Math.max(0, Math.min(node.scrollTop, length)),
-			Math.max(0, Math.min(travel - node.scrollTop, length))
-		);
+		// scrollLeft can be NEGATIVE in a right-to-left scroller and fractional
+		// everywhere; the clamp covers both.
+		const offset = horizontal ? node.scrollLeft : node.scrollTop;
+		apply(Math.max(0, Math.min(offset, length)), Math.max(0, Math.min(travel - offset, length)));
 	}
 
 	/** Scroll fires per frame; coalesce so a fling does one measure per paint. */

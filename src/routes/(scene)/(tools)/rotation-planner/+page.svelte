@@ -313,11 +313,11 @@
 		{/snippet}
 	</ToolStack>
 
-	<!-- Always-on bonuses caption, directly under the frame (the per-character
-	     ability panels are gone — the timeline itself is the timing reference
-	     for slotted characters, and the Team Builder is the deep ability
-	     reference) -->
-	<TeamBonusesBlock {slots} />
+	<!-- ⛔ TeamBonusesBlock USED TO SIT HERE, below the whole stack. It moved
+	     INSIDE the timeline (⚓ Nate 2026-08-11) — between the buff/NB/moonsign
+	     lanes and the notation field — and is handed down as the `underChart`
+	     snippet so the page keeps owning `slots` while the instrument decides
+	     placement. See that prop for why. -->
 </section>
 
 <!-- ── The main column: the timeline instrument ───────────────────────────── -->
@@ -329,6 +329,12 @@
 		tabCon={rt.tabCon}
 		sourceOpen={selectorOpen}
 	>
+		<!-- The always-on bonuses strip, rendered between the chart's last lane
+		     and the notation field. -->
+		{#snippet underChart()}
+			<TeamBonusesBlock {slots} />
+		{/snippet}
+
 		<!-- The character Source's CARDS, layered over the timeline frame
 		     (non-modal). Its filter column is the other half, in the aside below.
 		     Edits are live: each add/remove sets manualSlots, which flows back
@@ -349,16 +355,18 @@
 {/snippet}
 
 <style>
-	/* Stack ↔ TeamBonusesBlock. DOUBLE the tool gutter, deliberately: this seam
-	   separates the tool from a caption ABOUT the tool, which is a bigger break
-	   than the one between two boxes of the same tool, and the hierarchy dies
-	   if the two land equal. It was clamp(16px, 2.5vw, 32px), which at wide
-	   widths already resolved to exactly this — the clamp only ever bit below
-	   ~1280, where it would now be tied with the gutter. */
+	/* ↻ 2026-08-11: the doubled gutter is GONE with the thing it separated.
+	   It read "DOUBLE the tool gutter, deliberately: this seam separates the
+	   tool from a caption ABOUT the tool" — and that was right while
+	   TeamBonusesBlock hung below the stack. The strip is INSIDE the instrument
+	   now, so there is no longer a caption to hold at arm's length, and a
+	   double gutter under a stack with nothing after it is just a dead margin.
+	   The page is a single child again; the gap is kept for whatever lands
+	   beside the stack next. */
 	.rotation-page {
 		display: flex;
 		flex-direction: column;
-		gap: calc(var(--tool-gutter) * 2);
+		gap: var(--tool-gutter);
 	}
 
 	/* ── Band B: the planner's VIEW controls ─────────────────────

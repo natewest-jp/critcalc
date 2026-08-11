@@ -14,7 +14,8 @@
 	import { artifactImagePath } from '$lib/data/artifactLookup';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
-	import { benchBand } from '$lib/benchBand.svelte';
+	import { scrollFade } from '$lib/actions/scrollFade';
+	import { benchBand, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
 	import { onDestroy } from 'svelte';
@@ -26,12 +27,7 @@
 		desaturate,
 		type ElementPalette
 	} from '$lib/utils/elementColors';
-	import {
-		UPTIME_DIM_MIX,
-		GHOST_FILL_MIX,
-		GHOST_EDGE_MIX,
-		GHOST_CHROMA_KEEP
-	} from '$lib/timeline/barMix';
+	import { UPTIME_DIM_MIX, GHOST_FILL_MIX, GHOST_CHROMA_KEEP } from '$lib/timeline/barMix';
 	import {
 		xForTime as projectX,
 		barGeom as projectBar,
@@ -66,7 +62,8 @@
 		tabLoadout = {} as Record<string, LoadoutEntry>,
 		tabCon = {} as Record<string, number>,
 		sourceOpen = false,
-		sourceOverlay
+		sourceOverlay,
+		underChart
 	}: {
 		characterSlots?: string[];
 		notation?: string;
@@ -81,6 +78,17 @@
 		/** Source panel content (the planner page's CharacterSelector), rendered
 		 *  in-frame from the portrait column's edge. */
 		sourceOverlay?: import('svelte').Snippet;
+		/** Rendered BETWEEN the chart and the composer — the always-on bonuses
+		 *  strip. ⚓ Nate 2026-08-11 moved it here from the page's bottom edge:
+		 *  "sandwiched right in-between the buff bars / nightsoul / moonsign and
+		 *  the notation box." It reads as part of the instrument now rather than
+		 *  a footnote after it, which is what it always was — an always-on buff
+		 *  is the BASELINE the timeline's temporary bars sit on top of, so it
+		 *  belongs beside the lanes that show them.
+		 *  ⚠ A SNIPPET, NOT AN IMPORT, deliberately: the block needs the page's
+		 *  `slots` and the timeline only needs to decide WHERE it goes. Same
+		 *  contract as sourceOverlay. */
+		underChart?: import('svelte').Snippet;
 	} = $props();
 
 	// ---------------------------------------------------------------------------
@@ -132,38 +140,123 @@
 	 *  back as --rp-frame-pad-x and the dock's inset is measured against it. */
 	const FRAME_PAD_X = 14;
 	const RULER_H = 28;
-	const CHAR_PAD_TOP = 10;
-	const E_ROW_H = 20;
-	const Q_ROW_H = 20;
-	const ACTIVE_ROW_H = 40; // exactly 2× E/Q row height
-	const CHAR_BUFF_ROW_H = 14; // tightened aux-row convention
-	const CHAR_PAD_BOTTOM = 10;
-	const ROW_GAP = 4;
+	// ══ 🎛️ THE VERTICAL BUDGET (⚓ NATE 2026-08-11, rounds one and two) ═════════
+	// The chart sat too low once bands A and B took their shape above it, and on
+	// a 16:10 screen the fourth slot was near the fold. It began at 158px:
+	//
+	//     pad 10 + E 20 + gap 4 + Q 20 + gap 4 + ACTIVE 40 + gap 4 + aux 46 + pad 10
+	//
+	// and lands at 124 with the reserve full, ~96 on a typical rotation once the
+	// reserve adapts (see slotBuffRowsReserved). Every row is still there.
+	//
+	// ⚠ THE GAP BETWEEN BARS IS `STRIDE − ROW`, AND THAT IS THE WHOLE STORY.
+	// Round one slimmed the painted bar to 6px inside a 12px row and pushed
+	// consecutive bars 8px apart — ⚓ Nate: "there's no point making them
+	// narrower if we can't also collapse the space between them. The minimal gap
+	// that we have between bars is by design, because otherwise they look more
+	// 'noisy' with more space between them." He is right, and the arithmetic is
+	// blunt: a bar that does not fill its row spends the row's leftover as
+	// whitespace. The bar fills its row again, so the gap is the 2px of stride
+	// and nothing else. ⛔ Don't reintroduce a slim bar inside a taller row —
+	// whatever it buys in daintiness it spends twice over in emptiness.
+	const CHAR_PAD_TOP = 8;
+	// ↻ 20 → 14 (round two). ⚓ Nate: "when they're at a similar size, it's hard
+	// to tell who you should pay attention to first. The active row needs to
+	// take priority because it is the actual source of truth about what flow of
+	// inputs is going through." Round one had cut ACTIVE 40 → 28, which left
+	// these at 20 and the ratio at 1.4:1 — too close to rank. Restoring 2:1 by
+	// taking the DURATION rows down rather than the input row back up is the
+	// version that pays for itself: E/Q say how long something lasts, the active
+	// row says what is happening.
+	const E_ROW_H = 14;
+	const Q_ROW_H = 14;
+	// ↻ 40 → 28 (round one). It was "exactly 2× E/Q", which is hierarchy
+	// expressed as arithmetic — but the row carries a SINGLE LINE of --fs-sm text
+	// (.rp-input-block is a one-line flex row; nothing in it wraps), so 40px was
+	// 3.6× leading.
+	//
+	// ↻ 28 → 30 (⚓ NATE 2026-08-11), and the extra 2px is a CORRECTION, not
+	// generosity. He caught that the two rows are not measured the same way:
+	// .rp-bar-uptime is `top: 0; height: 100%`, so an E/Q row PAINTS its full
+	// height, while .rp-active-bg and .rp-input-block are `top: 1px;
+	// height: calc(100% - 2px)` — so a 28px active row painted only 26. The 2:1
+	// we thought we had restored was really 26:14. At 30 the painted heights are
+	// 28:14 and the ratio is true.
+	// ⚠ THE 1px INSET IS LOAD-BEARING, so don't "fix" this the other way by
+	// removing it: connectorGeom aligns swap connectors to the inset bar's
+	// edges (yTop + 1, yBottom − 1) and would need to move with it.
+	const ACTIVE_ROW_H = 30;
+	// The row AND its bar — they are the same number again (see the gap note).
+	// 12 holds --fs-xs with a px of air each side, which is the floor for text.
+	const CHAR_BUFF_ROW_H = 12;
+	const CHAR_PAD_BOTTOM = 8;
+	// ══ 🎛️ THE GAP LADDER (⚓ NATE 2026-08-11) ════════════════════════════════
+	// One ROW_GAP of 4 used to serve every seam in the slot. Nate's spec splits
+	// it in two, and the split says something the single value could not:
+	//
+	//     E bar ───────┐
+	//        2px       │  the ABILITY BLOCK — E, its summons and Q are one
+	//     Summon ──────┤  object, so their seams are the tightest in the slot
+	//        2px       │
+	//     Q bar ───────┘
+	//        3px          ← the active row stands apart from what surrounds it
+	//     ACTIVE ROW
+	//        3px
+	//     Buff bar ────┐
+	//        2px       │  the buff stack, already at its own 2px stride
+	//     Buff bar ────┘
+	//
+	// So gap encodes GROUPING: 2px means "same object", 3px means "next to".
+	// (Nate wrote the block top-down as Q → summon → E; the DOM runs E → summon
+	// → Q. The gaps are symmetric about the summon lane, so the spec is the same
+	// either way round.)
+	const ABILITY_ROW_GAP = 2;
+	const ACTIVE_ROW_GAP = 3;
 	// 2px visual gap between consecutive buff subrows
-	const CHAR_BUFF_ROW_STRIDE = CHAR_BUFF_ROW_H + 2; // = 16
+	const CHAR_BUFF_ROW_STRIDE = CHAR_BUFF_ROW_H + 2; // = 14
 
 	// Summon lane (between E and Q, conditional on summons[].length > 0)
-	const SUMMON_ROW_H = 14;
-	const SUMMON_ROW_STRIDE = SUMMON_ROW_H + 2; // = 16
-	// Gap above and below the summon lane. 3px is chosen so adding a summon costs
-	// exactly one CHAR_BUFF_ROW_STRIDE (16px) — `3 + 14 + 3 - 4(no-summon E↔Q gap)
-	// = 16` — which is the same amount the buff reservation gives back when one
-	// of its rows is replaced by a summon. Net slot-height delta: zero.
-	const SUMMON_LANE_GAP = 3;
+	// ⚠ SUMMON_ROW_H IS NOT FREE — it is pinned by the invariant below.
+	const SUMMON_ROW_H = 12;
+	const SUMMON_ROW_STRIDE = SUMMON_ROW_H + 2; // = 14
+	// Gap above and below the summon lane, chosen so adding a summon costs
+	// exactly one CHAR_BUFF_ROW_STRIDE — `gap + SUMMON_ROW_H + gap −
+	// ABILITY_ROW_GAP(the no-summon E↔Q seam) = CHAR_BUFF_ROW_STRIDE` — which is
+	// the same amount the buff reservation gives back when one of its rows is
+	// replaced by a summon. Net slot-height delta: zero.
+	// ⚠ IT MOVED WITH THE GAP LADDER AND THE INVARIANT STILL SOLVES: the seam it
+	// subtracts went 4 → 2, so this went 3 → 2 to match. 2 + 12 + 2 − 2 = 14 ✓
+	// (and it is the same 2px as the rest of the ability block, which is why the
+	// number Nate asked for and the number the invariant needs are the same one.)
+	const SUMMON_LANE_GAP = 2;
 
-	// Default reservation for the shared aux-row pool — summon sub-rows above the
-	// Q row and received-buff sub-rows below the active row count toward the same
-	// budget. The slot grows only when summon + buff combined exceeds this.
-	// Cut 4 → 3 (Nate 2026-07-19): the reserve is the tool's single largest
-	// vertical investment (one row = 16px × 4 slots = 64px), the typical
-	// rotation fills fewer rows, and overflow already grows the slot safely.
-	const DEFAULT_RESERVED_AUX_ROWS = 3;
+	// ══ THE AUX RESERVE, ADAPTIVE (⚓ NATE 2026-08-11, round two) ══════════════
+	// Summon sub-rows above the Q row and received-buff sub-rows below the active
+	// row draw on one shared budget. This was a FLOOR of 3 applied to each slot
+	// INDEPENDENTLY, and it was wrong in both directions at once: a character who
+	// receives nothing still paid for three empty rows, and because each slot
+	// took its own max, slots ended up DIFFERENT heights anyway — so the floor
+	// bought neither density nor uniformity, which are the only two things a
+	// reservation can buy.
+	//
+	// It reserves the MAXIMUM ACTUAL across the four slots now. Slots come out
+	// uniform (they did not before), a rotation with no received buffs pays
+	// nothing, and the layout still never jumps when one slot gains a row —
+	// which was the floor's real job. The old constant is kept as a CEILING-FREE
+	// minimum of 0: there is no floor any more.
+	// ⚠ This is why the budget note above quotes two slot heights. The 124 is the
+	// worst case, not the common one.
+	const MIN_RESERVED_AUX_ROWS = 0;
 
-	// Below-timeline lanes (team buffs, NB, Moonsign) — shared 14px bar + 2px
-	// padding each side; multi-row lanes grow with row count.
-	const AUX_LANE_BAR_H = 14;
+	// Below-timeline lanes (team buffs, NB, Moonsign) — shared bar + 2px padding
+	// each side; multi-row lanes grow with row count. ↻ 14 → 12 with the char
+	// buff rows: these lanes carry the same bar grammar, and a lane bar taller
+	// than the identical bar inside a slot would read as a different class of
+	// thing. The CSS subrows read AUX_LANE_BAR_H back as --rp-aux-bar-h rather
+	// than repeating the literal, which is how the two used to drift.
+	const AUX_LANE_BAR_H = 12;
 	const AUX_LANE_PAD_Y = 2;
-	const AUX_LANE_BAR_STRIDE = AUX_LANE_BAR_H + 2; // = 16
+	const AUX_LANE_BAR_STRIDE = AUX_LANE_BAR_H + 2; // = 14
 	function auxLaneH(rowCount: number): number {
 		const rows = Math.max(1, rowCount);
 		return rows * AUX_LANE_BAR_STRIDE - 2 + AUX_LANE_PAD_Y * 2;
@@ -190,15 +283,34 @@
 	// $lib/utils/elementColors so the Team Builder's Compare bars share the exact
 	// finish. Its Safari-revert history travelled with it.
 
-	// One gradient stop for the time-scaling buff envelope: --calm-fill (the buff
-	// body/fill) mixed toward the chart ground, so ramp/decay bars track any
-	// future --calm-fill change and stay in sync with the flat buff bars (which
-	// fill solid --calm-fill). ↻ 2026-08-01: mixes against --rp-chart-bg, NOT
-	// transparent — these bars always sit on the chart ground, and the alpha-
-	// compositing law says a fill on a known ground mixes opaquely against it
-	// (semi-transparent CSS renders display-dependently on P3).
-	function calmStop(alpha: number): string {
-		return `color-mix(in srgb, var(--calm-fill) ${(alpha * 100).toFixed(1)}%, var(--rp-chart-bg))`;
+	/** The thinnest a scaling buff's material gets, as a fraction of --glass-bar's
+	 *  own density. 🎛️ ⚠ IT IS NOT THE OLD 0.2. When the envelope mixed an
+	 *  OPAQUE fill toward the chart ground, 0.2 still produced a solid colour
+	 *  near that ground — thin meant "close to the background", and the bar was
+	 *  always there. Scaling a translucent material by 0.2 gives alpha .116,
+	 *  which is SHEER, and sheer is retired ("opaque or obviously translucent —
+	 *  the middle is not a place"). 0.5 keeps the thin end at alpha .29: still
+	 *  unmistakably a bar, still obviously less than full. */
+	const ENVELOPE_MIN = 0.5;
+
+	/** One gradient stop for the time-scaling buff envelope (Yelan Q, Mavuika Q
+	 *  — a buff whose value ramps or decays over its own window).
+	 *
+	 *  ↻ 2026-08-11: the bars became GLASS, and that changes what a stop IS.
+	 *  This used to mix the opaque fill toward --rp-chart-bg, on the
+	 *  alpha-compositing law's "a fill on a KNOWN ground mixes opaquely against
+	 *  it". Two things broke that: the chart has no painted ground any more, and
+	 *  — the sharp one — mixing a translucent colour toward an OPAQUE one raises
+	 *  its alpha as the mix fraction falls, so the old formula would have made a
+	 *  fading buff MORE solid. Backwards, and silently so.
+	 *
+	 *  Mixing toward `transparent` is the correct operation for a material:
+	 *  color-mix premultiplies, so this scales --glass-bar's alpha and leaves its
+	 *  rgb alone. A ramping buff now genuinely thins as material, which is what
+	 *  "the buff is weaker here" should look like on glass.
+	 *  ⚠ One level of mix — --glass-bar is a literal, so the nesting law holds. */
+	function buffStop(density: number): string {
+		return `color-mix(in srgb, var(--glass-bar) ${(density * 100).toFixed(1)}%, transparent)`;
 	}
 
 	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)
@@ -210,9 +322,9 @@
 			ramp.cap != null ? ((ramp.cap - ramp.startValue) / ramp.stepValue) * ramp.stepInterval : 10;
 		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / rampDur));
 		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / rampDur));
-		const o0 = 0.2 + p0 * 0.8;
-		const o1 = 0.2 + p1 * 0.8;
-		return `linear-gradient(to right, ${calmStop(o0)}, ${calmStop(o1)})`;
+		const o0 = ENVELOPE_MIN + p0 * (1 - ENVELOPE_MIN);
+		const o1 = ENVELOPE_MIN + p1 * (1 - ENVELOPE_MIN);
+		return `linear-gradient(to right, ${buffStop(o0)}, ${buffStop(o1)})`;
 	}
 
 	// Returns a linear-gradient CSS string for decaying buff bars, fading from full
@@ -223,9 +335,9 @@
 		if (!decay || bar.buffStart == null || decay.duration <= 0) return undefined;
 		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / decay.duration));
 		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / decay.duration));
-		const o0 = 1.0 - p0 * 0.8;
-		const o1 = 1.0 - p1 * 0.8;
-		return `linear-gradient(to right, ${calmStop(o0)}, ${calmStop(o1)})`;
+		const o0 = 1.0 - p0 * (1 - ENVELOPE_MIN);
+		const o1 = 1.0 - p1 * (1 - ENVELOPE_MIN);
+		return `linear-gradient(to right, ${buffStop(o0)}, ${buffStop(o1)})`;
 	}
 
 	// ---------------------------------------------------------------------------
@@ -386,42 +498,65 @@
 	function qRowTopForSlot(slotIdx: number): number {
 		const summonH = slotSummonLaneHeights[slotIdx];
 		if (summonH === 0) {
-			// E ↔ Q: standard ROW_GAP when no summon lane sits between them.
-			return CHAR_PAD_TOP + E_ROW_H + ROW_GAP;
+			// E ↔ Q direct: the ability block's own seam.
+			return CHAR_PAD_TOP + E_ROW_H + ABILITY_ROW_GAP;
 		}
-		// E ↔ summon ↔ Q: tight 2px gaps on both sides of the summon lane.
+		// E ↔ summon ↔ Q — the same seam either side of the lane.
 		return CHAR_PAD_TOP + E_ROW_H + SUMMON_LANE_GAP + summonH + SUMMON_LANE_GAP;
 	}
 
+	// The two seams that set the active row apart from what surrounds it — see
+	// the gap ladder at ACTIVE_ROW_GAP. Deliberately the SAME constant on both
+	// sides: the row is one object standing clear, not a thing pushed downward.
 	function activeRowOffsetForSlot(slotIdx: number): number {
-		return qRowTopForSlot(slotIdx) + Q_ROW_H + ROW_GAP;
+		return qRowTopForSlot(slotIdx) + Q_ROW_H + ACTIVE_ROW_GAP;
 	}
 
 	function buffRowsTopForSlot(slotIdx: number): number {
-		return activeRowOffsetForSlot(slotIdx) + ACTIVE_ROW_H + ROW_GAP;
+		return activeRowOffsetForSlot(slotIdx) + ACTIVE_ROW_H + ACTIVE_ROW_GAP;
 	}
 
-	// Aux-row budget: summon sub-rows (between E and Q) and received-buff sub-rows
-	// (below the active row) share one DEFAULT_RESERVED_AUX_ROWS reservation.
-	// Examples (rows reserved → buff slots reserved):
-	//   0 summon + 2 buffs  → 3 reserved → buff reserves 3 (slot at baseline)
-	//   1 summon + 0 buffs  → 3 reserved → buff reserves 2 (slot at baseline)
-	//   1 summon + 3 buffs  → 4 reserved → buff reserves 3 (slot grows by stride)
+	/** Aux rows actually used by one slot — summon sub-rows (between E and Q) plus
+	 *  received-buff sub-rows (below the active row), which draw on one budget. */
+	function slotAuxRowsUsed(slotIdx: number): number {
+		return (
+			summonSubrows.filter((r) => r.slotIdx === slotIdx).length +
+			(slotReceivedSubrowCounts[slotIdx] ?? 0)
+		);
+	}
+
+	/** The reservation every slot takes: the BUSIEST slot's actual usage. See the
+	 *  aux-reserve note at MIN_RESERVED_AUX_ROWS for why this replaced a fixed
+	 *  per-slot floor of 3. Uniform across slots by construction — that is half
+	 *  the point — so it takes no slotIdx. */
+	let auxRowsReserved = $derived(
+		Math.max(MIN_RESERVED_AUX_ROWS, ...[0, 1, 2, 3].map(slotAuxRowsUsed))
+	);
+
+	// Reserved rows go to SUMMONS first (they sit in their own lane between E and
+	// Q); what is left is the slot's buff-row allowance. A slot with fewer
+	// summons than the busiest one therefore gets the difference back as buff
+	// rows, which is what keeps every slot the same height.
 	function slotBuffRowsReserved(slotIdx: number): number {
 		const summonCount = summonSubrows.filter((r) => r.slotIdx === slotIdx).length;
-		const buffCount = slotReceivedSubrowCounts[slotIdx] ?? 0;
-		const totalAux = summonCount + buffCount;
-		const reservedAux = Math.max(DEFAULT_RESERVED_AUX_ROWS, totalAux);
-		return Math.max(0, reservedAux - summonCount);
+		return Math.max(0, auxRowsReserved - summonCount);
 	}
 
 	// Block height intentionally excludes LOADOUT_ROWS_H — the loadout panel
 	// in the label column lives within the cell's existing real estate, so the
 	// track column doesn't carry a parallel dead band underneath.
+	// ⚠ FLOORED BY THE BENCH CARD, NOT BY THE ROWS. The card that labels this
+	// slot needs 86px before its portrait gets a pixel (see BENCH_SLOT_MIN_H),
+	// and after two condensing rounds the tracks ask for less than that — so the
+	// CARD sets the minimum now. Without this floor the 68px portrait disc spills
+	// straight through the identity row and the loadout pill; it is capped rather
+	// than floored on its own side, so nothing else would catch it.
+	// The extra height lands as slack BELOW the last aux row (every row is
+	// positioned from the slot's top), which is where it is least noticeable.
 	function slotBlockH(slotIdx: number): number {
 		const buffRows = slotBuffRowsReserved(slotIdx);
 		const buffH = buffRows > 0 ? buffRows * CHAR_BUFF_ROW_STRIDE - 2 : 0;
-		return buffRowsTopForSlot(slotIdx) + buffH + CHAR_PAD_BOTTOM;
+		return Math.max(BENCH_SLOT_MIN_H, buffRowsTopForSlot(slotIdx) + buffH + CHAR_PAD_BOTTOM);
 	}
 
 	// Cumulative Y offsets per slot, accounting for variable block heights.
@@ -473,47 +608,38 @@
 
 	let trackScrollWidth = $state(0);
 	let trackScrollEl: HTMLDivElement | undefined;
-	let extScrollEl: HTMLDivElement | undefined;
-	// The ruler strip viewport — a pure FOLLOWER of the two real scrollers
-	// (overflow hidden, no user scroll, never a latch source): it only ever
-	// receives programmatic scrollLeft writes, so it can't trigger the
-	// Safari interrupted-momentum jump the latch protects against.
+	// The ruler strip viewport — a pure FOLLOWER of the track scroller (overflow
+	// hidden, no user scroll): it only ever receives programmatic scrollLeft
+	// writes, so it can't be momentum-scrolling when one lands.
 	let rulerScrollEl: HTMLDivElement | undefined;
 
-	// Mirrored-scroll gesture latching. The two scrollers mirror each other,
-	// but a programmatic scrollLeft write onto an element that is momentum-
-	// scrolling breaks the scroll: Chrome/Firefox hitch, and Safari resolves
-	// the interrupted momentum by JUMPING the scroll to its end position
-	// (WebKit's known interrupted-momentum behavior). Echo detection by
-	// expected-value comparison proved fragile against Safari's scroll-event
-	// cadence, so latch instead — mirroring what browsers themselves do with
-	// gestures: whichever element last saw a scroll event while the other was
-	// idle is the SOURCE; the other side's events are ignored wholesale until
-	// the source has been quiet for 150ms. Mirror writes are batched to rAF so
-	// they never run inside the source's scroll-event dispatch, and the
-	// actively-scrolling element never receives a programmatic write.
-	let syncSource: 'track' | 'ext' | null = null;
-	let syncSourceTimer: ReturnType<typeof setTimeout> | undefined;
+	// ↻ 2026-08-11 (the timeline round): THE GESTURE LATCH IS GONE, and it is
+	// worth recording what it was for, because deleting a hard-won workaround
+	// looks reckless without the reason.
+	//
+	// There used to be TWO user-scrollable elements here — the tracks and a
+	// hand-built external scrollbar below them — mirroring each other. A
+	// programmatic scrollLeft write onto an element that is momentum-scrolling
+	// breaks the scroll (Chrome/Firefox hitch; Safari resolves the interrupted
+	// momentum by JUMPING to the end), so each side had to know when the other
+	// was driving, via a 150ms source latch.
+	//
+	// ⚓ NATE 2026-08-11: "the only thing we need [the custom scrollbar] to
+	// avoid" was the native overlay scrollbar drawing on top of the bottom lane's
+	// bars. Styling ::-webkit-scrollbar makes the scrollbar non-overlay — it
+	// takes layout space instead of floating over content — so a bottom gutter
+	// on the scroller solves that directly (see .rp-track-scroll). With the
+	// second scroller gone there is exactly ONE gesture source and one
+	// write-only follower, which is a shape that cannot have the bug the latch
+	// defended against. The whole class of failure left with the DOM node.
 	let mirrorRaf = 0;
-
-	function latchSource(side: 'track' | 'ext') {
-		syncSource = side;
-		clearTimeout(syncSourceTimer);
-		syncSourceTimer = setTimeout(() => (syncSource = null), 150);
-	}
 
 	function scheduleMirror() {
 		if (mirrorRaf) return;
 		mirrorRaf = requestAnimationFrame(() => {
 			mirrorRaf = 0;
-			if (!trackScrollEl || !extScrollEl) return;
-			if (syncSource === 'track') extScrollEl.scrollLeft = trackScrollEl.scrollLeft;
-			else if (syncSource === 'ext') trackScrollEl.scrollLeft = extScrollEl.scrollLeft;
-			// Ruler follows whichever side drove this mirror pass.
-			if (rulerScrollEl && syncSource) {
-				rulerScrollEl.scrollLeft =
-					syncSource === 'track' ? trackScrollEl.scrollLeft : extScrollEl.scrollLeft;
-			}
+			if (!trackScrollEl || !rulerScrollEl) return;
+			rulerScrollEl.scrollLeft = trackScrollEl.scrollLeft;
 		});
 	}
 
@@ -539,20 +665,11 @@
 	}
 	$effect(() => () => {
 		clearTimeout(scrollIdleTimer);
-		clearTimeout(syncSourceTimer);
 		cancelAnimationFrame(mirrorRaf);
 	});
 
 	function onTrackScroll() {
 		markScrolling();
-		if (syncSource === 'ext') return; // echo of our ext-driven mirror write
-		latchSource('track');
-		scheduleMirror();
-	}
-	function onExtScroll() {
-		markScrolling();
-		if (syncSource === 'track') return; // echo of our track-driven mirror write
-		latchSource('ext');
 		scheduleMirror();
 	}
 
@@ -601,8 +718,9 @@
 	});
 	let totalWidth = $derived(Math.round(totalDuration * scale));
 
+	// ⛔ `majorTicks` is gone (2026-08-11): it existed only to draw gridlines for
+	// the 5s marks, and every tick draws one now.
 	let ticks = $derived(rulerTicks(totalDuration, scale));
-	let majorTicks = $derived(ticks.filter((t) => t.major));
 
 	// ---------------------------------------------------------------------------
 	// Geometry helpers
@@ -621,12 +739,19 @@
 		return projectBar(start, span, scale);
 	}
 
-	/** Cap a buff-bar label's width at the NEXT bar's left edge when two bars in
-	 *  the same subrow overlap — the neighbour paints over this bar's tail, so
-	 *  without the cap the label never truncates and its fade mask never engages
-	 *  (the neighbour just occludes it mid-glyph). Inset = bar padding (5) +
-	 *  icon 11 + gap 4 when an icon leads, plus 2px for the neighbour's edge
-	 *  line. Null (no cap) when the bars don't overlap. */
+	/** Cap a buff-bar label's width at the NEXT bar's left edge. Inset = bar
+	 *  padding (5) + icon 11 + gap 4 when an icon leads, plus 2px for the
+	 *  neighbour's edge line. Null (no cap) only when nothing follows in this
+	 *  subrow, where the lane's own width is the bound.
+	 *
+	 *  ↻ 2026-08-11 (the label-decoupling round) — THE NEIGHBOUR IS NOW THE ONLY
+	 *  BOUND, so this applies whether or not the two bars overlap. It used to
+	 *  return null for non-overlapping bars because the BAR clipped its own
+	 *  label (overflow:hidden) and the cap was needed only where a neighbour
+	 *  painted over the tail. The label leaves its bar now — vertically by
+	 *  design, and horizontally as the readability win, since a 5px bar with
+	 *  three seconds of empty lane after it can finally say what it is. What it
+	 *  must never do is run under the next bar, which is exactly this. */
 	function labelCapPx(
 		g: { left: number; width: number },
 		next: { start: number } | undefined,
@@ -634,7 +759,6 @@
 	): string | null {
 		if (!next) return null;
 		const nextLeft = barGeom(next.start, 0).left;
-		if (nextLeft >= g.left + g.width) return null;
 		return `${Math.max(0, nextLeft - g.left - (hasIcon ? 20 : 5) - 2)}px`;
 	}
 
@@ -675,13 +799,44 @@
 	 * headless-WebKit probe couldn't reproduce it, real Safari shows it). The
 	 * PNG export keeps drawing from the same connectorGeom.
 	 */
+	/**
+	 * ══ THE CONNECTOR'S CORNERS ROUND THEMSELVES (⚓ NATE 2026-08-11) ══════════
+	 * ⚓ "I'm wondering how possible it would be to make this border radius fully
+	 * round the corner no matter what ping setting or zoom display is chosen.
+	 * Would it be as simple as making it border-radius 999px on that corner? Or
+	 * would it need to be calculated from ping and zoom?"
+	 *
+	 * As simple as 999px, and the reason it needs no arithmetic is a rule CSS
+	 * already applies for us. Per CSS Backgrounds §5.5, when the radii on a side
+	 * exceed that side's length the engine computes ONE scale factor
+	 * f = min over sides of (side length ÷ sum of that side's two radii) and
+	 * scales EVERY radius by it. Only two opposite corners carry a radius here,
+	 * so each side's sum is just R, and f = min(w, h) ÷ R. The used radius comes
+	 * out at exactly min(w, h) — the largest arc the box can hold — for any R
+	 * big enough to trigger the clamp.
+	 *
+	 * So the box's own dimensions ARE the calculation, and they already track
+	 * ping and zoom: w is the swap gap in px (xForTime of the next active start
+	 * minus this one, so ping × scale) and h spans the two active rows. Nothing
+	 * to recompute, and nothing to keep in sync when either knob moves.
+	 *
+	 * ⚠ THIS IS A REAL SHAPE CHANGE, NOT JUST A CAP LIFT. The old radius was
+	 * min(3, floor(w / 2)) — capped at 3px AND at HALF the width. The used value
+	 * is now the FULL min(w, h), so a connector at a wide swap gap sweeps rather
+	 * than nicks its corner.
+	 *
+	 * ⚠ 999px is doing real work and is not a lazy "big number": it must exceed
+	 * min(w, h) at every zoom for the clamp to bite, and ZOOM_MAX × a long ping
+	 * can be hundreds of px. Don't "tidy" it down to something that looks
+	 * reasonable — a value that stops triggering the clamp silently becomes a
+	 * fixed radius again.
+	 */
 	function connectorStyle(from: SlottedTrack, to: SlottedTrack): string | null {
 		const geo = connectorGeom(from, to);
 		if (!geo) return null;
 		const { x, w, yTop, yBottom, downward } = geo;
-		const r = Math.min(3, Math.floor(w / 2));
 		// Downward: free corners are TR and BL; upward: TL and BR
-		const radius = downward ? `0 ${r}px 0 ${r}px` : `${r}px 0 ${r}px 0`;
+		const radius = downward ? '0 999px 0 999px' : '999px 0 999px 0';
 		return `left:${x}px;top:${yTop}px;width:${w}px;height:${yBottom - yTop}px;border-radius:${radius}`;
 	}
 
@@ -1013,14 +1168,18 @@
      bands AND the surface off the strip together — one declaration instead of
      the three that had to agree. (TeamBonusesBlock still sits outside the
      stack at the content margin, below the strip's bottom end.) -->
-<div class="rp-root ctx-dark" style:--rp-frame-pad-x="{FRAME_PAD_X}px">
+<div
+	class="rp-root ctx-dark"
+	style:--rp-frame-pad-x="{FRAME_PAD_X}px"
+	style:--rp-aux-bar-h="{AUX_LANE_BAR_H}px"
+>
 	<!-- ── Timeline chart frame ──────────────────────────────── -->
 	<!-- The frame is ONE instrument with a fixed grammar: time axis (ruler +
 	     view controls) on the TOP edge per DAW/NLE convention, rendered tracks
 	     in the middle, and the notation COMPOSER (input + its KQM/PNG submit
 	     pair) on the BOTTOM edge — the chat-app register: you write at the
 	     bottom, the conversation renders above. -->
-	<div class="rp-frame frame" class:rp-frame--picking={sourceOpen}>
+	<div class="rp-frame" class:rp-frame--picking={sourceOpen}>
 		<!-- The RIBBON's dock used to live here, hanging off this frame's padding
 		     box. It moved up to the TOOL STACK in the toolbar round: the strip
 		     now stands proud of the BANDS as well as the surface, so its anchor
@@ -1032,7 +1191,16 @@
 		     track/ext scrollers), and the view cluster stays pinned to the
 		     frame's right edge. -->
 		<div class="rp-ruler-strip">
-			<div class="rp-ruler-scroll" bind:this={rulerScrollEl}>
+			<!-- The ruler takes the SAME edge roll-off as the tracks below it
+			     (⚓ NATE 2026-08-11): it is the same instrument seen from the top,
+			     and a faded bar under a hard-cut time axis reads as two objects.
+			     Its scrollLeft is written programmatically, which still fires the
+			     scroll events the action listens for. -->
+			<div
+				class="rp-ruler-scroll scroll-fade-x"
+				bind:this={rulerScrollEl}
+				use:scrollFade={{ axis: 'x' }}
+			>
 				<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
 				     rise to the seam, labels above them. -->
 				<div class="rp-ruler" style:width="{totalWidth}px" style:height="{RULER_H}px">
@@ -1061,10 +1229,11 @@
 				     the shadow column never carried it. -->
 				<!-- Scrollable track area -->
 				<div
-					class="rp-track-scroll"
+					class="rp-track-scroll scroll-fade-x"
 					bind:this={trackScrollEl}
 					bind:clientWidth={trackScrollWidth}
 					onscroll={onTrackScroll}
+					use:scrollFade={{ axis: 'x' }}
 				>
 					<div
 						class="rp-tracks"
@@ -1075,9 +1244,14 @@
 						     track area, replacing the old per-container loops. Divs, not
 						     SVG, so Safari pixel-snaps them together with the bars (see
 						     connectorStyle). z:0 + first in DOM keeps them beneath the
-						     ghost CD tracks. -->
-						{#each majorTicks as tick (tick.t)}
-							<div class="rp-gridline" style:left="{tick.x}px"></div>
+						     ghost CD tracks.
+						     ↻ 2026-08-11: EVERY tick draws a line, not just the majors —
+						     the minors are fainter and shorter (see .rp-gridline). The
+						     `major` flag is `t % 5 === 0`, so "minor" is exactly Nate's
+						     sub-5s. This loop is the ruler's ticks one-for-one now, which
+						     is what lets a tick and its line be one stroke. -->
+						{#each ticks as tick (tick.t)}
+							<div class="rp-gridline" class:major={tick.major} style:left="{tick.x}px"></div>
 						{/each}
 
 						<!-- Character slot tracks (always 4 rows) -->
@@ -1157,12 +1331,7 @@
 															p.main,
 															GHOST_CHROMA_KEEP
 														)}
-														{GHOST_FILL_MIX}%, var(--rp-chart-bg))"
-														style:border-color="color-mix(in srgb, {desaturate(
-															p.main,
-															GHOST_CHROMA_KEEP
-														)}
-														{GHOST_EDGE_MIX}%, var(--rp-chart-bg))"
+														{GHOST_FILL_MIX}%, transparent)"
 													>
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
@@ -1275,12 +1444,7 @@
 															p.main,
 															GHOST_CHROMA_KEEP
 														)}
-														{GHOST_FILL_MIX}%, var(--rp-chart-bg))"
-														style:border-color="color-mix(in srgb, {desaturate(
-															p.main,
-															GHOST_CHROMA_KEEP
-														)}
-														{GHOST_EDGE_MIX}%, var(--rp-chart-bg))"
+														{GHOST_FILL_MIX}%, transparent)"
 													>
 														{#if g.width > 32}
 															<span class="rp-bar-cd-label"
@@ -1366,7 +1530,16 @@
 												style:left="{g.left}px"
 												style:width="{g.width}px"
 											>
-												<span class="rp-buff-label">{procRow.label} trigger CD</span>
+												<!-- The cap is not optional here. This row's bar used to clip
+												     its own label (overflow:hidden) and so never needed one;
+												     the slim bar lets the label out on both axes, so without
+												     labelCapPx a long proc name would run straight over the
+												     next trigger window. -->
+												<span
+													class="rp-buff-label"
+													style:max-width={labelCapPx(g, procRow.bars[bi + 1], false)}
+													>{procRow.label} trigger CD</span
+												>
 											</div>
 										{/each}
 									</div>
@@ -1431,11 +1604,9 @@
 											{#each subrow.bars as bar, bi (bi)}
 												{@const g = barGeom(bar.start, bar.end - bar.start)}
 												{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
-												{@const isDebuff = subrow.kind === 'debuff'}
 												<!-- svelte-ignore a11y_no_static_element_interactions -->
 												<div
 													class="rp-team-buff-bar"
-													class:rp-team-debuff-bar={isDebuff}
 													style:left="{g.left}px"
 													style:width="{g.width}px"
 													onmouseenter={(e) =>
@@ -1548,12 +1719,14 @@
 		</div>
 		<!-- /rp-timeline-area -->
 
-		<!-- ── External scrollbar (below timeline, synced to track) ─ -->
-		<div class="rp-ext-scroll-wrap">
-			<div class="rp-ext-scroll" bind:this={extScrollEl} onscroll={onExtScroll}>
-				<div style:width="{totalWidth}px" style:height="1px"></div>
-			</div>
-		</div>
+		<!-- The EXTERNAL SCROLLBAR stood here — a second real scroller mirroring
+		     the tracks, built for one reason: the native overlay scrollbar drew
+		     on top of the bottom lane's bars. It is retired (⚓ NATE 2026-08-11).
+		     The track scroller styles its own scrollbar now, which makes it
+		     non-overlay, and reserves a gutter for it — so the bar lands on empty
+		     space by construction rather than by being moved somewhere else. See
+		     .rp-track-scroll, and scheduleMirror for what the second scroller was
+		     costing in sync machinery. -->
 
 		<!-- ── Character Source overlay ─────────────────────────────
 		     Non-modal, and a sibling of the frame's own rows so it covers
@@ -1561,7 +1734,7 @@
 		     cluster, tracks, external scrollbar, composer — instead of the
 		     track area alone. That makes the planner in picking mode the
 		     mirror of the Team Builder at rest: bench on one edge, grid and
-		     filters filling the rest of one frame. The 4 live portraits stay
+		     filters filling the rest of one surface. The 4 live portraits stay
 		     visible on the left as the team display. The content is the
 		     planner page's CharacterSelector, handed in as a snippet. Kept
 		     MOUNTED after the first open (hidden, not destroyed) so reopening
@@ -1587,6 +1760,22 @@
 		{/if}
 	</div>
 	<!-- /rp-frame -->
+
+	<!-- ── Always-on bonuses, sandwiched between chart and composer ──────────
+	     ⚓ NATE 2026-08-11: it used to hang off the bottom of the PAGE, below the
+	     composer, "looking a bit out of place" — and it was: an always-on buff is
+	     the BASELINE every temporary bar above it is measured against, so
+	     reading it is part of reading the chart. Below the composer it read as a
+	     footnote about the tool; here it reads as the last row of it.
+	     ⚠ The seam that separated it from the stack was a DOUBLE tool gutter,
+	     deliberately, on the reasoning that "this separates the tool from a
+	     caption ABOUT the tool". That reasoning inverts with the move — it is
+	     inside the tool now — so it takes the ordinary single gutter that
+	     .rp-root's `gap` already provides, and the page's double-gutter rule
+	     went with the element. -->
+	{#if underChart}
+		<div class="rp-underchart">{@render underChart()}</div>
+	{/if}
 
 	<!-- ── Composer ─────────────────────────────────────────────
 	     The notation input: you write the rotation here, the timeline renders
@@ -1616,7 +1805,7 @@
 	     ↻ TOOLBAR ROUND: the KQM/PNG pair that used to sit just outside the box
 	     is gone from here. Both are EXPORTS, and exports are one family with the
 	     share link — they live in band A's Share menu now. -->
-	<div class="rp-composer frame" class:rp-composer--picking={sourceOpen} inert={sourceOpen}>
+	<div class="rp-composer" class:rp-composer--picking={sourceOpen} inert={sourceOpen}>
 		<div class="rp-notation-wrap">
 			<div class="rp-notation" use:mountEditor={notation}></div>
 		</div>
@@ -1639,7 +1828,7 @@
 		   survives with the roles the archetype gives them: the frame wears
 		   the RAISED rung (#212121, see .rp-frame) and the chart sits one
 		   rung deeper on the surface. Every derived mix below (ghosts, dims,
-		   calmStop, grid/lane lines) follows it. ⚠ the exporter mirrors this
+		   buffStop, grid/lane lines) follows it. ⚠ the exporter mirrors this
 		   literal. */
 		/* ↻ 2026-08-09 (Genshin Night): this is --surface-well now, a role that
 		   exists BECAUSE of this declaration. The well used to be the literal
@@ -1657,6 +1846,34 @@
 		   resolved literals (the mirror test enforces). */
 		--rp-grid: color-mix(in srgb, var(--border) 45%, var(--rp-chart-bg));
 		--rp-line: color-mix(in srgb, var(--border) 85%, var(--rp-chart-bg));
+		/* ══ THE SUB-5s LINE — ⚓ NATE'S OWN VALUES, 2026-08-11 ═══════════════
+		   ⚓ "I think I was wrong about height being the main factor to make them
+		   not too noisy — it's visibility mostly." Measured in the inspector at
+		   85% reach and 17% ink, and landed verbatim: these are his numbers, not
+		   a derivation. The previous pair (22% ink, 45% reach) was my guess that
+		   short was what tamed a dense grid; it was faintness.
+
+		   ⚠ AND IT MIXES TOWARD `transparent`, NOT TOWARD THE GROUND — the one
+		   place in this component that does. That is not a slip, it is the
+		   alpha-compositing law being followed rather than bent: a line mixes
+		   opaquely against a KNOWN ground, and carries ALPHA where the ground is
+		   unknown. This line sits on the bare scene. The majors are still opaque
+		   mixes because at 45% ink the difference is beneath notice over a range
+		   this narrow (see .rp-frame); at 17% it is not, which is exactly why
+		   the faint one is the one that had to move.
+
+		   ⚠ color-mix TOWARD transparent IS SAFE AND IS NOT THE WEBKIT TRAP. It
+		   premultiplies, so this resolves to --border at alpha .17 — it does NOT
+		   darken toward black. (The trap is GRADIENT INTERPOLATION through the
+		   `transparent` keyword; see .rp-gridline for why that case is benign
+		   here too.) And --border is an alias of a literal in .ctx-dark, so this
+		   is one level of mix — the nesting law is untouched. */
+		--rp-grid-faint: color-mix(in srgb, var(--border) 17%, transparent);
+		/* 🎛️ Where each gridline's downward fade reaches nothing — see
+		   .rp-gridline. 100% = across the whole chart; pull either up to bring
+		   that line's horizon closer to the ruler. */
+		--rp-grid-fade: 100%;
+		--rp-grid-fade-minor: 85%;
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all
 		   share it (the elemental block mix in the markup references it too).
@@ -1671,6 +1888,19 @@
 		   connectors ride the same var. */
 		--rp-active: #757f93;
 
+		/* 🎛️ How far a lane's NAME is inset from the tracks' left edge. Shared,
+		   because the always-on strip below the chart lines up with it (⚓ Nate
+		   2026-08-11: "snug the Always-on buffs over to the left, to match the
+		   positioning of the Team Buffs label") and two literals would drift the
+		   moment either moved. */
+		--rp-lane-name-inset: 8px;
+
+		/* ⛔ --rp-buff-bar-h is DELETED (round two). It was the slim bar's painted
+		   height, separate from its row's; the bar fills its row again, so a
+		   second number could only ever put whitespace back between the bars.
+		   The row height is the knob now, and it lives in JS (CHAR_BUFF_ROW_H /
+		   AUX_LANE_BAR_H) because the bench column aligns to it. */
+
 		font-family: var(--font-body);
 		font-size: var(--fs-lg);
 		color: var(--text);
@@ -1683,25 +1913,46 @@
 		gap: var(--tool-gutter);
 	}
 
-	/* ── Chart frame (timeline + external scrollbar) ─────────── */
-	/* .frame (app.css) supplies the 1px dire border + --frame-bg
-	   fill; this only shapes it. Radius 9 per the 3/6/9 scale. */
+	/* ── Chart area (formerly the chart FRAME) ───────────────── */
+	/* ══ ⚓ NATE 2026-08-11: NO FRAME, NO CHART GROUND — THE TIMELINE IS ON THE
+	   SCENE. This element used to be a `.frame`: a 1px border, the dark
+	   context's RAISED rung as fill, a radius and symmetric padding. All of it
+	   is gone. What is left is a layout box that still earns its place three
+	   ways — it is the flex column that stacks ruler over tracks, it is the
+	   Source overlay's containing block (position:relative below), and it is
+	   where the horizontal padding that aligns the tracks with the composer
+	   lives.
+
+	   WHAT SURVIVED THE GROUND, AND WHY EACH ONE DID:
+	   · --rp-chart-bg stays DECLARED and is no longer PAINTED. It is the ground
+	     the bar mixes are composited against, and the PNG exporter still paints
+	     it for real (an exported image has no scene behind it). The
+	     alpha-compositing law wants a KNOWN ground for those mixes; a notional
+	     one that the export makes real is exactly that.
+	   · The grid and lane LINES stay opaque mixes rather than going alpha, which
+	     is the one place this round argued with the night rule and won on
+	     measurement. Composite TOOL_DIM .75 of #101013 over the scene and the
+	     dimmed world lands around #12151c–#1e222a — DARKER than the slate-900
+	     ground these lines were cut against, and only ~12 levels wide. An opaque
+	     line reads identically everywhere across that range; an alpha one would
+	     shimmer with the sky for no gain. (The exception the law is really about
+	     — glass — is a ground that moves a lot more than this.)
+	   · Everything gains contrast rather than losing it, for the same reason:
+	     the scene is darker than the ground we removed.
+
+	   THE HORIZONTAL PADDING STAYS AND THE VERTICAL PADDING GOES. The 14px sides
+	   are not frame inset — they are the clearance from the bench ribbon, which
+	   abuts this surface's left edge, and the alignment contract with the
+	   composer below (both read --rp-frame-pad-x). The 10px top and bottom WERE
+	   frame inset, so they left with the frame — and the 11px the top gives back
+	   (border 1 + padding 10) is the first of the height this round is after.
+	   ⚠ RIBBON_FRAME_TOP_INSET in benchBand.svelte.ts is that same sum; it moved
+	   with this declaration. */
 	.rp-frame {
-		/* The frame wears the dark context's RAISED rung; the chart well sits
-		   one rung deeper on --rp-chart-bg (= the context surface). Overrides
-		   the shared .frame background (Genshin-UI archetype, 2026-08-05). */
-		background: var(--surface-raised);
-		border-radius: var(--r-sm);
-		/* --rp-frame-pad-x comes inline from FRAME_PAD_X (the dock's inset is
-		   measured against it, so it can't be a second literal here).
-		   ↻ 2026-08-08: the bottom goes 4px → 10px, symmetric with the top. The
-		   asymmetry existed only because the composer sat inside and brought its
-		   own 12/14px margins; with it out, 4px left the external scrollbar
-		   almost touching the frame's edge. */
-		padding: 10px var(--rp-frame-pad-x);
-		/* The frame BEGINS at the ribbon's right edge — but it is the TOOL
+		padding: 0 var(--rp-frame-pad-x);
+		/* The surface BEGINS at the ribbon's right edge — but it is the TOOL
 		   STACK that puts it there now (toolbar round), so the bands above and
-		   the frame share one inset by construction rather than by two
+		   the tracks share one inset by construction rather than by two
 		   declarations agreeing. */
 		display: flex;
 		flex-direction: column;
@@ -1749,8 +2000,14 @@
 		min-height: 0;
 		overflow: hidden;
 		padding: 10px 12px 12px;
+		/* Opaque, and now the ONE opaque box on this surface besides the composer
+		   — picking is a takeover, so it should cover. ↻ 2026-08-11: it used to
+		   inherit its edges from the frame it sat inside; with no frame it needs
+		   its own, so the stray border-left (a seam against a portrait column
+		   that has not existed since the tall-bench round) is replaced by the
+		   radius that makes it read as a panel laid on the scene. */
 		background: var(--rp-chart-bg);
-		border-left: 1px solid var(--rp-line);
+		border-radius: var(--r-sm);
 	}
 	/* The explicit display:flex above would beat the UA's [hidden] rule. */
 	.rp-source-overlay[hidden] {
@@ -1772,15 +2029,30 @@
 	   the bars, which are free to cover it — Nate's call, and the honest one:
 	   a bar states what it is more precisely than the lane's name does. Dimmed
 	   to the chart's receding ink so it reads as ground, not content. */
+	/* ↻ ⚓ NATE 2026-08-11: THEY SCROLL NOW. "Let's take TEAM BUFFS, NIGHTSOUL
+	   BURST and ASCENDANT GLEAM scroll with the timeline — not fixed. The user
+	   really only needs to see them once; they don't need to hang around."
+
+	   They were `position: sticky; left: 0`, pinned to the viewport's left edge
+	   for the whole rotation. A lane name is an INTRODUCTION, not a legend: once
+	   you have read "TEAM BUFFS" you know what that row is, and re-reading it at
+	   40s costs a permanent obstruction over the one place bars start.
+
+	   ✅ AND IT CLOSES A KNOWN CONFLICT rather than trading one for another. The
+	   horizontal edge fade (round one) is strongest exactly where a sticky name
+	   sat, so scrolling right dissolved these names into the mask — flagged at
+	   the time as the one thing to watch, and now moot: they leave the viewport
+	   with their content long before the fade could eat them. */
 	.rp-lane-name {
-		position: sticky;
+		position: absolute;
 		left: 0;
+		top: 0;
 		z-index: 0;
 		display: flex;
 		align-items: center;
 		width: max-content;
 		height: 100%;
-		padding-left: 8px;
+		padding-left: var(--rp-lane-name-inset);
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-widest);
@@ -1792,34 +2064,75 @@
 	}
 
 	/* ── Track scroll container ───────────────────────────────── */
+	/* ⚓ NATE 2026-08-11 — THE ONE JOB THE CUSTOM SCROLLBAR HAD. The native
+	   scrollbar was hidden here and rebuilt as a second scroller below the
+	   timeline for exactly one reason: on macOS the OVERLAY scrollbar floats
+	   over content, so scrolling drew the bar across the bottom lane's buff bars.
+	   Nate: "if there's a way to avoid this, we don't need a custom scroll bar at
+	   all — that's the only thing we need it to avoid."
+
+	   There is, and it is a GUTTER: reserve --rp-scrollbar-gutter of empty space
+	   at the bottom of the scroller, and the bar has somewhere to be that isn't
+	   on top of a bar. Styling ::-webkit-scrollbar additionally opts the element
+	   out of overlay scrollbars in WebKit/Blink (it becomes a classic one that
+	   takes layout space), but THE GUTTER DOES NOT DEPEND ON THAT — which is the
+	   point of the next warning.
+
+	   ⚠ TWO KNOBS ON PURPOSE, AND THEY ARE NOT THE SAME NUMBER. --…-thickness is
+	   how thick the bar is PAINTED; --…-gutter is how much room is RESERVED. The
+	   gutter is the larger of the two because it has to cover the case where the
+	   engine ignores the opt-out and keeps an overlay scrollbar: macOS overlay
+	   bars live in a ~15px band whose thumb sits a few px off the edge, so a
+	   gutter sized to the painted thickness alone would still let the thumb
+	   clip the last lane by a pixel or two. Sized to the band, both readings are
+	   safe. (Headless Chrome reports NO scrollbar at all — offsetHeight ===
+	   clientHeight — so this is one of the few things here that a probe cannot
+	   settle and only a real browser can.)
+
+	   ⚠ THE GUTTER IS NOT DECORATION, IT IS THE FIX. This scroller is height:auto
+	   (stretched by its content), and a classic horizontal scrollbar is placed
+	   INSIDE the padding box — so without the reservation it would clip the
+	   bottom of the last lane rather than overlap it. Either way the lane loses.
+	   ⚠ It reserves the space whether or not the rotation actually overflows.
+	   With no ground left to paint, an unused gutter is invisible scene.
+
+	   🎛️ --scroll-fade at 48 is longer than the roster's 32: the timeline's
+	   content is CONTINUOUS, so unlike a grid of cards there is no gap for a
+	   short roll-off to hide in and the edge stays legible as a hard cut. */
 	.rp-track-scroll {
+		--rp-scrollbar-thickness: 10px;
+		--rp-scrollbar-gutter: 14px;
+		--scroll-fade: 48px;
 		flex: 1;
 		min-width: 0;
 		overflow-x: auto;
 		overflow-y: hidden;
-		scrollbar-width: none;
+		padding-bottom: var(--rp-scrollbar-gutter);
+		/* Firefox has no ::-webkit-scrollbar; this is its whole vocabulary. */
+		scrollbar-width: thin;
+		scrollbar-color: var(--rp-active) transparent;
 	}
 	.rp-track-scroll::-webkit-scrollbar {
-		display: none;
+		height: var(--rp-scrollbar-thickness);
 	}
-
-	/* ── External scrollbar strip ─────────────────────────────── */
-	.rp-ext-scroll-wrap {
-		display: flex;
-		flex-shrink: 0;
+	/* Transparent track — the scene IS the track now. */
+	.rp-track-scroll::-webkit-scrollbar-track {
+		background: transparent;
 	}
-	.rp-ext-scroll {
-		flex: 1;
-		min-width: 0;
-		height: 14px;
-		overflow-x: auto;
-		overflow-y: hidden;
+	.rp-track-scroll::-webkit-scrollbar-thumb {
+		background: color-mix(in srgb, var(--rp-active) 60%, transparent);
+		border-radius: 999px;
+	}
+	.rp-track-scroll::-webkit-scrollbar-thumb:hover {
+		background: var(--rp-active);
 	}
 
 	/* ── Track area ───────────────────────────────────────────── */
+	/* ↻ 2026-08-11: no background-color. The chart ground is gone — see the note
+	   on .rp-frame for what --rp-chart-bg still means now that nothing paints
+	   it. */
 	.rp-tracks {
 		position: relative;
-		background-color: var(--rp-chart-bg);
 		/* Fade width for truncating bar labels (buff chips, cd/cast labels) —
 		   clipped text dissolves over this many px instead of slicing mid-glyph. */
 		--buff-label-fade: 12px;
@@ -1839,23 +2152,47 @@
 		flex: 1;
 		min-width: 0;
 		overflow: hidden;
+		/* Must match .rp-track-scroll's, or the two edges of one instrument would
+		   ramp at different rates. A follower needs no scrollbar gutter. */
+		--scroll-fade: 48px;
 	}
+	/* No seam under the ruler (round two, with the slot separators). The ticks
+	   rising to the axis line ARE the axis; a rule beneath them was saying the
+	   same thing a second time, in the heaviest way available. */
 	.rp-ruler {
 		position: relative;
-		border-bottom: 1px solid var(--rp-line);
 	}
-	/* Ruler ticks ride the line tokens (they were stranded pre-token navy
-	   literals until 2026-08-01 — the "showing a little blue" Nate spotted). */
+	/* ══ A TICK IS THE TOP OF ITS OWN GRIDLINE (⚓ NATE 2026-08-11) ════════════
+	   ⚓ "Unify the tickmarks with their lines — either remove the tickmarks and
+	   have the lines serve that purpose, or make the tickmark's color at the top
+	   of the gradient blend in."
+
+	   The second reading, and the mismatch he was seeing was real and specific:
+	   a MAJOR tick was painted --border while the line continuing straight down
+	   from it started at --rp-grid, which is that same ink at 45%. So the stroke
+	   got visibly DIMMER at the moment it crossed from ruler into chart — one
+	   line rendered as two objects, with a seam at the join.
+
+	   Each tick now takes exactly its own line's opening stop: majors --rp-grid,
+	   minors --rp-grid-faint. Nothing separates the two elements — .rp-ruler
+	   lost its border-bottom in round two and the ticks sit at bottom: 0 — so a
+	   tick now reads as the part of the gridline that rises INTO the axis, which
+	   is what it always was geometrically. The 8px/4px heights stay: they are
+	   how far up each level reaches, and they are the only thing distinguishing
+	   the two in the ruler now that the labels sit above.
+
+	   ⚠ KEEP THE FOUR VALUES IN TWO PAIRS. tick colour ↔ gradient's first stop,
+	   per level. Change one and the seam comes back. */
 	.rp-tick {
 		position: absolute;
 		bottom: 0;
 		width: 1px;
-		background: var(--rp-grid);
+		background: var(--rp-grid-faint);
 		height: 4px;
 	}
 	.rp-tick.major {
 		height: 8px;
-		background: var(--border);
+		background: var(--rp-grid);
 	}
 	.rp-tick-label {
 		position: absolute;
@@ -1873,14 +2210,62 @@
 	   inline-SVG geometry at the exact fractional page offset, so SVG
 	   overlays here sat ~1px off the bars they join (Chrome/Firefox were
 	   flush). See connectorStyle. */
+	/* ══ THE GRIDLINES FADE DOWNWARD (⚓ NATE 2026-08-11, round two) ═══════════
+	   They ran full height at one strength, which on the bare scene made them
+	   the strongest structure on screen — vertical bars of ink from the ruler to
+	   the last lane, holding the chart in a cage. You read time at the TOP, next
+	   to the axis that labels it, so that is where the reference belongs; below
+	   the first slot it is reassurance you have already had.
+
+	   A HORIZON, NOT A CAGE. Full strength at the ruler, gone by
+	   --rp-grid-fade — so the chart is precisely located where you look for a
+	   time and floats where you don't.
+
+	   ⚠ ON FADING TO THE `transparent` KEYWORD, which the moonsign bar warns
+	   about. Two different things get called the same trap and only one is real
+	   here. The moonsign case is a BLOOM: transparent stops sitting BETWEEN two
+	   different hues mid-gradient, where an engine that interpolates
+	   un-premultiplied drags the midpoints toward black. This is the benign
+	   shape — one hue fading to nothing at the END. Gradients interpolate in
+	   PREMULTIPLIED space, where a stop at alpha 0 contributes no colour at all,
+	   so the hue is carried by the live stop the whole way down.
+	   And the belt to that brace: the residue is bounded by the ground behind
+	   being the dimmed scene at roughly #12151c–#1e222a, so even a wrong
+	   interpolation would travel a couple of levels. Neither reason survives on
+	   a light surface — don't copy this shortcut there.
+	   ⚠ And this is a gradient taking a derived value, NOT a color-mix taking
+	   one — the nesting law is about mix-inside-mix. The NB and moonsign fills
+	   already put color-mix results inside gradients.
+
+	   ↻ ⚓ NATE 2026-08-11, same day: THE SUB-5s TICKS GET LINES TOO — "fainter
+	   and shorter than the main separators". Two levels of the same idea.
+
+	   ↻ AND THEN, MEASURED: ⚓ "I think I was wrong about height being the main
+	   factor to make them not too noisy — it's visibility mostly." Worth
+	   recording because I had it backwards in the same breath as building it: I
+	   argued shortness was what kept a dense grid from accumulating into
+	   texture, and reached 45%. His inspector pass says the reach can run almost
+	   the full chart (85%) as long as the ink is quiet enough (17%). A faint
+	   line that goes far reads as depth; a darker line that stops short reads as
+	   a mark that ended.
+
+	   🎛️ The knobs are --rp-grid-fade / --rp-grid-fade-minor (how far each
+	   reaches) and --rp-grid / --rp-grid-faint (how dark each starts). */
 	.rp-gridline {
 		position: absolute;
 		top: 0;
 		bottom: 0;
 		width: 1px;
-		background: var(--rp-grid);
+		background: linear-gradient(
+			to bottom,
+			var(--rp-grid-faint),
+			transparent var(--rp-grid-fade-minor)
+		);
 		pointer-events: none;
 		z-index: 0;
+	}
+	.rp-gridline.major {
+		background: linear-gradient(to bottom, var(--rp-grid), transparent var(--rp-grid-fade));
 	}
 	.rp-connector {
 		position: absolute;
@@ -1906,20 +2291,60 @@
 	}
 	.rp-team-buff-subrow {
 		position: relative;
-		height: 14px;
+		height: var(--rp-aux-bar-h);
 		flex-shrink: 0;
 	}
-	/* Buff bars overlap and must stay individually readable — solid
-	   low-luminance fill, a hairline ring barely above the fill (the
-	   .panel register), and the brighter left edge as the scan hook. */
+	/* ══ THE BAR FILLS ITS ROW (⚓ NATE 2026-08-11, round two) ═════════════════
+	   Round one took Genshin's HP-bar idiom — a bar too slim to contain its own
+	   label, with the glyphs breaking its top and bottom walls — and it was the
+	   wrong borrowing. Genshin's bar is ONE bar with nothing stacked under it;
+	   ours is a lane of stacked rows, and there the escape room and the gap
+	   between bars are THE SAME PIXELS. A 6px bar centred in a 12px row put
+	   consecutive bars 8px apart where they had been 2px, which is the noise
+	   Nate called out. Filling the row is the fix, and it is the whole fix.
+
+	   ⚠ WHAT DIED WITH IT, so nobody re-derives it: the label went back to
+	   --fs-xs (11px does not fit a 12px row with the bar in it), and the bar
+	   clips its own label again, so .rp-buff-label's max-width is once more a
+	   refinement rather than the only bound. labelCapPx still applies whether or
+	   not the bars overlap — that part of round one was right and is worth
+	   keeping: it makes a label dissolve at the neighbour's edge instead of
+	   sliding under it.
+
+	   ⚠ WHAT DID NOT COME BACK: the inset hairline ring. It lifted a
+	   low-luminance fill off the chart ground, and there is no chart ground now
+	   — the scene is darker than the ground it compensated for. The 2px bright
+	   left edge went with it in the flattening pass. */
+	/* ══ THE LEFT EDGE COMES BACK (⚓ NATE 2026-08-11) ═════════════════════════
+	   ⚓ "They really are better with a 2px left border — #fff at .3. The main
+	   purpose is to separate stacking buff bars, of course. It also helps
+	   distinguish their look — that they're specifically a different kind of bar
+	   from the others."
+
+	   A deliberate exception to this morning's flattening pass, which took the
+	   2px edge off EVERY bar. That was right as a sweep and wrong for this one
+	   consumer, and the reason is in the material: glass bars in one subrow can
+	   share a span, and where two overlap the alpha stacks into a single
+	   continuous slab with no seam. Every other bar on the chart is opaque, so
+	   the one in front simply covers the one behind and the boundary draws
+	   itself. These need the boundary drawn for them.
+
+	   ⚠ WHITE AT .3, NOT THE BAR'S OWN HUE LIGHTENED. It is the only edge left on
+	   the chart, so it is also doing identity work — a neutral highlight reads as
+	   "a lit edge on this material" rather than as a second colour in the
+	   register, and it survives whatever the element round does around it.
+	   ⚠ Safe against the timing: the global reset is border-box, so the 2px
+	   comes OUT of the bar's computed width rather than adding to it. A
+	   content-box border here would push every bar 2px past its end time.
+	   ⚠ Mirrored in the export as the composited literal — canvas has no
+	   translucency over a scene to resolve. */
 	.rp-team-buff-bar {
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: var(--calm-fill);
+		background: var(--glass-bar);
 		border: none;
-		border-left: 2px solid var(--calm);
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+		border-left: 2px solid rgb(255 255 255 / 0.3);
 		border-radius: 1px;
 		display: flex;
 		align-items: center;
@@ -1929,35 +2354,54 @@
 		z-index: 2;
 		min-width: 2px;
 	}
-	/* Debuff variant — applied to enemy resShred bars. Same geometry AND now the
-	   same weight as the buff bar: --debuff-fill is the exact counterpart of
-	   --calm-fill (see app.css). It used to be color-mix(the retired dire 24%,
-	   which sat at half the buff bar's lightness and read as a different, dimmer
-	   class of thing. Fill + bright edge, mirroring the buff bar's
-	   --calm-fill + --calm pairing. */
-	.rp-team-buff-bar.rp-team-debuff-bar {
-		background: var(--debuff-fill);
-		border-left-color: var(--debuff);
-	}
-	.rp-team-buff-bar.rp-team-debuff-bar .rp-buff-label {
-		color: rgba(255, 255, 255, 0.85);
-	}
-
+	/* ⛔ THE DEBUFF VARIANT IS GONE (⚓ NATE 2026-08-11). It carried its own fill
+	   through three colour schemes — dire, then --debuff-fill, then a cool
+	   counterpart — and the round that was supposed to perfect the split killed
+	   it instead: "there's really no need to colour-split the buff/debuff bars.
+	   They're both good things to the user. Splitting them only adds
+	   complication to the chart, when we want to go in the opposite direction
+	   and simplify." A buff on you and a shred on the enemy are the same fact to
+	   a reader — something helpful is running — so they are one bar now. The
+	   `kind` is still in the data and still in the tooltip; it just stopped
+	   being paint. */
 	.rp-buff-icon {
 		width: 11px;
 		height: 11px;
 		flex-shrink: 0;
 		object-fit: contain;
-		opacity: 0.85;
+		/* ↻ ⚓ NATE 2026-08-11: half strength, with the labels. ⚠ AND THIS ONE HAS
+		   TO BE ELEMENT OPACITY where the label alongside it uses paint alpha —
+		   an <img> has no colour channel to dim. The sub-pixel laws prefer paint,
+		   but they are about transform-placed subtrees, and these icons are
+		   placed by `left`/`width` in px inside a scroller. If a future round
+		   ever transform-animates the track layer, this is the line that will
+		   shimmer first. */
+		opacity: 0.65;
 	}
 	.rp-buff-label {
 		/* Truncation fade (--buff-label-fade, set on .rp-tracks): the mask's
 		   transparent tail lines up with the padding, so a label that FITS shows
 		   no fade — only clipped text runs under it and dissolves instead of
-		   slicing mid-glyph. */
+		   slicing mid-glyph.
+		   ↻ 2026-08-11 round two: back to --fs-xs. The bar fills its row again
+		   (see .rp-team-buff-bar), so the label is sized to fit inside one —
+		   --fs-sm was what the slim bar bought and it went back with it. The
+		   colour does NOT go back: full white stays. ⚓ Nate: "all labels back to
+		   white, please — especially since we're going right over the scene."
+		   ↻ 2026-08-11: semibold → medium (⚓ Nate), and it is a true 500 — the
+		   body face went variable in the same session, so this rung exists.
+		   ↻ 2026-08-11, once the bars were glass: HALF-STRENGTH white (⚓ Nate).
+		   Alpha in the PAINT, not element opacity — a colour has a channel for
+		   this and the sub-pixel laws want it used.
+		   ⚠ MEASURED AT ~4:1 ON THE BAR, ~3.6:1 AGAINST A STAR — under the 4.5:1
+		   small-text floor, deliberately. The full table and the reasoning live
+		   at --glass-bar in app.css; the short version is that these labels are
+		   supplementary (the tooltip carries every bar's real detail) and the
+		   point of the round was that dozens of them should not shout. α .62 is
+		   where it would clear AA, if it ever needs to. */
 		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		color: rgba(255, 255, 255, 0.85);
+		font-weight: var(--fw-medium);
+		color: rgb(255 255 255 / 0.65);
 		white-space: nowrap;
 		letter-spacing: var(--ls-mid);
 		pointer-events: none;
@@ -1973,16 +2417,17 @@
 		mask-image: linear-gradient(to right, #000 calc(100% - var(--buff-label-fade)), transparent);
 	}
 
-	/* Sacrificial-proc rows share the debuff bars' register (Nate 2026-07-18;
-	   formerly a gold-tinted look of their own) */
+	/* Identical to .rp-team-buff-bar now — same material, same geometry. It used
+	   to borrow the debuff register (Nate 2026-07-18), which was always a visual
+	   choice rather than a semantic one: a weapon ICD is on your OWN character,
+	   not the enemy. With one bar material there is nothing left to borrow. */
 	.rp-weapon-proc-bar {
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: var(--debuff-fill);
+		background: var(--glass-bar);
 		border: none;
-		border-left: 2px solid var(--debuff);
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+		border-left: 2px solid rgb(255 255 255 / 0.3);
 		border-radius: 1px;
 		display: flex;
 		align-items: center;
@@ -1993,9 +2438,11 @@
 	}
 
 	/* ── NB lane ─────────────────────────────────────────────── */
+	/* Border-top gone with the slot separators (round two) — same rule, same
+	   reason. These lanes are already set off by the whole slot stack ending
+	   above them and by their own sticky lane names. */
 	.rp-nb-lane {
 		position: relative;
-		border-top: 1px solid var(--rp-line);
 	}
 	.rp-nb-rows {
 		position: absolute;
@@ -2007,7 +2454,7 @@
 	}
 	.rp-nb-subrow {
 		position: relative;
-		height: 14px;
+		height: var(--rp-aux-bar-h);
 		flex-shrink: 0;
 	}
 	/* Phlogiston fill (Nate 2026-07-18) — static "flowy" fire gradient echoing
@@ -2017,20 +2464,16 @@
 	   at this size), two light-orange blooms, and a drifting linear flow base.
 	   Fixed px tiles keep the density constant at any bar width/zoom.
 
-	   Edge grammar is the BUFF BAR's (Nate 2026-07-28): heavy left border, thin
-	   ring all round, and — Nate's call — the same POLARITY too, edge lighter
-	   than fill, even though these two lanes are the only bright-filled bars on
-	   the chart. The edge is the lane's own hue at the buff pair's own step
-	   (--calm-fill L30 → --calm L60), so the lane still reads as one object:
-	   phlogiston at L55 → a pale ember at L85.
+	   ↻ 2026-08-11 round two: THE EDGE GRAMMAR IS GONE — the heavy left border
+	   and the thin ring both (Nate 2026-07-28 gave them to every bar; the
+	   flattening pass takes them back from every bar). The phlogiston fill was
+	   always the point of this lane, and it carries itself.
 	   ⚠️ Mirrored by paintNbBar() in timelineExport.ts. */
 	.rp-nb-bar {
 		position: absolute;
 		top: 0;
 		height: 100%;
 		border: none;
-		border-left: 2px solid #fdc8b5;
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
 		background-color: #f85b21;
 		background-image:
 			radial-gradient(
@@ -2084,6 +2527,23 @@
 			transparent
 		);
 	}
+	/* ⏸️ THE .9 DIM IS REVERTED (⚓ NATE 2026-08-11, same day). It shipped for a
+	   few minutes as a ::before at opacity .9 so the labels could stay white.
+	   His own diagnosis is why it went: "the problem is that they're just too
+	   bright right now, and I was trying to solve it with opacity when I should
+	   really be adjusting their colours. Let's hold off until after we adjust
+	   element colours, as that will also affect the brightness/saturation
+	   balance on the timeline."
+
+	   ⚠ WORTH KEEPING AS A RULE: opacity is not a brightness control. Dimming a
+	   fill to fix "too bright" makes it thinner as well as darker, and on a
+	   translucent chart that reads as a different MATERIAL rather than a
+	   different colour — which is a change nobody asked for, applied to the two
+	   lanes whose fills are the most deliberately authored on the chart. The
+	   fix is the palette, and the palette round is next.
+	   ⛔ So the fill is back on the bar itself and the ::before is gone; the
+	   export's globalAlpha went with it. Don't reintroduce either as a
+	   brightness lever. */
 	.rp-nb-bar {
 		--label-halo: #f85b21;
 	}
@@ -2091,7 +2551,7 @@
 	/* ── Moonsign lane ───────────────────────────────────────── */
 	.rp-moonsign-lane {
 		position: relative;
-		border-top: 1px solid var(--rp-line);
+		/* Border-top gone with the slot separators — see .rp-nb-lane. */
 		/* Halo — a dark indigo shade of the pale moonlight palette, so the white
 		   labels keep separation now that the bar itself is soft/light. */
 		--label-halo: #2b3576;
@@ -2106,7 +2566,7 @@
 	}
 	.rp-moonsign-subrow {
 		position: relative;
-		height: 14px;
+		height: var(--rp-aux-bar-h);
 		flex-shrink: 0;
 	}
 	/* Moon-gravity-wave fill (Nate 2026-07-18) — same layered-tile technique as
@@ -2128,14 +2588,6 @@
 		padding: 0 5px;
 		overflow: hidden;
 		background-color: #b0a9ff;
-		/* Two tiled layers, top then bottom. Top: occasional soft cyan + coral
-		   blooms, semi-transparent, tiled at a different prime width so they land
-		   at varying points along the base; their transparent stops carry the
-		   bloom's OWN hue at alpha 0, not the `transparent` keyword which WebKit
-		   fades through black. Bottom: the base moonlight gradient 87B3FF / B0A9FF
-		   / BEA1FF, palindromic so B0A9FF always sits between the two ends and the
-		   tile loops seamlessly. No gray wash — the tones are soft enough on their
-		   own. Mirror any change in timelineExport.ts. */
 		background-image:
 			linear-gradient(
 				80deg,
@@ -2151,26 +2603,31 @@
 			433px 100%,
 			719px 100%;
 		background-repeat: repeat-x;
-		/* Buff-bar edge grammar — see the note on .rp-nb-bar. The moonlight fill
-		   already sits at L83, so its edge is the same lavender taken as far up
-		   as there is room to go rather than the buff pair's full +30.
-		   ⚠️ Mirrored by paintMoonsignBar() in timelineExport.ts. */
+		/* Edge and ring gone in the flattening pass — see .rp-nb-bar. */
 		border: none;
-		border-left: 2px solid #e8e5ff;
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 		border-radius: 1px;
 		z-index: 2;
 	}
-	/* Full-opacity white on the light moonlight fill (the buff bars' 0.85 white
-	   washes out here) + the shared halo, matching every other bar label. */
-	.rp-moonsign-bar .rp-buff-label {
-		color: #fff;
-	}
+	/* This override is a no-op since the buff labels went full white (2026-08-11)
+	   and is kept only as the anchor for the halo selector below — the moonsign
+	   fill is light enough that its labels are the one place the halo is load-
+	   bearing rather than ornamental. */
 
 	/* ── Character block ──────────────────────────────────────── */
+	/* ⚓ NATE 2026-08-11, round two — NO SLOT SEPARATOR. There was a full-width
+	   1px rule under every slot. On the old chart ground that was cheap
+	   structure; on the bare scene it was four hard rules across the sky, and
+	   with the ruler seam and the lane border-tops the chart read as a cage
+	   drawn around bars that are supposed to float.
+
+	   The grouping survives without it, which Nate predicted before the frame
+	   came off: bars are element-coloured PER CHARACTER, the active row shows
+	   every swap explicitly, and the bench ribbon's cards label each slot group
+	   from the left edge. Three redundant signals; the rule was a fourth.
+	   The vertical rhythm — CHAR_PAD_TOP/BOTTOM either side of ROW_GAP — is what
+	   separates slots now, and it was already doing most of the work. */
 	.rp-char-block {
 		position: relative;
-		border-bottom: 1px solid var(--rp-line);
 	}
 
 	/* ── Rows ─────────────────────────────────────────────────── */
@@ -2205,19 +2662,45 @@
 		justify-content: center;
 		min-width: 2px;
 	}
-	/* Ghost CD remainder: a recessed slim track — physically subordinate to
-	   the cast pill — outlined on top/right/bottom (the left edge stays open so
-	   the track reads as flowing out of the pill), the right edge landing on the
-	   exact moment the ability comes back up. Fill + outline colors are opaque
-	   element mixes set inline (border-color per element). */
-	/* 14px — matches the summon/buff/debuff row height (Nate 2026-07-18) */
+	/* ══ THE GHOST CD TRACK (⚓ NATE 2026-08-11) ═══════════════════════════════
+	   The cooldown remainder: physically subordinate to the cast pill it flows
+	   out of, its right edge landing on the exact moment the ability comes back
+	   up. It used to be a slim track OUTLINED on top/right/bottom (left open, so
+	   it read as flowing out of the pill), with the outline colour an opaque
+	   element mix set inline per bar.
+
+	   ↻ ⚓ NATE 2026-08-11, once the buff bars became glass: "the natural next
+	   conclusion is to mix the CD bars with transparent." So the fill is the
+	   element at GHOST_FILL_MIX% ALPHA rather than that much element mixed into
+	   the chart ground — the same move the buff bars made, for the same reason:
+	   there is no chart ground to mix into any more.
+	   ⚠ SAFE HERE PRECISELY BECAUSE OF THE Z-ORDER, and this is the one thing to
+	   check before copying it. The dim continuation and overflow bars stay
+	   OPAQUE mixes because swap connectors pass BEHIND them and must not show
+	   through; ghosts sit at z-index 0 and connectors at z-index 1, so a
+	   connector paints OVER a ghost and transparency reveals only the scene.
+
+	   ↻ 12px, AND THE OUTLINE IS GONE. ⚓ "Let's change the CD bars to 12px (E/Q
+	   is only 1px proud on each side) and let's remove their edge border.
+	   They're the last things on the chart with an edge border and I tested it —
+	   they don't need it, it cleans it up." Both halves are the same move: the
+	   inset was carrying the recession, the outline was carrying the SHAPE, and
+	   at 1px proud the pill's own edges state where the ghost begins and ends
+	   without help. It is the fill's job now, which is what the ghost mix was
+	   always cut to do.
+
+	   ⚠ THE INLINE `style:border-color` WENT WITH IT at both markup sites — a
+	   border-colour on a border-less element is a value that resolves, paints
+	   nothing, and quietly outlives the reason it existed. GHOST_EDGE_MIX is no
+	   longer imported here; the EXPORT still uses it (its ghosts keep their
+	   outlines — flat paper, no scene, same reasoning as the separators it
+	   kept), so the knob itself stays live in barMix.ts.
+
+	   🎛️ The 1px inset is the knob: it is the whole of the recession now. */
 	.rp-bar-cd--ghost {
-		top: 3px;
-		height: calc(100% - 6px);
+		top: 1px;
+		height: calc(100% - 2px);
 		border: none;
-		border-top: 1px solid transparent;
-		border-right: 1px solid transparent;
-		border-bottom: 1px solid transparent;
 		border-radius: 0 1px 1px 0;
 		z-index: 0;
 	}
@@ -2239,10 +2722,23 @@
 		letter-spacing: var(--ls-tight);
 		flex-shrink: 0;
 	}
+	/* 🐛 ⚓ NATE: "I noticed their labels somehow got turned white — it's much too
+	   intense. #fff at .5 is probably more right (like the buff bars)." They HAD
+	   been turned white, by me, in 27da633 — a comment inserted into the middle
+	   of the halo selector list re-pointed this selector at a `color: #fff`
+	   body. The full autopsy is at that list; the fix is there too.
+	   ⚠ MY FIRST READ WAS WRONG and is worth recording, because it was the
+	   plausible one: I checked the declared value, saw .4, and concluded the
+	   value had not changed and the CONTEXT had (a darker track under it,
+	   everything else on the chart dimmed around it). That story explained the
+	   symptom perfectly and was false. Reading the declaration is not reading
+	   the cascade.
+	   ⚠ The halo left with the whiteness — see the list — which is also what
+	   "like the buff bars" means: they carry none either. .5, no halo. */
 	.rp-bar-cd-label {
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
-		color: rgba(255, 255, 255, 0.4);
+		color: rgb(255 255 255 / 0.5);
 		white-space: nowrap;
 		pointer-events: none;
 		/* Same dissolve-not-slice treatment as .rp-buff-label. Symmetric padding
@@ -2263,33 +2759,61 @@
 			transparent
 		);
 	}
-	/* NB lane durations stay full-strength — the bright fill swallows the
-	   quiet 0.4 used on the element ghost tracks */
+	/* NB lane durations stay full-strength — the phlogiston fill swallows the
+	   quiet alpha the element ghost tracks use. ⚠ AND THE HALO STAYS HERE, where
+	   it left the ghost track: this lane really does have a bright fill of its
+	   own, which is the condition the halo exists for. Full white + halo is also
+	   the pairing the halo block requires. */
 	.rp-nb-bar .rp-bar-cd-label {
 		color: #fff;
+		text-shadow:
+			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
+			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
 	}
-	/* Label halo (Nate 2026-07-18), ↻ 2026-08-01 lightness-structure round:
-	   full-strength castFill fills now carry DARK INK (--ink) with no halo —
-	   the bright-chip idiom (Genshin's Lv-chips; GaugeInstrument's badge was
-	   the codebase precedent). The halo is the crutch for white-on-mid, so
-	   this list ENUMERATES the labels that stay white — a soft shadow in a
-	   dark shade of the bar's own element color (--label-halo, set on each
-	   char block via shiftHue lightness −30; NB/moonsign lanes pin their
-	   darkest palette color). White text must be FULL-opacity: alpha-reduced
-	   white lets the shadow bleed through the glyphs. Small blur radii only;
-	   static, so paint cost is negligible. */
+	/* ══ THE LABEL HALO — WHO STILL GETS ONE, AND WHY ═════════════════════════
+	   A halo is a soft shadow in a dark shade of the bar's own element colour
+	   (--label-halo). Its ONE job is to hold white text off a BRIGHT fill.
+
+	   ↻ 2026-08-11: the bright-chip idiom is retired from this chart (it said
+	   full-strength castFill carries DARK ink, and this list enumerated the
+	   exceptions that stayed white; ⚓ "all labels back to white" made the
+	   exception the rule). So the question stopped being "who stays white" and
+	   became "who still has a bright fill" — and after the flattening and the
+	   glass rounds, that is only the two decorated lanes.
+
+	   🐛 AND THIS LIST IS WHERE I BROKE THE CD LABELS. In 27da633 I inserted a
+	   comment and two rules INTO THE MIDDLE of this selector list, between
+	   `.rp-bar-cd-label,` and the moonsign selector. The list silently
+	   re-terminated on the moonsign rule's `color: #fff` body — so every
+	   selector above it, .rp-bar-cd-label included, was assigned FULL WHITE, and
+	   it won on source order over the .4 declared earlier. ⚓ Nate spotted it
+	   from the chart alone: "their labels somehow got turned white — it's much
+	   too intense." He was right and my first reading of it ("the value never
+	   changed, the context did") was wrong.
+	   ⚠ THE LESSON IS MECHANICAL, not aesthetic: never insert into a
+	   comma-separated selector list. A stray rule inside one does not error — it
+	   re-points every selector before it at the next body it finds. Add a
+	   separate rule instead, as the two below now are.
+
+	   ⚠ White text over a halo must be FULL opacity: alpha-reduced white lets the
+	   shadow bleed through the glyphs. That is why nothing dimmed carries one —
+	   and why .rp-bar-cd-label, now at .5, correctly has none. */
 	.rp-bar-cast-label,
-	.rp-bar-cd-label,
-	.rp-bar-uptime--dim .rp-bar-row-badge,
 	.rp-moonsign-bar .rp-buff-label {
 		text-shadow:
 			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
 			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
 	}
-	/* The dim (sac-proc) continuation drops back to the mid band — its badge
-	   keeps the white+halo treatment above. */
-	.rp-bar-uptime--dim .rp-bar-row-badge {
+
+	/* ⚠ THE MOONSIGN LANE OPTS OUT OF THE .5 DIM, by law rather than taste: its
+	   label carries a halo (above), and halo + alpha-white is the bleed case.
+	   Its bar is also the one bar that never became glass — a pale moonlight
+	   fill needs full-strength ink on it regardless. */
+	.rp-moonsign-bar .rp-buff-label {
 		color: #fff;
+	}
+	.rp-moonsign-bar .rp-buff-icon {
+		opacity: 1;
 	}
 	/* The moonsign lane's lunar glyph is part of that label, so it takes the
 	   same halo — text-shadow can't reach an <img>, and drop-shadow's blur is
@@ -2319,9 +2843,12 @@
 	}
 	.rp-summon-label {
 		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
-		/* Summon bars are always full-strength castFill → ink, no halo. */
-		color: var(--bright-ink);
+		/* ↻ 2026-08-11: bold → medium (⚓ Nate) — a genuine two-rung drop now
+		   that the body face is variable. See the --fw-* block in app.css. */
+		font-weight: var(--fw-medium);
+		/* ↻ 2026-08-11 round two: --bright-ink → white with every other label.
+		   See the halo block for the deferred contrast debt this carries. */
+		color: #fff;
 		white-space: nowrap;
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
@@ -2396,10 +2923,14 @@
 		background: transparent;
 		box-shadow: none;
 	}
+	/* ↻ 2026-08-11: 0.85 white → full (⚓ Nate, "all labels back to white"). The
+	   active strip is opaque so this is not a legibility-over-scene fix, but the
+	   token names on it are the chart's most-read text and they now match every
+	   other label rather than sitting a step below them for no reason. */
 	.rp-active-text {
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
-		color: rgba(255, 255, 255, 0.85);
+		color: #fff;
 	}
 	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: warning-
 	   tinted text, marking the actions whose timing is generic. --ui-danger,
@@ -2410,14 +2941,16 @@
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */
-	/* Ink on the full-strength castFill pill (the bright-chip idiom); the
-	   --dim variant overrides back to white+halo above. */
+	/* ↻ 2026-08-11 round two: --bright-ink → white. This badge and the summon
+	   label were the last two holdouts of the bright-chip idiom; both convert,
+	   and the --dim variant no longer needs an override because white IS the
+	   base now. See the halo block for the deferred contrast debt. */
 	.rp-bar-row-badge {
 		position: absolute;
 		left: 4px;
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
-		color: var(--bright-ink);
+		color: #fff;
 		pointer-events: none;
 		letter-spacing: var(--ls-tight);
 	}
@@ -2435,12 +2968,33 @@
 	   on the same x as the timeline's content above it (probe-frame-rework
 	   asserts that, and post-split it is a genuine CROSS-PANEL alignment check
 	   rather than the near-tautology it used to be). */
+	/* ↻ ⚓ NATE 2026-08-11: NO PANEL. "I'd like to try making the notation box
+	   styled like the search boxes in the character roster filter column — with
+	   no box around it, taking up all of its width, and directly on the scene."
+	   So the `.frame` goes (it was the last opaque panel on this surface) and
+	   what remains is a bare row: the FIELD is the object now, exactly as the
+	   filter rail's search is a bare .field in a column of scene.
+	   ⚠ The horizontal padding stays --rp-frame-pad-x, which is the whole point
+	   of that variable: the notation's left edge and the timeline's tracks have
+	   started on the same x since the breathing-room round, and losing the panel
+	   must not lose the alignment. The vertical padding goes with the panel. */
+	/* ⚓ NATE 2026-08-11: its label lines up with the LANE NAMES above it, not
+	   with the tracks' edge — so it carries the frame's inset PLUS the lane
+	   name's own, and reads as one more lane label at the bottom of the stack.
+	   ⚠ The one thing it does NOT share with them is scrolling: the lane names
+	   travel with the chart now, this strip does not, because it is not on the
+	   time axis at all — an always-on buff has no start. Same x, different
+	   behaviour, and that is correct rather than an oversight. */
+	.rp-underchart {
+		padding: 0 var(--rp-frame-pad-x);
+		padding-left: calc(var(--rp-frame-pad-x) + var(--rp-lane-name-inset));
+	}
+
 	.rp-composer {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		padding: 10px var(--rp-frame-pad-x);
-		border-radius: var(--r-sm);
+		padding: 0 var(--rp-frame-pad-x);
 	}
 	/* Picking takes over the instrument. The Source overlay bounds to the frame
 	   and used to cover this as part of it; it no longer reaches, so the state
@@ -2509,9 +3063,14 @@
 		box-sizing: content-box;
 		min-height: 21px;
 		padding: 10px 12px;
-		background: color-mix(in srgb, #000 40%, var(--rp-chart-bg));
-		border: 1px solid var(--rp-line);
-		border-radius: 6px;
+		/* ↻ 2026-08-11: follows the editor onto the .field treatment (see
+		   notationTheme). If these two drift, the swap-in when the lazy
+		   CodeMirror chunk lands is a visible jump — which is the only reason
+		   this stand-in is styled at all. */
+		background: var(--fill-rest);
+		box-shadow: inset 0 0 0 1px var(--border);
+		border: none;
+		border-radius: var(--r-sm);
 		font-family: var(--font-body);
 		font-size: 13px;
 		line-height: var(--lh-relaxed);

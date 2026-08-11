@@ -129,13 +129,27 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		// ↻ 2026-08-11: and that surface is the WELL rung now — --sp-avatar-fill
 		// is one ground with the element travelling down it, and this is its top.
 		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(resolve(ctxToken('.ctx-dark', '--surface-well')));
-		expect(PALETTE_MIRROR.CALM_TINT).toBe(resolve(cssToken('--calm-fill')));
-		expect(PALETTE_MIRROR.CALM_EDGE).toBe(resolve(cssToken('--calm')));
 	});
 
-	it('--debuff / --debuff-fill match (dire successors, 2026-08-05)', () => {
-		expect(PALETTE_MIRROR.DEBUFF_EDGE).toBe(resolve(cssToken('--debuff')));
-		expect(PALETTE_MIRROR.DEBUFF_FILL).toBe(resolve(cssToken('--debuff-fill')));
+	// ↻ 2026-08-11: the bar fill became a MATERIAL (--glass-bar), and one for
+	// buffs, debuffs and procs alike. A PNG has no scene to lay glass on, so the
+	// export paints the material COMPOSITED against the only ground it has.
+	//
+	// This is a stronger check than the literal comparison it replaces: it does
+	// the compositing arithmetic here, so the export cannot drift if EITHER the
+	// glass alpha, the glass rung, or the chart ground moves. Two of those three
+	// have moved unannounced before — see the GRID/LANE_LINE notes.
+	it('the bar material composites to the export literal (--glass-bar over the chart ground)', () => {
+		const m = /rgb\(\s*(\d+)\s+(\d+)\s+(\d+)\s*\/\s*([\d.]+)\s*\)/.exec(cssToken('--glass-bar'));
+		expect(m, '--glass-bar must stay an rgb() literal — see the nesting law').not.toBeNull();
+		const [r, g, b] = [+m![1], +m![2], +m![3]];
+		const a = +m![4];
+		const ground = hexToRgb(resolve(cssToken('--rp-chart-bg', timelineSvelte)));
+		const over = (c: number, i: number) =>
+			Math.round(c * a + ground[i] * (1 - a))
+				.toString(16)
+				.padStart(2, '0');
+		expect(PALETTE_MIRROR.BAR_FILL).toBe(`#${over(r, 0)}${over(g, 1)}${over(b, 2)}`);
 	});
 
 	it('resolved color-mix lines match (GRID, LANE_LINE)', () => {

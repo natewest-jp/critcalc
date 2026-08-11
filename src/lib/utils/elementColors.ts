@@ -121,17 +121,28 @@ export function elementPalette(element: string | undefined): ElementPalette {
 	};
 }
 
-// The cast-pill / summon fill: a solid element tone with the whisper of a
-// top-light so the bar has depth without a hard highlight. Shared by the
-// planner's E/Q pills and the Team Builder's Compare bars so both finishes
-// match exactly.
+// The cast-pill / summon fill. Shared by the planner's E/Q pills and the Team
+// Builder's Compare bars so both finishes match exactly.
+//
+// ↻ ⚓ NATE 2026-08-11 — IT IS FLAT NOW. It used to carry a whisper of top-light
+// (`linear-gradient(180deg, main+10% white 0%, main 58%)`) so the bar had depth
+// without a hard highlight. Depth was the right instinct against a raised frame
+// on an opaque chart ground; the planner's timeline renders straight onto the
+// night scene since 2026-08-11, and there a lit bar reads as a leftover from a
+// surface that is no longer under it. Nate's word for the direction was
+// "flattening colors (taking away highlight gradients)".
+//
+// ⚠ THIS FUNCTION IS A TEAM BUILDER DEPENDENCY TOO (CompareBar). The flattening
+// deliberately takes both — the whole point of the shared helper is that the
+// two finishes cannot drift, and a lit Compare bar beside a flat planner bar is
+// exactly the drift it exists to prevent.
 //
 // ⚠ HISTORY (2026-07-18): a hue-wave version (tiling ±18° hue-rotated wave
 // layers) was reverted — real Safari rendered a zoom-dependent 1px bottom gap
 // on the tiled multi-layer fills that survived every structural fix and never
 // reproduced in headless WebKit. Consistent cross-browser display won over the
 // subtle wave. Don't reintroduce tiled background layers on these bars without
-// a real-Safari pass.
+// a real-Safari pass. Flat has no such hazard: it is one colour.
 export function castFill(main: string): string {
-	return `linear-gradient(180deg, color-mix(in srgb, ${main} 90%, white) 0%, ${main} 58%)`;
+	return main;
 }
