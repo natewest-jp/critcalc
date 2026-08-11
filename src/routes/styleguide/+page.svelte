@@ -151,7 +151,10 @@
 	);
 	const chartInk = pre('--chart-');
 	const metrics = exact('--chrome-h', '--site-footer-h');
-	const famAnnotation = exact('--buff-fill', '--debuff-fill');
+	/* Deliberately also shown under the glass family (`pre('--glass-')` claims
+	   it). The register section needs to display its own stop, and a token that
+	   is BOTH a material and a content role earns two appearances. */
+	const famAnnotation = exact('--glass-bar');
 	const uiStates = pre('--ui-');
 	const geometry = [...pre('--r-'), ...exact('--frame-inset')];
 	const motion = exact('--t-quick');
@@ -663,36 +666,48 @@
 
 		<h3>The annotation register <span class="sg-badge sg-badge--ship">shipped</span></h3>
 		<p class="sg-note">
-			A context owns <em>structure</em>; identity chroma belongs to CONTENT. But not everything on a
-			chart is content. An E/Q bar is <strong>the game</strong> — a real ability, element-coloured,
-			saturated. A buff window is <strong>our reading of the game</strong>: derived, computed,
-			explanatory. This pair is that second thing, and it lives far below the element floor so it
-			can never be mistaken for a bar.
+			Not everything on a chart is content. An E/Q bar is <strong>the game</strong> — a real
+			ability, element-coloured, saturated. A buff window is
+			<strong>our reading of the game</strong>: derived, computed, explanatory. This register is
+			that second thing, and since 2026-08-11 it is not a colour at all — it is a
+			<strong>material</strong>, <code>--glass-bar</code>. Which says “our reading of the chart”
+			more plainly than any hue could, and costs less: a chart can carry dozens of these at once,
+			and translucent ones stack up into far less weight.
 		</p>
 		<p class="sg-note">
-			↻ <strong>Recut 2026-08-11</strong>, replacing <code>--calm</code> / <code>--calm-fill</code>
-			(blue) and <code>--debuff</code> (red). The diagnosis was already written down one section
-			over: the <code>--ui-value</code> rejection says
+			↻ <strong>Two answers landed the same day</strong>, and both findings are worth keeping. The
+			pair being replaced was <code>--calm</code> / <code>--calm-fill</code> (blue) and
+			<code>--debuff</code> (red), and the diagnosis was already in <code>app.css</code>: the
+			<code>--ui-value</code> rejection reads
 			<em
-				>“we have no free blue —
-				<code>--calm</code> sits ΔH 2.2° from <code>--el-hydro-main</code>”</em
-			>, and that measurement was used to veto a <em>proposed</em> blue while the shipped one kept
-			its place. A buff bar was a dark hydro bar on a chart made of element hues. Red was better
-			separated (ΔH 4.6° off pyro) but still inside element territory — and red/blue encoded a
-			valence that isn't there, since a res-shred window is <em>beneficial</em>, just aimed
-			elsewhere.
+				>“we have no free blue — <code>--calm</code> sits ΔH 2.2° from
+				<code>--el-hydro-main</code>”</em
+			>, a measurement used to veto a
+			<em>proposed</em> blue while the shipped one kept its place. A buff bar was a dark hydro bar
+			on a chart made of element hues. Red sat ΔH 4.6° off pyro — better, still inside element
+			territory — and red/blue encoded a valence that isn't there, since a res-shred window is
+			<em>beneficial</em>, just aimed elsewhere.
 		</p>
 		<p class="sg-note">
-			⚠️ <strong>The pair is one colour reflected.</strong> Both stops share a lightness and a
-			saturation — they are channel-reversals of each other (107 98 75 ↔ 75 98 107) — so only
-			TEMPERATURE separates them: warm for ours, cool for theirs. Nothing says better or worse, and
-			the two tune as one decision. Elements run s70–s90 against this pair's s20, so
-			<strong>chroma, not hue,</strong> is what holds them apart — the only axis the element palette
-			leaves free. ⛔ Not gold: <code>--accent</code> already means “a gap you can click” on the
-			Team Builder's coverage chips, and one hue cannot mean both “you're missing something” and
-			“you have something”. ⚠️ Both must stay LITERALS — the planner's time-scaling envelope mixes
-			<code>--buff-fill</code> inside a <code>color-mix</code>, and a mix fed by a mix crashes
-			WebKit.
+			⛔ <strong>Not gold</strong>, though gold is the obvious reach: <code>--accent</code> already
+			means “a gap you can click” on the Team Builder's coverage chips, and one hue cannot mean both
+			“you're missing something” and “you have something”. ⛔ <strong>And not two stops.</strong>
+			The first answer was a warm/cool pair at s20 — channel-reversals of each other, so only temperature
+			separated them. ⚓ Nate tested it and retired it the same day:
+			<em
+				>“there's really no need to colour-split the buff/debuff bars. They're both good things to
+				the user. Splitting them only adds complication.”</em
+			> A two-stop answer to a question with one state.
+		</p>
+		<p class="sg-note">
+			⚠️ <strong>Alpha stacks, and these overlap.</strong> Two bars in one subrow can share a span,
+			and where they do .58 over .58 composites to .82 — the first thing to check if a lane reads
+			blotchy. ⚠️ White labels ride these; measured against a star at <code>TOOL_DIM</code> .75 (the
+			corrected model — wash <code>#101013</code>, not pure black) the stop composites to
+			<code>rgb(63 68 78)</code> and white lands at <strong>9.3:1</strong>. ⚠️ The PNG exporter has
+			no scene to lay glass on, so it paints this material composited against its own ground; the
+			mirror test does that arithmetic rather than comparing literals, so the two cannot drift if
+			the alpha, the rung <em>or</em> the ground moves.
 		</p>
 		<div class="sg-swatches">
 			{#each famAnnotation as t (t.name)}{@render swatch(t)}{/each}
@@ -996,8 +1011,8 @@
 			Generic, deliberately boring, <strong>interface-only</strong>. The test:
 			<em>is this color describing the game, or describing a consequence to the user's data?</em>
 			Game → a domain family. Consequence → here. A UI state color must never appear inside a visualization;
-			a domain color must never appear on a control's destructive state. So: debuff bars are
-			<code>--debuff-fill</code>, but
+			a domain color must never appear on a control's destructive state. So: an element bar is a domain
+			colour, but
 			<em>Reset all</em>
 			is <code>--ui-danger</code>.
 			<br />⚠ These are the loudest values in the system by a wide margin (C.15+ against a structure
@@ -1907,7 +1922,8 @@
 					</li>
 					<li>
 						<strong
-							>debuff-fill = enemy-facing · buff-fill = ally-facing · chrome = the over-world white.</strong
+							>elements = the game · <code>--glass-bar</code> = our reading of it · chrome = the over-world
+							white.</strong
 						>
 						Don't cross them. <code>--accent</code> is zoned and never leaves its zone — don't hard-code
 						a context's accent in the world (landing scene, static pages).

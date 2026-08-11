@@ -97,28 +97,30 @@ const TEXT = '#ece5d8'; // --text (ctx-dark) → --parchment-100
 // became what Genshin actually does — the ink laid on the ground at .72.
 const MUTED = '#b7b4ae'; // --muted (ctx-dark) = mix(parchment-100 72%, slate-800)
 const INK = '#0d0d0f'; // --bright-ink → --ink-950 (⚓ NATE 2026-08-05)
-// THE ANNOTATION REGISTER — mirrors app.css, where the reasoning lives. One
-// colour reflected: warm for effects on your team, cool for effects on the
-// enemy, identical lightness and saturation so only temperature separates them.
-// They replaced a blue/red pair that was wearing element hues (--calm sat ΔH
-// 2.2° from hydro) on a chart made of element hues.
-// ⛔ The bright EDGE stops are gone with the flattening pass — there is no
-// stripe left for CALM_EDGE / DEBUFF_EDGE to mirror.
-// (Ramping/decaying received buffs paint flat here — the on-screen opacity
+// THE ANNOTATION REGISTER — one bar material for buffs, debuffs and procs
+// alike (⚓ Nate 2026-08-11: "there's really no need to colour-split the
+// buff/debuff bars"). app.css holds the reasoning.
+//
+// ⚠ ON SCREEN IT IS GLASS; HERE IT IS THE COMPOSITE. --glass-bar is
+// rgb(54 62 77 / .58) laid on the night scene, and a PNG has no scene — so this
+// is that material resolved against the only ground the export has, CHART_BG:
+//     .58 × (54 62 77) + .42 × (31 38 53) = (44 52 67)
+// That is the decoupling declared at the top of this file doing its job. The
+// screen gets a material; paper gets what the material looks like on paper.
+// ⚠ If --glass-bar's alpha or rung moves, RECOMPUTE — the mirror test does this
+// arithmetic and will fail rather than let the two drift.
+// (Ramping/decaying received buffs paint flat here — the on-screen density
 // envelope isn't reproduced; the flat fill matches their full end.)
-const BUFF_FILL = '#71624b'; // --buff-fill   h36  s20 l37
-const DEBUFF_FILL = '#4b6271'; // --debuff-fill h204 s20 l37
+const BAR_FILL = '#2c3443';
 // ↻ 2026-08-11: every bar label went from .85 white to FULL white on screen
-// (⚓ Nate, "all labels back to white"), and these three mirror it. The one
-// label deliberately left at partial strength is the ghost track's CD readout —
-// it is a duration on a recessive track, not a label, and it sits on an opaque
-// bar rather than over the scene.
-const TEAM_BUFF_FILL = BUFF_FILL;
-const TEAM_BUFF_LABEL = '#fff';
-const DEBUFF_LABEL = '#fff';
-// Sacrificial-proc rows share the debuff register (Nate 2026-07-18)
-const PROC_FILL = DEBUFF_FILL;
-const PROC_LABEL = '#fff';
+// (⚓ Nate, "all labels back to white"). The one label deliberately left at
+// partial strength is the ghost track's CD readout — it is a duration on a
+// recessive track, not a label, and it sits on an opaque bar.
+// ⛔ The buff / debuff / proc trio of fills and labels collapsed into this ONE
+// pair on 2026-08-11. They had been three names for what was becoming the same
+// value anyway (procs borrowed debuff's, debuff was pinned to buff's weight);
+// the unification made that explicit rather than incidental.
+const BAR_LABEL = '#fff';
 // Generic-timing (no-frame-map) marks are a DATA-QUALITY state, not a domain
 // color — they ride --ui-danger (the marks left dire 2026-08-05).
 const UI_DANGER = '#e63946';
@@ -146,8 +148,7 @@ export const PALETTE_MIRROR = {
 	TEXT,
 	MUTED,
 	INK,
-	BUFF_FILL,
-	DEBUFF_FILL,
+	BAR_FILL,
 	PORTRAIT_BG
 } as const;
 
@@ -733,8 +734,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						rowTop,
 						barGeomW(bar.start, bar.end - bar.start),
 						snap.buffRowH,
-						PROC_FILL,
-						PROC_LABEL,
+						BAR_FILL,
+						BAR_LABEL,
 						`${row.label} trigger CD`,
 						undefined,
 						next ? x(next.start) : undefined
@@ -753,8 +754,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						rowTop,
 						barGeomW(bar.start, bar.end - bar.start),
 						snap.buffRowH,
-						TEAM_BUFF_FILL,
-						TEAM_BUFF_LABEL,
+						BAR_FILL,
+						BAR_LABEL,
 						bar.sourceLabel,
 						icon ? images.get(icon) : undefined,
 						next ? x(next.start) : undefined
@@ -903,7 +904,6 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		const laneTop = oy + snap.rulerH + snap.teamBuffsTop;
 		snap.teamBuffRows.forEach((subrow, ri) => {
 			const rowTop = laneTop + 2 + ri * snap.buffRowStride;
-			const isDebuff = subrow.kind === 'debuff';
 			const icon = snap.statIconFor(subrow.primaryStat);
 			subrow.bars.forEach((bar, bi) => {
 				const next = subrow.bars[bi + 1];
@@ -912,8 +912,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					rowTop,
 					barGeomW(bar.start, bar.end - bar.start),
 					snap.buffRowH,
-					isDebuff ? DEBUFF_FILL : TEAM_BUFF_FILL,
-					isDebuff ? DEBUFF_LABEL : TEAM_BUFF_LABEL,
+					BAR_FILL,
+					BAR_LABEL,
 					subrow.sourceLabel,
 					icon ? images.get(icon) : undefined,
 					next ? x(next.start) : undefined

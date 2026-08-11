@@ -205,6 +205,33 @@
 	   without looking for it. */
 	--glass-hover: rgb(54 62 77 / 0.8);
 	--glass-parch: rgb(236 229 216 / 0.1); /* parchment frost — a resting fill */
+	/* ══ THE BAR STOP (⚓ NATE 2026-08-11) ═════════════════════════════════════
+	   ⚓ "Glass is actually the best fill for the buff/debuff bars." Its own stop
+	   rather than a reuse, because its consumer is unlike every other pane here:
+	   a chart can carry DOZENS of these at once, they are 12px tall, they can
+	   overlap, and they are the only glass that is CONTENT rather than chrome.
+	   Nate asked whether a purpose-built one was needed — this is that, and the
+	   value it starts at is the panel's, so today the answer is "not yet" and
+	   the token exists so the question can be answered by tuning one number
+	   instead of by moving the bands.
+
+	   ⛔ DON'T "SIMPLIFY" THIS BACK TO --glass-panel. The bands and the bars want
+	   opposite things when they disagree: a band should get MORE present under
+	   the hand, a lane of bars should get quieter as it gets denser.
+
+	   ⚠ ALPHA STACKS, AND THESE OVERLAP. Two bars in one subrow can share a span
+	   (it is why the planner caps labels at the neighbour's edge), and where they
+	   do, .58 over .58 composites to .82 — visibly denser. That is arguably
+	   honest (more buff there) but it is the first thing to look at if a lane
+	   reads blotchy.
+
+	   ⚠ White labels ride these, and white is the WORST case over a bright pixel.
+	   Measured against a star at TOOL_DIM .75 — the corrected model, wash
+	   #101013 rather than pure black — a star behind the tool is rgb(76 76 78)
+	   and this stop composites it to rgb(63 68 78): white lands at 9.3:1. The
+	   dark case is better still. It is the MUTED-on-glass floor that constrains
+	   the bands; nothing here reads --muted. */
+	--glass-bar: rgb(54 62 77 / 0.58);
 	/* ⛔ --glass-blur IS RETIRED — ⚓ NATE 2026-08-11, THE PROBATION IS OVER.
 	   "We're starting to get a little performance lag on things like Atlas card
 	   lifts on hover and cross-tool pans. I tested without it in the inspector,
@@ -533,73 +560,45 @@
 	   over-the-world voice (site chrome, branding, biggest headers); --ink is
 	   the universal dark ink. The dire and gilt FAMILIES are RETIRED
 	   (2026-08-05, dire-retirement round) — dire's enemy-facing semantic
-	   survives as --debuff-fill below; gilt's chrome role went to --chrome and
-	   its text roles to the contexts. CALM IS RETIRED TOO (2026-08-11) — its
-	   ally-facing role survives as --buff-fill in the annotation register just
-	   below, at a colour that no longer collides with hydro. The element palette
-	   is untouched. */
+	   survives in the ANNOTATION REGISTER below; gilt's chrome role went to
+	   --chrome and its text roles to the contexts. CALM IS RETIRED TOO
+	   (2026-08-11) — buff and debuff bars stopped being a COLOUR that day and
+	   became a MATERIAL (--glass-bar). The element palette is untouched. */
 
-	/* ══ THE ANNOTATION REGISTER (⚓ NATE 2026-08-11) ══════════════════════════
-	   ⚓ "Let's rework the buff/debuff colour. They were adopted in the dire
-	   border phase and now they honestly are just looking out of place."
+	/* ══ THE ANNOTATION REGISTER — now a MATERIAL, see --glass-bar ════════════
+	   ⚓ NATE 2026-08-11: "let's rework the buff/debuff colour, they're looking
+	   out of place." Two answers landed the same day and the second one is the
+	   one that shipped; both findings are worth keeping.
 
-	   THE DIAGNOSIS WAS ALREADY IN THIS FILE. The old pair was --calm #6b99c7
-	   (h210) over --calm-fill #2b5590 (h215), and --debuff = --red-500. Look up
-	   twelve lines from here at the --ui-value rejection: "WE HAVE NO FREE BLUE
-	   … --calm sits ΔH 2.2° from --el-hydro-main." That measurement was used to
-	   veto a PROPOSED blue while the shipped one kept its place. A buff bar was
-	   a dark hydro bar, sitting on a chart whose every other bar is
-	   element-coloured. Red was better separated (ΔH 4.6° off pyro) but still
-	   inside element territory.
+	   WHY THE OLD PAIR WAS WRONG (--calm #6b99c7 / --calm-fill #2b5590, and
+	   --debuff = --red-500). The diagnosis was already in this file — read the
+	   --ui-value rejection above: "WE HAVE NO FREE BLUE … --calm sits ΔH 2.2°
+	   from --el-hydro-main." That measurement vetoed a PROPOSED blue while the
+	   shipped one kept its place. A buff bar was a dark hydro bar on a chart
+	   made of element hues. Red sat ΔH 4.6° off pyro — better, still inside
+	   element territory. And red/blue encoded a valence that isn't there: a
+	   res-shred window is BENEFICIAL, just aimed elsewhere.
 
-	   ⚠ AND RED/BLUE ENCODED A VALENCE THAT ISN'T THERE. Both of these are GOOD:
-	   a res-shred window is beneficial, it is just aimed at the enemy. The pair's
-	   real axis is DIRECTION — on us / on them — not good / bad.
+	   THE PRINCIPLE, WHICH SURVIVED BOTH ATTEMPTS. An E/Q bar is the GAME — a
+	   real ability, element-coloured, saturated. A buff window is our READING of
+	   the game: derived, computed, explanatory. Content gets chroma; annotation
+	   doesn't.
 
-	   THE PRINCIPLE. An E/Q bar is the GAME: a real ability, element-coloured,
-	   saturated. A buff window is our READING of the game — derived, computed,
-	   explanatory. Content gets chroma; annotation doesn't. So this register
-	   lives far below the element floor and cannot be mistaken for a bar.
+	   ⛔ NOT GOLD, though gold is the obvious reach. --accent already means "a
+	   gap you can click" on the Team Builder's coverage chips (.ts-cov--no takes
+	   an accent wash; .ts-cov--yes RECEDES). One hue cannot mean both "you are
+	   missing something" and "you have something" in two tools a swipe apart.
 
-	   ⛔ AND IT IS NOT GOLD, though gold is the obvious reach. --accent already
-	   means "a gap you can click" three feet away in the Team Builder's coverage
-	   chips (.ts-cov--no takes an accent wash; .ts-cov--yes RECEDES to --muted).
-	   Gold on "a buff is active" would make one hue mean both "you are missing
-	   something" and "you have something", in two tools one swipe apart.
-
-	   THE PAIR IS ONE COLOUR REFLECTED. Both stops are the same lightness and
-	   the same saturation — they are literally channel-reversals of each other
-	   (107 98 75 ↔ 75 98 107) — so only TEMPERATURE separates them: warm for
-	   ours, cool for theirs. Nothing about the pair says better or worse, which
-	   is the point, and it means the two can be tuned as one decision: move the
-	   lightness and reverse the channels.
-
-	   Measured: h36/h204, s20, l37. Elements run s70–s90, so chroma — not hue —
-	   is what holds them apart, which is the only axis the element palette has
-	   left free. White labels measure 5.91:1 on the warm stop and 6.39:1 on the
-	   cool — both well clear of the 4.5:1 floor, and the ~0.5 spread is the
-	   price of matching SATURATION rather than luminance across a hue flip.
-	   ⚠ Raising either stop's lightness spends that headroom; the floor is what
-	   caps how light this pair can go, not taste.
-
-	   ⚠ THEY MUST STAY LITERALS. RotationTimeline's time-scaling envelope does
-	   `color-mix(… var(--buff-fill) X%, var(--rp-chart-bg))`, and a color-mix
-	   fed by a color-mix CRASHES WEBKIT (THE NESTING LAW). Writing these as
-	   derivations would take the planner down.
-	   ⚠ Canvas can't resolve var() — timelineExport.ts mirrors both.
-
-	   ⛔ RETIRED WITH THIS ROUND: --calm, --calm-fill and --debuff. The first two
-	   were the blue; --debuff was the bright enemy STRIPE, and the flattening
-	   pass earlier today took every bar's edge off, so it had already stopped
-	   being painted. --red-500 stays in the ramp as a primitive.
-
-	   ⚠ The sacrificial-proc rows borrow --debuff-fill and are NOT enemy-facing
-	   (a weapon ICD is on your own character). That borrowing predates this
-	   round — Nate 2026-07-18 — and is a visual-register choice, not a semantic
-	   one. Kept as-is; it is the reason these are named for the BAR KIND rather
-	   than for who the effect lands on. */
-	--buff-fill: #71624b; /* ours   — h36  s20 l37 */
-	--debuff-fill: #4b6271; /* theirs — h204 s20 l37 */
+	   ⛔ AND NOT TWO STOPS. The first answer was a warm/cool pair at s20 —
+	   --buff-fill #71624b, --debuff-fill #4b6271, channel-reversals of each other
+	   so only temperature separated them. Nate tested it and retired it the same
+	   day: "there's really no need to colour-split the buff/debuff bars. They're
+	   both good things to the user. Splitting them only adds complication to the
+	   chart, when we want to go in the opposite direction and simplify." A
+	   two-stop answer to a question with one state. What replaced it is a
+	   MATERIAL rather than a colour, which says "our reading of the chart" more
+	   plainly than any hue could — and being translucent, it also does the other
+	   thing his testing asked for: many bars now cost less. */
 
 	/* (GILT RETIRED 2026-08-05 — the family's chrome role went to --chrome,
 	   its heading/label roles to the contexts' --text/--muted, its beige

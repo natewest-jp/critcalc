@@ -271,15 +271,34 @@
 	// $lib/utils/elementColors so the Team Builder's Compare bars share the exact
 	// finish. Its Safari-revert history travelled with it.
 
-	// One gradient stop for the time-scaling buff envelope: --buff-fill (the buff
-	// body/fill) mixed toward the chart ground, so ramp/decay bars track any
-	// future --buff-fill change and stay in sync with the flat buff bars (which
-	// fill solid --buff-fill). ↻ 2026-08-01: mixes against --rp-chart-bg, NOT
-	// transparent — these bars always sit on the chart ground, and the alpha-
-	// compositing law says a fill on a known ground mixes opaquely against it
-	// (semi-transparent CSS renders display-dependently on P3).
-	function buffStop(alpha: number): string {
-		return `color-mix(in srgb, var(--buff-fill) ${(alpha * 100).toFixed(1)}%, var(--rp-chart-bg))`;
+	/** The thinnest a scaling buff's material gets, as a fraction of --glass-bar's
+	 *  own density. 🎛️ ⚠ IT IS NOT THE OLD 0.2. When the envelope mixed an
+	 *  OPAQUE fill toward the chart ground, 0.2 still produced a solid colour
+	 *  near that ground — thin meant "close to the background", and the bar was
+	 *  always there. Scaling a translucent material by 0.2 gives alpha .116,
+	 *  which is SHEER, and sheer is retired ("opaque or obviously translucent —
+	 *  the middle is not a place"). 0.5 keeps the thin end at alpha .29: still
+	 *  unmistakably a bar, still obviously less than full. */
+	const ENVELOPE_MIN = 0.5;
+
+	/** One gradient stop for the time-scaling buff envelope (Yelan Q, Mavuika Q
+	 *  — a buff whose value ramps or decays over its own window).
+	 *
+	 *  ↻ 2026-08-11: the bars became GLASS, and that changes what a stop IS.
+	 *  This used to mix the opaque fill toward --rp-chart-bg, on the
+	 *  alpha-compositing law's "a fill on a KNOWN ground mixes opaquely against
+	 *  it". Two things broke that: the chart has no painted ground any more, and
+	 *  — the sharp one — mixing a translucent colour toward an OPAQUE one raises
+	 *  its alpha as the mix fraction falls, so the old formula would have made a
+	 *  fading buff MORE solid. Backwards, and silently so.
+	 *
+	 *  Mixing toward `transparent` is the correct operation for a material:
+	 *  color-mix premultiplies, so this scales --glass-bar's alpha and leaves its
+	 *  rgb alone. A ramping buff now genuinely thins as material, which is what
+	 *  "the buff is weaker here" should look like on glass.
+	 *  ⚠ One level of mix — --glass-bar is a literal, so the nesting law holds. */
+	function buffStop(density: number): string {
+		return `color-mix(in srgb, var(--glass-bar) ${(density * 100).toFixed(1)}%, transparent)`;
 	}
 
 	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)
@@ -291,8 +310,8 @@
 			ramp.cap != null ? ((ramp.cap - ramp.startValue) / ramp.stepValue) * ramp.stepInterval : 10;
 		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / rampDur));
 		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / rampDur));
-		const o0 = 0.2 + p0 * 0.8;
-		const o1 = 0.2 + p1 * 0.8;
+		const o0 = ENVELOPE_MIN + p0 * (1 - ENVELOPE_MIN);
+		const o1 = ENVELOPE_MIN + p1 * (1 - ENVELOPE_MIN);
 		return `linear-gradient(to right, ${buffStop(o0)}, ${buffStop(o1)})`;
 	}
 
@@ -304,8 +323,8 @@
 		if (!decay || bar.buffStart == null || decay.duration <= 0) return undefined;
 		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / decay.duration));
 		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / decay.duration));
-		const o0 = 1.0 - p0 * 0.8;
-		const o1 = 1.0 - p1 * 0.8;
+		const o0 = 1.0 - p0 * (1 - ENVELOPE_MIN);
+		const o1 = 1.0 - p1 * (1 - ENVELOPE_MIN);
 		return `linear-gradient(to right, ${buffStop(o0)}, ${buffStop(o1)})`;
 	}
 
@@ -1573,11 +1592,9 @@
 											{#each subrow.bars as bar, bi (bi)}
 												{@const g = barGeom(bar.start, bar.end - bar.start)}
 												{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
-												{@const isDebuff = subrow.kind === 'debuff'}
 												<!-- svelte-ignore a11y_no_static_element_interactions -->
 												<div
 													class="rp-team-buff-bar"
-													class:rp-team-debuff-bar={isDebuff}
 													style:left="{g.left}px"
 													style:width="{g.width}px"
 													onmouseenter={(e) =>
@@ -2252,7 +2269,7 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: var(--buff-fill);
+		background: var(--glass-bar);
 		border: none;
 		border-radius: 1px;
 		display: flex;
@@ -2263,17 +2280,16 @@
 		z-index: 2;
 		min-width: 2px;
 	}
-	/* Debuff variant — applied to enemy resShred bars. Same geometry AND the same
-	   weight as the buff bar: --debuff-fill is the exact counterpart of
-	   --buff-fill (see app.css). It used to be color-mix(the retired dire 24%),
-	   which sat at half the buff bar's lightness and read as a different, dimmer
-	   class of thing.
-	   ↻ 2026-08-11: the paired bright edge went with every other bar's in the
-	   flattening pass, so the fill is the whole distinction now — which is what
-	   --debuff-fill was cut to be able to do on its own. */
-	.rp-team-buff-bar.rp-team-debuff-bar {
-		background: var(--debuff-fill);
-	}
+	/* ⛔ THE DEBUFF VARIANT IS GONE (⚓ NATE 2026-08-11). It carried its own fill
+	   through three colour schemes — dire, then --debuff-fill, then a cool
+	   counterpart — and the round that was supposed to perfect the split killed
+	   it instead: "there's really no need to colour-split the buff/debuff bars.
+	   They're both good things to the user. Splitting them only adds
+	   complication to the chart, when we want to go in the opposite direction
+	   and simplify." A buff on you and a shred on the enemy are the same fact to
+	   a reader — something helpful is running — so they are one bar now. The
+	   `kind` is still in the data and still in the tooltip; it just stopped
+	   being paint. */
 	.rp-buff-icon {
 		width: 11px;
 		height: 11px;
@@ -2315,15 +2331,15 @@
 		mask-image: linear-gradient(to right, #000 calc(100% - var(--buff-label-fade)), transparent);
 	}
 
-	/* Sacrificial-proc rows share the debuff bars' register (Nate 2026-07-18;
-	   formerly a gold-tinted look of their own) */
-	/* The same bar grammar in the debuff register, so it follows
-	   .rp-team-buff-bar exactly — fills its row, ring and left edge gone. */
+	/* Identical to .rp-team-buff-bar now — same material, same geometry. It used
+	   to borrow the debuff register (Nate 2026-07-18), which was always a visual
+	   choice rather than a semantic one: a weapon ICD is on your OWN character,
+	   not the enemy. With one bar material there is nothing left to borrow. */
 	.rp-weapon-proc-bar {
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: var(--debuff-fill);
+		background: var(--glass-bar);
 		border: none;
 		border-radius: 1px;
 		display: flex;
