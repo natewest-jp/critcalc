@@ -216,6 +216,404 @@
 			border: '1.5px solid var(--frame-line-quiet)'
 		}
 	];
+
+	/* ══════════════════════════════════════════════════════════════════════════
+	   THE ELEMENT ROUND — the board for it. ⚓ Nate 2026-08-11.
+
+	   ↻ ROUND TWO, same day, after the first board was read. Two things changed
+	   and both narrowed the work:
+
+	   ⚓ "Looking at it straight, Genshin's palette is superior to ours. We don't
+	   need to keep our values for any particular reason." So OUR LIGHTNESS IS NO
+	   LONGER A CONSTRAINT, and with it goes the whole hydro trilemma the first
+	   board spent a section on — hydro was only stuck because it was pinned dark
+	   by a ladder we are no longer defending. The comparison is now Genshin
+	   straight versus one deliberate divergence from it, not a blend of ours and
+	   theirs.
+
+	   ⚓ "We are absolutely keeping white labels on the bars. Dark ink on the
+	   element bars just kills the chart's atmosphere, period. But legibility
+	   doesn't need to be so high on them. I'm up for slightly darker bars, so
+	   that the text can show clearly, but the highest priority is the bars
+	   showing cleanly and with pleasing element colours on the night scene."
+	   So the ink question is CLOSED (white, with its halo) and the remaining
+	   question is a single dial on the FILL — see LADDER_LO / LADDER_HI.
+
+	   ⚠ EVERYTHING BELOW IS COMPUTED, not typed — same argument as the styleguide
+	   census. A board whose numbers are hand-maintained is worse than no board.
+	   ══════════════════════════════════════════════════════════════════════════ */
+
+	const EL7 = ['pyro', 'electro', 'hydro', 'anemo', 'geo', 'dendro', 'cryo'] as const;
+	type El = (typeof EL7)[number];
+
+	/** ⚠ THE PALETTE THIS ROUND REPLACED — NOT what ships. Held as literals so
+	 *  the board can still render the before; /lab is exempt from the L0 law for
+	 *  exactly this reason, and it is the only surface that can show a value
+	 *  nothing points at any more. Do not "update" these to the live tokens: the
+	 *  comparison is the whole point of the row. */
+	const EL_NOW: Record<El, string> = {
+		pyro: '#f9563e',
+		electro: '#cd7cfe',
+		hydro: '#1c88e8',
+		anemo: '#47dbc1',
+		geo: '#fabd22',
+		dendro: '#85d736',
+		cryo: '#9de2f7'
+	};
+
+	/**
+	 * GENSHIN'S OWN TWO PALETTES — and there really are two, which is the single
+	 * most useful thing this round turned up.
+	 *
+	 * ICON is measured off the flat-colour source art (assets-src/game, byte
+	 * identical to static/assets/elements/flat-color — each file is ONE colour
+	 * plus an antialiased edge, so "the icon colour" is not an estimate).
+	 *
+	 * TEXT is the `<color=#rrggbbff>` tag Genshin wraps elemental words in
+	 * throughout its own description strings, counted out of the genshin-db
+	 * devDependency: 8891 uses of the cryo one, 2596 electro, and so on. It is
+	 * the game's own table, not a fan reconstruction.
+	 *
+	 * ⚠ AND THE SECOND IS THE FIRST, LIFTED. Every TEXT entry is its ICON hue
+	 * carried up to a lightness floor (oklch L ≈ .79) and left alone if it was
+	 * already above it — pyro climbs .699 → .788 while cryo barely moves at
+	 * .892 → .938. Genshin keeps a bright FILL palette and derives an
+	 * INK-ON-DARK palette from it by exactly the rule proposed below.
+	 *
+	 * ⚠⚠ SO GENSHIN'S PALETTE ARRIVES WITH ITS OWN `hi` RUNG ALREADY DRAWN. That
+	 * is why the two ladders below are not symmetrical work: for the Genshin set
+	 * we derive only `deep`, and `hi` is theirs. Deriving a rung we have been
+	 * handed would be inventing a disagreement.
+	 */
+	const EL_GENSHIN_ICON: Record<El, string> = {
+		pyro: '#ff6640',
+		electro: '#cc80ff',
+		hydro: '#00c0ff',
+		anemo: '#33d7a0',
+		geo: '#ffb00d',
+		dendro: '#9be53d',
+		cryo: '#7af2f2'
+	};
+	const EL_GENSHIN_TEXT: Record<El, string> = {
+		pyro: '#ff9999',
+		electro: '#ffacff',
+		hydro: '#80c0ff',
+		anemo: '#80ffd7',
+		geo: '#ffe699',
+		dendro: '#99ff88',
+		cryo: '#99ffff'
+	};
+
+	// ── colour maths. sRGB ⇄ oklch, and WCAG contrast. ─────────────────────────
+	const _rgb = (hex: string): [number, number, number] =>
+		[0, 2, 4].map((i) => parseInt(hex.replace('#', '').slice(i, i + 2), 16)) as [
+			number,
+			number,
+			number
+		];
+	const _lin = (c: number) =>
+		c / 255 <= 0.04045 ? c / 255 / 12.92 : ((c / 255 + 0.055) / 1.055) ** 2.4;
+	const _unlin = (v: number) => (v <= 0.0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - 0.055);
+	const _lum = (c: [number, number, number]) =>
+		0.2126 * _lin(c[0]) + 0.7152 * _lin(c[1]) + 0.0722 * _lin(c[2]);
+	/** WCAG contrast of two OPAQUE colours. */
+	const ratio = (a: string, b: string) => {
+		const [hi, lo] = [_lum(_rgb(a)), _lum(_rgb(b))].sort((x, y) => y - x);
+		return (hi + 0.05) / (lo + 0.05);
+	};
+	const r2 = (a: string, b: string) => ratio(a, b).toFixed(2);
+
+	function toOklch(hex: string): [number, number, number] {
+		const [r, g, b] = _rgb(hex).map(_lin);
+		const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+		const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+		const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+		const A = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
+		const B = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
+		return [
+			0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+			Math.hypot(A, B),
+			// ⚠ NORMALISED to [0,360). atan2 returns ±180 and every hue comparison
+			// below would otherwise be off by a full turn for half the wheel.
+			((Math.atan2(B, A) * 180) / Math.PI + 360) % 360
+		];
+	}
+	function fromOklch(L: number, C: number, Hdeg: number) {
+		const h = (Hdeg * Math.PI) / 180;
+		const A = C * Math.cos(h);
+		const B = C * Math.sin(h);
+		const l = (L + 0.3963377774 * A + 0.2158037573 * B) ** 3;
+		const m = (L - 0.1055613458 * A - 0.0638541728 * B) ** 3;
+		const s = (L - 0.0894841775 * A - 1.291485548 * B) ** 3;
+		const v = [
+			4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+			-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+			-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s
+		];
+		return {
+			hex:
+				'#' +
+				v
+					.map((x) =>
+						Math.round(Math.min(1, Math.max(0, _unlin(Math.min(1, Math.max(0, x))))) * 255)
+							.toString(16)
+							.padStart(2, '0')
+					)
+					.join(''),
+			inGamut: v.every((x) => x >= -0.0015 && x <= 1.0015)
+		};
+	}
+	/** Shortest angular distance between two hues, in degrees. The wheel wraps,
+	 *  so a plain subtraction reports 327° where the answer is 33°. */
+	const hueGap = (a: string, b: string) => {
+		const d = Math.abs(toOklch(a)[2] - toOklch(b)[2]) % 360;
+		return d > 180 ? 360 - d : d;
+	};
+	/** The most chroma sRGB will hold at this lightness and hue. */
+	function maxChroma(L: number, H: number) {
+		let c = 0.4;
+		while (c > 0 && !fromOklch(L, c, H).inGamut) c -= 0.001;
+		return Math.max(c, 0);
+	}
+	const fitLCH = (L: number, C: number, H: number) =>
+		fromOklch(L, Math.min(C, maxChroma(L, H)), H).hex;
+	/** The same colour at lightness L. ⚠ Takes the HEX, not an unpacked triple:
+	 *  hue has to come from the original every time, because a walk that drives
+	 *  chroma to zero passes through a gray and a gray has no hue to read back. */
+	const atLightness = (hex: string, L: number) => {
+		const [, C, H] = toOklch(hex);
+		return fitLCH(L, C, H);
+	};
+	/** Walk lightness in `dir` until the colour clears `target` against `ground`. */
+	function toFloor(hex: string, ground: string, target: number, dir: 1 | -1) {
+		const [L0] = toOklch(hex);
+		if (ratio(hex, ground) >= target) return hex;
+		for (let L = L0; L > 0.08 && L < 0.99; L += dir * 0.004) {
+			const c = atLightness(hex, L);
+			if (ratio(c, ground) >= target) return c;
+		}
+		return atLightness(hex, dir > 0 ? 0.99 : 0.08);
+	}
+
+	/* ── the grounds a colour has to answer to ──────────────────────────────── */
+	/** The BRIGHTEST night pixel: a blank-white star under the tool wash. Glyphs
+	 *  and fills on the open scene are limited by this and nothing else.
+	 *  ⚠ Composited properly (dim·wash + (1−dim)·white), not white×(1−dim) —
+	 *  that error is what made every star figure before 2026-08-10 optimistic. */
+	const STAR = '#4c4c4e';
+	const PAPER = '#ece5d8'; // parchment-100 — the DARKER paper, so the harder case
+	/* ⚠ ctx-dark (slate-800) is deliberately NOT measured here. Its ground sits
+	   at half the star's luminance, so night is strictly the harder of the two
+	   and anything that clears the star clears slate. One ground, not three. */
+
+	/**
+	 * THE LADDER — three rungs, one hue, each with ONE job.
+	 * Same shape as the accent's law already in app.css ("one hue at two rungs;
+	 * it changes weight, not identity, when a surface flips"); elements need a
+	 * third because an element is a FILL as well as an INK.
+	 *
+	 *   deep  →  element on LIGHT   (Atlas icons, pips, ink on parchment)
+	 *   main  →  the identity FILL  (bars, discs, icons on dark/night)
+	 *   hi    →  element as GLYPH/INK on dark/night
+	 *
+	 * deep and hi are DERIVED — same hue, same chroma, lightness walked to
+	 * whichever floor its ground demands. That is what stops the set drifting
+	 * apart one element at a time, which is the failure the icon generator was
+	 * built to end; this is the same idea one layer up.
+	 *
+	 * ⚠ THE EXCEPTION IS GENSHIN'S OWN `hi`, WHICH IS NOT DERIVED — see
+	 * EL_GENSHIN_TEXT. They already drew that rung and it measures 4.2:1+ on the
+	 * worst star, so deriving our own would be manufacturing a disagreement.
+	 */
+	const HI_TARGET = 4.5; //  vs the worst star. 4.5 = readable as text.
+	const DEEP_TARGET = 3.0; // vs parchment-100. 3.0 = the graphical threshold.
+
+	/**
+	 * 🎛️🎛️ THE ONE DIAL THIS BOARD EXISTS TO SET — ⚓ Nate's brief, exactly.
+	 *
+	 * Genshin's fill palette spans oklch L .699–.892. Their UI never has to put
+	 * WHITE INK on those fills at 11px, and ours does, so the divergence pulls
+	 * the whole ladder down into [LADDER_LO, LADDER_HI].
+	 *
+	 * ⚠ IT REMAPS, IT DOES NOT CLIP. A ceiling looks like the obvious move and is
+	 * wrong: capping at L .74 lands FIVE of the seven on the same rung, and a
+	 * palette with no lightness ladder is unreadable in a dense stacked chart
+	 * (and dead under the grayscale gate). Remapping keeps Genshin's spacing —
+	 * which is more even than ours ever was — and just moves and narrows it.
+	 *
+	 * ⚠ THE DIAL IS A TRADE AND BOTH ENDS ARE REAL. Down helps the label and
+	 * costs the fill: at Genshin's own span the worst white-on-fill is 1.34:1 and
+	 * the worst fill-vs-star is 2.96:1; at [.63,.78] that is 1.94 and 2.22. Nate
+	 * ranked them — "the highest priority is the bars showing cleanly and with
+	 * pleasing element colours" — so this is set nearer the bright end than a
+	 * contrast target alone would put it, ON PURPOSE.
+	 *
+	 * ⚠ CHROMA IS KEPT AS A FRACTION OF THE GAMUT, not as an absolute. Dropping
+	 * cryo from L .892 to .78 makes MORE chroma available, and holding its
+	 * absolute C would spend that headroom on nothing — a darker cryo that is
+	 * also duller is the muddy version of this idea. Same fraction = a darker
+	 * cryo that is still ice.
+	 */
+	const LADDER_LO = 0.66;
+	const LADDER_HI = 0.82;
+
+	/** 🎛️ Degrees the divergence rotates CRYO toward blue. ⚓ Nate: their cryo is
+	 *  "too turquoise / encroaching on anemo territory".
+	 *  ⚠ BUT SEE THE MARKUP — most of that crowding was OUR ANEMO's doing, not
+	 *  their cryo's. Their anemo is 14° greener than ours, which opens the pair
+	 *  up before this dial touches anything. Hence 8° and not the 24° our
+	 *  shipped cryo actually sits at. */
+	const CRYO_NUDGE = 8;
+
+	const GENSHIN_LS = EL7.map((el) => toOklch(EL_GENSHIN_ICON[el])[0]);
+	const G_LO = Math.min(...GENSHIN_LS);
+	const G_HI = Math.max(...GENSHIN_LS);
+
+	/** The divergence: Genshin's hue and relative chroma, cryo nudged, ladder
+	 *  remapped into [LADDER_LO, LADDER_HI]. */
+	const EL_OURS_V2: Record<El, string> = Object.fromEntries(
+		EL7.map((el) => {
+			const [L, C, H] = toOklch(EL_GENSHIN_ICON[el]);
+			const L2 = LADDER_LO + ((L - G_LO) / (G_HI - G_LO)) * (LADDER_HI - LADDER_LO);
+			const H2 = el === 'cryo' ? H + CRYO_NUDGE : H;
+			return [el, fitLCH(L2, maxChroma(L2, H2) * (C / maxChroma(L, H)), H2)];
+		})
+	) as Record<El, string>;
+
+	/** A ladder row. `hi` is passed in when the palette already has one. */
+	const ladder = (mains: Record<El, string>, his?: Record<El, string>) =>
+		EL7.map((el) => ({
+			el,
+			deep: toFloor(mains[el], PAPER, DEEP_TARGET, -1),
+			main: mains[el],
+			hi: his ? his[el] : toFloor(mains[el], STAR, HI_TARGET, 1),
+			hiGiven: !!his
+		}));
+	const LADDER_GENSHIN = ladder(EL_GENSHIN_ICON, EL_GENSHIN_TEXT);
+	const LADDER_V2 = ladder(EL_OURS_V2);
+
+	const PALETTES = [
+		{ key: 'now', label: 'ours — what this round replaced', set: EL_NOW },
+		{ key: 'genshin', label: 'Genshin, straight — SHIPPED', set: EL_GENSHIN_ICON },
+		{ key: 'v2', label: 'the divergence — rejected, see above', set: EL_OURS_V2 }
+	];
+
+	/** The worst case in each direction, measured across the whole set — the two
+	 *  numbers the dial trades against each other. */
+	const extremes = (set: Record<El, string>) => ({
+		white: Math.min(...EL7.map((el) => ratio('#ffffff', set[el]))),
+		star: Math.min(...EL7.map((el) => ratio(set[el], STAR)))
+	});
+
+	/* ══ THE OTHER ICON SETS — measured, because the answer was counterintuitive ══
+	 *
+	 * ⚓ Nate: "there are other icons available — tcg, gilded, glow. What if we
+	 * use something like tcg or gilded on parchment instead?"
+	 *
+	 * ⛔ NONE OF THEM WORKS ON PAPER, AND GILDED IS NEARLY THE WORST. Ink contrast
+	 * against parchment-100, measured over every opaque pixel of all seven:
+	 *
+	 *     flat-color  1.06 – 2.32     tcg   1.38 – 2.14
+	 *     glow        1.01 – 1.54     gilded 1.15 – 1.19
+	 *
+	 * Nothing clears the 3:1 graphical floor anywhere. "Gilded" reads like it
+	 * belongs on parchment and is in fact bright gold FOR DARK GROUNDS; glow's
+	 * anemo measures 1.01:1 on paper, which is invisible. Genshin has no light
+	 * UI, so there is no light-ground glyph to borrow — that is the whole finding.
+	 *
+	 * ⚠ AND ONLY TWO OF THE FIVE SETS ARE TINTABLE. flat-color and flat-white are
+	 * one colour plus straight alpha; tcg (461–1201 colours), gilded (128–180)
+	 * and glow (32–76) are artwork with baked palettes. Using one of those in a
+	 * context means THAT CONTEXT'S ICONS STOP TRACKING --el-*, which is the exact
+	 * coupling generate-element-icons.mjs exists to guarantee. A system cost, not
+	 * a taste one.
+	 *
+	 * ✅ BUT GILDED IS THE MOST INSTRUCTIVE OF THE FOUR. All seven of its glyphs
+	 * average the same gold, within 0.05 of contrast of each other — it carries
+	 * NO element colour at all. Genshin ships a set where element identity is
+	 * carried entirely by the SILHOUETTE, which is what licenses the monochrome
+	 * rows below.
+	 *
+	 * 🔎 glow is Genshin's own `hi` rung in icon form (4.57–7.86 vs the star) —
+	 * the same two-tier pattern as their icon/in-text colour split, drawn twice.
+	 */
+	const MONO_PAPER = [
+		{ key: 'ink', label: 'monochrome · --ink-900', color: '#3b4255' },
+		{
+			key: 'gold',
+			label: 'monochrome · --gold-700 — the gilded idea, at a rung paper can hold',
+			color: '#74603c'
+		}
+	];
+
+	/* ══ THE MASK SOURCE IS flat-white, NOT flat-color ═══════════════════════════
+	 * ⚓ Nate 2026-08-11, on being shown the measurement: "I didn't realize the
+	 * flat white icons were larger."
+	 *
+	 * Both are one colour plus straight alpha, so both tint losslessly — but
+	 * flat-white is 128px against flat-color's 84, and it carries three glyphs
+	 * flat-color has no version of: lunar, omni and stellar. ⚓ Those three are
+	 * NATE'S OWN, traced from art Genshin uses but never drew as icons, which is
+	 * why they exist in white only. If they are ever wanted in colour he has
+	 * schemes to suggest — do not invent one.
+	 *
+	 * So flat-white is a strictly better generator input, and this board reads
+	 * from it for the same reason.
+	 */
+	const MASK = (el: string) => `url('/assets/elements/flat-white/${el}.png')`;
+
+	/* ══ GLYPH SIZING — A "DEFECT" THAT WASN'T ═══════════════════════════════════
+	 * The set survey turned up that the source art is not size-normalised: cropped
+	 * to its own ink, cryo fills 89% of its canvas and hydro 75%, so at one CSS box
+	 * hydro renders ~19% smaller in its longest dimension. True of flat-color
+	 * (12–29% margins) and flat-white (11–25%) alike.
+	 *
+	 * ⛔ IT IS NOT BEING FIXED, and the reasoning is the part worth keeping.
+	 * ⚓ Nate, shown all three rows: "to my eye, the non-normalized marks read most
+	 * balanced." He is right, and my framing was wrong — I measured a variance and
+	 * assumed uniformity was the correct state without establishing that it was.
+	 *
+	 * ⚠ THE NUMBERS BACKED HIM AND I MISSED IT. Ink area spans 17.6%–22.5%, a
+	 * ratio of 1.28× — WIDER than the bounding-box spread of 1.19×. Neither metric
+	 * is flat, and the two disagree about direction: hydro's box says ×1.19 while
+	 * its ink says ×1.00, dendro's box says ×1.02 while its ink says ×1.13 (hydro
+	 * is a solid droplet in a small box; dendro a sparse leaf in a large one). If
+	 * the art were carelessly sized ONE of those would come out uniform. That both
+	 * vary in opposite directions is what already-balanced-by-eye looks like: the
+	 * artist compensated for perceived weight, which is the thing optical sizing
+	 * actually means and which neither of my metrics measures.
+	 *
+	 * ⚠ THE GENERAL LESSON: a variance is not a defect until you can say what the
+	 * correct value is. Both tables stay so the board can render the rejected
+	 * candidates — seeing box-normalisation blob hydro is the argument.
+	 */
+	const SCALE_BY_BOX: Record<El, number> = {
+		pyro: 1.056,
+		electro: 1.14,
+		hydro: 1.188,
+		anemo: 1.096,
+		geo: 1.14,
+		dendro: 1.018,
+		cryo: 1.0
+	};
+	const SCALE_BY_INK: Record<El, number> = {
+		pyro: 1.067,
+		electro: 1.114,
+		hydro: 1.0,
+		anemo: 1.051,
+		geo: 1.074,
+		dendro: 1.131,
+		cryo: 1.092
+	};
+	const SIZING_ROWS = [
+		{ key: 'asis', label: 'as shipped — untouched, and the one that reads best', scale: null },
+		{
+			key: 'box',
+			label: 'normalised by BOUNDING BOX — rejected, blobs hydro',
+			scale: SCALE_BY_BOX
+		},
+		{ key: 'ink', label: 'normalised by INK AREA — rejected, swells dendro', scale: SCALE_BY_INK }
+	];
 </script>
 
 <svelte:head><title>Specimen Board — critcalc.app</title></svelte:head>
@@ -716,6 +1114,408 @@
 				</div>
 			</div>
 		</div>
+	</section>
+
+	<!-- ══════════════════════════════════ 9 · THE ELEMENT COLOURS ══ -->
+	<section>
+		<h2 class="lab-h">
+			Element colours <span class="lab-badge">shipped</span>
+		</h2>
+		<p class="lab-note">
+			⚓ <strong>SETTLED 2026-08-11: Genshin's palette, transcribed.</strong>
+			<code>main</code> is their icon set, <code>hi</code> is their in-text set, and
+			<strong>neither is computed</strong> — two tables copied out of the game. The board is kept because
+			the reason is visible in it, and because the losing candidate is the useful half of the record.
+		</p>
+		<p class="lab-note">
+			⚓ <em
+				>"Looking at it straight, Genshin's palette is superior to ours. We don't need to keep our
+				values for any particular reason."</em
+			>
+			That released the constraint everything else was bending around. Hydro had looked like a trilemma
+			— their hue, our lightness, its chroma, pick two — but it was only stuck because our own ladder
+			pinned it dark. Stop defending that and hydro is just <code>#00c0ff</code>.
+		</p>
+		<p class="lab-note">
+			⛔ <strong
+				>WHY THE DIVERGENCE LOST, since it was the better-looking candidate for two rounds.</strong
+			>
+			It had exactly two advantages and both evaporated. It read better on parchment — deleted by the
+			decision that element marks live on dark. And it improved white-on-fill 1.33 → 1.69 — but paid
+			<strong>2.95 → 2.49 on fill-vs-star</strong>, which is the priority Nate had ranked FIRST (⚓
+			<em>"the highest priority is the bars showing cleanly"</em>). It traded the first priority for
+			a rounding error on the second, on a label the halo was already carrying. Its remapped pyro
+			was also the thing he flagged as over-chromatic — an artefact of pushing the ladder down into
+			the reddest part of the headroom.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>What survives from it is its SHAPE, not its values.</strong> If one element
+			misbehaves in the real timeline, fix that element with a comment saying why — the pattern the
+			generator's old <code>ICON_HUE_OFFSET</code> used, where an entry is a claim that must survive being
+			asked why. A per-element exception you can defend beats a global transform you cannot.
+		</p>
+
+		<!-- ── 9a · what Genshin actually uses ─────────────────────────────── -->
+		<h3 class="lab-sub">Two palettes, and the second is the first, lifted</h3>
+		<p class="lab-note">
+			The icon colours are measured off the flat-colour art (one colour per file, so this is not an
+			estimate). The second set is the <code>&lt;color=#rrggbbff&gt;</code> tag the game wraps
+			elemental words in inside its own description strings — from the <code>genshin-db</code>
+			dependency, <strong>8891 uses</strong> of the cryo one alone. The game's own table, not a fan reconstruction.
+		</p>
+		<p class="lab-note">
+			⚠ Every in-text colour is its icon hue carried up to a lightness floor (<code
+				>oklch L ≈ .79</code
+			>) and left alone if it was already above it: pyro climbs .699 → .788, cryo barely moves at
+			.892 → .938.
+			<strong
+				>Genshin's palette therefore arrives with its own <code>hi</code> rung already drawn</strong
+			>
+			— which is why the two ladders below are not symmetrical work. For their set we derive only
+			<code>deep</code>. Deriving a rung we have been handed would be manufacturing a disagreement.
+		</p>
+		<div class="lab-grid lab-grid--el">
+			{#each SPECIMEN_GROUNDS as g (g.key)}
+				<div class="spec elspec {g.cls}" class:spec--bare={g.key === 'night'}>
+					<div class="spec-tag">{g.label}</div>
+					{#each PALETTES as s (s.key)}
+						<div class="elref-tag">{s.label}</div>
+						<div class="elref">
+							{#each EL7 as el (el)}
+								<div class="elcell">
+									<i
+										class="elglyph"
+										style="--c:{s.set[el]}; --m:url('/assets/elements/flat-color/{el}.png')"
+									></i>
+									<span class="elbar" style:background={s.set[el]}></span>
+								</div>
+							{/each}
+						</div>
+					{/each}
+				</div>
+			{/each}
+		</div>
+
+		<!-- ── 9b · the cryo/anemo correction ──────────────────────────────── -->
+		<h3 class="lab-sub">On cryo being too turquoise — it was mostly our anemo</h3>
+		<p class="lab-note">
+			⚓ <em
+				>"I didn't completely like their cryo value — I felt it was too turquoise, encroaching on
+				anemo territory."</em
+			>
+			That is a different constraint from the one written into
+			<code>app.css</code> (which records hydro, not anemo) and it changes the answer, so it is worth
+			measuring rather than accepting.
+		</p>
+		<p class="lab-note">
+			In oklch hue: <strong>ours anemo–cryo {hueGap(EL_NOW.anemo, EL_NOW.cryo).toFixed(0)}°</strong
+			>,
+			<strong>Genshin's {hueGap(EL_GENSHIN_ICON.anemo, EL_GENSHIN_ICON.cryo).toFixed(0)}°</strong>
+			— so the complaint is real as an angle. But look at where the angle went:
+			<strong
+				>their anemo is {(toOklch(EL_NOW.anemo)[2] - toOklch(EL_GENSHIN_ICON.anemo)[2]).toFixed(0)}°
+				greener than ours</strong
+			>. Their anemo (<code>#33d7a0</code>) is a spring green and their cryo (<code>#7af2f2</code>)
+			is exact cyan; ours are two teals sitting 40° apart and reading closer than the number says.
+			<strong>Adopting their palette fixes most of the crowding by moving anemo, not cryo.</strong>
+		</p>
+		<p class="lab-note">
+			🎛️ The divergence still takes cryo <strong>{CRYO_NUDGE}° toward blue</strong> for your taste —
+			opening anemo–cryo to
+			{hueGap(EL_OURS_V2.anemo, EL_OURS_V2.cryo).toFixed(0)}° while leaving cryo–hydro at
+			{hueGap(EL_OURS_V2.cryo, EL_OURS_V2.hydro).toFixed(0)}°. Our shipped cryo sits
+			{(toOklch(EL_NOW.cryo)[2] - toOklch(EL_GENSHIN_ICON.cryo)[2]).toFixed(0)}° out; this is a
+			third of that, because their anemo already did most of the work.
+			<code>CRYO_NUDGE</code> is one number in the script.
+		</p>
+
+		<!-- ── 9c · the dial ───────────────────────────────────────────────── -->
+		<h3 class="lab-sub">Where the divergence actually is — the ladder, lowered</h3>
+		<p class="lab-note">
+			⚓ <em
+				>"We are absolutely keeping white labels on the bars… but legibility doesn't need to be so
+				high. I'm up for slightly darker bars… the highest priority is the bars showing cleanly and
+				with pleasing element colours on the night scene."</em
+			>
+		</p>
+		<p class="lab-note">
+			Genshin never has to put 11px white on these fills, so their span runs bright:
+			<code>oklch L .699–.892</code>. The divergence is
+			<strong>that one axis and nothing else</strong>
+			— same hues, same relative chroma, ladder remapped into
+			<code>[{LADDER_LO}, {LADDER_HI}]</code>.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>It remaps rather than clips.</strong> A ceiling is the obvious move and it is wrong:
+			capping at L .74 lands <em>five of the seven on the same rung</em>, and a palette with no
+			lightness ladder is unreadable in a dense stacked chart. Remapping keeps Genshin's spacing —
+			more even than ours ever was — and just moves and narrows it.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>Chroma is kept as a fraction of the gamut, not as an absolute.</strong> Dropping
+			cryo from L .892 makes <em>more</em> chroma available, and holding its absolute value would spend
+			that headroom on nothing. A darker cryo that is also duller is the muddy version of this idea.
+		</p>
+		<div class="eldial">
+			{#each [{ k: 'Genshin, straight', s: EL_GENSHIN_ICON }, { k: `the divergence · [${LADDER_LO}, ${LADDER_HI}]`, s: EL_OURS_V2 }] as row (row.k)}
+				<div class="eldial-row">
+					<span class="eldial-tag">{row.k}</span>
+					<span class="eldial-fig"
+						>worst white-on-fill <b>{extremes(row.s).white.toFixed(2)}:1</b></span
+					>
+					<span class="eldial-fig"
+						>worst fill-vs-star <b>{extremes(row.s).star.toFixed(2)}:1</b></span
+					>
+				</div>
+			{/each}
+		</div>
+		<p class="lab-note">
+			🎛️ <strong>That is the trade, and both ends of it are real</strong> — every step down helps
+			the label and costs the fill. <code>LADDER_LO</code> / <code>LADDER_HI</code> are two numbers at
+			the top of this page's script; the pair above re-measures itself when you move them. It is set nearer
+			the bright end than a contrast target alone would put it, on purpose, because you ranked the fill
+			first.
+		</p>
+
+		<!-- ── 9d · the two ladders ────────────────────────────────────────── -->
+		<h3 class="lab-sub">The two palettes, all three rungs</h3>
+		<div class="lab-row lab-row--ladder">
+			{#each [{ k: 'Genshin, straight — SHIPPED', rows: LADDER_GENSHIN }, { k: 'the divergence — rejected', rows: LADDER_V2 }] as pal (pal.k)}
+				<div class="cand">
+					<span class="cand-tag">{pal.k}</span>
+					<div class="elladder">
+						{#each pal.rows as row (row.el)}
+							<div class="ell-row">
+								<span class="ell-name">{row.el}</span>
+								<div class="ell-cell">
+									<span class="ell-sw" style:background={row.deep}></span>
+									<span class="ell-hex">{row.deep}</span>
+									<span class="ell-r">{r2(row.deep, PAPER)}:1</span>
+								</div>
+								<div class="ell-cell">
+									<span class="ell-sw" style:background={row.main}></span>
+									<span class="ell-hex">{row.main}</span>
+									<span class="ell-r">{r2(row.main, STAR)}:1</span>
+								</div>
+								<div class="ell-cell">
+									<span class="ell-sw" style:background={row.hi}></span>
+									<span class="ell-hex">{row.hi}</span>
+									<span class="ell-r">{r2(row.hi, STAR)}:1</span>
+								</div>
+							</div>
+						{/each}
+						<div class="ell-legend">
+							<span></span><span>deep · vs paper</span><span>main · vs star</span>
+							<span>hi · {pal.rows[0].hiGiven ? "Genshin's own" : 'derived'}</span>
+						</div>
+					</div>
+				</div>
+			{/each}
+		</div>
+
+		<!-- ── 9e · bars on night, white labels ────────────────────────────── -->
+		<h3 class="lab-sub">Goal 2 · the bars on night, white labels — settled ink, open fill</h3>
+		<p class="lab-note">
+			The ink question is closed: <strong>white, with its halo</strong>. So this row is not three
+			answers any more, it is the same answer on two fills — which makes it the honest picture of
+			what
+			<code>LADDER_LO/HI</code> buys. Judge the <em>fill</em> first and the label second, in that order.
+		</p>
+		<div class="elpills">
+			{#each [{ k: 'Genshin, straight — SHIPPED', rows: LADDER_GENSHIN }, { k: 'the divergence — rejected', rows: LADDER_V2 }] as pal (pal.k)}
+				<div class="elpill-row">
+					<span class="elpill-tag">{pal.k}</span>
+					{#each pal.rows as row (row.el)}
+						<span
+							class="elpill elpill--halo"
+							style:background={row.main}
+							style:--label-halo={row.deep}>Q · {row.el}</span
+						>
+					{/each}
+				</div>
+			{/each}
+			<div class="elpill-row">
+				<span class="elpill-tag">ours — the palette this replaced</span>
+				{#each EL7 as el (el)}
+					<span
+						class="elpill elpill--halo"
+						style:background={EL_NOW[el]}
+						style:--label-halo="#081225">Q · {el}</span
+					>
+				{/each}
+			</div>
+		</div>
+
+		<!-- ── 9f · icons on light ─────────────────────────────────────────── -->
+		<h3 class="lab-sub">
+			Goal 1 · the icon on parchment — four answers and a fifth that sidesteps it
+		</h3>
+		<p class="lab-note">
+			⛔ <strong
+				>The other official sets do not rescue this, and the one that sounds like it should is
+				nearly the worst.</strong
+			>
+			Ink contrast on parchment-100, over every opaque pixel:
+			<code>flat-color 1.06–2.32</code> · <code>tcg 1.38–2.14</code> ·
+			<code>glow 1.01–1.54</code> · <code>gilded 1.15–1.19</code>. Nothing clears 3:1 anywhere.
+			Gilded is bright gold <em>for dark grounds</em>; glow's anemo measures 1.01:1 on paper, which
+			is invisible.
+			<strong>Genshin has no light UI, so there is no light-ground glyph to borrow.</strong>
+		</p>
+		<p class="lab-note">
+			⚠ And only <code>flat-color</code> / <code>flat-white</code> are tintable — one colour plus
+			straight alpha. <code>tcg</code>, <code>gilded</code> and <code>glow</code> are artwork with
+			baked palettes, so adopting one means
+			<strong
+				>that context's icons stop tracking
+				<code>--el-*</code></strong
+			>. That is the coupling the generator exists to guarantee; it is a system cost, not a taste
+			one.
+		</p>
+		<p class="lab-note">
+			✅ <strong>But gilded is the most instructive of the four.</strong> All seven of its glyphs
+			average the same gold, within 0.05 of contrast of each other — it carries
+			<em>no element colour at all</em>. Genshin ships a set where identity is carried entirely by
+			the
+			<strong>silhouette</strong>, and that is what licenses the two monochrome rows below.
+		</p>
+		<div class="ctx-light elpaper">
+			<div class="elpaper-row">
+				<span class="elpaper-tag">a · main on paper — the smudge</span>
+				{#each EL7 as el (el)}
+					<i class="elglyph elglyph--lg" style="--c:{EL_NOW[el]}; --m:{MASK(el)}"></i>
+				{/each}
+				<span class="elpaper-r">{r2(EL_NOW.cryo, PAPER)}:1 worst</span>
+			</div>
+			<div class="elpaper-row">
+				<span class="elpaper-tag">b · the deep rung — seven muddy colours</span>
+				{#each LADDER_V2 as row (row.el)}
+					<i class="elglyph elglyph--lg" style="--c:{row.deep}; --m:{MASK(row.el)}"></i>
+				{/each}
+				<span class="elpaper-r">{r2(LADDER_V2[0].deep, PAPER)}:1</span>
+			</div>
+			{#each MONO_PAPER as m (m.key)}
+				<div class="elpaper-row">
+					<span class="elpaper-tag">{m.key === 'ink' ? 'c' : 'd'} · {m.label}</span>
+					{#each EL7 as el (el)}
+						<i class="elglyph elglyph--lg" style="--c:{m.color}; --m:{MASK(el)}"></i>
+					{/each}
+					<span class="elpaper-r">{r2(m.color, PAPER)}:1</span>
+				</div>
+			{/each}
+			<p class="elpaper-note">
+				⚓ <strong
+					>You already called it, and the measurements agree: the fifth answer is the one.</strong
+				>
+				Follow Genshin's own practice and
+				<strong>do not put element marks on light UI at all</strong>
+				— move the Atlas pips to the card's glass half, where the full-strength palette runs
+				{r2(EL_OURS_V2.pyro, STAR)}–{r2(EL_OURS_V2.cryo, STAR)}:1 with no second tint set, no
+				monochrome compromise, and no <code>deep</code> rung to keep in lockstep. A colour problem solved
+				by not having the colour on the paper. The row is directly below.
+			</p>
+			<p class="elpaper-note">
+				Of the four that stay on paper: <strong>c</strong> is the strongest — it is gilded's own
+				logic, it reaches {r2(MONO_PAPER[0].color, PAPER)}:1, and cryo stops being a problem because
+				there is no pale colour left to fail. <strong>d</strong> is the same idea wearing the gilded
+				flavour, and it is the one to pick if these ever need to read as ornament rather than data.
+				<strong>b</strong> buys colour that is too muddy to be a fast lookup, at the price of a whole
+				second generated set. ⚠ Judge c and d at pip size, not at this size — the question is whether
+				seven silhouettes are separable small, and that is exactly what gilded is Genshin's evidence for.
+			</p>
+			<div class="elpaper-row elpaper-row--small">
+				<span class="elpaper-tag">c and d again, at real pip size</span>
+				{#each EL7 as el (el)}
+					<i class="elglyph" style="--c:#3b4255; --m:{MASK(el)}"></i>
+				{/each}
+				<span class="elpaper-sp"></span>
+				{#each EL7 as el (el)}
+					<i class="elglyph" style="--c:#74603c; --m:{MASK(el)}"></i>
+				{/each}
+			</div>
+		</div>
+		<div class="elonglass">
+			<span class="elpaper-tag">the recommendation · full strength, on the glass half</span>
+			<div class="ctx-glass elonglass-pane">
+				{#each EL7 as el (el)}
+					<span class="elpip"
+						><i class="elglyph" style="--c:{EL_OURS_V2[el]}; --m:{MASK(el)}"></i>{[
+							9, 8, 7, 7, 6, 5, 6
+						][EL7.indexOf(el)]}</span
+					>
+				{/each}
+			</div>
+		</div>
+
+		<!-- ── 9g · the sizing defect ──────────────────────────────────────── -->
+		<h3 class="lab-sub">Glyph sizing — I called this a defect and it is not one</h3>
+		<p class="lab-note">
+			⛔ <strong
+				>NOT FIXED, ON PURPOSE. ⚓ Nate: "to my eye, the non-normalized marks read most balanced" —
+				and he is right.</strong
+			> The row below is the whole argument; judge it, do not re-derive it.
+		</p>
+		<p class="lab-note">
+			The measurement that started this is real: cropped to its own ink, each glyph fills a
+			different share of its canvas — cryo 89%, hydro 75% — so at one CSS box hydro renders ~19%
+			smaller in its longest dimension than cryo. <strong
+				>What was wrong was calling that a defect.</strong
+			> I measured a variance and assumed uniformity was the correct state, without establishing it.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>And my own numbers said otherwise, which I should have noticed.</strong> Ink area
+			across the seven spans 17.6%–22.5%, a ratio of <strong>1.28×</strong> — <em>wider</em> than
+			the bounding-box spread of 1.19×. Neither measure is flat, and they disagree about direction:
+			hydro's box says ×1.19 while its ink says ×1.00; dendro's box says ×1.02 while its ink says
+			×1.13. If the art were carelessly sized, one metric would come out uniform. That both vary, in
+			opposite directions, is what <strong>already balanced by eye</strong> looks like — a sparse spiky
+			glyph needs more box than a dense one to carry the same weight, and miHoYo's artist did that work.
+		</p>
+		<p class="lab-note">
+			⚠ The general lesson is worth more than the case: <strong
+				>a variance is not a defect until you can say what the correct value is.</strong
+			> Both normalisations stay rendered below as the evidence — box-normalising visibly blobs hydro,
+			ink-normalising visibly swells dendro, and neither reads as well as the art does untouched.
+		</p>
+		<div class="elsizing">
+			{#each SIZING_ROWS as row (row.key)}
+				<div class="elsizing-row">
+					<span class="elpaper-tag">{row.label}</span>
+					{#each EL7 as el (el)}
+						<i
+							class="elglyph elglyph--lg"
+							style="--c:{EL_OURS_V2[el]}; --m:{MASK(el)}; --ms:{row.scale
+								? (row.scale[el] * 100).toFixed(1)
+								: 100}%"
+						></i>
+					{/each}
+				</div>
+			{/each}
+		</div>
+
+		<p class="lab-note">
+			🔎 Two asides worth keeping. <strong
+				><code>flat-white</code> is a strictly better generator input than
+				<code>flat-color</code></strong
+			>
+			— same lossless tintability, 128px against 84, and it carries <code>lunar</code>,
+			<code>omni</code>
+			and <code>stellar</code>. ⚓ Those three are
+			<strong>Nate's own</strong>, traced from art Genshin uses but never drew as icons, which is
+			why they exist in white only; if they are ever wanted in colour he has schemes to suggest, so
+			<strong>do not invent one</strong>. And <code>glow</code> is Genshin's own <code>hi</code> rung
+			in icon form (4.57–7.86 against the star) — the same two-tier pattern as their icon/in-text colour
+			split, drawn a second time in a different medium.
+		</p>
+
+		<p class="lab-note">
+			<strong>Scope note.</strong> Three families ride along and would drift the moment the mains
+			move: the <code>--rx-*</code> aura colours (frozen is cryo's <code>hi</code> by construction,
+			burning is pyro pushed to ember), <code>--el-none-main</code> and <code>physical</code> (which
+			have no light rung at all), and the generated icon manifest. <code>elementColors.ts</code> and
+			the export mirror test are the two places that must move in lockstep with
+			<code>app.css</code>.
+		</p>
 	</section>
 </div>
 
@@ -1619,5 +2419,290 @@
 	}
 	.ab-pip {
 		color: var(--text);
+	}
+
+	/* ── 9 · element colours ───────────────────────────────────────────────
+	   ⚠ THE GLYPHS HERE ARE MASKED, NOT TINTED. Everywhere else in the app an
+	   element icon is a pre-tinted PNG from the generated manifest, and it has
+	   to be: masking asks the compositor for a colour it never resolves at
+	   build time, so the token and the art could drift apart again — which is
+	   the exact failure generate-element-icons.mjs exists to prevent.
+
+	   A board is the one place it is right. The whole job here is to put a
+	   colour that DOES NOT EXIST YET on the real silhouette, and generating
+	   four hashed sets of seven files to look at a candidate would leave 28
+	   files in an add-only tree for every idea we reject. The source art is
+	   flat with straight alpha (same property the generator relies on), so a
+	   mask reproduces the tint exactly. ⛔ Do not copy this into a component. */
+	.lab-sub {
+		margin: 1.6rem 0 0.5rem;
+		font-family: var(--font-display);
+		font-size: var(--fs-xl);
+		color: var(--chrome);
+	}
+	.lab-list {
+		padding-left: 1.1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.elglyph {
+		display: block;
+		width: 20px;
+		height: 20px;
+		background-color: var(--c);
+		/* --ms scales the SILHOUETTE inside a box that stays put, which is what
+		   makes the three sizing rows comparable. Defaults to `contain`, i.e.
+		   exactly what every consumer gets today. */
+		-webkit-mask: var(--m) center / var(--ms, contain) no-repeat;
+		mask: var(--m) center / var(--ms, contain) no-repeat;
+	}
+	.elglyph--lg {
+		width: 30px;
+		height: 30px;
+	}
+
+	/* The four grounds carry four sets each, so this grid wants the whole width
+	   and the panels want to be tall rather than wide. */
+	.lab-grid--el {
+		gap: 0.8rem;
+	}
+	.elspec {
+		gap: 0.55rem;
+	}
+	.elref-tag {
+		font-size: var(--fs-xs);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	/* ⚠ ctx-night forbids --muted (it does not clear the star), and these tags
+	   sit on the bare world in the first panel. */
+	.spec--bare .elref-tag {
+		color: var(--text);
+	}
+	.elref {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		gap: 0.3rem;
+		margin-bottom: 0.5rem;
+	}
+	.elcell {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+	}
+	/* A bar as well as a glyph, because the two questions are different: a glyph
+	   is judged on recognition and a bar on how it sits in a stack of others. */
+	.elbar {
+		width: 100%;
+		height: 9px;
+		border-radius: 2px;
+	}
+
+	/* The dial's two readouts, side by side — the whole argument of the
+	   divergence is that these two numbers move in opposite directions. */
+	.eldial {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		margin-bottom: 1rem;
+	}
+	.eldial-row {
+		display: grid;
+		grid-template-columns: 22rem 15rem 15rem;
+		gap: 0.5rem;
+		align-items: baseline;
+	}
+	.eldial-tag {
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.eldial-fig {
+		font-size: var(--fs-sm);
+		color: var(--text);
+		opacity: 0.8;
+	}
+	.eldial-fig b {
+		font-family: var(--font-mono);
+		font-variant-numeric: tabular-nums;
+		opacity: 1;
+	}
+
+	.lab-row--ladder {
+		gap: 2rem;
+	}
+	.elladder {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+	}
+	.ell-row,
+	.ell-legend {
+		display: grid;
+		grid-template-columns: 4.5rem repeat(3, 8.6rem);
+		gap: 0.4rem;
+		align-items: center;
+	}
+	.ell-name {
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.ell-cell {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+	}
+	.ell-sw {
+		width: 18px;
+		height: 18px;
+		border-radius: 2px;
+		flex: none;
+	}
+	.ell-hex,
+	.ell-r {
+		font-family: var(--font-mono);
+		font-size: var(--fs-xs);
+		font-variant-numeric: tabular-nums;
+	}
+	.ell-hex {
+		color: var(--text);
+	}
+	.ell-r {
+		color: var(--muted);
+	}
+	/* On the bare world again — see .elref-tag. */
+	.ell-r,
+	.ell-legend {
+		color: var(--text);
+		opacity: 0.75;
+	}
+	.ell-legend {
+		margin-top: 0.2rem;
+		font-size: var(--fs-xs);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+	}
+
+	.elpaper {
+		display: flex;
+		flex-direction: column;
+		gap: 0.9rem;
+		padding: 1.2rem 1.4rem;
+		border-radius: 3px;
+		background: var(--surface-broad);
+	}
+	.elpaper-row {
+		display: flex;
+		align-items: center;
+		gap: 0.9rem;
+	}
+	.elpaper-tag {
+		width: 22rem;
+		flex: none;
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.elpaper-r {
+		margin-left: auto;
+		font-family: var(--font-mono);
+		font-size: var(--fs-xs);
+		font-variant-numeric: tabular-nums;
+		color: var(--muted);
+	}
+	/* The pip-size row — the only size at which c and d can actually be judged,
+	   because the question is whether seven SILHOUETTES separate when small. */
+	.elpaper-row--small {
+		gap: 0.55rem;
+	}
+	.elpaper-sp {
+		width: 1.6rem;
+	}
+	/* The recommendation, drawn as the thing it would actually be: pips on the
+	   card's glass half, at full strength. Glass over the scene, so this sits
+	   OUTSIDE .elpaper — putting it on the parchment would be the very mistake
+	   the row exists to avoid. */
+	.elonglass {
+		display: flex;
+		align-items: center;
+		gap: 0.9rem;
+		margin-top: 1rem;
+	}
+	/* ⚠ .ctx-glass re-points TOKENS; it does not paint. The pane has to claim
+	   --surface itself, same as .benchband above — a glass context with no fill
+	   is just bare scene wearing the right ink. */
+	.elonglass-pane {
+		display: flex;
+		gap: 1rem;
+		padding: 0.6rem 0.9rem;
+		border-radius: 3px;
+		background: var(--surface);
+	}
+	.elpip {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
+		font-size: var(--fs-sm);
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
+	}
+	/* The sizing comparison. --ms drives mask-size, so the SILHOUETTE scales
+	   inside a box that does not move — which is the only way the three rows
+	   stay comparable. */
+	.elsizing {
+		display: flex;
+		flex-direction: column;
+		gap: 0.7rem;
+	}
+	.elsizing-row {
+		display: flex;
+		align-items: center;
+		gap: 0.9rem;
+	}
+	.elpaper-note {
+		margin: 0.3rem 0 0;
+		max-width: 90ch;
+		font-size: var(--fs-md);
+		line-height: var(--lh-relaxed);
+		color: var(--text);
+	}
+	/* ⛔ THE DARK-DISC CANDIDATE IS GONE, not merely unused. It was drawn here as
+	   option (b) for one round and lost on a rule rather than on looks: a disc
+	   re-chips a PICTURE mark, which the TB card round had just finished
+	   removing, and it puts an opaque dark object on the paper to fix a problem
+	   that is really about paint. Recorded so it is not re-proposed as new. */
+
+	.elpills {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.elpill-row {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+	.elpill-tag {
+		width: 14rem;
+		flex: none;
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.elpill {
+		padding: 0.2rem 0.6rem;
+		border-radius: 2px;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		white-space: nowrap;
+	}
+	/* The shipped halo, reproduced exactly — the point of showing option (a) is
+	   that its real defence is the halo and not the ratio, so a version without
+	   one would be arguing against a straw man. */
+	.elpill--halo {
+		text-shadow:
+			color-mix(in srgb, var(--label-halo) 25%, transparent) 0px 1px 2px,
+			color-mix(in srgb, var(--label-halo) 50%, transparent) 0px 0px 6px;
 	}
 </style>
