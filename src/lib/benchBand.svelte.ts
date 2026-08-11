@@ -49,6 +49,24 @@ export type BenchHostRegistration =
 export const BENCH_CARD_W = 160;
 
 /**
+ * ⚗️ TEMPORARY — ⚓ NATE 2026-08-11: "Just out of curiosity, I'd like to see
+ * what we'd have if the bench's card wasn't holding back the sizing — can you
+ * make the avatars display:none or something so we can work without being
+ * distracted by them and see what it looks like?"
+ *
+ * ⚠ HIDING THE DISC IS NOT ENOUGH ON ITS OWN, which is the whole reason this is
+ * one flag rather than a line of CSS. The card's portrait is not what holds the
+ * timeline back — BENCH_SLOT_MIN_H is, and it would still floor every slot at
+ * 126px with an invisible disc's worth of space reserved. So this flag does
+ * both: it drops the disc AND drops the floor to what a portrait-less card
+ * needs, which is the two fixed bands and nothing more.
+ *
+ * ⛔ FLIP IT BACK TO `true` TO RESTORE THE BENCH. Nothing else needs touching —
+ * the floor, the card and the timeline all follow from here.
+ */
+export const BENCH_PORTRAIT_SHOWN = false;
+
+/**
  * ══ WHAT ONE CARD NEEDS, AND WHY IT IS NOW THE BINDING CONSTRAINT ═══════════
  * The card is three stacked bands with fixed outer two:
  *
@@ -75,8 +93,12 @@ export const BENCH_CARD_W = 160;
  * ⚠ The disc itself is capped, not floored (--sp-avatar-max in SlotPortrait):
  * it shrinks to fit whatever it is given. This constant is what stops it being
  * given too little.
+ *
+ * ⚗️ The portrait-less arm is the experiment above: with no disc the card is
+ * only its two fixed bands, so 86 is the whole of it and the timeline is free
+ * to show what its rows actually ask for.
  */
-export const BENCH_SLOT_MIN_H = 86 + 40;
+export const BENCH_SLOT_MIN_H = BENCH_PORTRAIT_SHOWN ? 86 + 40 : 86;
 
 /**
  * The band's resting rhythm: one card at the planner's BASELINE slot height,

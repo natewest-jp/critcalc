@@ -2294,9 +2294,15 @@
 		   (see .rp-team-buff-bar), so the label is sized to fit inside one —
 		   --fs-sm was what the slim bar bought and it went back with it. The
 		   colour does NOT go back: full white stays. ⚓ Nate: "all labels back to
-		   white, please — especially since we're going right over the scene." */
+		   white, please — especially since we're going right over the scene."
+		   ↻ 2026-08-11: semibold → medium (⚓ Nate). ⚠ Which lands on 400 TODAY,
+		   not 500 — only Plex Sans 400 and 600 are loaded, so --fw-medium
+		   resolves to normal. The table at the --fw-* tokens in app.css has the
+		   measurements. The token records the intent and upgrades itself if the
+		   500 face is ever bought; the visible change right now is 600 → 400,
+		   which is the direction asked for. */
 		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
+		font-weight: var(--fw-medium);
 		color: #fff;
 		white-space: nowrap;
 		letter-spacing: var(--ls-mid);
@@ -2682,7 +2688,10 @@
 	}
 	.rp-summon-label {
 		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
+		/* ↻ 2026-08-11: bold → medium (⚓ Nate), which is a TWO-step drop even
+		   though it reads as one — --fw-bold was already resolving to 600 and
+		   --fw-medium resolves to 400. See the --fw-* table in app.css. */
+		font-weight: var(--fw-medium);
 		/* ↻ 2026-08-11 round two: --bright-ink → white with every other label.
 		   See the halo block for the deferred contrast debt this carries. */
 		color: #fff;

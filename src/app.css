@@ -962,6 +962,34 @@
 	   rung is fine; a role with no rung is not. */
 	--fs-5xl: 2rem; /* 32px — page headings · instrument readouts */
 
+	/* ══ ⚠ FOUR NAMES, TWO REAL WEIGHTS (measured 2026-08-11) ═════════════════
+	   ⚓ NATE: "I couldn't see any difference between normal (should be 400) and
+	   medium (should be 500), but then there's a large jump to semibold (600)."
+	   He was seeing the truth. src/routes/+layout.svelte imports exactly two
+	   faces of IBM Plex Sans — 400 and 600 — so the CSS font-matching algorithm
+	   resolves the other two onto them:
+
+	     --fw-normal   400  →  400  ✅ real
+	     --fw-medium   500  →  400  ⚠ IDENTICAL TO NORMAL
+	     --fw-semibold 600  →  600  ✅ real
+	     --fw-bold     700  →  600  ⚠ IDENTICAL TO SEMIBOLD
+
+	   Measured, not inferred: a 40px string renders 400.844px at both 400 and
+	   500, and 412.563px at 600, 700 AND 800. (The rule is CSS Fonts §5.2 — for
+	   a target ≤ 500 the engine walks DOWN first, and for ≥ 600 it walks UP
+	   first, so 500 lands on 400 and 700 lands on 600. No synthetic bolding is
+	   applied while a heavier real face is unnecessary.)
+
+	   ⚠ SO A `--fw-bold` NEXT TO A `--fw-semibold` IS NOT A CONTRAST — it is the
+	   same pixels with two names, and any hierarchy written that way is
+	   decorative. Check against this table before reaching for a weight.
+
+	   🎛️ THE FIX IS TWO IMPORTS, NOT A TOKEN CHANGE: `@fontsource/ibm-plex-sans/
+	   500.css` and `/700.css` are ~23.6 KB and ~22.3 KB of latin woff2. Whether
+	   the ladder is worth ~46 KB is a payload decision, so the tokens stay as
+	   they are — they describe the intent, and they become true the moment the
+	   faces land. What must NOT happen is quietly renumbering them to 400/600
+	   and losing the distinction the design wants. */
 	--fw-normal: 400;
 	--fw-medium: 500;
 	--fw-semibold: 600;

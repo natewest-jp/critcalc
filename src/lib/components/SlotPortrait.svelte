@@ -34,6 +34,8 @@
 	import type { Snippet } from 'svelte';
 	import { siteSettings, type LoadoutEntry } from '$lib/stores';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
+	// ⚗️ TEMPORARY — see the flag's note; remove this import with the experiment.
+	import { BENCH_PORTRAIT_SHOWN } from '$lib/benchBand.svelte';
 	import { elementPalette } from '$lib/utils/elementColors';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { artifactImagePath } from '$lib/data/artifactLookup';
@@ -250,35 +252,42 @@
 		>
 	</div>
 
-	<div class="sp-portrait-area">
-		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-		<div
-			class="sp-avatar-chip"
-			class:sp-avatar-clickable={!!onPortraitClick}
-			onclick={onPortraitClick}
-			role={onPortraitClick ? 'button' : undefined}
-			tabindex={onPortraitClick ? 0 : undefined}
-			aria-label={onPortraitClick ? portraitLabel : undefined}
-		>
-			<span class="sp-avatar-clip">
-				{#if !avatarFallback}
-					<img
-						class="sp-avatar-img"
-						src={getAvatar(
-							slotId,
-							$siteSettings.useNewOutfits,
-							'side',
-							$siteSettings.travelerVariant
-						)}
-						alt={char?.displayName ?? 'Empty slot'}
-						onerror={handleAvatarError}
-					/>
-				{:else}
-					<span class="sp-avatar-initials">{initials(char?.displayName ?? slotId)}</span>
-				{/if}
-			</span>
+	<!-- ⚗️ TEMPORARY (⚓ Nate 2026-08-11): the portrait is out so the timeline can
+	     be judged without the bench card's floor holding its rows up. The whole
+	     area goes, not just the disc — an empty flex:1 box would still claim the
+	     space the experiment is trying to reclaim. Flip BENCH_PORTRAIT_SHOWN
+	     back to `true` to restore it; see the note there. -->
+	{#if BENCH_PORTRAIT_SHOWN}
+		<div class="sp-portrait-area">
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+			<div
+				class="sp-avatar-chip"
+				class:sp-avatar-clickable={!!onPortraitClick}
+				onclick={onPortraitClick}
+				role={onPortraitClick ? 'button' : undefined}
+				tabindex={onPortraitClick ? 0 : undefined}
+				aria-label={onPortraitClick ? portraitLabel : undefined}
+			>
+				<span class="sp-avatar-clip">
+					{#if !avatarFallback}
+						<img
+							class="sp-avatar-img"
+							src={getAvatar(
+								slotId,
+								$siteSettings.useNewOutfits,
+								'side',
+								$siteSettings.travelerVariant
+							)}
+							alt={char?.displayName ?? 'Empty slot'}
+							onerror={handleAvatarError}
+						/>
+					{:else}
+						<span class="sp-avatar-initials">{initials(char?.displayName ?? slotId)}</span>
+					{/if}
+				</span>
+			</div>
 		</div>
-	</div>
+	{/if}
 
 	<!-- Base band: the loadout pill, flanked by any host slot actions. The
 	     actions wrapper is `display: contents`, so the buttons become flex items
