@@ -533,37 +533,73 @@
 	   over-the-world voice (site chrome, branding, biggest headers); --ink is
 	   the universal dark ink. The dire and gilt FAMILIES are RETIRED
 	   (2026-08-05, dire-retirement round) — dire's enemy-facing semantic
-	   survives as --debuff below; gilt's chrome role went to --chrome and its
-	   text roles to the contexts. CALM remains the ally-facing content
-	   register (buff bars); the element palette is untouched. */
+	   survives as --debuff-fill below; gilt's chrome role went to --chrome and
+	   its text roles to the contexts. CALM IS RETIRED TOO (2026-08-11) — its
+	   ally-facing role survives as --buff-fill in the annotation register just
+	   below, at a colour that no longer collides with hydro. The element palette
+	   is untouched. */
 
-	/* DEBUFF — the enemy-facing semantic (debuffs, res shred, sacrificial
-	   procs): dire's successor. --debuff is the bright EDGE/stripe, exactly
-	   --calm's role on buff bars; --debuff-fill is the bar BODY, pinned near
-	   --calm-fill's weight (L≈.35) so debuff and buff bars carry the same
-	   presence in the timeline.
-	   ✅ 2026-08-09 (Genshin Night): NO LONGER INTERIM. The value did not change
-	   — it was promoted into the ramp as --red-500 and the open question closed.
-	   The evidence is in the primitive's comment: Fable's independent
-	   reverse-engineering landed ~ΔE 3 away, and measured head to head Nate's
-	   pick separates BETTER from pyro (ΔH 4.6° vs 2.1°), which is the constraint
-	   it was chosen under in the first place.
-	   ⚠ Canvas can't resolve var() — timelineExport.ts mirrors both. */
-	--debuff: var(--red-500);
-	--debuff-fill: #6e332d;
+	/* ══ THE ANNOTATION REGISTER (⚓ NATE 2026-08-11) ══════════════════════════
+	   ⚓ "Let's rework the buff/debuff colour. They were adopted in the dire
+	   border phase and now they honestly are just looking out of place."
 
-	/* CALM — content register. These are the HIGH-saturation members of the
-	   family whose structural members are --surface / --surface-raised /
-	   --border above. --calm is the bright stripe / identity; --calm-fill is the
-	   buff bar BODY: the deep blue a time-scaling buff (Yelan Q, Mavuika Q)
-	   ramps up to at full, so flat and ramping buffs share one color.
-	   ↻ 2026-08-01 lightness-structure: --calm-fill lifted l30 → l37 (oklch
-	   L.39 → L.45) — buff strips are content and earn real ΔL over --frame-bg
-	   (L.23) instead of hovering at the dire scene's lightness. --dire-fill's
-	   pinned l moves with it (30% → 37%), per the counterpart coupling above.
-	   ⚠ both mirrored as literals in timelineExport.ts. */
-	--calm: #6b99c7; /* bright stripe / identity  h210 s45 l60 */
-	--calm-fill: #2b5590; /* buff bar body             h215 s54 l37 */
+	   THE DIAGNOSIS WAS ALREADY IN THIS FILE. The old pair was --calm #6b99c7
+	   (h210) over --calm-fill #2b5590 (h215), and --debuff = --red-500. Look up
+	   twelve lines from here at the --ui-value rejection: "WE HAVE NO FREE BLUE
+	   … --calm sits ΔH 2.2° from --el-hydro-main." That measurement was used to
+	   veto a PROPOSED blue while the shipped one kept its place. A buff bar was
+	   a dark hydro bar, sitting on a chart whose every other bar is
+	   element-coloured. Red was better separated (ΔH 4.6° off pyro) but still
+	   inside element territory.
+
+	   ⚠ AND RED/BLUE ENCODED A VALENCE THAT ISN'T THERE. Both of these are GOOD:
+	   a res-shred window is beneficial, it is just aimed at the enemy. The pair's
+	   real axis is DIRECTION — on us / on them — not good / bad.
+
+	   THE PRINCIPLE. An E/Q bar is the GAME: a real ability, element-coloured,
+	   saturated. A buff window is our READING of the game — derived, computed,
+	   explanatory. Content gets chroma; annotation doesn't. So this register
+	   lives far below the element floor and cannot be mistaken for a bar.
+
+	   ⛔ AND IT IS NOT GOLD, though gold is the obvious reach. --accent already
+	   means "a gap you can click" three feet away in the Team Builder's coverage
+	   chips (.ts-cov--no takes an accent wash; .ts-cov--yes RECEDES to --muted).
+	   Gold on "a buff is active" would make one hue mean both "you are missing
+	   something" and "you have something", in two tools one swipe apart.
+
+	   THE PAIR IS ONE COLOUR REFLECTED. Both stops are the same lightness and
+	   the same saturation — they are literally channel-reversals of each other
+	   (107 98 75 ↔ 75 98 107) — so only TEMPERATURE separates them: warm for
+	   ours, cool for theirs. Nothing about the pair says better or worse, which
+	   is the point, and it means the two can be tuned as one decision: move the
+	   lightness and reverse the channels.
+
+	   Measured: h36/h204, s20, l37. Elements run s70–s90, so chroma — not hue —
+	   is what holds them apart, which is the only axis the element palette has
+	   left free. White labels measure 5.91:1 on the warm stop and 6.39:1 on the
+	   cool — both well clear of the 4.5:1 floor, and the ~0.5 spread is the
+	   price of matching SATURATION rather than luminance across a hue flip.
+	   ⚠ Raising either stop's lightness spends that headroom; the floor is what
+	   caps how light this pair can go, not taste.
+
+	   ⚠ THEY MUST STAY LITERALS. RotationTimeline's time-scaling envelope does
+	   `color-mix(… var(--buff-fill) X%, var(--rp-chart-bg))`, and a color-mix
+	   fed by a color-mix CRASHES WEBKIT (THE NESTING LAW). Writing these as
+	   derivations would take the planner down.
+	   ⚠ Canvas can't resolve var() — timelineExport.ts mirrors both.
+
+	   ⛔ RETIRED WITH THIS ROUND: --calm, --calm-fill and --debuff. The first two
+	   were the blue; --debuff was the bright enemy STRIPE, and the flattening
+	   pass earlier today took every bar's edge off, so it had already stopped
+	   being painted. --red-500 stays in the ramp as a primitive.
+
+	   ⚠ The sacrificial-proc rows borrow --debuff-fill and are NOT enemy-facing
+	   (a weapon ICD is on your own character). That borrowing predates this
+	   round — Nate 2026-07-18 — and is a visual-register choice, not a semantic
+	   one. Kept as-is; it is the reason these are named for the BAR KIND rather
+	   than for who the effect lands on. */
+	--buff-fill: #71624b; /* ours   — h36  s20 l37 */
+	--debuff-fill: #4b6271; /* theirs — h204 s20 l37 */
 
 	/* (GILT RETIRED 2026-08-05 — the family's chrome role went to --chrome,
 	   its heading/label roles to the contexts' --text/--muted, its beige

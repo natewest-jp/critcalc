@@ -271,15 +271,15 @@
 	// $lib/utils/elementColors so the Team Builder's Compare bars share the exact
 	// finish. Its Safari-revert history travelled with it.
 
-	// One gradient stop for the time-scaling buff envelope: --calm-fill (the buff
+	// One gradient stop for the time-scaling buff envelope: --buff-fill (the buff
 	// body/fill) mixed toward the chart ground, so ramp/decay bars track any
-	// future --calm-fill change and stay in sync with the flat buff bars (which
-	// fill solid --calm-fill). ↻ 2026-08-01: mixes against --rp-chart-bg, NOT
+	// future --buff-fill change and stay in sync with the flat buff bars (which
+	// fill solid --buff-fill). ↻ 2026-08-01: mixes against --rp-chart-bg, NOT
 	// transparent — these bars always sit on the chart ground, and the alpha-
 	// compositing law says a fill on a known ground mixes opaquely against it
 	// (semi-transparent CSS renders display-dependently on P3).
-	function calmStop(alpha: number): string {
-		return `color-mix(in srgb, var(--calm-fill) ${(alpha * 100).toFixed(1)}%, var(--rp-chart-bg))`;
+	function buffStop(alpha: number): string {
+		return `color-mix(in srgb, var(--buff-fill) ${(alpha * 100).toFixed(1)}%, var(--rp-chart-bg))`;
 	}
 
 	// Returns a linear-gradient CSS string for ramping buff bars, fading from dim (ramp start)
@@ -293,7 +293,7 @@
 		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / rampDur));
 		const o0 = 0.2 + p0 * 0.8;
 		const o1 = 0.2 + p1 * 0.8;
-		return `linear-gradient(to right, ${calmStop(o0)}, ${calmStop(o1)})`;
+		return `linear-gradient(to right, ${buffStop(o0)}, ${buffStop(o1)})`;
 	}
 
 	// Returns a linear-gradient CSS string for decaying buff bars, fading from full
@@ -306,7 +306,7 @@
 		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / decay.duration));
 		const o0 = 1.0 - p0 * 0.8;
 		const o1 = 1.0 - p1 * 0.8;
-		return `linear-gradient(to right, ${calmStop(o0)}, ${calmStop(o1)})`;
+		return `linear-gradient(to right, ${buffStop(o0)}, ${buffStop(o1)})`;
 	}
 
 	// ---------------------------------------------------------------------------
@@ -1783,7 +1783,7 @@
 		   survives with the roles the archetype gives them: the frame wears
 		   the RAISED rung (#212121, see .rp-frame) and the chart sits one
 		   rung deeper on the surface. Every derived mix below (ghosts, dims,
-		   calmStop, grid/lane lines) follows it. ⚠ the exporter mirrors this
+		   buffStop, grid/lane lines) follows it. ⚠ the exporter mirrors this
 		   literal. */
 		/* ↻ 2026-08-09 (Genshin Night): this is --surface-well now, a role that
 		   exists BECAUSE of this declaration. The well used to be the literal
@@ -2252,7 +2252,7 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		background: var(--calm-fill);
+		background: var(--buff-fill);
 		border: none;
 		border-radius: 1px;
 		display: flex;
@@ -2265,7 +2265,7 @@
 	}
 	/* Debuff variant — applied to enemy resShred bars. Same geometry AND the same
 	   weight as the buff bar: --debuff-fill is the exact counterpart of
-	   --calm-fill (see app.css). It used to be color-mix(the retired dire 24%),
+	   --buff-fill (see app.css). It used to be color-mix(the retired dire 24%),
 	   which sat at half the buff bar's lightness and read as a different, dimmer
 	   class of thing.
 	   ↻ 2026-08-11: the paired bright edge went with every other bar's in the

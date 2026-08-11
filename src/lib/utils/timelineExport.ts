@@ -97,25 +97,24 @@ const TEXT = '#ece5d8'; // --text (ctx-dark) → --parchment-100
 // became what Genshin actually does — the ink laid on the ground at .72.
 const MUTED = '#b7b4ae'; // --muted (ctx-dark) = mix(parchment-100 72%, slate-800)
 const INK = '#0d0d0f'; // --bright-ink → --ink-950 (⚓ NATE 2026-08-05)
-// Paired tool tints — mirror app.css. --calm-fill = #2b5590 (buff body/fill —
-// the time-scaling ramp's full end); --calm = #6b99c7 (bright accent stripe).
-// Buff bars fill solid calm-fill with a calm stripe; debuff/proc bars fill
-// solid --debuff-fill with a --debuff stripe — the exact counterpart pairing
-// (↻ 2026-08-05: the dire family retired; --debuff/--debuff-fill are its
-// enemy-facing successors, interim values). mix()/hexToRgb hoist.
+// THE ANNOTATION REGISTER — mirrors app.css, where the reasoning lives. One
+// colour reflected: warm for effects on your team, cool for effects on the
+// enemy, identical lightness and saturation so only temperature separates them.
+// They replaced a blue/red pair that was wearing element hues (--calm sat ΔH
+// 2.2° from hydro) on a chart made of element hues.
+// ⛔ The bright EDGE stops are gone with the flattening pass — there is no
+// stripe left for CALM_EDGE / DEBUFF_EDGE to mirror.
 // (Ramping/decaying received buffs paint flat here — the on-screen opacity
 // envelope isn't reproduced; the flat fill matches their full end.)
-const CALM_TINT = '#2b5590';
-const CALM_EDGE = '#6b99c7';
+const BUFF_FILL = '#71624b'; // --buff-fill   h36  s20 l37
+const DEBUFF_FILL = '#4b6271'; // --debuff-fill h204 s20 l37
 // ↻ 2026-08-11: every bar label went from .85 white to FULL white on screen
 // (⚓ Nate, "all labels back to white"), and these three mirror it. The one
 // label deliberately left at partial strength is the ghost track's CD readout —
 // it is a duration on a recessive track, not a label, and it sits on an opaque
 // bar rather than over the scene.
-const TEAM_BUFF_FILL = CALM_TINT;
+const TEAM_BUFF_FILL = BUFF_FILL;
 const TEAM_BUFF_LABEL = '#fff';
-const DEBUFF_FILL = '#6e332d'; // --debuff-fill
-const DEBUFF_EDGE = '#c9524a'; // --debuff
 const DEBUFF_LABEL = '#fff';
 // Sacrificial-proc rows share the debuff register (Nate 2026-07-18)
 const PROC_FILL = DEBUFF_FILL;
@@ -147,9 +146,7 @@ export const PALETTE_MIRROR = {
 	TEXT,
 	MUTED,
 	INK,
-	DEBUFF_EDGE,
-	CALM_TINT,
-	CALM_EDGE,
+	BUFF_FILL,
 	DEBUFF_FILL,
 	PORTRAIT_BG
 } as const;
