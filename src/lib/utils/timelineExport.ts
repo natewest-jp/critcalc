@@ -851,28 +851,41 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	}
 
 	// z:1 — connectors
+	//
+	// ↻ 2026-08-11: the corners round FULLY now (⚓ Nate). On screen that is
+	// `border-radius: 999px` and CSS's own overlap rule resolves it to
+	// min(w, h) — see connectorStyle for the derivation. Canvas has no such
+	// rule, so the resolved value is computed here instead: this is the one
+	// place the two sides have to agree by hand, and it is why the mirror is
+	// worth keeping for a mark this prominent even though SHAPE is otherwise
+	// decoupled (see the header).
+	//
+	// ⚠ arcTo, not quadraticCurveTo. A quadratic with its control point at the
+	// corner is the cheap quarter-circle approximation and it undershoots a true
+	// arc by ~6% of the radius — invisible at the old 3px cap, and a couple of
+	// visible px once the radius can reach tens of px.
 	ctx.fillStyle = ACTIVE;
 	for (const c of snap.connectors) {
 		const cx = ox + c.x;
 		const yT = oy + c.yTop;
 		const yB = oy + c.yBottom;
-		const r = Math.min(3, Math.floor(c.w / 2));
+		const r = Math.min(c.w, yB - yT);
 		ctx.beginPath();
 		if (c.downward) {
 			ctx.moveTo(cx, yT);
 			ctx.lineTo(cx + c.w - r, yT);
-			ctx.quadraticCurveTo(cx + c.w, yT, cx + c.w, yT + r);
+			ctx.arcTo(cx + c.w, yT, cx + c.w, yT + r, r);
 			ctx.lineTo(cx + c.w, yB);
 			ctx.lineTo(cx + r, yB);
-			ctx.quadraticCurveTo(cx, yB, cx, yB - r);
+			ctx.arcTo(cx, yB, cx, yB - r, r);
 		} else {
 			ctx.moveTo(cx + r, yT);
 			ctx.lineTo(cx + c.w, yT);
 			ctx.lineTo(cx + c.w, yB - r);
-			ctx.quadraticCurveTo(cx + c.w, yB, cx + c.w - r, yB);
+			ctx.arcTo(cx + c.w, yB, cx + c.w - r, yB, r);
 			ctx.lineTo(cx, yB);
 			ctx.lineTo(cx, yT + r);
-			ctx.quadraticCurveTo(cx, yT, cx + r, yT);
+			ctx.arcTo(cx, yT, cx + r, yT, r);
 		}
 		ctx.closePath();
 		ctx.fill();

@@ -734,13 +734,44 @@
 	 * headless-WebKit probe couldn't reproduce it, real Safari shows it). The
 	 * PNG export keeps drawing from the same connectorGeom.
 	 */
+	/**
+	 * ══ THE CONNECTOR'S CORNERS ROUND THEMSELVES (⚓ NATE 2026-08-11) ══════════
+	 * ⚓ "I'm wondering how possible it would be to make this border radius fully
+	 * round the corner no matter what ping setting or zoom display is chosen.
+	 * Would it be as simple as making it border-radius 999px on that corner? Or
+	 * would it need to be calculated from ping and zoom?"
+	 *
+	 * As simple as 999px, and the reason it needs no arithmetic is a rule CSS
+	 * already applies for us. Per CSS Backgrounds §5.5, when the radii on a side
+	 * exceed that side's length the engine computes ONE scale factor
+	 * f = min over sides of (side length ÷ sum of that side's two radii) and
+	 * scales EVERY radius by it. Only two opposite corners carry a radius here,
+	 * so each side's sum is just R, and f = min(w, h) ÷ R. The used radius comes
+	 * out at exactly min(w, h) — the largest arc the box can hold — for any R
+	 * big enough to trigger the clamp.
+	 *
+	 * So the box's own dimensions ARE the calculation, and they already track
+	 * ping and zoom: w is the swap gap in px (xForTime of the next active start
+	 * minus this one, so ping × scale) and h spans the two active rows. Nothing
+	 * to recompute, and nothing to keep in sync when either knob moves.
+	 *
+	 * ⚠ THIS IS A REAL SHAPE CHANGE, NOT JUST A CAP LIFT. The old radius was
+	 * min(3, floor(w / 2)) — capped at 3px AND at HALF the width. The used value
+	 * is now the FULL min(w, h), so a connector at a wide swap gap sweeps rather
+	 * than nicks its corner.
+	 *
+	 * ⚠ 999px is doing real work and is not a lazy "big number": it must exceed
+	 * min(w, h) at every zoom for the clamp to bite, and ZOOM_MAX × a long ping
+	 * can be hundreds of px. Don't "tidy" it down to something that looks
+	 * reasonable — a value that stops triggering the clamp silently becomes a
+	 * fixed radius again.
+	 */
 	function connectorStyle(from: SlottedTrack, to: SlottedTrack): string | null {
 		const geo = connectorGeom(from, to);
 		if (!geo) return null;
 		const { x, w, yTop, yBottom, downward } = geo;
-		const r = Math.min(3, Math.floor(w / 2));
 		// Downward: free corners are TR and BL; upward: TL and BR
-		const radius = downward ? `0 ${r}px 0 ${r}px` : `${r}px 0 ${r}px 0`;
+		const radius = downward ? '0 999px 0 999px' : '999px 0 999px 0';
 		return `left:${x}px;top:${yTop}px;width:${w}px;height:${yBottom - yTop}px;border-radius:${radius}`;
 	}
 
@@ -1746,19 +1777,34 @@
 		   resolved literals (the mirror test enforces). */
 		--rp-grid: color-mix(in srgb, var(--border) 45%, var(--rp-chart-bg));
 		--rp-line: color-mix(in srgb, var(--border) 85%, var(--rp-chart-bg));
-		/* The SUB-5s line (⚓ NATE 2026-08-11). Exactly half the major line's ink,
-		   which is the whole derivation — a minor gridline is not a different
-		   kind of line, it is the same line said quieter, and a ratio says that
-		   where a hand-picked hex would only imply it. */
-		--rp-grid-faint: color-mix(in srgb, var(--border) 22%, var(--rp-chart-bg));
+		/* ══ THE SUB-5s LINE — ⚓ NATE'S OWN VALUES, 2026-08-11 ═══════════════
+		   ⚓ "I think I was wrong about height being the main factor to make them
+		   not too noisy — it's visibility mostly." Measured in the inspector at
+		   85% reach and 17% ink, and landed verbatim: these are his numbers, not
+		   a derivation. The previous pair (22% ink, 45% reach) was my guess that
+		   short was what tamed a dense grid; it was faintness.
+
+		   ⚠ AND IT MIXES TOWARD `transparent`, NOT TOWARD THE GROUND — the one
+		   place in this component that does. That is not a slip, it is the
+		   alpha-compositing law being followed rather than bent: a line mixes
+		   opaquely against a KNOWN ground, and carries ALPHA where the ground is
+		   unknown. This line sits on the bare scene. The majors are still opaque
+		   mixes because at 45% ink the difference is beneath notice over a range
+		   this narrow (see .rp-frame); at 17% it is not, which is exactly why
+		   the faint one is the one that had to move.
+
+		   ⚠ color-mix TOWARD transparent IS SAFE AND IS NOT THE WEBKIT TRAP. It
+		   premultiplies, so this resolves to --border at alpha .17 — it does NOT
+		   darken toward black. (The trap is GRADIENT INTERPOLATION through the
+		   `transparent` keyword; see .rp-gridline for why that case is benign
+		   here too.) And --border is an alias of a literal in .ctx-dark, so this
+		   is one level of mix — the nesting law is untouched. */
+		--rp-grid-faint: color-mix(in srgb, var(--border) 17%, transparent);
 		/* 🎛️ Where each gridline's downward fade reaches nothing — see
-		   .rp-gridline. 100% = across the whole chart. The minor lines are
-		   SHORTER as well as fainter (Nate's spec), which is what keeps a 1s
-		   grid from becoming a comb: they mark the beat near the axis and are
-		   gone before they can add up to texture. Pull either up to bring that
-		   line's horizon closer to the ruler. */
+		   .rp-gridline. 100% = across the whole chart; pull either up to bring
+		   that line's horizon closer to the ruler. */
 		--rp-grid-fade: 100%;
-		--rp-grid-fade-minor: 45%;
+		--rp-grid-fade-minor: 85%;
 		/* The active-strip neutral: the continuous "who's on field" surface —
 		   input blocks, swap connectors, and the active background strip all
 		   share it (the elemental block mix in the markup references it too).
@@ -2084,22 +2130,33 @@
 	   --rp-grid-fade — so the chart is precisely located where you look for a
 	   time and floats where you don't.
 
-	   ⚠ FADING TO THE `transparent` KEYWORD IS NORMALLY A TRAP (WebKit
-	   interpolates through BLACK, which is why the moonsign bar's stops carry
-	   their own hue at alpha 0). It is safe HERE and only here: the ground
-	   behind is the dimmed scene at roughly #12151c–#1e222a, so "through black"
-	   and "through the ground" are the same journey to within a couple of
-	   levels. Do not copy this shortcut onto a light surface.
+	   ⚠ ON FADING TO THE `transparent` KEYWORD, which the moonsign bar warns
+	   about. Two different things get called the same trap and only one is real
+	   here. The moonsign case is a BLOOM: transparent stops sitting BETWEEN two
+	   different hues mid-gradient, where an engine that interpolates
+	   un-premultiplied drags the midpoints toward black. This is the benign
+	   shape — one hue fading to nothing at the END. Gradients interpolate in
+	   PREMULTIPLIED space, where a stop at alpha 0 contributes no colour at all,
+	   so the hue is carried by the live stop the whole way down.
+	   And the belt to that brace: the residue is bounded by the ground behind
+	   being the dimmed scene at roughly #12151c–#1e222a, so even a wrong
+	   interpolation would travel a couple of levels. Neither reason survives on
+	   a light surface — don't copy this shortcut there.
 	   ⚠ And this is a gradient taking a derived value, NOT a color-mix taking
 	   one — the nesting law is about mix-inside-mix. The NB and moonsign fills
 	   already put color-mix results inside gradients.
 
 	   ↻ ⚓ NATE 2026-08-11, same day: THE SUB-5s TICKS GET LINES TOO — "fainter
-	   and shorter than the main separators". Two levels of the same idea, and
-	   the pairing matters: fainter alone would still lay a full-height comb
-	   across the chart at 1s zoom. Shorter is what keeps a dense grid from
-	   accumulating into texture — the minors mark the beat next to the axis,
-	   then get out of the way well before the majors do.
+	   and shorter than the main separators". Two levels of the same idea.
+
+	   ↻ AND THEN, MEASURED: ⚓ "I think I was wrong about height being the main
+	   factor to make them not too noisy — it's visibility mostly." Worth
+	   recording because I had it backwards in the same breath as building it: I
+	   argued shortness was what kept a dense grid from accumulating into
+	   texture, and reached 45%. His inspector pass says the reach can run almost
+	   the full chart (85%) as long as the ink is quiet enough (17%). A faint
+	   line that goes far reads as depth; a darker line that stops short reads as
+	   a mark that ended.
 
 	   🎛️ The knobs are --rp-grid-fade / --rp-grid-fade-minor (how far each
 	   reaches) and --rp-grid / --rp-grid-faint (how dark each starts). */
