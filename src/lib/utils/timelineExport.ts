@@ -543,6 +543,18 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		tileBloom(px, py, pw, ph, 127, 15, 0.25, 26, 10, '#e1a566', 0.7);
 		tileBloom(px, py, pw, ph, 173, 60, 0.75, 34, 12, '#e1a566', 0.72);
 		tileBloom(px, py, pw, ph, 211, 160, 0.3, 24, 12, mix('#70e1c1', '#e1a566', 55), 0.82);
+		// ↻ 2026-08-12: the buff register's 2px left edge came to this lane.
+		// ⚠ TWO THINGS DIFFER FROM THE BUFF BARS' EDGE AND BOTH MATTER.
+		// (1) It is painted INSIDE the clip and AFTER the tiles: this fill is a
+		//     stack of tiled layers, not one colour, so drawing it first buries it.
+		// (2) It uses REAL ALPHA, not BAR_EDGE. That literal is white .3
+		//     composited against BAR_FILL — the glass bar's ground — and this
+		//     lane's ground is a bright phlogiston orange, so the literal would
+		//     paint a grey-blue smear here. Over an already-painted canvas the
+		//     alpha resolves correctly on its own; the literal only exists for
+		//     bars whose ground the exporter has to model rather than draw.
+		ctx!.fillStyle = 'rgba(255, 255, 255, 0.3)';
+		ctx!.fillRect(px, py, 2, ph);
 		ctx!.restore();
 	}
 
@@ -568,6 +580,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			[0.8, alpha('#ef8e91', 0.2)],
 			[1, alpha('#ef8e91', 0)]
 		]);
+		// The 2px left edge — real alpha over the painted tiles; see paintNbBar
+		// for why this is not BAR_EDGE.
+		ctx!.fillStyle = 'rgba(255, 255, 255, 0.3)';
+		ctx!.fillRect(px, py, 2, ph);
 		ctx!.restore();
 	}
 
