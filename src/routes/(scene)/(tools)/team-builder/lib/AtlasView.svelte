@@ -5,8 +5,10 @@
 	 * ROW of portrait blocks (⚓ Nate 2026-08-11; it was a 2×2 of wide cards, and
 	 * the CSS below holds the measurements that moved it). Each card is split:
 	 * a glass IDENTITY half carrying the color Role+Function glyphs, the label
-	 * and the monotone role backdrop, over a parchment CONTENT half carrying the
-	 * provides/owned readout and the per-element breakdown. Clicking a card
+	 * and (since 2026-08-12) the per-element breakdown, over a parchment CONTENT
+	 * half carrying the provides/owned readout and the monotone role watermark.
+	 * ⚠ The breakdown is on the DARK half on purpose — element colour has no
+	 * light rung; see the note at .rolecard-elements. Clicking a card
 	 * drills into it (the drill + the Rotation-Planner "slots" view both render
 	 * inline character tiles in +page.svelte, where the tile handlers live).
 	 */
@@ -25,12 +27,12 @@
 	const elIcon = (el: string) => elementIcon(el);
 
 	/**
-	 * The breakdown rows NAME their element now (⚓ Nate 2026-08-11 — the cards
-	 * "aren't distributing content very well"). An icon and a number alone left a
-	 * ~200px hole in the middle of every full-width row; the name is what makes
-	 * the row a row rather than two things at opposite ends of one.
-	 * `none` is the physical/elementless bucket — it has no icon either, and
-	 * "None" would read as a missing value rather than as a category.
+	 * ↻ 2026-08-12: the name is no longer RENDERED — the breakdown went back to a
+	 * horizontal pip row on the glass half, where seven names will not fit — so
+	 * this is now the icon's ALT TEXT. It has to keep working: with the label gone
+	 * from the DOM, the alt is the only thing that says which element a count
+	 * belongs to. `none` is the physical/elementless bucket (unreachable here, see
+	 * the note at .rolecard-elements) and "None" would read as a missing value.
 	 */
 	const elLabel = (el: string) => (el === 'none' ? 'Physical' : el[0].toUpperCase() + el.slice(1));
 </script>
@@ -62,11 +64,11 @@
 			onclick={() => onSelectCategory(card.category)}
 			aria-label="{card.category.label}: {card.providerCount} characters, {card.ownedCount} owned"
 		>
-			<!-- THE IDENTITY HALF — what this card IS. Keeps the glass the card has
-			     worn since 2026-08-09 (it simply inherits it from the button) and
-			     the monotone role backdrop, which is CLIPPED here by construction:
-			     that art is near-black, drawn to read as a deeper pool in dark
-			     slate, and it inverts the moment it crosses the seam. -->
+			<!-- THE IDENTITY HALF — what this card IS, and (since 2026-08-12) what
+			     it is MADE OF. Keeps the glass the card has worn since 2026-08-09
+			     (it simply inherits it from the button); the element breakdown
+			     moved up here because element colour may not run on parchment —
+			     see the note at .rolecard-elements. -->
 			<div class="rolecard-id">
 				<div class="rolecard-glyphs">
 					{#if card.category.position}
@@ -80,6 +82,24 @@
 					<img class="rolecard-glyph" src={functionIcon(card.category.function, 'color')} alt="" />
 				</div>
 				<span class="rolecard-label">{card.category.label}</span>
+
+				<!-- The rule belongs to the breakdown, so it moved up with it: it is
+				     what says "the count of this category decomposes from here",
+				     and on the parchment half it was heading nothing. -->
+				<div class="rolecard-elements">
+					{#each card.byElement as pip (pip.element)}
+						<span class="rolecard-el">
+							{#if pip.element !== 'none'}
+								<img
+									class="rolecard-el-icon"
+									src={elIcon(pip.element)}
+									alt={elLabel(pip.element)}
+								/>
+							{/if}
+							<span class="rolecard-el-count">{pip.count}</span>
+						</span>
+					{/each}
+				</div>
 			</div>
 
 			<!-- THE CONTENT HALF — what this card HOLDS.
@@ -88,7 +108,9 @@
 			     flexible. Let's plan on just using CSS boxes unless a better
 			     concept really makes itself apparent." So this is a plain
 			     parchment block, and the art reservation that used to squeeze the
-			     pip row is gone with it. -->
+			     pip row is gone with it.
+			     ↻ 2026-08-12: it holds the two FIGURES and nothing else now —
+			     stacked, with the watermark beside them rather than under them. -->
 			<div class="rolecard-body ctx-light">
 				<div class="rolecard-readout">
 					<!-- ⚓ NATE 2026-08-11: "provide", not "provides". The subject is the
@@ -101,17 +123,6 @@
 					<span class="rolecard-fig rolecard-fig--owned">
 						<b>{card.ownedCount}</b><small>owned</small>
 					</span>
-				</div>
-				<div class="rolecard-elements">
-					{#each card.byElement as pip (pip.element)}
-						<span class="rolecard-el">
-							{#if pip.element !== 'none'}
-								<img class="rolecard-el-icon" src={elIcon(pip.element)} alt="" />
-							{/if}
-							<span class="rolecard-el-name">{elLabel(pip.element)}</span>
-							<span class="rolecard-el-count">{pip.count}</span>
-						</span>
-					{/each}
 				</div>
 			</div>
 		</button>
@@ -196,23 +207,19 @@
 		   what makes four cards read as one group standing off the walls rather
 		   than as a row that happens to stop short. */
 		--atlas-margin-x: 48px;
-		/* The identity half's height. Sized by its content (42px glyphs + the
-		   label + padding ≈ 123), not by a fraction, so the seam does not drift
-		   when the card's height moves. */
-		--atlas-id-h: 145px;
 		/* Never crush below this; a shorter window scrolls instead (the zone
 		   carries the scroll fade, so a clipped card reads as clipped).
-		   ⚠ IT IS THE CONTENT'S FLOOR, NOT A ROUND NUMBER, and it has moved three
-		   times for the same reason each time — the breakdown's height. 335 at the
-		   4+3 cloud, 405 at the seven-row stack, and 425 now.
-		   ⚠ THE LAST MOVE IS THE SUBTLE ONE: the rows are `1fr` and LOOK
-		   infinitely compressible, but a grid track cannot go below its
-		   min-content, which here is the 22px element icon in its line box — 24px,
-		   measured. Seven of those is 168 whatever the card does, so at 405 the
-		   seventh row was pushing 18px out of its own block and into the body's
-		   bottom padding. 425 = --atlas-id-h + padding 37 + readout 52 + rule 22 +
-		   rows 168. Move the icon, the readout or the row count and move this. */
-		--atlas-card-min-h: 425px;
+		   ⚠ IT IS THE CONTENT'S FLOOR, NOT A ROUND NUMBER, and it has moved four
+		   times now for the same reason each time — the breakdown's height. 335 at
+		   the 4+3 cloud, 405 at the seven-row stack, 425 with the icon's line box
+		   measured, and 340 now that the breakdown is ONE horizontal row again.
+
+		   🎛️ 340 = glass 183 + parchment 151, rounded up:
+		     glass      pad 38 + glyphs 42 + gap 10 + label 27 + rule block 22
+		                + pip row 44
+		     parchment  pad 37 + two figures 106 + gap 8
+		   Move the glyph size, the figure size or the pip row and move this. */
+		--atlas-card-min-h: 340px;
 		/* ⚠ A CEILING IN PX, NOT A RATIO, and it has to be: the card's width is
 		   now a fraction of the column, and a `max-height` percentage resolves
 		   against HEIGHT, so there is no way to say "never taller than N× my own
@@ -221,8 +228,22 @@
 		   ↻ ⚓ NATE 2026-08-11: 620 → 500, "tighten the cards up vertically a
 		   little bit". At a 1000px window this is now the binding constraint
 		   rather than the column, so the cards stop growing with the viewport and
-		   the slack lands below the group instead of inside each card. */
-		--atlas-max-h: 500px;
+		   the slack lands below the group instead of inside each card.
+		   ↻ 2026-08-12: 500 → 380, following the floor down. The card shed six pip
+		   rows and gained one stacked figure, so it needs ~85px less; leaving the
+		   ceiling where it was would have spent all of that on interior air
+		   instead of on the tighten Nate asked for — and this card has drawn the
+		   "content isn't distributed very well" note twice, so the error worth
+		   avoiding is the airy one.
+		   🎛️ MEASURED at 1600×1000, and this IS the binding constraint at every
+		   width down to the two-column breakpoint (the column is always taller):
+		   glass content 176 + parchment 148 = 324, so 380 hands the glass half
+		   ~56px of interior slack, which the two `margin-top: auto`s below split
+		   ~28 above the glyphs / ~28 above the rule rather than pooling in one
+		   hole. At 420 it was 96px and the identity group floated. Raising this is
+		   the one knob for a roomier card; --atlas-card-min-h is the floor it
+		   scrolls at, not the resting height. */
+		--atlas-max-h: 380px;
 
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
@@ -265,11 +286,19 @@
 	   ⚠ overflow: hidden is load-bearing here in a way it was not before — the
 	   two halves must be clipped to the radius, and there is no ground behind the
 	   seam that could hide a mismatch. */
+	/* ↻ 2026-08-12: THE SEAM IS NO LONGER PINNED. It was `--atlas-id-h 1fr` — a
+	   fixed identity half over a parchment half that absorbed every spare pixel —
+	   and the two halves have swapped jobs: the glass half now carries three
+	   groups (identity, rule, breakdown) and the parchment half carries two
+	   figures and nothing else, so the parchment half is the one whose height is
+	   genuinely given by its content. `1fr auto` says that. The seam then drifts
+	   with the card's height, which is invisible: all four cards share a grid row,
+	   so their seams are always level with each other. */
 	.rolecard {
 		position: relative;
 		overflow: hidden;
 		display: grid;
-		grid-template-rows: var(--atlas-id-h) 1fr;
+		grid-template-rows: 1fr auto;
 		min-height: 0;
 		padding: 0;
 		/* Edge border retired 2026-08-07 — the raised ground is the separation.
@@ -308,15 +337,21 @@
 		transform: translateY(-2px);
 	}
 
-	/* ── The identity half ──────────────────────────────────────────────────── */
+	/* ── The identity half ────────────────────────────────────────────────────
+	   ⚠ TWO `margin-top: auto`s, NOT `justify-content`. The half holds three
+	   groups now and only two of the gaps between them should stretch: the one
+	   above the glyphs and the one above the rule. Flexbox splits free space
+	   equally between auto margins, so the identity group floats centred in
+	   whatever is left above the breakdown, and the breakdown sits on the seam.
+	   `space-between` would have pooled the whole slack into ONE gap — the dead
+	   middle the distribution fix removed from this card last round. */
 	.rolecard-id {
 		position: relative;
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
 		gap: 0.6rem;
-		padding: 0 1.2rem;
+		padding: 1.2rem 1.2rem 1.1rem;
 		/* ⚠ --surface, not --surface-raised. On glass the two resolve to the same
 		   stop (there is no "raised" through a translucent material — depth here
 		   comes from alpha, and the well is the only other rung), and --surface is
@@ -333,6 +368,7 @@
 	}
 
 	.rolecard-glyphs {
+		margin-top: auto;
 		display: flex;
 		align-items: center;
 		gap: 0.45rem;
@@ -395,24 +431,30 @@
 	   has an asset-side answer as well as a CSS-side one, and this is it.
 	   ⚠ So do not reintroduce an `opacity` here to tune it. The knob is the file. */
 	/* 🎛️ ⚓ NATE 2026-08-11: "size up the wash marks a little bit." 62% → 76%.
-	   ⚠ ONLY THE WIDTH IS A KNOB. The art is square and `background-size:
-	   contain` takes the SMALLER of the two, so height has never been the binding
-	   dimension here (62% of the body's width was ~178px against 88% of its
-	   height at ~312) — raising `height` alone would have done nothing at all,
-	   which is exactly the kind of no-op that reads as "the file must be wrong".
-	   Height stays generous purely so it never becomes the constraint on a short
-	   card; the bleed offsets grew with the mark so it still runs off the corner
-	   rather than sitting inside it. */
+	   ⚠ ONLY ONE OF THE TWO IS A KNOB AT A TIME. The art is square and
+	   `background-size: contain` takes the SMALLER of the two, so raising the
+	   other one alone is a silent no-op — exactly the kind that reads as "the
+	   file must be wrong".
+	   ↻ 2026-08-12: ⚓ Nate — "the Provide and Owned stacked, with the wash mark
+	   on the right". So it stops being a corner bleed and becomes the right-hand
+	   HALF of the readout: full height of the parchment block, centred in it,
+	   running a little off the right edge.
+	   ⚠ AND THE BINDING DIMENSION SWAPPED WITH IT. MEASURED: the block is 148px
+	   tall against 287 wide, so with the inset below it is HEIGHT that decides
+	   the mark's size (~130px against 52% of width ≈ 149). The inset is what the
+	   height is FOR — at `top: 0; bottom: 0` the art's box touched the seam and
+	   the card's bottom edge at once, which reads as a crop even though `contain`
+	   never crops. The width knob is what keeps it clear of the figures. */
 	.rolecard-body::before {
 		content: '';
 		position: absolute;
-		right: -8%;
-		bottom: -12%;
-		width: 76%;
-		height: 92%;
+		top: 6%;
+		bottom: 6%;
+		right: -5%;
+		width: 52%;
 		background-image: var(--role-bg);
 		background-repeat: no-repeat;
-		background-position: bottom right;
+		background-position: center right;
 		background-size: contain;
 		pointer-events: none;
 	}
@@ -429,15 +471,25 @@
 	   bigger. A block card has the room, and OWNED earns the promotion: it is the
 	   only PERSONAL fact on the surface, the one number that is about the reader
 	   rather than about the corpus. */
-	/* ⚓ NATE 2026-08-11: space-between, not a left huddle. The breakdown below is
-	   a run of full-width rows anchored to both edges; a readout bunched at the
-	   left would be the one thing on the parchment half not on that grid. Now
-	   every line in this half starts at the same left edge and ends at the same
-	   right one. */
+	/* ↻ 2026-08-12: STACKED, not a row. ⚓ Nate's sketch for this round puts the
+	   two figures one above the other with the watermark beside them.
+	   ⚠ The 2026-08-11 note this replaces is worth keeping visible, because its
+	   reasoning EXPIRED rather than being wrong: "space-between, not a left
+	   huddle — the breakdown below is a run of full-width rows anchored to both
+	   edges, and a readout bunched at the left would be the one thing on the
+	   parchment half not on that grid." True while the breakdown lived down here;
+	   the breakdown is on the glass half now, so there is no full-width grid left
+	   for the figures to align with, and the half's right-hand column belongs to
+	   the mark. A left column of figures is the honest reading of what's left.
+	   `width: max-content` so the column is only as wide as its widest figure —
+	   without it the flex item spans the half and the (invisible) box overlaps
+	   the mark, which costs nothing visually but makes the next layout edit
+	   here misleading. */
 	.rolecard-readout {
 		display: flex;
-		justify-content: space-between;
-		gap: 1rem;
+		flex-direction: column;
+		gap: 0.5rem;
+		width: max-content;
 	}
 	.rolecard-fig {
 		display: flex;
@@ -464,142 +516,91 @@
 		color: var(--accent);
 	}
 
-	/* THE PIPS STAY WITH THE READOUT, and the reason is arithmetic rather than
-	   aesthetic: they ARE the providers figure decomposed — 9+7+8+6+5+7+6 = 48.
-	   Putting a number and its own breakdown on opposite sides of the card's one
-	   structural seam would split a single fact in half.
-	   ⚠⚠ THEY STILL READ POORLY, AND THE FIX IS NOW KNOWN TO BE A MOVE, NOT A
-	   COLOUR. Every --el-*-main is under 3:1 on parchment-100 (cryo 1.14:1, geo
-	   1.36, anemo 1.38, dendro 1.42, electro 2.12, pyro 2.61, hydro 2.92) against
-	   3.36–8.59:1 on slate.
-	   ↻ THIS NOTE USED TO SAY "wait for the --el-* round, which will define
-	   light-context element colours". That round happened (2026-08-11) and
-	   decided the OPPOSITE: there is no light-context element colour, because
-	   Genshin has no light UI and every one of their five icon sets measures
-	   under 3:1 on paper — gilded, the one that sounds like parchment, is nearly
-	   the worst at 1.15–1.19. See the --el-* block in app.css for the law.
-	   ⚓ THE RULE IS: element marks go on DARK contexts. So the fix here is to
-	   move the pip stack to the card's GLASS half, where the palette runs
-	   2.49–5.08:1 untouched — /lab section 9 draws exactly that, beside the
-	   alternatives it beat. The ink fallback (--ink-900 monochrome, 8.00:1,
-	   silhouette carries the element) is the FLOOR for marks that genuinely
-	   cannot move, not the first reach.
-	   ⚠ Nate's layout constraint from the previous round still stands and is why
-	   this has not simply been done: "only go for the optimal layout logically" —
-	   the pips ARE the providers figure decomposed (9+7+8+6+5+7+6 = 48), so
-	   moving them across the seam has to keep the number and its breakdown
-	   together. That is the open design question, not the colour.
-	   ↻ ⚓ NATE 2026-08-11: THE ART RESERVATION IS GONE. It capped this row at
-	   `100% - --atlas-art-w` to keep a corner clear, and the cost was a row that
-	   wrapped to two lines with the space to sit on one — ⚓ "they're wrapping to
-	   a second row, even if there's plenty of space available to them; they are
-	   allowed to sit on top of the art I provide." Correct on both counts: seven
-	   pips set ~300px against ~460 of content, and an element count laid over a
-	   faint backdrop is exactly the layering the card already does on its dark
-	   half.
+	/* ══ THE PIPS CROSSED THE SEAM (⚓ NATE 2026-08-12) ═══════════════════════
+	   THE FIX WAS A MOVE, NOT A COLOUR, and this is the move. Every
+	   --el-*-main is under 3:1 on parchment-100 (cryo 1.14:1, geo 1.36, anemo
+	   1.38, dendro 1.42, electro 2.12, pyro 2.61, hydro 2.92); on the glass half
+	   the same palette runs 2.49–5.08:1 untouched. The --el-* round (2026-08-11)
+	   established the law behind that — there IS no light-context element
+	   colour, because Genshin has no light UI and every one of their five icon
+	   sets measures under 3:1 on paper, gilded (the one that sounds like
+	   parchment) nearly worst at 1.15–1.19. See the --el-* block in app.css.
+	   The ink fallback (--ink-900 monochrome, 8.00:1, silhouette carries the
+	   element) is the FLOOR for marks that genuinely cannot move — not this.
 
-	   ↻ ⚓ NATE 2026-08-11: "either display them stacked vertically if there's
-	   room, or in two rows as a kind of pip cloud." It shipped as the aligned
-	   cloud (4 + 3 via `repeat(4, auto)`) and he has since called the stack:
-	   ⚓ "I'd like to go ahead and try the repeat(7, auto) — there's plenty of
-	   room on my screen." So ONE COLUMN, seven rows, each a bare icon + count.
+	   ⚠ WHAT HELD THE MOVE UP FOR A ROUND, and how it was answered. The pips ARE
+	   the providers figure decomposed (9+7+8+6+5+7+6 = 48), so ⚓ Nate's "only go
+	   for the optimal layout logically" said a number and its own breakdown must
+	   not end up on opposite sides of the card's one structural seam. The answer
+	   is that the SEAM MOVED TOO: the breakdown did not cross alone, it took the
+	   RULE with it, and the card is now read top-down as
+	     what this is (glyphs + label) → what it is made of (rule + pips) → how
+	     many, and how many are yours (the parchment figures).
+	   The figure is the SUM, and a sum sitting under its own terms is not a
+	   split fact — it is the ordinary way a breakdown is written.
 
-	   ⚠ THE STACK COSTS ~72px OF CARD HEIGHT (≈160 against the block's ≈88), and
-	   that number is what sets --atlas-card-min-h below and therefore the viewport
-	   at which the Atlas starts scrolling. It is the more elegant answer in a
-	   portrait card — a column reads as a breakdown where a 4+3 block reads as
-	   chips — and the whole reason the card went portrait is that height is the
-	   plentiful dimension here. Spending it on the breakdown is the point.
-	   🎛️ `repeat(4, auto)` restores the compact block if a short window makes the
-	   scrolling annoying; nothing else has to change with it except the floor.
-
-	   ↻↻ ⚓ NATE 2026-08-11 — THE DISTRIBUTION FIX. "The content just isn't
-	   distributed very well." It was two small clusters flung to opposite ends of
-	   the parchment half with ~30% of the card's height dead between them, and
-	   `margin-top: auto` was doing it: the readout pinned to the top, the pips
-	   pushed to the bottom, nothing responsible for the middle.
-	   THE BLOCK NOW OWNS THE REMAINING HEIGHT (`flex: 1`) and divides it into
-	   seven equal rows, so the breakdown scales with the card instead of sinking
-	   to the floor of it. The rule is what the top of a filled block needs and a
-	   floated one never had: something that says the breakdown begins here. */
+	   ↻ AND THE COLUMN WENT BACK TO A ROW. `repeat(7, 1fr)` down the parchment
+	   half was ⚓ Nate's own call ("plenty of room on my screen") and it was right
+	   for a half whose spare dimension was height. The glass half's spare
+	   dimension is WIDTH — the label sets ~147px in a ~272px half — so the same
+	   seven pips lay across it in one band: icons on a line, counts beneath them,
+	   which is the shape Nate sketched.
+	   ⚠ THE NAMES DID NOT COME WITH THEM, and they were load-bearing in the old
+	   layout (icon-left + number-right across a full row leaves a hole in the
+	   middle unless something fills it). A 7-across band has no such hole and no
+	   room for them; the element is carried by the glyph, which is what a glyph
+	   is for. ⚠ They live on as the img ALT — with no label in the DOM that is
+	   the only thing naming a count for a screen reader, so keep it.
+	   🎛️ It buys back ~116px of card height, which is most of what took
+	   --atlas-card-min-h from 425 to 340. */
 	.rolecard-elements {
-		display: grid;
-		grid-template-rows: repeat(7, 1fr);
-		flex: 1;
-		min-height: 0;
-		margin-top: 0.9rem;
-		padding-top: 0.4rem;
+		margin-top: auto;
+		padding-top: 0.55rem;
 		border-top: 1px solid var(--border);
+		display: grid;
+		/* Seven equal columns, so the counts sit on a fixed pitch whatever the
+		   digits do. ⚠ Only safe because the set is CLOSED: `byElement` filters
+		   ATLAS_ELEMENT_ORDER, the seven real elements, so there is never an
+		   eighth column and the 'none' → "Physical" bucket (which has no icon
+		   either) is unreachable. If that filter ever widens, this is the first
+		   thing that breaks. */
+		grid-template-columns: repeat(7, 1fr);
 	}
-	/* A ROW, NOT A CHIP. It was `inline-flex` — icon and count hugging each other
-	   in a ~50px sliver down the left edge of a 430px card, which is what made
-	   the breakdown read as an afterthought rather than as the card's content.
-	   Now each row spans the half: element left, count RIGHT, on the same two
-	   edges the readout above uses. ⚓ Nate's cards are the tool's front door and
-	   they have to look like it — using the width is most of that.
-	   ⚠ THE NAME IS LOAD-BEARING, not decoration. Icon-left + number-right across
-	   a full row leaves a large hole in the middle unless something occupies it;
-	   the name fills it, and turns a cryptic pip into a legible line. */
+	/* A COLUMN PER ELEMENT: glyph over count, both centred on the same axis, so
+	   the band reads as one object rather than as seven small pairs. */
 	.rolecard-el {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: 0.45rem;
+		gap: 2px;
 		min-width: 0;
+		/* The pips' only guaranteed air. The columns are 1fr, so at the narrowest
+		   four-across layout they are barely wider than the glyph itself — this is
+		   what stops seven of them touching. */
+		padding-inline: 2px;
 	}
 	.rolecard-el-icon {
-		flex: none;
-		/* ↻ 18 → 22. The whole parchment half was sized for the old wide card and
-		   never grew with it — every rung in here was the smallest one we own
-		   inside the largest object on the surface. */
-		width: 22px;
-		height: 22px;
+		/* 22 — sized to match the roster card's portrait pip, which is the same
+		   mark doing the same job one surface away.
+		   ⚠ IT TAPERS RATHER THAN OVERFLOWING, and that is not defensive coding,
+		   it is the measured case. MEASURED at three widths: a card is 287px at
+		   1600 (columns 36px), 249 at 1440 (30), 215 at 1300 (25) — the grid
+		   narrows all the way down to the 1260px two-column breakpoint, so a fixed
+		   22 would have had 1.5px of air either side at the bottom of that range.
+		   min() with the padding above keeps the taper graceful instead. */
+		width: min(22px, 100%);
+		height: auto;
+		aspect-ratio: 1;
 		object-fit: contain;
 	}
-	/* ⚠ CAPPED, NOT FREE-GROWING — ⚓ NATE 2026-08-11: "the numbers that go with
-	   each element row are spaced a bit far apart, so the eye has to wander."
-	   Correct, and the cause was `flex: 1` with nothing to stop it: the name ate
-	   every spare pixel, which shoved the count onto the card's right edge and
-	   left ~150px of nothing between an element and its own number. Seven rows of
-	   that is seven separate journeys.
-	   Capping the name puts the count at a FIXED short distance from the icon on
-	   every row, so the counts still form a clean vertical column (the thing
-	   right-alignment was actually buying) while sitting close enough to read as
-	   part of the row. The space that used to be the gap is now trailing space at
-	   the right, which is where the watermark lives — so the card fills the same
-	   width, just with the art doing it instead of a void.
-	   ↻ ⚓ NATE 2026-08-11: 6.6em → 5em, "almost flush with the longest word
-	   electro". MEASURED: at --fs-md uppercase with --ls-wide the seven labels
-	   run Geo 26.5px → ELECTRO 56.8px, so 5em (60px) clears the longest by 3.2px
-	   and every count sits as close to its name as the widest row allows.
-	   ⚠ FLUSH IS ONLY SAFE BECAUSE THE SET IS CLOSED. `byElement` is built by
-	   filtering ATLAS_ELEMENT_ORDER — the seven real elements — so 'none'
-	   (→ "Physical", ~64px, the one label that would ellipsize here) is
-	   unreachable, and so is the icon guard in the markup above. If that filter
-	   ever widens, this width is the thing that breaks first. */
-	.rolecard-el-name {
-		flex: 1;
-		max-width: 5em;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: var(--fs-md);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		color: var(--muted);
-	}
-	/* The figure takes the anchoring ink and a real size — it is the number the
-	   row exists to state, and at --fs-sm it was quieter than the label beside
-	   it. Tabular + a min-width so a 10 lines up with a 9 rather than nudging the
-	   column. */
+	/* The number the pip exists to state. Tabular so a 10 and a 9 sit on the same
+	   pitch; --text because this is now on GLASS, where the dark context's ink
+	   ladder applies. */
 	.rolecard-el-count {
-		flex: none;
-		min-width: 1.4em;
-		text-align: right;
-		font-size: var(--fs-xl);
+		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		font-variant-numeric: tabular-nums;
+		line-height: var(--lh-tight);
 		color: var(--text);
 	}
 </style>
