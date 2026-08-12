@@ -2,11 +2,6 @@
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import Mark from './Mark.svelte';
 	import ConMark from './ConMark.svelte';
-
-	/** 🎛️ The constellation glyph's cap height. 8px is the ink the old --fs-sm
-	 *  text laid down (11px × Plex Sans' 0.698 cap ratio ≈ 7.7), so the swap from
-	 *  type to vector changes nothing about how big the value reads. */
-	const CON_GLYPH_H = 8;
 	/**
 	 * SlotPortrait — the slot card of the bench ribbon, shared by the Rotation
 	 * Planner (where it labels a timeline track group) and the Team Builder.
@@ -121,6 +116,11 @@
 	} = $props();
 
 	const p = $derived(elementPalette(char?.element));
+
+	/** 🎛️ The constellation glyph's cap height. 8px is the ink the old --fs-sm
+	 *  text laid down (11px × Plex Sans' 0.698 cap ratio ≈ 7.7), so the swap from
+	 *  type to vector changed nothing about how big the value reads. */
+	const CON_GLYPH_H = 8;
 
 	// Frame-timing-not-curated mark. `curated` lives on the INDEX entry, not on
 	// the loaded payload the planner hands us, so it is looked up here rather
@@ -253,10 +253,9 @@
 	     card in a slot shorter than its own content from spilling instead of
 	     shrinking — see .sp-avatar-chip for the bug that taught us. -->
 	<div class="sp-body">
-		<!-- The RAIL. Rendered on every slot, buttons hidden (not removed) when
-		     the slot is empty: an empty card must hold the same geometry as a
-		     filled one or the portraits step sideways down the strip. -->
-		<div class="sp-rail" class:sp-rail--quiet={!char}>
+		<!-- The RAIL. Rendered and VISIBLE on every slot; the host disables its
+		     buttons on an empty one. See the empty-slot note on .sp-controls. -->
+		<div class="sp-rail">
 			{#if actions}{@render actions()}{/if}
 		</div>
 
@@ -289,8 +288,7 @@
 		</div>
 
 		<!-- The column: name along the disc's top edge, value controls along its
-		     bottom. An empty slot shows NEITHER — four blank discs are the empty
-		     state, and eight disabled controls beside them only say it louder. -->
+		     bottom. -->
 		<div class="sp-col">
 			<div class="sp-id-row">
 				{#if char?.element}
@@ -308,39 +306,51 @@
 				{/if}
 			</div>
 
-			{#if char}
-				<div class="sp-controls">
-					<button
-						class="sp-cons-chip"
-						class:sp-cons-chip--set={conLevel > 0}
-						disabled={noCons}
-						onclick={openConstellation}
-						title={noCons ? 'Constellations can’t be unlocked for this character' : undefined}
-						aria-label={noCons
+			<!-- ⚓ NATE 2026-08-12: AN EMPTY SLOT KEEPS ITS FOUR STATIONS, all inert.
+			     A first pass hid them — four blank discs being the empty state, and
+			     eight dead controls only saying it louder. That reasoning was wrong
+			     about what the strip is FOR: the controls are the slot's shape, and
+			     a card that loses them stops reading as a slot waiting to be filled
+			     and starts reading as a different, smaller kind of card. The one
+			     thing that genuinely has nothing to say is the NAME, which stays
+			     empty (both hosts pass emptyLabel=''). Restores the four-station
+			     rhythm from 2026-08-06, which was right the first time. -->
+			<div class="sp-controls">
+				<button
+					class="sp-cons-chip"
+					class:sp-cons-chip--set={conLevel > 0}
+					disabled={!char || noCons}
+					onclick={openConstellation}
+					title={noCons ? 'Constellations can’t be unlocked for this character' : undefined}
+					aria-label={char
+						? noCons
 							? `${char.displayName} has no constellations`
-							: `Set constellation for ${char.displayName}, currently C${conLevel}`}
+							: `Set constellation for ${char.displayName}, currently C${conLevel}`
+						: 'Constellation (empty slot)'}
+				>
+					<ConMark level={conLevel} height={CON_GLYPH_H} />
+				</button>
+				<div class="sp-loadout" class:sp-loadout--disabled={!char}>
+					<button
+						class="sp-lo-zone"
+						class:sp-lo-zone--unset={!loadoutEntry?.artifactSetId}
+						disabled={!char}
+						onclick={(e) => openLoadout(e, 'artifact')}
+						title={char ? 'Artifact set' : undefined}
+						aria-label="Choose artifact set"
 					>
-						<ConMark level={conLevel} height={CON_GLYPH_H} />
+						<img class="sp-lo-icon" src={artifactIcon} alt="" />
 					</button>
-					<div class="sp-loadout">
-						<button
-							class="sp-lo-zone"
-							class:sp-lo-zone--unset={!loadoutEntry?.artifactSetId}
-							onclick={(e) => openLoadout(e, 'artifact')}
-							title="Artifact set"
-							aria-label="Choose artifact set"
-						>
-							<img class="sp-lo-icon" src={artifactIcon} alt="" />
-						</button>
-						<button
-							class="sp-lo-zone"
-							class:sp-lo-zone--unset={!hasWeapon}
-							onclick={(e) => openLoadout(e, 'weapon')}
-							title={hasWeapon ? `Weapon · refinement ${currentRef}` : 'Weapon'}
-							aria-label="Choose weapon and refinement"
-						>
-							<img class="sp-lo-icon" src={weaponIcon} alt="" />
-							<!-- The refinement, as the in-game weapon card draws it: a digit
+					<button
+						class="sp-lo-zone"
+						class:sp-lo-zone--unset={!hasWeapon}
+						disabled={!char}
+						onclick={(e) => openLoadout(e, 'weapon')}
+						title={char ? (hasWeapon ? `Weapon · refinement ${currentRef}` : 'Weapon') : undefined}
+						aria-label="Choose weapon and refinement"
+					>
+						<img class="sp-lo-icon" src={weaponIcon} alt="" />
+						<!-- The refinement, as the in-game weapon card draws it: a digit
 							     on the icon's corner rather than a hit zone of its own. It is
 							     DISPLAY only — the panel this zone opens always renders its
 							     refinement pips, so nothing became unreachable.
@@ -351,13 +361,12 @@
 							     different statement. A digit on an icon corner has no room
 							     to draw that distinction, so it makes no claim at all; the
 							     panel's inert pips carry the explanation instead. -->
-							{#if hasWeapon}
-								<span class="sp-lo-ref" aria-hidden="true">{currentRef}</span>
-							{/if}
-						</button>
-					</div>
+						{#if hasWeapon}
+							<span class="sp-lo-ref" aria-hidden="true">{currentRef}</span>
+						{/if}
+					</button>
 				</div>
-			{/if}
+			</div>
 		</div>
 	</div>
 </div>
@@ -615,13 +624,6 @@
 		height: auto;
 		min-height: 0;
 	}
-	/* An empty slot keeps the rail's BOX and loses its buttons. Removing them
-	   would narrow the card and step every portrait sideways at the exact moment
-	   a user is scanning the strip for who is missing. */
-	.sp-rail--quiet :global(> *) {
-		visibility: hidden;
-		pointer-events: none;
-	}
 
 	/* ── The column ───────────────────────────────────────────────────────────
 	   ⚓ NATE 2026-08-12 asked for the two rows to sit on "the UI controls'
@@ -846,6 +848,13 @@
 		border: none;
 		border-radius: var(--r-round);
 		background: var(--sp-pill-fill);
+	}
+	/* An empty slot's pill: the shared 0.35 dim the constellation chip and the
+	   rail's buttons wear, so all four stations fade as one family. Element
+	   opacity is the accepted remnant here — it is STATIC (never toggled by
+	   hover), which is what the WebKit transparency-layer dance needs. */
+	.sp-loadout--disabled {
+		opacity: 0.35;
 	}
 	.sp-lo-zone {
 		position: relative;
