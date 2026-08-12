@@ -813,10 +813,62 @@
 	   it, and let that surface's needs shape it. */
 
 	/* ══ MOTION ════════════════════════════════════════════════════════════════
-	   One interaction duration. (It was already one duration — `150ms ease`
-	   appeared 123 times — it just had no name.) Scene and tool-slide
-	   transitions own their own timing and do NOT use this. */
+	   ⚓ NATE 2026-08-12, THE SECOND PASS — and it recut the whole thing. The
+	   bands first shipped named for CAUSE ("is this on the click path?"), and
+	   that axis is WRONG. It predicted that buttons, being hover states, wanted
+	   the slower band and modals, being summoned, wanted the faster one. Both
+	   came back backwards from real use: "buttons need --t-snap… the edge border
+	   at the quick speed does read a bit like that latency", and modals read
+	   nicely SLOWER.
+
+	   ══ THE RULE IS SIZE. HOW MUCH SCREEN THE CHANGE OCCUPIES. ═════════════════
+	   Which is also the industry's rule, arrived at from the other direction —
+	   Material ("larger elements take longer"), IBM Carbon ("the larger the
+	   change in distance or size, the longer the duration"), Apple HIG. Nobody
+	   in the field bands by causality; everybody bands by magnitude.
+
+	   WHY IT IS SIZE, physically: a control's change is a HAIRLINE on an object
+	   you could cover with a fingertip. The eye resolves a 1px edge instantly,
+	   so any ramp on it is perceived as SMEAR — the border looks like it is
+	   catching up with you. A panel's change is a broad area of low-contrast
+	   alpha; the eye integrates it, and it needs real time to read as ARRIVING
+	   rather than as popping into place. Same milliseconds, opposite verdicts.
+
+	     --t-snap   A CONTROL — anything you point at to act. Buttons, chips,
+	                tabs, links, fields, pips, tiles, cards, small marks. Their
+	                edges are hairlines: go fast or it reads as lag.
+	     --t-quick  A SURFACE — a region arriving or leaving. Modals and their
+	                scrims, popovers, menus, the Source takeover. Big soft
+	                changes that want to be SEEN to move.
+	     --t-move   TRAVEL — something crossing a distance because a STATE
+	                changed. ⚠ The test is NOT "does it animate a transform": a
+	                hover lift or a 2px nudge is an AFFORDANCE and must keep up
+	                with the pointer, so those are CONTROLS (see .rolecard in
+	                AtlasView). One resident: the toggle thumb.
+
+	   ⚠ THE SITE CHROME IS THE ONE EXCEPTION, and it is a real one: the brand
+	   marks are small, so size says --t-snap, but ⚓ Nate looked and they are
+	   right where they are. The reason the rule misses them is AMPLITUDE — they
+	   travel 0.85 → 1.0 alpha, a change so slight there is no edge to smear, so
+	   the ramp reads as an ambient brightening rather than as a control
+	   answering you. Size is the rule; amplitude is why this one is filed under
+	   surfaces. (SiteChrome ×3 + CloseMark + .chrome-nav-link.)
+
+	   ⛔ NOT FOR THE SCENE. TOOL_NAV_MS, the camera crane, the star clock, the
+	   loading veil and the world-locked tool fade are Nate-tuned and own their
+	   own clocks. These three are INTERACTION motion, inside a tool.
+
+	   A token is a DURATION AND ITS EASING, one value: there is one easing in
+	   the product and splitting it onto a second axis would double every call
+	   site to buy a distinction nobody had asked for.
+
+	   ⚠ MIRRORED IN `src/lib/motion.ts` — a hand-synced pair, because CSS
+	   cannot hand a number to Svelte's `transition:` directive. Change one,
+	   change the other; the numbers are repeated in that file's comment so a
+	   mismatch is visible at either end. */
+	--t-snap: 120ms ease;
 	--t-quick: 150ms ease;
+	--t-move: 240ms ease;
 
 	/* ══ INTERACTION SURFACES ══════════════════════════════════════════════════
 	   The resting/hover/selected ladder every control shares. These were also
@@ -1281,6 +1333,43 @@
 	--lh-snug: 1.4;
 	--lh-normal: 1.5;
 	--lh-relaxed: 1.6;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION, ONCE — the whole point of naming the three bands.
+
+   `prefers-reduced-motion` used to be honoured a rule at a time: ten files each
+   listing the selectors they happened to know about, which meant every new
+   transition was honoured only if whoever wrote it remembered to go and add it
+   to a block somewhere else. That is not a mechanism, it is a habit, and the
+   drift was already measurable — SlotPortrait, DetailCard, BandMenu,
+   InstrumentPicker, CharacterCard, LoadoutPanel, RotationTimeline, AtlasView,
+   CompareView and the Team Builder page all animated with no reduce path at
+   all.
+
+   Zeroing the TOKENS retires the habit. Every rule that reaches for a band goes
+   inert here, including rules that do not exist yet, and the honouring can no
+   longer be forgotten because there is nothing left to remember. Custom
+   properties inherit and nothing re-declares --t-*, so this reaches portalled
+   nodes and every .ctx-* zone alike.
+
+   ⚠ THIS ONLY COVERS WHAT USES A BAND. Two things keep their own clock and
+   therefore their own reduce path: the scene/nav machinery (which has one
+   already), and Svelte's `transition:` directive — JS, which cannot read a CSS
+   variable, and which is why $lib/motion.ts exists and why its helpers return 0
+   under the same query. Keyframe `animation`s are the third gap and cannot be
+   closed this way at all: a duration token has nothing to say to `@keyframes`.
+   (`pulse-confirm` is the only one, and it still declares its own reduce path.)
+
+   ↻ 2026-08-12: the site chrome's private 200ms folded in (⚓ Nate), taking
+   three more blocks with it. Nothing outside the three exceptions above is
+   still honouring this preference by hand. */
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--t-snap: 0s;
+		--t-quick: 0s;
+		--t-move: 0s;
+	}
 }
 
 /* The tool zone — the other half of the accent zoning declared in :root.
@@ -2024,7 +2113,7 @@ img {
 	color: var(--accent);
 	text-decoration: none;
 	border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-	transition: border-color var(--t-quick);
+	transition: border-color var(--t-snap);
 }
 
 .prose a:hover,
@@ -2054,11 +2143,8 @@ img {
 	background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.prose a {
-		transition: none;
-	}
-}
+/* (A reduced-motion block for `.prose a` stood here. Retired with the motion
+   round — the rule spends --t-quick, and the band is zeroed at :root.) */
 
 /* ══════════════════════════════════════════════════════════════════════════════
    THE PATTERN LAYER — promoted from /styleguide 2026-07-27 (migration chunk 1).
@@ -2121,9 +2207,9 @@ img {
 	white-space: nowrap;
 	cursor: pointer;
 	transition:
-		background var(--t-quick),
-		color var(--t-quick),
-		box-shadow var(--t-quick);
+		background var(--t-snap),
+		color var(--t-snap),
+		box-shadow var(--t-snap);
 }
 .btn:hover {
 	background: var(--btn-face-hover);
@@ -2253,10 +2339,10 @@ img {
 	letter-spacing: var(--ls-mid);
 	cursor: pointer;
 	transition:
-		background var(--t-quick),
-		color var(--t-quick),
-		box-shadow var(--t-quick),
-		opacity var(--t-quick);
+		background var(--t-snap),
+		color var(--t-snap),
+		box-shadow var(--t-snap),
+		opacity var(--t-snap);
 }
 .chip:hover {
 	background: var(--accent-hover-fill);
@@ -2334,9 +2420,9 @@ img {
 	user-select: none;
 	cursor: pointer;
 	transition:
-		background var(--t-quick),
-		color var(--t-quick),
-		box-shadow var(--t-quick);
+		background var(--t-snap),
+		color var(--t-snap),
+		box-shadow var(--t-snap);
 }
 .tab:hover:not(.active) {
 	background: var(--accent-hover-fill);
@@ -2372,8 +2458,8 @@ img {
 	opacity: 0.4;
 	cursor: pointer;
 	transition:
-		opacity var(--t-quick),
-		background var(--t-quick);
+		opacity var(--t-snap),
+		background var(--t-snap);
 }
 .tab-close:hover {
 	opacity: 1;
@@ -2407,8 +2493,8 @@ img {
 	background: var(--fill-rest);
 	box-shadow: inset 0 0 0 1px var(--border);
 	transition:
-		background var(--t-quick),
-		box-shadow var(--t-quick);
+		background var(--t-snap),
+		box-shadow var(--t-snap);
 }
 .toggle-thumb {
 	position: absolute;
@@ -2418,9 +2504,17 @@ img {
 	height: 0.85rem;
 	border-radius: var(--r-sm);
 	background: var(--knob);
+	/* --t-move's FIRST RESIDENT (2026-08-12), and the two halves are on
+	   different bands on purpose. The thumb TRAVELS 1.05rem across its track —
+	   the one place on the site where something crosses a distance as the
+	   result of a state change rather than shifting a pixel or two under a
+	   pointer — so the position takes the band for spatial moves. Its COLOUR is
+	   not travelling anywhere: it changes in place, at the same moment the
+	   track's does, so it stays with the track on --t-snap (both are controls)
+	   and the two land together. One colour event, one movement, two clocks. */
 	transition:
-		transform var(--t-quick),
-		background var(--t-quick);
+		transform var(--t-move),
+		background var(--t-snap);
 }
 .toggle input:checked + .toggle-track {
 	background: var(--ui-positive-soft);
@@ -2455,8 +2549,8 @@ img {
 	background: var(--fill-rest);
 	box-shadow: inset 0 0 0 1px var(--border);
 	transition:
-		background var(--t-quick),
-		box-shadow var(--t-quick);
+		background var(--t-snap),
+		box-shadow var(--t-snap);
 }
 /* The mark is a rotated 2-sided box — geometry, not a glyph, so it never
    depends on a font and never shifts baseline. */
@@ -2480,7 +2574,7 @@ img {
 	border: solid transparent;
 	border-width: 0 2px 2px 0;
 	transform: translate(-50%, calc(-50% - 0.1rem)) rotate(45deg);
-	transition: border-color var(--t-quick);
+	transition: border-color var(--t-snap);
 }
 .check input:checked + .check-box {
 	background: var(--sel-fill);
@@ -2584,7 +2678,7 @@ img {
    engine, and on this project's own machine it is a different weight between
    the browser we tune in and the browser we ship to. */
 
-⚠ The bench ribbon does not read --inset-stroke at all: it carries its own
+/* ⚠ The bench ribbon does not read --inset-stroke at all: it carries its own
    RIBBON_FRAME_BORDER (= 2), because its radii are tuned to its geometry and it
    predates this family. The two numbers agreeing is the point — if one moves,
    move the other. */
@@ -2960,8 +3054,8 @@ img {
 	font-family: var(--font-body);
 	font-size: var(--fs-xl);
 	transition:
-		background var(--t-quick),
-		box-shadow var(--t-quick);
+		background var(--t-snap),
+		box-shadow var(--t-snap);
 }
 .field::placeholder {
 	color: var(--muted);
@@ -3068,18 +3162,18 @@ img {
 	margin-bottom: 1rem;
 }
 
+/* ↻ 2026-08-12 (motion round): the nine-selector `transition: none` list that
+   used to lead this block is GONE — every one of those rules spends --t-quick,
+   and the band is zeroed at :root under the same query. The list is not merely
+   redundant now, it is misleading: leaving it would say that enumerating your
+   selectors is still how a control gets honoured, and the next person would
+   add a tenth.
+
+   The animation stays, and it is the whole reason this block survives at all.
+   `pulse-confirm` is a KEYFRAME on its own 200ms clock — an animation cannot be
+   zeroed by a transition token, so the one shape the mechanism does not reach
+   still has to say so by hand. */
 @media (prefers-reduced-motion: reduce) {
-	.btn,
-	.chip,
-	.tab,
-	.tab-close,
-	.field,
-	.toggle-track,
-	.toggle-thumb,
-	.check-box,
-	.check-box::after {
-		transition: none;
-	}
 	.btn--danger.is-confirming {
 		animation: none;
 	}

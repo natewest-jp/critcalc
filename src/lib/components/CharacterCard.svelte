@@ -278,8 +278,8 @@
 		border-radius: 6px;
 		overflow: hidden;
 		transition:
-			border-color 150ms ease,
-			opacity 150ms ease,
+			border-color var(--t-snap),
+			opacity var(--t-snap),
 			transform 100ms ease;
 	}
 	.cc:hover:not(.cc--disabled) {
@@ -683,7 +683,10 @@
 		background: var(--surface);
 		opacity: 0;
 		pointer-events: none;
-		transition: opacity 120ms ease;
+		/* --t-snap: the band is set by SIZE, and this is a control-sized layer
+		   over a card's tag row. It was already 120ms by hand, so the token was
+		   value-preserving when it landed and the second pass left it alone. */
+		transition: opacity var(--t-snap);
 	}
 	.cc:hover .cc-actions,
 	.cc-actions:focus-within {

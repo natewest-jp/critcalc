@@ -991,7 +991,7 @@
 		letter-spacing: var(--ls-tight);
 		color: color-mix(in srgb, var(--chrome) 85%, transparent);
 		padding: 0.15rem 0;
-		transition: color 150ms ease;
+		transition: color var(--t-quick);
 	}
 
 	a.chrome-nav-link:hover,
@@ -1081,9 +1081,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.chrome-nav-link {
-			transition: none;
-		}
-	}
+	/* (A reduced-motion block for .chrome-nav-link stood here. Retired with the
+	   motion round — it spends --t-quick, and the band is zeroed at :root under
+	   the same query. See app.css § MOTION.) */
 </style>

@@ -126,7 +126,7 @@
 		font-weight: var(--fw-semibold);
 		text-align: right;
 		cursor: pointer;
-		transition: background 150ms ease;
+		transition: background var(--t-snap);
 	}
 
 	.vw-field:hover {

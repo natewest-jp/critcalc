@@ -172,8 +172,8 @@
 		color: var(--muted);
 		text-decoration: none;
 		transition:
-			color 150ms ease,
-			background 150ms ease;
+			color var(--t-snap),
+			background var(--t-snap);
 	}
 
 	.area-chapter:hover,
@@ -207,7 +207,7 @@
 		color: var(--muted);
 		text-decoration: none;
 		opacity: 0.85;
-		transition: color 150ms ease;
+		transition: color var(--t-snap);
 	}
 
 	.area-toc a:hover,
@@ -274,10 +274,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.area-chapter,
-		.area-toc a {
-			transition: none;
-		}
-	}
+	/* (A reduced-motion block for .area-chapter / .area-toc a stood here.
+	   Retired with the motion round — both spend --t-quick, and the band is
+	   zeroed at :root under the same query. See app.css § MOTION.) */
 </style>

@@ -157,7 +157,7 @@
 	const famAnnotation = exact('--glass-bar');
 	const uiStates = pre('--ui-');
 	const geometry = [...pre('--r-'), ...exact('--frame-inset')];
-	const motion = exact('--t-quick');
+	const motion = exact('--t-snap', '--t-quick', '--t-move');
 	const interaction = exact(
 		'--fill-rest',
 		'--fill-hover',
@@ -1102,6 +1102,54 @@
 			Both ladders were <em>already</em> converged in practice — <code>150ms ease</code> appeared 123
 			times, and accent 20%/55% were the two spikes across the whole codebase. Naming them is what stops
 			the next control inventing a 25th alpha.
+		</p>
+		<p class="sg-note">
+			↻ 2026-08-12, second pass (⚓ Nate) — and it recut the bands.
+			<strong>THE RULE IS SIZE: how much screen the change occupies.</strong> They first shipped
+			banded by <em>cause</em> ("is this on the click path?"), which predicted that buttons wanted
+			the slower band and modals the faster one. Real use came back backwards on both counts.
+			Banding by magnitude is also what the field does — Material
+			<em>("larger elements take longer")</em>, IBM Carbon
+			<em>("the larger the change in distance or size, the longer the duration")</em>, Apple HIG.
+			Nobody bands by causality.
+		</p>
+		<p class="sg-note">
+			<strong>Why size, physically.</strong> A control's change is a <em>hairline</em> on an object
+			you could cover with a fingertip; the eye resolves a 1px edge instantly, so any ramp on it is
+			perceived as <strong>smear</strong> — the border looks like it is catching up with you. A
+			panel's change is a broad area of low-contrast alpha; the eye integrates it, and it needs real
+			time to read as <em>arriving</em> rather than popping. Same milliseconds, opposite verdicts.
+			So: <code>--t-snap</code> = <strong>a control</strong> (buttons, chips, tabs, links, fields,
+			pips, tiles, cards, small marks). <code>--t-quick</code> = <strong>a surface</strong> (modals
+			and their scrims, popovers, menus, the Source takeover). <code>--t-move</code> =
+			<strong>travel</strong>, something crossing a distance because a state changed.
+		</p>
+		<p class="sg-note">
+			⚠ <strong>The test for <code>--t-move</code> is not "does it animate a transform."</strong> A
+			hover lift or a 2px nudge is an <em>affordance</em> and has to keep up with the pointer, which
+			makes it a control — 240ms there reads as the element lagging your mouse (measured 2026-08-12;
+			the argument is written out at <code>.rolecard</code> in AtlasView). One resident: the toggle
+			thumb, whose <em>position</em> takes the move band while its <em>colour</em> stays with the
+			track on <code>--t-snap</code>. One colour event, one movement, two clocks.
+		</p>
+		<p class="sg-note">
+			⚠ <strong>The site chrome is the one exception, and it is a real one.</strong> The brand marks
+			are small, so size says <code>--t-snap</code>, but they sit on <code>--t-quick</code> and ⚓
+			Nate confirmed they read right there. What the rule misses is <strong>amplitude</strong>: they
+			travel 0.85 → 1.0 alpha, a change slight enough that there is no edge to smear, so the ramp
+			reads as ambient brightening rather than as a control answering you. Size is the rule;
+			amplitude is why this one files under surfaces.
+		</p>
+		<p class="sg-note">
+			<strong>A token is a duration AND its easing, one value.</strong> There is one easing in the
+			product; splitting it onto a second axis would double every call site to buy a distinction
+			nobody asked for. ⚠
+			<strong><code>prefers-reduced-motion</code> is honoured by zeroing the bands</strong>
+			in one block, so a rule that reaches for one is covered whether or not it exists yet. Only three
+			things still honour it by hand: the scene/nav machinery, Svelte's
+			<code>transition:</code> directive (JS, which cannot read a custom property — what
+			<code>src/lib/motion.ts</code> mirrors the numbers for), and keyframe
+			<code>animation</code>s, which a duration token cannot reach at all.
 		</p>
 		<div class="sg-swatches">
 			{#each motion as t (t.name)}{@render swatch(t)}{/each}
@@ -2150,15 +2198,41 @@
 				<h3>Motion & perf</h3>
 				<ul>
 					<li>
-						One interaction duration: <code>--t-quick</code>. Scene and tool-slide transitions own
-						their own timing.
+						Three interaction bands, easing included in the value, and
+						<strong>the axis is SIZE</strong> — how much screen the change occupies, never what
+						caused it. <code>--t-snap</code> a control, <code>--t-quick</code> a surface,
+						<code>--t-move</code> travel. A hairline on a small object must go fast or it reads as smear;
+						a broad soft area needs time to read as arriving. ⛔ Scene and tool-slide transitions own
+						their own timing and never use these.
 					</li>
 					<li>
 						Never animate a paint property (border-color, gradient angle) on a persistent surface —
 						it re-rasterizes the tool layer forever. Animate <code>opacity</code> on a stacked static
 						ring instead.
 					</li>
-					<li>Everything interactive honours <code>prefers-reduced-motion</code>.</li>
+					<li>
+						⛔ Never animate a LAYOUT property — <code>width</code>, <code>height</code>,
+						<code>top</code>/<code>left</code>, <code>margin</code>, <code>padding</code>,
+						<code>font-size</code>, <code>grid-template-*</code>. Free is
+						<code>transform</code>/<code>opacity</code>; cheap is
+						<code>background-color</code>/<code>color</code>/<code>border-color</code>. This is why
+						the planner's Source overlay fades in and does not fade out: the frame's
+						<code>min-height</code> under it cannot come with it.
+					</li>
+					<li>
+						A fading-out overlay is <strong>still in the DOM</strong>, and a full-screen dismiss
+						backdrop that outlives its own visibility eats the next click. Pair
+						<code>onoutrostart</code> with <code>onintrostart</code> —
+						<code>outroInert</code>/<code>introLive</code> in
+						<code>$lib/motion</code>. The second half matters because Svelte runs the intro when a
+						reopen interrupts an outro, and without it a fast toggle leaves the surface permanently
+						dead.
+					</li>
+					<li>
+						Everything interactive honours <code>prefers-reduced-motion</code> — CSS by zeroing the
+						bands in one block, JS by routing every <code>transition:</code> duration through
+						<code>motion()</code>.
+					</li>
 					<li>New persistent scene animations must suspend on tool routes.</li>
 				</ul>
 			</div>

@@ -1385,7 +1385,7 @@
 		letter-spacing: var(--ls-tight);
 		white-space: nowrap;
 		cursor: pointer;
-		transition: color var(--t-quick);
+		transition: color var(--t-snap);
 	}
 	.tb-nav-item:hover:not(.active):not(:disabled) {
 		color: var(--ink-active);
@@ -1536,8 +1536,8 @@
 		font-size: var(--fs-md);
 		cursor: pointer;
 		transition:
-			border-color 150ms ease,
-			background 150ms ease;
+			border-color var(--t-snap),
+			background var(--t-snap);
 	}
 	.tb-cand:hover:not(:disabled) {
 		border-color: color-mix(in srgb, var(--el-color) 80%, var(--border));
@@ -1932,9 +1932,9 @@
 		font-family: var(--font-body);
 		cursor: pointer;
 		transition:
-			border-color 150ms ease,
-			background 150ms ease,
-			color 150ms ease;
+			border-color var(--t-snap),
+			background var(--t-snap),
+			color var(--t-snap);
 	}
 	.tb-act-glyph {
 		display: flex;

@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { fade } from 'svelte/transition';
 	import { portal } from '$lib/actions/portal';
 	import Mark from '$lib/components/Mark.svelte';
+	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { INSTRUMENTS, type InstrumentId } from './workspace';
 
 	// Per-tile instrument switcher: the chip row didn't scale past five
@@ -107,12 +109,26 @@
 	<span class="ip-caret"><Mark name="chevron" size={12} /></span>
 </button>
 
+<!-- Same treatment as BandMenu, deliberately: this is the other copy of the
+     portalled-menu shape, and two menus on one site should not arrive
+     differently. Surface band (--t-quick), fade only, outro made inert. -->
 {#if open}
-	<div class="ip-backdrop" use:portal onclick={() => close(false)} aria-hidden="true"></div>
+	<div
+		class="ip-backdrop"
+		use:portal
+		transition:fade={{ duration: motion(T_QUICK) }}
+		onintrostart={introLive}
+		onoutrostart={outroInert}
+		onclick={() => close(false)}
+		aria-hidden="true"
+	></div>
 	<div
 		bind:this={listEl}
 		class="ip-menu"
 		use:portal
+		transition:fade={{ duration: motion(T_QUICK) }}
+		onintrostart={introLive}
+		onoutrostart={outroInert}
 		style:left="{menuX}px"
 		style:top="{menuY}px"
 		role="listbox"
@@ -168,8 +184,8 @@
 		text-transform: uppercase;
 		cursor: pointer;
 		transition:
-			background 150ms ease,
-			box-shadow 150ms ease;
+			background var(--t-snap),
+			box-shadow var(--t-snap);
 	}
 
 	.ip-trigger:hover {

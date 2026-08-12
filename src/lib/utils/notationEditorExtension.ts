@@ -275,7 +275,7 @@ const notationTheme = EditorView.theme({
 		width: '100%',
 		boxSizing: 'border-box',
 		cursor: 'text',
-		transition: 'box-shadow 150ms ease, background 150ms ease'
+		transition: 'box-shadow var(--t-snap), background var(--t-snap)'
 	},
 	'&:hover': {
 		boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent)'

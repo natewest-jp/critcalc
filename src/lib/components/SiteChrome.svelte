@@ -181,7 +181,7 @@
 		width: auto;
 		margin-top: calc(var(--brand-size) * var(--brand-lift));
 		opacity: 0.85;
-		transition: opacity 200ms ease;
+		transition: opacity var(--t-quick);
 	}
 
 	/* The wordmark speaks --chrome (Genshin-UI archetype, Nate 2026-08-05:
@@ -197,9 +197,16 @@
 		   slightly translucent at 0.85 and hovers to opaque white — logo img,
 		   wordmark, glyph cluster (fill-opacity, WebKit — see below) and the
 		   tool switcher links (color-mix 85%, in the tools layout) all share
-		   the same pair. Change one, change all. */
+		   the same pair. Change one, change all.
+
+		   ⚠ THE PAIR IS THE ALPHAS, AND ONLY THE ALPHAS. ⚓ Nate 2026-08-12: the
+		   DURATION folded into --t-quick with the rest of the site's hover
+		   states — this is a hover changing an alpha in place, which is that
+		   band's whole job, and the private 200ms was never part of the
+		   contract so much as beside it. The tell is that the four marks did
+		   not even agree: the tool switcher links have been 150 all along. */
 		opacity: 0.85;
-		transition: opacity 200ms ease;
+		transition: opacity var(--t-quick);
 	}
 
 	/* Hover is opacity ALONE. This pair used to also carry a cool
@@ -292,7 +299,7 @@
 		width: auto;
 		fill: currentColor;
 		fill-opacity: 0.85;
-		transition: fill-opacity 200ms ease;
+		transition: fill-opacity var(--t-quick);
 	}
 
 	.chrome-btn:hover .chrome-glyph,
@@ -323,11 +330,7 @@
 		}
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.chrome-brand img,
-		.chrome-wordmark,
-		.chrome-glyph {
-			transition: none;
-		}
-	}
+	/* (A reduced-motion block for the three chrome marks stood here. Retired
+	   2026-08-12 with the fold onto --t-quick — the band is zeroed at :root
+	   under the same query. See app.css § MOTION.) */
 </style>

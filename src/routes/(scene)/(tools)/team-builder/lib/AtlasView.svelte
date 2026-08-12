@@ -325,7 +325,16 @@
 		cursor: pointer;
 		color: inherit;
 		font: inherit;
-		transition: transform 150ms ease;
+		/* ⚠ --t-snap, NOT --t-move, even though this animates a transform. The
+		   band is not "is it a transform". This is a 2px HOVER LIFT — an
+		   affordance that has to keep up with the pointer, which makes the card
+		   a CONTROL and puts it on the fastest band. 240ms here reads as the
+		   card lagging your mouse. --t-move is for something that travels
+		   because a STATE changed and you are meant to follow it there (the
+		   toggle thumb, app.css). Measured 2026-08-12, when this was a candidate
+		   for the move band and the 2px is what ruled it out. Same reasoning
+		   keeps .rp-explore-arrow's 2px nudge on --t-snap. */
+		transition: transform var(--t-snap);
 	}
 	/* ↻ ⚓ NATE 2026-08-10: the glass pane-hover idiom — A RING AND A DENSITY,
 	   no wash. Same treatment as the band plates (see app.css), because this is
@@ -365,7 +374,7 @@
 		   comes from alpha, and the well is the only other rung), and --surface is
 		   the honest name for the ground a card paints. */
 		background: var(--surface);
-		transition: background 150ms ease;
+		transition: background var(--t-snap);
 	}
 	.rolecard:hover .rolecard-id {
 		background: var(--surface-hover);

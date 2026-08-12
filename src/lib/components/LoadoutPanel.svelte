@@ -234,8 +234,8 @@
 		background: var(--fill-rest);
 		cursor: pointer;
 		transition:
-			background 150ms ease,
-			box-shadow 150ms ease;
+			background var(--t-snap),
+			box-shadow var(--t-snap);
 	}
 	.lp-tile:hover {
 		background: var(--fill-hover);
@@ -303,9 +303,9 @@
 		place-items: center;
 		padding: 0;
 		transition:
-			background 150ms ease,
-			box-shadow 150ms ease,
-			color 150ms ease;
+			background var(--t-snap),
+			box-shadow var(--t-snap),
+			color var(--t-snap);
 	}
 	.lp-pip--filled {
 		background: color-mix(in srgb, var(--el) 22%, transparent);
