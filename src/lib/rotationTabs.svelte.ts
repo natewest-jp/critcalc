@@ -42,7 +42,45 @@ export type RotationTab = {
 };
 
 export const TAB_LIMIT = 6;
-const TABS_KEY = 'critcalc:rotationTabs';
+export const TABS_KEY = 'critcalc:rotationTabs';
+
+/**
+ * Notation → the four slot ids it implies: the first four distinct character
+ * names in segment order, padded with 'blank'.
+ *
+ * ⚠ ONE COPY, and it is here because two already existed. `autoSlots` below is
+ * a $derived over the ACTIVE tab, and prewarmPlanner.ts hand-rolled a mirror of
+ * it to run before this store is restored — its comment said as much ("mirroring
+ * the planner's autoSlots"). Warming the OTHER open tabs needed the same
+ * resolution a third time, which is where a mirror stops being a shortcut. Both
+ * callers now share this; it is a pure string → string[] with no runes, so the
+ * pre-restore caller can use it as freely as the reactive one.
+ */
+export function slotsFromNotation(notation: string): string[] {
+	const seen: string[] = [];
+	for (const segment of notation.split('>')) {
+		const words = segment.trim().split(/\s+/).filter(Boolean);
+		if (words.length === 0) continue;
+		// Try longest multi-word prefix first so names like "Hu Tao" resolve
+		// before a bare "Hu" would. Cap at 3 words — no canonical name is longer.
+		let char = null;
+		for (let k = Math.min(3, words.length); k >= 1; k--) {
+			char = getIndexEntryByDisplayName(words.slice(0, k).join(' '));
+			if (char) break;
+		}
+		if (char && !seen.includes(char.id)) seen.push(char.id);
+		if (seen.length === 4) break;
+	}
+	while (seen.length < 4) seen.push('blank');
+	return seen;
+}
+
+/** The character ids a tab actually needs loaded — its manual override if it has
+ *  one, else what its notation implies. 'blank' is not a character. */
+export function tabCharacterIds(tab: Pick<RotationTab, 'notation' | 'manualSlots'>): string[] {
+	const slots = tab.manualSlots ?? slotsFromNotation(tab.notation ?? '');
+	return slots.filter((id) => id && id !== 'blank');
+}
 
 function genId(): string {
 	return Math.random().toString(36).slice(2, 10);
@@ -86,24 +124,7 @@ class RotationTabsState {
 
 	/** Slots inferred from the notation: first four distinct character names in
 	 *  segment order, padded with 'blank'. */
-	autoSlots = $derived.by(() => {
-		const seen: string[] = [];
-		for (const segment of this.notation.split('>')) {
-			const words = segment.trim().split(/\s+/).filter(Boolean);
-			if (words.length === 0) continue;
-			// Try longest multi-word prefix first so names like "Hu Tao" resolve
-			// before a bare "Hu" would. Cap at 3 words — no canonical name is longer.
-			let char = null;
-			for (let k = Math.min(3, words.length); k >= 1; k--) {
-				char = getIndexEntryByDisplayName(words.slice(0, k).join(' '));
-				if (char) break;
-			}
-			if (char && !seen.includes(char.id)) seen.push(char.id);
-			if (seen.length === 4) break;
-		}
-		while (seen.length < 4) seen.push('blank');
-		return seen;
-	});
+	autoSlots = $derived(slotsFromNotation(this.notation));
 
 	/** THE working team: manual override if set, else notation-derived.
 	 *  Always 4 entries; 'blank' = empty slot. */

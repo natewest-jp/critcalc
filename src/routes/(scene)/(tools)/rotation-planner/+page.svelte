@@ -14,6 +14,7 @@
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
 	import { decodeRotation, type SharedRotation } from '$lib/utils/rotationUrl';
 	import { warmAvatars } from '$lib/utils/warmAvatars';
+	import { warmOpenTabCharacters } from '../lib/prewarmPlanner';
 	import { onMount } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
@@ -94,6 +95,22 @@
 	// makes the bench behave identically in both tools: a filled portrait reads
 	// the character (Detail card), ⇄ changes who fills the slot (Source), and an
 	// empty portrait — with no character to read — falls through to ⇄'s job.
+	// Warm every open tab's characters, so switching to one you have not opened
+	// this session does not stall on a cold payload (⚓ Nate 2026-08-12).
+	//
+	// ⚠ AN $effect GATED ON `restored`, NOT onMount — and the gate is the whole
+	// point. The tabs are restored by the (tools) LAYOUT's onMount, and in Svelte
+	// a CHILD's onMount runs BEFORE its parent's: warming from this page's
+	// onMount read the default single empty tab and warmed nothing, which is
+	// exactly the bug it was meant to fix (measured — a cold switch still pulled
+	// both of the target tab's chunks). Depending on `restored` is robust to that
+	// ordering whichever way it falls, and it also covers landing on another tool
+	// first, where the layout mounted long ago. warmOpenTabCharacters is
+	// once-per-session guarded, so a re-run is free.
+	$effect(() => {
+		if (rt.restored) warmOpenTabCharacters();
+	});
+
 	onMount(() => {
 		warmAvatars();
 		return benchBand.registerHost({
