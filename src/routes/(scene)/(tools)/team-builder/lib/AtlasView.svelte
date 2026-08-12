@@ -70,18 +70,27 @@
 			     moved up here because element colour may not run on parchment —
 			     see the note at .rolecard-elements. -->
 			<div class="rolecard-id">
-				<div class="rolecard-glyphs">
-					{#if card.category.position}
+				<!-- ⚓ NATE 2026-08-12: the glass half divides 2:1, role over pips. The
+				     wrapper is what makes that expressible — two grid rows need two
+				     children, and the glyphs and the label are one thing. -->
+				<div class="rolecard-idmain">
+					<div class="rolecard-glyphs">
+						{#if card.category.position}
+							<img
+								class="rolecard-glyph"
+								src={positionIcon(card.category.position, 'color')}
+								alt=""
+							/>
+							<span class="rolecard-plus" aria-hidden="true">+</span>
+						{/if}
 						<img
 							class="rolecard-glyph"
-							src={positionIcon(card.category.position, 'color')}
+							src={functionIcon(card.category.function, 'color')}
 							alt=""
 						/>
-						<span class="rolecard-plus" aria-hidden="true">+</span>
-					{/if}
-					<img class="rolecard-glyph" src={functionIcon(card.category.function, 'color')} alt="" />
+					</div>
+					<span class="rolecard-label">{card.category.label}</span>
 				</div>
-				<span class="rolecard-label">{card.category.label}</span>
 
 				<!-- The rule belongs to the breakdown, so it moved up with it: it is
 				     what says "the count of this category decomposes from here",
@@ -338,19 +347,18 @@
 	}
 
 	/* ── The identity half ────────────────────────────────────────────────────
-	   ⚠ TWO `margin-top: auto`s, NOT `justify-content`. The half holds three
-	   groups now and only two of the gaps between them should stretch: the one
-	   above the glyphs and the one above the rule. Flexbox splits free space
-	   equally between auto margins, so the identity group floats centred in
-	   whatever is left above the breakdown, and the breakdown sits on the seam.
-	   `space-between` would have pooled the whole slack into ONE gap — the dead
-	   middle the distribution fix removed from this card last round. */
+	   ↻ ⚓ NATE 2026-08-12: "can we make the section for role and the section for
+	   pips a clean 2:1 ratio?" So the half is a two-row GRID rather than a flex
+	   column, and the ratio is DECLARED instead of falling out of two auto
+	   margins fighting over the slack. The rule — which is the breakdown's own
+	   border-top — lands exactly on the 2/3 line at every card height.
+	   ⚠ The ratio divides the CONTENT box, not the half: the padding is the
+	   card's own inset and belongs to neither section. */
 	.rolecard-id {
 		position: relative;
 		overflow: hidden;
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
+		display: grid;
+		grid-template-rows: 2fr 1fr;
 		padding: 1.2rem 1.2rem 1.1rem;
 		/* ⚠ --surface, not --surface-raised. On glass the two resolve to the same
 		   stop (there is no "raised" through a translucent material — depth here
@@ -367,8 +375,17 @@
 		z-index: 1;
 	}
 
+	/* The 2fr row's occupant. Centred in it, so the glyphs and the label read as
+	   one block floating in the role section rather than as two things stuck to
+	   its top edge. */
+	.rolecard-idmain {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 0.6rem;
+		min-height: 0;
+	}
 	.rolecard-glyphs {
-		margin-top: auto;
 		display: flex;
 		align-items: center;
 		gap: 0.45rem;
@@ -439,23 +456,43 @@
 	   on the right". So it stops being a corner bleed and becomes the right-hand
 	   HALF of the readout: full height of the parchment block, centred in it,
 	   running a little off the right edge.
-	   ⚠ AND THE BINDING DIMENSION SWAPPED WITH IT. MEASURED: the block is 148px
-	   tall against 287 wide, so with the inset below it is HEIGHT that decides
-	   the mark's size (~130px against 52% of width ≈ 149). The inset is what the
-	   height is FOR — at `top: 0; bottom: 0` the art's box touched the seam and
-	   the card's bottom edge at once, which reads as a crop even though `contain`
-	   never crops. The width knob is what keeps it clear of the figures. */
+	   ↻↻ ⚓ NATE 2026-08-12: "even larger and even more cropped — maybe cropped
+	   more off the bottom and a little off the top." So it stops being a
+	   `contain` fit inside a box and becomes an OVERSIZE mark positioned from the
+	   card's own edges, which is the only way to say "crop 20 off the top and 76
+	   off the bottom" and have it stay true.
+
+	   ⚠ THE `contain`-IN-A-BOX FORM COULD NOT EXPRESS THIS, and the reason is
+	   worth keeping: `contain` takes the SMALLER of the box's two dimensions, so
+	   which one binds flips with the card's width — the box is 52% of a width
+	   that runs 287px at four-across and ~528 at two-across. Any crop tuned
+	   against one layout was wrong in the other. Sizing off the parchment half's
+	   HEIGHT instead is stable, because that height is content-given (two
+	   figures + padding = 148px) and does not move with the viewport at all.
+
+	   🎛️ THE THREE KNOBS, and they are independent now:
+	     --wash-h      the mark's size, as a multiple of the half's height.
+	                   155% ≈ 229px in a 148px block.
+	     --wash-up     how much comes off the TOP. Everything else
+	                   (229 − 148 − 20 = 61px) crops off the bottom, so raising
+	                   --wash-h alone deepens the bottom crop and leaves the top
+	                   where it is — which is the axis Nate asked for.
+	     --wash-out-x  how far it runs past the right edge.
+	   ⚠ The mark's LEFT edge is 287 + 16 − 229 = 74px at four-across, and the
+	   figures end at 71 — so --wash-h is the knob with a limit: much past 155%
+	   and the art starts under the readout. Not fatal (⚓ "they are allowed to sit
+	   on top of the art I provide") but it is where the next one will be felt. */
 	.rolecard-body::before {
 		content: '';
 		position: absolute;
-		top: 6%;
-		bottom: 6%;
-		right: -5%;
-		width: 52%;
+		inset: 0;
+		--wash-h: 155%;
+		--wash-up: -20px;
+		--wash-out-x: -16px;
 		background-image: var(--role-bg);
 		background-repeat: no-repeat;
-		background-position: center right;
-		background-size: contain;
+		background-size: auto var(--wash-h);
+		background-position: right var(--wash-out-x) top var(--wash-up);
 		pointer-events: none;
 	}
 	/* The readout and the pips ride ABOVE the watermark. ⚓ Nate, on the pips:
@@ -554,7 +591,11 @@
 	   🎛️ It buys back ~116px of card height, which is most of what took
 	   --atlas-card-min-h from 425 to 340. */
 	.rolecard-elements {
-		margin-top: auto;
+		/* The 1fr row. `align-content: center` is what spends the difference
+		   between the row (≈65px) and the band (≈54): the pips sit in the middle
+		   of their section instead of hanging off the rule. */
+		align-content: center;
+		min-height: 0;
 		padding-top: 0.55rem;
 		border-top: 1px solid var(--border);
 		display: grid;
