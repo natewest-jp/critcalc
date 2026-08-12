@@ -432,16 +432,54 @@
 		display: flex;
 		flex-direction: column;
 		align-items: stretch;
-		padding: 8px 10px 10px 8px;
+		/* No HORIZONTAL padding: the ribbon's own RIBBON_PAD is the card's side
+		   inset, and having both was the doubling ⚓ Nate trimmed on 2026-08-12.
+		   Vertical padding stays — it is the only thing holding the band off the
+		   slot's top edge. */
+		padding: 8px 0 10px;
 
-		/* 🎛️ The rail's width and how far the portrait laps over it. The overlap
-		   is what makes two columns cost less than their sum (net 22px here), and
-		   it is the mockup's foreground/background read.
-		   ⚠ Hit-testing respects border-radius, so the disc's rounded corners do
-		   NOT steal clicks from the tile beneath them — if a dead corner ever
-		   shows up in one engine, this is the line it came from. */
-		--sp-rail-w: 30px;
-		--sp-rail-overlap: 8px;
+		/* ══ THE RAIL, SOLVED RATHER THAN PICKED ═════════════════════════════
+		   ⚓ NATE 2026-08-12: "if you would be able to make the buttons' right
+		   edge reach the half-way point of the avatars' circle, that would look
+		   the cleanest (so the buttons cleanly extend right under the avatar all
+		   the way)."
+
+		   So the tile's fill runs to the disc's CENTRE — one expression, half the
+		   band, rather than a tuned number — and because the circle's left edge
+		   sweeps from disc.x+30 at the band's top down to disc.x at its middle,
+		   the fill's own right edge is never visible anywhere. It slides under
+		   the avatar and stops. That is the whole effect.
+
+		   ⚠ BUT THE BUTTON IS NOT THAT WIDE, AND MUST NOT BE. A 46px tile with
+		   its right 30px under an opaque disc has its CENTRE POINT — the place
+		   every click lands by default — inside the portrait, which owns the
+		   pointer there. It shipped that way for one build and Playwright caught
+		   it immediately ("the portrait subtree intercepts pointer events"); a
+		   human would have found a button that works at its left edge and not
+		   its middle. So --sp-rail-w is THE VISIBLE, CLICKABLE STRIP, and the
+		   hidden remainder is a pseudo-element on .bb-act that paints but cannot
+		   be clicked. The thing you can press is the thing you can see.
+
+		   The strip's width is then set by the MARK clearing the circle's arc,
+		   solved at its worst corner (lower-right of the top mark; by symmetry
+		   upper-right of the bottom one):
+
+		     R  = band/2                     = 30    (circle radius)
+		     t  = (band − gap)/2             = 28    (tile height)
+		     dy = R − (t + mark)/2           = 9     (that corner off-centre)
+		     arc left at dy = R − √(R²−dy²)  = 1.43  (px right of disc.x)
+		     W  ≥ inset + mark − 1.43        = 3 + 14 − 1.43 = 15.6
+
+		   16 clears it, and the marks' ink stops a further 1.78px inside their
+		   box, so the real margin is ~2.2px. ⚠ RE-SOLVE IF THE BAND, THE GAP OR
+		   MARK_SIZE MOVE — the failure is a glyph with its corner shaved off by
+		   the portrait, subtle enough to read as a rendering bug rather than a
+		   layout one. */
+		--sp-rail-w: 16px;
+		--sp-rail-gap: 4px;
+		--sp-rail-mark-inset: 3px;
+		/** How far the tile's FILL (not its box) runs on under the portrait. */
+		--sp-rail-underlap: calc(var(--sp-band) / 2);
 
 		/* The two VALUE controls — the constellation chip and the loadout pill.
 		   Change them here, never on one alone. (The rail's COMMANDS are a
@@ -544,7 +582,7 @@
 		width: var(--sp-rail-w);
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: var(--sp-rail-gap);
 		min-height: 0;
 	}
 	.sp-rail :global(> *) {
@@ -562,15 +600,34 @@
 	}
 
 	/* ── The column ───────────────────────────────────────────────────────────
-	   Name pinned to the disc's top edge, value controls to its bottom. */
+	   ⚓ NATE 2026-08-12 asked for the two rows to sit on "the UI controls'
+	   centers", and found by inspector that it meant moving the name down 7px
+	   and the controls up 2px. THE RULE BEHIND THOSE TWO NUMBERS: the column
+	   runs the RAIL'S GRID. Same two tracks, same gap, each row centring its
+	   content — so the name lands on the ⇄ tile's centre-line and the controls
+	   on the ✕'s, and the card reads as 2 × 2 stations with the portrait
+	   spanning both rows.
+
+	   Checked against his own values: at the 68px band he was measuring, the
+	   tracks are 32 and their centres +16 / +52, against a top-aligned name at
+	   +9 and a bottom-aligned control row at +55 — i.e. down 7 and up 2, to the
+	   pixel. Deriving it means it stays true when the band moves, which it did
+	   in the same message (68 → 60).
+
+	   ⚠ A TWO-LINE NAME (34) OVERFLOWS ITS 28px TRACK, by design: centred, it
+	   spends 3px into the 4px gap at each end and still clears the control row,
+	   which sits 1px inside its own track. Names up to Kuki Shinobu (87.8px at
+	   --fs-lg, ⚓ Nate's stated bar) fit on one line at this width; the six
+	   longer ones in the roster wrap and are the reason the clamp stays. */
 	.sp-col {
 		flex: 1 1 auto;
 		min-width: 0;
 		min-height: 0;
 		margin-left: 8px;
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
+		display: grid;
+		grid-template-rows: 1fr 1fr;
+		gap: var(--sp-rail-gap);
+		align-items: center;
 	}
 	/* flex-START, not center: for a one-line name the row is the badge's own
 	   height and the two are identical, but a name that wraps to two lines must
@@ -752,7 +809,13 @@
 		display: flex;
 		align-items: center;
 		gap: 1px;
-		padding: 0;
+		/* 🎛️ ⚓ NATE 2026-08-12: "the artifact/weapon loadout pill needs a little
+		   more background pill on each end — a little more of that dark slate
+		   showing on the left and right edges of the icons." The zones used to
+		   run flush to the capsule's ends, so its curve cut straight into the
+		   artwork and the pill read as two icons rather than one well holding
+		   two icons. */
+		padding: 0 3px;
 		border: none;
 		border-radius: var(--r-round);
 		background: var(--sp-pill-fill);
@@ -923,9 +986,11 @@
 	   retune; only BENCH_CARD_W needs to follow it. */
 	.sp-avatar-chip {
 		position: relative;
-		/* Over the rail it laps onto — the mockup's foreground/background read. */
+		/* Over the rail tiles' painted extension — the mockup's foreground/
+		   background read. The disc sits FLUSH against the rail (no negative
+		   margin): it is the tiles' fill that reaches under the disc, not the
+		   disc that laps over the tiles' boxes. See --sp-rail-underlap. */
 		z-index: 1;
-		margin-left: calc(-1 * var(--sp-rail-overlap));
 		flex: 0 0 auto;
 		height: 100%;
 		width: auto;

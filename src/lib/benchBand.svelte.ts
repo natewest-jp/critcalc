@@ -109,15 +109,20 @@ export type BenchHostRegistration = {
  *  neither. 40px of tracks (~3% at 1600) buys 40px × 4 slots of height. */
 export const BENCH_CARD_W = 200;
 
-/** The portrait disc at its full size — ⚓ Nate's concepts drew 68 and it has
- *  survived every round since. Also the CAP, not a floor: the disc takes its
- *  host band's height and shrinks if given less (see .sp-avatar-chip). Read by
- *  SlotPortrait as --sp-avatar-max so the floor below and the disc cannot
- *  disagree.
+/** 🎛️ The portrait disc, which is also THE CARD'S WHOLE HEIGHT — the band, the
+ *  rail's two tiles, and the column's two rows all derive from it.
+ *
+ *  ⚓ NATE 2026-08-12, second pass: 68 → 60. "68px turned out to be the right
+ *  size back when the RP's bars were bigger." It was set against a 158px slot
+ *  and never re-judged against the condensed one.
+ *
+ *  Also the CAP, not a floor: the disc takes its host band's height and shrinks
+ *  if given less (see .sp-avatar-chip), so the floor below is what stops it
+ *  being given too little.
  *  ⚠ DON'T GROW IT. The side avatars are 128² and the card's framing transform
  *  scales 1.25×, so a 68px disc already asks for ~170 device px from a 128px
  *  source on a retina display. It is fine here and visibly soft past ~100. */
-export const CARD_PORTRAIT = 68;
+export const CARD_PORTRAIT = 60;
 
 /** The card's own padding, top + bottom (`.sp-card` — 8 over, 10 under). */
 export const CARD_PAD_Y = 18;
@@ -126,13 +131,14 @@ export const CARD_PAD_Y = 18;
  * ══ WHAT ONE CARD NEEDS ════════════════════════════════════════════════════
  * The card is ONE band the height of its portrait, plus padding:
  *
- *     padding 8+10  +  max(disc 68, name 2×17 + gap 8 + controls 26)  =  86
+ *     padding 8 + 10  +  disc 60  =  78
  *
- * The two are the same 68 by construction and that is not a coincidence worth
- * losing: two lines of name at --fs-lg over a 26px control row is exactly a
- * portrait, which is what lets the three columns square up on one band. Move
- * the name's size or its line count and this stops being true — the card still
- * works, it just stops looking designed.
+ * ⚠ THE DISC IS THE ONLY THING THAT SETS IT NOW. Everything beside it derives
+ * FROM the band rather than competing with it: the rail splits the band into
+ * two tiles, the column splits it into two rows on the same grid, and each row
+ * centres its content on its tile (see .sp-col). So the column can never ask
+ * for more height than the portrait — which is what makes 60 a free choice and
+ * not a negotiation.
  *
  * 🎛️ Lower it only by shrinking CARD_PORTRAIT, which is what the floor is FOR:
  * the disc is capped rather than floored on its own side, so nothing else would
@@ -204,14 +210,15 @@ export const RIBBON_EDGE = 5;
 /** Each of the two stacked frame strokes. */
 export const RIBBON_FRAME_BORDER = 2;
 /**
- * The shelf line between two cards. Lives here with the rest of the strip's
- * geometry rather than buried in BenchBand's style block — every number that
- * shapes the strip should be findable in one file. ⚓ NATE 2026-08-06 (1 → 1.5,
- * matching the card controls' own 1.5px borders).
+ * Interior padding between the inner frame and the card column.
+ * ⚓ NATE 2026-08-12: 9 → 5, "to match the gap on the other side of the inset
+ * border" — i.e. RIBBON_EDGE. The strip's chrome is symmetric about its own
+ * frame now: 5 of bare ground outside the stroke, 5 of it inside.
+ * ⚠ This is the card's ONLY side inset — .sp-card's horizontal padding went to
+ * 0 in the same pass, because two nested paddings is exactly the doubling this
+ * was trimming.
  */
-export const RIBBON_DIVIDER_H = 1.5;
-/** Interior padding between the inner frame and the card column. */
-export const RIBBON_PAD = 9;
+export const RIBBON_PAD = 5;
 /** The ground's outer radius (3/6/9 scale — ⚓ NATE 2026-08-06). */
 export const RIBBON_RADIUS = 3;
 /** The double frame's tight corner. */

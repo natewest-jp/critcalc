@@ -41,7 +41,6 @@
 		RIBBON_PAD,
 		RIBBON_EDGE,
 		RIBBON_FRAME_BORDER,
-		RIBBON_DIVIDER_H,
 		RIBBON_FRAME_R_TIGHT,
 		RIBBON_FRAME_R_WIDE,
 		RIBBON_RADIUS,
@@ -152,7 +151,6 @@
 	style:--bb-pad="{RIBBON_PAD}px"
 	style:--bb-frame-inset="{RIBBON_EDGE}px"
 	style:--bb-frame-border="{RIBBON_FRAME_BORDER}px"
-	style:--bb-divider-h="{RIBBON_DIVIDER_H}px"
 	style:--bb-frame-r-tight="{RIBBON_FRAME_R_TIGHT}px"
 	style:--bb-frame-r-wide="{RIBBON_FRAME_R_WIDE}px"
 	style:--bb-height-transition={traveling ? `height ${travelMs}ms ${travelEase}` : 'none'}
@@ -308,20 +306,15 @@
 		box-sizing: border-box;
 		transition: var(--bb-height-transition, none);
 	}
-	/* Dividers between cards only — the strip's own frame closes the box (no
-	   trailing separator; the ribbon is self-contained). Drawn as a pseudo so
-	   it can run the full width INSIDE the frame (the mockup's shelf line,
-	   wider than the card) while taking no height: card k's top has to stay at
-	   the cumulative sum the planner's track groups use. */
-	.bb-slot + .bb-slot::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: calc(-1 * var(--bb-pad));
-		right: calc(-1 * var(--bb-pad));
-		height: var(--bb-divider-h);
-		background: var(--frame-line-quiet);
-	}
+	/* ⛔ THE SHELF LINE BETWEEN CARDS IS GONE (⚓ NATE 2026-08-12), and with it
+	   RIBBON_DIVIDER_H. It was drawn for a card that filled its slot; the card
+	   is a fixed 78px band sitting at the TOP of a slot that can be any height,
+	   so a rule at the slot boundary no longer marked the edge of anything you
+	   could see — ⚓ Nate: "if they're going to sit at the top of their row, then
+	   having that border separator only highlights how they're off-center from
+	   their slot height." The cards' own spacing separates them now.
+	   ⚠ If a separator ever comes back it must still take NO height: card k's
+	   top has to stay on the cumulative sum the planner's track groups use. */
 
 	/* ── Slot commands (⇄ · ✕) — THE RAISED REGISTER ─────────────────────────
 	   ⚓ NATE 2026-08-12, from his mockup: VALUE CONTROLS ARE WELLS; COMMAND
@@ -338,17 +331,31 @@
 	   real; it was just the wrong family.
 
 	   The box is the CARD's — .sp-rail stretches them to split the portrait's
-	   height, so no width/height here. Glyph-only; title/aria carry the meaning. */
+	   height, so no width/height here. Glyph-only; title/aria carry the meaning.
+
+	   ⚠ THE MARK IS RANGED LEFT, NOT CENTRED (⚓ NATE 2026-08-12), and that is
+	   geometry rather than taste: the tile's right edge now sits at the disc's
+	   CENTRE, so its right half is behind an opaque circle. A centred glyph
+	   would be centred in a box the user cannot see most of. --sp-rail-w is
+	   solved from this inset (see .sp-card) so the mark clears the circle's arc
+	   at every corner. */
 	.bb-act {
+		position: relative;
 		box-sizing: border-box;
 		display: grid;
-		place-items: center;
-		padding: 0;
+		place-items: center start;
+		padding: 0 0 0 var(--sp-rail-mark-inset);
 		border: none;
 		/* Square, not round: --r-sm is the box vocabulary's tightest corner, and
-		   at this size it reads as a plain square while staying on the scale. */
-		border-radius: var(--r-sm);
-		background: var(--surface-raised);
+		   at this size it reads as a plain square while staying on the scale.
+		   LEFT corners only — the right pair belongs to ::before, which carries
+		   the rest of the tile. */
+		border-radius: var(--r-sm) 0 0 var(--r-sm);
+		/* ONE fill, TWO painted boxes. Routed through a custom property so the
+		   button and its hidden extension can never disagree — including on the
+		   danger hover below, which would otherwise need stating twice. */
+		--bb-act-fill: var(--surface-raised);
+		background: var(--bb-act-fill);
 		/* The card's dimmed-white ladder (inherited from .sp-card — these
 		   buttons render inside it via the actions snippet), not --muted: the
 		   beige glyphs sat oddly against the white-mix C/R values and icons
@@ -370,6 +377,22 @@
 		cursor: default;
 		pointer-events: none;
 	}
+	/* The tile's hidden half: it PAINTS on under the portrait to the disc's
+	   centre and stops, but it is not part of the button's box, so it cannot
+	   take a click the portrait should have had. The disc (z-index 1) covers it
+	   from its own left edge, and because that edge sweeps left as the circle
+	   widens, this extension's right end is never visible at any height. */
+	.bb-act::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 100%;
+		width: var(--sp-rail-underlap);
+		background: var(--bb-act-fill);
+		border-radius: 0 var(--r-sm) var(--r-sm) 0;
+		pointer-events: none;
+	}
 	/* ⇄ hovers by brightening the GLYPH — the card's standing rule. */
 	.bb-act:hover:not(:disabled) {
 		color: var(--sp-unset-ink-hover);
@@ -388,7 +411,7 @@
 	   these buttons already wear, so the fill reads as the same object lighting
 	   up rather than a different plate appearing. */
 	.bb-act--remove:hover:not(:disabled) {
-		background: color-mix(in srgb, var(--ui-danger) 22%, var(--surface-raised));
+		--bb-act-fill: color-mix(in srgb, var(--ui-danger) 22%, var(--surface-raised));
 		/* Danger mixes into WHITE, not --text — the beige base would pull the
 		   red warm against the card's white-mix ladder. */
 		color: color-mix(in srgb, var(--ui-danger) 45%, white);
