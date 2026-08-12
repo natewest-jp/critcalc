@@ -481,6 +481,23 @@
 		/** How far the tile's FILL (not its box) runs on under the portrait. */
 		--sp-rail-underlap: calc(var(--sp-band) / 2);
 
+		/* ══ THE COLUMN'S TWO LEFT EDGES (⚓ NATE 2026-08-12) ══════════════════
+		   They are deliberately NOT the same edge. What lines up is the two
+		   rows' LEADING CONTROLS — the constellation chip under the element
+		   badge — because those are what the eye tracks down the strip, and the
+		   chip (26) is wider than the badge (18).
+
+		   Box-concentric would be a 4px offset (half the difference). ⚓ Nate's
+		   eye says 2: "not quite centered on each other, but very close."
+		   ⚠ AND THERE IS NO SOLVING IT — the element icons' glyph sizing is
+		   deliberately NOT normalised across the seven (see the icon generator),
+		   so each element's ink sits differently inside its 18px box and no
+		   single offset is optically right for all of them. This is a chosen
+		   value, not a derived one; it stops being a compromise only if the
+		   icons are ever normalised. */
+		--sp-col-inset: 4px;
+		--sp-id-nudge: 2px;
+
 		/* The two VALUE controls — the constellation chip and the loadout pill.
 		   Change them here, never on one alone. (The rail's COMMANDS are a
 		   different register and deliberately don't share this height: see
@@ -623,7 +640,7 @@
 		flex: 1 1 auto;
 		min-width: 0;
 		min-height: 0;
-		margin-left: 8px;
+		margin-left: var(--sp-col-inset);
 		display: grid;
 		grid-template-rows: 1fr 1fr;
 		gap: var(--sp-rail-gap);
@@ -638,6 +655,9 @@
 		align-items: flex-start;
 		gap: 0.3rem;
 		min-width: 0;
+		/* Sits --sp-id-nudge right of the control row, so the element badge lands
+		   just off-centre under the constellation chip. See the knob. */
+		padding-left: var(--sp-id-nudge);
 	}
 	.sp-controls {
 		display: flex;

@@ -73,13 +73,15 @@
 		travelEase?: string;
 	} = $props();
 
-	// Card heights: coupled to the planner's published slot metrics while the
-	// planner is (or is becoming) the docked tool; the even resting rhythm
-	// everywhere else. borders paint inside these border-box heights.
+	// Card heights: the planner's published slot metrics, wherever we are.
+	// ⚓ NATE 2026-08-12 — this used to be gated on `mode === 'rp'`, so the cards
+	// relaxed to an even rhythm on the Team Builder and the four cards you were
+	// looking at changed shape as you crossed. The ribbon's whole job across
+	// that seam is to be the thing that DOESN'T change. The resting rhythm now
+	// only carries a session that has never had a timeline mounted at all (a
+	// cold load straight onto the Team Builder).
 	const heights = $derived(
-		mode === 'rp' && benchBand.slotHeights
-			? benchBand.slotHeights
-			: [BENCH_SLOT_H, BENCH_SLOT_H, BENCH_SLOT_H, BENCH_SLOT_H]
+		benchBand.slotHeights ?? [BENCH_SLOT_H, BENCH_SLOT_H, BENCH_SLOT_H, BENCH_SLOT_H]
 	);
 
 	// The strip spans its tool frame (+ the overhang at each end) — but never

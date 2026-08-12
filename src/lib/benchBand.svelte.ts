@@ -335,12 +335,28 @@ export const RIBBON_RESTING_H = BENCH_COLUMN_H + RIBBON_HEAD + 2 * RIBBON_CHROME
 class BenchBandState {
 	host = $state<BenchHostRegistration | null>(null);
 
-	/** Per-slot block heights published by the planner's timeline (px), or
-	 *  null when no timeline is mounted. The band couples to these only while
-	 *  the planner is the active tool. */
+	/**
+	 * Per-slot block heights published by the planner's timeline (px), or null
+	 * until one has ever been mounted this session.
+	 *
+	 * ⚓ NATE 2026-08-12: THEY ARE RETAINED WHEN THE TIMELINE GOES AWAY. The
+	 * cards used to relax to an even resting rhythm on the Team Builder, which
+	 * meant the four cards you were just looking at silently changed shape as
+	 * you crossed — the one moment the ribbon exists to make continuous. The
+	 * heights are a property of the TEAM, which both tools share, not of the
+	 * timeline that happens to compute them.
+	 *
+	 * ⚠ SO A DESTROY PUBLISHES null AND IS IGNORED (see claimMetrics). What is
+	 * left over is deliberately stale: edit the team on the Team Builder and the
+	 * cards keep the departing rotation's rhythm until the planner recomputes
+	 * it. That is the right trade — a card height is a rhythm, not a claim about
+	 * anything, and holding it still beats re-flowing four cards on a surface
+	 * that has no rows to justify the change.
+	 */
 	slotHeights = $state<number[] | null>(null);
 
-	/** Per-slot: a 'blank' slot whose generic kit is actually cast. */
+	/** Per-slot: a 'blank' slot whose generic kit is actually cast. Retained on
+	 *  destroy with the heights, and read only in planner mode. */
 	blankUsed = $state<boolean[]>([false, false, false, false]);
 
 	/** Register a tool page's bench affordances. Returns an unregister that
@@ -354,12 +370,17 @@ class BenchBandState {
 
 	/** Claim the metrics channel. The returned publisher applies only while it
 	 *  is the latest claimant — a retention-delayed unmount of the previous
-	 *  timeline can't stomp the live one's metrics. Publish null on destroy. */
+	 *  timeline can't stomp the live one's metrics.
+	 *
+	 *  Callers still publish null on destroy; it is now a no-op, kept as the
+	 *  signal it always was rather than removed from every call site. See
+	 *  `slotHeights` for why the last real measurement outlives its timeline. */
 	claimMetrics(): (heights: number[] | null, blankUsed?: boolean[]) => void {
 		const token = {};
 		this.#metricsOwner = token;
 		return (heights, blankUsed) => {
 			if (this.#metricsOwner !== token) return;
+			if (!heights) return;
 			this.slotHeights = heights;
 			this.blankUsed = blankUsed ?? [false, false, false, false];
 		};
