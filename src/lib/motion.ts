@@ -11,22 +11,27 @@
  * small and the two files are one grep apart; a generator or a computed-style
  * read would both cost more than the duplication does.
  *
- *     --t-snap   120ms   the click path — popovers, menus, backdrops
- *     --t-quick  150ms   hover and rest      (CSS only; nothing mounts on it)
- *     --t-move   240ms   spatial moves       (CSS only; unclaimed so far)
+ *     --t-snap   120ms   a CONTROL — hairline edges, go fast   (CSS only)
+ *     --t-quick  150ms   a SURFACE — modals, popovers, menus
+ *     --t-move   240ms   TRAVEL across a distance               (CSS only)
+ *
+ * The band is set by SIZE — how much screen the change occupies — not by what
+ * caused it. The full argument, and why the first cut had it backwards, is in
+ * app.css § MOTION. Everything that mounts through this file is a surface, so
+ * T_QUICK is the only one with callers here.
  *
  * ⛔ NOT FOR THE SCENE. TOOL_NAV_MS, the camera crane, the star clock and the
  * loading veil are Nate-tuned and own their own clocks — see
  * $lib/landing/transition.ts. These bands are interaction motion inside a tool.
  */
 
-/** The click path: something arriving because you just pressed for it. */
+/** A CONTROL — buttons, chips, tabs, links, pips. CSS only; nothing mounts. */
 export const T_SNAP = 120;
 
-/** Hover and rest. Declared for completeness — spend it from CSS. */
+/** A SURFACE — modals, popovers, menus. The one the JS transitions spend. */
 export const T_QUICK = 150;
 
-/** Spatial moves the eye follows. Declared for completeness. */
+/** TRAVEL across a distance. CSS only; one resident (the toggle thumb). */
 export const T_MOVE = 240;
 
 /**
@@ -59,7 +64,7 @@ export function motion(ms: number): number {
  * Svelte runs the intro when an outro is INTERRUPTED by a reopen, so without
  * the arriving half a fast toggle would leave the surface permanently dead.
  *
- *     <div transition:fade={{ duration: motion(T_SNAP) }}
+ *     <div transition:fade={{ duration: motion(T_QUICK) }}
  *          onintrostart={introLive} onoutrostart={outroInert}>
  */
 

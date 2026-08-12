@@ -813,32 +813,54 @@
 	   it, and let that surface's needs shape it. */
 
 	/* ══ MOTION ════════════════════════════════════════════════════════════════
-	   THREE BANDS, EACH NAMING A JOB — not three sizes to pick from by taste
-	   (⚓ Nate 2026-08-12, the motion round). A token is a DURATION AND ITS
-	   EASING, one value: there is one easing in the product and splitting it
-	   onto a second axis would double every call site to buy a distinction
-	   nobody had asked for.
+	   ⚓ NATE 2026-08-12, THE SECOND PASS — and it recut the whole thing. The
+	   bands first shipped named for CAUSE ("is this on the click path?"), and
+	   that axis is WRONG. It predicted that buttons, being hover states, wanted
+	   the slower band and modals, being summoned, wanted the faster one. Both
+	   came back backwards from real use: "buttons need --t-snap… the edge border
+	   at the quick speed does read a bit like that latency", and modals read
+	   nicely SLOWER.
 
-	     --t-snap   the CLICK PATH. Something you summoned is arriving, or
-	                leaving, because you just pressed for it: popovers, menus,
-	                modal backdrops, the Source overlay. Anything longer here
-	                reads as LAG rather than as polish — you already know what
-	                is coming, so the animation is only there to say where it
-	                came FROM.
-	     --t-quick  HOVER AND REST. The state ladder every control shares. This
-	                is the one that already existed, unchanged at 150ms, and it
-	                is by far the most-used.
-	     --t-move   SPATIAL MOVES the eye has to follow — something travelling a
-	                distance because a STATE changed, rather than a box changing
-	                colour in place. ⚠ The test is NOT "does it animate a
-	                transform": a hover lift or a 2px nudge is an AFFORDANCE and
-	                has to keep up with the pointer, so those stay on --t-quick
-	                (the argument is written out at .rolecard in AtlasView). One
-	                resident so far — the toggle thumb crossing its track.
+	   ══ THE RULE IS SIZE. HOW MUCH SCREEN THE CHANGE OCCUPIES. ═════════════════
+	   Which is also the industry's rule, arrived at from the other direction —
+	   Material ("larger elements take longer"), IBM Carbon ("the larger the
+	   change in distance or size, the longer the duration"), Apple HIG. Nobody
+	   in the field bands by causality; everybody bands by magnitude.
+
+	   WHY IT IS SIZE, physically: a control's change is a HAIRLINE on an object
+	   you could cover with a fingertip. The eye resolves a 1px edge instantly,
+	   so any ramp on it is perceived as SMEAR — the border looks like it is
+	   catching up with you. A panel's change is a broad area of low-contrast
+	   alpha; the eye integrates it, and it needs real time to read as ARRIVING
+	   rather than as popping into place. Same milliseconds, opposite verdicts.
+
+	     --t-snap   A CONTROL — anything you point at to act. Buttons, chips,
+	                tabs, links, fields, pips, tiles, cards, small marks. Their
+	                edges are hairlines: go fast or it reads as lag.
+	     --t-quick  A SURFACE — a region arriving or leaving. Modals and their
+	                scrims, popovers, menus, the Source takeover. Big soft
+	                changes that want to be SEEN to move.
+	     --t-move   TRAVEL — something crossing a distance because a STATE
+	                changed. ⚠ The test is NOT "does it animate a transform": a
+	                hover lift or a 2px nudge is an AFFORDANCE and must keep up
+	                with the pointer, so those are CONTROLS (see .rolecard in
+	                AtlasView). One resident: the toggle thumb.
+
+	   ⚠ THE SITE CHROME IS THE ONE EXCEPTION, and it is a real one: the brand
+	   marks are small, so size says --t-snap, but ⚓ Nate looked and they are
+	   right where they are. The reason the rule misses them is AMPLITUDE — they
+	   travel 0.85 → 1.0 alpha, a change so slight there is no edge to smear, so
+	   the ramp reads as an ambient brightening rather than as a control
+	   answering you. Size is the rule; amplitude is why this one is filed under
+	   surfaces. (SiteChrome ×3 + CloseMark + .chrome-nav-link.)
 
 	   ⛔ NOT FOR THE SCENE. TOOL_NAV_MS, the camera crane, the star clock, the
 	   loading veil and the world-locked tool fade are Nate-tuned and own their
 	   own clocks. These three are INTERACTION motion, inside a tool.
+
+	   A token is a DURATION AND ITS EASING, one value: there is one easing in
+	   the product and splitting it onto a second axis would double every call
+	   site to buy a distinction nobody had asked for.
 
 	   ⚠ MIRRORED IN `src/lib/motion.ts` — a hand-synced pair, because CSS
 	   cannot hand a number to Svelte's `transition:` directive. Change one,
@@ -2091,7 +2113,7 @@ img {
 	color: var(--accent);
 	text-decoration: none;
 	border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-	transition: border-color var(--t-quick);
+	transition: border-color var(--t-snap);
 }
 
 .prose a:hover,
@@ -2185,9 +2207,9 @@ img {
 	white-space: nowrap;
 	cursor: pointer;
 	transition:
-		background var(--t-quick),
-		color var(--t-quick),
-		box-shadow var(--t-quick);
+		background var(--t-snap),
+		color var(--t-snap),
+		box-shadow var(--t-snap);
 }
 .btn:hover {
 	background: var(--btn-face-hover);
@@ -2317,10 +2339,10 @@ img {
 	letter-spacing: var(--ls-mid);
 	cursor: pointer;
 	transition:
-		background var(--t-quick),
-		color var(--t-quick),
-		box-shadow var(--t-quick),
-		opacity var(--t-quick);
+		background var(--t-snap),
+		color var(--t-snap),
+		box-shadow var(--t-snap),
+		opacity var(--t-snap);
 }
 .chip:hover {
 	background: var(--accent-hover-fill);
@@ -2398,9 +2420,9 @@ img {
 	user-select: none;
 	cursor: pointer;
 	transition:
-		background var(--t-quick),
-		color var(--t-quick),
-		box-shadow var(--t-quick);
+		background var(--t-snap),
+		color var(--t-snap),
+		box-shadow var(--t-snap);
 }
 .tab:hover:not(.active) {
 	background: var(--accent-hover-fill);
@@ -2436,8 +2458,8 @@ img {
 	opacity: 0.4;
 	cursor: pointer;
 	transition:
-		opacity var(--t-quick),
-		background var(--t-quick);
+		opacity var(--t-snap),
+		background var(--t-snap);
 }
 .tab-close:hover {
 	opacity: 1;
@@ -2471,8 +2493,8 @@ img {
 	background: var(--fill-rest);
 	box-shadow: inset 0 0 0 1px var(--border);
 	transition:
-		background var(--t-quick),
-		box-shadow var(--t-quick);
+		background var(--t-snap),
+		box-shadow var(--t-snap);
 }
 .toggle-thumb {
 	position: absolute;
@@ -2488,11 +2510,11 @@ img {
 	   result of a state change rather than shifting a pixel or two under a
 	   pointer — so the position takes the band for spatial moves. Its COLOUR is
 	   not travelling anywhere: it changes in place, at the same moment the
-	   track's does, so it stays on --t-quick and the two land together. One
-	   colour event, one movement, each on its own clock. */
+	   track's does, so it stays with the track on --t-snap (both are controls)
+	   and the two land together. One colour event, one movement, two clocks. */
 	transition:
 		transform var(--t-move),
-		background var(--t-quick);
+		background var(--t-snap);
 }
 .toggle input:checked + .toggle-track {
 	background: var(--ui-positive-soft);
@@ -2527,8 +2549,8 @@ img {
 	background: var(--fill-rest);
 	box-shadow: inset 0 0 0 1px var(--border);
 	transition:
-		background var(--t-quick),
-		box-shadow var(--t-quick);
+		background var(--t-snap),
+		box-shadow var(--t-snap);
 }
 /* The mark is a rotated 2-sided box — geometry, not a glyph, so it never
    depends on a font and never shifts baseline. */
@@ -2552,7 +2574,7 @@ img {
 	border: solid transparent;
 	border-width: 0 2px 2px 0;
 	transform: translate(-50%, calc(-50% - 0.1rem)) rotate(45deg);
-	transition: border-color var(--t-quick);
+	transition: border-color var(--t-snap);
 }
 .check input:checked + .check-box {
 	background: var(--sel-fill);
@@ -3032,8 +3054,8 @@ img {
 	font-family: var(--font-body);
 	font-size: var(--fs-xl);
 	transition:
-		background var(--t-quick),
-		box-shadow var(--t-quick);
+		background var(--t-snap),
+		box-shadow var(--t-snap);
 }
 .field::placeholder {
 	color: var(--muted);

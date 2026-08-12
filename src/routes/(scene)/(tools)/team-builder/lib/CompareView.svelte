@@ -578,7 +578,7 @@
 		color: color-mix(in srgb, var(--muted) 60%, transparent);
 		font-size: var(--fs-sm);
 		cursor: pointer;
-		transition: color var(--t-quick);
+		transition: color var(--t-snap);
 	}
 	.cmp-chip-remove:hover {
 		color: var(--text);
@@ -610,7 +610,7 @@
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		cursor: pointer;
-		transition: background var(--t-quick);
+		transition: background var(--t-snap);
 	}
 	.cmp-chip-commit:hover {
 		background: color-mix(in srgb, var(--accent) 32%, transparent);

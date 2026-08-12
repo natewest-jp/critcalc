@@ -6,7 +6,7 @@
 	import CloseMark from '$lib/components/CloseMark.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import { fade } from 'svelte/transition';
-	import { T_SNAP, motion, introLive, outroInert } from '$lib/motion';
+	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import {
 		deriveCharacterCapabilities,
@@ -143,15 +143,15 @@
      non-modal principle): a focused single-character read, where covering the
      workspace is the point. Esc / backdrop / ✕ all dismiss.
 
-     ↻ 2026-08-12 (motion round): it fades, at the click-path band. This card is
-     the SAME REGISTER as ChromeOverlay — a scrim plus a raised panel, dismissed
-     the same three ways — and ChromeOverlay has faded since it was built, so
-     the card snapping in was not a choice anyone made, just the one modal that
-     never got the treatment. Both are on --t-snap/T_SNAP now; the overlay's
-     lone hand-written 140 folded into the band. -->
+     ↻ 2026-08-12 (motion round): it fades, on --t-quick — the SURFACE band,
+     because size sets the clock and this is a scrim over the whole viewport.
+     The card is the SAME REGISTER as ChromeOverlay, dismissed the same three
+     ways, and ChromeOverlay has faded since it was built; the card snapping in
+     was not a choice anyone made, just the one modal that never got the
+     treatment. Both on T_QUICK now. -->
 <div
 	class="dc-backdrop"
-	transition:fade={{ duration: motion(T_SNAP) }}
+	transition:fade={{ duration: motion(T_QUICK) }}
 	onintrostart={introLive}
 	onoutrostart={outroInert}
 	onclick={handleBackdropClick}
@@ -476,8 +476,8 @@
 		letter-spacing: var(--ls-mid);
 		cursor: pointer;
 		transition:
-			background var(--t-quick),
-			border-color var(--t-quick);
+			background var(--t-snap),
+			border-color var(--t-snap);
 	}
 	.dc-team:hover:not(:disabled),
 	.dc-compare:hover:not(:disabled) {

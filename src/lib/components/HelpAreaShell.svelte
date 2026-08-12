@@ -172,8 +172,8 @@
 		color: var(--muted);
 		text-decoration: none;
 		transition:
-			color var(--t-quick),
-			background var(--t-quick);
+			color var(--t-snap),
+			background var(--t-snap);
 	}
 
 	.area-chapter:hover,
@@ -207,7 +207,7 @@
 		color: var(--muted);
 		text-decoration: none;
 		opacity: 0.85;
-		transition: color var(--t-quick);
+		transition: color var(--t-snap);
 	}
 
 	.area-toc a:hover,

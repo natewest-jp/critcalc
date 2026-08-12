@@ -2065,8 +2065,8 @@
 		   thing that works in Chrome and quietly does nothing in WebKit. */
 		opacity: 1;
 		transition:
-			opacity var(--t-snap),
-			display var(--t-snap) allow-discrete;
+			opacity var(--t-quick),
+			display var(--t-quick) allow-discrete;
 	}
 	@starting-style {
 		.rp-source-overlay {
@@ -3143,8 +3143,8 @@
 		white-space: nowrap;
 		color: var(--control-ink);
 		transition:
-			background var(--t-quick),
-			color var(--t-quick);
+			background var(--t-snap),
+			color var(--t-snap);
 	}
 	.rp-explore-link:hover {
 		background: var(--control-face-hover);
@@ -3152,7 +3152,7 @@
 	.rp-explore-arrow {
 		display: inline-flex;
 		vertical-align: -2px;
-		transition: transform var(--t-quick);
+		transition: transform var(--t-snap);
 	}
 	.rp-explore-link:hover .rp-explore-arrow {
 		transform: translateX(-2px);

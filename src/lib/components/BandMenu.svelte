@@ -4,7 +4,7 @@
 	import { portal } from '$lib/actions/portal';
 	import Mark from './Mark.svelte';
 	import type { MarkName } from '$lib/marks.generated';
-	import { T_SNAP, motion, introLive, outroInert } from '$lib/motion';
+	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 
 	// ---------------------------------------------------------------------------
 	// A dropdown for a band control (toolbar round, 2026-08-07).
@@ -89,15 +89,16 @@
 	{#if !compact}<Mark name="chevron" size={11} />{/if}
 </button>
 
-<!-- The click-path band. A menu you just pressed for gets a fade and nothing
-     else — it is viewport-fixed off a measured left/top, so a slide would mean
-     a second transform over fractional coordinates, and the trigger already
-     told you where it came from. See $lib/motion for the outro pair. -->
+<!-- The SURFACE band (--t-quick): a menu is a region arriving, and size sets
+     the clock. A fade and nothing else — it is viewport-fixed off a measured
+     left/top, so a slide would mean a second transform over fractional
+     coordinates, and the trigger already told you where it came from. See
+     $lib/motion for the outro pair. -->
 {#if open}
 	<div
 		class="band-menu-backdrop"
 		use:portal
-		transition:fade={{ duration: motion(T_SNAP) }}
+		transition:fade={{ duration: motion(T_QUICK) }}
 		onintrostart={introLive}
 		onoutrostart={outroInert}
 		onclick={() => close(false)}
@@ -107,7 +108,7 @@
 		bind:this={menuEl}
 		class="band-menu ctx-glass"
 		use:portal
-		transition:fade={{ duration: motion(T_SNAP) }}
+		transition:fade={{ duration: motion(T_QUICK) }}
 		onintrostart={introLive}
 		onoutrostart={outroInert}
 		style:left="{menuX}px"

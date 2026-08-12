@@ -65,7 +65,7 @@
 	// context (the Team Builder Bench is `position: sticky`) — see $lib/actions/portal
 	import { portal } from '$lib/actions/portal';
 	import { fade } from 'svelte/transition';
-	import { T_SNAP, motion, introLive, outroInert } from '$lib/motion';
+	import { T_QUICK, motion, introLive, outroInert } from '$lib/motion';
 
 	/** The minimal character shape the card renders — an index entry or a loaded
 	 *  payload both satisfy it. null = empty slot. */
@@ -374,12 +374,14 @@
 </div>
 
 <!-- ── Constellation + loadout popovers ─────────────────────────────────────
-     THE CLICK-PATH BAND (--t-snap / T_SNAP, motion round 2026-08-12). A fade
-     and nothing else: these are viewport-fixed and PLACED BY A TRANSFORM
-     (translateY(-50%) off a measured, fractional top), and a scale or a slide
-     would be a second transform compounding on that — the exact geometry the
-     sub-pixel laws warn about. A fade ends at opacity 1, so the transient
-     rasterization is 120ms long and the resting state is clean.
+     THE SURFACE BAND (--t-quick / T_QUICK, motion round 2026-08-12) — a
+     popover is a region arriving, not a control, and SIZE is what sets the
+     clock (app.css § MOTION). A fade and nothing else: these are viewport-fixed
+     and PLACED BY A TRANSFORM (translateY(-50%) off a measured, fractional
+     top), and a scale or a slide would be a second transform compounding on
+     that — the exact geometry the sub-pixel laws warn about. A fade ends at
+     opacity 1, so the transient rasterization is brief and the resting state
+     is clean.
 
      Both halves fade TOGETHER: the backdrop is invisible, but it is the thing
      that would still be swallowing clicks after the panel had gone if it
@@ -391,7 +393,7 @@
 		tabindex="-1"
 		aria-label="Close picker"
 		use:portal
-		transition:fade={{ duration: motion(T_SNAP) }}
+		transition:fade={{ duration: motion(T_QUICK) }}
 		onintrostart={introLive}
 		onoutrostart={outroInert}
 		onclick={closePopovers}
@@ -405,7 +407,7 @@
 		class="sp-popover"
 		class:sp-popover--flip={conFlip}
 		use:portal
-		transition:fade={{ duration: motion(T_SNAP) }}
+		transition:fade={{ duration: motion(T_QUICK) }}
 		onintrostart={introLive}
 		onoutrostart={outroInert}
 		style:left="{conX}px"
@@ -427,7 +429,7 @@
 		class="sp-popover sp-popover--panel"
 		class:sp-popover--flip={loadoutFlip}
 		use:portal
-		transition:fade={{ duration: motion(T_SNAP) }}
+		transition:fade={{ duration: motion(T_QUICK) }}
 		onintrostart={introLive}
 		onoutrostart={outroInert}
 		style:left="{loadoutX}px"
@@ -819,7 +821,7 @@
 		background: var(--sp-pill-fill);
 		color: var(--sp-unset-ink);
 		cursor: pointer;
-		transition: color var(--t-quick);
+		transition: color var(--t-snap);
 		z-index: 1;
 	}
 	/* Unset hover climbs the icons' ladder (0.4 → 0.65 white); a SET value
@@ -890,7 +892,7 @@
 		border-radius: var(--r-round);
 		background: none;
 		cursor: pointer;
-		transition: background var(--t-quick);
+		transition: background var(--t-snap);
 	}
 	/* ── Icon dimming = a GROUND-COLORED WASH over a full-opacity icon ────────
 	   Never element `opacity` on the icon — and the alpha must live IN THE
@@ -931,7 +933,7 @@
 		border-radius: inherit;
 		--sp-wash-a: 15%;
 		background: color-mix(in srgb, var(--sp-pill-fill) var(--sp-wash-a), transparent);
-		transition: --sp-wash-a var(--t-quick);
+		transition: --sp-wash-a var(--t-snap);
 		pointer-events: none;
 	}
 	/* Hover brightens the CONTENT, it does not fill the zone — the same move the
@@ -992,7 +994,7 @@
 		text-shadow:
 			0 0 3px var(--sp-pill-fill),
 			0 1px 2px var(--sp-pill-fill);
-		transition: color var(--t-quick);
+		transition: color var(--t-snap);
 	}
 	/* Follows its ZONE's hover, not its own — it is a label on the weapon
 	   button, not a control. One rung, because it has one state. */
@@ -1066,7 +1068,7 @@
 		   thing on the card doing that job at distance, and it was drawn at the
 		   same weight as the card's hairlines. */
 		border: 2px solid color-mix(in srgb, var(--el, #6a7080) 85%, transparent);
-		transition: box-shadow var(--t-quick);
+		transition: box-shadow var(--t-snap);
 	}
 	.sp-avatar-clickable {
 		cursor: pointer;
@@ -1150,9 +1152,9 @@
 		justify-content: center;
 		padding: 0;
 		transition:
-			background var(--t-quick),
-			box-shadow var(--t-quick),
-			color var(--t-quick);
+			background var(--t-snap),
+			box-shadow var(--t-snap),
+			color var(--t-snap);
 	}
 	.sp-pip--filled {
 		background: color-mix(in srgb, var(--pip-color) 22%, transparent);

@@ -1104,25 +1104,41 @@
 			the next control inventing a 25th alpha.
 		</p>
 		<p class="sg-note">
-			↻ 2026-08-12 (motion round): <strong>three bands, each naming a JOB</strong> — not three sizes
-			to pick from by taste. <code>--t-snap</code> is the
-			<strong>click path</strong>: something arriving because you just pressed for it (popovers,
-			menus, modal scrims, the Source overlay). Anything longer there reads as lag — you already
-			know what is coming, so the motion is only saying where it came <em>from</em>.
-			<code>--t-quick</code> is <strong>hover and rest</strong>, the state ladder every control
-			shares — by far the most-used, and unchanged at 150ms.
-			<code>--t-move</code> is for <strong>spatial moves</strong>: something travelling a distance
-			because a STATE changed and you are meant to follow it there.
+			↻ 2026-08-12, second pass (⚓ Nate) — and it recut the bands.
+			<strong>THE RULE IS SIZE: how much screen the change occupies.</strong> They first shipped
+			banded by <em>cause</em> ("is this on the click path?"), which predicted that buttons wanted
+			the slower band and modals the faster one. Real use came back backwards on both counts.
+			Banding by magnitude is also what the field does — Material
+			<em>("larger elements take longer")</em>, IBM Carbon
+			<em>("the larger the change in distance or size, the longer the duration")</em>, Apple HIG.
+			Nobody bands by causality.
+		</p>
+		<p class="sg-note">
+			<strong>Why size, physically.</strong> A control's change is a <em>hairline</em> on an object
+			you could cover with a fingertip; the eye resolves a 1px edge instantly, so any ramp on it is
+			perceived as <strong>smear</strong> — the border looks like it is catching up with you. A
+			panel's change is a broad area of low-contrast alpha; the eye integrates it, and it needs real
+			time to read as <em>arriving</em> rather than popping. Same milliseconds, opposite verdicts.
+			So: <code>--t-snap</code> = <strong>a control</strong> (buttons, chips, tabs, links, fields,
+			pips, tiles, cards, small marks). <code>--t-quick</code> = <strong>a surface</strong> (modals
+			and their scrims, popovers, menus, the Source takeover). <code>--t-move</code> =
+			<strong>travel</strong>, something crossing a distance because a state changed.
 		</p>
 		<p class="sg-note">
 			⚠ <strong>The test for <code>--t-move</code> is not "does it animate a transform."</strong> A
-			hover lift or a 2px nudge is an <em>affordance</em> and has to keep up with the pointer —
-			240ms there reads as the element lagging your mouse, so those stay on
-			<code>--t-quick</code> (measured 2026-08-12; the argument is written out at
-			<code>.rolecard</code> in AtlasView). One resident so far: the toggle thumb crossing its
-			track, whose <em>position</em> takes the move band while its <em>colour</em> stays on
-			<code>--t-quick</code> so it lands with the track's. One colour event, one movement, each on its
-			own clock.
+			hover lift or a 2px nudge is an <em>affordance</em> and has to keep up with the pointer, which
+			makes it a control — 240ms there reads as the element lagging your mouse (measured 2026-08-12;
+			the argument is written out at <code>.rolecard</code> in AtlasView). One resident: the toggle
+			thumb, whose <em>position</em> takes the move band while its <em>colour</em> stays with the
+			track on <code>--t-snap</code>. One colour event, one movement, two clocks.
+		</p>
+		<p class="sg-note">
+			⚠ <strong>The site chrome is the one exception, and it is a real one.</strong> The brand marks
+			are small, so size says <code>--t-snap</code>, but they sit on <code>--t-quick</code> and ⚓
+			Nate confirmed they read right there. What the rule misses is <strong>amplitude</strong>: they
+			travel 0.85 → 1.0 alpha, a change slight enough that there is no edge to smear, so the ramp
+			reads as ambient brightening rather than as a control answering you. Size is the rule;
+			amplitude is why this one files under surfaces.
 		</p>
 		<p class="sg-note">
 			<strong>A token is a duration AND its easing, one value.</strong> There is one easing in the
@@ -1133,8 +1149,7 @@
 			things still honour it by hand: the scene/nav machinery, Svelte's
 			<code>transition:</code> directive (JS, which cannot read a custom property — what
 			<code>src/lib/motion.ts</code> mirrors the numbers for), and keyframe
-			<code>animation</code>s, which a duration token cannot reach at all. ↻ The site chrome's
-			private 200ms folded into <code>--t-quick</code> on 2026-08-12, taking three more blocks with it.
+			<code>animation</code>s, which a duration token cannot reach at all.
 		</p>
 		<div class="sg-swatches">
 			{#each motion as t (t.name)}{@render swatch(t)}{/each}
@@ -2183,10 +2198,12 @@
 				<h3>Motion & perf</h3>
 				<ul>
 					<li>
-						Three interaction bands, each naming a job, easing included in the value:
-						<code>--t-snap</code> the click path, <code>--t-quick</code> hover and rest,
-						<code>--t-move</code> spatial moves. ⛔ Scene and tool-slide transitions own their own timing
-						and never use these.
+						Three interaction bands, easing included in the value, and
+						<strong>the axis is SIZE</strong> — how much screen the change occupies, never what
+						caused it. <code>--t-snap</code> a control, <code>--t-quick</code> a surface,
+						<code>--t-move</code> travel. A hairline on a small object must go fast or it reads as smear;
+						a broad soft area needs time to read as arriving. ⛔ Scene and tool-slide transitions own
+						their own timing and never use these.
 					</li>
 					<li>
 						Never animate a paint property (border-color, gradient angle) on a persistent surface —

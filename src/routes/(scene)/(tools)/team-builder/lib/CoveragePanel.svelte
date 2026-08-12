@@ -353,8 +353,8 @@
 		background: color-mix(in srgb, var(--accent) 16%, transparent);
 		cursor: pointer;
 		transition:
-			background var(--t-quick),
-			color var(--t-quick);
+			background var(--t-snap),
+			color var(--t-snap);
 	}
 	.ts-cov--no:hover {
 		color: var(--ink-active);

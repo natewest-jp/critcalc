@@ -1054,9 +1054,9 @@
 		cursor: pointer;
 		opacity: 0.55;
 		transition:
-			opacity var(--t-quick),
-			background var(--t-quick),
-			box-shadow var(--t-quick);
+			opacity var(--t-snap),
+			background var(--t-snap),
+			box-shadow var(--t-snap);
 	}
 
 	.ar-slot img {

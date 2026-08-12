@@ -392,8 +392,8 @@
 		color: var(--sp-unset-ink);
 		cursor: pointer;
 		transition:
-			color var(--t-quick),
-			--bb-act-fill var(--t-quick);
+			color var(--t-snap),
+			--bb-act-fill var(--t-snap);
 	}
 	/* The glyph size, weight and joins come from Mark.svelte's MARK_SIZE /
 	   MARK_STROKE — the .bb-glyph rules that used to set them here are gone,
