@@ -237,6 +237,20 @@
 </div>
 
 <style>
+	/* Registered so the tile's fill INTERPOLATES rather than snapping, and — the
+	   part that matters — so the button and its ::before extension read ONE
+	   animating value instead of running two transitions that must agree. See
+	   the bug note at .bb-act.
+	   ⚠ inherits: TRUE, unlike SlotPortrait's --sp-wash-a: ::before resolves
+	   var(--bb-act-fill) through inheritance from its originating element, so a
+	   non-inherited registration would hand the extension the initial value and
+	   paint it transparent. */
+	@property --bb-act-fill {
+		syntax: '<color>';
+		inherits: true;
+		initial-value: transparent;
+	}
+
 	/* The ribbon box: its OWN surface — the dark context's ground and its
 	   radius — one identity everywhere. Width, height, padding and radius come
 	   inline from the RIBBON_* knobs so the dock math and the box always agree.
@@ -355,7 +369,20 @@
 		border-radius: var(--r-sm) 0 0 var(--r-sm);
 		/* ONE fill, TWO painted boxes. Routed through a custom property so the
 		   button and its hidden extension can never disagree — including on the
-		   danger hover below, which would otherwise need stating twice. */
+		   danger hover below, which would otherwise need stating twice.
+		   🐛 AND THE PROPERTY IS WHAT ANIMATES, NOT THE TWO BACKGROUNDS. ⚓ Nate
+		   saw "a split down the middle that very slightly changes opacity at
+		   different timings" on hover, in both engines: PSEUDO-ELEMENTS DO NOT
+		   INHERIT THEIR ORIGINATING ELEMENT'S TRANSITIONS, so `transition:
+		   background-color` on .bb-act reached the button and not its ::before —
+		   the extension SNAPPED while the button eased, and the seam between the
+		   two painted boxes showed for the length of the ease. Declaring the
+		   transition twice would fix the symptom and leave two numbers to keep in
+		   step; registering --bb-act-fill (@property, below) makes ONE
+		   interpolating value that both boxes re-resolve per frame, so they
+		   cannot desync by construction. Engines without @property snap — but
+		   they snap TOGETHER, which is still no seam. Same technique as
+		   --sp-wash-a in SlotPortrait, and for the same reason. */
 		--bb-act-fill: var(--surface-raised);
 		background: var(--bb-act-fill);
 		/* The card's dimmed-white ladder (inherited from .sp-card — these
@@ -366,7 +393,7 @@
 		cursor: pointer;
 		transition:
 			color 150ms ease,
-			background-color 150ms ease;
+			--bb-act-fill 150ms ease;
 	}
 	/* The glyph size, weight and joins come from Mark.svelte's MARK_SIZE /
 	   MARK_STROKE — the .bb-glyph rules that used to set them here are gone,
