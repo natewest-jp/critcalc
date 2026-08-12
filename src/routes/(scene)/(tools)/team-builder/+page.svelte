@@ -1589,6 +1589,36 @@
 	   started flush against the band above and the scroller's edge below —
 	   sentences had been doing the spacing's job. padding-block does it now,
 	   and the same 0.8rem still separates the drill's rows from each other. */
+	/* ── THE VIEW SWAP FADES IN, AND DOES NOT FADE OUT ───────────────────────
+	   (⚓ Nate 2026-08-12, the motion round's #1.) Atlas / Roster / Compare are
+	   three whole regions replacing one another, so they take --t-quick, the
+	   SURFACE band, not the control band the plates above them use.
+
+	   ⚠ IN ONLY, AND ⛔ NEVER A CROSS-FADE. The three views have different
+	   heights and `sourceFills` differs between them, so the box they live in
+	   RESIZES as they swap. Overlapping an outgoing copy onto that would fade a
+	   ghost while it re-fits itself — the same trap that keeps the planner's
+	   Source overlay from fading out (RotationTimeline). Instant out also means
+	   no dead frames before the view you asked for starts arriving.
+
+	   @starting-style supplies the 0 to run from, and it reaches all three for
+	   two different reasons: Atlas and Compare are newly INSERTED on each swap,
+	   while the Roster is kept mounted and merely crosses display:none →
+	   displayed — both count as "first rendered", so one rule covers a mounting
+	   view and a revealed one alike.
+
+	   :global on the child selector because CompareView's root <section> carries
+	   its own scope class; scoping would silently skip exactly one of the three. */
+	.tb-source > :global(*) {
+		opacity: 1;
+		transition: opacity var(--t-quick);
+	}
+	@starting-style {
+		.tb-source > :global(*) {
+			opacity: 0;
+		}
+	}
+
 	/* flex:1 + min-height:0 so the cards view can hand its grid a definite
 	   height to fill (see the markup note). Inert on the drill and slots views —
 	   their .tb-source is content-height, and flex:1 against an indefinite
@@ -1780,10 +1810,33 @@
 		--cg-tile-min: 118px;
 		--cg-gap: 0.6rem;
 		--cg-stack-gap: 0.7rem;
+		/* Adds `display` to the shared fade. The Roster is the one view that is
+		   REVEALED rather than mounted, so its entry crosses display:none, and
+		   allow-discrete is the documented other half of that crossing — the same
+		   pairing the planner's Source overlay uses. Atlas and Compare need no
+		   such thing: they are fresh nodes, unambiguously first-rendered.
+
+		   ⚠⚠ AND IT MUST NOT RESTATE `opacity: 1`. @starting-style carries the
+		   SAME SPECIFICITY as the equivalent normal rule, so a tie falls to
+		   SOURCE ORDER — and this rule sits after the @starting-style block. An
+		   `opacity: 1` here therefore wins the STARTING style too, the fade runs
+		   1 → 1, and nothing moves. Measured exactly that way in WebKit: Atlas
+		   ramped 0.00 → 0.96 over eight frames while the Roster sat flat at 1.00.
+		   The shared rule above already supplies the resting 1; leave it there. */
+		transition:
+			opacity var(--t-quick),
+			display var(--t-quick) allow-discrete;
 	}
-	/* The explicit display:flex above would beat the UA's [hidden] rule. */
+	/* The explicit display:flex above would beat the UA's [hidden] rule.
+	   ⚠ `transition: none` IS THE INSTANT EXIT. A transition is driven by the
+	   AFTER-change style, so hiding reads THIS rule and revealing reads the one
+	   above — which is what lets one element fade in and snap out with no second
+	   class to track. Drop it and allow-discrete starts deferring display:none
+	   to the end of the fade, leaving the old roster sitting there opaque after
+	   you have already asked for another view. */
 	.tb-roster[hidden] {
 		display: none;
+		transition: none;
 	}
 	/* Reward wide screens with roomier cards (fewer-but-bigger), not more tiles
 	   at once — the wider cells cross CharacterCard's `roomy` container-query
