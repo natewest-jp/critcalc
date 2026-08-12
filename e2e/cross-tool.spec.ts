@@ -42,7 +42,16 @@ test('the planner Source overlay edits the shared team live', async ({ page, see
 
 	// In-frame and non-modal — it lives inside the tool frame, not over it.
 	await expect(page.locator('.rp-source-overlay .cs-panel')).toHaveCount(1);
-	expect(await page.locator('.cc').count(), 'the overlay renders the grid').toBeGreaterThan(100);
+	// ⚠ POLLED, not a snapshot. The roster mounts through createProgressiveReveal
+	// — ~123 tiles appended in rAF batches — so `await …count()` reads whatever
+	// happened to exist in that one frame and the number depends on how loaded
+	// the machine is. It was measured failing at 72/100 on WebKit under load, on
+	// main, with no product change involved. The assertion's INTENT is "the
+	// overlay renders the grid", which becomes true a beat later; expect.poll
+	// says that, a bare count says "…within one frame", which was never meant.
+	await expect
+		.poll(() => page.locator('.cc').count(), { message: 'the overlay renders the grid' })
+		.toBeGreaterThan(100);
 	await expect(page.locator('.cc-slot'), 'the current team shows as four badges').toHaveCount(4);
 
 	// Live edit: deselecting frees a slot immediately, with no Confirm step.

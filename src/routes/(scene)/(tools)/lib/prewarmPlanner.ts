@@ -94,14 +94,21 @@ export function warmOpenTabCharacters(): void {
 		];
 		const queue = [...new Set(ordered.flatMap(tabCharacterIds))];
 
-		// Same idle shape as warmAvatars (Safari lacked requestIdleCallback, and
-		// the `timeout` matters — a busy planner starves idle callbacks outright).
-		// BATCH is small because each landing chunk costs a main-thread parse, and
-		// the whole point of deferring these is to not spend frames on them.
+		// ⚠ NO `timeout`, and that is the ONE place this deliberately differs from
+		// warmAvatars. A timeout is an instruction to run EVEN IF THE PAGE IS
+		// BUSY, which is the exact opposite of what "speculative, lower priority"
+		// means — and the busiest moment on this page is the Source overlay's
+		// roster mounting ~123 tiles in rAF batches, i.e. precisely when a forced
+		// batch of chunk parses would be felt. warmAvatars needs its timeout
+		// because those images are wanted by that very grid; these payloads are
+		// wanted by a tab switch that has not happened yet, so waiting for real
+		// idle costs nothing and starving until the page settles is CORRECT
+		// behaviour rather than a failure mode.
+		//
+		// BATCH is small for the same reason: each landing chunk costs a
+		// main-thread parse, and not spending frames on them is the whole point.
 		const idle = (fn: () => void) =>
-			'requestIdleCallback' in window
-				? requestIdleCallback(fn, { timeout: 500 })
-				: setTimeout(fn, 200);
+			'requestIdleCallback' in window ? requestIdleCallback(fn) : setTimeout(fn, 200);
 		const BATCH = 4;
 		const pump = () => {
 			for (const id of queue.splice(0, BATCH)) void loadCharacter(id);
