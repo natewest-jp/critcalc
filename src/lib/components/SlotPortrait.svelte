@@ -571,9 +571,14 @@
 		margin-right: auto;
 		flex-shrink: 0;
 		display: flex;
-		/* --ui-danger, not a domain color — a data-quality consequence, not a
-		   game fact (dire-retirement round, 2026-08-05; mirrors .cc-namemark). */
-		color: var(--ui-danger);
+		/* Not a domain color — a data-quality consequence, not a game fact
+		   (dire-retirement round, 2026-08-05; mirrors .cc-namemark).
+		   ↻ 2026-08-12: and the right STATE colour is --ui-provisional, not
+		   --ui-danger. That round settled which FAMILY this belongs to and red was
+		   just the only rung left; the family has a fourth value now. ⚠ The bench
+		   is always dark, so this takes the :root rung — the roster card's twin
+		   resolves to the ctx-light one. Same token, two grounds. */
+		color: var(--ui-provisional);
 		cursor: help;
 		/* ↻ 2026-08-11: the type declarations and the -0.08em lift are GONE, for
 		   the reason spelled out at .cc-namemark — they were tuned for a unicode

@@ -27,6 +27,7 @@
 	import { deriveTeamComposition } from '$lib/utils/teamComposition';
 	import { deriveResonances, type Resonance } from '$lib/utils/resonance';
 	import { elementPalette } from '$lib/utils/elementColors';
+	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import type { CharacterData } from '$lib/types/character';
 	import type { Ability, Effect } from '$lib/types/ability';
 	import type { MergedEffectDisplay } from '$lib/timeline/types';
@@ -147,11 +148,27 @@
 		};
 	}
 
-	/** Element-tinted badge colors; Protective Canopy gets the neutral pair. */
+	/**
+	 * ↻ ⚓ NATE 2026-08-12: THE RESONANCE CHIPS ARE THE TEAM BUILDER'S LEAD PILL
+	 * NOW — "elemental icon, same fill, border, and text color."
+	 *
+	 * They were a one-off: `hi` ink on a 16% wash of `main`, no ring, no icon.
+	 * The TB's CoveragePanel already had the settled answer for the same fact —
+	 * `.ts-lead-pill`, a 22% ground with a 45% inset ring and `--text` ink — and
+	 * two tools stating the same resonance in two different chips is exactly the
+	 * drift the shared components exist to stop.
+	 *
+	 * ⚠ ONE DIFFERENCE, AND IT IS DELIBERATE: no `--r-round`. ⚓ "Let's reserve
+	 * that for where it's displayed on the TB." The pill shape is the Coverage
+	 * run's idiom; down here the chip sits in a row of square-cornered footnote
+	 * chips, and a lozenge among them would read as a control.
+	 *
+	 * ⚠ `main`, not `bar`. The ground is a 22% WASH and the ring is a LINE —
+	 * identity uses, which is the half of the palette `main` owns.
+	 */
 	function resonanceBadgeStyle(res: Resonance): string {
-		if (!res.element) return 'color: var(--muted); background: var(--fill-hover);';
-		const p = elementPalette(res.element);
-		return `color: ${p.hi}; background: color-mix(in srgb, ${p.main} 16%, transparent);`;
+		const c = res.element ? elementPalette(res.element).main : 'var(--accent)';
+		return `--pill-color: ${c};`;
 	}
 </script>
 
@@ -165,7 +182,11 @@
 					class="faction-badge res-badge"
 					style={resonanceBadgeStyle(res)}
 					onmouseenter={(e) => showResonanceTooltip(e, res)}
-					onmouseleave={hideChipTooltip}>{res.label}</span
+					onmouseleave={hideChipTooltip}
+				>
+					{#if res.element}
+						<img class="res-badge-icon" src={elementIcon(res.element)} alt="" />
+					{/if}{res.label}</span
 				>
 			{/each}
 			{#if comp.hasAscendantGleam}
@@ -245,6 +266,35 @@
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
+	}
+
+	/* ── The resonance chip = the Team Builder's .ts-lead-pill ────────────────
+	   ⚓ NATE 2026-08-12. Ground, ring and ink are CoveragePanel's numbers
+	   verbatim (22% / 45% / --text) so the two tools cannot state the same
+	   resonance two ways. ⚠ Everything except the RADIUS: --r-round stays the
+	   Coverage run's alone.
+	   ⚠ The values are duplicated rather than shared because there is no chip
+	   component yet and one recipe in two files is cheaper than the wrong
+	   abstraction — but they are a PAIR. If the TB's move, these move. */
+	.res-badge {
+		gap: 0.3rem;
+		padding-left: 5px;
+		background: color-mix(in srgb, var(--pill-color) 22%, transparent);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pill-color) 45%, transparent);
+		color: var(--text);
+		cursor: help;
+	}
+	/* Protective Canopy has no element, so nothing leads it and the left inset
+	   goes back to the plain one — same rule the TB's pill carries. */
+	.res-badge:not(:has(.res-badge-icon)) {
+		padding-left: 8px;
+	}
+	/* 15, not the TB's 17: this strip runs at --fs-sm where Coverage runs at
+	   --fs-md, and the glyph tracks the words it sits with. */
+	.res-badge-icon {
+		width: 15px;
+		height: 15px;
+		flex-shrink: 0;
 	}
 
 	.faction-badge--moonsign {

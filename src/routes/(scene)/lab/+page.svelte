@@ -666,6 +666,189 @@
 		cryo: 'Q · Escoffier'
 	};
 
+	/* ══ SECTION 11 · THE UI STATE COLOURS ═══════════════════════════════════
+	 * ⚓ Nate 2026-08-12: "let's quickly talk about those, since they're close to
+	 * the element colours too" — plus three values Genshin uses.
+	 *
+	 * The question the board has to answer is NOT "which trio is prettier". It is
+	 * the one the element round taught: a colour here has to live BESIDE the
+	 * element palette without being mistaken for it, and it has to hold three
+	 * different grounds. So every row is measured on both axes.
+	 */
+	const PAPER100 = '#ece5d8'; // parchment-100 — cards, the ∅ mark's actual ground
+	const SLATE800 = '#2e3543'; // ctx-dark surface — panels, the detail card
+	const UI_GROUNDS = [
+		{ k: 'star', label: 'a star, on night', g: STAR },
+		{ k: 'slate', label: 'slate-800', g: SLATE800 },
+		{ k: 'paper', label: 'parchment-100', g: PAPER100 }
+	];
+
+	const EL_BAR: Record<El, string> = {
+		pyro: '#ff653e',
+		electro: '#ca7aff',
+		hydro: '#00b7f4',
+		anemo: '#1ecb95',
+		geo: '#f1a501',
+		dendro: '#8cd525',
+		cryo: '#50e1e2'
+	};
+
+	/** ΔE in oklab — the same measure the palette round uses, where ~.05 is where
+	 *  two colours stop reading as two. ⚠ NOT the hue gap: hue alone said our
+	 *  hydro/cryo were fine when lightness was doing all the separating. */
+	function dE(a: string, b: string) {
+		const [LA, CA, HA] = toOklch(a);
+		const [LB, CB, HB] = toOklch(b);
+		const f = (C: number, H: number) => [
+			C * Math.cos((H * Math.PI) / 180),
+			C * Math.sin((H * Math.PI) / 180)
+		];
+		const [aa, ab] = f(CA, HA);
+		const [ba, bb] = f(CB, HB);
+		return Math.hypot(LA - LB, aa - ba, ab - bb);
+	}
+	/** The element this colour is most likely to be mistaken for, measured
+	 *  against BOTH rungs — `main` is what a glyph beside it wears, `bar` is what
+	 *  a fill beside it wears, and since 2026-08-12 those are different colours. */
+	const nearestEl = (hex: string) => {
+		const pick = (set: Record<El, string>) =>
+			EL7.map((el) => ({ el, d: dE(hex, set[el]) })).sort((x, y) => x.d - y.d)[0];
+		return { main: pick(EL_GENSHIN_ICON), bar: pick(EL_BAR) };
+	};
+
+	/**
+	 * ⚠ FIVE VALUES, NOT THREE — and that gap is the first finding. The tokens
+	 * were taken FROM the crit visualizer's risk ramp (⚓ Nate's pick), so the
+	 * chart is the parent, not a copy. But the ramp has FOUR stops and only two
+	 * of them ever became tokens:
+	 *   #e63946 = --ui-danger   ✅       #f4a261 = --ui-warning  ✅
+	 *   #f6d365 = no token at all        #4ecca3 = the PRE-NUDGE positive
+	 * --ui-positive was pushed .034 → #51c89a to escape the OLD anemo and the
+	 * chart never followed, so the family that was meant to be one is now two.
+	 */
+	const UI_ROWS = [
+		{ key: 'danger', label: 'danger', now: '#e63946', token: '--ui-danger', gen: '#ff5a5a' },
+		{ key: 'warning', label: 'warning', now: '#f4a261', token: '--ui-warning', gen: '#ffc700' },
+		{ key: 'positive', label: 'positive', now: '#51c89a', token: '--ui-positive', gen: '#80df66' }
+	];
+	const UI_STRAYS = [
+		{ hex: '#f6d365', note: 'the ramp’s 4th stop — never became a token' },
+		{ hex: '#4ecca3', note: 'the pre-nudge positive — still in the ramp + ArtifactInstrument' }
+	];
+
+	/** OUR HUE AT GENSHIN'S LIGHTNESS, chroma held at the same share of the
+	 *  gamut. The one transform worth showing, because it is the move this
+	 *  system already makes twice (rx-quicken, and the --ui-positive note's own
+	 *  advice: "the axis to spend is LIGHTNESS, not hue"). */
+	function atGenshinL(ours: string, gen: string) {
+		const [L0, C0, H] = toOklch(ours);
+		const Lg = toOklch(gen)[0];
+		return fitLCH(Lg, maxChroma(Lg, H) * (C0 / maxChroma(L0, H)), H);
+	}
+	const UI_LIFTED = Object.fromEntries(
+		UI_ROWS.map((r) => [r.key, atGenshinL(r.now, r.gen)])
+	) as Record<string, string>;
+
+	/* ══ THE FOURTH VALUE ═════════════════════════════════════════════════════
+	 * ⚓ Nate 2026-08-12: "should we actually have four values — an orange for
+	 * warning, and a yellow like #f6d365 freed up for another use?"
+	 *
+	 * The census says yes, and that the fourth is not an invention: it is a SPLIT
+	 * of what --ui-danger is already doing at thirteen sites in two different
+	 * jobs. Counted by hand, excluding app.css's own declarations:
+	 *   --ui-danger    13 sites   --ui-warning  1 site   --ui-positive  1 site
+	 * (warning = the notation editor's unknown-token squiggle; positive = the
+	 * switch's checked track, in app.css.)
+	 */
+	const UI_DANGER_CENSUS = [
+		{
+			job: 'a destructive ACTION — a verb, what a control will do',
+			red: true,
+			sites: [
+				'SettingsPanel .sp-section--danger',
+				'BandMenu .band-menu-item--danger',
+				'BenchBand .bb-act--remove'
+			]
+		},
+		{
+			job: 'data is INCOMPLETE or APPROXIMATE — a provenance statement, not an action',
+			red: false,
+			sites: [
+				'CharacterCard .cc-namemark (the ∅, on 122 cards)',
+				'SlotPortrait .sp-namemark',
+				'RotationTimeline .rp-active-text--danger (generic timing)',
+				'RotationTimeline isApprox block gradient',
+				'CoveragePanel unknown chip',
+				'DetailCard stub note · CompareView stub label'
+			]
+		}
+	];
+
+	/**
+	 * The proposed fourth token. 🎛️ Two rungs, because it has a consumer on
+	 * PAPER (the ∅ mark on a character card) and #f6d365 is 1.16:1 there.
+	 * ⚠ THE LIGHT RUNG SITS AT THE GRAPHICAL FLOOR (3:1), NOT THE TEXT FLOOR,
+	 * and that is forced rather than chosen: walking it to 4.5:1 lands on
+	 * #786529, which is ΔE .030 from --gold-700 — it IS the light accent, and
+	 * gold on paper already means "a gap you can click". So provisional may be a
+	 * MARK on paper and must never be prose ink there.
+	 */
+	const UI_PROVISIONAL = '#f6d365';
+	const UI_PROVISIONAL_LIGHT = '#998136';
+
+	/* ── the in-context specimen ────────────────────────────────────────────
+	 * ⚓ Nate: "can I see the current and proposed values used as text
+	 * chips/buttons on the different backgrounds." Three forms, because a state
+	 * colour is asked to do three different things and they fail differently: as
+	 * INK it needs 4.5:1, as a soft CHIP the ink is the colour on 18% of itself,
+	 * and as a solid BUTTON the colour is the ground and something else is the
+	 * ink. */
+	const UI_FORMS_GROUNDS = [
+		{ k: 'night', label: 'night (bare scene)', bg: null, cls: '' },
+		{ k: 'slate', label: 'slate-800 · ctx-dark', bg: SLATE800, cls: 'ctx-dark' },
+		{ k: 'paper', label: 'parchment-100 · ctx-light', bg: PAPER100, cls: 'ctx-light' }
+	];
+	/** On a solid fill, the ink is whichever of white/near-black reads better —
+	 *  the same question every button in the system answers. */
+	const onFill = (hex: string) =>
+		ratio(hex, '#0d0d0f') >= ratio(hex, '#ffffff') ? '#0d0d0f' : '#ffffff';
+
+	const UI_ROLES = [
+		{ key: 'danger', label: 'danger', now: '#e63946', next: '#e63946', nextLight: null },
+		{ key: 'warning', label: 'warning', now: '#f4a261', next: '#f4a261', nextLight: null },
+		{
+			key: 'positive',
+			label: 'positive',
+			now: '#51c89a',
+			next: UI_LIFTED.positive,
+			nextLight: null
+		},
+		{
+			key: 'provisional',
+			label: 'provisional',
+			/* Today this fact is drawn in --ui-danger — that IS the current
+			   column, and seeing the ∅ red beside the ∅ yellow is the whole
+			   comparison. */
+			now: '#e63946',
+			next: UI_PROVISIONAL,
+			nextLight: UI_PROVISIONAL_LIGHT
+		}
+	];
+
+	/* The risk ramp, verbatim from crit.ts — high risk → low risk, which is
+	 * left → right on the hits/rotation slider (more hits = less risk). */
+	const RAMP_NOW = ['#e63946', '#f4a261', '#f6d365', '#4ecca3'];
+	const RAMP_GENSHIN = ['#ff5a5a', '#ffc700', '#80df66'];
+	/** ⚠ DANGER AND WARNING ARE THE SHIPPED VALUES HERE, not the lifted ones —
+	 *  the recommendation holds both, and a demo that quietly disagrees with its
+	 *  own label is worse than no demo. Only positive moves.
+	 *  🔎 WHICH MAKES THIS RAMP THE WHOLE POINT OF THE FOURTH VALUE: with
+	 *  #f6d365 promoted to --ui-provisional, every one of the four stops is a
+	 *  token, and the chart that FATHERED this family would finally be spelled
+	 *  entirely in it. */
+	const RAMP_LIFTED = ['#e63946', '#f4a261', UI_PROVISIONAL, UI_LIFTED.positive];
+	const ramp = (stops: string[]) => `linear-gradient(to right, ${stops.join(', ')})`;
+
 	/* ══ THE OTHER ICON SETS — measured, because the answer was counterintuitive ══
 	 *
 	 * ⚓ Nate: "there are other icons available — tcg, gilded, glow. What if we
@@ -1858,6 +2041,292 @@
 			whatever they currently say. If one element misbehaves at the chosen setting, ⚠ the rule from
 			the palette round applies:
 			<strong>a per-element exception you can defend beats a global transform you cannot</strong>.
+		</p>
+	</section>
+
+	<!-- ════════════════════════════════ 11 · THE UI STATE COLOURS ══ -->
+	<section>
+		<h2 class="lab-h">
+			UI state colours <span class="lab-badge">shipped</span>
+		</h2>
+		<p class="lab-note">
+			✅ <strong>SETTLED 2026-08-12 — ⚓ Nate approved all four.</strong>
+			<code>--ui-danger</code> holds <code>#e63946</code> · <code>--ui-warning</code> holds
+			<code>#f4a261</code> · <code>--ui-positive</code> → <code>#5be0ac</code> ·
+			<strong><code>--ui-provisional</code> is NEW</strong> at <code>#f6d365</code>, zoned to
+			<code>#998136</code> on <code>.ctx-light</code>. Seven consumers moved off
+			<code>--ui-danger</code>, and <code>crit.ts</code>'s risk ramp was re-synced so all four of
+			its stops are token values again. The board is kept because the reasoning is visible in it —
+			the
+			<em>now</em> column below is what shipped, the <em>next</em> column is what it replaced.
+		</p>
+		<p class="lab-note">
+			⚓ Nate 2026-08-12: <em
+				>"let's quickly talk about those, since they're close to the element colours, too"</em
+			>
+			— with three values Genshin uses: <code>#80DF66</code> · <code>#FFC700</code> ·
+			<code>#FF5A5A</code>.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>The question is not which trio is prettier.</strong> A UI state colour has to live BESIDE
+			the element palette without being mistaken for it, and it has to hold three different grounds. Every
+			row below is measured on both axes, and the two answers point opposite ways — which is the whole
+			result.
+		</p>
+
+		<!-- ── 11a · what we actually have ─────────────────────────────────── -->
+		<h3 class="lab-sub">First: we have FIVE values, not three</h3>
+		<p class="lab-note">
+			The tokens were taken <em>from</em> the crit visualizer's risk ramp (⚓ Nate's pick), so the
+			chart is the parent and not a copy that drifted. But
+			<strong>the ramp has four stops and only two became tokens</strong>, and one of the other two
+			has since gone stale:
+		</p>
+		<div class="uistray">
+			{#each UI_STRAYS as s (s.hex)}
+				<div class="uistray-row">
+					<span class="uisw" style:background={s.hex}></span>
+					<code>{s.hex}</code>
+					<span class="uistray-note">{s.note}</span>
+				</div>
+			{/each}
+		</div>
+		<p class="lab-note">
+			🐛 <code>#4ecca3</code> is the finding worth acting on. <code>--ui-positive</code> was pushed
+			to <code>#51c89a</code> to escape the OLD anemo; the chart never followed, so
+			<strong>the family that was meant to be one value is now two</strong> —
+			<code>#4ecca3</code> still lives in <code>crit.ts</code>'s <code>RISK_STOPS</code> and in
+			<code>ArtifactInstrument</code>'s better/same/worse odds.
+		</p>
+
+		<!-- ── 11b · the two measurements ──────────────────────────────────── -->
+		<h3 class="lab-sub">Ours vs Genshin's — and they win opposite arguments</h3>
+		<div class="uigrid">
+			<div class="uigrid-row uigrid-row--head">
+				<span></span><span>swatch</span><span>nearest element</span><span>nearest bar</span>
+				{#each UI_GROUNDS as g (g.k)}<span>vs {g.label}</span>{/each}
+			</div>
+			{#each UI_ROWS as row (row.key)}
+				{#each [{ tag: `ours · ${row.token}`, hex: row.now, mine: false }, { tag: 'Genshin', hex: row.gen, mine: false }, { tag: 'ours, at their L', hex: UI_LIFTED[row.key], mine: true }] as cand (cand.tag)}
+					{@const n = nearestEl(cand.hex)}
+					<div class="uigrid-row" class:uigrid-row--mine={cand.mine}>
+						<span class="uigrid-tag">{row.label} · {cand.tag}</span>
+						<span class="uisw uisw--wide" style:background={cand.hex}></span>
+						<span class="uifig" class:uifig--bad={n.main.d < 0.05}
+							>{n.main.el} <b>{n.main.d.toFixed(3)}</b></span
+						>
+						<span class="uifig" class:uifig--bad={n.bar.d < 0.05}
+							>{n.bar.el} <b>{n.bar.d.toFixed(3)}</b></span
+						>
+						{#each UI_GROUNDS as g (g.k)}
+							<span class="uifig" class:uifig--bad={ratio(cand.hex, g.g) < 3}
+								><b>{r2(cand.hex, g.g)}</b></span
+							>
+						{/each}
+					</div>
+				{/each}
+			{/each}
+		</div>
+		<p class="lab-note">
+			🔎 <strong>Genshin's are brighter; ours are better separated.</strong> Their trio wins every
+			contrast column — their red is 2.80 against a star where ours is 2.06 — and loses the
+			separation column on two of three: their red sits <strong>ΔE .040 from pyro</strong> where
+			ours sits .099, and their green <strong>.045 from dendro</strong>. ⚠ At ~.05 two colours stop
+			reading as two. <strong>Genshin can afford that and we cannot:</strong> in their UI, element colour
+			is icons and inline text tags while state colour is buttons and numeric deltas — the two never share
+			a reading. Ours share a chart.
+		</p>
+
+		<!-- ── 11c · in context ────────────────────────────────────────────── -->
+		<h3 class="lab-sub">In context — ink, chip and button, on each ground</h3>
+		<p class="lab-note">
+			⚓ Nate asked to see them used. <strong
+				>Three forms, because a state colour is asked to do three different things and they fail
+				differently.</strong
+			>
+			As INK it needs 4.5:1 against the ground. As a soft CHIP the ink is the colour sitting on 18% of
+			itself, which is a
+			<em>much</em>
+			easier problem and hides a weak value. As a solid BUTTON the colour becomes the ground and something
+			else has to be the ink — so a pale value stops being legible as a surface and a dark one stops taking
+			white. ⚠ Judge the middle column last; it flatters everything.
+		</p>
+		<div class="uictx">
+			{#each UI_FORMS_GROUNDS as g (g.k)}
+				<div class="uictx-panel {g.cls}" class:uictx-panel--bare={!g.bg} style:background={g.bg}>
+					<div class="uictx-head">{g.label}</div>
+					{#each UI_ROLES as role (role.key)}
+						{@const nxt = g.k === 'paper' && role.nextLight ? role.nextLight : role.next}
+						<div class="uictx-role">{role.label}</div>
+						{#each [{ tag: 'was', c: role.now }, { tag: 'now', c: nxt }] as v (v.tag)}
+							<div class="uictx-row">
+								<span class="uictx-vtag">{v.tag}</span>
+								<span class="uictx-ink" style:color={v.c}>Not curated</span>
+								<span
+									class="uictx-chip"
+									style:color={v.c}
+									style:background="color-mix(in srgb, {v.c} 18%, transparent)">Not curated</span
+								>
+								<button
+									class="uictx-btn"
+									type="button"
+									style:background={v.c}
+									style:color={onFill(v.c)}>Not curated</button
+								>
+								<span class="uictx-r">{r2(v.c, g.bg ?? STAR)}:1</span>
+							</div>
+						{/each}
+					{/each}
+				</div>
+			{/each}
+		</div>
+		<p class="lab-note">
+			⚠ The ratio at the end of each row is the INK case — the colour against that panel's ground,
+			or against a star for the bare one. ⚠ On the paper panel the <em>now</em> provisional row is
+			the LIGHT rung (<code>{UI_PROVISIONAL_LIGHT}</code>), not <code>{UI_PROVISIONAL}</code>; see
+			below for why it has two. ⚠ The <em>was</em> rows are what each value replaced — for
+			provisional that is <code>--ui-danger</code>, because that is what was drawing the ∅.
+		</p>
+
+		<!-- ── 11d · the recommendation ────────────────────────────────────── -->
+		<h3 class="lab-sub">My suggestion — per token, not a set swap</h3>
+		<p class="lab-note">
+			⚠ <strong>The right move is the one this system has already made twice</strong> — keep our
+			HUES (they are the ones holding the separation) and spend LIGHTNESS. That is literally what
+			the <code>--ui-positive</code> note in <code>app.css</code> advises, and what
+			<code>--rx-quicken</code> did when the new anemo closed on it. But it does not apply evenly, so
+			the answer is three answers:
+		</p>
+		<p class="lab-note">
+			↻ <strong><code>--ui-warning</code> HOLDS at <code>#f4a261</code></strong> — ⚠ and this
+			REVERSES what this board said in its first draft. With three values the lift to
+			<code>{UI_LIFTED.warning}</code> was a pure win (4.16 → 5.44 on a star <em>and</em> geo
+			separation .070 → .106). <strong>The fourth value changes warning's job.</strong> Once a
+			yellow joins the family, warning's darker, more saturated orange is what makes the
+			orange/yellow pair read as two: <code>#f4a261</code> sits ΔE <strong>.122</strong> from
+			<code>#f6d365</code> where the lifted version sits <strong>.083</strong> — a third of the headroom
+			gone, and both become pale warm tones. 4.16 was never a problem; the lift was solving for comfort,
+			and the pair needs the separation more.
+		</p>
+		<p class="lab-note">
+			✅ <strong><code>--ui-positive</code> → {UI_LIFTED.positive}</strong> — it fixes a collision
+			that <em>today's bar rung made worse</em>. Shipped positive sits ΔE
+			<strong>.026 from <code>--el-anemo-bar</code></strong>, well inside the "not two colours" line
+			and the adjacency that actually happens — a green "saved" state beside an anemo bar. The lift
+			takes it to .072 and buys 4.11 → 5.18 on the star.
+		</p>
+		<p class="lab-note">
+			⛔ <strong><code>--ui-danger</code> stays at <code>#e63946</code></strong> — boxed in for
+			three independent reasons, which is why I would not touch it. <strong>(1)</strong> Lifting it
+			<em>halves</em>
+			the pyro separation, .099 → .050, because <strong>pyro IS a light red</strong> — there is
+			nowhere brighter for a red to go here. <strong>(2)</strong> It is the only one of the three
+			that works on PAPER (<strong>3.33:1</strong> on parchment-100, against warning's 1.65 and
+			positive's 1.66), and that is not hypothetical: the uncurated ∅ on a character card is
+			<code>--ui-danger</code>
+			on parchment. Genshin's red manages 2.44 there — no light UI, again.
+			<strong>(3)</strong> Its weak-looking 2.06 vs a star is measured against a ground it never sits
+			on; every consumer is ink on a card or a panel.
+		</p>
+
+		<!-- ── 11d · the ramp ──────────────────────────────────────────────── -->
+		<!-- ── 11e · the fourth value ──────────────────────────────────────── -->
+		<h3 class="lab-sub">Should there be a fourth? — yes, and it is already being drawn</h3>
+		<p class="lab-note">
+			⚓ Nate: <em
+				>"an orange for warning, and a yellow, like the <code>#f6d365</code>, freed up for another
+				use?"</em
+			>
+			<strong
+				>Yes — and the fourth value is not an invention. It is a SPLIT of what
+				<code>--ui-danger</code> is already doing.</strong
+			>
+			The census, counted by hand:
+			<code>--ui-danger</code> <strong>13 sites</strong> · <code>--ui-warning</code> 1 (the notation
+			editor's unknown-token squiggle) · <code>--ui-positive</code> 1 (the switch's checked track). And
+			the thirteen split cleanly in two:
+		</p>
+		<div class="uicensus">
+			{#each UI_DANGER_CENSUS as grp (grp.job)}
+				<div class="uicensus-grp" class:uicensus-grp--move={!grp.red}>
+					<div class="uicensus-job">
+						<span class="uisw" style:background={grp.red ? '#e63946' : UI_PROVISIONAL}></span>
+						{grp.job}
+					</div>
+					{#each grp.sites as s (s)}<div class="uicensus-site">{s}</div>{/each}
+				</div>
+			{/each}
+		</div>
+		<p class="lab-note">
+			🔎 <strong>Read the comments at those sites and none of them argues that RED is right.</strong
+			>
+			They argue about which FAMILY — "<code>--ui-danger</code>, not a domain color, a data-quality
+			consequence" appears verbatim on both name-marks — because state-vs-domain was the question
+			the dire-retirement round was answering. Red was simply the only rung available that wasn't
+			orange (which reads "you did something") or green. One of them gives the game away in its own
+			text: <code>.rp-active-text--danger</code> calls itself
+			<em>"warning-tinted text"</em> and then reaches for danger.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>And it is a tone bug at scale, not just a taxonomy one.</strong> "We haven't curated
+			frames for this character yet" is not an error, not destructive, and not the user's fault —
+			there is nothing to click. Drawn in red on 122 cards at once it reads as
+			<em>something is wrong with this character</em>. Yellow says "proceed, this isn't fully
+			known", which is the actual claim. 📌 The name I'd use is
+			<strong><code>--ui-provisional</code></strong> — it covers approximate timing and uncurated
+			and unknown-coverage in one word, where <code>--ui-unknown</code> would be wrong for timing we do
+			know approximately.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>IT NEEDS TWO RUNGS, and the light one is forced rather than chosen.</strong> One
+			consumer is on PAPER — the ∅ on a character card — and <code>{UI_PROVISIONAL}</code> is 1.16:1
+			there. Zoning is the existing pattern (<code>--accent</code> is gold-400 dark / gold-700
+			light), so <code>.ctx-light</code> takes <strong><code>{UI_PROVISIONAL_LIGHT}</code></strong>
+			at 3.02:1. ⛔
+			<strong>It sits at the GRAPHICAL floor, not the text floor, and it cannot go further:</strong>
+			walking it to 4.5:1 lands on <code>#786529</code>, which is ΔE
+			<strong>.030 from <code>--gold-700</code></strong> — it IS the light accent, and gold on paper already
+			means "a gap you can click". So provisional may be a MARK on paper and must never be prose ink there.
+			That constraint is the one thing to write into the token if it ships.
+		</p>
+
+		<!-- ── 11f · the ramp ──────────────────────────────────────────────── -->
+		<h3 class="lab-sub">The crit visualizer's Hits / Rotation ramp</h3>
+		<p class="lab-note">
+			⚓ Nate asked whether those are our current values. <strong>Two of four exactly</strong> —
+			<code>#e63946</code> is <code>--ui-danger</code> and <code>#f4a261</code> is
+			<code>--ui-warning</code>. <code>#f6d365</code> has no token at all, and
+			<code>#4ecca3</code> is the pre-nudge positive. Drawn at the slider's own size:
+		</p>
+		<div class="uiramps">
+			{#each [{ k: 'ours — shipped, 4 stops', s: RAMP_NOW }, { k: 'Genshin’s three', s: RAMP_GENSHIN }, { k: 'the suggestion — all four are tokens', s: RAMP_LIFTED }] as g (g.k)}
+				<div class="uiramp-row">
+					<span class="uiramp-tag">{g.k}</span>
+					<span class="uiramp" style:background={ramp(g.s)}></span>
+					<span class="uiramp-hex">{g.s.join(' ')}</span>
+				</div>
+			{/each}
+		</div>
+		<p class="lab-note">
+			🔎 <strong
+				>Genshin's makes a visibly different object, and the stop COUNT does more of that than the
+				hues.</strong
+			>
+			Three stops put the midpoint at pure yellow, so it reads red → yellow → green in three clean bands.
+			Ours has four, and the extra <code>#f6d365</code> between orange and teal is what gives it its
+			long warm shoulder — the thing that makes it read as a <em>risk</em> gradient rather than a
+			traffic light. ⚠ If the tokens ever move,
+			<strong>the ramp is a separate decision</strong>: § Laws says a UI state colour must not
+			appear inside a visualization, and the only reason these coincide is that the chart got there
+			first.
+		</p>
+		<p class="lab-note">
+			🔎 <strong>And notice what the third row is.</strong> With <code>#f6d365</code> promoted to
+			<code>--ui-provisional</code>, every one of the four stops is a token —
+			<strong>the chart that fathered this family would finally be spelled entirely in it</strong>,
+			which is the best evidence that four is the right count and not three. The only value still
+			differing would be <code>#4ecca3</code> → <code>{UI_LIFTED.positive}</code>, which is the
+			drift 11a opened with.
 		</p>
 	</section>
 </div>
@@ -3172,5 +3641,211 @@
 	.barmatrix-sw {
 		height: 14px;
 		border-radius: 2px;
+	}
+
+	/* ══ 11 · UI STATE COLOURS ════════════════════════════════════════════════ */
+	.uisw {
+		display: inline-block;
+		width: 22px;
+		height: 18px;
+		border-radius: 2px;
+		flex: none;
+	}
+	.uisw--wide {
+		width: 100%;
+	}
+	.uistray {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		margin-bottom: 1rem;
+	}
+	.uistray-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.uistray-note {
+		opacity: 0.75;
+	}
+
+	.uigrid {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		margin-bottom: 1rem;
+	}
+	.uigrid-row {
+		display: grid;
+		grid-template-columns: 17rem 5rem repeat(5, minmax(0, 7rem));
+		gap: 0.5rem;
+		align-items: center;
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.uigrid-row--head {
+		font-size: var(--fs-2xs);
+		text-transform: uppercase;
+		letter-spacing: var(--ls-wide);
+		opacity: 0.7;
+		margin-bottom: 0.2rem;
+	}
+	/* The proposal rows get a rule rather than a box — same reasoning as the bar
+	   board's pick marker: on the bare scene a box competes with the swatches. */
+	.uigrid-row--mine {
+		border-left: 2px solid var(--accent);
+		padding-left: 0.5rem;
+		margin-left: -0.7rem;
+		margin-bottom: 0.5rem;
+	}
+	.uigrid-tag {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.uifig {
+		font-size: var(--fs-xs);
+		opacity: 0.85;
+	}
+	.uifig b {
+		font-family: var(--font-mono);
+		font-variant-numeric: tabular-nums;
+	}
+	/* ⚠ NOT --ui-danger. This board is ABOUT --ui-danger, and marking its own
+	   failures in the value under discussion would move with the thing being
+	   judged. --accent is the one hue on this page that is not on trial. */
+	.uifig--bad {
+		color: var(--accent);
+		opacity: 1;
+	}
+
+	.uiramps {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		margin-bottom: 1rem;
+	}
+	.uiramp-row {
+		display: grid;
+		grid-template-columns: 17rem minmax(0, 22rem) 1fr;
+		gap: 0.7rem;
+		align-items: center;
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	/* The slider track's own geometry — 6px tall, fully rounded. A ramp judged
+	   at swatch height is a different object from a ramp judged as a track. */
+	.uiramp {
+		height: 6px;
+		border-radius: 3px;
+	}
+	.uiramp-hex {
+		font-family: var(--font-mono);
+		font-size: var(--fs-2xs);
+		opacity: 0.6;
+	}
+
+	/* ── 11c · the in-context panels ─────────────────────────────────────────
+	   Three real grounds side by side. ⚠ The night panel paints NOTHING — a
+	   colour judged against a swatch of "dark" is not judged against the world,
+	   and the world is what half these marks sit on. */
+	.uictx {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+	.uictx-panel {
+		padding: 0.9rem 1rem 1.1rem;
+		border-radius: var(--r-sm);
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 0.15rem;
+	}
+	.uictx-panel--bare {
+		box-shadow: inset 0 0 0 1px var(--line-soft);
+	}
+	.uictx-head {
+		font-size: var(--fs-2xs);
+		text-transform: uppercase;
+		letter-spacing: var(--ls-wide);
+		color: var(--muted);
+		margin-bottom: 0.5rem;
+	}
+	.uictx-role {
+		margin-top: 0.55rem;
+		font-size: var(--fs-2xs);
+		text-transform: uppercase;
+		letter-spacing: var(--ls-wide);
+		color: var(--text);
+		opacity: 0.55;
+	}
+	.uictx-row {
+		display: grid;
+		grid-template-columns: 2.2rem 1fr 1fr 1fr 2.6rem;
+		gap: 0.35rem;
+		align-items: center;
+	}
+	.uictx-vtag {
+		font-size: var(--fs-2xs);
+		color: var(--text);
+		opacity: 0.5;
+	}
+	.uictx-ink,
+	.uictx-chip,
+	.uictx-btn {
+		font-family: var(--font-body);
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		white-space: nowrap;
+		text-align: center;
+		padding: 3px 6px;
+		border-radius: 3px;
+	}
+	.uictx-btn {
+		border: none;
+		font: inherit;
+		font-weight: var(--fw-semibold);
+		cursor: default;
+	}
+	.uictx-r {
+		font-family: var(--font-mono);
+		font-size: var(--fs-2xs);
+		color: var(--text);
+		opacity: 0.6;
+		text-align: right;
+	}
+
+	/* ── 11e · the census ────────────────────────────────────────────────── */
+	.uicensus {
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+		margin-bottom: 1rem;
+	}
+	.uicensus-job {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
+		margin-bottom: 0.3rem;
+	}
+	.uicensus-site {
+		font-family: var(--font-mono);
+		font-size: var(--fs-2xs);
+		color: var(--text);
+		opacity: 0.7;
+		padding-left: 1.9rem;
+	}
+	/* The group that would MOVE gets the rule — same marker the proposal rows
+	   use, so "this is the change" reads the same way twice on one page. */
+	.uicensus-grp--move {
+		border-left: 2px solid var(--accent);
+		padding-left: 0.6rem;
+		margin-left: -0.8rem;
 	}
 </style>

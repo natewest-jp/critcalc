@@ -566,8 +566,10 @@
 		   stub note — a data-quality state, not a domain colour. A TOKEN
 		   correction only; the Compare view's own restyle is deliberately parked
 		   until after the Rotation Planner round (⚓ Nate), and this leaves it one
-		   less inherited bug to carry into it. */
-		color: color-mix(in srgb, var(--ui-danger) 80%, var(--muted));
+		   less inherited bug to carry into it.
+		   ↻ 2026-08-12: --ui-provisional now, moving with the ∅ and the two notes
+		   above. Still a token correction only; Compare's restyle stays parked. */
+		color: color-mix(in srgb, var(--ui-provisional) 80%, var(--muted));
 	}
 	.cmp-chip-remove {
 		background: none;

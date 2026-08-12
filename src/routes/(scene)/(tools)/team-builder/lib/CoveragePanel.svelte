@@ -366,10 +366,14 @@
 	   the three finally agree. It was on a borrowed element token, and gold was
 	   doubly wrong beside it: --accent already carries "a gap you can click" two
 	   rules up, so the unknown state was wearing the gap's colour while being
-	   the one chip you CAN'T act on. */
+	   the one chip you CAN'T act on.
+	   ↻ 2026-08-12: --ui-provisional, and the SAME objection applies one rung
+	   over. That fix was right about the family and had only red available; red
+	   says "error" about a chip that reports what WE haven't finished. The three
+	   still agree — they moved together. */
 	.ts-cov--unknown {
-		color: color-mix(in srgb, var(--ui-danger) 80%, var(--text));
-		background: var(--ui-danger-soft);
+		color: color-mix(in srgb, var(--ui-provisional) 80%, var(--text));
+		background: var(--ui-provisional-soft);
 		cursor: help;
 	}
 </style>

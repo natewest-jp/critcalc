@@ -687,22 +687,50 @@
 	   saturation is plenty of separation, so warning is no longer restricted to
 	   small marks.
 
-	   ⚠⚠ --ui-positive's ANEMO NOTE HAS INVERTED, and the value has NOT been
-	   changed to match — ⚓ this family is Nate's and a re-tune is his call.
-	   The note used to read: the gradient's own teal (#4ecca3) sat within 5° of
-	   --el-anemo-main (then #4ecbb4), so it was pushed greener to h157 to buy
-	   separation. The 2026-08-11 palette swap moved anemo to Genshin's spring
-	   green (#33d7a0) — which is the direction the nudge went. Measured now:
+	   ══ THE FAMILY IS FOUR (⚓ NATE 2026-08-12) ═════════════════════════════
+	   It was three, and --ui-danger was quietly doing two jobs at thirteen
+	   sites. Counted:
 
-	     #4ecca3 (the un-nudged teal) vs new anemo   Δhue  3.1°   ΔE .034
-	     #51c89a (SHIPPED, the nudge)  vs new anemo   Δhue  0.4°   ΔE .041
+	     a destructive ACTION      SettingsPanel, BandMenu, BenchBand remove
+	     data is INCOMPLETE        the ∅ on 122 cards + its bench twin, the
+	                               planner's generic-timing text and isApprox
+	                               fill, CoveragePanel's unknown chip,
+	                               DetailCard + CompareView's stub labels
 
-	   So the push no longer buys separation, it COSTS it, and the shipped value
-	   now sits below the ~.05 line where two colours stop reading as two. Both
-	   candidates are close; neither escapes by hue any more, because anemo now
-	   owns that hue. If this matters in practice the axis to spend is
-	   LIGHTNESS, not hue — the same move --rx-quicken just made for the same
-	   reason. Flagged, measured, and left alone.
+	   ⚠ THE SECOND GROUP IS NOT AN ERROR. It is a provenance statement: nothing
+	   to click, nothing the user did, nothing wrong with the character. Red on
+	   122 cards at once reads as "something is broken here". The comments at
+	   those sites all argued about which FAMILY (state vs domain, which is what
+	   the dire-retirement round was settling) and none of them argued that RED
+	   was right — red was simply the only rung left that wasn't orange (which
+	   reads "you did something") or green. One said so outright:
+	   .rp-active-text--danger described itself as "warning-tinted text".
+	   So they move to --ui-provisional, and --ui-danger goes back to meaning a
+	   verb.
+
+	   ⚠ --ui-warning HOLDS at #f4a261, and that is a REVERSAL of what a
+	   three-value analysis said. Lifting it to #f7c49d was a pure win on its
+	   own (4.16 → 5.44 vs a star, geo separation .070 → .106) — but once a
+	   yellow joins the family, warning's darker, more saturated orange is what
+	   keeps the orange/yellow pair reading as two: #f4a261 is ΔE .122 from
+	   #f6d365 where the lifted version is .083. The pair needs the separation
+	   more than warning needed the comfort.
+
+	   ✅ --ui-positive's ANEMO COLLISION IS FIXED, by lightness, exactly as the
+	   note this replaces predicted it would have to be. The history is worth
+	   keeping: the gradient's own teal (#4ecca3) sat within 5° of the OLD
+	   --el-anemo-main (#4ecbb4), so it was pushed greener to h157 (#51c89a).
+	   The 2026-08-11 swap moved anemo to Genshin's spring green — the direction
+	   the nudge had gone — so the push started COSTING separation instead of
+	   buying it, and the bar rung made it worse still:
+
+	     #51c89a (the old nudge) vs --el-anemo-main   ΔE .041
+	     #51c89a                 vs --el-anemo-bar    ΔE .026  ← not two colours
+	     #5be0ac (SHIPPED now)   vs --el-anemo-bar    ΔE .072
+
+	   Same hue, Genshin's lightness. ⚠ THE LESSON, twice proven here and at
+	   --rx-quicken: when an element closes on a UI colour, spend LIGHTNESS. Hue
+	   is what the element owns.
 	   ✅ --ui-warning vs --rx-burning is RESOLVED, not by touching --ui-warning
 	   but because burning was banked down to an ember in the same round: they
 	   were ΔE .051 and are now .095.
@@ -723,11 +751,17 @@
 	   real as a semantic (§ Laws forbids spending a STATE colour on prose
 	   emphasis) but it has no consumer, and no speculative abstractions. */
 	--ui-danger: #e63946; /* destroy · discard · invalid input */
-	--ui-warning: #f4a261; /* parse warning · unknown token · not yet curated */
-	--ui-positive: #51c89a; /* saved · on · valid */
+	--ui-warning: #f4a261; /* parse warning · unknown token — a CAUTION you caused */
+	--ui-positive: #5be0ac; /* saved · on · valid */
+	/* ⚠ NOT a caution and NOT an error — a PROVENANCE statement. "We have not
+	   curated this yet", "this timing is approximate", "coverage unknown".
+	   Nothing to click, nothing the user did. See the block above for the census
+	   that split it out of --ui-danger. */
+	--ui-provisional: #f6d365;
 	--ui-danger-soft: color-mix(in srgb, var(--ui-danger) 18%, transparent);
 	--ui-positive-soft: color-mix(in srgb, var(--ui-positive) 18%, transparent);
 	--ui-warning-soft: color-mix(in srgb, var(--ui-warning) 18%, transparent);
+	--ui-provisional-soft: color-mix(in srgb, var(--ui-provisional) 18%, transparent);
 
 	/* ══ GEOMETRY ══════════════════════════════════════════════════════════════
 	   ↻ 2026-08-07 (⚓ NATE — TEST VALUES, not law yet): the scale collapses from
@@ -1513,6 +1547,24 @@
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
+	/* ⚠ THE ONLY UI STATE COLOUR THAT IS ZONED, and it has to be: --ui-provisional
+	   is #f6d365 on dark and 1.16:1 on this paper, and one of its consumers —
+	   the ∅ on a character card — lives HERE. Same move as the accent above:
+	   same hue, carried down. 3.02:1.
+
+	   ⛔ IT SITS AT THE GRAPHICAL FLOOR (3:1) AND MAY NOT GO FURTHER, so
+	   PROVISIONAL IS A MARK ON PAPER AND NEVER PROSE INK. Walking it to the 4.5:1
+	   text floor lands on #786529 — ΔE .030 from --gold-700, i.e. it IS the light
+	   accent, and gold on paper already means "a gap you can click". A provisional
+	   state wearing the actionable colour is the exact confusion the TB card round
+	   fixed on the coverage chip; do not re-create it here.
+
+	   ⚠ The other three are NOT zoned, and that is a decision rather than an
+	   oversight: danger is the only one of them that works on paper at all
+	   (3.33:1, against warning's 1.65 and positive's 1.66), and the other two have
+	   no paper consumers. If one ever gains a paper consumer it needs a rung here,
+	   not a nudge at :root. */
+	--ui-provisional: #998136;
 	--knob: var(--muted);
 	/* The promoted control ink flips to the DARKEST thing this context owns —
 	   see --ink-active at :root for why it can't stay --text here. */

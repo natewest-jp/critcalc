@@ -130,8 +130,12 @@ const BAR_EDGE = '#696f7d';
 // the unification made that explicit rather than incidental.
 const BAR_LABEL = '#fff';
 // Generic-timing (no-frame-map) marks are a DATA-QUALITY state, not a domain
-// color — they ride --ui-danger (the marks left dire 2026-08-05).
-const UI_DANGER = '#e63946';
+// color (the marks left dire 2026-08-05).
+// ↻ 2026-08-12: they ride --ui-provisional, not --ui-danger. The state family
+// grew a fourth value for exactly this — "our data is incomplete" is a
+// provenance statement, not an error — and the two on-screen rules this mirrors
+// moved with it. ⚠ The :root rung, not the ctx-light one: the chart is dark.
+const UI_PROVISIONAL = '#f6d365';
 // The circular backing behind a (transparent-background) avatar in the label
 // column. ↻ 2026-08-05 (archetype consistency pass): was the LIGHT context's
 // #f2f2ec, mirroring the `ctx-light` class SlotPortrait used to carry. That
@@ -543,6 +547,18 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		tileBloom(px, py, pw, ph, 127, 15, 0.25, 26, 10, '#e1a566', 0.7);
 		tileBloom(px, py, pw, ph, 173, 60, 0.75, 34, 12, '#e1a566', 0.72);
 		tileBloom(px, py, pw, ph, 211, 160, 0.3, 24, 12, mix('#70e1c1', '#e1a566', 55), 0.82);
+		// ↻ 2026-08-12: the buff register's 2px left edge came to this lane.
+		// ⚠ TWO THINGS DIFFER FROM THE BUFF BARS' EDGE AND BOTH MATTER.
+		// (1) It is painted INSIDE the clip and AFTER the tiles: this fill is a
+		//     stack of tiled layers, not one colour, so drawing it first buries it.
+		// (2) It uses REAL ALPHA, not BAR_EDGE. That literal is white .3
+		//     composited against BAR_FILL — the glass bar's ground — and this
+		//     lane's ground is a bright phlogiston orange, so the literal would
+		//     paint a grey-blue smear here. Over an already-painted canvas the
+		//     alpha resolves correctly on its own; the literal only exists for
+		//     bars whose ground the exporter has to model rather than draw.
+		ctx!.fillStyle = 'rgba(255, 255, 255, 0.3)';
+		ctx!.fillRect(px, py, 2, ph);
 		ctx!.restore();
 	}
 
@@ -568,6 +584,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			[0.8, alpha('#ef8e91', 0.2)],
 			[1, alpha('#ef8e91', 0)]
 		]);
+		// The 2px left edge — real alpha over the painted tiles; see paintNbBar
+		// for why this is not BAR_EDGE.
+		ctx!.fillStyle = 'rgba(255, 255, 255, 0.3)';
+		ctx!.fillRect(px, py, 2, ph);
 		ctx!.restore();
 	}
 
@@ -671,13 +691,13 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					const bx = x(block.start);
 					const bw = barGeomW(block.start, block.duration);
 					const kind = block.kind;
-					// No-frame-map N/C/P (everything but E/Q): danger gradient fill
+					// No-frame-map N/C/P (everything but E/Q): provisional gradient fill
 					// left→right, mirroring the on-screen linear-gradient.
 					const approxToken = slot.isApprox && kind !== 'skill' && kind !== 'burst';
 					if (kind === 'unset') {
 						return;
 					} else if (approxToken) {
-						const [dr, dg, db] = hexToRgb(UI_DANGER);
+						const [dr, dg, db] = hexToRgb(UI_PROVISIONAL);
 						const grad = ctx!.createLinearGradient(bx, 0, bx + bw, 0);
 						grad.addColorStop(0, `rgba(${dr}, ${dg}, ${db}, 0.25)`);
 						grad.addColorStop(1, `rgba(${dr}, ${dg}, ${db}, 0)`);
@@ -697,9 +717,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						ctx!.fillStyle = 'rgba(8, 18, 37, 0.2)';
 						ctx!.fillRect(bx + bw - 1, rowTop + 1, 1, snap.activeRowH - 2);
 					}
-					// label — danger tinted on no-frame-map N/C/P tokens (mirrors
+					// label — provisional tinted on no-frame-map N/C/P tokens (mirrors
 					// .rp-active-text--danger)
-					ctx!.fillStyle = approxToken ? mix('#ffffff', UI_DANGER, 50) : '#fff';
+					ctx!.fillStyle = approxToken ? mix('#ffffff', UI_PROVISIONAL, 50) : '#fff';
 					ctx!.font = `600 10px ${SANS}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);

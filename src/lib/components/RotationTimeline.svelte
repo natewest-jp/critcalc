@@ -1506,7 +1506,7 @@
 												style:background={isApprox &&
 												block.kind !== 'skill' &&
 												block.kind !== 'burst'
-													? 'linear-gradient(to right, color-mix(in srgb, var(--ui-danger) 20%, transparent), transparent)'
+													? 'linear-gradient(to right, color-mix(in srgb, var(--ui-provisional) 20%, transparent), transparent)'
 													: block.kind === 'skill' ||
 														  block.kind === 'burst' ||
 														  block.kind === 'elemental-normal'
@@ -2555,13 +2555,42 @@
 	   fill to fix "too bright" makes it thinner as well as darker, and on a
 	   translucent chart that reads as a different MATERIAL rather than a
 	   different colour — which is a change nobody asked for, applied to the two
-	   lanes whose fills are the most deliberately authored on the chart. The
-	   fix is the palette, and the palette round is next.
+	   lanes whose fills are the most deliberately authored on the chart.
 	   ⛔ So the fill is back on the bar itself and the ::before is gone; the
 	   export's globalAlpha went with it. Don't reintroduce either as a
-	   brightness lever. */
+	   brightness lever.
+
+	   ✅ CLOSED 2026-08-12, AND NOT THE WAY THE NOTE ABOVE EXPECTED. The element
+	   colours did move (twice — Genshin's palette, then the `bar` rung), and
+	   ⚓ Nate looked again: "they fit in pretty well with the new bars. Let's keep
+	   them for now." No palette change here.
+
+	   🐛 AND THE PREMISE WAS WRONG ANYWAY — worth recording so nobody re-opens it
+	   on the old reasoning. Measured against the shipped bar rung, these two are
+	   DARKER than every element bar and their labels read BETTER:
+	     brightest element bar (cryo #50e1e2)  lum .610  white-on-fill 1.59
+	     NB       #f85b21 → #e1a566            lum .275–.439      2.15–3.23
+	     moonsign #b0a9ff → #bea1ff            lum .437–.448      2.11–2.16
+	   "Too bright" was never a luminance fact, so darkening the palette — the fix
+	   this note assumed — was aimed at the wrong axis. The likelier reading is
+	   that they are the LAST TWO LIT BARS on a chart that was flattened
+	   (castFill() went flat the same day); busy reads as bright. Left alone
+	   because Nate's eye is the verdict and his eye now says they fit. ⚠ If it
+	   ever comes back, try FLATTENING before re-colouring. */
+	/* ⚓ NATE 2026-08-12: the buff register's 2px left edge comes to these two.
+	   It was the buff/proc bars' alone because it was justified by GLASS — two
+	   translucent bars sharing a span stack into one slab with no seam, and every
+	   opaque bar draws its own boundary by covering what is behind it. That is
+	   still true, but it is not the only thing the edge does: it is the annotation
+	   register's tell, and NB and moonsign are annotation lanes. Now that they sit
+	   beside deeper element bars rather than brighter ones, the edge is what says
+	   these belong to the same family as the buffs above them.
+	   ⚠ Declared here rather than on the shared rule because the two lanes carry
+	   their own multi-stop fills; box-sizing is border-box so the 2px comes OUT of
+	   the width and no bar ends 2px late. */
 	.rp-nb-bar {
 		--label-halo: #f85b21;
+		border-left: 2px solid rgb(255 255 255 / 0.3);
 	}
 
 	/* ── Moonsign lane ───────────────────────────────────────── */
@@ -2597,7 +2626,9 @@
 		position: absolute;
 		top: 0;
 		height: 100%;
-		/* Buff-bar label grammar: icon + label ranged left, same inset. */
+		/* Buff-bar label grammar: icon + label ranged left, same inset — and
+		   since 2026-08-12 the buff register's 2px edge too; see .rp-nb-bar. */
+		border-left: 2px solid rgb(255 255 255 / 0.3);
 		display: flex;
 		align-items: center;
 		gap: 4px;
@@ -2948,12 +2979,19 @@
 		font-weight: var(--fw-semibold);
 		color: #fff;
 	}
-	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: warning-
-	   tinted text, marking the actions whose timing is generic. --ui-danger,
-	   not a domain color — approximate timing is a consequence to the user's
-	   data, not a game fact (dire-retirement round, 2026-08-05). */
+	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: marking the
+	   actions whose timing is generic. Not a domain color — approximate timing
+	   is a consequence to the user's data, not a game fact (dire-retirement
+	   round, 2026-08-05).
+	   ↻ 2026-08-12: --ui-provisional, and THIS RULE ASKED FOR IT IN WRITING. Its
+	   own comment called the effect "warning-tinted text" and then reached for
+	   --ui-danger, because in a three-value family there was nothing between
+	   "you did something wrong" and "everything is fine". Approximate timing is
+	   neither: it is a statement about what WE know. The class keeps its
+	   --danger suffix for now — renaming it means touching the projection that
+	   emits it, and the token is the part that was lying. */
 	.rp-active-text--danger {
-		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--ui-danger));
+		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--ui-provisional));
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */
