@@ -420,8 +420,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// 2026-08-11 (the top-light was depth against a raised frame that no longer
 	// exists). Colour is one of the things the export does still track; see the
 	// decoupling note at the top of this file for what it doesn't.
-	function paintCastFill(px: number, py: number, pw: number, ph: number, main: string) {
-		ctx!.fillStyle = main;
+	function paintCastFill(px: number, py: number, pw: number, ph: number, bar: string) {
+		ctx!.fillStyle = bar;
 		rr(px, py, pw, ph, 1);
 		ctx!.fill();
 	}
@@ -452,9 +452,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx!.restore();
 	}
 
-	/** The two halo shadow colors for an element-main hex (dark shade, −30 L) */
-	function elementHalo(main: string): [string, string] {
-		return [shiftHue(main, 0, -30, 0.25), shiftHue(main, 0, -30, 0.5)];
+	/** The two halo shadow colors for a BAR-rung hex (dark shade, −30 L).
+	 *  ⚠ The bar rung, not `main` — the halo's job is to hold white ink off the
+	 *  fill it sits on, so it has to be that fill's own shade. Mirrors
+	 *  --label-halo in RotationTimeline, which moved the same day. */
+	function elementHalo(bar: string): [string, string] {
+		return [shiftHue(bar, 0, -30, 0.25), shiftHue(bar, 0, -30, 0.5)];
 	}
 
 	// ── NB / Moonsign layered-tile fills — mirror the on-screen CSS ──
@@ -571,14 +574,15 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// ── Per-slot ghost CD tracks first (z:0), then connectors (z:1),
 	//    then solid bars (z:2) — the on-screen sandwich. ──
 
-	type GhostDraw = { px: number; pw: number; py: number; ph: number; main: string; cd: number };
+	type GhostDraw = { px: number; pw: number; py: number; ph: number; barColor: string; cd: number };
 	const ghosts: GhostDraw[] = [];
 
 	function collectBarPhases(
 		bar: ExportBar,
 		rowTop: number,
 		rowH: number,
-		main: string,
+		/** ⚠ The `bar` RUNG, not `main` — every use below is a fill. */
+		barColor: string,
 		badge: string,
 		solids: Array<() => void>
 	) {
@@ -596,14 +600,14 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				ctx!.font = `700 9px ${SANS}`;
 				ctx!.textAlign = 'left';
 				if (dim) {
-					ctx!.fillStyle = mix(main, CHART_BG, UPTIME_DIM_MIX);
+					ctx!.fillStyle = mix(barColor, CHART_BG, UPTIME_DIM_MIX);
 					rr(px, py, pw, ph, 1);
 					ctx!.fill();
 					// Dim continuation keeps the white+halo treatment.
 					ctx!.fillStyle = '#fff';
-					haloText(badge, px + 4, py + ph / 2 + 3, ...elementHalo(main));
+					haloText(badge, px + 4, py + ph / 2 + 3, ...elementHalo(barColor));
 				} else {
-					paintCastFill(px, py, pw, ph, main);
+					paintCastFill(px, py, pw, ph, barColor);
 					// Full-strength castFill carries dark ink, no halo — mirrors
 					// .rp-bar-row-badge (bright-chip idiom, 2026-08-01).
 					ctx!.fillStyle = INK;
@@ -617,7 +621,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				pw: barGeomW(start, span),
 				py: ghostY,
 				ph: ghostH,
-				main,
+				barColor,
 				cd
 			});
 		};
@@ -643,9 +647,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 		for (const track of slot.tracks) {
 			for (const bar of track.eBars)
-				collectBarPhases(bar, top + snap.charPadTop, snap.eRowH, p.main, bar.label, solidDraws);
+				collectBarPhases(bar, top + snap.charPadTop, snap.eRowH, p.bar, bar.label, solidDraws);
 			for (const bar of track.qBars)
-				collectBarPhases(bar, top + slot.qRowTop, snap.qRowH, p.main, bar.label, solidDraws);
+				collectBarPhases(bar, top + slot.qRowTop, snap.qRowH, p.bar, bar.label, solidDraws);
 		}
 
 		// Active strip + input blocks (solid layer)
@@ -679,7 +683,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						grad.addColorStop(1, `rgba(${dr}, ${dg}, ${db}, 0)`);
 						ctx!.fillStyle = grad;
 					} else if (kind === 'skill' || kind === 'burst' || kind === 'elemental-normal') {
-						ctx!.fillStyle = mix(p.main, ACTIVE, 50);
+						ctx!.fillStyle = mix(p.bar, ACTIVE, 50);
 					} else {
 						// Movement and every other non-infused input: the active strip's
 						// own color, no extra fill (mirrors the on-screen rule — only
@@ -713,7 +717,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					// Full-strength castFill — same finish as the E/Q pills;
 					// full row height (matches the buff bars — no inset).
 					// Dark ink, no halo — mirrors .rp-summon-label (2026-08-01).
-					paintCastFill(px, rowTop, pw, snap.summonRowH, p.main);
+					paintCastFill(px, rowTop, pw, snap.summonRowH, p.bar);
 					ctx!.fillStyle = INK;
 					ctx!.font = `700 9px ${SANS}`;
 					ctx!.textAlign = 'left';
@@ -844,12 +848,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// z:0 — ghosts (chroma-dropped before mixing — recessive structure; the
 	// desaturate/mix pairing mirrors the DOM's ghost rules exactly)
 	for (const g of ghosts) {
-		ctx.fillStyle = mix(desaturate(g.main, GHOST_CHROMA_KEEP), CHART_BG, GHOST_FILL_MIX);
+		ctx.fillStyle = mix(desaturate(g.barColor, GHOST_CHROMA_KEEP), CHART_BG, GHOST_FILL_MIX);
 		rr(g.px, g.py, g.pw, g.ph, 1);
 		ctx.fill();
 		// 1px outline on top/right/bottom (left stays open — the track flows out
 		// of the cast pill); the right edge still marks the exact ready moment.
-		ctx.fillStyle = mix(desaturate(g.main, GHOST_CHROMA_KEEP), CHART_BG, GHOST_EDGE_MIX);
+		ctx.fillStyle = mix(desaturate(g.barColor, GHOST_CHROMA_KEEP), CHART_BG, GHOST_EDGE_MIX);
 		ctx.fillRect(g.px, g.py, g.pw, 1); // top
 		ctx.fillRect(g.px + g.pw - 1, g.py, 1, g.ph); // right
 		ctx.fillRect(g.px, g.py + g.ph - 1, g.pw, 1); // bottom
@@ -861,7 +865,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				`${Math.round(g.cd * 10) / 10}s`,
 				g.px + g.pw / 2,
 				g.py + g.ph / 2 + 3,
-				...elementHalo(g.main)
+				...elementHalo(g.barColor)
 			);
 		}
 	}
@@ -1039,6 +1043,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			ctx.drawImage(avatar, px + (size - s) / 2, py + (size - s) / 2 - size * 0.14, s, s);
 		}
 		ctx.restore();
+		// ⚠ `main`, and it stays `main`: this is a RING, not a fill with ink on
+		// it, and the bar rung must not creep into the element's identity uses
+		// (see the ⛔ at --el-* in app.css). Same for the C-level readout below.
 		ctx.strokeStyle = p.main;
 		ctx.lineWidth = 1.5;
 		ctx.beginPath();

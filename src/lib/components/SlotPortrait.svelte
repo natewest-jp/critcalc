@@ -603,9 +603,13 @@
 	   quietly stopped being the name's peer. 18 restores the ratio it was built
 	   at (1.25 × the name's size — glyph a touch taller than the cap, which is
 	   how the in-game cards draw it).
-	   ⚠ The roster card's .cc-el has the SAME staleness at both of its bands
-	   (14px and 16px names, still a 15px glyph) and is deliberately NOT swept
-	   here — that's a roster-card call, not a bench one. */
+	   ⚠ THE TWO FAMILIES HAVE PARTED HERE, deliberately, and this is the last
+	   place they still agree about the idiom. On 2026-08-12 the roster card's
+	   .cc-el moved OUT of its name row and into the portrait's top-left corner,
+	   following Genshin's own character cards; the bench's badge stays inline
+	   because this card has no portrait corner to put it in — the portrait is a
+	   disc, and its corners are outside the art. So the sizing rule above no
+	   longer has a roster twin to stay in step with: it is this card's alone. */
 	.sp-el-badge {
 		flex-shrink: 0;
 		width: 18px;

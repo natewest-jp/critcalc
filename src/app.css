@@ -961,13 +961,22 @@
 
 	   THE SLOTS, and what each is FOR:
 	     main   Genshin's ICON palette — measured off the flat-colour source art
-	            (one colour per file, so not an estimate). The identity FILL:
-	            bars, discs, pips, the tinted glyphs.
+	            (one colour per file, so not an estimate). The element's
+	            IDENTITY: glyphs, discs, pips, washes, rings.
 	     hi     Genshin's IN-TEXT palette — the `<color=#rrggbbff>` tag the game
 	            wraps elemental words in, counted out of the genshin-db
 	            devDependency (8891 uses of the cryo one alone). The element as
 	            INK or a bright mark on a dark ground.
+	     bar    DERIVED FROM main (2026-08-12). A FILL WITH WHITE WRITTEN ON IT —
+	            the planner's cast pills and their phases, the summon lane, the
+	            Team Builder's Compare bars. See the block below it.
 	     border main at 0.5 alpha. Translucent uses — bars, cast markers.
+
+	   ⚠ TWO OF THE FOUR ARE TRANSCRIBED AND TWO ARE DERIVED, and the line between
+	   them is the one rule this block has: `main` and `hi` are TABLES COPIED OUT
+	   OF THE GAME and are not to be re-tuned as a set. `bar` and `border` are
+	   functions of `main`. Adding a derived rung is how this palette grows; a
+	   fifth transcribed one would have to come from Genshin.
 
 	   ⚠ `hi` IS NOT "main mixed with white" ANY MORE. It used to be, and the
 	   change is the useful part: Genshin derives their in-text set from their
@@ -991,12 +1000,61 @@
 
 	   The runtime mirror is src/lib/utils/elementColors.ts and the two are
 	   locked together by timelineExport.mirror.test.ts. The tinted icons are a
-	   BUILD ARTIFACT of `main` — scripts/generate-element-icons.mjs. */
+	   BUILD ARTIFACT of `main` — scripts/generate-element-icons.mjs.
+
+	   ══ THE `bar` RUNG (⚓ NATE 2026-08-12) ═════════════════════════════════
+	   ⚓ "We rejected a deeper rung for icons, but I think we might need a deeper
+	   rung for things like BARS — very slightly deeper (colour density) and
+	   slightly more balanced between the darkness of the scene and the white of
+	   their text."
+
+	   A bar answers to TWO grounds at once — the night behind it and the white
+	   written on it — and `main` only ever had to answer to one, because Genshin
+	   never puts 11px of white on these fills. That is the whole reason a fourth
+	   rung is justified where a light-context rung was not: this is a JOB main
+	   was not drawn for, rather than a ground the palette cannot reach.
+
+	   THE ANCHOR. There is exactly one luminance where a fill owes both the same
+	   — contrast(white, fill) == contrast(fill, star) — and it solves to
+	   2.93:1 in each direction. `main` sits nowhere near it: worst white-on-fill
+	   1.33:1 against a fill-vs-star of 2.95:1, i.e. the fill is nearly as bright
+	   as the ink on it. `bar` travels 30% of the way there and spends half the
+	   chroma headroom the drop frees:
+
+	     BAR_BALANCE 0.3 · BAR_DENSITY 0.5   (/lab section 10, candidate D)
+	     worst white-on-fill 1.33 → 1.59 · worst fill-vs-star 2.95 → 2.93
+
+	   ⚠⚠ AND THAT SECOND FIGURE IS WHY THIS IS NOT THE REJECTED DIVERGENCE. That
+	   proposal cost 2.95 → 2.49 on fill-vs-star and lost for it (⚓ "the highest
+	   priority is the bars showing cleanly"). The difference is mechanical, not a
+	   matter of degree: the divergence REMAPPED THE WHOLE LADDER, so the darkest
+	   fills went down too — and the worst case is always set by the darkest
+	   fill. Pulling every element toward a SHARED luminance squeezes the ladder
+	   FROM THE BRIGHT END ONLY. Cryo, geo and dendro had enormous fill-vs-star
+	   headroom and are the ones that move (cryo ΔL .058); pyro was already at the
+	   balance point and travels .001, #ff6640 → #ff653e.
+
+	   ⚠ SO THE COST IS NOT CONTRAST, IT IS THE LADDER. Squeezing toward one
+	   luminance narrows the set's lightness spread — oklch ΔL .193 → .137 — and a
+	   palette with no lightness ladder is unreadable in a dense stacked chart
+	   (the finding that killed a plain ceiling: capping at L .74 landed five of
+	   the seven on one rung). .137 is the number to watch if this is ever pushed
+	   further; the fully-balanced anchor flattens it to .041.
+
+	   ⛔ DO NOT USE `bar` FOR ANYTHING THAT IS NOT A FILL CARRYING INK. Glyphs,
+	   pips, portrait washes, avatar rings and the C-level readout stay on `main`
+	   — the /lab board's whole test is a bar beside an unchanged icon, and the
+	   rung only works because the icon did not follow it down.
+	   🎛️ The two knobs and every figure above live at the top of /lab's script
+	   and re-measure themselves. ⚠ /lab is dev-only (not in the production
+	   build), so drive it with `npm run dev`. */
 	--el-pyro-main: #ff6640;
+	--el-pyro-bar: #ff653e;
 	--el-pyro-border: rgba(255, 102, 64, 0.5);
 	--el-pyro-hi: #ff9999;
 
 	--el-electro-main: #cc80ff;
+	--el-electro-bar: #ca7aff;
 	--el-electro-border: rgba(204, 128, 255, 0.5);
 	--el-electro-hi: #ffacff;
 
@@ -1009,6 +1067,7 @@
 	   .134), a dimension the rotation never touched. So the hues went home and
 	   the timeline lost nothing. */
 	--el-hydro-main: #00c0ff;
+	--el-hydro-bar: #00b7f4;
 	--el-hydro-border: rgba(0, 192, 255, 0.5);
 	--el-hydro-hi: #80c0ff;
 
@@ -1018,18 +1077,22 @@
 	   cyan, where ours were two teals sitting 40° apart and reading closer than
 	   the number said. Adopting their palette opens the pair by moving anemo. */
 	--el-anemo-main: #33d7a0;
+	--el-anemo-bar: #1ecb95;
 	--el-anemo-border: rgba(51, 215, 160, 0.5);
 	--el-anemo-hi: #80ffd7;
 
 	--el-geo-main: #ffb00d;
+	--el-geo-bar: #f1a501;
 	--el-geo-border: rgba(255, 176, 13, 0.5);
 	--el-geo-hi: #ffe699;
 
 	--el-dendro-main: #9be53d;
+	--el-dendro-bar: #8cd525;
 	--el-dendro-border: rgba(155, 229, 61, 0.5);
 	--el-dendro-hi: #99ff88;
 
 	--el-cryo-main: #7af2f2;
+	--el-cryo-bar: #50e1e2;
 	--el-cryo-border: rgba(122, 242, 242, 0.5);
 	--el-cryo-hi: #99ffff;
 

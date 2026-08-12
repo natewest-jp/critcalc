@@ -2,10 +2,13 @@
 // Use the CSS variables in stylesheets; reach for this mirror only when styles
 // are constructed at runtime. Values must stay in lockstep with app.css.
 
-export type ElementSlot = 'main' | 'border' | 'hi';
+export type ElementSlot = 'main' | 'bar' | 'border' | 'hi';
 
 export type ElementPalette = {
 	main: string;
+	/** The FILL rung — a bar with white written on it. Derived from `main`;
+	 *  see the --el-* block in app.css for the anchor and the two knobs. */
+	bar: string;
 	border: string;
 	hi: string;
 };
@@ -21,25 +24,32 @@ export type ElementKey =
 	| 'physical'
 	| 'none';
 
-// `none` and `physical` only have `main` — their `border` / `hi` slots are
-// intentionally absent. Physical uses the muted gray palette of `none` because
-// no character is canonically Physical-aligned (it's used for damage instances
-// and RES debuffs, not character UI), and the bar needs a recognizable but
-// understated tone.
-// ⚠ GENSHIN'S OWN TWO TABLES, TRANSCRIBED — not tuned values, and not to be
-// re-tuned as a set. `main` is their icon palette (measured off the flat-colour
-// source art); `hi` is their in-text `<color=#rrggbbff>` palette, which is that
-// same set carried up to a lightness floor. The full argument, including why
-// there is no third light-context rung, lives at --el-* in app.css. Change one
-// file and the mirror test fails; that is the point.
+// `none` and `physical` only have `main` — their `bar` / `border` / `hi` slots
+// are intentionally absent. Physical uses the muted gray palette of `none`
+// because no character is canonically Physical-aligned (it's used for damage
+// instances and RES debuffs, not character UI), and the bar needs a
+// recognizable but understated tone.
+// ⚠ AND `bar` IS ABSENT FOR A SECOND, STRONGER REASON on those two: they are
+// near-neutrals. The rung's derivation spends freed gamut on CHROMA, which on a
+// gray means inventing a hue it does not have — and both already sit BELOW the
+// balanced luminance the rung walks toward, so the lightness half would be a
+// no-op anyway. elementPalette() falls their `bar` back to their own `main`,
+// not to none's, so a physical bar stays physical gray.
+// ⚠ TWO OF THESE SLOTS ARE TRANSCRIBED AND TWO ARE DERIVED. `main` is Genshin's
+// icon palette (measured off the flat-colour source art) and `hi` is their
+// in-text `<color=#rrggbbff>` palette — copied tables, NOT to be re-tuned as a
+// set. `bar` (a fill with white on it) and `border` are functions of `main`.
+// The full argument, including why there is no light-context rung and why the
+// bar rung is not the rejected divergence, lives at --el-* in app.css. Change
+// one file and the mirror test fails; that is the point.
 export const elementColors = {
-	pyro: { main: '#ff6640', border: 'rgba(255, 102, 64, 0.5)', hi: '#ff9999' },
-	hydro: { main: '#00c0ff', border: 'rgba(0, 192, 255, 0.5)', hi: '#80c0ff' },
-	anemo: { main: '#33d7a0', border: 'rgba(51, 215, 160, 0.5)', hi: '#80ffd7' },
-	electro: { main: '#cc80ff', border: 'rgba(204, 128, 255, 0.5)', hi: '#ffacff' },
-	cryo: { main: '#7af2f2', border: 'rgba(122, 242, 242, 0.5)', hi: '#99ffff' },
-	geo: { main: '#ffb00d', border: 'rgba(255, 176, 13, 0.5)', hi: '#ffe699' },
-	dendro: { main: '#9be53d', border: 'rgba(155, 229, 61, 0.5)', hi: '#99ff88' },
+	pyro: { main: '#ff6640', bar: '#ff653e', border: 'rgba(255, 102, 64, 0.5)', hi: '#ff9999' },
+	hydro: { main: '#00c0ff', bar: '#00b7f4', border: 'rgba(0, 192, 255, 0.5)', hi: '#80c0ff' },
+	anemo: { main: '#33d7a0', bar: '#1ecb95', border: 'rgba(51, 215, 160, 0.5)', hi: '#80ffd7' },
+	electro: { main: '#cc80ff', bar: '#ca7aff', border: 'rgba(204, 128, 255, 0.5)', hi: '#ffacff' },
+	cryo: { main: '#7af2f2', bar: '#50e1e2', border: 'rgba(122, 242, 242, 0.5)', hi: '#99ffff' },
+	geo: { main: '#ffb00d', bar: '#f1a501', border: 'rgba(255, 176, 13, 0.5)', hi: '#ffe699' },
+	dendro: { main: '#9be53d', bar: '#8cd525', border: 'rgba(155, 229, 61, 0.5)', hi: '#99ff88' },
 	physical: { main: '#9ea4b3' },
 	none: { main: '#6a7080' }
 } as const;
@@ -116,10 +126,15 @@ export function elementPalette(element: string | undefined): ElementPalette {
 	const key = (element ?? 'none') as ElementKey;
 	const entry = elementColors[key] ?? elementColors.none;
 	// Fall back to `none.main` for the missing slots so callers built around
-	// the three-slot shape (RotationTimeline) keep working when an element key
+	// the four-slot shape (RotationTimeline) keep working when an element key
 	// isn't recognized — visually indistinguishable from the prior local palette.
+	// ⚠ `bar` falls back to THIS ENTRY'S OWN main, not none's. It is the only
+	// slot that does, and it has to: physical and `none` have no bar rung by
+	// design (see above), and sending physical's bar to none's gray would silently
+	// merge two tones the chart draws side by side.
 	return {
 		main: entry.main,
+		bar: 'bar' in entry ? entry.bar : entry.main,
 		border: 'border' in entry ? entry.border : elementColors.none.main,
 		hi: 'hi' in entry ? entry.hi : elementColors.none.main
 	};
@@ -127,6 +142,12 @@ export function elementPalette(element: string | undefined): ElementPalette {
 
 // The cast-pill / summon fill. Shared by the planner's E/Q pills and the Team
 // Builder's Compare bars so both finishes match exactly.
+//
+// ↻ ⚓ NATE 2026-08-12 — IT TAKES THE `bar` RUNG NOW, not `main`. Every caller
+// moved with it, which is the point of the parameter having a name: this
+// function is where "a fill carrying white ink" is defined, so it is where the
+// rung that exists for that job belongs. A caller still passing `main` is a
+// caller that has not been told about the fourth rung.
 //
 // ↻ ⚓ NATE 2026-08-11 — IT IS FLAT NOW. It used to carry a whisper of top-light
 // (`linear-gradient(180deg, main+10% white 0%, main 58%)`) so the bar had depth
@@ -147,6 +168,6 @@ export function elementPalette(element: string | undefined): ElementPalette {
 // reproduced in headless WebKit. Consistent cross-browser display won over the
 // subtle wave. Don't reintroduce tiled background layers on these bars without
 // a real-Safari pass. Flat has no such hazard: it is one colour.
-export function castFill(main: string): string {
-	return main;
+export function castFill(bar: string): string {
+	return bar;
 }

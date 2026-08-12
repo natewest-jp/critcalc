@@ -35,7 +35,6 @@
 		disabled = false,
 		ariaLabel,
 		// portrait corners
-		showWeapon = true,
 		con,
 		slotNumber,
 		wishlist = false,
@@ -62,7 +61,6 @@
 		/** Team-full etc. — a real `disabled` button (unfocusable + dimmed). */
 		disabled?: boolean;
 		ariaLabel?: string;
-		showWeapon?: boolean;
 		/** Constellation pip (top-right). undefined hides it; the consumer owns the
 		 *  C0-vs-hide policy (TB shows C0, the planner hides until owned). */
 		con?: number;
@@ -84,10 +82,11 @@
 		actions?: Snippet<[CharacterIndexEntry]>;
 	} = $props();
 
-	const WEAPON_TYPES = ['sword', 'claymore', 'polearm', 'bow', 'catalyst'];
-	const hasWeaponIcon = $derived(WEAPON_TYPES.includes(entry.weapon ?? ''));
-
 	const color = $derived(elementPalette(entry.element).main);
+
+	/** Both halves of the name row consult this — the mark on the right, and the
+	 *  spacer on the left that keeps the name centred against it. */
+	const uncurated = $derived(showUncuratedMark && !entry.curated);
 
 	const shown = $derived(tags.slice(0, maxTags));
 	const overflow = $derived(tags.length - shown.length);
@@ -146,13 +145,17 @@
 				<span class="cc-initials">{entry.displayName.slice(0, 2).toUpperCase()}</span>
 			{/if}
 
-			{#if showWeapon && hasWeaponIcon}
+			{#if entry.element}
+				<!-- ⚓ NATE 2026-08-12, from the game itself: the element pip goes in
+				     the portrait's TOP LEFT, bare on the art, where Genshin puts it
+				     on its own character cards. It takes over the corner the weapon
+				     glyph held — same position, same size, same shadow. -->
 				<span
-					class="cc-weapon"
+					class="cc-el"
 					role="img"
-					aria-label={entry.weapon}
-					title={entry.weapon}
-					style:background-image="url('/assets/weapon-types/{entry.weapon}.webp')"
+					aria-label={entry.element}
+					title={entry.element}
+					style:background-image="url('{elementIcon(entry.element)}')"
 				></span>
 			{/if}
 			{#if con !== undefined && !entry.noConstellations}
@@ -167,16 +170,16 @@
 		</div>
 
 		<span class="cc-namerow">
-			{#if entry.element}
-				<span
-					class="cc-el"
-					role="img"
-					aria-label={entry.element}
-					style:background-image="url('{elementIcon(entry.element)}')"
-				></span>
+			{#if uncurated}
+				<!-- The mark's twin, with nothing in it. Centring a flex row centres
+				     the CONTENT, so a lone trailing mark would push the name left by
+				     half its width on exactly the cards that already look different.
+				     An empty box of the same width on the left is what makes the name
+				     sit on the card's centre line whether or not it is annotated. -->
+				<span class="cc-namepad" aria-hidden="true"></span>
 			{/if}
 			<span class="cc-name">{entry.displayName}</span>
-			{#if showUncuratedMark && !entry.curated}
+			{#if uncurated}
 				<span
 					class="cc-namemark"
 					title="Frame timing not curated yet — capabilities are complete, but Planner timing is approximate"
@@ -396,8 +399,25 @@
 	}
 
 	/* ── Corner marks ─────────────────────────────────────────────
-	   TL weapon · TR constellation · BL wishlist(TB) / slot(planner).
+	   TL element · TR constellation · BL wishlist(TB) / slot(planner).
 	   The base sizes serve every grid that ships; the roomy band bumps them.
+
+	   ↻ ⚓ NATE 2026-08-12: THE TOP-LEFT CORNER IS THE ELEMENT'S NOW, and the
+	   answer came out of the game rather than out of this file — "I was playing
+	   Genshin last night, and I think the answer just dropped out from how they
+	   handle it: the element icon goes in the top left of the portrait."
+	   That solves the last of the round's two element-on-parchment offenders. The
+	   glyph used to sit in the NAME ROW, which is `.ctx-light` paper, where the
+	   whole palette measures under 3:1 (cryo 1.14:1) — see the --el-* block in
+	   app.css for why there is no light rung to reach for instead. In the
+	   portrait it is on `.ctx-dark`, at 3.36–8.59:1, and it is doing what the
+	   element already does everywhere else on this card: describing the picture
+	   rather than the label.
+	   ⛔ THE WEAPON GLYPH IS GONE, not moved. It held this corner and there is
+	   only one of it; ⚓ Nate's call was a straight replacement, following the
+	   in-game card, which shows element and never weapon. Weapon type is still on
+	   the detail card and still a roster filter. (Bottom-right is the one free
+	   corner if it is ever missed.)
 
 	   ⚓ NATE 2026-08-11: "the constellation pip and the element-type pip are
 	   really outdated styling — reference the bench's, and I'm not sure round is
@@ -409,25 +429,44 @@
 	   two families of character card disagreeing about the shape of a
 	   constellation reading would be the drift worth avoiding.
 
-	   A PICTURE (the weapon glyph) gets NO CHIP AT ALL. The chip was scaffolding
-	   for a legibility problem that no longer exists: the art is white line-work
-	   and it used to sit on whatever the gradient's near-black end happened to
-	   be, so it needed a plate under it. On a well one rung down from the card,
-	   at a known slate rung, it simply reads — and Genshin draws its own element
-	   pip the same way, bare on the gradient with a soft shadow. Removing it also
-	   removes the last `--bg` reach in this file. */
-	.cc-weapon {
+	   A PICTURE (now the element glyph) gets NO CHIP AT ALL. The chip was
+	   scaffolding for a legibility problem that no longer exists: the art used to
+	   sit on whatever the gradient's near-black end happened to be, so it needed
+	   a plate under it. On a well one rung down from the card, at a known slate
+	   rung, it simply reads — and Genshin draws its own element pip the same way,
+	   bare on the gradient with a soft shadow. */
+	.cc-el {
 		position: absolute;
 		top: 5px;
 		left: 5px;
+		/* 22, and it is the same 22 as the Atlas card's pip — one mark doing one
+		   job on two surfaces, so they are sized together on purpose. It is also
+		   what the weapon glyph held here, and that geometry was tuned for this
+		   corner. ⚠ Up from 18 in the name row: identity gets to outgrow an
+		   annotation, and there is no cap letter beside it to be a peer to now. */
 		width: 22px;
 		height: 22px;
 		background-size: contain;
 		background-position: center;
 		background-repeat: no-repeat;
-		/* The glyph crosses hair as often as sky. A shadow rather than a plate:
-		   it separates the art from whatever is behind it without adding a second
-		   rectangle to a corner that already has one card edge in it. */
+		/* ⚓ NATE ASKED: glow or flat? FLAT — and the reason is a system cost
+		   rather than a preference. Genshin uses its `glow` set in this exact
+		   position and it is beautiful there, but glow is ARTWORK with a baked
+		   palette (32–76 colours per glyph), so it cannot be tinted: adopting it
+		   here means this one surface's element marks stop tracking --el-*, which
+		   is the precise coupling generate-element-icons.mjs exists to guarantee
+		   and the drift the palette round deleted (hydro's glyph used to sit 19°
+		   off its own token). /lab section 9 measured all five sets.
+		   ⚠ And the halo is a fix for THEIR problem, not ours: their pip sits on a
+		   bright saturated portrait, ours on a dark slate well. What our corner
+		   actually needs is separation from hair, which is what the shadow does —
+		   a coloured glow would make a cryo pip WORSE over blonde hair.
+		   🎛️ If the glow is wanted anyway, it is a one-line source swap
+		   (/assets/elements/glow/{element}.png, already in the repo at 64px) plus
+		   accepting that those seven files no longer follow the tokens.
+		   The shadow itself: a shadow rather than a plate, because the glyph
+		   crosses hair as often as sky and a plate would add a second rectangle to
+		   a corner that already has one card edge in it. */
 		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
 		z-index: 1;
 	}
@@ -491,36 +530,30 @@
 		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
 		z-index: 1;
 	}
-	/* ── Name row ──────────────────────────────────────────────── */
+	/* ── Name row ────────────────────────────────────────────────
+	   ↻ ⚓ NATE 2026-08-12: CENTRED. The row used to lead with the element glyph,
+	   which gave the name something to be flush-left against; with the glyph up
+	   in the portrait the name was the only thing on the plate and left-alignment
+	   read as an accident. "Nothing next to [it] to make it look good with them
+	   flush left, so centered they go." Genshin's own cards centre their name
+	   plate too, which is the same reference this round is following. */
 	.cc-namerow {
+		/* Sizes the uncurated mark AND its counterweight — see .cc-namemark. */
+		--cc-mark: 14px;
 		display: flex;
 		align-items: center;
-		justify-content: flex-start;
+		justify-content: center;
 		gap: 0.3rem;
 		padding: 0.25rem 0.5rem;
 		min-width: 0;
 		width: 100%;
 		box-sizing: border-box;
 	}
-	/* ↻ 2026-08-11: 15 → 18px, closing the staleness SlotPortrait's .sp-el-badge
-	   comment flagged and deliberately left for "a roster-card call". The glyph
-	   was sized against a smaller name and never followed it up; the bench's
-	   ratio is 1.25 × the name's size — glyph a touch taller than the cap, which
-	   is how the in-game cards draw it — so 14px name → 18, 16px name → 20. */
-	.cc-el {
-		display: inline-block;
-		width: 18px;
-		height: 18px;
-		flex-shrink: 0;
-		background-size: contain;
-		background-position: center;
-		background-repeat: no-repeat;
-	}
 	.cc-name {
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
-		text-align: left;
+		text-align: center;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -537,11 +570,10 @@
 	   do not reach an SVG, and `transform: translateY(-0.1em)` — the optical lift
 	   ⚓ Nate tuned by eye because the ∅ sat low in its line box — was now pushing
 	   a mark that is already centred OFF its own centre. A Mark is `display:
-	   block`, drawn centred in a square viewBox, so it aligns exactly the way
-	   .cc-el (the element glyph two items to the left) does, and neither needs a
-	   nudge. THE FIX FOR A GLYPH SITTING LOW WAS NEVER SUPPOSED TO OUTLIVE THE
-	   GLYPH — this is the second half of the sub-pixel law's marks-are-geometry
-	   rule, and worth remembering wherever else the set replaced a character.
+	   block`, drawn centred in a square viewBox, so it needs no nudge. THE FIX FOR
+	   A GLYPH SITTING LOW WAS NEVER SUPPOSED TO OUTLIVE THE GLYPH — this is the
+	   second half of the sub-pixel law's marks-are-geometry rule, and worth
+	   remembering wherever else the set replaced a character.
 
 	   🎛️ It also stopped SCALING when it stopped being type. The size prop is a
 	   fixed 11 at every band, so the mark shrank (relatively) as the card grew,
@@ -552,11 +584,21 @@
 
 	   THE SIZE RULE, shared with the bench (.sp-namemark): the mark MATCHES THE
 	   NAME IT ANNOTATES, 1:1 in px — 14 beside a --fs-lg name, 16 beside --fs-xl.
-	   The element glyph runs 1.25× the name instead, because identity outranks
-	   annotation and gets to be the one bigger than the words. */
+	   (The bench's element badge runs 1.25× its name instead; identity outranks
+	   annotation. This card's element glyph left the row entirely on 2026-08-12
+	   and is sized against the portrait corner now, not against the name.)
+
+	   ↻ 2026-08-12: `margin-left: auto` is GONE. It pushed the mark to the right
+	   edge, which was free while the row was flush-left and is now the thing that
+	   would break centring — an auto margin absorbs all the free space, so the
+	   name would be shoved hard left instead of sitting in the middle. The row's
+	   `justify-content: center` plus .cc-namepad (the mark's empty twin on the
+	   other side) does the job symmetrically.
+
+	   🎛️ --cc-mark now lives on the ROW rather than on the mark, because two
+	   elements read it: the mark and its counterweight. One declaration site is
+	   what stops them falling out of step at the roomy band. */
 	.cc-namemark {
-		--cc-mark: 14px;
-		margin-left: auto;
 		flex-shrink: 0;
 		display: flex;
 		color: var(--ui-danger);
@@ -565,6 +607,11 @@
 	.cc-namemark :global(.mark) {
 		width: var(--cc-mark);
 		height: var(--cc-mark);
+	}
+	/* The counterweight — see the markup for why it exists. */
+	.cc-namepad {
+		width: var(--cc-mark);
+		flex-shrink: 0;
 	}
 
 	/* ── Body: capability tags + hover action overlay ────────────
@@ -664,15 +711,12 @@
 	@container charcard (min-width: 150px) {
 		.cc-namerow {
 			padding: 0.45rem 0.6rem 0.2rem;
+			--cc-mark: 16px;
 		}
 		.cc-name {
 			font-size: var(--fs-xl);
 		}
 		.cc-el {
-			width: 20px;
-			height: 20px;
-		}
-		.cc-weapon {
 			width: 25px;
 			height: 25px;
 		}
@@ -686,9 +730,6 @@
 		}
 		.cc-slot {
 			font-size: var(--fs-xl);
-		}
-		.cc-namemark {
-			--cc-mark: 16px;
 		}
 		.cc-body {
 			height: 4.4rem;

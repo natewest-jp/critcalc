@@ -20,7 +20,7 @@
 	let {
 		segments,
 		ticks = [],
-		color,
+		bar,
 		scaleSeconds,
 		trackWidthPx,
 		locked = false
@@ -28,7 +28,13 @@
 		segments: BarPhaseSegment[];
 		/** Tick offsets in seconds (summon/heal cadence), drawn over the bar. */
 		ticks?: number[];
-		color: string;
+		/** ⚠ The element's `bar` RUNG, not `main` — every use of it in here is a
+		 *  FILL (the solid window, the dim continuation, the ghost track), which
+		 *  is the job that rung exists for. It was named `color` and fed `main`
+		 *  until 2026-08-12; the rename is so a caller cannot pass the identity
+		 *  colour again by accident, which is the same one-value-two-jobs slip
+		 *  that put an element token on the wishlist star. */
+		bar: string;
 		/** Shared across the whole comparison — the widest cycle in the model. */
 		scaleSeconds: number;
 		trackWidthPx: number;
@@ -42,7 +48,7 @@
 	class="cb-track"
 	class:cb-locked={locked}
 	style:width="{trackWidthPx}px"
-	style:--cb-color={color}
+	style:--cb-color={bar}
 >
 	{#each segments as seg, i (i)}
 		{@const g = barGeom(seg.start, seg.span, pxPerSec)}
@@ -52,7 +58,7 @@
 				class:cb-flush={seg.role === 'uptimeFlush'}
 				style:left="{g.left}px"
 				style:width="{g.width}px"
-				style:background={castFill(color)}
+				style:background={castFill(bar)}
 			></span>
 		{:else if seg.role === 'uptimeDim' || seg.role === 'overflow'}
 			<span
