@@ -1757,8 +1757,22 @@
 		     MOUNTED after the first open (hidden, not destroyed) so reopening
 		     skips the ~122-card remount — a visible stall in Safari 26.x, and
 		     free even where mounts are fast. -->
+		<!-- ↻ 2026-08-12 (motion round): the `hidden` attribute became a class.
+		     Same display:none in both states — that is load-bearing and stays,
+		     because `visibility` would leave 122 cards being laid out on every
+		     zoom of a timeline they are not even on screen for — but a class can
+		     carry an @starting-style and an attribute cannot.
+
+		     `inert` is now asserted rather than implied. It came free with
+		     `hidden`; the shut state still reaches display:none in the same
+		     frame, so nothing has actually changed for a reader, but the state
+		     is written down instead of being a side effect of the mechanism. -->
 		{#if sourceEverOpened && sourceOverlay}
-			<div class="rp-source-overlay" hidden={!sourceOpen}>
+			<div
+				class="rp-source-overlay"
+				class:rp-source-overlay--shut={!sourceOpen}
+				inert={!sourceOpen}
+			>
 				{@render sourceOverlay()}
 				<!-- ← Explore alternatives is tied to the picker, not the main
 				     surface, and it lives INSIDE the picker now (tall-bench round:
@@ -2025,10 +2039,54 @@
 		   radius that makes it read as a panel laid on the scene. */
 		background: var(--rp-chart-bg);
 		border-radius: var(--r-sm);
+		/* ── IT FADES IN, AND IT DOES NOT FADE OUT ────────────────────────────
+		   Opening is a TAKEOVER: the whole instrument disappears under a panel
+		   in one frame, and 120ms of fade is what turns that from a jump-cut
+		   into a thing that arrived. @starting-style supplies the opacity 0 to
+		   start from — needed because the shut state is display:none, so each
+		   open is a FIRST RENDER and a plain transition would have nothing to
+		   run from.
+
+		   ⚠ THE EXIT IS DELIBERATELY INSTANT, and it is not laziness. The frame
+		   under this carries `--picking`'s 26rem min-height, which drops the
+		   moment picking ends; min-height is the LAYOUT tier and cannot be
+		   faded alongside. Fading out would therefore leave a ghost of the
+		   picker — inset:0, so it re-fits itself as it goes — shrinking onto a
+		   collapsing frame for the length of the fade. Snapping shut has none
+		   of that, and dismissal is the one direction where instant is also the
+		   better feel: you already know what you're going back to.
+
+		   `display` is IN the transition list, with allow-discrete, and it is
+		   there for the ENTRY rather than the exit. Crossing out of display:none
+		   is what makes this a first render, and pairing allow-discrete with
+		   @starting-style is the documented shape of that crossing — without it
+		   the entry animation is left resting on how eagerly a given engine
+		   decides an element was newly rendered, which is exactly the kind of
+		   thing that works in Chrome and quietly does nothing in WebKit. */
+		opacity: 1;
+		transition:
+			opacity var(--t-snap),
+			display var(--t-snap) allow-discrete;
 	}
-	/* The explicit display:flex above would beat the UA's [hidden] rule. */
-	.rp-source-overlay[hidden] {
+	@starting-style {
+		.rp-source-overlay {
+			opacity: 0;
+		}
+	}
+	/* Was the UA's [hidden] rule, which the explicit display:flex above had to
+	   be beaten by. Same effect, but a class the entry transition can key off.
+
+	   ⚠ `transition: none` IS THE INSTANT EXIT, and it has to live here rather
+	   than anywhere else. A transition is driven by the AFTER-change style, so
+	   the declaration the browser reads on the way OUT is this one and the
+	   declaration it reads on the way back IN is the rule above — which is what
+	   lets one element fade in and snap out without a second class to track.
+	   Drop this line and allow-discrete starts deferring display:none to the
+	   end of the fade, leaving the picker sitting there fully opaque for 120ms
+	   after you dismissed it. */
+	.rp-source-overlay--shut {
 		display: none;
+		transition: none;
 	}
 
 	/* ── Scroll wrapper ───────────────────────────────────────── */
@@ -3085,8 +3143,8 @@
 		white-space: nowrap;
 		color: var(--control-ink);
 		transition:
-			background 150ms ease,
-			color 150ms ease;
+			background var(--t-quick),
+			color var(--t-quick);
 	}
 	.rp-explore-link:hover {
 		background: var(--control-face-hover);
@@ -3094,7 +3152,7 @@
 	.rp-explore-arrow {
 		display: inline-flex;
 		vertical-align: -2px;
-		transition: transform 150ms ease;
+		transition: transform var(--t-quick);
 	}
 	.rp-explore-link:hover .rp-explore-arrow {
 		transform: translateX(-2px);

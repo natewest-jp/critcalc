@@ -942,8 +942,8 @@
 		cursor: pointer;
 		padding: 0;
 		transition:
-			background 150ms ease,
-			color 150ms ease;
+			background var(--t-quick),
+			color var(--t-quick);
 	}
 
 	.gx-remove:hover {

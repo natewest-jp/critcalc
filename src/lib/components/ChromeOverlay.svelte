@@ -3,6 +3,7 @@
 	import type { Snippet } from 'svelte';
 	import HRule from '$lib/components/HRule.svelte';
 	import CloseMark from '$lib/components/CloseMark.svelte';
+	import { T_SNAP, motion, introLive, outroInert } from '$lib/motion';
 
 	// The shell every meta overlay wears — settings, help, about — on every
 	// surface. Presentational only: the host decides when it exists and what
@@ -38,11 +39,21 @@
 
 <svelte:window onkeydown={onWindowKeydown} />
 
+<!-- ↻ 2026-08-12 (motion round): 140 by hand became the click-path band. The
+     number moved by 20ms, which is below noticing; the two things that changed
+     underneath it are not. The duration now collapses to 0 under
+     prefers-reduced-motion — this was the ONE animation on the site with no
+     reduce path at all, because a JS transition cannot see a media query and
+     the CSS blocks that honour the preference could never reach it. And
+     outroInert stops the dismissed scrim from swallowing the click that lands
+     in the 120ms after you close it. -->
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div
 	class="overlay-backdrop"
 	class:on-scene={onScene}
-	transition:fade={{ duration: 140 }}
+	transition:fade={{ duration: motion(T_SNAP) }}
+	onintrostart={introLive}
+	onoutrostart={outroInert}
 	onclick={(event) => {
 		if (event.target === event.currentTarget) onClose();
 	}}

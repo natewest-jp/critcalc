@@ -1536,8 +1536,8 @@
 		font-size: var(--fs-md);
 		cursor: pointer;
 		transition:
-			border-color 150ms ease,
-			background 150ms ease;
+			border-color var(--t-quick),
+			background var(--t-quick);
 	}
 	.tb-cand:hover:not(:disabled) {
 		border-color: color-mix(in srgb, var(--el-color) 80%, var(--border));
@@ -1932,9 +1932,9 @@
 		font-family: var(--font-body);
 		cursor: pointer;
 		transition:
-			border-color 150ms ease,
-			background 150ms ease,
-			color 150ms ease;
+			border-color var(--t-quick),
+			background var(--t-quick),
+			color var(--t-quick);
 	}
 	.tb-act-glyph {
 		display: flex;

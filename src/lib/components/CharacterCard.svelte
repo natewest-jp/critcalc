@@ -278,8 +278,8 @@
 		border-radius: 6px;
 		overflow: hidden;
 		transition:
-			border-color 150ms ease,
-			opacity 150ms ease,
+			border-color var(--t-quick),
+			opacity var(--t-quick),
 			transform 100ms ease;
 	}
 	.cc:hover:not(.cc--disabled) {
@@ -683,7 +683,11 @@
 		background: var(--surface);
 		opacity: 0;
 		pointer-events: none;
-		transition: opacity 120ms ease;
+		/* --t-snap, not --t-quick, even though the trigger is a hover: the band
+		   names the JOB, and this is a control layer ARRIVING over the tag row,
+		   not a tint changing in place. It was already 120ms by hand, so the
+		   token is value-preserving here. */
+		transition: opacity var(--t-snap);
 	}
 	.cc:hover .cc-actions,
 	.cc-actions:focus-within {

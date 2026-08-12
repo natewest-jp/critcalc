@@ -346,7 +346,7 @@
 		gap: 14px;
 		padding: 12px 16px;
 		border-bottom: 1px solid var(--frame-line);
-		transition: background 150ms ease;
+		transition: background var(--t-quick);
 	}
 	.entry:last-child {
 		border-bottom: none;

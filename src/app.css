@@ -813,10 +813,37 @@
 	   it, and let that surface's needs shape it. */
 
 	/* ══ MOTION ════════════════════════════════════════════════════════════════
-	   One interaction duration. (It was already one duration — `150ms ease`
-	   appeared 123 times — it just had no name.) Scene and tool-slide
-	   transitions own their own timing and do NOT use this. */
+	   THREE BANDS, EACH NAMING A JOB — not three sizes to pick from by taste
+	   (⚓ Nate 2026-08-12, the motion round). A token is a DURATION AND ITS
+	   EASING, one value: there is one easing in the product and splitting it
+	   onto a second axis would double every call site to buy a distinction
+	   nobody had asked for.
+
+	     --t-snap   the CLICK PATH. Something you summoned is arriving, or
+	                leaving, because you just pressed for it: popovers, menus,
+	                modal backdrops, the Source overlay. Anything longer here
+	                reads as LAG rather than as polish — you already know what
+	                is coming, so the animation is only there to say where it
+	                came FROM.
+	     --t-quick  HOVER AND REST. The state ladder every control shares. This
+	                is the one that already existed, unchanged at 150ms, and it
+	                is by far the most-used.
+	     --t-move   SPATIAL MOVES the eye has to follow — something travelling a
+	                distance, rather than a box changing colour in place.
+	                Nothing claims it yet; it is declared so the next thing that
+	                needs it does not invent a fourth number.
+
+	   ⛔ NOT FOR THE SCENE. TOOL_NAV_MS, the camera crane, the star clock, the
+	   loading veil and the world-locked tool fade are Nate-tuned and own their
+	   own clocks. These three are INTERACTION motion, inside a tool.
+
+	   ⚠ MIRRORED IN `src/lib/motion.ts` — a hand-synced pair, because CSS
+	   cannot hand a number to Svelte's `transition:` directive. Change one,
+	   change the other; the numbers are repeated in that file's comment so a
+	   mismatch is visible at either end. */
+	--t-snap: 120ms ease;
 	--t-quick: 150ms ease;
+	--t-move: 240ms ease;
 
 	/* ══ INTERACTION SURFACES ══════════════════════════════════════════════════
 	   The resting/hover/selected ladder every control shares. These were also
@@ -1281,6 +1308,37 @@
 	--lh-snug: 1.4;
 	--lh-normal: 1.5;
 	--lh-relaxed: 1.6;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION, ONCE — the whole point of naming the three bands.
+
+   `prefers-reduced-motion` used to be honoured a rule at a time: ten files each
+   listing the selectors they happened to know about, which meant every new
+   transition was honoured only if whoever wrote it remembered to go and add it
+   to a block somewhere else. That is not a mechanism, it is a habit, and the
+   drift was already measurable — SlotPortrait, DetailCard, BandMenu,
+   InstrumentPicker, CharacterCard, LoadoutPanel, RotationTimeline, AtlasView,
+   CompareView and the Team Builder page all animated with no reduce path at
+   all.
+
+   Zeroing the TOKENS retires the habit. Every rule that reaches for a band goes
+   inert here, including rules that do not exist yet, and the honouring can no
+   longer be forgotten because there is nothing left to remember. Custom
+   properties inherit and nothing re-declares --t-*, so this reaches portalled
+   nodes and every .ctx-* zone alike.
+
+   ⚠ THIS ONLY COVERS WHAT USES A BAND. Three things deliberately keep their own
+   clock and therefore their own reduce path: the scene/nav machinery (which has
+   one already), the chrome state contract's 200ms, and Svelte's `transition:`
+   directive — JS, which cannot read a CSS variable. That last one is why
+   $lib/motion.ts exists and why its helpers return 0 under the same query. */
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--t-snap: 0s;
+		--t-quick: 0s;
+		--t-move: 0s;
+	}
 }
 
 /* The tool zone — the other half of the accent zoning declared in :root.
@@ -2054,11 +2112,8 @@ img {
 	background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.prose a {
-		transition: none;
-	}
-}
+/* (A reduced-motion block for `.prose a` stood here. Retired with the motion
+   round — the rule spends --t-quick, and the band is zeroed at :root.) */
 
 /* ══════════════════════════════════════════════════════════════════════════════
    THE PATTERN LAYER — promoted from /styleguide 2026-07-27 (migration chunk 1).
@@ -3068,18 +3123,18 @@ img {
 	margin-bottom: 1rem;
 }
 
+/* ↻ 2026-08-12 (motion round): the nine-selector `transition: none` list that
+   used to lead this block is GONE — every one of those rules spends --t-quick,
+   and the band is zeroed at :root under the same query. The list is not merely
+   redundant now, it is misleading: leaving it would say that enumerating your
+   selectors is still how a control gets honoured, and the next person would
+   add a tenth.
+
+   The animation stays, and it is the whole reason this block survives at all.
+   `pulse-confirm` is a KEYFRAME on its own 200ms clock — an animation cannot be
+   zeroed by a transition token, so the one shape the mechanism does not reach
+   still has to say so by hand. */
 @media (prefers-reduced-motion: reduce) {
-	.btn,
-	.chip,
-	.tab,
-	.tab-close,
-	.field,
-	.toggle-track,
-	.toggle-thumb,
-	.check-box,
-	.check-box::after {
-		transition: none;
-	}
 	.btn--danger.is-confirming {
 		animation: none;
 	}

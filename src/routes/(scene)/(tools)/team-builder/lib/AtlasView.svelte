@@ -325,7 +325,7 @@
 		cursor: pointer;
 		color: inherit;
 		font: inherit;
-		transition: transform 150ms ease;
+		transition: transform var(--t-quick);
 	}
 	/* ↻ ⚓ NATE 2026-08-10: the glass pane-hover idiom — A RING AND A DENSITY,
 	   no wash. Same treatment as the band plates (see app.css), because this is
@@ -365,7 +365,7 @@
 		   comes from alpha, and the well is the only other rung), and --surface is
 		   the honest name for the ground a card paints. */
 		background: var(--surface);
-		transition: background 150ms ease;
+		transition: background var(--t-quick);
 	}
 	.rolecard:hover .rolecard-id {
 		background: var(--surface-hover);

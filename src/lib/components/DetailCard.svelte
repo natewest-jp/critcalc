@@ -5,6 +5,8 @@
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import CloseMark from '$lib/components/CloseMark.svelte';
 	import Mark from '$lib/components/Mark.svelte';
+	import { fade } from 'svelte/transition';
+	import { T_SNAP, motion, introLive, outroInert } from '$lib/motion';
 	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
 	import {
 		deriveCharacterCapabilities,
@@ -139,8 +141,22 @@
 
 <!-- The Team Builder's one deliberate modal (documented exception to the
      non-modal principle): a focused single-character read, where covering the
-     workspace is the point. Esc / backdrop / ✕ all dismiss. -->
-<div class="dc-backdrop" onclick={handleBackdropClick} role="presentation">
+     workspace is the point. Esc / backdrop / ✕ all dismiss.
+
+     ↻ 2026-08-12 (motion round): it fades, at the click-path band. This card is
+     the SAME REGISTER as ChromeOverlay — a scrim plus a raised panel, dismissed
+     the same three ways — and ChromeOverlay has faded since it was built, so
+     the card snapping in was not a choice anyone made, just the one modal that
+     never got the treatment. Both are on --t-snap/T_SNAP now; the overlay's
+     lone hand-written 140 folded into the band. -->
+<div
+	class="dc-backdrop"
+	transition:fade={{ duration: motion(T_SNAP) }}
+	onintrostart={introLive}
+	onoutrostart={outroInert}
+	onclick={handleBackdropClick}
+	role="presentation"
+>
 	<div
 		class="dc-panel"
 		style:--el-color={color}
@@ -460,8 +476,8 @@
 		letter-spacing: var(--ls-mid);
 		cursor: pointer;
 		transition:
-			background 150ms ease,
-			border-color 150ms ease;
+			background var(--t-quick),
+			border-color var(--t-quick);
 	}
 	.dc-team:hover:not(:disabled),
 	.dc-compare:hover:not(:disabled) {
