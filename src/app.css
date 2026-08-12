@@ -2639,7 +2639,7 @@ img {
    engine, and on this project's own machine it is a different weight between
    the browser we tune in and the browser we ship to. */
 
-⚠ The bench ribbon does not read --inset-stroke at all: it carries its own
+/* ⚠ The bench ribbon does not read --inset-stroke at all: it carries its own
    RIBBON_FRAME_BORDER (= 2), because its radii are tuned to its geometry and it
    predates this family. The two numbers agreeing is the point — if one moves,
    move the other. */
