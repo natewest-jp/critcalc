@@ -505,6 +505,161 @@
 		star: Math.min(...EL7.map((el) => ratio(set[el], STAR)))
 	});
 
+	/* ══ SECTION 10 · A FOURTH RUNG, FOR BARS ════════════════════════════════
+	 * ⚓ Nate 2026-08-12: "we rejected a deeper rung for icons, but I think we
+	 * might need a deeper rung for things like BARS… very slightly deeper
+	 * (colour density) and slightly more balanced between the darkness of the
+	 * scene and the white of their text."
+	 *
+	 * ⚠ THIS IS NOT A RE-TUNE OF THE PALETTE, AND THE DISTINCTION IS THE WHOLE
+	 * REASON IT IS ALLOWED. `main` and `hi` are TRANSCRIBED — two tables copied
+	 * out of the game — and the law from that round is "do not re-tune them as a
+	 * set". A bar rung is DERIVED FROM main, the way `deep` and the icon set are:
+	 * the transcription is untouched and gains a fourth job.
+	 *
+	 * ⚠ AND IT IS THE ANSWER THE REJECTED DIVERGENCE COULD NOT GIVE. That one
+	 * moved the whole ladder, so a darker bar cost a darker ICON — and ⚓ Nate
+	 * ranked the fill first. Scoping the move to bars pays nothing anywhere else:
+	 * icons, glyphs, discs and washes all keep reading `main`.
+	 */
+
+	/**
+	 * The luminance at which a fill sits EXACTLY between white and the worst
+	 * star — i.e. where contrast(white, fill) == contrast(fill, star). Solving
+	 * (1.05)/(x+.05) = (x+.05)/(Ls+.05) gives x = √(1.05·(Ls+.05)) − .05, and
+	 * both ratios land on √(1.05/(Ls+.05)).
+	 *
+	 * ⚠ IT IS AN ANCHOR, NOT A TARGET. "Balanced" is a long way down from where
+	 * Genshin's fills sit (their worst white-on-fill is 1.34:1 against a
+	 * fill-vs-star of 2.96 — the fill is nearly as bright as the ink on it), and
+	 * ⚓ Nate asked for "slightly MORE balanced", not balanced. What the anchor
+	 * buys is a dial with meaning at BOTH ends instead of a taste slider.
+	 */
+	const STAR_LUM = _lum(_rgb(STAR));
+	const BALANCED_LUM = Math.sqrt(1.05 * (STAR_LUM + 0.05)) - 0.05;
+	const BALANCED_RATIO = 1.05 / (BALANCED_LUM + 0.05);
+
+	/**
+	 * 🎛️🎛️ THE TWO KNOBS THIS SECTION EXISTS TO SET. They are separate on
+	 * purpose, because "deeper" is two different requests wearing one word.
+	 *
+	 *   BAR_BALANCE  how far each fill travels from where it is toward the
+	 *                balanced luminance above. 0 = `main` untouched,
+	 *                1 = equal contrast in both directions.
+	 *   BAR_DENSITY  how much of the chroma headroom the drop FREES gets spent.
+	 *                0 = hold the same share of the gamut it has now (the
+	 *                divergence's rule — a darker cryo that is still ice);
+	 *                1 = push to the gamut edge at the new lightness.
+	 *                This is the "colour density" half of the ask, and it is the
+	 *                half that costs the fill-vs-star ratio almost nothing.
+	 *
+	 * ⚠ ORDER MATTERS AND THE SOLVER HANDLES IT: chroma changes luminance too, so
+	 * density is applied INSIDE the lightness walk rather than after it.
+	 * Otherwise every candidate overshoots its own target by a few percent, in a
+	 * direction that varies by hue.
+	 */
+	const BAR_BALANCE = 0.3;
+	const BAR_DENSITY = 0.5;
+
+	/** One element's bar rung. Same hue, always — the hue is Genshin's and no
+	 *  knob here touches it. */
+	function barRung(hex: string, balance: number, density: number) {
+		const [L0, C0, H] = toOklch(hex);
+		const share = C0 / maxChroma(L0, H);
+		const frac = share + (1 - share) * density;
+		const target = _lum(_rgb(hex)) * (1 - balance) + BALANCED_LUM * balance;
+		for (let L = L0; L > 0.2; L -= 0.002) {
+			const c = fitLCH(L, maxChroma(L, H) * frac, H);
+			if (_lum(_rgb(c)) <= target) return c;
+		}
+		return fitLCH(0.2, maxChroma(0.2, H) * frac, H);
+	}
+	const barSet = (balance: number, density: number) =>
+		Object.fromEntries(
+			EL7.map((el) => [el, barRung(EL_GENSHIN_ICON[el], balance, density)])
+		) as Record<El, string>;
+
+	/** The candidates on the board. ⚠ The last one is the anchor, not a
+	 *  proposal — it is there so the dial's far end is visible rather than
+	 *  imagined. */
+	const BAR_CANDIDATES = [
+		{
+			key: 'shipped',
+			label: 'A · `main`, as shipped — the icon rung doing a bar’s job',
+			balance: 0,
+			density: 0
+		},
+		{
+			key: 'density',
+			label: 'B · density only — same lightness, chroma to the gamut edge',
+			balance: 0,
+			density: 1
+		},
+		{ key: 'gentle', label: 'C · balance 0.15 + density 0.5', balance: 0.15, density: 0.5 },
+		{
+			key: 'pick',
+			label: `D · balance ${BAR_BALANCE} + density ${BAR_DENSITY} — my pick`,
+			balance: BAR_BALANCE,
+			density: BAR_DENSITY
+		},
+		{ key: 'deeper', label: 'E · balance 0.5 + density 0.5', balance: 0.5, density: 0.5 },
+		{
+			key: 'anchor',
+			label: 'F · balance 1.0 — the anchor, NOT a proposal',
+			balance: 1,
+			density: 0.5
+		}
+	].map((c, i) => {
+		const set = barSet(c.balance, c.density);
+		const e = extremes(set);
+		const Ls = EL7.map((el) => toOklch(set[el])[0]);
+		return {
+			...c,
+			set,
+			/** The letter the prose refers to. Derived, so the two can't disagree. */
+			mark: 'ABCDEF'[i],
+			white: e.white,
+			star: e.star,
+			spread: Math.max(e.white, e.star) / Math.min(e.white, e.star),
+			/* ⚠ THE COLUMN THAT TURNED OUT TO MATTER — see the note in the markup.
+			   Pulling every fill toward ONE luminance is by definition a squeeze on
+			   the lightness ladder, and a palette without one is unreadable in a
+			   dense stacked chart (the finding that killed the "just cap it"
+			   proposal a round ago). Genshin's own span is .193. */
+			span: Math.max(...Ls) - Math.min(...Ls)
+		};
+	});
+
+	/** The shipped halo, derived the way RotationTimeline derives it: the bar's
+	 *  own colour dropped 30 HSL lightness points. Reproduced rather than
+	 *  imported so the mock cannot quietly diverge from the chart. */
+	function haloOf(hex: string) {
+		const [r, g, b] = _rgb(hex).map((v) => v / 255);
+		const mx = Math.max(r, g, b);
+		const mn = Math.min(r, g, b);
+		const l = (mx + mn) / 2;
+		const d = mx - mn;
+		let h = 0;
+		if (d !== 0) {
+			if (mx === r) h = 60 * (((g - b) / d + 6) % 6);
+			else if (mx === g) h = 60 * ((b - r) / d + 2);
+			else h = 60 * ((r - g) / d + 4);
+		}
+		const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+		return `hsl(${Math.round(h)} ${Math.round(s * 100)}% ${Math.max(0, Math.round(l * 100) - 30)}%)`;
+	}
+
+	/** What a planner row actually says — a real cast label, not lorem. */
+	const BAR_SPECIMENS: Record<El, string> = {
+		pyro: 'Q · Bennett',
+		electro: 'E · Raiden',
+		hydro: 'Q · Furina',
+		anemo: 'E · Kazuha',
+		geo: 'Q · Zhongli',
+		dendro: 'E · Nahida',
+		cryo: 'Q · Escoffier'
+	};
+
 	/* ══ THE OTHER ICON SETS — measured, because the answer was counterintuitive ══
 	 *
 	 * ⚓ Nate: "there are other icons available — tcg, gilded, glow. What if we
@@ -1515,6 +1670,180 @@
 			have no light rung at all), and the generated icon manifest. <code>elementColors.ts</code> and
 			the export mirror test are the two places that must move in lockstep with
 			<code>app.css</code>.
+		</p>
+	</section>
+
+	<!-- ═══════════════════════════════════ 10 · A FOURTH RUNG, FOR BARS ══ -->
+	<section>
+		<h2 class="lab-h">
+			A deeper rung — for BARS only <span class="lab-badge">open</span>
+		</h2>
+		<p class="lab-note">
+			⚓ <em
+				>"We rejected a deeper rung for icons, but I think we might need a deeper rung for things
+				like bars… very slightly deeper (colour density) and slightly more balanced between the
+				darkness of the scene and the white of their text."</em
+			>
+		</p>
+		<p class="lab-note">
+			⚠ <strong
+				>This is not a re-tune of the palette, and that distinction is what makes it allowed.</strong
+			>
+			<code>main</code> and <code>hi</code> are TRANSCRIBED — two tables copied out of the game —
+			and the law from that round is <em>do not re-tune them as a set</em>. A bar rung is
+			<strong>derived from <code>main</code></strong>, the way the icon set is: the transcription is
+			untouched and gains a fourth job.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>It is also the answer the rejected divergence could not give.</strong> That one
+			moved the whole ladder, so a darker bar bought a darker ICON, and the fill was ranked first.
+			Scoping the move to bars pays nothing anywhere else — icons, glyphs, discs and the portrait
+			washes all keep reading <code>main</code>. 🔎 And it is <em>one function</em>:
+			<code>castFill()</code> in <code>elementColors.ts</code> is the only thing that turns an element
+			into a bar, shared by the planner's E/Q pills and the Team Builder's Compare bars so the two finishes
+			cannot drift.
+		</p>
+
+		<!-- ── 10a · where "balanced" actually is ──────────────────────────── -->
+		<h3 class="lab-sub">The anchor: where "balanced" actually is</h3>
+		<p class="lab-note">
+			A bar fill answers to two things at once — the night behind it and the white on it — and those
+			pull opposite ways. There is exactly one luminance where it owes each the same:
+			<code>contrast(white, fill) == contrast(fill, star)</code>, which solves to
+			<strong>{BALANCED_RATIO.toFixed(2)}:1 in both directions</strong>. Today's fills are nowhere
+			near it — worst white-on-fill
+			<strong>{extremes(EL_GENSHIN_ICON).white.toFixed(2)}:1</strong> against a fill-vs-star of
+			<strong>{extremes(EL_GENSHIN_ICON).star.toFixed(2)}:1</strong>, i.e. the fill is almost as
+			bright as the ink written on it.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>The anchor is a reference, NOT a target.</strong> Fully balanced is a long way down,
+			and the ask was "slightly more balanced". What it buys is a dial with a
+			<em>meaning</em> at both ends rather than a taste slider: <code>BAR_BALANCE</code> is "how far
+			toward that point", and <code>BAR_DENSITY</code> is the separate question of how much chroma
+			to spend on the way — because <strong>"deeper" is two requests wearing one word</strong>, and
+			only one of them costs anything.
+		</p>
+
+		<!-- ── 10b · the numbers ───────────────────────────────────────────── -->
+		<h3 class="lab-sub">What each candidate costs</h3>
+		<div class="eldial eldial--quad">
+			{#each BAR_CANDIDATES as c (c.key)}
+				<div class="eldial-row">
+					<span class="eldial-tag">{c.label}</span>
+					<span class="eldial-fig">white-on-fill <b>{c.white.toFixed(2)}:1</b></span>
+					<span class="eldial-fig">fill-vs-star <b>{c.star.toFixed(2)}:1</b></span>
+					<span class="eldial-fig">imbalance <b>{c.spread.toFixed(2)}×</b></span>
+					<span class="eldial-fig">ladder ΔL <b>{c.span.toFixed(3)}</b></span>
+				</div>
+			{/each}
+		</div>
+		<p class="lab-note">
+			🔎🔎 <strong>THE SECOND COLUMN DOESN'T MOVE, AND THAT IS THE WHOLE FINDING.</strong> Worst
+			fill-vs-star runs <strong>2.95 → 2.93 → 2.90</strong> across the entire dial while
+			white-on-fill climbs 1.33 → 2.93. ⚠ <strong>This is not the divergence measured again</strong>
+			— that one cost 2.95 → 2.49 on exactly this number, which is why it lost. The difference is mechanical:
+			the divergence <em>remapped the whole ladder</em>, so the darkest fills went down too, and the
+			worst case is set by the darkest fill. Pulling each element toward a
+			<em>shared</em> luminance instead squeezes the ladder
+			<strong>from the bright end only</strong> — cryo, geo and dendro had enormous fill-vs-star
+			headroom and are the ones that move, while pyro barely budges (<code>#ff6640 → #ff653e</code>
+			at balance 0.3). <strong>The priority you ranked first is not on the table this time.</strong>
+		</p>
+		<p class="lab-note">
+			⚠ <strong>The real cost is the fourth column.</strong> Pulling toward one luminance is by
+			definition a squeeze on the lightness ladder, and a palette without one is unreadable in a
+			dense stacked chart — the finding that killed "just cap it" a round ago (a ceiling at L .74
+			landed five of the seven on the same rung). Genshin's own span is
+			<strong>ΔL {BAR_CANDIDATES[0].span.toFixed(3)}</strong>; the anchor flattens it to
+			<strong>{BAR_CANDIDATES[BAR_CANDIDATES.length - 1].span.toFixed(3)}</strong>. That, and not
+			the star, is what sets how far down this dial can go.
+		</p>
+		<p class="lab-note">
+			🔎 And <strong>row B is free.</strong> Pushing every fill to the gamut edge at its own
+			lightness moves both contrast figures by less than 0.01, because relative luminance is mostly
+			a lightness fact — so if "deeper" turns out to mean "denser", it costs nothing that was ranked
+			first. ⚠ It also does nothing to three of the seven: pyro, electro and hydro are already at
+			the sRGB edge, so density alone is a <em>four</em>-element change (cryo
+			<code>#7af2f2 → #01f8f9</code>, plus geo, dendro, anemo). Whether a set that moves four of
+			seven still reads as one set is a judgement, not a measurement.
+		</p>
+
+		<!-- ── 10c · the specimen ──────────────────────────────────────────── -->
+		<h3 class="lab-sub">On the night, at the chart's real size</h3>
+		<p class="lab-note">
+			14px rows, <code>--fs-xs</code> bold white, the shipped halo (the bar's own colour dropped 30
+			HSL points) — reproduced from <code>RotationTimeline</code> rather than imported, so the mock
+			cannot quietly diverge from the chart.
+			<strong
+				>The icon beside each bar stays on
+				<code>main</code></strong
+			>
+			and does not move with the candidate: that pairing is the test. A bar rung only works if the bar
+			still reads as the same element as the glyph next to it.
+		</p>
+		{#each BAR_CANDIDATES as c (c.key)}
+			<div class="barcand" class:barcand--pick={c.key === 'pick'}>
+				<div class="barcand-head">
+					<span class="barcand-tag">{c.label}</span>
+					<span class="barcand-fig"
+						>{c.white.toFixed(2)} / {c.star.toFixed(2)} · <b>{c.spread.toFixed(2)}×</b></span
+					>
+				</div>
+				<div class="barcand-rows">
+					{#each EL7 as el (el)}
+						<div class="barrow">
+							<i
+								class="barrow-glyph"
+								style="--c:{EL_GENSHIN_ICON[el]}; --m:url('/assets/elements/flat-color/{el}.png')"
+							></i>
+							<span
+								class="barrow-bar"
+								style:background={c.set[el]}
+								style:--label-halo={haloOf(c.set[el])}
+								><span class="barrow-label">{BAR_SPECIMENS[el]}</span></span
+							>
+							<span class="barrow-hex">{c.set[el]}</span>
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/each}
+
+		<!-- ── 10d · side by side, one element at a time ───────────────────── -->
+		<h3 class="lab-sub">The same element down the ladder</h3>
+		<p class="lab-note">
+			The rows above answer "does this palette hold together"; this one answers "how far did each
+			element actually move". ⚠ Watch <strong>cryo</strong> and <strong>geo</strong> — they start
+			highest (<code>oklch L .892</code> and <code>.812</code>), so a balance step moves them
+			furthest and they are where a set-wide dial goes wrong first.
+		</p>
+		<div class="barmatrix">
+			<div class="barmatrix-row barmatrix-row--head">
+				<span></span>
+				{#each BAR_CANDIDATES as c (c.key)}<span class="barmatrix-h">{c.mark} · {c.key}</span
+					>{/each}
+			</div>
+			{#each EL7 as el (el)}
+				<div class="barmatrix-row">
+					<i
+						class="barrow-glyph"
+						style="--c:{EL_GENSHIN_ICON[el]}; --m:url('/assets/elements/flat-color/{el}.png')"
+					></i>
+					{#each BAR_CANDIDATES as c (c.key)}
+						<span class="barmatrix-sw" style:background={c.set[el]} title="{el} · {c.set[el]}"
+						></span>
+					{/each}
+				</div>
+			{/each}
+		</div>
+
+		<p class="lab-note">
+			🎛️ <code>BAR_BALANCE</code> and <code>BAR_DENSITY</code> are two numbers at the top of this
+			page's script and every figure above re-measures itself when you move them — candidate D is
+			whatever they currently say. If one element misbehaves at the chosen setting, ⚠ the rule from
+			the palette round applies:
+			<strong>a per-element exception you can defend beats a global transform you cannot</strong>.
 		</p>
 	</section>
 </div>
@@ -2704,5 +3033,130 @@
 		text-shadow:
 			color-mix(in srgb, var(--label-halo) 25%, transparent) 0px 1px 2px,
 			color-mix(in srgb, var(--label-halo) 50%, transparent) 0px 0px 6px;
+	}
+
+	/* ══ 10 · THE BAR RUNG ════════════════════════════════════════════════════
+	   Everything here is drawn at the PLANNER'S OWN NUMBERS, because the whole
+	   question is whether a fill survives 10px of white at 14px of height. A
+	   comfortable mock would answer a question nobody asked. */
+	.eldial--quad .eldial-row {
+		grid-template-columns: 24rem 10rem 10rem 8rem 8rem;
+	}
+
+	.barcand {
+		margin-bottom: 1.1rem;
+	}
+	/* The pick gets a rule down its left edge and nothing else. On the bare
+	   scene a box would be a second object competing with the specimens it is
+	   supposed to be pointing at. */
+	.barcand--pick {
+		border-left: 2px solid var(--accent);
+		padding-left: 0.7rem;
+		margin-left: -0.9rem;
+	}
+	.barcand-head {
+		display: flex;
+		align-items: baseline;
+		gap: 0.6rem;
+		margin-bottom: 0.35rem;
+	}
+	.barcand-tag {
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.barcand-fig {
+		font-family: var(--font-mono);
+		font-size: var(--fs-xs);
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
+		opacity: 0.7;
+	}
+	/* ⚠ SEVEN FIXED COLUMNS, AND THAT IS THE POINT — not a wrap, not two
+	   columns of four. Every candidate lays its elements out on the same pitch,
+	   so pyro is at the same x in row A as in row F and a colour's travel down
+	   the dial is read by looking STRAIGHT DOWN. A wrapping row breaks that the
+	   moment two candidates wrap differently.
+	   ⚠ It also fixes the bar's width at ~174px, which is chart-like. A bar
+	   stretched across half the page is a different specimen: the fill dominates,
+	   the label floats in the middle of it, and the thing being judged (10px of
+	   white on a small coloured block) never appears. */
+	.barcand-rows {
+		display: grid;
+		grid-template-columns: repeat(7, minmax(0, 1fr));
+		gap: 0.5rem;
+	}
+	.barrow {
+		display: grid;
+		grid-template-columns: 18px minmax(0, 1fr);
+		gap: 2px 6px;
+		align-items: center;
+	}
+	/* The comparison the section is FOR: the glyph is `main` and never moves. */
+	.barrow-glyph {
+		display: block;
+		flex: none;
+		width: 18px;
+		height: 18px;
+		background-color: var(--c);
+		-webkit-mask: var(--m) center / contain no-repeat;
+		mask: var(--m) center / contain no-repeat;
+	}
+	/* E_ROW_H and the cast pill's radius, verbatim from RotationTimeline. */
+	.barrow-bar {
+		position: relative;
+		flex: 1;
+		min-width: 0;
+		height: 14px;
+		border-radius: 2px;
+		display: flex;
+		align-items: center;
+	}
+	.barrow-label {
+		padding-left: 5px;
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
+		color: #fff;
+		white-space: nowrap;
+		overflow: hidden;
+		/* The shipped halo. ⚠ Two shadows, not one — the tight 1px pass is what
+		   holds the stem edges and the 6px pass is what separates the word from
+		   the fill; dropping either changes the answer this board is asked for. */
+		text-shadow:
+			color-mix(in srgb, var(--label-halo) 25%, transparent) 0px 1px 2px,
+			color-mix(in srgb, var(--label-halo) 50%, transparent) 0px 0px 6px;
+	}
+	/* Under the bar, aligned with it — the second column of the row's grid. */
+	.barrow-hex {
+		grid-column: 2;
+		font-family: var(--font-mono);
+		font-size: var(--fs-2xs);
+		color: var(--text);
+		opacity: 0.6;
+	}
+
+	/* One element per row, one candidate per column — the ladder read the other
+	   way round, so a single element's whole travel is one glance. */
+	.barmatrix {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		margin-bottom: 1rem;
+	}
+	.barmatrix-row {
+		display: grid;
+		grid-template-columns: 22px repeat(6, minmax(0, 7rem));
+		gap: 4px;
+		align-items: center;
+	}
+	.barmatrix-h {
+		font-size: var(--fs-2xs);
+		text-transform: uppercase;
+		letter-spacing: var(--ls-wide);
+		color: var(--text);
+		opacity: 0.7;
+	}
+	.barmatrix-sw {
+		height: 14px;
+		border-radius: 2px;
 	}
 </style>
