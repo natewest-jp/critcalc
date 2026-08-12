@@ -666,6 +666,100 @@
 		cryo: 'Q · Escoffier'
 	};
 
+	/* ══ SECTION 11 · THE UI STATE COLOURS ═══════════════════════════════════
+	 * ⚓ Nate 2026-08-12: "let's quickly talk about those, since they're close to
+	 * the element colours too" — plus three values Genshin uses.
+	 *
+	 * The question the board has to answer is NOT "which trio is prettier". It is
+	 * the one the element round taught: a colour here has to live BESIDE the
+	 * element palette without being mistaken for it, and it has to hold three
+	 * different grounds. So every row is measured on both axes.
+	 */
+	const PAPER100 = '#ece5d8'; // parchment-100 — cards, the ∅ mark's actual ground
+	const SLATE800 = '#2e3543'; // ctx-dark surface — panels, the detail card
+	const UI_GROUNDS = [
+		{ k: 'star', label: 'a star, on night', g: STAR },
+		{ k: 'slate', label: 'slate-800', g: SLATE800 },
+		{ k: 'paper', label: 'parchment-100', g: PAPER100 }
+	];
+
+	const EL_BAR: Record<El, string> = {
+		pyro: '#ff653e',
+		electro: '#ca7aff',
+		hydro: '#00b7f4',
+		anemo: '#1ecb95',
+		geo: '#f1a501',
+		dendro: '#8cd525',
+		cryo: '#50e1e2'
+	};
+
+	/** ΔE in oklab — the same measure the palette round uses, where ~.05 is where
+	 *  two colours stop reading as two. ⚠ NOT the hue gap: hue alone said our
+	 *  hydro/cryo were fine when lightness was doing all the separating. */
+	function dE(a: string, b: string) {
+		const [LA, CA, HA] = toOklch(a);
+		const [LB, CB, HB] = toOklch(b);
+		const f = (C: number, H: number) => [
+			C * Math.cos((H * Math.PI) / 180),
+			C * Math.sin((H * Math.PI) / 180)
+		];
+		const [aa, ab] = f(CA, HA);
+		const [ba, bb] = f(CB, HB);
+		return Math.hypot(LA - LB, aa - ba, ab - bb);
+	}
+	/** The element this colour is most likely to be mistaken for, measured
+	 *  against BOTH rungs — `main` is what a glyph beside it wears, `bar` is what
+	 *  a fill beside it wears, and since 2026-08-12 those are different colours. */
+	const nearestEl = (hex: string) => {
+		const pick = (set: Record<El, string>) =>
+			EL7.map((el) => ({ el, d: dE(hex, set[el]) })).sort((x, y) => x.d - y.d)[0];
+		return { main: pick(EL_GENSHIN_ICON), bar: pick(EL_BAR) };
+	};
+
+	/**
+	 * ⚠ FIVE VALUES, NOT THREE — and that gap is the first finding. The tokens
+	 * were taken FROM the crit visualizer's risk ramp (⚓ Nate's pick), so the
+	 * chart is the parent, not a copy. But the ramp has FOUR stops and only two
+	 * of them ever became tokens:
+	 *   #e63946 = --ui-danger   ✅       #f4a261 = --ui-warning  ✅
+	 *   #f6d365 = no token at all        #4ecca3 = the PRE-NUDGE positive
+	 * --ui-positive was pushed .034 → #51c89a to escape the OLD anemo and the
+	 * chart never followed, so the family that was meant to be one is now two.
+	 */
+	const UI_ROWS = [
+		{ key: 'danger', label: 'danger', now: '#e63946', token: '--ui-danger', gen: '#ff5a5a' },
+		{ key: 'warning', label: 'warning', now: '#f4a261', token: '--ui-warning', gen: '#ffc700' },
+		{ key: 'positive', label: 'positive', now: '#51c89a', token: '--ui-positive', gen: '#80df66' }
+	];
+	const UI_STRAYS = [
+		{ hex: '#f6d365', note: 'the ramp’s 4th stop — never became a token' },
+		{ hex: '#4ecca3', note: 'the pre-nudge positive — still in the ramp + ArtifactInstrument' }
+	];
+
+	/** OUR HUE AT GENSHIN'S LIGHTNESS, chroma held at the same share of the
+	 *  gamut. The one transform worth showing, because it is the move this
+	 *  system already makes twice (rx-quicken, and the --ui-positive note's own
+	 *  advice: "the axis to spend is LIGHTNESS, not hue"). */
+	function atGenshinL(ours: string, gen: string) {
+		const [L0, C0, H] = toOklch(ours);
+		const Lg = toOklch(gen)[0];
+		return fitLCH(Lg, maxChroma(Lg, H) * (C0 / maxChroma(L0, H)), H);
+	}
+	const UI_LIFTED = Object.fromEntries(
+		UI_ROWS.map((r) => [r.key, atGenshinL(r.now, r.gen)])
+	) as Record<string, string>;
+
+	/* The risk ramp, verbatim from crit.ts — high risk → low risk, which is
+	 * left → right on the hits/rotation slider (more hits = less risk). */
+	const RAMP_NOW = ['#e63946', '#f4a261', '#f6d365', '#4ecca3'];
+	const RAMP_GENSHIN = ['#ff5a5a', '#ffc700', '#80df66'];
+	/** ⚠ DANGER IS THE SHIPPED VALUE HERE, not the lifted one — the row above
+	 *  recommends holding it, and a demo that quietly disagrees with its own
+	 *  label is worse than no demo. The ramp's 4th stop is untouched because it
+	 *  is the chart's, not a token (see 11a). */
+	const RAMP_LIFTED = ['#e63946', UI_LIFTED.warning, '#f6d365', UI_LIFTED.positive];
+	const ramp = (stops: string[]) => `linear-gradient(to right, ${stops.join(', ')})`;
+
 	/* ══ THE OTHER ICON SETS — measured, because the answer was counterintuitive ══
 	 *
 	 * ⚓ Nate: "there are other icons available — tcg, gilded, glow. What if we
@@ -1858,6 +1952,155 @@
 			whatever they currently say. If one element misbehaves at the chosen setting, ⚠ the rule from
 			the palette round applies:
 			<strong>a per-element exception you can defend beats a global transform you cannot</strong>.
+		</p>
+	</section>
+
+	<!-- ════════════════════════════════ 11 · THE UI STATE COLOURS ══ -->
+	<section>
+		<h2 class="lab-h">
+			UI state colours <span class="lab-badge">open</span>
+		</h2>
+		<p class="lab-note">
+			⚓ Nate 2026-08-12: <em
+				>"let's quickly talk about those, since they're close to the element colours, too"</em
+			>
+			— with three values Genshin uses: <code>#80DF66</code> · <code>#FFC700</code> ·
+			<code>#FF5A5A</code>.
+		</p>
+		<p class="lab-note">
+			⚠ <strong>The question is not which trio is prettier.</strong> A UI state colour has to live BESIDE
+			the element palette without being mistaken for it, and it has to hold three different grounds. Every
+			row below is measured on both axes, and the two answers point opposite ways — which is the whole
+			result.
+		</p>
+
+		<!-- ── 11a · what we actually have ─────────────────────────────────── -->
+		<h3 class="lab-sub">First: we have FIVE values, not three</h3>
+		<p class="lab-note">
+			The tokens were taken <em>from</em> the crit visualizer's risk ramp (⚓ Nate's pick), so the
+			chart is the parent and not a copy that drifted. But
+			<strong>the ramp has four stops and only two became tokens</strong>, and one of the other two
+			has since gone stale:
+		</p>
+		<div class="uistray">
+			{#each UI_STRAYS as s (s.hex)}
+				<div class="uistray-row">
+					<span class="uisw" style:background={s.hex}></span>
+					<code>{s.hex}</code>
+					<span class="uistray-note">{s.note}</span>
+				</div>
+			{/each}
+		</div>
+		<p class="lab-note">
+			🐛 <code>#4ecca3</code> is the finding worth acting on. <code>--ui-positive</code> was pushed
+			to <code>#51c89a</code> to escape the OLD anemo; the chart never followed, so
+			<strong>the family that was meant to be one value is now two</strong> —
+			<code>#4ecca3</code> still lives in <code>crit.ts</code>'s <code>RISK_STOPS</code> and in
+			<code>ArtifactInstrument</code>'s better/same/worse odds.
+		</p>
+
+		<!-- ── 11b · the two measurements ──────────────────────────────────── -->
+		<h3 class="lab-sub">Ours vs Genshin's — and they win opposite arguments</h3>
+		<div class="uigrid">
+			<div class="uigrid-row uigrid-row--head">
+				<span></span><span>swatch</span><span>nearest element</span><span>nearest bar</span>
+				{#each UI_GROUNDS as g (g.k)}<span>vs {g.label}</span>{/each}
+			</div>
+			{#each UI_ROWS as row (row.key)}
+				{#each [{ tag: `ours · ${row.token}`, hex: row.now, mine: false }, { tag: 'Genshin', hex: row.gen, mine: false }, { tag: 'ours, at their L', hex: UI_LIFTED[row.key], mine: true }] as cand (cand.tag)}
+					{@const n = nearestEl(cand.hex)}
+					<div class="uigrid-row" class:uigrid-row--mine={cand.mine}>
+						<span class="uigrid-tag">{row.label} · {cand.tag}</span>
+						<span class="uisw uisw--wide" style:background={cand.hex}></span>
+						<span class="uifig" class:uifig--bad={n.main.d < 0.05}
+							>{n.main.el} <b>{n.main.d.toFixed(3)}</b></span
+						>
+						<span class="uifig" class:uifig--bad={n.bar.d < 0.05}
+							>{n.bar.el} <b>{n.bar.d.toFixed(3)}</b></span
+						>
+						{#each UI_GROUNDS as g (g.k)}
+							<span class="uifig" class:uifig--bad={ratio(cand.hex, g.g) < 3}
+								><b>{r2(cand.hex, g.g)}</b></span
+							>
+						{/each}
+					</div>
+				{/each}
+			{/each}
+		</div>
+		<p class="lab-note">
+			🔎 <strong>Genshin's are brighter; ours are better separated.</strong> Their trio wins every
+			contrast column — their red is 2.80 against a star where ours is 2.06 — and loses the
+			separation column on two of three: their red sits <strong>ΔE .040 from pyro</strong> where
+			ours sits .099, and their green <strong>.045 from dendro</strong>. ⚠ At ~.05 two colours stop
+			reading as two. <strong>Genshin can afford that and we cannot:</strong> in their UI, element colour
+			is icons and inline text tags while state colour is buttons and numeric deltas — the two never share
+			a reading. Ours share a chart.
+		</p>
+
+		<!-- ── 11c · the recommendation ────────────────────────────────────── -->
+		<h3 class="lab-sub">My suggestion — per token, not a set swap</h3>
+		<p class="lab-note">
+			⚠ <strong>The right move is the one this system has already made twice</strong> — keep our
+			HUES (they are the ones holding the separation) and spend LIGHTNESS. That is literally what
+			the <code>--ui-positive</code> note in <code>app.css</code> advises, and what
+			<code>--rx-quicken</code> did when the new anemo closed on it. But it does not apply evenly, so
+			the answer is three answers:
+		</p>
+		<p class="lab-note">
+			✅ <strong><code>--ui-warning</code> → {UI_LIFTED.warning}</strong> — a pure win, no trade.
+			Contrast 4.16 → 5.44 against a star <em>and</em> geo separation .070 → .106, because the lift moves
+			it away from geo rather than toward it.
+		</p>
+		<p class="lab-note">
+			✅ <strong><code>--ui-positive</code> → {UI_LIFTED.positive}</strong> — it fixes a collision
+			that <em>today's bar rung made worse</em>. Shipped positive sits ΔE
+			<strong>.026 from <code>--el-anemo-bar</code></strong>, well inside the "not two colours" line
+			and the adjacency that actually happens — a green "saved" state beside an anemo bar. The lift
+			takes it to .072 and buys 4.11 → 5.18 on the star.
+		</p>
+		<p class="lab-note">
+			⛔ <strong><code>--ui-danger</code> stays at <code>#e63946</code></strong> — boxed in for
+			three independent reasons, which is why I would not touch it. <strong>(1)</strong> Lifting it
+			<em>halves</em>
+			the pyro separation, .099 → .050, because <strong>pyro IS a light red</strong> — there is
+			nowhere brighter for a red to go here. <strong>(2)</strong> It is the only one of the three
+			that works on PAPER (<strong>3.33:1</strong> on parchment-100, against warning's 1.65 and
+			positive's 1.66), and that is not hypothetical: the uncurated ∅ on a character card is
+			<code>--ui-danger</code>
+			on parchment. Genshin's red manages 2.44 there — no light UI, again.
+			<strong>(3)</strong> Its weak-looking 2.06 vs a star is measured against a ground it never sits
+			on; every consumer is ink on a card or a panel.
+		</p>
+
+		<!-- ── 11d · the ramp ──────────────────────────────────────────────── -->
+		<h3 class="lab-sub">The crit visualizer's Hits / Rotation ramp</h3>
+		<p class="lab-note">
+			⚓ Nate asked whether those are our current values. <strong>Two of four exactly</strong> —
+			<code>#e63946</code> is <code>--ui-danger</code> and <code>#f4a261</code> is
+			<code>--ui-warning</code>. <code>#f6d365</code> has no token at all, and
+			<code>#4ecca3</code> is the pre-nudge positive. Drawn at the slider's own size:
+		</p>
+		<div class="uiramps">
+			{#each [{ k: 'ours — shipped, 4 stops', s: RAMP_NOW }, { k: 'Genshin’s three', s: RAMP_GENSHIN }, { k: 'the suggestion above (danger held)', s: RAMP_LIFTED }] as g (g.k)}
+				<div class="uiramp-row">
+					<span class="uiramp-tag">{g.k}</span>
+					<span class="uiramp" style:background={ramp(g.s)}></span>
+					<span class="uiramp-hex">{g.s.join(' ')}</span>
+				</div>
+			{/each}
+		</div>
+		<p class="lab-note">
+			🔎 <strong
+				>Genshin's makes a visibly different object, and the stop COUNT does more of that than the
+				hues.</strong
+			>
+			Three stops put the midpoint at pure yellow, so it reads red → yellow → green in three clean bands.
+			Ours has four, and the extra <code>#f6d365</code> between orange and teal is what gives it its
+			long warm shoulder — the thing that makes it read as a <em>risk</em> gradient rather than a
+			traffic light. ⚠ If the tokens ever move,
+			<strong>the ramp is a separate decision</strong>: § Laws says a UI state colour must not
+			appear inside a visualization, and the only reason these coincide is that the chart got there
+			first.
 		</p>
 	</section>
 </div>
@@ -3172,5 +3415,109 @@
 	.barmatrix-sw {
 		height: 14px;
 		border-radius: 2px;
+	}
+
+	/* ══ 11 · UI STATE COLOURS ════════════════════════════════════════════════ */
+	.uisw {
+		display: inline-block;
+		width: 22px;
+		height: 18px;
+		border-radius: 2px;
+		flex: none;
+	}
+	.uisw--wide {
+		width: 100%;
+	}
+	.uistray {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		margin-bottom: 1rem;
+	}
+	.uistray-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.uistray-note {
+		opacity: 0.75;
+	}
+
+	.uigrid {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		margin-bottom: 1rem;
+	}
+	.uigrid-row {
+		display: grid;
+		grid-template-columns: 17rem 5rem repeat(5, minmax(0, 7rem));
+		gap: 0.5rem;
+		align-items: center;
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	.uigrid-row--head {
+		font-size: var(--fs-2xs);
+		text-transform: uppercase;
+		letter-spacing: var(--ls-wide);
+		opacity: 0.7;
+		margin-bottom: 0.2rem;
+	}
+	/* The proposal rows get a rule rather than a box — same reasoning as the bar
+	   board's pick marker: on the bare scene a box competes with the swatches. */
+	.uigrid-row--mine {
+		border-left: 2px solid var(--accent);
+		padding-left: 0.5rem;
+		margin-left: -0.7rem;
+		margin-bottom: 0.5rem;
+	}
+	.uigrid-tag {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.uifig {
+		font-size: var(--fs-xs);
+		opacity: 0.85;
+	}
+	.uifig b {
+		font-family: var(--font-mono);
+		font-variant-numeric: tabular-nums;
+	}
+	/* ⚠ NOT --ui-danger. This board is ABOUT --ui-danger, and marking its own
+	   failures in the value under discussion would move with the thing being
+	   judged. --accent is the one hue on this page that is not on trial. */
+	.uifig--bad {
+		color: var(--accent);
+		opacity: 1;
+	}
+
+	.uiramps {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		margin-bottom: 1rem;
+	}
+	.uiramp-row {
+		display: grid;
+		grid-template-columns: 17rem minmax(0, 22rem) 1fr;
+		gap: 0.7rem;
+		align-items: center;
+		font-size: var(--fs-sm);
+		color: var(--text);
+	}
+	/* The slider track's own geometry — 6px tall, fully rounded. A ramp judged
+	   at swatch height is a different object from a ramp judged as a track. */
+	.uiramp {
+		height: 6px;
+		border-radius: 3px;
+	}
+	.uiramp-hex {
+		font-family: var(--font-mono);
+		font-size: var(--fs-2xs);
+		opacity: 0.6;
 	}
 </style>
