@@ -132,15 +132,30 @@
 		{/if}
 	</section>
 
-	<section class="lp-section" class:lp-section--lead={section === 'refinement'}>
-		<h3 class="lp-hd"><span class="lp-hd-key">Refinement</span></h3>
+	<!-- ⚓ NATE 2026-08-12: with no weapon equipped there is nothing to refine, so
+	     the pips go inert rather than accepting a value that describes nothing.
+	     They stay VISIBLE and dimmed rather than disappearing: the section is how
+	     you learn refinement is part of this decision at all, and a control that
+	     vanishes teaches nothing about why. Its twin is the pill's corner digit
+	     in SlotPortrait, which does hide — a badge on an icon has no room to
+	     explain itself, and an unset one would just be a number about nothing. -->
+	<section
+		class="lp-section"
+		class:lp-section--lead={section === 'refinement'}
+		class:lp-section--inert={!currentWeapon}
+	>
+		<h3 class="lp-hd">
+			<span class="lp-hd-key">Refinement</span>
+			{#if !currentWeapon}<span class="lp-hd-note">equip a weapon first</span>{/if}
+		</h3>
 		<div class="lp-pips">
 			{#each [1, 2, 3, 4, 5] as r (r)}
 				<button
 					class="lp-pip"
-					class:lp-pip--filled={r <= currentRef}
-					class:lp-pip--current={r === currentRef}
-					aria-pressed={r === currentRef}
+					class:lp-pip--filled={!!currentWeapon && r <= currentRef}
+					class:lp-pip--current={!!currentWeapon && r === currentRef}
+					disabled={!currentWeapon}
+					aria-pressed={!!currentWeapon && r === currentRef}
 					onclick={() => onSetRefinement(r as 1 | 2 | 3 | 4 | 5)}>R{r}</button
 				>
 			{/each}
@@ -189,6 +204,19 @@
 	.lp-section--lead .lp-hd-key {
 		color: var(--text);
 	}
+	/* Says WHY the pips beneath are inert, in the heading that already carries
+	   each section's current state. Lower case against the key's caps — it is a
+	   condition, not a value. */
+	.lp-hd-note {
+		font-style: italic;
+		color: color-mix(in srgb, var(--muted) 75%, transparent);
+	}
+	/* The whole section reads one rung back while it has nothing to act on. The
+	   pips carry their own :disabled dim; this is the LABEL following them, so
+	   the section reads as unavailable rather than as five broken buttons. */
+	.lp-section--inert .lp-hd-key {
+		color: color-mix(in srgb, var(--muted) 55%, transparent);
+	}
 
 	.lp-grid {
 		display: grid;
@@ -212,6 +240,20 @@
 	.lp-tile:hover {
 		background: var(--fill-hover);
 	}
+	/* ⏸ THE THREE SELECTION RINGS ARE THE 1.5px SWEEP'S DELIBERATE EXCEPTION
+	   (this, .lp-pip--current, and SlotPortrait's .sp-pip--current).
+
+	   The 2026-08-12 measurement retired 1.5px BORDERS because Chrome floors
+	   border-width to whole CSS px, so they were silently painting 1px in the
+	   browser we tune in — moving those to 1px was visually inert there and
+	   fixed a real Chrome/Safari split. box-shadow is the opposite case: Chrome
+	   renders a 1.5px inset ring EXACTLY at every DPR, so these three have been
+	   showing the weight they were judged at, and sweeping them would be a
+	   visible design change rather than a correction.
+	   ⚠ WebKit still varies (2 / 1.33 / 1.5 / 1.67 CSS px at DPR 1 / 1.5 / 2 / 3),
+	   so they are not dependable either — just not WRONG. 2px is the value that
+	   renders identically in both engines at every DPR if these are ever wanted
+	   settled; that is ⚓ Nate's call, not a cleanup. */
 	.lp-tile--current {
 		background: color-mix(in srgb, var(--el) 20%, transparent);
 		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--el) 60%, transparent);
@@ -271,7 +313,17 @@
 	}
 	.lp-pip--current {
 		background: color-mix(in srgb, var(--el) 30%, transparent);
+		/* 1.5px stands here on purpose — see .lp-tile--current above. */
 		box-shadow: inset 0 0 0 1.5px var(--el);
+	}
+	/* Nothing to refine without a weapon. The 0.35 dim is the site's disabled
+	   rung (the bench card's chips and slot actions wear the same one); these sit
+	   in a MODAL popover at static coordinates, so element opacity is safe here
+	   in a way it is not on the transform-placed ribbon. */
+	.lp-pip:disabled {
+		opacity: 0.35;
+		cursor: default;
+		pointer-events: none;
 	}
 	.lp-pip:hover {
 		background: var(--fill-hover);

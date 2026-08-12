@@ -15,7 +15,7 @@
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
-	import { benchBand, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
+	import { benchBand, BENCH_CARD_W, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { plannerView as pv } from '$lib/plannerView.svelte';
 	import { onDestroy } from 'svelte';
@@ -124,18 +124,17 @@
 	/** The CONVERGED SLOT-CARD width — the thing the two tools actually share,
 	 *  and the width the ribbon is built around (RIBBON_W = this + chrome).
 	 *
-	 *  160 is set by the Bench's base row, the card's widest band:
-	 *      action 26 + gap 4 + pill 76 + gap 4 + action 26 = 136
-	 *      + 18 card padding = 154, leaving ~6px of slack.
-	 *  Undershoot it and the TB card silently OVERFLOWS its grid track rather
-	 *  than clipping — the bench keeps its width while the portrait drifts
-	 *  right. probe-bench-align asserts both that and cross-tool card parity.
-	 *
 	 *  The planner reads it for ONE thing now: the PNG export, which draws its
 	 *  own label column with no strip standing over it. The on-screen gutter
 	 *  retired with the abutting round — the frame starts at the ribbon's right
-	 *  edge, so the tracks begin at the frame's own padding box. */
-	const LABEL_W = 160;
+	 *  edge, so the tracks begin at the frame's own padding box.
+	 *
+	 *  ↻ 2026-08-12: this was a hand-copied `160` kept in step with
+	 *  BENCH_CARD_W by a comment saying "move together". It imports the constant
+	 *  now — the bench-card round moved that number and one of the two literals
+	 *  would silently have stayed behind, taking the PNG's whole left column
+	 *  with it. */
+	const LABEL_W = BENCH_CARD_W;
 	/** The chart frame's horizontal padding — JS-side because .rp-frame reads it
 	 *  back as --rp-frame-pad-x and the dock's inset is measured against it. */
 	const FRAME_PAD_X = 14;
@@ -554,14 +553,16 @@
 	// Block height intentionally excludes LOADOUT_ROWS_H — the loadout panel
 	// in the label column lives within the cell's existing real estate, so the
 	// track column doesn't carry a parallel dead band underneath.
-	// ⚠ FLOORED BY THE BENCH CARD, NOT BY THE ROWS. The card that labels this
-	// slot needs 86px before its portrait gets a pixel (see BENCH_SLOT_MIN_H),
-	// and after two condensing rounds the tracks ask for less than that — so the
-	// CARD sets the minimum now. Without this floor the 68px portrait disc spills
-	// straight through the identity row and the loadout pill; it is capped rather
-	// than floored on its own side, so nothing else would catch it.
-	// The extra height lands as slack BELOW the last aux row (every row is
-	// positioned from the slot's top), which is where it is least noticeable.
+	// ⚠ FLOORED BY THE BENCH CARD, which labels this slot and cannot be shorter
+	// than its own portrait (BENCH_SLOT_MIN_H = 86). The disc is capped rather
+	// than floored on its own side, so without this nothing would catch a slot
+	// too short to hold it and it would SPILL — that bug shipped once.
+	// ↻ 2026-08-12 (the bench-card round): the floor was 126 and the card was
+	// genuinely the binding constraint; the card is a ROW now and 86 sits under
+	// what a busy slot asks for (122) and 4px over a sparse one (82). So this is
+	// back to being a guard rather than a governor — it binds on empty and
+	// near-empty rotations only. Any slack lands BELOW the last aux row (every
+	// row is positioned from the slot's top), where it is least noticeable.
 	function slotBlockH(slotIdx: number): number {
 		const buffRows = slotBuffRowsReserved(slotIdx);
 		const buffH = buffRows > 0 ? buffRows * CHAR_BUFF_ROW_STRIDE - 2 : 0;
@@ -2932,7 +2933,9 @@
 	   rather than an empty outline. */
 	.rp-active-bg--unset {
 		background: color-mix(in srgb, var(--rp-active) 60%, transparent);
-		border: 1.5px dashed var(--rp-active);
+		/* 1px, not 1.5 — Chrome floors border-width to whole CSS px, so this has
+		   always painted 1px there; see the measurement at --inset-stroke. */
+		border: 1px dashed var(--rp-active);
 	}
 
 	/* ── Input blocks ─────────────────────────────────────────── */

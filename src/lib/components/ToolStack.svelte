@@ -122,7 +122,17 @@
 				     would collapse them to their labels' widths. -->
 				<div class="band-full">{@render bandBFull()}</div>
 			{:else}
-				<div class="band-zone">{@render bandBLeft?.()}</div>
+				<!-- 🐛 RENDERED ONLY WHEN FILLED. An empty flex item is still a flex
+				     item, so it takes no width and its GAP anyway — which put the
+				     planner's rail 4px right of the tab above it once band B became a
+				     3-up with nothing in its left zone (⚓ Nate: "the left of the band
+				     B bar looks a little off, from the tabs above it… I think it's
+				     different from the TB's band because the TB has a button on the
+				     far left"; measured 270 against band A's 266, where the TB sits
+				     at 266/266). The invariant this restores is PLATE EDGES align
+				     down the stack — their inks do not, and cannot, since each plate
+				     insets its own label by its own padding. -->
+				{#if bandBLeft}<div class="band-zone">{@render bandBLeft()}</div>{/if}
 				{#if bandBCenter}
 					<!-- THE RAIL. In the 3-up split this zone is the only thing in either
 					     band that still paints a ground: the two flanking controls became
@@ -131,7 +141,9 @@
 					     navigation sits on, and that strip is now a plate too. -->
 					<div class="band-zone band-zone--center">{@render bandBCenter()}</div>
 				{/if}
-				<div class="band-zone band-zone--end">{@render bandBRight?.()}</div>
+				<!-- Same guard, same reason: a band whose right zone is empty would
+				     hold a trailing gap its rail should have had. -->
+				{#if bandBRight}<div class="band-zone band-zone--end">{@render bandBRight()}</div>{/if}
 			{/if}
 		</div>
 	</div>

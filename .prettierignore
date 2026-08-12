@@ -20,6 +20,10 @@ src/lib/data/characterRoles.generated.ts
 # explode each icon's node array across a dozen lines, so a Lucide bump that
 # redraws one glyph would read as a hundred-line diff instead of one.
 src/lib/marks.generated.ts
+# Generated — scripts/generate-constellation-marks.mjs, one GLYPH per line, for
+# the same reason as the marks above: a re-export of the C-set should read as
+# seven lines, not seven hundred.
+src/lib/constellationMarks.generated.ts
 docs/curation/capability-audit.md
 
 # Generated — scripts/audit-genshin-db-diff.mjs and audit-data-outliers.mjs.

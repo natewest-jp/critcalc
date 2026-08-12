@@ -26,7 +26,7 @@ import {
 	type DerivedCapability,
 	type NormalizedTarget
 } from '$lib/capabilities/deriveCapabilities';
-import { KIND_LABEL, KIND_ORDER } from './capabilityText';
+import { KIND_LABEL, KIND_ORDER } from '$lib/capabilities/capabilityText';
 
 /** Columns stay readable side by side up to a full team's worth. */
 export const MAX_COMPARE = 4;

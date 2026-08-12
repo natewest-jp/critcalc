@@ -64,13 +64,17 @@ const BASE = process.env.BASE ?? 'http://localhost:4998';
 const SHOTS = process.env.SHOTS_DIR ?? null;
 const SCALE = Number(process.env.SCALE ?? 8); // deviceScaleFactor: subpixel resolution
 const SWEEP = process.env.SWEEP ? process.env.SWEEP.split(',').map(Number) : [null];
-// Default targets: the bench card's two value controls, on the planner.
+// Default targets: the bench card's typeset values, on the planner.
+// ↻ 2026-08-12: the CONSTELLATION CHIP left this list — its C0–C6 are vector
+// glyphs now (ConMark), and a path has no advance box for its ink to sit off
+// the middle of. That is the fix this probe's whole method exists to justify,
+// so it is worth being explicit: the chip did not get better at centering text,
+// it stopped centering text. Everything still typeset is fair game, and the
+// method (analytic clip ref + the control's own stroke, judged by ink bbox) is
+// unchanged — see reference_subpixel_rendering_laws.
 const TARGETS = process.env.SEL
 	? [{ sel: process.env.SEL, label: process.env.SEL }]
-	: [
-			{ sel: '.sp-card .sp-cons-chip', label: 'constellation chip' },
-			{ sel: '.sp-card .sp-lo-ref', label: 'refinement value' }
-		];
+	: [{ sel: '.sp-card .sp-lo-ref', label: 'refinement digit' }];
 // A rotation with a filled slot, so the cards render values.
 const SEED = {
 	tabs: [

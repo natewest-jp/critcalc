@@ -1,5 +1,5 @@
 import { test, expect, openTool, KEYS } from './fixtures/critcalc';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 /**
  * THE TWO-LAYER MODEL — constellations and loadouts.
@@ -23,6 +23,21 @@ import type { Page } from '@playwright/test';
 const conChip = (page: Page, i: number) => page.locator('.sp-cons-chip').nth(i);
 const readStore = (page: Page, key: string) => page.evaluate((k) => localStorage.getItem(k), key);
 
+/**
+ * ⚠ THE CHIP HAS NO TEXT. Since 2026-08-12 its value is a VECTOR GLYPH
+ * (ConMark — C0–C6 cut from IBM Plex Sans, so centring a value in a round chip
+ * stopped needing optical nudges), which means `toHaveText('C2')` matches an
+ * empty string and every assertion here passed vacuously or failed outright.
+ * Nine failures across three engines caught it, deterministically.
+ *
+ * The accessible NAME still carries the level — it is what a screen reader
+ * announces, and the only machine-readable statement of the value left in the
+ * DOM. Asserting on it pins the same fact the eye checks, and would catch the
+ * value silently disappearing from assistive tech too.
+ */
+const expectCon = (chip: Locator, level: number, why: string) =>
+	expect(chip, why).toHaveAttribute('aria-label', new RegExp(`currently C${level}$`));
+
 /** Set a slot's constellation from its bench card chip. */
 async function setBenchCon(page: Page, slot: number, pip: number) {
 	await page.locator('.bench-band-mount .sp-cons-chip').nth(slot).click();
@@ -33,11 +48,11 @@ test('the planner con chip writes the plan, never the roster', async ({ page }) 
 	await openTool(page, '/rotation-planner');
 	await page.locator('.cm-content').first().click();
 	await page.keyboard.type('Furina E Q > Bennett E Q');
-	await expect(conChip(page, 0), 'a fresh tab starts at C0').toHaveText('C0');
+	await expectCon(conChip(page, 0), 0, 'a fresh tab starts at C0');
 
 	await conChip(page, 0).click();
 	await page.locator('.sp-popover .sp-pip').nth(2).click();
-	await expect(conChip(page, 0), 'the chip reflects the tab override').toHaveText('C2');
+	await expectCon(conChip(page, 0), 2, 'the chip reflects the tab override');
 
 	const tabs = JSON.parse((await readStore(page, KEYS.tabs)) ?? '{}');
 	expect(tabs?.tabs?.[0]?.tabCon?.furina, 'written to tabCon, keyed by character').toBe(2);
@@ -56,7 +71,7 @@ test('an open tab falls back live; saving freezes the resolved values', async ({
 	await conChip(page, 0).click();
 	await page.locator('.sp-popover .sp-pip').nth(2).click();
 
-	await expect(conChip(page, 1), 'an un-overridden slot falls back to the roster').toHaveText('C1');
+	await expectCon(conChip(page, 1), 1, 'an un-overridden slot falls back to the roster');
 
 	// Save → the bank copy freezes BOTH slots' effective values.
 	// ⚠ Unanchored on purpose: `hasText` matches textContent, and the button
@@ -80,8 +95,8 @@ test('an open tab falls back live; saving freezes the resolved values', async ({
 		KEYS.constellations
 	);
 	await page.reload({ waitUntil: 'networkidle' });
-	await expect(conChip(page, 1), 'the open tab tracks the roster change').toHaveText('C6');
-	await expect(conChip(page, 0), 'the explicit override survives it').toHaveText('C2');
+	await expectCon(conChip(page, 1), 6, 'the open tab tracks the roster change');
+	await expectCon(conChip(page, 0), 2, 'the explicit override survives it');
 });
 
 test('the bench band writes Layer 2 on the Team Builder too', async ({ page, seed }) => {
@@ -126,8 +141,9 @@ test('the detail card owns Layer 1, and the plan keeps shadowing it', async ({ p
 	expect(own.nahida, 'a roster constellation implies ownership').toBe('owned');
 
 	await page.keyboard.press('Escape');
-	await expect(
+	await expectCon(
 		page.locator('.bench-band-mount .sp-cons-chip').first(),
+		4,
 		'the plan keeps shadowing the new roster value'
-	).toHaveText('C4');
+	);
 });

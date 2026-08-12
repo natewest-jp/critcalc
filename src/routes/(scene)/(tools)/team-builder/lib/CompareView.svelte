@@ -13,7 +13,7 @@
 	import type { Ability } from '$lib/types/ability';
 	import { conCapFor, type ConMode } from './facets';
 	import { buildCompareModel, glyphScaleSeconds, type CapCell } from './compare';
-	import { TARGET_SHORT, capDetailText, caveatText } from './capabilityText';
+	import { TARGET_SHORT, capDetailText, caveatText } from '$lib/capabilities/capabilityText';
 	import type { CapabilityKind } from '$lib/capabilities/deriveCapabilities';
 	import CompareBar from './CompareBar.svelte';
 

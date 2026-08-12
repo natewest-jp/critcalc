@@ -20,7 +20,13 @@
 	import { rotationTabs as rt, TAB_LIMIT } from '$lib/rotationTabs.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { documentBar as db } from '$lib/documentBar.svelte';
-	import { plannerView as pv, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from '$lib/plannerView.svelte';
+	import {
+		plannerView as pv,
+		ZOOM_DEFAULT,
+		ZOOM_MAX,
+		ZOOM_MIN,
+		ZOOM_STEP
+	} from '$lib/plannerView.svelte';
 
 	// ---------------------------------------------------------------------------
 	// Tab state — hoisted to the shared working-team module (bench-band round):
@@ -79,13 +85,23 @@
 	}
 
 	// On first load: warm the avatar cache and register this tool's bench-band
-	// affordances (a bench portrait click opens the character Source). Tab
-	// restore lives in the (tools) layout now — it must run for every tool.
+	// affordances. Tab restore lives in the (tools) layout now — it must run for
+	// every tool.
+	//
+	// ⚓ NATE 2026-08-12 — the two affordances used to be ONE here: the portrait
+	// and ⇄ both opened the Source, which meant the planner had a permanent
+	// button duplicating its own portrait. They split now, and the split is what
+	// makes the bench behave identically in both tools: a filled portrait reads
+	// the character (Detail card), ⇄ changes who fills the slot (Source), and an
+	// empty portrait — with no character to read — falls through to ⇄'s job.
 	onMount(() => {
 		warmAvatars();
 		return benchBand.registerHost({
 			tool: 'rp',
-			onPortraitClick: () => {
+			onOpenDetail: (id) => {
+				detailId = id;
+			},
+			onSwap: () => {
 				selectorOpen = true;
 			}
 		});
@@ -167,14 +183,36 @@
 
 	let selectorOpen = $state(false);
 
+	/** The character whose Detail card is open, from a bench portrait click.
+	 *  ⚓ NATE 2026-08-12: the planner reads characters through the SAME modal the
+	 *  Team Builder does. It is the one deliberate modal in either tool (a
+	 *  focused single-character read; see the non-modal-tools principle). */
+	let detailId = $state<string | null>(null);
+
+	/** The Detail card, fetched on first open (see its render site for why it is
+	 *  lazy here and static on the Team Builder). */
+	let DetailCardComp = $state<typeof import('$lib/components/DetailCard.svelte').default | null>(
+		null
+	);
+	$effect(() => {
+		if (!detailId || DetailCardComp) return;
+		void import('$lib/components/DetailCard.svelte').then((m) => {
+			DetailCardComp = m.default;
+		});
+	});
+
 	/** How many of the four slots are filled — the picker column's readout. */
 	let chosenCount = $derived(slots.filter((id) => id && id !== 'blank').length);
 
 	// Escape closes the Source. It lives here rather than in the picker because
 	// the page owns `selectorOpen` — and since the aside-column round the picker
 	// is TWO components, so neither half could own the key on its own.
+	// The Detail card owns its own Escape (it is a modal with a close button);
+	// this only has to stay out of its way, hence the ordering.
 	function onWindowKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape' && selectorOpen) selectorOpen = false;
+		if (e.key !== 'Escape') return;
+		if (detailId) return;
+		if (selectorOpen) selectorOpen = false;
 	}
 
 	// ---------------------------------------------------------------------------
@@ -225,7 +263,26 @@
 			<DocumentActions />
 		{/snippet}
 
-		{#snippet bandBLeft()}
+		<!-- ══ BAND B IS A 3-UP NOW (⚓ NATE 2026-08-12) ══════════════════════════
+		     "Move both the NOTES and the zoom slider and its +/- buttons to
+		     outside the band B's glass like MY ROSTER ∨ on the Team Builder — but
+		     please keep the band extending to fill the distance. Basically,
+		     maintaining one layer of glass, not stacked glass."
+
+		     The controls were glass plates sitting INSIDE a glass band, so every
+		     one of them composited two stops of the same material — the thing the
+		     Team Builder's split fixed on its own band a round earlier. Filling
+		     bandBCenter switches ToolStack to the 3-up: the BAND stops painting,
+		     the centre zone becomes the only ground in the row, and the flanking
+		     controls become plates on the bare scene.
+
+		     ⚠ WHAT GOES IN THE RAIL IS THE READOUT, not nothing. Nate asked for
+		     the band to keep "extending to fill the distance", and an empty strip
+		     would do that — but the Total is the one thing here that is not a
+		     control, and a strip is exactly what a readout wants to sit on. The
+		     left zone is therefore empty and the rail takes the whole run from
+		     the content margin to the controls. -->
+		{#snippet bandBCenter()}
 			<!-- What the chart is showing: how long the rotation runs. A readout,
 			     not a control — it leads band B the way the tabs lead band A. -->
 			{#if pv.totalDuration > 0}
@@ -237,6 +294,23 @@
 		{/snippet}
 
 		{#snippet bandBRight()}
+			<!-- Back to the resting view: the zoom AND the notes panel, which is
+			     the whole of band B's state — hence "Reset view" rather than
+			     "Reset zoom", which would under-describe what it does. It sits
+			     left of the zoom group because that is the control it most often
+			     undoes. Inert when there is nothing to undo, like the zoom
+			     buttons at their limits. -->
+			<button
+				class="btn btn--sm rp-reset"
+				type="button"
+				aria-label="Reset the view to its resting zoom"
+				title="Back to the resting zoom, and close the notes panel"
+				disabled={pv.scale === ZOOM_DEFAULT && !pv.showNotes}
+				onclick={() => pv.reset()}
+			>
+				<Mark name="reset" />
+				Reset view
+			</button>
 			<div class="rp-zoom" role="group" aria-label="Zoom">
 				<button
 					class="btn btn--sm btn--icon"
@@ -327,6 +401,22 @@
 	     placement. See that prop for why. -->
 </section>
 
+<!-- The one deliberate modal, and now the same one in both tools: a focused
+     single-character read, opened by clicking a bench portrait.
+     LAZY, unlike the Team Builder's static import of the same component — the
+     TB is the character tool and would load it anyway; the planner would be
+     paying for the capability-derivation graph on first paint for a card most
+     sessions never open. One frame's delay on first open, and the character
+     payload it renders is a lazy chunk regardless. -->
+{#if detailId && DetailCardComp}
+	<DetailCardComp
+		id={detailId}
+		conMode="mine"
+		onClose={() => (detailId = null)}
+		conEditable={false}
+	/>
+{/if}
+
 <!-- ── The main column: the timeline instrument ───────────────────────────── -->
 {#snippet main()}
 	<RotationTimeline
@@ -386,10 +476,16 @@
 	/* Total-length readout: the LED-style key/value pair that led the old view
 	   cluster, minus its chip backing — band B is its own surface now, and a
 	   fill inside a fill read as a control the reader could press. */
+	/* Ranged LEFT inside the rail. The 3-up centre zone centres its content —
+	   right for the Team Builder, whose rail holds navigation — but this is a
+	   readout at the start of a long strip, and it reads as a label on that
+	   strip only from its leading edge. `margin-right: auto` eats the run to its
+	   right rather than fighting the zone's own justification. */
 	.rp-total {
 		display: inline-flex;
 		align-items: baseline;
 		gap: 0.45rem;
+		margin-right: auto;
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		white-space: nowrap;
@@ -402,6 +498,35 @@
 		opacity: 0.75;
 	}
 
+	/* ── DISABLED DIMS THE INK, NOT THE PLATE (⚓ NATE 2026-08-12) ────────────
+	   "For disabling the reset view, can you have the glass stay the same
+	   opacity? Otherwise it breaks up the look of the bar."
+
+	   He is right, and the reason is structural rather than aesthetic. The
+	   global `.btn:disabled { opacity: 0.3 }` was written for buttons sitting ON
+	   something, where fading the whole control fades it toward its background.
+	   These four are plates sitting on the BARE SCENE since the 3-up split, so
+	   fading the element fades the GLASS — and a run of controls where one pane
+	   is thinner than its neighbours reads as a hole in the bar, not as a
+	   disabled button.
+
+	   So: restore the element to full and spend the state on `color` alone. The
+	   Marks ride currentColor, so they follow. This also puts the alpha back in
+	   the PAINT, which is the sub-pixel law's preference everywhere.
+	   ⏭ A candidate to generalise to every glass `.btn` on the site — deliberately
+	   scoped to this bar for now, because it is the only one where Nate has
+	   judged the result. */
+	.rp-reset:disabled,
+	.rp-zoom .btn:disabled,
+	.rp-notes-btn:disabled {
+		opacity: 1;
+		color: color-mix(in srgb, var(--text) 45%, transparent);
+	}
+
+	/* A bare flex group, NOT a plate — band B's 3-up put these controls out on
+	   the scene, and giving the group its own glass while the buttons inside it
+	   keep theirs would rebuild the stack that was just removed. Each control
+	   paints itself, exactly as band A's buttons do. */
 	.rp-zoom {
 		display: flex;
 		align-items: center;

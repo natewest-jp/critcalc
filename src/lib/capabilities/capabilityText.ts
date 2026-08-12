@@ -1,8 +1,13 @@
 /**
- * team-builder/lib/capabilityText.ts
+ * $lib/capabilities/capabilityText.ts
  *
  * Shared presentation vocabulary for derived capabilities — used by the
  * DetailCard and the CompareView so the two surfaces can't drift.
+ *
+ * ↻ 2026-08-12: hoisted out of team-builder/lib with the DetailCard, which the
+ * Rotation Planner now opens too (the bench portrait does the same thing in
+ * both tools). The CompareView and compare.ts, both still Team-Builder-only,
+ * import it from here.
  */
 
 import type { CapabilityKind } from '$lib/capabilities/deriveCapabilities';
