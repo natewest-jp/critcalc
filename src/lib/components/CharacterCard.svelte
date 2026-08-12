@@ -559,10 +559,10 @@
 		text-overflow: ellipsis;
 		min-width: 0;
 	}
-	/* Frame-timing-not-curated mark — a warning at the right of the name row (all
+	/* Frame-timing-not-curated mark — a note at the right of the name row (all
 	   cards): capability data is complete, only Planner timing is approximate.
-	   --ui-danger, not a domain color — a data-quality consequence, not a game
-	   fact (dire-retirement round, 2026-08-05). No chip; it sits on the card.
+	   Not a domain color — a data-quality consequence, not a game fact
+	   (dire-retirement round, 2026-08-05). No chip; it sits on the card.
 
 	   ↻ 2026-08-11: THE TYPESET BAGGAGE IS GONE. This was a unicode ∅ until the
 	   icon set replaced it with <Mark name="uncurated">, and four declarations
@@ -601,7 +601,14 @@
 	.cc-namemark {
 		flex-shrink: 0;
 		display: flex;
-		color: var(--ui-danger);
+		/* ↻ 2026-08-12: --ui-provisional, not --ui-danger. "Frame timing not
+		   curated yet" is a PROVENANCE statement — nothing to click, nothing the
+		   user did, nothing wrong with the character — and in red on 122 cards at
+		   once it read as "something is broken here". ⚠ The card is .ctx-light, so
+		   this resolves to the ZONED rung (#998136, 3.02:1 on parchment) rather
+		   than the dark #f6d365, which would be invisible here. Naming the role is
+		   what makes that automatic. */
+		color: var(--ui-provisional);
 		cursor: help;
 	}
 	.cc-namemark :global(.mark) {

@@ -2047,8 +2047,19 @@
 	<!-- ════════════════════════════════ 11 · THE UI STATE COLOURS ══ -->
 	<section>
 		<h2 class="lab-h">
-			UI state colours <span class="lab-badge">open</span>
+			UI state colours <span class="lab-badge">shipped</span>
 		</h2>
+		<p class="lab-note">
+			✅ <strong>SETTLED 2026-08-12 — ⚓ Nate approved all four.</strong>
+			<code>--ui-danger</code> holds <code>#e63946</code> · <code>--ui-warning</code> holds
+			<code>#f4a261</code> · <code>--ui-positive</code> → <code>#5be0ac</code> ·
+			<strong><code>--ui-provisional</code> is NEW</strong> at <code>#f6d365</code>, zoned to
+			<code>#998136</code> on <code>.ctx-light</code>. Seven consumers moved off
+			<code>--ui-danger</code>, and <code>crit.ts</code>'s risk ramp was re-synced so all four of
+			its stops are token values again. The board is kept because the reasoning is visible in it —
+			the
+			<em>now</em> column below is what shipped, the <em>next</em> column is what it replaced.
+		</p>
 		<p class="lab-note">
 			⚓ Nate 2026-08-12: <em
 				>"let's quickly talk about those, since they're close to the element colours, too"</em
@@ -2147,7 +2158,7 @@
 					{#each UI_ROLES as role (role.key)}
 						{@const nxt = g.k === 'paper' && role.nextLight ? role.nextLight : role.next}
 						<div class="uictx-role">{role.label}</div>
-						{#each [{ tag: 'now', c: role.now }, { tag: 'next', c: nxt }] as v (v.tag)}
+						{#each [{ tag: 'was', c: role.now }, { tag: 'now', c: nxt }] as v (v.tag)}
 							<div class="uictx-row">
 								<span class="uictx-vtag">{v.tag}</span>
 								<span class="uictx-ink" style:color={v.c}>Not curated</span>
@@ -2171,9 +2182,10 @@
 		</div>
 		<p class="lab-note">
 			⚠ The ratio at the end of each row is the INK case — the colour against that panel's ground,
-			or against a star for the bare one. ⚠ On the paper panel the <em>next</em> provisional row is
+			or against a star for the bare one. ⚠ On the paper panel the <em>now</em> provisional row is
 			the LIGHT rung (<code>{UI_PROVISIONAL_LIGHT}</code>), not <code>{UI_PROVISIONAL}</code>; see
-			below for why it has two.
+			below for why it has two. ⚠ The <em>was</em> rows are what each value replaced — for
+			provisional that is <code>--ui-danger</code>, because that is what was drawing the ∅.
 		</p>
 
 		<!-- ── 11d · the recommendation ────────────────────────────────────── -->

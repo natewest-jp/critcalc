@@ -474,9 +474,12 @@
 		   fact the ∅ marker does — frame timing isn't curated — and the
 		   dire-retirement round settled that as a DATA-QUALITY state rather than a
 		   domain colour. It was wearing a borrowed element token; now the note and
-		   the mark that summarises it speak with one voice. */
-		border: 1px solid color-mix(in srgb, var(--ui-danger) 40%, transparent);
-		background: var(--ui-danger-soft);
+		   the mark that summarises it speak with one voice.
+		   ↻ 2026-08-12: and that one voice is now --ui-provisional. The 08-11 move
+		   settled state-over-domain; this one settles WHICH state, now that the
+		   family has a value for "incomplete" that isn't "wrong". */
+		border: 1px solid color-mix(in srgb, var(--ui-provisional) 40%, transparent);
+		background: var(--ui-provisional-soft);
 		font-size: var(--fs-md);
 		line-height: var(--lh-normal);
 		color: var(--text);

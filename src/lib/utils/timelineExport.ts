@@ -130,8 +130,12 @@ const BAR_EDGE = '#696f7d';
 // the unification made that explicit rather than incidental.
 const BAR_LABEL = '#fff';
 // Generic-timing (no-frame-map) marks are a DATA-QUALITY state, not a domain
-// color — they ride --ui-danger (the marks left dire 2026-08-05).
-const UI_DANGER = '#e63946';
+// color (the marks left dire 2026-08-05).
+// ↻ 2026-08-12: they ride --ui-provisional, not --ui-danger. The state family
+// grew a fourth value for exactly this — "our data is incomplete" is a
+// provenance statement, not an error — and the two on-screen rules this mirrors
+// moved with it. ⚠ The :root rung, not the ctx-light one: the chart is dark.
+const UI_PROVISIONAL = '#f6d365';
 // The circular backing behind a (transparent-background) avatar in the label
 // column. ↻ 2026-08-05 (archetype consistency pass): was the LIGHT context's
 // #f2f2ec, mirroring the `ctx-light` class SlotPortrait used to carry. That
@@ -687,13 +691,13 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					const bx = x(block.start);
 					const bw = barGeomW(block.start, block.duration);
 					const kind = block.kind;
-					// No-frame-map N/C/P (everything but E/Q): danger gradient fill
+					// No-frame-map N/C/P (everything but E/Q): provisional gradient fill
 					// left→right, mirroring the on-screen linear-gradient.
 					const approxToken = slot.isApprox && kind !== 'skill' && kind !== 'burst';
 					if (kind === 'unset') {
 						return;
 					} else if (approxToken) {
-						const [dr, dg, db] = hexToRgb(UI_DANGER);
+						const [dr, dg, db] = hexToRgb(UI_PROVISIONAL);
 						const grad = ctx!.createLinearGradient(bx, 0, bx + bw, 0);
 						grad.addColorStop(0, `rgba(${dr}, ${dg}, ${db}, 0.25)`);
 						grad.addColorStop(1, `rgba(${dr}, ${dg}, ${db}, 0)`);
@@ -713,9 +717,9 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						ctx!.fillStyle = 'rgba(8, 18, 37, 0.2)';
 						ctx!.fillRect(bx + bw - 1, rowTop + 1, 1, snap.activeRowH - 2);
 					}
-					// label — danger tinted on no-frame-map N/C/P tokens (mirrors
+					// label — provisional tinted on no-frame-map N/C/P tokens (mirrors
 					// .rp-active-text--danger)
-					ctx!.fillStyle = approxToken ? mix('#ffffff', UI_DANGER, 50) : '#fff';
+					ctx!.fillStyle = approxToken ? mix('#ffffff', UI_PROVISIONAL, 50) : '#fff';
 					ctx!.font = `600 10px ${SANS}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);

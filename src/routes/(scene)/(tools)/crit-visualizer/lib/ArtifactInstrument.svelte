@@ -1174,8 +1174,15 @@
 		font-weight: var(--fw-semibold);
 	}
 
+	/* ⚠ THE CHART'S OWN LITERALS, kept as literals on purpose — § Laws forbids a
+	   UI state token inside a visualization, and these are the risk ramp's stops
+	   read as a verdict. ↻ 2026-08-12: better re-synced #4ecca3 → #5be0ac with
+	   crit.ts's RISK_STOPS, which had drifted from --ui-positive.
+	   ⛔ `same` is NOT --ui-provisional even though the hex matches: provisional
+	   means "our data is incomplete", and "this roll is a wash" is a full and
+	   confident answer. Same value, different fact. */
 	.ar-odds.better {
-		color: #4ecca3;
+		color: #5be0ac;
 	}
 
 	.ar-odds.same {

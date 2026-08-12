@@ -1019,6 +1019,21 @@
 			that whispers at C.04), which is the point — and the reason <code>--ui-warning</code> stays on small
 			markers and underlines rather than large fills.
 		</p>
+		<p class="sg-note">
+			↻ <strong>2026-08-12: the family is FOUR.</strong> <code>--ui-danger</code> was doing two jobs
+			at thirteen sites, and only one of them was a verb.
+			<strong><code>--ui-provisional</code></strong>
+			takes the other: <em>data is incomplete or approximate</em> — the ∅ on a character card, the
+			planner's generic-timing marks, an unknown coverage chip. ⚠
+			<strong>Not a caution and not an error.</strong>
+			Nothing to click, nothing the user did, nothing wrong with the character; red on 122 cards at once
+			read as "something is broken here".
+			<br />⚠ <strong>It is the only zoned UI state colour</strong> — <code>#f6d365</code> on dark,
+			<code>#998136</code> on <code>.ctx-light</code>, the same move the accent makes. ⛔ And the
+			light rung sits at the GRAPHICAL floor (3.02:1) because it cannot go further: at the 4.5:1
+			text floor it lands ΔE .030 from <code>--gold-700</code>, i.e. it becomes the light accent.
+			<strong>Provisional may be a MARK on paper and never prose ink.</strong>
+		</p>
 		<div class="sg-swatches">
 			{#each uiStates as t (t.name)}{@render swatch(t)}{/each}
 		</div>
@@ -2285,11 +2300,16 @@
 				<h3>Open</h3>
 				<ul>
 					<li>
-						<strong><code>--ui-positive</code> vs anemo.</strong> The gradient's own teal (<code
-							>#4ecca3</code
-						>) is within 5° of <code>--el-anemo-main</code> — effectively the same color — so
-						positive was pushed to h157. Revert to <code>#4ecca3</code> if the adjacency turns out not
-						to matter in practice.
+						✅ <strong><code>--ui-positive</code> vs anemo — CLOSED 2026-08-12.</strong> The hue
+						nudge (h157, <code>#51c89a</code>) stopped buying separation the moment anemo became
+						Genshin's spring green, and the bar rung closed it to ΔE <strong>.026</strong> from
+						<code>--el-anemo-bar</code> — under the line where two colours stop being two. Fixed by
+						LIGHTNESS instead: <code>#5be0ac</code>, same hue, Genshin's L, ΔE .072. ⚠ The rule this
+						leaves behind:
+						<strong
+							>when an element closes on a UI colour, spend lightness — hue is what the element
+							owns.</strong
+						>
 					</li>
 					<li>
 						<strong>There is no <code>--el-physical-main</code>.</strong> The element palette

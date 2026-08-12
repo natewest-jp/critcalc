@@ -77,14 +77,14 @@ describe('nearestIsoline', () => {
 
 describe('zeroCritRiskColor', () => {
 	it('maps probability bands to the fixed ramp', () => {
-		expect(zeroCritRiskColor(0.01)).toBe('#4ecca3');
+		expect(zeroCritRiskColor(0.01)).toBe('#5be0ac');
 		expect(zeroCritRiskColor(0.1)).toBe('#f6d365');
 		expect(zeroCritRiskColor(0.3)).toBe('#f4a261');
 		expect(zeroCritRiskColor(0.9)).toBe('#e63946');
 	});
 
 	it('gradient runs high risk → low risk', () => {
-		expect(riskRampGradient).toBe('linear-gradient(to right, #e63946, #f4a261, #f6d365, #4ecca3)');
+		expect(riskRampGradient).toBe('linear-gradient(to right, #e63946, #f4a261, #f6d365, #5be0ac)');
 	});
 });
 

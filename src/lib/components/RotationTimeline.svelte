@@ -1506,7 +1506,7 @@
 												style:background={isApprox &&
 												block.kind !== 'skill' &&
 												block.kind !== 'burst'
-													? 'linear-gradient(to right, color-mix(in srgb, var(--ui-danger) 20%, transparent), transparent)'
+													? 'linear-gradient(to right, color-mix(in srgb, var(--ui-provisional) 20%, transparent), transparent)'
 													: block.kind === 'skill' ||
 														  block.kind === 'burst' ||
 														  block.kind === 'elemental-normal'
@@ -2979,12 +2979,19 @@
 		font-weight: var(--fw-semibold);
 		color: #fff;
 	}
-	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: warning-
-	   tinted text, marking the actions whose timing is generic. --ui-danger,
-	   not a domain color — approximate timing is a consequence to the user's
-	   data, not a game fact (dire-retirement round, 2026-08-05). */
+	/* N/C/P (everything but E/Q) tokens on a no-frame-map character: marking the
+	   actions whose timing is generic. Not a domain color — approximate timing
+	   is a consequence to the user's data, not a game fact (dire-retirement
+	   round, 2026-08-05).
+	   ↻ 2026-08-12: --ui-provisional, and THIS RULE ASKED FOR IT IN WRITING. Its
+	   own comment called the effect "warning-tinted text" and then reached for
+	   --ui-danger, because in a three-value family there was nothing between
+	   "you did something wrong" and "everything is fine". Approximate timing is
+	   neither: it is a statement about what WE know. The class keeps its
+	   --danger suffix for now — renaming it means touching the projection that
+	   emits it, and the token is the part that was lying. */
 	.rp-active-text--danger {
-		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--ui-danger));
+		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--ui-provisional));
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */

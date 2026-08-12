@@ -70,12 +70,26 @@ export function nearestIsoline(multiplier: number): { value: number; delta: numb
 
 // ── No-crit risk ramp ───────────────────────────────────────────────────────
 // Chart palette — preserved verbatim per the redesign brief guardrails.
-
+//
+// ⚠ THIS RAMP IS THE PARENT OF --ui-*, NOT A COPY OF IT. The UI state family was
+// taken FROM these four stops (⚓ Nate's pick), which is why they coincide; § Laws
+// still says a UI state colour may not appear inside a visualization, so this
+// stays a literal table rather than reaching for var(). The two are a PAIR that
+// has to be re-synced by hand when either moves.
+//
+// ↻ 2026-08-12: re-synced, after the census found it had silently become two
+// families. #4ecca3 was the pre-nudge positive; --ui-positive was pushed to
+// #51c89a to escape the old anemo and this table never followed, so the chart
+// and the tokens disagreed for months. The token has since moved again — same
+// hue, Genshin's lightness, to clear --el-anemo-bar — and the ramp follows it
+// this time. ✅ With #f6d365 promoted to --ui-provisional the same day, all four
+// stops are now token values, which is the state this table was always assumed
+// to be in.
 export const RISK_STOPS: ReadonlyArray<{ readonly max: number; readonly color: string }> = [
-	{ max: 0.05, color: '#4ecca3' },
-	{ max: 0.2, color: '#f6d365' },
-	{ max: 0.5, color: '#f4a261' },
-	{ max: Infinity, color: '#e63946' }
+	{ max: 0.05, color: '#5be0ac' }, // = --ui-positive
+	{ max: 0.2, color: '#f6d365' }, // = --ui-provisional
+	{ max: 0.5, color: '#f4a261' }, // = --ui-warning
+	{ max: Infinity, color: '#e63946' } // = --ui-danger
 ];
 
 export const zeroCritRiskColor = (probability: number) =>
