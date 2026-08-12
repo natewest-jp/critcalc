@@ -4,9 +4,9 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"predev": "node scripts/generate-newfit.js && node scripts/generate-character-roles.mjs && node scripts/generate-character-index.mjs && node scripts/generate-element-icons.mjs && node scripts/generate-marks.mjs",
+		"predev": "node scripts/generate-newfit.js && node scripts/generate-character-roles.mjs && node scripts/generate-character-index.mjs && node scripts/generate-element-icons.mjs && node scripts/generate-marks.mjs && node scripts/generate-constellation-marks.mjs",
 		"dev": "vite dev",
-		"prebuild": "node scripts/generate-newfit.js && node scripts/generate-character-roles.mjs && node scripts/generate-character-index.mjs && node scripts/generate-element-icons.mjs && node scripts/generate-marks.mjs",
+		"prebuild": "node scripts/generate-newfit.js && node scripts/generate-character-roles.mjs && node scripts/generate-character-index.mjs && node scripts/generate-element-icons.mjs && node scripts/generate-marks.mjs && node scripts/generate-constellation-marks.mjs",
 		"build": "vite build",
 		"preview": "vite preview",
 		"optimize-bg": "node scripts/optimize-bg.js",
@@ -30,7 +30,8 @@
 		"test:e2e:ui": "playwright test --project=chrome --ui",
 		"test:e2e:storm": "playwright test --grep @storm --workers=1 --retries=0",
 		"test:e2e:report": "playwright show-report",
-		"generate-marks": "node scripts/generate-marks.mjs"
+		"generate-marks": "node scripts/generate-marks.mjs",
+		"generate-con-marks": "node scripts/generate-constellation-marks.mjs"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.2",

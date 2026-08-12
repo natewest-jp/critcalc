@@ -79,13 +79,23 @@
 	}
 
 	// On first load: warm the avatar cache and register this tool's bench-band
-	// affordances (a bench portrait click opens the character Source). Tab
-	// restore lives in the (tools) layout now — it must run for every tool.
+	// affordances. Tab restore lives in the (tools) layout now — it must run for
+	// every tool.
+	//
+	// ⚓ NATE 2026-08-12 — the two affordances used to be ONE here: the portrait
+	// and ⇄ both opened the Source, which meant the planner had a permanent
+	// button duplicating its own portrait. They split now, and the split is what
+	// makes the bench behave identically in both tools: a filled portrait reads
+	// the character (Detail card), ⇄ changes who fills the slot (Source), and an
+	// empty portrait — with no character to read — falls through to ⇄'s job.
 	onMount(() => {
 		warmAvatars();
 		return benchBand.registerHost({
 			tool: 'rp',
-			onPortraitClick: () => {
+			onOpenDetail: (id) => {
+				detailId = id;
+			},
+			onSwap: () => {
 				selectorOpen = true;
 			}
 		});
@@ -167,14 +177,36 @@
 
 	let selectorOpen = $state(false);
 
+	/** The character whose Detail card is open, from a bench portrait click.
+	 *  ⚓ NATE 2026-08-12: the planner reads characters through the SAME modal the
+	 *  Team Builder does. It is the one deliberate modal in either tool (a
+	 *  focused single-character read; see the non-modal-tools principle). */
+	let detailId = $state<string | null>(null);
+
+	/** The Detail card, fetched on first open (see its render site for why it is
+	 *  lazy here and static on the Team Builder). */
+	let DetailCardComp = $state<typeof import('$lib/components/DetailCard.svelte').default | null>(
+		null
+	);
+	$effect(() => {
+		if (!detailId || DetailCardComp) return;
+		void import('$lib/components/DetailCard.svelte').then((m) => {
+			DetailCardComp = m.default;
+		});
+	});
+
 	/** How many of the four slots are filled — the picker column's readout. */
 	let chosenCount = $derived(slots.filter((id) => id && id !== 'blank').length);
 
 	// Escape closes the Source. It lives here rather than in the picker because
 	// the page owns `selectorOpen` — and since the aside-column round the picker
 	// is TWO components, so neither half could own the key on its own.
+	// The Detail card owns its own Escape (it is a modal with a close button);
+	// this only has to stay out of its way, hence the ordering.
 	function onWindowKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape' && selectorOpen) selectorOpen = false;
+		if (e.key !== 'Escape') return;
+		if (detailId) return;
+		if (selectorOpen) selectorOpen = false;
 	}
 
 	// ---------------------------------------------------------------------------
@@ -326,6 +358,22 @@
 	     snippet so the page keeps owning `slots` while the instrument decides
 	     placement. See that prop for why. -->
 </section>
+
+<!-- The one deliberate modal, and now the same one in both tools: a focused
+     single-character read, opened by clicking a bench portrait.
+     LAZY, unlike the Team Builder's static import of the same component — the
+     TB is the character tool and would load it anyway; the planner would be
+     paying for the capability-derivation graph on first paint for a card most
+     sessions never open. One frame's delay on first open, and the character
+     payload it renders is a lazy chunk regardless. -->
+{#if detailId && DetailCardComp}
+	<DetailCardComp
+		id={detailId}
+		conMode="mine"
+		onClose={() => (detailId = null)}
+		conEditable={false}
+	/>
+{/if}
 
 <!-- ── The main column: the timeline instrument ───────────────────────────── -->
 {#snippet main()}

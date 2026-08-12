@@ -115,18 +115,25 @@
 		return { ...($loadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
 	}
 
-	// Discriminated host views — the ternaries narrow the union for TS.
-	const rpHost = $derived(benchBand.host?.tool === 'rp' ? benchBand.host : null);
-	const tbHost = $derived(benchBand.host?.tool === 'tb' ? benchBand.host : null);
+	// The registered host, but only while it is the tool we are docked to (or
+	// traveling toward) — during a pan BOTH pages are briefly alive.
+	const host = $derived(benchBand.host?.tool === mode ? benchBand.host : null);
 
-	function portraitClickFor(char: { id: string; displayName: string } | null) {
-		if (mode === 'rp' && rpHost) return rpHost.onPortraitClick;
-		if (mode === 'tb' && tbHost && char && char.id !== 'blank') {
-			const h = tbHost;
+	/**
+	 * ⚓ NATE 2026-08-12: the portrait does the SAME thing in both tools now.
+	 * A filled slot opens that character's Detail card; an empty one — and the
+	 * generic Blank, which has no details worth reading — asks the host to fill
+	 * it. Nothing here is tool-aware any more; the host decides what "swap"
+	 * means (the planner's Source picker, the TB's audition).
+	 */
+	function portraitClickFor(char: { id: string; displayName: string } | null, i: number) {
+		if (!host) return undefined;
+		const h = host;
+		if (char && char.id !== 'blank') {
 			const id = char.id;
 			return () => h.onOpenDetail(id);
 		}
-		return undefined;
+		return () => h.onSwap(i, char?.id ?? null);
 	}
 </script>
 
@@ -169,27 +176,27 @@
 				onSetWeapon={(wid, ref) =>
 					char && rt.setTabLoadout(char.id, { weaponId: wid, weaponRefinement: ref })}
 				onSetRefinement={(r) => char && rt.setTabLoadout(char.id, { weaponRefinement: r })}
-				onPortraitClick={portraitClickFor(char)}
-				portraitLabel={mode === 'tb' && char ? `Open ${char.displayName}` : undefined}
+				onPortraitClick={portraitClickFor(char, i)}
+				portraitLabel={char && char.id !== 'blank'
+					? `Open ${char.displayName}`
+					: 'Choose a character for this slot'}
 				emptyLabel=""
 			>
 				{#snippet actions()}
 					<!-- Uniform action set (Nate 2026-08-05): ✕ removes everywhere;
 					     ⇄ auditions on the TB but opens the character Source on the
-					     planner (stays in-tool). SlotPortrait pins the first action
-					     to the pill's left and the last to its right
-					     (display:contents + order). Always rendered — an EMPTY slot
-					     shows them disabled, like the card's own controls, so the
-					     base row keeps its full four-station rhythm on every slot.
-					     The generic-Blank card gets LIVE actions (Nate 2026-08-06):
-					     a deliberately-typed Blank is a placeholder the user may
-					     well want to swap a real character into. -->
+					     planner (stays in-tool). They stack in the card's left RAIL
+					     and split the portrait's height between them.
+					     Always rendered — an EMPTY slot renders them and the card
+					     HIDES them, holding their box so the portraits don't step
+					     sideways. The generic-Blank card gets LIVE actions (Nate
+					     2026-08-06): a deliberately-typed Blank is a placeholder the
+					     user may well want to swap a real character into. -->
 					{@const live = !!char}
 					<button
 						class="bb-act"
 						disabled={!live}
-						onclick={() =>
-							char && (mode === 'rp' ? rpHost?.onPortraitClick() : tbHost?.onAudition(i, char.id))}
+						onclick={() => char && host?.onSwap(i, char.id)}
 						title={live && char
 							? mode === 'rp'
 								? 'Change who fills this slot'
@@ -316,31 +323,41 @@
 		background: var(--frame-line-quiet);
 	}
 
-	/* Slot actions (audition/remove) — the card's shared capsule treatment at
-	   the pill's own height; glyph-only, title/aria carry the meaning. Moved
-	   from the TB Bench with the cards. */
+	/* ── Slot commands (⇄ · ✕) — THE RAISED REGISTER ─────────────────────────
+	   ⚓ NATE 2026-08-12, from his mockup: VALUE CONTROLS ARE WELLS; COMMAND
+	   BUTTONS ARE RAISED. The constellation chip and the loadout pill are places
+	   data sits, cut into the card (--surface-well); these are things you press,
+	   standing on it (--surface-raised, one rung the other way). They are also
+	   SQUARES where the value controls are capsules, so the split survives at a
+	   glance and at distance.
+
+	   ⚠ THIS INVERTS THE 2026-08-11 RULING that all four controls share one flat
+	   fill "so they read as one family". That is exactly what went wrong: four
+	   identical objects in a row read as ONE continuous bar of chrome, heavy
+	   enough to outweigh the portrait it was supposed to caption. The family was
+	   real; it was just the wrong family.
+
+	   The box is the CARD's — .sp-rail stretches them to split the portrait's
+	   height, so no width/height here. Glyph-only; title/aria carry the meaning. */
 	.bb-act {
 		box-sizing: border-box;
-		flex-shrink: 0;
-		width: var(--sp-pill-h);
-		height: var(--sp-pill-h);
 		display: grid;
 		place-items: center;
 		padding: 0;
-		/* ↻ 2026-08-11: flat and borderless with the card's other two controls —
-		   see --sp-pill-fill in SlotPortrait for the whole argument. These
-		   buttons render inside .sp-card via the actions snippet, so they
-		   inherit the change rather than restating it. */
 		border: none;
-		border-radius: var(--r-round);
-		background: var(--sp-pill-fill);
+		/* Square, not round: --r-sm is the box vocabulary's tightest corner, and
+		   at this size it reads as a plain square while staying on the scale. */
+		border-radius: var(--r-sm);
+		background: var(--surface-raised);
 		/* The card's dimmed-white ladder (inherited from .sp-card — these
 		   buttons render inside it via the actions snippet), not --muted: the
 		   beige glyphs sat oddly against the white-mix C/R values and icons
 		   (Nate 2026-08-06). Rest 40% → hover 65%, like every unset value. */
 		color: var(--sp-unset-ink);
 		cursor: pointer;
-		transition: color 150ms ease;
+		transition:
+			color 150ms ease,
+			background-color 150ms ease;
 	}
 	/* The glyph size, weight and joins come from Mark.svelte's MARK_SIZE /
 	   MARK_STROKE — the .bb-glyph rules that used to set them here are gone,
@@ -353,14 +370,25 @@
 		cursor: default;
 		pointer-events: none;
 	}
-	/* Hover brightens the GLYPH — the card's rule, and now its only hover
-	   channel (the element-tinted / danger-tinted border-color rings went with
-	   the stroke, 2026-08-11). They were the second half of a two-channel hover;
-	   the ink was always the half you actually read. */
+	/* ⇄ hovers by brightening the GLYPH — the card's standing rule. */
 	.bb-act:hover:not(:disabled) {
 		color: var(--sp-unset-ink-hover);
 	}
+	/* ── ✕ hovers by FILLING, and that is the round's second sanctioned
+	   exception (⚓ NATE 2026-08-12, from the mockup: "danger fill on hover
+	   specifically"). The card's rule since 2026-07-30 is that hover brightens
+	   content and never fills, and it holds everywhere else — but destructive is
+	   the one action that should announce itself with a surface rather than a
+	   shade, and the contrast against ⇄'s ink-only hover is what makes the two
+	   buttons read as different KINDS of thing rather than a pair.
+
+	   The alpha lives in the PAINT (an opaque mix, not element opacity) — the
+	   ribbon is transform-placed at fractional coordinates and any
+	   element-opacity subtree dances in real Safari. Mixed onto the raised rung
+	   these buttons already wear, so the fill reads as the same object lighting
+	   up rather than a different plate appearing. */
 	.bb-act--remove:hover:not(:disabled) {
+		background: color-mix(in srgb, var(--ui-danger) 22%, var(--surface-raised));
 		/* Danger mixes into WHITE, not --text — the beige base would pull the
 		   red warm against the card's white-mix ladder. */
 		color: color-mix(in srgb, var(--ui-danger) 45%, white);

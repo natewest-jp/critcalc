@@ -29,7 +29,15 @@ test('the planner Source overlay edits the shared team live', async ({ page, see
 	await seed({ team: { slots: TEAM } });
 	await openTool(page, '/rotation-planner');
 
+	// ↻ 2026-08-12: the portrait no longer opens the Source — it opens the
+	// character's Detail card, the same as on the Team Builder. ⇄ is what
+	// changes who fills a slot, in both tools.
 	await page.locator('.sp-avatar-chip').first().click();
+	await expect(page.locator('.dc-backdrop'), 'the portrait reads the character').toHaveCount(1);
+	await page.keyboard.press('Escape');
+	await expect(page.locator('.dc-backdrop')).toHaveCount(0);
+
+	await page.locator('.bb-act[aria-label="Change who fills this slot"]').first().click();
 	await page.locator('.cs-panel').waitFor();
 
 	// In-frame and non-modal — it lives inside the tool frame, not over it.
@@ -59,7 +67,8 @@ test('"Explore alternatives" hands off to the per-slot view, team already shared
 	// The hand-off rides the picker's own bottom edge — it is tied to choosing
 	// team members and is unreachable from the main surface.
 	await expect(page.locator('.rp-explore-link')).toBeHidden();
-	await page.locator('.sp-avatar-chip').first().click();
+	// ⇄, not the portrait — the portrait reads the character now (2026-08-12).
+	await page.locator('.bb-act[aria-label="Change who fills this slot"]').first().click();
 	await page.locator('.rp-explore-link').waitFor();
 
 	// The team no longer rides the URL; `?alts=1` only requests the view.

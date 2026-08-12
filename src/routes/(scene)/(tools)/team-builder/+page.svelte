@@ -34,7 +34,7 @@
 	import CharacterGrid from '$lib/components/CharacterGrid.svelte';
 	import CharacterFilterRail from '$lib/components/CharacterFilterRail.svelte';
 	import type { GridFilters } from '$lib/characterFilters';
-	import DetailCard from './lib/DetailCard.svelte';
+	import DetailCard from '$lib/components/DetailCard.svelte';
 	import CompareView from './lib/CompareView.svelte';
 	import CoveragePanel from './lib/CoveragePanel.svelte';
 	import AtlasView from './lib/AtlasView.svelte';
@@ -82,7 +82,7 @@
 		return benchBand.registerHost({
 			tool: 'tb',
 			onOpenDetail: openDetail,
-			onAudition: openAudition
+			onSwap: benchSwap
 		});
 	});
 
@@ -444,6 +444,20 @@
 		auditionReturnTab = sourceTab === 'compare' ? 'atlas' : sourceTab;
 		selectedId = null;
 		sourceTab = 'compare';
+	}
+
+	/** The bench's ⇄ (and an EMPTY slot's portrait, since there are no details to
+	 *  read for nobody). An occupied slot auditions its incumbent; an empty one
+	 *  has no incumbent to audition against, so it opens the Roster, which is
+	 *  where you pick somebody. Empty slots used to be inert here — the planner's
+	 *  ⇄ opened its Source and the TB's did nothing. */
+	function benchSwap(index: number, incumbentId: string | null): void {
+		if (incumbentId) {
+			openAudition(index, incumbentId);
+			return;
+		}
+		selectedId = null;
+		sourceTab = 'roster';
 	}
 
 	/** Commit an audition candidate into its slot, then return whence you came. */

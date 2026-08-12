@@ -10,15 +10,15 @@
 		deriveCharacterCapabilities,
 		type DerivedCapability
 	} from '$lib/capabilities/deriveCapabilities';
-	import type { ConMode } from './facets';
-	import { conCapFor } from './facets';
+	import type { ConMode } from '$lib/capabilities/facets';
+	import { conCapFor } from '$lib/capabilities/facets';
 	import {
 		KIND_LABEL,
 		KIND_ORDER,
 		TARGET_LABEL,
 		capDetailText,
 		caveatText
-	} from './capabilityText';
+	} from '$lib/capabilities/capabilityText';
 
 	let {
 		id,
@@ -27,7 +27,8 @@
 		teamState,
 		onToggleTeam,
 		compareState,
-		onToggleCompare
+		onToggleCompare,
+		conEditable = true
 	}: {
 		id: string;
 		conMode: ConMode;
@@ -39,6 +40,29 @@
 		 *  Compare tab's avatar stack is the feedback. Undefined hides the button. */
 		compareState?: 'in' | 'out' | 'full';
 		onToggleCompare?: (id: string) => void;
+		/**
+		 * ⚓ NATE 2026-08-12 — false on the Rotation Planner, and this is PARKED,
+		 * not solved.
+		 *
+		 * THE PROBLEM: constellations live in two layers. Layer 1 is your account
+		 * roster (`constellations` in stores, what this stepper writes); Layer 2
+		 * is the rotation tab's override (what the bench card's C chip writes),
+		 * and display resolves L2 ⇒ L1. On the Team Builder that split has a
+		 * surface for each — the roster grid and Detail card edit L1, the bench
+		 * edits L2. The planner has never had an L1 editor, so opening this card
+		 * from its bench would put two constellation steppers one click apart,
+		 * writing different layers, with nothing on screen saying so — and the
+		 * one further from your eye would silently be the one that doesn't
+		 * affect the rotation you are looking at.
+		 *
+		 * ⏭ TO THINK ABOUT PROPERLY: whether the planner should get an L1 editor
+		 * at all, whether this card should edit whichever layer its HOST owns, or
+		 * whether the two layers want naming in the UI before either. Disabled is
+		 * the honest holding position — the control is visible, so the fact that
+		 * your roster constellation exists is not hidden, and the note beneath it
+		 * says where to change it.
+		 */
+		conEditable?: boolean;
 	} = $props();
 
 	const entry = $derived(getCharacterIndexEntry(id));
@@ -237,14 +261,24 @@
 							class:is-active={myCon === level}
 							role="radio"
 							aria-checked={myCon === level}
+							disabled={!conEditable}
 							onclick={() => setCon(level)}>C{level}</button
 						>
 					{/each}
 				</div>
-				<p class="note dc-note">
-					Saved to your roster — “My roster” filtering across the site uses it. Setting a
-					constellation marks the character owned.
-				</p>
+				{#if conEditable}
+					<p class="note dc-note">
+						Saved to your roster — “My roster” filtering across the site uses it. Setting a
+						constellation marks the character owned.
+					</p>
+				{:else}
+					<!-- See the `conEditable` prop for why this is disabled rather than
+					     hidden, and what still has to be decided. -->
+					<p class="note dc-note">
+						This is your roster constellation, and it can only be changed in the Team Builder. To
+						set the constellation for <em>this rotation</em>, use the C value on the bench card.
+					</p>
+				{/if}
 			{/if}
 		</section>
 

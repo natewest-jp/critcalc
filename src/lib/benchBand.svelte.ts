@@ -31,104 +31,115 @@
 import { BAND_STACK_TO_SURFACE } from './toolBands.ts';
 import { RIBBON_GAP } from './toolGutter.ts';
 
-export type BenchHostRegistration =
-	| {
-			tool: 'rp';
-			/** Any portrait click (filled or empty) opens the character Source. */
-			onPortraitClick: () => void;
-	  }
-	| {
-			tool: 'tb';
-			/** Filled-slot portrait click opens the Detail card. */
-			onOpenDetail: (id: string) => void;
-			/** ⇄ — audition replacements for a filled slot. */
-			onAudition: (index: number, incumbentId: string) => void;
-	  };
-
-/** The converged slot-card width (RotationTimeline's LABEL_W — move together). */
-export const BENCH_CARD_W = 160;
+/**
+ * ⚓ NATE 2026-08-12: ONE shape for both tools, where there used to be a
+ * discriminated pair. "I'd like to make clicking on the portrait behave the
+ * same as on the Team Builder — it pulls up the modal of the character's
+ * details… it teaches the user that it's the exact same set of actions
+ * regardless of the tool they're on."
+ *
+ * So the AFFORDANCES are now identical and only their destinations differ:
+ * - a FILLED portrait opens that character's Detail card, in both tools;
+ * - an EMPTY portrait, and ⇄ on any slot, asks the host to swap — which the
+ *   planner answers with its character Source and the Team Builder with an
+ *   audition. There are no details for nobody, and "click the empty disc to
+ *   fill it" is the one thing that must not stop working.
+ *
+ * This also gives ⇄ a job of its own for the first time: on the planner it used
+ * to call the very same handler the portrait did.
+ */
+export type BenchHostRegistration = {
+	tool: 'rp' | 'tb';
+	/** Filled-slot portrait click — the character's Detail card. */
+	onOpenDetail: (id: string) => void;
+	/** ⇄, and an empty slot's portrait. RP: open the character Source. TB:
+	 *  audition replacements (`incumbentId` null on an empty slot). */
+	onSwap: (index: number, incumbentId: string | null) => void;
+};
 
 /**
- * ⚗️ THE EXPERIMENT IS OVER AND THIS IS BACK ON. ⚓ Nate 2026-08-11: "I've had a
- * chance to see it condensed — we don't need to keep it hidden and constantly
- * tripping those three errors while we do the other work."
+ * ══ THE CARD IS A ROW, NOT A STACK (⚓ NATE's mockup, the bench-card round
+ *    2026-08-12) ═══════════════════════════════════════════════════════════
  *
- * WHAT IT MEASURED, so nobody has to re-run it: with the portrait gone and the
- * floor dropped to 86, a four-character rotation using the full aux reserve
- * gave 122px slots — ROWS-driven, not floored — and a sparse one fell to the
- * 86 floor where it had been 126. That is the headroom the bench card is
- * currently holding back, and it is the brief for the bench round.
+ *   ┌────────────────────────────────────────────────┐
+ *   │ ┌──┐                                           │  ← name top-aligned to
+ *   │ │⇄ │  ╭────────╮   ⬡ Neuvillette               │    the disc's top edge
+ *   │ ├──┤ (  PORTRAIT )                             │
+ *   │ │✕ │  ╰────────╯   ⓒ  ( ▣ ⚔¹ )                │  ← controls bottom-
+ *   │ └──┘                                           │    aligned to its bottom
+ *   └────────────────────────────────────────────────┘
+ *     rail   68 disc      name + value controls
  *
- * ⛔ KEEP THE FLAG. It is two lines of arithmetic and one `{#if}`, and it is the
- * only way to see the timeline's own height without rebuilding the card first.
- * ⚠ But do not leave it OFF: a hidden portrait is a hidden BUTTON (see below).
+ * WHY IT MOVED. The old card stacked three bands — identity / portrait /
+ * loadout — and the outer two were FIXED at 86px between them, so the portrait
+ * was the only thing that could absorb a change in slot height. After two
+ * condensing rounds the timeline asked for 82–122px and the card floored every
+ * slot at 126, which left the disc at 40px on a typical rotation: the smallest
+ * object on the card, beside a 26 × 128px band of chrome. ⚓ Nate: the portrait
+ * IS the read — "seeing that avatar with the elemental-colored border is the
+ * immediate read", and it was the one thing losing.
  *
- * ⚓ NATE's original ask 2026-08-11: "Just out of curiosity, I'd like to see
- * what we'd have if the bench's card wasn't holding back the sizing — can you
- * make the avatars display:none or something so we can work without being
- * distracted by them and see what it looks like?"
+ * A name BESIDE a portrait is free — it lives in space the disc's height has
+ * already paid for. A name BELOW one costs its own line box plus a gap, every
+ * time. That single fact is why every centred variant lost by ~20px, and it is
+ * the whole argument for the row.
  *
- * ⚠ HIDING THE DISC IS NOT ENOUGH ON ITS OWN, which is the whole reason this is
- * one flag rather than a line of CSS. The card's portrait is not what holds the
- * timeline back — BENCH_SLOT_MIN_H is, and it would still floor every slot at
- * 126px with an invisible disc's worth of space reserved. So this flag does
- * both: it drops the disc AND drops the floor to what a portrait-less card
- * needs, which is the two fixed bands and nothing more.
+ * WHAT IT BOUGHT: the card is 86px tall with a FULL 68px disc, where it was
+ * 126px tall with a 40px one. Both axes improved at once, and the card stopped
+ * being the binding constraint — 86 sits under the timeline's own busy ask
+ * (122) and 4px over its sparse one (82), so slots are rows-driven again.
  *
- * ⛔ FLIP IT BACK TO `true` TO RESTORE THE BENCH. Nothing else needs touching —
- * the floor, the card and the timeline all follow from here.
- *
- * ⚠⚠ IT COSTS AN INTERACTION, WHICH I DID NOT FORESEE AND THE E2E SUITE DID.
- * THE PORTRAIT IS A BUTTON: `onPortraitClick` on the disc is how the planner
- * opens its character Source and how the Team Builder opens a Detail card. Take
- * the disc away and that affordance goes with it — three specs fail on
- * `.sp-avatar-chip` (cross-tool ×2, loadout-layers ×1), and they pass again the
- * moment this flips back. Verified both ways.
- *
- * Neither tool is a dead end while the experiment runs, which is the only
- * reason it is safe to leave on: the planner's ⇄ slot action calls the SAME
- * onPortraitClick, so the Source picker is still one click away, and the TB's
- * Detail card is reachable from the roster grid. But "click the portrait" is
- * muscle memory and it will feel broken.
- *
- * ⛔ SO THIS MUST NOT OUTLIVE THE LOOK IT WAS BUILT FOR. It is not a candidate
- * for "leave it, we'll decide later" — a hidden portrait is a hidden button.
+ * ⚗️ RETIRED HERE: `BENCH_PORTRAIT_SHOWN`, the flag that measured this. Its own
+ * note said it "MUST NOT OUTLIVE THE LOOK IT WAS BUILT FOR", and the look is
+ * built — with the row layout a portrait-less card is 68px of empty text column
+ * plus padding, i.e. the same 86, so the flag could not measure anything any
+ * more. What it found is recorded above instead.
  */
-export const BENCH_PORTRAIT_SHOWN = true;
+
+/** The converged slot-card width (RotationTimeline's LABEL_W imports this).
+ *
+ *  🎛️ ⚓ NATE, bench-card round: 160 → 200. This is the width at which NOTHING
+ *  in the card has to shrink — the text column lands at 84px, which is exactly
+ *  a constellation chip (26) + gap (4) + the two-zone loadout pill (54), and a
+ *  2-line name at --fs-lg. Below ~180 the value controls have to give something
+ *  up; above it, the chart pays for space the card cannot use.
+ *
+ *  ⚠ THE PLANNER PAYS FOR THIS IN CHART WIDTH, and that is the good direction
+ *  of the trade: horizontal is scrollable AND zoomable in a Gantt, vertical is
+ *  neither. 40px of tracks (~3% at 1600) buys 40px × 4 slots of height. */
+export const BENCH_CARD_W = 200;
+
+/** The portrait disc at its full size — ⚓ Nate's concepts drew 68 and it has
+ *  survived every round since. Also the CAP, not a floor: the disc takes its
+ *  host band's height and shrinks if given less (see .sp-avatar-chip). Read by
+ *  SlotPortrait as --sp-avatar-max so the floor below and the disc cannot
+ *  disagree.
+ *  ⚠ DON'T GROW IT. The side avatars are 128² and the card's framing transform
+ *  scales 1.25×, so a 68px disc already asks for ~170 device px from a 128px
+ *  source on a retina display. It is fine here and visibly soft past ~100. */
+export const CARD_PORTRAIT = 68;
+
+/** The card's own padding, top + bottom (`.sp-card` — 8 over, 10 under). */
+export const CARD_PAD_Y = 18;
 
 /**
- * ══ WHAT ONE CARD NEEDS, AND WHY IT IS NOW THE BINDING CONSTRAINT ═══════════
- * The card is three stacked bands with fixed outer two:
+ * ══ WHAT ONE CARD NEEDS ════════════════════════════════════════════════════
+ * The card is ONE band the height of its portrait, plus padding:
  *
- *     padding 8+10  +  identity row 26  +  gap 8  +  PORTRAIT  +  gap 8
- *                   +  loadout pill 26                        =  86 + portrait
+ *     padding 8+10  +  max(disc 68, name 2×17 + gap 8 + controls 26)  =  86
  *
- * At the portrait's full 68px that is 154, which is where BENCH_SLOT_H's old
- * value of 158 came from — it was the planner's slot height, and the card was
- * designed to exactly fill it.
+ * The two are the same 68 by construction and that is not a coincidence worth
+ * losing: two lines of name at --fs-lg over a 26px control row is exactly a
+ * portrait, which is what lets the three columns square up on one band. Move
+ * the name's size or its line count and this stops being true — the card still
+ * works, it just stops looking designed.
  *
- * ⚠ THE TIMELINE OUTGREW THAT, DOWNWARD. Two condensing rounds took the
- * planner's slot to 124 at full aux reserve and 84 with none, and the card
- * cannot follow: it needs 86px before the portrait gets a single pixel. So the
- * CARD is what sets the minimum slot height now, not the rows. That is a real
- * inversion and it is worth stating plainly rather than letting a floor
- * constant look arbitrary.
- *
- * 🎛️ THE FLOOR IS THE SMALLEST PORTRAIT WE ARE WILLING TO SHOW. 40px still
- * reads as a character — below that the disc stops being a portrait and starts
- * being a dot — so the floor is 86 + 40. Lower this only together with a
- * decision about what the card looks like when it can no longer stack three
- * bands; the honest alternative is restructuring the card (portrait INLINE with
- * the identity row), which buys ~48px and is a design change, not a number.
- * ⚠ The disc itself is capped, not floored (--sp-avatar-max in SlotPortrait):
- * it shrinks to fit whatever it is given. This constant is what stops it being
- * given too little.
- *
- * ⚗️ The portrait-less arm is the experiment above: with no disc the card is
- * only its two fixed bands, so 86 is the whole of it and the timeline is free
- * to show what its rows actually ask for.
+ * 🎛️ Lower it only by shrinking CARD_PORTRAIT, which is what the floor is FOR:
+ * the disc is capped rather than floored on its own side, so nothing else would
+ * catch a slot too short to hold it (a fixed disc that cannot shrink SPILLS —
+ * that bug shipped once already).
  */
-export const BENCH_SLOT_MIN_H = BENCH_PORTRAIT_SHOWN ? 86 + 40 : 86;
+export const BENCH_SLOT_MIN_H = CARD_PORTRAIT + CARD_PAD_Y;
 
 /**
  * The band's resting rhythm: one card at the planner's BASELINE slot height,
