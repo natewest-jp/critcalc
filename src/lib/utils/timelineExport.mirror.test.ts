@@ -273,7 +273,7 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 
 describe('elementColors ↔ app.css --el-* tokens', () => {
 	it('every declared --el-* slot matches the TS mirror', () => {
-		const re = /^\s*--el-([a-z]+)-(main|border|hi):\s*([^;]+);/gm;
+		const re = /^\s*--el-([a-z]+)-(main|bar|border|hi):\s*([^;]+);/gm;
 		let m: RegExpExecArray | null;
 		let count = 0;
 		while ((m = re.exec(appCss))) {
@@ -283,8 +283,10 @@ describe('elementColors ↔ app.css --el-* tokens', () => {
 			expect(entry[slot], `--el-${el}-${slot}`).toBe(value.trim().replace(/\s+/g, ' '));
 			count++;
 		}
-		// 7 elements × 3 slots + none-main — a floor so a regex regression
-		// can't silently pass on zero matches.
-		expect(count).toBeGreaterThanOrEqual(22);
+		// 7 elements × 4 slots + none-main — a floor so a regex regression
+		// can't silently pass on zero matches. ⚠ physical has no CSS token at
+		// all (it is TS-only), and none/physical have no bar/border/hi by
+		// design, so this counts DECLARATIONS in app.css, not slots in the TS.
+		expect(count).toBeGreaterThanOrEqual(29);
 	});
 });

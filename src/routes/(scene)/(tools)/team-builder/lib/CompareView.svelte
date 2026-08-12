@@ -5,7 +5,7 @@
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
 	import { constellations, siteSettings, ownership } from '$lib/stores';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
-	import { elementColors, type ElementKey } from '$lib/utils/elementColors';
+	import { elementPalette } from '$lib/utils/elementColors';
 	import Mark from '$lib/components/Mark.svelte';
 	import { deriveCharacterCapabilities } from '$lib/capabilities/deriveCapabilities';
 	import { rulerTicks } from '$lib/timeline/barGeometry';
@@ -56,14 +56,18 @@
 		timelineW > 0 ? Math.max(280, Math.min(720, timelineW - NAME_W - 84)) : 300
 	);
 
+	/* ⚠ TWO COLOURS PER COLUMN SINCE 2026-08-12, and they are not
+	   interchangeable. `color` is the element's IDENTITY (`main`) — the lane
+	   accents, the header ink, the --el-color the CSS reads. `bar` is the FILL
+	   rung, which is `main` pulled 30% toward the balance point between the night
+	   and the white written on it; it goes to CompareBar and nowhere else.
+	   One value was doing both jobs, which was only invisible because the two
+	   rungs did not exist yet. */
 	const columns = $derived(
 		ids.map((id) => {
 			const entry = getCharacterIndexEntry(id);
-			return {
-				id,
-				entry,
-				color: (elementColors[(entry?.element ?? 'none') as ElementKey] ?? elementColors.none).main
-			};
+			const pal = elementPalette(entry?.element);
+			return { id, entry, color: pal.main, bar: pal.bar };
 		})
 	);
 
@@ -276,7 +280,7 @@
 								<span class="cmp-lane-name">{col.entry?.displayName ?? col.id}</span>
 								<CompareBar
 									segments={cooldownSegments(skillCd[i]!)}
-									color={col.color}
+									bar={col.bar}
 									{scaleSeconds}
 									trackWidthPx={trackW}
 								/>
@@ -294,7 +298,7 @@
 								<span class="cmp-lane-name">{col.entry?.displayName ?? col.id}</span>
 								<CompareBar
 									segments={cooldownSegments(burstCd[i]!)}
-									color={col.color}
+									bar={col.bar}
 									{scaleSeconds}
 									trackWidthPx={trackW}
 								/>
@@ -314,7 +318,7 @@
 								<span class="cmp-lane-name">{col.entry?.displayName ?? col.id}</span>
 								<CompareBar
 									segments={glyphSegments(cell)}
-									color={col.color}
+									bar={col.bar}
 									{scaleSeconds}
 									trackWidthPx={trackW}
 									{locked}

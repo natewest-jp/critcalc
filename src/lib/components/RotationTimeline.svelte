@@ -277,7 +277,16 @@
 	// saturation as the rows around them.
 	// Literal, not var(--neutral): these values also feed the PNG export path,
 	// and canvas can't resolve custom properties. Mirrors --neutral (app.css).
-	const BLANK_PAL: ElementPalette = { main: '#768093', border: '#768093', hi: '#768093' };
+	// ⚠ `bar` is the SAME value here, deliberately. Blank is a neutral standing in
+	// for "no element", and the bar rung's derivation spends freed gamut on
+	// chroma — on a gray that would invent a hue it does not have. Same reasoning
+	// as physical/none in elementColors.ts.
+	const BLANK_PAL: ElementPalette = {
+		main: '#768093',
+		bar: '#768093',
+		border: '#768093',
+		hi: '#768093'
+	};
 
 	// castFill (the cast-pill / summon vertical top-light) now lives in
 	// $lib/utils/elementColors so the Team Builder's Compare bars share the exact
@@ -1263,10 +1272,17 @@
 							     N/C/P tokens with a dire gradient fill + dire text. -->
 							{@const isApprox = char != null && !isCurated(char) && char.id !== 'blank'}
 
+							<!-- ↻ 2026-08-12: THE HALO IS DERIVED FROM `bar`, NOT `main`. Its
+							     one job is to hold white ink off the fill it sits on, so it
+							     has to be that fill's own shade — a halo drawn from `main`
+							     under a `bar` fill is a slightly different hue AND the wrong
+							     distance from it, which is exactly the drift the shared
+							     castFill() contract exists to prevent. -30 HSL points from
+							     whatever the bar is; the /lab board judged it this way. -->
 							<div
 								class="rp-char-block"
 								style:height="{slotBlockH(slotIdx)}px"
-								style:--label-halo={char ? shiftHue(p.main, 0, -30, 1) : undefined}
+								style:--label-halo={char ? shiftHue(p.bar, 0, -30, 1) : undefined}
 							>
 								<!-- E row -->
 								<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
@@ -1283,7 +1299,7 @@
 														class="rp-bar-uptime"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.main)}
+														style:background={castFill(p.bar)}
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
@@ -1293,7 +1309,7 @@
 														class="rp-bar-uptime"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.main)}
+														style:background={castFill(p.bar)}
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
@@ -1306,7 +1322,7 @@
 														class="rp-bar-uptime rp-bar-uptime--dim"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background="color-mix(in srgb, {p.main}
+														style:background="color-mix(in srgb, {p.bar}
 														{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														style:border-radius="1px"
 													>
@@ -1318,7 +1334,7 @@
 															class="rp-bar-cd rp-bar-cd--overflow"
 															style:left="{g.left}px"
 															style:width="{g.width}px"
-															style:background="color-mix(in srgb, {p.main}
+															style:background="color-mix(in srgb, {p.bar}
 															{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														></div>
 													{/if}
@@ -1328,7 +1344,7 @@
 														style:left="{g.left}px"
 														style:width="{g.width}px"
 														style:background="color-mix(in srgb, {desaturate(
-															p.main,
+															p.bar,
 															GHOST_CHROMA_KEEP
 														)}
 														{GHOST_FILL_MIX}%, transparent)"
@@ -1363,7 +1379,7 @@
 													class="rp-summon-bar"
 													style:left="{g.left}px"
 													style:width="{g.width}px"
-													style:background={castFill(p.main)}
+													style:background={castFill(p.bar)}
 												>
 													<span class="rp-summon-label">{srow.label}</span>
 												</div>
@@ -1400,7 +1416,7 @@
 														class="rp-bar-uptime"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.main)}
+														style:background={castFill(p.bar)}
 														style:border-radius="1px"
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
@@ -1410,7 +1426,7 @@
 														class="rp-bar-uptime"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background={castFill(p.main)}
+														style:background={castFill(p.bar)}
 													>
 														<span class="rp-bar-row-badge">{bar.label}</span>
 													</div>
@@ -1419,7 +1435,7 @@
 														class="rp-bar-uptime rp-bar-uptime--dim"
 														style:left="{g.left}px"
 														style:width="{g.width}px"
-														style:background="color-mix(in srgb, {p.main}
+														style:background="color-mix(in srgb, {p.bar}
 														{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														style:border-radius="1px"
 													>
@@ -1431,7 +1447,7 @@
 															class="rp-bar-cd rp-bar-cd--overflow"
 															style:left="{g.left}px"
 															style:width="{g.width}px"
-															style:background="color-mix(in srgb, {p.main}
+															style:background="color-mix(in srgb, {p.bar}
 															{UPTIME_DIM_MIX}%, var(--rp-chart-bg))"
 														></div>
 													{/if}
@@ -1441,7 +1457,7 @@
 														style:left="{g.left}px"
 														style:width="{g.width}px"
 														style:background="color-mix(in srgb, {desaturate(
-															p.main,
+															p.bar,
 															GHOST_CHROMA_KEEP
 														)}
 														{GHOST_FILL_MIX}%, transparent)"
@@ -1494,7 +1510,7 @@
 													: block.kind === 'skill' ||
 														  block.kind === 'burst' ||
 														  block.kind === 'elemental-normal'
-														? `color-mix(in srgb, ${p.main} 50%, var(--rp-active))`
+														? `color-mix(in srgb, ${p.bar} 50%, var(--rp-active))`
 														: undefined}
 												style:border-right={bi === track.inputBlocks.length - 1
 													? 'none'

@@ -1095,9 +1095,26 @@
 
 		<h3>Elements</h3>
 		<p class="sg-note">
-			Three slots each: <strong>main</strong> · <strong>border</strong> (main at 0.5α) ·
-			<strong>hi</strong> (main mixed 50/50 white). <code>none</code> deliberately has only
-			<code>main</code>. Runtime mirror: <code>src/lib/utils/elementColors.ts</code> — keep in lockstep.
+			Four slots each, and <strong>the split that matters is transcribed vs derived</strong>.
+			<strong>main</strong> (Genshin's icon palette) and <strong>hi</strong> (their in-text
+			<code>&lt;color=&gt;</code> palette) are <em>tables copied out of the game</em> — ⛔ not to be
+			re-tuned as a set. <strong>bar</strong> and <strong>border</strong> are functions of
+			<code>main</code>: border is main at 0.5α; <strong>bar</strong> (2026-08-12) is main pulled
+			30% toward the luminance where a fill owes the night and the white on it the same, with half
+			the freed chroma headroom spent — <em>a fill with ink written on it</em>, which is a job the
+			icon palette was never drawn for.
+		</p>
+		<p class="sg-note">
+			⛔ <strong><code>bar</code> is for FILLS THAT CARRY INK and nothing else</strong> — the
+			planner's cast pills and their phases, the summon lane, the label halo, Compare bars. Glyphs,
+			pips, portrait washes, avatar rings and readouts stay on <code>main</code>; the rung only
+			works because the icon did not follow the bar down. ⚠ <code>none</code> and
+			<code>physical</code> have <code>main</code> alone — they are near-neutrals, and the
+			derivation spends freed gamut on chroma, which on a gray invents a hue it does not have.
+			<code>/lab</code> section 10 holds the board and the two knobs; the full argument (including
+			why this is not the rejected divergence) is at <code>--el-*</code> in
+			<code>app.css</code>. Runtime mirror:
+			<code>src/lib/utils/elementColors.ts</code> — keep in lockstep.
 		</p>
 		<div class="sg-el-grid">
 			{#each ELEMENTS as el (el)}

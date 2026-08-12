@@ -558,6 +558,12 @@
 	 * Otherwise every candidate overshoots its own target by a few percent, in a
 	 * direction that varies by hue.
 	 */
+	/* ✅ ⚓ NATE PICKED D, 2026-08-12 — these two numbers ARE the shipped rung.
+	 * --el-*-bar in app.css and its mirror in elementColors.ts are this
+	 * function's output at these values, transcribed. ⚠ So moving them here no
+	 * longer just re-draws the board: it makes the board disagree with what
+	 * ships, and the fix is to re-transcribe (7 hexes, both files, the mirror
+	 * test enforces the pair). */
 	const BAR_BALANCE = 0.3;
 	const BAR_DENSITY = 0.5;
 
@@ -598,7 +604,7 @@
 		{ key: 'gentle', label: 'C · balance 0.15 + density 0.5', balance: 0.15, density: 0.5 },
 		{
 			key: 'pick',
-			label: `D · balance ${BAR_BALANCE} + density ${BAR_DENSITY} — my pick`,
+			label: `D · balance ${BAR_BALANCE} + density ${BAR_DENSITY} — ✅ SHIPPED`,
 			balance: BAR_BALANCE,
 			density: BAR_DENSITY
 		},
@@ -1676,8 +1682,16 @@
 	<!-- ═══════════════════════════════════ 10 · A FOURTH RUNG, FOR BARS ══ -->
 	<section>
 		<h2 class="lab-h">
-			A deeper rung — for BARS only <span class="lab-badge">open</span>
+			A deeper rung — for BARS only <span class="lab-badge">shipped</span>
 		</h2>
+		<p class="lab-note">
+			✅ <strong>SETTLED 2026-08-12: candidate D ships as <code>--el-*-bar</code></strong> — the
+			planner's cast pills and every phase of them, the summon lane, the active-row tint, the label
+			halo, and the Team Builder's Compare bars. ⛔
+			<strong>Not the icons, not the glyphs, not the portrait washes, not the avatar rings</strong> —
+			the board's whole test is a bar beside an UNCHANGED icon, and the rung only works because the icon
+			did not follow it down.
+		</p>
 		<p class="lab-note">
 			⚓ <em
 				>"We rejected a deeper rung for icons, but I think we might need a deeper rung for things
