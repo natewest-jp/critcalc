@@ -1760,8 +1760,16 @@
 		<!-- ↻ 2026-08-12 (motion round): the `hidden` attribute became a class.
 		     Same display:none in both states — that is load-bearing and stays,
 		     because `visibility` would leave 122 cards being laid out on every
-		     zoom of a timeline they are not even on screen for — but a class can
-		     carry an @starting-style and an attribute cannot.
+		     zoom of a timeline they are not even on screen for.
+
+		     ⚠ AN EARLIER VERSION OF THIS NOTE CLAIMED a class was REQUIRED, "an
+		     attribute cannot carry an @starting-style". That is wrong and worth
+		     correcting rather than quietly deleting: @starting-style matches the
+		     element, not the toggled state, so `[hidden]` would have worked just
+		     as well — the Team Builder's roster does exactly that. The class is a
+		     preference, not a necessity: it names the state next to the `inert`
+		     that shares it, instead of hanging more behaviour off the UA's
+		     `[hidden]` rule.
 
 		     `inert` is now asserted rather than implied. It came free with
 		     `hidden`; the shut state still reaches display:none in the same
