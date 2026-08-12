@@ -22,15 +22,28 @@
 	 *   the card heights (planner: coupled to the timeline's published slot
 	 *   metrics; TB: the even resting rhythm) and the ⇄ action's meaning
 	 *   (audition on the TB; open the Source on the planner).
-	 * - `height` is MEASURED by the layout from the dock, which stretches with
-	 *   its tool frame (tall-bench round): the strip spans the frame and stands
-	 *   RIBBON_OVERHANG_Y proud at both ends. The cards keep their track-group
-	 *   alignment at the top (RIBBON_HEAD below the strip's interior top) and
-	 *   the tail beneath them is deliberately empty — a container slightly
-	 *   taller than its contents.
-	 * - Height changes animate only while `traveling` (the layout flips it for
-	 *   the pan's duration, passing the shared clock in) — mid-session metric
-	 *   changes on the planner snap, so cards never lag their track groups.
+	 * - ⚓ IT ENDS IN A POINT (tail round 2026-08-12), Genshin's banner shape:
+	 *   square top, straight sides, a tapered tail. Its height is now simply
+	 *   its CONTENT — top chrome + RIBBON_HEAD + the four cards + the tail —
+	 *   and it does not animate at all.
+	 *
+	 *   That replaced a strip MEASURED against its tool's dock and stretched to
+	 *   `max(that, content)`, padding itself out below the last card with empty
+	 *   ribbon so its bottom edge would meet the tool frame's. ⚓ Nate: "it
+	 *   animates to extend down to different heights with no content at all.
+	 *   Its only purpose has been to try to line up with edges of tools." A
+	 *   point has nothing to line up — it terminates rather than negotiates —
+	 *   so the measurement, the `height` prop and the travel animation all went
+	 *   with the job they existed to do.
+	 *
+	 *   ⚠ CONTENT-SIZED IS NOT THE SAME AS RESPONSIVE. Every typical rotation
+	 *   leaves each slot at its BENCH_SLOT_H floor, so the height is a constant
+	 *   in practice; it only grows in the extreme many-bars case, where it must,
+	 *   because each card is exactly as tall as the track group it labels.
+	 *
+	 *   The silhouette is a generated `clip-path` and the double frame is a
+	 *   generated SVG — see the tail block in benchBand.svelte.ts for both, and
+	 *   for why neither could stay a CSS box.
 	 */
 	import SlotPortrait from '$lib/components/SlotPortrait.svelte';
 	import Mark from '$lib/components/Mark.svelte';
@@ -39,39 +52,35 @@
 		benchBand,
 		BENCH_SLOT_H,
 		RIBBON_PAD,
-		RIBBON_EDGE,
-		RIBBON_FRAME_BORDER,
+		// RIBBON_EDGE / RIBBON_FRAME_BORDER / RIBBON_RADIUS are no longer read
+		// here: the inset, the stroke weight and the corner all live inside the
+		// generated path now, which is the point of generating it.
 		RIBBON_FRAME_R_TIGHT,
 		RIBBON_FRAME_R_WIDE,
-		RIBBON_RADIUS,
 		RIBBON_CHROME,
 		RIBBON_HEAD,
-		RIBBON_RESTING_H,
-		RIBBON_W
+		RIBBON_TAIL_H,
+		RIBBON_W,
+		ribbonClipPath,
+		ribbonFramePath
 	} from '$lib/benchBand.svelte';
 	import { constellations, loadout, type LoadoutEntry } from '$lib/stores';
 
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 
 	let {
-		mode,
-		height = 0,
-		traveling = false,
-		travelMs = 0,
-		travelEase = 'ease'
+		mode
 	}: {
 		/** The tool the band is docked to (or traveling toward). */
 		mode: 'rp' | 'tb' | null;
-		/** The strip's full height, measured by the layout from the dock (the
-		 *  tool frame + RIBBON_OVERHANG_Y at each end). 0 = not yet measured;
-		 *  the resting height carries the first paint. */
-		height?: number;
-		/** True for the duration of a tool pan — heights animate on the shared
-		 *  clock; at rest they snap with the timeline. */
-		traveling?: boolean;
-		travelMs?: number;
-		travelEase?: string;
 	} = $props();
+
+	// ⚠ FOUR PROPS LEFT WITH THE TAIL (2026-08-12): `height`, `traveling`,
+	// `travelMs`, `travelEase`. They existed to stretch the strip to a MEASURED
+	// dock height and to ease that stretch on a tool pan — a job a pointed
+	// bottom does not have, since a point terminates instead of meeting an edge.
+	// The layout no longer measures for us. See the tail block in
+	// benchBand.svelte.ts for the whole argument.
 
 	// Card heights: the planner's published slot metrics, wherever we are.
 	// ⚓ NATE 2026-08-12 — this used to be gated on `mode === 'rp'`, so the cards
@@ -84,13 +93,15 @@
 		benchBand.slotHeights ?? [BENCH_SLOT_H, BENCH_SLOT_H, BENCH_SLOT_H, BENCH_SLOT_H]
 	);
 
-	// The strip spans its tool frame (+ the overhang at each end) — but never
-	// shrinks below its own cards. On a short viewport the Team Builder's frame
-	// is viewport-fit and can be shorter than four cards; clamping to it would
-	// slice the fourth card off inside the frame. Standing proud of a short
-	// tool is exactly what this strip is for.
-	const contentH = $derived(2 * RIBBON_CHROME + RIBBON_HEAD + heights.reduce((a, b) => a + b, 0));
-	const boxH = $derived(Math.max(height || RIBBON_RESTING_H, contentH));
+	// THE BOX IS ITS CONTENT: top chrome + head + cards + tail. It was
+	// `max(measured dock height, content)` until the tail round; the tail
+	// supplies the bottom now, and there is no longer an edge to reach for.
+	// One chrome, not two — the tail IS the space under the last card, and its
+	// first TAIL_LEAD px are straight, so that space is more generous than the
+	// 12px it replaces rather than less.
+	const boxH = $derived(
+		RIBBON_CHROME + RIBBON_HEAD + heights.reduce((a, b) => a + b, 0) + RIBBON_TAIL_H
+	);
 
 	// Resolved card characters. Index entries satisfy SlotPortrait's SlotChar
 	// shape and are available eagerly (no payload wait). A 'blank' slot shows
@@ -148,21 +159,38 @@
 	class="bb ctx-dark"
 	style:width="{RIBBON_W}px"
 	style:height="{boxH}px"
-	style:padding="{RIBBON_CHROME + RIBBON_HEAD}px {RIBBON_CHROME}px {RIBBON_CHROME}px"
-	style:border-radius="{RIBBON_RADIUS}px"
+	style:padding="{RIBBON_CHROME + RIBBON_HEAD}px {RIBBON_CHROME}px {RIBBON_TAIL_H}px"
+	style:clip-path="path('{ribbonClipPath(boxH)}')"
 	style:--bb-pad="{RIBBON_PAD}px"
-	style:--bb-frame-inset="{RIBBON_EDGE}px"
-	style:--bb-frame-border="{RIBBON_FRAME_BORDER}px"
-	style:--bb-frame-r-tight="{RIBBON_FRAME_R_TIGHT}px"
-	style:--bb-frame-r-wide="{RIBBON_FRAME_R_WIDE}px"
-	style:--bb-height-transition={traveling ? `height ${travelMs}ms ${travelEase}` : 'none'}
 >
-	<!-- The double frame: two strokes on ONE box, differing only in corner
-	     radius, so the wide arc cuts across the tight corner (Nate's mockup).
-	     Pseudo-elements, not wrappers — they must not affect the card column's
-	     box, and the strip has to clip them at its own rounded edge. -->
-	<span class="bb-frame bb-frame--tight" aria-hidden="true"></span>
-	<span class="bb-frame bb-frame--wide" aria-hidden="true"></span>
+	<!-- ── THE DOUBLE FRAME, NOW ONE SVG (tail round 2026-08-12) ──────────────
+	     It was two absolutely-positioned <span>s wearing CSS borders, which is
+	     the one thing a border cannot do here: a border draws a rounded
+	     RECTANGLE, and this box ends in a point. Clipping them to the taper
+	     would not help — a clipped border stops at the cut instead of following
+	     it, which is exactly the trap that makes clip-path fine for the GROUND
+	     (no stroke of its own) and useless for a line.
+
+	     ⚠ ONE ELEMENT, TWO PATHS, AND THAT IS THE POINT. The alternative — a
+	     separate "cap" for the tail — would have put a CSS border and an SVG
+	     edge against each other at a seam, in FOUR places (two strokes × two
+	     sides), across two rasterisers that this repo has already measured
+	     disagreeing about stroke weight (Chrome floors border-width to whole CSS
+	     px; WebKit does not). One renderer has no seam to align.
+
+	     The two paths still differ only in corner radius, so the wide arc cuts
+	     across the tight one exactly as before — the ornament is unchanged, it
+	     simply has nowhere to appear at the bottom any more. -->
+	<svg
+		class="bb-frame"
+		width={RIBBON_W}
+		height={boxH}
+		viewBox="0 0 {RIBBON_W} {boxH}"
+		aria-hidden="true"
+	>
+		<path d={ribbonFramePath(boxH, RIBBON_FRAME_R_TIGHT)} fill-rule="evenodd" />
+		<path d={ribbonFramePath(boxH, RIBBON_FRAME_R_WIDE)} fill-rule="evenodd" />
+	</svg>
 	{#each rt.slots as _id, i (i)}
 		{@const char = chars[i]}
 		<div class="bb-slot" style:height="{heights[i]}px">
@@ -292,25 +320,27 @@
 		   ⚓ SETTLED: it stays at --surface. /lab § "The bench, on the scene"
 		   holds the comparison against a real band. */
 		background: var(--surface);
+		/* Belt to clip-path's braces: the silhouette already cuts the box, but a
+		   card column that outgrew a short frame used to rely on this and the
+		   cost of keeping it is nothing. */
 		overflow: hidden;
-		transition: var(--bb-height-transition, none);
 	}
 
-	/* The two frame strokes: same box, same inset, same color — only the corner
-	   radius differs, which is the whole trick. They sit ABOVE the ground and
-	   BELOW the cards (the cards start RIBBON_PAD inside them, so nothing
-	   overlaps in practice). */
+	/* The two frame strokes, drawn as one overlay. Geometry (both radii, both
+	   edges of each 2px band, and the taper) is generated in benchBand.svelte.ts
+	   from Nate's artwork; this only places the canvas and gives it its ink.
+	   Above the ground, below the cards — the cards start RIBBON_PAD inside it,
+	   so nothing overlaps in practice.
+
+	   `fill: currentColor` rather than a token per path: the colour is stated
+	   ONCE here and both paths take it, which is the same "one line, two
+	   corners" contract the CSS pair had. */
 	.bb-frame {
 		position: absolute;
-		inset: var(--bb-frame-inset);
-		border: var(--bb-frame-border) solid var(--frame-line-quiet);
+		inset: 0;
+		color: var(--frame-line-quiet);
+		fill: currentColor;
 		pointer-events: none;
-	}
-	.bb-frame--tight {
-		border-radius: var(--bb-frame-r-tight);
-	}
-	.bb-frame--wide {
-		border-radius: var(--bb-frame-r-wide);
 	}
 
 	.bb-slot {
@@ -320,7 +350,12 @@
 		min-width: 0;
 		flex-shrink: 0;
 		box-sizing: border-box;
-		transition: var(--bb-height-transition, none);
+		/* ⛔ NO HEIGHT TRANSITION (tail round). It only ever ran while the layout
+		   flagged `traveling`, i.e. inside the 2s camera crane with both tool
+		   surfaces cross-fading over it — so it animated exclusively where it
+		   could not be seen. It also cannot come back alone: the tail is pinned
+		   below the last card, so a slot that eased while the box snapped would
+		   drag the point around behind it. Both or neither; ⚓ Nate chose neither. */
 	}
 	/* ⛔ THE SHELF LINE BETWEEN CARDS IS GONE (⚓ NATE 2026-08-12), and with it
 	   RIBBON_DIVIDER_H. It was drawn for a card that filled its slot; the card

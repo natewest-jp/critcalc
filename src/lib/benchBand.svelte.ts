@@ -288,11 +288,13 @@ export const TOOL_INSET = RIBBON_W + RIBBON_GAP;
 export const RIBBON_DOCK_LEFT = -(TOOL_INSET + FRAME_BORDER);
 
 /**
- * ⚓ NATE 2026-08-06 — how far the strip stands proud of its tool frame at the
- * TOP and the BOTTOM. The whole point of the tall bench: whatever height the
- * planner or the Team Builder happens to have, the ribbon extends that far and
- * a little further, so it always reads as the taller object. Both docks stretch
- * with their frame, so this is the only vertical number to tune.
+ * ⚓ NATE 2026-08-06 — how far the strip stands proud of its tool frame.
+ *
+ * ↻ TAIL ROUND 2026-08-12: AT THE TOP ONLY. It used to mean both ends — the
+ * tall-bench idea was that the ribbon extends past whatever height its tool
+ * happens to have, so it always reads as the taller object. The bottom half of
+ * that retired with the stretch: the strip ends in a POINT now, and a point
+ * does not overhang anything, it just stops. Only RIBBON_HEAD reads this.
  */
 export const RIBBON_OVERHANG_Y = 12;
 
@@ -328,9 +330,154 @@ export const RIBBON_FRAME_TOP_INSET = 28;
 export const RIBBON_HEAD =
 	BAND_STACK_TO_SURFACE + RIBBON_FRAME_TOP_INSET + RIBBON_OVERHANG_Y - RIBBON_CHROME;
 
-/** Resting ribbon interior above/below the card column — the TB's dock height
- *  is measured, so this only seeds the pre-measure paint. */
+/** Resting ribbon interior above/below the card column — retained as the
+ *  content-height reference for a bench with four baseline slots. Since the
+ *  tail round the box is content-sized, so nothing measures against a dock. */
 export const RIBBON_RESTING_H = BENCH_COLUMN_H + RIBBON_HEAD + 2 * RIBBON_CHROME;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// THE TAIL (⚓ NATE 2026-08-12) — the strip ENDS IN A POINT, Genshin's own
+// banner shape, and that single change retires a whole behaviour.
+//
+// ⚠ WHAT WENT, AND WHY IT COULD: the ribbon used to stretch to
+// `max(measured dock height, content)`, padding itself out past its last card
+// with empty strip so its bottom edge would meet the tool frame's. ⚓ Nate:
+// "it animates to extend down to different heights with no content at all. Its
+// only purpose has been to try to line up with edges of tools." A POINT HAS
+// NOTHING TO LINE UP — it terminates rather than negotiates — so the box is
+// simply head + cards + tail now, and the dock measurement, the `height` prop
+// and the travel animation all went with the job they existed to do.
+//
+// ⚠ AND THE HEIGHT ANIMATION IS GONE ENTIRELY (⚓ Nate, same round). It was
+// gated on `traveling`, so it only ever played during the 2s camera crane while
+// both tool surfaces were cross-fading — exclusively inside a window designed
+// to hide changes. Worth knowing it was near-invisible before you go looking
+// for what you lost. It also could not have stayed: with the tail pinned below
+// the last card, a banner that eased while the cards snapped (or vice versa)
+// would drag the point around behind them.
+//
+// ⚠ THE BOX STILL SIZES TO CONTENT, and that is not the same as responding to
+// the tool. For every typical rotation the timeline asks for less than a card
+// needs, so each slot sits at its BENCH_SLOT_H floor and the height is a
+// constant — fixed in practice. In the extreme many-bars case the slots grow,
+// and they must: each card is exactly as tall as the timeline track group it
+// labels, which is what makes the bench read as that group's label. Freezing
+// the box would clip the bottom cards and break that alignment.
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * 🎛️ The tail's height — a CONSTANT, and deliberately not responsive
+ * (⚓ Nate: "we can just make the tail a fixed safe size… it doesn't need to
+ * respond"). Only the STRAIGHT RUN above it varies with content; the taper
+ * itself never scales. That matters beyond simplicity: scaling the shape would
+ * flatten the point and pull the 2px frame line off its declared weight.
+ *
+ * It doubles as the box's bottom padding, so the cards end exactly where the
+ * tail begins — the first TAIL_LEAD px of it are straight, which is the
+ * breathing room under the last card.
+ */
+export const RIBBON_TAIL_H = 100;
+
+/**
+ * How far the tail runs STRAIGHT before the taper starts. Read off Nate's
+ * artwork (`assets-src/tools/bench-clip-path.svg`, 46.118 at 2×) rather than
+ * chosen — and it is the number that makes the splice below exact: above this
+ * point both the silhouette and the frame are plain vertical lines, so the
+ * generated straight run and the drawn taper meet with nothing to align.
+ */
+const TAIL_LEAD = 23.059;
+
+/**
+ * ⚓ NATE'S ARTWORK, TRANSCRIBED — `assets-src/tools/bench-clip-path.svg` (the
+ * silhouette) and `bench-inset-point.svg` (the frame line), both drawn at 2×
+ * and halved here. ⛔ Do not re-tune these numbers by eye; redraw the assets
+ * and re-transcribe, the same rule the element palette carries.
+ *
+ * VERIFIED against the ribbon's own knobs when they landed: the silhouette is
+ * 448/2 = RIBBON_W, the frame ring 428/2 = RIBBON_W − 2·RIBBON_EDGE, the ring
+ * 4/2 = RIBBON_FRAME_BORDER thick — and, the part that is easy to get wrong,
+ * the perpendicular distance between silhouette and frame AT THE TIP measures
+ * exactly RIBBON_EDGE. A naive "put the inner tip 5px higher" would converge:
+ * at this edge's 20.96° the tip has to lift ~14px along the axis to stay 5px
+ * away. The artwork is a true parallel offset.
+ */
+const TAIL = {
+	/** Silhouette, x 0…RIBBON_W, y measured from the tail's top. */
+	outer: (t: number) =>
+		`C 224,${t + 43.772} 211.229,${t + 62.34} 191.887,${t + 69.75}` +
+		`L 113.7885,${t + 99.669}` +
+		`C 112.637,${t + 100.1105} 111.363,${t + 100.1105} 110.2115,${t + 99.669}` +
+		`L 32.113,${t + 69.75}` +
+		`C 12.771,${t + 62.34} 0,${t + 43.772} 0,${t + 23.059}`,
+	/** Frame ring, OUTER edge — the silhouette inset by RIBBON_EDGE. */
+	ringOuter: (t: number) =>
+		`C 219,${t + 41.7005} 207.506,${t + 58.412} 190.0985,${t + 65.081}` +
+		`L 112,${t + 95}` +
+		`L 33.9015,${t + 65.081}` +
+		`C 16.494,${t + 58.412} 5,${t + 41.7005} 5,${t + 23.059}`,
+	/** Frame ring, INNER edge — a sharp point; only the silhouette's is capped. */
+	ringInner: (t: number) =>
+		`C 217,${t + 40.872} 206.017,${t + 56.841} 189.383,${t + 63.2135}` +
+		`L 112,${t + 92.8585}` +
+		`L 34.617,${t + 63.2135}` +
+		`C 17.983,${t + 56.841} 7,${t + 40.872} 7,${t + 23.059}`
+};
+
+/**
+ * The ribbon's SILHOUETTE for a box `h` tall — square top with RIBBON_RADIUS
+ * corners, straight sides, Nate's taper. Spent as `clip-path: path(…)`.
+ *
+ * ⚠ `path()` takes USER UNITS — no percentages, no calc() — which is why this
+ * is generated per height rather than written once in CSS. ⛔ And why the
+ * obvious alternative is wrong: a `clipPathUnits="objectBoundingBox"` clipPath
+ * normalises to 0–1 and would STRETCH the taper with the box, flattening the
+ * point on a tall rotation.
+ */
+export function ribbonClipPath(h: number): string {
+	const t = h - RIBBON_TAIL_H;
+	const r = RIBBON_RADIUS;
+	return (
+		`M ${r},0 H ${RIBBON_W - r} A ${r},${r} 0 0 1 ${RIBBON_W},${r}` +
+		`V ${t + TAIL_LEAD}` +
+		TAIL.outer(t) +
+		`V ${r} A ${r},${r} 0 0 1 ${r},0 Z`
+	);
+}
+
+/**
+ * One stroke of the double frame, as a filled RING (evenodd) rather than a
+ * stroked centreline: SVG strokes straddle their path, so a stroked version
+ * would need every coordinate shifted by half a width and would rasterise
+ * differently again from the CSS borders this replaces. The artwork already
+ * gives both edges of the band, so the ring is the honest transcription.
+ *
+ * `r` is the OUTER corner radius — the two calls are what makes the double
+ * corner: RIBBON_FRAME_R_TIGHT crossed by RIBBON_FRAME_R_WIDE, exactly as the
+ * two CSS boxes did. ⚠ They coincide along the sides and the whole taper, and
+ * that is safe ONLY because --frame-line-quiet is opaque (#414752, already
+ * composited). If it ever becomes translucent, two overlapping fills would
+ * double its density along every straight run — the alpha-stacking law.
+ */
+export function ribbonFramePath(h: number, r: number): string {
+	const t = h - RIBBON_TAIL_H;
+	const e = RIBBON_EDGE;
+	const b = RIBBON_FRAME_BORDER;
+	const xo = RIBBON_W - e; // ring outer edge, right
+	const xi = RIBBON_W - e - b; // ring inner edge, right
+	const ri = Math.max(0, r - b);
+	return (
+		// outer edge of the band, clockwise from its top-left corner
+		`M ${e + r},${e} H ${xo - r} A ${r},${r} 0 0 1 ${xo},${e + r}` +
+		`V ${t + TAIL_LEAD}` +
+		TAIL.ringOuter(t) +
+		`V ${e + r} A ${r},${r} 0 0 1 ${e + r},${e} Z` +
+		// inner edge — evenodd punches it out, leaving a band RIBBON_FRAME_BORDER wide
+		`M ${e + b + ri},${e + b} H ${xi - ri} A ${ri},${ri} 0 0 1 ${xi},${e + b + ri}` +
+		`V ${t + TAIL_LEAD}` +
+		TAIL.ringInner(t) +
+		`V ${e + b + ri} A ${ri},${ri} 0 0 1 ${e + b + ri},${e + b} Z`
+	);
+}
 
 class BenchBandState {
 	host = $state<BenchHostRegistration | null>(null);

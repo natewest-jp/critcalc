@@ -217,8 +217,9 @@
 
 	let benchMount: HTMLDivElement | undefined = $state();
 	let benchVisible = $state(false);
-	let benchTraveling = $state(false);
-	let benchHeight = $state(0);
+	// ↻ TAIL ROUND: `benchHeight`/`benchTraveling` retired with the stretch they
+	// drove. The anchor is still measured, but only for x/y — see snapBench.
+
 	let benchTravelTimer: ReturnType<typeof setTimeout> | undefined;
 	// Set by benchNavTransition on a dockless→docked leg; fired from startFadeIn
 	// with the incoming PAGE fade's actual startTime, so the ribbon's entrance
@@ -289,7 +290,7 @@
 		if (benchROTarget === el) return;
 		if (typeof ResizeObserver === 'undefined') return;
 		benchRO ??= new ResizeObserver(() => {
-			if (!benchTraveling) snapBench();
+			snapBench();
 		});
 		benchRO.disconnect();
 		benchRO.observe(el);
@@ -312,7 +313,6 @@
 		benchMount.style.transition = 'none';
 		benchMount.style.transform = `translate(${a.x}px, ${a.y}px)`;
 		benchMount.style.opacity = '';
-		benchHeight = a.h;
 		benchVisible = true;
 		observeBenchAnchor(a.anchorEl);
 	}
@@ -390,16 +390,9 @@
 				});
 				fade.startTime = clock;
 			}
-			// Heights: relax between the tools' rhythms on the world clock when
-			// docked throughout; snap when arriving from a DOCKLESS tool — the
-			// strip is fading in at its new height, and growing it mid-fade
-			// would read as the box inflating.
-			benchTraveling = wasDocked;
-			benchHeight = target.h;
 			observeBenchAnchor(target.anchorEl);
 			benchTravelTimer = setTimeout(
 				() => {
-					benchTraveling = false;
 					cancelToolNavAnims(mount, false);
 					mount.style.opacity = '';
 					snapBench();
@@ -844,13 +837,12 @@
 			bind:this={benchMount}
 			style:visibility={benchVisible ? 'visible' : 'hidden'}
 		>
-			<BenchBand
-				mode={benchMode}
-				height={benchHeight}
-				traveling={benchTraveling}
-				travelMs={SLIDE_MS}
-				travelEase={SLIDE_EASE}
-			/>
+			<!-- ↻ TAIL ROUND 2026-08-12: four props gone. The strip used to be told
+			     how tall to be, measured from the dock so its bottom edge met the
+			     tool frame's; it ends in a POINT now and sizes to its own cards.
+			     Nothing here measures its height any more — the anchor is still
+			     measured for POSITION, which is a separate job. -->
+			<BenchBand mode={benchMode} />
 		</div>
 	</div>
 </div>
