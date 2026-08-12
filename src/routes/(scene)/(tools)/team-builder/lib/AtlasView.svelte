@@ -325,6 +325,14 @@
 		cursor: pointer;
 		color: inherit;
 		font: inherit;
+		/* ⚠ --t-quick, NOT --t-move, even though this animates a transform. The
+		   band is not "is it a transform", it is WHAT THE MOTION IS FOR. This is
+		   a 2px hover lift: an affordance that has to keep up with the pointer,
+		   and 240ms on it reads as the card lagging your mouse. --t-move is for
+		   something that travels because a STATE changed and you are meant to
+		   follow it there (the toggle thumb, app.css). Measured 2026-08-12 when
+		   this was a candidate for the move band and the 2px is what ruled it
+		   out. Same reasoning keeps .rp-explore-arrow's 2px nudge here. */
 		transition: transform var(--t-quick);
 	}
 	/* ↻ ⚓ NATE 2026-08-10: the glass pane-hover idiom — A RING AND A DENSITY,

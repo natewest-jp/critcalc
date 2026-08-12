@@ -829,9 +829,12 @@
 	                is the one that already existed, unchanged at 150ms, and it
 	                is by far the most-used.
 	     --t-move   SPATIAL MOVES the eye has to follow — something travelling a
-	                distance, rather than a box changing colour in place.
-	                Nothing claims it yet; it is declared so the next thing that
-	                needs it does not invent a fourth number.
+	                distance because a STATE changed, rather than a box changing
+	                colour in place. ⚠ The test is NOT "does it animate a
+	                transform": a hover lift or a 2px nudge is an AFFORDANCE and
+	                has to keep up with the pointer, so those stay on --t-quick
+	                (the argument is written out at .rolecard in AtlasView). One
+	                resident so far — the toggle thumb crossing its track.
 
 	   ⛔ NOT FOR THE SCENE. TOOL_NAV_MS, the camera crane, the star clock, the
 	   loading veil and the world-locked tool fade are Nate-tuned and own their
@@ -1328,11 +1331,17 @@
    properties inherit and nothing re-declares --t-*, so this reaches portalled
    nodes and every .ctx-* zone alike.
 
-   ⚠ THIS ONLY COVERS WHAT USES A BAND. Three things deliberately keep their own
-   clock and therefore their own reduce path: the scene/nav machinery (which has
-   one already), the chrome state contract's 200ms, and Svelte's `transition:`
-   directive — JS, which cannot read a CSS variable. That last one is why
-   $lib/motion.ts exists and why its helpers return 0 under the same query. */
+   ⚠ THIS ONLY COVERS WHAT USES A BAND. Two things keep their own clock and
+   therefore their own reduce path: the scene/nav machinery (which has one
+   already), and Svelte's `transition:` directive — JS, which cannot read a CSS
+   variable, and which is why $lib/motion.ts exists and why its helpers return 0
+   under the same query. Keyframe `animation`s are the third gap and cannot be
+   closed this way at all: a duration token has nothing to say to `@keyframes`.
+   (`pulse-confirm` is the only one, and it still declares its own reduce path.)
+
+   ↻ 2026-08-12: the site chrome's private 200ms folded in (⚓ Nate), taking
+   three more blocks with it. Nothing outside the three exceptions above is
+   still honouring this preference by hand. */
 @media (prefers-reduced-motion: reduce) {
 	:root {
 		--t-snap: 0s;
@@ -2473,8 +2482,16 @@ img {
 	height: 0.85rem;
 	border-radius: var(--r-sm);
 	background: var(--knob);
+	/* --t-move's FIRST RESIDENT (2026-08-12), and the two halves are on
+	   different bands on purpose. The thumb TRAVELS 1.05rem across its track —
+	   the one place on the site where something crosses a distance as the
+	   result of a state change rather than shifting a pixel or two under a
+	   pointer — so the position takes the band for spatial moves. Its COLOUR is
+	   not travelling anywhere: it changes in place, at the same moment the
+	   track's does, so it stays on --t-quick and the two land together. One
+	   colour event, one movement, each on its own clock. */
 	transition:
-		transform var(--t-quick),
+		transform var(--t-move),
 		background var(--t-quick);
 }
 .toggle input:checked + .toggle-track {

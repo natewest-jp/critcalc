@@ -29,7 +29,7 @@
 		flex: none;
 		fill: currentColor;
 		fill-opacity: 0.85;
-		transition: fill-opacity 200ms ease;
+		transition: fill-opacity var(--t-quick);
 	}
 
 	/* :global — the states live on the host BUTTON, which is the consumer's. */
@@ -38,9 +38,6 @@
 		fill-opacity: 1;
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.close-mark {
-			transition: none;
-		}
-	}
+	/* (A reduced-motion block stood here. Retired 2026-08-12 with the fold onto
+	   --t-quick — the band is zeroed at :root under the same query.) */
 </style>

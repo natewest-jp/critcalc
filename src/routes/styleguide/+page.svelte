@@ -1110,19 +1110,31 @@
 			menus, modal scrims, the Source overlay). Anything longer there reads as lag — you already
 			know what is coming, so the motion is only saying where it came <em>from</em>.
 			<code>--t-quick</code> is <strong>hover and rest</strong>, the state ladder every control
-			shares, unchanged. <code>--t-move</code> is for <strong>spatial moves</strong> the eye has to follow,
-			and nothing claims it yet — it exists so the next thing that needs one does not invent a fourth
-			number.
+			shares — by far the most-used, and unchanged at 150ms.
+			<code>--t-move</code> is for <strong>spatial moves</strong>: something travelling a distance
+			because a STATE changed and you are meant to follow it there.
+		</p>
+		<p class="sg-note">
+			⚠ <strong>The test for <code>--t-move</code> is not "does it animate a transform."</strong> A
+			hover lift or a 2px nudge is an <em>affordance</em> and has to keep up with the pointer —
+			240ms there reads as the element lagging your mouse, so those stay on
+			<code>--t-quick</code> (measured 2026-08-12; the argument is written out at
+			<code>.rolecard</code> in AtlasView). One resident so far: the toggle thumb crossing its
+			track, whose <em>position</em> takes the move band while its <em>colour</em> stays on
+			<code>--t-quick</code> so it lands with the track's. One colour event, one movement, each on its
+			own clock.
 		</p>
 		<p class="sg-note">
 			<strong>A token is a duration AND its easing, one value.</strong> There is one easing in the
 			product; splitting it onto a second axis would double every call site to buy a distinction
 			nobody asked for. ⚠
 			<strong><code>prefers-reduced-motion</code> is honoured by zeroing the bands</strong>
-			in one block, so a rule that reaches for one is covered whether or not it exists yet. Three things
-			keep their own clock and their own reduce path: the scene/nav machinery, the chrome state contract's
-			200ms, and Svelte's <code>transition:</code> directive — JS, which cannot read a custom
-			property, and which is what <code>src/lib/motion.ts</code> mirrors the numbers for.
+			in one block, so a rule that reaches for one is covered whether or not it exists yet. Only three
+			things still honour it by hand: the scene/nav machinery, Svelte's
+			<code>transition:</code> directive (JS, which cannot read a custom property — what
+			<code>src/lib/motion.ts</code> mirrors the numbers for), and keyframe
+			<code>animation</code>s, which a duration token cannot reach at all. ↻ The site chrome's
+			private 200ms folded into <code>--t-quick</code> on 2026-08-12, taking three more blocks with it.
 		</p>
 		<div class="sg-swatches">
 			{#each motion as t (t.name)}{@render swatch(t)}{/each}
