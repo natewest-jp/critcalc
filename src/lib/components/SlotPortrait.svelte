@@ -343,10 +343,17 @@
 							<!-- The refinement, as the in-game weapon card draws it: a digit
 							     on the icon's corner rather than a hit zone of its own. It is
 							     DISPLAY only — the panel this zone opens always renders its
-							     refinement pips, so nothing became unreachable. -->
-							<span class="sp-lo-ref" class:sp-lo-ref--set={hasWeapon} aria-hidden="true"
-								>{currentRef}</span
-							>
+							     refinement pips, so nothing became unreachable.
+							     ⚓ NATE 2026-08-12: ABSENT with no weapon equipped, rather
+							     than dimmed. Dimmed is this card's "nothing here yet" voice,
+							     and it is the right one for a slot you can FILL — but there
+							     is no refinement to set until a weapon exists, which is a
+							     different statement. A digit on an icon corner has no room
+							     to draw that distinction, so it makes no claim at all; the
+							     panel's inert pips carry the explanation instead. -->
+							{#if hasWeapon}
+								<span class="sp-lo-ref" aria-hidden="true">{currentRef}</span>
+							{/if}
 						</button>
 					</div>
 				</div>
@@ -929,9 +936,9 @@
 	/* ── The refinement digit ─────────────────────────────────────────────────
 	   The number alone, on the weapon icon's top-right corner — the in-game
 	   weapon card's own idiom, and the reason it can be four pixels of type
-	   instead of a 24px hit zone. Weapons are always R1–R5, so it is never
-	   absent: dimmed white until a weapon is equipped (the icons' ladder),
-	   element-tinted after, exactly like the constellation chip.
+	   instead of a 24px hit zone. It renders ONLY with a weapon equipped (see the
+	   markup), so it has one state and takes the element tint unconditionally —
+	   the unset rung the constellation chip still carries has no meaning here.
 
 	   ⚠ z-index is load-bearing. The zone's dimming wash is an ::after at
 	   inset 0, which paints ABOVE every static child and would wash the half of
@@ -945,7 +952,7 @@
 		z-index: 1;
 		top: -1px;
 		right: -1px;
-		color: var(--sp-unset-ink);
+		color: color-mix(in srgb, var(--el) 75%, white);
 		font-family: var(--font-body);
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
@@ -957,15 +964,9 @@
 			0 1px 2px var(--sp-pill-fill);
 		transition: color 150ms ease;
 	}
-	.sp-lo-ref--set {
-		color: color-mix(in srgb, var(--el) 75%, white);
-	}
 	/* Follows its ZONE's hover, not its own — it is a label on the weapon
-	   button, not a control. Same two rungs as everything else on the card. */
+	   button, not a control. One rung, because it has one state. */
 	.sp-lo-zone:hover:not(:disabled) .sp-lo-ref {
-		color: var(--sp-unset-ink-hover);
-	}
-	.sp-lo-zone:hover:not(:disabled) .sp-lo-ref--set {
 		color: var(--text);
 	}
 
