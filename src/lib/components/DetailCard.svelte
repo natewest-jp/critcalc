@@ -406,7 +406,9 @@
 		height: 56px;
 		flex-shrink: 0;
 		border-radius: 50%;
-		border: 1.5px solid var(--el-color);
+		/* 1px, not 1.5 — Chrome floors border-width to whole CSS px, so this has
+		   always painted 1px there; see the measurement at --inset-stroke. */
+		border: 1px solid var(--el-color);
 		overflow: hidden;
 		display: flex;
 		align-items: center;

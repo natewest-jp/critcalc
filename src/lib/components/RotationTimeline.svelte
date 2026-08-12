@@ -2933,7 +2933,9 @@
 	   rather than an empty outline. */
 	.rp-active-bg--unset {
 		background: color-mix(in srgb, var(--rp-active) 60%, transparent);
-		border: 1.5px dashed var(--rp-active);
+		/* 1px, not 1.5 — Chrome floors border-width to whole CSS px, so this has
+		   always painted 1px there; see the measurement at --inset-stroke. */
+		border: 1px dashed var(--rp-active);
 	}
 
 	/* ── Input blocks ─────────────────────────────────────────── */

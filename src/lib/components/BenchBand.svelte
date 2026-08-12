@@ -395,8 +395,22 @@
 		border-radius: 0 var(--r-sm) var(--r-sm) 0;
 		pointer-events: none;
 	}
-	/* ⇄ hovers by brightening the GLYPH — the card's standing rule. */
+	/* ── BOTH tiles fill on hover; the HUE is what separates them ────────────
+	   ⚓ NATE 2026-08-12 asked for ⇄ to fill like ✕ does, "one shade up of
+	   slate". That completes a rule the palette round already settled for the
+	   glass panes and it is worth stating in the same words: DENSITY separates
+	   resting from engaged, HUE separates the two engaged states. The raised
+	   register lights up whenever you are on it; only the destructive one goes
+	   red.
+
+	   ⚠ 7% white, not `--slate-600`: a component may not name a primitive (the
+	   layer law, grep-enforced). 7% is where slate-700 meets slate-600 on the
+	   ramp, i.e. it IS the one-rung step Nate asked for, expressed as the mix a
+	   role is allowed to carry — the same move --sp-unset-ink and
+	   --control-face-hover already make.
+	   The glyph keeps brightening too: the ink was always the half you read. */
 	.bb-act:hover:not(:disabled) {
+		--bb-act-fill: color-mix(in srgb, white 7%, var(--surface-raised));
 		color: var(--sp-unset-ink-hover);
 	}
 	/* ── ✕ hovers by FILLING, and that is the round's second sanctioned

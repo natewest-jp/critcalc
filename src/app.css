@@ -2548,19 +2548,43 @@ img {
    A frame's right weight is a function of what it goes round, so the family has
    exactly two:
 
-     1.5px — THE DEFAULT. Buttons, plates, chips, a selected nav item: anything
+     1px   — THE DEFAULT. Buttons, plates, chips, a selected nav item: anything
              where 2px stops reading as jewelry and starts reading as the box's
              own border.
      2px   — LARGE PANELS. The bench ribbon and anything of that scale, where a
              thinner line reads as a hairline rather than a rule.
 
-   ⚠ THE DEFAULT FLIPPED THIS ROUND (2px → 1.5px), because the small case turned
+   ⚠ THE DEFAULT FLIPPED (2px → the thin rung), because the small case turned
    out to be the common one — every caller but the bench is a control. The rule
    rung in § Laws ("rules are 2px, section dividers 1px") still governs RULES;
    this family is the ornamental frame, and it now says the smaller thing by
    default and asks a panel to declare the larger.
 
-   ⚠ The bench ribbon does not read --inset-stroke at all: it carries its own
+   ══ ⛔ AND THE THIN RUNG IS 1px, NOT 1.5 — THE PLATFORM CANNOT DRAW 1.5 ═════
+   Measured 2026-08-12 (Nate asked whether 1.5px borders were safe; they are
+   not, and not for the reason either of us expected). The SAME declaration,
+   `border: 1.5px`, paints:
+
+                    DPR 1    DPR 1.5   DPR 2    DPR 3
+       Chrome        1px       1px      1px      1px
+       WebKit        1px      1.33px   1.5px    1.33px
+
+   ⚠ CHROME FLOORS border-width TO WHOLE CSS PIXELS — not device pixels. Swept
+   0.5 / 1 / 1.25 / 1.5 / 1.75 and all five paint identically at 1px; 2 and 2.5
+   both paint 2px. `outline` behaves the same. So in Chrome 1.5px has never been
+   a value at all, and this "flip from 2px to 1.5px" was in fact a flip to 1px
+   everywhere we were judging it. Declaring 1px changes NOTHING visible in
+   Chrome and finally makes Safari agree with it.
+
+   `box-shadow` is the mirror image and is NOT a workaround: Chrome renders a
+   1.5px inset ring exactly and stably at every DPR, while WebKit gives
+   2 / 1.33 / 1.5 / 1.67. There is no property that draws 1.5px dependably in
+   both engines, so the value is retired rather than rehoused.
+   ⛔ DECLARE WHOLE PIXELS. A fractional border is a different weight in every
+   engine, and on this project's own machine it is a different weight between
+   the browser we tune in and the browser we ship to. */
+
+⚠ The bench ribbon does not read --inset-stroke at all: it carries its own
    RIBBON_FRAME_BORDER (= 2), because its radii are tuned to its geometry and it
    predates this family. The two numbers agreeing is the point — if one moves,
    move the other. */
@@ -2692,7 +2716,7 @@ img {
 	/* The fallback, not a declared default: --inset-stroke is a host override
 	   (see above), and a declaration on `.inset` would have to out-specify every
 	   host that sets it. Large panels declare 2px; everything else takes this. */
-	border: var(--inset-stroke, 1.5px) solid var(--inset-line);
+	border: var(--inset-stroke, 1px) solid var(--inset-line);
 }
 
 /* 2 · DOUBLE — two strokes on ONE box, differing only in corner radius, so the

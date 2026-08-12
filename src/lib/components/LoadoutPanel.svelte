@@ -212,6 +212,20 @@
 	.lp-tile:hover {
 		background: var(--fill-hover);
 	}
+	/* ⏸ THE THREE SELECTION RINGS ARE THE 1.5px SWEEP'S DELIBERATE EXCEPTION
+	   (this, .lp-pip--current, and SlotPortrait's .sp-pip--current).
+
+	   The 2026-08-12 measurement retired 1.5px BORDERS because Chrome floors
+	   border-width to whole CSS px, so they were silently painting 1px in the
+	   browser we tune in — moving those to 1px was visually inert there and
+	   fixed a real Chrome/Safari split. box-shadow is the opposite case: Chrome
+	   renders a 1.5px inset ring EXACTLY at every DPR, so these three have been
+	   showing the weight they were judged at, and sweeping them would be a
+	   visible design change rather than a correction.
+	   ⚠ WebKit still varies (2 / 1.33 / 1.5 / 1.67 CSS px at DPR 1 / 1.5 / 2 / 3),
+	   so they are not dependable either — just not WRONG. 2px is the value that
+	   renders identically in both engines at every DPR if these are ever wanted
+	   settled; that is ⚓ Nate's call, not a cleanup. */
 	.lp-tile--current {
 		background: color-mix(in srgb, var(--el) 20%, transparent);
 		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--el) 60%, transparent);
@@ -271,6 +285,7 @@
 	}
 	.lp-pip--current {
 		background: color-mix(in srgb, var(--el) 30%, transparent);
+		/* 1.5px stands here on purpose — see .lp-tile--current above. */
 		box-shadow: inset 0 0 0 1.5px var(--el);
 	}
 	.lp-pip:hover {

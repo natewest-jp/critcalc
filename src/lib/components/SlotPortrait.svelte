@@ -1129,6 +1129,8 @@
 	}
 	.sp-pip--current {
 		background: color-mix(in srgb, var(--pip-color) 30%, transparent);
+		/* 1.5px stands here on purpose — the selection-ring exception to the
+		   1.5px sweep; the argument is at .lp-tile--current in LoadoutPanel. */
 		box-shadow: inset 0 0 0 1.5px var(--pip-color);
 	}
 	.sp-pip:hover {
