@@ -15,12 +15,21 @@
 
 import { EditorView } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
+import { undo, redo, undoDepth, redoDepth } from '@codemirror/commands';
 import { buildNotationExtensions } from './notationEditorExtension';
 
 export interface NotationEditor {
-	/** Replace the whole document (no-op when the value already matches). */
+	/** Replace the document (no-op when the value already matches). Lands as a
+	 *  minimal, UNDOABLE transaction — see setValue's note. */
 	setValue(value: string): void;
 	getValue(): string;
+	/** Run the editor's own history commands. Exposed so the composer can put
+	 *  buttons beside the box for the same thing ⌘Z already does. */
+	undo(): void;
+	redo(): void;
+	/** Whether there is anything to undo / redo right now. */
+	canUndo(): boolean;
+	canRedo(): boolean;
 	destroy(): void;
 }
 
@@ -46,18 +55,54 @@ export function createNotationEditor(
 	});
 
 	return {
+		/**
+		 * ⚠ THIS IS THE UNDO PATH, not just a mirror. Since single truth every
+		 * team edit is a notation rewrite (rotationTabs writes the string, Svelte
+		 * hands it down, this replays it) — so a swap or a bench ✕ becomes a
+		 * CodeMirror TRANSACTION here, which is the only reason ⌘Z can reach it.
+		 * A plain `dispatch` goes into the history by default; do NOT add
+		 * `addToHistory.of(false)`.
+		 *
+		 * The change is MINIMAL (common prefix/suffix trimmed) rather than a
+		 * whole-document replace. Deleting one segment out of four then reads as
+		 * an edit to that segment: the caret maps through it instead of being
+		 * dumped at the end of a brand-new document, and undo restores the text
+		 * without also restoring a stale selection.
+		 */
 		setValue(value: string) {
 			const current = view.state.doc.toString();
 			if (value === current) return;
+			let from = 0;
+			while (from < current.length && from < value.length && current[from] === value[from]) from++;
+			let end = current.length;
+			let newEnd = value.length;
+			while (end > from && newEnd > from && current[end - 1] === value[newEnd - 1]) {
+				end--;
+				newEnd--;
+			}
 			externalUpdate = true;
 			try {
-				view.dispatch({ changes: { from: 0, to: current.length, insert: value } });
+				view.dispatch({ changes: { from, to: end, insert: value.slice(from, newEnd) } });
 			} finally {
 				externalUpdate = false;
 			}
 		},
 		getValue() {
 			return view.state.doc.toString();
+		},
+		undo() {
+			undo(view);
+			view.focus();
+		},
+		redo() {
+			redo(view);
+			view.focus();
+		},
+		canUndo() {
+			return undoDepth(view.state) > 0;
+		},
+		canRedo() {
+			return redoDepth(view.state) > 0;
 		},
 		destroy() {
 			view.destroy();
