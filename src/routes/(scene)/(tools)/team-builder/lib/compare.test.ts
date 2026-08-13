@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Ability } from '$lib/types/ability';
 import type { DerivedCapability } from '$lib/capabilities/deriveCapabilities';
-import { buildCompareModel, glyphScaleSeconds, type CompareCharacter } from './compare';
+import { buildCompareModel, type CompareCharacter } from './compare';
 
 // ---------------------------------------------------------------------------
 // Fixtures — minimal shapes; the model only reads the fields it aligns on.
@@ -24,7 +24,6 @@ const cap = (partial: Partial<DerivedCapability> & { kind: DerivedCapability['ki
 
 const char = (id: string, over: Partial<CompareCharacter> = {}): CompareCharacter => ({
 	id,
-	curated: true,
 	abilities: [],
 	capabilities: [],
 	...over
@@ -140,111 +139,6 @@ describe('buildCompareModel — capability rows', () => {
 		expect(cell.also).toEqual({ target: 'team', minCon: 2 });
 	});
 
-	it('builds an uptime glyph when the window has a cooldown-bearing host', () => {
-		const model = buildCompareModel([
-			char('a', {
-				abilities: [
-					{
-						abilityType: 'burst',
-						behavior: 'instant',
-						cooldown: 15,
-						energyCost: 60,
-						id: 'q'
-					} as unknown as Ability
-				],
-				capabilities: [
-					cap({
-						kind: 'buff',
-						detail: 'baseAtk',
-						target: 'active',
-						duration: 12,
-						source: { section: 'ability', abilityId: 'q', abilityName: 'Q' }
-					})
-				]
-			})
-		]);
-		expect(model.capRows[0].cells[0]!.glyph).toEqual({ uptime: 12, cooldown: 15 });
-	});
-
-	it('glyph falls back to the longest window at the gate when the primary is instant', () => {
-		const model = buildCompareModel([
-			char('a', {
-				abilities: [
-					{
-						abilityType: 'skill',
-						behavior: 'instant',
-						cooldown: 15,
-						id: 'e'
-					} as unknown as Ability
-				],
-				capabilities: [
-					// Primary (broadest target) has no duration; two variants carry windows.
-					cap({
-						kind: 'shield',
-						target: 'team',
-						source: { section: 'ability', abilityId: 'e', abilityName: 'E' }
-					}),
-					cap({
-						kind: 'shield',
-						target: 'active',
-						duration: 4.8,
-						source: { section: 'ability', abilityId: 'e', abilityName: 'E' }
-					}),
-					cap({
-						kind: 'shield',
-						target: 'active',
-						duration: 12,
-						source: { section: 'ability', abilityId: 'e', abilityName: 'E' }
-					})
-				]
-			})
-		]);
-		expect(model.capRows[0].cells[0]!.glyph).toEqual({ uptime: 12, cooldown: 15 });
-	});
-
-	it('no glyph for passive-hosted windows (no cast cycle to visualize)', () => {
-		const model = buildCompareModel([
-			char('a', {
-				capabilities: [
-					cap({
-						kind: 'buff',
-						detail: 'em',
-						target: 'team',
-						duration: 8,
-						source: { section: 'passive', abilityId: 'a4', abilityName: 'A4' }
-					})
-				]
-			})
-		]);
-		expect(model.capRows[0].cells[0]!.glyph).toBeUndefined();
-	});
-
-	it('glyphScaleSeconds spans the longest cycle across all glyphs', () => {
-		const burstOf = (id: string, cd: number) =>
-			({
-				abilityType: 'burst',
-				behavior: 'instant',
-				cooldown: cd,
-				energyCost: 60,
-				id
-			}) as unknown as Ability;
-		const withGlyph = (id: string, cd: number, dur: number) =>
-			char(id, {
-				abilities: [burstOf('q', cd)],
-				capabilities: [
-					cap({
-						kind: 'buff',
-						detail: 'baseAtk',
-						target: 'active',
-						duration: dur,
-						source: { section: 'ability', abilityId: 'q', abilityName: 'Q' }
-					})
-				]
-			});
-		const model = buildCompareModel([withGlyph('a', 15, 12), withGlyph('b', 20, 25)]);
-		expect(glyphScaleSeconds(model)).toBe(25);
-	});
-
 	it('collects distinct details at the gate and all source names', () => {
 		const model = buildCompareModel([
 			char('a', {
@@ -267,5 +161,145 @@ describe('buildCompareModel — capability rows', () => {
 		const cell = model.capRows[0].cells[0]!;
 		expect(cell.details.sort()).toEqual(['hydro', 'pyro']);
 		expect(cell.sources.sort()).toEqual(['Burst Q', 'C1 Name']);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// Lanes — the chart projection. A lane is an ABILITY under an EFFECT heading,
+// so the fixtures below all carry ability ids (a lane resolves its host by id;
+// the cells projection never needed one).
+// ---------------------------------------------------------------------------
+
+const skillOf = (id: string, cooldown: number, charges?: number) =>
+	({ abilityType: 'skill', behavior: 'instant', id, cooldown, charges }) as unknown as Ability;
+
+const burstOf = (id: string, cooldown: number, energyCost = 60) =>
+	({ abilityType: 'burst', behavior: 'instant', id, cooldown, energyCost }) as unknown as Ability;
+
+const from = (abilityId: string, extra: Partial<DerivedCapability> = {}) => ({
+	source: { section: 'ability' as const, abilityId, abilityName: abilityId.toUpperCase() },
+	...extra
+});
+
+describe('buildCompareModel — lanes', () => {
+	it('emits ONE LANE PER HOST, so a two-button healer gets two lanes', () => {
+		const model = buildCompareModel([
+			char('jean', {
+				abilities: [skillOf('e', 6), burstOf('q', 20)],
+				capabilities: [
+					cap({ kind: 'heal', target: 'team', duration: 4, ...from('e') }),
+					cap({ kind: 'heal', target: 'team', duration: 10, ...from('q') })
+				]
+			})
+		]);
+		const lanes = model.capRows[0].lanes;
+		expect(lanes.map((l) => l.host.label)).toEqual(['E', 'Q']);
+		expect(lanes.map((l) => l.uptime)).toEqual([4, 10]);
+		// The price travels with the lane — that is the whole point of host-as-lane.
+		expect(lanes[0].host.cooldown).toBe(6);
+		expect(lanes[1].host.energyCost).toBe(60);
+	});
+
+	it('carries the column index so stacked lanes know whose they are', () => {
+		const healer = (id: string, cd: number) =>
+			char(id, {
+				abilities: [burstOf('q', cd)],
+				capabilities: [cap({ kind: 'heal', target: 'team', duration: 8, ...from('q') })]
+			});
+		const model = buildCompareModel([healer('a', 15), healer('b', 20)]);
+		expect(model.capRows[0].lanes.map((l) => l.columnIndex)).toEqual([0, 1]);
+	});
+
+	it('lists what else the SAME cast buys, excluding its own row', () => {
+		const model = buildCompareModel([
+			char('bennett', {
+				abilities: [burstOf('q', 15)],
+				capabilities: [
+					cap({ kind: 'heal', target: 'team', duration: 12, ...from('q') }),
+					cap({ kind: 'buff', detail: 'baseAtk', target: 'team', duration: 12, ...from('q') })
+				]
+			})
+		]);
+		const heal = model.capRows.find((r) => r.key === 'heal')!;
+		const atk = model.capRows.find((r) => r.key === 'buff:atk')!;
+		expect(heal.lanes[0].alsoCarries).toEqual(['buff:atk']);
+		expect(atk.lanes[0].alsoCarries).toEqual(['heal']);
+	});
+
+	it('splits a summon off its parent cast and takes the summon cadence', () => {
+		const model = buildCompareModel([
+			char('xiangling', {
+				abilities: [burstOf('q', 20)],
+				capabilities: [
+					cap({
+						kind: 'offFieldDamage',
+						detail: 'summon',
+						duration: 14,
+						summon: { label: 'Guoba', tickInterval: 4, firstTickDelay: 2 },
+						...from('q')
+					})
+				]
+			})
+		]);
+		const lane = model.capRows[0].lanes[0];
+		expect(lane.host.label).toBe('Q · Guoba');
+		expect(lane.host.summonLabel).toBe('Guoba');
+		// Offsets stop INSIDE the window — a tick after the summon expires is a lie.
+		expect(lane.ticks).toEqual([2, 6, 10]);
+	});
+
+	it('refuses a lane with no cast cycle — passives get no invented rhythm', () => {
+		const model = buildCompareModel([
+			char('a', {
+				abilities: [burstOf('q', 20)],
+				capabilities: [
+					// Hosted by a passive: no cooldown-bearing ability with this id.
+					cap({
+						kind: 'heal',
+						target: 'team',
+						duration: 10,
+						source: { section: 'passive', abilityId: 'p1', abilityName: 'A4' }
+					})
+				]
+			})
+		]);
+		expect(model.capRows[0].lanes).toEqual([]);
+		// …and the cell still reports the capability. The chart is quiet, not the table.
+		expect(model.capRows[0].cells[0]).not.toBeNull();
+	});
+
+	it('takes the longest window at the gate, so variant order cannot decide it', () => {
+		const model = buildCompareModel([
+			char('a', {
+				abilities: [burstOf('q', 20)],
+				capabilities: [
+					cap({ kind: 'shield', target: 'team', duration: 8, ...from('q') }),
+					cap({ kind: 'shield', target: 'team', duration: 15, ...from('q') })
+				]
+			})
+		]);
+		expect(model.capRows[0].lanes).toHaveLength(1);
+		expect(model.capRows[0].lanes[0].uptime).toBe(15);
+	});
+
+	it('keeps a gated lane and reports its gate rather than hiding it', () => {
+		const model = buildCompareModel([
+			char('a', {
+				abilities: [skillOf('e', 12)],
+				capabilities: [
+					cap({
+						kind: 'shield',
+						target: 'team',
+						duration: 6,
+						minConstellation: 4,
+						caveats: ['selfHp'],
+						...from('e')
+					})
+				]
+			})
+		]);
+		const lane = model.capRows[0].lanes[0];
+		expect(lane.minCon).toBe(4);
+		expect(lane.conditional).toBe(true);
 	});
 });

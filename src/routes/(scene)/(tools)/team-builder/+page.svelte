@@ -51,7 +51,7 @@
 	import type { RolePosition, RoleFunction, CharacterIndexEntry } from '$lib/types/character';
 	import { getAvatar, getAvatarFallback, hasAvatar } from '$lib/utils/getAvatar';
 	import { positionIcon, functionIcon, POSITION_LABEL, FUNCTION_LABEL } from '$lib/utils/roleIcons';
-	import { MAX_COMPARE } from './lib/compare';
+	import { MAX_COMPARE, lensFacet, type CapRowKey } from './lib/compare';
 	import { facetsProvidedBy, parseTeamParam, type TeamSlot } from './lib/team';
 
 	// ---------------------------------------------------------------------------
@@ -288,8 +288,6 @@
 		else set.add(val);
 	}
 
-	const facetMeta = (key: FacetKey) => FACETS.find((f) => f.key === key);
-
 	// Filtering is a Roster-tab activity — and the filter rail only EXISTS on
 	// the Roster tab, so only the off-rail entry points (bench coverage gaps,
 	// Atlas role chips) still need to steer there.
@@ -449,10 +447,17 @@
 	/** Audition: the pinned incumbent + the slot it holds (null = plain compare). */
 	let anchorId = $state<string | null>(null);
 	let auditionSlot = $state<number | null>(null);
-	/** The facets the incumbent provides — the candidate strip's chip row. */
+	/** The comparison an audition interrupted. An audition scopes the selection
+	 *  to itself, which used to mean it DESTROYED whatever you were building —
+	 *  three characters lined up, one bench ⇄, and they were gone with no undo.
+	 *  Stashed on open, put back on commit or cancel. */
+	let stashedCompare: string[] = [];
+	/** The facets the incumbent provides — what this SLOT does, which is what
+	 *  seeds the audition's lens. */
 	let auditionSeedFacets = $state<FacetKey[]>([]);
-	/** The currently-active subset (toggleable, so an over-narrow AND of every
-	 *  seed facet can be relaxed chip by chip). */
+	/** The currently-active subset, driven by CompareView's lens chips — ONE
+	 *  control doing two jobs: it groups the chart AND narrows the candidates.
+	 *  Toggleable so an over-narrow AND of every seed facet can be relaxed. */
 	const auditionFacets = new SvelteSet<FacetKey>();
 	/** Where commit/cancel returns to — the tab active when the audition began. */
 	let auditionReturnTab = $state<'atlas' | 'roster'>('atlas');
@@ -490,7 +495,9 @@
 	});
 
 	function endAudition(): void {
-		compareIds.clear(); // the audition selection is scoped
+		compareIds.clear(); // the audition selection is scoped…
+		for (const id of stashedCompare) compareIds.add(id); // …and gives back what it borrowed
+		stashedCompare = [];
 		anchorId = null;
 		auditionSlot = null;
 		auditionSeedFacets = [];
@@ -501,6 +508,9 @@
 	 *  and open the Compare tab, whose in-view candidates strip suggests
 	 *  characters covering the facets the incumbent provides. */
 	function openAudition(index: number, incumbentId: string): void {
+		// Re-auditioning from inside an audition must not stash the audition's own
+		// scoped selection over the comparison it is already holding for you.
+		if (anchorId === null) stashedCompare = [...compareIds];
 		compareIds.clear();
 		compareIds.add(incumbentId);
 		anchorId = incumbentId;
@@ -550,6 +560,25 @@
 		returnOnCommit = false;
 		endAudition();
 		sourceTab = auditionReturnTab;
+	}
+
+	/**
+	 * CompareView's lens changed — re-point the candidate filter at it.
+	 *
+	 * ⚠ The two vocabularies overlap but are not identical, so `lensFacet` drops
+	 * what has no facet (`summon`, `buff:other`). One consequence worth knowing:
+	 * a facet the incumbent provides that the CHART cannot draw (an instant heal
+	 * has no window, so no lane) is not offered as a chip and so stops narrowing
+	 * the candidate list. That loosens the search slightly — in the same
+	 * direction as the fix that made these chips toggleable in the first place
+	 * (⚓ Nate: the AND of every provided facet went near-empty).
+	 */
+	function applyAuditionLens(keys: CapRowKey[]): void {
+		auditionFacets.clear();
+		for (const key of keys) {
+			const facet = lensFacet(key);
+			if (facet) auditionFacets.add(facet);
+		}
 	}
 
 	/** Candidates for the audition strip: everyone (outside the team) who covers
@@ -713,25 +742,15 @@
 	</button>
 {/snippet}
 
-<!-- Audition candidates — rendered inside CompareView (below its legend): who
-     else covers the facets the incumbent provides, chips toggleable so an
-     over-narrow AND can be relaxed. Handlers live here with the other tiles'. -->
+<!-- Audition candidates — rendered inside CompareView (below the reference row):
+     who else covers what this slot does. Handlers live here with the other
+     tiles'.
+     ↻ 2026-08-13: the "covers" chip row LEFT this snippet. It is now
+     CompareView's lens, on the glass control plate — the same chips group the
+     chart and narrow this list, because they were always asking the same
+     question and asking it twice put two chip rows on one screen. -->
 {#snippet auditionStrip()}
 	<div class="tb-aud">
-		{#if auditionSeedFacets.length > 0}
-			<div class="tb-aud-facets">
-				<span class="tb-aud-label">covers</span>
-				{#each auditionSeedFacets as f (f)}
-					<button
-						class="chip"
-						class:active={auditionFacets.has(f)}
-						aria-pressed={auditionFacets.has(f)}
-						title={facetMeta(f)?.hint}
-						onclick={() => toggleSet(auditionFacets, f)}>{facetMeta(f)?.label ?? f}</button
-					>
-				{/each}
-			</div>
-		{/if}
 		<div class="tb-aud-cands">
 			{#each auditionCandidates as entry (entry.id)}
 				{@const on = compareIds.has(entry.id)}
@@ -760,7 +779,7 @@
 			{/each}
 			{#if auditionCandidates.length === 0}
 				<p class="note tb-aud-none">
-					No one covers all of these at once — toggle a chip off to broaden the search.
+					No one covers all of these at once — turn a “Show” chip off to broaden the search.
 				</p>
 			{/if}
 		</div>
@@ -1300,6 +1319,9 @@
 						ids={[...compareIds]}
 						{conMode}
 						anchorId={anchorId ?? undefined}
+						auditionSlot={auditionSlot ?? undefined}
+						seedLenses={anchorId ? auditionSeedFacets : undefined}
+						onLensChange={anchorId ? applyAuditionLens : undefined}
 						onRemove={toggleCompare}
 						onCommit={anchorId ? commitAudition : undefined}
 						onClear={anchorId ? undefined : () => compareIds.clear()}
@@ -1639,19 +1661,8 @@
 		flex-direction: column;
 		gap: 0.5rem;
 	}
-	.tb-aud-facets {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 0.3rem;
-	}
-	.tb-aud-label {
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		color: var(--muted);
-	}
+	/* ⛔ `.tb-aud-facets` / `.tb-aud-label` are GONE, not commented out — the
+	   "covers" chip row moved onto CompareView's glass control plate. */
 	.tb-aud-cands {
 		display: flex;
 		flex-wrap: wrap;
