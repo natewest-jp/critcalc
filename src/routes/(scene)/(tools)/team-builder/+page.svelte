@@ -933,43 +933,19 @@
 	{/snippet}
 
 	{#snippet bandBLeft()}
-		<!-- BACK TO PLANNER → — only while an errand is live (Source retirement,
-		     2026-08-13). Committing an audition returns on its own; this is for
-		     the other endings — you cancelled, or the slot was empty and there was
-		     no commit to hang a return on.
+		<!-- ⛔ "BACK TO PLANNER →" IS NOT IN THIS BAND (⚓ Nate 2026-08-13). It lives
+		     beside "Cancel audition" in CompareView's titlebar and ONLY there — see
+		     that button for what it is actually for.
 
-		     ⚠ THE ARROW POINTS RIGHT, AND IT IS NOT A TYPO. The chip this
-		     replaces read "← Explore alternatives" with a LEADING arrow, and its
-		     note says why: the Team Builder sits to the planner's LEFT in the tool
-		     order. Coming back is therefore a move to the RIGHT, so the arrow
-		     turns and moves to the trailing edge with it. The site's arrows are
-		     SPATIAL — they say where the tool is, not whether the trip is an
-		     outbound or a return — and a left arrow here would be the first one
-		     that disagreed with the nav it belongs to.
+		     ⚠ AN EARLIER PASS KEPT A COPY HERE, reasoning that `fromPlanner` outlives
+		     the audition and cancelling would otherwise STRAND you. That reasoning was
+		     wrong: `.chrome-nav` renders a link to every other tool on every tool page,
+		     so the way back is always one click away and this plate was never
+		     load-bearing. What it actually was is a second control for a trip the
+		     navigation already offers — and offers better, since a user who has learned
+		     the nav reaches for it from anywhere.
+		     ⛔ Do not re-add it to cover a "what if they cancel" case. The nav covers it. -->
 
-		     A peer plate beside Clear team rather than a new zone: band B is
-		     already two plates flanking the rail, and this joins the near one. -->
-		<!-- ↻ ⚓ NATE 2026-08-13: WHILE THE AUDITION IS ON SCREEN, THIS LIVES WITH
-		     THE AUDITION — beside "Cancel audition" in CompareView's titlebar,
-		     which is where the errand's two exits belong together. It was in the
-		     band only because the errand got wired up before the audition had a
-		     designed surface to put it on.
-
-		     ⚠ It does NOT simply move, and the gate below is the reason: the
-		     errand outlives the audition. `fromPlanner` lasts the whole visit, so
-		     cancelling and browsing the Roster must still leave a way back. The
-		     plate steps aside exactly when the header is showing the button
-		     instead — including the case where an audition is open but you have
-		     manually switched to another tab, where the header is not on screen
-		     and the band is the only exit left. -->
-		{#if fromPlanner && !(anchorId !== null && sourceTab === 'compare')}
-			<!-- A bare .btn: the plate look is the band's, and .tb-clear's only
-			     rule is its danger hover — there is nothing for a sibling class
-			     to hold, so it does not get one. -->
-			<button class="btn" title="Return to the rotation planner" onclick={backToPlanner}
-				>Back to planner <Mark name="forward" /></button
-			>
-		{/if}
 		<!-- The team's one destructive action, moved out of the coverage read-out
 		     (⚓ NATE 2026-08-09) — that run is now a bare header on the scene with
 		     nowhere to hang a control, and a team action belongs in the band with
