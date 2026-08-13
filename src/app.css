@@ -170,8 +170,11 @@
 	   computes all of it live.
 
 	   ⚠ Glass and the wash MULTIPLY: what reaches the eye is
-	   (1 − glass)(1 − TOOL_DIM). At the old dim of .85 these same stops would
-	   deliver 5% and 7%, i.e. `sheer` again. Move one, check the other.
+	   (1 − glass)(1 − TOOL_DIM). Move one, check the other.
+	   ↻ 2026-08-13: this paragraph used to end "at the old dim of .85 these same
+	   stops would deliver 5% and 7%, i.e. `sheer` again" — and then the dim went
+	   to .875 and they do. They are not sheer. See the ⚓ NATE 2026-08-13 block
+	   at .ctx-glass for why the threshold was never a percentage.
 
 	   ⛔ --glass-ribbon is DELETED. It was Fable's stop for the bench ribbon,
 	   and the bench went back to opaque slate the same day (⚓ NATE). Nothing
@@ -412,8 +415,19 @@
 	   rgb(103,104,106). ⚠ THIS IS THE TOKEN EVERY STAR MEASUREMENT DEPENDS ON,
 	   and the old figures across the system were computed as if it were pure
 	   black. See TOOL_DIM in landing/transition.ts for the correction and what
-	   it turned out to be hiding. */
-	--scene-dim: #101013;
+	   it turned out to be hiding.
+
+	   ↻ ⚓ NATE 2026-08-13: #101013 → #121216, and this time the two axes moved
+	   in OPPOSITE directions — the wash got a hair LIGHTER while TOOL_DIM got
+	   denser (.75 → .875). That is not a contradiction, it is the pair being
+	   used as the pair: density decides how much world survives, colour decides
+	   what the floor of the composite is, and a deeper wash over a slightly
+	   lifted floor takes the world down without taking it to black. The
+	   Visualizers going onto the scene is what asked for it — with no framed
+	   slabs left anywhere, how much world comes through stopped being a per-tool
+	   question. The worst pixel (a star) now lands at rgb(48,48,51), from
+	   rgb(76,76,78). */
+	--scene-dim: #121216;
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are
@@ -592,20 +606,81 @@
 	   is why the charts still read COOL WHITE inside frames whose every other
 	   surface had gone parchment: white is not a member of either context.
 
-	   Derived from the context, so an instrument dropped into a light panel
-	   inverts for free instead of vanishing. Opaque mixes against --frame-bg,
-	   never onto transparent — the alpha-compositing law (a semi-transparent
-	   line renders display-dependently on P3).
+	   ⛔ A NOTE THAT USED TO STAND HERE IS DELETED, not moved: "derived from the
+	   context, so an instrument dropped into a light panel inverts for free."
+	   It never did. These are declared at :root, and a custom property containing
+	   var() is substituted WHERE IT IS DECLARED — so what inherits down is
+	   :root's resolved string, not a recipe re-run per context (the .ctx-dark
+	   block explains the same mechanism from the other side). Every chart on the
+	   site has always drawn with the dark-referenced values. That was harmless
+	   while every chart was dark, and it is still harmless now that every chart
+	   is on the night, but do not build on the promise: an instrument that ever
+	   needs to invert has to re-declare these on its own root.
 
 	   SVG presentation attributes take these directly: fill="var(--chart-ink)".
-	   Three rungs, matching what the instruments actually drew:
+	   Four rungs, matching what the instruments actually drew:
 	     · ink  = readable label text (was white .45–.62)
 	     · dim  = de-emphasized labels, legend text (was white .28–.42)
-	     · grid = gridlines and hairlines (was white .04–.16) */
+	     · rule = baselines, axis rules, the emphasised gridline
+	     · grid = gridlines and hairlines (was white .04–.16)
+
+	   ══ ⚓ NATE 2026-08-13: THE LINES GO DOWN, AND THEY HAD TO GO ALPHA ═══════
+	   "Take the gridlines down a tiny bit, similar to how we aggressively trimmed
+	   the Rotation Planner's." The trim is real, but the reason they had grown
+	   loud is structural and worth the paragraph, because lowering the numbers
+	   alone could not have fixed it.
+
+	   AN OPAQUE MIX HAS A FLOOR, AND THE FLOOR IS THE GROUND IT MIXES AGAINST.
+	   These two were `color-mix(--border N%, --frame-bg)`, and --frame-bg is
+	   slate-800 = rgb(46,53,67). The dimmed world is now about rgb(19,19,23). So
+	   at N → 0 the line does not fade out, it settles onto slate-800 — a
+	   distinctly LIGHT hairline on the night. Measured:
+
+	       grid  26% opaque → rgb(67,72,83)     the floor is rgb(46,53,67)
+	       rule  55% opaque → rgb(90,94,102)
+
+	   That was invisible while a `.frame` painted slate-800 behind the chart: the
+	   line was cut against the exact ground it sat on. Take the ground away and
+	   the same declaration becomes a light line on a dark world, which is why the
+	   grids read heavier AFTER the frames came off, not before.
+
+	   ⚠ SO THE FIX IS THE MIX TARGET, NOT THE PERCENTAGE. Toward `transparent`,
+	   which is the planner's exact move for its own faint gridline and for the
+	   same stated reason: a line mixes opaquely against a KNOWN ground and
+	   carries ALPHA where the ground is unknown. Out here it honestly is.
+	     · Mixing toward `transparent` premultiplies — it resolves to --border at
+	       that alpha and does NOT darken toward black. (The WebKit trap is
+	       gradient interpolation THROUGH the keyword; this is not that.)
+	     · --border is an alias of a literal, so this is one level of mix and the
+	       nesting law is untouched.
+
+	   ⚠ AND THE PLANNER'S "MAJORS STAY OPAQUE" RULING DOES NOT TRANSFER. It held
+	   because its majors were cut against slate-900, a near neighbour of its
+	   night; ours were cut against slate-800, which is not. Same law, different
+	   ground, opposite answer — check the ground before copying the conclusion.
+
+	   🎛️ THE TWO KNOBS. Resolved over the night, for tuning by eye:
+	       grid .17 → rgb(37,37,41)   was rgb(67,72,83)
+	       rule .38 → rgb(60,60,64)   was rgb(90,94,102)
+	   .17 is not a fresh guess — it is ⚓ Nate's own tuned value for the planner's
+	   faint gridline (--rp-grid-faint), landed verbatim there, on this ground, for
+	   this job. Starting the Visualizers somewhere else would have meant two
+	   answers to one question.
+
+	   ⛔ NOTHING WAS STRUCK OR FADED, and that was considered. The planner needed
+	   a downward fade because its grid is one line per second across a long
+	   rotation; these four charts carry 4–10 lines per axis and every one of them
+	   has a labelled tick, so there is no redundant line to remove — only weight
+	   to take off.
+
+	   ⚠ ink AND dim STAY OPAQUE MIXES. They are TEXT, Nate's constraint was that
+	   labels stay visible, and the floor that hurts a hairline flatters a glyph.
+	   They carry the same latent inconsistency; fix them the day they read wrong,
+	   not before. */
 	--chart-ink: var(--muted);
 	--chart-dim: color-mix(in srgb, var(--muted) 62%, var(--frame-bg));
-	--chart-grid: color-mix(in srgb, var(--border) 26%, var(--frame-bg));
-	--chart-rule: color-mix(in srgb, var(--border) 55%, var(--frame-bg));
+	--chart-grid: color-mix(in srgb, var(--border) 17%, transparent);
+	--chart-rule: color-mix(in srgb, var(--border) 38%, transparent);
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (SiteChrome.svelte),
@@ -1564,8 +1639,16 @@
 	color: var(--text);
 }
 
+/* ⚠ WRITTEN `.panel.panel--paper`, NOT `.panel--paper` — the same trap, and the
+   same fix, as `.btn.btn--glass` further down this file. `.panel` joins the
+   .ctx-glass list BELOW this block, so a lone modifier here would be one class
+   against one class and lose ON SOURCE ORDER ALONE: the paper card would quietly
+   take the glass tokens and paint itself translucent slate. Two classes beat
+   one, and the tie stops depending on where in the file each block sits.
+   ⚠ Every context tie in this system is decided this way — see the motion
+   round's @starting-style finding for the third instance of the same lesson. */
 .ctx-light,
-.panel {
+.panel.panel--paper {
 	/* ↻ 2026-08-09 (Genshin Night): the paper is parchment and the ink is the
 	   NAVY RAMP. ⚓ NATE chose the reference's ink over the warm brown, and the
 	   thing worth recording is that his inversion survived the swap intact:
@@ -1701,12 +1784,34 @@
    ⚠ AND IT IS NOT `sheer`. That experiment was built, measured, shipped and
    reverted, and the rule that came out of it stands: opaque, or OBVIOUSLY
    translucent — the middle is not a place. Sheer let 2–3% of scene light
-   through, which reads as a duller colour. These stops let ~17% through at
-   TOOL_DIM .65 — the far side of that same rule, and several times sheer.
+   through, which reads as a duller colour.
    ⚠ The alpha alone does not decide it: glass and the wash MULTIPLY, so the
-   world reaching the eye is (1 − glass)(1 − TOOL_DIM). At the old dim of .85
-   these same stops would deliver 5–7%, which is sheer again. Move one, check
-   the other.
+   world reaching the eye is (1 − glass)(1 − TOOL_DIM). Move one, check the
+   other. At TOOL_DIM .875 that is 5.25% for the panel stop and 6.9% for the
+   well.
+
+   ══ ⚓ NATE 2026-08-13: THE PERCENTAGE IS NOT THE THRESHOLD ════════════════
+   Three figures stood here over three rounds — ~17% at dim .65, 10.5% at .75,
+   5.25% now — and the note that stood with them said "5–7% is sheer again",
+   which would make the CURRENTLY SHIPPING configuration the thing this round
+   rejected. It is not, and the correction is worth more than the number was:
+
+   ⚓ "The sheer problem was due to different wash colour and glass colours —
+   we don't need to be so strict about it anymore."
+
+   Sheer failed because at 2–3% a translucent pane over the wash of that day
+   read as a DULLER VERSION OF ITS OWN COLOUR — the world was present without
+   being legible, which is the muddy middle. Whether that happens is a fact
+   about the composite (how dark the wash is, how dark the pane is, whether a
+   star still resolves through it), not about a transmission percentage. At
+   .875 over #121216 stars still read through these stops and the panes read as
+   slate glass, so the rule is satisfied at a number the old prose called a
+   failure.
+   ⛔ SO DON'T DEFEND A PERCENTAGE. The test is the one the rule always stated:
+   can you tell, looking at it, that this is a translucent material? Judge it on
+   /lab or /styleguide § Palette census (which composites the wash properly and
+   recomputes from the imported TOOL_DIM, so its star figures are never stale
+   the way this paragraph twice was).
 
    ⛔ 2026-08-11 — THE BLUR IS GONE (⚓ NATE; see --glass-blur's retirement note
    for the full verdict). GLASS IS NOW PURELY AN ALPHA, which is what it always
@@ -1724,7 +1829,18 @@
    band had to portal out. Glass no longer imposes that. The band menus keep
    portaling anyway — they must clear the band's bounds regardless — so nothing
    moved; the trap simply stopped existing. */
-.ctx-glass {
+/* ↻ 2026-08-13 (Visualizers on the scene): `.panel` JOINS THIS SELECTOR, having
+   spent its whole life in .ctx-light above. A Visualizers control panel is
+   apparatus — sliders, chips, toggles — and apparatus is the same material as
+   the bands directly above it. The move costs nothing: `.panel` never named a
+   light token, only the roles, so it follows whichever context it is given.
+   ⚠ ONE CONSEQUENCE WORTH KNOWING. --btn-face here is opaque against slate-800,
+   so buttons and chips INSIDE a glass panel stay plates and never stack alpha —
+   which is the whole reason a panel may be glass at all (the band-plates rule:
+   glass is for plates standing on the SCENE; a control sitting on one of them
+   keeps --btn-face). */
+.ctx-glass,
+.panel {
 	/* ⚠ PAINT --surface, MIX AGAINST --frame-bg. In the opaque contexts those
 	   two are the same value and the distinction never had teeth; here they
 	   deliberately diverge, and it is the one thing to get right when moving a
@@ -1843,8 +1959,33 @@
    rest while its HOVER worked, because the hover selector happened to carry
    enough pseudo-classes to get over the line. A treatment that is right only on
    hover is the signature of exactly this. */
+/* ⚓ NATE 2026-08-13: THE SEGMENTED GROUP'S TRACK JOINS THE LIST — "it's a
+   slightly different glass from all the other glass in band A/B, it's grayer."
+   It was, and by a lot more than grey: `.segment` grounds itself in
+   --fill-rest, which on glass is --glass-parch — PARCHMENT FROST at .10, where
+   every plate beside it is slate at .58. Five times more world coming through,
+   and a warm cast on top of it.
+
+   ⚠ WHY THE TRACK IS NOT AN EXCEPTION TO "a control on glass keeps --btn-face".
+   That rule is about a control sitting ON a rail, where the two alphas stack.
+   Band A has no rail; the segment IS a plate standing on the scene, exactly like
+   the buttons either side of it, so it takes the plate's ground for the same
+   reason they do.
+
+   ⚠ AND IT IS THE TRACK ONLY. `.segment > .btn` still zeroes its children to
+   transparent further down this file — it ties with `.band-a .btn` on
+   specificity and wins on source order — so the group keeps reading as one
+   recessed object with a chosen pill in it, rather than as three plates that
+   happen to be touching. Don't "fix" that tie; it is what the affordance is
+   made of.
+   ⛔ SCOPED TO BAND A, deliberately — the only place a segment currently stands
+   on the scene. In an opaque context (the Team Builder's filter rail, the Detail
+   card, Settings) --fill-rest is the RIGHT track and this would flatten it, and
+   band B has no segment to speak for. If one ever lands there it joins this list
+   the way `.btn--glass` did: on demand, with a caller. */
 .band-a .tab:not(.active),
 .band-a .btn,
+.band-a .segment,
 .band--3up > .band-zone .btn,
 .btn.btn--glass {
 	background: var(--surface); /* = --glass-panel, via .ctx-glass */
@@ -2585,42 +2726,87 @@ img {
 }
 
 /* ── Surfaces ─────────────────────────────────────────────────────────── */
-/* In-page panel (the --surface-raised role): a card lifting off the page/frame
-   ground.
+/* ══ NIGHT LOOKS · GLASS TOUCHES · PAPER ANSWERS (⚓ NATE 2026-08-13) ════════
+   The Visualizers round that put this file's last framed surface on the scene,
+   and the one-line rule it produced. Every instrument is the same three things
+   in the same three materials:
 
-   ↻ 2026-08-07 (⚓ NATE): NO EDGE BORDER. Genshin draws almost nothing on the
-   outside of a panel — a surface is separated by being a different ground. The
-   2026-07-31 note this replaces said "separation is the border's job now,
-   everywhere",
-   which retired a top-light highlight in favour of an outline; the outline goes
-   the same way, and separation is the GROUND's job. A panel that disappears
-   without its border was never lifting off anything.
+     the CHART      draws on the night, with no ground at all
+     the APPARATUS  — sliders, chips, toggles — is GLASS (`.panel`)
+     the ANSWER     — one readout per instrument — is PAPER (`.panel--paper`)
 
-   Radius drops 6 → 3 with the scale re-cut; 6 is modals only now. */
+   The split is not invented. Five of the eight instruments already had a panel
+   whose kicker read "Readout", and the other three had its equivalent (Current
+   Build · What The Next Roll Buys · Enemy Status); everything else in every
+   instrument is input. A rule that lands on a label the authors chose before
+   anyone was looking for it is describing the thing rather than imposing on it.
+
+   ⚠ ONE PAPER CARD PER INSTRUMENT, and that is a rule rather than a tendency
+   (⚓ Nate: "unifying each instrument's readouts to a single panel"). Paper is
+   the brightest material on a dark world, so a second one does not read as a
+   second answer — it reads as the first one having failed to be the answer.
+   The Gauge is the case that proves it: Enemy Status and Event Log were two
+   paper cards saying one thing at two speeds, and they are one card now.
+
+   ↻ 2026-08-07 (⚓ NATE): NO EDGE BORDER, and it survives the material change
+   unchanged. Genshin draws almost nothing on the outside of a panel — a surface
+   is separated by being a different ground. (The 2026-07-31 note this replaced
+   said "separation is the border's job now, everywhere", which retired a
+   top-light highlight in favour of an outline; the outline went the same way.)
+   ⚠ Glass is the one documented exception, and only when ENGAGED: a hovered or
+   selected pane takes a ring, because glass is the one material whose extent is
+   not self-evident. A resting panel still draws no edge.
+
+   Radius drops 6 → 3 with the scale re-cut; 6 is modals only now.
+
+   ⚠ --surface, NOT --surface-raised. They are the same value in both contexts a
+   panel can now be in (glass has no depth axis; paper has no raised rung — see
+   .ctx-light), so the choice is only about which role tells the truth: this is
+   a surface, and there is nothing underneath it to be raised off. */
 .panel {
 	display: grid;
 	gap: 0.7rem;
 	padding: 1.1rem 1.2rem;
 	border-radius: var(--r-sm);
-	background: var(--surface-raised);
+	background: var(--surface);
 	align-content: start;
 }
 
-/* ── The tool frame / chart interior ──────────────────────────────────────
-   ↻ 2026-08-07 (⚓ NATE): the edge border retires at both of this class's
-   scales, and nothing replaces it. A chart interior is a well cut into a
-   lighter frame — the lightness step is what draws it. A tool frame is the
-   surface everything else sits on and had nothing to be outlined against.
+/* THE ANSWER is `.panel.panel--paper`, and it has NO RULE OF ITS OWN — the
+   modifier's entire job is to claim .ctx-light (see the selector list up there),
+   which re-points --surface at parchment-100 and inverts the ink with it. The
+   box above then paints itself, unchanged.
+   That is the strongest form of the intent: the material is the WHOLE signal,
+   and there is no second declaration here that could ever drift away from it.
+   ⚠ parchment-100 and not -50, per the size axis on paper: this is a CARD
+   standing on the world, not a broad panel carrying other things. */
+
+/* ⛔ `.frame` IS RETIRED (2026-08-13). It painted --frame-bg, and by the end it
+   had exactly one caller left: the Visualizers' chart interiors, which now draw
+   on the scene like the planner's timeline and the Team Builder's roster before
+   them. Both of those deleted their own ground first; this class was the last
+   place a tool still painted a slab to stand on.
+
+   ⚠ WHAT IT WAS ACTUALLY DOING BY THE END, and why deleting it was a fix rather
+   than a preference: --frame-bg is slate-800 (#2e3543), and the dimmed world
+   composites to roughly #12151c–#1e222a. So the "chart interior" — a WELL in
+   the idiom that named it — had become the LIGHTEST thing in its tile after the
+   paper. The lightness step that used to draw it had reversed sign, quietly, on
+   the day the world got darker.
+
+   ✅ --frame-bg SURVIVES AS A NOTIONAL GROUND and is still declared everywhere:
+   the --chart-* stops mix against it, the heatmap's canvas reads it out of the
+   cascade, and a PNG export has to paint something real. Unpainted reference,
+   painted export — the same arrangement --rp-chart-bg has held since the
+   planner's own round.
 
    (This is where the dire-tinted animated conic border used to live, retired
    2026-07-10 on perf: the rotation invalidated paint every frame, forever,
    re-rasterizing tiles of the 32MB .tool-main layer ~100×/s even at rest —
-   perf audit F6. The lesson outlives the border: NEVER animate a paint
-   property on a persistent surface. If a pulse is ever wanted here, animate
-   the OPACITY of a stacked static ring, which is compositor-only.) */
-.frame {
-	background: var(--frame-bg);
-}
+   perf audit F6. THE LESSON OUTLIVES BOTH THE BORDER AND THE CLASS: never
+   animate a paint property on a persistent surface. If a pulse is ever wanted
+   on a chart, animate the OPACITY of a stacked static ring, which is
+   compositor-only.) */
 
 /* ══ THE INSET BORDER FAMILY (Genshin Night, 2026-08-09) ═══════════════════
    ⚓ NATE picked TWO and discarded three (2026-08-09 feedback round): --plain

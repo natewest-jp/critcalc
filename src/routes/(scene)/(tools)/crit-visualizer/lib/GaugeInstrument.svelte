@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
+	import Mark from '$lib/components/Mark.svelte';
 	import {
 		simulateGauge,
 		gaugesAt,
@@ -452,7 +453,7 @@
 </script>
 
 <div class="instrument">
-	<div class="gx-frame frame ctx-dark">
+	<div class="gx-chart ctx-dark">
 		<div class="gx-transport">
 			<button
 				class="btn btn--primary btn--icon gx-play"
@@ -460,7 +461,11 @@
 				aria-label={playhead.playing ? 'Pause playback' : 'Play the timeline'}
 				onclick={() => playhead.toggle()}
 			>
-				{playhead.playing ? '⏸' : '▶'}
+				<!-- FILLED — see Mark's `filled` prop. An outlined triangle reads as
+				     "insert" before it reads as "play"; the solid form is the idiom
+				     every media transport on earth uses, and this is the site's only
+				     one. -->
+				<Mark name={playhead.playing ? 'pause' : 'play'} size={12} filled />
 			</button>
 			{#each PLAYHEAD_SPEEDS as sp (sp)}
 				<button
@@ -506,7 +511,7 @@
 						y1={yOf(u)}
 						x2={graphW - PADR}
 						y2={yOf(u)}
-						stroke="rgba(255,255,255,{u % 1 === 0 ? 0.09 : 0.04})"
+						stroke={u % 1 === 0 ? 'var(--chart-rule)' : 'var(--chart-grid)'}
 					/>
 					{#if u % 1 === 0}
 						<text
@@ -523,7 +528,7 @@
 
 				<!-- Application markers -->
 				{#each markers as m (m.n)}
-					<line x1={m.x} y1={18} x2={m.x} y2={plotY1} stroke={m.color} opacity="0.28" />
+					<line x1={m.x} y1={18} x2={m.x} y2={plotY1} stroke={m.color} stroke-opacity="0.28" />
 					<circle cx={m.x} cy={10} r="7.5" fill={m.color} />
 					<text
 						x={m.x}
@@ -590,7 +595,7 @@
 						cy={plotY1 - 5}
 						r="7"
 						fill="var(--el-dendro-main)"
-						opacity="0.25"
+						fill-opacity="0.25"
 					/>
 				{/each}
 
@@ -608,7 +613,7 @@
 							height="10"
 							rx="2"
 							fill={row.meta.color}
-							opacity="0.32"
+							fill-opacity="0.32"
 						/>
 					{/each}
 				{/each}
@@ -719,8 +724,14 @@
 			{/if}
 		</div>
 
-		<div class="panel">
-			<p class="kicker">Enemy Status</p>
+		<!-- ⚓ ONE PAPER CARD PER INSTRUMENT (2026-08-13). This was two panels —
+		     Enemy Status and Event Log — and the Gauge is the case that showed why
+		     the rule has to be a rule: they say ONE thing at two speeds (what is
+		     true at the playhead, and how it got there), and as two sheets of the
+		     brightest material on the page they competed to be the answer. One
+		     card, the state on top, the transcript under a quiet label. -->
+		<div class="panel panel--paper">
+			<p class="kicker">Readout</p>
 			{#if hoverGauges}
 				<p class="note">at {fmtT(displayT!)}</p>
 				{#if hoverGauges.length === 0}
@@ -749,10 +760,8 @@
 					</p>
 				{/each}
 			{/if}
-		</div>
 
-		<div class="panel">
-			<p class="kicker">Event Log</p>
+			<p class="gx-sub">Event log</p>
 			<div class="gx-log">
 				{#each logRows as row, ri (ri)}
 					{#if row.kind === 'ecRun'}
@@ -803,7 +812,12 @@
 								: ''}
 						</p>
 					{:else if row.event.kind === 'core'}
-						<p class="gx-log-tick">{fmtT(row.event.time)} — Dendro Core spawned 🌱</p>
+						<!-- The 🌱 that used to close this line is gone with the 🎲 in the
+						     crit sampler: an emoji is drawn by whichever fallback face the
+						     engine picks, in colour, at a weight nothing here chose. The
+						     die became a <Mark> because it was a CONTROL's glyph; this one
+						     was decoration on a log line and simply goes. -->
+						<p class="gx-log-tick">{fmtT(row.event.time)} — Dendro Core spawned</p>
 					{/if}
 				{/each}
 			</div>
@@ -812,9 +826,14 @@
 </div>
 
 <style>
-	.gx-frame {
-		padding: 0.4rem 0.6rem 0.2rem;
-		border-radius: var(--r-sm);
+	/* ⚓ NO FRAME — the chart draws on the night (`.frame`'s retirement note in
+	   app.css has the argument). The ground, the radius and the inset padding all
+	   left together; what remains is a layout box.
+	   ⚠ .ctx-dark stays CLAIMED and is doing real work: at TOOL_DIM the crest IS a
+	   dark ground, and --frame-bg has to keep resolving somewhere for the --chart-*
+	   stops that mix against it. Unpainted reference, not a leftover. */
+	.gx-chart {
+		min-width: 0;
 	}
 
 	.gx-graph svg {
@@ -924,7 +943,16 @@
 		letter-spacing: normal;
 	}
 	/* .btn--primary .btn--icon, but round: a transport control, not a chip. */
+	/* ↻ 2026-08-13: the ▶/⏸ inside became <Mark>s, which retires the type
+	   metrics this button used to be balanced against — a glyph sat on the
+	   baseline with its own side bearings, so the round plate needed no help to
+	   look centred. An SVG is a box, so it does: `display: grid` + `place-items`
+	   centres the mark's BOX, and the mark's own viewBox is symmetric, so its
+	   ink lands centred too. (The retired-glyph hazard is the reverse case — an
+	   optical nudge left behind after a swap; there was none here to leave.) */
 	.gx-play {
+		display: grid;
+		place-items: center;
 		width: 28px;
 		height: 28px;
 		border-radius: var(--r-round);
@@ -984,6 +1012,22 @@
 		font-family: var(--font-body);
 		font-weight: var(--fw-semibold);
 		color: var(--text);
+	}
+
+	/* The transcript's label inside the merged readout card. ⚠ DELIBERATELY NOT A
+	   .kicker: a kicker is gold, and gold names a BLOCK — a second one in one card
+	   would say "second panel" exactly where the merge was trying to stop saying
+	   it. This is the LABEL voice (the slider-label rung) with a hairline over it,
+	   which is the section-divider weight, not the rule weight. */
+	.gx-sub {
+		margin: 0.5rem 0 0;
+		padding-top: 0.6rem;
+		border-top: 1px solid var(--line-faint);
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wider);
+		text-transform: uppercase;
+		color: var(--muted);
 	}
 
 	.gx-log {

@@ -589,13 +589,18 @@
 			<strong>And it is not <code>sheer</code></strong>: that experiment let 2–3% of scene light
 			through, which reads as a duller colour. ⚠ The alpha alone does not decide it: glass and the
 			wash <strong>multiply</strong>, so what reaches the eye is
-			<code>(1 − glass)(1 − TOOL_DIM)</code> — <strong>10.5%</strong> for the panel stop at
+			<code>(1 − glass)(1 − TOOL_DIM)</code> —
+			<strong>{(100 * (1 - 0.58) * (1 - TOOL_DIM)).toFixed(1)}%</strong> for the panel stop at
 			<code>TOOL_DIM</code>
-			{TOOL_DIM}. <strong>Move one, check the other</strong>, and this round is the worked example:
-			deepening the wash alone took it to 8.0% — the closest we have been to sheer, and glass
-			started reading as opaque slate — so the ALPHAS came down after it. If glass ever stops
-			reading as glass, this is the number that did it, and a lower glass alpha (never a lower dim)
-			is the fix.
+			{TOOL_DIM}. <strong>Move one, check the other.</strong>
+			⚓ <strong>But the threshold was never a percentage</strong> (Nate, 2026-08-13). This figure
+			has been 17%, 10.5% and now single digits across three rounds, and the prose that travelled
+			with it declared each new value the one that would read as sheer — while the panes went on
+			reading as glass. Sheer failed because a pane over <em>that</em> wash read as a duller version
+			of its own colour; whether that happens is a fact about the composite, not about a number. The
+			test is the one the rule always stated:
+			<em>can you tell, looking at it, that this is a translucent material?</em> A star still resolves
+			through both stops below.
 		</p>
 		<p class="sg-note">
 			⚠️ <strong>What sets the floor on a glass stop is a STAR.</strong> Text on glass is limited by
@@ -1583,7 +1588,7 @@
 				</div>
 				{@render spec(
 					'.panel · .kicker · .chips · .note',
-					'3px · --surface-raised · NO border (2026-08-07). The kicker is --muted (context label voice), trailing rule --muted @22%. A .panel is also a .ctx-light — declaring one paints the other'
+					'THE APPARATUS. 3px · --surface · NO border (2026-08-07). ↻ 2026-08-13: a .panel is GLASS now, not paper — it declares .ctx-glass, where it spent its life declaring .ctx-light. Night looks, glass touches, paper answers; a panel is the thing you touch. Controls inside it keep --btn-face and never stack alpha'
 				)}
 			</div>
 
@@ -1625,11 +1630,17 @@
 
 			<div class="sg-cell sg-cell--wide">
 				<div class="sg-stage sg-stage--block">
-					<div class="frame sg-frame-demo">chart interior</div>
+					<div class="panel panel--paper">
+						<h3 class="kicker">Readout</h3>
+						<p class="note">
+							One card per instrument, and the material is the whole signal — same box as the glass
+							panel beside it, one context up.
+						</p>
+					</div>
 				</div>
 				{@render spec(
-					'.frame',
-					'--frame-bg, no border (2026-08-07). ⚠️ This class covers TWO scales: a chart interior (here) is a well cut into a lighter frame, and a tool frame is the surface everything else sits on — neither had anything to be outlined against. NEVER animate a paint property on either (retired 2026-07-10, perf)'
+					'.panel.panel--paper',
+					'THE ANSWER. --surface in .ctx-light = parchment-100, the CARD rung (not -50: the size axis on paper says a card standing on the world is the darker one). ⚠️ ONE per instrument — paper is the brightest material on a dark world, so a second card does not read as a second answer, it reads as the first one failing to be one'
 				)}
 			</div>
 		</div>
@@ -2260,12 +2271,16 @@
 						the ribbon's exact two-stroke frame is the form it will take.
 					</li>
 					<li>
-						<strong>One <code>.frame</code> per tool, and one grammar site-wide:</strong>
-						<strong>bench LEFT · work CENTER · filters RIGHT.</strong> The Team Builder and the
-						Rotation Planner are each a single full-screen <code>.frame</code> below the band stack,
-						holding zones rather than nested islands. Zones separate with a 1px interior hairline
-						over the frame's own fill — never a gap, never a second box. Nothing inside a frame
-						wears <code>.panel</code>; the kickers do the separating.
+						<strong>No tool has a frame. One grammar site-wide:</strong>
+						<strong>bench LEFT · work CENTER · filters RIGHT.</strong> All three tools put their
+						work straight on the dimmed scene below the band stack — the Team Builder 2026-08-08,
+						the planner's timeline 2026-08-11, the Visualizers' eight chart interiors 2026-08-13, at
+						which point <code>.frame</code> had no callers left and was
+						<strong>retired</strong>. Each surface still <em>claims</em>
+						<code>.ctx-dark</code>: at <code>TOOL_DIM</code> the crest is a dark ground, and
+						<code>--frame-bg</code> lives on as the unpainted reference every
+						<code>color-mix</code>, canvas fill and PNG export resolves against. Zones separate with
+						a 1px hairline or with bare scene — never a second box.
 					</li>
 					<li>
 						<strong>The bench is not a zone either tool owns.</strong> It is the layout-level ribbon
@@ -2334,13 +2349,24 @@
 						state survives swaps; the lineup size is viewport capacity capped by the reader's
 						preference. The <em>tile</em> owns <code>container-name: instrument</code> — instruments
 						size to the slot they're in, never to the viewport — and their control panels flow in
-						<code>.panels</code> multicolumn.
+						<code>.panels</code> multicolumn. ⚓ 2026-08-13:
+						<strong>band B is cut by the tile gap</strong>
+						here and paints nothing (band A still spans the screen), so each instrument's picker and actions
+						are their own run of glass plates; and the gap
+						<em>between</em> instruments is deliberately <strong>double</strong> the gap inside one, since
+						with the frames gone it is the only thing left saying where one argument ends.
 					</li>
 					<li>
-						⚠️ <strong><code>.frame</code> means two different things.</strong> In the Planner and
-						Team Builder it is the tool's outer frame; in every Visualizers instrument it is a
-						<em>chart interior</em> (the specimen above). Same class, same border-and-ground job, two
-						scales — read the context before reusing it.
+						⚓ <strong>NIGHT LOOKS · GLASS TOUCHES · PAPER ANSWERS.</strong> The three materials an
+						instrument is made of, and the rule that assigns them. The
+						<strong>chart</strong> draws on the night with no ground. The
+						<strong>apparatus</strong> — sliders, chips, toggles — is <code>.panel</code>, which is
+						<code>.ctx-glass</code>, the same material as the bands above it. The
+						<strong>answer</strong> is <code>.panel--paper</code>, and there is
+						<strong>exactly one per instrument</strong>: paper is the brightest material on a dark
+						world, so a second card does not read as a second answer, it reads as the first one
+						failing to be one. Controls inside a glass panel keep <code>--btn-face</code> and never stack
+						alpha.
 					</li>
 					<li>
 						Control glyphs are <strong>geometry</strong>, never a unicode character and never
@@ -2443,7 +2469,7 @@
 					</li>
 					<li>
 						<strong>The border sweep is unfinished.</strong> The pattern layer is done —
-						<code>.panel</code>, <code>.frame</code> and the Atlas cards. Roughly
+						<code>.panel</code> and the Atlas cards (<code>.frame</code> is gone entirely). Roughly
 						<strong>70 bespoke edge borders</strong> remain in components, concentrated in
 						<code>RotationTimeline</code> (28), <code>SavedNotationsOverlay</code> (8) and
 						<code>CharacterCard</code> (6). Most should simply go; several are structural hairlines that
@@ -3112,14 +3138,6 @@
 	.sg-notes {
 		font-size: var(--fs-sm);
 		line-height: var(--lh-snug);
-		color: var(--muted);
-	}
-
-	.sg-frame-demo {
-		display: grid;
-		place-items: center;
-		height: 90px;
-		font-size: var(--fs-md);
 		color: var(--muted);
 	}
 

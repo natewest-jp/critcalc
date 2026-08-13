@@ -1,5 +1,6 @@
 <script lang="ts">
 	import CritHeatmap from './CritHeatmap.svelte';
+	import Mark from '$lib/components/Mark.svelte';
 	import {
 		CR_MIN,
 		CR_MAX,
@@ -234,7 +235,8 @@
 						<!-- Roll it: sample the rotation and watch the coin flips land -->
 						<div class="cv-roll">
 							<button class="btn btn--primary cv-pin-button" onclick={rollIt}>
-								🎲 Roll {hitsPerRotation} hits
+								<Mark name="dice" size={12} />
+								Roll {hitsPerRotation} hits
 							</button>
 							{#if rollResult}
 								{#key rollNonce}
@@ -260,7 +262,7 @@
 			</div>
 
 			<!-- Build readout: key stats for the current marker position -->
-			<div class="panel cv-build-panel">
+			<div class="panel panel--paper cv-build-panel">
 				<p class="kicker">Current Build</p>
 				<p class="cv-build-value">{myMultiplier.toFixed(3)}x</p>
 				<p class="cv-build-sub">your average hit, vs never critting</p>

@@ -114,7 +114,11 @@
 			<div class="band-zone">{@render bandALeft?.()}</div>
 			<div class="band-zone band-zone--end">{@render bandARight?.()}</div>
 		</div>
-		<div class="band band-b ctx-glass" class:band--3up={!!bandBCenter}>
+		<div
+			class="band band-b ctx-glass"
+			class:band--3up={!!bandBCenter}
+			class:band--full={!!bandBFull}
+		>
 			{#if bandBFull}
 				<!-- The full-width variant is one flex child that must actually FILL
 				     the band: the Visualizers lays a grid in here whose columns have
@@ -349,6 +353,37 @@
 		/* The selected plate stands PROUD of the rail (Genshin's own tab strip
 		   does this — see the Team Builder's nav), so nothing here may clip. */
 		overflow: visible;
+	}
+
+	/* ── BAND B GETS CUT BY THE TOOL'S OWN GAP (⚓ NATE 2026-08-13) ─────────
+	   The third and last way a band can lose its ground, and the reason is the
+	   same one that took band A's and split band B three ways: a rail is only
+	   honest when it holds ONE run of controls.
+
+	     band A     spans the screen, paints nothing            (2026-08-09)
+	     band B     paints, unless a tool subdivides it
+	       · 3-up   control · RAIL · control                    (2026-08-10)
+	       · full   N runs, one per instrument, cut by the
+	                tile gap — the ground goes with them        (2026-08-13)
+
+	   ⚓ Nate: "band A spans the whole screen, while band B responds to how many
+	   instrument surfaces there are." One continuous rail across three
+	   instruments said the opposite — that the pickers were one row of peers —
+	   when each of them belongs to the tile underneath it. Cutting the ground at
+	   the tile boundary is the only thing in the header that can say so.
+
+	   AND ITS PADDING GOES WITH IT, exactly as band A's did: --band-pad-x exists
+	   to hold controls off a rail's ends, and with no rail an inset is just the
+	   first plate failing to line up with the surface below. (The Visualizers'
+	   workspace grid drops its matching padding in the same breath — the two
+	   were a pair, and they still are.)
+
+	   ⚠ WHAT THE TOOL OWES IN RETURN: its controls must now be PLATES. A control
+	   that kept --btn-face here would be an opaque button standing on nothing.
+	   See .ws-band-cell in the Visualizers page. */
+	.band--full {
+		background: none;
+		padding: 0;
 	}
 
 	.band-full {

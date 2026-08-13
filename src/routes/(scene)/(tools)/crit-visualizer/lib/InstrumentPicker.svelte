@@ -105,7 +105,7 @@
 	onclick={() => (open ? close(false) : openMenu())}
 	onkeydown={onTriggerKeydown}
 >
-	{currentName}
+	<span class="ip-name-current">{currentName}</span>
 	<span class="ip-caret"><Mark name="chevron" size={12} /></span>
 </button>
 
@@ -167,29 +167,62 @@
 {/if}
 
 <style>
-	/* Trigger inherits the active-chip look the chip row had */
+	/* ══ THE TILE'S NAMEPLATE (⚓ NATE 2026-08-13) ═══════════════════════════
+	   A GLASS PLATE, and the widest one in its cell. It used to wear the SELECTED
+	   idiom — an accent fill inside an accent ring — which was right while band B
+	   was a rail and the trigger had to lift off it. With the rail gone that
+	   reading is wrong twice over: gold means CHOSEN AMONG PEERS, and this
+	   trigger has no peers (there is exactly one per tile, and what it names is
+	   not a choice you are making but the instrument you are already looking at).
+	   Plain glass, hovering and opening through the shared pane idiom.
+
+	   ⚠ IT TAKES THE SLACK — flex: 1 — and that is what keeps the hierarchy after
+	   the colour left. Nothing else in the cell grows, so the nameplate is always
+	   the long plate and the actions are always the short ones; the tile's title
+	   reads as the title because of its EXTENT, the way the band-B rail does in
+	   the other two tools.
+	   ⚠ Height comes from `.band-b .btn`… which this is not — it is not a .btn at
+	   all — so it names --band-ctrl-h itself. One row, one height. */
 	.ip-trigger {
-		display: inline-flex;
+		display: flex;
+		flex: 1;
+		min-width: 0;
 		align-items: center;
+		justify-content: space-between;
 		gap: 0.45rem;
-		padding: 0.38rem 0.85rem;
+		height: var(--band-ctrl-h);
+		padding: 0 0.85rem;
 		border: none;
-		border-radius: 3px;
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+		border-radius: var(--band-radius);
+		background: var(--surface);
 		color: var(--text);
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
+		text-align: left;
 		cursor: pointer;
 		transition:
 			background var(--t-snap),
 			box-shadow var(--t-snap);
 	}
 
-	.ip-trigger:hover {
-		background: color-mix(in srgb, var(--accent) 30%, transparent);
+	/* The shared glass idiom: density + an INK ring for "here". Spelled locally
+	   rather than reached for via .btn--glass because this is a listbox trigger,
+	   not a button — but the values are the roles, so it moves when glass does. */
+	.ip-trigger:hover,
+	.ip-trigger[aria-expanded='true'] {
+		background: var(--surface-hover);
+		box-shadow: inset 0 0 0 1px var(--glass-ring);
+	}
+
+	/* The name has to ellipsize before the caret does: at three-up a cell is
+	   ~1/3 of the surface minus two action plates, and "Reaction Curves" in
+	   wide-tracked uppercase is the instrument that finds the edge first. */
+	.ip-name-current {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	/* Alpha in the PAINT, not element opacity: the whole Viz surface is

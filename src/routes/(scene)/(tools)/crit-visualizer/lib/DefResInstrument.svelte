@@ -107,7 +107,7 @@
 </script>
 
 <div class="instrument">
-	<div class="dr-frame frame ctx-dark">
+	<div class="dr-chart ctx-dark">
 		<div class="dr-graph" bind:clientWidth={graphW}>
 			<svg
 				width={graphW}
@@ -148,7 +148,7 @@
 						y1={yOf(m)}
 						x2={graphW - PADR}
 						y2={yOf(m)}
-						stroke="rgba(255,255,255,{m === 1 ? 0.14 : 0.07})"
+						stroke={m === 1 ? 'var(--chart-rule)' : 'var(--chart-grid)'}
 					/>
 					<text
 						x={PADL - 7}
@@ -369,7 +369,7 @@
 			{/if}
 		</div>
 
-		<div class="panel">
+		<div class="panel panel--paper">
 			<p class="kicker">Readout</p>
 			{#if view === 'res'}
 				<p class="dr-big">
@@ -403,9 +403,10 @@
 </div>
 
 <style>
-	.dr-frame {
-		padding: 0.4rem 0.6rem 0.2rem;
-		border-radius: var(--r-sm);
+	/* No frame — the chart is on the night; .ctx-dark stays claimed for
+	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
+	.dr-chart {
+		min-width: 0;
 	}
 
 	.dr-graph svg {

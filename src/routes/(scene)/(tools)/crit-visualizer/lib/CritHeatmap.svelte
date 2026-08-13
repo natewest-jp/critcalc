@@ -195,15 +195,21 @@
 		const pw = Math.max(1, Math.round(plotW));
 		const ph = Math.max(1, Math.round(plotH));
 
-		// Fill background, then write each plot pixel directly via ImageData.
-		// The ground is READ FROM THE CASCADE, not hardcoded — this canvas
-		// paints opaquely over .frame, and a literal here silently detaches
-		// the heatmap from --frame-bg tuning (it was the one frame that
-		// didn't follow devtools edits — Nate 2026-07-31). Re-read per draw;
-		// a live var edit lands on the next redraw (resize or remount).
-		const frameBg = getComputedStyle(canvasEl).getPropertyValue('--frame-bg').trim() || '#121b2f';
-		context.fillStyle = frameBg;
-		context.fillRect(0, 0, boxW, boxH);
+		// ⚓ 2026-08-13: CLEAR, DON'T FILL. This used to paint the whole box with
+		// --frame-bg before writing the plot pixels — which is how the axis-label
+		// margin got its ground, and why removing `.frame`'s CSS background alone
+		// would have changed nothing here: the slab was being drawn by the canvas.
+		// Clearing leaves the margin transparent so the scene reads through it,
+		// and the plot image itself is opaque (alpha 255), so the chart is
+		// unchanged where it actually draws.
+		//
+		// ⚠ --frame-bg IS STILL THE GROUND OF RECORD, it just has no painter here
+		// any more. If the deferred PNG export lands, it reads that token and
+		// fills this rect for real (the planner's --rp-chart-bg does exactly
+		// this) — do NOT hardcode a literal there: one once silently detached
+		// the heatmap from --frame-bg tuning, and it was the one frame that
+		// didn't follow devtools edits (Nate 2026-07-31).
+		context.clearRect(0, 0, boxW, boxH);
 
 		const image = context.createImageData(pw, ph);
 		const data = image.data;
@@ -435,7 +441,7 @@
 </script>
 
 <div class="cv-heatmap-shell" bind:this={shellEl}>
-	<div class="cv-map-frame frame ctx-dark" style:width={`${boxW}px`} style:height={`${boxH}px`}>
+	<div class="cv-map ctx-dark" style:width={`${boxW}px`} style:height={`${boxH}px`}>
 		<!-- Layer 1: heatmap field (redrawn on resize via canvas 2D API). The buffer
 		     size is set imperatively inside drawHeatmap, not via a reactive width=. -->
 		<canvas bind:this={canvasEl} aria-hidden="true"></canvas>
@@ -509,7 +515,13 @@
 				>
 					CD = 2×CR
 				</text>
-				<path d={cvPath} fill="none" stroke="var(--text)" stroke-width="1.6" opacity="0.85" />
+				<path
+					d={cvPath}
+					fill="none"
+					stroke="var(--text)"
+					stroke-width="1.6"
+					stroke-opacity="0.85"
+				/>
 				<text x={cvLabel.x} y={cvLabel.y} fill="var(--text)" font-size="10" font-weight="600">
 					{Math.round(cv * 100)} CV
 				</text>
@@ -656,17 +668,59 @@
 
 			<!-- Marker: soft halo + solid dot -->
 			<circle cx={dotX} cy={dotY} r="17" fill={ink(0.08)} />
-			<circle cx={dotX} cy={dotY} r="8" fill="#f7fafc" stroke="rgba(0,0,0,0.35)" stroke-width="2" />
+			<!-- ↻ 2026-08-13: the dot's fill was a stray #f7fafc — a cool near-white
+			     literal in the one file that has a single-sourced ink helper five
+			     lines above it. Same colour to the eye, one fewer value to drift.
+			     ⏸ The black halo STAYS and is the deliberate exception: the
+			     "semi-transparent black ring" idiom was retired for the slider
+			     knob because that knob rides a track of known colour. This dot
+			     rides a rainbow, and white-on-pale-yellow is exactly where it
+			     would disappear. -->
+			<circle cx={dotX} cy={dotY} r="8" fill={ink(1)} stroke="rgba(0,0,0,0.35)" stroke-width="2" />
 
-			<!-- Floating tooltip -->
+			<!-- ══ Floating readout — ⚓ NATE 2026-08-13: DARK GLASS, MODAL CORNER ══
+			     It had three bespoke values: rgba(5,10,24,.82) invented on the
+			     spot, a white-at-.22 outline, and rx="7" — a radius that exists
+			     nowhere else in the system (the scale is 1/3/6).
+
+			     THE CORNER IS --r-md, and 6px is not an arbitrary pick: this is a
+			     popover floating over content with no ground to belong to, which
+			     is the MODAL role, and the modal corner is the one place the
+			     softer radius survived the 6 → 3 re-cut. It is also why the
+			     OUTLINE stays when edge borders retired everywhere else — a modal
+			     is the documented survivor. Now --line-soft.
+
+			     ⚠ AND THAT IS WHY THE RECT CLAIMS .ctx-glass. Both :root and
+			     .ctx-dark declare --line-soft as an OPAQUE mix (#50555e, cut
+			     against slate-800) — correct over a known ground, and a stripe of
+			     the wrong colour over a rainbow. .ctx-glass is the one context
+			     whose line stops carry ALPHA, for exactly this reason: the ground
+			     behind a pane is unknown. The class costs nothing else here (the
+			     rect names no other role, and the text beside it uses ink()
+			     literals) and it is honest — this object IS glass.
+
+			     THE FILL IS --glass-bar, and it is the darkest glass we have —
+			     but by DENSITY, not by hue, which is the thing worth writing down:
+			         --glass-well  slate-900 @ .45  darkest COLOUR, thinnest
+			         --glass-panel slate-700 @ .58
+			         --glass-bar   #2c3549   @ .80  darkest RESULT
+			     Over the plot's brightest region (~rgb(188,212,46)) the well
+			     composites to a muddy olive that puts white text at ~2.6:1, and
+			     the bar to ~rgb(73,84,67), which carries it at ~8.6:1. Density is
+			     what a readout over a SATURATED field needs; the darkest hue at a
+			     thin alpha just takes on whatever it is lying over.
+			     ⚠ Borrowing the planner's bar material is legitimate precisely
+			     because that round made it a MATERIAL rather than a colour — it
+			     stopped meaning "buff" the day it stopped being paint. -->
 			<rect
+				class="ctx-glass"
 				x={tooltip.x}
 				y={tooltip.y}
 				width={tooltip.width}
 				height={tooltip.height}
-				rx="7"
-				fill="rgba(5, 10, 24, 0.82)"
-				stroke={ink(0.22)}
+				rx="6"
+				fill="var(--glass-bar)"
+				stroke="var(--line-soft)"
 				stroke-width="1"
 			/>
 			<text x={tooltip.x + 10} y={tooltip.y + 17} fill={ink(0.72)} font-size="10">
@@ -675,7 +729,7 @@
 			<text x={tooltip.x + 10} y={tooltip.y + 33} fill={ink(0.72)} font-size="10">
 				CD {(shownCD * 100).toFixed(1)}%
 			</text>
-			<text x={tooltip.x + 10} y={tooltip.y + 51} fill="white" font-size="13" font-weight="700">
+			<text x={tooltip.x + 10} y={tooltip.y + 51} fill={ink(1)} font-size="13" font-weight="700">
 				{dotMultiplier.toFixed(3)}x
 			</text>
 			{#if showVariance}
@@ -714,9 +768,13 @@
 
 	/* The drawn rectangle. Its pixel size (boxW × boxH) is set inline by JS to fill
 	   the shell at a clamped aspect; grid-centered so any letterbox is symmetric.
-	   Interior fill + the animated Dire conic border both come from .frame;
-	   the heatmap canvas fills the padding box opaquely, so no interior bg is needed. */
-	.cv-map-frame {
+	   ⚓ 2026-08-13: no ground — the axis margin is the night now (drawHeatmap
+	   clears rather than fills; app.css's `.frame` retirement note has the why).
+	   ⚠ THE RADIUS AND THE CLIP STAY, and this is the one instrument where they
+	   should: the plot is a painted IMAGE with hard edges of its own, so it is an
+	   object on the world rather than ink drawn on it. Corners get cut for the
+	   same reason a portrait's do. */
+	.cv-map {
 		position: relative;
 		border-radius: var(--r-sm);
 		overflow: hidden;

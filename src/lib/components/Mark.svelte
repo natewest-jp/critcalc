@@ -41,13 +41,38 @@
 	let {
 		name,
 		size = MARK_SIZE,
-		strokeWidth = MARK_STROKE
+		strokeWidth = MARK_STROKE,
+		filled = false
 	}: {
 		name: MarkName;
 		/** Edge of the square box, in px. The stroke scales with it. */
 		size?: number;
 		/** Override for a mark that needs to hold its own beside heavier text. */
 		strokeWidth?: number;
+		/**
+		 * Fill the geometry in currentColor as well as stroking it.
+		 *
+		 * ⚓ NATE 2026-08-13, on the Gauge's transport: "the outlined play/pause
+		 * buttons don't read well — are there filled versions?" There are not.
+		 * LUCIDE IS A STROKE-ONLY SET; it ships no filled variants of anything, so
+		 * the choice is between filling the geometry we already have and taking on
+		 * a second icon library for two glyphs. This is the cheap half of that.
+		 *
+		 * ⚠ IT IS NOT A GENERAL SWITCH, even though it is written as one. Filling
+		 * only means anything for a CLOSED shape whose interior is the picture —
+		 * play's triangle, pause's two bars, a solid star. On an open path (the
+		 * chevron, the arrows) it fills the region the curve happens to enclose
+		 * and produces a blob. Use it where the solid form IS the idiom, which for
+		 * a transport control it is: every media player on earth draws these
+		 * filled, and an outlined triangle reads as "insert" long before it reads
+		 * as "play".
+		 *
+		 * The stroke stays on underneath. Lucide's joins are round, so stroking
+		 * the same path grows the shape by half a stroke on every side with a
+		 * softened corner — which is what keeps a 12px filled triangle from
+		 * looking like a shard.
+		 */
+		filled?: boolean;
 	} = $props();
 </script>
 
@@ -56,7 +81,7 @@
 	width={size}
 	height={size}
 	viewBox="0 0 {MARK_VIEWBOX} {MARK_VIEWBOX}"
-	fill="none"
+	fill={filled ? 'currentColor' : 'none'}
 	stroke="currentColor"
 	stroke-width={strokeWidth}
 	stroke-linecap="round"
