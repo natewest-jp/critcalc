@@ -127,9 +127,11 @@
 		return { ...($loadout[id] ?? {}), ...(rt.tabLoadout[id] ?? {}) };
 	}
 
-	// The registered host, but only while it is the tool we are docked to (or
-	// traveling toward) — during a pan BOTH pages are briefly alive.
-	const host = $derived(benchBand.host?.tool === mode ? benchBand.host : null);
+	// The affordances of the tool we are docked to (or traveling toward) — during
+	// a pan BOTH pages are alive, and after an A→B→A pan both are still
+	// REGISTERED, which is why the lookup is keyed rather than filtered. See the
+	// note on BenchBandState#hosts for the revival this survives.
+	const host = $derived(benchBand.hostFor(mode));
 
 	/**
 	 * ⚓ NATE 2026-08-12: the portrait does the SAME thing in both tools now.

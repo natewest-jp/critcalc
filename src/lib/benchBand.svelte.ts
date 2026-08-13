@@ -480,7 +480,38 @@ export function ribbonFramePath(h: number, r: number): string {
 }
 
 class BenchBandState {
-	host = $state<BenchHostRegistration | null>(null);
+	/**
+	 * ⚠ ONE SLOT PER TOOL, NOT ONE SLOT (2026-08-13). This was a single `host`
+	 * field, last writer wins, with an identity-guarded unregister to survive the
+	 * pan's both-pages-alive window. The guard was not enough, and the hole is
+	 * REVIVAL rather than ordering:
+	 *
+	 *   1. planner mounts          host = P
+	 *   2. → Team Builder          host = T; the planner OUTROES but is retained,
+	 *                              so it is never destroyed and never unregisters
+	 *   3. → planner               Svelte cancels the outro and reinserts the SAME
+	 *                              component — no second onMount, no re-register,
+	 *                              host is still T
+	 *   4. the TB finally tears down; host === T, so it nulls the host
+	 *
+	 * …and the bench is left hostless on a planner that is on screen and looks
+	 * fine. ⇄ and the portraits go dead until you reload. The (tools) layout
+	 * documents this revival at TOOL_NAV_ANIM and answers it by re-deriving in
+	 * afterNavigate; a keyed record answers it by never needing a re-derive at
+	 * all — a tool's registration is removed only by that tool, and a stale one
+	 * is simply the entry `mode` is not asking for.
+	 *
+	 * ⚠️ It is PRE-EXISTING (measured on 847acdb, where the same round trip kills
+	 * the character Source). What changed is the stakes: ⇄ is now the planner's
+	 * only way to change a slot, and leaving the tool and coming back is the
+	 * flow, not an edge case.
+	 */
+	#hosts = $state<Partial<Record<BenchHostRegistration['tool'], BenchHostRegistration>>>({});
+
+	/** The affordances for one tool — null when that tool has none registered. */
+	hostFor(tool: BenchHostRegistration['tool'] | null): BenchHostRegistration | null {
+		return tool ? (this.#hosts[tool] ?? null) : null;
+	}
 
 	/**
 	 * Per-slot block heights published by the planner's timeline (px), or null
@@ -507,11 +538,13 @@ class BenchBandState {
 	blankUsed = $state<boolean[]>([false, false, false, false]);
 
 	/** Register a tool page's bench affordances. Returns an unregister that
-	 *  only clears its own registration (pan-retention safe). */
+	 *  clears only its own tool's entry, and only while that entry is still
+	 *  this registration — a re-mounted page must not be unregistered by its
+	 *  own predecessor's late teardown. */
 	registerHost(reg: BenchHostRegistration): () => void {
-		this.host = reg;
+		this.#hosts[reg.tool] = reg;
 		return () => {
-			if (this.host === reg) this.host = null;
+			if (this.#hosts[reg.tool] === reg) delete this.#hosts[reg.tool];
 		};
 	}
 

@@ -6,8 +6,6 @@
 	import DocumentActions from '$lib/components/DocumentActions.svelte';
 	import Mark from '$lib/components/Mark.svelte';
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
-	import CharacterSelector from '$lib/components/CharacterSelector.svelte';
-	import CharacterSelectorFilters from '$lib/components/CharacterSelectorFilters.svelte';
 	import RotationNotes from '$lib/components/RotationNotes.svelte';
 	import { collectSlotCaveats } from '$lib/timeline/slotCaveats';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -16,7 +14,8 @@
 	import { warmAvatars } from '$lib/utils/warmAvatars';
 	import { warmOpenTabCharacters } from '../lib/prewarmPlanner';
 	import { onMount } from 'svelte';
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
 	import { rotationTabs as rt, TAB_LIMIT } from '$lib/rotationTabs.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
@@ -93,8 +92,8 @@
 	// and ⇄ both opened the Source, which meant the planner had a permanent
 	// button duplicating its own portrait. They split now, and the split is what
 	// makes the bench behave identically in both tools: a filled portrait reads
-	// the character (Detail card), ⇄ changes who fills the slot (Source), and an
-	// empty portrait — with no character to read — falls through to ⇄'s job.
+	// the character (Detail card), ⇄ changes who fills the slot, and an empty
+	// portrait — with no character to read — falls through to ⇄'s job.
 	// Warm every open tab's characters, so switching to one you have not opened
 	// this session does not stall on a cold payload (⚓ Nate 2026-08-12).
 	//
@@ -118,8 +117,27 @@
 			onOpenDetail: (id) => {
 				detailId = id;
 			},
-			onSwap: () => {
-				selectorOpen = true;
+			// ⇄ LEAVES THE TOOL (2026-08-13). The planner's own Source could only
+			// ever fill the LOWEST EMPTY SLOT — it had no way to say "replace THIS
+			// one" — while the Team Builder's audition pins the incumbent and
+			// compares candidates against it, which is the question you actually
+			// have at a bench card. So the errand travels instead of being
+			// re-implemented worse: ?swap=N asks for that slot's audition, and
+			// committing a candidate there navigates back here.
+			//
+			// The team itself does NOT travel — it IS the shared working team
+			// (bench-band round), so the slot INDEX is the whole payload.
+			onSwap: (index) => {
+				// The path IS resolved — but `no-navigation-without-resolve` requires
+				// resolve() to be goto's argument *syntactically*, and it cannot be
+				// while the URL carries a query. Checked against the rule source
+				// rather than guessed: checkGotoCall accepts only a CallExpression
+				// (or an identifier bound straight to one), with none of the
+				// absolute/fragment escapes it grants an href — so a template, a
+				// concat and a `new URL()` all fail it equally. `index` is a bench
+				// slot index, so there is nothing to escape either way.
+				// eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve() is inside the template; the rule cannot see through one
+				void goto(`${resolve('/team-builder')}?swap=${index}`);
 			}
 		});
 	});
@@ -198,8 +216,6 @@
 	// UI state
 	// ---------------------------------------------------------------------------
 
-	let selectorOpen = $state(false);
-
 	/** The character whose Detail card is open, from a bench portrait click.
 	 *  ⚓ NATE 2026-08-12: the planner reads characters through the SAME modal the
 	 *  Team Builder does. It is the one deliberate modal in either tool (a
@@ -218,28 +234,22 @@
 		});
 	});
 
-	/** How many of the four slots are filled — the picker column's readout. */
-	let chosenCount = $derived(slots.filter((id) => id && id !== 'blank').length);
-
-	// Escape closes the Source. It lives here rather than in the picker because
-	// the page owns `selectorOpen` — and since the aside-column round the picker
-	// is TWO components, so neither half could own the key on its own.
-	// The Detail card owns its own Escape (it is a modal with a close button);
-	// this only has to stay out of its way, hence the ordering.
-	function onWindowKeydown(e: KeyboardEvent) {
-		if (e.key !== 'Escape') return;
-		if (detailId) return;
-		if (selectorOpen) selectorOpen = false;
-	}
-
 	// ---------------------------------------------------------------------------
 	// The ASIDE COLUMN (aside-column round, 2026-08-08)
 	//
 	// One slot, one occupant, decided in one expression — see $lib/toolColumns.
-	// The picker's filters WIN over the notes: opening the Source covers the
-	// whole surface, cards over the timeline and filters over the notes, and
-	// closing it puts back whatever was there. Before the round this collision
-	// was three unrelated booleans and the winner was an accident of z-index.
+	//
+	// ↻ 2026-08-13: there is no longer a contest to decide. The picker's filter
+	// rail was the notes' only rival for this column, and the round that keeps
+	// the aside honest is the one that removed the rival: the planner's aside is
+	// the NOTES, present when there is something to annotate. The expression
+	// stays an expression — the column takes one occupant or none, and `null` is
+	// still a real answer — but the ternary chain it used to need is gone.
+	//
+	// ⛔ The window Escape handler went with it. It existed to close the Source,
+	// and it had to live on the page because the picker was TWO components by
+	// then and neither half could own the key alone. The Detail card owns its
+	// own Escape (it is a modal with a close button), so the page needs none.
 	// ---------------------------------------------------------------------------
 
 	/** Caveats for the slotted kits. Computed HERE, not in the timeline and not
@@ -254,12 +264,8 @@
 		if (slotCaveats.length === 0) pv.showNotes = false;
 	});
 
-	let asideOccupant = $derived(
-		selectorOpen ? 'filters' : pv.showNotes && slotCaveats.length > 0 ? 'notes' : null
-	);
+	let showAside = $derived(pv.showNotes && slotCaveats.length > 0);
 </script>
-
-<svelte:window onkeydown={onWindowKeydown} />
 
 <svelte:head>
 	<title>Team rotation planner | critcalc.app</title>
@@ -400,14 +406,11 @@
 			<!-- The surface is TWO BOXES with a gap (aside-column round): the
 			     timeline, and — when something occupies it — the aside column. The
 			     bands above span both. -->
-			<!-- asideBare only for the FILTERS: the rail paints its own groups, so
-			     the column is a gutter of objects. The NOTES keep the box — they
-			     are one continuous reading and would look shredded in rows. -->
-			<ToolColumns
-				{main}
-				aside={asideOccupant ? asideColumn : undefined}
-				asideBare={asideOccupant === 'filters'}
-			/>
+			<!-- ⛔ `asideBare` went with the filter rail: it was for the RAIL only,
+			     which painted its own groups and wanted the column to be a gutter
+			     of objects. The NOTES keep the box — they are one continuous
+			     reading and would look shredded in rows. -->
+			<ToolColumns {main} aside={showAside ? asideColumn : undefined} />
 		{/snippet}
 	</ToolStack>
 
@@ -441,31 +444,18 @@
 		characterSlots={slots}
 		tabLoadout={rt.tabLoadout}
 		tabCon={rt.tabCon}
-		sourceOpen={selectorOpen}
 	>
 		<!-- The always-on bonuses strip, rendered between the chart's last lane
 		     and the notation field. -->
 		{#snippet underChart()}
 			<TeamBonusesBlock {slots} />
 		{/snippet}
-
-		<!-- The character Source's CARDS, layered over the timeline frame
-		     (non-modal). Its filter column is the other half, in the aside below.
-		     Edits are live: each add/remove sets manualSlots, which flows back
-		     down as the bench portraits' team. -->
-		{#snippet sourceOverlay()}
-			<CharacterSelector currentSlots={slots} onChange={(chosen) => (rt.manualSlots = chosen)} />
-		{/snippet}
 	</RotationTimeline>
 {/snippet}
 
-<!-- ── The aside column: notes, or the Source's filters over them ─────────── -->
+<!-- ── The aside column: the notes ────────────────────────────────────────── -->
 {#snippet asideColumn()}
-	{#if asideOccupant === 'filters'}
-		<CharacterSelectorFilters {chosenCount} onClose={() => (selectorOpen = false)} />
-	{:else}
-		<RotationNotes entries={slotCaveats} />
-	{/if}
+	<RotationNotes entries={slotCaveats} />
 {/snippet}
 
 <style>
