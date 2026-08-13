@@ -431,19 +431,25 @@
 							y2={M.top + plotH}
 							stroke="var(--chart-rule)"
 						/>
+						<!-- ↻ 2026-08-13: was #f7fafc, a cool near-white literal that
+						     predates the parchment palette — the marker line and its
+						     label are the brightest ANNOTATION on this chart, and the
+						     system's word for that is --text (parchment-100 here). The
+						     heatmap's CV budget line and the Wish cdf already say it
+						     this way; these four were the stragglers. -->
 						<line
 							x1={apXOf(apPieceValue)}
 							y1={M.top + 2}
 							x2={apXOf(apPieceValue)}
 							y2={M.top + plotH}
-							stroke="#f7fafc"
+							stroke="var(--text)"
 							stroke-width="1.5"
 							stroke-dasharray="4 4"
 						/>
 						<text
 							x={apXOf(apPieceValue)}
 							y={M.top - 4}
-							fill="#f7fafc"
+							fill="var(--text)"
 							font-size="10"
 							text-anchor="middle"
 						>
@@ -620,14 +626,14 @@
 							y1={M.top + 2}
 							x2={M.left + clampedCurrent * band + band * 0.5}
 							y2={M.top + plotH}
-							stroke="#f7fafc"
+							stroke="var(--text)"
 							stroke-width="1.5"
 							stroke-dasharray="4 4"
 						/>
 						<text
 							x={M.left + clampedCurrent * band + band * 0.5 + 5}
 							y={M.top + plotH - 8}
-							fill="#f7fafc"
+							fill="var(--text)"
 							font-size="10"
 							text-anchor="start"
 						>

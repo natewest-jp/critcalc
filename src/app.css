@@ -606,20 +606,81 @@
 	   is why the charts still read COOL WHITE inside frames whose every other
 	   surface had gone parchment: white is not a member of either context.
 
-	   Derived from the context, so an instrument dropped into a light panel
-	   inverts for free instead of vanishing. Opaque mixes against --frame-bg,
-	   never onto transparent — the alpha-compositing law (a semi-transparent
-	   line renders display-dependently on P3).
+	   ⛔ A NOTE THAT USED TO STAND HERE IS DELETED, not moved: "derived from the
+	   context, so an instrument dropped into a light panel inverts for free."
+	   It never did. These are declared at :root, and a custom property containing
+	   var() is substituted WHERE IT IS DECLARED — so what inherits down is
+	   :root's resolved string, not a recipe re-run per context (the .ctx-dark
+	   block explains the same mechanism from the other side). Every chart on the
+	   site has always drawn with the dark-referenced values. That was harmless
+	   while every chart was dark, and it is still harmless now that every chart
+	   is on the night, but do not build on the promise: an instrument that ever
+	   needs to invert has to re-declare these on its own root.
 
 	   SVG presentation attributes take these directly: fill="var(--chart-ink)".
-	   Three rungs, matching what the instruments actually drew:
+	   Four rungs, matching what the instruments actually drew:
 	     · ink  = readable label text (was white .45–.62)
 	     · dim  = de-emphasized labels, legend text (was white .28–.42)
-	     · grid = gridlines and hairlines (was white .04–.16) */
+	     · rule = baselines, axis rules, the emphasised gridline
+	     · grid = gridlines and hairlines (was white .04–.16)
+
+	   ══ ⚓ NATE 2026-08-13: THE LINES GO DOWN, AND THEY HAD TO GO ALPHA ═══════
+	   "Take the gridlines down a tiny bit, similar to how we aggressively trimmed
+	   the Rotation Planner's." The trim is real, but the reason they had grown
+	   loud is structural and worth the paragraph, because lowering the numbers
+	   alone could not have fixed it.
+
+	   AN OPAQUE MIX HAS A FLOOR, AND THE FLOOR IS THE GROUND IT MIXES AGAINST.
+	   These two were `color-mix(--border N%, --frame-bg)`, and --frame-bg is
+	   slate-800 = rgb(46,53,67). The dimmed world is now about rgb(19,19,23). So
+	   at N → 0 the line does not fade out, it settles onto slate-800 — a
+	   distinctly LIGHT hairline on the night. Measured:
+
+	       grid  26% opaque → rgb(67,72,83)     the floor is rgb(46,53,67)
+	       rule  55% opaque → rgb(90,94,102)
+
+	   That was invisible while a `.frame` painted slate-800 behind the chart: the
+	   line was cut against the exact ground it sat on. Take the ground away and
+	   the same declaration becomes a light line on a dark world, which is why the
+	   grids read heavier AFTER the frames came off, not before.
+
+	   ⚠ SO THE FIX IS THE MIX TARGET, NOT THE PERCENTAGE. Toward `transparent`,
+	   which is the planner's exact move for its own faint gridline and for the
+	   same stated reason: a line mixes opaquely against a KNOWN ground and
+	   carries ALPHA where the ground is unknown. Out here it honestly is.
+	     · Mixing toward `transparent` premultiplies — it resolves to --border at
+	       that alpha and does NOT darken toward black. (The WebKit trap is
+	       gradient interpolation THROUGH the keyword; this is not that.)
+	     · --border is an alias of a literal, so this is one level of mix and the
+	       nesting law is untouched.
+
+	   ⚠ AND THE PLANNER'S "MAJORS STAY OPAQUE" RULING DOES NOT TRANSFER. It held
+	   because its majors were cut against slate-900, a near neighbour of its
+	   night; ours were cut against slate-800, which is not. Same law, different
+	   ground, opposite answer — check the ground before copying the conclusion.
+
+	   🎛️ THE TWO KNOBS. Resolved over the night, for tuning by eye:
+	       grid .17 → rgb(37,37,41)   was rgb(67,72,83)
+	       rule .38 → rgb(60,60,64)   was rgb(90,94,102)
+	   .17 is not a fresh guess — it is ⚓ Nate's own tuned value for the planner's
+	   faint gridline (--rp-grid-faint), landed verbatim there, on this ground, for
+	   this job. Starting the Visualizers somewhere else would have meant two
+	   answers to one question.
+
+	   ⛔ NOTHING WAS STRUCK OR FADED, and that was considered. The planner needed
+	   a downward fade because its grid is one line per second across a long
+	   rotation; these four charts carry 4–10 lines per axis and every one of them
+	   has a labelled tick, so there is no redundant line to remove — only weight
+	   to take off.
+
+	   ⚠ ink AND dim STAY OPAQUE MIXES. They are TEXT, Nate's constraint was that
+	   labels stay visible, and the floor that hurts a hairline flatters a glyph.
+	   They carry the same latent inconsistency; fix them the day they read wrong,
+	   not before. */
 	--chart-ink: var(--muted);
 	--chart-dim: color-mix(in srgb, var(--muted) 62%, var(--frame-bg));
-	--chart-grid: color-mix(in srgb, var(--border) 26%, var(--frame-bg));
-	--chart-rule: color-mix(in srgb, var(--border) 55%, var(--frame-bg));
+	--chart-grid: color-mix(in srgb, var(--border) 17%, transparent);
+	--chart-rule: color-mix(in srgb, var(--border) 38%, transparent);
 
 	/* Chrome + footer heights. ONE chrome height site-wide: the landing, the
 	   content pages and the tools all render the same bar (SiteChrome.svelte),
