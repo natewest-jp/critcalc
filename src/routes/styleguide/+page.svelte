@@ -589,13 +589,18 @@
 			<strong>And it is not <code>sheer</code></strong>: that experiment let 2–3% of scene light
 			through, which reads as a duller colour. ⚠ The alpha alone does not decide it: glass and the
 			wash <strong>multiply</strong>, so what reaches the eye is
-			<code>(1 − glass)(1 − TOOL_DIM)</code> — <strong>10.5%</strong> for the panel stop at
+			<code>(1 − glass)(1 − TOOL_DIM)</code> —
+			<strong>{(100 * (1 - 0.58) * (1 - TOOL_DIM)).toFixed(1)}%</strong> for the panel stop at
 			<code>TOOL_DIM</code>
-			{TOOL_DIM}. <strong>Move one, check the other</strong>, and this round is the worked example:
-			deepening the wash alone took it to 8.0% — the closest we have been to sheer, and glass
-			started reading as opaque slate — so the ALPHAS came down after it. If glass ever stops
-			reading as glass, this is the number that did it, and a lower glass alpha (never a lower dim)
-			is the fix.
+			{TOOL_DIM}. <strong>Move one, check the other.</strong>
+			⚓ <strong>But the threshold was never a percentage</strong> (Nate, 2026-08-13). This figure
+			has been 17%, 10.5% and now single digits across three rounds, and the prose that travelled
+			with it declared each new value the one that would read as sheer — while the panes went on
+			reading as glass. Sheer failed because a pane over <em>that</em> wash read as a duller version
+			of its own colour; whether that happens is a fact about the composite, not about a number. The
+			test is the one the rule always stated:
+			<em>can you tell, looking at it, that this is a translucent material?</em> A star still resolves
+			through both stops below.
 		</p>
 		<p class="sg-note">
 			⚠️ <strong>What sets the floor on a glass stop is a STAR.</strong> Text on glass is limited by

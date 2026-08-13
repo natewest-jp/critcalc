@@ -170,8 +170,11 @@
 	   computes all of it live.
 
 	   ⚠ Glass and the wash MULTIPLY: what reaches the eye is
-	   (1 − glass)(1 − TOOL_DIM). At the old dim of .85 these same stops would
-	   deliver 5% and 7%, i.e. `sheer` again. Move one, check the other.
+	   (1 − glass)(1 − TOOL_DIM). Move one, check the other.
+	   ↻ 2026-08-13: this paragraph used to end "at the old dim of .85 these same
+	   stops would deliver 5% and 7%, i.e. `sheer` again" — and then the dim went
+	   to .875 and they do. They are not sheer. See the ⚓ NATE 2026-08-13 block
+	   at .ctx-glass for why the threshold was never a percentage.
 
 	   ⛔ --glass-ribbon is DELETED. It was Fable's stop for the bench ribbon,
 	   and the bench went back to opaque slate the same day (⚓ NATE). Nothing
@@ -412,7 +415,18 @@
 	   rgb(103,104,106). ⚠ THIS IS THE TOKEN EVERY STAR MEASUREMENT DEPENDS ON,
 	   and the old figures across the system were computed as if it were pure
 	   black. See TOOL_DIM in landing/transition.ts for the correction and what
-	   it turned out to be hiding. */
+	   it turned out to be hiding.
+
+	   ↻ ⚓ NATE 2026-08-13: #101013 → #121216, and this time the two axes moved
+	   in OPPOSITE directions — the wash got a hair LIGHTER while TOOL_DIM got
+	   denser (.75 → .875). That is not a contradiction, it is the pair being
+	   used as the pair: density decides how much world survives, colour decides
+	   what the floor of the composite is, and a deeper wash over a slightly
+	   lifted floor takes the world down without taking it to black. The
+	   Visualizers going onto the scene is what asked for it — with no framed
+	   slabs left anywhere, how much world comes through stopped being a per-tool
+	   question. The worst pixel (a star) now lands at rgb(48,48,51), from
+	   rgb(76,76,78). */
 	--scene-dim: #121216;
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
@@ -1709,12 +1723,34 @@
    ⚠ AND IT IS NOT `sheer`. That experiment was built, measured, shipped and
    reverted, and the rule that came out of it stands: opaque, or OBVIOUSLY
    translucent — the middle is not a place. Sheer let 2–3% of scene light
-   through, which reads as a duller colour. These stops let ~17% through at
-   TOOL_DIM .65 — the far side of that same rule, and several times sheer.
+   through, which reads as a duller colour.
    ⚠ The alpha alone does not decide it: glass and the wash MULTIPLY, so the
-   world reaching the eye is (1 − glass)(1 − TOOL_DIM). At the old dim of .85
-   these same stops would deliver 5–7%, which is sheer again. Move one, check
-   the other.
+   world reaching the eye is (1 − glass)(1 − TOOL_DIM). Move one, check the
+   other. At TOOL_DIM .875 that is 5.25% for the panel stop and 6.9% for the
+   well.
+
+   ══ ⚓ NATE 2026-08-13: THE PERCENTAGE IS NOT THE THRESHOLD ════════════════
+   Three figures stood here over three rounds — ~17% at dim .65, 10.5% at .75,
+   5.25% now — and the note that stood with them said "5–7% is sheer again",
+   which would make the CURRENTLY SHIPPING configuration the thing this round
+   rejected. It is not, and the correction is worth more than the number was:
+
+   ⚓ "The sheer problem was due to different wash colour and glass colours —
+   we don't need to be so strict about it anymore."
+
+   Sheer failed because at 2–3% a translucent pane over the wash of that day
+   read as a DULLER VERSION OF ITS OWN COLOUR — the world was present without
+   being legible, which is the muddy middle. Whether that happens is a fact
+   about the composite (how dark the wash is, how dark the pane is, whether a
+   star still resolves through it), not about a transmission percentage. At
+   .875 over #121216 stars still read through these stops and the panes read as
+   slate glass, so the rule is satisfied at a number the old prose called a
+   failure.
+   ⛔ SO DON'T DEFEND A PERCENTAGE. The test is the one the rule always stated:
+   can you tell, looking at it, that this is a translucent material? Judge it on
+   /lab or /styleguide § Palette census (which composites the wash properly and
+   recomputes from the imported TOOL_DIM, so its star figures are never stale
+   the way this paragraph twice was).
 
    ⛔ 2026-08-11 — THE BLUR IS GONE (⚓ NATE; see --glass-blur's retirement note
    for the full verdict). GLASS IS NOW PURELY AN ALPHA, which is what it always

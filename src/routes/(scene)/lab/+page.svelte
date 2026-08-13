@@ -210,7 +210,7 @@
 		},
 		{
 			key: 'was',
-			label: 'gradient + 1.5px stroke — was',
+			label: 'gradient + stroke (declared 1.5px, painted 1) — was',
 			ground: 'var(--surface)',
 			fill: 'linear-gradient(180deg, color-mix(in srgb, var(--slate-800) 45%, var(--bg)) 0%, var(--slate-800) 50%)',
 			border: '1.5px solid var(--frame-line-quiet)'
@@ -1333,9 +1333,22 @@
 		</p>
 		<p class="lab-note">
 			On the controls: the gradient-plus-stroke on the right is what shipped before this round. The
-			gradient manufactured an inner shadow and the 1.5px stroke drew the shape the gradient was too
-			faint to draw alone — <strong>one idea in two parts</strong>, and both predate the depth
-			ladder. A flat rung states it directly.
+			gradient manufactured an inner shadow and the stroke drew the shape the gradient was too faint
+			to draw alone — <strong>one idea in two parts</strong>, and both predate the depth ladder. A
+			flat rung states it directly.
+		</p>
+		<p class="lab-note">
+			⛔ <strong
+				>That stroke is declared <code>1.5px</code> and has never once been painted at 1.5px.</strong
+			>
+			Measured 2026-08-13 across four device-pixel ratios:
+			<strong>Chrome floors <code>border-width</code> to whole CSS pixels</strong> — 0.5, 1, 1.25,
+			1.5 and 1.75 all paint at 1px — while WebKit gives 1 / 1.33 / 1.5 / 1.33 depending on DPR. So
+			this specimen has always shown a 1px stroke in the browser it was judged in, and a different
+			weight in the one we ship to. <code>box-shadow</code> is the mirror image and is not a
+			workaround (Chrome renders a 1.5px inset ring exactly; WebKit wobbles). The value is
+			<strong>retired, not rehoused</strong>: declare whole pixels. It survives here only because
+			this column is a RECORD of what shipped before — and the label now says what it actually drew.
 		</p>
 		<p class="lab-note">
 			⚓ <strong>"How deep" turned out to be a question about the RAMP, not about the card.</strong>
