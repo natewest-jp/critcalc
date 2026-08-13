@@ -1,4 +1,31 @@
 <script lang="ts">
+	/**
+	 * Compare / Audition — the Team Builder's kit-against-kit surface.
+	 *
+	 * ONE SURFACE, TWO JOBS, AND THEY DIFFER IN EXACTLY ONE THING: whether there
+	 * is a REFERENCE. Compare is symmetric — N peers, nobody privileged, "how do
+	 * these differ?". Audition is asymmetric — an incumbent, challengers, and a
+	 * slot to fill, "does this one fit HERE?". So `anchorId` is not a mode flag
+	 * bolted on the side; it is the reference, and everything else follows from
+	 * whether it is set.
+	 *
+	 * TWO GEOMETRIES, BECAUSE TWO QUESTIONS. Time STACKS (a chart of lanes on one
+	 * shared axis); facts COLUMN (a table, one column per character). Trying to
+	 * make one geometry serve both is what left this surface reading as two half
+	 * things sharing a scroll.
+	 *
+	 * ⚓ THE CHART'S SPINE: a LANE is an ABILITY, the GROUPING is an EFFECT.
+	 * Aligning E-with-E is a category error — Bennett heals on Q, Kokomi on E,
+	 * Jean on both, so which button carries a thing is kit-design accident. But
+	 * aligning purely by effect throws away the COST, and the cost is the real
+	 * currency. So the lane is the cast (dragging its cooldown and its energy
+	 * along) and the heading is the effect. See compare.ts.
+	 *
+	 * MATERIALS (⚓ 2026-08-13, the on-the-scene law): night looks · glass
+	 * touches · paper answers. The chart draws on the bare night with no ground
+	 * of its own; the axis + lens controls are a glass plate; the facts table is
+	 * the ONE paper card — it is the thing you land on.
+	 */
 	import type { Snippet } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -9,10 +36,16 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import { deriveCharacterCapabilities } from '$lib/capabilities/deriveCapabilities';
 	import { rulerTicks } from '$lib/timeline/barGeometry';
-	import { barPhases, type BarPhaseSegment } from '$lib/timeline/barPhases';
-	import type { Ability } from '$lib/types/ability';
+	import { laneSegments } from '$lib/timeline/barCycles';
 	import { conCapFor, type ConMode } from './facets';
-	import { buildCompareModel, glyphScaleSeconds, type CapCell } from './compare';
+	import {
+		buildCompareModel,
+		COMPARE_AXIS_CHOICES,
+		COMPARE_AXIS_DEFAULT,
+		type CapCell,
+		type CapLane,
+		type CapRowKey
+	} from './compare';
 	import { TARGET_SHORT, capDetailText, caveatText } from '$lib/capabilities/capabilityText';
 	import type { CapabilityKind } from '$lib/capabilities/deriveCapabilities';
 	import CompareBar from './CompareBar.svelte';
@@ -22,38 +55,59 @@
 		conMode,
 		onRemove,
 		anchorId = undefined,
+		auditionSlot = undefined,
 		onCommit = undefined,
 		onClear = undefined,
 		onCancelAudition = undefined,
+		seedLenses = undefined,
+		onLensChange = undefined,
 		candidatesArea = undefined
 	}: {
 		ids: string[];
 		conMode: ConMode;
 		/** Remove one character from the comparison (the tab stack stays in sync). */
 		onRemove: (id: string) => void;
-		/** Audition mode: the incumbent, pinned as the anchor row — shown with a
-		 *  "current" badge, can't be removed. */
+		/** Audition mode: the incumbent, pinned as the reference — can't be removed. */
 		anchorId?: string;
+		/** Audition mode: which slot is being filled (the commit button names it). */
+		auditionSlot?: number;
 		/** Audition mode: commit a candidate into the audition slot (swaps + returns). */
 		onCommit?: (id: string) => void;
 		/** Plain compare: clear the whole selection (drops to the empty state). */
 		onClear?: () => void;
 		/** Audition mode: abandon without committing. */
 		onCancelAudition?: () => void;
-		/** Audition mode: the candidates strip, rendered below the legend — the
+		/** Audition mode: the jobs this slot currently does. Seeds the lens, so
+		 *  the chart opens on what has to be replaced rather than on everything. */
+		seedLenses?: readonly string[];
+		/** The lens selection changed. Audition narrows its candidate list by the
+		 *  same chips that group the chart — ONE control, two jobs. */
+		onLensChange?: (keys: CapRowKey[]) => void;
+		/** Audition mode: the candidates strip, rendered below the reference — the
 		 *  host owns the tiles/handlers (same pattern as the card actions). */
 		candidatesArea?: Snippet;
 	} = $props();
 
-	// The bar track stretches with the view (this is a center view now, not an
-	// inspector) — measured, then clamped so a narrow viewport still gets a
-	// readable ruler and an ultrawide doesn't stretch seconds absurdly thin.
-	// All lanes share it, so one px/sec scale governs the whole view and
-	// stacked bars compare truthfully.
+	// ── Geometry ──────────────────────────────────────────────────────────────
+	// The track stretches with the view. 🎛️ Tuning knobs: the gutter holds one
+	// avatar disc (it replaced a 96px name column that reprinted the same four
+	// names down thirty-odd lanes), and the ceiling is generous because a TILED
+	// lane fills its track — the old 720 cap existed when a bar was one cast in
+	// a mostly-empty row.
+	const LANE_GUTTER = 26;
+	const LANE_FACT_W = 172;
+	const LANE_GAP = 10;
+	const TRACK_MIN = 280;
+	const TRACK_MAX = 1100;
+
 	let timelineW = $state(0);
-	const NAME_W = 96;
 	const trackW = $derived(
-		timelineW > 0 ? Math.max(280, Math.min(720, timelineW - NAME_W - 84)) : 300
+		timelineW > 0
+			? Math.max(
+					TRACK_MIN,
+					Math.min(TRACK_MAX, timelineW - LANE_GUTTER - LANE_FACT_W - LANE_GAP * 2)
+				)
+			: 320
 	);
 
 	/* ⚠ TWO COLOURS PER COLUMN SINCE 2026-08-12, and they are not
@@ -71,6 +125,9 @@
 		})
 	);
 
+	const anchorIndex = $derived(anchorId ? ids.indexOf(anchorId) : -1);
+	const candidateColumns = $derived(columns.filter((c) => c.id !== anchorId));
+
 	// Full payloads — lazy chunks, reactive as each lands.
 	$effect(() => {
 		for (const id of ids) void loadCharacter(id);
@@ -78,67 +135,86 @@
 	const loaded = $derived(ids.map((id) => getLoadedCharacter(id)));
 	const allLoaded = $derived(loaded.every((d) => d !== null));
 
+	// Convention: show everything; lock (weaken) what the mode's constellation cap
+	// hasn't unlocked — per column, since "My roster" caps differ per character.
+	const viewCons = $derived(ids.map((id) => conCapFor(conMode, $constellations[id] ?? 0)));
+
 	// Same derivation brain as the DetailCard — the two surfaces can't disagree.
 	const model = $derived.by(() => {
 		if (!allLoaded) return null;
 		return buildCompareModel(
 			loaded.map((data, i) => ({
 				id: ids[i],
-				curated: columns[i].entry?.curated ?? false,
 				abilities: data!.abilities ?? [],
 				capabilities: deriveCharacterCapabilities(data!).capabilities
 			}))
 		);
 	});
 
-	// Convention: show everything; lock (dim) what the mode's constellation cap
-	// hasn't unlocked — per column, since "My roster" caps differ per character.
-	const viewCons = $derived(ids.map((id) => conCapFor(conMode, $constellations[id] ?? 0)));
+	// ── Axis + lenses ─────────────────────────────────────────────────────────
+	let axisSeconds = $state<number>(COMPARE_AXIS_DEFAULT);
 
-	function abilityCooldown(abilities: readonly Ability[], type: 'skill' | 'burst'): number | null {
-		for (const a of abilities) {
-			if (a.abilityType === type && 'cooldown' in a && typeof a.cooldown === 'number' && a.cooldown)
-				return a.cooldown;
-		}
-		return null;
-	}
+	/** Rows that have at least one drawable lane — the chart's whole vocabulary. */
+	const chartableRows = $derived(model ? model.capRows.filter((r) => r.lanes.length > 0) : []);
 
-	const skillCd = $derived(
-		loaded.map((d) => (d ? abilityCooldown(d.abilities ?? [], 'skill') : null))
-	);
-	const burstCd = $derived(
-		loaded.map((d) => (d ? abilityCooldown(d.abilities ?? [], 'burst') : null))
-	);
+	/** Lens selection. Empty = everything, which is also the honest default for
+	 *  plain compare: you start by seeing what there is, not by hiding most of
+	 *  it. An audition starts seeded instead — it opens on the jobs the slot
+	 *  already does, because that is the question it was opened to answer. */
+	const lenses = new SvelteSet<CapRowKey>();
 
-	// One shared time scale for every bar — the widest cycle across capability
-	// glyphs AND the E/Q cooldown bars, floored so short kits still get a ruler.
-	const scaleSeconds = $derived.by(() => {
-		let max = model ? glyphScaleSeconds(model) : 0;
-		for (const cd of skillCd) if (cd) max = Math.max(max, cd);
-		for (const cd of burstCd) if (cd) max = Math.max(max, cd);
-		return max > 0 ? Math.max(max, 6) : 0;
+	// `seedLenses` gets a NEW array identity per audition, so comparing the
+	// reference reseeds once per open and never fights the user's own toggles.
+	let seededFrom: readonly string[] | undefined = undefined;
+	$effect(() => {
+		if (seedLenses === seededFrom) return;
+		seededFrom = seedLenses;
+		lenses.clear();
+		for (const key of seedLenses ?? []) lenses.add(key as CapRowKey);
+		onLensChange?.([...lenses]);
 	});
-	const pxPerSec = $derived(scaleSeconds > 0 ? trackW / scaleSeconds : 0);
-	const ruler = $derived(rulerTicks(scaleSeconds, pxPerSec));
 
-	// The Timing panel shows only real bars; rows whose cells all lack timing
-	// live in the Facts table alone (no "no timing" placeholder lanes).
-	const glyphRows = $derived(
-		model ? model.capRows.filter((row) => row.cells.some((cell) => cell?.glyph)) : []
+	// Drop lens keys the current selection no longer offers, so a stale chip
+	// can't silently filter the chart down to nothing after a character swap.
+	// ⚠ Guarded on `model`: while the lazy payloads are still landing there are
+	// no chartable rows at all, and an unguarded sweep would wipe the audition's
+	// seed a frame after it was set.
+	$effect(() => {
+		if (!model) return;
+		const available = new Set(chartableRows.map((r) => r.key));
+		let changed = false;
+		for (const key of [...lenses]) {
+			if (!available.has(key)) {
+				lenses.delete(key);
+				changed = true;
+			}
+		}
+		if (changed) onLensChange?.([...lenses]);
+	});
+
+	function toggleLens(key: CapRowKey) {
+		if (lenses.has(key)) lenses.delete(key);
+		else lenses.add(key);
+		onLensChange?.([...lenses]);
+	}
+
+	const visibleRows = $derived(
+		lenses.size === 0 ? chartableRows : chartableRows.filter((r) => lenses.has(r.key))
 	);
 
-	/** Three-phase segments for a capability glyph: solid window, dim overflow
-	 *  past the cooldown, or a ghost cooldown remainder. */
-	function glyphSegments(cell: CapCell): BarPhaseSegment[] {
-		if (!cell.glyph) return [];
-		return barPhases(
-			{ start: 0, castTime: 0, cooldown: cell.glyph.cooldown, uptime: cell.glyph.uptime },
-			false
-		);
+	const pxPerSec = $derived(trackW / axisSeconds);
+	const ruler = $derived(rulerTicks(axisSeconds, pxPerSec));
+
+	function segmentsFor(lane: CapLane) {
+		return laneSegments(lane.uptime, lane.host.cooldown, axisSeconds);
 	}
-	/** A bare cooldown bar (E/Q recharge): one ghost track the length of the CD. */
-	function cooldownSegments(cd: number): BarPhaseSegment[] {
-		return [{ role: 'ghost', start: 0, span: cd, cooldown: cd }];
+
+	/** A lane's cost line: what the cast asks for, in the notation's own terms. */
+	function hostCost(lane: CapLane): string {
+		const parts = [lane.host.label];
+		if (lane.host.energyCost) parts.push(`${lane.host.energyCost} en`);
+		if (lane.host.charges) parts.push(`×${lane.host.charges}`);
+		return parts.join(' · ');
 	}
 
 	function cellTitle(cell: CapCell): string {
@@ -147,10 +223,31 @@
 		return parts.join(' — ');
 	}
 
+	function laneTitle(lane: CapLane, row: { label: string }): string {
+		const parts = [`${row.label} from ${lane.host.label}`];
+		if (lane.details.length > 0) parts.push(lane.details.join(' · '));
+		if (lane.caveats.length > 0) parts.push(lane.caveats.map(caveatText).join(' · '));
+		return parts.join(' — ');
+	}
+
+	// ── Crosshair ─────────────────────────────────────────────────────────────
+	// The single interaction the stacked geometry earns: "at nine seconds in, who
+	// is still healing?" is the real comparison question, and no table answers it.
+	let crossX = $state<number | null>(null);
+	const crossT = $derived(crossX === null ? null : crossX / pxPerSec);
+
+	function trackPointer(event: PointerEvent) {
+		const track = event.currentTarget as HTMLElement;
+		const x = event.clientX - track.getBoundingClientRect().left;
+		crossX = x >= 0 && x <= trackW ? x : null;
+	}
+
 	const modeLine = $derived.by(() => {
 		const con = conMode === 'mine' ? 'at your constellations' : `at ${conMode.toUpperCase()}`;
-		return anchorId ? `pick one to replace the current member · ${con}` : con;
+		return anchorId ? `pick one to take the slot · ${con}` : con;
 	});
+
+	const slotName = $derived(auditionSlot !== undefined ? `slot ${auditionSlot + 1}` : 'the slot');
 
 	const erroredAvatars = new SvelteSet<string>();
 	function fallbackFor(id: string): boolean {
@@ -165,6 +262,28 @@
 		}
 	}
 </script>
+
+<!-- ⚠ ctx-dark on every portrait backing, claimed IN THE MARKUP: --surface-well
+     is a ROLE, so it would otherwise follow whatever context the card is dropped
+     into, and a portrait backing is one of the few things that must NOT. -->
+{#snippet avatarDisc(id: string, name: string, color: string, size: number)}
+	<span
+		class="cmp-disc ctx-dark"
+		style:--el-color={color}
+		style:width="{size}px"
+		style:height="{size}px"
+	>
+		{#if !fallbackFor(id)}
+			<img
+				src={getAvatar(id, $siteSettings.useNewOutfits, 'side', $siteSettings.travelerVariant)}
+				alt=""
+				onerror={(e) => handleAvatarError(id, e)}
+			/>
+		{:else}
+			<span class="cmp-disc-initials">{name.slice(0, 2).toUpperCase()}</span>
+		{/if}
+	</span>
+{/snippet}
 
 <section class="cmp" aria-label={anchorId ? 'Audition replacements' : 'Compare characters'}>
 	<header class="cmp-titlebar">
@@ -181,34 +300,30 @@
 		{/if}
 	</header>
 
-	<!-- Character legend — the color key the stacked lanes refer back to. -->
+	<!-- ── The reference (audition only) ────────────────────────────────────
+	     The incumbent leaves the chip flow entirely. It is not a peer with a
+	     badge; it is what the others are being measured against, and the layout
+	     has to say so before the chart does. -->
+	{#if anchorIndex >= 0}
+		{@const ref = columns[anchorIndex]}
+		<div class="cmp-ref" style:--el-color={ref.color}>
+			{@render avatarDisc(ref.id, ref.entry?.displayName ?? ref.id, ref.color, 38)}
+			<span class="cmp-ref-body">
+				<span class="cmp-ref-role">Currently in {slotName}</span>
+				<span class="cmp-ref-name">{ref.entry?.displayName ?? ref.id}</span>
+			</span>
+			<span class="cmp-ref-meta">
+				{ref.entry?.element ?? '?'} · {ref.entry?.weapon ?? '?'}
+				{#if conMode === 'mine'}· C{$constellations[ref.id] ?? 0}{/if}
+			</span>
+		</div>
+	{/if}
+
+	<!-- ── Candidates / legend ──────────────────────────────────────────────── -->
 	<div class="cmp-legend">
-		{#each columns as col (col.id)}
-			<div
-				class="cmp-chip"
-				class:cmp-chip--anchor={col.id === anchorId}
-				style:--el-color={col.color}
-			>
-				<!-- ctx-dark: the portrait backing must not follow the surrounding
-				     context to parchment — see the note at .cmp-chip-avatar. -->
-				<span class="cmp-chip-avatar ctx-dark">
-					{#if !fallbackFor(col.id)}
-						<img
-							src={getAvatar(
-								col.id,
-								$siteSettings.useNewOutfits,
-								'side',
-								$siteSettings.travelerVariant
-							)}
-							alt=""
-							onerror={(e) => handleAvatarError(col.id, e)}
-						/>
-					{:else}
-						<span class="cmp-chip-initials"
-							>{(col.entry?.displayName ?? col.id).slice(0, 2).toUpperCase()}</span
-						>
-					{/if}
-				</span>
+		{#each candidateColumns as col (col.id)}
+			<div class="cmp-chip" style:--el-color={col.color}>
+				{@render avatarDisc(col.id, col.entry?.displayName ?? col.id, col.color, 30)}
 				<span class="cmp-chip-body">
 					<span class="cmp-chip-name"
 						>{col.entry?.displayName ?? col.id}{#if $ownership[col.id] === 'wishlist'}<span
@@ -223,26 +338,24 @@
 							>{/if}
 					</span>
 				</span>
-				{#if col.id === anchorId}
-					<span class="cmp-chip-current" title="Current team member — auditioning replacements"
-						>current</span
-					>
-				{:else}
-					{#if onCommit}
-						<button
-							class="cmp-chip-commit"
-							onclick={() => onCommit(col.id)}
-							title="Replace the current member with {col.entry?.displayName ?? col.id}"
-							>Use <Mark name="forward" size={12} /></button
-						>
-					{/if}
+				{#if onCommit}
+					<!-- ⚓ The commit lives on the COMPARED column, never on a browse
+					     pill: you commit what you have looked at, and putting it on
+					     the candidates strip would leave an irreversible act one
+					     click away from a browsing gesture. -->
 					<button
-						class="cmp-chip-remove"
-						onclick={() => onRemove(col.id)}
-						aria-label="Remove {col.entry?.displayName ?? col.id} from comparison"
-						title="Remove from comparison"><Mark name="close" size={12} /></button
+						class="btn btn--primary cmp-take"
+						onclick={() => onCommit(col.id)}
+						title="Put {col.entry?.displayName ?? col.id} in {slotName}"
+						>Take {slotName} <Mark name="forward" size={12} /></button
 					>
 				{/if}
+				<button
+					class="cmp-chip-remove"
+					onclick={() => onRemove(col.id)}
+					aria-label="Remove {col.entry?.displayName ?? col.id} from comparison"
+					title="Remove from comparison"><Mark name="close" size={12} /></button
+				>
 			</div>
 		{/each}
 	</div>
@@ -254,13 +367,52 @@
 	{#if !model}
 		<p class="cmp-loading">Loading kit data…</p>
 	{:else}
-		<!-- ── Timing on one ruler — the bar instrument, full width ── -->
+		<!-- ── Apparatus: glass. The axis and the lens, and nothing else. ────── -->
+		{#if chartableRows.length > 0}
+			<div class="panel ctx-glass cmp-controls">
+				<div class="cmp-ctrl">
+					<span class="cmp-ctrl-label" id="cmp-axis-label">Axis</span>
+					<div class="segment" role="group" aria-labelledby="cmp-axis-label">
+						{#each COMPARE_AXIS_CHOICES as choice (choice)}
+							<button
+								class="btn"
+								class:is-active={axisSeconds === choice}
+								aria-pressed={axisSeconds === choice}
+								onclick={() => (axisSeconds = choice)}>{choice}s</button
+							>
+						{/each}
+					</div>
+				</div>
+				<div class="cmp-ctrl cmp-ctrl--lens">
+					<span class="cmp-ctrl-label" id="cmp-lens-label">Show</span>
+					<div class="cmp-lenses" role="group" aria-labelledby="cmp-lens-label">
+						{#each chartableRows as row (row.key)}
+							<button
+								class="chip chip--sm"
+								class:active={lenses.has(row.key)}
+								aria-pressed={lenses.has(row.key)}
+								onclick={() => toggleLens(row.key)}>{row.label}</button
+							>
+						{/each}
+					</div>
+				</div>
+			</div>
+		{/if}
+
+		<!-- ── The chart: on the night, no ground of its own. ────────────────── -->
 		<div class="cmp-section">
 			<p class="kicker">Timing on one ruler</p>
-			<div class="cmp-timeline" bind:clientWidth={timelineW} style:--track-w="{trackW}px">
-				{#if scaleSeconds > 0}
+			<div
+				class="cmp-chart"
+				bind:clientWidth={timelineW}
+				style:--track-w="{trackW}px"
+				style:--gutter="{LANE_GUTTER}px"
+				style:--fact-w="{LANE_FACT_W}px"
+				style:--lane-gap="{LANE_GAP}px"
+			>
+				{#if visibleRows.length > 0}
 					<div class="cmp-ruler-row">
-						<div class="cmp-lane-name"></div>
+						<div></div>
 						<div class="cmp-ruler">
 							{#each ruler as tick (tick.t)}
 								<span class="cmp-rtick" class:cmp-rtick--major={tick.major} style:left="{tick.x}px">
@@ -268,173 +420,166 @@
 								</span>
 							{/each}
 						</div>
-						<div class="cmp-lane-fact"></div>
+						<div></div>
 					</div>
-				{/if}
 
-				{#if skillCd.some((c) => c !== null)}
-					<div class="cmp-dim-label">E cooldown</div>
-					{#each columns as col, i (col.id)}
-						{#if skillCd[i] !== null}
-							<div class="cmp-lane" style:--el-color={col.color}>
-								<span class="cmp-lane-name">{col.entry?.displayName ?? col.id}</span>
-								<CompareBar
-									segments={cooldownSegments(skillCd[i]!)}
-									bar={col.bar}
-									{scaleSeconds}
-									trackWidthPx={trackW}
-								/>
-								<span class="cmp-lane-fact">{skillCd[i]}s</span>
+					<!-- The pointer region is the tracks' column only, so `crossX` is
+					     already lane-local and needs no offset arithmetic. -->
+					<div class="cmp-lanes">
+						<div
+							class="cmp-crosshair-zone"
+							onpointermove={trackPointer}
+							onpointerleave={() => (crossX = null)}
+							aria-hidden="true"
+						></div>
+						{#if crossX !== null}
+							<div class="cmp-crosshair" style:left="{crossX}px">
+								<span class="cmp-crosshair-tag">{crossT!.toFixed(1)}s</span>
 							</div>
 						{/if}
-					{/each}
-				{/if}
 
-				{#if burstCd.some((c) => c !== null)}
-					<div class="cmp-dim-label">Q cooldown</div>
-					{#each columns as col, i (col.id)}
-						{#if burstCd[i] !== null}
-							<div class="cmp-lane" style:--el-color={col.color}>
-								<span class="cmp-lane-name">{col.entry?.displayName ?? col.id}</span>
-								<CompareBar
-									segments={cooldownSegments(burstCd[i]!)}
-									bar={col.bar}
-									{scaleSeconds}
-									trackWidthPx={trackW}
-								/>
-								<span class="cmp-lane-fact">{burstCd[i]}s</span>
-							</div>
-						{/if}
-					{/each}
-				{/if}
-
-				{#each glyphRows as row (row.key)}
-					<div class="cmp-dim-label">{row.label}</div>
-					{#each row.cells as cell, i (ids[i])}
-						{@const col = columns[i]}
-						{#if cell?.glyph}
-							{@const locked = cell.minCon > viewCons[i]}
-							<div class="cmp-lane" class:cmp-lane--locked={locked} style:--el-color={col.color}>
-								<span class="cmp-lane-name">{col.entry?.displayName ?? col.id}</span>
-								<CompareBar
-									segments={glyphSegments(cell)}
-									bar={col.bar}
-									{scaleSeconds}
-									trackWidthPx={trackW}
-									{locked}
-								/>
-								<span class="cmp-lane-fact" title={cellTitle(cell)}
-									>{cell.glyph.uptime}s / {cell.glyph.cooldown}s{#if locked}<Mark
-											name="gated"
-											size={11}
-										/>{/if}</span
-								>
-							</div>
-						{/if}
-					{/each}
-				{/each}
-
-				{#if glyphRows.length === 0 && skillCd.every((c) => c === null) && burstCd.every((c) => c === null)}
+						{#each visibleRows as row (row.key)}
+							<p class="cmp-group">{row.label}</p>
+							{#each row.lanes as lane (`${lane.columnIndex}:${lane.key}`)}
+								{@const col = columns[lane.columnIndex]}
+								{@const locked = lane.minCon > viewCons[lane.columnIndex]}
+								<div class="cmp-lane" style:--el-color={col.color}>
+									{@render avatarDisc(
+										col.id,
+										col.entry?.displayName ?? col.id,
+										col.color,
+										LANE_GUTTER
+									)}
+									<CompareBar
+										segments={segmentsFor(lane)}
+										ticks={lane.ticks ?? []}
+										bar={col.bar}
+										scaleSeconds={axisSeconds}
+										trackWidthPx={trackW}
+										{locked}
+									/>
+									<span class="cmp-lane-fact" title={laneTitle(lane, row)}>
+										<span class="cmp-lane-nums">{lane.uptime}s / {lane.host.cooldown}s</span>
+										<span class="cmp-lane-host">{hostCost(lane)}</span>
+										{#if locked}<Mark name="gated" size={11} />{/if}
+									</span>
+								</div>
+								{#if lane.alsoCarries.length > 0}
+									<p class="cmp-also-line">
+										also: {lane.alsoCarries
+											.map((k) => chartableRows.find((r) => r.key === k)?.label ?? k)
+											.join(' · ')}
+									</p>
+								{/if}
+							{/each}
+						{/each}
+					</div>
+				{:else if chartableRows.length > 0}
+					<p class="cmp-empty">Every effect is hidden — turn a chip back on to draw the chart.</p>
+				{:else}
 					<p class="cmp-empty">No curated timing to draw for this selection.</p>
 				{/if}
 			</div>
 			<p class="note cmp-footnote">
-				Bars share one time scale — solid = effect window, dim = window past its cooldown, faint =
-				cooldown remaining. Hover a lane's numbers for the source ability.
+				A lane is one ability; the heading is what it does. Solid = the cast you make now, faint =
+				the same cast repeated on cooldown — <strong>energy is not modelled</strong>, so a burst's
+				repeats are a best case. Ticks mark a summon's cadence over its first window.
 			</p>
 		</div>
 
-		<!-- ── Side by side — the dense fact reference, aligned by row ── -->
+		<!-- ── The answer: paper. ⚠ `.panel.panel--paper` — a lone modifier ties
+		     with `.panel` on specificity and loses on source order. ──────────── -->
 		<div class="cmp-section">
 			<p class="kicker">Side by side</p>
-			<div class="cmp-tablewrap">
-				<table class="cmp-table">
-					<thead>
-						<tr>
-							<th class="cmp-th-label" aria-label="Attribute"></th>
-							{#each columns as col (col.id)}
-								<th style:color={col.color}>{col.entry?.displayName ?? col.id}</th>
+			<div class="panel panel--paper cmp-facts">
+				<div class="cmp-tablewrap">
+					<table class="cmp-table">
+						<thead>
+							<tr>
+								<th class="cmp-th-label" aria-label="Attribute"></th>
+								{#each columns as col (col.id)}
+									<th class:cmp-th-ref={col.id === anchorId}>{col.entry?.displayName ?? col.id}</th>
+								{/each}
+							</tr>
+						</thead>
+						<tbody>
+							{#each model.timingRows as row (row.key)}
+								<tr>
+									<td class="cmp-td-label">{row.label}</td>
+									{#each row.cells as cell, i (ids[i])}
+										<td>
+											{#if cell !== null}
+												<span class="cmp-val">{cell}</span>
+											{:else}
+												<span class="cmp-none">—</span>
+											{/if}
+										</td>
+									{/each}
+								</tr>
 							{/each}
-						</tr>
-					</thead>
-					<tbody>
-						{#each model.timingRows as row (row.key)}
-							<tr>
-								<td class="cmp-td-label">{row.label}</td>
-								{#each row.cells as cell, i (ids[i])}
-									<td>
-										{#if cell !== null}
-											<span class="cmp-val">{cell}</span>
-										{:else}
-											<span class="cmp-none">—</span>
-										{/if}
-									</td>
-								{/each}
-							</tr>
-						{/each}
 
-						{#if model.capRows.length === 0}
-							<tr>
-								<td class="cmp-td-label"></td>
-								<td colspan={ids.length} class="cmp-empty"
-									>Nothing team-facing derives from these kits.</td
-								>
-							</tr>
-						{/if}
+							{#if model.capRows.length === 0}
+								<tr>
+									<td class="cmp-td-label"></td>
+									<td colspan={ids.length} class="cmp-empty"
+										>Nothing team-facing derives from these kits.</td
+									>
+								</tr>
+							{/if}
 
-						{#each model.capRows as row (row.key)}
-							<tr>
-								<td class="cmp-td-label">{row.label}</td>
-								{#each row.cells as cell, i (ids[i])}
-									{@const col = columns[i]}
-									{#if cell === null}
-										<td>
-											<span class="cmp-none"
-												>{col.entry && !col.entry.curated ? 'unknown' : '—'}</span
-											>
-										</td>
-									{:else}
-										{@const locked = cell.minCon > viewCons[i]}
-										<td>
-											<span
-												class="cmp-cell"
-												class:cmp-cell--locked={locked}
-												style:--el-color={col.color}
-												title={cellTitle(cell)}
-											>
-												<span class="cmp-gate" class:cmp-gate--base={cell.minCon === 0}
-													>C{cell.minCon}{#if locked}<Mark name="gated" size={11} />{/if}</span
+							{#each model.capRows as row (row.key)}
+								<tr>
+									<td class="cmp-td-label">{row.label}</td>
+									{#each row.cells as cell, i (ids[i])}
+										{@const col = columns[i]}
+										{#if cell === null}
+											<td>
+												<span class="cmp-none"
+													>{col.entry && !col.entry.curated ? 'unknown' : '—'}</span
 												>
-												{#if cell.target}<span class="cmp-target"
-														>{TARGET_SHORT[cell.target] ?? cell.target}</span
-													>{/if}
-												{#if cell.conditional}<span
-														class="cmp-cond"
-														title={cell.caveats.map(caveatText).join(' · ')}>~</span
-													>{/if}
-												{#if cell.details.length > 0}
-													{@const kind = row.key.startsWith('buff:') ? 'buff' : row.key}
-													<span class="cmp-details"
-														>{cell.details
-															.map((d) => capDetailText(kind as CapabilityKind, d))
-															.join(' · ')}</span
+											</td>
+										{:else}
+											{@const locked = cell.minCon > viewCons[i]}
+											<td>
+												<span
+													class="cmp-cell"
+													class:cmp-cell--locked={locked}
+													title={cellTitle(cell)}
+												>
+													<span class="cmp-gate" class:cmp-gate--base={cell.minCon === 0}
+														>C{cell.minCon}{#if locked}<Mark name="gated" size={11} />{/if}</span
 													>
-												{/if}
-												{#if cell.also}
-													{@const alsoLocked = cell.also.minCon > viewCons[i]}
-													<span class="cmp-also" class:cmp-cell--locked={alsoLocked}
-														>{TARGET_SHORT[cell.also.target]} from C{cell.also
-															.minCon}{#if alsoLocked}<Mark name="gated" size={11} />{/if}</span
-													>
-												{/if}
-											</span>
-										</td>
-									{/if}
-								{/each}
-							</tr>
-						{/each}
-					</tbody>
-				</table>
+													{#if cell.target}<span class="cmp-target"
+															>{TARGET_SHORT[cell.target] ?? cell.target}</span
+														>{/if}
+													{#if cell.conditional}<span
+															class="cmp-cond"
+															title={cell.caveats.map(caveatText).join(' · ')}>~</span
+														>{/if}
+													{#if cell.details.length > 0}
+														{@const kind = row.key.startsWith('buff:') ? 'buff' : row.key}
+														<span class="cmp-details"
+															>{cell.details
+																.map((d) => capDetailText(kind as CapabilityKind, d))
+																.join(' · ')}</span
+														>
+													{/if}
+													{#if cell.also}
+														{@const alsoLocked = cell.also.minCon > viewCons[i]}
+														<span class="cmp-also" class:cmp-cell--locked={alsoLocked}
+															>{TARGET_SHORT[cell.also.target]} from C{cell.also
+																.minCon}{#if alsoLocked}<Mark name="gated" size={11} />{/if}</span
+														>
+													{/if}
+												</span>
+											</td>
+										{/if}
+									{/each}
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
 			</div>
 			<p class="note cmp-footnote">
 				~ = conditional (hover for the condition) · hover a cell for its source ability · full
@@ -445,11 +590,6 @@
 </section>
 
 <style>
-	/* A center view in normal flow — nothing docks or overlays; it scrolls with
-	   the frame's center zone.
-	   Flat: the Team Builder's frame is the surface this view sits on, so the
-	   old panel chrome (fill, border, radius, inset padding) is gone and the
-	   two § kickers carry the structure on their own. */
 	.cmp {
 		display: flex;
 		flex-direction: column;
@@ -475,19 +615,82 @@
 		flex: 1;
 		margin: 0;
 		font-size: var(--fs-md);
-		color: var(--muted);
+		color: var(--chart-ink);
 	}
 	.cmp-headact {
 		align-self: center;
 		white-space: nowrap;
 	}
-
 	.cmp-footnote {
 		font-size: var(--fs-sm);
-		color: color-mix(in srgb, var(--muted) 80%, transparent);
+		color: var(--chart-dim);
 	}
 
-	/* ── Legend ───────────────────────────────────────────────── */
+	/* ── Portrait discs ───────────────────────────────────────── */
+	/* ⚓ NATE 2026-08-11: "they do need to be opaque — they layer and stack, so
+	   they can't be transparent." The disc takes the element wash, like every
+	   other character portrait on the site: ONE ground, only the element
+	   travels. ⛔ Never --bg. */
+	.cmp-disc {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		/* ⛔ 1px, not 1.5 — Chrome floors border-width to whole CSS px, so the
+		   half never rendered and cost a hairline of alignment instead. */
+		border: 1px solid var(--el-color);
+		overflow: hidden;
+		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
+		flex-shrink: 0;
+	}
+	.cmp-disc img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transform: scale(1.333) translateY(-14%);
+	}
+	.cmp-disc-initials {
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-bold);
+		color: var(--el-color);
+	}
+
+	/* ── The reference row (audition) ─────────────────────────── */
+	.cmp-ref {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.45rem 0.7rem;
+		border: 1px solid color-mix(in srgb, var(--el-color) 45%, var(--border));
+		border-left: 3px solid var(--el-color);
+		border-radius: var(--r-sm);
+		background: color-mix(in srgb, var(--el-color) 10%, transparent);
+	}
+	.cmp-ref-body {
+		display: flex;
+		flex-direction: column;
+		line-height: var(--lh-tight);
+	}
+	.cmp-ref-role {
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-wide);
+		text-transform: uppercase;
+		color: var(--chart-ink);
+	}
+	.cmp-ref-name {
+		font-family: var(--font-display);
+		font-size: var(--fs-xl);
+		font-weight: var(--fw-semibold);
+	}
+	.cmp-ref-meta {
+		margin-left: auto;
+		font-size: var(--fs-sm);
+		color: var(--chart-ink);
+		text-transform: capitalize;
+	}
+
+	/* ── Candidates / legend ──────────────────────────────────── */
 	.cmp-legend {
 		display: flex;
 		flex-wrap: wrap;
@@ -503,41 +706,6 @@
 		border-radius: var(--r-sm);
 		background: color-mix(in srgb, var(--el-color) 7%, transparent);
 	}
-	/* ⚓ NATE 2026-08-11: "they do need to be opaque — they layer and stack, so
-	   they can't be transparent." Exactly right, and this disc was the worst
-	   version of it: a raw rgba(0,0,0,.5), so the ground under a cut-out avatar
-	   was half of whatever happened to be behind the chip. The avatar's own soft
-	   edges then composited onto that unknown, which is the alpha-compositing law
-	   in one line.
-	   It takes the element wash, like every other character portrait on the site.
-	   ⚠ .ctx-dark is claimed on the disc IN THE MARKUP and that is the half that
-	   answers "I don't want the portrait back to be parchment": --surface-well is
-	   a ROLE, so it follows whatever context the chip is dropped into, and a
-	   portrait backing is one of the few things that must NOT. Claiming the
-	   context pins it to slate wherever this view ends up. */
-	.cmp-chip-avatar {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 30px;
-		height: 30px;
-		border-radius: 50%;
-		border: 1.5px solid var(--el-color);
-		overflow: hidden;
-		background: color-mix(in srgb, var(--el-color) 26%, var(--surface-well));
-		flex-shrink: 0;
-	}
-	.cmp-chip-avatar img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		transform: scale(1.333) translateY(-14%);
-	}
-	.cmp-chip-initials {
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-bold);
-		color: var(--el-color);
-	}
 	.cmp-chip-body {
 		display: flex;
 		flex-direction: column;
@@ -548,34 +716,32 @@
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
 	}
+	/* ⛔ NOT an element token. Gold means "a gap you can click"; the wishlist
+	   star is exactly that, and it wore --el-geo-hi only because geo happens to
+	   be gold-ish — borrowing an element's colour for a non-element role. */
 	.cmp-chip-wish {
 		margin-left: 0.25rem;
-		color: var(--el-geo-hi, #eed8a5);
+		color: var(--accent);
 		font-size: var(--fs-md);
 	}
 	.cmp-chip-meta {
 		font-size: var(--fs-xs);
-		color: var(--muted);
+		color: var(--chart-ink);
 		text-transform: capitalize;
 	}
+	/* ↻ 2026-08-12: --ui-provisional — the "stub" label reports uncurated frame
+	   timing, a data-quality state, not a domain colour and not an actionable
+	   gap. */
 	.cmp-chip-stub {
 		text-transform: uppercase;
 		letter-spacing: var(--ls-wide);
-		/* ↻ 2026-08-11: --ui-danger, not --el-geo-main. The "stub" label reports
-		   uncurated frame timing, the same fact as the ∅ marker and DetailCard's
-		   stub note — a data-quality state, not a domain colour. A TOKEN
-		   correction only; the Compare view's own restyle is deliberately parked
-		   until after the Rotation Planner round (⚓ Nate), and this leaves it one
-		   less inherited bug to carry into it.
-		   ↻ 2026-08-12: --ui-provisional now, moving with the ∅ and the two notes
-		   above. Still a token correction only; Compare's restyle stays parked. */
-		color: color-mix(in srgb, var(--ui-provisional) 80%, var(--muted));
+		color: color-mix(in srgb, var(--ui-provisional) 80%, var(--chart-ink));
 	}
 	.cmp-chip-remove {
 		background: none;
 		border: none;
 		padding: 2px 3px;
-		color: color-mix(in srgb, var(--muted) 60%, transparent);
+		color: var(--chart-dim);
 		font-size: var(--fs-sm);
 		cursor: pointer;
 		transition: color var(--t-snap);
@@ -583,86 +749,130 @@
 	.cmp-chip-remove:hover {
 		color: var(--text);
 	}
-
-	/* ── Audition (anchor + commit) ───────────────────────────── */
-	.cmp-chip--anchor {
-		border-left-width: 4px;
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--el-color) 30%, transparent);
+	.cmp-take {
+		white-space: nowrap;
 	}
-	.cmp-chip-current {
-		padding: 1px 6px;
-		border-radius: 3px;
-		background: color-mix(in srgb, var(--el-color) 20%, transparent);
-		color: var(--text);
+
+	/* ── Apparatus: the glass plate ───────────────────────────── */
+	.cmp-controls {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 1.1rem;
+		padding: 0.45rem 0.7rem;
+	}
+	.cmp-ctrl {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		min-width: 0;
+	}
+	.cmp-ctrl--lens {
+		flex: 1;
+		min-width: 0;
+	}
+	.cmp-ctrl-label {
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
+		color: var(--chart-ink);
+		white-space: nowrap;
 	}
-	.cmp-chip-commit {
-		padding: 2px 8px;
-		border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
-		border-radius: 3px;
-		background: color-mix(in srgb, var(--accent) 20%, transparent);
-		color: var(--text);
-		font-family: var(--font-body);
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-mid);
-		cursor: pointer;
-		transition: background var(--t-snap);
-	}
-	.cmp-chip-commit:hover {
-		background: color-mix(in srgb, var(--accent) 32%, transparent);
+	.cmp-lenses {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3rem;
+		min-width: 0;
 	}
 
-	/* ── Timing panel ─────────────────────────────────────────── */
+	/* ── The chart ────────────────────────────────────────────── */
 	.cmp-section {
 		display: flex;
 		flex-direction: column;
 		gap: 0.45rem;
 		min-width: 0;
 	}
-
-	.cmp-timeline {
+	.cmp-chart {
 		min-width: 0;
 	}
 
 	.cmp-ruler-row,
 	.cmp-lane {
 		display: grid;
-		grid-template-columns: 96px var(--track-w) minmax(0, 1fr);
+		grid-template-columns: var(--gutter) var(--track-w) minmax(0, var(--fact-w));
 		align-items: center;
-		gap: 0.6rem;
+		gap: var(--lane-gap);
 	}
 
 	.cmp-ruler {
 		position: relative;
-		height: 16px;
+		height: 15px;
 	}
 	.cmp-rtick {
 		position: absolute;
 		bottom: 0;
 		width: 1px;
-		height: 5px;
-		background: color-mix(in srgb, var(--muted) 40%, transparent);
+		height: 4px;
+		background: var(--chart-grid);
 	}
 	.cmp-rtick--major {
-		height: 9px;
-		background: color-mix(in srgb, var(--muted) 65%, transparent);
+		height: 8px;
+		background: var(--chart-rule);
 	}
 	.cmp-rtick-label {
 		position: absolute;
-		bottom: 10px;
+		bottom: 9px;
 		left: 0;
 		transform: translateX(-50%);
 		font-size: var(--fs-xs);
-		color: var(--muted);
+		color: var(--chart-dim);
 		white-space: nowrap;
 	}
 
-	.cmp-dim-label {
-		margin: 0.55rem 0 0.2rem;
+	.cmp-lanes {
+		position: relative;
+	}
+
+	/* The pointer target is the TRACK column only — offset by the gutter and one
+	   gap, so the x it reports is already lane-local. */
+	.cmp-crosshair-zone {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: calc(var(--gutter) + var(--lane-gap));
+		width: var(--track-w);
+		z-index: 4;
+	}
+	.cmp-crosshair {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		width: 1px;
+		margin-left: calc(var(--gutter) + var(--lane-gap));
+		background: var(--chart-rule);
+		pointer-events: none;
+		z-index: 5;
+		/* ⛔ No transition: it tracks the pointer, and a ramp on a hairline reads
+		   as smear (motion round — the band axis is SIZE, and this is a control
+		   surface at its smallest). */
+	}
+	.cmp-crosshair-tag {
+		position: absolute;
+		top: 0;
+		left: 3px;
+		padding: 0 4px;
+		border-radius: 2px;
+		background: var(--glass-bar);
+		color: var(--text);
+		font-size: var(--fs-xs);
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+
+	.cmp-group {
+		margin: 0.7rem 0 0.25rem;
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
@@ -670,32 +880,52 @@
 	}
 
 	.cmp-lane {
-		padding: 0.14rem 0;
+		padding: 0.1rem 0;
 	}
-	.cmp-lane--locked {
-		opacity: 0.55;
-	}
-	.cmp-lane-name {
+	/* inline-flex: the locked state's Mark is a block-level <svg>, which would
+	   otherwise break the surrounding inline box. */
+	.cmp-lane-fact {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 5px;
 		font-size: var(--fs-sm);
-		font-weight: var(--fw-semibold);
-		color: var(--el-color);
+		color: var(--chart-ink);
 		white-space: nowrap;
+		min-width: 0;
+	}
+	.cmp-lane-nums {
+		font-variant-numeric: tabular-nums;
+	}
+	.cmp-lane-host {
+		color: var(--chart-dim);
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-	/* inline-flex on all three: the locked state's Mark is a block-level <svg>,
-	   which would otherwise break the surrounding inline box. */
-	.cmp-lane-fact {
-		display: inline-flex;
-		align-items: center;
-		gap: 3px;
-		font-size: var(--fs-sm);
-		font-variant-numeric: tabular-nums;
-		color: var(--muted);
-		white-space: nowrap;
+	/* The second half of host-as-lane: one cast buying two things is a fact the
+	   per-effect model could not show at all. */
+	.cmp-also-line {
+		margin: 0 0 0.2rem;
+		padding-left: calc(var(--gutter) + var(--lane-gap));
+		font-size: var(--fs-xs);
+		color: var(--chart-dim);
 	}
 
-	/* ── Facts table ──────────────────────────────────────────── */
+	/* ── The facts table: paper ───────────────────────────────────────────────
+	   ⚠⚠ A CONTEXT FLIP INVERTS THE INK LADDER, AND THIS BLOCK IS WHERE IT BITES.
+	   On dark, --muted is the QUIET rung under --text. On paper it is the exact
+	   opposite: ⚓ Nate's inversion makes --muted (ink-900, 8.00:1) the ANCHORING
+	   rung for labels and controls, and --text (ink-700, 6.18:1) the RECEDING
+	   rung for prose. So every role below reads backwards from how the same
+	   token reads twenty lines up in the chart.
+
+	   This table carried the dark-context ladder for as long as it sat on a dark
+	   frame, where it was right. Turning it into the paper card is what exposed
+	   it — the tokens did not move, the ground did. LABELS take --muted; prose
+	   and detail take --text; the genuinely quiet things go down from --text.
+	   ⛔ Do not "fix" this back by symmetry with the chart. */
+	.cmp-facts {
+		padding: 0.5rem 0.8rem 0.7rem;
+	}
 	.cmp-tablewrap {
 		overflow-x: auto;
 		min-width: 0;
@@ -706,13 +936,20 @@
 		font-size: var(--fs-md);
 	}
 	.cmp-table th {
-		padding: 0.3rem 0.6rem 0.3rem 0;
+		padding: 0.35rem 0.6rem 0.35rem 0;
 		text-align: left;
 		font-family: var(--font-display);
 		font-size: var(--fs-lg);
 		font-weight: var(--fw-semibold);
+		color: var(--muted); /* a heading anchors — see the ladder note above */
 		border-bottom: 1px solid var(--border);
 		white-space: nowrap;
+	}
+	/* ⛔ The header is INK, not the element: on paper every --el-*-main sits
+	   under 3:1 (cryo measures 1.14), and the palette has no light rung by
+	   design. The discs above carry the element; a name does not need to. */
+	.cmp-th-ref {
+		color: var(--accent);
 	}
 	.cmp-table td {
 		padding: 0.4rem 0.6rem 0.4rem 0;
@@ -726,7 +963,7 @@
 		font-size: var(--fs-md);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
-		color: var(--text);
+		color: var(--muted); /* a row label anchors */
 		white-space: nowrap;
 	}
 
@@ -738,8 +975,13 @@
 		font-size: var(--fs-sm);
 		min-width: 0;
 	}
-	.cmp-cell--locked {
-		opacity: 0.55;
+	/* The rung below prose. On paper the ground is opaque, so mixing toward
+	   transparent is safe here in a way it is not out on the night. */
+	.cmp-cell--locked,
+	.cmp-gate--base,
+	.cmp-none,
+	.cmp-also {
+		color: color-mix(in srgb, var(--text) 62%, transparent);
 	}
 	.cmp-val {
 		font-variant-numeric: tabular-nums;
@@ -752,37 +994,30 @@
 		border-radius: 3px;
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
-		background: color-mix(in srgb, var(--el-color) 18%, transparent);
+		background: var(--fill-rest);
 	}
 	.cmp-gate--base {
-		background: var(--fill-rest);
-		color: var(--muted);
+		background: transparent;
 	}
-	.cmp-target {
-		color: var(--muted);
+	.cmp-target,
+	.cmp-details,
+	.cmp-cond {
+		color: var(--text); /* prose recedes on paper — it is not the label */
 	}
 	.cmp-cond {
 		font-style: italic;
-		color: var(--muted);
 		cursor: help;
-	}
-	.cmp-details {
-		color: var(--muted);
 	}
 	.cmp-also {
 		display: inline-flex;
 		align-items: center;
 		gap: 3px;
 		font-style: italic;
-		color: color-mix(in srgb, var(--muted) 80%, transparent);
-	}
-	.cmp-none {
-		color: color-mix(in srgb, var(--muted) 55%, transparent);
 	}
 
 	.cmp-empty,
 	.cmp-loading {
 		padding: 0.6rem 0;
-		color: var(--muted);
+		color: var(--chart-ink);
 	}
 </style>

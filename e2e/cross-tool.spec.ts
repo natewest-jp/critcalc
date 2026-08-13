@@ -55,7 +55,7 @@ test("the planner's ⇄ hands its slot to the Team Builder's audition", async ({
 		page.locator('.cmp[aria-label="Audition replacements"]'),
 		'⇄ lands on the audition, not the Atlas'
 	).toHaveCount(1);
-	await expect(page.locator('.cmp-chip-current'), 'the incumbent is pinned').toHaveCount(1);
+	await expect(page.locator('.cmp-ref'), 'the incumbent is the reference').toHaveCount(1);
 
 	// ?swap= is consumed on arrival like every other inbound param.
 	expect(page.url(), 'the param is stripped after reading').not.toContain('swap=');
@@ -99,7 +99,7 @@ test('committing an audition returns to the planner; cancelling stays with a way
 	await page.locator('.bb-act[aria-label="Change who fills this slot"]').first().click();
 	await page.locator('.cmp[aria-label="Audition replacements"]').waitFor({ timeout: 10_000 });
 	await page.locator('.tb-cand').first().click();
-	await page.locator('.cmp-chip-commit').first().click();
+	await page.locator('.cmp-take').first().click();
 
 	await page.waitForURL(/rotation-planner/, { timeout: 10_000 });
 	expect(

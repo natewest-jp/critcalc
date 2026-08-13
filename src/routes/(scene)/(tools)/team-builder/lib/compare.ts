@@ -6,6 +6,16 @@
  * one line, each capability kind on one line — differences pop instead of
  * requiring saccades between stacked cards.
  *
+ * TWO PROJECTIONS OFF ONE MODEL, and they answer different questions:
+ *
+ * - `cells` — one per (row × character), for the FACTS TABLE. Aggregated: the
+ *   whole character collapses to one value per row.
+ * - `lanes` — one per (row × character × HOST), for the TIMING CHART. A lane is
+ *   an ABILITY, not an effect, so its cooldown and energy cost travel with it;
+ *   the EFFECT is the grouping. That is why Jean gets two lanes under "Heal"
+ *   (her E and her Q) where she gets one cell: which button carries a thing is
+ *   kit-design accident, but what it COSTS is the comparison.
+ *
  * Row semantics:
  * - Timing rows come straight from ability fields (cooldown/charges/energyCost).
  * - Capability rows are the union across the selected characters of
@@ -24,6 +34,7 @@ import {
 	buffFamilyOf,
 	type CapabilityKind,
 	type DerivedCapability,
+	type FacetKey,
 	type NormalizedTarget
 } from '$lib/capabilities/deriveCapabilities';
 import { KIND_LABEL, KIND_ORDER } from '$lib/capabilities/capabilityText';
@@ -31,12 +42,21 @@ import { KIND_LABEL, KIND_ORDER } from '$lib/capabilities/capabilityText';
 /** Columns stay readable side by side up to a full team's worth. */
 export const MAX_COMPARE = 4;
 
+/** ⛔ No `curated` flag. It was required here and never read: the null-cell
+ *  distinction it was meant to carry ("unknown" vs "—") is drawn at the RENDER
+ *  site off the index entry, which is where the view already had the fact. A
+ *  required field with no reader is a claim the model does not honour. */
 export type CompareCharacter = {
 	id: string;
-	curated: boolean;
 	abilities: readonly Ability[];
 	capabilities: readonly DerivedCapability[];
 };
+
+/** Seconds spanned by the timing chart's axis. A control, not a derivation —
+ *  the axis is chosen so every lane tiles against the SAME ruler, which is what
+ *  makes duty cycles comparable by eye. */
+export const COMPARE_AXIS_CHOICES = [20, 30, 60] as const;
+export const COMPARE_AXIS_DEFAULT = 30;
 
 // ---------------------------------------------------------------------------
 // Timing rows
@@ -112,17 +132,6 @@ const ROW_KEY_ORDER: CapRowKey[] = KIND_ORDER.flatMap((kind) =>
 const TARGET_RANK: Record<NormalizedTarget, number> = { team: 0, active: 1, enemy: 2, self: 3 };
 const targetRank = (t: NormalizedTarget | undefined) => (t === undefined ? 4 : TARGET_RANK[t]);
 
-/** Uptime glyph inputs: the primary entry's window vs its host cooldown.
- *  Rendered as a static three-phase bar (planner vocabulary: solid uptime /
- *  dim continuation past CD / ghost CD remainder) at a scale shared across
- *  the whole comparison. */
-export type CapGlyph = {
-	/** Effect window in seconds. */
-	uptime: number;
-	/** Hosting ability's cooldown in seconds. */
-	cooldown: number;
-};
-
 export type CapCell = {
 	/** Lowest constellation gate at which this row's capability exists. */
 	minCon: number;
@@ -137,19 +146,149 @@ export type CapCell = {
 	sources: string[];
 	/** Broader-target upgrade available at a higher gate, when one exists. */
 	also?: { target: NormalizedTarget; minCon: number };
-	glyph?: CapGlyph;
 };
 
 export type CapRow = {
 	key: CapRowKey;
 	label: string;
 	cells: (CapCell | null)[];
+	/** Chart projection — see the header. One entry per (character × host); a
+	 *  character with no timed host under this row contributes none. */
+	lanes: CapLane[];
 };
 
-function buildCell(
+// ---------------------------------------------------------------------------
+// Lanes — the chart projection
+// ---------------------------------------------------------------------------
+
+/** The ability (or summon) a lane is drawn for. Its cycle and its price. */
+export type LaneHost = {
+	abilityId: string;
+	/** 'E' · 'Q' · 'E (Hold)' · 'Q · Oz' — the cast, named the way notation does. */
+	label: string;
+	cooldown: number;
+	charges?: number;
+	/** Bursts only. Reference-tier per the constitution: shown, never computed with. */
+	energyCost?: number;
+	/** Set when a summon hosts the window rather than the caster's own state. */
+	summonLabel?: string;
+};
+
+export type CapLane = {
+	/** Index into the comparison's character array — the column this lane belongs to. */
+	columnIndex: number;
+	/** Unique within a row: two hosts on one character must not collide. */
+	key: string;
+	host: LaneHost;
+	/** Effect window in seconds. */
+	uptime: number;
+	/** Tick offsets in seconds from the cast, when a summon sets the cadence. */
+	ticks?: number[];
+	/** Other rows this SAME cast also buys — one cast for two jobs is a fact
+	 *  worth showing, and it is the thing a per-effect lane model hides. */
+	alsoCarries: CapRowKey[];
+	minCon: number;
+	conditional: boolean;
+	target?: NormalizedTarget;
+	details: string[];
+	caveats: string[];
+};
+
+/** Ticks never outrun their window, and a pathological interval can't hang the
+ *  view. 240 is far past anything the corpus authors (Xiangling's Guoba is 4). */
+const MAX_TICKS = 240;
+
+function tickOffsets(interval: number, firstDelay: number, uptime: number): number[] {
+	const ticks: number[] = [];
+	for (let t = firstDelay; t < uptime && ticks.length < MAX_TICKS; t += interval) ticks.push(t);
+	return ticks;
+}
+
+/** Short cast name, in the notation's own vocabulary. */
+function hostLabel(ability: Ability, variant: string | undefined, summonLabel?: string): string {
+	const base = ability.abilityType === 'burst' ? 'Q' : ability.abilityType === 'skill' ? 'E' : '';
+	const cast = variant ? `${base} (${variant})` : base;
+	return summonLabel ? `${cast} · ${summonLabel}` : cast;
+}
+
+/**
+ * Lanes for one row key and one character.
+ *
+ * Grouped by HOST — `abilityId` plus the summon label, because a summon is a
+ * host in its own right (Xiangling's Q and its Guoba are two different cycles
+ * off one cast). A lane needs both halves to be real: a window with a duration
+ * AND a cooldown-bearing host. Passives and constellations have no cast cycle,
+ * and inventing one would be fake timing.
+ */
+function buildLanes(
+	columnIndex: number,
+	rowKey: CapRowKey,
 	caps: DerivedCapability[],
-	cooldownOf: (abilityId: string) => number | undefined
-): CapCell | null {
+	abilityById: Map<string, Ability>,
+	alsoByAbility: Map<string, CapRowKey[]>
+): CapLane[] {
+	const groups = new Map<string, DerivedCapability[]>();
+	for (const cap of caps) {
+		if (cap.duration === undefined) continue;
+		const ability = abilityById.get(cap.source.abilityId);
+		if (!ability || !('cooldown' in ability) || !(Number(ability.cooldown) > 0)) continue;
+		const key = `${cap.source.abilityId}::${cap.summon?.label ?? ''}`;
+		const list = groups.get(key);
+		if (list) list.push(cap);
+		else groups.set(key, [cap]);
+	}
+
+	const lanes: CapLane[] = [];
+	for (const [key, group] of groups) {
+		const ability = abilityById.get(group[0].source.abilityId)!;
+		const minCon = Math.min(...group.map((c) => c.minConstellation));
+		const atGate = group.filter((c) => c.minConstellation === minCon);
+		// The primary follows the cell's rule (broadest reach, then fewest
+		// caveats) so a lane and its cell can't disagree about who it serves.
+		const primary = [...atGate].sort(
+			(a, b) => targetRank(a.target) - targetRank(b.target) || a.caveats.length - b.caveats.length
+		)[0];
+		// Longest window at the gate — deterministic, so JSON variant order can
+		// never decide how long the bar is.
+		const uptime = Math.max(...atGate.map((c) => c.duration ?? 0));
+		if (!(uptime > 0)) continue;
+
+		const cadence = group.find((c) => c.summon?.tickInterval !== undefined)?.summon;
+		const ticks = cadence?.tickInterval
+			? tickOffsets(cadence.tickInterval, cadence.firstTickDelay ?? cadence.tickInterval, uptime)
+			: undefined;
+
+		const charges = 'charges' in ability ? ability.charges : undefined;
+		const energyCost = 'energyCost' in ability ? ability.energyCost : undefined;
+
+		lanes.push({
+			columnIndex,
+			key,
+			host: {
+				abilityId: ability.id,
+				label: hostLabel(ability, primary.source.variant, group[0].summon?.label),
+				cooldown: (ability as { cooldown: number }).cooldown,
+				...(charges !== undefined && charges > 1 && { charges }),
+				...(energyCost !== undefined && energyCost > 0 && { energyCost }),
+				...(group[0].summon?.label !== undefined && { summonLabel: group[0].summon.label })
+			},
+			uptime,
+			...(ticks !== undefined && ticks.length > 0 && { ticks }),
+			alsoCarries: (alsoByAbility.get(ability.id) ?? []).filter((k) => k !== rowKey),
+			minCon,
+			conditional: atGate.every((c) => c.caveats.length > 0),
+			...(primary.target !== undefined && { target: primary.target }),
+			details: [...new Set(atGate.map((c) => c.detail).filter((d): d is string => !!d))],
+			caveats: primary.caveats
+		});
+	}
+
+	// Cheapest cycle first — the lane you can renew soonest reads first.
+	lanes.sort((a, b) => a.host.cooldown - b.host.cooldown || a.key.localeCompare(b.key));
+	return lanes;
+}
+
+function buildCell(caps: DerivedCapability[]): CapCell | null {
 	if (caps.length === 0) return null;
 	const minCon = Math.min(...caps.map((c) => c.minConstellation));
 	const atGate = caps.filter((c) => c.minConstellation === minCon);
@@ -168,21 +307,6 @@ function buildCell(
 		also = { target: broader.target, minCon: broader.minConstellation };
 	}
 
-	// Glyph only when both halves are real: a durationed window granted by a
-	// cooldown-bearing ability. Passive/constellation hosts have no cast cycle
-	// to visualize — an invented one would be fake timing. Prefer the primary
-	// entry; otherwise the longest window at the gate (deterministic — variant
-	// order in the JSON must not decide which bar renders).
-	let glyph: CapGlyph | undefined;
-	const glyphable = (c: DerivedCapability) =>
-		c.duration !== undefined && cooldownOf(c.source.abilityId) !== undefined;
-	const glyphSource = glyphable(primary)
-		? primary
-		: atGate.filter(glyphable).sort((a, b) => b.duration! - a.duration!)[0];
-	if (glyphSource?.duration !== undefined) {
-		glyph = { uptime: glyphSource.duration, cooldown: cooldownOf(glyphSource.source.abilityId)! };
-	}
-
 	return {
 		minCon,
 		conditional: atGate.every((c) => c.caveats.length > 0),
@@ -190,8 +314,7 @@ function buildCell(
 		details,
 		caveats: primary.caveats,
 		sources,
-		...(also && { also }),
-		...(glyph && { glyph })
+		...(also && { also })
 	};
 }
 
@@ -234,14 +357,19 @@ export function buildCompareModel(characters: readonly CompareCharacter[]): Comp
 		return byKey;
 	});
 
-	const cooldownLookups = characters.map((c) => {
-		const byId = new Map<string, number>();
-		for (const a of c.abilities) {
-			if ('cooldown' in a && typeof a.cooldown === 'number' && a.cooldown > 0) {
-				byId.set(a.id, a.cooldown);
-			}
+	const abilityLookups = characters.map((c) => new Map(c.abilities.map((a) => [a.id, a])));
+
+	// Which rows each ability feeds, per character — the `also:` list on a lane
+	// is read straight off this, so it stays consistent with the rows on screen.
+	const alsoLookups = characters.map((c) => {
+		const byAbility = new Map<string, CapRowKey[]>();
+		for (const cap of c.capabilities) {
+			const key = capRowKeyOf(cap);
+			const list = byAbility.get(cap.source.abilityId);
+			if (!list) byAbility.set(cap.source.abilityId, [key]);
+			else if (!list.includes(key)) list.push(key);
 		}
-		return (abilityId: string) => byId.get(abilityId);
+		return byAbility;
 	});
 
 	const capRows: CapRow[] = [];
@@ -250,23 +378,44 @@ export function buildCompareModel(characters: readonly CompareCharacter[]): Comp
 		capRows.push({
 			key,
 			label: capRowLabelOf(key),
-			cells: grouped.map((g, i) => buildCell(g.get(key) ?? [], cooldownLookups[i]))
+			cells: grouped.map((g) => buildCell(g.get(key) ?? [])),
+			lanes: grouped.flatMap((g, i) =>
+				buildLanes(i, key, g.get(key) ?? [], abilityLookups[i], alsoLookups[i])
+			)
 		});
 	}
 
 	return { timingRows, capRows };
 }
 
-/** Seconds spanned by the shared glyph scale — the longest cycle (cooldown or
- *  window, whichever is longer) among every glyph in the model. All glyphs
- *  render against this one scale so bar lengths compare truthfully. */
-export function glyphScaleSeconds(model: CompareModel): number {
-	let max = 0;
-	for (const row of model.capRows) {
-		for (const cell of row.cells) {
-			if (!cell?.glyph) continue;
-			max = Math.max(max, cell.glyph.cooldown, cell.glyph.uptime);
-		}
-	}
-	return max;
+/**
+ * A chart lens key as a roster FACET, so the one chip row can both group the
+ * chart and narrow an audition's candidate list.
+ *
+ * ⚠ The two vocabularies are near-identical and are NOT the same, which is
+ * exactly why this is a function and not a cast. `CapRowKey` has `summon` and
+ * `buff:other` (rows worth drawing, not worth filtering a roster by);
+ * `FacetKey` has `interruptionRes`, which is not a CapabilityKind at all. The
+ * overlap is everything else.
+ */
+export function lensFacet(key: CapRowKey): FacetKey | null {
+	return (FACET_KEYS as readonly string[]).includes(key) ? (key as FacetKey) : null;
 }
+
+const FACET_KEYS = [
+	'heal',
+	'shield',
+	'offFieldDamage',
+	'resShred',
+	'cleanse',
+	'grouping',
+	'taunt',
+	'energy',
+	'infuse',
+	'interruptionRes',
+	'buff:atk',
+	'buff:em',
+	'buff:crit',
+	'buff:dmg',
+	'buff:hpdef'
+] as const satisfies readonly FacetKey[];

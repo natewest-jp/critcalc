@@ -187,35 +187,74 @@ test.describe('compare — the tab is the accumulator', () => {
 		for (const n of ['Bennett', 'Jean', 'Diona']) await addToCompare(page, n);
 
 		await page.locator('.band-b .tb-nav-item', { hasText: 'Compare' }).click();
-		await page.locator('.cmp-dim-label').first().waitFor();
+		await page.locator('.cmp-group').first().waitFor();
 
 		// A center Source view in normal flow — no scrim, no dock rules.
 		await expect(page.locator('.cmp')).toHaveCSS('position', 'static');
 		await expect(page.locator('.cmp-chip')).toHaveCount(3);
 
-		const lanes = await page.locator('.cmp-dim-label').allInnerTexts();
-		expect(lanes, 'timing ruler lanes').toEqual(
-			expect.arrayContaining(['E cooldown', 'Q cooldown', 'Heal'])
-		);
+		// ⚓ THE GROUPING IS AN EFFECT, NEVER A BUTTON. "E cooldown" was a chart
+		// group until 2026-08-13 and is now a FACTS ROW only: every lane's ghost
+		// segment already is its cooldown, so a group for it printed the same
+		// fact twice in two geometries.
+		const groups = await page.locator('.cmp-group').allInnerTexts();
+		expect(groups, 'effect groups').toEqual(expect.arrayContaining(['Heal']));
+		expect(groups, 'buttons are not groups').not.toContain('E cooldown');
+		expect(groups).not.toContain('Q cooldown');
 		expect(await page.locator('.cmp-ruler .cmp-rtick').count()).toBeGreaterThan(0);
 
 		const factLabels = await page.locator('.cmp-table .cmp-td-label').allInnerTexts();
-		expect(factLabels, 'Q energy is a facts row now').toContain('Q energy');
+		expect(factLabels, 'Q energy is a facts row').toContain('Q energy');
+		expect(factLabels, 'and so is the cooldown the chart stopped grouping by').toContain(
+			'E cooldown'
+		);
 		await expect(page.locator('.cmp-table thead th'), 'label column + 3').toHaveCount(4);
 		expect(await page.locator('.cmp-cell .cmp-gate').count()).toBeGreaterThanOrEqual(3);
 
-		// Stacked bars share one scale: every character gets a cooldown ghost, and
-		// being different cooldowns they must differ in width.
-		const widths = await page
+		// A lane carries its host's price — that is the point of host-as-lane.
+		expect(await page.locator('.cmp-lane-host').first().innerText()).toMatch(/^[EQ]\b/);
+
+		// The cycle TILES: a lane whose cooldown is shorter than the axis must
+		// draw more than one window, and the repeats must be marked as projected
+		// (cycle > 0) rather than drawn as strongly as the cast you can make now.
+		const uptimes = await page
+			.locator('.cmp-lane')
+			.first()
+			.locator('.cb-uptime')
+			.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
+		expect(uptimes.length, 'a tiled lane repeats its window').toBeGreaterThan(1);
+		expect(
+			uptimes.every((w) => w > 0),
+			`widths ${uptimes.join(',')}`
+		).toBe(true);
+
+		// Stacked bars share one scale, so differing cooldowns differ in width.
+		const ghosts = await page
 			.locator('.cb-ghost')
 			.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
-		expect(widths.length).toBeGreaterThanOrEqual(3);
-		expect(
-			widths.every((w) => w > 0),
-			`widths ${widths.join(',')}`
-		).toBe(true);
-		expect(new Set(widths.map(Math.round)).size, 'non-uniform widths').toBeGreaterThan(1);
-		expect(await page.locator('.cb-uptime').count()).toBeGreaterThanOrEqual(1);
+		expect(ghosts.length).toBeGreaterThanOrEqual(3);
+		expect(new Set(ghosts.map(Math.round)).size, 'non-uniform widths').toBeGreaterThan(1);
+	});
+
+	test('the lens narrows the chart without touching the facts table', async ({ page }) => {
+		await openTool(page, '/team-builder');
+		await openRoster(page);
+		for (const n of ['Bennett', 'Jean']) await addToCompare(page, n);
+		await page.locator('.band-b .tb-nav-item', { hasText: 'Compare' }).click();
+		await page.locator('.cmp-group').first().waitFor();
+
+		const allGroups = await page.locator('.cmp-group').count();
+		const allRows = await page.locator('.cmp-table tbody tr').count();
+		expect(allGroups).toBeGreaterThan(1);
+
+		// One chip on = only that effect is drawn. The table is a REFERENCE and
+		// does not follow the lens — the two halves answer different questions.
+		await page.locator('.cmp-lenses .chip').first().click();
+		await expect(page.locator('.cmp-group')).toHaveCount(1);
+		await expect(page.locator('.cmp-table tbody tr')).toHaveCount(allRows);
+
+		await page.locator('.cmp-lenses .chip.active').first().click();
+		await expect(page.locator('.cmp-group')).toHaveCount(allGroups);
 	});
 
 	test('removing and clearing sync the tab stack', async ({ page }) => {
@@ -223,7 +262,7 @@ test.describe('compare — the tab is the accumulator', () => {
 		await openRoster(page);
 		for (const n of ['Bennett', 'Jean', 'Diona']) await addToCompare(page, n);
 		await page.locator('.band-b .tb-nav-item', { hasText: 'Compare' }).click();
-		await page.locator('.cmp-dim-label').first().waitFor();
+		await page.locator('.cmp-group').first().waitFor();
 
 		await page.locator('.cmp-chip-remove').first().click();
 		await expect(page.locator('.cmp-chip')).toHaveCount(2);
@@ -313,31 +352,31 @@ test.describe('audition', () => {
 
 		// Bennett holds slot 0 — audition replacements for him from the bench.
 		await page.locator('.bb-act[aria-label^="Audition"]').first().click();
-		await page.locator('.cmp-chip--anchor').first().waitFor();
+		await page.locator('.cmp-ref').first().waitFor();
 
-		await expect(page.locator('.cmp-chip--anchor')).toHaveCount(1);
-		await expect(page.locator('.cmp-chip-current')).toHaveCount(1);
-		await expect(
-			page.locator('.cmp-chip--anchor .cmp-chip-remove'),
-			'the anchor stays pinned'
-		).toHaveCount(0);
+		// ⚓ The incumbent is the REFERENCE, not a peer with a badge: it has its
+		// own row above the candidates and is not one of the chips at all.
+		await expect(page.locator('.cmp-ref')).toHaveCount(1);
+		await expect(page.locator('.cmp-ref-role')).toHaveText(/slot 1/);
+		await expect(page.locator('.cmp-chip'), 'no candidates picked yet').toHaveCount(0);
 
-		// The candidates strip seeds with the incumbent's own facets as toggles.
+		// The lens seeds with the jobs this slot does — ONE chip row now, on the
+		// glass plate, grouping the chart AND narrowing the candidates.
 		await expect(page.locator('.tb-aud')).toHaveCount(1);
-		expect(await page.locator('.tb-aud-facets .chip.active').count()).toBeGreaterThan(0);
+		expect(await page.locator('.cmp-lenses .chip.active').count()).toBeGreaterThan(0);
 
-		// Relaxing every facet is the AND escape hatch, and broadens candidates to
+		// Relaxing every chip is the AND escape hatch, and broadens candidates to
 		// the whole roster minus the team — the deterministic bound.
-		while ((await page.locator('.tb-aud-facets .chip.active').count()) > 0) {
-			await page.locator('.tb-aud-facets .chip.active').first().click();
+		while ((await page.locator('.cmp-lenses .chip.active').count()) > 0) {
+			await page.locator('.cmp-lenses .chip.active').first().click();
 		}
 		await expect(page.locator('.tb-cand')).toHaveCount(122 - 4);
 
 		await page.locator('.tb-cand', { hasText: 'Furina' }).first().click();
-		await page.locator('.cmp-chip-commit').first().waitFor();
-		await expect(page.locator('.cmp-chip')).toHaveCount(2);
+		await page.locator('.cmp-take').first().waitFor();
+		await expect(page.locator('.cmp-chip')).toHaveCount(1);
 
-		await page.locator('.cmp-chip-commit').first().click();
+		await page.locator('.cmp-take').first().click();
 		await page.locator('.cmp').waitFor({ state: 'detached' });
 
 		const names = await benchNames(page);
@@ -345,6 +384,31 @@ test.describe('audition', () => {
 		expect(names).not.toContain('Bennett');
 		expect(page.url(), 'the swap never touches the URL').not.toContain('team=');
 		await expect(page.locator('.tb-tabstack'), 'audition picks are cleared').toHaveCount(0);
+	});
+
+	test('an audition borrows the comparison and gives it back', async ({ page, seed }) => {
+		// An audition scopes the selection to itself, which used to mean it DELETED
+		// whatever comparison you had going — three picks, one bench ⇄, gone.
+		await seed({ team: { slots: ['bennett', 'jean', 'diona', 'gorou'] } });
+		await openTool(page, '/team-builder');
+		await openRoster(page);
+
+		for (const n of ['Furina', 'Xingqiu'] as const) {
+			await page
+				.locator('.cc', { hasText: n })
+				.first()
+				.locator('.tb-act--compare')
+				.dispatchEvent('click');
+		}
+		await expect(page.locator('.tb-tabstack-circle')).toHaveCount(2);
+
+		await page.locator('.bb-act[aria-label^="Audition"]').first().click();
+		await page.locator('.cmp-ref').first().waitFor();
+		await expect(page.locator('.tb-tabstack-circle'), 'scoped to the incumbent').toHaveCount(1);
+
+		await page.locator('.cmp-headact').click(); // cancel
+		await page.locator('.cmp-ref').waitFor({ state: 'detached' });
+		await expect(page.locator('.tb-tabstack-circle'), 'the comparison came back').toHaveCount(2);
 	});
 });
 
