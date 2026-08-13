@@ -413,7 +413,7 @@
 	   and the old figures across the system were computed as if it were pure
 	   black. See TOOL_DIM in landing/transition.ts for the correction and what
 	   it turned out to be hiding. */
-	--scene-dim: #101013;
+	--scene-dim: #121216;
 	/* The universal gray: "inactive / unknown / no element". Absorbs the
 	   planner's old local --rp-active (#717898). Near-neighbor to
 	   --el-none-main (#6a7080) — those two do overlapping jobs and are
@@ -1862,8 +1862,33 @@
    rest while its HOVER worked, because the hover selector happened to carry
    enough pseudo-classes to get over the line. A treatment that is right only on
    hover is the signature of exactly this. */
+/* ⚓ NATE 2026-08-13: THE SEGMENTED GROUP'S TRACK JOINS THE LIST — "it's a
+   slightly different glass from all the other glass in band A/B, it's grayer."
+   It was, and by a lot more than grey: `.segment` grounds itself in
+   --fill-rest, which on glass is --glass-parch — PARCHMENT FROST at .10, where
+   every plate beside it is slate at .58. Five times more world coming through,
+   and a warm cast on top of it.
+
+   ⚠ WHY THE TRACK IS NOT AN EXCEPTION TO "a control on glass keeps --btn-face".
+   That rule is about a control sitting ON a rail, where the two alphas stack.
+   Band A has no rail; the segment IS a plate standing on the scene, exactly like
+   the buttons either side of it, so it takes the plate's ground for the same
+   reason they do.
+
+   ⚠ AND IT IS THE TRACK ONLY. `.segment > .btn` still zeroes its children to
+   transparent further down this file — it ties with `.band-a .btn` on
+   specificity and wins on source order — so the group keeps reading as one
+   recessed object with a chosen pill in it, rather than as three plates that
+   happen to be touching. Don't "fix" that tie; it is what the affordance is
+   made of.
+   ⛔ SCOPED TO BAND A, deliberately — the only place a segment currently stands
+   on the scene. In an opaque context (the Team Builder's filter rail, the Detail
+   card, Settings) --fill-rest is the RIGHT track and this would flatten it, and
+   band B has no segment to speak for. If one ever lands there it joins this list
+   the way `.btn--glass` did: on demand, with a caller. */
 .band-a .tab:not(.active),
 .band-a .btn,
+.band-a .segment,
 .band--3up > .band-zone .btn,
 .btn.btn--glass {
 	background: var(--surface); /* = --glass-panel, via .ctx-glass */

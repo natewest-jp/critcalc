@@ -261,7 +261,7 @@ export type SceneLayerKind = 'composition' | 'dim';
  *    --scene-dim in app.css the wash COLOUR — how black the floor of the
  *                           composite is. A different axis entirely. Both moved
  *                           together on 2026-08-10 (#15161a → #101013). */
-export const TOOL_DIM = 0.75;
+export const TOOL_DIM = 0.875;
 export const dimTarget = (path: string) => (isToolPath(path) ? TOOL_DIM : 0);
 
 // --- Transition clock --------------------------------------------------------
