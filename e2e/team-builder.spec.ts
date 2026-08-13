@@ -386,6 +386,39 @@ test.describe('audition', () => {
 		await expect(page.locator('.tb-tabstack'), 'audition picks are cleared').toHaveCount(0);
 	});
 
+	test('a slot with no capability to match on falls back to element', async ({ page, seed }) => {
+		// ⚓ 17 of 123 characters have no ally-facing capability, and they are not a
+		// curation gap — they are MAIN DPS as a role (Diluc here). Auditioning your
+		// carry is normal, and it is exactly where "who covers what they cover" has
+		// nothing to say, because a DPS's job is damage and this site does not
+		// compute damage. Without the fallback this is a wall of ~118 chips.
+		await seed({ team: { slots: ['diluc', 'jean', 'diona', 'gorou'] } });
+		await openTool(page, '/team-builder');
+
+		await page.locator('.bb-act[aria-label^="Audition"]').first().click();
+		await page.locator('.cmp-ref').first().waitFor();
+
+		// ⛔ ONE vocabulary, never both: element chips REPLACE the capability chips.
+		const chips = page.locator('.cmp-lenses .chip');
+		await expect(chips).toHaveCount(7);
+		await expect(page.locator('.cmp-lenses .chip--element')).toHaveCount(7);
+		await expect(page.locator('.cmp-ctrl-label', { hasText: 'Element' })).toHaveCount(1);
+
+		// Seeded to the incumbent's own element — the opening question is "who else
+		// is Pyro", not a blank one.
+		await expect(page.locator('.cmp-lenses .chip.active')).toHaveCount(1);
+		await expect(page.locator('.cmp-lenses .chip.active')).toHaveText(/pyro/i);
+
+		// …and that is what makes the list usable rather than the whole roster.
+		const pyro = await page.locator('.tb-cand').count();
+		expect(pyro).toBeGreaterThan(0);
+		expect(pyro, 'a slice, not a wall').toBeLessThan(30);
+
+		// Turning it off is still the escape hatch to everyone outside the team.
+		await page.locator('.cmp-lenses .chip.active').click();
+		await expect(page.locator('.tb-cand')).toHaveCount(122 - 4);
+	});
+
 	test('an audition borrows the comparison and gives it back', async ({ page, seed }) => {
 		// An audition scopes the selection to itself, which used to mean it DELETED
 		// whatever comparison you had going — three picks, one bench ⇄, gone.
