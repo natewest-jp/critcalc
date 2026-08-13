@@ -28,6 +28,15 @@
 import { tokenizeNotation } from './tokenizer';
 import { getCharacterIndexEntry, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 
+/** How many characters a team holds. The notation may name more — they parse,
+ *  and the linter says they have nowhere to sit (notationFlags).
+ *  ⚠ Lives HERE, with the segment reader, because both the store's slot
+ *  derivation and the linter's "this is the fifth" test are counting the same
+ *  thing off the same list. (The Team Builder's own slot array and resonance.ts
+ *  each still carry a local copy — pre-existing, and a different question:
+ *  those count SLOTS, this counts NAMES.) */
+export const TEAM_SIZE = 4;
+
 /** One `>`-delimited segment, located in the source string. */
 export type NotationSegment = {
 	/** Character id the leading name resolves to, or null when it resolves to

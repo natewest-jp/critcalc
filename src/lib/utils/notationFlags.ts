@@ -40,11 +40,8 @@
  */
 
 import { tokenizeNotation, tokenizeActionRun, type Token } from './tokenizer';
+import { TEAM_SIZE } from './notationEdit';
 import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
-
-/** How many characters a team holds. The notation may name more; they have
- *  nowhere to go. */
-export const TEAM_SIZE = 4;
 
 export type NotationFlagReason =
 	/** The leading name of a segment resolves to nobody — the segment is skipped. */

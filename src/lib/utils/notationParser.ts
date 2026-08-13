@@ -3987,12 +3987,13 @@ export function parseNotation(
 		// used "next track with a different slotIdx"; the two agree as long as
 		// characterId ↔ slotIdx is a bijection over summon-bearing tracks —
 		// mapTracksToSlots (RotationTimeline.svelte) maps each slotIdx to exactly
-		// one characterId, and the default slot producer `autoSlots` dedupes real
-		// characters. The only producers that DON'T dedupe are the `?team=`
-		// hand-off (`importTeam`) and shared links (`applyShared`), which pass
-		// their id array verbatim; a crafted duplicate-character `?team=` is the
-		// sole non-bijective input, but it's an invalid Genshin comp outside the
-		// corpus (see the fuller note in computeSummonSubrows). For every real
+		// one characterId, and the slots are distinct BY CONSTRUCTION.
+		// ✅ 2026-08-13 (single truth): that last clause used to carry a caveat —
+		// `?team=` (`importTeam`) and shared links passed their id array through
+		// verbatim with no dedup, so a crafted `?team=fischl,fischl` was one
+		// non-bijective input away from breaking this. Both routes now go through
+		// the NOTATION, and `orderedCharacterIds` dedupes, so a duplicate cannot
+		// be expressed at all (see the fuller note in computeSummonSubrows). For every real
 		// team the two swap-out definitions coincide.
 		let swapOutAt = Infinity;
 		for (let k = ti + 1; k < tracks.length; k++) {

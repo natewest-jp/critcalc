@@ -55,7 +55,8 @@ import {
 	deleteCharacterFromNotation,
 	foldTeamIntoNotation,
 	orderedCharacterIds,
-	renameCharacterInNotation
+	renameCharacterInNotation,
+	TEAM_SIZE
 } from '$lib/utils/notationEdit';
 import type { LoadoutEntry } from '$lib/stores';
 
@@ -82,8 +83,9 @@ export type LegacyTeam = { manualSlots?: string[] | null };
 export const TAB_LIMIT = 6;
 export const TABS_KEY = 'critcalc:rotationTabs';
 
-/** How many characters a team holds. */
-export const TEAM_SIZE = 4;
+/** Re-exported so a consumer reading the team from this module does not have to
+ *  know the notation layer defines it. ONE definition, in notationEdit. */
+export { TEAM_SIZE };
 
 /**
  * Notation → the four slot ids it implies: the first four distinct character

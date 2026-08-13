@@ -80,11 +80,19 @@ class DocumentBarState {
 		return !!rt.activeTab.savedId;
 	}
 
-	/** Is there anything TO save/share? A team alone counts — that is the point
-	 *  of the round; a Team Builder user with four slots and no notation yet has
-	 *  a document worth keeping. */
+	/**
+	 * Is there anything TO save/share? A team alone still counts — a Team
+	 * Builder user with four slots and no rotation yet has a document worth
+	 * keeping, which was the toolbar round's whole point.
+	 *
+	 * ↻ 2026-08-13: it no longer takes two tests to say so. This read
+	 * `notation.trim() || slots.some(filled)`, and under single truth the second
+	 * clause cannot be true while the first is false — a filled slot IS a name
+	 * in the notation. The team case is still covered; it just arrives through
+	 * the same string now, as four bare-name segments.
+	 */
 	get hasContent() {
-		return !!rt.notation.trim() || rt.slots.some((id) => id && id !== 'blank');
+		return !!rt.notation.trim();
 	}
 
 	showNotice(msg: string) {
