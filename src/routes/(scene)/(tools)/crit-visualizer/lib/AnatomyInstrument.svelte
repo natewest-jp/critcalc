@@ -262,7 +262,7 @@
 		</button>
 	</div>
 
-	<div class="an-frame frame ctx-dark">
+	<div class="an-chart ctx-dark">
 		<div class="chips an-reactions">
 			{#each REACTIONS[family] as r (r.id)}
 				<button
@@ -494,7 +494,7 @@
 			</p>
 		</div>
 
-		<div class="panel">
+		<div class="panel panel--paper">
 			<p class="kicker">What The Next Roll Buys</p>
 			{#each gains as g (g.stat.key)}
 				<div class="an-lab-row">
@@ -523,11 +523,13 @@
 		gap: 0.4rem;
 	}
 
-	.an-frame {
+	/* No frame — the chart is on the night; .ctx-dark stays claimed for
+	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. The grid
+	   and its gap are LAYOUT (view chips over the equation) and stay. */
+	.an-chart {
 		display: grid;
 		gap: 0.7rem;
-		padding: 0.9rem 1rem 0.8rem;
-		border-radius: var(--r-sm);
+		min-width: 0;
 	}
 
 	.an-reactions :global(.chip) {

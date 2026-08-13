@@ -208,7 +208,7 @@
 </script>
 
 <div class="instrument">
-	<div class="rx-frame frame ctx-dark">
+	<div class="rx-chart ctx-dark">
 		<div class="rx-graph" bind:clientWidth={graphW}>
 			<svg
 				width={graphW}
@@ -355,7 +355,7 @@
 			{/if}
 		</div>
 
-		<div class="panel">
+		<div class="panel panel--paper">
 			<p class="kicker">Readout</p>
 			{#each family.curves as c (c.label)}
 				<div class="rx-read">
@@ -378,9 +378,10 @@
 </div>
 
 <style>
-	.rx-frame {
-		padding: 0.4rem 0.6rem 0.2rem;
-		border-radius: var(--r-sm);
+	/* No frame — the chart is on the night; .ctx-dark stays claimed for
+	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
+	.rx-chart {
+		min-width: 0;
 	}
 
 	.rx-graph svg {

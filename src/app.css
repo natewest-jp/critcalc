@@ -1564,8 +1564,16 @@
 	color: var(--text);
 }
 
+/* ⚠ WRITTEN `.panel.panel--paper`, NOT `.panel--paper` — the same trap, and the
+   same fix, as `.btn.btn--glass` further down this file. `.panel` joins the
+   .ctx-glass list BELOW this block, so a lone modifier here would be one class
+   against one class and lose ON SOURCE ORDER ALONE: the paper card would quietly
+   take the glass tokens and paint itself translucent slate. Two classes beat
+   one, and the tie stops depending on where in the file each block sits.
+   ⚠ Every context tie in this system is decided this way — see the motion
+   round's @starting-style finding for the third instance of the same lesson. */
 .ctx-light,
-.panel {
+.panel.panel--paper {
 	/* ↻ 2026-08-09 (Genshin Night): the paper is parchment and the ink is the
 	   NAVY RAMP. ⚓ NATE chose the reference's ink over the warm brown, and the
 	   thing worth recording is that his inversion survived the swap intact:
@@ -1724,7 +1732,18 @@
    band had to portal out. Glass no longer imposes that. The band menus keep
    portaling anyway — they must clear the band's bounds regardless — so nothing
    moved; the trap simply stopped existing. */
-.ctx-glass {
+/* ↻ 2026-08-13 (Visualizers on the scene): `.panel` JOINS THIS SELECTOR, having
+   spent its whole life in .ctx-light above. A Visualizers control panel is
+   apparatus — sliders, chips, toggles — and apparatus is the same material as
+   the bands directly above it. The move costs nothing: `.panel` never named a
+   light token, only the roles, so it follows whichever context it is given.
+   ⚠ ONE CONSEQUENCE WORTH KNOWING. --btn-face here is opaque against slate-800,
+   so buttons and chips INSIDE a glass panel stay plates and never stack alpha —
+   which is the whole reason a panel may be glass at all (the band-plates rule:
+   glass is for plates standing on the SCENE; a control sitting on one of them
+   keeps --btn-face). */
+.ctx-glass,
+.panel {
 	/* ⚠ PAINT --surface, MIX AGAINST --frame-bg. In the opaque contexts those
 	   two are the same value and the distinction never had teeth; here they
 	   deliberately diverge, and it is the one thing to get right when moving a
@@ -2585,42 +2604,87 @@ img {
 }
 
 /* ── Surfaces ─────────────────────────────────────────────────────────── */
-/* In-page panel (the --surface-raised role): a card lifting off the page/frame
-   ground.
+/* ══ NIGHT LOOKS · GLASS TOUCHES · PAPER ANSWERS (⚓ NATE 2026-08-13) ════════
+   The Visualizers round that put this file's last framed surface on the scene,
+   and the one-line rule it produced. Every instrument is the same three things
+   in the same three materials:
 
-   ↻ 2026-08-07 (⚓ NATE): NO EDGE BORDER. Genshin draws almost nothing on the
-   outside of a panel — a surface is separated by being a different ground. The
-   2026-07-31 note this replaces said "separation is the border's job now,
-   everywhere",
-   which retired a top-light highlight in favour of an outline; the outline goes
-   the same way, and separation is the GROUND's job. A panel that disappears
-   without its border was never lifting off anything.
+     the CHART      draws on the night, with no ground at all
+     the APPARATUS  — sliders, chips, toggles — is GLASS (`.panel`)
+     the ANSWER     — one readout per instrument — is PAPER (`.panel--paper`)
 
-   Radius drops 6 → 3 with the scale re-cut; 6 is modals only now. */
+   The split is not invented. Five of the eight instruments already had a panel
+   whose kicker read "Readout", and the other three had its equivalent (Current
+   Build · What The Next Roll Buys · Enemy Status); everything else in every
+   instrument is input. A rule that lands on a label the authors chose before
+   anyone was looking for it is describing the thing rather than imposing on it.
+
+   ⚠ ONE PAPER CARD PER INSTRUMENT, and that is a rule rather than a tendency
+   (⚓ Nate: "unifying each instrument's readouts to a single panel"). Paper is
+   the brightest material on a dark world, so a second one does not read as a
+   second answer — it reads as the first one having failed to be the answer.
+   The Gauge is the case that proves it: Enemy Status and Event Log were two
+   paper cards saying one thing at two speeds, and they are one card now.
+
+   ↻ 2026-08-07 (⚓ NATE): NO EDGE BORDER, and it survives the material change
+   unchanged. Genshin draws almost nothing on the outside of a panel — a surface
+   is separated by being a different ground. (The 2026-07-31 note this replaced
+   said "separation is the border's job now, everywhere", which retired a
+   top-light highlight in favour of an outline; the outline went the same way.)
+   ⚠ Glass is the one documented exception, and only when ENGAGED: a hovered or
+   selected pane takes a ring, because glass is the one material whose extent is
+   not self-evident. A resting panel still draws no edge.
+
+   Radius drops 6 → 3 with the scale re-cut; 6 is modals only now.
+
+   ⚠ --surface, NOT --surface-raised. They are the same value in both contexts a
+   panel can now be in (glass has no depth axis; paper has no raised rung — see
+   .ctx-light), so the choice is only about which role tells the truth: this is
+   a surface, and there is nothing underneath it to be raised off. */
 .panel {
 	display: grid;
 	gap: 0.7rem;
 	padding: 1.1rem 1.2rem;
 	border-radius: var(--r-sm);
-	background: var(--surface-raised);
+	background: var(--surface);
 	align-content: start;
 }
 
-/* ── The tool frame / chart interior ──────────────────────────────────────
-   ↻ 2026-08-07 (⚓ NATE): the edge border retires at both of this class's
-   scales, and nothing replaces it. A chart interior is a well cut into a
-   lighter frame — the lightness step is what draws it. A tool frame is the
-   surface everything else sits on and had nothing to be outlined against.
+/* THE ANSWER is `.panel.panel--paper`, and it has NO RULE OF ITS OWN — the
+   modifier's entire job is to claim .ctx-light (see the selector list up there),
+   which re-points --surface at parchment-100 and inverts the ink with it. The
+   box above then paints itself, unchanged.
+   That is the strongest form of the intent: the material is the WHOLE signal,
+   and there is no second declaration here that could ever drift away from it.
+   ⚠ parchment-100 and not -50, per the size axis on paper: this is a CARD
+   standing on the world, not a broad panel carrying other things. */
+
+/* ⛔ `.frame` IS RETIRED (2026-08-13). It painted --frame-bg, and by the end it
+   had exactly one caller left: the Visualizers' chart interiors, which now draw
+   on the scene like the planner's timeline and the Team Builder's roster before
+   them. Both of those deleted their own ground first; this class was the last
+   place a tool still painted a slab to stand on.
+
+   ⚠ WHAT IT WAS ACTUALLY DOING BY THE END, and why deleting it was a fix rather
+   than a preference: --frame-bg is slate-800 (#2e3543), and the dimmed world
+   composites to roughly #12151c–#1e222a. So the "chart interior" — a WELL in
+   the idiom that named it — had become the LIGHTEST thing in its tile after the
+   paper. The lightness step that used to draw it had reversed sign, quietly, on
+   the day the world got darker.
+
+   ✅ --frame-bg SURVIVES AS A NOTIONAL GROUND and is still declared everywhere:
+   the --chart-* stops mix against it, the heatmap's canvas reads it out of the
+   cascade, and a PNG export has to paint something real. Unpainted reference,
+   painted export — the same arrangement --rp-chart-bg has held since the
+   planner's own round.
 
    (This is where the dire-tinted animated conic border used to live, retired
    2026-07-10 on perf: the rotation invalidated paint every frame, forever,
    re-rasterizing tiles of the 32MB .tool-main layer ~100×/s even at rest —
-   perf audit F6. The lesson outlives the border: NEVER animate a paint
-   property on a persistent surface. If a pulse is ever wanted here, animate
-   the OPACITY of a stacked static ring, which is compositor-only.) */
-.frame {
-	background: var(--frame-bg);
-}
+   perf audit F6. THE LESSON OUTLIVES BOTH THE BORDER AND THE CLASS: never
+   animate a paint property on a persistent surface. If a pulse is ever wanted
+   on a chart, animate the OPACITY of a stacked static ring, which is
+   compositor-only.) */
 
 /* ══ THE INSET BORDER FAMILY (Genshin Night, 2026-08-09) ═══════════════════
    ⚓ NATE picked TWO and discarded three (2026-08-09 feedback round): --plain

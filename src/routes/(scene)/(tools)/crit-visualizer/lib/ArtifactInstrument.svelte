@@ -397,7 +397,7 @@
 	</div>
 
 	<!-- Graph frame -->
-	<div class="ar-frame frame ctx-dark">
+	<div class="ar-chart ctx-dark">
 		{#if !pairValid}
 			<p class="ar-empty">Pick two target substats below.</p>
 		{:else if view === 'appraise'}
@@ -421,7 +421,7 @@
 								width={Math.max(1, plotW / apBins.length - 1)}
 								height={plotH * (bin.p / apMaxBin)}
 								fill="var(--accent)"
-								opacity="0.75"
+								fill-opacity="0.75"
 							/>
 						{/each}
 						<line
@@ -507,7 +507,7 @@
 							width={Math.max(1, plotW / cvBins.length - 1)}
 							height={plotH * (bin.p / cvMaxBin)}
 							fill="var(--accent)"
-							opacity="0.75"
+							fill-opacity="0.75"
 						/>
 					{/each}
 					<line
@@ -584,7 +584,7 @@
 							width={band * 0.48}
 							height={plotH * (p / barsMax)}
 							fill="var(--accent)"
-							opacity="0.85"
+							fill-opacity="0.85"
 						/>
 						{#if p > 0.0005}
 							<text
@@ -856,7 +856,7 @@
 			{/if}
 		</div>
 
-		<div class="panel">
+		<div class="panel panel--paper">
 			<p class="kicker">Readout</p>
 			{#if !pairValid}
 				<p class="note">Pick two target substats.</p>
@@ -954,12 +954,13 @@
 		gap: 0.4rem;
 	}
 
-	/* Chart frame: same family treatment as the other instruments */
-	.ar-frame {
+	/* No frame — the chart is on the night; .ctx-dark stays claimed for
+	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. The grid
+	   and its gap are LAYOUT (view chips over the plot) and stay. */
+	.ar-chart {
 		display: grid;
 		gap: 0.5rem;
-		padding: 0.9rem 1rem 0.7rem;
-		border-radius: var(--r-sm);
+		min-width: 0;
 	}
 
 	.ar-graph svg {
@@ -1039,11 +1040,16 @@
 
 	/* ↻ 2026-08-05 (archetype consistency pass): a SOLID face, not --fill-rest.
 	   The five piece glyphs are white line-art .webp assets (the shared
-	   generic-full-set art) — they assume a dark chip, and on this panel's paper
-	   ground a 10% wash left them white-on-near-white, effectively invisible.
-	   --control-face is the one deliberately ground-agnostic surface in the
-	   system (Genshin lays the same slate on beige and navy alike), so it gives
-	   the art the dark chip it needs without nesting a context here. */
+	   generic-full-set art) — they assume a dark chip, and on the PAPER ground
+	   this panel had then, a 10% wash left them white-on-near-white, effectively
+	   invisible. --control-face is the one deliberately ground-agnostic surface
+	   in the system (Genshin lays the same slate on beige and navy alike), so it
+	   gives the art the dark chip it needs without nesting a context here.
+	   ↻ 2026-08-13: the panel is GLASS now, so the emergency this solved is over
+	   — a white glyph on a translucent slate pane was never going to vanish. The
+	   declaration stays exactly as it is: --control-face is ground-agnostic on
+	   purpose, and a chip that reads on paper AND on glass is worth more than one
+	   tuned to whichever ground the panel happens to wear this month. */
 	.ar-slot {
 		width: 46px;
 		height: 46px;

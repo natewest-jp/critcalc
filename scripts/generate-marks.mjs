@@ -95,6 +95,15 @@ const MARKS = {
 	/** Two things exchange places — a bench slot's occupant, an instrument's
 	 *  column. NOT a document action; nothing is saved or reloaded. */
 	swap: 'ArrowLeftRight',
+	/** The crit instrument's "Roll N hits" sampler — the one control on the
+	 *  site that performs a random trial, and the one place a die is literal
+	 *  rather than decorative. Replaces a 🎲 EMOJI, which is the icon set's
+	 *  standing hazard rather than a taste call: an emoji is rendered by
+	 *  whichever fallback face the engine picks, at a size and weight this
+	 *  design language never chose, and it lands in COLOUR on a monochrome row.
+	 *  `Dices` (two dice) over `Dice5`: at 12px a single die's pips silt into
+	 *  its square, while the pair reads as an object at any size. */
+	dice: 'Dices',
 
 	// ── State badges ────────────────────────────────────────────────────────
 	/**

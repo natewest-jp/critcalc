@@ -195,15 +195,21 @@
 		const pw = Math.max(1, Math.round(plotW));
 		const ph = Math.max(1, Math.round(plotH));
 
-		// Fill background, then write each plot pixel directly via ImageData.
-		// The ground is READ FROM THE CASCADE, not hardcoded — this canvas
-		// paints opaquely over .frame, and a literal here silently detaches
-		// the heatmap from --frame-bg tuning (it was the one frame that
-		// didn't follow devtools edits — Nate 2026-07-31). Re-read per draw;
-		// a live var edit lands on the next redraw (resize or remount).
-		const frameBg = getComputedStyle(canvasEl).getPropertyValue('--frame-bg').trim() || '#121b2f';
-		context.fillStyle = frameBg;
-		context.fillRect(0, 0, boxW, boxH);
+		// ⚓ 2026-08-13: CLEAR, DON'T FILL. This used to paint the whole box with
+		// --frame-bg before writing the plot pixels — which is how the axis-label
+		// margin got its ground, and why removing `.frame`'s CSS background alone
+		// would have changed nothing here: the slab was being drawn by the canvas.
+		// Clearing leaves the margin transparent so the scene reads through it,
+		// and the plot image itself is opaque (alpha 255), so the chart is
+		// unchanged where it actually draws.
+		//
+		// ⚠ --frame-bg IS STILL THE GROUND OF RECORD, it just has no painter here
+		// any more. If the deferred PNG export lands, it reads that token and
+		// fills this rect for real (the planner's --rp-chart-bg does exactly
+		// this) — do NOT hardcode a literal there: one once silently detached
+		// the heatmap from --frame-bg tuning, and it was the one frame that
+		// didn't follow devtools edits (Nate 2026-07-31).
+		context.clearRect(0, 0, boxW, boxH);
 
 		const image = context.createImageData(pw, ph);
 		const data = image.data;
@@ -435,7 +441,7 @@
 </script>
 
 <div class="cv-heatmap-shell" bind:this={shellEl}>
-	<div class="cv-map-frame frame ctx-dark" style:width={`${boxW}px`} style:height={`${boxH}px`}>
+	<div class="cv-map ctx-dark" style:width={`${boxW}px`} style:height={`${boxH}px`}>
 		<!-- Layer 1: heatmap field (redrawn on resize via canvas 2D API). The buffer
 		     size is set imperatively inside drawHeatmap, not via a reactive width=. -->
 		<canvas bind:this={canvasEl} aria-hidden="true"></canvas>
@@ -509,7 +515,13 @@
 				>
 					CD = 2×CR
 				</text>
-				<path d={cvPath} fill="none" stroke="var(--text)" stroke-width="1.6" opacity="0.85" />
+				<path
+					d={cvPath}
+					fill="none"
+					stroke="var(--text)"
+					stroke-width="1.6"
+					stroke-opacity="0.85"
+				/>
 				<text x={cvLabel.x} y={cvLabel.y} fill="var(--text)" font-size="10" font-weight="600">
 					{Math.round(cv * 100)} CV
 				</text>
@@ -714,9 +726,13 @@
 
 	/* The drawn rectangle. Its pixel size (boxW × boxH) is set inline by JS to fill
 	   the shell at a clamped aspect; grid-centered so any letterbox is symmetric.
-	   Interior fill + the animated Dire conic border both come from .frame;
-	   the heatmap canvas fills the padding box opaquely, so no interior bg is needed. */
-	.cv-map-frame {
+	   ⚓ 2026-08-13: no ground — the axis margin is the night now (drawHeatmap
+	   clears rather than fills; app.css's `.frame` retirement note has the why).
+	   ⚠ THE RADIUS AND THE CLIP STAY, and this is the one instrument where they
+	   should: the plot is a painted IMAGE with hard edges of its own, so it is an
+	   object on the world rather than ink drawn on it. Corners get cut for the
+	   same reason a portrait's do. */
+	.cv-map {
 		position: relative;
 		border-radius: var(--r-sm);
 		overflow: hidden;

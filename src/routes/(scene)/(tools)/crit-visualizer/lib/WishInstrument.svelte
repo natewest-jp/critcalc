@@ -107,7 +107,7 @@
 </script>
 
 <div class="instrument">
-	<div class="wi-frame frame ctx-dark">
+	<div class="wi-chart ctx-dark">
 		<div class="wi-graph" bind:clientWidth={graphW}>
 			<svg
 				width={graphW}
@@ -150,7 +150,7 @@
 						y1={yOfC(p)}
 						x2={graphW - PADR}
 						y2={yOfC(p)}
-						stroke="rgba(255,255,255,{p === 1 ? 0.14 : 0.07})"
+						stroke={p === 1 ? 'var(--chart-rule)' : 'var(--chart-grid)'}
 					/>
 					<text
 						x={PADL - 7}
@@ -188,7 +188,7 @@
 				{/if}
 
 				<!-- pmf silhouette (which pull lands it) + cumulative line -->
-				<path d={pmfPath} fill="var(--accent)" opacity="0.3" />
+				<path d={pmfPath} fill="var(--accent)" fill-opacity="0.3" />
 				<path
 					d={cdfPath}
 					fill="none"
@@ -304,7 +304,7 @@
 			</label>
 		</div>
 
-		<div class="panel">
+		<div class="panel panel--paper">
 			<p class="kicker">Readout</p>
 			<p class="wi-big">
 				{fmtPct(chanceWithin)}<span class="wi-big-unit">chance within your {pulls} pulls</span>
@@ -326,9 +326,10 @@
 </div>
 
 <style>
-	.wi-frame {
-		padding: 0.4rem 0.6rem 0.2rem;
-		border-radius: var(--r-sm);
+	/* No frame — the chart is on the night; .ctx-dark stays claimed for
+	   --frame-bg. See .gx-chart / app.css's `.frame` retirement note. */
+	.wi-chart {
+		min-width: 0;
 	}
 
 	.wi-graph svg {

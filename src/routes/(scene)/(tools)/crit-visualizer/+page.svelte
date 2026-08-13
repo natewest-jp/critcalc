@@ -29,6 +29,24 @@
 		type SlotPref
 	} from './lib/workspace';
 	import { decodeInstrumentParam, encodeInstrumentParam } from '$lib/utils/instrumentUrl';
+	import { TOOL_GUTTER } from '$lib/toolGutter';
+
+	/**
+	 * 🎛️ Bare scene BETWEEN two instruments — the widest gap inside this tool.
+	 *
+	 * ⚓ 2026-08-13: DOUBLE the tool gutter, and the doubling is the whole point.
+	 * Since the instruments lost their frames there is no ground left to say
+	 * where one ends and the next begins — the gap is the only boundary, and it
+	 * was 20px against a 16px rhythm INSIDE each instrument (`.panels`' column
+	 * gap). Four pixels cannot carry that distinction, so at three-up the three
+	 * arguments read as one field of panels.
+	 *
+	 * This is the planner's law one axis over — the gap encodes GROUPING — and
+	 * the same ratio the planner already uses where a tool meets a caption about
+	 * itself (`.rotation-page`, deliberately double the gutter). Two rungs, and
+	 * they must not collapse to equal.
+	 */
+	const TILE_GAP = TOOL_GUTTER * 2;
 
 	// The Visualizers workspace: N side-by-side instrument slots. Every
 	// instrument mounts exactly once and hides via display:none when unslotted,
@@ -226,8 +244,13 @@
 
 	{#snippet bandBFull()}
 		<!-- One row of cells on the tile grid's own columns, so each picker sits
-		     over the instrument it switches. -->
-		<div class="ws-band" style:--ws-slots={slotCount}>
+		     over the instrument it switches — and, since 2026-08-13, so does the
+		     GROUND: band B stops painting for this tool and each cell is its own
+		     run of glass plates, cut from its neighbours by the tile gap. See
+		     .band--full in ToolStack for the rule; the controls' half of the
+		     bargain is that every one of them is a plate (.btn--glass), because
+		     there is no longer a rail for a button to sit on. -->
+		<div class="ws-band" style:--ws-slots={slotCount} style:--ws-tile-gap="{TILE_GAP}px">
 			{#each assignment.slice(0, slotCount) as id, slot (id)}
 				<div class="ws-band-cell">
 					<InstrumentPicker
@@ -240,7 +263,7 @@
 					<span class="ws-band-actions">
 						{#if handles[id]?.reset}
 							<button
-								class="btn btn--sm"
+								class="btn btn--sm btn--glass"
 								onclick={() => handles[id]?.reset?.()}
 								title="Reset this instrument's controls to their defaults"
 							>
@@ -250,7 +273,7 @@
 						{/if}
 						{#if handles[id]?.getShareState}
 							<button
-								class="btn btn--sm"
+								class="btn btn--sm btn--glass"
 								class:ws-share-copied={copiedTile === id}
 								onclick={() => shareTile(id)}
 								title="Copy a link that reopens this instrument as it looks now"
@@ -266,7 +289,7 @@
 	{/snippet}
 
 	{#snippet surface()}
-		<div class="ws" style:--ws-slots={slotCount}>
+		<div class="ws" style:--ws-slots={slotCount} style:--ws-tile-gap="{TILE_GAP}px">
 			{#each INSTRUMENTS as inst (inst.id)}
 				{@const slot = slotOf(inst.id)}
 				<section class="ws-tile" class:ws-hidden={slot === -1} style:order={slot}>
@@ -330,42 +353,51 @@
 	}
 
 	/* ── Band B: one row of cells on the TILE GRID's own columns ──
-	   Same track definition and same gap as .ws below, inside the same band
-	   padding, so cell N sits exactly over tile N at every lineup size. That
-	   alignment is the reason the workspace grid took the band's padding: the
-	   picker has to look like it belongs to the instrument beneath it. */
+	   Same track definition and same gap as .ws below, so cell N sits exactly
+	   over tile N at every lineup size — and now the ground is cut on those same
+	   columns too (see .band--full in ToolStack). The picker does not merely
+	   point at the instrument beneath it; the whole run stops where that
+	   instrument stops. */
 	.ws-band,
 	.ws {
 		display: grid;
 		grid-template-columns: repeat(var(--ws-slots, 1), minmax(0, 1fr));
-		gap: 1.25rem;
+		gap: var(--ws-tile-gap);
 	}
 
+	/* A cell is a RUN OF PLATES, not a rail with things in it: the picker takes
+	   the slack, the actions sit at the far end, and --band-item-gap between them
+	   is the same distance band A puts between two of its buttons. So the ladder
+	   across the header reads 4px between plates in one instrument · 32px between
+	   instruments, with nothing painted underneath either. */
 	.ws-band-cell {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 0.4rem;
+		gap: var(--band-item-gap, 4px);
 		min-width: 0;
 	}
 
 	.ws-band-actions {
 		display: flex;
-		gap: 0.3rem;
+		align-items: center;
+		gap: var(--band-item-gap, 4px);
 		flex-shrink: 0;
 	}
 
-	.ws-share-copied {
+	/* ⚠ The copied state overrides .btn--glass's ground on purpose and has to
+	   out-specify it: two classes there, two here, and this rule is later in the
+	   cascade only because scoped component styles load after app.css. Pinned
+	   with the same accent fill the rest of the site uses for "this happened". */
+	.ws-band-actions .ws-share-copied {
 		color: var(--ink-active);
 		background: var(--sel-fill);
 	}
 
-	/* The workspace takes the bands' own horizontal padding — without it the
-	   tiles would sit --band-pad-x left of the pickers that switch them.
-	   (.ws-band needs none: the band it fills already supplies it.) */
-	.ws {
-		padding: 0 var(--band-pad-x);
-	}
+	/* ⛔ NO --band-pad-x HERE ANY MORE. The workspace used to take the band's own
+	   horizontal padding so the tiles lined up with the pickers above them; band
+	   B dropped that padding with its ground (2026-08-13), so keeping it here
+	   would push every instrument 14px right of the header it belongs to. The two
+	   were always a pair — they still are, at zero. */
 
 	/* The TILE is the query container every instrument sizes against — not the
 	   instrument's own root, and never the viewport: a half-width tile on a wide

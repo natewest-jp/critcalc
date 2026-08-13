@@ -68,7 +68,7 @@
 
 <div class="instrument">
 	<!-- Hit timeline: which hits actually apply their element -->
-	<div class="icd-frame frame ctx-dark">
+	<div class="icd-chart ctx-dark">
 		<div class="icd-graph" bind:clientWidth={graphW}>
 			<svg width={graphW} height={H} role="img" aria-label="ICD hit timeline">
 				<!-- Second grid -->
@@ -102,7 +102,7 @@
 							height={ROW.bandH}
 							rx="2"
 							fill={el}
-							opacity="0.22"
+							fill-opacity="0.22"
 						/>
 						<line
 							x1={xOf(h.time)}
@@ -111,7 +111,7 @@
 							y2={ROW.bandTop + ROW.bandH + 1}
 							stroke={el}
 							stroke-width="2"
-							opacity="0.75"
+							stroke-opacity="0.75"
 						/>
 					{/each}
 				{/if}
@@ -193,7 +193,7 @@
 						height="10"
 						rx="2"
 						fill={el}
-						opacity="0.22"
+						fill-opacity="0.22"
 					/>
 					<text x={M.left + 378} y={ROW.legendY + 3.5} fill="var(--chart-ink)" font-size="10">
 						ICD timer window
@@ -334,7 +334,7 @@
 			<p class="note">Presentation only — ICD rules are element-agnostic</p>
 		</div>
 
-		<div class="panel">
+		<div class="panel panel--paper">
 			<p class="kicker">Readout</p>
 			<p class="icd-big">
 				{apps}<span class="icd-big-unit"> of {hitCount} hits apply</span>
@@ -367,11 +367,12 @@
 </div>
 
 <style>
-	/* Chart frame: same treatment as the heatmap — dark chart field, Dire-tinted
-	   border, tight radius */
-	.icd-frame {
-		padding: 0.4rem 0.6rem 0.2rem;
-		border-radius: var(--r-sm);
+	/* ⚓ NO FRAME — the chart draws on the night (see .frame's retirement note in
+	   app.css). The ground, the radius and the inset padding all left together;
+	   .ctx-dark stays CLAIMED, because at TOOL_DIM the crest is a dark ground and
+	   --chart-* still needs --frame-bg as its notional reference. */
+	.icd-chart {
+		min-width: 0;
 	}
 
 	.icd-graph svg {
