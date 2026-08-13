@@ -71,15 +71,15 @@ test('committing an audition returns to the planner; cancelling stays with a way
 	await page.locator('.bb-act[aria-label="Change who fills this slot"]').first().click();
 	await page.locator('.cmp[aria-label="Audition replacements"]').waitFor({ timeout: 10_000 });
 
-	// CANCEL: the errand's auto-return is discharged, the way back is not.
+	// CANCEL: the errand's auto-return is discharged, and so is the shortcut.
 	//
-	// ⚓ 2026-08-13: the way back MOVES WITH THE ERRAND. While the audition is on
-	// screen it sits beside "Cancel audition" — the errand's two exits together —
-	// and it steps back into band B once the audition is gone, because
-	// `fromPlanner` outlives the audition and cancelling must not strand you.
-	// There is only ever ONE of it; this asserts where.
+	// ⚓ 2026-08-13: "Back to planner" lives BESIDE "Cancel audition" and NOWHERE
+	// ELSE. It is a hand-guiding shortcut for the errand, not the way back — the
+	// way back is `.chrome-nav`, which is on every tool page and is what a user
+	// who has learned the navigation will reach for from anywhere. So it belongs
+	// on the ONE surface that is visibly about swapping this slot, and it leaves
+	// with that surface.
 	const back = page.locator('button[title="Return to the rotation planner"]');
-	await expect(back, 'exactly one way back, always').toHaveCount(1);
 	await expect(
 		page.locator('.cmp-titlebar button[title="Return to the rotation planner"]'),
 		'during the audition it sits with Cancel'
@@ -87,11 +87,7 @@ test('committing an audition returns to the planner; cancelling stays with a way
 
 	await page.locator('.cmp-headact').click();
 	await expect(page.locator('.cmp[aria-label="Audition replacements"]')).toHaveCount(0);
-	await expect(back, 'cancelling leaves you here, and leaves a way back').toHaveCount(1);
-	await expect(
-		page.locator('.band-b button[title="Return to the rotation planner"]'),
-		'with the audition gone it returns to the band'
-	).toHaveCount(1);
+	await expect(back, 'the shortcut leaves with the audition').toHaveCount(0);
 	expect(page.url(), 'cancelling does not navigate').toContain('team-builder');
 
 	// ⚠ THE RETURN TRIP IS PART OF THE SETUP, not decoration. The auto-return is
@@ -99,7 +95,11 @@ test('committing an audition returns to the planner; cancelling stays with a way
 	// an audition that commits in place, which is the whole point of the scoping
 	// (a commit two auditions later must not yank you out of a tool you decided
 	// to stay in). So a second errand has to start where errands start.
-	await back.click();
+	//
+	// …and going back by the NAV rather than by a button is the point above,
+	// exercised: cancelling leaves you with the navigation, and the navigation is
+	// enough.
+	await page.locator('.chrome-nav a[href*="rotation-planner"]').click();
 	await page.waitForURL(/rotation-planner/, { timeout: 10_000 });
 	await page.waitForTimeout(1400); // the pan + band travel
 
