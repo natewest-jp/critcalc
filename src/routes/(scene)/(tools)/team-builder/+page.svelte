@@ -554,6 +554,12 @@
 		if (goBack) void goto(resolve('/rotation-planner'));
 	}
 
+	/** The errand's way back. Leaves the team exactly as it is — the working team
+	 *  is shared state, so nothing needs carrying. */
+	function backToPlanner(): void {
+		void goto(resolve('/rotation-planner'));
+	}
+
 	function cancelAudition(): void {
 		// Cancelling discharges the auto-return but NOT the errand: you are still
 		// someone who arrived from the planner, and the plate stays put.
@@ -943,14 +949,24 @@
 
 		     A peer plate beside Clear team rather than a new zone: band B is
 		     already two plates flanking the rail, and this joins the near one. -->
-		{#if fromPlanner}
+		<!-- ↻ ⚓ NATE 2026-08-13: WHILE THE AUDITION IS ON SCREEN, THIS LIVES WITH
+		     THE AUDITION — beside "Cancel audition" in CompareView's titlebar,
+		     which is where the errand's two exits belong together. It was in the
+		     band only because the errand got wired up before the audition had a
+		     designed surface to put it on.
+
+		     ⚠ It does NOT simply move, and the gate below is the reason: the
+		     errand outlives the audition. `fromPlanner` lasts the whole visit, so
+		     cancelling and browsing the Roster must still leave a way back. The
+		     plate steps aside exactly when the header is showing the button
+		     instead — including the case where an audition is open but you have
+		     manually switched to another tab, where the header is not on screen
+		     and the band is the only exit left. -->
+		{#if fromPlanner && !(anchorId !== null && sourceTab === 'compare')}
 			<!-- A bare .btn: the plate look is the band's, and .tb-clear's only
 			     rule is its danger hover — there is nothing for a sibling class
 			     to hold, so it does not get one. -->
-			<button
-				class="btn"
-				title="Return to the rotation planner"
-				onclick={() => void goto(resolve('/rotation-planner'))}
+			<button class="btn" title="Return to the rotation planner" onclick={backToPlanner}
 				>Back to planner <Mark name="forward" /></button
 			>
 		{/if}
@@ -1138,12 +1154,21 @@
 		     the coverage gaps filter. The gate is HERE rather than inside either
 		     component so an empty team costs no boxes and no gutter: four blank
 		     cards in the ribbon already say there is no team. -->
-		{#if filledCount > 0}
+		{#if filledCount > 0 && sourceTab !== 'compare'}
 			<!-- ↻ 2026-08-09: ONE component again. TeamFacts (resonance + the
 			     faction facts) used to ride the banner's far end; the banner is a
 			     bare on-scene header now and the facts moved INTO the capability
 			     run as its left-hand cluster, which is where they always belonged
-			     — "what the team is" and "what it covers" are one reading. -->
+			     — "what the team is" and "what it covers" are one reading.
+
+			     ↻ ⚓ NATE 2026-08-13: NOT ON COMPARE. The coverage read-out answers
+			     "what does my TEAM have", and Compare has already left the team —
+			     you reach it from the Roster's compare buttons as often as from
+			     the bench, and the characters in it need not be on the team at
+			     all. Two panels answering two different questions were competing
+			     for the same vertical space, and the comparison is what that space
+			     is for. It stays on the Atlas and the Roster, where picks are made
+			     against a team. -->
 			<CoveragePanel
 				{members}
 				conCapOf={(id) => rt.tabCon[id] ?? (mounted ? ($constellations[id] ?? 0) : 0)}
@@ -1326,6 +1351,7 @@
 						onCommit={anchorId ? commitAudition : undefined}
 						onClear={anchorId ? undefined : () => compareIds.clear()}
 						onCancelAudition={anchorId ? cancelAudition : undefined}
+						onBackToPlanner={anchorId && fromPlanner ? backToPlanner : undefined}
 						candidatesArea={anchorId ? auditionStrip : undefined}
 					/>
 				{/if}

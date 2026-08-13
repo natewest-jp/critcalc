@@ -59,6 +59,7 @@
 		onCommit = undefined,
 		onClear = undefined,
 		onCancelAudition = undefined,
+		onBackToPlanner = undefined,
 		seedLenses = undefined,
 		onLensChange = undefined,
 		candidatesArea = undefined
@@ -77,6 +78,9 @@
 		onClear?: () => void;
 		/** Audition mode: abandon without committing. */
 		onCancelAudition?: () => void;
+		/** Set only when the audition arrived as an errand from the planner — the
+		 *  errand's two exits sit together, cancel then return. */
+		onBackToPlanner?: () => void;
 		/** Audition mode: the jobs this slot currently does. Seeds the lens, so
 		 *  the chart opens on what has to be replaced rather than on everything. */
 		seedLenses?: readonly string[];
@@ -293,6 +297,20 @@
 			<button class="btn cmp-headact" onclick={onCancelAudition}>
 				<Mark name="close" /> Cancel audition
 			</button>
+			<!-- ⚠ The arrow points RIGHT and trails the label. The site's arrows are
+			     SPATIAL — they say where the tool IS, not whether the trip is out or
+			     back — and the planner sits to the RIGHT of the Team Builder in the
+			     nav. A left arrow here would be the first one to disagree with it. -->
+			<!-- ⚠ Its OWN class, not a second .cmp-headact: two same-class buttons
+			     in one header is the documented Playwright strict-mode trap this
+			     repo has already paid for once. -->
+			{#if onBackToPlanner}
+				<button
+					class="btn cmp-headback"
+					title="Return to the rotation planner"
+					onclick={onBackToPlanner}>Back to planner <Mark name="forward" /></button
+				>
+			{/if}
 		{:else if onClear}
 			<button class="btn cmp-headact" onclick={onClear}>
 				<Mark name="close" /> Clear
@@ -617,7 +635,8 @@
 		font-size: var(--fs-md);
 		color: var(--chart-ink);
 	}
-	.cmp-headact {
+	.cmp-headact,
+	.cmp-headback {
 		align-self: center;
 		white-space: nowrap;
 	}

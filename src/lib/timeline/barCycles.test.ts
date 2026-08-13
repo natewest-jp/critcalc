@@ -44,15 +44,29 @@ describe('repeatCycles', () => {
 });
 
 describe('laneSegments', () => {
-	it('draws an ability that outlasts its cooldown as ONE unbroken window', () => {
-		// Back up before it lapses = permanently up. Tiling here would draw a
-		// seam at every cooldown boundary and invent a gap that never happens.
+	it('tiles permanent uptime into abutting blocks, one per recast', () => {
+		// ⚓ It returned ONE unbroken segment until 2026-08-13, and that lost real
+		// information: on a 30s axis a 30s window and a 15s window on a 15s
+		// cooldown drew the identical solid bar, when the second one needs you
+		// back on that character at 15s to refresh it. Permanent uptime is a
+		// RESULT, not a property, and the seams are what it costs.
 		const out = laneSegments(20, 15, 60);
-		expect(out).toEqual([{ role: 'uptime', start: 0, span: 60, cycle: 0 }]);
+		expect(out.every((s) => s.role === 'uptimeFlush')).toBe(true);
+		expect(out.map((s) => s.start)).toEqual([0, 15, 30, 45]);
+		expect(out.map((s) => s.cycle)).toEqual([0, 1, 2, 3]);
 	});
 
-	it('treats duration exactly equal to cooldown as permanent, not as a tiling', () => {
-		expect(laneSegments(15, 15, 45)).toHaveLength(1);
+	it('blocks abut exactly — permanent uptime must not read as gapped', () => {
+		const out = laneSegments(20, 15, 45);
+		for (let i = 1; i < out.length; i++) {
+			expect(out[i].start).toBe(out[i - 1].start + out[i - 1].span);
+		}
+	});
+
+	it('treats duration exactly equal to cooldown as permanent', () => {
+		const out = laneSegments(15, 15, 45);
+		expect(out).toHaveLength(3);
+		expect(out.every((s) => s.role === 'uptimeFlush')).toBe(true);
 	});
 
 	it('tiles window-then-gap when the cooldown outlasts the window', () => {
@@ -63,7 +77,10 @@ describe('laneSegments', () => {
 		expect(out.some((s) => s.role === 'ghost')).toBe(true);
 	});
 
-	it('marks only the first cycle as the one that actually happened', () => {
+	// The index no longer weakens a repeat (that fade is retired — it collided
+	// with the cooldown ghost's value). It is what the renderer reads to seam
+	// abutting solid blocks, so cycle 0 still has to be distinguishable.
+	it('indexes the cycles it emits', () => {
 		const out = laneSegments(4, 10, 30);
 		expect(out.filter((s) => s.cycle === 0)).toHaveLength(2);
 		expect(out.some((s) => (s.cycle ?? 0) > 0)).toBe(true);

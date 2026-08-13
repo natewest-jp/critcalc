@@ -72,11 +72,26 @@ test('committing an audition returns to the planner; cancelling stays with a way
 	await page.locator('.cmp[aria-label="Audition replacements"]').waitFor({ timeout: 10_000 });
 
 	// CANCEL: the errand's auto-return is discharged, the way back is not.
+	//
+	// ⚓ 2026-08-13: the way back MOVES WITH THE ERRAND. While the audition is on
+	// screen it sits beside "Cancel audition" — the errand's two exits together —
+	// and it steps back into band B once the audition is gone, because
+	// `fromPlanner` outlives the audition and cancelling must not strand you.
+	// There is only ever ONE of it; this asserts where.
 	const back = page.locator('button[title="Return to the rotation planner"]');
-	await expect(back, 'arriving on an errand plants the return plate').toHaveCount(1);
+	await expect(back, 'exactly one way back, always').toHaveCount(1);
+	await expect(
+		page.locator('.cmp-titlebar button[title="Return to the rotation planner"]'),
+		'during the audition it sits with Cancel'
+	).toHaveCount(1);
+
 	await page.locator('.cmp-headact').click();
 	await expect(page.locator('.cmp[aria-label="Audition replacements"]')).toHaveCount(0);
-	await expect(back, 'cancelling leaves you here, and leaves the plate').toHaveCount(1);
+	await expect(back, 'cancelling leaves you here, and leaves a way back').toHaveCount(1);
+	await expect(
+		page.locator('.band-b button[title="Return to the rotation planner"]'),
+		'with the audition gone it returns to the band'
+	).toHaveCount(1);
 	expect(page.url(), 'cancelling does not navigate').toContain('team-builder');
 
 	// ⚠ THE RETURN TRIP IS PART OF THE SETUP, not decoration. The auto-return is
