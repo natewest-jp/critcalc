@@ -10,17 +10,25 @@
  * the tool REWRITES it for you (an audition commit renames a character's
  * segments), a drop the user cannot see is a drop they cannot fix.
  *
- * ══ TWO REGISTERS, AND THEY ARE NOT THE SAME THING ═══════════════════════════
+ * ══ TWO REGISTERS, AND THE LINE BETWEEN THEM ═════════════════════════════════
  *
- *   --ui-warning     "a CAUTION you caused" — the name doesn't resolve, so the
- *                    segment is skipped entirely. Shares the register (and the
- *                    class) with the tokenizer's unknown tokens, because it is
- *                    the same sentence: this text didn't parse.
- *   --ui-provisional "this timing is approximate" — the text parsed fine and
- *                    the bar is drawn from a stand-in. Nothing to fix, nothing
- *                    you did wrong; the palette split this out of danger in the
- *                    2026-08-12 UI-state round naming exactly this consumer
- *                    ("the planner's generic-timing text").
+ *   --ui-warning     WE CANNOT TAKE THIS. An unresolvable name (the segment is
+ *                    skipped), a token we do not simulate (nothing is drawn).
+ *                    It is a statement about the INPUT, which is why it shares
+ *                    the register — and the class — with the tokenizer's
+ *                    unknown tokens: to the reader it is the same sentence.
+ *   --ui-provisional WE TOOK IT, AND WHAT YOU SEE IS A STAND-IN. An approximated
+ *                    cast, a fifth character with nowhere to sit. A statement
+ *                    about OUR coverage; nothing to fix, nothing you did wrong.
+ *                    The palette split this out of danger in the 2026-08-12
+ *                    UI-state round naming exactly this consumer ("the planner's
+ *                    generic-timing text").
+ *
+ * ⚓ NATE 2026-08-13 put `W` on the warning side rather than the provisional one,
+ * and the reasoning generalises: a token we will never simulate is not a
+ * coverage gap that might close later. Walk-cancels enable timing-breaking
+ * gameplay (machine-gun Gorou), gcsim does not model them either, and saying so
+ * plainly beats implying we are getting round to it.
  *
  * ⚠ NO PARSE RUNS HERE. The linter is fed by the eager character index
  * (`casts`, published by castTokens.ts) so it can run per KEYSTROKE inside the
@@ -41,6 +49,9 @@ export const TEAM_SIZE = 4;
 export type NotationFlagReason =
 	/** The leading name of a segment resolves to nobody — the segment is skipped. */
 	| 'unknown-character'
+	/** A valid KQM token the planner draws nothing for: `W`, or `A` on a
+	 *  character who cannot take an aimed shot. */
+	| 'unsupported-token'
 	/** A cast token the segment's character cannot perform — timed by a stand-in. */
 	| 'approximate-cast'
 	/** A fifth (or later) distinct character: parsed, but with no slot to draw in. */
@@ -57,10 +68,12 @@ export type NotationFlag = {
 	message: string;
 };
 
-/** Warning register (the segment is dropped) vs provisional (it is stood in
- *  for). The editor maps these to its two squiggle classes. */
+/** Warning (we cannot take this) vs provisional (we took it and stood in for
+ *  it) — see the header. The editor maps these to its two squiggle classes. */
 export function flagSeverity(reason: NotationFlagReason): 'warning' | 'provisional' {
-	return reason === 'unknown-character' ? 'warning' : 'provisional';
+	return reason === 'unknown-character' || reason === 'unsupported-token'
+		? 'warning'
+		: 'provisional';
 }
 
 const HOLD_TOKEN_RE = /^h[12]?E$/;
@@ -79,13 +92,19 @@ function approximateCastMessage(name: string, token: string, casts: readonly str
 	return `${name} can't perform ${token} — this cast is drawn with generic timing.`;
 }
 
-/** The E/Q cast tokens inside one segment, including the ones hiding inside a
+/** Tokens the linter has an opinion about: the E/Q casts, plus the two `label`
+ *  tokens the planner may not be able to draw (`A`, `W`). */
+function isLintable(tok: Token): boolean {
+	return tok.kind === 'E' || tok.kind === 'Q' || (tok.kind === 'label' && /^[AW]$/.test(tok.text));
+}
+
+/** The lintable tokens inside one segment, including the ones hiding inside a
  *  bracket repeat group. Optional `(...)` groups and `/Q` alternatives are
- *  skipped: the parser drops both, so there is no timing to approximate. */
+ *  skipped: the parser drops both, so there is nothing to say about them. */
 function castTokensIn(tokens: readonly Token[]): Token[] {
 	const out: Token[] = [];
 	for (const tok of tokens) {
-		if (tok.kind === 'E' || tok.kind === 'Q') {
+		if (isLintable(tok)) {
 			out.push(tok);
 			continue;
 		}
@@ -98,7 +117,7 @@ function castTokensIn(tokens: readonly Token[]): Token[] {
 		if (close <= open) continue;
 		const inner = tok.text.slice(open + 1, close);
 		for (const sub of tokenizeActionRun(inner, tok.from + open + 1)) {
-			if (sub.kind === 'E' || sub.kind === 'Q') out.push(sub);
+			if (isLintable(sub)) out.push(sub);
 		}
 	}
 	return out;
@@ -150,6 +169,32 @@ export function flagNotation(notation: string): NotationFlag[] {
 		}
 
 		for (const tok of castTokensIn(body)) {
+			// ⛔ NOTHING IS DRAWN for these two, so they take the warning register
+			// rather than the provisional one — see the header for the line.
+			if (tok.text === 'W') {
+				flags.push({
+					from: tok.from,
+					to: tok.to,
+					text: tok.text,
+					reason: 'unsupported-token',
+					message: 'Walk-cancels aren’t simulated. Use ~2s for a deliberate pause.'
+				});
+				continue;
+			}
+			if (tok.text === 'A') {
+				// A bow's `A` is that bow's fully-charged shot and parses as one; on
+				// anyone else there is no aimed shot to take, and gcsim says so in the
+				// same words ("action aimed not implemented").
+				if (entry.weapon === 'bow') continue;
+				flags.push({
+					from: tok.from,
+					to: tok.to,
+					text: tok.text,
+					reason: 'unsupported-token',
+					message: `Only a bow can take an aimed shot — ${entry.displayName} wields a ${entry.weapon ?? 'melee weapon'}.`
+				});
+				continue;
+			}
 			if (entry.casts.includes(tok.text)) continue;
 			flags.push({
 				from: tok.from,

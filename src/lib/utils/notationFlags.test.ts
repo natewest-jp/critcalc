@@ -91,3 +91,30 @@ describe('notationFlags', () => {
 		for (const f of flagNotation(n)) expect(n.slice(f.from, f.to)).toBe(f.text);
 	});
 });
+
+// ── A and W (⚓ Nate 2026-08-13) ───────────────────────────────────────────────
+describe('the two tokens the planner may not be able to draw', () => {
+	it('says nothing about A on a bow — it IS that bow’s charged shot', () => {
+		expect(flagNotation('Ganyu A N1 A')).toEqual([]);
+	});
+
+	it('flags A on anyone else, in the WARNING register (nothing is drawn)', () => {
+		const flags = flagNotation('Bennett A');
+		expect(flags).toHaveLength(1);
+		expect(flags[0].reason).toBe('unsupported-token');
+		expect(flagSeverity(flags[0].reason)).toBe('warning');
+		expect(flags[0].message).toMatch(/Only a bow can take an aimed shot/);
+	});
+
+	it('flags W for everyone, and points at the token that does work', () => {
+		const flags = flagNotation('Ganyu A W N1');
+		expect(flags).toHaveLength(1);
+		expect(flags[0].text).toBe('W');
+		expect(flagSeverity(flags[0].reason)).toBe('warning');
+		expect(flags[0].message).toMatch(/~2s/);
+	});
+
+	it('finds both inside a bracket repeat group', () => {
+		expect(reasons('Bennett 2[A W]')).toEqual(['unsupported-token', 'unsupported-token']);
+	});
+});
