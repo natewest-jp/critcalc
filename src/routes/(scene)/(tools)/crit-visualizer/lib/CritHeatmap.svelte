@@ -668,17 +668,59 @@
 
 			<!-- Marker: soft halo + solid dot -->
 			<circle cx={dotX} cy={dotY} r="17" fill={ink(0.08)} />
-			<circle cx={dotX} cy={dotY} r="8" fill="#f7fafc" stroke="rgba(0,0,0,0.35)" stroke-width="2" />
+			<!-- ↻ 2026-08-13: the dot's fill was a stray #f7fafc — a cool near-white
+			     literal in the one file that has a single-sourced ink helper five
+			     lines above it. Same colour to the eye, one fewer value to drift.
+			     ⏸ The black halo STAYS and is the deliberate exception: the
+			     "semi-transparent black ring" idiom was retired for the slider
+			     knob because that knob rides a track of known colour. This dot
+			     rides a rainbow, and white-on-pale-yellow is exactly where it
+			     would disappear. -->
+			<circle cx={dotX} cy={dotY} r="8" fill={ink(1)} stroke="rgba(0,0,0,0.35)" stroke-width="2" />
 
-			<!-- Floating tooltip -->
+			<!-- ══ Floating readout — ⚓ NATE 2026-08-13: DARK GLASS, MODAL CORNER ══
+			     It had three bespoke values: rgba(5,10,24,.82) invented on the
+			     spot, a white-at-.22 outline, and rx="7" — a radius that exists
+			     nowhere else in the system (the scale is 1/3/6).
+
+			     THE CORNER IS --r-md, and 6px is not an arbitrary pick: this is a
+			     popover floating over content with no ground to belong to, which
+			     is the MODAL role, and the modal corner is the one place the
+			     softer radius survived the 6 → 3 re-cut. It is also why the
+			     OUTLINE stays when edge borders retired everywhere else — a modal
+			     is the documented survivor. Now --line-soft.
+
+			     ⚠ AND THAT IS WHY THE RECT CLAIMS .ctx-glass. Both :root and
+			     .ctx-dark declare --line-soft as an OPAQUE mix (#50555e, cut
+			     against slate-800) — correct over a known ground, and a stripe of
+			     the wrong colour over a rainbow. .ctx-glass is the one context
+			     whose line stops carry ALPHA, for exactly this reason: the ground
+			     behind a pane is unknown. The class costs nothing else here (the
+			     rect names no other role, and the text beside it uses ink()
+			     literals) and it is honest — this object IS glass.
+
+			     THE FILL IS --glass-bar, and it is the darkest glass we have —
+			     but by DENSITY, not by hue, which is the thing worth writing down:
+			         --glass-well  slate-900 @ .45  darkest COLOUR, thinnest
+			         --glass-panel slate-700 @ .58
+			         --glass-bar   #2c3549   @ .80  darkest RESULT
+			     Over the plot's brightest region (~rgb(188,212,46)) the well
+			     composites to a muddy olive that puts white text at ~2.6:1, and
+			     the bar to ~rgb(73,84,67), which carries it at ~8.6:1. Density is
+			     what a readout over a SATURATED field needs; the darkest hue at a
+			     thin alpha just takes on whatever it is lying over.
+			     ⚠ Borrowing the planner's bar material is legitimate precisely
+			     because that round made it a MATERIAL rather than a colour — it
+			     stopped meaning "buff" the day it stopped being paint. -->
 			<rect
+				class="ctx-glass"
 				x={tooltip.x}
 				y={tooltip.y}
 				width={tooltip.width}
 				height={tooltip.height}
-				rx="7"
-				fill="rgba(5, 10, 24, 0.82)"
-				stroke={ink(0.22)}
+				rx="6"
+				fill="var(--glass-bar)"
+				stroke="var(--line-soft)"
 				stroke-width="1"
 			/>
 			<text x={tooltip.x + 10} y={tooltip.y + 17} fill={ink(0.72)} font-size="10">
@@ -687,7 +729,7 @@
 			<text x={tooltip.x + 10} y={tooltip.y + 33} fill={ink(0.72)} font-size="10">
 				CD {(shownCD * 100).toFixed(1)}%
 			</text>
-			<text x={tooltip.x + 10} y={tooltip.y + 51} fill="white" font-size="13" font-weight="700">
+			<text x={tooltip.x + 10} y={tooltip.y + 51} fill={ink(1)} font-size="13" font-weight="700">
 				{dotMultiplier.toFixed(3)}x
 			</text>
 			{#if showVariance}

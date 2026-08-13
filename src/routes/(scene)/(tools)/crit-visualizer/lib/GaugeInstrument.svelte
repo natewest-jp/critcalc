@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
+	import Mark from '$lib/components/Mark.svelte';
 	import {
 		simulateGauge,
 		gaugesAt,
@@ -460,7 +461,11 @@
 				aria-label={playhead.playing ? 'Pause playback' : 'Play the timeline'}
 				onclick={() => playhead.toggle()}
 			>
-				{playhead.playing ? '⏸' : '▶'}
+				<!-- FILLED — see Mark's `filled` prop. An outlined triangle reads as
+				     "insert" before it reads as "play"; the solid form is the idiom
+				     every media transport on earth uses, and this is the site's only
+				     one. -->
+				<Mark name={playhead.playing ? 'pause' : 'play'} size={12} filled />
 			</button>
 			{#each PLAYHEAD_SPEEDS as sp (sp)}
 				<button
@@ -938,7 +943,16 @@
 		letter-spacing: normal;
 	}
 	/* .btn--primary .btn--icon, but round: a transport control, not a chip. */
+	/* ↻ 2026-08-13: the ▶/⏸ inside became <Mark>s, which retires the type
+	   metrics this button used to be balanced against — a glyph sat on the
+	   baseline with its own side bearings, so the round plate needed no help to
+	   look centred. An SVG is a box, so it does: `display: grid` + `place-items`
+	   centres the mark's BOX, and the mark's own viewBox is symmetric, so its
+	   ink lands centred too. (The retired-glyph hazard is the reverse case — an
+	   optical nudge left behind after a swap; there was none here to leave.) */
 	.gx-play {
+		display: grid;
+		place-items: center;
 		width: 28px;
 		height: 28px;
 		border-radius: var(--r-round);
