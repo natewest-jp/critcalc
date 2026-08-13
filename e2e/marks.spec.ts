@@ -76,8 +76,8 @@ test.describe('control glyphs are geometry, not type', () => {
 
 	test('rotation planner — bench and bands', async ({ page, seed }) => {
 		await seed({
-			team: { slots: ['hu-tao', 'xingqiu', 'zhongli', 'albedo'], notation: 'Hu Tao E N3 Q' },
-			constellations: { 'hu-tao': 1, xingqiu: 6 }
+			team: { slots: ['hu_tao', 'xingqiu', 'zhongli', 'albedo'], notation: 'Hu Tao E N3 Q' },
+			constellations: { hu_tao: 1, xingqiu: 6 }
 		});
 		await openTool(page, '/rotation-planner');
 		await expectSwept(page, '.bench-band-mount');
@@ -91,7 +91,12 @@ test.describe('control glyphs are geometry, not type', () => {
 					id: 's1',
 					name: 'Vape Hu Tao',
 					notation: 'Hu Tao E N3 Q > Xingqiu E Q',
-					manualSlots: ['hu-tao', 'xingqiu', 'zhongli', 'albedo'],
+					// ⚠ A PRE-SINGLE-TRUTH entry, kept deliberately: `manualSlots` is
+					// retired but still READ, and this is the one place the legacy fold
+					// (documentBar.load → foldTeamIntoNotation) runs at the browser
+					// surface. Zhongli and Albedo are not in the notation, so opening
+					// this entry is what proves they still arrive.
+					manualSlots: ['hu_tao', 'xingqiu', 'zhongli', 'albedo'],
 					tabLoadout: {},
 					tabCon: {},
 					savedAt: 1754500000000

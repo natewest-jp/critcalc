@@ -67,6 +67,16 @@ const MARKS = {
 	share: 'Share',
 	more: 'Ellipsis',
 	reset: 'RotateCcw',
+	/** The notation composer's history pair (single truth, 2026-08-13). Every
+	 *  team edit is a text rewrite now, so undo is a first-class control on the
+	 *  box rather than a keystroke people have to know about.
+	 *  ⚠ `Undo2`/`Redo2` (the flat hooked arrows), NOT `Undo`/`Redo` (the curved
+	 *  ones): the curved pair is `reset`'s RotateCcw with a straighter tail, and
+	 *  the composer sits one band under a "Reset view" button wearing exactly
+	 *  that glyph. Two marks a reader has to tell apart by curvature is not a
+	 *  distinction this set makes at 14px. */
+	undo: 'Undo2',
+	redo: 'Redo2',
 
 	// ── The share menu's destinations ───────────────────────────────────────
 	link: 'Link',

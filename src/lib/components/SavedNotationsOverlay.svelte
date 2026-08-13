@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { savedNotations, siteSettings, type SavedNotation } from '$lib/stores';
-	import { getIndexEntryByDisplayName, getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
+	import { slotsFromNotation } from '$lib/rotationTabs.svelte';
+	import { foldTeamIntoNotation } from '$lib/utils/notationEdit';
 	import { getAvatar } from '$lib/utils/getAvatar';
 	import { elementColors } from '$lib/utils/elementColors';
 	import Mark from './Mark.svelte';
@@ -26,18 +28,12 @@
 
 	let entries = $derived([...$savedNotations].sort((a, b) => b.savedAt - a.savedAt));
 
+	/** The four faces on a bank card. ↻ 2026-08-13: one derivation, shared with
+	 *  the store, instead of a third hand-rolled name scan — and a pre-single-truth
+	 *  entry's retired team is folded in the same way `load` will fold it, so the
+	 *  card shows what opening the entry will actually give you. */
 	function entryCharIds(entry: SavedNotation): string[] {
-		if (entry.manualSlots) return entry.manualSlots;
-		const seen: string[] = [];
-		for (const segment of entry.notation.split('>')) {
-			const name = segment.trim().split(/\s+/)[0];
-			if (!name) continue;
-			const char = getIndexEntryByDisplayName(name);
-			if (char && !seen.includes(char.id)) seen.push(char.id);
-			if (seen.length === 4) break;
-		}
-		while (seen.length < 4) seen.push('blank');
-		return seen;
+		return slotsFromNotation(foldTeamIntoNotation(entry.notation, entry.manualSlots));
 	}
 
 	let editingId = $state<string | null>(null);

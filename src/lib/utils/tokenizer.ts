@@ -179,7 +179,24 @@ function splitConcatenated(text: string, startOffset: number): Token[] {
 	if (text.length === 0 || !ACTION_FIRST_CHARS.has(text[0])) {
 		return [{ from: startOffset, to: startOffset + text.length, kind: 'unknown', text }];
 	}
+	return tokenizeActionRun(text, startOffset);
+}
 
+/**
+ * Split a run of action tokens with no character-name context — the greedy
+ * longest-match pass, minus the "does this look like a name?" guard that
+ * {@link splitConcatenated} applies first.
+ *
+ * Exported for the notation LINTER (notationFlags.ts), which has to see inside
+ * a bracket repeat group: `2[hE C]` reaches the tokenizer as ONE `label` token,
+ * so a linter that only walked top-level tokens would have a silent hole
+ * exactly where a rotation repeats itself. Offsets are absolute — pass the
+ * position of `text` in the source string.
+ *
+ * Whitespace inside `text` is skipped (it matches no alternative, and a global
+ * `exec` walks past it), so both `[hEC]` and `[hE C]` split the same way.
+ */
+export function tokenizeActionRun(text: string, startOffset = 0): Token[] {
 	const tokens: Token[] = [];
 	CONCAT_SPLIT_RE.lastIndex = 0;
 	let m: RegExpExecArray | null;

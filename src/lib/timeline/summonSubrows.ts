@@ -103,19 +103,19 @@ export function computeSummonSubrows(
 	//    different characterId". This module assigns each window a slotIdx via
 	//    the character it belongs to. Those two agree AS LONG AS a character
 	//    never occupies two slots at once — i.e. characterId ↔ slotIdx is a
-	//    bijection over summon-bearing tracks. That holds for the default slot
-	//    producer (`autoSlots` dedupes real characters, rotation-planner
-	//    +page.svelte) and the selector. It can be VIOLATED only by the
-	//    `?team=` Team-Builder hand-off (`importTeam`) and shared-link
-	//    (`applyShared`), which pass their id array through verbatim with no
-	//    dedup: a crafted duplicate-character team (e.g. `?team=fischl,fischl,…`)
-	//    makes `mapTracksToSlots` (RotationTimeline.svelte) hand one characterId
-	//    two slotIdx via `matching[usage % matching.length]`. Such a team is an
-	//    invalid Genshin comp (no duplicate characters exist) and is outside the
-	//    corpus, so it is not a fidelity case: under it OLD split the summon into
-	//    two slot-keyed lanes and truncated on the intra-character swap, while
-	//    NEW keeps one characterId-keyed lane — neither is "right" for an
-	//    impossible team. The matching note lives on the parser finalize pass.
+	//    bijection over summon-bearing tracks.
+	//
+	//    ✅ 2026-08-13 (single truth): IT NOW HOLDS UNCONDITIONALLY, and the
+	//    caveat this note used to carry is retired. There was exactly one way to
+	//    violate it: the `?team=` hand-off (`importTeam`) and shared links passed
+	//    their id array through VERBATIM with no dedup, so a crafted
+	//    `?team=fischl,fischl,…` made `mapTracksToSlots` hand one characterId two
+	//    slotIdx via `matching[usage % matching.length]`. Both routes now write
+	//    the NOTATION instead, and the slots are read back through
+	//    `orderedCharacterIds`, which dedupes — so a duplicate-character team can
+	//    no longer be expressed, by any input, rather than merely being an
+	//    invalid comp nobody was expected to try. The matching note lives on the
+	//    parser finalize pass.
 	const rowMap = new Map<string, SummonSubrow>();
 	const subrowOrder: SummonSubrow[] = [];
 	const summonByKey = new Map<string, Summon>();

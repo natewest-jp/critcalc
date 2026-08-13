@@ -601,9 +601,29 @@ function inferredStates(
  * Maps the next token after position j to the ActionKey used for cancel-window
  * selection. Returns 'swap' (full animation fallback) for end-of-segment,
  * time advances, optional groups, or anything else that isn't a direct action.
+ *
+ * `isBow` is threaded for ONE token: KQM's `A` is an aimed shot, which only a
+ * bow can take, and which our data models as that bow's fully-charged attack
+ * (see the charged branch). So a following `A` selects the 'C' cancel window
+ * for a bow and stays 'swap' for anyone else — where the token performs no
+ * action at all, and the conservative full animation is the honest reading.
  */
-function peekActionKey(tokens: Token[], j: number): ActionKey {
-	const next = tokens[j + 1];
+function peekActionKey(tokens: Token[], j: number, isBow: boolean): ActionKey {
+	// ⚓ `W` IS SKIPPED, NOT READ (2026-08-13). We do not simulate walk-cancels
+	// (⚓ Nate; gcsim does not either — its `walk` has no intrinsic duration, only
+	// the frame count you hand it), and the composer says so. But an unread `W`
+	// was not free: it is not a key in any FrameMap, so it resolved to 'swap' —
+	// the full-animation fallback — and `N1 W N2` silently timed its N1
+	// differently from `N1 N2`. A token we tell the user does nothing has to
+	// actually do nothing.
+	//
+	// Skipping is also the closer approximation of the technique: a walk-cancel
+	// does not reset the normal-attack string in game — that is exactly what
+	// makes it worth doing — so `N1 W N2` really is an N1 followed by an N2, just
+	// without the frames the cancel would have saved.
+	let k = j + 1;
+	while (tokens[k]?.kind === 'label' && tokens[k].text === 'W') k++;
+	const next = tokens[k];
 	if (!next) return 'swap';
 	if (next.kind === 'Q') return 'Q';
 	if (next.kind === 'E') return 'E';
@@ -613,6 +633,7 @@ function peekActionKey(tokens: Token[], j: number): ActionKey {
 		if (t === 'D') return 'D';
 		if (t === 'J') return 'J';
 		if (/^C\d*$/.test(t)) return 'C';
+		if (t === 'A' && isBow) return 'C';
 		if (/^[hl]?P$/.test(t)) return 'P';
 	}
 	return 'swap';
@@ -2994,7 +3015,7 @@ export function parseNotation(
 			}
 
 			if (ability) {
-				const nextKey = peekActionKey(expandedTokens, j);
+				const nextKey = peekActionKey(expandedTokens, j, isBow);
 
 				// E: cooldown wait + variant re-resolution (sweep 2026-07-05 #5).
 				// The active skill variant is time-dependent (stance/state windows)
@@ -3475,7 +3496,7 @@ export function parseNotation(
 				if (tok.kind === 'unknown') unknownTokens.push(tok.text);
 
 				const t = tok.text;
-				const nextKey = peekActionKey(expandedTokens, j);
+				const nextKey = peekActionKey(expandedTokens, j, isBow);
 
 				if (/^N\d*$/.test(t)) {
 					// Normal attack: N5 means "perform 5 normals in a row" starting from
@@ -3562,9 +3583,25 @@ export function parseNotation(
 							true
 						);
 					}
-				} else if (/^C\d*$/.test(t)) {
+				} else if (/^C\d*$/.test(t) || (t === 'A' && isBow)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
 					// chargeFrames/chargeHits. Bow uses chargeHits, others use chargeFrames.
+					//
+					// ⚓ `A` IS AN ALIAS, NOT A NEW ACTION (2026-08-13). KQM writes a bow's
+					// aimed shot as `A`; we have always modelled it as that bow's CHARGED
+					// attack — `chargeHits` holds the aimed-shot frames, and
+					// resolveActionElement already carries the rule that a bow's charged
+					// shot is elemental except the C1 partial. So the only thing missing
+					// was the token, and a KQM user typing `A` got SILENCE: no block, no
+					// cursor advance, no message. Everything below reads `t` through the
+					// same `t === 'C1' ? first : last` test, so `A` lands on the
+					// fully-charged shot, which is what the token means.
+					//
+					// ⛔ BOW-GATED, and gcsim agrees literally: its base `Aimed` returns
+					// "action aimed not implemented" for anyone else. A non-bow `A` falls
+					// through to no branch at all and is flagged in the composer
+					// (notationFlags) — an unsupported token rather than an approximated
+					// one, because nothing is drawn for it.
 					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
 					// Explicit annotation: the chargeHits read in the hit block below
 					// otherwise forms a TS7022 inference cycle through this initializer.
@@ -3950,12 +3987,13 @@ export function parseNotation(
 		// used "next track with a different slotIdx"; the two agree as long as
 		// characterId ↔ slotIdx is a bijection over summon-bearing tracks —
 		// mapTracksToSlots (RotationTimeline.svelte) maps each slotIdx to exactly
-		// one characterId, and the default slot producer `autoSlots` dedupes real
-		// characters. The only producers that DON'T dedupe are the `?team=`
-		// hand-off (`importTeam`) and shared links (`applyShared`), which pass
-		// their id array verbatim; a crafted duplicate-character `?team=` is the
-		// sole non-bijective input, but it's an invalid Genshin comp outside the
-		// corpus (see the fuller note in computeSummonSubrows). For every real
+		// one characterId, and the slots are distinct BY CONSTRUCTION.
+		// ✅ 2026-08-13 (single truth): that last clause used to carry a caveat —
+		// `?team=` (`importTeam`) and shared links passed their id array through
+		// verbatim with no dedup, so a crafted `?team=fischl,fischl` was one
+		// non-bijective input away from breaking this. Both routes now go through
+		// the NOTATION, and `orderedCharacterIds` dedupes, so a duplicate cannot
+		// be expressed at all (see the fuller note in computeSummonSubrows). For every real
 		// team the two swap-out definitions coincide.
 		let swapOutAt = Infinity;
 		for (let k = ti + 1; k < tracks.length; k++) {

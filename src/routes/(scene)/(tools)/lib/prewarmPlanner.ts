@@ -44,6 +44,7 @@ import {
 	rotationTabs,
 	tabCharacterIds,
 	TABS_KEY,
+	type LegacyTeam,
 	type RotationTab
 } from '$lib/rotationTabs.svelte';
 
@@ -54,7 +55,9 @@ export function prewarmPlannerCharacters(): void {
 		const raw = localStorage.getItem(TABS_KEY);
 		if (!raw) return;
 		const data = JSON.parse(raw) as {
-			tabs?: Array<Pick<RotationTab, 'id' | 'notation' | 'manualSlots'>>;
+			// Raw storage, so a tab here may still carry the retired manualSlots —
+			// this runs BEFORE restore() migrates them. tabCharacterIds warms both.
+			tabs?: Array<Pick<RotationTab, 'id' | 'notation'> & LegacyTeam>;
 			activeTabId?: string;
 		};
 		const active = data.tabs?.find((t) => t.id === data.activeTabId) ?? data.tabs?.[0];

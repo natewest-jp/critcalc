@@ -19,6 +19,7 @@
 	import { afterNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
+	import { notationHasActions } from '$lib/utils/notationEdit';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import ToolColumns from '$lib/components/ToolColumns.svelte';
@@ -582,6 +583,15 @@
 	const rosterIds = new Set(roster.map((c) => c.id));
 	const teamSlots = $derived<TeamSlot[]>(rt.slots.map((id) => (id === 'blank' ? null : id)));
 
+	/** "Clear team" is armed — see its button for why it is sometimes two steps.
+	 *  Disarmed whenever the team changes underneath it, so a confirm can never
+	 *  be left pointing at a document it was not raised against. */
+	let clearArmed = $state(false);
+	$effect(() => {
+		void rt.notation;
+		clearArmed = false;
+	});
+
 	// The resolved team, and whether there IS one. Both used to live inside the
 	// TeamStrip; the breathing-room round split that component into two panels,
 	// and the presence test has to sit above BOTH of them — otherwise an empty
@@ -936,11 +946,32 @@
 		     looking pressable) and Nate asked for a solid ████ here. The
 		     destructive reading moves to the hover, which is where the hand
 		     actually is when it matters. -->
+		<!-- ↻ 2026-08-13 (single truth): TWO STEPS WHEN THERE IS A ROTATION TO
+		     LOSE. The team is the notation now, so clearing the team deletes every
+		     slotted character's segments — on a written rotation that is the
+		     rotation. A team of four bare names has nothing to lose and still goes
+		     in one press; the confirm arms only once `notationHasActions` says
+		     otherwise, so the guard appears exactly when it earns its click.
+		     ⌘Z in the notation box is the other half of this: the deletion lands
+		     as an editor transaction, so a mistaken clear is one undo away. -->
 		<button
 			class="btn tb-clear"
+			class:btn--danger={clearArmed}
+			class:is-confirming={clearArmed}
 			disabled={filledCount === 0}
-			title="Empty every slot in the working team"
-			onclick={() => rt.clearTeam()}><Mark name="close" /> Clear team</button
+			title={clearArmed
+				? 'Confirm: delete every team member’s segments from the notation'
+				: 'Empty every slot in the working team'}
+			onclick={() => {
+				if (clearArmed || !notationHasActions(rt.notation)) {
+					rt.clearTeam();
+					clearArmed = false;
+				} else {
+					clearArmed = true;
+				}
+			}}
+			><Mark name={clearArmed ? 'warn' : 'close'} />
+			{clearArmed ? 'Clear rotation?' : 'Clear team'}</button
 		>
 	{/snippet}
 

@@ -3665,3 +3665,51 @@ describe('parseNotation — Yanfei Scarlet Seals are auto-tracked (real JSON, ph
 		expect(sealAt(result, 'qBars')).toBe(3);
 	});
 });
+
+// ── KQM `A` and `W` (⚓ Nate 2026-08-13) ──────────────────────────────────────
+// Both tokens were classified by the tokenizer and then silently dropped by the
+// parser — no block, no cursor advance, no message. The decisions differ, and
+// each leaves an invariant that is easy to lose to an unrelated tidy-up.
+describe('parseNotation — A is a bow’s aimed shot; W is inert', () => {
+	const ganyu = ganyuJson as unknown as CharacterData;
+	const bennett = bennettJson as unknown as CharacterData;
+	const lookupGanyu = (n: string): CharacterData | null => (n === 'Ganyu' ? ganyu : null);
+	const lookupBennett = (n: string): CharacterData | null => (n === 'Bennett' ? bennett : null);
+
+	/** The shape of what got drawn, ignoring ids (which count up per event). */
+	const drawn = (r: ReturnType<typeof parseNotation>) =>
+		r.events
+			.filter((e) => e.kind === 'action')
+			.map((e) => (e.kind === 'action' ? [e.action, e.time, e.duration, e.element] : null));
+
+	it('⚓ A on a bow is EXACTLY that bow’s charged attack — it is an alias, not a second action', () => {
+		// A bow's fully-charged shot IS the aimed shot; `chargeHits` holds those
+		// frames and resolveActionElement already carries the C1-is-physical
+		// exception. If this ever diverges, `A` has grown its own timing path,
+		// which is the bug the alias exists to prevent.
+		const a = parseNotation('Ganyu A N1 A', lookupGanyu, 8);
+		const c = parseNotation('Ganyu C N1 C', lookupGanyu, 8);
+		expect(drawn(a)).toEqual(drawn(c));
+		expect(a.totalDuration).toBe(c.totalDuration);
+	});
+
+	it('⛔ A on a non-bow draws nothing, and does not poison the parse', () => {
+		// gcsim says the same in its own words ("action aimed not implemented").
+		// The composer flags it; the parser must simply not invent a shot.
+		const r = parseNotation('Bennett E A Q', lookupBennett, 8);
+		expect(drawn(r)).toEqual([]);
+		expect(r.unknownTokens).toEqual([]);
+		expect(Number.isFinite(r.totalDuration)).toBe(true);
+	});
+
+	it('🐛 W changes NOTHING — it is not a cancel window we have, so it must not act as one', () => {
+		// The bug this caught: `W` is no FrameMap key, so peekActionKey resolved
+		// it to `swap` (the full-animation fallback) and an inserted W silently
+		// retimed the swing before it — 1.0s against 1.1s. A token the composer
+		// tells you is not simulated has to actually do nothing.
+		const withW = parseNotation('Ganyu N1 W N2', lookupGanyu, 8);
+		const without = parseNotation('Ganyu N1 N2', lookupGanyu, 8);
+		expect(drawn(withW)).toEqual(drawn(without));
+		expect(withW.totalDuration).toBe(without.totalDuration);
+	});
+});

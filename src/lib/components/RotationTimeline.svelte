@@ -13,6 +13,7 @@
 	import { artifactImagePath } from '$lib/data/artifactLookup';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import BuffTooltip from '$lib/components/BuffTooltip.svelte';
+	import Mark from '$lib/components/Mark.svelte';
 	import { scrollFade } from '$lib/actions/scrollFade';
 	import { benchBand, BENCH_CARD_W, BENCH_SLOT_MIN_H } from '$lib/benchBand.svelte';
 	import { documentBar } from '$lib/documentBar.svelte';
@@ -393,6 +394,14 @@
 			const matching = slots
 				.map((id, idx) => (id === track.characterId ? idx : -1))
 				.filter((idx) => idx >= 0);
+			// ↻ 2026-08-13 (single truth): this `continue` is where a parsed track
+			// with no slot used to vanish — no lane, no message. It survives, but it
+			// is no longer silent and no longer common: the slots ARE the notation's
+			// first four characters, so the only track that can land here is a FIFTH
+			// one, and notationFlags squiggles that name in the composer with "no
+			// slot — a team holds four". ⚓ Nate 2026-08-13 chose flagging over
+			// growing a fifth lane: the bench holds four, and a chart that disagreed
+			// with it would be a worse lie than the drop.
 			if (matching.length === 0) continue;
 			const usage = slotUsage[track.characterId] ?? 0;
 			const slotIdx = matching[usage % matching.length];
@@ -1025,6 +1034,29 @@
 	// the editor's own changes don't cause a redundant round-trip).
 	// ---------------------------------------------------------------------------
 
+	/**
+	 * The live editor, once its chunk lands — the composer's history buttons
+	 * need a handle on it, and only this action has one.
+	 *
+	 * ⚠ `historyTick` is what makes `canUndo`/`canRedo` REACTIVE. CodeMirror's
+	 * undo depth is its own state, invisible to Svelte, so the two deriveds
+	 * below read this counter to know when to ask again. It is bumped on BOTH
+	 * sync directions on purpose: a programmatic write (a bench ✕, an audition
+	 * commit) runs through the action's update() with the change callback
+	 * suppressed, so counting only typed changes would leave the Undo button
+	 * greyed out immediately after the one edit most likely to want it.
+	 */
+	let editorApi = $state<NotationEditor | null>(null);
+	let historyTick = $state(0);
+	let canUndo = $derived.by(() => {
+		void historyTick;
+		return editorApi?.canUndo() ?? false;
+	});
+	let canRedo = $derived.by(() => {
+		void historyTick;
+		return editorApi?.canRedo() ?? false;
+	});
+
 	function mountEditor(node: HTMLElement, value: string) {
 		let editor: NotationEditor | null = null;
 		let destroyed = false;
@@ -1043,17 +1075,23 @@
 			placeholder.remove();
 			editor = createNotationEditor(node, pendingValue, (v) => {
 				notation = v;
+				historyTick++;
 			});
+			editorApi = editor;
+			historyTick++;
 		});
 
 		return {
 			update(newValue: string) {
 				pendingValue = newValue;
-				if (editor) editor.setValue(newValue);
-				else placeholder.textContent = newValue;
+				if (editor) {
+					editor.setValue(newValue);
+					historyTick++;
+				} else placeholder.textContent = newValue;
 			},
 			destroy() {
 				destroyed = true;
+				if (editorApi === editor) editorApi = null;
 				editor?.destroy();
 				editor = null;
 			}
@@ -1784,6 +1822,45 @@
 	<div class="rp-composer">
 		<div class="rp-notation-wrap">
 			<div class="rp-notation" use:mountEditor={notation}></div>
+		</div>
+		<!-- ── THE HISTORY PAIR (single truth, 2026-08-13) ─────────────────────
+		     ⚓ NATE asked for undo/redo buttons on one side of the notation box.
+		     They are a thin wrapper over CodeMirror's own history commands, which
+		     ⌘Z/⌘⇧Z have always reached — what changed is that the box is no longer
+		     the only thing that writes here. A swap on the bench renames a
+		     character's segments and ✕ deletes them, and those land as editor
+		     transactions precisely so this pair can walk them back. A keystroke is
+		     not a discoverable way to undo something you did with a mouse two
+		     panels away.
+
+		     ⚠ THE TRAILING EDGE, not the leading one. The composer's left edge is
+		     the CHART's left edge (both read --rp-frame-pad-x), and that alignment
+		     is the only thing tying the box to the instrument above it; controls
+		     in front of the box would indent the notation away from the tracks it
+		     describes. -->
+		<div class="rp-history" role="group" aria-label="Notation history">
+			<button
+				class="btn btn--sm btn--icon"
+				type="button"
+				aria-label="Undo the last notation change"
+				title="Undo (⌘Z)"
+				disabled={!canUndo}
+				onclick={() => {
+					editorApi?.undo();
+					historyTick++;
+				}}><Mark name="undo" /></button
+			>
+			<button
+				class="btn btn--sm btn--icon"
+				type="button"
+				aria-label="Redo the last undone notation change"
+				title="Redo (⌘⇧Z)"
+				disabled={!canRedo}
+				onclick={() => {
+					editorApi?.redo();
+					historyTick++;
+				}}><Mark name="redo" /></button
+			>
 		</div>
 	</div>
 
@@ -3003,6 +3080,24 @@
 		flex-direction: column;
 		flex: 1;
 		min-width: 0;
+	}
+	/* The history pair. A bare flex group, not a plate — same reasoning as band
+	   B's .rp-zoom: the buttons paint themselves, and wrapping them in a second
+	   ground would stack a surface on a surface. `align-self: start` pins them to
+	   the TOP of the row so they stay level with the notation's first line if the
+	   box ever wraps to two. */
+	.rp-history {
+		display: flex;
+		align-self: start;
+		gap: 2px;
+	}
+	/* Disabled dims the INK, not the plate — the same ruling band B's controls
+	   took (⚓ Nate 2026-08-12). These sit on the bare scene beside a full-width
+	   field, so fading the element fades the glass and punches a hole in the row;
+	   an empty history should read as a button with nothing to do, not as a gap. */
+	.rp-history .btn:disabled {
+		opacity: 1;
+		color: color-mix(in srgb, var(--text) 45%, transparent);
 	}
 	/* .rp-notation is the CodeMirror host div — structural only; all visual
 	   styling (background, border, font, colors) is injected by notationTheme

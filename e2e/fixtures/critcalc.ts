@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { test as base, expect, type Page } from '@playwright/test';
 
 /**
@@ -17,8 +19,49 @@ export const KEYS = {
 	settings: 'critcalc:siteSettings'
 } as const;
 
+/**
+ * charId → the name you TYPE for it, read straight out of the committed eager
+ * index (one JSON object per line — the generator writes it that way for
+ * readable diffs, which makes it readable here too).
+ *
+ * ⚠ WHY A FILE SCRAPE RATHER THAN AN IMPORT. Since single truth (2026-08-13)
+ * the team IS the notation, so seeding a team means writing NAMES into a
+ * notation string — and the fixture cannot `import { characterIndex }` because
+ * that module resolves `$lib`, an alias only Vite knows about and Playwright's
+ * loader does not. Two lines of regex beat teaching the test runner the app's
+ * module graph.
+ */
+const DISPLAY_NAME: Record<string, string> = Object.fromEntries(
+	readFileSync(
+		fileURLToPath(new URL('../../src/lib/data/characterIndex.generated.ts', import.meta.url)),
+		'utf8'
+	)
+		.split('\n')
+		.flatMap((line) => {
+			const m = line.match(/^\t(\{.*?\}),?$/);
+			if (!m) return [];
+			const e = JSON.parse(m[1]) as { id: string; displayName: string };
+			return [[e.id, e.displayName]] as [string, string][];
+		})
+);
+
+/** The notation a seeded team resolves to: whatever the spec wrote, with any
+ *  slot it does not already name appended as a bare-name segment — the same
+ *  fold the app applies (notationEdit.foldTeamIntoNotation). */
+function seedNotation(team: NonNullable<SeedState['team']>): string {
+	let out = (team.notation ?? '').trim();
+	for (const id of team.slots) {
+		const name = DISPLAY_NAME[id];
+		if (!name || out.includes(name)) continue;
+		out = out ? `${out} > ${name}` : name;
+	}
+	return out;
+}
+
 export type SeedState = {
-	/** The working team + notation, as one active rotation tab. */
+	/** The working team + notation, as one active rotation tab. ⚠ `slots` is a
+	 *  CONVENIENCE now, not a second source of truth: it is folded into the
+	 *  notation before the tab is written, because the notation is the team. */
 	team?: { slots: string[]; notation?: string; label?: string };
 	constellations?: Record<string, number>;
 	ownership?: Record<string, 'owned' | 'wishlist'>;
@@ -47,8 +90,11 @@ export const test = base.extend<Fixtures>({
 
 	seed: async ({ page }, use) => {
 		await use(async (state: SeedState) => {
+			// Resolve the team to its notation HERE, in Node: addInitScript's body is
+			// serialized into the page and cannot reach the index.
+			const notation = state.team ? seedNotation(state.team) : '';
 			await page.addInitScript(
-				([keys, s]: [typeof KEYS, SeedState]) => {
+				([keys, s, seededNotation]: [typeof KEYS, SeedState, string]) => {
 					/**
 					 * ⚠ SEED ONCE, NEVER OVERWRITE. `addInitScript` re-runs on EVERY
 					 * navigation in the page — including `page.reload()`. Writing
@@ -69,8 +115,7 @@ export const test = base.extend<Fixtures>({
 								{
 									id: 'e2e-tab',
 									label: s.team.label ?? 'E2E',
-									notation: s.team.notation ?? '',
-									manualSlots: s.team.slots,
+									notation: seededNotation,
 									tabLoadout: {},
 									tabCon: {},
 									savedId: null
@@ -84,7 +129,7 @@ export const test = base.extend<Fixtures>({
 					if (s.settings) put(keys.settings, s.settings);
 					if (s.saved) put(keys.saved, s.saved);
 				},
-				[KEYS, state] as [typeof KEYS, SeedState]
+				[KEYS, state, notation] as [typeof KEYS, SeedState, string]
 			);
 		});
 	},
