@@ -22,7 +22,10 @@ export type SavedNotation = {
 	id: string;
 	name: string;
 	notation: string;
-	manualSlots: string[] | null;
+	/** ⛔ RETIRED (single truth, 2026-08-13) — never written again. Entries saved
+	 *  before the round still carry it, and documentBar.load folds it into the
+	 *  notation on the way in (rotationTabs.LegacyTeam). */
+	manualSlots?: string[] | null;
 	tabLoadout?: Record<string, LoadoutEntry>;
 	/**
 	 * Per-tab constellation overrides (Layer 2), snapshot alongside the notation.
@@ -67,9 +70,7 @@ function createSavedNotationsStore() {
 		/** Update an existing entry's content and/or name in-place. */
 		update(
 			id: string,
-			fields: Partial<
-				Pick<SavedNotation, 'name' | 'notation' | 'manualSlots' | 'tabLoadout' | 'tabCon'>
-			>
+			fields: Partial<Pick<SavedNotation, 'name' | 'notation' | 'tabLoadout' | 'tabCon'>>
 		) {
 			store.update((items) =>
 				persist(items.map((e) => (e.id === id ? { ...e, ...fields, savedAt: Date.now() } : e)))

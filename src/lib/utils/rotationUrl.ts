@@ -3,11 +3,19 @@
  *
  * URL codec for sharing a single rotation-planner tab via a `?r=` query param.
  *
- * Wire format:  "1~" + base64url( deflate-raw( JSON.stringify(payload) ) )
+ * Wire format:  "2~" + base64url( deflate-raw( JSON.stringify(payload) ) )
  *
- *   - The leading "1~" is a version/format marker. If the encoding ever changes
- *     (different compression, added fields that need a migration), bump it — old
- *     links keep resolving because the decoder dispatches on the marker.
+ *   - The leading "2~" is a version/format marker; the decoder dispatches on it
+ *     before attempting decompression, and the payload carries a matching `v`.
+ *
+ *     ⚓ BUMPED TO 2 (2026-08-13, single truth): the `team` field is GONE. The
+ *     notation is the team now, so an explicit slot list is not a compatible
+ *     addition to drop — a v1 link's team is exactly the state the round
+ *     retired. There is deliberately NO v1 decoder: ⚓ Nate confirmed nobody
+ *     else has used the site and he has saved no share URLs, so a v1 link
+ *     decodes to null and surfaces through the planner's existing
+ *     "Invalid share link" notice. ⛔ Do not "add" a version marker here — it
+ *     has had two since it was written; use them.
  *   - base64url alphabet (`-`/`_`, no `=` padding) is used deliberately so the
  *     blob survives `URLSearchParams` decoding untouched. Standard base64's `+`
  *     is decoded to a space by `application/x-www-form-urlencoded` rules, which
@@ -24,17 +32,16 @@ import { deflateToBase64Url, inflateFromBase64Url } from './urlCodec';
 
 /** The reproducible state of one shared rotation. */
 export type SharedRotation = {
-	/** Rotation notation text, verbatim. */
+	/** Rotation notation text, verbatim — and, since single truth, the team as
+	 *  well: the slots are the first four distinct names it holds. */
 	notation: string;
-	/** Explicit team/slot order (charIds), or `null` if the team was inferred. */
-	team: string[] | null;
 	/** charId → constellation level (1–6). Only meaningful team members included. */
 	constellations: Record<string, number>;
 	/** charId → effective loadout (character default merged with tab override). */
 	loadout: Record<string, LoadoutEntry>;
 };
 
-const FORMAT = '1';
+const FORMAT = '2';
 const MARKER = `${FORMAT}~`;
 
 // ---------------------------------------------------------------------------
@@ -44,9 +51,8 @@ const MARKER = `${FORMAT}~`;
 /** Encode a rotation into the `?r=` value (marker + base64url deflate-raw JSON). */
 export async function encodeRotation(r: SharedRotation): Promise<string> {
 	const payload = {
-		v: 1,
+		v: 2,
 		notation: r.notation,
-		team: r.team,
 		constellations: r.constellations,
 		loadout: r.loadout
 	};
@@ -69,12 +75,9 @@ export async function decodeRotation(
 	try {
 		const json = await inflateFromBase64Url(body);
 		const data = JSON.parse(json);
-		if (!isRecord(data) || data.v !== 1 || typeof data.notation !== 'string') return null;
+		if (!isRecord(data) || data.v !== 2 || typeof data.notation !== 'string') return null;
 		return {
 			notation: data.notation,
-			team: Array.isArray(data.team)
-				? data.team.filter((x): x is string => typeof x === 'string')
-				: null,
 			constellations: isRecord(data.constellations) ? sanitizeCons(data.constellations) : {},
 			loadout: isRecord(data.loadout) ? sanitizeLoadout(data.loadout) : {}
 		};

@@ -1,0 +1,200 @@
+/**
+ * src/lib/utils/notationEdit.ts
+ *
+ * REWRITING THE NOTATION ON THE USER'S BEHALF — the write half of single truth.
+ *
+ * Once the notation IS the team (rotationTabs.slots is derived from it), every
+ * team edit has to become a text edit: an audition commit RENAMES a character's
+ * segments, the bench ✕ DELETES them, and adding somebody APPENDS a bare-name
+ * segment. This module is the only place that happens, and it is pure — the
+ * store calls it, the tools call the store.
+ *
+ * ⚠ NEVER A SEARCH-AND-REPLACE. That is the trap this module exists to avoid:
+ * "Ganyu" → "Ayaka" over the raw text would also rewrite a label, and a naive
+ * pass at the segment level would corrupt `N2`. What makes the rewrite bounded
+ * is a fact about the grammar — ⚓ A CHARACTER NAME IS ONLY EVER A SEGMENT'S
+ * FIRST TOKEN. The parser reads `tokens[0]` as the character slot and the
+ * tokenizer refuses to read a name anywhere else (there is no inline
+ * `[Bennett Q]` construct), so every edit here is a leading-token splice with
+ * offsets the tokenizer already computed.
+ *
+ * ⚠ SURGICAL, NOT REBUILT. Every function splices the original string and
+ * leaves everything it did not target byte-identical — including the user's own
+ * spacing, a dangling `> ` they are typing into, and any junk the tokenizer
+ * could not classify. A rewrite that reformats the parts it was not asked about
+ * is a rewrite you cannot trust with a document you are in the middle of.
+ */
+
+import { tokenizeNotation } from './tokenizer';
+import { getCharacterIndexEntry, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
+
+/** One `>`-delimited segment, located in the source string. */
+export type NotationSegment = {
+	/** Character id the leading name resolves to, or null when it resolves to
+	 *  nobody (the parser skips such a segment; so does the slot derivation). */
+	charId: string | null;
+	/** The leading character-name token's span — what a rename replaces. */
+	nameFrom: number;
+	nameTo: number;
+	/** End of the segment's last token. Trailing whitespace and the following
+	 *  separator are NOT included; deletion decides what else to take. */
+	contentEnd: number;
+};
+
+/**
+ * Locate every segment in a notation string, in source order.
+ *
+ * Resolution goes through the tokenizer's `character` token rather than the
+ * word-prefix scan that used to live in rotationTabs — deliberately, because
+ * the PARSER resolves that same token, and the two disagreeing is precisely how
+ * a character could end up with a track and no slot to draw it in.
+ */
+export function notationSegments(notation: string): NotationSegment[] {
+	const tokens = tokenizeNotation(notation);
+	const segments: NotationSegment[] = [];
+	for (let i = 0; i < tokens.length; i++) {
+		const head = tokens[i];
+		if (head.kind !== 'character') continue;
+		let end = i + 1;
+		while (end < tokens.length && tokens[end].kind !== 'character') end++;
+		// The body may close with a separator belonging to the JOIN, not the
+		// segment — walk back over it so `contentEnd` is the last real token.
+		let last = end - 1;
+		while (last > i && tokens[last].kind === 'separator') last--;
+		segments.push({
+			charId: getIndexEntryByDisplayName(head.text)?.id ?? null,
+			nameFrom: head.from,
+			nameTo: head.to,
+			contentEnd: tokens[last].to
+		});
+	}
+	return segments;
+}
+
+/** The first `TEAM_SIZE` distinct character ids the notation names, in segment
+ *  order — see rotationTabs.slotsFromNotation, which pads this to four. */
+export function orderedCharacterIds(notation: string): string[] {
+	const seen: string[] = [];
+	for (const seg of notationSegments(notation)) {
+		if (seg.charId && !seen.includes(seg.charId)) seen.push(seg.charId);
+	}
+	return seen;
+}
+
+/**
+ * True when the notation says more than who is on the team — i.e. at least one
+ * segment carries an action after its name.
+ *
+ * The Team Builder's "Clear team" asks: under single truth it deletes every
+ * character's segments, which on a written rotation means deleting the
+ * rotation. A team of four bare names is nothing to lose; a team of four with a
+ * rotation attached wants to be asked first.
+ */
+export function notationHasActions(notation: string): boolean {
+	return notationSegments(notation).some((s) => s.contentEnd > s.nameTo);
+}
+
+/** `id` → the name to type for it. Unknown ids fall back to the id itself,
+ *  which will lint as an unresolvable name rather than vanish silently. */
+function displayNameFor(charId: string): string {
+	return getCharacterIndexEntry(charId)?.displayName ?? charId;
+}
+
+/**
+ * Rename every segment led by `charId` to `toCharId` — what an audition commit
+ * does. The segments keep their actions verbatim; whether the new character can
+ * PERFORM them is the linter's sentence to pass (notationFlags), not this
+ * module's to censor.
+ */
+export function renameCharacterInNotation(
+	notation: string,
+	charId: string,
+	toCharId: string
+): string {
+	const name = displayNameFor(toCharId);
+	let out = notation;
+	// Descending, so an earlier splice can't shift a later span's offsets.
+	for (const seg of notationSegments(notation).reverse()) {
+		if (seg.charId !== charId) continue;
+		out = out.slice(0, seg.nameFrom) + name + out.slice(seg.nameTo);
+	}
+	return out;
+}
+
+/**
+ * Delete every segment led by `charId` — what the bench ✕ does.
+ *
+ * ⚠ THE JOINS ARE THE HARD PART, not the segments. Removing a middle segment
+ * has to take ONE `>` with it or the survivors collide; removing the LAST has
+ * to take the one BEFORE it instead. Doing that as independent spans overlaps
+ * the moment two adjacent segments both go, so the string is reassembled from
+ * the surviving pieces instead: each survivor's text verbatim, joined by an
+ * ORIGINAL join (the one that followed the earlier survivor), with whatever sat
+ * before the first segment and after the last left exactly where it was.
+ */
+export function deleteCharacterFromNotation(notation: string, charId: string): string {
+	const segments = notationSegments(notation);
+	const doomed = segments.filter((s) => s.charId === charId);
+	if (doomed.length === 0) return notation;
+	const survivors = segments.filter((s) => s.charId !== charId);
+
+	const prefix = notation.slice(0, segments[0].nameFrom);
+	const suffix = notation.slice(segments[segments.length - 1].contentEnd);
+	if (survivors.length === 0) return (prefix + suffix).trim();
+
+	// The join that FOLLOWED segment k, verbatim (`" > "`, `">"`, `"  >\n"` …).
+	const joinAfter = (k: number) =>
+		k < segments.length - 1 ? notation.slice(segments[k].contentEnd, segments[k + 1].nameFrom) : '';
+
+	let out = prefix + notation.slice(survivors[0].nameFrom, survivors[0].contentEnd);
+	for (let i = 1; i < survivors.length; i++) {
+		const prevIdx = segments.indexOf(survivors[i - 1]);
+		out += joinAfter(prevIdx) + notation.slice(survivors[i].nameFrom, survivors[i].contentEnd);
+	}
+	return out + suffix;
+}
+
+/**
+ * Append a bare-name segment — what adding somebody to the team does when there
+ * is nothing of theirs to rename.
+ *
+ * A lone name is valid notation: it parses, it takes a slot, and it draws an
+ * empty track waiting for actions. That is the whole mechanism by which a Team
+ * Builder user can assemble four characters before typing a single cast.
+ */
+export function appendCharacterToNotation(notation: string, charId: string): string {
+	const name = displayNameFor(charId);
+	const body = notation.replace(/\s+$/, '');
+	if (body === '') return name;
+	// A dangling separator is somebody mid-thought — complete it rather than
+	// adding a second one.
+	return body.endsWith('>') ? `${body} ${name}` : `${body} > ${name}`;
+}
+
+/**
+ * MIGRATION: fold a legacy explicit team (`manualSlots`, the `?r=` `team`
+ * field) into the notation, so a document restored from before single truth
+ * still has the team it was saved with.
+ *
+ * Anyone the notation already names keeps their place; anyone it does not is
+ * appended as a bare-name segment, in the order the old team held them. Slot
+ * ORDER can therefore change — a character sitting in slot 3 of a manual team
+ * whose notation names nobody arrives in slot 0 — which is the trade Nate took
+ * knowingly (⚓ 2026-08-13: "having the tool and notation agree is way more
+ * important" than preserving slot order).
+ */
+export function foldTeamIntoNotation(
+	notation: string,
+	team: readonly (string | null)[] | null | undefined
+): string {
+	if (!team) return notation;
+	let out = notation;
+	const present = new Set(orderedCharacterIds(notation));
+	for (const id of team) {
+		if (!id || id === 'blank' || present.has(id)) continue;
+		if (!getCharacterIndexEntry(id)) continue;
+		present.add(id);
+		out = appendCharacterToNotation(out, id);
+	}
+	return out;
+}

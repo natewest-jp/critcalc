@@ -2,8 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { encodeRotation, decodeRotation, type SharedRotation } from './rotationUrl';
 
 const SAMPLE: SharedRotation = {
-	notation: 'Zhongli E Kazuha E Q Yelan E Q Hu Tao E N2C N2C N2C D N2C Q',
-	team: ['hu_tao', 'yelan', 'kaedehara_kazuha', 'zhongli'],
+	notation: 'Zhongli E > Kazuha E Q > Yelan E Q > Hu Tao E N2C N2C N2C D N2C Q',
 	constellations: { hu_tao: 1, kaedehara_kazuha: 2, zhongli: 6 },
 	loadout: {
 		kaedehara_kazuha: {
@@ -24,7 +23,7 @@ describe('rotationUrl codec', () => {
 
 	it('produces a URLSearchParams-safe blob (base64url only, no + / =)', async () => {
 		const encoded = await encodeRotation(SAMPLE);
-		expect(encoded).toMatch(/^1~[A-Za-z0-9_-]+$/);
+		expect(encoded).toMatch(/^2~[A-Za-z0-9_-]+$/);
 		expect(encoded).not.toMatch(/[+/=]/);
 	});
 
@@ -37,15 +36,9 @@ describe('rotationUrl codec', () => {
 		expect(await decodeRotation(param)).toEqual(SAMPLE);
 	});
 
-	it('round-trips a null team', async () => {
-		const shared: SharedRotation = { ...SAMPLE, team: null };
-		expect(await decodeRotation(await encodeRotation(shared))).toEqual(shared);
-	});
-
 	it('round-trips empty constellations / loadout', async () => {
 		const shared: SharedRotation = {
 			notation: 'Bennett E Q',
-			team: null,
 			constellations: {},
 			loadout: {}
 		};
@@ -54,8 +47,7 @@ describe('rotationUrl codec', () => {
 
 	it('round-trips unicode and long notation', async () => {
 		const shared: SharedRotation = {
-			notation: ('Furina E Q Neuvillette CA '.repeat(40) + '— café ✨').trim(),
-			team: ['furina', 'neuvillette'],
+			notation: ('Furina E Q > Neuvillette C > '.repeat(40) + '— café ✨').trim(),
 			constellations: {},
 			loadout: {}
 		};
@@ -73,11 +65,13 @@ describe('rotationUrl codec', () => {
 			['null', null],
 			['undefined', undefined],
 			['empty', ''],
-			['marker only', '1~'],
-			['wrong marker', '2~abcd'],
-			['no marker', 'eyJ2IjoxfQ'],
-			['garbage base64url', '1~!!!!not base64!!!!'],
-			['valid base64url but not deflate', '1~aGVsbG8']
+			['marker only', '2~'],
+			// ⚓ A v1 link. There is NO v1 decoder by design (single truth,
+			// 2026-08-13) — it degrades to the planner's "Invalid share link".
+			['a retired v1 link', '1~abcd'],
+			['no marker', 'eyJ2IjoyfQ'],
+			['garbage base64url', '2~!!!!not base64!!!!'],
+			['valid base64url but not deflate', '2~aGVsbG8']
 		])('returns null for %s', async (_label, input) => {
 			expect(await decodeRotation(input)).toBeNull();
 		});
@@ -86,7 +80,6 @@ describe('rotationUrl codec', () => {
 	it('sanitizes a hostile / malformed payload', async () => {
 		const dirty: SharedRotation = {
 			notation: 'X E',
-			team: ['a', 'b'],
 			// out-of-range + wrong-type values that a hand-edited link might carry
 			constellations: { a: 9, b: 0, c: -3, d: 4.6 } as unknown as Record<string, number>,
 			loadout: {
@@ -103,8 +96,9 @@ describe('rotationUrl codec', () => {
 	});
 
 	it('rejects a JSON payload with the wrong version', async () => {
-		// Hand-build a v:2 payload through the same pipeline to prove version gating.
-		const bad = { v: 2, notation: 'x', team: null, constellations: {}, loadout: {} };
+		// Hand-build a v:1 payload through the same pipeline to prove version gating
+		// still bites from the inside (the marker is only the outer half).
+		const bad = { v: 1, notation: 'x', team: null, constellations: {}, loadout: {} };
 		const compressed = await (async () => {
 			const cs = new CompressionStream('deflate-raw');
 			const w = cs.writable.getWriter();
@@ -117,6 +111,6 @@ describe('rotationUrl codec', () => {
 			.replace(/\+/g, '-')
 			.replace(/\//g, '_')
 			.replace(/=+$/, '');
-		expect(await decodeRotation(`1~${b64url}`)).toBeNull();
+		expect(await decodeRotation(`2~${b64url}`)).toBeNull();
 	});
 });

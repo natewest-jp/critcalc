@@ -67,14 +67,12 @@
 				t.id === rt.activeTabId ? { ...t, label, savedId: undefined } : t
 			);
 			rt.notation = shared.notation;
-			rt.manualSlots = shared.team;
 			rt.tabLoadout = shared.loadout;
 			rt.tabCon = importedCon;
 		} else {
 			rt.openTab({
 				label,
 				notation: shared.notation,
-				manualSlots: shared.team,
 				tabLoadout: shared.loadout,
 				tabCon: importedCon
 			});
@@ -190,9 +188,11 @@
 
 	let slots = $derived(rt.slots);
 
-	// Lazy-load full character payloads for the slotted set (plus any
-	// notation-named characters when manual slots override autoSlots, so the
-	// parser can still resolve them). Payloads land in characterData's
+	// Lazy-load full character payloads for the slotted set. ↻ 2026-08-13: that
+	// used to be the union of `slots` and `autoSlots`, because a manual override
+	// could hide a notation-named character the parser still had to resolve.
+	// Under single truth the slots ARE the notation's characters, so the union
+	// collapsed — and `autoSlots` went with it. Payloads land in characterData's
 	// reactive cache; timeline/panels/bonuses populate via getLoadedCharacter.
 	//
 	// This is also where the loading veil is released on a hard load. The
@@ -203,7 +203,7 @@
 	// re-run when the flag flips, so the ordering of onMount vs effects does
 	// not matter. releaseVeil is idempotent and a no-op once the veil is gone.
 	$effect(() => {
-		const loads = [...new Set([...slots, ...rt.autoSlots])].map((id) =>
+		const loads = [...new Set(slots)].map((id) =>
 			// `blank` loads too now — the generic-profile placeholder kit, so a
 			// "Blank E Q" rotation resolves and renders like any other slot.
 			loadCharacter(id)

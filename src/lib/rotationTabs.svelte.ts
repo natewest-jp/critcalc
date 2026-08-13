@@ -17,6 +17,29 @@
  *             bench band in BOTH tools. The bench is the plan's team editor
  *             everywhere; it never marks ownership.
  *
+ * ══ THE NOTATION IS THE SINGLE SOURCE OF TRUTH (⚓ NATE 2026-08-13) ═══════════
+ *
+ * `manualSlots` is RETIRED. The team was `manualSlots ?? autoSlots` — two
+ * sources of truth for one fact — and every bug in the area was the two
+ * disagreeing: one bench ✕ materialized a manual override and killed notation
+ * inference for the whole tab (type a character who was never involved and they
+ * would not slot either), while a character the notation named but the manual
+ * slots did not got a full parsed track and no lane to draw it in.
+ *
+ * So the team is DERIVED, always: the first four distinct characters the
+ * notation names, in segment order. Every team edit is therefore a TEXT edit —
+ * a swap renames that character's segments, ✕ deletes them, adding somebody
+ * appends a bare-name segment (see notationEdit.ts, which owns the rewrites).
+ * ⚠ The cost, taken knowingly: slot ORDER is notation order, so you cannot fill
+ * slot 3 while 1–2 are empty. Nate traded reordering away for the tool and the
+ * text agreeing, and has a separate idea for reordering.
+ *
+ * The gain that pays for it is undo. Because the slot is derived from the text,
+ * undoing the text restores the slot by itself — there is no separate
+ * slot-restore path, and ⌘Z in the notation box reaches a ✕ pressed on the
+ * bench (see RotationTimeline's editor handle for the routing that makes the
+ * store's write land as a CodeMirror transaction).
+ *
  * SSR/hydration safety: the module initializes the same deterministic default
  * on server and client (one empty tab); localStorage state is restored by the
  * tools layout's onMount (pre-paint). Persistence is an $effect in the tools
@@ -27,59 +50,76 @@
  */
 
 import { browser } from '$app/environment';
-import { getIndexEntryByDisplayName } from '$lib/data/characterLookup';
+import {
+	appendCharacterToNotation,
+	deleteCharacterFromNotation,
+	foldTeamIntoNotation,
+	orderedCharacterIds,
+	renameCharacterInNotation
+} from '$lib/utils/notationEdit';
 import type { LoadoutEntry } from '$lib/stores';
 
 export type RotationTab = {
 	id: string;
 	label: string;
 	notation: string;
-	manualSlots: string[] | null;
 	tabLoadout?: Record<string, LoadoutEntry>;
 	/** Per-tab constellation overrides (Layer 2), parallel to tabLoadout. */
 	tabCon?: Record<string, number>;
 	savedId?: string;
 };
 
+/**
+ * What a pre-single-truth tab carried alongside its notation. Never written
+ * again; read once, at the boundary where old state arrives (localStorage
+ * restore, a saved-bank entry, a settings backup), and folded into the notation
+ * by {@link foldTeamIntoNotation}. ⚓ Nate 2026-08-13: no backwards
+ * compatibility is REQUIRED — nobody but him has used the site — so this is a
+ * courtesy to his own open tabs, not a contract.
+ */
+export type LegacyTeam = { manualSlots?: string[] | null };
+
 export const TAB_LIMIT = 6;
 export const TABS_KEY = 'critcalc:rotationTabs';
 
+/** How many characters a team holds. */
+export const TEAM_SIZE = 4;
+
 /**
  * Notation → the four slot ids it implies: the first four distinct character
- * names in segment order, padded with 'blank'.
+ * names in segment order, padded with 'blank'. THE team, since single truth.
  *
- * ⚠ ONE COPY, and it is here because two already existed. `autoSlots` below is
- * a $derived over the ACTIVE tab, and prewarmPlanner.ts hand-rolled a mirror of
- * it to run before this store is restored — its comment said as much ("mirroring
- * the planner's autoSlots"). Warming the OTHER open tabs needed the same
- * resolution a third time, which is where a mirror stops being a shortcut. Both
- * callers now share this; it is a pure string → string[] with no runes, so the
- * pre-restore caller can use it as freely as the reactive one.
+ * ⚠ ONE COPY, and it is here because two already existed (prewarmPlanner
+ * hand-rolled a mirror to run before this store is restored). It is a pure
+ * string → string[] with no runes, so the pre-restore caller can use it as
+ * freely as the reactive one.
+ *
+ * ↻ 2026-08-13: resolution moved to the TOKENIZER (notationEdit.orderedCharacterIds)
+ * from a word-prefix scan of `notation.split('>')`. The two agreed on every
+ * ordinary rotation and disagreed at the edges — and the parser resolves the
+ * tokenizer's `character` token, so the scan was the odd one out. A slot
+ * derivation that can disagree with the parser is the exact shape of the bug
+ * this round is removing.
  */
 export function slotsFromNotation(notation: string): string[] {
-	const seen: string[] = [];
-	for (const segment of notation.split('>')) {
-		const words = segment.trim().split(/\s+/).filter(Boolean);
-		if (words.length === 0) continue;
-		// Try longest multi-word prefix first so names like "Hu Tao" resolve
-		// before a bare "Hu" would. Cap at 3 words — no canonical name is longer.
-		let char = null;
-		for (let k = Math.min(3, words.length); k >= 1; k--) {
-			char = getIndexEntryByDisplayName(words.slice(0, k).join(' '));
-			if (char) break;
-		}
-		if (char && !seen.includes(char.id)) seen.push(char.id);
-		if (seen.length === 4) break;
-	}
-	while (seen.length < 4) seen.push('blank');
+	const seen = orderedCharacterIds(notation ?? '').slice(0, TEAM_SIZE);
+	while (seen.length < TEAM_SIZE) seen.push('blank');
 	return seen;
 }
 
-/** The character ids a tab actually needs loaded — its manual override if it has
- *  one, else what its notation implies. 'blank' is not a character. */
-export function tabCharacterIds(tab: Pick<RotationTab, 'notation' | 'manualSlots'>): string[] {
-	const slots = tab.manualSlots ?? slotsFromNotation(tab.notation ?? '');
-	return slots.filter((id) => id && id !== 'blank');
+/** The character ids a tab actually needs loaded. 'blank' is not a character.
+ *  Still tolerates a legacy `manualSlots`: the planner's navigation-start
+ *  prewarm reads RAW localStorage, before restore() has migrated anything. */
+export function tabCharacterIds(tab: Pick<RotationTab, 'notation'> & LegacyTeam): string[] {
+	// A plain array scan, not a Set: the list is four-ish entries and nothing
+	// here is state — `svelte/prefer-svelte-reactivity` would rather see a
+	// SvelteSet, which would be wrong for a pure function (documentBar.copyName
+	// makes the same call for the same reason).
+	const ids: string[] = [];
+	for (const id of [...slotsFromNotation(tab.notation ?? ''), ...(tab.manualSlots ?? [])]) {
+		if (id && id !== 'blank' && !ids.includes(id)) ids.push(id);
+	}
+	return ids;
 }
 
 function genId(): string {
@@ -87,7 +127,15 @@ function genId(): string {
 }
 
 function makeTab(label: string): RotationTab {
-	return { id: genId(), label, notation: '', manualSlots: null };
+	return { id: genId(), label, notation: '' };
+}
+
+/** Strip a restored tab of its retired field, folding whatever team it carried
+ *  into the notation first. See {@link LegacyTeam}. */
+function migrateTab(tab: RotationTab & LegacyTeam): RotationTab {
+	const { manualSlots, ...rest } = tab;
+	if (!manualSlots) return rest;
+	return { ...rest, notation: foldTeamIntoNotation(rest.notation ?? '', manualSlots) };
 }
 
 function loadFromStorage(): { tabs: RotationTab[]; activeTabId: string } | null {
@@ -114,7 +162,6 @@ class RotationTabsState {
 	// Live working state — kept separate from the tabs array so bind:notation
 	// on RotationTimeline works cleanly without circular reactivity.
 	notation = $state<string>('');
-	manualSlots = $state<string[] | null>(null);
 	tabLoadout = $state<Record<string, LoadoutEntry>>({});
 	tabCon = $state<Record<string, number>>({});
 
@@ -122,13 +169,10 @@ class RotationTabsState {
 	 *  pre-restore default state can never clobber saved tabs. */
 	restored = $state(false);
 
-	/** Slots inferred from the notation: first four distinct character names in
-	 *  segment order, padded with 'blank'. */
-	autoSlots = $derived(slotsFromNotation(this.notation));
-
-	/** THE working team: manual override if set, else notation-derived.
-	 *  Always 4 entries; 'blank' = empty slot. */
-	slots = $derived(this.manualSlots ?? this.autoSlots);
+	/** THE working team, derived from the notation and nothing else: the first
+	 *  four distinct character names in segment order, padded with 'blank'.
+	 *  ⛔ There is no override to consult any more — see the module header. */
+	slots = $derived(slotsFromNotation(this.notation));
 
 	get activeTab(): RotationTab {
 		return this.tabs.find((t) => t.id === this.activeTabId) ?? this.tabs[0];
@@ -138,14 +182,17 @@ class RotationTabsState {
 	restore(): void {
 		const stored = loadFromStorage();
 		if (stored) {
-			const activeId = stored.tabs.some((t) => t.id === stored.activeTabId)
+			// Migrate at the boundary — every tab that still carries a retired
+			// `manualSlots` has its team folded into its notation here, once, and
+			// nothing downstream ever sees the field again.
+			const tabs = stored.tabs.map(migrateTab);
+			const activeId = tabs.some((t) => t.id === stored.activeTabId)
 				? stored.activeTabId
-				: stored.tabs[0].id;
-			const active = stored.tabs.find((t) => t.id === activeId) ?? stored.tabs[0];
-			this.tabs = stored.tabs;
+				: tabs[0].id;
+			const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
+			this.tabs = tabs;
 			this.activeTabId = activeId;
 			this.notation = active.notation;
-			this.manualSlots = active.manualSlots;
 			this.tabLoadout = active.tabLoadout ?? {};
 			this.tabCon = active.tabCon ?? {};
 		}
@@ -161,7 +208,6 @@ class RotationTabsState {
 				? {
 						...t,
 						notation: this.notation,
-						manualSlots: this.manualSlots,
 						tabLoadout: this.tabLoadout,
 						tabCon: this.tabCon
 					}
@@ -181,7 +227,6 @@ class RotationTabsState {
 				? {
 						...t,
 						notation: this.notation,
-						manualSlots: this.manualSlots,
 						tabLoadout: this.tabLoadout,
 						tabCon: this.tabCon
 					}
@@ -191,7 +236,6 @@ class RotationTabsState {
 
 	private loadWorkingState(tab: RotationTab): void {
 		this.notation = tab.notation;
-		this.manualSlots = tab.manualSlots;
 		this.tabLoadout = tab.tabLoadout ?? {};
 		this.tabCon = tab.tabCon ?? {};
 	}
@@ -261,7 +305,6 @@ class RotationTabsState {
 
 	resetActiveTab(): void {
 		this.notation = '';
-		this.manualSlots = null;
 		this.tabLoadout = {};
 		this.tabCon = {};
 		this.tabs = this.tabs.map((t, i) =>
@@ -270,7 +313,6 @@ class RotationTabsState {
 						...t,
 						label: `Tab ${i + 1}`,
 						notation: '',
-						manualSlots: null,
 						tabLoadout: {},
 						tabCon: {},
 						savedId: undefined
@@ -288,34 +330,72 @@ class RotationTabsState {
 
 	// -------------------------------------------------------------------------
 	// Composition writes (the Team Builder + the bench band)
+	//
+	// ⚠ EVERY ONE OF THESE IS A TEXT EDIT NOW. They read like slot operations
+	// because that is what the callers have — a bench index, a candidate id —
+	// but each resolves to a rewrite of the notation, which is the only place a
+	// team is recorded. Writing `this.notation` is also what makes them
+	// undoable: the planner's editor mirrors the value in as a CodeMirror
+	// transaction, so ⌘Z reaches a ✕ pressed on the bench.
 	// -------------------------------------------------------------------------
 
-	/** Set one slot of the working team. Materializes the notation-derived
-	 *  slots into an explicit manual override first — the same rule the
-	 *  planner's picker applies. `null`/'blank' empties the slot. */
+	/**
+	 * Set one slot of the working team. A filled slot is RENAMED (that
+	 * character's segments keep their actions and change who performs them —
+	 * the audition commit's move); an empty one APPENDS a bare-name segment;
+	 * `null`/'blank' DELETES the occupant's segments.
+	 *
+	 * ⚠ `index` is honoured for the outgoing character, not the incoming one:
+	 * filling an empty slot appends, so the new character lands after everyone
+	 * already named rather than at `index`. Slot order is notation order — see
+	 * the module header for the trade.
+	 */
 	setSlot(index: number, id: string | null): void {
-		const next = [...this.slots];
-		next[index] = id ?? 'blank';
-		this.manualSlots = next;
+		const outgoing = this.slots[index];
+		const incoming = id ?? 'blank';
+		if (outgoing === incoming) return;
+		if (incoming === 'blank') {
+			if (outgoing !== 'blank') {
+				this.notation = deleteCharacterFromNotation(this.notation, outgoing);
+			}
+			return;
+		}
+		this.notation =
+			outgoing === 'blank'
+				? appendCharacterToNotation(this.notation, incoming)
+				: renameCharacterInNotation(this.notation, outgoing, incoming);
 	}
 
-	/** Add to the first empty slot (no-op when full or already present). */
+	/** Add to the team (no-op when full or already present). */
 	addToTeam(id: string): void {
 		if (this.slots.includes(id)) return;
-		const empty = this.slots.indexOf('blank');
-		if (empty >= 0) this.setSlot(empty, id);
+		if (!this.slots.includes('blank')) return;
+		this.notation = appendCharacterToNotation(this.notation, id);
 	}
 
-	/** Remove a character wherever it sits. */
+	/** Remove a character wherever it sits — deletes their segments. */
 	removeFromTeam(id: string): void {
-		const at = this.slots.indexOf(id);
-		if (at >= 0) this.setSlot(at, null);
+		if (!this.slots.includes(id)) return;
+		this.notation = deleteCharacterFromNotation(this.notation, id);
 	}
 
-	/** Empty every slot (an explicit override — the notation may still name
-	 *  characters, and clearing must win over re-inference). */
+	/**
+	 * Empty every slot. Under single truth that means deleting every slotted
+	 * character's segments — i.e. the rotation, if one was written. The Team
+	 * Builder asks first when there is more than bare names to lose
+	 * (notationEdit.notationHasActions); the ⌘Z that follows a mistake is the
+	 * other half of that safety.
+	 *
+	 * Anything the notation holds that ISN'T a slotted character survives — an
+	 * unresolvable name, a fifth character with no slot — because this clears
+	 * the TEAM, and those were never on it.
+	 */
 	clearTeam(): void {
-		this.manualSlots = ['blank', 'blank', 'blank', 'blank'];
+		let next = this.notation;
+		for (const id of this.slots) {
+			if (id && id !== 'blank') next = deleteCharacterFromNotation(next, id);
+		}
+		this.notation = next;
 	}
 
 	// -------------------------------------------------------------------------
@@ -338,10 +418,11 @@ class RotationTabsState {
 	// -------------------------------------------------------------------------
 
 	/** Import a team by ids: reuse a pristine first tab (or the active tab at
-	 *  the limit), else open a new tab. Returns whether a tab was replaced. */
+	 *  the limit), else open a new tab. Returns whether a tab was replaced.
+	 *  The team arrives as the notation it now IS — a run of bare-name segments,
+	 *  ready to have actions typed after each. */
 	importTeam(ids: string[], label = 'Imported team'): { replacedTab: boolean } {
-		const team = [...ids];
-		while (team.length < 4) team.push('blank');
+		const notation = foldTeamIntoNotation('', ids.slice(0, TEAM_SIZE));
 		const active = this.activeTab;
 		const pristine = this.tabs.length === 1 && !active.notation.trim() && !active.savedId;
 		const atLimit = this.tabs.length >= TAB_LIMIT;
@@ -351,12 +432,11 @@ class RotationTabsState {
 			);
 		} else {
 			this.flush();
-			const newTab: RotationTab = { id: genId(), label, notation: '', manualSlots: team };
+			const newTab: RotationTab = { id: genId(), label, notation };
 			this.tabs = [...this.tabs, newTab];
 			this.activeTabId = newTab.id;
 		}
-		this.notation = '';
-		this.manualSlots = team;
+		this.notation = notation;
 		this.tabLoadout = {};
 		this.tabCon = {};
 		return { replacedTab: atLimit && !pristine };

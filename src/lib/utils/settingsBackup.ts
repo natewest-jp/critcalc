@@ -137,6 +137,10 @@ function sanitizeSavedNotations(v: unknown, now: number): Record<string, unknown
 			id: entry.id,
 			name: entry.name,
 			notation: entry.notation,
+			// ⛔ RETIRED FIELD, still READ (single truth, 2026-08-13). A backup taken
+			// before the round carries an explicit team; carrying it through the
+			// sanitizer is what lets documentBar.load fold it into the notation when
+			// the entry is opened. Nothing writes it any more.
 			manualSlots: Array.isArray(entry.manualSlots) ? entry.manualSlots : null,
 			savedAt:
 				typeof entry.savedAt === 'number' && Number.isFinite(entry.savedAt) ? entry.savedAt : now
