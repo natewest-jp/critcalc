@@ -25,7 +25,7 @@ import {
 	keymap,
 	tooltips
 } from '@codemirror/view';
-import { RangeSetBuilder, type Extension } from '@codemirror/state';
+import { type Extension } from '@codemirror/state';
 import { history, historyKeymap, defaultKeymap } from '@codemirror/commands';
 import {
 	autocompletion,
@@ -34,6 +34,7 @@ import {
 	type CompletionResult
 } from '@codemirror/autocomplete';
 import { tokenizeNotation, type Token, type TokenKind } from './tokenizer';
+import { flagNotation, flagSeverity, type NotationFlag } from './notationFlags';
 import { searchCharacterIndex, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 import { elementPalette } from './elementColors';
 import { resolveActionElement, type NormalActionKind } from './actionElement';
@@ -107,6 +108,34 @@ function elementTintForToken(
 // Syntax highlight plugin
 // ---------------------------------------------------------------------------
 
+/** Squiggle class per flag register — see notationFlags for what separates them.
+ *  The warning one is the tokenizer's existing unrecognized-token treatment,
+ *  reused rather than twinned: an unresolvable NAME and an unrecognized TOKEN
+ *  are the same sentence to the reader ("this didn't parse"), so they must not
+ *  arrive in two different colours. */
+const FLAG_CLASS = {
+	warning: 'rp-tok-unknown',
+	provisional: 'rp-flag-approx'
+} as const;
+
+/**
+ * True when the caret sits inside (or immediately after) a range — WE DO NOT
+ * LINT THE WORD YOU ARE TYPING.
+ *
+ * Only the unresolvable-name flag needs this, and it needs it badly: a name is
+ * typed one letter at a time and every prefix of it resolves to nobody, so
+ * without the suppression the squiggle fires under the cursor for the whole
+ * time the autocomplete popup is offering to finish the word. The approximation
+ * flags ride short, complete tokens (`hE`, `sQ`) and are steady enough to show
+ * as you type.
+ */
+function caretInside(view: EditorView, from: number, to: number): boolean {
+	for (const range of view.state.selection.ranges) {
+		if (range.head >= from && range.head <= to) return true;
+	}
+	return false;
+}
+
 const notationHighlight = ViewPlugin.fromClass(
 	class {
 		decorations: DecorationSet;
@@ -116,12 +145,29 @@ const notationHighlight = ViewPlugin.fromClass(
 		}
 
 		update(update: ViewUpdate) {
-			if (update.docChanged) this.decorations = this.build(update.view);
+			// ⚠ selectionSet MATTERS, not just docChanged: the name-flag suppression
+			// above reads the caret, so moving off a half-typed name has to be able
+			// to bring its squiggle back (and moving onto one, take it away).
+			if (update.docChanged || update.selectionSet) this.decorations = this.build(update.view);
 		}
 
 		build(view: EditorView): DecorationSet {
-			const builder = new RangeSetBuilder<Decoration>();
-			const tokens = tokenizeNotation(view.state.doc.toString());
+			const doc = view.state.doc.toString();
+			const tokens = tokenizeNotation(doc);
+			// Flags keyed by their exact source range, so a token can pick up its
+			// own without a scan. A bracket-inner flag (`2[hE]`) has no top-level
+			// token to attach to and is emitted as its own nested mark below.
+			const flags = new Map<string, NotationFlag>();
+			for (const flag of flagNotation(doc)) {
+				if (flag.reason === 'unknown-character' && caretInside(view, flag.from, flag.to)) continue;
+				flags.set(`${flag.from}:${flag.to}`, flag);
+			}
+
+			// ⛔ NOT a RangeSetBuilder any more. It requires ranges added in source
+			// order and cannot take a mark NESTED inside one already added — which
+			// is exactly what a flag inside a bracket repeat group is. Decoration.set
+			// with sort:true accepts both.
+			const ranges: ReturnType<Decoration['range']>[] = [];
 			// Segment's caster element/weapon — reset at each character token, which
 			// always opens a segment, and carried across its action tokens.
 			let curElement: Element | null = null;
@@ -134,18 +180,33 @@ const notationHighlight = ViewPlugin.fromClass(
 				}
 				const cls = TOKEN_CLASS[tok.kind];
 				if (!cls) continue;
+				const key = `${tok.from}:${tok.to}`;
+				const flag = flags.get(key);
+				flags.delete(key);
 				const tint = elementTintForToken(tok, curElement, curWeapon);
+				const attributes: Record<string, string> = {};
 				// Element-bearing tokens keep their structural class (padding/weight)
 				// and override just the color inline with the caster's bright tint.
-				builder.add(
-					tok.from,
-					tok.to,
-					tint
-						? Decoration.mark({ class: cls, attributes: { style: `color:${tint}` } })
-						: Decoration.mark({ class: cls })
+				if (tint) attributes.style = `color:${tint}`;
+				if (flag) attributes.title = flag.message;
+				const className = flag ? `${cls} ${FLAG_CLASS[flagSeverity(flag.reason)]}` : cls;
+				ranges.push(
+					Decoration.mark(
+						Object.keys(attributes).length ? { class: className, attributes } : { class: className }
+					).range(tok.from, tok.to)
 				);
 			}
-			return builder.finish();
+			// Whatever is left never matched a top-level token: a cast inside a
+			// bracket group. It nests inside that group's own mark.
+			for (const flag of flags.values()) {
+				ranges.push(
+					Decoration.mark({
+						class: FLAG_CLASS[flagSeverity(flag.reason)],
+						attributes: { title: flag.message }
+					}).range(flag.from, flag.to)
+				);
+			}
+			return Decoration.set(ranges, true);
 		}
 	},
 	{ decorations: (v) => v.decorations }
@@ -381,6 +442,24 @@ const notationTheme = EditorView.theme({
 		textDecorationLine: 'underline',
 		textDecorationStyle: 'wavy',
 		textDecorationColor: 'var(--ui-warning)',
+		textUnderlineOffset: '3px'
+	},
+	// ── THE SECOND SQUIGGLE: an APPROXIMATED cast (notationFlags) ────────────
+	// The token parsed perfectly; the character simply cannot perform it, so the
+	// bar is drawn from a stand-in — an `hE` on a character with no hold variant,
+	// an `sQ` with no short burst, a fifth character with nowhere to sit.
+	//
+	// ⚠ IT DOES NOT TAKE THE INK, and that is the whole difference from the
+	// warning above. --ui-provisional is "this is approximate", not "you did
+	// something" — and the token's colour is already carrying real information
+	// (the caster's element tint), which recolouring would destroy to say
+	// something quieter. So: the underline alone. The two registers are a
+	// measured pair (ΔE .122; see the UI-state block in app.css), which is what
+	// lets one amber squiggle be told from the other at this size.
+	'.rp-flag-approx': {
+		textDecorationLine: 'underline',
+		textDecorationStyle: 'wavy',
+		textDecorationColor: 'var(--ui-provisional)',
 		textUnderlineOffset: '3px'
 	}
 });

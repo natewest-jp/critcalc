@@ -15,6 +15,7 @@ import {
 	summarizeCapabilities
 } from '$lib/capabilities/deriveCapabilities';
 import { isCurated } from '$lib/utils/characterLint';
+import { declaredCastTokens } from '$lib/utils/castTokens';
 
 const INDEX_FIELDS = [
 	'id',
@@ -42,6 +43,7 @@ function indexFieldsOf(source: CharacterData): CharacterIndexEntry {
 		if (source[field] !== undefined) entry[field] = source[field];
 	}
 	entry.curated = isCurated(source);
+	entry.casts = declaredCastTokens(source);
 	entry.caps = summarizeCapabilities(deriveCharacterCapabilities(source).capabilities);
 	const gated = collectGatedReactions(source);
 	if (gated.length > 0) entry.gatedReactions = gated;

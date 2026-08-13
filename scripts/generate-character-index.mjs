@@ -29,6 +29,7 @@ import {
 	summarizeCapabilities
 } from '../src/lib/capabilities/deriveCapabilities.ts';
 import { isCurated } from '../src/lib/utils/characterLint.ts';
+import { declaredCastTokens } from '../src/lib/utils/castTokens.ts';
 
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const CHARACTERS_DIR = join(PROJECT_ROOT, 'src/lib/data/characters');
@@ -65,6 +66,10 @@ for (const file of files) {
 		if (data[field] !== undefined) entry[field] = data[field];
 	}
 	entry.curated = isCurated(data);
+	// The E/Q entry tokens this character can perform. Eager because the notation
+	// editor lints against it on every keystroke and cannot wait for a lazy
+	// payload — the same reason element/weapon are eager for the token tinting.
+	entry.casts = declaredCastTokens(data);
 	entry.caps = summarizeCapabilities(deriveCharacterCapabilities(data).capabilities);
 	const gated = collectGatedReactions(data);
 	if (gated.length > 0) entry.gatedReactions = gated;

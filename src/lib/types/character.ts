@@ -111,6 +111,13 @@ export type CharacterIndexEntry = Pick<
 	 *  "doesn't have it" — uncurated characters must never be silently filtered
 	 *  out by capability facets. */
 	curated: boolean;
+	/** The E/Q entry tokens this character can actually perform
+	 *  (castTokens.declaredCastTokens), computed at index-generation time.
+	 *  EAGER because the notation editor lints against it per keystroke — a
+	 *  token outside this list is approximated by the parser, and the squiggle
+	 *  that says so cannot wait for a lazy payload. Empty = an uncurated stub
+	 *  with no skill or burst ability at all. */
+	casts: string[];
 	/** Distinct reactions the kit gates on via `teamEnablesReaction`
 	 *  conditions — derived at index generation. A character with
 	 *  `stellarConduct` here carries Stellar-conditional buffs without being
