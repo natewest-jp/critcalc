@@ -39,6 +39,12 @@ export interface BarPhaseSegment {
 	span: number;
 	/** Cooldown seconds for the ghost-track label — present on `ghost` only. */
 	cooldown?: number;
+	/** Which repetition of the cycle this segment belongs to (0 = the first, the
+	 *  one that actually happened). Set only by `repeatCycles` for the Team
+	 *  Builder's Compare chart, where later cycles are HYPOTHETICAL and render
+	 *  weaker. The planner and the PNG exporter draw real casts off a parsed
+	 *  rotation, never a projected cadence, so they neither set nor read it. */
+	cycle?: number;
 }
 
 /** Minimal bar shape the phase math reads. `TimelineBar` (and the exporter's
