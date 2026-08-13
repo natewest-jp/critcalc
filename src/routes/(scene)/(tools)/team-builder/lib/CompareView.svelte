@@ -26,7 +26,7 @@
 	 * of its own; the axis + lens controls are a glass plate; the facts table is
 	 * the ONE paper card — it is the thing you land on.
 	 */
-	import type { Snippet } from 'svelte';
+	import { untrack, type Snippet } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
@@ -62,6 +62,7 @@
 		onBackToPlanner = undefined,
 		seedLenses = undefined,
 		onLensChange = undefined,
+		onElementLensChange = undefined,
 		candidatesArea = undefined
 	}: {
 		ids: string[];
@@ -81,16 +82,26 @@
 		/** Set only when the audition arrived as an errand from the planner — the
 		 *  errand's two exits sit together, cancel then return. */
 		onBackToPlanner?: () => void;
-		/** Audition mode: the jobs this slot currently does. Seeds the lens, so
-		 *  the chart opens on what has to be replaced rather than on everything. */
-		seedLenses?: readonly string[];
+		/** Audition mode: the jobs this slot currently does, with the facet
+		 *  system's own labels (⚠ handed in rather than derived here, so the chips
+		 *  cannot drift from the Roster rail's wording). Seeds the lens, so the
+		 *  chart opens on what has to be replaced rather than on everything.
+		 *  EMPTY is meaningful — it triggers the element fallback. */
+		seedLenses?: readonly { key: string; label: string }[];
 		/** The lens selection changed. Audition narrows its candidate list by the
 		 *  same chips that group the chart — ONE control, two jobs. */
 		onLensChange?: (keys: CapRowKey[]) => void;
+		/** The ELEMENT lens changed — only fires in the fallback, where the slot
+		 *  has no capability to match on. */
+		onElementLensChange?: (elements: string[]) => void;
 		/** Audition mode: the candidates strip, rendered below the reference — the
 		 *  host owns the tiles/handlers (same pattern as the card actions). */
 		candidatesArea?: Snippet;
 	} = $props();
+
+	/** The element fallback's vocabulary — the same seven, in the same order, as
+	 *  the Roster filter rail's Element section. */
+	const LENS_ELEMENTS = ['anemo', 'cryo', 'dendro', 'electro', 'geo', 'hydro', 'pyro'] as const;
 
 	// ── Geometry ──────────────────────────────────────────────────────────────
 	// The track stretches with the view. 🎛️ Tuning knobs: the gutter holds one
@@ -158,33 +169,81 @@
 	// ── Axis + lenses ─────────────────────────────────────────────────────────
 	let axisSeconds = $state<number>(COMPARE_AXIS_DEFAULT);
 
-	/** Rows that have at least one drawable lane — the chart's whole vocabulary. */
+	/** Rows that have at least one drawable lane — the chart's own vocabulary. */
 	const chartableRows = $derived(model ? model.capRows.filter((r) => r.lanes.length > 0) : []);
 
-	/** Lens selection. Empty = everything, which is also the honest default for
-	 *  plain compare: you start by seeing what there is, not by hiding most of
-	 *  it. An audition starts seeded instead — it opens on the jobs the slot
-	 *  already does, because that is the question it was opened to answer. */
+	/**
+	 * THE CHIP VOCABULARY, and which thing it is ABOUT is the whole subtlety.
+	 *
+	 * In plain compare the chips are the CHART's rows — you are narrowing what
+	 * you are looking at, so the chart is the subject.
+	 *
+	 * ⚓ In an AUDITION they are the SLOT's — what the incumbent does, handed in
+	 * whole by the host. That matters for two reasons. It keeps the row STABLE
+	 * as candidates come and go (chart-derived chips would grow a "Heal" chip the
+	 * moment you added a healer to compare, changing the question mid-answer),
+	 * and it keeps facets the chart cannot DRAW — an instant cleanse has no
+	 * window, so no lane — as candidate filters, which is the job that actually
+	 * matters here.
+	 */
+	const lensChips = $derived<{ key: string; label: string }[]>(
+		anchorId !== undefined
+			? [...(seedLenses ?? [])]
+			: chartableRows.map((r) => ({ key: r.key as string, label: r.label }))
+	);
+
+	/**
+	 * ⚓ THE ELEMENT FALLBACK (Nate 2026-08-13). 17 of 123 characters have no
+	 * ally-facing capability at all, and they are not a curation gap — they are
+	 * Diluc, Keqing, Neuvillette, Tartaglia, Mualani, Skirk, Ningguang. MAIN DPS
+	 * AS A ROLE. Auditioning your carry is an entirely normal thing to do, and it
+	 * is exactly the case where "who covers what they cover" has nothing to say,
+	 * because a DPS's job is damage and this site does not compute damage.
+	 *
+	 * So the answer is not to paginate a wall of ~118 chips — it is to ask the
+	 * question that IS meaningful for that slot. For a carry that is ELEMENT:
+	 * reactions and resonance are the reason team composition exists at all.
+	 *
+	 * ⛔ Never BOTH vocabularies at once. One question per chip row, chosen by
+	 * what the slot actually offers.
+	 */
+	const elementLens = $derived(anchorId !== undefined && lensChips.length === 0);
+	const anchorElement = $derived(
+		anchorIndex >= 0 ? (columns[anchorIndex].entry?.element ?? null) : null
+	);
+
+	/** Capability lens selection. Empty = everything, which is the honest default
+	 *  for plain compare: you start by seeing what there is, not by hiding most
+	 *  of it. An audition starts SEEDED — it opens on the jobs the slot already
+	 *  does, because that is the question it was opened to answer. */
 	const lenses = new SvelteSet<CapRowKey>();
+	/** Element lens selection — only ever populated in the fallback above. */
+	const elementLenses = new SvelteSet<string>();
 
 	// `seedLenses` gets a NEW array identity per audition, so comparing the
 	// reference reseeds once per open and never fights the user's own toggles.
-	let seededFrom: readonly string[] | undefined = undefined;
+	let seededFrom: readonly unknown[] | undefined = undefined;
 	$effect(() => {
 		if (seedLenses === seededFrom) return;
 		seededFrom = seedLenses;
 		lenses.clear();
-		for (const key of seedLenses ?? []) lenses.add(key as CapRowKey);
+		elementLenses.clear();
+		for (const chip of seedLenses ?? []) lenses.add(chip.key as CapRowKey);
+		// Seed the fallback to the incumbent's own element — "who else is Pyro"
+		// is the opening question, not a blank one.
+		if (untrack(() => elementLens) && anchorElement) elementLenses.add(anchorElement);
 		onLensChange?.([...lenses]);
+		onElementLensChange?.([...elementLenses]);
 	});
 
-	// Drop lens keys the current selection no longer offers, so a stale chip
-	// can't silently filter the chart down to nothing after a character swap.
-	// ⚠ Guarded on `model`: while the lazy payloads are still landing there are
-	// no chartable rows at all, and an unguarded sweep would wipe the audition's
-	// seed a frame after it was set.
+	// Drop lens keys the chart no longer offers, so a stale chip can't silently
+	// filter it down to nothing after a character swap.
+	// ⚠ PLAIN COMPARE ONLY. An audition's chips are the SLOT's, not the chart's
+	// (see above) — sweeping them against the chart would delete exactly the
+	// undrawable facets that were doing the useful work, and would do it a frame
+	// after the seed landed.
 	$effect(() => {
-		if (!model) return;
+		if (!model || anchorId !== undefined) return;
 		const available = new Set(chartableRows.map((r) => r.key));
 		let changed = false;
 		for (const key of [...lenses]) {
@@ -196,12 +255,21 @@
 		if (changed) onLensChange?.([...lenses]);
 	});
 
-	function toggleLens(key: CapRowKey) {
-		if (lenses.has(key)) lenses.delete(key);
-		else lenses.add(key);
+	function toggleLens(key: string) {
+		if (lenses.has(key as CapRowKey)) lenses.delete(key as CapRowKey);
+		else lenses.add(key as CapRowKey);
 		onLensChange?.([...lenses]);
 	}
 
+	function toggleElementLens(el: string) {
+		if (elementLenses.has(el)) elementLenses.delete(el);
+		else elementLenses.add(el);
+		onElementLensChange?.([...elementLenses]);
+	}
+
+	/** ⚠ Only the capability lens narrows the CHART. An element is an identity
+	 *  fact, not something a lane can be grouped under, so in the fallback the
+	 *  chart shows everything and the chips are purely a candidate filter. */
 	const visibleRows = $derived(
 		lenses.size === 0 ? chartableRows : chartableRows.filter((r) => lenses.has(r.key))
 	);
@@ -386,35 +454,65 @@
 		<p class="cmp-loading">Loading kit data…</p>
 	{:else}
 		<!-- ── Apparatus: glass. The axis and the lens, and nothing else. ────── -->
-		{#if chartableRows.length > 0}
+		{#if chartableRows.length > 0 || elementLens}
 			<div class="panel ctx-glass cmp-controls">
-				<div class="cmp-ctrl">
-					<span class="cmp-ctrl-label" id="cmp-axis-label">Axis</span>
-					<div class="segment" role="group" aria-labelledby="cmp-axis-label">
-						{#each COMPARE_AXIS_CHOICES as choice (choice)}
-							<button
-								class="btn"
-								class:is-active={axisSeconds === choice}
-								aria-pressed={axisSeconds === choice}
-								onclick={() => (axisSeconds = choice)}>{choice}s</button
-							>
-						{/each}
+				{#if chartableRows.length > 0}
+					<div class="cmp-ctrl">
+						<span class="cmp-ctrl-label" id="cmp-axis-label">Axis</span>
+						<div class="segment" role="group" aria-labelledby="cmp-axis-label">
+							{#each COMPARE_AXIS_CHOICES as choice (choice)}
+								<button
+									class="btn"
+									class:is-active={axisSeconds === choice}
+									aria-pressed={axisSeconds === choice}
+									onclick={() => (axisSeconds = choice)}>{choice}s</button
+								>
+							{/each}
+						</div>
 					</div>
-				</div>
+				{/if}
 				<div class="cmp-ctrl cmp-ctrl--lens">
-					<span class="cmp-ctrl-label" id="cmp-lens-label">Show</span>
-					<div class="cmp-lenses" role="group" aria-labelledby="cmp-lens-label">
-						{#each chartableRows as row (row.key)}
-							<button
-								class="chip chip--sm"
-								class:active={lenses.has(row.key)}
-								aria-pressed={lenses.has(row.key)}
-								onclick={() => toggleLens(row.key)}>{row.label}</button
-							>
-						{/each}
-					</div>
+					{#if elementLens}
+						<!-- The fallback. Same row, same job, a different question —
+						     "who else is Pyro" instead of "who else heals" — because
+						     this slot's occupant has no capability to be matched on.
+						     ⚠ `chip--element` + `--chip-color`, exactly the grammar the
+						     Roster's filter rail uses: the same axis must not grow a
+						     second look on a second surface. -->
+						<span class="cmp-ctrl-label" id="cmp-lens-label">Element</span>
+						<div class="cmp-lenses" role="group" aria-labelledby="cmp-lens-label">
+							{#each LENS_ELEMENTS as el (el)}
+								<button
+									class="chip chip--sm chip--element"
+									class:active={elementLenses.has(el)}
+									style:--chip-color={elementPalette(el).main}
+									aria-pressed={elementLenses.has(el)}
+									onclick={() => toggleElementLens(el)}>{el}</button
+								>
+							{/each}
+						</div>
+					{:else}
+						<span class="cmp-ctrl-label" id="cmp-lens-label">Show</span>
+						<div class="cmp-lenses" role="group" aria-labelledby="cmp-lens-label">
+							{#each lensChips as chip (chip.key)}
+								<button
+									class="chip chip--sm"
+									class:active={lenses.has(chip.key as CapRowKey)}
+									aria-pressed={lenses.has(chip.key as CapRowKey)}
+									onclick={() => toggleLens(chip.key)}>{chip.label}</button
+								>
+							{/each}
+						</div>
+					{/if}
 				</div>
 			</div>
+			{#if elementLens}
+				<p class="note cmp-fallback-note">
+					{columns[anchorIndex]?.entry?.displayName ?? 'This slot'} has no team-facing capability to match
+					candidates on — a main DPS's job is damage, which this site shows rather than scores. Matching
+					on element instead.
+				</p>
+			{/if}
 		{/if}
 
 		<!-- ── The chart: on the night, no ground of its own. ────────────────── -->
@@ -803,6 +901,14 @@
 		flex-wrap: wrap;
 		gap: 0.3rem;
 		min-width: 0;
+	}
+	.cmp-lenses .chip--element {
+		text-transform: capitalize;
+	}
+	.cmp-fallback-note {
+		margin: -0.35rem 0 0;
+		font-size: var(--fs-sm);
+		color: var(--chart-dim);
 	}
 
 	/* ── The chart ────────────────────────────────────────────── */

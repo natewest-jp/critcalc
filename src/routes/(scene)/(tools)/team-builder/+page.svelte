@@ -454,11 +454,14 @@
 	let stashedCompare: string[] = [];
 	/** The facets the incumbent provides — what this SLOT does, which is what
 	 *  seeds the audition's lens. */
-	let auditionSeedFacets = $state<FacetKey[]>([]);
+	let auditionSeedFacets = $state<{ key: FacetKey; label: string }[]>([]);
 	/** The currently-active subset, driven by CompareView's lens chips — ONE
 	 *  control doing two jobs: it groups the chart AND narrows the candidates.
 	 *  Toggleable so an over-narrow AND of every seed facet can be relaxed. */
 	const auditionFacets = new SvelteSet<FacetKey>();
+	/** The ELEMENT fallback's selection — populated only when the incumbent has
+	 *  no facet to match on (a main DPS). See CompareView's note. */
+	const auditionElements = new SvelteSet<string>();
 	/** Where commit/cancel returns to — the tab active when the audition began. */
 	let auditionReturnTab = $state<'atlas' | 'roster'>('atlas');
 
@@ -502,6 +505,7 @@
 		auditionSlot = null;
 		auditionSeedFacets = [];
 		auditionFacets.clear();
+		auditionElements.clear();
 	}
 
 	/** Audition replacements for a filled slot: pin the incumbent as the anchor
@@ -517,9 +521,20 @@
 		auditionSlot = index;
 		const cap = conCapFor(conMode, mounted ? ($constellations[incumbentId] ?? 0) : 0);
 		const entry = getCharacterIndexEntry(incumbentId);
-		auditionSeedFacets = entry ? [...facetsProvidedBy(entry, cap)] : [];
+		// ⚠ Labels come from FACETS, the same source the Roster rail reads, so the
+		// audition's chips cannot drift from the wording used to find characters
+		// everywhere else on this tool.
+		auditionSeedFacets = entry
+			? [...facetsProvidedBy(entry, cap)].map((key) => ({
+					key,
+					label: FACETS.find((f) => f.key === key)?.label ?? key
+				}))
+			: [];
 		auditionFacets.clear();
-		for (const f of auditionSeedFacets) auditionFacets.add(f);
+		for (const f of auditionSeedFacets) auditionFacets.add(f.key);
+		// The element fallback seeds itself in CompareView (it owns the decision
+		// about which vocabulary is on offer); this only has to start clean.
+		auditionElements.clear();
 		auditionReturnTab = sourceTab === 'compare' ? 'atlas' : sourceTab;
 		selectedId = null;
 		sourceTab = 'compare';
@@ -587,18 +602,35 @@
 		}
 	}
 
-	/** Candidates for the audition strip: everyone (outside the team) who covers
-	 *  ALL currently-active seed facets at the mode's constellation cap. */
+	/**
+	 * Candidates for the audition strip: everyone outside the team who covers ALL
+	 * currently-active facets at the mode's constellation cap.
+	 *
+	 * ⚓ …or, when the slot has no facet to match on (a main DPS — see
+	 * CompareView's element-fallback note), everyone outside the team of the
+	 * selected ELEMENT. The two filters are alternatives, never both: only one
+	 * chip vocabulary is ever on offer, so only one of these sets is ever
+	 * populated.
+	 */
 	const auditionCandidates = $derived.by(() => {
 		if (anchorId === null) return [] as CharacterIndexEntry[];
 		const cons = mounted ? $constellations : {};
 		const wanted = [...auditionFacets];
+		const elements = [...auditionElements];
 		return roster.filter((e) => {
 			if (e.id === anchorId || teamSlots.includes(e.id)) return false;
+			if (elements.length > 0 && !elements.includes(e.element ?? '')) return false;
+			if (wanted.length === 0) return true;
 			const provided = facetsProvidedBy(e, conCapFor(conMode, cons[e.id]));
 			return wanted.every((f) => provided.includes(f));
 		});
 	});
+
+	/** CompareView's ELEMENT lens changed (the fallback only). */
+	function applyElementLens(elements: string[]): void {
+		auditionElements.clear();
+		for (const el of elements) auditionElements.add(el);
+	}
 
 	// The tab's avatar stack — insertion order, the anchor first when auditioning.
 	const compareStack = $derived(
@@ -1323,6 +1355,7 @@
 						auditionSlot={auditionSlot ?? undefined}
 						seedLenses={anchorId ? auditionSeedFacets : undefined}
 						onLensChange={anchorId ? applyAuditionLens : undefined}
+						onElementLensChange={anchorId ? applyElementLens : undefined}
 						onRemove={toggleCompare}
 						onCommit={anchorId ? commitAudition : undefined}
 						onClear={anchorId ? undefined : () => compareIds.clear()}
