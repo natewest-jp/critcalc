@@ -9,16 +9,22 @@
 	 * a comparison is handed the SAME `scaleSeconds` + `trackWidthPx`, so lengths
 	 * compare truthfully when the lanes stack.
 	 *
-	 * ⚠ TWO WEAKENINGS, AND THEY MEAN DIFFERENT THINGS. A repeated cycle is
-	 * weaker because it is HYPOTHETICAL (we projected it from the cooldown); a
-	 * locked lane is weaker because it is UNREACHED (its constellation gate is
-	 * above your cap). They multiply, and they are both spent in the PAINT —
-	 * never as element `opacity`, per the sub-pixel laws.
+	 * ⚠ ONE WEAKENING, NOT TWO. A LOCKED lane is weaker because it is UNREACHED
+	 * (its constellation gate is above your cap). ⛔ A REPEATED cycle is NOT
+	 * weakened — that fade is retired; see the note in barCycles.ts for why it
+	 * failed. The weakening is spent in the PAINT, never as element `opacity`,
+	 * per the sub-pixel laws.
 	 *
 	 * ⛔ EVERY FILL IS A SINGLE-LEVEL `color-mix`, and the percentage arithmetic
 	 * happens in JS on purpose: a `color-mix` fed by a `color-mix` CRASHES WEBKIT.
 	 * Weakening a fill by nesting one mix in another is the obvious way to write
 	 * this and it is the one way that cannot ship.
+	 *
+	 * ⚓ THE BARS DRAW STRAIGHT ON THE NIGHT — the track has no ground of its own.
+	 * A faint recessed field used to sit under them, and it read as a halo along
+	 * the cooldown ghost's top and bottom edges, softening exactly the boundary
+	 * the chart is for. With it gone, the ghost is the only thing in the "off"
+	 * beats and uptime-versus-cooldown separates on its own.
 	 *
 	 * Bars are divs, never SVG — same Safari fractional-offset reason as the
 	 * planner (see RotationTimeline.svelte). Geometry comes from the shared pure
@@ -27,7 +33,7 @@
 	import { barGeom } from '$lib/timeline/barGeometry';
 	import { castFill, desaturate } from '$lib/utils/elementColors';
 	import { GHOST_CHROMA_KEEP, GHOST_FILL_MIX, UPTIME_DIM_MIX } from '$lib/timeline/barMix';
-	import { COMPARE_LOCKED_MIX, COMPARE_REPEAT_MIX } from '$lib/timeline/barCycles';
+	import { COMPARE_LOCKED_MIX } from '$lib/timeline/barCycles';
 	import type { BarPhaseSegment } from '$lib/timeline/barPhases';
 
 	let {
@@ -58,12 +64,20 @@
 
 	const pxPerSec = $derived(scaleSeconds > 0 ? trackWidthPx / scaleSeconds : 0);
 
-	/** Compose the two weakenings into ONE percentage, then mix once. */
-	function strength(cycle: number | undefined, base: number): number {
-		let pct = base;
-		if ((cycle ?? 0) > 0) pct = (pct * COMPARE_REPEAT_MIX) / 100;
-		if (locked) pct = (pct * COMPARE_LOCKED_MIX) / 100;
-		return pct;
+	/** ⚓ The seam between two abutting solid blocks: a bite off the leading edge,
+	 *  so the NIGHT shows through and you can see where one cast ends and the
+	 *  next begins. It is a seam, not a gap — on a 30s axis it is worth well
+	 *  under a tenth of a second, far below anything this chart resolves.
+	 *
+	 *  🎛️ Tuning knob, and deliberately NOT a hairline. The retired repeat-fade
+	 *  failed by being subtle enough to confuse with its neighbour; a marker
+	 *  whose entire job is "these two lanes are not the same thing" has to win at
+	 *  a glance or it repeats that mistake. Two pixels of night is unambiguous in
+	 *  KIND (nothing else in a lane is a hole) and in SIZE. */
+	const SEAM_PX = 2;
+
+	function strength(base: number): number {
+		return locked ? (base * COMPARE_LOCKED_MIX) / 100 : base;
 	}
 
 	function mix(color: string, pct: number): string {
@@ -71,18 +85,25 @@
 		return `color-mix(in srgb, ${color} ${pct.toFixed(1)}%, transparent)`;
 	}
 
+	/** A repeated solid block gets the seam; the first cast has nothing to its
+	 *  left to be separated from. Applied here rather than in the geometry so
+	 *  `barGeom`'s telescoping endpoints stay exact. */
+	function seamed(g: { left: number; width: number }, seg: BarPhaseSegment) {
+		if (seg.role !== 'uptimeFlush' || (seg.cycle ?? 0) === 0 || g.width <= SEAM_PX * 2) return g;
+		return { left: g.left + SEAM_PX, width: g.width - SEAM_PX };
+	}
+
 	/** The solid window — the cast-fill finish shared with the planner's pills. */
-	const uptimeFill = (seg: BarPhaseSegment) => mix(castFill(bar), strength(seg.cycle, 100));
+	const uptimeFill = () => mix(castFill(bar), strength(100));
 
 	/** Continuation of the window past its cooldown. ⚓ The planner keeps this
 	 *  OPAQUE because swap connectors pass behind its bars; Compare has no
 	 *  connectors, so the same tone is honest as alpha — which is what retired
 	 *  the hardcoded `#10131c` this file used to mix against. */
-	const dimFill = (seg: BarPhaseSegment) => mix(castFill(bar), strength(seg.cycle, UPTIME_DIM_MIX));
+	const dimFill = () => mix(castFill(bar), strength(UPTIME_DIM_MIX));
 
 	/** Ghost cooldown track — desaturated, the planner's exact recipe. */
-	const ghostFill = (seg: BarPhaseSegment) =>
-		mix(desaturate(bar, GHOST_CHROMA_KEEP), strength(seg.cycle, GHOST_FILL_MIX));
+	const ghostFill = () => mix(desaturate(bar, GHOST_CHROMA_KEEP), strength(GHOST_FILL_MIX));
 
 	/** ⛔ Deliberately plain white at alpha, NOT the element tinted toward white:
 	 *  tinting first and weakening second is two mixes, and a `color-mix` fed by
@@ -93,14 +114,14 @@
 
 <div class="cb-track" style:width="{trackWidthPx}px">
 	{#each segments as seg, i (i)}
-		{@const g = barGeom(seg.start, seg.span, pxPerSec)}
+		{@const g = seamed(barGeom(seg.start, seg.span, pxPerSec), seg)}
 		{#if seg.role === 'uptime' || seg.role === 'uptimeFlush'}
 			<span
 				class="cb-seg cb-uptime"
 				class:cb-flush={seg.role === 'uptimeFlush'}
 				style:left="{g.left}px"
 				style:width="{g.width}px"
-				style:background={uptimeFill(seg)}
+				style:background={uptimeFill()}
 			></span>
 		{:else if seg.role === 'uptimeDim' || seg.role === 'overflow'}
 			<span
@@ -108,14 +129,14 @@
 				class:cb-flush={seg.role === 'overflow'}
 				style:left="{g.left}px"
 				style:width="{g.width}px"
-				style:background={dimFill(seg)}
+				style:background={dimFill()}
 			></span>
 		{:else if seg.role === 'ghost'}
 			<span
 				class="cb-seg cb-ghost"
 				style:left="{g.left}px"
 				style:width="{g.width}px"
-				style:background={ghostFill(seg)}
+				style:background={ghostFill()}
 			></span>
 		{/if}
 	{/each}
@@ -127,18 +148,16 @@
 </div>
 
 <style>
+	/* ⛔ NO GROUND (⚓ Nate 2026-08-13). A --chart-grid field used to sit under
+	   the lane, on the reasoning that a track wants a field to be a track in.
+	   What it actually produced was a faint halo along the cooldown ghost's top
+	   and bottom edges — the ghost is inset vertically, so the field showed
+	   above and below it and softened the one boundary this chart draws. The
+	   bars go straight on the night, like the planner's timeline. */
 	.cb-track {
 		position: relative;
 		height: 14px;
 		flex-shrink: 0;
-		/* The shared time field the lanes sit in. Barely there — with the cycle
-		   tiled, the ghost track already occupies the "off" beats, so a strong
-		   ground here would fight the rhythm it is supposed to hold.
-		   ⚓ --chart-grid, because that is exactly what this is: a hairline
-		   inside an instrument. It already carries ALPHA rather than mixing
-		   toward a ground, which is what a lane sitting on the bare night needs. */
-		background: var(--chart-grid);
-		border-radius: 1px;
 	}
 
 	.cb-seg {

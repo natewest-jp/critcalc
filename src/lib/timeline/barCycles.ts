@@ -40,15 +40,22 @@ import { barPhases, type BarPhaseSegment } from './barPhases';
  *  is a handful of seconds. */
 const MAX_CYCLES = 200;
 
-/** How much of its full strength a HYPOTHETICAL cycle keeps. Cycle 0 happened;
- *  1..n are the cadence continued, so they read as the same bar, quieter.
- *  🎛️ Tuning knob — the floor is legibility: below ~30 the rhythm stops
- *  reading as rhythm and starts reading as one bar with smudges after it. */
-export const COMPARE_REPEAT_MIX = 40;
-
 /** How much a lane keeps when its constellation gate is above the view's cap.
  *  ⚠ Spent in the PAINT, never as element `opacity` — see the sub-pixel laws. */
 export const COMPARE_LOCKED_MIX = 45;
+
+/* ⛔ `COMPARE_REPEAT_MIX` IS RETIRED (⚓ Nate 2026-08-13, at the surface).
+   Repeated cycles used to render weaker, on the reasoning that a projected cast
+   is a claim and the drawing should say so. It was worth trying and it did not
+   read: a faded uptime block landed at almost exactly the value of the PREVIOUS
+   cycle's cooldown ghost, and the width difference was not enough to separate
+   them — so the fade did not mark a repeat, it blurred the boundary between
+   uptime and cooldown, which is the one distinction this chart exists to draw.
+
+   The caveat did not go anywhere; it moved to the only place that was carrying
+   it unambiguously anyway — the footnote under the chart. A repeat is still a
+   claim. It is just drawn at full strength, because a legible bar that needs a
+   sentence beats an illegible one that tried to be self-documenting. */
 
 /**
  * Repeat one cycle's segments across `axisSeconds`, tagging each with its
@@ -85,12 +92,29 @@ export function repeatCycles(
  * The Compare chart's lane geometry: one effect window on one host's cooldown,
  * tiled across the axis.
  *
- * ⚓ `uptime >= cooldown` is PERMANENT UPTIME and gets ONE unbroken segment, not
- * a tiling. The ability is back before its window lapses, so there is nothing to
- * repeat — and `barPhases`' case B (a window outlasting its cooldown) is a
- * ONE-CAST reading that would draw a spurious seam at every cooldown boundary.
- * Same math, different question: the planner asks "what did this cast do", and
- * Compare asks "what does this ability hold". Intercept before delegating.
+ * ⚓ `uptime >= cooldown` is PERMANENT UPTIME, and it still TILES — as abutting
+ * `uptimeFlush` blocks one cooldown long, which the renderer separates with a
+ * hairline seam.
+ *
+ * ⚠ IT USED TO RETURN ONE UNBROKEN SEGMENT, AND THAT WAS A REAL LOSS OF
+ * INFORMATION (⚓ Nate 2026-08-13): on a 30s axis, a 30s window and a 15s window
+ * on a 15s cooldown drew the IDENTICAL solid bar — but in play they are not the
+ * same thing at all, because the second one needs you to come back to that
+ * character at 15s and cast again or it lapses. Permanent uptime is a *result*,
+ * not a property; the seams are what it costs, and a chart that hides the cost
+ * of holding a buff up is telling you the easy half of the story.
+ *
+ * The seam sits on the COOLDOWN boundary — the moment the cast comes back and
+ * the rhythm resets. When `uptime > cooldown` there is slack (you may recast any
+ * time between the cooldown and the window's end); the fact column carries both
+ * numbers, and the seam marks the earliest honest moment rather than inventing a
+ * deadline inside the slack.
+ *
+ * `barPhases` is bypassed on this branch on purpose: its case B is a ONE-CAST
+ * reading (window, then overflow past the cooldown), and tiling that would make
+ * each cycle's overflow collide with the next cycle's window. Same math,
+ * different question — the planner asks "what did this cast do", Compare asks
+ * "what does this ability hold".
  */
 export function laneSegments(
 	uptime: number,
@@ -99,7 +123,8 @@ export function laneSegments(
 ): BarPhaseSegment[] {
 	if (!(uptime > 0) || !(cooldown > 0) || !(axisSeconds > 0)) return [];
 	if (uptime >= cooldown) {
-		return [{ role: 'uptime', start: 0, span: axisSeconds, cycle: 0 }];
+		// `uptimeFlush` = square corners, which is what abutting blocks need.
+		return repeatCycles([{ role: 'uptimeFlush', start: 0, span: cooldown }], cooldown, axisSeconds);
 	}
 	return repeatCycles(
 		barPhases({ start: 0, castTime: 0, cooldown, uptime }, false),
