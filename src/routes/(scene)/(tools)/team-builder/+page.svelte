@@ -16,7 +16,8 @@
 		type FacetKey,
 		type OwnershipView
 	} from './lib/facets';
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
@@ -102,23 +103,90 @@
 	//   (pristine-tab reuse rules), same as the planner's own ?team=.
 	// - ?alts=1 — the planner's "← Explore alternatives" hand-off: the team is
 	//   already here, so the link only asks for the per-slot alternatives view.
+	//   ⛔ The chip that sent it is RETIRED (2026-08-13); the param is kept
+	//   because it is a shareable URL like any other and costs one branch.
+	// - ?swap=N — the planner's bench ⇄ (Source retirement, 2026-08-13): audition
+	//   slot N. The team does not travel — it IS the shared working team — so the
+	//   slot index is the entire payload.
 	afterNavigate((nav) => {
 		const url = nav.to?.url;
 		if (!url || !url.pathname.endsWith('/team-builder')) return;
 		const teamParam = url.searchParams.get('team');
 		const altsParam = url.searchParams.get('alts');
-		if (!teamParam && !altsParam) return;
+		const swapParam = url.searchParams.get('swap');
+		if (!teamParam && !altsParam && !swapParam) return;
 		history.replaceState(history.state, '', url.pathname + url.hash);
 		if (teamParam) {
 			const imported = parseTeamParam(teamParam, (id) => rosterIds.has(id));
 			const ids = imported.filter((s): s is string => s !== null);
 			if (ids.length > 0) rt.importTeam(ids, 'Imported team');
 		}
-		// A team arrival (either param) opens the Atlas on the per-slot
+		if (swapParam !== null) {
+			// Validated, not trusted: this is a URL, so anyone can type ?swap=9.
+			const n = Number(swapParam);
+			if (Number.isInteger(n) && n >= 0 && n < rt.slots.length) {
+				pendingSwapSlot = n;
+				fromPlanner = true;
+			}
+			// A swap errand does NOT want the Atlas below — it wants ONE slot's
+			// audition, which the effect opens as soon as the tabs are restored.
+			return;
+		}
+		// A team arrival (either other param) opens the Atlas on the per-slot
 		// "alternatives" view — the reason both hand-offs exist.
 		if (teamSlots.some((s) => s !== null)) {
 			atlasMode = 'slots';
 			sourceTab = 'atlas';
+		}
+	});
+
+	// ---------------------------------------------------------------------------
+	// THE PLANNER'S SWAP ERRAND (Source retirement, 2026-08-13)
+	//
+	// The planner has no character grid of its own any more: ⇄ on a bench card
+	// sends the slot here, because an audition can pin the incumbent and compare
+	// against it and the planner's picker could only ever fill the lowest empty
+	// slot. Two flags, because they answer two different questions:
+	// ---------------------------------------------------------------------------
+
+	/** Arrived on an errand — drives the "Back to planner" plate. Deliberately
+	 *  lives for the whole VISIT: cancelling an audition means "let me look
+	 *  around", not "I no longer came from the planner", and the way back must
+	 *  not evaporate at the moment it becomes the only way back. */
+	let fromPlanner = $state(false);
+
+	/** Does committing THIS audition return to the planner? Scoped to the one
+	 *  audition the errand opened — cancel and commit both discharge it. Without
+	 *  the scope, a commit two auditions later would yank you out of a tool you
+	 *  had decided to stay in. */
+	let returnOnCommit = $state(false);
+
+	/** The slot to audition once the document is actually here. */
+	let pendingSwapSlot = $state<number | null>(null);
+
+	// ⚠ NOT DONE IN afterNavigate, and the gate is the whole point (same shape as
+	// the planner's warm effect): the tabs are restored by the (tools) LAYOUT's
+	// onMount, and on a COLD load of /team-builder?swap=2 the param is read
+	// before that happens — so the slot would read 'blank' and the errand would
+	// silently degrade to "open the Roster" for a team that does have someone in
+	// it. Depending on `restored` is right whichever way the ordering falls; on
+	// SPA arrival from the planner it is already true and this runs immediately.
+	// `mounted` joins it because openAudition seeds its facet chips from the
+	// roster constellations, which are localStorage-backed.
+	$effect(() => {
+		if (pendingSwapSlot === null || !rt.restored || !mounted) return;
+		const slot = pendingSwapSlot;
+		pendingSwapSlot = null;
+		const incumbent = rt.slots[slot];
+		if (incumbent && incumbent !== 'blank') {
+			openAudition(slot, incumbent);
+			returnOnCommit = true;
+		} else {
+			// No incumbent to audition against — the same fall-through the bench's
+			// own ⇄ takes for an empty slot. There is no commit to return on: a
+			// roster add is freeform, so the plate is the way back.
+			selectedId = null;
+			sourceTab = 'roster';
 		}
 	});
 
@@ -460,14 +528,25 @@
 		sourceTab = 'roster';
 	}
 
-	/** Commit an audition candidate into its slot, then return whence you came. */
+	/** Commit an audition candidate into its slot, then return whence you came —
+	 *  which is the TOOL you came from when the planner sent the errand, and the
+	 *  tab you were on otherwise. */
 	function commitAudition(candidateId: string): void {
 		if (auditionSlot !== null) rt.setSlot(auditionSlot, candidateId);
+		const goBack = returnOnCommit;
+		returnOnCommit = false;
 		endAudition();
 		sourceTab = auditionReturnTab;
+		// The slot is already written — the working team is shared state, not
+		// something the navigation carries — so the planner redraws with the new
+		// character on arrival.
+		if (goBack) void goto(resolve('/rotation-planner'));
 	}
 
 	function cancelAudition(): void {
+		// Cancelling discharges the auto-return but NOT the errand: you are still
+		// someone who arrived from the planner, and the plate stays put.
+		returnOnCommit = false;
 		endAudition();
 		sourceTab = auditionReturnTab;
 	}
@@ -819,6 +898,33 @@
 	{/snippet}
 
 	{#snippet bandBLeft()}
+		<!-- BACK TO PLANNER → — only while an errand is live (Source retirement,
+		     2026-08-13). Committing an audition returns on its own; this is for
+		     the other endings — you cancelled, or the slot was empty and there was
+		     no commit to hang a return on.
+
+		     ⚠ THE ARROW POINTS RIGHT, AND IT IS NOT A TYPO. The chip this
+		     replaces read "← Explore alternatives" with a LEADING arrow, and its
+		     note says why: the Team Builder sits to the planner's LEFT in the tool
+		     order. Coming back is therefore a move to the RIGHT, so the arrow
+		     turns and moves to the trailing edge with it. The site's arrows are
+		     SPATIAL — they say where the tool is, not whether the trip is an
+		     outbound or a return — and a left arrow here would be the first one
+		     that disagreed with the nav it belongs to.
+
+		     A peer plate beside Clear team rather than a new zone: band B is
+		     already two plates flanking the rail, and this joins the near one. -->
+		{#if fromPlanner}
+			<!-- A bare .btn: the plate look is the band's, and .tb-clear's only
+			     rule is its danger hover — there is nothing for a sibling class
+			     to hold, so it does not get one. -->
+			<button
+				class="btn"
+				title="Return to the rotation planner"
+				onclick={() => void goto(resolve('/rotation-planner'))}
+				>Back to planner <Mark name="forward" /></button
+			>
+		{/if}
 		<!-- The team's one destructive action, moved out of the coverage read-out
 		     (⚓ NATE 2026-08-09) — that run is now a bare header on the scene with
 		     nowhere to hang a control, and a team action belongs in the band with

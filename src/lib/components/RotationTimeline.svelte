@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
-	import Mark from './Mark.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { parseNotation, type ParsedRotation } from '$lib/utils/notationParser';
 	import type { Stat } from '$lib/types/ability';
@@ -50,7 +49,6 @@
 	} from '$lib/utils/timelineExport';
 	import type { TimelineBar } from '$lib/utils/notationParser';
 	import { toKqmNotation } from '$lib/utils/kqmExport';
-	import { resolve } from '$app/paths';
 
 	// ---------------------------------------------------------------------------
 	// Props
@@ -61,8 +59,6 @@
 		notation = $bindable(''),
 		tabLoadout = {} as Record<string, LoadoutEntry>,
 		tabCon = {} as Record<string, number>,
-		sourceOpen = false,
-		sourceOverlay,
 		underChart
 	}: {
 		characterSlots?: string[];
@@ -73,11 +69,6 @@
 		 *  The slot cards themselves live in the layout-level bench band now —
 		 *  these props feed the parser's effective-con and the PNG export. */
 		tabCon?: Record<string, number>;
-		/** When true, the character Source panel is layered over the track area. */
-		sourceOpen?: boolean;
-		/** Source panel content (the planner page's CharacterSelector), rendered
-		 *  in-frame from the portrait column's edge. */
-		sourceOverlay?: import('svelte').Snippet;
 		/** Rendered BETWEEN the chart and the composer — the always-on bonuses
 		 *  strip. ⚓ Nate 2026-08-11 moved it here from the page's bottom edge:
 		 *  "sandwiched right in-between the buff bars / nightsoul / moonsign and
@@ -86,8 +77,9 @@
 		 *  is the BASELINE the timeline's temporary bars sit on top of, so it
 		 *  belongs beside the lanes that show them.
 		 *  ⚠ A SNIPPET, NOT AN IMPORT, deliberately: the block needs the page's
-		 *  `slots` and the timeline only needs to decide WHERE it goes. Same
-		 *  contract as sourceOverlay. */
+		 *  `slots` and the timeline only needs to decide WHERE it goes. It is the
+		 *  last snippet prop standing — `sourceOverlay` used the same contract to
+		 *  hand in the character Source, which the Source retirement removed. */
 		underChart?: import('svelte').Snippet;
 	} = $props();
 
@@ -100,22 +92,10 @@
 	// times and `pv.scale` at every site would bury it.
 	const scale = $derived(pv.scale);
 
-	// Sticky: true after the Source overlay first opens — from then on it stays
-	// mounted (CSS-hidden when closed) so reopening skips the grid remount.
-	let sourceEverOpened = $state(false);
-	$effect(() => {
-		if (sourceOpen) sourceEverOpened = true;
-	});
 	// Swap ping (network latency, ms) lives in site settings (chrome ⚙ overlay);
 	// the timeline converts it to swap-delay frames for the parser. gcsim's
 	// relationship: frames ≈ ping × 2 × 60 / 1000 = ping × 0.12.
 	let swapFrames = $derived(Math.round($siteSettings.swapPing * 0.12));
-
-	// "Explore alternatives →" opens the Team Builder's per-slot alternatives
-	// view. The team itself no longer travels by URL — it IS the shared working
-	// team (bench-band round); ?alts=1 only asks for the view. Sent only when a
-	// slot is filled, so an empty team lands on the Atlas cards as usual.
-	const exploreHasTeam = $derived(characterSlots.some((id) => id && id !== 'blank'));
 
 	// ---------------------------------------------------------------------------
 	// Layout constants (px)
@@ -1189,7 +1169,7 @@
 	     in the middle, and the notation COMPOSER (input + its KQM/PNG submit
 	     pair) on the BOTTOM edge — the chat-app register: you write at the
 	     bottom, the conversation renders above. -->
-	<div class="rp-frame" class:rp-frame--picking={sourceOpen}>
+	<div class="rp-frame">
 		<!-- The RIBBON's dock used to live here, hanging off this frame's padding
 		     box. It moved up to the TOOL STACK in the toolbar round: the strip
 		     now stands proud of the BANDS as well as the surface, so its anchor
@@ -1745,58 +1725,15 @@
 		     .rp-track-scroll, and scheduleMirror for what the second scroller was
 		     costing in sync machinery. -->
 
-		<!-- ── Character Source overlay ─────────────────────────────
-		     Non-modal, and a sibling of the frame's own rows so it covers
-		     EVERYTHING right of the portrait column — ruler strip, view
-		     cluster, tracks, external scrollbar, composer — instead of the
-		     track area alone. That makes the planner in picking mode the
-		     mirror of the Team Builder at rest: bench on one edge, grid and
-		     filters filling the rest of one surface. The 4 live portraits stay
-		     visible on the left as the team display. The content is the
-		     planner page's CharacterSelector, handed in as a snippet. Kept
-		     MOUNTED after the first open (hidden, not destroyed) so reopening
-		     skips the ~122-card remount — a visible stall in Safari 26.x, and
-		     free even where mounts are fast. -->
-		<!-- ↻ 2026-08-12 (motion round): the `hidden` attribute became a class.
-		     Same display:none in both states — that is load-bearing and stays,
-		     because `visibility` would leave 122 cards being laid out on every
-		     zoom of a timeline they are not even on screen for.
-
-		     ⚠ AN EARLIER VERSION OF THIS NOTE CLAIMED a class was REQUIRED, "an
-		     attribute cannot carry an @starting-style". That is wrong and worth
-		     correcting rather than quietly deleting: @starting-style matches the
-		     element, not the toggled state, so `[hidden]` would have worked just
-		     as well — the Team Builder's roster does exactly that. The class is a
-		     preference, not a necessity: it names the state next to the `inert`
-		     that shares it, instead of hanging more behaviour off the UA's
-		     `[hidden]` rule.
-
-		     `inert` is now asserted rather than implied. It came free with
-		     `hidden`; the shut state still reaches display:none in the same
-		     frame, so nothing has actually changed for a reader, but the state
-		     is written down instead of being a side effect of the mechanism. -->
-		{#if sourceEverOpened && sourceOverlay}
-			<div
-				class="rp-source-overlay"
-				class:rp-source-overlay--shut={!sourceOpen}
-				inert={!sourceOpen}
-			>
-				{@render sourceOverlay()}
-				<!-- ← Explore alternatives is tied to the picker, not the main
-				     surface, and it lives INSIDE the picker now (tall-bench round:
-				     the ribbon owns the label column it used to dock in). Bottom
-				     edge, leading arrow — the Team Builder sits to the planner's
-				     LEFT in the tool order — and it hands over the whole team,
-				     which is already shared. -->
-				<a
-					class="rp-explore-link"
-					href="{resolve('/team-builder')}{exploreHasTeam ? '?alts=1' : ''}"
-					title="Open the current team in the Team Builder to compare alternatives"
-				>
-					<span class="rp-explore-arrow"><Mark name="back" size={12} /></span> Explore alternatives
-				</a>
-			</div>
-		{/if}
+		<!-- ⛔ THE CHARACTER SOURCE OVERLAY STOOD HERE — retired 2026-08-13.
+		     It was a non-modal panel covering the whole frame: the ~122-card
+		     grid over the tracks, its filter rail over the notes, kept mounted
+		     after first open to dodge a Safari remount stall. What retired it
+		     was not its cost but its JOB: the planner's picker could only fill
+		     the LOWEST EMPTY SLOT, while the Team Builder's audition targets the
+		     slot you clicked and pins its incumbent to compare against. ⇄ on a
+		     bench card goes there now (?swap=N), so the planner has no grid of
+		     its own to cover its own instrument with. -->
 	</div>
 	<!-- /rp-frame -->
 
@@ -1836,15 +1773,15 @@
 	     outside the stack would stop the strip standing beside the whole tool
 	     object, which is the toolbar round's headline.
 
-	     `inert` while picking: the Source overlay bounds to the frame and used
-	     to cover the composer as part of it. It no longer reaches, so the
-	     "picking takes over the instrument" reading is asserted directly rather
-	     than by an accident of geometry.
+	     ↻ 2026-08-13: the composer used to go `inert` and blank while the Source
+	     was up, asserting a takeover the overlay's geometry had stopped reaching
+	     far enough to perform. Nothing takes this surface over any more — the
+	     planner has no panel of its own left to raise over it.
 
 	     ↻ TOOLBAR ROUND: the KQM/PNG pair that used to sit just outside the box
 	     is gone from here. Both are EXPORTS, and exports are one family with the
 	     share link — they live in band A's Share menu now. -->
-	<div class="rp-composer" class:rp-composer--picking={sourceOpen} inert={sourceOpen}>
+	<div class="rp-composer">
 		<div class="rp-notation-wrap">
 			<div class="rp-notation" use:mountEditor={notation}></div>
 		</div>
@@ -1996,17 +1933,17 @@
 		display: flex;
 		flex-direction: column;
 		min-width: 0;
-		/* The Source overlay's containing block: it insets to the frame's
-		   padding box, so it covers every row right of the portrait column. */
-		position: relative;
+		/* ⛔ `position: relative` LEFT WITH THE SOURCE (2026-08-13). It was the
+		   overlay's containing block and nothing else's: both remaining children
+		   — .rp-ruler-strip and .rp-timeline-area — declare their own, so every
+		   absolutely-positioned descendant already anchors nearer than this. A
+		   stale "containing block for X" on a frame with no X is how a stacking
+		   context gets inherited by accident later. */
 	}
-	/* Picking: guarantee the Source overlay a usable height even when the
-	   rotation is short (an empty timeline is just 4 slot cards tall). Lives on
-	   the FRAME now that the overlay bounds to the frame rather than the track
-	   area. Knob — the picker gets this minus the frame's padding. */
-	.rp-frame--picking {
-		min-height: 26rem;
-	}
+	/* ⛔ `.rp-frame--picking` (min-height: 26rem) left with it. It guaranteed the
+	   Source a usable height under a short rotation — an empty timeline is only
+	   4 slot cards tall — and a min-height propping up a panel that no longer
+	   exists would just be a floor on every empty timeline. */
 
 	/* ── Timeline area (the track scroller) ──────────────────── */
 	/* The notes panel used to be the second child here, pushing the tracks with
@@ -2018,84 +1955,19 @@
 		flex-direction: row;
 		align-items: stretch;
 	}
-	/* ── Character Source overlay ─────────────────────────────── */
-	/* Non-modal: an opaque panel over the whole frame — ruler, view cluster,
-	   tracks, external scrollbar and composer. The 4 live portraits stay
-	   visible in the RIBBON beside the frame as the team display (they are no
-	   longer inside it to be covered), and the frame's own --picking
-	   min-height keeps the panel usable under a short rotation. */
-	.rp-source-overlay {
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		/* The panel fills the frame's padding box. It used to stop short of the
-		   portrait column; the ribbon holds the portraits outside the frame
-		   now, so there is nothing left inside for it to clear. */
-		left: 0;
-		z-index: 6;
-		display: flex;
-		flex-direction: column;
-		min-height: 0;
-		overflow: hidden;
-		padding: 10px 12px 12px;
-		/* Opaque, and now the ONE opaque box on this surface besides the composer
-		   — picking is a takeover, so it should cover. ↻ 2026-08-11: it used to
-		   inherit its edges from the frame it sat inside; with no frame it needs
-		   its own, so the stray border-left (a seam against a portrait column
-		   that has not existed since the tall-bench round) is replaced by the
-		   radius that makes it read as a panel laid on the scene. */
-		background: var(--rp-chart-bg);
-		border-radius: var(--r-sm);
-		/* ── IT FADES IN, AND IT DOES NOT FADE OUT ────────────────────────────
-		   Opening is a TAKEOVER: the whole instrument disappears under a panel
-		   in one frame, and 120ms of fade is what turns that from a jump-cut
-		   into a thing that arrived. @starting-style supplies the opacity 0 to
-		   start from — needed because the shut state is display:none, so each
-		   open is a FIRST RENDER and a plain transition would have nothing to
-		   run from.
-
-		   ⚠ THE EXIT IS DELIBERATELY INSTANT, and it is not laziness. The frame
-		   under this carries `--picking`'s 26rem min-height, which drops the
-		   moment picking ends; min-height is the LAYOUT tier and cannot be
-		   faded alongside. Fading out would therefore leave a ghost of the
-		   picker — inset:0, so it re-fits itself as it goes — shrinking onto a
-		   collapsing frame for the length of the fade. Snapping shut has none
-		   of that, and dismissal is the one direction where instant is also the
-		   better feel: you already know what you're going back to.
-
-		   `display` is IN the transition list, with allow-discrete, and it is
-		   there for the ENTRY rather than the exit. Crossing out of display:none
-		   is what makes this a first render, and pairing allow-discrete with
-		   @starting-style is the documented shape of that crossing — without it
-		   the entry animation is left resting on how eagerly a given engine
-		   decides an element was newly rendered, which is exactly the kind of
-		   thing that works in Chrome and quietly does nothing in WebKit. */
-		opacity: 1;
-		transition:
-			opacity var(--t-quick),
-			display var(--t-quick) allow-discrete;
-	}
-	@starting-style {
-		.rp-source-overlay {
-			opacity: 0;
-		}
-	}
-	/* Was the UA's [hidden] rule, which the explicit display:flex above had to
-	   be beaten by. Same effect, but a class the entry transition can key off.
-
-	   ⚠ `transition: none` IS THE INSTANT EXIT, and it has to live here rather
-	   than anywhere else. A transition is driven by the AFTER-change style, so
-	   the declaration the browser reads on the way OUT is this one and the
-	   declaration it reads on the way back IN is the rule above — which is what
-	   lets one element fade in and snap out without a second class to track.
-	   Drop this line and allow-discrete starts deferring display:none to the
-	   end of the fade, leaving the picker sitting there fully opaque for 120ms
-	   after you dismissed it. */
-	.rp-source-overlay--shut {
-		display: none;
-		transition: none;
-	}
+	/* ⛔ THE SOURCE OVERLAY'S RULES STOOD HERE — retired with the panel
+	   (2026-08-13). Worth naming what went, because two of them were hard-won
+	   and the reasoning outlives the element:
+	   · display:none in BOTH states (not `visibility`), so ~122 cards were not
+	     being laid out on every zoom of a timeline they were not on screen for.
+	   · A fade IN and an instant OUT, from one class: a transition is driven by
+	     the after-change style, so the shut rule's `transition: none` was the
+	     exit and the open rule's was the entry. The exit had to be instant
+	     because the frame's --picking min-height is LAYOUT tier and could not be
+	     faded alongside it — fading out left a ghost shrinking onto a
+	     collapsing frame.
+	   Both notes are kept for the next panel that wants to cover an instrument;
+	   the Team Builder's roster still uses the [hidden] variant of the first. */
 
 	/* ── Scroll wrapper ───────────────────────────────────────── */
 	.rp-scroll-wrapper {
@@ -3119,52 +2991,13 @@
 		gap: 8px;
 		padding: 0 var(--rp-frame-pad-x);
 	}
-	/* Picking takes over the instrument. The Source overlay bounds to the frame
-	   and used to cover this as part of it; it no longer reaches, so the state
-	   is asserted rather than implied — `inert` in the markup kills interaction,
-	   this says so. Paint alpha, never element opacity (the WebKit law): the
-	   composer sits over the live scene. */
-	.rp-composer--picking {
-		background: color-mix(in srgb, var(--surface-raised) 45%, transparent);
-	}
-	.rp-composer--picking .rp-notation-wrap {
-		visibility: hidden;
-	}
-	/* ← Explore alternatives — the picker's own footer chip (tall-bench round:
-	   it used to dock in the label column, which the ribbon now owns at every
-	   height). Same chip register as the KQM/PNG export buttons — a solid quiet
-	   fill, brightening on hover. align-self keeps it hugging its text at the
-	   overlay's bottom-left; the picker above it takes the remaining height. */
-	.rp-explore-link {
-		flex-shrink: 0;
-		align-self: flex-start;
-		box-sizing: border-box;
-		margin-top: 8px;
-		padding: 6px 10px;
-		border-radius: var(--r-sm);
-		background: var(--control-face);
-		font-size: var(--fs-xs);
-		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-wide);
-		text-transform: uppercase;
-		text-decoration: none;
-		white-space: nowrap;
-		color: var(--control-ink);
-		transition:
-			background var(--t-snap),
-			color var(--t-snap);
-	}
-	.rp-explore-link:hover {
-		background: var(--control-face-hover);
-	}
-	.rp-explore-arrow {
-		display: inline-flex;
-		vertical-align: -2px;
-		transition: transform var(--t-snap);
-	}
-	.rp-explore-link:hover .rp-explore-arrow {
-		transform: translateX(-2px);
-	}
+	/* ⛔ `.rp-composer--picking` AND `.rp-explore-link` LEFT WITH THE SOURCE
+	   (2026-08-13). The first dimmed and blanked the composer while the picker
+	   was up — the overlay bounded to the frame and no longer reached down here,
+	   so the takeover had to be asserted rather than inherited. The second was
+	   the picker's own footer chip, "← Explore alternatives", which opened the
+	   Team Builder on the whole team; ⇄ on a bench card supersedes it and aims
+	   at ONE slot, so the planner keeps a single way out instead of two. */
 	.rp-notation-wrap {
 		display: flex;
 		flex-direction: column;
