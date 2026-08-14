@@ -23,7 +23,13 @@ export type TeamBuffSubrow = {
 	primaryStat: Stat;
 	bars: TeamBuffBar[];
 	sourceLabel: string;
-	/** 'debuff' renders with the resShred (red-tinted) bar treatment.
+	/** Whether the row is a buff on the team or a shred on the enemy.
+	 *  ⛔ NOT PAINT — the debuff bar variant was deleted 2026-08-11 (⚓ Nate:
+	 *  "there's really no need to colour-split the buff/debuff bars. They're
+	 *  both good things to the user."). This note used to say "renders with the
+	 *  resShred (red-tinted) bar treatment" and outlived that by three days.
+	 *  What `kind` still does is separate ROWS (a shred and a buff off one cast
+	 *  are two rows) and pick the display formatter; the bars look identical.
 	 *  Defaults to 'buff' when omitted. */
 	kind?: 'buff' | 'debuff';
 };

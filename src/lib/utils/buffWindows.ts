@@ -104,6 +104,57 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		return win;
 	};
 
+	// ⚓ ONE WINDOW PER APPLICATION, NOT PER EFFECT (2026-08-14). Every other
+	// dispatch site in this pass emits a POOL — `effects: barEffects`,
+	// `effects: [...resShredEndPool]` — because one cast that grants three stats
+	// is one buff, and the row shows one bar whose tooltip lists all three. The
+	// two onReaction sites were the exception: they emitted `effects: [effect]`,
+	// so a kit that shreds two elements off one reaction (Chevreuse: Pyro AND
+	// Electro RES off one Overloaded) or buffs two elements off one (Sandrone:
+	// Cryo AND Electro DMG off one Stellar-Conduct) drew a bar PER ELEMENT —
+	// identical span, identical trigger, identical number, stacked on the chart
+	// and each tooltip telling half the story. This groups them back.
+	//
+	// ⚠ THE MERGE KEY IS THE EVENT, NOT THE INSTANT. Two effects merge only when
+	// the SAME reaction event fired them at the same span and the same kind. Two
+	// different reactions landing on the same frame stay two windows: they are
+	// different triggers that happen to coincide, and Viridescent Venerer (one
+	// entry per swirlable element) depends on that — a Pyro swirl and a Cryo
+	// swirl are two debuffs, not one two-element debuff.
+	//
+	// ⚠ BUFF AND DEBUFF NEVER MERGE even off one event and one span (Sandrone
+	// grants both). ⛔ NOT because of paint — the coloured debuff bar was
+	// deleted 2026-08-11 and the two look identical. Because they are different
+	// TARGETS carrying different display formatters: a window is read wholesale
+	// as buff-or-shred (`formatBuffDisplayValue` vs `formatResShredDisplayValue`)
+	// and its row carries one `kind`, so a mixed pool has no single answer.
+	const reactionEventIndex = new Map<ReactionEvent, number>(
+		reactionEvents.map((ev, i) => [ev, i] as const)
+	);
+	type ReactionPool = { start: number; end: number; debuff: boolean; effects: Effect[] };
+	/** Collects (effect × reaction-event) pairs into per-application pools,
+	 *  preserving first-seen order so window ids stay deterministic. */
+	const makeReactionPooler = () => {
+		const byKey = new Map<string, ReactionPool>();
+		const order: ReactionPool[] = [];
+		return {
+			add(ev: ReactionEvent, effect: BuffEffect | ResShredEffect): void {
+				const debuff = effect.type === 'resShred';
+				const start = ev.time;
+				const end = start + effect.duration!;
+				const key = `${reactionEventIndex.get(ev)}::${end}::${debuff}`;
+				let pool = byKey.get(key);
+				if (!pool) {
+					pool = { start, end, debuff, effects: [] };
+					byKey.set(key, pool);
+					order.push(pool);
+				}
+				pool.effects.push(effect);
+			},
+			pools: order
+		};
+	};
+
 	// ── per-swing hit helpers (phase-6 delta) ──
 	// A track's hits of one input class, scoped by the track's active span
 	// (the same partitioning rule casts use).
@@ -609,6 +660,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				const charReactionEvents = reactionEvents.filter(
 					(ev) => ev.characterId === track.characterId
 				);
+				const pooler = makeReactionPooler();
 				for (const effect of artifactOnReactionFiltered) {
 					const trigReaction = (effect.trigger as { reaction: Reaction | Reaction[] | 'any' })
 						.reaction;
@@ -617,17 +669,18 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						(Array.isArray(trigReaction) ? trigReaction.includes(r) : trigReaction === r);
 					for (const ev of charReactionEvents) {
 						if (!matches(ev.reaction)) continue;
-						const buffStart = ev.time;
-						const buffEnd = buffStart + effect.duration!;
-						emit({
-							characterId: track.characterId,
-							start: buffStart,
-							end: buffEnd,
-							debuff: effect.type === 'resShred' || undefined,
-							effects: [effect],
-							source: { type: 'artifact', setId: artifactSetId, trigger: 'reaction' }
-						});
+						pooler.add(ev, effect);
 					}
+				}
+				for (const pool of pooler.pools) {
+					emit({
+						characterId: track.characterId,
+						start: pool.start,
+						end: pool.end,
+						debuff: pool.debuff || undefined,
+						effects: pool.effects,
+						source: { type: 'artifact', setId: artifactSetId, trigger: 'reaction' }
+					});
 				}
 			}
 		}
@@ -652,6 +705,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					return false;
 				return true;
 			});
+			const pooler = makeReactionPooler();
 			for (const effect of qualified) {
 				const trig = effect.trigger as {
 					reaction: Reaction | Reaction[] | 'any';
@@ -661,20 +715,25 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				const matches = (r: Reaction): boolean =>
 					trigReaction === 'any' ||
 					(Array.isArray(trigReaction) ? trigReaction.includes(r) : trigReaction === r);
+				// ⚠ `ownReactionEvents` is a FILTER of `reactionEvents`, so both pools
+				// hand back the same event objects — which is what lets the pooler
+				// key on event identity across a self-triggered and a team-triggered
+				// effect that happen to share one event.
 				const eventPool = trig.source === 'team' ? reactionEvents : ownReactionEvents;
 				for (const ev of eventPool) {
 					if (!matches(ev.reaction)) continue;
-					const buffStart = ev.time;
-					const buffEnd = buffStart + effect.duration!;
-					emit({
-						characterId: track.characterId,
-						start: buffStart,
-						end: buffEnd,
-						debuff: effect.type === 'resShred' || undefined,
-						effects: [effect],
-						source: { type: 'character', trigger: 'reaction' }
-					});
+					pooler.add(ev, effect);
 				}
+			}
+			for (const pool of pooler.pools) {
+				emit({
+					characterId: track.characterId,
+					start: pool.start,
+					end: pool.end,
+					debuff: pool.debuff || undefined,
+					effects: pool.effects,
+					source: { type: 'character', trigger: 'reaction' }
+				});
 			}
 		}
 	}

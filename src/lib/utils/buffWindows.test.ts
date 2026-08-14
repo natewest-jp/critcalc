@@ -232,7 +232,16 @@ describe('buff windows — team surface', () => {
 		expect(keys).not.toContain('applier::char::onReaction::atk');
 	});
 
-	it('dual-element resShred on one reaction yields two rows with distinct keys', () => {
+	// ↻ 2026-08-14 — THIS TEST'S EXPECTATION IS INVERTED ON PURPOSE. It used to
+	// assert TWO rows with distinct keys, guarding the archived
+	// `each_key_duplicate` crash: Chevreuse's two shreds share one sourceLabel,
+	// so a row key coarser than the display stat collided. ⚓ Nate 2026-08-14:
+	// two bars for one reaction, one span and one number was the wrong output
+	// to be guarding — the onReaction sites now pool per application like every
+	// other dispatch site, so the pair arrives as ONE window carrying both
+	// effects. The collision hazard is gone by construction rather than by key
+	// choice, and the tooltip is where the two elements are told apart.
+	it('dual-element resShred on one reaction is ONE row carrying both effects', () => {
 		const chev = mkChar('chevstub', 'ChevStub', { element: 'pyro' });
 		const elec = mkChar('elecstub', 'ElecStub', { element: 'electro' });
 		const shred = (element: string): Effect =>
@@ -255,8 +264,14 @@ describe('buff windows — team surface', () => {
 		// Electro aura first, then a pyro cast → overloaded.
 		const { team } = run('ElecStub E > ChevStub E', [chev, elec]);
 		const shredRows = team.filter((r) => r.kind === 'debuff');
-		expect(shredRows).toHaveLength(2);
-		expect(new Set(shredRows.map((r) => r.key)).size).toBe(2);
+		expect(shredRows).toHaveLength(1);
+		// One bar, and it carries BOTH elements — the pair is readable in the
+		// tooltip, which is the only place it was ever legible.
+		expect(shredRows[0].bars).toHaveLength(1);
+		expect(shredRows[0].bars[0].effects.map((e) => e.stat).sort()).toEqual([
+			'electroRes',
+			'pyroRes'
+		]);
 	});
 
 	it('artifact 4pc onCast attaches to the trigger ability; stale set ids are tolerated', () => {
