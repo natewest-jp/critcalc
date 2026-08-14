@@ -25,7 +25,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseNotation, type ParsedRotation, type TimelineBar } from './notationParser';
 import type { CharacterData } from '$lib/types/character';
-import { findCastSummon } from '$lib/timeline/summonSubrows';
+import { findCastSummons } from '$lib/timeline/summonSubrows';
 
 const EPS = 1e-6;
 
@@ -88,7 +88,7 @@ const tupleKey = (t: SummonTuple) =>
 /** Independently reconstruct the expected summon spans from bar geometry — the
  *  spawn-offset + terminatesOn swap/recast truncation `computeSummonSubrows`
  *  owned pre-3c, re-derived here from `result.tracks` (a distinct code path from
- *  the parser's finalize summon pass, sharing only the `findCastSummon`
+ *  the parser's finalize summon pass, sharing only the `findCastSummons`
  *  resolution primitive). Swap-out is keyed by characterId, matching the
  *  parser; over the corpus + multi-segment fixtures characterId ↔ slotIdx is a
  *  bijection so this equals the renderer's former slotIdx-keyed computation. */
@@ -108,26 +108,31 @@ function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 		}
 		const emit = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
 			if (bar.uptime <= 0) return;
-			const summon = findCastSummon(char, kind, bar.label, bar.abilityId);
-			if (!summon) return;
-			const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
-			let endAt = spawnAt + bar.uptime;
-			if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
-			if (endAt <= spawnAt) return;
-			const key = `${track.characterId}::${summon.label}`;
-			if (summon.terminatesOn === 'recast') {
-				const prev = lastByKey.get(key);
-				if (prev && prev.end > spawnAt) prev.end = spawnAt;
-			}
-			const t: SummonTuple = {
-				characterId: track.characterId,
-				label: summon.label,
-				start: spawnAt,
-				end: endAt,
-				source: kind
-			};
-			out.push(t);
-			lastByKey.set(key, t);
+			// ↻ 2026-08-14: one tuple per summon, mirroring the parser's move off
+			// `summons[0]`. The primary reads the BAR's spawn/uptime (the geometry
+			// the ability accessors already resolved, extensions included); a
+			// secondary reads its own authored spawnsAt/duration.
+			findCastSummons(char, kind, bar.label, bar.abilityId).forEach((summon, i) => {
+				const spawnAt =
+					bar.start + (i === 0 ? (bar.summonActivatesAt ?? 0) : (summon.spawnsAt ?? 0)) / 60;
+				let endAt = spawnAt + (i === 0 ? bar.uptime : summon.duration);
+				if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
+				if (endAt <= spawnAt) return;
+				const key = `${track.characterId}::${summon.label}`;
+				if (summon.terminatesOn === 'recast') {
+					const prev = lastByKey.get(key);
+					if (prev && prev.end > spawnAt) prev.end = spawnAt;
+				}
+				const t: SummonTuple = {
+					characterId: track.characterId,
+					label: summon.label,
+					start: spawnAt,
+					end: endAt,
+					source: kind
+				};
+				out.push(t);
+				lastByKey.set(key, t);
+			});
 		};
 		for (const bar of track.eBars) emit(bar, 'skill');
 		for (const bar of track.qBars) emit(bar, 'burst');

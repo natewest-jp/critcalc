@@ -252,6 +252,13 @@ export type TimelineWindow =
 			source: 'skill' | 'burst';
 			start: number;
 			end: number;
+			/** This shield is ALREADY on the chart as a `summons[]` entry — the
+			 *  pre-shield-window authoring convention, where a zero-effect summon
+			 *  of the same duration stood in for the shield (Layla's "Curtain of
+			 *  Slumber", Zhongli's "Jade Shield"). The shield lane skips these so
+			 *  the same span isn't drawn twice; every other consumer ignores it.
+			 *  Set by `registerShieldOnCast`, which is where both are in hand. */
+			coveredBySummon?: true;
 	  } & WindowProvenance)
 	/** A weapon-proc ICD span (e.g. Sacrificial reset on cooldown). */
 	| ({ kind: 'weaponProc'; characterId: string; start: number; end: number } & WindowProvenance)

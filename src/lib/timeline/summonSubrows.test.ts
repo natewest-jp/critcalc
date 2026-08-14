@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeSummonSubrows, computeSummonTicks, findCastSummon } from './summonSubrows';
+import { computeSummonSubrows, computeSummonTicks, findCastSummons } from './summonSubrows';
 import type { TimelineBar, TimelineWindow } from '$lib/utils/notationParser';
 import type { Ability, Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
@@ -292,7 +292,7 @@ describe('computeSummonTicks', () => {
 	});
 });
 
-describe('findCastSummon', () => {
+describe('findCastSummons', () => {
 	const variantSummon = mkSummon({ label: 'Hold Oz' });
 	const baseSummon = mkSummon({ label: 'Oz' });
 	const char = {
@@ -314,15 +314,26 @@ describe('findCastSummon', () => {
 	} as CharacterData;
 
 	it('resolves the base summon for the base input', () => {
-		expect(findCastSummon(char, 'skill', 'E')?.label).toBe('Oz');
+		expect(findCastSummons(char, 'skill', 'E')[0]?.label).toBe('Oz');
 	});
 
 	it('resolves the variant summon when the bar label matches variant input', () => {
-		expect(findCastSummon(char, 'skill', 'hE')?.label).toBe('Hold Oz');
+		expect(findCastSummons(char, 'skill', 'hE')[0]?.label).toBe('Hold Oz');
 	});
 
-	it('returns undefined for a null character or missing ability', () => {
-		expect(findCastSummon(null, 'skill', 'E')).toBeUndefined();
-		expect(findCastSummon(char, 'burst', 'Q')).toBeUndefined();
+	it('returns an empty array for a null character or missing ability', () => {
+		expect(findCastSummons(null, 'skill', 'E')).toEqual([]);
+		expect(findCastSummons(char, 'burst', 'Q')).toEqual([]);
+	});
+
+	// The reason this went plural: an ability may own more than one summon and
+	// only the first was ever reachable.
+	it('returns EVERY summon on the ability, in authored order', () => {
+		const second = mkSummon({ label: 'Second' });
+		const multi = {
+			...char,
+			abilities: [{ ...char.abilities[0], summons: [baseSummon, second] }]
+		} as CharacterData;
+		expect(findCastSummons(multi, 'skill', 'E').map((s) => s.label)).toEqual(['Oz', 'Second']);
 	});
 });

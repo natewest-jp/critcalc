@@ -61,15 +61,20 @@ export function computeSummonTicks(
 	return ticks;
 }
 
-/** Resolve the summon owned by a given E/Q cast (variant-aware). Returns
- *  undefined for stance abilities or abilities without `summons[]`. */
-export function findCastSummon(
+/** Resolve ALL summons owned by a given E/Q cast (variant-aware). Empty for
+ *  stance abilities or abilities without `summons[]`.
+ *  ⚠ MUST STAY IDENTICAL to `findSummonsForBar` in notationParser.ts — that one
+ *  authors the windows this walk assigns to lanes, so a disagreement drops a
+ *  window on the floor (`rowMap.get` misses and Pass 2 skips it silently).
+ *  ↻ 2026-08-14: both went from `summons[0]` to the whole array — see the
+ *  parser's note for which three abilities were hiding a second summon. */
+export function findCastSummons(
 	char: CharacterData | null | undefined,
 	kind: 'skill' | 'burst',
 	label: string,
 	abilityId?: string
-): Summon | undefined {
-	if (!char) return undefined;
+): Summon[] {
+	if (!char) return [];
 	const candidates = char.abilities.filter((a): a is CastAbility => a.abilityType === kind);
 	// Prefer the exact resolved ability (bar.abilityId — a state-gated sibling
 	// can carry its own summon, e.g. Durin's Dark burst); else the
@@ -79,9 +84,9 @@ export function findCastSummon(
 		(abilityId !== undefined ? candidates.find((a) => a.id === abilityId) : undefined) ??
 		candidates.find((a) => a.conditions === undefined) ??
 		candidates[0];
-	if (!ability) return undefined;
+	if (!ability) return [];
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(label));
-	return variant?.summons?.[0] ?? ability.summons?.[0];
+	return (variant?.summons?.length ? variant.summons : ability.summons) ?? [];
 }
 
 export function computeSummonSubrows(
@@ -131,22 +136,29 @@ export function computeSummonSubrows(
 	const registerBar = (track: SlottedTrack, bar: TimelineBar, kind: 'skill' | 'burst'): void => {
 		if (bar.uptime <= 0) return;
 		const char = getCharacter(track.characterId);
-		const summon = findCastSummon(char, kind, bar.label, bar.abilityId);
-		if (!summon) return;
-		summonByKey.set(`${track.characterId}::${summon.label}::${kind}`, summon);
-		const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
-		walkIndex.set(`${track.characterId}::${summon.label}::${kind}::${spawnAt}`, walkSeq++);
-		const key = `${track.characterId}::${summon.label}`;
-		if (!rowMap.has(key)) {
-			const row: SummonSubrow = {
-				slotIdx: track.slotIdx,
-				characterId: track.characterId,
-				label: summon.label,
-				bars: []
-			};
-			rowMap.set(key, row);
-			subrowOrder.push(row);
-		}
+		// One lane per summon, registered in authored order — the primary keeps
+		// the sub-row position it has always had and a secondary stacks under it.
+		findCastSummons(char, kind, bar.label, bar.abilityId).forEach((summon, i) => {
+			summonByKey.set(`${track.characterId}::${summon.label}::${kind}`, summon);
+			// ⚠ The spawn instant here is a LOOKUP KEY, not geometry — it has to
+			// reproduce the parser's window `start` exactly (same float ops, same
+			// primary/secondary split) or the re-sort below silently falls back
+			// to index 0 for every bar. See summonSpan() in notationParser.ts.
+			const spawnAt =
+				bar.start + (i === 0 ? (bar.summonActivatesAt ?? 0) : (summon.spawnsAt ?? 0)) / 60;
+			walkIndex.set(`${track.characterId}::${summon.label}::${kind}::${spawnAt}`, walkSeq++);
+			const key = `${track.characterId}::${summon.label}`;
+			if (!rowMap.has(key)) {
+				const row: SummonSubrow = {
+					slotIdx: track.slotIdx,
+					characterId: track.characterId,
+					label: summon.label,
+					bars: []
+				};
+				rowMap.set(key, row);
+				subrowOrder.push(row);
+			}
+		});
 	};
 
 	for (const track of annotatedTracks) {

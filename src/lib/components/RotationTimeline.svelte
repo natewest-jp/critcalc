@@ -37,7 +37,8 @@
 	import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
-	import { computeSummonSubrows, findCastSummon } from '$lib/timeline/summonSubrows';
+	import { computeSummonSubrows, findCastSummons } from '$lib/timeline/summonSubrows';
+	import { computeShieldSubrows } from '$lib/timeline/shieldRows';
 	import { barPhases } from '$lib/timeline/barPhases';
 	import { computeMoonsignRows } from '$lib/timeline/moonsignRows';
 	import { computeNBBars } from '$lib/timeline/nbRows';
@@ -472,9 +473,33 @@
 
 	// Summon lane data — see src/lib/timeline/summonSubrows.ts; thin reactive
 	// wrapper only (lane geometry stays below).
-	let summonSubrows = $derived.by(() =>
-		computeSummonSubrows(annotatedTracks, rotation.windows, effectiveCon, getLoadedCharacter)
-	);
+	//
+	// ↻ 2026-08-14 — SHIELDS RIDE THIS LANE. A shield is a labelled span with no
+	// tick markers, i.e. a summon sub-row minus its ticks, and for nine
+	// characters it was ALREADY drawn here (as a stand-in `summons[]` entry —
+	// "Curtain of Slumber", "Jade Shield"). Appending the shield rows to this
+	// one array rather than building a lane of their own means the height math
+	// below, the character-block layout and the PNG export snapshot all pick
+	// them up unchanged — and it puts every shield in the place readers already
+	// find them. Shields come AFTER summons per slot: a summon is a thing on the
+	// field, a shield is a state on the character, and the field reads first.
+	let summonSubrows = $derived.by(() => {
+		const summons = computeSummonSubrows(
+			annotatedTracks,
+			rotation.windows,
+			effectiveCon,
+			getLoadedCharacter
+		);
+		// A linear scan, not a lookup map: characterId ↔ slotIdx is a bijection
+		// over the tracks (see computeSummonSubrows' TRAP note), the array is a
+		// handful of entries, and a `new Map` inside a $derived trips the
+		// prefer-svelte-reactivity lint for a value that is never reactive.
+		const shields = computeShieldSubrows(
+			rotation.windows,
+			(id) => annotatedTracks.find((t) => t.characterId === id)?.slotIdx
+		);
+		return [...summons, ...shields];
+	});
 
 	let slotSummonLaneHeights = $derived(
 		characterSlots.map((_charId, slotIdx) => {
@@ -872,7 +897,7 @@
 			source: 'skill' | 'burst',
 			bars: TimelineBar[]
 		): ExportBar[] =>
-			bars.map((b) => ({ ...b, hasSummon: !!findCastSummon(char, source, b.label) }));
+			bars.map((b) => ({ ...b, hasSummon: findCastSummons(char, source, b.label).length > 0 }));
 
 		return {
 			title: teamNames.length > 0 ? `${teamNames.join(' · ')}  —  ${total}s` : 'critcalc rotation',
@@ -1307,7 +1332,7 @@
 								<div class="rp-row" style:top="{CHAR_PAD_TOP}px" style:height="{E_ROW_H}px">
 									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 										{#each track.eBars as bar, barIdx (barIdx)}
-											{@const eHasSummon = !!findCastSummon(char, 'skill', bar.label)}
+											{@const eHasSummon = findCastSummons(char, 'skill', bar.label).length > 0}
 											<!-- Three-case E/Q pill geometry lives in the shared barPhases()
 										     helper (mirrored by the PNG exporter). Roles carry the styling
 										     intent; this template projects each to its DOM treatment. -->
@@ -1424,7 +1449,7 @@
 								>
 									{#each slotTracks as track, ti (`${slotIdx}_${ti}`)}
 										{#each track.qBars as bar, barIdx (barIdx)}
-											{@const qHasSummon = !!findCastSummon(char, 'burst', bar.label)}
+											{@const qHasSummon = findCastSummons(char, 'burst', bar.label).length > 0}
 											<!-- Same shared barPhases() geometry as the E row (badge 'Q').
 										     Bursts never fire the sac proc, so the uptimeDim role is
 										     unreachable here, but kept for E/Q symmetry. -->

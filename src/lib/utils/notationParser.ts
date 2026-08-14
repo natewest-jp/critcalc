@@ -1084,8 +1084,8 @@ function getCharacterCdResetTargets(
 // ---------------------------------------------------------------------------
 
 /**
- * Resolves the summon owned by a given E/Q cast bar (variant-aware). Mirrors
- * `findCastSummon` in `summonSubrows.ts` exactly — the parser now authors the
+ * Resolves ALL summons owned by a given E/Q cast bar (variant-aware). Mirrors
+ * `findCastSummons` in `summonSubrows.ts` exactly — the parser now authors the
  * summon `TimelineWindow`s the renderer used to reconstruct, so the spawn/end
  * resolution must agree. Prefers the exact RESOLVED ability (`abilityId` from
  * the cast/bar — a state-gated sibling can carry its own summon, e.g. Durin's
@@ -1093,22 +1093,55 @@ function getCharacterCdResetTargets(
  * variants represent caster state and don't carry summons). Kept parser-side
  * (not imported from summonSubrows) to preserve the parser's runtime-import-free
  * purity — summonSubrows imports back from here.
+ *
+ * ↻ 2026-08-14 — RETURNS THE WHOLE ARRAY, not `summons[0]`. Three abilities own
+ * two summons and the second was silently unreachable: Ineffa's E (a shield
+ * barrier with no effects held the lane while BIRGITTA, the thing that ticks
+ * every 2s, was never drawn — ⚓ Nate's report), Citlali's E (Opal Shield) and
+ * Furina's E (Singer of Many Waters). ⚠ A variant's `summons` still OVERRIDES
+ * the base wholesale rather than merging, and an EMPTY variant array still
+ * falls through to the base — both preserved from the `?.[0] ?? ?.[0]` chain
+ * this replaces.
  */
-function findSummonForBar(
+function findSummonsForBar(
 	char: CharacterData | undefined,
 	kind: 'skill' | 'burst',
 	label: string,
 	abilityId?: string
-): Summon | undefined {
-	if (!char) return undefined;
+): Summon[] {
+	if (!char) return [];
 	const candidates = char.abilities.filter((a): a is CastAbility => a.abilityType === kind);
 	const ability =
 		(abilityId !== undefined ? candidates.find((a) => a.id === abilityId) : undefined) ??
 		candidates.find((a) => a.conditions === undefined) ??
 		candidates[0];
-	if (!ability) return undefined;
+	if (!ability) return [];
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(label));
-	return variant?.summons?.[0] ?? ability.summons?.[0];
+	return (variant?.summons?.length ? variant.summons : ability.summons) ?? [];
+}
+
+/**
+ * The span of one summon within its cast. ⚠ THE PRIMARY IS NOT COMPUTED THE
+ * SAME WAY AS THE REST, and that asymmetry is load-bearing: `summons[0]` is
+ * what the ability's geometry accessors already resolved into the cast, so its
+ * spawn comes from `summonActivatesAt` (which a persistent-summon override or a
+ * variant may have retargeted) and its lifetime from the bar's `uptime` (which
+ * `durationExtensions` may have grown mid-parse — Collei's Cuilein-Anbar). A
+ * secondary summon went through neither, so it reads its OWN authored fields.
+ * Today all three multi-summon abilities pair equal durations at different
+ * spawn frames, so this only shifts starts — but a secondary with its own
+ * duration will be right rather than inheriting the primary's.
+ */
+function summonSpan(
+	barStart: number,
+	barSummonActivatesAt: number | undefined,
+	barUptime: number,
+	summon: Summon,
+	index: number
+): { start: number; end: number } {
+	const start =
+		barStart + (index === 0 ? (barSummonActivatesAt ?? 0) : (summon.spawnsAt ?? 0)) / 60;
+	return { start, end: start + (index === 0 ? barUptime : summon.duration) };
 }
 
 // ---------------------------------------------------------------------------
@@ -2198,6 +2231,7 @@ export function parseNotation(
 		start: number;
 		end: number;
 		sourceCastId: number;
+		coveredBySummon?: true;
 	}[] = [];
 
 	// Close an open named state at `at` (gcsim DeleteStatus): clamp the live
@@ -2427,7 +2461,15 @@ export function parseNotation(
 		if (casts) {
 			for (const c of casts) {
 				if (c.uptime <= 0) continue;
-				const summon = findSummonForBar(holder, c.ability, c.label, c.abilityId);
+				// ⚠ PRIMARY ONLY, deliberately. `duringSummon` gates effects on
+				// "is this character's summon out" (Escoffier C6), and the
+				// ability's own geometry — the accessors that produced
+				// `summonActivatesAt` and `uptime` — is that answer. Widening it
+				// to every summon in `summons[]` would silently extend those
+				// gates by whatever a secondary's spawn/lifetime happen to be,
+				// which is a semantic change nobody asked for; the lane-emission
+				// site below is where the extra summons became visible.
+				const summon = findSummonsForBar(holder, c.ability, c.label, c.abilityId)[0];
 				if (!summon) continue;
 				const start = c.time + c.summonActivatesAt / 60;
 				if (t >= start && t < start + c.uptime) {
@@ -2635,6 +2677,19 @@ export function parseNotation(
 	 *       duration (Beidou Q pattern; bound to the cast site since onCast
 	 *       triggers fire at cast time).
 	 *
+	 *  🐛 THE TWO ARE A PRECEDENCE, NOT A UNION (fixed 2026-08-14). They used to
+	 *  both run, so an ability satisfying both registered TWO identical windows
+	 *  and fired TWO `shieldEnd` events per cast — seven abilities did (Baizhu Q,
+	 *  Citlali E, Ineffa E, Kirara E, Layla E, Thoma E, Xinyan E). Noelle's
+	 *  curator notes document the trap from the far side: her skill's shield
+	 *  Effect is authored deliberately WITHOUT a `duration` so the summon stays
+	 *  "the single onShieldEnd source", or her C4 Geo explosion would double-fire.
+	 *  The data should not have to be shaped around this. Case 2 wins because it
+	 *  is the EXPLICIT statement — a shield Effect with its own duration says the
+	 *  shield's length outright, where case 1 infers it from a summon's lifetime
+	 *  that merely coincides. All seven pairs carry equal durations today, so
+	 *  this removes duplicates and changes no span.
+	 *
 	 *  Shatter-by-damage is NOT modelled — the planner has no enemy/HP state.
 	 *  Shield windows always fire `onShieldEnd` at scheduled expiry, with the
 	 *  same null-resolving "assumed to hold" convention as the rest of the
@@ -2646,17 +2701,15 @@ export function parseNotation(
 		activeAbility: CastAbility,
 		sourceCastId: number
 	): void => {
-		const windows: { ability: 'skill' | 'burst'; endTime: number }[] = [];
-		// Case 1: summon-tagged shield ability
-		if (activeAbility.tags?.includes('shield')) {
-			const primary = activeAbility.summons?.[0];
-			if (primary?.duration !== undefined && primary.duration > 0) {
-				windows.push({ ability: castKind, endTime: castTime + primary.duration });
-			}
-		}
-		// Case 2: Effect.type === 'shield' on the cast ability itself, with
-		// onCast trigger + explicit duration. Triggers gated on the cast type
-		// via `trigger.ability` (if set) must match the current cast.
+		const windows: {
+			ability: 'skill' | 'burst';
+			endTime: number;
+			coveredBySummon?: boolean;
+		}[] = [];
+		// Case 2 FIRST — it is the one that wins (see the precedence note above).
+		// `Effect.type === 'shield'` on the cast ability itself, with onCast
+		// trigger + explicit duration. Triggers gated on the cast type via
+		// `trigger.ability` (if set) must match the current cast.
 		for (const eff of activeAbility.effects ?? []) {
 			if (eff.type !== 'shield') continue;
 			if (eff.trigger.type !== 'onCast') continue;
@@ -2664,7 +2717,44 @@ export function parseNotation(
 			if (eff.duration === undefined || eff.duration <= 0) continue;
 			windows.push({ ability: castKind, endTime: castTime + eff.duration });
 		}
+		// Case 1: summon-tagged shield ability — the FALLBACK, for kits whose
+		// shield has no Effect of its own to state a duration.
+		if (windows.length === 0 && activeAbility.tags?.includes('shield')) {
+			const primary = activeAbility.summons?.[0];
+			if (primary?.duration !== undefined && primary.duration > 0) {
+				windows.push({ ability: castKind, endTime: castTime + primary.duration });
+			}
+		}
 		if (windows.length === 0) return;
+		// ── Is this shield ALREADY DRAWN, as a summon? ────────────────────────
+		// ⚓ 2026-08-14, and it is a reconciliation of two authoring conventions
+		// for one fact, not a heuristic about art. Before shield windows existed,
+		// the only way to get a shield onto the chart was to author it as a
+		// `summons[]` entry with no effects — nine abilities still do (Layla's
+		// "Curtain of Slumber", Zhongli's "Jade Shield", Noelle's "Stone Armor"…).
+		// Those entries ARE the shield: same span, drawn in the summon lane. Now
+		// that the shield lane draws shield windows, they would be drawn twice.
+		//
+		// The test is EXACT, and both halves matter: a summon with NO effects of
+		// its own (a real summon does something — Itzpapa ticks, Birgitta ticks)
+		// AND whose duration is this shield's duration. ⚠ That second half is
+		// what saves Thoma's burst: "Scorching Ooyoroi" is a genuine 15s field
+		// that carries no effects yet, and his burst shield is 8s — it is not the
+		// same thing, so his field keeps its lane.
+		//
+		// ⛔ THE FIX IS NOT TO DELETE THOSE SUMMON ENTRIES, tempting as it looks.
+		// For five of them (Kirara, Layla, Thoma E, Xinyan, Noelle) the shield is
+		// the ability's ONLY summon, so `summons[0]` is also what gives the E BAR
+		// its active duration — deleting it would collapse a 12s bar to an instant
+		// pill. Retiring the convention properly means authoring `activeDuration`
+		// alongside, which is a data round with a visual verdict attached.
+		const shieldSummons = activeAbility.summons ?? [];
+		for (const w of windows) {
+			const dur = w.endTime - castTime;
+			w.coveredBySummon = shieldSummons.some(
+				(s) => (s.effects?.length ?? 0) === 0 && Math.abs(s.duration - dur) < 1e-9
+			);
+		}
 		const existing = getCharState(char.id).shields;
 		for (const w of windows) {
 			existing.push(w);
@@ -2674,7 +2764,8 @@ export function parseNotation(
 				source: w.ability,
 				start: castTime,
 				end: w.endTime,
-				sourceCastId
+				sourceCastId,
+				...(w.coveredBySummon ? { coveredBySummon: true as const } : {})
 			});
 		}
 		existing.sort((a, b) => a.endTime - b.endTime);
@@ -4088,7 +4179,8 @@ export function parseNotation(
 			source: rec.source,
 			start: rec.start,
 			end: rec.end,
-			sourceCastId: rec.sourceCastId
+			sourceCastId: rec.sourceCastId,
+			...(rec.coveredBySummon ? { coveredBySummon: true as const } : {})
 		});
 	}
 
@@ -4137,29 +4229,40 @@ export function parseNotation(
 		}
 		const emitSummon = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
 			if (bar.uptime <= 0) return;
-			const summon = findSummonForBar(summonChar, kind, bar.label, bar.abilityId);
-			if (!summon) return;
-			const spawnAt = bar.start + (bar.summonActivatesAt ?? 0) / 60;
-			let endAt = spawnAt + bar.uptime;
-			if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
-			if (endAt <= spawnAt) return;
-			const key = `${track.characterId}::${summon.label}`;
-			// Recast truncation: shorten the still-open prior window on this key.
-			if (summon.terminatesOn === 'recast') {
-				const prev = lastSummonWindowByKey.get(key);
-				if (prev && prev.end > spawnAt) prev.end = spawnAt;
-			}
-			const win: Extract<TimelineWindow, { kind: 'summon' }> = {
-				kind: 'summon',
-				characterId: track.characterId,
-				label: summon.label,
-				start: spawnAt,
-				end: endAt,
-				source: kind,
-				sourceCastId: castIdByBar.get(bar)
-			};
-			windows.push(win);
-			lastSummonWindowByKey.set(key, win);
+			// One window PER SUMMON. Emitted in authored order so the primary
+			// keeps the id it has always had and the extras land after it — the
+			// lane ordering in summonSubrows follows the same walk.
+			findSummonsForBar(summonChar, kind, bar.label, bar.abilityId).forEach((summon, i) => {
+				const { start: spawnAt, end } = summonSpan(
+					bar.start,
+					bar.summonActivatesAt,
+					bar.uptime,
+					summon,
+					i
+				);
+				// ⚠ terminatesOn is read off the SUMMON, so a stationary turret
+				// can outlive the swap that ends the field it spawned beside.
+				let endAt = end;
+				if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
+				if (endAt <= spawnAt) return;
+				const key = `${track.characterId}::${summon.label}`;
+				// Recast truncation: shorten the still-open prior window on this key.
+				if (summon.terminatesOn === 'recast') {
+					const prev = lastSummonWindowByKey.get(key);
+					if (prev && prev.end > spawnAt) prev.end = spawnAt;
+				}
+				const win: Extract<TimelineWindow, { kind: 'summon' }> = {
+					kind: 'summon',
+					characterId: track.characterId,
+					label: summon.label,
+					start: spawnAt,
+					end: endAt,
+					source: kind,
+					sourceCastId: castIdByBar.get(bar)
+				};
+				windows.push(win);
+				lastSummonWindowByKey.set(key, win);
+			});
 		};
 		for (const bar of track.eBars) emitSummon(bar, 'skill');
 		for (const bar of track.qBars) emitSummon(bar, 'burst');
