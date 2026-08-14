@@ -2886,8 +2886,27 @@
 	   full-strength castFill carries DARK ink, and this list enumerated the
 	   exceptions that stayed white; ⚓ "all labels back to white" made the
 	   exception the rule). So the question stopped being "who stays white" and
-	   became "who still has a bright fill" — and after the flattening and the
-	   glass rounds, that is only the two decorated lanes.
+	   became "who still has a bright fill".
+
+	   ✅ 2026-08-14 — THE DEFERRED CONTRAST DEBT IS PAID, and the answer to that
+	   question turned out to be wider than "the two decorated lanes". The
+	   2026-08-11 round left an explicit instruction here: ⚓ "don't worry about
+	   whether white works on E/Q labels — just convert them. We'll be balancing
+	   element colors in the next session… Don't 'helpfully' add one here in the
+	   meantime." That session happened — Genshin's palette was transcribed and
+	   then given its `bar` rung (2026-08-12) — so the precondition is met and
+	   the instruction has expired.
+	   ⚓ Nate 2026-08-14: "the halos were created but not extended far enough
+	   such that they emit… it was wired into the bars but not far enough for
+	   them to be picked up." Exactly right, and mechanically so: --label-halo is
+	   computed per character on .rp-char-block (shiftHue(p.bar, 0, −30)), and
+	   the only in-block selector that consumed it was `.rp-bar-cast-label`,
+	   which had by then moved to the NB lane. The variable was being derived for
+	   nobody. Both element-fill labels inside a char block now take it.
+	   ⚠ THE RULE IS THE FILL, NOT THE ROW: E/Q badges and summon/shield labels
+	   sit on full-strength castFill and qualify; the buff rows in the same block
+	   do NOT, because their bars are `--glass-bar` — translucent over the scene,
+	   with nothing bright to be held off.
 
 	   🐛 AND THIS LIST IS WHERE I BROKE THE CD LABELS. In 27da633 I inserted a
 	   comment and two rules INTO THE MIDDLE of this selector list, between
@@ -2908,6 +2927,18 @@
 	   and why .rp-bar-cd-label, now at .5, correctly has none. */
 	.rp-bar-cast-label,
 	.rp-moonsign-bar .rp-buff-label {
+		text-shadow:
+			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
+			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
+	}
+	/* The element-fill labels inside a character block — the E/Q pill badge and
+	   the summon/shield lane label. ⚠ A SEPARATE RULE, not two more selectors on
+	   the list above: both take their halo from the char block's own
+	   --label-halo rather than a lane constant, and the list above is the one
+	   this file has already been broken by inserting into once.
+	   ⚠ Both are full-opacity #fff, which is what a halo requires. */
+	.rp-bar-row-badge,
+	.rp-summon-label {
 		text-shadow:
 			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
 			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
@@ -2955,7 +2986,8 @@
 		   that the body face is variable. See the --fw-* block in app.css. */
 		font-weight: var(--fw-medium);
 		/* ↻ 2026-08-11 round two: --bright-ink → white with every other label.
-		   See the halo block for the deferred contrast debt this carries. */
+		   ✅ 2026-08-14: the contrast debt that carried is PAID — this label takes
+		   the char block's --label-halo (see the halo block). */
 		color: #fff;
 		white-space: nowrap;
 		pointer-events: none;
@@ -3061,7 +3093,9 @@
 	/* ↻ 2026-08-11 round two: --bright-ink → white. This badge and the summon
 	   label were the last two holdouts of the bright-chip idiom; both convert,
 	   and the --dim variant no longer needs an override because white IS the
-	   base now. See the halo block for the deferred contrast debt. */
+	   base now. ✅ 2026-08-14: the deferred contrast debt is PAID — both take the
+	   char block's --label-halo (see the halo block). The --dim variant inherits
+	   it, which is what it used to get from its own override. */
 	.rp-bar-row-badge {
 		position: absolute;
 		left: 4px;

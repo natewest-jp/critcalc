@@ -628,10 +628,16 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					haloText(badge, px + 4, py + ph / 2 + 3, ...elementHalo(barColor));
 				} else {
 					paintCastFill(px, py, pw, ph, barColor);
-					// Full-strength castFill carries dark ink, no halo — mirrors
-					// .rp-bar-row-badge (bright-chip idiom, 2026-08-01).
-					ctx!.fillStyle = INK;
-					ctx!.fillText(badge, px + 4, py + ph / 2 + 3);
+					// ↻ 2026-08-14: WHITE + HALO, same as the dim branch above.
+					// 🐛 This was still painting dark INK "mirrors .rp-bar-row-badge
+					// (bright-chip idiom, 2026-08-01)" — but that idiom was retired
+					// on screen on 2026-08-11, so the export had been drawing dark
+					// ink under white-labelled pills for three days. ⚠ The mirror
+					// test only covers COLOUR TOKENS, not which ink a label picks,
+					// so nothing caught it; the two branches are now identical and
+					// there is no second treatment left to drift.
+					ctx!.fillStyle = '#fff';
+					haloText(badge, px + 4, py + ph / 2 + 3, ...elementHalo(barColor));
 				}
 			});
 		};
@@ -736,12 +742,23 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					const pw = barGeomW(sbar.start, sbar.end - sbar.start);
 					// Full-strength castFill — same finish as the E/Q pills;
 					// full row height (matches the buff bars — no inset).
-					// Dark ink, no halo — mirrors .rp-summon-label (2026-08-01).
+					// ↻ 2026-08-14: white + halo at --fw-medium, mirroring
+					// .rp-summon-label. 🐛 It was dark INK at weight 700, both left
+					// behind by the 2026-08-11 round that took this label to white
+					// and dropped it two rungs to medium (500). Same blind spot as
+					// the E/Q badge above — the mirror test reads colour tokens, not
+					// ink choice or font weight.
 					paintCastFill(px, rowTop, pw, snap.summonRowH, p.bar);
-					ctx!.fillStyle = INK;
-					ctx!.font = `700 9px ${SANS}`;
+					ctx!.fillStyle = '#fff';
+					ctx!.font = `500 9px ${SANS}`;
 					ctx!.textAlign = 'left';
-					ctx!.fillText(srow.label, px + 4, rowTop + snap.summonRowH / 2 + 3, Math.max(pw - 6, 8));
+					haloText(
+						srow.label,
+						px + 4,
+						rowTop + snap.summonRowH / 2 + 3,
+						...elementHalo(p.bar),
+						Math.max(pw - 6, 8)
+					);
 					// Bottom-anchored tick stubs — mirror .rp-summon-tick
 					ctx!.fillStyle = p.hi;
 					ctx!.globalAlpha = 0.92;
