@@ -2699,8 +2699,18 @@ export function parseNotation(
 		castKind: 'skill' | 'burst',
 		castTime: number,
 		activeAbility: CastAbility,
+		variant: AbilityVariant | undefined,
 		sourceCastId: number
 	): void => {
+		// ⚠ VARIANT FIRST, for both halves. A variant's `effects` and `summons`
+		// each REPLACE the base ability's (see AbilityVariant in types/ability),
+		// so a hold-E shield reads its own duration rather than the tap's —
+		// Diona 12s not 4.8s, Candace 1.52s not 0.27s — and Zhongli, whose Jade
+		// Shield lives only on his hE variant, gets a shield window at all.
+		const abilityEffects = variant?.effects ?? activeAbility.effects ?? [];
+		const abilitySummons =
+			(variant?.summons?.length ? variant.summons : activeAbility.summons) ?? [];
+		const abilityTags = variant?.tags ?? activeAbility.tags;
 		const windows: {
 			ability: 'skill' | 'burst';
 			endTime: number;
@@ -2710,7 +2720,7 @@ export function parseNotation(
 		// `Effect.type === 'shield'` on the cast ability itself, with onCast
 		// trigger + explicit duration. Triggers gated on the cast type via
 		// `trigger.ability` (if set) must match the current cast.
-		for (const eff of activeAbility.effects ?? []) {
+		for (const eff of abilityEffects) {
 			if (eff.type !== 'shield') continue;
 			if (eff.trigger.type !== 'onCast') continue;
 			if (eff.trigger.ability !== undefined && eff.trigger.ability !== castKind) continue;
@@ -2719,8 +2729,8 @@ export function parseNotation(
 		}
 		// Case 1: summon-tagged shield ability — the FALLBACK, for kits whose
 		// shield has no Effect of its own to state a duration.
-		if (windows.length === 0 && activeAbility.tags?.includes('shield')) {
-			const primary = activeAbility.summons?.[0];
+		if (windows.length === 0 && abilityTags?.includes('shield')) {
+			const primary = abilitySummons[0];
 			if (primary?.duration !== undefined && primary.duration > 0) {
 				windows.push({ ability: castKind, endTime: castTime + primary.duration });
 			}
@@ -2748,7 +2758,7 @@ export function parseNotation(
 		// its active duration — deleting it would collapse a 12s bar to an instant
 		// pill. Retiring the convention properly means authoring `activeDuration`
 		// alongside, which is a data round with a visual verdict attached.
-		const shieldSummons = activeAbility.summons ?? [];
+		const shieldSummons = abilitySummons;
 		for (const w of windows) {
 			const dur = w.endTime - castTime;
 			w.coveredBySummon = shieldSummons.some(
@@ -3580,7 +3590,7 @@ export function parseNotation(
 				// Register shield window if the cast spawns a shield (tags
 				// `['shield']` + summons[0] duration, or onCast Effect.type
 				// `'shield'` + duration). Beidou Q and Noelle/Zhongli E are canonical.
-				registerShieldOnCast(char, kind, castStart, active, castId);
+				registerShieldOnCast(char, kind, castStart, active, variant, castId);
 				// Emit synthetic reactions for this cast and dispatch to onReaction
 				// consumers (gainStacks + durationExtensions). Fires after
 				// stance/summon registration so the just-opened stance owner /

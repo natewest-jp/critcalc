@@ -468,3 +468,74 @@ describe('buff windows — real-kit deltas (Yanfei A1, Flins C2)', () => {
 		expect(team.some((r) => r.key === 'flins::char::E::resShred')).toBe(true);
 	});
 });
+
+// ── variant effects (2026-08-14) ──
+//
+// The parser walked `src.effects` flat and never descended into `variants`, so
+// a hold-E's own effects were dead data on the timeline while the Team Builder
+// (deriveCapabilities, which DOES walk variants) reported them. Five corpus
+// characters were affected; these lock the resolution rule in on real data so
+// it can't silently regress to the base ability's list.
+describe('variant effects resolve per cast token', () => {
+	const load = async (id: string) =>
+		(await import(`$lib/data/characters/${id}.json`)).default as unknown as CharacterData;
+
+	it('Diona: the hold shield is 12s, the tap shield 4.8s', async () => {
+		const diona = await load('diona');
+		const dur = (n: string) => {
+			const w = run(n, [diona]).rotation.windows.find((x) => x.kind === 'shield');
+			return w ? w.end - w.start : undefined;
+		};
+		expect(dur('Diona E')).toBeCloseTo(4.8, 6);
+		expect(dur('Diona hE')).toBeCloseTo(12, 6);
+	});
+
+	it('Shenhe: the hold buff runs 15s where the tap runs 10s', async () => {
+		const shenhe = await load('shenhe');
+		const span = (n: string) => {
+			const bar = run(n, [shenhe]).team[0].bars[0];
+			return bar.end - bar.start;
+		};
+		expect(span('Shenhe E')).toBeCloseTo(10, 6);
+		expect(span('Shenhe hE')).toBeCloseTo(15, 6);
+	});
+
+	// ⚓ REPLACE, NOT ADD. Eula's base skill carries no effects and her hold
+	// variant carries two resShreds; a tap must therefore emit NOTHING, which is
+	// also what proves the variant list isn't leaking onto the base cast.
+	it('Eula: the hold shred exists and the tap has none', async () => {
+		const eula = await load('eula');
+		expect(run('Eula E', [eula]).team).toHaveLength(0);
+		const held = run('Eula hE', [eula]).team;
+		expect(held).toHaveLength(1);
+		expect(held[0].kind).toBe('debuff');
+		expect(held[0].bars[0].effects.map((e) => e.stat).sort()).toEqual(['cryoRes', 'physicalRes']);
+	});
+
+	// Zhongli's Jade Shield lives ONLY on his hE variant — before this he had no
+	// shield window at all, and his RES shred never fired.
+	it('Zhongli: the hold cast raises a shield window and the shred', async () => {
+		const zhongli = await load('zhongli');
+		expect(run('Zhongli E', [zhongli]).rotation.windows.some((w) => w.kind === 'shield')).toBe(
+			false
+		);
+		const held = run('Zhongli hE', [zhongli]);
+		const shield = held.rotation.windows.find((w) => w.kind === 'shield');
+		expect(shield).toBeTruthy();
+		expect(shield!.end - shield!.start).toBeCloseTo(20, 6);
+		expect(held.team.some((r) => r.kind === 'debuff')).toBe(true);
+	});
+
+	// A variant with `summons` but no `effects` must fall through to the base
+	// ability's effect list — and its own summon duration still wins for the
+	// summon-derived shield fallback.
+	it('Yun Jin: the hold shield takes the variant’s own 0.8s, not the base 0.2s', async () => {
+		const yunJin = await load('yun_jin');
+		const dur = (n: string) => {
+			const w = run(n, [yunJin]).rotation.windows.find((x) => x.kind === 'shield');
+			return w ? w.end - w.start : undefined;
+		};
+		expect(dur('Yun Jin E')).toBeCloseTo(0.2, 6);
+		expect(dur('Yun Jin hE')).toBeCloseTo(0.8, 6);
+	});
+});

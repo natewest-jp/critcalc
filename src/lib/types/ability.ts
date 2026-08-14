@@ -1546,6 +1546,16 @@ export type AbilityVariant = {
 	 *  Absent = the shared clock applies: the variant waits for it and writes
 	 *  its own resolved cooldown back (Varesa Volcano Kablam, 1s). */
 	bypassesCooldown?: boolean;
+	/** Effects this variant grants INSTEAD OF the base ability's — the same
+	 *  override convention `summons` uses above, not a merge. Diona's hold-E
+	 *  shield is 12s in place of the tap's 4.8s; an additive reading would put
+	 *  two shields on one cast.
+	 *  ⚠ SO A VARIANT THAT RESTATES ONE EFFECT DROPS THE REST. List everything
+	 *  the variant grants, not only the values that changed.
+	 *  ⚠ Read by the parser only since 2026-08-14 — before that these were live
+	 *  in the Team Builder (deriveCapabilities walks variants) and dead on the
+	 *  timeline, which is how five characters shipped a hold-E the planner drew
+	 *  as a tap. See `effectsForCast` in utils/effectCollection.ts. */
 	effects?: Effect[];
 };
 

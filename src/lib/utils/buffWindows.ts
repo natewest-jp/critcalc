@@ -269,10 +269,15 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		];
 
 		for (const [castType, abCasts] of castPairs) {
-			const castEffects = getCharacterEffectsForCast(char, castType);
-			const onHitEffects = getCharacterEffectsForOnHit(char, castType);
-			const afterDurationEffects = getCharacterEffectsForAfterDuration(char, castType);
-
+			// ⚠ THE POOL DEPENDS ON THE TOKEN, not just the cast class (2026-08-14).
+			// A variant's `effects` REPLACE the base ability's, so `E` and `hE`
+			// can qualify different effects — Diona's hold shield is 12s where her
+			// tap's is 4.8s. These used to be hoisted once per (char, castType);
+			// they are now resolved per token and memoised, because a track
+			// usually casts one or two distinct tokens and the pools are small.
+			// ⚠ Order is preserved: the per-cast loops still walk `abCasts` in
+			// chronological order, so window ids — and the row order derived from
+			// them — are unchanged for every character with no variant effects.
 			const universalPool = (effect: Effect): effect is BuffEffect => {
 				if (effect.type !== 'buff') return false;
 				if (!targetsTeamOrActive(effect.target)) return false;
@@ -285,16 +290,37 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					return false;
 				return true;
 			};
-			const seenStats = new Set<string>();
-			const qualifiedEffects = [...castEffects, ...onHitEffects]
-				.filter(universalPool)
-				.filter((effect) => {
-					if (seenStats.has(effect.stat)) return false;
-					seenStats.add(effect.stat);
-					return true;
-				});
-			if (qualifiedEffects.length > 0) {
+			type CastPools = {
+				qualified: BuffEffect[];
+				resShred: ResShredEffect[];
+				afterDuration: Effect[];
+			};
+			const poolCache = new Map<string, CastPools>();
+			const poolsFor = (label: string): CastPools => {
+				const hit = poolCache.get(label);
+				if (hit) return hit;
+				const merged = [
+					...getCharacterEffectsForCast(char, castType, label),
+					...getCharacterEffectsForOnHit(char, castType, label)
+				];
+				const seenStats = new Set<string>();
+				const built: CastPools = {
+					qualified: merged.filter(universalPool).filter((effect) => {
+						if (seenStats.has(effect.stat)) return false;
+						seenStats.add(effect.stat);
+						return true;
+					}),
+					resShred: dedupResShredByElement(merged.filter(resShredBase)),
+					afterDuration: getCharacterEffectsForAfterDuration(char, castType, label)
+				};
+				poolCache.set(label, built);
+				return built;
+			};
+
+			{
 				for (const cast of abCasts) {
+					const qualifiedEffects = poolsFor(cast.label).qualified;
+					if (qualifiedEffects.length === 0) continue;
 					const filterCtx = resolveCastContext(char, castType, cast);
 					const barEffects = qualifiedEffects.filter((effect) => {
 						if (
@@ -331,23 +357,34 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			}
 
 			// ── afterDuration buffs ──
-			const seenStatsAfter = new Set<string>();
-			const qualifiedEffectsAfter = afterDurationEffects.filter((effect): effect is BuffEffect => {
-				if (effect.type !== 'buff') return false;
-				if (!targetsTeamOrActive(effect.target)) return false;
-				if (isActiveTargetOnly(effect.target)) return false;
-				if (effect.duration == null) return false;
-				if (
-					evalCondition(effect.conditions, 4, new Set(), cLevel, undefined, undefined, baseCtx) ===
-					false
-				)
-					return false;
-				if (seenStatsAfter.has(effect.stat)) return false;
-				seenStatsAfter.add(effect.stat);
-				return true;
-			});
-			if (qualifiedEffectsAfter.length > 0) {
+			const qualifiedAfterFor = (label: string): BuffEffect[] => {
+				const seenStatsAfter = new Set<string>();
+				return poolsFor(label).afterDuration.filter((effect): effect is BuffEffect => {
+					if (effect.type !== 'buff') return false;
+					if (!targetsTeamOrActive(effect.target)) return false;
+					if (isActiveTargetOnly(effect.target)) return false;
+					if (effect.duration == null) return false;
+					if (
+						evalCondition(
+							effect.conditions,
+							4,
+							new Set(),
+							cLevel,
+							undefined,
+							undefined,
+							baseCtx
+						) === false
+					)
+						return false;
+					if (seenStatsAfter.has(effect.stat)) return false;
+					seenStatsAfter.add(effect.stat);
+					return true;
+				});
+			};
+			{
 				for (const cast of abCasts) {
+					const qualifiedEffectsAfter = qualifiedAfterFor(cast.label);
+					if (qualifiedEffectsAfter.length === 0) continue;
 					const barEffects = qualifiedEffectsAfter.filter(
 						(effect) =>
 							evalCondition(
@@ -377,11 +414,10 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			}
 
 			// ── resShred (debuff): onCast+onHit at cast start ──
-			const resShredStartPool = dedupResShredByElement(
-				[...castEffects, ...onHitEffects].filter(resShredBase)
-			);
-			if (resShredStartPool.length > 0) {
+			{
 				for (const cast of abCasts) {
+					const resShredStartPool = poolsFor(cast.label).resShred;
+					if (resShredStartPool.length === 0) continue;
 					const filterCtx = resolveCastContext(char, castType, cast);
 					const barEffects = resShredStartPool.filter((effect) => {
 						if (
@@ -418,9 +454,12 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			}
 
 			// ── resShred (debuff): afterDuration at cast end — no per-bar filter ──
-			const resShredEndPool = dedupResShredByElement(afterDurationEffects.filter(resShredBase));
-			if (resShredEndPool.length > 0) {
+			{
 				for (const cast of abCasts) {
+					const resShredEndPool = dedupResShredByElement(
+						poolsFor(cast.label).afterDuration.filter(resShredBase)
+					);
+					if (resShredEndPool.length === 0) continue;
 					const buffStart = afterDurationStart(cast);
 					const buffEnd = buffStart + resShredEndPool[0].duration!;
 					emit({
@@ -835,32 +874,44 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		];
 
 		for (const [castType, abCasts] of castPairs) {
-			const onCastList = getCharacterEffectsForCast(char, castType);
-			const onHitList = getCharacterEffectsForOnHit(char, castType);
-			const seenStats = new Set<string>();
-			const activeEffects = [...onCastList, ...onHitList].filter((effect): effect is BuffEffect => {
-				if (effect.type !== 'buff') return false;
-				if (!isActiveTargetOnly(effect.target)) return false;
-				if (effect.duration == null) return false;
-				if (
-					evalCondition(
-						effect.conditions,
-						4,
-						new Set(),
-						cLevel,
-						undefined,
-						undefined,
-						receivedBaseCtx
-					) === false
-				)
-					return false;
-				if (seenStats.has(effect.stat)) return false;
-				seenStats.add(effect.stat);
-				return true;
-			});
-			if (activeEffects.length === 0) continue;
+			// Per-token pool — see the note on the team-surface loop above: a
+			// variant's effects replace the base's, so `E` and `hE` can qualify
+			// different lists.
+			const activeCache = new Map<string, BuffEffect[]>();
+			const activeEffectsFor = (label: string): BuffEffect[] => {
+				const hit = activeCache.get(label);
+				if (hit) return hit;
+				const seenStats = new Set<string>();
+				const built = [
+					...getCharacterEffectsForCast(char, castType, label),
+					...getCharacterEffectsForOnHit(char, castType, label)
+				].filter((effect): effect is BuffEffect => {
+					if (effect.type !== 'buff') return false;
+					if (!isActiveTargetOnly(effect.target)) return false;
+					if (effect.duration == null) return false;
+					if (
+						evalCondition(
+							effect.conditions,
+							4,
+							new Set(),
+							cLevel,
+							undefined,
+							undefined,
+							receivedBaseCtx
+						) === false
+					)
+						return false;
+					if (seenStats.has(effect.stat)) return false;
+					seenStats.add(effect.stat);
+					return true;
+				});
+				activeCache.set(label, built);
+				return built;
+			};
 
 			for (const cast of abCasts) {
+				const activeEffects = activeEffectsFor(cast.label);
+				if (activeEffects.length === 0) continue;
 				const filterCtx = resolveCastContext(char, castType, cast);
 				const barEffects = activeEffects.filter((effect) => {
 					if (
@@ -1073,9 +1124,6 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		];
 
 		for (const [castType, abCasts] of selfCastPairs) {
-			const onCastSelf = getCharacterEffectsForCast(char, castType);
-			const onHitSelf = getCharacterEffectsForOnHit(char, castType);
-			const seenStats = new Set<string>();
 			const selfResolved = new Set<string>(['onField']);
 			const selfNegated = new Set<string>(['offField']);
 			const selfCtx: ConditionContext = {
@@ -1083,29 +1131,42 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				negatedStates: selfNegated,
 				teamElementCounts: teamElementCountsByHolder.get(char.id)
 			};
-			const selfEffects = [...onCastSelf, ...onHitSelf].filter((effect): effect is BuffEffect => {
-				if (effect.type !== 'buff') return false;
-				if (effect.target !== 'self') return false;
-				if (effect.duration == null) return false;
-				if (
-					evalCondition(
-						effect.conditions,
-						4,
-						selfResolved,
-						cLevel,
-						undefined,
-						undefined,
-						selfCtx
-					) === false
-				)
-					return false;
-				if (seenStats.has(effect.stat)) return false;
-				seenStats.add(effect.stat);
-				return true;
-			});
-			if (selfEffects.length === 0) continue;
+			// Per-token pool — see the team-surface loop's note.
+			const selfCache = new Map<string, BuffEffect[]>();
+			const selfEffectsFor = (label: string): BuffEffect[] => {
+				const cached = selfCache.get(label);
+				if (cached) return cached;
+				const seenStats = new Set<string>();
+				const built = [
+					...getCharacterEffectsForCast(char, castType, label),
+					...getCharacterEffectsForOnHit(char, castType, label)
+				].filter((effect): effect is BuffEffect => {
+					if (effect.type !== 'buff') return false;
+					if (effect.target !== 'self') return false;
+					if (effect.duration == null) return false;
+					if (
+						evalCondition(
+							effect.conditions,
+							4,
+							selfResolved,
+							cLevel,
+							undefined,
+							undefined,
+							selfCtx
+						) === false
+					)
+						return false;
+					if (seenStats.has(effect.stat)) return false;
+					seenStats.add(effect.stat);
+					return true;
+				});
+				selfCache.set(label, built);
+				return built;
+			};
 
 			for (const cast of abCasts) {
+				const selfEffects = selfEffectsFor(cast.label);
+				if (selfEffects.length === 0) continue;
 				const filterCtx = resolveCastContext(char, castType, cast);
 				const barEffects = selfEffects.filter((effect) => {
 					if (

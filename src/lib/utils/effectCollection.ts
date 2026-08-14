@@ -97,14 +97,51 @@ function normalizeBuffLikeEffects(effects: Effect[]): Effect[] {
  *     any cast (matches both skill and burst) — e.g. Kazuha C6 infusion
  *     triggers after either E or Q.
  */
+/**
+ * A source's effects AS THIS CAST RESOLVED THEM — variant-aware (2026-08-14).
+ *
+ * 🐛 The collectors below used to read `src.effects` flat, and nothing else in
+ * the parser descended into `variants`. So a variant's `effects` were dead data
+ * on the rotation side while the capabilities layer (deriveCapabilities, which
+ * DOES walk them) reported them to the Team Builder — five characters, all
+ * `onCast`, and every one of them silently wrong on the timeline:
+ *   Diona   hold-E shield 12s     rendered as the tap's 4.8s
+ *   Candace hold-E shield 1.52s   rendered as 0.27s
+ *   Shenhe  hold-E buff 15s       rendered as 10s
+ *   Eula    hold-E resShred ×2    rendered as nothing
+ *   Zhongli hold-E resShred 20s   rendered as nothing
+ *
+ * ⚓ A VARIANT'S EFFECTS REPLACE THE BASE ABILITY'S — they do not add to them.
+ * The corpus is unanimous and it is the only reading that works: Diona's hold
+ * shield is 12s INSTEAD OF the tap's 4.8s, not alongside it, and the additive
+ * reading would put two shields on one cast. It also matches the convention
+ * `AbilityVariant.summons` already documents ("Overrides the base ability's
+ * summons[]"). ⚠ The consequence for curators: a variant that restates ONE of
+ * its ability's effects drops the rest — list every effect the variant grants,
+ * not just the ones whose values changed.
+ *
+ * `castLabel` absent = no cast context (a corpus-wide capability sweep rather
+ * than a cast), so the base list stands. Passives and constellations have no
+ * variants and are untouched.
+ */
+function effectsForCast(
+	src: { effects?: Effect[]; variants?: { input?: string[]; effects?: Effect[] }[] },
+	castLabel: string | undefined
+): Effect[] {
+	if (castLabel === undefined || !src.variants) return src.effects ?? [];
+	const variant = src.variants.find((v) => v.input?.includes(castLabel));
+	return variant?.effects ?? src.effects ?? [];
+}
+
 export function getCharacterEffectsForCast(
 	char: CharacterData,
-	castType: 'skill' | 'burst'
+	castType: 'skill' | 'burst',
+	castLabel?: string
 ): Effect[] {
 	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
 	const result: Effect[] = [];
 	for (const src of sources) {
-		for (const fx of src.effects ?? []) {
+		for (const fx of effectsForCast(src, castLabel)) {
 			if (fx.trigger.type !== 'onCast') continue;
 			const explicit = fx.trigger.ability;
 			if (explicit !== undefined) {
@@ -132,13 +169,14 @@ export function getCharacterEffectsForCast(
  *  helper is purely the candidate-pool collector. */
 export function getCharacterEffectsForOnHit(
 	char: CharacterData,
-	castType: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge'
+	castType: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge',
+	castLabel?: string
 ): Effect[] {
 	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
 	const result: Effect[] = [];
 	const isInputClass = castType === 'normal' || castType === 'charged' || castType === 'plunge';
 	for (const src of sources) {
-		for (const fx of src.effects ?? []) {
+		for (const fx of effectsForCast(src, castLabel)) {
 			if (fx.trigger.type !== 'onHit') continue;
 			const explicit = fx.trigger.abilityType;
 			if (explicit !== undefined) {
@@ -254,12 +292,17 @@ export function resolveCastContext(
  *  determines which host ability's duration binds the trigger. */
 export function getCharacterEffectsForAfterDuration(
 	char: CharacterData,
-	castType: 'skill' | 'burst'
+	castType: 'skill' | 'burst',
+	castLabel?: string
 ): Effect[] {
 	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
 	const result: Effect[] = [];
 	for (const src of sources) {
-		for (const fx of src.effects ?? []) {
+		// Variant-resolved for SYMMETRY, not for a live case: no variant in the
+		// corpus authors an afterDuration effect today. Leaving one of the three
+		// cast-scoped collectors flat is how the next curator finds a gap the
+		// hard way.
+		for (const fx of effectsForCast(src, castLabel)) {
 			if (fx.trigger.type !== 'afterDuration') continue;
 			const explicit = fx.trigger.ability;
 			if (explicit !== undefined) {
