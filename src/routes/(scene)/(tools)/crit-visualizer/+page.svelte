@@ -184,10 +184,6 @@
 
 <svelte:window bind:innerWidth={vw} />
 
-<svelte:head>
-	<title>Visualizers | critcalc.app</title>
-</svelte:head>
-
 <!-- The tool stack (toolbar round). The Visualizers is the one UNBENCHED tool
      — no working team, so no ribbon and no inset: its stack starts at the
      content margin. It still wears the same two bands as the others, which is

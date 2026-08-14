@@ -29,11 +29,6 @@
 	] as const;
 </script>
 
-<svelte:head>
-	<title>{isNotFound ? 'Page not found' : 'Something went wrong'} · critcalc.app</title>
-	<meta name="robots" content="noindex" />
-</svelte:head>
-
 <main class="error-page">
 	<div class="error-inner">
 		<img class="mark" src={favicon} alt="" width="44" height="44" />

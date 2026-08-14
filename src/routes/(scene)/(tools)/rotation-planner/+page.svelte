@@ -267,10 +267,6 @@
 	let showAside = $derived(pv.showNotes && slotCaveats.length > 0);
 </script>
 
-<svelte:head>
-	<title>Team rotation planner | critcalc.app</title>
-</svelte:head>
-
 <section class="rotation-page">
 	<!-- The tool stack: bands + surface, with the bench ribbon's dock spanning
 	     both (toolbar round). The tab bar that used to float above the frame is

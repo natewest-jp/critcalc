@@ -715,10 +715,6 @@
 	// longer owns. Shareable teams travel through the planner's ⤴ Share link.
 </script>
 
-<svelte:head>
-	<title>Team Builder | critcalc.app</title>
-</svelte:head>
-
 <!-- One roster tile, shared by the roster grid, the "not yet curated" bucket,
      and the Rotation-Planner per-slot alternative rows. -->
 {#snippet charTile(entry: CharacterIndexEntry, dimmed: boolean)}
