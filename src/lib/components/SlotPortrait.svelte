@@ -39,8 +39,10 @@
 	 *
 	 * The loadout pill is one shape with TWO hit zones now — artifact and
 	 * weapon, the refinement having become a corner digit on the weapon icon.
-	 * Both open the same LoadoutPanel led by the section you clicked, and that
-	 * panel always renders its refinement pips, so nothing became unreachable;
+	 * Both open the same LoadoutPanel — which zone you clicked decides only
+	 * whether a second click closes it, not how the panel reads (the lead
+	 * emphasis went 2026-08-14) — and that panel always renders its refinement
+	 * pips, so nothing became unreachable;
 	 * setting refinement alone costs one extra click and gave back 24px of card.
 	 *
 	 * Purely presentational: it displays the resolved (effective) constellation +
@@ -56,7 +58,7 @@
 	import { CARD_PORTRAIT } from '$lib/benchBand.svelte';
 	import { elementPalette } from '$lib/utils/elementColors';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
-	import { artifactImagePath } from '$lib/data/artifactLookup';
+	import { artifactImagePath, getArtifactSetById } from '$lib/data/artifactLookup';
 	import { weaponImagePath } from '$lib/data/weaponLookup';
 	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
 	import LoadoutPanel from '$lib/components/LoadoutPanel.svelte';
@@ -168,8 +170,14 @@
 	// ── Loadout pill state ───────────────────────────────────────────────────
 	const currentRef = $derived(loadoutEntry?.weaponRefinement ?? 1);
 	const hasWeapon = $derived(!!loadoutEntry?.weaponId);
+	// ⚠ The stored id is checked against the SET LIST, not just for presence.
+	// A loadout is localStorage-backed and a set can leave the roster (Maiden
+	// Beloved did, 2026-08-14), so a saved id can outlive its set. The art is
+	// add-only and survives deletion, so the unguarded path drew the pill of a
+	// set the panel below it reports as "None" — the pill has to agree with the
+	// panel, and the panel can only offer what still exists.
 	const artifactIcon = $derived(
-		loadoutEntry?.artifactSetId
+		loadoutEntry?.artifactSetId && getArtifactSetById(loadoutEntry.artifactSetId)
 			? artifactImagePath(loadoutEntry.artifactSetId)
 			: GENERIC_ARTIFACT_ICON
 	);
@@ -439,7 +447,6 @@
 			{loadoutEntry}
 			weaponType={char.weapon}
 			elementColor={p.main}
-			section={loadoutSection}
 			onSetArtifact={(id) => onSetArtifact(id)}
 			onSetWeapon={(id, r) => onSetWeapon(id, r)}
 			onSetRefinement={(r) => onSetRefinement(r)}

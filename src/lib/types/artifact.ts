@@ -13,6 +13,9 @@ import type { Effect } from './ability';
 /** A single artifact set bonus definition. */
 export type ArtifactSetBonus = {
 	effects: Effect[];
+	/** Curator-only rationale — same convention as `CharacterData`. Never
+	 *  rendered; `caveat` on the effect is the player-facing surface. */
+	_curatorNotes?: string[];
 };
 
 /** Full artifact set definition with optional 2pc/4pc bonuses. */

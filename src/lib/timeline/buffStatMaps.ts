@@ -55,7 +55,18 @@ export const BUFF_STAT_ICON: Partial<Record<Stat, string>> = {
 	geoRes: '/assets/elements/flat-white/geo.png',
 	hydroRes: '/assets/elements/flat-white/hydro.png',
 	pyroRes: '/assets/elements/flat-white/pyro.png',
-	physicalRes: '/assets/elements/flat-white/omni.png',
+	/* ⛔ `physicalRes` IS NOT OMNI (⚓ Nate 2026-08-14). It wore the omni mark,
+	   but omni means ALL/ANY ELEMENTAL and Physical is precisely the damage type
+	   OUTSIDE that set — the one glyph we had said the opposite of the truth.
+	   ⚓ Nate's pick is the ATK sword, which is also Genshin's own Physical DMG
+	   Bonus glyph. ⚠ It is SHARED with the three ATK stats, knowingly (⚓ Nate:
+	   "not too worried about using the ATK icon multiple places") — the row
+	   LABEL is what tells them apart, in the tooltip and in the source name on
+	   the bar. ⛔ Don't reach for the buff/debuff split to separate them: the
+	   coloured debuff bar was deleted 2026-08-11 and the two registers look
+	   identical now.
+	   ⚠ `allElementalRes` KEEPS omni — that one really is all seven. */
+	physicalRes: '/assets/effects/Icon_Attribute_Attack.webp',
 	allElementalRes: '/assets/elements/flat-white/omni.png',
 	anemoCritDmg: '/assets/elements/flat-white/anemo.png',
 	cryoCritDmg: '/assets/elements/flat-white/cryo.png',

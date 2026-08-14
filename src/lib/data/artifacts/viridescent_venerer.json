@@ -18,15 +18,52 @@
 		]
 	},
 	"fourPiece": {
+		"_curatorNotes": [
+			"ONE effect per swirlable element, not one effect listing four reactions (2026-08-14). The 4pc shreds the RES of the element that was SWIRLED — a Pyro swirl takes 40% Pyro RES and nothing else — so the single element-less resShred this used to carry rendered as 'All Elemental RES −40%', which is four times the debuff the set actually applies. Each entry's trigger names exactly one swirl and its `element` names that swirl's element, so a rotation shows the shred it earned. Swirl only exists for the four aura elements; there is no anemo/geo/dendro entry by design."
+		],
 		"effects": [
 			{
 				"type": "resShred",
 				"target": "enemy",
 				"trigger": {
 					"type": "onReaction",
-					"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"]
+					"reaction": ["pyroSwirl"]
 				},
 				"duration": 10,
+				"element": "pyro",
+				"value": -40
+			},
+			{
+				"type": "resShred",
+				"target": "enemy",
+				"trigger": {
+					"type": "onReaction",
+					"reaction": ["hydroSwirl"]
+				},
+				"duration": 10,
+				"element": "hydro",
+				"value": -40
+			},
+			{
+				"type": "resShred",
+				"target": "enemy",
+				"trigger": {
+					"type": "onReaction",
+					"reaction": ["cryoSwirl"]
+				},
+				"duration": 10,
+				"element": "cryo",
+				"value": -40
+			},
+			{
+				"type": "resShred",
+				"target": "enemy",
+				"trigger": {
+					"type": "onReaction",
+					"reaction": ["electroSwirl"]
+				},
+				"duration": 10,
+				"element": "electro",
 				"value": -40
 			}
 		]

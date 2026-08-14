@@ -106,7 +106,7 @@
 	></div>
 	<div
 		bind:this={menuEl}
-		class="band-menu ctx-glass"
+		class="band-menu ctx-dark"
 		use:portal
 		transition:fade={{ duration: motion(T_QUICK) }}
 		onintrostart={introLive}
@@ -144,7 +144,18 @@
 	   --surface and a full border rather than the in-page raised rung. Always
 	   the dark context regardless of which band raised it — a popover floats
 	   over the scene, not over the band, and the site's other over-scene
-	   surfaces are dark. */
+	   surfaces are dark.
+	   🐛 ⚓ NATE 2026-08-14: the paragraph above described the intent, and the
+	   markup had said `ctx-glass` the whole time — so --surface resolved to
+	   --glass-panel and the two band-A/B menus (Share, the con lens) were the
+	   only translucent modals on the site. The class now matches the rule.
+	   ⚠ GLASS IS A BAND MATERIAL, NOT A MENU ONE: the band is worn over the
+	   scene and its translucency is what ties it to the world behind it, but a
+	   menu is portalled OUT of the band to <body> — there is no band left under
+	   it to be continuous with, only the dimmed tool, and reading a list of
+	   options through it is the cost with nothing bought. The other portalled
+	   menu (InstrumentPicker) never claimed a context and so was already slate
+	   via :root's safety net; these two now agree with it. */
 	.band-menu {
 		position: fixed;
 		z-index: 91;

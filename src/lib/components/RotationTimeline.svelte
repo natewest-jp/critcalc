@@ -2666,8 +2666,11 @@
 			433px 100%,
 			719px 100%;
 		background-repeat: repeat-x;
-		/* Edge and ring gone in the flattening pass — see .rp-nb-bar. */
-		border: none;
+		/* 🐛 2026-08-14: a `border: none` sat HERE, left over from the flattening
+		   pass, and the shorthand reset the border-left declared 20 lines up — so
+		   the moonsign lane was the one annotation bar with no 2px register edge.
+		   ⚠ The fill is a background, not a border, so there is nothing left for
+		   the reset to remove; it is deleted rather than narrowed. */
 		border-radius: 1px;
 		z-index: 2;
 	}

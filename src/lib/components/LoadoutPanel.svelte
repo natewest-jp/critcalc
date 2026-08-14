@@ -4,7 +4,7 @@
 	 * refinement, chosen from one surface instead of the three separate menus
 	 * this replaces (two searchable dropdowns + a refinement pip row).
 	 *
-	 * The corpus is small enough that lists would be the wrong form — 7 artifact
+	 * The corpus is small enough that lists would be the wrong form — 6 artifact
 	 * sets and at most 3 weapons of any one type — so each section is an icon
 	 * grid with a caption naming the current pick. No search, no scroll.
 	 *
@@ -18,14 +18,16 @@
 	import type { WeaponType } from '$lib/types/weapon';
 	import { GENERIC_ARTIFACT_ICON, weaponTypeIcon } from '$lib/utils/loadoutIcons';
 
-	/** Which section the pill zone that opened us should lead with. */
+	/** Which pill zone opened the panel. ⚠ The panel no longer RENDERS this —
+	 *  the lead emphasis went (see .lp-hd-key). It survives because SlotPortrait
+	 *  keys its open/close toggle on it: clicking the zone you are already in
+	 *  closes the panel, clicking the other one re-points it. */
 	export type LoadoutSection = 'artifact' | 'weapon' | 'refinement';
 
 	let {
 		loadoutEntry,
 		weaponType,
 		elementColor,
-		section = 'artifact',
 		onSetArtifact,
 		onSetWeapon,
 		onSetRefinement
@@ -35,7 +37,6 @@
 		 *  none, so it may equip anything — see `weaponItems`. */
 		weaponType: string | undefined;
 		elementColor: string;
-		section?: LoadoutSection;
 		onSetArtifact: (artifactSetId: string | undefined) => void;
 		onSetWeapon: (weaponId: string | undefined, refinement: 1 | 2 | 3 | 4 | 5) => void;
 		onSetRefinement: (r: 1 | 2 | 3 | 4 | 5) => void;
@@ -66,7 +67,7 @@
 </script>
 
 <div class="lp" style:--el={elementColor}>
-	<section class="lp-section" class:lp-section--lead={section === 'artifact'}>
+	<section class="lp-section">
 		<h3 class="lp-hd">
 			<span class="lp-hd-key">Artifact set:</span>
 			{currentArtifact?.name ?? 'None'}
@@ -97,7 +98,7 @@
 		</div>
 	</section>
 
-	<section class="lp-section" class:lp-section--lead={section === 'weapon'}>
+	<section class="lp-section">
 		<h3 class="lp-hd">
 			<span class="lp-hd-key">Weapon:</span>
 			{currentWeapon?.name ?? 'None'}
@@ -139,11 +140,7 @@
 	     vanishes teaches nothing about why. Its twin is the pill's corner digit
 	     in SlotPortrait, which does hide — a badge on an icon has no room to
 	     explain itself, and an unset one would just be a number about nothing. -->
-	<section
-		class="lp-section"
-		class:lp-section--lead={section === 'refinement'}
-		class:lp-section--inert={!currentWeapon}
-	>
+	<section class="lp-section" class:lp-section--inert={!currentWeapon}>
 		<h3 class="lp-hd">
 			<span class="lp-hd-key">Refinement</span>
 			{#if !currentWeapon}<span class="lp-hd-note">equip a weapon first</span>{/if}
@@ -164,7 +161,7 @@
 </div>
 
 <style>
-	/* One panel, three stacked sections. Sized by its content: at 7 artifact
+	/* One panel, three stacked sections. Sized by its content: at 6 artifact
 	   sets + a none tile the grid is 4 across and two rows deep, and no section
 	   ever needs to scroll. */
 	.lp {
@@ -193,16 +190,18 @@
 		letter-spacing: var(--ls-tight);
 		line-height: var(--lh-tight);
 	}
-	/* The pill zone that opened the panel leads — a quiet emphasis, since all
-	   three sections are visible and none is hidden behind a step. */
+	/* ⛔ THE LEAD EMPHASIS IS GONE (⚓ Nate 2026-08-14). The key of whichever zone
+	   you clicked used to resolve to --text while the other two stayed muted, as
+	   "a quiet emphasis, since all three sections are visible and none is hidden
+	   behind a step". Two keys at two rungs read as a hierarchy between ARTIFACT
+	   SET and WEAPON that does not exist — they are peers, and which one you
+	   happened to click is not a property of the panel. One rung for all three;
+	   the section you came for is already the one under your cursor. */
 	.lp-hd-key {
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-wide);
 		text-transform: uppercase;
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
-	}
-	.lp-section--lead .lp-hd-key {
-		color: var(--text);
 	}
 	/* Says WHY the pips beneath are inert, in the heading that already carries
 	   each section's current state. Lower case against the key's caps — it is a
