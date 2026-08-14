@@ -190,11 +190,24 @@ confirmed directly.**
 ⚓ **Item 1 alone blunts all of them** — it closes the remote vector, after which everything
 else is self-inflicted-only.
 
-1. ✅ **Hard length cap in `decodeRotation`** + `maxLength` on the editor. _(Landed
-   2026-08-14, `harden/launch-surface`.)_
-2. **Total-expansion budget in `expandBrackets`.**
-3. **Clamp the `~Xs` delta** + cap tick count in `rulerTicks`.
-4. **Regex fix** `~(?:\d+(?:\.\d+)?|\.\d+)s` at `tokenizer.ts:114, 146, 237`.
-5. **Chunk the two spread-pushes** (§6).
-6. ⏭ Later: bound the `[^)]*`/`[^\]]*` scans; memoize `inferredStates`; debounce the editor
-   parse; add an error boundary.
+1. ✅ **Hard length cap in `decodeRotation`** + `maxLength` on the editor — `015f610`.
+2. ✅ **Total-expansion budget in `expandBrackets`** — `MAX_EXPANDED_TOKENS = 20_000`. 1.78M
+   events/~1GB → **180k events / 139 ms**. `37c01f4`.
+3. ✅ **`~Xs` clamped** (`MAX_TIME_ADVANCE_S = 3600`) **+ `rulerTicks` capped**
+   (`MAX_RULER_TICKS = 10_000`) — 99,999,999s → 3,600s; ~1e8 ticks → 10,000. ⚠️ Two
+   INDEPENDENT guards: the per-token clamp cannot bound a document full of small waits,
+   which sum. `37c01f4`.
+4. ✅ **Regex fix** at all three scanning sites — 80k digits **9,439 ms → 0 ms**. `37c01f4`.
+   ⚠️ **Correction to §4 above:** this is zero-behaviour-change not because the pattern is
+   equivalent, but because these are only the SCANNING patterns — kinds are assigned by a
+   separate `/^~[\d.]+s$/` that never backtracked. `~12.s` and `~12.5.7s` still classify as
+   `time`, verified. ⛔ Do NOT "align" the two patterns as a tidy-up; that WOULD change
+   behaviour.
+5. ✅ **Both spread-pushes are loops** (§6) — `37c01f4`.
+6. ⏭ Still open, all non-blocking: bound the `[^)]*`/`[^\]]*` scans (§5); memoize
+   `inferredStates` (§3 — real O(casts²), but items 1–2 cap its input); debounce the editor
+   parse. ✅ The error boundary landed separately in `cbedff0`.
+
+**Status: the sweep is CLOSED for launch.** Every measured figure was re-verified in a
+scratch harness against real modules after the fixes; realistic rotations are unaffected
+(1,037 chars → 280 events, 9 ms, zero unknown tokens).
