@@ -590,24 +590,60 @@ function inferredStates(
 	emittedCasts: readonly CastEvent[],
 	eAbility: CastAbility | undefined,
 	qAbility: CastAbility | undefined,
-	cursor: number
+	cursor: number,
+	/** Which kinds are present at all — see `castKindsByChar`. Skipping a scan
+	 *  for an absent kind is where nearly all of this function's cost went. */
+	kinds: { hasSkill: boolean; hasBurst: boolean }
 ): Set<string> {
 	const states = new Set<string>();
 	const activeDuringSummon = (c: CastEvent) => {
 		const activatesAt = c.summonActivatesAt / 60;
 		return c.time + activatesAt <= cursor && cursor < c.time + activatesAt + c.uptime;
 	};
+
+	/**
+	 * ⚠️ NEWEST-FIRST, and that is the whole optimization.
+	 *
+	 * This is an existence check, so scan ORDER cannot change the answer — but it
+	 * changes the cost enormously. `computeCurrentStates` calls this on every
+	 * action AND every cast, so a forward scan is O(casts-per-character²): the
+	 * 2026-08-14 sweep measured 16,000 bursts on Bennett at 663 ms against 50 ms
+	 * for the same input on Keqing, whose abilities are not `stationary` so the
+	 * branch never runs at all (docs/parser-hardening-2026-08-14.md §3).
+	 *
+	 * The cast whose summon window covers `cursor` is overwhelmingly the most
+	 * recent one — windows are seconds long and casts arrive in time order — so
+	 * from the back the answer is typically the first element tested.
+	 *
+	 * ⛔ The sweep suggested memoizing with "a boolean that flips once a
+	 * qualifying cast is emitted". Do NOT do that: summon windows CLOSE
+	 * (`cursor < start + uptime`), so a latching flag would report `duringSummon`
+	 * forever after the first cast — a correctness bug traded for speed.
+	 */
+	const anySummonActive = (kind: CastEvent['ability']) => {
+		for (let i = emittedCasts.length - 1; i >= 0; i--) {
+			const c = emittedCasts[i];
+			if (c.ability === kind && activeDuringSummon(c)) return true;
+		}
+		return false;
+	};
+
+	// ⚠️ `kinds.hasX` FIRST — it is the guard that actually matters. Without it
+	// the scan below runs in full on every call for a kind the character has
+	// never cast, which was the whole quadratic.
 	if (
+		kinds.hasBurst &&
 		qAbility &&
 		getPersistentBehavior(qAbility) === 'stationary' &&
-		emittedCasts.some((c) => c.ability === 'burst' && activeDuringSummon(c))
+		anySummonActive('burst')
 	) {
 		states.add('duringSummon');
 	}
 	if (
+		kinds.hasSkill &&
 		eAbility &&
 		getPersistentBehavior(eAbility) === 'stationary' &&
-		emittedCasts.some((c) => c.ability === 'skill' && activeDuringSummon(c))
+		anySummonActive('skill')
 	) {
 		states.add('duringSummon');
 	}
@@ -2247,6 +2283,42 @@ export function parseNotation(
 	// `computeCurrentStates` reads for duringSummon detection (replaces the old
 	// prevBars/track-bars walk).
 	const castsByChar = new Map<string, CastEvent[]>();
+	/**
+	 * Which cast KINDS a character has emitted so far — an incremental index over
+	 * `castsByChar`, scanned in `castKinds()` below.
+	 *
+	 * ⚠️ This exists purely to stop `inferredStates` scanning for a kind that is
+	 * not there. Measured 2026-08-14: `inferredStates` was 76% of parse time on a
+	 * cast-heavy rotation (396 ms → 94 ms with it stubbed out), and the reason is
+	 * counter-intuitive — it is NOT the matching scan that costs, it is the
+	 * MISSING one. A run of pure bursts makes the skill branch walk every cast,
+	 * every call, and never match; a run of pure skills does the same to the burst
+	 * branch. Interleaved E/Q was measurably FASTER than either pure run (180 ms
+	 * vs ~400 ms) because both branches hit a match immediately.
+	 *
+	 * `scanned` is a high-water mark, so each cast is visited exactly once across
+	 * the whole parse — and the flags only ever go true, which is sound because a
+	 * cast is never removed. Parse-scope rather than segment-scope on purpose:
+	 * per-segment state would re-walk the array once per segment, restoring the
+	 * quadratic for a rotation with many segments.
+	 */
+	const castKindsByChar = new Map<
+		string,
+		{ scanned: number; hasSkill: boolean; hasBurst: boolean }
+	>();
+	const castKinds = (charId: string, casts: readonly CastEvent[]) => {
+		let k = castKindsByChar.get(charId);
+		if (!k) {
+			k = { scanned: 0, hasSkill: false, hasBurst: false };
+			castKindsByChar.set(charId, k);
+		}
+		for (; k.scanned < casts.length; k.scanned++) {
+			const ability = casts[k.scanned].ability;
+			if (ability === 'skill') k.hasSkill = true;
+			else if (ability === 'burst') k.hasBurst = true;
+		}
+		return k;
+	};
 	// Provenance for the finalize summon-window pass: each projected bar's
 	// opening `cast` event id (bars and casts are 1:1 by construction).
 	const castIdByBar = new Map<TimelineBar, number>();
@@ -2947,7 +3019,13 @@ export function parseNotation(
 		// named states opened by stance abilities with `opensState` (e.g.
 		// nightsoulBlessing on Natlan characters).
 		const computeCurrentStates = (cursor: number): Set<string> => {
-			const states = inferredStates(charCasts, eAbility, qAbility, cursor);
+			const states = inferredStates(
+				charCasts,
+				eAbility,
+				qAbility,
+				cursor,
+				castKinds(char.id, charCasts)
+			);
 			const stanceEnd = cs.stance?.end;
 			if (stanceEnd !== undefined && stanceEnd > cursor) states.add('inStance');
 			for (const [state, endTime] of cs.states) {
