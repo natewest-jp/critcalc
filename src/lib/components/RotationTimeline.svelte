@@ -481,8 +481,15 @@
 	// one array rather than building a lane of their own means the height math
 	// below, the character-block layout and the PNG export snapshot all pick
 	// them up unchanged — and it puts every shield in the place readers already
-	// find them. Shields come AFTER summons per slot: a summon is a thing on the
-	// field, a shield is a state on the character, and the field reads first.
+	// find them.
+	//
+	// 🐛 ⚓ NATE 2026-08-14: shields were simply APPENDED, which broke the lane's
+	// one ordering rule. The lane sits between the E row and the Q row, and its
+	// sub-rows are walked eBars-then-qBars so an E-spawned row lands next to the
+	// E bar and a Q-spawned one next to the Q bar — "each closest to its
+	// emitter". Concatenating put every shield below every summon regardless, so
+	// Thoma's Q field (Scorching Ooyoroi) always sat above his E shield (Blazing
+	// Barrier) whichever he cast first. The merge below restores the rule.
 	let summonSubrows = $derived.by(() => {
 		const summons = computeSummonSubrows(
 			annotatedTracks,
@@ -498,7 +505,17 @@
 			rotation.windows,
 			(id) => annotatedTracks.find((t) => t.characterId === id)?.slotIdx
 		);
-		return [...summons, ...shields];
+		// Skill-sourced rows above burst-sourced ones, which is the walk order
+		// computeSummonSubrows already produces for summons — so this is a NO-OP
+		// on a summon-only lane and only decides where the shields land. A row's
+		// first bar is the signal: its bars are walk-ordered too, so bars[0] is
+		// the E cast whenever the row has one (Fischl's shared E/Q Oz row sorts
+		// with E, as it always has).
+		// ⚠ Sort, not partition — `Array.prototype.sort` is stable, so summons
+		// and shields keep their own internal order within each group.
+		const rank = (r: { bars: { source: 'skill' | 'burst' }[] }) =>
+			r.bars[0]?.source === 'burst' ? 1 : 0;
+		return [...summons, ...shields].sort((a, b) => rank(a) - rank(b));
 	});
 
 	let slotSummonLaneHeights = $derived(
