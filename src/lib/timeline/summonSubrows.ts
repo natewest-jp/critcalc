@@ -86,7 +86,17 @@ export function findCastSummons(
 		candidates[0];
 	if (!ability) return [];
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(label));
-	return (variant?.summons?.length ? variant.summons : ability.summons) ?? [];
+	// ⚠ AN EMPTY `summons: []` ON A VARIANT MEANS "NONE", not "fall through".
+	// The `?.[0] ?? ability.summons?.[0]` chain this replaced could not express
+	// that — an empty array read as undefined and inherited the base's list —
+	// but the schema has always called this field an OVERRIDE, and a curator who
+	// writes `[]` is overriding to nothing. Zhongli's hold-E is the case that
+	// needs it: it raises a Jade Shield (now an Effect) while the base press-E
+	// leaves a 30s Stone Stele, and without an explicit "none" the hold would
+	// inherit the stele and draw it at the hold's own 20s window — a stele that
+	// lasts 30s, rendered 20s, on a cast that the curation notes have always
+	// said does not model the co-spawned stele.
+	return variant?.summons ?? ability.summons ?? [];
 }
 
 export function computeSummonSubrows(

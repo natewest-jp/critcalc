@@ -17,13 +17,53 @@
 			"duration": 5,
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 27, "N": 38, "C": 41 } },
-				{ "name": "N2", "frames": { "swap": 24, "N": 46, "C": 48 } },
-				{ "name": "N3", "frames": { "swap": 19, "N": 31, "C": 40 } },
-				{ "name": "N4", "frames": { "swap": 41, "N": 106 } }
+				{
+					"name": "N1",
+					"frames": {
+						"swap": 27,
+						"N": 38,
+						"C": 41
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"swap": 24,
+						"N": 46,
+						"C": 48
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"swap": 19,
+						"N": 31,
+						"C": 40
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"swap": 41,
+						"N": 106
+					}
+				}
 			],
-			"chargeFrames": { "swap": 79, "N": 198, "E": 155, "Q": 155, "D": 79, "J": 79 },
-			"plungeFrames": { "swap": 62, "N": 51, "E": 51, "Q": 50, "D": 39 },
+			"chargeFrames": {
+				"swap": 79,
+				"N": 198,
+				"E": 155,
+				"Q": 155,
+				"D": 79,
+				"J": 79
+			},
+			"plungeFrames": {
+				"swap": 62,
+				"N": 51,
+				"E": 51,
+				"Q": 50,
+				"D": 39
+			},
 			"_curatorNotes": [
 				"Charged attack uses a parametric spinning mechanic (claymore spin + finisher). chargeFrames here are for the minimum case: single spin + finisher from standing (windup=56f). ActionDash/Jump/Swap are explicitly set to 0 in gcsim's chargeFrames and resolved to the spin hitmark (frame 23) via a custom Frames closure — effective cancel = windup(56)+23 = 79. N/E/Q values include spinFrames(23)+transFrames(13) added to the base table values. Windup is state-dependent: 56 from standing, 45 after N3, 44 after dash, 41 after another CA, 47 after plunge. Additional spins increase all N/E/Q values by 23f per extra spin. Reviewer to decide final representation.",
 				"High plunge exists in gcsim (highPlungeFrames: hitmark=42, swap=64, N=53, E=52, Q=52, D=42); not represented here per recipe. Low plunge (hitmark=39) used for plungeFrames. ActionJump not explicitly set in lowPlungeFrames (defaults to AnimationLength=80) — omitted per InitAbilSlice rule."
@@ -53,31 +93,39 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 78, "N": 12, "Q": 14, "D": 11, "J": 11 },
+			"frames": {
+				"swap": 78,
+				"N": 12,
+				"Q": 14,
+				"D": 11,
+				"J": 11
+			},
 			"cooldown": 24,
 			"cooldownStartDelay": 6,
 			"tags": ["heal", "shield", "summon"],
-			"summons": [
-				{
-					"label": "Stone Armor",
-					"duration": 12,
-					"mobility": "follows",
-					"terminatesOn": "recast"
-				}
-			],
 			"effects": [
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "refresh",
 					"scaling": 288,
 					"stat": "def",
-					"flat": 1693.66
+					"flat": 1693.66,
+					"label": "Stone Armor"
 				},
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "onHit", "abilityType": "normal", "source": "self" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"source": "self"
+					},
 					"scaling": 38.3,
 					"stat": "def",
 					"flat": 226
@@ -85,7 +133,11 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "onHit", "abilityType": "charged", "source": "self" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged",
+						"source": "self"
+					},
 					"scaling": 38.3,
 					"stat": "def",
 					"flat": 226
@@ -94,12 +146,15 @@
 			"caveat": "Shown healing on every qualifying Normal or Charged hit, but each has only a ~59% chance to heal the party — rising to 100% at C1 while the burst is active. The proc chance is not modeled.",
 			"_curatorNotes": [
 				"Shield + heal effects authored 2026-07-12 at talent level 10 (gcsim skill.go + noelle_gen.go index 9; sidecar 'DMG Absorption' / 'Healing' / 'Healing Triggering Chance' rows, col 10).",
-				"Shield (Stone Armor): scaling 288% DEF + 1693.66 flat (gcsim shieldDef[9]=2.88, shieldFlat[9]=1693.6555; sidecar '288% DEF+1694'). Target 'active' — gcsim adds a player shield (newShield → Shields.Add, Target -1) protecting the on-field character, same convention as the Devotion passive shield. Authored WITHOUT a `duration` field: the 12s window is already owned by the summons[] Stone Armor entry, so there is nothing for a second statement of it to add. ↻ 2026-08-14: this used to be a WORKAROUND rather than a preference — registerShieldOnCast (notationParser) ran BOTH Case-1 (summon-tagged shield) and Case-2 (Effect.type 'shield' with onCast + duration), so adding a duration here would have registered two identical 12s windows and double-fired C4's onShieldEnd Geo explosion. The two cases are now a PRECEDENCE (Case 2 wins, Case 1 is the fallback), so a duration here would be harmless — it is still omitted because the summon entry already says it, not because saying it twice would break. 150% all-element/physical absorption efficiency not modelled.",
+				"Shield (Stone Armor): scaling 288% DEF + 1693.66 flat (gcsim shieldDef[9]=2.88, shieldFlat[9]=1693.6555; sidecar '288% DEF+1694'), duration 12s, label 'Stone Armor'. Target 'active' — gcsim adds a player shield (newShield → Shields.Add, Target -1) protecting the on-field character, same convention as the Devotion passive shield. 150% all-element/physical absorption efficiency not modelled.",
 				"Heal: 38.3% DEF + 226 flat per proc to ALL party members (gcsim skillHealCB: shieldHeal[9]=0.38304, shieldHealFlat[9]=225.99677, snapshotted Healing bonus; HealInfo Target -1 = whole team → target 'team'; sidecar '38.3% DEF+226'). Two onHit effects (abilityType normal + charged, source self) mirror the kit text 'Normal and Charged Attacks'. gcsim also attaches skillHealCB to the initial E cast hit and the two burst-cast hits (NOT plunge — plunge.go has no callback); those implementation-detail procs are not authored as separate effects. Requires the Stone Armor shield to be up (gcsim gates on Shields.Get(NoelleSkill) != nil). No explicit condition authored, mirroring the Thoma Crimson Ooyoroi onHit precedent (host-ability window scoping); a 'duringSummon' condition would NOT resolve here since inferredStates only detects stationary persistent summons and Stone Armor is a follows-mobility instant-skill summon. The ~59% proc chance (healChance[9]=0.59; raised to 100% at C1 while the burst buff is active, per skill.go/cons.go prob branch) is surfaced in the caveat — no probability primitive in the schema.",
-				"Retained: Stone Armor modeled as summons[] (12s, follows, recast); C4 explosion authored on the constellation node via onShieldEnd source:self ability:skill, firing at the summon's scheduled expiry. gcsim re-adding a new shield overwrites the old one via the OnOverwrite hook (also explodes at C4).",
-				"[A7] In game the heal only procs while the skill's Stone Armor shield is active; the tool approximates this via host-ability onHit window scoping (Thoma Crimson Ooyoroi precedent) rather than an explicit shield-up condition, since 'duringSummon' would not resolve for a follows-mobility instant-skill summon."
+				"C4's explosion is authored on the constellation node via onShieldEnd source:self ability:skill and fires at the shield window's scheduled expiry. ↻ 2026-08-14: that window used to come from the summons[] Stone Armor entry and now comes from this ability's own shield Effect — one window either way, so C4 is unaffected. gcsim re-adding a new shield overwrites the old one via the OnOverwrite hook (also explodes at C4); the planner models the refresh but not the overwrite-explosion.",
+				"[A7] In game the heal only procs while the skill's Stone Armor shield is active; the tool approximates this via host-ability onHit window scoping (Thoma Crimson Ooyoroi precedent) rather than an explicit shield-up condition, since 'duringSummon' would not resolve for a follows-mobility instant-skill summon.",
+				"↻ 2026-08-14 — the stand-in summon is retired. \"Stone Armor\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast its active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world.",
+				"The shield Effect finally carries its own `duration: 12`. It was authored WITHOUT one for two different reasons in succession: first as a workaround for registerShieldOnCast running its two conventions as a union (which would have double-fired C4's onShieldEnd Geo explosion), then, once that became a precedence, because the summon still said it. With the summon gone the Effect is the only statement left, and C4 keeps firing off the single window it produces."
 			],
-			"description": "Summons protective stone armor, dealing Geo DMG to surrounding opponents and creating a shield. The shield's DMG Absorption scales based on Noelle's DEF.\nThe shield has the following properties:\n·When Noelle's Normal and Charged Attacks hit a target, they have a certain chance to regenerate HP for all characters.\n·Possesses 150% DMG Absorption efficiency against all Elemental and Physical DMG.\n\nThe amount of HP healed when regeneration is triggered scales based on Noelle's DEF."
+			"description": "Summons protective stone armor, dealing Geo DMG to surrounding opponents and creating a shield. The shield's DMG Absorption scales based on Noelle's DEF.\nThe shield has the following properties:\n·When Noelle's Normal and Charged Attacks hit a target, they have a certain chance to regenerate HP for all characters.\n·Possesses 150% DMG Absorption efficiency against all Elemental and Physical DMG.\n\nThe amount of HP healed when regeneration is triggered scales based on Noelle's DEF.",
+			"activeDuration": 12
 		},
 		{
 			"id": "noelle__burst__sweeping_time",
@@ -107,7 +162,13 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 121, "N": 83, "E": 82, "D": 81, "J": 81 },
+			"frames": {
+				"swap": 121,
+				"N": 83,
+				"E": 82,
+				"D": 81,
+				"J": 81
+			},
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": [],
@@ -129,13 +190,24 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "ascension", "min": 1 },
-							{ "type": "state", "state": "offField" },
-							{ "type": "recipientHpBelow", "threshold": 30 }
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "state",
+								"state": "offField"
+							},
+							{
+								"type": "recipientHpBelow",
+								"threshold": 30
+							}
 						]
 					},
 					"duration": 20,
@@ -219,13 +291,23 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "constellation", "level": 6 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"duration": 16.3,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": { "type": "scaling", "stat": "def", "ratio": 50 },
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 50
+					},
 					"snapshottable": false
 				}
 			],

@@ -148,7 +148,16 @@ for (const [id, char] of characters) {
 // --- tag/effect cross-checks (per ability with cast effects in scope) ---
 for (const [id, char] of characters) {
 	for (const ability of char.data.abilities ?? []) {
-		const tags = ability.tags ?? [];
+		// ⚠ BASE **AND** VARIANT TAGS. `own` below is ability-WIDE (deriveCapabilities
+		// walks variants too), so comparing it against base-only tags is asymmetric:
+		// an effect authored on a variant, tagged on that same variant, read as
+		// "effect without tag". Zhongli's hold-E is the live case — his Jade Shield
+		// moved to the variant 2026-08-14 and press-E must NOT gain a 'shield' tag,
+		// because pressing E doesn't shield.
+		const tags = [
+			...(ability.tags ?? []),
+			...(ability.variants ?? []).flatMap((v) => v.tags ?? [])
+		];
 		const own = char.capabilities.filter((c) => c.source.abilityId === ability.id);
 		for (const tagKind of ['heal', 'shield']) {
 			const tagged = tags.includes(tagKind);

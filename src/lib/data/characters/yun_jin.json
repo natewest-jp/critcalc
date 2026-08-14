@@ -104,9 +104,11 @@
 						"type": "onCast",
 						"ability": "skill"
 					},
+					"duration": 0.2,
 					"scaling": 21.6,
 					"stat": "hp",
-					"flat": 2542
+					"flat": 2542,
+					"label": "Opening Flourish Shield"
 				}
 			],
 			"behavior": "instant",
@@ -115,13 +117,6 @@
 				"D": 49,
 				"J": 48
 			},
-			"summons": [
-				{
-					"label": "Opening Flourish Shield",
-					"duration": 0.2,
-					"mobility": "follows"
-				}
-			],
 			"variants": [
 				{
 					"label": "Hold Lv.1",
@@ -135,16 +130,26 @@
 						"D": 85,
 						"J": 85
 					},
-					"summons": [
-						{
-							"label": "Opening Flourish Shield",
-							"duration": 0.8,
-							"mobility": "follows"
-						}
-					],
 					"_curatorNotes": [
 						"cooldownStartDelay for Hold Lv.1 is 48 frames (gcsim skillCDStarts[1] = 48); schema gap — AbilityVariant has no cooldownStartDelay field.",
-						"Shield duration: 50 frames = 0.8s (gcsim skillHitmarks[1] = 50)."
+						"Shield duration: 50 frames = 0.8s (gcsim skillHitmarks[1] = 50).",
+						"Shield effect restated on this variant because a variant's `effects` REPLACE the base ability's — absorption is identical across hold levels (gcsim skillShieldPct/skillShieldFlat are indexed by talent level, not charge), only the duration differs. gcsim expires the shield at `hitDelay`, i.e. it lasts exactly until the swing lands, which is why these are fractions of a second rather than a normal shield duration."
+					],
+					"activeDuration": 0.8,
+					"effects": [
+						{
+							"type": "shield",
+							"target": "self",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 0.8,
+							"scaling": 21.6,
+							"stat": "hp",
+							"flat": 2542,
+							"label": "Opening Flourish Shield"
+						}
 					]
 				},
 				{
@@ -159,16 +164,26 @@
 						"D": 129,
 						"J": 129
 					},
-					"summons": [
-						{
-							"label": "Opening Flourish Shield",
-							"duration": 1.6,
-							"mobility": "follows"
-						}
-					],
 					"_curatorNotes": [
 						"cooldownStartDelay for Hold Lv.2 is 90 frames (gcsim skillCDStarts[2] = 90); schema gap — AbilityVariant has no cooldownStartDelay field.",
-						"Shield duration: 93 frames = 1.6s (gcsim skillHitmarks[2] = 93)."
+						"Shield duration: 93 frames = 1.6s (gcsim skillHitmarks[2] = 93).",
+						"Shield effect restated on this variant because a variant's `effects` REPLACE the base ability's — absorption is identical across hold levels (gcsim skillShieldPct/skillShieldFlat are indexed by talent level, not charge), only the duration differs. gcsim expires the shield at `hitDelay`, i.e. it lasts exactly until the swing lands, which is why these are fractions of a second rather than a normal shield duration."
+					],
+					"activeDuration": 1.6,
+					"effects": [
+						{
+							"type": "shield",
+							"target": "self",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 1.6,
+							"scaling": 21.6,
+							"stat": "hp",
+							"flat": 2542,
+							"label": "Opening Flourish Shield"
+						}
 					]
 				}
 			],
@@ -177,9 +192,11 @@
 				"cooldownStartDelay varies by charge level: Tap E = 11f, Hold Lv.1 = 48f, Hold Lv.2 = 90f (gcsim skillCDStarts[]). Hold variant values recorded in variant _curatorNotes; AbilityVariant schema gap.",
 				"A1 (True to Oneself) perfect-parry mechanic not implemented in gcsim (asc.go TODO). gcsim workaround: perfect=1 param uses Tap E animation frames (animIdx=0) with Level 2 damage (chargeLevel=2) and cooldownStartDelay=11.",
 				"Shield HP formula: skillShieldPct[talentLvl] * MaxHP + skillShieldFlat[talentLvl]. HP is a scaling value — reviewer to author shield HP expression.",
-				"2026-07-12 (A3 pass): shield effect authored — 21.6% Max HP at talent level 10 (sidecar 'Shield DMG Absorption' row, 10th column: '21.6% Max HP+2542'). The +2542 flat portion is dropped — schema gap, shield effect has no `flat` field (same gap as heal flat, see escoffier burst note). target 'self': the parry shield covers only Yun Jin while she charges. Effect duration omitted — shield lifetime is carried by the per-variant summons entries (Tap 0.2s / Hold Lv.1 0.8s / Hold Lv.2 1.6s); a single duration on the base effect would misstate the Hold variants. 150% DMG absorption effectiveness vs all Elemental and Physical DMG not modeled."
+				"2026-07-12 (A3 pass): shield effect authored — 21.6% Max HP at talent level 10 (sidecar 'Shield DMG Absorption' row, 10th column: '21.6% Max HP+2542'). The +2542 flat portion is dropped — schema gap, shield effect has no `flat` field (same gap as heal flat, see escoffier burst note). target 'self': the parry shield covers only Yun Jin while she charges. Effect duration omitted — shield lifetime is carried by the per-variant summons entries (Tap 0.2s / Hold Lv.1 0.8s / Hold Lv.2 1.6s); a single duration on the base effect would misstate the Hold variants. 150% DMG absorption effectiveness vs all Elemental and Physical DMG not modeled.",
+				"↻ 2026-08-14 — the stand-in summon is retired. \"Opening Flourish Shield\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast its active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world."
 			],
-			"description": "Ms. Yun may just be acting out fights on stage, but her skills with the spear are real enough to defend against her foes.\n\nPress\nFlourishes her polearm in a cloud-grasping stance, dealing Geo DMG.\n\nHold\nTakes up the Opening Flourish stance and charges up, forming a shield. DMG Absorption is based on Yun Jin's Max HP and has 150% effectiveness against all Elemental DMG and Physical DMG. The shield lasts until she finishes unleashing her Elemental Skill.\nWhen the skill is released, when its duration ends, or when the shield breaks, Yun Jin will unleash the charged energy as an attack, dealing Geo DMG.\nBased on the time spent charging, it will either unleash an attack at Charge Level 1 or Level 2."
+			"description": "Ms. Yun may just be acting out fights on stage, but her skills with the spear are real enough to defend against her foes.\n\nPress\nFlourishes her polearm in a cloud-grasping stance, dealing Geo DMG.\n\nHold\nTakes up the Opening Flourish stance and charges up, forming a shield. DMG Absorption is based on Yun Jin's Max HP and has 150% effectiveness against all Elemental DMG and Physical DMG. The shield lasts until she finishes unleashing her Elemental Skill.\nWhen the skill is released, when its duration ends, or when the shield breaks, Yun Jin will unleash the charged energy as an attack, dealing Geo DMG.\nBased on the time spent charging, it will either unleash an attack at Charge Level 1 or Level 2.",
+			"activeDuration": 0.2
 		},
 		{
 			"id": "yun_jin__burst__cliffbreakers_banner",

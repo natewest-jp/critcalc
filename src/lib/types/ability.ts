@@ -977,6 +977,17 @@ export type Effect =
 			 *  talent-table flat absorption (Diona +1524, Thoma +1525, Yun Jin
 			 *  +2542 at talent level 10). */
 			flat?: number;
+			/** The shield's in-game NAME — "Curtain of Slumber", "Jade Shield",
+			 *  "Stone Armor". Rendered as the shield lane's row label; absent
+			 *  falls back to a plain "Shield", which is right for the kits whose
+			 *  shield genuinely has no name (Xinyan, Diona, Baizhu).
+			 *
+			 *  ⚓ 2026-08-14. Before this, the name lived on the stand-in
+			 *  `summons[]` entry — so the nine shields authored that way were
+			 *  named and the six authored as a plain Effect all read "Shield".
+			 *  ⛔ Do not invent one: a wrong name reads as fact, and the fallback
+			 *  is honest. Take it from the talent text or leave it off. */
+			label?: string;
 	  })
 	| (EffectBase & {
 			type: 'resShred';
@@ -1385,6 +1396,24 @@ export type SkillAbility =
 			/** Post-action transient state opened at cast start (Flins Northland
 			 *  Spearstorm → `symphonyWindow`). See {@link TransientStateSpec}. */
 			opensTransientState?: TransientStateSpec;
+			/** How long this instant cast's ACTIVE WINDOW runs, in seconds — the
+			 *  span the E/Q bar draws. Optional; absent = a pure instant pill.
+			 *
+			 *  ⚓ 2026-08-14. It exists because `summons[]` was previously the only
+			 *  way to say this, and nine shield abilities authored a zero-effect
+			 *  summon purely to get a 12s bar (Layla's "Curtain of Slumber",
+			 *  Noelle's "Stone Armor"…). That stretched `summons[]` to cover
+			 *  things nobody would call a summon; this field is what lets those
+			 *  entries retire and leaves `summons[]` meaning what its name says —
+			 *  a thing left in the WORLD.
+			 *
+			 *  ⚠ DELIBERATELY NOT `duration`. Twelve instant abilities already
+			 *  carry a stray `duration` that is dead data (it is not declared on
+			 *  this behavior variant and no accessor reads it) — Kachina's burst,
+			 *  Kaveh's, Zhongli's Planet Befall. Teaching the accessor to read
+			 *  `duration` on instant would have resurrected all twelve as active
+			 *  bars nobody authored. A distinct name is what keeps them inert. */
+			activeDuration?: number;
 	  })
 	| (SkillCommonFields & {
 			behavior: 'persistent';
@@ -1450,6 +1479,10 @@ export type BurstAbility =
 			/** Post-action transient state opened at cast start. See
 			 *  {@link TransientStateSpec}. */
 			opensTransientState?: TransientStateSpec;
+			/** Active-window span in seconds — see the twin on SkillAbility for
+			 *  the full note. Declared on both so the accessor stays behavior-
+			 *  generic; no burst needs it today. */
+			activeDuration?: number;
 	  })
 	| (BurstCommonFields & {
 			behavior: 'persistent';
@@ -1507,6 +1540,13 @@ export type AbilityVariant = {
 	/** Overrides the base ability's behavior (e.g. Zhongli hE: instant skill → persistent shield). */
 	behavior?: 'instant' | 'persistent' | 'stance';
 	duration?: number;
+	/** Active-window span for an INSTANT variant — the twin of the field on
+	 *  SkillAbility/BurstAbility, and the variant-level override for it. Yun
+	 *  Jin's hold levels each shield for a different length; Zhongli's hold
+	 *  raises a 20s Jade Shield off a base whose own summon runs 30s. Sits
+	 *  above the base ability's summons[] in `resolveActiveDuration`, so a
+	 *  variant can shorten a cast the base ability would have drawn long. */
+	activeDuration?: number;
 	durationModifiers?: DurationModifier[];
 	persistentBehavior?: 'stationary' | 'follows';
 	summonActivatesAt?: number;
@@ -1581,7 +1621,11 @@ export function getPrimarySummon(a: CastAbility): Summon | undefined {
 export function getActiveDuration(a: CastAbility): number {
 	const s = a.summons?.[0];
 	if (s) return s.duration;
-	return a.behavior === 'instant' ? 0 : a.duration;
+	// ⚠ `activeDuration`, never `duration`, on the instant branch — twelve
+	// instant abilities carry a stray undeclared `duration` that no accessor
+	// has ever read, and reading it here would grow twelve bars nobody
+	// authored. See the field's note on SkillAbility.
+	return a.behavior === 'instant' ? (a.activeDuration ?? 0) : a.duration;
 }
 
 /** Duration modifiers for the active window. Reads `summons[0].durationModifiers`

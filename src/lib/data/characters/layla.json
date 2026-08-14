@@ -79,14 +79,6 @@
 			"cooldown": 12,
 			"cooldownStartDelay": 19,
 			"tags": ["shield"],
-			"summons": [
-				{
-					"label": "Curtain of Slumber",
-					"duration": 12,
-					"spawnsAt": 19,
-					"mobility": "follows"
-				}
-			],
 			"effects": [
 				{
 					"type": "shield",
@@ -107,11 +99,16 @@
 						"Absorbs Cryo DMG with 250% effectiveness — not modelled (gcsim newShield sets Ele=Cryo; mirrors the Thoma/Diona 250%-effectiveness note).",
 						"C1 Fortress of Fantasy (+20% absorption via `shield *= 1.2`, plus a 35%-absorption fortification shield to nearby unprotected party members for 12s) not modelled — base C0 shield only, per scope.",
 						"A1 Like Nascent Light (+6% Shield Strength per Night Star, max 24%) and the brief self-Cryo application on cast (player.ApplySelfInfusion) are separate and not folded into this shield value."
-					]
+					],
+					"label": "Curtain of Slumber"
 				}
 			],
 			"description": "Puts forth a shield known as the Curtain of Slumber, dealing AoE Cryo DMG.\nThe Curtain of Slumber's DMG Absorption is based on Layla's Max HP and absorbs Cryo DMG with 250% effectiveness. When the shield is deployed, Layla will have Cryo applied to her briefly.\n\nNight Stars and Shooting Stars\nWhile the Curtain of Slumber is active, it will create 1 Night Star that will be attached to it every 1.5s. When a character protected by this shield uses an Elemental Skill, 2 Night Stars will be created. Night Stars can be created once every 0.3s in this way. A maximum of 4 Night Stars can be accumulated at any one time.\nOnce the Curtain of Slumber has accumulated 4 Night Stars and there are opponents nearby, these Night Stars will transform into homing Shooting Stars that will be fired off in sequence, dealing Cryo DMG to any opponents hit.\nIf the Curtain of Slumber's duration ends or it is destroyed, the Night Stars will disappear. If they are already being fired off as Shooting Stars, these Shooting Stars will last until this wave of shots ends.\n\nNew Night Stars cannot be created until the previous wave of Shooting Stars has been fired completely.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"activeDuration": 12,
+			"_curatorNotes": [
+				"↻ 2026-08-14 — the stand-in summon is retired. \"Curtain of Slumber\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast a 12s active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world. Bar geometry is unchanged apart from the spawn offset, which the shield window never had."
+			]
 		},
 		{
 			"id": "layla__burst__dream_of_the_starstream_shaker",

@@ -63,6 +63,32 @@ describe('computeShieldSubrows', () => {
 		expect(computeShieldSubrows([shield('diona', 3, 3)], slotIdxFor)).toEqual([]);
 	});
 
+	// The names arrived 2026-08-14 with `ShieldEffect.label`; before that every
+	// row read "Shield" because the name lived on a stand-in summon.
+	it('uses the shield’s own name, and falls back only when it has none', () => {
+		const rows = computeShieldSubrows(
+			[shield('layla', 0, 12, { label: 'Curtain of Slumber' }), shield('diona', 0, 4.8)],
+			slotIdxFor
+		);
+		expect(rows.map((r) => r.label)).toEqual(['Curtain of Slumber', 'Shield']);
+	});
+
+	// Same rule the summon lane uses: one row per (character, label). Thoma
+	// shields off E and Q under one name and keeps one row; two differently
+	// named shields are two different things.
+	it('splits rows by name but merges sources sharing one', () => {
+		const rows = computeShieldSubrows(
+			[
+				shield('thoma', 0, 8, { label: 'Blazing Barrier' }),
+				shield('thoma', 10, 18, { source: 'burst', label: 'Blazing Barrier' }),
+				shield('thoma', 2, 6, { source: 'burst', label: 'Scorching Ooyoroi' })
+			],
+			slotIdxFor
+		);
+		expect(rows.map((r) => r.label)).toEqual(['Blazing Barrier', 'Scorching Ooyoroi']);
+		expect(rows[0].bars).toHaveLength(2);
+	});
+
 	it('ignores every non-shield window kind', () => {
 		const summon = {
 			kind: 'summon',

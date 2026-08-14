@@ -252,12 +252,19 @@ export type TimelineWindow =
 			source: 'skill' | 'burst';
 			start: number;
 			end: number;
+			/** The shield's in-game name, from `ShieldEffect.label` — the shield
+			 *  lane's row label. Absent renders a plain "Shield". */
+			label?: string;
 			/** This shield is ALREADY on the chart as a `summons[]` entry — the
 			 *  pre-shield-window authoring convention, where a zero-effect summon
-			 *  of the same duration stood in for the shield (Layla's "Curtain of
-			 *  Slumber", Zhongli's "Jade Shield"). The shield lane skips these so
-			 *  the same span isn't drawn twice; every other consumer ignores it.
-			 *  Set by `registerShieldOnCast`, which is where both are in hand. */
+			 *  of the same duration stood in for the shield. The shield lane skips
+			 *  these so the same span isn't drawn twice; every other consumer
+			 *  ignores it. Set by `registerShieldOnCast`, which is where both are
+			 *  in hand.
+			 *  ⏸️ NO CORPUS CHARACTER SETS THIS as of 2026-08-14 — the nine
+			 *  stand-ins were retired in favour of `activeDuration` + a labelled
+			 *  shield Effect. It survives because the summon-derived fallback
+			 *  survives, and a kit re-authored that way would need it again. */
 			coveredBySummon?: true;
 	  } & WindowProvenance)
 	/** A weapon-proc ICD span (e.g. Sacrificial reset on cooldown). */

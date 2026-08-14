@@ -99,12 +99,6 @@
 			"tags": ["shield", "summon"],
 			"summons": [
 				{
-					"label": "Optical Flow Shield Barrier",
-					"duration": 20,
-					"spawnsAt": 4,
-					"mobility": "follows"
-				},
-				{
 					"label": "Birgitta",
 					"duration": 20,
 					"spawnsAt": 68,
@@ -137,7 +131,8 @@
 					"durationType": "refresh",
 					"scaling": 398.13,
 					"stat": "atk",
-					"flat": 3050.92
+					"flat": 3050.92,
+					"label": "Optical Flow Shield Barrier"
 				}
 			],
 			"_curatorNotes": [
@@ -146,7 +141,8 @@
 				"Two summons: (1) Optical Flow Shield Barrier — 20s, addShield called at +4f from cast; mobility:follows (shield travels with active char). HP=shieldAtk[lvl=10]×ATK + shieldFlat[lvl=10] = 398.13% ATK + 3050.92 flat. Absorbs Electro DMG at 250% effectiveness (not modelled — schema has no shield-strength field). (2) Birgitta — 20s, summonBirgitta at +68f from cast (skillHitmark+42); mobility:stationary, placed on primary target.",
 				"Birgitta discharge: firstTickDelay=0.7s (42f after spawn), interval~2s (119f, 1.983s rounded). Mult = skillDoT[lvl=10] = 172.8% ATK Electro per tick. AttackTagElementalArt, ICDTagNone — count as elemental art DMG.",
 				"Cooldown: SetCDWithDelay(skill, 16*60, 1) — 16s cooldown from frame 1.",
-				"Frames: skillFrames=InitAbilSlice(32), only ActionSwap=31 explicitly set; other actions default to animLen=32. Per E-spec swap/N/Q/D/J authored at the available values."
+				"Frames: skillFrames=InitAbilSlice(32), only ActionSwap=31 explicitly set; other actions default to animLen=32. Per E-spec swap/N/Q/D/J authored at the available values.",
+				"↻ 2026-08-14 — the stand-in summon is retired. \"Optical Flow Shield Barrier\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast a 20s active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world. Bar geometry is unchanged apart from the spawn offset, which the shield window never had."
 			],
 			"description": "Ineffa engages her Enhanced Cleaning Module, dealing a single instance of AoE Electro DMG to nearby opponents, activating her Optical Flow Shield Barrier, and summoning the Multipurpose Smart Assistance Unit, **Birgitta**.\nThe Optical Flow Shield Barrier absorbs DMG based on Ineffa's ATK, and it will absorb Electro DMG with 250% effectiveness."
 		},
@@ -251,10 +247,16 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"durationType": "refresh",
-					"conditions": { "type": "constellation", "level": 1 },
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"source": "character",
 					"stat": "lunarChargedDmgBonus",
 					"value": {

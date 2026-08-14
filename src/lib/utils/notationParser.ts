@@ -756,10 +756,18 @@ function resolveChargeCastTime(
 /**
  * Resolves the active-window duration and modifiers for a cast, accounting for
  * variant overrides. Precedence (most specific wins):
- *   1. variant.summons[0]   — variant-level summon override
- *   2. variant.duration     — variant-level legacy override
- *   3. ability.summons[0]   — base summon (via getActiveDuration accessor)
- *   4. ability.duration     — base legacy (via getActiveDuration accessor)
+ *   1. variant.summons[0]     — variant-level summon override
+ *   2. variant.duration       — variant-level legacy override
+ *   3. variant.activeDuration — variant-level instant window (2026-08-14)
+ *   4. ability.summons[0]     — base summon (via getActiveDuration accessor)
+ *   5. ability.duration       — base legacy (via getActiveDuration accessor)
+ *   6. ability.activeDuration — base instant window (via the same accessor)
+ *
+ * ⚠ RUNGS 3 AND 4 ARE THE ORDER THAT MATTERS. A variant's own instant window
+ * has to outrank the BASE ability's summon, or Zhongli's hold-E — a 20s Jade
+ * Shield cast off a base whose Stone Stele runs 30s — would draw a 30s bar the
+ * moment its stand-in summon was retired. Every other variant field already
+ * behaves this way; this one just has a base-level rival that is easy to miss.
  *
  * Variant modifier arrays **replace** the base's array — a curator who lists
  * modifiers on a variant has opted that variant out of the base set.
@@ -774,6 +782,9 @@ function resolveActiveDuration(
 	}
 	if (variant?.duration !== undefined) {
 		return { duration: variant.duration, modifiers: variant.durationModifiers };
+	}
+	if (variant?.activeDuration !== undefined) {
+		return { duration: variant.activeDuration, modifiers: variant.durationModifiers };
 	}
 	return { duration: getActiveDuration(ability), modifiers: getActiveDurationModifiers(ability) };
 }
@@ -1098,10 +1109,9 @@ function getCharacterCdResetTargets(
  * two summons and the second was silently unreachable: Ineffa's E (a shield
  * barrier with no effects held the lane while BIRGITTA, the thing that ticks
  * every 2s, was never drawn — ⚓ Nate's report), Citlali's E (Opal Shield) and
- * Furina's E (Singer of Many Waters). ⚠ A variant's `summons` still OVERRIDES
- * the base wholesale rather than merging, and an EMPTY variant array still
- * falls through to the base — both preserved from the `?.[0] ?? ?.[0]` chain
- * this replaces.
+ * Furina's E (Singer of Many Waters). ⚠ A variant's `summons` OVERRIDES the
+ * base wholesale rather than merging, and since 2026-08-14 an EMPTY variant
+ * array means NONE rather than falling through — see the note at the return.
  */
 function findSummonsForBar(
 	char: CharacterData | undefined,
@@ -1117,7 +1127,17 @@ function findSummonsForBar(
 		candidates[0];
 	if (!ability) return [];
 	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(label));
-	return (variant?.summons?.length ? variant.summons : ability.summons) ?? [];
+	// ⚠ AN EMPTY `summons: []` ON A VARIANT MEANS "NONE", not "fall through".
+	// The `?.[0] ?? ability.summons?.[0]` chain this replaced could not express
+	// that — an empty array read as undefined and inherited the base's list —
+	// but the schema has always called this field an OVERRIDE, and a curator who
+	// writes `[]` is overriding to nothing. Zhongli's hold-E is the case that
+	// needs it: it raises a Jade Shield (now an Effect) while the base press-E
+	// leaves a 30s Stone Stele, and without an explicit "none" the hold would
+	// inherit the stele and draw it at the hold's own 20s window — a stele that
+	// lasts 30s, rendered 20s, on a cast that the curation notes have always
+	// said does not model the co-spawned stele.
+	return variant?.summons ?? ability.summons ?? [];
 }
 
 /**
@@ -2231,6 +2251,7 @@ export function parseNotation(
 		start: number;
 		end: number;
 		sourceCastId: number;
+		label?: string;
 		coveredBySummon?: true;
 	}[] = [];
 
@@ -2714,6 +2735,7 @@ export function parseNotation(
 		const windows: {
 			ability: 'skill' | 'burst';
 			endTime: number;
+			label?: string;
 			coveredBySummon?: boolean;
 		}[] = [];
 		// Case 2 FIRST — it is the one that wins (see the precedence note above).
@@ -2725,14 +2747,39 @@ export function parseNotation(
 			if (eff.trigger.type !== 'onCast') continue;
 			if (eff.trigger.ability !== undefined && eff.trigger.ability !== castKind) continue;
 			if (eff.duration === undefined || eff.duration <= 0) continue;
-			windows.push({ ability: castKind, endTime: castTime + eff.duration });
+			windows.push({
+				ability: castKind,
+				endTime: castTime + eff.duration,
+				...(eff.label !== undefined ? { label: eff.label } : {})
+			});
 		}
 		// Case 1: summon-tagged shield ability — the FALLBACK, for kits whose
-		// shield has no Effect of its own to state a duration.
-		if (windows.length === 0 && abilityTags?.includes('shield')) {
+		// shield has no Effect of its own AT ALL.
+		// ⚠ THE GUARD IS "no shield Effect", not "case 2 produced nothing".
+		// Thoma's burst is why: it authors its shield as an onHit effect (8s,
+		// refreshing on team normal hits), which this onCast site cannot fire —
+		// so case 2 came back empty and the fallback happily inferred a shield
+		// from "Scorching Ooyoroi", his 15s FIELD. An 8s shield rendered as a
+		// 15s one, from a summon that isn't a shield. An ability that states a
+		// shield Effect has spoken; if this site can't fire it, the answer is
+		// nothing, not a guess off the nearest summon.
+		const authorsShieldEffect = abilityEffects.some((e) => e.type === 'shield');
+		// ⏸️ DORMANT SINCE 2026-08-14 and kept deliberately: every corpus shield
+		// now authors an Effect, so nothing reaches this branch. It survives
+		// because a kit CAN still legitimately be authored the old way, and
+		// silently dropping its shield would be worse than a fallback nobody
+		// currently needs. If it ever fires again, `coveredBySummon` below is
+		// what stops the shield lane drawing what the summon lane already has.
+		if (windows.length === 0 && !authorsShieldEffect && abilityTags?.includes('shield')) {
 			const primary = abilitySummons[0];
 			if (primary?.duration !== undefined && primary.duration > 0) {
-				windows.push({ ability: castKind, endTime: castTime + primary.duration });
+				// The stand-in summon's label IS the shield's name in this
+				// convention, so it rides along rather than being lost.
+				windows.push({
+					ability: castKind,
+					endTime: castTime + primary.duration,
+					label: primary.label
+				});
 			}
 		}
 		if (windows.length === 0) return;
@@ -2775,6 +2822,7 @@ export function parseNotation(
 				start: castTime,
 				end: w.endTime,
 				sourceCastId,
+				...(w.label !== undefined ? { label: w.label } : {}),
 				...(w.coveredBySummon ? { coveredBySummon: true as const } : {})
 			});
 		}
@@ -4190,6 +4238,7 @@ export function parseNotation(
 			start: rec.start,
 			end: rec.end,
 			sourceCastId: rec.sourceCastId,
+			...(rec.label !== undefined ? { label: rec.label } : {}),
 			...(rec.coveredBySummon ? { coveredBySummon: true as const } : {})
 		});
 	}

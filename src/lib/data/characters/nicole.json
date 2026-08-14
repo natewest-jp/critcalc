@@ -129,10 +129,14 @@
 					"_curatorNotes": [
 						"Shield of Blazing Light scales on Nicole's ATK: 398.1% ATK + 3051 at talent lvl 10 (skillShieldAtk[9]=3.981312, skillShieldFlat[9]=3050.9045). gcsim shield.go, Expires = F + 20*60.",
 						"Base shield (target 'active', per gcsim shield Target:-1) protects the on-field character. C2 extends a Shield of Blazing Light to nearby party members (separate effect on the C2 entry)."
-					]
+					],
+					"label": "Shield of Blazing Light"
 				}
 			],
-			"description": "Recreates a fleeting glimpse of an age long past, when the angels acted on the authority of the heavens, bestowing the **Grace of Kenosis** effect on nearby party members. This increases their ATK and deals AoE Pyro DMG, as well as creates a Shield of Blazing Light.\nThe Shield of Blazing Light's DMG Absorption is based on Nicole's ATK, and it will absorb Pyro DMG at 250% effectiveness."
+			"description": "Recreates a fleeting glimpse of an age long past, when the angels acted on the authority of the heavens, bestowing the **Grace of Kenosis** effect on nearby party members. This increases their ATK and deals AoE Pyro DMG, as well as creates a Shield of Blazing Light.\nThe Shield of Blazing Light's DMG Absorption is based on Nicole's ATK, and it will absorb Pyro DMG at 250% effectiveness.",
+			"_curatorNotes": [
+				"Shield label \"Shield of Blazing Light\" taken verbatim from this ability's own description text (the game's wording, via genshin-db) — the shield lane renders it. ⛔ Kits whose text says only \"a shield\" (Diona, Candace, Xinyan, Lan Yan) keep the generic fallback rather than borrowing the ability name; gcsim's \"<Ability> (Shield)\" strings are its own internal convention, not in-game names."
+			]
 		},
 		{
 			"id": "nicole__burst__revelation_ladder_of_divine_ascent",
@@ -352,7 +356,11 @@
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 70 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 70
+					},
 					"snapshottable": false,
 					"attribution": "C4 (Pathfinder's Blessing)",
 					"_curatorNotes": [

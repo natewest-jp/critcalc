@@ -17,10 +17,10 @@
  * geometry. A shield is a labelled span with no tick markers, which is exactly
  * a summon sub-row minus its ticks.
  *
- * ⚠ ONE ROW PER CHARACTER, not per source. Mirrors the summon lane's own rule
- * (one sub-row per label, so E-Oz and Q-Oz share a lane): a character who
- * shields off both E and Q — Thoma — gets one "Shield" row carrying both bars,
- * not two identically-labelled rows the reader has to tell apart by span.
+ * ⚠ ONE ROW PER (CHARACTER, LABEL), not per source. Mirrors the summon lane's
+ * own rule exactly — E-Oz and Q-Oz share a lane — so a character who shields
+ * off both E and Q under one name gets ONE row carrying both bars, not two
+ * identically-labelled rows the reader has to tell apart by span.
  *
  * ⛔ Windows marked `coveredBySummon` are SKIPPED — those are already on the
  * chart as their stand-in summon, and drawing them here would double them. See
@@ -33,12 +33,12 @@ import type { SummonSubrow } from './types';
 
 type ShieldWindow = Extract<TimelineWindow, { kind: 'shield' }>;
 
-/** The lane label. Deliberately generic: the stand-in summons are the only
- *  place a shield's in-game NAME is recorded, and a character whose shield is
- *  drawn here by definition has no such entry — inventing one per character
- *  would be curation, and a wrong guess reads as fact. The row sits inside its
- *  character's block and its bars align with the cast that raised them, so
- *  "whose shield, from which cast" is already answered by position. */
+/** Fallback lane label, for a shield whose kit gives it no name of its own
+ *  (Xinyan's, Diona's, Baizhu's). ↻ 2026-08-14: named shields now carry
+ *  `ShieldEffect.label` through to the window, so this is the exception rather
+ *  than the rule it started as. ⛔ Never invent a name to avoid it — a wrong
+ *  one reads as fact, and the row's position already says whose shield it is
+ *  and which cast raised it. */
 const SHIELD_LABEL = 'Shield';
 
 export function computeShieldSubrows(
@@ -58,15 +58,21 @@ export function computeShieldSubrows(
 		// same guard computeSummonSubrows applies before assigning a lane.
 		if (slotIdx === undefined) continue;
 
-		let row = rowMap.get(sw.characterId);
+		// ↻ Keyed by (character, LABEL) since names arrived — the summon lane's
+		// own rule. A character shielding off both E and Q under one name keeps
+		// one row (the point of the original per-character grouping); two
+		// differently-named shields are two different things and get a row each.
+		const label = sw.label ?? SHIELD_LABEL;
+		const key = `${sw.characterId}::${label}`;
+		let row = rowMap.get(key);
 		if (!row) {
 			row = {
 				slotIdx,
 				characterId: sw.characterId,
-				label: SHIELD_LABEL,
+				label,
 				bars: []
 			};
-			rowMap.set(sw.characterId, row);
+			rowMap.set(key, row);
 			order.push(row);
 		}
 		row.bars.push({ start: sw.start, end: sw.end, source: sw.source, ticks: [] });

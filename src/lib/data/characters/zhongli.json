@@ -134,14 +134,22 @@
 					},
 					"cooldown": 12,
 					"tags": ["shield", "summon"],
-					"summons": [
-						{
-							"label": "Jade Shield",
-							"duration": 20,
-							"mobility": "follows"
-						}
-					],
+					"summons": [],
 					"effects": [
+						{
+							"type": "shield",
+							"target": "active",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 20,
+							"durationType": "refresh",
+							"scaling": 23.04,
+							"stat": "hp",
+							"flat": 2711.5093,
+							"label": "Jade Shield"
+						},
 						{
 							"type": "resShred",
 							"target": "enemy",
@@ -167,8 +175,11 @@
 					"behavior": "instant",
 					"_curatorNotes": [
 						"resShred trigger migrated to onCast skill 2026-05-09 (F1). Lives on the Hold-E variant so the shield-active gate is naturally scoped: only fires when Hold-E is cast (which is what creates the Jade Shield carrying the RES debuff to nearby enemies). ↻ 2026-08-14: the PHYSICAL half was missing. The element-less entry means all-elemental, so the bar read \"All Elemental RES −20%\" and stopped there — but gcsim shield.go applies Value: -0.2 across a list that is explicitly Pyro/Hydro/Cryo/Electro/Geo/Anemo/PHYSICAL/Dendro, and the kit text says \"Elemental RES and Physical RES\". Authored as a second entry with element: 'physical', the same pairing Shenhe Q, Eula hold-E and Venti C1 use. gcsim re-applies the shred every 18f for as long as the shield holds (0 → 1200f); the 20s duration models that continuous coverage, and the shield-drops-early case is not simulable (no enemy/HP state).",
-						"Hold E also creates a Stone Stele alongside the Jade Shield. Variant summons[] overrides base, so only Jade Shield is rendered here — the timeline does not show a co-spawned stele on Hold-press. The press-E base entry above carries the Stele rendering and is the canonical case for stele visualisation."
-					]
+						"Hold E also creates a Stone Stele alongside the Jade Shield. Variant summons[] overrides base, so only Jade Shield is rendered here — the timeline does not show a co-spawned stele on Hold-press. The press-E base entry above carries the Stele rendering and is the canonical case for stele visualisation.",
+						"Jade Shield authored as a shield Effect 2026-08-14, replacing the zero-effect `summons[]` stand-in. TL10 absorption from gcsim zz_zhongli.dm.go: shieldPer[9]=0.2304 (23.04% Max HP) + shieldBase[9]=2711.5093; duration from shield.go `c.newShield(shield, 1200)` = 1200f = 20s. `activeDuration: 20` on the variant keeps the hold bar at 20s — without it the bar would fall through to the BASE ability's Stone Stele and draw 30s. 150% absorption efficiency against all elemental and physical DMG is not modelled (no per-element shield-efficiency primitive; same gap class as Diona/Thoma/Kaeya).",
+						"`summons: []` is an EXPLICIT override to none, not an oversight. Hold-E does create a Stone Stele alongside the Jade Shield in game, and once the Jade Shield stand-in became a shield Effect this variant had no summons of its own — which would have inherited the base press-E's stele and drawn it at THIS cast's 20s window, a 30s stele rendered 20s. The co-spawned stele stays unmodelled, as it always has been; the declaration just says so out loud now. Modelling it properly needs the stele at its own 30s span alongside a 20s shield, which is the same per-summon-duration work Ineffa/Citlali/Furina flagged."
+					],
+					"activeDuration": 20
 				}
 			],
 			"tags": ["summon"],
