@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, untrack } from 'svelte';
 	import { resolve } from '$app/paths';
+	import { dev } from '$app/environment';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import {
@@ -824,7 +825,41 @@
 	<div class="tool-main" bind:this={toolMain}>
 		{#key page.url.pathname}
 			<div class="tool-page" use:stampPage out:holdPage>
-				{@render children()}
+				<!-- ⚠️ `+error.svelte` DOES NOT COVER THIS. SvelteKit's error page
+				     catches load and routing failures; a throw during component
+				     RENDER is a different animal, and before this boundary existed
+				     it took the whole document down to a blank page — no chrome, no
+				     scene, no way back, and (client-side) not even a status code.
+				     The 2026-08-14 parser sweep found two live routes to exactly
+				     that: unbounded `push(...)` spreads that RangeError on a large
+				     enough rotation (docs/parser-hardening-2026-08-14.md §6).
+				     Those get fixed at the source; this is the floor under them.
+
+				     Scoped to .tool-page ON PURPOSE — the failure is contained to
+				     the tool's own area, so the chrome, the scene and the bench band
+				     all survive and the reader can simply navigate away. A boundary
+				     any higher would take those down with it, which is most of what
+				     made the blank page bad. -->
+				<svelte:boundary>
+					{@render children()}
+
+					{#snippet failed(error, reset)}
+						<div class="tool-crash">
+							<h2>This tool ran into a problem.</h2>
+							<p>
+								The rest of the site is fine — you can switch tools above, or try again. Your saved
+								rotations are untouched.
+							</p>
+							<div class="tool-crash__actions">
+								<button class="btn btn--primary" onclick={reset}>Try again</button>
+								<a class="btn" href={resolve('/contribute')}>Report this</a>
+							</div>
+							{#if dev}
+								<pre>{error instanceof Error ? (error.stack ?? error.message) : String(error)}</pre>
+							{/if}
+						</div>
+					{/snippet}
+				</svelte:boundary>
 			</div>
 		{/key}
 
@@ -1045,6 +1080,60 @@
 	.tool-page {
 		grid-area: 1 / 1;
 		min-width: 0;
+	}
+
+	/* The render-boundary fallback. Claims .ctx-dark's job by hand rather than
+	   the class, because it is a bare notice on the dimmed world, not a tool
+	   surface — no frame, no glass, nothing to mistake for apparatus. Centred in
+	   the tool area so it reads as "this pane failed" rather than "the site
+	   failed", which is the whole point of scoping the boundary here. */
+	.tool-crash {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+		min-height: 50svh;
+		padding: clamp(1.5rem, 5vw, 3rem);
+		text-align: center;
+	}
+
+	.tool-crash h2 {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: var(--fs-xl);
+		font-weight: var(--fw-semibold);
+		color: var(--text);
+	}
+
+	.tool-crash p {
+		margin: 0;
+		max-width: 32rem;
+		font-size: var(--fs-md);
+		line-height: var(--lh-relaxed);
+		color: var(--muted);
+	}
+
+	.tool-crash__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		justify-content: center;
+		margin-top: 0.5rem;
+	}
+
+	.tool-crash pre {
+		max-width: 100%;
+		margin: 1rem 0 0;
+		padding: 0.75rem 1rem;
+		overflow-x: auto;
+		font-family: var(--font-mono);
+		font-size: var(--fs-xs);
+		text-align: left;
+		color: var(--muted);
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--r-sm);
 	}
 
 	/* The bench band's mount: absolutely positioned in .tool-main coordinates
