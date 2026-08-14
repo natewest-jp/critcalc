@@ -71,6 +71,25 @@ export type Token = {
  *    pattern unambiguous against character names that begin uppercase).
  *  - count: non-negative integer
  *  Captures: [1] = key, [2] = count (as string). */
+/**
+ * Upper bound on a notation we are willing to tokenize or parse, in characters.
+ *
+ * ⚠️ A SAFETY guard, not a product limit. Parsing runs synchronously per
+ * keystroke, and the 2026-08-14 hardening sweep showed that a few hundred bytes
+ * of hostile-but-legal notation can expand into millions of IR events — freezing
+ * or OOM-ing the tab with no exception to catch. The `?r=` share link makes that
+ * remote: a ~90-character URL can kill the *recipient's* tab, and the planner
+ * persists what it imports, so it re-kills on every reload.
+ *
+ * Full defect list and measurements: `docs/parser-hardening-2026-08-14.md`.
+ *
+ * 16 KiB is ~3× the largest rotation anyone would plausibly write — a realistic
+ * four-character rotation cycled out to 5,319 characters parses in 19 ms. Both
+ * the share-link decoder (`rotationUrl.ts`) and the editor enforce it, so the
+ * two entry points cannot drift apart.
+ */
+export const MAX_NOTATION_CHARS = 16_384;
+
 export const STACK_ASSERT_RE = /^\{([a-z][a-zA-Z0-9_-]*):(\d+)\}$/;
 
 // ---------------------------------------------------------------------------

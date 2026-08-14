@@ -23,6 +23,22 @@ import { deflateToBase64Url, inflateFromBase64Url } from './urlCodec';
 const FORMAT = '1';
 const MARKER = `${FORMAT}~`;
 
+/**
+ * ⚓ DECODER RETENTION RULE (2026-08-16, public launch).
+ *
+ * The docblock above already says "bump it and old links keep resolving." From
+ * launch that stops being a convention and becomes a contract: **every wire
+ * format we have ever shipped must stay decodable, forever.** A `?i=` link
+ * pasted into a Discord pin outlives several redesigns of this file, and there
+ * is no server to migrate it.
+ *
+ * Bumping FORMAT is fine. Deleting the branch that reads the old one is not —
+ * when you bump, ADD a decoder and keep dispatching on the marker. Same rule
+ * binds `rotationUrl.ts` (`?r=`), which learned it the hard way: its v1 decoder
+ * was deleted pre-launch on the grounds that no link existed yet, and that
+ * justification expired the day the site was shared.
+ */
+
 /** id must be url-plain: lowercase alnum, no separators the format uses */
 const ID_RE = /^[a-z0-9]+$/;
 

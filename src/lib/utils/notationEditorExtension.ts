@@ -25,7 +25,7 @@ import {
 	keymap,
 	tooltips
 } from '@codemirror/view';
-import { type Extension } from '@codemirror/state';
+import { EditorState, type Extension } from '@codemirror/state';
 import { history, historyKeymap, defaultKeymap } from '@codemirror/commands';
 import {
 	autocompletion,
@@ -33,7 +33,7 @@ import {
 	type CompletionContext,
 	type CompletionResult
 } from '@codemirror/autocomplete';
-import { tokenizeNotation, type Token, type TokenKind } from './tokenizer';
+import { tokenizeNotation, MAX_NOTATION_CHARS, type Token, type TokenKind } from './tokenizer';
 import { flagNotation, flagSeverity, type NotationFlag } from './notationFlags';
 import { searchCharacterIndex, getIndexEntryByDisplayName } from '$lib/data/characterLookup';
 import { elementPalette } from './elementColors';
@@ -491,6 +491,16 @@ export function buildNotationExtensions(onChange: (value: string) => void): Exte
 		// Empty-state invitation: shows what to type and models the syntax.
 		placeholder('Type a rotation — e.g.  Bennett E Q > Xiangling E Q N3 > …'),
 		notationTheme,
+		// Hard ceiling on document length. Highlighting, linting and parsing all
+		// run synchronously per keystroke, and a few hundred bytes of legal-but-
+		// hostile notation can expand into millions of IR events — a freeze with
+		// no exception to catch (docs/parser-hardening-2026-08-14.md).
+		//
+		// Rejecting the whole transaction (rather than truncating it) is the
+		// deliberate choice: a silently shortened paste is a DIFFERENT rotation
+		// than the one the user pasted. Nothing legitimate comes close to the cap,
+		// so the case this fires on is always a paste of something else.
+		EditorState.changeFilter.of((tr) => tr.newDoc.length <= MAX_NOTATION_CHARS),
 		EditorView.updateListener.of((update) => {
 			if (update.docChanged) onChange(update.state.doc.toString());
 		})

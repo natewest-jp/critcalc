@@ -29,6 +29,7 @@
 
 import type { LoadoutEntry } from '$lib/stores';
 import { deflateToBase64Url, inflateFromBase64Url } from './urlCodec';
+import { MAX_NOTATION_CHARS } from './tokenizer';
 
 /** The reproducible state of one shared rotation. */
 export type SharedRotation = {
@@ -43,6 +44,25 @@ export type SharedRotation = {
 
 const FORMAT = '2';
 const MARKER = `${FORMAT}~`;
+
+/**
+ * ⚓ DECODER RETENTION RULE (2026-08-16, public launch).
+ *
+ * Before launch this codec could drop old formats freely — the v1 decoder was
+ * removed outright because nobody outside this repo had ever made a link. That
+ * reasoning EXPIRED the moment the site was shared.
+ *
+ * From launch on: **every wire format we have ever shipped must stay decodable,
+ * forever.** A `?r=` link pasted into a Reddit comment or a Discord pin outlives
+ * several redesigns of this file, and there is no server to migrate it. Bumping
+ * FORMAT is fine; deleting the branch that reads the old one is not.
+ *
+ * So: when you bump, ADD a decoder, keep the old one, and make `decodeRotation`
+ * dispatch on the marker. The same rule binds `instrumentUrl.ts` (`?i=`).
+ */
+
+// The notation length cap is shared with the editor so the two entry points
+// cannot drift — see tokenizer.ts for why it exists and how 16 KiB was chosen.
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -76,6 +96,10 @@ export async function decodeRotation(
 		const json = await inflateFromBase64Url(body);
 		const data = JSON.parse(json);
 		if (!isRecord(data) || data.v !== 2 || typeof data.notation !== 'string') return null;
+		// Reject rather than truncate: a truncated rotation is a DIFFERENT rotation
+		// than the sender meant, applied silently. Returning null surfaces through
+		// the planner's existing "Invalid share link" notice, which is honest.
+		if (data.notation.length > MAX_NOTATION_CHARS) return null;
 		return {
 			notation: data.notation,
 			constellations: isRecord(data.constellations) ? sanitizeCons(data.constellations) : {},

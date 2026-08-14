@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Hand-maintained. The route set is small, stable and prerendered, so a build
+  step to generate this would cost more than it saves — but it does mean a NEW
+  ROUTE MUST BE ADDED HERE BY HAND.
+
+  Deliberately absent: /styleguide and /lab. Both are internal instruments —
+  the exhaustive design reference and the specimen board — and neither is a
+  page a reader arrives at on purpose.
+
+  ⚠️ This file is inert until launch: `static/_headers` sends X-Robots-Tag:
+  noindex for /*, so nothing here is indexed while that rule stands.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://critcalc.app/</loc><priority>1.0</priority></url>
+
+  <url><loc>https://critcalc.app/rotation-planner</loc><priority>0.9</priority></url>
+  <url><loc>https://critcalc.app/team-builder</loc><priority>0.9</priority></url>
+  <url><loc>https://critcalc.app/crit-visualizer</loc><priority>0.9</priority></url>
+
+  <url><loc>https://critcalc.app/help</loc><priority>0.7</priority></url>
+  <url><loc>https://critcalc.app/help/rotation-planner</loc><priority>0.6</priority></url>
+  <url><loc>https://critcalc.app/help/team-builder</loc><priority>0.6</priority></url>
+  <url><loc>https://critcalc.app/help/crit-visualizer</loc><priority>0.6</priority></url>
+
+  <url><loc>https://critcalc.app/about</loc><priority>0.5</priority></url>
+  <url><loc>https://critcalc.app/contribute</loc><priority>0.5</priority></url>
+  <url><loc>https://critcalc.app/privacy</loc><priority>0.3</priority></url>
+  <url><loc>https://critcalc.app/settings</loc><priority>0.3</priority></url>
+</urlset>
