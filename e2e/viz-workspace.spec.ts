@@ -34,7 +34,7 @@ const expectLineup = (page: Page, names: string[]) =>
 
 test.describe('lineup and slots', () => {
 	test('first load shows the default two-slot lineup', async ({ page }) => {
-		await openTool(page, '/crit-visualizer');
+		await openTool(page, '/visualizers');
 		await expectLineup(page, ['Crit Heatmap', 'Gauge Explorer']);
 
 		const actions = page.locator('.ws-band-actions .btn');
@@ -45,7 +45,7 @@ test.describe('lineup and slots', () => {
 	});
 
 	test('picking an already-visible instrument swaps the two tiles', async ({ page }) => {
-		await openTool(page, '/crit-visualizer');
+		await openTool(page, '/visualizers');
 		await page.locator('.ws-band-cell').first().locator('.ip-trigger').click();
 
 		await expect(page.locator('.ip-menu .ip-option'), 'all eight instruments').toHaveCount(8);
@@ -60,7 +60,7 @@ test.describe('lineup and slots', () => {
 	});
 
 	test('the layout survives a reload and resets on demand', async ({ page }) => {
-		await openTool(page, '/crit-visualizer');
+		await openTool(page, '/visualizers');
 		await page.locator('.ws-band-cell').first().locator('.ip-trigger').click();
 		await page.locator('.ip-menu .ip-option', { hasText: 'Gauge Explorer' }).click();
 
@@ -80,7 +80,7 @@ test.describe('lineup and slots', () => {
 
 test.describe('deep links', () => {
 	test('a bare ?i= slots its instrument first and strips the param', async ({ page }) => {
-		await openTool(page, '/crit-visualizer?i=rolls');
+		await openTool(page, '/visualizers?i=rolls');
 		await expect(triggers(page).first()).toHaveText(/Artifact Rolls/);
 		expect(page.url(), 'the param is consumed, not left in the URL').not.toContain('i=');
 	});
@@ -89,7 +89,7 @@ test.describe('deep links', () => {
 		// Build the param with the page's own CompressionStream rather than
 		// re-implementing the codec in Node — the encoding IS a browser API, and
 		// `instrumentUrl.test.ts` owns the codec's round-trip separately.
-		await openTool(page, '/crit-visualizer');
+		await openTool(page, '/visualizers');
 		const param = await page.evaluate(async () => {
 			const state = { v: 1, cr: 0.9, cd: 2.5, cvLine: true, variance: false, hits: 8, pin: null };
 			const stream = new CompressionStream('deflate-raw');
@@ -103,7 +103,7 @@ test.describe('deep links', () => {
 			return `crit.1~${b64}`;
 		});
 
-		await openTool(page, `/crit-visualizer?i=${encodeURIComponent(param)}`);
+		await openTool(page, `/visualizers?i=${encodeURIComponent(param)}`);
 		await expect(triggers(page).first()).toHaveText(/Crit Heatmap/);
 		await expect(page.locator('.cv-value-input').first(), 'shared CR applied').toHaveValue('90');
 
@@ -120,7 +120,7 @@ test.describe('deep links', () => {
 });
 
 test('the ICD timeline hands its hits off to a Gauge tile beside it', async ({ page }) => {
-	await openTool(page, '/crit-visualizer?i=icd');
+	await openTool(page, '/visualizers?i=icd');
 	await expect(triggers(page).first()).toHaveText(/ICD Timeline/);
 
 	const applying = parseInt(await page.locator('.icd-big').first().innerText(), 10);

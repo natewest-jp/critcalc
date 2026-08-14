@@ -109,7 +109,7 @@ test.describe('control glyphs are geometry, not type', () => {
 	});
 
 	test('visualizers — workspace and instrument picker', async ({ page }) => {
-		await openTool(page, '/crit-visualizer');
+		await openTool(page, '/visualizers');
 		await expectSwept(page, '.ip-trigger');
 		await page.locator('.ip-trigger').first().click();
 		await expectSwept(page, '.ip-menu');

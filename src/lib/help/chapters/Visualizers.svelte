@@ -3,7 +3,7 @@
 
 	 Rewritten 2026-07-26 against the shipped tool: the old copy predated the
 	 workspace layer and listed five instruments of eight. If an instrument is
-	 added or renamed, INSTRUMENTS in crit-visualizer/lib/workspace.ts is the
+	 added or renamed, INSTRUMENTS in visualizers/lib/workspace.ts is the
 	 source of truth for the roster. -->
 
 <h1>Visualizers</h1>

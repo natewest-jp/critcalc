@@ -69,7 +69,7 @@ test(
 		for (let i = 0; i < CYCLES; i++) {
 			// A dockless leg (the ribbon joins the tool surface), settled between —
 			// then the storm: navigate away and interrupt back mid-flight.
-			await click('crit-visualizer');
+			await click('visualizers');
 			await page.waitForTimeout(4600);
 			await click('rotation-planner');
 			await page.waitForTimeout(3400);

@@ -62,9 +62,9 @@ export const HELP_AREA: Area = {
 			load: () => import('./chapters/RotationPlanner.svelte')
 		},
 		{
-			id: 'crit-visualizer',
+			id: 'visualizers',
 			title: 'Visualizers',
-			path: resolve('/help/crit-visualizer'),
+			path: resolve('/help/visualizers'),
 			load: () => import('./chapters/Visualizers.svelte')
 		}
 	]

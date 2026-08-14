@@ -525,10 +525,10 @@ informs the aura-update rules — which aura is consumed when several match.
 
 The library is _what's true_; this section is the bridge to _how we consume it_.
 
-- **Reaction-curves instrument** (`crit-visualizer/lib/reactionCurves.ts`) — uses the three EM
+- **Reaction-curves instrument** (`visualizers/lib/reactionCurves.ts`) — uses the three EM
   bonus formulas (§2 `2.78·EM/(1400+EM)`, §3 `16·EM/(2000+EM)`, §4 `5·EM/(1200+EM)`), the
   reaction multipliers, and the per-level multiplier table.
-- **Gauge explorer** (`crit-visualizer/lib/gauge.ts`) — uses §1 gauge theory: aura tax (0.8×),
+- **Gauge explorer** (`visualizers/lib/gauge.ts`) — uses §1 gauge theory: aura tax (0.8×),
   decay `D(U)`, and reaction consumption.
 - **Rotation planner** (`notationParser.ts`, v1.5) — emits the plausible reaction set at each
   cast site ("windows not gauges" — no aura/ICD simulation); the §8 priority informs aura-update

@@ -25,7 +25,7 @@
 	const tools = [
 		{ label: 'Team Builder', path: '/team-builder' },
 		{ label: 'Rotation Planner', path: '/rotation-planner' },
-		{ label: 'Visualizers', path: '/crit-visualizer' }
+		{ label: 'Visualizers', path: '/visualizers' }
 	] as const;
 </script>
 

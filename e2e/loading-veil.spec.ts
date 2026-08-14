@@ -13,7 +13,7 @@ import { test, expect } from './fixtures/critcalc';
  * timing cannot judge honestly.
  */
 
-const SURFACES = ['/', '/about', '/rotation-planner', '/team-builder', '/crit-visualizer'];
+const SURFACES = ['/', '/about', '/rotation-planner', '/team-builder', '/visualizers'];
 
 test.describe('served markup', () => {
 	for (const path of SURFACES) {

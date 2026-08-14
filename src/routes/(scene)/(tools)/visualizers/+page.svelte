@@ -144,7 +144,7 @@
 	// $app/navigation version throws pre-router-init on cold load).
 	afterNavigate(async (nav) => {
 		const url = nav.to?.url;
-		if (!url || !url.pathname.startsWith('/crit-visualizer')) return;
+		if (!url || !url.pathname.startsWith('/visualizers')) return;
 		const param = url.searchParams.get('i');
 		if (!param) return;
 		history.replaceState(history.state, '', url.pathname + url.hash);
@@ -163,7 +163,7 @@
 	let copiedTile = $state<InstrumentId | null>(null);
 	async function shareTile(id: InstrumentId) {
 		const param = await encodeInstrumentParam(id, handles[id]?.getShareState?.());
-		await navigator.clipboard.writeText(`${location.origin}/crit-visualizer?i=${param}`);
+		await navigator.clipboard.writeText(`${location.origin}/visualizers?i=${param}`);
 		copiedTile = id;
 		setTimeout(() => {
 			if (copiedTile === id) copiedTile = null;

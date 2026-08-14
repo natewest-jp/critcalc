@@ -126,7 +126,7 @@ test.describe('every chapter is also a real route', () => {
 		['/help', 'Help & FAQ'],
 		['/help/team-builder', 'Team Builder'],
 		['/help/rotation-planner', 'Rotation Planner'],
-		['/help/crit-visualizer', 'Visualizers'],
+		['/help/visualizers', 'Visualizers'],
 		['/about', 'About critcalc'],
 		['/contribute', 'Contribute'],
 		['/privacy', 'Privacy']

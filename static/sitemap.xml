@@ -16,12 +16,12 @@
 
   <url><loc>https://critcalc.app/rotation-planner</loc><priority>0.9</priority></url>
   <url><loc>https://critcalc.app/team-builder</loc><priority>0.9</priority></url>
-  <url><loc>https://critcalc.app/crit-visualizer</loc><priority>0.9</priority></url>
+  <url><loc>https://critcalc.app/visualizers</loc><priority>0.9</priority></url>
 
   <url><loc>https://critcalc.app/help</loc><priority>0.7</priority></url>
   <url><loc>https://critcalc.app/help/rotation-planner</loc><priority>0.6</priority></url>
   <url><loc>https://critcalc.app/help/team-builder</loc><priority>0.6</priority></url>
-  <url><loc>https://critcalc.app/help/crit-visualizer</loc><priority>0.6</priority></url>
+  <url><loc>https://critcalc.app/help/visualizers</loc><priority>0.6</priority></url>
 
   <url><loc>https://critcalc.app/about</loc><priority>0.5</priority></url>
   <url><loc>https://critcalc.app/contribute</loc><priority>0.5</priority></url>

@@ -8,7 +8,7 @@
 // tool paths and help chapter ids are deliberately the same slug, which
 // helpChapterForPath() relies on.
 
-export type ToolPath = '/crit-visualizer' | '/rotation-planner' | '/team-builder';
+export type ToolPath = '/visualizers' | '/rotation-planner' | '/team-builder';
 
 export type ToolInfo = {
 	path: ToolPath;
@@ -24,5 +24,5 @@ export type ToolInfo = {
 export const TOOLS: ToolInfo[] = [
 	{ path: '/team-builder', title: 'Team Builder', short: 'Teams' },
 	{ path: '/rotation-planner', title: 'Rotation Planner', short: 'Planner' },
-	{ path: '/crit-visualizer', title: 'Visualizers', short: 'Visualizers' }
+	{ path: '/visualizers', title: 'Visualizers', short: 'Visualizers' }
 ];

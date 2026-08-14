@@ -1,0 +1,12 @@
+# Cloudflare Pages redirect table. Copied verbatim into the build output by
+# adapter-static, and evaluated by Pages BEFORE it looks for a prerendered file.
+#
+# ── /crit-visualizer → /visualizers (2026-08-14) ────────────────────────────
+# The tool has been called "Visualizers" since it grew past the crit heatmap
+# into eight instruments; the route was the last place still saying otherwise.
+# These two lines exist because the route was live (if noindex) from
+# 2026-07-21, so a link may already have been shared by hand. Pages forwards
+# the query string when the destination carries none, which is what keeps a
+# deep link like /crit-visualizer?i=icd landing on the right instrument.
+/crit-visualizer       /visualizers       301
+/help/crit-visualizer  /help/visualizers  301

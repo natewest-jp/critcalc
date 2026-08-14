@@ -73,7 +73,7 @@ is mathematically `talent × (1 + ΣDmgBonus%)`.)
 - **On a crit:** `1 + CRIT DMG`.
 - **Average (expected):** `1 + CRIT Rate × CRIT DMG`.
 
-critcalc's crit heatmap (`crit-visualizer/lib/crit.ts`) visualizes the CR/CD trade-off; it
+critcalc's crit heatmap (`visualizers/lib/crit.ts`) visualizes the CR/CD trade-off; it
 does **not** fold crit into a damage number.
 
 ## Enemy DEF Multiplier

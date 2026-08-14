@@ -32,7 +32,7 @@
 			tool: 'Rotation Planner',
 			path: '/rotation-planner'
 		},
-		{ id: 'crit-visualizer', title: 'Observatory', tool: 'Visualizers', path: '/crit-visualizer' }
+		{ id: 'visualizers', title: 'Observatory', tool: 'Visualizers', path: '/visualizers' }
 	] as const;
 
 	// Nate's hero-card silhouette, from assets-src/landing/hero-card.svg: a tall

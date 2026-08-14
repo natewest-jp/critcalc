@@ -755,7 +755,7 @@
 	   inside a visualization, and a domain color must never appear on a
 	   control's destructive/positive state.
 
-	   Values are taken from the crit-visualizer's own hit-count slider gradient
+	   Values are taken from the Visualizers' own hit-count slider gradient
 	   (Nate's pick): red → orange → teal. Danger and warning are that gradient
 	   exactly. The earlier worry that warning was "squeezed" between danger and
 	   gilt dissolved when gilt came down to s41 — 13° of hue but 44 points of

@@ -4,4 +4,4 @@
 	import Chapter from '$lib/help/chapters/Visualizers.svelte';
 </script>
 
-<HelpAreaShell area={HELP_AREA} chapter="crit-visualizer" chapterComponent={Chapter} />
+<HelpAreaShell area={HELP_AREA} chapter="visualizers" chapterComponent={Chapter} />

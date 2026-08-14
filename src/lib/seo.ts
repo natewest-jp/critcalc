@@ -77,7 +77,7 @@ export const PAGE_META: Record<string, PageMeta> = {
 		description:
 			'Find who covers what — healing, shielding, resistance shred, buffs — at which constellation, with the ability and the caveat that comes with it.'
 	},
-	'/crit-visualizer': {
+	'/visualizers': {
 		title: 'Visualizers',
 		description:
 			'Eight instruments for the mechanics behind the numbers: crit distribution, elemental gauge and ICD, reaction curves, artifact rolls, enemy defense and more.'
@@ -98,7 +98,7 @@ export const PAGE_META: Record<string, PageMeta> = {
 		description:
 			'How the critcalc Team Builder works: capability facets, constellation modes, comparison and team slots.'
 	},
-	'/help/crit-visualizer': {
+	'/help/visualizers': {
 		title: 'Visualizers help',
 		description:
 			'The critcalc Visualizers: the workspace, and what each of the eight graph instruments shows.'

@@ -96,7 +96,7 @@ export const TILT_EASING_CSS = 'cubic-bezier(0.58, 0, 0.42, 1)';
  */
 function sideSign(path: string): -1 | 0 | 1 {
 	if (path === '/team-builder') return 1;
-	if (path === '/crit-visualizer') return -1;
+	if (path === '/visualizers') return -1;
 	return 0;
 }
 
@@ -111,7 +111,7 @@ export const isLandingPath = (path: string) => path === '/';
  * it (that is the tools layout's doing and /lab is not in that group), so the
  * world keeps rendering behind it, which is the entire point.
  */
-const TOOL_PATHS = ['/crit-visualizer', '/rotation-planner', '/team-builder', '/lab'];
+const TOOL_PATHS = ['/visualizers', '/rotation-planner', '/team-builder', '/lab'];
 /**
  * True for the three tool routes — the ONLY routes whose opaque shell covers
  * the viewport and occludes the scene. The landing and the static content pages

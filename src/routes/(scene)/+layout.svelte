@@ -54,7 +54,7 @@
 	// reactively — once hydration runs, the WAAPI animations own these inline
 	// styles via direct el.style writes. Built from restTransform so the SSR
 	// strings stay in lockstep with the sceneLayer action, including the side-
-	// tool horizontal crane on a direct hit to /crit-visualizer or /team-builder.
+	// tool horizontal crane on a direct hit to /visualizers or /team-builder.
 	const initialDim = dimTarget(initialPath);
 
 	// The GL scene world (sceneGL.ts): plates + gradient in one canvas, camera

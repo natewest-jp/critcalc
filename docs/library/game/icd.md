@@ -159,7 +159,7 @@ We model elemental-application ICD **binary**, not as full sequences:
   to do with element application; the collision was only informal prose (its JSDoc used
   to nickname `0` as "no ICD" — since reworded to "no cooldown").
 
-**Tool surface:** the crit-visualizer **`IcdInstrument.svelte`** (backed by `icd.ts`)
+**Tool surface:** the visualizers **`IcdInstrument.svelte`** (backed by `icd.ts`)
 visualizes this doc — `standard` / `none` / `custom {timer, hits}` presets over a
 uniform attack string, showing which hits apply.
 
