@@ -204,8 +204,28 @@ else is self-inflicted-only.
    `time`, verified. ⛔ Do NOT "align" the two patterns as a tidy-up; that WOULD change
    behaviour.
 5. ✅ **Both spread-pushes are loops** (§6) — `37c01f4`.
-6. ⏭ Still open, all non-blocking: bound the `[^)]*`/`[^\]]*` scans (§5); memoize
-   `inferredStates` (§3 — real O(casts²), but items 1–2 cap its input); debounce the editor
+6. 🟡 **PARTIAL — `inferredStates` (§3)**, `04fd258`. ⚠️ **Correcting §3's own suggested
+   fix:** "a boolean that flips once a qualifying cast is emitted" would be a **correctness
+   bug** — summon windows CLOSE (`cursor < start + uptime`), so a latching flag reports
+   `duringSummon` forever after the first cast.
+
+   Isolated by stubbing the function: it is **76% of parse time** (396 ms → 94 ms without
+   it). ⚓ **And the cost is the MISSING scan, not the matching one** — a pure-burst run
+   makes the skill branch walk every cast and never match, and vice versa. Interleaved E/Q
+   measured _faster_ than either pure run (180 ms vs ~400 ms). `castKindsByChar` now indexes
+   which kinds exist and skips an absent branch.
+
+   Measured at 12,000 casts: **all-E 421 → 47 ms (9×)**; all-Q 392 → 366; mixed 180 → 173;
+   16 KiB worst case **678 → 646 ms**.
+
+   ⏭ **Still open — the present-but-not-matching scan.** With many Bennett bursts the field
+   expires ~3 s before each recast, and in those gaps the burst branch walks every cast for
+   nothing. A time-ordered early break would close it, but is sound only if a cast's
+   `uptime` is stable during parse — and this function's docblock documents that extendable
+   stationary summons carry un-extended uptime until finalize. ⛔ Not worth that risk for
+   pathological-input-only time.
+
+7. ⏭ Still open, non-blocking: bound the `[^)]*`/`[^\]]*` scans (§5); debounce the editor
    parse. ✅ The error boundary landed separately in `cbedff0`.
 
 **Status: the sweep is CLOSED for launch.** Every measured figure was re-verified in a
