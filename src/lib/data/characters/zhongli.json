@@ -151,11 +151,22 @@
 							},
 							"duration": 20,
 							"value": -20
+						},
+						{
+							"type": "resShred",
+							"target": "enemy",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 20,
+							"element": "physical",
+							"value": -20
 						}
 					],
 					"behavior": "instant",
 					"_curatorNotes": [
-						"resShred trigger migrated to onCast skill 2026-05-09 (F1). Lives on the Hold-E variant so the shield-active gate is naturally scoped: only fires when Hold-E is cast (which is what creates the Jade Shield carrying the -20% all-element RES debuff to nearby enemies).",
+						"resShred trigger migrated to onCast skill 2026-05-09 (F1). Lives on the Hold-E variant so the shield-active gate is naturally scoped: only fires when Hold-E is cast (which is what creates the Jade Shield carrying the RES debuff to nearby enemies). ↻ 2026-08-14: the PHYSICAL half was missing. The element-less entry means all-elemental, so the bar read \"All Elemental RES −20%\" and stopped there — but gcsim shield.go applies Value: -0.2 across a list that is explicitly Pyro/Hydro/Cryo/Electro/Geo/Anemo/PHYSICAL/Dendro, and the kit text says \"Elemental RES and Physical RES\". Authored as a second entry with element: 'physical', the same pairing Shenhe Q, Eula hold-E and Venti C1 use. gcsim re-applies the shred every 18f for as long as the shield holds (0 → 1200f); the 20s duration models that continuous coverage, and the shield-drops-early case is not simulable (no enemy/HP state).",
 						"Hold E also creates a Stone Stele alongside the Jade Shield. Variant summons[] overrides base, so only Jade Shield is rendered here — the timeline does not show a co-spawned stele on Hold-press. The press-E base entry above carries the Stele rendering and is the canonical case for stele visualisation."
 					]
 				}
