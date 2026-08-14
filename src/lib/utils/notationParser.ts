@@ -223,6 +223,23 @@ const E_CAST_S = GENERIC_SKILL.castSwap / 60;
 const Q_CAST_S = GENERIC_BURST.castSwap / 60;
 const MIN_ACTIVE_S = 0.5; // minimum on-field time when no ~Xs is specified
 
+/**
+ * Ceiling on a single `~Xs` time advance, in seconds.
+ *
+ * ⚠️ This guard was missing entirely: the site read `if (isFinite(delta))` and
+ * nothing else, so `Ifa ~99999999s` — FOURTEEN typed characters — parsed happily
+ * in 2.5 ms, reported no unknown tokens, and handed a 99,999,999-second duration
+ * to a ruler that allocates one tick object per second. That OOM-ed the tab.
+ * (docs/parser-hardening-2026-08-14.md §1.)
+ *
+ * One hour is far past any real rotation — the longest are minutes — while still
+ * leaving room for someone deliberately modelling a long wait. ⚠️ It is a
+ * per-token ceiling, so it does NOT bound total duration on its own: a document
+ * full of small waits still sums. `rulerTicks` in RotationTimeline carries its
+ * own independent cap for that, and both are needed.
+ */
+const MAX_TIME_ADVANCE_S = 3600;
+
 // Assumed ascension level for all characters (affects modifier eligibility).
 const DEFAULT_ASCENSION = 4;
 
@@ -876,6 +893,34 @@ function resolveActiveAbility<K extends Ability['abilityType']>(
 /** Hard cap on bracket repeat counts; real rotations stay in single digits. */
 const MAX_BRACKET_REPEATS = 99;
 
+/**
+ * Hard cap on the TOTAL tokens expansion may produce.
+ *
+ * ⚠️ `MAX_BRACKET_REPEATS` bounds one multiplicand and this bounds the other.
+ * Capping only the count was the 2026-08-14 sweep's second finding: nothing
+ * bounded the bracket BODY, so `99[` + 2,000 × `N9` — 4 KB of input — expanded
+ * to 1.78 million IR events and ~1 GB of heap, and 24 KB of it OOM-ed the tab
+ * outright. Measured ceiling was ~445 IR events per input character.
+ * (docs/parser-hardening-2026-08-14.md §2.)
+ *
+ * 20k is far past legitimate use and still cheap: the heaviest plausible bracket
+ * — `99[` around fifty tokens `]` — expands to ~5k, and a realistic twenty-cycle
+ * rotation is ~300 tokens parsing in 13 ms. Measured at the cap, the worst case
+ * lands near 180k events / ~90 ms: a hitch on a pathological paste, not a freeze.
+ * (A first cut used 50k and measured 450k events / 222 ms — correct, but there
+ * was no reason to buy headroom nobody can legitimately spend.)
+ *
+ * ⚠️ Hitting it truncates SILENTLY, which is a deliberate and slightly
+ * uncomfortable choice: `unknownTokens` is the only warning channel on
+ * `ParsedRotation` and nothing renders it (the editor lint in `notationFlags.ts`
+ * took that job), so a flag here would go nowhere. Building a display path for a
+ * condition no legitimate input can reach is the speculative abstraction the
+ * conventions warn against. ⏭ If a warning channel ever exists, this is a
+ * candidate — and the better home is the LINT, which already owns the "we cannot
+ * take this" vocabulary and could flag an over-budget group from the text alone.
+ */
+const MAX_EXPANDED_TOKENS = 20_000;
+
 function expandBrackets(tokens: Token[]): Token[] {
 	const result: Token[] = [];
 	for (const tok of tokens) {
@@ -901,7 +946,16 @@ function expandBrackets(tokens: Token[]): Token[] {
 		// Re-tokenize inner content; skip the synthetic character-name token.
 		const innerTokens = tokenizeNotation('_ ' + inner).slice(1);
 		for (let rep = 0; rep < count; rep++) {
-			result.push(...innerTokens);
+			// Budget check BEFORE appending, so the cap is a ceiling rather than a
+			// threshold we overshoot by one body's worth.
+			if (result.length + innerTokens.length > MAX_EXPANDED_TOKENS) return result;
+			// ⛔ NOT `result.push(...innerTokens)`. Spreading an array as arguments
+			// hits V8's argument limit and throws `RangeError: Maximum call stack
+			// size exceeded` somewhere north of ~125k elements — and a throw here is
+			// worse than the freeze it replaced, because it unwinds through the
+			// synchronous $derived that drives the timeline. A plain loop has no
+			// such limit. (Same reason the buff-window merge below is a loop.)
+			for (const innerTok of innerTokens) result.push(innerTok);
 		}
 	}
 	return result;
@@ -3469,7 +3523,8 @@ export function parseNotation(
 				const m = tok.text.match(/^~([\d.]+)s/);
 				if (m) {
 					const delta = parseFloat(m[1]);
-					if (isFinite(delta)) localCursor += delta;
+					// isFinite alone let `~99999999s` through — see MAX_TIME_ADVANCE_S.
+					if (isFinite(delta)) localCursor += Math.min(delta, MAX_TIME_ADVANCE_S);
 				}
 			} else if (tok.kind === 'unset-time') {
 				emitAction({ action: 'unset', label: '~?', time: localCursor, duration: MIN_ACTIVE_S });
@@ -4136,7 +4191,11 @@ export function parseNotation(
 			getCharacter: (id) => charById.get(id) ?? null
 		});
 		if (buffWindows.length > 0) {
-			windows.push(...buffWindows);
+			// ⛔ NOT `windows.push(...buffWindows)` — spreading an array as arguments
+			// throws RangeError past V8's argument limit (~125k), and buff windows
+			// scale with cast count, so a large rotation reaches it. See the same
+			// note in expandBrackets.
+			for (const w of buffWindows) windows.push(w);
 			// Restore the deterministic order; the stable sort keeps buff
 			// emission order within (start, end) ties, and the buff-row
 			// projections re-order their subset by window id regardless.
