@@ -5,6 +5,20 @@
 # ============================================================
 /*
   X-Robots-Tag: noindex
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# The HTML shell must NOT be held. Cloudflare Pages' default for non-hashed
+# assets is 4h must-revalidate, which would pin a user to a stale shell for
+# hours after a fix ships — exactly wrong in the weeks after launch, when
+# fixes land in response to user reports. The shell is small; revalidating it
+# every navigation costs a conditional request and buys immediate rollout.
+# (Assets it references are content-hashed and immutable, below.)
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
 
 # Static art/icons are ADD-ONLY: a changed asset must ship under a NEW
 # filename (e.g. -newfit variants), never edited in place — browsers hold

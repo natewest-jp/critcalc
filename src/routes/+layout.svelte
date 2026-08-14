@@ -43,6 +43,7 @@
 	import bodyVariableUrl from '@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2?url';
 	import monoRegularUrl from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url';
 	import favicon from '$lib/assets/favicon.svg';
+	import SeoHead from '$lib/components/SeoHead.svelte';
 	import '../app.css';
 	import { dev } from '$app/environment';
 
@@ -71,9 +72,13 @@
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bitterLatinUrl} />
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={bodyVariableUrl} />
 	<link rel="preload" as="font" type="font/woff2" crossorigin="anonymous" href={monoRegularUrl} />
-	<title>critcalc.app</title>
-	<meta name="description" content="Genshin Impact tools for planning and theorycrafting." />
 </svelte:head>
+
+<!-- Title, description, canonical and every og:/twitter: tag, for EVERY route,
+     from the one map in $lib/seo.ts. ⚠️ Rendered here and NOWHERE else: pages
+     must not add their own <svelte:head> title, because head content is not
+     deduped and two titles leave the choice to each scraper. -->
+<SeoHead />
 
 <svelte:window onkeydown={onDevGrayKey} />
 

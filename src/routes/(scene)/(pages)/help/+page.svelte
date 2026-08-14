@@ -7,12 +7,4 @@
 	import Chapter from '$lib/help/chapters/Faq.svelte';
 </script>
 
-<svelte:head>
-	<title>Help &amp; FAQ · critcalc.app</title>
-	<meta
-		name="description"
-		content="How to use critcalc's tools, plus answers to common questions about the site and its data."
-	/>
-</svelte:head>
-
 <HelpAreaShell area={HELP_AREA} chapter="faq" chapterComponent={Chapter} />

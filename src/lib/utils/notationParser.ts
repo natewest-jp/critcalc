@@ -223,6 +223,23 @@ const E_CAST_S = GENERIC_SKILL.castSwap / 60;
 const Q_CAST_S = GENERIC_BURST.castSwap / 60;
 const MIN_ACTIVE_S = 0.5; // minimum on-field time when no ~Xs is specified
 
+/**
+ * Ceiling on a single `~Xs` time advance, in seconds.
+ *
+ * ⚠️ This guard was missing entirely: the site read `if (isFinite(delta))` and
+ * nothing else, so `Ifa ~99999999s` — FOURTEEN typed characters — parsed happily
+ * in 2.5 ms, reported no unknown tokens, and handed a 99,999,999-second duration
+ * to a ruler that allocates one tick object per second. That OOM-ed the tab.
+ * (docs/parser-hardening-2026-08-14.md §1.)
+ *
+ * One hour is far past any real rotation — the longest are minutes — while still
+ * leaving room for someone deliberately modelling a long wait. ⚠️ It is a
+ * per-token ceiling, so it does NOT bound total duration on its own: a document
+ * full of small waits still sums. `rulerTicks` in RotationTimeline carries its
+ * own independent cap for that, and both are needed.
+ */
+const MAX_TIME_ADVANCE_S = 3600;
+
 // Assumed ascension level for all characters (affects modifier eligibility).
 const DEFAULT_ASCENSION = 4;
 
@@ -573,24 +590,60 @@ function inferredStates(
 	emittedCasts: readonly CastEvent[],
 	eAbility: CastAbility | undefined,
 	qAbility: CastAbility | undefined,
-	cursor: number
+	cursor: number,
+	/** Which kinds are present at all — see `castKindsByChar`. Skipping a scan
+	 *  for an absent kind is where nearly all of this function's cost went. */
+	kinds: { hasSkill: boolean; hasBurst: boolean }
 ): Set<string> {
 	const states = new Set<string>();
 	const activeDuringSummon = (c: CastEvent) => {
 		const activatesAt = c.summonActivatesAt / 60;
 		return c.time + activatesAt <= cursor && cursor < c.time + activatesAt + c.uptime;
 	};
+
+	/**
+	 * ⚠️ NEWEST-FIRST, and that is the whole optimization.
+	 *
+	 * This is an existence check, so scan ORDER cannot change the answer — but it
+	 * changes the cost enormously. `computeCurrentStates` calls this on every
+	 * action AND every cast, so a forward scan is O(casts-per-character²): the
+	 * 2026-08-14 sweep measured 16,000 bursts on Bennett at 663 ms against 50 ms
+	 * for the same input on Keqing, whose abilities are not `stationary` so the
+	 * branch never runs at all (docs/parser-hardening-2026-08-14.md §3).
+	 *
+	 * The cast whose summon window covers `cursor` is overwhelmingly the most
+	 * recent one — windows are seconds long and casts arrive in time order — so
+	 * from the back the answer is typically the first element tested.
+	 *
+	 * ⛔ The sweep suggested memoizing with "a boolean that flips once a
+	 * qualifying cast is emitted". Do NOT do that: summon windows CLOSE
+	 * (`cursor < start + uptime`), so a latching flag would report `duringSummon`
+	 * forever after the first cast — a correctness bug traded for speed.
+	 */
+	const anySummonActive = (kind: CastEvent['ability']) => {
+		for (let i = emittedCasts.length - 1; i >= 0; i--) {
+			const c = emittedCasts[i];
+			if (c.ability === kind && activeDuringSummon(c)) return true;
+		}
+		return false;
+	};
+
+	// ⚠️ `kinds.hasX` FIRST — it is the guard that actually matters. Without it
+	// the scan below runs in full on every call for a kind the character has
+	// never cast, which was the whole quadratic.
 	if (
+		kinds.hasBurst &&
 		qAbility &&
 		getPersistentBehavior(qAbility) === 'stationary' &&
-		emittedCasts.some((c) => c.ability === 'burst' && activeDuringSummon(c))
+		anySummonActive('burst')
 	) {
 		states.add('duringSummon');
 	}
 	if (
+		kinds.hasSkill &&
 		eAbility &&
 		getPersistentBehavior(eAbility) === 'stationary' &&
-		emittedCasts.some((c) => c.ability === 'skill' && activeDuringSummon(c))
+		anySummonActive('skill')
 	) {
 		states.add('duringSummon');
 	}
@@ -876,6 +929,34 @@ function resolveActiveAbility<K extends Ability['abilityType']>(
 /** Hard cap on bracket repeat counts; real rotations stay in single digits. */
 const MAX_BRACKET_REPEATS = 99;
 
+/**
+ * Hard cap on the TOTAL tokens expansion may produce.
+ *
+ * ⚠️ `MAX_BRACKET_REPEATS` bounds one multiplicand and this bounds the other.
+ * Capping only the count was the 2026-08-14 sweep's second finding: nothing
+ * bounded the bracket BODY, so `99[` + 2,000 × `N9` — 4 KB of input — expanded
+ * to 1.78 million IR events and ~1 GB of heap, and 24 KB of it OOM-ed the tab
+ * outright. Measured ceiling was ~445 IR events per input character.
+ * (docs/parser-hardening-2026-08-14.md §2.)
+ *
+ * 20k is far past legitimate use and still cheap: the heaviest plausible bracket
+ * — `99[` around fifty tokens `]` — expands to ~5k, and a realistic twenty-cycle
+ * rotation is ~300 tokens parsing in 13 ms. Measured at the cap, the worst case
+ * lands near 180k events / ~90 ms: a hitch on a pathological paste, not a freeze.
+ * (A first cut used 50k and measured 450k events / 222 ms — correct, but there
+ * was no reason to buy headroom nobody can legitimately spend.)
+ *
+ * ⚠️ Hitting it truncates SILENTLY, which is a deliberate and slightly
+ * uncomfortable choice: `unknownTokens` is the only warning channel on
+ * `ParsedRotation` and nothing renders it (the editor lint in `notationFlags.ts`
+ * took that job), so a flag here would go nowhere. Building a display path for a
+ * condition no legitimate input can reach is the speculative abstraction the
+ * conventions warn against. ⏭ If a warning channel ever exists, this is a
+ * candidate — and the better home is the LINT, which already owns the "we cannot
+ * take this" vocabulary and could flag an over-budget group from the text alone.
+ */
+const MAX_EXPANDED_TOKENS = 20_000;
+
 function expandBrackets(tokens: Token[]): Token[] {
 	const result: Token[] = [];
 	for (const tok of tokens) {
@@ -901,7 +982,16 @@ function expandBrackets(tokens: Token[]): Token[] {
 		// Re-tokenize inner content; skip the synthetic character-name token.
 		const innerTokens = tokenizeNotation('_ ' + inner).slice(1);
 		for (let rep = 0; rep < count; rep++) {
-			result.push(...innerTokens);
+			// Budget check BEFORE appending, so the cap is a ceiling rather than a
+			// threshold we overshoot by one body's worth.
+			if (result.length + innerTokens.length > MAX_EXPANDED_TOKENS) return result;
+			// ⛔ NOT `result.push(...innerTokens)`. Spreading an array as arguments
+			// hits V8's argument limit and throws `RangeError: Maximum call stack
+			// size exceeded` somewhere north of ~125k elements — and a throw here is
+			// worse than the freeze it replaced, because it unwinds through the
+			// synchronous $derived that drives the timeline. A plain loop has no
+			// such limit. (Same reason the buff-window merge below is a loop.)
+			for (const innerTok of innerTokens) result.push(innerTok);
 		}
 	}
 	return result;
@@ -2193,6 +2283,42 @@ export function parseNotation(
 	// `computeCurrentStates` reads for duringSummon detection (replaces the old
 	// prevBars/track-bars walk).
 	const castsByChar = new Map<string, CastEvent[]>();
+	/**
+	 * Which cast KINDS a character has emitted so far — an incremental index over
+	 * `castsByChar`, scanned in `castKinds()` below.
+	 *
+	 * ⚠️ This exists purely to stop `inferredStates` scanning for a kind that is
+	 * not there. Measured 2026-08-14: `inferredStates` was 76% of parse time on a
+	 * cast-heavy rotation (396 ms → 94 ms with it stubbed out), and the reason is
+	 * counter-intuitive — it is NOT the matching scan that costs, it is the
+	 * MISSING one. A run of pure bursts makes the skill branch walk every cast,
+	 * every call, and never match; a run of pure skills does the same to the burst
+	 * branch. Interleaved E/Q was measurably FASTER than either pure run (180 ms
+	 * vs ~400 ms) because both branches hit a match immediately.
+	 *
+	 * `scanned` is a high-water mark, so each cast is visited exactly once across
+	 * the whole parse — and the flags only ever go true, which is sound because a
+	 * cast is never removed. Parse-scope rather than segment-scope on purpose:
+	 * per-segment state would re-walk the array once per segment, restoring the
+	 * quadratic for a rotation with many segments.
+	 */
+	const castKindsByChar = new Map<
+		string,
+		{ scanned: number; hasSkill: boolean; hasBurst: boolean }
+	>();
+	const castKinds = (charId: string, casts: readonly CastEvent[]) => {
+		let k = castKindsByChar.get(charId);
+		if (!k) {
+			k = { scanned: 0, hasSkill: false, hasBurst: false };
+			castKindsByChar.set(charId, k);
+		}
+		for (; k.scanned < casts.length; k.scanned++) {
+			const ability = casts[k.scanned].ability;
+			if (ability === 'skill') k.hasSkill = true;
+			else if (ability === 'burst') k.hasBurst = true;
+		}
+		return k;
+	};
 	// Provenance for the finalize summon-window pass: each projected bar's
 	// opening `cast` event id (bars and casts are 1:1 by construction).
 	const castIdByBar = new Map<TimelineBar, number>();
@@ -2893,7 +3019,13 @@ export function parseNotation(
 		// named states opened by stance abilities with `opensState` (e.g.
 		// nightsoulBlessing on Natlan characters).
 		const computeCurrentStates = (cursor: number): Set<string> => {
-			const states = inferredStates(charCasts, eAbility, qAbility, cursor);
+			const states = inferredStates(
+				charCasts,
+				eAbility,
+				qAbility,
+				cursor,
+				castKinds(char.id, charCasts)
+			);
 			const stanceEnd = cs.stance?.end;
 			if (stanceEnd !== undefined && stanceEnd > cursor) states.add('inStance');
 			for (const [state, endTime] of cs.states) {
@@ -3469,7 +3601,8 @@ export function parseNotation(
 				const m = tok.text.match(/^~([\d.]+)s/);
 				if (m) {
 					const delta = parseFloat(m[1]);
-					if (isFinite(delta)) localCursor += delta;
+					// isFinite alone let `~99999999s` through — see MAX_TIME_ADVANCE_S.
+					if (isFinite(delta)) localCursor += Math.min(delta, MAX_TIME_ADVANCE_S);
 				}
 			} else if (tok.kind === 'unset-time') {
 				emitAction({ action: 'unset', label: '~?', time: localCursor, duration: MIN_ACTIVE_S });
@@ -4136,7 +4269,11 @@ export function parseNotation(
 			getCharacter: (id) => charById.get(id) ?? null
 		});
 		if (buffWindows.length > 0) {
-			windows.push(...buffWindows);
+			// ⛔ NOT `windows.push(...buffWindows)` — spreading an array as arguments
+			// throws RangeError past V8's argument limit (~125k), and buff windows
+			// scale with cast count, so a large rotation reaches it. See the same
+			// note in expandBrackets.
+			for (const w of buffWindows) windows.push(w);
 			// Restore the deterministic order; the stable sort keeps buff
 			// emission order within (start, end) ties, and the buff-row
 			// projections re-order their subset by window id regardless.
