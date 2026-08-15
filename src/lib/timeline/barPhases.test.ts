@@ -121,3 +121,60 @@ describe('barPhases — case 3: single-phase (cast + ghost CD)', () => {
 		] satisfies BarPhaseSegment[]);
 	});
 });
+
+/**
+ * Delayed cooldown starts (2026-08-15). A skill's cooldown clock does not
+ * start on the press — `Ability.cooldownStartDelay` (frames) offsets it, and
+ * 124 abilities carry one. The ghost tail must end where the ability is
+ * actually castable (`readyAt`), not at `start + cooldown`.
+ */
+describe('barPhases — delayed cooldown start (readyAt)', () => {
+	it('no readyAt → identical to the pre-2026-08-15 geometry', () => {
+		const b = bar({ castTime: 0.5, cooldown: 4, uptime: 0 });
+		expect(barPhases(b, false)).toEqual([
+			{ role: 'uptime', start: 0, span: 0.5 },
+			{ role: 'ghost', start: 0.5, span: 3.5, cooldown: 4 }
+		] satisfies BarPhaseSegment[]);
+	});
+
+	// Nahida's shape: cooldownStartDelay 11f, so readyAt = 5.183 while the
+	// cooldown is 5. The tail stretches; the LABEL still names the length.
+	it('an instant cast stretches its ghost tail to readyAt, label unchanged', () => {
+		const b = bar({ castTime: 0.5, cooldown: 5, uptime: 0, readyAt: 5.5 });
+		expect(barPhases(b, false)).toEqual([
+			{ role: 'uptime', start: 0, span: 0.5 },
+			{ role: 'ghost', start: 0.5, span: 5, cooldown: 5 }
+		] satisfies BarPhaseSegment[]);
+	});
+
+	// ⚓ THE CASE FLIP, and the reason this is worth a test. Xilonen's shape:
+	// uptime 9, cooldown 7, but the CD clock only starts when Nightsoul ENDS
+	// (gcsim sets it inside exitNightsoul), so readyAt = 16. Read off `cooldown`
+	// alone this takes case B — "cooldown finished, stance still running" —
+	// which told Nate he could recast at 7s when the parser placed it at 16s.
+	// With readyAt it takes case A and the chart explains itself: the stance
+	// runs to 9, then a 7s ghost.
+	it('⛔ a stance whose CD starts at stance END takes case A, not case B', () => {
+		const b = bar({ castTime: 0.5, cooldown: 7, uptime: 9, readyAt: 16 });
+		expect(barPhases(b, false)).toEqual([
+			{ role: 'uptime', start: 0, span: 9 },
+			{ role: 'ghost', start: 9, span: 7, cooldown: 7 }
+		] satisfies BarPhaseSegment[]);
+	});
+
+	it('a stance that genuinely outlasts its cooldown still takes case B', () => {
+		// Hu Tao's shape — a small animation offset does not flip the case.
+		const b = bar({ castTime: 0.5, cooldown: 4, uptime: 9, readyAt: 4.25 });
+		expect(barPhases(b, false)).toEqual([
+			{ role: 'uptimeFlush', start: 0, span: 4.25 },
+			{ role: 'overflow', start: 4.25, span: 4.75 }
+		] satisfies BarPhaseSegment[]);
+	});
+
+	it('a sac proc still wins over readyAt — the CD was reset, not delayed', () => {
+		const b = bar({ cooldown: 7, uptime: 9, readyAt: 16, sacProcFired: true });
+		expect(barPhases(b, false)).toEqual([
+			{ role: 'uptimeDim', start: 0, span: 9 }
+		] satisfies BarPhaseSegment[]);
+	});
+});
