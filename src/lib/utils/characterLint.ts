@@ -951,6 +951,35 @@ function lintCastAbility(
 		}
 	}
 
+	// (D.21) cooldownStartsAtStanceEnd is exclusive with cooldownStartDelay.
+	// The two mean different things — a stance-end CLOCK vs. an animation-frame
+	// offset — and authoring both leaves the reader (and the parser's readyAt
+	// branch) no way to know which was intended. Xilonen and Ifa were once
+	// encoded as the second because a delay equal to the duration happens to
+	// compute the same first cast; ⛔ don't go back.
+	if (a.behavior === 'stance' && a.cooldownStartsAtStanceEnd === true) {
+		if (a.cooldownStartDelay !== undefined) {
+			push(
+				'strict',
+				'cd-stance-end-with-delay',
+				'cooldownStartsAtStanceEnd and cooldownStartDelay are mutually exclusive — the first is a stance-end clock, the second an animation-frame offset',
+				a.id
+			);
+		}
+		// (D.22) …and not modelled alongside durationExtensions. The recast is
+		// placed mid-parse from the stance's expected end; an extension that
+		// fires LATER moves the real end past a placement already written.
+		// Early exit (the swap close) moves it earlier and IS handled.
+		if (a.durationExtensions?.length) {
+			push(
+				'strict',
+				'cd-stance-end-with-extensions',
+				'cooldownStartsAtStanceEnd is not modelled together with durationExtensions[] — an extension moves the stance end after the recast has been placed',
+				a.id
+			);
+		}
+	}
+
 	// (D.33) durationExtensions[] only valid on stance behavior
 	const baseExts = (a as { durationExtensions?: unknown }).durationExtensions;
 	if (baseExts !== undefined && a.behavior !== 'stance') {
