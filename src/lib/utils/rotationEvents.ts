@@ -194,8 +194,10 @@ export type BuffWindowSource =
 	| {
 			type: 'character';
 			/** Dispatch family: 'cast' = the merged onCast+onHit E/Q pool;
-			 *  'block' = the N/CA/P input-token pool; the rest are literal. */
-			trigger: 'cast' | 'afterDuration' | 'block' | 'reaction' | 'nightsoulBurst';
+			 *  'block' = the N/CA/P input-token pool; the rest are literal.
+			 *  ⚠️ 'state' is the odd one — its window is not a duration measured
+			 *  from a trigger instant, it IS the state's own span. */
+			trigger: 'cast' | 'afterDuration' | 'block' | 'reaction' | 'nightsoulBurst' | 'state';
 			abilityClass?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
 	  }
 	| {
@@ -231,7 +233,7 @@ export type BuffWindowSource =
 			faction: string;
 			bonusName: string;
 			/** Mirrors the `character` arm — the dispatch family that fired it. */
-			trigger: 'cast' | 'afterDuration' | 'block' | 'reaction' | 'nightsoulBurst';
+			trigger: 'cast' | 'afterDuration' | 'block' | 'reaction' | 'nightsoulBurst' | 'state';
 			abilityClass?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
 	  };
 

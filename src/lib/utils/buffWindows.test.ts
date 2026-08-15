@@ -774,3 +774,74 @@ describe('active-target buffs — weaponType gates on the receiver', () => {
 		expect(statsFor(bow, 'ganyu')).toContain('atk');
 	});
 });
+
+// ── orphaned triggers, wired 2026-08-15 (docs/curation/orphaned-schema-audit.md) ──
+//
+// Both effects were authored correctly, typechecked, linted clean, and drew
+// nothing — no consumer matched their trigger. They are the reason that audit
+// exists.
+describe('onState / post-stance buffs — triggers that were authored and never matched', () => {
+	const load = async (id: string) =>
+		(await import(`$lib/data/characters/${id}.json`)).default as unknown as CharacterData;
+	const barsOf = (rows: ReturnType<typeof projectTeamBuffRows>, needle: string) =>
+		rows.filter((r) => r.key.includes(needle)).flatMap((r) => r.bars);
+
+	it('Hu Tao A1 fires at the STANCE END, not at the swap', async () => {
+		// Flutter By: +12% CRIT Rate to teammates for 8s when Paramita Papilio
+		// ends. Her stance is 9s, and she is on field here for ~15s.
+		const [huTao, xingqiu] = await Promise.all([load('hu_tao'), load('xingqiu')]);
+		const { team } = run('Hu Tao E ~14s > Xingqiu E', [huTao, xingqiu]);
+		const bars = barsOf(team, 'hu_tao::char::E::afterDuration');
+		expect(bars).toHaveLength(1);
+		expect(bars[0].start).toBeCloseTo(9, 6);
+		expect(bars[0].end).toBeCloseTo(17, 6);
+	});
+
+	it('🐛 a stance ends at its DURATION even when the holder stays on field past it', async () => {
+		// The bug the fix above uncovered: the swap-close assigned the stance
+		// window's end unconditionally, so staying on field longer than the
+		// stance EXTENDED a window that had already closed. `terminatesOnSwap` is
+		// on 27 characters, and every `afterDuration` author read the stretched
+		// span — Hu Tao's buff landed at 14.87s instead of 9s. A swap can only
+		// ever end a stance early, so the close is a clamp.
+		const [huTao, xingqiu] = await Promise.all([load('hu_tao'), load('xingqiu')]);
+		const { rotation } = run('Hu Tao E ~14s > Xingqiu E', [huTao, xingqiu]);
+		const stance = rotation.windows.find(
+			(w) => w.kind === 'state' && w.name === 'inStance' && w.characterId === 'hu_tao'
+		)!;
+		expect(stance.end - stance.start).toBeCloseTo(9, 6);
+	});
+
+	it('a swap BEFORE the stance duration still truncates it', async () => {
+		// The other side of the clamp — it must not become a no-op.
+		const [huTao, xingqiu] = await Promise.all([load('hu_tao'), load('xingqiu')]);
+		const { rotation } = run('Hu Tao E ~3s > Xingqiu E', [huTao, xingqiu]);
+		const stance = rotation.windows.find(
+			(w) => w.kind === 'state' && w.name === 'inStance' && w.characterId === 'hu_tao'
+		)!;
+		expect(stance.end - stance.start).toBeLessThan(9);
+	});
+
+	it('Citlali C2 spans her SHIELD window — an onState buff has no duration of its own', async () => {
+		// ⚠️ `shielded` is a State in the union that nothing ever puts into
+		// `resolvedStates`; it resolves to shield WINDOWS. Matching only
+		// `kind: 'state'` would leave this bar invisible exactly as it was.
+		const [citlali, xingqiu] = await Promise.all([load('citlali'), load('xingqiu')]);
+		const { rotation, team } = run('Citlali E ~20s > Xingqiu E', [citlali, xingqiu], {
+			citlali: 2
+		});
+		const shield = rotation.windows.find(
+			(w) => w.kind === 'shield' && w.characterId === 'citlali'
+		)!;
+		const bars = barsOf(team, 'citlali::char::onState::em');
+		expect(bars).toHaveLength(1);
+		expect(bars[0].start).toBeCloseTo(shield.start, 6);
+		expect(bars[0].end).toBeCloseTo(shield.end, 6);
+	});
+
+	it('…and nothing below C2, since the constellation is the holder’s gate', async () => {
+		const [citlali, xingqiu] = await Promise.all([load('citlali'), load('xingqiu')]);
+		const { team } = run('Citlali E ~20s > Xingqiu E', [citlali, xingqiu], { citlali: 1 });
+		expect(barsOf(team, 'citlali::char::onState')).toHaveLength(0);
+	});
+});

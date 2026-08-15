@@ -278,7 +278,8 @@
 					"type": "buff",
 					"target": "teamExcludingSelf",
 					"trigger": {
-						"type": "onStanceEnd"
+						"type": "afterDuration",
+						"ability": "skill"
 					},
 					"duration": 8,
 					"durationType": "fixed",

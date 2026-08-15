@@ -4505,21 +4505,34 @@ export function parseNotation(
 
 		if (i < segments.length - 1 && cs.stance) {
 			if (cs.stance.terminatesOnSwap === true) {
-				cs.stance.end = localCursor;
+				// ⚠️ CLAMP, never assign. `end` was set at open to `cast + duration`,
+				// and a swap can only ever end a stance EARLY. An unconditional
+				// assignment silently EXTENDED the window whenever the holder stayed
+				// on field past the stance's own duration — the ordinary case, since
+				// `Hu Tao E N1 N2 N3 …` outlasts a 9s Paramita. The window then ran
+				// to the swap, and everything reading it inherited that: the drawn
+				// state span, and `afterDurationStart`, which places a post-stance
+				// buff at `cast + (end − start)` and so fired it seconds late for all
+				// five existing authors (Raiden C4, Diona, Chongyun, Venti, Itto).
+				// The `cs.states` loop below has always clamped; this line had not.
+				const stanceEnd = Math.min(cs.stance.end, localCursor);
+				cs.stance.end = stanceEnd;
 				cs.stance.terminatesOnSwap = false;
 				// ⚓ A stance whose cooldown CLOCK starts at the stance END was given
 				// a `readyAt` of `cast + duration + cd` at open time, on the
-				// assumption the window would run its full length. The swap just
-				// ended it early, so the clock starts NOW: take `localCursor + cd`
-				// outright — ⛔ not min/max against the stale value, which is a
-				// strictly later upper bound we are correcting, not competing with.
+				// assumption the window would run its full length. If the swap ended
+				// it early the clock starts THEN: take `stanceEnd + cd` outright —
+				// ⛔ not min/max against the stale value, which is a strictly later
+				// upper bound we are correcting, not competing with. ⚠️ `stanceEnd`
+				// rather than `localCursor` so a stance that already expired on its
+				// own doesn't have its cooldown restarted by a later swap.
 				// Both the ghost tail (castRef.readyAt) and the recast placement
 				// (the charge queue) have to move, or the chart and the parser
 				// disagree about when the ability is castable.
 				if (getCooldownStartsAtStanceEnd(cs.stance.ownerAbility)) {
 					const castRef = cs.stance.castRef;
 					const staleReadyAt = castRef.readyAt;
-					const readyAt = localCursor + castRef.cooldown;
+					const readyAt = stanceEnd + castRef.cooldown;
 					castRef.readyAt = readyAt;
 					// The queue is keyed by exact ability id (see the cast site), so
 					// this cannot reach a teammate's or a sibling variant's clock.

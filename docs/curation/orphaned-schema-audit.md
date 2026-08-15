@@ -5,7 +5,8 @@ meta-bug: data authored correctly, and no code path reading it. `factionBonuses`
 `noICD`, `twoPiece`, the five `infuse` effects, `shield` windows, variant `effects`, and
 `summons[1]` were all that shape. This sweep asks whether there are more.
 
-**Findings only — nothing here was changed.**
+**Findings only when written.** ✅ Findings 1 (Citlali + Hu Tao) and the promoted guard
+landed the same day — see "Resolved" at the bottom. Findings 2–6 stand.
 
 ---
 
@@ -114,8 +115,48 @@ key with no schema at all — worth folding into `_curatorNotes` or declaring.
 
 ## Proposed, not added
 
-⏭ **Promote passes A and C to a Vitest guard** (`orphanedSchema.test.ts`): fail when a key
-authored in the corpus has no property access in `src/`, against an explicit allow-list of
-the documented-inert fields above. It would have caught six of today's seven bugs at
-authoring time, and it survives refactors because it asserts a relationship rather than a
-value. ⚠️ Needs approval per the verification policy — proposing, not adding.
+~~⏭ Promote pass A to a Vitest guard.~~ ✅ **Approved and landed** — see below.
+
+---
+
+## ✅ Resolved 2026-08-15
+
+### Finding 1 — both team buffs now draw
+
+**Hu Tao A1** was re-authored from `onStanceEnd` to `afterDuration` + `ability: 'skill'`,
+and ⛔ **`onStanceEnd` was RETIRED from the `Trigger` union.** The two described the same
+instant: a stance's window _is_ the host ability's duration, and `afterDurationStart`
+already reads the window's final end, so the early-close case the old doc-comment called
+out ("naturally or via Q cast") was covered. ⚓ **Two trigger names for one instant is how
+the orphan happened** — the author picked the one nothing implemented.
+
+**Citlali C2** required real work: `onState` is now a consumer in `buffWindows`, spanning
+the state's own window. ⚓ An `onState` buff has **no duration of its own** — every other
+trigger measures a duration from an instant, this one is co-extensive with a window the
+parser already computes. ⚠️ `shielded` is a `State` in the union that nothing ever puts
+into `resolvedStates`; it resolves to **shield windows**, so matching only `kind: 'state'`
+would have left the bar exactly as invisible as before.
+
+### 🐛 …and a second bug, found only because the first was fixed
+
+Hu Tao's re-authored buff fired at **14.87s instead of 9s**. The stance swap-close assigned
+`cs.stance.end = localCursor` unconditionally, so a holder staying on field _past_ the
+stance duration **extended a window that had already closed**. A swap can only ever end a
+stance early, so the close is a **clamp** — the neighbouring `cs.states` loop had always
+clamped, and the comment three lines below already said "`end` clamps to the swap-out
+time". `terminatesOnSwap` is on **27 characters**, and every `afterDuration` author read
+the stretched span: **Raiden C4, Diona, Chongyun, Venti and Itto have all been firing
+late** whenever their holder outstayed the stance. `readyAt` for the stance-end cooldown
+clock takes the clamped value for the same reason.
+
+⚓ **The lesson worth keeping: a fix to an invisible bar is how you find a wrong one.** The
+orphan hid the timing error, because a bar that never draws can never draw at the wrong
+time.
+
+### The guard
+
+`src/lib/data/orphanedSchema.test.ts` — every authored key must have a property _access_ in
+`src/` or `scripts/`, against an `INERT` allow-list where **every entry states its reason**
+(a bare entry would be the same silence the test exists to break). A second case fails on
+_stale_ allow-list entries: a key no longer authored, or one that has since gained a
+consumer. Verified by seeded negative — an injected field fails the run and names it.

@@ -84,6 +84,15 @@ export function projectTeamBuffRows(
 			} else if (src.trigger === 'nightsoulBurst') {
 				rowKey = `${w.characterId}::char::NB`;
 				sourceLabel = `${displayName} NB`;
+			} else if (src.trigger === 'state') {
+				// ⚓ Named after the CONDITION, not a cast — the bar's whole claim is
+				// "while this state holds", and its span already says when. Keyed by
+				// stat so one character gating two stats on one state draws two
+				// rows rather than pooling one of the numbers away (the Prune
+				// lesson from the faction round).
+				rowKey = `${w.characterId}::char::onState::${effects[0].stat}`;
+				const attribution = (w.poolFirstEffect as BuffEffect | undefined)?.attribution;
+				sourceLabel = attribution ? `${displayName} ${attribution}` : displayName;
 			} else {
 				// 'reaction' — one row per effect, keyed by its display stat.
 				rowKey = `${w.characterId}::char::onReaction::${effects[0].stat}`;

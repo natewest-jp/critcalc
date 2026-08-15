@@ -564,8 +564,14 @@ export type Trigger =
 	 *  `ability` must be set to disambiguate which ability's duration binds the trigger.
 	 *  Example: Raiden C4 Pledge of Propriety — ATK% buff after Musou Isshin ends. */
 	| { type: 'afterDuration'; ability?: 'skill' | 'burst' }
-	/** Fires when the character's active stance window closes (naturally or via Q cast). Buff starts at stance end time. Used for post-stance team buffs (e.g. Hu Tao A1: CRIT Rate after Paramita Papilio ends). */
-	| { type: 'onStanceEnd' }
+	// ⛔ `onStanceEnd` was RETIRED 2026-08-15 — it described the same instant as
+	// `afterDuration` and had exactly one author (Hu Tao A1), matched by no
+	// consumer, so her post-Paramita CRIT share silently never drew. A stance's
+	// window IS the host ability's duration, and `afterDurationStart` reads the
+	// window's FINAL end, so the early-close case the old doc-comment called out
+	// ("naturally or via Q cast") was already covered. Two trigger names for one
+	// instant is how the orphan happened; re-authored as
+	// `afterDuration + ability:'skill'`. See docs/curation/orphaned-schema-audit.md.
 	/** Fires when a shield's scheduled duration expires. Shield windows are
 	 *  derived deterministically from cast-time-spawned shields (tags `['shield']`
 	 *  abilities + their summon duration, or `Effect.type: 'shield'` with onCast
