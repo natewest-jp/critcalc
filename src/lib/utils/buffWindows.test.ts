@@ -709,3 +709,29 @@ describe('artifact onHit — Silken Moon Moonsign tiers', () => {
 		]);
 	});
 });
+
+// ── refresh-merge on the row projection (2026-08-15) ──
+//
+// A buff re-applied before it expires is ONE covered span. The windows stay
+// one-per-trigger (provenance, export); only the drawing merges — which is what
+// kills the duplicate labels stacking on each other.
+describe('buff rows — refresh merge', () => {
+	it('a recast inside the duration extends one bar instead of stacking two', () => {
+		const c = mkChar('buffer', 'Buffer');
+		c.abilities[1] = mkSkill('buffer', { effects: [teamBuff({ duration: 12 })] });
+		const { team, rotation } = run('Buffer E ~8s E', [c]);
+		expect(team[0].bars).toHaveLength(1);
+		expect(team[0].bars[0].start).toBe(0);
+		// Spans to the SECOND cast's end, not the first's.
+		expect(team[0].bars[0].end).toBeGreaterThan(12);
+		// ⚓ The IR is untouched — two triggers, still two windows.
+		expect(rotation.windows.filter((w) => w.kind === 'buff')).toHaveLength(2);
+	});
+
+	it('a recast after expiry still draws two bars', () => {
+		const c = mkChar('buffer', 'Buffer');
+		c.abilities[1] = mkSkill('buffer', { effects: [teamBuff({ duration: 8 })] });
+		const { team } = run('Buffer E ~10s E', [c]);
+		expect(team[0].bars).toHaveLength(2);
+	});
+});
