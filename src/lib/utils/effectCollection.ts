@@ -392,6 +392,28 @@ export function getCharacterEffectsForAfterDuration(
 	return normalizeBuffLikeEffects(result);
 }
 
+/** Collects `onState` effects, grouped by the state they ride.
+ *
+ *  ⚓ An `onState` buff has no duration of its own — its span IS the state's
+ *  window, which is why it is collected by state rather than by cast. Citlali
+ *  C2 (+250 EM to the team while her Opal Shield holds) is the only author
+ *  today, and it drew nothing at all until 2026-08-15 because no consumer
+ *  matched the trigger. See docs/curation/orphaned-schema-audit.md. */
+export function getCharacterEffectsForOnState(char: CharacterData): Map<string, Effect[]> {
+	const byState = new Map<string, Effect[]>();
+	for (const src of effectSourcesOf(char)) {
+		for (const fx of src.effects ?? []) {
+			if (fx.trigger.type !== 'onState') continue;
+			const state = (fx.trigger as { state: string }).state;
+			const list = byState.get(state);
+			if (list) list.push(fx);
+			else byState.set(state, [fx]);
+		}
+	}
+	for (const [state, list] of byState) byState.set(state, normalizeBuffLikeEffects(list));
+	return byState;
+}
+
 /** Collects effects with `trigger.type === "onTeamNightsoulBurst"`. The trigger
  *  is global (fires on every team NB event in `nbBars`), so there's no per-cast
  *  filtering — just gather candidates. Source-agnostic; passives/constellations

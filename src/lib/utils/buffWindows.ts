@@ -51,6 +51,7 @@ import {
 	getCharacterEffectsForCast,
 	getCharacterEffectsForOnHit,
 	getCharacterEffectsForOnReaction,
+	getCharacterEffectsForOnState,
 	getCharacterEffectsForTeamNightsoulBurst,
 	factionProvenanceOf,
 	type FactionProvenance,
@@ -749,6 +750,62 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							poolFirstEffect: resShredBlockPool[0],
 							sourceActionId: hit.sourceEventId,
 							source: { type: 'character', trigger: 'block', abilityClass: blockClass }
+						});
+					}
+				}
+			}
+		}
+
+		// ── onState team-target buffs (once per character) ──
+		//
+		// ⚓ The span IS the state's window. Every other trigger here measures a
+		// duration from an instant; this one is co-extensive with a window the
+		// parser already computed, so there is no `duration` to read and an
+		// effect that carries one would be describing something else.
+		//
+		// ⚠️ `shielded` resolves to SHIELD windows. It is a State in the union but
+		// nothing ever put it in `resolvedStates`, so matching only `kind:'state'`
+		// would keep Citlali's bar invisible exactly as it has been.
+		if (firstTrackOfChar) {
+			for (const [state, stateEffects] of getCharacterEffectsForOnState(char)) {
+				const spans = windows.filter(
+					(w) =>
+						w.characterId === track.characterId &&
+						(state === 'shielded' ? w.kind === 'shield' : w.kind === 'state' && w.name === state)
+				);
+				if (spans.length === 0) continue;
+				for (const stateGroup of byProvenance(stateEffects)) {
+					const seenStatsState = new Set<string>();
+					const qualifiedState = stateGroup.effects.filter((effect): effect is BuffEffect => {
+						if (effect.type !== 'buff') return false;
+						if (!targetsTeamOrActive(effect.target)) return false;
+						if (isActiveTargetOnly(effect.target)) return false;
+						if (
+							evalCondition(
+								effect.conditions,
+								4,
+								new Set(),
+								cLevel,
+								undefined,
+								undefined,
+								baseCtx
+							) === false
+						)
+							return false;
+						if (seenStatsState.has(effect.stat)) return false;
+						seenStatsState.add(effect.stat);
+						return true;
+					});
+					if (qualifiedState.length === 0) continue;
+					for (const span of spans) {
+						emit({
+							characterId: track.characterId,
+							start: span.start,
+							end: span.end,
+							effects: qualifiedState,
+							poolFirstEffect: qualifiedState[0],
+							sourceCastId: span.sourceCastId,
+							source: { type: 'character', trigger: 'state' }
 						});
 					}
 				}

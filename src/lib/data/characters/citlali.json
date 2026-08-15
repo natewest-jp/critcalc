@@ -289,7 +289,8 @@
 					"source": "character",
 					"stat": "em",
 					"value": 250,
-					"snapshottable": false
+					"snapshottable": false,
+					"attribution": "C2: Heart Devourer's Travail"
 				},
 				{
 					"type": "resShred",
