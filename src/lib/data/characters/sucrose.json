@@ -177,17 +177,19 @@
 			"id": "sucrose__passive__catalyst_conversion",
 			"name": "Catalyst Conversion",
 			"abilityType": "passive",
+			"caveat": "Shown for the whole team, but in game only party members whose element matches the swirled one receive it — Anemo characters never do. Swirls of different elements run their own independent 8s windows.",
 			"_curatorNotes": [
-				"Effect target is 'self' but the description says all party members whose element matches the swirled element (excluding Sucrose). EffectTarget has no element-filtered team type. Reviewer must decide how to model or caveat this — possibly target: 'teamExcludingSelf' with a caveat noting the element-filter limitation.",
-				"2026-05-14 (Shape A reaction-key migration): trigger updated from broad `'swirl'` to OR-array [pyroSwirl, hydroSwirl, cryoSwirl, electroSwirl]. The +50 EM applies to any swirl Sucrose triggers; in-game it routes only to the matching element's teammates, which the existing target:'self' authoring (caveated above) under-renders."
+				"2026-08-15: target was 'self', which was simply wrong — the buff never lands on Sucrose in game (gcsim asc.go a1() skips any char whose Base.Element != the swirled element, and she is Anemo). It also meant the effect was DROPPED before rendering: buffWindows' onReaction branch requires targetsTeamOrActive(), so the +50 EM drew nothing on the timeline at all. Now target:'teamExcludingSelf' with the element filter stated in the caveat — EffectTarget still has no element-filtered team type, so this over-renders (shows for every teammate) rather than under-rendering to nothing.",
+				"2026-08-15: added 'stellarSwirl' to the reaction OR-array — current Fandom talent text reads 'triggers a Swirl or Stellar Swirl reaction' (gcsim predates this; its a1() subscribes to the four base swirl events only). Inert for now: computeReactionsForCast does not emit stellarSwirl until its 7.0 mechanics are confirmed (see the note at notationParser.ts computeReactionsForCast). Authored anyway so the key is in place when emission lands.",
+				"2026-05-14 (Shape A reaction-key migration): trigger updated from broad `'swirl'` to an OR-array of the element-specific swirl keys."
 			],
 			"effects": [
 				{
 					"type": "buff",
-					"target": "self",
+					"target": "teamExcludingSelf",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"]
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl", "stellarSwirl"]
 					},
 					"duration": 8,
 					"durationType": "fixed",
@@ -204,8 +206,10 @@
 			"name": "Mollis Favonius",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Migrated to onHit ability:skill 2026-05-09 (F1). gcsim a4() fires when E or Q hits an opponent — the onHit trigger captures the E case; the Q case is also a valid trigger source but the schema's onHit.abilityType is single-valued. Splitting into a second onHit ability:burst entry would dedup against the first (same stat); accepted as schema limitation.",
-				"Scaling buff: value field should be { type: 'scaling', stat: 'em', ratio: 0.2 } per recipe but kept as placeholder value:20 — needs reviewer pass when the renderer supports scaling buffs in onHit-triggered effects. Note: onHit-triggered team buffs don't currently render in the team-buff row regardless."
+				"2026-08-15: abilityType 'skill' → ['skill','burst']. gcsim a4() is called from BOTH skill.go and burst.go attack callbacks, and the talent text names both abilities. The old note claimed onHit.abilityType was single-valued — that has not been true since the array form landed (Escoffier C6), so only the E hit was firing and a Sucrose Q raised no EM at all.",
+				"2026-08-15: value 20 → { type:'scaling', stat:'em', ratio:20 }. The buff is 20% OF Sucrose's EM (gcsim: c.a4Buff[EM] = c.NonExtraStat(EM) * .20), not a flat +20 — the old flat value rendered as '+20 EM', off by roughly an order of magnitude on any real build. ratio is in PERCENTAGE POINTS per the BuffValue.scaling JSDoc, so 20 (not 0.2, as an earlier note guessed against the pre-correction renderer); it displays as '~20% EM'.",
+				"2026-08-15: snapshottable false → true. gcsim computes a4Buff once at trigger time from NonExtraStat(EM) and the receivers read that frozen slice for the whole 8s; Fandom's Gameplay Notes agree ('The Elemental Mastery buff snapshots on cast'), which is why an EM bump gained on the cast itself (Gilded Dreams 4pc, Etherlight Spindlelute) is captured and passed on.",
+				"Migrated to onHit ability:skill 2026-05-09 (F1)."
 			],
 			"effects": [
 				{
@@ -213,14 +217,18 @@
 					"target": "teamExcludingSelf",
 					"trigger": {
 						"type": "onHit",
-						"abilityType": "skill"
+						"abilityType": ["skill", "burst"]
 					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": 20,
-					"snapshottable": false
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 20
+					},
+					"snapshottable": true
 				}
 			],
 			"description": "When Astable Anemohypostasis Creation - 6308 or Forbidden Creation - Isomer 75 / Type II hits an opponent, increases all party members' (excluding Sucrose) Elemental Mastery by an amount equal to 20% of Sucrose's Elemental Mastery for 8s."

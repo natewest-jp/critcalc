@@ -90,13 +90,36 @@ export function formatBuffDisplayValue(
 }
 
 /** Friendly display name for the source stat of a scaling/perStack value.
+ *
+ *  ⚠ This label lands INSIDE a value string ("~20% EM"), one column over from
+ *  the row's own `BUFF_STAT_LABEL`. So it wants the SHORT KQM form, not the
+ *  column label — "Elem. Mastery · ~20% EM" reads; "Elem. Mastery ·
+ *  ~20% Elem. Mastery" does not. That is why this is its own map rather than a
+ *  fall-through to `buffStatMaps`, which also folds `baseAtk` into plain ATK.
+ *
+ *  Everything the corpus actually scales off is listed (atk 22 · hp 18 ·
+ *  def 13 · em 10 · baseAtk 4 · healingBonus 2 authored values). The raw-key
+ *  fallback used to be the only path for atk/hp/def/em, which printed
+ *  "~596% hp" and "~20% em" — raw Stat keys, which the legibility round
+ *  forbids on any user surface.
+ *
  *  Accepts the broader `Stat` union (the schema's `BuffValue.scaling.stat`
  *  is the generic Stat, not the narrower ScalingStat) so this can be used
  *  in both places. */
+const SCALING_STAT_LABEL: Partial<Record<Stat, string>> = {
+	atk: 'ATK',
+	'atk%': 'ATK',
+	baseAtk: 'base ATK',
+	hp: 'HP',
+	'hp%': 'HP',
+	def: 'DEF',
+	'def%': 'DEF',
+	em: 'EM',
+	healingBonus: 'Healing Bonus'
+};
+
 export function scalingStatLabel(stat: Stat): string {
-	if (stat === 'baseAtk') return 'base ATK';
-	if (stat === 'healingBonus') return 'Healing Bonus';
-	return stat;
+	return SCALING_STAT_LABEL[stat] ?? stat;
 }
 
 /** Maps a resShred effect to a display Stat key for icon / label lookup.
