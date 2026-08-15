@@ -539,3 +539,103 @@ describe('variant effects resolve per cast token', () => {
 		expect(dur('Yun Jin hE')).toBeCloseTo(0.8, 6);
 	});
 });
+
+// ── artifact onHit + summon-tick hits (2026-08-15) ──
+//
+// The hit stream used to stop at the active character, so every hit-triggered
+// artifact set was authored-but-unreachable and any `onHit` effect held by an
+// off-field damage dealer never fired. These cover the mechanism and the two
+// outcomes that actually prove the model — see the step-6c note in the parser.
+
+describe('artifact onHit — summon-borne hits', () => {
+	const tenacity: Record<string, LoadoutEntry> = {
+		holder: { artifactSetId: 'tenacity_of_the_millelith' }
+	};
+	const tickEffect = (type: 'damage' | 'heal') =>
+		({
+			type,
+			trigger: { type: 'summonTick', interval: 2 },
+			...(type === 'damage' ? { element: 'electro' } : {}),
+			scaling: 100,
+			stat: 'atk'
+		}) as unknown as Effect;
+
+	const holderWithSummon = (tick: 'damage' | 'heal') => {
+		const c = mkChar('holder', 'Holder');
+		c.abilities[1] = mkSkill('holder', {
+			summons: [{ label: 'Turret', duration: 12, effects: [tickEffect(tick)] }]
+		});
+		return c;
+	};
+
+	// The load-bearing pair. Tenacity is skill-hit-only with a 3s window, so a
+	// holder whose skill leaves nothing behind gets exactly one 3s stub off the
+	// cast, while a holder whose skill leaves a DAMAGING summon gets one long
+	// merged bar. That 3s-vs-covered split is the real Xingqiu/Xiangling
+	// difference, and it is the whole reason these sets are worth drawing.
+	it('a damaging summon carries the buff; refreshes merge into ONE bar', () => {
+		const { team } = run('Holder E ~14s', [holderWithSummon('damage')], {}, tenacity);
+		const rows = team.filter((r) => r.key.includes('tenacity_of_the_millelith'));
+		expect(rows).toHaveLength(1);
+		expect(rows[0].bars).toHaveLength(1);
+		// Ticks at +2/4/6/8/10 each re-trigger inside the open 3s window.
+		expect(rows[0].bars[0].end - rows[0].bars[0].start).toBeGreaterThan(10);
+	});
+
+	it('⛔ a HEAL-only summon carries nothing — a heal tick is not a hit', () => {
+		const { team } = run('Holder E ~14s', [holderWithSummon('heal')], {}, tenacity);
+		const rows = team.filter((r) => r.key.includes('tenacity_of_the_millelith'));
+		// The E cast itself still hits, so the set fires once for its 3s.
+		expect(rows).toHaveLength(1);
+		expect(rows[0].bars).toHaveLength(1);
+		expect(rows[0].bars[0].end - rows[0].bars[0].start).toBeCloseTo(3, 6);
+	});
+
+	it('a summon with no damage effect at all leaves the same 3s stub', () => {
+		const c = mkChar('holder', 'Holder');
+		c.abilities[1] = mkSkill('holder', { summons: [{ label: 'Inert', duration: 12 }] });
+		const { team } = run('Holder E ~14s', [c], {}, tenacity);
+		const rows = team.filter((r) => r.key.includes('tenacity_of_the_millelith'));
+		expect(rows[0].bars[0].end - rows[0].bars[0].start).toBeCloseTo(3, 6);
+	});
+
+	// Deepwood authors its shred TWICE (once keyed to skill hits, once to burst).
+	// A Dendro RES −30% from an E and one from a Q are the same debuff, so the
+	// shape grouping must collapse them rather than stack two identical rows.
+	it('Deepwood: two trigger entries render as ONE shred row', () => {
+		const c = mkChar('holder', 'Holder');
+		const { team } = run('Holder E Q', [c], {}, { holder: { artifactSetId: 'deepwood_memories' } });
+		const rows = team.filter((r) => r.key.includes('deepwood_memories'));
+		expect(rows).toHaveLength(1);
+		expect(rows[0].kind).toBe('debuff');
+	});
+});
+
+describe('artifact onHit — real characters', () => {
+	const load = async (id: string) =>
+		(await import(`$lib/data/characters/${id}.json`)).default as unknown as CharacterData;
+	const tenacity: Record<string, LoadoutEntry> = {
+		xingqiu: { artifactSetId: 'tenacity_of_the_millelith' },
+		xiangling: { artifactSetId: 'tenacity_of_the_millelith' }
+	};
+	const span = (rows: ReturnType<typeof projectTeamBuffRows>) => {
+		const r = rows.filter((x) => x.key.includes('tenacity_of_the_millelith'));
+		if (r.length === 0) return 0;
+		return r[0].bars.reduce((acc, b) => acc + (b.end - b.start), 0);
+	};
+
+	// ⚓ Xingqiu's off-field damage is his BURST rain; Tenacity is SKILL-hit-only,
+	// so it stays a 3s stub on him no matter how much off-field damage he deals.
+	// Xiangling's Guoba is a skill summon and ticks, so hers is covered. The set's
+	// whole reputation is this difference — if these two ever report the same
+	// number, the hit synthesis has stopped distinguishing skill from burst.
+	it('Xingqiu keeps a 3s stub; Xiangling rides Guoba', async () => {
+		const [xingqiu, xiangling] = await Promise.all([load('xingqiu'), load('xiangling')]);
+		const xq = span(run('Xingqiu E Q ~20s', [xingqiu], {}, tenacity).team);
+		const xl = span(run('Xiangling E Q ~20s', [xiangling], {}, tenacity).team);
+		expect(xq).toBeCloseTo(3, 6);
+		// Observed 10.1s — Guoba's ticks, merged. Asserted loosely so a Guoba
+		// cadence recuration moves the number without breaking the invariant.
+		expect(xl).toBeGreaterThan(6);
+	});
+});

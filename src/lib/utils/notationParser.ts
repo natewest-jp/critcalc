@@ -31,6 +31,7 @@ import type {
 	DamageTag,
 	DurationExtension,
 	DurationModifier,
+	Effect,
 	Element,
 	NormalAbility,
 	NormalHit,
@@ -1164,6 +1165,84 @@ function summonSpan(
 	return { start, end: start + (index === 0 ? barUptime : summon.duration) };
 }
 
+/**
+ * Walks a summon's `summonTick` effects over `[spawnAt, endAt)` and emits one
+ * entry per interval, paired with the effect that produced it. An effect whose
+ * conditions evaluate definitively false is skipped; unresolvable runtime
+ * conditions abstain (no ticks), matching the summon lane's behaviour.
+ *
+ * ⚠ THIS LIVES PARSER-SIDE ON PURPOSE. The renderer had the only copy until
+ * 2026-08-15, when the finalize pass started needing tick times to synthesize
+ * off-field hits — and the parser stays runtime-import-free, so `summonSubrows`
+ * imports back from here (the same direction as `evalCondition`) rather than
+ * the parser reaching into `$lib/timeline`. ⛔ Do not fork a second copy the
+ * way `findSummonsForBar`/`findCastSummons` were forked; that pair needs a
+ * "MUST STAY IDENTICAL" warning precisely because it is duplicated.
+ *
+ * ⚓ The ascension/state arguments to `evalCondition` are the renderer's
+ * (`4`, no states) rather than the parse's live state, and that is load-bearing:
+ * it makes the ticks a viewer SEES on the summon bar exactly the hits that fire.
+ * A divergence here would show a marker that buffs nothing, or buff off a marker
+ * that isn't drawn.
+ */
+function collectSummonTicks(
+	summon: Summon,
+	spawnAt: number,
+	endAt: number,
+	cLevel: number,
+	accept: (effect: Effect) => boolean
+): { time: number; effect: Effect }[] {
+	const ticks: { time: number; effect: Effect }[] = [];
+	for (const eff of summon.effects ?? []) {
+		if (eff.trigger.type !== 'summonTick') continue;
+		if (!accept(eff)) continue;
+		if (evalCondition(eff.conditions, 4, new Set(), cLevel) === false) continue;
+		const interval = eff.trigger.interval;
+		if (!(interval > 0)) continue;
+		const firstDelay = eff.trigger.firstTickDelay ?? interval;
+		for (let t = spawnAt + firstDelay; t < endAt; t += interval) {
+			ticks.push({ time: t, effect: eff });
+		}
+	}
+	ticks.sort((a, b) => a.time - b.time);
+	return ticks;
+}
+
+/** Tick timestamps for EVERY `summonTick` effect — the summon lane's markers.
+ *  Re-exported by `summonSubrows.ts`, which is where it used to live. */
+export function computeSummonTicks(
+	summon: Summon,
+	spawnAt: number,
+	endAt: number,
+	cLevel: number
+): number[] {
+	return collectSummonTicks(summon, spawnAt, endAt, cLevel, () => true).map((t) => t.time);
+}
+
+/**
+ * Tick timestamps for a summon's DAMAGE effects only, with each tick's element.
+ *
+ * ⚓ A heal tick is not a hit. Four summons pair a heal and a damage effect on
+ * the identical interval and first-delay (Diona's Drunken Mist, Kuki's Grass
+ * Ring, Kokomi's Bake-Kurage, Mizuki's Mini Baku), so taking every tick would
+ * fire each of those summons' onHit consumers TWICE per instant. Filtering to
+ * damage is what makes the count right — no dedup pass is needed on top of it,
+ * because the only summon carrying multiple damage series is Furina's Salon
+ * Solitaire, whose three series are three distinct Salon Members landing three
+ * distinct hits (and whose intervals — 3.369/1.626/5.231 — essentially never
+ * coincide anyway).
+ */
+function computeSummonDamageTicks(
+	summon: Summon,
+	spawnAt: number,
+	endAt: number,
+	cLevel: number
+): { time: number; element?: Element }[] {
+	return collectSummonTicks(summon, spawnAt, endAt, cLevel, (eff) => eff.type === 'damage').map(
+		(t) => ({ time: t.time, element: (t.effect as Extract<Effect, { type: 'damage' }>).element })
+	);
+}
+
 // ---------------------------------------------------------------------------
 // gainStacks dispatch (E3 v1)
 // ---------------------------------------------------------------------------
@@ -1843,8 +1922,12 @@ function syncOnReactionToStackState(
 
 /** Shared onHit trigger gate: source scoping + coarse abilityType/damageType
  *  filters + the fine-grained `filter` (G primitive) via `evalTriggerFilter`.
- *  A hit with no `element` is physical (ActionEvent convention). */
-function onHitTriggerMatches(
+ *  A hit with no `element` is physical (ActionEvent convention).
+ *  ⚓ Exported since 2026-08-15 for the artifact onHit branch in
+ *  `buffWindows.ts` — that module already imports `evalCondition` from here,
+ *  so this crosses the same documented-benign cycle. Reused rather than forked:
+ *  a second copy of a trigger gate is how the two ends drift. */
+export function onHitTriggerMatches(
 	trigger: Extract<Trigger, { type: 'onHit' }>,
 	hit: HitEvent,
 	holderId: string
@@ -4263,6 +4346,12 @@ export function parseNotation(
 	//    bar.uptime.
 	const charById = new Map(teamChars.map((c) => [c.id, c]));
 	const lastSummonWindowByKey = new Map<string, Extract<TimelineWindow, { kind: 'summon' }>>();
+	// The resolved `Summon` behind each emitted window, kept parser-private for
+	// the off-field hit synthesis in step 6c. Recorded HERE because this is the
+	// only place the object is in hand — a window carries the summon's LABEL,
+	// and re-resolving from the label alone cannot distinguish two summons that
+	// share one (the reason `findSummonsForBar` takes a bar, not a name).
+	const summonByWindow = new Map<Extract<TimelineWindow, { kind: 'summon' }>, Summon>();
 	for (let ti = 0; ti < tracks.length; ti++) {
 		const track = tracks[ti];
 		const summonChar = charById.get(track.characterId);
@@ -4320,6 +4409,7 @@ export function parseNotation(
 					sourceCastId: castIdByBar.get(bar)
 				};
 				windows.push(win);
+				summonByWindow.set(win, summon);
 				lastSummonWindowByKey.set(key, win);
 			});
 		};
@@ -4375,6 +4465,65 @@ export function parseNotation(
 			}
 		}
 	}
+
+	// 6c. Off-field hits from summon damage ticks (2026-08-15).
+	//
+	// ⚓ THE HIT STREAM USED TO STOP AT THE ACTIVE CHARACTER. Every record in
+	// `hitRecords` came from an E/Q cast or a normal/charged/plunge swing, so an
+	// `onHit` effect held by an off-field damage dealer — Oz ticking, Guoba
+	// breathing, a Salon Member landing — never fired at all. That silently
+	// disabled every hit-triggered artifact set (Deepwood Memories, Tenacity of
+	// the Millelith, Silken Moon's Serenade — all three authored, none reachable).
+	//
+	// Corpus reach beyond the artifacts, measured 2026-08-15: FOUR characters
+	// leave a damaging summon AND hold an `onHit` effect that summon can fire —
+	// Emilie (C2), Escoffier (A-passive), Anemo Traveler (C6), Xiangling (C1),
+	// every one of them a resShred. For those the effect already fired at the
+	// CAST instant, so this is an uptime correction rather than a from-nothing
+	// gain; the artifact sets are the from-nothing case.
+	//
+	// Runs HERE, at finalize, because a summon's FINAL end is only known once
+	// step 6's recast/swap truncation has landed. Synthesizing during the parse
+	// would emit ticks past an end a later recast pulls in.
+	//
+	// ⚠️⚠️ THESE HITS FEED `deriveBuffWindows` ONLY — they are deliberately NOT
+	// put through `dispatchHit`, so `gainStacks`/`consumeStacks` never see them.
+	// That machinery mutates live state in PARSE order, and a finalize-time hit
+	// cannot be interleaved into a stream that has already been consumed without
+	// a two-pass parse. Buff and resShred effects carry no stack state — which is
+	// all three artifact sets and the bulk of the character cases — so those are
+	// correct today; a summon tick feeding a STACK effect stays unmodelled.
+	// ⛔ Do not "fix" that by calling `dispatchHit` here: the ordering IS the
+	// problem, and a hit dispatched after the fact would apply its gain to a
+	// stack state that later hits have already read.
+	for (const win of windows) {
+		if (win.kind !== 'summon') continue;
+		const summon = summonByWindow.get(win);
+		if (!summon) continue;
+		const cLevel = constellationLevels?.[win.characterId] ?? 0;
+		for (const tick of computeSummonDamageTicks(summon, win.start, win.end, cLevel)) {
+			hitRecords.push({
+				characterId: win.characterId,
+				time: tick.time,
+				abilityType: win.source,
+				element: tick.element,
+				// A summon tick's damage class is its spawning cast's — there is no
+				// per-effect override on a `summonTick` damage effect to prefer.
+				damageTag: win.source,
+				abilityName: summon.label,
+				// Provenance is the CAST that spawned the summon — what a reader
+				// wants a summon-borne buff traced back to. `-1` is unreachable
+				// (ids count from 0, bars↔casts are 1:1 by construction); it is
+				// here so a missing link cannot fabricate a bogus event join.
+				sourceEventId: win.sourceCastId ?? -1
+			});
+		}
+	}
+	// ⚠ Appended, NOT merged by time into the existing records. `hitsForTrack`
+	// (buffWindows) only ever selects `normal`/`charged`/`plunge`, so a skill/
+	// burst-tagged summon hit is invisible to the per-swing passes and cannot
+	// perturb their order-sensitive refresh-merge. The one consumer that wants
+	// these sorts its own selection.
 
 	// 7. Sort the event stream by time (stable).
 	events.sort((a, b) => a.time - b.time);
