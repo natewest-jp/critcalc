@@ -230,6 +230,52 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		};
 	};
 
+	/** The pooled (effect × matching reaction event) applications for one
+	 *  character, shared by the received-surface onReaction sites.
+	 *
+	 *  ⚓ The three onReaction surfaces disagree about TARGETS, not about
+	 *  triggers — which is why `qualifies` is the only thing they pass in. The
+	 *  team surface (below) predates this and stays inline; it is the same
+	 *  shape with `targetsTeamOrActive` as its predicate.
+	 *
+	 *  ⚠ `ownEvents` is a FILTER of `reactionEvents`, so both pools hand back
+	 *  the same event objects — which is what lets the pooler key on event
+	 *  identity across a self-triggered and a team-triggered effect that happen
+	 *  to share one event. */
+	const reactionPoolsFor = (
+		char: CharacterData,
+		holderId: string,
+		cLevel: number,
+		ctx: ConditionContext,
+		qualifies: (e: Effect) => boolean
+	): ReactionPool[] => {
+		const qualified = getCharacterEffectsForOnReaction(char).filter(
+			(e): e is BuffEffect | ResShredEffect => {
+				if (e.duration == null) return false;
+				if (evalCondition(e.conditions, 4, new Set(), cLevel, undefined, undefined, ctx) === false)
+					return false;
+				return qualifies(e);
+			}
+		);
+		if (qualified.length === 0) return [];
+		const ownEvents = reactionEvents.filter((ev) => ev.characterId === holderId);
+		const pooler = makeReactionPooler();
+		for (const effect of qualified) {
+			const trig = effect.trigger as {
+				reaction: Reaction | Reaction[] | 'any';
+				source?: 'self' | 'team';
+			};
+			const trigReaction = trig.reaction;
+			const matches = (r: Reaction): boolean =>
+				trigReaction === 'any' ||
+				(Array.isArray(trigReaction) ? trigReaction.includes(r) : trigReaction === r);
+			for (const ev of trig.source === 'team' ? reactionEvents : ownEvents) {
+				if (matches(ev.reaction)) pooler.add(ev, effect);
+			}
+		}
+		return pooler.pools;
+	};
+
 	// ── per-swing hit helpers (phase-6 delta) ──
 	// A track's hits of one input class, scoped by the track's active span
 	// (the same partitioning rule casts use).
@@ -1109,6 +1155,10 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 	}
 
 	// ── Active-target ability buff segmentation ──
+	// onReaction fires once per CHARACTER, not once per track (the events are
+	// rotation-wide), so it needs its own first-track guard — the cast/block
+	// sites below are naturally per-track and do not.
+	const reactionActiveDispatched = new Set<string>();
 	for (let sti = 0; sti < tracks.length; sti++) {
 		const sourceTrack = tracks[sti];
 		const char = getCharacter(sourceTrack.characterId);
@@ -1363,6 +1413,51 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				}
 			}
 		}
+
+		// ── onReaction active-target (segmented, received surface) ──
+		//
+		// ⚓ Added 2026-08-15. Until then the ONLY onReaction dispatch was the
+		// team-surface one, which requires `targetsTeamOrActive` and then
+		// rejects `isActiveTargetOnly` — so an onReaction buff aimed at the
+		// active character was accepted by the first gate and dropped by the
+		// second, and there was no second home for it to fall through to. It
+		// rendered nowhere at all. Same class of silent drop as Sucrose's A1
+		// `target: 'self'` (9959b5b), found the same way: the effect is
+		// authored, the reaction fires, and no bar appears.
+		if (!reactionActiveDispatched.has(sourceTrack.characterId)) {
+			reactionActiveDispatched.add(sourceTrack.characterId);
+			for (const pool of reactionPoolsFor(
+				char,
+				sourceTrack.characterId,
+				cLevel,
+				receivedBaseCtx,
+				(e) => e.type === 'buff' && isActiveTargetOnly(e.target)
+			)) {
+				// Sliced across on-field windows exactly like the cast path: the
+				// buff follows whoever is active, so one application becomes one
+				// window per receiver it covers.
+				const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
+				for (const receiverTrack of tracks) {
+					const segStart = Math.max(pool.start, receiverTrack.activeStart);
+					const segEnd = Math.min(pool.end, receiverTrack.activeEnd);
+					if (segEnd <= segStart) continue;
+					segments.push({ receiverId: receiverTrack.characterId, segStart, segEnd });
+				}
+				for (let si = 0; si < segments.length; si++) {
+					const { receiverId, segStart, segEnd } = segments[si];
+					const isLast = si === segments.length - 1;
+					emit({
+						characterId: sourceTrack.characterId,
+						receiverId,
+						start: segStart,
+						end: isLast ? pool.end : segEnd,
+						effects: pool.effects,
+						duration: pool.end - pool.start,
+						source: { type: 'character', trigger: 'reaction' }
+					});
+				}
+			}
+		}
 	}
 
 	// ── Self-target buffs + NB self-target ──
@@ -1585,6 +1680,38 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						});
 					}
 				}
+			}
+		}
+
+		// ── onReaction self-target (received surface) ──
+		//
+		// ⚓ Added 2026-08-15, same gap as the active-target block above: the
+		// team-surface onReaction dispatch requires `targetsTeamOrActive`, which
+		// `self` fails outright, and no other site handled the trigger. Six
+		// effects across three characters rendered nothing — Prune's two Secret
+		// Rite ATK buffs, Varka's three, and Freminet's CRIT DMG — four of which
+		// are ordinary passives and constellations with no faction involvement.
+		//
+		// ⛔ Not segmented. A self-target buff has exactly one receiver and does
+		// not follow the field, so it is one window per application, matching
+		// the self-target cast site directly above.
+		if (firstTrackOfChar) {
+			for (const pool of reactionPoolsFor(
+				char,
+				sourceTrack.characterId,
+				cLevel,
+				receivedBaseCtx,
+				(e) => e.type === 'buff' && e.target === 'self'
+			)) {
+				emit({
+					characterId: sourceTrack.characterId,
+					receiverId: sourceTrack.characterId,
+					start: pool.start,
+					end: pool.end,
+					effects: pool.effects,
+					duration: pool.end - pool.start,
+					source: { type: 'character', trigger: 'reaction' }
+				});
 			}
 		}
 	}

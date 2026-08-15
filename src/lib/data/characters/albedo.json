@@ -196,7 +196,10 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"durationType": "refresh",
 					"target": "self",
@@ -259,36 +262,36 @@
 	"factionBonuses": [
 		{
 			"faction": "hexerei",
-			"name": "Secret Rite",
-			"description": "When 2+ Hexerei members are in the team, creating a Solar Isotoma raises the whole party's Normal, Charged, Plunging, Skill and Burst DMG by 4% per 1,000 of Albedo's DEF for 20s (max 12%), and generating a Silver Isotoma raises the same DMG for Hexerei party members by 10% per 1,000 DEF for 20s (max 30%).",
+			"name": "Secret Rite: Solar Isotoma",
+			"description": "When 2+ Hexerei members are in the team, creating a Solar Isotoma raises the whole party's Normal, Charged, Plunging, Skill and Burst DMG by 4% per 1,000 of Albedo's DEF for 20s (max 12%).",
 			"effects": [
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onCast", "ability": "skill" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 20,
 					"durationType": "refresh",
 					"target": "team",
 					"stat": "allDmgBonus",
-					"value": { "type": "scaling", "stat": "def", "ratio": 0.004, "cap": 12 },
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 0.004,
+						"cap": 12
+					},
 					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"source": "character",
-					"trigger": { "type": "onHit", "abilityType": "skill", "source": "self" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
-					"duration": 20,
-					"durationType": "refresh",
-					"target": "team",
-					"stat": "allDmgBonus",
-					"value": { "type": "scaling", "stat": "def", "ratio": 0.01, "cap": 30 },
-					"snapshottable": false,
-					"caveat": "Only Hexerei party members get this one, and only once a Silver Isotoma exists — which needs a skill hit within 20s of an earlier skill cast. Shown on every skill hit."
 				}
 			],
 			"_curatorNotes": [
+				"[Hexerei] 2026-08-15: SPLIT into two entries. Both bullets are one rite, but they are two buffs that STACK in game (Solar: whole party, cap 12%; Silver: Hexerei members only, cap 30%) and both grant allDmgBonus, so as one entry the planner's one-bar-per-stat-per-source dedup silently kept the Solar effect and dropped the Silver one. `byProvenance` groups by (faction, bonusName), so two entries are two groups, two rows and two correctly-labelled bars — no engine change, and the same shape Venti already uses for his three rite entries. See docs/faction-bonuses-round.md.",
 				"Source: Fandom \"Book of Blinding Light\" (Albedo's Witch's Eve Rite Passive, pageid 420847) Talent Infobox |info, bullets 2 and 3, verbatim: \"After creating a Solar Isotoma, nearby party members' Normal Attack, Charged Attack, Plunging Attack, Elemental Skill, and Elemental Burst DMG are increased by 4% for every 1,000 DEF Albedo has for 20s. The maximum increase that can be achieved this way is 12%.\" / \"After generating a Silver Isotoma, nearby Hexerei party members' Normal Attack, Charged Attack, Plunging Attack, Elemental Skill, and Elemental Burst DMG are increased by 10% for every 1,000 DEF Albedo has for 20s. The maximum increase that can be achieved this way is 30%.\" Both bullets sit under the passive's \"Hexerei: Secret Rite\" heading, so both are count-gated at 2+.",
 				"Stat choice: NA/CA/Plunge/Skill/Burst DMG is authored as allDmgBonus, matching the identical wording already authored on Sucrose's Sevenfold Transmutation. It over-covers reaction DMG, which the wording excludes.",
 				"Scaling form: per-1000-DEF expressed as a per-DEF ratio (4%/1000 DEF -> ratio 0.004, cap 12; 10%/1000 DEF -> ratio 0.01, cap 30), the Nilou C6 / Sigewinne C6 convention.",
@@ -296,6 +299,43 @@
 				"Trigger for the Silver buff is onHit/skill rather than onCast/skill: the Silver Isotoma spawns on a skill HIT, and only within 20s of a PRIOR skill cast. The prior-cast chain gate has no primitive, so the first skill of a rotation will show the buff a cast early — stated in the caveat.",
 				"The C1 +50% DEF addition was RE-HOMED to the Flower of Eden constellation as a permanent effect (Nate's ruling 2026-07-29: not Hexerei-gated; Fandom's |buffType marker is wrong there).",
 				"No permanent (ungated) kit patch found for Albedo this patch: every changed talent/constellation infobox carries |buffType = Hexerei, and the Witch's Eve Rite Passive page states these enhancements apply when at least two Hexerei characters are in the party."
+			]
+		},
+		{
+			"faction": "hexerei",
+			"name": "Secret Rite: Silver Isotoma",
+			"description": "When 2+ Hexerei members are in the team, generating a Silver Isotoma raises Hexerei party members' Normal, Charged, Plunging, Skill and Burst DMG by 10% per 1,000 of Albedo's DEF for 20s (max 30%).",
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"source": "self"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"target": "team",
+					"stat": "allDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 0.01,
+						"cap": 30
+					},
+					"snapshottable": false,
+					"caveat": "Only Hexerei party members get this one, and only once a Silver Isotoma exists — which needs a skill hit within 20s of an earlier skill cast. Shown on every skill hit."
+				}
+			],
+			"_curatorNotes": [
+				"[Hexerei] 2026-08-15: SPLIT into two entries. Both bullets are one rite, but they are two buffs that STACK in game (Solar: whole party, cap 12%; Silver: Hexerei members only, cap 30%) and both grant allDmgBonus, so as one entry the planner's one-bar-per-stat-per-source dedup silently kept the Solar effect and dropped the Silver one. `byProvenance` groups by (faction, bonusName), so two entries are two groups, two rows and two correctly-labelled bars — no engine change, and the same shape Venti already uses for his three rite entries. See docs/faction-bonuses-round.md.",
+				"[Hexerei] The Silver Isotoma gate — a skill HIT within 20s of an EARLIER skill cast — is not expressible (there is no nth-cast or since-last-cast primitive), so this fires on every skill hit. That is wrong on the FIRST cast of a rotation and right from the second onward, because the skill cooldown is 4s: any real rotation is inside the 20s window from the second E on. Chosen over dropping the effect, which was wrong on every cast AFTER the first. The caveat states it."
 			]
 		}
 	],

@@ -46,6 +46,14 @@ export function projectCharReceivedBuffRows(
 		} else if (src.type === 'character' && src.trigger === 'nightsoulBurst') {
 			const char = getCharacter(w.characterId);
 			sourceLabel = `${char?.displayName ?? w.characterId} NB`;
+		} else if (src.type === 'character' && src.trigger === 'reaction') {
+			// ⚠ A reaction window carries no `abilityClass` — it is not bound to a
+			// cast — so the branch below would render "Varka undefined". Harmless
+			// until 2026-08-15, when the onReaction self/active dispatch put the
+			// first character-reaction window on THIS surface; the team surface
+			// has always said "reaction" here.
+			const char = getCharacter(w.characterId);
+			sourceLabel = `${char?.displayName ?? w.characterId} reaction`;
 		} else if (src.type === 'character') {
 			const char = getCharacter(w.characterId);
 			sourceLabel = `${char?.displayName ?? w.characterId} ${AB_LABEL[src.abilityClass!]}`;

@@ -1,6 +1,6 @@
 # Faction-bonuses round
 
-**Status:** Steps 1–3 and 5 SHIPPED 2026-08-15 (`dd7761d`, `75271cf`). Step 4 is two open decisions, below.
+**Status:** ✅ CLOSED 2026-08-15. Steps 1–3 and 5 in `dd7761d` / `75271cf`; step 4 in `c1c86a6`.
 **Origin:** Nate asked whether Sucrose was displaying all the buffs she should be. Three of her defects were data and shipped separately (`9959b5b`, `2c21f9e`); the fourth is this — **her two Hexerei Secret Rite buffs have never drawn a bar, and neither has anyone else's.**
 
 ---
@@ -121,23 +121,22 @@ Two things the scoping got wrong, recorded so they are not re-derived:
 
 Neither remaining item is the row-key collision the plan predicted. Both are real, both were confirmed on the timeline, and **both are pre-existing — independent of this round's wiring.**
 
-### Prune — an `onReaction` buff targeting `self` or `active` never renders
+### ✅ Prune — an `onReaction` buff targeting `self` or `active` never rendered (fixed, `c1c86a6`)
 
 His two rite effects are `atk%` on `onReaction`, targeting `self` and `active`. The onReaction dispatch requires `targetsTeamOrActive` (which rejects `self`) and then rejects `isActiveTargetOnly` (which catches `active`); the active-target segmentation section only handles `onCast`/`onHit`. So both are dropped, and were before this round.
 
 ⚠️ **Not a faction problem — a general engine gap.** Six effects across three characters: Prune (2, faction), **Varka** (3) and **Freminet** (1), the latter four ordinary passives and constellations. Exactly the same class of defect as Sucrose's A1 `target: 'self'` (`9959b5b`), which is what makes it worth a proper look rather than a patch here.
 
-### Albedo — the second rite effect is dropped by the per-stat dedup, and that is accidentally the safer render
+### ✅ Albedo — the second rite effect was dropped by the per-stat dedup (fixed by splitting the bonus, `c1c86a6`)
 
 Both his rite effects are `allDmgBonus` in one cast pool (one `onCast` skill, cap 12%; one `onHit` skill, cap 30%), so the one-bar-per-stat dedup keeps the first and drops the second.
 
-The dropped one is the Silver Isotoma buff, whose real gate — a skill hit within 20s of an _earlier_ skill cast — is unmodelled, and whose own caveat admits "Shown on every skill hit." So rendering it would over-claim, and dropping it happens to be right. ⚠️ But it is right by accident, not by decision. Three options, needing Nate: accept and document; demote it to a caveat-only record (matching how the same kit's other unmodellable clauses are handled); or widen the dedup so both render, which over-claims.
+The dropped one is the Silver Isotoma buff, whose real gate — a skill hit within 20s of an _earlier_ skill cast — is unmodelled, and whose own caveat admits "Shown on every skill hit." So rendering it would over-claim, and dropping it happens to be right. ⚓ **Resolved by RENDERING it, via splitting the bonus into two entries** (`Secret Rite: Solar Isotoma` / `Secret Rite: Silver Isotoma`) so `byProvenance` gives each its own group — no engine change, the shape Venti already uses. The earlier "unmodelled, so dropping is safer" read was wrong on the arithmetic: Albedo's **skill cooldown is 4s**, so any real rotation is inside the 20s window from the second E onward. Rendering is wrong on the FIRST cast; dropping was wrong on every cast AFTER the first.
 
 ---
 
 ## Open
 
-- The two step-4 items above.
 - Whether the faction row belongs on the team-buff surface or wants its own visual register — it is a **conditional** buff in a way no other row is, and the chart currently has no vocabulary for "this only exists in a certain team". Deferred until the bars are on screen and Nate can look at them.
 - The general `attribution`-as-row-label round (24 effects, 6 characters) remains unscheduled.
-- 📌 Noticed while probing, unrelated and unmeasured: **reactions fire on E/Q casts but not on normal-attack blocks** (`Klee N1 > Sucrose N1` produces no swirl; `Klee E > Sucrose E` does). Not investigated — recorded only so it is not rediscovered from scratch.
+- 📌 **Reactions fire on E/Q casts but not on normal-attack blocks.** Investigated after this round closed and promoted to its own handoff: **`docs/icd-round-handoff.md`**. Short version — the wiring is small and the element is already resolved, but there is no ICD model anywhere, and normals are exactly where ICD bites.
