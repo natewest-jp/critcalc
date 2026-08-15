@@ -133,7 +133,7 @@
 					"stat": "allDmgBonus",
 					"value": {
 						"type": "unknown",
-						"description": "Scales with Prune's total ATK above 2,000 — every excess ATK point adds 0.025% DMG, reaching the +50% cap at 4,000 ATK. Only Prune's ATK counts; ATK gained by the recipient does not."
+						"description": "+2.5% per 100 of Prune's ATK over 2,000, cap 50%"
 					},
 					"snapshottable": false,
 					"attribution": "A4: Tolling Synchronicity",
@@ -143,7 +143,10 @@
 				}
 			],
 			"caveat": "With 2+ Hexerei in the party, team reactions also grant ATK; that is shown on every team reaction, though in game only Hexerei teammates carrying Tolling Rally count.",
-			"description": "After Prune hits an opponent with the **Banehunter Oathhammer** that has undergone Elemental Conversion, other nearby party members will gain the Tolling Rally effect for 5s: When Normal, Charged, or Plunging Attacks, or Elemental Skills and Bursts deal DMG to opponents, that attack's DMG will be increased based on the portion of Prune's ATK in excess of 2,000 when they become affected by the Tolling Rally effect. Every excess ATK point increases that instance of DMG by 0.025%, up to a total of 50% max."
+			"description": "After Prune hits an opponent with the **Banehunter Oathhammer** that has undergone Elemental Conversion, other nearby party members will gain the Tolling Rally effect for 5s: When Normal, Charged, or Plunging Attacks, or Elemental Skills and Bursts deal DMG to opponents, that attack's DMG will be increased based on the portion of Prune's ATK in excess of 2,000 when they become affected by the Tolling Rally effect. Every excess ATK point increases that instance of DMG by 0.025%, up to a total of 50% max.",
+			"_curatorNotes": [
+				"2026-08-15: the unknown-value `description` is a DISPLAY LABEL — the tooltip renders it verbatim in the value slot — and this one was authored as a 182-char sentence, three to seven times the corpus norm (25-43 chars) and the only one that wrapped the tooltip to a full-width paragraph (⚓ Nate spotted it). Shortened to Arlecchino's register ('+1% per 100 ATK above 1000, cap 20%' — the identical threshold shape) and Ineffa's habit of naming the holder ('+2.5% per 100 ATK Ineffa has'). Naming Prune in the label is what retires the dropped clause: the buff scales off HIS ATK, and 'per 100 of Prune's ATK' says so without a caveat. Underlying rate, unchanged: 0.025% DMG per single ATK point above 2,000 = 2.5% per 100, reaching the +50% cap at 4,000 ATK. ⛔ Not a caveat — the style guide reserves those for the timeline visibly diverging from the game, and 'never explain how the kit works'."
+			]
 		}
 	],
 	"constellations": [
