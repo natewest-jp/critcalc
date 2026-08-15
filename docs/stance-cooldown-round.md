@@ -1,113 +1,67 @@
-# Stance-cooldown round — handoff
+# Stance-cooldown round — closed
 
-**Status:** scoped, not started. Written 2026-08-15, after `4b5f1df`.
-**Origin:** ⚓ Nate reported Xilonen's E recast landing "WAY farther than it should." Chasing it produced three findings; two are fixed and merged, this is the third.
-
----
-
-## What is already fixed (do not redo)
-
-- **`e0a4868`…`bb2ab62`** (merged `1c52b96`) — unrelated; off-field summon-tick hits.
-- **`4fa17a7`** (merged `4b5f1df`) — the E/Q pill's ghost CD tail now ends at `readyAt` instead of `start + cooldown`. Xilonen's bar reads `uptime 0→9` then `ghost 9→16 label=7s`, which is self-explanatory and matches where the parser places the recast. **The chart is no longer lying.** What remains is whether the number it now honestly reports is itself right.
-
-## The remaining problem
-
-`readyAt` is computed once, at cast:
-
-```ts
-readyAt: castStart + (active.cooldownStartDelay ?? 0) / 60 + cd;
-```
-
-Two abilities abuse `cooldownStartDelay` to encode **"the cooldown starts when the STANCE ends"** rather than its intended meaning (an animation-frames offset). You can spot them because **the delay equals the duration**:
-
-| ability         | delay         | duration | cooldown | in gcsim?                    |
-| --------------- | ------------- | -------- | -------- | ---------------------------- |
-| `xilonen skill` | 540f = 9.00s  | 9        | 7        | yes                          |
-| `ifa skill`     | 600f = 10.00s | 10       | 7.5      | **no — not in the checkout** |
-
-Of the **124** abilities carrying `cooldownStartDelay`, the other ~122 sit at 1–35 frames (0.02–0.6s) and are genuine `SetCDWithDelay` transcriptions. Those are correct and must not be touched — see the FAQ item queued in the launch-roadmap memory.
-
-The encoding is static, so it cannot express early exit. gcsim exits Xilonen's Nightsoul three ways:
-
-1. **Swap off** — `onExitField()` subscribes `OnCharacterSwap`; if the outgoing char is Xilonen, `exitNightsoul()`.
-2. **Re-press E** — `Skill()` opens `if HasBlessing() { exitNightsoul(); 1-frame action }`, gated by a 1s `skilRecastCD` status.
-3. **Points drain** — 45 points at 5/sec, modified by C1/C6 and `nightsoulConsumptionMul()`.
-
-`exitNightsoul()` is where `c.SetCD(action.ActionSkill, 7*60)` lives, so any of the three starts the clock.
+**Status:** DONE, 2026-08-15. Scoped after `4b5f1df`, executed the same day.
+**Origin:** ⚓ Nate reported Xilonen's E recast landing "WAY farther than it should." That produced three findings; two were fixed in the originating session, and this doc covered the third.
 
 ---
 
-## ⚠️ STEP ONE IS VERIFICATION, NOT CODE
+## What shipped
 
-**Xilonen's `_curatorNotes` assert the opposite of gcsim, in plain words:**
+### 1. `cooldownStartsAtStanceEnd` replaces the delay hack
 
-> "the schema models this as a stance with terminatesOnSwap: false (**Nightsoul persists across swap in-game until points drain or timer expires**)"
+Two abilities encode **"the cooldown starts when the STANCE ends"**. Both were authored as `cooldownStartDelay` equal to the stance duration:
 
-gcsim's `onExitField` hook contradicts this unambiguously. One of them is wrong and **the source of the curator's claim is unknown**. ⛔ Do not flip `terminatesOnSwap` on the strength of gcsim alone — the repo already keeps a `GDB_CD_KNOWN_WRONG` list because upstream data can be wrong, and this note may encode a real in-game observation.
+| ability         | was          | duration | cooldown |
+| --------------- | ------------ | -------- | -------- |
+| `xilonen skill` | 540f = 9.00s | 9        | 7        |
+| `ifa skill`     | 600f = 10.0s | 10       | 7.5      |
 
-Neither Nate (does not own Xilonen) nor a session with only the gcsim checkout can settle it first-hand. Options, cheapest first:
+That computes the right _first_ cast, but `cooldownStartDelay` means **animation frames** — the other ~122 abilities carrying it sit at 1–35f and are genuine gcsim `SetCDWithDelay` transcriptions — and being static it could not express an early exit at all. Both now carry the explicit flag and no delay. ⛔ The ~122 were not touched.
 
-- The Fandom wiki's Xilonen page / Nightsoul's Blessing page (the MediaWiki API is the one sanctioned network path — `scripts/fetch-wiki-capabilities.mjs`; WebFetch is blocked).
-- KQM's Xilonen guide.
-- Ask Nate to source a first-hand report.
+**characterLint D.21** rejects both cooldown fields on one ability. **D.22** rejects the flag beside `durationExtensions[]`: the recast is placed mid-parse from the stance's expected end, so an extension firing later would move the real end past a placement already written. Early exit moves it _earlier_ and is handled. Both rules were checked by seeding the negative into `xilonen.json` and watching them fire.
 
-**If the note turns out right**, the swap half is dropped and only the re-press half survives — ⚓ and Nate has already ruled the re-press not worth modelling ("players don't really recast E to cancel the stance"), which would reduce this round to the schema cleanup below. **That is still worth doing.**
+### 2. `readyAt` follows the actual stance end
 
----
+`readyAt` derives from the resolved stance length at cast, so the charge queue and the ghost tail are written from one number. The swap-close site (`notationParser.ts`, the `terminatesOnSwap` block) then moves **both** to `swapTime + cd` when the stance is cut short — taking the value outright, ⛔ not min/max against the stale one, which is an upper bound being corrected rather than a competitor. The queue is keyed by exact ability id, so the patch cannot reach a teammate's clock; the entry is found by its stale value rather than assuming `q[0]`.
 
-## The design
+### 3. ⚓ Xilonen `terminatesOnSwap: false → true`
 
-### 1. Replace the hack with a real flag
+The handoff's step-one question. **Nate's call, on reasoned evidence rather than a first-hand observation** — recorded in full in her `_curatorNotes`, and worth re-opening if anyone plays her:
 
-`cooldownStartDelay == duration` is not a statement of intent, it is a coincidence that happens to compute. Add an explicit boolean instead:
+- **For:** gcsim's `onExitField` (`xilonen.go:78`) exits her Nightsoul on swap-out, and the same pattern appears independently in kinich/mualani/mavuika — all three authored `true` here. C2 reads "Geo Source Sample will be active **even when she is off-field**", which is only a gain if the base "active while in Nightsoul's Blessing" does _not_ reach off-field. And the state is a movement mode (Blade Roller, with sprint/climb point drain), which off-field has no meaning for.
+- **Against:** the in-game text lists only two exits (points depleted, skill re-used); the Fandom Gameplay Notes are otherwise exhaustive and never mention swapping; Citlali/Ororon/Chasca prove off-field Nightsoul is per-character, not a blanket rule.
 
-```ts
-/** The cooldown clock starts when the STANCE ends, not at the cast. Natlan
- *  Nightsoul skills: gcsim sets the CD inside exitNightsoul(). Mutually
- *  exclusive with cooldownStartDelay, which means animation frames. */
-cooldownStartsAtStanceEnd?: boolean;
-```
-
-Then Xilonen becomes `cooldownStartsAtStanceEnd: true` with **no** `cooldownStartDelay`, and `readyAt` derives from the resolved stance end. This is worth doing **even if the swap question resolves against gcsim**, because it makes the intent greppable and stops the next person reading 540f as an animation offset.
-
-⚠️ A characterLint rule should reject both fields on one ability.
-
-### 2. Wire `readyAt` to the actual stance end
-
-**The mechanism already exists and there is precedent for the exact operation.** `notationParser.ts` ~3636 (burst `cdReset` targeting `'skill'`) already reaches back into `eChargeQueues` mid-parse and rewrites a charge's ready time:
-
-```ts
-q[0] = Math.min(q[0], localCursor);
-q.sort((a, b) => a - b);
-```
-
-The stance-termination site (~4184, `if (i < segments.length - 1 && cs.stance)`) runs **inside the segment loop**, and `eChargeQueues` is function-scope, so it is in scope at exactly the right moment. The stance record also retains `castRef`/`barRef` by design (there is a P4 note saying so).
-
-So the write is: on early termination at time `T`, for a stance whose ability has `cooldownStartsAtStanceEnd`, set that skill's queue entry to `T + cd` (**not** `Math.min` — this moves the clock _earlier_ than the 9s assumption but _later_ than a reset; take the value, do not min/max against the stale one), and patch `castRef.readyAt` to match so the ghost tail follows.
-
-⚠️ The queue is keyed by **ability id** (`{charId}__…`), with a bare-`charId` fallback for uncurated characters. Match the existing key discipline at 3636 — a rotation-wide write would erase teammates' cooldowns.
-
-### 3. Scope boundaries — ⛔ what this round is NOT
-
-- ⛔ **Not gauge modelling.** The tool constitution is windows-not-gauges, and Xilonen's `_curatorNotes` already invoke it for the 45-point drain. Exit-by-drain stays unmodelled; C1's +45% timer stays unmodelled for the same reason the note gives (a draining gauge does not map to a fixed window).
-- ⛔ **Not the E-re-press cancel.** ⚓ Nate's call, 2026-08-15: players do not use it. Modelling it means teaching the parser that a token can _terminate_ a stance rather than open one — real semantic surgery for a rotation nobody writes.
-- ⛔ **Do not touch the ~122 small-delay abilities.**
+Effect: `Xilonen E > … > Xilonen E` returns her skill at **swap + 7s (~7.3s)** instead of a flat 16s.
 
 ---
 
-## Corrections to earlier reasoning in the originating session
+## What verification actually settled
 
-Both were stated to Nate and are wrong; do not re-derive them:
+⚠️ The handoff said gcsim and the curator note contradicted each other and neither could break the tie. **The Fandom wiki's per-talent Gameplay Notes settle the mechanic outright**, in words, for both abilities:
 
-1. **Her RES shred does NOT ride the stance window.** It is five per-element `onCast` effects on a separate **15s** window (A1 Netotiliztli's Echoes; gcsim `asc.go:75` sets a 15\*60f sampler activation). So no shred uptime is overstated by the current model, and fixing the stance does not fix the shred. (There _is_ a separate documented understatement — the Geo sampler persists for the whole Nightsoul and permanently at C2, while the timeline shows only the 15s window. Out of scope, already in `_curatorNotes`.)
-2. **Flipping `terminatesOnSwap` alone changes almost nothing visible.** There is an explicit design note at the swap site: _"a swap-terminated stance keeps its full owner-bar width while `end` clamps to the swap-out time."_ It clamps the state windows (`nightsoulBlessing`, `inStance`) and nothing else — the pill keeps its 9s width and `readyAt` is never recomputed. The flag is only meaningful **together with** step 2.
+> The **7s** cooldown starts once Xilonen's Nightsoul's Blessing state ends and not upon the Elemental Skill cast.
 
-## Test plan
+> The **7.5s** cooldown starts once Ifa's Nightsoul's Blessing state ends and not upon the Elemental Skill cast.
 
-- `barPhases` is already covered (`barPhases.test.ts`, the delayed-cooldown describe) — no new geometry work.
-- The discriminating parser assertions:
-  - `Xilonen E E` with no swap → second E still at **16.000** (the full-stance case must not regress).
-  - `Xilonen E > Bennett E > Xilonen E` → the swap terminates the stance, so the second Xilonen E is gated by `swapTime + 7`, not 16.
-  - A small-delay ability (Nahida, 11f) → `readyAt` unchanged at **5.183**.
-  - Bennett (no delay) → **4.000**, byte-identical.
-- Corpus guard: the parser-invariant roster test (`notationParser.roster.test.ts`) already drives every character's tokens; it should stay green untouched.
+That matters most for **Ifa, who is not in the gcsim checkout at all** (`d146b6d`, 2026-07-26) — his curator note cited a `skill.go exitNightsoul` that does not exist, written by analogy to Xilonen. The mechanic is now independently sourced; only his 10s duration remains authored (80 Nightsoul points ÷ the wiki's 8/s base consumption = exactly 10s, which corroborates it).
+
+Reaching those notes is `action=parse&prop=wikitext` against the MediaWiki API used by `scripts/fetch-wiki-capabilities.mjs` — the talent page, not the character page. Cheap, and the one sanctioned network path.
+
+---
+
+## Still open
+
+- ⚠️ **Ifa's `terminatesOnSwap` is still `false`, and the Xilonen argument applies to him verbatim** — his Nightsoul is a _hover_ with Supporting Fire normals, structurally on-field exactly like Blade Roller. It was left alone because the handoff only ever flagged Xilonen's flag as disputed, so flipping his would have been an unasked-for second data verdict. If it flips, his E returns at swap + 7.5s instead of 17.5s.
+- **A swap-terminated stance still keeps its FULL nominal bar width** while only its gating window clamps (the deliberate P4 note at the swap site). Cast Raiden Q, swap at 1s, and the pill still draws 7s. ⚓ Nate 2026-08-15: leave it, out of scope. For Xilonen this now lands in `barPhases` case B (stance window outlasts the cooldown), which is coherent — the bar says she is ready before the nominal window ends. Changing it corpus-wide across ~25 stances would be its own round, and wants Nate's eyes.
+
+## ⛔ Ruled out, do not re-derive
+
+- **Not gauge modelling.** The constitution is windows-not-gauges. Exit-by-drain stays unmodelled; C1's +45% timer stays unmodelled for the same reason.
+- **Not the E-re-press cancel.** ⚓ Nate: players do not use it. It would mean teaching the parser that a token can _terminate_ a stance rather than open one.
+- **Her RES shred does NOT ride the stance window.** It is five per-element `onCast` effects on a separate 15s window (A1 Netotiliztli's Echoes; gcsim `asc.go:75`). Fixing the stance does not touch the shred.
+
+## Tests
+
+`notationParser.test.ts` — two describes. The Xilonen/Nahida/Bennett one pins shipped behaviour (full stance → 16s; swap → swap + 7; an 11f delay unchanged at 5.183; no delay unchanged at 4.0, Bennett's 5s less the 20% his ascension passive takes off). The early-exit one is pinned to a **synthetic** fixture, deliberately: pinning the mechanism to Xilonen would make it a hostage of the open `terminatesOnSwap` question and would silently stop testing anything the day that flips.
+
+`barPhases` needed no work — its geometry was already fixed in `4fa17a7` and is covered by the delayed-cooldown describe in `barPhases.test.ts`.

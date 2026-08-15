@@ -625,6 +625,116 @@ describe('parseNotation — opensState (Xilonen nightsoulBlessing)', () => {
 	});
 });
 
+describe('parseNotation — cooldownStartsAtStanceEnd (stance-cooldown round, 2026-08-15)', () => {
+	const xilonen = xilonenJson as unknown as CharacterData;
+	const bennett = bennettJson as unknown as CharacterData;
+	const nahida = nahidaJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null =>
+		name === 'Xilonen' ? xilonen : name === 'Bennett' ? bennett : name === 'Nahida' ? nahida : null;
+
+	it('Xilonen: a full-length stance still returns the E at stance end + CD', () => {
+		// 9s stance + 7s CD = 16s. This is the number the retired
+		// `cooldownStartDelay: 540` hack computed, and it must not move — the
+		// flag was introduced to state the INTENT, not to change the answer.
+		const result = parseNotation('Xilonen E E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'xilonen')!;
+		expect(track.eBars).toHaveLength(2);
+		expect(track.eBars[1].start).toBeCloseTo(16, 3);
+		expect(track.eBars[0].readyAt).toBeCloseTo(16, 3);
+	});
+
+	it('Xilonen: swapping off her ends Nightsoul, so the E comes back at swap + 7', () => {
+		// ⚓ Nate 2026-08-15: terminatesOnSwap flipped to true. This is the case
+		// the retired static encoding could not express at all — it always
+		// answered 16s, however early she left the field.
+		const result = parseNotation('Xilonen E > Bennett E > Xilonen E', lookup, 8);
+		const tracks = result.tracks.filter((t) => t.characterId === 'xilonen');
+		const first = tracks[0].eBars[0];
+		const recast = tracks[tracks.length - 1].eBars[0];
+		expect(recast.start).toBeCloseTo(first.readyAt!, 3);
+		expect(recast.start).toBeGreaterThan(7); // the clock did start, at the swap
+		expect(recast.start).toBeLessThan(9); // …and nowhere near the old 16
+	});
+
+	it('an ability with a small cooldownStartDelay is untouched (Nahida, 11f)', () => {
+		// ⛔ The ~122 abilities carrying a 1–35 frame delay are genuine gcsim
+		// SetCDWithDelay transcriptions and share none of this behavior.
+		const result = parseNotation('Nahida E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'nahida')!;
+		expect(track.eBars[0].readyAt).toBeCloseTo(5 + 11 / 60, 3);
+	});
+
+	it('an ability with no delay at all is untouched (Bennett)', () => {
+		// 5s base, less the 20% his ascension passive Rekindle takes off = 4.0.
+		const result = parseNotation('Bennett E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'bennett')!;
+		expect(track.eBars[0].readyAt).toBeCloseTo(4, 3);
+	});
+});
+
+describe('parseNotation — cooldownStartsAtStanceEnd + early exit (swap closes the stance)', () => {
+	// Synthetic fixture pinned to the SHAPE, not to a character: the only two
+	// holders in the corpus (Xilonen, Ifa) are both authored
+	// `terminatesOnSwap: false`, and Xilonen's is disputed in her curator notes.
+	// Pinning this to her data would make the test a hostage of that open
+	// question — and would silently stop testing the mechanism the day it flips.
+	const stancer: CharacterData = {
+		id: 'stancer',
+		name: 'Stancer',
+		displayName: 'Stancer',
+		element: 'geo',
+		weapon: 'sword',
+		rarity: 5,
+		abilities: [
+			{
+				id: 'stancer__skill__x',
+				name: 'Stancer Skill',
+				input: ['E'],
+				abilityType: 'skill',
+				behavior: 'stance',
+				cooldown: 7,
+				cooldownStartsAtStanceEnd: true,
+				duration: 9,
+				terminatesOnSwap: true,
+				frames: { swap: 20, E: 20, N: 20, Q: 20 },
+				tags: [],
+				effects: [],
+				description: ''
+			}
+		],
+		passives: [],
+		constellations: []
+	} as unknown as CharacterData;
+
+	const bennett = bennettJson as unknown as CharacterData;
+	const lookup = (name: string): CharacterData | null =>
+		name === 'Stancer' ? stancer : name === 'Bennett' ? bennett : null;
+
+	it('swapping out mid-stance starts the cooldown at the swap, not at cast + duration', () => {
+		// The E is cast at 0 and the swap lands ~0.33s later, so the stance dies
+		// far short of its 9s. The clock starts THERE: the recast is gated by
+		// swapTime + 7, nowhere near the 16s a full-length window would imply.
+		const result = parseNotation('Stancer E > Bennett E > Stancer E', lookup, 8);
+		const tracks = result.tracks.filter((t) => t.characterId === 'stancer');
+		const first = tracks[0].eBars[0];
+		const recast = tracks[tracks.length - 1].eBars[0];
+		// Both surfaces have to agree — the ghost tail reads `readyAt`, the
+		// placement reads the charge queue, and a fix that moved only one would
+		// put the bar's tail and the next cast in different places.
+		expect(first.readyAt).toBeLessThan(16);
+		expect(recast.start).toBeCloseTo(first.readyAt!, 3);
+		expect(recast.start - first.start).toBeLessThan(9);
+		expect(recast.start).toBeGreaterThan(7);
+	});
+
+	it('with no swap the same ability still waits the full stance + CD', () => {
+		const result = parseNotation('Stancer E E', lookup, 8);
+		const track = result.tracks.find((t) => t.characterId === 'stancer')!;
+		expect(track.eBars).toHaveLength(2);
+		expect(track.eBars[1].start).toBeCloseTo(16, 3);
+	});
+});
+
 describe('evalCondition — stacks min/max range (E3 v2.x — branched-on-threshold pattern)', () => {
 	// Iansan-shape: a buff has two effects with mutually-exclusive `stacks`
 	// conditions on the same key — `min: 1, max: 41` for the linear-scaling

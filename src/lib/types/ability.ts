@@ -1436,6 +1436,25 @@ export type SkillAbility =
 			durationExtensions?: DurationExtension[];
 			/** Stance window closes when this character swaps off-field. */
 			terminatesOnSwap?: boolean;
+			/** The cooldown CLOCK starts when the stance window ENDS, not at the
+			 *  cast — so the ability comes back at `stanceEnd + cooldown` and an
+			 *  early exit brings it back sooner. Natlan Nightsoul skills whose CD
+			 *  gcsim sets inside `exitNightsoul()`; the Fandom wiki states it in
+			 *  words for Xilonen ("The 7s cooldown starts once Xilonen's
+			 *  Nightsoul's Blessing state ends and not upon the Elemental Skill
+			 *  cast").
+			 *
+			 *  ⛔ Mutually exclusive with `cooldownStartDelay`, which means
+			 *  ANIMATION FRAMES before the clock starts — an unrelated, much
+			 *  smaller offset. Both were once encoded the same way (a delay equal
+			 *  to the duration), which computed the right first cast and could not
+			 *  express an early exit. characterLint D.21/D.22 enforce the split.
+			 *
+			 *  ⚠️ Read off the BASE ability only, and not modelled together with
+			 *  `durationExtensions` — the recast time is placed mid-parse, so a
+			 *  stance end that moves LATER after the fact would leave a stale
+			 *  placement (lint D.22). Early exit moves it EARLIER and is handled. */
+			cooldownStartsAtStanceEnd?: boolean;
 			/** Additional named state opened when this stance is active, alongside the
 			 *  default "inStance". Closes with the stance window. Used for Natlan
 			 *  Nightsoul characters where the stance is semantically a Nightsoul Blessing
@@ -1499,6 +1518,10 @@ export type BurstAbility =
 			 *  {@link DurationExtension}. */
 			durationExtensions?: DurationExtension[];
 			terminatesOnSwap?: boolean;
+			/** See SkillAbility `cooldownStartsAtStanceEnd`. Declared here so the
+			 *  accessor can read it off a narrowed `CastAbility`; no burst stance
+			 *  authors it today (both holders — Xilonen, Ifa — are skills). */
+			cooldownStartsAtStanceEnd?: boolean;
 			/** Additional named state opened when this stance is active. See SkillAbility opensState. */
 			opensState?: State;
 	  });
@@ -1663,6 +1686,14 @@ export function getDurationExtensions(a: CastAbility): DurationExtension[] | und
 /** True when the ability's stance window closes on swap. */
 export function getTerminatesOnSwap(a: CastAbility): boolean {
 	return a.behavior === 'stance' ? a.terminatesOnSwap === true : false;
+}
+
+/** True when the ability's cooldown clock starts at the STANCE END rather than
+ *  at the cast — so `readyAt` is `stanceEnd + cooldown`, and an early exit
+ *  brings the recast forward. Base-ability only: no variant overrides it,
+ *  because the two holders open their stance from the base cast. */
+export function getCooldownStartsAtStanceEnd(a: CastAbility): boolean {
+	return a.behavior === 'stance' ? a.cooldownStartsAtStanceEnd === true : false;
 }
 
 /** True when the given ability is a stance burst/skill. */

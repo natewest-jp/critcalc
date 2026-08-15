@@ -50,6 +50,7 @@ import {
 	getSummonActivatesAt,
 	getDefaultDamageTag,
 	getNormalHitDamageTag,
+	getCooldownStartsAtStanceEnd,
 	evalTriggerFilter
 } from '$lib/types/ability';
 import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
@@ -3541,6 +3542,19 @@ export function parseNotation(
 				// Snapshot stack state at cast time (only when non-empty) so the
 				// timeline can filter stack-gated effects per-cast.
 				const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
+				// Resolved stance fields — read HERE (rather than at the window-open
+				// site below) because `readyAt` needs them: a stance whose cooldown
+				// CLOCK starts at the stance END is castable again at
+				// `stanceEnd + cd`, not `cast + cd`.
+				const stance = resolveStanceFields(active, variant);
+				// ⚓ Xilonen / Ifa. `dur` is the resolved stance length, so this lands
+				// on the same instant the old `cooldownStartDelay == duration` hack
+				// computed — but as a STATEMENT of intent, which the swap-close site
+				// can then move EARLIER when the stance is cut short. Guarded on the
+				// RESOLVED behavior so a variant that overrides the stance away does
+				// not pick up a stance-end clock it has no stance for.
+				const cdStartsAtStanceEnd =
+					stance.behavior === 'stance' && getCooldownStartsAtStanceEnd(active);
 				// P4 IR — one `cast` event per resolved cast (the unified single
 				// site). Post-P4 #3: this event IS the per-cast record — the E/Q
 				// bar is projected from it at finalize, so every geometric field
@@ -3560,7 +3574,9 @@ export function parseNotation(
 					castTime,
 					uptime: dur,
 					cooldown: cd,
-					readyAt: castStart + (active.cooldownStartDelay ?? 0) / 60 + cd,
+					readyAt: cdStartsAtStanceEnd
+						? castStart + dur + cd
+						: castStart + (active.cooldownStartDelay ?? 0) / 60 + cd,
 					summonActivatesAt: spawn,
 					fieldStart: castStart + (spawn ?? 0) / 60,
 					stackContext: stacks
@@ -3650,8 +3666,8 @@ export function parseNotation(
 				// Open a stance window when the resolved variant has stance
 				// behavior. Fresh record replaces any prior stance (resets
 				// per-window extension counts). Hu Tao / Xilonen open via base E;
-				// Mavuika hE and Collei-shape Q open via variant.
-				const stance = resolveStanceFields(active, variant);
+				// Mavuika hE and Collei-shape Q open via variant. (`stance` is
+				// resolved above, where readyAt needs it.)
 				if (stance.behavior === 'stance') {
 					const endTime = castStart + dur;
 					cs.stance = {
@@ -4185,6 +4201,34 @@ export function parseNotation(
 			if (cs.stance.terminatesOnSwap === true) {
 				cs.stance.end = localCursor;
 				cs.stance.terminatesOnSwap = false;
+				// ⚓ A stance whose cooldown CLOCK starts at the stance END was given
+				// a `readyAt` of `cast + duration + cd` at open time, on the
+				// assumption the window would run its full length. The swap just
+				// ended it early, so the clock starts NOW: take `localCursor + cd`
+				// outright — ⛔ not min/max against the stale value, which is a
+				// strictly later upper bound we are correcting, not competing with.
+				// Both the ghost tail (castRef.readyAt) and the recast placement
+				// (the charge queue) have to move, or the chart and the parser
+				// disagree about when the ability is castable.
+				if (getCooldownStartsAtStanceEnd(cs.stance.ownerAbility)) {
+					const castRef = cs.stance.castRef;
+					const staleReadyAt = castRef.readyAt;
+					const readyAt = localCursor + castRef.cooldown;
+					castRef.readyAt = readyAt;
+					// The queue is keyed by exact ability id (see the cast site), so
+					// this cannot reach a teammate's or a sibling variant's clock.
+					// Replace the entry this cast wrote — identified by its stale
+					// value — rather than q[0], which a multi-charge sort may have
+					// moved off the front.
+					const queue = eChargeQueues.get(cs.stance.ownerAbility.id);
+					if (queue && staleReadyAt !== undefined) {
+						const idx = queue.findIndex((t) => Math.abs(t - staleReadyAt) < 1e-9);
+						if (idx !== -1) {
+							queue[idx] = readyAt;
+							queue.sort((a, b) => a - b);
+						}
+					}
+				}
 				// barRef is intentionally retained (P4): the finalize pass stamps
 				// the owner bar's uptime from `ownerUptime`, which the swap does NOT
 				// clamp — a swap-terminated stance keeps its full owner-bar width
