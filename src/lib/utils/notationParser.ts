@@ -97,6 +97,25 @@ export type TimelineBar = {
 	cooldown: number; // seconds
 	label: string; // notation token displayed on the bar (e.g. "Q", "hE")
 	castTime: number; // seconds — duration of the cast animation (used for active-bar overlay)
+	/** Absolute time this cast's clock is mechanically ready again (mirrors
+	 *  `CastEvent.readyAt`). The ghost-CD tail ENDS here.
+	 *
+	 *  ⚠️ CARRIED ON THE BAR BECAUSE THE PILL GEOMETRY NEEDS IT, and carried as
+	 *  `readyAt` rather than the raw `cooldownStartDelay` deliberately: readyAt
+	 *  is the authoritative "when can this be cast again", so a future dynamic
+	 *  cooldown start (a stance whose exit is what starts the clock) moves the
+	 *  tail for free instead of needing the geometry taught a second rule.
+	 *
+	 *  ↻ 2026-08-15: `barPhases` read `cooldown` alone before this and drew the
+	 *  tail ending at `start + cooldown`. That divergence WAS documented as
+	 *  intentional on `CastEvent.readyAt` ("the visual ghost tail"), and it is
+	 *  invisible at the 1–35 frame delays 122 of the 124 delayed abilities
+	 *  carry — but on the two that encode "the CD starts when the STANCE ends"
+	 *  (Xilonen 540f, Ifa 600f) it is a 9–10 second lie that also flips the pill
+	 *  into case B, whose meaning is the exact opposite: "cooldown finished,
+	 *  stance still running". ⚓ Nate read it that way and asked why the recast
+	 *  was so late — which is the whole argument against the old choice. */
+	readyAt?: number;
 	/** id of the RESOLVED ability actually cast (mirrors CastEvent.abilityId).
 	 *  Disambiguates summon resolution when a state-gated sibling ability
 	 *  shares the input token (Durin's dual-form bursts, post-P4 #2). */
@@ -4217,6 +4236,7 @@ export function parseNotation(
 			start: ev.time,
 			uptime: ev.uptime,
 			cooldown: ev.cooldown,
+			readyAt: ev.readyAt,
 			label: ev.label,
 			castTime: ev.castTime,
 			abilityId: ev.abilityId,

@@ -56,6 +56,10 @@ export interface BarPhaseBar {
 	uptime: number;
 	summonActivatesAt?: number;
 	sacProcFired?: boolean;
+	/** Absolute time the ability is castable again. The ghost tail ENDS here.
+	 *  Absent ⇒ falls back to `start + cooldown`, which is the same thing for
+	 *  every ability with no `cooldownStartDelay` authored. */
+	readyAt?: number;
 }
 
 /**
@@ -69,6 +73,16 @@ export function barPhases(bar: BarPhaseBar, hasSummon: boolean): BarPhaseSegment
 	const fieldOffset = (bar.summonActivatesAt ?? 0) / 60;
 	const fieldStart = bar.start + fieldOffset;
 
+	// Seconds from the bar's start until the ability is castable again. ⚠ THIS
+	// IS NOT `bar.cooldown` — a cooldown whose CLOCK starts late ends late, and
+	// the tail's END is where a reader looks to answer "when can I recast".
+	// `bar.cooldown` survives as the ghost's LABEL, because the label's job is
+	// to name the cooldown's LENGTH ("7s"), not to locate its end.
+	const cdSpanFromStart = Math.max(
+		bar.castTime,
+		bar.readyAt !== undefined ? bar.readyAt - bar.start : bar.cooldown
+	);
+
 	// Case 1 — Sac proc: CD reset to 0, one dim continuation bar spanning the
 	// duration (or the cast time when the ability is instant).
 	if (bar.sacProcFired) {
@@ -79,10 +93,10 @@ export function barPhases(bar: BarPhaseBar, hasSummon: boolean): BarPhaseSegment
 
 	// Case 2 — Stance ability: caster-state window with optional CD overflow.
 	if (bar.uptime > 0 && !hasSummon) {
-		if (bar.cooldown >= fieldOffset + bar.uptime) {
+		if (cdSpanFromStart >= fieldOffset + bar.uptime) {
 			// Case A: cooldown outlasts the stance window.
 			const segs: BarPhaseSegment[] = [{ role: 'uptime', start: fieldStart, span: bar.uptime }];
-			const cdSpan = bar.cooldown - fieldOffset - bar.uptime;
+			const cdSpan = cdSpanFromStart - fieldOffset - bar.uptime;
 			if (cdSpan > 0) {
 				segs.push({
 					role: 'ghost',
@@ -95,18 +109,18 @@ export function barPhases(bar: BarPhaseBar, hasSummon: boolean): BarPhaseSegment
 		}
 		// Case B: stance window outlasts the cooldown.
 		return [
-			{ role: 'uptimeFlush', start: fieldStart, span: bar.cooldown - fieldOffset },
+			{ role: 'uptimeFlush', start: fieldStart, span: cdSpanFromStart - fieldOffset },
 			{
 				role: 'overflow',
-				start: bar.start + bar.cooldown,
-				span: fieldOffset + bar.uptime - bar.cooldown
+				start: bar.start + cdSpanFromStart,
+				span: fieldOffset + bar.uptime - cdSpanFromStart
 			}
 		];
 	}
 
 	// Case 3 — Single-phase: cast time + ghost CD remainder.
 	const segs: BarPhaseSegment[] = [{ role: 'uptime', start: bar.start, span: bar.castTime }];
-	const cdSpan = bar.cooldown - bar.castTime;
+	const cdSpan = cdSpanFromStart - bar.castTime;
 	if (cdSpan > 0) {
 		segs.push({
 			role: 'ghost',
