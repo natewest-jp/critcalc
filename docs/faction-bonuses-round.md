@@ -1,13 +1,13 @@
 # Faction-bonuses round — scoped, not started
 
-**Status:** SCOPED 2026-08-15, approved by ⚓ Nate. Not begun.
+**Status:** Steps 1–3 and 5 SHIPPED 2026-08-15 (`dd7761d`, `75271cf`). Step 4 is two open decisions, below.
 **Origin:** Nate asked whether Sucrose was displaying all the buffs she should be. Three of her defects were data and shipped separately (`9959b5b`, `2c21f9e`); the fourth is this — **her two Hexerei Secret Rite buffs have never drawn a bar, and neither has anyone else's.**
 
 ---
 
 ## The finding
 
-`factionBonuses` is **not consumed by the planner at all.** `effectCollection.ts` builds its candidate pool from `[...abilities, ...passives, ...constellations]` in **six** places, and the array is not in any of them. Every Secret Rite effect in the corpus is inert on the timeline.
+`factionBonuses` is **not consumed by the planner at all.** `effectCollection.ts` built its candidate pool from `[...abilities, ...passives, ...constellations]` in **five** places, and the array was in none of them. Every Secret Rite effect in the corpus is inert on the timeline.
 
 ⚠️ This is a **documented decision, not a regression** — `docs/library/game/snapshotting.md` records it as ⚓ Nate's ruling of 2026-07-14 (keep + document now, wire later), and Venti's curator notes state it outright at the site. What changed is that a real reader hit it.
 
@@ -99,15 +99,45 @@ Faction rows then read **"Sucrose Secret Rite"** by construction, and **not one 
 
 ## Order of work
 
-1. `effectSourcesOf(char)` helper + the fourth `BuffWindowSource` arm — collector and label together, so no bar ever ships unlabelled.
-2. **Venti** base gating (C2 shred, C4 manual buff) — must follow step 1, never precede it.
-3. **Durin** re-author to a single gated −35%.
-4. **Prune** and **Albedo** row-key checks.
-5. Corpus invariant in `notationParser.ir.test.ts` shape; gates; `test:e2e` before merge.
+1. ✅ `effectSourcesOf(char)` helper + the fourth `BuffWindowSource` arm — collector and label together, so no bar ever ships unlabelled. (`dd7761d`)
+2. ✅ **Venti** base gating (C2 shred, C4 manual buff) — must follow step 1, never precede it. (`75271cf`)
+3. ✅ **Durin** re-author to a single gated −35%. (`75271cf`)
+4. ⏸ **Prune** and **Albedo** — see _What step 4 turned out to be_ below. Neither is a keying problem; both need a decision.
+5. ✅ Corpus invariant (`buffWindows.faction.test.ts`) + characterLint C.17; gates; `test:e2e` before merge.
+
+---
+
+## What the build corrected in this plan
+
+Two things the scoping got wrong, recorded so they are not re-derived:
+
+**It is FIVE inline source lists, not six.** Two of the six greps were `char.abilities.find` / `.filter` calls, not candidate-pool construction.
+
+**⛔ The split cannot live in `emit`.** The plan implied appending faction effects to the source list would be enough. It is not, and the first cut shipped the bug: a pool's span is computed BEFORE `emit` sees it, from `effects[0].duration`, so a 15s Secret Rite sorting ahead of an 8s passive stretched both to 15s (Sucrose's A4 rendered 0.8–15.8 instead of 0.8–8.8). Recomputing per group inside `emit` does not rescue it either — the active-target sites emit SLICES, where `end − start` is a segment of an on-field window and not a duration. The split belongs at **pool construction**, at every site, with the reaction pooler taking source into its merge key.
+
+---
+
+## What step 4 turned out to be
+
+Neither remaining item is the row-key collision the plan predicted. Both are real, both were confirmed on the timeline, and **both are pre-existing — independent of this round's wiring.**
+
+### Prune — an `onReaction` buff targeting `self` or `active` never renders
+
+His two rite effects are `atk%` on `onReaction`, targeting `self` and `active`. The onReaction dispatch requires `targetsTeamOrActive` (which rejects `self`) and then rejects `isActiveTargetOnly` (which catches `active`); the active-target segmentation section only handles `onCast`/`onHit`. So both are dropped, and were before this round.
+
+⚠️ **Not a faction problem — a general engine gap.** Six effects across three characters: Prune (2, faction), **Varka** (3) and **Freminet** (1), the latter four ordinary passives and constellations. Exactly the same class of defect as Sucrose's A1 `target: 'self'` (`9959b5b`), which is what makes it worth a proper look rather than a patch here.
+
+### Albedo — the second rite effect is dropped by the per-stat dedup, and that is accidentally the safer render
+
+Both his rite effects are `allDmgBonus` in one cast pool (one `onCast` skill, cap 12%; one `onHit` skill, cap 30%), so the one-bar-per-stat dedup keeps the first and drops the second.
+
+The dropped one is the Silver Isotoma buff, whose real gate — a skill hit within 20s of an _earlier_ skill cast — is unmodelled, and whose own caveat admits "Shown on every skill hit." So rendering it would over-claim, and dropping it happens to be right. ⚠️ But it is right by accident, not by decision. Three options, needing Nate: accept and document; demote it to a caveat-only record (matching how the same kit's other unmodellable clauses are handled); or widen the dedup so both render, which over-claims.
 
 ---
 
 ## Open
 
+- The two step-4 items above.
 - Whether the faction row belongs on the team-buff surface or wants its own visual register — it is a **conditional** buff in a way no other row is, and the chart currently has no vocabulary for "this only exists in a certain team". Deferred until the bars are on screen and Nate can look at them.
 - The general `attribution`-as-row-label round (24 effects, 6 characters) remains unscheduled.
+- 📌 Noticed while probing, unrelated and unmeasured: **reactions fire on E/Q casts but not on normal-attack blocks** (`Klee N1 > Sucrose N1` produces no swirl; `Klee E > Sucrose E` does). Not investigated — recorded only so it is not rediscovered from scratch.
