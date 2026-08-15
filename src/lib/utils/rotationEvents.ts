@@ -207,6 +207,29 @@ export type BuffWindowSource =
 			type: 'weapon';
 			weaponId: string;
 			trigger: 'onSwapOut' | 'onSwapIn';
+	  }
+	/** A `factionBonuses` effect — a Secret Rite, gated on the party carrying
+	 *  enough of a faction (2026-08-15).
+	 *
+	 *  ⚓ Its own arm rather than a flag on `character`, for the same reason
+	 *  `artifact` has one: the row it lands on must be named after the BONUS, not
+	 *  after the cast that fired it. A Hexerei buff labelled "Sucrose E" is
+	 *  indistinguishable from an unconditional one, and the condition is the most
+	 *  important thing about it.
+	 *
+	 *  ⛔ Not routed through `EffectBase.attribution`, which would have been the
+	 *  cheaper-looking path: 24 effects across 6 characters already carry that
+	 *  field and it is read only in the `afterDuration` branch, so teaching the
+	 *  general row branches to read it would re-key all 24 and re-shape bars on
+	 *  characters with nothing to do with factions. See
+	 *  docs/faction-bonuses-round.md. */
+	| {
+			type: 'faction';
+			faction: string;
+			bonusName: string;
+			/** Mirrors the `character` arm — the dispatch family that fired it. */
+			trigger: 'cast' | 'afterDuration' | 'block' | 'reaction' | 'nightsoulBurst';
+			abilityClass?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
 	  };
 
 /** Span records. `end` is final — extensions and truncations applied. */

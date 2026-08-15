@@ -233,7 +233,15 @@
 					},
 					"duration": 10,
 					"element": "anemo",
-					"value": -12
+					"value": -12,
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "teamFaction",
+							"faction": "hexerei",
+							"min": 2
+						}
+					}
 				},
 				{
 					"type": "resShred",
@@ -244,13 +252,22 @@
 					},
 					"duration": 10,
 					"element": "physical",
-					"value": -12
+					"value": -12,
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "teamFaction",
+							"faction": "hexerei",
+							"min": 2
+						}
+					}
 				}
 			],
 			"_curatorNotes": [
 				"Migrated to onHit ability:skill 2026-05-09 (F1). gcsim c2() registered as AttackCBFunc on the skill hit (both Press and Hold variants). Physical companion effect added 2026-05-09 once Physical landed in the Element union.",
 				"Airborne portion (additional -12% RES while airborne) not modeled — gcsim's TODO marker indicates this isn't implemented upstream either.",
-				"[Hexerei] Fandom 'Breeze of Reminiscence' constellation infobox, buffType=Hexerei buff field: under Secret Rite the shred becomes a flat 'Anemo RES and Physical RES by 24% for 10s' (the airborne +12% clause is gone from the buff text). Base -12% effects here are LEFT UNCHANGED — they are the <2-Hexerei kit and are what the planner renders; the 24% Secret Rite version is authored in factionBonuses with conditions all[teamFaction hexerei >=2, constellation 2]. No mutual-exclusion condition was added to the base effects because factionBonuses effects are not consumed by the planner, so gating the base off would erase the shred window entirely in a Hexerei team.",
+				"[Hexerei] Fandom 'Breeze of Reminiscence' constellation infobox, buffType=Hexerei buff field: under Secret Rite the shred becomes a flat 'Anemo RES and Physical RES by 24% for 10s' (the airborne +12% clause is gone from the buff text). The 24% version is authored in factionBonuses with conditions all[teamFaction hexerei >=2, constellation 2].",
+				"[Hexerei] 2026-08-15: the two base -12% effects are now gated `not(teamFaction hexerei >=2)`. They previously carried NO condition, with the note that gating them off 'would erase the shred window entirely in a Hexerei team' — true at the time, because factionBonuses were not consumed by the planner. They are now (docs/faction-bonuses-round.md), so the mutual exclusion is both safe and REQUIRED: without it a Hexerei team draws the -12% and the -24% as two shred bars off one skill hit, which is not a thing that happens in game. The rule: a faction bonus that CHANGES AN EXISTING NUMBER re-authors it under a gate. Contrast C6 Storm of Defiance, whose shreds the rite leaves untouched and which therefore carry no gate.",
 				"[Hexerei] Same buff field, unauthored parts: after the burst Venti gains 'Wherever a Breeze Blows' and the skill CD is reset; a Windsunder Arrow hit has a 25% chance to grant it too. Wherever a Breeze Blows = press-skill deals 300% of original DMG, lasts 15s, consumed by the press. The 300% is damage-only. The CD reset is rotation-relevant but would be inert as a factionBonuses cdReset (not collected by the planner) — carried as a caveat instead."
 			],
 			"caveat": "Shown as 12% with the normal skill cooldown; with 2+ Hexerei in the party the drop is 24% and the burst resets the skill CD.",
@@ -275,6 +292,14 @@
 					"trigger": {
 						"type": "manual"
 					},
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "teamFaction",
+							"faction": "hexerei",
+							"min": 2
+						}
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -286,7 +311,8 @@
 			"caveat": "Orb and particle pickup aren't simulated, so this doesn't fire on its own — toggle it on for rotations that pick up particles. With 2+ Hexerei in the party it fires from the skill or burst instead, and also buffs the active character.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-14, onParticleReceived category): manual trigger preserved because particle pickup is non-deterministic in the planner (out-of-scope per tool constitution). gcsim source: event.OnParticleReceived gated on c.Core.Player.Active() == c.Index() — fires when ANY elemental orb/particle is caught by Venti on-field. Re-evaluate only if particle-gen modelling ever enters scope (unlikely).",
-				"[Hexerei] Fandom 'Hurricane of Freedom' constellation infobox, buffType=Hexerei buff field: under Secret Rite the trigger changes from orb/particle pickup to 'After unleashing his Elemental Skill Skyward Sonnet or Elemental Burst Wind's Grand Ode, Venti and his own active party members gain a 25% Anemo DMG Bonus for 10s.' Authored in factionBonuses as two onCast effects (skill, burst) with conditions all[teamFaction hexerei >=2, constellation 4], target ['self','active'] — 'his own active party members' read as the active character, mirroring the Fischl Secret Rite target shape. The base manual-trigger effect here is untouched (it is the <2-Hexerei kit).",
+				"[Hexerei] Fandom 'Hurricane of Freedom' constellation infobox, buffType=Hexerei buff field: under Secret Rite the trigger changes from orb/particle pickup to 'After unleashing his Elemental Skill Skyward Sonnet or Elemental Burst Wind's Grand Ode, Venti and his own active party members gain a 25% Anemo DMG Bonus for 10s.' Authored in factionBonuses as two onCast effects (skill, burst) with conditions all[teamFaction hexerei >=2, constellation 4], target ['self','active'] — 'his own active party members' read as the active character, mirroring the Fischl Secret Rite target shape.",
+				"[Hexerei] 2026-08-15: the base manual-trigger effect is now gated `not(teamFaction hexerei >=2)`. The rite REPLACES the trigger (orb/particle pickup becomes a skill/burst cast), it does not add a second buff — so once factionBonuses render (docs/faction-bonuses-round.md), leaving the toggle available in a Hexerei team would let a reader stack a manual 25% on top of the automatic 25% that already fires. Below 2 Hexerei the toggle is unchanged and is still the only way this buff appears.",
 				"[A7] Original user text noted the C4 buff fires only while Venti is active on-field at pickup; dropped from the rewrite as a minor nuance since the buff is a manual toggle regardless of on-field state. Already documented in the existing curator notes (gcsim OnParticleReceived gated on Active()==Index)."
 			],
 			"description": "When Venti picks up an Elemental Orb or Particle, he receives a 25% Anemo DMG Bonus for 10s."

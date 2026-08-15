@@ -407,6 +407,38 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 		}
 	}
 
+	// (C.17) a faction effect must BIND ITS TRIGGER EXPLICITLY.
+	//
+	// ⚠ Since 2026-08-15 `factionBonuses` effects join the planner's candidate
+	// pool (`effectSourcesOf`), and they enter it as a source with NO
+	// `abilityType` — the same shape a passive has. The collectors' fall-through
+	// for that shape is "no explicit ability → fire on BOTH casts", which for a
+	// passive is deliberate (Kazuha C6 infuses after either E or Q) and for a
+	// faction bonus is almost always an accident: a Secret Rite that names one
+	// ability would silently draw a bar on the other too.
+	//
+	// Every faction effect in the corpus already binds explicitly, so this rule
+	// pins a property the engine now relies on rather than fixing anything.
+	for (const fb of factionBonuses) {
+		for (const fx of fb.effects ?? []) {
+			const trig = fx.trigger as { type?: string; ability?: string; abilityType?: unknown };
+			if (trig?.type === 'onCast' && trig.ability === undefined) {
+				push(
+					'strict',
+					'faction-effect-unbound-trigger',
+					`factionBonuses["${fb.name}"] onCast effect has no trigger.ability — it would fire on BOTH skill and burst`
+				);
+			}
+			if (trig?.type === 'onHit' && trig.abilityType === undefined) {
+				push(
+					'strict',
+					'faction-effect-unbound-trigger',
+					`factionBonuses["${fb.name}"] onHit effect has no trigger.abilityType — it would fire on both skill and burst hits`
+				);
+			}
+		}
+	}
+
 	// Per-ability checks
 	const allAbilities: Ability[] = [...c.abilities, ...c.passives, ...c.constellations];
 	for (const a of allAbilities) {
