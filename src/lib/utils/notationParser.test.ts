@@ -643,6 +643,19 @@ describe('parseNotation — cooldownStartsAtStanceEnd (stance-cooldown round, 20
 		expect(track.eBars[0].readyAt).toBeCloseTo(16, 3);
 	});
 
+	it('Xilonen: swapping off her ends Nightsoul, so the E comes back at swap + 7', () => {
+		// ⚓ Nate 2026-08-15: terminatesOnSwap flipped to true. This is the case
+		// the retired static encoding could not express at all — it always
+		// answered 16s, however early she left the field.
+		const result = parseNotation('Xilonen E > Bennett E > Xilonen E', lookup, 8);
+		const tracks = result.tracks.filter((t) => t.characterId === 'xilonen');
+		const first = tracks[0].eBars[0];
+		const recast = tracks[tracks.length - 1].eBars[0];
+		expect(recast.start).toBeCloseTo(first.readyAt!, 3);
+		expect(recast.start).toBeGreaterThan(7); // the clock did start, at the swap
+		expect(recast.start).toBeLessThan(9); // …and nowhere near the old 16
+	});
+
 	it('an ability with a small cooldownStartDelay is untouched (Nahida, 11f)', () => {
 		// ⛔ The ~122 abilities carrying a 1–35 frame delay are genuine gcsim
 		// SetCDWithDelay transcriptions and share none of this behavior.

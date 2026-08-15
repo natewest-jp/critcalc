@@ -128,7 +128,7 @@
 			"cooldown": 7,
 			"cooldownStartsAtStanceEnd": true,
 			"duration": 9,
-			"terminatesOnSwap": false,
+			"terminatesOnSwap": true,
 			"opensState": "nightsoulBlessing",
 			"tags": [],
 			"effects": [
@@ -218,10 +218,10 @@
 					"value": -36
 				}
 			],
-			"caveat": "The RES shreds are shown from the cast; in game the Samplers activate moments later, once her Nightsoul points fill. The cooldown starts at the ~9s stance end — exiting early by pressing E again starts it sooner, which is not modeled.",
+			"caveat": "The RES shreds are shown from the cast; in game the Samplers activate moments later, once her Nightsoul points fill. Her cooldown starts when Nightsoul ends, so swapping off her early brings the skill back sooner — pressing E again to exit is not modeled.",
 			"_curatorNotes": [
-				"Yohual's Scratch enters Nightsoul Blessing (Blade Roller mode). Pressing E again while in Nightsoul exits the state in 1 frame; the schema models this as a stance with terminatesOnSwap: false.",
-				"⚠️ terminatesOnSwap: false is DISPUTED and left as-authored pending a first-hand check. Against it: gcsim's onExitField (xilonen.go:78) subscribes OnCharacterSwap and calls exitNightsoul() when Xilonen is the outgoing character — and the same four-character pattern appears independently in kinich/mualani/mavuika, all of which we author as terminatesOnSwap: true. Also against it: C2 reads 'Xilonen's Geo Source Sample will be active even when she is off-field', which is only a gain if the base 'active while in Nightsoul's Blessing' does NOT reach off-field. For it: nothing beyond this note's original claim — the in-game skill text lists only two exits (points depleted, skill re-used), the Fandom Gameplay Notes are otherwise exhaustive and never mention swapping, and Citlali/Ororon/Chasca show Nightsoul off-field is per-character rather than a blanket rule. It matters because the cooldown clock starts at the stance end (see the [A7] note): if the state does end on swap, her E returns at swapTime+7 instead of cast+16.",
+				"Yohual's Scratch enters Nightsoul Blessing (Blade Roller mode). Pressing E again while in Nightsoul exits the state in 1 frame; the schema models this as a stance with terminatesOnSwap: true.",
+				"terminatesOnSwap was authored `false` until 2026-08-15, on a note claiming Nightsoul persists across swap in-game. ⚓ Nate's call to flip it, on this evidence. FOR the flip: gcsim's onExitField (xilonen.go:78) subscribes OnCharacterSwap and calls exitNightsoul() when Xilonen is the outgoing character, and the same pattern appears independently in kinich/mualani/mavuika, all authored true here; C2 reads 'Xilonen's Geo Source Sample will be active even when she is off-field', which is only a gain if the base 'active while in Nightsoul's Blessing' does NOT reach off-field; and the state IS a movement mode (Blade Roller, with sprint/climb point drain), which off-field has no meaning for. AGAINST: the in-game skill text lists only two exits (points depleted, skill re-used), the Fandom Gameplay Notes are otherwise exhaustive and never mention swapping, and Citlali/Ororon/Chasca show off-field Nightsoul is per-character rather than a blanket rule — so ⚠️ this is still a reasoned call, not a first-hand observation. It matters because the cooldown clock starts at the stance end: her E now returns at swapTime + 7 rather than cast + 16.",
 				"opensState: \"nightsoulBlessing\" — opens the named state alongside the default inStance for the 9s stance window. Conditions on the in-stance Blade Roller normal gate on nightsoulBlessing specifically (not the generic inStance), making the semantic crisp.",
 				"Duration 9s reflects the Nightsoul timer. Actual exit: timer hits 0, points drain to 0, or E is re-pressed. Resource drain (5 points/sec) and 45-point starting pool aren't modelled per the constitution (windows not gauges).",
 				"C1 extends the Nightsoul timer by 45% (9s → ~13s) and reduces consumption by 30%. Not authored as a durationModifier because the underlying mechanic is a draining gauge, not a fixed window — the visible window length doesn't change cleanly with C1.",
