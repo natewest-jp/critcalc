@@ -1966,3 +1966,68 @@ describe('caveat style (E.26)', () => {
 		expect(failHit?.severity).toBe('strict');
 	});
 });
+
+// ---------------------------------------------------------------------------
+// (E.27) unknown-value descriptions are DISPLAY LABELS
+// ---------------------------------------------------------------------------
+
+function makeStubWithUnknownValue(description: string): CharacterData {
+	return makeStubCharacter({
+		passives: [
+			{
+				id: 'lintstub__passive__p',
+				name: 'P',
+				abilityType: 'passive',
+				description: 'Passive.',
+				effects: [
+					{
+						type: 'buff',
+						target: 'team',
+						trigger: { type: 'onCast', ability: 'skill' },
+						duration: 5,
+						source: 'character',
+						stat: 'allDmgBonus',
+						value: { type: 'unknown', description },
+						snapshottable: false
+					}
+				]
+			}
+		]
+	} as Partial<CharacterData>);
+}
+
+describe('unknown-value description length (E.27)', () => {
+	it('accepts a terse label', () => {
+		const c = makeStubWithUnknownValue('+1% per 100 ATK above 1000, cap 20%');
+		const hits = lintCharacter(c).filter((i) => i.check.startsWith('unknown-value-description'));
+		expect(hits).toEqual([]);
+	});
+
+	it('warns past 60 chars, fails past 100', () => {
+		const warn = lintCharacter(makeStubWithUnknownValue('a'.repeat(61))).find((i) =>
+			i.check.startsWith('unknown-value-description')
+		);
+		expect(warn?.severity).toBe('warn');
+
+		const fail = lintCharacter(makeStubWithUnknownValue('a'.repeat(101))).find((i) =>
+			i.check.startsWith('unknown-value-description')
+		);
+		expect(fail?.severity).toBe('strict');
+	});
+
+	// ⚠ CORPUS-WIDE, NOT CURATED-ONLY — and that is the whole point of this
+	// case. The suite above lints only `curated` characters, and the defect
+	// that produced this rule was on PRUNE, who is frameless and therefore
+	// uncurated: the rule fired correctly in isolation and would still have
+	// sailed through CI. A too-long label renders identically whether or not
+	// the character has frames, so curation is the wrong axis to gate it on.
+	it('no character in the corpus ships an over-long unknown-value description', () => {
+		const offenders = all
+			.flatMap((c) => lintCharacter(c))
+			.filter((i) => i.check === 'unknown-value-description-too-long');
+		expect(
+			offenders.map((i) => `${i.charId}: ${i.message}`),
+			'unknown-value descriptions render verbatim where a number goes'
+		).toEqual([]);
+	});
+});

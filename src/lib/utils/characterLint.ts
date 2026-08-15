@@ -231,6 +231,15 @@ const CAVEAT_BANNED_SUBSTRINGS = [
 const CAVEAT_WARN_LENGTH = 280;
 const CAVEAT_FAIL_LENGTH = 400;
 
+// (E.27) Bounds for a `BuffValue { type: 'unknown' }` description. ⚠ Far
+// tighter than the caveat bounds above, and deliberately: a caveat gets its own
+// paragraph in the notes panel, while this string is squeezed into a tooltip
+// cell beside a stat name. The corpus spans 23–48 chars; the warn line sits
+// just above the longest legitimate entry, and the hard cap is set where the
+// tooltip stops looking like a value and starts looking like prose.
+const UNKNOWN_VALUE_WARN_LENGTH = 60;
+const UNKNOWN_VALUE_FAIL_LENGTH = 100;
+
 /** Style issues for a user-facing caveat string (E.26). */
 function caveatStyleIssues(text: string): { severity: Severity; message: string }[] {
 	const issues: { severity: Severity; message: string }[] = [];
@@ -1291,6 +1300,40 @@ function lintEffect(
 				`effect on passive/constellation with trigger ${t.type} should set trigger.ability (omit only when intentionally firing on both skill and burst, like Kazuha C6)`,
 				location
 			);
+		}
+	}
+
+	// (E.27) an unknown-value `description` is a DISPLAY LABEL, not prose.
+	//
+	// ⚠ It is rendered VERBATIM in the slot where a number would go
+	// (`formatBuffDisplayValue`), on the timeline tooltip and in the Team
+	// Builder's bonuses block — so it has to read like a value. Prune's A4
+	// shipped a 182-char sentence that wrapped the tooltip to full width
+	// (⚓ Nate, 2026-08-15); the rest of the corpus sits at 23–48, and the
+	// house form is Arlecchino's "+1% per 100 ATK above 1000, cap 20%".
+	//
+	// ⛔ Explanation does NOT belong here, and mostly does not belong in a
+	// `caveat` either — the style guide reserves those for the timeline
+	// visibly diverging from the game. Kit mechanics go to `_curatorNotes`.
+	if ((eff.type === 'buff' || eff.type === 'elevate') && typeof eff.value === 'object') {
+		const v = eff.value as { type?: string; description?: string };
+		if (v.type === 'unknown' && typeof v.description === 'string') {
+			const n = v.description.length;
+			if (n > UNKNOWN_VALUE_FAIL_LENGTH) {
+				push(
+					'strict',
+					'unknown-value-description-too-long',
+					`unknown-value description is ${n} chars (hard cap ${UNKNOWN_VALUE_FAIL_LENGTH}) — it renders verbatim where a number goes; shorten to a label like "+2.5% per 100 ATK above 2,000, cap 50%" and move the explanation to _curatorNotes`,
+					location
+				);
+			} else if (n > UNKNOWN_VALUE_WARN_LENGTH) {
+				push(
+					'warn',
+					'unknown-value-description-long',
+					`unknown-value description is ${n} chars (corpus norm is 23–48) — it renders verbatim where a number goes; prefer a terse label`,
+					location
+				);
+			}
 		}
 	}
 
