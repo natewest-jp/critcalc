@@ -130,18 +130,16 @@ the authority when exact off-field application counts matter.
 
 We model elemental-application ICD **binary**, not as full sequences:
 
-- **`noICD?: boolean`** on `AbilityVariant` / `SkillCommonFields` / `BurstCommonFields`
-  (`ability.ts`). **`true` ⇒ the ability applies its element on every hit** (the
-  `ICDTagNone` case); absent means standard ICD, which is the game default. Authored on
-  7 rapid/off-field appliers (Cyno, Fischl, Ganyu, Kinich, Lan Yan, Mualani, Xingqiu).
-  **⚠️ Currently a forward-looking annotation — no code reads it yet.** The one plausible
-  consumer, the planner's reaction stream, is deliberately _"windows not gauges"_ (it
-  emits reactions optimistically at cast sites and models no aura/ICD), so nothing
-  consumes `noICD` today. Kept as correct, cheaply-captured game-truth and tracked here
-  as an **intentional gap, not a silent orphan** (the [`factionBonuses` lesson](../gotchas/README.md)
-  applied: wire end-to-end _or_ track the gap explicitly). Decision (2026-07-14, Nate):
-  keep binary + document; do **not** extend to full sequences and do **not** rename —
-  `noICD` matches gcsim's `ICDTagNone` and KQM vocabulary.
+- **`noICD?: boolean`** on `NormalAbility` / `AbilityVariant` / `SkillCommonFields` /
+  `BurstCommonFields` (`ability.ts`). **`true` ⇒ the ability applies its element on every
+  hit** (the `ICDTagNone` case); absent means standard ICD, which is the game default.
+  Authored on 7 rapid/off-field appliers (Cyno, Fischl, Ganyu, Kinich, Lan Yan, Mualani,
+  Xingqiu). Decision (2026-07-14, Nate): keep binary + document; do **not** extend to full
+  sequences and do **not** rename — `noICD` matches gcsim's `ICDTagNone` and KQM vocabulary.
+  **✅ Read since the ICD round (2026-08-15)** — but only on a `NormalAbility` (Mualani's
+  Sharky's Bite is the sole holder there). See "What the planner models" below for why the
+  skill/burst holders are still inert, which is now a stated consequence rather than an
+  unwired field.
 - ⚠️ **Gap — bespoke cadences aren't representable.** Every-other application, the 8-hit
   Burning cadence, Traveler groups, Nahida's `1.5` gauge, the `1,1` reaction groups, or
   Oz's exact 4-hit/5 s cadence collapse to either "standard" or "none" in our data. If a
@@ -159,9 +157,35 @@ We model elemental-application ICD **binary**, not as full sequences:
   to do with element application; the collision was only informal prose (its JSDoc used
   to nickname `0` as "no ICD" — since reworded to "no cooldown").
 
-**Tool surface:** the visualizers **`IcdInstrument.svelte`** (backed by `icd.ts`)
-visualizes this doc — `standard` / `none` / `custom {timer, hits}` presets over a
-uniform attack string, showing which hits apply.
+## What the planner models (ICD round, 2026-08-15)
+
+The rotation parser applies elements from **N/C/P swings as well as E/Q casts**, and
+gates the swings on this mechanic. One model serves both surfaces: `src/lib/utils/icd.ts`
+holds `simulateIcd` (batch — the instrument feeds it a whole hit list) and
+`createIcdClock`/`icdApplies` (streaming — the parser feeds it one swing at a time), with
+the batch form written in terms of the streaming one so they cannot drift.
+
+- **Clocks are keyed `(character, tag)`**, tag ∈ `normal` | `charged`, rotation-wide
+  beside the aura state — a swap-out does not hand back a free application.
+- ⛔ **E/Q casts are NOT gated, on purpose.** ICD counts _hits_; a cast event is an
+  _ability_. We model a multi-hit skill as one application, so a counter over cast events
+  would delete a second cast that in game lands several more hits. This is also why the
+  `noICD` flags on skills and bursts stay inert: at cast granularity they have nothing to
+  say.
+- **Two blanket cases live in `resolveActionIcd`, not in the data** (icd.md's curator
+  signal forbids mass-annotating the default): plunges apply every time (census of gcsim's
+  per-character `plunge.go` — 165 of 166 are `ICDTagNone`), and catalyst charged attacks
+  apply every time (same census over `charge.go` — every catalyst in the roster).
+- ⚠️ **Knowingly divergent, both bounded:** a melee infused CA shares the _normal_ counter
+  for 24 characters in gcsim and gets its own here (worst case one extra application per
+  2.5 s); bespoke groups collapse to standard, per the schema gap above.
+- A **physical** swing reaches no clock at all — it applies nothing, and a hit that
+  applies nothing spends no budget, so a physical string followed by an infusion starts
+  the infused counter fresh.
+
+**Tool surface:** the visualizers **`IcdInstrument.svelte`** (backed by
+`$lib/utils/icd.ts`) visualizes this doc — `standard` / `none` / `custom {timer, hits}`
+presets over a uniform attack string, showing which hits apply.
 
 ## Curator signal
 

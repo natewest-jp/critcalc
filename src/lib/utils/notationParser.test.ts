@@ -33,6 +33,10 @@ import yanfeiJson from '$lib/data/characters/yanfei.json';
 import nahidaJson from '$lib/data/characters/nahida.json';
 import xiaoJson from '$lib/data/characters/xiao.json';
 import keqingJson from '$lib/data/characters/keqing.json';
+import sucroseJson from '$lib/data/characters/sucrose.json';
+import xingqiuJson from '$lib/data/characters/xingqiu.json';
+import xiaoForIcd from '$lib/data/characters/xiao.json';
+import { simulateIcd, STANDARD_ICD } from './icd';
 
 const ganyu = ganyuJson as unknown as CharacterData;
 const kazuha = kazuhaJson as unknown as CharacterData;
@@ -3821,5 +3825,99 @@ describe('parseNotation — A is a bow’s aimed shot; W is inert', () => {
 		const without = parseNotation('Ganyu N1 N2', lookupGanyu, 8);
 		expect(drawn(withW)).toEqual(drawn(without));
 		expect(withW.totalDuration).toBe(without.totalDuration);
+	});
+});
+
+describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round, 2026-08-15)', () => {
+	const sucrose = sucroseJson as unknown as CharacterData;
+	const xingqiu = xingqiuJson as unknown as CharacterData;
+	const xiao = xiaoForIcd as unknown as CharacterData;
+	const team: Record<string, CharacterData> = { Sucrose: sucrose, Xingqiu: xingqiu, Xiao: xiao };
+	const lookup = (n: string): CharacterData | null => team[n] ?? null;
+
+	/** Reactions emitted by one character, in time order, with their source. */
+	const reactionsFrom = (notation: string, charId: string) =>
+		reactionsOf(parseNotation(notation, lookup, 8).events)
+			.filter((e) => e.characterId === charId)
+			.map((e) => [e.reaction, e.castKind]);
+
+	// Anemo is the clean probe: swirl does not consume the aura it reads, so a
+	// count measures the ICD clock and nothing else. A pyro N5 into hydro would
+	// vaporize once and then be measuring aura consumption instead.
+	it('⛔ a catalyst N5 swirls TWICE, not five times — the whole reason ICD came first', () => {
+		expect(reactionsFrom('Xingqiu E > Sucrose N5', 'sucrose')).toEqual([
+			['hydroSwirl', 'normal'],
+			['hydroSwirl', 'normal']
+		]);
+	});
+
+	it('the applications land on swings 1 and 4 — the 3-hit counter, not the 2.5s timer', () => {
+		const events = parseNotation('Xingqiu E > Sucrose N5', lookup, 8).events;
+		const swingEnds = events
+			.filter((e) => e.kind === 'action' && e.characterId === 'sucrose')
+			.map((e) => (e.kind === 'action' ? e.time + e.duration : 0));
+		const applied = reactionsOf(events)
+			.filter((e) => e.characterId === 'sucrose')
+			.map((e) => e.time);
+		// Applied at the swing's HIT instant, the same one dispatchHit uses.
+		expect(applied).toEqual([swingEnds[0], swingEnds[3]]);
+	});
+
+	it('a catalyst charged attack applies EVERY time (gcsim ICDTagNone)', () => {
+		expect(reactionsFrom('Xingqiu E > Sucrose C C C', 'sucrose')).toEqual([
+			['hydroSwirl', 'charged'],
+			['hydroSwirl', 'charged'],
+			['hydroSwirl', 'charged']
+		]);
+	});
+
+	it('normals and charged attacks keep INDEPENDENT counters, on the instrument’s model', () => {
+		// Interleaved CAs must not perturb the normal clock: the normals apply
+		// exactly where `simulateIcd` — the visualizers' ICD instrument, the
+		// model the parser borrowed — puts them given the normal hit times
+		// alone. That is the reconciliation this round exists to make, asserted
+		// rather than asserted-about.
+		const events = parseNotation('Xingqiu E > Sucrose N1 C N1 C N1', lookup, 8).events;
+		const normalEnds = events
+			.filter((e) => e.kind === 'action' && e.characterId === 'sucrose' && e.action === 'normal')
+			.map((e) => (e.kind === 'action' ? e.time + e.duration : 0));
+		const predicted = simulateIcd(normalEnds, STANDARD_ICD)
+			.filter((h) => h.applies)
+			.map((h) => h.time);
+		const applied = reactionsOf(events)
+			.filter((e) => e.characterId === 'sucrose' && e.castKind === 'normal')
+			.map((e) => e.time);
+		expect(applied).toEqual(predicted);
+		// …and every CA applied, so they were present and simply untracked.
+		expect(reactionsFrom('Xingqiu E > Sucrose N1 C N1 C N1', 'sucrose')).toHaveLength(
+			predicted.length + 2
+		);
+	});
+
+	it('a physical swing spends no ICD budget — it applies nothing', () => {
+		// Xingqiu's sword normals are physical. They must neither react nor
+		// silently consume a counter an infusion would later want.
+		expect(reactionsFrom('Sucrose E > Xingqiu N5', 'xingqiu')).toEqual([]);
+	});
+
+	it('an infused plunge applies on every landing (plunges carry no ICD)', () => {
+		// Xiao's burst stance infuses his plunges with anemo.
+		const rs = reactionsFrom('Xingqiu E > Xiao Q P P P', 'xiao');
+		expect(rs.filter(([, kind]) => kind === 'plunge')).toEqual([
+			['hydroSwirl', 'plunge'],
+			['hydroSwirl', 'plunge'],
+			['hydroSwirl', 'plunge']
+		]);
+	});
+
+	it('⛔ E/Q casts stay ungated — a cast is an ABILITY, not a hit', () => {
+		// Xiao's skill has two charges, so both anemo casts land well inside
+		// 2.5s. Modelling one cast as one hit means a counter over cast events
+		// would delete the second, which in game lands several more anemo hits.
+		const rs = reactionsFrom('Xingqiu E > Xiao E E', 'xiao');
+		expect(rs).toEqual([
+			['hydroSwirl', 'skill'],
+			['hydroSwirl', 'skill']
+		]);
 	});
 });

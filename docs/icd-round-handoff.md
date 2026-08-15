@@ -1,69 +1,54 @@
-# ICD round — handoff
+# ICD round
 
-**Status:** NOT STARTED. Scoped 2026-08-15 from the far side of the faction-bonuses round (`fec93f8`), which is where the gap surfaced.
-**Why it exists:** ⚓ Nate asked what it would take to feed catalyst normals, charged attacks and bow aimed shots into the reaction system, and whether stance infusions would come along. The answer is that the _wiring_ is small and the _ICD model_ is the round.
+**Status:** ✅ SHIPPED 2026-08-15. Scoped from the far side of the faction-bonuses round (`fec93f8`), which is where the gap surfaced.
+**Why it existed:** ⚓ Nate asked what it would take to feed catalyst normals, charged attacks and bow aimed shots into the reaction system, and whether stance infusions would come along. The answer was that the _wiring_ is small and the _ICD model_ is the round.
 
 ---
 
 ## The one-paragraph version
 
-The parser emits reactions **only from E/Q casts**. Feeding N/C/P in is a handful of lines — the element is already resolved and already stamped on every action event. But there is **no elemental-application ICD anywhere in `src`**, and casts are naturally spaced enough that its absence has never shown. Normals are exactly where it bites: standard ICD is "3 hits or 2.5s", so a catalyst `N5` applies on hits 1 and 4, and naive wiring would emit **five** swirls where the game gives two — on the single most common token in the tool. Build ICD first; normals-feed-reactions then falls out nearly free.
+The parser emitted reactions **only from E/Q casts**. Feeding N/C/P in is a handful of lines — the element was already resolved and already stamped on every action event. But there was **no elemental-application ICD anywhere in `src`**, and casts are naturally spaced enough that its absence never showed. Normals are exactly where it bites: standard ICD is "3 hits or 2.5s", so a catalyst `N5` applies on hits 1 and 4, and naive wiring would emit **five** swirls where the game gives two — on the single most common token in the tool. ICD went in first; normals-feed-reactions then fell out nearly free.
 
 ---
 
-## What already exists (more than you'd expect)
+## What shipped
 
-**The element rule is done and centralised.** `src/lib/utils/actionElement.ts` — `resolveActionElement(kind, tokenText, weapon, element, infusion)` — is the single source of "is this N/C/P elemental, and with what element", shared by the parser and the notation highlighter. It already encodes all three cases Nate asked about:
+**The instrument's model became the shared model.** `icd.ts` moved from the visualizers' lib to `src/lib/utils/icd.ts` and grew a streaming form beside its batch one:
 
-| case                                                                 | handled |
-| -------------------------------------------------------------------- | ------- |
-| catalyst N/C/P                                                       | ✅      |
-| bow charged / aimed shot (⛔ except `C1`, the physical partial shot) | ✅      |
-| active normal carries an infusion                                    | ✅      |
+| form                            | fed by                                |
+| ------------------------------- | ------------------------------------- |
+| `simulateIcd(hitTimes, params)` | the ICD instrument — a whole hit list |
+| `createIcdClock` + `icdApplies` | the parser — one swing at a time      |
 
-**The element is already stamped downstream.** `ActionEvent.element` carries it per swing (absent ⇒ physical), and the parser-private hit records carry it too. Nothing needs computing — only consuming.
+⚓ **The batch form is written in terms of the streaming one**, so the instrument and the planner cannot drift. The parser test asserts this literally: it re-predicts the parser's normal-attack applications by running `simulateIcd` over the swing times and compares.
 
-**Stance infusions come free.** 16 characters carry `NormalAbility.infusion` (Cyno, Hu Tao, Ayato, Yoimiya, Xiao, Itto, Skirk, Clorinde, Raiden, Mavuika, Chasca, Xilonen, Tartaglia, Nilou, Wanderer, Flins), and `resolveActiveAbility` makes it stance-aware, so mid-rotation infusion already resolves correctly. They start reacting the moment normals feed the aura.
+**`resolveActionIcd`** is the one rule, alongside `actionElement.ts`. It returns `null` for gcsim's `ICDTagNone` — ⚠️ **`null` is not `NO_ICD`**: an untracked source applies always _and touches no counter_, so it cannot reset a counter it shares a tag with (Mualani's `noICD` normals beside her ordinary ones is the reachable case).
 
-**The research is done.** `docs/library/game/icd.md` is thorough and cites gcsim's machine-readable `pkg/core/attacks/icd_groups_gen.go` alongside KQM and the Fandom per-ability catalogue.
+**Two blanket cases live in the rule, not in 166 JSONs.** icd.md's curator signal is "leave the field off when standard", so mass-annotating the default is what it forbids. Both are census results over the local gcsim checkout, cited at the call site:
 
-**The schema field exists.** `noICD?: boolean` on two types in `ability.ts` — ⚠️ read by **zero** code today, a deliberate forward-looking annotation.
+- **plunges apply every time** — 165 of 166 attacks across per-character `plunge.go` are `ICDTagNone` (the exception is Mavuika's Flamestrider, a bespoke group)
+- **catalyst charged attacks apply every time** — every catalyst in the roster is `ICDTagNone` on `charge.go`. Klee's `N1C` loop applying pyro on each C is the observable difference.
 
-**There is a visualizer that already simulates this.** ⚓ Nate: the Visualizers' **ICD timeline** instrument. Whatever model it uses is a second opinion worth reconciling against before inventing one parser-side.
+**Clocks are keyed `(character, tag)`**, tag ∈ `normal` | `charged`, and live at parse scope beside the aura — rotation-wide, so a swap-out neither resets nor freezes one.
 
----
+**⛔ E/Q casts stay ungated, and that is the load-bearing decision.** ICD counts **hits**; a cast event is an **ability**. We model a multi-hit skill as ONE application, so a counter over cast events would suppress a second cast that in game lands four more hits — strictly worse than the optimistic model it replaced. Normals are genuinely one swing = one hit, which is exactly where a counter belongs. A consequence worth stating: the `noICD` flags authored on skills and bursts (Cyno, Fischl, Ganyu, Kinich, Lan Yan, Xingqiu) remain inert, now for a stated reason rather than as an unwired field. Only `NormalAbility.noICD` is read, and Mualani is its sole holder.
 
-## What is missing
+**A physical swing reaches no clock.** `resolveActionElement` returning `undefined` means the swing applies nothing, and a hit that applies nothing spends no budget — so a physical string followed by an infusion starts the infused counter fresh, which is the KQM model.
 
-**All of it, on the parser side.** Grep for `applicationICD` / `elementalICD` / `gaugeUnit` / `auraGauge` in `src` returns nothing.
-
-The aura model is deliberately coarse — a presence `Set`:
-
-```ts
-type AuraState = {
-	applied: Set<AuraElement>; // no gauge units
-	burning: boolean; // no decay
-	quickened: boolean;
-	bloomCores: number;
-};
-```
-
-`computeReactionsForCast` documents itself as **optimistic**: "any opposing aura makes the matching reaction eligible." That is a defensible choice for a tool that visualises mechanics rather than computing damage — ⚠️ **do not casually replace it with a full gauge simulation.** The question this round must answer is narrower: _how often does a repeating source APPLY its element_, which is ICD, not gauge decay.
+**Stance infusions came free, as predicted.** 16 characters carry `NormalAbility.infusion` and `resolveActiveAbility` is stance-aware, so Xiao's burst-stance plunges swirl the moment plunges apply.
 
 ---
 
-## The work, in the order it wants doing
+## Knowingly divergent from gcsim (both bounded, both documented at the call site)
 
-1. **Reconcile with the visualizer.** Read the ICD instrument's model first. If it is already correct and testable, the parser should borrow its vocabulary rather than grow a second one.
-2. **An ICD clock in the parser**, keyed by (character, ICD group) — the "3 hits or 2.5s, whichever first, each resetting both counters" rule from `icd.md` §"What ICD is". ⚠️ Read that section rather than reimplementing from memory; the interaction between the two counters has a documented worked example that is easy to get subtly wrong.
-3. **Per-ability ICD-group tagging in the data.** gcsim's `icd_groups_gen.go` is the table. `noICD` already covers the "applies every hit" exception and has a documented authoring rule in `icd.md` (⛔ "leave the field off" when standard — don't mass-annotate the default).
-4. **Then wire normals into the reaction stream.** `emitReactionsAtCast` already exists and is called from exactly two sites, both E/Q. The normal loop in `notationParser.ts` has both the element (`nElement`) and each swing's time (`localCursor`) in hand.
+- A **melee infused charged attack shares the NORMAL counter** for 24 characters in gcsim (`ICDTagNormalAttack` on `charge.go` — Keqing, Kazuha, Xingqiu…); we give it its own. Worst case is one extra application per 2.5 s window.
+- **Bespoke groups collapse to standard** — Pole Extra Attack's 0.5 s timer, Ayaka's and Yae's charged groups, Oz's 5 s / 4-hit cadence. This is the pre-existing schema gap icd.md already tracks; nothing here made it worse.
 
 ---
 
-## The separate, smaller thing that is NOT in this round
+## Still open
 
-**`infuse` EFFECTS are unwired** — a different mechanism from `NormalAbility.infusion`, and the parser reads none of the five:
+**The five `infuse` EFFECTS are unwired** — a different mechanism from `NormalAbility.infusion`, and the parser reads none of them:
 
 | character | effect                              | target   |
 | --------- | ----------------------------------- | -------- |
@@ -73,10 +58,6 @@ type AuraState = {
 | Kazuha    | Crimson Momiji → anemo              | `self`   |
 | Lohen     | Unforeseen Strike → cryo            | `self`   |
 
-The two `active` ones are the interesting case: an infusion granted **to whoever is on field**, which means tracking an infusion window per receiver rather than reading a field off the active normal ability. Worth doing after normals react — until then it changes nothing observable.
+The two `active` ones are the interesting case: an infusion granted **to whoever is on field**, which means tracking an infusion window per receiver rather than reading a field off the active normal ability. This is now the observable follow-on — before this round it changed nothing, because normals did not react.
 
----
-
-## Ordering, stated plainly
-
-⛔ **Do not wire normals into reactions before ICD exists.** It ships a chart that over-counts reactions on every normal string, and it would look like a feature rather than a regression.
+**Summon ticks still do not react.** Off-field summon damage ticks synthesize hits at finalize (buff-bar merge round) but feed `deriveBuffWindows` only, deliberately — a finalize-time hit cannot be interleaved into parse-order state. Reactions from Oz, Guoba and friends would need the same two-pass parse that stack effects do.

@@ -80,7 +80,10 @@ export type ReactionEvent = {
 	characterId: string;
 	reaction: Reaction;
 	time: number;
-	castKind: 'skill' | 'burst';
+	/** What applied the element. `skill`/`burst` are cast sites; the three
+	 *  action classes arrived with the ICD round (2026-08-15) — a catalyst's
+	 *  normals, a catalyst/bow charged shot and an infused plunge all react. */
+	castKind: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
 };
 
 /** Scheduled expiry of a tracked shield window (not shatter-by-damage). */

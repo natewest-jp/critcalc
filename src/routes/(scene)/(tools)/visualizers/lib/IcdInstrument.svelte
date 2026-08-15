@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { elementIcon } from '$lib/data/elementIcons.generated';
 	import Mark from '$lib/components/Mark.svelte';
-	import { simulateIcd, uniformHitTimes, STANDARD_ICD, type IcdParams } from './icd';
+	import { simulateIcd, uniformHitTimes, STANDARD_ICD, type IcdParams } from '$lib/utils/icd';
 	import { icdHitsToGaugeApps, type HandoffMessage } from './workspace';
 
 	const ELEMENTS = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'] as const;

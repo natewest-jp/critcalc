@@ -11,7 +11,7 @@ import {
 	normalizeSlots,
 	viewportCapacity
 } from './workspace';
-import { simulateIcd, uniformHitTimes, STANDARD_ICD } from './icd';
+import { simulateIcd, uniformHitTimes, STANDARD_ICD } from '$lib/utils/icd';
 
 const ALL = INSTRUMENTS.map((i) => i.id);
 

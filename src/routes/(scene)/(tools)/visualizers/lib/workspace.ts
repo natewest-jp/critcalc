@@ -7,7 +7,7 @@
  */
 
 import type { Application, ElementId } from './gauge';
-import type { IcdHit } from './icd';
+import type { IcdHit } from '$lib/utils/icd';
 
 // ---------------------------------------------------------------------------
 // Registry
