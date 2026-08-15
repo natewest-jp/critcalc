@@ -25,6 +25,7 @@ import {
 	formatResShredDisplayValue,
 	resShredDisplayStat
 } from './buffDisplay';
+import { mergeRefreshedBars } from './mergeRefreshedBars';
 
 // Re-exported for renderer convenience (the template types against these).
 export type { TeamBuffBar, TeamBuffSubrow };
@@ -136,5 +137,14 @@ export function projectTeamBuffRows(
 	// keyed {#each} renders with that exact identity — coarser keys collide
 	// (Chevreuse's dual-element shred rows share one sourceLabel; see the
 	// archived each_key_duplicate lesson).
-	return [...rowMap].map(([key, row]) => ({ ...row, key }));
+	//
+	// Bars refresh-merge per row (2026-08-15): a buff re-applied before it
+	// expires is ONE covered span. No extra gate here — a team bar is
+	// `{start, end, effects}` with no envelope or ICD to disagree about, so the
+	// display comparison is the whole test.
+	return [...rowMap].map(([key, row]) => ({
+		...row,
+		bars: mergeRefreshedBars(row.bars),
+		key
+	}));
 }

@@ -539,3 +539,199 @@ describe('variant effects resolve per cast token', () => {
 		expect(dur('Yun Jin hE')).toBeCloseTo(0.8, 6);
 	});
 });
+
+// ── artifact onHit + summon-tick hits (2026-08-15) ──
+//
+// The hit stream used to stop at the active character, so every hit-triggered
+// artifact set was authored-but-unreachable and any `onHit` effect held by an
+// off-field damage dealer never fired. These cover the mechanism and the two
+// outcomes that actually prove the model — see the step-6c note in the parser.
+
+describe('artifact onHit — summon-borne hits', () => {
+	const tenacity: Record<string, LoadoutEntry> = {
+		holder: { artifactSetId: 'tenacity_of_the_millelith' }
+	};
+	const tickEffect = (type: 'damage' | 'heal') =>
+		({
+			type,
+			trigger: { type: 'summonTick', interval: 2 },
+			...(type === 'damage' ? { element: 'electro' } : {}),
+			scaling: 100,
+			stat: 'atk'
+		}) as unknown as Effect;
+
+	const holderWithSummon = (tick: 'damage' | 'heal') => {
+		const c = mkChar('holder', 'Holder');
+		c.abilities[1] = mkSkill('holder', {
+			summons: [{ label: 'Turret', duration: 12, effects: [tickEffect(tick)] }]
+		});
+		return c;
+	};
+
+	// The load-bearing pair. Tenacity is skill-hit-only with a 3s window, so a
+	// holder whose skill leaves nothing behind gets exactly one 3s stub off the
+	// cast, while a holder whose skill leaves a DAMAGING summon gets one long
+	// merged bar. That 3s-vs-covered split is the real Xingqiu/Xiangling
+	// difference, and it is the whole reason these sets are worth drawing.
+	it('a damaging summon carries the buff; refreshes merge into ONE bar', () => {
+		const { team } = run('Holder E ~14s', [holderWithSummon('damage')], {}, tenacity);
+		const rows = team.filter((r) => r.key.includes('tenacity_of_the_millelith'));
+		expect(rows).toHaveLength(1);
+		expect(rows[0].bars).toHaveLength(1);
+		// Ticks at +2/4/6/8/10 each re-trigger inside the open 3s window.
+		expect(rows[0].bars[0].end - rows[0].bars[0].start).toBeGreaterThan(10);
+	});
+
+	it('⛔ a HEAL-only summon carries nothing — a heal tick is not a hit', () => {
+		const { team } = run('Holder E ~14s', [holderWithSummon('heal')], {}, tenacity);
+		const rows = team.filter((r) => r.key.includes('tenacity_of_the_millelith'));
+		// The E cast itself still hits, so the set fires once for its 3s.
+		expect(rows).toHaveLength(1);
+		expect(rows[0].bars).toHaveLength(1);
+		expect(rows[0].bars[0].end - rows[0].bars[0].start).toBeCloseTo(3, 6);
+	});
+
+	it('a summon with no damage effect at all leaves the same 3s stub', () => {
+		const c = mkChar('holder', 'Holder');
+		c.abilities[1] = mkSkill('holder', { summons: [{ label: 'Inert', duration: 12 }] });
+		const { team } = run('Holder E ~14s', [c], {}, tenacity);
+		const rows = team.filter((r) => r.key.includes('tenacity_of_the_millelith'));
+		expect(rows[0].bars[0].end - rows[0].bars[0].start).toBeCloseTo(3, 6);
+	});
+
+	// Deepwood authors its shred TWICE (once keyed to skill hits, once to burst).
+	// A Dendro RES −30% from an E and one from a Q are the same debuff, so the
+	// shape grouping must collapse them rather than stack two identical rows.
+	it('Deepwood: two trigger entries render as ONE shred row', () => {
+		const c = mkChar('holder', 'Holder');
+		const { team } = run('Holder E Q', [c], {}, { holder: { artifactSetId: 'deepwood_memories' } });
+		const rows = team.filter((r) => r.key.includes('deepwood_memories'));
+		expect(rows).toHaveLength(1);
+		expect(rows[0].kind).toBe('debuff');
+	});
+});
+
+describe('artifact onHit — real characters', () => {
+	const load = async (id: string) =>
+		(await import(`$lib/data/characters/${id}.json`)).default as unknown as CharacterData;
+	const tenacity: Record<string, LoadoutEntry> = {
+		xingqiu: { artifactSetId: 'tenacity_of_the_millelith' },
+		xiangling: { artifactSetId: 'tenacity_of_the_millelith' }
+	};
+	const span = (rows: ReturnType<typeof projectTeamBuffRows>) => {
+		const r = rows.filter((x) => x.key.includes('tenacity_of_the_millelith'));
+		if (r.length === 0) return 0;
+		return r[0].bars.reduce((acc, b) => acc + (b.end - b.start), 0);
+	};
+
+	// ⚓ Xingqiu's off-field damage is his BURST rain; Tenacity is SKILL-hit-only,
+	// so it stays a 3s stub on him no matter how much off-field damage he deals.
+	// Xiangling's Guoba is a skill summon and ticks, so hers is covered. The set's
+	// whole reputation is this difference — if these two ever report the same
+	// number, the hit synthesis has stopped distinguishing skill from burst.
+	it('Xingqiu keeps a 3s stub; Xiangling rides Guoba', async () => {
+		const [xingqiu, xiangling] = await Promise.all([load('xingqiu'), load('xiangling')]);
+		const xq = span(run('Xingqiu E Q ~20s', [xingqiu], {}, tenacity).team);
+		const xl = span(run('Xiangling E Q ~20s', [xiangling], {}, tenacity).team);
+		expect(xq).toBeCloseTo(3, 6);
+		// Observed 10.1s — Guoba's ticks, merged. Asserted loosely so a Guoba
+		// cadence recuration moves the number without breaking the invariant.
+		expect(xl).toBeGreaterThan(6);
+	});
+});
+
+// ── Silken Moon's Serenade: Moonsign tiering (2026-08-15) ──
+//
+// The pattern any future faction-gated set should copy: the TIER is a
+// `teamFaction` condition on the effect, resolved once off team composition,
+// not a runtime state the parser has to track. Mechanics from gcsim
+// internal/artifacts/silkenmoonsserenade — level 0 gives NOTHING, 1 gives
+// +60 EM, 2+ gives +120.
+describe('artifact onHit — Silken Moon Moonsign tiers', () => {
+	const load = async (id: string) =>
+		(await import(`$lib/data/characters/${id}.json`)).default as unknown as CharacterData;
+	const silken: Record<string, LoadoutEntry> = {
+		flins: { artifactSetId: 'silken_moons_serenade' }
+	};
+	const silkenRows = (rows: ReturnType<typeof projectTeamBuffRows>) =>
+		rows.filter((x) => x.key.includes('silken_moons_serenade'));
+	const emValue = (rows: ReturnType<typeof projectTeamBuffRows>) => {
+		const r = silkenRows(rows);
+		if (r.length === 0) return null;
+		return r[0].bars[0].effects.find((e) => e.stat === 'em')?.displayValue ?? null;
+	};
+
+	it('Moonsign 1 → +60 EM; Moonsign 2 → +120 EM; the tiers never both fire', async () => {
+		const [flins, ineffa, bennett] = await Promise.all([
+			load('flins'),
+			load('ineffa'),
+			load('bennett')
+		]);
+		// Flins alone is Moonsign level 1 (Bennett is not Moonsign).
+		const nascent = run('Flins E Q > Bennett E', [flins, bennett], {}, silken);
+		expect(emValue(nascent.team)).toBe('+60');
+		// Flins + Ineffa is level 2 — Ascendant.
+		const ascendant = run('Flins E Q > Ineffa E', [flins, ineffa], {}, silken);
+		expect(emValue(ascendant.team)).toBe('+120');
+		// Exactly one EM rung fires in each case — the negation on the Nascent
+		// entry is what stops both landing in one pooled bar.
+		for (const res of [nascent, ascendant]) {
+			for (const bar of silkenRows(res.team)[0].bars) {
+				expect(bar.effects.filter((e) => e.stat === 'em')).toHaveLength(1);
+			}
+		}
+	});
+
+	it('⛔ Moonsign 0 → the 4pc does nothing at all', async () => {
+		const [bennett, xingqiu] = await Promise.all([load('bennett'), load('xingqiu')]);
+		const { team } = run(
+			'Bennett E Q > Xingqiu E',
+			[bennett, xingqiu],
+			{},
+			{ bennett: { artifactSetId: 'silken_moons_serenade' } }
+		);
+		expect(silkenRows(team)).toHaveLength(0);
+	});
+
+	// The set grants EM plus three lunar Reaction Bonus stats on one trigger.
+	// They must pool into ONE bar, the way a multi-stat onCast set does — not
+	// split into four rows saying the same thing at the same time.
+	it('all four stats pool into a single bar', async () => {
+		const [flins, ineffa] = await Promise.all([load('flins'), load('ineffa')]);
+		const { team } = run('Flins E Q > Ineffa E', [flins, ineffa], {}, silken);
+		const rows = silkenRows(team);
+		expect(rows).toHaveLength(1);
+		expect(rows[0].bars[0].effects.map((e) => e.stat).sort()).toEqual([
+			'em',
+			'lunarBloomReactionBonus',
+			'lunarChargedReactionBonus',
+			'lunarCrystallizeReactionBonus'
+		]);
+	});
+});
+
+// ── refresh-merge on the row projection (2026-08-15) ──
+//
+// A buff re-applied before it expires is ONE covered span. The windows stay
+// one-per-trigger (provenance, export); only the drawing merges — which is what
+// kills the duplicate labels stacking on each other.
+describe('buff rows — refresh merge', () => {
+	it('a recast inside the duration extends one bar instead of stacking two', () => {
+		const c = mkChar('buffer', 'Buffer');
+		c.abilities[1] = mkSkill('buffer', { effects: [teamBuff({ duration: 12 })] });
+		const { team, rotation } = run('Buffer E ~8s E', [c]);
+		expect(team[0].bars).toHaveLength(1);
+		expect(team[0].bars[0].start).toBe(0);
+		// Spans to the SECOND cast's end, not the first's.
+		expect(team[0].bars[0].end).toBeGreaterThan(12);
+		// ⚓ The IR is untouched — two triggers, still two windows.
+		expect(rotation.windows.filter((w) => w.kind === 'buff')).toHaveLength(2);
+	});
+
+	it('a recast after expiry still draws two bars', () => {
+		const c = mkChar('buffer', 'Buffer');
+		c.abilities[1] = mkSkill('buffer', { effects: [teamBuff({ duration: 8 })] });
+		const { team } = run('Buffer E ~10s E', [c]);
+		expect(team[0].bars).toHaveLength(2);
+	});
+});

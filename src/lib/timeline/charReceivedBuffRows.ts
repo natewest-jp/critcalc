@@ -20,6 +20,7 @@ import type {
 	MergedEffectDisplay
 } from './types';
 import { formatBuffDisplayValue } from './buffDisplay';
+import { mergeRefreshedBars } from './mergeRefreshedBars';
 
 export type { CharReceivedBuffBar, CharReceivedBuffSubrow };
 
@@ -84,5 +85,28 @@ export function projectCharReceivedBuffRows(
 		}
 	}
 
-	return [...rowMap.values()];
+	// Bars refresh-merge per row (2026-08-15) — see mergeRefreshedBars.
+	//
+	// ⚠ GATED HARDER THAN THE TEAM SURFACE, and each clause is load-bearing:
+	// a ramp/decay bar draws its envelope from `buffStart`, and a refresh
+	// RESTARTS that envelope — merging two would paint one smooth gradient over
+	// a buff that actually reset, which is a lie the team surface cannot tell
+	// because it has no envelopes. `duration` and `procCooldown` feed the
+	// tooltip and `isMutuallyExclusive` changes what it says, so bars that
+	// disagree on any of them stay separate rather than have one silently win.
+	return [...rowMap.values()].map((row) => ({
+		...row,
+		bars: mergeRefreshedBars(
+			row.bars,
+			(a, b) =>
+				a.rampParams === undefined &&
+				b.rampParams === undefined &&
+				a.decayParams === undefined &&
+				b.decayParams === undefined &&
+				a.duration === b.duration &&
+				a.procCooldown === b.procCooldown &&
+				a.isMutuallyExclusive === b.isMutuallyExclusive &&
+				a.sourceLabel === b.sourceLabel
+		)
+	}));
 }

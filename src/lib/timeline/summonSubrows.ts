@@ -31,35 +31,21 @@
  * (summonLaneTop and friends) stays component-side.
  */
 
-import { evalCondition, type TimelineBar, type TimelineWindow } from '$lib/utils/notationParser';
+import {
+	computeSummonTicks,
+	type TimelineBar,
+	type TimelineWindow
+} from '$lib/utils/notationParser';
 import type { CastAbility, Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import type { SlottedTrack, SummonSubrow } from './types';
 
-/** Compute tick timestamps for a summon's `effects[]` over [spawnAt, endAt].
- *  Walks each effect with `trigger.type === "summonTick"` and emits one
- *  marker per interval. Conditions on the effect must definitively-true
- *  (or undefined); unresolvable runtime conditions abstain (no markers). */
-export function computeSummonTicks(
-	summon: Summon,
-	spawnAt: number,
-	endAt: number,
-	cLevel: number
-): number[] {
-	const ticks: number[] = [];
-	for (const eff of summon.effects ?? []) {
-		if (eff.trigger.type !== 'summonTick') continue;
-		if (evalCondition(eff.conditions, 4, new Set(), cLevel) === false) continue;
-		const interval = eff.trigger.interval;
-		if (!(interval > 0)) continue;
-		const firstDelay = eff.trigger.firstTickDelay ?? interval;
-		for (let t = spawnAt + firstDelay; t < endAt; t += interval) {
-			ticks.push(t);
-		}
-	}
-	ticks.sort((a, b) => a - b);
-	return ticks;
-}
+/** Tick timestamps for a summon's `effects[]` over [spawnAt, endAt].
+ *  ↻ 2026-08-15: MOVED to `notationParser.ts` and re-exported here. The
+ *  finalize pass needs the same walk to synthesize off-field hits, and the
+ *  parser is runtime-import-free, so it cannot import from `$lib/timeline`.
+ *  Re-exported rather than forked — see the ⛔ note at its new home. */
+export { computeSummonTicks };
 
 /** Resolve ALL summons owned by a given E/Q cast (variant-aware). Empty for
  *  stance abilities or abilities without `summons[]`.

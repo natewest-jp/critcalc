@@ -198,7 +198,7 @@ export type BuffWindowSource =
 	| {
 			type: 'artifact';
 			setId: string;
-			trigger: 'cast' | 'reaction';
+			trigger: 'cast' | 'reaction' | 'hit';
 			/** onCast trigger-ability grouping key ('any' fires on both E and Q). */
 			triggerKey?: 'any' | 'skill' | 'burst';
 			abilityClass?: 'skill' | 'burst';

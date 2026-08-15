@@ -34,6 +34,7 @@
 
 import {
 	evalCondition,
+	onHitTriggerMatches,
 	type ConditionContext,
 	type CharacterTrack,
 	type HitEvent
@@ -720,6 +721,141 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						effects: pool.effects,
 						source: { type: 'artifact', setId: artifactSetId, trigger: 'reaction' }
 					});
+				}
+			}
+
+			// ── Artifact onHit (buff + resShred), once per character ──
+			//
+			// ⚓ Deepwood Memories, Tenacity of the Millelith and Silken Moon's
+			// Serenade were all authored and none of them rendered, because this
+			// section only ever had `onCast` and `onReaction` branches. Their
+			// triggers are hits, and until 2026-08-15 the hit stream stopped at the
+			// active character — see the step-6c note in notationParser.ts.
+			//
+			// ⚠ ROTATION-WIDE, not per-track (hence `firstTrackOfChar`, the same
+			// gate onReaction uses). A summon keeps ticking while its owner is
+			// OFF-FIELD, so scoping these to the holder's active span — the way the
+			// N/CA/P passes scope theirs — would cut the window at every swap and
+			// report a fraction of the real uptime.
+			const artifactOnHitEffects = allEffects.filter(
+				(e): e is BuffEffect | ResShredEffect =>
+					e.trigger.type === 'onHit' &&
+					e.duration != null &&
+					((e.type === 'buff' && targetsTeamOrActive(e.target)) ||
+						(e.type === 'resShred' && targetsEnemy(e.target)))
+			);
+			if (firstTrackOfChar && artifactOnHitEffects.length > 0) {
+				// ⚓ A SET PRODUCES EFFECTS; SEVERAL TRIGGER ENTRIES ARE SEVERAL
+				// DOORWAYS TO THE SAME ONE. Deepwood authors its shred twice — once
+				// keyed to skill hits, once to burst hits — but a Dendro RES −30% from
+				// an E and one from a Q are the same debuff on the same enemy. Every
+				// qualifying effect is therefore canonicalised to a SHAPE
+				// REPRESENTATIVE, so a skill hit and a burst hit hand the merge below
+				// the SAME object and it treats them as one continuous window rather
+				// than two identical rows stacked. Shape key mirrors
+				// `dedupResShredByElement`'s convention.
+				//
+				// ⚠ Conditions are evaluated ONCE here rather than per hit: what gates
+				// an artifact effect is team composition and constellation, both static
+				// across a rotation. Silken Moon's Nascent/Ascendant split is exactly
+				// this — `teamFaction: moonsign` resolves off `baseCtx`, so the tier is
+				// picked once and the right rung is the only one that ever fires.
+				const shapeOf = (effect: BuffEffect | ResShredEffect): string =>
+					effect.type === 'resShred'
+						? `res::${effect.shredStat ?? 'res'}::${effect.element ?? '_all'}::${effect.value}::${effect.duration}`
+						: `buff::${effect.stat}::${effect.value}::${effect.duration}`;
+				const repByShape = new Map<string, BuffEffect | ResShredEffect>();
+				const qualified: {
+					effect: BuffEffect | ResShredEffect;
+					rep: BuffEffect | ResShredEffect;
+					shape: string;
+				}[] = [];
+				for (const effect of artifactOnHitEffects) {
+					if (
+						evalCondition(
+							effect.conditions,
+							4,
+							new Set(),
+							cLevel,
+							undefined,
+							undefined,
+							baseCtx
+						) === false
+					) {
+						continue;
+					}
+					const shape = shapeOf(effect);
+					const rep = repByShape.get(shape) ?? effect;
+					repByShape.set(shape, rep);
+					qualified.push({ effect, rep, shape });
+				}
+
+				// Every hit this character landed, in time order. Includes the
+				// summon-tick hits synthesized at finalize, which is the whole point —
+				// they arrive appended rather than merged, so the sort is required,
+				// not cosmetic.
+				const charHits = hits
+					.filter((h) => h.characterId === track.characterId)
+					.slice()
+					.sort((a, b) => a.time - b.time);
+
+				// ⚠ PARTITIONED BY (debuff, duration), NOT ONE PASS OVER EVERYTHING.
+				// `debuff` is a per-WINDOW flag and pooled effects share one end, so a
+				// set mixing a buff with a shred, or two different durations, must not
+				// land in one bar. Within a partition the effects DO pool: Silken
+				// Moon's four (EM + three lunar reaction bonuses) draw one bar, the way
+				// the onCast branch already pools a multi-stat cast set.
+				const partitions = new Map<string, typeof qualified>();
+				for (const q of qualified) {
+					const key = `${q.effect.type === 'resShred'}::${q.effect.duration}`;
+					const list = partitions.get(key) ?? [];
+					list.push(q);
+					partitions.set(key, list);
+				}
+
+				for (const part of partitions.values()) {
+					const debuff = part[0].effect.type === 'resShred';
+					const duration = part[0].effect.duration!;
+					// `procCooldown` is the set's own ICD (Tenacity: 0.5s), clocked PER
+					// SHAPE. Distinct from the refresh-merge below — the ICD decides
+					// whether a hit triggers at all, the merge decides whether a trigger
+					// draws a new bar or extends the open one.
+					const procReady = new Map<string, number>();
+					let lastWin: BuffWindow | undefined;
+					for (const hit of charHits) {
+						const fired: (BuffEffect | ResShredEffect)[] = [];
+						const seen = new Set<string>();
+						for (const q of part) {
+							if (seen.has(q.shape)) continue;
+							if (q.effect.trigger.type !== 'onHit') continue;
+							if (!onHitTriggerMatches(q.effect.trigger, hit, track.characterId)) continue;
+							if (hit.time < (procReady.get(q.shape) ?? -Infinity)) continue;
+							const icd = typeof q.effect.procCooldown === 'number' ? q.effect.procCooldown : 0;
+							procReady.set(q.shape, hit.time + icd);
+							seen.add(q.shape);
+							fired.push(q.rep);
+						}
+						if (fired.length === 0) continue;
+						const end = hit.time + duration;
+						if (lastWin && hit.time <= lastWin.end && sameEffects(lastWin.effects, fired)) {
+							// An overlapping re-trigger of the SAME effect set extends
+							// rather than stacks — this is what makes a ticking off-field
+							// summon read as one connected bar instead of a picket fence
+							// of 3s stubs. The equality guard matters once a set can fire
+							// different subsets on different hits.
+							lastWin.end = end;
+							continue;
+						}
+						lastWin = emit({
+							characterId: track.characterId,
+							start: hit.time,
+							end,
+							debuff: debuff || undefined,
+							effects: fired,
+							sourceActionId: hit.sourceEventId >= 0 ? hit.sourceEventId : undefined,
+							source: { type: 'artifact', setId: artifactSetId, trigger: 'hit' }
+						});
+					}
 				}
 			}
 		}
