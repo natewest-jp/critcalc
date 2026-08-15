@@ -159,7 +159,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 30,
 					"durationType": "fixed",
 					"conditions": {
@@ -176,7 +179,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 30,
 					"durationType": "fixed",
 					"conditions": {
@@ -193,7 +199,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 30,
 					"durationType": "fixed",
 					"conditions": {
@@ -229,12 +238,13 @@
 					"stat": "hydroDmgBonus",
 					"value": {
 						"type": "unknown",
-						"description": "Up to +30% Hydro DMG Bonus, scaling with current HP above 30% of Max HP (0.6% per 1% HP above the threshold)."
+						"description": "+0.6% per 1% HP above 30% Max HP, cap 30%"
 					},
 					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
+				"2026-08-15: unknown-value `description` shortened from 109 chars to 41. Same defect class as Prune's Tolling Synchronicity, found in the same sweep — the field is a display label rendered verbatim in the tooltip's value slot, not prose. Facts are unchanged: 0.6% Hydro DMG Bonus per 1% of current HP above the 30%-of-Max-HP threshold, capping at +30% (reached at 80% HP).",
 				"HP%→Hydro DMG: 0.6% per 1% current HP above 30%, capped at +30%. updateA4() in asc.go runs on every heal/drain event; a4Buff applied as attributes.HydroP modifier. Authored as a permanent-bonus passive buff with unknown value (HP-dynamic). Renders as a chip on TeamBonusesBlock; tooltip explains the scaling."
 			],
 			"description": "For each 1% of Neuvillette's current HP greater than 30% of Max HP, he will gain 0.6% Hydro DMG Bonus. A maximum bonus of 30% can be obtained this way."
