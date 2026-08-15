@@ -26,7 +26,7 @@ That computes the right _first_ cast, but `cooldownStartDelay` means **animation
 
 ### 3. ⚓ Xilonen `terminatesOnSwap: false → true`
 
-The handoff's step-one question. **Nate's call, on reasoned evidence rather than a first-hand observation** — recorded in full in her `_curatorNotes`, and worth re-opening if anyone plays her:
+The handoff's step-one question. Called by Nate on the evidence below, then **verified in-game the same day — settled, not a standing assumption.** Kept in her `_curatorNotes` only so nobody re-opens it:
 
 - **For:** gcsim's `onExitField` (`xilonen.go:78`) exits her Nightsoul on swap-out, and the same pattern appears independently in kinich/mualani/mavuika — all three authored `true` here. C2 reads "Geo Source Sample will be active **even when she is off-field**", which is only a gain if the base "active while in Nightsoul's Blessing" does _not_ reach off-field. And the state is a movement mode (Blade Roller, with sprint/climb point drain), which off-field has no meaning for.
 - **Against:** the in-game text lists only two exits (points depleted, skill re-used); the Fandom Gameplay Notes are otherwise exhaustive and never mention swapping; Citlali/Ororon/Chasca prove off-field Nightsoul is per-character, not a blanket rule.
@@ -51,7 +51,7 @@ Reaching those notes is `action=parse&prop=wikitext` against the MediaWiki API u
 
 ## Still open
 
-- ⚠️ **Ifa's `terminatesOnSwap` is still `false`, and the Xilonen argument applies to him verbatim** — his Nightsoul is a _hover_ with Supporting Fire normals, structurally on-field exactly like Blade Roller. It was left alone because the handoff only ever flagged Xilonen's flag as disputed, so flipping his would have been an unasked-for second data verdict. If it flips, his E returns at swap + 7.5s instead of 17.5s.
+- ⛔ **Ifa's `terminatesOnSwap: false` is CORRECT — do not flip it to match Xilonen.** ⚓ Nate verified in-game 2026-08-15. This doc originally claimed the Xilonen argument applied to him verbatim; **it does not.** Xilonen swaps out instantly and Blade Roller dies with the swap. Ifa is **airborne**: he has to be brought down first — cancel the flight, or use the in-flight Hold-E plunge — and only then can you swap. His cooldown starts when he **LANDS**, which is neither the swap nor a fixed offset from the cast. So he is not a one-field edit; he needs **stance-CANCEL mechanics** — a token that _terminates_ a stance rather than opening one, the same machinery Xilonen's E-re-press would need and which the parser has no notion of. Its own round, and not a small one. Until then the authored 10s hover is the natural point-drain landing, `cooldownStartsAtStanceEnd` reads it correctly, and an early landing is the unmodelled case (already in his caveat).
 - **A swap-terminated stance still keeps its FULL nominal bar width** while only its gating window clamps (the deliberate P4 note at the swap site). Cast Raiden Q, swap at 1s, and the pill still draws 7s. ⚓ Nate 2026-08-15: leave it, out of scope. For Xilonen this now lands in `barPhases` case B (stance window outlasts the cooldown), which is coherent — the bar says she is ready before the nominal window ends. Changing it corpus-wide across ~25 stances would be its own round, and wants Nate's eyes.
 
 ## ⛔ Ruled out, do not re-derive
