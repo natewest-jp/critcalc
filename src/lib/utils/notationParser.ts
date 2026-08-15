@@ -54,7 +54,14 @@ import {
 	evalTriggerFilter
 } from '$lib/types/ability';
 import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
-import { resolveActionElement } from '$lib/utils/actionElement';
+import { resolveActionElement, type NormalActionKind } from '$lib/utils/actionElement';
+import {
+	createIcdClock,
+	icdApplies,
+	icdTagFor,
+	resolveActionIcd,
+	type IcdClock
+} from '$lib/utils/icd';
 import { computeTeamEnabledReactions, computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import {
@@ -1457,7 +1464,16 @@ function dispatchConsumeStacks(
 //     Burgeon (consume core).
 //   - No element-absorption tracking (Kazuha-shape characters use their own
 //     element; absorbed elements are deferred to a future P4 expansion).
-//   - No infusion / per-N-hit emission. Cast-only.
+//
+// ⚓ N/C/P SWINGS APPLY TOO (ICD round, 2026-08-15), AND ONLY THEY ARE GATED.
+// A catalyst's normals, a catalyst or bow charged shot and an infused plunge
+// all feed the aura — behind the elemental-application ICD clock, because a
+// naive wiring would emit five swirls from a catalyst `N5` where the game
+// gives two. ⛔ E/Q casts stay ungated on purpose: **ICD counts HITS, and a
+// cast event is not a hit — it is an ABILITY**. We model a multi-hit skill as
+// one application, so a counter over cast events would suppress a second cast
+// that in game lands four more hits. Normals are genuinely one swing = one
+// hit, which is exactly where the counter belongs. See docs/library/game/icd.md.
 //
 // Cold-start emerges naturally: the first cast sees an empty aura set and
 // emits no reactions; only the LATER casts (after some applicator has fired)
@@ -1479,8 +1495,9 @@ function createAuraState(): AuraState {
 	return { applied: new Set(), burning: false, quickened: false, bloomCores: 0 };
 }
 
-/** Returns the typed reactions a cast of `element` plausibly triggers given the
- *  current aura state. Optimistic: any opposing aura makes the matching reaction
+/** Returns the typed reactions an application of `element` plausibly triggers
+ *  given the current aura state — an E/Q cast, or an N/C/P swing that cleared
+ *  its ICD clock. Optimistic: any opposing aura makes the matching reaction
  *  eligible. The consumer's `trigger.reaction` filter narrows further at
  *  dispatch time. `hasMoonsignTeam` enables `lunarCrystallize` emission for
  *  geo casts (gating: 2+ Moonsign on team). `teamEnabledReactions` CONVERTS
@@ -1497,7 +1514,7 @@ function createAuraState(): AuraState {
  *  them via the synthetic emission path; deferred to manual triggers / future
  *  Moonsign reaction surface). stellarSwirl is likewise not emitted until its
  *  7.0 mechanics are confirmed. */
-function computeReactionsForCast(
+function computeReactionsForApplication(
 	element: Element,
 	aura: AuraState,
 	hasMoonsignTeam: boolean,
@@ -1573,12 +1590,12 @@ function computeReactionsForCast(
 	return reactions;
 }
 
-/** Mutates `aura` in place to reflect the post-cast state. Anemo and Geo are
- *  no-ops (they don't apply or consume aura in our simplified model). PHEC and
- *  dendro casts apply consumption rules in priority order: bloom-core ops →
+/** Mutates `aura` in place to reflect the post-application state. Anemo and Geo
+ *  are no-ops (they don't apply or consume aura in our simplified model). PHEC
+ *  and dendro applications run consumption rules in priority order: bloom-core ops →
  *  bloom formation → burning compound → quicken compound → EC coexistence →
  *  default opposing-PHEC consumption. */
-function updateAuraStateAfterCast(element: Element, aura: AuraState): void {
+function updateAuraStateAfterApplication(element: Element, aura: AuraState): void {
 	if (element === 'anemo' || element === 'geo' || element === 'physical') return;
 
 	// Bloom-core consumption: electro → hyperbloom; pyro → burgeon. Consumes
@@ -2517,6 +2534,13 @@ export function parseNotation(
 	// consumed by a reaction. Anemo/Geo casts never modify this state.
 	const auraState = createAuraState();
 
+	// Elemental-application ICD clocks, keyed `${characterId}:${icdTag}` — gcsim
+	// tracks per (target, character, ICD tag), and we have one notional target.
+	// Rotation-wide like the aura: a character's normal-attack counter survives
+	// a swap-out, so returning to them mid-2.5s does not hand back a free
+	// application. Only N/C/P swings consult these (see the aura-model note).
+	const icdClocks = new Map<string, IcdClock>();
+
 	// Compute team Moonsign membership once: 2+ Moonsign chars enables
 	// `lunarCrystallize` emission on geo casts (per Linnea/Lauma/Flins family
 	// of effects). Walks all unique character IDs across segments.
@@ -3114,11 +3138,62 @@ export function parseNotation(
 		}
 	};
 
-	/** Convenience wrapper: at a cast site, compute synthetic reactions for the
-	 *  cast's element + current aura state, dispatch each emitted reaction to
-	 *  the onReaction extension and gainStacks paths, push `reaction` IR events
-	 *  for renderer consumption (artifact onReaction effects), then update the
-	 *  aura state. Caller passes the cast event context. */
+	/** One elemental application: compute the synthetic reactions for `element` +
+	 *  the current aura state, dispatch each to the onReaction extension and
+	 *  gainStacks paths, push `reaction` IR events for renderer consumption
+	 *  (artifact onReaction effects), then update the aura state. Shared by the
+	 *  E/Q cast sites and the N/C/P swing sites; the caller has already decided
+	 *  that this application LANDS (the swing sites ask the ICD clock first). */
+	const emitReactionsForApplication = (
+		char: CharacterData,
+		element: Element,
+		source: ReactionEvent['castKind'],
+		time: number,
+		preStates: ReadonlySet<string>,
+		constellation: number,
+		chainIdx: ChainIndex,
+		stackState: Map<string, number>
+	): void => {
+		const reactions = computeReactionsForApplication(
+			element,
+			auraState,
+			hasMoonsignTeam,
+			teamEnabledReactions
+		);
+		const stacksSnapshot = stackState.size > 0 ? new Map(stackState) : undefined;
+		for (const r of reactions) {
+			dispatchOnReactionExtensions(
+				char.id,
+				r,
+				time,
+				preStates,
+				constellation,
+				chainIdx,
+				stacksSnapshot
+			);
+			dispatchGainStacksOnReaction(
+				teamChars,
+				char.id,
+				r,
+				time,
+				new Map([[char.id, preStates]]),
+				new Map(teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])),
+				getCharState
+			);
+			events.push({
+				kind: 'reaction',
+				id: nextEventId++,
+				characterId: char.id,
+				reaction: r,
+				time,
+				castKind: source
+			});
+		}
+		updateAuraStateAfterApplication(element, auraState);
+	};
+
+	/** Convenience wrapper for a cast site. ⛔ Ungated: a cast is ability
+	 *  granularity, not hit granularity — see the ICD note above the aura model. */
 	const emitReactionsAtCast = (
 		char: CharacterData,
 		castKind: 'skill' | 'burst',
@@ -3130,46 +3205,68 @@ export function parseNotation(
 	): void => {
 		const element = char.element;
 		if (!element) return;
-		const reactions = computeReactionsForCast(
+		emitReactionsForApplication(
+			char,
 			element,
-			auraState,
-			hasMoonsignTeam,
-			teamEnabledReactions
+			castKind,
+			castTime,
+			preStates,
+			constellation,
+			chainIdx,
+			stackState
 		);
-		const stacksSnapshot = stackState.size > 0 ? new Map(stackState) : undefined;
-		for (const r of reactions) {
-			dispatchOnReactionExtensions(
-				char.id,
-				r,
-				castTime,
-				preStates,
-				constellation,
-				chainIdx,
-				stacksSnapshot
-			);
-			dispatchGainStacksOnReaction(
-				teamChars,
-				char.id,
-				r,
-				castTime,
-				new Map([[char.id, preStates]]),
-				new Map(teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])),
-				getCharState
-			);
-			events.push({
-				kind: 'reaction',
-				id: nextEventId++,
-				characterId: char.id,
-				reaction: r,
-				time: castTime,
-				castKind
-			});
-		}
-		updateAuraStateAfterCast(element, auraState);
 		// The cast's parser-private hit is built + dispatched by handleCast
 		// immediately after this call (onHit wiring 2026-07-17 — the hit needs
 		// the resolved ability/variant context this closure doesn't see). Same
 		// dispatch instant and ordering as the legacy tail dispatch here.
+	};
+
+	/** One N/C/P swing offered to the aura, behind its ICD clock (ICD round,
+	 *  2026-08-15). Called at the swing's HIT instant — the post-advance cursor,
+	 *  the same instant `dispatchHit` uses — because that is when the element
+	 *  lands.
+	 *
+	 *  ⚠️ A PHYSICAL swing never reaches a clock. `resolveActionElement`
+	 *  returning `undefined` means the swing applies nothing, and a hit that
+	 *  applies nothing does not spend an ICD budget — so a physical string
+	 *  followed by an infusion starts the infused counter fresh, which is the
+	 *  KQM model. The clock is keyed by (character, tag) and lives at parse
+	 *  scope beside the aura: a swap-out neither resets nor freezes it.
+	 *
+	 *  `null` params are gcsim's `ICDTagNone` — applies always AND touches no
+	 *  counter, so an untracked source can't reset a counter it shares a tag
+	 *  with (`resolveActionIcd` carries the case list). */
+	const emitReactionsAtSwing = (
+		char: CharacterData,
+		kind: NormalActionKind,
+		element: Element | undefined,
+		abilityNoICD: boolean | undefined,
+		time: number,
+		preStates: ReadonlySet<string>,
+		constellation: number,
+		stackState: Map<string, number>
+	): void => {
+		if (!element) return;
+		const params = resolveActionIcd(kind, char.weapon, abilityNoICD);
+		if (params) {
+			const key = `${char.id}:${icdTagFor(kind)}`;
+			let clock = icdClocks.get(key);
+			if (!clock) {
+				clock = createIcdClock();
+				icdClocks.set(key, clock);
+			}
+			if (!icdApplies(clock, time, params).applies) return;
+		}
+		emitReactionsForApplication(
+			char,
+			element,
+			kind,
+			time,
+			preStates,
+			constellation,
+			getChainIndexMap(char.id, time),
+			stackState
+		);
 	};
 
 	for (let i = 0; i < segments.length; i++) {
@@ -3961,6 +4058,19 @@ export function parseNotation(
 								sourceActionId: ev.id
 							});
 						}
+						// Offer the swing to the aura, behind the normal-attack ICD
+						// clock (ICD round). A catalyst `N5` applies on swings 1, 4
+						// and 6 at the corpus cadence, not on all five.
+						emitReactionsAtSwing(
+							char,
+							'normal',
+							nElement,
+							activeNormal?.noICD,
+							localCursor,
+							nStates,
+							charConstellationLevel,
+							stackState
+						);
 						// Parser-private per-swing hit (onHit wiring): swing-END time,
 						// per-hit damageTag override honored, combo index feeding
 						// filter.hitIndex. Dispatched AFTER the transient-state opener
@@ -4033,6 +4143,19 @@ export function parseNotation(
 						element: cElement
 					});
 					if (castS !== null) localCursor += castS;
+					// Offer the charged shot to the aura. A catalyst CA and a bow's
+					// aimed shot both apply; only the bow's runs a counter (a
+					// catalyst's is gcsim `ICDTagNone`) — resolveActionIcd holds it.
+					emitReactionsAtSwing(
+						char,
+						'charged',
+						cElement,
+						activeNormal?.noICD,
+						localCursor,
+						computeCurrentStates(localCursor),
+						charConstellationLevel,
+						stackState
+					);
 					// Parser-private charged hit (onHit wiring): swing-END time. The
 					// abilityName carries the bow chargeHit sub-name (C1 → first
 					// entry, C → last) so `filter.abilityName: "Wreath Arrow"`
@@ -4121,6 +4244,19 @@ export function parseNotation(
 								{ sourceActionId: plungeEv.id }
 							);
 						}
+						// Offer the plunge to the aura at the landing. Plunges carry no
+						// ICD at all (gcsim census in resolveActionIcd), so an infused
+						// plunge string applies on every landing.
+						emitReactionsAtSwing(
+							char,
+							'plunge',
+							pElement,
+							activeNormal?.noICD,
+							localCursor,
+							plungeStates,
+							charConstellationLevel,
+							stackState
+						);
 						// Parser-private plunge hit (onHit wiring): landing ≈ swing
 						// END. Dispatched after the transient-state opener (apexDrive
 						// is open to hit-gated conditions at the landing instant). A
