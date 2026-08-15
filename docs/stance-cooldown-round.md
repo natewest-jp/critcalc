@@ -16,9 +16,9 @@ Two abilities encode **"the cooldown starts when the STANCE ends"**. Both were a
 | `xilonen skill` | 540f = 9.00s | 9        | 7        |
 | `ifa skill`     | 600f = 10.0s | 10       | 7.5      |
 
-That computes the right *first* cast, but `cooldownStartDelay` means **animation frames** — the other ~122 abilities carrying it sit at 1–35f and are genuine gcsim `SetCDWithDelay` transcriptions — and being static it could not express an early exit at all. Both now carry the explicit flag and no delay. ⛔ The ~122 were not touched.
+That computes the right _first_ cast, but `cooldownStartDelay` means **animation frames** — the other ~122 abilities carrying it sit at 1–35f and are genuine gcsim `SetCDWithDelay` transcriptions — and being static it could not express an early exit at all. Both now carry the explicit flag and no delay. ⛔ The ~122 were not touched.
 
-**characterLint D.21** rejects both cooldown fields on one ability. **D.22** rejects the flag beside `durationExtensions[]`: the recast is placed mid-parse from the stance's expected end, so an extension firing later would move the real end past a placement already written. Early exit moves it *earlier* and is handled. Both rules were checked by seeding the negative into `xilonen.json` and watching them fire.
+**characterLint D.21** rejects both cooldown fields on one ability. **D.22** rejects the flag beside `durationExtensions[]`: the recast is placed mid-parse from the stance's expected end, so an extension firing later would move the real end past a placement already written. Early exit moves it _earlier_ and is handled. Both rules were checked by seeding the negative into `xilonen.json` and watching them fire.
 
 ### 2. `readyAt` follows the actual stance end
 
@@ -28,7 +28,7 @@ That computes the right *first* cast, but `cooldownStartDelay` means **animation
 
 The handoff's step-one question. **Nate's call, on reasoned evidence rather than a first-hand observation** — recorded in full in her `_curatorNotes`, and worth re-opening if anyone plays her:
 
-- **For:** gcsim's `onExitField` (`xilonen.go:78`) exits her Nightsoul on swap-out, and the same pattern appears independently in kinich/mualani/mavuika — all three authored `true` here. C2 reads "Geo Source Sample will be active **even when she is off-field**", which is only a gain if the base "active while in Nightsoul's Blessing" does *not* reach off-field. And the state is a movement mode (Blade Roller, with sprint/climb point drain), which off-field has no meaning for.
+- **For:** gcsim's `onExitField` (`xilonen.go:78`) exits her Nightsoul on swap-out, and the same pattern appears independently in kinich/mualani/mavuika — all three authored `true` here. C2 reads "Geo Source Sample will be active **even when she is off-field**", which is only a gain if the base "active while in Nightsoul's Blessing" does _not_ reach off-field. And the state is a movement mode (Blade Roller, with sprint/climb point drain), which off-field has no meaning for.
 - **Against:** the in-game text lists only two exits (points depleted, skill re-used); the Fandom Gameplay Notes are otherwise exhaustive and never mention swapping; Citlali/Ororon/Chasca prove off-field Nightsoul is per-character, not a blanket rule.
 
 Effect: `Xilonen E > … > Xilonen E` returns her skill at **swap + 7s (~7.3s)** instead of a flat 16s.
@@ -51,13 +51,13 @@ Reaching those notes is `action=parse&prop=wikitext` against the MediaWiki API u
 
 ## Still open
 
-- ⚠️ **Ifa's `terminatesOnSwap` is still `false`, and the Xilonen argument applies to him verbatim** — his Nightsoul is a *hover* with Supporting Fire normals, structurally on-field exactly like Blade Roller. It was left alone because the handoff only ever flagged Xilonen's flag as disputed, so flipping his would have been an unasked-for second data verdict. If it flips, his E returns at swap + 7.5s instead of 17.5s.
+- ⚠️ **Ifa's `terminatesOnSwap` is still `false`, and the Xilonen argument applies to him verbatim** — his Nightsoul is a _hover_ with Supporting Fire normals, structurally on-field exactly like Blade Roller. It was left alone because the handoff only ever flagged Xilonen's flag as disputed, so flipping his would have been an unasked-for second data verdict. If it flips, his E returns at swap + 7.5s instead of 17.5s.
 - **A swap-terminated stance still keeps its FULL nominal bar width** while only its gating window clamps (the deliberate P4 note at the swap site). Cast Raiden Q, swap at 1s, and the pill still draws 7s. ⚓ Nate 2026-08-15: leave it, out of scope. For Xilonen this now lands in `barPhases` case B (stance window outlasts the cooldown), which is coherent — the bar says she is ready before the nominal window ends. Changing it corpus-wide across ~25 stances would be its own round, and wants Nate's eyes.
 
 ## ⛔ Ruled out, do not re-derive
 
 - **Not gauge modelling.** The constitution is windows-not-gauges. Exit-by-drain stays unmodelled; C1's +45% timer stays unmodelled for the same reason.
-- **Not the E-re-press cancel.** ⚓ Nate: players do not use it. It would mean teaching the parser that a token can *terminate* a stance rather than open one.
+- **Not the E-re-press cancel.** ⚓ Nate: players do not use it. It would mean teaching the parser that a token can _terminate_ a stance rather than open one.
 - **Her RES shred does NOT ride the stance window.** It is five per-element `onCast` effects on a separate 15s window (A1 Netotiliztli's Echoes; gcsim `asc.go:75`). Fixing the stance does not touch the shred.
 
 ## Tests
