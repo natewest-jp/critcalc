@@ -3,23 +3,84 @@
 	"name": "Silken Moon's Serenade",
 	"shortName": "Silken Moon",
 	"twoPiece": {
+		"_curatorNotes": [
+			"The 2pc is Energy Recharge +20% (gcsim internal/artifacts/silkenmoonsserenade: `m[attributes.ER] = 0.2`). UNAUTHORED because there is no `er` key in the Stat union and nothing consumes `twoPiece` — it is declared on ArtifactSetBonus and read by zero call sites, so Instructor's +80 EM and VV's +15% Anemo DMG are inert data too. Adding a Stat key for a surface that does not render would be a speculative abstraction; author this the moment a 2pc consumer exists."
+		],
 		"effects": []
 	},
 	"fourPiece": {
+		"_curatorNotes": [
+			"Authored 2026-08-15 against gcsim internal/artifacts/silkenmoonsserenade/silkenmoonsserenade.go, which is the mechanics source for all four entries below.",
+			"MOONSIGN LEVEL 0 GIVES NOTHING. gcsim switches on Player.GetMoonsignLevel() and returns early on `case 0` — a team with no Moonsign character gets no 4pc effect at all. The previous authoring handed out +60 EM unconditionally, so it was wrong in every non-Moonsign team, not merely imprecise in Ascendant ones. Level 1 = +60 EM (Nascent Gleam), level 2+ = +120 EM (Ascendant Gleam); the tiers are mutually exclusive, hence the negation on the Nascent entry.",
+			"The Lunar Reaction DMG rider is a FLAT +10%, not +10% per Gleaming Moon effect — the earlier _todo described it wrongly. gcsim's AddReactBonusMod returns a constant 0.1 for any lunar-tagged reaction, gated only on at least one party member currently holding the Gleaming Moon Devotion EM buff. Since that buff is exactly what these entries model, the rider rides the same trigger and the same 8s window. It lands on the bucket-5 *ReactionBonus family (additive with EM inside the EM bracket), NOT the bucket-3 *DmgBonus family — three entries because AttackTagIsLunar covers Lunar-Charged, Lunar-Bloom and Lunar-Crystallize and there is no all-lunar Reaction Bonus key.",
+			"Trigger is the WEARER's own elemental damage (gcsim checks `atk.Info.ActorIndex == s.char.Index()` and rejects Physical), buffs the WHOLE party for 8s, and can proc off-field — which is why this set needed the summon-tick hit stream (notationParser step 6c) before it could render at all."
+		],
 		"effects": [
 			{
 				"type": "buff",
 				"source": "artifact",
-				"trigger": {
-					"type": "onHit",
-					"damageType": "elemental"
-				},
+				"trigger": { "type": "onHit", "damageType": "elemental" },
+				"target": "team",
+				"duration": 8,
+				"stat": "em",
+				"value": 120,
+				"snapshottable": false,
+				"conditions": { "type": "teamFaction", "faction": "moonsign", "min": 2 },
+				"caveat": "Ascendant Gleam value. With exactly one Moonsign character the buff is +60 EM instead."
+			},
+			{
+				"type": "buff",
+				"source": "artifact",
+				"trigger": { "type": "onHit", "damageType": "elemental" },
 				"target": "team",
 				"duration": 8,
 				"stat": "em",
 				"value": 60,
 				"snapshottable": false,
-				"_todo": "Value models Nascent Gleam tier (+60 EM). Ascendant Gleam gives +120 EM — requires Moonsign state (Nascent vs Ascendant) which isn't tracked. Lunar Reaction DMG +10% per Gleaming Moon effect in party not modeled — needs a stat key and party-wide aggregation. Can proc off-field."
+				"conditions": {
+					"type": "all",
+					"conditions": [
+						{ "type": "teamFaction", "faction": "moonsign", "min": 1 },
+						{
+							"type": "not",
+							"condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 }
+						}
+					]
+				},
+				"caveat": "Nascent Gleam value. A second Moonsign character raises this to +120 EM."
+			},
+			{
+				"type": "buff",
+				"source": "artifact",
+				"trigger": { "type": "onHit", "damageType": "elemental" },
+				"target": "team",
+				"duration": 8,
+				"stat": "lunarChargedReactionBonus",
+				"value": 10,
+				"snapshottable": false,
+				"conditions": { "type": "teamFaction", "faction": "moonsign", "min": 1 }
+			},
+			{
+				"type": "buff",
+				"source": "artifact",
+				"trigger": { "type": "onHit", "damageType": "elemental" },
+				"target": "team",
+				"duration": 8,
+				"stat": "lunarBloomReactionBonus",
+				"value": 10,
+				"snapshottable": false,
+				"conditions": { "type": "teamFaction", "faction": "moonsign", "min": 1 }
+			},
+			{
+				"type": "buff",
+				"source": "artifact",
+				"trigger": { "type": "onHit", "damageType": "elemental" },
+				"target": "team",
+				"duration": 8,
+				"stat": "lunarCrystallizeReactionBonus",
+				"value": 10,
+				"snapshottable": false,
+				"conditions": { "type": "teamFaction", "faction": "moonsign", "min": 1 }
 			}
 		]
 	}

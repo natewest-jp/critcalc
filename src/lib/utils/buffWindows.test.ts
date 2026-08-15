@@ -639,3 +639,73 @@ describe('artifact onHit — real characters', () => {
 		expect(xl).toBeGreaterThan(6);
 	});
 });
+
+// ── Silken Moon's Serenade: Moonsign tiering (2026-08-15) ──
+//
+// The pattern any future faction-gated set should copy: the TIER is a
+// `teamFaction` condition on the effect, resolved once off team composition,
+// not a runtime state the parser has to track. Mechanics from gcsim
+// internal/artifacts/silkenmoonsserenade — level 0 gives NOTHING, 1 gives
+// +60 EM, 2+ gives +120.
+describe('artifact onHit — Silken Moon Moonsign tiers', () => {
+	const load = async (id: string) =>
+		(await import(`$lib/data/characters/${id}.json`)).default as unknown as CharacterData;
+	const silken: Record<string, LoadoutEntry> = {
+		flins: { artifactSetId: 'silken_moons_serenade' }
+	};
+	const silkenRows = (rows: ReturnType<typeof projectTeamBuffRows>) =>
+		rows.filter((x) => x.key.includes('silken_moons_serenade'));
+	const emValue = (rows: ReturnType<typeof projectTeamBuffRows>) => {
+		const r = silkenRows(rows);
+		if (r.length === 0) return null;
+		return r[0].bars[0].effects.find((e) => e.stat === 'em')?.displayValue ?? null;
+	};
+
+	it('Moonsign 1 → +60 EM; Moonsign 2 → +120 EM; the tiers never both fire', async () => {
+		const [flins, ineffa, bennett] = await Promise.all([
+			load('flins'),
+			load('ineffa'),
+			load('bennett')
+		]);
+		// Flins alone is Moonsign level 1 (Bennett is not Moonsign).
+		const nascent = run('Flins E Q > Bennett E', [flins, bennett], {}, silken);
+		expect(emValue(nascent.team)).toBe('+60');
+		// Flins + Ineffa is level 2 — Ascendant.
+		const ascendant = run('Flins E Q > Ineffa E', [flins, ineffa], {}, silken);
+		expect(emValue(ascendant.team)).toBe('+120');
+		// Exactly one EM rung fires in each case — the negation on the Nascent
+		// entry is what stops both landing in one pooled bar.
+		for (const res of [nascent, ascendant]) {
+			for (const bar of silkenRows(res.team)[0].bars) {
+				expect(bar.effects.filter((e) => e.stat === 'em')).toHaveLength(1);
+			}
+		}
+	});
+
+	it('⛔ Moonsign 0 → the 4pc does nothing at all', async () => {
+		const [bennett, xingqiu] = await Promise.all([load('bennett'), load('xingqiu')]);
+		const { team } = run(
+			'Bennett E Q > Xingqiu E',
+			[bennett, xingqiu],
+			{},
+			{ bennett: { artifactSetId: 'silken_moons_serenade' } }
+		);
+		expect(silkenRows(team)).toHaveLength(0);
+	});
+
+	// The set grants EM plus three lunar Reaction Bonus stats on one trigger.
+	// They must pool into ONE bar, the way a multi-stat onCast set does — not
+	// split into four rows saying the same thing at the same time.
+	it('all four stats pool into a single bar', async () => {
+		const [flins, ineffa] = await Promise.all([load('flins'), load('ineffa')]);
+		const { team } = run('Flins E Q > Ineffa E', [flins, ineffa], {}, silken);
+		const rows = silkenRows(team);
+		expect(rows).toHaveLength(1);
+		expect(rows[0].bars[0].effects.map((e) => e.stat).sort()).toEqual([
+			'em',
+			'lunarBloomReactionBonus',
+			'lunarChargedReactionBonus',
+			'lunarCrystallizeReactionBonus'
+		]);
+	});
+});

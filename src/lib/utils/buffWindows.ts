@@ -745,19 +745,31 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						(e.type === 'resShred' && targetsEnemy(e.target)))
 			);
 			if (firstTrackOfChar && artifactOnHitEffects.length > 0) {
-				// ⚓ A SET PRODUCES AN EFFECT; SEVERAL TRIGGER ENTRIES ARE SEVERAL
+				// ⚓ A SET PRODUCES EFFECTS; SEVERAL TRIGGER ENTRIES ARE SEVERAL
 				// DOORWAYS TO THE SAME ONE. Deepwood authors its shred twice — once
-				// keyed to skill hits, once to burst hits — but a Dendro RES −30%
-				// from an E and one from a Q are the same debuff on the same enemy.
-				// Grouping by SHAPE and letting any member's trigger open the window
-				// is what keeps that one row instead of two identical ones stacked.
-				// The shape key mirrors `dedupResShredByElement`'s convention.
-				type OnHitGroup = {
+				// keyed to skill hits, once to burst hits — but a Dendro RES −30% from
+				// an E and one from a Q are the same debuff on the same enemy. Every
+				// qualifying effect is therefore canonicalised to a SHAPE
+				// REPRESENTATIVE, so a skill hit and a burst hit hand the merge below
+				// the SAME object and it treats them as one continuous window rather
+				// than two identical rows stacked. Shape key mirrors
+				// `dedupResShredByElement`'s convention.
+				//
+				// ⚠ Conditions are evaluated ONCE here rather than per hit: what gates
+				// an artifact effect is team composition and constellation, both static
+				// across a rotation. Silken Moon's Nascent/Ascendant split is exactly
+				// this — `teamFaction: moonsign` resolves off `baseCtx`, so the tier is
+				// picked once and the right rung is the only one that ever fires.
+				const shapeOf = (effect: BuffEffect | ResShredEffect): string =>
+					effect.type === 'resShred'
+						? `res::${effect.shredStat ?? 'res'}::${effect.element ?? '_all'}::${effect.value}::${effect.duration}`
+						: `buff::${effect.stat}::${effect.value}::${effect.duration}`;
+				const repByShape = new Map<string, BuffEffect | ResShredEffect>();
+				const qualified: {
+					effect: BuffEffect | ResShredEffect;
 					rep: BuffEffect | ResShredEffect;
-					members: (BuffEffect | ResShredEffect)[];
-					debuff: boolean;
-				};
-				const groups = new Map<string, OnHitGroup>();
+					shape: string;
+				}[] = [];
 				for (const effect of artifactOnHitEffects) {
 					if (
 						evalCondition(
@@ -772,48 +784,65 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					) {
 						continue;
 					}
-					const debuff = effect.type === 'resShred';
-					const shape = debuff
-						? `res::${(effect as ResShredEffect).shredStat ?? 'res'}::${(effect as ResShredEffect).element ?? '_all'}::${effect.value}::${effect.duration}`
-						: `buff::${(effect as BuffEffect).stat}::${effect.value}::${effect.duration}`;
-					const group = groups.get(shape);
-					if (group) group.members.push(effect);
-					else groups.set(shape, { rep: effect, members: [effect], debuff });
+					const shape = shapeOf(effect);
+					const rep = repByShape.get(shape) ?? effect;
+					repByShape.set(shape, rep);
+					qualified.push({ effect, rep, shape });
 				}
 
 				// Every hit this character landed, in time order. Includes the
-				// summon-tick hits synthesized at finalize, which is the whole
-				// point — they arrive appended rather than merged, so the sort is
-				// required, not cosmetic.
+				// summon-tick hits synthesized at finalize, which is the whole point —
+				// they arrive appended rather than merged, so the sort is required,
+				// not cosmetic.
 				const charHits = hits
 					.filter((h) => h.characterId === track.characterId)
 					.slice()
 					.sort((a, b) => a.time - b.time);
 
-				for (const group of groups.values()) {
-					const duration = group.rep.duration!;
-					// `procCooldown` is the set's own ICD (Tenacity: 0.5s). Distinct
-					// from the refresh-merge below — the ICD decides whether a hit
-					// TRIGGERS at all, the merge decides whether a trigger draws a
-					// new bar or extends the open one.
-					const icd = typeof group.rep.procCooldown === 'number' ? group.rep.procCooldown : 0;
-					let procReady = -Infinity;
+				// ⚠ PARTITIONED BY (debuff, duration), NOT ONE PASS OVER EVERYTHING.
+				// `debuff` is a per-WINDOW flag and pooled effects share one end, so a
+				// set mixing a buff with a shred, or two different durations, must not
+				// land in one bar. Within a partition the effects DO pool: Silken
+				// Moon's four (EM + three lunar reaction bonuses) draw one bar, the way
+				// the onCast branch already pools a multi-stat cast set.
+				const partitions = new Map<string, typeof qualified>();
+				for (const q of qualified) {
+					const key = `${q.effect.type === 'resShred'}::${q.effect.duration}`;
+					const list = partitions.get(key) ?? [];
+					list.push(q);
+					partitions.set(key, list);
+				}
+
+				for (const part of partitions.values()) {
+					const debuff = part[0].effect.type === 'resShred';
+					const duration = part[0].effect.duration!;
+					// `procCooldown` is the set's own ICD (Tenacity: 0.5s), clocked PER
+					// SHAPE. Distinct from the refresh-merge below — the ICD decides
+					// whether a hit triggers at all, the merge decides whether a trigger
+					// draws a new bar or extends the open one.
+					const procReady = new Map<string, number>();
 					let lastWin: BuffWindow | undefined;
 					for (const hit of charHits) {
-						const fires = group.members.some(
-							(effect) =>
-								effect.trigger.type === 'onHit' &&
-								onHitTriggerMatches(effect.trigger, hit, track.characterId)
-						);
-						if (!fires) continue;
-						if (hit.time < procReady) continue;
-						procReady = hit.time + icd;
+						const fired: (BuffEffect | ResShredEffect)[] = [];
+						const seen = new Set<string>();
+						for (const q of part) {
+							if (seen.has(q.shape)) continue;
+							if (q.effect.trigger.type !== 'onHit') continue;
+							if (!onHitTriggerMatches(q.effect.trigger, hit, track.characterId)) continue;
+							if (hit.time < (procReady.get(q.shape) ?? -Infinity)) continue;
+							const icd = typeof q.effect.procCooldown === 'number' ? q.effect.procCooldown : 0;
+							procReady.set(q.shape, hit.time + icd);
+							seen.add(q.shape);
+							fired.push(q.rep);
+						}
+						if (fired.length === 0) continue;
 						const end = hit.time + duration;
-						if (lastWin && hit.time <= lastWin.end) {
-							// Same shape by construction (one group, one effect array),
-							// so an overlapping re-trigger extends rather than stacks —
-							// this is what makes a ticking off-field summon read as one
-							// connected bar instead of a picket fence of 3s stubs.
+						if (lastWin && hit.time <= lastWin.end && sameEffects(lastWin.effects, fired)) {
+							// An overlapping re-trigger of the SAME effect set extends
+							// rather than stacks — this is what makes a ticking off-field
+							// summon read as one connected bar instead of a picket fence
+							// of 3s stubs. The equality guard matters once a set can fire
+							// different subsets on different hits.
 							lastWin.end = end;
 							continue;
 						}
@@ -821,8 +850,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							characterId: track.characterId,
 							start: hit.time,
 							end,
-							debuff: group.debuff || undefined,
-							effects: [group.rep],
+							debuff: debuff || undefined,
+							effects: fired,
 							sourceActionId: hit.sourceEventId >= 0 ? hit.sourceEventId : undefined,
 							source: { type: 'artifact', setId: artifactSetId, trigger: 'hit' }
 						});
