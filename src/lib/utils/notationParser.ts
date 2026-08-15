@@ -158,6 +158,13 @@ export type InputBlock = {
 	duration: number; // seconds — block width
 	parts: string[]; // display labels e.g. ["N5"], ["Q"], ["hE"]
 	kind: InputBlockKind;
+	/** The element this input LANDED with, when it landed with one — which is
+	 *  not always the character's own. ⚠️ `kind: 'elemental-normal'` says only
+	 *  THAT a swing was elemental; a renderer that tints from the track's
+	 *  element paints a Bennett-infused Xingqiu N in hydro (2026-08-15). Absent
+	 *  on physical inputs, on movement, and on E/Q blocks (a cast always carries
+	 *  the caster's element, so the track answers for those). */
+	element?: Element;
 };
 
 export type CharacterTrack = {
@@ -4631,7 +4638,13 @@ export function parseNotation(
 							? 'unset'
 							: ev.element !== undefined
 								? 'elemental-normal'
-								: 'normal'
+								: 'normal',
+				// The ANCHOR swing's element speaks for the whole block, which is
+				// exact today: infusion is resolved once per token, so every swing
+				// an `N5` groups shares it. ⚠️ If infusion ever resolves per swing,
+				// a block can no longer carry one element and this is the site that
+				// has to say so.
+				...(ev.element !== undefined ? { element: ev.element } : {})
 			};
 			blocksByAnchor.set(ev.blockId, block);
 			pushItem(track, ev.blockId, block);

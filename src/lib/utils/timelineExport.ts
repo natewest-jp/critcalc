@@ -709,7 +709,15 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						grad.addColorStop(1, `rgba(${dr}, ${dg}, ${db}, 0)`);
 						ctx!.fillStyle = grad;
 					} else if (kind === 'skill' || kind === 'burst' || kind === 'elemental-normal') {
-						ctx!.fillStyle = mix(p.bar, ACTIVE, 50);
+						// ⚠️ The BLOCK's element, falling back to the slot's — an
+						// infused swing does not land in the swinger's own element
+						// (Bennett C6 makes Xingqiu's normals pyro). Mirrors the
+						// on-screen rule exactly; both read `InputBlock.element`.
+						ctx!.fillStyle = mix(
+							block.element ? elementPalette(block.element).bar : p.bar,
+							ACTIVE,
+							50
+						);
 					} else {
 						// Movement and every other non-infused input: the active strip's
 						// own color, no extra fill (mirrors the on-screen rule — only

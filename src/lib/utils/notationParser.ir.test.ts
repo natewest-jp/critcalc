@@ -166,13 +166,21 @@ function assertSummonWindowsMatchGeometry(result: ParsedRotation): void {
  *  an action group (events sharing a `blockId`) projects as one block whose
  *  duration is the id-ordered sum of swing durations (the same float
  *  additions, in the same order, as the parser's accumulation) and whose
- *  kind derives from the action + element (`element` present ⇔ elemental).
+ *  kind derives from the action + element (`element` present ⇔ elemental), and
+ *  whose `element` is the anchor swing's — the tint a renderer paints, which is
+ *  NOT always the track's own (an infused N).
  *  Track assignment is characterId + [activeStart, activeEnd] containment —
  *  unambiguous because consecutive same-character tracks are separated by
  *  the swap gap. This is the projection safety net: it proves the blocks
  *  are derivable from events over the whole corpus. */
 function assertBlocksProjectFromEvents(result: ParsedRotation): void {
-	type ExpectedBlock = { start: number; duration: number; parts: string[]; kind: string };
+	type ExpectedBlock = {
+		start: number;
+		duration: number;
+		parts: string[];
+		kind: string;
+		element?: string;
+	};
 	const actionBlockKind = (e: Extract<ParsedRotation['events'][number], { kind: 'action' }>) => {
 		if (e.action === 'dash' || e.action === 'jump') return 'movement';
 		if (e.action === 'unset') return 'unset';
@@ -212,7 +220,10 @@ function assertBlocksProjectFromEvents(result: ParsedRotation): void {
 					start: anchor.time,
 					duration,
 					parts: [anchor.label],
-					kind: actionBlockKind(anchor)
+					kind: actionBlockKind(anchor),
+					// The anchor's element speaks for the group — infusion resolves
+					// once per token, so every swing an `N5` groups shares it.
+					...(anchor.element !== undefined ? { element: anchor.element } : {})
 				}
 			});
 		}
