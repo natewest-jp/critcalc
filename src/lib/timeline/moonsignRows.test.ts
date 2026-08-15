@@ -36,24 +36,29 @@ describe('computeMoonsignRows', () => {
 		]);
 	});
 
-	it('emits one 20s window per E/Q cast, sorted chronologically', () => {
+	// ↻ 2026-08-15: casts inside 20s of each other now merge into ONE window.
+	// Two casts at 1 and 8 used to draw two bars with two identical
+	// "· Ascendant Gleam" labels; they are one covered span from 1 to 28.
+	it('merges overlapping windows into one covered span', () => {
 		const events = [mkCast('c', 8, 'skill'), mkCast('c', 1, 'burst'), mkCast('d', 3, 'skill')];
 		const rows = computeMoonsignRows(events, [2], ['a', 'b', 'c', 'd']);
-		expect(rows).toEqual([
-			{
-				slotIdx: 2,
-				windows: [
-					{ start: 1, duration: 20 },
-					{ start: 8, duration: 20 }
-				]
-			}
+		expect(rows).toEqual([{ slotIdx: 2, windows: [{ start: 1, duration: 27 }] }]);
+	});
+
+	it('emits one 20s window per cast when they do NOT overlap', () => {
+		const events = [mkCast('c', 0, 'skill'), mkCast('c', 25, 'burst')];
+		const rows = computeMoonsignRows(events, [2], ['a', 'b', 'c', 'd']);
+		expect(rows[0].windows).toEqual([
+			{ start: 0, duration: 20 },
+			{ start: 25, duration: 20 }
 		]);
 	});
 
 	it('collects casts for a character regardless of source ordering', () => {
 		const events = [mkCast('c', 0, 'skill'), mkCast('other', 5), mkCast('c', 9, 'skill')];
 		const rows = computeMoonsignRows(events, [0], ['c', 'other', 'blank', 'blank']);
-		expect(rows[0].windows.map((w) => w.start)).toEqual([0, 9]);
+		// Both inside 20s of each other — one span, 0 → 29.
+		expect(rows[0].windows).toEqual([{ start: 0, duration: 29 }]);
 	});
 
 	it('ignores non-cast events', () => {
