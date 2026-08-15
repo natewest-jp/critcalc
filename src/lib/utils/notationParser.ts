@@ -54,7 +54,9 @@ import {
 	evalTriggerFilter
 } from '$lib/types/ability';
 import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
+import type { WeaponType } from '$lib/types/weapon';
 import { resolveActionElement, type NormalActionKind } from '$lib/utils/actionElement';
+import { getCharacterEffectsForCast } from '$lib/utils/effectCollection';
 import {
 	createIcdClock,
 	icdApplies,
@@ -319,6 +321,19 @@ export type ConditionContext = {
 	 *  without team context) so effects aren't dropped before the renderer
 	 *  has team scope. */
 	teamElementCounts?: ReadonlyMap<Element, number>;
+	/** The weapon of the character an effect is being resolved FOR — the
+	 *  receiver, not the holder.
+	 *
+	 *  ⚓ Census 2026-08-15: every `weaponType` condition in the corpus sits on
+	 *  an `active`-target effect (Bennett C6's Pyro buff and its infusion,
+	 *  Candace's burst infusion), so the weapon the condition asks about is
+	 *  always the RECEIVER's. For a self-target effect the receiver IS the
+	 *  holder, so one field serves both readings. ⚠️ If a holder-facing
+	 *  `weaponType` is ever authored, this field is the thing to split.
+	 *
+	 *  Absent → `weaponType` returns null, the same optimistic rule
+	 *  `teamFaction` and `activeCharFaction` use. */
+	receiverWeapon?: WeaponType;
 };
 
 /**
@@ -420,6 +435,12 @@ export function evalCondition(
 			return context.activeCharFactions.has(cond.faction);
 		}
 		case 'weaponType':
+			// Resolves once the receiver is concrete (the infusion path passes
+			// the swinging character's weapon); null before then so the effect
+			// isn't dropped. See `receiverWeapon` on ConditionContext for why
+			// the subject is the receiver and not the holder.
+			if (!context?.receiverWeapon) return null;
+			return cond.weapons.includes(context.receiverWeapon);
 		case 'enemyHpBelow':
 		case 'enemyHpAbove':
 		case 'enemyAffectedBy':
@@ -2534,6 +2555,34 @@ export function parseNotation(
 	// consumed by a reaction. Anemo/Geo casts never modify this state.
 	const auraState = createAuraState();
 
+	// Elemental infusions granted by an EFFECT (infusion round, 2026-08-15).
+	//
+	// ⚠️ A DIFFERENT MECHANISM from `NormalAbility.infusion`, which is a field on
+	// a stance's normal ability and needs no tracking — the stance IS the window.
+	// An `infuse` Effect is a timed grant from a cast, and it may land on someone
+	// else: Bennett's Fire Ventures With Me and Candace's Wagtail's Tide target
+	// `active`, i.e. whoever is on field, while Dori/Kazuha/Lohen target `self`.
+	//
+	// ⚓ The `active` case is far simpler here than it looks, and the reason is
+	// structural: **only the active character swings**. A segment IS a character's
+	// on-field window, so the swinger is by construction the receiver — there is
+	// no separate "who is on field" to track, only a window to be inside. That
+	// turns "an infusion window per receiver" into a lookup at consumption.
+	//
+	// Windows are never truncated. In game an infusion is a buff on the receiver
+	// that runs its own clock; swapping away does not cancel it (⚓ Bennett's C6
+	// infusion is famously still there when you swap back inside the 12s).
+	const infusionWindows: {
+		holderId: string;
+		holderConstellation: number;
+		/** `self` = the holder only; `active` = whoever is swinging. */
+		receiver: 'self' | 'active';
+		element: Element;
+		start: number;
+		end: number;
+		conditions?: Condition;
+	}[] = [];
+
 	// Elemental-application ICD clocks, keyed `${characterId}:${icdTag}` — gcsim
 	// tracks per (target, character, ICD tag), and we have one notional target.
 	// Rotation-wide like the aura: a character's normal-attack counter survives
@@ -3136,6 +3185,99 @@ export function parseNotation(
 				}
 			}
 		}
+	};
+
+	/** Opens an infusion window for every `infuse` Effect this cast fires
+	 *  (infusion round, 2026-08-15). Reuses `getCharacterEffectsForCast`, which
+	 *  already walks abilities + passives + constellations + faction bonuses and
+	 *  applies the variant-replacement rule — three of the five authored
+	 *  infusions live on a C6, so a walk of the cast ability alone would find
+	 *  only Candace's and Lohen's.
+	 *
+	 *  ⚠️ The conditions are judged TWICE, because one tree has two subjects:
+	 *  `constellation` is a fact about the HOLDER and is known here, while
+	 *  `weaponType` is a fact about the RECEIVER and is not. So this site drops
+	 *  a window only on a definitive `false`, and the consumption site
+	 *  re-evaluates with the receiver's weapon in hand. Each pass resolves what
+	 *  it can and neither can wrongly open a window the other would close. */
+	const registerInfusionsOnCast = (
+		char: CharacterData,
+		castKind: 'skill' | 'burst',
+		castTime: number,
+		castLabel: string,
+		states: ReadonlySet<string>,
+		constellation: number,
+		chainIdx: ChainIndex,
+		stackState: Map<string, number>,
+		holderCtx: ConditionContext
+	): void => {
+		for (const fx of getCharacterEffectsForCast(char, castKind, castLabel)) {
+			if (fx.type !== 'infuse') continue;
+			if (fx.duration === undefined || fx.duration <= 0) continue;
+			const targets = Array.isArray(fx.target) ? fx.target : [fx.target];
+			// `self` and `active` are the only receivers an infusion can mean —
+			// you cannot infuse an off-field character's normals, because they
+			// are not swinging. A `team`-target infusion would be an authoring
+			// error rather than something to approximate.
+			const receiver = targets.includes('active')
+				? 'active'
+				: targets.includes('self')
+					? 'self'
+					: undefined;
+			if (!receiver) continue;
+			const holderVerdict = evalCondition(
+				fx.conditions,
+				DEFAULT_ASCENSION,
+				states,
+				constellation,
+				chainIdx,
+				stackState,
+				holderCtx
+			);
+			if (holderVerdict === false) continue;
+			infusionWindows.push({
+				holderId: char.id,
+				holderConstellation: constellation,
+				receiver,
+				element: fx.element,
+				start: castTime,
+				end: castTime + fx.duration,
+				...(fx.conditions !== undefined ? { conditions: fx.conditions } : {})
+			});
+		}
+	};
+
+	/** The element infusing `receiver`'s N/C/P at `time`, or undefined.
+	 *
+	 *  ⚠️ NEWEST WINS. Two overlapping infusions is a real rotation (Bennett Q
+	 *  then Candace Q), and in game the later grant replaces the earlier — an
+	 *  infusion is not a stack.
+	 *
+	 *  ⚠️ The re-evaluation deliberately carries only TWO facts: the holder's
+	 *  constellation and the receiver's weapon. ⛔ It passes no states, no
+	 *  stacks and NOT the swinger's `ConditionContext` — those describe the
+	 *  wrong character. The holder's own were already judged at the cast, and
+	 *  handing over a per-holder map (`teamElementCounts`) built for the
+	 *  receiver would answer a holder's question with a stranger's facts.
+	 *  Anything else in the tree returns null here, and null is kept. */
+	const infusionAt = (receiver: CharacterData, time: number): Element | undefined => {
+		for (let i = infusionWindows.length - 1; i >= 0; i--) {
+			const w = infusionWindows[i];
+			if (time < w.start || time >= w.end) continue;
+			if (w.receiver === 'self' && w.holderId !== receiver.id) continue;
+			const verdict = evalCondition(
+				w.conditions,
+				DEFAULT_ASCENSION,
+				new Set(),
+				w.holderConstellation,
+				new Map(),
+				undefined,
+				{ receiverWeapon: receiver.weapon }
+			);
+			if (verdict === false) continue;
+			return w.element;
+		}
+		return undefined;
 	};
 
 	/** One elemental application: compute the synthetic reactions for `element` +
@@ -3854,6 +3996,21 @@ export function parseNotation(
 				// `['shield']` + summons[0] duration, or onCast Effect.type
 				// `'shield'` + duration). Beidou Q and Noelle/Zhongli E are canonical.
 				registerShieldOnCast(char, kind, castStart, active, variant, castId);
+				// Open any infusion windows this cast grants (Bennett Q, Candace Q,
+				// Kazuha C6, Dori C6, Lohen E). Registered BEFORE the reaction
+				// emission below for the same reason the shield is: a window this
+				// cast opens should be visible to everything the cast then does.
+				registerInfusionsOnCast(
+					char,
+					kind,
+					castStart,
+					timingLabel,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stackState,
+					variantCtx
+				);
 				// Emit synthetic reactions for this cast and dispatch to onReaction
 				// consumers (gainStacks + durationExtensions). Fires after
 				// stance/summon registration so the just-opened stance owner /
@@ -4018,12 +4175,18 @@ export function parseNotation(
 					const rawHits = activeNormal?.hits;
 					const hits = Number.isFinite(rawHits?.[0]?.frames?.swap) ? rawHits! : GENERIC_NORMAL_HITS;
 					// Infusion rule shared with the notation highlighter (actionElement.ts).
+					// ⚠️ TWO infusion mechanisms, and the stance one WINS: a stance's
+					// own `infusion` is the character's self-infusion, which in game
+					// overrides an external grant (Xiao's burst stays anemo through
+					// a Bennett C6 pyro infusion). Resolved once per TOKEN, at the
+					// token's start — the same altitude `activeNormal` is resolved at,
+					// so a swing's drawn element and its reaction cannot disagree.
 					const nElement = resolveActionElement(
 						'normal',
 						t,
 						char.weapon,
 						char.element,
-						activeNormal?.infusion
+						activeNormal?.infusion ?? infusionAt(char, localCursor)
 					);
 					// Per-swing action events sharing one blockId (the anchor = the
 					// first swing's id). `time` is the swing's pre-advance start.
@@ -4132,7 +4295,7 @@ export function parseNotation(
 						t,
 						char.weapon,
 						char.element,
-						activeNormal?.infusion
+						activeNormal?.infusion ?? infusionAt(char, blockStart)
 					);
 					const chargedEv = emitAction({
 						action: 'charged',
@@ -4216,7 +4379,7 @@ export function parseNotation(
 							t,
 							char.weapon,
 							char.element,
-							activeNormal?.infusion
+							activeNormal?.infusion ?? infusionAt(char, blockStart)
 						);
 						const plungeEv = emitAction({
 							action: 'plunge',

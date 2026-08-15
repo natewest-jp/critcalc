@@ -735,3 +735,42 @@ describe('buff rows — refresh merge', () => {
 		expect(team[0].bars).toHaveLength(2);
 	});
 });
+
+// ── weaponType conditions resolve against the RECEIVER (infusion round, 2026-08-15) ──
+//
+// ⚓ Census over all 123 characters: every `weaponType` condition in the corpus
+// sits on an `active`-target effect (Bennett C6's Pyro DMG bonus + its infusion,
+// Candace's burst infusion), so the weapon the condition asks about is the
+// receiver's, never the holder's. `evalCondition` used to return null for it —
+// lumped in with the HP conditions the planner genuinely cannot simulate — so
+// the buff drew for every teammate regardless of what they were holding.
+//
+// ⚠️ A per-segment slice is the ONE scope where the receiver is concrete, which
+// is why the fact is supplied there and nowhere else. Team-wide pools have no
+// receiver to ask about.
+describe('active-target buffs — weaponType gates on the receiver', () => {
+	const load = async (id: string) =>
+		(await import(`$lib/data/characters/${id}.json`)).default as unknown as CharacterData;
+	/** The stats Bennett's C6 hands `receiverId` during his burst. */
+	const statsFor = (rows: ReturnType<typeof projectCharReceivedBuffRows>, receiverId: string) =>
+		rows
+			.filter((r) => r.characterId === receiverId)
+			.flatMap((r) => r.bars.flatMap((b) => b.effects ?? []))
+			.map((e) => (e as { stat?: string }).stat)
+			.filter((s): s is string => s !== undefined);
+
+	it('a sword receiver gets the Pyro DMG bonus; a bow receiver gets only the ATK buff', async () => {
+		const [bennett, xingqiu, ganyu] = await Promise.all([
+			load('bennett'),
+			load('xingqiu'),
+			load('ganyu')
+		]);
+		const sword = run('Bennett Q > Xingqiu N3', [bennett, xingqiu], { bennett: 6 }).received;
+		const bow = run('Bennett Q > Ganyu N3', [bennett, ganyu], { bennett: 6 }).received;
+		expect(statsFor(sword, 'xingqiu')).toContain('pyroDmgBonus');
+		expect(statsFor(bow, 'ganyu')).not.toContain('pyroDmgBonus');
+		// ⚠️ The ATK buff has no weaponType gate and must still reach the bow user —
+		// the fix narrows one effect, not the whole bar.
+		expect(statsFor(bow, 'ganyu')).toContain('atk');
+	});
+});

@@ -46,18 +46,34 @@ The parser emitted reactions **only from E/Q casts**. Feeding N/C/P in is a hand
 
 ---
 
+## ✅ The follow-on shipped the same day — infuse EFFECTS
+
+Landed immediately after, because the ICD round is what made the gap visible: once a catalyst's normals reacted and a Bennett-buffed sword still read as physical, the hole was an inconsistency rather than a silence.
+
+All five are wired — a different mechanism from `NormalAbility.infusion`, which is a field on a stance's normal ability and needs no tracking because **the stance IS the window**. An `infuse` Effect is a timed grant from a cast, and it can land on someone else:
+
+| character | effect                              | target   | gate                 |
+| --------- | ----------------------------------- | -------- | -------------------- |
+| Bennett   | Fire Ventures With Me → pyro        | `active` | C6 + receiver weapon |
+| Candace   | Sacred Rite: Wagtail's Tide → hydro | `active` | receiver weapon      |
+| Dori      | Sprinkling Weight → electro         | `self`   | C6                   |
+| Kazuha    | Crimson Momiji → anemo              | `self`   | C6                   |
+| Lohen     | Unforeseen Strike → cryo            | `self`   | —                    |
+
+⚓ **The `active` case was far simpler than scoped, and the reason is structural: only the active character swings.** A segment IS a character's on-field window, so the swinger is by construction the receiver. There is no separate "who is on field" to track — only a window to be inside. That turned "an infusion window per receiver" into a lookup at consumption.
+
+⚓ **The real work was that one condition tree carries TWO subjects.** `constellation` is a fact about the HOLDER and is known at the cast; `weaponType` is a fact about the RECEIVER and is not known until someone swings. Judging the tree once, at either site, gets one of them wrong. So the cast site drops a window only on a definitive `false`, and the consumption site re-evaluates with the receiver's weapon in hand — each pass resolving what it can.
+
+⚠️ `evalCondition` used to return `null` for `weaponType`, lumped in with the HP conditions the planner genuinely cannot simulate. It is now answerable whenever the context supplies a receiver. **Census over all 123 characters: every `weaponType` condition in the corpus sits on an `active`-target effect** (Bennett C6's buff and infusion, Candace's infusion), so the subject is always the receiver; for a `self`-target effect the receiver IS the holder, so one field serves both.
+
+**That fixed a second thing on the way past.** Bennett's C6 Pyro DMG bonus was drawing a bar for every teammate regardless of weapon. The per-segment slice in `buffWindows` is the one scope where the receiver is concrete — the same structural claim `activeCharFactions` already makes there — so it supplies the weapon too and the bow/catalyst receivers correctly lose that half of the bar (keeping the ungated ATK buff).
+
+Other rules, each with a test: **newest wins** (an infusion is a replacement, not a stack); **a stance infusion beats a granted one** (Xiao's burst stays anemo through Bennett's pyro); **windows are never truncated on swap** — Bennett's 12s is famously still there when you swap back, so cancelling it would be a visible regression rather than a conservative choice.
+
+---
+
 ## Still open
 
-**The five `infuse` EFFECTS are unwired** — a different mechanism from `NormalAbility.infusion`, and the parser reads none of them:
-
-| character | effect                              | target   |
-| --------- | ----------------------------------- | -------- |
-| Bennett   | Fire Ventures With Me → pyro        | `active` |
-| Candace   | Sacred Rite: Wagtail's Tide → hydro | `active` |
-| Dori      | Sprinkling Weight → electro         | `self`   |
-| Kazuha    | Crimson Momiji → anemo              | `self`   |
-| Lohen     | Unforeseen Strike → cryo            | `self`   |
-
-The two `active` ones are the interesting case: an infusion granted **to whoever is on field**, which means tracking an infusion window per receiver rather than reading a field off the active normal ability. This is now the observable follow-on — before this round it changed nothing, because normals did not react.
-
 **Summon ticks still do not react.** Off-field summon damage ticks synthesize hits at finalize (buff-bar merge round) but feed `deriveBuffWindows` only, deliberately — a finalize-time hit cannot be interleaved into parse-order state. Reactions from Oz, Guoba and friends would need the same two-pass parse that stack effects do.
+
+**`weaponType` is answered only where a receiver is concrete.** The infusion path and the two per-segment buff slices supply one; every team-wide pool has no receiver to ask about, so the condition still returns null there. That is correct rather than partial — but if a holder-facing `weaponType` is ever authored, `receiverWeapon` is the field to split.
