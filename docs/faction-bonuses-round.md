@@ -1,4 +1,4 @@
-# Faction-bonuses round — scoped, not started
+# Faction-bonuses round
 
 **Status:** Steps 1–3 and 5 SHIPPED 2026-08-15 (`dd7761d`, `75271cf`). Step 4 is two open decisions, below.
 **Origin:** Nate asked whether Sucrose was displaying all the buffs she should be. Three of her defects were data and shipped separately (`9959b5b`, `2c21f9e`); the fourth is this — **her two Hexerei Secret Rite buffs have never drawn a bar, and neither has anyone else's.**
@@ -7,7 +7,7 @@
 
 ## The finding
 
-`factionBonuses` is **not consumed by the planner at all.** `effectCollection.ts` built its candidate pool from `[...abilities, ...passives, ...constellations]` in **five** places, and the array was in none of them. Every Secret Rite effect in the corpus is inert on the timeline.
+`factionBonuses` is **not consumed by the planner at all.** `effectCollection.ts` built its candidate pool from `[...abilities, ...passives, ...constellations]` in **five** places, and the array was in none of them. Every Secret Rite effect in the corpus was inert on the timeline.
 
 ⚠️ This is a **documented decision, not a regression** — `docs/library/game/snapshotting.md` records it as ⚓ Nate's ruling of 2026-07-14 (keep + document now, wire later), and Venti's curator notes state it outright at the site. What changed is that a real reader hit it.
 
@@ -17,7 +17,7 @@ The capability layer (`deriveCapabilities.ts:505`) **does** walk `factionBonuses
 
 ## Why the collector change is the easy half
 
-One shared `effectSourcesOf(char)` helper, appending faction effects as pseudo-sources, replacing the six inline `sources` arrays.
+One shared `effectSourcesOf(char)` helper, appending faction effects as pseudo-sources, replacing the five inline `sources` arrays. (⚠️ Easy only in the collector — the _pool_ side was not; see _What the build corrected_ below.)
 
 Low risk, and the reason is worth stating because it is the thing that would otherwise need re-deriving: **every faction effect in the corpus declares its trigger explicitly** (`onCast ability:`, `onHit abilityType:`, `onReaction reaction:`). So the collectors' "passive with no explicit ability → fire on BOTH casts" fall-through — the one real hazard in feeding non-ability sources through an ability-shaped pool — never bites. Checked across all 11 characters.
 
@@ -69,9 +69,9 @@ Re-authoring adds `not(teamFaction hexerei ≥2)` to the base and moves the rite
 
 A summing projection would have to distinguish replaces / stacks-from-a-different-source / same-source-composition-modifier — three relationships the data encodes only through conditions — and would double Faruzan and Citlali unless it also understood mutual exclusion. Strictly more machinery for strictly less clarity.
 
-**Prune — row-key collision.** Both rite buffs are `atk%` on `onReaction`, and the onReaction row key is `${characterId}::char::onReaction::${stat}`, so a +60% self buff and a +30% active buff pool into one row despite different triggers and targets. The faction source arm below only half-solves it (they share a `bonusName`); the key likely needs stat or target too.
+**Prune — predicted a row-key collision; it is not that.** ↓ _What step 4 turned out to be_.
 
-**Albedo — same class of collision to verify**, `onCast`-E and `onHit`-E both keying under `albedo::char::E`.
+**Albedo — predicted the same; it is not that either.** ↓ same section.
 
 ### No action (4 characters)
 
