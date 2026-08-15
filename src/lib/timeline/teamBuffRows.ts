@@ -90,6 +90,22 @@ export function projectTeamBuffRows(
 				sourceLabel = `${displayName} reaction`;
 				explicitKind = w.debuff ? 'debuff' : 'buff';
 			}
+		} else if (src.type === 'faction') {
+			// ⚓ Named after the BONUS, not the cast — a Secret Rite bar labelled
+			// "Sucrose E" reads as an unconditional buff, and the team-composition
+			// gate is the most important thing about it.
+			sourceLabel = `${displayName} ${src.bonusName}`;
+			// ⚠ The stat rides the key. A faction bonus commonly grants the same
+			// stat off two different triggers (Prune: +60% ATK on any reaction to
+			// himself, +30% to the active character on a Swirl), and those are two
+			// claims about two different things — keyed only by bonus name they
+			// would pool into one row and one of the two numbers would vanish.
+			const scope =
+				src.trigger === 'cast' || src.trigger === 'block'
+					? AB_LABEL[src.abilityClass!]
+					: src.trigger;
+			rowKey = `${w.characterId}::faction::${src.faction}::${src.bonusName}::${scope}::${effects[0].stat}${w.debuff ? '::resShred' : ''}`;
+			explicitKind = w.debuff ? 'debuff' : 'buff';
 		} else {
 			const set = getArtifactSetById(src.setId);
 			sourceLabel = set?.name ?? src.setId;

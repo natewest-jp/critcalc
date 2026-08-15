@@ -49,6 +49,14 @@ export function projectCharReceivedBuffRows(
 		} else if (src.type === 'character') {
 			const char = getCharacter(w.characterId);
 			sourceLabel = `${char?.displayName ?? w.characterId} ${AB_LABEL[src.abilityClass!]}`;
+		} else if (src.type === 'faction') {
+			// Same naming rule as the team surface: the bonus, not the cast. The
+			// row key here is `receiverId::sourceLabel`, so two triggers of one
+			// bonus DO pool into a single received row — correct on this surface,
+			// where the question is "what am I receiving from whom", and the
+			// tooltip gates (duration / procCooldown) keep unlike bars apart.
+			const char = getCharacter(w.characterId);
+			sourceLabel = `${char?.displayName ?? w.characterId} ${src.bonusName}`;
 		} else {
 			continue; // artifact windows are team-surface only
 		}

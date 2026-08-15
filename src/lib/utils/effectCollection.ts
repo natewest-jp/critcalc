@@ -14,6 +14,77 @@ import { getDefaultDamageTag, type DamageTag, type TriggerFilterContext } from '
 import type { Effect, EffectTarget, Stat } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 
+/** Where on the character an effect came from, when that is a faction bonus
+ *  rather than an ability / passive / constellation. */
+export type FactionProvenance = { faction: string; bonusName: string };
+
+/* ── Faction provenance (2026-08-15) ─────────────────────────────────────────
+ *
+ * ⚓ `factionBonuses` effects now join the candidate pool (they reached the
+ * capability layer but never the planner, so no Secret Rite buff had ever drawn
+ * a bar — see docs/faction-bonuses-round.md).
+ *
+ * ⚠ They must NOT be indistinguishable from the ability's own effects once
+ * collected. Every emit site in `buffWindows` pools one cast's effects into ONE
+ * window, so a faction buff merged into that pool would render inside the
+ * ability's bar and label as plain "Sucrose E" — hiding the team-composition
+ * gate that is the whole point of a Secret Rite. `emit` splits the pool by
+ * provenance instead, which needs to recover it from the effect alone.
+ *
+ * ⛔ Not by widening the collectors' return type to a wrapper: they return
+ * `Effect[]` to a dozen call sites that filter and narrow on `effect.type`, and
+ * threading a box through all of them buys nothing the map does not. Effects
+ * are stable object references off the loaded character JSON, so a WeakMap
+ * keyed on identity is O(1), allocation-free after registration, and invisible
+ * to every consumer that does not ask.
+ *
+ * ⚠ Identity is the one invariant this depends on. `normalizeBuffLikeEffect`
+ * CLONES `elevate` effects, so it re-registers the clone below; no faction
+ * bonus authors an `elevate` today, and that line is why one may. */
+const FACTION_PROVENANCE = new WeakMap<Effect, FactionProvenance>();
+
+/** Registration is idempotent, but the character walk is not free — a memo
+ *  keeps `effectSourcesOf` cheap on the per-cast paths that call it in a loop. */
+const REGISTERED = new WeakSet<CharacterData>();
+
+/** The character's full effect surface: abilities + passives + constellations,
+ *  and (since 2026-08-15) faction bonuses.
+ *
+ * ⚠ A faction bonus is not ability-shaped — it has no `abilityType`, so it
+ * takes the same path a passive does through the collectors' trigger matching.
+ * That is safe ONLY because every faction effect in the corpus declares its
+ * trigger binding explicitly (`onCast ability:`, `onHit abilityType:`,
+ * `onReaction reaction:`), so the "no explicit ability → fire on BOTH casts"
+ * fall-through never reaches one. `characterLint` C.17 holds that property. */
+export function effectSourcesOf(char: CharacterData): Array<{
+	abilityType?: string;
+	effects?: Effect[];
+	variants?: { input?: string[]; effects?: Effect[] }[];
+}> {
+	const factionSources = char.factionBonuses ?? [];
+	if (factionSources.length > 0 && !REGISTERED.has(char)) {
+		for (const fb of factionSources) {
+			for (const fx of fb.effects ?? []) {
+				FACTION_PROVENANCE.set(fx, { faction: fb.faction, bonusName: fb.name });
+			}
+		}
+		REGISTERED.add(char);
+	}
+	return [
+		...char.abilities,
+		...(char.passives ?? []),
+		...(char.constellations ?? []),
+		...factionSources.map((fb) => ({ effects: fb.effects }))
+	];
+}
+
+/** The faction bonus an effect came from, or undefined for ability / passive /
+ *  constellation effects. Populated by `effectSourcesOf`, so it is only
+ *  meaningful for effects that came out of a collector. */
+export function factionProvenanceOf(effect: Effect): FactionProvenance | undefined {
+	return FACTION_PROVENANCE.get(effect);
+}
+
 export function targetsTeamOrActive(target: EffectTarget | EffectTarget[]): boolean {
 	const ts = Array.isArray(target) ? target : [target];
 	return ts.some((t) => t === 'team' || t === 'teamExcludingSelf' || t === 'active');
@@ -53,7 +124,7 @@ function normalizeBuffLikeEffect(effect: Effect): Effect | null {
 	if (effect.reactions.length !== 1) return null;
 	const stat = elevateReactionToDisplayStat(effect.reactions[0]);
 	if (!stat) return null;
-	return {
+	const synthesized: Effect = {
 		type: 'buff',
 		target: effect.target,
 		trigger: effect.trigger,
@@ -67,6 +138,11 @@ function normalizeBuffLikeEffect(effect: Effect): Effect | null {
 		value: effect.value,
 		snapshottable: effect.snapshottable
 	};
+	// ⚠ This is the ONE place a collected effect is not the authored object, so
+	// it is the one place faction provenance can be lost. Carry it across.
+	const prov = FACTION_PROVENANCE.get(effect);
+	if (prov) FACTION_PROVENANCE.set(synthesized, prov);
+	return synthesized;
 }
 
 /** Flat-maps a list of effects through `normalizeBuffLikeEffect`, dropping
@@ -138,7 +214,7 @@ export function getCharacterEffectsForCast(
 	castType: 'skill' | 'burst',
 	castLabel?: string
 ): Effect[] {
-	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	const sources = effectSourcesOf(char);
 	const result: Effect[] = [];
 	for (const src of sources) {
 		for (const fx of effectsForCast(src, castLabel)) {
@@ -172,7 +248,7 @@ export function getCharacterEffectsForOnHit(
 	castType: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge',
 	castLabel?: string
 ): Effect[] {
-	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	const sources = effectSourcesOf(char);
 	const result: Effect[] = [];
 	const isInputClass = castType === 'normal' || castType === 'charged' || castType === 'plunge';
 	for (const src of sources) {
@@ -295,7 +371,7 @@ export function getCharacterEffectsForAfterDuration(
 	castType: 'skill' | 'burst',
 	castLabel?: string
 ): Effect[] {
-	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	const sources = effectSourcesOf(char);
 	const result: Effect[] = [];
 	for (const src of sources) {
 		// Variant-resolved for SYMMETRY, not for a live case: no variant in the
@@ -321,7 +397,7 @@ export function getCharacterEffectsForAfterDuration(
  *  filtering — just gather candidates. Source-agnostic; passives/constellations
  *  carry these triggers in practice (Mavuika A1, Varesa A4, Xilonen A2, Ifa A1). */
 export function getCharacterEffectsForTeamNightsoulBurst(char: CharacterData): Effect[] {
-	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	const sources = effectSourcesOf(char);
 	const result: Effect[] = [];
 	for (const src of sources) {
 		for (const fx of src.effects ?? []) {
@@ -338,7 +414,7 @@ export function getCharacterEffectsForTeamNightsoulBurst(char: CharacterData): E
  *  each event against `trigger.reaction` and the effect's `conditions` per
  *  cast at fire time. */
 export function getCharacterEffectsForOnReaction(char: CharacterData): Effect[] {
-	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	const sources = effectSourcesOf(char);
 	const result: Effect[] = [];
 	for (const src of sources) {
 		for (const fx of src.effects ?? []) {
