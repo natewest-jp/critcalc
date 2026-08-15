@@ -37,6 +37,12 @@ import sucroseJson from '$lib/data/characters/sucrose.json';
 import xingqiuJson from '$lib/data/characters/xingqiu.json';
 import xiaoForIcd from '$lib/data/characters/xiao.json';
 import { simulateIcd, STANDARD_ICD } from './icd';
+import bennettInfJson from '$lib/data/characters/bennett.json';
+import xingqiuInfJson from '$lib/data/characters/xingqiu.json';
+import ganyuInfJson from '$lib/data/characters/ganyu.json';
+import candaceInfJson from '$lib/data/characters/candace.json';
+import lohenInfJson from '$lib/data/characters/lohen.json';
+import xiaoInfJson from '$lib/data/characters/xiao.json';
 
 const ganyu = ganyuJson as unknown as CharacterData;
 const kazuha = kazuhaJson as unknown as CharacterData;
@@ -3919,5 +3925,90 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 			['hydroSwirl', 'skill'],
 			['hydroSwirl', 'skill']
 		]);
+	});
+});
+
+// ── infuse EFFECTS (infusion round, 2026-08-15) ──
+//
+// ⚠️ A DIFFERENT MECHANISM from `NormalAbility.infusion`. That one is a field on
+// a stance's normal ability and needs no tracking — the stance IS the window.
+// An `infuse` Effect is a timed grant from a cast, and it can land on someone
+// else: Bennett and Candace target `active` (whoever is on field), while Dori,
+// Kazuha and Lohen target `self`. Five effects, authored since the schema
+// existed, read by nothing until the ICD round made normals react.
+describe('parseNotation — infuse effects grant a timed elemental infusion', () => {
+	const bennett = bennettInfJson as unknown as CharacterData;
+	const xingqiu = xingqiuInfJson as unknown as CharacterData;
+	const ganyu = ganyuInfJson as unknown as CharacterData;
+	const candace = candaceInfJson as unknown as CharacterData;
+	const lohen = lohenInfJson as unknown as CharacterData;
+	const xiao = xiaoInfJson as unknown as CharacterData;
+	const team: Record<string, CharacterData> = {
+		Bennett: bennett,
+		Xingqiu: xingqiu,
+		Ganyu: ganyu,
+		Candace: candace,
+		Lohen: lohen,
+		Xiao: xiao
+	};
+	const lookup = (n: string): CharacterData | null => team[n] ?? null;
+
+	/** The element each drawn N/C/P landed with — `null` for physical. */
+	const elements = (notation: string, cons?: Record<string, number>) =>
+		parseNotation(notation, lookup, 8, cons)
+			.events.filter((e) => e.kind === 'action')
+			.map((e) => (e.kind === 'action' ? (e.element ?? null) : null));
+
+	it('Bennett C6 infuses a SWORD teammate’s normals with pyro', () => {
+		expect(elements('Bennett Q > Xingqiu N3', { bennett: 6 })).toEqual(['pyro', 'pyro', 'pyro']);
+	});
+
+	it('⛔ at C0 it grants nothing — the constellation is the HOLDER’s fact', () => {
+		expect(elements('Bennett Q > Xingqiu N3')).toEqual([null, null, null]);
+	});
+
+	it('⚓ a BOW teammate is not infused — the weaponType condition asks about the RECEIVER', () => {
+		// The load-bearing case for the whole round. One condition tree carries
+		// two subjects: `constellation` is Bennett's and is known at the cast,
+		// `weaponType` is the receiver's and is not known until someone swings.
+		// Judging the tree once, at either site, gets one of them wrong.
+		expect(elements('Bennett Q > Ganyu N3', { bennett: 6 })).toEqual([null, null, null]);
+	});
+
+	it('Candace’s burst infusion has no constellation gate at all', () => {
+		expect(elements('Candace Q > Xingqiu N3')).toEqual(['hydro', 'hydro', 'hydro']);
+	});
+
+	it('a self-target infusion reaches only its holder', () => {
+		expect(elements('Lohen E N3')).toEqual(['cryo', 'cryo', 'cryo']);
+		// Lohen's grant is `self`, so standing next to him buys Xingqiu nothing.
+		expect(elements('Lohen E > Xingqiu N3')).toEqual([null, null, null]);
+	});
+
+	it('⚠️ a STANCE infusion wins over an external grant', () => {
+		// Xiao's burst is a self-infusion, and in game a self-infusion overrides
+		// one handed to you. His plunges stay anemo through Bennett's pyro.
+		expect(elements('Bennett Q > Xiao Q P', { bennett: 6 })).toEqual(['anemo']);
+	});
+
+	it('NEWEST wins — an infusion is a replacement, not a stack', () => {
+		expect(elements('Bennett Q > Candace Q > Xingqiu N1', { bennett: 6 })).toEqual(['hydro']);
+		expect(elements('Candace Q > Bennett Q > Xingqiu N1', { bennett: 6 })).toEqual(['pyro']);
+	});
+
+	it('the window expires on its own clock, and a swap does not cancel it', () => {
+		// Bennett's is 12s. ⚓ It survives him leaving the field — that longevity
+		// is the whole reason the buff is famous, so a truncation-on-swap would
+		// be a visible regression, not a conservative choice.
+		expect(elements('Bennett Q > Xingqiu N1 ~13s N1', { bennett: 6 })).toEqual(['pyro', null]);
+	});
+
+	it('an infused normal reaches the REACTION stream', () => {
+		// The point of the round: Bennett Q (pyro aura) → Xingqiu E (hydro,
+		// vaporizing off it) → his now-pyro normals vaporize back off the hydro.
+		const rs = parseNotation('Bennett Q > Xingqiu E N5', lookup, 8, { bennett: 6 })
+			.events.filter((e) => e.kind === 'reaction')
+			.map((e) => (e.kind === 'reaction' ? [e.characterId, e.reaction, e.castKind] : null));
+		expect(rs).toContainEqual(['xingqiu', 'vaporize', 'normal']);
 	});
 });

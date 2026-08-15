@@ -1277,7 +1277,15 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						const segCtx: ConditionContext = {
 							teamFactionCounts,
 							negatedStates: segNegated,
-							activeCharFactions
+							activeCharFactions,
+							// ⚓ Same structural claim `activeCharFactions` makes: a
+							// per-segment slice is the one scope where the RECEIVER is
+							// concrete, so it is the one scope where a `weaponType`
+							// condition can be answered. Bennett C6's Pyro DMG bonus is
+							// the only buff in the corpus that asks (infusion round,
+							// 2026-08-15) — it stops drawing for a bow or catalyst
+							// receiver, which is what the talent says.
+							receiverWeapon: receiverChar?.weapon
 						};
 
 						const segEffects = barEffects.filter(
@@ -1382,7 +1390,15 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						const segCtx: ConditionContext = {
 							teamFactionCounts,
 							negatedStates: segNegated,
-							activeCharFactions
+							activeCharFactions,
+							// ⚓ Same structural claim `activeCharFactions` makes: a
+							// per-segment slice is the one scope where the RECEIVER is
+							// concrete, so it is the one scope where a `weaponType`
+							// condition can be answered. Bennett C6's Pyro DMG bonus is
+							// the only buff in the corpus that asks (infusion round,
+							// 2026-08-15) — it stops drawing for a bow or catalyst
+							// receiver, which is what the talent says.
+							receiverWeapon: receiverChar?.weapon
 						};
 						const segEffects = barEffects.filter(
 							(effect) =>

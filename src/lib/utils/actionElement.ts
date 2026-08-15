@@ -12,12 +12,17 @@
  * ability carries an infusion (a stance/permanent infusion). The element is the
  * infusion if present, else the character's own element.
  *
- * `infusion` is the caller's contribution of context the rule itself can't see:
- * the parser passes the stance-resolved `activeNormal.infusion`, so mid-rotation
- * infusions (Cyno after Q, Xiao's Q-stance plunges) resolve correctly; the
- * editor passes `undefined` because it reads only the eager identity index and
- * doesn't run the parser's state machine — so it colors permanent weapon-class
- * infusions exactly and leaves stance infusions neutral.
+ * `infusion` is the caller's contribution of context the rule itself can't see.
+ * ⚠️ There are TWO sources of one and the parser resolves both, stance FIRST:
+ * `NormalAbility.infusion` (a field on a stance's normal ability — Cyno after Q,
+ * Xiao's Q-stance plunges) and, since 2026-08-15, an `infuse` EFFECT's window
+ * (Bennett C6 and Candace granting to whoever is on field; Dori, Kazuha and
+ * Lohen to themselves). A stance infusion wins, because it is the character's
+ * own and in game a self-infusion overrides a granted one.
+ *
+ * The editor passes `undefined` for both, because it reads only the eager
+ * identity index and doesn't run the parser's state machine — so it colors
+ * permanent weapon-class infusions exactly and leaves every timed one neutral.
  */
 
 import type { Element } from '$lib/types/ability';
