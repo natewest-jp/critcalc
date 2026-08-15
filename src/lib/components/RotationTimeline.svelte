@@ -1571,7 +1571,7 @@
 													: block.kind === 'skill' ||
 														  block.kind === 'burst' ||
 														  block.kind === 'elemental-normal'
-														? `color-mix(in srgb, ${p.bar} 50%, var(--rp-active))`
+														? `color-mix(in srgb, ${block.element ? pal(block.element).bar : p.bar} 50%, var(--rp-active))`
 														: undefined}
 												style:border-right={bi === track.inputBlocks.length - 1
 													? 'none'

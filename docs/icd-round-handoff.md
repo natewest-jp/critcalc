@@ -68,6 +68,8 @@ All five are wired — a different mechanism from `NormalAbility.infusion`, whic
 
 **That fixed a second thing on the way past.** Bennett's C6 Pyro DMG bonus was drawing a bar for every teammate regardless of weapon. The per-segment slice in `buffWindows` is the one scope where the receiver is concrete — the same structural claim `activeCharFactions` already makes there — so it supplies the weapon too and the bow/catalyst receivers correctly lose that half of the bar (keeping the ungated ATK buff).
 
+🐛 **And one the round shipped broken, caught by Nate on the live tool the same evening: an infused Xingqiu N drew in HYDRO.** ⚠️ `InputBlock.kind: 'elemental-normal'` says only **THAT** a swing was elemental, never with what — so both painters (the chart and the PNG export) fell back to `pal(track.element)`, the swinger's own. The reaction stream was correct throughout; only the paint was wrong, which is exactly the class the export mirror test cannot see (it asserts colour TOKENS, not which palette a call site picks). Fixed by carrying the element on the block itself, so both painters read one field. ⚠️ The anchor swing's element speaks for the whole block, which is exact only because infusion resolves once per TOKEN — if it ever resolves per swing, that projection site is what has to say so.
+
 Other rules, each with a test: **newest wins** (an infusion is a replacement, not a stack); **a stance infusion beats a granted one** (Xiao's burst stays anemo through Bennett's pyro); **windows are never truncated on swap** — Bennett's 12s is famously still there when you swap back, so cancelling it would be a visible regression rather than a conservative choice.
 
 ---

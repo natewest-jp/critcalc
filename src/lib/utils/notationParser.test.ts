@@ -4003,6 +4003,29 @@ describe('parseNotation — infuse effects grant a timed elemental infusion', ()
 		expect(elements('Bennett Q > Xingqiu N1 ~13s N1', { bennett: 6 })).toEqual(['pyro', null]);
 	});
 
+	it('🐛 the input BLOCK carries the infused element, so the tint is not the swinger’s', () => {
+		// ⚓ Nate caught this on the live tool: an infused Xingqiu N drew in HYDRO.
+		// `kind: 'elemental-normal'` says only THAT a swing was elemental, so both
+		// painters — the chart and the PNG export — fell back to the track's own
+		// element. The reaction stream was right the whole time; only the paint
+		// was wrong. The block has to carry the element for them to read.
+		const blocks = parseNotation('Bennett Q > Xingqiu N3', lookup, 8, { bennett: 6 })
+			.tracks.find((t) => t.characterId === 'xingqiu')!
+			.inputBlocks.filter((b) => b.kind === 'elemental-normal');
+		expect(blocks).toHaveLength(1);
+		expect(blocks[0].element).toBe('pyro');
+	});
+
+	it('an uninfused elemental input still carries its own element', () => {
+		// A bow's aimed shot is elemental by the weapon rule, with no infusion in
+		// sight — the field must be populated there too, or the renderer's
+		// fallback is quietly doing the work and the fix only appears to hold.
+		const blocks = parseNotation('Ganyu C', lookup, 8)
+			.tracks.find((t) => t.characterId === 'ganyu')!
+			.inputBlocks.filter((b) => b.kind === 'elemental-normal');
+		expect(blocks[0].element).toBe('cryo');
+	});
+
 	it('an infused normal reaches the REACTION stream', () => {
 		// The point of the round: Bennett Q (pyro aura) → Xingqiu E (hydro,
 		// vaporizing off it) → his now-pyro normals vaporize back off the hydro.
