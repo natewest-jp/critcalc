@@ -307,8 +307,21 @@
 						"source": "team"
 					},
 					"conditions": {
-						"type": "state",
-						"state": "duringSummon"
+						"type": "all",
+						"conditions": [
+							{
+								"type": "not",
+								"condition": {
+									"type": "teamFaction",
+									"faction": "hexerei",
+									"min": 2
+								}
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
+						]
 					},
 					"duration": 6,
 					"durationType": "refresh",
@@ -324,8 +337,21 @@
 						"source": "team"
 					},
 					"conditions": {
-						"type": "state",
-						"state": "duringSummon"
+						"type": "all",
+						"conditions": [
+							{
+								"type": "not",
+								"condition": {
+									"type": "teamFaction",
+									"faction": "hexerei",
+									"min": 2
+								}
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
+						]
 					},
 					"duration": 6,
 					"durationType": "refresh",
@@ -341,8 +367,21 @@
 						"source": "team"
 					},
 					"conditions": {
-						"type": "state",
-						"state": "duringSummon"
+						"type": "all",
+						"conditions": [
+							{
+								"type": "not",
+								"condition": {
+									"type": "teamFaction",
+									"faction": "hexerei",
+									"min": 2
+								}
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
+						]
 					},
 					"duration": 6,
 					"durationType": "refresh",
@@ -358,8 +397,21 @@
 						"source": "team"
 					},
 					"conditions": {
-						"type": "state",
-						"state": "duringSummon"
+						"type": "all",
+						"conditions": [
+							{
+								"type": "not",
+								"condition": {
+									"type": "teamFaction",
+									"faction": "hexerei",
+									"min": 2
+								}
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
+						]
 					},
 					"duration": 6,
 					"durationType": "refresh",
@@ -375,8 +427,21 @@
 						"source": "team"
 					},
 					"conditions": {
-						"type": "state",
-						"state": "duringSummon"
+						"type": "all",
+						"conditions": [
+							{
+								"type": "not",
+								"condition": {
+									"type": "teamFaction",
+									"faction": "hexerei",
+									"min": 2
+								}
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
+						]
 					},
 					"duration": 6,
 					"durationType": "refresh",
@@ -387,7 +452,7 @@
 			"_curatorNotes": [
 				"gcsim asc.go a1Init: gated on c.StatusIsActive(burstKeyWhite) (Dragon of White Flame active), modeled here as state:duringSummon. Fires on team Overloaded / Burning / Pyro-Swirl / Pyro-Crystallize reactions (a1ReactToElements) shredding Pyro RES + the partner element's RES by 20% for 6s. A separate onEnemyDamage hook also shreds Pyro + Dendro RES when a Burning opponent takes Pyro or Dendro DMG — not authored as an onHit effect (the Burning-reaction path above covers the common case). Hexerei bonus: hexereiA1Bonus()=1.75 with GetHexereiCount()>=2, i.e. -35% instead of -20% — faction-count dependent, not modeled. Dark form (a1OnBurst isWhite=false) adds a ReactBonusMod of +40% to Durin's Amped (Vaporize/Melt) hits — no vaporize/melt DMG-bonus stat primitive, so unmodeled.",
 				"[A7] Base shred is authored per reaction (Pyro plus electro/anemo/geo/dendro partner element, -20%, 6s refresh) and is shown; only the 35% Hexerei-count upgrade and the Dark-form +40% Vaporize/Melt are omissions.",
-				"[Hexerei 2026-07-29] Secret Rite now authored in top-level factionBonuses. gcsim asc.go:138-148 hexereiA1Bonus() returns 1.75 only when IsHexerei AND Core.Player.GetHexereiCount() >= 2 — count-gated, so every A1 value is x1.75 (asc.go:58,64,82,105): res shred -0.20 -> -0.35, Dark-form Amped ReactBonusMod 0.40 -> 0.70. Authored as five ADDITIVE resShred effects of -15 (mirroring the five A1 base effects, same triggers, same duringSummon gate wrapped in an `all` with teamFaction hexerei min 2), so base -20 + faction -15 = the in-game -35; durations unchanged at 6s per the article ('all effects +75% except duration'). The Dark-form 40->70% Vaporize/Melt uplift is a self reaction-DMG multiplier with no stat primitive — caveat only, no effect. No bare IsHexerei permanent patches exist for Durin: durin.go:29-34 only reads the hexerei param (default enabled) and asc.go:139 is the sole consumer, always paired with the count check."
+				"[Hexerei 2026-08-15] RE-AUTHORED. The five faction shreds were -15 ADDITIVE on top of the five base -20 (base + faction = the in-game -35), which was correct arithmetic and unrenderable: once factionBonuses reach the planner (docs/faction-bonuses-round.md) that draws TEN debuff bars where a reader expects five. The faction five now carry the FULL -35 and the base five are gated `not(teamFaction hexerei >=2)`, so exactly one bar per element renders in either world — -20% solo, -35% in a Hexerei team. \u26d4 The alternative, teaching the projection to SUM co-located shreds, was measured and rejected: eight characters have same-element shred pairs and they are overwhelmingly ALTERNATIVES, not addends (Faruzan's two -30% Anemo entries are one shred under two condition branches, and summing them shows -60%; Venti's Breeze -12% and Storm of Defiance -20% genuinely stack but must stay separate, because provenance is the point). Durin was the only true addend pair in the corpus, and only because his -15% modified his own shred. [Hexerei 2026-07-29] Secret Rite authored in top-level factionBonuses. gcsim asc.go:138-148 hexereiA1Bonus() returns 1.75 only when IsHexerei AND Core.Player.GetHexereiCount() >= 2 — count-gated, so every A1 value is x1.75 (asc.go:58,64,82,105): res shred -0.20 -> -0.35, Dark-form Amped ReactBonusMod 0.40 -> 0.70. Authored as five ADDITIVE resShred effects of -15 (mirroring the five A1 base effects, same triggers, same duringSummon gate wrapped in an `all` with teamFaction hexerei min 2), so base -20 + faction -15 = the in-game -35; durations unchanged at 6s per the article ('all effects +75% except duration'). The Dark-form 40->70% Vaporize/Melt uplift is a self reaction-DMG multiplier with no stat primitive — caveat only, no effect. No bare IsHexerei permanent patches exist for Durin: durin.go:29-34 only reads the hexerei param (default enabled) and asc.go:139 is the sole consumer, always paired with the count check."
 			],
 			"description": "Durin will trigger different buffs depending on the form that his power manifests as when he unleashes his Elemental Burst. When that form is:\n\nDragon of White Flame\nAfter nearby party members trigger Burning, Overloaded, Pyro Swirl, or Pyro Crystallize reactions on an opponent, or deal Pyro DMG or Dendro DMG to an opponent affected by Burning, that opponent's Pyro RES, and the RES for the corresponding Element involved in the reaction, are decreased by 20% for 6s.\n\nDragon of Dark Decay\nDurin's Vaporize DMG is increased by 40% and his Melt DMG is increased by 40%."
 		},
@@ -559,15 +624,22 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
-							{ "type": "state", "state": "duringSummon" }
+							{
+								"type": "teamFaction",
+								"faction": "hexerei",
+								"min": 2
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
 						]
 					},
 					"duration": 6,
 					"durationType": "refresh",
 					"element": "pyro",
-					"value": -15,
-					"caveat": "With 2 or more Hexerei on the team the White-form RES shred deepens to 35%; the extra 15% is shown as a second shred stacked on the passive's 20%."
+					"value": -35,
+					"caveat": "With 2 or more Hexerei on the team the White-form RES shred deepens from 20% to 35%."
 				},
 				{
 					"type": "resShred",
@@ -580,14 +652,22 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
-							{ "type": "state", "state": "duringSummon" }
+							{
+								"type": "teamFaction",
+								"faction": "hexerei",
+								"min": 2
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
 						]
 					},
 					"duration": 6,
 					"durationType": "refresh",
 					"element": "electro",
-					"value": -15
+					"value": -35,
+					"caveat": "With 2 or more Hexerei on the team the White-form RES shred deepens from 20% to 35%."
 				},
 				{
 					"type": "resShred",
@@ -600,14 +680,22 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
-							{ "type": "state", "state": "duringSummon" }
+							{
+								"type": "teamFaction",
+								"faction": "hexerei",
+								"min": 2
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
 						]
 					},
 					"duration": 6,
 					"durationType": "refresh",
 					"element": "anemo",
-					"value": -15
+					"value": -35,
+					"caveat": "With 2 or more Hexerei on the team the White-form RES shred deepens from 20% to 35%."
 				},
 				{
 					"type": "resShred",
@@ -620,14 +708,22 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
-							{ "type": "state", "state": "duringSummon" }
+							{
+								"type": "teamFaction",
+								"faction": "hexerei",
+								"min": 2
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
 						]
 					},
 					"duration": 6,
 					"durationType": "refresh",
 					"element": "geo",
-					"value": -15
+					"value": -35,
+					"caveat": "With 2 or more Hexerei on the team the White-form RES shred deepens from 20% to 35%."
 				},
 				{
 					"type": "resShred",
@@ -640,14 +736,22 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
-							{ "type": "state", "state": "duringSummon" }
+							{
+								"type": "teamFaction",
+								"faction": "hexerei",
+								"min": 2
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
 						]
 					},
 					"duration": 6,
 					"durationType": "refresh",
 					"element": "dendro",
-					"value": -15
+					"value": -35,
+					"caveat": "With 2 or more Hexerei on the team the White-form RES shred deepens from 20% to 35%."
 				}
 			]
 		}
