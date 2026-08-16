@@ -1,6 +1,11 @@
 # Gauge round — L6: surface and honesty
 
-**Status:** built, gates green, awaiting Nate's second look. Branch `feat/gauge-round-l6`.
+**Status:** ✅ built and visually verified by Nate on the live tool (⚓ _"I'm typing in
+rotations and it's leaving me stunned… what we have is already almost entirely the shape
+of it"_). ⚠️ **UNMERGED** on `feat/gauge-round-l6` — two commits, `65b453d` the lane and
+`8e4c67c` the plot conversion.
+⏳ **Open:** real Safari, and a refinement pass Nate has asked for but not yet specified
+(⛔ ask, don't guess — the knobs already on the table are in §8).
 Follows [L5e](gauge-round-L5e.md); the round's contract is [gauge-round.md](gauge-round.md).
 
 L6 is the landing where the gauge becomes something a player can look at. Everything
@@ -310,9 +315,9 @@ key into the IR (the bridge exists to stop that); it is a multiplier field on
   notes panel opens with the standing block above the caveats; the PNG export paints the
   lane with its label column. Edge cases clean — empty notation, a physical-only rotation
   (no lane, correctly), a rotation with no reactions, four characters.
-- ⏳ **`npm run test:e2e`** — pre-merge gate, run below.
-- ⏳ **Nate's eyes**, and Safari is unverified until he looks. This landing is entirely
-  visual, so the backlog re-opens at one.
+- `npm run test:e2e` — **73 + 73 on both engines**, run against each of the two commits.
+- ✅ **Nate's eyes**, on the live tool, typing rotations. ⏳ Real **Safari** is still
+  unverified — this landing is entirely visual, so the backlog re-opens at one.
 
 ---
 
