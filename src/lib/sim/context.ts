@@ -26,10 +26,12 @@
 import type { CharacterData } from '$lib/types/character';
 import type { Condition, Element } from '$lib/types/ability';
 import type { LoadoutEntry } from '$lib/stores';
-import type { CastEvent, TimelineEvent } from '$lib/utils/rotationEvents';
+import type { ActionEvent, CastEvent, TimelineEvent } from '$lib/utils/rotationEvents';
 import type { IcdClock } from '$lib/utils/icd';
+import type { HitEvent } from './hits';
 import { type AuraState, createAuraState } from './aura';
 import type { CastKinds } from './states';
+import type { CharacterTrack, TimelineBar } from './types';
 import {
 	type CharState,
 	createCharState,
@@ -116,6 +118,11 @@ export type TeamContext = {
 	 * character's stack arithmetic.
 	 */
 	teamHasOnHitStackEffects: boolean;
+	/** The caller's SLOT roster, when it supplied one. ⚠️ Preferred over
+	 *  `teamChars` for TEAM-WIDE mechanics: a Stellar enabler in slot 4 with
+	 *  zero casts still converts every Superconduct, and the NB clock counts
+	 *  Natlan members who never appear in the notation. */
+	slotRoster?: (CharacterData | null)[];
 };
 
 export type SimContext = {
@@ -126,12 +133,32 @@ export type SimContext = {
 	team: TeamContext;
 
 	// ── IR collectors ─────────────────────────────────────────────────────────
+	/** Per-segment character tracks, in segment order. */
+	tracks: CharacterTrack[];
+	/** Tokens the parse could not recognise (the only warning channel on
+	 *  `ParsedRotation`). */
+	unknownTokens: string[];
 	/** The single event stream, pushed in EMISSION order and sorted by time at
 	 *  finalize. ⚠️ Emission order is what `id` records, and ids are visible in
 	 *  the IR — see the differ's STRICT surface. */
 	events: TimelineEvent[];
 	/** Stable per-parse ids, assigned in emission order. */
 	nextId(): number;
+
+	/** Cast events with their owning track, in EMISSION order — the finalize
+	 *  pass projects `track.eBars`/`track.qBars` from these (post-P4 #3, bars
+	 *  are projections of casts). ⚠️ `ev` is the LIVE event: finalize stamps
+	 *  extension uptimes onto it before the bars are built. */
+	castRecords: { ev: CastEvent; track: CharacterTrack }[];
+	/** Action events with their owning track, in emission order; the finalize
+	 *  pass projects `track.inputBlocks` from these, grouped by `blockId`. */
+	actionRecords: { ev: ActionEvent; track: CharacterTrack }[];
+	/** Parser-private hit stream — one per E/Q cast and per N/CA/P swing, plus
+	 *  the summon damage ticks synthesized at finalize. ⛔ NOT public IR. */
+	hitRecords: HitEvent[];
+	/** Projected bar → its opening cast's event id. ⚠️ Keyed by BAR OBJECT
+	 *  IDENTITY (bars and casts are 1:1 by construction). */
+	castIdByBar: Map<TimelineBar, number>;
 
 	stanceWindowRecs: StanceRecord[];
 	summonExtRecs: SummonExtRecord[];
@@ -192,7 +219,13 @@ export function createSimContext(input: SimContextInput): SimContext {
 		loadoutMap: input.loadoutMap,
 		team: input.team,
 
+		tracks: [],
+		unknownTokens: [],
 		events: [],
+		castRecords: [],
+		actionRecords: [],
+		hitRecords: [],
+		castIdByBar: new Map(),
 		nextId: () => nextEventId++,
 
 		stanceWindowRecs: [],
