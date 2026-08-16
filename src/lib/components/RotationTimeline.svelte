@@ -380,7 +380,8 @@
 				totalDuration: 0,
 				unknownTokens: [],
 				events: [],
-				windows: []
+				windows: [],
+				applications: []
 			} satisfies ParsedRotation;
 		}
 	});

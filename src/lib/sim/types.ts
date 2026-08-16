@@ -16,6 +16,7 @@
 
 import type { Element } from '$lib/types/ability';
 import type { TimelineEvent, TimelineWindow } from '$lib/utils/rotationEvents';
+import type { AuraApplication } from './aura';
 
 /** Per-track E/Q bar. Post-P4 #3: a pure PROJECTION of a `cast` event —
  *  built at finalize from the event's geometric fields (1:1, field-equal).
@@ -124,4 +125,19 @@ export type ParsedRotation = {
 	 *  from bar geometry (weapon-proc rows, summon subrows, stance/state
 	 *  overlays all project these spans). */
 	windows: TimelineWindow[];
+	/**
+	 * Every elemental application this rotation put on the target, in time order
+	 * (gauge round L5c).
+	 *
+	 * ⚓ NOT part of the IR proper and deliberately outside `events`: an
+	 * application is not a point the timeline draws, it is what the gauge was
+	 * FED. It exists because an application that reacts with nothing leaves no
+	 * trace anywhere else — which forced the L0 oracle to REPLAY the parser's own
+	 * rules over the IR to reconstruct the stream it was diffing, and is how it
+	 * came to measure a model we no longer had for one commit (L4d).
+	 *
+	 * ⚠️ Its consumer today is `scripts/audit-gcsim-reactions.mjs`; L6's aura lane
+	 * is the second. ⛔ Not a display surface — nothing renders it yet.
+	 */
+	applications: AuraApplication[];
 };
