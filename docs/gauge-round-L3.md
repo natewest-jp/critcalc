@@ -1,6 +1,6 @@
 # L3 — The clock-driven core
 
-**Status:** ✅ **CODE COMPLETE 2026-08-16** — awaiting Nate's eyes on the timeline
+**Status:** ✅ **SHIPPED 2026-08-16** — visually verified by Nate, merged to `main`
 **Branch:** `refactor/gauge-l3`
 **Landing:** [`gauge-round.md`](gauge-round.md) §L3, against contracts **C2**, **C5**, **C6**.
 **Shape:** no behaviour change. The IR must come out byte-identical, ids included.
@@ -467,9 +467,10 @@ The clock must not introduce an unbounded loop or a recursion.
 - ✅ `notationParser.legacy.ts` deleted; nothing imports it.
 - ✅ `orphanedSchema.test.ts` re-run with the copy gone — it was BLINDED while the
   copy existed (§7), so this is the only run in the landing that means anything.
-- ⏳ ⚓ **Nate's eyes on the timeline** — this landing's whole claim is that nothing
-  moved, and that is the one part the machines cannot close (L2's outcome says so in
-  the same words).
+- ✅ ⚓ **Nate's eyes on the timeline** (2026-08-16): _"the live Planner and PNG didn't
+  budge one inch"_. This landing's whole claim was that nothing moved, and that is the
+  one part the machines cannot close — the differ proves the IR is byte-identical, e2e
+  proves nothing throws, and neither can see a bar land a pixel off.
 
 ---
 
@@ -532,6 +533,9 @@ for a differ rather than a careful eye.
 
 ### Open
 
-- ⏳ Nate's eyes on the timeline, then the merge.
 - ⏭ The order-visible deferrals enumerated in §4.2 (shieldEnd, NB, summon-tick hits)
   are L5's to move, each with an expected diff and a visual check.
+- ⏭ `sim/run.ts` is still 1,320 lines — the turn loop with `handleCast` and the action
+  branches inside it. ⛔ Splitting it further was NOT part of this landing and should
+  not be done speculatively: the natural seam is L5's, when the turn stops being the
+  only thing that moves time.

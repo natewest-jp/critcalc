@@ -559,10 +559,10 @@ the 47 non-whole-frame values are enumerated (⚓ Furina's six are already resol
 are means of a randomised tick and simply round), and
 the timeline renders identically.
 
-### L3 — The clock-driven core ✅ CODE COMPLETE 2026-08-16 — _the big one_
+### L3 — The clock-driven core ✅ SHIPPED 2026-08-16 — _the big one_
 
-📄 **Full record: [`gauge-round-L3.md`](gauge-round-L3.md)** · branch `refactor/gauge-l3`
-· ⏳ awaiting Nate's eyes on the timeline before merge.
+📄 **Full record: [`gauge-round-L3.md`](gauge-round-L3.md)** · ✅ **visually verified**
+(⚓ Nate: _"the live Planner and PNG didn't budge one inch"_).
 
 `notationParser.ts` went **5,051 → 223 lines**; the work lives in sixteen modules under
 `$lib/sim/`, and the file is now the façade its header always claimed to be — all 22
