@@ -1,12 +1,21 @@
 # Gauge round — L6: surface and honesty
 
-**Status:** built, gates green, awaiting Nate's eyes. Branch `feat/gauge-round-l6`.
+**Status:** built, gates green, awaiting Nate's second look. Branch `feat/gauge-round-l6`.
 Follows [L5e](gauge-round-L5e.md); the round's contract is [gauge-round.md](gauge-round.md).
 
 L6 is the landing where the gauge becomes something a player can look at. Everything
 from L1 to L5e was correctness with no picture: the gauge decides which reactions
 happen, the reactions drive buff windows, and what the reader saw was a buff bar
 moving. The **target-aura lane** is the cause, drawn.
+
+↻⚓ **It shipped twice.** The first form was one BAR PER MOD, each bar's fill height its
+gauge, chosen over the Gauge Explorer's overlaid chart on the argument that concurrent
+auras on one y axis would go muddy. ⚓ Nate then read the live lane across several
+reaction families and **measured the premise false — auras barely coexist** — so the rows
+were spending the lane's whole height on a collision that mostly does not happen, and
+each was too short to show the depth the units were bought for. §3 is the second form:
+one overlaid plot, a line with the fill fading out beneath it. ⛔ Do not restore the rows
+without re-measuring the overlap.
 
 > _"Here is your aura across your rotation, and here is where you lost it."_
 
@@ -17,7 +26,7 @@ moving. The **target-aura lane** is the cause, drawn.
 | piece                       | where                                                      |
 | --------------------------- | ---------------------------------------------------------- |
 | `ParsedRotation.auraSeries` | `sim/aura.ts` (`collectAuraSeries`) → `sim/finalize.ts`    |
-| the lane's projection       | `src/lib/timeline/auraRows.ts` (+ 12 tests)                |
+| the lane's projection       | `src/lib/timeline/auraPlot.ts` (+ 23 tests)                |
 | the shared mod vocabulary   | `src/lib/utils/auraDisplay.ts`                             |
 | the lane                    | `RotationTimeline.svelte` (`.rp-aura-lane`)                |
 | the PNG mirror              | `timelineExport.ts` + four new `PALETTE_MIRROR` entries    |
@@ -85,48 +94,91 @@ that document is 300 real aura lifetimes back to back, not because time is being
 ## 3. The lane
 
 ```
-           ·Bloom        ·Hyperbloom                          ← reaction markers
-TARGET AURA  ¦ ¦    ¦  ¦     ¦        ¦         ¦             ← application ticks
- ELECTRO        ▂▅███▇▆▅▄▃▂▁▁▁▁▁▁                             ← one row per aura mod
- DENDRO   ████▆▄▂
+           ·Bloom        ·Hyperbloom                       ← reaction markers
+TARGET AURA  ¦ ¦    ¦  ¦     ¦        ¦         ¦          ← application ticks
+            ╭──╮                                           ┐
+       ╭────╯  ╰──╮  ╭──╮                                  │ ONE plot, 56px,
+  ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈  │ 1U datum dotted
+ ╭╯               ╰──╯  ╰─────╮                            │ every mod overlaid
+ ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓                      ┘ (fill fades down)
 ```
 
 **Three bands, top to bottom, each annotating the one below it.** Reaction labels, then
-the applications that caused them, then the auras those left behind.
+the applications that caused them, then the aura they left behind.
 
-- **A row is a mod's whole life; a SPAN is one continuous lifetime of it.** Two spans in
-  one row with a gap between them is the lane's whole answer to "where you lost it" —
-  never one bar bridging the gap.
-- **Fill height is the gauge**, against one `uMax` shared by every row (floored at 2U, so
-  a rotation of 0.8U auras is not drawn full-height implying a saturated target). A
-  per-row scale would make 0.2U and 2U the same height.
+- **One overlaid plot, not a row per mod.** ⚓ The reversal is §0's: auras barely coexist,
+  so rows were paying the lane's whole height for a collision that mostly does not happen.
+  Overlaid, all of it goes to depth — and a swirl-heavy rotation now shows the sawtooth of
+  Pyronado topping the aura back up between five swirls eating it down, which the rows
+  could only hint at.
+- **A LINE with the fill fading out beneath it.** ⚓ The colour lives in the line, so where
+  two auras do coexist — Burning on its Fuel, Frozen on Cryo — they cross legibly instead
+  of turning to mud. That is the Gauge Explorer's own recipe (0.34 → 0 gradient, 2px
+  stroke), and using it is what makes the two surfaces read as one model.
+- **A span is one continuous lifetime**, so a mod re-applied after it decayed draws twice
+  with a gap between. The gap is the lane's whole answer to "where you lost it".
+- **One `uMax` for every series, floored at 2U.** ⚓ Overlaying them is what makes that
+  scale mean something: a tall Pyro line and a short Hydro one are now directly
+  comparable, which stacked rows could only imply. The floor keeps a rotation of 0.8U
+  auras from drawing full-height and implying a saturated target.
 - **Nine mods, and four of them are not elements.** Frozen, Quicken, Burning and its Fuel
   are reaction STATES with different decay curves, so they get `--rx-*` hues rather than
-  borrowing the element that caused them — a Frozen bar drawn in cryo would say "the cryo
-  aura is still there", and it is not.
-- **Row order groups a derived state under its parent** (Burning under Pyro, Frozen under
-  Cryo, Quicken under Dendro), not alphabetically and not by arrival.
+  borrowing the element that caused them. The Fuel draws as a bare dashed line with NO
+  area — it is bookkeeping, not an aura on the target.
 
-### ⚓ It is the only lane that is not made of buff bars, and it says so in its materials
+### ⚓ It is the only lane that is not made of bars at all
 
 Every other lane down there draws a granted effect: a filled register bar with a 2px lit
-edge, a stat icon, a source name. This one draws the TARGET'S state — not something
-anyone gave anyone — so it takes none of that grammar. No register edge, no icon, no
-label inside the bar; an area whose height is a quantity, on the bare night. ⛔ And no
-border-radius: rounding an area chart rounds off the moment the aura landed and the moment
-it ran out, which are the two instants the lane exists to show.
+edge, a stat icon, a source name. This one draws the TARGET'S state — not something anyone
+gave anyone — so it takes none of that grammar. It is a chart, on the bare night like the
+timeline above it.
 
-### ⚠️ Fill only, no stroke
+### ⚓ 1:1 is what makes the line possible
 
-The bar is positioned and sized by the timeline's existing frames→px seam, and the SVG
-stretches to whatever width that produces (`preserveAspectRatio="none"` over a normalized
-`0 0 100 100` viewBox). **A stretched stroke gets non-uniform thickness** — the same trap
-`objectBoundingBox` set for the bench tail — so the area's own top edge is the line.
-Nothing re-runs on zoom. `auraSpanPath` is shared with the canvas export, which walks the
-same string with `lineTo`, so the exported curve cannot differ from the drawn one.
+The row form's SVG was NORMALIZED (`0 0 100 100` + `preserveAspectRatio="none"`) because
+each bar was sized by the timeline's frames→px seam and had to stretch into it — which
+forbade a stroke, since a stretched stroke gets non-uniform thickness (the
+`objectBoundingBox` trap the bench tail already paid for). **One plot spanning the whole
+track draws in real pixels**, so the constraint is simply gone. `auraSpanPoints` maps a
+span into the caller's own pixel space and is shared: the screen joins the points into an
+SVG `d`, the canvas export walks the identical list with `lineTo`.
 
-`minFrac` lifts a live-but-tiny aura off the floor: a 0.05U reading in a 14px row is half
-a pixel, and not drawing it reads as "the aura ended" a second before it did.
+`AURA_MIN_PX` (1.5) lifts a live-but-tiny aura off the baseline — a 0.02U tail is a
+fraction of a pixel, and not drawing it reads as "the aura ended" a second before it did.
+⛔ A gauge of exactly **zero** is not lifted: that sample is the instant the aura ran out.
+
+### The crosshair readout
+
+⚓ **Overlaid series cannot be hovered individually, and the answer is better than the
+per-span tooltips the rows had:** a vertical cursor reads out EVERY aura on the target at
+one instant, which is the question a gauge chart is actually asked. A per-series hit
+target would also have had to pick a winner wherever two lines cross — exactly where a
+reader is most likely to be pointing. `gaugesAt` is `gauge.ts`'s own interpolation over
+its own series; ⛔ not a second reading of the trajectory.
+
+⚠️ `showTooltip` grew an `anchorToCursor` flag for it, and that is not a preference: the
+plot element spans the entire track, so its centre is halfway along the rotation and the
+readout would appear nowhere near the time it reports.
+
+⚠️ An empty aura is a REAL answer and the one the lane exists to show — the readout says
+"No aura" rather than showing an empty card.
+
+### Naming, and the one piece of furniture
+
+Each aura **names itself where it appears**, which is the one moment the word is news; an
+overlaid plot has nowhere to put a permanent legend that is not on top of the data. Two
+suppressions: a span too narrow to hold its name, and a label that would collide with one
+already placed.
+
+⚠️⚠️ **A collision is BOTH AXES.** An x-only test threw away exactly the pair a reader most
+needs — Burning opens on the same frame as the Pyro that lit it — and they were never
+going to overlap, because Burning opens at 2U and Pyro at 0.8U, 30-odd pixels apart.
+
+**One faint rule at each whole unit below the ceiling** is the lane's entire chart
+furniture, and it earns its place: the y axis is otherwise unreadable without hovering, so
+a shape filling 40% of its box says nothing until you know what the box is worth. ⛔ Never
+a line ON the ceiling — the plot's own top edge is that line. ⛔ And not a full axis; the
+timeline sheds furniture on purpose and one line is the budget.
 
 ### The two point streams
 
@@ -155,16 +207,13 @@ nothing and still cost the pip its clearance. Screen and export share the thresh
 ⚓ **The pip is neutral chart ink, never an element** — a reaction is what happened
 BETWEEN two elements.
 
-### The row names win over the bars
+### ⚓ The export is a DOCUMENT, and here it is plainly better
 
-Every other lane paints its name UNDER the bars (the tall-bench rule: a bar says what it
-is better than the name does). Here the name is IDENTIFICATION rather than decoration —
-nine mods can stack and three pairs are close in hue by construction — so it sits ABOVE
-with a dark halo, costing the row's first ~40px of shape. ⚠️ The PNG export has no such
-trade: it kept its label column when the live chart gave one up, so the mod names sit
-outside the plot there.
-
----
+The PNG kept its label column when the live chart gave one up (abutting round), and with
+no hover and no per-aura naming to fall back on, a shared image needs both. So the export
+alone carries a **legend** — the y ceiling as `{uMax}U`, then every mod in the plot, in
+colour. That divergence is licensed by this file's own header: colour tracks between the
+two surfaces, chrome does not have to.
 
 ## 4. Honesty, re-derived rather than copied
 
@@ -219,7 +268,14 @@ mod→token mapping.
 ⛔ **`provisionalCount` was authored and deleted before it shipped.** It was on `AuraLane`
 and read nowhere — the ticks say it on the chart and the notes say it in words. This
 project's most productive bug class is data with no consumer, and the cheapest moment to
-not have one is before it exists.
+not have one is before it exists. (`auraH` on the export snapshot went the same way.)
+
+⚓ **A design argument can be right in the abstract and wrong about this corpus.** The
+rows were chosen against a real failure mode — four concurrent auras on one y axis DO go
+muddy — and the reasoning was sound. It was just answering a question the data does not
+ask: measured across reaction families, auras barely coexist. ⚠️ The tell was available
+before the build and was not taken: the lane's own projection could have counted
+concurrent spans in ten lines. **Count the case before designing for it.**
 
 ---
 
@@ -243,7 +299,7 @@ key into the IR (the bridge exists to stop that); it is a multiplier field on
 
 ## 7. Verification
 
-- `npx vitest run` — 1528 pass (12 new in `auraRows.test.ts`, 1 new mirror assertion)
+- `npx vitest run` — 1539 pass (23 new in `auraPlot.test.ts`, 2 new mirror assertions)
 - `npm run check` · `npm run lint` · `npm run build` — clean
 - **The L0 oracle is UNCHANGED**, which is the point: applications **145**, extra **0**,
   element mismatch **0**, tier-2 agree **122 of 264**, mean |Δ| **0.173U**. L5e recorded
@@ -270,7 +326,13 @@ key into the IR (the bridge exists to stop that); it is a multiplier field on
 - ⏭ The lane draws only what the gauge was fed, so L5e's own residue shows through it: the
   30 applications of curation (a damage tick on 24 existing summons), the 30 other gaps
   (Fischl's A4, Nahida's Tri-Karma — neither a summon), and the 13 `OTHER` ICD series.
-- 🎛️ `AURA_ROW_H` (14) is a named knob for Nate. Every other lane bar is 12 and that is a
-  law; this is the only lane whose bar height carries a QUANTITY, and at 12px a 0.8U aura
-  against a 2U ceiling is 4.8px of fill. The tick strip's 2px provisional foot in a 6px
-  tick is the other number worth a second look.
+- 🎛️ `AURA_PLOT_H` (56) is the knob. ⚓ FIXED rather than per-series-count on purpose: a
+  chart whose y axis changes height with its content produces shapes that cannot be
+  compared between two rotations, and a lane that grows as a new aura appears makes the
+  whole timeline jump mid-read. The tick strip's 2px provisional foot in a 6px tick is the
+  other number worth a second look.
+- ⏭ The 2U `uMax` floor costs headroom on a rotation that never exceeds 0.8U (the
+  swirl-heavy case uses 40% of the plot). ⚓ Kept deliberately — that emptiness is the
+  finding, and lowering the floor to 1U would make a shallow aura read as maxed, which is
+  the exact problem the floor exists for. The unit rule is what turns the headroom from
+  blank space into a scale.

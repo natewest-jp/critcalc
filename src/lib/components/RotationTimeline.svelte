@@ -40,8 +40,15 @@
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummons } from '$lib/timeline/summonSubrows';
 	import { computeShieldSubrows } from '$lib/timeline/shieldRows';
-	import { auraSpanPath, computeAuraLane } from '$lib/timeline/auraRows';
-	import { REACTION_LABEL } from '$lib/utils/auraDisplay';
+	import {
+		auraPathD,
+		auraSpanLabels,
+		auraSpanPoints,
+		auraUnitLines,
+		computeAuraLane
+	} from '$lib/timeline/auraPlot';
+	import { AURA_MOD_META, AURA_MOD_ORDER, REACTION_LABEL } from '$lib/utils/auraDisplay';
+	import { gaugesAt } from '$lib/utils/gauge';
 	import { barPhases } from '$lib/timeline/barPhases';
 	import { computeMoonsignRows } from '$lib/timeline/moonsignRows';
 	import { computeNBBars } from '$lib/timeline/nbRows';
@@ -631,39 +638,76 @@
 
 	// ══ THE AURA LANE (gauge round L6) ════════════════════════════════════════
 	// The target's elemental state — the first surface the gauge has. See
-	// $lib/timeline/auraRows.ts for the shape and why it is rows-with-depth
-	// rather than the instrument's overlaid area chart.
+	// $lib/timeline/auraPlot.ts for the shape, and for why it is ONE overlaid
+	// plot rather than a row per mod (⚓ Nate measured the premise the rows were
+	// built on and it was false: auras barely coexist).
 	let auraLane = $derived(
 		computeAuraLane(rotation.auraSeries, rotation.applications, rotation.events)
 	);
 	// The reaction labels' band and the application ticks' strip both sit ABOVE
-	// the aura rows — a point stream reads as an annotation of the spans under
-	// it, and putting the ticks between the labels and the rows keeps each
-	// closer to the thing it describes.
+	// the plot — a point stream reads as an annotation of the continuum under it,
+	// and putting the ticks between the labels and the plot keeps each closer to
+	// the thing it describes.
 	const AURA_MARKER_H = 13;
 	const AURA_TICK_H = 6;
-	// 🎛️ THE ONE KNOB WORTH HAVING HERE. Every other lane bar is AUX_LANE_BAR_H
-	// (12) and that number is a law — "a lane bar taller than the identical bar
-	// inside a slot would read as a different class of thing". This lane IS a
-	// different class of thing (see .rp-aura-lane), and it is the only one whose
-	// bar carries a QUANTITY in its height: at 12px a 0.8U aura against a 2U
-	// ceiling is 4.8px of fill, which is legible as presence but poor as depth.
-	// ⚠ Raising it is a taste call, not a correctness one — the geometry and the
-	// export both read this constant, so it moves in one place.
-	const AURA_ROW_H = 14;
-	const AURA_ROW_STRIDE = AURA_ROW_H + 2;
-	// ⚠ The fill floor, as a fraction of a row: a live aura is never drawn
-	// thinner than ~1.5px, or a tail that has decayed to 0.05U simply vanishes
-	// and reads as "the aura ended" a second before it did.
-	const AURA_MIN_FILL = 1.5 / AURA_ROW_H;
+	// 🎛️ THE PLOT'S HEIGHT — the whole point of overlaying the mods.
+	//
+	// ⚓ FIXED, NOT PER-SERIES-COUNT, and that is a decision: a chart whose y axis
+	// changes height with its content produces shapes that cannot be compared
+	// between two rotations, and a lane that grows as a new aura appears makes the
+	// whole timeline jump mid-read. The cost is that a one-aura rotation pays for
+	// the same box a four-aura one does; the box is what makes them the same
+	// picture.
+	const AURA_PLOT_H = 56;
+	// ⚠ The floor a LIVE aura is never drawn below. A 0.02U tail is a fraction of
+	// a pixel, and not drawing it reads as "the aura ended" a second before it
+	// did. ⛔ A gauge of exactly zero is not lifted — see `auraSpanPoints`.
+	const AURA_MIN_PX = 1.5;
+	// 🎛️ Label suppression: a span narrower than this cannot hold its own name,
+	// and two labels closer than the gap would collide (Frozen opening on top of
+	// Cryo is the standing case).
+	const AURA_LABEL_MIN_SPAN = 46;
+	const AURA_LABEL_MIN_GAP = 40;
+	// ⚠ The vertical half of the collision test — one line-height. Two labels at
+	// the same instant but different gauges do NOT collide, and Burning-on-Pyro
+	// is exactly that pair.
+	const AURA_LABEL_MIN_ROW = 12;
 	let auraLaneH = $derived(
-		auraLane.rows.length > 0
-			? AURA_MARKER_H +
-					AURA_TICK_H +
-					auraLane.rows.length * AURA_ROW_STRIDE -
-					2 +
-					AUX_LANE_PAD_Y * 2
-			: 0
+		auraLane.series.length > 0 ? AURA_MARKER_H + AURA_TICK_H + AURA_PLOT_H + AUX_LANE_PAD_Y * 2 : 0
+	);
+	/** Units → px within the plot box. ⚓ The plot draws at 1:1 (one SVG spanning
+	 *  the whole track, no viewBox stretch), which is what lets the gauge line be
+	 *  a real STROKE — the row form could only ever be a fill. */
+	const auraYOf = (u: number): number => AURA_PLOT_H - (u / auraLane.uMax) * AURA_PLOT_H;
+	let auraLabels = $derived(
+		auraSpanLabels(
+			auraLane.series,
+			xForTime,
+			auraYOf,
+			AURA_LABEL_MIN_SPAN,
+			AURA_LABEL_MIN_GAP,
+			AURA_LABEL_MIN_ROW
+		)
+	);
+	let auraUnitRules = $derived(auraUnitLines(auraLane.uMax));
+	/** Every span's polyline, pre-mapped once per zoom change — the fill and the
+	 *  line share it, and so does the PNG export by calling the same function. */
+	let auraPaths = $derived(
+		auraLane.series.flatMap((s, si) =>
+			s.spans.map((span, pi) => {
+				const points = auraSpanPoints(span, xForTime, auraYOf, AURA_MIN_PX);
+				return {
+					id: `${s.mod}-${si}-${pi}`,
+					color: s.color,
+					dash: s.dash,
+					// ⚠ The fuel is bookkeeping, not an aura on the target, so it draws
+					// as a bare dashed line with NO area under it — the same distinction
+					// the Gauge Explorer makes.
+					fill: s.dash ? null : auraPathD(points, AURA_PLOT_H),
+					line: auraPathD(points)
+				};
+			})
+		)
 	);
 
 	let annotatedTracks = $derived(mapTracksToSlots(rotation.tracks, characterSlots));
@@ -1049,14 +1093,16 @@
 			moonsignH: moonsignLaneH,
 			auraLane,
 			auraTop:
-				auraLane.rows.length > 0
+				auraLane.series.length > 0
 					? slotsBottom + teamBuffsH + (nbVisible ? nbLaneH : 0) + (moonVisible ? moonsignLaneH : 0)
 					: null,
-			auraRowH: AURA_ROW_H,
-			auraRowStride: AURA_ROW_STRIDE,
+			auraPlotH: AURA_PLOT_H,
 			auraMarkerH: AURA_MARKER_H,
 			auraTickH: AURA_TICK_H,
-			auraMinFill: AURA_MIN_FILL,
+			auraMinPx: AURA_MIN_PX,
+			auraLabelMinSpan: AURA_LABEL_MIN_SPAN,
+			auraLabelMinGap: AURA_LABEL_MIN_GAP,
+			auraLabelMinRow: AURA_LABEL_MIN_ROW,
 			statIconFor: (stat) => BUFF_STAT_ICON[stat as Stat],
 			avatarFor: (i) =>
 				getAvatar(
@@ -1242,7 +1288,7 @@
 	$effect(() => {
 		// The aura lane's presence is the notes panel's second gate — see
 		// `plannerView.hasAura`.
-		pv.hasAura = auraLane.rows.length > 0;
+		pv.hasAura = auraLane.series.length > 0;
 	});
 
 	// ---------------------------------------------------------------------------
@@ -1265,12 +1311,21 @@
 
 	let tooltip = $state<TooltipState | null>(null);
 
-	function showTooltip(e: MouseEvent, data: TooltipPayload) {
+	/**
+	 * Anchor the tooltip to the hovered element's centre — the right answer for a
+	 * BAR, whose whole width is the thing being described.
+	 *
+	 * ⚠ `anchorToCursor` is for the aura plot, and it is not a preference: that
+	 * element spans the entire track, so its centre is halfway along the rotation
+	 * and the readout would appear nowhere near the time it reports. There the
+	 * pointer IS the subject.
+	 */
+	function showTooltip(e: MouseEvent, data: TooltipPayload, anchorToCursor = false) {
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		const above = rect.top > 80;
 		tooltip = {
 			...data,
-			x: rect.left + rect.width / 2,
+			x: anchorToCursor ? e.clientX : rect.left + rect.width / 2,
 			y: above ? rect.top - 6 : rect.bottom + 6,
 			above
 		};
@@ -1278,6 +1333,48 @@
 
 	function hideTooltip() {
 		tooltip = null;
+	}
+
+	// ── The aura plot's crosshair readout ────────────────────────────────────
+	//
+	// ⚓ OVERLAID SERIES CANNOT BE HOVERED INDIVIDUALLY, and the answer is better
+	// than the per-span tooltips the row form had: a vertical cursor reads out
+	// EVERY aura on the target at one instant, which is the question a gauge
+	// chart is actually asked. A per-series hit target would also have had to
+	// pick a winner wherever two lines cross — exactly where the reader is most
+	// likely to be pointing.
+	let auraCursorX = $state<number | null>(null);
+
+	function onAuraMove(e: MouseEvent) {
+		const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
+		const x = e.clientX - box.left;
+		auraCursorX = x;
+		const frames = (x / scale) * FPS;
+		// ⚓ `gaugesAt` is gauge.ts's own interpolation over its own series — ⛔ not
+		// a second reading of the trajectory. It wants SECONDS, which is what
+		// `rotation.auraSeries` is in; the plot's frames are the projection's.
+		const present = gaugesAt(rotation.auraSeries, frames / FPS);
+		const rows = AURA_MOD_ORDER.filter((mod) => (present[mod] ?? 0) > 0.01).map((mod) => ({
+			stat: AURA_MOD_META[mod].label,
+			displayValue: `${(present[mod] ?? 0).toFixed(2)}U`
+		}));
+		showTooltip(
+			e,
+			{
+				sourceLabel: `${secondsLabel(frames)}s`,
+				// ⚠ An empty aura is a REAL answer here and the one the lane exists to
+				// show — a gap is where the next trigger has nothing to react with. It
+				// says so rather than showing an empty card.
+				effects: rows.length > 0 ? rows : [{ stat: 'No aura', displayValue: '—' }],
+				isMutuallyExclusive: false
+			},
+			true
+		);
+	}
+
+	function onAuraLeave() {
+		auraCursorX = null;
+		hideTooltip();
 	}
 
 	// Ascendant Gleam (Moonsign Team Bonus): non-Moonsign members grant a
@@ -1328,7 +1425,6 @@
 	class="rp-root ctx-dark"
 	style:--rp-frame-pad-x="{FRAME_PAD_X}px"
 	style:--rp-aux-bar-h="{AUX_LANE_BAR_H}px"
-	style:--rp-aura-row-h="{AURA_ROW_H}px"
 >
 	<!-- ── Timeline chart frame ──────────────────────────────── -->
 	<!-- The frame is ONE instrument with a fixed grammar: time axis (ruler +
@@ -1869,7 +1965,7 @@
 						     behind. Rendered only when something ever landed — an
 						     all-physical rotation has no aura to draw and gets no lane,
 						     the same rule the NB and moonsign lanes follow. -->
-						{#if auraLane.rows.length > 0}
+						{#if auraLane.series.length > 0}
 							<div class="rp-aura-lane" style:height="{auraLaneH}px">
 								<!-- Reaction markers. ⚓ THE PAYOFF: reactions have been in the
 								     IR since P4 and drawn NOWHERE — the player saw the buff
@@ -1954,53 +2050,78 @@
 									{/each}
 								</div>
 
-								<div class="rp-aura-rows">
-									{#each auraLane.rows as row (row.mod)}
-										<div class="rp-aura-subrow">
-											<span class="rp-aura-row-name" style:color={row.color}>{row.label}</span>
-											{#each row.spans as span, si (si)}
-												{@const g = barGeom(span.start, span.end - span.start)}
-												<!-- svelte-ignore a11y_no_static_element_interactions -->
-												<div
-													class="rp-aura-bar"
-													style:left="{g.left}px"
-													style:width="{g.width}px"
-													onmouseenter={(e) =>
-														showTooltip(e, {
-															sourceLabel: `${row.label} aura`,
-															effects: [
-																{ stat: 'Peak', displayValue: `${span.peak.toFixed(2)}U` },
-																{ stat: 'From', displayValue: `${secondsLabel(span.start)}s` },
-																{ stat: 'Gone by', displayValue: `${secondsLabel(span.end)}s` }
-															],
-															// ⛔ No `duration` footer: From and Gone by already bound
-															// the span, and a third number derived from those two
-															// reads as a fourth fact rather than a restatement.
-															isMutuallyExclusive: false
-														})}
-													onmouseleave={hideTooltip}
-												>
-													<!-- ⚠ FILL ONLY, no stroke: the bar is sized by the
-													     frames→px seam and the SVG stretches to it, and a
-													     stretched stroke gets non-uniform thickness (the
-													     objectBoundingBox trap the bench tail already paid
-													     for). The area's own top edge IS the line. -->
-													<svg
-														viewBox="0 0 100 100"
-														preserveAspectRatio="none"
-														aria-hidden="true"
-														class="rp-aura-fill"
-													>
-														<path
-															d={auraSpanPath(span, auraLane.uMax, AURA_MIN_FILL)}
-															fill={row.color}
-															fill-opacity={row.dash ? 0.45 : 0.85}
-														/>
-													</svg>
-												</div>
+								<!-- ⚓ ONE OVERLAID PLOT, drawn at 1:1 across the whole track.
+								     A single SVG at the track's own width means no viewBox
+								     stretch — which is what makes the gauge LINE possible, and
+								     the line is what lets two auras cross legibly where two
+								     solid areas would have gone to mud. -->
+								<!-- svelte-ignore a11y_no_static_element_interactions -->
+								<div
+									class="rp-aura-plot"
+									style:height="{AURA_PLOT_H}px"
+									onmousemove={onAuraMove}
+									onmouseleave={onAuraLeave}
+								>
+									<svg
+										class="rp-aura-svg"
+										width={totalWidth}
+										height={AURA_PLOT_H}
+										aria-hidden="true"
+									>
+										<!-- The one datum: whole units below the ceiling, so the y
+									     axis can be read without hovering. Under the fills. -->
+										{#each auraUnitRules as u (u)}
+											<line
+												x1="0"
+												x2={totalWidth}
+												y1={auraYOf(u)}
+												y2={auraYOf(u)}
+												stroke="var(--rp-grid)"
+											/>
+										{/each}
+										<defs>
+											<!-- The fill fades OUT toward the baseline so overlapping
+											     auras stay separable; the colour lives in the line. -->
+											{#each auraPaths as p (p.id)}
+												{#if p.fill}
+													<linearGradient id="rp-aura-{p.id}" x1="0" y1="0" x2="0" y2="1">
+														<stop offset="0%" stop-color={p.color} stop-opacity="0.34" />
+														<stop offset="100%" stop-color={p.color} stop-opacity="0" />
+													</linearGradient>
+												{/if}
 											{/each}
-										</div>
+										</defs>
+										{#each auraPaths as p (p.id)}
+											{#if p.fill}
+												<path d={p.fill} fill="url(#rp-aura-{p.id})" />
+											{/if}
+										{/each}
+										<!-- Lines last, so a short aura is never buried under a
+										     taller one's fill. -->
+										{#each auraPaths as p (p.id)}
+											<path
+												d={p.line}
+												fill="none"
+												stroke={p.color}
+												stroke-width="2"
+												stroke-dasharray={p.dash ?? 'none'}
+												stroke-linejoin="round"
+												stroke-linecap="round"
+											/>
+										{/each}
+									</svg>
+									{#each auraLabels as entry (entry.mod + entry.span.start)}
+										<span
+											class="rp-aura-series-name"
+											style:color={entry.color}
+											style:left="{xForTime(entry.span.start) + 4}px"
+											style:top="{Math.max(0, auraYOf(entry.span.openingU) - 11)}px"
+											>{entry.label}</span
+										>
 									{/each}
+									{#if auraCursorX !== null}
+										<span class="rp-aura-crosshair" style:left="{auraCursorX}px"></span>
+									{/if}
 								</div>
 							</div>
 						{/if}
@@ -2950,14 +3071,18 @@
 	   bearing rather than ornamental. */
 
 	/* ── Target aura lane (gauge round L6) ────────────────────── */
-	/* ⚓ THE ONLY LANE THAT IS NOT MADE OF BUFF BARS, and it says so in its
+	/* ⚓ THE ONLY LANE THAT IS NOT MADE OF BARS AT ALL, and it says so in its
 	   materials. Every other lane down here draws a granted effect: a filled
 	   register bar with a 2px lit edge, a stat icon and a source name. This one
 	   draws the TARGET'S state — not something anyone gave anyone — so it takes
-	   none of that grammar. No register edge, no icon, no label inside the bar;
-	   an area whose height is a quantity, on the bare night like the chart above
+	   none of that grammar. It is a CHART: a line whose height is a quantity over
+	   a fill that fades away beneath it, on the bare night like the timeline above
 	   it. A reader should not have to be told these are a different kind of
-	   object. */
+	   object.
+	   ↻ It shipped as one bar per mod and became this when ⚓ Nate measured the
+	   premise: auras barely coexist, so N thin lanes were paying for a collision
+	   that mostly does not happen — and the height they were spending is exactly
+	   what depth needed. */
 	.rp-aura-lane {
 		position: relative;
 		display: flex;
@@ -3042,66 +3167,52 @@
 		inset: -2px -3px;
 	}
 
-	.rp-aura-rows {
+	/* ⚓ ONE PLOT, at 1:1 with the track. The row form's SVG was normalized and
+	   stretched into each bar's width, which forbade a stroke; a single SVG sized
+	   to the track draws in real pixels, so the gauge LINE is a 2px stroke of
+	   uniform weight and the fill can fade out beneath it. */
+	.rp-aura-plot {
 		position: relative;
 		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		padding: 2px 0;
+		margin: 2px 0;
 	}
-	.rp-aura-subrow {
-		position: relative;
-		height: var(--rp-aura-row-h);
-		flex-shrink: 0;
+	.rp-aura-svg {
+		display: block;
+		/* ⚠ The svg is sized in the markup (width = totalWidth), not stretched by
+		   CSS — a percentage width here would re-introduce the non-uniform scaling
+		   the whole conversion exists to escape. */
+		pointer-events: none;
 	}
-	/* Per-row names rather than one lane name, because up to nine mods stack
-	   here and three pairs of them are close in hue by construction (Pyro and
-	   its Burning, Dendro and its Quicken and Fuel). Painted UNDER the bars at
-	   the viewport's left edge — the tall-bench lane-name rule: a bar starting
-	   at 0s covers it, and the bar says what it is better than the name does. */
-	.rp-aura-row-name {
+	/* Each aura names itself where it APPEARS, which is the one moment the word
+	   is news. ⚠ Sits ON the plot because an overlaid chart has nowhere to put a
+	   permanent legend that is not on top of the data; the halo is what keeps it
+	   off its own fill. The PNG export does have somewhere — see its label
+	   column. */
+	.rp-aura-series-name {
 		position: absolute;
-		left: 0;
-		top: 0;
-		/* ⚠ ABOVE the bars, unlike every other lane name, and the reason is that
-		   this one is IDENTIFICATION rather than decoration: nine mods can stack
-		   here and three pairs of them are close in hue by construction (Pyro and
-		   its Burning, Dendro and its Quicken and Fuel). The tall-bench rule put
-		   a lane name UNDER the bars because a bar says what it is better than
-		   the name does — true of a buff bar, false of an aura, which carries no
-		   label of its own. A dark halo keeps it readable over its own fill and
-		   costs the row's first ~40px of shape, which is the trade. */
 		z-index: 3;
-		text-shadow:
-			0 0 3px var(--frame-bg),
-			0 0 6px var(--frame-bg);
-		display: flex;
-		align-items: center;
-		height: 100%;
-		padding-left: var(--rp-lane-name-inset);
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-wider);
 		text-transform: uppercase;
 		white-space: nowrap;
 		line-height: var(--lh-none);
-		opacity: 0.55;
+		opacity: 0.8;
+		text-shadow:
+			0 0 3px var(--frame-bg),
+			0 0 6px var(--frame-bg);
 		pointer-events: none;
 	}
-	.rp-aura-bar {
+	/* The readout's cursor. ⚓ A hairline, not a highlight: it marks WHERE the
+	   tooltip's numbers were taken and must not become a second thing to read. */
+	.rp-aura-crosshair {
 		position: absolute;
 		top: 0;
-		height: 100%;
-		z-index: 1;
-		/* ⛔ No border-radius: the shape IS the data. Rounding the corners of an
-		   area chart rounds off the moment the aura landed and the moment it
-		   ran out, which are the two instants the lane exists to show. */
-	}
-	.rp-aura-fill {
-		display: block;
-		width: 100%;
-		height: 100%;
+		bottom: 0;
+		width: 1px;
+		background: var(--chart-dim);
+		opacity: 0.45;
+		pointer-events: none;
 	}
 
 	/* ── Character block ──────────────────────────────────────── */

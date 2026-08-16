@@ -805,9 +805,14 @@ not on being finished.**
 📄 **Full record: [`gauge-round-L6.md`](gauge-round-L6.md)** · built, gates green,
 ⏳ awaiting Nate's eyes.
 
-The **target-aura lane**: one row per aura mod, the bar's fill HEIGHT the gauge in units,
-with application ticks and reaction markers riding above it. Reactions have been in the IR
-since P4 and were drawn NOWHERE; this is the first surface that shows them.
+The **target-aura lane**: ONE overlaid plot, a line per aura mod with the fill fading out
+beneath it, with application ticks and reaction markers riding above. Reactions have been
+in the IR since P4 and were drawn NOWHERE; this is the first surface that shows them.
+
+↻⚓ **It shipped as one bar per mod and was reversed by MEASUREMENT** — ⚓ Nate read the
+live lane and found the premise false: auras barely coexist, so the rows were spending the
+lane's whole height on a collision that mostly does not happen and each was too short to
+show depth. ⚓ **Count the case before designing for it.**
 
 |             |                                                                                                          |
 | ----------- | -------------------------------------------------------------------------------------------------------- |

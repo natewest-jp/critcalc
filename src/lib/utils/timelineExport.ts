@@ -65,7 +65,12 @@ import type {
 	TeamBuffSubrow,
 	WeaponProcSubrow
 } from '$lib/timeline/types';
-import { auraSpanPath, type AuraLane } from '$lib/timeline/auraRows';
+import {
+	auraSpanLabels,
+	auraSpanPoints,
+	auraUnitLines,
+	type AuraLane
+} from '$lib/timeline/auraPlot';
 import type { AuraKey } from '$lib/utils/gauge';
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
@@ -302,11 +307,13 @@ export type TimelineSnapshot = {
 	// ⛔ No `auraH`. `nbH`/`moonsignH` exist because the painter centres a lane
 	// label in them and closes them with a rule; this lane is bottom-most and
 	// top-labels its rows, so a height here would be a field with no reader.
-	auraRowH: number;
-	auraRowStride: number;
+	auraPlotH: number;
 	auraMarkerH: number;
 	auraTickH: number;
-	auraMinFill: number;
+	auraMinPx: number;
+	auraLabelMinSpan: number;
+	auraLabelMinGap: number;
+	auraLabelMinRow: number;
 	statIconFor: (stat: string) => string | undefined;
 	avatarFor: (slotIdx: number) => string | null;
 	elementGlyphFor: (element: string | undefined) => string | null;
@@ -1124,13 +1131,15 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	}
 
 	// ── Target aura lane (gauge round L6) ──
-	// ⚓ THE SHAPE COMES FROM THE SAME FUNCTION THE SCREEN USES. `auraSpanPath`
-	// returns a normalized `0..100` polyline, and here it is simply walked with
-	// lineTo instead of handed to an SVG — so the exported curve cannot differ
-	// from the drawn one, which is the whole point of a mirror.
+	// ⚓ THE SHAPE COMES FROM THE SAME FUNCTIONS THE SCREEN USES. `auraSpanPoints`
+	// maps a span into the caller's pixel space and `auraSpanLabels` decides which
+	// names survive; here they are walked with `lineTo` instead of joined into an
+	// SVG `d`. A mirror that re-derives the shape is not a mirror.
 	if (snap.auraTop !== null) {
 		const laneY = oy + snap.rulerH + snap.auraTop;
-		const rowsY = laneY + snap.auraMarkerH + snap.auraTickH + 2;
+		const plotTop = laneY + snap.auraMarkerH + snap.auraTickH + 2;
+		const plotBase = plotTop + snap.auraPlotH;
+		const yOf = (u: number) => plotBase - (u / snap.auraLane.uMax) * snap.auraPlotH;
 
 		// Reaction markers — pip + family name, in the ruler's neutral ink. ⚠ A
 		// reaction is not an element and must not borrow one.
@@ -1168,32 +1177,76 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			}
 		}
 
-		snap.auraLane.rows.forEach((row, ri) => {
-			const rowTop = rowsY + ri * snap.auraRowStride;
-			ctx!.fillStyle = AURA_MOD_COLOR[row.mod];
-			ctx!.globalAlpha = row.dash ? 0.45 : 0.85;
-			for (const span of row.spans) {
-				const sx = x(span.start);
-				const sw = barGeomW(span.start, span.end - span.start);
-				// The normalized path's numbers are percentages of (sw, auraRowH).
-				const pts = auraSpanPath(span, snap.auraLane.uMax, snap.auraMinFill)
-					.split(' ')
-					.filter((p) => p[0] === 'M' || p[0] === 'L')
-					.map((p) => p.slice(1).split(',').map(Number));
-				ctx!.beginPath();
-				pts.forEach(([px, py], i) => {
-					const cx = sx + (px / 100) * sw;
-					const cy = rowTop + (py / 100) * snap.auraRowH;
-					if (i === 0) ctx!.moveTo(cx, cy);
-					else ctx!.lineTo(cx, cy);
-				});
-				ctx!.closePath();
-				ctx!.fill();
-			}
-			ctx!.globalAlpha = 1;
-		});
-	}
+		// The one datum, under everything: whole units below the ceiling.
+		ctx.strokeStyle = GRID;
+		for (const u of auraUnitLines(snap.auraLane.uMax)) {
+			const gy = Math.round(yOf(u)) + 0.5;
+			ctx.beginPath();
+			// ⚓ `ox`, i.e. x(0) — the datum belongs to the PLOT, not the page, and
+			// starting it at the label column's edge only happens to coincide.
+			ctx.moveTo(ox, gy);
+			ctx.lineTo(ox + snap.totalWidth, gy);
+			ctx.stroke();
+		}
 
+		// Every span walked once: the gradient area, then the line on top of it.
+		const walk = (pts: Array<[number, number]>) => {
+			ctx!.beginPath();
+			pts.forEach(([px, py], i) => (i ? ctx!.lineTo(px, py) : ctx!.moveTo(px, py)));
+		};
+		for (const series of snap.auraLane.series) {
+			const color = AURA_MOD_COLOR[series.mod];
+			for (const span of series.spans) {
+				const pts = auraSpanPoints(span, x, yOf, snap.auraMinPx);
+				if (pts.length === 0) continue;
+				// ⚠ The fuel draws as a bare dashed line with NO area — bookkeeping,
+				// not an aura on the target.
+				if (!series.dash) {
+					// ⚓ The fade is anchored to the SPAN'S OWN PEAK, not the plot's
+					// ceiling, so a shallow aura is not drawn as the faint tail of a
+					// gradient it never reaches. The screen's objectBoundingBox gradient
+					// resolves to exactly this.
+					const top = pts.reduce((m, [, py]) => Math.min(m, py), plotBase);
+					const grad = ctx.createLinearGradient(0, top, 0, plotBase);
+					grad.addColorStop(0, alpha(color, 0.34));
+					grad.addColorStop(1, alpha(color, 0));
+					ctx.fillStyle = grad;
+					walk(pts);
+					ctx.lineTo(pts[pts.length - 1][0], plotBase);
+					ctx.lineTo(pts[0][0], plotBase);
+					ctx.closePath();
+					ctx.fill();
+				}
+				ctx.strokeStyle = color;
+				ctx.lineWidth = 2;
+				ctx.lineJoin = 'round';
+				ctx.lineCap = 'round';
+				ctx.setLineDash(series.dash ? series.dash.split(' ').map(Number) : []);
+				walk(pts);
+				ctx.stroke();
+				ctx.setLineDash([]);
+			}
+		}
+
+		// Series names, where each aura first appears.
+		ctx.font = `600 8px ${SANS}`;
+		ctx.textAlign = 'left';
+		for (const entry of auraSpanLabels(
+			snap.auraLane.series,
+			x,
+			yOf,
+			snap.auraLabelMinSpan,
+			snap.auraLabelMinGap,
+			snap.auraLabelMinRow
+		)) {
+			ctx.fillStyle = AURA_MOD_COLOR[entry.mod];
+			ctx.fillText(
+				entry.label.toUpperCase(),
+				x(entry.span.start) + 4,
+				Math.max(plotTop + 7, yOf(entry.span.openingU) - 3)
+			);
+		}
+	}
 	// ── Label column ──
 	// Opaque backing (below the notation header) so long ghost bars never
 	// bleed under the labels
@@ -1286,15 +1339,19 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		// (abutting round), so the mod names can sit OUTSIDE the plot here
 		// instead of over their own bars. Same names, more room.
 		ctx.fillText('TARGET AURA', laneLabelX, oy + snap.rulerH + snap.auraTop + 9);
-		const rowsY = oy + snap.rulerH + snap.auraTop + snap.auraMarkerH + snap.auraTickH + 2;
+		const plotTop = oy + snap.rulerH + snap.auraTop + snap.auraMarkerH + snap.auraTickH + 2;
+		// ⚓ THE LEGEND AND THE CEILING ARE EXPORT-ONLY, and they are the clearest
+		// case yet for this file being a DOCUMENT rather than a screenshot (see the
+		// header). On screen a reader hovers the plot for a full readout and each
+		// aura names itself where it appears; a shared PNG has neither, so the
+		// column the live chart gave up earns its keep by carrying both the y
+		// ceiling and every mod in the plot.
 		ctx.font = `600 8px ${SANS}`;
-		snap.auraLane.rows.forEach((row, ri) => {
-			ctx!.fillStyle = AURA_MOD_COLOR[row.mod];
-			ctx!.fillText(
-				row.label.toUpperCase(),
-				laneLabelX,
-				rowsY + ri * snap.auraRowStride + snap.auraRowH / 2 + 3
-			);
+		ctx.fillStyle = MUTED;
+		ctx.fillText(`${snap.auraLane.uMax}U`, laneLabelX, plotTop + 7);
+		snap.auraLane.series.forEach((series, si) => {
+			ctx!.fillStyle = AURA_MOD_COLOR[series.mod];
+			ctx!.fillText(series.label.toUpperCase(), laneLabelX, plotTop + 19 + si * 10);
 		});
 	}
 
