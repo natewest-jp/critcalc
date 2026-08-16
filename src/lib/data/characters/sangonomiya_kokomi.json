@@ -20,9 +20,31 @@
 				"No plunge.go in gcsim character dir — plungeFrames not available."
 			],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 30, "hit": 4, "N": 14, "C": 19 } },
-				{ "name": "N2", "frames": { "anim": 34, "hit": 12, "N": 30 } },
-				{ "name": "N3", "frames": { "anim": 65, "hit": 28, "C": 60 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 30,
+						"hit": 4,
+						"N": 14,
+						"C": 19
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 34,
+						"hit": 12,
+						"N": 30
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 65,
+						"hit": 28,
+						"C": 60
+					}
+				}
 			],
 			"chargeFrames": {
 				"anim": 76,
@@ -59,7 +81,11 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 61, "D": 29, "J": 29 },
+			"frames": {
+				"anim": 61,
+				"D": 29,
+				"J": 29
+			},
 			"cooldown": 20,
 			"cooldownStartDelay": 20,
 			"tags": ["heal", "summon"],
@@ -74,7 +100,11 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 0 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 0
+							},
 							"scaling": 7.92,
 							"stat": "hp",
 							"flat": 932.22455
@@ -82,7 +112,12 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 0 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 0,
+								"icdGate": "none"
+							},
 							"scaling": 196.54,
 							"stat": "atk",
 							"element": "hydro"
@@ -105,7 +140,13 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 78, "N": 77, "C": 77, "E": 77, "swap": 76 },
+			"frames": {
+				"anim": 78,
+				"N": 77,
+				"C": 77,
+				"E": 77,
+				"swap": 76
+			},
 			"cooldown": 18,
 			"cooldownStartDelay": 46,
 			"tags": ["summon"],
@@ -117,7 +158,13 @@
 				"A1 (Tamakushi Casket): if Bake-Kurage is active when Q is cast, Bake-Kurage duration resets to 12.5s (implemented via c.a1() called at frame 46 in burst.go). No schema representation needed — mechanic is upstream of the planner."
 			],
 			"description": "Summons the might of Watatsumi, dealing Hydro DMG to surrounding opponents, before robing Kokomi in a Ceremonial Garment made from the flowing waters of Sangonomiya.\n\nCeremonial Garment\n·Sangonomiya Kokomi's Normal Attack, Charged Attack and Bake-Kurage DMG are increased based on her Max HP.\n·When her Normal and Charged Attacks hit opponents, Kokomi will restore HP for all nearby party members, and the amount restored is based on her Max HP.\n·Increases Sangonomiya Kokomi's resistance to interruption and allows her to walk on the water's surface.\n\nThese effects will be cleared once Sangonomiya Kokomi leaves the field.",
-			"application": [{ "frame": 49, "element": "hydro", "units": 2 }]
+			"application": [
+				{
+					"frame": 49,
+					"element": "hydro",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -140,23 +187,37 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "normalDmgBonus",
-					"value": { "type": "scaling", "stat": "healingBonus", "ratio": 15 },
+					"value": {
+						"type": "scaling",
+						"stat": "healingBonus",
+						"ratio": 15
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "chargeDmgBonus",
-					"value": { "type": "scaling", "stat": "healingBonus", "ratio": 15 },
+					"value": {
+						"type": "scaling",
+						"stat": "healingBonus",
+						"ratio": 15
+					},
 					"snapshottable": false
 				}
 			],
@@ -176,7 +237,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 30,
 					"stat": "hp",
 					"element": "hydro"
@@ -197,7 +260,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "hp%",
@@ -244,7 +309,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 4,
 					"durationType": "fixed",
 					"source": "character",

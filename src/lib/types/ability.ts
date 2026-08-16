@@ -612,7 +612,54 @@ export type Trigger =
 	 *
 	 *  Reference: Fischl Oz, Zhongli Stone Stele, Albedo Solar Isotoma blossom,
 	 *  Ororon Supersonic Oculus, Mavuika Ring of Searing Radiance. */
-	| { type: 'summonTick'; interval: number; firstTickDelay?: number };
+	| {
+			type: 'summonTick';
+			interval: number;
+			firstTickDelay?: number;
+			/**
+			 * ⚓ Elemental-application gating for THIS tick series (gauge round
+			 * L5e-a¾). Absent means **standard ICD** — `icd.ts` at
+			 * `STANDARD_ICD_FRAMES`, on a clock of the series' own. `'none'` means
+			 * every tick applies, gcsim's `ICDTagNone`.
+			 *
+			 * ⚠️⚠️ IT LIVES ON THE TRIGGER, NOT THE SUMMON, and Furina is why:
+			 * Salon Solitaire is ONE authored summon carrying THREE tick series,
+			 * and they measure differently — Chevalmarin is standard, Gentilhomme
+			 * is neither, Crabaletta cannot be told apart. A per-summon flag
+			 * could not express that.
+			 *
+			 * ⚓ Absent is the MEASURED majority, not a fallback: 15 of the 35
+			 * series gcsim exposes are reproduced exactly by standard ICD and
+			 * only 5 require `'none'`. ⛔ So do not annotate a series that
+			 * standard already gets right — including the two where standard and
+			 * `'none'` agree because the interval exceeds the 2.5 s timer (Yae's
+			 * Sesshou Sakura, Furina's Crabaletta). Annotating those would assert
+			 * a measurement nobody made.
+			 *
+			 * ⛔ NOT a free-form gcsim ICD-group name. 13 series are neither
+			 * standard nor none — real groups with their own timers, L4's named
+			 * top schema gap — and they stay wrong by ±1–2 hits until something
+			 * can consume a group. Declaring a field no consumer reads is
+			 * `twoPiece`'s mistake.
+			 *
+			 * ⚠️⚠️ THE NAME IS LOAD-BEARING — this key is deliberately not called
+			 * `icd`. `orphanedSchema.test.ts` matches property ACCESS by key
+			 * name, and the Visualizers' ICD instrument already fills the
+			 * codebase with `.icd-chart`, `handles.icd` and the instrument id
+			 * `'icd'` — so a key of that name satisfies the guard no matter
+			 * what, and would be permanently unverifiable. ⛔ Never name an
+			 * authored key after an existing module, instrument or CSS prefix:
+			 * the guard is only as strong as the name is unique. Confirmed by
+			 * deleting every access and watching the test stay GREEN under the
+			 * old name and go RED under this one.
+			 *
+			 * ⚠️ Second-order, and found the same way: the guard also counts a
+			 * BACKTICKED MENTION followed by punctuation, so prose naming this
+			 * key in a comma'd list would stand in for a real consumer. Keep
+			 * discussion of it phrased so no such mention appears.
+			 */
+			icdGate?: 'none';
+	  };
 
 /** Known gameplay state keys used in conditions and triggers. */
 export type State =

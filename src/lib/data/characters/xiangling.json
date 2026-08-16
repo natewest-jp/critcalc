@@ -16,14 +16,59 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 20, "hit": 12 } },
-				{ "name": "N2", "frames": { "anim": 17, "hit": 8 } },
-				{ "name": "N3", "frames": { "anim": 28, "hit": 18, "C": 24 } },
-				{ "name": "N4", "frames": { "anim": 37, "hit": 29, "C": 34 } },
-				{ "name": "N5", "frames": { "anim": 70, "hit": 21 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 20,
+						"hit": 12
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 17,
+						"hit": 8
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 28,
+						"hit": 18,
+						"C": 24
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 37,
+						"hit": 29,
+						"C": 34
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 70,
+						"hit": 21
+					}
+				}
 			],
-			"chargeFrames": { "anim": 69, "N": 67, "Q": 67, "D": 24, "J": 24, "swap": 66 },
-			"plungeFrames": { "anim": 77, "N": 58, "E": 60, "Q": 60, "swap": 63 },
+			"chargeFrames": {
+				"anim": 69,
+				"N": 67,
+				"Q": 67,
+				"D": 24,
+				"J": 24,
+				"swap": 66
+			},
+			"plungeFrames": {
+				"anim": 77,
+				"N": 58,
+				"E": 60,
+				"Q": 60,
+				"swap": 63
+			},
 			"_curatorNotes": [
 				"N3 has two hitmarks [11, 18] and N4 has four hitmarks [5, 15, 24, 29]; cancel frames sourced from last hitmark per recipe. N5 gcsim sets C=500 with comment 'this action is illegal' — omitted. High plunge exists in gcsim (swap=63, N=58, E=60, Q=60; no D/J set) but not represented (recipe uses lowPlungeFrames only). gcsim restricts LowPlungeAttack to AirborneXianyun context — plunge returns error unless launched by Xianyun E; reviewer may want to add a plunge caveat."
 			],
@@ -45,7 +90,14 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 77, "N": 59, "E": 59, "Q": 58, "D": 75, "swap": 62 }
+			"lowPlungeFrames": {
+				"anim": 77,
+				"N": 59,
+				"E": 59,
+				"Q": 58,
+				"D": 75,
+				"swap": 62
+			}
 		},
 		{
 			"id": "xiangling__skill__guoba_attack",
@@ -55,7 +107,12 @@
 			"cooldown": 12,
 			"cooldownStartDelay": 13,
 			"tags": ["summon"],
-			"frames": { "anim": 39, "D": 14, "J": 14, "swap": 38 },
+			"frames": {
+				"anim": 39,
+				"D": 14,
+				"J": 14,
+				"swap": 38
+			},
 			"behavior": "instant",
 			"summons": [
 				{
@@ -67,7 +124,12 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 1.667, "firstTickDelay": 1.883 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.667,
+								"firstTickDelay": 1.883,
+								"icdGate": "none"
+							},
 							"scaling": 200.3,
 							"stat": "atk",
 							"element": "pyro",
@@ -91,7 +153,10 @@
 			"cooldownStartDelay": 18,
 			"tags": ["summon"],
 			"energyCost": 80,
-			"frames": { "anim": 80, "swap": 79 },
+			"frames": {
+				"anim": 80,
+				"swap": 79
+			},
 			"behavior": "instant",
 			"summons": [
 				{
@@ -104,14 +169,22 @@
 							"source": "C4: Slowbake",
 							"type": "flat",
 							"value": 4,
-							"conditions": { "type": "constellation", "level": 4 }
+							"conditions": {
+								"type": "constellation",
+								"level": 4
+							}
 						}
 					],
 					"effects": [
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 1.217, "firstTickDelay": 0 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.217,
+								"firstTickDelay": 0,
+								"icdGate": "none"
+							},
 							"scaling": 201.6,
 							"stat": "atk",
 							"element": "pyro",
@@ -125,9 +198,19 @@
 			"effects": [],
 			"description": "Displaying her mastery over both fire and polearms, Xiangling sends a Pyronado whirling around her.\nThe Pyronado will move with your character for the ability's duration, dealing Pyro DMG to all opponents in its path.",
 			"application": [
-				{ "frame": 18, "element": "pyro", "units": 1 },
-				{ "frame": 33, "element": "pyro" },
-				{ "frame": 57, "element": "pyro" }
+				{
+					"frame": 18,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 33,
+					"element": "pyro"
+				},
+				{
+					"frame": 57,
+					"element": "pyro"
+				}
 			]
 		}
 	],
@@ -158,8 +241,14 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
-					"conditions": { "type": "constellation", "level": 1 },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"duration": 6,
 					"durationType": "refresh",
 					"element": "pyro",
@@ -180,7 +269,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 75,
 					"stat": "atk",
 					"element": "pyro",
@@ -221,7 +312,9 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "pyroDmgBonus",

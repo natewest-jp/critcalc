@@ -20,6 +20,12 @@
  *         (without --write, prints the summary and leaves the report alone)
  */
 
+// ⚓ MUST be first, and MUST stay a static import — it registers the `$lib` resolver
+// that lets `icd.ts` load below. Static imports evaluate before the module body, so the
+// hook is in place by the time the dynamic import runs. ⛔ A `$lib` import above this
+// line defeats it (the rule `audit-gcsim-reactions.mjs` already carries).
+import './lib/alias-hook.mjs';
+
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,6 +43,13 @@ import {
 	splitApplications,
 	variantDumpKey
 } from './lib/gcsim-map.mjs';
+
+// ⚓ THE REAL ICD MODEL, imported rather than restated — the same reason `gcsim-map.mjs`
+// imports the real `frameAt`. A second copy of the standard-ICD rule here would let this
+// report clear a series the parser then gates differently, which is the failure mode L4d
+// recorded for the reaction oracle. ⚠️ Dynamic because `icd.ts` reaches `$lib` for `FPS`,
+// so it needs the resolver registered at the top of this file.
+const { createIcdClock, icdApplies, STANDARD_ICD_FRAMES } = await import('../src/lib/utils/icd.ts');
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const REPORT = join(REPO_ROOT, 'docs/curation/gcsim-frames-diff.md');
@@ -79,7 +92,16 @@ function authoredTicks(ability) {
 				spawnsAt: s.spawnsAt ?? 0,
 				firstTick:
 					(s.spawnsAt ?? 0) + (t.firstTickDelay !== undefined ? f(t.firstTickDelay) : interval),
-				interval
+				interval,
+				// ⚓ Read back so the annotation is SELF-CHECKING (L5e-a¾). Authoring
+				// a gate is a CLAIM about gcsim, and this is the report that
+				// re-measures it against the dump's own post-ICD `applied` flag —
+				// the same reason the frame rows are diffed rather than trusted.
+				// ⛔ The audit never WRITES it.
+				// ⚠️ This access is also what keeps the key visible to
+				// `orphanedSchema.test.ts` until the parser consumes it at L5e-b;
+				// deleting it turns the guard red, which was verified deliberately.
+				icdGate: t.icdGate ?? 'standard'
 			});
 		}
 	}
@@ -252,6 +274,29 @@ function main() {
 					}
 				return { abil, first: frames[0], interval: modal, n: frames.length, spread: tally.size };
 			});
+			// ⚓ The measured ICD verdict per stream (L5e-a¾). gcsim's `applied` flag
+			// is the POST-ICD subset of the damage stream, so the gate is observable
+			// rather than inferred: compare it against `icd.ts` at standard params.
+			// ⚠️ `either` is a real answer, not a missing one — when the interval
+			// exceeds the 2.5s timer, standard and none are indistinguishable and
+			// ⛔ the series must NOT be annotated on the strength of it.
+			for (const o of observed) {
+				const frames = streams.get(o.abil);
+				const applied = ticks.filter((x) => x.abil === o.abil && x.applied).length;
+				const clock = createIcdClock();
+				let std = 0;
+				for (const fr of frames) if (icdApplies(clock, fr, STANDARD_ICD_FRAMES).applies) std++;
+				o.applied = applied;
+				o.std = std;
+				o.verdict =
+					applied === std
+						? applied === frames.length
+							? 'either'
+							: 'standard'
+						: applied === frames.length
+							? 'none'
+							: 'other';
+			}
 			if (!authored.length && !observed.length) continue;
 			tickRows.push({ id: char.id, path: a.id, authored, observed });
 		}
@@ -437,18 +482,36 @@ function renderReport(d) {
 	p('Tzitzimitl DMG`; it spells Chiori\'s Tamoto "Tamato"). ⛔ Damage ticks only: a heal');
 	p('tick leaves no `damage` event, and a heal tick is not a hit.');
 	p();
-	p('| character | ability | authored (first / interval) | observed (first / interval × n) |');
+	p('');
+	p('⚓ **ICD is MEASURED, not inferred** — gcsim logs an `element` application only for');
+	p('a hit its ICD let through, so the `applied/total` column is the gate itself. The');
+	p('authored column shows what the data claims (absent ⇒ `standard`); ⚠️ `either` means');
+	p('the interval exceeds the 2.5s timer so standard and none are indistinguishable, and');
+	p('⛔ such a series must NOT be annotated. `other` is a real gcsim ICD group we cannot');
+	p('yet express — see docs/gauge-round-L5e.md §3.3.');
+	p();
+	p(
+		'| character | ability | authored (first / interval · icd) | observed (first / interval × n · applied) |'
+	);
 	p('| --- | --- | --- | --- |');
 	for (const t of d.tickRows) {
 		const a = t.authored.length
-			? t.authored.map((x) => `${x.label} ${x.firstTick}f / ${x.interval}f`).join('<br>')
+			? t.authored
+					.map((x) => `${x.label} ${x.firstTick}f / ${x.interval}f · \`${x.icdGate}\``)
+					.join('<br>')
 			: '—';
 		const o = t.observed.length
 			? t.observed
-					.map(
-						(x) =>
-							`${x.abil} ${x.first}f / ${x.interval ?? '—'}f × ${x.n}${x.spread > 2 ? ' ⚠️ irregular' : ''}`
-					)
+					.map((x) => {
+						// ⚠️ Flagged only when the AUTHORED claim contradicts the
+						// measurement — a lone `other` is a known limit, not a defect.
+						const claim = t.authored.length === 1 ? t.authored[0].icdGate : null;
+						const bad =
+							claim && (x.verdict === 'none' || x.verdict === 'standard')
+								? claim !== x.verdict
+								: false;
+						return `${x.abil} ${x.first}f / ${x.interval ?? '—'}f × ${x.n}${x.spread > 2 ? ' ⚠️ irregular' : ''} · ${x.applied}/${x.n} \`${x.verdict}\`${bad ? ' ⚠️ **authored disagrees**' : ''}`;
+					})
 					.join('<br>')
 			: '—';
 		const agree =

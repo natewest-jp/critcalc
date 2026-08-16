@@ -35,11 +35,39 @@
 			],
 			"description": "Normal Attack\nSummons Moonlit Tides, performing up to 3 attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\nIf you have at least 1 **Verdant Dew**, Columbina's Charged Attacks will be replaced with the special Charged Attack Moondew Cleanse, which will not consume Stamina: Consume 1 Verdant Dew to deal 3 instances of AoE Dendro DMG to opponents in front. This DMG is considered Lunar-Bloom DMG.\n\nPlunging Attack\nPlunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 36, "hit": 23, "N": 24, "C": 24 } },
-				{ "name": "N2", "frames": { "anim": 37, "hit": 20, "N": 20, "C": 33 } },
-				{ "name": "N3", "frames": { "anim": 76, "hit": 41, "N": 74, "C": 71 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 36,
+						"hit": 23,
+						"N": 24,
+						"C": 24
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 37,
+						"hit": 20,
+						"N": 20,
+						"C": 33
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 76,
+						"hit": 41,
+						"N": 74,
+						"C": 71
+					}
+				}
 			],
-			"chargeFrames": { "anim": 101, "hit": 57, "N": 94 },
+			"chargeFrames": {
+				"anim": 101,
+				"hit": 57,
+				"N": 94
+			},
 			"caveat": "Shown as the base Hydro Charged Attack. With at least 1 Verdant Dew it becomes a stamina-free 3-hit AoE Dendro (Lunar-Bloom) attack; not modeled, since Verdant Dew comes from team Lunar-Bloom reactions.",
 			"_curatorNotes": [
 				"Frames 2026-07-14 from gcsim internal/characters/columbina/ (frame origin: gcsim main, merged). Normals: attack.go attackHitmarks=[23,20,41], animations [36,37,76]; per-hit ActionAttack/ActionCharge overrides — N1 24/24, N2 20/33, N3 74/71 (InitNormalCancelSlice). swap = hitmark. Windup (state-dependent +2 on N1) is not part of the canonical FrameMap.",
@@ -57,7 +85,15 @@
 			"cooldownStartDelay": 20,
 			"tags": ["summon"],
 			"behavior": "instant",
-			"frames": { "anim": 41, "C": 40, "E": 28, "Q": 28, "D": 27, "J": 32, "swap": 26 },
+			"frames": {
+				"anim": 41,
+				"C": 40,
+				"E": 28,
+				"Q": 28,
+				"D": 27,
+				"J": 32,
+				"swap": 26
+			},
 			"summons": [
 				{
 					"label": "Gravity Ripple",
@@ -68,7 +104,11 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 1.95 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.95,
+								"icdGate": "none"
+							},
 							"scaling": 16.8,
 							"stat": "hp",
 							"element": "hydro",
@@ -83,7 +123,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 8.47,
 					"stat": "hp",
 					"element": "electro",
@@ -94,7 +136,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 2.53,
 					"stat": "hp",
 					"element": "dendro",
@@ -105,7 +149,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 15.88,
 					"stat": "hp",
 					"element": "geo",
@@ -120,7 +166,13 @@
 				"Frames 2026-07-14 from gcsim skill.go: skillFrames = InitAbilSlice(41); ActionCharge=40, Skill=28, Burst=28, Dash=27, Jump=32, Swap=26. swap=ActionSwap=26; N=InitAbilSlice default 41 (ActionAttack not overridden). CD: SetCDWithDelay(action.ActionSkill, 17*60, 20) -> cooldown 17s, cooldownStartDelay 20. Skill self-DMG skill[9]=0.30096=30.1% Max HP (Hydro, hitmark 21) follows the FrameMap convention, not authored as an effect.",
 				"Behavior corrected instant (genshin-db stub had duration:25 on an instant skill — moved to the Gravity Ripple summon which carries the 25s window; Gravity Ripple Duration row confirms 25.0s)."
 			],
-			"application": [{ "frame": 21, "element": "hydro", "units": 1 }]
+			"application": [
+				{
+					"frame": 21,
+					"element": "hydro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "columbina__burst__moonlit_melancholy",
@@ -131,15 +183,30 @@
 			"energyCost": 60,
 			"behavior": "instant",
 			"tags": [],
-			"frames": { "anim": 131, "C": 130, "E": 122, "D": 122, "J": 124, "swap": 122 },
+			"frames": {
+				"anim": 131,
+				"C": 130,
+				"E": 122,
+				"D": 122,
+				"J": 124,
+				"swap": 122
+			},
 			"summons": [
-				{ "label": "Lunar Domain", "duration": 20, "spawnsAt": 86, "mobility": "stationary" }
+				{
+					"label": "Lunar Domain",
+					"duration": 20,
+					"spawnsAt": 86,
+					"mobility": "stationary"
+				}
 			],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 20,
 					"durationType": "refresh",
 					"source": "character",
@@ -150,7 +217,10 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 20,
 					"durationType": "refresh",
 					"source": "character",
@@ -161,7 +231,10 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 20,
 					"durationType": "refresh",
 					"source": "character",
@@ -176,7 +249,13 @@
 				"Frames 2026-07-14 from gcsim burst.go: burstFrames = InitAbilSlice(131); ActionCharge=130, Skill=122, Dash=122, Jump=124, Swap=122. swap=122; N=131 (ActionAttack default). CD: SetCD(action.ActionBurst, 15*60) -> 15s, no delay. Energy cost 60 (data_gen/sidecar; EnergyMax 60). burstHitmark=110 (self Hydro hit, burst[9]=0.58032=58.0% Max HP, UseHP). burstField=86 -> summon spawnsAt (field buff checks begin). burstDur=20*60=20s. Modeled as an instant burst spawning a stationary 'Lunar Domain' summon (spawnsAt 86, 20s) — the Shrine-of-Maya shape — rather than a legacy persistent burst bar, so the field reads as its own lane.",
 				"Lunar Reaction DMG Bonus burstBuff[9]=0.40=40% @T10, applied to every party member via AddReactBonusMod for Lunar-tagged attacks while the active player is within the domain area (re-checked every 0.8s, 1.2s per application -> modeled as 20s refresh). RE-KEYED 2026-07-29 to the lunar*ReactionBonus stat family (bucket-5 Reaction Bonus, additive with the EM bonus) per Nate's ruling — the bucket-5 primitive now exists; the old lunar*DmgBonus keying conflated it with the bucket-3 Base DMG bracket."
 			],
-			"application": [{ "frame": 110, "element": "hydro", "units": 2 }]
+			"application": [
+				{
+					"frame": 110,
+					"element": "hydro",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -188,14 +267,19 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
 					"value": 5,
 					"snapshottable": false,
-					"stacks": { "maxStacks": 3, "durationModel": "shared" }
+					"stacks": {
+						"maxStacks": 3,
+						"durationModel": "shared"
+					}
 				}
 			],
 			"description": "When triggering **Gravity Interference**, Columbina gains the Lunacy effect, increasing her CRIT Rate by 5% for 10s. This effect can be stacked up to 3 times.",
@@ -235,54 +319,89 @@
 				{
 					"type": "shield",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 8,
 					"scaling": 12,
 					"stat": "hp",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 1 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					}
 				},
 				{
 					"type": "energy",
 					"target": "active",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"amount": 6,
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 1 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					}
 				},
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "interruptionRes",
-					"value": { "type": "unknown", "description": "interruption resistance" },
+					"value": {
+						"type": "unknown",
+						"description": "interruption resistance"
+					},
 					"snapshottable": false,
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 1 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					}
 				},
 				{
 					"type": "elevate",
 					"target": "team",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 1 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"source": "character",
 					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
 					"value": 1.5,
@@ -306,74 +425,123 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "hp%",
 					"value": 40,
 					"snapshottable": false,
-					"conditions": { "type": "constellation", "level": 2 }
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
 				},
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 1 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 1
+					},
 					"snapshottable": false,
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					}
 				},
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 0.35 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 0.35
+					},
 					"snapshottable": false,
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					}
 				},
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "def",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 1 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 1
+					},
 					"snapshottable": false,
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					}
 				},
 				{
 					"type": "elevate",
 					"target": "team",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 2 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"source": "character",
 					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
 					"value": 7,
@@ -396,8 +564,13 @@
 				{
 					"type": "elevate",
 					"target": "team",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 3 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 3
+					},
 					"source": "character",
 					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
 					"value": 1.5,
@@ -418,8 +591,13 @@
 				{
 					"type": "elevate",
 					"target": "team",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 4 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
 					"source": "character",
 					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
 					"value": 1.5,
@@ -442,8 +620,13 @@
 				{
 					"type": "elevate",
 					"target": "team",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 5 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 5
+					},
 					"source": "character",
 					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
 					"value": 1.5,
@@ -464,20 +647,30 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",
 					"value": 80,
 					"snapshottable": false,
-					"conditions": { "type": "constellation", "level": 6 }
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					}
 				},
 				{
 					"type": "elevate",
 					"target": "team",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 6 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"source": "character",
 					"reactions": ["lunarCharged", "lunarBloom", "lunarCrystallize"],
 					"value": 7,
@@ -491,7 +684,10 @@
 			]
 		}
 	],
-	"meta": { "source": "genshin-db", "generatedAt": "2026-04-06T11:45:40.687Z" },
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.687Z"
+	},
 	"_curatorNotes": [
 		"Full curation 2026-07-14 (stub -> curated). Effects + FrameMaps from gcsim internal/characters/columbina/ (frame origin: gcsim main, merged) cross-checked against docs/curation/talents/columbina.json. Web: KQM Columbina quickguide + genshin wiki.",
 		"UNMODELED / FLAGGED: (1) Moonsign Benediction 'Moonlight, Lent Unto You' (extraPassive) — converts party Electro-Charged/Bloom/Hydro-Crystallize into the Lunar variants, grants Lunar reaction Base DMG up to +7% from Max HP (0.2% per 1000 Max HP, needs ~35k HP), and +1 party Moonsign level. No Lunar-conversion / Moonsign-level / lunar-base-DMG primitive exists — excluded per extraPassive convention, flagged. (2) Gravity accumulation system (10/s, +34% C2, 60 limit) has no primitive; Gravity Interference off-field hits use manual triggers. (3) Verdant Dew / Moondew Cleanse CA gated on external party-generated resource."

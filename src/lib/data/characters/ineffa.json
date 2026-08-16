@@ -17,12 +17,51 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 35, "hit": 9, "N": 12, "C": 27 } },
-				{ "name": "N2", "frames": { "anim": 46, "hit": 17, "N": 19, "C": 39 } },
-				{ "name": "N3", "frames": { "anim": 48, "hit": 21, "N": 33, "C": 39 } },
-				{ "name": "N4", "frames": { "anim": 55, "hit": 27, "N": 52 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 35,
+						"hit": 9,
+						"N": 12,
+						"C": 27
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 46,
+						"hit": 17,
+						"N": 19,
+						"C": 39
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 48,
+						"hit": 21,
+						"N": 33,
+						"C": 39
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 55,
+						"hit": 27,
+						"N": 52
+					}
+				}
 			],
-			"chargeFrames": { "anim": 60, "N": 45, "E": 45, "Q": 45, "D": 23, "J": 23, "swap": 43 },
+			"chargeFrames": {
+				"anim": 60,
+				"N": 45,
+				"E": 45,
+				"Q": 45,
+				"D": 23,
+				"J": 23,
+				"swap": 43
+			},
 			"_curatorNotes": [
 				"Polearm normals: 4-hit Physical chain. attackHitmarks=[[9],[17],[10,21],[27]]; N3 multi-hit, last=21 gates cancel. attackFrames built via InitNormalCancelSlice; per-hit ActionAttack + ActionCharge overrides. N4 final-hit no C key per convention.",
 				"Charge: chargeFrames=InitAbilSlice(60), ActionDash/Jump=23 (chargeHitmark), ActionAttack/Skill/Burst=45, ActionSwap=43. NextQueueItemIsValid forbids C from idle (NormalCounter==0); polearm convention.",
@@ -53,7 +92,10 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 32, "swap": 31 },
+			"frames": {
+				"anim": 32,
+				"swap": 31
+			},
 			"cooldown": 16,
 			"cooldownStartDelay": 1,
 			"tags": ["shield", "summon"],
@@ -67,7 +109,12 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 0.7 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 0.7,
+								"icdGate": "none"
+							},
 							"scaling": 172.8,
 							"stat": "atk",
 							"element": "electro"
@@ -79,7 +126,10 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"durationType": "refresh",
 					"scaling": 398.13,
@@ -98,7 +148,13 @@
 				"↻ 2026-08-14 — the stand-in summon is retired. \"Optical Flow Shield Barrier\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast a 20s active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world. Bar geometry is unchanged apart from the spawn offset, which the shield window never had."
 			],
 			"description": "Ineffa engages her Enhanced Cleaning Module, dealing a single instance of AoE Electro DMG to nearby opponents, activating her Optical Flow Shield Barrier, and summoning the Multipurpose Smart Assistance Unit, **Birgitta**.\nThe Optical Flow Shield Barrier absorbs DMG based on Ineffa's ATK, and it will absorb Electro DMG with 250% effectiveness.",
-			"application": [{ "frame": 26, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 26,
+					"element": "electro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "ineffa__burst__supreme_instruction_cyclonic_exterminator",
@@ -106,7 +162,12 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 127, "D": 105, "J": 106, "swap": 126 },
+			"frames": {
+				"anim": 127,
+				"D": 105,
+				"J": 106,
+				"swap": 126
+			},
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": ["summon"],
@@ -120,7 +181,12 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 0.7 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 0.7,
+								"icdGate": "none"
+							},
 							"scaling": 172.8,
 							"stat": "atk",
 							"element": "electro"
@@ -137,7 +203,13 @@
 				"Birgitta authored as a separate summon on the burst — discharge effect identical to skill-summoned Birgitta. In-game the burst RESETS the existing Birgitta's duration rather than spawning a second; the planner over-spawns when E and Q overlap. Trade-off documented in caveat."
 			],
 			"description": "Through Multipurpose Smart Assistance Unit, **Birgitta**, Ineffa can use Rocket Punches to quickly clean up opponents! Shoots Birgitta into the fray, dealing AoE Electro DMG and allowing Birgitta to remain on the field.\n\nIf Birgitta is already on the field, having been summoned by Ineffa, this Skill will re-summon Birgitta at the target's location and reset her duration.",
-			"application": [{ "frame": 111, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 111,
+					"element": "electro",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -159,12 +231,19 @@
 				{
 					"type": "buff",
 					"target": ["self", "active"],
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 6 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 6
+					},
 					"snapshottable": false
 				}
 			],
@@ -185,13 +264,22 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"durationType": "refresh",
-					"conditions": { "type": "constellation", "level": 1 },
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"source": "character",
 					"stat": "lunarChargedDmgBonus",
-					"value": { "type": "unknown", "description": "+2.5% per 100 ATK Ineffa has, max +50%" },
+					"value": {
+						"type": "unknown",
+						"description": "+2.5% per 100 ATK Ineffa has, max +50%"
+					},
 					"snapshottable": false
 				}
 			],
@@ -227,9 +315,15 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "onReaction", "reaction": "lunarCharged" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "lunarCharged"
+					},
 					"procCooldown": 4,
-					"conditions": { "type": "constellation", "level": 4 },
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
 					"amount": 5
 				}
 			],
@@ -254,9 +348,15 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": "lunarCharged" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "lunarCharged"
+					},
 					"procCooldown": 3.5,
-					"conditions": { "type": "constellation", "level": 6 },
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"scaling": 135,
 					"stat": "atk",
 					"element": "electro"
