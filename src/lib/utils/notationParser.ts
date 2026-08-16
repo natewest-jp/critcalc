@@ -35,7 +35,6 @@ import type {
 	Condition,
 	DamageTag,
 	DurationExtension,
-	DurationModifier,
 	Effect,
 	Element,
 	NormalAbility,
@@ -48,11 +47,8 @@ import type {
 	Trigger
 } from '$lib/types/ability';
 import {
-	getActiveDuration,
-	getActiveDurationModifiers,
 	getPersistentBehavior,
 	getDurationExtensions,
-	getSummonActivatesAt,
 	getDefaultDamageTag,
 	getNormalHitDamageTag,
 	getCooldownStartsAtStanceEnd,
@@ -65,12 +61,7 @@ import { createIcdClock, icdApplies, icdTagFor, resolveActionIcd } from '$lib/ut
 import { computeTeamEnabledReactions, computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { FPS, framesOf } from '$lib/utils/frames';
 import { getWeaponById } from '$lib/data/weaponLookup';
-import {
-	GENERIC_NORMAL_HITS,
-	GENERIC_CHARGE_FRAMES,
-	GENERIC_SKILL,
-	GENERIC_BURST
-} from '$lib/data/genericProfile';
+import { GENERIC_NORMAL_HITS, GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
 import type { LoadoutEntry } from '$lib/stores';
 import type {
 	ActionEvent,
@@ -83,7 +74,6 @@ import { deriveBuffWindows } from '$lib/utils/buffWindows';
 import type { CharState } from '$lib/sim/charState';
 import { createSimContext } from '$lib/sim/context';
 import {
-	applyModifiers,
 	DEFAULT_ASCENSION,
 	evalCondition,
 	findChainStage,
@@ -92,6 +82,15 @@ import {
 	type ChainIndex,
 	type ConditionContext
 } from '$lib/sim/conditions';
+import {
+	resolveAbilityTiming,
+	resolveActiveAbility,
+	resolveChargeCastTime,
+	resolveEQCastTime,
+	resolveNormalCastTime,
+	resolveStanceFields
+} from '$lib/sim/resolve';
+import { expandBrackets, peekActionKey } from '$lib/sim/tokens';
 
 // Re-export the IR surface so consumers can import event/window types straight
 // from the parser module they already depend on.
@@ -397,378 +396,9 @@ function inferredStates(
 	return states;
 }
 
-/**
- * Maps the next token after position j to the ActionKey used for cancel-window
- * selection. Returns 'swap' (full animation fallback) for end-of-segment,
- * time advances, optional groups, or anything else that isn't a direct action.
- *
- * `isBow` is threaded for ONE token: KQM's `A` is an aimed shot, which only a
- * bow can take, and which our data models as that bow's fully-charged attack
- * (see the charged branch). So a following `A` selects the 'C' cancel window
- * for a bow and stays 'swap' for anyone else — where the token performs no
- * action at all, and the conservative full animation is the honest reading.
- */
-function peekActionKey(tokens: Token[], j: number, isBow: boolean): ActionKey {
-	// ⚓ `W` IS SKIPPED, NOT READ (2026-08-13). We do not simulate walk-cancels
-	// (⚓ Nate; gcsim does not either — its `walk` has no intrinsic duration, only
-	// the frame count you hand it), and the composer says so. But an unread `W`
-	// was not free: it is not a key in any FrameMap, so it resolved to 'swap' —
-	// the full-animation fallback — and `N1 W N2` silently timed its N1
-	// differently from `N1 N2`. A token we tell the user does nothing has to
-	// actually do nothing.
-	//
-	// Skipping is also the closer approximation of the technique: a walk-cancel
-	// does not reset the normal-attack string in game — that is exactly what
-	// makes it worth doing — so `N1 W N2` really is an N1 followed by an N2, just
-	// without the frames the cancel would have saved.
-	let k = j + 1;
-	while (tokens[k]?.kind === 'label' && tokens[k].text === 'W') k++;
-	const next = tokens[k];
-	if (!next) return 'swap';
-	if (next.kind === 'Q') return 'Q';
-	if (next.kind === 'E') return 'E';
-	if (next.kind === 'label' || next.kind === 'unknown') {
-		const t = next.text;
-		if (/^N\d*$/.test(t)) return 'N';
-		if (t === 'D') return 'D';
-		if (t === 'J') return 'J';
-		if (/^C\d*$/.test(t)) return 'C';
-		if (t === 'A' && isBow) return 'C';
-		if (/^[hl]?P$/.test(t)) return 'P';
-	}
-	return 'swap';
-}
-
-/**
- * Resolves E/Q cast time (FRAMES) from frame data, selecting the cancel window
- * for the given next-action key. The caller passes the `matchVariant`-resolved
- * variant (e.g. hE, h1E, h2E, sQ) whose frames replace the base's.
- * Characters authored without FrameMaps (pre-release stubs with no gcsim
- * source) fall back to the generic cast constants instead of killing the parse.
- *
- * ⚓ A FrameMap was always frames; this used to divide them into a seconds
- * clock. The clock is frames now (C1), so the value passes through untouched.
- */
-function resolveEQCastTime(
-	ability: CastAbility,
-	variant: AbilityVariant | undefined,
-	nextKey: ActionKey
-): number {
-	const frameMap = variant?.frames ?? ability.frames;
-	if (!frameMap) return ability.abilityType === 'burst' ? Q_CAST_F : E_CAST_F;
-	// A few curated FrameMaps lack the canonical `swap` key (qiqi skill, Mika
-	// hE variant); fall back to the longest defined cancel window rather than
-	// letting undefined poison the cursor with NaN.
-	const swapFallback = frameMap.swap ?? Math.max(0, ...Object.values(frameMap));
-	return frameMap[nextKey] ?? swapFallback;
-}
-
-/**
- * Resolves cast time (FRAMES) for a single hit in a normal-attack combo.
- * `index` is the 0-based hit index (normalCounter or explicit N1→0, N2→1 …).
- * Returns null when hits data is absent (caller should skip the cursor advance).
- */
-function resolveNormalCastTime(
-	hits: NormalHit[] | undefined,
-	index: number,
-	nextKey: ActionKey
-): number | null {
-	if (!hits?.length) return null;
-	const hit = hits[Math.min(index, hits.length - 1)];
-	return hit.frames[nextKey] ?? hit.frames.swap;
-}
-
-/**
- * Resolves cast time (FRAMES) for a charged attack.
- * Bow characters use `chargeHits[]`; all others use `chargeFrames`.
- * Token 'C'/'C2' → last entry (full charge); 'C1' → first entry.
- * Returns null when the relevant frame data is absent.
- */
-function resolveChargeCastTime(
-	ability: NormalAbility,
-	charToken: string,
-	nextKey: ActionKey,
-	isBow: boolean
-): number | null {
-	if (isBow) {
-		const hits = ability.chargeHits;
-		if (!hits?.length) return null;
-		const index = charToken === 'C1' ? 0 : hits.length - 1;
-		return hits[index].frames[nextKey] ?? hits[index].frames.swap;
-	} else {
-		// Frameless (uncurated / Blank) → generic charge profile, so a charged
-		// attack advances the cursor realistically instead of by zero.
-		const frameMap = ability.chargeFrames ?? GENERIC_CHARGE_FRAMES;
-		return frameMap[nextKey] ?? frameMap.swap;
-	}
-}
-
-/**
- * Resolves the active-window duration and modifiers for a cast, accounting for
- * variant overrides. Precedence (most specific wins):
- *   1. variant.summons[0]     — variant-level summon override
- *   2. variant.duration       — variant-level legacy override
- *   3. variant.activeDuration — variant-level instant window (2026-08-14)
- *   4. ability.summons[0]     — base summon (via getActiveDuration accessor)
- *   5. ability.duration       — base legacy (via getActiveDuration accessor)
- *   6. ability.activeDuration — base instant window (via the same accessor)
- *
- * ⚠ RUNGS 3 AND 4 ARE THE ORDER THAT MATTERS. A variant's own instant window
- * has to outrank the BASE ability's summon, or Zhongli's hold-E — a 20s Jade
- * Shield cast off a base whose Stone Stele runs 30s — would draw a 30s bar the
- * moment its stand-in summon was retired. Every other variant field already
- * behaves this way; this one just has a base-level rival that is easy to miss.
- *
- * Variant modifier arrays **replace** the base's array — a curator who lists
- * modifiers on a variant has opted that variant out of the base set.
- */
-function resolveActiveDuration(
-	ability: CastAbility,
-	variant: AbilityVariant | undefined
-): { duration: number; modifiers: DurationModifier[] | undefined } {
-	// ⚠️ Every rung reads AUTHORED SECONDS and returns FRAMES (C1). The accessors
-	// (`getActiveDuration`) are shared with the Team Builder, which is
-	// seconds-native — so the conversion belongs here, at the parser's edge, and
-	// NOT inside them.
-	const variantSummon = variant?.summons?.[0];
-	if (variantSummon) {
-		return {
-			duration: framesOf(variantSummon.duration),
-			modifiers: variantSummon.durationModifiers
-		};
-	}
-	if (variant?.duration !== undefined) {
-		return { duration: framesOf(variant.duration), modifiers: variant.durationModifiers };
-	}
-	if (variant?.activeDuration !== undefined) {
-		return { duration: framesOf(variant.activeDuration), modifiers: variant.durationModifiers };
-	}
-	return {
-		duration: framesOf(getActiveDuration(ability)),
-		modifiers: getActiveDurationModifiers(ability)
-	};
-}
-
-/**
- * Resolves cooldown, duration, and summon spawn frame for an ability cast,
- * merging variant overrides and applying modifiers at DEFAULT_ASCENSION.
- * Variant fields take precedence; modifiers (from the base ability) are
- * applied on top. `resolvedStates` allows state-gated modifiers (e.g.
- * duringSummon) to activate.
- *
- * Returns `summonActivatesAt` in 60fps frames; the renderer offsets the active
- * bar by this value. Variant summons override variant.summonActivatesAt
- * override the base ability's summons[0].spawnsAt / persistent summonActivatesAt.
- */
-/**
- * Resolves stance-related fields for an ability + token combination, with
- * variant overrides applied. Used at cast-open time to decide whether to
- * open a stance window, what named state (if any) to attach, and whether
- * the window closes on character swap.
- *
- * Variant fields fully replace base values when explicitly present (per the
- * AbilityVariant convention); the `!== undefined` check distinguishes
- * "variant didn't set this field" from "variant set it to false/undefined."
- *
- * Reference: Mavuika Hold-E (variant input ["hE"]) overrides the base skill's
- * behavior: "instant" → "stance" + opensState: "nightsoulBlessing" so the
- * Flamestrider mode opens a real bike-NS window without splitting into two
- * skill abilities.
- */
-function resolveStanceFields(
-	ability: CastAbility,
-	variant: AbilityVariant | undefined
-): {
-	behavior: 'instant' | 'persistent' | 'stance';
-	opensState?: import('$lib/types/ability').State;
-	terminatesOnSwap: boolean;
-} {
-	const behavior = variant?.behavior !== undefined ? variant.behavior : ability.behavior;
-	if (behavior !== 'stance') return { behavior, terminatesOnSwap: false };
-	const baseStance = ability.behavior === 'stance';
-	const opensState =
-		variant?.opensState !== undefined
-			? variant.opensState
-			: baseStance
-				? ability.opensState
-				: undefined;
-	const terminatesOnSwap =
-		variant?.terminatesOnSwap !== undefined
-			? variant.terminatesOnSwap
-			: baseStance
-				? ability.terminatesOnSwap === true
-				: false;
-	return { behavior, opensState, terminatesOnSwap };
-}
-
-function resolveAbilityTiming(
-	ability: CastAbility,
-	variant: AbilityVariant | undefined,
-	resolvedStates: ReadonlySet<string> = new Set(),
-	constellationLevel = 0,
-	chainIndex: ChainIndex = new Map(),
-	stacks?: ReadonlyMap<string, number>
-): { cooldown: number; duration: number; summonActivatesAt: number } {
-	const cooldown = applyModifiers(
-		framesOf(variant?.cooldown ?? ability.cooldown),
-		variant?.cooldownModifiers ?? ability.cooldownModifiers,
-		DEFAULT_ASCENSION,
-		resolvedStates,
-		constellationLevel,
-		chainIndex,
-		stacks,
-		FPS // a `flat` cooldown modifier is authored in seconds
-	);
-	const { duration: baseDur, modifiers: durMods } = resolveActiveDuration(ability, variant);
-	const duration = applyModifiers(
-		baseDur,
-		durMods,
-		DEFAULT_ASCENSION,
-		resolvedStates,
-		constellationLevel,
-		chainIndex,
-		stacks,
-		FPS // ditto for a `flat` duration modifier
-	);
-	const variantSummon = variant?.summons?.[0];
-	const summonActivatesAt = variantSummon
-		? (variantSummon.spawnsAt ?? 0)
-		: (variant?.summonActivatesAt ?? getSummonActivatesAt(ability));
-	// Non-instant abilities authored without a duration (pre-release data gaps)
-	// yield undefined here; sanitize to 0 so downstream window math
-	// (stanceWindows end = start + duration, bar uptime) never sees NaN.
-	return {
-		cooldown,
-		duration: Number.isFinite(duration) ? duration : 0,
-		summonActivatesAt
-	};
-}
-
-// ---------------------------------------------------------------------------
-// Stance-aware ability resolution
-// ---------------------------------------------------------------------------
-
-/**
- * Finds the best-matching ability of the given type for the current resolved
- * states. Prefers conditioned abilities whose condition is definitively met
- * (e.g. an in-stance variant when `inStance` is in resolvedStates) over
- * unconditioned base abilities. Returns undefined if no match exists.
- */
-function resolveActiveAbility<K extends Ability['abilityType']>(
-	char: import('$lib/types/character').CharacterData,
-	abilityType: K,
-	resolvedStates: ReadonlySet<string>,
-	constellationLevel = 0,
-	chainIndex: ChainIndex = new Map(),
-	stacks?: ReadonlyMap<string, number>
-): Extract<Ability, { abilityType: K }> | undefined {
-	const candidates = char.abilities.filter(
-		(a): a is Extract<Ability, { abilityType: K }> => a.abilityType === abilityType
-	);
-	// Prefer a conditioned ability whose condition is definitively satisfied.
-	const conditioned = candidates.find(
-		(a) =>
-			a.conditions !== undefined &&
-			evalCondition(
-				a.conditions,
-				DEFAULT_ASCENSION,
-				resolvedStates,
-				constellationLevel,
-				chainIndex,
-				stacks
-			) === true
-	);
-	if (conditioned) return conditioned;
-	// Fall back to the unconditioned base ability.
-	return candidates.find((a) => a.conditions === undefined);
-}
-
-// ---------------------------------------------------------------------------
-// Bracket expansion
-// ---------------------------------------------------------------------------
-
-/**
- * Expands bracket repeat groups (e.g. '2[N5C]', '[N5C]x3') in an action-token
- * list into their constituent sub-tokens, repeated the specified number of
- * times. Range prefixes (e.g. '2-4[N5C]') use the lower bound.
- *
- * The character-name token must NOT be included in the input — pass
- * tokens.slice(1) from the segment. The returned array is a flat list of
- * action tokens ready for the main parser loop.
- *
- * Inner content is re-tokenized via a synthetic segment prefix ('_ ') so the
- * tokenizer does not treat the first action token as a character name.
- */
-/** Hard cap on bracket repeat counts; real rotations stay in single digits. */
-const MAX_BRACKET_REPEATS = 99;
-
-/**
- * Hard cap on the TOTAL tokens expansion may produce.
- *
- * ⚠️ `MAX_BRACKET_REPEATS` bounds one multiplicand and this bounds the other.
- * Capping only the count was the 2026-08-14 sweep's second finding: nothing
- * bounded the bracket BODY, so `99[` + 2,000 × `N9` — 4 KB of input — expanded
- * to 1.78 million IR events and ~1 GB of heap, and 24 KB of it OOM-ed the tab
- * outright. Measured ceiling was ~445 IR events per input character.
- * (docs/parser-hardening-2026-08-14.md §2.)
- *
- * 20k is far past legitimate use and still cheap: the heaviest plausible bracket
- * — `99[` around fifty tokens `]` — expands to ~5k, and a realistic twenty-cycle
- * rotation is ~300 tokens parsing in 13 ms. Measured at the cap, the worst case
- * lands near 180k events / ~90 ms: a hitch on a pathological paste, not a freeze.
- * (A first cut used 50k and measured 450k events / 222 ms — correct, but there
- * was no reason to buy headroom nobody can legitimately spend.)
- *
- * ⚠️ Hitting it truncates SILENTLY, which is a deliberate and slightly
- * uncomfortable choice: `unknownTokens` is the only warning channel on
- * `ParsedRotation` and nothing renders it (the editor lint in `notationFlags.ts`
- * took that job), so a flag here would go nowhere. Building a display path for a
- * condition no legitimate input can reach is the speculative abstraction the
- * conventions warn against. ⏭ If a warning channel ever exists, this is a
- * candidate — and the better home is the LINT, which already owns the "we cannot
- * take this" vocabulary and could flag an over-budget group from the text alone.
- */
-const MAX_EXPANDED_TOKENS = 20_000;
-
-function expandBrackets(tokens: Token[]): Token[] {
-	const result: Token[] = [];
-	for (const tok of tokens) {
-		if (tok.kind !== 'label') {
-			result.push(tok);
-			continue;
-		}
-		const m = tok.text.match(/^(\d+(?:-\d+)?)?\[([^\]]*)\](?:x(\d+))?$/);
-		if (!m) {
-			result.push(tok);
-			continue;
-		}
-		const inner = m[2].trim();
-		if (!inner) continue;
-		let count = 1;
-		if (m[1])
-			count = parseInt(m[1].split('-')[0]); // prefix, lower bound for ranges
-		else if (m[3]) count = parseInt(m[3]); // x-suffix
-		if (count < 1) continue;
-		// Parsing runs synchronously per keystroke — an unbounded repeat count
-		// (e.g. 999999999[N1C]) would freeze or OOM the tab.
-		count = Math.min(count, MAX_BRACKET_REPEATS);
-		// Re-tokenize inner content; skip the synthetic character-name token.
-		const innerTokens = tokenizeNotation('_ ' + inner).slice(1);
-		for (let rep = 0; rep < count; rep++) {
-			// Budget check BEFORE appending, so the cap is a ceiling rather than a
-			// threshold we overshoot by one body's worth.
-			if (result.length + innerTokens.length > MAX_EXPANDED_TOKENS) return result;
-			// ⛔ NOT `result.push(...innerTokens)`. Spreading an array as arguments
-			// hits V8's argument limit and throws `RangeError: Maximum call stack
-			// size exceeded` somewhere north of ~125k elements — and a throw here is
-			// worse than the freeze it replaced, because it unwinds through the
-			// synchronous $derived that drives the timeline. A plain loop has no
-			// such limit. (Same reason the buff-window merge below is a loop.)
-			for (const innerTok of innerTokens) result.push(innerTok);
-		}
-	}
-	return result;
-}
+// ⚓ Resolution (`$lib/sim/resolve.ts`) and token shaping (`$lib/sim/tokens.ts`)
+// moved out at L3c. Neither was ever imported from outside this file, so there
+// is nothing to re-export.
 
 // ---------------------------------------------------------------------------
 // Weapon cdReset helper
