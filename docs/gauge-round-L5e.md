@@ -1,6 +1,6 @@
 # L5e — summon ticks apply their element (the recall half)
 
-**Status:** 🔄 in progress — L5e-a (`637a175`) + L5e-a½ (`7d63949`) shipped 2026-08-16; §3.3 ICD decision MADE — L5e-a¾ (annotation) then L5e-b (the chain)
+**Status:** 🔄 in progress — L5e-a (`637a175`) + L5e-a½ (`7d63949`) shipped 2026-08-16; L5e-a¾ (`ab2701d`) shipped — **L5e-b, the live chain, is next and is the last step**
 **Reads:** [`gauge-round.md`](gauge-round.md) (the contract) · [`gauge-round-L5.md`](gauge-round-L5.md)
 (the gauge, and this landing's decomposition in its §5) · [`gauge-round-L3.md`](gauge-round-L3.md)
 (the clock)
@@ -296,10 +296,26 @@ index, swapOutAt })`, with the swap clamp folded INSIDE so an unclamped end can 
   collapsed onto `summonEndAt`.
   ⏭ **Nate has not looked at this yet** — Fischl draws ONE Oz lane handing off at the
   recast, and Zhongli's stele markers shift 2.4 s later.
-- ⏭ **L5e-a¾ — the ICD annotation** (§3.3's decision): the audit reports applied/total per
-  summon series, a migration authors `'none'` on the seven, and the schema gains the
-  field. ⚠️ **No behaviour change on its own** — nothing reads it until L5e-b, so it gates
-  on the corpus IR being byte-identical, exactly like L5e-a.
+- **L5e-a¾** ✅ **SHIPPED 2026-08-16 (`ab2701d`)** — the gate is authored on **six effects
+  across five summons** (Pyronado, Guoba, Gravity Ripple, Bake-Kurage, and Birgitta twice
+  — she is spawned by both the skill and the burst). Corpus IR byte-identical over 257
+  parses, so it is provably inert until L5e-b.
+  ↻ **ON THE TRIGGER, NOT THE SUMMON** — §3.3 said per-summon and Furina disproved it:
+  Salon Solitaire is ONE summon with THREE tick series measuring differently
+  (Chevalmarin standard, Gentilhomme neither, Crabaletta indistinguishable).
+  ↻ **Annotated only where standard is PROVABLY wrong.** The first census called any
+  all-applied series `none` without checking whether standard also predicted all of them;
+  where the interval exceeds the 2.5 s timer the two are indistinguishable, so ⛔ Yae's
+  Sesshou Sakura and Furina's Crabaletta are deliberately left bare. Four-way:
+  **NEEDS-none 5 · STANDARD 15 · EITHER 2 · OTHER 13**.
+  ⚓ **The audit reads it back**, reporting applied/total and the measured verdict beside
+  the authored claim (currently zero contradictions) — so ⛔ no `INERT` entry was needed:
+  the consumer that keeps it honest is the one that re-measures it.
+  ⚠️⚠️ **The key is NOT named after `icd.ts`, and that is load-bearing** —
+  `orphanedSchema.test.ts` matches ACCESS by key name and the Visualizers' ICD instrument
+  already fills the codebase with matching text, so that name would be permanently
+  unverifiable. Found by deleting every access and watching the guard stay GREEN; renamed
+  and watched it go RED. ⚓ **A guard is only as strong as its key name is unique.**
 - **L5e-b** — the live chain: spawn hook, chained ticks, liveness at fire, ticks gated
   through `icd.ts` on the per-summon clock. Applications reach the gauge. ⚠️ **This is the
   behaviour change** — measured by the oracle, gated by Nate's eyes, ⛔ never by IR
