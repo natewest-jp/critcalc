@@ -28,7 +28,6 @@
 import type { CharacterData } from '$lib/types/character';
 import type {
 	Ability,
-	AbilityVariant,
 	ActionKey,
 	AuraElement,
 	CastAbility,
@@ -50,7 +49,6 @@ import {
 } from '$lib/types/ability';
 import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement, type NormalActionKind } from '$lib/utils/actionElement';
-import { getCharacterEffectsForCast } from '$lib/utils/effectCollection';
 import { createIcdClock, icdApplies, icdTagFor, resolveActionIcd } from '$lib/utils/icd';
 import { computeTeamEnabledReactions, computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { FPS, framesOf } from '$lib/utils/frames';
@@ -97,6 +95,8 @@ import {
 	syncSourceLifetimeToStackState
 } from '$lib/sim/stacks';
 import { dispatchOnCastExtensions, dispatchOnReactionExtensions } from '$lib/sim/extensions';
+import { dispatchShieldEnds, registerShieldOnCast } from '$lib/sim/shields';
+import { infusionAt, registerInfusionsOnCast } from '$lib/sim/infusions';
 import { computeSummonDamageTicks, findSummonsForBar, summonSpan } from '$lib/sim/summons';
 
 // Re-export the IR surface so consumers can import event/window types straight
@@ -961,25 +961,6 @@ export function parseNotation(
 	// consumed by a reaction. Anemo/Geo casts never modify this state.
 	const auraState = createAuraState();
 
-	// Elemental infusions granted by an EFFECT (infusion round, 2026-08-15).
-	//
-	// ⚠️ A DIFFERENT MECHANISM from `NormalAbility.infusion`, which is a field on
-	// a stance's normal ability and needs no tracking — the stance IS the window.
-	// An `infuse` Effect is a timed grant from a cast, and it may land on someone
-	// else: Bennett's Fire Ventures With Me and Candace's Wagtail's Tide target
-	// `active`, i.e. whoever is on field, while Dori/Kazuha/Lohen target `self`.
-	//
-	// ⚓ The `active` case is far simpler here than it looks, and the reason is
-	// structural: **only the active character swings**. A segment IS a character's
-	// on-field window, so the swinger is by construction the receiver — there is
-	// no separate "who is on field" to track, only a window to be inside. That
-	// turns "an infusion window per receiver" into a lookup at consumption.
-	//
-	// Windows are never truncated. In game an infusion is a buff on the receiver
-	// that runs its own clock; swapping away does not cancel it (⚓ Bennett's C6
-	// infusion is famously still there when you swap back inside the 12s).
-	const infusionWindows = ctx.infusionWindows;
-
 	// Elemental-application ICD clocks, keyed `${characterId}:${icdTag}` — gcsim
 	// tracks per (target, character, ICD tag), and we have one notional target.
 	// Rotation-wide like the aura: a character's normal-attack counter survives
@@ -1069,225 +1050,8 @@ export function parseNotation(
 	// ⚓ durationExtensions dispatch (feedback edge F2) MOVED to
 	// `$lib/sim/extensions.ts` (L3c).
 
-	/** Register a shield window when the active cast spawns a shield. Two
-	 *  authoring conventions covered:
-	 *    1. Ability has `tags: ['shield']` AND `summons[0]` — the primary
-	 *       summon's duration IS the shield duration (Noelle Breastplate,
-	 *       Zhongli Jade Shield, Xinyan, Layla pattern).
-	 *    2. Ability has an `Effect.type: 'shield'` with onCast trigger and
-	 *       an explicit `duration` — the effect's duration IS the shield
-	 *       duration (Beidou Q pattern; bound to the cast site since onCast
-	 *       triggers fire at cast time).
-	 *
-	 *  🐛 THE TWO ARE A PRECEDENCE, NOT A UNION (fixed 2026-08-14). They used to
-	 *  both run, so an ability satisfying both registered TWO identical windows
-	 *  and fired TWO `shieldEnd` events per cast — seven abilities did (Baizhu Q,
-	 *  Citlali E, Ineffa E, Kirara E, Layla E, Thoma E, Xinyan E). Noelle's
-	 *  curator notes document the trap from the far side: her skill's shield
-	 *  Effect is authored deliberately WITHOUT a `duration` so the summon stays
-	 *  "the single onShieldEnd source", or her C4 Geo explosion would double-fire.
-	 *  The data should not have to be shaped around this. Case 2 wins because it
-	 *  is the EXPLICIT statement — a shield Effect with its own duration says the
-	 *  shield's length outright, where case 1 infers it from a summon's lifetime
-	 *  that merely coincides. All seven pairs carry equal durations today, so
-	 *  this removes duplicates and changes no span.
-	 *
-	 *  Shatter-by-damage is NOT modelled — the planner has no enemy/HP state.
-	 *  Shield windows always fire `onShieldEnd` at scheduled expiry, with the
-	 *  same null-resolving "assumed to hold" convention as the rest of the
-	 *  planner's optimistic-render treatment. */
-	const registerShieldOnCast = (
-		char: CharacterData,
-		castKind: 'skill' | 'burst',
-		castTime: number,
-		activeAbility: CastAbility,
-		variant: AbilityVariant | undefined,
-		sourceCastId: number
-	): void => {
-		// ⚠ VARIANT FIRST, for both halves. A variant's `effects` and `summons`
-		// each REPLACE the base ability's (see AbilityVariant in types/ability),
-		// so a hold-E shield reads its own duration rather than the tap's —
-		// Diona 12s not 4.8s, Candace 1.52s not 0.27s — and Zhongli, whose Jade
-		// Shield lives only on his hE variant, gets a shield window at all.
-		const abilityEffects = variant?.effects ?? activeAbility.effects ?? [];
-		const abilitySummons =
-			(variant?.summons?.length ? variant.summons : activeAbility.summons) ?? [];
-		const abilityTags = variant?.tags ?? activeAbility.tags;
-		const windows: {
-			ability: 'skill' | 'burst';
-			endTime: number;
-			label?: string;
-			coveredBySummon?: boolean;
-		}[] = [];
-		// Case 2 FIRST — it is the one that wins (see the precedence note above).
-		// `Effect.type === 'shield'` on the cast ability itself, with onCast
-		// trigger + explicit duration. Triggers gated on the cast type via
-		// `trigger.ability` (if set) must match the current cast.
-		for (const eff of abilityEffects) {
-			if (eff.type !== 'shield') continue;
-			if (eff.trigger.type !== 'onCast') continue;
-			if (eff.trigger.ability !== undefined && eff.trigger.ability !== castKind) continue;
-			if (eff.duration === undefined || eff.duration <= 0) continue;
-			windows.push({
-				ability: castKind,
-				endTime: castTime + framesOf(eff.duration),
-				...(eff.label !== undefined ? { label: eff.label } : {})
-			});
-		}
-		// Case 1: summon-tagged shield ability — the FALLBACK, for kits whose
-		// shield has no Effect of its own AT ALL.
-		// ⚠ THE GUARD IS "no shield Effect", not "case 2 produced nothing".
-		// Thoma's burst is why: it authors its shield as an onHit effect (8s,
-		// refreshing on team normal hits), which this onCast site cannot fire —
-		// so case 2 came back empty and the fallback happily inferred a shield
-		// from "Scorching Ooyoroi", his 15s FIELD. An 8s shield rendered as a
-		// 15s one, from a summon that isn't a shield. An ability that states a
-		// shield Effect has spoken; if this site can't fire it, the answer is
-		// nothing, not a guess off the nearest summon.
-		const authorsShieldEffect = abilityEffects.some((e) => e.type === 'shield');
-		// ⏸️ DORMANT SINCE 2026-08-14 and kept deliberately: every corpus shield
-		// now authors an Effect, so nothing reaches this branch. It survives
-		// because a kit CAN still legitimately be authored the old way, and
-		// silently dropping its shield would be worse than a fallback nobody
-		// currently needs. If it ever fires again, `coveredBySummon` below is
-		// what stops the shield lane drawing what the summon lane already has.
-		if (windows.length === 0 && !authorsShieldEffect && abilityTags?.includes('shield')) {
-			const primary = abilitySummons[0];
-			if (primary?.duration !== undefined && primary.duration > 0) {
-				// The stand-in summon's label IS the shield's name in this
-				// convention, so it rides along rather than being lost.
-				windows.push({
-					ability: castKind,
-					endTime: castTime + framesOf(primary.duration),
-					label: primary.label
-				});
-			}
-		}
-		if (windows.length === 0) return;
-		// ── Is this shield ALREADY DRAWN, as a summon? ────────────────────────
-		// ⚓ 2026-08-14, and it is a reconciliation of two authoring conventions
-		// for one fact, not a heuristic about art. Before shield windows existed,
-		// the only way to get a shield onto the chart was to author it as a
-		// `summons[]` entry with no effects — nine abilities still do (Layla's
-		// "Curtain of Slumber", Zhongli's "Jade Shield", Noelle's "Stone Armor"…).
-		// Those entries ARE the shield: same span, drawn in the summon lane. Now
-		// that the shield lane draws shield windows, they would be drawn twice.
-		//
-		// The test is EXACT, and both halves matter: a summon with NO effects of
-		// its own (a real summon does something — Itzpapa ticks, Birgitta ticks)
-		// AND whose duration is this shield's duration. ⚠ That second half is
-		// what saves Thoma's burst: "Scorching Ooyoroi" is a genuine 15s field
-		// that carries no effects yet, and his burst shield is 8s — it is not the
-		// same thing, so his field keeps its lane.
-		//
-		// ⛔ THE FIX IS NOT TO DELETE THOSE SUMMON ENTRIES, tempting as it looks.
-		// For five of them (Kirara, Layla, Thoma E, Xinyan, Noelle) the shield is
-		// the ability's ONLY summon, so `summons[0]` is also what gives the E BAR
-		// its active duration — deleting it would collapse a 12s bar to an instant
-		// pill. Retiring the convention properly means authoring `activeDuration`
-		// alongside, which is a data round with a visual verdict attached.
-		const shieldSummons = abilitySummons;
-		for (const w of windows) {
-			const dur = w.endTime - castTime;
-			w.coveredBySummon = shieldSummons.some(
-				(s) => (s.effects?.length ?? 0) === 0 && framesOf(s.duration) === dur
-			);
-		}
-		const existing = getCharState(char.id).shields;
-		for (const w of windows) {
-			existing.push(w);
-			// IR shield window (append-only; not drained like the dispatch queue).
-			shieldWindowRecs.push({
-				characterId: char.id,
-				source: w.ability,
-				start: castTime,
-				end: w.endTime,
-				sourceCastId,
-				...(w.label !== undefined ? { label: w.label } : {}),
-				...(w.coveredBySummon ? { coveredBySummon: true as const } : {})
-			});
-		}
-		existing.sort((a, b) => a.endTime - b.endTime);
-	};
-
-	/** Drain all shield windows whose `endTime <= currentTime` in chronological
-	 *  order. For each expired window, push a `shieldEnd` IR event and dispatch
-	 *  `onShieldEnd`-trigger effects from every team character's passives /
-	 *  constellations. Source filter ('self' / 'team') and procCooldown gating
-	 *  are evaluated per (holder, effect) at dispatch time.
-	 *
-	 *  Called at the top of each E/Q handler (after `localCursor` is set to the
-	 *  cast time) and once at rotation end (with `Infinity` so any remaining
-	 *  windows drain). v1 emits `shieldEnd` events only — per-effect damage/buff
-	 *  rendering at shield-end time is a future renderer pass (mirrors the v0.8
-	 *  HitEvent pattern: emission shipped before per-event rendering). */
-	const dispatchShieldEnds = (currentTime: number): void => {
-		type Expired = { holderId: string; ability: 'skill' | 'burst'; endTime: number };
-		const expired: Expired[] = [];
-		// Snapshot the entries: the listener loop below calls getCharState (which
-		// may create new empty CharStates), and those never carry shields, so a
-		// live iteration would only visit no-op empties anyway. `expired` is
-		// sorted below on (endTime, holderId) — a total order — so dispatch order
-		// is deterministic regardless of charStates insertion order.
-		for (const [holderId, cs] of [...charStates]) {
-			const windows = cs.shields;
-			while (windows.length > 0 && windows[0].endTime <= currentTime) {
-				const w = windows.shift()!;
-				expired.push({ holderId, ability: w.ability, endTime: w.endTime });
-			}
-		}
-		if (expired.length === 0) return;
-		expired.sort((a, b) => a.endTime - b.endTime || a.holderId.localeCompare(b.holderId));
-		for (const ev of expired) {
-			events.push({
-				kind: 'shieldEnd',
-				id: ctx.nextId(),
-				characterId: ev.holderId,
-				ability: ev.ability,
-				time: ev.endTime
-			});
-			// Walk every team char's onShieldEnd-trigger effects and apply
-			// source/ability/procCooldown gating. v1 records the dispatch via
-			// the event stream above; no renderer-visible side effect yet.
-			for (const listener of teamChars) {
-				const sources = [
-					...listener.abilities,
-					...(listener.passives ?? []),
-					...(listener.constellations ?? [])
-				];
-				const listenerCons = constellationLevels?.[listener.id] ?? 0;
-				for (let nodeIdx = 0; nodeIdx < sources.length; nodeIdx++) {
-					const node = sources[nodeIdx];
-					const effects = node.effects ?? [];
-					for (let effIdx = 0; effIdx < effects.length; effIdx++) {
-						const fx = effects[effIdx];
-						if (fx.trigger.type !== 'onShieldEnd') continue;
-						const srcMode = fx.trigger.source ?? 'self';
-						if (srcMode === 'self' && listener.id !== ev.holderId) continue;
-						if (fx.trigger.ability !== undefined && fx.trigger.ability !== ev.ability) continue;
-						const condResult = evalCondition(
-							fx.conditions,
-							DEFAULT_ASCENSION,
-							new Set<string>(),
-							listenerCons,
-							new Map(),
-							undefined
-						);
-						if (condResult !== true) continue;
-						const pc = fx.procCooldown;
-						const pcNum = typeof pc === 'number' ? framesOf(pc) : undefined;
-						if (pcNum !== undefined && pcNum > 0) {
-							const charMap = getCharState(listener.id).shieldEndProcCooldown;
-							const fxKey = `${node.id}#${effIdx}`;
-							const last = charMap.get(fxKey) ?? -Infinity;
-							if (ev.endTime - last < pcNum) continue;
-							charMap.set(fxKey, ev.endTime);
-						}
-					}
-				}
-			}
-		}
-	};
+	// ⚓ Shield registration + the shieldEnd drain MOVED to `$lib/sim/shields.ts`
+	// (L3c).
 
 	/** Apply continuous-rate stack drain (E3 v2) for every gainStacks key on
 	 *  `char` that declares a `drain` spec. Called immediately before each cast
@@ -1398,98 +1162,7 @@ export function parseNotation(
 		}
 	};
 
-	/** Opens an infusion window for every `infuse` Effect this cast fires
-	 *  (infusion round, 2026-08-15). Reuses `getCharacterEffectsForCast`, which
-	 *  already walks abilities + passives + constellations + faction bonuses and
-	 *  applies the variant-replacement rule — three of the five authored
-	 *  infusions live on a C6, so a walk of the cast ability alone would find
-	 *  only Candace's and Lohen's.
-	 *
-	 *  ⚠️ The conditions are judged TWICE, because one tree has two subjects:
-	 *  `constellation` is a fact about the HOLDER and is known here, while
-	 *  `weaponType` is a fact about the RECEIVER and is not. So this site drops
-	 *  a window only on a definitive `false`, and the consumption site
-	 *  re-evaluates with the receiver's weapon in hand. Each pass resolves what
-	 *  it can and neither can wrongly open a window the other would close. */
-	const registerInfusionsOnCast = (
-		char: CharacterData,
-		castKind: 'skill' | 'burst',
-		castTime: number,
-		castLabel: string,
-		states: ReadonlySet<string>,
-		constellation: number,
-		chainIdx: ChainIndex,
-		stackState: Map<string, number>,
-		holderCtx: ConditionContext
-	): void => {
-		for (const fx of getCharacterEffectsForCast(char, castKind, castLabel)) {
-			if (fx.type !== 'infuse') continue;
-			if (fx.duration === undefined || fx.duration <= 0) continue;
-			const targets = Array.isArray(fx.target) ? fx.target : [fx.target];
-			// `self` and `active` are the only receivers an infusion can mean —
-			// you cannot infuse an off-field character's normals, because they
-			// are not swinging. A `team`-target infusion would be an authoring
-			// error rather than something to approximate.
-			const receiver = targets.includes('active')
-				? 'active'
-				: targets.includes('self')
-					? 'self'
-					: undefined;
-			if (!receiver) continue;
-			const holderVerdict = evalCondition(
-				fx.conditions,
-				DEFAULT_ASCENSION,
-				states,
-				constellation,
-				chainIdx,
-				stackState,
-				holderCtx
-			);
-			if (holderVerdict === false) continue;
-			infusionWindows.push({
-				holderId: char.id,
-				holderConstellation: constellation,
-				receiver,
-				element: fx.element,
-				start: castTime,
-				end: castTime + framesOf(fx.duration),
-				...(fx.conditions !== undefined ? { conditions: fx.conditions } : {})
-			});
-		}
-	};
-
-	/** The element infusing `receiver`'s N/C/P at `time`, or undefined.
-	 *
-	 *  ⚠️ NEWEST WINS. Two overlapping infusions is a real rotation (Bennett Q
-	 *  then Candace Q), and in game the later grant replaces the earlier — an
-	 *  infusion is not a stack.
-	 *
-	 *  ⚠️ The re-evaluation deliberately carries only TWO facts: the holder's
-	 *  constellation and the receiver's weapon. ⛔ It passes no states, no
-	 *  stacks and NOT the swinger's `ConditionContext` — those describe the
-	 *  wrong character. The holder's own were already judged at the cast, and
-	 *  handing over a per-holder map (`teamElementCounts`) built for the
-	 *  receiver would answer a holder's question with a stranger's facts.
-	 *  Anything else in the tree returns null here, and null is kept. */
-	const infusionAt = (receiver: CharacterData, time: number): Element | undefined => {
-		for (let i = infusionWindows.length - 1; i >= 0; i--) {
-			const w = infusionWindows[i];
-			if (time < w.start || time >= w.end) continue;
-			if (w.receiver === 'self' && w.holderId !== receiver.id) continue;
-			const verdict = evalCondition(
-				w.conditions,
-				DEFAULT_ASCENSION,
-				new Set(),
-				w.holderConstellation,
-				new Map(),
-				undefined,
-				{ receiverWeapon: receiver.weapon }
-			);
-			if (verdict === false) continue;
-			return w.element;
-		}
-		return undefined;
-	};
+	// ⚓ `infuse`-Effect infusion windows MOVED to `$lib/sim/infusions.ts` (L3c).
 
 	/** One elemental application: compute the synthetic reactions for `element` +
 	 *  the current aura state, dispatch each to the onReaction extension and
@@ -1914,7 +1587,7 @@ export function parseNotation(
 				// see post-event state), then decay/expire stacks BEFORE resolving
 				// the active variant so any condition reading stackState sees
 				// decayed/expired values.
-				dispatchShieldEnds(castStart);
+				dispatchShieldEnds(ctx, castStart);
 				const states = computeCurrentStates(castStart);
 				applyDrain(char, castStart, states, stackState);
 				applyLifetimeExpiry(char, castStart, stackState, stackInstances);
@@ -2207,12 +1880,13 @@ export function parseNotation(
 				// Register shield window if the cast spawns a shield (tags
 				// `['shield']` + summons[0] duration, or onCast Effect.type
 				// `'shield'` + duration). Beidou Q and Noelle/Zhongli E are canonical.
-				registerShieldOnCast(char, kind, castStart, active, variant, castId);
+				registerShieldOnCast(ctx, char, kind, castStart, active, variant, castId);
 				// Open any infusion windows this cast grants (Bennett Q, Candace Q,
 				// Kazuha C6, Dori C6, Lohen E). Registered BEFORE the reaction
 				// emission below for the same reason the shield is: a window this
 				// cast opens should be visible to everything the cast then does.
 				registerInfusionsOnCast(
+					ctx,
 					char,
 					kind,
 					castStart,
@@ -2401,7 +2075,7 @@ export function parseNotation(
 						t,
 						char.weapon,
 						char.element,
-						activeNormal?.infusion ?? infusionAt(char, localCursor)
+						activeNormal?.infusion ?? infusionAt(ctx, char, localCursor)
 					);
 					// Per-swing action events sharing one blockId (the anchor = the
 					// first swing's id). `time` is the swing's pre-advance start.
@@ -2510,7 +2184,7 @@ export function parseNotation(
 						t,
 						char.weapon,
 						char.element,
-						activeNormal?.infusion ?? infusionAt(char, blockStart)
+						activeNormal?.infusion ?? infusionAt(ctx, char, blockStart)
 					);
 					const chargedEv = emitAction({
 						action: 'charged',
@@ -2594,7 +2268,7 @@ export function parseNotation(
 							t,
 							char.weapon,
 							char.element,
-							activeNormal?.infusion ?? infusionAt(char, blockStart)
+							activeNormal?.infusion ?? infusionAt(ctx, char, blockStart)
 						);
 						const plungeEv = emitAction({
 							action: 'plunge',
@@ -2781,7 +2455,7 @@ export function parseNotation(
 	// Final pass: any shield windows still open at rotation end fire their
 	// onShieldEnd dispatch at their scheduled expiry (clamped to the rotation's
 	// observed totalDuration so events don't drift past the timeline ruler).
-	dispatchShieldEnds(Infinity);
+	dispatchShieldEnds(ctx, Infinity);
 
 	// ── P4 finalize: author the IR windows, stamp owner uptimes, and project
 	// the track bars from the cast events.
