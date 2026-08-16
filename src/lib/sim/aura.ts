@@ -502,12 +502,35 @@ export function scheduleSummonTicks(
 /** The applications this parse put on the target, in time order — the public
  *  projection of `AuraState.offers`, authored onto `ParsedRotation` at finalize. */
 export function collectApplications(ctx: SimContext): AuraApplication[] {
-	return ctx.aura.offers.map((o) => ({
-		time: o.time,
-		characterId: o.characterId,
-		element: o.element,
-		units: o.units,
-		provisionalUnits: o.provisionalUnits,
-		castKind: o.castKind
-	}));
+	// ⚠️⚠️ SORTED, because OFFER ORDER IS NOT ALWAYS TIME ORDER and this field is
+	// documented as the latter (gauge round L5e-b).
+	//
+	// The cast pipeline advances the clock through the cast animation BEFORE the
+	// emitters run, so a cast's own application at, say, frame 18 is scheduled
+	// when `clock.now` is already 79 and gets CLAMPED to 79 — that is what the
+	// clock's `latecomers` counter has always counted. Harmless while everything
+	// clamped to one frame fired in insertion order; L5e-b put a second BAND at
+	// the same clamped frame, and `Band.TICK` (10) sorts ahead of `Band.LAND`
+	// (20), so a summon's first tick can be OFFERED before the cast hit that
+	// spawned it even though its nominal frame is later.
+	//
+	// ⚠️ The gauge therefore sees them in that order too, and `advanceTo` is
+	// `while (frame < target)` — a backwards advance is a NO-OP, so the earlier
+	// application lands at the later frame. Measured corpus-wide over `<name> E Q`
+	// for all 123 characters: **4 inversions in 464 applications, none of them
+	// cross-element** — a summon and its caster share an element, which is what
+	// keeps it from changing a reaction. ⛔ Do not read this sort as the fix: it
+	// makes the PROJECTION honest, not the feed order. Fixing the feed means
+	// scheduling before the advance, which moves event ids and is its own
+	// landing.
+	return [...ctx.aura.offers]
+		.sort((a, b) => a.time - b.time)
+		.map((o) => ({
+			time: o.time,
+			characterId: o.characterId,
+			element: o.element,
+			units: o.units,
+			provisionalUnits: o.provisionalUnits,
+			castKind: o.castKind
+		}));
 }
