@@ -15,60 +15,15 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 15
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 13,
-						"N": 21
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 18,
-						"N": 38
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 29,
-						"N": 67
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 15, "hit": 13 } },
+				{ "name": "N2", "frames": { "anim": 21, "hit": 13 } },
+				{ "name": "N3", "frames": { "anim": 38, "hit": 18 } },
+				{ "name": "N4", "frames": { "anim": 67, "hit": 29 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 25,
-						"D": 15,
-						"J": 15
-					}
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 96,
-						"D": 86,
-						"J": 86
-					}
-				},
-				{
-					"name": "Breakthrough Barb",
-					"frames": {
-						"swap": 42,
-						"D": 32,
-						"J": 32
-					}
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 25, "D": 15, "J": 15, "swap": 25 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 42, "D": 32, "J": 32 } },
+				{ "name": "Breakthrough Barb", "frames": { "anim": 42, "D": 32, "J": 32, "swap": 42 } }
 			],
 			"sections": [
 				{
@@ -97,22 +52,13 @@
 			"abilityType": "skill",
 			"cooldown": 10,
 			"cooldownStartDelay": 33,
-			"frames": {
-				"swap": 40,
-				"N": 42,
-				"Q": 41,
-				"D": 41,
-				"J": 41
-			},
+			"frames": { "anim": 42, "Q": 41, "D": 41, "J": 41, "swap": 40 },
 			"chargeModifiers": [
 				{
 					"source": "C1: Enter the Plotters",
 					"type": "flat",
 					"value": 1,
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					}
+					"conditions": { "type": "constellation", "level": 1 }
 				}
 			],
 			"tags": [],
@@ -120,15 +66,10 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"durationType": "fixed",
 					"duration": 25,
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"stat": "hp%",
 					"value": 40,
 					"snapshottable": false,
@@ -147,20 +88,9 @@
 			"abilityType": "burst",
 			"behavior": "instant",
 			"cooldown": 18,
-			"frames": {
-				"swap": 90,
-				"N": 93,
-				"E": 92,
-				"D": 93,
-				"J": 91
-			},
+			"frames": { "anim": 93, "E": 92, "J": 91, "swap": 90 },
 			"summons": [
-				{
-					"label": "Exquisite Throw",
-					"duration": 15,
-					"spawnsAt": 76,
-					"mobility": "follows"
-				}
+				{ "label": "Exquisite Throw", "duration": 15, "spawnsAt": 76, "mobility": "follows" }
 			],
 			"tags": ["coordinatedAttack"],
 			"energyCost": 70,
@@ -168,9 +98,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"durationType": "fixed",
 					"duration": 15,
 					"source": "passive",
@@ -219,9 +147,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 14,
 					"stat": "hp",
 					"element": "hydro"

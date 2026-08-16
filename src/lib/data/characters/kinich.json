@@ -16,27 +16,9 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 47,
-						"N": 30
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 48,
-						"N": 41
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 79,
-						"N": 75
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 47, "N": 30, "swap": 47 } },
+				{ "name": "N2", "frames": { "anim": 48, "N": 41, "swap": 48 } },
+				{ "name": "N3", "frames": { "anim": 79, "N": 75, "swap": 79 } }
 			],
 			"_curatorNotes": [
 				"Base normals (out-of-Nightsoul) are physical claymore strikes with hitmarks 21/22/44. Inside Nightsoul Blessing, the N input routes to Loop Shot (separate skill ability gated by state: \"nightsoulBlessing\").",
@@ -68,18 +50,8 @@
 			"input": ["N"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "state",
-				"state": "nightsoulBlessing"
-			},
-			"frames": {
-				"swap": 53,
-				"N": 40,
-				"E": 33,
-				"Q": 35,
-				"D": 26,
-				"J": 32
-			},
+			"conditions": { "type": "state", "state": "nightsoulBlessing" },
+			"frames": { "anim": 53, "N": 40, "E": 33, "Q": 35, "D": 26, "J": 32, "swap": 53 },
 			"cooldown": 0,
 			"noICD": true,
 			"tags": [],
@@ -99,13 +71,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "stance",
-			"frames": {
-				"swap": 42,
-				"N": 29,
-				"Q": 27,
-				"D": 42,
-				"J": 42
-			},
+			"frames": { "anim": 42, "N": 29, "Q": 27, "D": 42, "J": 42, "swap": 42 },
 			"cooldown": 18,
 			"cooldownStartDelay": 9,
 			"duration": 10,
@@ -131,17 +97,8 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "state",
-				"state": "nightsoulBlessing"
-			},
-			"frames": {
-				"swap": 100,
-				"N": 59,
-				"Q": 59,
-				"D": 67,
-				"J": 67
-			},
+			"conditions": { "type": "state", "state": "nightsoulBlessing" },
+			"frames": { "anim": 100, "N": 59, "Q": 59, "D": 67, "J": 67, "swap": 100 },
 			"cooldown": 0,
 			"tags": [],
 			"description": "While in Nightsoul Blessing with maximum Nightsoul points (20), pressing E consumes all points to fire Scalespiker Cannon — a single Dendro hit landing 12 frames after release. The cannon snapshot is taken before points drain (gcsim ScalespikerCannon flow). Frames here are the Tap variant (release at frame 35); Hold release shifts to frame 17 with up to 180 extra hold frames.",
@@ -159,11 +116,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 126,
-				"N": 125,
-				"D": 124
-			},
+			"frames": { "anim": 126, "N": 125, "D": 124, "swap": 126 },
 			"cooldown": 18,
 			"cooldownStartDelay": 1,
 			"energyCost": 70,
@@ -178,11 +131,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2.45,
-								"firstTickDelay": 1.53
-							},
+							"trigger": { "type": "summonTick", "interval": 2.45, "firstTickDelay": 1.53 },
 							"scaling": 217.32,
 							"stat": "atk",
 							"element": "dendro"
@@ -218,26 +167,16 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 1,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "stacks",
-						"key": "huntersExperience",
-						"min": 1
-					},
+					"conditions": { "type": "stacks", "key": "huntersExperience", "min": 1 },
 					"source": "character",
 					"stat": "skillFlatDmg",
 					"value": {
 						"type": "perStack",
 						"key": "huntersExperience",
-						"per": {
-							"stat": "atk",
-							"ratio": 320
-						},
+						"per": { "stat": "atk", "ratio": 320 },
 						"maxStacks": 2
 					},
 					"snapshottable": false
@@ -276,15 +215,9 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"duration": 6,
-					"conditions": {
-						"type": "constellation",
-						"level": 2
-					},
+					"conditions": { "type": "constellation", "level": 2 },
 					"element": "dendro",
 					"value": -30
 				}
@@ -311,13 +244,8 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "constellation", "level": 4 },
 					"source": "character",
 					"stat": "burstDmgBonus",
 					"value": 70,
@@ -345,14 +273,8 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"conditions": { "type": "constellation", "level": 6 },
 					"scaling": 700,
 					"stat": "atk",
 					"element": "dendro"

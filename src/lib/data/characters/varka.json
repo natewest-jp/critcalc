@@ -17,55 +17,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 19,
-						"N": 23,
-						"C": 22
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 28,
-						"N": 29,
-						"C": 30
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 43,
-						"N": 55,
-						"C": 48
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 24,
-						"N": 40,
-						"C": 28
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 45,
-						"N": 73,
-						"C": 48
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 51, "hit": 24, "N": 28, "C": 27 } },
+				{ "name": "N2", "frames": { "anim": 51, "hit": 33, "N": 34, "C": 35 } },
+				{ "name": "N3", "frames": { "anim": 43, "N": 55, "C": 48, "swap": 43 } },
+				{ "name": "N4", "frames": { "anim": 24, "N": 40, "C": 28, "swap": 24 } },
+				{ "name": "N5", "frames": { "anim": 45, "N": 73, "C": 48, "swap": 45 } }
 			],
-			"chargeFrames": {
-				"swap": 49,
-				"N": 58,
-				"E": 59,
-				"Q": 58,
-				"D": 41,
-				"J": 41
-			},
+			"chargeFrames": { "anim": 81, "N": 72, "E": 73, "Q": 72, "D": 55, "J": 55, "swap": 63 },
 			"_curatorNotes": [
 				"FrameMaps re-extracted 2026-07-29 from gcsim main (PR #2668 merged as 5d1ec8c79); post-merge timings replaced the PR-era values.",
 				"attack.go attackHitmarks = [[19],[18,28],[27,43],[19,24],[44,45]] with InitNormalCancelSlice animations 46/46/60/47/82; ActionAttack (N) overrides 23/29/55/40/73 and ActionCharge (C) overrides 22/30/48/28/48. Multi-hitmark hits (N2-N5) use the LAST hitmark for swap per convention. gcsim adds a +5f windup when starting from idle/swap/jump/dash — not modeled.",
@@ -101,51 +59,22 @@
 			"behavior": "stance",
 			"duration": 12,
 			"terminatesOnSwap": true,
-			"frames": {
-				"swap": 49,
-				"N": 49,
-				"E": 44,
-				"Q": 44,
-				"D": 46,
-				"J": 43
-			},
+			"frames": { "anim": 55, "N": 49, "C": 49, "E": 44, "Q": 44, "D": 46, "J": 43, "swap": 49 },
 			"cooldown": 16,
 			"cooldownStartDelay": 39,
-			"durationExtensions": [
-				{
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"delta": 2.3
-				}
-			],
+			"durationExtensions": [{ "trigger": { "type": "onCast", "ability": "burst" }, "delta": 2.3 }],
 			"variants": [
-				{
-					"label": "Hold",
-					"input": ["hE"],
-					"cooldown": 8
-				},
+				{ "label": "Hold", "input": ["hE"], "cooldown": 8 },
 				{
 					"label": "Four Winds' Ascension",
 					"input": ["E"],
 					"behavior": "instant",
 					"cooldown": 11,
-					"frames": {
-						"swap": 68,
-						"N": 55,
-						"E": 56,
-						"Q": 55,
-						"D": 56,
-						"J": 55
-					},
+					"frames": { "anim": 68, "N": 55, "E": 56, "Q": 55, "D": 56, "J": 55, "swap": 68 },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "state",
-								"state": "inStance"
-							},
+							{ "type": "state", "state": "inStance" },
 							{
 								"type": "teamElementCount",
 								"elements": ["pyro", "hydro", "electro", "cryo"],
@@ -180,13 +109,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 136,
-				"N": 137,
-				"E": 138,
-				"D": 138,
-				"J": 137
-			},
+			"frames": { "anim": 152, "N": 137, "E": 138, "D": 138, "J": 137, "swap": 136 },
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
@@ -208,17 +131,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"source": "character",
 					"stat": "anemoDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 1,
-						"cap": 25
-					},
+					"value": { "type": "scaling", "stat": "atk", "ratio": 1, "cap": 25 },
 					"snapshottable": false,
 					"conditions": {
 						"type": "teamElementCount",
@@ -254,10 +170,7 @@
 					"source": "character",
 					"stat": "normalDmgBonus",
 					"value": 7.5,
-					"stacks": {
-						"maxStacks": 4,
-						"durationModel": "shared"
-					},
+					"stacks": { "maxStacks": 4, "durationModel": "shared" },
 					"snapshottable": false
 				},
 				{
@@ -273,10 +186,7 @@
 					"source": "character",
 					"stat": "chargeDmgBonus",
 					"value": 7.5,
-					"stacks": {
-						"maxStacks": 4,
-						"durationModel": "shared"
-					},
+					"stacks": { "maxStacks": 4, "durationModel": "shared" },
 					"snapshottable": false
 				}
 			],
@@ -309,9 +219,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 800,
 					"stat": "atk",
 					"element": "anemo"
@@ -384,10 +292,7 @@
 					"source": "character",
 					"stat": "critDmg",
 					"value": 20,
-					"stacks": {
-						"maxStacks": 4,
-						"durationModel": "shared"
-					},
+					"stacks": { "maxStacks": 4, "durationModel": "shared" },
 					"snapshottable": false
 				}
 			],
@@ -407,8 +312,5 @@
 			"effects": []
 		}
 	],
-	"meta": {
-		"source": "genshin-db",
-		"generatedAt": "2026-04-06T11:45:40.725Z"
-	}
+	"meta": { "source": "genshin-db", "generatedAt": "2026-04-06T11:45:40.725Z" }
 }

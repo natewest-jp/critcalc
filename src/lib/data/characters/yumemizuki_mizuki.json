@@ -18,32 +18,26 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 18
-					}
+					"frames": { "anim": 34, "N": 18, "C": 20, "E": 10, "Q": 9, "D": 10, "J": 7, "swap": 13 }
 				},
 				{
 					"name": "N2",
-					"frames": {
-						"swap": 21,
-						"N": 37
-					}
+					"frames": { "anim": 38, "N": 37, "C": 36, "E": 21, "Q": 20, "D": 21, "J": 21, "swap": 21 }
 				},
 				{
 					"name": "N3",
-					"frames": {
-						"swap": 41,
-						"N": 73
-					}
+					"frames": { "anim": 98, "N": 73, "E": 41, "Q": 40, "D": 41, "J": 41, "swap": 41 }
 				}
 			],
 			"chargeFrames": {
-				"swap": 64,
+				"anim": 81,
+				"N": 62,
+				"C": 62,
 				"E": 62,
 				"Q": 60,
 				"D": 37,
-				"J": 37
+				"J": 37,
+				"swap": 64
 			},
 			"sections": [
 				{
@@ -70,13 +64,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "stance",
-			"frames": {
-				"swap": 30,
-				"N": 50,
-				"Q": 34,
-				"D": 50,
-				"J": 50
-			},
+			"frames": { "anim": 50, "Q": 34, "swap": 30 },
 			"cooldown": 15,
 			"cooldownStartDelay": 23,
 			"duration": 5,
@@ -113,13 +101,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 94,
-				"N": 93,
-				"E": 93,
-				"D": 91,
-				"J": 93
-			},
+			"frames": { "anim": 94, "N": 93, "C": 92, "E": 93, "D": 91, "J": 93 },
 			"cooldown": 15,
 			"cooldownStartDelay": 1,
 			"tags": ["heal", "summon", "grouping"],
@@ -134,11 +116,7 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.5,
-								"firstTickDelay": 1.5
-							},
+							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 1.5 },
 							"scaling": 235,
 							"stat": "em",
 							"flat": 692
@@ -146,11 +124,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.5,
-								"firstTickDelay": 1.5
-							},
+							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 1.5 },
 							"scaling": 127.01,
 							"stat": "atk",
 							"element": "anemo"
@@ -189,15 +163,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 4,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "state",
-						"state": "nightsoulBlessing"
-					},
+					"conditions": { "type": "state", "state": "nightsoulBlessing" },
 					"source": "character",
 					"stat": "em",
 					"value": 100,
@@ -227,14 +196,8 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 1
-							},
-							{
-								"type": "state",
-								"state": "nightsoulBlessing"
-							}
+							{ "type": "constellation", "level": 1 },
+							{ "type": "state", "state": "nightsoulBlessing" }
 						]
 					},
 					"scaling": 1100,

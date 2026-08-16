@@ -15,10 +15,10 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 23 } },
-				{ "name": "N2", "frames": { "swap": 29 } },
-				{ "name": "N3", "frames": { "swap": 26 } },
-				{ "name": "N4", "frames": { "swap": 35 } }
+				{ "name": "N1", "frames": { "anim": 36, "hit": 23 } },
+				{ "name": "N2", "frames": { "anim": 48, "hit": 29 } },
+				{ "name": "N3", "frames": { "anim": 52, "hit": 26 } },
+				{ "name": "N4", "frames": { "anim": 71, "hit": 35 } }
 			],
 			"tags": [],
 			"sections": [
@@ -52,7 +52,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 42, "Q": 43, "J": 45 },
+			"frames": { "anim": 44, "Q": 43, "J": 45, "swap": 42 },
 			"cooldown": 6,
 			"cooldownStartDelay": 14,
 			"tags": [],
@@ -61,7 +61,7 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "swap": 87 },
+					"frames": { "anim": 110, "D": 109, "J": 109, "swap": 107 },
 					"cooldown": 6.2
 				}
 			],
@@ -79,7 +79,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 64, "D": 64 },
+			"frames": { "anim": 65, "D": 64, "swap": 64 },
 			"cooldown": 20,
 			"energyCost": 80,
 			"tags": ["heal", "summon"],
@@ -92,15 +92,8 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.5,
-								"firstTickDelay": 2.42
-							},
-							"conditions": {
-								"type": "recipientHpBelow",
-								"threshold": 70
-							},
+							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 2.42 },
+							"conditions": { "type": "recipientHpBelow", "threshold": 70 },
 							"scaling": 143.8,
 							"stat": "atk",
 							"flat": 1100.8761
@@ -112,10 +105,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"scaling": 165.9,
 					"stat": "atk",
 					"flat": 1270.2417
@@ -200,9 +190,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk%",
@@ -211,9 +199,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk%",

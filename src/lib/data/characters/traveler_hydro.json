@@ -16,13 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 13, "N": 17, "C": 28 } },
-				{ "name": "N2", "frames": { "swap": 13, "N": 26, "C": 28 } },
-				{ "name": "N3", "frames": { "swap": 16, "N": 32, "C": 36 } },
-				{ "name": "N4", "frames": { "swap": 30, "N": 39, "C": 45 } },
-				{ "name": "N5", "frames": { "swap": 25, "N": 69 } }
+				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
+				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
+				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
+				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
 			],
-			"chargeFrames": { "swap": 44, "N": 55, "E": 37, "Q": 36, "D": 20, "J": 20 },
+			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
 			"caveat": "Not modeled: Foreign Aqualis, unlocked by the True Moon quest — stat bonuses for each element resonated with, plus an empowered Charged Attack that spends or restores HP depending on current HP. These bonuses depend on account progress.",
 			"_curatorNotes": [
 				"Normal/charge frames + scaling shared across all Traveler element variants (Male/Aether).",
@@ -54,13 +54,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 43,
-				"N": 44,
-				"Q": 44,
-				"D": 40,
-				"J": 41
-			},
+			"frames": { "anim": 45, "N": 44, "Q": 44, "D": 40, "J": 41, "swap": 43 },
 			"cooldown": 10,
 			"cooldownStartDelay": 24,
 			"tags": [],
@@ -68,13 +62,7 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": {
-						"swap": 90,
-						"N": 81,
-						"Q": 81,
-						"D": 74,
-						"J": 74
-					}
+					"frames": { "anim": 90, "N": 81, "Q": 81, "D": 74, "J": 74, "swap": 90 }
 				}
 			],
 			"effects": [],
@@ -96,13 +84,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 76,
-				"N": 76,
-				"E": 78,
-				"D": 78,
-				"J": 77
-			},
+			"frames": { "anim": 78, "N": 76, "J": 77, "swap": 76 },
 			"cooldown": 20,
 			"energyCost": 80,
 			"tags": [],
@@ -117,21 +99,14 @@
 							"source": "C2: Trickling Purity",
 							"type": "flat",
 							"value": 3,
-							"conditions": {
-								"type": "constellation",
-								"level": 2
-							}
+							"conditions": { "type": "constellation", "level": 2 }
 						}
 					],
 					"effects": [
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 0.5,
-								"firstTickDelay": 0
-							},
+							"trigger": { "type": "summonTick", "interval": 0.5, "firstTickDelay": 0 },
 							"scaling": 183.36,
 							"stat": "atk",
 							"element": "hydro"
@@ -162,13 +137,8 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"conditions": {
-						"type": "ascension",
-						"min": 1
-					},
+					"trigger": { "type": "manual" },
+					"conditions": { "type": "ascension", "min": 1 },
 					"scaling": 7,
 					"stat": "hp"
 				}
@@ -233,10 +203,7 @@
 				{
 					"type": "shield",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"scaling": 10,
 					"stat": "hp"
 				}
@@ -267,9 +234,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 6,
 					"stat": "hp"
 				}

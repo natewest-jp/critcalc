@@ -18,7 +18,7 @@
  *     - per normal POSITION, per FrameMap KEY: MEDIAN (robust to multi-hit
  *       combos and stance outliers), rounded to the nearest frame.
  *     - normal-hit COUNT: MODAL (most-represented), not max.
- *     - skill / burst cast animation (frames.swap): MEDIAN.
+ *     - skill / burst cast animation (frames.anim): MEDIAN.
  *     - skill / burst cooldown, energy: MODE (most-represented) — discrete
  *       values that cluster, so the mode is the right center.
  *
@@ -47,8 +47,9 @@ const OUT = join(PROJECT_ROOT, 'docs/curation/generic-profile-survey.md');
 
 // On-field auto-attack archetypes (see METHOD).
 const NORMAL_WEAPONS = new Set(['sword', 'polearm', 'catalyst']);
-// FrameMap keys in the order we report them. `swap` is the required fallback.
-const FRAME_KEYS = ['swap', 'N', 'C', 'E', 'Q', 'D', 'J', 'P'];
+// FrameMap keys in the order we report them. ⚓ `anim` is the required fallback since
+// L4b (it was `swap`), and `hit` fills the cancel keys on a normal-style map.
+const FRAME_KEYS = ['anim', 'hit', 'N', 'C', 'E', 'Q', 'D', 'J', 'P', 'swap'];
 // Charged-attack outlier cutoff: discard entries this many MADs from the
 // median full-charge length (catches channeled / unusual charges like
 // Neuvillette's beam). Deliberately tighter than the 8-MAD "review" tier the
@@ -91,8 +92,8 @@ function isCurated(c) {
 	const skill = c.abilities?.find((a) => a.abilityType === 'skill');
 	if (!normal || !skill) return false;
 	if (!normal.hits?.length) return false;
-	if (!isNum(normal.hits[0]?.frames?.swap)) return false;
-	if (!isNum(skill.frames?.swap)) return false;
+	if (!isNum(normal.hits[0]?.frames?.anim)) return false;
+	if (!isNum(skill.frames?.anim)) return false;
 	return true;
 }
 
@@ -139,15 +140,15 @@ for (const c of normalScope) {
 /** Median per (pos,key), with sample size. A key is "recommended" for the
  *  generic FrameMap when it clears a support threshold; `swap` is always in. */
 function frameRow(pos) {
-	const swapN = (posKeyVals.get(`${pos}|swap`) ?? []).length;
-	const threshold = Math.max(3, Math.round(swapN * 0.3));
+	const animN = (posKeyVals.get(`${pos}|anim`) ?? []).length;
+	const threshold = Math.max(3, Math.round(animN * 0.3));
 	const cells = [];
 	const recommended = {};
 	for (const key of FRAME_KEYS) {
 		const vals = posKeyVals.get(`${pos}|${key}`) ?? [];
 		if (!vals.length) continue;
 		const med = Math.round(median(vals));
-		const keep = key === 'swap' || vals.length >= threshold;
+		const keep = key === 'anim' || vals.length >= threshold;
 		cells.push(`${key}=${med}(n${vals.length}${keep ? '' : ' ·below'})`);
 		if (keep) recommended[key] = med;
 	}
@@ -162,22 +163,22 @@ const chargeRaw = [];
 const chargeSkipped = [];
 for (const c of normalScope) {
 	const n = firstOf(c, 'normal');
-	if (n.chargeFrames && isNum(n.chargeFrames.swap)) {
+	if (n.chargeFrames && isNum(n.chargeFrames.anim)) {
 		chargeRaw.push({ id: c.id, frames: n.chargeFrames });
 	} else if (n.chargeHits) {
 		chargeSkipped.push(`${c.id} (chargeHits — bow-style, out of scope)`);
 	}
 }
-// MAD-trim on full-charge length (swap).
-const chargeSwaps = chargeRaw.map((e) => e.frames.swap);
+// MAD-trim on full-charge length (the animation).
+const chargeSwaps = chargeRaw.map((e) => e.frames.anim);
 const chargeMed = median(chargeSwaps);
 const chargeMad = median(chargeSwaps.map((v) => Math.abs(v - chargeMed))) || 0;
 const chargeTrimmed = [];
 const chargeKept = [];
 for (const e of chargeRaw) {
-	const dev = chargeMad > 0 ? Math.abs(e.frames.swap - chargeMed) / chargeMad : 0;
+	const dev = chargeMad > 0 ? Math.abs(e.frames.anim - chargeMed) / chargeMad : 0;
 	if (chargeMad > 0 && dev > CHARGE_MAD_CUTOFF) {
-		chargeTrimmed.push({ id: e.id, swap: e.frames.swap, dev: dev.toFixed(1) });
+		chargeTrimmed.push({ id: e.id, anim: e.frames.anim, dev: dev.toFixed(1) });
 	} else {
 		chargeKept.push(e);
 	}
@@ -190,7 +191,7 @@ for (const key of FRAME_KEYS) {
 	const vals = chargeKept.map((e) => e.frames[key]).filter(isNum);
 	if (!vals.length) continue;
 	const med = Math.round(median(vals));
-	const keep = key === 'swap' || vals.length >= chargeThreshold;
+	const keep = key === 'anim' || vals.length >= chargeThreshold;
 	chargeCells.push(`${key}=${med}(n${vals.length}${keep ? '' : ' ·below'})`);
 	if (keep) chargeRecommended[key] = med;
 }
@@ -209,7 +210,7 @@ function castProfile(type, pop) {
 		const a = firstOf(c, type);
 		if (!a) continue;
 		total++;
-		if (isNum(a.frames?.swap)) casts.push(a.frames.swap);
+		if (isNum(a.frames?.anim)) casts.push(a.frames.anim);
 		if (isNum(a.cooldown) && a.cooldown > 0) cooldowns.push(a.cooldown);
 		if (isNum(a.duration) && a.duration > 0) durations.push(a.duration);
 		if (isNum(a.energyCost) && a.energyCost > 0) energies.push(a.energyCost);
@@ -333,11 +334,11 @@ p(
 			chargeFrames: chargeRecommended,
 			// Durations intentionally omitted — ~85% of skills/bursts are instant.
 			skill: {
-				castSwap: skill.castMedian,
+				castAnim: skill.castMedian,
 				cooldown: modeOf(skill.cooldownHist)
 			},
 			burst: {
-				castSwap: burst.castMedian,
+				castAnim: burst.castMedian,
 				cooldown: modeOf(burst.cooldownHist),
 				energy: modeOf(burst.energyHist)
 			}

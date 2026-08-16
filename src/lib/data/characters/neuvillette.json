@@ -16,38 +16,11 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 19,
-						"N": 29,
-						"C": 20
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 16,
-						"N": 31,
-						"C": 22
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 32,
-						"N": 62
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 36, "hit": 19, "N": 29, "C": 20 } },
+				{ "name": "N2", "frames": { "anim": 33, "hit": 16, "N": 31, "C": 22 } },
+				{ "name": "N3", "frames": { "anim": 62, "hit": 32, "C": 51 } }
 			],
-			"chargeFrames": {
-				"swap": 58,
-				"N": 87,
-				"E": 26,
-				"Q": 27,
-				"D": 25,
-				"J": 26
-			},
+			"chargeFrames": { "anim": 74, "C": 53, "E": 23, "Q": 23, "D": 23, "J": 23, "swap": 50 },
 			"caveat": "Typing 'C' shows the short Charged Attack; holding to charge enters Equitable Judgment, the empowered channeled attack — not modeled, since it feeds on Sourcewater Droplets picked up from the field. Each Droplet he absorbs also restores 16% of his Max HP.",
 			"_curatorNotes": [
 				"Droplet-absorption self-heal (16% MaxHP per Droplet consumed, gcsim charge.go:301-312 consumeDroplet) named in the caveat 2026-07-28 (capability sweep). Not authorable: absorption count is player-dependent field state inside the unmodeled EJ system; a bare heal effect would fake its trigger cadence. The wiki's C4 'heal' credit is this same base mechanic — C4 only spawns a Droplet (cons.go:46-79, 4s ICD), stub-with-caveat stands.",
@@ -83,13 +56,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 29,
-				"N": 42,
-				"Q": 30,
-				"D": 29,
-				"J": 32
-			},
+			"frames": { "anim": 42, "C": 21, "Q": 30, "D": 29, "J": 32, "swap": 29 },
 			"cooldown": 12,
 			"cooldownStartDelay": 20,
 			"tags": ["summon"],
@@ -109,13 +76,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 120,
-				"N": 135,
-				"E": 127,
-				"D": 127,
-				"J": 128
-			},
+			"frames": { "anim": 135, "C": 133, "E": 127, "D": 127, "J": 128, "swap": 120 },
 			"cooldown": 18,
 			"energyCost": 70,
 			"tags": [],
@@ -159,18 +120,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 30,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "stacks",
-						"key": "pastDraconicGlories",
-						"min": 1,
-						"max": 1
-					},
+					"conditions": { "type": "stacks", "key": "pastDraconicGlories", "min": 1, "max": 1 },
 					"source": "character",
 					"stat": "chargeDmgBonus",
 					"value": 10,
@@ -179,18 +132,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 30,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "stacks",
-						"key": "pastDraconicGlories",
-						"min": 2,
-						"max": 2
-					},
+					"conditions": { "type": "stacks", "key": "pastDraconicGlories", "min": 2, "max": 2 },
 					"source": "character",
 					"stat": "chargeDmgBonus",
 					"value": 25,
@@ -199,17 +144,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 30,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "stacks",
-						"key": "pastDraconicGlories",
-						"min": 3
-					},
+					"conditions": { "type": "stacks", "key": "pastDraconicGlories", "min": 3 },
 					"source": "character",
 					"stat": "chargeDmgBonus",
 					"value": 60,
@@ -231,9 +169,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "hydroDmgBonus",
 					"value": {

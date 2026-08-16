@@ -15,55 +15,14 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 10,
-						"N": 15
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 10,
-						"N": 16
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 14,
-						"N": 27
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 21,
-						"N": 31
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 22
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 19, "hit": 10, "N": 15 } },
+				{ "name": "N2", "frames": { "anim": 24, "hit": 10, "N": 16 } },
+				{ "name": "N3", "frames": { "anim": 36, "hit": 14, "N": 27 } },
+				{ "name": "N4", "frames": { "anim": 58, "hit": 21, "N": 31 } },
+				{ "name": "N5", "frames": { "anim": 66, "hit": 22 } }
 			],
-			"chargeFrames": {
-				"swap": 24,
-				"E": 35,
-				"Q": 35,
-				"D": 24,
-				"J": 24
-			},
-			"plungeFrames": {
-				"swap": 60,
-				"N": 57,
-				"E": 57,
-				"Q": 58,
-				"D": 46
-			},
+			"chargeFrames": { "anim": 36, "E": 35, "Q": 35, "D": 24, "J": 24, "swap": 24 },
+			"plungeFrames": { "anim": 75, "N": 59, "E": 59, "Q": 59, "D": 48, "swap": 61 },
 			"_curatorNotes": [
 				"N4 has 2 damage instances at gcsim frames 11 and 21 (attackHitmarks[3] = [11, 21]); authored as single entry using last hitmark (21) per multi-hitmark convention.",
 				"High plunge exists in gcsim (highPlungeFrames: swap 61, hitmark 48) but not represented here; low plunge frames used per convention (swap 60, hitmark 46). Add _curatorNotes entry noting high plunge omission.",
@@ -87,7 +46,8 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"lowPlungeFrames": { "anim": 73, "N": 57, "E": 57, "Q": 58, "D": 46, "swap": 60 }
 		},
 		{
 			"id": "keqing__skill__stellar_restoration",
@@ -95,21 +55,10 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 28,
-				"N": 36,
-				"E": 35,
-				"D": 21,
-				"J": 21
-			},
+			"frames": { "anim": 28, "N": 36, "E": 35, "D": 21, "J": 21, "swap": 28 },
 			"cooldown": 7.5,
 			"cooldownStartDelay": 20,
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 0,
-				"window": 5.33
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 0, "window": 5.33 },
 			"_curatorNotes": [
 				"First cast (stage 0 of the E→recast chain). gcsim explicitly sets skillFrames[ActionSkill] = 35. Sets the 7.5s skill CD and opens the Lightning Stiletto window (gcsim Status.Add(stilettoKey, 5*60+20) = 320f = 5.33s). Authored as chainStage index 0 with window 5.33 — a second E within the window resolves to the recast (keqing__skill__stellar_restoration_recast), mirroring Diluc's E1/E2/E3 chainStage pattern. After the window the chain resets and E is a fresh first cast (still gated by the 7.5s CD). Previously the recast was an unreachable input-less variant on this ability; converted 2026-07-15.",
 				"Hold (first cast): gcsim uses identical skillFrames for tap and hold first cast — hold only changes throw direction, not animation timing; no separate hold frames authored.",
@@ -125,17 +74,8 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 1
-			},
-			"frames": {
-				"swap": 42,
-				"N": 42,
-				"D": 16,
-				"J": 16
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 1 },
+			"frames": { "anim": 42, "N": 42, "D": 16, "J": 16, "swap": 42 },
 			"cooldown": 0,
 			"tags": [],
 			"effects": [],
@@ -151,11 +91,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 122,
-				"N": 123,
-				"E": 123
-			},
+			"frames": { "anim": 124, "N": 123, "E": 123, "swap": 122 },
 			"cooldown": 12,
 			"cooldownStartDelay": 52,
 			"tags": [],
@@ -186,10 +122,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
@@ -214,9 +147,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 50,
 					"stat": "atk",
 					"element": "electro"
@@ -270,9 +201,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",

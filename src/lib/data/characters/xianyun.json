@@ -16,41 +16,20 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 12,
-						"N": 17
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 14,
-						"N": 24
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 34,
-						"N": 40
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 38,
-						"N": 91
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 34, "hit": 12, "N": 17, "C": 17 } },
+				{ "name": "N2", "frames": { "anim": 38, "hit": 14, "N": 24, "C": 23 } },
+				{ "name": "N3", "frames": { "anim": 65, "hit": 34, "N": 40, "C": 40 } },
+				{ "name": "N4", "frames": { "anim": 93, "hit": 38, "N": 91 } }
 			],
 			"chargeFrames": {
-				"swap": 56,
+				"anim": 73,
+				"N": 62,
+				"C": 61,
 				"E": 62,
 				"Q": 61,
 				"D": 56,
-				"J": 56
+				"J": 56,
+				"swap": 56
 			},
 			"_curatorNotes": [
 				"N4 swap=38 reflects attackHitmarks[3]; gcsim's attackFrames[3] passes attackHitmarks[2]=34 into InitNormalCancelSlice but then overrides ActionSwap to attackHitmarks[3]=38, so the final value is correct. (Same shape of hitmark-index mismatch as albedo's N5 — gcsim authoring quirk.)",
@@ -82,19 +61,8 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 0,
-				"window": 3.67
-			},
-			"frames": {
-				"swap": 36,
-				"N": 221,
-				"Q": 40,
-				"D": 39,
-				"J": 41
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 0, "window": 3.67 },
+			"frames": { "anim": 244, "N": 221, "E": 14, "Q": 40, "D": 39, "J": 41, "P": 14, "swap": 36 },
 			"cooldown": 12,
 			"tags": [],
 			"chargeModifiers": [
@@ -102,10 +70,7 @@
 					"source": "C1: Purifying Wind",
 					"type": "flat",
 					"value": 1,
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					}
+					"conditions": { "type": "constellation", "level": 1 }
 				}
 			],
 			"effects": [],
@@ -124,19 +89,8 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 1,
-				"window": 3.97
-			},
-			"frames": {
-				"swap": 59,
-				"N": 243,
-				"Q": 60,
-				"D": 60,
-				"J": 60
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 1, "window": 3.97 },
+			"frames": { "anim": 59, "N": 243, "Q": 60, "D": 60, "J": 60, "swap": 59 },
 			"cooldown": 0,
 			"tags": [],
 			"effects": [],
@@ -152,18 +106,8 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 2
-			},
-			"frames": {
-				"swap": 126,
-				"N": 178,
-				"Q": 126,
-				"D": 130,
-				"J": 129
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 2 },
+			"frames": { "anim": 126, "N": 178, "Q": 126, "D": 130, "J": 129, "swap": 126 },
 			"cooldown": 0,
 			"tags": [],
 			"effects": [],
@@ -178,13 +122,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 99,
-				"N": 101,
-				"E": 101,
-				"D": 101,
-				"J": 103
-			},
+			"frames": { "anim": 103, "N": 101, "C": 102, "E": 101, "D": 101, "swap": 99 },
 			"cooldown": 18,
 			"tags": ["heal", "summon"],
 			"energyCost": 70,
@@ -198,11 +136,7 @@
 						{
 							"type": "heal",
 							"target": "team",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2.5,
-								"firstTickDelay": 0.07
-							},
+							"trigger": { "type": "summonTick", "interval": 2.5, "firstTickDelay": 0.07 },
 							"scaling": 77.4,
 							"stat": "atk",
 							"flat": 593
@@ -214,10 +148,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"scaling": 165.9,
 					"stat": "atk",
 					"flat": 1271
@@ -247,10 +178,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -272,35 +200,16 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 16,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "state",
-						"state": "duringSummon"
-					},
+					"conditions": { "type": "state", "state": "duringSummon" },
 					"source": "character",
 					"stat": "plungeFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 200,
-						"cap": 9000
-					},
+					"value": { "type": "scaling", "stat": "atk", "ratio": 200, "cap": 9000 },
 					"constellationScaling": {
-						"conditions": {
-							"type": "constellation",
-							"level": 2
-						},
-						"value": {
-							"type": "scaling",
-							"stat": "atk",
-							"ratio": 400,
-							"cap": 18000
-						}
+						"conditions": { "type": "constellation", "level": 2 },
+						"value": { "type": "scaling", "stat": "atk", "ratio": 400, "cap": 18000 }
 					},
 					"snapshottable": false
 				}
@@ -332,16 +241,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 2
-					},
+					"conditions": { "type": "constellation", "level": 2 },
 					"source": "character",
 					"stat": "atk%",
 					"value": 20,
@@ -370,15 +273,9 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"procCooldown": 5,
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"scaling": 150,
 					"stat": "atk"
 				}

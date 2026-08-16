@@ -15,45 +15,12 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 15,
-						"N": 31,
-						"C": 34
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 12,
-						"N": 23,
-						"C": 28
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 21,
-						"N": 36,
-						"C": 45
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 27,
-						"N": 53,
-						"C": 58
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 34, "hit": 15, "N": 31 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 12, "N": 23 } },
+				{ "name": "N3", "frames": { "anim": 48, "hit": 21, "N": 36, "C": 45 } },
+				{ "name": "N4", "frames": { "anim": 58, "hit": 27, "N": 53 } }
 			],
-			"chargeFrames": {
-				"swap": 33,
-				"N": 37,
-				"C": 47,
-				"E": 47
-			},
+			"chargeFrames": { "anim": 33, "N": 37, "C": 47, "E": 47, "swap": 33 },
 			"sections": [
 				{
 					"type": "normal",
@@ -78,13 +45,7 @@
 			"name": "Salon Solitaire",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": {
-				"swap": 53,
-				"N": 53,
-				"Q": 54,
-				"D": 18,
-				"J": 18
-			},
+			"frames": { "anim": 54, "N": 53, "C": 53, "D": 18, "J": 18, "swap": 53 },
 			"cooldown": 20,
 			"summons": [
 				{
@@ -96,11 +57,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 3.369,
-								"firstTickDelay": 1.908
-							},
+							"trigger": { "type": "summonTick", "interval": 3.369, "firstTickDelay": 1.908 },
 							"scaling": 10.73,
 							"stat": "hp",
 							"element": "hydro",
@@ -111,11 +68,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.626,
-								"firstTickDelay": 1.539
-							},
+							"trigger": { "type": "summonTick", "interval": 1.626, "firstTickDelay": 1.539 },
 							"scaling": 5.82,
 							"stat": "hp",
 							"element": "hydro",
@@ -126,11 +79,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 5.231,
-								"firstTickDelay": 1.877
-							},
+							"trigger": { "type": "summonTick", "interval": 5.231, "firstTickDelay": 1.877 },
 							"scaling": 14.92,
 							"stat": "hp",
 							"element": "hydro",
@@ -149,11 +98,7 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2,
-								"firstTickDelay": 1.05
-							},
+							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 1.05 },
 							"scaling": 8.64,
 							"stat": "hp",
 							"flat": 1016.97,
@@ -183,19 +128,14 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",
 					"value": 0,
 					"snapshottable": false,
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					},
+					"conditions": { "type": "constellation", "level": 6 },
 					"_curatorNotes": [
 						"C6 Center of Attention: Furina's NA/CA/plunge gain Hydro infusion + 18% MaxHP flat DMG bonus (not modelable as allDmgBonus — HP-scaling flat). Ousia: heals team 4% MaxHP per hit every 1s for 2.9s (up to 6 triggers). Pneuma: +25% MaxHP DMG per hit + 1% current HP drain from team (up to 6 triggers). Requires HP-scaling flat damage type."
 					]
@@ -209,13 +149,7 @@
 			"name": "Let the People Rejoice",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": {
-				"swap": 111,
-				"N": 113,
-				"E": 114,
-				"D": 115,
-				"J": 115
-			},
+			"frames": { "anim": 121, "N": 113, "C": 113, "E": 114, "D": 115, "J": 115, "swap": 111 },
 			"cooldown": 15,
 			"duration": 18,
 			"tags": [],
@@ -224,9 +158,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 18,
 					"durationType": "fixed",
 					"source": "burst",
@@ -240,9 +172,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 18,
 					"durationType": "fixed",
 					"source": "burst",
@@ -271,9 +201,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 2,
 					"stat": "hp"
 				}

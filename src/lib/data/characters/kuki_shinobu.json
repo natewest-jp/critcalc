@@ -16,43 +16,12 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 12,
-						"N": 19,
-						"C": 23
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 13,
-						"N": 17,
-						"C": 27
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 13,
-						"N": 42,
-						"C": 50
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 23,
-						"N": 57
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 23, "hit": 12, "N": 19 } },
+				{ "name": "N2", "frames": { "anim": 27, "hit": 13, "N": 17 } },
+				{ "name": "N3", "frames": { "anim": 50, "hit": 13, "N": 42 } },
+				{ "name": "N4", "frames": { "anim": 57, "hit": 23 } }
 			],
-			"chargeFrames": {
-				"swap": 29,
-				"D": 31,
-				"J": 31
-			},
+			"chargeFrames": { "anim": 35, "D": 31, "J": 31, "swap": 29 },
 			"sections": [
 				{
 					"type": "normal",
@@ -82,12 +51,7 @@
 			"tags": ["heal"],
 			"effects": [],
 			"behavior": "instant",
-			"frames": {
-				"swap": 50,
-				"N": 50,
-				"D": 12,
-				"J": 11
-			},
+			"frames": { "anim": 52, "N": 50, "D": 12, "J": 11, "swap": 50 },
 			"summons": [
 				{
 					"label": "Grass Ring of Sanctification",
@@ -100,20 +64,14 @@
 							"source": "C2: To Forsake Fortune",
 							"type": "flat",
 							"value": 3,
-							"conditions": {
-								"type": "constellation",
-								"level": 2
-							}
+							"conditions": { "type": "constellation", "level": 2 }
 						}
 					],
 					"effects": [
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.5
-							},
+							"trigger": { "type": "summonTick", "interval": 1.5 },
 							"scaling": 5.4,
 							"stat": "hp",
 							"flat": 635.608,
@@ -122,10 +80,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.5
-							},
+							"trigger": { "type": "summonTick", "interval": 1.5 },
 							"scaling": 45.43,
 							"stat": "atk",
 							"element": "electro",
@@ -151,11 +106,7 @@
 			"energyCost": 60,
 			"effects": [],
 			"behavior": "instant",
-			"frames": {
-				"swap": 62,
-				"N": 62,
-				"E": 62
-			},
+			"frames": { "anim": 63, "N": 62, "E": 62, "swap": 62 },
 			"summons": [
 				{
 					"label": "Gyoei Narukami Kariyama Rite",
@@ -189,18 +140,14 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 75,
 					"stat": "em"
 				},
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 25,
 					"stat": "em"
 				}
@@ -242,9 +189,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 9.7,
 					"stat": "hp",
 					"element": "electro"
@@ -271,9 +216,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",

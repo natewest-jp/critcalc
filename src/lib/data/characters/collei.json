@@ -16,44 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 16,
-						"N": 24
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 14,
-						"N": 25
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 22,
-						"N": 43
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 32,
-						"N": 65
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 24, "hit": 16 } },
+				{ "name": "N2", "frames": { "anim": 25, "hit": 14 } },
+				{ "name": "N3", "frames": { "anim": 43, "hit": 22 } },
+				{ "name": "N4", "frames": { "anim": 65, "hit": 32 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 96,
-						"D": 86,
-						"J": 86
-					}
-				}
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 96, "D": 86, "J": 86 } }
 			],
 			"_curatorNotes": ["No plunge.go in gcsim character dir — plungeFrames not available."],
 			"sections": [
@@ -81,12 +50,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 66,
-				"N": 65,
-				"D": 54,
-				"J": 53
-			},
+			"frames": { "anim": 68, "N": 65, "E": 67, "D": 54, "J": 53, "swap": 66 },
 			"cooldown": 12,
 			"cooldownStartDelay": 20,
 			"tags": [],
@@ -99,10 +63,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 66,
-				"N": 65
-			},
+			"frames": { "anim": 67, "N": 65, "swap": 66 },
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
@@ -149,10 +110,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "burning"
-					},
+					"trigger": { "type": "onReaction", "reaction": "burning" },
 					"duration": 3,
 					"scaling": 40,
 					"stat": "atk",
@@ -191,9 +149,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 3,
 					"scaling": 40,
 					"stat": "atk",
@@ -222,9 +178,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -254,9 +208,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 200,
 					"stat": "atk",
 					"element": "dendro",

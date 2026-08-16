@@ -16,31 +16,12 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": { "swap": 24 }
-				},
-				{
-					"name": "N2",
-					"frames": { "swap": 39 }
-				},
-				{
-					"name": "N3",
-					"frames": { "swap": 26 }
-				},
-				{
-					"name": "N4",
-					"frames": { "swap": 49 }
-				}
+				{ "name": "N1", "frames": { "anim": 32, "hit": 24 } },
+				{ "name": "N2", "frames": { "anim": 46, "hit": 39 } },
+				{ "name": "N3", "frames": { "anim": 34, "hit": 26 } },
+				{ "name": "N4", "frames": { "anim": 99, "hit": 49 } }
 			],
-			"plungeFrames": {
-				"swap": 59,
-				"N": 49,
-				"E": 50,
-				"Q": 49,
-				"D": 36,
-				"J": 77
-			},
+			"plungeFrames": { "anim": 81, "N": 51, "E": 53, "Q": 51, "D": 40, "swap": 63 },
 			"sections": [
 				{
 					"type": "normal",
@@ -64,7 +45,8 @@
 				"chargeFrames not available: Diluc's charged attack is a stamina-drain spinning slash (claymore type); no explicit chargeFrames slice in gcsim character dir. Reviewer to source from KQM or game testing.",
 				"High plunge variant exists in gcsim (highPlungeFrames) but is not represented per recipe — low plunge is the standard rotation animation. plungeFrames sourced from lowPlungeFrames.",
 				"gcsim restricts plunge invocation to AirborneXianyun-launched only — sim limitation, not in-game one. In-game any post-jump plunge works."
-			]
+			],
+			"lowPlungeFrames": { "anim": 78, "N": 49, "E": 50, "Q": 49, "D": 36, "J": 77, "swap": 59 }
 		},
 		{
 			"id": "diluc__skill__searing_onslaught_e1",
@@ -72,18 +54,8 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 0,
-				"window": 4
-			},
-			"frames": {
-				"swap": 30,
-				"E": 31,
-				"D": 24,
-				"J": 24
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 0, "window": 4 },
+			"frames": { "anim": 32, "E": 31, "D": 24, "J": 24, "swap": 30 },
 			"cooldown": 10,
 			"tags": [],
 			"effects": [],
@@ -102,19 +74,8 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 1,
-				"window": 4
-			},
-			"frames": {
-				"swap": 36,
-				"E": 37,
-				"Q": 37,
-				"D": 28,
-				"J": 31
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 1, "window": 4 },
+			"frames": { "anim": 38, "E": 37, "Q": 37, "D": 28, "J": 31, "swap": 36 },
 			"cooldown": 0,
 			"tags": [],
 			"effects": [],
@@ -129,19 +90,8 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 2
-			},
-			"frames": {
-				"swap": 66,
-				"N": 58,
-				"E": 57,
-				"Q": 57,
-				"D": 47,
-				"J": 48
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 2 },
+			"frames": { "anim": 66, "N": 58, "E": 57, "Q": 57, "D": 47, "J": 48 },
 			"cooldown": 0,
 			"tags": [],
 			"effects": [],
@@ -157,24 +107,14 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 138,
-				"N": 139,
-				"E": 139,
-				"J": 139
-			},
+			"frames": { "anim": 140, "N": 139, "E": 139, "J": 139, "swap": 138 },
 			"cooldown": 12,
 			"cooldownStartDelay": 14,
 			"tags": ["summon"],
 			"energyCost": 40,
 			"effects": [],
 			"summons": [
-				{
-					"label": "Phoenix",
-					"duration": 1.7,
-					"spawnsAt": 100,
-					"mobility": "stationary"
-				}
+				{ "label": "Phoenix", "duration": 1.7, "spawnsAt": 100, "mobility": "stationary" }
 			],
 			"description": "Releases intense flames to knock back nearby opponents, dealing Pyro DMG. The flames then converge into the weapon, summoning a Phoenix that flies forward and deals massive Pyro DMG to all opponents in its path. The Phoenix explodes upon reaching its destination, causing a large amount of AoE Pyro DMG.\nThe searing flames that run down his blade cause it to be infused with Pyro.",
 			"_curatorNotes": [
@@ -205,10 +145,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",

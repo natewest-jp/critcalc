@@ -15,64 +15,17 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "N6", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 11,
-						"N": 18,
-						"C": 30
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 9,
-						"N": 13,
-						"C": 30
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 8,
-						"N": 19,
-						"C": 28
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 16,
-						"N": 34,
-						"C": 33
-					}
-				},
+				{ "name": "N1", "frames": { "anim": 30, "hit": 11, "N": 18 } },
+				{ "name": "N2", "frames": { "anim": 30, "hit": 9, "N": 13 } },
+				{ "name": "N3", "frames": { "anim": 28, "hit": 8, "N": 19 } },
+				{ "name": "N4", "frames": { "anim": 34, "hit": 16, "C": 33 } },
 				{
 					"name": "N5",
-					"frames": {
-						"swap": 4,
-						"N": 27,
-						"C": 21,
-						"D": 5,
-						"J": 5
-					}
+					"frames": { "anim": 31, "N": 27, "E": 5, "Q": 5, "D": 5, "J": 5, "swap": 4 }
 				},
-				{
-					"name": "N6",
-					"frames": {
-						"swap": 29,
-						"N": 54
-					}
-				}
+				{ "name": "N6", "frames": { "anim": 54, "hit": 29 } }
 			],
-			"chargeFrames": {
-				"swap": 31,
-				"N": 47,
-				"E": 33,
-				"Q": 33,
-				"D": 4,
-				"J": 4
-			},
+			"chargeFrames": { "anim": 47, "E": 33, "Q": 33, "D": 4, "J": 4, "swap": 31 },
 			"sections": [
 				{
 					"type": "normal",
@@ -97,11 +50,7 @@
 			"name": "Dominus Lapidis",
 			"input": ["E", "pE", "tE"],
 			"abilityType": "skill",
-			"frames": {
-				"swap": 37,
-				"D": 23,
-				"J": 23
-			},
+			"frames": { "anim": 38, "N": 37, "D": 23, "J": 23, "swap": 37 },
 			"cooldown": 4,
 			"summons": [
 				{
@@ -112,10 +61,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2
-							},
+							"trigger": { "type": "summonTick", "interval": 2 },
 							"scaling": 57.6,
 							"stat": "atk",
 							"element": "geo"
@@ -127,11 +73,7 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": {
-						"swap": 96,
-						"D": 55,
-						"J": 55
-					},
+					"frames": { "anim": 96, "D": 55, "J": 55 },
 					"cooldown": 12,
 					"tags": ["shield", "summon"],
 					"summons": [],
@@ -139,10 +81,7 @@
 						{
 							"type": "shield",
 							"target": "active",
-							"trigger": {
-								"type": "onCast",
-								"ability": "skill"
-							},
+							"trigger": { "type": "onCast", "ability": "skill" },
 							"duration": 20,
 							"durationType": "refresh",
 							"scaling": 23.04,
@@ -153,20 +92,14 @@
 						{
 							"type": "resShred",
 							"target": "enemy",
-							"trigger": {
-								"type": "onCast",
-								"ability": "skill"
-							},
+							"trigger": { "type": "onCast", "ability": "skill" },
 							"duration": 20,
 							"value": -20
 						},
 						{
 							"type": "resShred",
 							"target": "enemy",
-							"trigger": {
-								"type": "onCast",
-								"ability": "skill"
-							},
+							"trigger": { "type": "onCast", "ability": "skill" },
 							"duration": 20,
 							"element": "physical",
 							"value": -20
@@ -196,12 +129,7 @@
 			"name": "Planet Befall",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": {
-				"swap": 138,
-				"N": 139,
-				"D": 123,
-				"J": 123
-			},
+			"frames": { "anim": 139, "D": 123, "J": 123, "swap": 138 },
 			"cooldown": 12,
 			"duration": 4,
 			"durationModifiers": [
@@ -209,10 +137,7 @@
 					"source": "C4: Topaz, Unbreakable and Fearless",
 					"type": "flat",
 					"value": 2,
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					}
+					"conditions": { "type": "constellation", "level": 4 }
 				}
 			],
 			"tags": [],
@@ -240,76 +165,46 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "hp",
-						"ratio": 1.39
-					},
+					"value": { "type": "scaling", "stat": "hp", "ratio": 1.39 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "chargeFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "hp",
-						"ratio": 1.39
-					},
+					"value": { "type": "scaling", "stat": "hp", "ratio": 1.39 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "plungeFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "hp",
-						"ratio": 1.39
-					},
+					"value": { "type": "scaling", "stat": "hp", "ratio": 1.39 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "skillFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "hp",
-						"ratio": 1.9
-					},
+					"value": { "type": "scaling", "stat": "hp", "ratio": 1.9 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "burstFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "hp",
-						"ratio": 33
-					},
+					"value": { "type": "scaling", "stat": "hp", "ratio": 33 },
 					"snapshottable": false
 				}
 			],

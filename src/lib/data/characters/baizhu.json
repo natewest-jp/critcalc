@@ -16,44 +16,20 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 17,
-						"N": 22,
-						"C": 19
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 25,
-						"N": 33,
-						"C": 31
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 35,
-						"N": 40,
-						"C": 39
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 30
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 33, "hit": 17, "N": 22, "C": 19 } },
+				{ "name": "N2", "frames": { "anim": 39, "hit": 25, "N": 33, "C": 31 } },
+				{ "name": "N3", "frames": { "anim": 46, "hit": 35, "N": 40, "C": 39 } },
+				{ "name": "N4", "frames": { "anim": 67, "hit": 30, "C": 57 } }
 			],
 			"chargeFrames": {
-				"swap": 68,
+				"anim": 75,
 				"N": 70,
+				"C": 70,
 				"E": 69,
 				"Q": 70,
 				"D": 53,
-				"J": 53
+				"J": 53,
+				"swap": 68
 			},
 			"_curatorNotes": ["No plunge.go in gcsim character dir — plungeFrames not available."],
 			"sections": [
@@ -82,22 +58,13 @@
 			"abilityType": "skill",
 			"cooldown": 10,
 			"cooldownStartDelay": 23,
-			"frames": {
-				"swap": 28,
-				"E": 40,
-				"Q": 30,
-				"D": 29,
-				"J": 29
-			},
+			"frames": { "anim": 49, "C": 48, "E": 40, "Q": 30, "D": 29, "J": 29, "swap": 28 },
 			"chargeModifiers": [
 				{
 					"source": "C1: Attentive Observation",
 					"type": "flat",
 					"value": 1,
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					}
+					"conditions": { "type": "constellation", "level": 1 }
 				}
 			],
 			"tags": ["heal"],
@@ -105,10 +72,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"scaling": 14.4,
 					"stat": "hp",
 					"flat": 1694.9546
@@ -128,12 +92,7 @@
 			"abilityType": "burst",
 			"cooldown": 20,
 			"energyCost": 80,
-			"frames": {
-				"swap": 102,
-				"N": 104,
-				"E": 104,
-				"J": 104
-			},
+			"frames": { "anim": 105, "N": 104, "E": 104, "J": 104, "swap": 102 },
 			"summons": [
 				{
 					"label": "Pulsing Clarity",
@@ -142,11 +101,7 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2.43,
-								"firstTickDelay": 3.72
-							},
+							"trigger": { "type": "summonTick", "interval": 2.43, "firstTickDelay": 3.72 },
 							"scaling": 9.36,
 							"stat": "hp",
 							"flat": 1101.7205
@@ -165,10 +120,7 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 14,
 					"durationType": "fixed",
 					"scaling": 1.44,
@@ -194,9 +146,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "dendroDmgBonus",
 					"value": 25,
@@ -237,9 +187,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 250,
 					"stat": "atk",
 					"element": "dendro"
@@ -266,10 +214,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -299,9 +244,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 8,
 					"stat": "hp"
 				}

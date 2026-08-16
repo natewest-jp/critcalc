@@ -22,18 +22,12 @@
 				"plungeFrames: LowPlungeAttack and HighPlungeAttack in gcsim only accept AirborneXianyun state — standard plunge not modeled. Reviewer to verify in-game plunge availability independently of Xianyun."
 			],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 27, "N": 35 } },
-				{ "name": "N2", "frames": { "swap": 22, "N": 35 } },
-				{ "name": "N3", "frames": { "swap": 33, "N": 42 } },
-				{ "name": "N4", "frames": { "swap": 40, "N": 67 } }
+				{ "name": "N1", "frames": { "anim": 44, "hit": 27, "N": 35 } },
+				{ "name": "N2", "frames": { "anim": 45, "hit": 22, "N": 35 } },
+				{ "name": "N3", "frames": { "anim": 56, "hit": 33, "N": 42 } },
+				{ "name": "N4", "frames": { "anim": 81, "hit": 40, "N": 67 } }
 			],
-			"plungeFrames": {
-				"swap": 65,
-				"N": 54,
-				"E": 54,
-				"Q": 55,
-				"D": 41
-			},
+			"plungeFrames": { "anim": 84, "N": 54, "E": 53, "Q": 54, "D": 41, "J": 83, "swap": 64 },
 			"sections": [
 				{
 					"type": "normal",
@@ -51,7 +45,8 @@
 					"description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nUses Mehrak to perform up to 4 consecutive attacks.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nUses Mehrak to perform up to 4 consecutive attacks.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"lowPlungeFrames": { "anim": 85, "N": 54, "E": 54, "Q": 55, "D": 41, "swap": 65 }
 		},
 		{
 			"id": "kaveh__skill__artistic_ingenuity",
@@ -59,13 +54,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 44,
-				"N": 45,
-				"Q": 45,
-				"D": 34,
-				"J": 34
-			},
+			"frames": { "anim": 52, "N": 45, "E": 45, "Q": 45, "D": 34, "J": 34, "swap": 44 },
 			"cooldown": 6,
 			"cooldownStartDelay": 33,
 			"tags": [],
@@ -78,12 +67,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 42,
-				"N": 48,
-				"D": 44,
-				"J": 44
-			},
+			"frames": { "anim": 49, "N": 48, "D": 44, "J": 44, "swap": 42 },
 			"cooldown": 20,
 			"duration": 12,
 			"tags": [],
@@ -108,9 +92,7 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 300,
 					"stat": "em"
 				}
@@ -128,9 +110,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -189,9 +169,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 61.8,
 					"stat": "atk",
 					"element": "dendro"

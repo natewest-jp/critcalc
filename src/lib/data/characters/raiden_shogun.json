@@ -16,61 +16,14 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 14,
-						"N": 18,
-						"C": 24
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 9,
-						"N": 13,
-						"C": 26
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 14,
-						"N": 26,
-						"C": 36
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 27,
-						"N": 41,
-						"C": 57
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 34,
-						"N": 50
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 24, "hit": 14, "N": 18 } },
+				{ "name": "N2", "frames": { "anim": 26, "hit": 9, "N": 13 } },
+				{ "name": "N3", "frames": { "anim": 36, "hit": 14, "N": 26 } },
+				{ "name": "N4", "frames": { "anim": 57, "hit": 27, "N": 41 } },
+				{ "name": "N5", "frames": { "anim": 50, "hit": 34 } }
 			],
-			"chargeFrames": {
-				"swap": 36,
-				"E": 37,
-				"Q": 37,
-				"N": 37,
-				"D": 22,
-				"J": 22
-			},
-			"plungeFrames": {
-				"swap": 62,
-				"E": 59,
-				"N": 60,
-				"D": 80,
-				"J": 80
-			},
+			"chargeFrames": { "anim": 37, "D": 22, "J": 22, "swap": 36 },
+			"plungeFrames": { "anim": 99, "N": 61, "E": 60, "Q": 62, "D": 84, "J": 84, "swap": 65 },
 			"sections": [
 				{
 					"type": "normal",
@@ -88,99 +41,41 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"lowPlungeFrames": { "anim": 96, "N": 60, "E": 59, "Q": 60, "D": 80, "J": 80, "swap": 62 }
 		},
 		{
 			"id": "raiden_shogun__normal__musou_isshin",
 			"name": "Musou Isshin",
 			"input": ["N1", "N2", "N3", "N4", "N5", "C"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"infusion": "electro",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 12,
-						"N": 19,
-						"C": 24
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 13,
-						"N": 16,
-						"C": 26
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 11,
-						"N": 16,
-						"C": 34
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 33,
-						"N": 44,
-						"C": 67
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 33,
-						"N": 59
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 21, "hit": 12, "N": 19 } },
+				{ "name": "N2", "frames": { "anim": 26, "hit": 13, "N": 16 } },
+				{ "name": "N3", "frames": { "anim": 34, "hit": 11, "N": 16 } },
+				{ "name": "N4", "frames": { "anim": 67, "hit": 33, "N": 44 } },
+				{ "name": "N5", "frames": { "anim": 59, "hit": 33 } }
 			],
-			"chargeFrames": {
-				"swap": 56,
-				"E": 56,
-				"N": 56,
-				"D": 34,
-				"J": 34
-			},
-			"plungeFrames": {
-				"swap": 60,
-				"N": 58,
-				"D": 78,
-				"J": 81
-			},
+			"chargeFrames": { "anim": 56, "D": 32, "J": 32 },
+			"plungeFrames": { "anim": 88, "N": 60, "E": 60, "Q": 60, "D": 83, "J": 81, "swap": 61 },
 			"caveat": "Plunging in this stance is only possible with Xianyun on the team; the plunge frames shown assume that setup.",
 			"description": "While in the Musou Isshin state, the Raiden Shogun wields her tachi in battle. Normal, Charged, and Plunging Attacks are infused with Electro DMG (cannot be overridden) and count as Elemental Burst DMG.",
 			"_curatorNotes": [
 				"[A7] Stored plunge frames are the low-plunge (Xianyun-assisted) values. Unused high-plunge: hitmark 51f (48+3), swap 61."
-			]
+			],
+			"lowPlungeFrames": { "anim": 85, "N": 58, "E": 59, "Q": 59, "D": 78, "J": 81, "swap": 60 }
 		},
 		{
 			"id": "raiden_shogun__skill__transcendence_baleful_omen",
 			"name": "Transcendence: Baleful Omen",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": {
-				"swap": 36,
-				"Q": 37,
-				"N": 51,
-				"D": 17,
-				"J": 17
-			},
+			"frames": { "anim": 37, "D": 17, "J": 17, "swap": 36 },
 			"cooldown": 10,
 			"cooldownStartDelay": 6,
-			"summons": [
-				{
-					"label": "Eye of Stormy Judgment",
-					"duration": 25,
-					"mobility": "follows"
-				}
-			],
+			"summons": [{ "label": "Eye of Stormy Judgment", "duration": 25, "mobility": "follows" }],
 			"tags": ["coordinatedAttack"],
 			"caveat": "The burst DMG bonus scales with each member's own burst energy cost, so it differs per party member; the timeline shows the buff window but not a single value.",
 			"_curatorNotes": [
@@ -191,17 +86,12 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 25,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "burstDmgBonus",
-					"value": {
-						"type": "unknown",
-						"description": "≈0.30% per energy cost (T10)"
-					},
+					"value": { "type": "unknown", "description": "≈0.30% per energy cost (T10)" },
 					"snapshottable": false
 				}
 			],
@@ -214,13 +104,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"terminatesOnSwap": true,
-			"frames": {
-				"swap": 111,
-				"N": 111,
-				"E": 111,
-				"D": 111,
-				"J": 112
-			},
+			"frames": { "anim": 112, "N": 111, "E": 111, "D": 111, "swap": 110 },
 			"cooldown": 18,
 			"duration": 7,
 			"energyCost": 90,
@@ -244,15 +128,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "electroDmgBonus",
-					"value": {
-						"type": "unknown",
-						"description": "0.4% per 1% ER above 100%"
-					},
+					"value": { "type": "unknown", "description": "0.4% per 1% ER above 100%" },
 					"snapshottable": false
 				}
 			],
@@ -291,20 +170,14 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": {
-						"type": "afterDuration",
-						"ability": "burst"
-					},
+					"trigger": { "type": "afterDuration", "ability": "burst" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk%",
 					"value": 30,
 					"snapshottable": false,
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					}
+					"conditions": { "type": "constellation", "level": 4 }
 				}
 			]
 		},

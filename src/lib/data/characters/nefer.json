@@ -17,46 +17,12 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 10,
-						"N": 15,
-						"C": 40
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 8,
-						"N": 20,
-						"C": 38
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 26,
-						"N": 49,
-						"C": 62
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 22,
-						"N": 51
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 10, "N": 15, "C": 40, "swap": 10 } },
+				{ "name": "N2", "frames": { "anim": 8, "N": 20, "C": 38, "swap": 8 } },
+				{ "name": "N3", "frames": { "anim": 26, "N": 49, "C": 62, "swap": 26 } },
+				{ "name": "N4", "frames": { "anim": 22, "N": 51, "swap": 22 } }
 			],
-			"chargeFrames": {
-				"swap": 28,
-				"N": 29,
-				"E": 48,
-				"Q": 48,
-				"D": 48,
-				"J": 48
-			},
+			"chargeFrames": { "anim": 28, "N": 29, "E": 48, "Q": 48, "D": 48, "J": 48, "swap": 28 },
 			"caveat": "Only the basic Charged Attack is shown. Not modeled: the Slither movement state, and the multi-hit Phantasm Performance CA that replaces it in Shadow Dance while Verdant Dew is available.",
 			"_curatorNotes": [
 				"Catalyst normals: 4-hit Dendro chain. attackHitmarks=[10,8,26,22]; N3 is two-hit (10f and 26f QueueAttacks); attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack overrides: N1=15, N2=20, N3=49, N4=51 (final N4 same as animLen).",
@@ -93,13 +59,7 @@
 			"behavior": "stance",
 			"duration": 9,
 			"terminatesOnSwap": true,
-			"frames": {
-				"swap": 25,
-				"N": 26,
-				"Q": 38,
-				"D": 38,
-				"J": 38
-			},
+			"frames": { "anim": 25, "N": 26, "Q": 38, "D": 38, "J": 38, "swap": 25 },
 			"cooldown": 9,
 			"cooldownStartDelay": 22,
 			"charges": 2,
@@ -121,13 +81,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 118,
-				"N": 119,
-				"E": 119,
-				"D": 120,
-				"J": 120
-			},
+			"frames": { "anim": 118, "N": 119, "E": 119, "D": 120, "J": 120, "swap": 118 },
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": [],
@@ -202,16 +156,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 13.5,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"element": "dendro",
 					"value": -20
 				}
@@ -238,9 +186,7 @@
 				{
 					"type": "elevate",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"conditions": {
 						"type": "all",
 						"conditions": [

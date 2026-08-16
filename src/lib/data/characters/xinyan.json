@@ -17,38 +17,12 @@
 			"duration": 5,
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 25
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 27
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 47
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 35
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 33, "hit": 25 } },
+				{ "name": "N2", "frames": { "anim": 39, "hit": 27 } },
+				{ "name": "N3", "frames": { "anim": 64, "hit": 47 } },
+				{ "name": "N4", "frames": { "anim": 94, "hit": 35 } }
 			],
-			"plungeFrames": {
-				"swap": 64,
-				"N": 51,
-				"E": 51,
-				"Q": 51,
-				"D": 38
-			},
+			"plungeFrames": { "anim": 82, "N": 53, "C": 53, "E": 52, "Q": 53, "D": 40, "swap": 66 },
 			"_curatorNotes": [
 				"N1–N4 frames: gcsim uses InitNormalCancelSlice(hitmark, animation) with no explicit ActionAttack or ActionCharge overrides for any hit — N and C remain at AnimationLength defaults and are omitted per recipe. Hitmarks (= swap values): N1=25, N2=27, N3=47, N4=35. AnimationLengths: N1=33, N2=39, N3=64, N4=94.",
 				"Charged attack not implemented in gcsim (// TODO: charged attack in attack.go). chargeFrames cannot be sourced.",
@@ -71,7 +45,8 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"lowPlungeFrames": { "anim": 81, "N": 51, "C": 51, "E": 51, "Q": 51, "D": 38, "swap": 64 }
 		},
 		{
 			"id": "xinyan__skill__sweeping_fervor",
@@ -79,13 +54,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 62,
-				"N": 53,
-				"Q": 54,
-				"D": 54,
-				"J": 53
-			},
+			"frames": { "anim": 62, "N": 53, "Q": 54, "D": 54, "J": 53 },
 			"cooldown": 18,
 			"cooldownStartDelay": 13,
 			"tags": ["shield", "summon"],
@@ -93,10 +62,7 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 12,
 					"durationType": "refresh",
 					"scaling": 187.3,
@@ -124,10 +90,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 86,
-				"N": 86
-			},
+			"frames": { "anim": 87, "N": 86, "swap": 86 },
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": [],
@@ -172,9 +135,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -203,14 +164,8 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"conditions": { "type": "constellation", "level": 4 },
 					"duration": 12,
 					"durationType": "refresh",
 					"element": "physical",
@@ -238,20 +193,11 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "constellation", "level": 6 },
 					"source": "character",
 					"stat": "atk",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 50
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 50 },
 					"snapshottable": false
 				}
 			],

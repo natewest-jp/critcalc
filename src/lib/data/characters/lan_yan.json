@@ -16,51 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 11,
-						"N": 20,
-						"C": 21
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 37,
-						"C": 30
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 21,
-						"C": 37
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 40,
-						"C": 50
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 11, "N": 20, "C": 21, "swap": 11 } },
+				{ "name": "N2", "frames": { "anim": 37, "C": 30, "swap": 37 } },
+				{ "name": "N3", "frames": { "anim": 21, "C": 37, "swap": 21 } },
+				{ "name": "N4", "frames": { "anim": 40, "C": 50, "swap": 40 } }
 			],
-			"chargeFrames": {
-				"swap": 45,
-				"N": 41,
-				"E": 44,
-				"Q": 44,
-				"D": 59,
-				"J": 70
-			},
-			"plungeFrames": {
-				"swap": 53,
-				"N": 56,
-				"E": 56,
-				"Q": 57,
-				"D": 44
-			},
+			"chargeFrames": { "anim": 45, "N": 41, "E": 44, "Q": 44, "D": 59, "J": 70, "swap": 45 },
+			"plungeFrames": { "anim": 53, "N": 56, "E": 56, "Q": 57, "D": 44, "swap": 53 },
 			"_curatorNotes": [
 				"Normal attack name and description are placeholders — the character JSON generator was not run for this character. Reviewer to merge genshin-db text on a future pass.",
 				"N2 and N3 each deal two hits (attackHitmarks: N2=[17,37], N3=[15,21]); per recipe, swap reflects the last hitmark and N2/N3 N-cancel frames are AnimationLength (46/53) so omitted.",
@@ -73,17 +35,8 @@
 			"name": "Feathermoon Ring (N follow-up)",
 			"input": ["N"],
 			"abilityType": "skill",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
-			"frames": {
-				"swap": 41,
-				"N": 37,
-				"Q": 39,
-				"D": 38,
-				"J": 39
-			},
+			"conditions": { "type": "state", "state": "inStance" },
+			"frames": { "anim": 41, "N": 37, "Q": 39, "D": 38, "J": 39, "swap": 41 },
 			"cooldown": 0,
 			"noICD": true,
 			"tags": [],
@@ -104,14 +57,7 @@
 			"name": "Swallow-Wisp Pinion Dance",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": {
-				"swap": 80,
-				"N": 33,
-				"E": 33,
-				"Q": 79,
-				"D": 77,
-				"J": 79
-			},
+			"frames": { "anim": 80, "N": 33, "E": 33, "Q": 79, "D": 77, "J": 79, "swap": 80 },
 			"cooldown": 16,
 			"cooldownStartDelay": 4,
 			"tags": ["shield"],
@@ -122,10 +68,7 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 12.5,
 					"durationType": "fixed",
 					"scaling": 497.664,
@@ -155,10 +98,7 @@
 					"source": "C6: Of Hopes Fulfilled",
 					"type": "flat",
 					"value": 1,
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					}
+					"conditions": { "type": "constellation", "level": 6 }
 				}
 			]
 		},
@@ -167,17 +107,8 @@
 			"name": "Feathermoon Ring (E follow-up)",
 			"input": ["E"],
 			"abilityType": "skill",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
-			"frames": {
-				"swap": 41,
-				"N": 37,
-				"Q": 39,
-				"D": 38,
-				"J": 39
-			},
+			"conditions": { "type": "state", "state": "inStance" },
+			"frames": { "anim": 41, "N": 37, "Q": 39, "D": 38, "J": 39, "swap": 41 },
 			"cooldown": 0,
 			"noICD": true,
 			"tags": [],
@@ -193,12 +124,7 @@
 			"name": "Lustrous Moonrise",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": {
-				"swap": 75,
-				"N": 75,
-				"E": 75,
-				"D": 72
-			},
+			"frames": { "anim": 75, "N": 75, "E": 75, "D": 72, "swap": 75 },
 			"cooldown": 15,
 			"tags": ["grouping"],
 			"energyCost": 60,
@@ -272,10 +198,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
 					"stat": "em",
@@ -306,9 +229,5 @@
 			]
 		}
 	],
-	"meta": {
-		"source": "gcsim",
-		"draftedAt": "2026-05-07",
-		"draftedBy": "claude-opus-4-7"
-	}
+	"meta": { "source": "gcsim", "draftedAt": "2026-05-07", "draftedBy": "claude-opus-4-7" }
 }

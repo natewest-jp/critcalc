@@ -138,7 +138,7 @@ describe('parseNotation — variant-level modifiers (Bug #3)', () => {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 20 },
+				frames: { anim: 20 },
 				cooldown: 10,
 				cooldownModifiers: [],
 				charges: 1,
@@ -146,7 +146,7 @@ describe('parseNotation — variant-level modifiers (Bug #3)', () => {
 					{
 						label: 'Hold',
 						input: ['hE'],
-						frames: { swap: 30 },
+						frames: { anim: 30 },
 						cooldown: 10,
 						cooldownModifiers: [{ source: 'Hold variant', type: 'flat', value: -4 }]
 					}
@@ -158,7 +158,7 @@ describe('parseNotation — variant-level modifiers (Bug #3)', () => {
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 20 },
+				frames: { anim: 20 },
 				cooldown: 15,
 				energyCost: 60
 			}
@@ -411,7 +411,7 @@ describe('parseNotation — stacks condition + {key:N} assertion', () => {
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'stackstub__skill__base',
@@ -419,7 +419,7 @@ describe('parseNotation — stacks condition + {key:N} assertion', () => {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 5
 			} as Ability,
 			{
@@ -428,7 +428,7 @@ describe('parseNotation — stacks condition + {key:N} assertion', () => {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 20,
 				conditions: { type: 'stacks', key: 'declension', min: 4 }
 			} as Ability
@@ -535,7 +535,7 @@ describe('parseNotation — variant-driven stance + opensState', () => {
 				name: 'Base N',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'variantstub__normal__bike',
@@ -544,7 +544,7 @@ describe('parseNotation — variant-driven stance + opensState', () => {
 				abilityType: 'normal',
 				conditions: { type: 'state', state: 'nightsoulBlessing' },
 				infusion: 'pyro',
-				hits: [{ frames: { swap: 8 } }]
+				hits: [{ frames: { anim: 8 } }]
 			} as Ability,
 			{
 				id: 'variantstub__skill__cast',
@@ -552,13 +552,13 @@ describe('parseNotation — variant-driven stance + opensState', () => {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 10,
 				variants: [
 					{
 						label: 'Hold (Bike)',
 						input: ['hE'],
-						frames: { swap: 40 },
+						frames: { anim: 40 },
 						behavior: 'stance',
 						duration: 8,
 						terminatesOnSwap: true,
@@ -572,7 +572,7 @@ describe('parseNotation — variant-driven stance + opensState', () => {
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 60 },
+				frames: { anim: 60 },
 				cooldown: 15,
 				energyCost: 60
 			} as Ability
@@ -1199,7 +1199,7 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'gainstub__skill__cast',
@@ -1207,7 +1207,7 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 5
 			} as Ability,
 			{
@@ -1216,7 +1216,7 @@ describe('parseNotation — gainStacks effect (E3 v1)', () => {
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 60 },
+				frames: { anim: 60 },
 				cooldown: 15,
 				energyCost: 60
 			} as Ability
@@ -1316,7 +1316,7 @@ describe('parseNotation — gainStacks constellationScaling (E3 v2.x)', () => {
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'csstub__skill__cast',
@@ -1324,7 +1324,7 @@ describe('parseNotation — gainStacks constellationScaling (E3 v2.x)', () => {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 60 },
+				frames: { anim: 60 },
 				cooldown: 12
 			} as unknown as Ability,
 			{
@@ -1333,7 +1333,7 @@ describe('parseNotation — gainStacks constellationScaling (E3 v2.x)', () => {
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 60 },
+				frames: { anim: 60 },
 				cooldown: 15,
 				energyCost: 60
 			} as Ability
@@ -1416,7 +1416,7 @@ describe('parseNotation — parser-private hit dispatch + onHit gainStacks sourc
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'skirka4__skill__cast',
@@ -1424,7 +1424,7 @@ describe('parseNotation — parser-private hit dispatch + onHit gainStacks sourc
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 60 },
+				frames: { anim: 60 },
 				cooldown: 8
 			} as unknown as Ability,
 			{
@@ -1433,7 +1433,7 @@ describe('parseNotation — parser-private hit dispatch + onHit gainStacks sourc
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 60 },
+				frames: { anim: 60 },
 				cooldown: 15,
 				energyCost: 50
 			} as Ability
@@ -1493,7 +1493,7 @@ describe('parseNotation — parser-private hit dispatch + onHit gainStacks sourc
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'furinastub__skill__cast',
@@ -1501,7 +1501,7 @@ describe('parseNotation — parser-private hit dispatch + onHit gainStacks sourc
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 8
 			} as unknown as Ability,
 			{
@@ -1510,7 +1510,7 @@ describe('parseNotation — parser-private hit dispatch + onHit gainStacks sourc
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 15,
 				energyCost: 60
 			} as Ability
@@ -1591,7 +1591,7 @@ describe('parseNotation — gainStacks drain (E3 v2)', () => {
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'drainstub__skill__cast',
@@ -1602,7 +1602,7 @@ describe('parseNotation — gainStacks drain (E3 v2)', () => {
 				duration: 10,
 				opensState: 'nightsoulBlessing',
 				terminatesOnSwap: false,
-				frames: { swap: 60 },
+				frames: { anim: 60 },
 				cooldown: 20,
 				effects: [
 					{
@@ -1622,7 +1622,7 @@ describe('parseNotation — gainStacks drain (E3 v2)', () => {
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 60 },
+				frames: { anim: 60 },
 				cooldown: 15,
 				energyCost: 60,
 				effects: [
@@ -1710,7 +1710,7 @@ describe('parseNotation — gainStacks drain (E3 v2)', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				} as Ability,
 				{
 					id: 'nodrain__skill__cast',
@@ -1718,7 +1718,7 @@ describe('parseNotation — gainStacks drain (E3 v2)', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 30 },
+					frames: { anim: 30 },
 					cooldown: 5,
 					effects: [
 						{
@@ -1765,7 +1765,7 @@ describe('parseNotation — gainStacks per-stack lifetime (E3 v2.x)', () => {
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'lifestub__skill__cast',
@@ -1773,7 +1773,7 @@ describe('parseNotation — gainStacks per-stack lifetime (E3 v2.x)', () => {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 4,
 				effects: [
 					{
@@ -1793,7 +1793,7 @@ describe('parseNotation — gainStacks per-stack lifetime (E3 v2.x)', () => {
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 60 },
+				frames: { anim: 60 },
 				cooldown: 15,
 				energyCost: 60
 			} as Ability
@@ -1891,7 +1891,7 @@ describe('parseNotation — gainStacks variant gating + consumeStacks (E3 v2.x)'
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'skirkstub__skill__warp',
@@ -1899,13 +1899,13 @@ describe('parseNotation — gainStacks variant gating + consumeStacks (E3 v2.x)'
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 8,
 				variants: [
 					{
 						label: 'Hold',
 						input: ['hE'],
-						frames: { swap: 15 },
+						frames: { anim: 15 },
 						behavior: 'instant'
 					}
 				],
@@ -1934,7 +1934,7 @@ describe('parseNotation — gainStacks variant gating + consumeStacks (E3 v2.x)'
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 60 },
+				frames: { anim: 60 },
 				cooldown: 15,
 				energyCost: 50,
 				effects: [
@@ -2023,7 +2023,7 @@ describe('parseNotation — consumeStacks numeric subtraction', () => {
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'numstub__skill__cast',
@@ -2031,7 +2031,7 @@ describe('parseNotation — consumeStacks numeric subtraction', () => {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 5,
 				effects: [
 					{
@@ -2050,7 +2050,7 @@ describe('parseNotation — consumeStacks numeric subtraction', () => {
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 60 },
+				frames: { anim: 60 },
 				cooldown: 15,
 				energyCost: 60,
 				effects: [
@@ -2200,7 +2200,7 @@ describe('parseNotation — bloom core lifecycle (E3 v1.5)', () => {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 5
 			} as Ability
 		],
@@ -2279,7 +2279,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'shielder__skill__breastplate',
@@ -2287,7 +2287,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 24,
 				tags: ['shield', 'summon'],
 				summons: [{ label: 'Stone Armor', duration: 12 }]
@@ -2298,7 +2298,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 60 },
+				frames: { anim: 60 },
 				cooldown: 15,
 				energyCost: 60
 			} as Ability
@@ -2343,7 +2343,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'listener__skill__cast',
@@ -2351,7 +2351,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 6
 			} as unknown as Ability,
 			{
@@ -2360,7 +2360,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 15,
 				energyCost: 60
 			} as Ability
@@ -2405,7 +2405,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'effectshielder__skill__cast',
@@ -2413,7 +2413,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 6
 			} as unknown as Ability,
 			{
@@ -2422,7 +2422,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 20,
 				energyCost: 60,
 				effects: [
@@ -2544,7 +2544,7 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'neuva__skill__cast',
@@ -2552,7 +2552,7 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 12
 			} as unknown as Ability,
 			{
@@ -2561,7 +2561,7 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 18,
 				energyCost: 70
 			} as Ability
@@ -2637,7 +2637,7 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			} as Ability,
 			{
 				id: 'pyrostub__skill__cast',
@@ -2645,7 +2645,7 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 8
 			} as unknown as Ability,
 			{
@@ -2654,7 +2654,7 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 				input: ['Q'],
 				abilityType: 'burst',
 				behavior: 'instant',
-				frames: { swap: 30 },
+				frames: { anim: 30 },
 				cooldown: 15,
 				energyCost: 60
 			} as Ability
@@ -3005,8 +3005,8 @@ describe('parseNotation — frameless / malformed abilities parse gracefully (re
 		expect(track.eBars).toHaveLength(1);
 		expect(track.qBars).toHaveLength(1);
 		// Falls back to the data-derived generic profile cast (genericProfile.ts).
-		expect(track.eBars[0].castTime).toBe(GENERIC_SKILL.castSwap);
-		expect(track.qBars[0].castTime).toBe(GENERIC_BURST.castSwap);
+		expect(track.eBars[0].castTime).toBe(GENERIC_SKILL.castAnim);
+		expect(track.qBars[0].castTime).toBe(GENERIC_BURST.castAnim);
 	});
 
 	it('stance ability with an absent duration produces finite window math, not NaN', () => {
@@ -3385,7 +3385,7 @@ describe('parseNotation — onHit dispatch from action hits (onHit wiring, 2026-
 			input: ['E'],
 			abilityType: 'skill',
 			behavior: 'instant',
-			frames: { swap: 30 },
+			frames: { anim: 30 },
 			cooldown: 8
 		}) as unknown as Ability;
 	const baseChar = (id: string, name: string, element: string, weapon: string): CharacterData =>
@@ -3644,7 +3644,7 @@ describe('parseNotation — onHit abilityType arrays + summon-gated teammate hit
 			input: ['E'],
 			abilityType: 'skill',
 			behavior: 'instant',
-			frames: { swap: 30 },
+			frames: { anim: 30 },
 			cooldown: 8,
 			...extra
 		}) as unknown as Ability;

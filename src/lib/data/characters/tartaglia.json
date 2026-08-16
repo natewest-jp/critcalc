@@ -16,58 +16,15 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 17,
-						"N": 26
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 8,
-						"N": 27
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 15,
-						"N": 33
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 19,
-						"N": 32
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 11,
-						"N": 33
-					}
-				},
-				{
-					"name": "N6",
-					"frames": {
-						"swap": 14,
-						"N": 66
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 26, "hit": 17 } },
+				{ "name": "N2", "frames": { "anim": 27, "hit": 8 } },
+				{ "name": "N3", "frames": { "anim": 33, "hit": 15 } },
+				{ "name": "N4", "frames": { "anim": 32, "hit": 19 } },
+				{ "name": "N5", "frames": { "anim": 33, "hit": 11 } },
+				{ "name": "N6", "frames": { "anim": 66, "hit": 14 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 94,
-						"D": 86,
-						"J": 86
-					}
-				}
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 94, "D": 86, "J": 86 } }
 			],
 			"sections": [
 				{
@@ -98,68 +55,18 @@
 			"name": "Foul Legacy: Raging Tide (Melee Stance)",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"infusion": "hydro",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 8,
-						"N": 10,
-						"C": 23
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 6,
-						"N": 11,
-						"C": 23
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 16,
-						"N": 32,
-						"C": 37
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 7,
-						"N": 33,
-						"C": 37
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 7,
-						"N": 22,
-						"C": 23
-					}
-				},
-				{
-					"name": "N6",
-					"frames": {
-						"swap": 20,
-						"N": 65
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 23, "hit": 8, "N": 10 } },
+				{ "name": "N2", "frames": { "anim": 23, "hit": 6, "N": 11 } },
+				{ "name": "N3", "frames": { "anim": 37, "hit": 16, "N": 32 } },
+				{ "name": "N4", "frames": { "anim": 37, "hit": 7, "N": 33 } },
+				{ "name": "N5", "frames": { "anim": 23, "hit": 7, "N": 22 } },
+				{ "name": "N6", "frames": { "anim": 65, "hit": 20 } }
 			],
-			"chargeFrames": {
-				"swap": 52,
-				"E": 29,
-				"Q": 29,
-				"D": 14,
-				"J": 15
-			},
+			"chargeFrames": { "anim": 55, "E": 29, "Q": 29, "D": 14, "J": 15, "swap": 52 },
 			"description": "While in Melee Stance, Tartaglia's bow is replaced with dual hydro blades. Performs up to 6 consecutive Hydro melee strikes; charged attack is a cross slash dealing Hydro DMG.",
 			"_curatorNotes": [
 				"Tartaglia is the only character whose weapon TYPE changes mid-stance (bow → melee dual-blades). Base normal uses chargeHits[] (bow); in-stance normal uses chargeFrames (melee). Planner should treat the in-stance N as melee for any weapon-keyed logic.",
@@ -177,13 +84,7 @@
 			"terminatesOnSwap": true,
 			"duration": 30,
 			"cooldown": 6,
-			"frames": {
-				"swap": 39,
-				"N": 19,
-				"Q": 19,
-				"D": 19,
-				"J": 21
-			},
+			"frames": { "anim": 39, "N": 19, "Q": 19, "D": 19, "J": 21 },
 			"tags": [],
 			"effects": [],
 			"sections": [
@@ -213,19 +114,10 @@
 			"name": "Foul Legacy: Raging Tide (Exit Melee)",
 			"input": ["E"],
 			"abilityType": "skill",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"behavior": "instant",
 			"cooldown": 7,
-			"frames": {
-				"swap": 16,
-				"N": 17,
-				"Q": 18,
-				"D": 17,
-				"J": 17
-			},
+			"frames": { "anim": 18, "N": 17, "D": 17, "J": 17, "swap": 16 },
 			"_curatorNotes": [
 				"In-stance skill recast — exits Melee Stance early and returns to Ranged. Frames sourced from gcsim's skillMeleeFrames: InitAbilSlice(18) with Attack=17, Burst=18, Dash=17, Jump=17, Swap=16.",
 				"cooldown: 7 is the minimum value of the parametric exit CD (timeInMelee < 2s → 7s). See base-skill _curatorNotes for the full table. C1 reduces by 20%. C6 + Q-in-melee triggers ResetActionCooldown instead — flag separately; not authored.",
@@ -240,12 +132,7 @@
 			"abilityType": "burst",
 			"behavior": "instant",
 			"cooldown": 15,
-			"frames": {
-				"swap": 53,
-				"N": 54,
-				"D": 54,
-				"J": 54
-			},
+			"frames": { "anim": 53, "N": 54, "D": 54, "J": 54, "swap": 53 },
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
@@ -262,18 +149,10 @@
 			"name": "Havoc: Obliteration (Melee Stance)",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"behavior": "instant",
 			"cooldown": 15,
-			"frames": {
-				"swap": 101,
-				"N": 102,
-				"E": 102,
-				"J": 102
-			},
+			"frames": { "anim": 101, "N": 102, "E": 102, "J": 102, "swap": 101 },
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],

@@ -16,52 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 22,
-						"C": 25
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 6,
-						"N": 14,
-						"C": 20
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 17,
-						"N": 28,
-						"C": 31
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 37,
-						"N": 44,
-						"C": 49
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 25,
-						"N": 68
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 25, "hit": 13, "N": 22 } },
+				{ "name": "N2", "frames": { "anim": 20, "hit": 6, "N": 14 } },
+				{ "name": "N3", "frames": { "anim": 31, "hit": 17, "N": 28 } },
+				{ "name": "N4", "frames": { "anim": 49, "hit": 37, "N": 44 } },
+				{ "name": "N5", "frames": { "anim": 68, "hit": 25 } }
 			],
-			"chargeFrames": {
-				"swap": 39,
-				"Q": 56,
-				"D": 36,
-				"J": 36
-			},
+			"chargeFrames": { "anim": 57, "Q": 56, "D": 36, "J": 36, "swap": 39 },
 			"_curatorNotes": [
 				"Plunge frames: no plunge.go exists for Jean in gcsim; plunge frame data not available from source."
 			],
@@ -90,11 +51,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 45,
-				"D": 28,
-				"J": 28
-			},
+			"frames": { "anim": 46, "D": 28, "J": 28, "swap": 45 },
 			"cooldown": 6,
 			"cooldownStartDelay": 19,
 			"tags": ["grouping"],
@@ -112,11 +69,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 88,
-				"N": 88,
-				"E": 89
-			},
+			"frames": { "anim": 90, "N": 88, "E": 89, "swap": 88 },
 			"cooldown": 20,
 			"cooldownStartDelay": 38,
 			"tags": ["heal", "cleanse"],
@@ -125,10 +78,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"scaling": 452.16,
 					"stat": "atk",
 					"flat": 3389
@@ -144,11 +94,7 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1,
-								"firstTickDelay": 1
-							},
+							"trigger": { "type": "summonTick", "interval": 1, "firstTickDelay": 1 },
 							"scaling": 45.22,
 							"stat": "atk",
 							"flat": 339
@@ -173,10 +119,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "normal"
-					},
+					"trigger": { "type": "onHit", "abilityType": "normal" },
 					"scaling": 15,
 					"stat": "atk"
 				}
@@ -234,10 +177,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 10,
 					"element": "anemo",
 					"value": -40

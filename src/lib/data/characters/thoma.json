@@ -16,43 +16,12 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 20,
-						"C": 21
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 18,
-						"N": 27,
-						"C": 25
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 23,
-						"N": 31,
-						"C": 32
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 20,
-						"N": 58
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 21, "hit": 13, "N": 20 } },
+				{ "name": "N2", "frames": { "anim": 27, "hit": 18, "C": 25 } },
+				{ "name": "N3", "frames": { "anim": 32, "hit": 23, "N": 31 } },
+				{ "name": "N4", "frames": { "anim": 58, "hit": 20 } }
 			],
-			"chargeFrames": {
-				"swap": 63,
-				"D": 34,
-				"J": 34
-			},
+			"chargeFrames": { "anim": 64, "D": 34, "J": 34, "swap": 63 },
 			"_curatorNotes": ["No plunge.go in gcsim character dir — plungeFrames not available."],
 			"sections": [
 				{
@@ -81,20 +50,13 @@
 			"cooldown": 15,
 			"cooldownStartDelay": 9,
 			"tags": ["summon", "shield"],
-			"frames": {
-				"swap": 44,
-				"D": 32,
-				"J": 32
-			},
+			"frames": { "anim": 46, "D": 32, "J": 32, "swap": 44 },
 			"behavior": "instant",
 			"effects": [
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 8,
 					"durationType": "refresh",
 					"scaling": 13,
@@ -121,12 +83,7 @@
 			"cooldown": 20,
 			"tags": ["summon", "shield"],
 			"energyCost": 80,
-			"frames": {
-				"swap": 56,
-				"N": 57,
-				"E": 56,
-				"D": 57
-			},
+			"frames": { "anim": 58, "N": 57, "E": 56, "D": 57, "swap": 56 },
 			"behavior": "instant",
 			"summons": [
 				{
@@ -137,10 +94,7 @@
 							"source": "C2: A Subordinate's Skills",
 							"type": "flat",
 							"value": 3,
-							"conditions": {
-								"type": "constellation",
-								"level": 2
-							}
+							"conditions": { "type": "constellation", "level": 2 }
 						}
 					]
 				}
@@ -149,11 +103,7 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "normal",
-						"source": "team"
-					},
+					"trigger": { "type": "onHit", "abilityType": "normal", "source": "team" },
 					"procCooldown": 1,
 					"duration": 8,
 					"durationType": "refresh",
@@ -192,9 +142,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"_curatorNotes": [
 						"Inherited `manual` trigger — do not rewrite. Probable trigger: fires on each Fiery Collapse hit (`onHit` with Fiery Collapse ability); adds FlatDmg = 2.2% of Thoma's Max HP. gcsim: `a4()` returns `0.022 * c.MaxHP()` and is passed as `FlatDmg` in `summonFieryCollapse` AttackInfo. Scaling buff — value depends on caster's Max HP; reviewer to author scaling-buff shape."
 					],

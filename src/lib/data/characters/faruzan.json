@@ -16,52 +16,14 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 14,
-						"N": 26
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 10,
-						"N": 21
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 24,
-						"N": 39
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 29,
-						"N": 86
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 26, "hit": 14 } },
+				{ "name": "N2", "frames": { "anim": 21, "hit": 10 } },
+				{ "name": "N3", "frames": { "anim": 39, "hit": 24 } },
+				{ "name": "N4", "frames": { "anim": 86, "hit": 29 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 96,
-						"D": 86,
-						"J": 86
-					}
-				},
-				{
-					"name": "Hurricane Arrow",
-					"frames": {
-						"swap": 60,
-						"D": 49,
-						"J": 49
-					}
-				}
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 96, "D": 86, "J": 86 } },
+				{ "name": "Hurricane Arrow", "frames": { "anim": 60, "D": 49, "J": 49, "swap": 60 } }
 			],
 			"_curatorNotes": [
 				"chargeHits[1] Hurricane Arrow is available only when Manifest Gale state (from Wind Realm of Nasamjnin) is active at A1+. Standard fully-charged aimed shot uses aimedFrames[1] (96f animation, 86f hitmark); Hurricane Arrow uses aimedEFrames (60f animation, 49f hitmark) at DEFAULT_ASCENSION=4. Quick physical aimed shot (aimedFrames[0]: swap=26, D=15, J=15) omitted — never used in optimal rotations. Reviewer to decide chargeHits representation for the conditional variant.",
@@ -92,12 +54,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 33,
-				"Q": 34,
-				"D": 28,
-				"J": 27
-			},
+			"frames": { "anim": 35, "E": 34, "Q": 34, "D": 28, "J": 27, "swap": 33 },
 			"cooldown": 6,
 			"cooldownStartDelay": 12,
 			"tags": ["grouping"],
@@ -116,13 +73,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 60,
-				"N": 61,
-				"E": 61,
-				"D": 61,
-				"J": 63
-			},
+			"frames": { "anim": 71, "N": 61, "E": 61, "D": 61, "J": 63, "swap": 60 },
 			"cooldown": 20,
 			"tags": [],
 			"energyCost": 80,
@@ -137,10 +88,7 @@
 							"source": "C2: Overzealous Intellect",
 							"type": "flat",
 							"value": 6,
-							"conditions": {
-								"type": "constellation",
-								"level": 2
-							}
+							"conditions": { "type": "constellation", "level": 2 }
 						}
 					]
 				}
@@ -149,10 +97,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"element": "anemo",
 					"value": -30,
@@ -161,10 +106,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 18,
 					"element": "anemo",
 					"value": -30,
@@ -173,10 +115,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -188,10 +127,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 18,
 					"durationType": "fixed",
 					"source": "character",
@@ -230,13 +166,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"source": "team",
-						"filter": {
-							"element": "anemo"
-						}
-					},
+					"trigger": { "type": "onHit", "source": "team", "filter": { "element": "anemo" } },
 					"procCooldown": 0.8,
 					"scaling": 32,
 					"stat": "baseAtk",
@@ -296,10 +226,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",

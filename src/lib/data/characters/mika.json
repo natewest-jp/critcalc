@@ -15,13 +15,13 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 20, "N": 23, "C": 28 } },
-				{ "name": "N2", "frames": { "swap": 14, "N": 19, "C": 19 } },
-				{ "name": "N3", "frames": { "swap": 16, "N": 34, "C": 39 } },
-				{ "name": "N4", "frames": { "swap": 24, "N": 32, "C": 40 } },
-				{ "name": "N5", "frames": { "swap": 30, "N": 71 } }
+				{ "name": "N1", "frames": { "anim": 35, "hit": 20, "N": 23, "C": 28 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 14, "N": 19, "C": 19 } },
+				{ "name": "N3", "frames": { "anim": 41, "hit": 16, "N": 34, "C": 39 } },
+				{ "name": "N4", "frames": { "anim": 48, "hit": 24, "N": 32, "C": 40 } },
+				{ "name": "N5", "frames": { "anim": 71, "hit": 30 } }
 			],
-			"chargeFrames": { "swap": 61, "N": 63, "E": 62, "Q": 62, "D": 26, "J": 26 },
+			"chargeFrames": { "anim": 66, "N": 63, "E": 62, "Q": 62, "D": 26, "J": 26, "swap": 61 },
 			"tags": [],
 			"_curatorNotes": ["No plunge.go in gcsim character dir — plungeFrames not available."],
 			"sections": [
@@ -49,7 +49,7 @@
 			"input": ["E", "hE"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 37, "D": 34, "J": 35 },
+			"frames": { "anim": 39, "D": 34, "J": 35, "swap": 37 },
 			"cooldown": 15,
 			"cooldownStartDelay": 16,
 			"tags": [],
@@ -64,7 +64,7 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "N": 38, "Q": 37, "D": 30, "J": 30 }
+					"frames": { "anim": 46, "N": 38, "Q": 37, "D": 30, "J": 30 }
 				}
 			],
 			"description": "Mika uses his crossbow to attack, granting all nearby characters in your party Soulwind. When characters in the Soulwind state are on the field, their ATK SPD will be increased.\nWill take effect in different ways if Tapped or Held.\n\nTap\nFires a Flowfrost Arrow that can pierce through opponents, dealing Cryo DMG to enemies it comes into contact with.\n\nHold\nGoes into Aiming Mode, locking on to an opponent and firing a Rimestar Flare at them, dealing Cryo DMG. When the Rimestar Flare hits, it will rise before exploding, launching Rimestar Shards into a maximum of 3 other opponents, dealing Cryo DMG."
@@ -75,7 +75,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 59, "E": 60, "J": 60 },
+			"frames": { "anim": 61, "E": 60, "J": 60, "swap": 59 },
 			"cooldown": 18,
 			"energyCost": 70,
 			"tags": ["heal"],
@@ -83,10 +83,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"scaling": 21.9,
 					"stat": "hp",
 					"flat": 2579
@@ -94,11 +91,7 @@
 				{
 					"type": "heal",
 					"target": "active",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "normal",
-						"source": "team"
-					},
+					"trigger": { "type": "onHit", "abilityType": "normal", "source": "team" },
 					"procCooldown": 2.5,
 					"scaling": 4.4,
 					"stat": "hp",

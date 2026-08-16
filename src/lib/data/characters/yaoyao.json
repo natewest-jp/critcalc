@@ -16,45 +16,12 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 22,
-						"C": 22
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 16,
-						"N": 22,
-						"C": 25
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 31,
-						"N": 41,
-						"C": 37
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 21
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 22, "C": 22 } },
+				{ "name": "N2", "frames": { "anim": 31, "hit": 16, "N": 22, "C": 25 } },
+				{ "name": "N3", "frames": { "anim": 51, "hit": 31, "N": 41, "C": 37 } },
+				{ "name": "N4", "frames": { "anim": 59, "hit": 21 } }
 			],
-			"chargeFrames": {
-				"swap": 49,
-				"N": 49,
-				"E": 49,
-				"Q": 50,
-				"D": 24,
-				"J": 24
-			},
+			"chargeFrames": { "anim": 55, "N": 49, "E": 49, "Q": 50, "D": 24, "J": 24, "swap": 49 },
 			"_curatorNotes": [
 				"No plunge.go in gcsim character dir — plungeFrames not available. | N3 is a two-hit normal (hitmarks at frames 12 and 31 from cast start per attackHitmarks[2]=[12,31]); frames extracted from last hitmark (31) per recipe convention. | N4: ActionAttack has no explicit override (AnimationLength=59 from InitNormalCancelSlice default) — N key omitted. ActionCharge=500 is flagged as illegal in gcsim (TODO comment) — C key omitted for final normal."
 			],
@@ -83,11 +50,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 50,
-				"D": 49,
-				"J": 48
-			},
+			"frames": { "anim": 52, "D": 49, "J": 48, "swap": 50 },
 			"cooldown": 15,
 			"cooldownStartDelay": 15,
 			"summons": [
@@ -100,11 +63,7 @@
 						{
 							"type": "heal",
 							"target": "team",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1,
-								"firstTickDelay": 0.7
-							},
+							"trigger": { "type": "summonTick", "interval": 1, "firstTickDelay": 0.7 },
 							"scaling": 3.09,
 							"stat": "hp",
 							"flat": 363.203
@@ -128,13 +87,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 56,
-				"N": 58,
-				"E": 57,
-				"D": 58,
-				"J": 57
-			},
+			"frames": { "anim": 63, "N": 58, "E": 57, "D": 58, "J": 57, "swap": 56 },
 			"cooldown": 20,
 			"summons": [
 				{
@@ -147,11 +100,7 @@
 						{
 							"type": "heal",
 							"target": "team",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1,
-								"firstTickDelay": 0.7
-							},
+							"trigger": { "type": "summonTick", "interval": 1, "firstTickDelay": 0.7 },
 							"scaling": 3.63,
 							"stat": "hp",
 							"flat": 427.299
@@ -186,9 +135,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "hp%",
@@ -211,9 +158,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
@@ -250,9 +195,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
@@ -282,9 +225,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 75,
 					"stat": "atk",
 					"element": "dendro"
@@ -292,9 +233,7 @@
 				{
 					"type": "heal",
 					"target": "active",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 7.5,
 					"stat": "hp"
 				}

@@ -19,15 +19,8 @@
 				{
 					"type": "gainStacks",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "normal",
-						"source": "self"
-					},
-					"conditions": {
-						"type": "not",
-						"condition": { "type": "constellation", "level": 6 }
-					},
+					"trigger": { "type": "onHit", "abilityType": "normal", "source": "self" },
+					"conditions": { "type": "not", "condition": { "type": "constellation", "level": 6 } },
 					"key": "seal",
 					"amount": 1,
 					"max": 3
@@ -35,11 +28,7 @@
 				{
 					"type": "gainStacks",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "normal",
-						"source": "self"
-					},
+					"trigger": { "type": "onHit", "abilityType": "normal", "source": "self" },
 					"conditions": { "type": "constellation", "level": 6 },
 					"key": "seal",
 					"amount": 1,
@@ -48,11 +37,7 @@
 				{
 					"type": "consumeStacks",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged",
-						"source": "self"
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged", "source": "self" },
 					"key": "seal",
 					"amount": "all"
 				}
@@ -70,41 +55,12 @@
 				"plungeFrames: lowPlungeFrames recorded. highPlungeFrames also exists in gcsim (swap=50, N=58, E=59, Q=59, D=47) but is not represented; standard rotation uses low plunge. Catalyst plunge is gated on AirborneXianyun in gcsim — plunges are only available when launched by Xianyun support."
 			],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 12,
-						"C": 21
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 16,
-						"C": 16
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 37
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 26, "hit": 12, "C": 21 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 16, "C": 16 } },
+				{ "name": "N3", "frames": { "anim": 73, "hit": 37, "C": 42 } }
 			],
-			"chargeFrames": {
-				"swap": 59,
-				"E": 63,
-				"Q": 63,
-				"D": 51,
-				"J": 49
-			},
-			"plungeFrames": {
-				"swap": 48,
-				"N": 57,
-				"E": 57,
-				"Q": 57,
-				"D": 45
-			},
+			"chargeFrames": { "anim": 79, "C": 78, "E": 63, "Q": 63, "D": 51, "J": 49, "swap": 59 },
+			"plungeFrames": { "anim": 67, "N": 58, "C": 49, "E": 59, "Q": 59, "D": 47, "swap": 50 },
 			"sections": [
 				{
 					"type": "normal",
@@ -122,7 +78,8 @@
 					"description": "Gathering the power of Pyro, Yanfei plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground."
 				}
 			],
-			"description": "Normal Attack\nShoots fireballs that deal up to three counts of Pyro DMG.\nWhen Yanfei's Normal Attacks hit enemies, they will grant her a single Scarlet Seal. Yanfei may possess a maximum of 3 Scarlet Seals, and each time this effect is triggered, the duration of currently possessed Scarlet Seals will refresh.\nEach Scarlet Seal will decrease Yanfei's Stamina consumption and will disappear when she leaves the field.\n\nCharged Attack\nConsumes Stamina and all Scarlet Seals before dealing AoE Pyro DMG to opponents after a short casting time.\nThis Charged Attack's AoE and DMG will increase according to the amount of Scarlet Seals consumed.\n\nPlunging Attack\nGathering the power of Pyro, Yanfei plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground."
+			"description": "Normal Attack\nShoots fireballs that deal up to three counts of Pyro DMG.\nWhen Yanfei's Normal Attacks hit enemies, they will grant her a single Scarlet Seal. Yanfei may possess a maximum of 3 Scarlet Seals, and each time this effect is triggered, the duration of currently possessed Scarlet Seals will refresh.\nEach Scarlet Seal will decrease Yanfei's Stamina consumption and will disappear when she leaves the field.\n\nCharged Attack\nConsumes Stamina and all Scarlet Seals before dealing AoE Pyro DMG to opponents after a short casting time.\nThis Charged Attack's AoE and DMG will increase according to the amount of Scarlet Seals consumed.\n\nPlunging Attack\nGathering the power of Pyro, Yanfei plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground.",
+			"lowPlungeFrames": { "anim": 65, "N": 57, "C": 46, "E": 57, "Q": 57, "D": 45, "swap": 48 }
 		},
 		{
 			"id": "yanfei__skill__signed_edict",
@@ -130,12 +87,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 44,
-				"Q": 43,
-				"D": 29,
-				"J": 34
-			},
+			"frames": { "anim": 46, "C": 35, "Q": 43, "D": 29, "J": 34, "swap": 44 },
 			"cooldown": 9,
 			"cooldownStartDelay": 28,
 			"tags": [],
@@ -144,10 +96,7 @@
 					"type": "gainStacks",
 					"target": "self",
 					"trigger": { "type": "onCast" },
-					"conditions": {
-						"type": "not",
-						"condition": { "type": "constellation", "level": 6 }
-					},
+					"conditions": { "type": "not", "condition": { "type": "constellation", "level": 6 } },
 					"key": "seal",
 					"amount": 3,
 					"max": 3
@@ -176,12 +125,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 46,
-				"E": 55,
-				"D": 33,
-				"J": 32
-			},
+			"frames": { "anim": 58, "C": 47, "E": 55, "D": 33, "J": 32, "swap": 46 },
 			"cooldown": 20,
 			"energyCost": 80,
 			"tags": [],
@@ -190,10 +134,7 @@
 					"type": "gainStacks",
 					"target": "self",
 					"trigger": { "type": "onCast" },
-					"conditions": {
-						"type": "not",
-						"condition": { "type": "constellation", "level": 6 }
-					},
+					"conditions": { "type": "not", "condition": { "type": "constellation", "level": 6 } },
 					"key": "seal",
 					"amount": 3,
 					"max": 3
@@ -227,25 +168,13 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged"
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged" },
 					"duration": 6,
 					"durationType": "refresh",
-					"conditions": {
-						"type": "stacks",
-						"key": "seal",
-						"min": 1
-					},
+					"conditions": { "type": "stacks", "key": "seal", "min": 1 },
 					"source": "character",
 					"stat": "pyroDmgBonus",
-					"value": {
-						"type": "perStack",
-						"key": "seal",
-						"per": 5,
-						"maxStacks": 4
-					},
+					"value": { "type": "perStack", "key": "seal", "per": 5, "maxStacks": 4 },
 					"snapshottable": false
 				}
 			],
@@ -264,9 +193,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 80,
 					"stat": "atk",
 					"element": "pyro"
@@ -298,13 +225,8 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "enemyHpBelow",
-						"threshold": 50
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "enemyHpBelow", "threshold": 50 },
 					"source": "character",
 					"stat": "critRate",
 					"value": 20,
@@ -335,10 +257,7 @@
 				{
 					"type": "shield",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"conditions": { "type": "constellation", "level": 4 },
 					"duration": 15,
 					"scaling": 45,

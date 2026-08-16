@@ -35,45 +35,12 @@
 			],
 			"description": "Normal Attack\nPerforms up to 4 consecutive sword strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform a slash toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 11,
-						"N": 19,
-						"C": 21
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 9,
-						"N": 14,
-						"C": 21
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 37,
-						"N": 48,
-						"C": 43
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 38,
-						"N": 66,
-						"C": 66
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 29, "hit": 11, "N": 19, "C": 21 } },
+				{ "name": "N2", "frames": { "anim": 30, "hit": 9, "N": 14, "C": 21 } },
+				{ "name": "N3", "frames": { "anim": 55, "hit": 37, "N": 48, "C": 43 } },
+				{ "name": "N4", "frames": { "anim": 66, "hit": 38 } }
 			],
-			"chargeFrames": {
-				"swap": 51,
-				"N": 53,
-				"E": 52,
-				"Q": 52
-			},
+			"chargeFrames": { "anim": 58, "N": 53, "E": 52, "Q": 52, "D": 17, "J": 17, "swap": 51 },
 			"_curatorNotes": [
 				"[A7] Caveat removed as working behavior: an N token during the transmuting window auto-resolving to the Dark commit is wired (post-P4 #2) and already documented on the Denial of Darkness entry; no user-facing divergence remains."
 			]
@@ -83,31 +50,17 @@
 			"name": "Transmutation: Denial of Darkness",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "transmuting"
-			},
+			"conditions": { "type": "state", "state": "transmuting" },
 			"tags": [],
 			"description": "Transmutation: Denial of Darkness\nDeal 3 consecutive instances of Pyro DMG to opponents in front, reverse Essential Transmutation, and enter the Denial of Darkness state for 30s.",
 			"hits": [
 				{
 					"name": "Denial of Darkness",
-					"frames": {
-						"swap": 43,
-						"N": 64,
-						"E": 48,
-						"Q": 45,
-						"D": 42,
-						"J": 41
-					}
+					"frames": { "anim": 67, "N": 64, "E": 48, "Q": 45, "D": 42, "J": 41, "swap": 43 }
 				}
 			],
 			"actionOpensState": {
-				"normal": {
-					"state": "darkForm",
-					"duration": 30,
-					"consumes": ["transmuting", "whiteForm"]
-				}
+				"normal": { "state": "darkForm", "duration": 30, "consumes": ["transmuting", "whiteForm"] }
 			},
 			"_curatorNotes": [
 				"The Dark commit, WIRED via the post-P4 #2 normal-opened transient state (2026-07-17): a state-gated normal ability (conditions state:transmuting) that resolveActiveAbility prefers over Radiant Wingslash while the window is open; its first swing's recovery opens `darkForm` (30s, gcsim AddStatus(blackKey, 30*60)) and consumes transmuting + whiteForm (gcsim DeleteStatus(skillWindowKey)/(whiteKey)).",
@@ -123,19 +76,13 @@
 			"abilityType": "skill",
 			"cooldown": 12,
 			"behavior": "instant",
-			"opensTransientState": {
-				"state": "transmuting",
-				"duration": 6
-			},
+			"opensTransientState": { "state": "transmuting", "duration": 6 },
 			"tags": [],
 			"effects": [
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"procCooldown": 6,
 					"amount": 33,
 					"_curatorNotes": [
@@ -145,14 +92,7 @@
 			],
 			"description": "Purify the substance of souls and wishes to undergo **Essential Transmutation**. While transmuted, Durin's Elemental Skill Binary Form: Convergence and Division will be replaced with the special Elemental Skill Transmutation: Confirmation of Purity, and the Normal Attack Radiant Wingslash will be replaced with the special Elemental Skill Transmutation: Denial of Darkness.\n\nTransmutation: Confirmation of Purity\nDeal 1 instance of AoE Pyro DMG to nearby opponents, reverse Essential Transmutation, and enter the Confirmation of Purity state for 30s.\n\nTransmutation: Denial of Darkness\nDeal 3 consecutive instances of Pyro DMG to opponents in front, reverse Essential Transmutation, and enter the Denial of Darkness state for 30s.\n\nWhen Durin enters the Confirmation of Purity or Denial of Darkness state while in battle, he will restore a certain amount of Elemental Energy. Elemental Energy can be restored this way once every 6s.",
 			"caveat": "The opening press deals no damage and starts the 12s CD. A second E commits to the White (support) form; a Normal Attack commits to the Dark (damage) form instead — the chosen form lasts 30s and sets which Burst you get.",
-			"frames": {
-				"swap": 13,
-				"N": 16,
-				"E": 15,
-				"Q": 4,
-				"D": 14,
-				"J": 14
-			},
+			"frames": { "anim": 49, "N": 16, "E": 15, "Q": 4, "D": 14, "J": 14, "swap": 13 },
 			"_curatorNotes": [
 				"Base frames = the opening tap E that enters Essential Transmutation (gcsim skill.go skillFrames, InitAbilSlice(49); ActionSwap=13, ActionAttack=16, ActionSkill=15, ActionBurst=4, ActionDash=14, ActionJump=14). The tap deals no damage and sets the 12s CD (SetCD(action.ActionSkill, 12*60)); the commits do not re-set CD (separate abilities with their own timing). CD/energy verified against the talent sidecar.",
 				"DUAL-FORM MODEL — WIRED 2026-07-17 (post-P4 #2, the 'normal-attack opens a mode state' primitive; Nate 2026-07-15 chose faithful auto-tracking over a user-assertion workaround). (1) This tap opens `transmuting` (6s, gcsim skillWindowDur) via opensTransientState — behavior is `instant`, not stance: the tap itself has no lasting on-field mode. (2) WHITE commit = durin__skill__transmutation_confirmation_of_purity, a separate skill gated state:transmuting (Flins Northland-Spearstorm pattern). (3) DARK commit = durin__normal__transmutation_denial_of_darkness, a state-gated normal whose actionOpensState.normal opens `darkForm` — the post-P4 #2 primitive. (4) BURST reads the form: base Q = White (default); durin__burst__principle_of_darkness_as_the_stars_smolder is gated state:darkForm and carries the Dragon of Dark Decay. Both commits `consumes` the window + the opposite form (gcsim DeleteStatus pairs). The former input-less placeholder variants are deleted; their frames live on the new abilities.",
@@ -164,10 +104,7 @@
 			"name": "Transmutation: Confirmation of Purity",
 			"input": ["E"],
 			"abilityType": "skill",
-			"conditions": {
-				"type": "state",
-				"state": "transmuting"
-			},
+			"conditions": { "type": "state", "state": "transmuting" },
 			"cooldown": 0,
 			"behavior": "instant",
 			"opensTransientState": {
@@ -178,14 +115,7 @@
 			"tags": [],
 			"effects": [],
 			"description": "Transmutation: Confirmation of Purity\nDeal 1 instance of AoE Pyro DMG to nearby opponents, reverse Essential Transmutation, and enter the Confirmation of Purity state for 30s.",
-			"frames": {
-				"swap": 48,
-				"N": 62,
-				"E": 53,
-				"Q": 50,
-				"D": 46,
-				"J": 47
-			},
+			"frames": { "anim": 48, "N": 62, "E": 53, "Q": 50, "D": 46, "J": 47, "swap": 48 },
 			"_curatorNotes": [
 				"The White commit, reachable via a second E during `transmuting` (resolveActiveAbility prefers this conditioned skill; separate ability id → separate charge queue, so the base 12s clock is untouched — gcsim: recast sets no CD and ActionReady bypasses the CD check while the window is active). cooldown: 0 mirrors that.",
 				"Frames = gcsim skill.go skillRecastWhiteFrames (InitAbilSlice(83); ActionSwap=48, ActionAttack=62, ActionSkill=53, ActionBurst=50, ActionDash=46, ActionJump=47). Deals 190.1% ATK Pyro at T10 (skillWhite[9]=1.9008), hitmark 35f — frame-represented, not authored as an effect.",
@@ -203,12 +133,7 @@
 			"energyCost": 70,
 			"tags": [],
 			"effects": [],
-			"frames": {
-				"swap": 102,
-				"N": 103,
-				"E": 103,
-				"D": 102
-			},
+			"frames": { "anim": 104, "N": 103, "E": 103, "D": 102, "swap": 102 },
 			"summons": [
 				{
 					"label": "Dragon of White Flame",
@@ -219,10 +144,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 0.98
-							},
+							"trigger": { "type": "summonTick", "interval": 0.98 },
 							"scaling": 170.4,
 							"stat": "atk",
 							"element": "pyro",
@@ -245,22 +167,14 @@
 			"name": "Principle of Darkness: As the Stars Smolder",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"conditions": {
-				"type": "state",
-				"state": "darkForm"
-			},
+			"conditions": { "type": "state", "state": "darkForm" },
 			"behavior": "instant",
 			"cooldown": 18,
 			"energyCost": 70,
 			"tags": [],
 			"effects": [],
 			"description": "Principle of Darkness: As the Stars Smolder\nWhen Durin is in the Denial of Darkness state, he will use the Elemental Burst Principle of Darkness: As the Stars Smolder, dealing 3 instances of AoE Pyro DMG to opponents in front, and manifesting his power in the Dragon of Dark Decay form. The Dragon of Dark Decay will follow the current active character and periodically attack a single nearby opponent, dealing Pyro DMG. This DMG is considered Elemental Burst DMG.",
-			"frames": {
-				"swap": 102,
-				"N": 103,
-				"E": 103,
-				"D": 102
-			},
+			"frames": { "anim": 104, "N": 103, "E": 103, "D": 102, "swap": 102 },
 			"summons": [
 				{
 					"label": "Dragon of Dark Decay",
@@ -271,10 +185,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.23
-							},
+							"trigger": { "type": "summonTick", "interval": 1.23 },
 							"scaling": 233.7,
 							"stat": "atk",
 							"element": "pyro",
@@ -311,16 +222,9 @@
 						"conditions": [
 							{
 								"type": "not",
-								"condition": {
-									"type": "teamFaction",
-									"faction": "hexerei",
-									"min": 2
-								}
+								"condition": { "type": "teamFaction", "faction": "hexerei", "min": 2 }
 							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "state", "state": "duringSummon" }
 						]
 					},
 					"duration": 6,
@@ -331,26 +235,15 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "overloaded",
-						"source": "team"
-					},
+					"trigger": { "type": "onReaction", "reaction": "overloaded", "source": "team" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
 							{
 								"type": "not",
-								"condition": {
-									"type": "teamFaction",
-									"faction": "hexerei",
-									"min": 2
-								}
+								"condition": { "type": "teamFaction", "faction": "hexerei", "min": 2 }
 							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "state", "state": "duringSummon" }
 						]
 					},
 					"duration": 6,
@@ -361,26 +254,15 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "pyroSwirl",
-						"source": "team"
-					},
+					"trigger": { "type": "onReaction", "reaction": "pyroSwirl", "source": "team" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
 							{
 								"type": "not",
-								"condition": {
-									"type": "teamFaction",
-									"faction": "hexerei",
-									"min": 2
-								}
+								"condition": { "type": "teamFaction", "faction": "hexerei", "min": 2 }
 							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "state", "state": "duringSummon" }
 						]
 					},
 					"duration": 6,
@@ -391,26 +273,15 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "pyroCrystallize",
-						"source": "team"
-					},
+					"trigger": { "type": "onReaction", "reaction": "pyroCrystallize", "source": "team" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
 							{
 								"type": "not",
-								"condition": {
-									"type": "teamFaction",
-									"faction": "hexerei",
-									"min": 2
-								}
+								"condition": { "type": "teamFaction", "faction": "hexerei", "min": 2 }
 							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "state", "state": "duringSummon" }
 						]
 					},
 					"duration": 6,
@@ -421,26 +292,15 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "burning",
-						"source": "team"
-					},
+					"trigger": { "type": "onReaction", "reaction": "burning", "source": "team" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
 							{
 								"type": "not",
-								"condition": {
-									"type": "teamFaction",
-									"faction": "hexerei",
-									"min": 2
-								}
+								"condition": { "type": "teamFaction", "faction": "hexerei", "min": 2 }
 							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "state", "state": "duringSummon" }
 						]
 					},
 					"duration": 6,
@@ -452,7 +312,7 @@
 			"_curatorNotes": [
 				"gcsim asc.go a1Init: gated on c.StatusIsActive(burstKeyWhite) (Dragon of White Flame active), modeled here as state:duringSummon. Fires on team Overloaded / Burning / Pyro-Swirl / Pyro-Crystallize reactions (a1ReactToElements) shredding Pyro RES + the partner element's RES by 20% for 6s. A separate onEnemyDamage hook also shreds Pyro + Dendro RES when a Burning opponent takes Pyro or Dendro DMG — not authored as an onHit effect (the Burning-reaction path above covers the common case). Hexerei bonus: hexereiA1Bonus()=1.75 with GetHexereiCount()>=2, i.e. -35% instead of -20% — faction-count dependent, not modeled. Dark form (a1OnBurst isWhite=false) adds a ReactBonusMod of +40% to Durin's Amped (Vaporize/Melt) hits — no vaporize/melt DMG-bonus stat primitive, so unmodeled.",
 				"[A7] Base shred is authored per reaction (Pyro plus electro/anemo/geo/dendro partner element, -20%, 6s refresh) and is shown; only the 35% Hexerei-count upgrade and the Dark-form +40% Vaporize/Melt are omissions.",
-				"[Hexerei 2026-08-15] RE-AUTHORED. The five faction shreds were -15 ADDITIVE on top of the five base -20 (base + faction = the in-game -35), which was correct arithmetic and unrenderable: once factionBonuses reach the planner (docs/faction-bonuses-round.md) that draws TEN debuff bars where a reader expects five. The faction five now carry the FULL -35 and the base five are gated `not(teamFaction hexerei >=2)`, so exactly one bar per element renders in either world — -20% solo, -35% in a Hexerei team. \u26d4 The alternative, teaching the projection to SUM co-located shreds, was measured and rejected: eight characters have same-element shred pairs and they are overwhelmingly ALTERNATIVES, not addends (Faruzan's two -30% Anemo entries are one shred under two condition branches, and summing them shows -60%; Venti's Breeze -12% and Storm of Defiance -20% genuinely stack but must stay separate, because provenance is the point). Durin was the only true addend pair in the corpus, and only because his -15% modified his own shred. [Hexerei 2026-07-29] Secret Rite authored in top-level factionBonuses. gcsim asc.go:138-148 hexereiA1Bonus() returns 1.75 only when IsHexerei AND Core.Player.GetHexereiCount() >= 2 — count-gated, so every A1 value is x1.75 (asc.go:58,64,82,105): res shred -0.20 -> -0.35, Dark-form Amped ReactBonusMod 0.40 -> 0.70. Authored as five ADDITIVE resShred effects of -15 (mirroring the five A1 base effects, same triggers, same duringSummon gate wrapped in an `all` with teamFaction hexerei min 2), so base -20 + faction -15 = the in-game -35; durations unchanged at 6s per the article ('all effects +75% except duration'). The Dark-form 40->70% Vaporize/Melt uplift is a self reaction-DMG multiplier with no stat primitive — caveat only, no effect. No bare IsHexerei permanent patches exist for Durin: durin.go:29-34 only reads the hexerei param (default enabled) and asc.go:139 is the sole consumer, always paired with the count check."
+				"[Hexerei 2026-08-15] RE-AUTHORED. The five faction shreds were -15 ADDITIVE on top of the five base -20 (base + faction = the in-game -35), which was correct arithmetic and unrenderable: once factionBonuses reach the planner (docs/faction-bonuses-round.md) that draws TEN debuff bars where a reader expects five. The faction five now carry the FULL -35 and the base five are gated `not(teamFaction hexerei >=2)`, so exactly one bar per element renders in either world — -20% solo, -35% in a Hexerei team. ⛔ The alternative, teaching the projection to SUM co-located shreds, was measured and rejected: eight characters have same-element shred pairs and they are overwhelmingly ALTERNATIVES, not addends (Faruzan's two -30% Anemo entries are one shred under two condition branches, and summing them shows -60%; Venti's Breeze -12% and Storm of Defiance -20% genuinely stack but must stay separate, because provenance is the point). Durin was the only true addend pair in the corpus, and only because his -15% modified his own shred. [Hexerei 2026-07-29] Secret Rite authored in top-level factionBonuses. gcsim asc.go:138-148 hexereiA1Bonus() returns 1.75 only when IsHexerei AND Core.Player.GetHexereiCount() >= 2 — count-gated, so every A1 value is x1.75 (asc.go:58,64,82,105): res shred -0.20 -> -0.35, Dark-form Amped ReactBonusMod 0.40 -> 0.70. Authored as five ADDITIVE resShred effects of -15 (mirroring the five A1 base effects, same triggers, same duringSummon gate wrapped in an `all` with teamFaction hexerei min 2), so base -20 + faction -15 = the in-game -35; durations unchanged at 6s per the article ('all effects +75% except duration'). The Dark-form 40->70% Vaporize/Melt uplift is a self reaction-DMG multiplier with no stat primitive — caveat only, no effect. No bare IsHexerei permanent patches exist for Durin: durin.go:29-34 only reads the hexerei param (default enabled) and asc.go:139 is the sole consumer, always paired with the count check."
 			],
 			"description": "Durin will trigger different buffs depending on the form that his power manifests as when he unleashes his Elemental Burst. When that form is:\n\nDragon of White Flame\nAfter nearby party members trigger Burning, Overloaded, Pyro Swirl, or Pyro Crystallize reactions on an opponent, or deal Pyro DMG or Dendro DMG to an opponent affected by Burning, that opponent's Pyro RES, and the RES for the corresponding Element involved in the reaction, are decreased by 20% for 6s.\n\nDragon of Dark Decay\nDurin's Vaporize DMG is increased by 40% and his Melt DMG is increased by 40%."
 		},
@@ -506,10 +366,7 @@
 						],
 						"source": "team"
 					},
-					"conditions": {
-						"type": "state",
-						"state": "duringSummon"
-					},
+					"conditions": { "type": "state", "state": "duringSummon" },
 					"duration": 6,
 					"durationType": "refresh"
 				}
@@ -541,9 +398,7 @@
 					"stat": "burstDmgBonus",
 					"value": 40,
 					"snapshottable": false,
-					"trigger": {
-						"type": "passive"
-					}
+					"trigger": { "type": "passive" }
 				}
 			],
 			"_curatorNotes": [
@@ -569,14 +424,8 @@
 					"type": "resShred",
 					"shredStat": "def",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"conditions": {
-						"type": "state",
-						"state": "duringSummon"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"conditions": { "type": "state", "state": "duringSummon" },
 					"duration": 6,
 					"durationType": "refresh",
 					"value": -30,
@@ -585,10 +434,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -624,15 +470,8 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "teamFaction",
-								"faction": "hexerei",
-								"min": 2
-							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "state", "state": "duringSummon" }
 						]
 					},
 					"duration": 6,
@@ -644,23 +483,12 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "overloaded",
-						"source": "team"
-					},
+					"trigger": { "type": "onReaction", "reaction": "overloaded", "source": "team" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "teamFaction",
-								"faction": "hexerei",
-								"min": 2
-							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "state", "state": "duringSummon" }
 						]
 					},
 					"duration": 6,
@@ -672,23 +500,12 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "pyroSwirl",
-						"source": "team"
-					},
+					"trigger": { "type": "onReaction", "reaction": "pyroSwirl", "source": "team" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "teamFaction",
-								"faction": "hexerei",
-								"min": 2
-							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "state", "state": "duringSummon" }
 						]
 					},
 					"duration": 6,
@@ -700,23 +517,12 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "pyroCrystallize",
-						"source": "team"
-					},
+					"trigger": { "type": "onReaction", "reaction": "pyroCrystallize", "source": "team" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "teamFaction",
-								"faction": "hexerei",
-								"min": 2
-							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "state", "state": "duringSummon" }
 						]
 					},
 					"duration": 6,
@@ -728,23 +534,12 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "burning",
-						"source": "team"
-					},
+					"trigger": { "type": "onReaction", "reaction": "burning", "source": "team" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "teamFaction",
-								"faction": "hexerei",
-								"min": 2
-							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
+							{ "type": "state", "state": "duringSummon" }
 						]
 					},
 					"duration": 6,
@@ -756,10 +551,7 @@
 			]
 		}
 	],
-	"meta": {
-		"source": "genshin-db",
-		"generatedAt": "2026-04-06T11:45:40.691Z"
-	},
+	"meta": { "source": "genshin-db", "generatedAt": "2026-04-06T11:45:40.691Z" },
 	"_curatorNotes": [
 		"Full curation 2026-07-14 (stub upgrade). Frames from gcsim main (merged) at ~/Code/gcsim/internal/characters/durin/ (attack.go, charge.go, skill.go, burst.go). Normal/charge/skill/burst FrameMaps + Burst dragon summonTick effects authored; plunge omitted (not rotation-relevant, no plunge.go). All scalings/CD/energy/durations cross-checked against docs/curation/talents/durin.json at talent level 10. Stub artifacts fixed: Burst behavior stance->instant (+summons); mismodeled A4/C1/C6 'damage' effects removed and documented as unmodelable (ATK-scaled dragon amp / source-ATK flat-DMG buff / DEF ignore+shred). Support capabilities modeled: A1 Pyro(+partner-element) RES shred (White form), C2 team Pyro DMG buff, C4 self Burst DMG buff, Skill self energy restore. Durin is a dual-form (White support / Dark DPS) character; form is set by the Skill and cannot be switched inside the planner — Burst is modeled as the default White form with the Dark form as a variant."
 	]

@@ -16,36 +16,11 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 10,
-						"N": 18,
-						"C": 19
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 8,
-						"N": 22,
-						"C": 17
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 38,
-						"N": 52,
-						"C": 52
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 26, "hit": 10, "N": 18, "C": 19 } },
+				{ "name": "N2", "frames": { "anim": 34, "hit": 8, "N": 22, "C": 17 } },
+				{ "name": "N3", "frames": { "anim": 67, "hit": 38, "N": 52, "C": 52 } }
 			],
-			"chargeFrames": {
-				"swap": 66,
-				"N": 99,
-				"C": 99
-			},
+			"chargeFrames": { "anim": 97, "hit": 64 },
 			"_curatorNotes": [
 				"Frames from gcsim main (merged). attack.go attackHitmarks=[10,8,38], animations N1=26/N2=34/N3=67; per-hit overrides ActionAttack(N) & ActionCharge(C): N1 N=18 C=19, N2 N=22 C=17, N3 N=52 C=52. swap=hitmark (InitNormalCancelSlice). N1/CA windup (7/2/3 frames, state-dependent) not baked into base FrameMaps.",
 				"charge.go chargeHitmark=66, chargeFrames=InitAbilSlice(99) with Skill/Burst/Dash/Jump/Swap overridden to 66; N & C stay at the 99 animation default. Catalyst charged attack -> chargeFrames (not chargeHits).",
@@ -77,34 +52,18 @@
 			"abilityType": "skill",
 			"behavior": "instant",
 			"cooldown": 16,
-			"frames": {
-				"swap": 31,
-				"N": 40,
-				"C": 40,
-				"E": 33,
-				"Q": 32,
-				"D": 34,
-				"J": 32
-			},
+			"frames": { "anim": 42, "N": 40, "C": 40, "E": 33, "Q": 32, "D": 34, "J": 32, "swap": 31 },
 			"tags": ["shield"],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 15,
-						"cap": 600
-					},
+					"value": { "type": "scaling", "stat": "atk", "ratio": 15, "cap": 600 },
 					"snapshottable": false,
 					"attribution": "Grace of Kenosis",
 					"_curatorNotes": [
@@ -115,10 +74,7 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "refresh",
 					"scaling": 398.1,
@@ -147,22 +103,12 @@
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": ["coordinatedAttack"],
-			"frames": {
-				"swap": 113,
-				"N": 117,
-				"C": 120,
-				"E": 116,
-				"D": 118,
-				"J": 117
-			},
+			"frames": { "anim": 128, "N": 117, "C": 120, "E": 116, "D": 118, "J": 117, "swap": 113 },
 			"effects": [
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"source": "team"
-					},
+					"trigger": { "type": "onHit", "source": "team" },
 					"duration": 20,
 					"procCooldown": 3,
 					"scaling": 180,
@@ -193,10 +139,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -221,11 +164,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"damageType": "elemental",
-						"source": "team"
-					},
+					"trigger": { "type": "onHit", "damageType": "elemental", "source": "team" },
 					"duration": 8,
 					"durationType": "refresh",
 					"source": "character",
@@ -252,10 +191,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"source": "team"
-					},
+					"trigger": { "type": "onHit", "source": "team" },
 					"procCooldown": 6,
 					"scaling": 600,
 					"stat": "atk",
@@ -279,10 +215,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -298,10 +231,7 @@
 					"type": "resShred",
 					"target": "enemy",
 					"value": -25,
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "refresh",
 					"attribution": "C2 (Guidance of Theosis RES shred)",
@@ -313,10 +243,7 @@
 				{
 					"type": "shield",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "refresh",
 					"scaling": 398.1,
@@ -348,19 +275,12 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 70
-					},
+					"value": { "type": "scaling", "stat": "atk", "ratio": 70 },
 					"snapshottable": false,
 					"attribution": "C4 (Pathfinder's Blessing)",
 					"_curatorNotes": [
@@ -392,10 +312,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",

@@ -21,20 +21,11 @@
 				"No plunge.go in gcsim character dir — plungeFrames not available."
 			],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": { "swap": 14, "C": 17 }
-				},
-				{
-					"name": "N2",
-					"frames": { "swap": 11, "C": 19 }
-				},
-				{
-					"name": "N3",
-					"frames": { "swap": 16, "C": 33 }
-				}
+				{ "name": "N1", "frames": { "anim": 29, "hit": 14, "C": 17 } },
+				{ "name": "N2", "frames": { "anim": 33, "hit": 11, "C": 19 } },
+				{ "name": "N3", "frames": { "anim": 38, "hit": 16, "C": 33 } }
 			],
-			"chargeFrames": { "swap": 67, "N": 67, "E": 67, "Q": 67, "D": 67, "J": 67 },
+			"chargeFrames": { "anim": 64, "N": 61, "C": 63, "E": 63, "Q": 63, "J": 49, "swap": 49 },
 			"sections": [
 				{
 					"type": "normal",
@@ -60,14 +51,14 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 36, "N": 38, "Q": 38, "D": 37, "J": 38 },
+			"frames": { "anim": 42, "N": 38, "C": 38, "Q": 38, "D": 37, "J": 38, "swap": 36 },
 			"cooldown": 12,
 			"cooldownStartDelay": 13,
 			"variants": [
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "swap": 56, "N": 57, "Q": 58, "J": 57 },
+					"frames": { "anim": 56, "N": 57, "Q": 58, "J": 57, "swap": 56 },
 					"_curatorNotes": [
 						"Hold variant requires ≥1 Verdant Dew (c.Core.Player.VerdantDew()); gcsim returns an error if VerdantDew=0. Verdant Dew is a team-level resource not yet modeled in the schema. D omitted — ActionDash not explicitly set in skillFrames[1]; stays at InitAbilSlice default 64 (AnimationLength)."
 					]
@@ -86,10 +77,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"duration": 10,
 					"durationType": "refresh",
 					"element": "dendro",
@@ -98,10 +86,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"duration": 10,
 					"durationType": "refresh",
 					"element": "hydro",
@@ -121,7 +106,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 109, "N": 111, "E": 110, "D": 111 },
+			"frames": { "anim": 115, "N": 111, "C": 110, "E": 110, "D": 111, "swap": 109 },
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": [],
@@ -163,10 +148,7 @@
 				{
 					"type": "heal",
 					"target": "active",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "lunarBloom"
-					},
+					"trigger": { "type": "onReaction", "reaction": "lunarBloom" },
 					"procCooldown": 1.9,
 					"scaling": 500,
 					"stat": "em"
@@ -186,9 +168,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 500,
 					"stat": "em"
 				},
@@ -250,9 +230,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 185,
 					"stat": "em",
 					"element": "dendro"
@@ -260,9 +238,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 150,
 					"stat": "em",
 					"element": "dendro"
@@ -270,9 +246,7 @@
 				{
 					"type": "elevate",
 					"target": "team",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"conditions": {
 						"type": "all",
 						"conditions": [

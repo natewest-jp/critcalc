@@ -16,13 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 13, "N": 17, "C": 28 } },
-				{ "name": "N2", "frames": { "swap": 13, "N": 26, "C": 28 } },
-				{ "name": "N3", "frames": { "swap": 16, "N": 32, "C": 36 } },
-				{ "name": "N4", "frames": { "swap": 30, "N": 39, "C": 45 } },
-				{ "name": "N5", "frames": { "swap": 25, "N": 69 } }
+				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
+				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
+				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
+				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
 			],
-			"chargeFrames": { "swap": 44, "N": 55, "E": 37, "Q": 36, "D": 20, "J": 20 },
+			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
 			"_curatorNotes": [
 				"Normal-attack frames + scaling are SHARED across all 6 Traveler element variants in gcsim — only the skill/burst differ per element. Same normal/charge data as traveler_anemo.json (Male/Aether frames).",
 				"Plunge frames not authored — geo Traveler has no plunge.go in gcsim source."
@@ -52,13 +52,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 67,
-				"N": 81,
-				"Q": 81,
-				"D": 25,
-				"J": 24
-			},
+			"frames": { "anim": 81, "D": 25, "J": 24, "swap": 67 },
 			"cooldown": 6,
 			"cooldownStartDelay": 23,
 			"cooldownModifiers": [
@@ -66,10 +60,7 @@
 					"source": "A1: Frenzied Rockslide",
 					"type": "flat",
 					"value": -2,
-					"conditions": {
-						"type": "ascension",
-						"level": 1
-					}
+					"conditions": { "type": "ascension", "level": 1 }
 				}
 			],
 			"tags": ["summon"],
@@ -84,10 +75,7 @@
 							"source": "C6: Aftershock",
 							"type": "flat",
 							"value": 10,
-							"conditions": {
-								"type": "constellation",
-								"level": 6
-							}
+							"conditions": { "type": "constellation", "level": 6 }
 						}
 					]
 				}
@@ -96,13 +84,7 @@
 				{
 					"label": "Short Hold",
 					"input": ["hE"],
-					"frames": {
-						"swap": 39,
-						"N": 54,
-						"Q": 54,
-						"D": 31,
-						"J": 31
-					}
+					"frames": { "anim": 39, "N": 54, "Q": 54, "D": 31, "J": 31, "swap": 39 }
 				}
 			],
 			"effects": [],
@@ -121,13 +103,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 51,
-				"N": 67,
-				"E": 67,
-				"D": 42,
-				"J": 42
-			},
+			"frames": { "anim": 67, "D": 42, "J": 42, "swap": 51 },
 			"cooldown": 15,
 			"cooldownStartDelay": 35,
 			"energyCost": 60,
@@ -143,10 +119,7 @@
 							"source": "C6: Aftershock",
 							"type": "flat",
 							"value": 5,
-							"conditions": {
-								"type": "constellation",
-								"level": 6
-							}
+							"conditions": { "type": "constellation", "level": 6 }
 						}
 					]
 				}

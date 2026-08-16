@@ -22,54 +22,22 @@
 				"plungeFrames.J=66: InitAbilSlice(66) default (AnimationLength), not explicitly overridden in gcsim lowPlungeFrames init — may not represent a valid cancel frame; reviewer should verify"
 			],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 17,
-						"N": 17,
-						"C": 20
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 18,
-						"N": 26,
-						"C": 18
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 28,
-						"N": 33,
-						"C": 28
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 28,
-						"N": 51
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 28, "hit": 17, "N": 17, "C": 20 } },
+				{ "name": "N2", "frames": { "anim": 38, "hit": 18, "N": 26, "C": 18 } },
+				{ "name": "N3", "frames": { "anim": 46, "hit": 28, "N": 33, "C": 28 } },
+				{ "name": "N4", "frames": { "anim": 65, "hit": 28, "N": 51, "C": 54 } }
 			],
 			"chargeFrames": {
-				"swap": 54,
+				"anim": 71,
 				"N": 69,
+				"C": 66,
 				"E": 60,
 				"Q": 61,
 				"D": 54,
-				"J": 54
+				"J": 54,
+				"swap": 54
 			},
-			"plungeFrames": {
-				"swap": 49,
-				"N": 56,
-				"E": 45,
-				"Q": 45,
-				"D": 45,
-				"J": 66
-			},
+			"plungeFrames": { "anim": 68, "N": 59, "C": 49, "E": 46, "Q": 46, "D": 46, "swap": 51 },
 			"sections": [
 				{
 					"type": "normal",
@@ -87,7 +55,8 @@
 					"description": "Calling upon the power of her Wind Spirits, Sucrose plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 attacks using Wind Spirits, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of her Wind Spirits, Sucrose plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
+			"description": "Normal Attack\nPerforms up to 4 attacks using Wind Spirits, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of her Wind Spirits, Sucrose plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground.",
+			"lowPlungeFrames": { "anim": 66, "N": 56, "C": 47, "E": 45, "Q": 45, "D": 45, "swap": 49 }
 		},
 		{
 			"id": "sucrose__skill__astable_anemohypostasis_creation_6308",
@@ -95,14 +64,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 56,
-				"N": 57,
-				"E": 56,
-				"Q": 57,
-				"D": 11,
-				"J": 11
-			},
+			"frames": { "anim": 68, "N": 57, "C": 56, "E": 56, "Q": 57, "D": 11, "J": 11, "swap": 56 },
 			"cooldown": 15,
 			"cooldownStartDelay": 9,
 			"chargeModifiers": [
@@ -110,10 +72,7 @@
 					"source": "C1: Clustered Vacuum Field",
 					"type": "flat",
 					"value": 1,
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					}
+					"conditions": { "type": "constellation", "level": 1 }
 				}
 			],
 			"tags": ["grouping"],
@@ -132,13 +91,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 47,
-				"N": 49,
-				"E": 48,
-				"D": 47,
-				"J": 47
-			},
+			"frames": { "anim": 65, "N": 49, "C": 48, "E": 48, "D": 47, "J": 47, "swap": 47 },
 			"cooldown": 20,
 			"cooldownStartDelay": 18,
 			"tags": ["grouping"],
@@ -154,10 +107,7 @@
 							"source": "C2: Beth: Unbound Form",
 							"type": "flat",
 							"value": 2,
-							"conditions": {
-								"type": "constellation",
-								"level": 2
-							}
+							"conditions": { "type": "constellation", "level": 2 }
 						}
 					]
 				}
@@ -215,19 +165,12 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": ["skill", "burst"]
-					},
+					"trigger": { "type": "onHit", "abilityType": ["skill", "burst"] },
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": {
-						"type": "scaling",
-						"stat": "em",
-						"ratio": 20
-					},
+					"value": { "type": "scaling", "stat": "em", "ratio": 20 },
 					"snapshottable": true
 				}
 			],
@@ -286,9 +229,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",
@@ -308,15 +249,8 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
-					"conditions": {
-						"type": "teamFaction",
-						"faction": "hexerei",
-						"min": 2
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
 					"duration": 15,
 					"durationType": "refresh",
 					"target": "team",
@@ -327,15 +261,8 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"conditions": {
-						"type": "teamFaction",
-						"faction": "hexerei",
-						"min": 2
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
 					"duration": 20,
 					"durationType": "refresh",
 					"target": "team",

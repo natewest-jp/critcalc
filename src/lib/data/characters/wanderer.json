@@ -18,42 +18,28 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": {
-						"swap": 11,
-						"N": 26,
-						"C": 24
-					}
+					"frames": { "anim": 35, "N": 26, "C": 24, "E": 12, "Q": 12, "D": 12, "J": 11, "swap": 11 }
 				},
 				{
 					"name": "N2",
-					"frames": {
-						"swap": 5,
-						"N": 18,
-						"C": 27
-					}
+					"frames": { "anim": 39, "N": 18, "C": 27, "E": 5, "Q": 5, "D": 6, "J": 5, "swap": 5 }
 				},
 				{
 					"name": "N3",
-					"frames": {
-						"swap": 33,
-						"N": 64
-					}
+					"frames": { "anim": 76, "N": 64, "C": 50, "E": 33, "Q": 33, "D": 34, "J": 34, "swap": 33 }
 				}
 			],
 			"chargeFrames": {
-				"swap": 47,
+				"anim": 69,
 				"N": 51,
+				"C": 50,
 				"E": 49,
 				"Q": 49,
 				"D": 37,
-				"J": 37
+				"J": 37,
+				"swap": 47
 			},
-			"plungeFrames": {
-				"swap": 57,
-				"N": 65,
-				"Q": 65,
-				"D": 41
-			},
+			"plungeFrames": { "anim": 57, "N": 65, "Q": 65, "D": 41, "swap": 57 },
 			"sections": [
 				{
 					"type": "normal",
@@ -82,45 +68,21 @@
 			"name": "Kuugo: Fushoudan",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"infusion": "anemo",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 15,
-						"N": 30,
-						"C": 31
-					}
-				},
+				{ "name": "N1", "frames": { "anim": 43, "hit": 15, "N": 30, "C": 31 } },
 				{
 					"name": "N2",
-					"frames": {
-						"swap": 3,
-						"N": 17,
-						"C": 23
-					}
+					"frames": { "anim": 34, "N": 17, "C": 23, "E": 4, "Q": 6, "D": 5, "J": 5, "swap": 3 }
 				},
 				{
 					"name": "N3",
-					"frames": {
-						"swap": 32,
-						"N": 54
-					}
+					"frames": { "anim": 70, "N": 54, "C": 53, "E": 33, "Q": 33, "D": 32, "J": 33, "swap": 32 }
 				}
 			],
-			"chargeFrames": {
-				"swap": 70,
-				"N": 49,
-				"E": 38,
-				"Q": 38,
-				"D": 38,
-				"J": 38
-			},
+			"chargeFrames": { "anim": 70, "N": 49, "C": 49, "E": 38, "Q": 38, "D": 38, "J": 38 },
 			"description": "While in the Windfavored state activated by Hanega: Song of the Wind, Wanderer's Normal Attacks are converted into Kuugo: Fushoudan and his Charged Attacks into Kuugo: Toufukai. Both deal Anemo DMG with increased AoE and damage; Kuugo: Toufukai does not consume Stamina. Plunging Attacks are disabled while hovering.",
 			"_curatorNotes": [
 				"In-stance N (Kuugo: Fushoudan) and CA (Kuugo: Toufukai) deal anemo DMG and are still tagged as Normal/Charged Attack DMG by the game. gcsim applies skillNABonus[talentLvlSkill] (N) and skillCABonus[talentLvlSkill] (CA) as a multiplicative bonus on top of the base Mult — these are stance-only damage scalings the schema can't represent on hits[]; reviewer to wire as a state-conditioned damage modifier.",
@@ -137,9 +99,7 @@
 			"abilityType": "skill",
 			"cooldown": 6,
 			"duration": 10,
-			"frames": {
-				"swap": 28
-			},
+			"frames": { "anim": 28 },
 			"tags": [],
 			"effects": [],
 			"description": "Concentrates the power of the winds to break free from the shackles of the earth, dealing AoE Anemo DMG before leaping into the air and entering the Windfavored state.\n\nWindfavored\nThe Wanderer cannot perform Plunging Attacks in this state. When he uses Normal and Charged Attacks, they will be converted into Kuugo: Fushoudan and Kuugo: Toufukai respectively; the DMG they deal and their AoE will be increased, and their DMG will be considered Normal and Charged Attack DMG respectively. Kuugo: Toufukai will not consume Stamina.\nThe Wanderer will hover persistently during this time. While this state is active, the Wanderer's movements gain the following properties:\n·Persistently consumes Kuugoryoku Points to maintain this hovering state.\n·When sprinting, additional Kuugoryoku Points will be consumed for the Wanderer to accelerate mid-air. Holding sprint will cause persistent Kuugoryoku Point consumption to maintain speed. This effect will replace his default sprint.\n·Jumping expends extra Kuugoryoku Points to increase hovering height. Holding jump will cause persistent Kuugoryoku Point consumption to keep increasing hovering height.\n\nRunning out of Kuugoryoku Points will end the Windfavored state.\nA second cast during the duration of Windfavored will also end it.",
@@ -160,13 +120,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"frames": {
-				"swap": 94,
-				"N": 94,
-				"E": 95,
-				"D": 97,
-				"J": 96
-			},
+			"frames": { "anim": 145, "N": 117, "C": 119, "D": 119, "J": 119 },
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
@@ -189,9 +143,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -213,9 +165,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 35,
 					"stat": "atk",
 					"element": "anemo"
@@ -238,9 +188,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 25,
 					"stat": "atk"
 				}
@@ -293,9 +241,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 40,
 					"stat": "atk"
 				}

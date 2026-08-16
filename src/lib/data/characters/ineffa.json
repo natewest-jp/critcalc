@@ -17,46 +17,12 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 9,
-						"N": 12,
-						"C": 27
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 17,
-						"N": 19,
-						"C": 39
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 21,
-						"N": 33,
-						"C": 39
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 27,
-						"N": 52
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 35, "hit": 9, "N": 12, "C": 27 } },
+				{ "name": "N2", "frames": { "anim": 46, "hit": 17, "N": 19, "C": 39 } },
+				{ "name": "N3", "frames": { "anim": 48, "hit": 21, "N": 33, "C": 39 } },
+				{ "name": "N4", "frames": { "anim": 55, "hit": 27, "N": 52 } }
 			],
-			"chargeFrames": {
-				"swap": 43,
-				"N": 45,
-				"E": 45,
-				"Q": 45,
-				"D": 23,
-				"J": 23
-			},
+			"chargeFrames": { "anim": 60, "N": 45, "E": 45, "Q": 45, "D": 23, "J": 23, "swap": 43 },
 			"_curatorNotes": [
 				"Polearm normals: 4-hit Physical chain. attackHitmarks=[[9],[17],[10,21],[27]]; N3 multi-hit, last=21 gates cancel. attackFrames built via InitNormalCancelSlice; per-hit ActionAttack + ActionCharge overrides. N4 final-hit no C key per convention.",
 				"Charge: chargeFrames=InitAbilSlice(60), ActionDash/Jump=23 (chargeHitmark), ActionAttack/Skill/Burst=45, ActionSwap=43. NextQueueItemIsValid forbids C from idle (NormalCounter==0); polearm convention.",
@@ -87,13 +53,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 31,
-				"N": 32,
-				"Q": 32,
-				"D": 32,
-				"J": 32
-			},
+			"frames": { "anim": 32, "swap": 31 },
 			"cooldown": 16,
 			"cooldownStartDelay": 1,
 			"tags": ["shield", "summon"],
@@ -107,11 +67,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2,
-								"firstTickDelay": 0.7
-							},
+							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 0.7 },
 							"scaling": 172.8,
 							"stat": "atk",
 							"element": "electro"
@@ -123,10 +79,7 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "refresh",
 					"scaling": 398.13,
@@ -152,13 +105,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 126,
-				"N": 127,
-				"E": 127,
-				"D": 105,
-				"J": 106
-			},
+			"frames": { "anim": 127, "D": 105, "J": 106, "swap": 126 },
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": ["summon"],
@@ -172,11 +119,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2,
-								"firstTickDelay": 0.7
-							},
+							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 0.7 },
 							"scaling": 172.8,
 							"stat": "atk",
 							"element": "electro"
@@ -214,19 +157,12 @@
 				{
 					"type": "buff",
 					"target": ["self", "active"],
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 6
-					},
+					"value": { "type": "scaling", "stat": "atk", "ratio": 6 },
 					"snapshottable": false
 				}
 			],
@@ -247,22 +183,13 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "refresh",
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					},
+					"conditions": { "type": "constellation", "level": 1 },
 					"source": "character",
 					"stat": "lunarChargedDmgBonus",
-					"value": {
-						"type": "unknown",
-						"description": "+2.5% per 100 ATK Ineffa has, max +50%"
-					},
+					"value": { "type": "unknown", "description": "+2.5% per 100 ATK Ineffa has, max +50%" },
 					"snapshottable": false
 				}
 			],
@@ -298,15 +225,9 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "lunarCharged"
-					},
+					"trigger": { "type": "onReaction", "reaction": "lunarCharged" },
 					"procCooldown": 4,
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"amount": 5
 				}
 			],
@@ -331,15 +252,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "lunarCharged"
-					},
+					"trigger": { "type": "onReaction", "reaction": "lunarCharged" },
 					"procCooldown": 3.5,
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					},
+					"conditions": { "type": "constellation", "level": 6 },
 					"scaling": 135,
 					"stat": "atk",
 					"element": "electro"

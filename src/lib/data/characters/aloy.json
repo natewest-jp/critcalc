@@ -16,32 +16,14 @@
 			"input": ["N1", "N2", "N3", "N4", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": { "swap": 24, "N": 31 }
-				},
-				{
-					"name": "N2",
-					"frames": { "swap": 16, "N": 28 }
-				},
-				{
-					"name": "N3",
-					"frames": { "swap": 23, "N": 38 }
-				},
-				{
-					"name": "N4",
-					"frames": { "swap": 30, "N": 61 }
-				}
+				{ "name": "N1", "frames": { "anim": 31, "hit": 24 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 16 } },
+				{ "name": "N3", "frames": { "anim": 38, "hit": 23 } },
+				{ "name": "N4", "frames": { "anim": 61, "hit": 30 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": { "swap": 25, "D": 15, "J": 15 }
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": { "swap": 96, "D": 86, "J": 86 }
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 25, "D": 15, "J": 15, "swap": 25 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 96, "D": 86, "J": 86 } }
 			],
 			"_curatorNotes": [
 				"No plunge.go in gcsim character dir — plungeFrames not available.",
@@ -73,7 +55,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 66, "N": 47, "Q": 48, "J": 47 },
+			"frames": { "anim": 49, "N": 47, "Q": 48, "J": 47, "swap": 66 },
 			"cooldown": 20,
 			"cooldownStartDelay": 19,
 			"tags": [],
@@ -92,7 +74,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 117, "N": 101, "E": 101, "D": 101, "J": 100 },
+			"frames": { "anim": 117, "N": 101, "E": 101, "D": 101, "J": 100 },
 			"cooldown": 12,
 			"tags": [],
 			"energyCost": 40,
@@ -118,9 +100,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"duration": 10,
 					"source": "character",

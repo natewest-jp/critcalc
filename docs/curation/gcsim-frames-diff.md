@@ -8,8 +8,8 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **123** authored · **111** with a gcsim source
-- FrameMaps: **1042** authored · **883** matching gcsim exactly · **82** disagreeing · **77** uncovered
-- skill/burst application schedules observed: **276** · unobserved: **12**
+- FrameMaps: **1082** authored · **960** matching gcsim exactly · **35** disagreeing · **87** uncovered
+- skill/burst application schedules observed: **272** · unobserved: **16**
 - summon tick streams cross-checked: **57**
 
 ⛔ **No gcsim source (12)** — cannot be oracled at all, and nothing here may be written to them:
@@ -24,134 +24,63 @@ difference, per transition that currently falls back.
 
 | transition | maps falling back | median understatement |
 | --- | --- | --- |
-| normal → P | 533 / 565 | 19f |
-| E/Q → P | 343 / 397 | 9f |
-| E/Q → C | 327 / 382 | 8f |
-| normal → C | 266 / 297 | 22f |
-| E/Q → Q | 152 / 182 | 3f |
-| E/Q → E | 146 / 176 | 3f |
-| normal → N | 77 / 103 | 22f |
-| E/Q → N | 72 / 86 | 3f |
-| E/Q → J | 64 / 75 | 14f |
-| E/Q → D | 42 / 55 | 3f |
+| E/Q → P | 375 / 393 | 10f |
+| E/Q → C | 282 / 300 | 8f |
+| E/Q → Q | 162 / 172 | 3f |
+| E/Q → E | 133 / 144 | 3f |
+| E/Q → N | 126 / 130 | 3f |
+| E/Q → J | 100 / 102 | 14f |
+| E/Q → D | 56 / 60 | 3f |
+| normal → P | 40 / 45 | 24f |
+| normal → C | 13 / 18 | 27f |
+| normal → N | 11 / 12 | 23f |
 
-Maps whose true `anim` exceeds the authored `swap`: **533** normal (median 19f), **343** E/Q (median 9f).
+Maps whose true `anim` exceeds the authored `swap`: **40** normal (median 24f), **377** E/Q (median 10f).
 
-## 2. FrameMaps that disagree (82)
+## 2. FrameMaps that disagree (35)
 
 ⚠️ C4b rules that gcsim is the source for all frame data, so these resolve in
 gcsim's favour — but each is listed so it is READ before it is written.
 
-| character | map | read as | keys (ours → gcsim) |
-| --- | --- | --- | --- |
-| albedo | `albedo__normal__favonius_bladework_weiss.hits[4]` |  | swap 27→17 |
-| arataki_itto | `arataki_itto__normal__fight_club_legend.hits[1]` |  | C 51→27 |
-| arataki_itto | `arataki_itto__normal__fight_club_legend.hits[2]` |  | C 57→21 |
-| arataki_itto | `arataki_itto__normal__fight_club_legend.chargeFrames` |  | D 89→51, J 89→51, swap 130→51 |
-| arataki_itto | `arataki_itto__normal__fight_club_legend_oni_king.hits[1]` |  | C 51→27 |
-| arataki_itto | `arataki_itto__normal__fight_club_legend_oni_king.hits[2]` |  | C 57→21 |
-| arataki_itto | `arataki_itto__normal__fight_club_legend_oni_king.chargeFrames` |  | D 89→51, J 89→51, swap 130→51 |
-| bennett | `bennett__skill__passion_overload.frames` |  | Q 41→42 |
-| bennett | `bennett__skill__passion_overload.variants[h2E]` |  | J 240→340 |
-| bennett | `bennett__burst__fantastic_voyage.frames` |  | E 52→53 |
-| chasca | `chasca__normal__phantom_feather_flurry.hits[0]` |  | N 17→24, swap 10→13 |
-| chasca | `chasca__normal__phantom_feather_flurry.hits[1]` |  | N 19→41, swap 8→25 |
-| chasca | `chasca__normal__phantom_feather_flurry.hits[2]` |  | N 36→78, swap 20→44 |
-| chasca | `chasca__normal__phantom_feather_flurry.hits[3]` |  | N 73→22, swap 39→15 |
-| chasca | `chasca__skill__spirit_reins_shadow_hunt.frames` |  | swap 37→623 |
-| chasca | `chasca__burst__soul_reapers_fatal_round.frames` |  | N 99→106, E 102→104, D 101→103, J 100→111, swap 98→111 |
-| cyno | `cyno__normal__invokers_spear.chargeFrames` |  | E 62→63 |
-| cyno | `cyno__normal__pactsworn_pathclearer.hits[3]` |  | swap 14→5 |
-| dahlia | `dahlia__skill__immersive_ordinance.variants[hE]` |  | N 35→32, Q 35→33, D 33→31, J 32→29, swap 33→31 |
-| escoffier | `escoffier__normal__kitchen_skills.hits[0]` |  | swap 17→7 |
-| escoffier | `escoffier__normal__kitchen_skills.hits[1]` |  | swap 21→16 |
-| escoffier | `escoffier__normal__kitchen_skills.hits[2]` |  | swap 62→40 |
-| faruzan | `faruzan__normal__parthian_shot.chargeHits[1]` |  | D 49→86, J 49→86, swap 60→96 |
-| fischl | `fischl__normal__bolts_of_downfall.hits[4]` |  | N 37→67 |
-| flins | `flins__burst__ancient_ritual_cometh_the_night.frames` |  | N 102→53, E 103→53, D 103→51, J 103→50, swap 91→81 |
-| freminet | `freminet__skill__pressurized_floe.variants[E]` |  | N 53→42, E 47→31, Q 47→42, D 47→32, J 47→31, swap 51→46 |
-| freminet | `freminet__skill__pressurized_floe.variants[E]` |  | N 53→42, E 42→31, D 43→32, J 41→31, swap 51→46 |
-| furina | `furina__normal__soloists_solicitation.chargeFrames` |  | C 47→253 |
-| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.hits[4]` |  | swap 28→26 |
-| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.hits[5]` |  | swap 27→23 |
-| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.chargeFrames` |  | E 53→60, Q 54→62, D 26→19, J 24→19 |
-| hu_tao | `hu_tao__normal__paramita_papilio.hits[4]` |  | N 36→37, swap 28→26 |
-| hu_tao | `hu_tao__normal__paramita_papilio.hits[5]` |  | swap 27→23 |
-| hu_tao | `hu_tao__normal__paramita_papilio.chargeFrames` |  | Q 33→62, D 3→19, J 3→19, swap 42→62 |
-| hu_tao | `hu_tao__normal__paramita_papilio.plungeFrames` | lP | E 58→59, Q 58→59 |
-| hu_tao | `hu_tao__skill__guide_to_afterlife.frames` |  | D 38→37, J 39→37 |
-| kaedehara_kazuha | `kaedehara_kazuha__normal__garyuu_bladework.hits[0]` |  | N 16→21 |
-| kaedehara_kazuha | `kaedehara_kazuha__normal__garyuu_bladework.plungeFrames` | P | N 55→54, E 56→53, Q 55→53, D 43→47, J 50→69, swap 50→55 |
-| keqing | `keqing__skill__stellar_restoration_recast.frames` |  | N 42→36, D 16→21, J 16→21, swap 42→28 |
-| kinich | `kinich__normal__nightsun_style.hits[0]` |  | swap 47→21 |
-| kinich | `kinich__normal__nightsun_style.hits[1]` |  | swap 48→22 |
-| kinich | `kinich__normal__nightsun_style.hits[2]` |  | swap 79→44 |
-| lan_yan | `lan_yan__skill__swallow_wisp_pinion_dance.frames` |  | N 33→45, E 33→49, Q 79→46, D 77→47, J 79→47, swap 80→49 |
-| lauma | `lauma__normal__peregrination_of_linnunrata.chargeFrames` |  | N 67→61, E 67→63, Q 67→63, D 67→64, J 67→49, swap 67→49 |
-| lyney | `lyney__normal__card_force_translocation.chargeHits[0]` |  | D 15→72, J 15→72, swap 23→80 |
-| mualani | `mualani__normal__cooling_treatment.chargeFrames` |  | N 73→86, C 85→98, E 72→85, Q 73→86, D 72→85, J 73→86, swap 71→84 |
-| neuvillette | `neuvillette__normal__as_water_seeks_equilibrium.chargeFrames` |  | N 87→74, E 26→23, Q 27→23, D 25→23, J 26→23, swap 58→50 |
-| nicole | `nicole__normal__allegoria.chargeFrames` |  | N 99→97, C 99→97, swap 66→64 |
-| nilou | `nilou__skill__whirling_steps_2.frames` |  | N 40→27, E 32→27, Q 40→33, D 36→26, J 37→27, swap 62→31 |
-| nilou | `nilou__skill__whirling_steps_3.frames` |  | D 57→26, J 57→27, swap 61→31 |
-| ningguang | `ningguang__normal__sparkling_scatter.hits[0]` |  | C 42→40, swap 15→13 |
-| ningguang | `ningguang__normal__sparkling_scatter.chargeFrames` |  | N 46→68, E 48→72, Q 47→69, D 32→54, J 32→54, swap 46→67 |
-| raiden_shogun | `raiden_shogun__normal__musou_isshin.hits[0]` |  | C 24→21 |
-| raiden_shogun | `raiden_shogun__normal__musou_isshin.chargeFrames` |  | D 34→32, J 34→32 |
-| raiden_shogun | `raiden_shogun__normal__musou_isshin.plungeFrames` | P@state-inStance | N 58→60, D 78→83, swap 60→61 |
-| raiden_shogun | `raiden_shogun__skill__transcendence_baleful_omen.frames` |  | N 51→37 |
-| raiden_shogun | `raiden_shogun__burst__secret_art_musou_shinsetsu.frames` |  | swap 111→110 |
-| sayu | `sayu__skill__yoohoo_art_fuuin_dash.variants[hE]` |  | swap 87→107 |
-| sethos | `sethos__normal__royal_reed_archery.chargeHits[0]` |  | swap 26→25 |
-| sethos | `sethos__normal__royal_reed_archery.chargeHits[1]` |  | D 74→16, J 74→16, swap 83→25 |
-| sethos | `sethos__normal__royal_reed_archery.chargeHits[2]` |  | D 368→27, J 368→27, swap 379→38 |
-| sigewinne | `sigewinne__normal__targeted_treatment.chargeHits[2]` |  | D 103→86, J 103→86, swap 112→94 |
-| sigewinne | `sigewinne__burst__super_saturated_syringing.frames` |  | N 269→127, E 271→129, D 241→99, J 241→99, swap 245→103 |
-| skirk | `skirk__normal__havoc_sunder.hits[4]` |  | N 72→67 |
-| tartaglia | `tartaglia__burst__havoc_obliteration_ranged.frames` |  | N 54→102, D 54→103, J 54→102, swap 53→101 |
-| tartaglia | `tartaglia__burst__havoc_obliteration_melee.frames` |  | N 102→54, E 102→55, J 102→54, swap 101→53 |
-| tighnari | `tighnari__normal__khanda_barrierbuster.chargeHits[2]` |  | D 175→86, J 175→86, swap 183→94 |
-| traveler_anemo | `traveler_anemo__skill__palm_vortex.variants[hE]` |  | N 134→160, D 78→116, J 78→116, swap 124→151 |
-| traveler_geo | `traveler_geo__skill__starfell_sword.variants[hE]` |  | N 54→81, Q 54→81, D 31→25, J 31→24, swap 39→67 |
-| traveler_hydro | `traveler_hydro__skill__aquacrest_saber.variants[hE]` |  | N 81→396, Q 81→396, D 74→389, J 74→389, swap 90→405 |
-| varesa | `varesa__normal__by_the_horns.hits[0]` |  | N 33→27, C 23→17, swap 23→17 |
-| varesa | `varesa__normal__by_the_horns.plungeFrames` | lP | C 47→39, E 40→39, Q 40→39, D 40→37, J 51→50, swap 37→38 |
-| varesa | `varesa__normal__fiery_passion_strikes.plungeFrames` | lP | N 47→40, C 46→39, E 47→39, Q 47→39, D 40→37, J 79→50, swap 45→38 |
-| varka | `varka__normal__favonius_bladework_dancing_radiance.hits[0]` |  | N 23→28, C 22→27, swap 19→24 |
-| varka | `varka__normal__favonius_bladework_dancing_radiance.hits[1]` |  | N 29→34, C 30→35, swap 28→33 |
-| varka | `varka__normal__favonius_bladework_dancing_radiance.chargeFrames` |  | N 58→72, E 59→73, Q 58→72, D 41→55, J 41→55, swap 49→63 |
-| varka | `varka__skill__windbound_execution.variants[E]` |  | N 55→49, E 56→44, Q 55→44, D 56→46, J 55→43, swap 68→49 |
-| wanderer | `wanderer__burst__kyougen_five_ceremonial_plays.frames` |  | N 94→117, E 95→145, D 97→119, J 96→119, swap 94→145 |
-| xingqiu | `xingqiu__skill__guhua_sword_fatal_rainscreen.frames` |  | Q 68→67 |
-| yelan | `yelan__normal__stealthy_bowshot.chargeHits[0]` |  | D 15→86, J 15→86, swap 25→96 |
-| yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` |  | N 140→96, D 129→85, J 129→85, swap 138→95 |
-| zhongli | `zhongli__normal__rain_of_stone.hits[4]` |  | C 21→31 |
-
-### Which gcsim variant our ambiguous maps actually describe
-
-⚓ A finding, not plumbing. Our schema has ONE `plungeFrames` and does not say
-whether it means the low or the high plunge, and one `chargeHits` array that
-does not say which draw level gcsim's `aim` default corresponds to. Resolved by
-matching rather than by assumption:
-
-| gcsim variant | maps that match it | maps that do not |
+| character | map | keys (ours → gcsim) |
 | --- | --- | --- |
-| `lP` | 36 | 3 |
-| `P` | 1 | 1 |
-| `P@state-nightsoulBlessing` | 1 | 0 |
-| `P@state-inStance` | 0 | 1 |
+| albedo | `albedo__normal__favonius_bladework_weiss.hits[4]` | swap 27→17 |
+| arataki_itto | `arataki_itto__normal__fight_club_legend.chargeFrames` | D 89→51, J 89→51, swap 130→51 |
+| arataki_itto | `arataki_itto__normal__fight_club_legend_oni_king.chargeFrames` | D 89→51, J 89→51, swap 130→51 |
+| bennett | `bennett__skill__passion_overload.variants[h2E]` | J 240→340 |
+| chasca | `chasca__normal__phantom_feather_flurry.hits[0]` | N 17→24, swap 10→13 |
+| chasca | `chasca__normal__phantom_feather_flurry.hits[1]` | N 19→41, swap 8→25 |
+| chasca | `chasca__normal__phantom_feather_flurry.hits[2]` | N 36→78, swap 20→44 |
+| chasca | `chasca__normal__phantom_feather_flurry.hits[3]` | N 73→22, swap 39→15 |
+| chasca | `chasca__skill__spirit_reins_shadow_hunt.frames` | swap 37→623 |
+| chasca | `chasca__burst__soul_reapers_fatal_round.frames` | N 99→106, E 102→104, D 101→103, J 100→111, swap 98→111 |
+| flins | `flins__burst__ancient_ritual_cometh_the_night.frames` | N 102→53, E 103→53, D 103→51, J 103→50, swap 91→81 |
+| furina | `furina__normal__soloists_solicitation.chargeFrames` | C 47→253 |
+| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.hits[4]` | swap 28→26 |
+| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.chargeFrames` | E 53→60, Q 54→62, D 26→19, J 24→19 |
+| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.plungeFrames` | N 58→59, E 59→60, Q 59→60, J 74→76, swap 61→64 |
+| hu_tao | `hu_tao__normal__paramita_papilio.hits[4]` | N 36→37, swap 28→26 |
+| hu_tao | `hu_tao__normal__paramita_papilio.chargeFrames` | Q 33→62, D 3→19, J 3→19, swap 42→62 |
+| hu_tao | `hu_tao__normal__paramita_papilio.plungeFrames` | N 58→59, E 58→60, Q 58→60, swap 61→64 |
+| hu_tao | `hu_tao__normal__paramita_papilio.lowPlungeFrames` | E 58→59, Q 58→59 |
+| keqing | `keqing__skill__stellar_restoration_recast.frames` | N 42→36, D 16→21, J 16→21, swap 42→28 |
+| kinich | `kinich__normal__nightsun_style.hits[0]` | swap 47→21 |
+| kinich | `kinich__normal__nightsun_style.hits[1]` | swap 48→22 |
+| kinich | `kinich__normal__nightsun_style.hits[2]` | swap 79→44 |
+| lan_yan | `lan_yan__normal__normal_attack.plungeFrames` | N 56→58, E 56→59, Q 57→60, D 44→46 |
+| lan_yan | `lan_yan__skill__swallow_wisp_pinion_dance.frames` | N 33→45, E 33→49, Q 79→46, D 77→47, J 79→47, swap 80→49 |
+| nilou | `nilou__skill__whirling_steps_2.frames` | N 40→27, E 32→27, Q 40→33, D 36→26, J 37→27, swap 62→31 |
+| nilou | `nilou__skill__whirling_steps_3.frames` | D 57→26, J 57→27, swap 61→31 |
+| sigewinne | `sigewinne__burst__super_saturated_syringing.frames` | N 269→127, E 271→129, D 241→99, J 241→99, swap 245→103 |
+| tartaglia | `tartaglia__burst__havoc_obliteration_ranged.frames` | N 54→102, D 54→103, J 54→102, swap 53→101 |
+| tartaglia | `tartaglia__burst__havoc_obliteration_melee.frames` | N 102→54, E 102→55, J 102→54, swap 101→53 |
+| traveler_hydro | `traveler_hydro__skill__aquacrest_saber.variants[hE]` | N 81→396, Q 81→396, D 74→389, J 74→389, swap 90→405 |
+| varesa | `varesa__normal__by_the_horns.hits[0]` | N 33→27, C 23→17, swap 23→17 |
+| varesa | `varesa__normal__by_the_horns.plungeFrames` | N 40→39, C 47→40, E 40→39, Q 40→39, D 40→38, J 51→49, swap 37→39 |
+| yelan | `yelan__normal__stealthy_bowshot.chargeHits[0]` | D 15→86, J 15→86, swap 25→96 |
+| yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | N 140→96, D 129→85, J 129→85, swap 138→95 |
 
-### Known-unresolved drivers
-
-These characters have a condition-gated ability the driver table cannot yet
-reach. ⛔ Their maps must be excluded from the migration until adjudicated.
-
-- **chasca** — Multitarget Fire (Tap): 0/1 under every candidate prereq. gcsim's base attack (34/13) and its post-skill reading (39/39) both disagree with the authored 11f. Adjudicate before migrating any Chasca normal.
-- **kinich** — Loop Shot / Scalespiker Cannon: gcsim errors on `skill` under every prereq we tried, so the Nightsoul skill is never captured at all.
-- **lanyan** — Feathermoon Ring (N / E): 0/2 under every candidate.
-- **varesa** — Fiery Passion Strikes: her skill leaves her AIRBORNE, so a post-skill `attack` reads a plunge-adjacent animation rather than her Nightsoul normal. Needs a landing step the driver vocabulary does not have.
-
-## 3. Uncovered maps (77)
+## 3. Uncovered maps (87)
 
 ⚠️ Uncovered is **not** the same as matching. A map here has no gcsim reading at
 all; the migration leaves it alone and it keeps `anim = swap`.
@@ -160,13 +89,17 @@ all; the migration leaves it alone and it keeps `anim = swap`.
 
 > iansan `iansan__normal__weighted_spike.hits[0]` · iansan `iansan__normal__weighted_spike.hits[1]` · iansan `iansan__normal__weighted_spike.hits[2]` · iansan `iansan__normal__weighted_spike.chargeFrames` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[0]` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[1]` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[2]` · iansan `iansan__normal__weighted_spike_swift_stormflight.chargeFrames` · iansan `iansan__skill__thunderbolt_rush.frames` · iansan `iansan__burst__the_three_principles_of_power.frames` · ifa `ifa__normal__rite_of_dispelling_winds.hits[0]` · ifa `ifa__normal__rite_of_dispelling_winds.hits[1]` · ifa `ifa__normal__rite_of_dispelling_winds.hits[2]` · ifa `ifa__normal__rite_of_dispelling_winds.chargeFrames` · ifa `ifa__normal__rite_of_dispelling_winds.plungeFrames` · ifa `ifa__skill__airborne_disease_prevention.frames` · ifa `ifa__burst__compound_sedation_field.frames` · jahoda `jahoda__normal__strike_while_the_arrows_hot.hits[0]` · jahoda `jahoda__normal__strike_while_the_arrows_hot.hits[1]` · jahoda `jahoda__normal__strike_while_the_arrows_hot.hits[2]` · jahoda `jahoda__normal__strike_while_the_arrows_hot.chargeHits[0]` · jahoda `jahoda__normal__strike_while_the_arrows_hot.chargeHits[1]` · jahoda `jahoda__skill__savvy_strategy_splitting_the_spoils.frames` · jahoda `jahoda__burst__hidden_aces_seven_tools_of_the_hunter.frames` · linnea `linnea__normal__capture_protocol.hits[0]` · linnea `linnea__normal__capture_protocol.hits[1]` · linnea `linnea__normal__capture_protocol.hits[2]` · linnea `linnea__normal__capture_protocol.chargeHits[0]` · linnea `linnea__normal__capture_protocol.chargeHits[1]` · linnea `linnea__skill__countermeasure_lumis_battle_cry.frames` · linnea `linnea__burst__memo_survival_guide_in_extreme_conditions.frames` · nefer `nefer__normal__striking_serpent.hits[0]` · nefer `nefer__normal__striking_serpent.hits[1]` · nefer `nefer__normal__striking_serpent.hits[2]` · nefer `nefer__normal__striking_serpent.hits[3]` · nefer `nefer__normal__striking_serpent.chargeFrames` · nefer `nefer__skill__senet_strategy_dance_of_a_thousand_nights.frames` · nefer `nefer__burst__sacred_vow_true_eyes_phantasm.frames`
 
-**gcsim models one aimed shot per bow (no partial draw)** (14)
+**no gcsim analogue** (18)
 
-> aloy `aloy__normal__rapid_fire.chargeHits[0]` · amber `amber__normal__sharpshooter.chargeHits[0]` · chasca `chasca__normal__phantom_feather_flurry.chargeHits[0]` · diona `diona__normal__ktzlein_style.chargeHits[0]` · faruzan `faruzan__normal__parthian_shot.chargeHits[0]` · gorou `gorou__normal__ripping_fang_fletching.chargeHits[0]` · ororon `ororon__normal__spiritvessel_snapshot.chargeHits[0]` · sigewinne `sigewinne__normal__targeted_treatment.chargeHits[0]` · sigewinne `sigewinne__normal__targeted_treatment.chargeHits[1]` · tighnari `tighnari__normal__khanda_barrierbuster.chargeHits[0]` · tighnari `tighnari__normal__khanda_barrierbuster.chargeHits[1]` · venti `venti__normal__divine_marksmanship.chargeHits[0]` · yoimiya `yoimiya__normal__firework_flareup.chargeHits[0]` · yoimiya `yoimiya__normal__firework_flareup_niwabi.chargeHits[0]`
+> chasca `chasca__normal__multitarget_fire_tap.hits[0]` · flins `flins__burst__ancient_ritual_cometh_the_night.variants[sQ]` · freminet `freminet__skill__pressurized_floe.variants[E]` · freminet `freminet__skill__pressurized_floe.variants[E]` · kaedehara_kazuha `kaedehara_kazuha__normal__garyuu_bladework.plungeVariants[After Hold E]` · kinich `kinich__skill__loop_shot.frames` · kinich `kinich__skill__scalespiker_cannon.frames` · lan_yan `lan_yan__skill__feathermoon_ring_n.frames` · lan_yan `lan_yan__skill__feathermoon_ring_e.frames` · lisa `lisa__skill__violet_arc.variants[E]` · varesa `varesa__normal__fiery_passion_strikes.hits[0]` · varesa `varesa__normal__fiery_passion_strikes.hits[1]` · varesa `varesa__normal__fiery_passion_strikes.hits[2]` · varesa `varesa__normal__fiery_passion_strikes.chargeFrames` · varesa `varesa__normal__fiery_passion_strikes.plungeFrames` · varesa `varesa__skill__fiery_passion_rush.frames` · varesa `varesa__burst__guardian_vent.variants[sQ]` · varka `varka__skill__windbound_execution.variants[E]`
 
-**no gcsim analogue** (13)
+**gcsim models one aimed shot per bow (no partial draw)** (11)
 
-> chasca `chasca__normal__multitarget_fire_tap.hits[0]` · flins `flins__burst__ancient_ritual_cometh_the_night.variants[sQ]` · kaedehara_kazuha `kaedehara_kazuha__normal__garyuu_bladework.plungeVariants[After Hold E]` · kinich `kinich__skill__loop_shot.frames` · kinich `kinich__skill__scalespiker_cannon.frames` · lan_yan `lan_yan__skill__feathermoon_ring_n.frames` · lan_yan `lan_yan__skill__feathermoon_ring_e.frames` · varesa `varesa__normal__fiery_passion_strikes.hits[0]` · varesa `varesa__normal__fiery_passion_strikes.hits[1]` · varesa `varesa__normal__fiery_passion_strikes.hits[2]` · varesa `varesa__normal__fiery_passion_strikes.chargeFrames` · varesa `varesa__skill__fiery_passion_rush.frames` · varesa `varesa__burst__guardian_vent.variants[sQ]`
+> aloy `aloy__normal__rapid_fire.chargeHits[0]` · amber `amber__normal__sharpshooter.chargeHits[0]` · chasca `chasca__normal__phantom_feather_flurry.chargeHits[0]` · diona `diona__normal__ktzlein_style.chargeHits[0]` · gorou `gorou__normal__ripping_fang_fletching.chargeHits[0]` · ororon `ororon__normal__spiritvessel_snapshot.chargeHits[0]` · sigewinne `sigewinne__normal__targeted_treatment.chargeHits[0]` · tighnari `tighnari__normal__khanda_barrierbuster.chargeHits[0]` · venti `venti__normal__divine_marksmanship.chargeHits[0]` · yoimiya `yoimiya__normal__firework_flareup.chargeHits[0]` · yoimiya `yoimiya__normal__firework_flareup_niwabi.chargeHits[0]`
+
+**gcsim models no distinct hold for this character (its hold slice IS the tap)** (3)
+
+> dahlia `dahlia__skill__immersive_ordinance.variants[hE]` · lauma `lauma__skill__runo_dawnless_rest_of_karsikko.variants[hE]` · traveler_geo `traveler_geo__skill__starfell_sword.variants[hE]`
 
 **panic: unexpected charges less than 0** (3)
 
@@ -180,13 +113,29 @@ all; the migration leaves it alone and it keeps `anim = swap`.
 
 > cyno `cyno__normal__pactsworn_pathclearer.hits[4]`
 
-**lauma: Cannot use Skill Hold without Dew** (1)
+**no gcsim analogue for "Hurricane Arrow"** (1)
 
-> lauma `lauma__skill__runo_dawnless_rest_of_karsikko.variants[hE]`
+> faruzan `faruzan__normal__parthian_shot.chargeHits[1]`
+
+**no gcsim analogue for "Prop Arrow"** (1)
+
+> lyney `lyney__normal__card_force_translocation.chargeHits[2]`
+
+**no gcsim analogue for "Shadowpiercing Shot"** (1)
+
+> sethos `sethos__normal__royal_reed_archery.chargeHits[2]`
+
+**no gcsim analogue for "Fully-Charged Aimed Shot (Mini-Stration Bubble)"** (1)
+
+> sigewinne `sigewinne__normal__targeted_treatment.chargeHits[2]`
 
 **applications: panic: unexpected charges less than 0** (1)
 
 > tartaglia `tartaglia__skill__foul_legacy_recast.frames`
+
+**no gcsim analogue for "Wreath Arrow"** (1)
+
+> tighnari `tighnari__normal__khanda_barrierbuster.chargeHits[2]`
 
 **high_plunge should be preceded by hold skill** (1)
 
@@ -199,6 +148,10 @@ all; the migration leaves it alone and it keeps `anim = swap`.
 **only plunge after using jump** (1)
 
 > xiao `xiao__normal__yaksha_mask.plungeFrames`
+
+**no gcsim analogue for "Breakthrough Barb"** (1)
+
+> yelan `yelan__normal__stealthy_bowshot.chargeHits[2]`
 
 ## 4. Proposed application schedules
 
@@ -310,8 +263,6 @@ in the list) or a thing left in the world we have not modelled.
 | flins | `flins__skill__northland_spearstorm` | +23 electro (1U) |  |
 | flins | `flins__burst__ancient_ritual_cometh_the_night` | +93 electro (1U) · +110 electro [icd] · +119 electro [icd] · +164 electro [icd] |  |
 | freminet | `freminet__skill__pressurized_floe` | +29 cryo (1U) · +62 cryo [icd] |  |
-| freminet | `freminet__skill__pressurized_floe · E` | +29 cryo (1U) · +62 cryo [icd] |  |
-| freminet | `freminet__skill__pressurized_floe · E` | +29 cryo (1U) · +62 cryo [icd] |  |
 | freminet | `freminet__burst__shadowhunters_ambush` | +44 cryo (1U) |  |
 | furina | `furina__skill__salon_solitaire` | +110 hydro (1U) · +131 hydro (1U) · +137 hydro (1U) · +209 hydro [icd] · +307 hydro (1U) · +336 hydro [icd] · +405 hydro [icd] · +445 hydro (1U) · +498 hydro (1U) · +540 hydro (1U) · +595 hydro [icd] · +693 hydro (1U) · +744 hydro [icd] · +760 hydro (1U) · +792 hydro [icd] · +891 hydro (1U) | 1× Salon Solitaire: Ousia Bubble |
 | furina | `furina__burst__let_the_people_rejoice` | +98 hydro (1U) |  |
@@ -358,7 +309,6 @@ in the list) or a thing left in the world we have not modelled.
 | layla | `layla__skill__nights_of_formal_focus` | +32 cryo (1U) · +450 cryo (1U) · +475 cryo [icd] · +499 cryo [icd] · +524 cryo [icd] |  |
 | layla | `layla__burst__dream_of_the_starstream_shaker` | **—** | 8× Starlight Slug |
 | lisa | `lisa__skill__violet_arc` | +22 electro (1U) |  |
-| lisa | `lisa__skill__violet_arc · E` | +22 electro (1U) |  |
 | lisa | `lisa__skill__violet_arc · hE` | +117 electro (2U) |  |
 | lisa | `lisa__burst__lightning_rose` | **—** | 28× Lightning Rose (Initial), Lightning Rose (Tick) |
 | lynette | `lynette__skill__enigmatic_feint` | +28 anemo (1U) · +58 anemo [icd] |  |
@@ -457,7 +407,6 @@ in the list) or a thing left in the world we have not modelled.
 | varesa | `varesa__burst__guardian_vent` | +88 electro (1U) |  |
 | varka | `varka__skill__windbound_execution` | +40 anemo (1U) |  |
 | varka | `varka__skill__windbound_execution · hE` | +40 anemo (1U) |  |
-| varka | `varka__skill__windbound_execution · E` | +40 anemo (1U) |  |
 | varka | `varka__burst__northwind_avatar` | +112 anemo (1U) · +131 anemo (1U) |  |
 | venti | `venti__skill__skyward_sonnet` | +51 anemo (2U) |  |
 | venti | `venti__skill__skyward_sonnet · hE` | +74 anemo (2U) |  |
@@ -498,21 +447,25 @@ in the list) or a thing left in the world we have not modelled.
 | zhongli | `zhongli__skill__dominus_lapidis · hE` | **—** | 9× Stone Stele (Hold), Stone Stele (Initial), Stone Stele (Tick) |
 | zhongli | `zhongli__burst__planet_befall` | +101 geo (4U) |  |
 
-### No observed schedule (12)
+### No observed schedule (16)
 
 ⚓ These land in the provisional register: absent is not empty, and a bar drawn
 from an absent list carries `--ui-provisional` (L6).
 
 - durin `durin__skill__transmutation_confirmation_of_purity` — panic: unexpected charges less than 0
 - flins `flins__burst__ancient_ritual_cometh_the_night · sQ` — no gcsl spelling for this variant / no driver row for its state
+- freminet `freminet__skill__pressurized_floe · E` — no gcsl spelling for this variant / no driver row for its state
+- freminet `freminet__skill__pressurized_floe · E` — no gcsl spelling for this variant / no driver row for its state
 - kinich `kinich__skill__loop_shot` — no gcsl spelling for this variant / no driver row for its state
 - kinich `kinich__skill__scalespiker_cannon` — no gcsl spelling for this variant / no driver row for its state
 - lan_yan `lan_yan__skill__feathermoon_ring_n` — no gcsl spelling for this variant / no driver row for its state
 - lan_yan `lan_yan__skill__feathermoon_ring_e` — no gcsl spelling for this variant / no driver row for its state
 - lauma `lauma__skill__runo_dawnless_rest_of_karsikko · hE` — lauma: Cannot use Skill Hold without Dew
+- lisa `lisa__skill__violet_arc · E` — no gcsl spelling for this variant / no driver row for its state
 - tartaglia `tartaglia__skill__foul_legacy_recast` — applications: panic: unexpected charges less than 0
 - varesa `varesa__skill__fiery_passion_rush` — no gcsl spelling for this variant / no driver row for its state
 - varesa `varesa__burst__guardian_vent · sQ` — no gcsl spelling for this variant / no driver row for its state
+- varka `varka__skill__windbound_execution · E` — no gcsl spelling for this variant / no driver row for its state
 - xianyun `xianyun__skill__skyladder_2` — panic: unexpected charges less than 0
 - xianyun `xianyun__skill__skyladder_3` — panic: unexpected charges less than 0
 

@@ -16,34 +16,19 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 16,
-						"N": 34
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 16,
-						"N": 37
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 36,
-						"N": 49
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 38, "hit": 16, "N": 34, "C": 33 } },
+				{ "name": "N2", "frames": { "anim": 39, "hit": 16, "N": 37, "C": 37 } },
+				{ "name": "N3", "frames": { "anim": 52, "hit": 36, "N": 49, "C": 50 } }
 			],
 			"chargeFrames": {
-				"swap": 50,
+				"anim": 56,
+				"N": 49,
+				"C": 52,
 				"E": 52,
 				"Q": 51,
 				"D": 45,
-				"J": 46
+				"J": 46,
+				"swap": 50
 			},
 			"sections": [
 				{
@@ -70,13 +55,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 41,
-				"N": 42,
-				"Q": 41,
-				"D": 49,
-				"J": 49
-			},
+			"frames": { "anim": 50, "N": 42, "C": 42, "Q": 41, "D": 49, "J": 49, "swap": 41 },
 			"cooldown": 16,
 			"cooldownStartDelay": 18,
 			"tags": ["shield", "summon"],
@@ -90,10 +69,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 0.983
-							},
+							"trigger": { "type": "summonTick", "interval": 0.983 },
 							"scaling": 30.64,
 							"stat": "atk",
 							"element": "cryo"
@@ -105,10 +81,7 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"scaling": 1036.8,
 					"stat": "em",
@@ -134,13 +107,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 110,
-				"N": 112,
-				"E": 111,
-				"D": 112,
-				"J": 113
-			},
+			"frames": { "anim": 113, "N": 112, "C": 112, "E": 111, "D": 112, "swap": 110 },
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
@@ -161,14 +128,8 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": ["melt", "frozen"]
-					},
-					"conditions": {
-						"type": "state",
-						"state": "duringSummon"
-					},
+					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"] },
+					"conditions": { "type": "state", "state": "duringSummon" },
 					"duration": 12,
 					"element": "hydro",
 					"value": -20
@@ -176,14 +137,8 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": ["melt", "frozen"]
-					},
-					"conditions": {
-						"type": "state",
-						"state": "duringSummon"
-					},
+					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"] },
+					"conditions": { "type": "state", "state": "duringSummon" },
 					"duration": 12,
 					"element": "pyro",
 					"value": -20
@@ -202,9 +157,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 90,
 					"stat": "em",
 					"element": "cryo"
@@ -212,9 +165,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 1200,
 					"stat": "em",
 					"element": "cryo"
@@ -237,13 +188,8 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					},
+					"trigger": { "type": "manual" },
+					"conditions": { "type": "constellation", "level": 1 },
 					"scaling": 200,
 					"stat": "em"
 				}
@@ -263,13 +209,8 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 2
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "constellation", "level": 2 },
 					"source": "character",
 					"stat": "em",
 					"value": 125,
@@ -278,14 +219,8 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onState",
-						"state": "shielded"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 2
-					},
+					"trigger": { "type": "onState", "state": "shielded" },
+					"conditions": { "type": "constellation", "level": 2 },
 					"source": "character",
 					"stat": "em",
 					"value": 250,
@@ -295,21 +230,12 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": ["melt", "frozen"]
-					},
+					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"] },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 2
-							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "constellation", "level": 2 },
+							{ "type": "state", "state": "duringSummon" }
 						]
 					},
 					"duration": 12,
@@ -319,21 +245,12 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": ["melt", "frozen"]
-					},
+					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"] },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 2
-							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "constellation", "level": 2 },
+							{ "type": "state", "state": "duringSummon" }
 						]
 					},
 					"duration": 12,
@@ -363,13 +280,8 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"trigger": { "type": "manual" },
+					"conditions": { "type": "constellation", "level": 4 },
 					"scaling": 1800,
 					"stat": "em",
 					"element": "cryo"

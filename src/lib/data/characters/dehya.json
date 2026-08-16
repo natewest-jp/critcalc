@@ -16,34 +16,10 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 22,
-						"N": 31
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 26,
-						"N": 34
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 26,
-						"N": 43
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 41,
-						"N": 85
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 31, "hit": 22 } },
+				{ "name": "N2", "frames": { "anim": 34, "hit": 26 } },
+				{ "name": "N3", "frames": { "anim": 43, "hit": 26 } },
+				{ "name": "N4", "frames": { "anim": 85, "hit": 41 } }
 			],
 			"_curatorNotes": [
 				"No chargeFrames: Dehya's CA is sustained-stamina-drain (claymore-style), not the discrete-hit form. gcsim leaves it as `// TODO: charged attack`. Authored without chargeFrames; will need a separate pass when CA matters for rotation modelling.",
@@ -75,19 +51,8 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 0,
-				"window": 12
-			},
-			"frames": {
-				"swap": 25,
-				"N": 39,
-				"Q": 29,
-				"D": 26,
-				"J": 28
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 0, "window": 12 },
+			"frames": { "anim": 39, "E": 30, "Q": 29, "D": 26, "J": 28, "swap": 25 },
 			"cooldown": 20,
 			"cooldownStartDelay": 18,
 			"tags": ["coordinatedAttack"],
@@ -102,10 +67,7 @@
 							"source": "C2: The Sand-Blades Glittering (recast extension)",
 							"type": "flat",
 							"value": 6,
-							"conditions": {
-								"type": "constellation",
-								"level": 2
-							}
+							"conditions": { "type": "constellation", "level": 2 }
 						}
 					]
 				}
@@ -128,18 +90,8 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 1
-			},
-			"frames": {
-				"swap": 44,
-				"N": 74,
-				"Q": 45,
-				"D": 45,
-				"J": 49
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 1 },
+			"frames": { "anim": 74, "E": 45, "Q": 45, "D": 45, "J": 49, "swap": 44 },
 			"cooldown": 0,
 			"tags": [],
 			"effects": [],
@@ -157,13 +109,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "stance",
-			"frames": {
-				"swap": 105,
-				"N": 105,
-				"E": 105,
-				"D": 105,
-				"J": 105
-			},
+			"frames": { "anim": 105 },
 			"cooldown": 18,
 			"cooldownStartDelay": 1,
 			"duration": 4.1,
@@ -199,9 +145,7 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 20,
 					"stat": "hp"
 				}
@@ -222,13 +166,8 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "constellation", "level": 1 },
 					"source": "character",
 					"stat": "hp%",
 					"value": 20,
@@ -237,39 +176,21 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "constellation", "level": 1 },
 					"source": "character",
 					"stat": "skillFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "hp",
-						"ratio": 3.6
-					},
+					"value": { "type": "scaling", "stat": "hp", "ratio": 3.6 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "constellation", "level": 1 },
 					"source": "character",
 					"stat": "burstFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "hp",
-						"ratio": 6
-					},
+					"value": { "type": "scaling", "stat": "hp", "ratio": 6 },
 					"snapshottable": false
 				}
 			],
@@ -301,13 +222,8 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"trigger": { "type": "manual" },
+					"conditions": { "type": "constellation", "level": 4 },
 					"scaling": 2.5,
 					"stat": "hp"
 				}

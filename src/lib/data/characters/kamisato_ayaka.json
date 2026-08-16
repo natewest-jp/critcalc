@@ -15,52 +15,13 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 8,
-						"N": 9,
-						"C": 22
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 10,
-						"N": 19,
-						"C": 20
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 16,
-						"N": 32,
-						"C": 31
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 22,
-						"N": 22,
-						"C": 23
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 27,
-						"N": 66
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 22, "hit": 8, "N": 9 } },
+				{ "name": "N2", "frames": { "anim": 20, "hit": 10, "N": 19 } },
+				{ "name": "N3", "frames": { "anim": 32, "hit": 16, "C": 31 } },
+				{ "name": "N4", "frames": { "anim": 23, "hit": 22, "N": 22 } },
+				{ "name": "N5", "frames": { "anim": 66, "hit": 27 } }
 			],
-			"chargeFrames": {
-				"swap": 39,
-				"N": 71,
-				"E": 62,
-				"Q": 63
-			},
+			"chargeFrames": { "anim": 71, "E": 62, "Q": 63, "D": 39, "J": 39, "swap": 39 },
 			"tags": [],
 			"sections": [
 				{
@@ -87,12 +48,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 48,
-				"N": 49,
-				"D": 30,
-				"J": 32
-			},
+			"frames": { "anim": 49, "Q": 48, "D": 30, "J": 32, "swap": 48 },
 			"cooldown": 10,
 			"tags": [],
 			"effects": [],
@@ -104,13 +60,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "persistent",
-			"frames": {
-				"swap": 123,
-				"N": 124,
-				"E": 124,
-				"J": 113,
-				"D": 125
-			},
+			"frames": { "anim": 125, "N": 124, "E": 124, "J": 113, "swap": 123 },
 			"cooldown": 20,
 			"duration": 5,
 			"summonActivatesAt": 104,
@@ -135,9 +85,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -181,14 +129,8 @@
 					"type": "resShred",
 					"shredStat": "def",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "burst"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"trigger": { "type": "onHit", "abilityType": "burst" },
+					"conditions": { "type": "constellation", "level": 4 },
 					"duration": 6,
 					"durationType": "refresh",
 					"value": -30
@@ -214,8 +156,5 @@
 			"description": "Kamisato Ayaka gains Usurahi Butou every 10s, increasing her Charged Attack DMG by 298%. This buff will be cleared 0.5s after Ayaka's Charged ATK hits an opponent, after which the timer for this ability will restart."
 		}
 	],
-	"meta": {
-		"source": "genshin-db",
-		"generatedAt": "2026-04-06T11:45:40.703Z"
-	}
+	"meta": { "source": "genshin-db", "generatedAt": "2026-04-06T11:45:40.703Z" }
 }

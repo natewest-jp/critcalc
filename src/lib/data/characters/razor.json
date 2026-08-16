@@ -16,12 +16,12 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 25 } },
-				{ "name": "N2", "frames": { "swap": 16 } },
-				{ "name": "N3", "frames": { "swap": 13 } },
-				{ "name": "N4", "frames": { "swap": 38 } }
+				{ "name": "N1", "frames": { "anim": 45, "hit": 25 } },
+				{ "name": "N2", "frames": { "anim": 33, "hit": 16 } },
+				{ "name": "N3", "frames": { "anim": 47, "hit": 13 } },
+				{ "name": "N4", "frames": { "anim": 116, "hit": 38 } }
 			],
-			"plungeFrames": { "swap": 69, "N": 56, "E": 57, "Q": 57, "D": 44 },
+			"plungeFrames": { "anim": 87, "N": 58, "E": 58, "Q": 58, "D": 46, "J": 86, "swap": 71 },
 			"_curatorNotes": [
 				"N and C cancel frames not explicitly set in gcsim attack.go — all 4 hits use InitNormalCancelSlice(hitmark, animLength) with no subsequent ActionAttack/ActionCharge overrides. AnimationLengths: N1=45, N2=33, N3=47, N4=116. Only swap recorded per hit (= hitmark). KQM frame cross-check needed.",
 				"chargeFrames not available: Razor's charged attack is a stamina-drain spinning slash (claymore type); no charge.go in gcsim character dir. Note: Lightning Fang (Q) disables charged attacks for its duration. Reviewer to source chargeFrames from KQM or game testing.",
@@ -45,7 +45,8 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"lowPlungeFrames": { "anim": 86, "N": 56, "E": 57, "Q": 57, "D": 44, "swap": 69 }
 		},
 		{
 			"id": "razor__skill__claw_and_thunder",
@@ -53,7 +54,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 74, "N": 70, "Q": 69, "D": 31, "J": 31 },
+			"frames": { "anim": 74, "N": 70, "Q": 69, "D": 31, "J": 31 },
 			"cooldown": 6,
 			"cooldownStartDelay": 30,
 			"variants": [
@@ -61,7 +62,7 @@
 					"label": "Hold",
 					"input": ["hE"],
 					"cooldown": 10,
-					"frames": { "swap": 91, "N": 102, "D": 52, "J": 52 },
+					"frames": { "anim": 103, "N": 102, "D": 52, "J": 52, "swap": 91 },
 					"_curatorNotes": [
 						"Hold variant cooldownStartDelay = 52 (skillHoldCDStarts[0] in gcsim). AbilityVariant has no cooldownStartDelay field — schema gap; reviewer to extend if needed. Inside-Q Hold cooldownStartDelay also = 52 (skillHoldCDStarts[1]).",
 						"Hold Q-cancel: ActionBurst not explicitly set in skillHoldFrames[0] — stays at InitAbilSlice default (103 = AnimationLength). Omitted per rule. gcsim comment labels InitAbilSlice(103) as 'Hold E -> Q', suggesting 103f as Q-cancel; reviewer to verify."
@@ -87,7 +88,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 63, "N": 73, "D": 58, "J": 57 },
+			"frames": { "anim": 74, "N": 73, "D": 58, "J": 57, "swap": 63 },
 			"cooldown": 20,
 			"tags": ["summon"],
 			"energyCost": 80,
@@ -147,13 +148,8 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "enemyHpBelow",
-						"threshold": 30
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "enemyHpBelow", "threshold": 30 },
 					"source": "character",
 					"stat": "critRate",
 					"value": 10,
@@ -260,10 +256,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "normal"
-					},
+					"trigger": { "type": "onHit", "abilityType": "normal" },
 					"procCooldown": 10,
 					"scaling": 100,
 					"stat": "atk",

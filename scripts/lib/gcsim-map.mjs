@@ -1,0 +1,357 @@
+/**
+ * scripts/lib/gcsim-map.mjs
+ *
+ * Which gcsim capture describes which authored FrameMap.
+ *
+ * ⚓ Shared by `audit-gcsim-frames.mjs` (which reports) and
+ * `migrate-frames-shape.mjs` (which writes) on purpose: if the two disagreed
+ * about what a map corresponds to, the audit would clear a row the migration
+ * then rewrote from the wrong source, silently. One module, one answer.
+ */
+
+import { readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// ⚓ THE REAL RESOLVER, imported — not a second copy. `frames.ts` has no runtime
+// imports, so Node's type stripping loads it directly, and the migration therefore
+// cannot disagree with the parser about what a FrameMap means. ⛔ Do not reimplement
+// `frameAt` here; a duplicated fallback rule is precisely the class of bug L4b exists
+// to remove.
+import { frameAt } from '../../src/lib/utils/frames.ts';
+
+export { frameAt };
+
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+export const CHAR_DIR = join(REPO_ROOT, 'src/lib/data/characters');
+export const DRIVERS_PATH = join(REPO_ROOT, 'scripts/gcsim-dump/drivers.json');
+
+/** Our FrameMap's action keys. */
+export const KEYS = ['N', 'C', 'E', 'Q', 'D', 'J', 'P', 'swap'];
+
+/** ⚓ The keys `InitNormalCancelSlice` overrides with the HITMARK. Everything else
+ *  in a normal's slice is the animation length — the whole C4b finding. Mirrors
+ *  `HIT_KEYS` in `$lib/utils/frames.ts`; ⚠️ the two must agree or the migration
+ *  writes a shape the resolver reads differently. */
+export const CANCEL_KEYS = new Set(['E', 'Q', 'D', 'J', 'swap']);
+
+/** ⚠️ The six Travelers are NOT in the no-gcsim-source set — they map by name, not
+ *  by the underscore rule. gcsim keys them by body (`aether…`); the corpus does not
+ *  model the Aether/Lumine split for frames and the two are frame-identical upstream. */
+const KEY_OVERRIDES = {
+	traveler_anemo: 'aetheranemo',
+	traveler_dendro: 'aetherdendro',
+	traveler_electro: 'aetherelectro',
+	traveler_geo: 'aethergeo',
+	traveler_hydro: 'aetherhydro',
+	traveler_pyro: 'aetherpyro'
+};
+
+export const gcsimKeyFor = (id) => KEY_OVERRIDES[id] ?? id.replace(/_/g, '');
+
+export const loadDrivers = () => JSON.parse(readFileSync(DRIVERS_PATH, 'utf8'));
+
+/**
+ * ⚓ The corpus already says what gates each ability, so the prerequisite is DERIVED
+ * from the ability's own `conditions` rather than hand-listed:
+ *
+ *   `chainStage {ability, index: N}`  →  N repeats of that action  (Diluc E2/E3,
+ *                                        Keqing's recast, Xianyun's Skyladder, Dehya)
+ *   `state {state: S}`                →  one lookup in drivers.json's `states`
+ *
+ * That leaves the driver table answering exactly one question per row — "what puts
+ * this character into that state" — which is the only part no rule derives.
+ *
+ * Returns `{ label, prereq }`, or `null` when the prerequisite cannot be built.
+ * ⚠️ `null` is UNCOVERED, never "compare it against the base": reading a stance
+ * ability off a grounded capture is how you manufacture a mismatch.
+ */
+export function prereqFor(conditions, drv) {
+	if (!conditions) return { label: '', prereq: [] };
+	if (conditions.type === 'chainStage') {
+		const n = conditions.index ?? 0;
+		if (n === 0) return { label: '', prereq: [] };
+		const act = conditions.ability === 'burst' ? 'burst' : 'skill';
+		return { label: `chain-${act}-${n}`, prereq: [{ action: act, params: {}, repeat: n }] };
+	}
+	if (conditions.type === 'state') {
+		const steps = drv?.states?.[conditions.state];
+		if (!steps) return null;
+		// ⚓ An empty step list is a ROW that says "this state does not change the
+		// frames"; it resolves to the BASE capture rather than a redundant second one.
+		if (!steps.length) return { label: '', prereq: [] };
+		return { label: `state-${conditions.state}`, prereq: steps };
+	}
+	// Constellation, ascension and team-composition gates do not change the frames a
+	// C0 capture reads, so they are not prerequisites at all.
+	return { label: '', prereq: [] };
+}
+
+/**
+ * `hE`/`h1E` are gcsim's `skill[hold=1]`; `h2E` is `hold=2`.
+ *
+ * ⚠️ `sQ` (KQM short burst) has no known gcsl spelling — L0 §9 left it open and it is
+ * still open.
+ *
+ * ⛔ A variant whose input is the PLAIN `E` returns null, not the base key. Such a
+ * variant is selected by STATE, not by token — Varka's Four Winds' Ascension only
+ * exists when a Pyro/Hydro/Electro/Cryo unit is in the party, which a single-character
+ * dump can never produce — so comparing it against the base capture reports a
+ * mismatch between two different abilities. Uncovered is the true answer.
+ */
+export function variantDumpKey(input, base) {
+	if (input.includes('h2E')) return 'h2E';
+	if (input.includes('hE') || input.includes('h1E')) return 'hE';
+	if (input.includes('E')) return null;
+	if (input.includes('sQ')) return null;
+	return base;
+}
+
+/** The capture sets a character needs, derived from its own abilities. */
+export function driverSetsFor(char, drv) {
+	const sets = new Map();
+	for (const a of char.abilities ?? []) {
+		const ctx = prereqFor(a.conditions, drv);
+		if (!ctx || !ctx.label) continue;
+		if (!sets.has(ctx.label))
+			sets.set(ctx.label, { label: ctx.label, prereq: ctx.prereq, captures: [] });
+	}
+	return [...sets.values()];
+}
+
+/**
+ * Every authored FrameMap, paired with the dump key that should describe it and a
+ * `set(newMap)` that writes it back into the character object.
+ *
+ * A map whose `dumpKey` is null has no gcsim reading; ⚠️ that is UNCOVERED and must
+ * never be reported or migrated as though it were a match.
+ */
+export function authoredMaps(char, drv, dumped) {
+	const out = [];
+	const isBow = char.weapon === 'bow';
+	// ⛔ gcsim models ONE aimed shot per bow: for 18 of 19, `aim[hold=1]` returns the
+	// identical slice, so the partial draw has no reading at all. Ganyu is the lone
+	// exception — detected, never special-cased by name.
+	const aimFull = dumped?.get('A');
+	const aimHold = dumped?.get('hA');
+	const hasPartialAim =
+		isBow &&
+		aimFull?.frames &&
+		aimHold?.frames &&
+		JSON.stringify(aimFull.frames) !== JSON.stringify(aimHold.frames);
+	// ⚓ Same shape as `hasPartialAim`: gcsim models a distinct HOLD for only 47 of
+	// 109 characters, and for the rest `skill[hold=1]` returns the tap's slice
+	// verbatim. ⛔ That is NOT "the hold equals the tap" — it is gcsim declining to
+	// model one, and taking it as data overwrites a genuinely distinct authored hold
+	// with the tap reading. (Caught by the roster gate's hold-distinctness invariant
+	// on the geo Traveler, which is exactly what that gate is for.)
+	const distinctFrom = (a, b) => {
+		const x = dumped?.get(a);
+		const y = dumped?.get(b);
+		return !!(x?.frames && y?.frames && JSON.stringify(x.frames) !== JSON.stringify(y.frames));
+	};
+	const holdKeys = new Set(
+		[
+			['hE', 'E'],
+			['h2E', 'E']
+		]
+			.filter(([h, base]) => distinctFrom(h, base))
+			.map(([h]) => h)
+	);
+	const suffixed = (key, ctx) => (ctx === null ? null : ctx.label ? `${key}@${ctx.label}` : key);
+
+	for (const a of char.abilities ?? []) {
+		const ctx = prereqFor(a.conditions, drv);
+		if (a.abilityType === 'normal') {
+			(a.hits ?? []).forEach((h, i) =>
+				out.push({
+					group: `hits[${i}]`,
+					path: `${a.id}.hits[${i}]`,
+					frames: h.frames,
+					dumpKey: suffixed(`N${i + 1}`, ctx),
+					normalStyle: true,
+					set: (fm) => (h.frames = fm)
+				})
+			);
+			if (a.chargeFrames)
+				out.push({
+					group: 'chargeFrames',
+					path: `${a.id}.chargeFrames`,
+					frames: a.chargeFrames,
+					dumpKey: suffixed('C', ctx),
+					normalStyle: true,
+					set: (fm) => (a.chargeFrames = fm)
+				});
+			// ⚓⚓ A bow's charged attack is gcsim's `aim`, and its default reading is the
+			// FULLY-charged shot — measured (Amber `aim` = 96f = our "Fully-Charged
+			// Aimed Shot"), not assumed. ⛔ Pair by NAME, never by index: our arrays run
+			// 1–3 long and the full shot is not always last. Faruzan's is
+			// `[Fully-Charged, Hurricane Arrow]`, so an index rule hands gcsim's one
+			// aimed reading to her signature shot instead — and Sethos, Tighnari,
+			// Sigewinne, Lyney and Yelan all carry a third entry that is a kit-specific
+			// shot with no gcsim analogue at all.
+			const partialKey = hasPartialAim ? 'hA' : null;
+			const named = (h) =>
+				String(h?.name ?? '')
+					.trim()
+					.toLowerCase();
+			const chargeHits = a.chargeHits ?? [];
+			let fullIdx = chargeHits.findIndex((h) => named(h) === 'fully-charged aimed shot');
+			if (fullIdx < 0) fullIdx = chargeHits.length - 1;
+			chargeHits.forEach((h, i) => {
+				const isPartial = named(h) === 'aimed shot';
+				const key = i === fullIdx ? 'A' : isPartial && partialKey ? partialKey : null;
+				out.push({
+					group: `chargeHits[${i}]`,
+					path: `${a.id}.chargeHits[${i}]`,
+					frames: h.frames,
+					dumpKey: isBow ? key : suffixed('C', ctx),
+					normalStyle: true,
+					uncoveredReason:
+						isBow && key === null
+							? isPartial
+								? 'gcsim models one aimed shot per bow (no partial draw)'
+								: `no gcsim analogue for "${h.name ?? '?'}"`
+							: undefined,
+					set: (fm) => (h.frames = fm)
+				});
+			});
+			// ⚓⚓ `plungeFrames` is the HIGH plunge and `lowPlungeFrames` is `lP`
+			// (L4b — Nate: the high plunge is what players actually perform, so it keeps
+			// the plain name and the bare `P` token). ⚠️ Before L4b there was ONE map and
+			// 36 of its 41 authors were carrying LOW-plunge numbers, so this pairing
+			// moves almost every plunge value — that is the intended migration, not drift.
+			if (a.plungeFrames)
+				out.push({
+					group: 'plungeFrames',
+					path: `${a.id}.plungeFrames`,
+					frames: a.plungeFrames,
+					dumpKey: suffixed('P', ctx),
+					normalStyle: true,
+					set: (fm) => (a.plungeFrames = fm)
+				});
+			if (a.lowPlungeFrames)
+				out.push({
+					group: 'lowPlungeFrames',
+					path: `${a.id}.lowPlungeFrames`,
+					frames: a.lowPlungeFrames,
+					dumpKey: suffixed('lP', ctx),
+					normalStyle: true,
+					set: (fm) => (a.lowPlungeFrames = fm)
+				});
+			// ⛔ plungeVariants have no gcsim analogue — gcsim models one plunge per
+			// character, launched by Xianyun. Left uncovered on purpose.
+			for (const v of a.plungeVariants ?? [])
+				out.push({
+					group: 'plungeVariants',
+					path: `${a.id}.plungeVariants[${v.label}]`,
+					frames: v.frames,
+					dumpKey: null,
+					normalStyle: true,
+					set: (fm) => (v.frames = fm)
+				});
+			continue;
+		}
+		if (a.abilityType !== 'skill' && a.abilityType !== 'burst') continue;
+		const base = a.abilityType === 'burst' ? 'Q' : 'E';
+		if (a.frames)
+			out.push({
+				group: a.abilityType,
+				path: `${a.id}.frames`,
+				frames: a.frames,
+				dumpKey: suffixed(base, ctx),
+				normalStyle: false,
+				set: (fm) => (a.frames = fm)
+			});
+		for (const v of a.variants ?? []) {
+			if (!v.frames) continue;
+			let vk = variantDumpKey(v.input ?? [], base);
+			let why;
+			if ((vk === 'hE' || vk === 'h2E') && !holdKeys.has(vk)) {
+				vk = null;
+				why = 'gcsim models no distinct hold for this character (its hold slice IS the tap)';
+			}
+			out.push({
+				group: a.abilityType,
+				path: `${a.id}.variants[${v.input?.join('/') ?? '?'}]`,
+				frames: v.frames,
+				dumpKey: vk === null ? null : suffixed(vk, ctx),
+				normalStyle: false,
+				uncoveredReason: why,
+				set: (fm) => (v.frames = fm)
+			});
+		}
+	}
+	return out;
+}
+
+/**
+ * A gcsim slice → our minimal FrameMap.
+ *
+ * ⚓ MINIMAL is the point. gcsim's slice has a value for every action; writing all
+ * of them would bury the two or three numbers that actually carry information. So:
+ * `anim` always, `hit` when the five cancel keys agree on a value that is not
+ * `anim`, and then only the keys that still differ from what `frameAt` would
+ * resolve. Xiangling's N1 goes from `{swap:12, N:20, C:20}` to `{anim:20, hit:12}`.
+ *
+ * ⚠️ `hit` is offered for normal-style maps only. An E/Q slice has no hitmark tier
+ * (`InitAbilSlice` takes one number) and characterLint rejects one there.
+ */
+export const GCSIM_ILLEGAL_F = 500;
+
+export function toFrameMap(slice, { normalStyle }) {
+	const out = { anim: slice.anim };
+	// ⛔ 500 is gcsim's "this action is illegal" SENTINEL, not frame data — it is
+	// written on `ActionCharge` after a final normal with the comment "TODO: this
+	// action is illegal; need better way to handle it", 30 times across the roster.
+	// Migrating it verbatim would cost 8.3 seconds for an `N5 C`.
+	//
+	// ⚓ Dropping it is not just pragmatic, it is the game-accurate reading: the combo
+	// resets when the animation ends, and a charge after that IS legal. So the key
+	// falls back to `anim`, which is exactly when you could do it. ⛔ We have no
+	// vocabulary for "illegal" and inventing one would be a verdict, which the tool
+	// constitution forbids.
+	const isSentinel = (v) => v === GCSIM_ILLEGAL_F && v > slice.anim;
+	const resolved = (key) => (CANCEL_KEYS.has(key) && out.hit !== undefined ? out.hit : out.anim);
+	if (normalStyle) {
+		const h = slice.swap;
+		if (h !== slice.anim && [...CANCEL_KEYS].every((k) => slice[k] === h)) out.hit = h;
+	}
+	for (const k of KEYS) {
+		const v = slice[k];
+		if (typeof v !== 'number' || isSentinel(v)) continue;
+		if (v !== resolved(k)) out[k] = v;
+	}
+	return out;
+}
+
+/** Every key's RESOLVED value — the shape-independent reading of a FrameMap.
+ *
+ * ⚓ The migration's guards compare these, never the authored keys. A guard that looks
+ * only at present keys is not stable across a reshape: Itto's charge map was held back
+ * on pass one, preserved WITHOUT its `swap` key (it had become redundant), and then
+ * migrated on pass two because the delta was now computed over two keys instead of
+ * three. Resolving first makes the decision the same on every pass. */
+export const resolvedKeys = (fm) => KEYS.map((k) => frameAt(fm, k));
+
+/**
+ * Preserve today's behaviour for a map with no gcsim reading, or one held back.
+ *
+ * ⚓ The old fallback WAS `swap`, so `anim = swap` reproduces it exactly and changes
+ * nothing. ⚠️ `swap` is then written again alongside it, redundant on purpose, for two
+ * reasons: `anim === swap` is a legible signal that the animation length was NOT
+ * measured but stood in for, and — the practical one — keeping every authored key means
+ * the migration's holdback test sees the same key set on a second pass. Dropping the
+ * redundant `swap` made Itto's charge map hold back on pass one and migrate on pass two,
+ * because the delta was suddenly computed over two keys instead of three.
+ */
+export function preserveFrameMap(fm) {
+	const anim = fm.anim ?? fm.swap ?? Math.max(0, ...Object.values(fm));
+	const out = { anim };
+	if (fm.hit !== undefined) out.hit = fm.hit;
+	for (const k of KEYS) {
+		if (typeof fm[k] === 'number') out[k] = fm[k];
+	}
+	if (out.swap === undefined) out.swap = anim;
+	return out;
+}

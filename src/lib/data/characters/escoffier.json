@@ -16,42 +16,12 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 17,
-						"C": 20
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 21,
-						"N": 29
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 62
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 17, "hit": 7, "C": 20 } },
+				{ "name": "N2", "frames": { "anim": 21, "hit": 16, "N": 29 } },
+				{ "name": "N3", "frames": { "anim": 62, "hit": 40 } }
 			],
-			"chargeFrames": {
-				"swap": 52,
-				"N": 53,
-				"E": 52,
-				"Q": 52,
-				"D": 20,
-				"J": 20
-			},
-			"plungeFrames": {
-				"swap": 61,
-				"N": 59,
-				"E": 58,
-				"Q": 58,
-				"D": 75
-			},
+			"chargeFrames": { "anim": 65, "N": 53, "E": 52, "Q": 52, "D": 20, "J": 20, "swap": 52 },
+			"plungeFrames": { "anim": 77, "N": 60, "E": 61, "Q": 60, "J": 76, "swap": 63 },
 			"_curatorNotes": [
 				"Normals: 3-hit polearm chain. attackHitmarks = [[7], [16], [27, 40]] — N3 has 2 sub-hits at 27 and 40, last hit gates the cancel window. attackFrames per gcsim attack.go.",
 				"N1: ActionAttack default = 17 (animation length per InitNormalCancelSlice(7, 17)); per recipe rule N omitted on N1. Explicit ActionCharge = 20 → C key.",
@@ -77,7 +47,8 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 3 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward thrust.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 3 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward thrust.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"lowPlungeFrames": { "anim": 76, "N": 59, "E": 58, "Q": 58, "D": 75, "swap": 61 }
 		},
 		{
 			"id": "escoffier__skill__lowtemperature_cooking",
@@ -85,13 +56,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 31,
-				"N": 32,
-				"Q": 32,
-				"D": 35,
-				"J": 35
-			},
+			"frames": { "anim": 35, "N": 32, "Q": 32, "swap": 31 },
 			"cooldown": 15,
 			"cooldownStartDelay": 22,
 			"tags": ["summon"],
@@ -105,11 +70,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 0.975,
-								"firstTickDelay": 2.467
-							},
+							"trigger": { "type": "summonTick", "interval": 0.975, "firstTickDelay": 2.467 },
 							"scaling": 216,
 							"stat": "atk",
 							"element": "cryo"
@@ -137,10 +98,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 108,
-				"E": 109
-			},
+			"frames": { "anim": 110, "E": 109, "swap": 108 },
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": ["heal"],
@@ -148,10 +106,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"scaling": 309.6576,
 					"stat": "atk"
 				}
@@ -176,10 +131,7 @@
 				{
 					"type": "heal",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 9,
 					"scaling": 138.24,
 					"stat": "atk"
@@ -200,10 +152,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"duration": 12,
 					"element": "cryo",
 					"value": -55
@@ -211,10 +160,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"duration": 12,
 					"element": "hydro",
 					"value": -55
@@ -241,9 +187,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 15,
 					"durationType": "fixed",
 					"conditions": {
@@ -281,24 +225,14 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 15,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 2
-							},
-							{
-								"type": "stacks",
-								"key": "coldDish",
-								"min": 1
-							}
+							{ "type": "constellation", "level": 2 },
+							{ "type": "stacks", "key": "coldDish", "min": 1 }
 						]
 					},
 					"source": "character",
@@ -306,10 +240,7 @@
 					"value": {
 						"type": "perStack",
 						"key": "coldDish",
-						"per": {
-							"stat": "atk",
-							"ratio": 240
-						},
+						"per": { "stat": "atk", "ratio": 240 },
 						"maxStacks": 5
 					},
 					"snapshottable": false

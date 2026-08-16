@@ -16,16 +16,16 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 12, "N": 20 } },
-				{ "name": "N2", "frames": { "swap": 14, "N": 36 } },
-				{ "name": "N3", "frames": { "swap": 38, "N": 82 } }
+				{ "name": "N1", "frames": { "anim": 33, "hit": 12, "N": 20 } },
+				{ "name": "N2", "frames": { "anim": 40, "hit": 14, "N": 36 } },
+				{ "name": "N3", "frames": { "anim": 67, "hit": 38, "N": 82 } }
 			],
 			"chargeHits": [
-				{ "name": "Aimed Shot", "frames": { "swap": 23, "D": 14, "J": 14 } },
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "swap": 94, "D": 86, "J": 86 } },
+				{ "name": "Aimed Shot", "frames": { "anim": 23, "D": 14, "J": 14, "swap": 23 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 94, "D": 86, "J": 86 } },
 				{
 					"name": "Fully-Charged Aimed Shot (Mini-Stration Bubble)",
-					"frames": { "swap": 112, "D": 103, "J": 103 }
+					"frames": { "anim": 112, "D": 103, "J": 103, "swap": 112 }
 				}
 			],
 			"_curatorNotes": [
@@ -57,7 +57,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 41, "N": 39 },
+			"frames": { "anim": 41, "N": 39, "C": 40 },
 			"cooldown": 18,
 			"cooldownStartDelay": 16,
 			"tags": ["heal"],
@@ -92,7 +92,7 @@
 				{
 					"label": "Short Hold",
 					"input": ["h1E"],
-					"frames": { "swap": 56 },
+					"frames": { "anim": 56 },
 					"summons": [
 						{
 							"label": "Bolstering Bubblebalm",
@@ -123,7 +123,7 @@
 				{
 					"label": "Hold",
 					"input": ["h2E"],
-					"frames": { "swap": 89 },
+					"frames": { "anim": 89 },
 					"summons": [
 						{
 							"label": "Bolstering Bubblebalm",
@@ -172,7 +172,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 245, "N": 269, "E": 271, "D": 241, "J": 241 },
+			"frames": { "anim": 245, "N": 269, "E": 271, "D": 241, "J": 241, "swap": 245 },
 			"cooldown": 18,
 			"cooldownStartDelay": 1,
 			"tags": [],
@@ -194,9 +194,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 18,
 					"durationType": "fixed",
 					"source": "character",
@@ -207,10 +205,7 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 18,
 					"durationType": "fixed",
 					"source": "character",
@@ -257,19 +252,14 @@
 				{
 					"type": "shield",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 30,
 					"stat": "hp"
 				},
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"conditions": { "type": "constellation", "level": 2 },
 					"duration": 8,
 					"durationType": "refresh",
@@ -279,10 +269,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "burst"
-					},
+					"trigger": { "type": "onHit", "abilityType": "burst" },
 					"conditions": { "type": "constellation", "level": 2 },
 					"duration": 8,
 					"durationType": "refresh",
@@ -329,37 +316,23 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
-					"value": {
-						"type": "scaling",
-						"stat": "hp",
-						"ratio": 0.0004,
-						"cap": 20
-					},
+					"value": { "type": "scaling", "stat": "hp", "ratio": 0.0004, "cap": 20 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "hp",
-						"ratio": 0.0022,
-						"cap": 110
-					},
+					"value": { "type": "scaling", "stat": "hp", "ratio": 0.0022, "cap": 110 },
 					"snapshottable": false
 				}
 			],

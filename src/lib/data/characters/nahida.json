@@ -22,41 +22,19 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": {
-						"swap": 21,
-						"N": 30,
-						"C": 26
-					}
+					"frames": { "anim": 35, "N": 30, "C": 26, "E": 21, "Q": 21, "D": 21, "J": 23, "swap": 21 }
 				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 13,
-						"N": 22,
-						"C": 23
-					}
-				},
+				{ "name": "N2", "frames": { "anim": 31, "hit": 13, "N": 22, "C": 23 } },
 				{
 					"name": "N3",
-					"frames": {
-						"swap": 24,
-						"N": 38,
-						"C": 37
-					}
+					"frames": { "anim": 45, "N": 38, "C": 37, "E": 24, "Q": 24, "D": 26, "J": 25, "swap": 24 }
 				},
 				{
 					"name": "N4",
-					"frames": {
-						"swap": 39,
-						"N": 71
-					}
+					"frames": { "anim": 71, "C": 69, "E": 40, "Q": 40, "D": 39, "J": 39, "swap": 39 }
 				}
 			],
-			"chargeFrames": {
-				"swap": 21,
-				"D": 21,
-				"J": 21
-			},
+			"chargeFrames": { "anim": 65, "D": 21, "J": 21, "swap": 21 },
 			"sections": [
 				{
 					"type": "normal",
@@ -82,13 +60,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 25,
-				"N": 28,
-				"Q": 32,
-				"D": 27,
-				"J": 26
-			},
+			"frames": { "anim": 32, "N": 28, "C": 28, "D": 27, "J": 26, "swap": 25 },
 			"cooldown": 5,
 			"cooldownStartDelay": 11,
 			"tags": ["coordinatedAttack"],
@@ -104,11 +76,14 @@
 					"input": ["hE"],
 					"cooldown": 6,
 					"frames": {
-						"swap": 57,
+						"anim": 63,
 						"N": 57,
+						"C": 58,
+						"E": 62,
 						"Q": 62,
 						"D": 59,
-						"J": 62
+						"J": 62,
+						"swap": 57
 					},
 					"_curatorNotes": [
 						"Hold E has parametric total frame count: Frames(next) = hold + skillHoldFrames[next], where hold = max(min(p['hold'], 300), 1) - 1 ∈ [0, 299]. Frames recorded above are at min-hold (hold=0). At max-hold (hold=299): swap=356, N=356, Q=361, D=358, J=361.",
@@ -124,19 +99,12 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 111
-			},
+			"frames": { "anim": 112, "swap": 111 },
 			"cooldown": 13.5,
 			"tags": [],
 			"energyCost": 50,
 			"summons": [
-				{
-					"label": "Shrine of Maya",
-					"duration": 15,
-					"spawnsAt": 66,
-					"mobility": "stationary"
-				}
+				{ "label": "Shrine of Maya", "duration": 15, "spawnsAt": 66, "mobility": "stationary" }
 			],
 			"effects": [],
 			"_curatorNotes": [
@@ -158,10 +126,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -189,9 +154,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "skillDmgBonus",
 					"value": 80,
@@ -203,9 +166,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "critRate",
 					"value": 24,
@@ -246,9 +207,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -258,9 +217,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",
@@ -302,9 +259,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -334,9 +289,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 200,
 					"stat": "atk",
 					"element": "dendro"

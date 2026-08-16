@@ -16,25 +16,40 @@
  *
  * All frame values are @60fps. Skills/bursts carry no `duration` on purpose:
  * ~85% of real skills/bursts are instant, so the generic kit is too.
+ *
+ * ⚠️ REGENERATED at gauge-round L4b (2026-08-16) against the reshaped corpus. The
+ * numbers moved because the medians are now over `anim` — the full animation — where
+ * they used to be over `swap`, which is only the cancel window. A frameless skill went
+ * 37f → 44f and a frameless burst 93f → 95f for that reason and no other; the
+ * cooldown/energy modes are unchanged.
  */
 
 import type { FrameMap, NormalHit } from '$lib/types/ability';
 
-/** Modal 5-hit combo; per-position, per-key medians (swap = full-recovery
- *  fallback, N = cancel-into-next-normal, C = cancel-into-charge). */
+/** Modal 5-hit combo; per-position, per-key medians (`anim` = the full animation and
+ *  the fallback, `hit` = the hitmark the cancel keys resolve to, N = cancel-into-
+ *  next-normal, C = cancel-into-charge). */
 export const GENERIC_NORMAL_HITS: NormalHit[] = [
-	{ frames: { swap: 13, N: 19, C: 23 } },
-	{ frames: { swap: 13, N: 22, C: 26 } },
-	{ frames: { swap: 22, N: 36, C: 36 } },
-	{ frames: { swap: 27, N: 40, C: 42 } },
-	{ frames: { swap: 26, N: 66 } }
+	{ frames: { anim: 28, hit: 13, N: 19, C: 22 } },
+	{ frames: { anim: 28, hit: 13, N: 22, C: 25 } },
+	{ frames: { anim: 43, hit: 21, N: 37, C: 39 } },
+	{ frames: { anim: 51, hit: 27, N: 39 } },
+	{ frames: { anim: 66, hit: 26 } }
 ];
 
 /** Median full-charge FrameMap after MAD-trimming channeled/AoE outliers. */
-export const GENERIC_CHARGE_FRAMES: FrameMap = { swap: 46, N: 55, E: 48, Q: 49, D: 26, J: 26 };
+export const GENERIC_CHARGE_FRAMES: FrameMap = {
+	anim: 57,
+	N: 51,
+	E: 46,
+	Q: 49,
+	D: 25,
+	J: 24,
+	swap: 45
+};
 
 /** Skill: cast animation (frames) + cooldown (seconds). */
-export const GENERIC_SKILL = { castSwap: 37, cooldown: 12 } as const;
+export const GENERIC_SKILL = { castAnim: 44, cooldown: 12 } as const;
 
 /** Burst: cast animation (frames) + cooldown (seconds) + energy cost. */
-export const GENERIC_BURST = { castSwap: 93, cooldown: 15, energy: 60 } as const;
+export const GENERIC_BURST = { castAnim: 95, cooldown: 15, energy: 60 } as const;

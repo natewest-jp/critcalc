@@ -16,46 +16,12 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 17,
-						"N": 19,
-						"C": 22
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 16,
-						"N": 22,
-						"C": 33
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 32,
-						"N": 41,
-						"C": 42
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 37,
-						"N": 59
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 22, "hit": 17, "N": 19 } },
+				{ "name": "N2", "frames": { "anim": 33, "hit": 16, "N": 22 } },
+				{ "name": "N3", "frames": { "anim": 42, "hit": 32, "N": 41 } },
+				{ "name": "N4", "frames": { "anim": 59, "hit": 37 } }
 			],
-			"chargeFrames": {
-				"swap": 26,
-				"N": 39,
-				"E": 39,
-				"Q": 39,
-				"D": 26,
-				"J": 26
-			},
+			"chargeFrames": { "anim": 44, "N": 39, "E": 39, "Q": 39, "D": 26, "J": 26, "swap": 26 },
 			"sections": [
 				{
 					"type": "normal",
@@ -81,13 +47,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 49,
-				"N": 42,
-				"Q": 43,
-				"D": 42,
-				"J": 42
-			},
+			"frames": { "anim": 51, "N": 42, "E": 30, "Q": 43, "D": 42, "J": 42, "swap": 49 },
 			"cooldown": 16,
 			"cooldownStartDelay": 19,
 			"tags": ["summon"],
@@ -101,11 +61,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 3.6,
-								"firstTickDelay": 0.6
-							},
+							"trigger": { "type": "summonTick", "interval": 3.6, "firstTickDelay": 0.6 },
 							"scaling": 147.74,
 							"stat": "atk",
 							"element": "geo"
@@ -129,13 +85,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 99,
-				"N": 101,
-				"E": 100,
-				"D": 100,
-				"J": 101
-			},
+			"frames": { "anim": 101, "E": 100, "D": 100, "swap": 99 },
 			"cooldown": 13.5,
 			"tags": [],
 			"energyCost": 50,
@@ -161,9 +111,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -234,20 +182,11 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "constellation", "level": 6 },
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 235
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 235 },
 					"snapshottable": false
 				}
 			],

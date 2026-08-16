@@ -22,25 +22,13 @@
 				"gcsim plunge.go restricts plunge to AirborneXianyun state only — Lynette cannot plunge normally without a prior Xianyun E in gcsim."
 			],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": { "swap": 17, "N": 24, "C": 25 }
-				},
-				{
-					"name": "N2",
-					"frames": { "swap": 13, "N": 16, "C": 25 }
-				},
-				{
-					"name": "N3",
-					"frames": { "swap": 31, "N": 35 }
-				},
-				{
-					"name": "N4",
-					"frames": { "swap": 29, "N": 60 }
-				}
+				{ "name": "N1", "frames": { "anim": 30, "hit": 17, "N": 24, "C": 25 } },
+				{ "name": "N2", "frames": { "anim": 27, "hit": 13, "N": 16, "C": 25 } },
+				{ "name": "N3", "frames": { "anim": 47, "hit": 31, "N": 35 } },
+				{ "name": "N4", "frames": { "anim": 68, "hit": 29, "N": 60 } }
 			],
-			"chargeFrames": { "swap": 13, "N": 42, "E": 31, "Q": 32, "D": 13, "J": 13 },
-			"plungeFrames": { "swap": 59, "N": 58, "E": 58, "Q": 58, "D": 45 },
+			"chargeFrames": { "anim": 51, "N": 42, "E": 31, "Q": 32, "D": 13, "J": 13, "swap": 13 },
+			"plungeFrames": { "anim": 75, "N": 59, "E": 58, "Q": 59, "D": 47, "swap": 61 },
 			"sections": [
 				{
 					"type": "normal",
@@ -58,7 +46,8 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"lowPlungeFrames": { "anim": 73, "N": 58, "E": 58, "Q": 58, "D": 45, "swap": 59 }
 		},
 		{
 			"id": "lynette__skill__enigmatic_feint",
@@ -66,7 +55,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 42, "N": 43, "E": 44, "Q": 45, "D": 44, "J": 43 },
+			"frames": { "anim": 58, "N": 43, "E": 44, "Q": 45, "D": 44, "J": 43, "swap": 42 },
 			"cooldown": 12,
 			"cooldownStartDelay": 26,
 			"chargeModifiers": [
@@ -82,10 +71,7 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"scaling": 25,
 					"stat": "hp"
 				}
@@ -101,7 +87,7 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "swap": 62, "N": 64, "E": 64, "Q": 64, "D": 63, "J": 66 },
+					"frames": { "anim": 76, "N": 64, "E": 64, "Q": 64, "D": 63, "J": 66, "swap": 62 },
 					"_curatorNotes": [
 						"Frames recorded at minimum hold (hold param=1, internal duration=35f). Formula: skillHoldEndFrames[action]+duration where duration=clamp(hold,1,150)+34. At max hold (hold=150, duration=184f): swap=211, N=213, E=213, Q=213, D=212, J=215.",
 						"cooldownStartDelay for Hold = duration + skillHoldEndCDStart (14f). At min hold: 35+14=49f; at max hold: 184+14=198f. Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to decide extension."
@@ -116,17 +102,12 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 43, "N": 55, "D": 46, "J": 44 },
+			"frames": { "anim": 56, "N": 55, "D": 46, "J": 44, "swap": 43 },
 			"cooldown": 18,
 			"energyCost": 70,
 			"tags": ["taunt"],
 			"summons": [
-				{
-					"label": "Bogglecat Box",
-					"duration": 12.6,
-					"spawnsAt": 14,
-					"mobility": "stationary"
-				}
+				{ "label": "Bogglecat Box", "duration": 12.6, "spawnsAt": 14, "mobility": "stationary" }
 			],
 			"effects": [],
 			"_curatorNotes": [
@@ -211,10 +192,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 6,
 					"durationType": "fixed",
 					"source": "character",

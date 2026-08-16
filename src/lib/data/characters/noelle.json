@@ -17,53 +17,22 @@
 			"duration": 5,
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 27,
-						"N": 38,
-						"C": 41
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 24,
-						"N": 46,
-						"C": 48
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 19,
-						"N": 31,
-						"C": 40
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 41,
-						"N": 106
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 54, "hit": 27, "N": 38, "C": 41 } },
+				{ "name": "N2", "frames": { "anim": 66, "hit": 24, "N": 46, "C": 48 } },
+				{ "name": "N3", "frames": { "anim": 72, "hit": 19, "N": 31, "C": 40 } },
+				{ "name": "N4", "frames": { "anim": 112, "hit": 41, "N": 106, "C": 109 } }
 			],
 			"chargeFrames": {
-				"swap": 79,
+				"anim": 200,
 				"N": 198,
+				"C": 79,
 				"E": 155,
 				"Q": 155,
 				"D": 79,
-				"J": 79
+				"J": 79,
+				"swap": 79
 			},
-			"plungeFrames": {
-				"swap": 62,
-				"N": 51,
-				"E": 51,
-				"Q": 50,
-				"D": 39
-			},
+			"plungeFrames": { "anim": 82, "N": 53, "C": 52, "E": 52, "Q": 52, "D": 42, "swap": 64 },
 			"_curatorNotes": [
 				"Charged attack uses a parametric spinning mechanic (claymore spin + finisher). chargeFrames here are for the minimum case: single spin + finisher from standing (windup=56f). ActionDash/Jump/Swap are explicitly set to 0 in gcsim's chargeFrames and resolved to the spin hitmark (frame 23) via a custom Frames closure — effective cancel = windup(56)+23 = 79. N/E/Q values include spinFrames(23)+transFrames(13) added to the base table values. Windup is state-dependent: 56 from standing, 45 after N3, 44 after dash, 41 after another CA, 47 after plunge. Additional spins increase all N/E/Q values by 23f per extra spin. Reviewer to decide final representation.",
 				"High plunge exists in gcsim (highPlungeFrames: hitmark=42, swap=64, N=53, E=52, Q=52, D=42); not represented here per recipe. Low plunge (hitmark=39) used for plungeFrames. ActionJump not explicitly set in lowPlungeFrames (defaults to AnimationLength=80) — omitted per InitAbilSlice rule."
@@ -85,7 +54,8 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"lowPlungeFrames": { "anim": 80, "N": 51, "C": 51, "E": 51, "Q": 50, "D": 39, "swap": 62 }
 		},
 		{
 			"id": "noelle__skill__breastplate",
@@ -93,13 +63,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 78,
-				"N": 12,
-				"Q": 14,
-				"D": 11,
-				"J": 11
-			},
+			"frames": { "anim": 78, "N": 12, "C": 13, "E": 14, "Q": 14, "D": 11, "J": 11 },
 			"cooldown": 24,
 			"cooldownStartDelay": 6,
 			"tags": ["heal", "shield", "summon"],
@@ -107,10 +71,7 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 12,
 					"durationType": "refresh",
 					"scaling": 288,
@@ -121,11 +82,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "normal",
-						"source": "self"
-					},
+					"trigger": { "type": "onHit", "abilityType": "normal", "source": "self" },
 					"scaling": 38.3,
 					"stat": "def",
 					"flat": 226
@@ -133,11 +90,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged",
-						"source": "self"
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged", "source": "self" },
 					"scaling": 38.3,
 					"stat": "def",
 					"flat": 226
@@ -162,13 +115,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 121,
-				"N": 83,
-				"E": 82,
-				"D": 81,
-				"J": 81
-			},
+			"frames": { "anim": 121, "N": 83, "C": 82, "E": 82, "D": 81, "J": 81 },
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": [],
@@ -190,24 +137,13 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "ascension",
-								"min": 1
-							},
-							{
-								"type": "state",
-								"state": "offField"
-							},
-							{
-								"type": "recipientHpBelow",
-								"threshold": 30
-							}
+							{ "type": "ascension", "min": 1 },
+							{ "type": "state", "state": "offField" },
+							{ "type": "recipientHpBelow", "threshold": 30 }
 						]
 					},
 					"duration": 20,
@@ -260,11 +196,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onShieldEnd",
-						"source": "self",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onShieldEnd", "source": "self", "ability": "skill" },
 					"scaling": 400,
 					"stat": "atk",
 					"element": "geo"
@@ -291,23 +223,13 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"conditions": { "type": "constellation", "level": 6 },
 					"duration": 16.3,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 50
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 50 },
 					"snapshottable": false
 				}
 			],

@@ -1234,16 +1234,41 @@ export type Effect =
 export type ActionKey = 'N' | 'C' | 'E' | 'Q' | 'D' | 'J' | 'P' | 'swap';
 
 /**
- * Per-next-action frame durations (60fps integers).
- * `swap` is required and acts as the fallback when a key is absent.
- * Absent keys resolve to `frames.swap` in the parser.
+ * Per-next-action frame durations (60fps integers) — gcsim's two slice
+ * constructors, transcribed.
+ *
+ * ⚓⚓ THE FALLBACK IS `anim`, NOT `swap` (gauge-round L4b, 2026-08-16). gcsim
+ * builds an action's cancel table by filling EVERY slot with the animation
+ * length and then applying overrides, of which `ActionSwap` is merely one — and
+ * frequently one of the shortest. Our schema kept the override and threw away the
+ * default, so every absent key resolved to the swap window: measured, a charged
+ * attack after a normal was timed **22 frames early in 266 of 297 maps**.
+ *
+ * Resolution order, and `frameAt()` in `$lib/utils/frames.ts` is the ONLY place
+ * that implements it:
+ *
+ *     explicit key  →  `hit` (for E, Q, D, J, swap)  →  `anim`
+ *
+ * ⚓ `hit` is `InitNormalCancelSlice`'s hitmark, and it exists because a normal
+ * swing is fully described by two numbers: everything cancels at the hitmark
+ * except another normal, a charge and a plunge, which wait out the animation.
+ * `{ "anim": 35, "hit": 24 }` is the whole of Yoimiya's N1. ⛔ An E/Q slice has no
+ * such tier — `InitAbilSlice` takes one number — so `hit` there is a lint error.
+ *
+ * ⚠️ `P` sits in the `anim` tier, not the `hit` tier: `InitNormalCancelSlice`
+ * does not override `ActionHighPlunge`.
  *
  * Curation convention: for multi-hit attacks where the cancel window only opens
  * after the final hitmark (e.g. a double-hit N4), all keys must reflect the
  * frame of the *last* hitmark — not an earlier sub-hit. Cancelling before the
  * final hit lands loses damage and is not a valid rotation decision.
  */
-export type FrameMap = Partial<Record<ActionKey, number>> & { swap: number };
+export type FrameMap = Partial<Record<ActionKey, number>> & {
+	/** Full animation length — the fallback for every key not otherwise set. */
+	anim: number;
+	/** Hitmark; fills E/Q/D/J/swap. Normal and charged slices only. */
+	hit?: number;
+};
 
 /**
  * Timing data for a single hit in a normal-attack combo.
@@ -1329,9 +1354,20 @@ export type NormalAbility = AbilityCommon & {
 	/** Per-level charged hits for bow characters. Mutually exclusive with chargeFrames.
 	 *  Index 0 = C1 (partial); index 1 = C2 (full / Frostflake). */
 	chargeHits?: NormalHit[];
-	/** Plunge attack frames (base). Covers the standalone `P` token and the
-	 *  `E P` path where no plungeVariant matches the preceding E token. */
+	/** HIGH-plunge frames, and the default. Covers the standalone `P` token, the
+	 *  explicit `hP`, and the `E P` path where no plungeVariant matches the
+	 *  preceding E token.
+	 *
+	 *  ⚠️⚠️ THE MEANING OF THIS FIELD CHANGED AT L4b (2026-08-16). It used to hold
+	 *  ONE undifferentiated plunge, and measured against gcsim 36 of its 41
+	 *  authors were carrying LOW-plunge numbers — so a note or a value predating
+	 *  that round is describing a different thing. ⚓ Nate's ruling: the high
+	 *  plunge is what players actually perform, so it gets the plain name and the
+	 *  bare `P` token; the low plunge is the exception. */
 	plungeFrames?: FrameMap;
+	/** LOW-plunge frames — the `lP` token only. Falls back to `plungeFrames` when
+	 *  absent, so a character gcsim models with one plunge is not left with none. */
+	lowPlungeFrames?: FrameMap;
 	/** Plunge variants keyed by the preceding E token — e.g. Kazuha's
 	 *  Midare Ranzan has distinct frames for `E P` (press) vs `hE P` (hold).
 	 *  Selection is "first entry whose input[] contains the preceding E text". */

@@ -88,7 +88,7 @@ function makeStubCharacter(extra: Partial<CharacterData> = {}): CharacterData {
 				name: 'Attack',
 				input: ['N'],
 				abilityType: 'normal',
-				hits: [{ frames: { swap: 10 } }]
+				hits: [{ frames: { anim: 10 } }]
 			},
 			{
 				id: 'lintstub__skill__cast',
@@ -96,7 +96,7 @@ function makeStubCharacter(extra: Partial<CharacterData> = {}): CharacterData {
 				input: ['E'],
 				abilityType: 'skill',
 				behavior: 'instant',
-				frames: { swap: 20 },
+				frames: { anim: 20 },
 				cooldown: 10
 			}
 		],
@@ -115,7 +115,7 @@ describe('summonTick lint rules (P3)', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -123,7 +123,7 @@ describe('summonTick lint rules (P3)', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 20 },
+					frames: { anim: 20 },
 					cooldown: 10,
 					summons: [
 						{
@@ -156,7 +156,7 @@ describe('summonTick lint rules (P3)', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -164,7 +164,7 @@ describe('summonTick lint rules (P3)', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 20 },
+					frames: { anim: 20 },
 					cooldown: 10,
 					effects: [
 						{
@@ -191,7 +191,7 @@ describe('summonTick lint rules (P3)', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -199,7 +199,7 @@ describe('summonTick lint rules (P3)', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 20 },
+					frames: { anim: 20 },
 					cooldown: 10,
 					summons: [
 						{
@@ -234,7 +234,7 @@ describe('stacks condition lint rules', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -242,7 +242,7 @@ describe('stacks condition lint rules', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 20 },
+					frames: { anim: 20 },
 					cooldown: 10,
 					conditions: { type: 'stacks', key: '', min: 1 }
 				}
@@ -261,7 +261,7 @@ describe('stacks condition lint rules', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -269,7 +269,7 @@ describe('stacks condition lint rules', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 20 },
+					frames: { anim: 20 },
 					cooldown: 10,
 					conditions: { type: 'stacks', key: 'seal', min: -1 }
 				}
@@ -288,7 +288,7 @@ describe('stacks condition lint rules', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -296,7 +296,7 @@ describe('stacks condition lint rules', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 20 },
+					frames: { anim: 20 },
 					cooldown: 10,
 					conditions: { type: 'stacks', key: 'seal', min: 4, max: 2 }
 				}
@@ -315,7 +315,7 @@ describe('stacks condition lint rules', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -323,7 +323,7 @@ describe('stacks condition lint rules', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 20 },
+					frames: { anim: 20 },
 					cooldown: 10,
 					conditions: { type: 'stacks', key: 'declension', min: 4, max: 4 }
 				}
@@ -541,7 +541,7 @@ describe('consumeStacks lint rules (E3 v2.x)', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -549,7 +549,7 @@ describe('consumeStacks lint rules (E3 v2.x)', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 30 },
+					frames: { anim: 30 },
 					cooldown: 5
 				},
 				{
@@ -558,7 +558,7 @@ describe('consumeStacks lint rules (E3 v2.x)', () => {
 					input: ['Q'],
 					abilityType: 'burst',
 					behavior: 'instant',
-					frames: { swap: 60 },
+					frames: { anim: 60 },
 					cooldown: 15,
 					energyCost: 60,
 					effects: [eff]
@@ -668,7 +668,7 @@ describe('gainStacks trigger.input lint rules (E3 v2.x)', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -676,7 +676,7 @@ describe('gainStacks trigger.input lint rules (E3 v2.x)', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 30 },
+					frames: { anim: 30 },
 					cooldown: 5,
 					effects: [
 						{
@@ -731,7 +731,7 @@ describe('gainStacks lifetime lint rules (E3 v2.x)', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -739,7 +739,7 @@ describe('gainStacks lifetime lint rules (E3 v2.x)', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 30 },
+					frames: { anim: 30 },
 					cooldown: 5,
 					effects: [
 						{
@@ -1113,7 +1113,7 @@ describe('TriggerFilter / damageTag (G primitive)', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 }, damageTag: 'spaghetti' }]
+					hits: [{ frames: { anim: 10 }, damageTag: 'spaghetti' }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -1121,7 +1121,7 @@ describe('TriggerFilter / damageTag (G primitive)', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 20 },
+					frames: { anim: 20 },
 					cooldown: 10
 				}
 			]
@@ -1139,7 +1139,7 @@ describe('TriggerFilter / damageTag (G primitive)', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -1147,7 +1147,7 @@ describe('TriggerFilter / damageTag (G primitive)', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 20 },
+					frames: { anim: 20 },
 					cooldown: 10,
 					variants: [{ label: 'Hold', input: ['hE'], damageTag: 'cosmic' }]
 				}
@@ -1401,7 +1401,7 @@ describe('damage/heal flat addend lint rules', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -1409,7 +1409,7 @@ describe('damage/heal flat addend lint rules', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 20 },
+					frames: { anim: 20 },
 					cooldown: 10,
 					effects: [effect as never]
 				}
@@ -1486,7 +1486,7 @@ describe('damage/heal flatScaling lint rules (2026-05-17)', () => {
 					name: 'Attack',
 					input: ['N'],
 					abilityType: 'normal',
-					hits: [{ frames: { swap: 10 } }]
+					hits: [{ frames: { anim: 10 } }]
 				},
 				{
 					id: 'lintstub__skill__cast',
@@ -1494,7 +1494,7 @@ describe('damage/heal flatScaling lint rules (2026-05-17)', () => {
 					input: ['E'],
 					abilityType: 'skill',
 					behavior: 'instant',
-					frames: { swap: 20 },
+					frames: { anim: 20 },
 					cooldown: 10,
 					effects: [effect as never]
 				}

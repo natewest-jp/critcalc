@@ -51,14 +51,8 @@
 			"effects": [],
 			"durationExtensions": [
 				{
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"conditions": {
-						"type": "state",
-						"state": "inStance"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"conditions": { "type": "state", "state": "inStance" },
 					"delta": 1.7
 				}
 			],
@@ -108,16 +102,12 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "def%",
 					"value": {
 						"type": "perTeamCount",
-						"count": {
-							"elements": ["geo"]
-						},
+						"count": { "elements": ["geo"] },
 						"per": 15,
 						"cap": 45
 					},
@@ -132,16 +122,12 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "em",
 					"value": {
 						"type": "perTeamCount",
-						"count": {
-							"elements": ["hydro"]
-						},
+						"count": { "elements": ["hydro"] },
 						"per": 60,
 						"cap": 180
 					},
@@ -181,20 +167,14 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"source": "character",
 					"stat": "lunarCrystallizeDmgBonus",
 					"value": 30,
 					"snapshottable": false,
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "state",
-						"state": "inStance"
-					}
+					"conditions": { "type": "state", "state": "inStance" }
 				}
 			],
 			"caveat": "Shown as a fixed 15s team window, but in game it lasts only while she is in the Lunar Phase Shift mode — it ends early if she swaps off-field.",

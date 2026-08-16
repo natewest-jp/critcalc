@@ -16,61 +16,14 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 11,
-						"N": 15,
-						"C": 23
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 13,
-						"N": 22,
-						"C": 25
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 29,
-						"N": 44,
-						"C": 45
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 21,
-						"N": 30,
-						"C": 37
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 35,
-						"N": 67
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 29, "hit": 11, "N": 15, "C": 23 } },
+				{ "name": "N2", "frames": { "anim": 31, "hit": 13, "N": 22, "C": 25 } },
+				{ "name": "N3", "frames": { "anim": 55, "hit": 29, "N": 44, "C": 45 } },
+				{ "name": "N4", "frames": { "anim": 51, "hit": 21, "N": 30, "C": 37 } },
+				{ "name": "N5", "frames": { "anim": 90, "hit": 35, "N": 67 } }
 			],
-			"chargeFrames": {
-				"swap": 48,
-				"N": 50,
-				"E": 50,
-				"Q": 50,
-				"D": 27,
-				"J": 27
-			},
-			"plungeFrames": {
-				"swap": 58,
-				"N": 49,
-				"E": 50,
-				"Q": 50,
-				"D": 40
-			},
+			"chargeFrames": { "anim": 64, "N": 50, "E": 50, "Q": 50, "D": 27, "J": 27, "swap": 48 },
+			"plungeFrames": { "anim": 77, "N": 56, "E": 56, "Q": 56, "D": 48, "J": 76, "swap": 64 },
 			"sections": [
 				{
 					"type": "normal",
@@ -96,20 +49,15 @@
 				"Mirror-gated infusion: while Alhaitham possesses ≥1 Chisel-Light Mirror, Normal/Charged/Plunge attacks are converted to Dendro DMG. Schema's `infusion` field on a normal ability is unconditional; the closest existing condition (`state: inStance`) doesn't fit because there is no stance — N/C/P frames are unchanged. Reviewer to wire conditional infusion when the schema supports a mirror-count or holds-mirror condition.",
 				"Projection Attack proc: while ≥1 mirror is active, each N/C/P hit triggers an AoE Dendro Projection Attack scaling on talent and EM. Per-hit count = current mirror count (1/2/3); 1.6s ICD between procs (gcsim projectionICDKey = 96f). Snapshot timings per mirror count: [20, 22, 26]f. Multi-hit hitmark slices in gcsim — mirror1HitmarkLeft/Right, mirror2HitmarksLeft/Right, mirror3Hitmarks. Effect not authored — needs reviewer pass once schema supports mirror-state-conditional damage effects.",
 				"A1 (Four-Causal Correction) extra mirror-gen on C/P hit, 12s ICD — flagged on the passive."
-			]
+			],
+			"lowPlungeFrames": { "anim": 70, "N": 49, "E": 50, "Q": 50, "D": 40, "swap": 58 }
 		},
 		{
 			"id": "alhaitham__skill__universality_an_elaboration_on_form",
 			"name": "Universality: An Elaboration on Form",
 			"input": ["E", "tE"],
 			"abilityType": "skill",
-			"frames": {
-				"swap": 36,
-				"N": 27,
-				"Q": 28,
-				"D": 33,
-				"J": 33
-			},
+			"frames": { "anim": 44, "N": 27, "E": 28, "Q": 28, "D": 33, "J": 33, "swap": 36 },
 			"cooldown": 18,
 			"cooldownStartDelay": 15,
 			"tags": [],
@@ -118,10 +66,7 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": {
-						"swap": 85,
-						"N": 86
-					},
+					"frames": { "anim": 87, "N": 86, "E": 80, "swap": 85 },
 					"cooldown": 18,
 					"behavior": "instant",
 					"_curatorNotes": [
@@ -147,12 +92,7 @@
 			"name": "Particular Field: Fetters of Phenomena",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": {
-				"swap": 87,
-				"N": 88,
-				"E": 89,
-				"D": 89
-			},
+			"frames": { "anim": 91, "N": 88, "E": 89, "D": 89, "swap": 87 },
 			"cooldown": 18,
 			"tags": [],
 			"energyCost": 70,
@@ -186,9 +126,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -222,19 +160,14 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
 					"value": 50,
 					"snapshottable": false,
-					"stacks": {
-						"maxStacks": 4,
-						"durationModel": "separate"
-					}
+					"stacks": { "maxStacks": 4, "durationModel": "separate" }
 				}
 			],
 			"description": "When Alhaitham generates a Chisel-Light Mirror, his Elemental Mastery will be increased by 50 for 8 seconds, max 4 stacks. Each stack's duration is counted independently. This effect can be triggered even when the maximum number of Chisel-Light Mirrors has been reached.",
@@ -258,9 +191,7 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 15,
 					"durationType": "refresh",
 					"source": "character",
@@ -271,9 +202,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 15,
 					"durationType": "refresh",
 					"source": "character",
@@ -304,9 +233,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 6,
 					"durationType": "refresh",
 					"source": "character",
@@ -317,9 +244,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 6,
 					"durationType": "refresh",
 					"source": "character",

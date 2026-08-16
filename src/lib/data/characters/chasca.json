@@ -16,51 +16,16 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 10,
-						"N": 17
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 8,
-						"N": 19
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 20,
-						"N": 36
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 39,
-						"N": 73
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 10, "N": 17, "swap": 10 } },
+				{ "name": "N2", "frames": { "anim": 8, "N": 19, "swap": 8 } },
+				{ "name": "N3", "frames": { "anim": 20, "N": 36, "swap": 20 } },
+				{ "name": "N4", "frames": { "anim": 39, "N": 73, "swap": 39 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 26,
-						"D": 14,
-						"J": 14
-					}
-				},
+				{ "name": "Aimed Shot", "frames": { "anim": 26, "D": 14, "J": 14, "swap": 26 } },
 				{
 					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 96,
-						"D": 86,
-						"J": 86
-					}
+					"frames": { "anim": 96, "D": 86, "J": 86, "swap": 96 }
 				}
 			],
 			"_curatorNotes": [
@@ -93,20 +58,9 @@
 			"input": ["N1", "N2", "N3", "N4", "C", "P"],
 			"abilityType": "normal",
 			"infusion": "anemo",
-			"conditions": {
-				"type": "state",
-				"state": "nightsoulBlessing"
-			},
+			"conditions": { "type": "state", "state": "nightsoulBlessing" },
 			"tags": [],
-			"hits": [
-				{
-					"name": "Tap Fire",
-					"frames": {
-						"swap": 11,
-						"N": 34
-					}
-				}
-			],
+			"hits": [{ "name": "Tap Fire", "frames": { "anim": 11, "N": 34, "swap": 11 } }],
 			"caveat": "Not modeled: the Hold charged-attack mode during Nightsoul's Blessing, which fires up to 6 bullets — some converting to your party's Pyro, Hydro, Cryo, or Electro elements. The timeline shows only the single Tap shot.",
 			"_curatorNotes": [
 				"In-NS Tap fire: attackSkillTapFrames=InitAbilSlice(39), ActionAttack=34, ActionSkill=31, ActionBurst=11, ActionDash=11. Hitmark=11. Single hit, AttackTagNormal but Element=Anemo and ICDTag=ICDTagChascaTap (custom). Damage = skillNA[lvl=10]=64.8% Anemo per hit. AdditionalTagNightsoul.",
@@ -124,13 +78,7 @@
 			"duration": 10,
 			"opensState": "nightsoulBlessing",
 			"terminatesOnSwap": true,
-			"frames": {
-				"swap": 37,
-				"N": 6,
-				"Q": 6,
-				"D": 6,
-				"J": 27
-			},
+			"frames": { "anim": 37, "N": 6, "Q": 6, "D": 6, "J": 27, "swap": 37 },
 			"cooldown": 6.5,
 			"tags": [],
 			"effects": [],
@@ -149,13 +97,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 98,
-				"N": 99,
-				"E": 102,
-				"D": 101,
-				"J": 100
-			},
+			"frames": { "anim": 98, "N": 99, "E": 102, "D": 101, "J": 100, "swap": 98 },
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": [],

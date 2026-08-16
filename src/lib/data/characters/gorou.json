@@ -16,52 +16,14 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 17,
-						"N": 21
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 12,
-						"N": 26
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 27,
-						"N": 43
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 31,
-						"N": 55
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 21, "hit": 17 } },
+				{ "name": "N2", "frames": { "anim": 26, "hit": 12 } },
+				{ "name": "N3", "frames": { "anim": 43, "hit": 27 } },
+				{ "name": "N4", "frames": { "anim": 55, "hit": 31 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 23,
-						"D": 15,
-						"J": 15
-					}
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 94,
-						"D": 86,
-						"J": 86
-					}
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 23, "D": 15, "J": 15, "swap": 23 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 94, "D": 86, "J": 86 } }
 			],
 			"_curatorNotes": ["No plunge.go in gcsim character dir — plungeFrames not available."],
 			"sections": [
@@ -89,11 +51,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 46,
-				"D": 33,
-				"J": 33
-			},
+			"frames": { "anim": 47, "D": 33, "J": 33, "swap": 46 },
 			"cooldown": 10,
 			"cooldownStartDelay": 32,
 			"tags": ["summon"],
@@ -109,10 +67,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -123,10 +78,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 10,
 					"durationType": "fixed",
 					"conditions": {
@@ -137,19 +89,13 @@
 					},
 					"source": "character",
 					"stat": "interruptionRes",
-					"value": {
-						"type": "unknown",
-						"description": "interruption resistance"
-					},
+					"value": { "type": "unknown", "description": "interruption resistance" },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 10,
 					"durationType": "fixed",
 					"conditions": {
@@ -179,12 +125,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 55,
-				"N": 53,
-				"D": 42,
-				"J": 43
-			},
+			"frames": { "anim": 56, "N": 53, "D": 42, "J": 43, "swap": 55 },
 			"cooldown": 20,
 			"tags": ["summon"],
 			"energyCost": 80,
@@ -198,10 +139,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.5
-							},
+							"trigger": { "type": "summonTick", "interval": 1.5 },
 							"scaling": 110.34,
 							"stat": "def",
 							"element": "geo"
@@ -213,10 +151,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 9,
 					"durationType": "fixed",
 					"source": "character",
@@ -227,10 +162,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 9,
 					"durationType": "fixed",
 					"conditions": {
@@ -241,19 +173,13 @@
 					},
 					"source": "character",
 					"stat": "interruptionRes",
-					"value": {
-						"type": "unknown",
-						"description": "interruption resistance"
-					},
+					"value": { "type": "unknown", "description": "interruption resistance" },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 9,
 					"durationType": "fixed",
 					"conditions": {
@@ -289,16 +215,10 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "ascension",
-						"min": 1
-					},
+					"conditions": { "type": "ascension", "min": 1 },
 					"source": "character",
 					"stat": "def%",
 					"value": 25,
@@ -314,9 +234,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 156,
 					"stat": "def",
 					"_curatorNotes": [
@@ -326,9 +244,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 15.6,
 					"stat": "def",
 					"_curatorNotes": [
@@ -373,9 +289,7 @@
 				{
 					"type": "heal",
 					"target": "active",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 50,
 					"stat": "def",
 					"_curatorNotes": [
@@ -407,24 +321,14 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 12,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 6
-							},
-							{
-								"type": "teamElementCount",
-								"elements": ["geo"],
-								"comparison": "=",
-								"value": 0
-							}
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamElementCount", "elements": ["geo"], "comparison": "=", "value": 0 }
 						]
 					},
 					"source": "character",
@@ -435,24 +339,14 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 12,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 6
-							},
-							{
-								"type": "teamElementCount",
-								"elements": ["geo"],
-								"comparison": "=",
-								"value": 1
-							}
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamElementCount", "elements": ["geo"], "comparison": "=", "value": 1 }
 						]
 					},
 					"source": "character",
@@ -463,24 +357,14 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 12,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 6
-							},
-							{
-								"type": "teamElementCount",
-								"elements": ["geo"],
-								"comparison": ">=",
-								"value": 2
-							}
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamElementCount", "elements": ["geo"], "comparison": ">=", "value": 2 }
 						]
 					},
 					"source": "character",

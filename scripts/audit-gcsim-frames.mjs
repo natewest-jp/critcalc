@@ -25,176 +25,23 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { runDumper } from './lib/gcsim-dump.mjs';
+import {
+	CANCEL_KEYS,
+	CHAR_DIR,
+	KEYS,
+	authoredMaps,
+	driverSetsFor,
+	gcsimKeyFor,
+	loadDrivers,
+	prereqFor,
+	variantDumpKey
+} from './lib/gcsim-map.mjs';
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const CHAR_DIR = join(REPO_ROOT, 'src/lib/data/characters');
-const DRIVERS = join(REPO_ROOT, 'scripts/gcsim-dump/drivers.json');
 const REPORT = join(REPO_ROOT, 'docs/curation/gcsim-frames-diff.md');
 
 const FPS = 60;
 const f = (seconds) => Math.round(seconds * FPS);
-
-/** Our FrameMap keys, in the order the report prints them. */
-const KEYS = ['N', 'C', 'E', 'Q', 'D', 'J', 'P', 'swap'];
-
-/** ⚓ The keys `InitNormalCancelSlice` overrides with the HITMARK. Everything else in a
- *  normal's slice is the animation length — which is the whole C4b finding: `swap` was
- *  standing in for both, and it is only ever right about this half. */
-const CANCEL_KEYS = new Set(['E', 'Q', 'D', 'J', 'swap']);
-
-/** ⚠️ The six Travelers are NOT in the no-gcsim-source set — they map by name, not by
- *  the underscore rule. gcsim keys them by body (`aether…`); the corpus does not model
- *  the Aether/Lumine split for frames, and the two are frame-identical upstream. */
-const KEY_OVERRIDES = {
-	traveler_anemo: 'aetheranemo',
-	traveler_dendro: 'aetherdendro',
-	traveler_electro: 'aetherelectro',
-	traveler_geo: 'aethergeo',
-	traveler_hydro: 'aetherhydro',
-	traveler_pyro: 'aetherpyro'
-};
-
-const gcsimKeyFor = (id) => KEY_OVERRIDES[id] ?? id.replace(/_/g, '');
-
-// ---------------------------------------------------------------------------
-// Corpus → dump-key mapping
-// ---------------------------------------------------------------------------
-
-/**
- * ⚓ The corpus already says what gates each ability, so the prerequisite is DERIVED
- * from the ability's own `conditions` rather than hand-listed:
- *
- *   `chainStage {ability, index: N}`  →  N repeats of that action  (Diluc E2/E3,
- *                                        Keqing's recast, Xianyun's Skyladder, Dehya)
- *   `state {state: S}`                →  one lookup in drivers.json's `states`
- *
- * That leaves the driver table answering exactly one question per row — "what puts this
- * character into that state" — which is the only part no rule derives.
- *
- * Returns `{ label, prereq }`, or `null` when the ability needs a prerequisite we
- * cannot build. ⚠️ `null` is UNCOVERED, never "compare it against the base": reading a
- * stance ability off a grounded capture is how you manufacture a mismatch.
- */
-function prereqFor(conditions, drv) {
-	if (!conditions) return { label: '', prereq: [] };
-	if (conditions.type === 'chainStage') {
-		const n = conditions.index ?? 0;
-		if (n === 0) return { label: '', prereq: [] };
-		const act = conditions.ability === 'burst' ? 'burst' : 'skill';
-		return { label: `chain-${act}-${n}`, prereq: [{ action: act, params: {}, repeat: n }] };
-	}
-	if (conditions.type === 'state') {
-		const steps = drv?.states?.[conditions.state];
-		if (!steps) return null;
-		// ⚓ An empty step list is a ROW that says "this state does not change the
-		// frames"; it resolves to the BASE capture rather than to a redundant second one.
-		if (!steps.length) return { label: '', prereq: [] };
-		return { label: `state-${conditions.state}`, prereq: steps };
-	}
-	// Constellation, ascension and team-composition gates do not change the frames a
-	// C0 capture reads, so they are not prerequisites at all.
-	return { label: '', prereq: [] };
-}
-
-/**
- * Every authored FrameMap, paired with the dump key that should describe it.
- *
- * A map whose dump key is null is not a mismatch; it is uncovered, and the two must
- * never be reported as the same thing.
- */
-function authoredMaps(char, drv, dumped) {
-	const out = [];
-	const isBow = char.weapon === 'bow';
-	// Does this bow have a SECOND aim reading at all? (see the chargeHits note below)
-	const aimFull = dumped?.get('A');
-	const aimHold = dumped?.get('hA');
-	const hasPartialAim =
-		isBow &&
-		aimFull?.frames &&
-		aimHold?.frames &&
-		JSON.stringify(aimFull.frames) !== JSON.stringify(aimHold.frames);
-	const suffixed = (key, ctx) => (ctx === null ? null : ctx.label ? `${key}@${ctx.label}` : key);
-	for (const a of char.abilities ?? []) {
-		const ctx = prereqFor(a.conditions, drv);
-		if (a.abilityType === 'normal') {
-			(a.hits ?? []).forEach((h, i) =>
-				out.push({
-					path: `${a.id}.hits[${i}]`,
-					frames: h.frames,
-					dumpKey: suffixed(`N${i + 1}`, ctx)
-				})
-			);
-			if (a.chargeFrames)
-				out.push({
-					path: `${a.id}.chargeFrames`,
-					frames: a.chargeFrames,
-					dumpKey: suffixed('C', ctx)
-				});
-			// ⚓⚓ A bow's charged attack is gcsim's `aim`, and its default reading is the
-			// FULLY-charged shot — measured, not assumed (Amber `aim` = 96f = our
-			// "Fully-Charged Aimed Shot"). ⛔ gcsim models ONE aimed shot per bow: for
-			// 18 of 19 bows `aim[hold=1]` returns the identical slice, so the partial
-			// draw has no gcsim reading at all and must be reported UNCOVERED rather
-			// than diffed against the full shot. Ganyu is the single exception, where
-			// hold=1 is a genuinely different (level-1) aim — and `hasPartialAim` is
-			// how that is detected rather than special-cased by name.
-			const partialKey = hasPartialAim ? 'hA' : null;
-			(a.chargeHits ?? []).forEach((h, i) => {
-				const isLast = i === a.chargeHits.length - 1;
-				out.push({
-					path: `${a.id}.chargeHits[${i}]`,
-					frames: h.frames,
-					dumpKey: isBow ? (isLast ? 'A' : partialKey) : suffixed('C', ctx),
-					uncoveredReason:
-						isBow && !isLast && !partialKey
-							? 'gcsim models one aimed shot per bow (no partial draw)'
-							: undefined
-				});
-			});
-			if (a.plungeFrames)
-				out.push({
-					path: `${a.id}.plungeFrames`,
-					frames: a.plungeFrames,
-					dumpKey: suffixed('P', ctx),
-					// ⚓ Our single `plungeFrames` does not say WHICH plunge it is, and
-					// measured across the corpus it is overwhelmingly gcsim's LOW plunge
-					// (35 of 41). Reporting it against `P` alone would invent 35
-					// mismatches out of a naming ambiguity, so the audit picks whichever
-					// gcsim variant matches and reports the split as a finding.
-					alternatives: ['lP']
-				});
-			// ⛔ plungeVariants have no gcsim analogue — gcsim models one plunge per
-			// character, launched by Xianyun. Left uncovered on purpose.
-			for (const v of a.plungeVariants ?? [])
-				out.push({ path: `${a.id}.plungeVariants[${v.label}]`, frames: v.frames, dumpKey: null });
-			continue;
-		}
-		if (a.abilityType !== 'skill' && a.abilityType !== 'burst') continue;
-		const base = a.abilityType === 'burst' ? 'Q' : 'E';
-		if (a.frames)
-			out.push({ path: `${a.id}.frames`, frames: a.frames, dumpKey: suffixed(base, ctx) });
-		for (const v of a.variants ?? []) {
-			if (!v.frames) continue;
-			const vk = variantDumpKey(v.input ?? [], base);
-			out.push({
-				path: `${a.id}.variants[${v.input?.join('/') ?? '?'}]`,
-				frames: v.frames,
-				dumpKey: vk === null ? null : suffixed(vk, ctx)
-			});
-		}
-	}
-	return out;
-}
-
-/** `hE`/`h1E` are gcsim's `skill[hold=1]`; `h2E` is `hold=2`. ⚠️ `sQ` (KQM short burst)
- *  has no known gcsl spelling — L0 §9 left it open and it is still open. */
-function variantDumpKey(input, base) {
-	if (input.includes('h2E')) return 'h2E';
-	if (input.includes('hE') || input.includes('h1E')) return 'hE';
-	if (input.includes('E')) return 'E';
-	if (input.includes('sQ')) return null;
-	return base;
-}
 
 // ---------------------------------------------------------------------------
 // Application attribution
@@ -278,7 +125,7 @@ function main() {
 	const onlyIdx = args.indexOf('--char');
 	const only = onlyIdx >= 0 ? args[onlyIdx + 1] : null;
 
-	const drivers = JSON.parse(readFileSync(DRIVERS, 'utf8'));
+	const drivers = loadDrivers();
 	const unresolved = drivers._unresolved ?? {};
 
 	const chars = readdirSync(CHAR_DIR)
@@ -293,15 +140,8 @@ function main() {
 	const driverTable = {};
 	for (const char of chars) {
 		const gk = gcsimKeyFor(char.id);
-		const drv = drivers[gk];
-		const sets = new Map();
-		for (const a of char.abilities ?? []) {
-			const ctx = prereqFor(a.conditions, drv);
-			if (!ctx || !ctx.label) continue;
-			if (!sets.has(ctx.label))
-				sets.set(ctx.label, { label: ctx.label, prereq: ctx.prereq, captures: [] });
-		}
-		if (sets.size) driverTable[gk] = { sets: [...sets.values()] };
+		const sets = driverSetsFor(char, drivers[gk]);
+		if (sets.length) driverTable[gk] = { sets };
 	}
 
 	process.stderr.write('building + running the gcsim dumper…\n');
@@ -317,8 +157,6 @@ function main() {
 	const tickRows = [];
 	let matched = 0;
 	let authored = 0;
-
-	const variantPicks = {};
 
 	for (const char of chars) {
 		const gk = gcsimKeyFor(char.id);
@@ -338,48 +176,22 @@ function main() {
 		const byKey = new Map((cd.abilities ?? []).map((a) => [a.key, a]));
 
 		for (const m of maps) {
-			// PICK_BEST: where our schema is ambiguous about WHICH gcsim variant a map
-			// describes (a plunge, a bow's partial draw), try each and keep the one that
-			// agrees — then report the choice, so an ambiguity never masquerades as a
-			// clean match.
-			const candidates = [m.dumpKey, ...(m.alternatives ?? [])].filter(Boolean);
-			let g = null;
-			let picked = null;
-			let bad = null;
-			for (const key of candidates) {
-				const cand = byKey.get(key);
-				if (!cand || cand.error || !cand.frames) continue;
-				const wrong = KEYS.filter(
-					(k) => m.frames[k] !== undefined && m.frames[k] !== cand.frames[k]
-				);
-				if (g === null || wrong.length < bad.length) {
-					g = cand;
-					picked = key;
-					bad = wrong;
-				}
-			}
-			if (!g) {
+			const g = m.dumpKey ? byKey.get(m.dumpKey) : null;
+			if (!g || g.error || !g.frames) {
 				uncovered.push({
 					id: char.id,
 					path: m.path,
 					reason:
 						m.uncoveredReason ??
-						(!m.dumpKey
-							? 'no gcsim analogue'
-							: (byKey.get(m.dumpKey)?.error ?? `not captured (${m.dumpKey})`))
+						(!m.dumpKey ? 'no gcsim analogue' : (g?.error ?? `not captured (${m.dumpKey})`))
 				});
 				continue;
 			}
-			if (m.alternatives?.length) {
-				const bucket = (variantPicks[picked] ??= { ok: 0, off: 0 });
-				if (bad.length) bucket.off++;
-				else bucket.ok++;
-			}
+			const bad = KEYS.filter((k) => m.frames[k] !== undefined && m.frames[k] !== g.frames[k]);
 			if (bad.length) {
 				mismatches.push({
 					id: char.id,
 					path: m.path,
-					picked: m.alternatives?.length ? picked : null,
 					keys: bad.map((k) => `${k} ${m.frames[k]}→${g.frames[k]}`)
 				});
 			} else matched++;
@@ -492,7 +304,6 @@ function main() {
 		applicationRows,
 		noApplication,
 		tickRows,
-		variantPicks,
 		median
 	});
 
@@ -573,39 +384,13 @@ function renderReport(d) {
 		if (!byChar.has(m.id)) byChar.set(m.id, []);
 		byChar.get(m.id).push(m);
 	}
-	p('| character | map | read as | keys (ours → gcsim) |');
-	p('| --- | --- | --- | --- |');
+	p('| character | map | keys (ours → gcsim) |');
+	p('| --- | --- | --- |');
 	for (const [id, rows] of byChar) {
-		for (const r of rows) p(`| ${id} | \`${r.path}\` | ${r.picked ?? ''} | ${r.keys.join(', ')} |`);
+		for (const r of rows) p(`| ${id} | \`${r.path}\` | ${r.keys.join(', ')} |`);
 	}
 	p();
 
-	if (Object.keys(d.variantPicks).length) {
-		p('### Which gcsim variant our ambiguous maps actually describe');
-		p();
-		p('⚓ A finding, not plumbing. Our schema has ONE `plungeFrames` and does not say');
-		p('whether it means the low or the high plunge, and one `chargeHits` array that');
-		p("does not say which draw level gcsim's `aim` default corresponds to. Resolved by");
-		p('matching rather than by assumption:');
-		p();
-		p('| gcsim variant | maps that match it | maps that do not |');
-		p('| --- | --- | --- |');
-		for (const [k, v] of Object.entries(d.variantPicks)) p(`| \`${k}\` | ${v.ok} | ${v.off} |`);
-		p();
-	}
-
-	// --- unresolved drivers -------------------------------------------------
-	if (Object.keys(d.unresolved).length) {
-		p('### Known-unresolved drivers');
-		p();
-		p('These characters have a condition-gated ability the driver table cannot yet');
-		p('reach. ⛔ Their maps must be excluded from the migration until adjudicated.');
-		p();
-		for (const [id, why] of Object.entries(d.unresolved)) p(`- **${id}** — ${why}`);
-		p();
-	}
-
-	// --- uncovered ----------------------------------------------------------
 	p(`## 3. Uncovered maps (${d.uncovered.length})`);
 	p();
 	p('⚠️ Uncovered is **not** the same as matching. A map here has no gcsim reading at');

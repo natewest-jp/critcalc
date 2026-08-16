@@ -16,37 +16,11 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 18,
-						"N": 20,
-						"C": 26
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 32,
-						"N": 46,
-						"C": 39
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 22,
-						"N": 57
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 34, "hit": 18, "N": 20, "C": 26 } },
+				{ "name": "N2", "frames": { "anim": 57, "hit": 32, "N": 46, "C": 39 } },
+				{ "name": "N3", "frames": { "anim": 70, "hit": 22, "N": 57 } }
 			],
-			"chargeFrames": {
-				"swap": 27,
-				"N": 42,
-				"Q": 40,
-				"D": 23,
-				"J": 23
-			},
+			"chargeFrames": { "anim": 42, "Q": 40, "D": 23, "J": 23, "swap": 27 },
 			"sections": [
 				{
 					"type": "normal",
@@ -71,41 +45,14 @@
 			"name": "Blade Roller",
 			"input": ["N1", "N2", "N3", "N4"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "nightsoulBlessing"
-			},
+			"conditions": { "type": "state", "state": "nightsoulBlessing" },
 			"infusion": "geo",
 			"tags": [],
 			"hits": [
-				{
-					"name": "Blade Roller 1",
-					"frames": {
-						"swap": 17,
-						"N": 20
-					}
-				},
-				{
-					"name": "Blade Roller 2",
-					"frames": {
-						"swap": 17,
-						"N": 28
-					}
-				},
-				{
-					"name": "Blade Roller 3",
-					"frames": {
-						"swap": 22,
-						"N": 30
-					}
-				},
-				{
-					"name": "Blade Roller 4",
-					"frames": {
-						"swap": 32,
-						"N": 68
-					}
-				}
+				{ "name": "Blade Roller 1", "frames": { "anim": 44, "hit": 17, "N": 20 } },
+				{ "name": "Blade Roller 2", "frames": { "anim": 48, "hit": 17, "N": 28 } },
+				{ "name": "Blade Roller 3", "frames": { "anim": 50, "hit": 22, "N": 30 } },
+				{ "name": "Blade Roller 4", "frames": { "anim": 69, "hit": 32, "N": 68 } }
 			],
 			"_curatorNotes": [
 				"Blade Roller is the in-stance N replacement (4 kicks instead of 3 sword strikes), gated by nightsoulBlessing state (opened by the skill's opensState field). DEF-scaling Geo damage (UseDef + IgnoreInfusion in gcsim); modelled via infusion: \"geo\" — DEF scaling itself isn't expressed in our schema.",
@@ -118,13 +65,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "stance",
-			"frames": {
-				"swap": 19,
-				"N": 19,
-				"Q": 20,
-				"D": 15,
-				"J": 15
-			},
+			"frames": { "anim": 20, "N": 19, "D": 15, "J": 15, "swap": 19 },
 			"cooldown": 7,
 			"cooldownStartsAtStanceEnd": true,
 			"duration": 9,
@@ -135,10 +76,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"conditions": {
 						"type": "teamElementCount",
 						"elements": ["pyro"],
@@ -152,10 +90,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"conditions": {
 						"type": "teamElementCount",
 						"elements": ["hydro"],
@@ -169,10 +104,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"conditions": {
 						"type": "teamElementCount",
 						"elements": ["cryo"],
@@ -186,10 +118,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"conditions": {
 						"type": "teamElementCount",
 						"elements": ["electro"],
@@ -203,10 +132,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"conditions": {
 						"type": "teamElementCount",
 						"elements": ["pyro", "hydro", "cryo", "electro"],
@@ -238,13 +164,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 92,
-				"N": 95,
-				"E": 93,
-				"D": 95,
-				"J": 94
-			},
+			"frames": { "anim": 101, "N": 95, "E": 93, "D": 95, "J": 94, "swap": 92 },
 			"cooldown": 15,
 			"tags": ["heal"],
 			"energyCost": 60,
@@ -259,11 +179,7 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.5,
-								"firstTickDelay": 0
-							},
+							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 0 },
 							"conditions": {
 								"type": "teamElementCount",
 								"elements": ["pyro", "hydro", "cryo", "electro"],
@@ -305,9 +221,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onTeamNightsoulBurst"
-					},
+					"trigger": { "type": "onTeamNightsoulBurst" },
 					"duration": 15,
 					"durationType": "refresh",
 					"source": "character",
@@ -359,67 +273,37 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 65
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 65 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"source": "character",
 					"stat": "chargeFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 65
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 65 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"source": "character",
 					"stat": "plungeFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 65
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 65 },
 					"snapshottable": false
 				}
 			],

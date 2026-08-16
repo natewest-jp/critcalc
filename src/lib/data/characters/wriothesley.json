@@ -16,59 +16,14 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 12,
-						"N": 14,
-						"C": 23
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 10,
-						"N": 13,
-						"C": 20
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 18,
-						"N": 24,
-						"C": 19
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 35,
-						"N": 41,
-						"C": 41
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 39,
-						"N": 59,
-						"C": 39
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 27, "hit": 12, "N": 14, "C": 23 } },
+				{ "name": "N2", "frames": { "anim": 25, "hit": 10, "N": 13, "C": 20 } },
+				{ "name": "N3", "frames": { "anim": 41, "hit": 18, "N": 24, "C": 19 } },
+				{ "name": "N4", "frames": { "anim": 56, "hit": 35, "N": 41, "C": 41 } },
+				{ "name": "N5", "frames": { "anim": 59, "hit": 39, "C": 39 } }
 			],
-			"chargeFrames": {
-				"swap": 49,
-				"D": 19,
-				"J": 19
-			},
-			"plungeFrames": {
-				"swap": 49,
-				"N": 62,
-				"E": 63,
-				"Q": 64,
-				"D": 44
-			},
+			"chargeFrames": { "anim": 52, "D": 19, "J": 19, "swap": 49 },
+			"plungeFrames": { "anim": 76, "N": 65, "E": 64, "Q": 63, "D": 47, "swap": 51 },
 			"sections": [
 				{
 					"type": "normal",
@@ -93,59 +48,22 @@
 				"Catalyst CA is gated by gcsim's NextQueueItemIsValid: charge cannot be queued unless prior action is ActionAttack — this is a per-character constraint not modeled in the planner.",
 				"High plunge variants exist in gcsim but are not represented per recipe; lowPlungeFrames used for plungeFrames. lowPlungeFrames[ActionJump] not set in gcsim — J omitted.",
 				"Combo-counter persistence: gcsim preserves NormalCounter across DashState and SkillState (savedNormalCounter mechanic), enabling N continues after dash/E. Description-level mechanic; planner may not model this."
-			]
+			],
+			"lowPlungeFrames": { "anim": 75, "N": 62, "E": 63, "Q": 64, "D": 44, "swap": 49 }
 		},
 		{
 			"id": "wriothesley__normal__forceful_fists_of_frost_chilling_penalty",
 			"name": "Forceful Fists of Frost (Chilling Penalty)",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 12,
-						"N": 14,
-						"C": 23
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 10,
-						"N": 13,
-						"C": 20
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 18,
-						"N": 24,
-						"C": 19
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 35,
-						"N": 41,
-						"C": 41
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 39,
-						"N": 59,
-						"C": 39
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 27, "hit": 12, "N": 14, "C": 23 } },
+				{ "name": "N2", "frames": { "anim": 25, "hit": 10, "N": 13, "C": 20 } },
+				{ "name": "N3", "frames": { "anim": 41, "hit": 18, "N": 24, "C": 19 } },
+				{ "name": "N4", "frames": { "anim": 56, "hit": 35, "N": 41, "C": 41 } },
+				{ "name": "N5", "frames": { "anim": 59, "hit": 39, "C": 39 } }
 			],
 			"description": "Wriothesley's normal-attack combo while in the Chilling Penalty state from Icefang Rush. The 5-press combo and frame timings are identical to the base normal — gcsim uses the same attackFrames slice — but each hit's damage is multiplied by an additional skill-talent coefficient and consumes a fixed portion of Wriothesley's HP. No element conversion (already Cryo).",
 			"_curatorNotes": [
@@ -165,21 +83,13 @@
 			"cooldown": 16,
 			"cooldownStartDelay": 1,
 			"duration": 10,
-			"frames": {
-				"swap": 19,
-				"N": 15,
-				"Q": 5,
-				"D": 21,
-				"J": 20
-			},
+			"frames": { "anim": 29, "N": 15, "Q": 5, "D": 21, "J": 20, "swap": 19 },
 			"tags": [],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -206,9 +116,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"frames": {
-				"swap": 94
-			},
+			"frames": { "anim": 133, "swap": 94 },
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
@@ -231,14 +139,8 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged"
-					},
-					"conditions": {
-						"type": "selfHpBelow",
-						"threshold": 60
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged" },
+					"conditions": { "type": "selfHpBelow", "threshold": 60 },
 					"procCooldown": 5,
 					"scaling": 30,
 					"stat": "hp"
@@ -271,13 +173,8 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
 					"source": "character",
 					"stat": "stellarConductReactionBonus",
 					"value": 30,
@@ -286,21 +183,12 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged"
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "teamEnablesReaction",
-								"reaction": "stellarConduct"
-							},
-							{
-								"type": "selfHpBelow",
-								"threshold": 60
-							}
+							{ "type": "teamEnablesReaction", "reaction": "stellarConduct" },
+							{ "type": "selfHpBelow", "threshold": 60 }
 						]
 					},
 					"procCooldown": 2,
@@ -332,9 +220,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",
@@ -381,9 +267,7 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 50,
 					"stat": "hp"
 				}
@@ -413,9 +297,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -425,9 +307,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",

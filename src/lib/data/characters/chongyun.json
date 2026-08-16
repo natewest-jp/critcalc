@@ -21,38 +21,12 @@
 				"plungeFrames: highPlungeFrames also present in gcsim plunge.go (swap=71, N=58, E=59, D=47) but not represented here per recipe convention (lowPlungeFrames used)."
 			],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 26
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 24
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 41
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 53
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 30, "hit": 26 } },
+				{ "name": "N2", "frames": { "anim": 36, "hit": 24 } },
+				{ "name": "N3", "frames": { "anim": 57, "hit": 41 } },
+				{ "name": "N4", "frames": { "anim": 101, "hit": 53 } }
 			],
-			"plungeFrames": {
-				"swap": 69,
-				"N": 57,
-				"E": 56,
-				"Q": 56,
-				"D": 47
-			},
+			"plungeFrames": { "anim": 87, "N": 58, "E": 59, "Q": 58, "D": 47, "swap": 71 },
 			"sections": [
 				{
 					"type": "normal",
@@ -70,7 +44,8 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"lowPlungeFrames": { "anim": 85, "N": 57, "E": 56, "Q": 56, "D": 47, "swap": 69 }
 		},
 		{
 			"id": "chongyun__skill__spirit_blade_chonghuas_layered_frost",
@@ -78,12 +53,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 49,
-				"Q": 51,
-				"D": 35,
-				"J": 35
-			},
+			"frames": { "anim": 52, "Q": 51, "D": 35, "J": 35, "swap": 49 },
 			"cooldown": 15,
 			"cooldownStartDelay": 34,
 			"summons": [
@@ -96,14 +66,8 @@
 				}
 			],
 			"variants": [
-				{
-					"label": "Infusion",
-					"duration": 2.9
-				},
-				{
-					"label": "Field",
-					"duration": 10
-				}
+				{ "label": "Infusion", "duration": 2.9 },
+				{ "label": "Field", "duration": 10 }
 			],
 			"_curatorNotes": [
 				"Variants above are pre-existing display variants from the generator showing infusion duration (talent-scaling, 2.0–3.0s) and field duration (10s). Field entity lifetime is now canonical on summons[0]. Infusion duration (infuseDur[talentLevel]) is applied as a stat modifier on characters within the field on each tick — not a separate summon entity.",
@@ -120,13 +84,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 79,
-				"N": 64,
-				"E": 64,
-				"D": 64,
-				"J": 66
-			},
+			"frames": { "anim": 79, "N": 64, "E": 64, "D": 64, "J": 66 },
 			"cooldown": 12,
 			"tags": ["summon"],
 			"energyCost": 40,
@@ -156,10 +114,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "afterDuration",
-						"ability": "skill"
-					},
+					"trigger": { "type": "afterDuration", "ability": "skill" },
 					"duration": 8,
 					"element": "cryo",
 					"value": -10,
@@ -181,9 +136,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 50,
 					"stat": "atk",
 					"element": "cryo",
@@ -220,13 +173,8 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": {
-						"type": "onHit"
-					},
-					"conditions": {
-						"type": "enemyAffectedBy",
-						"element": "cryo"
-					},
+					"trigger": { "type": "onHit" },
+					"conditions": { "type": "enemyAffectedBy", "element": "cryo" },
 					"procCooldown": 2,
 					"amount": 1,
 					"_curatorNotes": [

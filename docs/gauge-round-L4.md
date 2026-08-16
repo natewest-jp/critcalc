@@ -536,3 +536,96 @@ code, no character JSON. **The whole roster dumps and diffs in ~2 s.**
 - ⚠️ **`travel=0` is pinned on every aimed shot.** gcsim's default of 10 is a simulation
   policy that lands inside the observed hitmark; zero measures "frames until the arrow
   leaves the bow", which is the distance-independent number.
+
+---
+
+## 12. L4b outcome — the FrameMap shape (2026-08-16)
+
+✅ Shipped. `FrameMap` is gcsim's slice shape: `anim` is required and is the fallback,
+`hit` carries a normal's hitmark, `swap` is an ordinary optional override.
+`frameAt()` in `$lib/utils/frames.ts` is the only resolver. **The corpus shrank by
+~8,400 lines** — the reshape is a compression as well as a correction.
+
+|                           |                                                                                    |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| FrameMaps rewritten       | **941 migrated** · 72 preserved (no gcsim reading) · **69 held back**              |
+| `lowPlungeFrames` created | **40**                                                                             |
+| audit after               | **960 of 1,082 match gcsim exactly**, 35 disagree, 87 uncovered                    |
+| L0 oracle                 | **unchanged at 63 / 200 / 1 / 138 / 0** — L4b moves timings, not application logic |
+
+⚓ **The plunge split, per Nate's ruling: the HIGH plunge is the default.** `plungeFrames`
+now means the high plunge and serves `P`/`hP`; the new `lowPlungeFrames` serves `lP` and
+falls back to the high map. ⚠️⚠️ **The meaning of `plungeFrames` CHANGED** — 36 of its 41
+authors were carrying low-plunge numbers, so any note or value that predates this round is
+describing a different thing.
+
+### ⚓ The curator already knew — the schema couldn't say it
+
+Kaeya's `_curatorNotes`, written long before this round:
+
+> "N5: ActionCharge=500 is explicitly set but gcsim source comment says 'this action is
+> illegal' — omitted. ActionAttack (N) defaults to AnimationLength=64 … not explicitly
+> overridden — omitted."
+> "plungeFrames: gcsim has separate lowPlungeFrames (hitmark=45, swap=64) and
+> highPlungeFrames (hitmark=47, swap=67); using lowPlunge values here. High plunge frames:
+> swap=67, N=56, E=57, Q=56, D=47 — **not represented**."
+
+Every one of L4b's findings is in there, in prose, with the numbers. **The corpus was not
+wrong; it was inexpressible.** 325 such frame-shape notes exist, and mining them is what
+found Albedo (below). ⚓ Read the curator notes before overruling the corpus.
+
+### The four guards, each of which caught a real regression
+
+The plan had exactly one rule — "gcsim wins" — and it was not enough. Each of these was
+added because the migration broke something the test suite or the corpus caught:
+
+1. **The 500 sentinel.** gcsim writes `ActionCharge = 500` thirty times with the comment
+   "this action is illegal; need better way to handle it". Migrating it verbatim gave 48
+   maps an 8.3-second `N5 C`. ⚓ Dropping it is the game-accurate reading, not a
+   workaround: the combo resets when the animation ends and a charge after that IS legal,
+   which is exactly what falling back to `anim` says.
+2. **No distinct hold.** gcsim models a separate `skill[hold=1]` for only 47 of 109
+   characters; for the rest it returns the tap's slice verbatim. ⛔ That is gcsim declining
+   to model the hold, not evidence the hold equals the tap — and taking it as data
+   overwrote the geo Traveler's genuine hold with her tap. Caught by the roster gate's
+   hold-distinctness invariant, which is precisely what that gate is for.
+3. ⚓⚓ **THE MIGRATION MUST NOT COLLAPSE A DISTINCTION THE CORPUS DRAWS.** If two authored
+   maps in the same group differ today and would be identical after, the capture describes
+   ONE of them and is being written to both. Three regressions the magnitude rule sailed
+   past: Keqing's blink recast, **Flins' `sQ`** (gcsim models the SHORT burst as the base,
+   so the migration overwrote our long one with it and made both short) and Hu Tao's
+   Paramita frames. ⛔ The whole GROUP reverts, not the loser — which of the pair the
+   capture describes is exactly what we do not know.
+4. **A variant whose input is the plain `E`** is selected by STATE, not by token — Varka's
+   Four Winds' Ascension only exists with a Pyro/Hydro/Electro/Cryo unit in the party,
+   which a single-character dump can never produce. Comparing it to the base capture
+   reports a mismatch between two different abilities.
+
+### The short list — 69 maps held back, and why
+
+⚓ Nate: _"apply the C4b rule, flag the odd ones."_ These are the odd ones. Each keeps
+today's values (`anim = swap`, behaviour unchanged) and each needs a human.
+
+| character                                                            | maps | why                                                                                                                                                                                                           |
+| -------------------------------------------------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **albedo**                                                           | 1    | ⚓ **OUR DATA IS RIGHT.** The curator note says gcsim passes `attackHitmarks[3]` into N5's slice — 17f, which cancels BEFORE the hit lands — and calls it a likely upstream typo. Our 27 is the real hitmark. |
+| **tartaglia**                                                        | 2    | ⚠️ **TRANSPOSED.** Our ranged burst reads 54/53 against gcsim's 102/101, and our melee burst reads exactly the reverse. A corpus fix, not a migration.                                                        |
+| varesa · lan_yan · chasca · kinich                                   | 40   | the four unresolved drivers (§7)                                                                                                                                                                              |
+| hu_tao · nilou · yun_jin · keqing · flins                            | 19   | would collapse a distinction gcsim does not model                                                                                                                                                             |
+| traveler_hydro · furina · sigewinne · bennett · arataki_itto · yelan | 7    | a key moves ≥ 60 frames — a second or more is a different action, not drift                                                                                                                                   |
+
+### Traps
+
+- 🐛 **`preserveFrameMap` writes `swap` redundantly beside `anim`, on purpose.** Dropping
+  it made Itto's charge map hold back on pass one and migrate on pass two, because the
+  delta was suddenly computed over two keys instead of three. `anim === swap` also reads
+  as "the animation length was not measured, it stood in" — which is true.
+- ⚠️ **The holdback delta is measured over the keys the corpus ASSERTS, not over the
+  resolved reading.** An absent key is not a claim, and gcsim disagreeing with the old
+  `swap` fallback about it IS the bug being fixed — measuring that as a conflict held back
+  452 maps, which is the migration refusing to run.
+- ⚠️ **`genericProfile.ts` was regenerated** and its numbers moved (frameless skill 37f →
+  44f, burst 93f → 95f) because the medians are now over `anim`. `castSwap` was renamed
+  `castAnim` for the same reason. Cooldown and energy modes are unchanged.
+- ⚠️ **The migration formats through prettier's own API.** A bare
+  `JSON.stringify(…, '\t')` re-expands every `"input": ["N"]` and doubles the diff.

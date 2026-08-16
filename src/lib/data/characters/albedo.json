@@ -17,54 +17,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 12,
-						"N": 14,
-						"C": 23
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 11,
-						"N": 22,
-						"C": 21
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 17,
-						"N": 32,
-						"C": 41
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 17,
-						"N": 34,
-						"C": 36
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 27,
-						"N": 62
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 14, "hit": 12, "C": 23 } },
+				{ "name": "N2", "frames": { "anim": 22, "hit": 11, "C": 21 } },
+				{ "name": "N3", "frames": { "anim": 32, "hit": 17, "C": 41 } },
+				{ "name": "N4", "frames": { "anim": 34, "hit": 17, "C": 36 } },
+				{ "name": "N5", "frames": { "anim": 27, "N": 62, "swap": 27 } }
 			],
-			"chargeFrames": {
-				"swap": 33,
-				"N": 56,
-				"E": 34,
-				"Q": 34,
-				"D": 20,
-				"J": 20
-			},
+			"chargeFrames": { "anim": 56, "E": 34, "Q": 34, "D": 20, "J": 20, "swap": 33 },
 			"_curatorNotes": [
 				"N5 swap=27 reflects the actual N5 hitmark; gcsim's attackFrames[4] passes attackHitmarks[3]=17 into InitNormalCancelSlice, which would cancel before the hit lands — likely a typo in the gcsim source (should be attackHitmarks[4]=27). Cross-checked against the FrameMap convention (final-hit swap = last hitmark)."
 			],
@@ -93,13 +52,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 31,
-				"N": 32,
-				"Q": 33,
-				"D": 29,
-				"J": 28
-			},
+			"frames": { "anim": 33, "N": 32, "D": 29, "J": 28, "swap": 31 },
 			"cooldown": 4,
 			"cooldownStartDelay": 23,
 			"tags": ["summon", "coordinatedAttack"],
@@ -129,13 +82,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 93,
-				"N": 96,
-				"E": 96,
-				"D": 95,
-				"J": 94
-			},
+			"frames": { "anim": 96, "D": 95, "J": 94, "swap": 93 },
 			"cooldown": 12,
 			"cooldownStartDelay": 74,
 			"tags": [],
@@ -167,10 +114,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -196,10 +140,7 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "refresh",
 					"target": "self",
@@ -268,25 +209,13 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
-					"conditions": {
-						"type": "teamFaction",
-						"faction": "hexerei",
-						"min": 2
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
 					"duration": 20,
 					"durationType": "refresh",
 					"target": "team",
 					"stat": "allDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 0.004,
-						"cap": 12
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 0.004, "cap": 12 },
 					"snapshottable": false
 				}
 			],
@@ -309,26 +238,13 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill",
-						"source": "self"
-					},
-					"conditions": {
-						"type": "teamFaction",
-						"faction": "hexerei",
-						"min": 2
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill", "source": "self" },
+					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
 					"duration": 20,
 					"durationType": "refresh",
 					"target": "team",
 					"stat": "allDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 0.01,
-						"cap": 30
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 0.01, "cap": 30 },
 					"snapshottable": false,
 					"caveat": "Only Hexerei party members get this one, and only once a Silver Isotoma exists — which needs a skill hit within 20s of an earlier skill cast. Shown on every skill hit."
 				}

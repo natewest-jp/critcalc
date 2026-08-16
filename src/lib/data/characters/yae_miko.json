@@ -16,21 +16,12 @@
 			"abilityType": "normal",
 			"tags": ["summon"],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": { "swap": 14, "N": 16 }
-				},
-				{
-					"name": "N2",
-					"frames": { "swap": 22, "N": 36 }
-				},
-				{
-					"name": "N3",
-					"frames": { "swap": 33, "N": 79, "C": 74 }
-				}
+				{ "name": "N1", "frames": { "anim": 28, "hit": 14, "N": 16 } },
+				{ "name": "N2", "frames": { "anim": 40, "hit": 22, "N": 36 } },
+				{ "name": "N3", "frames": { "anim": 79, "hit": 33, "C": 74 } }
 			],
-			"chargeFrames": { "swap": 94, "D": 46, "J": 47 },
-			"plungeFrames": { "swap": 50, "N": 58, "E": 58, "Q": 58, "D": 46 },
+			"chargeFrames": { "anim": 96, "C": 95, "D": 46, "J": 47, "swap": 94 },
+			"plungeFrames": { "anim": 68, "N": 60, "C": 51, "E": 60, "Q": 60, "D": 49, "swap": 52 },
 			"sections": [
 				{
 					"type": "normal",
@@ -55,7 +46,8 @@
 				"Charged-attack hitmark = 90 (gcsim). The CA fires 5 sequential damage instances 9 frames apart, all with the same ICDGroup; this is one notation 'C' action.",
 				"Plunge frames sourced from gcsim's lowPlungeFrames. ActionJump is not explicitly set in lowPlungeFrames (defaults to 66 = AnimationLength) — J omitted per recipe. High plunge variant exists in gcsim but is not represented per recipe.",
 				"gcsim restricts plunge to AirborneXianyun-launched only — this is a sim limitation, not an in-game one. In-game any post-jump plunge works."
-			]
+			],
+			"lowPlungeFrames": { "anim": 66, "N": 58, "C": 48, "E": 58, "Q": 58, "D": 46, "swap": 50 }
 		},
 		{
 			"id": "yae_miko__skill__yakan_evocation_sesshou_sakura",
@@ -63,7 +55,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 20, "Q": 36, "D": 20, "J": 20 },
+			"frames": { "anim": 37, "C": 36, "Q": 36, "D": 20, "J": 20, "swap": 20 },
 			"cooldown": 4,
 			"cooldownStartDelay": 16,
 			"charges": 3,
@@ -78,11 +70,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2.933,
-								"firstTickDelay": 1.433
-							},
+							"trigger": { "type": "summonTick", "interval": 2.933, "firstTickDelay": 1.433 },
 							"scaling": 170.64,
 							"stat": "atk",
 							"element": "electro"
@@ -111,7 +99,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 101, "N": 112, "E": 113, "D": 103, "J": 104 },
+			"frames": { "anim": 114, "N": 112, "E": 113, "D": 103, "J": 104, "swap": 101 },
 			"cooldown": 22,
 			"tags": ["summon"],
 			"energyCost": 90,
@@ -146,9 +134,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -221,10 +207,7 @@
 				{
 					"type": "buff",
 					"target": ["self", "active"],
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 14,
 					"durationType": "refresh",
 					"source": "character",
@@ -256,9 +239,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 5,
 					"durationType": "fixed",
 					"source": "character",
@@ -269,18 +250,14 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"procCooldown": 5,
 					"amount": 8
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "burstDmgBonus",
 					"value": 100,

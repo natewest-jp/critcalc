@@ -16,54 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 17,
-						"C": 28
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 13,
-						"N": 26,
-						"C": 28
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 16,
-						"N": 32,
-						"C": 36
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 30,
-						"N": 39,
-						"C": 45
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 25,
-						"N": 69
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
+				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
+				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
+				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
 			],
-			"chargeFrames": {
-				"swap": 44,
-				"N": 55,
-				"E": 37,
-				"Q": 36,
-				"D": 20,
-				"J": 20
-			},
+			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
 			"_curatorNotes": [
 				"Sword normals: 5-hit Physical chain. Authored using Male (Aether) frames; Female (Lumine) frames differ slightly (e.g. N1 hitmark 16 vs 13). attackHitmarks (Male) = [13, 13, 16, 30, 25]; attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack overrides give next-N cancel. N5 ActionCharge=500 (illegal) — final-hit C key omitted per convention.",
 				"Charge: 2-hit CA at chargeHitmarks=[9,20] (last=20 gates D/J). chargeFrames=InitAbilSlice(55), ActionSkill=37 ActionBurst=36 ActionDash/Jump=20 ActionSwap=44. Standard sword CA shape.",
@@ -95,13 +54,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 66,
-				"N": 74,
-				"Q": 76,
-				"D": 30,
-				"J": 31
-			},
+			"frames": { "anim": 74, "Q": 76, "D": 30, "J": 31, "swap": 66 },
 			"cooldown": 5,
 			"cooldownStartDelay": 29,
 			"tags": [],
@@ -109,12 +62,7 @@
 				{
 					"label": "Hold (Max)",
 					"input": ["hE"],
-					"frames": {
-						"swap": 124,
-						"N": 134,
-						"D": 78,
-						"J": 78
-					},
+					"frames": { "anim": 160, "D": 116, "J": 116, "swap": 151 },
 					"cooldown": 8
 				}
 			],
@@ -136,13 +84,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 100,
-				"N": 110,
-				"E": 109,
-				"D": 96,
-				"J": 96
-			},
+			"frames": { "anim": 110, "E": 109, "D": 96, "J": 96, "swap": 100 },
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": ["summon", "grouping"],
@@ -156,11 +98,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 0.5,
-								"firstTickDelay": 0
-							},
+							"trigger": { "type": "summonTick", "interval": 0.5, "firstTickDelay": 0 },
 							"scaling": 67.68,
 							"stat": "atk",
 							"element": "anemo"
@@ -200,9 +138,7 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"procCooldown": 5,
 					"scaling": 2,
 					"stat": "hp"
@@ -267,10 +203,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "burst"
-					},
+					"trigger": { "type": "onHit", "abilityType": "burst" },
 					"duration": 10,
 					"element": "anemo",
 					"value": -20

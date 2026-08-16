@@ -20,59 +20,15 @@
 				"chargeHits swap values: both Aimed Shot (swap=25) and Fully-Charged Aimed Shot (swap=96) sourced from InitAbilSlice defaults — not explicitly assigned in aimed.go. Included per bow chargeHit convention (matches fischl reference). Reviewer to verify."
 			],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 14,
-						"N": 26
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 10,
-						"N": 22
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 27,
-						"N": 37
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 26,
-						"N": 34
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 26,
-						"N": 60
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 26, "hit": 14 } },
+				{ "name": "N2", "frames": { "anim": 22, "hit": 10 } },
+				{ "name": "N3", "frames": { "anim": 37, "hit": 27 } },
+				{ "name": "N4", "frames": { "anim": 34, "hit": 26 } },
+				{ "name": "N5", "frames": { "anim": 60, "hit": 26 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 25,
-						"D": 15,
-						"J": 15
-					}
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 96,
-						"D": 86,
-						"J": 86
-					}
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 25, "D": 15, "J": 15, "swap": 25 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 96, "D": 86, "J": 86 } }
 			],
 			"sections": [
 				{
@@ -99,14 +55,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 23,
-				"N": 32,
-				"E": 33,
-				"Q": 32,
-				"D": 8,
-				"J": 8
-			},
+			"frames": { "anim": 33, "N": 32, "Q": 32, "D": 8, "J": 8, "swap": 23 },
 			"cooldown": 15,
 			"cooldownStartDelay": 5,
 			"cooldownModifiers": [
@@ -114,10 +63,7 @@
 					"source": "C4: It's Not Just Any Doll...",
 					"type": "percent",
 					"value": -20,
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					}
+					"conditions": { "type": "constellation", "level": 4 }
 				}
 			],
 			"chargeModifiers": [
@@ -125,19 +71,11 @@
 					"source": "C4: It's Not Just Any Doll...",
 					"type": "flat",
 					"value": 1,
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					}
+					"conditions": { "type": "constellation", "level": 4 }
 				}
 			],
 			"summons": [
-				{
-					"label": "Baron Bunny",
-					"duration": 8.1,
-					"spawnsAt": 45,
-					"mobility": "stationary"
-				}
+				{ "label": "Baron Bunny", "duration": 8.1, "spawnsAt": 45, "mobility": "stationary" }
 			],
 			"tags": ["taunt"],
 			"effects": [],
@@ -155,20 +93,11 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 60,
-				"D": 57,
-				"J": 58
-			},
+			"frames": { "anim": 111, "D": 57, "J": 58, "swap": 60 },
 			"cooldown": 12,
 			"cooldownStartDelay": 56,
 			"summons": [
-				{
-					"label": "Fiery Rain",
-					"duration": 2,
-					"spawnsAt": 72,
-					"mobility": "stationary"
-				}
+				{ "label": "Fiery Rain", "duration": 2, "spawnsAt": 72, "mobility": "stationary" }
 			],
 			"tags": [],
 			"energyCost": 40,
@@ -193,10 +122,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
