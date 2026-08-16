@@ -447,9 +447,9 @@ really is the same timer-plus-counter shape as standard ICD, at `{ timer: 2.0, h
 re-check the generation either — a chain superseded inside that gap would take 0.4U off the
 _new_ chain's auras. Closed.
 
-⚠️ **Nate's eyes needed:** the Gauge Explorer's burning preset now shows Pyro _decaying and
-being topped back up_ instead of pinned flat. That is the corrected behaviour, but it is a
-visible change to an instrument.
+✅ **Visually verified (⚓ Nate 2026-08-16):** the Gauge Explorer's burning preset shows
+Pyro _decaying and being topped back up_ instead of pinned flat. A visible change to an
+instrument, and the corrected behaviour.
 
 ⚠️ Still knowingly absent, recorded but not fixed here: shatter/poise on Frozen (Geo and
 claymore teams will read freeze uptime too long), dendro core gadgets (so no
