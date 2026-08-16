@@ -16,46 +16,12 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 20,
-						"C": 24
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 18,
-						"N": 28,
-						"C": 28
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 39,
-						"N": 54,
-						"C": 40
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 39,
-						"N": 60
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 33, "hit": 13, "N": 20, "C": 24 } },
+				{ "name": "N2", "frames": { "anim": 35, "hit": 18, "N": 28, "C": 28 } },
+				{ "name": "N3", "frames": { "anim": 61, "hit": 39, "N": 54, "C": 40 } },
+				{ "name": "N4", "frames": { "anim": 63, "hit": 39, "N": 60 } }
 			],
-			"chargeFrames": {
-				"swap": 37,
-				"N": 43,
-				"E": 43,
-				"Q": 43,
-				"D": 38,
-				"J": 38
-			},
+			"chargeFrames": { "anim": 52, "N": 43, "E": 43, "Q": 43, "D": 38, "J": 38, "swap": 37 },
 			"sections": [
 				{
 					"type": "normal",
@@ -86,14 +52,7 @@
 			"name": "Meow-teor Kick",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": {
-				"swap": 33,
-				"N": 34,
-				"E": 34,
-				"Q": 34,
-				"D": 35,
-				"J": 35
-			},
+			"frames": { "anim": 38, "N": 34, "E": 34, "Q": 34, "D": 35, "J": 35, "swap": 33 },
 			"cooldown": 8,
 			"cooldownStartDelay": 12,
 			"tags": ["shield"],
@@ -101,10 +60,7 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 12,
 					"durationType": "refresh",
 					"scaling": 18,
@@ -127,30 +83,20 @@
 				"Skill self-applies dendro for 6 frames on cast (gcsim: `player.ApplySelfInfusion(attributes.Dendro, 25, 0.1*60)`). Not authored — the planner has no self-aura model.",
 				"↻ 2026-08-14 — the stand-in summon is retired. \"Shield of Safe Transport\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast a 12s active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world. Bar geometry is unchanged apart from the spawn offset, which the shield window never had."
 			],
-			"activeDuration": 12
+			"activeDuration": 12,
+			"application": [{ "frame": 14, "element": "dendro" }]
 		},
 		{
 			"id": "kirara__burst__secret_art_surprise_dispatch",
 			"name": "Secret Art: Surprise Dispatch",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": {
-				"swap": 57,
-				"N": 57,
-				"E": 57,
-				"D": 52,
-				"J": 52
-			},
+			"frames": { "anim": 58, "N": 57, "E": 57, "D": 52, "J": 52, "swap": 57 },
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
 			"summons": [
-				{
-					"label": "Cat Grass Cardamoms",
-					"duration": 12,
-					"spawnsAt": 38,
-					"mobility": "stationary"
-				}
+				{ "label": "Cat Grass Cardamoms", "duration": 12, "spawnsAt": 38, "mobility": "stationary" }
 			],
 			"effects": [],
 			"description": "Smash opponents with a Special Delivery Package used for punishing parcel thieves, dealing AoE Dendro DMG. After the Special Delivery Package explodes, it will split up into many Cat Grass Cardamoms that will explode either upon contact with opponents or after a period of time, dealing AoE Dendro DMG.",
@@ -159,6 +105,15 @@
 				"Initial Special Delivery Package hit lands at frame 38 (gcsim: `boxHitmark = 38`); cardamoms spawn at the same frame. Default cardamom count = 6 (gcsim: `c.cardamoms = 6`).",
 				"Cardamoms either explode on contact with enemies or expire after 12s, at which point any remaining are released sequentially with 18-frame stagger. Schema's stationary `summons[]` represents the lifetime; per-cardamom contact-trigger semantics aren't modeled.",
 				"C1 adds up to 4 extra cardamoms (1 per 8000 Max HP) — a scaling buff on the summon's projectile count, not a damage scaling on existing hits. Flagged on the C1 constellation entry; not modeled on the burst summon."
+			],
+			"application": [
+				{ "frame": 38, "element": "dendro" },
+				{ "frame": 180, "element": "dendro" },
+				{ "frame": 180, "element": "dendro" },
+				{ "frame": 800, "element": "dendro" },
+				{ "frame": 818, "element": "dendro" },
+				{ "frame": 836, "element": "dendro" },
+				{ "frame": 854, "element": "dendro" }
 			]
 		}
 	],
@@ -219,9 +174,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 200,
 					"stat": "atk",
 					"element": "dendro"
@@ -248,9 +201,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",

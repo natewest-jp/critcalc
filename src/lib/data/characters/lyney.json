@@ -21,60 +21,15 @@
 				"Spiritbreath Thorn (Arkhe: Pneuma) fires on Prop Arrow hit with 6s ICD (skillAlignedICD=6*60). Separate Pyro DMG instance. Not in effects skeleton; reviewer to author."
 			],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 17,
-						"N": 22
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 12,
-						"N": 24
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 29,
-						"N": 39
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 29,
-						"N": 59
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 32, "hit": 17, "N": 22 } },
+				{ "name": "N2", "frames": { "anim": 34, "hit": 12, "N": 24 } },
+				{ "name": "N3", "frames": { "anim": 86, "hit": 29, "N": 39 } },
+				{ "name": "N4", "frames": { "anim": 66, "hit": 29, "N": 59 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 23,
-						"D": 15,
-						"J": 15
-					}
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 80,
-						"D": 72,
-						"J": 72
-					}
-				},
-				{
-					"name": "Prop Arrow",
-					"frames": {
-						"swap": 111,
-						"D": 103,
-						"J": 103
-					}
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 80, "D": 72, "J": 72 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 111, "D": 103, "J": 103 } },
+				{ "name": "Prop Arrow", "frames": { "anim": 111, "D": 103, "J": 103, "swap": 111 } }
 			],
 			"sections": [
 				{
@@ -102,22 +57,14 @@
 			"abilityType": "skill",
 			"cooldown": 15,
 			"cooldownStartDelay": 15,
-			"frames": {
-				"swap": 41,
-				"N": 42,
-				"Q": 42,
-				"J": 42
-			},
+			"frames": { "anim": 43, "N": 42, "E": 42, "Q": 42, "J": 42, "swap": 41 },
 			"behavior": "instant",
 			"tags": ["heal"],
 			"effects": [
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"scaling": 20,
 					"stat": "hp"
 				}
@@ -128,7 +75,8 @@
 				"Heal authored (capability sweep 2026-07-28): gcsim skill.go:56-69 — base Skill() heals active for 0.2*MaxHP*propSurplusStacks at hitmark, then zeroes the stacks; no ascension gate, so base kit (the sweep's A1 guess was wrong). Fixed 20% per stack (not talent-scaled); per-stack value scaling on heals is not expressible (perStack is buff-only), so authored at one stack + caveat, per the Lyney C2 curator precedent. The stacking-damage bonus on the same cast is still unauthored.",
 				"If a Grin-Malkin Hat is on field when E is cast, the Hat explodes (skillExplode) dealing AoE Charged Attack DMG equal to a Pyrotechnic Strike. Not modeled in effects."
 			],
-			"description": "Lyney does a flourish with his hat, unleashing a firework surprise!\nWhen used, he will clear all current Prop Surplus stacks and deal AoE Pyro DMG to opponents in front of him. DMG will be increased according to the stacks cleared, and this will also regenerate Lyney's HP based on his Max HP.\n\nWhen a Grin-Malkin Hat created by Lyney is on the field, the fireworks will cause it to explode, dealing AoE Pyro DMG equal to that of a Pyrotechnic Strike.\nThe DMG dealt through the Grin-Malkin Hat in this way is considered Charged Attack DMG."
+			"description": "Lyney does a flourish with his hat, unleashing a firework surprise!\nWhen used, he will clear all current Prop Surplus stacks and deal AoE Pyro DMG to opponents in front of him. DMG will be increased according to the stacks cleared, and this will also regenerate Lyney's HP based on his Max HP.\n\nWhen a Grin-Malkin Hat created by Lyney is on the field, the fireworks will cause it to explode, dealing AoE Pyro DMG equal to that of a Pyrotechnic Strike.\nThe DMG dealt through the Grin-Malkin Hat in this way is considered Charged Attack DMG.",
+			"application": [{ "frame": 18, "element": "pyro" }]
 		},
 		{
 			"id": "lyney__burst__wondrous_trick_miracle_parade",
@@ -137,23 +85,12 @@
 			"abilityType": "burst",
 			"cooldown": 15,
 			"energyCost": 60,
-			"frames": {
-				"swap": 283,
-				"N": 297,
-				"E": 101,
-				"D": 287,
-				"J": 285
-			},
+			"frames": { "anim": 321, "N": 297, "E": 101, "D": 287, "J": 285, "swap": 283 },
 			"behavior": "instant",
 			"tags": ["summon"],
 			"effects": [],
 			"summons": [
-				{
-					"label": "Grin-Malkin Hat",
-					"duration": 4.1,
-					"spawnsAt": 282,
-					"mobility": "stationary"
-				}
+				{ "label": "Grin-Malkin Hat", "duration": 4.1, "spawnsAt": 282, "mobility": "stationary" }
 			],
 			"_curatorNotes": [
 				"Grin-Malkin Cat is a self-state, not a summon entity: Lyney transforms at burstStart=100 frames and the status lasts burstDuration=182 frames (~3.03s, expires at frame 282 from cast start). Normals/charge are NOT replaced — this is not a stance. Modeled as behavior: 'instant'; the cat phase is flagged here rather than in summons[].",
@@ -161,7 +98,12 @@
 				"Grin-Malkin Hat (modeled in summons[]): natural spawn at frame 282 (burstStart=100 + burstDuration=182). Duration=245 frames=4.08s (~4.1s). If E-cancel used, Hat spawns earlier (~frame 101+). spawnsAt=282 reflects the natural no-cancel case.",
 				"Cat ticks deal Pyro DMG to each enemy at most once per cast (burstMarkKey status). Not modeled in effects skeleton."
 			],
-			"description": "Unleashing his magic, Lyney turns himself into a Grin-Malkin Cat that can move around quickly. (Not to be mistaken for the Grin-Malkin Hat. They're two different props!)\nWhen the Grin-Malkin Cat gets close to opponents, it will send flames falling down on them, dealing at most 1 instance of Pyro DMG to each opponent. When the duration ends, he will dismiss the Grin-Malkin Cat and ignite fireworks that deal AoE Pyro DMG, summon 1 Grin-Malkin Hat, and grant himself 1 Prop Surplus stack.\n\nGrin-Malkin Cat can be actively canceled."
+			"description": "Unleashing his magic, Lyney turns himself into a Grin-Malkin Cat that can move around quickly. (Not to be mistaken for the Grin-Malkin Hat. They're two different props!)\nWhen the Grin-Malkin Cat gets close to opponents, it will send flames falling down on them, dealing at most 1 instance of Pyro DMG to each opponent. When the duration ends, he will dismiss the Grin-Malkin Cat and ignite fireworks that deal AoE Pyro DMG, summon 1 Grin-Malkin Hat, and grant himself 1 Prop Surplus stack.\n\nGrin-Malkin Cat can be actively canceled.",
+			"application": [
+				{ "frame": 112, "element": "pyro" },
+				{ "frame": 288, "element": "pyro" },
+				{ "frame": 563, "element": "pyro" }
+			]
 		}
 	],
 	"passives": [
@@ -177,9 +119,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 80,
 					"stat": "atk"
 				}
@@ -219,9 +159,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",
@@ -250,11 +188,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged",
-						"filter": { "element": "pyro" }
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged", "filter": { "element": "pyro" } },
 					"conditions": { "type": "constellation", "level": 4 },
 					"duration": 6,
 					"durationType": "refresh",

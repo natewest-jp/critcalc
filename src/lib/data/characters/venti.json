@@ -23,70 +23,18 @@
 				"[Hexerei] Fandom 'Divine Marksmanship' talent infobox, buffType=Hexerei buff field (Luna III): under Hexerei: Secret Rite, while the Stormeye is active Venti's Normal Attacks convert to enemy-piercing Windsunder Arrows dealing extra Anemo DMG along the path; NA hits extend the Stormeye duration by 1s and its CD by 0.5s, once per 0.1s, max 2 times per burst. Nothing authored: the NA conversion and the extra DMG are damage-only (constitution), and onHit-driven durationExtensions are outside the wired summon path. Caveat carries the Stormeye-duration divergence."
 			],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 27,
-						"N": 30
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 19,
-						"N": 38
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 28,
-						"N": 33
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 28,
-						"N": 31
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 17,
-						"N": 22
-					}
-				},
-				{
-					"name": "N6",
-					"frames": {
-						"swap": 49,
-						"N": 98
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 30, "hit": 27 } },
+				{ "name": "N2", "frames": { "anim": 38, "hit": 19 } },
+				{ "name": "N3", "frames": { "anim": 33, "hit": 28 } },
+				{ "name": "N4", "frames": { "anim": 31, "hit": 28 } },
+				{ "name": "N5", "frames": { "anim": 22, "hit": 17 } },
+				{ "name": "N6", "frames": { "anim": 98, "hit": 49 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 23,
-						"D": 15,
-						"J": 15
-					}
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 94,
-						"D": 86,
-						"J": 86
-					}
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 23, "D": 15, "J": 15, "swap": 23 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 94, "D": 86, "J": 86 } }
 			],
-			"plungeFrames": {
-				"swap": 58
-			},
+			"plungeFrames": { "anim": 58, "swap": 58 },
 			"sections": [
 				{
 					"type": "normal",
@@ -113,13 +61,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 98,
-				"N": 22,
-				"Q": 22,
-				"D": 22,
-				"J": 22
-			},
+			"frames": { "anim": 98, "N": 22, "E": 22, "Q": 22, "D": 22, "J": 22 },
 			"cooldown": 6,
 			"cooldownStartDelay": 21,
 			"variants": [
@@ -127,14 +69,13 @@
 					"label": "Hold",
 					"input": ["hE"],
 					"cooldown": 15,
-					"frames": {
-						"swap": 289
-					},
+					"frames": { "anim": 289, "P": 116 },
 					"_curatorNotes": [
 						"Hold variant cooldownStartDelay = 34 frames (vs Press = 21 on base skill). Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to extend schema or document. From skill.go: SetCDWithDelay(ActionSkill, 900, 34).",
 						"Hold E earliest cancel in gcsim is skillHoldFrames[action.ActionHighPlunge] = 116f (CanQueueAfter = 116). ActionHighPlunge is not a standard JSON key — not recorded in frames. After Hold E, Venti is airborne; typical follow-up is a high plunge (enforced by gcsim: high_plunge requires last action = hold skill with hold != 0).",
 						"All other action keys (N, Q, D, J) fall back to InitAbilSlice default = 289 (AnimationLength) — omitted per recipe rule."
-					]
+					],
+					"application": [{ "frame": 74, "element": "anemo" }]
 				}
 			],
 			"tags": ["summon"],
@@ -142,7 +83,8 @@
 			"_curatorNotes": [
 				"'summon' tag inherited from generator. No summons[] authored: skill deals AoE anemo hit, and per A1 passive creates a 20s upcurrent on Hold — but gcsim does not model the upcurrent (asc.go explicitly: 'A1 is not implemented and will likely never be implemented'). Reviewer to decide whether to remove tag or author upcurrent as a summon/buff."
 			],
-			"description": "O wind upon which all hymns and songs fly, bear these earth-walkers up into the sky!\n\nPress\nSummons a Wind Domain at the opponent's location, dealing AoE Anemo DMG and launching opponents into the air.\n\nHold\nSummons an even larger Wind Domain with Venti as the epicenter, dealing AoE Anemo DMG and launching affected opponents into the air.\nAfter unleashing the Hold version of this ability, Venti rides the wind into the air.\n\nOpponents hit by Skyward Sonnet will fall to the ground slowly."
+			"description": "O wind upon which all hymns and songs fly, bear these earth-walkers up into the sky!\n\nPress\nSummons a Wind Domain at the opponent's location, dealing AoE Anemo DMG and launching opponents into the air.\n\nHold\nSummons an even larger Wind Domain with Venti as the epicenter, dealing AoE Anemo DMG and launching affected opponents into the air.\nAfter unleashing the Hold version of this ability, Venti rides the wind into the air.\n\nOpponents hit by Skyward Sonnet will fall to the ground slowly.",
+			"application": [{ "frame": 51, "element": "anemo" }]
 		},
 		{
 			"id": "venti__burst__winds_grand_ode",
@@ -150,22 +92,12 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 93,
-				"J": 94
-			},
+			"frames": { "anim": 95, "J": 94, "swap": 93 },
 			"cooldown": 15,
 			"cooldownStartDelay": 81,
 			"tags": ["grouping"],
 			"energyCost": 60,
-			"summons": [
-				{
-					"label": "Stormeye",
-					"duration": 8,
-					"spawnsAt": 94,
-					"mobility": "stationary"
-				}
-			],
+			"summons": [{ "label": "Stormeye", "duration": 8, "spawnsAt": 94, "mobility": "stationary" }],
 			"effects": [],
 			"_curatorNotes": [
 				"Elemental Absorption: burst absorbs one of Pyro/Hydro/Cryo/Electro once per use (absorb check begins at 4th anemo tick, frame 178; up to (480-24*4)/18 additional checks every 18f). Adds 15 absorbed-element ticks (24f interval) after absorption. Reviewer to decide effect-row representation.",
@@ -174,7 +106,8 @@
 				"cooldownStartDelay: 81 frames from SetCDWithDelay(ActionBurst, 15*60, 81) in burst.go.",
 				"[Hexerei] Fandom 'Temporal Wind's Eulogy' (Witch's Eve Rite Passive, Change History: Luna III): with 2+ Hexerei in the party, while the Stormeye is active, for 4s after a nearby active character triggers Swirl that character's DMG +50% and the Stormeye deals 135% of its original DMG. The +50% DMG buff is authored in factionBonuses (gated teamFaction hexerei >=2 + state duringSummon); the 135% Stormeye multiplier is damage-only and intentionally unauthored. Note: factionBonuses effects are currently consumed only by the capability layer (Team Builder), not by the planner's buff windows — nothing in this array renders on the timeline yet."
 			],
-			"description": "Fires off an arrow made of countless coalesced winds, creating a huge Stormeye that sucks in opponents and deals continuous Anemo DMG.\n\nElemental Absorption\nIf the Stormeye comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use."
+			"description": "Fires off an arrow made of countless coalesced winds, creating a huge Stormeye that sucks in opponents and deals continuous Anemo DMG.\n\nElemental Absorption\nIf the Stormeye comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
+			"application": []
 		}
 	],
 	"passives": [
@@ -192,10 +125,7 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": {
-						"type": "afterDuration",
-						"ability": "burst"
-					},
+					"trigger": { "type": "afterDuration", "ability": "burst" },
 					"amount": 15
 				}
 			],
@@ -227,39 +157,25 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"duration": 10,
 					"element": "anemo",
 					"value": -12,
 					"conditions": {
 						"type": "not",
-						"condition": {
-							"type": "teamFaction",
-							"faction": "hexerei",
-							"min": 2
-						}
+						"condition": { "type": "teamFaction", "faction": "hexerei", "min": 2 }
 					}
 				},
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"duration": 10,
 					"element": "physical",
 					"value": -12,
 					"conditions": {
 						"type": "not",
-						"condition": {
-							"type": "teamFaction",
-							"faction": "hexerei",
-							"min": 2
-						}
+						"condition": { "type": "teamFaction", "faction": "hexerei", "min": 2 }
 					}
 				}
 			],
@@ -289,16 +205,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"conditions": {
 						"type": "not",
-						"condition": {
-							"type": "teamFaction",
-							"faction": "hexerei",
-							"min": 2
-						}
+						"condition": { "type": "teamFaction", "faction": "hexerei", "min": 2 }
 					},
 					"duration": 10,
 					"durationType": "fixed",
@@ -333,10 +243,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "burst"
-					},
+					"trigger": { "type": "onHit", "abilityType": "burst" },
 					"duration": 10,
 					"element": "anemo",
 					"value": -20
@@ -344,10 +251,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "burst"
-					},
+					"trigger": { "type": "onHit", "abilityType": "burst" },
 					"duration": 10,
 					"value": -20
 				}
@@ -398,10 +302,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
@@ -416,10 +317,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
@@ -441,10 +339,7 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
@@ -462,10 +357,7 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"conditions": {
 						"type": "all",
 						"conditions": [

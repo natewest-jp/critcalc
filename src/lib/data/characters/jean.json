@@ -16,52 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 22,
-						"C": 25
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 6,
-						"N": 14,
-						"C": 20
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 17,
-						"N": 28,
-						"C": 31
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 37,
-						"N": 44,
-						"C": 49
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 25,
-						"N": 68
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 25, "hit": 13, "N": 22 } },
+				{ "name": "N2", "frames": { "anim": 20, "hit": 6, "N": 14 } },
+				{ "name": "N3", "frames": { "anim": 31, "hit": 17, "N": 28 } },
+				{ "name": "N4", "frames": { "anim": 49, "hit": 37, "N": 44 } },
+				{ "name": "N5", "frames": { "anim": 68, "hit": 25 } }
 			],
-			"chargeFrames": {
-				"swap": 39,
-				"Q": 56,
-				"D": 36,
-				"J": 36
-			},
+			"chargeFrames": { "anim": 57, "Q": 56, "D": 36, "J": 36, "swap": 39 },
 			"_curatorNotes": [
 				"Plunge frames: no plunge.go exists for Jean in gcsim; plunge frame data not available from source."
 			],
@@ -90,11 +51,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 45,
-				"D": 28,
-				"J": 28
-			},
+			"frames": { "anim": 46, "D": 28, "J": 28, "swap": 45 },
 			"cooldown": 6,
 			"cooldownStartDelay": 19,
 			"tags": ["grouping"],
@@ -104,7 +61,8 @@
 				"Hold mechanic: skill can be held up to 5s (300 frames). Tap frames recorded here (hold=0). Actual animation = skillFrames[action] + hold; cooldownStartDelay = (skillHitmark + hold) - 2 = 21 + hold - 2, so varies with hold duration. Tap cooldownStartDelay = 19. C1 grants +40% DMG when held ≥1s (≥60 frames). Reviewer to decide if a hold variant entry is needed.",
 				"'grouping' tag added (capability sweep 2026-07-28): wiki Vacuum Field table lists Gale Blade (Hold) as a pulling vacuum (radius 10m, strength 2; C1 doubles to 4 — gcsim cons.go:13 'Increases the pulling speed of Gale Blade after holding for more than 1s'). Hold-only — the tap launches instead — hence the caveat; no hold variant exists yet (see note above)."
 			],
-			"description": "Focusing the might of the formless wind around her blade, Jean releases a miniature storm, launching opponents in the direction she aims at, dealing massive Anemo DMG.\n\nHold\nAt the cost of continued stamina consumption, Jean can command the whirlwind to pull surrounding opponents and objects towards her front.\nDirection can be adjusted.\nCharacter is immobile during skill duration."
+			"description": "Focusing the might of the formless wind around her blade, Jean releases a miniature storm, launching opponents in the direction she aims at, dealing massive Anemo DMG.\n\nHold\nAt the cost of continued stamina consumption, Jean can command the whirlwind to pull surrounding opponents and objects towards her front.\nDirection can be adjusted.\nCharacter is immobile during skill duration.",
+			"application": [{ "frame": 21, "element": "anemo" }]
 		},
 		{
 			"id": "jean__burst__dandelion_breeze",
@@ -112,11 +70,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 88,
-				"N": 88,
-				"E": 89
-			},
+			"frames": { "anim": 90, "N": 88, "E": 89, "swap": 88 },
 			"cooldown": 20,
 			"cooldownStartDelay": 38,
 			"tags": ["heal", "cleanse"],
@@ -125,10 +79,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"scaling": 452.16,
 					"stat": "atk",
 					"flat": 3389
@@ -144,11 +95,7 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1,
-								"firstTickDelay": 1
-							},
+							"trigger": { "type": "summonTick", "interval": 1, "firstTickDelay": 1 },
 							"scaling": 45.22,
 							"stat": "atk",
 							"flat": 339
@@ -161,7 +108,12 @@
 				"Field also continuously imbues the active character with Anemo (self-swirl mechanic in gcsim — see burst.go ReactWithSelf, ticks alongside each heal tick); not modeled — no infusion-of-recipient primitive for summon fields."
 			],
 			"description": "Calling upon the wind's protection, Jean creates a swirling Dandelion Field, launching surrounding opponents and dealing Anemo DMG.\nAt the same time, she instantly regenerates a large amount of HP for all party members. The amount of HP restored scales off Jean's ATK.\n\nDandelion Field\n·Continuously regenerates HP of characters within the AoE and continuously imbues them with Anemo.\n·Deals Anemo DMG to opponents entering or exiting the Dandelion Field.",
-			"caveat": "Not modeled: the field's continuous Anemo application (self-swirl) to the active character standing inside it."
+			"caveat": "Not modeled: the field's continuous Anemo application (self-swirl) to the active character standing inside it.",
+			"application": [
+				{ "frame": 40, "element": "anemo" },
+				{ "frame": 55, "element": "anemo" },
+				{ "frame": 640, "element": "anemo" }
+			]
 		}
 	],
 	"passives": [
@@ -173,10 +125,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "normal"
-					},
+					"trigger": { "type": "onHit", "abilityType": "normal" },
 					"scaling": 15,
 					"stat": "atk"
 				}
@@ -234,10 +183,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 10,
 					"element": "anemo",
 					"value": -40

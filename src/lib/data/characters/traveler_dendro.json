@@ -16,13 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 13, "N": 17, "C": 28 } },
-				{ "name": "N2", "frames": { "swap": 13, "N": 26, "C": 28 } },
-				{ "name": "N3", "frames": { "swap": 16, "N": 32, "C": 36 } },
-				{ "name": "N4", "frames": { "swap": 30, "N": 39, "C": 45 } },
-				{ "name": "N5", "frames": { "swap": 25, "N": 69 } }
+				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
+				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
+				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
+				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
 			],
-			"chargeFrames": { "swap": 44, "N": 55, "E": 37, "Q": 36, "D": 20, "J": 20 },
+			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
 			"_curatorNotes": [
 				"Normal/charge frames + scaling shared across all Traveler element variants (Male/Aether)."
 			],
@@ -51,13 +51,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 36,
-				"N": 37,
-				"Q": 37,
-				"D": 29,
-				"J": 29
-			},
+			"frames": { "anim": 37, "D": 29, "J": 29, "swap": 36 },
 			"cooldown": 8,
 			"cooldownStartDelay": 25,
 			"tags": [],
@@ -67,7 +61,8 @@
 				"Cooldown: SetCDWithDelay(skill, 8*60, 25).",
 				"Frames: skillFrames[0]=InitAbilSlice(37), ActionDash/Jump=29 ActionSwap=36. Per E-spec swap/N/Q/D/J — N/Q default to animLen=37."
 			],
-			"description": "Whirling the discarded sword to its limit, the Traveler unleashes 1 final stroke that deals AoE Dendro DMG to opponents in front of them."
+			"description": "Whirling the discarded sword to its limit, the Traveler unleashes 1 final stroke that deals AoE Dendro DMG to opponents in front of them.",
+			"application": [{ "frame": 28, "element": "dendro" }]
 		},
 		{
 			"id": "traveler_dendro__burst__surgent_manifestation",
@@ -75,13 +70,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 57,
-				"N": 58,
-				"E": 58,
-				"D": 58,
-				"J": 58
-			},
+			"frames": { "anim": 58, "swap": 57 },
 			"cooldown": 20,
 			"energyCost": 80,
 			"tags": ["summon"],
@@ -95,11 +84,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.5,
-								"firstTickDelay": 0
-							},
+							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 0 },
 							"scaling": 144.29,
 							"stat": "atk",
 							"element": "dendro"
@@ -117,7 +102,8 @@
 				"A1 (Lush Reaches): LeaLotus accumulates 1 stack per second on Lamp (max 12). On burst end, explodes for burstExplode[lvl] × stacks. A1 stack accumulation + on-end explosion not authored — no trigger primitive for 'on-summon-end-with-stack-multiplier'.",
 				"C6 (Hopeful Inheritance): A1 buff +30 EM to active party member during Lamp duration. Not authored — A1 stack mechanic deferred."
 			],
-			"description": "Forming a LeaLotus Lamp, the Traveler deals AoE Dendro DMG to opponents and uses the LeaLotus Lamp to deal continuous Dendro DMG to opponents within an AoE for the duration."
+			"description": "Forming a LeaLotus Lamp, the Traveler deals AoE Dendro DMG to opponents and uses the LeaLotus Lamp to deal continuous Dendro DMG to opponents within an AoE for the duration.",
+			"application": []
 		}
 	],
 	"passives": [

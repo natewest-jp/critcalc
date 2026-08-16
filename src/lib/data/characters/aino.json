@@ -17,29 +17,9 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 23,
-						"N": 32,
-						"C": 48
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 20,
-						"N": 43,
-						"C": 75
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 43,
-						"N": 62
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 48, "hit": 23, "N": 32 } },
+				{ "name": "N2", "frames": { "anim": 75, "hit": 20, "N": 43 } },
+				{ "name": "N3", "frames": { "anim": 93, "hit": 43, "N": 62 } }
 			],
 			"_curatorNotes": [
 				"Claymore normals: 3-hit Physical chain. attackHitmarks=[[23],[20],[35,43]]; N3 multi-hit, last=43 gates cancel. attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack overrides for next-N cancel; ActionCharge not overridden (defaults to animLen — included as C key for non-final hits per convention).",
@@ -71,13 +51,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 49,
-				"N": 50,
-				"Q": 50,
-				"D": 39,
-				"J": 38
-			},
+			"frames": { "anim": 52, "N": 50, "Q": 50, "D": 39, "J": 38, "swap": 49 },
 			"cooldown": 10,
 			"cooldownStartDelay": 13,
 			"tags": [],
@@ -88,7 +62,11 @@
 				"Frames: skillFrames=InitAbilSlice(52), ActionAttack/Burst/Walk=50 ActionDash=39 ActionJump=38 ActionSwap=49. Per E-spec swap/N/Q/D/J.",
 				"Hold variant (aiming mode for direction adjustment): not separately authored; cosmetic windup difference rather than a different action."
 			],
-			"description": "Aino throws a Musecatcher forward, dealing Hydro DMG and dragging her along behind it. When the dragging stops, Aino deals AoE Hydro DMG to nearby opponents.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the Musecatcher's throwing direction."
+			"description": "Aino throws a Musecatcher forward, dealing Hydro DMG and dragging her along behind it. When the dragging stops, Aino deals AoE Hydro DMG to nearby opponents.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the Musecatcher's throwing direction.",
+			"application": [
+				{ "frame": 15, "element": "hydro" },
+				{ "frame": 33, "element": "hydro" }
+			]
 		},
 		{
 			"id": "aino__burst__precision_hydronic_cooler",
@@ -96,13 +74,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 54,
-				"N": 55,
-				"E": 55,
-				"D": 56,
-				"J": 56
-			},
+			"frames": { "anim": 60, "N": 55, "C": 55, "E": 55, "D": 56, "J": 56, "swap": 54 },
 			"cooldown": 13.5,
 			"energyCost": 50,
 			"tags": ["summon"],
@@ -116,11 +88,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.5,
-								"firstTickDelay": 0
-							},
+							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 0 },
 							"scaling": 36.2,
 							"stat": "atk",
 							"element": "hydro",
@@ -140,7 +108,8 @@
 				"EnergyMax=50 (matches energyCost). C2 trigger (off-field active hits) and C6 reaction-DMG bonus are deferred — see constellation entries.",
 				"[A7] Caveat previously also stated the summon's AoE radius increases under Moonsign Ascendant Gleam (1 → 4); dropped from the user-facing caveat because the timeline does not display AoE radius, so it is not a divergence the user could be misled by. The radius change is already documented in the A1 passive (Modular Efficiency Protocol) curator note."
 			],
-			"description": "Aino deploys a custom water-spraying device, the Cool Your Jets Ducky to establish a Focused Hydronic Cooling Zone.\nWhile active, the Cool Your Jets Ducky will periodically fire water balls at nearby opponents, dealing Hydro DMG."
+			"description": "Aino deploys a custom water-spraying device, the Cool Your Jets Ducky to establish a Focused Hydronic Cooling Zone.\nWhile active, the Cool Your Jets Ducky will periodically fire water balls at nearby opponents, dealing Hydro DMG.",
+			"application": []
 		}
 	],
 	"passives": [
@@ -173,15 +142,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					},
+					"conditions": { "type": "constellation", "level": 1 },
 					"source": "character",
 					"stat": "em",
 					"value": 80,
@@ -190,15 +154,10 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					},
+					"conditions": { "type": "constellation", "level": 1 },
 					"source": "character",
 					"stat": "em",
 					"value": 80,
@@ -237,15 +196,9 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"procCooldown": 10,
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"amount": 10
 				}
 			],

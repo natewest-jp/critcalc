@@ -29,24 +29,12 @@
 			],
 			"caveat": "With two or more Hexerei in the party, Normal and Charged hits build Astral Glow of Mercury stacks that boost teammates' Vaporize DMG, and extend an enemy's Omen by up to 8s. Neither is modeled.",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": { "swap": 11, "N": 18 }
-				},
-				{
-					"name": "N2",
-					"frames": { "swap": 14, "N": 23 }
-				},
-				{
-					"name": "N3",
-					"frames": { "swap": 25, "N": 39 }
-				},
-				{
-					"name": "N4",
-					"frames": { "swap": 27 }
-				}
+				{ "name": "N1", "frames": { "anim": 29, "hit": 11, "N": 18 } },
+				{ "name": "N2", "frames": { "anim": 30, "hit": 14, "N": 23 } },
+				{ "name": "N3", "frames": { "anim": 54, "hit": 25, "N": 39 } },
+				{ "name": "N4", "frames": { "anim": 67, "hit": 27 } }
 			],
-			"chargeFrames": { "swap": 54, "E": 92, "Q": 68, "D": 72, "J": 64 },
+			"chargeFrames": { "anim": 113, "C": 105, "E": 92, "Q": 68, "D": 72, "J": 64, "swap": 54 },
 			"sections": [
 				{
 					"type": "normal",
@@ -72,18 +60,11 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 43, "Q": 28, "D": 36, "J": 28 },
+			"frames": { "anim": 50, "C": 46, "Q": 28, "D": 36, "J": 28, "swap": 43 },
 			"cooldown": 12,
 			"cooldownStartDelay": 24,
 			"tags": ["taunt"],
-			"summons": [
-				{
-					"label": "Phantom",
-					"duration": 4,
-					"spawnsAt": 86,
-					"mobility": "stationary"
-				}
-			],
+			"summons": [{ "label": "Phantom", "duration": 4, "spawnsAt": 86, "mobility": "stationary" }],
 			"effects": [],
 			"_curatorNotes": [
 				"Phantom summon spawns at first DoT tick (Tap E: frame 86, Hold E: frame 101) and explodes at skillHitmarks[hold]+243 frames (~4.05s after spawn). Duration rounded to 4s.",
@@ -95,18 +76,15 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "swap": 73, "Q": 58, "D": 66, "J": 59 },
+					"frames": { "anim": 80, "C": 76, "Q": 58, "D": 66, "J": 59, "swap": 73 },
 					"summons": [
-						{
-							"label": "Phantom",
-							"duration": 4,
-							"spawnsAt": 101,
-							"mobility": "stationary"
-						}
-					]
+						{ "label": "Phantom", "duration": 4, "spawnsAt": 101, "mobility": "stationary" }
+					],
+					"application": [{ "frame": 344, "element": "hydro" }]
 				}
 			],
-			"description": "Creates an illusory Phantom of Fate from coalesced waterspouts.\n\nPhantom\nHas the following special properties:\n·Continuously taunts nearby opponents, attracting their fire.\n·Continuously deals Hydro DMG to nearby opponents.\n·When its duration expires, the Phantom explodes, dealing AoE Hydro DMG.\n\nHold\nUtilizes water currents to move backwards swiftly before conjuring a Phantom.\n\nOnly one Phantom created by Mirror Reflection of Doom can exist at any time."
+			"description": "Creates an illusory Phantom of Fate from coalesced waterspouts.\n\nPhantom\nHas the following special properties:\n·Continuously taunts nearby opponents, attracting their fire.\n·Continuously deals Hydro DMG to nearby opponents.\n·When its duration expires, the Phantom explodes, dealing AoE Hydro DMG.\n\nHold\nUtilizes water currents to move backwards swiftly before conjuring a Phantom.\n\nOnly one Phantom created by Mirror Reflection of Doom can exist at any time.",
+			"application": [{ "frame": 329, "element": "hydro" }]
 		},
 		{
 			"id": "mona__burst__stellaris_phantasm",
@@ -114,24 +92,16 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 127, "N": 121, "E": 115, "D": 115, "J": 104 },
+			"frames": { "anim": 127, "N": 121, "C": 118, "E": 115, "D": 115, "J": 104 },
 			"cooldown": 15,
 			"tags": ["summon"],
 			"energyCost": 60,
-			"summons": [
-				{
-					"label": "Illusory Bubble",
-					"duration": 8,
-					"spawnsAt": 107
-				}
-			],
+			"summons": [{ "label": "Illusory Bubble", "duration": 8, "spawnsAt": 107 }],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 5,
 					"durationType": "fixed",
 					"source": "character",
@@ -149,7 +119,12 @@
 				"Hexerei (permanent patch, bare IsHexerei): gcsim burst.go:149-151 — when the Bubble pops, the Omen status is tagged with a refresh budget of 4, enabling the Secret-Rite Omen extension (asc.go:110-156, count-gated at >=2). burst.go:61-63 also opens a 5s post-burst window that guarantees the next C2 follow-up Charged Attack. Neither changes the authored 5s team allDmgBonus window; the extension is caveated on the normal-attack ability and the CA proc on C2. The 5s buff duration was NOT lengthened — the extension is count-gated and per-hit, so faking a longer fixed window would over-credit."
 			],
 			"description": "Mona summons the sparkling waves and creates a reflection of the starry sky, applying the Illusory Bubble status to opponents in a large AoE.\n\nIllusory Bubble\nTraps opponents inside a pocket of destiny and also makes them Wet. Renders weaker opponents immobile.\nWhen an opponent affected by Illusory Bubble sustains DMG, it has the following effects:\n·Applies an Omen to the opponent, which gives a DMG Bonus, also increasing the DMG of the attack that causes it.\n·Removes the Illusory Bubble, dealing Hydro DMG in the process.\n\nOmen\nDuring its duration, increases DMG taken by opponents.",
-			"caveat": "The team DMG bonus applies only against the enemy caught in the Illusory Bubble. In game its 5s Omen countdown starts when the bubble bursts from a hit, a beat later than shown."
+			"caveat": "The team DMG bonus applies only against the enemy caught in the Illusory Bubble. In game its 5s Omen countdown starts when the bubble bursts from a hit, a beat later than shown.",
+			"application": [
+				{ "frame": 107, "element": "hydro" },
+				{ "frame": 587 },
+				{ "frame": 588, "element": "hydro" }
+			]
 		}
 	],
 	"passives": [
@@ -174,15 +149,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "hydroDmgBonus",
-					"value": {
-						"type": "unknown",
-						"description": "+20% of Mona's Energy Recharge"
-					},
+					"value": { "type": "unknown", "description": "+20% of Mona's Energy Recharge" },
 					"snapshottable": false
 				}
 			],
@@ -216,10 +186,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged"
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged" },
 					"duration": 12,
 					"durationType": "refresh",
 					"source": "character",
@@ -251,9 +218,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "critRate",
 					"value": 15,
@@ -262,14 +227,8 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "teamFaction",
-						"faction": "hexerei",
-						"min": 2
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
 					"source": "character",
 					"stat": "critDmg",
 					"value": 15,
@@ -299,9 +258,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",

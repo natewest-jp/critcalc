@@ -16,50 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 23,
-						"N": 33,
-						"C": 41
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 25,
-						"N": 36,
-						"C": 51
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 16,
-						"N": 43,
-						"C": 57
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 48,
-						"N": 83
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 41, "hit": 23, "N": 33 } },
+				{ "name": "N2", "frames": { "anim": 36, "hit": 25, "C": 27 } },
+				{ "name": "N3", "frames": { "anim": 43, "hit": 16, "C": 21 } },
+				{ "name": "N4", "frames": { "anim": 83, "hit": 48, "C": 52 } }
 			],
-			"chargeFrames": {
-				"swap": 130,
-				"D": 89,
-				"J": 89
-			},
-			"plungeFrames": {
-				"swap": 60,
-				"N": 49,
-				"E": 48,
-				"Q": 49,
-				"D": 37
-			},
+			"chargeFrames": { "anim": 130, "D": 89, "J": 89, "swap": 130 },
+			"plungeFrames": { "anim": 87, "N": 53, "C": 53, "E": 51, "Q": 51, "D": 40, "swap": 62 },
 			"sections": [
 				{
 					"type": "normal",
@@ -86,81 +49,39 @@
 				"Plunge in gcsim is gated on AirborneXianyun (sim limitation), not in-game.",
 				"In-stance N (Raging Oni King): same frame slices as base (gcsim does not differ). Differences are: (a) larger hitbox (attackHitboxes[1] vs [0]); (b) stack grants on N1/N3 instead of N2/N4 (q-attack source); (c) Geo infusion via Snapshot override. The in-stance N is authored as a separate `normal` ability with `conditions: state=inStance` + infusion=geo, mirroring frames identically.",
 				"Per-character note in recipe-tier-b.md mentions a Saichigiri-after-N3 mechanic (charged-only-at-N3) and C1 +1 skill charge — neither is present in gcsim source. C1 grants 2 Superlative Superstrength stacks, not a skill charge; no chargeModifiers authored. The N3-CA distinction is the standard CA-state machine (Saichi vs stack-CA), not an N3-specific mechanic."
-			]
+			],
+			"lowPlungeFrames": { "anim": 83, "N": 49, "C": 49, "E": 48, "Q": 49, "D": 37, "swap": 60 }
 		},
 		{
 			"id": "arataki_itto__normal__fight_club_legend_oni_king",
 			"name": "Fight Club Legend (Raging Oni King)",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"infusion": "geo",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 23,
-						"N": 33,
-						"C": 41
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 25,
-						"N": 36,
-						"C": 51
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 16,
-						"N": 43,
-						"C": 57
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 48,
-						"N": 83
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 41, "hit": 23, "N": 33 } },
+				{ "name": "N2", "frames": { "anim": 36, "hit": 25, "C": 27 } },
+				{ "name": "N3", "frames": { "anim": 43, "hit": 16, "C": 21 } },
+				{ "name": "N4", "frames": { "anim": 83, "hit": 48, "C": 52 } }
 			],
-			"chargeFrames": {
-				"swap": 130,
-				"D": 89,
-				"J": 89
-			},
-			"plungeFrames": {
-				"swap": 60,
-				"N": 49,
-				"E": 48,
-				"Q": 49,
-				"D": 37
-			},
+			"chargeFrames": { "anim": 130, "D": 89, "J": 89, "swap": 130 },
+			"plungeFrames": { "anim": 87, "N": 53, "C": 53, "E": 51, "Q": 51, "D": 40, "swap": 62 },
 			"description": "Itto's normal-attack combo while in the Raging Oni King stance. The 4-hit string uses identical frame timings to the base combo, but all hits are converted to Geo DMG (cannot be overridden), gain a +10% ATK SPD buff during normals, and grant Superlative Superstrength stacks on the 1st and 3rd strikes (instead of 2nd/4th).",
 			"_curatorNotes": [
 				"Frames mirror the base normal — gcsim uses the same attackFrames slices in/out of Q stance. The differences are mechanical (hitbox, stack-grant timing, infusion, ATK SPD buff), not frame-level.",
 				"Q stance grants +10% ATK SPD on normals (gcsim burstAtkSpdKey, only applies during NormalAttackState) — not authored as a buff effect; reviewer to decide. ATK SPD scales hitmarks at runtime per gcsim, but the schema doesn't encode this for the planner.",
 				"Stack-grant change in Q stance: N1 and N3 each grant 1 stack (instead of base N2=1 / N4=2). Mechanical only; no schema impact."
-			]
+			],
+			"lowPlungeFrames": { "anim": 83, "N": 49, "C": 49, "E": 48, "Q": 49, "D": 37, "swap": 60 }
 		},
 		{
 			"id": "arataki_itto__skill__masatsu_zetsugi_akaushi_burst",
 			"name": "Masatsu Zetsugi: Akaushi Burst!",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": {
-				"swap": 41,
-				"D": 28,
-				"J": 28
-			},
+			"frames": { "anim": 42, "C": 28, "E": 28, "D": 28, "J": 28, "swap": 41 },
 			"cooldown": 10,
 			"cooldownStartDelay": 14,
 			"tags": ["taunt"],
@@ -181,18 +102,15 @@
 				"Skill cooldown starts on release per `SetCDWithDelay(action.ActionSkill, 600, skillRelease)`.",
 				"Hold variant (adjust throw angle) not authored — gcsim does not differentiate frames; in-game it only re-aims.",
 				"Stamina-cost override during Q stance (gcsim ActionStam returns 0 for ActionCharge while Itto has SSS stacks > 0) — Pattern 5 (no animation change), not authored."
-			]
+			],
+			"application": [{ "frame": 18, "element": "geo" }]
 		},
 		{
 			"id": "arataki_itto__burst__royal_descent_behold_itto_the_evil",
 			"name": "Royal Descent: Behold, Itto the Evil!",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": {
-				"swap": 90,
-				"D": 84,
-				"J": 85
-			},
+			"frames": { "anim": 91, "D": 84, "J": 85, "swap": 90 },
 			"cooldown": 18,
 			"cooldownModifiers": [
 				{
@@ -242,7 +160,8 @@
 				"Burst frames: ActionAttack/ActionSkill/ActionBurst not explicitly set in gcsim (default to anim=91); N/E omitted per recipe silent-default rule. The intended Q→N/E cancel is 91f if reviewer wants to add it.",
 				"C1: 2 SSS stacks at ~75f after Q + 1 stack every 30f for 60–120f (gcsim cons.go c1) — not authored; SSS economy is not represented in the schema.",
 				"C2: CD reduction AUTHORED 2026-07-20 (A7b pilot, Nate implement-first): three flat -1.5s cooldownModifiers on the burst, gated constellation:2 + teamElementCount(geo excl-self) >= 0/1/2 — gcsim counts Geo members incl. Itto statically at init (cap 3), and Itto is Geo, so excl-self >= 0/1/2 is exactly equivalent. The 6-energy-per-Geo-member restore (cap 18) stays unauthored: energy generation is out of scope by constitution."
-			]
+			],
+			"application": []
 		}
 	],
 	"passives": [
@@ -263,9 +182,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 35,
 					"stat": "def"
 				}
@@ -313,10 +230,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "afterDuration",
-						"ability": "burst"
-					},
+					"trigger": { "type": "afterDuration", "ability": "burst" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -327,10 +241,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "afterDuration",
-						"ability": "burst"
-					},
+					"trigger": { "type": "afterDuration", "ability": "burst" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",

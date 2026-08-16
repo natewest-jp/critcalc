@@ -22,41 +22,19 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": {
-						"swap": 21,
-						"N": 30,
-						"C": 26
-					}
+					"frames": { "anim": 35, "N": 30, "C": 26, "E": 21, "Q": 21, "D": 21, "J": 23, "swap": 21 }
 				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 13,
-						"N": 22,
-						"C": 23
-					}
-				},
+				{ "name": "N2", "frames": { "anim": 31, "hit": 13, "N": 22, "C": 23 } },
 				{
 					"name": "N3",
-					"frames": {
-						"swap": 24,
-						"N": 38,
-						"C": 37
-					}
+					"frames": { "anim": 45, "N": 38, "C": 37, "E": 24, "Q": 24, "D": 26, "J": 25, "swap": 24 }
 				},
 				{
 					"name": "N4",
-					"frames": {
-						"swap": 39,
-						"N": 71
-					}
+					"frames": { "anim": 71, "C": 69, "E": 40, "Q": 40, "D": 39, "J": 39, "swap": 39 }
 				}
 			],
-			"chargeFrames": {
-				"swap": 21,
-				"D": 21,
-				"J": 21
-			},
+			"chargeFrames": { "anim": 65, "D": 21, "J": 21, "swap": 21 },
 			"sections": [
 				{
 					"type": "normal",
@@ -82,13 +60,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 25,
-				"N": 28,
-				"Q": 32,
-				"D": 27,
-				"J": 26
-			},
+			"frames": { "anim": 32, "N": 28, "C": 28, "D": 27, "J": 26, "swap": 25 },
 			"cooldown": 5,
 			"cooldownStartDelay": 11,
 			"tags": ["coordinatedAttack"],
@@ -104,19 +76,24 @@
 					"input": ["hE"],
 					"cooldown": 6,
 					"frames": {
-						"swap": 57,
+						"anim": 63,
 						"N": 57,
+						"C": 58,
+						"E": 62,
 						"Q": 62,
 						"D": 59,
-						"J": 62
+						"J": 62,
+						"swap": 57
 					},
 					"_curatorNotes": [
 						"Hold E has parametric total frame count: Frames(next) = hold + skillHoldFrames[next], where hold = max(min(p['hold'], 300), 1) - 1 ∈ [0, 299]. Frames recorded above are at min-hold (hold=0). At max-hold (hold=299): swap=356, N=356, Q=361, D=358, J=361.",
 						"cooldownStartDelay for Hold variant is parametric: hold + 30 frames. At min-hold (hold=0): 30 frames. At max-hold (hold=299): 329 frames. AbilityVariant has no cooldownStartDelay schema field — reviewer to decide whether to extend the schema or model only the min-hold value."
-					]
+					],
+					"application": [{ "frame": 33, "element": "dendro" }]
 				}
 			],
-			"description": "Sends forth karmic bonds of wood and tree from her side, dealing AoE Dendro DMG and marking up to 8 opponents hit with the Seed of Skandha.\nWhen held, this skill will trigger differently.\n\nHold\nEnters Aiming Mode, which will allow you to select a limited number of opponents within a limited area. During this time, Nahida's resistance to interruption will be increased.\nWhen released, this skill deals Dendro DMG to these opponents and marks them with the Seed of Skandha.\nAiming Mode will last up to 5s and can select a maximum of 8 opponents.\n\nSeed of Skandha\nOpponents who have been marked by the Seed of Skandha will be linked to one another up till a certain distance.\nAfter you trigger Elemental Reactions on opponents who are affected by the Seeds of Skandha or when they take DMG from Dendro Cores (including Burgeon and Hyperbloom DMG), Nahida will unleash Tri-Karma Purification on the opponents and all connected opponents, dealing Dendro DMG based on her ATK and Elemental Mastery.\nYou can trigger at most 1 Tri-Karma Purification within a short period of time."
+			"description": "Sends forth karmic bonds of wood and tree from her side, dealing AoE Dendro DMG and marking up to 8 opponents hit with the Seed of Skandha.\nWhen held, this skill will trigger differently.\n\nHold\nEnters Aiming Mode, which will allow you to select a limited number of opponents within a limited area. During this time, Nahida's resistance to interruption will be increased.\nWhen released, this skill deals Dendro DMG to these opponents and marks them with the Seed of Skandha.\nAiming Mode will last up to 5s and can select a maximum of 8 opponents.\n\nSeed of Skandha\nOpponents who have been marked by the Seed of Skandha will be linked to one another up till a certain distance.\nAfter you trigger Elemental Reactions on opponents who are affected by the Seeds of Skandha or when they take DMG from Dendro Cores (including Burgeon and Hyperbloom DMG), Nahida will unleash Tri-Karma Purification on the opponents and all connected opponents, dealing Dendro DMG based on her ATK and Elemental Mastery.\nYou can trigger at most 1 Tri-Karma Purification within a short period of time.",
+			"application": [{ "frame": 13, "element": "dendro" }]
 		},
 		{
 			"id": "nahida__burst__illusory_heart",
@@ -124,26 +101,20 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 111
-			},
+			"frames": { "anim": 112, "swap": 111 },
 			"cooldown": 13.5,
 			"tags": [],
 			"energyCost": 50,
 			"summons": [
-				{
-					"label": "Shrine of Maya",
-					"duration": 15,
-					"spawnsAt": 66,
-					"mobility": "stationary"
-				}
+				{ "label": "Shrine of Maya", "duration": 15, "spawnsAt": 66, "mobility": "stationary" }
 			],
 			"effects": [],
 			"_curatorNotes": [
 				"Shrine of Maya party-composition-dependent buffs not authored: (a) Pyro — while Nahida is within the field, Tri-Karma Purification DMG is increased (gcsim: burstTriKarmaDmgBonus[pyroCount-1][talentLevel] added as AttackMod on each 30-frame tick); (b) Electro — Tri-Karma Purification ICD interval reduced by burstTriKarmaCDReduction[electroCount-1][talentLevel]; (c) Hydro — field duration extended (see note below). All branch values require talent-level lookup tables; effects[] skeleton not authored — needs reviewer pass.",
 				"Shrine of Maya duration extension from Hydro characters: base 15s; extended by burstTriKarmaDurationExtend[hydroCount-1][talentLevel] when hydroCount > 0 (up to hydroCount=2). Extension is talent-level-scaled and team-comp-conditional — no matching durationModifiers condition type in schema. Generator's variants[] (Hydro Extension 8.5272s, Base 15s) removed; duration modeled as base 15s on summons[0]. Reviewer to add hydro extension once schema supports team-composition conditions."
 			],
-			"description": "Manifests the Court of Dreams and expands the Shrine of Maya.\n\nWhen the Shrine of Maya field is unleashed, the following effects will be separately unleashed based on the Elemental Types present within the party.\n·Pyro: While Nahida remains within the Shrine of Maya, the DMG dealt by Tri-Karma Purification from \"All Schemes to Know\" is increased.\n·Electro: While Nahida remains within the Shrine of Maya, the interval between each Tri-Karma Purification from \"All Schemes to Know\" is decreased.\n·Hydro: The Shrine of Maya's duration is increased.\n\nIf there are at least 2 party members of the aforementioned Elemental Types present when the field is deployed, the aforementioned effects will be increased further.\n\nEven if Nahida is not on the field, these bonuses will still take effect so long as party members are within the Shrine of Maya."
+			"description": "Manifests the Court of Dreams and expands the Shrine of Maya.\n\nWhen the Shrine of Maya field is unleashed, the following effects will be separately unleashed based on the Elemental Types present within the party.\n·Pyro: While Nahida remains within the Shrine of Maya, the DMG dealt by Tri-Karma Purification from \"All Schemes to Know\" is increased.\n·Electro: While Nahida remains within the Shrine of Maya, the interval between each Tri-Karma Purification from \"All Schemes to Know\" is decreased.\n·Hydro: The Shrine of Maya's duration is increased.\n\nIf there are at least 2 party members of the aforementioned Elemental Types present when the field is deployed, the aforementioned effects will be increased further.\n\nEven if Nahida is not on the field, these bonuses will still take effect so long as party members are within the Shrine of Maya.",
+			"application": []
 		}
 	],
 	"passives": [
@@ -158,10 +129,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -189,9 +157,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "skillDmgBonus",
 					"value": 80,
@@ -203,9 +169,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "critRate",
 					"value": 24,
@@ -246,9 +210,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -258,9 +220,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",
@@ -302,9 +262,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -334,9 +292,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 200,
 					"stat": "atk",
 					"element": "dendro"

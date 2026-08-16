@@ -25,7 +25,7 @@ const mkNormal = (id: string): Ability =>
 		name: 'Attack',
 		input: ['N'],
 		abilityType: 'normal',
-		hits: [{ frames: { swap: 20, N: 20, E: 20 } }, { frames: { swap: 20, N: 20, E: 20 } }]
+		hits: [{ frames: { anim: 20, hit: 20, N: 20 } }, { frames: { anim: 20, hit: 20, N: 20 } }]
 	}) as unknown as Ability;
 
 const mkSkill = (id: string, extra: Record<string, unknown> = {}): Ability =>
@@ -35,7 +35,7 @@ const mkSkill = (id: string, extra: Record<string, unknown> = {}): Ability =>
 		input: ['E'],
 		abilityType: 'skill',
 		behavior: 'instant',
-		frames: { swap: 30 },
+		frames: { anim: 30 },
 		cooldown: 8,
 		...extra
 	}) as unknown as Ability;
@@ -47,7 +47,7 @@ const mkBurst = (id: string, extra: Record<string, unknown> = {}): Ability =>
 		input: ['Q'],
 		abilityType: 'burst',
 		behavior: 'instant',
-		frames: { swap: 30 },
+		frames: { anim: 30 },
 		cooldown: 15,
 		energyCost: 60,
 		...extra

@@ -15,60 +15,15 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 14,
-						"N": 26
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 12,
-						"N": 23
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 25,
-						"N": 37
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 28,
-						"N": 68
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 26, "hit": 14 } },
+				{ "name": "N2", "frames": { "anim": 23, "hit": 12 } },
+				{ "name": "N3", "frames": { "anim": 37, "hit": 25 } },
+				{ "name": "N4", "frames": { "anim": 68, "hit": 28 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 23,
-						"D": 14,
-						"J": 14
-					}
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 94,
-						"D": 86,
-						"J": 86
-					}
-				},
-				{
-					"name": "Wreath Arrow",
-					"frames": {
-						"swap": 183,
-						"D": 175,
-						"J": 175
-					}
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 23, "D": 14, "J": 14, "swap": 23 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 94, "D": 86, "J": 86 } },
+				{ "name": "Wreath Arrow", "frames": { "anim": 183, "D": 175, "J": 175, "swap": 183 } }
 			],
 			"tags": [],
 			"sections": [
@@ -101,22 +56,11 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 21,
-				"N": 20,
-				"Q": 22,
-				"D": 23,
-				"J": 23
-			},
+			"frames": { "anim": 30, "N": 20, "Q": 22, "D": 23, "J": 23, "swap": 21 },
 			"cooldown": 12,
 			"cooldownStartDelay": 13,
 			"summons": [
-				{
-					"label": "Vijnana-Khanda Field",
-					"duration": 8,
-					"spawnsAt": 15,
-					"mobility": "stationary"
-				}
+				{ "label": "Vijnana-Khanda Field", "duration": 8, "spawnsAt": 15, "mobility": "stationary" }
 			],
 			"tags": ["taunt"],
 			"effects": [],
@@ -126,7 +70,8 @@
 				"Generator variants[] removed. The two generator entries ('Vijnana Khanda Field', 8s) and ('Vijnana Suffusion', 12s) modeled two effects of the same skill cast, not separate input variants. Vijnana-Khanda Field is now modeled as summons[0]; Vijnana Suffusion is the self-buff flagged above.",
 				"Vijnana-Khanda Field spawnsAt=15 (skillRelease constant in gcsim). Actual impact frame is skillRelease + travel (default travel=5 → frame 20). spawnsAt uses the release frame per recipe convention."
 			],
-			"caveat": "Not modeled: Vijnana Suffusion's Wreath Arrow charge-time reduction — the shot is shown at full base charge time even while the buff is active."
+			"caveat": "Not modeled: Vijnana Suffusion's Wreath Arrow charge-time reduction — the shot is shown at full base charge time even while the buff is active.",
+			"application": [{ "frame": 20, "element": "dendro" }]
 		},
 		{
 			"id": "tighnari__burst__fashioners_tanglevine_shaft",
@@ -134,17 +79,26 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 115,
-				"N": 114,
-				"E": 117,
-				"D": 117
-			},
+			"frames": { "anim": 118, "N": 114, "E": 117, "D": 117, "swap": 115 },
 			"cooldown": 12,
 			"tags": [],
 			"energyCost": 40,
 			"effects": [],
-			"description": "Combines the power of all seeds to fire 6 Tanglevine Shafts that can track opponents and deal Dendro DMG.\nAfter they hit, the Tanglevine Shafts will create a secondary wave of Tanglevine Shafts that can also track nearby opponents and deal Dendro DMG on hit."
+			"description": "Combines the power of all seeds to fire 6 Tanglevine Shafts that can track opponents and deal Dendro DMG.\nAfter they hit, the Tanglevine Shafts will create a secondary wave of Tanglevine Shafts that can also track nearby opponents and deal Dendro DMG on hit.",
+			"application": [
+				{ "frame": 112, "element": "dendro" },
+				{ "frame": 117, "element": "dendro" },
+				{ "frame": 120, "element": "dendro" },
+				{ "frame": 121, "element": "dendro" },
+				{ "frame": 126, "element": "dendro" },
+				{ "frame": 128, "element": "dendro" },
+				{ "frame": 147, "element": "dendro" },
+				{ "frame": 153, "element": "dendro" },
+				{ "frame": 160, "element": "dendro" },
+				{ "frame": 161, "element": "dendro" },
+				{ "frame": 171, "element": "dendro" },
+				{ "frame": 175, "element": "dendro" }
+			]
 		}
 	],
 	"passives": [
@@ -159,9 +113,7 @@
 					"trigger": {
 						"type": "onHit",
 						"abilityType": "charged",
-						"filter": {
-							"abilityName": "Wreath Arrow"
-						}
+						"filter": { "abilityName": "Wreath Arrow" }
 					},
 					"duration": 4,
 					"durationType": "refresh",
@@ -184,9 +136,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -195,9 +145,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",
@@ -220,9 +168,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -244,9 +190,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "dendroDmgBonus",
@@ -275,10 +219,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
@@ -322,9 +263,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 150,
 					"stat": "atk"
 				}

@@ -15,66 +15,16 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "N6", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 19
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 14,
-						"N": 27
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 20,
-						"N": 38
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 26,
-						"N": 37
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 21,
-						"N": 28
-					}
-				},
-				{
-					"name": "N6",
-					"frames": {
-						"swap": 22,
-						"N": 59
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 19, "hit": 13 } },
+				{ "name": "N2", "frames": { "anim": 27, "hit": 14 } },
+				{ "name": "N3", "frames": { "anim": 38, "hit": 20 } },
+				{ "name": "N4", "frames": { "anim": 37, "hit": 26 } },
+				{ "name": "N5", "frames": { "anim": 28, "hit": 21 } },
+				{ "name": "N6", "frames": { "anim": 59, "hit": 22 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 85,
-						"D": 74,
-						"J": 74
-					}
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 113,
-						"D": 103,
-						"J": 103
-					}
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 85, "D": 74, "J": 74 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 113, "D": 103, "J": 103 } }
 			],
 			"sections": [
 				{
@@ -100,22 +50,11 @@
 			"name": "Trail of the Qilin",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": {
-				"swap": 27,
-				"N": 28,
-				"Q": 28,
-				"D": 28,
-				"J": 28
-			},
+			"frames": { "anim": 28, "swap": 27 },
 			"cooldown": 10,
 			"cooldownStartDelay": 10,
 			"summons": [
-				{
-					"label": "Ice Lotus",
-					"duration": 6,
-					"spawnsAt": 13,
-					"mobility": "stationary"
-				}
+				{ "label": "Ice Lotus", "duration": 6, "spawnsAt": 13, "mobility": "stationary" }
 			],
 			"charges": 1,
 			"chargeModifiers": [
@@ -123,10 +62,7 @@
 					"source": "C2: The Auspicious",
 					"type": "flat",
 					"value": 1,
-					"conditions": {
-						"type": "constellation",
-						"level": 2
-					}
+					"conditions": { "type": "constellation", "level": 2 }
 				}
 			],
 			"snapshots": true,
@@ -134,7 +70,8 @@
 			"tags": ["taunt"],
 			"effects": [],
 			"description": "Leaving a single Ice Lotus behind, Ganyu dashes backward, shunning all impurity and dealing AoE Cryo DMG.\n\nIce Lotus\n·Continuously taunts surrounding opponents, attracting them to attack it.\n·Endurance scales based on Ganyu's Max HP.\n·Blooms profusely when destroyed or once its duration ends, dealing AoE Cryo DMG.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"application": []
 		},
 		{
 			"id": "ganyu__burst__celestial_shower",
@@ -142,25 +79,29 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 122,
-				"N": 124,
-				"E": 124,
-				"D": 125,
-				"J": 125
-			},
+			"frames": { "anim": 125, "N": 124, "E": 124, "swap": 122 },
 			"cooldown": 15,
 			"summons": [
-				{
-					"label": "Sacred Cryo Pearl",
-					"duration": 15,
-					"spawnsAt": 122,
-					"mobility": "stationary"
-				}
+				{ "label": "Sacred Cryo Pearl", "duration": 15, "spawnsAt": 122, "mobility": "stationary" }
 			],
 			"tags": ["summon"],
 			"energyCost": 60,
-			"description": "Coalesces atmospheric frost and snow to summon a Sacred Cryo Pearl that exorcises evil.\nDuring its ability duration, the Sacred Cryo Pearl will continuously rain down shards of ice, striking opponents within an AoE and dealing Cryo DMG."
+			"description": "Coalesces atmospheric frost and snow to summon a Sacred Cryo Pearl that exorcises evil.\nDuring its ability duration, the Sacred Cryo Pearl will continuously rain down shards of ice, striking opponents within an AoE and dealing Cryo DMG.",
+			"application": [
+				{ "frame": 130, "element": "cryo" },
+				{ "frame": 220, "element": "cryo" },
+				{ "frame": 310, "element": "cryo" },
+				{ "frame": 346, "element": "cryo" },
+				{ "frame": 400, "element": "cryo" },
+				{ "frame": 454, "element": "cryo" },
+				{ "frame": 490, "element": "cryo" },
+				{ "frame": 580, "element": "cryo" },
+				{ "frame": 670, "element": "cryo" },
+				{ "frame": 706, "element": "cryo" },
+				{ "frame": 760, "element": "cryo" },
+				{ "frame": 796, "element": "cryo" },
+				{ "frame": 850, "element": "cryo" }
+			]
 		}
 	],
 	"passives": [
@@ -179,10 +120,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -213,10 +151,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged"
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged" },
 					"duration": 6,
 					"element": "cryo",
 					"value": -15
@@ -224,10 +159,7 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged"
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged" },
 					"amount": 2
 				}
 			]

@@ -40,3 +40,32 @@ export const FPS = 60;
  * there is noise against the mechanic. See gauge-round.md §C1.
  */
 export const framesOf = (seconds: number): number => Math.round(seconds * FPS);
+
+/**
+ * The keys `InitNormalCancelSlice` overrides with the hitmark. Everything else in
+ * a normal's slice is the animation length.
+ *
+ * ⚠️ `P` is deliberately absent — gcsim does not override `ActionHighPlunge`, so
+ * a plunge after a normal waits out the whole animation.
+ */
+const HIT_KEYS: ReadonlySet<string> = new Set(['E', 'Q', 'D', 'J', 'swap']);
+
+/**
+ * Resolve one entry of a FrameMap: how long until the given next action.
+ *
+ * ⚓⚓ **THE ONE PLACE THE FALLBACK LIVES.** Before L4b this was written inline as
+ * `fm[key] ?? fm.swap` at five sites, and it was wrong at every one of them: gcsim
+ * fills an unlisted slot with the ANIMATION length, and `swap` is just an override
+ * that usually happens to be shorter. ⛔ Never re-inline it — the failure mode is
+ * silent and it understated a charged attack after a normal by a median 22 frames.
+ *
+ * ⚠️ A FrameMap authored before L4b has no `anim`; the migration gave every one of
+ * them the field, and `characterLint` requires it. The `?? 0` here is a NaN guard
+ * for hand-built fixtures, not a fallback anyone should rely on.
+ */
+export function frameAt(fm: import('$lib/types/ability').FrameMap, key: string): number {
+	const explicit = (fm as Record<string, number | undefined>)[key];
+	if (typeof explicit === 'number') return explicit;
+	if (HIT_KEYS.has(key) && typeof fm.hit === 'number') return fm.hit;
+	return fm.anim ?? 0;
+}

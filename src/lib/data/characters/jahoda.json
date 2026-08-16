@@ -17,44 +17,15 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 14,
-						"N": 30
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 29,
-						"N": 48
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 40,
-						"N": 88
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 14, "N": 30, "swap": 14 } },
+				{ "name": "N2", "frames": { "anim": 29, "N": 48, "swap": 29 } },
+				{ "name": "N3", "frames": { "anim": 40, "N": 88, "swap": 40 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 15,
-						"D": 15,
-						"J": 15
-					}
-				},
+				{ "name": "Aimed Shot", "frames": { "anim": 15, "D": 15, "J": 15, "swap": 15 } },
 				{
 					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 85,
-						"D": 85,
-						"J": 85
-					}
+					"frames": { "anim": 85, "D": 85, "J": 85, "swap": 85 }
 				}
 			],
 			"_curatorNotes": [
@@ -90,13 +61,7 @@
 			"behavior": "stance",
 			"duration": 5.57,
 			"terminatesOnSwap": true,
-			"frames": {
-				"swap": 42,
-				"N": 42,
-				"Q": 42,
-				"D": 42,
-				"J": 42
-			},
+			"frames": { "anim": 42, "N": 42, "Q": 42, "D": 42, "J": 42, "swap": 42 },
 			"cooldown": 15.5,
 			"tags": [],
 			"effects": [],
@@ -119,13 +84,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 36,
-				"N": 48,
-				"E": 53,
-				"D": 54,
-				"J": 54
-			},
+			"frames": { "anim": 36, "N": 48, "E": 53, "D": 54, "J": 54, "swap": 36 },
 			"cooldown": 18,
 			"cooldownStartDelay": 1,
 			"energyCost": 70,
@@ -140,11 +99,7 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.45,
-								"firstTickDelay": 0.2
-							},
+							"trigger": { "type": "summonTick", "interval": 1.45, "firstTickDelay": 0.2 },
 							"scaling": 143.77,
 							"stat": "atk",
 							"flat": 1101.7

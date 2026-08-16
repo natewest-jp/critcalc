@@ -18,6 +18,7 @@ import type {
 	AbilityVariant,
 	Condition,
 	Effect,
+	ElementalApplication,
 	NormalAbility,
 	SkillAbility,
 	BurstAbility
@@ -273,10 +274,13 @@ export function isCurated(c: CharacterData): boolean {
 	const skill = c.abilities.find((a) => a.abilityType === 'skill') as SkillAbility | undefined;
 	if (!normal || !skill) return false;
 	if (!normal.hits?.length) return false;
+	// ⚠️ The framed-vs-not sentinel is `anim` since L4b, not `swap`: `anim` is what
+	// every FrameMap is now required to carry, and `swap` became an ordinary
+	// optional override that two curated maps never had in the first place.
 	const firstHitFrames = normal.hits[0]?.frames;
-	if (!firstHitFrames || typeof firstHitFrames.swap !== 'number') return false;
-	const skillFrames = (skill as { frames?: { swap?: unknown } }).frames;
-	if (!skillFrames || typeof skillFrames.swap !== 'number') return false;
+	if (!firstHitFrames || typeof firstHitFrames.anim !== 'number') return false;
+	const skillFrames = (skill as { frames?: { anim?: unknown } }).frames;
+	if (!skillFrames || typeof skillFrames.anim !== 'number') return false;
 	return true;
 }
 
@@ -823,11 +827,11 @@ function lintNormal(
 			push('strict', 'missing-frames', `hits[${i}].frames is missing`, a.id);
 			continue;
 		}
-		if (!isPositiveInt(fm.swap)) {
+		if (!isPositiveInt(fm.anim)) {
 			push(
 				'strict',
-				'missing-swap',
-				`hits[${i}].frames.swap missing or not a positive integer`,
+				'missing-anim',
+				`hits[${i}].frames.anim missing or not a positive integer`,
 				a.id
 			);
 		}
@@ -865,8 +869,8 @@ function lintNormal(
 
 	// chargeFrames frame values
 	if (a.chargeFrames) {
-		if (!isPositiveInt(a.chargeFrames.swap)) {
-			push('strict', 'missing-swap', `chargeFrames.swap missing or not a positive integer`, a.id);
+		if (!isPositiveInt(a.chargeFrames.anim)) {
+			push('strict', 'missing-anim', `chargeFrames.anim missing or not a positive integer`, a.id);
 		}
 		for (const [k, v] of Object.entries(a.chargeFrames)) {
 			if (v !== undefined && !isPositiveInt(v)) {
@@ -883,11 +887,11 @@ function lintNormal(
 				push('strict', 'missing-frames', `chargeHits[${i}].frames is missing`, a.id);
 				continue;
 			}
-			if (!isPositiveInt(fm.swap)) {
+			if (!isPositiveInt(fm.anim)) {
 				push(
 					'strict',
-					'missing-swap',
-					`chargeHits[${i}].frames.swap missing or not a positive integer`,
+					'missing-anim',
+					`chargeHits[${i}].frames.anim missing or not a positive integer`,
 					a.id
 				);
 			}
@@ -913,11 +917,20 @@ function lintNormal(
 		}
 	}
 
-	// plungeFrames
-	if (a.plungeFrames) {
-		if (!isPositiveInt(a.plungeFrames.swap)) {
-			push('strict', 'missing-swap', `plungeFrames.swap missing or not a positive integer`, a.id);
+	// plungeFrames (HIGH plunge — the default) and lowPlungeFrames (`lP` only)
+	for (const [field, fm] of [
+		['plungeFrames', a.plungeFrames],
+		['lowPlungeFrames', a.lowPlungeFrames]
+	] as const) {
+		if (!fm) continue;
+		if (!isPositiveInt(fm.anim)) {
+			push('strict', 'missing-anim', `${field}.anim missing or not a positive integer`, a.id);
 		}
+	}
+	// ⛔ A low-plunge map with no high-plunge map beside it inverts the default:
+	// the bare `P` token would fall through to nothing while `lP` resolved.
+	if (a.lowPlungeFrames && !a.plungeFrames) {
+		push('strict', 'missing-frames', 'lowPlungeFrames without plungeFrames', a.id);
 	}
 
 	// (C.19) infusion is valid Element
@@ -940,8 +953,64 @@ function lintCastAbility(
 	if (!a.frames) {
 		push('strict', 'missing-frames', 'skill/burst missing frames map', a.id);
 	} else {
-		if (!isPositiveInt(a.frames.swap)) {
-			push('strict', 'missing-swap', 'frames.swap missing or not a positive integer', a.id);
+		if (!isPositiveInt(a.frames.anim)) {
+			push('strict', 'missing-anim', 'frames.anim missing or not a positive integer', a.id);
+		}
+		// ⛔ `hit` is `InitNormalCancelSlice`'s tier and an E/Q slice has no such
+		// tier — `InitAbilSlice` takes one number. Authoring it here would create a
+		// silent second fallback that gcsim does not have.
+		if (a.frames.hit !== undefined) {
+			push('strict', 'frame-value-invalid', 'frames.hit is not valid on a skill/burst map', a.id);
+		}
+	}
+
+	// (A.6) application[] — the elemental hit schedule (gauge round L4c)
+	for (const [where, list] of [
+		[a.id, a.application],
+		...(a.variants ?? []).map((v) => [`${a.id} variant "${v.label}"`, v.application])
+	] as [string, ElementalApplication[] | undefined][]) {
+		if (!list) continue;
+		let last = -1;
+		for (let i = 0; i < list.length; i++) {
+			const e = list[i];
+			if (!Number.isInteger(e.frame) || e.frame < 0) {
+				push(
+					'strict',
+					'application-invalid',
+					`${where} application[${i}].frame is not a non-negative integer`,
+					a.id
+				);
+			}
+			// ⚠️ SORTED, and it matters: the sim schedules these in order and the report
+			// reads them as a timeline. An out-of-order entry is an authoring slip that
+			// nothing downstream would notice.
+			if (e.frame < last) {
+				push(
+					'strict',
+					'application-invalid',
+					`${where} application[${i}] is out of frame order`,
+					a.id
+				);
+			}
+			last = e.frame;
+			if (e.element !== undefined && !CHARACTER_ELEMENTS.has(e.element)) {
+				push(
+					'strict',
+					'invalid-element',
+					`${where} application[${i}].element "${e.element}" is not a valid Element`,
+					a.id
+				);
+			}
+			// ⛔ `units` belongs to L5 and has no consumer yet; authoring it early is
+			// exactly the orphaned-data class the schema guard exists to catch.
+			if (e.units !== undefined) {
+				push(
+					'strict',
+					'application-invalid',
+					`${where} application[${i}].units is not authored until L5`,
+					a.id
+				);
+			}
 		}
 		for (const [k, v] of Object.entries(a.frames)) {
 			if (v !== undefined && !isPositiveInt(v)) {
@@ -1037,6 +1106,25 @@ function lintCastAbility(
 	for (const v of a.variants ?? []) {
 		if (v.durationExtensions) {
 			lintDurationExtensions(v.durationExtensions, `${a.id} variant "${v.label}"`, a.id, push);
+		}
+		// A variant's frames REPLACE the base's, so they carry the same obligations.
+		if (v.frames) {
+			if (!isPositiveInt(v.frames.anim)) {
+				push(
+					'strict',
+					'missing-anim',
+					`variant "${v.label}" frames.anim missing or not a positive integer`,
+					a.id
+				);
+			}
+			if (v.frames.hit !== undefined) {
+				push(
+					'strict',
+					'frame-value-invalid',
+					`variant "${v.label}" frames.hit is not valid on a skill/burst map`,
+					a.id
+				);
+			}
 		}
 	}
 

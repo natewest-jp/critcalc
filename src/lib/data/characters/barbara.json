@@ -20,50 +20,21 @@
 				"plungeFrames: gcsim has separate lowPlungeFrames and highPlungeFrames; using lowPlunge values per recipe. High plunge base frames (not represented): swap=50, N=59, E=45, Q=45, D=45, J=67. Schema supports one plungeFrames entry — reviewer should decide if high plunge representation is needed."
 			],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 6,
-						"N": 15,
-						"C": 18
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 11,
-						"N": 21,
-						"C": 24
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 12,
-						"N": 22,
-						"C": 28
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 2
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 23, "hit": 6, "N": 15, "C": 18 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 11, "N": 21, "C": 24 } },
+				{ "name": "N3", "frames": { "anim": 30, "hit": 12, "N": 22, "C": 28 } },
+				{ "name": "N4", "frames": { "anim": 60, "E": 32, "Q": 32, "D": 2, "J": 3, "swap": 2 } }
 			],
-			"chargeFrames": {
-				"swap": 55,
-				"E": 88,
-				"Q": 87,
-				"D": 56,
-				"J": 56
-			},
+			"chargeFrames": { "anim": 89, "C": 88, "E": 88, "Q": 87, "D": 56, "J": 56, "swap": 55 },
 			"plungeFrames": {
-				"swap": 48,
-				"N": 57,
-				"E": 44,
-				"Q": 44,
-				"D": 44
+				"anim": 68,
+				"N": 59,
+				"C": 49,
+				"E": 45,
+				"Q": 45,
+				"D": 45,
+				"J": 67,
+				"swap": 50
 			},
 			"sections": [
 				{
@@ -82,7 +53,8 @@
 					"description": "Gathering the might of Hydro, Barbara plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 water splash attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Barbara plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground."
+			"description": "Normal Attack\nPerforms up to 4 water splash attacks that deal Hydro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Hydro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Hydro, Barbara plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Hydro DMG upon impact with the ground.",
+			"lowPlungeFrames": { "anim": 66, "N": 57, "C": 46, "E": 44, "Q": 44, "D": 44, "swap": 48 }
 		},
 		{
 			"id": "barbara__skill__let_the_show_begin",
@@ -90,12 +62,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 53,
-				"N": 54,
-				"D": 4,
-				"J": 5
-			},
+			"frames": { "anim": 55, "N": 54, "C": 54, "E": 54, "D": 4, "J": 5, "swap": 53 },
 			"cooldown": 32,
 			"cooldownStartDelay": 3,
 			"tags": ["heal", "cleanse"],
@@ -103,10 +70,7 @@
 				{
 					"type": "heal",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 15,
 					"scaling": 7.2,
 					"stat": "hp",
@@ -115,10 +79,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "normal"
-					},
+					"trigger": { "type": "onHit", "abilityType": "normal" },
 					"scaling": 1.35,
 					"stat": "hp",
 					"flat": 158.902
@@ -126,10 +87,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged"
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged" },
 					"scaling": 5.4,
 					"stat": "hp",
 					"flat": 635.608
@@ -146,7 +104,21 @@
 				"(3) On-Charged-hit heal → target 'team' (gcsim charge.go cb Heal Target:-1, Src = 4×(prochpp×MaxHP+prochp)); onHit abilityType 'charged'. 4× the per-hit value → 5.4% Max HP + 635.608 flat. Kit: 'Charged Attack generates 4 times the amount of healing.'",
 				"Melody-Loop gating: all three heals only occur while the 15s Loop is active, but no schema condition expresses 'Melody Loop active' (it is a self-status, not a summon/named state). The onHit heals therefore render on any Barbara N/CA in the planner regardless of loop state — surfaced via caveat. Healing Bonus (gcsim HealInfo.Bonus = Heal stat) is applied by the renderer, not authored here."
 			],
-			"description": "Summons water droplets resembling musical notes that form a Melody Loop, dealing Hydro DMG to surrounding opponents and applying the Wet status to them.\n\nMelody Loop\n·On hit, Barbara's Normal Attacks heal your own party members and nearby teammates for a certain amount of HP, which scales with Barbara's Max HP.\n·On hit, Barbara's Charged Attack generates 4 times the amount of healing.\n·Periodically regenerates your own active character's HP.\n·Applies the Wet status to the character and to opponents who come in contact with them."
+			"description": "Summons water droplets resembling musical notes that form a Melody Loop, dealing Hydro DMG to surrounding opponents and applying the Wet status to them.\n\nMelody Loop\n·On hit, Barbara's Normal Attacks heal your own party members and nearby teammates for a certain amount of HP, which scales with Barbara's Max HP.\n·On hit, Barbara's Charged Attack generates 4 times the amount of healing.\n·Periodically regenerates your own active character's HP.\n·Applies the Wet status to the character and to opponents who come in contact with them.",
+			"application": [
+				{ "frame": 3, "element": "hydro" },
+				{ "frame": 42, "element": "hydro" },
+				{ "frame": 78, "element": "hydro" },
+				{ "frame": 93, "element": "hydro" },
+				{ "frame": 183, "element": "hydro" },
+				{ "frame": 273, "element": "hydro" },
+				{ "frame": 363, "element": "hydro" },
+				{ "frame": 453, "element": "hydro" },
+				{ "frame": 543, "element": "hydro" },
+				{ "frame": 633, "element": "hydro" },
+				{ "frame": 723, "element": "hydro" },
+				{ "frame": 813, "element": "hydro" }
+			]
 		},
 		{
 			"id": "barbara__burst__shining_miracle",
@@ -154,13 +126,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 195,
-				"N": 141,
-				"E": 141,
-				"D": 160,
-				"J": 160
-			},
+			"frames": { "anim": 195, "N": 141, "C": 140, "E": 141, "D": 160, "J": 160 },
 			"cooldown": 20,
 			"cooldownStartDelay": 1,
 			"tags": ["heal"],
@@ -169,10 +135,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"scaling": 31.68,
 					"stat": "hp",
 					"flat": 3727.7026
@@ -181,7 +144,8 @@
 			"_curatorNotes": [
 				"One-shot team heal authored 2026-07-12 at talent level 10. onCast (burst), target 'team' (gcsim burst.go Heal Target:-1 = all party members). TL10 bursthpp[9]=0.3168 → 31.68% Max HP + bursthp[9]=3727.7026 flat (sidecar 'Regeneration' col10 '31.7% Max HP+3728'). Heal fires at frame 77 (Tasks.Add delay 77); rendered at cast per the onCast convention. Healing Bonus (gcsim HealInfo.Bonus = Heal stat) is applied by the renderer, not authored here."
 			],
-			"description": "Heals your own party members and nearby teammates for a large amount of HP that scales with Barbara's Max HP."
+			"description": "Heals your own party members and nearby teammates for a large amount of HP that scales with Barbara's Max HP.",
+			"application": []
 		}
 	],
 	"passives": [
@@ -212,14 +176,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"effects": [
-				{
-					"type": "energy",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"amount": 1
-				}
+				{ "type": "energy", "target": "self", "trigger": { "type": "manual" }, "amount": 1 }
 			],
 			"_curatorNotes": [
 				"trigger: 'manual' inherited from generator — probable trigger is periodic (10s interval). Target scope: self. No conditions or stack cap. Reviewer should update to appropriate trigger type."
@@ -235,9 +192,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "hydroDmgBonus",
@@ -264,14 +219,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"effects": [
-				{
-					"type": "energy",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"amount": 1
-				}
+				{ "type": "energy", "target": "self", "trigger": { "type": "manual" }, "amount": 1 }
 			],
 			"_curatorNotes": [
 				"trigger: 'manual' inherited from generator — actual trigger is onHit (Charged Attack, vs. enemy). Each enemy hit regenerates 1 Energy, capped at 5 per CA cast. Reviewer should update trigger to onHit with charged abilityType and note the per-cast energy cap."

@@ -15,53 +15,21 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 19,
-						"C": 20
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 7,
-						"N": 18,
-						"C": 21
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 22,
-						"N": 37,
-						"C": 30
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 11,
-						"N": 19,
-						"C": 20
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 35,
-						"N": 72
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 27, "hit": 13, "N": 19, "C": 20 } },
+				{ "name": "N2", "frames": { "anim": 25, "hit": 7, "N": 18, "C": 21 } },
+				{ "name": "N3", "frames": { "anim": 43, "hit": 22, "N": 37, "C": 30 } },
+				{ "name": "N4", "frames": { "anim": 23, "hit": 11, "N": 19, "C": 20 } },
+				{ "name": "N5", "frames": { "anim": 72, "hit": 35, "N": 67, "C": 48 } }
 			],
 			"chargeFrames": {
-				"swap": 42,
+				"anim": 53,
 				"N": 43,
+				"C": 43,
 				"E": 43,
 				"Q": 43,
 				"D": 27,
-				"J": 28
+				"J": 28,
+				"swap": 42
 			},
 			"_curatorNotes": [
 				"Out-of-stance sword normals: 5-hit Physical chain. attackHitmarks=[[13],[7],[8,22],[11],[35]]; N3 multi-hit, last=22 gates cancel. Hitmarks include the 2f windup baked into the hitmark constant. attackFrames built via InitNormalCancelSlice.",
@@ -95,59 +63,16 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "C"],
 			"abilityType": "normal",
 			"infusion": "cryo",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 12,
-						"N": 12,
-						"C": 13
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 11,
-						"N": 21,
-						"C": 12
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 23,
-						"N": 31,
-						"C": 34
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 27,
-						"N": 33,
-						"C": 40
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 25,
-						"N": 51
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 30, "hit": 12, "N": 12, "C": 13 } },
+				{ "name": "N2", "frames": { "anim": 43, "hit": 11, "N": 21, "C": 12 } },
+				{ "name": "N3", "frames": { "anim": 42, "hit": 23, "N": 31, "C": 34 } },
+				{ "name": "N4", "frames": { "anim": 60, "hit": 27, "N": 33, "C": 40 } },
+				{ "name": "N5", "frames": { "anim": 72, "hit": 25, "N": 51, "C": 42 } }
 			],
-			"chargeFrames": {
-				"swap": 42,
-				"N": 54,
-				"Q": 43,
-				"D": 27,
-				"J": 28
-			},
+			"chargeFrames": { "anim": 54, "C": 53, "Q": 43, "D": 27, "J": 28, "swap": 42 },
 			"caveat": "Not modeled: after the in-stance burst, normal hits deal bonus DMG on a repeating 0.1s trigger (up to 10 times), raised further by Void Rifts absorbed during that burst.",
 			"_curatorNotes": [
 				"In-stance normals: separate 5-hit Cryo chain with different frames + scaling. attackSkillHitmarks=[[12],[11],[11,23],[11,27],[25]]; attackSkillFrames built via InitNormalCancelSlice with skillAttack[N] multipliers.",
@@ -165,26 +90,15 @@
 			"behavior": "stance",
 			"duration": 12.57,
 			"terminatesOnSwap": true,
-			"frames": {
-				"swap": 29,
-				"N": 21,
-				"Q": 31,
-				"D": 29,
-				"J": 30
-			},
+			"frames": { "anim": 43, "N": 21, "C": 21, "Q": 31, "D": 29, "J": 30, "swap": 29 },
 			"cooldown": 8,
 			"variants": [
 				{
 					"label": "Hold (Rapid Movement)",
 					"input": ["hE"],
-					"frames": {
-						"swap": 15,
-						"N": 18,
-						"Q": 18,
-						"D": 18,
-						"J": 18
-					},
-					"behavior": "instant"
+					"frames": { "anim": 18, "swap": 15 },
+					"behavior": "instant",
+					"application": []
 				}
 			],
 			"tags": [],
@@ -192,27 +106,16 @@
 				{
 					"type": "gainStacks",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill",
-						"input": ["E"]
-					},
+					"trigger": { "type": "onCast", "ability": "skill", "input": ["E"] },
 					"key": "serpentsSubtlety",
 					"amount": 45,
 					"max": 100,
-					"drain": {
-						"ratePerSecond": 7,
-						"state": "inStance"
-					}
+					"drain": { "ratePerSecond": 7, "state": "inStance" }
 				},
 				{
 					"type": "gainStacks",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill",
-						"input": ["hE"]
-					},
+					"trigger": { "type": "onCast", "ability": "skill", "input": ["hE"] },
 					"key": "serpentsSubtlety",
 					"amount": 45,
 					"max": 100
@@ -230,7 +133,8 @@
 				"A6 rigor 2026-07-12: Hold-E gainStacks amount corrected 18 → 45 (gcsim skill.go skillHold calls AddSerpentsSubtlety 45.0 — the skillHoldGainSS=18 constant is a frame delay/CD offset, not the grant; kit text 'Hold: Skirk gains 45 Serpent's Subtlety' confirms). Caveat + note references updated 18→45.",
 				"[A7] Hold-E void-rift absorption is not simulated but is covered by the A1 passive gadget-gap caveat, so it was dropped here. Tap-opens-inStance vs Hold-as-instant-grant branching is modeled correctly. Variable hold duration = gcsim p['hold'] param, max ~3s, unrepresented."
 			],
-			"description": "Imitates the combat style of \"The Foul.\" Produces different effects depending on whether you Tap or Hold.\n\nTap\nSkirk gains 45 **Serpent's Subtlety** and switches to **Seven-Phase Flash** mode.\n\nHold\nSkirk gains 45 Serpent's Subtlety and will continuously move at high speed. Her interruption resistance is increased in this state.\nDuring this time, Skirk can control her movement direction and move atop water. She can also use this Skill again to end rapid movement prematurely."
+			"description": "Imitates the combat style of \"The Foul.\" Produces different effects depending on whether you Tap or Hold.\n\nTap\nSkirk gains 45 **Serpent's Subtlety** and switches to **Seven-Phase Flash** mode.\n\nHold\nSkirk gains 45 Serpent's Subtlety and will continuously move at high speed. Her interruption resistance is increased in this state.\nDuring this time, Skirk can control her movement direction and move atop water. She can also use this Skill again to end rapid movement prematurely.",
+			"application": []
 		},
 		{
 			"id": "skirk__burst__havoc_ruin",
@@ -238,13 +142,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 101,
-				"N": 100,
-				"E": 102,
-				"D": 102,
-				"J": 102
-			},
+			"frames": { "anim": 151, "N": 100, "C": 102, "E": 102, "D": 102, "J": 102, "swap": 101 },
 			"cooldown": 15,
 			"energyCost": 50,
 			"tags": [],
@@ -252,10 +150,7 @@
 				{
 					"type": "consumeStacks",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"key": "serpentsSubtlety",
 					"amount": "all"
 				},
@@ -263,17 +158,10 @@
 					"type": "buff",
 					"source": "character",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 2.6,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "stacks",
-						"key": "serpentsSubtlety",
-						"min": 51
-					},
+					"conditions": { "type": "stacks", "key": "serpentsSubtlety", "min": 51 },
 					"stat": "burstDmgBonus",
 					"value": {
 						"type": "perStack",
@@ -284,10 +172,7 @@
 					},
 					"snapshottable": true,
 					"constellationScaling": {
-						"conditions": {
-							"type": "constellation",
-							"level": 2
-						},
+						"conditions": { "type": "constellation", "level": 2 },
 						"value": {
 							"type": "perStack",
 							"key": "serpentsSubtlety",
@@ -307,7 +192,15 @@
 				"Variant Havoc: Extinction is authored as a separate burst entry below, gated on state:inStance. Extinction does NOT consume SS (no `consumeStacks` on its effects array) and does NOT carry the perStack bonus buff (the bonus is bound to Havoc: Ruin only).",
 				"[A7] The over-50 SS bonus DMG IS modeled (perStack buff, threshold 50, cap +12 / +22 at C2, snapshotting pre-consume SS via consumeStacks). energyCost=50 is a lint placeholder mirroring the SS threshold, not real Energy. The unmodeled part is purely the cast-time SS>=50 availability gate, which the planner does not enforce."
 			],
-			"description": "Skirk's Elemental Burst is not reliant on Elemental Energy but instead on **Serpent's Subtlety**.\nWhen Skirk has at least 50 Serpent's Subtlety, she can expend all her Serpent's Subtlety to unleash her Elemental Burst, ripping the space before her apart and using rapid consecutive slashes that deal AoE Cryo DMG. At the same time, the DMG dealt by an instance of this Elemental Burst will be increased by every point of Serpent's Subtlety over 50 when it is unleashed. Up to 12 points can be counted for this purpose."
+			"description": "Skirk's Elemental Burst is not reliant on Elemental Energy but instead on **Serpent's Subtlety**.\nWhen Skirk has at least 50 Serpent's Subtlety, she can expend all her Serpent's Subtlety to unleash her Elemental Burst, ripping the space before her apart and using rapid consecutive slashes that deal AoE Cryo DMG. At the same time, the DMG dealt by an instance of this Elemental Burst will be increased by every point of Serpent's Subtlety over 50 when it is unleashed. Up to 12 points can be counted for this purpose.",
+			"application": [
+				{ "frame": 109, "element": "cryo" },
+				{ "frame": 111, "element": "cryo" },
+				{ "frame": 114, "element": "cryo" },
+				{ "frame": 125, "element": "cryo" },
+				{ "frame": 135, "element": "cryo" },
+				{ "frame": 158, "element": "cryo" }
+			]
 		},
 		{
 			"id": "skirk__burst__havoc_extinction",
@@ -315,16 +208,8 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
-			"frames": {
-				"swap": 39,
-				"N": 39,
-				"D": 40,
-				"J": 40
-			},
+			"conditions": { "type": "state", "state": "inStance" },
+			"frames": { "anim": 41, "N": 39, "C": 39, "D": 40, "J": 40, "swap": 39 },
 			"cooldown": 15,
 			"energyCost": 50,
 			"tags": [],
@@ -338,7 +223,8 @@
 				"Void Rifts absorbed during cast: c.absorbVoidRifts() returns count 0-3, used to index burstDMG[voids][lvl] for All Shall Wither bonus. Void Rifts are A1-spawned by team Frozen/Superconduct/Cryo-Swirl/Cryo-Crystallize reactions — not modeled.",
 				"[A7] All Shall Wither has no matching primitive: per-normal-hit proc-counted bonus with a 10-proc cap plus Void-Rift-count scaling (0-3 rifts -> +0/+1/+2/+3, gcsim burstDMG[voids][lvl]). Correctly modeled and dropped: this variant consumes no SS and does not exit the stance."
 			],
-			"description": "A special Elemental Burst that can be used even without consuming Serpent's Subtlety.\nAfter using it, Skirk will gain the \"All Shall Wither\" effect, which will last until Seven-Phase Flash ends. After unlocking the Ascension Talent **Reason Beyond Reason**, she can also absorb nearby Void Rifts.\nWhile \"All Shall Wither\" is active, every 0.1s, after Skirk's Normal Attack hits an opponent, that Normal Attack will deal increased DMG. If she absorbed any Void Rifts while using Havoc: Extinction, this Normal Attack's DMG will be further increased based on the number of Rifts absorbed."
+			"description": "A special Elemental Burst that can be used even without consuming Serpent's Subtlety.\nAfter using it, Skirk will gain the \"All Shall Wither\" effect, which will last until Seven-Phase Flash ends. After unlocking the Ascension Talent **Reason Beyond Reason**, she can also absorb nearby Void Rifts.\nWhile \"All Shall Wither\" is active, every 0.1s, after Skirk's Normal Attack hits an opponent, that Normal Attack will deal increased DMG. If she absorbed any Void Rifts while using Havoc: Extinction, this Normal Attack's DMG will be further increased based on the number of Rifts absorbed.",
+			"application": []
 		}
 	],
 	"passives": [
@@ -539,23 +425,14 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12.5,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 2
-							},
-							{
-								"type": "state",
-								"state": "inStance"
-							}
+							{ "type": "constellation", "level": 2 },
+							{ "type": "state", "state": "inStance" }
 						]
 					},
 					"source": "character",
@@ -566,14 +443,8 @@
 				{
 					"type": "gainStacks",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 2
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"conditions": { "type": "constellation", "level": 2 },
 					"key": "serpentsSubtlety",
 					"amount": 10,
 					"max": 100

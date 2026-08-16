@@ -16,51 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 18,
-						"N": 19,
-						"C": 24
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 12,
-						"N": 12,
-						"C": 27
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 32,
-						"N": 40,
-						"C": 42
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 23,
-						"N": 32,
-						"C": 35
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 21,
-						"N": 60
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 24, "hit": 18, "N": 19 } },
+				{ "name": "N2", "frames": { "anim": 27, "hit": 12, "N": 12 } },
+				{ "name": "N3", "frames": { "anim": 42, "hit": 32, "N": 40 } },
+				{ "name": "N4", "frames": { "anim": 35, "hit": 23, "N": 32 } },
+				{ "name": "N5", "frames": { "anim": 60, "hit": 21 } }
 			],
-			"chargeFrames": {
-				"swap": 45,
-				"N": 66,
-				"Q": 67
-			},
+			"chargeFrames": { "anim": 44, "N": 66, "Q": 67, "swap": 45 },
 			"sections": [
 				{
 					"type": "normal",
@@ -90,36 +52,13 @@
 			"name": "Swift Hunt",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"infusion": "electro",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 8,
-						"N": 18,
-						"C": 18
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 8,
-						"N": 17,
-						"C": 17
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 9,
-						"N": 20
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 18, "E": 11, "Q": 10, "D": 8, "J": 8, "swap": 8 } },
+				{ "name": "N2", "frames": { "anim": 17, "E": 10, "Q": 10, "D": 8, "J": 8, "swap": 8 } },
+				{ "name": "N3", "frames": { "anim": 20, "E": 11, "Q": 11, "D": 9, "J": 9, "swap": 9 } }
 			],
 			"description": "Clorinde's normal-attack chain while in the Night Vigil stance. Replaces the standard 5-hit string with a 3-hit pistolet shot cycle. All hits deal Electro DMG that cannot be overridden by infusions, and Charged Attacks are disabled while in stance.",
 			"_curatorNotes": [
@@ -134,12 +73,7 @@
 			"name": "Hunter's Vigil",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": {
-				"swap": 25,
-				"N": 31,
-				"D": 6,
-				"J": 25
-			},
+			"frames": { "anim": 33, "N": 31, "E": 32, "D": 6, "J": 25, "swap": 25 },
 			"cooldown": 16,
 			"cooldownStartDelay": 6,
 			"duration": 7.5,
@@ -160,24 +94,16 @@
 				"Night Vigil healing conversion (gcsim heal.go ReceiveHeal): while the stance is active, incoming heals from other sources (any heal whose Message is not prefixed 'Impale the Night') are suppressed and converted to Bond of Life at healingBOL=0.80, raised to 1.0 at A4+ (Lawful Remuneration; DEFAULT_ASCENSION=4). Conversion not modeled (Bond of Life untracked).",
 				"tags ['heal', 'summon'] retained from generator. The 'heal' tag remains the honest capability signal (self-heal, size untrackable — see caveat). The 'summon' tag corresponds to the Arkhe: Ousia Surging Blade (periodic Electro proc on Swift Hunt hits — gcsim arkheCD, hitmark 42f); not authored as a summons[] entry and out of scope for this heal-tag pass.",
 				"[A7] Impale the Night self-heal scales with current Bond of Life (largest at full BoL, none at 0%) — dropped from the caveat as kit explanation per style guide; size stays untrackable without a BoL primitive."
-			]
+			],
+			"application": []
 		},
 		{
 			"id": "clorinde__skill__impale_the_night",
 			"name": "Impale the Night",
 			"input": ["E"],
 			"abilityType": "skill",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
-			"frames": {
-				"swap": 42,
-				"N": 24,
-				"Q": 24,
-				"D": 25,
-				"J": 25
-			},
+			"conditions": { "type": "state", "state": "inStance" },
+			"frames": { "anim": 43, "N": 24, "E": 24, "Q": 24, "D": 25, "J": 25, "swap": 42 },
 			"cooldown": 0,
 			"description": "In-stance E variant. While Night Vigil is active, casting E performs a lunging strike (Impale the Night). DMG and healing scale with Clorinde's current Bond of Life percentage; at ≥100% BoL, the lunge becomes 'Impale the Night: Pact' (3-hit + heal).",
 			"behavior": "instant",
@@ -187,17 +113,15 @@
 				"cooldown: 0 — Impale the Night has no independent CD. gcsim only calls SetCDWithDelay on the stance-activation cast, not on Impale; while the stance is active, E presses fire Impale freely. Each ability has its own ability id and therefore its own charge queue, so cooldown: 0 means 'always available' which is the correct semantic.",
 				"No stanceExtension — Impale does not extend the Night Vigil window in gcsim.",
 				"C6 Glimbright Shade trigger: 'when Clorinde uses Impale the Night: Pact' is one of the C6 proc conditions — flagged on the C6 constellation, not authored here."
-			]
+			],
+			"application": [{ "frame": 11, "element": "electro" }]
 		},
 		{
 			"id": "clorinde__burst__last_lightfall",
 			"name": "Last Lightfall",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": {
-				"swap": 127,
-				"D": 127
-			},
+			"frames": { "anim": 128, "N": 127, "E": 127, "D": 127, "swap": 127 },
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
@@ -209,6 +133,13 @@
 				"In-stance burst variant: gcsim has a separate burstSkillStateFrames slice used when skillStateKey is active — explicit ActionAttack=127, ActionSkill=127, ActionDash=127, ActionSwap=127. Schema has no condition for casting Q while in stance with different frames; values are nearly identical to the base (N/E rise from anim 128 → explicit 127). Flagged here; reviewer to decide if a state-conditioned variant is warranted.",
 				"Burst grants Bond of Life: gcsim ModifyHPDebtByRatio(burstBOL[8] = 1.14) — 114% max HP at talent 9. Not authored (BoL not modeled).",
 				"Burst hitmarks (5-hit AoE): [97, 103, 109, 115, 121]. Single damage scalar per hit (burstDamage[talent]); recorded conceptually as one damage event in the planner."
+			],
+			"application": [
+				{ "frame": 97, "element": "electro" },
+				{ "frame": 103, "element": "electro" },
+				{ "frame": 109, "element": "electro" },
+				{ "frame": 115, "element": "electro" },
+				{ "frame": 121, "element": "electro" }
 			]
 		}
 	],
@@ -221,9 +152,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 15,
 					"scaling": 20,
 					"stat": "atk",
@@ -244,9 +173,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -271,9 +198,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 30,
 					"stat": "atk",
 					"element": "electro"
@@ -352,9 +277,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -365,9 +288,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -378,9 +299,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 200,
 					"stat": "atk",
 					"element": "electro"

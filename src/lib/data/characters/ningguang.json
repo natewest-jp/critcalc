@@ -20,13 +20,17 @@
 				"Multi-variant charge attack: chargeFrames records the Left variant (used after Left/Twirl normals when entering from NormalAttackState). Right variant (after Right normal): {swap:67, N:68, E:72, Q:69, D:54, J:54}. Twirl variant (from random/non-normal state): {swap:76, N:76, E:77, Q:77, D:61, J:62}. Raw base values recorded (windup=0). At runtime gcsim subtracts 15 frames when entering from NormalAttackState or ChargeAttackState — reviewer to decide whether post-windup values should be used instead.",
 				"No plunge.go in gcsim character dir — plungeFrames not available."
 			],
-			"hits": [
-				{
-					"name": "N1",
-					"frames": { "swap": 15, "C": 42 }
-				}
-			],
-			"chargeFrames": { "swap": 46, "N": 46, "E": 48, "Q": 47, "D": 32, "J": 32 },
+			"hits": [{ "name": "N1", "frames": { "anim": 66, "hit": 13, "C": 40 } }],
+			"chargeFrames": {
+				"anim": 74,
+				"N": 68,
+				"C": 69,
+				"E": 72,
+				"Q": 69,
+				"D": 54,
+				"J": 54,
+				"swap": 67
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -56,7 +60,7 @@
 			"effects": [],
 			"description": "Ningguang creates a Jade Screen out of gold, obsidian, and her great opulence, dealing AoE Geo DMG.\n\nJade Screen\n·Blocks opponents' projectiles.\n·Endurance scales based on Ningguang's Max HP.\n\nJade Screen is considered a Geo Construct and can be used to block certain attacks, but cannot be climbed. Only one Jade Screen may exist at any one time.",
 			"behavior": "instant",
-			"frames": { "swap": 60, "D": 28, "J": 29 },
+			"frames": { "anim": 62, "D": 28, "J": 29, "swap": 60 },
 			"summons": [
 				{
 					"label": "Jade Screen",
@@ -68,7 +72,8 @@
 			"_curatorNotes": [
 				"Jade Screen construct spawns at frame 0 (Constructs.New called directly, not in a task queue). Damage hitmark is at skillHitmark=17. C2 (Shock Effect) resets skill CD when the screen is destroyed (6s ICD), including when destroyed by Starshatter (Q).",
 				"Burst (Starshatter) also destroys the active Jade Screen via c.Core.Constructs.Destroy(c.lastScreen) and fires additional gem projectiles. The terminatesOn field records only 'recast' (new E cast); reviewer to decide if 'onBurst' also warrants representation."
-			]
+			],
+			"application": []
 		},
 		{
 			"id": "ningguang__burst__starshatter",
@@ -81,7 +86,15 @@
 			"effects": [],
 			"description": "Gathering a great number of gems, Ningguang scatters them all at once, sending homing projectiles at her opponents that deal massive Geo DMG.\nIf Starshatter is cast when a Jade Screen is nearby, the Jade Screen will fire additional gem projectiles at the same time.",
 			"behavior": "instant",
-			"frames": { "swap": 98, "D": 99, "J": 100 }
+			"frames": { "anim": 127, "D": 99, "J": 100, "swap": 98 },
+			"application": [
+				{ "frame": 62, "element": "geo" },
+				{ "frame": 97, "element": "geo" },
+				{ "frame": 106, "element": "geo" },
+				{ "frame": 110, "element": "geo" },
+				{ "frame": 116, "element": "geo" },
+				{ "frame": 124, "element": "geo" }
+			]
 		}
 	],
 	"passives": [
@@ -102,9 +115,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",

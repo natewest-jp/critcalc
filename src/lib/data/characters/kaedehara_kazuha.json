@@ -15,74 +15,19 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 16,
-						"C": 21
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 11,
-						"N": 20,
-						"C": 20
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 25,
-						"N": 33,
-						"C": 31
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 15,
-						"N": 38,
-						"C": 35
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 27,
-						"N": 72
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 21, "hit": 13 } },
+				{ "name": "N2", "frames": { "anim": 20, "hit": 11 } },
+				{ "name": "N3", "frames": { "anim": 33, "hit": 25, "C": 31 } },
+				{ "name": "N4", "frames": { "anim": 38, "hit": 15, "C": 35 } },
+				{ "name": "N5", "frames": { "anim": 72, "hit": 27 } }
 			],
-			"chargeFrames": {
-				"swap": 28,
-				"N": 55,
-				"E": 30,
-				"Q": 30,
-				"D": 20,
-				"J": 20
-			},
-			"plungeFrames": {
-				"swap": 50,
-				"N": 55,
-				"E": 56,
-				"Q": 55,
-				"D": 43,
-				"J": 50
-			},
+			"chargeFrames": { "anim": 55, "E": 30, "Q": 30, "D": 20, "J": 20, "swap": 28 },
+			"plungeFrames": { "anim": 73, "N": 54, "E": 53, "Q": 53, "D": 47, "J": 69, "swap": 55 },
 			"plungeVariants": [
 				{
 					"label": "After Hold E",
 					"input": ["hE"],
-					"frames": {
-						"swap": 54,
-						"N": 61,
-						"E": 60,
-						"Q": 60,
-						"D": 48,
-						"J": 55
-					}
+					"frames": { "anim": 54, "N": 61, "E": 60, "Q": 60, "D": 48, "J": 55, "swap": 54 }
 				}
 			],
 			"sections": [
@@ -105,17 +50,15 @@
 			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact. If this Plunging Attack is triggered by Chihayaburu, it will be converted to Plunging Attack: Midare Ranzan.\n\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG and will create a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents.",
 			"_curatorNotes": [
 				"[A7] Base plungeFrames represent the Press-E plunge path (plungePressFrames in gcsim, hitmark 36f); the 'After Hold E' plungeVariant represents plungeHoldFrames (hitmark 41f). The plunge variant is auto-selected from whichever E token (Press vs Hold) preceded P in the notation string."
-			]
+			],
+			"lowPlungeFrames": { "anim": 73, "N": 52, "E": 52, "Q": 51, "D": 46, "J": 69, "swap": 53 }
 		},
 		{
 			"id": "kaedehara_kazuha__skill__chihayaburu",
 			"name": "Chihayaburu",
 			"input": ["E", "tE", "pE"],
 			"abilityType": "skill",
-			"frames": {
-				"swap": 77,
-				"P": 24
-			},
+			"frames": { "anim": 77, "P": 24 },
 			"cooldown": 6,
 			"cooldownStartDelay": 8,
 			"cooldownModifiers": [
@@ -123,10 +66,7 @@
 					"source": "C1: Scarlet Hills",
 					"type": "percent",
 					"value": -10,
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					}
+					"conditions": { "type": "constellation", "level": 1 }
 				}
 			],
 			"caveat": "Shown timing assumes a standard cast; glide-canceling into the burst or a swap (common in practice) is faster and is not modeled.",
@@ -135,10 +75,7 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": {
-						"swap": 175,
-						"P": 58
-					},
+					"frames": { "anim": 175, "P": 58 },
 					"cooldown": 9,
 					"cooldownStartDelay": 31,
 					"cooldownModifiers": [
@@ -146,46 +83,35 @@
 							"source": "C1: Scarlet Hills",
 							"type": "percent",
 							"value": -10,
-							"conditions": {
-								"type": "constellation",
-								"level": 1
-							}
+							"conditions": { "type": "constellation", "level": 1 }
 						}
 					],
-					"behavior": "instant"
+					"behavior": "instant",
+					"application": [{ "frame": 33, "element": "anemo" }]
 				}
 			],
 			"description": "Unleashes a secret technique as fierce as the rushing wind that pulls objects and opponents towards Kazuha's current position before launching opponents within the AoE, dealing Anemo DMG and lifting Kazuha into the air on a rushing gust of wind.\nWithin 10s of remaining airborne after casting Chihayaburu, Kazuha can unleash a powerful Plunging Attack known as Midare Ranzan.\n\nPress\nCan be used in mid-air.\n\nHold\nCharges up before unleashing greater Anemo DMG over a larger AoE than Press Mode.\n\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG. On landing, Kazuha creates a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents.\nMidare Ranzan's DMG is considered Plunging Attack DMG.",
 			"behavior": "instant",
 			"_curatorNotes": [
 				"[A7] Glide-cancel path frames (common when going E→Q or E→swap): swap=60, Q=61, D=61, J=59. Not authored as a separate cast/plunge variant."
-			]
+			],
+			"application": [{ "frame": 10, "element": "anemo" }]
 		},
 		{
 			"id": "kaedehara_kazuha__burst__kazuha_slash",
 			"name": "Kazuha Slash",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": {
-				"swap": 90,
-				"N": 92,
-				"E": 92,
-				"D": 92,
-				"J": 93
-			},
+			"frames": { "anim": 93, "N": 92, "E": 92, "D": 92, "swap": 90 },
 			"cooldown": 15,
 			"tags": ["summon"],
 			"energyCost": 60,
 			"summons": [
-				{
-					"label": "Autumn Whirlwind",
-					"duration": 8,
-					"spawnsAt": 82,
-					"mobility": "stationary"
-				}
+				{ "label": "Autumn Whirlwind", "duration": 8, "spawnsAt": 82, "mobility": "stationary" }
 			],
 			"description": "The signature technique of Kazuha's self-styled bladework — a single slash that strikes with the force of the first winds of autumn, dealing AoE Anemo DMG.\nThe blade's passage will leave behind a field named \"Autumn Whirlwind\" that periodically deals AoE Anemo DMG to opponents within its range.\n\nElemental Absorption\nIf Autumn Whirlwind comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"application": [{ "frame": 82, "element": "anemo" }]
 		}
 	],
 	"passives": [
@@ -204,73 +130,45 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "pyroSwirl"
-					},
+					"trigger": { "type": "onReaction", "reaction": "pyroSwirl" },
 					"duration": 8,
 					"durationType": "refresh",
 					"source": "character",
 					"stat": "pyroDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "em",
-						"ratio": 0.04
-					},
+					"value": { "type": "scaling", "stat": "em", "ratio": 0.04 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "hydroSwirl"
-					},
+					"trigger": { "type": "onReaction", "reaction": "hydroSwirl" },
 					"duration": 8,
 					"durationType": "refresh",
 					"source": "character",
 					"stat": "hydroDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "em",
-						"ratio": 0.04
-					},
+					"value": { "type": "scaling", "stat": "em", "ratio": 0.04 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "cryoSwirl"
-					},
+					"trigger": { "type": "onReaction", "reaction": "cryoSwirl" },
 					"duration": 8,
 					"durationType": "refresh",
 					"source": "character",
 					"stat": "cryoDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "em",
-						"ratio": 0.04
-					},
+					"value": { "type": "scaling", "stat": "em", "ratio": 0.04 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "electroSwirl"
-					},
+					"trigger": { "type": "onReaction", "reaction": "electroSwirl" },
 					"duration": 8,
 					"durationType": "refresh",
 					"source": "character",
 					"stat": "electroDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "em",
-						"ratio": 0.04
-					},
+					"value": { "type": "scaling", "stat": "em", "ratio": 0.04 },
 					"snapshottable": false
 				}
 			]
@@ -288,15 +186,9 @@
 					"type": "cdReset",
 					"source": "character",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"resets": "skill",
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					}
+					"conditions": { "type": "constellation", "level": 1 }
 				}
 			],
 			"_curatorNotes": [
@@ -313,20 +205,14 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
 					"value": 200,
 					"snapshottable": false,
-					"conditions": {
-						"type": "constellation",
-						"level": 2
-					}
+					"conditions": { "type": "constellation", "level": 2 }
 				}
 			]
 		},
@@ -364,79 +250,47 @@
 				{
 					"type": "infuse",
 					"target": "self",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 5,
 					"durationType": "fixed",
 					"element": "anemo",
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					}
+					"conditions": { "type": "constellation", "level": 6 }
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 5,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "normalDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "em",
-						"ratio": 0.2
-					},
+					"value": { "type": "scaling", "stat": "em", "ratio": 0.2 },
 					"snapshottable": false,
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					}
+					"conditions": { "type": "constellation", "level": 6 }
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 5,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "chargeDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "em",
-						"ratio": 0.2
-					},
+					"value": { "type": "scaling", "stat": "em", "ratio": 0.2 },
 					"snapshottable": false,
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					}
+					"conditions": { "type": "constellation", "level": 6 }
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 5,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "plungeDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "em",
-						"ratio": 0.2
-					},
+					"value": { "type": "scaling", "stat": "em", "ratio": 0.2 },
 					"snapshottable": false,
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					}
+					"conditions": { "type": "constellation", "level": 6 }
 				}
 			]
 		}

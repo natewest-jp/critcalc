@@ -16,21 +16,12 @@
 			"abilityType": "normal",
 			"tags": ["summon"],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": { "swap": 14, "N": 16 }
-				},
-				{
-					"name": "N2",
-					"frames": { "swap": 22, "N": 36 }
-				},
-				{
-					"name": "N3",
-					"frames": { "swap": 33, "N": 79, "C": 74 }
-				}
+				{ "name": "N1", "frames": { "anim": 28, "hit": 14, "N": 16 } },
+				{ "name": "N2", "frames": { "anim": 40, "hit": 22, "N": 36 } },
+				{ "name": "N3", "frames": { "anim": 79, "hit": 33, "C": 74 } }
 			],
-			"chargeFrames": { "swap": 94, "D": 46, "J": 47 },
-			"plungeFrames": { "swap": 50, "N": 58, "E": 58, "Q": 58, "D": 46 },
+			"chargeFrames": { "anim": 96, "C": 95, "D": 46, "J": 47, "swap": 94 },
+			"plungeFrames": { "anim": 68, "N": 60, "C": 51, "E": 60, "Q": 60, "D": 49, "swap": 52 },
 			"sections": [
 				{
 					"type": "normal",
@@ -55,7 +46,8 @@
 				"Charged-attack hitmark = 90 (gcsim). The CA fires 5 sequential damage instances 9 frames apart, all with the same ICDGroup; this is one notation 'C' action.",
 				"Plunge frames sourced from gcsim's lowPlungeFrames. ActionJump is not explicitly set in lowPlungeFrames (defaults to 66 = AnimationLength) — J omitted per recipe. High plunge variant exists in gcsim but is not represented per recipe.",
 				"gcsim restricts plunge to AirborneXianyun-launched only — this is a sim limitation, not an in-game one. In-game any post-jump plunge works."
-			]
+			],
+			"lowPlungeFrames": { "anim": 66, "N": 58, "C": 48, "E": 58, "Q": 58, "D": 46, "swap": 50 }
 		},
 		{
 			"id": "yae_miko__skill__yakan_evocation_sesshou_sakura",
@@ -63,7 +55,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 20, "Q": 36, "D": 20, "J": 20 },
+			"frames": { "anim": 37, "C": 36, "Q": 36, "D": 20, "J": 20, "swap": 20 },
 			"cooldown": 4,
 			"cooldownStartDelay": 16,
 			"charges": 3,
@@ -78,11 +70,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2.933,
-								"firstTickDelay": 1.433
-							},
+							"trigger": { "type": "summonTick", "interval": 2.933, "firstTickDelay": 1.433 },
 							"scaling": 170.64,
 							"stat": "atk",
 							"element": "electro"
@@ -103,7 +91,8 @@
 				"Each E cast plants an independent totem with its own tick schedule — the per-cast summon bar with its own summonTick markers is the correct rendering.",
 				"Particle generation: 1 Electro particle per Sesshou Sakura tick that hits an enemy, ICD 2.5s (gcsim particleICDKey).",
 				"[Stellar] No current-patch change to this talent: the Fandom talent page for Yakan Evocation: Sesshou Sakura carries NO `buff` field (unlike her A1/C1/C2/C4/C6 pages), and its Change History still reads 2.5. game8's claimed '+10s Sesshou Sakura duration' is unsupported — the infobox `|duration = 14s`, the Talent Scaling `duration=14s` and the Gameplay Note ('5 strikes over their 14 seconds duration') all read 14s. The infobox's stray `|value5 = 15s` row contradicts its own duration field and is treated as a wiki typo, not evidence. Summon duration left at 14."
-			]
+			],
+			"application": []
 		},
 		{
 			"id": "yae_miko__burst__great_secret_art_tenko_kenshin",
@@ -111,7 +100,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 101, "N": 112, "E": 113, "D": 103, "J": 104 },
+			"frames": { "anim": 114, "N": 112, "E": 113, "D": 103, "J": 104, "swap": 101 },
 			"cooldown": 22,
 			"tags": ["summon"],
 			"energyCost": 90,
@@ -121,7 +110,8 @@
 				"Burst is instant, not persistent — the existing `behavior: 'persistent'` stub from the generator is corrected per recipe. The burst fires an initial AoE strike at frame 100 (burstHitmark) and one Tenko Thunderbolt per existing Sesshou Sakura totem at burstThunderbolt1Hitmark (154) + i*24 frames. All thunderbolts are instant damage instances; no entity persists.",
 				"Burst consumes 2 energy on cast (gcsim ConsumeEnergy(2)) — reviewer to confirm whether this is a cost adjustment or post-cast drain; not authored as an effect.",
 				"All existing Sesshou Sakura are destroyed by burst (popAllKitsune). The thunderbolt count = totem count at cast time."
-			]
+			],
+			"application": [{ "frame": 100, "element": "electro" }]
 		}
 	],
 	"passives": [
@@ -146,9 +136,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -221,10 +209,7 @@
 				{
 					"type": "buff",
 					"target": ["self", "active"],
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 14,
 					"durationType": "refresh",
 					"source": "character",
@@ -256,9 +241,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 5,
 					"durationType": "fixed",
 					"source": "character",
@@ -269,18 +252,14 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"procCooldown": 5,
 					"amount": 8
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "burstDmgBonus",
 					"value": 100,

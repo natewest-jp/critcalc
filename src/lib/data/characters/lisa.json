@@ -22,13 +22,13 @@
 				"Lisa's plunge in gcsim is only available via Xianyun AirborneXianyun state; standard low/high plunge returns an error. Frames still recorded from the gcsim slice."
 			],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 26 } },
-				{ "name": "N2", "frames": { "swap": 18, "N": 20 } },
-				{ "name": "N3", "frames": { "swap": 17, "C": 34 } },
-				{ "name": "N4", "frames": { "swap": 31 } }
+				{ "name": "N1", "frames": { "anim": 30, "hit": 26 } },
+				{ "name": "N2", "frames": { "anim": 24, "hit": 18, "N": 20 } },
+				{ "name": "N3", "frames": { "anim": 40, "hit": 17, "C": 34 } },
+				{ "name": "N4", "frames": { "anim": 57, "hit": 31 } }
 			],
-			"chargeFrames": { "swap": 90, "N": 91, "D": 70, "J": 70 },
-			"plungeFrames": { "swap": 50, "N": 58, "E": 58, "Q": 57, "D": 45 },
+			"chargeFrames": { "anim": 93, "N": 91, "C": 90, "D": 70, "J": 70, "swap": 90 },
+			"plungeFrames": { "anim": 68, "N": 60, "C": 51, "E": 58, "Q": 59, "D": 47, "swap": 52 },
 			"sections": [
 				{
 					"type": "normal",
@@ -46,7 +46,8 @@
 					"description": "Gathering the might of Electro, Lisa plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Electro DMG upon impact with the ground."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 lightning attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Electro, Lisa plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Electro DMG upon impact with the ground."
+			"description": "Normal Attack\nPerforms up to 4 lightning attacks that deal Electro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina to deal AoE Electro DMG after a short casting time.\n\nPlunging Attack\nGathering the might of Electro, Lisa plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Electro DMG upon impact with the ground.",
+			"lowPlungeFrames": { "anim": 67, "N": 58, "C": 48, "E": 58, "Q": 57, "D": 45, "swap": 50 }
 		},
 		{
 			"id": "lisa__skill__violet_arc",
@@ -54,28 +55,30 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 20, "N": 37, "D": 35, "J": 20 },
+			"frames": { "anim": 40, "N": 37, "C": 38, "D": 35, "J": 20, "swap": 20 },
 			"cooldown": 1,
 			"cooldownStartDelay": 17,
 			"variants": [
 				{
 					"label": "Press",
 					"input": ["E"],
-					"frames": { "swap": 20, "N": 37, "D": 35, "J": 20 },
+					"frames": { "anim": 20, "N": 37, "D": 35, "J": 20, "swap": 20 },
 					"cooldown": 1,
 					"cooldownStartDelay": 17
 				},
 				{
 					"label": "Holding",
 					"input": ["hE"],
-					"frames": { "swap": 117, "Q": 138, "D": 116, "J": 117 },
+					"frames": { "anim": 143, "C": 138, "Q": 138, "D": 116, "J": 117, "swap": 117 },
 					"cooldown": 16,
-					"cooldownStartDelay": 114
+					"cooldownStartDelay": 114,
+					"application": [{ "frame": 117, "element": "electro" }]
 				}
 			],
 			"tags": [],
 			"effects": [],
-			"description": "Channels the power of lightning to sweep bothersome matters away.\n\nPress\nReleases a homing Lightning Orb.\nOn hit, it deals Electro DMG and applies a stack of the Conductive status (max 3 stacks) to opponents in a small AoE.\n\nHold\nAfter an extended casting time, calls down lightning from the heavens, dealing massive Electro DMG to all nearby opponents.\nDeals great amounts of extra damage to opponents based on the number of Conductive stacks applied to them, and clears their Conductive status."
+			"description": "Channels the power of lightning to sweep bothersome matters away.\n\nPress\nReleases a homing Lightning Orb.\nOn hit, it deals Electro DMG and applies a stack of the Conductive status (max 3 stacks) to opponents in a small AoE.\n\nHold\nAfter an extended casting time, calls down lightning from the heavens, dealing massive Electro DMG to all nearby opponents.\nDeals great amounts of extra damage to opponents based on the number of Conductive stacks applied to them, and clears their Conductive status.",
+			"application": [{ "frame": 22, "element": "electro" }]
 		},
 		{
 			"id": "lisa__burst__lightning_rose",
@@ -83,25 +86,21 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 56, "N": 86, "E": 87, "J": 57 },
+			"frames": { "anim": 88, "N": 86, "C": 86, "E": 87, "J": 57, "swap": 56 },
 			"cooldown": 20,
 			"cooldownStartDelay": 53,
 			"tags": ["summon"],
 			"energyCost": 80,
 			"summons": [
-				{
-					"label": "Lightning Rose",
-					"duration": 15,
-					"spawnsAt": 119,
-					"mobility": "stationary"
-				}
+				{ "label": "Lightning Rose", "duration": 15, "spawnsAt": 119, "mobility": "stationary" }
 			],
 			"_curatorNotes": [
 				"Lightning Rose fires an initial discharge ('Lightning Rose (Initial)', no ICD) at burstHitmark=56. Periodic ticks ('Lightning Rose (Tick)') start at firstTick=119, every 30 frames for 900 frames (15s). spawnsAt set to 119 per recipe burst-loop guidance; the initial hit at frame 56 is not separately represented in summons[].",
 				"C4: each Lightning Rose tick fires 1–3 discharges instead of 1, count is probabilistic based on enemy count and prior discharge count (Markov chain). Effect not modeled — needs reviewer pass."
 			],
 			"effects": [],
-			"description": "Summons a Lightning Rose that unleashes powerful lightning bolts, launching surrounding opponents and dealing Electro DMG.\nThe Lightning Rose will continuously emit lightning to knock back opponents and deal Electro DMG throughout the ability's duration."
+			"description": "Summons a Lightning Rose that unleashes powerful lightning bolts, launching surrounding opponents and dealing Electro DMG.\nThe Lightning Rose will continuously emit lightning to knock back opponents and deal Electro DMG throughout the ability's duration.",
+			"application": [{ "frame": 56, "element": "electro" }]
 		}
 	],
 	"passives": [
@@ -123,10 +122,7 @@
 					"type": "resShred",
 					"shredStat": "def",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"conditions": { "type": "ascension", "min": 4 },
 					"duration": 25,
 					"value": -15
@@ -148,14 +144,7 @@
 				"trigger: 'manual' inherited from generator. Likely onHit with ability: 'skill' restricted to Hold variant only; 2 energy per enemy hit, max 5 procs per cast (10 energy total per description). gcsim uses a counter capped at 5 and fires energy restore at 0.4s (24 frame) delay per hit. Reviewer to update trigger."
 			],
 			"effects": [
-				{
-					"type": "energy",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"amount": 2
-				}
+				{ "type": "energy", "target": "self", "trigger": { "type": "manual" }, "amount": 2 }
 			],
 			"description": "Lisa regenerates 2 Energy for every opponent hit while holding Violet Arc.\nA maximum of 10 Energy can be regenerated in this manner at any one time."
 		},

@@ -20,12 +20,12 @@
 				"N4 ActionCharge=500 in gcsim attack.go, marked as 'TODO: this action is illegal' — omitted from hits[3].frames."
 			],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 11, "N": 23, "C": 27 } },
-				{ "name": "N2", "frames": { "swap": 12, "N": 26, "C": 28 } },
-				{ "name": "N3", "frames": { "swap": 25, "N": 33, "C": 36 } },
-				{ "name": "N4", "frames": { "swap": 33, "N": 64 } }
+				{ "name": "N1", "frames": { "anim": 33, "hit": 11, "N": 23, "C": 27 } },
+				{ "name": "N2", "frames": { "anim": 33, "hit": 12, "N": 26, "C": 28 } },
+				{ "name": "N3", "frames": { "anim": 46, "hit": 25, "N": 33, "C": 36 } },
+				{ "name": "N4", "frames": { "anim": 67, "hit": 33, "N": 64 } }
 			],
-			"chargeFrames": { "swap": 57, "N": 58, "E": 58, "Q": 58, "D": 27, "J": 27 },
+			"chargeFrames": { "anim": 65, "N": 58, "E": 58, "Q": 58, "D": 27, "J": 27, "swap": 57 },
 			"sections": [
 				{
 					"type": "normal",
@@ -51,7 +51,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 24, "D": 23, "J": 25 },
+			"frames": { "anim": 31, "D": 23, "J": 25, "swap": 24 },
 			"cooldown": 15,
 			"cooldownStartDelay": 18,
 			"tags": ["heal"],
@@ -77,10 +77,18 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "swap": 23, "N": 25, "D": 21, "J": 23 }
+					"frames": { "anim": 26, "N": 25, "D": 21, "J": 23, "swap": 23 },
+					"application": [
+						{ "frame": 19, "element": "pyro" },
+						{ "frame": 55, "element": "pyro" }
+					]
 				}
 			],
-			"description": "Chevreuse quickly shoulders her musket and fires at her opponent(s), dealing AoE Pyro DMG.\nFor a short duration after Chevreuse fires a shot, she will continuously restore HP to your active character on the field. The amount healed is based on her Max HP.\nHold to fire in a different fashion.\n\nHold\nEnter Aiming Mode, locking a target in her sights to fire a precise interdiction shot. If Chevreuse has an Overcharged Ball, then she will fire the Overcharged Ball instead, dealing greater Pyro DMG in a larger area.\nChevreuse gains 1 Overcharged Ball every time a nearby character in the party triggers an Overloaded reaction, and can have up to 1 Overcharged Ball at a time.\n\nArkhe: Ousia\nPeriodically, after Chevreuse's Short-Range Rapid Interdiction Fire hits, a Surging Blade will be called forth that deals Ousia-aligned Pyro DMG."
+			"description": "Chevreuse quickly shoulders her musket and fires at her opponent(s), dealing AoE Pyro DMG.\nFor a short duration after Chevreuse fires a shot, she will continuously restore HP to your active character on the field. The amount healed is based on her Max HP.\nHold to fire in a different fashion.\n\nHold\nEnter Aiming Mode, locking a target in her sights to fire a precise interdiction shot. If Chevreuse has an Overcharged Ball, then she will fire the Overcharged Ball instead, dealing greater Pyro DMG in a larger area.\nChevreuse gains 1 Overcharged Ball every time a nearby character in the party triggers an Overloaded reaction, and can have up to 1 Overcharged Ball at a time.\n\nArkhe: Ousia\nPeriodically, after Chevreuse's Short-Range Rapid Interdiction Fire hits, a Surging Blade will be called forth that deals Ousia-aligned Pyro DMG.",
+			"application": [
+				{ "frame": 25, "element": "pyro" },
+				{ "frame": 59, "element": "pyro" }
+			]
 		},
 		{
 			"id": "chevreuse__burst__ring_of_bursting_grenades",
@@ -88,12 +96,23 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 56, "N": 57, "E": 59, "D": 57, "J": 57 },
+			"frames": { "anim": 61, "N": 57, "E": 59, "D": 57, "J": 57, "swap": 56 },
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
-			"description": "Chevreuse fires an explosive grenade at opponents with her musket, dealing AoE Pyro DMG. After the projectile hits, it will split into many secondary explosive shells.\nThe secondary explosive shells will burst after a short interval, dealing Pyro DMG to nearby opponents."
+			"description": "Chevreuse fires an explosive grenade at opponents with her musket, dealing AoE Pyro DMG. After the projectile hits, it will split into many secondary explosive shells.\nThe secondary explosive shells will burst after a short interval, dealing Pyro DMG to nearby opponents.",
+			"application": [
+				{ "frame": 59, "element": "pyro" },
+				{ "frame": 83, "element": "pyro" },
+				{ "frame": 92, "element": "pyro" },
+				{ "frame": 92, "element": "pyro" },
+				{ "frame": 101, "element": "pyro" },
+				{ "frame": 101, "element": "pyro" },
+				{ "frame": 110, "element": "pyro" },
+				{ "frame": 110, "element": "pyro" },
+				{ "frame": 119, "element": "pyro" }
+			]
 		}
 	],
 	"passives": [
@@ -108,10 +127,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "overloaded"
-					},
+					"trigger": { "type": "onReaction", "reaction": "overloaded" },
 					"duration": 6,
 					"element": "electro",
 					"value": -40
@@ -119,10 +135,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "overloaded"
-					},
+					"trigger": { "type": "onReaction", "reaction": "overloaded" },
 					"duration": 6,
 					"element": "pyro",
 					"value": -40
@@ -142,9 +155,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 30,
 					"durationType": "fixed",
 					"source": "character",
@@ -229,18 +240,14 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 10,
 					"stat": "hp"
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
@@ -251,9 +258,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",

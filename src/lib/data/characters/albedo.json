@@ -17,54 +17,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 12,
-						"N": 14,
-						"C": 23
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 11,
-						"N": 22,
-						"C": 21
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 17,
-						"N": 32,
-						"C": 41
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 17,
-						"N": 34,
-						"C": 36
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 27,
-						"N": 62
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 14, "hit": 12, "C": 23 } },
+				{ "name": "N2", "frames": { "anim": 22, "hit": 11, "C": 21 } },
+				{ "name": "N3", "frames": { "anim": 32, "hit": 17, "C": 41 } },
+				{ "name": "N4", "frames": { "anim": 34, "hit": 17, "C": 36 } },
+				{ "name": "N5", "frames": { "anim": 27, "N": 62, "swap": 27 } }
 			],
-			"chargeFrames": {
-				"swap": 33,
-				"N": 56,
-				"E": 34,
-				"Q": 34,
-				"D": 20,
-				"J": 20
-			},
+			"chargeFrames": { "anim": 56, "E": 34, "Q": 34, "D": 20, "J": 20, "swap": 33 },
 			"_curatorNotes": [
 				"N5 swap=27 reflects the actual N5 hitmark; gcsim's attackFrames[4] passes attackHitmarks[3]=17 into InitNormalCancelSlice, which would cancel before the hit lands — likely a typo in the gcsim source (should be attackHitmarks[4]=27). Cross-checked against the FrameMap convention (final-hit swap = last hitmark)."
 			],
@@ -93,13 +52,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 31,
-				"N": 32,
-				"Q": 33,
-				"D": 29,
-				"J": 28
-			},
+			"frames": { "anim": 33, "N": 32, "D": 29, "J": 28, "swap": 31 },
 			"cooldown": 4,
 			"cooldownStartDelay": 23,
 			"tags": ["summon", "coordinatedAttack"],
@@ -121,7 +74,8 @@
 				"Construct also acts as a climbable platform / blocker; not relevant for the planner.",
 				"[A7] Dropped from the user caveat for length: the emissions are on-hit-from-summon (they trigger when a hit lands inside the construct's field, not on a periodic tick). Mechanism already detailed in the curator notes above."
 			],
-			"description": "Albedo creates a Solar Isotoma using alchemy, which deals AoE Geo DMG on appearance.\n\nSolar Isotoma\nhas the following properties:\n·When opponents within the Solar Isotoma field take DMG, the Solar Isotoma will generate Transient Blossoms which deal AoE Geo DMG. DMG dealt scales off Albedo's DEF. \n·Transient Blossoms can only be generated once every 2s.\n·When a character is located at the locus of the Solar Isotoma, the Solar Isotoma will accumulate Geo power to form a crystallized platform that lifts the character up to a certain height. Only one crystallized platform can exist at a time.\n·Solar Isotoma is considered a Geo construct. Only one Solar Isotoma created by Albedo himself can exist at a time. \n\nHold to designate the location of the skill."
+			"description": "Albedo creates a Solar Isotoma using alchemy, which deals AoE Geo DMG on appearance.\n\nSolar Isotoma\nhas the following properties:\n·When opponents within the Solar Isotoma field take DMG, the Solar Isotoma will generate Transient Blossoms which deal AoE Geo DMG. DMG dealt scales off Albedo's DEF. \n·Transient Blossoms can only be generated once every 2s.\n·When a character is located at the locus of the Solar Isotoma, the Solar Isotoma will accumulate Geo power to form a crystallized platform that lifts the character up to a certain height. Only one crystallized platform can exist at a time.\n·Solar Isotoma is considered a Geo construct. Only one Solar Isotoma created by Albedo himself can exist at a time. \n\nHold to designate the location of the skill.",
+			"application": [{ "frame": 25, "element": "geo" }]
 		},
 		{
 			"id": "albedo__burst__rite_of_progeniture_tectonic_tide",
@@ -129,13 +83,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 93,
-				"N": 96,
-				"E": 96,
-				"D": 95,
-				"J": 94
-			},
+			"frames": { "anim": 96, "D": 95, "J": 94, "swap": 93 },
 			"cooldown": 12,
 			"cooldownStartDelay": 74,
 			"tags": [],
@@ -145,7 +93,8 @@
 				"Burst fires in two phases: Tectonic Tide initial hit at frame 75, then up to 7 Fatal Blossoms starting at frame 145 (each 5 frames apart) — but only if Solar Isotoma is active. Both phases happen inside the cast animation so we author as instant; per-blossom timing is not separately rendered.",
 				"Cancel frames (swap 93 / D 95 / J 94) reflect the full burst animation, not the initial hit at 75. Albedo can be swapped earlier in practice via the construct's queueing — gcsim's CanQueueAfter is burstFrames[ActionSwap]=93, treating that as the canonical animation length."
 			],
-			"description": "Under Albedo's command, Geo crystals surge and burst forth, dealing AoE Geo DMG in front of him.\nIf a Solar Isotoma created by Albedo himself is on the field, 7 Fatal Blossoms will be generated in the Solar Isotoma field, bursting violently into bloom and dealing AoE Geo DMG.\n\nTectonic Tide DMG and Fatal Blossom DMG will not generate Transient Blossoms."
+			"description": "Under Albedo's command, Geo crystals surge and burst forth, dealing AoE Geo DMG in front of him.\nIf a Solar Isotoma created by Albedo himself is on the field, 7 Fatal Blossoms will be generated in the Solar Isotoma field, bursting violently into bloom and dealing AoE Geo DMG.\n\nTectonic Tide DMG and Fatal Blossom DMG will not generate Transient Blossoms.",
+			"application": [{ "frame": 75, "element": "geo" }]
 		}
 	],
 	"passives": [
@@ -167,10 +116,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -196,10 +142,7 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "refresh",
 					"target": "self",
@@ -268,25 +211,13 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
-					"conditions": {
-						"type": "teamFaction",
-						"faction": "hexerei",
-						"min": 2
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
 					"duration": 20,
 					"durationType": "refresh",
 					"target": "team",
 					"stat": "allDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 0.004,
-						"cap": 12
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 0.004, "cap": 12 },
 					"snapshottable": false
 				}
 			],
@@ -309,26 +240,13 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill",
-						"source": "self"
-					},
-					"conditions": {
-						"type": "teamFaction",
-						"faction": "hexerei",
-						"min": 2
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill", "source": "self" },
+					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
 					"duration": 20,
 					"durationType": "refresh",
 					"target": "team",
 					"stat": "allDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 0.01,
-						"cap": 30
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 0.01, "cap": 30 },
 					"snapshottable": false,
 					"caveat": "Only Hexerei party members get this one, and only once a Silver Isotoma exists — which needs a skill hit within 20s of an earlier skill cast. Shown on every skill hit."
 				}

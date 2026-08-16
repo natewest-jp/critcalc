@@ -20,20 +20,20 @@
 				"No plunge.go in gcsim character dir — plungeFrames not available."
 			],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": { "swap": 4, "N": 14, "C": 19 }
-				},
-				{
-					"name": "N2",
-					"frames": { "swap": 12, "N": 30 }
-				},
-				{
-					"name": "N3",
-					"frames": { "swap": 28 }
-				}
+				{ "name": "N1", "frames": { "anim": 30, "hit": 4, "N": 14, "C": 19 } },
+				{ "name": "N2", "frames": { "anim": 34, "hit": 12, "N": 30 } },
+				{ "name": "N3", "frames": { "anim": 65, "hit": 28, "C": 60 } }
 			],
-			"chargeFrames": { "swap": 62, "N": 62, "E": 62, "Q": 62, "D": 48, "J": 48 },
+			"chargeFrames": {
+				"anim": 76,
+				"N": 62,
+				"C": 62,
+				"E": 62,
+				"Q": 62,
+				"D": 48,
+				"J": 48,
+				"swap": 62
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -59,7 +59,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 61, "D": 29, "J": 29 },
+			"frames": { "anim": 61, "D": 29, "J": 29 },
 			"cooldown": 20,
 			"cooldownStartDelay": 20,
 			"tags": ["heal", "summon"],
@@ -74,11 +74,7 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2,
-								"firstTickDelay": 0
-							},
+							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 0 },
 							"scaling": 7.92,
 							"stat": "hp",
 							"flat": 932.22455
@@ -86,11 +82,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2,
-								"firstTickDelay": 0
-							},
+							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 0 },
 							"scaling": 196.54,
 							"stat": "atk",
 							"element": "hydro"
@@ -104,7 +96,8 @@
 				"Bake-Kurage Ripple DMG tick authored alongside as a summonTick damage effect (kuki heal+damage pair shape). The skillTick pulse handles both damage and heal, so the trigger is identical to the heal's. TL10: skillDmg[9]=1.965427 → 196.54% ATK (sidecar 'Ripple DMG' col 10 = 196.5%), Hydro, ICDTag None. NOTE: Bake-Kurage base DMG scales on ATK, not HP (sidecar Ripple DMG row lacks the 'Max HP' suffix; createSkillSnapshot carries no HP scaling) — a known Kokomi quirk. NOT authored on the damage tick: the burstDmgBonus FlatDmg (Ceremonial Garment '+Bake-Kurage DMG based on Max HP'), which applies only while the burst is active — that belongs to the still-unauthored Ceremonial Garment buff (see burst _curatorNotes).",
 				"C2 (The Clouds Like Waves Rippling) heal add-on: gcsim skill.go lines 111-118 resolve the C2 node's flagged shape ambiguity — the +4.5% Max HP is a heal-AMOUNT add (src += 0.045*maxhp) gated on the active char's HP ratio ≤ 0.5, i.e. a second heal effect scaling 4.5 on hp with conditions constellation:2 + recipientHpBelow:50. Left on the C2 constellation node (out of scope for this skill-heal finding) but documented here so the C2 node can be fixed."
 			],
-			"description": "Summons a \"Bake-Kurage\" created from water that can heal her allies.\nUsing this skill will apply the Wet status to Sangonomiya Kokomi.\n\nBake-Kurage\nDeals Hydro DMG to surrounding opponents and heals nearby active characters at fixed intervals. This healing is based on Kokomi's Max HP."
+			"description": "Summons a \"Bake-Kurage\" created from water that can heal her allies.\nUsing this skill will apply the Wet status to Sangonomiya Kokomi.\n\nBake-Kurage\nDeals Hydro DMG to surrounding opponents and heals nearby active characters at fixed intervals. This healing is based on Kokomi's Max HP.",
+			"application": []
 		},
 		{
 			"id": "sangonomiya_kokomi__burst__nereids_ascension",
@@ -112,7 +105,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 76, "N": 77, "E": 77 },
+			"frames": { "anim": 78, "N": 77, "C": 77, "E": 77, "swap": 76 },
 			"cooldown": 18,
 			"cooldownStartDelay": 46,
 			"tags": ["summon"],
@@ -123,7 +116,8 @@
 				"Initial Q hit at burstHitmark=49 frames (49/60 ≈ 0.82s from cast). Not authored as an effect — consistent with other burst damage entries.",
 				"A1 (Tamakushi Casket): if Bake-Kurage is active when Q is cast, Bake-Kurage duration resets to 12.5s (implemented via c.a1() called at frame 46 in burst.go). No schema representation needed — mechanic is upstream of the planner."
 			],
-			"description": "Summons the might of Watatsumi, dealing Hydro DMG to surrounding opponents, before robing Kokomi in a Ceremonial Garment made from the flowing waters of Sangonomiya.\n\nCeremonial Garment\n·Sangonomiya Kokomi's Normal Attack, Charged Attack and Bake-Kurage DMG are increased based on her Max HP.\n·When her Normal and Charged Attacks hit opponents, Kokomi will restore HP for all nearby party members, and the amount restored is based on her Max HP.\n·Increases Sangonomiya Kokomi's resistance to interruption and allows her to walk on the water's surface.\n\nThese effects will be cleared once Sangonomiya Kokomi leaves the field."
+			"description": "Summons the might of Watatsumi, dealing Hydro DMG to surrounding opponents, before robing Kokomi in a Ceremonial Garment made from the flowing waters of Sangonomiya.\n\nCeremonial Garment\n·Sangonomiya Kokomi's Normal Attack, Charged Attack and Bake-Kurage DMG are increased based on her Max HP.\n·When her Normal and Charged Attacks hit opponents, Kokomi will restore HP for all nearby party members, and the amount restored is based on her Max HP.\n·Increases Sangonomiya Kokomi's resistance to interruption and allows her to walk on the water's surface.\n\nThese effects will be cleared once Sangonomiya Kokomi leaves the field.",
+			"application": [{ "frame": 49, "element": "hydro" }]
 		}
 	],
 	"passives": [
@@ -146,37 +140,23 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "normalDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "healingBonus",
-						"ratio": 15
-					},
+					"value": { "type": "scaling", "stat": "healingBonus", "ratio": 15 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "chargeDmgBonus",
-					"value": {
-						"type": "scaling",
-						"stat": "healingBonus",
-						"ratio": 15
-					},
+					"value": { "type": "scaling", "stat": "healingBonus", "ratio": 15 },
 					"snapshottable": false
 				}
 			],
@@ -196,9 +176,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 30,
 					"stat": "hp",
 					"element": "hydro"
@@ -219,9 +197,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "hp%",
@@ -268,9 +244,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 4,
 					"durationType": "fixed",
 					"source": "character",

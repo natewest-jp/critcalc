@@ -17,59 +17,15 @@
 			"tags": [],
 			"_curatorNotes": ["No plunge.go in gcsim character dir — plungeFrames not available."],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 19,
-						"N": 30
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 11,
-						"N": 21
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 21,
-						"N": 44
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 10,
-						"N": 21
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 38,
-						"N": 73
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 30, "hit": 19 } },
+				{ "name": "N2", "frames": { "anim": 21, "hit": 11 } },
+				{ "name": "N3", "frames": { "anim": 44, "hit": 21 } },
+				{ "name": "N4", "frames": { "anim": 21, "hit": 10 } },
+				{ "name": "N5", "frames": { "anim": 73, "hit": 38 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 23,
-						"D": 15,
-						"J": 15
-					}
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 94,
-						"D": 86,
-						"J": 86
-					}
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 23, "D": 15, "J": 15, "swap": 23 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 94, "D": 86, "J": 86 } }
 			],
 			"sections": [
 				{
@@ -96,13 +52,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 16,
-				"N": 33,
-				"Q": 33,
-				"D": 11,
-				"J": 11
-			},
+			"frames": { "anim": 34, "N": 33, "Q": 33, "D": 11, "J": 11, "swap": 16 },
 			"cooldown": 6,
 			"cooldownStartDelay": 5,
 			"variants": [
@@ -110,26 +60,24 @@
 					"label": "Hold",
 					"input": ["hE"],
 					"cooldown": 15,
-					"frames": {
-						"swap": 29,
-						"N": 36,
-						"Q": 37,
-						"D": 31,
-						"J": 31
-					},
+					"frames": { "anim": 49, "N": 36, "Q": 37, "D": 31, "J": 31, "swap": 29 },
 					"effects": [
 						{
 							"type": "shield",
 							"target": "active",
-							"trigger": {
-								"type": "onCast",
-								"ability": "skill"
-							},
+							"trigger": { "type": "onCast", "ability": "skill" },
 							"duration": 12,
 							"scaling": 22.68,
 							"stat": "hp",
 							"flat": 2667.51
 						}
+					],
+					"application": [
+						{ "frame": 34, "element": "cryo" },
+						{ "frame": 35, "element": "cryo" },
+						{ "frame": 36, "element": "cryo" },
+						{ "frame": 37, "element": "cryo" },
+						{ "frame": 38, "element": "cryo" }
 					]
 				}
 			],
@@ -138,10 +86,7 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 4.8,
 					"scaling": 12.96,
 					"stat": "hp",
@@ -160,7 +105,11 @@
 				"Press variant cooldownStartDelay = 5 (skillPressHitmark). Base ability cooldownStartDelay reflects Press variant.",
 				"[A7] Shield duration = 2.4s per paw landed at talent level 10 (pawDur[9]); the caveat text now conveys the paws-scaling qualitatively. Already recorded in existing curator notes."
 			],
-			"description": "Fires an Icy Paw that deals Cryo DMG to opponents and forms a shield on hit.\nThe shield's DMG Absorption scales based on Diona's Max HP, and its duration scales off the number of Icy Paws that hit their target.\n\nPress\nRapidly fires off 2 Icy Paws.\n\nHold\nDashes back quickly before firing 5 Icy Paws.\nThe shield created by a Hold attack will gain a 75% DMG Absorption Bonus.\n\nThe shield has a 250% Cryo DMG Absorption Bonus, and will cause your active character to become affected by Cryo at the point of formation for a short duration."
+			"description": "Fires an Icy Paw that deals Cryo DMG to opponents and forms a shield on hit.\nThe shield's DMG Absorption scales based on Diona's Max HP, and its duration scales off the number of Icy Paws that hit their target.\n\nPress\nRapidly fires off 2 Icy Paws.\n\nHold\nDashes back quickly before firing 5 Icy Paws.\nThe shield created by a Hold attack will gain a 75% DMG Absorption Bonus.\n\nThe shield has a 250% Cryo DMG Absorption Bonus, and will cause your active character to become affected by Cryo at the point of formation for a short duration.",
+			"application": [
+				{ "frame": 10, "element": "cryo" },
+				{ "frame": 11, "element": "cryo" }
+			]
 		},
 		{
 			"id": "diona__burst__signature_mix",
@@ -168,11 +117,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 41,
-				"D": 43,
-				"J": 44
-			},
+			"frames": { "anim": 64, "D": 43, "J": 44, "swap": 41 },
 			"cooldown": 20,
 			"cooldownStartDelay": 41,
 			"energyCost": 80,
@@ -188,11 +133,7 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2,
-								"firstTickDelay": 2
-							},
+							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 2 },
 							"scaling": 9.6,
 							"stat": "hp",
 							"flat": 1129.1
@@ -200,11 +141,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 2,
-								"firstTickDelay": 2
-							},
+							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 2 },
 							"scaling": 94.75,
 							"stat": "atk",
 							"element": "cryo"
@@ -222,7 +159,8 @@
 				"A4 Drunkards' Farce (enemy ATK -10% in field) remains unauthored — not implemented in gcsim, see passive node note.",
 				"[A7] Field is stationary (summon mobility 'stationary'); the caveat's 'standing inside the field' conveys the fixed-position sense for users."
 			],
-			"description": "Tosses out a special cold brew that deals AoE Cryo DMG and creates a Drunken Mist in an AoE.\n\nDrunken Mist\n·Deals continuous Cryo DMG to opponents within the AoE.\n·Continuously regenerates the HP of characters within the AoE."
+			"description": "Tosses out a special cold brew that deals AoE Cryo DMG and creates a Drunken Mist in an AoE.\n\nDrunken Mist\n·Deals continuous Cryo DMG to opponents within the AoE.\n·Continuously regenerates the HP of characters within the AoE.",
+			"application": [{ "frame": 58, "element": "cryo" }]
 		}
 	],
 	"passives": [
@@ -269,10 +207,7 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": {
-						"type": "afterDuration",
-						"ability": "burst"
-					},
+					"trigger": { "type": "afterDuration", "ability": "burst" },
 					"amount": 15
 				}
 			],
@@ -331,9 +266,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -343,9 +276,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "hp%",
 					"value": 25,
@@ -354,14 +285,8 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
 					"duration": 12.5,
 					"durationType": "fixed",
 					"source": "character",
@@ -372,14 +297,8 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
 					"duration": 12.5,
 					"durationType": "fixed",
 					"source": "character",
@@ -390,14 +309,8 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
 					"duration": 12.5,
 					"durationType": "fixed",
 					"source": "character",

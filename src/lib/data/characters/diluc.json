@@ -16,31 +16,12 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": { "swap": 24 }
-				},
-				{
-					"name": "N2",
-					"frames": { "swap": 39 }
-				},
-				{
-					"name": "N3",
-					"frames": { "swap": 26 }
-				},
-				{
-					"name": "N4",
-					"frames": { "swap": 49 }
-				}
+				{ "name": "N1", "frames": { "anim": 32, "hit": 24 } },
+				{ "name": "N2", "frames": { "anim": 46, "hit": 39 } },
+				{ "name": "N3", "frames": { "anim": 34, "hit": 26 } },
+				{ "name": "N4", "frames": { "anim": 99, "hit": 49 } }
 			],
-			"plungeFrames": {
-				"swap": 59,
-				"N": 49,
-				"E": 50,
-				"Q": 49,
-				"D": 36,
-				"J": 77
-			},
+			"plungeFrames": { "anim": 81, "N": 51, "E": 53, "Q": 51, "D": 40, "swap": 63 },
 			"sections": [
 				{
 					"type": "normal",
@@ -64,7 +45,8 @@
 				"chargeFrames not available: Diluc's charged attack is a stamina-drain spinning slash (claymore type); no explicit chargeFrames slice in gcsim character dir. Reviewer to source from KQM or game testing.",
 				"High plunge variant exists in gcsim (highPlungeFrames) but is not represented per recipe — low plunge is the standard rotation animation. plungeFrames sourced from lowPlungeFrames.",
 				"gcsim restricts plunge invocation to AirborneXianyun-launched only — sim limitation, not in-game one. In-game any post-jump plunge works."
-			]
+			],
+			"lowPlungeFrames": { "anim": 78, "N": 49, "E": 50, "Q": 49, "D": 36, "J": 77, "swap": 59 }
 		},
 		{
 			"id": "diluc__skill__searing_onslaught_e1",
@@ -72,18 +54,8 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 0,
-				"window": 4
-			},
-			"frames": {
-				"swap": 30,
-				"E": 31,
-				"D": 24,
-				"J": 24
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 0, "window": 4 },
+			"frames": { "anim": 32, "E": 31, "D": 24, "J": 24, "swap": 30 },
 			"cooldown": 10,
 			"tags": [],
 			"effects": [],
@@ -94,7 +66,8 @@
 				"No cooldownStartDelay (gcsim uses SetCD, not SetCDWithDelay).",
 				"Particle generation: 1 Pyro particle per cast (33% chance of 2), gated by a 0.3s particle ICD across the chain (gcsim particleICDKey). Not modeled as an effect; reviewer to wire energy generation if needed.",
 				"Generator stub had `behavior: 'stance'`; corrected to 'instant' — Diluc does not replace N or charge during the chain window."
-			]
+			],
+			"application": [{ "frame": 24, "element": "pyro" }]
 		},
 		{
 			"id": "diluc__skill__searing_onslaught_e2",
@@ -102,26 +75,16 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 1,
-				"window": 4
-			},
-			"frames": {
-				"swap": 36,
-				"E": 37,
-				"Q": 37,
-				"D": 28,
-				"J": 31
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 1, "window": 4 },
+			"frames": { "anim": 38, "E": 37, "Q": 37, "D": 28, "J": 31, "swap": 36 },
 			"cooldown": 0,
 			"tags": [],
 			"effects": [],
 			"description": "Second press of Searing Onslaught (within 4s of E1): a forward slash dealing Pyro DMG with different timing and damage multiplier than the first press.",
 			"_curatorNotes": [
 				"chainStage(skill, 1, window: 4) — fires when chain position is 1 (after E1, within 4s). After firing, parser advances to chain index 2 with another 4s window."
-			]
+			],
+			"application": [{ "frame": 28, "element": "pyro" }]
 		},
 		{
 			"id": "diluc__skill__searing_onslaught_e3",
@@ -129,19 +92,8 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "chainStage",
-				"ability": "skill",
-				"index": 2
-			},
-			"frames": {
-				"swap": 66,
-				"N": 58,
-				"E": 57,
-				"Q": 57,
-				"D": 47,
-				"J": 48
-			},
+			"conditions": { "type": "chainStage", "ability": "skill", "index": 2 },
+			"frames": { "anim": 66, "N": 58, "E": 57, "Q": 57, "D": 47, "J": 48 },
 			"cooldown": 0,
 			"tags": [],
 			"effects": [],
@@ -149,7 +101,8 @@
 			"_curatorNotes": [
 				"chainStage(skill, 2) — terminal stage; no `window` field signals 'reset chain to 0 after firing.' Matches gcsim's behavior of deleting eWindowKey + resetting eCounter to 0 after E3.",
 				"swap=66 sourced via the InitAbilSlice-arg-as-swap exception — no explicit ActionSwap line follows skillFrames[2]'s init in gcsim. N=58 is included because skillFrames[2] is the only one of the three stages that explicitly sets ActionAttack."
-			]
+			],
+			"application": [{ "frame": 46, "element": "pyro" }]
 		},
 		{
 			"id": "diluc__burst__dawn",
@@ -157,24 +110,14 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 138,
-				"N": 139,
-				"E": 139,
-				"J": 139
-			},
+			"frames": { "anim": 140, "N": 139, "E": 139, "J": 139, "swap": 138 },
 			"cooldown": 12,
 			"cooldownStartDelay": 14,
 			"tags": ["summon"],
 			"energyCost": 40,
 			"effects": [],
 			"summons": [
-				{
-					"label": "Phoenix",
-					"duration": 1.7,
-					"spawnsAt": 100,
-					"mobility": "stationary"
-				}
+				{ "label": "Phoenix", "duration": 1.7, "spawnsAt": 100, "mobility": "stationary" }
 			],
 			"description": "Releases intense flames to knock back nearby opponents, dealing Pyro DMG. The flames then converge into the weapon, summoning a Phoenix that flies forward and deals massive Pyro DMG to all opponents in its path. The Phoenix explodes upon reaching its destination, causing a large amount of AoE Pyro DMG.\nThe searing flames that run down his blade cause it to be infused with Pyro.",
 			"_curatorNotes": [
@@ -184,6 +127,11 @@
 				"burstHitmark=100 is the strike-firing frame. The schema has no hitmark-on-burst field; the value is captured here as `summons[0].spawnsAt` (the Phoenix is the entity that carries the strike + DoT + explosion).",
 				"ActionDash is not explicitly overridden on burstFrames (defaults to 140 / animation length); D omitted per recipe. ActionBurst, ActionCharge — not applicable on burst frames.",
 				"Particle generation: burst does not generate particles in gcsim."
+			],
+			"application": [
+				{ "frame": 101, "element": "pyro" },
+				{ "frame": 112, "element": "pyro" },
+				{ "frame": 124, "element": "pyro" }
 			]
 		}
 	],
@@ -205,10 +153,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",

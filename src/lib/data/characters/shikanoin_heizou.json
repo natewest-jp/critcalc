@@ -16,61 +16,14 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 12,
-						"N": 20,
-						"C": 21
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 13,
-						"N": 17,
-						"C": 21
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 21,
-						"N": 45,
-						"C": 46
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 27,
-						"N": 36,
-						"C": 38
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 31,
-						"N": 66
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 21, "hit": 12, "N": 20 } },
+				{ "name": "N2", "frames": { "anim": 21, "hit": 13, "N": 17 } },
+				{ "name": "N3", "frames": { "anim": 46, "hit": 21, "N": 45 } },
+				{ "name": "N4", "frames": { "anim": 38, "hit": 27, "N": 36 } },
+				{ "name": "N5", "frames": { "anim": 66, "hit": 31 } }
 			],
-			"chargeFrames": {
-				"swap": 46,
-				"N": 38,
-				"E": 38,
-				"Q": 38,
-				"D": 24,
-				"J": 24
-			},
-			"plungeFrames": {
-				"swap": 60,
-				"N": 68,
-				"E": 67,
-				"Q": 67,
-				"D": 44
-			},
+			"chargeFrames": { "anim": 46, "N": 38, "E": 38, "Q": 38, "D": 24, "J": 24 },
+			"plungeFrames": { "anim": 78, "N": 69, "E": 70, "Q": 69, "D": 47, "swap": 62 },
 			"sections": [
 				{
 					"type": "normal",
@@ -95,7 +48,8 @@
 				"chargeFrames sourced from gcsim charge.go (single sweeping kick, hitmark=24). swap=46 from InitAbilSlice argument per recipe special exception (no explicit ActionSwap). N1 normalCounter requirement: gcsim NextQueueItemIsValid blocks ChargeAttack unless LastAction.Type == ActionAttack — so CA must be preceded by an N. Not modeled in schema; flag for reviewer.",
 				"Heizou plunge gating in gcsim: plunge can only fire when AirborneXianyun (Xianyun-launched). This is a sim-side limitation, not in-game (Heizou plunges normally with any jump). plungeFrames sourced from gcsim's lowPlungeFrames; ActionJump is not explicitly set on lowPlungeFrames so J omitted per recipe. highPlungeFrames exist in gcsim but are not represented per recipe convention (low plunge is the standard rotation animation).",
 				"Pattern 4 / 3 hybrid (Tier B): Declension stack mechanic gates the SKILL's damage at 4 stacks (Conviction → Heartstopper Strike (Max Stacks) per gcsim ai.Abil), not the charged attack. Per-character note in recipe-tier-b.md prescribes a stack-gated CA variant, but gcsim source shows the 4-stack tier sharing identical chargeFrames with the base CA — there are no separate frame slices to record. Stack-gated damage is documented on the skill's _curatorNotes; no second normal entry authored. Reviewer to confirm representation."
-			]
+			],
+			"lowPlungeFrames": { "anim": 75, "N": 68, "E": 67, "Q": 67, "D": 44, "swap": 60 }
 		},
 		{
 			"id": "shikanoin_heizou__skill__heartstopper_strike",
@@ -103,21 +57,14 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"cooldown": 10,
-			"frames": {
-				"swap": 30,
-				"D": 30,
-				"J": 30
-			},
+			"frames": { "anim": 39, "D": 30, "J": 30, "swap": 30 },
 			"variants": [
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": {
-						"swap": 210,
-						"D": 210,
-						"J": 210
-					},
-					"cooldown": 10
+					"frames": { "anim": 219, "D": 210, "J": 210, "swap": 210 },
+					"cooldown": 10,
+					"application": [{ "frame": 200, "element": "anemo" }]
 				}
 			],
 			"tags": [],
@@ -132,7 +79,8 @@
 				"Conviction effect (Heartstopper Strike (Max Stacks)) — when decStack==4: ai.Abil renamed to 'Heartstopper Strike (Max Stacks)', Mult += convicBonus[talent], hitbox enlarged (width+1, height+1), HitlagHaltFrames bumped from 0.09 to 0.12. Cancel frames identical to base skill — no separate skill ability authored. Damage and hitbox deltas not modeled.",
 				"Per-stack damage scaling (skill base mult): Mult = skill[talent] + decStack * decBonus[talent]. Not authored as a separate buff/scaling — schema has no 'stack count' state condition. Reviewer to decide representation.",
 				"Particle generation scales with decStack: 0/1 stacks=2 particles, 2/3 stacks=2-3 particles (50% chance for 3rd), 4 stacks=3 particles. Particle ICD 12 frames (0.2s). Particle output is not modeled in this codebase; flag for completeness."
-			]
+			],
+			"application": [{ "frame": 20, "element": "anemo" }]
 		},
 		{
 			"id": "shikanoin_heizou__burst__windmuster_kick",
@@ -140,12 +88,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 12,
-			"frames": {
-				"swap": 69,
-				"N": 71,
-				"E": 71,
-				"J": 70
-			},
+			"frames": { "anim": 72, "N": 71, "E": 71, "J": 70, "swap": 69 },
 			"tags": ["grouping"],
 			"energyCost": 40,
 			"effects": [],
@@ -156,7 +99,8 @@
 				"burstHitmark = 34 (initial Vacuum Slugger). Windmuster Iris explosions follow at delay 40 frames after the auraCheck callback for each tagged enemy. Max 4 opponents tagged per cast.",
 				"Windmuster Iris is a per-enemy delayed elemental DMG instance keyed off the enemy's existing aura (Pyro/Hydro/Electro/Cryo priority). Not modeled as a summon (no spawned entity). Element absorption-style mechanic — flag for reviewer; this is similar in flavor to recipe.md § 3.5 Elemental Absorption but applies per-enemy on burst hit rather than at cast.",
 				"energyCost=40 from data_gen.textproto (burst_energy_cost). gcsim burst.go also calls c.ConsumeEnergy(3) — likely an unrelated/secondary internal hook; not modeled."
-			]
+			],
+			"application": [{ "frame": 34 }, { "frame": 34, "element": "anemo" }]
 		}
 	],
 	"passives": [
@@ -177,10 +121,7 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -246,57 +187,32 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 1,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 6
-							},
-							{
-								"type": "stacks",
-								"key": "declension",
-								"min": 1
-							}
+							{ "type": "constellation", "level": 6 },
+							{ "type": "stacks", "key": "declension", "min": 1 }
 						]
 					},
 					"source": "character",
 					"stat": "critRate",
-					"value": {
-						"type": "perStack",
-						"key": "declension",
-						"per": 4,
-						"maxStacks": 4
-					},
+					"value": { "type": "perStack", "key": "declension", "per": 4, "maxStacks": 4 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 1,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 6
-							},
-							{
-								"type": "stacks",
-								"key": "declension",
-								"min": 4
-							}
+							{ "type": "constellation", "level": 6 },
+							{ "type": "stacks", "key": "declension", "min": 4 }
 						]
 					},
 					"source": "character",

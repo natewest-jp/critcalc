@@ -16,13 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 13, "N": 17, "C": 28 } },
-				{ "name": "N2", "frames": { "swap": 13, "N": 26, "C": 28 } },
-				{ "name": "N3", "frames": { "swap": 16, "N": 32, "C": 36 } },
-				{ "name": "N4", "frames": { "swap": 30, "N": 39, "C": 45 } },
-				{ "name": "N5", "frames": { "swap": 25, "N": 69 } }
+				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
+				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
+				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
+				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
 			],
-			"chargeFrames": { "swap": 44, "N": 55, "E": 37, "Q": 36, "D": 20, "J": 20 },
+			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
 			"_curatorNotes": [
 				"Normal-attack frames + scaling are SHARED across all 6 Traveler element variants in gcsim — only the skill/burst differ per element. Same normal/charge data as traveler_anemo.json (Male/Aether frames).",
 				"Plunge frames not authored — geo Traveler has no plunge.go in gcsim source."
@@ -52,13 +52,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 67,
-				"N": 81,
-				"Q": 81,
-				"D": 25,
-				"J": 24
-			},
+			"frames": { "anim": 81, "D": 25, "J": 24, "swap": 67 },
 			"cooldown": 6,
 			"cooldownStartDelay": 23,
 			"cooldownModifiers": [
@@ -66,10 +60,7 @@
 					"source": "A1: Frenzied Rockslide",
 					"type": "flat",
 					"value": -2,
-					"conditions": {
-						"type": "ascension",
-						"level": 1
-					}
+					"conditions": { "type": "ascension", "level": 1 }
 				}
 			],
 			"tags": ["summon"],
@@ -84,10 +75,7 @@
 							"source": "C6: Aftershock",
 							"type": "flat",
 							"value": 10,
-							"conditions": {
-								"type": "constellation",
-								"level": 6
-							}
+							"conditions": { "type": "constellation", "level": 6 }
 						}
 					]
 				}
@@ -96,13 +84,8 @@
 				{
 					"label": "Short Hold",
 					"input": ["hE"],
-					"frames": {
-						"swap": 39,
-						"N": 54,
-						"Q": 54,
-						"D": 31,
-						"J": 31
-					}
+					"frames": { "anim": 39, "N": 54, "Q": 54, "D": 31, "J": 31, "swap": 39 },
+					"application": [{ "frame": 62, "element": "geo" }]
 				}
 			],
 			"effects": [],
@@ -113,7 +96,8 @@
 				"Meteorite construct: counts as a Geo construct (Crystallize-able). C2 'Rockcore Meltdown' makes the meteorite explode for 248% ATK Geo when destructed — not authored as separate effect (would need a destruct trigger primitive).",
 				"Frames: skillFrames[0][0]=InitAbilSlice(81), ActionDash=25 ActionJump=24 ActionSwap=67. Per E-spec swap/N/Q/D/J — Q defaults to animLen=81."
 			],
-			"description": "Calls upon the power of Geo to summon forth a giant Meteorite that will deal AoE Geo DMG to opponents in front of you upon impact.\n\nThe Meteorite remains on the field after impact and acts as Geo-imbued matter. It can also be destroyed by enemy attacks."
+			"description": "Calls upon the power of Geo to summon forth a giant Meteorite that will deal AoE Geo DMG to opponents in front of you upon impact.\n\nThe Meteorite remains on the field after impact and acts as Geo-imbued matter. It can also be destroyed by enemy attacks.",
+			"application": [{ "frame": 62, "element": "geo" }]
 		},
 		{
 			"id": "traveler_geo__burst__wake_of_earth",
@@ -121,13 +105,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 51,
-				"N": 67,
-				"E": 67,
-				"D": 42,
-				"J": 42
-			},
+			"frames": { "anim": 67, "D": 42, "J": 42, "swap": 51 },
 			"cooldown": 15,
 			"cooldownStartDelay": 35,
 			"energyCost": 60,
@@ -143,10 +121,7 @@
 							"source": "C6: Aftershock",
 							"type": "flat",
 							"value": 5,
-							"conditions": {
-								"type": "constellation",
-								"level": 6
-							}
+							"conditions": { "type": "constellation", "level": 6 }
 						}
 					]
 				}
@@ -160,7 +135,8 @@
 				"C1 Aftershock: party members within radius +10% CR + interrupt RES. Schema-fit: would need a 'duringSummon' state condition on a team buff; possible but not authored — flagged.",
 				"C4 Shoreline: -5 Energy per enemy hit (max 25 from one cast). Authored conceptually but per-hit-energy-callback not modeled."
 			],
-			"description": "Energy from deep underground bursts forth, dealing AoE Geo DMG and forming a Stone Stele that deals continuous AoE Geo DMG to opponents within its AoE."
+			"description": "Energy from deep underground bursts forth, dealing AoE Geo DMG and forming a Stone Stele that deals continuous AoE Geo DMG to opponents within its AoE.",
+			"application": []
 		}
 	],
 	"passives": [

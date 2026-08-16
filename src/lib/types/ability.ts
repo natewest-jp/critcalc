@@ -1234,16 +1234,41 @@ export type Effect =
 export type ActionKey = 'N' | 'C' | 'E' | 'Q' | 'D' | 'J' | 'P' | 'swap';
 
 /**
- * Per-next-action frame durations (60fps integers).
- * `swap` is required and acts as the fallback when a key is absent.
- * Absent keys resolve to `frames.swap` in the parser.
+ * Per-next-action frame durations (60fps integers) — gcsim's two slice
+ * constructors, transcribed.
+ *
+ * ⚓⚓ THE FALLBACK IS `anim`, NOT `swap` (gauge-round L4b, 2026-08-16). gcsim
+ * builds an action's cancel table by filling EVERY slot with the animation
+ * length and then applying overrides, of which `ActionSwap` is merely one — and
+ * frequently one of the shortest. Our schema kept the override and threw away the
+ * default, so every absent key resolved to the swap window: measured, a charged
+ * attack after a normal was timed **22 frames early in 266 of 297 maps**.
+ *
+ * Resolution order, and `frameAt()` in `$lib/utils/frames.ts` is the ONLY place
+ * that implements it:
+ *
+ *     explicit key  →  `hit` (for E, Q, D, J, swap)  →  `anim`
+ *
+ * ⚓ `hit` is `InitNormalCancelSlice`'s hitmark, and it exists because a normal
+ * swing is fully described by two numbers: everything cancels at the hitmark
+ * except another normal, a charge and a plunge, which wait out the animation.
+ * `{ "anim": 35, "hit": 24 }` is the whole of Yoimiya's N1. ⛔ An E/Q slice has no
+ * such tier — `InitAbilSlice` takes one number — so `hit` there is a lint error.
+ *
+ * ⚠️ `P` sits in the `anim` tier, not the `hit` tier: `InitNormalCancelSlice`
+ * does not override `ActionHighPlunge`.
  *
  * Curation convention: for multi-hit attacks where the cancel window only opens
  * after the final hitmark (e.g. a double-hit N4), all keys must reflect the
  * frame of the *last* hitmark — not an earlier sub-hit. Cancelling before the
  * final hit lands loses damage and is not a valid rotation decision.
  */
-export type FrameMap = Partial<Record<ActionKey, number>> & { swap: number };
+export type FrameMap = Partial<Record<ActionKey, number>> & {
+	/** Full animation length — the fallback for every key not otherwise set. */
+	anim: number;
+	/** Hitmark; fills E/Q/D/J/swap. Normal and charged slices only. */
+	hit?: number;
+};
 
 /**
  * Timing data for a single hit in a normal-attack combo.
@@ -1329,9 +1354,20 @@ export type NormalAbility = AbilityCommon & {
 	/** Per-level charged hits for bow characters. Mutually exclusive with chargeFrames.
 	 *  Index 0 = C1 (partial); index 1 = C2 (full / Frostflake). */
 	chargeHits?: NormalHit[];
-	/** Plunge attack frames (base). Covers the standalone `P` token and the
-	 *  `E P` path where no plungeVariant matches the preceding E token. */
+	/** HIGH-plunge frames, and the default. Covers the standalone `P` token, the
+	 *  explicit `hP`, and the `E P` path where no plungeVariant matches the
+	 *  preceding E token.
+	 *
+	 *  ⚠️⚠️ THE MEANING OF THIS FIELD CHANGED AT L4b (2026-08-16). It used to hold
+	 *  ONE undifferentiated plunge, and measured against gcsim 36 of its 41
+	 *  authors were carrying LOW-plunge numbers — so a note or a value predating
+	 *  that round is describing a different thing. ⚓ Nate's ruling: the high
+	 *  plunge is what players actually perform, so it gets the plain name and the
+	 *  bare `P` token; the low plunge is the exception. */
 	plungeFrames?: FrameMap;
+	/** LOW-plunge frames — the `lP` token only. Falls back to `plungeFrames` when
+	 *  absent, so a character gcsim models with one plunge is not left with none. */
+	lowPlungeFrames?: FrameMap;
 	/** Plunge variants keyed by the preceding E token — e.g. Kazuha's
 	 *  Midare Ranzan has distinct frames for `E P` (press) vs `hE P` (hold).
 	 *  Selection is "first entry whose input[] contains the preceding E text". */
@@ -1363,6 +1399,41 @@ export type PlungeVariant = {
 	frames: FrameMap;
 };
 
+/**
+ * One hit of an ability, at the frame it LANDS.
+ *
+ * ⚓⚓ THE THING THE CORPUS COULD NOT SAY. Until L4c an ability recorded when it could
+ * be CANCELLED (the FrameMap) and never when it landed, so the parser applied
+ * `char.element` at every E/Q cast, unconditionally — including Xiangling's E, which in
+ * game applies zero Pyro because it only puts Guoba on the field. See
+ * `docs/gauge-round.md` §1 and contract C3.
+ *
+ * ⛔ **AN ABSENT LIST IS NOT "1U AT CAST".** Absent means we never drove this ability and
+ * do not know; it applies nothing and is counted in the provisional register. An EMPTY
+ * ARRAY is the positive statement that the cast applies nothing — 19 abilities in the
+ * corpus are like that, and it is the most valuable thing this field records.
+ *
+ * ⚠️ This is the NOMINAL hit schedule, not the applied one (contract C4). It is derived
+ * from gcsim's `damage` stream, which fires even when ICD zeroes the application, and
+ * `icd.ts` remains the only thing that decides whether a hit lands. ⛔ Never pre-apply
+ * ICD here.
+ *
+ * ⛔ Normals carry no list: their hitmark is `frames.hit` and their element already has
+ * one owner in `resolveActionElement`. Summons carry none either — `interval` /
+ * `firstTickDelay` already say when a summon applies.
+ */
+export type ElementalApplication = {
+	/** Frames (60fps) from cast start to the hitmark. */
+	frame: number;
+	/** ⛔ ABSENT MEANS PHYSICAL — the hit applies nothing. Never a default element. */
+	element?: Element;
+	/** Gauge units. ⚠️ NOT AUTHORED YET — the gauge engine that reads it lands in L5,
+	 *  and authoring a number in front of its only consumer is exactly what
+	 *  `orphanedSchema.test.ts` exists to catch. The extractor already measures it
+	 *  (gcsim's applied durability / 25) and reports it. */
+	units?: number;
+};
+
 /** Fields shared by all skill behavior variants. */
 type SkillCommonFields = AbilityCommon & {
 	abilityType: 'skill';
@@ -1389,6 +1460,10 @@ type SkillCommonFields = AbilityCommon & {
 	 *  is deliberately "windows not gauges"). See docs/library/game/icd.md. */
 	noICD?: boolean;
 	tags?: AbilityTag[];
+	/** When this cast's own hits LAND, and what they apply. ⚓ An empty array is the
+	 *  positive statement that the cast applies nothing; an absent field means we have
+	 *  no reading. See {@link ElementalApplication}. */
+	application?: ElementalApplication[];
 	/** Entities spawned by this cast with their own lifetimes. When present,
 	 *  these supersede the ability's own `duration` for active-window rendering. */
 	summons?: Summon[];
@@ -1491,6 +1566,10 @@ type BurstCommonFields = AbilityCommon & {
 	 *  is deliberately "windows not gauges"). See docs/library/game/icd.md. */
 	noICD?: boolean;
 	tags?: AbilityTag[];
+	/** When this cast's own hits LAND, and what they apply. ⚓ An empty array is the
+	 *  positive statement that the cast applies nothing; an absent field means we have
+	 *  no reading. See {@link ElementalApplication}. */
+	application?: ElementalApplication[];
 	/** Entities spawned by this cast with their own lifetimes. When present,
 	 *  these supersede the ability's own `duration` for active-window rendering. */
 	summons?: Summon[];
@@ -1581,6 +1660,9 @@ export type AbilityVariant = {
 	summonActivatesAt?: number;
 	/** Overrides the base ability's summons[]. */
 	summons?: Summon[];
+	/** Overrides the base ability's `application[]`. ⚠️ REPLACES it, like every other
+	 *  variant array — a hold that lands different hits states all of them. */
+	application?: ElementalApplication[];
 	/** Overrides the base ability's `durationExtensions[]`. */
 	durationExtensions?: DurationExtension[];
 	terminatesOnSwap?: boolean;

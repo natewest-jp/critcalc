@@ -16,52 +16,14 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 14,
-						"N": 26
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 10,
-						"N": 21
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 24,
-						"N": 39
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 29,
-						"N": 86
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 26, "hit": 14 } },
+				{ "name": "N2", "frames": { "anim": 21, "hit": 10 } },
+				{ "name": "N3", "frames": { "anim": 39, "hit": 24 } },
+				{ "name": "N4", "frames": { "anim": 86, "hit": 29 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 96,
-						"D": 86,
-						"J": 86
-					}
-				},
-				{
-					"name": "Hurricane Arrow",
-					"frames": {
-						"swap": 60,
-						"D": 49,
-						"J": 49
-					}
-				}
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 96, "D": 86, "J": 86 } },
+				{ "name": "Hurricane Arrow", "frames": { "anim": 60, "D": 49, "J": 49, "swap": 60 } }
 			],
 			"_curatorNotes": [
 				"chargeHits[1] Hurricane Arrow is available only when Manifest Gale state (from Wind Realm of Nasamjnin) is active at A1+. Standard fully-charged aimed shot uses aimedFrames[1] (96f animation, 86f hitmark); Hurricane Arrow uses aimedEFrames (60f animation, 49f hitmark) at DEFAULT_ASCENSION=4. Quick physical aimed shot (aimedFrames[0]: swap=26, D=15, J=15) omitted — never used in optimal rotations. Reviewer to decide chargeHits representation for the conditional variant.",
@@ -92,12 +54,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 33,
-				"Q": 34,
-				"D": 28,
-				"J": 27
-			},
+			"frames": { "anim": 35, "E": 34, "Q": 34, "D": 28, "J": 27, "swap": 33 },
 			"cooldown": 6,
 			"cooldownStartDelay": 12,
 			"tags": ["grouping"],
@@ -108,7 +65,8 @@
 				"cooldownStartDelay: 12 — SetCD(360f) is called inside a 12-frame-delayed task in skill.go. Effects[] empty — initial polyhedron hit (AoE Anemo DMG) and Hurricane Arrow DMG not authored; needs reviewer pass."
 			],
 			"description": "Faruzan deploys a polyhedron that deals AoE Anemo DMG to nearby opponents. She will also enter the Manifest Gale state.\nWhile in the Manifest Gale state, Faruzan's next fully charged shot will consume this state and will become a Hurricane Arrow that contains high-pressure currents. This arrow deals Anemo DMG based on the DMG of a fully charged Aimed Shot from \"Normal Attack: Parthian Shot.\"\n\nPressurized Collapse\nThe Hurricane Arrow will apply a Pressurized Collapse effect to the opponent or character hit. This effect will be removed after a short delay, creating a vortex that deals AoE Anemo DMG and pulls nearby objects and opponents in. If the Hurricane Arrow does not hit any opponent or character, it will create a Pressurized Collapse effect at its point of impact.\nThe vortex DMG is considered Elemental Skill DMG.",
-			"caveat": "Not modeled: the Manifest Gale state — charged shots are drawn with Hurricane Arrow timing whether or not it's active, and the Pressurized Collapse vortex never appears on the timeline."
+			"caveat": "Not modeled: the Manifest Gale state — charged shots are drawn with Hurricane Arrow timing whether or not it's active, and the Pressurized Collapse vortex never appears on the timeline.",
+			"application": [{ "frame": 14, "element": "anemo" }]
 		},
 		{
 			"id": "faruzan__burst__the_winds_secret_ways",
@@ -116,13 +74,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 60,
-				"N": 61,
-				"E": 61,
-				"D": 61,
-				"J": 63
-			},
+			"frames": { "anim": 71, "N": 61, "E": 61, "D": 61, "J": 63, "swap": 60 },
 			"cooldown": 20,
 			"tags": [],
 			"energyCost": 80,
@@ -137,10 +89,7 @@
 							"source": "C2: Overzealous Intellect",
 							"type": "flat",
 							"value": 6,
-							"conditions": {
-								"type": "constellation",
-								"level": 2
-							}
+							"conditions": { "type": "constellation", "level": 2 }
 						}
 					]
 				}
@@ -149,10 +98,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"element": "anemo",
 					"value": -30,
@@ -161,10 +107,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 18,
 					"element": "anemo",
 					"value": -30,
@@ -173,10 +116,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -188,10 +128,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 18,
 					"durationType": "fixed",
 					"source": "character",
@@ -208,7 +145,8 @@
 				"Burst duration: 745 frames (base) + 360 frames at C2. 745/60=12.42s rounded to 12s (in-game description). C2 adds 6s → 18s total at C2.",
 				"[A7b] C2 effect durations AUTHORED 2026-07-20 (Nate implement-first): shred + buff each split into a 12s not-C2 / 18s C2-gated pair matching the summon's durationModifiers (+6 at C2) — Effect has no durationModifiers field, so condition-gated duplicates are the wired expression. Buff/shred coverage now tracks the polyhedron at both C0 and C2; the planned A7b caveat (12s-vs-18s contradiction) became unnecessary. Residual approximation, deliberate: buffs are pulse-granted in game (re-applied per Whirlwind Pulse, 4s each) but drawn as one continuous window — same class as other onCast simplifications."
 			],
-			"description": "Faruzan deploys a Dazzling Polyhedron that unleashes a Whirlwind Pulse and deals AoE Anemo DMG.\nWhile the Dazzling Polyhedron persists, it will continuously move along a triangular path. Once it reaches each corner of that triangular path, it will unleash 1 more Whirlwind Pulse.\n\nWhirlwind Pulse\n·When the Whirlwind Pulse is unleashed, it will apply Perfidious Wind's Bale to nearby opponents, decreasing their Anemo RES.\n·The Whirlwind Pulse will also apply Prayerful Wind's Benefit to all nearby party members when it is unleashed, granting them an Anemo DMG Bonus."
+			"description": "Faruzan deploys a Dazzling Polyhedron that unleashes a Whirlwind Pulse and deals AoE Anemo DMG.\nWhile the Dazzling Polyhedron persists, it will continuously move along a triangular path. Once it reaches each corner of that triangular path, it will unleash 1 more Whirlwind Pulse.\n\nWhirlwind Pulse\n·When the Whirlwind Pulse is unleashed, it will apply Perfidious Wind's Bale to nearby opponents, decreasing their Anemo RES.\n·The Whirlwind Pulse will also apply Prayerful Wind's Benefit to all nearby party members when it is unleashed, granting them an Anemo DMG Bonus.",
+			"application": [{ "frame": 54, "element": "anemo" }]
 		}
 	],
 	"passives": [
@@ -230,13 +168,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"source": "team",
-						"filter": {
-							"element": "anemo"
-						}
-					},
+					"trigger": { "type": "onHit", "source": "team", "filter": { "element": "anemo" } },
 					"procCooldown": 0.8,
 					"scaling": 32,
 					"stat": "baseAtk",
@@ -296,10 +228,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",

@@ -16,38 +16,11 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 19,
-						"N": 29,
-						"C": 20
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 16,
-						"N": 31,
-						"C": 22
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 32,
-						"N": 62
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 36, "hit": 19, "N": 29, "C": 20 } },
+				{ "name": "N2", "frames": { "anim": 33, "hit": 16, "N": 31, "C": 22 } },
+				{ "name": "N3", "frames": { "anim": 62, "hit": 32, "C": 51 } }
 			],
-			"chargeFrames": {
-				"swap": 58,
-				"N": 87,
-				"E": 26,
-				"Q": 27,
-				"D": 25,
-				"J": 26
-			},
+			"chargeFrames": { "anim": 74, "C": 53, "E": 23, "Q": 23, "D": 23, "J": 23, "swap": 50 },
 			"caveat": "Typing 'C' shows the short Charged Attack; holding to charge enters Equitable Judgment, the empowered channeled attack — not modeled, since it feeds on Sourcewater Droplets picked up from the field. Each Droplet he absorbs also restores 16% of his Max HP.",
 			"_curatorNotes": [
 				"Droplet-absorption self-heal (16% MaxHP per Droplet consumed, gcsim charge.go:301-312 consumeDroplet) named in the caveat 2026-07-28 (capability sweep). Not authorable: absorption count is player-dependent field state inside the unmodeled EJ system; a bare heal effect would fake its trigger cadence. The wiki's C4 'heal' credit is this same base mechanic — C4 only spawns a Droplet (cons.go:46-79, 4s ICD), stub-with-caveat stands.",
@@ -83,13 +56,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 29,
-				"N": 42,
-				"Q": 30,
-				"D": 29,
-				"J": 32
-			},
+			"frames": { "anim": 42, "C": 21, "Q": 30, "D": 29, "J": 32, "swap": 29 },
 			"cooldown": 12,
 			"cooldownStartDelay": 20,
 			"tags": ["summon"],
@@ -101,7 +68,11 @@
 				"Spiritbreath Thorn (Pneuma Arkhe): hitmark=60f (=23+37), 37.44% ATK Hydro, AttackTagElementalArt, 10s ICD per skillAlignedICDKey. Pneuma-aligned; schema has no Arkhe field — flagged.",
 				"Cooldown: SetCDWithDelay(skill, 12*60, 20) → cooldown 12s, cooldownStartDelay 20f."
 			],
-			"description": "Summons a Raging Waterfall that will deal AoE Hydro DMG to opponents in front of Neuvillette based on his Max HP. After hitting an opponent, this skill will generate 3 Sourcewater Droplets near that opponent.\n\nArkhe: Pneuma\nAt certain intervals, when the Raging Waterfall descends, a Spiritbreath Thorn will descend that will pierce opponents, dealing Pneuma-aligned Hydro DMG."
+			"description": "Summons a Raging Waterfall that will deal AoE Hydro DMG to opponents in front of Neuvillette based on his Max HP. After hitting an opponent, this skill will generate 3 Sourcewater Droplets near that opponent.\n\nArkhe: Pneuma\nAt certain intervals, when the Raging Waterfall descends, a Spiritbreath Thorn will descend that will pierce opponents, dealing Pneuma-aligned Hydro DMG.",
+			"application": [
+				{ "frame": 23, "element": "hydro" },
+				{ "frame": 60, "element": "hydro" }
+			]
 		},
 		{
 			"id": "neuvillette__burst__o_tides_i_have_returned",
@@ -109,13 +80,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 120,
-				"N": 135,
-				"E": 127,
-				"D": 127,
-				"J": 128
-			},
+			"frames": { "anim": 135, "C": 133, "E": 127, "D": 127, "J": 128, "swap": 120 },
 			"cooldown": 18,
 			"energyCost": 70,
 			"tags": [],
@@ -124,7 +89,12 @@
 				"3-tick burst at burstHitmarks=[95, 135, 154]. Initial wave: 40.06% MaxHP Hydro (FlatDmg). Two waterfalls: 16.39% MaxHP Hydro each. Spawns 3+2+1=6 droplets across the 3 ticks (gadgets, not modelled). All 3 hits AttackTagElementalBurst, behavior:instant since the entire damage event resolves within 154f (no persistent on-field entity).",
 				"ConsumeEnergy(4) on cast — drains 4 energy from each non-active party member; not modelled."
 			],
-			"description": "Unleashes waves that will deal AoE Hydro DMG based on Neuvillette's Max HP. After a short interval, 2 waterfalls will descend and deal Hydro DMG in a somewhat smaller AoE, and will generate 6 Sourcewater Droplets within an area in front."
+			"description": "Unleashes waves that will deal AoE Hydro DMG based on Neuvillette's Max HP. After a short interval, 2 waterfalls will descend and deal Hydro DMG in a somewhat smaller AoE, and will generate 6 Sourcewater Droplets within an area in front.",
+			"application": [
+				{ "frame": 95, "element": "hydro" },
+				{ "frame": 135, "element": "hydro" },
+				{ "frame": 154, "element": "hydro" }
+			]
 		}
 	],
 	"passives": [
@@ -159,18 +129,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 30,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "stacks",
-						"key": "pastDraconicGlories",
-						"min": 1,
-						"max": 1
-					},
+					"conditions": { "type": "stacks", "key": "pastDraconicGlories", "min": 1, "max": 1 },
 					"source": "character",
 					"stat": "chargeDmgBonus",
 					"value": 10,
@@ -179,18 +141,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 30,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "stacks",
-						"key": "pastDraconicGlories",
-						"min": 2,
-						"max": 2
-					},
+					"conditions": { "type": "stacks", "key": "pastDraconicGlories", "min": 2, "max": 2 },
 					"source": "character",
 					"stat": "chargeDmgBonus",
 					"value": 25,
@@ -199,17 +153,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 30,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "stacks",
-						"key": "pastDraconicGlories",
-						"min": 3
-					},
+					"conditions": { "type": "stacks", "key": "pastDraconicGlories", "min": 3 },
 					"source": "character",
 					"stat": "chargeDmgBonus",
 					"value": 60,
@@ -231,9 +178,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "hydroDmgBonus",
 					"value": {

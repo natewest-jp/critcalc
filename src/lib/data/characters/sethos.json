@@ -16,51 +16,16 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 10,
-						"N": 17
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 15,
-						"N": 32
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 39
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 19, "hit": 10, "N": 17 } },
+				{ "name": "N2", "frames": { "anim": 35, "hit": 15, "N": 32 } },
+				{ "name": "N3", "frames": { "anim": 69, "hit": 39, "N": 63 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 26,
-						"D": 16,
-						"J": 16
-					}
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 83,
-						"D": 74,
-						"J": 74
-					}
-				},
+				{ "name": "Aimed Shot", "frames": { "anim": 25, "D": 16, "J": 16 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 38, "D": 27, "J": 27 } },
 				{
 					"name": "Shadowpiercing Shot",
-					"frames": {
-						"swap": 379,
-						"D": 368,
-						"J": 368
-					}
+					"frames": { "anim": 379, "D": 368, "J": 368, "swap": 379 }
 				}
 			],
 			"_curatorNotes": [
@@ -95,20 +60,15 @@
 			"abilityType": "skill",
 			"cooldown": 8,
 			"cooldownStartDelay": 10,
-			"frames": {
-				"swap": 30,
-				"N": 28,
-				"Q": 28,
-				"D": 27,
-				"J": 27
-			},
+			"frames": { "anim": 38, "N": 28, "E": 32, "Q": 28, "D": 27, "J": 27, "swap": 30 },
 			"tags": [],
 			"effects": [],
 			"_curatorNotes": [
 				"Skill energy refund on reaction not authored in effects[] — gcsim subscribes to OnElectroCharged, OnLunarCharged, OnSuperconduct, OnOverload, OnSwirlElectro, OnHyperbloom, OnQuicken, OnAggravate and refunds skillEnergyRegen[lvl]=12 energy on hit. Likely onReaction trigger with electro-reaction condition. Reviewer to author effect."
 			],
 			"behavior": "instant",
-			"description": "Gathers the might of thunder, dealing AoE Electro DMG and quickly retreating. If this attack triggers Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, or Electro Swirl reactions, Sethos recovers a certain amount of Elemental Energy."
+			"description": "Gathers the might of thunder, dealing AoE Electro DMG and quickly retreating. If this attack triggers Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, or Electro Swirl reactions, Sethos recovers a certain amount of Elemental Energy.",
+			"application": [{ "frame": 13, "element": "electro" }]
 		},
 		{
 			"id": "sethos__burst__secret_rite_twilight_shadowpiercer",
@@ -117,16 +77,15 @@
 			"abilityType": "burst",
 			"cooldown": 15,
 			"energyCost": 60,
-			"frames": {
-				"swap": 50
-			},
+			"frames": { "anim": 50 },
 			"tags": [],
 			"effects": [],
 			"_curatorNotes": [
 				"Changed behavior from 'stance' to 'instant' per recipe (stance reserved for Hu Tao/Cyno/Raiden/Furina + queue-flagged; Sethos is Tier A). Q grants an 8s self-buff 'Twilight Meditation' (burstBuffKey) that converts Normal Attacks to Electro Dusk Bolts (AttackTagExtra, ICDTagElementalBurst; DMG = ATK × burstEM[lvl] + burstEM[lvl] × EM, counted as Charged Attack DMG). Canceled when Sethos leaves the field (onCharacterSwap hook in sethos.go). Dusk Bolt EM scaling uses burstEM[] table (talent-level-gated). Reviewer to decide whether duration field or self-buff entry is warranted, and whether 'stance' should be reinstated given the N-replacement behavior."
 			],
 			"behavior": "instant",
-			"description": "Perform a secret rite, entering the \"Twilight Meditation\" state, during which Sethos's Normal Attacks will be converted into enemy-piercing Dusk Bolts: Deal Electro DMG to opponents in its path, with DMG increased based on Sethos's Elemental Mastery.\nSethos cannot perform Aimed Shots while in this state.\nDMG dealt by Dusk Bolts is considered Charged Attack DMG.\nThis effect will be canceled when Sethos leaves the field."
+			"description": "Perform a secret rite, entering the \"Twilight Meditation\" state, during which Sethos's Normal Attacks will be converted into enemy-piercing Dusk Bolts: Deal Electro DMG to opponents in its path, with DMG increased based on Sethos's Elemental Mastery.\nSethos cannot perform Aimed Shots while in this state.\nDMG dealt by Dusk Bolts is considered Charged Attack DMG.\nThis effect will be canceled when Sethos leaves the field.",
+			"application": []
 		}
 	],
 	"passives": [
@@ -144,9 +103,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 700,
 					"stat": "em"
 				}
@@ -167,9 +124,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -191,9 +146,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -223,9 +176,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",

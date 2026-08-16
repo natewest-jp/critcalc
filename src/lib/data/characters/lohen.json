@@ -260,8 +260,5 @@
 			]
 		}
 	],
-	"meta": {
-		"source": "genshin-db",
-		"generatedAt": "2026-07-12T05:40:54.372Z"
-	}
+	"meta": { "source": "genshin-db", "generatedAt": "2026-07-12T05:40:54.372Z" }
 }

@@ -16,45 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 12,
-						"N": 24
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 10,
-						"N": 27
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 20,
-						"N": 70
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 32, "hit": 12, "N": 24 } },
+				{ "name": "N2", "frames": { "anim": 53, "hit": 10, "N": 27 } },
+				{ "name": "N3", "frames": { "anim": 70, "hit": 20 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 23,
-						"D": 15,
-						"J": 15
-					}
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 85,
-						"D": 84,
-						"J": 84
-					}
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 23, "D": 15, "J": 15, "swap": 23 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 85, "D": 84, "J": 84 } }
 			],
 			"sections": [
 				{
@@ -81,13 +49,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 29,
-				"N": 30,
-				"Q": 30,
-				"D": 31,
-				"J": 30
-			},
+			"frames": { "anim": 31, "N": 30, "C": 30, "Q": 30, "J": 30, "swap": 29 },
 			"cooldown": 15,
 			"cooldownStartDelay": 14,
 			"tags": [],
@@ -95,7 +57,8 @@
 			"_curatorNotes": [
 				"3-bounce Spirit Orb (5 with C1 via c1ExtraBounce). Each bounce hits a separate enemy; not separately rendered (single E cast = single bar). The 15s post-skill window gates A1's Hydro/Electro Nightsoul-point gain — pure resource, not modelled."
 			],
-			"description": "Ororon manifests an ancient mystical technique from the Masters of the Night-Wind as a Spirit Orb of midnight shade and throws it at his foe, dealing Nightsoul-aligned Electro DMG.\nWhen other opponents are nearby, the Spirit Orb will bounce between them, dealing Nightsoul-aligned Electro DMG. Each time Night's Sling is used, each opponent can only be selected as a target once.\nAfter 3 bounces, or if there are no eligible targets left, the Orb will disappear."
+			"description": "Ororon manifests an ancient mystical technique from the Masters of the Night-Wind as a Spirit Orb of midnight shade and throws it at his foe, dealing Nightsoul-aligned Electro DMG.\nWhen other opponents are nearby, the Spirit Orb will bounce between them, dealing Nightsoul-aligned Electro DMG. Each time Night's Sling is used, each opponent can only be selected as a target once.\nAfter 3 bounces, or if there are no eligible targets left, the Orb will disappear.",
+			"application": [{ "frame": 41, "element": "electro" }]
 		},
 		{
 			"id": "ororon__burst__dark_voices_echo",
@@ -103,13 +66,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 61,
-				"N": 62,
-				"E": 62,
-				"D": 59,
-				"J": 60
-			},
+			"frames": { "anim": 62, "D": 59, "J": 60, "swap": 61 },
 			"cooldown": 15,
 			"tags": ["summon", "taunt"],
 			"energyCost": 60,
@@ -123,11 +80,7 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1,
-								"firstTickDelay": 0.4
-							},
+							"trigger": { "type": "summonTick", "interval": 1, "firstTickDelay": 0.4 },
 							"scaling": 59.76,
 							"stat": "atk",
 							"element": "electro"
@@ -142,7 +95,8 @@
 				"Supersonic Oculus is stationary in-game — placed on the player's location at burst cast and stays there. mobility: \"stationary\" matches; gcsim's burstArea is captured at frame 0 and reused for all ticks.",
 				"[A7] Taunt is surfaced only via the taunt tag as a placeholder; no dedicated taunt behavior is modeled."
 			],
-			"description": "Ororon works an ancient ritual, dealing Nightsoul-aligned AoE Electro DMG, summoning forth a Supersonic Oculus.\n\nSupersonic Oculus\n·Continuously taunts nearby opponents and attracts attacks from them.\n·Continuously rotates and fires off sonic waves that deal Nightsoul-aligned Electro DMG."
+			"description": "Ororon works an ancient ritual, dealing Nightsoul-aligned AoE Electro DMG, summoning forth a Supersonic Oculus.\n\nSupersonic Oculus\n·Continuously taunts nearby opponents and attracts attacks from them.\n·Continuously rotates and fires off sonic waves that deal Nightsoul-aligned Electro DMG.",
+			"application": [{ "frame": 36, "element": "electro" }]
 		}
 	],
 	"passives": [
@@ -154,10 +108,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": ["electroCharged", "lunarCharged"]
-					},
+					"trigger": { "type": "onReaction", "reaction": ["electroCharged", "lunarCharged"] },
 					"procCooldown": 1.8,
 					"scaling": 160,
 					"stat": "atk",
@@ -203,16 +154,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 9,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 2
-					},
+					"conditions": { "type": "constellation", "level": 2 },
 					"source": "character",
 					"stat": "electroDmgBonus",
 					"value": 40,
@@ -240,14 +185,8 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"conditions": { "type": "constellation", "level": 4 },
 					"amount": 8
 				}
 			],

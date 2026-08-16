@@ -16,37 +16,11 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 18,
-						"N": 20,
-						"C": 26
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 32,
-						"N": 46,
-						"C": 39
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 22,
-						"N": 57
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 34, "hit": 18, "N": 20, "C": 26 } },
+				{ "name": "N2", "frames": { "anim": 57, "hit": 32, "N": 46, "C": 39 } },
+				{ "name": "N3", "frames": { "anim": 70, "hit": 22, "N": 57 } }
 			],
-			"chargeFrames": {
-				"swap": 27,
-				"N": 42,
-				"Q": 40,
-				"D": 23,
-				"J": 23
-			},
+			"chargeFrames": { "anim": 42, "Q": 40, "D": 23, "J": 23, "swap": 27 },
 			"sections": [
 				{
 					"type": "normal",
@@ -71,41 +45,14 @@
 			"name": "Blade Roller",
 			"input": ["N1", "N2", "N3", "N4"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "nightsoulBlessing"
-			},
+			"conditions": { "type": "state", "state": "nightsoulBlessing" },
 			"infusion": "geo",
 			"tags": [],
 			"hits": [
-				{
-					"name": "Blade Roller 1",
-					"frames": {
-						"swap": 17,
-						"N": 20
-					}
-				},
-				{
-					"name": "Blade Roller 2",
-					"frames": {
-						"swap": 17,
-						"N": 28
-					}
-				},
-				{
-					"name": "Blade Roller 3",
-					"frames": {
-						"swap": 22,
-						"N": 30
-					}
-				},
-				{
-					"name": "Blade Roller 4",
-					"frames": {
-						"swap": 32,
-						"N": 68
-					}
-				}
+				{ "name": "Blade Roller 1", "frames": { "anim": 44, "hit": 17, "N": 20 } },
+				{ "name": "Blade Roller 2", "frames": { "anim": 48, "hit": 17, "N": 28 } },
+				{ "name": "Blade Roller 3", "frames": { "anim": 50, "hit": 22, "N": 30 } },
+				{ "name": "Blade Roller 4", "frames": { "anim": 69, "hit": 32, "N": 68 } }
 			],
 			"_curatorNotes": [
 				"Blade Roller is the in-stance N replacement (4 kicks instead of 3 sword strikes), gated by nightsoulBlessing state (opened by the skill's opensState field). DEF-scaling Geo damage (UseDef + IgnoreInfusion in gcsim); modelled via infusion: \"geo\" — DEF scaling itself isn't expressed in our schema.",
@@ -118,13 +65,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "stance",
-			"frames": {
-				"swap": 19,
-				"N": 19,
-				"Q": 20,
-				"D": 15,
-				"J": 15
-			},
+			"frames": { "anim": 20, "N": 19, "D": 15, "J": 15, "swap": 19 },
 			"cooldown": 7,
 			"cooldownStartsAtStanceEnd": true,
 			"duration": 9,
@@ -135,10 +76,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"conditions": {
 						"type": "teamElementCount",
 						"elements": ["pyro"],
@@ -152,10 +90,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"conditions": {
 						"type": "teamElementCount",
 						"elements": ["hydro"],
@@ -169,10 +104,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"conditions": {
 						"type": "teamElementCount",
 						"elements": ["cryo"],
@@ -186,10 +118,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"conditions": {
 						"type": "teamElementCount",
 						"elements": ["electro"],
@@ -203,10 +132,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"conditions": {
 						"type": "teamElementCount",
 						"elements": ["pyro", "hydro", "cryo", "electro"],
@@ -230,7 +156,8 @@
 				"Sampler conversion (gcsim xilonen.go Init): one Geo sampler converts per non-Xilonen Pyro/Hydro/Cryo/Electro party MEMBER (samplersConverted++ each). teamElementCount excludes the holder by definition (ability.ts exclude-self semantic), so elements:[X] >= 1 gates each converted element exactly. The Geo effect's <=2 fallback models gcsim's 'geo remains if samplersConverted < 3' rule; the party-smaller-than-4 branch (geo also stays) is subsumed — with fewer than 4 members the converted count can never exceed 2, so the condition is automatically true.",
 				"Geo Sample additionally stays active the whole time she is in Nightsoul's Blessing (gcsim skill.go:111-133 activeGeoSampler re-applies every 60f while blading), and C2 makes it permanently active — the timeline shows only the 15s activation window, so extra Geo shred uptime is understated."
 			],
-			"description": "Let the rhythms of passion resound throughout the land! Xilonen switches to high-speed combat blading gear and rushes forward a certain distance before dealing Nightsoul-aligned Geo DMG based on her DEF.\nAfter using this, Xilonen will gain 45 Nightsoul points and enter the Nightsoul's Blessing state. In this state, she will shift to the Blade Roller mode.\n\nSource Samples\nXilonen has 3 Samplers with her that can generate different Soundscapes based on her other party members' Elemental Types, decreasing nearby opponents' corresponding Elemental RES while active.\nThe initial recorded Source Sample within each Sampler will be Geo, and for each party member who is Pyro/Hydro/Cryo/Electro, 1 Geo Sample will change to that corresponding Element.\nWhile Xilonen is in the Nightsoul's Blessing state, the Geo Source Sample she carries will always be active. After unlocking her Ascension Talent, \"Netotiliztli's Echoes,\" Xilonen can trigger said Ascension Talent's effects to regenerate Nightsoul points for herself. When her Nightsoul points hit the maximum, she will consume all her Nightsoul points and activate the 3 Source Samples she has on hand for 15s.\nWhen the Source Samples are active, nearby opponents' corresponding Elemental RES will decrease. Source Sample effects of the same Elemental Type cannot stack. Xilonen can trigger these effects even when off-field.\n\nNightsoul's Blessing: Xilonen\nContinuously consume Nightsoul points. When these points are depleted or if used again, this Nightsoul's Blessing state will end. This state has the following traits:\n·Switches to the Blade Roller mode, increasing Xilonen's Movement SPD and climbing speed, and she can perform high-speed leaps in Ocelot Form while climbing.\n·Xilonen's Nightsoul's Blessing has the following restrictions: When in this state, Xilonen's Nightsoul points have a 9s time limit. After this limit passes, her Nightsoul points will immediately expire.\n\nAfter Xilonen's Nightsoul points have expired while she is in the Nightsoul's Blessing state, she will no longer be able to generate Nightsoul points via the Ascension Talent \"Netotiliztli's Echoes.\""
+			"description": "Let the rhythms of passion resound throughout the land! Xilonen switches to high-speed combat blading gear and rushes forward a certain distance before dealing Nightsoul-aligned Geo DMG based on her DEF.\nAfter using this, Xilonen will gain 45 Nightsoul points and enter the Nightsoul's Blessing state. In this state, she will shift to the Blade Roller mode.\n\nSource Samples\nXilonen has 3 Samplers with her that can generate different Soundscapes based on her other party members' Elemental Types, decreasing nearby opponents' corresponding Elemental RES while active.\nThe initial recorded Source Sample within each Sampler will be Geo, and for each party member who is Pyro/Hydro/Cryo/Electro, 1 Geo Sample will change to that corresponding Element.\nWhile Xilonen is in the Nightsoul's Blessing state, the Geo Source Sample she carries will always be active. After unlocking her Ascension Talent, \"Netotiliztli's Echoes,\" Xilonen can trigger said Ascension Talent's effects to regenerate Nightsoul points for herself. When her Nightsoul points hit the maximum, she will consume all her Nightsoul points and activate the 3 Source Samples she has on hand for 15s.\nWhen the Source Samples are active, nearby opponents' corresponding Elemental RES will decrease. Source Sample effects of the same Elemental Type cannot stack. Xilonen can trigger these effects even when off-field.\n\nNightsoul's Blessing: Xilonen\nContinuously consume Nightsoul points. When these points are depleted or if used again, this Nightsoul's Blessing state will end. This state has the following traits:\n·Switches to the Blade Roller mode, increasing Xilonen's Movement SPD and climbing speed, and she can perform high-speed leaps in Ocelot Form while climbing.\n·Xilonen's Nightsoul's Blessing has the following restrictions: When in this state, Xilonen's Nightsoul points have a 9s time limit. After this limit passes, her Nightsoul points will immediately expire.\n\nAfter Xilonen's Nightsoul points have expired while she is in the Nightsoul's Blessing state, she will no longer be able to generate Nightsoul points via the Ascension Talent \"Netotiliztli's Echoes.\"",
+			"application": [{ "frame": 6, "element": "geo" }]
 		},
 		{
 			"id": "xilonen__burst__ocelotlicue_point",
@@ -238,13 +165,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 92,
-				"N": 95,
-				"E": 93,
-				"D": 95,
-				"J": 94
-			},
+			"frames": { "anim": 101, "N": 95, "E": 93, "D": 95, "J": 94, "swap": 92 },
 			"cooldown": 15,
 			"tags": ["heal"],
 			"energyCost": 60,
@@ -259,11 +180,7 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1.5,
-								"firstTickDelay": 0
-							},
+							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 0 },
 							"conditions": {
 								"type": "teamElementCount",
 								"elements": ["pyro", "hydro", "cryo", "electro"],
@@ -284,7 +201,12 @@
 				"Heal per tick TL10: 187.2% DEF + 1101.71 flat (sidecar 'Continuous Healing' col 10 = '187.2% DEF+1102'; gcsim burstHealPer[9]=1.872, burstHealBase[9]=1101.7063). Target 'active' — gcsim sets hi.Target = c.Core.Player.Active() each pulse. Heal snapshots Xilonen's Healing Bonus (hi.Bonus = c.Stat(Heal)).",
 				"Initial burst AoE Geo DMG (281.3% DEF TL10, 96f) and the <2-mode Follow-Up Beats (also 281.3% DEF, 128f/164f) are rendered via the burst FrameMap, not authored as separate damage effects (corpus convention for cast damage). Burst remains behavior: instant — the periodic heal now lives on the summon rather than being described as queued cast events."
 			],
-			"description": "Activates the Phlogiston Stereo DJ Controller (Portable) at full power, dealing Nightsoul-aligned AoE Geo DMG based on Xilonen's DEF.\n\nAdditionally, she will trigger the following effects based on her different Source Samples:\n·If she has at least 2 Source Samples that have had their Elemental Types changed, Xilonen will play an Ebullient rhythm, healing nearby active characters at intervals based on her DEF.\n·If she has fewer than 2 Source Samples that have had their Elemental Types changed, Xilonen will start up an Ardent rhythm, which will play two additional beats that deal Nightsoul-aligned AoE Geo DMG based on her DEF."
+			"description": "Activates the Phlogiston Stereo DJ Controller (Portable) at full power, dealing Nightsoul-aligned AoE Geo DMG based on Xilonen's DEF.\n\nAdditionally, she will trigger the following effects based on her different Source Samples:\n·If she has at least 2 Source Samples that have had their Elemental Types changed, Xilonen will play an Ebullient rhythm, healing nearby active characters at intervals based on her DEF.\n·If she has fewer than 2 Source Samples that have had their Elemental Types changed, Xilonen will start up an Ardent rhythm, which will play two additional beats that deal Nightsoul-aligned AoE Geo DMG based on her DEF.",
+			"application": [
+				{ "frame": 96, "element": "geo" },
+				{ "frame": 128, "element": "geo" },
+				{ "frame": 164, "element": "geo" }
+			]
 		}
 	],
 	"passives": [
@@ -305,9 +227,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onTeamNightsoulBurst"
-					},
+					"trigger": { "type": "onTeamNightsoulBurst" },
 					"duration": 15,
 					"durationType": "refresh",
 					"source": "character",
@@ -359,67 +279,37 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 65
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 65 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"source": "character",
 					"stat": "chargeFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 65
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 65 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"conditions": { "type": "constellation", "level": 4 },
 					"source": "character",
 					"stat": "plungeFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "def",
-						"ratio": 65
-					},
+					"value": { "type": "scaling", "stat": "def", "ratio": 65 },
 					"snapshottable": false
 				}
 			],

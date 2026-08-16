@@ -38,12 +38,13 @@
 			],
 			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 25, "N": 30 } },
-				{ "name": "N2", "frames": { "swap": 18, "N": 32 } },
-				{ "name": "N3", "frames": { "swap": 34, "N": 79 } },
-				{ "name": "N4", "frames": { "swap": 48, "N": 87 } }
+				{ "name": "N1", "frames": { "anim": 39, "hit": 25, "N": 30 } },
+				{ "name": "N2", "frames": { "anim": 46, "hit": 18, "N": 32 } },
+				{ "name": "N3", "frames": { "anim": 86, "hit": 34, "N": 79 } },
+				{ "name": "N4", "frames": { "anim": 89, "hit": 48, "N": 87 } }
 			],
-			"plungeFrames": { "swap": 67, "N": 56, "E": 56, "Q": 56, "D": 43 }
+			"plungeFrames": { "anim": 87, "N": 58, "E": 57, "Q": 57, "D": 46, "swap": 69 },
+			"lowPlungeFrames": { "anim": 84, "N": 56, "E": 56, "Q": 56, "D": 43, "swap": 67 }
 		},
 		{
 			"id": "gaming__skill__bestial_ascent",
@@ -59,7 +60,8 @@
 			],
 			"description": "Pounces forward using the Wushou arts, leaping high into the air after coming into contact with a target or surface.\nAfter Gaming has used Bestial Ascent to rise into the air, if he immediately uses a Plunging Attack, he will use the especially powerful Plunging Attack: Charmed Cloudstrider instead.\n\nPlunging Attack: Charmed Cloudstrider\nThe DMG from Plunging Attacks caused by Bestial Ascent is converted to Pyro DMG that cannot be overridden by other elemental infusions. Upon landing, Gaming will consume a fixed amount of HP. Gaming's HP cannot be reduced below 10% by this method.\nCharmed Cloudstrider DMG is considered Plunging Attack DMG.",
 			"behavior": "instant",
-			"frames": { "swap": 63, "J": 63 }
+			"frames": { "anim": 64, "J": 63, "P": 23, "swap": 63 },
+			"application": []
 		},
 		{
 			"id": "gaming__burst__suannis_gilded_dance",
@@ -73,9 +75,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -90,7 +90,8 @@
 			],
 			"description": "Gaming enters Wushou Stance, briefly applying Pyro to him, recovering a fixed amount of HP, and summons his companion, the Suanni Man Chai, to smash into his target, dealing AoE Pyro DMG.\nAfter bashing its target, Man Chai will roll to a nearby location before moving towards Gaming. When it links up with Gaming, Man Chai will leave the field and reset the CD for Gaming's Elemental Skill, Bestial Ascent.\nWhile Wushou Stance is active, his resistance to interruption is increased, and when Gaming lands with Charmed Cloudstrider attack or completes the forward pounce attack from Bestial Ascent with over 50% HP, he will summon Man Chai again.\nEach Gaming can only have 1 Man Chai on the field simultaneously.\nThis effect will be canceled once Gaming leaves the field.",
 			"behavior": "instant",
-			"frames": { "swap": 77, "N": 63, "E": 63, "J": 65 }
+			"frames": { "anim": 66, "N": 63, "E": 63, "J": 65, "swap": 77 },
+			"application": [{ "frame": 60, "element": "pyro" }]
 		}
 	],
 	"passives": [
@@ -105,9 +106,7 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 1.5,
 					"stat": "hp",
 					"caveat": "After Charmed Cloudstrider (plunge) hits, Gaming heals 1.5% of his Max HP every 0.2s for 0.8s (4 ticks); an 0.8s cooldown gates each proc window."
@@ -138,9 +137,7 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 15,
 					"stat": "hp"
 				}
@@ -193,9 +190,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -205,9 +200,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",

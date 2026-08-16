@@ -35,45 +35,12 @@
 			"description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"_curatorNotes": ["No plunge.go in gcsim character dir — plungeFrames not available."],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 15,
-						"N": 21,
-						"C": 21
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 13,
-						"N": 21,
-						"C": 21
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 15,
-						"N": 39,
-						"C": 39
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 21,
-						"N": 71
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 32, "hit": 15, "N": 21, "C": 21 } },
+				{ "name": "N2", "frames": { "anim": 34, "hit": 13, "N": 21, "C": 21 } },
+				{ "name": "N3", "frames": { "anim": 47, "hit": 15, "N": 39, "C": 39 } },
+				{ "name": "N4", "frames": { "anim": 62, "hit": 21, "N": 71 } }
 			],
-			"chargeFrames": {
-				"swap": 42,
-				"E": 42,
-				"Q": 42,
-				"D": 10,
-				"J": 10
-			}
+			"chargeFrames": { "anim": 67, "E": 42, "Q": 42, "D": 10, "J": 10, "swap": 42 }
 		},
 		{
 			"id": "dahlia__skill__immersive_ordinance",
@@ -93,26 +60,16 @@
 				"[A7] Ability caveat demoted kit detail: the Sacramental Shower is touch-triggered — nearby party members bounce off it, opponents make it explode.",
 				"[A7] Ability caveat demoted rationale: its duration is not tracked by gcsim and has no canonical source, so no window is surfaced (a fabricated window would mislead). Already captured in curator notes."
 			],
-			"frames": {
-				"swap": 31,
-				"N": 32,
-				"Q": 33,
-				"D": 31,
-				"J": 29
-			},
+			"frames": { "anim": 53, "N": 32, "E": 36, "Q": 33, "D": 31, "J": 29, "swap": 31 },
 			"variants": [
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": {
-						"swap": 33,
-						"N": 35,
-						"Q": 35,
-						"D": 33,
-						"J": 32
-					}
+					"frames": { "anim": 33, "N": 35, "Q": 35, "D": 33, "J": 32, "swap": 33 },
+					"application": [{ "frame": 27, "element": "hydro" }]
 				}
-			]
+			],
+			"application": [{ "frame": 27, "element": "hydro" }]
 		},
 		{
 			"id": "dahlia__burst__radiant_psalter",
@@ -126,10 +83,7 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
 					"scaling": 6.048,
@@ -151,13 +105,8 @@
 				"Favonian Favor is a 12s duration-bounded self-status (C4 extends to 15s, gcsim: favonianFavorDuration = 12*60 + c4FavonianFavorBonusDur()). Not modeled as summons[] — no spawned entity in world space. Shield of Sacred Favor first applies at frame 31 (burstShieldInitial) and regenerates from Benison stacks (max 4 per Favonian Favor window; gained via 4 NA hits on-field or 2 via A1 Frozen trigger). Shield effect authored 2026-07-12 (see effects[]); still pending reviewer: Favonian Favor ATK SPD self-buff and Benison stack tracking.",
 				"Shield label \"Shield of Sacred Favor\" taken verbatim from this ability's own description text (the game's wording, via genshin-db) — the shield lane renders it. ⛔ Kits whose text says only \"a shield\" (Diona, Candace, Xinyan, Lan Yan) keep the generic fallback rather than borrowing the ability name; gcsim's \"<Ability> (Shield)\" strings are its own internal convention, not in-game names."
 			],
-			"frames": {
-				"swap": 52,
-				"N": 53,
-				"E": 52,
-				"D": 51,
-				"J": 51
-			}
+			"frames": { "anim": 55, "N": 53, "E": 52, "D": 51, "J": 51, "swap": 52 },
+			"application": [{ "frame": 30, "element": "hydro" }]
 		}
 	],
 	"passives": [

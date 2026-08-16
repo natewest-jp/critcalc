@@ -15,54 +15,13 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 20,
-						"C": 33
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 9,
-						"N": 17,
-						"C": 27
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 13,
-						"N": 37,
-						"C": 46
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 25,
-						"N": 44,
-						"C": 48
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 24,
-						"N": 60
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 33, "hit": 13, "N": 20 } },
+				{ "name": "N2", "frames": { "anim": 27, "hit": 9, "N": 17 } },
+				{ "name": "N3", "frames": { "anim": 46, "hit": 13, "N": 37 } },
+				{ "name": "N4", "frames": { "anim": 48, "hit": 25, "N": 44 } },
+				{ "name": "N5", "frames": { "anim": 60, "hit": 24 } }
 			],
-			"chargeFrames": {
-				"swap": 44,
-				"N": 55,
-				"E": 41,
-				"Q": 41,
-				"D": 21,
-				"J": 21
-			},
+			"chargeFrames": { "anim": 55, "E": 41, "Q": 41, "D": 21, "J": 21, "swap": 44 },
 			"sections": [
 				{
 					"type": "normal",
@@ -88,23 +47,14 @@
 			"input": ["E", "tE", "pE"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 41,
-				"N": 42,
-				"Q": 41,
-				"D": 22,
-				"J": 23
-			},
+			"frames": { "anim": 42, "D": 22, "J": 23, "swap": 41 },
 			"cooldown": 5,
 			"cooldownModifiers": [
 				{
 					"source": "A1: Rekindle",
 					"type": "percent",
 					"value": -20,
-					"conditions": {
-						"type": "ascension",
-						"min": 1
-					}
+					"conditions": { "type": "ascension", "min": 1 }
 				},
 				{
 					"source": "A4: Fearnaught",
@@ -113,14 +63,8 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "ascension",
-								"min": 4
-							},
-							{
-								"type": "state",
-								"state": "duringSummon"
-							}
+							{ "type": "ascension", "min": 4 },
+							{ "type": "state", "state": "duringSummon" }
 						]
 					}
 				}
@@ -129,31 +73,28 @@
 				{
 					"label": "Hold Lv.1",
 					"input": ["h1E"],
-					"frames": {
-						"swap": 96,
-						"N": 98,
-						"Q": 97,
-						"D": 65,
-						"J": 66
-					},
-					"cooldown": 7.5
+					"frames": { "anim": 98, "Q": 97, "D": 65, "J": 66, "swap": 96 },
+					"cooldown": 7.5,
+					"application": [
+						{ "frame": 45, "element": "pyro" },
+						{ "frame": 57, "element": "pyro" }
+					]
 				},
 				{
 					"label": "Hold Lv.2",
 					"input": ["h2E"],
-					"frames": {
-						"swap": 337,
-						"N": 343,
-						"E": 339,
-						"Q": 339,
-						"D": 231,
-						"J": 240
-					},
-					"cooldown": 10
+					"frames": { "anim": 337, "N": 343, "E": 339, "Q": 339, "D": 231, "J": 240, "swap": 337 },
+					"cooldown": 10,
+					"application": [
+						{ "frame": 112, "element": "pyro" },
+						{ "frame": 121, "element": "pyro" },
+						{ "frame": 166, "element": "pyro" }
+					]
 				}
 			],
 			"tags": [],
-			"description": "Bennett puts all his fire and passion for adventuring into his sword. Results may vary based on how fired up he is...\n\nPress\nA single, swift flame strike that deals Pyro DMG.\n\nHold (Short)\nCharges up, resulting in different effects when unleashed based on the Charge Level.\n·Level 1: Strikes twice, dealing Pyro DMG and launching opponents.\n·Level 2: Unleashes 3 consecutive attacks that deal impressive Pyro DMG, but the last attack triggers an explosion that launches both Bennett and the enemy.\nBennett takes no damage from being launched."
+			"description": "Bennett puts all his fire and passion for adventuring into his sword. Results may vary based on how fired up he is...\n\nPress\nA single, swift flame strike that deals Pyro DMG.\n\nHold (Short)\nCharges up, resulting in different effects when unleashed based on the Charge Level.\n·Level 1: Strikes twice, dealing Pyro DMG and launching opponents.\n·Level 2: Unleashes 3 consecutive attacks that deal impressive Pyro DMG, but the last attack triggers an explosion that launches both Bennett and the enemy.\nBennett takes no damage from being launched.",
+			"application": [{ "frame": 16, "element": "pyro" }]
 		},
 		{
 			"id": "bennett__burst__fantastic_voyage",
@@ -161,13 +102,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 51,
-				"N": 53,
-				"E": 52,
-				"D": 49,
-				"J": 50
-			},
+			"frames": { "anim": 53, "D": 49, "J": 50, "swap": 51 },
 			"cooldown": 15,
 			"cooldownStartDelay": 34,
 			"summons": [
@@ -180,18 +115,11 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 1,
-								"firstTickDelay": 1
-							},
+							"trigger": { "type": "summonTick", "interval": 1, "firstTickDelay": 1 },
 							"scaling": 10.8,
 							"stat": "hp",
 							"flat": 1270.24,
-							"conditions": {
-								"type": "recipientHpBelow",
-								"threshold": 70
-							}
+							"conditions": { "type": "recipientHpBelow", "threshold": 70 }
 						}
 					]
 				}
@@ -208,34 +136,23 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast"
-					},
+					"trigger": { "type": "onCast" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": {
-						"type": "scaling",
-						"stat": "baseAtk",
-						"ratio": 100.8
-					},
+					"value": { "type": "scaling", "stat": "baseAtk", "ratio": 100.8 },
 					"snapshottable": true,
 					"conditions": {
 						"type": "any",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 1
-							},
-							{
-								"type": "selfHpAbove",
-								"threshold": 70
-							}
+							{ "type": "constellation", "level": 1 },
+							{ "type": "selfHpAbove", "threshold": 70 }
 						]
 					}
 				}
-			]
+			],
+			"application": [{ "frame": 37, "element": "pyro" }]
 		}
 	],
 	"passives": [
@@ -269,24 +186,14 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": {
-						"type": "scaling",
-						"stat": "baseAtk",
-						"ratio": 20
-					},
+					"value": { "type": "scaling", "stat": "baseAtk", "ratio": 20 },
 					"snapshottable": true,
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					}
+					"conditions": { "type": "constellation", "level": 1 }
 				}
 			]
 		},
@@ -314,15 +221,10 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 135,
 					"stat": "atk",
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					}
+					"conditions": { "type": "constellation", "level": 4 }
 				}
 			]
 		},
@@ -343,10 +245,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -356,38 +255,23 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 6
-							},
-							{
-								"type": "weaponType",
-								"weapons": ["sword", "claymore", "polearm"]
-							}
+							{ "type": "constellation", "level": 6 },
+							{ "type": "weaponType", "weapons": ["sword", "claymore", "polearm"] }
 						]
 					}
 				},
 				{
 					"type": "infuse",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
 					"element": "pyro",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 6
-							},
-							{
-								"type": "weaponType",
-								"weapons": ["sword", "claymore", "polearm"]
-							}
+							{ "type": "constellation", "level": 6 },
+							{ "type": "weaponType", "weapons": ["sword", "claymore", "polearm"] }
 						]
 					}
 				}

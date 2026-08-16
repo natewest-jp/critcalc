@@ -16,14 +16,14 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 11, "N": 14, "C": 21 } },
-				{ "name": "N2", "frames": { "swap": 10, "N": 21, "C": 22 } },
-				{ "name": "N3", "frames": { "swap": 20, "N": 33, "C": 33 } },
-				{ "name": "N4", "frames": { "swap": 18, "N": 28, "C": 26 } },
-				{ "name": "N5", "frames": { "swap": 16, "N": 53 } }
+				{ "name": "N1", "frames": { "anim": 21, "hit": 11, "N": 14 } },
+				{ "name": "N2", "frames": { "anim": 22, "hit": 10, "N": 21 } },
+				{ "name": "N3", "frames": { "anim": 33, "hit": 20 } },
+				{ "name": "N4", "frames": { "anim": 28, "hit": 18, "C": 26 } },
+				{ "name": "N5", "frames": { "anim": 53, "hit": 16 } }
 			],
-			"chargeFrames": { "swap": 29, "E": 67, "Q": 67, "D": 32, "J": 30 },
-			"plungeFrames": { "swap": 61, "N": 58, "E": 59, "Q": 59, "D": 46 },
+			"chargeFrames": { "anim": 76, "E": 67, "Q": 67, "D": 32, "J": 30, "swap": 29 },
+			"plungeFrames": { "anim": 77, "N": 59, "E": 60, "Q": 61, "D": 46, "J": 76, "swap": 63 },
 			"_curatorNotes": [
 				"High plunge frames exist in gcsim (highPlungeFrames) but are not represented; recipe uses lowPlungeFrames only.",
 				"N5 ActionCharge=500 is flagged in gcsim as 'TODO: this action is illegal' — omitted from N5 frames.",
@@ -46,7 +46,8 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"lowPlungeFrames": { "anim": 76, "N": 58, "E": 59, "Q": 59, "D": 46, "swap": 61 }
 		},
 		{
 			"id": "qiqi__skill__adeptus_art_herald_of_frost",
@@ -56,26 +57,16 @@
 			"cooldown": 30,
 			"cooldownStartDelay": 3,
 			"cooldownModifiers": [
-				{
-					"source": "Witch's Revelation: Seven Sacred Treasures",
-					"type": "flat",
-					"value": -15
-				}
+				{ "source": "Witch's Revelation: Seven Sacred Treasures", "type": "flat", "value": -15 }
 			],
 			"tags": ["heal"],
-			"frames": { "swap": 57, "Q": 58, "D": 6, "J": 5 },
+			"frames": { "anim": 57, "Q": 58, "D": 6, "J": 5 },
 			"effects": [
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "normal"
-					},
-					"conditions": {
-						"type": "state",
-						"state": "duringSummon"
-					},
+					"trigger": { "type": "onHit", "abilityType": "normal" },
+					"conditions": { "type": "state", "state": "duringSummon" },
 					"scaling": 19.008,
 					"stat": "atk",
 					"flat": 148.309
@@ -83,14 +74,8 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged"
-					},
-					"conditions": {
-						"type": "state",
-						"state": "duringSummon"
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged" },
+					"conditions": { "type": "state", "state": "duringSummon" },
 					"scaling": 19.008,
 					"stat": "atk",
 					"flat": 148.309
@@ -107,11 +92,7 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 4.5,
-								"firstTickDelay": 0
-							},
+							"trigger": { "type": "summonTick", "interval": 4.5, "firstTickDelay": 0 },
 							"scaling": 125.28,
 							"stat": "atk",
 							"flat": 991.287
@@ -129,7 +110,19 @@
 			],
 			"behavior": "instant",
 			"description": "Using the Icevein Talisman, Qiqi brings forth the Herald of Frost, dealing Cryo DMG to surrounding opponents.\n\nHerald of Frost\n·On hit, Qiqi's Normal and Charged Attacks regenerate HP for your own party members and nearby teammates. Healing scales based on Qiqi's ATK.\n·Periodically regenerates your active character's HP.\n·Follows the character around, dealing Cryo DMG to opponents in their path.",
-			"caveat": "The 15s cooldown assumes the Witch's Revelation talent Seven Sacred Treasures is unlocked; without it the cooldown is 30s. Not modeled: the Herald's coordinated attacks on the active character's hits."
+			"caveat": "The 15s cooldown assumes the Witch's Revelation talent Seven Sacred Treasures is unlocked; without it the cooldown is 30s. Not modeled: the Herald's coordinated attacks on the active character's hits.",
+			"application": [
+				{ "frame": 32, "element": "cryo" },
+				{ "frame": 96, "element": "cryo" },
+				{ "frame": 231, "element": "cryo" },
+				{ "frame": 291, "element": "cryo" },
+				{ "frame": 426, "element": "cryo" },
+				{ "frame": 486, "element": "cryo" },
+				{ "frame": 621, "element": "cryo" },
+				{ "frame": 681, "element": "cryo" },
+				{ "frame": 816, "element": "cryo" },
+				{ "frame": 876, "element": "cryo" }
+			]
 		},
 		{
 			"id": "qiqi__burst__adeptus_art_preserver_of_fortune",
@@ -139,15 +132,9 @@
 			"cooldown": 20,
 			"tags": [],
 			"energyCost": 80,
-			"frames": { "swap": 112, "N": 113, "E": 113, "J": 114 },
+			"frames": { "anim": 115, "N": 113, "E": 113, "J": 114, "swap": 112 },
 			"effects": [],
-			"summons": [
-				{
-					"label": "Fortune-Preserving Talisman",
-					"duration": 15,
-					"spawnsAt": 40
-				}
-			],
+			"summons": [{ "label": "Fortune-Preserving Talisman", "duration": 15, "spawnsAt": 40 }],
 			"_curatorNotes": [
 				"Fortune-Preserving Talisman is an enemy-attached status effect modeled as a summon (no mobility field, per Mona Illusory Bubble precedent). spawnsAt=40 from talismanAi QueueAttack(…, 40, 40, talismanCB) in burst.go, which fires before main DMG at burstHitmark=82. Duration 15s from e.AddStatus(talismanKey, 15*60).",
 				"STELLAR ROUND 2026-07-29. Enhanced (buff-field) text, Fandom 'Adeptus Art: Preserver of Fortune': 'Radiance: Stellar-Conduct: Deals an additional instance of Cryo DMG that is also considered Stellar-Conduct DMG.' Stellar-Conduct DMG scaling row 297.3–669%, TL10 = 535.2%; Advanced Properties list it as a separate 0U, no-ICD instance. Page category 'Direct Stellar-Conduct Talents' — damage magnitude, so caveat + note only, never a damage effect (same call as Sandrone C4). Gate is the Radiance: Stellar-Conduct state (Qiqi inside a Polestar Field), narrower than a teamEnablesReaction condition would express — nothing authored, so no gate needed here.",
@@ -155,7 +142,8 @@
 			],
 			"behavior": "instant",
 			"description": "Qiqi releases the adeptus power sealed within her body, marking nearby opponents with a Fortune-Preserving Talisman that deals Cryo DMG.\n\nFortune-Preserving Talisman\nWhen opponents affected by this Talisman take DMG, the character that dealt this DMG regenerates HP.",
-			"caveat": "Not modeled: with the Witch's Revelation talent unlocked, a cast inside a Polestar Field adds a Cryo hit that counts as Stellar-Conduct DMG."
+			"caveat": "Not modeled: with the Witch's Revelation talent unlocked, a cast inside a Polestar Field adds a Cryo hit that counts as Stellar-Conduct DMG.",
+			"application": [{ "frame": 40 }]
 		}
 	],
 	"passives": [
@@ -187,14 +175,8 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
-					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
 					"duration": 15,
 					"durationType": "refresh",
 					"source": "character",
@@ -205,14 +187,8 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
-					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
 					"duration": 15,
 					"durationType": "refresh",
 					"source": "character",
@@ -239,24 +215,12 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"effects": [
+				{ "type": "energy", "target": "self", "trigger": { "type": "manual" }, "amount": 2 },
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"amount": 2
-				},
-				{
-					"type": "energy",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
-					},
+					"trigger": { "type": "manual" },
+					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
 					"procCooldown": 6,
 					"amount": 6
 				}
@@ -277,13 +241,8 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
 					"source": "character",
 					"stat": "atk%",
 					"value": 50,
@@ -313,9 +272,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 180,
 					"stat": "atk"
 				}
@@ -343,10 +300,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"scaling": 50,
 					"stat": "hp"
 				}

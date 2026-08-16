@@ -16,70 +16,24 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 11,
-						"N": 11,
-						"C": 17
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 16,
-						"N": 21,
-						"C": 26
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 17,
-						"N": 31,
-						"C": 33
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 35,
-						"N": 49,
-						"C": 49
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 21,
-						"N": 30,
-						"C": 33
-					}
-				},
-				{
-					"name": "N6",
-					"frames": {
-						"swap": 44,
-						"N": 58,
-						"C": 55
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 24, "hit": 11, "N": 11, "C": 17 } },
+				{ "name": "N2", "frames": { "anim": 31, "hit": 16, "N": 21, "C": 26 } },
+				{ "name": "N3", "frames": { "anim": 39, "hit": 17, "N": 31, "C": 33 } },
+				{ "name": "N4", "frames": { "anim": 55, "hit": 35, "N": 49, "C": 49 } },
+				{ "name": "N5", "frames": { "anim": 43, "hit": 21, "N": 30, "C": 33 } },
+				{ "name": "N6", "frames": { "anim": 59, "hit": 44, "N": 58, "C": 55 } }
 			],
 			"chargeFrames": {
-				"swap": 58,
+				"anim": 60,
 				"N": 42,
+				"C": 53,
 				"E": 42,
 				"Q": 42,
 				"D": 37,
-				"J": 37
+				"J": 37,
+				"swap": 58
 			},
-			"plungeFrames": {
-				"swap": 63,
-				"N": 62,
-				"E": 60,
-				"Q": 61,
-				"J": 78
-			},
+			"plungeFrames": { "anim": 81, "N": 62, "C": 73, "E": 64, "Q": 63, "J": 80, "swap": 66 },
 			"sections": [
 				{
 					"type": "normal",
@@ -107,7 +61,8 @@
 				"Charged-attack chargeFrames includes ActionCharge = 53 (CA-into-CA cancel) — omitted per recipe key-set rule for charged attacks (no C key).",
 				"High plunge variants exist in gcsim (highPlungeFrames distinct from low) but are not represented per recipe. plungeFrames sourced from gcsim's lowPlungeFrames. ActionDash not set on lowPlungeFrames — D omitted per recipe rule. ActionCharge = 69 set on lowPlungeFrames — omitted per recipe key-set rule (no C on plunges).",
 				"gcsim restricts plunge to AirborneXianyun-launched only — sim limitation, not in-game."
-			]
+			],
+			"lowPlungeFrames": { "anim": 79, "N": 62, "C": 69, "E": 60, "Q": 61, "J": 78, "swap": 63 }
 		},
 		{
 			"id": "arlecchino__skill__all_is_ash",
@@ -116,13 +71,7 @@
 			"abilityType": "skill",
 			"cooldown": 30,
 			"cooldownStartDelay": 16,
-			"frames": {
-				"swap": 60,
-				"N": 70,
-				"Q": 70,
-				"D": 72,
-				"J": 73
-			},
+			"frames": { "anim": 77, "N": 70, "C": 65, "Q": 70, "D": 72, "J": 73, "swap": 60 },
 			"tags": [],
 			"effects": [],
 			"description": "Summons forth Balemoon Bloodfire, dealing Pyro DMG to multiple nearby opponents and performing a dash-cleave against one of them, dealing AoE Pyro DMG.\nOpponents hit by the aforementioned attack will have a Blood-Debt Directive applied to them.\n\nBlood-Debt Directive\n·Lasts 30s. Every 5s, it will deal 1 instance of Pyro DMG to the opponent. Max 2 instances. This DMG will be considered Elemental Skill DMG.\n·When Arlecchino uses a Charged Attack or her Elemental Burst, Balemoon Rising, she will absorb and clear nearby Blood-Debt Directives. Each Directive absorbed grants her a Bond of Life worth 65% of her Max HP.\n·The maximum value of the Bond of Life she can be granted through Blood-Debt Directives within 35s after using her Elemental Skill is 145% of her Max HP. Using the Elemental Skill again during this duration will restart the count on duration and the limit on the value of Bond of Life she may gain from Blood-Debt Directives.",
@@ -132,6 +81,12 @@
 				"Skill ticks: Spike hit at frame 17 (mult skillSpike[talent], skillSpike[8] = 0.25228), Final cleave hit at frame 38 (mult skillFinal[talent], skillFinal[8] = 2.27052). Both Pyro. Particle generation: 5 Pyro particles via particleCB on cleave hit, 0.3s ICD.",
 				"BoL economy on cast: a 35s `directiveLimitKey` window opens at finalHitmark+1, capping BoL gain to 1.45 × MaxHP (gcsim skillDebtMax). Directives absorbed via CA or Q grant 0.65 × MaxHP each (1.30 with A1 upgrade after 5s, or initialDirectiveLevel = 2 with C2). Recasting E within the 35s window resets the counter. Not authored — schema has no BoL-grant or directive-absorb encoder.",
 				"Skill cooldown 30s with 16-frame delay (gcsim `c.SetCDWithDelay(action.ActionSkill, 30*60, 16)`)."
+			],
+			"application": [
+				{ "frame": 17, "element": "pyro" },
+				{ "frame": 38, "element": "pyro" },
+				{ "frame": 338, "element": "pyro" },
+				{ "frame": 638, "element": "pyro" }
 			]
 		},
 		{
@@ -140,22 +95,14 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"frames": {
-				"swap": 145,
-				"N": 113,
-				"D": 111,
-				"J": 113
-			},
+			"frames": { "anim": 146, "N": 113, "C": 124, "D": 111, "J": 113, "swap": 145 },
 			"tags": ["heal"],
 			"energyCost": 60,
 			"effects": [
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"scaling": 150,
 					"stat": "atk"
 				}
@@ -170,7 +117,8 @@
 				"Self-heal authored 2026-07-12 as an onCast(burst) heal, target 'self'. gcsim burst.go balemoonRisingHeal (QueueCharTask at frame 123): amt = 1.5 × CurrentHPDebt + 1.5 × TotalAtk. The ReceiveHeal filter in arlecchino.go (lines 83-88) returns 0 for any healing whose Caller≠self or Message≠'Balemoon Rising (Heal)' — she is un-healable by anyone else (Blood-Debt identity). Only the ATK portion is authored: scaling 150, stat atk (sidecar burst 'Amount of HP Restored' = '150.0% Bond of Life+150.0% ATK', constant across talent levels; gcsim 1.5×TotalAtk). The 1.5 × CurrentHPDebt (150% of current Bond of Life) portion is NOT modeled — Bond of Life is not a ScalingStat and the planner doesn't track HP debt at runtime; flagged in the ability caveat.",
 				"Burst CD 15s with 0-frame delay; cooldownStartDelay omitted per recipe.",
 				"C4 reduces this burst's CD by 2s and grants 15 energy on each successful directive absorb (10s ICD). Not authored — schema has no `cooldownReduction` or `addEnergy` effect type."
-			]
+			],
+			"application": [{ "frame": 110, "element": "pyro" }]
 		}
 	],
 	"passives": [
@@ -195,10 +143,7 @@
 					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "allElementalRes",
-					"value": {
-						"type": "unknown",
-						"description": "+1% per 100 ATK above 1000, cap 20%"
-					},
+					"value": { "type": "unknown", "description": "+1% per 100 ATK above 1000, cap 20%" },
 					"snapshottable": false
 				},
 				{
@@ -207,10 +152,7 @@
 					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "physicalRes",
-					"value": {
-						"type": "unknown",
-						"description": "+1% per 100 ATK above 1000, cap 20%"
-					},
+					"value": { "type": "unknown", "description": "+1% per 100 ATK above 1000, cap 20%" },
 					"snapshottable": false
 				}
 			],
@@ -239,9 +181,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 15,
 					"scaling": 900,
 					"stat": "atk",
@@ -288,9 +228,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -301,9 +239,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",

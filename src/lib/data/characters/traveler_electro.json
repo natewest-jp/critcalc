@@ -16,13 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 13, "N": 17, "C": 28 } },
-				{ "name": "N2", "frames": { "swap": 13, "N": 26, "C": 28 } },
-				{ "name": "N3", "frames": { "swap": 16, "N": 32, "C": 36 } },
-				{ "name": "N4", "frames": { "swap": 30, "N": 39, "C": 45 } },
-				{ "name": "N5", "frames": { "swap": 25, "N": 69 } }
+				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
+				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
+				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
+				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
 			],
-			"chargeFrames": { "swap": 44, "N": 55, "E": 37, "Q": 36, "D": 20, "J": 20 },
+			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
 			"_curatorNotes": [
 				"Normal/charge frames + scaling shared across all Traveler element variants (Male/Aether). See traveler_anemo.json _curatorNotes for the full attack-data reference."
 			],
@@ -51,13 +51,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 56,
-				"N": 57,
-				"Q": 56,
-				"D": 42,
-				"J": 42
-			},
+			"frames": { "anim": 57, "Q": 56, "D": 42, "J": 42, "swap": 56 },
 			"cooldown": 13.5,
 			"cooldownStartDelay": 20,
 			"tags": [],
@@ -65,10 +59,7 @@
 				{
 					"type": "energy",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"amount": 4
 				}
 			],
@@ -80,7 +71,8 @@
 				"A4: amulet ER buff scaled by 10% of Traveler's base ER. Composite buff scaling not authored.",
 				"Frames: skillFrames[0]=InitAbilSlice(57), ActionBurst=56 ActionDash=42 ActionJump=42 ActionSwap=56. Per E-spec swap/N/Q/D/J."
 			],
-			"description": "Brandishing the discarded sword, the Traveler hurls it forward with a flash of lightning, dealing Electro DMG to opponents in its path. The sword will then split into 3 Abundance Amulets, granting Energy to the character that touches it."
+			"description": "Brandishing the discarded sword, the Traveler hurls it forward with a flash of lightning, dealing Electro DMG to opponents in its path. The sword will then split into 3 Abundance Amulets, granting Energy to the character that touches it.",
+			"application": [{ "frame": 21, "element": "electro" }]
 		},
 		{
 			"id": "traveler_electro__burst__bellowing_thunder",
@@ -91,13 +83,7 @@
 			"duration": 12,
 			"persistentBehavior": "follows",
 			"summonActivatesAt": 37,
-			"frames": {
-				"swap": 60,
-				"N": 62,
-				"E": 63,
-				"D": 62,
-				"J": 61
-			},
+			"frames": { "anim": 63, "N": 62, "D": 62, "J": 61, "swap": 60 },
 			"cooldown": 20,
 			"cooldownStartDelay": 35,
 			"energyCost": 80,
@@ -106,10 +92,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "normal"
-					},
+					"trigger": { "type": "onHit", "abilityType": "normal" },
 					"procCooldown": 0.5,
 					"scaling": 59.04,
 					"stat": "atk",
@@ -118,10 +101,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged"
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged" },
 					"procCooldown": 0.5,
 					"scaling": 59.04,
 					"stat": "atk",
@@ -130,15 +110,9 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": ["normal", "charged"]
-					},
+					"trigger": { "type": "onHit", "abilityType": ["normal", "charged"] },
 					"procCooldown": 0.5,
-					"conditions": {
-						"type": "constellation",
-						"level": 2
-					},
+					"conditions": { "type": "constellation", "level": 2 },
 					"duration": 8,
 					"durationType": "refresh",
 					"element": "electro",
@@ -156,7 +130,8 @@
 				"C6 (World-Shaker): every 2 Falling Thunders, the next is x2 DMG + restores +1 Energy. Stack-counted-on-trigger primitive missing; not authored.",
 				"A6 rigor 2026-07-12: Falling Thunder scaling corrected 32.8 -> 59.04 (talent lvl 10; gcsim stats.go burstTick[9]=0.5904 — prior 32.8 was the lvl-1 figure burstTick[0], and no talent sidecar exists so the 2026-07-12 normalization sweep skipped this char). Also fixed stale note constants: Falling Thunder 32.8%->59.04%, and burstRegen[lvl=10] 4->1 (gcsim burstRegen[9]=1; the 4 confused it with skillRegen)."
 			],
-			"description": "Releases the powers of lightning, dealing Electro DMG to surrounding opponents and creating a Lightning Shroud field around the Traveler. The Traveler's Normal and Charged Attacks while within this field will trigger Falling Thunder, which will damage enemies."
+			"description": "Releases the powers of lightning, dealing Electro DMG to surrounding opponents and creating a Lightning Shroud field around the Traveler. The Traveler's Normal and Charged Attacks while within this field will trigger Falling Thunder, which will damage enemies.",
+			"application": [{ "frame": 37, "element": "electro" }]
 		}
 	],
 	"passives": [

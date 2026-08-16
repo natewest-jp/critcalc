@@ -16,13 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 13, "N": 17, "C": 28 } },
-				{ "name": "N2", "frames": { "swap": 13, "N": 26, "C": 28 } },
-				{ "name": "N3", "frames": { "swap": 16, "N": 32, "C": 36 } },
-				{ "name": "N4", "frames": { "swap": 30, "N": 39, "C": 45 } },
-				{ "name": "N5", "frames": { "swap": 25, "N": 69 } }
+				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
+				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
+				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
+				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
 			],
-			"chargeFrames": { "swap": 44, "N": 55, "E": 37, "Q": 36, "D": 20, "J": 20 },
+			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
 			"caveat": "Not modeled: Foreign Aqualis, unlocked by the True Moon quest — stat bonuses for each element resonated with, plus an empowered Charged Attack that spends or restores HP depending on current HP. These bonuses depend on account progress.",
 			"_curatorNotes": [
 				"Normal/charge frames + scaling shared across all Traveler element variants (Male/Aether).",
@@ -54,13 +54,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 43,
-				"N": 44,
-				"Q": 44,
-				"D": 40,
-				"J": 41
-			},
+			"frames": { "anim": 45, "N": 44, "Q": 44, "D": 40, "J": 41, "swap": 43 },
 			"cooldown": 10,
 			"cooldownStartDelay": 24,
 			"tags": [],
@@ -68,13 +62,33 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": {
-						"swap": 90,
-						"N": 81,
-						"Q": 81,
-						"D": 74,
-						"J": 74
-					}
+					"frames": { "anim": 90, "N": 81, "Q": 81, "D": 74, "J": 74, "swap": 90 },
+					"application": [
+						{ "frame": 61, "element": "hydro" },
+						{ "frame": 76, "element": "hydro" },
+						{ "frame": 91, "element": "hydro" },
+						{ "frame": 106, "element": "hydro" },
+						{ "frame": 121, "element": "hydro" },
+						{ "frame": 136, "element": "hydro" },
+						{ "frame": 151, "element": "hydro" },
+						{ "frame": 166, "element": "hydro" },
+						{ "frame": 181, "element": "hydro" },
+						{ "frame": 196, "element": "hydro" },
+						{ "frame": 211, "element": "hydro" },
+						{ "frame": 226, "element": "hydro" },
+						{ "frame": 241, "element": "hydro" },
+						{ "frame": 256, "element": "hydro" },
+						{ "frame": 271, "element": "hydro" },
+						{ "frame": 286, "element": "hydro" },
+						{ "frame": 301, "element": "hydro" },
+						{ "frame": 316, "element": "hydro" },
+						{ "frame": 331, "element": "hydro" },
+						{ "frame": 346, "element": "hydro" },
+						{ "frame": 361, "element": "hydro" },
+						{ "frame": 372, "element": "hydro" },
+						{ "frame": 376, "element": "hydro" },
+						{ "frame": 418, "element": "hydro" }
+					]
 				}
 			],
 			"effects": [],
@@ -88,7 +102,11 @@
 				"Capability sweep 2026-07-28: deleted stale beta note 'C4 (Tide Tributary): +20% Hydro DMG on E cast' — the release C4 is 'Pouring Descent' (Aquacrest Aegis shield), authored on the constellation entry. Description refreshed to genshin-db 5.2.12 combat2 text (beta '22 Dewdrops' wording replaced).",
 				"[A7] Original caveat: each Dewdrop's per-hit flat damage scales with Max HP via dewdropBonus[lvl]; the HP-cost-per-tick combined with per-hit flat-DMG-on-Max-HP scaling does not fit a single-scaling damage effect, which is why per-tick damage and HP costs are left unmodeled and only the frame variant is authored."
 			],
-			"description": "Unleashes a torrent that can cleanse the world.\n\nPress\nSends a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\n\nHold\nEnter Aiming Mode and constantly fire off Dewdrops in the direction in which you are aiming, dealing Hydro DMG to opponents they hit.\nWhen the skill ends, it will send a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\nSuffusion: When using the Hold configuration of this skill, if the Traveler's HP is higher than 50%, the DMG dealt by Dewdrops will increase based on the Traveler's Max HP, and the Traveler will lose a fixed amount of HP every second.\n\nArkhe: Pneuma\nAt certain intervals, after using Torrent Surge, this skill will unleash a Spiritbreath Thorn that pierces opponents, dealing Pneuma-aligned Hydro DMG."
+			"description": "Unleashes a torrent that can cleanse the world.\n\nPress\nSends a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\n\nHold\nEnter Aiming Mode and constantly fire off Dewdrops in the direction in which you are aiming, dealing Hydro DMG to opponents they hit.\nWhen the skill ends, it will send a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\nSuffusion: When using the Hold configuration of this skill, if the Traveler's HP is higher than 50%, the DMG dealt by Dewdrops will increase based on the Traveler's Max HP, and the Traveler will lose a fixed amount of HP every second.\n\nArkhe: Pneuma\nAt certain intervals, after using Torrent Surge, this skill will unleash a Spiritbreath Thorn that pierces opponents, dealing Pneuma-aligned Hydro DMG.",
+			"application": [
+				{ "frame": 25, "element": "hydro" },
+				{ "frame": 70, "element": "hydro" }
+			]
 		},
 		{
 			"id": "traveler_hydro__burst__rising_waters",
@@ -96,13 +114,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 76,
-				"N": 76,
-				"E": 78,
-				"D": 78,
-				"J": 77
-			},
+			"frames": { "anim": 78, "N": 76, "J": 77, "swap": 76 },
 			"cooldown": 20,
 			"energyCost": 80,
 			"tags": [],
@@ -117,21 +129,14 @@
 							"source": "C2: Trickling Purity",
 							"type": "flat",
 							"value": 3,
-							"conditions": {
-								"type": "constellation",
-								"level": 2
-							}
+							"conditions": { "type": "constellation", "level": 2 }
 						}
 					],
 					"effects": [
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 0.5,
-								"firstTickDelay": 0
-							},
+							"trigger": { "type": "summonTick", "interval": 0.5, "firstTickDelay": 0 },
 							"scaling": 183.36,
 							"stat": "atk",
 							"element": "hydro"
@@ -150,7 +155,8 @@
 				"[A7] C2 was authored as a +3s duration modifier on the burst's Rising Waters Bubble summon (4s -> 7s). Original caveat framed the -30% movement-speed reduction as yielding 14 ticks vs 8 by slowing drift to 0.7s/tile; per curator notes the 14-tick count actually follows from the +3s duration (7s / 0.5s tick interval), which is modeled, so the movement-speed omission does not change tick count.",
 				"Capability sweep 2026-07-28: C2 renamed from stale beta 'Liquid Drift' to release 'Trickling Purity' (genshin-db 5.2.12) — durationModifier source label updated. Description refreshed to genshin-db combat3 text."
 			],
-			"description": "Unleashes a slow-moving floating bubble that deals continuous Hydro DMG to nearby opponents."
+			"description": "Unleashes a slow-moving floating bubble that deals continuous Hydro DMG to nearby opponents.",
+			"application": [{ "frame": 34, "element": "hydro" }]
 		}
 	],
 	"passives": [
@@ -162,13 +168,8 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"conditions": {
-						"type": "ascension",
-						"min": 1
-					},
+					"trigger": { "type": "manual" },
+					"conditions": { "type": "ascension", "min": 1 },
 					"scaling": 7,
 					"stat": "hp"
 				}
@@ -233,10 +234,7 @@
 				{
 					"type": "shield",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"scaling": 10,
 					"stat": "hp"
 				}
@@ -267,9 +265,7 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 6,
 					"stat": "hp"
 				}

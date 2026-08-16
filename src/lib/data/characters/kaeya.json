@@ -22,55 +22,14 @@
 				"plungeFrames.J: ActionJump is InitAbilSlice(74) default (AnimationLength) in lowPlungeFrames — not explicitly set, omitted."
 			],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 14,
-						"N": 21
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 9,
-						"N": 21
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 14,
-						"N": 39
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 23,
-						"N": 38
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 30
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 30, "hit": 14, "N": 21 } },
+				{ "name": "N2", "frames": { "anim": 25, "hit": 9, "N": 21 } },
+				{ "name": "N3", "frames": { "anim": 47, "hit": 14, "N": 39 } },
+				{ "name": "N4", "frames": { "anim": 46, "hit": 23, "N": 38 } },
+				{ "name": "N5", "frames": { "anim": 64, "hit": 30 } }
 			],
-			"chargeFrames": {
-				"swap": 34,
-				"E": 37,
-				"Q": 36,
-				"D": 25,
-				"J": 24
-			},
-			"plungeFrames": {
-				"swap": 64,
-				"N": 55,
-				"E": 55,
-				"Q": 55,
-				"D": 45
-			},
+			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 25, "J": 24, "swap": 34 },
+			"plungeFrames": { "anim": 77, "N": 56, "E": 57, "Q": 56, "D": 47, "swap": 67 },
 			"sections": [
 				{
 					"type": "normal",
@@ -88,7 +47,8 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"lowPlungeFrames": { "anim": 74, "N": 55, "E": 55, "Q": 55, "D": 45, "swap": 64 }
 		},
 		{
 			"id": "kaeya__skill__frostgnaw",
@@ -96,12 +56,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 49,
-				"Q": 52,
-				"D": 25,
-				"J": 26
-			},
+			"frames": { "anim": 53, "Q": 52, "D": 25, "J": 26, "swap": 49 },
 			"cooldown": 6,
 			"cooldownStartDelay": 25,
 			"_curatorNotes": [
@@ -109,7 +64,8 @@
 			],
 			"tags": [],
 			"effects": [],
-			"description": "Unleashes a frigid blast, dealing Cryo DMG to opponents in front of Kaeya."
+			"description": "Unleashes a frigid blast, dealing Cryo DMG to opponents in front of Kaeya.",
+			"application": [{ "frame": 28, "element": "cryo" }]
 		},
 		{
 			"id": "kaeya__burst__glacial_waltz",
@@ -117,21 +73,11 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 77,
-				"N": 77,
-				"D": 62,
-				"J": 61
-			},
+			"frames": { "anim": 78, "N": 77, "D": 62, "J": 61, "swap": 77 },
 			"cooldown": 15,
 			"cooldownStartDelay": 48,
 			"summons": [
-				{
-					"label": "Glacial Waltz",
-					"duration": 8,
-					"spawnsAt": 53,
-					"mobility": "follows"
-				}
+				{ "label": "Glacial Waltz", "duration": 8, "spawnsAt": 53, "mobility": "follows" }
 			],
 			"_curatorNotes": [
 				"C2 (Never-Ending Performance): duration extends +2.5s per kill during burst (max 15s, up to 3 extensions) — this is runtime-dynamic and cannot be represented as static durationModifiers. Reviewer to decide modeling approach.",
@@ -140,7 +86,8 @@
 			"tags": ["summon"],
 			"energyCost": 60,
 			"effects": [],
-			"description": "Coalescing the frost in the air, Kaeya summons 3 icicles that revolve around him.\nThese icicles will follow the character around and deal Cryo DMG to opponents in their path for the ability's duration."
+			"description": "Coalescing the frost in the air, Kaeya summons 3 icicles that revolve around him.\nThese icicles will follow the character around and deal Cryo DMG to opponents in their path for the ability's duration.",
+			"application": []
 		}
 	],
 	"passives": [
@@ -155,10 +102,7 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"scaling": 15,
 					"stat": "atk"
 				}
@@ -186,13 +130,8 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "enemyAffectedBy",
-						"element": "cryo"
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "enemyAffectedBy", "element": "cryo" },
 					"source": "character",
 					"stat": "critRate",
 					"value": 15,
@@ -229,13 +168,8 @@
 				{
 					"type": "shield",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "selfHpBelow",
-						"threshold": 20
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "selfHpBelow", "threshold": 20 },
 					"duration": 20,
 					"scaling": 30,
 					"stat": "hp"

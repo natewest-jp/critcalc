@@ -16,32 +16,14 @@
 			"input": ["N1", "N2", "N3", "N4", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": { "swap": 24, "N": 31 }
-				},
-				{
-					"name": "N2",
-					"frames": { "swap": 16, "N": 28 }
-				},
-				{
-					"name": "N3",
-					"frames": { "swap": 23, "N": 38 }
-				},
-				{
-					"name": "N4",
-					"frames": { "swap": 30, "N": 61 }
-				}
+				{ "name": "N1", "frames": { "anim": 31, "hit": 24 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 16 } },
+				{ "name": "N3", "frames": { "anim": 38, "hit": 23 } },
+				{ "name": "N4", "frames": { "anim": 61, "hit": 30 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": { "swap": 25, "D": 15, "J": 15 }
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": { "swap": 96, "D": 86, "J": 86 }
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 25, "D": 15, "J": 15, "swap": 25 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 96, "D": 86, "J": 86 } }
 			],
 			"_curatorNotes": [
 				"No plunge.go in gcsim character dir — plungeFrames not available.",
@@ -73,7 +55,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 66, "N": 47, "Q": 48, "J": 47 },
+			"frames": { "anim": 49, "N": 47, "Q": 48, "J": 47, "swap": 66 },
 			"cooldown": 20,
 			"cooldownStartDelay": 19,
 			"tags": [],
@@ -84,7 +66,12 @@
 				"Rushing Ice infusion: when 4 Coil stacks accumulate, gcsim calls AddWeaponInfuse(Cryo, 600f, AttackTagNormal) giving all normals cryo infusion for 10s, plus a NA DMG bonus (skillRushingIceNABonus: ~29.2% at TL1). The NormalAbility.infusion field is documented for stance normals (e.g. Cyno); this is a conditional skill-window infusion with no direct input variant. Reviewer to decide representation (conditional infusion effect, or schema extension).",
 				"ATK Decrease effect not yet authored: Chillwater Bomblets that hit enemies reduce opponent ATK (12–15% scaling with TL1–15) for 6s. Generator emitted effects: [] on skill. Reviewer to add enemy debuff entry."
 			],
-			"description": "Aloy throws a Freeze Bomb in the targeted direction that explodes on impact, dealing Cryo DMG. After it explodes, the Freeze Bomb will split up into many Chillwater Bomblets that explode on contact with opponents or after a short delay, dealing Cryo DMG.\nWhen a Freeze Bomb or Chillwater Bomblet hits an opponent, the opponent's ATK is decreased and Aloy receives 1 Coil stack.\nAloy can gain up to 1 Coil stack every 0.1s.\n\nCoil\n·Each stack increases Aloy's Normal Attack DMG.\n·When Aloy has 4 Coil stacks, all stacks of Coil are cleared. She then enters the Rushing Ice state, which further increases the DMG dealt by her Normal Attacks and converts her Normal Attack DMG to Cryo DMG.\n\nWhile in the Rushing Ice state, Aloy cannot obtain new Coil stacks.\nCoil effects will be cleared 30s after Aloy leaves combat."
+			"description": "Aloy throws a Freeze Bomb in the targeted direction that explodes on impact, dealing Cryo DMG. After it explodes, the Freeze Bomb will split up into many Chillwater Bomblets that explode on contact with opponents or after a short delay, dealing Cryo DMG.\nWhen a Freeze Bomb or Chillwater Bomblet hits an opponent, the opponent's ATK is decreased and Aloy receives 1 Coil stack.\nAloy can gain up to 1 Coil stack every 0.1s.\n\nCoil\n·Each stack increases Aloy's Normal Attack DMG.\n·When Aloy has 4 Coil stacks, all stacks of Coil are cleared. She then enters the Rushing Ice state, which further increases the DMG dealt by her Normal Attacks and converts her Normal Attack DMG to Cryo DMG.\n\nWhile in the Rushing Ice state, Aloy cannot obtain new Coil stacks.\nCoil effects will be cleared 30s after Aloy leaves combat.",
+			"application": [
+				{ "frame": 25, "element": "cryo" },
+				{ "frame": 31, "element": "cryo" },
+				{ "frame": 37, "element": "cryo" }
+			]
 		},
 		{
 			"id": "aloy__burst__prophecies_of_dawn",
@@ -92,12 +79,13 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 117, "N": 101, "E": 101, "D": 101, "J": 100 },
+			"frames": { "anim": 117, "N": 101, "E": 101, "D": 101, "J": 100 },
 			"cooldown": 12,
 			"tags": [],
 			"energyCost": 40,
 			"effects": [],
-			"description": "Aloy throws a Power Cell filled with Cryo in the targeted direction, then detonates it with an arrow, dealing AoE Cryo DMG."
+			"description": "Aloy throws a Power Cell filled with Cryo in the targeted direction, then detonates it with an arrow, dealing AoE Cryo DMG.",
+			"application": [{ "frame": 100, "element": "cryo" }]
 		}
 	],
 	"passives": [
@@ -118,9 +106,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"duration": 10,
 					"source": "character",

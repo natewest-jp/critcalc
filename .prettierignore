@@ -29,3 +29,11 @@ docs/curation/capability-audit.md
 # Generated — scripts/audit-genshin-db-diff.mjs and audit-data-outliers.mjs.
 docs/curation/genshin-db-diff.md
 docs/curation/data-outliers.md
+
+# Generated — scripts/audit-gcsim-reactions.mjs (the L0 oracle).
+docs/curation/gcsim-reaction-diff.md
+
+# Generated — scripts/audit-gcsim-frames.mjs. Its application rows are long by
+# nature (a 32-tick burst is one cell); rewrapping them would make every rerun a
+# whole-file diff.
+docs/curation/gcsim-frames-diff.md

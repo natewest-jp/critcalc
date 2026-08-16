@@ -22,18 +22,12 @@
 				"plungeFrames: LowPlungeAttack and HighPlungeAttack in gcsim only accept AirborneXianyun state — standard plunge not modeled. Reviewer to verify in-game plunge availability independently of Xianyun."
 			],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 27, "N": 35 } },
-				{ "name": "N2", "frames": { "swap": 22, "N": 35 } },
-				{ "name": "N3", "frames": { "swap": 33, "N": 42 } },
-				{ "name": "N4", "frames": { "swap": 40, "N": 67 } }
+				{ "name": "N1", "frames": { "anim": 44, "hit": 27, "N": 35 } },
+				{ "name": "N2", "frames": { "anim": 45, "hit": 22, "N": 35 } },
+				{ "name": "N3", "frames": { "anim": 56, "hit": 33, "N": 42 } },
+				{ "name": "N4", "frames": { "anim": 81, "hit": 40, "N": 67 } }
 			],
-			"plungeFrames": {
-				"swap": 65,
-				"N": 54,
-				"E": 54,
-				"Q": 55,
-				"D": 41
-			},
+			"plungeFrames": { "anim": 84, "N": 54, "E": 53, "Q": 54, "D": 41, "J": 83, "swap": 64 },
 			"sections": [
 				{
 					"type": "normal",
@@ -51,7 +45,8 @@
 					"description": "Plunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nUses Mehrak to perform up to 4 consecutive attacks.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nUses Mehrak to perform up to 4 consecutive attacks.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"lowPlungeFrames": { "anim": 85, "N": 54, "E": 54, "Q": 55, "D": 41, "swap": 65 }
 		},
 		{
 			"id": "kaveh__skill__artistic_ingenuity",
@@ -59,18 +54,13 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 44,
-				"N": 45,
-				"Q": 45,
-				"D": 34,
-				"J": 34
-			},
+			"frames": { "anim": 52, "N": 45, "E": 45, "Q": 45, "D": 34, "J": 34, "swap": 44 },
 			"cooldown": 6,
 			"cooldownStartDelay": 33,
 			"tags": [],
 			"effects": [],
-			"description": "Uses Mehrak's mapping ability for offensive purposes, initiating a radial scan that deals AoE Dendro DMG. It will also scan all Dendro Cores in its AoE and cause them to immediately burst."
+			"description": "Uses Mehrak's mapping ability for offensive purposes, initiating a radial scan that deals AoE Dendro DMG. It will also scan all Dendro Cores in its AoE and cause them to immediately burst.",
+			"application": [{ "frame": 35, "element": "dendro" }]
 		},
 		{
 			"id": "kaveh__burst__painted_dome",
@@ -78,12 +68,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 42,
-				"N": 48,
-				"D": 44,
-				"J": 44
-			},
+			"frames": { "anim": 49, "N": 48, "D": 44, "J": 44, "swap": 42 },
 			"cooldown": 20,
 			"duration": 12,
 			"tags": [],
@@ -93,7 +78,8 @@
 				"Painted Dome grants Kaveh a 12s self-status (burstDuration = 720 frames): normal/charged/plunge attack AoE increased, DMG converted to Dendro, resistance to interruption increased. Status cancels immediately on swap (OnCharacterSwap handler in burst.go deletes burstKey). No spawned entity — behavior: 'instant' per recipe. duration: 12 left as generator artifact; reviewer to decide field placement.",
 				"Bloom/Lunar-Bloom damage bonus: while Painted Dome is active, all party members' Bloom reactions deal additional DMG (~27.5% at L1, scaling in burstDmgBonus[] in kaveh_gen.go). This team-wide buff is not represented in effects[]. Reviewer to author."
 			],
-			"description": "Completely unleashes Mehrak's energy and creates a cubic scanned space, dealing AoE Dendro DMG to all opponents within it, causing all Dendro Cores in its AoE to immediately burst, and granting Kaveh the following enhanced combat abilities for a specific duration:\n· Increases Kaveh's Normal, Charged, and Plunging Attack AoE, and converts his attack DMG to Dendro DMG that cannot be overridden.\n· All Dendro Cores created by all your own party members through Bloom and Lunar-Bloom reactions will deal additional DMG when they burst.\n· Increases Kaveh's resistance to interruption.\nThese effects will be canceled once Kaveh leaves the field."
+			"description": "Completely unleashes Mehrak's energy and creates a cubic scanned space, dealing AoE Dendro DMG to all opponents within it, causing all Dendro Cores in its AoE to immediately burst, and granting Kaveh the following enhanced combat abilities for a specific duration:\n· Increases Kaveh's Normal, Charged, and Plunging Attack AoE, and converts his attack DMG to Dendro DMG that cannot be overridden.\n· All Dendro Cores created by all your own party members through Bloom and Lunar-Bloom reactions will deal additional DMG when they burst.\n· Increases Kaveh's resistance to interruption.\nThese effects will be canceled once Kaveh leaves the field.",
+			"application": [{ "frame": 36, "element": "dendro" }]
 		}
 	],
 	"passives": [
@@ -108,9 +94,7 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 300,
 					"stat": "em"
 				}
@@ -128,9 +112,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -189,9 +171,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 61.8,
 					"stat": "atk",
 					"element": "dendro"

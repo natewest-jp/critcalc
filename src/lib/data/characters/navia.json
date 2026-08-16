@@ -34,17 +34,18 @@
 			],
 			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 23 } },
-				{ "name": "N2", "frames": { "swap": 22 } },
-				{ "name": "N3", "frames": { "swap": 29, "E": 30 } },
-				{ "name": "N4", "frames": { "swap": 41 } }
+				{ "name": "N1", "frames": { "anim": 28, "hit": 23 } },
+				{ "name": "N2", "frames": { "anim": 42, "hit": 22 } },
+				{ "name": "N3", "frames": { "anim": 48, "E": 30, "Q": 29, "D": 29, "J": 29, "swap": 29 } },
+				{ "name": "N4", "frames": { "anim": 93, "hit": 41 } }
 			],
-			"plungeFrames": { "swap": 62, "N": 50, "E": 50, "Q": 50, "D": 37 },
+			"plungeFrames": { "anim": 83, "N": 52, "E": 53, "Q": 53, "D": 40, "swap": 64 },
 			"_curatorNotes": [
 				"No charge.go in gcsim character dir — chargeFrames not available. Navia has a spinning stamina-drain charged attack (claymore type) that is not modeled in gcsim.",
 				"N3 is a 3-hit sequence (hitmarks 31, 39, 48) treated as one notation action. gcsim queues all three attacks at frame 29 (attackEarliestCancel[2]=29) and sets CanQueueAfter=29 to snapshot A1 geo infusion correctly at gadget creation. Cancel frames (swap=29, E=30) reflect this committed-at-29 model; actual in-game cancel window vs hitmarks warrants KQM cross-check.",
 				"High plunge frames exist in gcsim (highPlungeFrames) but not represented here per recipe convention (lowPlungeFrames used). High plunge reference: swap=64, N=52, E/Q=53, D=40 (J not explicitly set in gcsim)."
-			]
+			],
+			"lowPlungeFrames": { "anim": 82, "N": 50, "E": 50, "Q": 50, "D": 37, "swap": 62 }
 		},
 		{
 			"id": "navia__skill__ceremonial_crystalshot",
@@ -55,7 +56,7 @@
 			"cooldownStartDelay": 11,
 			"charges": 2,
 			"behavior": "instant",
-			"frames": { "swap": 38, "N": 38, "D": 24, "J": 24 },
+			"frames": { "anim": 40, "N": 38, "D": 24, "J": 24, "swap": 38 },
 			"tags": [],
 			"effects": [],
 			"description": "When a character in the party obtains an Elemental Shard created from the Crystallize reaction, or when they trigger the Lunar-Crystallize reaction, Navia will gain 1 Crystal Shrapnel stack. Navia can have up to 6 stacks of Crystal Shrapnel at once. Each time Crystal Shrapnel gain is triggered, the duration of the Crystal Shrapnel stacks you already have will be reset. Through the Lunar-Crystallize reaction, Navia will gain up to 1 Crystal Shrapnel stack every second.\nWhen she fires, Navia will consume all Crystal Shrapnel stacks and open her elegant yet lethal Gunbrella, firing multiple Rosula Shardshots that can penetrate opponents, dealing Geo DMG to opponents hit.\nWhen 0/1/2/3 or more stacks of Crystal Shrapnel are consumed, 5/7/9/11 Rosula Shardshots will be fired respectively. The more Rosula Shardshots that strike a single opponent, the greater the DMG dealt to them. When all 11 Rosula Shardshots strike, 200% of the original amount of DMG is dealt.\nIn addition, when more than 3 stacks of Crystal Shrapnel are consumed, every stack consumed beyond those 3 will increase the DMG dealt by this Gunbrella attack by an additional 15%.\n\nHold\nEnter Aiming Mode, continually collecting nearby Elemental Shards created by Crystallize reactions. When released, fire Rosula Shardshots with the same effect as when the skill is Tapped.\n\nTwo initial charges.\n\nArkhe: Ousia\nPeriodically, when Navia fires her Gunbrella, a Surging Blade will be summoned, dealing Ousia-aligned Geo DMG.",
@@ -63,7 +64,11 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "swap": 69, "N": 70, "D": 54, "J": 54 }
+					"frames": { "anim": 71, "N": 70, "D": 54, "J": 54, "swap": 69 },
+					"application": [
+						{ "frame": 50, "element": "geo" },
+						{ "frame": 105, "element": "geo" }
+					]
 				}
 			],
 			"_curatorNotes": [
@@ -73,6 +78,10 @@
 				"Removed generator duration:300 — Crystal Shrapnel stack duration is a resource mechanic (gcsim comment: 'way too long to bother'), not a summon or persistent ability window.",
 				"Removed generator tags:[\"summon\"] — the skill fires projectiles and spawns no persistent summon entity.",
 				"Surging Blade (Arkhe: Ousia): delayed one-shot proc registered at 28f after cast, damage at +36f (total 64f from cast). ICD: 7s (arkheICDKey). Not a persistent summon — no summons[] entry authored."
+			],
+			"application": [
+				{ "frame": 20, "element": "geo" },
+				{ "frame": 75, "element": "geo" }
 			]
 		},
 		{
@@ -83,23 +92,18 @@
 			"cooldown": 15,
 			"energyCost": 60,
 			"behavior": "instant",
-			"frames": { "swap": 93, "N": 102, "E": 102, "D": 103, "J": 103 },
+			"frames": { "anim": 127, "N": 102, "E": 102, "D": 103, "J": 103, "swap": 93 },
 			"tags": [],
 			"effects": [],
-			"summons": [
-				{
-					"label": "Cannon Fire Support",
-					"duration": 12,
-					"spawnsAt": 154
-				}
-			],
+			"summons": [{ "label": "Cannon Fire Support", "duration": 12, "spawnsAt": 154 }],
 			"description": "On the orders of the President of the Spina di Rosula, call for a magnificent Rosula Dorata Salute. Unleashes a massive cannon bombardment on opponents in front of her, dealing AoE Geo DMG and providing Cannon Fire Support for a duration afterward, periodically dealing Geo DMG to nearby opponents.\nWhen cannon attacks hit opponents, Navia will gain 1 stack of Crystal Shrapnel. This effect can be triggered up to once every 2.4s.",
 			"_curatorNotes": [
 				"Cannon Fire Support mobility omitted: in gcsim it targets random enemies within 10m of player position (player-proximal, not a fixed world point or literally caster-attached). Reviewer to decide 'stationary' vs 'follows' or omit.",
 				"Cannon Fire Support tick pattern: first tick at burstDelay=154f, then alternates 42/42/48f intervals (tick%3==2 → 48f, else 42f) for the full 720f = 12s window.",
 				"Initial cannon blast (burstHitmark=104f) is the main burst damage instance, separate from the Cannon Fire Support summon.",
 				"Removed generator duration:12 — moved to summons[0].duration per recipe convention."
-			]
+			],
+			"application": [{ "frame": 104, "element": "geo" }]
 		}
 	],
 	"passives": [
@@ -120,9 +124,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk%",
@@ -156,9 +158,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -168,9 +168,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -200,10 +198,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "burst"
-					},
+					"trigger": { "type": "onHit", "abilityType": "burst" },
 					"conditions": { "type": "constellation", "level": 4 },
 					"duration": 8,
 					"durationType": "refresh",
@@ -232,9 +227,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",

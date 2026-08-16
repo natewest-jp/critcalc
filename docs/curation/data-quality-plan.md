@@ -67,8 +67,17 @@ follows end-to-end:
 4. Capability fixture entry (expected heal/shield/offField/buffs) written
    BEFORE running the audit — expectations from research, not from the data.
 5. Gates: lint → parse smoke → audit → vitest → probe if UI-adjacent.
-6. Frames follow-up pass (when gcsim ships the character): extraction per
-   the gcsim-frames skill, sanity lints, flag-and-ask on anomalies.
+6. Frames + application follow-up (when gcsim ships the character). ⚓ **No
+   longer a hand-read of Go** (gauge round L4, 2026-08-16): run
+   `audit-gcsim-frames.mjs --char <id>` to see what gcsim says, then
+   `migrate-frames-shape.mjs` and `migrate-application-schema.mjs` to write
+   `anim`/`hit` and `application[]`. The **gcsim-frames** skill is the fallback,
+   for the ~12 characters with no gcsim source and for reading an unmerged PR.
+   ⚠️ `characterLint` requires `anim`; nothing requires `application[]`, and a
+   character without one silently falls back to applying its element at the
+   cast — the defect the gauge round exists to remove. Sanity lints and
+   flag-and-ask on anomalies as before; ⛔ read `_curatorNotes` before
+   overruling the corpus, they have repeatedly known more than the extractor.
 7. Image assets: ask Nate (the one human-only step).
 
 Batch mode: multiple characters fan out as parallel agents (workflows

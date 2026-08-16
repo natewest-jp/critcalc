@@ -16,38 +16,11 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 22,
-						"C": 22
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 16,
-						"N": 22,
-						"C": 25
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 12,
-						"N": 41
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 13, "N": 22, "C": 22, "swap": 13 } },
+				{ "name": "N2", "frames": { "anim": 16, "N": 22, "C": 25, "swap": 16 } },
+				{ "name": "N3", "frames": { "anim": 12, "N": 41, "swap": 12 } }
 			],
-			"chargeFrames": {
-				"swap": 49,
-				"N": 49,
-				"E": 49,
-				"Q": 50,
-				"D": 24,
-				"J": 24
-			},
+			"chargeFrames": { "anim": 49, "N": 49, "E": 49, "Q": 50, "D": 24, "J": 24, "swap": 49 },
 			"_curatorNotes": [
 				"Out-of-NS polearm normals: 3-hit Physical chain. attackHitmarks=[13,16,12]; attackFrames built via InitNormalCancelSlice(hitmark, animLen).",
 				"Per-hit overrides: N1 ActionAttack=22/Charge=22; N2 ActionAttack=22/Charge=25; N3 ActionAttack=41/Charge=500 (illegal — final hit C key omitted per convention).",
@@ -78,42 +51,14 @@
 			"name": "Weighted Spike (Swift Stormflight)",
 			"input": ["N1", "N2", "N3", "C", "P"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "nightsoulBlessing"
-			},
+			"conditions": { "type": "state", "state": "nightsoulBlessing" },
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 13,
-						"N": 22,
-						"C": 22
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 16,
-						"N": 22,
-						"C": 25
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 12,
-						"N": 41
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 13, "N": 22, "C": 22, "swap": 13 } },
+				{ "name": "N2", "frames": { "anim": 16, "N": 22, "C": 25, "swap": 16 } },
+				{ "name": "N3", "frames": { "anim": 12, "N": 41, "swap": 12 } }
 			],
-			"chargeFrames": {
-				"swap": 49,
-				"N": 51,
-				"E": 51,
-				"J": 50
-			},
+			"chargeFrames": { "anim": 49, "N": 51, "E": 51, "J": 50, "swap": 49 },
 			"caveat": "Not modeled: for 5s after the skill, a Normal Attack auto-triggers a free empowered stomp. The timeline only swaps the Charged Attack while in the Nightsoul state, so a Normal there is shown as an ordinary hit.",
 			"_curatorNotes": [
 				"Dual normal authored to switch chargeFrames during NS. Hits[] frames are identical to the base normal (N1-N3 don't change in NS); only chargeFrames swap to swiftFrames=InitAbilSlice(52) with ActionAttack/Skill=51 ActionJump=50 ActionSwap=49. Swift Stormflight hitmark=14f.",
@@ -131,30 +76,18 @@
 			"duration": 9,
 			"opensState": "nightsoulBlessing",
 			"terminatesOnSwap": false,
-			"frames": {
-				"swap": 42,
-				"N": 43,
-				"Q": 43,
-				"D": 31,
-				"J": 32
-			},
+			"frames": { "anim": 42, "N": 43, "Q": 43, "D": 31, "J": 32, "swap": 42 },
 			"cooldown": 16,
 			"tags": [],
 			"effects": [
 				{
 					"type": "gainStacks",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"key": "nightsoul",
 					"amount": 54,
 					"max": 54,
-					"drain": {
-						"ratePerSecond": 6,
-						"state": "nightsoulBlessing"
-					}
+					"drain": { "ratePerSecond": 6, "state": "nightsoulBlessing" }
 				}
 			],
 			"_curatorNotes": [
@@ -174,13 +107,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 69,
-				"N": 71,
-				"E": 71,
-				"D": 72,
-				"J": 70
-			},
+			"frames": { "anim": 69, "N": 71, "E": 71, "D": 72, "J": 70, "swap": 69 },
 			"cooldown": 18,
 			"energyCost": 70,
 			"tags": ["summon"],
@@ -195,10 +122,7 @@
 							"source": "C6: Strain to Stay Stronger",
 							"type": "flat",
 							"value": 3,
-							"conditions": {
-								"type": "constellation",
-								"level": 6
-							}
+							"conditions": { "type": "constellation", "level": 6 }
 						}
 					]
 				}
@@ -207,10 +131,7 @@
 				{
 					"type": "gainStacks",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"key": "nightsoul",
 					"amount": 15,
 					"max": 54
@@ -218,52 +139,29 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "stacks",
-						"key": "nightsoul",
-						"min": 1,
-						"max": 41
-					},
+					"conditions": { "type": "stacks", "key": "nightsoul", "min": 1, "max": 41 },
 					"source": "character",
 					"stat": "atk",
 					"value": {
 						"type": "perStack",
 						"key": "nightsoul",
-						"per": {
-							"stat": "atk",
-							"ratio": 0.5
-						}
+						"per": { "stat": "atk", "ratio": 0.5 }
 					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "stacks",
-						"key": "nightsoul",
-						"min": 42
-					},
+					"conditions": { "type": "stacks", "key": "nightsoul", "min": 42 },
 					"source": "character",
 					"stat": "atk",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 27,
-						"cap": 690
-					},
+					"value": { "type": "scaling", "stat": "atk", "ratio": 27, "cap": 690 },
 					"snapshottable": false
 				}
 			],
@@ -299,9 +197,7 @@
 				{
 					"type": "heal",
 					"target": "active",
-					"trigger": {
-						"type": "onTeamNightsoulBurst"
-					},
+					"trigger": { "type": "onTeamNightsoulBurst" },
 					"duration": 10,
 					"procCooldown": 2.8,
 					"scaling": 60,
@@ -339,16 +235,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 2
-					},
+					"conditions": { "type": "constellation", "level": 2 },
 					"source": "character",
 					"stat": "atk%",
 					"value": 20,
@@ -357,10 +247,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 15,
 					"durationType": "fixed",
 					"conditions": {

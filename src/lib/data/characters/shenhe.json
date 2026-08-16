@@ -15,69 +15,13 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 14,
-						"C": 22,
-						"E": 14,
-						"Q": 14,
-						"D": 14,
-						"J": 14
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 17,
-						"N": 17,
-						"E": 17,
-						"Q": 17,
-						"D": 17,
-						"J": 17
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 19,
-						"N": 32,
-						"E": 19,
-						"Q": 19,
-						"D": 19,
-						"J": 19
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 18,
-						"N": 25,
-						"E": 18,
-						"Q": 18,
-						"D": 18,
-						"J": 18
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 26,
-						"E": 26,
-						"Q": 26,
-						"D": 26,
-						"J": 26
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 23, "hit": 14, "C": 22 } },
+				{ "name": "N2", "frames": { "anim": 29, "hit": 17, "N": 17 } },
+				{ "name": "N3", "frames": { "anim": 33, "hit": 19, "N": 32 } },
+				{ "name": "N4", "frames": { "anim": 27, "hit": 18, "N": 25 } },
+				{ "name": "N5", "frames": { "anim": 49, "hit": 26 } }
 			],
-			"chargeFrames": {
-				"swap": 46,
-				"N": 48,
-				"E": 49,
-				"Q": 49,
-				"D": 25,
-				"J": 25
-			},
+			"chargeFrames": { "anim": 81, "N": 48, "E": 49, "Q": 49, "D": 25, "J": 25, "swap": 46 },
 			"_curatorNotes": [
 				"No plunge.go in gcsim character dir — plungeFrames not available.",
 				"N4 is a two-hit normal (gcsim attackHitmarks[3]=[14,18]); authored as one entry per recipe convention; InitNormalCancelSlice uses last hitmark (18) as cancel-frame source for swap/E/Q/D/J; ActionAttack explicitly set to 25.",
@@ -108,14 +52,7 @@
 			"name": "Spring Spirit Summoning",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": {
-				"swap": 27,
-				"N": 27,
-				"E": 27,
-				"Q": 27,
-				"D": 21,
-				"J": 21
-			},
+			"frames": { "anim": 38, "N": 27, "E": 27, "Q": 27, "D": 21, "J": 21, "swap": 27 },
 			"cooldown": 10,
 			"cooldownStartDelay": 2,
 			"chargeModifiers": [
@@ -123,10 +60,7 @@
 					"source": "C1: Clarity of Heart",
 					"type": "flat",
 					"value": 1,
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					}
+					"conditions": { "type": "constellation", "level": 1 }
 				}
 			],
 			"variants": [
@@ -134,22 +68,12 @@
 					"label": "Hold",
 					"input": ["hE"],
 					"cooldown": 15,
-					"frames": {
-						"swap": 44,
-						"N": 45,
-						"E": 45,
-						"Q": 45,
-						"D": 38,
-						"J": 39
-					},
+					"frames": { "anim": 78, "N": 45, "E": 45, "Q": 45, "D": 38, "J": 39, "swap": 44 },
 					"effects": [
 						{
 							"type": "buff",
 							"target": "team",
-							"trigger": {
-								"type": "onCast",
-								"ability": "skill"
-							},
+							"trigger": { "type": "onCast", "ability": "skill" },
 							"duration": 15,
 							"durationType": "fixed",
 							"source": "character",
@@ -162,7 +86,8 @@
 					"_curatorNotes": [
 						"Hold variant cooldownStartDelay is 32 frames (gcsim: skillHoldCDStart+1 = 32); AbilityVariant has no cooldownStartDelay field — reviewer to add schema support or document separately.",
 						"gcsim comment on ActionSkill for Hold frames: '// assume skill (press)'; gcsim also notes 'skill (hold) -> skill (hold) is 52 frames'. The ActionSkill value (45) reflects H→Press, not H→Hold. Reviewer to verify whether H→H (52f) warrants a separate entry."
-					]
+					],
+					"application": [{ "frame": 33, "element": "cryo" }]
 				}
 			],
 			"tags": [],
@@ -170,10 +95,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -189,19 +111,15 @@
 			],
 			"description": "The frosted dew, silvery and dense, shall exorcise all demons.\nGrants all nearby party members the Icy Quill effect and deals Cryo DMG in different ways based on whether it is pressed or held.\n\nPress\nRushes forward together with a Talisman Spirit, dealing Cryo DMG to opponents along the path.\n\nHold\nCommands the Talisman Spirit to deal AoE Cryo DMG.\n\nIcy Quill\nWhen Normal, Charged, and Plunging Attacks, Elemental Skills, and Elemental Bursts deal Cryo DMG to opponents, the DMG dealt is increased based on Shenhe's current ATK.\n\nThe Icy Quill's effects will be cleared once its duration ends or after being triggered a certain number of times. When held rather than pressed, the Icy Quill's effect lasts longer and can be triggered more times.\nWhen one Cryo DMG instance strikes multiple opponents, the effect is triggered multiple times based on the number of opponents hit. The number of times the effect is triggered is calculated independently for each party member with the Icy Quill.",
 			"behavior": "instant",
-			"caveat": "Shown for the full duration; in game each Cryo hit consumes 1 of 5 quills (7 if held), and only Cryo DMG gets the bonus."
+			"caveat": "Shown for the full duration; in game each Cryo hit consumes 1 of 5 quills (7 if held), and only Cryo DMG gets the bonus.",
+			"application": [{ "frame": 4, "element": "cryo" }]
 		},
 		{
 			"id": "shenhe__burst__divine_maidens_deliverance",
 			"name": "Divine Maiden's Deliverance",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": {
-				"swap": 98,
-				"N": 99,
-				"D": 78,
-				"J": 79
-			},
+			"frames": { "anim": 100, "N": 99, "D": 78, "J": 79, "swap": 98 },
 			"cooldown": 20,
 			"tags": [],
 			"energyCost": 80,
@@ -216,10 +134,7 @@
 							"source": "C2: Centered Spirit",
 							"type": "flat",
 							"value": 6,
-							"conditions": {
-								"type": "constellation",
-								"level": 2
-							}
+							"conditions": { "type": "constellation", "level": 2 }
 						}
 					]
 				}
@@ -228,10 +143,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"element": "cryo",
 					"value": -15
@@ -239,10 +151,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 12,
 					"element": "physical",
 					"value": -15
@@ -254,7 +163,21 @@
 				"Deific Embrace (A1) cryo DMG bonus for active char within field is authored on the A1 passive, not here."
 			],
 			"description": "Unleashes the power of the Talisman Spirit, allowing it to roam free in this plane, dealing AoE Cryo DMG.\nThe Talisman Spirit then creates a field that decreases the Cryo RES and Physical RES of opponents within it. It also deals periodic Cryo DMG to opponents within the field.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"application": [
+				{ "frame": 129, "element": "cryo" },
+				{ "frame": 159, "element": "cryo" },
+				{ "frame": 246, "element": "cryo" },
+				{ "frame": 278, "element": "cryo" },
+				{ "frame": 363, "element": "cryo" },
+				{ "frame": 397, "element": "cryo" },
+				{ "frame": 480, "element": "cryo" },
+				{ "frame": 510, "element": "cryo" },
+				{ "frame": 597, "element": "cryo" },
+				{ "frame": 629, "element": "cryo" },
+				{ "frame": 714, "element": "cryo" },
+				{ "frame": 748, "element": "cryo" }
+			]
 		}
 	],
 	"passives": [
@@ -266,9 +189,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "cryoDmgBonus",
@@ -311,9 +232,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "cryoCritDmg",

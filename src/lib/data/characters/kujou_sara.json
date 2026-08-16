@@ -16,32 +16,14 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": { "swap": 14, "N": 25 }
-				},
-				{
-					"name": "N2",
-					"frames": { "swap": 13, "N": 28 }
-				},
-				{
-					"name": "N3",
-					"frames": { "swap": 19, "N": 37 }
-				},
-				{
-					"name": "N4",
-					"frames": { "swap": 19, "N": 38 }
-				},
-				{
-					"name": "N5",
-					"frames": { "swap": 32, "N": 45 }
-				}
+				{ "name": "N1", "frames": { "anim": 25, "hit": 14 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 13 } },
+				{ "name": "N3", "frames": { "anim": 37, "hit": 19 } },
+				{ "name": "N4", "frames": { "anim": 38, "hit": 19 } },
+				{ "name": "N5", "frames": { "anim": 45, "hit": 32 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": { "swap": 96, "D": 86, "J": 86 }
-				}
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 96, "D": 86, "J": 86 } }
 			],
 			"_curatorNotes": [
 				"A1 (Immovable Will): when Crowfeather Cover is active, the Fully-Charged Aimed Shot uses reduced charge-time frames — gcsim models this as a distinct frame set (aimedA1Frames: swap=60, D=50, J=50). This is Sara's primary gameplay CA pattern (E → CA during cover). chargeHits[] records the standard non-A1 frames; reviewer should decide how to represent the A1 variant.",
@@ -72,12 +54,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"swap": 50,
-				"N": 29,
-				"Q": 32,
-				"J": 51
-			},
+			"frames": { "anim": 52, "N": 29, "Q": 32, "J": 51, "swap": 50 },
 			"cooldown": 10,
 			"cooldownStartDelay": 7,
 			"tags": ["summon"],
@@ -101,7 +78,8 @@
 				"C2 (Dark Wings): on E cast, a weaker Crowfeather also fires automatically at Sara's original position at c2Hitmark=103 frames from cast, dealing 30% of standard Ambush DMG and applying the same ATK buff to the active character (gcsim: skill.go QueueAttack delay=50, hitmark=103). Under the onCast model this changes nothing about the authored buff window.",
 				"[A7] The delayed ATK grant is the kit effect named Tengu Juurai: Ambush."
 			],
-			"description": "Retreats rapidly with the speed of a tengu, summoning the protection of the Crowfeather.\nGains Crowfeather Cover for 18s, and when Kujou Sara fires a fully-charged Aimed Shot, Crowfeather Cover will be consumed, and will leave a Crowfeather at the target location.\nCrowfeathers will trigger Tengu Juurai: Ambush after a short time, dealing Electro DMG and granting the active character within its AoE an ATK Bonus based on Kujou Sara's Base ATK.\n\nThe ATK Bonuses from different Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect."
+			"description": "Retreats rapidly with the speed of a tengu, summoning the protection of the Crowfeather.\nGains Crowfeather Cover for 18s, and when Kujou Sara fires a fully-charged Aimed Shot, Crowfeather Cover will be consumed, and will leave a Crowfeather at the target location.\nCrowfeathers will trigger Tengu Juurai: Ambush after a short time, dealing Electro DMG and granting the active character within its AoE an ATK Bonus based on Kujou Sara's Base ATK.\n\nThe ATK Bonuses from different Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect.",
+			"application": []
 		},
 		{
 			"id": "kujou_sara__burst__subjugation_koukou_sendou",
@@ -109,13 +87,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 56,
-				"N": 78,
-				"E": 57,
-				"D": 58,
-				"J": 58
-			},
+			"frames": { "anim": 80, "N": 78, "E": 57, "D": 58, "J": 58, "swap": 56 },
 			"cooldown": 20,
 			"cooldownStartDelay": 47,
 			"energyCost": 80,
@@ -140,7 +112,14 @@
 				"C4 (Conclusive Proof): Stormcluster count increases from 4 to 6 (wider AoE ring coverage, 24→36 total cluster hits). Tick timing is unchanged (all clusters share the 100+18j schedule), so the buff window is identical at C4 — no constellationScaling needed.",
 				"[A7] In-kit the re-grants land from Titanbreaker (~0.85s) and each Stormcluster tick (~1.7-3.2s after cast); the buff reaches the active character standing in the AoE."
 			],
-			"description": "Casts down Tengu Juurai: Titanbreaker, dealing AoE Electro DMG. Afterwards, Tengu Juurai: Titanbreaker spreads out into 4 consecutive bouts of Tengu Juurai: Stormcluster, dealing AoE Electro DMG.\nTengu Juurai: Titanbreaker and Tengu Juurai: Stormcluster can provide the active character within their AoE with the same ATK Bonus as given by the Elemental Skill, Tengu Stormcall.\n\nThe ATK Bonus provided by various kinds of Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect."
+			"description": "Casts down Tengu Juurai: Titanbreaker, dealing AoE Electro DMG. Afterwards, Tengu Juurai: Titanbreaker spreads out into 4 consecutive bouts of Tengu Juurai: Stormcluster, dealing AoE Electro DMG.\nTengu Juurai: Titanbreaker and Tengu Juurai: Stormcluster can provide the active character within their AoE with the same ATK Bonus as given by the Elemental Skill, Tengu Stormcall.\n\nThe ATK Bonus provided by various kinds of Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect.",
+			"application": [
+				{ "frame": 51, "element": "electro" },
+				{ "frame": 100, "element": "electro" },
+				{ "frame": 100, "element": "electro" },
+				{ "frame": 100, "element": "electro" },
+				{ "frame": 100, "element": "electro" }
+			]
 		}
 	],
 	"passives": [

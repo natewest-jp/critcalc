@@ -16,36 +16,11 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 10,
-						"N": 18,
-						"C": 19
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 8,
-						"N": 22,
-						"C": 17
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 38,
-						"N": 52,
-						"C": 52
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 26, "hit": 10, "N": 18, "C": 19 } },
+				{ "name": "N2", "frames": { "anim": 34, "hit": 8, "N": 22, "C": 17 } },
+				{ "name": "N3", "frames": { "anim": 67, "hit": 38, "N": 52, "C": 52 } }
 			],
-			"chargeFrames": {
-				"swap": 66,
-				"N": 99,
-				"C": 99
-			},
+			"chargeFrames": { "anim": 97, "hit": 64 },
 			"_curatorNotes": [
 				"Frames from gcsim main (merged). attack.go attackHitmarks=[10,8,38], animations N1=26/N2=34/N3=67; per-hit overrides ActionAttack(N) & ActionCharge(C): N1 N=18 C=19, N2 N=22 C=17, N3 N=52 C=52. swap=hitmark (InitNormalCancelSlice). N1/CA windup (7/2/3 frames, state-dependent) not baked into base FrameMaps.",
 				"charge.go chargeHitmark=66, chargeFrames=InitAbilSlice(99) with Skill/Burst/Dash/Jump/Swap overridden to 66; N & C stay at the 99 animation default. Catalyst charged attack -> chargeFrames (not chargeHits).",
@@ -77,34 +52,18 @@
 			"abilityType": "skill",
 			"behavior": "instant",
 			"cooldown": 16,
-			"frames": {
-				"swap": 31,
-				"N": 40,
-				"C": 40,
-				"E": 33,
-				"Q": 32,
-				"D": 34,
-				"J": 32
-			},
+			"frames": { "anim": 42, "N": 40, "C": 40, "E": 33, "Q": 32, "D": 34, "J": 32, "swap": 31 },
 			"tags": ["shield"],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 15,
-						"cap": 600
-					},
+					"value": { "type": "scaling", "stat": "atk", "ratio": 15, "cap": 600 },
 					"snapshottable": false,
 					"attribution": "Grace of Kenosis",
 					"_curatorNotes": [
@@ -115,10 +74,7 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "refresh",
 					"scaling": 398.1,
@@ -136,7 +92,8 @@
 			"description": "Recreates a fleeting glimpse of an age long past, when the angels acted on the authority of the heavens, bestowing the **Grace of Kenosis** effect on nearby party members. This increases their ATK and deals AoE Pyro DMG, as well as creates a Shield of Blazing Light.\nThe Shield of Blazing Light's DMG Absorption is based on Nicole's ATK, and it will absorb Pyro DMG at 250% effectiveness.",
 			"_curatorNotes": [
 				"Shield label \"Shield of Blazing Light\" taken verbatim from this ability's own description text (the game's wording, via genshin-db) — the shield lane renders it. ⛔ Kits whose text says only \"a shield\" (Diona, Candace, Xinyan, Lan Yan) keep the generic fallback rather than borrowing the ability name; gcsim's \"<Ability> (Shield)\" strings are its own internal convention, not in-game names."
-			]
+			],
+			"application": [{ "frame": 9, "element": "pyro" }]
 		},
 		{
 			"id": "nicole__burst__revelation_ladder_of_divine_ascent",
@@ -147,22 +104,12 @@
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": ["coordinatedAttack"],
-			"frames": {
-				"swap": 113,
-				"N": 117,
-				"C": 120,
-				"E": 116,
-				"D": 118,
-				"J": 117
-			},
+			"frames": { "anim": 128, "N": 117, "C": 120, "E": 116, "D": 118, "J": 117, "swap": 113 },
 			"effects": [
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"source": "team"
-					},
+					"trigger": { "type": "onHit", "source": "team" },
 					"duration": 20,
 					"procCooldown": 3,
 					"scaling": 180,
@@ -181,7 +128,8 @@
 				"HEXEREI Secret Rite (count-gated). gcsim asc.go:111-123 hexereiOnProjection: requires Nicole IsHexerei AND GetHexereiCount() >= 2 AND the triggering character IsHexerei; returns c.TotalAtk()*3, applied as AttackInfo.FlatDmg on the burst projection (burst.go:164) and on C1's Arcane Projection: Unity (cons.go:56).",
 				"Pure damage-magnitude enhancement to an existing hit (flat add, no new instance, no stat change) — recorded, not authored as an effect. Lives in factionBonuses as a description-only Secret Rite entry plus this caveat."
 			],
-			"description": "As Nicole weaves the path of anchored fate with golden threads of light, she deals AoE Pyro DMG and switches to Silent Contemplation mode.\nIn this mode, when nearby active party members hit an opponent, an Arcane Projection is summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type. This DMG scales based on the corresponding character's ATK and will be considered as having been dealt by them.\nThis effect can occur once every 3s, and can be triggered up to 4 times each time Nicole switches to Silent Contemplation mode.\n\nIt is worth noting that Hexerei characters' Arcane Projections appear to differ somehow in appearance from the others..."
+			"description": "As Nicole weaves the path of anchored fate with golden threads of light, she deals AoE Pyro DMG and switches to Silent Contemplation mode.\nIn this mode, when nearby active party members hit an opponent, an Arcane Projection is summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type. This DMG scales based on the corresponding character's ATK and will be considered as having been dealt by them.\nThis effect can occur once every 3s, and can be triggered up to 4 times each time Nicole switches to Silent Contemplation mode.\n\nIt is worth noting that Hexerei characters' Arcane Projections appear to differ somehow in appearance from the others...",
+			"application": [{ "frame": 108, "element": "pyro" }]
 		}
 	],
 	"passives": [
@@ -193,10 +141,7 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -221,11 +166,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"damageType": "elemental",
-						"source": "team"
-					},
+					"trigger": { "type": "onHit", "damageType": "elemental", "source": "team" },
 					"duration": 8,
 					"durationType": "refresh",
 					"source": "character",
@@ -252,10 +193,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"source": "team"
-					},
+					"trigger": { "type": "onHit", "source": "team" },
 					"procCooldown": 6,
 					"scaling": 600,
 					"stat": "atk",
@@ -279,10 +217,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -298,10 +233,7 @@
 					"type": "resShred",
 					"target": "enemy",
 					"value": -25,
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "refresh",
 					"attribution": "C2 (Guidance of Theosis RES shred)",
@@ -313,10 +245,7 @@
 				{
 					"type": "shield",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "refresh",
 					"scaling": 398.1,
@@ -348,19 +277,12 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 70
-					},
+					"value": { "type": "scaling", "stat": "atk", "ratio": 70 },
 					"snapshottable": false,
 					"attribution": "C4 (Pathfinder's Blessing)",
 					"_curatorNotes": [
@@ -392,10 +314,7 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",

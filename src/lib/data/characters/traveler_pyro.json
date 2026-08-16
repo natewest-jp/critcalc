@@ -16,13 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 13, "N": 17, "C": 28 } },
-				{ "name": "N2", "frames": { "swap": 13, "N": 26, "C": 28 } },
-				{ "name": "N3", "frames": { "swap": 16, "N": 32, "C": 36 } },
-				{ "name": "N4", "frames": { "swap": 30, "N": 39, "C": 45 } },
-				{ "name": "N5", "frames": { "swap": 25, "N": 69 } }
+				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
+				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
+				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
+				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
+				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
 			],
-			"chargeFrames": { "swap": 44, "N": 55, "E": 37, "Q": 36, "D": 20, "J": 20 },
+			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
 			"_curatorNotes": [
 				"Normal/charge frames + scaling shared across all Traveler element variants (Male/Aether)."
 			],
@@ -54,13 +54,7 @@
 			"duration": 12,
 			"opensState": "nightsoulBlessing",
 			"terminatesOnSwap": false,
-			"frames": {
-				"swap": 48,
-				"N": 49,
-				"Q": 49,
-				"D": 31,
-				"J": 31
-			},
+			"frames": { "anim": 49, "D": 31, "J": 31, "swap": 48 },
 			"cooldown": 18,
 			"cooldownStartDelay": 19,
 			"tags": [],
@@ -68,13 +62,11 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": {
-						"swap": 59,
-						"N": 61,
-						"Q": 59,
-						"D": 60,
-						"J": 61
-					}
+					"frames": { "anim": 77, "N": 61, "Q": 59, "D": 60, "J": 61, "swap": 59 },
+					"application": [
+						{ "frame": 50, "element": "pyro" },
+						{ "frame": 62, "element": "pyro" }
+					]
 				}
 			],
 			"effects": [],
@@ -91,7 +83,15 @@
 				"[A7] Flavor context: Traveler is the only non-Natlan character to use the Nightsoul system — worth mentioning to explain why the drain/refresh mechanics matter.",
 				"[A7] The burst restores 7 Nightsoul points per refresh, up to 4 times (+28 total, filling toward the 42 cap); the per-refresh amount is already detailed in the burst's curator notes."
 			],
-			"description": "The Traveler unleashes their inner flame, dealing AoE Pyro DMG.\n\nTap\nDeals AoE Pyro DMG, enters Nightsoul's Blessing, and produces Blazing Threshold pulses at intervals.\n\nHold\nDeals stronger AoE Pyro DMG and enters Nightsoul's Blessing with the Scorching Threshold effect: when nearby opponents take damage, a Pyro pulse triggers."
+			"description": "The Traveler unleashes their inner flame, dealing AoE Pyro DMG.\n\nTap\nDeals AoE Pyro DMG, enters Nightsoul's Blessing, and produces Blazing Threshold pulses at intervals.\n\nHold\nDeals stronger AoE Pyro DMG and enters Nightsoul's Blessing with the Scorching Threshold effect: when nearby opponents take damage, a Pyro pulse triggers.",
+			"application": [
+				{ "frame": 24, "element": "pyro" },
+				{ "frame": 90, "element": "pyro" },
+				{ "frame": 156, "element": "pyro" },
+				{ "frame": 222, "element": "pyro" },
+				{ "frame": 288, "element": "pyro" },
+				{ "frame": 354, "element": "pyro" }
+			]
 		},
 		{
 			"id": "traveler_pyro__burst__plains_scorcher",
@@ -99,13 +99,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 47,
-				"N": 49,
-				"E": 48,
-				"D": 49,
-				"J": 49
-			},
+			"frames": { "anim": 49, "E": 48, "swap": 47 },
 			"cooldown": 18,
 			"energyCost": 70,
 			"tags": [],
@@ -117,7 +111,8 @@
 				"Cooldown: SetCD(burst, 18*60). EnergyMax=70. ConsumeEnergy(19) drains 19 energy from teammates.",
 				"C4 effect on burst (+30% Q DMG when in NS): not authored — would need conditional effect with state:nightsoulBlessing condition."
 			],
-			"description": "Releases all the Pyro power within, dealing massive AoE Pyro DMG and restoring Nightsoul points to the Traveler."
+			"description": "Releases all the Pyro power within, dealing massive AoE Pyro DMG and restoring Nightsoul points to the Traveler.",
+			"application": [{ "frame": 40, "element": "pyro" }]
 		}
 	],
 	"passives": [

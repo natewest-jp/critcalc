@@ -16,59 +16,15 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 24,
-						"N": 35
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 17,
-						"N": 26
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 25,
-						"N": 39
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 26,
-						"N": 44
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 17,
-						"N": 52
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 35, "hit": 24 } },
+				{ "name": "N2", "frames": { "anim": 26, "hit": 17 } },
+				{ "name": "N3", "frames": { "anim": 39, "hit": 25 } },
+				{ "name": "N4", "frames": { "anim": 44, "hit": 26 } },
+				{ "name": "N5", "frames": { "anim": 52, "hit": 17 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 26,
-						"D": 15,
-						"J": 15
-					}
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 97,
-						"D": 86,
-						"J": 86
-					}
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 26, "D": 15, "J": 15, "swap": 26 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 97, "D": 86, "J": 86 } }
 			],
 			"sections": [
 				{
@@ -100,66 +56,19 @@
 			"name": "Firework Flare-Up (Niwabi Fire-Dance)",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"infusion": "pyro",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 24,
-						"N": 35
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 17,
-						"N": 26
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 25,
-						"N": 39
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 26,
-						"N": 44
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 17,
-						"N": 52
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 35, "hit": 24 } },
+				{ "name": "N2", "frames": { "anim": 26, "hit": 17 } },
+				{ "name": "N3", "frames": { "anim": 39, "hit": 25 } },
+				{ "name": "N4", "frames": { "anim": 44, "hit": 26 } },
+				{ "name": "N5", "frames": { "anim": 52, "hit": 17 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Aimed Shot",
-					"frames": {
-						"swap": 26,
-						"D": 15,
-						"J": 15
-					}
-				},
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 97,
-						"D": 86,
-						"J": 86
-					}
-				}
+				{ "name": "Aimed Shot", "frames": { "anim": 26, "D": 15, "J": 15, "swap": 26 } },
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 97, "D": 86, "J": 86 } }
 			],
 			"description": "Yoimiya's Normal Attack while Niwabi Fire-Dance is active. Arrows become Blazing Arrows, gaining Pyro infusion, an auto-aim assist, and a skill-talent damage multiplier. Charge Level 2 will not generate Kindling Arrows.",
 			"_curatorNotes": [
@@ -177,12 +86,7 @@
 			"cooldown": 18,
 			"cooldownStartDelay": 11,
 			"duration": 10,
-			"frames": {
-				"swap": 31,
-				"N": 22,
-				"Q": 23,
-				"J": 32
-			},
+			"frames": { "anim": 34, "N": 22, "Q": 23, "J": 32, "swap": 31 },
 			"tags": [],
 			"effects": [],
 			"description": "Yoimiya waves a sparkler and causes a ring of saltpeter to surround her.\n\nNiwabi Enshou\nDuring this time, arrows fired by Yoimiya's Normal Attack will be Blazing Arrows, and their DMG will be increased and converted to Pyro DMG. During this time, Normal Attack: Firework Flare-Up will not generate Kindling Arrows at Charge Level 2.\n\nThis effect will deactivate when Yoimiya leaves the field.",
@@ -192,7 +96,8 @@
 				"Stance duration = 10s (gcsim AddStatus(skillKey, 600+11, true) — 600 frames effective stance window after 11-frame cast delay).",
 				"terminatesOnSwap: true — gcsim onExit() subscribes to OnCharacterSwap and calls DeleteStatus(skillKey) when Yoimiya swaps off-field.",
 				"Skill-talent damage multiplier on in-stance N (1.617 → 3.823 across TL1–15) is reviewer-owned; flagged on the in-stance normal entry."
-			]
+			],
+			"application": []
 		},
 		{
 			"id": "yoimiya__burst__ryuukin_saxifrage",
@@ -200,12 +105,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"frames": {
-				"swap": 109,
-				"E": 112,
-				"D": 111,
-				"J": 112
-			},
+			"frames": { "anim": 113, "E": 112, "D": 111, "J": 112, "swap": 109 },
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
@@ -217,7 +117,8 @@
 				"Aurous Blaze trigger: party-member-other-than-Yoimiya N/CA/P/E/Q hit on debuffed enemy → AoE pyro explosion, 2s ICD per enemy (gcsim abIcdKey = 120 frames). Multiplier from gcsim burstExplode[talent]. Effect not authored; reviewer-owned.",
 				"Burst frames: ActionAttack at InitAbilSlice default (113, comment 'Q -> N1') — omitted per recipe silent-default rule. swap recorded explicitly at 109.",
 				"Burst CD has no explicit cooldownStartDelay (gcsim uses SetCD without delay variant); omitted."
-			]
+			],
+			"application": [{ "frame": 75, "element": "pyro" }]
 		}
 	],
 	"passives": [
@@ -229,9 +130,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "pyroDmgBonus",
@@ -253,10 +152,7 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -292,13 +188,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"filter": {
-							"element": "pyro",
-							"isCrit": true
-						}
-					},
+					"trigger": { "type": "onHit", "filter": { "element": "pyro", "isCrit": true } },
 					"duration": 6,
 					"durationType": "refresh",
 					"source": "character",

@@ -17,53 +17,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 11,
-						"N": 14,
-						"C": 25
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 11,
-						"N": 16,
-						"C": 27
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 16,
-						"N": 23,
-						"C": 25
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 29,
-						"N": 40
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 29,
-						"N": 68
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 31, "hit": 11, "N": 14, "C": 25 } },
+				{ "name": "N2", "frames": { "anim": 31, "hit": 11, "N": 16, "C": 27 } },
+				{ "name": "N3", "frames": { "anim": 45, "hit": 16, "N": 23, "C": 25 } },
+				{ "name": "N4", "frames": { "anim": 67, "hit": 29, "N": 40 } },
+				{ "name": "N5", "frames": { "anim": 68, "hit": 29 } }
 			],
-			"chargeFrames": {
-				"swap": 43,
-				"N": 60,
-				"E": 28,
-				"Q": 28,
-				"D": 28,
-				"J": 28
-			},
+			"chargeFrames": { "anim": 60, "E": 28, "Q": 28, "D": 28, "J": 28, "swap": 43 },
 			"_curatorNotes": [
 				"Out-of-stance polearm normals: 5-hit Physical chain. attackHitmarks=[[11],[11],[16],[20,29],[29]]; N4 is multi-hit, last hitmark=29 gates cancel. attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack/ActionCharge overrides give next-N / charge-cancel windows. N5 final hit per convention has no C key.",
 				"N4 ActionCharge not explicitly set in attack.go (defaults to animLen=67 — non-meaningful cancel); C key omitted from N4 hits[].",
@@ -95,59 +55,16 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "C"],
 			"abilityType": "normal",
 			"infusion": "electro",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 11,
-						"N": 14,
-						"C": 25
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 11,
-						"N": 16,
-						"C": 27
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 16,
-						"N": 23,
-						"C": 25
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 29,
-						"N": 40
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 29,
-						"N": 68
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 31, "hit": 11, "N": 14, "C": 25 } },
+				{ "name": "N2", "frames": { "anim": 31, "hit": 11, "N": 16, "C": 27 } },
+				{ "name": "N3", "frames": { "anim": 45, "hit": 16, "N": 23, "C": 25 } },
+				{ "name": "N4", "frames": { "anim": 67, "hit": 29, "N": 40 } },
+				{ "name": "N5", "frames": { "anim": 68, "hit": 29 } }
 			],
-			"chargeFrames": {
-				"swap": 43,
-				"N": 60,
-				"E": 28,
-				"Q": 28,
-				"D": 28,
-				"J": 28
-			},
+			"chargeFrames": { "anim": 60, "E": 28, "Q": 28, "D": 28, "J": 28, "swap": 43 },
 			"caveat": "Not modeled: plunges are disabled in this form.",
 			"_curatorNotes": [
 				"In-stance normals: same frame data as base (gcsim shares attackFrames between Attack() and skillAttack()), only Element=Electro and ICD/scaling differ. AttackTagNormal preserved (still normal-typed). IgnoreInfusion:true blocks override.",
@@ -163,14 +80,7 @@
 			"behavior": "stance",
 			"duration": 10,
 			"terminatesOnSwap": true,
-			"frames": {
-				"swap": 17,
-				"N": 19,
-				"E": 22,
-				"Q": 19,
-				"D": 17,
-				"J": 18
-			},
+			"frames": { "anim": 44, "N": 19, "E": 22, "Q": 19, "D": 17, "J": 18, "swap": 17 },
 			"cooldown": 16,
 			"cooldownStartDelay": 19,
 			"tags": [],
@@ -182,7 +92,8 @@
 				"Skill frames: skillFrames=InitAbilSlice(44), ActionAttack=19 ActionSkill=22 (E→E recast cancel into Spearstorm) ActionBurst=19 ActionDash=17 ActionJump=18 ActionSwap=17. Per E-spec swap/N/E/Q/D/J — E key included since Spearstorm IS a meaningful E→E sequence.",
 				"Manifest Flame opens inStance (default for behavior:stance). When inStance is active: (a) normals route to the in-stance Pocztowy Demonspear variant (Electro infusion); (b) E recast routes to Northland Spearstorm; (c) plunge is disabled in-game (not modelled). Manifest Flame is modelled as the generic 'inStance' state (no flins-specific State enum value)."
 			],
-			"description": "Flins summons forth the ancient power concealed within his lamp and switches to his Manifest Flame form. This form has the following characteristics:\n· Flins's Normal and Charged Attacks deal Electro DMG that cannot be overridden by other Elemental infusions, and he is unable to perform Plunging Attacks.\n· His interruption resistance is increased.\n· His Elemental Skill Ancient Rite: Arcane Light is replaced with the special Elemental Skill Northland Spearstorm.\n\nNorthland Spearstorm\nFlins summons a flurry of spears in front, dealing AoE Electro DMG and causing his Elemental Burst Ancient Ritual: Cometh the Night to be replaced with the special Elemental Burst **Thunderous Symphony** for the next 6s.\nThe base CD of Northland Spearstorm is 6s and will not be affected by other effects."
+			"description": "Flins summons forth the ancient power concealed within his lamp and switches to his Manifest Flame form. This form has the following characteristics:\n· Flins's Normal and Charged Attacks deal Electro DMG that cannot be overridden by other Elemental infusions, and he is unable to perform Plunging Attacks.\n· His interruption resistance is increased.\n· His Elemental Skill Ancient Rite: Arcane Light is replaced with the special Elemental Skill Northland Spearstorm.\n\nNorthland Spearstorm\nFlins summons a flurry of spears in front, dealing AoE Electro DMG and causing his Elemental Burst Ancient Ritual: Cometh the Night to be replaced with the special Elemental Burst **Thunderous Symphony** for the next 6s.\nThe base CD of Northland Spearstorm is 6s and will not be affected by other effects.",
+			"application": [{ "frame": 19, "element": "electro" }]
 		},
 		{
 			"id": "flins__skill__northland_spearstorm",
@@ -190,34 +101,18 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
-			"frames": {
-				"swap": 42,
-				"N": 28,
-				"Q": 28,
-				"D": 26,
-				"J": 26
-			},
+			"conditions": { "type": "state", "state": "inStance" },
+			"frames": { "anim": 42, "N": 28, "Q": 28, "D": 26, "J": 26 },
 			"cooldown": 6,
 			"cooldownModifiers": [
 				{
 					"source": "C1: Part the Veil of Snow",
 					"type": "flat",
 					"value": -2,
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					}
+					"conditions": { "type": "constellation", "level": 1 }
 				}
 			],
-			"opensTransientState": {
-				"state": "symphonyWindow",
-				"duration": 6,
-				"terminatesOnSwap": true
-			},
+			"opensTransientState": { "state": "symphonyWindow", "duration": 6, "terminatesOnSwap": true },
 			"tags": [],
 			"effects": [],
 			"_curatorNotes": [
@@ -229,7 +124,8 @@
 				"[A7] Thunderous Symphony hit figures (single Lunar-Charged Electro hit, 171.7% ATK at talent 10; +258.7% ATK extra hit under Moonsign: Ascendant Gleam) are damage math — out of scope for user caveats; already recorded in the burst _curatorNotes."
 			],
 			"caveat": "Type `sQ` within 6s of casting this to fire the 30-energy replacement Burst; plain Q still casts the full 80-energy Burst.",
-			"description": "Flins summons a flurry of spears in front, dealing AoE Electro DMG and causing his Elemental Burst Ancient Ritual: Cometh the Night to be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\nThe base CD of Northland Spearstorm is 6s and will not be affected by other effects."
+			"description": "Flins summons a flurry of spears in front, dealing AoE Electro DMG and causing his Elemental Burst Ancient Ritual: Cometh the Night to be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\nThe base CD of Northland Spearstorm is 6s and will not be affected by other effects.",
+			"application": [{ "frame": 23, "element": "electro" }]
 		},
 		{
 			"id": "flins__burst__ancient_ritual_cometh_the_night",
@@ -237,32 +133,17 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": {
-				"swap": 91,
-				"N": 102,
-				"E": 103,
-				"D": 103,
-				"J": 103
-			},
+			"frames": { "anim": 91, "N": 102, "E": 103, "D": 103, "J": 103, "swap": 91 },
 			"cooldown": 15,
 			"energyCost": 80,
 			"variants": [
 				{
 					"label": "Thunderous Symphony",
 					"input": ["sQ"],
-					"frames": {
-						"swap": 81,
-						"N": 53,
-						"E": 53,
-						"D": 51,
-						"J": 50
-					},
+					"frames": { "anim": 81, "N": 53, "E": 53, "D": 51, "J": 50, "swap": 81 },
 					"cooldown": 0,
 					"energyCost": 30,
-					"conditions": {
-						"type": "state",
-						"state": "symphonyWindow"
-					},
+					"conditions": { "type": "state", "state": "symphonyWindow" },
 					"consumesState": "symphonyWindow",
 					"bypassesCooldown": true,
 					"effects": []
@@ -278,7 +159,13 @@
 				"ConsumeEnergy(4) on cast — drains 4 energy from teammates; not modelled.",
 				"Thunderous Symphony variant WIRED via the KQM `sQ` token (2026-07-17): gated on the `symphonyWindow` transient state Spearstorm opens; consumesState closes the window on cast (gcsim DeleteStatus). bypassesCooldown per gcsim flins.go ActionReady — while the window is active the burst CD check is SKIPPED entirely (only the 30-energy gate applies, which the planner doesn't simulate), and thunderousSymphony() sets no CD, so cooldown: 0 and the shared clock is untouched. Frames: symphonyFrames=InitAbilSlice(81), ActionAttack=53 ActionSkill=53 ActionDash=51 ActionJump=50, no explicit ActionSwap → swap=81 (animLen). Single Lunar-Charged hit at symphonyHitmark=44f (171.7% ATK), +1 extra hit at +18 (258.7% ATK) if Moonsign Ascendant Gleam. ConsumeEnergyPartial(3, 30)."
 			],
-			"description": "Flins unleashes the true power of his lamp, dealing AoE Electro DMG and, after a short delay, dealing 2 instances of middle-phase and 1 instance of final-phase AoE Electro DMG, all of which are considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: Flins's Skill is enhanced: If there are thunderclouds nearby, Flins will deal an additional 2 instances of middle-phase Lunar-Charged AoE Electro DMG.\n\nAfter using the special Elemental Skill Northland Spearstorm, Flins's Elemental Burst Ancient Ritual: Cometh the Night will be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\n\nThunderous Symphony\nConsume less Elemental Energy to unleash a special Elemental Burst. Flins deals a single instance of AoE Electro DMG that is considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: Flins's Skill is enhanced: If there are thunderclouds nearby, Flins will deal an additional instance of Lunar-Charged AoE Electro DMG.\n\nMoonsign: Ascendant Gleam (additional buff): If there are thunderclouds nearby, Flins's Skill is enhanced. (See description above for full text.)"
+			"description": "Flins unleashes the true power of his lamp, dealing AoE Electro DMG and, after a short delay, dealing 2 instances of middle-phase and 1 instance of final-phase AoE Electro DMG, all of which are considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: Flins's Skill is enhanced: If there are thunderclouds nearby, Flins will deal an additional 2 instances of middle-phase Lunar-Charged AoE Electro DMG.\n\nAfter using the special Elemental Skill Northland Spearstorm, Flins's Elemental Burst Ancient Ritual: Cometh the Night will be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\n\nThunderous Symphony\nConsume less Elemental Energy to unleash a special Elemental Burst. Flins deals a single instance of AoE Electro DMG that is considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: Flins's Skill is enhanced: If there are thunderclouds nearby, Flins will deal an additional instance of Lunar-Charged AoE Electro DMG.\n\nMoonsign: Ascendant Gleam (additional buff): If there are thunderclouds nearby, Flins's Skill is enhanced. (See description above for full text.)",
+			"application": [
+				{ "frame": 93, "element": "electro" },
+				{ "frame": 110, "element": "electro" },
+				{ "frame": 119, "element": "electro" },
+				{ "frame": 164, "element": "electro" }
+			]
 		}
 	],
 	"passives": [
@@ -290,14 +177,8 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "teamFaction",
-						"faction": "moonsign",
-						"min": 2
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "teamFaction", "faction": "moonsign", "min": 2 },
 					"source": "character",
 					"stat": "lunarChargedDmgBonus",
 					"value": 20,
@@ -318,17 +199,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "em",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 8,
-						"cap": 160
-					},
+					"value": { "type": "scaling", "stat": "atk", "ratio": 8, "cap": 160 },
 					"snapshottable": false
 				}
 			],
@@ -348,15 +222,9 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "lunarCharged"
-					},
+					"trigger": { "type": "onReaction", "reaction": "lunarCharged" },
 					"procCooldown": 5.5,
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					},
+					"conditions": { "type": "constellation", "level": 1 },
 					"amount": 8
 				}
 			],
@@ -415,13 +283,8 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 4
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "constellation", "level": 4 },
 					"source": "character",
 					"stat": "atk%",
 					"value": 20,
@@ -449,13 +312,8 @@
 				{
 					"type": "elevate",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "constellation", "level": 6 },
 					"source": "character",
 					"reactions": ["lunarCharged"],
 					"value": 35,
@@ -464,21 +322,12 @@
 				{
 					"type": "elevate",
 					"target": "team",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 6
-							},
-							{
-								"type": "teamFaction",
-								"faction": "moonsign",
-								"min": 2
-							}
+							{ "type": "constellation", "level": 6 },
+							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
 						]
 					},
 					"source": "character",

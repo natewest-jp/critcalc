@@ -18,48 +18,26 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": {
-						"swap": 11,
-						"N": 23,
-						"C": 22,
-						"E": 13,
-						"Q": 11,
-						"D": 12,
-						"J": 13
-					}
+					"frames": { "anim": 33, "N": 23, "C": 22, "E": 13, "Q": 11, "D": 12, "J": 13, "swap": 11 }
 				},
 				{
 					"name": "N2",
-					"frames": {
-						"swap": 8,
-						"N": 22,
-						"C": 24,
-						"E": 11,
-						"Q": 11,
-						"D": 10,
-						"J": 10
-					}
+					"frames": { "anim": 32, "N": 22, "C": 24, "E": 11, "Q": 11, "D": 10, "J": 10, "swap": 8 }
 				},
 				{
 					"name": "N3",
-					"frames": {
-						"swap": 32,
-						"N": 54,
-						"E": 32,
-						"Q": 33,
-						"D": 32,
-						"J": 34
-					}
+					"frames": { "anim": 67, "N": 54, "C": 52, "E": 32, "Q": 33, "D": 32, "J": 34, "swap": 32 }
 				}
 			],
 			"chargeFrames": {
-				"swap": 71,
-				"N": 73,
-				"C": 85,
-				"E": 72,
-				"Q": 73,
-				"D": 72,
-				"J": 73
+				"anim": 113,
+				"N": 86,
+				"C": 98,
+				"E": 85,
+				"Q": 86,
+				"D": 85,
+				"J": 86,
+				"swap": 84
 			},
 			"sections": [
 				{
@@ -89,23 +67,13 @@
 			"name": "Sharky's Bite",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"noICD": true,
 			"tags": [],
 			"hits": [
 				{
 					"name": "Sharky's Bite",
-					"frames": {
-						"swap": 215,
-						"N": 109,
-						"E": 39,
-						"Q": 40,
-						"D": 40,
-						"J": 40
-					}
+					"frames": { "anim": 215, "N": 109, "E": 39, "Q": 40, "D": 40, "J": 40 }
 				}
 			],
 			"description": "While in Nightsoul's Blessing, Mualani's Normal Attacks are converted to Sharky's Bites — auto-targeting wave-chomps that deal Nightsoul-aligned Hydro DMG based on Max HP. Each Sharky's Bite has a 1.8s ICD (gcsim). Charged Attacks are disabled in this state.",
@@ -125,13 +93,7 @@
 			"abilityType": "skill",
 			"cooldown": 6,
 			"duration": 6,
-			"frames": {
-				"swap": 65,
-				"N": 5,
-				"Q": 6,
-				"D": 15,
-				"J": 18
-			},
+			"frames": { "anim": 69, "N": 5, "Q": 6, "D": 15, "J": 18, "swap": 65 },
 			"tags": [],
 			"effects": [],
 			"description": "Combining her mastery of speed and the waves and water, Mualani can surf anytime, anywhere.\nAfter using this skill, Mualani will gain 60 Nightsoul points and enter the Nightsoul's Blessing state.\n\nNightsoul's Blessing: Mualani\nContinuously consume Nightsoul points. When they are depleted or when the skill is used again, Mualani's Nightsoul's Blessing will end. The state itself has the following traits:\n·Mualani mounts her Sharky Surfboard, increasing Mualani's Movement SPD and interruption resistance. Mualani can move on water and liquid Phlogiston while this state is active, and she will take no DMG from the latter.\n·Normal Attacks will be converted to Sharky's Bites, dealing Nightsoul-aligned Hydro DMG based on Mualani's Max HP. Sharky's Bites can be used in mid-air. DMG dealt this way is considered Normal Attack DMG.\n·When she makes contact with opponents in this state, Mualani applies \"Marked as Prey\" to them and gains 1 Wave Momentum stack. Max 3 stacks. 1 stack can be gained from the same opponent every 0.7s.\n\nWave Momentum and Marked as Prey\nWhen Mualani uses Sharky's Bite, her DMG dealt increases based on Wave Momentum stacks. When she has 3 stacks, Sharky's Bite will be converted to Sharky's Surging Bite, further increasing her DMG and removing all her stacks when hitting an opponent.\nWhen Sharky's Bite hits an opponent Marked as Prey, that mark will be removed, and she will fire Shark Missiles at up to 5 nearby opponents Marked as Prey, dealing DMG to them equal to this Sharky's Bite instance and clearing their Marks. If more than 1 opponent is the target of Sharky's Bite and Shark Missiles, the DMG dealt will decrease, decreasing at most to 72% of the original DMG when 3 opponents are targeted.",
@@ -144,7 +106,8 @@
 				"Re-pressing E during stance cancels Nightsoul (gcsim Skill function early-returns with skillCancelFrames). Cancel frames: swap=11, N=7, Q=4, D=13, J=12. Not authored as a separate variant — cancel-press behavior cannot be expressed in current schema.",
 				"Stack-conditional N animation: see Sharky's Bite ability for the 3-stack Surging Bite variant flag.",
 				"Movement/dash/jump frame replacements while in stance (skillDashFrames, skillJumpFrames) not authored — schema does not represent stance-altered dash/jump; reviewer to decide."
-			]
+			],
+			"application": []
 		},
 		{
 			"id": "mualani__burst__boomsharkalaka",
@@ -152,13 +115,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"frames": {
-				"swap": 108,
-				"N": 167,
-				"E": 166,
-				"D": 167,
-				"J": 167
-			},
+			"frames": { "anim": 180, "N": 167, "E": 166, "D": 167, "J": 167, "swap": 108 },
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
@@ -168,7 +125,8 @@
 				"Burst hit lands at hitmark 108 + travel (default 70f in gcsim). Snapshot taken at burstHitmarks=108 (bullet creation), damage applied at +travel.",
 				"gcsim ConsumeEnergy(11) is a non-standard call distinct from the burst's true 60-energy cost (sourced from data_gen.textproto: burst_energy_cost=60). Authored energyCost=60.",
 				"A4 \"Wavechaser's Exploits\" stacks add 15%/30%/45% Max-HP flat DMG when consumed by Q (gcsim: 0.15 * stacks * MaxHP). Authored on the passive as a damage skeleton with manual trigger (inherited)."
-			]
+			],
+			"application": [{ "frame": 178, "element": "hydro" }]
 		}
 	],
 	"passives": [
@@ -189,9 +147,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 45,
 					"stat": "hp"
 				}
@@ -212,9 +168,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 66,
 					"stat": "hp"
 				}
@@ -252,9 +206,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"conditions": { "type": "constellation", "level": 4 },
 					"source": "character",
 					"stat": "burstDmgBonus",

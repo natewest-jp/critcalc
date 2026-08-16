@@ -53,6 +53,7 @@ const { tokenizeNotation } = await import('../src/lib/utils/tokenizer.ts');
 const { FPS } = await import('../src/lib/utils/frames.ts');
 const { createIcdClock, icdApplies, icdTagFor, resolveActionIcd } =
 	await import('../src/lib/utils/icd.ts');
+const { resolveCastApplications } = await import('../src/lib/sim/aura.ts');
 
 // ---------------------------------------------------------------------------
 // Corpus
@@ -101,15 +102,21 @@ const FIXTURES = [
  * application that reacts with nothing is invisible in the IR. So we replay
  * the model's own rule over the IR:
  *
- *   - every E/Q cast applies the caster's element at `cast.time` (⛔ ungated,
- *     and unconditional — there is no per-ability data that could say a cast
- *     applies nothing; that gap is the round's central finding)
+ *   - every E/Q cast applies on its authored `application[]` schedule, at
+ *     `cast.time + entry.frame`, behind the cast's OWN ICD counter (⛔ not one
+ *     shared across casts — see the census in `resolveActionIcd`)
  *   - every N/C/P swing with a resolved element applies at its swing END
  *     (`action.time + action.duration`), behind the ICD clock
  *
- * ⚓ The ICD gating REUSES `$lib/utils/icd.ts` — the same module the parser
- * calls — rather than reimplementing it, so this cannot drift from the model
- * it is meant to describe.
+ * ⚓⚓ BOTH RULES ARE IMPORTED, NOT RESTATED. The ICD gating calls
+ * `$lib/utils/icd.ts` and the cast schedule calls `resolveCastApplications` from
+ * `$lib/sim/aura.ts` — the same functions the parser calls.
+ *
+ * 🐛 This mattered within one landing. Until L4d the cast rule was written out
+ * here as "every cast applies the caster's element at cast.time", and when the
+ * engine stopped doing that, the oracle went on measuring the old model and
+ * reported the baseline UNCHANGED. An oracle that silently describes a model you
+ * no longer have is worse than no oracle. ⛔ Never inline either rule again.
  */
 function ourApplications(parsed) {
 	const clocks = new Map();
@@ -127,14 +134,20 @@ function ourApplications(parsed) {
 		if (!char) continue;
 
 		if (ev.kind === 'cast') {
-			if (!char.element) continue;
-			out.push({
-				time: at,
-				characterId: ev.characterId,
-				element: char.element,
-				kind: ev.ability,
-				label: ev.label
-			});
+			// The resolved ability the cast actually used, and the variant its token
+			// selected — the same pair `emitReactionsAtCast` is handed.
+			const ability = char.abilities?.find((a) => a.id === ev.abilityId);
+			const variant = ability?.variants?.find((v) => (v.input ?? []).includes(ev.label));
+			const list = variant?.application ?? ability?.application;
+			for (const app of resolveCastApplications(char, list, ev.ability, ability?.noICD)) {
+				out.push({
+					time: at + app.frame,
+					characterId: ev.characterId,
+					element: app.element,
+					kind: ev.ability,
+					label: ev.label
+				});
+			}
 			continue;
 		}
 

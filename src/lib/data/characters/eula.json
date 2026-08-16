@@ -34,13 +34,13 @@
 			],
 			"description": "Normal Attack\nPerforms up to 5 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous slashes.\nAt the end of the sequence, performs a more powerful slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"hits": [
-				{ "name": "N1", "frames": { "swap": 30 } },
-				{ "name": "N2", "frames": { "swap": 19 } },
-				{ "name": "N3", "frames": { "swap": 42 } },
-				{ "name": "N4", "frames": { "swap": 17 } },
-				{ "name": "N5", "frames": { "swap": 56 } }
+				{ "name": "N1", "frames": { "anim": 34, "hit": 30 } },
+				{ "name": "N2", "frames": { "anim": 36, "hit": 19 } },
+				{ "name": "N3", "frames": { "anim": 56, "hit": 42 } },
+				{ "name": "N4", "frames": { "anim": 44, "hit": 17 } },
+				{ "name": "N5", "frames": { "anim": 105, "hit": 56 } }
 			],
-			"plungeFrames": { "swap": 62, "N": 50, "E": 51, "Q": 50, "D": 37 },
+			"plungeFrames": { "anim": 84, "N": 53, "E": 54, "Q": 52, "D": 41, "swap": 64 },
 			"_curatorNotes": [
 				"chargeFrames: no explicit chargeFrames found in gcsim character dir (no charge.go; attack.go has no chargeFrames slice). Reviewer to source charge attack frame data.",
 				"Normal N (ActionAttack) and C (ActionCharge) cancel frames are not explicitly assigned after InitNormalCancelSlice — they default to AnimationLength (N1:34, N2:36, N3:56, N4:44, N5:105) and are omitted per recipe rule. Only swap is recorded for each hit.",
@@ -48,7 +48,8 @@
 				"plungeFrames: LowPlungeAttack and HighPlungeAttack in gcsim only accept AirborneXianyun state — Eula cannot plunge without a Xianyun launch. Reviewer to verify in-game plunge availability.",
 				"plungeFrames: highPlungeFrames exists in gcsim (InitAbilSlice(84), swap=64, N=53, E=54, Q=52, D=41) but is not represented — using lowPlungeFrames only per recipe.",
 				"plungeFrames: J (ActionJump) is not explicitly assigned in lowPlungeFrames (InitAbilSlice(80) default = 80 = AnimationLength) — omitted per recipe."
-			]
+			],
+			"lowPlungeFrames": { "anim": 80, "N": 50, "E": 51, "Q": 50, "D": 37, "swap": 62 }
 		},
 		{
 			"id": "eula__skill__icetide_vortex",
@@ -56,24 +57,21 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "swap": 29, "N": 31, "Q": 31, "D": 29, "J": 30 },
+			"frames": { "anim": 48, "N": 31, "Q": 31, "D": 29, "J": 30, "swap": 29 },
 			"cooldown": 4,
 			"cooldownStartDelay": 16,
 			"variants": [
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "swap": 100, "N": 77, "Q": 77, "D": 75, "J": 75 },
+					"frames": { "anim": 100, "N": 77, "Q": 77, "D": 75, "J": 75 },
 					"cooldown": 10,
 					"cooldownStartDelay": 46,
 					"effects": [
 						{
 							"type": "resShred",
 							"target": "enemy",
-							"trigger": {
-								"type": "onCast",
-								"ability": "skill"
-							},
+							"trigger": { "type": "onCast", "ability": "skill" },
 							"duration": 14,
 							"element": "cryo",
 							"value": -25
@@ -81,10 +79,7 @@
 						{
 							"type": "resShred",
 							"target": "enemy",
-							"trigger": {
-								"type": "onCast",
-								"ability": "skill"
-							},
+							"trigger": { "type": "onCast", "ability": "skill" },
 							"duration": 14,
 							"element": "physical",
 							"value": -25
@@ -94,7 +89,8 @@
 						"swap=100 sourced from InitAbilSlice(100) argument per recipe exception — no explicit ActionSwap assignment line in skillHoldFrames.",
 						"C2 (Lady of Seafoam) reduces Hold CD to 4s (identical to Press). gcsim: cd=4 when c.Base.Cons>=2 in holdSkill(). Schema has no cooldownModifiers on variants — reviewer to decide how to model this.",
 						"J=75 is explicitly assigned (ActionJump=75), matching ActionDash=75."
-					]
+					],
+					"application": [{ "frame": 49, "element": "cryo" }]
 				}
 			],
 			"tags": [],
@@ -108,7 +104,8 @@
 				"Hold hitmark: frame 49 (skillHoldHitmark). Consumes all Grimheart stacks. If ≥1 stacks: applies Physical RES -resRed[lvl] and Cryo RES -resRed[lvl] for 7*stacksConsumed seconds via Icewhirl Brand hits at frames 79 and 92 (icewhirlHitmarks). resRed scales with talent level.",
 				"A1 (Roiling Rime): when Hold E consumes exactly 2 Grimheart stacks, spawns a Shattered Lightfall Sword dealing 50% of base Lightfall Physical DMG (burstExplodeBase*0.5). Hits at frame 108 (a1Hitmark). Effect not yet authored — needs reviewer pass.",
 				"C1 (Tidal Illusion): when Hold E consumes ≥1 Grimheart stacks, Eula gains PhyDMG%+30 for (6*stacksConsumed+6) seconds (max 18s). Likely onCast with hold-E condition + stack-count gating. gcsim: c1buff[PhyP]=0.3, duration=(6*v+6)*60 frames. Effect not yet authored — needs reviewer pass."
-			]
+			],
+			"application": [{ "frame": 20, "element": "cryo" }]
 		},
 		{
 			"id": "eula__burst__glacial_illumination",
@@ -116,7 +113,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "swap": 120, "N": 120, "D": 122, "J": 121 },
+			"frames": { "anim": 123, "N": 120, "D": 122, "J": 121, "swap": 120 },
 			"cooldown": 20,
 			"cooldownStartDelay": 97,
 			"tags": [],
@@ -140,7 +137,8 @@
 				"E (ActionSkill) cancel not explicitly assigned in burstFrames (InitAbilSlice(123) comment '// Q -> E' indicates 123 is intended E-cancel). Omitted per recipe rule — no explicit ActionSkill assignment line.",
 				"A4 (Wellspring of War-Lust): on Q cast, resets Icetide Vortex CD (ResetActionCooldown) and grants 1 Grimheart stack (gcsim: a4() called at Burst()). Effect not yet authored — needs reviewer pass.",
 				"C6 (Noble Obligation): burstCounter starts at 5 (instead of 0) at C6. Additionally, 50% chance per on-field hit to grant an extra stack (burstStackCB at Cons==6). Effect not yet authored — needs reviewer pass."
-			]
+			],
+			"application": [{ "frame": 100, "element": "cryo" }, { "frame": 600 }]
 		}
 	],
 	"passives": [
@@ -200,13 +198,8 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
-					"conditions": {
-						"type": "enemyHpBelow",
-						"threshold": 50
-					},
+					"trigger": { "type": "passive" },
+					"conditions": { "type": "enemyHpBelow", "threshold": 50 },
 					"source": "character",
 					"stat": "burstDmgBonus",
 					"value": 25,

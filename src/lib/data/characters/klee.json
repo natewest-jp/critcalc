@@ -26,42 +26,33 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": {
-						"swap": 16,
-						"N": 31,
-						"C": 23
-					}
+					"frames": { "anim": 34, "N": 31, "C": 23, "E": 6, "Q": 6, "D": 6, "J": 6, "swap": 16 }
 				},
 				{
 					"name": "N2",
-					"frames": {
-						"swap": 23,
-						"N": 38,
-						"C": 32
-					}
+					"frames": { "anim": 41, "N": 38, "C": 32, "E": 2, "Q": 2, "D": 2, "J": 2, "swap": 23 }
 				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 37
-					}
-				}
+				{ "name": "N3", "frames": { "anim": 77, "hit": 37, "C": 49 } }
 			],
 			"chargeFrames": {
-				"swap": 104,
+				"anim": 113,
 				"N": 59,
+				"C": 59,
 				"E": 59,
 				"Q": 59,
 				"D": 31,
-				"J": 30
+				"J": 30,
+				"swap": 104
 			},
 			"plungeFrames": {
-				"swap": 50,
-				"N": 57,
-				"E": 58,
-				"Q": 47,
-				"D": 47,
-				"J": 66
+				"anim": 71,
+				"N": 60,
+				"C": 55,
+				"E": 61,
+				"Q": 48,
+				"D": 48,
+				"J": 68,
+				"swap": 53
 			},
 			"sections": [
 				{
@@ -80,7 +71,17 @@
 					"description": "Gathering the power of Pyro, Klee plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground."
 				}
 			],
-			"description": "Normal Attack\nThrows things that go boom when they hit things! Performs up to 3 explosive attacks, dealing AoE Pyro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Pyro DMG to opponents after a short casting time.\n\nPlunging Attack\nGathering the power of Pyro, Klee plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground."
+			"description": "Normal Attack\nThrows things that go boom when they hit things! Performs up to 3 explosive attacks, dealing AoE Pyro DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Pyro DMG to opponents after a short casting time.\n\nPlunging Attack\nGathering the power of Pyro, Klee plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Pyro DMG upon impact with the ground.",
+			"lowPlungeFrames": {
+				"anim": 67,
+				"N": 57,
+				"C": 53,
+				"E": 58,
+				"Q": 47,
+				"D": 47,
+				"J": 66,
+				"swap": 50
+			}
 		},
 		{
 			"id": "klee__skill__jumpy_dumpty",
@@ -98,14 +99,12 @@
 			],
 			"description": "Jumpy Dumpty is tons of boom-bang-fun! \nWhen thrown, Jumpy Dumpty bounces thrice, igniting and dealing AoE Pyro DMG with every bounce.\n\nOn the third bounce, the bomb splits into many mines.\nThe mines will explode upon contact with opponents, or after a short period of time, dealing AoE Pyro DMG.\n\nStarts with 2 charges.",
 			"behavior": "instant",
-			"frames": {
-				"swap": 74,
-				"N": 66,
-				"E": 68,
-				"Q": 34,
-				"D": 37,
-				"J": 35
-			}
+			"frames": { "anim": 75, "N": 66, "C": 69, "E": 68, "Q": 34, "D": 37, "J": 35, "swap": 74 },
+			"application": [
+				{ "frame": 71, "element": "pyro" },
+				{ "frame": 240, "element": "pyro" },
+				{ "frame": 240, "element": "pyro" }
+			]
 		},
 		{
 			"id": "klee__burst__sparks_n_splash",
@@ -124,18 +123,36 @@
 			"description": "Klee's Blazing Delight! For the duration of this ability, continuously summons Sparks 'n' Splash to attack nearby opponents, dealing AoE Pyro DMG.",
 			"behavior": "instant",
 			"summons": [
-				{
-					"label": "Sparks 'n' Splash",
-					"duration": 10,
-					"spawnsAt": 146,
-					"terminatesOn": "swap"
-				}
+				{ "label": "Sparks 'n' Splash", "duration": 10, "spawnsAt": 146, "terminatesOn": "swap" }
 			],
-			"frames": {
-				"swap": 101,
-				"D": 103,
-				"J": 104
-			}
+			"frames": { "anim": 139, "D": 103, "J": 104, "swap": 101 },
+			"application": [
+				{ "frame": 186, "element": "pyro" },
+				{ "frame": 198, "element": "pyro" },
+				{ "frame": 210, "element": "pyro" },
+				{ "frame": 294, "element": "pyro" },
+				{ "frame": 306, "element": "pyro" },
+				{ "frame": 306, "element": "pyro" },
+				{ "frame": 318, "element": "pyro" },
+				{ "frame": 318, "element": "pyro" },
+				{ "frame": 401, "element": "pyro" },
+				{ "frame": 413, "element": "pyro" },
+				{ "frame": 425, "element": "pyro" },
+				{ "frame": 425, "element": "pyro" },
+				{ "frame": 503, "element": "pyro" },
+				{ "frame": 515, "element": "pyro" },
+				{ "frame": 515, "element": "pyro" },
+				{ "frame": 527, "element": "pyro" },
+				{ "frame": 527, "element": "pyro" },
+				{ "frame": 610, "element": "pyro" },
+				{ "frame": 622, "element": "pyro" },
+				{ "frame": 634, "element": "pyro" },
+				{ "frame": 634, "element": "pyro" },
+				{ "frame": 718, "element": "pyro" },
+				{ "frame": 730, "element": "pyro" },
+				{ "frame": 730, "element": "pyro" },
+				{ "frame": 742, "element": "pyro" }
+			]
 		}
 	],
 	"passives": [
@@ -158,10 +175,7 @@
 				{
 					"type": "energy",
 					"target": "team",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "charged"
-					},
+					"trigger": { "type": "onHit", "abilityType": "charged" },
 					"amount": 2,
 					"procCooldown": 0.6,
 					"caveat": "Shown on every Charged Attack hit, but in game the Energy only flows when the hit is a CRIT."
@@ -189,10 +203,7 @@
 					"type": "buff",
 					"source": "character",
 					"target": "self",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": ["normal", "charged", "plunge", "skill"]
-					},
+					"trigger": { "type": "onHit", "abilityType": ["normal", "charged", "plunge", "skill"] },
 					"duration": 12,
 					"durationType": "refresh",
 					"stat": "atk%",
@@ -215,10 +226,7 @@
 					"type": "resShred",
 					"shredStat": "def",
 					"target": "enemy",
-					"trigger": {
-						"type": "onHit",
-						"abilityType": "skill"
-					},
+					"trigger": { "type": "onHit", "abilityType": "skill" },
 					"duration": 10,
 					"value": -23.3
 				}
@@ -245,9 +253,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 555,
 					"stat": "atk",
 					"element": "pyro"
@@ -275,20 +281,14 @@
 				{
 					"type": "energy",
 					"target": "teamExcludingSelf",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 10,
 					"amount": 3
 				},
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "Sparks 'n' Splash"
-					},
+					"trigger": { "type": "onCast", "ability": "Sparks 'n' Splash" },
 					"duration": 25,
 					"durationType": "fixed",
 					"source": "character",

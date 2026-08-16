@@ -43,7 +43,7 @@ import {
 } from '$lib/types/ability';
 import { STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
-import { FPS, framesOf } from '$lib/utils/frames';
+import { FPS, frameAt, framesOf } from '$lib/utils/frames';
 import { GENERIC_NORMAL_HITS, GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
 import type { ActionEvent, CastEvent } from '$lib/utils/rotationEvents';
 import { Band, createClock } from './clock';
@@ -94,8 +94,8 @@ const DASH_FRAMES = 21;
 /** Fallback cast time when no E/Q frame data is present on the ability (FRAMES).
  *  Sourced from the data-derived generic profile (genericProfile.ts) so a
  *  frameless skill/burst gets a realistic cast length, not a magic constant. */
-const E_CAST_F = GENERIC_SKILL.castSwap;
-const Q_CAST_F = GENERIC_BURST.castSwap;
+const E_CAST_F = GENERIC_SKILL.castAnim;
+const Q_CAST_F = GENERIC_BURST.castAnim;
 /** Minimum on-field time when no ~Xs is specified — 0.5s at 60fps. */
 const MIN_ACTIVE_F = 30;
 /** Fallback cooldowns for an uncurated character with no ability data at all. */
@@ -753,9 +753,18 @@ export function runRotation(
 				// `castStart` (the exact pre-advance cursor) for both kinds.
 				emitReactionsAtCast(
 					ctx,
+					clock,
 					char,
 					kind,
 					castStart,
+					// ⚠️ A variant's `application[]` REPLACES the base's, like every other
+					// variant array — a hold that lands different hits states all of them.
+					variant?.application ?? active.application,
+					// ⚠️ `noICD` on a skill/burst was declared and inert until L4d; this is
+					// its first reader (Mualani's Sharky's Bite is the normal-side holder).
+					// ⛔ Not variant-overridable — `AbilityVariant` has no `noICD`, and
+					// adding one would author a field with no data behind it.
+					active.noICD,
 					states,
 					charConstellationLevel,
 					chainIdx,
@@ -908,10 +917,11 @@ export function runRotation(
 					);
 					// Frameless normals (uncurated stubs with hits:[], Blank) ride the
 					// generic combo profile so swings get realistic per-position timing
-					// instead of collapsing to zero duration. `swap`-presence on the
-					// first hit is the same framed-vs-not sentinel isCurated uses.
+					// instead of collapsing to zero duration. ⚠️ The framed-vs-not sentinel
+					// is `anim` since L4b — it is what `isCurated` and characterLint now
+					// require, and `swap` is an ordinary optional override.
 					const rawHits = activeNormal?.hits;
-					const hits = Number.isFinite(rawHits?.[0]?.frames?.swap) ? rawHits! : GENERIC_NORMAL_HITS;
+					const hits = Number.isFinite(rawHits?.[0]?.frames?.anim) ? rawHits! : GENERIC_NORMAL_HITS;
 					// Infusion rule shared with the notation highlighter (actionElement.ts).
 					// ⚠️ TWO infusion mechanisms, and the stance one WINS: a stance's
 					// own `infusion` is the character's self-infusion, which in game
@@ -1099,9 +1109,15 @@ export function runRotation(
 						);
 					}
 				} else if (/^[hl]?P$/.test(t)) {
-					// Plunge attack. Uses the active normal ability's plungeFrames, or a
+					// Plunge attack. Uses the active normal ability's plunge frames, or a
 					// plungeVariant whose input[] matches the preceding E token text
 					// (e.g. Kazuha's Midare Ranzan has distinct "After Hold E" frames).
+					//
+					// ⚓ `lP` reads `lowPlungeFrames`; `P` and `hP` read `plungeFrames`,
+					// which is the HIGH plunge (L4b — Nate: the high plunge is what players
+					// actually perform, so it keeps the plain name and the bare token).
+					// The low map falls back to the high one, because gcsim models only one
+					// plunge for three of our authors and none at all for Venti and Wanderer.
 					const plungeStates = computeCurrentStates(clock.now);
 					const activeNormal = resolveActiveAbility(
 						char,
@@ -1115,9 +1131,13 @@ export function runRotation(
 								v.input.includes(lastEText as (typeof v.input)[number])
 							)
 						: undefined;
-					const plungeFrames = plungeVariant?.frames ?? activeNormal?.plungeFrames;
+					const isLowPlunge = t === 'lP';
+					const basePlunge = isLowPlunge
+						? (activeNormal?.lowPlungeFrames ?? activeNormal?.plungeFrames)
+						: activeNormal?.plungeFrames;
+					const plungeFrames = plungeVariant?.frames ?? basePlunge;
 					if (plungeFrames) {
-						const castS = plungeFrames[nextKey] ?? plungeFrames.swap;
+						const castS = frameAt(plungeFrames, nextKey);
 						const blockStart = clock.now;
 						// Catalyst / infused plunges (e.g. Xiao's Q-stance) are elemental —
 						// the shared infusion rule (actionElement.ts). An unresolvable plunge
@@ -1311,10 +1331,19 @@ export function runRotation(
 		if (i < segments.length - 1) clock.advance(clock.now + ctx.swapF);
 	}
 
+	// ⚓ Drain the queue, then report the PRE-DRAIN frame. An application that lands
+	// after the rotation's last action is real and must fire — Klee's mines land 240
+	// frames after her E — but it is not more rotation, and letting the drain move
+	// `clock.now` would stretch the timeline ruler by however long the last summon
+	// took to detonate. Same rule `dispatchShieldEnds` already follows for a shield
+	// still open at the end.
+	const endFrame = clock.now;
+	clock.drain();
+
 	// Final pass: any shield windows still open at rotation end fire their
 	// onShieldEnd dispatch at their scheduled expiry (clamped to the rotation's
 	// observed totalDuration so events don't drift past the timeline ruler).
 	dispatchShieldEnds(ctx, Infinity);
 
-	return clock.now;
+	return endFrame;
 }

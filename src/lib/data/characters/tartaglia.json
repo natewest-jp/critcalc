@@ -16,58 +16,15 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 17,
-						"N": 26
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 8,
-						"N": 27
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 15,
-						"N": 33
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 19,
-						"N": 32
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 11,
-						"N": 33
-					}
-				},
-				{
-					"name": "N6",
-					"frames": {
-						"swap": 14,
-						"N": 66
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 26, "hit": 17 } },
+				{ "name": "N2", "frames": { "anim": 27, "hit": 8 } },
+				{ "name": "N3", "frames": { "anim": 33, "hit": 15 } },
+				{ "name": "N4", "frames": { "anim": 32, "hit": 19 } },
+				{ "name": "N5", "frames": { "anim": 33, "hit": 11 } },
+				{ "name": "N6", "frames": { "anim": 66, "hit": 14 } }
 			],
 			"chargeHits": [
-				{
-					"name": "Fully-Charged Aimed Shot",
-					"frames": {
-						"swap": 94,
-						"D": 86,
-						"J": 86
-					}
-				}
+				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 94, "D": 86, "J": 86 } }
 			],
 			"sections": [
 				{
@@ -98,68 +55,18 @@
 			"name": "Foul Legacy: Raging Tide (Melee Stance)",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"infusion": "hydro",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 8,
-						"N": 10,
-						"C": 23
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 6,
-						"N": 11,
-						"C": 23
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 16,
-						"N": 32,
-						"C": 37
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 7,
-						"N": 33,
-						"C": 37
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 7,
-						"N": 22,
-						"C": 23
-					}
-				},
-				{
-					"name": "N6",
-					"frames": {
-						"swap": 20,
-						"N": 65
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 23, "hit": 8, "N": 10 } },
+				{ "name": "N2", "frames": { "anim": 23, "hit": 6, "N": 11 } },
+				{ "name": "N3", "frames": { "anim": 37, "hit": 16, "N": 32 } },
+				{ "name": "N4", "frames": { "anim": 37, "hit": 7, "N": 33 } },
+				{ "name": "N5", "frames": { "anim": 23, "hit": 7, "N": 22 } },
+				{ "name": "N6", "frames": { "anim": 65, "hit": 20 } }
 			],
-			"chargeFrames": {
-				"swap": 52,
-				"E": 29,
-				"Q": 29,
-				"D": 14,
-				"J": 15
-			},
+			"chargeFrames": { "anim": 55, "E": 29, "Q": 29, "D": 14, "J": 15, "swap": 52 },
 			"description": "While in Melee Stance, Tartaglia's bow is replaced with dual hydro blades. Performs up to 6 consecutive Hydro melee strikes; charged attack is a cross slash dealing Hydro DMG.",
 			"_curatorNotes": [
 				"Tartaglia is the only character whose weapon TYPE changes mid-stance (bow → melee dual-blades). Base normal uses chargeHits[] (bow); in-stance normal uses chargeFrames (melee). Planner should treat the in-stance N as melee for any weapon-keyed logic.",
@@ -177,13 +84,7 @@
 			"terminatesOnSwap": true,
 			"duration": 30,
 			"cooldown": 6,
-			"frames": {
-				"swap": 39,
-				"N": 19,
-				"Q": 19,
-				"D": 19,
-				"J": 21
-			},
+			"frames": { "anim": 39, "N": 19, "Q": 19, "D": 19, "J": 21 },
 			"tags": [],
 			"effects": [],
 			"sections": [
@@ -206,26 +107,18 @@
 				"cooldownStartDelay on the entry cast: 14f from-standing, 0f from walk/dash (gcsim skill.go cdDelay branch). Recorded value omitted; reviewer can author once the variant-state model lands.",
 				"Particles: 1 Hydro particle on E hit, gated by a 3s ICD (particleICDKey). Not authored (no particle-effect schema field); flagged for completeness.",
 				"Riptide application + slash/burst/flash callbacks not authored — Riptide is a debuff economy with multiple sub-effects (Slash 1.5s ICD, Flash 0.7s ICD, Burst on-defeat) the schema cannot express cleanly. Reviewer to decide representation."
-			]
+			],
+			"application": [{ "frame": 16, "element": "hydro" }]
 		},
 		{
 			"id": "tartaglia__skill__foul_legacy_recast",
 			"name": "Foul Legacy: Raging Tide (Exit Melee)",
 			"input": ["E"],
 			"abilityType": "skill",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"behavior": "instant",
 			"cooldown": 7,
-			"frames": {
-				"swap": 16,
-				"N": 17,
-				"Q": 18,
-				"D": 17,
-				"J": 17
-			},
+			"frames": { "anim": 18, "N": 17, "D": 17, "J": 17, "swap": 16 },
 			"_curatorNotes": [
 				"In-stance skill recast — exits Melee Stance early and returns to Ranged. Frames sourced from gcsim's skillMeleeFrames: InitAbilSlice(18) with Attack=17, Burst=18, Dash=17, Jump=17, Swap=16.",
 				"cooldown: 7 is the minimum value of the parametric exit CD (timeInMelee < 2s → 7s). See base-skill _curatorNotes for the full table. C1 reduces by 20%. C6 + Q-in-melee triggers ResetActionCooldown instead — flag separately; not authored.",
@@ -240,12 +133,7 @@
 			"abilityType": "burst",
 			"behavior": "instant",
 			"cooldown": 15,
-			"frames": {
-				"swap": 53,
-				"N": 54,
-				"D": 54,
-				"J": 54
-			},
+			"frames": { "anim": 53, "N": 54, "D": 54, "J": 54, "swap": 53 },
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
@@ -255,25 +143,18 @@
 				"Hitmark: 70f. cooldown: 15 = 900f / 60 (SetCDWithDelay). cooldownStartDelay=0 (ranged branch).",
 				"Energy economics: ConsumeEnergy(3) instead of (60), with a deferred AddEnergy(20) at +4f — net energy spent ≈ ~43 (60 - 17 effective refund). The schema's energyCost: 60 reflects the in-game listed cost; reviewer to decide whether the refund mechanic warrants modeling.",
 				"Riptide application on hit (rangedBurstApplyRiptide callback) — not authored; see skill _curatorNotes on Riptide handling."
-			]
+			],
+			"application": [{ "frame": 70, "element": "hydro" }]
 		},
 		{
 			"id": "tartaglia__burst__havoc_obliteration_melee",
 			"name": "Havoc: Obliteration (Melee Stance)",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"behavior": "instant",
 			"cooldown": 15,
-			"frames": {
-				"swap": 101,
-				"N": 102,
-				"E": 102,
-				"J": 102
-			},
+			"frames": { "anim": 101, "N": 102, "E": 102, "J": 102, "swap": 101 },
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
@@ -283,7 +164,8 @@
 				"Energy economics: ConsumeEnergy(71) — gcsim deliberately drains an extra 11 to prevent the ranged-burst refund logic from kicking in. Net energy ≈ 60 (full cost). energyCost: 60 retained.",
 				"Damage mult uses meleeBurst[talent] — distinct from ranged burst[talent]. Mult difference is the headline reason the in-game description splits the burst into two named variants.",
 				"C6 (Havoc: Annihilation): when cast in Melee Stance, sets c.mlBurstUsed = true; on next onExitMeleeStance, ResetActionCooldown is called on the skill. Effect not authored — schema has no 'reset other ability CD on exit' construct. Flag preserved on the C6 entry."
-			]
+			],
+			"application": [{ "frame": 69, "element": "hydro" }]
 		}
 	],
 	"passives": [

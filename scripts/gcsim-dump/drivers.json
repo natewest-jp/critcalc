@@ -1,0 +1,122 @@
+{
+	"_readme": [
+		"How to ENTER a named state, per character. Keyed by GCSIM key (our character id",
+		"with the underscores removed); the six Travelers are handled by name in the audit.",
+		"",
+		"⚓ This table is deliberately SMALL, because the corpus already says what gates",
+		"each ability. `audit-gcsim-frames.mjs` reads every ability's own `conditions` and",
+		"derives the prerequisite from them: a `chainStage` at index N is N repeats of that",
+		"ability, and a `state` condition is one lookup here. So the only per-character",
+		"knowledge that cannot be derived is the single question 'what puts this character",
+		"into that state', which is exactly what this file answers.",
+		"",
+		"Every row was PROPOSED by probing skill / hold-skill / burst / pairs of them, and",
+		"CONFIRMED by scoring the result against the FrameMaps the corpus already authors",
+		"for that character's gated abilities. A row is only here when the prereq scores",
+		"strictly better than no prereq at all; `_scored` records both numbers.",
+		"",
+		"⚓ An EMPTY step list is a ROW, not an absence, and it says something: 'this state",
+		"does not change the frames — read them off the base capture.' Hu Tao, Wriothesley,",
+		"Xiao, Yoimiya and Durin's dark form are all like that, and Arataki Itto scores",
+		"strictly WORSE with a prereq than without one. ⛔ Leaving them out instead would",
+		"file them as UNCOVERED, which is a different and untrue claim."
+	],
+
+	"_unresolved": {
+		"chasca": "Multitarget Fire (Tap): 0/1 under every candidate prereq. gcsim's base attack (34/13) and its post-skill reading (39/39) both disagree with the authored 11f. Adjudicate before migrating any Chasca normal.",
+		"kinich": "Loop Shot / Scalespiker Cannon: gcsim errors on `skill` under every prereq we tried, so the Nightsoul skill is never captured at all.",
+		"lanyan": "Feathermoon Ring (N / E): 0/2 under every candidate.",
+		"varesa": "Fiery Passion Strikes: her skill leaves her AIRBORNE, so a post-skill `attack` reads a plunge-adjacent animation rather than her Nightsoul normal. Needs a landing step the driver vocabulary does not have."
+	},
+
+	"aratakiitto": {
+		"note": "Raging Oni King. ⚓ An EMPTY prereq is a positive statement: the probe scored base 2/4 and every candidate prereq 1/4, so entering the stance makes the reading WORSE. Read it off the base.",
+		"_scored": "base 2/4, best prereq 1/4",
+		"states": { "inStance": [] }
+	},
+	"clorinde": {
+		"note": "Night Vigil.",
+		"_scored": "skill 4/4 (base 0/4)",
+		"states": { "inStance": [{ "action": "skill" }] }
+	},
+	"cyno": {
+		"note": "Pactsworn Pathclearer — five normals against the base's four.",
+		"_scored": "burst 4/5 (base 0/5)",
+		"states": { "inStance": [{ "action": "burst" }] }
+	},
+	"durin": {
+		"note": "⚠️ transmuting only. Dark form's burst reads identically to the base, so it gets no row.",
+		"_scored": "skill 1/1 (base 0/2)",
+		"states": { "transmuting": [{ "action": "skill" }], "darkForm": [] }
+	},
+	"flins": {
+		"note": "Northland Spearstorm.",
+		"_scored": "skill 6/6 (base 5/6)",
+		"states": { "inStance": [{ "action": "skill" }] }
+	},
+	"hutao": {
+		"note": "Paramita Papilio — frames identical to the base reading.",
+		"_scored": "base 4/6, no prereq improves it",
+		"states": { "inStance": [] }
+	},
+	"kamisatoayato": {
+		"note": "Takimeguri Kanka.",
+		"_scored": "skill 3/3 (base 0/3)",
+		"states": { "inStance": [{ "action": "skill" }] }
+	},
+	"mavuika": {
+		"note": "Flamestrider. ⚠️ Her BURST scores the same 5/5 — it also opens the ring — but hold-E is the cast the corpus models, so that is the row.",
+		"_scored": "hold-skill 5/5 (base 0/4)",
+		"states": { "nightsoulBlessing": [{ "action": "skill", "params": { "hold": 1 } }] }
+	},
+	"mualani": {
+		"note": "Sharky's Bite. ⚓ Its 215f swap looked like a mis-authored full sequence and is not — gcsim reproduces it exactly once the skill has run.",
+		"_scored": "skill 1/1 (base 0/1)",
+		"states": { "inStance": [{ "action": "skill" }] }
+	},
+	"nilou": {
+		"note": "Pirouette / Whirling Steps.",
+		"_scored": "skill 4/6 (base 0/6)",
+		"states": { "inStance": [{ "action": "skill" }] }
+	},
+	"raidenshogun": {
+		"note": "Musou Isshin.",
+		"_scored": "burst 4/5 (base 0/5)",
+		"states": { "inStance": [{ "action": "burst" }] }
+	},
+	"skirk": {
+		"note": "Seven-Phase Flash. ⚓ SKILL, not burst — the burst reading was the near-miss that made this look unresolvable.",
+		"_scored": "skill 6/6 (base 0/6)",
+		"states": { "inStance": [{ "action": "skill" }] }
+	},
+	"tartaglia": {
+		"note": "Foul Legacy: Raging Tide (melee).",
+		"_scored": "skill 7/8 (base 1/8)",
+		"states": { "inStance": [{ "action": "skill" }] }
+	},
+	"wanderer": {
+		"note": "Windfavored.",
+		"_scored": "skill 3/3 (base 0/3)",
+		"states": { "inStance": [{ "action": "skill" }] }
+	},
+	"wriothesley": {
+		"note": "Chilling Penalty — frames identical to the base reading.",
+		"_scored": "base 5/5",
+		"states": { "inStance": [] }
+	},
+	"xiao": {
+		"note": "Yaksha's Mask — frames identical to the base reading.",
+		"_scored": "base 6/6",
+		"states": { "inStance": [] }
+	},
+	"xilonen": {
+		"note": "Nightsoul / Source Samples.",
+		"_scored": "skill 4/4 (base 0/3)",
+		"states": { "nightsoulBlessing": [{ "action": "skill" }] }
+	},
+	"yoimiya": {
+		"note": "Niwabi Enshou — frames identical to the base reading.",
+		"_scored": "base 5/5",
+		"states": { "inStance": [] }
+	}
+}

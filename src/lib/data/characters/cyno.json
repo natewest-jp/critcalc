@@ -15,46 +15,12 @@
 			"input": ["N1", "N2", "N3", "N4", "C"],
 			"abilityType": "normal",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 14,
-						"N": 15,
-						"C": 28
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 17,
-						"N": 22,
-						"C": 23
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 22,
-						"N": 27,
-						"C": 26
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 27,
-						"N": 58
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 28, "hit": 14, "N": 15 } },
+				{ "name": "N2", "frames": { "anim": 23, "hit": 17, "N": 22 } },
+				{ "name": "N3", "frames": { "anim": 27, "hit": 22, "C": 26 } },
+				{ "name": "N4", "frames": { "anim": 58, "hit": 27 } }
 			],
-			"chargeFrames": {
-				"swap": 61,
-				"N": 63,
-				"E": 62,
-				"Q": 62,
-				"D": 24,
-				"J": 24
-			},
+			"chargeFrames": { "anim": 63, "Q": 62, "D": 24, "J": 24, "swap": 61 },
 			"sections": [
 				{
 					"type": "normal",
@@ -79,108 +45,49 @@
 			"name": "Pactsworn Pathclearer",
 			"input": ["N1", "N2", "N3", "N4", "N5", "C"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"infusion": "electro",
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"swap": 12,
-						"N": 16,
-						"C": 28
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"swap": 14,
-						"N": 31,
-						"C": 35
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"swap": 18,
-						"N": 41,
-						"C": 39
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"swap": 14,
-						"N": 27,
-						"C": 36
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"swap": 40,
-						"N": 62
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 28, "hit": 12, "N": 16 } },
+				{ "name": "N2", "frames": { "anim": 35, "hit": 14, "N": 31 } },
+				{ "name": "N3", "frames": { "anim": 41, "hit": 18, "C": 39 } },
+				{ "name": "N4", "frames": { "anim": 36, "hit": 5, "N": 27 } },
+				{ "name": "N5", "frames": { "anim": 40, "N": 62, "swap": 40 } }
 			],
-			"chargeFrames": {
-				"swap": 63,
-				"N": 65,
-				"E": 63,
-				"D": 27,
-				"J": 27
-			}
+			"chargeFrames": { "anim": 65, "E": 63, "D": 27, "J": 27, "swap": 63 }
 		},
 		{
 			"id": "cyno__skill__secret_rite_chasmic_soulfarer",
 			"name": "Secret Rite: Chasmic Soulfarer",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": {
-				"swap": 42,
-				"N": 43,
-				"Q": 43,
-				"D": 31,
-				"J": 32
-			},
+			"frames": { "anim": 43, "D": 31, "J": 32, "swap": 42 },
 			"cooldown": 7.5,
 			"description": "Performs a swift thrust, dealing Electro DMG to opponents along the way.\n\nWhen Cyno is in the Pactsworn Pathclearer state, he will instead unleash a Mortuary Rite that deals thunderous AoE Electro DMG. If Cyno enters the Pactsworn Pathclearer through the Elemental Burst Sacred Rite: Wolf's Swiftness, unleashing Mortuary Rite will also extend the duration of the current instance of Pactsworn Pathclearer.",
 			"behavior": "instant",
-			"opensTransientState": {
-				"state": "inStance",
-				"duration": 6,
-				"terminatesOnSwap": true
-			},
+			"opensTransientState": { "state": "inStance", "duration": 6, "terminatesOnSwap": true },
 			"_curatorNotes": [
 				"[Stellar 2026-07-29] PERMANENT current-patch patch, no Stellar gate: the Witch's Revelation additional talent \"A Star With Which to Start the Journey\" (Fandom talent page, fetched 2026-07-29) reads \"If Cyno unleashes the Elemental Skill Secret Rite: Chasmic Soulfarer while not in the Pactsworn Pathclearer state, he will enter Pactsworn Pathclearer for 6s.\" Modeled with opensTransientState {inStance, 6s, terminatesOnSwap} on THIS ability rather than a new stance ability: the parser prefers the in-stance ability for the E token, so this base ability is only ever resolved when Cyno is NOT in Pathclearer — which is exactly the talent's own gate, for free.",
 				"[Stellar 2026-07-29] The 6s window deliberately gets no durationExtensions: the Fandom skill `buff` text restricts the +4s Mortuary Rite extension to instances entered \"through the Elemental Burst Sacred Rite: Wolf's Swiftness\", and the extensions live on the burst's stance window only. Mortuary Rite cast inside the 6s window therefore does not lengthen it, matching the wiki.",
 				"[Stellar 2026-07-29] Skill text updated to the Fandom `buff` field (buffType Revelation): the Mortuary Rite clause no longer requires the burst-sourced state, and the duration-extension clause was narrowed to the burst-sourced instance. CD unchanged at 7.5s/3s (infobox still reads 7.5s/3s; the dual-CD gameplay note is unchanged)."
-			]
+			],
+			"application": [{ "frame": 21, "element": "electro" }]
 		},
 		{
 			"id": "cyno__skill__mortuary_rite",
 			"name": "Mortuary Rite",
 			"input": ["E"],
 			"abilityType": "skill",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
-			"frames": {
-				"swap": 33,
-				"N": 34,
-				"D": 30,
-				"J": 31
-			},
+			"conditions": { "type": "state", "state": "inStance" },
+			"frames": { "anim": 34, "D": 30, "J": 31, "swap": 33 },
 			"cooldown": 3,
 			"noICD": true,
 			"description": "When Cyno is in the Pactsworn Pathclearer state, he will instead unleash a Mortuary Rite that deals thunderous AoE Electro DMG. If Cyno enters the Pactsworn Pathclearer through the Elemental Burst Sacred Rite: Wolf's Swiftness, unleashing Mortuary Rite will also extend the duration of the current instance of Pactsworn Pathclearer.",
 			"behavior": "instant",
 			"_curatorNotes": [
 				"[Stellar 2026-07-29] Now reachable outside the burst: the Revelation talent lets the base skill open a 6s Pactsworn Pathclearer, and this in-stance ability resolves inside that window too. Its +4s extension still only applies to the burst-sourced stance (durationExtensions live on the burst)."
-			]
+			],
+			"application": [{ "frame": 28, "element": "electro" }]
 		},
 		{
 			"id": "cyno__burst__sacred_rite_wolfs_swiftness",
@@ -188,26 +95,14 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"terminatesOnSwap": true,
-			"frames": {
-				"swap": 83,
-				"N": 84,
-				"E": 84,
-				"D": 84,
-				"J": 86
-			},
+			"frames": { "anim": 86, "N": 84, "E": 84, "D": 84, "swap": 83 },
 			"cooldown": 20,
 			"duration": 11.87,
 			"energyCost": 80,
 			"durationExtensions": [
 				{
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
-					"conditions": {
-						"type": "state",
-						"state": "inStance"
-					},
+					"trigger": { "type": "onCast", "ability": "skill" },
+					"conditions": { "type": "state", "state": "inStance" },
 					"delta": 4,
 					"maxExtensions": 2
 				}
@@ -217,7 +112,8 @@
 			"_curatorNotes": [
 				"[A7] Burst base duration is 712f = 11.87s from cast start (~10s active after the burst animation).",
 				"[A7] Each in-stance Mortuary Rite (skill) cast extends the window +4s, max 2 (up to ~19.87s total), wired via durationExtensions[] with an onCast skill trigger — modeled correctly, so the removed caveat described working behavior rather than a gap."
-			]
+			],
+			"application": []
 		}
 	],
 	"passives": [
@@ -241,31 +137,19 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "em",
-						"ratio": 150
-					},
+					"value": { "type": "scaling", "stat": "em", "ratio": 150 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"source": "character",
 					"stat": "skillFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "em",
-						"ratio": 250
-					},
+					"value": { "type": "scaling", "stat": "em", "ratio": 250 },
 					"snapshottable": false
 				}
 			],
@@ -298,14 +182,8 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
 					"source": "character",
 					"stat": "em",
 					"value": 200,
@@ -330,14 +208,8 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
 					"duration": 11.87,
 					"durationType": "refresh",
 					"source": "character",
@@ -387,10 +259,7 @@
 						"source": "team"
 					},
 					"procCooldown": 18,
-					"conditions": {
-						"type": "teamEnablesReaction",
-						"reaction": "stellarConduct"
-					},
+					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
 					"amount": 20
 				}
 			],

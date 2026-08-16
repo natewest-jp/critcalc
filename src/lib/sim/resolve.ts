@@ -26,15 +26,15 @@ import {
 	getActiveDurationModifiers,
 	getSummonActivatesAt
 } from '$lib/types/ability';
-import { FPS, framesOf } from '$lib/utils/frames';
+import { FPS, frameAt, framesOf } from '$lib/utils/frames';
 import { GENERIC_CHARGE_FRAMES, GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
 import { applyModifiers, DEFAULT_ASCENSION, evalCondition, type ChainIndex } from './conditions';
 
 /** Fallback cast time when no E/Q frame data is present on the ability (FRAMES).
  *  Sourced from the data-derived generic profile (genericProfile.ts) so a
  *  frameless skill/burst gets a realistic cast length, not a magic constant. */
-const E_CAST_F = GENERIC_SKILL.castSwap;
-const Q_CAST_F = GENERIC_BURST.castSwap;
+const E_CAST_F = GENERIC_SKILL.castAnim;
+const Q_CAST_F = GENERIC_BURST.castAnim;
 
 /**
  * Resolves E/Q cast time (FRAMES) from frame data, selecting the cancel window
@@ -53,11 +53,11 @@ export function resolveEQCastTime(
 ): number {
 	const frameMap = variant?.frames ?? ability.frames;
 	if (!frameMap) return ability.abilityType === 'burst' ? Q_CAST_F : E_CAST_F;
-	// A few curated FrameMaps lack the canonical `swap` key (qiqi skill, Mika
-	// hE variant); fall back to the longest defined cancel window rather than
-	// letting undefined poison the cursor with NaN.
-	const swapFallback = frameMap.swap ?? Math.max(0, ...Object.values(frameMap));
-	return frameMap[nextKey] ?? swapFallback;
+	// ⚓ The fallback is `anim`, not `swap` (L4b). The old code needed a
+	// `Math.max(...Object.values())` guard here for the two curated maps that never
+	// carried a `swap` key at all (qiqi skill, Mika hE); with an animation length
+	// required on every map, that guard has nothing left to guard.
+	return frameAt(frameMap, nextKey);
 }
 
 /**
@@ -72,7 +72,7 @@ export function resolveNormalCastTime(
 ): number | null {
 	if (!hits?.length) return null;
 	const hit = hits[Math.min(index, hits.length - 1)];
-	return hit.frames[nextKey] ?? hit.frames.swap;
+	return frameAt(hit.frames, nextKey);
 }
 
 /**
@@ -91,12 +91,12 @@ export function resolveChargeCastTime(
 		const hits = ability.chargeHits;
 		if (!hits?.length) return null;
 		const index = charToken === 'C1' ? 0 : hits.length - 1;
-		return hits[index].frames[nextKey] ?? hits[index].frames.swap;
+		return frameAt(hits[index].frames, nextKey);
 	} else {
 		// Frameless (uncurated / Blank) → generic charge profile, so a charged
 		// attack advances the cursor realistically instead of by zero.
 		const frameMap = ability.chargeFrames ?? GENERIC_CHARGE_FRAMES;
-		return frameMap[nextKey] ?? frameMap.swap;
+		return frameAt(frameMap, nextKey);
 	}
 }
 
