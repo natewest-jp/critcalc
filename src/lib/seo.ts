@@ -37,8 +37,19 @@ export const SITE_URL = 'https://critcalc.app';
  *
  * Spec for the artwork: 1200×630, opaque (no alpha), PNG or JPEG — not WebP,
  * which several scrapers still refuse.
+ *
+ * ⚠️ AND UNDER 600 KB, which is the constraint that actually binds. Facebook, X
+ * and LinkedIn cap at 8/5/5 MB and merely *recommend* under 1 MB — but
+ * **WhatsApp caps preview images at 600 KB and does not degrade gracefully:
+ * over the cap it drops the preview entirely and the link unfurls bare.** The
+ * card shipped as JPEG (q97, 272 KB) for exactly that reason; the source PNG
+ * was 711 KB, and maximum-effort LOSSLESS optimization only reached 619 KB, so
+ * clearing the cap was not possible without re-encoding. ⛔ Don't "upgrade" this
+ * back to PNG for fidelity — platforms re-encode the card anyway, so the quality
+ * delta is invisible at the ~400px it renders at, while the WhatsApp failure is
+ * total. (Verified 2026-08-16.)
  */
-export const OG_IMAGE = '/assets/og/critcalc-og-v1.png';
+export const OG_IMAGE = '/assets/og/critcalc-og-v1.jpg';
 export const OG_IMAGE_W = 1200;
 export const OG_IMAGE_H = 630;
 export const OG_IMAGE_ALT = 'critcalc — Genshin Impact tools for visualizing mechanics';
