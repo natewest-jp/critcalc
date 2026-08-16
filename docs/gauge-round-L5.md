@@ -1,12 +1,18 @@
 # L5 — the gauge replaces the coarse aura
 
-**Status:** planning · opened 2026-08-16
+**Status:** ✅ shipped + merged 2026-08-16 (`fec2ed4`) · **visually verified**
 **Reads:** [`gauge-round.md`](gauge-round.md) (the contract) · [`gauge-round-L3.md`](gauge-round-L3.md)
 (the machine) · [`gauge-round-L4.md`](gauge-round-L4.md) (the data)
 
 > The payoff landing. `AuraState` — a set of flags with no units, no decay and no
 > consumption for Anemo/Geo — is deleted, and `simulateGauge` takes the field.
 > ⚓ **L5 merges on a MEASURED improvement, not on being finished** (contract §5).
+
+✅ **Visually verified (⚓ Nate 2026-08-16):** _"Buff bars stayed put, and I tested for
+swirl reactions — they don't continue indefinitely any more."_ ⚓ Both halves of the
+prediction confirmed on the live tool: the surface a player reads did not move (§1's
+amendment, measured on five rotations and then seen), and the thing that WAS wrong —
+an Anemo application swirling forever off an aura that never decayed — is gone.
 
 ---
 

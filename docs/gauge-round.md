@@ -733,7 +733,9 @@ the provisional set is enumerated and surfaced.
 
 ### L5 — The gauge replaces the coarse aura ✅ SHIPPED 2026-08-16 — _the payoff_
 
-📄 **Full record: [`gauge-round-L5.md`](gauge-round-L5.md)**
+📄 **Full record: [`gauge-round-L5.md`](gauge-round-L5.md)** · ✅ **visually verified**
+(⚓ Nate: _"Buff bars stayed put, and I tested for swirl reactions — they don't continue
+indefinitely any more."_)
 
 `AuraState`'s flags, `computeReactionsForApplication` and
 `updateAuraStateAfterApplication` are deleted. `ctx.aura` is a live `Gauge`, fed post-ICD
