@@ -24,12 +24,13 @@
  * which ability resolution then reads. ⛔ This is not a pure output and never was.
  */
 
-import type { AuraElement, Element, Reaction } from '$lib/types/ability';
+import type { AuraElement, Element, ElementalApplication, Reaction } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import { createIcdClock, icdApplies, icdTagFor, resolveActionIcd } from '$lib/utils/icd';
 import type { NormalActionKind } from '$lib/utils/actionElement';
 import type { ReactionEvent } from '$lib/utils/rotationEvents';
 import type { SimContext } from './context';
+import { Band, type Clock } from './clock';
 import { type ChainIndex } from './conditions';
 import { dispatchOnReactionExtensions } from './extensions';
 import { dispatchGainStacksOnReaction } from './stacks';
@@ -316,35 +317,126 @@ export function emitReactionsForApplication(
 	updateAuraStateAfterApplication(element, ctx.aura);
 }
 
-/** Convenience wrapper for a cast site. ⛔ Ungated: a cast is ability
- *  granularity, not hit granularity — see the ICD note above the aura model. */
+/**
+ * A cast's applications: the absent-list rule, then its own ICD counter.
+ *
+ * ⚓⚓ THE ONE PLACE BOTH RULES LIVE. `scripts/audit-gcsim-reactions.mjs` calls this
+ * rather than restating it, because the L0 oracle exists to describe our model and a
+ * second copy lets it describe a model we no longer have. It did exactly that for one
+ * commit: L4d changed the engine and the oracle reported the baseline UNCHANGED,
+ * because it was still replaying "every cast applies the caster's element at cast
+ * time". ⛔ Never inline either rule again.
+ *
+ * ⚓ Gating is PURE here only because the counter is scoped to a single cast — see the
+ * census in `resolveActionIcd`. If it ever spans casts it must move back to a
+ * scheduled task, where the clock can see the rotation's hits in true time order.
+ *
+ * ⛔ A physical entry is dropped, not defaulted: absent `element` means the hit applies
+ * nothing, and a physical hit spends no aura budget — so it must not consume a counter
+ * slot either, which is why the filter runs BEFORE the clock.
+ */
+export function resolveCastApplications(
+	char: CharacterData,
+	application: ElementalApplication[] | undefined,
+	castKind: 'skill' | 'burst',
+	abilityNoICD: boolean | undefined
+): { frame: number; element: Element }[] {
+	if (!application) {
+		// Absent → the pre-L4d model, provisionally. See the amendment note below.
+		return char.element ? [{ frame: 0, element: char.element }] : [];
+	}
+	const elemental: { frame: number; element: Element }[] = [];
+	for (const a of application) {
+		if (a.element) elemental.push({ frame: a.frame, element: a.element });
+	}
+	const params = resolveActionIcd(castKind, char.weapon, abilityNoICD);
+	if (!params) return elemental;
+	const clock = createIcdClock();
+	return elemental.filter((a) => icdApplies(clock, a.frame, params).applies);
+}
+
+/**
+ * A cast's own hits, SCHEDULED at the frames they land (gauge round L4d).
+ *
+ * ⚓⚓ THIS IS THE FIRST REAL CUSTOMER OF L3's TASK QUEUE. Until now the parser
+ * applied `char.element` at every E/Q cast, unconditionally, because the corpus
+ * recorded when a cast could be CANCELLED and never when it landed — so
+ * Xiangling's E applied Pyro at frame zero when in game it applies none at all,
+ * and Albedo's burst applied Geo 75 frames before its hitmark. `application[]`
+ * says both, and each entry becomes one `Band.LAND` task.
+ *
+ * ⚓⚓ EMPTY AND ABSENT ARE DIFFERENT, AND THIS IS A DELIBERATE AMENDMENT TO
+ * CONTRACT C3 (gauge round L4d).
+ *
+ *   `[]`        MEASURED to apply nothing — 39 abilities, and the whole point of
+ *               the field. Xiangling's E, Xiao's Q, every stance opener.
+ *   absent      UNMEASURED. Falls back to the old model — the character's own
+ *               element at the cast instant — and is counted as provisional.
+ *
+ * C3 ruled that an absent list applies nothing, reasoning from gcsim, "where
+ * `Durability` is not defaulted anywhere". ⚠️ That conflates two things our corpus
+ * can now tell apart: in gcsim an omitted durability means the AUTHOR intended no
+ * application; in our corpus an absent list means WE DID NOT MEASURE IT. Treating
+ * the second as the first deletes the element from the 12 characters with no gcsim
+ * source (Ifa, Iansan, Jahoda, Linnea, Nefer and seven frameless stubs) plus 6 with
+ * partial coverage — Linnea's Geo would simply never crystallize.
+ *
+ * ⚓ Of the two errors, a cast-instant stand-in is much the smaller: the reaction
+ * happens, timed a few frames early. Silence is a whole missing mechanic. And C3's
+ * real target — "a cast that applies nothing cannot say so" — is fully served,
+ * because `[]` now says it. The list is enumerated in
+ * `docs/curation/gcsim-frames-diff.md`; L6 marks it `--ui-provisional`.
+ *
+ * ⚓⚓ A CAST'S OWN HITS ARE ICD-GATED NOW; ACROSS CASTS THEY ARE STILL NOT. The
+ * standing ⛔ ("a cast is an ABILITY, not a hit") rested on *we model a multi-hit
+ * skill as one application*, which `application[]` retired — left wholly ungated,
+ * Barbara's Melody Loop landed twelve hydro applications against gcsim's six. But
+ * gating across casts is wrong for a reason the census makes plain: most skills
+ * are `ICDTagNone` upstream and the tagged ones sit in bespoke groups. So the
+ * counter is scoped to one cast. `resolveActionIcd` carries the numbers.
+ *
+ * ⚠️ The authored list stays NOMINAL — gcsim emits a damage event for a hit its
+ * own ICD suppressed, and we author from that stream (contract C4). The gate is
+ * applied HERE, once, at the land instant. ⛔ Never pre-filter the data.
+ *
+ * ⚠️ The dispatch context — states, constellation, chain index, stacks — is
+ * captured at the CAST, while the aura it reads is live at the LAND. That split
+ * is deliberate for L4d: the aura is the thing whose timing was wrong, and
+ * re-resolving a character's state set inside a scheduled closure is L5's
+ * problem, when reactions stop being synthesized at all.
+ */
 export function emitReactionsAtCast(
 	ctx: SimContext,
+	clock: Clock,
 	char: CharacterData,
 	castKind: 'skill' | 'burst',
 	castTime: number,
+	application: ElementalApplication[] | undefined,
+	abilityNoICD: boolean | undefined,
 	preStates: ReadonlySet<string>,
 	constellation: number,
 	chainIdx: ChainIndex,
 	stackState: Map<string, number>
 ): void {
-	const element = char.element;
-	if (!element) return;
-	emitReactionsForApplication(
-		ctx,
-		char,
-		element,
-		castKind,
-		castTime,
-		preStates,
-		constellation,
-		chainIdx,
-		stackState
-	);
+	for (const app of resolveCastApplications(char, application, castKind, abilityNoICD)) {
+		const at = castTime + app.frame;
+		clock.schedule(at, Band.LAND, () => {
+			emitReactionsForApplication(
+				ctx,
+				char,
+				app.element,
+				castKind,
+				at,
+				preStates,
+				constellation,
+				chainIdx,
+				stackState
+			);
+		});
+	}
 	// The cast's parser-private hit is built + dispatched by handleCast
 	// immediately after this call (onHit wiring 2026-07-17 — the hit needs
-	// the resolved ability/variant context this closure doesn't see). Same
-	// dispatch instant and ordering as the legacy tail dispatch here.
+	// the resolved ability/variant context this closure doesn't see).
 }
 
 /** One N/C/P swing offered to the aura, behind its ICD clock (ICD round,

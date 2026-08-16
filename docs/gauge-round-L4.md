@@ -629,3 +629,121 @@ today's values (`anim = swap`, behaviour unchanged) and each needs a human.
   `castAnim` for the same reason. Cooldown and energy modes are unchanged.
 - ⚠️ **The migration formats through prettier's own API.** A bare
   `JSON.stringify(…, '\t')` re-expands every `"input": ["N"]` and doubles the diff.
+
+---
+
+## 13. L4d outcome — the sim reads it (2026-08-16)
+
+✅ Shipped. `emitReactionsAtCast` no longer applies `char.element` at frame zero; it
+schedules one `Band.LAND` task per `application[]` entry at `cast + frame`. ⚓ **The
+first real customer of L3's task queue**, which was installed empty and pinned by
+`clock.test.ts` against exactly this.
+
+### The measurement
+
+⚠️ **Read the Δ column, not the counts.** The oracle pairs applications ORDINALLY — the
+nth by a character — so a cast that applied at frame 0 when the game applies at frame
+126 still counted as "matched". The count of matches is therefore almost insensitive to
+the thing L4d fixes, and the timing error is where it shows:
+
+| paired applications                                 | before L4d | after L4d    |
+| --------------------------------------------------- | ---------- | ------------ |
+| median \|Δ\|                                        | 35 frames  | **1 frame**  |
+| within 6 frames                                     | 11 (18%)   | **35 (61%)** |
+| within 30 frames                                    | 28 (45%)   | **45 (79%)** |
+| **phantom** applications (we apply, gcsim does not) | 1          | **0**        |
+
+Barbara's Melody Loop is the clean case: ours now reads
+`0.05 · 1.55 · 3.05 · 6.05 · 9.05 · 12.05` against gcsim's
+`0.07 · 1.57 · 3.07 · 6.07 · 9.07 · 12.07` — six for six, within a frame.
+
+⚠️ Total applications fell 63 → 57 and "gcsim applies, we do not" rose 138 → 144. That
+is precision improving, not coverage regressing: the missing rows are still
+overwhelmingly summon ticks, which are L5's, and the removed rows were phantoms or
+ICD-suppressed duplicates. ⛔ Do not read the headline count as the score.
+
+### ⚓ C3 amended: EMPTY and ABSENT are different
+
+C3 ruled that an absent list applies nothing, reasoning from gcsim, "where `Durability`
+is not defaulted anywhere". ⚠️ That conflates two things the corpus can now tell apart:
+in gcsim an omitted durability means the AUTHOR intended no application; in our corpus
+an absent list means **we did not measure it**.
+
+|        |                                                                      |
+| ------ | -------------------------------------------------------------------- |
+| `[]`   | MEASURED to apply nothing — 39 abilities, and the point of the field |
+| absent | UNMEASURED — falls back to the old model, counted as provisional     |
+
+Taking absent as nothing deletes the element from the 12 characters with no gcsim
+source and 6 with partial coverage: Linnea's Geo would simply never crystallize. Of the
+two errors a cast-instant stand-in is much the smaller — the reaction happens, timed a
+few frames early — and C3's real target is fully served, because `[]` now says it.
+
+### ⚓⚓ A cast's OWN hits are ICD-gated; across casts they still are not
+
+This one went back and forth twice and the census settled it, so the reasoning matters
+more than the answer.
+
+The standing rule from the ICD round is **"⛔ E/Q casts stay ungated — ICD counts HITS
+and a cast is an ABILITY"**, justified by _we model a multi-hit skill as one
+application_. `application[]` retires that premise, and leaving casts wholly ungated
+measurably over-applies: Barbara landed **twelve** hydro applications against gcsim's
+six.
+
+But gating across casts is wrong, and gcsim says so out loud:
+
+- **112 of 166 skills are `ICDTagNone`** upstream (and 70 of 132 bursts) — they apply on
+  every hit, and our schema has no way to record which.
+- Of the tagged remainder the GROUP varies wildly. Xiao's Lemniscatic Wind Cycling is
+  `ICDTagElementalArt` but sits in a group whose reset timer is **5 frames** — verified
+  in the log, gcsim applies both of his back-to-back E casts. A standard 2.5 s counter
+  would have deleted the second, and the corpus test that pins that ⛔ would have been
+  right to fail.
+
+⚓ So the counter is scoped to **one cast**: a multi-hit ability's hits genuinely share a
+tag, while across casts our data cannot say whether they do. That reproduces gcsim on
+both measured cases. ⚠️ Because the counter never spans casts, the gate is a PURE
+function of the list — which is why `resolveCastApplications` can be shared with the
+oracle instead of re-implemented.
+
+⚠️ **Per-ability ICD tag + group is now the top schema gap**, and it is L5's: `noICD` is
+binary and the truth is a tag and a group with its own reset timer.
+
+### 🐛 The oracle described a model we no longer had
+
+For one commit, L4d changed the engine and `audit-gcsim-reactions.mjs` reported the
+baseline **unchanged** — because its `ourApplications` had the old rule written out
+longhand: "every E/Q cast applies the caster's element at `cast.time`". An oracle that
+silently measures a model you have replaced is worse than no oracle, and this one had a
+header promising it reused `icd.ts` "so this cannot drift from the model it is meant to
+describe". It drifted anyway, in the one place the promise had not been kept.
+
+⛔ Both rules are now imported: ICD from `$lib/utils/icd.ts`, the cast schedule from
+`resolveCastApplications` in `$lib/sim/aura.ts`. Never inline either again.
+
+### Known hazards this landing introduces
+
+- ⚠️ **A long application stream is not truncated on swap.** A cast's hits are scheduled
+  unconditionally, so an ability whose thing-in-the-world we have not modelled as a
+  summon — Barbara's Melody Loop, Charlotte's marks, Dori's connector, Mizuki's
+  Dreamdrifter, 22 in all — keeps applying after the character leaves the field. ⚓ The
+  fix is DATA, not engine: model them as summons, which the audit already flags as
+  "⚠️ regular, no authored summon".
+- ⚠️ **The dispatch context is captured at the cast while the aura is read at the land.**
+  Deliberate: the aura is the thing whose timing was wrong, and re-resolving a state set
+  inside a scheduled closure is L5's problem, when reactions stop being synthesized.
+- ⚠️ **The queue is drained at the end but the reported duration is the pre-drain frame.**
+  Klee's mines land 240 frames after her E and must fire; they are not more rotation,
+  and letting the drain move `clock.now` would stretch the timeline ruler.
+
+### Tests that changed, and why
+
+- **Mizuki's A1 extension** expected +2.5 s (one swirl) and now reads +5 s (the
+  two-extension cap). Her Dreamdrifter is a continuous attack — eight anemo applications
+  at 45-frame intervals — so she reaches the cap from one cast. The old number was an
+  artefact of one-application-per-cast.
+- **The stance-death guard** ("a matching reaction long after the stance died no longer
+  extends the bar") was written against Mizuki and L4d took its ability to fail: with the
+  cap reached inside the stance, a late swirl cannot change the number either way. ⛔ A
+  test that cannot fail is worse than no test, so the invariant moved to a purpose-built
+  stub with a high cap and one application per cast.

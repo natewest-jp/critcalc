@@ -753,9 +753,18 @@ export function runRotation(
 				// `castStart` (the exact pre-advance cursor) for both kinds.
 				emitReactionsAtCast(
 					ctx,
+					clock,
 					char,
 					kind,
 					castStart,
+					// ⚠️ A variant's `application[]` REPLACES the base's, like every other
+					// variant array — a hold that lands different hits states all of them.
+					variant?.application ?? active.application,
+					// ⚠️ `noICD` on a skill/burst was declared and inert until L4d; this is
+					// its first reader (Mualani's Sharky's Bite is the normal-side holder).
+					// ⛔ Not variant-overridable — `AbilityVariant` has no `noICD`, and
+					// adding one would author a field with no data behind it.
+					active.noICD,
 					states,
 					charConstellationLevel,
 					chainIdx,
@@ -1322,10 +1331,19 @@ export function runRotation(
 		if (i < segments.length - 1) clock.advance(clock.now + ctx.swapF);
 	}
 
+	// ⚓ Drain the queue, then report the PRE-DRAIN frame. An application that lands
+	// after the rotation's last action is real and must fire — Klee's mines land 240
+	// frames after her E — but it is not more rotation, and letting the drain move
+	// `clock.now` would stretch the timeline ruler by however long the last summon
+	// took to detonate. Same rule `dispatchShieldEnds` already follows for a shield
+	// still open at the end.
+	const endFrame = clock.now;
+	clock.drain();
+
 	// Final pass: any shield windows still open at rotation end fire their
 	// onShieldEnd dispatch at their scheduled expiry (clamped to the rotation's
 	// observed totalDuration so events don't drift past the timeline ruler).
 	dispatchShieldEnds(ctx, Infinity);
 
-	return clock.now;
+	return endFrame;
 }

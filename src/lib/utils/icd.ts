@@ -109,10 +109,20 @@ export const uniformHitTimes = (count: number, interval: number) =>
 /** Which counter a swing draws on. gcsim splits `ICDTagNormalAttack` from
  *  `ICDTagExtraAttack`, so a catalyst's normals and its charged attacks keep
  *  independent 3-hit budgets. Plunges never reach a counter (see below). */
-export type IcdTag = 'normal' | 'charged';
+/**
+ * The counter an application draws on. ⚓ Four, not two, since gauge-round L4d:
+ * gcsim keys ICD by `(tag, group)` and gives a skill and a burst their own tags
+ * (`ICDTagElementalArt` / `ICDTagElementalBurst`) alongside `ICDTagNormalAttack`.
+ * A plunge shares the normal counter's tag but is `ICDTagNone` in 165 of 166
+ * kits, so it never reaches a clock.
+ */
+export type IcdTag = 'normal' | 'charged' | 'skill' | 'burst';
 
-export const icdTagFor = (kind: NormalActionKind): IcdTag =>
-	kind === 'normal' ? 'normal' : 'charged';
+/** The action classes that draw on a counter. */
+export type IcdActionKind = NormalActionKind | 'skill' | 'burst';
+
+export const icdTagFor = (kind: IcdActionKind): IcdTag =>
+	kind === 'skill' || kind === 'burst' ? kind : kind === 'normal' ? 'normal' : 'charged';
 
 /**
  * The ICD cadence of one N/C/P swing, or `null` for gcsim's `ICDTagNone` —
@@ -145,13 +155,35 @@ export const icdTagFor = (kind: NormalActionKind): IcdTag =>
  * frames (gauge-round.md C1) — so the cadence it hands back must be too. The
  * instrument never calls this; it picks its own params in seconds.
  *
- * @param kind         normal / charged / plunge
+ * ⚓⚓ A SKILL OR BURST REACHES THIS ONLY FOR ITS OWN HITS (L4d), AND THE REASON
+ * IS A CENSUS. The standing rule — "⛔ E/Q casts stay ungated: ICD counts HITS and
+ * a cast is an ABILITY" — was justified by *we model a multi-hit skill as one
+ * application*, a premise `application[]` retired. But gating ACROSS casts is
+ * still wrong, and now measurably so:
+ *
+ *   - **112 of 166 gcsim skills are `ICDTagNone`** (and 70 of 132 bursts) — they
+ *     apply on every hit and our schema has no way to say which.
+ *   - Of the rest, the GROUP varies wildly. Xiao's Lemniscatic Wind Cycling is
+ *     `ICDTagElementalArt` but sits in a group whose reset timer is **5 frames**,
+ *     so gcsim applies both of his back-to-back E casts. A standard 2.5s counter
+ *     would have deleted the second.
+ *
+ * ⚓ So the counter is scoped to ONE CAST: a multi-hit ability's hits genuinely
+ * share a tag, while across casts our data cannot say whether they do — and the
+ * census says usually not. That reproduces gcsim on both measured cases: Barbara's
+ * twelve Melody Loop hits collapse to ~6 applications as gcsim gives, and Xiao's
+ * two casts both land. ⚠️ Per-ability ICD tag + group is the schema gap; until it
+ * exists this is the honest scope.
+ *
+ * ⚠️ This is where `noICD` on a SKILL or BURST finally has a reader — it was
+ * declared and inert, with the schema comment saying so.
+ *
+ * @param kind         normal / charged / plunge / skill / burst
  * @param weapon       the character's weapon type
- * @param abilityNoICD the resolved normal ability's `noICD` (Mualani's
- *                     Sharky's Bite is the only holder today)
+ * @param abilityNoICD the resolved ability's `noICD`
  */
 export function resolveActionIcd(
-	kind: NormalActionKind,
+	kind: IcdActionKind,
 	weapon: WeaponType | undefined,
 	abilityNoICD: boolean | undefined
 ): IcdParams | null {
