@@ -373,7 +373,40 @@ Two tracks, running **concurrently**, meeting at L5.
   data:          L4 frame re-derivation + application ─────┘
 ```
 
-### L0 — The oracle
+### L0 — The oracle ✅ SHIPPED 2026-08-16
+
+`scripts/audit-gcsim-reactions.mjs` + `scripts/lib/{gcsim,alias-hook,glob-shim}.mjs` →
+`docs/curation/gcsim-reaction-diff.md`. 12 fixtures, all running.
+
+⚓⚓ **THE BASELINE — every later landing is measured against this.**
+
+| metric                                   | count         |
+| ---------------------------------------- | ------------- |
+| applications — ours                      | **63**        |
+| applications — gcsim                     | **200**       |
+| we apply, gcsim does not                 | 1             |
+| **gcsim applies, we do not**             | **138 (69%)** |
+| element mismatch on a paired application | 0             |
+
+**We are missing more than two thirds of all elemental application**, almost entirely summon
+ticks. ⚠️ The reaction counts (31 ours / 75 gcsim) are **not** a comparable pair — ours counts
+one event per application, gcsim's counts damage instances, and burning/EC tick.
+
+Per-fixture, both predicted failure modes reproduced and are now quantified:
+
+- **plunge spam** — ours **6** cryoSwirls, gcsim **3**. Anemo never consumes, so we
+  over-react 2×.
+- **long rotation** — ours 3 reactions, gcsim 1; **two of our three are phantoms** off an
+  aura that should have decayed ~20 s earlier.
+- **swirl-heavy** — ours 6, gcsim 8. Here the two errors literally cancel, which is the
+  "partially cancel by luck" claim with numbers on it.
+
+⚠️⚠️ **gcsim is not deterministic and no flag makes it so** (`CryptoRandSeed`, plus kits that
+genuinely roll dice). The harness runs each fixture 3× and reports the modal run, flagging any
+that varied. Corrections to this landing's plan are recorded in
+[`gauge-round-L0.md`](gauge-round-L0.md) §10.
+
+#### The original plan for this landing
 
 **Blocks:** nothing. **Informs:** everything.
 **Done when:** a diff report exists for ≥10 real rotations spanning the reaction families

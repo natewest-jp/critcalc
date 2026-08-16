@@ -82,6 +82,10 @@ the _repeat count_, not a param. Tested; do not guess this.
 ⚠️ There is **no** log line whose `msg` says "melt". A naive message grep finds nothing —
 the first pass of this spike found zero reactions in a config that definitely melted.
 
+⛔ **This table is INCOMPLETE — there is a fourth shape.** Crystallize and freeze produce no
+`damage` event at all, and the first pass of the harness reported zero crystallizes in a
+fixture that produced seven. See [§10](#10-corrections-from-implementation-2026-08-16).
+
 ### 1.7 Two config facts that matter
 
 - ⚓ **`options hitlag=false;`** exists. gcsim skips the reactable tick during hitlag and we do
@@ -263,7 +267,8 @@ oracle is worse than an acknowledged partial one.
 - The three-tier report distinguishes _we applied and they did not_ from _we applied at a
   different frame_ from _we applied a different number of units_.
 - Coverage is stated numerically.
-- Re-running with an unchanged checkout reproduces byte-identically (`iteration=1`, fixed seed).
+- ⛔ ~~Re-running reproduces byte-identically (`iteration=1`, fixed seed).~~
+  **WRONG — corrected during implementation.** See §10.
 - ⛔ No production code changes. L0 touches `scripts/` and `docs/` only.
 
 ## 8. Limits to state in the report
@@ -286,3 +291,55 @@ oracle is worse than an acknowledged partial one.
 3. **Optional groups `(…)`** — recommend excluding; confirm when writing the generator.
 4. **Where does the gcsim binary live?** Recommend: not committed, built on demand into a
    gitignored path, with the commit hash recorded in every report.
+
+---
+
+## 10. Corrections from implementation (2026-08-16)
+
+Four things the plan got wrong or did not know. All are fixed in the shipped harness.
+
+### ⚠️⚠️ gcsim is NOT deterministic, and no flag makes it so
+
+The plan asserted byte-identical reproduction with `iteration=1`. It is not achievable: the
+sample seed comes from `CryptoRandSeed()` (`cmd/gcsim/main.go:201`), and **some kits genuinely
+roll dice** — Ningguang's catalyst normals pick a random animation variant per swing
+(`Normal (Left)` / `(Right)` / `(Twirl)`), and Fischl's A4 fired 5 or 6 times across otherwise
+identical runs. Application counts flickered 199/200 across the corpus.
+
+⚓ **So the oracle is STATISTICAL, not exact.** The harness runs every fixture **3×**, reports
+the modal run, and **flags any fixture whose runs disagreed** — turning a silent baseline
+wobble into a stated property. ⛔ Do not "fix" this by patching gcsim.
+
+### ⚠️⚠️ Reactions leave FOUR kinds of trace, not one
+
+The plan listed three. The fourth is the one that matters, and the first pass of the harness
+reported **zero** crystallizes in a fixture that produced seven.
+
+| kind                    | trace                                                                                                                                                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| amplifying              | `damage.logs.amp`                                                                                                                                                                                                              |
+| additive                | `damage.logs.cata`                                                                                                                                                                                                             |
+| damaging transformative | a `damage` event whose `abil` IS the reaction                                                                                                                                                                                  |
+| **non-damaging**        | **no `damage` event at all** — crystallize emits `element :: "<ele> crystallize shard spawned"`; **freeze emits nothing** and is only visible as `frozen` appearing in an application's after-state, so the harness DERIVES it |
+
+⚠️ Also: bloom and burning each log a second `… (self damage)` event for the same reaction.
+Counting both doubles those families.
+
+### ⚠️ The two reaction counts are not the same unit
+
+Ours is one event per triggering application; gcsim's is one damage **instance**, and burning
+and electro-charged **tick** — 20 gcsim rows against our 2 for one burning window. The report
+now says so at both the summary and the per-fixture level, and tallies by reaction type rather
+than implying a 1:1 list comparison. **The application rows are the comparable ones.**
+
+### Syntax and ergonomics
+
+- `wait(n)` is a **system function**, not a character action — `<char> wait(n);` is a parse
+  error. It takes no prefix.
+- The harness self-bootstraps: `scripts/lib/alias-hook.mjs` is a **static** import (so the
+  `$lib` resolver and an `import.meta.glob` shim are registered before the dynamic parser
+  imports run), which means plain `node scripts/audit-gcsim-reactions.mjs` works. ⚓ That hook
+  is what lets the audit drive **the real parser** rather than a re-implementation of it.
+- Our side's applications are replayed from the IR using the **exported** `icd.ts` model —
+  the same module the parser calls — so the description of our behaviour cannot drift from the
+  behaviour.
