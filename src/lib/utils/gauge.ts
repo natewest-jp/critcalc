@@ -92,7 +92,9 @@ export type ReactionKind =
 	| 'spread'
 	| 'bloom'
 	| 'quickenBloom'
-	| 'burning';
+	| 'burning'
+	| 'hyperbloom'
+	| 'burgeon';
 
 export type AttachMode =
 	/** Fresh aura: taxed gauge, decay rate derived from the applied gauge */
@@ -217,6 +219,37 @@ const BURNING_TICK_FRAMES = 15;
  */
 const BURNING_ICD: IcdParams = { timer: 2.0, hits: 8 };
 
+// ── Dendro cores (gauge round L5b) ───────────────────────────────────────────
+//
+// ⚓ A core is A THING LEFT IN THE WORLD, not an aura, which is why it was absent
+// until now: L1 recorded "no dendro core gadgets, so no hyperbloom/burgeon" as a
+// knowing gap, and the coarse model the planner used carried a bare counter with
+// no lifetime instead. Modelling it here is what lets the gauge replace that
+// counter without deleting two reactions four characters author against.
+//
+// ⛔ What we do NOT model, deliberately: core damage, the bloom explosion, the
+// hyperbloom projectile seeking a target, AoE reaching several cores at once.
+// The question this module answers is "does this reaction happen, and when".
+
+/** Frames between a Bloom and its core actually being on the field
+ *  (gcsim `dendrocore.Delay`). An Electro hit inside this gap hyperblooms
+ *  nothing, which is why it is worth carrying. */
+const CORE_SPAWN_DELAY = 30;
+/**
+ * A core's lifetime once spawned.
+ *
+ * ⚠️ THE TWO SOURCES DISAGREE AND KQM WINS HERE. gcsim sets `Duration = 300 // ??`
+ * — its own author marking the number uncertain — while
+ * `docs/library/game/elemental-reactions.md` states a core "explodes after 6 s".
+ * The round's rule is that gcsim is an implementation-level second source rather
+ * than the game, so a value it flags as a guess loses to one KQM states outright.
+ * ⚠️ Expect a small residual against the oracle: an Electro hit between 5 s and
+ * 6 s after a Bloom hyperblooms for us and not for gcsim.
+ */
+const CORE_LIFETIME = 360;
+/** Cores on the field at once; a sixth Bloom pops the oldest (KQM). */
+const MAX_CORES = 5;
+
 /** Mods reduced when a reaction consumes an element ("Burning counts as Pyro") */
 const MODS_OF: Record<string, AuraKey[]> = {
 	pyro: ['pyro', 'burning'],
@@ -271,6 +304,11 @@ type Sim = {
 	/** Burning's Pyro re-application counter (see BURNING_ICD). */
 	burningIcd: IcdClock;
 	crysGcdUntil: number;
+	/** Live dendro cores, as expiry frames in spawn order. ⚠️ Pruned lazily on
+	 *  read rather than by a scheduled task — a core that nobody triggers has no
+	 *  consequence to fire, and a task whose only job is to check back later is
+	 *  precisely the cost the jumping clock exists to avoid. */
+	cores: number[];
 	/** Applications past `maxFrames`, reported rather than silently dropped. */
 	dropped: number;
 	tasks: Map<number, (() => void)[]>;
@@ -459,6 +497,26 @@ function burningTick(S: Sim, gen: number) {
 	schedule(S, S.frame + BURNING_TICK_FRAMES, () => burningTick(S, gen));
 }
 
+// ── Dendro cores ─────────────────────────────────────────────────────────────
+
+/** A Bloom's core, on the field `CORE_SPAWN_DELAY` frames later. */
+function spawnCore(S: Sim) {
+	schedule(S, S.frame + CORE_SPAWN_DELAY, () => {
+		S.cores = S.cores.filter((expiry) => expiry > S.frame);
+		// A sixth core pops the oldest rather than being refused.
+		if (S.cores.length >= MAX_CORES) S.cores.shift();
+		S.cores.push(S.frame + CORE_LIFETIME);
+	});
+}
+
+/** Take one live core, oldest first. `false` when there is none to take. */
+function consumeCore(S: Sim): boolean {
+	S.cores = S.cores.filter((expiry) => expiry > S.frame);
+	if (!S.cores.length) return false;
+	S.cores.shift();
+	return true;
+}
+
 /** Burning aura consumed (as Pyro) while fuel remains → fuel is swept too */
 function burningCheck(S: Sim) {
 	if (S.u.burning <= EPS && S.u.burningFuel > EPS) {
@@ -500,6 +558,12 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 
 	switch (element) {
 		case 'electro': {
+			// ⚓ A core is a GADGET, not an aura: hitting one costs the trigger no
+			// gauge and does not count as having reacted, so the same Electro hit
+			// hyperblooms the core AND goes on to meet the enemy's aura. gcsim's
+			// `React()` carries a bare `// hyperbloom` comment at exactly this
+			// position for the reaction it resolves outside the switch.
+			if (consumeCore(S)) emit('hyperbloom', [], 0);
 			if (S.u.quicken > EPS && g > EPS) emit('aggravate', [], 0);
 			if ((S.u.pyro > EPS || S.u.burning > EPS) && g > EPS) {
 				const r = reduce(S, 'pyro', g, 1);
@@ -543,6 +607,8 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 			break;
 		}
 		case 'pyro': {
+			// The Burgeon half of the same rule — see the Electro case above.
+			if (consumeCore(S)) emit('burgeon', [], 0);
 			if (S.u.electro > EPS && g > EPS) {
 				const r = reduce(S, 'electro', g, 1);
 				g -= r.spent;
@@ -626,6 +692,7 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 				reacted = true;
 				emit('bloom', [...ra.consumed, ...rb.consumed], spent);
 				S.events.push({ kind: 'core', time: t });
+				spawnCore(S);
 			}
 			if (S.u.frozen <= EPS && S.u.electro > EPS && g > EPS) {
 				if (!reacted) {
@@ -665,6 +732,7 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 				reacted = true;
 				emit('bloom', r.consumed, r.spent);
 				S.events.push({ kind: 'core', time: t });
+				spawnCore(S);
 			}
 			break;
 		}
@@ -733,6 +801,7 @@ function applyElement(S: Sim, element: ElementId, gauge: number, appIndex: numbe
 		S.u.quicken -= Math.min(r.spent, S.u.quicken);
 		emit('quickenBloom', [...r.consumed, { mod: 'quicken', amount: q0 - S.u.quicken }], 0);
 		S.events.push({ kind: 'core', time: t });
+		spawnCore(S);
 	}
 }
 
@@ -857,6 +926,7 @@ function createGaugeInternal({
 		burningGen: 0,
 		burningIcd: createIcdClock(),
 		crysGcdUntil: -1,
+		cores: [],
 		dropped: 0,
 		tasks: new Map(),
 		events: [],

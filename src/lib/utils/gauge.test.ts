@@ -233,6 +233,47 @@ describe('catalyze family', () => {
 	});
 });
 
+describe('dendro cores — hyperbloom + burgeon (L5b)', () => {
+	// A core is a thing in the world, not an aura. Until L5b the module spawned a
+	// `core` event and forgot it, so the two reactions it exists for could not
+	// happen at all — recorded as a knowing gap at L1.
+	const bloomThen = (trigger: 'electro' | 'pyro', at: number): ReturnType<typeof simulateGauge> =>
+		simulateGauge(apps([0, 'dendro', 2], [2, 'hydro', 2], [at, trigger, 1]));
+
+	it('an Electro trigger on a live core hyperblooms; a Pyro one burgeons', () => {
+		expect(reactions(bloomThen('electro', 4)).map((r) => r.reaction)).toContain('hyperbloom');
+		expect(reactions(bloomThen('pyro', 4)).map((r) => r.reaction)).toContain('burgeon');
+	});
+
+	it('costs the trigger nothing — the core is a gadget, not the enemy’s aura', () => {
+		// the Electro still meets the surviving dendro afterwards and quickens it
+		const rx = reactions(bloomThen('electro', 4)).map((r) => r.reaction);
+		expect(rx).toEqual(['bloom', 'hyperbloom', 'quicken']);
+	});
+
+	it('is not there yet inside the spawn delay, and is gone after its lifetime', () => {
+		// spawn delay is 30f: 2.4s is 24f after the bloom
+		expect(reactions(bloomThen('electro', 2.4)).map((r) => r.reaction)).not.toContain('hyperbloom');
+		// spawned at 2.5s, 6s lifetime → gone by 8.6s
+		expect(reactions(bloomThen('electro', 8.6)).map((r) => r.reaction)).not.toContain('hyperbloom');
+		expect(reactions(bloomThen('electro', 8.4)).map((r) => r.reaction)).toContain('hyperbloom');
+	});
+
+	it('consumes one core per trigger, oldest first', () => {
+		const sim = simulateGauge(
+			apps(
+				[0, 'dendro', 2],
+				[1, 'hydro', 1],
+				[2, 'hydro', 1],
+				[4, 'electro', 1],
+				[5, 'electro', 1],
+				[6, 'electro', 1]
+			)
+		);
+		expect(reactions(sim).filter((r) => r.reaction === 'hyperbloom')).toHaveLength(2);
+	});
+});
+
 describe('burning', () => {
 	it('attaches a fixed 2U burning aura + fuel draining at 0.4 U/s', () => {
 		const sim = simulateGauge(apps([0, 'dendro', 2], [2, 'pyro', 1]));
