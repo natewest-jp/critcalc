@@ -41,10 +41,15 @@ rather than modelling:
 | Pyronado | `int=1.217 first=0` over 10 s → **9**      | **9** applications, spaced 1.217 s |
 | Guoba    | `int=1.667 first=1.883` over 7.3 s → **4** | **4** applications, spaced 1.665 s |
 
-⚠️ **Count and interval agree; PHASE is unverified.** gcsim's first Pyronado tick lands
-0.63 s after the cast's own application, and our offset is composed from
-`summonActivatesAt` + `firstTickDelay` — check the composition at implementation rather
-than assuming it lines up.
+↻ **PHASE IS NOW CHECKED, across all twelve fixtures** (2026-08-16, before L5e-b). For
+Xiangling it is **exact — 1 frame** on both summons in every fixture they appear in, so
+the worry this line originally carried is closed for 65 of the 84.
+
+⚠️⚠️ **But the check did not come back clean, and it retired a ruling.** It found that
+summon ticks CAN be ICD-gated (Oz applies ~1 in 3), which §3.3 had ruled out on a
+one-character sample; plus two data bugs — Fischl's two Ozes running concurrently (§3.4)
+and Stone Stele's first tick 2.4 s late (§3.5). ⚓ **Read §3.3–3.5 before starting L5e-b**;
+they change what it has to do.
 
 ### The 30 that are curation, and what they are NOT
 
@@ -135,18 +140,70 @@ validity on fire"_ (§2's table).
 The spawn hook goes beside `emitReactionsAtCast` in `run.ts` (~:754), which is where the
 cast already has `char`, `kind`, the bar and the resolved spawn offset.
 
-### 3.3 ⛔ No ICD gate on a summon tick — MEASURED, not assumed
+### 3.3 ↻ ICD on a summon tick — the "no gate" ruling was WRONG, and is retired
 
-§5 of L5's plan prescribed a per-summon ICD clock keyed `${characterId}:summon:${label}`.
-**The measurement says do not add one.** gcsim applies on EVERY damage tick: Pyronado's
-9 ticks produce 9 applications at 1.217 s spacing, Guoba's 4 produce 4. Under standard
-ICD (3 hits / 2.5 s) a 1.217 s interval would apply roughly every third tick — so these
-summons are `ICDTagNone`-equivalent, exactly consistent with L4d's census that **112 of
-166 gcsim skills are `ICDTagNone`**.
+⛔ **Do not restore it.** This section previously ruled that a summon tick needs no ICD
+clock, and deleted the one L5's §5 had prescribed. That ruling was generalised from
+Xiangling alone — the only summon in the fixture I checked — and the phase check ran it
+into a counter-example immediately.
 
-⚓ **Default ungated; add a clock only for a summon MEASURED to need one.** That follows
-`icd.md`'s standing rule that the default must not be mass-annotated, and it keeps this
-landing from inventing a gate the oracle would then have to argue back down.
+Measured across all twelve oracle fixtures, our would-be tick stream against gcsim's
+observed applications:
+
+| summon      | our damage ticks | gcsim applications | verdict                           |
+| ----------- | ---------------- | ------------------ | --------------------------------- |
+| Pyronado    | 9                | 9                  | ✅ ungated, phase exact (1 frame) |
+| Guoba       | 4                | 4                  | ✅ ungated, phase exact (1 frame) |
+| Oz          | ~10 per window   | **3–5**            | ⚠️ **ICD-GATED, roughly 1 in 3**  |
+| Stone Stele | 14               | 4 (sim horizon)    | ⚠️ phase off by 2.34 s — see §3.5 |
+
+⚓ **So it is PER-ABILITY, which is exactly what L4d's census already said** — 112 of 166
+gcsim skills are `ICDTagNone` and **the rest are not**. Xiangling's two summons are in the
+majority; Oz is in the minority. ⛔ A blanket rule in either direction is wrong, and
+"measured" on one character is not measured.
+
+⚠️⚠️ **This lands L5e-b straight on the schema gap L4 named as its top one** (per-ability
+ICD tag + group). Un-gated, Oz over-applies electro roughly 3×; gated by default,
+Xiangling's 65 applications — **the bulk of this landing's 84** — would be wrong instead.
+The narrow fix is a per-summon opt-in so the two cases can differ; ⛔ do not reach for a
+corpus-wide default, which is what `icd.md` forbids annotating.
+
+⚓ Silver lining worth stating: **65 of the 84 are Xiangling's, and those are verified
+exact** — count, interval and phase. So the majority of this landing's value does not
+depend on resolving the ICD question at all.
+
+### 3.4 🐛 Fischl's two Ozes overlap — a pre-existing bug this landing would amplify
+
+Parsing `Barbara E > Fischl E Q > Barbara N3` emits **two concurrent Oz windows**:
+
+```
+fischl "Oz" source=skill  1.32s → 11.32s
+fischl "Oz" source=burst  1.75s → 11.75s
+```
+
+In game the burst's Oz REPLACES the skill's; there is only ever one. The cause is data
+plus an asymmetry: `terminatesOn: 'recast'` is authored on the **skill's** Oz and not the
+**burst's**, and finalize reads that flag off the summon being emitted — so E→Q does not
+truncate while Q→E does. ⚠️ It is visible on the timeline today as two Oz lanes, and it is
+why our tick stream shows ~20 where one window gives ~10.
+
+⛔ Fix the DATA (`terminatesOn` on the burst's Oz), not the truncation rule — the rule is
+right that a summon declares its own termination. ⚠️ Verify no other multi-cast summon
+has the same hole before L5e-b lands.
+
+### 3.5 🐛 Stone Stele's first tick is 2.4 s late
+
+Ours fires at spawn + 2 s, gcsim at cast + 4 s — a constant **−2.34 s** offset on every
+tick, while the 2 s interval and the cast itself agree (our Zhongli E pairs at 5.23 s vs
+gcsim's 5.17 s, 4 frames). The stele authors no `firstTickDelay`, so `collectSummonTicks`
+defaults it to the interval. ⚓ `gcsim-frames-diff.md` §5 already carries the row —
+authored `0f` against observed `144f` — so this is a known data gap the phase check simply
+walked into. Author `firstTickDelay: 2.4`.
+
+⚠️ Also seen and NOT chased: in the long-rotation fixture only, Xiangling's ticks run a
+constant **+0.25 s** late while the same summons are exact in four other fixtures. That is
+cast drift accumulating across the `~20s` waits, not a summon-phase issue — pre-existing,
+small, and out of scope here.
 
 ### 3.4 ⚠️⚠️ Step 6c STAYS WHERE IT IS
 
@@ -173,9 +230,14 @@ index, swapOutAt })`, with the swap clamp folded INSIDE so an unclamped end can 
   parses, 1,921 windows, 616 of them summons) before and after: **byte-identical**.
   ⚓ And the dump was verified against a seeded one-frame perturbation FIRST, so it is not
   green because nothing ran (L3's own lesson). Throwaway, deleted in the same turn.
+- ⏭ **L5e-a½ — the two data bugs the phase check surfaced**, before the wiring: the
+  burst Oz's missing `terminatesOn` (§3.4) and Stone Stele's `firstTickDelay` (§3.5).
+  ⚠️ Both change the timeline TODAY (an Oz lane disappears; stele tick markers shift), so
+  this is its own visible change and wants Nate's eyes separately from L5e-b's.
 - **L5e-b** — the live chain: spawn hook, chained ticks, liveness at fire. Applications
   reach the gauge. ⚠️ **This is the behaviour change** — measured by the oracle, gated by
-  Nate's eyes, ⛔ never by IR equality.
+  Nate's eyes, ⛔ never by IR equality. ⚠️ Needs the ICD decision from §3.3 made first:
+  ungated is right for 65 of the 84 and wrong for Oz.
 - **L5e-c** — measure, record, merge. Oracle re-run, residue enumerated, `gauge-round.md`
   §5 updated, memory written, `test:e2e` before the merge.
 
