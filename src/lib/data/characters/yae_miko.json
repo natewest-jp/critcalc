@@ -111,7 +111,7 @@
 				"Burst consumes 2 energy on cast (gcsim ConsumeEnergy(2)) — reviewer to confirm whether this is a cost adjustment or post-cast drain; not authored as an effect.",
 				"All existing Sesshou Sakura are destroyed by burst (popAllKitsune). The thunderbolt count = totem count at cast time."
 			],
-			"application": [{ "frame": 100, "element": "electro" }]
+			"application": [{ "frame": 100, "element": "electro", "units": 1 }]
 		}
 	],
 	"passives": [

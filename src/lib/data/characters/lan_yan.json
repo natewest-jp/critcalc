@@ -139,7 +139,7 @@
 				"C4 (Of Wisp-Lit Glow): on Q cast, all party members gain +60 EM for 12s. Authored on the C4 constellation entry."
 			],
 			"application": [
-				{ "frame": 30, "element": "anemo" },
+				{ "frame": 30, "element": "anemo", "units": 2 },
 				{ "frame": 46, "element": "anemo" },
 				{ "frame": 51, "element": "anemo" }
 			]

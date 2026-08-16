@@ -76,8 +76,8 @@
 					"frames": { "anim": 98, "Q": 97, "D": 65, "J": 66, "swap": 96 },
 					"cooldown": 7.5,
 					"application": [
-						{ "frame": 45, "element": "pyro" },
-						{ "frame": 57, "element": "pyro" }
+						{ "frame": 45, "element": "pyro", "units": 1 },
+						{ "frame": 57, "element": "pyro", "units": 1 }
 					]
 				},
 				{
@@ -86,15 +86,15 @@
 					"frames": { "anim": 337, "N": 343, "E": 339, "Q": 339, "D": 231, "J": 240, "swap": 337 },
 					"cooldown": 10,
 					"application": [
-						{ "frame": 112, "element": "pyro" },
-						{ "frame": 121, "element": "pyro" },
-						{ "frame": 166, "element": "pyro" }
+						{ "frame": 112, "element": "pyro", "units": 1 },
+						{ "frame": 121, "element": "pyro", "units": 1 },
+						{ "frame": 166, "element": "pyro", "units": 1 }
 					]
 				}
 			],
 			"tags": [],
 			"description": "Bennett puts all his fire and passion for adventuring into his sword. Results may vary based on how fired up he is...\n\nPress\nA single, swift flame strike that deals Pyro DMG.\n\nHold (Short)\nCharges up, resulting in different effects when unleashed based on the Charge Level.\n·Level 1: Strikes twice, dealing Pyro DMG and launching opponents.\n·Level 2: Unleashes 3 consecutive attacks that deal impressive Pyro DMG, but the last attack triggers an explosion that launches both Bennett and the enemy.\nBennett takes no damage from being launched.",
-			"application": [{ "frame": 16, "element": "pyro" }]
+			"application": [{ "frame": 16, "element": "pyro", "units": 2 }]
 		},
 		{
 			"id": "bennett__burst__fantastic_voyage",
@@ -152,7 +152,7 @@
 					}
 				}
 			],
-			"application": [{ "frame": 37, "element": "pyro" }]
+			"application": [{ "frame": 37, "element": "pyro", "units": 2 }]
 		}
 	],
 	"passives": [

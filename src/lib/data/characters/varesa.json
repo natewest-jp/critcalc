@@ -156,7 +156,7 @@
 				"Hold version not authored: schema lacks a `hE` distinct from `E` for stance-entry behavior change. Pressing hE in the parser will fall through to base E. Acceptable since Sudden Onrush is a movement/positional state."
 			],
 			"description": "With footwork swift as lightning and fierce as thunder, Varesa displays the true spirit of lucha libre, rushing forward a certain distance and dealing Nightsoul-aligned Electro DMG to opponents in her path.\nAfter using this Skill, Varesa gains 20 Nightsoul points and gains the \"Follow-Up Strike\" effect: Varesa has increased interruption resistance during this time, and upon pressing her Normal Attack, she will quickly unleash a Charged Attack that does not consume Stamina. \"Follow-Up Strike\" will be canceled after Varesa uses a Charged Attack.\nShe will use different techniques based on whether the skill is Tapped or Held.\n\nTap\nQuickly rush a certain distance forward.\n\nHold\nVaresa enters the Nightsoul's Blessing state and switches to Sudden Onrush mode.\n\nHas 2 charges. When Varesa enters the Fiery Passion state, she will obtain an additional Tap charge of her Elemental Skill and its DMG will be increased.",
-			"application": [{ "frame": 5, "element": "electro" }]
+			"application": [{ "frame": 5, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "varesa__skill__fiery_passion_rush",
@@ -235,7 +235,7 @@
 				"C2 Apex Drive on every plunge: removes the in-FP gate. With C2, plunges always trigger Apex Drive, enabling Volcano Kablam outside FP. Not modelled (Apex Drive itself isn't modelled)."
 			],
 			"description": "Leaps into the air before using the momentum of the drop to unleash a powerful flying kick, dealing Nightsoul-aligned AoE Electro DMG to opponents — just like those heroes of justice in woven scrolls for kids!\nAfter using this Skill, Varesa's Nightsoul points will be restored to maximum and she will enter the Fiery Passion state.\n\nIn the Fiery Passion state, Varesa's Elemental Burst will deal a greater amount of Nightsoul-aligned AoE Electro DMG.\n\nAdditionally, she will briefly activate Apex Drive after using a Plunging Attack while in her Fiery Passion state.\n\nApex Drive\nIncreases Varesa's interruption resistance. While affected by Apex Drive, Varesa can ignore her Elemental Burst CD and consume less Energy to use her special Elemental Burst, \"Guardian Vent: Volcano Kablam\": This causes her to use the especially powerful Plunging Attack, the \"Thunderous Tornado Eruption,\" which deals Nightsoul-aligned AoE Electro DMG upon landing before causing her to exit Apex Drive. This DMG is considered Plunging Attack DMG.\nVaresa will exit Apex Drive after using her Elemental Skill.",
-			"application": [{ "frame": 88, "element": "electro" }]
+			"application": [{ "frame": 88, "element": "electro", "units": 1 }]
 		}
 	],
 	"passives": [

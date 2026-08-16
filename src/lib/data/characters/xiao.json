@@ -101,7 +101,7 @@
 				"A4 (Dissolution Eon: Heaven Fall): each cast grants a stacking +15% E DMG buff (max 3 stacks, 7s duration, refreshes on stack). Authored as a passive effect skeleton may need a separate normalDmgBonus-style 'skillDmgBonus' self-buff with stacks; current schema lacks a stacks field — flag on the passive.",
 				"C6 (Conqueror of Evil: Guardian Yaksha): while in burst, Plunge hitting ≥2 opponents grants +1 E charge immediately and ignores E CD for 1s (gcsim: 1.2s / 72 frames). Not modelled here; flagged on the C6 entry."
 			],
-			"application": [{ "frame": 4, "element": "anemo" }]
+			"application": [{ "frame": 4, "element": "anemo", "units": 1 }]
 		},
 		{
 			"id": "xiao__burst__bane_of_all_evil",

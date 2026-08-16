@@ -71,7 +71,7 @@
 				"[Stellar 2026-07-29] The 6s window deliberately gets no durationExtensions: the Fandom skill `buff` text restricts the +4s Mortuary Rite extension to instances entered \"through the Elemental Burst Sacred Rite: Wolf's Swiftness\", and the extensions live on the burst's stance window only. Mortuary Rite cast inside the 6s window therefore does not lengthen it, matching the wiki.",
 				"[Stellar 2026-07-29] Skill text updated to the Fandom `buff` field (buffType Revelation): the Mortuary Rite clause no longer requires the burst-sourced state, and the duration-extension clause was narrowed to the burst-sourced instance. CD unchanged at 7.5s/3s (infobox still reads 7.5s/3s; the dual-CD gameplay note is unchanged)."
 			],
-			"application": [{ "frame": 21, "element": "electro" }]
+			"application": [{ "frame": 21, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "cyno__skill__mortuary_rite",
@@ -87,7 +87,7 @@
 			"_curatorNotes": [
 				"[Stellar 2026-07-29] Now reachable outside the burst: the Revelation talent lets the base skill open a 6s Pactsworn Pathclearer, and this in-stance ability resolves inside that window too. Its +4s extension still only applies to the burst-sourced stance (durationExtensions live on the burst)."
 			],
-			"application": [{ "frame": 28, "element": "electro" }]
+			"application": [{ "frame": 28, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "cyno__burst__sacred_rite_wolfs_swiftness",

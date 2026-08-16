@@ -113,7 +113,7 @@
 				"Element Absorption (recipe.md § 3.5): gcsim absorbCheckA1 absorbs up to 2 of Pyro/Hydro/Cryo/Electro at cast (5-radius circle around player), each granting a distinct Jade-Claimed Flower buff for 20s. Per recipe, no per-element conditional buffs authored; flagged on Jade-Claimed Flower passive.",
 				"Skydweller Points (gcsim: skydwellerPoints): resource pool starting at 100, max 100 (raised to 120 with Hydro absorption via A1), drains 1 per 6 frames passively, -15 per dash (A4-dependent), holding jump/sprint adds drain. State ends when points reach 0. Resource pool not modeled in the schema; flagged here for reviewer."
 			],
-			"application": [{ "frame": 2, "element": "anemo" }]
+			"application": [{ "frame": 2, "element": "anemo", "units": 1 }]
 		},
 		{
 			"id": "wanderer__burst__kyougen_five_ceremonial_plays",
@@ -134,10 +134,10 @@
 				"Damage shape: 5 hits delivered between frames 92 and 92+4*6=116 from cast (hitmarks [92, 98, 104, 110, 116]), at the same snapshot frame (gcsim burstSnapshotDelay = 55). burstSnapshotDelay carries a TODO comment in gcsim (`Determine correct Frame`); flagged for reviewer."
 			],
 			"application": [
-				{ "frame": 92, "element": "anemo" },
+				{ "frame": 92, "element": "anemo", "units": 1 },
 				{ "frame": 98, "element": "anemo" },
 				{ "frame": 104, "element": "anemo" },
-				{ "frame": 110, "element": "anemo" },
+				{ "frame": 110, "element": "anemo", "units": 1 },
 				{ "frame": 116, "element": "anemo" }
 			]
 		}

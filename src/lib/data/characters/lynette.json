@@ -93,14 +93,14 @@
 						"cooldownStartDelay for Hold = duration + skillHoldEndCDStart (14f). At min hold: 35+14=49f; at max hold: 184+14=198f. Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to decide extension."
 					],
 					"application": [
-						{ "frame": 51, "element": "anemo" },
+						{ "frame": 51, "element": "anemo", "units": 1 },
 						{ "frame": 79, "element": "anemo" }
 					]
 				}
 			],
 			"description": "Flicks her mantle and executes an Enigma Thrust, dealing Anemo DMG.\nWhen the Enigma Thrust hits an opponent, it will restore Lynette's HP based on her Max HP, and in the 4s afterward, she will lose a certain amount of HP per second.\nBased on whether you press or hold this ability, she will use Enigma Thrust differently.\n\nPress\nShe swiftly uses an Enigma Thrust.\n\nHold\nLynette will enter a high-speed Pilfering Shadow state and apply Shadowsign to a nearby opponent. You can control her movement direction during this state, and you can end it prematurely by using this skill again.\nWhen this high-speed state ends, Lynette will unleash her Enigma Thrust. If there is an opponent with Shadowsign applied to them nearby, Lynette will approach them in a flash before using Enigma Thrust.\n\nA maximum of 1 opponent can have Shadowsign at any one time. When this opponent gets too far from Lynette, the Shadowsign will be canceled.\n\nArkhe: Ousia\nAt specific intervals, Lynette will unleash a Surging Blade when she uses Enigma Thrust, dealing Ousia-aligned Anemo DMG.",
 			"application": [
-				{ "frame": 28, "element": "anemo" },
+				{ "frame": 28, "element": "anemo", "units": 1 },
 				{ "frame": 58, "element": "anemo" }
 			]
 		},
@@ -123,7 +123,7 @@
 				"After elemental absorption, b.Kill() removes the box from the hittable gadget list but all vivid shot tasks are already queued and continue to run. Box duration is burstDuration=754f (12.6s) from spawn regardless of when absorption occurs."
 			],
 			"description": "Lynette raises her mantle high, dealing AoE Anemo DMG, using skillful sleight of hand to make a giant Bogglecat Box appear!\n\nBogglecat Box\n·Taunts nearby opponents, attracting their attacks.\n·Deals Anemo DMG to nearby opponents at intervals.\n·When the Bogglecat Box comes into contact with Hydro/Pyro/Cryo/Electro, it will gain the corresponding element and additionally fire Vivid Shots that will deal DMG from that element at intervals.\nElemental Absorption of this kind will only occur once during this ability's duration.",
-			"application": [{ "frame": 18, "element": "anemo" }]
+			"application": [{ "frame": 18, "element": "anemo", "units": 1 }]
 		}
 	],
 	"passives": [

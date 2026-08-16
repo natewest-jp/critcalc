@@ -108,7 +108,7 @@
 				"Nilou is not implementable as a Tier B stance character without losing fidelity to the underlying state machine: shared step counter between SD and WS, two distinct end-states (Lunar Prayer vs Tranquility Aura), and the gating of E during Lunar Prayer. The current draft captures the dominant E E E E rotation cleanly and flags the rest.",
 				"[A7] The Tranquility Aura is authored on the base skill so the canonical E-E-E-E rotation (initial cast → WS1 → WS2 → WS3) displays correctly even though in-game it spawns only after WS3 — rationale already covered in existing notes. The dropped second short-rotation example was 'E E swap'. Lunar Prayer begins 8s after a Sword Dance combo."
 			],
-			"application": [{ "frame": 16, "element": "hydro" }]
+			"application": [{ "frame": 16, "element": "hydro", "units": 1 }]
 		},
 		{
 			"id": "nilou__skill__whirling_steps_1",
@@ -182,8 +182,8 @@
 				"C4 buff applies here when triggered: +50% burst DMG for 8s. Authored on C4 entry."
 			],
 			"application": [
-				{ "frame": 91, "element": "hydro" },
-				{ "frame": 212, "element": "hydro" }
+				{ "frame": 91, "element": "hydro", "units": 1 },
+				{ "frame": 212, "element": "hydro", "units": 1 }
 			]
 		}
 	],

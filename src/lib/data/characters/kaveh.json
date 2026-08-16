@@ -60,7 +60,7 @@
 			"tags": [],
 			"effects": [],
 			"description": "Uses Mehrak's mapping ability for offensive purposes, initiating a radial scan that deals AoE Dendro DMG. It will also scan all Dendro Cores in its AoE and cause them to immediately burst.",
-			"application": [{ "frame": 35, "element": "dendro" }]
+			"application": [{ "frame": 35, "element": "dendro", "units": 1 }]
 		},
 		{
 			"id": "kaveh__burst__painted_dome",
@@ -79,7 +79,7 @@
 				"Bloom/Lunar-Bloom damage bonus: while Painted Dome is active, all party members' Bloom reactions deal additional DMG (~27.5% at L1, scaling in burstDmgBonus[] in kaveh_gen.go). This team-wide buff is not represented in effects[]. Reviewer to author."
 			],
 			"description": "Completely unleashes Mehrak's energy and creates a cubic scanned space, dealing AoE Dendro DMG to all opponents within it, causing all Dendro Cores in its AoE to immediately burst, and granting Kaveh the following enhanced combat abilities for a specific duration:\n· Increases Kaveh's Normal, Charged, and Plunging Attack AoE, and converts his attack DMG to Dendro DMG that cannot be overridden.\n· All Dendro Cores created by all your own party members through Bloom and Lunar-Bloom reactions will deal additional DMG when they burst.\n· Increases Kaveh's resistance to interruption.\nThese effects will be canceled once Kaveh leaves the field.",
-			"application": [{ "frame": 36, "element": "dendro" }]
+			"application": [{ "frame": 36, "element": "dendro", "units": 2 }]
 		}
 	],
 	"passives": [

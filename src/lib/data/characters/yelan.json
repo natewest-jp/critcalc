@@ -80,7 +80,7 @@
 			],
 			"description": "Fires off a Lifeline that allows her to move rapidly, entangling and marking opponents along its path. When the rapid movement ends, the Lifeline explodes, dealing Hydro DMG to marked opponents based on Yelan's Max HP.\n\nTap: Moves a short distance forward swiftly. Frames reflect tap E.\n\nHold: Engages continuous swift movement (resistance to interruption increased). Yelan can steer and end the movement early by pressing E again. Duration is player-controlled up to ~3s. gcsim does not yet implement hold E frame data — TODO: model hold E as a variant once KQM data is available.\n\nEach marked opponent on explosion grants Yelan a 34% chance to reset her Breakthrough state.",
 			"behavior": "instant",
-			"application": [{ "frame": 36, "element": "hydro" }]
+			"application": [{ "frame": 36, "element": "hydro", "units": 1 }]
 		},
 		{
 			"id": "yelan__burst__depthclarion_dice",
@@ -115,7 +115,7 @@
 				}
 			],
 			"description": "Deals AoE Hydro DMG and creates an \"Exquisite Throw,\" which aids her in battle.\n\nExquisite Throw\nFollows the character around and will initiate a coordinated attack under the following circumstances, dealing Hydro DMG based on Yelan's Max HP:\n· Can occur once every second when your active character uses a Normal Attack.\n· Will occur each time Yelan's Lifeline explodes and hits opponents.",
-			"application": [{ "frame": 76, "element": "hydro" }]
+			"application": [{ "frame": 76, "element": "hydro", "units": 2 }]
 		}
 	],
 	"passives": [

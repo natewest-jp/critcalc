@@ -194,10 +194,10 @@
 			],
 			"description": "Skirk's Elemental Burst is not reliant on Elemental Energy but instead on **Serpent's Subtlety**.\nWhen Skirk has at least 50 Serpent's Subtlety, she can expend all her Serpent's Subtlety to unleash her Elemental Burst, ripping the space before her apart and using rapid consecutive slashes that deal AoE Cryo DMG. At the same time, the DMG dealt by an instance of this Elemental Burst will be increased by every point of Serpent's Subtlety over 50 when it is unleashed. Up to 12 points can be counted for this purpose.",
 			"application": [
-				{ "frame": 109, "element": "cryo" },
+				{ "frame": 109, "element": "cryo", "units": 1 },
 				{ "frame": 111, "element": "cryo" },
 				{ "frame": 114, "element": "cryo" },
-				{ "frame": 125, "element": "cryo" },
+				{ "frame": 125, "element": "cryo", "units": 1 },
 				{ "frame": 135, "element": "cryo" },
 				{ "frame": 158, "element": "cryo" }
 			]

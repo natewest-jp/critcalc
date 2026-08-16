@@ -88,19 +88,19 @@
 			"energyCost": 60,
 			"description": "Coalesces atmospheric frost and snow to summon a Sacred Cryo Pearl that exorcises evil.\nDuring its ability duration, the Sacred Cryo Pearl will continuously rain down shards of ice, striking opponents within an AoE and dealing Cryo DMG.",
 			"application": [
-				{ "frame": 130, "element": "cryo" },
+				{ "frame": 130, "element": "cryo", "units": 1 },
 				{ "frame": 220, "element": "cryo" },
-				{ "frame": 310, "element": "cryo" },
+				{ "frame": 310, "element": "cryo", "units": 1 },
 				{ "frame": 346, "element": "cryo" },
 				{ "frame": 400, "element": "cryo" },
-				{ "frame": 454, "element": "cryo" },
-				{ "frame": 490, "element": "cryo" },
+				{ "frame": 454, "element": "cryo", "units": 1 },
+				{ "frame": 490, "element": "cryo", "units": 1 },
 				{ "frame": 580, "element": "cryo" },
-				{ "frame": 670, "element": "cryo" },
+				{ "frame": 670, "element": "cryo", "units": 1 },
 				{ "frame": 706, "element": "cryo" },
 				{ "frame": 760, "element": "cryo" },
-				{ "frame": 796, "element": "cryo" },
-				{ "frame": 850, "element": "cryo" }
+				{ "frame": 796, "element": "cryo", "units": 1 },
+				{ "frame": 850, "element": "cryo", "units": 1 }
 			]
 		}
 	],

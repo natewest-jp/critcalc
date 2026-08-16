@@ -114,7 +114,7 @@
 					],
 					"activeDuration": 20,
 					"application": [
-						{ "frame": 48, "element": "geo" },
+						{ "frame": 48, "element": "geo", "units": 1 },
 						{ "frame": 48, "element": "geo" }
 					]
 				}
@@ -127,7 +127,7 @@
 			],
 			"description": "Every mountain, rock and inch of land is filled with the power of Geo, but those who can wield such powers freely are few and far between.\n\nPress\nCommands the power of earth to create a Stone Stele.\n\nHold\nCauses nearby Geo energy to explode, causing the following effects:\n·If their maximum number hasn't been reached, creates a Stone Stele.\n·Creates a shield of jade. The shield's DMG Absorption scales based on Zhongli's Max HP.\n·Deals AoE Geo DMG.\n·If there are nearby targets with the Geo element, it will drain a large amount of Geo element from a maximum of 2 such targets. This effect does not cause DMG.\n\nStone Stele\nWhen created, deals AoE Geo DMG.\nAdditionally, it will intermittently resonate with other nearby Geo constructs, dealing Geo DMG to nearby opponents.\nThe Stone Stele is considered a Geo construct that can both be climbed and used to block attacks.\nOnly one Stele created by Zhongli himself may initially exist at any one time.\n\nJade Shield\nPossesses 150% DMG Absorption against all Elemental and Physical DMG.\nCharacters protected by the Jade Shield will decrease the Elemental RES and Physical RES of opponents in a small AoE by 20%. This effect cannot be stacked.",
 			"behavior": "instant",
-			"application": [{ "frame": 24, "element": "geo" }]
+			"application": [{ "frame": 24, "element": "geo", "units": 2 }]
 		},
 		{
 			"id": "zhongli__burst__planet_befall",
@@ -153,7 +153,7 @@
 			],
 			"description": "Brings a falling meteor down to earth, dealing massive Geo DMG to opponents caught in its AoE and applying the Petrification status to them.\n\nPetrification\nOpponents affected by the Petrification status cannot move.",
 			"behavior": "instant",
-			"application": [{ "frame": 101, "element": "geo" }]
+			"application": [{ "frame": 101, "element": "geo", "units": 4 }]
 		}
 	],
 	"passives": [

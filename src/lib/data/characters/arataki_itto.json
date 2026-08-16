@@ -103,7 +103,7 @@
 				"Hold variant (adjust throw angle) not authored — gcsim does not differentiate frames; in-game it only re-aims.",
 				"Stamina-cost override during Q stance (gcsim ActionStam returns 0 for ActionCharge while Itto has SSS stacks > 0) — Pattern 5 (no animation change), not authored."
 			],
-			"application": [{ "frame": 18, "element": "geo" }]
+			"application": [{ "frame": 18, "element": "geo", "units": 1 }]
 		},
 		{
 			"id": "arataki_itto__burst__royal_descent_behold_itto_the_evil",

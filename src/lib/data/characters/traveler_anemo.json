@@ -65,13 +65,13 @@
 					"frames": { "anim": 160, "D": 116, "J": 116, "swap": 151 },
 					"cooldown": 8,
 					"application": [
-						{ "frame": 31, "element": "anemo" },
+						{ "frame": 31, "element": "anemo", "units": 1 },
 						{ "frame": 46, "element": "anemo" },
 						{ "frame": 66, "element": "anemo" },
-						{ "frame": 81, "element": "anemo" },
+						{ "frame": 81, "element": "anemo", "units": 1 },
 						{ "frame": 96, "element": "anemo" },
 						{ "frame": 111, "element": "anemo" },
-						{ "frame": 116, "element": "anemo" }
+						{ "frame": 116, "element": "anemo", "units": 1 }
 					]
 				}
 			],
@@ -86,7 +86,7 @@
 				"[A7] Hold variant per-tick damage and its 6-tick continuous-cutting + final-Storm sequence (first tick ~31f, +15f intervals, +5f Initial→Max transition) are not modeled as separate hits; the variant's timing is approximate. Frame breakdown already in _curatorNotes."
 			],
 			"description": "Aether/Lumine summons a vortex of wind, drawing enemies and objects in toward herself.\n\nTap\nUnleashes a small wind vortex that deals Anemo DMG to opponents in front of her.\n\nHold\nThe whirlwind continuously sucks in surrounding objects and opponents, dealing continuous Anemo DMG. After releasing, the whirlwind strikes again, causing AoE Anemo DMG and launching opponents.",
-			"application": [{ "frame": 34, "element": "anemo" }]
+			"application": [{ "frame": 34, "element": "anemo", "units": 1 }]
 		},
 		{
 			"id": "traveler_anemo__burst__gust_surge",

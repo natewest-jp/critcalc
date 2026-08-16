@@ -72,7 +72,7 @@
 				"Frames: skillFrames[0]=InitAbilSlice(57), ActionBurst=56 ActionDash=42 ActionJump=42 ActionSwap=56. Per E-spec swap/N/Q/D/J."
 			],
 			"description": "Brandishing the discarded sword, the Traveler hurls it forward with a flash of lightning, dealing Electro DMG to opponents in its path. The sword will then split into 3 Abundance Amulets, granting Energy to the character that touches it.",
-			"application": [{ "frame": 21, "element": "electro" }]
+			"application": [{ "frame": 21, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "traveler_electro__burst__bellowing_thunder",
@@ -131,7 +131,7 @@
 				"A6 rigor 2026-07-12: Falling Thunder scaling corrected 32.8 -> 59.04 (talent lvl 10; gcsim stats.go burstTick[9]=0.5904 — prior 32.8 was the lvl-1 figure burstTick[0], and no talent sidecar exists so the 2026-07-12 normalization sweep skipped this char). Also fixed stale note constants: Falling Thunder 32.8%->59.04%, and burstRegen[lvl=10] 4->1 (gcsim burstRegen[9]=1; the 4 confused it with skillRegen)."
 			],
 			"description": "Releases the powers of lightning, dealing Electro DMG to surrounding opponents and creating a Lightning Shroud field around the Traveler. The Traveler's Normal and Charged Attacks while within this field will trigger Falling Thunder, which will damage enemies.",
-			"application": [{ "frame": 37, "element": "electro" }]
+			"application": [{ "frame": 37, "element": "electro", "units": 1 }]
 		}
 	],
 	"passives": [

@@ -90,7 +90,7 @@
 						"C2 (Lady of Seafoam) reduces Hold CD to 4s (identical to Press). gcsim: cd=4 when c.Base.Cons>=2 in holdSkill(). Schema has no cooldownModifiers on variants — reviewer to decide how to model this.",
 						"J=75 is explicitly assigned (ActionJump=75), matching ActionDash=75."
 					],
-					"application": [{ "frame": 49, "element": "cryo" }]
+					"application": [{ "frame": 49, "element": "cryo", "units": 1 }]
 				}
 			],
 			"tags": [],
@@ -105,7 +105,7 @@
 				"A1 (Roiling Rime): when Hold E consumes exactly 2 Grimheart stacks, spawns a Shattered Lightfall Sword dealing 50% of base Lightfall Physical DMG (burstExplodeBase*0.5). Hits at frame 108 (a1Hitmark). Effect not yet authored — needs reviewer pass.",
 				"C1 (Tidal Illusion): when Hold E consumes ≥1 Grimheart stacks, Eula gains PhyDMG%+30 for (6*stacksConsumed+6) seconds (max 18s). Likely onCast with hold-E condition + stack-count gating. gcsim: c1buff[PhyP]=0.3, duration=(6*v+6)*60 frames. Effect not yet authored — needs reviewer pass."
 			],
-			"application": [{ "frame": 20, "element": "cryo" }]
+			"application": [{ "frame": 20, "element": "cryo", "units": 1 }]
 		},
 		{
 			"id": "eula__burst__glacial_illumination",
@@ -138,7 +138,7 @@
 				"A4 (Wellspring of War-Lust): on Q cast, resets Icetide Vortex CD (ResetActionCooldown) and grants 1 Grimheart stack (gcsim: a4() called at Burst()). Effect not yet authored — needs reviewer pass.",
 				"C6 (Noble Obligation): burstCounter starts at 5 (instead of 0) at C6. Additionally, 50% chance per on-field hit to grant an extra stack (burstStackCB at Cons==6). Effect not yet authored — needs reviewer pass."
 			],
-			"application": [{ "frame": 100, "element": "cryo" }, { "frame": 600 }]
+			"application": [{ "frame": 100, "element": "cryo", "units": 2 }, { "frame": 600 }]
 		}
 	],
 	"passives": [

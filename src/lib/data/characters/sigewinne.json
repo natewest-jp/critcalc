@@ -187,12 +187,12 @@
 			],
 			"description": "Takes out a special Fortress of Meropide-made syringe and assault the area in front with waves of kindness and medicine, dealing AoE Hydro DMG based on Sigewinne's max HP.\nIn addition, Sigewinne absorbs up to 2 nearby Sourcewater Droplets within a certain range when she uses this skill.",
 			"application": [
-				{ "frame": 99, "element": "hydro" },
+				{ "frame": 99, "element": "hydro", "units": 1 },
 				{ "frame": 124, "element": "hydro" },
 				{ "frame": 149, "element": "hydro" },
 				{ "frame": 174, "element": "hydro" },
 				{ "frame": 199, "element": "hydro" },
-				{ "frame": 224, "element": "hydro" }
+				{ "frame": 224, "element": "hydro", "units": 1 }
 			]
 		}
 	],

@@ -1427,10 +1427,17 @@ export type ElementalApplication = {
 	frame: number;
 	/** ⛔ ABSENT MEANS PHYSICAL — the hit applies nothing. Never a default element. */
 	element?: Element;
-	/** Gauge units. ⚠️ NOT AUTHORED YET — the gauge engine that reads it lands in L5,
-	 *  and authoring a number in front of its only consumer is exactly what
-	 *  `orphanedSchema.test.ts` exists to catch. The extractor already measures it
-	 *  (gcsim's applied durability / 25) and reports it. */
+	/**
+	 * Gauge units, pre-tax — measured as gcsim's applied durability ÷ 25.
+	 * Authored since L5d, once the gauge that reads it existed (contract C3 split
+	 * the three fields by consumer for exactly this reason).
+	 *
+	 * ⚠️ ABSENT MEANS UNMEASURED, not 1U. gcsim logs no durability for a hit its
+	 * own ICD suppressed, and the sim falls back to 1U marked provisional. ⛔ Do
+	 * not "tidy" a measured `units: 1` away — the corpus measured 1U 327 times,
+	 * and collapsing that into silence is the same conflation L4d had to undo on
+	 * the list itself.
+	 */
 	units?: number;
 };
 

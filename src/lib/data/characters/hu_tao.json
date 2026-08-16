@@ -138,7 +138,7 @@
 				"Spirit Soother does NOT end Paramita Papilio (gcsim onExitField only fires on swap; burst.go has no DeleteStatMod for paramita). PP and Q can run concurrently."
 			],
 			"behavior": "instant",
-			"application": [{ "frame": 66, "element": "pyro" }]
+			"application": [{ "frame": 66, "element": "pyro", "units": 2 }]
 		}
 	],
 	"passives": [

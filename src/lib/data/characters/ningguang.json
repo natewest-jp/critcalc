@@ -88,10 +88,10 @@
 			"behavior": "instant",
 			"frames": { "anim": 127, "D": 99, "J": 100, "swap": 98 },
 			"application": [
-				{ "frame": 62, "element": "geo" },
+				{ "frame": 62, "element": "geo", "units": 2 },
 				{ "frame": 97, "element": "geo" },
 				{ "frame": 106, "element": "geo" },
-				{ "frame": 110, "element": "geo" },
+				{ "frame": 110, "element": "geo", "units": 2 },
 				{ "frame": 116, "element": "geo" },
 				{ "frame": 124, "element": "geo" }
 			]

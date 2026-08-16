@@ -88,7 +88,7 @@
 				"A6 rigor 2026-07-12: scaling corrected 247.32 → 159.84 (gcsim birdAtk[9]=1.5984; genshin-db sidecar Oz's ATK DMG L10 159.8%). Prior 247.32 matched no Fischl multiplier at any level."
 			],
 			"description": "Summons Oz. The night raven forged of darkness and lightning descends upon the land, dealing Electro DMG in a small AoE.\nFor the ability's duration, Oz will continuously attack nearby opponents with Freikugel.\n\nHold to adjust the location Oz will be summoned to.\nPress again any time during the ability's duration to once again summon him to Fischl's side.",
-			"application": [{ "frame": 38, "element": "electro" }]
+			"application": [{ "frame": 38, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "fischl__burst__midnight_phantasmagoria",
@@ -134,7 +134,7 @@
 				"A6 rigor 2026-07-12: scaling corrected 247.32 → 159.84 (gcsim queueOz Mult=birdAtk[9]=1.5984; same Oz per-tick multiplier as the skill)."
 			],
 			"description": "Summons Oz to spread his twin wings of twilight and defend Fischl.\nHas the following properties during the ability's duration:\n·Fischl takes on Oz's form, greatly increasing her Movement Speed.\n·Strikes nearby opponents with lightning, dealing Electro DMG to opponents she comes into contact with. Each opponent can only be struck once.\n·Once this ability's effects end, Oz will remain on the battlefield and attack his Prinzessin's foes. If Oz is already on the field, then this will reset the duration of his presence.",
-			"application": [{ "frame": 18, "element": "electro" }]
+			"application": [{ "frame": 18, "element": "electro", "units": 1 }]
 		}
 	],
 	"passives": [

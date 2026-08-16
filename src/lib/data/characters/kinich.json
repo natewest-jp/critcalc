@@ -149,11 +149,11 @@
 			],
 			"description": "Unleashes the power of the Almighty Dragonlord, K'uhul Ajaw (on a limited, conditional, restricted, contractual, partial, temporary basis), dealing Nightsoul-aligned AoE Dendro DMG. Ajaw will unleash his Dragon Breath at intervals, dealing Nightsoul-aligned AoE Dendro DMG.\nIf Kinich is in Nightsoul's Blessing when this is used, this Blessing's duration is extended by 1.7s.",
 			"application": [
-				{ "frame": 161, "element": "dendro" },
+				{ "frame": 161, "element": "dendro", "units": 1 },
 				{ "frame": 253, "element": "dendro" },
-				{ "frame": 403, "element": "dendro" },
-				{ "frame": 553, "element": "dendro" },
-				{ "frame": 703, "element": "dendro" },
+				{ "frame": 403, "element": "dendro", "units": 1 },
+				{ "frame": 553, "element": "dendro", "units": 1 },
+				{ "frame": 703, "element": "dendro", "units": 1 },
 				{ "frame": 848, "element": "dendro" }
 			]
 		}

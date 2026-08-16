@@ -85,7 +85,7 @@
 					"label": "Short Hold",
 					"input": ["hE"],
 					"frames": { "anim": 39, "N": 54, "Q": 54, "D": 31, "J": 31, "swap": 39 },
-					"application": [{ "frame": 62, "element": "geo" }]
+					"application": [{ "frame": 62, "element": "geo", "units": 2 }]
 				}
 			],
 			"effects": [],
@@ -97,7 +97,7 @@
 				"Frames: skillFrames[0][0]=InitAbilSlice(81), ActionDash=25 ActionJump=24 ActionSwap=67. Per E-spec swap/N/Q/D/J — Q defaults to animLen=81."
 			],
 			"description": "Calls upon the power of Geo to summon forth a giant Meteorite that will deal AoE Geo DMG to opponents in front of you upon impact.\n\nThe Meteorite remains on the field after impact and acts as Geo-imbued matter. It can also be destroyed by enemy attacks.",
-			"application": [{ "frame": 62, "element": "geo" }]
+			"application": [{ "frame": 62, "element": "geo", "units": 2 }]
 		},
 		{
 			"id": "traveler_geo__burst__wake_of_earth",

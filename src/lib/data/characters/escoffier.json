@@ -92,21 +92,21 @@
 			],
 			"description": "Behold the true meaning of \"cooking\"! Escoffier will demonstrate different cooking techniques when you Tap or Hold this skill, but rest assured, each of them is Fontaine's pride and joy.\n\nTap\nActivates her All-Spectrum Multi-Use Cooking Mek in its Cold Storage mode and deals AoE Cryo DMG to nearby opponents.\n\nCooking Mek: Cold Storage Mode\nFollows the current active character and fires Frosty Parfaits at nearby opponents at intervals, dealing Cryo DMG.\n\nArkhe: Ousia\nAt intervals, Escoffier will summon a Surging Blade when activating her Cooking Mek in Cold Storage mode, dealing Ousia-aligned AoE Cryo DMG.\n\nHold\nActivates her All-Spectrum Multi-Use Cooking Mek's Off-the-Cuff Cookery Mode.",
 			"application": [
-				{ "frame": 23, "element": "cryo" },
+				{ "frame": 23, "element": "cryo", "units": 1 },
 				{ "frame": 83, "element": "cryo" },
-				{ "frame": 153, "element": "cryo" },
+				{ "frame": 153, "element": "cryo", "units": 1 },
 				{ "frame": 212, "element": "cryo" },
-				{ "frame": 270, "element": "cryo" },
+				{ "frame": 270, "element": "cryo", "units": 1 },
 				{ "frame": 329, "element": "cryo" },
-				{ "frame": 387, "element": "cryo" },
+				{ "frame": 387, "element": "cryo", "units": 1 },
 				{ "frame": 446, "element": "cryo" },
-				{ "frame": 504, "element": "cryo" },
+				{ "frame": 504, "element": "cryo", "units": 1 },
 				{ "frame": 563, "element": "cryo" },
-				{ "frame": 621, "element": "cryo" },
+				{ "frame": 621, "element": "cryo", "units": 1 },
 				{ "frame": 680, "element": "cryo" },
-				{ "frame": 738, "element": "cryo" },
+				{ "frame": 738, "element": "cryo", "units": 1 },
 				{ "frame": 797, "element": "cryo" },
-				{ "frame": 855, "element": "cryo" }
+				{ "frame": 855, "element": "cryo", "units": 1 }
 			]
 		},
 		{
@@ -137,7 +137,7 @@
 				"Burst element is Cryo (attributes.Cryo); hits are AttackTagElementalBurst with ICDTagNone."
 			],
 			"description": "Displaying her exceptional knife skills, Escoffier deals AoE Cryo DMG and restores HP to all nearby party members based on her ATK.",
-			"application": [{ "frame": 92, "element": "cryo" }]
+			"application": [{ "frame": 92, "element": "cryo", "units": 2 }]
 		}
 	],
 	"passives": [

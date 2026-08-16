@@ -93,7 +93,7 @@
 			"_curatorNotes": [
 				"Shield label \"Shield of Blazing Light\" taken verbatim from this ability's own description text (the game's wording, via genshin-db) — the shield lane renders it. ⛔ Kits whose text says only \"a shield\" (Diona, Candace, Xinyan, Lan Yan) keep the generic fallback rather than borrowing the ability name; gcsim's \"<Ability> (Shield)\" strings are its own internal convention, not in-game names."
 			],
-			"application": [{ "frame": 9, "element": "pyro" }]
+			"application": [{ "frame": 9, "element": "pyro", "units": 1 }]
 		},
 		{
 			"id": "nicole__burst__revelation_ladder_of_divine_ascent",
@@ -129,7 +129,7 @@
 				"Pure damage-magnitude enhancement to an existing hit (flat add, no new instance, no stat change) — recorded, not authored as an effect. Lives in factionBonuses as a description-only Secret Rite entry plus this caveat."
 			],
 			"description": "As Nicole weaves the path of anchored fate with golden threads of light, she deals AoE Pyro DMG and switches to Silent Contemplation mode.\nIn this mode, when nearby active party members hit an opponent, an Arcane Projection is summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type. This DMG scales based on the corresponding character's ATK and will be considered as having been dealt by them.\nThis effect can occur once every 3s, and can be triggered up to 4 times each time Nicole switches to Silent Contemplation mode.\n\nIt is worth noting that Hexerei characters' Arcane Projections appear to differ somehow in appearance from the others...",
-			"application": [{ "frame": 108, "element": "pyro" }]
+			"application": [{ "frame": 108, "element": "pyro", "units": 1 }]
 		}
 	],
 	"passives": [

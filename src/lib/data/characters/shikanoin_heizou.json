@@ -64,7 +64,7 @@
 					"input": ["hE"],
 					"frames": { "anim": 219, "D": 210, "J": 210, "swap": 210 },
 					"cooldown": 10,
-					"application": [{ "frame": 200, "element": "anemo" }]
+					"application": [{ "frame": 200, "element": "anemo", "units": 2 }]
 				}
 			],
 			"tags": [],
@@ -80,7 +80,7 @@
 				"Per-stack damage scaling (skill base mult): Mult = skill[talent] + decStack * decBonus[talent]. Not authored as a separate buff/scaling — schema has no 'stack count' state condition. Reviewer to decide representation.",
 				"Particle generation scales with decStack: 0/1 stacks=2 particles, 2/3 stacks=2-3 particles (50% chance for 3rd), 4 stacks=3 particles. Particle ICD 12 frames (0.2s). Particle output is not modeled in this codebase; flag for completeness."
 			],
-			"application": [{ "frame": 20, "element": "anemo" }]
+			"application": [{ "frame": 20, "element": "anemo", "units": 2 }]
 		},
 		{
 			"id": "shikanoin_heizou__burst__windmuster_kick",
@@ -100,7 +100,7 @@
 				"Windmuster Iris is a per-enemy delayed elemental DMG instance keyed off the enemy's existing aura (Pyro/Hydro/Electro/Cryo priority). Not modeled as a summon (no spawned entity). Element absorption-style mechanic — flag for reviewer; this is similar in flavor to recipe.md § 3.5 Elemental Absorption but applies per-enemy on burst hit rather than at cast.",
 				"energyCost=40 from data_gen.textproto (burst_energy_cost). gcsim burst.go also calls c.ConsumeEnergy(3) — likely an unrelated/secondary internal hook; not modeled."
 			],
-			"application": [{ "frame": 34 }, { "frame": 34, "element": "anemo" }]
+			"application": [{ "frame": 34 }, { "frame": 34, "element": "anemo", "units": 1 }]
 		}
 	],
 	"passives": [

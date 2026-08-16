@@ -117,7 +117,7 @@
 				"A1 (Tamakushi Casket): if Bake-Kurage is active when Q is cast, Bake-Kurage duration resets to 12.5s (implemented via c.a1() called at frame 46 in burst.go). No schema representation needed — mechanic is upstream of the planner."
 			],
 			"description": "Summons the might of Watatsumi, dealing Hydro DMG to surrounding opponents, before robing Kokomi in a Ceremonial Garment made from the flowing waters of Sangonomiya.\n\nCeremonial Garment\n·Sangonomiya Kokomi's Normal Attack, Charged Attack and Bake-Kurage DMG are increased based on her Max HP.\n·When her Normal and Charged Attacks hit opponents, Kokomi will restore HP for all nearby party members, and the amount restored is based on her Max HP.\n·Increases Sangonomiya Kokomi's resistance to interruption and allows her to walk on the water's surface.\n\nThese effects will be cleared once Sangonomiya Kokomi leaves the field.",
-			"application": [{ "frame": 49, "element": "hydro" }]
+			"application": [{ "frame": 49, "element": "hydro", "units": 2 }]
 		}
 	],
 	"passives": [

@@ -168,7 +168,7 @@
 				"  (d) Simpler near-term: skip gating entirely (current approach). The constitution leans 'visualize, don't gate' — the user types the rotation, the planner shows the buff window. Loses the 'this character can't plunge without Xianyun' semantic but keeps the buff timing visible."
 			],
 			"description": "Brings forth a sacred breeze that deals AoE Anemo DMG and heals all nearby characters based on Xianyun's ATK. It will also summon the \"Starwicker\" mechanism.\n\nStarwicker\n·Continuously follows the active character and periodically heals all nearby party members based on Xianyun's ATK.\n·Starts with 8 stacks of Adeptal Assistance. While Adeptal Assistance is active, nearby active characters in the party will have their jump height increased.\n·When the active character completes a Plunging Attack, Starwicker will consume 1 stack of Adeptal Assistance and deal AoE Anemo DMG.\nOnly 1 Starwicker can exist simultaneously.",
-			"application": [{ "frame": 75, "element": "anemo" }]
+			"application": [{ "frame": 75, "element": "anemo", "units": 1 }]
 		}
 	],
 	"passives": [

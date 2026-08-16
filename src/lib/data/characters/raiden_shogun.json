@@ -97,7 +97,7 @@
 			],
 			"description": "The Raiden Shogun unveils a shard of her Euthymia, dealing Electro DMG to nearby opponents, and granting nearby party members the Eye of Stormy Judgment.\n\nEye of Stormy Judgment\n·When characters with this buff attack and deal DMG to opponents, the Eye will unleash a coordinated attack, dealing AoE Electro DMG at the opponent's position. One coordinated attack every 0.9s per party.\n·Characters who gain the Eye of Stormy Judgment will have their Elemental Burst DMG increased based on the Energy Cost of their Elemental Burst during the Eye's 25s duration.",
 			"behavior": "instant",
-			"application": [{ "frame": 51, "element": "electro" }]
+			"application": [{ "frame": 51, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "raiden_shogun__burst__secret_art_musou_shinsetsu",
@@ -112,7 +112,7 @@
 			"caveat": "Not modeled: Resolve stack count or the resulting DMG bonus.",
 			"description": "Gathering truths unnumbered and wishes uncounted, the Raiden Shogun unleashes the Musou no Hitotachi and deals AoE Electro DMG, using Musou Isshin in combat for a certain duration afterward. The DMG dealt by Musou no Hitotachi and Musou Isshin attacks is increased based on Chakra Desiderata Resolve stacks consumed.\n\nMusou Isshin\nWhile in this state, the Raiden Shogun wields her tachi in battle. Normal, Charged, and Plunging Attacks are infused with Electro DMG (cannot be overridden) and count as Elemental Burst DMG.\n\nChakra Desiderata\nWhen nearby party members (excluding Raiden) use their Elemental Bursts, the Raiden Shogun builds Resolve stacks based on the Energy Cost of those Bursts (max 60 stacks). Resolve stacks increase the DMG of the initial Musou no Hitotachi and Musou Isshin hits.",
 			"behavior": "stance",
-			"application": [{ "frame": 98, "element": "electro" }]
+			"application": [{ "frame": 98, "element": "electro", "units": 2 }]
 		}
 	],
 	"passives": [

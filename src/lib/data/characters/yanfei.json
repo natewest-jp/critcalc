@@ -118,7 +118,7 @@
 				"Skill cooldown: 540 frames = 9s. cooldownStartDelay: 28f from gcsim's c.SetCDWithDelay(ActionSkill, 540, 28)."
 			],
 			"description": "Summons blistering flames that deal AoE Pyro DMG.\nOpponents hit by the flames will grant Yanfei the maximum number of Scarlet Seals.",
-			"application": [{ "frame": 32, "element": "pyro" }]
+			"application": [{ "frame": 32, "element": "pyro", "units": 1 }]
 		},
 		{
 			"id": "yanfei__burst__done_deal",
@@ -158,7 +158,7 @@
 				"gcsim Burst calls c.ConsumeEnergy(5) at the end — appears to drain 5 additional energy on cast beyond the 80 cost; semantic unclear (possible off-by-one or refund mechanic). Energy cost 80 sourced from data_gen.textproto (burst_energy_cost). Flag for reviewer."
 			],
 			"description": "Triggers a spray of intense flames that rush at nearby opponents, dealing AoE Pyro DMG, granting Yanfei the maximum number of Scarlet Seals, and applying Brilliance to her.\n\nBrilliance\nHas the following effects:\n·Grants Yanfei a Scarlet Seal at fixed intervals.\n·Increases the DMG dealt by her Charged Attacks.\nThe effects of Brilliance will end if Yanfei leaves the field or falls in battle.",
-			"application": [{ "frame": 24, "element": "pyro" }]
+			"application": [{ "frame": 24, "element": "pyro", "units": 2 }]
 		}
 	],
 	"passives": [

@@ -83,10 +83,10 @@
 				"Skill cooldown 30s with 16-frame delay (gcsim `c.SetCDWithDelay(action.ActionSkill, 30*60, 16)`)."
 			],
 			"application": [
-				{ "frame": 17, "element": "pyro" },
-				{ "frame": 38, "element": "pyro" },
+				{ "frame": 17, "element": "pyro", "units": 1 },
+				{ "frame": 38, "element": "pyro", "units": 1 },
 				{ "frame": 338, "element": "pyro" },
-				{ "frame": 638, "element": "pyro" }
+				{ "frame": 638, "element": "pyro", "units": 1 }
 			]
 		},
 		{
@@ -118,7 +118,7 @@
 				"Burst CD 15s with 0-frame delay; cooldownStartDelay omitted per recipe.",
 				"C4 reduces this burst's CD by 2s and grants 15 energy on each successful directive absorb (10s ICD). Not authored — schema has no `cooldownReduction` or `addEnergy` effect type."
 			],
-			"application": [{ "frame": 110, "element": "pyro" }]
+			"application": [{ "frame": 110, "element": "pyro", "units": 1 }]
 		}
 	],
 	"passives": [

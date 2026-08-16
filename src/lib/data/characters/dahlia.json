@@ -66,10 +66,10 @@
 					"label": "Hold",
 					"input": ["hE"],
 					"frames": { "anim": 33, "N": 35, "Q": 35, "D": 33, "J": 32, "swap": 33 },
-					"application": [{ "frame": 27, "element": "hydro" }]
+					"application": [{ "frame": 27, "element": "hydro", "units": 1 }]
 				}
 			],
-			"application": [{ "frame": 27, "element": "hydro" }]
+			"application": [{ "frame": 27, "element": "hydro", "units": 1 }]
 		},
 		{
 			"id": "dahlia__burst__radiant_psalter",
@@ -106,7 +106,7 @@
 				"Shield label \"Shield of Sacred Favor\" taken verbatim from this ability's own description text (the game's wording, via genshin-db) — the shield lane renders it. ⛔ Kits whose text says only \"a shield\" (Diona, Candace, Xinyan, Lan Yan) keep the generic fallback rather than borrowing the ability name; gcsim's \"<Ability> (Shield)\" strings are its own internal convention, not in-game names."
 			],
 			"frames": { "anim": 55, "N": 53, "E": 52, "D": 51, "J": 51, "swap": 52 },
-			"application": [{ "frame": 30, "element": "hydro" }]
+			"application": [{ "frame": 30, "element": "hydro", "units": 2 }]
 		}
 	],
 	"passives": [

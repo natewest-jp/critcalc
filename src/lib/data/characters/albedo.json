@@ -75,7 +75,7 @@
 				"[A7] Dropped from the user caveat for length: the emissions are on-hit-from-summon (they trigger when a hit lands inside the construct's field, not on a periodic tick). Mechanism already detailed in the curator notes above."
 			],
 			"description": "Albedo creates a Solar Isotoma using alchemy, which deals AoE Geo DMG on appearance.\n\nSolar Isotoma\nhas the following properties:\n·When opponents within the Solar Isotoma field take DMG, the Solar Isotoma will generate Transient Blossoms which deal AoE Geo DMG. DMG dealt scales off Albedo's DEF. \n·Transient Blossoms can only be generated once every 2s.\n·When a character is located at the locus of the Solar Isotoma, the Solar Isotoma will accumulate Geo power to form a crystallized platform that lifts the character up to a certain height. Only one crystallized platform can exist at a time.\n·Solar Isotoma is considered a Geo construct. Only one Solar Isotoma created by Albedo himself can exist at a time. \n\nHold to designate the location of the skill.",
-			"application": [{ "frame": 25, "element": "geo" }]
+			"application": [{ "frame": 25, "element": "geo", "units": 1 }]
 		},
 		{
 			"id": "albedo__burst__rite_of_progeniture_tectonic_tide",
@@ -94,7 +94,7 @@
 				"Cancel frames (swap 93 / D 95 / J 94) reflect the full burst animation, not the initial hit at 75. Albedo can be swapped earlier in practice via the construct's queueing — gcsim's CanQueueAfter is burstFrames[ActionSwap]=93, treating that as the canonical animation length."
 			],
 			"description": "Under Albedo's command, Geo crystals surge and burst forth, dealing AoE Geo DMG in front of him.\nIf a Solar Isotoma created by Albedo himself is on the field, 7 Fatal Blossoms will be generated in the Solar Isotoma field, bursting violently into bloom and dealing AoE Geo DMG.\n\nTectonic Tide DMG and Fatal Blossom DMG will not generate Transient Blossoms.",
-			"application": [{ "frame": 75, "element": "geo" }]
+			"application": [{ "frame": 75, "element": "geo", "units": 1 }]
 		}
 	],
 	"passives": [

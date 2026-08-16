@@ -90,7 +90,7 @@
 				"Hold-E during NS triggers a Plunging Attack (Anemo) which hits ground and ends NS — not modelled (would conflict with the input ['E'] schema slot)."
 			],
 			"description": "Chasca and the will residing in her weapon resonate, dealing Nightsoul-aligned AoE Anemo DMG.\nAfter using this Skill, Chasca gains 80 Nightsoul points and enters the Nightsoul's Blessing state.\n\nNightsoul's Blessing: Chasca\nContinually consume Nightsoul points. When Nightsoul points are fully depleted or the skill is used again, Chasca's Nightsoul's Blessing state will end. Her Nightsoul's Blessing has the following traits:\n·Mounts \"Soulsniper: Ritual Staff,\" increasing Chasca's Movement SPD and interruption resistance. In this state, Chasca will continually consume Nightsoul points to remain airborne. When Sprinting or increasing height, extra Nightsoul points will be consumed.\n·When using Normal or Charged Attacks, Tap or Hold to switch between using \"Multitarget Fire\" in different ways.\n\nMultitarget Fire\nTap\nDeal Nightsoul-aligned Anemo DMG to opponents in front. This DMG is considered Normal Attack DMG.\nHold\nEnter Aiming Mode and choose a certain number of opponents within a certain range, before loading up to 6 Shadowhunt Shells based on the duration for which the skill was charged. When 6 Shells have been loaded or charging is stopped, these Shells will be fired at the chosen opponents in sequence.\n\nShadowhunt Shells\n·Deal Nightsoul-aligned Anemo DMG, which is considered Charged Attack DMG.\n·The 4th, 5th, and 6th Shells loaded into the cylinder will undergo Elemental Conversion based on the Elemental Types of the other characters in the party: For each Pyro, Hydro, Cryo, or Electro character in the party, one Shadowhunt Shell will randomly be Converted into a \"Shining Shadowhunt Shell\" of one of these corresponding Elemental Types, dealing Nightsoul-aligned DMG corresponding to that Elemental Type. This DMG is considered Charged Attack DMG.\n·The Shells loaded into the cylinder are fired starting from the last Shadowhunt Shell to be loaded, in a \"last in, first out\" order.\n\nAdditionally, when Chasca is in the Nightsoul's Blessing state, Holding her Elemental Skill Spirit Reins, Shadow Hunt will cause her to execute a Nightsoul-aligned Plunging Attack. Release the Elemental Skill to interrupt this Plunging Attack and maintain her airborne state. Should Chasca hit the ground with her Plunging Attack, her Nightsoul's Blessing state will end.",
-			"application": [{ "frame": 3, "element": "anemo" }]
+			"application": [{ "frame": 3, "element": "anemo", "units": 1 }]
 		},
 		{
 			"id": "chasca__burst__soul_reapers_fatal_round",
@@ -111,12 +111,12 @@
 			],
 			"description": "Chasca concentrates her will, firing a single \"Galesplitting Soulseeker Shell\" that deals Nightsoul-aligned AoE Anemo DMG. Afterward, the Galesplitting Soulseeker Shell will split into 6 Soulseeker Shells, which attack nearby opponents.\n\nSoulseeker Shells\n·Deal Nightsoul-aligned Anemo DMG.\n·For each Pyro, Hydro, Cryo, or Electro character in the party, two Soulseeker Shells will undergo corresponding Elemental Conversions to become \"Radiant Soulseeker Shells,\" which deal Nightsoul-aligned Elemental DMG from a randomly selected one of the corresponding Elemental Types.",
 			"application": [
-				{ "frame": 96, "element": "anemo" },
-				{ "frame": 103, "element": "anemo" },
+				{ "frame": 96, "element": "anemo", "units": 1 },
+				{ "frame": 103, "element": "anemo", "units": 1 },
 				{ "frame": 139, "element": "anemo" },
-				{ "frame": 147, "element": "anemo" },
+				{ "frame": 147, "element": "anemo", "units": 1 },
 				{ "frame": 153, "element": "anemo" },
-				{ "frame": 157, "element": "anemo" },
+				{ "frame": 157, "element": "anemo", "units": 1 },
 				{ "frame": 160, "element": "anemo" }
 			]
 		}

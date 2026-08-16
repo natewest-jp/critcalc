@@ -112,15 +112,15 @@
 			"description": "Using the Icevein Talisman, Qiqi brings forth the Herald of Frost, dealing Cryo DMG to surrounding opponents.\n\nHerald of Frost\n·On hit, Qiqi's Normal and Charged Attacks regenerate HP for your own party members and nearby teammates. Healing scales based on Qiqi's ATK.\n·Periodically regenerates your active character's HP.\n·Follows the character around, dealing Cryo DMG to opponents in their path.",
 			"caveat": "The 15s cooldown assumes the Witch's Revelation talent Seven Sacred Treasures is unlocked; without it the cooldown is 30s. Not modeled: the Herald's coordinated attacks on the active character's hits.",
 			"application": [
-				{ "frame": 32, "element": "cryo" },
+				{ "frame": 32, "element": "cryo", "units": 1 },
 				{ "frame": 96, "element": "cryo" },
-				{ "frame": 231, "element": "cryo" },
+				{ "frame": 231, "element": "cryo", "units": 1 },
 				{ "frame": 291, "element": "cryo" },
-				{ "frame": 426, "element": "cryo" },
+				{ "frame": 426, "element": "cryo", "units": 1 },
 				{ "frame": 486, "element": "cryo" },
-				{ "frame": 621, "element": "cryo" },
+				{ "frame": 621, "element": "cryo", "units": 1 },
 				{ "frame": 681, "element": "cryo" },
-				{ "frame": 816, "element": "cryo" },
+				{ "frame": 816, "element": "cryo", "units": 1 },
 				{ "frame": 876, "element": "cryo" }
 			]
 		},

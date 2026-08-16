@@ -111,7 +111,7 @@
 					"duration": 9,
 					"terminatesOnSwap": true,
 					"opensState": "nightsoulBlessing",
-					"application": [{ "frame": 16, "element": "pyro" }]
+					"application": [{ "frame": 16, "element": "pyro", "units": 1 }]
 				}
 			],
 			"effects": [],
@@ -130,13 +130,13 @@
 			],
 			"description": "Calling upon her authority over \"conflict,\" Mavuika summons the All-Fire Armaments passed down through the line of human Archons, dealing Nightsoul-aligned Pyro DMG.\nAfter using this, Mavuika's Nightsoul points are restored to max value, and she enters the Nightsoul's Blessing state.\n\nAll-Fire Armaments\nHas different forms when Tapped or Held.\n\nTap\n\"Divine Name Unleashed\": The All-Fire Armaments manifest as a Ring of Searing Radiance. The Ring follows the current active character and attacks nearby opponents at intervals, dealing Nightsoul-aligned Pyro DMG.\n\nHold\n\"Ancient Name Unbound\": The All-Fire Armaments manifest as a Flamestrider. In this state, Mavuika can ride the Flamestrider at high speed, or activate its hidden backup propulsion module to temporarily cross various terrain types and glide in mid-air. Mavuika's Normal, Charged, and Plunging Attacks will also be converted to deal Nightsoul-aligned Pyro DMG which cannot be overridden. When sprinting, she also deals Nightsoul-aligned Pyro DMG to opponents along her path.\n\nWhile in the Nightsoul's Blessing state, Tapping the Elemental Skill can switch the All-Fire Armaments' form. The Armaments will disappear once Mavuika's Nightsoul's Blessing state ends.",
 			"application": [
-				{ "frame": 16, "element": "pyro" },
-				{ "frame": 120, "element": "pyro" },
-				{ "frame": 240, "element": "pyro" },
-				{ "frame": 360, "element": "pyro" },
-				{ "frame": 480, "element": "pyro" },
-				{ "frame": 600, "element": "pyro" },
-				{ "frame": 720, "element": "pyro" }
+				{ "frame": 16, "element": "pyro", "units": 1 },
+				{ "frame": 120, "element": "pyro", "units": 1 },
+				{ "frame": 240, "element": "pyro", "units": 1 },
+				{ "frame": 360, "element": "pyro", "units": 1 },
+				{ "frame": 480, "element": "pyro", "units": 1 },
+				{ "frame": 600, "element": "pyro", "units": 1 },
+				{ "frame": 720, "element": "pyro", "units": 1 }
 			]
 		},
 		{
@@ -166,7 +166,7 @@
 				"[A7] To preserve: Mavuika has no in-game Energy bar (gcsim EnergyMax=0), and her skill's particle generation (5 Pyro, 0.5s ICD) does not fuel her own burst readiness — it feeds teammates' Energy."
 			],
 			"description": "Let the people's inner voices reach the divine throne in the heavens.\nMavuika's Elemental Burst is not reliant on Energy, but instead, on \"Fighting Spirit.\"\n\nFighting Spirit\nWhen Mavuika has at least 50% Fighting Spirit, she can consume it all to unleash her Elemental Burst.\nMavuika can obtain Fighting Spirit via the following methods:\n· When in combat, Nightsoul points consumed by nearby party members are converted to Fighting Spirit.\n· When nearby party members' Normal Attacks hit opponents, Mavuika gains 1.5 Fighting Spirit. This can trigger once every 0.1s.\n\nAfter using this, Mavuika gains 10 Nightsoul points and enters the Nightsoul's Blessing state. Riding her Flamestrider high in the air, she uses a powerful Sunfell Slice against opponents on the ground, dealing Nightsoul-aligned AoE Pyro DMG and entering the \"Crucible of Death and Life\" state.\n\nCrucible of Death and Life\nDuring this time, Mavuika's various actions will no longer consume Nightsoul points, and her interruption resistance is increased. Also, the DMG dealt by Sunfell Slice and \"Ancient Name Unbound\"'s Normal and Charged Attacks is increased based on the amount of Fighting Spirit she has when using the Elemental Burst.\nCrucible of Death and Life will be canceled when Mavuika leaves the field.",
-			"application": [{ "frame": 106, "element": "pyro" }]
+			"application": [{ "frame": 106, "element": "pyro", "units": 1 }]
 		}
 	],
 	"passives": [

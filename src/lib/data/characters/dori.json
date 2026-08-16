@@ -63,7 +63,7 @@
 			"effects": [],
 			"description": "Directs a Spirit-Warding Lamp to fire off a Troubleshooter Shot at opponents, dealing Electro DMG.\nAfter the Troubleshooter Shot hits, it will create 2 After-Sales Service Rounds that will automatically track nearby opponents and deal Electro DMG.",
 			"application": [
-				{ "frame": 26, "element": "electro" },
+				{ "frame": 26, "element": "electro", "units": 1 },
 				{ "frame": 72, "element": "electro" },
 				{ "frame": 85, "element": "electro" }
 			]
@@ -107,7 +107,7 @@
 			],
 			"description": "Summons forth the Jinni within the lamp to give the client various kinds of aid.\n\nJinni\nConnects to a nearby character. The connected character will:\n· Continuously restore HP based on Dori's Max HP.\n· Continuously regenerate Energy.\n· Be affected by Electro.\nWhen the connector between the Jinni and the character touches opponents, it will deal one instance of Electro DMG to them every 0.4s.\n\nOnly one Jinni can exist at one time.",
 			"application": [
-				{ "frame": 28, "element": "electro" },
+				{ "frame": 28, "element": "electro", "units": 1 },
 				{ "frame": 52, "element": "electro" },
 				{ "frame": 76, "element": "electro" },
 				{ "frame": 100, "element": "electro" },
@@ -115,7 +115,7 @@
 				{ "frame": 148, "element": "electro" },
 				{ "frame": 172, "element": "electro" },
 				{ "frame": 196, "element": "electro" },
-				{ "frame": 220, "element": "electro" },
+				{ "frame": 220, "element": "electro", "units": 1 },
 				{ "frame": 244, "element": "electro" },
 				{ "frame": 268, "element": "electro" },
 				{ "frame": 292, "element": "electro" },
@@ -123,7 +123,7 @@
 				{ "frame": 340, "element": "electro" },
 				{ "frame": 364, "element": "electro" },
 				{ "frame": 388, "element": "electro" },
-				{ "frame": 412, "element": "electro" },
+				{ "frame": 412, "element": "electro", "units": 1 },
 				{ "frame": 436, "element": "electro" },
 				{ "frame": 460, "element": "electro" },
 				{ "frame": 484, "element": "electro" },
@@ -131,7 +131,7 @@
 				{ "frame": 532, "element": "electro" },
 				{ "frame": 556, "element": "electro" },
 				{ "frame": 580, "element": "electro" },
-				{ "frame": 604, "element": "electro" },
+				{ "frame": 604, "element": "electro", "units": 1 },
 				{ "frame": 628, "element": "electro" },
 				{ "frame": 652, "element": "electro" },
 				{ "frame": 676, "element": "electro" },
