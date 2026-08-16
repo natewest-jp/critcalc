@@ -229,8 +229,15 @@ application: { frame: number; element?: Element; units?: number }[]
 - `element` — absent means physical, i.e. applies nothing.
 - `units` — gauge units, **default 1U within an entry** (census: 688 of 835 explicit gcsim
   durabilities are `25`).
-- ⛔ **An ABSENT list is not "1U at cast".** Absent = we do not know = **applies nothing**,
-  marked provisional. gcsim's own engine default is a hard zero — `Durability` is not
+- ↻ **AMENDED 2026-08-16 (L4d).** This clause read _"⛔ An ABSENT list is not '1U at
+  cast'. Absent = we do not know = applies nothing, marked provisional"_, and it was
+  wrong in a way that would have deleted a mechanic. It reasoned from gcsim, where an
+  omitted `Durability` means the AUTHOR intended no application — but in OUR corpus an
+  absent list means **we did not measure it**. ⚓ `[]` is measured silence (39
+  abilities, and the finding of the round); ABSENT falls back to the old model and is
+  counted provisional. Taking absent as nothing removes the element entirely from the 12
+  characters with no gcsim source — Linnea's Geo would never crystallize. C3's real
+  target is fully served, because `[]` now says it. Original reasoning, kept: gcsim's own engine default is a hard zero — `Durability` is not
   defaulted anywhere and every path early-returns below `ZeroDur`
   (`pkg/core/info/reaction.go:43`) — so "omitted means no application" is also the upstream
   semantics. An empty list is the _positive_ statement that a cast applies nothing
@@ -291,8 +298,20 @@ Xiangling E   gcsim InitAbilSlice(39), ActionSwap = 38   → ours { swap: 38, �
 Xiangling Q   gcsim InitAbilSlice(80), ActionSwap = 79   → ours { swap: 79 },     absent keys read 79, not 80
 ```
 
-**Direction (detail settled in the data landing):** store gcsim's slice shape — an explicit
-animation default plus overrides — so the fallback is the default, not `swap`.
+✅ **SETTLED AND SHIPPED (L4b).** `FrameMap` is `{ anim, hit?, …overrides }`: `anim` is
+required and is the fallback, `hit` is `InitNormalCancelSlice`'s hitmark and fills the
+five cancel keys, and `frameAt()` in `$lib/utils/frames.ts` is the only resolver.
+
+⚠️ **The measured damage was not where this section put it.** The E/Q median gap is 3
+frames; the real cost is `normal → charged` (266 of 297 maps, median **22 frames**
+early) and `normal → plunge` (533 of 565). A normal's cancel keys were already right,
+because `swap` genuinely IS the hitmark for them.
+
+⚓ **And the plunge is two fields now** — Nate 2026-08-16: the high plunge is what
+players actually perform, so it keeps the plain name and the bare `P`/`hP` tokens, and
+`lowPlungeFrames` serves `lP`. ⚠️⚠️ 36 of the 41 authors of `plungeFrames` were carrying
+LOW-plunge numbers, so the field CHANGED MEANING — a note predating L4b describes a
+different thing.
 
 ⚓⚓ **For normals this makes the record smaller AND yields the hitmark for free.**
 `InitNormalCancelSlice(hitmark, animation)` sets everything to `animation`, then overrides
@@ -620,7 +639,45 @@ geometry from cast events (a second copy of a parser rule); and `moonsignRows.ts
 ⚓ **The differ is the gate and it mostly exists.** Baseline: **51 files / 1467 tests / 2.7 s**
 — fast enough to run on every edit, which is what makes a strangler this size sane.
 
-### L4 — Frame re-derivation + application schema (data track — concurrent)
+### L4 — Frame re-derivation + application schema ✅ SHIPPED 2026-08-16
+
+📄 **Full record: [`gauge-round-L4.md`](gauge-round-L4.md)**
+
+⚡ **The method changed a third time, and it is the best of the three.** L0 retired
+static Go parsing in favour of RUNNING gcsim's CLI; L4 links gcsim as a **library** from
+our own repo (`scripts/gcsim-dump/main.go`). The cancel slice is not in the debug log at
+all, and executing ONE ability in an otherwise-empty core makes application attribution
+exact instead of heuristic. The whole roster dumps and diffs in **~2 seconds**.
+
+|                 |                                                                                              |
+| --------------- | -------------------------------------------------------------------------------------------- |
+| FrameMaps       | 1,082 · **960 match gcsim exactly** · 35 disagree · 87 uncovered                             |
+| shape           | `anim` is required and IS the fallback; `hit` is the hitmark; corpus **shrank ~8,400 lines** |
+| plunges         | split — ⚓ Nate: the HIGH plunge is the default (`plungeFrames`), `lowPlungeFrames` is `lP`  |
+| `application[]` | 233 abilities with hits, **39 that apply NOTHING**, 40 with no reading                       |
+| oracle          | median timing error on paired applications **35 frames → 1 frame**; phantoms **1 → 0**       |
+
+⚓ **The driver table came out at 18 rows, not the ~40 budgeted**, because the corpus
+already says what gates each ability — a `chainStage` at index N is N repeats, and only
+"what puts this character into that state" needs a human.
+
+⚓ **The curator already knew.** Kaeya's `_curatorNotes` name the 500 sentinel, the
+anim-vs-swap default and the low/high plunge split in prose, with the numbers, years
+before the schema could hold them. **The corpus was not wrong; it was inexpressible.**
+
+↻ **Two contract amendments, both recorded in L4's §12–13:**
+
+- **C3** — an absent `application[]` does NOT apply nothing. `[]` is measured silence
+  (39 abilities); ABSENT means unmeasured and falls back to the old model, counted
+  provisional. C3 reasoned from gcsim "where `Durability` is not defaulted anywhere",
+  which conflates the author intending none with us not having looked; taking absent as
+  nothing deletes the element from the 12 characters with no gcsim source.
+- **The ICD round's ⛔** — a cast's OWN hits are gated now (its premise, "we model a
+  multi-hit skill as one application", is retired). ⛔ Across casts they still are not:
+  **112 of 166 gcsim skills are `ICDTagNone`**, and Xiao's tagged skill sits in a group
+  whose reset timer is 5 frames. Per-ability ICD tag + group is now the top schema gap.
+
+#### The original plan for this landing
 
 ⚓ **One re-extraction pass, not two.** Under C4b this landing re-derives **all** frame data
 from gcsim in the new shape _and_ authors the application lists, because both come out of the

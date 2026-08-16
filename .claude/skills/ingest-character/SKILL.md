@@ -122,18 +122,48 @@ main` (the checkout drifts commits behind; a released char is often already
    Note in `_curatorNotes` that frames came from an unmerged PR (#N) — they may
    shift before merge.
 3. **Neither hits** → genuinely no gcsim source yet. Author everything else
-   (Stages 1–3: cooldowns, energy, durations, all effects, tags — only
-   FrameMaps and gcsim-only summon tick cadences are blocked) and leave the
-   char in `FRAMELESS_EXEMPT`. Post-launch, in-demand chars here are the ones
+   (Stages 1–3: cooldowns, energy, durations, all effects, tags — FrameMaps,
+   `application[]` and gcsim-only summon tick cadences are blocked) and leave
+   the char in `FRAMELESS_EXEMPT`. ⚠️ With no `application[]` the character
+   falls back to applying its element at the cast instant, marked provisional —
+   honest, and enumerated in `docs/curation/gcsim-frames-diff.md`. Post-launch, in-demand chars here are the ones
    to point community contributors at gcsim for.
 
 Once located:
 
-- Extract FrameMaps from gcsim's character Go source per the
-  **gcsim-frames** skill (canonical key sets per ability type,
-  `reference_framemap_conventions` memory). NOTE: that skill's "always
-  cross-check KQM sheets" section predates the 2026-07-12 gcsim-primary
-  decision — the verification block below supersedes it.
+⚓⚓ **DO NOT HAND-READ THE GO SOURCE ANY MORE (gauge round L4, 2026-08-16).**
+`scripts/gcsim-dump/main.go` links gcsim as a LIBRARY and reads the resolved
+values directly — the cancel slice is `action.Info.Frames(next)` and the
+animation length is index 0 of it, so there is nothing to interpret. Run:
+
+```
+node scripts/audit-gcsim-frames.mjs --char <id>          # what gcsim says vs what we ship
+node scripts/migrate-frames-shape.mjs --write --char <id>       # FrameMaps
+node scripts/migrate-application-schema.mjs --write --char <id> # application[]
+```
+
+⚠️ **A new character needs `anim`, `hit` AND `application[]`, and the last is
+the one nothing else will notice is missing.** `characterLint` requires `anim`;
+nothing requires an application list, and a character without one silently
+falls back to "applies its element at the cast", which is the defect the gauge
+round exists to remove. The migration writes all three.
+
+⚠️ If the character needs a MODE the default capture cannot reach — a stance,
+a hold, a chained press — add a row to `scripts/gcsim-dump/drivers.json`. The
+corpus's own `conditions` derive most of it: a `chainStage` at index N is N
+repeats of that action, and only "what puts this character into that state"
+needs a human. ⛔ Score the candidate before keeping it — a row that does not
+beat no-prereq is a regression dressed as coverage.
+
+⛔ Read `_curatorNotes` before overruling anything. The corpus's frame notes
+have repeatedly turned out to know more than the extractor does: Albedo's N5
+documents a gcsim typo, and Kaeya's plunge note named the low/high split years
+before the schema could hold it.
+
+- The **gcsim-frames** skill is now the FALLBACK, for the ~12 characters with
+  no gcsim source and for reading a not-yet-merged PR. Its "always cross-check
+  KQM sheets" section predates the 2026-07-12 gcsim-primary decision — the
+  verification block below supersedes it.
 - Remove the character from `FRAMELESS_EXEMPT` (the tracker's prune check
   enforces this).
 - **Verification (2026-07-12 policy):**
