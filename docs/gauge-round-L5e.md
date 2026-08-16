@@ -1,6 +1,6 @@
 # L5e — summon ticks apply their element (the recall half)
 
-**Status:** 🔄 in progress — L5e-a shipped 2026-08-16 (`637a175`); L5e-b next
+**Status:** 🔄 in progress — L5e-a (`637a175`) + L5e-a½ (`7d63949`) shipped 2026-08-16; L5e-b next, ⚠️ pending the §3.3 ICD decision
 **Reads:** [`gauge-round.md`](gauge-round.md) (the contract) · [`gauge-round-L5.md`](gauge-round-L5.md)
 (the gauge, and this landing's decomposition in its §5) · [`gauge-round-L3.md`](gauge-round-L3.md)
 (the clock)
@@ -230,10 +230,26 @@ index, swapOutAt })`, with the swap clamp folded INSIDE so an unclamped end can 
   parses, 1,921 windows, 616 of them summons) before and after: **byte-identical**.
   ⚓ And the dump was verified against a seeded one-frame perturbation FIRST, so it is not
   green because nothing ran (L3's own lesson). Throwaway, deleted in the same turn.
-- ⏭ **L5e-a½ — the two data bugs the phase check surfaced**, before the wiring: the
-  burst Oz's missing `terminatesOn` (§3.4) and Stone Stele's `firstTickDelay` (§3.5).
-  ⚠️ Both change the timeline TODAY (an Oz lane disappears; stele tick markers shift), so
-  this is its own visible change and wants Nate's eyes separately from L5e-b's.
+- **L5e-a½** ✅ **SHIPPED 2026-08-16 (`7d63949`)** — the two data bugs, plus two more they
+  uncovered. Burst Oz's `terminatesOn` (§3.4) and Stone Stele's `firstTickDelay: 2.4`
+  (§3.5) landed; a corpus sweep confirmed **Oz is the only** summon label spawned by two
+  abilities with inconsistent `terminatesOn`.
+  🐛 **The audit was describing a model we do not have** — `audit-gcsim-frames.mjs`
+  computed authored-first as `firstTickDelay ?? 0` while the walk uses `?? interval`, so
+  on the **11** summons that author no delay it manufactured a phantom discrepancy exactly
+  one interval wide. Columbina's Gravity Ripple (reported 117f wrong) and Durin's White
+  Flame (59f) are **EXACT**; Gorou and Kuki are within 1–2 frames. ⚓ The same failure mode
+  L4d recorded for the reaction oracle.
+  🐛 **And the Oz fix exposed an ordering bug in finalize**: step 6 emitted every eBar then
+  every qBar, so `lastSummonWindowByKey` meant "last EMITTED", and recast truncation could
+  shorten a window whose cast had not happened yet (`Fischl Q E` gave an Oz ending 2.75 s
+  before it started). Summon bars emit in **cast order** now — ⚓ which is what L5e-b's
+  live chain necessarily sees, so it is the two paths agreeing rather than a patch.
+  ⚠️ `notationParser.ir.test.ts`'s independent reconstruction held the identical defect and
+  reproduced it faithfully; corrected there too, and ⛔ still re-derived rather than
+  collapsed onto `summonEndAt`.
+  ⏭ **Nate has not looked at this yet** — Fischl draws ONE Oz lane handing off at the
+  recast, and Zhongli's stele markers shift 2.4 s later.
 - **L5e-b** — the live chain: spawn hook, chained ticks, liveness at fire. Applications
   reach the gauge. ⚠️ **This is the behaviour change** — measured by the oracle, gated by
   Nate's eyes, ⛔ never by IR equality. ⚠️ Needs the ICD decision from §3.3 made first:
