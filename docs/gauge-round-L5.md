@@ -223,6 +223,12 @@ generator → `migrate-application-schema.mjs` writes; the audit never does.
 
 ### L5e — summon ticks apply their element ⚓ THE RECALL HALF · ⏭ ITS OWN LANDING
 
+📄 **PLANNED — the implementation plan is [`gauge-round-L5e.md`](gauge-round-L5e.md)**, and
+it supersedes this section wherever the two differ. ⚠️ Two things below were overturned by
+measurement while that plan was written: the "mostly DATA" framing (see the decomposition
+at the end of this section) and the per-summon ICD clock in item 3, which the oracle says
+must NOT be added — gcsim applies on every damage tick.
+
 **Not shipped in this branch, and that is a scope decision with a measurement behind
 it** (§1's amendment): the buff surface does not collapse without it, so precision
 shipped alone rather than waiting. What remains is the recall gap — **82 of 251 aura
@@ -294,11 +300,11 @@ and interval for every row. Only the scaling is real curation.
 **The 144 missing applications, attributed by ability** (⚓ from the oracle report's own
 🔴 rows, not re-derived — the per-fixture 🔴 counts sum to 144 and the aura column to 82):
 
-| bucket                                                   | apps    | what closes it                          |
-| -------------------------------------------------------- | ------- | --------------------------------------- |
-| summon authored **with** damage ticks                    | **84**  | L5e engine work alone                   |
-| summon authored, **no** damage tick                      | **30**  | curation, then L5e carries it for free  |
-| neither — other data/schema gaps                         | **30**  | case by case, mostly L4-family          |
+| bucket                                | apps   | what closes it                         |
+| ------------------------------------- | ------ | -------------------------------------- |
+| summon authored **with** damage ticks | **84** | L5e engine work alone                  |
+| summon authored, **no** damage tick   | **30** | curation, then L5e carries it for free |
+| neither — other data/schema gaps      | **30** | case by case, mostly L4-family         |
 
 - **84** — Xiangling Pyronado 45 · Guoba 20 · Fischl Oz (Burst) 13 / (Skill) 2 ·
   Zhongli Stone Stele 4. ⚓ **These tick correctly in our corpus already and simply do
@@ -373,10 +379,10 @@ and magnitude, never equality.
 
 ## 7. Risks
 
-| risk                                                                                                                                          | handling                                                                                                    |
-| --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Buffs shrink and it reads as a bug.** Honest decay ends bars that used to run forever.                                                      | Expected and stated. §1's cancellation is why L5e is not optional.                                          |
+| risk                                                                                                                                                                                                                                                              | handling                                                                                                                               |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Buffs shrink and it reads as a bug.** Honest decay ends bars that used to run forever.                                                                                                                                                                          | Expected and stated. §1's cancellation is why L5e is not optional.                                                                     |
 | ↻ **"The recall ceiling is DATA, not engine" — MEASURED AND BACKWARDS.** ⛔ Do not re-derive it: **84 of the 144** missing applications are summons we already tick correctly and simply do not feed the gauge, and there are **ZERO** summons we fail to author. | The decomposition is in §5 under L5e. The DATA half is 30, and it is "add a damage tick to an existing summon", not "author a summon". |
-| **A self-rescheduling gauge task and `clock.drain()`.**                                                                                       | Chains are bounded by fuel/aura lifetime. Pinned by a test that a burning chain at rotation end terminates. |
-| **Perf** — the editor re-parses per keystroke and the gauge frame-walks live auras.                                                           | Bounded by aura lifetime with the idle skip; measure a 120 s rotation and record it here.                   |
-| **Per-ability ICD tag + group is still the top schema gap** (L4).                                                                             | Unchanged by L5: casts stay gated within a cast, not across. ⛔ Do not widen the gate here on a guess.      |
+| **A self-rescheduling gauge task and `clock.drain()`.**                                                                                                                                                                                                           | Chains are bounded by fuel/aura lifetime. Pinned by a test that a burning chain at rotation end terminates.                            |
+| **Perf** — the editor re-parses per keystroke and the gauge frame-walks live auras.                                                                                                                                                                               | Bounded by aura lifetime with the idle skip; measure a 120 s rotation and record it here.                                              |
+| **Per-ability ICD tag + group is still the top schema gap** (L4).                                                                                                                                                                                                 | Unchanged by L5: casts stay gated within a cast, not across. ⛔ Do not widen the gate here on a guess.                                 |

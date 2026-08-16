@@ -760,7 +760,14 @@ is pure cost), and the plan's own "both halves or neither".
 would vanish without it was measured and is false: on five realistic rotations not one
 buff window moved. The recall gap is real (82 of 251 aura samples) but it is decoupled,
 and closing it means moving summon-window authorship into the live path rather than
-copying its geometry — the full design is in L5's §5.
+copying its geometry. 📄 **Planned: [`gauge-round-L5e.md`](gauge-round-L5e.md).**
+
+↻ **The gap is decomposed, and L5's "the ceiling is mostly DATA" was backwards.** There
+are **ZERO** summons we fail to author; **84 of the 144** missing applications are summons
+we already tick correctly and simply do not feed the gauge (Pyronado 45, Guoba 20, Oz 15,
+Stone Stele 4), 30 are summons lacking a damage tick, and 30 are other gaps — led by
+Fischl's A4 coordinated attack and Nahida's Tri-Karma, ⚓ neither of which is a summon at
+all. **So L5e is engine work and is not gated on curation.**
 
 **Done when (met):** the oracle diff is materially better than the L0 baseline, with
 residual divergences enumerated and explained. ⚓ **L5 merges on a measured improvement,
