@@ -267,10 +267,60 @@ refused to spend. The tick APPLICATION is a second reader of the same
 `computeSummonDamageTicks` rule — ⛔ one rule, two readers, never two copies of the
 walk.
 
-⚠️ And a large part of the recall gap is DATA, not engine: many summons gcsim ticks
-are not authored in our corpus at all (Kaeya's Glacial Waltz ticks 13× in gcsim and we
-have no summon for it). `docs/curation/gcsim-frames-diff.md` §5 enumerates them. That
-part is L4-family curation work and ⛔ is not a reason to hold L5e either.
+#### ↻ The recall gap, DECOMPOSED — and the "not authored at all" claim was WRONG
+
+This section said a large part of the gap was summons _"not authored in our corpus at
+all (Kaeya's Glacial Waltz ticks 13× in gcsim and we have no summon for it)."_ Measured
+against the corpus, that is false in its specifics and in its shape.
+
+⚓ **There are ZERO summons we do not author.** Every one of the 24 abilities gcsim
+ticks and we do not has an authored `Summon` — Kaeya's Glacial Waltz included. What is
+missing is the **damage `summonTick` effect on it**: 21 of the 24 are geometry-only
+shells (a label and a duration, `effects: []`), and 3 carry heal ticks but no damage
+tick (Baizhu's Pulsing Clarity, Sayu's Muji-Muji Daruma, Sigewinne's Bubblebalm).
+
+```
+kaeya/Glacial Waltz        duration=8      effects=[]
+venti/Stormeye             duration=8      effects=[]
+xingqiu/Rainbow Bladework  duration=15.55  effects=[]
+```
+
+⚠️ That is a different job from what the old sentence scoped. The hard half of
+authoring a summon — spawn offset, duration, `terminatesOn`, the lane it draws — is
+**already done for all 24**. What each needs is interval, `firstTickDelay`, element and
+scaling, and `gcsim-frames-diff.md` §5 already hands over a gcsim-measured first-frame
+and interval for every row. Only the scaling is real curation.
+
+**The 144 missing applications, attributed by ability** (⚓ from the oracle report's own
+🔴 rows, not re-derived — the per-fixture 🔴 counts sum to 144 and the aura column to 82):
+
+| bucket                                                   | apps    | what closes it                          |
+| -------------------------------------------------------- | ------- | --------------------------------------- |
+| summon authored **with** damage ticks                    | **84**  | L5e engine work alone                   |
+| summon authored, **no** damage tick                      | **30**  | curation, then L5e carries it for free  |
+| neither — other data/schema gaps                         | **30**  | case by case, mostly L4-family          |
+
+- **84** — Xiangling Pyronado 45 · Guoba 20 · Fischl Oz (Burst) 13 / (Skill) 2 ·
+  Zhongli Stone Stele 4. ⚓ **These tick correctly in our corpus already and simply do
+  not reach the gauge** — they are exactly what L5e is for, and they are 58% of the gap.
+- **30** — Xingqiu Orbital 13 · Kaeya Glacial Waltz 13 · Collei Trump-Card Kitty 2 ·
+  Sucrose Forbidden Creation 2.
+- **30** — Fischl's A4 coordinated attack 12 and Nahida's Tri-Karma Purification 6 are
+  the two big ones, and **neither is a summon**: both are mark/passive-triggered
+  off-field damage with no thing-in-the-world, which the schema has no shape for.
+  Then `application[]` gaps (Fischl's burst 2, Collei's E 1, Mona's bubble explosion 1),
+  normal-swing ICD divergences (Ningguang 2, Sucrose 1), Mona's phantom-death explosion
+  1 (summon-END damage, also unshaped), a lone second Kaeya Frostgnaw at 65.85 s, and
+  ⚠️ **3 that are not an independent gap at all** — Xiangling's `burning` re-application,
+  which we DO model and which never fired only because Collei's dendro was missing
+  upstream. A downstream consequence, and it disappears when its cause does.
+
+⚓ **The sequencing this settles: L5e is not gated on curation.** 84 of 144 are summons
+already ticking correctly, and the doc's old framing — that the ceiling is mostly DATA —
+had it backwards. ⚠️ But the 30 are cheaper than they look _and_ they land partly
+without L5e: `finalize.ts` step 6c already synthesizes off-field hits from
+`computeSummonDamageTicks`, so authoring a tick series moves buff windows **today**.
+That is a visible change needing Nate's eyes, ⛔ not a silent data top-up.
 
 ### L5f — measure, record, merge
 
@@ -326,7 +376,7 @@ and magnitude, never equality.
 | risk                                                                                                                                          | handling                                                                                                    |
 | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | **Buffs shrink and it reads as a bug.** Honest decay ends bars that used to run forever.                                                      | Expected and stated. §1's cancellation is why L5e is not optional.                                          |
-| **The recall ceiling is DATA, not engine.** Many summons gcsim ticks are not authored in our corpus at all (Kaeya's Glacial Waltz ticks 13×). | Enumerate from the frames-diff report §5; it is L4-family follow-up work, ⛔ not a reason to hold L5.       |
+| ↻ **"The recall ceiling is DATA, not engine" — MEASURED AND BACKWARDS.** ⛔ Do not re-derive it: **84 of the 144** missing applications are summons we already tick correctly and simply do not feed the gauge, and there are **ZERO** summons we fail to author. | The decomposition is in §5 under L5e. The DATA half is 30, and it is "add a damage tick to an existing summon", not "author a summon". |
 | **A self-rescheduling gauge task and `clock.drain()`.**                                                                                       | Chains are bounded by fuel/aura lifetime. Pinned by a test that a burning chain at rotation end terminates. |
 | **Perf** — the editor re-parses per keystroke and the gauge frame-walks live auras.                                                           | Bounded by aura lifetime with the idle skip; measure a 120 s rotation and record it here.                   |
 | **Per-ability ICD tag + group is still the top schema gap** (L4).                                                                             | Unchanged by L5: casts stay gated within a cast, not across. ⛔ Do not widen the gate here on a guess.      |
