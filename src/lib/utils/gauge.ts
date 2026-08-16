@@ -17,11 +17,32 @@
 //     0.1 U/s² while frozen (ramping back down at 0.2 U/s² after)
 //   - Electro-Charged: both auras coexist; ticks every 1s drain 0.4U from each
 //   - Burning: a fixed 2U non-decaying Burning aura + a fuel gauge draining at
-//     0.4 U/s; re-applies 1U Pyro to the target every 0.25s while alive
+//     0.4 U/s; DAMAGE ticks every 0.25s, but re-applies Pyro only every ~2s
+//     (the Burning ICD group — see BURNING_ICD below)
 //
 // The sim is frame-stepped at 60fps to mirror gcsim's Tick() exactly.
+//
+// ⚓ ONE MODEL, THREE SHAPES (gauge round L1, 2026-08-16). This module moved
+// here from the Visualizers' lib to sit beside `icd.ts`, which made the same
+// journey: `icd.ts` decides WHETHER a hit applies its element, `gauge.ts`
+// decides WHAT HAPPENS when it does. Both now serve the instruments and the
+// rotation planner from one implementation, so the two can never drift.
+//
+// ⚠️⚠️ THIS MODULE MUST BE FED POST-ICD APPLICATIONS. It applies every gauge it
+// is handed. gcsim applies ICD at the TARGET (`pkg/enemy/attack.go:114` scales
+// durability by `WillApplyEle` before `React()`), so an authored unit value is
+// the NOMINAL cap, not the applied rate. Pipe raw swings in and every aura
+// comes out several times too strong.
 
-export type ElementId = 'pyro' | 'hydro' | 'electro' | 'cryo' | 'dendro' | 'anemo' | 'geo';
+import { createIcdClock, icdApplies, type IcdClock, type IcdParams } from '$lib/utils/icd';
+import type { Element } from '$lib/types/ability';
+
+/**
+ * The seven elements that can be applied. ⚓ Derived from the canonical
+ * `Element` rather than restated, so the two cannot drift: the only difference
+ * is `physical`, which by definition applies nothing.
+ */
+export type ElementId = Exclude<Element, 'physical'>;
 
 export type AuraKey =
 	| 'pyro'
@@ -98,7 +119,7 @@ export type SimEvent =
 			/** Trigger units spent (consumed ÷ unit modifier) */
 			spent: number;
 	  }
-	| { kind: 'expire'; time: number; mod: AuraKey }
+	| { kind: 'drained'; time: number; mod: AuraKey }
 	| { kind: 'ecTick'; time: number; drained: number }
 	| { kind: 'burningTick'; time: number }
 	| { kind: 'burningEnd'; time: number; swept: AuraKey[] }
@@ -113,6 +134,11 @@ export type GaugeSim = {
 	events: SimEvent[];
 	/** Time of the last sample (all gauges empty) */
 	duration: number;
+	/** ⚠️ The run hit `maxSeconds` with gauge still alive — the tail is MISSING,
+	 *  not empty. Silent truncation is how a caller trusts a wrong answer. */
+	truncated: boolean;
+	/** Applications discarded for falling past `maxSeconds`. */
+	droppedApplications: number;
 };
 
 export const AURA_TAX = 0.8;
@@ -125,7 +151,12 @@ export const auraDecayRate = (gauge: number) => (AURA_TAX * gauge) / auraDuratio
 
 const FPS = 60;
 const EPS = 1e-6;
-const MAX_FRAMES = 75 * FPS;
+
+/** Default simulation cap. ⚠️ Overridable per call — a 75 s ceiling suits the
+ *  instrument's hand-placed applications but silently truncates a real
+ *  rotation, and silent truncation is how a caller comes to trust a wrong
+ *  answer. `simulateGauge` reports what it dropped. */
+export const DEFAULT_MAX_SECONDS = 75;
 
 // Frozen decay: base 0.4 U/s, +0.1 U/s² while frozen, −0.2 U/s² back down after
 const FRZ_BASE_RATE = 0.4;
@@ -136,6 +167,29 @@ const FRZ_RAMP_DOWN = 0.2 / FPS;
 const BURNING_GAUGE = 2;
 const FUEL_RATE = 0.4;
 const EC_DRAIN = 0.4;
+/** Burning DAMAGE cadence — every 15 frames. ⚠️ NOT the application cadence. */
+const BURNING_TICK_FRAMES = 15;
+
+/**
+ * ⚓ The Burning ICD group: a 2.0 s reset timer over an `1,0,0,0,0,0,0,0`
+ * eight-tick sequence (`docs/library/game/icd.md`, and gcsim's
+ * `ICDGroupBurning`). At the 0.25 s tick cadence that is one Pyro application
+ * roughly every 2 s.
+ *
+ * 🐛 **This module used to re-apply 1U Pyro on EVERY 0.25 s tick — eight times
+ * too often**, and because each phantom application ran the full `applyElement`
+ * chain, a burning target carrying Electro overloaded ~4×/s. The bug was
+ * conflating the DAMAGE cadence with the APPLICATION cadence; they are
+ * different mechanics that happen to share a tick.
+ *
+ * Confirmed against KQM independently of gcsim — `elemental-reactions.md` §3.9
+ * says Burning "[t]icks every 0.25 s and applies 1U Pyro … then once every
+ * 2 s" — and measured through the L0 oracle at 128–135 frames between real
+ * applications. ⚠️ We model the ICD rule (a flat ~2.0 s); gcsim's observed
+ * gaps drift a little wider because its tick chain restarts on fuel refresh.
+ * A residual ~10% is the accepted cost of not modelling the chain restart.
+ */
+const BURNING_ICD: IcdParams = { timer: 2.0, hits: 8 };
 
 /** Mods reduced when a reaction consumes an element ("Burning counts as Pyro") */
 const MODS_OF: Record<string, AuraKey[]> = {
@@ -164,11 +218,26 @@ type ModState = Record<AuraKey, number>;
 
 type Sim = {
 	frame: number;
+	maxFrames: number;
 	u: ModState;
 	rate: ModState;
 	ecActive: boolean;
 	burningActive: boolean;
+	/**
+	 * 🐛 GENERATION STAMPS, not booleans. A scheduled tick fires later and must
+	 * be able to tell "am I still the live chain?" — if EC (or Burning) lapses
+	 * and re-forms before a pending task runs, a boolean says yes to BOTH
+	 * chains and they drain independently, doubling the rate and compounding
+	 * with each re-lapse. gcsim stamps for exactly this reason
+	 * (`ecTickSrc` / `burningTickSrc`).
+	 */
+	ecGen: number;
+	burningGen: number;
+	/** Burning's Pyro re-application counter (see BURNING_ICD). */
+	burningIcd: IcdClock;
 	crysGcdUntil: number;
+	/** Applications past `maxFrames`, reported rather than silently dropped. */
+	dropped: number;
 	tasks: Map<number, (() => void)[]>;
 	events: SimEvent[];
 	// series building: open interval per mod + collinear-pruning anchor
@@ -288,7 +357,7 @@ function attachQuicken(S: Sim, amount: number) {
 
 function expireIfDrained(S: Sim, mod: AuraKey, before: number) {
 	if (before > EPS && S.u[mod] <= EPS) {
-		S.events.push({ kind: 'expire', time: S.frame / FPS, mod });
+		S.events.push({ kind: 'drained', time: S.frame / FPS, mod });
 	}
 }
 
@@ -297,14 +366,21 @@ function expireIfDrained(S: Sim, mod: AuraKey, before: number) {
 function startEC(S: Sim) {
 	if (S.ecActive) return;
 	S.ecActive = true;
-	schedule(S, S.frame + 10, () => ecTick(S));
+	const gen = ++S.ecGen;
+	schedule(S, S.frame + 10, () => ecTick(S, gen));
 }
 
-function ecTick(S: Sim) {
+function ecTick(S: Sim, gen: number) {
+	// 🐛 A stale chain must die here. Without the generation check, an EC that
+	// lapsed and re-formed leaves two live chains draining 0.4U each per tick.
+	if (gen !== S.ecGen) return;
 	if (!S.ecActive) return;
 	if (S.u.electro <= EPS || S.u.hydro <= EPS) return;
-	// gauge drain lands 0.1s after the damage tick
+	// Gauge drain lands 0.1s after the damage tick. ⚠️ It must re-check the
+	// generation too: the chain can be superseded inside that 6-frame gap, and a
+	// stale drain would take 0.4U off the NEW chain's auras.
 	schedule(S, S.frame + 6, () => {
+		if (gen !== S.ecGen) return;
 		const e0 = S.u.electro;
 		const h0 = S.u.hydro;
 		S.u.electro -= Math.min(EC_DRAIN, S.u.electro);
@@ -313,7 +389,7 @@ function ecTick(S: Sim) {
 		expireIfDrained(S, 'electro', e0);
 		expireIfDrained(S, 'hydro', h0);
 	});
-	schedule(S, S.frame + 60, () => ecTick(S));
+	schedule(S, S.frame + 60, () => ecTick(S, gen));
 }
 
 // ── Burning ──────────────────────────────────────────────────────────────────
@@ -324,15 +400,27 @@ function startBurning(S: Sim, fuel: number) {
 	S.u.burning = BURNING_GAUGE;
 	S.rate.burning = 0;
 	S.burningActive = true;
-	schedule(S, S.frame + 15, () => burningTick(S));
+	// A fresh burn is a fresh chain AND a fresh ICD counter.
+	const gen = ++S.burningGen;
+	S.burningIcd = createIcdClock();
+	schedule(S, S.frame + BURNING_TICK_FRAMES, () => burningTick(S, gen));
 }
 
-function burningTick(S: Sim) {
+function burningTick(S: Sim, gen: number) {
+	// 🐛 Same stale-chain hazard as EC: a re-ignition before a pending tick
+	// fires would otherwise leave two chains ticking.
+	if (gen !== S.burningGen) return;
 	if (!S.burningActive) return;
 	if (S.u.burningFuel <= EPS || S.u.burning <= EPS) return;
+
+	// The DAMAGE tick fires every time…
 	S.events.push({ kind: 'burningTick', time: S.frame / FPS });
-	applyElement(S, 'pyro', 1, null);
-	schedule(S, S.frame + 15, () => burningTick(S));
+	// …but the Pyro APPLICATION is gated by the Burning ICD group. ⚓ Reuses
+	// `icd.ts` rather than restating the rule — one model, three shapes.
+	if (icdApplies(S.burningIcd, S.frame / FPS, BURNING_ICD).applies) {
+		applyElement(S, 'pyro', 1, null);
+	}
+	schedule(S, S.frame + BURNING_TICK_FRAMES, () => burningTick(S, gen));
 }
 
 /** Burning aura consumed (as Pyro) while fuel remains → fuel is swept too */
@@ -663,13 +751,25 @@ function decayTick(S: Sim) {
 
 // ── Entry point ──────────────────────────────────────────────────────────────
 
-export function simulateGauge(applications: Application[]): GaugeSim {
+export function simulateGauge(
+	applications: Application[],
+	{ maxSeconds = DEFAULT_MAX_SECONDS }: { maxSeconds?: number } = {}
+): GaugeSim {
+	const maxFrames = Math.max(1, Math.round(maxSeconds * FPS));
 	const apps = [...applications]
 		.filter((a) => a.gauge > 0 && a.time >= 0)
 		.sort((a, b) => a.time - b.time);
 	const byFrame = new Map<number, { app: Application; index: number }[]>();
+	// ⚠️ Applications past the cap used to vanish without a trace. They are
+	// still not simulated — but they are COUNTED, so a caller cannot mistake a
+	// truncated run for a complete one.
+	let dropped = 0;
 	apps.forEach((app, index) => {
 		const f = Math.round(app.time * FPS);
+		if (f > maxFrames) {
+			dropped++;
+			return;
+		}
 		const list = byFrame.get(f);
 		if (list) list.push({ app, index });
 		else byFrame.set(f, [{ app, index }]);
@@ -678,18 +778,23 @@ export function simulateGauge(applications: Application[]): GaugeSim {
 
 	const S: Sim = {
 		frame: 0,
+		maxFrames,
 		u: zeroState(),
 		rate: { ...zeroState(), frozen: FRZ_BASE_RATE },
 		ecActive: false,
 		burningActive: false,
+		ecGen: 0,
+		burningGen: 0,
+		burningIcd: createIcdClock(),
 		crysGcdUntil: -1,
+		dropped,
 		tasks: new Map(),
 		events: [],
 		open: {},
 		series: []
 	};
 
-	for (S.frame = 0; S.frame <= MAX_FRAMES; S.frame++) {
+	for (S.frame = 0; S.frame <= maxFrames; S.frame++) {
 		const t = S.frame / FPS;
 
 		const due = byFrame.get(S.frame);
@@ -719,10 +824,15 @@ export function simulateGauge(applications: Application[]): GaugeSim {
 		}
 	}
 
+	// Hit the cap with gauge still alive → the tail is missing, not empty.
+	const truncated = S.frame > maxFrames && ALL_MODS.some((m) => S.u[m] > EPS);
+
 	return {
 		series: S.series,
 		events: S.events,
-		duration: Math.min(S.frame + 1, MAX_FRAMES) / FPS
+		duration: Math.min(S.frame + 1, maxFrames) / FPS,
+		truncated,
+		droppedApplications: S.dropped
 	};
 }
 

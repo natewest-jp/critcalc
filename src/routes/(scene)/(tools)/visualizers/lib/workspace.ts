@@ -6,7 +6,7 @@
  * (`+page.svelte`) owns all rendering and the restore→persist lifecycle.
  */
 
-import type { Application, ElementId } from './gauge';
+import type { Application, ElementId } from '$lib/utils/gauge';
 import type { IcdHit } from '$lib/utils/icd';
 
 // ---------------------------------------------------------------------------

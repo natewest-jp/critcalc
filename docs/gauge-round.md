@@ -414,7 +414,36 @@ that varied. Corrections to this landing's plan are recorded in
 divergence count recorded here — **and the coverage stated honestly.** A partial oracle is
 worth having; a _believed-total_ partial oracle is not.
 
-### L1 — Move and fix the gauge engine
+### L1 — Move and fix the gauge engine ✅ SHIPPED 2026-08-16
+
+`gauge.ts` + `gauge.test.ts` now live in `$lib/utils/` beside `icd.ts` (⚓ **one model,
+three shapes**: `icd.ts` decides _whether_ a hit applies, `gauge.ts` decides _what happens_).
+Tests 19 → 26.
+
+| fix                                    | outcome                                                                                                                                             |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| burning re-applied Pyro every 0.25 s   | now gated by `BURNING_ICD` — **measured 2.00 s apart**, against gcsim's observed 2.13–2.25 s and KQM's "once every 2 s". Damage ticks still 0.25 s. |
+| EC + burning tick chains used booleans | generation stamps; the audit's repro no longer produces its 0.2 s tick pairs                                                                        |
+| `MAX_FRAMES` truncated silently        | `maxSeconds` option + `truncated` / `droppedApplications` in the result                                                                             |
+| `expire` fired only on decay           | renamed **`drained`** — it never meant "the aura ended", and a reaction-consumed aura still emits nothing                                           |
+| `ElementId` was a parallel union       | now `Exclude<Element, 'physical'>`, so it cannot drift                                                                                              |
+
+⚓ **The burning fix reuses `icd.ts`** rather than restating the rule — the Burning ICD group
+really is the same timer-plus-counter shape as standard ICD, at `{ timer: 2.0, hits: 8 }`.
+
+⚠️ Found while fixing: the EC **drain closure**, scheduled 6 frames after its tick, did not
+re-check the generation either — a chain superseded inside that gap would take 0.4U off the
+_new_ chain's auras. Closed.
+
+⚠️ **Nate's eyes needed:** the Gauge Explorer's burning preset now shows Pyro _decaying and
+being topped back up_ instead of pinned flat. That is the corrected behaviour, but it is a
+visible change to an instrument.
+
+⚠️ Still knowingly absent, recorded but not fixed here: shatter/poise on Frozen (Geo and
+claymore teams will read freeze uptime too long), dendro core gadgets (so no
+hyperbloom/burgeon), Lunar-Charged, `FreezeResist`, hitlag, multi-target swirl spread.
+
+#### The original plan for this landing
 
 Bigger than "move the file" — the parity audit found three real bugs. `gauge.ts` matches
 gcsim on aura tax, decay derivation, topUp, the Pyro refresh rule, the frozen decay ramp,

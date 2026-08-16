@@ -18,7 +18,7 @@ const applies = (sim: ReturnType<typeof simulateGauge>) =>
 	sim.events.filter((e): e is Extract<SimEvent, { kind: 'apply' }> => e.kind === 'apply');
 
 const expires = (sim: ReturnType<typeof simulateGauge>) =>
-	sim.events.filter((e): e is Extract<SimEvent, { kind: 'expire' }> => e.kind === 'expire');
+	sim.events.filter((e): e is Extract<SimEvent, { kind: 'drained' }> => e.kind === 'drained');
 
 const expireOf = (sim: ReturnType<typeof simulateGauge>, mod: string) =>
 	expires(sim).find((e) => e.mod === mod);
@@ -143,6 +143,51 @@ describe('electro-charged', () => {
 		// electro survives the last tick with ~0.1U and decays out shortly after
 		expect(expireOf(sim, 'electro')!.time).toBeCloseTo(4.0, 1);
 	});
+
+	// 🐛 REGRESSION GUARD — `ecActive` was a boolean, so an EC that lapsed and
+	// re-formed before a pending tick fired left BOTH chains alive, each draining
+	// 0.4U. The effective rate doubled and compounded with every re-lapse. gcsim
+	// stamps the chain (`ecTickSrc`) for exactly this reason.
+	//
+	// Reproduction from the L1 parity audit: this used to yield 7 ticks at
+	// 0.267/1.267/2.067/2.267/3.067/3.267/4.067 — note the 0.2s pairs, which one
+	// chain can never produce.
+	it('an EC that lapses and re-forms does not leave two tick chains running', () => {
+		const sim = simulateGauge(apps([0, 'hydro', 1], [0, 'electro', 4], [1.8, 'hydro', 4]));
+		const ticks = sim.events.filter((e) => e.kind === 'ecTick');
+		const gaps = ticks.slice(1).map((t, i) => t.time - ticks[i].time);
+		// ⚠️ Not "every gap ≈ 1s": a legitimate re-form restarts the cadence, so
+		// one gap is legitimately ~0.8s. The BUG's signature is a ~0.2s pair,
+		// which a single chain can never produce.
+		expect(Math.min(...gaps)).toBeGreaterThan(0.5);
+	});
+});
+
+describe('simulation bounds', () => {
+	// ⚠️ Applications past the cap used to vanish with no trace, and a live aura
+	// at the cap was truncated with no signal — both silent, which is how a
+	// caller comes to trust a wrong answer.
+	it('reports dropped applications rather than discarding them silently', () => {
+		const sim = simulateGauge(apps([0, 'pyro', 1], [80, 'hydro', 2]), { maxSeconds: 75 });
+		expect(sim.droppedApplications).toBe(1);
+	});
+
+	it('raising maxSeconds admits an application the default would drop', () => {
+		const sim = simulateGauge(apps([0, 'pyro', 1], [80, 'hydro', 2]), { maxSeconds: 120 });
+		expect(sim.droppedApplications).toBe(0);
+		expect(applies(sim)).toHaveLength(2);
+	});
+
+	it('flags truncation when gauge is still alive at the cap', () => {
+		const sim = simulateGauge(apps([0, 'electro', 4]), { maxSeconds: 2 });
+		expect(sim.truncated).toBe(true);
+	});
+
+	it('does not flag truncation for a run that finishes naturally', () => {
+		const sim = simulateGauge(apps([0, 'pyro', 1]));
+		expect(sim.truncated).toBe(false);
+		expect(sim.droppedApplications).toBe(0);
+	});
 });
 
 describe('freeze', () => {
@@ -188,21 +233,55 @@ describe('catalyze family', () => {
 });
 
 describe('burning', () => {
-	it('attaches a fixed 2U burning aura + fuel draining at 0.4 U/s, self-refreshing pyro', () => {
+	it('attaches a fixed 2U burning aura + fuel draining at 0.4 U/s', () => {
 		const sim = simulateGauge(apps([0, 'dendro', 2], [2, 'pyro', 1]));
 		expect(reactions(sim).some((r) => r.reaction === 'burning')).toBe(true);
 		// dendro at 2s = 1.3333 becomes the fuel
 		expect(gaugesAt(sim.series, 2.01).burningFuel).toBeCloseTo(1.333, 2);
 		expect(gaugesAt(sim.series, 2.01).burning).toBeCloseTo(2, 6);
-		// pyro attached (ignition does not consume the trigger) and is kept topped up
-		expect(gaugesAt(sim.series, 4.5).pyro).toBeCloseTo(0.8, 1);
 		// fuel dies at 2 + 1.3333/0.4 ≈ 5.33s and sweeps burning with it
 		const end = sim.events.find((e) => e.kind === 'burningEnd')!;
 		expect(end.time).toBeCloseTo(5.33, 1);
 		expect(end.kind === 'burningEnd' && end.swept.includes('burning')).toBe(true);
-		// the leftover pyro aura outlives burning by its own 9.5s clock
-		expect(expireOf(sim, 'pyro')!.time).toBeGreaterThan(14);
-		expect(expireOf(sim, 'pyro')!.time).toBeLessThan(15.5);
+		// The leftover pyro drains 9.5s after the LAST burning re-application
+		// (t≈4.25), not after the last damage TICK — see the ICD test below.
+		expect(expireOf(sim, 'pyro')!.time).toBeCloseTo(13.75, 1);
+	});
+
+	// 🐛 REGRESSION GUARD — burning used to re-apply 1U Pyro on EVERY 0.25s
+	// damage tick instead of once per ~2s ICD window, eight times too often. The
+	// symptom was a Pyro aura PINNED at 0.8U for the whole burn; each phantom
+	// application also ran the full reaction chain, so a burning target carrying
+	// Electro overloaded ~4×/s. See BURNING_ICD in gauge.ts.
+	it('re-applies pyro on the burning ICD, not on every damage tick', () => {
+		const sim = simulateGauge(apps([0, 'dendro', 4], [2, 'pyro', 1]));
+
+		// Damage ticks still run at 4/s…
+		const ticks = sim.events.filter((e) => e.kind === 'burningTick');
+		const tickGaps = ticks.slice(1).map((t, i) => t.time - ticks[i].time);
+		expect(Math.min(...tickGaps)).toBeCloseTo(0.25, 2);
+
+		// …but the aura must visibly DECAY between applications. Under the bug it
+		// never fell, because something topped it back to 0.8 four times a second.
+		const atApply = gaugesAt(sim.series, 2.3).pyro!;
+		const beforeNext = gaugesAt(sim.series, 4.2).pyro!;
+		expect(beforeNext).toBeLessThan(atApply - 0.1);
+
+		// …and then be topped back up on the next ICD window (~2s later).
+		expect(gaugesAt(sim.series, 4.4).pyro!).toBeGreaterThan(beforeNext);
+	});
+
+	// 🐛 REGRESSION GUARD — a boolean `burningActive` let a re-ignition leave the
+	// previous tick chain alive, so two chains ticked at once. Generation stamps
+	// fix it (gcsim uses `burningTickSrc` for the same reason).
+	it('a re-ignition does not leave a second tick chain running', () => {
+		const sim = simulateGauge(
+			apps([0, 'dendro', 1], [1, 'pyro', 1], [6, 'dendro', 2], [6.5, 'pyro', 2])
+		);
+		const ticks = sim.events.filter((e) => e.kind === 'burningTick');
+		const gaps = ticks.slice(1).map((t, i) => t.time - ticks[i].time);
+		// Two concurrent chains interleave and produce sub-tick gaps.
+		expect(gaps.every((g) => g > 0.2)).toBe(true);
 	});
 
 	it('hydro extinguishes burning (consuming pyro AND the 2U burning aura) then blooms the leftover', () => {

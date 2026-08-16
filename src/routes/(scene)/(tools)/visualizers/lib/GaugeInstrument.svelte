@@ -10,7 +10,7 @@
 		type ElementId,
 		type ReactionKind,
 		type SimEvent
-	} from './gauge';
+	} from '$lib/utils/gauge';
 	import { MAX_GAUGE_APPS, MAX_GAUGE_TIME } from './workspace';
 	import { createPlayhead } from './playhead.svelte';
 	import { PLAYHEAD_SPEEDS } from './playhead';
@@ -801,7 +801,7 @@
 								<span class="gx-dim">(burning self-tick)</span>
 							{/if}
 						</p>
-					{:else if row.event.kind === 'expire'}
+					{:else if row.event.kind === 'drained'}
 						<p class="gx-log-tick">
 							{fmtT(row.event.time)} — {MOD_META[row.event.mod].label} aura decays out
 						</p>
