@@ -28,6 +28,19 @@
 // decides WHAT HAPPENS when it does. Both now serve the instruments and the
 // rotation planner from one implementation, so the two can never drift.
 //
+// ⚓⚓ AND THE MODULE ITSELF HAS TWO SHAPES (gauge round L5a, 2026-08-16), the
+// same pair `icd.ts` already carries:
+//
+//   createGauge()    a LIVE gauge — the rotation sim learns its applications one
+//                    at a time, from a clock that JUMPS between scheduled
+//                    instants and never walks frames
+//   simulateGauge()  the BATCH — hand it every application at once, get series +
+//                    events, which is what an instrument wants
+//
+// ⚓ The batch is WRITTEN IN TERMS OF THE STREAM (`simulateGauge` is a loop over
+// `createGauge`), so a second implementation cannot appear and the two cannot
+// disagree. ⛔ Never add a rule to one of them.
+//
 // ⚠️⚠️ THIS MODULE MUST BE FED POST-ICD APPLICATIONS. It applies every gauge it
 // is handed. gcsim applies ICD at the TARGET (`pkg/enemy/attack.go:114` scales
 // durability by `WillApplyEle` before `React()`), so an authored unit value is
@@ -109,7 +122,20 @@ export type SimEvent =
 	| {
 			kind: 'reaction';
 			time: number;
-			/** Index into the (time-sorted) application list; null for burning ticks */
+			/**
+			 * Index into the (time-sorted) application list; null for an internal
+			 * trigger.
+			 *
+			 * ⚓ A null here is UNREACHABLE TODAY, and a consumer that needs to
+			 * attribute a reaction to a character (the rotation planner dispatches
+			 * `onReaction` effects by holder) may rely on that — but should say so
+			 * rather than assume it. The only internal applicator is the Burning
+			 * chain's Pyro, and nothing that REACTS with Pyro can coexist with a
+			 * Burning aura: Hydro, Cryo and Electro each react on contact and so
+			 * never attach while it is up. ⛔ Do not thread a "who ignited this"
+			 * token through the chain for it — that was tried in L5a and is a field
+			 * with no reachable case.
+			 */
 			appIndex: number | null;
 			reaction: ReactionKind;
 			trigger: ElementId;
@@ -217,8 +243,17 @@ const ALL_MODS: AuraKey[] = [
 type ModState = Record<AuraKey, number>;
 
 type Sim = {
+	/** The frame the gauge is AT — the next one to be processed. */
 	frame: number;
+	/** ⚠️ `Infinity` for the live gauge: a cap is a batch concern (an instrument
+	 *  charting hand-placed applications), and a rotation must never be silently
+	 *  truncated mid-parse. */
 	maxFrames: number;
+	/** Series sampling. Off for the live gauge until L6 draws an aura lane. */
+	sampling: boolean;
+	/** An application landed at `frame` — the batch's "sample once before the
+	 *  group, once after" grouping, preserved across the streaming split. */
+	appliedThisFrame: boolean;
 	u: ModState;
 	rate: ModState;
 	ecActive: boolean;
@@ -287,6 +322,7 @@ function pushPoint(points: SeriesPoint[], t: number, u: number) {
 }
 
 function sample(S: Sim, t: number) {
+	if (!S.sampling) return;
 	for (const mod of ALL_MODS) {
 		const val = S.u[mod];
 		const open = S.open[mod];
@@ -749,7 +785,176 @@ function decayTick(S: Sim) {
 	if (S.ecActive && (S.u.electro <= EPS || S.u.hydro <= EPS)) S.ecActive = false;
 }
 
-// ── Entry point ──────────────────────────────────────────────────────────────
+// ── The live gauge (streaming shape) ─────────────────────────────────────────
+
+/**
+ * A gauge that runs alongside a clock instead of over a finished list.
+ *
+ * ⚓⚓ THE SHAPE THE ROTATION SIM NEEDS. The planner cannot hand over a sorted
+ * application list, because half of them do not exist yet: a reaction changes a
+ * stance's length, which changes what the next token resolves to, which decides
+ * what applies next (gauge-round.md §2, feedback edge F2). So the gauge learns
+ * one application at a time, at the instant the sim reaches it.
+ *
+ * ⚠️ Frame ordering inside one frame F is a contract carried over from the batch
+ * loop, not an implementation detail:
+ *
+ *   `advanceTo(F)`  runs internal tasks and decay for every frame BEFORE F, and
+ *                   stops at the top of F
+ *   `apply()`       lands at the top of F, before F's own internal tasks
+ *   F's tasks fire when the gauge next LEAVES F
+ *
+ * ⚓ `advanceTo` JUMPS when the gauge is idle — every aura at zero and nothing
+ * scheduled — because a rotation may contain hours of legal idle time (C6, as
+ * amended at L3a: 14 KB of `~3600s` tokens is 432,000,000 frames). Continuous
+ * work is bounded by AURA LIFETIME, never by rotation length.
+ */
+export type Gauge = {
+	/** The frame the gauge is at — the next one to be processed. */
+	readonly frame: number;
+	/** Every aura empty and nothing scheduled: time may be skipped freely. */
+	readonly idle: boolean;
+	/** Earliest pending internal task (a Burning or EC tick), or `null`.
+	 *  ⚓ The rotation sim schedules its own wake-up here, so a tick-borne
+	 *  reaction dispatches in true clock order instead of being noticed late. */
+	nextTaskFrame(): number | null;
+	/** Run tasks + decay up to (not including) `frame`. ⛔ Never moves backwards. */
+	advanceTo(frame: number): void;
+	/** Land one application at the current frame. `gauge` is PRE-TAX units and
+	 *  `source` is the caller's own token, handed back on every event it causes
+	 *  — including the ones a Burning chain fires later. */
+	apply(element: ElementId, gauge: number, source?: number | null): void;
+	/** Events since the last call. */
+	takeEvents(): SimEvent[];
+	/** Every event so far. */
+	allEvents(): SimEvent[];
+	/** Current gauge of every mod — the aura trajectory the L0 oracle compares. */
+	gauges(): Readonly<ModState>;
+	/** Close the open series intervals and return them. Batch/instrument only. */
+	closeSeries(): SeriesInterval[];
+};
+
+/** ⚠️ The batch needs two things the streaming contract deliberately withholds:
+ *  the raw state (to ask "is every aura spent yet") and a way to walk ONE frame
+ *  past the last application without the idle skip cutting the series tail
+ *  short. They stay module-private rather than widening `Gauge`. */
+type GaugeInternals = { gauge: Gauge; sim: Sim; step: () => void };
+
+function createGaugeInternal({
+	maxFrames = Infinity,
+	sampling = false
+}: { maxFrames?: number; sampling?: boolean } = {}): GaugeInternals {
+	const S: Sim = {
+		frame: 0,
+		maxFrames,
+		sampling,
+		appliedThisFrame: false,
+		u: zeroState(),
+		rate: { ...zeroState(), frozen: FRZ_BASE_RATE },
+		ecActive: false,
+		burningActive: false,
+		ecGen: 0,
+		burningGen: 0,
+		burningIcd: createIcdClock(),
+		crysGcdUntil: -1,
+		dropped: 0,
+		tasks: new Map(),
+		events: [],
+		open: {},
+		series: []
+	};
+	let taken = 0;
+
+	const isIdle = () => S.tasks.size === 0 && ALL_MODS.every((m) => S.u[m] <= EPS);
+
+	/** Process the current frame and move to the next. */
+	const stepFrame = () => {
+		const t = S.frame / FPS;
+		const tasks = S.tasks.get(S.frame);
+		if (tasks) {
+			S.tasks.delete(S.frame);
+			for (const run of tasks) run();
+		}
+		if (S.appliedThisFrame || tasks) sample(S, t);
+		S.appliedThisFrame = false;
+		decayTick(S);
+		sample(S, (S.frame + 1) / FPS);
+		S.frame++;
+	};
+
+	const gauge: Gauge = {
+		get frame() {
+			return S.frame;
+		},
+		get idle() {
+			return isIdle();
+		},
+		nextTaskFrame() {
+			let min: number | null = null;
+			for (const f of S.tasks.keys()) if (min === null || f < min) min = f;
+			return min;
+		},
+		advanceTo(frame) {
+			while (S.frame < frame) {
+				// ⚓ THE IDLE SKIP. Nothing decays and nothing fires, so the frames in
+				// between are indistinguishable — and walking them is the one way to
+				// reintroduce the freeze C6 exists to prevent.
+				//
+				// 🐛 ⚠️ THE CURRENT FRAME IS NOT SKIPPABLE WHILE AN APPLICATION IS
+				// UNFLUSHED, even when every aura reads zero — which is exactly the
+				// state an application that CONSUMED the last aura leaves behind. Its
+				// post-sample is what closes the series interval; skipping it merged
+				// two lifetimes of the same aura into one and drew a line across the
+				// gap where the chart should have gone to zero. (148/400 sweeps.)
+				if (!S.appliedThisFrame && isIdle()) {
+					S.frame = frame;
+					return;
+				}
+				stepFrame();
+			}
+		},
+		apply(element, gauge, source = null) {
+			if (!(gauge > 0)) return;
+			if (!S.appliedThisFrame) {
+				// Ground the pre-application values so a consumed aura renders as a
+				// vertical drop rather than a diagonal to the next sample.
+				sample(S, S.frame / FPS);
+				S.appliedThisFrame = true;
+			}
+			applyElement(S, element, gauge, source);
+		},
+		takeEvents() {
+			const out = S.events.slice(taken);
+			taken = S.events.length;
+			return out;
+		},
+		allEvents() {
+			return S.events;
+		},
+		gauges() {
+			return S.u;
+		},
+		closeSeries() {
+			for (const mod of ALL_MODS) {
+				const open = S.open[mod];
+				if (open) {
+					S.series.push({ key: mod, points: open });
+					S.open[mod] = undefined;
+				}
+			}
+			return S.series;
+		}
+	};
+
+	return { gauge, sim: S, step: stepFrame };
+}
+
+/** The live gauge. See {@link Gauge}. */
+export function createGauge(opts?: { maxFrames?: number; sampling?: boolean }): Gauge {
+	return createGaugeInternal(opts).gauge;
+}
+
+// ── Entry point (the batch) ──────────────────────────────────────────────────
 
 export function simulateGauge(
 	applications: Application[],
@@ -759,7 +964,9 @@ export function simulateGauge(
 	const apps = [...applications]
 		.filter((a) => a.gauge > 0 && a.time >= 0)
 		.sort((a, b) => a.time - b.time);
-	const byFrame = new Map<number, { app: Application; index: number }[]>();
+
+	const { gauge: g, sim: S, step } = createGaugeInternal({ maxFrames, sampling: true });
+
 	// ⚠️ Applications past the cap used to vanish without a trace. They are
 	// still not simulated — but they are COUNTED, so a caller cannot mistake a
 	// truncated run for a complete one.
@@ -770,69 +977,32 @@ export function simulateGauge(
 			dropped++;
 			return;
 		}
-		const list = byFrame.get(f);
-		if (list) list.push({ app, index });
-		else byFrame.set(f, [{ app, index }]);
+		g.advanceTo(f);
+		g.apply(app.element, app.gauge, index);
 	});
+	// ⚠️ The LAST application's frame, dropped ones included — so a run whose
+	// input all fell past the cap still walks to the cap rather than reporting a
+	// one-frame duration. It reads like an off-by-one and is the behaviour.
 	const lastAppFrame = apps.length ? Math.round(apps[apps.length - 1].time * FPS) : 0;
 
-	const S: Sim = {
-		frame: 0,
-		maxFrames,
-		u: zeroState(),
-		rate: { ...zeroState(), frozen: FRZ_BASE_RATE },
-		ecActive: false,
-		burningActive: false,
-		ecGen: 0,
-		burningGen: 0,
-		burningIcd: createIcdClock(),
-		crysGcdUntil: -1,
-		dropped,
-		tasks: new Map(),
-		events: [],
-		open: {},
-		series: []
-	};
-
-	for (S.frame = 0; S.frame <= maxFrames; S.frame++) {
-		const t = S.frame / FPS;
-
-		const due = byFrame.get(S.frame);
-		if (due) {
-			sample(S, t); // ground the pre-application values so drops render vertical
-			for (const { app, index } of due) applyElement(S, app.element, app.gauge, index);
-		}
-		const tasks = S.tasks.get(S.frame);
-		if (tasks) {
-			S.tasks.delete(S.frame);
-			for (const run of tasks) run();
-		}
-		if (due || tasks) sample(S, t);
-
-		decayTick(S);
-		sample(S, (S.frame + 1) / FPS);
-
-		if (S.frame >= lastAppFrame && ALL_MODS.every((m) => S.u[m] <= EPS)) break;
+	// Run on past the last application until every aura is spent (or the cap).
+	// ⚠️ A bare frame walk rather than `advanceTo`, because the idle skip would
+	// jump straight to the cap and the series would lose its tail.
+	while (S.frame <= maxFrames) {
+		step();
+		if (S.frame - 1 >= lastAppFrame && ALL_MODS.every((m) => S.u[m] <= EPS)) break;
 	}
 
-	// close any interval still open at the cap
-	for (const mod of ALL_MODS) {
-		const open = S.open[mod];
-		if (open) {
-			S.series.push({ key: mod, points: open });
-			S.open[mod] = undefined;
-		}
-	}
-
+	const series = g.closeSeries();
 	// Hit the cap with gauge still alive → the tail is missing, not empty.
 	const truncated = S.frame > maxFrames && ALL_MODS.some((m) => S.u[m] > EPS);
 
 	return {
-		series: S.series,
-		events: S.events,
-		duration: Math.min(S.frame + 1, maxFrames) / FPS,
+		series,
+		events: g.allEvents(),
+		duration: Math.min(S.frame, maxFrames) / FPS,
 		truncated,
-		droppedApplications: S.dropped
+		droppedApplications: dropped
 	};
 }
 
