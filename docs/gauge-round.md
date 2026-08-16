@@ -559,9 +559,34 @@ the 47 non-whole-frame values are enumerated (⚓ Furina's six are already resol
 are means of a randomised tick and simply round), and
 the timeline renders identically.
 
-### L3 — The clock-driven core (no behaviour change) — _the big one_
+### L3 — The clock-driven core ✅ CODE COMPLETE 2026-08-16 — _the big one_
 
-📄 **Planned in full: [`gauge-round-L3.md`](gauge-round-L3.md)** (2026-08-16).
+📄 **Full record: [`gauge-round-L3.md`](gauge-round-L3.md)** · branch `refactor/gauge-l3`
+· ⏳ awaiting Nate's eyes on the timeline before merge.
+
+`notationParser.ts` went **5,051 → 223 lines**; the work lives in sixteen modules under
+`$lib/sim/`, and the file is now the façade its header always claimed to be — all 22
+consumers' import statements are unchanged. Twelve commits, each one green against a
+corpus differ (123 characters × C0/C6 + 33 scenarios) comparing the IR **byte for
+byte, ids and array order included**, against a frozen copy of `main`'s parser.
+
+⚓ **One clock where there were two.** `cursor` and `localCursor` — assigned to each
+other at every segment boundary — are one `clock.now`. That is the precondition for
+everything else: nothing can be SCHEDULED against a time two variables disagree about.
+
+⚓ **The seam has a name now.** `sim/aura.ts` holds the coarse model alone, with the L0
+baseline in its header and an interface already shaped like `simulateGauge`'s.
+`ctx.aura` is the ONE field that changes type when the gauge lands.
+
+⚠️ **The task queue is EMPTY, deliberately.** Everything the parse still defers is
+order-VISIBLE — shieldEnd is a public event, and the NB + summon-tick sweeps move
+`hits` order — so L3 installs the clock and changes nothing. Moving them is L5's, each
+with an expected diff. ⛔ Don't read the empty queue as the clock being unused: every
+`clock.advance` is a firing point the moment something is scheduled.
+
+✅ Gates: 1,493 vitest · check · lint · build · **e2e 73 + 73** (both engines' lines read
+separately) · the L0 oracle unchanged at **63 ours / 1 extra / 0 mismatch** (gcsim's own
+total flickers 199↔200, verified by re-running rather than assumed).
 
 ✅ **`parseNotation` has exactly ONE production call site** (`RotationTimeline.svelte:362`).
 One door, and the strangler goes behind it.

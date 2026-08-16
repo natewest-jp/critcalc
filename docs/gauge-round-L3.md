@@ -1,6 +1,6 @@
 # L3 — The clock-driven core
 
-**Status:** 🔄 IN PROGRESS · planned 2026-08-16 · L3a ✅ L3b ✅ L3c 5/14 families
+**Status:** ✅ **CODE COMPLETE 2026-08-16** — awaiting Nate's eyes on the timeline
 **Branch:** `refactor/gauge-l3`
 **Landing:** [`gauge-round.md`](gauge-round.md) §L3, against contracts **C2**, **C5**, **C6**.
 **Shape:** no behaviour change. The IR must come out byte-identical, ids included.
@@ -64,14 +64,20 @@ buff bar into two.
 
 **Measured on `main`, before any change** (parse cost, mean of 10 after warmup):
 
-| fixture                                                    |    now | shape                              |
-| ---------------------------------------------------------- | -----: | ---------------------------------- |
-| short 4-char rotation                                      | 0.6 ms | 25 events, 12 windows              |
-| realistic 20-cycle (80 segments)                           | 3.7 ms | 500 events, 240 windows, 418 s     |
-| summon-heavy 20-cycle                                      | 3.3 ms | 219 events, 160 windows, 492 s     |
-| `99[N5C]` bracket bomb                                     | 0.4 ms | 596 events                         |
-| 400× `Q E` cast spam                                       | 4.4 ms | 800 events, 6,213 s                |
-| ⚠️ **14 KB of `~3600s` waits** — legal input, 2,000 tokens | 4.3 ms | **432,000,000 frames** (2,000 hrs) |
+| fixture                                                    | before | after ✅ | shape                              |
+| ---------------------------------------------------------- | -----: | -------: | ---------------------------------- |
+| short 4-char rotation                                      | 0.6 ms |   0.5 ms | 25 events, 12 windows              |
+| realistic 20-cycle (80 segments)                           | 3.7 ms |   3.2 ms | 500 events, 240 windows, 418 s     |
+| summon-heavy 20-cycle                                      | 3.3 ms |   2.1 ms | 219 events, 160 windows, 492 s     |
+| long waits (3 × `~600s`)                                   | 0.1 ms |   0.1 ms | 108,137 frames                     |
+| `99[N5C]` bracket bomb                                     | 0.4 ms |   0.4 ms | 596 events                         |
+| 400× `Q E` cast spam                                       | 4.4 ms |   4.2 ms | 800 events, 6,213 s                |
+| ⚠️ **14 KB of `~3600s` waits** — legal input, 2,000 tokens | 4.3 ms |   0.4 ms | **432,000,000 frames** (2,000 hrs) |
+
+✅ **Re-measured at L3e** (mean of 20 after warmup; the "before" column was a mean of
+10 on `main`). Nothing regressed and the two heaviest fixtures got slightly faster —
+the clock is one variable where there were two, and the extracted dispatchers are
+plain function calls rather than closures rebuilt per parse.
 
 That last row is the design constraint, and it **overturns C6's reasoning**. C6 says
 the frame loop's cap "derives from `MAX_TIME_ADVANCE_S` → 216k frames — not a fresh
@@ -375,21 +381,29 @@ aliasing warning starts to bite.
 
 **Done when:** `parseNotation` is the façade + `run.ts`, and the differ is green.
 
-### L3d — the swap
+### L3d — the swap ✅ (2026-08-16)
 
 `run.ts` drives from the clock: `now` advances only through `clock.advance()`, the
 turn's `freeAt` replaces `localCursor`, the charge-wait scan and `~Xs` become clock
 advances, and the finalize passes run off the clock's terminal state. The uptime
 stamps migrate (§4.2).
 
-**Done when:** STRICT is green over the whole corpus with the two drivers differing.
+**Done when:** ✅ STRICT green over the whole corpus with the two drivers differing.
 
-### L3e — delete
+⚠️ One thing L3d does NOT do, and the plan said so up front: the task queue is
+**empty**. Everything the parse still defers is order-visible (§4.2), so the landing
+installs the clock and changes nothing. Every `clock.advance` is the hook — when L5
+schedules a gauge tick or a summon hit, it fires in order at each of those sites for
+free.
 
-Remove `notationParser.legacy.ts` and the two-engine differ (keep the projection
-comparator as an ordinary test — it is worth having permanently). Re-measure §2.
-Run the L0 oracle. Run `npm run test:e2e` — this is a pre-merge gate and L3 is a
-merge.
+### L3e — delete ✅ (2026-08-16)
+
+`notationParser.legacy.ts` and the two-engine differ are gone. What survives is
+`$lib/sim/projections.ts` + `projections.test.ts`: the same corpus (123 characters ×
+C0/C6, 33 scenarios) run through all seven row surfaces, plus the **three coverage
+floors** the differ's construction earned — corpus size, every loadout id resolves,
+every buff-window source family is reached — and a fourth added on the way out (every
+one of the seven surfaces produces rows somewhere).
 
 **Done when:** the legacy copy is gone, the five oracle numbers hold, both e2e
 engines report their "N passed" line, and Nate has looked at the timeline.
@@ -438,16 +452,24 @@ The clock must not introduce an unbounded loop or a recursion.
 
 ## 8. Done when
 
-- The differ is green over the corpus at STRICT, with the two drivers differing.
-- `npx vitest run` (≥1,474 tests), `npm run check`, `npm run lint`, `npm run build`.
-- `npm run test:e2e` — both engines' "N passed" lines read, not the exit code
-  ([playwright#39753](https://github.com/microsoft/playwright/issues/39753)).
-- The L0 oracle reproduces **63 / 200 / 1 / 138 / 0** and all twelve per-fixture rows.
-- §2's perf table re-measured, no fixture past 1.5×, the wait-bomb still O(tokens).
-- `notationParser.legacy.ts` deleted; no `$lib/sim` module imports it.
-- ⚓ **Nate's eyes on the timeline** — this landing's whole claim is that nothing moved,
-  and that is the one part the machines cannot close (L2's outcome says so in the
-  same words).
+- ✅ The differ green over the corpus at STRICT, with the two drivers differing.
+- ✅ `npx vitest run` (1,493), `npm run check`, `npm run lint`, `npm run build`.
+- ✅ `npm run test:e2e` — **73 passed on WebKit and 73 on Chrome**, both "N passed"
+  lines read separately, ⛔ not the exit code
+  ([playwright#39753](https://github.com/microsoft/playwright/issues/39753); and the
+  script joins its two runs with `;`, so the status is WebKit's alone).
+- ✅ The L0 oracle: **63 ours / 1 extra / 0 element mismatch**, unchanged. gcsim's own
+  columns read 200/138 on one run and 199/137 on the next — ⚠️ checked rather than
+  waved through, per L2's lesson, by running it three times: OUR side is pinned every
+  time and only gcsim's total moves, which is the ±1 flicker its docs describe.
+- ✅ §2's perf table re-measured: nothing regressed, two fixtures improved, the
+  wait-bomb still parses 432M frames in 0.4 ms.
+- ✅ `notationParser.legacy.ts` deleted; nothing imports it.
+- ✅ `orphanedSchema.test.ts` re-run with the copy gone — it was BLINDED while the
+  copy existed (§7), so this is the only run in the landing that means anything.
+- ⏳ ⚓ **Nate's eyes on the timeline** — this landing's whole claim is that nothing
+  moved, and that is the one part the machines cannot close (L2's outcome says so in
+  the same words).
 
 ---
 
@@ -467,4 +489,49 @@ strengthening the warning.
 
 ## 10. Outcome
 
-_(filled at L3e)_
+✅ **Code complete 2026-08-16.** `notationParser.ts` went **5,051 → 223 lines** and is
+now the façade its header always claimed to be; the work lives in sixteen modules
+under `$lib/sim/`. Twelve commits, every one of them differ-green.
+
+### What the landing actually bought
+
+⚓ **One clock where there were two.** `cursor`/`localCursor` — assigned to each other
+at every segment boundary — are one `clock.now`. That is the whole precondition: you
+cannot SCHEDULE anything against a time two variables disagree about.
+
+⚓ **A seam for L5 with a name on it.** `sim/aura.ts` is the coarse model, alone in a
+file, with the L0 baseline quoted in its header and an interface — "an application
+LANDS at `time`, with `element`" — already shaped like what `simulateGauge` wants.
+`ctx.aura` is the single field that changes type when the gauge arrives.
+
+⚠️ **And an empty task queue, on purpose.** Everything still deferred is order-visible
+(§4.2), so nothing moved onto it. ⛔ Do not read that as the clock being unused: every
+advance site is a firing point the moment L5 schedules anything.
+
+### What the plan got wrong, and what it got right
+
+⚠️ **Wrong: the sub-step order in the contract doc.** "Drive the sim alongside, then
+move the dispatchers" cannot be executed — a dispatcher cannot be moved between two
+drivers before it is callable from outside the body it closes over. Corrected to
+extract-then-swap before any code was written, and the correction held: ten extraction
+commits, then a driver swap that was almost small.
+
+⚠️ **Wrong: C6's frame-loop cap.** Measured, not argued — see §2.
+
+✅ **Right: the differ, and the discipline of not trusting it.** It was green on day one
+and its first real perturbation (`DASH_FRAMES 21 → 22`) came back green too, because
+no fixture used `D`. Three floors now guard that, and two of them caught live holes on
+their first run. ⚓ The lesson is the one L2 recorded in different words: a check you
+have not tried to break is not a check.
+
+✅ **Right: the aliasing warning.** Six sites, written down before the first extraction,
+and not one of them was copied by accident. A `(?<![\w.])name\b` rewrite DID miss
+`...name` in a spread once (a spread ends in a dot) — the typecheck caught it, but an
+identifier that also existed in scope would have sailed through, which is the argument
+for a differ rather than a careful eye.
+
+### Open
+
+- ⏳ Nate's eyes on the timeline, then the merge.
+- ⏭ The order-visible deferrals enumerated in §4.2 (shieldEnd, NB, summon-tick hits)
+  are L5's to move, each with an expected diff and a visual check.
