@@ -22,6 +22,7 @@ import type {
 	Condition,
 	CooldownModifier,
 	Element,
+	Reaction,
 	SkillAbility
 } from '$lib/types/ability';
 import type { WeaponType } from '$lib/types/weapon';
@@ -382,4 +383,20 @@ export function resolveEffectiveCharges(
 		1,
 		Math.round(applyModifiers(base, modifiers, DEFAULT_ASCENSION, new Set(), constellationLevel))
 	);
+}
+
+/** Does an emitted Reaction match an authored `trigger.reaction`, which may be a
+ *  single Reaction, an array, or "any"?
+ *
+ *  ⚓ A leaf predicate over authored trigger data, and it lives here rather than
+ *  beside either caller because BOTH the stacks dispatch and the duration-
+ *  extension dispatch need it — the one shape a shared gate must not have is two
+ *  copies (`onHitTriggerMatches` carries the same note at its own site). */
+export function reactionMatchesTrigger(
+	emitted: Reaction,
+	trigReaction: Reaction | Reaction[] | 'any'
+): boolean {
+	if (trigReaction === 'any') return true;
+	if (Array.isArray(trigReaction)) return trigReaction.includes(emitted);
+	return trigReaction === emitted;
 }
