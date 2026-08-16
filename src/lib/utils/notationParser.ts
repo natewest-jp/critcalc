@@ -64,13 +64,7 @@ import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokeni
 import type { WeaponType } from '$lib/types/weapon';
 import { resolveActionElement, type NormalActionKind } from '$lib/utils/actionElement';
 import { getCharacterEffectsForCast } from '$lib/utils/effectCollection';
-import {
-	createIcdClock,
-	icdApplies,
-	icdTagFor,
-	resolveActionIcd,
-	type IcdClock
-} from '$lib/utils/icd';
+import { createIcdClock, icdApplies, icdTagFor, resolveActionIcd } from '$lib/utils/icd';
 import { computeTeamEnabledReactions, computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { FPS, framesOf } from '$lib/utils/frames';
 import { getWeaponById } from '$lib/data/weaponLookup';
@@ -89,6 +83,8 @@ import type {
 	TimelineWindow
 } from '$lib/utils/rotationEvents';
 import { deriveBuffWindows } from '$lib/utils/buffWindows';
+import type { CharState } from '$lib/sim/charState';
+import { createSimContext } from '$lib/sim/context';
 
 // Re-export the IR surface so consumers can import event/window types straight
 // from the parser module they already depend on.
@@ -1758,127 +1754,6 @@ function reactionMatchesTrigger(
 	return trigReaction === emitted;
 }
 
-// ---------------------------------------------------------------------------
-// Per-character parser state
-// ---------------------------------------------------------------------------
-//
-// `parseNotation` formerly threaded ~18 parallel `Map<charId, …>`s; the
-// 2026-07-05 bug sweep showed order-of-operations across them was the parser's
-// top bug class. `CharState` groups all of a character's mutable parser state
-// behind one lookup (`getCharState`). Everything here persists across segments
-// (cross-segment cooldown / stance / drain tracking). NB: E-charge queues stay
-// keyed by ABILITY id — not folded in here — because stance characters keep
-// independent charge queues per skill variant (see the eChargeQueues decl).
-
-/** Active stance window for a character. Present iff a stance E/Q has ever been
- *  cast (never cleared — swap-close only clamps `end`, mirroring the old
- *  never-deleted `stanceWindows` entry). */
-type StanceRecord = {
-	/** Absolute window end (FRAMES). Extended by durationExtensions, clamped to
-	 *  the swap-out time when the owner terminatesOnSwap. */
-	end: number;
-	/** Whether the window terminates on swap-out. Recorded at open time so
-	 *  variant-driven stances close correctly. Set false after swap-close so a
-	 *  later swap in a segment that never re-opened doesn't re-clamp (mirrors the
-	 *  old `stanceTerminatesOnSwap.delete`). */
-	terminatesOnSwap: boolean;
-	/** Ability that opened the window; read for its durationExtensions[]. */
-	ownerAbility: CastAbility;
-	/** The cast event that opened the window (post-P4 #3: bars are projections
-	 *  of cast events, so the finalize uptime stamp lands on the EVENT — the
-	 *  projected bar inherits it). Not mutated during parsing: extension
-	 *  dispatchers accumulate `ownerUptime`; the finalize pass stamps it back. */
-	castRef: CastEvent;
-	/** Character that owns the stance (for the `stance` TimelineWindow). */
-	characterId: string;
-	/** Absolute window start = cast start, FRAMES (for the `stance` TimelineWindow). */
-	start: number;
-	/** Which cast opened the window (skill/burst) — the window's `source`. */
-	source: 'skill' | 'burst';
-	/** Event id of the `cast` that opened the window (IR provenance). */
-	sourceCastId: number;
-	/** Accumulated owner-bar uptime: initial duration + fired extension deltas.
-	 *  The finalize pass stamps `barRef.uptime = ownerUptime`. Distinct from
-	 *  `end`, which is the (swap-clamped) gating end — a swap-terminated stance
-	 *  keeps its full owner-bar width while `end` clamps to the swap-out time. */
-	ownerUptime: number;
-	/** Per-durationExtensions[]-index fire counts (reset each window open). */
-	extCounts: Map<number, number>;
-	/** Per-durationExtensions[]-index last-fire cursor (reset each window open). */
-	extLastFire: Map<number, number>;
-};
-
-/** Active summon-bound durationExtensions[] owner (E3 v1.5). Registered when a
- *  cast spawns a summon carrying extensions (Collei A4). Replaced per matching
- *  cast; skipped once `endTime` is in the past. */
-type SummonExtRecord = {
-	endTime: number;
-	extensions: DurationExtension[];
-	/** The cast event that spawned the extension-bearing summon; the finalize
-	 *  pass stamps `castRef.uptime = ownerUptime` before bars are projected. */
-	castRef: CastEvent;
-	/** Accumulated owner uptime (initial duration + fired extension deltas);
-	 *  stamped onto the cast event at finalize (P4 — replaces the old live
-	 *  `bar.uptime += delta` back-channel). */
-	ownerUptime: number;
-	counts: Map<number, number>;
-	lastFires: Map<number, number>;
-};
-
-type CharState = {
-	/** Per-character burst cooldown clock (absolute time). `-Infinity` = never
-	 *  cast (treated as "no gate" via the isFinite check at the Q handler top). */
-	qReadyAt: number;
-	/** Weapon cdReset (Sacrificial series) proc-ready clock: when the proc ICD
-	 *  expires and it can fire again. 0 = ready. */
-	sacProcReadyAt: number;
-	/** Open stance window, or undefined if none has ever opened. */
-	stance?: StanceRecord;
-	/** Named state windows opened by stance abilities with `opensState`
-	 *  (e.g. nightsoulBlessing) or by the transient-state primitive
-	 *  (symphonyWindow, apexDrive). state key → absolute end time. */
-	states: Map<string, number>;
-	/** Transient states flagged `terminatesOnSwap` — clamped to the swap-out
-	 *  time at segment end, independently of any stance window (a stance's own
-	 *  terminatesOnSwap clamp covers its opensState companion separately). */
-	statesTerminatingOnSwap: Set<string>;
-	/** Skill/burst chain-stage positions (Diluc E1→E2→E3). */
-	chains: Map<'skill' | 'burst', { index: number; expiresAt: number }>;
-	/** Active summon-extension owner, or undefined. */
-	summonExt?: SummonExtRecord;
-	/** Pending shield-end records, sorted by `endTime` ascending; drained at each
-	 *  cast and at rotation end. */
-	shields: { ability: 'skill' | 'burst'; endTime: number }[];
-	/** Per-onShieldEnd-effect proc cooldown: `${nodeId}#${effectIndex}` → last
-	 *  fire time (Kachina C6 "once every 5s"). */
-	shieldEndProcCooldown: Map<string, number>;
-	/** onReaction gainStacks accrual (rotation-wide, off-field-inclusive):
-	 *  key → stack count. */
-	onReactionStacks: Map<string, number>;
-	/** Per-instance expiry stamps for lifetime-bearing onReaction grants:
-	 *  key → expiry times. */
-	onReactionStackInstances: Map<string, number[]>;
-	/** onHit gainStacks per-source slot expiry (Skirk A4): key → sourceCharId →
-	 *  expiry time. */
-	sourceLifetime: Map<string, Map<string, number>>;
-	/** Drain-anchor timestamps (E3 v2): drain-bearing gainStacks key → time decay
-	 *  was last applied. */
-	drainAnchors: Map<string, number>;
-	/** onHit gainStacks accrual for `source: 'team' | 'others'` grants
-	 *  (rotation-wide, off-field-inclusive — the onHit analog of
-	 *  `onReactionStacks`). `source: 'self'` grants write the hitter's
-	 *  per-segment `stackState` instead (per-segment scope — a swap clears
-	 *  the pool, matching in-game Yanfei-seal semantics). key → count. */
-	onHitStacks: Map<string, number>;
-	/** Per-instance expiry stamps for lifetime-bearing team/others onHit
-	 *  grants: key → expiry times. */
-	onHitStackInstances: Map<string, number[]>;
-	/** Per-onHit-effect proc cooldown (`Effect.procCooldown`):
-	 *  `${nodeId}#${effectIndex}` → last fire time. Escoffier C6's 0.5s ICD
-	 *  is the canonical consumer; mirrors `shieldEndProcCooldown`. */
-	onHitProcLastFire: Map<string, number>;
-};
-
 /** Dispatches a single emitted Reaction to all team characters' `gainStacks`
  *  effects with onReaction triggers, mutating rotation-wide accumulator maps.
  *
@@ -2411,46 +2286,103 @@ export function parseNotation(
 	const tracks: CharacterTrack[] = [];
 	const unknownTokens: string[] = [];
 
+	// ── Team facts, resolved once before the first token (L3c: hoisted above the
+	//    context so `createSimContext` can take them; the computation itself is
+	//    unchanged and depends only on `segments` and the caller's arguments).
+
+	// Compute team Moonsign membership once: 2+ Moonsign chars enables
+	// `lunarCrystallize` emission on geo casts (per Linnea/Lauma/Flins family
+	// of effects). Walks all unique character IDs across segments.
+	const seenChars = new Set<string>();
+	const teamChars: CharacterData[] = [];
+	let moonsignCount = 0;
+	for (const seg of segments) {
+		const charTok = seg[0];
+		if (!charTok || charTok.kind !== 'character') continue;
+		const c = lookupChar(charTok.text);
+		if (!c) continue;
+		if (seenChars.has(c.id)) continue;
+		seenChars.add(c.id);
+		teamChars.push(c);
+		if ((c.factions ?? []).includes('moonsign')) moonsignCount++;
+	}
+	const hasMoonsignTeam = moonsignCount >= 2;
+
+	// Reactions the party enables (Stellar model). Prefers the SLOT roster:
+	// an enabler's mere presence in the party converts the base reaction
+	// (Sandrone in slot 4 with zero casts still turns every Superconduct into
+	// Stellar-Conduct), so the segment roster is only the no-slots fallback.
+	const teamEnabledReactions = teamCharacters
+		? computeTeamEnabledReactions(teamCharacters)
+		: computeTeamEnabledReactions(teamChars);
+
+	// Shared holder-constellation map for the onHit dispatchers (the reaction
+	// dispatch sites build theirs inline per fire — left untouched).
+	const constellationByHolder = new Map(
+		teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])
+	);
+
+	// Team-level pre-check: hit STACK dispatch (and the drain/lifetime settle
+	// it requires at action sites) only runs when someone on the team actually
+	// authors an onHit gainStacks/consumeStacks. Guards corpus-wide float
+	// identity of drain settling — without an onHit consumer, drain anchors
+	// advance ONLY at cast sites, exactly as before the wiring.
+	const teamHasOnHitStackEffects = teamChars.some((c) =>
+		[...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])].some((src) =>
+			(src.effects ?? []).some(
+				(fx) =>
+					(fx.type === 'gainStacks' || fx.type === 'consumeStacks') && fx.trigger.type === 'onHit'
+			)
+		)
+	);
+
+	// Team context for variant-condition resolution (sQ primitive): lets
+	// `teamFaction` / `teamElementCount` conditions on ability VARIANTS resolve
+	// definitively parser-side (Varka Four Winds' Ascension needs an elemental
+	// teammate). Mirrors the renderer's per-holder maps: faction counts are
+	// whole-team, element counts exclude the holder.
+	const teamFactionCounts = computeTeamFactionCounts(teamChars);
+	const teamElementCountsByHolder = new Map<string, Map<Element, number>>();
+	for (const holder of teamChars) {
+		const counts = new Map<Element, number>();
+		for (const other of teamChars) {
+			if (other.id === holder.id || !other.element) continue;
+			counts.set(other.element, (counts.get(other.element) ?? 0) + 1);
+		}
+		teamElementCountsByHolder.set(holder.id, counts);
+	}
+
+	// ── The sim context: every container the dispatchers share (L3c). Held as
+	//    one object so an extracted family can reach the state it mutates; the
+	//    locals below are destructured aliases, so the body reads unchanged.
+	//    ⚠️ Aliases, not copies — see the warning on SimContext.
+	const ctx = createSimContext({
+		swapF,
+		constellationLevels,
+		loadoutMap,
+		team: {
+			teamChars,
+			hasMoonsignTeam,
+			teamEnabledReactions,
+			teamFactionCounts,
+			teamElementCountsByHolder,
+			constellationByHolder,
+			teamHasOnHitStackEffects
+		}
+	});
+
 	// P4 IR — the single event stream. `cast` events are pushed at each E/Q bar
 	// push; `reaction`/`shieldEnd` events are emitted at their sites.
-	// Sorted by time before return.
-	const events: TimelineEvent[] = [];
-	// Stable per-parse event ids, assigned in emission order (deterministic for
-	// a given notation). Window records capture the opening cast's id as their
-	// `sourceCastId` provenance.
-	let nextEventId = 0;
+	// Sorted by time before return. Stable per-parse ids come from `ctx.nextId()`,
+	// assigned in emission order (deterministic for a given notation); window
+	// records capture the opening cast's id as their `sourceCastId` provenance.
+	const events = ctx.events;
 
 	// P4 IR — window-record collectors. Each grows a mutable record during
 	// parsing (extensions move `end`, swap-close clamps it); the finalize pass
 	// converts them to `TimelineWindow`s. Kept separate from the CharState maps
 	// (which are replaced per cast) so EVERY opened window is retained.
-	const stanceWindowRecs: StanceRecord[] = [];
-	const summonExtRecs: SummonExtRecord[] = [];
-	const stateWindowRecs: {
-		characterId: string;
-		name: string;
-		start: number;
-		end: number;
-		/** id of the opening `cast` event — absent on action-opened windows. */
-		sourceCastId?: number;
-		/** id of the opening `action` event (post-P4 #2 — plunge/normal-opened
-		 *  transient states: Varesa Apex Drive, Durin's dark commit). At most
-		 *  one of the two provenance ids is set. */
-		sourceActionId?: number;
-		/** Opening cast kind, for cast-opened transients. Required when the
-		 *  transient's state is `inStance` (the IR invariant: every inStance
-		 *  window knows its opener — Cyno's skill-opened 6s Pathclearer). */
-		source?: 'skill' | 'burst';
-	}[] = [];
-	const shieldWindowRecs: {
-		characterId: string;
-		source: 'skill' | 'burst';
-		start: number;
-		end: number;
-		sourceCastId: number;
-		label?: string;
-		coveredBySummon?: true;
-	}[] = [];
+	const { stanceWindowRecs, summonExtRecs, stateWindowRecs, shieldWindowRecs } = ctx;
 
 	// Close an open named state at `at` (gcsim DeleteStatus): clamp the live
 	// CharState entry and every open window record. Shared by the variant
@@ -2534,7 +2466,7 @@ export function parseNotation(
 	// Per-character cast events emitted so far — the mid-parse record that
 	// `computeCurrentStates` reads for duringSummon detection (replaces the old
 	// prevBars/track-bars walk).
-	const castsByChar = new Map<string, CastEvent[]>();
+	const castsByChar = ctx.castsByChar;
 	/**
 	 * Which cast KINDS a character has emitted so far — an incremental index over
 	 * `castsByChar`, scanned in `castKinds()` below.
@@ -2580,30 +2512,8 @@ export function parseNotation(
 	// accumulators) so a single lookup yields all of a character's mutable
 	// parser state. Persists across segments (cross-segment cooldown / stance /
 	// shield-end / drain tracking). See the CharState decl for per-field scope.
-	const charStates = new Map<string, CharState>();
-	const getCharState = (charId: string): CharState => {
-		let cs = charStates.get(charId);
-		if (!cs) {
-			cs = {
-				qReadyAt: -Infinity,
-				sacProcReadyAt: 0,
-				states: new Map(),
-				statesTerminatingOnSwap: new Set(),
-				chains: new Map(),
-				shields: [],
-				shieldEndProcCooldown: new Map(),
-				onReactionStacks: new Map(),
-				onReactionStackInstances: new Map(),
-				sourceLifetime: new Map(),
-				drainAnchors: new Map(),
-				onHitStacks: new Map(),
-				onHitStackInstances: new Map(),
-				onHitProcLastFire: new Map()
-			};
-			charStates.set(charId, cs);
-		}
-		return cs;
-	};
+	const charStates = ctx.charStates;
+	const getCharState = ctx.getCharState;
 	let cursor = 0; // rotation clock (FRAMES — see the time model in the header)
 
 	// E3 v1.5 — rotation-wide aura state for synthetic reaction emission.
@@ -2628,69 +2538,14 @@ export function parseNotation(
 	// Windows are never truncated. In game an infusion is a buff on the receiver
 	// that runs its own clock; swapping away does not cancel it (⚓ Bennett's C6
 	// infusion is famously still there when you swap back inside the 12s).
-	const infusionWindows: {
-		holderId: string;
-		holderConstellation: number;
-		/** `self` = the holder only; `active` = whoever is swinging. */
-		receiver: 'self' | 'active';
-		element: Element;
-		start: number;
-		end: number;
-		conditions?: Condition;
-	}[] = [];
+	const infusionWindows = ctx.infusionWindows;
 
 	// Elemental-application ICD clocks, keyed `${characterId}:${icdTag}` — gcsim
 	// tracks per (target, character, ICD tag), and we have one notional target.
 	// Rotation-wide like the aura: a character's normal-attack counter survives
 	// a swap-out, so returning to them mid-2.5s does not hand back a free
 	// application. Only N/C/P swings consult these (see the aura-model note).
-	const icdClocks = new Map<string, IcdClock>();
-
-	// Compute team Moonsign membership once: 2+ Moonsign chars enables
-	// `lunarCrystallize` emission on geo casts (per Linnea/Lauma/Flins family
-	// of effects). Walks all unique character IDs across segments.
-	const seenChars = new Set<string>();
-	const teamChars: CharacterData[] = [];
-	let moonsignCount = 0;
-	for (const seg of segments) {
-		const charTok = seg[0];
-		if (!charTok || charTok.kind !== 'character') continue;
-		const c = lookupChar(charTok.text);
-		if (!c) continue;
-		if (seenChars.has(c.id)) continue;
-		seenChars.add(c.id);
-		teamChars.push(c);
-		if ((c.factions ?? []).includes('moonsign')) moonsignCount++;
-	}
-	const hasMoonsignTeam = moonsignCount >= 2;
-
-	// Reactions the party enables (Stellar model). Prefers the SLOT roster:
-	// an enabler's mere presence in the party converts the base reaction
-	// (Sandrone in slot 4 with zero casts still turns every Superconduct into
-	// Stellar-Conduct), so the segment roster is only the no-slots fallback.
-	const teamEnabledReactions = teamCharacters
-		? computeTeamEnabledReactions(teamCharacters)
-		: computeTeamEnabledReactions(teamChars);
-
-	// Shared holder-constellation map for the onHit dispatchers (the reaction
-	// dispatch sites build theirs inline per fire — left untouched).
-	const constellationByHolder = new Map(
-		teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])
-	);
-
-	// Team-level pre-check: hit STACK dispatch (and the drain/lifetime settle
-	// it requires at action sites) only runs when someone on the team actually
-	// authors an onHit gainStacks/consumeStacks. Guards corpus-wide float
-	// identity of drain settling — without an onHit consumer, drain anchors
-	// advance ONLY at cast sites, exactly as before the wiring.
-	const teamHasOnHitStackEffects = teamChars.some((c) =>
-		[...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])].some((src) =>
-			(src.effects ?? []).some(
-				(fx) =>
-					(fx.type === 'gainStacks' || fx.type === 'consumeStacks') && fx.trigger.type === 'onHit'
-			)
-		)
-	);
+	const icdClocks = ctx.icdClocks;
 
 	// Resolved runtime states for ANY holder at time `t` — the onHit-dispatch
 	// analog of the per-segment `computeCurrentStates`, usable for OFF-FIELD
@@ -2734,39 +2589,11 @@ export function parseNotation(
 		return states;
 	};
 
-	// Team context for variant-condition resolution (sQ primitive): lets
-	// `teamFaction` / `teamElementCount` conditions on ability VARIANTS resolve
-	// definitively parser-side (Varka Four Winds' Ascension needs an elemental
-	// teammate). Mirrors the renderer's per-holder maps: faction counts are
-	// whole-team, element counts exclude the holder.
-	const teamFactionCounts = computeTeamFactionCounts(teamChars);
-	const teamElementCountsByHolder = new Map<string, Map<Element, number>>();
-	for (const holder of teamChars) {
-		const counts = new Map<Element, number>();
-		for (const other of teamChars) {
-			if (other.id === holder.id || !other.element) continue;
-			counts.set(other.element, (counts.get(other.element) ?? 0) + 1);
-		}
-		teamElementCountsByHolder.set(holder.id, counts);
-	}
-
-	// E-charge queues. Keyed by ABILITY id (not character id): stance characters
-	// keep independent charge queues per skill variant — Cyno's out-of-stance E
-	// (7.5s CD) shares no cooldown with his in-stance Mortuary Rite (3s CD), so
-	// folding this into the per-character CharState would wrongly merge them. The
-	// uncurated fallback keys by bare charId. Each value is a sorted array of
-	// "ready at" timestamps, one entry per charge (length = effective charge
-	// count); picking queue[0] (earliest-ready) and re-sorting after each cast
-	// models independent per-charge cooldowns — a new cast never cancels an
-	// in-progress cooldown. Persists across segments (cross-segment CD enforcement:
-	//   Bennett E > Xiangling Q > Bennett E → second E waits for the first's CD).
-	// The per-character burst cooldown clock now lives on cs.qReadyAt.
-	const eChargeQueues = new Map<string, number[]>();
-
-	// Weapon cdReset (Sacrificial series) output: accumulated proc-ICD windows per
-	// character for timeline rendering (with the proccing cast's id for IR
-	// provenance). The proc-ready clock lives on cs.sacProcReadyAt.
-	const weaponProcBars = new Map<string, (WeaponProcBar & { sourceCastId: number })[]>();
+	// E-charge queues (keyed by ABILITY id — see the SimContext field) and the
+	// weapon cdReset (Sacrificial series) output: accumulated proc-ICD windows
+	// per character for timeline rendering, with the proccing cast's id for IR
+	// provenance. The proc-ready clock lives on cs.sacProcReadyAt.
+	const { eChargeQueues, weaponProcBars } = ctx;
 
 	// Per-character chain-stage lookup (skill/burst chains, e.g. Diluc E1→E2→E3),
 	// backed by cs.chains. Each entry holds the *next* expected stage index plus
@@ -3095,7 +2922,7 @@ export function parseNotation(
 		for (const ev of expired) {
 			events.push({
 				kind: 'shieldEnd',
-				id: nextEventId++,
+				id: ctx.nextId(),
 				characterId: ev.holderId,
 				ability: ev.ability,
 				time: ev.endTime
@@ -3389,7 +3216,7 @@ export function parseNotation(
 			);
 			events.push({
 				kind: 'reaction',
-				id: nextEventId++,
+				id: ctx.nextId(),
 				characterId: char.id,
 				reaction: r,
 				time,
@@ -3520,7 +3347,7 @@ export function parseNotation(
 		const emitAction = (
 			fields: Omit<ActionEvent, 'kind' | 'id' | 'characterId' | 'blockId'> & { blockId?: number }
 		): ActionEvent => {
-			const id = nextEventId++;
+			const id = ctx.nextId();
 			const ev: ActionEvent = {
 				...fields,
 				kind: 'action',
@@ -3866,7 +3693,7 @@ export function parseNotation(
 				// initialized to the delay-adjusted CD end; the E sac-proc branch
 				// below may retarget it to the hitmark. The id is the provenance
 				// anchor for every window this cast opens.
-				const castId = nextEventId++;
+				const castId = ctx.nextId();
 				const castEvent: CastEvent = {
 					kind: 'cast',
 					id: castId,
@@ -4129,7 +3956,7 @@ export function parseNotation(
 				// No resolved variant — key the abilityId by the bare charId.
 				const fallbackQ: CastEvent = {
 					kind: 'cast',
-					id: nextEventId++,
+					id: ctx.nextId(),
 					characterId: char.id,
 					ability: 'burst',
 					abilityId: char.id,
@@ -4154,7 +3981,7 @@ export function parseNotation(
 				if (queue[0] > localCursor) localCursor = queue[0];
 				const fallbackE: CastEvent = {
 					kind: 'cast',
-					id: nextEventId++,
+					id: ctx.nextId(),
 					characterId: char.id,
 					ability: 'skill',
 					abilityId: char.id,
@@ -4904,7 +4731,7 @@ export function parseNotation(
 				if (t.time >= nbNextAllowed) {
 					events.push({
 						kind: 'nightsoulBurst',
-						id: nextEventId++,
+						id: ctx.nextId(),
 						characterId: t.characterId,
 						time: t.time,
 						cooldown: nbCd
