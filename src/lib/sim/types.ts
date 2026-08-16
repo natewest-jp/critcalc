@@ -17,6 +17,7 @@
 import type { Element } from '$lib/types/ability';
 import type { TimelineEvent, TimelineWindow } from '$lib/utils/rotationEvents';
 import type { AuraApplication } from './aura';
+import type { SeriesInterval } from '$lib/utils/gauge';
 
 /** Per-track E/Q bar. Post-P4 #3: a pure PROJECTION of a `cast` event —
  *  built at finalize from the event's geometric fields (1:1, field-equal).
@@ -136,8 +137,23 @@ export type ParsedRotation = {
 	 * rules over the IR to reconstruct the stream it was diffing, and is how it
 	 * came to measure a model we no longer had for one commit (L4d).
 	 *
-	 * ⚠️ Its consumer today is `scripts/audit-gcsim-reactions.mjs`; L6's aura lane
-	 * is the second. ⛔ Not a display surface — nothing renders it yet.
+	 * ⚠️ Its consumers are `scripts/audit-gcsim-reactions.mjs` and, since L6, the
+	 * aura lane's application ticks.
 	 */
 	applications: AuraApplication[];
+	/**
+	 * The target's aura over the rotation — one interval per continuous lifetime
+	 * of one aura mod, sampled from the gauge the parse actually drove (gauge
+	 * round L6). Seconds and taxed units, `gauge.ts`'s own shape.
+	 *
+	 * ⚓⚓ THIS IS THE LIVE GAUGE'S OWN OUTPUT, NOT A RE-RUN. ⛔ Never rebuild it
+	 * by feeding `applications` to `simulateGauge`: that list is sorted and the
+	 * feed order is not, so a re-run would draw an aura the parse never had. Same
+	 * rule that put `applications` here in the first place.
+	 *
+	 * ⚠️ Includes the decay tail past the last cast — the gauge is settled at
+	 * finalize (`collectAuraSeries`), because "where you lost it" is mostly what
+	 * happens after the last application.
+	 */
+	auraSeries: SeriesInterval[];
 };

@@ -36,6 +36,17 @@ class PlannerViewState {
 	/** Published by the timeline for band B's readout + the notes gate. */
 	hasCaveats = $state(false);
 	totalDuration = $state(0);
+	/**
+	 * The rotation put something on the target, so the aura lane is drawn — and
+	 * the notes panel therefore has its standing "how the aura is modelled"
+	 * block to show (gauge round L6).
+	 *
+	 * ⚠ A SECOND REASON THE NOTES PANEL CAN OPEN. It used to be gated on slot
+	 * caveats alone, which would have made the modelling limits unreachable for
+	 * exactly the rotations most likely to need them: a fully-curated team has
+	 * no caveats and still gets a gauge.
+	 */
+	hasAura = $state(false);
 
 	zoomBy(delta: number) {
 		this.scale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, this.scale + delta));

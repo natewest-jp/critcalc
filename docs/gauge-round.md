@@ -800,14 +800,36 @@ standard nor none — real gcsim ICD groups, which is L4's named top schema gap.
 residual divergences enumerated and explained. ⚓ **L5 merges on a measured improvement,
 not on being finished.**
 
-### L6 — Surface and honesty
+### L6 — Surface and honesty ✅
 
-- An aura lane on the timeline, and/or feeding the real rotation into the gauge instrument —
-  _"here is your aura across your rotation, and here is where you lost it."_
-- ⚓ A bar drawn from a **defaulted** unit value carries `--ui-provisional` — the existing
-  squiggle rule ("we took it, it's a stand-in"), not a new vocabulary.
-- The limits stated on the surface: **single target, no enemy-applied aura, no shatter, no
-  hyperbloom/burgeon core modelling.**
+📄 **Full record: [`gauge-round-L6.md`](gauge-round-L6.md)** · built, gates green,
+⏳ awaiting Nate's eyes.
+
+The **target-aura lane**: one row per aura mod, the bar's fill HEIGHT the gauge in units,
+with application ticks and reaction markers riding above it. Reactions have been in the IR
+since P4 and were drawn NOWHERE; this is the first surface that shows them.
+
+|             |                                                                                                          |
+| ----------- | -------------------------------------------------------------------------------------------------------- |
+| substrate   | ⚓⚓ `ParsedRotation.auraSeries`, sampled from the **LIVE** gauge — ⛔ never a re-run of `simulateGauge` |
+| provisional | the tick's `--ui-provisional` FOOT, under the element colour, resolved in words by its tooltip           |
+| honesty     | a standing block in the Notes panel + a Help § — ⚓ Nate chose both                                      |
+| oracle      | **unchanged** (145 / 0 / 0 / 122 of 264): L6 changed no engine behaviour                                 |
+| perf        | heavy fixture 4.8 → 6.8 ms; the idle skip keeps C6 intact                                                |
+
+⚠️⚠️ **This section's own original text was STALE and is kept below only as history** —
+following it would have shipped a wrong public claim:
+
+> The limits stated on the surface: single target, no enemy-applied aura, no shatter,
+> **no hyperbloom/burgeon core modelling.**
+
+Dendro cores landed at **L5b**, with a real spawn delay and lifetime. The limits that
+shipped were re-derived from the code, each with a named source (L6 §4), and
+`RotationNotes.svelte` carries the rule: ⛔ no line without one.
+
+⛔ **Feeding the real rotation into the gauge instrument is OFF the table** — open
+decision #2, closed by measurement rather than taste: `MAX_GAUGE_APPS` is **8** and a
+heavy rotation makes **230**.
 
 ---
 
@@ -882,12 +904,18 @@ correct. Not a blocker.
 
 ## 10. Open decisions
 
-1. 🚧 **Install Go?** The oracle needs it (`brew install go`). Without it, L0 cannot happen and
-   every downstream claim degrades from _measured_ to _argued_. **Recommendation: yes, first.**
-2. **Does the aura lane ship in L6, or is the payoff purely correctness?** Affects nothing
-   upstream; decide late.
-3. **How honest is honest, on the surface?** Single-target is real, and gauge theory is where
-   multi-target actually decides team value. Footnote, caveat chip, or a Help note — L6.
+1. ✅ **Install Go?** Yes — done at L0, and the library-linked dumper it enabled is what made
+   L4 a two-second whole-roster job instead of 123 hand reads.
+2. ✅ **Does the aura lane ship in L6?** It ships, and it is the landing. ⚓ Nate chose its
+   FORM (mod rows carrying gauge depth) over a presence strip and over the instrument's
+   overlaid area chart. The other half of the question — feeding the real rotation into the
+   Gauge Explorer — is ⛔ **closed NO by measurement**: `MAX_GAUGE_APPS` is 8, a heavy
+   rotation makes 230.
+3. ✅ **How honest is honest?** ⚓ Nate: **both** a standing block in the Notes panel and a
+   Help §; ⛔ not a caveat line on the lane (it costs vertical space in the busiest part of
+   the chart and carries one sentence) and ⛔ not an info mark (it hides the statement behind
+   an interaction). ⚠️ And the LIST had to be re-derived from the code — §5's original was a
+   year stale in one line. See L6 §4.
 
 ---
 

@@ -77,6 +77,10 @@ export type {
 	ParsedRotation
 } from '$lib/sim/types';
 
+// What the gauge was fed (`$lib/sim/aura.ts`) — the aura lane's tick row and
+// the L0 oracle both read it through this door (gauge round L6).
+export type { AuraApplication } from '$lib/sim/aura';
+
 // Condition evaluation (`$lib/sim/conditions.ts`) — eight modules import
 // `evalCondition` from here, `buffWindows.ts` among them.
 export {
@@ -118,7 +122,8 @@ export function parseNotation(
 			unknownTokens: [],
 			events: [],
 			windows: [],
-			applications: []
+			applications: [],
+			auraSeries: []
 		};
 
 	// Tokenize the full string, then group into segments by separator tokens.

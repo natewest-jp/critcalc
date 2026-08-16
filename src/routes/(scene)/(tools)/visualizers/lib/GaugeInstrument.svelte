@@ -11,6 +11,7 @@
 		type ReactionKind,
 		type SimEvent
 	} from '$lib/utils/gauge';
+	import { AURA_MOD_META, AURA_MOD_ORDER } from '$lib/utils/auraDisplay';
 	import { MAX_GAUGE_APPS, MAX_GAUGE_TIME } from './workspace';
 	import { createPlayhead } from './playhead.svelte';
 	import { PLAYHEAD_SPEEDS } from './playhead';
@@ -20,43 +21,17 @@
 
 	const ELEMENTS: ElementId[] = ['pyro', 'hydro', 'anemo', 'electro', 'cryo', 'geo', 'dendro'];
 
-	type ModMeta = { label: string; icon: string; color: string; dash?: string };
-	const MOD_META: Record<AuraKey, ModMeta> = {
-		pyro: { label: 'Pyro', icon: 'pyro', color: 'var(--el-pyro-main)' },
-		burning: {
-			label: 'Burning',
-			icon: 'pyro',
-			color: 'var(--rx-burning)'
-		},
-		burningFuel: {
-			label: 'Fuel',
-			icon: 'dendro',
-			color: 'var(--rx-burning-fuel)',
-			dash: '5 4'
-		},
-		hydro: { label: 'Hydro', icon: 'hydro', color: 'var(--el-hydro-main)' },
-		cryo: { label: 'Cryo', icon: 'cryo', color: 'var(--el-cryo-main)' },
-		frozen: { label: 'Frozen', icon: 'cryo', color: 'var(--rx-frozen)' },
-		electro: { label: 'Electro', icon: 'electro', color: 'var(--el-electro-main)' },
-		dendro: { label: 'Dendro', icon: 'dendro', color: 'var(--el-dendro-main)' },
-		quicken: {
-			label: 'Quicken',
-			icon: 'dendro',
-			color: 'var(--rx-quicken)'
-		}
-	};
-	const MOD_ORDER: AuraKey[] = [
-		'pyro',
-		'burning',
-		'burningFuel',
-		'hydro',
-		'cryo',
-		'frozen',
-		'electro',
-		'dendro',
-		'quicken'
-	];
+	// ↻ Gauge round L6: the mod vocabulary moved to `$lib/utils/auraDisplay.ts`
+	// when the planner's aura lane became a second reader. ⛔ Don't re-inline it
+	// — a Frozen bar must be the same colour in both tools.
+	const MOD_META = AURA_MOD_META;
+	const MOD_ORDER = AURA_MOD_ORDER;
 
+	// ⚠️ STAYS LOCAL, and is not the planner's map. This is keyed on the GAUGE's
+	// `ReactionKind` — the instrument drives `simulateGauge` directly and so sees
+	// the distinctions `reactionBridge.ts` collapses on the way to the IR:
+	// forward vs reverse multipliers, a blocked crystallize, a bloom that formed
+	// off Quicken. The planner cannot say any of those.
 	const REACTION_NAME: Record<ReactionKind, string> = {
 		vaporize: 'Vaporize ×2',
 		reverseVaporize: 'Vaporize ×1.5',

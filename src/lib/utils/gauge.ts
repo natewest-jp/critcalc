@@ -282,7 +282,8 @@ type Sim = {
 	 *  charting hand-placed applications), and a rotation must never be silently
 	 *  truncated mid-parse. */
 	maxFrames: number;
-	/** Series sampling. Off for the live gauge until L6 draws an aura lane. */
+	/** Series sampling. On for the batch and, since L6, for the rotation sim's
+	 *  live gauge as well — the aura lane needs the trajectory. */
 	sampling: boolean;
 	/** An application landed at `frame` — the batch's "sample once before the
 	 *  group, once after" grouping, preserved across the streaming split. */
@@ -899,7 +900,10 @@ export type Gauge = {
 	allEvents(): SimEvent[];
 	/** Current gauge of every mod — the aura trajectory the L0 oracle compares. */
 	gauges(): Readonly<ModState>;
-	/** Close the open series intervals and return them. Batch/instrument only. */
+	/** Close the open series intervals and return them.
+	 *  ⚠️ The rotation sim calls this too since L6 (`collectAuraSeries`) — the
+	 *  aura lane draws the LIVE gauge's own trajectory rather than a re-run, so
+	 *  this is no longer batch/instrument-only. Call it once, at the end. */
 	closeSeries(): SeriesInterval[];
 };
 

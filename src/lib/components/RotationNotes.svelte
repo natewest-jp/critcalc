@@ -21,10 +21,48 @@
 	// tell it.
 	// ---------------------------------------------------------------------------
 
-	let { entries }: { entries: SlotCaveatEntry[] } = $props();
+	let { entries, showAuraNote = false }: { entries: SlotCaveatEntry[]; showAuraNote?: boolean } =
+		$props();
+
+	// ══ HOW THE AURA IS MODELLED (gauge round L6) ═════════════════════════════
+	//
+	// ⚓ THE LIMITS BELONG BESIDE THE PICTURE, NOT IN A CHANGELOG. The target-aura
+	// lane is the first thing in the planner that makes a claim about the enemy,
+	// and a gauge chart is exactly the kind of surface a reader trusts further
+	// than it deserves. This is the standing note that says where it stops.
+	//
+	// ⚠️⚠️ RE-DERIVED FROM THE CODE, NOT COPIED. The round's own plan (§5, written
+	// at L3) listed "no hyperbloom/burgeon core modelling" — which stopped being
+	// true at L5b, when dendro cores landed in `gauge.ts` with a real spawn delay
+	// and lifetime. A stale honesty note is worse than none: it under-claims in
+	// public while the code has moved on, and a reader who checks once and finds
+	// it wrong stops believing the rest of it.
+	//
+	// ⛔ Do not add a line here without a source in the code. Each of these is
+	// one:
+	//   one enemy          — `gauge.ts` carries a single `ModState`
+	//   nothing back       — no path applies an aura the enemy owns
+	//   no Shatter         — `sim/reactionBridge.ts` leaves it unemitted
+	//   nominal schedule   — `application[]`'s contract C4 (types/ability.ts)
+	//   one hit per swing  — the hit stream's documented approximation
+	//   1U default         — `DEFAULT_UNITS` in `sim/aura.ts`, and what the
+	//                        lane's yellow-footed ticks mark
+	const AURA_NOTES = [
+		'One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mage, and no auras you did not put there.',
+		'Hits land on their listed timing. A swing that hits several times counts as one application, and Shatter is not modelled.',
+		'A tick marked in yellow means we are using a default gauge strength of 1U for that hit rather than a measured one.'
+	];
 </script>
 
 <div class="rp-caveat-panel">
+	{#if showAuraNote}
+		<div class="rp-caveat-char rp-aura-note">
+			<div class="rp-caveat-char-name">How the aura is modelled</div>
+			{#each AURA_NOTES as note (note)}
+				<p class="rp-caveat-text">{note}</p>
+			{/each}
+		</div>
+	{/if}
 	{#each entries as entry (entry.id)}
 		<div class="rp-caveat-char">
 			<div class="rp-caveat-char-name" style:color={elementPalette(entry.element).main}>
@@ -64,6 +102,17 @@
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-widest);
 		text-transform: uppercase;
+	}
+	/* ⚠ It is a STANDING note, not a character's, so it takes the panel's
+	   neutral ink rather than an element hue — every other heading here is a
+	   character name painted its element, and borrowing one would say this
+	   belongs to someone. The rule under it is what separates the two kinds. */
+	.rp-aura-note {
+		padding-bottom: 12px;
+		border-bottom: 1px solid var(--frame-line);
+	}
+	.rp-aura-note .rp-caveat-char-name {
+		color: var(--muted);
 	}
 	.rp-caveat-item {
 		display: flex;

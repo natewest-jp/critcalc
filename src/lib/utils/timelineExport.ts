@@ -65,6 +65,8 @@ import type {
 	TeamBuffSubrow,
 	WeaponProcSubrow
 } from '$lib/timeline/types';
+import { auraSpanPath, type AuraLane } from '$lib/timeline/auraRows';
+import type { AuraKey } from '$lib/utils/gauge';
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
@@ -149,6 +151,29 @@ const UI_PROVISIONAL = '#f6d365';
 // tint with), so it mirrors the gradient's TOP stop, as it always has.
 const PORTRAIT_BG = '#1f2635'; // --surface-well (ctx-dark) → --slate-900
 
+// ── Aura-lane mod colours (gauge round L6) ──────────────────────────────────
+// ⚠ The five elemental mods go through `elementPalette`, which is itself the
+// guarded mirror of --el-*; only the four that are NOT elements need literals
+// here. They are reaction STATES rather than auras of an element (see
+// $lib/utils/auraDisplay.ts), so they carry --rx-* hues and have no palette
+// entry to borrow.
+const RX_FROZEN = '#cbeaf3';
+const RX_QUICKEN = '#46c865';
+const RX_BURNING = '#d76822';
+const RX_BURNING_FUEL = '#84b46a';
+
+const AURA_MOD_COLOR: Record<AuraKey, string> = {
+	pyro: elementPalette('pyro').main,
+	hydro: elementPalette('hydro').main,
+	cryo: elementPalette('cryo').main,
+	electro: elementPalette('electro').main,
+	dendro: elementPalette('dendro').main,
+	frozen: RX_FROZEN,
+	quicken: RX_QUICKEN,
+	burning: RX_BURNING,
+	burningFuel: RX_BURNING_FUEL
+};
+
 /** Test-only: the hand-maintained mirror, exported so
  *  timelineExport.mirror.test.ts can assert it against app.css /
  *  RotationTimeline.svelte. The mirror stops being trust-based — if a token
@@ -162,7 +187,11 @@ export const PALETTE_MIRROR = {
 	MUTED,
 	INK,
 	BAR_FILL,
-	PORTRAIT_BG
+	PORTRAIT_BG,
+	RX_FROZEN,
+	RX_QUICKEN,
+	RX_BURNING,
+	RX_BURNING_FUEL
 } as const;
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
@@ -266,6 +295,18 @@ export type TimelineSnapshot = {
 	moonsignRows: MoonsignRow[];
 	moonsignTop: number | null;
 	moonsignH: number;
+	/** The target-aura lane (gauge round L6). `auraTop` is null when nothing
+	 *  ever landed and the lane is not drawn — same rule as NB/moonsign. */
+	auraLane: AuraLane;
+	auraTop: number | null;
+	// ⛔ No `auraH`. `nbH`/`moonsignH` exist because the painter centres a lane
+	// label in them and closes them with a rule; this lane is bottom-most and
+	// top-labels its rows, so a height here would be a field with no reader.
+	auraRowH: number;
+	auraRowStride: number;
+	auraMarkerH: number;
+	auraTickH: number;
+	auraMinFill: number;
 	statIconFor: (stat: string) => string | undefined;
 	avatarFor: (slotIdx: number) => string | null;
 	elementGlyphFor: (element: string | undefined) => string | null;
@@ -892,11 +933,25 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// Lane separators are top-only (mirrors the live border-top scheme): a
 	// lane's closing line is drawn ONLY when another lane follows, so the
 	// bottom-most lane leaves no line before the ruler gap.
-	if (snap.nbTop !== null || snap.moonsignTop !== null) {
+	// ↻ Gauge round L6: the aura lane joins the "another lane follows" test, so
+	// the rule stays "a lane closes only when something comes after it" rather
+	// than becoming an enumeration of pairs.
+	const laneFollows = (after: 'teamBuffs' | 'nb' | 'moonsign') => {
+		const later = [
+			after === 'teamBuffs' ? snap.nbTop : null,
+			after === 'teamBuffs' || after === 'nb' ? snap.moonsignTop : null,
+			snap.auraTop
+		];
+		return later.some((t) => t !== null);
+	};
+	if (laneFollows('teamBuffs')) {
 		hline(oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH);
 	}
-	if (snap.nbTop !== null && snap.moonsignTop !== null) {
+	if (snap.nbTop !== null && laneFollows('nb')) {
 		hline(oy + snap.rulerH + snap.nbTop + snap.nbH);
+	}
+	if (snap.moonsignTop !== null && snap.auraTop !== null) {
+		hline(oy + snap.rulerH + snap.moonsignTop + snap.moonsignH);
 	}
 
 	// z:0 — ghosts (chroma-dropped before mixing — recessive structure; the
@@ -1068,6 +1123,77 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		});
 	}
 
+	// ── Target aura lane (gauge round L6) ──
+	// ⚓ THE SHAPE COMES FROM THE SAME FUNCTION THE SCREEN USES. `auraSpanPath`
+	// returns a normalized `0..100` polyline, and here it is simply walked with
+	// lineTo instead of handed to an SVG — so the exported curve cannot differ
+	// from the drawn one, which is the whole point of a mirror.
+	if (snap.auraTop !== null) {
+		const laneY = oy + snap.rulerH + snap.auraTop;
+		const rowsY = laneY + snap.auraMarkerH + snap.auraTickH + 2;
+
+		// Reaction markers — pip + family name, in the ruler's neutral ink. ⚠ A
+		// reaction is not an element and must not borrow one.
+		ctx.fillStyle = MUTED;
+		ctx.font = `600 9px ${SANS}`;
+		ctx.textAlign = 'left';
+		snap.auraLane.markers.forEach((marker, mi) => {
+			const mx = x(marker.time);
+			const next = snap.auraLane.markers[mi + 1];
+			ctx!.fillRect(mx - 1, laneY + snap.auraMarkerH - 6, 3, 3);
+			// ⚠ 26, matching the screen's threshold: below it the label is DROPPED,
+			// not truncated — a two-character stub names nothing and still crowds
+			// the pip beside it.
+			const room = next ? x(next.time) - mx - 8 : Infinity;
+			if (room < 26) return;
+			ctx!.save();
+			ctx!.beginPath();
+			ctx!.rect(mx + 5, laneY, Math.min(room, 200), snap.auraMarkerH);
+			ctx!.clip();
+			ctx!.fillText(marker.label, mx + 5, laneY + snap.auraMarkerH - 4);
+			ctx!.restore();
+		});
+
+		// Application ticks, with the --ui-provisional foot under a defaulted
+		// unit value (the squiggle rule).
+		const tickY = laneY + snap.auraMarkerH;
+		for (const tick of snap.auraLane.ticks) {
+			ctx.fillStyle = elementPalette(tick.element).main;
+			ctx.globalAlpha = 0.75;
+			ctx.fillRect(x(tick.time), tickY, 2, snap.auraTickH);
+			ctx.globalAlpha = 1;
+			if (tick.provisional) {
+				ctx.fillStyle = UI_PROVISIONAL;
+				ctx.fillRect(x(tick.time), tickY + snap.auraTickH - 2, 2, 2);
+			}
+		}
+
+		snap.auraLane.rows.forEach((row, ri) => {
+			const rowTop = rowsY + ri * snap.auraRowStride;
+			ctx!.fillStyle = AURA_MOD_COLOR[row.mod];
+			ctx!.globalAlpha = row.dash ? 0.45 : 0.85;
+			for (const span of row.spans) {
+				const sx = x(span.start);
+				const sw = barGeomW(span.start, span.end - span.start);
+				// The normalized path's numbers are percentages of (sw, auraRowH).
+				const pts = auraSpanPath(span, snap.auraLane.uMax, snap.auraMinFill)
+					.split(' ')
+					.filter((p) => p[0] === 'M' || p[0] === 'L')
+					.map((p) => p.slice(1).split(',').map(Number));
+				ctx!.beginPath();
+				pts.forEach(([px, py], i) => {
+					const cx = sx + (px / 100) * sw;
+					const cy = rowTop + (py / 100) * snap.auraRowH;
+					if (i === 0) ctx!.moveTo(cx, cy);
+					else ctx!.lineTo(cx, cy);
+				});
+				ctx!.closePath();
+				ctx!.fill();
+			}
+			ctx!.globalAlpha = 1;
+		});
+	}
+
 	// ── Label column ──
 	// Opaque backing (below the notation header) so long ghost bars never
 	// bleed under the labels
@@ -1154,6 +1280,23 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			laneLabelX,
 			oy + snap.rulerH + snap.moonsignTop + snap.moonsignH / 2 + 3
 		);
+	if (snap.auraTop !== null) {
+		// ⚓ THE ONE PLACE THE EXPORT IS BETTER THAN THE SCREEN, and it costs
+		// nothing: the PNG kept its label column when the live chart gave it up
+		// (abutting round), so the mod names can sit OUTSIDE the plot here
+		// instead of over their own bars. Same names, more room.
+		ctx.fillText('TARGET AURA', laneLabelX, oy + snap.rulerH + snap.auraTop + 9);
+		const rowsY = oy + snap.rulerH + snap.auraTop + snap.auraMarkerH + snap.auraTickH + 2;
+		ctx.font = `600 8px ${SANS}`;
+		snap.auraLane.rows.forEach((row, ri) => {
+			ctx!.fillStyle = AURA_MOD_COLOR[row.mod];
+			ctx!.fillText(
+				row.label.toUpperCase(),
+				laneLabelX,
+				rowsY + ri * snap.auraRowStride + snap.auraRowH / 2 + 3
+			);
+		});
+	}
 
 	// ── Footer: title left, watermark right ──
 	const fy = h - PAD / 2 - 4;
