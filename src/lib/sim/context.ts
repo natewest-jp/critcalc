@@ -28,6 +28,7 @@ import type { Condition, Element } from '$lib/types/ability';
 import type { LoadoutEntry } from '$lib/stores';
 import type { CastEvent, TimelineEvent } from '$lib/utils/rotationEvents';
 import type { IcdClock } from '$lib/utils/icd';
+import { type AuraState, createAuraState } from './aura';
 import {
 	type CharState,
 	createCharState,
@@ -154,6 +155,14 @@ export type SimContext = {
 	eChargeQueues: Map<string, number[]>;
 
 	// ── world state ───────────────────────────────────────────────────────────
+	/**
+	 * The rotation-wide aura. ⚓ THE FIELD L5 REPLACES: today it is a set of
+	 * flags with no decay and no units (`$lib/sim/aura.ts`); the gauge engine
+	 * takes its place, and this is the one field that changes type when it does.
+	 * Persists across segments — once applied, an aura sticks until a reaction
+	 * consumes it.
+	 */
+	aura: AuraState;
 	/** Elemental-application ICD clocks, keyed `${characterId}:${icdTag}`.
 	 *  Rotation-wide like the aura: a swap-out neither resets nor freezes one. */
 	icdClocks: Map<string, IcdClock>;
@@ -198,6 +207,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		castsByChar: new Map(),
 		eChargeQueues: new Map(),
 
+		aura: createAuraState(),
 		icdClocks: new Map(),
 		infusionWindows: []
 	};

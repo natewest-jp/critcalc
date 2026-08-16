@@ -29,14 +29,10 @@ import type { CharacterData } from '$lib/types/character';
 import type {
 	Ability,
 	ActionKey,
-	AuraElement,
 	CastAbility,
-	Condition,
 	Element,
 	NormalAbility,
 	NormalHit,
-	Reaction,
-	ScaledValue,
 	SkillAbility,
 	Summon,
 	TransientStateSpec
@@ -48,11 +44,9 @@ import {
 	getCooldownStartsAtStanceEnd
 } from '$lib/types/ability';
 import { tokenizeNotation, STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
-import { resolveActionElement, type NormalActionKind } from '$lib/utils/actionElement';
-import { createIcdClock, icdApplies, icdTagFor, resolveActionIcd } from '$lib/utils/icd';
+import { resolveActionElement } from '$lib/utils/actionElement';
 import { computeTeamEnabledReactions, computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { FPS, framesOf } from '$lib/utils/frames';
-import { getWeaponById } from '$lib/data/weaponLookup';
 import { GENERIC_NORMAL_HITS, GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
 import type { LoadoutEntry } from '$lib/stores';
 import type {
@@ -68,7 +62,6 @@ import { createSimContext } from '$lib/sim/context';
 import {
 	DEFAULT_ASCENSION,
 	evalCondition,
-	findChainStage,
 	matchVariant,
 	resolveEffectiveCharges,
 	type ChainIndex,
@@ -89,14 +82,20 @@ import {
 	dispatchConsumeStacksOnHit,
 	dispatchGainStacks,
 	dispatchGainStacksOnHit,
-	dispatchGainStacksOnReaction,
 	syncOnHitToStackState,
 	syncOnReactionToStackState,
 	syncSourceLifetimeToStackState
 } from '$lib/sim/stacks';
-import { dispatchOnCastExtensions, dispatchOnReactionExtensions } from '$lib/sim/extensions';
+import { dispatchOnCastExtensions } from '$lib/sim/extensions';
 import { dispatchShieldEnds, registerShieldOnCast } from '$lib/sim/shields';
 import { infusionAt, registerInfusionsOnCast } from '$lib/sim/infusions';
+import {
+	advanceChain,
+	getChainIndexMap,
+	getCharacterCdResetTargets,
+	getWeaponCdResetCooldown
+} from '$lib/sim/cooldowns';
+import { emitReactionsAtCast, emitReactionsAtSwing } from '$lib/sim/aura';
 import { computeSummonDamageTicks, findSummonsForBar, summonSpan } from '$lib/sim/summons';
 
 // Re-export the IR surface so consumers can import event/window types straight
@@ -367,86 +366,9 @@ function inferredStates(
 // is nothing to re-export.
 
 // ---------------------------------------------------------------------------
-// Weapon cdReset helper
+// cdReset helpers — MOVED to `$lib/sim/cooldowns.ts` (L3c), beside the chain
+// bookkeeping: both are the parser's cooldown-clock feedback edges (F4 / F1).
 // ---------------------------------------------------------------------------
-
-/**
- * Returns the effective proc cooldown (FRAMES) for the cdReset effect on the
- * character's equipped weapon, or null if none. Resolves ScaledValue using the
- * stored weaponRefinement (defaults to R1 when absent).
- */
-function resolveScaledValue(v: number | ScaledValue, refinementIndex: number): number {
-	if (typeof v === 'number') return v;
-	return v.refinementValues[refinementIndex];
-}
-
-function getWeaponCdResetCooldown(
-	charId: string,
-	loadoutMap: Record<string, LoadoutEntry> | undefined
-): number | null {
-	const entry = loadoutMap?.[charId];
-	if (!entry?.weaponId) return null;
-	const weapon = getWeaponById(entry.weaponId);
-	if (!weapon) return null;
-	const effect = weapon.passive.effects.find(
-		(e) => e.type === 'cdReset' && e.trigger.type === 'onCast' && e.trigger.ability === 'skill'
-	);
-	if (!effect?.procCooldown) return null;
-	const refinementIndex = (entry.weaponRefinement ?? 1) - 1;
-	return framesOf(resolveScaledValue(effect.procCooldown, refinementIndex));
-}
-
-// ---------------------------------------------------------------------------
-// Character cdReset helper
-// ---------------------------------------------------------------------------
-
-/**
- * Returns the abilities (skill/burst) whose cooldowns should be reset when the
- * given character casts the named ability. Walks the character's burst,
- * passives, and constellations for `cdReset` effects with `source: "character"`
- * whose `trigger.ability` matches the cast that just fired. Constellation-gated
- * effects are filtered against the character's constellation level.
- *
- * Use case (v1): Kazuha C1 — burst reset of skill CD on Q-cast.
- */
-function getCharacterCdResetTargets(
-	char: CharacterData,
-	firingAbility: 'skill' | 'burst',
-	constellationLevel: number
-): Array<'skill' | 'burst'> {
-	const targets: Array<'skill' | 'burst'> = [];
-	const sources: Array<{
-		effects?: {
-			type: string;
-			source?: string;
-			trigger: { type: string; ability?: string };
-			resets?: string;
-			conditions?: Condition;
-		}[];
-	}> = [...(char.passives ?? []), ...(char.constellations ?? [])];
-	for (const node of sources) {
-		const effects = node.effects ?? [];
-		for (const eff of effects) {
-			if (eff.type !== 'cdReset') continue;
-			if (eff.source !== 'character') continue;
-			if (eff.trigger.type !== 'onCast') continue;
-			if (eff.trigger.ability !== firingAbility) continue;
-			// Constellation gating: skip when the effect is gated above the player's level.
-			const cond = eff.conditions;
-			if (
-				cond &&
-				cond.type === 'constellation' &&
-				cond.level !== undefined &&
-				constellationLevel < cond.level
-			) {
-				continue;
-			}
-			const resetTarget = (eff.resets ?? eff.trigger.ability) as 'skill' | 'burst';
-			targets.push(resetTarget);
-		}
-	}
-	return targets;
-}
 
 // ---------------------------------------------------------------------------
 // Summon resolution — MOVED to `$lib/sim/summons.ts` (L3c). `computeSummonTicks`
@@ -461,229 +383,10 @@ export { computeSummonTicks } from '$lib/sim/summons';
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// Synthetic reaction emission (E3 v1.5 — cast-only optimistic model)
+// The coarse aura model + synthetic reaction emission — MOVED to
+// `$lib/sim/aura.ts` (L3c). ⚓ That module is the seam L5 replaces with the real
+// gauge; the interface it exposes is already the shape `simulateGauge` wants.
 // ---------------------------------------------------------------------------
-//
-// The planner does not simulate elemental gauge / aura state at gcsim fidelity
-// (per "windows not gauges" constitution). Instead, v1.5 emits typed reactions
-// at each E/Q cast based on the character's element + a coarse rotation-wide
-// aura state. The emitted reactions feed the `onReaction` triggers on
-// `gainStacks` effects and `durationExtensions[]` entries.
-//
-// Aura state simplifications vs. KQM Elemental Gauge Theory:
-//   - No durability/decay: applied auras stick indefinitely.
-//   - No reaction-specific GCDs (Crystallize 1s, Swirl 0.5s ICD, etc.).
-//   - Anemo and Geo do NOT consume aura (KQM: anemo spreads/doesn't clear;
-//     geo's partial reduce is approximated as no-consume).
-//   - PHEC casts consume opposing PHEC and apply own element (default rule),
-//     with explicit special cases for EC coexistence, Bloom (push core),
-//     Burning (compound aura), Quicken (compound aura), and Hyperbloom/
-//     Burgeon (consume core).
-//   - No element-absorption tracking (Kazuha-shape characters use their own
-//     element; absorbed elements are deferred to a future P4 expansion).
-//
-// ⚓ N/C/P SWINGS APPLY TOO (ICD round, 2026-08-15), AND ONLY THEY ARE GATED.
-// A catalyst's normals, a catalyst or bow charged shot and an infused plunge
-// all feed the aura — behind the elemental-application ICD clock, because a
-// naive wiring would emit five swirls from a catalyst `N5` where the game
-// gives two. ⛔ E/Q casts stay ungated on purpose: **ICD counts HITS, and a
-// cast event is not a hit — it is an ABILITY**. We model a multi-hit skill as
-// one application, so a counter over cast events would suppress a second cast
-// that in game lands four more hits. Normals are genuinely one swing = one
-// hit, which is exactly where the counter belongs. See docs/library/game/icd.md.
-//
-// Cold-start emerges naturally: the first cast sees an empty aura set and
-// emits no reactions; only the LATER casts (after some applicator has fired)
-// react. Anemo→Anemo→Anemo all emit zero reactions if no PHEC/dendro
-// applicator preceded them.
-
-type AuraState = {
-	/** Currently-applied 5-element auras. Anemo and Geo are not aura-applying. */
-	applied: Set<AuraElement>;
-	/** Burning compound aura — pyro+dendro coexisting. Acts as both. */
-	burning: boolean;
-	/** Quickened compound aura — dendro+electro coexisting. Acts as both. */
-	quickened: boolean;
-	/** Count of dendro cores on field (consumed by hyperbloom/burgeon). */
-	bloomCores: number;
-};
-
-function createAuraState(): AuraState {
-	return { applied: new Set(), burning: false, quickened: false, bloomCores: 0 };
-}
-
-/** Returns the typed reactions an application of `element` plausibly triggers
- *  given the current aura state — an E/Q cast, or an N/C/P swing that cleared
- *  its ICD clock. Optimistic: any opposing aura makes the matching reaction
- *  eligible. The consumer's `trigger.reaction` filter narrows further at
- *  dispatch time. `hasMoonsignTeam` enables `lunarCrystallize` emission for
- *  geo casts (gating: 2+ Moonsign on team). `teamEnabledReactions` CONVERTS
- *  superConduct → stellarConduct when a Stellar-Conduct enabler is on the
- *  team (replacement, not addition — in game ALL Superconduct converts, and
- *  patched kit texts say "Superconduct or Stellar-Conduct", so consumers
- *  author OR-arrays; see docs/library/game/stellar-reactions.md).
- *
- *  Returns `Reaction` keys matching `src/lib/types/ability.ts`:
- *  swirl, crystallize, lunarCrystallize, vaporize, melt, overloaded, burning,
- *  bloom, electroCharged, frozen, superConduct|stellarConduct, quicken,
- *  aggravate, hyperbloom, burgeon, spread. Note: lunarBloom and lunarCharged
- *  are schema-supported but not yet emitted (no character authoring needs
- *  them via the synthetic emission path; deferred to manual triggers / future
- *  Moonsign reaction surface). stellarSwirl is likewise not emitted until its
- *  7.0 mechanics are confirmed. */
-function computeReactionsForApplication(
-	element: Element,
-	aura: AuraState,
-	hasMoonsignTeam: boolean,
-	teamEnabledReactions: ReadonlySet<string>
-): Reaction[] {
-	const reactions: Reaction[] = [];
-	const has = (e: AuraElement) => aura.applied.has(e);
-
-	switch (element) {
-		case 'anemo':
-			// Shape A (2026-05-14): emit element-specific swirl variants only.
-			// The broad `'swirl'` key was retired so the schema matches in-game
-			// React() ontology — pyroSwirl / hydroSwirl / cryoSwirl /
-			// electroSwirl are distinct reactions. Existing consumers
-			// (Mizuki A1, Kazuha A4, Sucrose A4, VV 4pc) author OR-arrays
-			// matching all four variants when they need the "any swirl" effect.
-			if (has('pyro')) reactions.push('pyroSwirl');
-			if (has('hydro')) reactions.push('hydroSwirl');
-			if (has('cryo')) reactions.push('cryoSwirl');
-			if (has('electro')) reactions.push('electroSwirl');
-			break;
-		case 'geo':
-			if (has('pyro')) reactions.push('pyroCrystallize');
-			if (has('hydro')) reactions.push('hydroCrystallize');
-			if (has('cryo')) reactions.push('cryoCrystallize');
-			if (has('electro')) reactions.push('electroCrystallize');
-			if (hasMoonsignTeam && (has('pyro') || has('hydro') || has('cryo') || has('electro')))
-				reactions.push('lunarCrystallize');
-			break;
-		case 'pyro':
-			if (has('hydro')) reactions.push('vaporize');
-			if (has('cryo')) reactions.push('melt');
-			if (has('electro')) reactions.push('overloaded');
-			if (has('dendro')) reactions.push('burning');
-			if (aura.bloomCores > 0) reactions.push('burgeon');
-			break;
-		case 'hydro':
-			if (has('pyro')) reactions.push('vaporize');
-			if (has('cryo')) reactions.push('frozen');
-			if (has('electro')) reactions.push('electroCharged');
-			if (has('dendro') || aura.quickened) reactions.push('bloom');
-			break;
-		case 'cryo':
-			if (has('pyro')) reactions.push('melt');
-			if (has('hydro')) reactions.push('frozen');
-			if (has('electro'))
-				reactions.push(
-					teamEnabledReactions.has('stellarConduct') ? 'stellarConduct' : 'superConduct'
-				);
-			break;
-		case 'electro':
-			if (has('pyro')) reactions.push('overloaded');
-			if (has('hydro')) reactions.push('electroCharged');
-			if (has('cryo'))
-				reactions.push(
-					teamEnabledReactions.has('stellarConduct') ? 'stellarConduct' : 'superConduct'
-				);
-			if (has('dendro')) reactions.push('quicken');
-			if (aura.quickened) reactions.push('aggravate');
-			if (aura.bloomCores > 0) reactions.push('hyperbloom');
-			break;
-		case 'dendro':
-			if (has('pyro')) reactions.push('burning');
-			if (has('hydro')) reactions.push('bloom');
-			if (has('electro')) reactions.push('quicken');
-			if (aura.quickened) reactions.push('spread');
-			break;
-		case 'physical':
-			// No reaction emission for physical casts (no character has
-			// physical as element today; included for type completeness).
-			break;
-	}
-	return reactions;
-}
-
-/** Mutates `aura` in place to reflect the post-application state. Anemo and Geo
- *  are no-ops (they don't apply or consume aura in our simplified model). PHEC
- *  and dendro applications run consumption rules in priority order: bloom-core ops →
- *  bloom formation → burning compound → quicken compound → EC coexistence →
- *  default opposing-PHEC consumption. */
-function updateAuraStateAfterApplication(element: Element, aura: AuraState): void {
-	if (element === 'anemo' || element === 'geo' || element === 'physical') return;
-
-	// Bloom-core consumption: electro → hyperbloom; pyro → burgeon. Consumes
-	// one core; otherwise behaves like a normal aura application.
-	if ((element === 'electro' || element === 'pyro') && aura.bloomCores > 0) {
-		aura.bloomCores -= 1;
-		// Fall through to default to also apply own element / clear opposing.
-	}
-
-	// Bloom: hydro + dendro → consume both, push core.
-	if (element === 'hydro' && aura.applied.has('dendro')) {
-		aura.applied.delete('dendro');
-		aura.bloomCores += 1;
-		// hydro is consumed in the reaction; do not add it to applied.
-		return;
-	}
-	if (element === 'dendro' && aura.applied.has('hydro')) {
-		aura.applied.delete('hydro');
-		aura.bloomCores += 1;
-		return;
-	}
-
-	// Burning: pyro + dendro → set compound flag; both elements remain present
-	// (burning aura acts as pyro for future reactions, with underlying dendro).
-	if (element === 'pyro' && aura.applied.has('dendro')) {
-		aura.burning = true;
-		aura.applied.add('pyro');
-		return;
-	}
-	if (element === 'dendro' && aura.applied.has('pyro')) {
-		aura.burning = true;
-		aura.applied.add('dendro');
-		return;
-	}
-
-	// Quicken: dendro + electro → set compound flag; both elements remain
-	// (quicken aura coexists with dendro/electro/cryo per KQM).
-	if (element === 'dendro' && aura.applied.has('electro')) {
-		aura.quickened = true;
-		aura.applied.add('dendro');
-		return;
-	}
-	if (element === 'electro' && aura.applied.has('dendro')) {
-		aura.quickened = true;
-		aura.applied.add('electro');
-		return;
-	}
-
-	// EC coexistence: hydro + electro → both auras stay.
-	if (element === 'hydro' && aura.applied.has('electro')) {
-		aura.applied.add('hydro');
-		return;
-	}
-	if (element === 'electro' && aura.applied.has('hydro')) {
-		aura.applied.add('electro');
-		return;
-	}
-
-	// Default PHEC: cast clears opposing PHEC, applies own.
-	const opposingMap: Partial<Record<Element, AuraElement[]>> = {
-		pyro: ['hydro', 'cryo', 'electro'],
-		hydro: ['pyro', 'cryo'],
-		cryo: ['pyro', 'hydro', 'electro'],
-		electro: ['pyro', 'cryo'],
-		dendro: []
-	};
-	for (const opp of opposingMap[element] ?? []) {
-		aura.applied.delete(opp);
-	}
-	aura.applied.add(element as AuraElement);
-}
 
 // ---------------------------------------------------------------------------
 // Parser
@@ -956,18 +659,6 @@ export function parseNotation(
 	const getCharState = ctx.getCharState;
 	let cursor = 0; // rotation clock (FRAMES — see the time model in the header)
 
-	// E3 v1.5 — rotation-wide aura state for synthetic reaction emission.
-	// Persists across segments: once applied, auras stick (no decay) until
-	// consumed by a reaction. Anemo/Geo casts never modify this state.
-	const auraState = createAuraState();
-
-	// Elemental-application ICD clocks, keyed `${characterId}:${icdTag}` — gcsim
-	// tracks per (target, character, ICD tag), and we have one notional target.
-	// Rotation-wide like the aura: a character's normal-attack counter survives
-	// a swap-out, so returning to them mid-2.5s does not hand back a free
-	// application. Only N/C/P swings consult these (see the aura-model note).
-	const icdClocks = ctx.icdClocks;
-
 	// Resolved runtime states for ANY holder at time `t` — the onHit-dispatch
 	// analog of the per-segment `computeCurrentStates`, usable for OFF-FIELD
 	// holders (Escoffier C6 gates on HER `duringSummon` while a teammate's
@@ -1016,36 +707,7 @@ export function parseNotation(
 	// provenance. The proc-ready clock lives on cs.sacProcReadyAt.
 	const { eChargeQueues, weaponProcBars } = ctx;
 
-	// Per-character chain-stage lookup (skill/burst chains, e.g. Diluc E1→E2→E3),
-	// backed by cs.chains. Each entry holds the *next* expected stage index plus
-	// the absolute time after which the chain resets to 0. After firing a
-	// non-terminal chainStage ability, advanceChain advances index and sets
-	// expiresAt = now + window; firing the terminal stage deletes the entry.
-	// (Stance windows, named states, and extension bookkeeping now live on
-	// cs.stance / cs.states — see CharState.)
-	const getChainIndexMap = (charId: string, cursor: number): Map<'skill' | 'burst', number> => {
-		const result = new Map<'skill' | 'burst', number>();
-		for (const [kind, pos] of getCharState(charId).chains) {
-			if (pos.expiresAt > cursor) result.set(kind, pos.index);
-		}
-		return result;
-	};
-	const advanceChain = (
-		ability: CastAbility,
-		charId: string,
-		kind: 'skill' | 'burst',
-		cursor: number
-	) => {
-		const stage = findChainStage(ability.conditions);
-		if (!stage) return;
-		const charChain = getCharState(charId).chains;
-		if (stage.window === undefined) {
-			// Terminal stage: reset chain to index 0.
-			charChain.delete(kind);
-		} else {
-			charChain.set(kind, { index: stage.index + 1, expiresAt: cursor + framesOf(stage.window) });
-		}
-	};
+	// ⚓ Chain-stage bookkeeping MOVED to `$lib/sim/cooldowns.ts` (L3c).
 
 	// ⚓ durationExtensions dispatch (feedback edge F2) MOVED to
 	// `$lib/sim/extensions.ts` (L3c).
@@ -1164,137 +826,8 @@ export function parseNotation(
 
 	// ⚓ `infuse`-Effect infusion windows MOVED to `$lib/sim/infusions.ts` (L3c).
 
-	/** One elemental application: compute the synthetic reactions for `element` +
-	 *  the current aura state, dispatch each to the onReaction extension and
-	 *  gainStacks paths, push `reaction` IR events for renderer consumption
-	 *  (artifact onReaction effects), then update the aura state. Shared by the
-	 *  E/Q cast sites and the N/C/P swing sites; the caller has already decided
-	 *  that this application LANDS (the swing sites ask the ICD clock first). */
-	const emitReactionsForApplication = (
-		char: CharacterData,
-		element: Element,
-		source: ReactionEvent['castKind'],
-		time: number,
-		preStates: ReadonlySet<string>,
-		constellation: number,
-		chainIdx: ChainIndex,
-		stackState: Map<string, number>
-	): void => {
-		const reactions = computeReactionsForApplication(
-			element,
-			auraState,
-			hasMoonsignTeam,
-			teamEnabledReactions
-		);
-		const stacksSnapshot = stackState.size > 0 ? new Map(stackState) : undefined;
-		for (const r of reactions) {
-			dispatchOnReactionExtensions(
-				ctx,
-				char.id,
-				r,
-				time,
-				preStates,
-				constellation,
-				chainIdx,
-				stacksSnapshot
-			);
-			dispatchGainStacksOnReaction(
-				teamChars,
-				char.id,
-				r,
-				time,
-				new Map([[char.id, preStates]]),
-				new Map(teamChars.map((c) => [c.id, constellationLevels?.[c.id] ?? 0])),
-				getCharState
-			);
-			events.push({
-				kind: 'reaction',
-				id: ctx.nextId(),
-				characterId: char.id,
-				reaction: r,
-				time,
-				castKind: source
-			});
-		}
-		updateAuraStateAfterApplication(element, auraState);
-	};
-
-	/** Convenience wrapper for a cast site. ⛔ Ungated: a cast is ability
-	 *  granularity, not hit granularity — see the ICD note above the aura model. */
-	const emitReactionsAtCast = (
-		char: CharacterData,
-		castKind: 'skill' | 'burst',
-		castTime: number,
-		preStates: ReadonlySet<string>,
-		constellation: number,
-		chainIdx: ChainIndex,
-		stackState: Map<string, number>
-	): void => {
-		const element = char.element;
-		if (!element) return;
-		emitReactionsForApplication(
-			char,
-			element,
-			castKind,
-			castTime,
-			preStates,
-			constellation,
-			chainIdx,
-			stackState
-		);
-		// The cast's parser-private hit is built + dispatched by handleCast
-		// immediately after this call (onHit wiring 2026-07-17 — the hit needs
-		// the resolved ability/variant context this closure doesn't see). Same
-		// dispatch instant and ordering as the legacy tail dispatch here.
-	};
-
-	/** One N/C/P swing offered to the aura, behind its ICD clock (ICD round,
-	 *  2026-08-15). Called at the swing's HIT instant — the post-advance cursor,
-	 *  the same instant `dispatchHit` uses — because that is when the element
-	 *  lands.
-	 *
-	 *  ⚠️ A PHYSICAL swing never reaches a clock. `resolveActionElement`
-	 *  returning `undefined` means the swing applies nothing, and a hit that
-	 *  applies nothing does not spend an ICD budget — so a physical string
-	 *  followed by an infusion starts the infused counter fresh, which is the
-	 *  KQM model. The clock is keyed by (character, tag) and lives at parse
-	 *  scope beside the aura: a swap-out neither resets nor freezes it.
-	 *
-	 *  `null` params are gcsim's `ICDTagNone` — applies always AND touches no
-	 *  counter, so an untracked source can't reset a counter it shares a tag
-	 *  with (`resolveActionIcd` carries the case list). */
-	const emitReactionsAtSwing = (
-		char: CharacterData,
-		kind: NormalActionKind,
-		element: Element | undefined,
-		abilityNoICD: boolean | undefined,
-		time: number,
-		preStates: ReadonlySet<string>,
-		constellation: number,
-		stackState: Map<string, number>
-	): void => {
-		if (!element) return;
-		const params = resolveActionIcd(kind, char.weapon, abilityNoICD);
-		if (params) {
-			const key = `${char.id}:${icdTagFor(kind)}`;
-			let clock = icdClocks.get(key);
-			if (!clock) {
-				clock = createIcdClock();
-				icdClocks.set(key, clock);
-			}
-			if (!icdApplies(clock, time, params).applies) return;
-		}
-		emitReactionsForApplication(
-			char,
-			element,
-			kind,
-			time,
-			preStates,
-			constellation,
-			getChainIndexMap(char.id, time),
-			stackState
-		);
-	};
+	// ⚓ Elemental application + synthetic reaction emission MOVED to
+	// `$lib/sim/aura.ts` (L3c) — the seam L5 replaces.
 
 	for (let i = 0; i < segments.length; i++) {
 		const tokens = segments[i];
@@ -1515,7 +1048,7 @@ export function parseNotation(
 						tok.text,
 						computeCurrentStates(localCursor),
 						charConstellationLevel,
-						getChainIndexMap(char.id, localCursor),
+						getChainIndexMap(ctx, char.id, localCursor),
 						stackState,
 						variantCtx
 					)?.bypassesCooldown === true;
@@ -1544,7 +1077,7 @@ export function parseNotation(
 								'skill',
 								scanStates,
 								charConstellationLevel,
-								getChainIndexMap(char.id, localCursor),
+								getChainIndexMap(ctx, char.id, localCursor),
 								stackState
 							) ?? (ability as SkillAbility); // !isBurst branch: `ability` is the skill
 						// Initialize this ability's charge queue on first sight:
@@ -1555,7 +1088,7 @@ export function parseNotation(
 								tok.text,
 								scanStates,
 								charConstellationLevel,
-								getChainIndexMap(char.id, localCursor),
+								getChainIndexMap(ctx, char.id, localCursor),
 								stackState,
 								variantCtx
 							);
@@ -1597,7 +1130,7 @@ export function parseNotation(
 				// frozen settle order, not a reorder: syncs team/others-sourced
 				// onHit accrual into the segment before conditions read it.
 				syncOnHitToStackState(char, castStart, stackState, stackInstances, getCharState);
-				const chainIdx = getChainIndexMap(char.id, castStart);
+				const chainIdx = getChainIndexMap(ctx, char.id, castStart);
 				// Resolve the active variant (chain-stage + state + stack aware).
 				const active =
 					resolveActiveAbility(char, kind, states, charConstellationLevel, chainIdx, stackState) ??
@@ -1761,7 +1294,7 @@ export function parseNotation(
 
 				localCursor += castTime;
 				if (!isBurst) lastEText = tok.text; // plunge-variant selection
-				advanceChain(active, char.id, kind, localCursor);
+				advanceChain(ctx, active, char.id, kind, localCursor);
 
 				// Q only: character cdReset — refund a charge on each affected
 				// ability whose CD the burst resets (Kazuha C1: Q resets E).
@@ -1905,6 +1438,7 @@ export function parseNotation(
 				// The cast instant fed to the reaction/extension emitters is
 				// `castStart` (the exact pre-advance cursor) for both kinds.
 				emitReactionsAtCast(
+					ctx,
 					char,
 					kind,
 					castStart,
@@ -2114,6 +1648,7 @@ export function parseNotation(
 						// clock (ICD round). A catalyst `N5` applies on swings 1, 4
 						// and 6 at the corpus cadence, not on all five.
 						emitReactionsAtSwing(
+							ctx,
 							char,
 							'normal',
 							nElement,
@@ -2199,6 +1734,7 @@ export function parseNotation(
 					// aimed shot both apply; only the bow's runs a counter (a
 					// catalyst's is gcsim `ICDTagNone`) — resolveActionIcd holds it.
 					emitReactionsAtSwing(
+						ctx,
 						char,
 						'charged',
 						cElement,
@@ -2300,6 +1836,7 @@ export function parseNotation(
 						// ICD at all (gcsim census in resolveActionIcd), so an infused
 						// plunge string applies on every landing.
 						emitReactionsAtSwing(
+							ctx,
 							char,
 							'plunge',
 							pElement,
