@@ -347,7 +347,17 @@ independent of every architecture decision so nothing can invalidate it; if it r
 `gauge.ts` diverges materially **that changes the plan**; and it gives a **baseline to beat**
 so the round reports a delta rather than a claim.
 
-🚧 **Blocker: Go is not installed** (`which go` → not found; gcsim is `go 1.25.0`). See §10.
+✅ **Unblocked 2026-08-16** — `go1.26.6` installed, gcsim builds and runs.
+
+⚡⚡ **The L0 spike found the oracle is far stronger than this section assumed, and it
+supersedes the static-extraction plan in §L4.** The element log carries the applied
+**durability**, the aura gauge **before and after**, and the exact frame — so hitmarks,
+gauge units, and "does this cast apply at all" are all **observable** rather than parsed out
+of Go. The ~9% of call sites that needed a human, the wrapper-flattening ambiguity, the
+mode-indexed tables and the runtime-dependent hit counts all dissolve, because the simulator
+resolves them. ⚠️ In exchange, **coverage** becomes the data track's central risk: running
+sees one path where static reading sees all branches. Full plan and evidence:
+[`gauge-round-L0.md`](gauge-round-L0.md).
 
 ---
 
@@ -478,7 +488,17 @@ same files in the same read. Splitting them would mean visiting 123 characters t
 was understating), so it cannot ride the L3 differ. It is gated by the L0 oracle and by
 `npm run build` + Nate's eyes, not by IR equality.
 
-Extractability, measured across 924 QueueAttack-family sites:
+⛔⛔ **SUPERSEDED BY L0 (2026-08-16): do not extract statically.** The table below measured
+reading gcsim's Go source; the L0 spike showed the same facts are **observable** by running
+the simulator and reading its element log — hitmark = `element.frame − action.frame`, units =
+`logs.dur / 25`, applies-at-all = presence of the event. Everything the static route flagged
+as hard (loops, wrapper flattening, mode-indexed tables, runtime-dependent hit counts, the
+25 sites needing a human) resolves because the simulator resolves it. The table is kept as
+the record of _why_ we did not go that way — and as the fallback for the 12 characters with
+no gcsim source. ⚠️ The new risk is **coverage**, not parseability: see
+[`gauge-round-L0.md`](gauge-round-L0.md) §5.
+
+Extractability of the **static** route, measured across 924 QueueAttack-family sites:
 
 | surface                                          | verdict                                                                                                                                                                                                                 |
 | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
