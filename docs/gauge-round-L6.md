@@ -2,8 +2,9 @@
 
 **Status:** ✅ built and visually verified by Nate on the live tool (⚓ _"I'm typing in
 rotations and it's leaving me stunned… what we have is already almost entirely the shape
-of it"_). ⚠️ **UNMERGED** on `feat/gauge-round-l6` — two commits, `65b453d` the lane and
-`8e4c67c` the plot conversion.
+of it"_). ✅ **MERGED + PUSHED 2026-08-16 — `8893da5`** (⚠️ cite the merge, not the branch tip).
+That push carried the whole gauge round: 60 commits, L0 through L6, which until then had
+been entirely local.
 ⏳ **Open:** real Safari, and a refinement pass Nate has asked for but not yet specified
 (⛔ ask, don't guess — the knobs already on the table are in §8).
 Follows [L5e](gauge-round-L5e.md); the round's contract is [gauge-round.md](gauge-round.md).
