@@ -1,6 +1,7 @@
 # L3 — The clock-driven core
 
-**Status:** planned 2026-08-16 · not started
+**Status:** 🔄 IN PROGRESS · planned 2026-08-16 · L3a ✅ L3b ✅ L3c 5/14 families
+**Branch:** `refactor/gauge-l3`
 **Landing:** [`gauge-round.md`](gauge-round.md) §L3, against contracts **C2**, **C5**, **C6**.
 **Shape:** no behaviour change. The IR must come out byte-identical, ids included.
 
