@@ -66,8 +66,22 @@
 				}
 			],
 			"variants": [
-				{ "label": "Infusion", "duration": 2.9 },
-				{ "label": "Field", "duration": 10 }
+				{
+					"label": "Infusion",
+					"duration": 2.9,
+					"application": [
+						{ "frame": 36, "element": "cryo" },
+						{ "frame": 655, "element": "cryo" }
+					]
+				},
+				{
+					"label": "Field",
+					"duration": 10,
+					"application": [
+						{ "frame": 36, "element": "cryo" },
+						{ "frame": 655, "element": "cryo" }
+					]
+				}
 			],
 			"_curatorNotes": [
 				"Variants above are pre-existing display variants from the generator showing infusion duration (talent-scaling, 2.0–3.0s) and field duration (10s). Field entity lifetime is now canonical on summons[0]. Infusion duration (infuseDur[talentLevel]) is applied as a stat modifier on characters within the field on each tick — not a separate summon entity.",
@@ -76,7 +90,11 @@
 			],
 			"tags": [],
 			"effects": [],
-			"description": "Chongyun strikes the ground with his greatsword, causing a Cryo explosion in a circular AoE in front of him that deals Cryo DMG.\nAfter a short delay, the cold air created by the Cryo explosion will coalesce into a Chonghua Frost Field, within which all Sword, Claymore and Polearm-wielding characters' weapons will be infused with Cryo."
+			"description": "Chongyun strikes the ground with his greatsword, causing a Cryo explosion in a circular AoE in front of him that deals Cryo DMG.\nAfter a short delay, the cold air created by the Cryo explosion will coalesce into a Chonghua Frost Field, within which all Sword, Claymore and Polearm-wielding characters' weapons will be infused with Cryo.",
+			"application": [
+				{ "frame": 36, "element": "cryo" },
+				{ "frame": 655, "element": "cryo" }
+			]
 		},
 		{
 			"id": "chongyun__burst__spirit_blade_cloudparting_star",
@@ -93,7 +111,12 @@
 				"ActionSwap not explicitly set in burstFrames (InitAbilSlice(79)) — stays at AnimationLength 79. swap key omitted per recipe rule. This means the burst cannot be swap-cancelled before the full 79-frame animation."
 			],
 			"effects": [],
-			"description": "Performing the secret hand seals, Chongyun summons 3 giant spirit blades in mid-air that fall to the earth one by one after a short delay, exploding as they hit the ground.\nWhen the spirit blades explode, they will deal AoE Cryo DMG and launch opponents."
+			"description": "Performing the secret hand seals, Chongyun summons 3 giant spirit blades in mid-air that fall to the earth one by one after a short delay, exploding as they hit the ground.\nWhen the spirit blades explode, they will deal AoE Cryo DMG and launch opponents.",
+			"application": [
+				{ "frame": 50, "element": "cryo" },
+				{ "frame": 59, "element": "cryo" },
+				{ "frame": 67, "element": "cryo" }
+			]
 		}
 	],
 	"passives": [

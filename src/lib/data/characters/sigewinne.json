@@ -118,7 +118,8 @@
 								}
 							]
 						}
-					]
+					],
+					"application": [{ "frame": 106, "element": "hydro" }]
 				},
 				{
 					"label": "Hold",
@@ -149,7 +150,8 @@
 								}
 							]
 						}
-					]
+					],
+					"application": [{ "frame": 130, "element": "hydro" }]
 				}
 			],
 			"caveat": "Not modeled: the one-time self-heal (50% Max HP) when the bubble stops bouncing, the held-cast healing boost on early bounces (+5% / +10%), and Bond of Life from the skill's Sourcewater Droplets.",
@@ -164,7 +166,8 @@
 				"Schema gap — Short Hold variant (h1E) cooldownStartDelay=40f (skillShortHoldCDStart=40 in skill.go). AbilityVariant has no cooldownStartDelay field; reviewer to extend schema.",
 				"Schema gap — Hold variant (h2E) cooldownStartDelay=66f (skillHoldCDStart=66 in skill.go). AbilityVariant has no cooldownStartDelay field; reviewer to extend schema."
 			],
-			"description": "Blows a Bolstering Bubblebalm that can stimulate blood flow and help patients drift off to sleep using a bubblegun specially made in the Fortress of Meropide.\nBolstering Bubblebalms will bounce between nearby opponents, dealing Hydro DMG based on Sigewinne's max HP to opponents it hits. When it bounces, it will restore HP to all nearby party members except Sigewinne herself. The amount healed is based on Sigewinne's max HP.\nAfter bouncing 5 times, the Bolstering Bubblebalm will disappear and restore HP to Sigewinne based on her max HP value.\nWhen no opponents are present, the Bolstering Bubblebalm will bounce nearby. Only one Bolstering Bubblebalm created by a Sigewinne may exist at once.\nWhen Held, the Bolstering Bubblebalm can be boosted to an even bigger size.\n\nHold\nEnter Aiming Mode to begin blowing an even bigger, even more breathtaking Bolstering Bubblebalm!\nThe Bolstering Bubblebalm will grow bigger the longer the skill is Held, until it grows up to two tiers in size. Each tier it grows increases its DMG by 5% and healing by 5%. When a Bolstering Bubblebalm bounces, it will drop down a tier in size, until it returns to being a normal Bolstering Bubblebalm.\nAfter weaker opponents are hit by big Bolstering Bubblebalms, they will be imprisoned and will be unable to move.\n\nIn addition, 2 Sourcewater Droplets will be created near Sigewinne when she uses this Skill. Each Sourcewater Droplet Sigewinne collects will grant her a Bond of Life worth 10% of her Max HP.\nWhen Sigewinne's Bond of Life is cleared, she regains 1 Elemental Energy for every 2,000 HP worth of the Bond of Life that was cleared. Sigewinne can regain up to 5 Elemental Energy in this way.\n\nArkhe: Ousia\nBolstering Bubblebalms periodically call down a Surging Blade on the position they hit, dealing Ousia-aligned Hydro DMG based on Sigewinne's max HP."
+			"description": "Blows a Bolstering Bubblebalm that can stimulate blood flow and help patients drift off to sleep using a bubblegun specially made in the Fortress of Meropide.\nBolstering Bubblebalms will bounce between nearby opponents, dealing Hydro DMG based on Sigewinne's max HP to opponents it hits. When it bounces, it will restore HP to all nearby party members except Sigewinne herself. The amount healed is based on Sigewinne's max HP.\nAfter bouncing 5 times, the Bolstering Bubblebalm will disappear and restore HP to Sigewinne based on her max HP value.\nWhen no opponents are present, the Bolstering Bubblebalm will bounce nearby. Only one Bolstering Bubblebalm created by a Sigewinne may exist at once.\nWhen Held, the Bolstering Bubblebalm can be boosted to an even bigger size.\n\nHold\nEnter Aiming Mode to begin blowing an even bigger, even more breathtaking Bolstering Bubblebalm!\nThe Bolstering Bubblebalm will grow bigger the longer the skill is Held, until it grows up to two tiers in size. Each tier it grows increases its DMG by 5% and healing by 5%. When a Bolstering Bubblebalm bounces, it will drop down a tier in size, until it returns to being a normal Bolstering Bubblebalm.\nAfter weaker opponents are hit by big Bolstering Bubblebalms, they will be imprisoned and will be unable to move.\n\nIn addition, 2 Sourcewater Droplets will be created near Sigewinne when she uses this Skill. Each Sourcewater Droplet Sigewinne collects will grant her a Bond of Life worth 10% of her Max HP.\nWhen Sigewinne's Bond of Life is cleared, she regains 1 Elemental Energy for every 2,000 HP worth of the Bond of Life that was cleared. Sigewinne can regain up to 5 Elemental Energy in this way.\n\nArkhe: Ousia\nBolstering Bubblebalms periodically call down a Surging Blade on the position they hit, dealing Ousia-aligned Hydro DMG based on Sigewinne's max HP.",
+			"application": [{ "frame": 75, "element": "hydro" }]
 		},
 		{
 			"id": "sigewinne__burst__super_saturated_syringing",
@@ -182,7 +185,15 @@
 				"Burst fires repeated Hydro DMG waves over burstMaxDuration=142f wave window (chargeBurstDur=99f pre-wave + 142f = 241f total). No persistent entity spawned; removed legacy duration:2.5 (reflected 142/60≈2.37s wave window). C4 sets burstMaxDuration=326f (425-99), +~3s. Frames dynamic: Frames(next)=chargeBurstDur(99)+tickAnimLength(=burstMaxDuration at full run)+endLag[next]. endLag map from burst.go init: swap=4, N=28, E=30, D=0, J=0. Full-duration frames recorded (default ticks=-1).",
 				"Burst absorbs up to 2 nearby Sourcewater Droplets on cast (burstFindDroplets granting Bond of Life). See skill _curatorNotes for Bond of Life/energy mechanic."
 			],
-			"description": "Takes out a special Fortress of Meropide-made syringe and assault the area in front with waves of kindness and medicine, dealing AoE Hydro DMG based on Sigewinne's max HP.\nIn addition, Sigewinne absorbs up to 2 nearby Sourcewater Droplets within a certain range when she uses this skill."
+			"description": "Takes out a special Fortress of Meropide-made syringe and assault the area in front with waves of kindness and medicine, dealing AoE Hydro DMG based on Sigewinne's max HP.\nIn addition, Sigewinne absorbs up to 2 nearby Sourcewater Droplets within a certain range when she uses this skill.",
+			"application": [
+				{ "frame": 99, "element": "hydro" },
+				{ "frame": 124, "element": "hydro" },
+				{ "frame": 149, "element": "hydro" },
+				{ "frame": 174, "element": "hydro" },
+				{ "frame": 199, "element": "hydro" },
+				{ "frame": 224, "element": "hydro" }
+			]
 		}
 	],
 	"passives": [

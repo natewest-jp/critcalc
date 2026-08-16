@@ -94,7 +94,8 @@
 				"A4 Heart's Repose heal boost (+75% of Shinobu's EM per tick, gcsim a4Healing) co-located on the ring heal via flatScaling per the Aino A4 precedent (DEFAULT_ASCENSION=4 ⇒ A4 active). The manual-trigger stub effects on the Heart's Repose passive node are retained as documentation and do not dispatch.",
 				"Ring electro DMG tick authored 2026-07-12 as a summonTick damage effect alongside the heal (Diona Drunken Mist heal+damage pair shape). Same bellTick pulse: gcsim skill.go bellTick queues both the QueueAttack and the Heal every 90f (1.5s), so trigger is identical to the heal's (firstTickDelay omitted = interval default). TL10: skilldot[9]=0.45432 → 45.43% ATK (sidecar 'Grass Ring of Sanctification DMG' col 10 = 45.4%), electro, ICDTag ElementalArt. A4 DMG boost (+25% of Shinobu's EM flat per tick, gcsim a4Damage) co-located via flatScaling, mirroring the heal's A4 treatment (DEFAULT_ASCENSION=4 ⇒ A4 active)."
 			],
-			"description": "Creates a Grass Ring of Sanctification at the cost of part of her HP, dealing Electro DMG to nearby opponents.\n\nGrass Ring of Sanctification\nFollows your current active character around. Deals Electro DMG to nearby opponents every 1.5s and restores HP for active character(s) within the ring's AoE based on Kuki Shinobu's Max HP.\n\nThe HP consumption from using this skill can only bring her to 20% HP."
+			"description": "Creates a Grass Ring of Sanctification at the cost of part of her HP, dealing Electro DMG to nearby opponents.\n\nGrass Ring of Sanctification\nFollows your current active character around. Deals Electro DMG to nearby opponents every 1.5s and restores HP for active character(s) within the ring's AoE based on Kuki Shinobu's Max HP.\n\nThe HP consumption from using this skill can only bring her to 20% HP.",
+			"application": [{ "frame": 11, "element": "electro" }]
 		},
 		{
 			"id": "kuki_shinobu__burst__gyoei_narukami_kariyama_rite",
@@ -119,7 +120,8 @@
 				"HP-conditional duration: gcsim uses count=7 ticks (base, ~2s) or count=12 ticks (when HP ≤50%, ~4s from cast), interval=17 frames, burstStart=50. HP condition is not supported by durationModifiers schema (constellation-only). Reviewer to decide representation. gcsim comment notes '11 at low HP' but code sets 12.",
 				"Continuous electro DMG effects not authored (field deals electro DMG per tick, scales on Shinobu Max HP). Reviewer to model field tick effects."
 			],
-			"description": "Stabs an evil-excoriating blade into the ground, creating a field that cleanses the area of all that is foul, dealing continuous Electro DMG to opponents within its AoE based on Shinobu's Max HP.\nIf Shinobu's HP is less than or equal to 50% when this skill is used, the field will last longer."
+			"description": "Stabs an evil-excoriating blade into the ground, creating a field that cleanses the area of all that is foul, dealing continuous Electro DMG to opponents within its AoE based on Shinobu's Max HP.\nIf Shinobu's HP is less than or equal to 50% when this skill is used, the field will last longer.",
+			"application": []
 		}
 	],
 	"passives": [

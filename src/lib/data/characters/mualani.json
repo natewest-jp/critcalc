@@ -106,7 +106,8 @@
 				"Re-pressing E during stance cancels Nightsoul (gcsim Skill function early-returns with skillCancelFrames). Cancel frames: swap=11, N=7, Q=4, D=13, J=12. Not authored as a separate variant — cancel-press behavior cannot be expressed in current schema.",
 				"Stack-conditional N animation: see Sharky's Bite ability for the 3-stack Surging Bite variant flag.",
 				"Movement/dash/jump frame replacements while in stance (skillDashFrames, skillJumpFrames) not authored — schema does not represent stance-altered dash/jump; reviewer to decide."
-			]
+			],
+			"application": []
 		},
 		{
 			"id": "mualani__burst__boomsharkalaka",
@@ -124,7 +125,8 @@
 				"Burst hit lands at hitmark 108 + travel (default 70f in gcsim). Snapshot taken at burstHitmarks=108 (bullet creation), damage applied at +travel.",
 				"gcsim ConsumeEnergy(11) is a non-standard call distinct from the burst's true 60-energy cost (sourced from data_gen.textproto: burst_energy_cost=60). Authored energyCost=60.",
 				"A4 \"Wavechaser's Exploits\" stacks add 15%/30%/45% Max-HP flat DMG when consumed by Q (gcsim: 0.15 * stacks * MaxHP). Authored on the passive as a damage skeleton with manual trigger (inherited)."
-			]
+			],
+			"application": [{ "frame": 178, "element": "hydro" }]
 		}
 	],
 	"passives": [

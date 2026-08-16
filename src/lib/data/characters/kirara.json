@@ -83,7 +83,8 @@
 				"Skill self-applies dendro for 6 frames on cast (gcsim: `player.ApplySelfInfusion(attributes.Dendro, 25, 0.1*60)`). Not authored — the planner has no self-aura model.",
 				"↻ 2026-08-14 — the stand-in summon is retired. \"Shield of Safe Transport\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast a 12s active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world. Bar geometry is unchanged apart from the spawn offset, which the shield window never had."
 			],
-			"activeDuration": 12
+			"activeDuration": 12,
+			"application": [{ "frame": 14, "element": "dendro" }]
 		},
 		{
 			"id": "kirara__burst__secret_art_surprise_dispatch",
@@ -104,6 +105,15 @@
 				"Initial Special Delivery Package hit lands at frame 38 (gcsim: `boxHitmark = 38`); cardamoms spawn at the same frame. Default cardamom count = 6 (gcsim: `c.cardamoms = 6`).",
 				"Cardamoms either explode on contact with enemies or expire after 12s, at which point any remaining are released sequentially with 18-frame stagger. Schema's stationary `summons[]` represents the lifetime; per-cardamom contact-trigger semantics aren't modeled.",
 				"C1 adds up to 4 extra cardamoms (1 per 8000 Max HP) — a scaling buff on the summon's projectile count, not a damage scaling on existing hits. Flagged on the C1 constellation entry; not modeled on the burst summon."
+			],
+			"application": [
+				{ "frame": 38, "element": "dendro" },
+				{ "frame": 180, "element": "dendro" },
+				{ "frame": 180, "element": "dendro" },
+				{ "frame": 800, "element": "dendro" },
+				{ "frame": 818, "element": "dendro" },
+				{ "frame": 836, "element": "dendro" },
+				{ "frame": 854, "element": "dendro" }
 			]
 		}
 	],

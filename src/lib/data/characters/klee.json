@@ -99,7 +99,12 @@
 			],
 			"description": "Jumpy Dumpty is tons of boom-bang-fun! \nWhen thrown, Jumpy Dumpty bounces thrice, igniting and dealing AoE Pyro DMG with every bounce.\n\nOn the third bounce, the bomb splits into many mines.\nThe mines will explode upon contact with opponents, or after a short period of time, dealing AoE Pyro DMG.\n\nStarts with 2 charges.",
 			"behavior": "instant",
-			"frames": { "anim": 75, "N": 66, "C": 69, "E": 68, "Q": 34, "D": 37, "J": 35, "swap": 74 }
+			"frames": { "anim": 75, "N": 66, "C": 69, "E": 68, "Q": 34, "D": 37, "J": 35, "swap": 74 },
+			"application": [
+				{ "frame": 71, "element": "pyro" },
+				{ "frame": 240, "element": "pyro" },
+				{ "frame": 240, "element": "pyro" }
+			]
 		},
 		{
 			"id": "klee__burst__sparks_n_splash",
@@ -120,7 +125,34 @@
 			"summons": [
 				{ "label": "Sparks 'n' Splash", "duration": 10, "spawnsAt": 146, "terminatesOn": "swap" }
 			],
-			"frames": { "anim": 139, "D": 103, "J": 104, "swap": 101 }
+			"frames": { "anim": 139, "D": 103, "J": 104, "swap": 101 },
+			"application": [
+				{ "frame": 186, "element": "pyro" },
+				{ "frame": 198, "element": "pyro" },
+				{ "frame": 210, "element": "pyro" },
+				{ "frame": 294, "element": "pyro" },
+				{ "frame": 306, "element": "pyro" },
+				{ "frame": 306, "element": "pyro" },
+				{ "frame": 318, "element": "pyro" },
+				{ "frame": 318, "element": "pyro" },
+				{ "frame": 401, "element": "pyro" },
+				{ "frame": 413, "element": "pyro" },
+				{ "frame": 425, "element": "pyro" },
+				{ "frame": 425, "element": "pyro" },
+				{ "frame": 503, "element": "pyro" },
+				{ "frame": 515, "element": "pyro" },
+				{ "frame": 515, "element": "pyro" },
+				{ "frame": 527, "element": "pyro" },
+				{ "frame": 527, "element": "pyro" },
+				{ "frame": 610, "element": "pyro" },
+				{ "frame": 622, "element": "pyro" },
+				{ "frame": 634, "element": "pyro" },
+				{ "frame": 634, "element": "pyro" },
+				{ "frame": 718, "element": "pyro" },
+				{ "frame": 730, "element": "pyro" },
+				{ "frame": 730, "element": "pyro" },
+				{ "frame": 742, "element": "pyro" }
+			]
 		}
 	],
 	"passives": [

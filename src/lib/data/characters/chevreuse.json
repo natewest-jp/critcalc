@@ -77,10 +77,18 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 26, "N": 25, "D": 21, "J": 23, "swap": 23 }
+					"frames": { "anim": 26, "N": 25, "D": 21, "J": 23, "swap": 23 },
+					"application": [
+						{ "frame": 19, "element": "pyro" },
+						{ "frame": 55, "element": "pyro" }
+					]
 				}
 			],
-			"description": "Chevreuse quickly shoulders her musket and fires at her opponent(s), dealing AoE Pyro DMG.\nFor a short duration after Chevreuse fires a shot, she will continuously restore HP to your active character on the field. The amount healed is based on her Max HP.\nHold to fire in a different fashion.\n\nHold\nEnter Aiming Mode, locking a target in her sights to fire a precise interdiction shot. If Chevreuse has an Overcharged Ball, then she will fire the Overcharged Ball instead, dealing greater Pyro DMG in a larger area.\nChevreuse gains 1 Overcharged Ball every time a nearby character in the party triggers an Overloaded reaction, and can have up to 1 Overcharged Ball at a time.\n\nArkhe: Ousia\nPeriodically, after Chevreuse's Short-Range Rapid Interdiction Fire hits, a Surging Blade will be called forth that deals Ousia-aligned Pyro DMG."
+			"description": "Chevreuse quickly shoulders her musket and fires at her opponent(s), dealing AoE Pyro DMG.\nFor a short duration after Chevreuse fires a shot, she will continuously restore HP to your active character on the field. The amount healed is based on her Max HP.\nHold to fire in a different fashion.\n\nHold\nEnter Aiming Mode, locking a target in her sights to fire a precise interdiction shot. If Chevreuse has an Overcharged Ball, then she will fire the Overcharged Ball instead, dealing greater Pyro DMG in a larger area.\nChevreuse gains 1 Overcharged Ball every time a nearby character in the party triggers an Overloaded reaction, and can have up to 1 Overcharged Ball at a time.\n\nArkhe: Ousia\nPeriodically, after Chevreuse's Short-Range Rapid Interdiction Fire hits, a Surging Blade will be called forth that deals Ousia-aligned Pyro DMG.",
+			"application": [
+				{ "frame": 25, "element": "pyro" },
+				{ "frame": 59, "element": "pyro" }
+			]
 		},
 		{
 			"id": "chevreuse__burst__ring_of_bursting_grenades",
@@ -93,7 +101,18 @@
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
-			"description": "Chevreuse fires an explosive grenade at opponents with her musket, dealing AoE Pyro DMG. After the projectile hits, it will split into many secondary explosive shells.\nThe secondary explosive shells will burst after a short interval, dealing Pyro DMG to nearby opponents."
+			"description": "Chevreuse fires an explosive grenade at opponents with her musket, dealing AoE Pyro DMG. After the projectile hits, it will split into many secondary explosive shells.\nThe secondary explosive shells will burst after a short interval, dealing Pyro DMG to nearby opponents.",
+			"application": [
+				{ "frame": 59, "element": "pyro" },
+				{ "frame": 83, "element": "pyro" },
+				{ "frame": 92, "element": "pyro" },
+				{ "frame": 92, "element": "pyro" },
+				{ "frame": 101, "element": "pyro" },
+				{ "frame": 101, "element": "pyro" },
+				{ "frame": 110, "element": "pyro" },
+				{ "frame": 110, "element": "pyro" },
+				{ "frame": 119, "element": "pyro" }
+			]
 		}
 	],
 	"passives": [

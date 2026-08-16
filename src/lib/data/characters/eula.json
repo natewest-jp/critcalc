@@ -89,7 +89,8 @@
 						"swap=100 sourced from InitAbilSlice(100) argument per recipe exception — no explicit ActionSwap assignment line in skillHoldFrames.",
 						"C2 (Lady of Seafoam) reduces Hold CD to 4s (identical to Press). gcsim: cd=4 when c.Base.Cons>=2 in holdSkill(). Schema has no cooldownModifiers on variants — reviewer to decide how to model this.",
 						"J=75 is explicitly assigned (ActionJump=75), matching ActionDash=75."
-					]
+					],
+					"application": [{ "frame": 49, "element": "cryo" }]
 				}
 			],
 			"tags": [],
@@ -103,7 +104,8 @@
 				"Hold hitmark: frame 49 (skillHoldHitmark). Consumes all Grimheart stacks. If ≥1 stacks: applies Physical RES -resRed[lvl] and Cryo RES -resRed[lvl] for 7*stacksConsumed seconds via Icewhirl Brand hits at frames 79 and 92 (icewhirlHitmarks). resRed scales with talent level.",
 				"A1 (Roiling Rime): when Hold E consumes exactly 2 Grimheart stacks, spawns a Shattered Lightfall Sword dealing 50% of base Lightfall Physical DMG (burstExplodeBase*0.5). Hits at frame 108 (a1Hitmark). Effect not yet authored — needs reviewer pass.",
 				"C1 (Tidal Illusion): when Hold E consumes ≥1 Grimheart stacks, Eula gains PhyDMG%+30 for (6*stacksConsumed+6) seconds (max 18s). Likely onCast with hold-E condition + stack-count gating. gcsim: c1buff[PhyP]=0.3, duration=(6*v+6)*60 frames. Effect not yet authored — needs reviewer pass."
-			]
+			],
+			"application": [{ "frame": 20, "element": "cryo" }]
 		},
 		{
 			"id": "eula__burst__glacial_illumination",
@@ -135,7 +137,8 @@
 				"E (ActionSkill) cancel not explicitly assigned in burstFrames (InitAbilSlice(123) comment '// Q -> E' indicates 123 is intended E-cancel). Omitted per recipe rule — no explicit ActionSkill assignment line.",
 				"A4 (Wellspring of War-Lust): on Q cast, resets Icetide Vortex CD (ResetActionCooldown) and grants 1 Grimheart stack (gcsim: a4() called at Burst()). Effect not yet authored — needs reviewer pass.",
 				"C6 (Noble Obligation): burstCounter starts at 5 (instead of 0) at C6. Additionally, 50% chance per on-field hit to grant an extra stack (burstStackCB at Cons==6). Effect not yet authored — needs reviewer pass."
-			]
+			],
+			"application": [{ "frame": 100, "element": "cryo" }, { "frame": 600 }]
 		}
 	],
 	"passives": [

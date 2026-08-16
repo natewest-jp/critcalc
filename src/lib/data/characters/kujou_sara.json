@@ -78,7 +78,8 @@
 				"C2 (Dark Wings): on E cast, a weaker Crowfeather also fires automatically at Sara's original position at c2Hitmark=103 frames from cast, dealing 30% of standard Ambush DMG and applying the same ATK buff to the active character (gcsim: skill.go QueueAttack delay=50, hitmark=103). Under the onCast model this changes nothing about the authored buff window.",
 				"[A7] The delayed ATK grant is the kit effect named Tengu Juurai: Ambush."
 			],
-			"description": "Retreats rapidly with the speed of a tengu, summoning the protection of the Crowfeather.\nGains Crowfeather Cover for 18s, and when Kujou Sara fires a fully-charged Aimed Shot, Crowfeather Cover will be consumed, and will leave a Crowfeather at the target location.\nCrowfeathers will trigger Tengu Juurai: Ambush after a short time, dealing Electro DMG and granting the active character within its AoE an ATK Bonus based on Kujou Sara's Base ATK.\n\nThe ATK Bonuses from different Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect."
+			"description": "Retreats rapidly with the speed of a tengu, summoning the protection of the Crowfeather.\nGains Crowfeather Cover for 18s, and when Kujou Sara fires a fully-charged Aimed Shot, Crowfeather Cover will be consumed, and will leave a Crowfeather at the target location.\nCrowfeathers will trigger Tengu Juurai: Ambush after a short time, dealing Electro DMG and granting the active character within its AoE an ATK Bonus based on Kujou Sara's Base ATK.\n\nThe ATK Bonuses from different Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect.",
+			"application": []
 		},
 		{
 			"id": "kujou_sara__burst__subjugation_koukou_sendou",
@@ -111,7 +112,14 @@
 				"C4 (Conclusive Proof): Stormcluster count increases from 4 to 6 (wider AoE ring coverage, 24→36 total cluster hits). Tick timing is unchanged (all clusters share the 100+18j schedule), so the buff window is identical at C4 — no constellationScaling needed.",
 				"[A7] In-kit the re-grants land from Titanbreaker (~0.85s) and each Stormcluster tick (~1.7-3.2s after cast); the buff reaches the active character standing in the AoE."
 			],
-			"description": "Casts down Tengu Juurai: Titanbreaker, dealing AoE Electro DMG. Afterwards, Tengu Juurai: Titanbreaker spreads out into 4 consecutive bouts of Tengu Juurai: Stormcluster, dealing AoE Electro DMG.\nTengu Juurai: Titanbreaker and Tengu Juurai: Stormcluster can provide the active character within their AoE with the same ATK Bonus as given by the Elemental Skill, Tengu Stormcall.\n\nThe ATK Bonus provided by various kinds of Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect."
+			"description": "Casts down Tengu Juurai: Titanbreaker, dealing AoE Electro DMG. Afterwards, Tengu Juurai: Titanbreaker spreads out into 4 consecutive bouts of Tengu Juurai: Stormcluster, dealing AoE Electro DMG.\nTengu Juurai: Titanbreaker and Tengu Juurai: Stormcluster can provide the active character within their AoE with the same ATK Bonus as given by the Elemental Skill, Tengu Stormcall.\n\nThe ATK Bonus provided by various kinds of Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect.",
+			"application": [
+				{ "frame": 51, "element": "electro" },
+				{ "frame": 100, "element": "electro" },
+				{ "frame": 100, "element": "electro" },
+				{ "frame": 100, "element": "electro" },
+				{ "frame": 100, "element": "electro" }
+			]
 		}
 	],
 	"passives": [

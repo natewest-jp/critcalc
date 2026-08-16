@@ -18,6 +18,7 @@ import type {
 	AbilityVariant,
 	Condition,
 	Effect,
+	ElementalApplication,
 	NormalAbility,
 	SkillAbility,
 	BurstAbility
@@ -960,6 +961,56 @@ function lintCastAbility(
 		// silent second fallback that gcsim does not have.
 		if (a.frames.hit !== undefined) {
 			push('strict', 'frame-value-invalid', 'frames.hit is not valid on a skill/burst map', a.id);
+		}
+	}
+
+	// (A.6) application[] — the elemental hit schedule (gauge round L4c)
+	for (const [where, list] of [
+		[a.id, a.application],
+		...(a.variants ?? []).map((v) => [`${a.id} variant "${v.label}"`, v.application])
+	] as [string, ElementalApplication[] | undefined][]) {
+		if (!list) continue;
+		let last = -1;
+		for (let i = 0; i < list.length; i++) {
+			const e = list[i];
+			if (!Number.isInteger(e.frame) || e.frame < 0) {
+				push(
+					'strict',
+					'application-invalid',
+					`${where} application[${i}].frame is not a non-negative integer`,
+					a.id
+				);
+			}
+			// ⚠️ SORTED, and it matters: the sim schedules these in order and the report
+			// reads them as a timeline. An out-of-order entry is an authoring slip that
+			// nothing downstream would notice.
+			if (e.frame < last) {
+				push(
+					'strict',
+					'application-invalid',
+					`${where} application[${i}] is out of frame order`,
+					a.id
+				);
+			}
+			last = e.frame;
+			if (e.element !== undefined && !CHARACTER_ELEMENTS.has(e.element)) {
+				push(
+					'strict',
+					'invalid-element',
+					`${where} application[${i}].element "${e.element}" is not a valid Element`,
+					a.id
+				);
+			}
+			// ⛔ `units` belongs to L5 and has no consumer yet; authoring it early is
+			// exactly the orphaned-data class the schema guard exists to catch.
+			if (e.units !== undefined) {
+				push(
+					'strict',
+					'application-invalid',
+					`${where} application[${i}].units is not authored until L5`,
+					a.id
+				);
+			}
 		}
 		for (const [k, v] of Object.entries(a.frames)) {
 			if (v !== undefined && !isPositiveInt(v)) {

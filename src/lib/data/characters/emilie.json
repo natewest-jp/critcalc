@@ -86,6 +86,10 @@
 						}
 					]
 				}
+			],
+			"application": [
+				{ "frame": 37, "element": "dendro" },
+				{ "frame": 62, "element": "dendro" }
 			]
 		},
 		{
@@ -121,7 +125,8 @@
 						}
 					]
 				}
-			]
+			],
+			"application": []
 		}
 	],
 	"passives": [

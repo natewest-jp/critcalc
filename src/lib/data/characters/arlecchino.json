@@ -81,6 +81,12 @@
 				"Skill ticks: Spike hit at frame 17 (mult skillSpike[talent], skillSpike[8] = 0.25228), Final cleave hit at frame 38 (mult skillFinal[talent], skillFinal[8] = 2.27052). Both Pyro. Particle generation: 5 Pyro particles via particleCB on cleave hit, 0.3s ICD.",
 				"BoL economy on cast: a 35s `directiveLimitKey` window opens at finalHitmark+1, capping BoL gain to 1.45 × MaxHP (gcsim skillDebtMax). Directives absorbed via CA or Q grant 0.65 × MaxHP each (1.30 with A1 upgrade after 5s, or initialDirectiveLevel = 2 with C2). Recasting E within the 35s window resets the counter. Not authored — schema has no BoL-grant or directive-absorb encoder.",
 				"Skill cooldown 30s with 16-frame delay (gcsim `c.SetCDWithDelay(action.ActionSkill, 30*60, 16)`)."
+			],
+			"application": [
+				{ "frame": 17, "element": "pyro" },
+				{ "frame": 38, "element": "pyro" },
+				{ "frame": 338, "element": "pyro" },
+				{ "frame": 638, "element": "pyro" }
 			]
 		},
 		{
@@ -111,7 +117,8 @@
 				"Self-heal authored 2026-07-12 as an onCast(burst) heal, target 'self'. gcsim burst.go balemoonRisingHeal (QueueCharTask at frame 123): amt = 1.5 × CurrentHPDebt + 1.5 × TotalAtk. The ReceiveHeal filter in arlecchino.go (lines 83-88) returns 0 for any healing whose Caller≠self or Message≠'Balemoon Rising (Heal)' — she is un-healable by anyone else (Blood-Debt identity). Only the ATK portion is authored: scaling 150, stat atk (sidecar burst 'Amount of HP Restored' = '150.0% Bond of Life+150.0% ATK', constant across talent levels; gcsim 1.5×TotalAtk). The 1.5 × CurrentHPDebt (150% of current Bond of Life) portion is NOT modeled — Bond of Life is not a ScalingStat and the planner doesn't track HP debt at runtime; flagged in the ability caveat.",
 				"Burst CD 15s with 0-frame delay; cooldownStartDelay omitted per recipe.",
 				"C4 reduces this burst's CD by 2s and grants 15 energy on each successful directive absorb (10s ICD). Not authored — schema has no `cooldownReduction` or `addEnergy` effect type."
-			]
+			],
+			"application": [{ "frame": 110, "element": "pyro" }]
 		}
 	],
 	"passives": [

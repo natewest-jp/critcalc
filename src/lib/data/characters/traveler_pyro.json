@@ -62,7 +62,11 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 77, "N": 61, "Q": 59, "D": 60, "J": 61, "swap": 59 }
+					"frames": { "anim": 77, "N": 61, "Q": 59, "D": 60, "J": 61, "swap": 59 },
+					"application": [
+						{ "frame": 50, "element": "pyro" },
+						{ "frame": 62, "element": "pyro" }
+					]
 				}
 			],
 			"effects": [],
@@ -79,7 +83,15 @@
 				"[A7] Flavor context: Traveler is the only non-Natlan character to use the Nightsoul system — worth mentioning to explain why the drain/refresh mechanics matter.",
 				"[A7] The burst restores 7 Nightsoul points per refresh, up to 4 times (+28 total, filling toward the 42 cap); the per-refresh amount is already detailed in the burst's curator notes."
 			],
-			"description": "The Traveler unleashes their inner flame, dealing AoE Pyro DMG.\n\nTap\nDeals AoE Pyro DMG, enters Nightsoul's Blessing, and produces Blazing Threshold pulses at intervals.\n\nHold\nDeals stronger AoE Pyro DMG and enters Nightsoul's Blessing with the Scorching Threshold effect: when nearby opponents take damage, a Pyro pulse triggers."
+			"description": "The Traveler unleashes their inner flame, dealing AoE Pyro DMG.\n\nTap\nDeals AoE Pyro DMG, enters Nightsoul's Blessing, and produces Blazing Threshold pulses at intervals.\n\nHold\nDeals stronger AoE Pyro DMG and enters Nightsoul's Blessing with the Scorching Threshold effect: when nearby opponents take damage, a Pyro pulse triggers.",
+			"application": [
+				{ "frame": 24, "element": "pyro" },
+				{ "frame": 90, "element": "pyro" },
+				{ "frame": 156, "element": "pyro" },
+				{ "frame": 222, "element": "pyro" },
+				{ "frame": 288, "element": "pyro" },
+				{ "frame": 354, "element": "pyro" }
+			]
 		},
 		{
 			"id": "traveler_pyro__burst__plains_scorcher",
@@ -99,7 +111,8 @@
 				"Cooldown: SetCD(burst, 18*60). EnergyMax=70. ConsumeEnergy(19) drains 19 energy from teammates.",
 				"C4 effect on burst (+30% Q DMG when in NS): not authored — would need conditional effect with state:nightsoulBlessing condition."
 			],
-			"description": "Releases all the Pyro power within, dealing massive AoE Pyro DMG and restoring Nightsoul points to the Traveler."
+			"description": "Releases all the Pyro power within, dealing massive AoE Pyro DMG and restoring Nightsoul points to the Traveler.",
+			"application": [{ "frame": 40, "element": "pyro" }]
 		}
 	],
 	"passives": [

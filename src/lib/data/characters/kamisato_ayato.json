@@ -94,7 +94,8 @@
 				"frames sparse: gcsim skill.go uses frames.InitAbilSlice(21) with no explicit overrides except the swap-arg convention → swap=21. All other keys default to AnimationLength and are omitted per recipe rule. CanQueueAfter references ActionDash but gcsim sets no ActionDash override; the planner will lack D/N/E/Q/J cancel windows for the cast.",
 				"cooldown: c.SetCD(action.ActionSkill, 12*60) → 12s; no SetCDWithDelay → cooldownStartDelay omitted (0).",
 				"Particle generation: 1 or 2 hydro particles on first Shunsuiken hit per cycle, gated by 1.9s particleICDKey (gcsim skill.go particleCB). Not authored as an effect."
-			]
+			],
+			"application": [{ "frame": 35, "element": "hydro" }]
 		},
 		{
 			"id": "kamisato_ayato__burst__kamisato_art_suiyuu",
@@ -118,6 +119,18 @@
 				"Inside-field Normal Attack DMG buff: each tick queues a 90f-lifetime AttackMod on the active character that adds burstatkp[talent] to Normal Attack DmgP. This is a periodic team-targeted buff with rolling 1.5s freshness. Reviewer to author once schema supports periodic-refresh team buffs gated on player-in-area state.",
 				"ConsumeEnergy(5) at end of cast — odd given burst_energy_cost: 80; appears to be a gcsim implementation quirk (extra energy consumption on cast that isn't reflected in textproto cost). Authoritative cost is 80 from data_gen.textproto.",
 				"Burst's `duration: 18` from the generator stub was moved to summons[0].duration per the 2026-05-01 summons migration."
+			],
+			"application": [
+				{ "frame": 139, "element": "hydro" },
+				{ "frame": 229, "element": "hydro" },
+				{ "frame": 319, "element": "hydro" },
+				{ "frame": 409, "element": "hydro" },
+				{ "frame": 469, "element": "hydro" },
+				{ "frame": 499, "element": "hydro" },
+				{ "frame": 589, "element": "hydro" },
+				{ "frame": 679, "element": "hydro" },
+				{ "frame": 769, "element": "hydro" },
+				{ "frame": 859, "element": "hydro" }
 			]
 		}
 	],

@@ -94,7 +94,8 @@
 				"Night Vigil healing conversion (gcsim heal.go ReceiveHeal): while the stance is active, incoming heals from other sources (any heal whose Message is not prefixed 'Impale the Night') are suppressed and converted to Bond of Life at healingBOL=0.80, raised to 1.0 at A4+ (Lawful Remuneration; DEFAULT_ASCENSION=4). Conversion not modeled (Bond of Life untracked).",
 				"tags ['heal', 'summon'] retained from generator. The 'heal' tag remains the honest capability signal (self-heal, size untrackable — see caveat). The 'summon' tag corresponds to the Arkhe: Ousia Surging Blade (periodic Electro proc on Swift Hunt hits — gcsim arkheCD, hitmark 42f); not authored as a summons[] entry and out of scope for this heal-tag pass.",
 				"[A7] Impale the Night self-heal scales with current Bond of Life (largest at full BoL, none at 0%) — dropped from the caveat as kit explanation per style guide; size stays untrackable without a BoL primitive."
-			]
+			],
+			"application": []
 		},
 		{
 			"id": "clorinde__skill__impale_the_night",
@@ -112,7 +113,8 @@
 				"cooldown: 0 — Impale the Night has no independent CD. gcsim only calls SetCDWithDelay on the stance-activation cast, not on Impale; while the stance is active, E presses fire Impale freely. Each ability has its own ability id and therefore its own charge queue, so cooldown: 0 means 'always available' which is the correct semantic.",
 				"No stanceExtension — Impale does not extend the Night Vigil window in gcsim.",
 				"C6 Glimbright Shade trigger: 'when Clorinde uses Impale the Night: Pact' is one of the C6 proc conditions — flagged on the C6 constellation, not authored here."
-			]
+			],
+			"application": [{ "frame": 11, "element": "electro" }]
 		},
 		{
 			"id": "clorinde__burst__last_lightfall",
@@ -131,6 +133,13 @@
 				"In-stance burst variant: gcsim has a separate burstSkillStateFrames slice used when skillStateKey is active — explicit ActionAttack=127, ActionSkill=127, ActionDash=127, ActionSwap=127. Schema has no condition for casting Q while in stance with different frames; values are nearly identical to the base (N/E rise from anim 128 → explicit 127). Flagged here; reviewer to decide if a state-conditioned variant is warranted.",
 				"Burst grants Bond of Life: gcsim ModifyHPDebtByRatio(burstBOL[8] = 1.14) — 114% max HP at talent 9. Not authored (BoL not modeled).",
 				"Burst hitmarks (5-hit AoE): [97, 103, 109, 115, 121]. Single damage scalar per hit (burstDamage[talent]); recorded conceptually as one damage event in the planner."
+			],
+			"application": [
+				{ "frame": 97, "element": "electro" },
+				{ "frame": 103, "element": "electro" },
+				{ "frame": 109, "element": "electro" },
+				{ "frame": 115, "element": "electro" },
+				{ "frame": 121, "element": "electro" }
 			]
 		}
 	],

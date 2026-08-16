@@ -58,7 +58,11 @@
 			"effects": [],
 			"frames": { "anim": 51, "D": 38, "J": 40, "swap": 50 },
 			"behavior": "instant",
-			"description": "Rosaria swiftly shifts her position to appear behind her opponent, then stabs and slashes them with her polearm, dealing Cryo DMG.\nThis ability cannot be used to travel behind opponents of a larger build."
+			"description": "Rosaria swiftly shifts her position to appear behind her opponent, then stabs and slashes them with her polearm, dealing Cryo DMG.\nThis ability cannot be used to travel behind opponents of a larger build.",
+			"application": [
+				{ "frame": 24, "element": "cryo" },
+				{ "frame": 38, "element": "cryo" }
+			]
 		},
 		{
 			"id": "rosaria__burst__rites_of_termination",
@@ -87,7 +91,11 @@
 					]
 				}
 			],
-			"description": "Rosaria's unique take on this prayer ritual: First, she swings her weapon to slash surrounding opponents; then, she summons a frigid Ice Lance that strikes the ground. Both actions deal Cryo DMG.\nWhile active, the Ice Lance periodically releases a blast of cold air, dealing Cryo DMG to surrounding opponents."
+			"description": "Rosaria's unique take on this prayer ritual: First, she swings her weapon to slash surrounding opponents; then, she summons a frigid Ice Lance that strikes the ground. Both actions deal Cryo DMG.\nWhile active, the Ice Lance periodically releases a blast of cold air, dealing Cryo DMG to surrounding opponents.",
+			"application": [
+				{ "frame": 15, "element": "cryo" },
+				{ "frame": 56, "element": "cryo" }
+			]
 		}
 	],
 	"passives": [

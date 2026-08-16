@@ -97,7 +97,8 @@
 					"label": "Hold (Rapid Movement)",
 					"input": ["hE"],
 					"frames": { "anim": 18, "swap": 15 },
-					"behavior": "instant"
+					"behavior": "instant",
+					"application": []
 				}
 			],
 			"tags": [],
@@ -132,7 +133,8 @@
 				"A6 rigor 2026-07-12: Hold-E gainStacks amount corrected 18 → 45 (gcsim skill.go skillHold calls AddSerpentsSubtlety 45.0 — the skillHoldGainSS=18 constant is a frame delay/CD offset, not the grant; kit text 'Hold: Skirk gains 45 Serpent's Subtlety' confirms). Caveat + note references updated 18→45.",
 				"[A7] Hold-E void-rift absorption is not simulated but is covered by the A1 passive gadget-gap caveat, so it was dropped here. Tap-opens-inStance vs Hold-as-instant-grant branching is modeled correctly. Variable hold duration = gcsim p['hold'] param, max ~3s, unrepresented."
 			],
-			"description": "Imitates the combat style of \"The Foul.\" Produces different effects depending on whether you Tap or Hold.\n\nTap\nSkirk gains 45 **Serpent's Subtlety** and switches to **Seven-Phase Flash** mode.\n\nHold\nSkirk gains 45 Serpent's Subtlety and will continuously move at high speed. Her interruption resistance is increased in this state.\nDuring this time, Skirk can control her movement direction and move atop water. She can also use this Skill again to end rapid movement prematurely."
+			"description": "Imitates the combat style of \"The Foul.\" Produces different effects depending on whether you Tap or Hold.\n\nTap\nSkirk gains 45 **Serpent's Subtlety** and switches to **Seven-Phase Flash** mode.\n\nHold\nSkirk gains 45 Serpent's Subtlety and will continuously move at high speed. Her interruption resistance is increased in this state.\nDuring this time, Skirk can control her movement direction and move atop water. She can also use this Skill again to end rapid movement prematurely.",
+			"application": []
 		},
 		{
 			"id": "skirk__burst__havoc_ruin",
@@ -190,7 +192,15 @@
 				"Variant Havoc: Extinction is authored as a separate burst entry below, gated on state:inStance. Extinction does NOT consume SS (no `consumeStacks` on its effects array) and does NOT carry the perStack bonus buff (the bonus is bound to Havoc: Ruin only).",
 				"[A7] The over-50 SS bonus DMG IS modeled (perStack buff, threshold 50, cap +12 / +22 at C2, snapshotting pre-consume SS via consumeStacks). energyCost=50 is a lint placeholder mirroring the SS threshold, not real Energy. The unmodeled part is purely the cast-time SS>=50 availability gate, which the planner does not enforce."
 			],
-			"description": "Skirk's Elemental Burst is not reliant on Elemental Energy but instead on **Serpent's Subtlety**.\nWhen Skirk has at least 50 Serpent's Subtlety, she can expend all her Serpent's Subtlety to unleash her Elemental Burst, ripping the space before her apart and using rapid consecutive slashes that deal AoE Cryo DMG. At the same time, the DMG dealt by an instance of this Elemental Burst will be increased by every point of Serpent's Subtlety over 50 when it is unleashed. Up to 12 points can be counted for this purpose."
+			"description": "Skirk's Elemental Burst is not reliant on Elemental Energy but instead on **Serpent's Subtlety**.\nWhen Skirk has at least 50 Serpent's Subtlety, she can expend all her Serpent's Subtlety to unleash her Elemental Burst, ripping the space before her apart and using rapid consecutive slashes that deal AoE Cryo DMG. At the same time, the DMG dealt by an instance of this Elemental Burst will be increased by every point of Serpent's Subtlety over 50 when it is unleashed. Up to 12 points can be counted for this purpose.",
+			"application": [
+				{ "frame": 109, "element": "cryo" },
+				{ "frame": 111, "element": "cryo" },
+				{ "frame": 114, "element": "cryo" },
+				{ "frame": 125, "element": "cryo" },
+				{ "frame": 135, "element": "cryo" },
+				{ "frame": 158, "element": "cryo" }
+			]
 		},
 		{
 			"id": "skirk__burst__havoc_extinction",
@@ -213,7 +223,8 @@
 				"Void Rifts absorbed during cast: c.absorbVoidRifts() returns count 0-3, used to index burstDMG[voids][lvl] for All Shall Wither bonus. Void Rifts are A1-spawned by team Frozen/Superconduct/Cryo-Swirl/Cryo-Crystallize reactions — not modeled.",
 				"[A7] All Shall Wither has no matching primitive: per-normal-hit proc-counted bonus with a 10-proc cap plus Void-Rift-count scaling (0-3 rifts -> +0/+1/+2/+3, gcsim burstDMG[voids][lvl]). Correctly modeled and dropped: this variant consumes no SS and does not exit the stance."
 			],
-			"description": "A special Elemental Burst that can be used even without consuming Serpent's Subtlety.\nAfter using it, Skirk will gain the \"All Shall Wither\" effect, which will last until Seven-Phase Flash ends. After unlocking the Ascension Talent **Reason Beyond Reason**, she can also absorb nearby Void Rifts.\nWhile \"All Shall Wither\" is active, every 0.1s, after Skirk's Normal Attack hits an opponent, that Normal Attack will deal increased DMG. If she absorbed any Void Rifts while using Havoc: Extinction, this Normal Attack's DMG will be further increased based on the number of Rifts absorbed."
+			"description": "A special Elemental Burst that can be used even without consuming Serpent's Subtlety.\nAfter using it, Skirk will gain the \"All Shall Wither\" effect, which will last until Seven-Phase Flash ends. After unlocking the Ascension Talent **Reason Beyond Reason**, she can also absorb nearby Void Rifts.\nWhile \"All Shall Wither\" is active, every 0.1s, after Skirk's Normal Attack hits an opponent, that Normal Attack will deal increased DMG. If she absorbed any Void Rifts while using Havoc: Extinction, this Normal Attack's DMG will be further increased based on the number of Rifts absorbed.",
+			"application": []
 		}
 	],
 	"passives": [

@@ -71,12 +71,14 @@
 					"input": ["hE"],
 					"frames": { "anim": 143, "C": 138, "Q": 138, "D": 116, "J": 117, "swap": 117 },
 					"cooldown": 16,
-					"cooldownStartDelay": 114
+					"cooldownStartDelay": 114,
+					"application": [{ "frame": 117, "element": "electro" }]
 				}
 			],
 			"tags": [],
 			"effects": [],
-			"description": "Channels the power of lightning to sweep bothersome matters away.\n\nPress\nReleases a homing Lightning Orb.\nOn hit, it deals Electro DMG and applies a stack of the Conductive status (max 3 stacks) to opponents in a small AoE.\n\nHold\nAfter an extended casting time, calls down lightning from the heavens, dealing massive Electro DMG to all nearby opponents.\nDeals great amounts of extra damage to opponents based on the number of Conductive stacks applied to them, and clears their Conductive status."
+			"description": "Channels the power of lightning to sweep bothersome matters away.\n\nPress\nReleases a homing Lightning Orb.\nOn hit, it deals Electro DMG and applies a stack of the Conductive status (max 3 stacks) to opponents in a small AoE.\n\nHold\nAfter an extended casting time, calls down lightning from the heavens, dealing massive Electro DMG to all nearby opponents.\nDeals great amounts of extra damage to opponents based on the number of Conductive stacks applied to them, and clears their Conductive status.",
+			"application": [{ "frame": 22, "element": "electro" }]
 		},
 		{
 			"id": "lisa__burst__lightning_rose",
@@ -97,7 +99,8 @@
 				"C4: each Lightning Rose tick fires 1–3 discharges instead of 1, count is probabilistic based on enemy count and prior discharge count (Markov chain). Effect not modeled — needs reviewer pass."
 			],
 			"effects": [],
-			"description": "Summons a Lightning Rose that unleashes powerful lightning bolts, launching surrounding opponents and dealing Electro DMG.\nThe Lightning Rose will continuously emit lightning to knock back opponents and deal Electro DMG throughout the ability's duration."
+			"description": "Summons a Lightning Rose that unleashes powerful lightning bolts, launching surrounding opponents and dealing Electro DMG.\nThe Lightning Rose will continuously emit lightning to knock back opponents and deal Electro DMG throughout the ability's duration.",
+			"application": [{ "frame": 56, "element": "electro" }]
 		}
 	],
 	"passives": [

@@ -61,7 +61,8 @@
 				"Hold mechanic: skill can be held up to 5s (300 frames). Tap frames recorded here (hold=0). Actual animation = skillFrames[action] + hold; cooldownStartDelay = (skillHitmark + hold) - 2 = 21 + hold - 2, so varies with hold duration. Tap cooldownStartDelay = 19. C1 grants +40% DMG when held ≥1s (≥60 frames). Reviewer to decide if a hold variant entry is needed.",
 				"'grouping' tag added (capability sweep 2026-07-28): wiki Vacuum Field table lists Gale Blade (Hold) as a pulling vacuum (radius 10m, strength 2; C1 doubles to 4 — gcsim cons.go:13 'Increases the pulling speed of Gale Blade after holding for more than 1s'). Hold-only — the tap launches instead — hence the caveat; no hold variant exists yet (see note above)."
 			],
-			"description": "Focusing the might of the formless wind around her blade, Jean releases a miniature storm, launching opponents in the direction she aims at, dealing massive Anemo DMG.\n\nHold\nAt the cost of continued stamina consumption, Jean can command the whirlwind to pull surrounding opponents and objects towards her front.\nDirection can be adjusted.\nCharacter is immobile during skill duration."
+			"description": "Focusing the might of the formless wind around her blade, Jean releases a miniature storm, launching opponents in the direction she aims at, dealing massive Anemo DMG.\n\nHold\nAt the cost of continued stamina consumption, Jean can command the whirlwind to pull surrounding opponents and objects towards her front.\nDirection can be adjusted.\nCharacter is immobile during skill duration.",
+			"application": [{ "frame": 21, "element": "anemo" }]
 		},
 		{
 			"id": "jean__burst__dandelion_breeze",
@@ -107,7 +108,12 @@
 				"Field also continuously imbues the active character with Anemo (self-swirl mechanic in gcsim — see burst.go ReactWithSelf, ticks alongside each heal tick); not modeled — no infusion-of-recipient primitive for summon fields."
 			],
 			"description": "Calling upon the wind's protection, Jean creates a swirling Dandelion Field, launching surrounding opponents and dealing Anemo DMG.\nAt the same time, she instantly regenerates a large amount of HP for all party members. The amount of HP restored scales off Jean's ATK.\n\nDandelion Field\n·Continuously regenerates HP of characters within the AoE and continuously imbues them with Anemo.\n·Deals Anemo DMG to opponents entering or exiting the Dandelion Field.",
-			"caveat": "Not modeled: the field's continuous Anemo application (self-swirl) to the active character standing inside it."
+			"caveat": "Not modeled: the field's continuous Anemo application (self-swirl) to the active character standing inside it.",
+			"application": [
+				{ "frame": 40, "element": "anemo" },
+				{ "frame": 55, "element": "anemo" },
+				{ "frame": 640, "element": "anemo" }
+			]
 		}
 	],
 	"passives": [

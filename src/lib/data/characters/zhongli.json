@@ -112,7 +112,11 @@
 						"Jade Shield authored as a shield Effect 2026-08-14, replacing the zero-effect `summons[]` stand-in. TL10 absorption from gcsim zz_zhongli.dm.go: shieldPer[9]=0.2304 (23.04% Max HP) + shieldBase[9]=2711.5093; duration from shield.go `c.newShield(shield, 1200)` = 1200f = 20s. `activeDuration: 20` on the variant keeps the hold bar at 20s — without it the bar would fall through to the BASE ability's Stone Stele and draw 30s. 150% absorption efficiency against all elemental and physical DMG is not modelled (no per-element shield-efficiency primitive; same gap class as Diona/Thoma/Kaeya).",
 						"`summons: []` is an EXPLICIT override to none, not an oversight. Hold-E does create a Stone Stele alongside the Jade Shield in game, and once the Jade Shield stand-in became a shield Effect this variant had no summons of its own — which would have inherited the base press-E's stele and drawn it at THIS cast's 20s window, a 30s stele rendered 20s. The co-spawned stele stays unmodelled, as it always has been; the declaration just says so out loud now. Modelling it properly needs the stele at its own 30s span alongside a 20s shield, which is the same per-summon-duration work Ineffa/Citlali/Furina flagged."
 					],
-					"activeDuration": 20
+					"activeDuration": 20,
+					"application": [
+						{ "frame": 48, "element": "geo" },
+						{ "frame": 48, "element": "geo" }
+					]
 				}
 			],
 			"tags": ["summon"],
@@ -122,7 +126,8 @@
 				"Multi-stele spawning (C2 max 2 steles, Hold-E spawning a stele alongside Jade Shield) is not modelled. ↻ 2026-08-14: the reason changed — the renderer used to draw summons[0] only, and now draws every entry in summons[], so an ability CAN own two lanes (Ineffa's shield + Birgitta). What is still missing here is different: two live instances of the SAME summon, which needs a per-instance model rather than a second array entry, and a Hold-E entry pairing Jade Shield with a stele. The first-cast rendering is correct; subsequent casts on the same input refresh the same sub-row."
 			],
 			"description": "Every mountain, rock and inch of land is filled with the power of Geo, but those who can wield such powers freely are few and far between.\n\nPress\nCommands the power of earth to create a Stone Stele.\n\nHold\nCauses nearby Geo energy to explode, causing the following effects:\n·If their maximum number hasn't been reached, creates a Stone Stele.\n·Creates a shield of jade. The shield's DMG Absorption scales based on Zhongli's Max HP.\n·Deals AoE Geo DMG.\n·If there are nearby targets with the Geo element, it will drain a large amount of Geo element from a maximum of 2 such targets. This effect does not cause DMG.\n\nStone Stele\nWhen created, deals AoE Geo DMG.\nAdditionally, it will intermittently resonate with other nearby Geo constructs, dealing Geo DMG to nearby opponents.\nThe Stone Stele is considered a Geo construct that can both be climbed and used to block attacks.\nOnly one Stele created by Zhongli himself may initially exist at any one time.\n\nJade Shield\nPossesses 150% DMG Absorption against all Elemental and Physical DMG.\nCharacters protected by the Jade Shield will decrease the Elemental RES and Physical RES of opponents in a small AoE by 20%. This effect cannot be stacked.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"application": [{ "frame": 24, "element": "geo" }]
 		},
 		{
 			"id": "zhongli__burst__planet_befall",
@@ -147,7 +152,8 @@
 				"A6 rigor 2026-07-12: duration corrected 3.9 → 4.0 (Petrification duration at talent level 10 = 4.0s per genshin-db sidecar; 3.9 was the level-9 value, missed by the 2026-07-12 scaling-only sweep since it lives in a duration field, not a scaling field). C4 +2s modifier stacks on top."
 			],
 			"description": "Brings a falling meteor down to earth, dealing massive Geo DMG to opponents caught in its AoE and applying the Petrification status to them.\n\nPetrification\nOpponents affected by the Petrification status cannot move.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"application": [{ "frame": 101, "element": "geo" }]
 		}
 	],
 	"passives": [

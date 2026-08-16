@@ -86,7 +86,8 @@
 					"_curatorNotes": [
 						"Hold variant cooldownStartDelay is 32 frames (gcsim: skillHoldCDStart+1 = 32); AbilityVariant has no cooldownStartDelay field — reviewer to add schema support or document separately.",
 						"gcsim comment on ActionSkill for Hold frames: '// assume skill (press)'; gcsim also notes 'skill (hold) -> skill (hold) is 52 frames'. The ActionSkill value (45) reflects H→Press, not H→Hold. Reviewer to verify whether H→H (52f) warrants a separate entry."
-					]
+					],
+					"application": [{ "frame": 33, "element": "cryo" }]
 				}
 			],
 			"tags": [],
@@ -110,7 +111,8 @@
 			],
 			"description": "The frosted dew, silvery and dense, shall exorcise all demons.\nGrants all nearby party members the Icy Quill effect and deals Cryo DMG in different ways based on whether it is pressed or held.\n\nPress\nRushes forward together with a Talisman Spirit, dealing Cryo DMG to opponents along the path.\n\nHold\nCommands the Talisman Spirit to deal AoE Cryo DMG.\n\nIcy Quill\nWhen Normal, Charged, and Plunging Attacks, Elemental Skills, and Elemental Bursts deal Cryo DMG to opponents, the DMG dealt is increased based on Shenhe's current ATK.\n\nThe Icy Quill's effects will be cleared once its duration ends or after being triggered a certain number of times. When held rather than pressed, the Icy Quill's effect lasts longer and can be triggered more times.\nWhen one Cryo DMG instance strikes multiple opponents, the effect is triggered multiple times based on the number of opponents hit. The number of times the effect is triggered is calculated independently for each party member with the Icy Quill.",
 			"behavior": "instant",
-			"caveat": "Shown for the full duration; in game each Cryo hit consumes 1 of 5 quills (7 if held), and only Cryo DMG gets the bonus."
+			"caveat": "Shown for the full duration; in game each Cryo hit consumes 1 of 5 quills (7 if held), and only Cryo DMG gets the bonus.",
+			"application": [{ "frame": 4, "element": "cryo" }]
 		},
 		{
 			"id": "shenhe__burst__divine_maidens_deliverance",
@@ -161,7 +163,21 @@
 				"Deific Embrace (A1) cryo DMG bonus for active char within field is authored on the A1 passive, not here."
 			],
 			"description": "Unleashes the power of the Talisman Spirit, allowing it to roam free in this plane, dealing AoE Cryo DMG.\nThe Talisman Spirit then creates a field that decreases the Cryo RES and Physical RES of opponents within it. It also deals periodic Cryo DMG to opponents within the field.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"application": [
+				{ "frame": 129, "element": "cryo" },
+				{ "frame": 159, "element": "cryo" },
+				{ "frame": 246, "element": "cryo" },
+				{ "frame": 278, "element": "cryo" },
+				{ "frame": 363, "element": "cryo" },
+				{ "frame": 397, "element": "cryo" },
+				{ "frame": 480, "element": "cryo" },
+				{ "frame": 510, "element": "cryo" },
+				{ "frame": 597, "element": "cryo" },
+				{ "frame": 629, "element": "cryo" },
+				{ "frame": 714, "element": "cryo" },
+				{ "frame": 748, "element": "cryo" }
+			]
 		}
 	],
 	"passives": [

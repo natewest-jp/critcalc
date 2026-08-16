@@ -52,7 +52,8 @@
 			"cooldown": 10,
 			"tags": [],
 			"effects": [],
-			"description": "Summons blooming ice to launch nearby opponents, dealing AoE Cryo DMG."
+			"description": "Summons blooming ice to launch nearby opponents, dealing AoE Cryo DMG.",
+			"application": [{ "frame": 33, "element": "cryo" }]
 		},
 		{
 			"id": "kamisato_ayaka__burst__kamisato_art_soumetsu",
@@ -67,7 +68,29 @@
 			"tags": ["summon"],
 			"energyCost": 80,
 			"effects": [],
-			"description": "Summons forth a snowstorm with flawless poise, unleashing a Frostflake Seki no To that moves forward continuously.\n\nFrostflake Seki no To\n·A storm of whirling icy winds that slashes repeatedly at every enemy it touches, dealing Cryo DMG.\n·The snowstorm explodes after its duration ends, dealing AoE Cryo DMG."
+			"description": "Summons forth a snowstorm with flawless poise, unleashing a Frostflake Seki no To that moves forward continuously.\n\nFrostflake Seki no To\n·A storm of whirling icy winds that slashes repeatedly at every enemy it touches, dealing Cryo DMG.\n·The snowstorm explodes after its duration ends, dealing AoE Cryo DMG.",
+			"application": [
+				{ "frame": 104, "element": "cryo" },
+				{ "frame": 119, "element": "cryo" },
+				{ "frame": 134, "element": "cryo" },
+				{ "frame": 149, "element": "cryo" },
+				{ "frame": 164, "element": "cryo" },
+				{ "frame": 179, "element": "cryo" },
+				{ "frame": 194, "element": "cryo" },
+				{ "frame": 209, "element": "cryo" },
+				{ "frame": 224, "element": "cryo" },
+				{ "frame": 239, "element": "cryo" },
+				{ "frame": 254, "element": "cryo" },
+				{ "frame": 269, "element": "cryo" },
+				{ "frame": 284, "element": "cryo" },
+				{ "frame": 299, "element": "cryo" },
+				{ "frame": 314, "element": "cryo" },
+				{ "frame": 329, "element": "cryo" },
+				{ "frame": 344, "element": "cryo" },
+				{ "frame": 359, "element": "cryo" },
+				{ "frame": 374, "element": "cryo" },
+				{ "frame": 404, "element": "cryo" }
+			]
 		}
 	],
 	"passives": [

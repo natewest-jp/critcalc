@@ -96,7 +96,8 @@
 				"Bake-Kurage Ripple DMG tick authored alongside as a summonTick damage effect (kuki heal+damage pair shape). The skillTick pulse handles both damage and heal, so the trigger is identical to the heal's. TL10: skillDmg[9]=1.965427 → 196.54% ATK (sidecar 'Ripple DMG' col 10 = 196.5%), Hydro, ICDTag None. NOTE: Bake-Kurage base DMG scales on ATK, not HP (sidecar Ripple DMG row lacks the 'Max HP' suffix; createSkillSnapshot carries no HP scaling) — a known Kokomi quirk. NOT authored on the damage tick: the burstDmgBonus FlatDmg (Ceremonial Garment '+Bake-Kurage DMG based on Max HP'), which applies only while the burst is active — that belongs to the still-unauthored Ceremonial Garment buff (see burst _curatorNotes).",
 				"C2 (The Clouds Like Waves Rippling) heal add-on: gcsim skill.go lines 111-118 resolve the C2 node's flagged shape ambiguity — the +4.5% Max HP is a heal-AMOUNT add (src += 0.045*maxhp) gated on the active char's HP ratio ≤ 0.5, i.e. a second heal effect scaling 4.5 on hp with conditions constellation:2 + recipientHpBelow:50. Left on the C2 constellation node (out of scope for this skill-heal finding) but documented here so the C2 node can be fixed."
 			],
-			"description": "Summons a \"Bake-Kurage\" created from water that can heal her allies.\nUsing this skill will apply the Wet status to Sangonomiya Kokomi.\n\nBake-Kurage\nDeals Hydro DMG to surrounding opponents and heals nearby active characters at fixed intervals. This healing is based on Kokomi's Max HP."
+			"description": "Summons a \"Bake-Kurage\" created from water that can heal her allies.\nUsing this skill will apply the Wet status to Sangonomiya Kokomi.\n\nBake-Kurage\nDeals Hydro DMG to surrounding opponents and heals nearby active characters at fixed intervals. This healing is based on Kokomi's Max HP.",
+			"application": []
 		},
 		{
 			"id": "sangonomiya_kokomi__burst__nereids_ascension",
@@ -115,7 +116,8 @@
 				"Initial Q hit at burstHitmark=49 frames (49/60 ≈ 0.82s from cast). Not authored as an effect — consistent with other burst damage entries.",
 				"A1 (Tamakushi Casket): if Bake-Kurage is active when Q is cast, Bake-Kurage duration resets to 12.5s (implemented via c.a1() called at frame 46 in burst.go). No schema representation needed — mechanic is upstream of the planner."
 			],
-			"description": "Summons the might of Watatsumi, dealing Hydro DMG to surrounding opponents, before robing Kokomi in a Ceremonial Garment made from the flowing waters of Sangonomiya.\n\nCeremonial Garment\n·Sangonomiya Kokomi's Normal Attack, Charged Attack and Bake-Kurage DMG are increased based on her Max HP.\n·When her Normal and Charged Attacks hit opponents, Kokomi will restore HP for all nearby party members, and the amount restored is based on her Max HP.\n·Increases Sangonomiya Kokomi's resistance to interruption and allows her to walk on the water's surface.\n\nThese effects will be cleared once Sangonomiya Kokomi leaves the field."
+			"description": "Summons the might of Watatsumi, dealing Hydro DMG to surrounding opponents, before robing Kokomi in a Ceremonial Garment made from the flowing waters of Sangonomiya.\n\nCeremonial Garment\n·Sangonomiya Kokomi's Normal Attack, Charged Attack and Bake-Kurage DMG are increased based on her Max HP.\n·When her Normal and Charged Attacks hit opponents, Kokomi will restore HP for all nearby party members, and the amount restored is based on her Max HP.\n·Increases Sangonomiya Kokomi's resistance to interruption and allows her to walk on the water's surface.\n\nThese effects will be cleared once Sangonomiya Kokomi leaves the field.",
+			"application": [{ "frame": 49, "element": "hydro" }]
 		}
 	],
 	"passives": [

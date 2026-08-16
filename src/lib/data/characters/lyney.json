@@ -75,7 +75,8 @@
 				"Heal authored (capability sweep 2026-07-28): gcsim skill.go:56-69 — base Skill() heals active for 0.2*MaxHP*propSurplusStacks at hitmark, then zeroes the stacks; no ascension gate, so base kit (the sweep's A1 guess was wrong). Fixed 20% per stack (not talent-scaled); per-stack value scaling on heals is not expressible (perStack is buff-only), so authored at one stack + caveat, per the Lyney C2 curator precedent. The stacking-damage bonus on the same cast is still unauthored.",
 				"If a Grin-Malkin Hat is on field when E is cast, the Hat explodes (skillExplode) dealing AoE Charged Attack DMG equal to a Pyrotechnic Strike. Not modeled in effects."
 			],
-			"description": "Lyney does a flourish with his hat, unleashing a firework surprise!\nWhen used, he will clear all current Prop Surplus stacks and deal AoE Pyro DMG to opponents in front of him. DMG will be increased according to the stacks cleared, and this will also regenerate Lyney's HP based on his Max HP.\n\nWhen a Grin-Malkin Hat created by Lyney is on the field, the fireworks will cause it to explode, dealing AoE Pyro DMG equal to that of a Pyrotechnic Strike.\nThe DMG dealt through the Grin-Malkin Hat in this way is considered Charged Attack DMG."
+			"description": "Lyney does a flourish with his hat, unleashing a firework surprise!\nWhen used, he will clear all current Prop Surplus stacks and deal AoE Pyro DMG to opponents in front of him. DMG will be increased according to the stacks cleared, and this will also regenerate Lyney's HP based on his Max HP.\n\nWhen a Grin-Malkin Hat created by Lyney is on the field, the fireworks will cause it to explode, dealing AoE Pyro DMG equal to that of a Pyrotechnic Strike.\nThe DMG dealt through the Grin-Malkin Hat in this way is considered Charged Attack DMG.",
+			"application": [{ "frame": 18, "element": "pyro" }]
 		},
 		{
 			"id": "lyney__burst__wondrous_trick_miracle_parade",
@@ -97,7 +98,12 @@
 				"Grin-Malkin Hat (modeled in summons[]): natural spawn at frame 282 (burstStart=100 + burstDuration=182). Duration=245 frames=4.08s (~4.1s). If E-cancel used, Hat spawns earlier (~frame 101+). spawnsAt=282 reflects the natural no-cancel case.",
 				"Cat ticks deal Pyro DMG to each enemy at most once per cast (burstMarkKey status). Not modeled in effects skeleton."
 			],
-			"description": "Unleashing his magic, Lyney turns himself into a Grin-Malkin Cat that can move around quickly. (Not to be mistaken for the Grin-Malkin Hat. They're two different props!)\nWhen the Grin-Malkin Cat gets close to opponents, it will send flames falling down on them, dealing at most 1 instance of Pyro DMG to each opponent. When the duration ends, he will dismiss the Grin-Malkin Cat and ignite fireworks that deal AoE Pyro DMG, summon 1 Grin-Malkin Hat, and grant himself 1 Prop Surplus stack.\n\nGrin-Malkin Cat can be actively canceled."
+			"description": "Unleashing his magic, Lyney turns himself into a Grin-Malkin Cat that can move around quickly. (Not to be mistaken for the Grin-Malkin Hat. They're two different props!)\nWhen the Grin-Malkin Cat gets close to opponents, it will send flames falling down on them, dealing at most 1 instance of Pyro DMG to each opponent. When the duration ends, he will dismiss the Grin-Malkin Cat and ignite fireworks that deal AoE Pyro DMG, summon 1 Grin-Malkin Hat, and grant himself 1 Prop Surplus stack.\n\nGrin-Malkin Cat can be actively canceled.",
+			"application": [
+				{ "frame": 112, "element": "pyro" },
+				{ "frame": 288, "element": "pyro" },
+				{ "frame": 563, "element": "pyro" }
+			]
 		}
 	],
 	"passives": [

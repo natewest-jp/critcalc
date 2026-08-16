@@ -64,10 +64,12 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 46, "N": 38, "Q": 37, "D": 30, "J": 30 }
+					"frames": { "anim": 46, "N": 38, "Q": 37, "D": 30, "J": 30 },
+					"application": [{ "frame": 15, "element": "cryo" }]
 				}
 			],
-			"description": "Mika uses his crossbow to attack, granting all nearby characters in your party Soulwind. When characters in the Soulwind state are on the field, their ATK SPD will be increased.\nWill take effect in different ways if Tapped or Held.\n\nTap\nFires a Flowfrost Arrow that can pierce through opponents, dealing Cryo DMG to enemies it comes into contact with.\n\nHold\nGoes into Aiming Mode, locking on to an opponent and firing a Rimestar Flare at them, dealing Cryo DMG. When the Rimestar Flare hits, it will rise before exploding, launching Rimestar Shards into a maximum of 3 other opponents, dealing Cryo DMG."
+			"description": "Mika uses his crossbow to attack, granting all nearby characters in your party Soulwind. When characters in the Soulwind state are on the field, their ATK SPD will be increased.\nWill take effect in different ways if Tapped or Held.\n\nTap\nFires a Flowfrost Arrow that can pierce through opponents, dealing Cryo DMG to enemies it comes into contact with.\n\nHold\nGoes into Aiming Mode, locking on to an opponent and firing a Rimestar Flare at them, dealing Cryo DMG. When the Rimestar Flare hits, it will rise before exploding, launching Rimestar Shards into a maximum of 3 other opponents, dealing Cryo DMG.",
+			"application": [{ "frame": 18, "element": "cryo" }]
 		},
 		{
 			"id": "mika__burst__skyfeather_song",
@@ -107,7 +109,8 @@
 				"Both heals apply Mika's Healing Bonus at cast (gcsim Bonus: c.Stat(attributes.Heal)) — standard, not separately modelled. C1 Factor Confluence reduces the Eagleplume interval by the Soulwind ATK SPD% (gcsim Init: healIcd *= 1 - atkSpdBuff); base C0 interval 2.5s authored, C1 interaction noted on the C1 node. C4 Sunfrost Encomium energy return on each Eagleplume heal noted on the C4 node — not authored here.",
 				"[A7] The instant party heal (onCast burst, target 'team') is fully modeled and shown at cast; dropped from the caveat text as working behavior, kept here for reference. Caveat now focuses on the conditional Eagleplume on-hit heal (onHit normal, source 'team', procCooldown 2.5, target 'active')."
 			],
-			"description": "Derives the ability to spur his teammates on from the recited prayers of the knightly order, regenerating HP for all nearby party members. This healing is based on Mika's Max HP and will grant them the Eagleplume state.\n\nEagleplume\nWhen the Normal Attacks of active characters affected by Eagleplume hit an opponent, Mika will help them regenerate HP based on his Max HP.\nCharacters affected by this state can only regenerate HP in this way once per short interval of time."
+			"description": "Derives the ability to spur his teammates on from the recited prayers of the knightly order, regenerating HP for all nearby party members. This healing is based on Mika's Max HP and will grant them the Eagleplume state.\n\nEagleplume\nWhen the Normal Attacks of active characters affected by Eagleplume hit an opponent, Mika will help them regenerate HP based on his Max HP.\nCharacters affected by this state can only regenerate HP in this way once per short interval of time.",
+			"application": []
 		}
 	],
 	"passives": [

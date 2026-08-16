@@ -34,6 +34,7 @@ import {
 	gcsimKeyFor,
 	loadDrivers,
 	prereqFor,
+	splitApplications,
 	variantDumpKey
 } from './lib/gcsim-map.mjs';
 
@@ -46,52 +47,6 @@ const f = (seconds) => Math.round(seconds * FPS);
 // ---------------------------------------------------------------------------
 // Application attribution
 // ---------------------------------------------------------------------------
-
-/**
- * Split a dumped application stream into the cast's own hits and its summons' ticks.
- *
- * ⚓ Only one ability ever ran, so everything in the stream belongs to this cast — the
- * question is which BAR it belongs to. Our summons are already modelled with a label, a
- * spawn frame and a tick interval, so the split is a name match first (gcsim uses the
- * same in-game names) and a recurrence test second, for the summons we have not
- * authored yet.
- */
-function splitApplications(apps, ability) {
-	const summonLabels = new Set(
-		(ability.summons ?? []).map((s) => String(s.label ?? '').toLowerCase()).filter(Boolean)
-	);
-	const byAbil = new Map();
-	for (const a of apps) {
-		if (!byAbil.has(a.abil)) byAbil.set(a.abil, []);
-		byAbil.get(a.abil).push(a);
-	}
-	const cast = [];
-	const ticks = [];
-	const tickStreams = [];
-	for (const [abil, group] of byAbil) {
-		const name = abil.toLowerCase();
-		const named = [...summonLabels].some((l) => name.includes(l));
-		// ⚓ A stream is a SUMMON TICK only when the ability declares a summon. Regularity
-		// alone is not enough: Keqing's eight consecutive slashes, Ayaka's nineteen
-		// Soumetsu cuts and Wanderer's five Kyougen hits are all evenly spaced and all
-		// belong to the CAST — `summons[]` means a thing left in the world, and only the
-		// corpus can say that. Classifying by cadence put them in the wrong column and
-		// made four bursts read as applying nothing.
-		const gaps = group.slice(1).map((x, i) => x.frame - group[i].frame);
-		const even = gaps.length >= 2 && new Set(gaps).size === 1 && gaps[0] > 0;
-		const isTick = named || (even && summonLabels.size > 0);
-		(isTick ? ticks : cast).push(...group);
-		if (even && !isTick) tickStreams.push(`${abil} ×${group.length}/${gaps[0]}f`);
-	}
-	cast.sort((a, b) => a.frame - b.frame);
-	ticks.sort((a, b) => a.frame - b.frame);
-	// ⚠️ A recurring stream on an ability that declares NO summon is a finding, not
-	// plumbing: something in the game leaves a thing in the world that our corpus does
-	// not model (Amber's Fiery Rain, Dori's connector, Collei's Kitty). ⛔ It must not
-	// be read as "this cast applies nothing" — the emptiness of the cast column here is
-	// an artifact of the split, not a statement about the cast.
-	return { cast, ticks, regular: tickStreams };
-}
 
 /** Authored summon cadence, in frames, for the cross-check.
  *

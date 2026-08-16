@@ -62,7 +62,33 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 90, "N": 81, "Q": 81, "D": 74, "J": 74, "swap": 90 }
+					"frames": { "anim": 90, "N": 81, "Q": 81, "D": 74, "J": 74, "swap": 90 },
+					"application": [
+						{ "frame": 61, "element": "hydro" },
+						{ "frame": 76, "element": "hydro" },
+						{ "frame": 91, "element": "hydro" },
+						{ "frame": 106, "element": "hydro" },
+						{ "frame": 121, "element": "hydro" },
+						{ "frame": 136, "element": "hydro" },
+						{ "frame": 151, "element": "hydro" },
+						{ "frame": 166, "element": "hydro" },
+						{ "frame": 181, "element": "hydro" },
+						{ "frame": 196, "element": "hydro" },
+						{ "frame": 211, "element": "hydro" },
+						{ "frame": 226, "element": "hydro" },
+						{ "frame": 241, "element": "hydro" },
+						{ "frame": 256, "element": "hydro" },
+						{ "frame": 271, "element": "hydro" },
+						{ "frame": 286, "element": "hydro" },
+						{ "frame": 301, "element": "hydro" },
+						{ "frame": 316, "element": "hydro" },
+						{ "frame": 331, "element": "hydro" },
+						{ "frame": 346, "element": "hydro" },
+						{ "frame": 361, "element": "hydro" },
+						{ "frame": 372, "element": "hydro" },
+						{ "frame": 376, "element": "hydro" },
+						{ "frame": 418, "element": "hydro" }
+					]
 				}
 			],
 			"effects": [],
@@ -76,7 +102,11 @@
 				"Capability sweep 2026-07-28: deleted stale beta note 'C4 (Tide Tributary): +20% Hydro DMG on E cast' — the release C4 is 'Pouring Descent' (Aquacrest Aegis shield), authored on the constellation entry. Description refreshed to genshin-db 5.2.12 combat2 text (beta '22 Dewdrops' wording replaced).",
 				"[A7] Original caveat: each Dewdrop's per-hit flat damage scales with Max HP via dewdropBonus[lvl]; the HP-cost-per-tick combined with per-hit flat-DMG-on-Max-HP scaling does not fit a single-scaling damage effect, which is why per-tick damage and HP costs are left unmodeled and only the frame variant is authored."
 			],
-			"description": "Unleashes a torrent that can cleanse the world.\n\nPress\nSends a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\n\nHold\nEnter Aiming Mode and constantly fire off Dewdrops in the direction in which you are aiming, dealing Hydro DMG to opponents they hit.\nWhen the skill ends, it will send a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\nSuffusion: When using the Hold configuration of this skill, if the Traveler's HP is higher than 50%, the DMG dealt by Dewdrops will increase based on the Traveler's Max HP, and the Traveler will lose a fixed amount of HP every second.\n\nArkhe: Pneuma\nAt certain intervals, after using Torrent Surge, this skill will unleash a Spiritbreath Thorn that pierces opponents, dealing Pneuma-aligned Hydro DMG."
+			"description": "Unleashes a torrent that can cleanse the world.\n\nPress\nSends a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\n\nHold\nEnter Aiming Mode and constantly fire off Dewdrops in the direction in which you are aiming, dealing Hydro DMG to opponents they hit.\nWhen the skill ends, it will send a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\nSuffusion: When using the Hold configuration of this skill, if the Traveler's HP is higher than 50%, the DMG dealt by Dewdrops will increase based on the Traveler's Max HP, and the Traveler will lose a fixed amount of HP every second.\n\nArkhe: Pneuma\nAt certain intervals, after using Torrent Surge, this skill will unleash a Spiritbreath Thorn that pierces opponents, dealing Pneuma-aligned Hydro DMG.",
+			"application": [
+				{ "frame": 25, "element": "hydro" },
+				{ "frame": 70, "element": "hydro" }
+			]
 		},
 		{
 			"id": "traveler_hydro__burst__rising_waters",
@@ -125,7 +155,8 @@
 				"[A7] C2 was authored as a +3s duration modifier on the burst's Rising Waters Bubble summon (4s -> 7s). Original caveat framed the -30% movement-speed reduction as yielding 14 ticks vs 8 by slowing drift to 0.7s/tile; per curator notes the 14-tick count actually follows from the +3s duration (7s / 0.5s tick interval), which is modeled, so the movement-speed omission does not change tick count.",
 				"Capability sweep 2026-07-28: C2 renamed from stale beta 'Liquid Drift' to release 'Trickling Purity' (genshin-db 5.2.12) — durationModifier source label updated. Description refreshed to genshin-db combat3 text."
 			],
-			"description": "Unleashes a slow-moving floating bubble that deals continuous Hydro DMG to nearby opponents."
+			"description": "Unleashes a slow-moving floating bubble that deals continuous Hydro DMG to nearby opponents.",
+			"application": [{ "frame": 34, "element": "hydro" }]
 		}
 	],
 	"passives": [

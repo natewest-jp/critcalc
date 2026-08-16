@@ -108,7 +108,8 @@
 				"snapshottable: false chosen to match the Sanguine Rouge passive convention in this file. The buff value is computed once at cast and cached, but the field semantics in this codebase are 'does the buff freeze onto outgoing attacks at attack time' — verify this is the right reading for PP."
 			],
 			"behavior": "stance",
-			"terminatesOnSwap": true
+			"terminatesOnSwap": true,
+			"application": [{ "frame": 14 }]
 		},
 		{
 			"id": "hu_tao__burst__spirit_soother",
@@ -136,7 +137,8 @@
 				"Low-HP variant (≤50% HP at cast time): mult swaps to burstLow[talent] and heal swaps to regenLow[talent]. regenLow[8] = 10.5%. Not modeled as a separate variant; reviewer to decide whether a state-conditioned variant is warranted.",
 				"Spirit Soother does NOT end Paramita Papilio (gcsim onExitField only fires on swap; burst.go has no DeleteStatMod for paramita). PP and Q can run concurrently."
 			],
-			"behavior": "instant"
+			"behavior": "instant",
+			"application": [{ "frame": 66, "element": "pyro" }]
 		}
 	],
 	"passives": [

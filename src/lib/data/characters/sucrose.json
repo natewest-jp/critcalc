@@ -83,7 +83,8 @@
 				"gcsim skillFrames has ActionCharge=56; C is not in the required key set for skill frames per recipe — omitted",
 				"[Hexerei] Small Wind Spirit party DMG bonus is count-gated (gcsim internal/characters/sucrose/asc.go:113-141 hexOnSkill — IsHexerei && GetHexereiCount() >= 2), 0.0571428 DmgP to every Chars() entry for 15*60 frames. Authored in factionBonuses as allDmgBonus 5.71428 / 15s / target team. gcsim restricts the mod to AttackTagNormal/Extra/Plunge/ElementalArt/ElementalArtHold/ElementalBurst — swirl and other reaction DMG are excluded; allDmgBonus over-covers, hence the caveat."
 			],
-			"description": "Creates a small Wind Spirit that pulls opponents and objects towards its location, launches opponents within its AoE, and deals Anemo DMG."
+			"description": "Creates a small Wind Spirit that pulls opponents and objects towards its location, launches opponents within its AoE, and deals Anemo DMG.",
+			"application": [{ "frame": 42, "element": "anemo" }]
 		},
 		{
 			"id": "sucrose__burst__forbidden_creation_isomer_75_type_ii",
@@ -119,7 +120,8 @@
 				"gcsim has a TODO comment: 'does sucrose burst snapshot?' — snapshotting behavior is unverified in source; snapshots field left unset for reviewer",
 				"[Hexerei] Large Wind Spirit DMG bonus is count-gated (gcsim internal/characters/sucrose/asc.go:143-175 hexOnBurst — IsHexerei && GetHexereiCount() >= 2), 0.0714285 DmgP for 20*60 frames, applied only to team members whose own IsHexerei is set. EffectTarget has no per-faction team subset, so it is authored target:'team' with the routing stated in the caveat. Same attack-tag restriction as the skill buff (no reaction DMG)."
 			],
-			"description": "Sucrose hurls an unstable concoction that creates a Large Wind Spirit.\nWhile it persists, the Large Wind Spirit will continuously pull in surrounding opponents and objects, launch nearby opponents, and deal Anemo DMG.\n\nElemental Absorption\nIf the Wind Spirit comes into contact with Hydro/Pyro/Cryo/Electro energy, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use."
+			"description": "Sucrose hurls an unstable concoction that creates a Large Wind Spirit.\nWhile it persists, the Large Wind Spirit will continuously pull in surrounding opponents and objects, launch nearby opponents, and deal Anemo DMG.\n\nElemental Absorption\nIf the Wind Spirit comes into contact with Hydro/Pyro/Cryo/Electro energy, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
+			"application": []
 		}
 	],
 	"passives": [

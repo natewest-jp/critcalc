@@ -104,7 +104,21 @@
 				"(3) On-Charged-hit heal → target 'team' (gcsim charge.go cb Heal Target:-1, Src = 4×(prochpp×MaxHP+prochp)); onHit abilityType 'charged'. 4× the per-hit value → 5.4% Max HP + 635.608 flat. Kit: 'Charged Attack generates 4 times the amount of healing.'",
 				"Melody-Loop gating: all three heals only occur while the 15s Loop is active, but no schema condition expresses 'Melody Loop active' (it is a self-status, not a summon/named state). The onHit heals therefore render on any Barbara N/CA in the planner regardless of loop state — surfaced via caveat. Healing Bonus (gcsim HealInfo.Bonus = Heal stat) is applied by the renderer, not authored here."
 			],
-			"description": "Summons water droplets resembling musical notes that form a Melody Loop, dealing Hydro DMG to surrounding opponents and applying the Wet status to them.\n\nMelody Loop\n·On hit, Barbara's Normal Attacks heal your own party members and nearby teammates for a certain amount of HP, which scales with Barbara's Max HP.\n·On hit, Barbara's Charged Attack generates 4 times the amount of healing.\n·Periodically regenerates your own active character's HP.\n·Applies the Wet status to the character and to opponents who come in contact with them."
+			"description": "Summons water droplets resembling musical notes that form a Melody Loop, dealing Hydro DMG to surrounding opponents and applying the Wet status to them.\n\nMelody Loop\n·On hit, Barbara's Normal Attacks heal your own party members and nearby teammates for a certain amount of HP, which scales with Barbara's Max HP.\n·On hit, Barbara's Charged Attack generates 4 times the amount of healing.\n·Periodically regenerates your own active character's HP.\n·Applies the Wet status to the character and to opponents who come in contact with them.",
+			"application": [
+				{ "frame": 3, "element": "hydro" },
+				{ "frame": 42, "element": "hydro" },
+				{ "frame": 78, "element": "hydro" },
+				{ "frame": 93, "element": "hydro" },
+				{ "frame": 183, "element": "hydro" },
+				{ "frame": 273, "element": "hydro" },
+				{ "frame": 363, "element": "hydro" },
+				{ "frame": 453, "element": "hydro" },
+				{ "frame": 543, "element": "hydro" },
+				{ "frame": 633, "element": "hydro" },
+				{ "frame": 723, "element": "hydro" },
+				{ "frame": 813, "element": "hydro" }
+			]
 		},
 		{
 			"id": "barbara__burst__shining_miracle",
@@ -130,7 +144,8 @@
 			"_curatorNotes": [
 				"One-shot team heal authored 2026-07-12 at talent level 10. onCast (burst), target 'team' (gcsim burst.go Heal Target:-1 = all party members). TL10 bursthpp[9]=0.3168 → 31.68% Max HP + bursthp[9]=3727.7026 flat (sidecar 'Regeneration' col10 '31.7% Max HP+3728'). Heal fires at frame 77 (Tasks.Add delay 77); rendered at cast per the onCast convention. Healing Bonus (gcsim HealInfo.Bonus = Heal stat) is applied by the renderer, not authored here."
 			],
-			"description": "Heals your own party members and nearby teammates for a large amount of HP that scales with Barbara's Max HP."
+			"description": "Heals your own party members and nearby teammates for a large amount of HP that scales with Barbara's Max HP.",
+			"application": []
 		}
 	],
 	"passives": [

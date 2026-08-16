@@ -73,7 +73,8 @@
 						"Hold E shares the 18s base cooldown but cooldownStartDelay = 23 frames (vs 15 for tap). Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to extend or document.",
 						"Hold E low-plunge cancel exists in gcsim (skillHoldFrames[ActionLowPlunge] = 35) — this is the canonical hE → P combo; FrameMap has no `P` key, so omitted here. Reviewer to consider schema extension.",
 						"Hold E damage hitmark = 28 (skillHoldHitmark) and triggers mirror gain at frame 23 (vs 15 for tap)."
-					]
+					],
+					"application": [{ "frame": 28, "element": "dendro" }]
 				}
 			],
 			"description": "Rushes forward, dealing Dendro DMG to nearby opponents when the rush ends, causing a Chisel-Light Mirror to form.\nHolding this skill will cause it to behave differently.\n\nHold\nEnters Aiming Mode to adjust the direction of Alhaitham's rush attack.\n\nChisel-Light Mirror\nWhen this skill is unleashed, Alhaitham will generate 1 Chisel-Light Mirror. If there are no Mirrors at this time, he will generate 1 additional Mirror. Chisel-Light Mirrors will have the following properties:\n·When he possesses Chisel-Light Mirrors, Alhaitham's Normal, Charged, and Plunging Attacks will be converted to Dendro DMG. This cannot be overridden.\n·When attacks of the aforementioned kind hit opponents, the Chisel-Light Mirrors will unleash a Projection Attack that deals AoE Dendro DMG based on the number of Mirrors on the field.\n·A total of 3 Chisel-Light Mirrors can exist at once.\n·The Chisel-Light Mirrors will disappear one after the other over time, and will all disappear when Alhaitham leaves the field.",
@@ -85,7 +86,8 @@
 				"Particle generation: Dendro particle on first Projection Attack hit per cast (1.5s ICD on particleICDKey). Not authored as an explicit effect — particle generation is not currently modeled in character JSONs.",
 				"C1 (Intuition) reduces this skill's CD by 1.2s per Projection Attack hit, 1s ICD. Flagged on C1.",
 				"Per-character pattern note: alhaitham was flagged 'most complex Tier B case' in recipe-tier-b.md. Tap/Hold E authored as variants per the note's guidance; mirror-count gating intentionally not authored as conditions/effects — schema cannot represent stack-keyed buffs and per-mirror lifetimes. All mirror-dependent mechanics flagged here and on consuming abilities."
-			]
+			],
+			"application": [{ "frame": 19, "element": "dendro" }]
 		},
 		{
 			"id": "alhaitham__burst__particular_field_fetters_of_phenomena",
@@ -105,6 +107,12 @@
 				"C4 (Elucidation) grants stacking team EM and self Dendro DMG bonus per mirror consumed/generated (15s, fixed duration, refresh on next burst). Existing skeletons in C4 use single-stack values (30 EM team, 10% Dendro self) — they assume max-mirror baseline; reviewer to encode the per-mirror-count gating.",
 				"energyCost = 70 (data_gen.textproto burst_energy_cost: 70).",
 				"ConsumeEnergy(6) on cast — gcsim convention; not relevant to JSON encoding."
+			],
+			"application": [
+				{ "frame": 94, "element": "dendro" },
+				{ "frame": 115, "element": "dendro" },
+				{ "frame": 136, "element": "dendro" },
+				{ "frame": 157, "element": "dendro" }
 			]
 		}
 	],

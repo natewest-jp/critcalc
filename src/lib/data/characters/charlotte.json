@@ -65,8 +65,28 @@
 			"cooldown": 12,
 			"cooldownStartDelay": 29,
 			"variants": [
-				{ "label": "\"Snappy Silhouette\" Mark", "duration": 6 },
-				{ "label": "\"Focused Impression\" Mark", "duration": 12 },
+				{
+					"label": "\"Snappy Silhouette\" Mark",
+					"duration": 6,
+					"application": [
+						{ "frame": 31, "element": "cryo" },
+						{ "frame": 121, "element": "cryo" },
+						{ "frame": 211, "element": "cryo" },
+						{ "frame": 301, "element": "cryo" },
+						{ "frame": 391, "element": "cryo" }
+					]
+				},
+				{
+					"label": "\"Focused Impression\" Mark",
+					"duration": 12,
+					"application": [
+						{ "frame": 31, "element": "cryo" },
+						{ "frame": 121, "element": "cryo" },
+						{ "frame": 211, "element": "cryo" },
+						{ "frame": 301, "element": "cryo" },
+						{ "frame": 391, "element": "cryo" }
+					]
+				},
 				{
 					"label": "Focused Impression (Hold)",
 					"input": ["hE"],
@@ -74,6 +94,17 @@
 					"frames": { "anim": 138, "N": 133, "C": 133, "E": 131, "Q": 131, "swap": 135 },
 					"_curatorNotes": [
 						"Hold cast (Focused Impression). input:['hE'] added 2026-07-15 — was previously the unreachable input-less 'Finisher Frame Cast' (cooldown only, no frames). gcsim skillHoldCD=1080f=18s (base Press = 720f = 12s). Frames = skillHoldFrames at min hold (hold=1): swap=134+1, N=132+1, E/Q=130+1; the hold parameter adds a variable offset, D/J stay at the InitAbilSlice 137 default (omitted per recipe). Hold cooldownStartDelay is parametric (hitmark-2) — AbilityVariant has no cooldownStartDelay field (see [[curator-notes-deferral-survey]])."
+					],
+					"application": [
+						{ "frame": 112, "element": "cryo" },
+						{ "frame": 202, "element": "cryo" },
+						{ "frame": 292, "element": "cryo" },
+						{ "frame": 382, "element": "cryo" },
+						{ "frame": 472, "element": "cryo" },
+						{ "frame": 562, "element": "cryo" },
+						{ "frame": 652, "element": "cryo" },
+						{ "frame": 742, "element": "cryo" },
+						{ "frame": 832, "element": "cryo" }
 					]
 				}
 			],
@@ -88,6 +119,13 @@
 				"Hold variant has variable frame duration: gcsim total animation = hold + skillHoldFrames[next], where hold is a runtime parameter (range 1–809f, min hitmark = hold+111). Post-release cancel frames (min hold=1): swap=134+1=135, N=132+1=133, Q=130+1=131, E=130+1=131; D and J default to AnimationLength (137+1=138) — not real cancels. Hold cooldownStartDelay is also variable: hitmark-2 = (hold+111)-2 = hold+109 (minimum ~110f).",
 				"Snappy Silhouette and Focused Impression marks are enemy-targeted periodic DMG sources (AttackTagElementalArt, ICDTagCharlotteMark / ICDGroupCharlotteMark), ticking every 90f (1.5s). Not spawned entities — not modeled as summons[]. Reviewer to decide representation. Press mark: 360+48=408f (~6.8s); Hold mark: 720+54=774f (~12.9s).",
 				"'heal' tag removed 2026-07-12: E is damage/marking only — no heal anywhere in gcsim skill.go or kit text. The tag was a mis-tag from the A1 tag batch (heals attached to Charlotte's kit all originate from the burst; even C6's coordinated heal is burst-attributed despite triggering off E's Focused Impression mark)."
+			],
+			"application": [
+				{ "frame": 31, "element": "cryo" },
+				{ "frame": 121, "element": "cryo" },
+				{ "frame": 211, "element": "cryo" },
+				{ "frame": 301, "element": "cryo" },
+				{ "frame": 391, "element": "cryo" }
 			]
 		},
 		{
@@ -134,7 +172,18 @@
 				"ATK and Healing Bonus snapshot at cast for both the initial heal and all dot ticks (gcsim takes one Snapshot and computes heal/healDot from it before queuing).",
 				"Kamera also deals periodic Cryo DMG on the same tick frames (Kamera DMG 11.6% ATK at TL10, ICDTagCharlotteKamera); damage ticks not authored — heal-focused pass. C1 Verification heal-over-time rides on these heal events (see constellation node)."
 			],
-			"description": "Condensing ice to create The Steambird's signature, Charlotte creates a Newsflash Field that will deal AoE Cryo DMG and restores HP for all nearby party members based on Charlotte's ATK.\nNewsflash Field\n·While the ability is active, Monsieur Verite will deal Cryo DMG at intervals to opponents within its AoE.\n·Will continuously restore HP to active character(s) within its AoE based on Charlotte's ATK."
+			"description": "Condensing ice to create The Steambird's signature, Charlotte creates a Newsflash Field that will deal AoE Cryo DMG and restores HP for all nearby party members based on Charlotte's ATK.\nNewsflash Field\n·While the ability is active, Monsieur Verite will deal Cryo DMG at intervals to opponents within its AoE.\n·Will continuously restore HP to active character(s) within its AoE based on Charlotte's ATK.",
+			"application": [
+				{ "frame": 53, "element": "cryo" },
+				{ "frame": 95, "element": "cryo" },
+				{ "frame": 119, "element": "cryo" },
+				{ "frame": 143, "element": "cryo" },
+				{ "frame": 166, "element": "cryo" },
+				{ "frame": 179, "element": "cryo" },
+				{ "frame": 203, "element": "cryo" },
+				{ "frame": 226, "element": "cryo" },
+				{ "frame": 249, "element": "cryo" }
+			]
 		}
 	],
 	"passives": [

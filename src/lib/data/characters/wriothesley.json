@@ -108,7 +108,8 @@
 				"Skill enhancement of N is gated by HP > 50% (skillBuffActive). The stance flag persists through HP changes, but the damage enhancement only applies while above 50%. Schema's `inStance` condition cannot express this; flagged on the in-stance N variant as well.",
 				"C1 extends the stance by 4s when a Rebuke: Vaulting Fist hits while in-stance (gcsim ExtendStatus). One extension per stance window. Fits the `durationExtensions[]` primitive (E5, 2026-05-10) on the skill stance: `{ trigger: { type: 'onHit', filter: { abilityName: 'Rebuke: Vaulting Fist' } }, delta: 4, maxExtensions: 1 }`. Authoring blocked on parser dispatching `onHit` events to stance owners — currently only `onCast` extensions fire.",
 				"Energy particle generation comes from the in-stance NORMAL hits, not from the skill cast itself (gcsim particleCB is wired into chillingPenalty path). Approx 1 cryo particle per stance hit with 2s ICD."
-			]
+			],
+			"application": []
 		},
 		{
 			"id": "wriothesley__burst__darkgold_wolfbite",
@@ -127,6 +128,14 @@
 				"Icicle Impact fires 5 hits at burstHitmarks {99, 104, 109, 114, 119}. Surging Blade (Ousia follow-up) lands at frame 160 with a 10s ICD between Surging Blade procs (gcsim burstOusiaICDKey). Removed the 'Surging Blade' burst variant 2026-07-15: it modeled the Arkhe follow-up's 10s ICD as a variant cooldown, but Surging Blade is an internal component of the burst cast, not a token-selectable Q variant — no notation selects it, so it was unreachable dead data. Its DMG remains frame-represented within the burst.",
 				"Q snapshots ATK at cast (gcsim Snapshot called once, then QueueAttackWithSnap for all 5 hits + Surging Blade). Reviewer to confirm snapshot semantics for the planner's buff timing.",
 				"C2 adds 40% × a4Stack to Q DMG (snap.Stats[DmgP] += 0.4 * a4Stack at cast). Not authored — depends on a4Stack runtime which schema cannot express."
+			],
+			"application": [
+				{ "frame": 99, "element": "cryo" },
+				{ "frame": 104, "element": "cryo" },
+				{ "frame": 109, "element": "cryo" },
+				{ "frame": 114, "element": "cryo" },
+				{ "frame": 119, "element": "cryo" },
+				{ "frame": 160, "element": "cryo" }
 			]
 		}
 	],

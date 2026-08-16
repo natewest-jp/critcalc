@@ -71,6 +71,13 @@
 							"stat": "hp",
 							"flat": 2667.51
 						}
+					],
+					"application": [
+						{ "frame": 34, "element": "cryo" },
+						{ "frame": 35, "element": "cryo" },
+						{ "frame": 36, "element": "cryo" },
+						{ "frame": 37, "element": "cryo" },
+						{ "frame": 38, "element": "cryo" }
 					]
 				}
 			],
@@ -98,7 +105,11 @@
 				"Press variant cooldownStartDelay = 5 (skillPressHitmark). Base ability cooldownStartDelay reflects Press variant.",
 				"[A7] Shield duration = 2.4s per paw landed at talent level 10 (pawDur[9]); the caveat text now conveys the paws-scaling qualitatively. Already recorded in existing curator notes."
 			],
-			"description": "Fires an Icy Paw that deals Cryo DMG to opponents and forms a shield on hit.\nThe shield's DMG Absorption scales based on Diona's Max HP, and its duration scales off the number of Icy Paws that hit their target.\n\nPress\nRapidly fires off 2 Icy Paws.\n\nHold\nDashes back quickly before firing 5 Icy Paws.\nThe shield created by a Hold attack will gain a 75% DMG Absorption Bonus.\n\nThe shield has a 250% Cryo DMG Absorption Bonus, and will cause your active character to become affected by Cryo at the point of formation for a short duration."
+			"description": "Fires an Icy Paw that deals Cryo DMG to opponents and forms a shield on hit.\nThe shield's DMG Absorption scales based on Diona's Max HP, and its duration scales off the number of Icy Paws that hit their target.\n\nPress\nRapidly fires off 2 Icy Paws.\n\nHold\nDashes back quickly before firing 5 Icy Paws.\nThe shield created by a Hold attack will gain a 75% DMG Absorption Bonus.\n\nThe shield has a 250% Cryo DMG Absorption Bonus, and will cause your active character to become affected by Cryo at the point of formation for a short duration.",
+			"application": [
+				{ "frame": 10, "element": "cryo" },
+				{ "frame": 11, "element": "cryo" }
+			]
 		},
 		{
 			"id": "diona__burst__signature_mix",
@@ -148,7 +159,8 @@
 				"A4 Drunkards' Farce (enemy ATK -10% in field) remains unauthored — not implemented in gcsim, see passive node note.",
 				"[A7] Field is stationary (summon mobility 'stationary'); the caveat's 'standing inside the field' conveys the fixed-position sense for users."
 			],
-			"description": "Tosses out a special cold brew that deals AoE Cryo DMG and creates a Drunken Mist in an AoE.\n\nDrunken Mist\n·Deals continuous Cryo DMG to opponents within the AoE.\n·Continuously regenerates the HP of characters within the AoE."
+			"description": "Tosses out a special cold brew that deals AoE Cryo DMG and creates a Drunken Mist in an AoE.\n\nDrunken Mist\n·Deals continuous Cryo DMG to opponents within the AoE.\n·Continuously regenerates the HP of characters within the AoE.",
+			"application": [{ "frame": 58, "element": "cryo" }]
 		}
 	],
 	"passives": [

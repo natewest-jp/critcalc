@@ -96,7 +96,8 @@
 				"Stance duration = 10s (gcsim AddStatus(skillKey, 600+11, true) — 600 frames effective stance window after 11-frame cast delay).",
 				"terminatesOnSwap: true — gcsim onExit() subscribes to OnCharacterSwap and calls DeleteStatus(skillKey) when Yoimiya swaps off-field.",
 				"Skill-talent damage multiplier on in-stance N (1.617 → 3.823 across TL1–15) is reviewer-owned; flagged on the in-stance normal entry."
-			]
+			],
+			"application": []
 		},
 		{
 			"id": "yoimiya__burst__ryuukin_saxifrage",
@@ -116,7 +117,8 @@
 				"Aurous Blaze trigger: party-member-other-than-Yoimiya N/CA/P/E/Q hit on debuffed enemy → AoE pyro explosion, 2s ICD per enemy (gcsim abIcdKey = 120 frames). Multiplier from gcsim burstExplode[talent]. Effect not authored; reviewer-owned.",
 				"Burst frames: ActionAttack at InitAbilSlice default (113, comment 'Q -> N1') — omitted per recipe silent-default rule. swap recorded explicitly at 109.",
 				"Burst CD has no explicit cooldownStartDelay (gcsim uses SetCD without delay variant); omitted."
-			]
+			],
+			"application": [{ "frame": 75, "element": "pyro" }]
 		}
 	],
 	"passives": [

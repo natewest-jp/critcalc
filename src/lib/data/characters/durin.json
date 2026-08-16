@@ -97,7 +97,8 @@
 				"Base frames = the opening tap E that enters Essential Transmutation (gcsim skill.go skillFrames, InitAbilSlice(49); ActionSwap=13, ActionAttack=16, ActionSkill=15, ActionBurst=4, ActionDash=14, ActionJump=14). The tap deals no damage and sets the 12s CD (SetCD(action.ActionSkill, 12*60)); the commits do not re-set CD (separate abilities with their own timing). CD/energy verified against the talent sidecar.",
 				"DUAL-FORM MODEL — WIRED 2026-07-17 (post-P4 #2, the 'normal-attack opens a mode state' primitive; Nate 2026-07-15 chose faithful auto-tracking over a user-assertion workaround). (1) This tap opens `transmuting` (6s, gcsim skillWindowDur) via opensTransientState — behavior is `instant`, not stance: the tap itself has no lasting on-field mode. (2) WHITE commit = durin__skill__transmutation_confirmation_of_purity, a separate skill gated state:transmuting (Flins Northland-Spearstorm pattern). (3) DARK commit = durin__normal__transmutation_denial_of_darkness, a state-gated normal whose actionOpensState.normal opens `darkForm` — the post-P4 #2 primitive. (4) BURST reads the form: base Q = White (default); durin__burst__principle_of_darkness_as_the_stars_smolder is gated state:darkForm and carries the Dragon of Dark Decay. Both commits `consumes` the window + the opposite form (gcsim DeleteStatus pairs). The former input-less placeholder variants are deleted; their frames live on the new abilities.",
 				"[A7] Compression drops: the 6s Essential Transmutation window duration; White commit = single AoE Pyro hit, Dark commit = 3 front Pyro hits (both frame-represented, in curator notes)."
-			]
+			],
+			"application": []
 		},
 		{
 			"id": "durin__skill__transmutation_confirmation_of_purity",
@@ -160,6 +161,11 @@
 				"Burst frames from gcsim burst.go burstFrames (InitAbilSlice(104); ActionSwap=102, ActionAttack=103, ActionSkill=103, ActionDash=102, ActionJump=104, ActionWalk=102). SetCD(action.ActionBurst, 18*60) = 18s, no delay; EnergyMax 70 — both verified vs sidecar. White opening 3 hits at T10: 214.1%+173.5%+201.3% ATK Pyro (burstWhiteInitial[*][9]), hitmarks 97/121/154f; frame-represented, not effects. Summon spawnsAt=97 = burstInitHitmark[0] (where the dragon manifests; gcsim burstDuration starts here, internally 20.5s vs the 20s field lifetime shown). Corrected stub behavior from 'stance' to 'instant' + summons: the Burst is an instant cast that spawns a following dragon — the form state lives on the Skill, not here. C4 +40% Burst DMG, C6 30%/70% DEF-ignore, and C1 Cycle-of-Enlightenment flat-DMG are noted on their constellation entries.",
 				"Dark form split out 2026-07-17 (post-P4 #2): the former input-less Dark variant is now durin__burst__principle_of_darkness_as_the_stars_smolder, gated state:darkForm — resolveActiveAbility picks it only while darkForm is live, so Q immediately, or after the 30s form expires, correctly renders White. Both bursts share the single per-character burst cooldown scalar (matching gcsim's one burst slot).",
 				"[A7] Caveat removed as working behavior: default-form selection and the following-dragon ticks (~0.98s, 20s) are shown; the un-modeled A4 dragon amp is noted on the Chaos Formed passive instead."
+			],
+			"application": [
+				{ "frame": 97, "element": "pyro" },
+				{ "frame": 121, "element": "pyro" },
+				{ "frame": 154, "element": "pyro" }
 			]
 		},
 		{
@@ -199,6 +205,24 @@
 			"_curatorNotes": [
 				"Split out of the base Burst's input-less variant 2026-07-17 (post-P4 #2) per the deferred design: gated state:darkForm so resolveActiveAbility auto-selects it only while the Dark form is live. Opening 3 hits at T10: 225.8%+183.2%+201.3% ATK Pyro (burstBlackInitial[*][9]); frame-represented via the shared burstFrames slice (gcsim burst.go uses one for both forms). Shares the single burst CD scalar + 70 energy cost with the White form.",
 				"[A7] Caveat removed: auto-selection while darkForm is live is working behavior and the ~1.23s cadence (16 ticks) is shown; single-target-vs-AoE and 'harder-hitting' are out of scope (the tool shows no damage numbers and does not distinguish target counts)."
+			],
+			"application": [
+				{ "frame": 97, "element": "pyro" },
+				{ "frame": 121, "element": "pyro" },
+				{ "frame": 154, "element": "pyro" },
+				{ "frame": 156, "element": "pyro" },
+				{ "frame": 214, "element": "pyro" },
+				{ "frame": 273, "element": "pyro" },
+				{ "frame": 332, "element": "pyro" },
+				{ "frame": 391, "element": "pyro" },
+				{ "frame": 450, "element": "pyro" },
+				{ "frame": 508, "element": "pyro" },
+				{ "frame": 567, "element": "pyro" },
+				{ "frame": 626, "element": "pyro" },
+				{ "frame": 685, "element": "pyro" },
+				{ "frame": 744, "element": "pyro" },
+				{ "frame": 802, "element": "pyro" },
+				{ "frame": 861, "element": "pyro" }
 			]
 		}
 	],

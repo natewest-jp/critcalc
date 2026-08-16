@@ -72,7 +72,8 @@
 			"_curatorNotes": [
 				"Jade Screen construct spawns at frame 0 (Constructs.New called directly, not in a task queue). Damage hitmark is at skillHitmark=17. C2 (Shock Effect) resets skill CD when the screen is destroyed (6s ICD), including when destroyed by Starshatter (Q).",
 				"Burst (Starshatter) also destroys the active Jade Screen via c.Core.Constructs.Destroy(c.lastScreen) and fires additional gem projectiles. The terminatesOn field records only 'recast' (new E cast); reviewer to decide if 'onBurst' also warrants representation."
-			]
+			],
+			"application": []
 		},
 		{
 			"id": "ningguang__burst__starshatter",
@@ -85,7 +86,15 @@
 			"effects": [],
 			"description": "Gathering a great number of gems, Ningguang scatters them all at once, sending homing projectiles at her opponents that deal massive Geo DMG.\nIf Starshatter is cast when a Jade Screen is nearby, the Jade Screen will fire additional gem projectiles at the same time.",
 			"behavior": "instant",
-			"frames": { "anim": 127, "D": 99, "J": 100, "swap": 98 }
+			"frames": { "anim": 127, "D": 99, "J": 100, "swap": 98 },
+			"application": [
+				{ "frame": 62, "element": "geo" },
+				{ "frame": 97, "element": "geo" },
+				{ "frame": 106, "element": "geo" },
+				{ "frame": 110, "element": "geo" },
+				{ "frame": 116, "element": "geo" },
+				{ "frame": 124, "element": "geo" }
+			]
 		}
 	],
 	"passives": [

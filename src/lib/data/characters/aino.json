@@ -62,7 +62,11 @@
 				"Frames: skillFrames=InitAbilSlice(52), ActionAttack/Burst/Walk=50 ActionDash=39 ActionJump=38 ActionSwap=49. Per E-spec swap/N/Q/D/J.",
 				"Hold variant (aiming mode for direction adjustment): not separately authored; cosmetic windup difference rather than a different action."
 			],
-			"description": "Aino throws a Musecatcher forward, dealing Hydro DMG and dragging her along behind it. When the dragging stops, Aino deals AoE Hydro DMG to nearby opponents.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the Musecatcher's throwing direction."
+			"description": "Aino throws a Musecatcher forward, dealing Hydro DMG and dragging her along behind it. When the dragging stops, Aino deals AoE Hydro DMG to nearby opponents.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the Musecatcher's throwing direction.",
+			"application": [
+				{ "frame": 15, "element": "hydro" },
+				{ "frame": 33, "element": "hydro" }
+			]
 		},
 		{
 			"id": "aino__burst__precision_hydronic_cooler",
@@ -104,7 +108,8 @@
 				"EnergyMax=50 (matches energyCost). C2 trigger (off-field active hits) and C6 reaction-DMG bonus are deferred — see constellation entries.",
 				"[A7] Caveat previously also stated the summon's AoE radius increases under Moonsign Ascendant Gleam (1 → 4); dropped from the user-facing caveat because the timeline does not display AoE radius, so it is not a divergence the user could be misled by. The radius change is already documented in the A1 passive (Modular Efficiency Protocol) curator note."
 			],
-			"description": "Aino deploys a custom water-spraying device, the Cool Your Jets Ducky to establish a Focused Hydronic Cooling Zone.\nWhile active, the Cool Your Jets Ducky will periodically fire water balls at nearby opponents, dealing Hydro DMG."
+			"description": "Aino deploys a custom water-spraying device, the Cool Your Jets Ducky to establish a Focused Hydronic Cooling Zone.\nWhile active, the Cool Your Jets Ducky will periodically fire water balls at nearby opponents, dealing Hydro DMG.",
+			"application": []
 		}
 	],
 	"passives": [

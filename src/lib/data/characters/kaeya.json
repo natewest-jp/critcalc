@@ -64,7 +64,8 @@
 			],
 			"tags": [],
 			"effects": [],
-			"description": "Unleashes a frigid blast, dealing Cryo DMG to opponents in front of Kaeya."
+			"description": "Unleashes a frigid blast, dealing Cryo DMG to opponents in front of Kaeya.",
+			"application": [{ "frame": 28, "element": "cryo" }]
 		},
 		{
 			"id": "kaeya__burst__glacial_waltz",
@@ -85,7 +86,8 @@
 			"tags": ["summon"],
 			"energyCost": 60,
 			"effects": [],
-			"description": "Coalescing the frost in the air, Kaeya summons 3 icicles that revolve around him.\nThese icicles will follow the character around and deal Cryo DMG to opponents in their path for the ability's duration."
+			"description": "Coalescing the frost in the air, Kaeya summons 3 icicles that revolve around him.\nThese icicles will follow the character around and deal Cryo DMG to opponents in their path for the ability's duration.",
+			"application": []
 		}
 	],
 	"passives": [

@@ -70,7 +70,8 @@
 				"[Stellar 2026-07-29] PERMANENT current-patch patch, no Stellar gate: the Witch's Revelation additional talent \"A Star With Which to Start the Journey\" (Fandom talent page, fetched 2026-07-29) reads \"If Cyno unleashes the Elemental Skill Secret Rite: Chasmic Soulfarer while not in the Pactsworn Pathclearer state, he will enter Pactsworn Pathclearer for 6s.\" Modeled with opensTransientState {inStance, 6s, terminatesOnSwap} on THIS ability rather than a new stance ability: the parser prefers the in-stance ability for the E token, so this base ability is only ever resolved when Cyno is NOT in Pathclearer — which is exactly the talent's own gate, for free.",
 				"[Stellar 2026-07-29] The 6s window deliberately gets no durationExtensions: the Fandom skill `buff` text restricts the +4s Mortuary Rite extension to instances entered \"through the Elemental Burst Sacred Rite: Wolf's Swiftness\", and the extensions live on the burst's stance window only. Mortuary Rite cast inside the 6s window therefore does not lengthen it, matching the wiki.",
 				"[Stellar 2026-07-29] Skill text updated to the Fandom `buff` field (buffType Revelation): the Mortuary Rite clause no longer requires the burst-sourced state, and the duration-extension clause was narrowed to the burst-sourced instance. CD unchanged at 7.5s/3s (infobox still reads 7.5s/3s; the dual-CD gameplay note is unchanged)."
-			]
+			],
+			"application": [{ "frame": 21, "element": "electro" }]
 		},
 		{
 			"id": "cyno__skill__mortuary_rite",
@@ -85,7 +86,8 @@
 			"behavior": "instant",
 			"_curatorNotes": [
 				"[Stellar 2026-07-29] Now reachable outside the burst: the Revelation talent lets the base skill open a 6s Pactsworn Pathclearer, and this in-stance ability resolves inside that window too. Its +4s extension still only applies to the burst-sourced stance (durationExtensions live on the burst)."
-			]
+			],
+			"application": [{ "frame": 28, "element": "electro" }]
 		},
 		{
 			"id": "cyno__burst__sacred_rite_wolfs_swiftness",
@@ -110,7 +112,8 @@
 			"_curatorNotes": [
 				"[A7] Burst base duration is 712f = 11.87s from cast start (~10s active after the burst animation).",
 				"[A7] Each in-stance Mortuary Rite (skill) cast extends the window +4s, max 2 (up to ~19.87s total), wired via durationExtensions[] with an onCast skill trigger — modeled correctly, so the removed caveat described working behavior rather than a gap."
-			]
+			],
+			"application": []
 		}
 	],
 	"passives": [

@@ -66,7 +66,8 @@
 				"No cooldownStartDelay (gcsim uses SetCD, not SetCDWithDelay).",
 				"Particle generation: 1 Pyro particle per cast (33% chance of 2), gated by a 0.3s particle ICD across the chain (gcsim particleICDKey). Not modeled as an effect; reviewer to wire energy generation if needed.",
 				"Generator stub had `behavior: 'stance'`; corrected to 'instant' — Diluc does not replace N or charge during the chain window."
-			]
+			],
+			"application": [{ "frame": 24, "element": "pyro" }]
 		},
 		{
 			"id": "diluc__skill__searing_onslaught_e2",
@@ -82,7 +83,8 @@
 			"description": "Second press of Searing Onslaught (within 4s of E1): a forward slash dealing Pyro DMG with different timing and damage multiplier than the first press.",
 			"_curatorNotes": [
 				"chainStage(skill, 1, window: 4) — fires when chain position is 1 (after E1, within 4s). After firing, parser advances to chain index 2 with another 4s window."
-			]
+			],
+			"application": [{ "frame": 28, "element": "pyro" }]
 		},
 		{
 			"id": "diluc__skill__searing_onslaught_e3",
@@ -99,7 +101,8 @@
 			"_curatorNotes": [
 				"chainStage(skill, 2) — terminal stage; no `window` field signals 'reset chain to 0 after firing.' Matches gcsim's behavior of deleting eWindowKey + resetting eCounter to 0 after E3.",
 				"swap=66 sourced via the InitAbilSlice-arg-as-swap exception — no explicit ActionSwap line follows skillFrames[2]'s init in gcsim. N=58 is included because skillFrames[2] is the only one of the three stages that explicitly sets ActionAttack."
-			]
+			],
+			"application": [{ "frame": 46, "element": "pyro" }]
 		},
 		{
 			"id": "diluc__burst__dawn",
@@ -124,6 +127,11 @@
 				"burstHitmark=100 is the strike-firing frame. The schema has no hitmark-on-burst field; the value is captured here as `summons[0].spawnsAt` (the Phoenix is the entity that carries the strike + DoT + explosion).",
 				"ActionDash is not explicitly overridden on burstFrames (defaults to 140 / animation length); D omitted per recipe. ActionBurst, ActionCharge — not applicable on burst frames.",
 				"Particle generation: burst does not generate particles in gcsim."
+			],
+			"application": [
+				{ "frame": 101, "element": "pyro" },
+				{ "frame": 112, "element": "pyro" },
+				{ "frame": 124, "element": "pyro" }
 			]
 		}
 	],

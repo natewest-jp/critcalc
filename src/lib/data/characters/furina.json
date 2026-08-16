@@ -142,7 +142,26 @@
 				}
 			],
 			"description": "Invites the guests of the Salon Solitaire to come forth and aid in Furina's performance. Will summon either the Salon Members or the Singer of Many Waters based on Furina's current Arkhe alignment.\n\nOusia\nFoaming bubbles like celebrants shall dance, dealing AoE Hydro DMG based on Furina's Max HP and summoning 3 Salon Members: the Ball Octopus-shaped Gentilhomme Usher, the Bubbly Seahorse-shaped Surintendante Chevalmarin, and the Armored Crab-shaped Mademoiselle Crabaletta.\nThey will attack nearby opponents at intervals, prioritizing the target of the active character, dealing Hydro DMG based on Max HP.\nWhen they attack, if character(s) with more than 50% HP are nearby, the Members will increase their current attack's power based on the number of such characters, and consume said characters' HP. If 1/2/3/4 (or more) characters meet these requirements, the Members' attacks will deal 110%/120%/130%/140% of their original DMG.\n\nPneuma\nSummons the Singer of Many Waters, who will heal nearby active character(s) based on Max HP at intervals.\n\nThe Salon Members and Singer of Many Waters share a duration, and when Furina uses her Charged Attack to change the guest type, the new guests will inherit the remaining duration.\nWhile the Salon Members or the Singer of Many Waters is on the field, Furina can move on the water's surface.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"application": [
+				{ "frame": 18, "element": "hydro" },
+				{ "frame": 110, "element": "hydro" },
+				{ "frame": 131, "element": "hydro" },
+				{ "frame": 137, "element": "hydro" },
+				{ "frame": 209, "element": "hydro" },
+				{ "frame": 307, "element": "hydro" },
+				{ "frame": 336, "element": "hydro" },
+				{ "frame": 405, "element": "hydro" },
+				{ "frame": 445, "element": "hydro" },
+				{ "frame": 498, "element": "hydro" },
+				{ "frame": 540, "element": "hydro" },
+				{ "frame": 595, "element": "hydro" },
+				{ "frame": 693, "element": "hydro" },
+				{ "frame": 744, "element": "hydro" },
+				{ "frame": 760, "element": "hydro" },
+				{ "frame": 792, "element": "hydro" },
+				{ "frame": 891, "element": "hydro" }
+			]
 		},
 		{
 			"id": "furina__burst__let_the_people_rejoice",
@@ -189,7 +208,8 @@
 			"terminatesOnSwap": false,
 			"_curatorNotes": [
 				"heal tag removed 2026-07-12: Let the People Rejoice grants Fanfare (DMG + INCOMING-healing bonus) — it does not itself heal. Furina heals via Salon Solitaire Pneuma (Singer of Many Waters), tagged on the skill."
-			]
+			],
+			"application": [{ "frame": 98, "element": "hydro" }]
 		}
 	],
 	"passives": [

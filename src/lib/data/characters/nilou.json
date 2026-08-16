@@ -107,7 +107,8 @@
 				"C1 extension (+6s) on Tranquility Aura is authored as a durationModifier on the summon. C1 also adds +65% Luminous Illusion DMG (SD3 multiplier) — flagged on the C1 entry, not on the base since it's variant-conditional.",
 				"Nilou is not implementable as a Tier B stance character without losing fidelity to the underlying state machine: shared step counter between SD and WS, two distinct end-states (Lunar Prayer vs Tranquility Aura), and the gating of E during Lunar Prayer. The current draft captures the dominant E E E E rotation cleanly and flags the rest.",
 				"[A7] The Tranquility Aura is authored on the base skill so the canonical E-E-E-E rotation (initial cast → WS1 → WS2 → WS3) displays correctly even though in-game it spawns only after WS3 — rationale already covered in existing notes. The dropped second short-rotation example was 'E E swap'. Lunar Prayer begins 8s after a Sword Dance combo."
-			]
+			],
+			"application": [{ "frame": 16, "element": "hydro" }]
 		},
 		{
 			"id": "nilou__skill__whirling_steps_1",
@@ -124,7 +125,8 @@
 				"Pattern 3 multi-stage skill chain (diluc-shape). All three Whirling Steps entries (WS1/WS2/WS3) share the same `input: [\"E\"]` and `conditions: { state: \"inStance\" }`. The planner's parser will resolve the first matching ability for each in-stance E press, which means in-game gcsim's `skillStep` advances WS1 → WS2 → WS3 but the planner currently picks WS1 each time. Frame data is captured for reviewer to wire chain-state in a future schema extension.",
 				"Frames: gcsim whirlingStepsFrames[0] = InitAbilSlice(33) with overrides ActionAttack=27, ActionSkill=27, ActionDash=26, ActionJump=27, ActionSwap=31. Hit at whirlingStepsHitMarks[0] = 21.",
 				"Cooldown 0: gcsim does not call SetCD inside WhirlingSteps. ActionReady override grants E availability during Pirouette regardless of base 18s skill CD."
-			]
+			],
+			"application": [{ "frame": 21, "element": "hydro" }]
 		},
 		{
 			"id": "nilou__skill__whirling_steps_2",
@@ -140,7 +142,8 @@
 			"_curatorNotes": [
 				"Frames: gcsim whirlingStepsFrames[1] = InitAbilSlice(62) with overrides ActionAttack=40, ActionSkill=32, ActionBurst=40, ActionDash=36, ActionJump=37. Hit at whirlingStepsHitMarks[1] = 29. Note swap=62 (no override) — the WS2 cancel slice keeps the InitAbilSlice default.",
 				"Same parser-broken caveat as WS1: this entry is not selected by the parser; WS1 wins for all in-stance E presses currently. Reviewer to add chain-state condition once schema supports it."
-			]
+			],
+			"application": [{ "frame": 21, "element": "hydro" }]
 		},
 		{
 			"id": "nilou__skill__whirling_steps_3",
@@ -158,7 +161,8 @@
 				"Tranquility Aura DOES NOT spawn from this ability entry — it is authored on the base E (Dance of Haftkarsvar) so the simulation renders for the canonical \"E E E E\" rotation regardless of which WS variant the parser selects. See base E _curatorNotes for the timing rationale.",
 				"Same parser-broken caveat as WS1/WS2: this entry is not currently selected by the parser. Frame data captured for future wire-up.",
 				"C4 trigger: c4cb() in gcsim cons.go fires when SD3 (skillStep == 2) lands an enemy hit during Pirouette — that path is the SwordDance variant, not WhirlingSteps. So C4's energy + burst-damage buff is gated by Sword Dance N3, not WS3. Authored on C4 entry."
-			]
+			],
+			"application": [{ "frame": 21, "element": "hydro" }]
 		},
 		{
 			"id": "nilou__burst__dance_of_abzendegi_distant_dreams_listening_spring",
@@ -176,6 +180,10 @@
 				"Initial hit at burstHitmark=91 (FlatDmg = burst[talent] × MaxHP). Each enemy hit receives a 121-frame status (lingeringAeonStatus); after expiry, a delayed Hydro DMG fires on that enemy (FlatDmg = burstAeon[talent] × MaxHP). The delayed hit is enemy-attached, similar to Mona's Bubble — not authored as a summon (caster-side); flagged for future schema work on enemy-attached debuffs.",
 				"Energy cost 70 matches gcsim EnergyMax. ConsumeEnergy(4) on cast is the standard energy-bar discount (the 4-energy refund pattern across Hydro chars).",
 				"C4 buff applies here when triggered: +50% burst DMG for 8s. Authored on C4 entry."
+			],
+			"application": [
+				{ "frame": 91, "element": "hydro" },
+				{ "frame": 212, "element": "hydro" }
 			]
 		}
 	],

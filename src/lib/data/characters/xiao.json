@@ -100,7 +100,8 @@
 				"skillFrames does not set ActionJump in gcsim; J omitted per recipe. ActionAttack/ActionSkill/ActionBurst are all 24 (CanQueueAfter == ActionSkill).",
 				"A4 (Dissolution Eon: Heaven Fall): each cast grants a stacking +15% E DMG buff (max 3 stacks, 7s duration, refreshes on stack). Authored as a passive effect skeleton may need a separate normalDmgBonus-style 'skillDmgBonus' self-buff with stacks; current schema lacks a stacks field — flag on the passive.",
 				"C6 (Conqueror of Evil: Guardian Yaksha): while in burst, Plunge hitting ≥2 opponents grants +1 E charge immediately and ignores E CD for 1s (gcsim: 1.2s / 72 frames). Not modelled here; flagged on the C6 entry."
-			]
+			],
+			"application": [{ "frame": 4, "element": "anemo" }]
 		},
 		{
 			"id": "xiao__burst__bane_of_all_evil",
@@ -126,7 +127,8 @@
 				"A1 (Conqueror of Evil: Tamer of Demons) DMG bonus is a self-buff that stacks 1→5 over 12s (5% per 3s) during the stance, capped at 25%. The inherited manual-trigger skeleton on the passive collapses this to a single +25%; reviewer to model the ramp.",
 				"Anemo conversion of N/C/P during the stance is handled in gcsim's Snapshot (forces a.Element = Anemo for AttackTagNormal / AttackTagExtra / AttackTagPlunge) and is represented here by the in-stance normal entry's infusion: anemo. Burst itself does not perform an absorption check (no aiAbs/absorbCheck in burst.go) — recipe §3.5 absorption flag does NOT apply to Xiao despite being listed alongside other anemo bursts.",
 				"[A7] Caveat HP-drain specifics (demoted, kept concise in the note above): 3.0%/2.5%/2.0% of current HP per second at talent levels 1/6/13 — drain decreases with talent level. Already fully captured in the A6 rigor 2026-07-12 curator note on this ability."
-			]
+			],
+			"application": []
 		}
 	],
 	"passives": [

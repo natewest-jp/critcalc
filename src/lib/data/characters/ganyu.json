@@ -70,7 +70,8 @@
 			"tags": ["taunt"],
 			"effects": [],
 			"description": "Leaving a single Ice Lotus behind, Ganyu dashes backward, shunning all impurity and dealing AoE Cryo DMG.\n\nIce Lotus\n·Continuously taunts surrounding opponents, attracting them to attack it.\n·Endurance scales based on Ganyu's Max HP.\n·Blooms profusely when destroyed or once its duration ends, dealing AoE Cryo DMG.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"application": []
 		},
 		{
 			"id": "ganyu__burst__celestial_shower",
@@ -85,7 +86,22 @@
 			],
 			"tags": ["summon"],
 			"energyCost": 60,
-			"description": "Coalesces atmospheric frost and snow to summon a Sacred Cryo Pearl that exorcises evil.\nDuring its ability duration, the Sacred Cryo Pearl will continuously rain down shards of ice, striking opponents within an AoE and dealing Cryo DMG."
+			"description": "Coalesces atmospheric frost and snow to summon a Sacred Cryo Pearl that exorcises evil.\nDuring its ability duration, the Sacred Cryo Pearl will continuously rain down shards of ice, striking opponents within an AoE and dealing Cryo DMG.",
+			"application": [
+				{ "frame": 130, "element": "cryo" },
+				{ "frame": 220, "element": "cryo" },
+				{ "frame": 310, "element": "cryo" },
+				{ "frame": 346, "element": "cryo" },
+				{ "frame": 400, "element": "cryo" },
+				{ "frame": 454, "element": "cryo" },
+				{ "frame": 490, "element": "cryo" },
+				{ "frame": 580, "element": "cryo" },
+				{ "frame": 670, "element": "cryo" },
+				{ "frame": 706, "element": "cryo" },
+				{ "frame": 760, "element": "cryo" },
+				{ "frame": 796, "element": "cryo" },
+				{ "frame": 850, "element": "cryo" }
+			]
 		}
 	],
 	"passives": [

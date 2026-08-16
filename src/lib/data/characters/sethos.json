@@ -67,7 +67,8 @@
 				"Skill energy refund on reaction not authored in effects[] — gcsim subscribes to OnElectroCharged, OnLunarCharged, OnSuperconduct, OnOverload, OnSwirlElectro, OnHyperbloom, OnQuicken, OnAggravate and refunds skillEnergyRegen[lvl]=12 energy on hit. Likely onReaction trigger with electro-reaction condition. Reviewer to author effect."
 			],
 			"behavior": "instant",
-			"description": "Gathers the might of thunder, dealing AoE Electro DMG and quickly retreating. If this attack triggers Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, or Electro Swirl reactions, Sethos recovers a certain amount of Elemental Energy."
+			"description": "Gathers the might of thunder, dealing AoE Electro DMG and quickly retreating. If this attack triggers Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, or Electro Swirl reactions, Sethos recovers a certain amount of Elemental Energy.",
+			"application": [{ "frame": 13, "element": "electro" }]
 		},
 		{
 			"id": "sethos__burst__secret_rite_twilight_shadowpiercer",
@@ -83,7 +84,8 @@
 				"Changed behavior from 'stance' to 'instant' per recipe (stance reserved for Hu Tao/Cyno/Raiden/Furina + queue-flagged; Sethos is Tier A). Q grants an 8s self-buff 'Twilight Meditation' (burstBuffKey) that converts Normal Attacks to Electro Dusk Bolts (AttackTagExtra, ICDTagElementalBurst; DMG = ATK × burstEM[lvl] + burstEM[lvl] × EM, counted as Charged Attack DMG). Canceled when Sethos leaves the field (onCharacterSwap hook in sethos.go). Dusk Bolt EM scaling uses burstEM[] table (talent-level-gated). Reviewer to decide whether duration field or self-buff entry is warranted, and whether 'stance' should be reinstated given the N-replacement behavior."
 			],
 			"behavior": "instant",
-			"description": "Perform a secret rite, entering the \"Twilight Meditation\" state, during which Sethos's Normal Attacks will be converted into enemy-piercing Dusk Bolts: Deal Electro DMG to opponents in its path, with DMG increased based on Sethos's Elemental Mastery.\nSethos cannot perform Aimed Shots while in this state.\nDMG dealt by Dusk Bolts is considered Charged Attack DMG.\nThis effect will be canceled when Sethos leaves the field."
+			"description": "Perform a secret rite, entering the \"Twilight Meditation\" state, during which Sethos's Normal Attacks will be converted into enemy-piercing Dusk Bolts: Deal Electro DMG to opponents in its path, with DMG increased based on Sethos's Elemental Mastery.\nSethos cannot perform Aimed Shots while in this state.\nDMG dealt by Dusk Bolts is considered Charged Attack DMG.\nThis effect will be canceled when Sethos leaves the field.",
+			"application": []
 		}
 	],
 	"passives": [

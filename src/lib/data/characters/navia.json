@@ -64,7 +64,11 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 71, "N": 70, "D": 54, "J": 54, "swap": 69 }
+					"frames": { "anim": 71, "N": 70, "D": 54, "J": 54, "swap": 69 },
+					"application": [
+						{ "frame": 50, "element": "geo" },
+						{ "frame": 105, "element": "geo" }
+					]
 				}
 			],
 			"_curatorNotes": [
@@ -74,6 +78,10 @@
 				"Removed generator duration:300 — Crystal Shrapnel stack duration is a resource mechanic (gcsim comment: 'way too long to bother'), not a summon or persistent ability window.",
 				"Removed generator tags:[\"summon\"] — the skill fires projectiles and spawns no persistent summon entity.",
 				"Surging Blade (Arkhe: Ousia): delayed one-shot proc registered at 28f after cast, damage at +36f (total 64f from cast). ICD: 7s (arkheICDKey). Not a persistent summon — no summons[] entry authored."
+			],
+			"application": [
+				{ "frame": 20, "element": "geo" },
+				{ "frame": 75, "element": "geo" }
 			]
 		},
 		{
@@ -94,7 +102,8 @@
 				"Cannon Fire Support tick pattern: first tick at burstDelay=154f, then alternates 42/42/48f intervals (tick%3==2 → 48f, else 42f) for the full 720f = 12s window.",
 				"Initial cannon blast (burstHitmark=104f) is the main burst damage instance, separate from the Cannon Fire Support summon.",
 				"Removed generator duration:12 — moved to summons[0].duration per recipe convention."
-			]
+			],
+			"application": [{ "frame": 104, "element": "geo" }]
 		}
 	],
 	"passives": [

@@ -79,7 +79,8 @@
 				}
 			],
 			"effects": [],
-			"description": "Summons Guoba, who will continuously breathe fire at opponents, dealing AoE Pyro DMG."
+			"description": "Summons Guoba, who will continuously breathe fire at opponents, dealing AoE Pyro DMG.",
+			"application": []
 		},
 		{
 			"id": "xiangling__burst__pyronado",
@@ -122,7 +123,12 @@
 				}
 			],
 			"effects": [],
-			"description": "Displaying her mastery over both fire and polearms, Xiangling sends a Pyronado whirling around her.\nThe Pyronado will move with your character for the ability's duration, dealing Pyro DMG to all opponents in its path."
+			"description": "Displaying her mastery over both fire and polearms, Xiangling sends a Pyronado whirling around her.\nThe Pyronado will move with your character for the ability's duration, dealing Pyro DMG to all opponents in its path.",
+			"application": [
+				{ "frame": 18, "element": "pyro" },
+				{ "frame": 33, "element": "pyro" },
+				{ "frame": 57, "element": "pyro" }
+			]
 		}
 	],
 	"passives": [

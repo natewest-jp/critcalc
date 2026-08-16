@@ -74,7 +74,18 @@ function authoredKeys(): Map<string, string> {
 	return keys;
 }
 
-/** Application code — the data itself and the tests are not consumers. */
+/**
+ * Application code — the data itself and the tests are not consumers.
+ *
+ * ⛔ NEITHER IS A `migrate-*` SCRIPT. Those exist to WRITE the corpus, so a field they
+ * touch is authored data mentioning itself — morally identical to the JSON, which this
+ * function already excludes. Caught in the act (gauge round L4c): the guard went green
+ * on `application[]` because the migration that had just written it also read it back,
+ * while the parser still knew nothing about the field. ⚠️ An `audit-*` script IS a
+ * consumer — it reads the corpus and reports on it, which is a real use.
+ */
+const WRITERS = /(^|[/\\])migrate[-_]/;
+
 function codeBlob(): string {
 	const parts: string[] = [];
 	const collect = (dir: string): void => {
@@ -82,7 +93,11 @@ function codeBlob(): string {
 			const p = path.join(dir, e.name);
 			if (e.isDirectory()) {
 				if (!p.includes(path.join('lib', 'data'))) collect(p);
-			} else if (/\.(ts|svelte|mjs|js)$/.test(e.name) && !/\.test\.ts$/.test(e.name)) {
+			} else if (
+				/\.(ts|svelte|mjs|js)$/.test(e.name) &&
+				!/\.test\.ts$/.test(e.name) &&
+				!WRITERS.test(e.name)
+			) {
 				parts.push(fs.readFileSync(p, 'utf8'));
 			}
 		}

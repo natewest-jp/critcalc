@@ -1399,6 +1399,41 @@ export type PlungeVariant = {
 	frames: FrameMap;
 };
 
+/**
+ * One hit of an ability, at the frame it LANDS.
+ *
+ * ⚓⚓ THE THING THE CORPUS COULD NOT SAY. Until L4c an ability recorded when it could
+ * be CANCELLED (the FrameMap) and never when it landed, so the parser applied
+ * `char.element` at every E/Q cast, unconditionally — including Xiangling's E, which in
+ * game applies zero Pyro because it only puts Guoba on the field. See
+ * `docs/gauge-round.md` §1 and contract C3.
+ *
+ * ⛔ **AN ABSENT LIST IS NOT "1U AT CAST".** Absent means we never drove this ability and
+ * do not know; it applies nothing and is counted in the provisional register. An EMPTY
+ * ARRAY is the positive statement that the cast applies nothing — 19 abilities in the
+ * corpus are like that, and it is the most valuable thing this field records.
+ *
+ * ⚠️ This is the NOMINAL hit schedule, not the applied one (contract C4). It is derived
+ * from gcsim's `damage` stream, which fires even when ICD zeroes the application, and
+ * `icd.ts` remains the only thing that decides whether a hit lands. ⛔ Never pre-apply
+ * ICD here.
+ *
+ * ⛔ Normals carry no list: their hitmark is `frames.hit` and their element already has
+ * one owner in `resolveActionElement`. Summons carry none either — `interval` /
+ * `firstTickDelay` already say when a summon applies.
+ */
+export type ElementalApplication = {
+	/** Frames (60fps) from cast start to the hitmark. */
+	frame: number;
+	/** ⛔ ABSENT MEANS PHYSICAL — the hit applies nothing. Never a default element. */
+	element?: Element;
+	/** Gauge units. ⚠️ NOT AUTHORED YET — the gauge engine that reads it lands in L5,
+	 *  and authoring a number in front of its only consumer is exactly what
+	 *  `orphanedSchema.test.ts` exists to catch. The extractor already measures it
+	 *  (gcsim's applied durability / 25) and reports it. */
+	units?: number;
+};
+
 /** Fields shared by all skill behavior variants. */
 type SkillCommonFields = AbilityCommon & {
 	abilityType: 'skill';
@@ -1425,6 +1460,10 @@ type SkillCommonFields = AbilityCommon & {
 	 *  is deliberately "windows not gauges"). See docs/library/game/icd.md. */
 	noICD?: boolean;
 	tags?: AbilityTag[];
+	/** When this cast's own hits LAND, and what they apply. ⚓ An empty array is the
+	 *  positive statement that the cast applies nothing; an absent field means we have
+	 *  no reading. See {@link ElementalApplication}. */
+	application?: ElementalApplication[];
 	/** Entities spawned by this cast with their own lifetimes. When present,
 	 *  these supersede the ability's own `duration` for active-window rendering. */
 	summons?: Summon[];
@@ -1527,6 +1566,10 @@ type BurstCommonFields = AbilityCommon & {
 	 *  is deliberately "windows not gauges"). See docs/library/game/icd.md. */
 	noICD?: boolean;
 	tags?: AbilityTag[];
+	/** When this cast's own hits LAND, and what they apply. ⚓ An empty array is the
+	 *  positive statement that the cast applies nothing; an absent field means we have
+	 *  no reading. See {@link ElementalApplication}. */
+	application?: ElementalApplication[];
 	/** Entities spawned by this cast with their own lifetimes. When present,
 	 *  these supersede the ability's own `duration` for active-window rendering. */
 	summons?: Summon[];
@@ -1617,6 +1660,9 @@ export type AbilityVariant = {
 	summonActivatesAt?: number;
 	/** Overrides the base ability's summons[]. */
 	summons?: Summon[];
+	/** Overrides the base ability's `application[]`. ⚠️ REPLACES it, like every other
+	 *  variant array — a hold that lands different hits states all of them. */
+	application?: ElementalApplication[];
 	/** Overrides the base ability's `durationExtensions[]`. */
 	durationExtensions?: DurationExtension[];
 	terminatesOnSwap?: boolean;

@@ -355,3 +355,60 @@ export function preserveFrameMap(fm) {
 	if (out.swap === undefined) out.swap = anim;
 	return out;
 }
+
+// ---------------------------------------------------------------------------
+// Application attribution
+// ---------------------------------------------------------------------------
+
+/**
+ * Split one ability's dumped hit stream into the cast's own hits and its summons' ticks.
+ *
+ * ⚓ Only one ability ever ran, so everything in the stream belongs to this cast — the
+ * question is which BAR it belongs to, and the answer decides whether an application
+ * gets authored (`application[]`) or is already covered (`interval` / `firstTickDelay`).
+ *
+ * Two signals, and BOTH are needed:
+ *
+ *   1. an EXACT name match against a declared summon label, and
+ *   2. a recurring, evenly-spaced stream of 3+ on an ability that declares a summon.
+ *
+ * ⛔ Exact, not substring. `"Pyronado Hit 1"` contains `"Pyronado"`, so a substring match
+ * swallowed all three of Xiangling's burst cast hits into her summon and made her Q read
+ * as applying nothing — a false "applies nothing" is the one failure this whole field
+ * must not have.
+ *
+ * ⛔ Cadence alone is not enough either: Keqing's eight consecutive slashes and Ayaka's
+ * nineteen Soumetsu cuts are evenly spaced and belong to the CAST. `summons[]` means a
+ * thing left in the world, and only the corpus can say that.
+ *
+ * ⚠️ A one-off hit named for a summon but NOT matching its label exactly — Fischl's
+ * `"Oz (Summon)"` at +38, Zhongli's `"Stone Stele (Initial)"` at +24 — stays a cast
+ * application, and that is right: the summon's tick schedule does not cover its arrival
+ * hit, so calling it a tick would silently drop a real application.
+ */
+export function splitApplications(apps, ability) {
+	const summonLabels = new Set(
+		(ability.summons ?? []).map((s) => String(s.label ?? '').toLowerCase()).filter(Boolean)
+	);
+	const byAbil = new Map();
+	for (const a of apps) {
+		if (!byAbil.has(a.abil)) byAbil.set(a.abil, []);
+		byAbil.get(a.abil).push(a);
+	}
+	const cast = [];
+	const ticks = [];
+	const regular = [];
+	for (const [abil, group] of byAbil) {
+		const named = summonLabels.has(abil.trim().toLowerCase());
+		const gaps = group.slice(1).map((x, i) => x.frame - group[i].frame);
+		const even = gaps.length >= 2 && new Set(gaps).size === 1 && gaps[0] > 0;
+		const isTick = named || (even && summonLabels.size > 0);
+		(isTick ? ticks : cast).push(...group);
+		// ⚠️ A regular stream on an ability that declares NO summon is a finding: either a
+		// multi-hit cast (author it) or a thing left in the world we have not modelled.
+		if (even && !isTick) regular.push(`${abil} ×${group.length}/${gaps[0]}f`);
+	}
+	cast.sort((a, b) => a.frame - b.frame);
+	ticks.sort((a, b) => a.frame - b.frame);
+	return { cast, ticks, regular };
+}
