@@ -327,14 +327,26 @@ types. Reconcile at the move; do not ship a second element union.
 
 ### C6 — Determinism and versioning
 
-- Same-frame tasks resolve by **(priority band, insertion order)**. The band list is part of
-  the sim's contract and gets written down in L3's plan.
+- Same-frame tasks resolve by **(priority band, insertion order)**. The band list is written
+  down in [`gauge-round-L3.md`](gauge-round-L3.md) §3.2 — `EXPIRE < TICK < LAND < ACT` — and
+  pinned by `clock.test.ts` rather than only documented.
 - ⛔ **No `?r=` codec bump.** The payload is the notation, which is unchanged; the sim is
   derived. Confirmed by census: zero numeric time is serialized anywhere. (Nate confirmed no
   shared links exist, so nothing needs back-compat regardless.)
-- Existing caps still bound the frame loop: `MAX_NOTATION_CHARS` 16 KiB,
-  `MAX_EXPANDED_TOKENS` 20k, `MAX_TIME_ADVANCE_S` 3600 → 216k frames. ⚠️ The frame loop's own
-  cap derives from that last one — not a fresh magic number.
+- Existing caps bound the work: `MAX_NOTATION_CHARS` 16 KiB, `MAX_EXPANDED_TOKENS` 20k,
+  `MAX_TIME_ADVANCE_F` 3600 s → 216k frames.
+- ↻ **AMENDED 2026-08-16 (L3a).** This clause used to read _"the frame loop's own cap derives
+  from that last one — not a fresh magic number"_, and that was **wrong in a way that would
+  have shipped a freeze**. ⚓⚓ **THE CLOCK JUMPS TO THE NEXT SCHEDULED INSTANT; there is no
+  frame loop, so there is no frame-loop cap.** `MAX_TIME_ADVANCE_F` bounds ONE token and a
+  document full of waits sums: **measured**, 14 KB of legal `~3600s` tokens parses today in
+  4.3 ms and reaches **432,000,000 frames**. A `for (f = 0; f <= end; f++)` loop over that is
+  4+ seconds of frozen tab at an optimistic 10 ns/iteration — precisely the failure class
+  `docs/parser-hardening-2026-08-14.md` closed. Work stays proportional to **scheduled
+  instants**, never to elapsed time. ⚠️ This survives L5: the gauge's decay is bounded by
+  aura lifetime (`2.5·U + 7` s), not by rotation length, so a long idle advances the clock
+  once and the gauge catches up over the span it can still be alive — ⛔ never hand the gauge
+  a 2,000-hour span and let it step to the end of it.
 
 ---
 
@@ -549,17 +561,29 @@ the timeline renders identically.
 
 ### L3 — The clock-driven core (no behaviour change) — _the big one_
 
+📄 **Planned in full: [`gauge-round-L3.md`](gauge-round-L3.md)** (2026-08-16).
+
 ✅ **`parseNotation` has exactly ONE production call site** (`RotationTimeline.svelte:362`).
 One door, and the strangler goes behind it.
 
 - **L3a** — stand up `$lib/sim/`: frame clock, task queue, priority bands, character state
-  machines. Nothing consumes it. **Measure the perf budget here and record it below.**
-- **L3b** — drive the sim from the token stream alongside the live parser, behind a flag,
-  with a **corpus differ** asserting IR deep-equality across all 123 characters —
-  ⚠️ including `BuffWindow.id` **order** (C2).
-- **L3c** — move the dispatchers one family at a time (states → cooldowns/charges → stacks →
-  summons → shields → buff derivation), differ green after each. `buffWindows.ts` moves too.
-- **L3d** — delete the old path.
+  machines. Nothing consumes it. **Measure the perf budget here and record it** (done —
+  L3 plan §2; it is what forced the C6 amendment above).
+- **L3b** — the **corpus differ**, against an unchanged parser. Three surfaces: STRICT IR
+  (ids + array order), CANONICAL (a diagnostic), and the seven **row projections** — ⚓ the
+  last is what actually answers C2's "did rows move on screen".
+- **L3c** — extract the dispatcher families out of `parseNotation`'s body into `$lib/sim/`
+  against an explicit `SimContext`, one family per commit, differ green after each.
+- **L3d** — swap the driver: the clock drives; STRICT green with the two drivers differing.
+- **L3e** — delete the frozen legacy copy.
+
+↻ **The sub-step order above is a deliberate correction** to the "drive alongside, then move
+the dispatchers" sequencing this section first carried. You cannot move a dispatcher between
+two drivers until it is callable from outside `parseNotation`'s 2,675-line body — 17
+parse-scope closures and ~20 shared containers are the actual mass of this landing — so the
+extraction comes FIRST and the driver swap is small. ⛔ And `buffWindows.ts` does NOT move
+or get clocked: feeding an unchanged finalize projection identical inputs is what CLOSES the
+C2 hazard rather than merely watching it (L3 plan §4.1).
 
 ⚠️ **The ten hard couplings the census found are the risk list**, and four need explicit
 handling: the `findCastSummons` / `findSummonsForBar` duplicate pair that "must stay
