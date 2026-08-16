@@ -36,7 +36,8 @@ import {
 	type TimelineBar,
 	type TimelineWindow
 } from '$lib/utils/notationParser';
-import type { CastAbility, Summon } from '$lib/types/ability';
+import { findSummonsForBar } from '$lib/sim/summons';
+import type { Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import type { SlottedTrack, SummonSubrow } from './types';
 
@@ -49,41 +50,16 @@ export { computeSummonTicks };
 
 /** Resolve ALL summons owned by a given E/Q cast (variant-aware). Empty for
  *  stance abilities or abilities without `summons[]`.
- *  ⚠ MUST STAY IDENTICAL to `findSummonsForBar` in notationParser.ts — that one
- *  authors the windows this walk assigns to lanes, so a disagreement drops a
- *  window on the floor (`rowMap.get` misses and Pass 2 skips it silently).
- *  ↻ 2026-08-14: both went from `summons[0]` to the whole array — see the
- *  parser's note for which three abilities were hiding a second summon. */
-export function findCastSummons(
-	char: CharacterData | null | undefined,
-	kind: 'skill' | 'burst',
-	label: string,
-	abilityId?: string
-): Summon[] {
-	if (!char) return [];
-	const candidates = char.abilities.filter((a): a is CastAbility => a.abilityType === kind);
-	// Prefer the exact resolved ability (bar.abilityId — a state-gated sibling
-	// can carry its own summon, e.g. Durin's Dark burst); else the
-	// unconditioned base ability — stance-conditioned variants represent
-	// caster state and don't carry summons.
-	const ability =
-		(abilityId !== undefined ? candidates.find((a) => a.id === abilityId) : undefined) ??
-		candidates.find((a) => a.conditions === undefined) ??
-		candidates[0];
-	if (!ability) return [];
-	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(label));
-	// ⚠ AN EMPTY `summons: []` ON A VARIANT MEANS "NONE", not "fall through".
-	// The `?.[0] ?? ability.summons?.[0]` chain this replaced could not express
-	// that — an empty array read as undefined and inherited the base's list —
-	// but the schema has always called this field an OVERRIDE, and a curator who
-	// writes `[]` is overriding to nothing. Zhongli's hold-E is the case that
-	// needs it: it raises a Jade Shield (now an Effect) while the base press-E
-	// leaves a 30s Stone Stele, and without an explicit "none" the hold would
-	// inherit the stele and draw it at the hold's own 20s window — a stele that
-	// lasts 30s, rendered 20s, on a cast that the curation notes have always
-	// said does not model the co-spawned stele.
-	return variant?.summons ?? ability.summons ?? [];
-}
+ *
+ *  ⚓ ONE RESOLVER SINCE 2026-08-16 (gauge round L3c). This used to be a
+ *  character-for-character COPY of the parser's `findSummonsForBar`, and both
+ *  wore a "MUST STAY IDENTICAL" warning — the parser authors the windows this
+ *  walk assigns to lanes, so a disagreement drops a window on the floor
+ *  (`rowMap.get` misses and Pass 2 skips it silently). It is now the same
+ *  function, re-exported under its old name so this module's consumers and
+ *  `notationParser.ir.test.ts` do not move. ⛔ Do not fork it again. */
+const findCastSummons = findSummonsForBar;
+export { findCastSummons };
 
 export function computeSummonSubrows(
 	annotatedTracks: SlottedTrack[],
