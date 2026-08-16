@@ -17,8 +17,9 @@
 
 import type { Reaction } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
-import { framesOf } from '$lib/utils/frames';
+import { FPS, framesOf } from '$lib/utils/frames';
 import type { CharState } from './charState';
+import type { SimContext } from './context';
 import {
 	DEFAULT_ASCENSION,
 	evalCondition,
@@ -651,5 +652,115 @@ export function syncSourceLifetimeToStackState(
 			if (expiry <= currentTime) keyMap.delete(src);
 		}
 		stackState.set(key, keyMap.size);
+	}
+}
+
+/** Apply continuous-rate stack drain (E3 v2) for every gainStacks key on
+ *  `char` that declares a `drain` spec. Called immediately before each cast
+ *  resolves abilities/effects so that reads of `stackState` see decayed
+ *  values. Two regimes:
+ *
+ *  - **State active at `cursor`**: decay = `ratePerSecond × (cursor - last)`,
+ *    clamped to 0; `last` advances to `cursor`. The first time a state-active
+ *    cast happens with `last` undefined, no decay is applied — the anchor is
+ *    seeded later by `dispatchGainStacks` (which sets `last = castTime` when
+ *    a drain-bearing grant fires) or here on the next cast (after seeding).
+ *  - **State inactive at `cursor`**: settle decay up to the state's recorded
+ *    end time (`stanceWindows` for `inStance`, `stateWindows` otherwise) so
+ *    post-state snapshots reflect the value the resource drained to before
+ *    the state expired. Then clear the anchor; future state-reopen casts
+ *    re-seed via the next dispatchGainStacks. */
+export function applyDrain(
+	ctx: SimContext,
+	char: CharacterData,
+	cursor: number,
+	currentStates: ReadonlySet<string>,
+	stackState: Map<string, number>
+): void {
+	const cs = ctx.getCharState(char.id);
+	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	const seenKeys = new Set<string>();
+	for (const src of sources) {
+		for (const fx of src.effects ?? []) {
+			if (fx.type !== 'gainStacks') continue;
+			if (!fx.drain) continue;
+			if (seenKeys.has(fx.key)) continue; // first drain spec per key wins
+			seenKeys.add(fx.key);
+			const charAnchors = cs.drainAnchors;
+			const last = charAnchors.get(fx.key);
+			// ⚠️⚠️ `ratePerSecond` IS A RATE, NOT A DURATION — ⛔ do not run it
+			// through `framesOf`. `elapsed` is frames (C1), so the seconds the
+			// rate is quoted against have to come back out of the elapsed side.
+			// Skirk's Serpent's Subtlety drains 7/sec; miss this and she drains
+			// 420/sec and the resource is gone by the next token.
+			const perFrame = fx.drain.ratePerSecond / FPS;
+			if (currentStates.has(fx.drain.state)) {
+				if (last !== undefined) {
+					const elapsed = cursor - last;
+					if (elapsed > 0) {
+						const current = stackState.get(fx.key) ?? 0;
+						const decayed = Math.max(0, current - perFrame * elapsed);
+						stackState.set(fx.key, decayed);
+					}
+				}
+				charAnchors.set(fx.key, cursor);
+			} else if (last !== undefined) {
+				const stateEnd =
+					fx.drain.state === 'inStance' ? cs.stance?.end : cs.states.get(fx.drain.state);
+				if (stateEnd !== undefined && stateEnd > last) {
+					const elapsed = stateEnd - last;
+					const current = stackState.get(fx.key) ?? 0;
+					const decayed = Math.max(0, current - perFrame * elapsed);
+					stackState.set(fx.key, decayed);
+				}
+				charAnchors.delete(fx.key);
+			}
+		}
+	}
+}
+
+/** Apply per-stack lifetime expiry (E3 v2.x) for every gainStacks key on
+ *  `char` that declares a `lifetime` spec. Drops instances whose expiry
+ *  time has passed and updates `stackState[key]` to the remaining count.
+ *  Lazy: only runs at cast events (mirroring `applyDrain`). The first
+ *  lifetime spec per key wins (matches the drain convention).
+ *
+ *  Operates on the per-segment `stackInstances` map; called from cast
+ *  handlers BEFORE `dispatchGainStacks` so reads see expired counts and
+ *  fresh grants land cleanly on top. */
+export function applyLifetimeExpiry(
+	char: CharacterData,
+	cursor: number,
+	stackState: Map<string, number>,
+	stackInstances: Map<string, number[]>
+): void {
+	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	const seenKeys = new Set<string>();
+	for (const src of sources) {
+		for (const fx of src.effects ?? []) {
+			if (fx.type !== 'gainStacks') continue;
+			if (fx.lifetime === undefined) continue;
+			// onReaction lifetime is handled by `syncOnReactionToStackState`
+			// against rotation-wide instance maps; skipping here avoids
+			// touching the per-segment copy the sync just rewrote. Same for
+			// team/others-sourced onHit lifetime keys (rotation-wide, owned
+			// by `syncOnHitToStackState`); self-sourced onHit instances ARE
+			// segment-scoped and expire here like the onCast shape.
+			if (fx.trigger.type === 'onReaction') continue;
+			if (
+				fx.trigger.type === 'onHit' &&
+				(fx.trigger.source === 'team' || fx.trigger.source === 'others')
+			)
+				continue;
+			if (seenKeys.has(fx.key)) continue;
+			seenKeys.add(fx.key);
+			const instances = stackInstances.get(fx.key);
+			if (!instances || instances.length === 0) continue;
+			const remaining = instances.filter((expiry) => expiry > cursor);
+			if (remaining.length !== instances.length) {
+				stackInstances.set(fx.key, remaining);
+				stackState.set(fx.key, remaining.length);
+			}
+		}
 	}
 }
