@@ -85,7 +85,7 @@
 			"behavior": "instant",
 			"description": "Controls a Gossamer Sprite that cruises and attacks nearby opponents, dealing Dendro DMG.\nAfter it performs 3 attacks or if there are no opponents nearby, the Sprite will return, healing all nearby party members based on Baizhu's Max HP.",
 			"application": [
-				{ "frame": 13, "element": "dendro" },
+				{ "frame": 13, "element": "dendro", "units": 1 },
 				{ "frame": 61, "element": "dendro" },
 				{ "frame": 109, "element": "dendro" }
 			]

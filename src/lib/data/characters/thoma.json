@@ -74,7 +74,7 @@
 			"_curatorNotes": [
 				"↻ 2026-08-14 — the stand-in summon is retired. \"Blazing Barrier\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast a 8s active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world. Bar geometry is unchanged apart from the spawn offset, which the shield window never had."
 			],
-			"application": [{ "frame": 11, "element": "pyro" }]
+			"application": [{ "frame": 11, "element": "pyro", "units": 1 }]
 		},
 		{
 			"id": "thoma__burst__crimson_ooyoroi",
@@ -123,7 +123,7 @@
 				"Fiery Collapse shield authored on this ability (see effects[]). Fiery Collapse DAMAGE (58%..137.75% ATK AoE Pyro per proc, 104.4% @T10) not yet authored — needs reviewer pass; would be a `damage` effect with the same onHit trigger, plus the A4 +2.2% Max HP FlatDmg rider (see thoma__passive__flaming_assault). gcsim: `summonFieryCollapse()` via burst.go with burstICDKey 60-frame ICD."
 			],
 			"description": "Thoma spins his polearm, slicing at his foes with roaring flames that deal AoE Pyro DMG and weave themselves into a Scorching Ooyoroi.\n\nScorching Ooyoroi\nWhile Scorching Ooyoroi is in effect, the active character's Normal Attacks will trigger Fiery Collapse, dealing AoE Pyro DMG and summoning a Blazing Barrier.\nFiery Collapse can be triggered once every 1s.\n\nExcept for the amount of DMG they can absorb, the Blazing Barriers created in this way are identical to those created by Thoma's Elemental Skill, Blazing Blessing:\n·Absorbs Pyro DMG 250% more effectively.\n·When a new Blazing Barrier is obtained, the remaining DMG Absorption of an existing Blazing Barrier will stack and its duration will be refreshed.\n\nThe maximum DMG Absorption of the Blazing Barrier will not exceed a certain percentage of Thoma's Max HP.\n\nIf Thoma falls, the effects of Scorching Ooyoroi will be cleared.",
-			"application": [{ "frame": 40, "element": "pyro" }]
+			"application": [{ "frame": 40, "element": "pyro", "units": 2 }]
 		}
 	],
 	"passives": [

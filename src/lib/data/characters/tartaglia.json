@@ -108,7 +108,7 @@
 				"Particles: 1 Hydro particle on E hit, gated by a 3s ICD (particleICDKey). Not authored (no particle-effect schema field); flagged for completeness.",
 				"Riptide application + slash/burst/flash callbacks not authored — Riptide is a debuff economy with multiple sub-effects (Slash 1.5s ICD, Flash 0.7s ICD, Burst on-defeat) the schema cannot express cleanly. Reviewer to decide representation."
 			],
-			"application": [{ "frame": 16, "element": "hydro" }]
+			"application": [{ "frame": 16, "element": "hydro", "units": 2 }]
 		},
 		{
 			"id": "tartaglia__skill__foul_legacy_recast",
@@ -144,7 +144,7 @@
 				"Energy economics: ConsumeEnergy(3) instead of (60), with a deferred AddEnergy(20) at +4f — net energy spent ≈ ~43 (60 - 17 effective refund). The schema's energyCost: 60 reflects the in-game listed cost; reviewer to decide whether the refund mechanic warrants modeling.",
 				"Riptide application on hit (rangedBurstApplyRiptide callback) — not authored; see skill _curatorNotes on Riptide handling."
 			],
-			"application": [{ "frame": 70, "element": "hydro" }]
+			"application": [{ "frame": 70, "element": "hydro", "units": 2 }]
 		},
 		{
 			"id": "tartaglia__burst__havoc_obliteration_melee",
@@ -165,7 +165,7 @@
 				"Damage mult uses meleeBurst[talent] — distinct from ranged burst[talent]. Mult difference is the headline reason the in-game description splits the burst into two named variants.",
 				"C6 (Havoc: Annihilation): when cast in Melee Stance, sets c.mlBurstUsed = true; on next onExitMeleeStance, ResetActionCooldown is called on the skill. Effect not authored — schema has no 'reset other ability CD on exit' construct. Flag preserved on the C6 entry."
 			],
-			"application": [{ "frame": 69, "element": "hydro" }]
+			"application": [{ "frame": 69, "element": "hydro", "units": 2 }]
 		}
 	],
 	"passives": [

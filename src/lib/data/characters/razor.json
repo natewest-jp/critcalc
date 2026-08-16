@@ -67,7 +67,7 @@
 						"Hold variant cooldownStartDelay = 52 (skillHoldCDStarts[0] in gcsim). AbilityVariant has no cooldownStartDelay field — schema gap; reviewer to extend if needed. Inside-Q Hold cooldownStartDelay also = 52 (skillHoldCDStarts[1]).",
 						"Hold Q-cancel: ActionBurst not explicitly set in skillHoldFrames[0] — stays at InitAbilSlice default (103 = AnimationLength). Omitted per rule. gcsim comment labels InitAbilSlice(103) as 'Hold E -> Q', suggesting 103f as Q-cancel; reviewer to verify."
 					],
-					"application": [{ "frame": 55, "element": "electro" }]
+					"application": [{ "frame": 55, "element": "electro", "units": 1 }]
 				}
 			],
 			"_curatorNotes": [
@@ -82,7 +82,7 @@
 			"effects": [],
 			"description": "Hunts his prey using the techniques taught to him by his master and his lupical.\n\nPress\nSwings the Thunder Wolf Claw, dealing Electro DMG to opponents in front of Razor.\nUpon striking an opponent, Razor will gain an Electro Sigil, which increases his Energy Recharge rate.\nRazor can have up to 3 Electro Sigils simultaneously, and gaining a new Electro Sigil refreshes their duration.\n\nHold\nGathers Electro energy to unleash a lightning storm over a small AoE, causing massive Electro DMG, and clears all of Razor's Electro Sigils.\nEach Electro Sigil cleared in this manner will be converted into Energy for Razor.",
 			"caveat": "With 2 or more Hexerei in the party, overflowing Electro Sigils call down a lightning strike that returns 7 Energy. It doesn't fire on its own — add it manually.",
-			"application": [{ "frame": 32, "element": "electro" }]
+			"application": [{ "frame": 32, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "razor__burst__lightning_fang",
@@ -104,7 +104,7 @@
 			],
 			"effects": [],
 			"description": "Summons the Wolf Within, which deals Electro DMG to all nearby opponents. This clears all of Razor's Electro Sigils, which will be converted into Elemental Energy for him.\nThe Wolf Within will fight alongside Razor for the skill's duration.\n\nThe Wolf Within\n·Strikes alongside Razor's normal attacks, dealing Electro DMG.\n·Raises Razor's ATK SPD and Electro RES.\n·Causes Razor to be immune to DMG inflicted by the Electro-Charged status.\n·Disables Razor's Charged Attacks.\n·Increases Razor's resistance to interruption.\n\nThese effects end when Razor leaves the battlefield.\nWhen Razor leaves the field, a maximum of 10 Energy will be returned to him based off the duration remaining on this skill.",
-			"application": [{ "frame": 32, "element": "electro" }]
+			"application": [{ "frame": 32, "element": "electro", "units": 2 }]
 		}
 	],
 	"passives": [

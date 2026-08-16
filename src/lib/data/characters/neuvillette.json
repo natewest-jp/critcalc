@@ -70,7 +70,7 @@
 			],
 			"description": "Summons a Raging Waterfall that will deal AoE Hydro DMG to opponents in front of Neuvillette based on his Max HP. After hitting an opponent, this skill will generate 3 Sourcewater Droplets near that opponent.\n\nArkhe: Pneuma\nAt certain intervals, when the Raging Waterfall descends, a Spiritbreath Thorn will descend that will pierce opponents, dealing Pneuma-aligned Hydro DMG.",
 			"application": [
-				{ "frame": 23, "element": "hydro" },
+				{ "frame": 23, "element": "hydro", "units": 1 },
 				{ "frame": 60, "element": "hydro" }
 			]
 		},
@@ -91,7 +91,7 @@
 			],
 			"description": "Unleashes waves that will deal AoE Hydro DMG based on Neuvillette's Max HP. After a short interval, 2 waterfalls will descend and deal Hydro DMG in a somewhat smaller AoE, and will generate 6 Sourcewater Droplets within an area in front.",
 			"application": [
-				{ "frame": 95, "element": "hydro" },
+				{ "frame": 95, "element": "hydro", "units": 1 },
 				{ "frame": 135, "element": "hydro" },
 				{ "frame": 154, "element": "hydro" }
 			]

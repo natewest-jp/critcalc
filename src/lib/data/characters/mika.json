@@ -65,11 +65,11 @@
 					"label": "Hold",
 					"input": ["hE"],
 					"frames": { "anim": 46, "N": 38, "Q": 37, "D": 30, "J": 30 },
-					"application": [{ "frame": 15, "element": "cryo" }]
+					"application": [{ "frame": 15, "element": "cryo", "units": 1 }]
 				}
 			],
 			"description": "Mika uses his crossbow to attack, granting all nearby characters in your party Soulwind. When characters in the Soulwind state are on the field, their ATK SPD will be increased.\nWill take effect in different ways if Tapped or Held.\n\nTap\nFires a Flowfrost Arrow that can pierce through opponents, dealing Cryo DMG to enemies it comes into contact with.\n\nHold\nGoes into Aiming Mode, locking on to an opponent and firing a Rimestar Flare at them, dealing Cryo DMG. When the Rimestar Flare hits, it will rise before exploding, launching Rimestar Shards into a maximum of 3 other opponents, dealing Cryo DMG.",
-			"application": [{ "frame": 18, "element": "cryo" }]
+			"application": [{ "frame": 18, "element": "cryo", "units": 1 }]
 		},
 		{
 			"id": "mika__burst__skyfeather_song",

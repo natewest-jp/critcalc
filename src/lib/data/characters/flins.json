@@ -125,7 +125,7 @@
 			],
 			"caveat": "Type `sQ` within 6s of casting this to fire the 30-energy replacement Burst; plain Q still casts the full 80-energy Burst.",
 			"description": "Flins summons a flurry of spears in front, dealing AoE Electro DMG and causing his Elemental Burst Ancient Ritual: Cometh the Night to be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\nThe base CD of Northland Spearstorm is 6s and will not be affected by other effects.",
-			"application": [{ "frame": 23, "element": "electro" }]
+			"application": [{ "frame": 23, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "flins__burst__ancient_ritual_cometh_the_night",
@@ -161,7 +161,7 @@
 			],
 			"description": "Flins unleashes the true power of his lamp, dealing AoE Electro DMG and, after a short delay, dealing 2 instances of middle-phase and 1 instance of final-phase AoE Electro DMG, all of which are considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: Flins's Skill is enhanced: If there are thunderclouds nearby, Flins will deal an additional 2 instances of middle-phase Lunar-Charged AoE Electro DMG.\n\nAfter using the special Elemental Skill Northland Spearstorm, Flins's Elemental Burst Ancient Ritual: Cometh the Night will be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\n\nThunderous Symphony\nConsume less Elemental Energy to unleash a special Elemental Burst. Flins deals a single instance of AoE Electro DMG that is considered Lunar-Charged DMG.\nMoonsign: Ascendant Gleam: Flins's Skill is enhanced: If there are thunderclouds nearby, Flins will deal an additional instance of Lunar-Charged AoE Electro DMG.\n\nMoonsign: Ascendant Gleam (additional buff): If there are thunderclouds nearby, Flins's Skill is enhanced. (See description above for full text.)",
 			"application": [
-				{ "frame": 93, "element": "electro" },
+				{ "frame": 93, "element": "electro", "units": 1 },
 				{ "frame": 110, "element": "electro" },
 				{ "frame": 119, "element": "electro" },
 				{ "frame": 164, "element": "electro" }

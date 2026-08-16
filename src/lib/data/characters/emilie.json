@@ -88,7 +88,7 @@
 				}
 			],
 			"application": [
-				{ "frame": 37, "element": "dendro" },
+				{ "frame": 37, "element": "dendro", "units": 1 },
 				{ "frame": 62, "element": "dendro" }
 			]
 		},

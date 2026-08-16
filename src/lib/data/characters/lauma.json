@@ -99,7 +99,7 @@
 				"Moon Song: Hold variant grants 1 Moon Song stack per Verdant Dew consumed (max 3 per cast). If Moon Song is active when Burst is used (or Burst is active when Moon Song is gained), each stack ×6 = additional Pale Hymn, once per burst use. Unspent Moon Song expires after 15s. Effect not authored — needs reviewer pass."
 			],
 			"description": "Silently incants an ancient hymn, summoning a **Frostgrove Sanctuary** with different effects depending on whether you Tap or Hold.\n\nTap\nIntone a Hymn of Hunting, dealing AoE Dendro DMG.\n\nHold\nCan be unleashed when you have at least 1 **Verdant Dew**. Lauma consumes all Verdant Dew and intones a Hymn of Eternal Rest, dealing one regular instance of AoE Dendro DMG and another instance of AoE Dendro DMG that is considered Lunar-Bloom DMG. Each Verdant Dew consumed will give Lauma one stack of **Moon Song**. Each time you Hold to cast an Elemental Skill, a maximum of 3 Verdant Dew can be consumed in this way.\n\nAdditionally, when Lauma's Elemental Skill or attacks from Frostgrove Sanctuary hit an opponent, that opponent's Dendro RES and Hydro RES will be decreased for 10s.",
-			"application": [{ "frame": 16, "element": "dendro" }]
+			"application": [{ "frame": 16, "element": "dendro", "units": 1 }]
 		},
 		{
 			"id": "lauma__burst__runo_all_hearts_become_the_beating_moon",

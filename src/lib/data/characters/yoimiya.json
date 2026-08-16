@@ -118,7 +118,7 @@
 				"Burst frames: ActionAttack at InitAbilSlice default (113, comment 'Q -> N1') — omitted per recipe silent-default rule. swap recorded explicitly at 109.",
 				"Burst CD has no explicit cooldownStartDelay (gcsim uses SetCD without delay variant); omitted."
 			],
-			"application": [{ "frame": 75, "element": "pyro" }]
+			"application": [{ "frame": 75, "element": "pyro", "units": 2 }]
 		}
 	],
 	"passives": [

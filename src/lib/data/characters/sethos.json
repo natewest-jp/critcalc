@@ -68,7 +68,7 @@
 			],
 			"behavior": "instant",
 			"description": "Gathers the might of thunder, dealing AoE Electro DMG and quickly retreating. If this attack triggers Electro-Charged, Lunar-Charged, Superconduct, Overloaded, Quicken, Aggravate, Hyperbloom, or Electro Swirl reactions, Sethos recovers a certain amount of Elemental Energy.",
-			"application": [{ "frame": 13, "element": "electro" }]
+			"application": [{ "frame": 13, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "sethos__burst__secret_rite_twilight_shadowpiercer",

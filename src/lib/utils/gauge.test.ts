@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+	createGauge,
 	simulateGauge,
 	gaugesAt,
 	auraDecayRate,
@@ -232,6 +233,47 @@ describe('catalyze family', () => {
 	});
 });
 
+describe('dendro cores — hyperbloom + burgeon (L5b)', () => {
+	// A core is a thing in the world, not an aura. Until L5b the module spawned a
+	// `core` event and forgot it, so the two reactions it exists for could not
+	// happen at all — recorded as a knowing gap at L1.
+	const bloomThen = (trigger: 'electro' | 'pyro', at: number): ReturnType<typeof simulateGauge> =>
+		simulateGauge(apps([0, 'dendro', 2], [2, 'hydro', 2], [at, trigger, 1]));
+
+	it('an Electro trigger on a live core hyperblooms; a Pyro one burgeons', () => {
+		expect(reactions(bloomThen('electro', 4)).map((r) => r.reaction)).toContain('hyperbloom');
+		expect(reactions(bloomThen('pyro', 4)).map((r) => r.reaction)).toContain('burgeon');
+	});
+
+	it('costs the trigger nothing — the core is a gadget, not the enemy’s aura', () => {
+		// the Electro still meets the surviving dendro afterwards and quickens it
+		const rx = reactions(bloomThen('electro', 4)).map((r) => r.reaction);
+		expect(rx).toEqual(['bloom', 'hyperbloom', 'quicken']);
+	});
+
+	it('is not there yet inside the spawn delay, and is gone after its lifetime', () => {
+		// spawn delay is 30f: 2.4s is 24f after the bloom
+		expect(reactions(bloomThen('electro', 2.4)).map((r) => r.reaction)).not.toContain('hyperbloom');
+		// spawned at 2.5s, 6s lifetime → gone by 8.6s
+		expect(reactions(bloomThen('electro', 8.6)).map((r) => r.reaction)).not.toContain('hyperbloom');
+		expect(reactions(bloomThen('electro', 8.4)).map((r) => r.reaction)).toContain('hyperbloom');
+	});
+
+	it('consumes one core per trigger, oldest first', () => {
+		const sim = simulateGauge(
+			apps(
+				[0, 'dendro', 2],
+				[1, 'hydro', 1],
+				[2, 'hydro', 1],
+				[4, 'electro', 1],
+				[5, 'electro', 1],
+				[6, 'electro', 1]
+			)
+		);
+		expect(reactions(sim).filter((r) => r.reaction === 'hyperbloom')).toHaveLength(2);
+	});
+});
+
 describe('burning', () => {
 	it('attaches a fixed 2U burning aura + fuel draining at 0.4 U/s', () => {
 		const sim = simulateGauge(apps([0, 'dendro', 2], [2, 'pyro', 1]));
@@ -317,6 +359,93 @@ describe('multi-reaction trigger flow', () => {
 		// electro line dies at the hit; hydro survives with ~0.53U
 		expect(gaugesAt(sim.series, 1.51).electro).toBeUndefined();
 		expect(gaugesAt(sim.series, 1.51).hydro).toBeCloseTo(0.533, 2);
+	});
+});
+
+describe('the live gauge (streaming shape — L5a)', () => {
+	/** Drive `createGauge` by hand the way the rotation sim does: jump the clock
+	 *  to each application's frame, land it, and never walk a frame in between. */
+	const stream = (list: Application[]) => {
+		const g = createGauge({ sampling: true });
+		[...list]
+			.sort((a, b) => a.time - b.time)
+			.forEach((a, i) => {
+				g.advanceTo(Math.round(a.time * 60));
+				g.apply(a.element, a.gauge, i);
+			});
+		g.advanceTo(Math.round(75 * 60));
+		return g;
+	};
+
+	it('reproduces the batch event stream when driven one application at a time', () => {
+		// ⚓ The batch IS this loop (`simulateGauge` calls `createGauge`), so what
+		// this pins is the CALLER's half of the contract: advance-then-apply, with
+		// arbitrarily large jumps, must not change the answer.
+		const list = apps(
+			[0, 'cryo', 2],
+			[1.5, 'pyro', 1],
+			[4, 'hydro', 2],
+			[9, 'electro', 4],
+			[30, 'dendro', 1],
+			[31, 'pyro', 2],
+			[60, 'anemo', 1]
+		);
+		const streamed = stream(list)
+			.allEvents()
+			.filter((e) => e.kind !== 'drained' || e.time <= 75);
+		expect(streamed).toEqual(simulateGauge(list, { maxSeconds: 75 }).events);
+	});
+
+	it('🐛 closes a series interval on the frame that consumed the aura, then skips idle time', () => {
+		// The idle skip jumped over the frame an application had just landed on
+		// whenever that application consumed the LAST live aura — so the interval
+		// never closed, and two lifetimes of one aura drew as a single line across
+		// the gap. Caught by a 400-case sweep against the pre-split module.
+		// the swirl at t=1 takes the whole hydro aura and Anemo attaches nothing,
+		// so the gauge is left completely empty ON the frame it just worked on
+		const list = apps([0, 'hydro', 1], [1, 'anemo', 4], [40, 'hydro', 1]);
+		const g = stream(list);
+		const hydro = g.closeSeries().filter((s) => s.key === 'hydro');
+		expect(hydro).toHaveLength(2);
+		expect(hydro[0].points.at(-1)).toEqual({ t: 1, u: 0 });
+		expect(g.closeSeries()).toEqual(simulateGauge(list, { maxSeconds: 75 }).series);
+	});
+
+	it('skips idle time instead of walking it (C6 — the clock jumps)', () => {
+		const g = createGauge();
+		g.apply('pyro', 1, 0);
+		g.advanceTo(432_000_000);
+		expect(g.frame).toBe(432_000_000);
+		expect(g.gauges().pyro).toBe(0);
+		expect(g.idle).toBe(true);
+	});
+
+	it('reports its next internal task so a caller can schedule a wake-up', () => {
+		const g = createGauge();
+		expect(g.nextTaskFrame()).toBeNull();
+		g.apply('dendro', 2, 0);
+		g.apply('pyro', 1, 1);
+		// burning ignited → its damage tick is 15 frames out
+		expect(g.nextTaskFrame()).toBe(15);
+	});
+
+	it('has no internal applicator that can react — so `appIndex` is never null', () => {
+		// ⚓ The census behind the note on `SimEvent.appIndex`. The Burning chain is
+		// the only thing that applies an element nobody cast, and every element that
+		// would REACT with its Pyro (Hydro, Cryo, Electro) reacts on contact and so
+		// cannot be sitting there as an aura when the tick lands. A consumer that
+		// must name a character for each reaction depends on this.
+		const g = createGauge();
+		g.apply('cryo', 4, 0);
+		g.advanceTo(30);
+		g.apply('dendro', 2, 1);
+		g.advanceTo(60);
+		g.apply('pyro', 4, 2);
+		g.apply('hydro', 4, 3);
+		g.apply('electro', 4, 4);
+		g.advanceTo(60 * 30);
+		const orphans = g.allEvents().filter((e) => e.kind === 'reaction' && e.appIndex === null);
+		expect(orphans).toEqual([]);
 	});
 });
 

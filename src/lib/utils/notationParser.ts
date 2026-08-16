@@ -16,7 +16,7 @@
  *   `sim/run.ts`        the driver — walks the segments and owns the clock
  *   `sim/clock.ts`      the frame clock + task queue (⚓ it JUMPS, see C6)
  *   `sim/context.ts`    `SimContext` — the state every dispatcher shares
- *   `sim/aura.ts`       ⚓ the coarse aura model — THE SEAM L5 REPLACES
+ *   `sim/aura.ts`       the live gauge's wiring (⚓ L5 crossed the seam here)
  *   `sim/finalize.ts`   window authoring + the bar/block projections
  *   `sim/conditions.ts` `sim/resolve.ts` `sim/tokens.ts` `sim/states.ts`
  *   `sim/stacks.ts` `sim/hits.ts` `sim/shields.ts` `sim/infusions.ts`
@@ -117,7 +117,8 @@ export function parseNotation(
 			totalDuration: 0,
 			unknownTokens: [],
 			events: [],
-			windows: []
+			windows: [],
+			applications: []
 		};
 
 	// Tokenize the full string, then group into segments by separator tokens.

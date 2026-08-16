@@ -72,13 +72,13 @@
 					"frames": { "anim": 143, "C": 138, "Q": 138, "D": 116, "J": 117, "swap": 117 },
 					"cooldown": 16,
 					"cooldownStartDelay": 114,
-					"application": [{ "frame": 117, "element": "electro" }]
+					"application": [{ "frame": 117, "element": "electro", "units": 2 }]
 				}
 			],
 			"tags": [],
 			"effects": [],
 			"description": "Channels the power of lightning to sweep bothersome matters away.\n\nPress\nReleases a homing Lightning Orb.\nOn hit, it deals Electro DMG and applies a stack of the Conductive status (max 3 stacks) to opponents in a small AoE.\n\nHold\nAfter an extended casting time, calls down lightning from the heavens, dealing massive Electro DMG to all nearby opponents.\nDeals great amounts of extra damage to opponents based on the number of Conductive stacks applied to them, and clears their Conductive status.",
-			"application": [{ "frame": 22, "element": "electro" }]
+			"application": [{ "frame": 22, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "lisa__burst__lightning_rose",

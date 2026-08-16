@@ -57,8 +57,8 @@
 			"effects": [],
 			"description": "Throws out a Floral Ring that deals 1 instance of Dendro DMG to targets it comes into contact with.\nThe Floral Ring will return after a set time, dealing Dendro DMG once again.",
 			"application": [
-				{ "frame": 34, "element": "dendro" },
-				{ "frame": 138, "element": "dendro" }
+				{ "frame": 34, "element": "dendro", "units": 1 },
+				{ "frame": 138, "element": "dendro", "units": 1 }
 			]
 		},
 		{
@@ -103,7 +103,7 @@
 			],
 			"effects": [],
 			"description": "Trusty Cuilein-Anbar comes to save the day!\nThrows the doll named Cuilein-Anbar, causing an explosion that deals AoE Dendro DMG, creating a Cuilein-Anbar Zone. Cuilein-Anbar will bounce around within this zone, dealing AoE Dendro DMG.",
-			"application": [{ "frame": 25, "element": "dendro" }]
+			"application": [{ "frame": 25, "element": "dendro", "units": 1 }]
 		}
 	],
 	"passives": [

@@ -101,9 +101,9 @@
 			"behavior": "instant",
 			"frames": { "anim": 75, "N": 66, "C": 69, "E": 68, "Q": 34, "D": 37, "J": 35, "swap": 74 },
 			"application": [
-				{ "frame": 71, "element": "pyro" },
-				{ "frame": 240, "element": "pyro" },
-				{ "frame": 240, "element": "pyro" }
+				{ "frame": 71, "element": "pyro", "units": 1 },
+				{ "frame": 240, "element": "pyro", "units": 1 },
+				{ "frame": 240, "element": "pyro", "units": 1 }
 			]
 		},
 		{
@@ -127,30 +127,30 @@
 			],
 			"frames": { "anim": 139, "D": 103, "J": 104, "swap": 101 },
 			"application": [
-				{ "frame": 186, "element": "pyro" },
+				{ "frame": 186, "element": "pyro", "units": 1 },
 				{ "frame": 198, "element": "pyro" },
 				{ "frame": 210, "element": "pyro" },
-				{ "frame": 294, "element": "pyro" },
+				{ "frame": 294, "element": "pyro", "units": 1 },
 				{ "frame": 306, "element": "pyro" },
 				{ "frame": 306, "element": "pyro" },
-				{ "frame": 318, "element": "pyro" },
-				{ "frame": 318, "element": "pyro" },
-				{ "frame": 401, "element": "pyro" },
+				{ "frame": 318, "element": "pyro", "units": 1 },
+				{ "frame": 318, "element": "pyro", "units": 1 },
+				{ "frame": 401, "element": "pyro", "units": 1 },
 				{ "frame": 413, "element": "pyro" },
-				{ "frame": 425, "element": "pyro" },
-				{ "frame": 425, "element": "pyro" },
+				{ "frame": 425, "element": "pyro", "units": 1 },
+				{ "frame": 425, "element": "pyro", "units": 1 },
 				{ "frame": 503, "element": "pyro" },
-				{ "frame": 515, "element": "pyro" },
-				{ "frame": 515, "element": "pyro" },
+				{ "frame": 515, "element": "pyro", "units": 1 },
+				{ "frame": 515, "element": "pyro", "units": 1 },
 				{ "frame": 527, "element": "pyro" },
 				{ "frame": 527, "element": "pyro" },
-				{ "frame": 610, "element": "pyro" },
+				{ "frame": 610, "element": "pyro", "units": 1 },
 				{ "frame": 622, "element": "pyro" },
-				{ "frame": 634, "element": "pyro" },
-				{ "frame": 634, "element": "pyro" },
+				{ "frame": 634, "element": "pyro", "units": 1 },
+				{ "frame": 634, "element": "pyro", "units": 1 },
 				{ "frame": 718, "element": "pyro" },
-				{ "frame": 730, "element": "pyro" },
-				{ "frame": 730, "element": "pyro" },
+				{ "frame": 730, "element": "pyro", "units": 1 },
+				{ "frame": 730, "element": "pyro", "units": 1 },
 				{ "frame": 742, "element": "pyro" }
 			]
 		}

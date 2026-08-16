@@ -87,7 +87,7 @@
 						}
 					],
 					"behavior": "instant",
-					"application": [{ "frame": 33, "element": "anemo" }]
+					"application": [{ "frame": 33, "element": "anemo", "units": 2 }]
 				}
 			],
 			"description": "Unleashes a secret technique as fierce as the rushing wind that pulls objects and opponents towards Kazuha's current position before launching opponents within the AoE, dealing Anemo DMG and lifting Kazuha into the air on a rushing gust of wind.\nWithin 10s of remaining airborne after casting Chihayaburu, Kazuha can unleash a powerful Plunging Attack known as Midare Ranzan.\n\nPress\nCan be used in mid-air.\n\nHold\nCharges up before unleashing greater Anemo DMG over a larger AoE than Press Mode.\n\nPlunging Attack: Midare Ranzan\nWhen a Plunging Attack is performed using the effects of the Elemental Skill Chihayaburu, Plunging Attack DMG is converted to Anemo DMG. On landing, Kazuha creates a small wind tunnel via a secret blade technique that pulls in nearby objects and opponents.\nMidare Ranzan's DMG is considered Plunging Attack DMG.",
@@ -95,7 +95,7 @@
 			"_curatorNotes": [
 				"[A7] Glide-cancel path frames (common when going E→Q or E→swap): swap=60, Q=61, D=61, J=59. Not authored as a separate cast/plunge variant."
 			],
-			"application": [{ "frame": 10, "element": "anemo" }]
+			"application": [{ "frame": 10, "element": "anemo", "units": 1 }]
 		},
 		{
 			"id": "kaedehara_kazuha__burst__kazuha_slash",
@@ -111,7 +111,7 @@
 			],
 			"description": "The signature technique of Kazuha's self-styled bladework — a single slash that strikes with the force of the first winds of autumn, dealing AoE Anemo DMG.\nThe blade's passage will leave behind a field named \"Autumn Whirlwind\" that periodically deals AoE Anemo DMG to opponents within its range.\n\nElemental Absorption\nIf Autumn Whirlwind comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
 			"behavior": "instant",
-			"application": [{ "frame": 82, "element": "anemo" }]
+			"application": [{ "frame": 82, "element": "anemo", "units": 2 }]
 		}
 	],
 	"passives": [

@@ -51,9 +51,7 @@ const OUT_PATH = join(REPO_ROOT, 'docs/curation/gcsim-reaction-diff.md');
 const { parseNotation } = await import('../src/lib/utils/notationParser.ts');
 const { tokenizeNotation } = await import('../src/lib/utils/tokenizer.ts');
 const { FPS } = await import('../src/lib/utils/frames.ts');
-const { createIcdClock, icdApplies, icdTagFor, resolveActionIcd } =
-	await import('../src/lib/utils/icd.ts');
-const { resolveCastApplications } = await import('../src/lib/sim/aura.ts');
+const { simulateGauge, gaugesAt } = await import('../src/lib/utils/gauge.ts');
 
 // ---------------------------------------------------------------------------
 // Corpus
@@ -64,7 +62,6 @@ const characters = readdirSync(CHAR_DIR)
 	.filter((f) => f.endsWith('.json'))
 	.map((f) => JSON.parse(readFileSync(join(CHAR_DIR, f), 'utf8')));
 const byName = new Map(characters.map((c) => [c.displayName, c]));
-const byId = new Map(characters.map((c) => [c.id, c]));
 const lookupChar = (name) => byName.get(name) ?? null;
 
 /**
@@ -98,83 +95,96 @@ const FIXTURES = [
 // ---------------------------------------------------------------------------
 
 /**
- * The planner emits `reaction` events but never an "application" event — an
- * application that reacts with nothing is invisible in the IR. So we replay
- * the model's own rule over the IR:
+ * ⚓⚓ THE SIM SAYS WHAT IT APPLIED; WE NO LONGER GUESS (gauge round L5c).
  *
- *   - every E/Q cast applies on its authored `application[]` schedule, at
- *     `cast.time + entry.frame`, behind the cast's OWN ICD counter (⛔ not one
- *     shared across casts — see the census in `resolveActionIcd`)
- *   - every N/C/P swing with a resolved element applies at its swing END
- *     (`action.time + action.duration`), behind the ICD clock
+ * This used to REPLAY the parser's own rules over the IR — walk the cast and
+ * action events, re-resolve each cast's `application[]`, re-run the ICD clocks —
+ * because an application that reacted with nothing left no trace in the IR at
+ * all. That is not a small inconvenience: it is how an oracle comes to measure a
+ * model you no longer have, and it did exactly that for one commit (L4d changed
+ * the engine and the baseline was reported UNCHANGED).
  *
- * ⚓⚓ BOTH RULES ARE IMPORTED, NOT RESTATED. The ICD gating calls
- * `$lib/utils/icd.ts` and the cast schedule calls `resolveCastApplications` from
- * `$lib/sim/aura.ts` — the same functions the parser calls.
- *
- * 🐛 This mattered within one landing. Until L4d the cast rule was written out
- * here as "every cast applies the caster's element at cast.time", and when the
- * engine stopped doing that, the oracle went on measuring the old model and
- * reported the baseline UNCHANGED. An oracle that silently describes a model you
- * no longer have is worse than no oracle. ⛔ Never inline either rule again.
+ * `parseNotation` now returns `applications` — what the gauge was actually fed,
+ * from the run itself. ⛔ Never reconstruct this from events again.
  */
 function ourApplications(parsed) {
-	const clocks = new Map();
-	const out = [];
+	return parsed.applications.map((a) => ({
+		time: a.time,
+		characterId: a.characterId,
+		element: a.element,
+		units: a.units,
+		kind: a.castKind,
+		provisionalUnits: a.provisionalUnits
+	}));
+}
 
-	const timed = parsed.events
-		.filter((e) => e.kind === 'cast' || e.kind === 'action')
-		.map((e) =>
-			e.kind === 'cast' ? { at: e.time, ev: e } : { at: e.time + (e.duration ?? 0), ev: e }
-		)
-		.sort((a, b) => a.at - b.at || a.ev.id - b.ev.id);
+/**
+ * Tier 2 — the aura trajectory, which is L5's real scoreboard.
+ *
+ * ⚓ A reaction count can be right by luck; a trajectory cannot. gcsim logs the
+ * target's gauge BEFORE every application it makes, so its 200-odd applications
+ * are 200 sample points of the true aura over the rotation. We sample OUR gauge
+ * at the same frames and compare.
+ *
+ * ⚠️ Our gauge is re-run here through the BATCH form over the sim's own
+ * applications. That is the same module and the same code path the parse used
+ * (`simulateGauge` is a loop over `createGauge`, proven equivalent in
+ * gauge.test.ts) — ⛔ not a second model, which is the thing this file must
+ * never grow.
+ *
+ * gcsim reports DURABILITY (25 per unit); we report taxed units.
+ */
+const DUR_PER_UNIT = 25;
+/** Units of disagreement tolerated before a sample counts as drift. A 1U
+ *  application is 0.8U of aura, so this is a fifth of the smallest thing that
+ *  can be on the field. */
+const AURA_TOLERANCE = 0.16;
 
-	for (const { at, ev } of timed) {
-		const char = byId.get(ev.characterId);
-		if (!char) continue;
+function trajectoryDiff(ours, theirApplications) {
+	const series = simulateGauge(
+		ours.map((a) => ({ time: a.time / 60, element: a.element, gauge: a.units })),
+		{ maxSeconds: 600 }
+	).series;
 
-		if (ev.kind === 'cast') {
-			// The resolved ability the cast actually used, and the variant its token
-			// selected — the same pair `emitReactionsAtCast` is handed.
-			const ability = char.abilities?.find((a) => a.id === ev.abilityId);
-			const variant = ability?.variants?.find((v) => (v.input ?? []).includes(ev.label));
-			const list = variant?.application ?? ability?.application;
-			for (const app of resolveCastApplications(char, list, ev.ability, ability?.noICD)) {
-				out.push({
-					time: at + app.frame,
-					characterId: ev.characterId,
-					element: app.element,
-					kind: ev.ability,
-					label: ev.label
-				});
-			}
-			continue;
+	const rows = [];
+	const totals = { samples: 0, agree: 0, drift: 0, missing: 0, phantom: 0, absDelta: 0 };
+	for (const app of theirApplications) {
+		const t = app.frame / 60;
+		const theirs = {};
+		for (const [mod, dur] of Object.entries(app.auraBefore ?? {})) {
+			const u = dur / DUR_PER_UNIT;
+			if (u > 0.01) theirs[mod] = u;
 		}
-
-		if (ev.action !== 'normal' && ev.action !== 'charged' && ev.action !== 'plunge') continue;
-		if (!ev.element) continue; // physical swings reach no clock
-
-		const normalAbility = char.abilities?.find((a) => a.abilityType === 'normal');
-		const params = resolveActionIcd(ev.action, char.weapon, normalAbility?.noICD);
-		if (params) {
-			const key = `${ev.characterId}:${icdTagFor(ev.action)}`;
-			let clock = clocks.get(key);
-			if (!clock) {
-				clock = createIcdClock();
-				clocks.set(key, clock);
-			}
-			if (!icdApplies(clock, at, params).applies) continue;
+		const oursAt = {};
+		for (const [mod, u] of Object.entries(gaugesAt(series, t))) {
+			if (u > 0.01) oursAt[mod] = u;
 		}
-		out.push({
-			time: at,
-			characterId: ev.characterId,
-			element: ev.element,
-			kind: ev.action,
-			label: ev.label
-		});
+		const mods = [...new Set([...Object.keys(theirs), ...Object.keys(oursAt)])];
+		const cells = [];
+		for (const mod of mods) {
+			const a = oursAt[mod] ?? 0;
+			const b = theirs[mod] ?? 0;
+			totals.samples++;
+			if (b === 0) {
+				totals.phantom++;
+				cells.push(`🟠 ${mod} ${a.toFixed(2)}/—`);
+			} else if (a === 0) {
+				totals.missing++;
+				cells.push(`🔴 ${mod} —/${b.toFixed(2)}`);
+			} else {
+				totals.absDelta += Math.abs(a - b);
+				if (Math.abs(a - b) <= AURA_TOLERANCE) {
+					totals.agree++;
+					cells.push(`${mod} ${a.toFixed(2)}/${b.toFixed(2)}`);
+				} else {
+					totals.drift++;
+					cells.push(`🟡 ${mod} ${a.toFixed(2)}/${b.toFixed(2)}`);
+				}
+			}
+		}
+		rows.push({ frame: app.frame, characterId: app.characterId, cells });
 	}
-
-	return out;
+	return { rows, totals };
 }
 
 // ---------------------------------------------------------------------------
@@ -264,11 +274,14 @@ function diffFixture(fixture) {
 		.filter((e) => e.kind === 'reaction')
 		.map((e) => ({ time: e.time, reaction: e.reaction, characterId: e.characterId }));
 
+	const trajectory = trajectoryDiff(ours, theirs);
+
 	return {
 		fixture,
 		problems,
 		config,
 		team,
+		trajectory,
 		counts: {
 			ours: ours.length,
 			theirs: theirs.length,
@@ -283,8 +296,7 @@ function diffFixture(fixture) {
 		theirReactions: facts.reactions.map((r) => ({
 			...r,
 			characterId: indexToId.get(r.charIndex) ?? `#${r.charIndex}`
-		})),
-		trajectory: theirs
+		}))
 	};
 }
 
@@ -303,11 +315,13 @@ function render(results, commit) {
 		ourReactions: 0,
 		theirReactions: 0
 	};
+	const traj = { samples: 0, agree: 0, drift: 0, missing: 0, phantom: 0, absDelta: 0 };
 	let ran = 0;
 	for (const r of results) {
 		if (r.skipped) continue;
 		ran++;
 		for (const k of Object.keys(totals)) totals[k] += r.counts[k];
+		for (const k of Object.keys(traj)) traj[k] += r.trajectory.totals[k];
 	}
 
 	L.push('# gcsim reaction diff');
@@ -337,9 +351,21 @@ function render(results, commit) {
 	L.push("triggering application, gcsim's is one damage instance, and burning and");
 	L.push('electro-charged tick. **The application rows are the comparable ones.**');
 	L.push('');
-	L.push('⚠️ **Tier 2 (aura trajectory) is REFERENCE ONLY** — the planner has no gauge');
-	L.push("to compare against until L5. gcsim's figures are recorded so the target is on");
-	L.push('the record before we build to it.');
+	L.push('## Aura trajectory (tier 2)');
+	L.push('');
+	L.push('⚓ **The measurement L5 is judged on.** One sample per gcsim application, of');
+	L.push('every aura on the target at that instant, in taxed units.');
+	L.push('');
+	L.push('| metric | count |');
+	L.push('| --- | --- |');
+	L.push(`| aura samples compared | ${traj.samples} |`);
+	L.push(`| **agree** (within ${AURA_TOLERANCE}U) | **${traj.agree}** |`);
+	L.push(`| 🟡 drift (both present, further apart) | ${traj.drift} |`);
+	L.push(`| 🔴 aura gcsim has and we do not | ${traj.missing} |`);
+	L.push(`| 🟠 aura we have and gcsim does not | ${traj.phantom} |`);
+	L.push(
+		`| mean \\|Δ\\| where both present | ${(traj.absDelta / Math.max(1, traj.agree + traj.drift)).toFixed(3)}U |`
+	);
 	L.push('');
 
 	for (const r of results) {
@@ -394,19 +420,24 @@ function render(results, commit) {
 		);
 		L.push('');
 
-		L.push('### 2. Aura trajectory (gcsim — reference)');
+		L.push('### 2. Aura trajectory — ours / gcsim');
 		L.push('');
-		L.push('| t | char | applied | before | after |');
-		L.push('| --- | --- | --- | --- | --- |');
-		for (const a of r.trajectory) {
-			const fmt = (m) =>
-				Object.keys(m).length
-					? Object.entries(m)
-							.map(([k, v]) => `${k} ${v.toFixed(2)}`)
-							.join(', ')
-					: '—';
+		L.push("⚓ **L5's real scoreboard.** gcsim logs the target's gauge before every");
+		L.push('application it makes, so one row per application is a sample of the true aura');
+		L.push('across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports');
+		L.push('durability, 25 per unit).');
+		L.push('');
+		L.push(
+			`agree **${r.trajectory.totals.agree}** · 🟡 drift ${r.trajectory.totals.drift} · ` +
+				`🔴 aura we do not have ${r.trajectory.totals.missing} · ` +
+				`🟠 aura they do not have ${r.trajectory.totals.phantom}`
+		);
+		L.push('');
+		L.push('| t | char | aura before (ours/gcsim) |');
+		L.push('| --- | --- | --- |');
+		for (const row of r.trajectory.rows) {
 			L.push(
-				`| ${f2s(a.frame)}s | ${a.characterId} | ${a.element} ${a.units}U | ${fmt(a.auraBefore)} | ${fmt(a.auraAfter)} |`
+				`| ${f2s(row.frame)}s | ${row.characterId} | ${row.cells.length ? row.cells.join(', ') : '—'} |`
 			);
 		}
 		L.push('');

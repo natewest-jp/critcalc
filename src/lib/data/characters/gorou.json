@@ -118,7 +118,7 @@
 				"General's War Banner terminatesOn is non-standard: the banner is explicitly destroyed when Q is cast (gcsim: Status.Delete on burstHitmark=31). Also, E will not create a new banner while General's Glory is active. Standard terminatesOn 'recast' does not capture this cross-ability interaction — reviewer to decide schema approach."
 			],
 			"description": "Deals AoE Geo DMG and sets up a General's War Banner.\n\nGeneral's War Banner\nProvides up to 3 buffs to active characters within the skill's AoE based on the number of Geo characters in the party at the time of casting:\n· 1 Geo character: Adds \"Standing Firm\" - DEF Bonus.\n· 2 Geo characters: Adds \"Impregnable\" - Increased resistance to interruption.\n· 3 Geo characters: Adds \"Crunch\" - Geo DMG Bonus.\n\nGorou can deploy only 1 General's War Banner on the field at any one time. Characters can only benefit from 1 General's War Banner at a time. When a party member leaves the field, the active buff will last for 2s.\n\nHold\nAdjust the location of the skill.",
-			"application": [{ "frame": 34, "element": "geo" }]
+			"application": [{ "frame": 34, "element": "geo", "units": 1 }]
 		},
 		{
 			"id": "gorou__burst__juuga_forward_unto_victory",
@@ -201,7 +201,7 @@
 				"C2 extends General's Glory duration by 1s per Crystallize shard pickup (once per 0.1s, max +3s per cast). This is event-driven (subscribes to OnShielded + Crystallize shield type check), not a flat constellation durationModifier — not modeled here. Reviewer to decide representation."
 			],
 			"description": "Displaying his valor as a general, Gorou deals AoE Geo DMG and creates a field known as General's Glory to embolden his comrades.\n\nGeneral's Glory\nThis field has the following properties:\n· Like the General's War Banner created by Inuzaka All-Round Defense, provides buffs to active characters within the skill's AoE based on the number of Geo characters in the party. Also moves together with your active character.\n· Generates 1 Crystal Collapse every 1.5s that deals AoE Geo DMG to 1 opponent within the skill's AoE.\n· Pulls 1 elemental shard in the skill's AoE to your active character's position every 1.5s (elemental shards are created by Crystallize reactions).\n\nIf a General's War Banner created by Gorou currently exists on the field when this ability is used, it will be destroyed. In addition, for the duration of General's Glory, Gorou's Elemental Skill \"Inuzaka All-Round Defense\" will not create the General's War Banner.\n If Gorou falls, the effects of General's Glory will be cleared.",
-			"application": [{ "frame": 31, "element": "geo" }]
+			"application": [{ "frame": 31, "element": "geo", "units": 1 }]
 		}
 	],
 	"passives": [

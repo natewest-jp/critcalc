@@ -114,7 +114,7 @@
 				"No stanceExtension — Impale does not extend the Night Vigil window in gcsim.",
 				"C6 Glimbright Shade trigger: 'when Clorinde uses Impale the Night: Pact' is one of the C6 proc conditions — flagged on the C6 constellation, not authored here."
 			],
-			"application": [{ "frame": 11, "element": "electro" }]
+			"application": [{ "frame": 11, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "clorinde__burst__last_lightfall",
@@ -135,10 +135,10 @@
 				"Burst hitmarks (5-hit AoE): [97, 103, 109, 115, 121]. Single damage scalar per hit (burstDamage[talent]); recorded conceptually as one damage event in the planner."
 			],
 			"application": [
-				{ "frame": 97, "element": "electro" },
+				{ "frame": 97, "element": "electro", "units": 1 },
 				{ "frame": 103, "element": "electro" },
 				{ "frame": 109, "element": "electro" },
-				{ "frame": 115, "element": "electro" },
+				{ "frame": 115, "element": "electro", "units": 1 },
 				{ "frame": 121, "element": "electro" }
 			]
 		}

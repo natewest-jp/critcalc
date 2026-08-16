@@ -98,7 +98,7 @@
 				"↻ 2026-08-14 — the stand-in summon is retired. \"Optical Flow Shield Barrier\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast a 20s active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world. Bar geometry is unchanged apart from the spawn offset, which the shield window never had."
 			],
 			"description": "Ineffa engages her Enhanced Cleaning Module, dealing a single instance of AoE Electro DMG to nearby opponents, activating her Optical Flow Shield Barrier, and summoning the Multipurpose Smart Assistance Unit, **Birgitta**.\nThe Optical Flow Shield Barrier absorbs DMG based on Ineffa's ATK, and it will absorb Electro DMG with 250% effectiveness.",
-			"application": [{ "frame": 26, "element": "electro" }]
+			"application": [{ "frame": 26, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "ineffa__burst__supreme_instruction_cyclonic_exterminator",
@@ -137,7 +137,7 @@
 				"Birgitta authored as a separate summon on the burst — discharge effect identical to skill-summoned Birgitta. In-game the burst RESETS the existing Birgitta's duration rather than spawning a second; the planner over-spawns when E and Q overlap. Trade-off documented in caveat."
 			],
 			"description": "Through Multipurpose Smart Assistance Unit, **Birgitta**, Ineffa can use Rocket Punches to quickly clean up opponents! Shoots Birgitta into the fray, dealing AoE Electro DMG and allowing Birgitta to remain on the field.\n\nIf Birgitta is already on the field, having been summoned by Ineffa, this Skill will re-summon Birgitta at the target's location and reset her duration.",
-			"application": [{ "frame": 111, "element": "electro" }]
+			"application": [{ "frame": 111, "element": "electro", "units": 1 }]
 		}
 	],
 	"passives": [

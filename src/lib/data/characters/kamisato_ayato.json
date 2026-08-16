@@ -95,7 +95,7 @@
 				"cooldown: c.SetCD(action.ActionSkill, 12*60) → 12s; no SetCDWithDelay → cooldownStartDelay omitted (0).",
 				"Particle generation: 1 or 2 hydro particles on first Shunsuiken hit per cycle, gated by 1.9s particleICDKey (gcsim skill.go particleCB). Not authored as an effect."
 			],
-			"application": [{ "frame": 35, "element": "hydro" }]
+			"application": [{ "frame": 35, "element": "hydro", "units": 1 }]
 		},
 		{
 			"id": "kamisato_ayato__burst__kamisato_art_suiyuu",
@@ -121,16 +121,16 @@
 				"Burst's `duration: 18` from the generator stub was moved to summons[0].duration per the 2026-05-01 summons migration."
 			],
 			"application": [
-				{ "frame": 139, "element": "hydro" },
+				{ "frame": 139, "element": "hydro", "units": 1 },
 				{ "frame": 229, "element": "hydro" },
-				{ "frame": 319, "element": "hydro" },
+				{ "frame": 319, "element": "hydro", "units": 1 },
 				{ "frame": 409, "element": "hydro" },
-				{ "frame": 469, "element": "hydro" },
+				{ "frame": 469, "element": "hydro", "units": 1 },
 				{ "frame": 499, "element": "hydro" },
 				{ "frame": 589, "element": "hydro" },
-				{ "frame": 679, "element": "hydro" },
+				{ "frame": 679, "element": "hydro", "units": 1 },
 				{ "frame": 769, "element": "hydro" },
-				{ "frame": 859, "element": "hydro" }
+				{ "frame": 859, "element": "hydro", "units": 1 }
 			]
 		}
 	],

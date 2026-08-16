@@ -130,10 +130,10 @@
 				"C2 adds 40% × a4Stack to Q DMG (snap.Stats[DmgP] += 0.4 * a4Stack at cast). Not authored — depends on a4Stack runtime which schema cannot express."
 			],
 			"application": [
-				{ "frame": 99, "element": "cryo" },
+				{ "frame": 99, "element": "cryo", "units": 1 },
 				{ "frame": 104, "element": "cryo" },
 				{ "frame": 109, "element": "cryo" },
-				{ "frame": 114, "element": "cryo" },
+				{ "frame": 114, "element": "cryo", "units": 1 },
 				{ "frame": 119, "element": "cryo" },
 				{ "frame": 160, "element": "cryo" }
 			]

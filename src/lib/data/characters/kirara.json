@@ -84,7 +84,7 @@
 				"↻ 2026-08-14 — the stand-in summon is retired. \"Shield of Safe Transport\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast a 12s active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world. Bar geometry is unchanged apart from the spawn offset, which the shield window never had."
 			],
 			"activeDuration": 12,
-			"application": [{ "frame": 14, "element": "dendro" }]
+			"application": [{ "frame": 14, "element": "dendro", "units": 1 }]
 		},
 		{
 			"id": "kirara__burst__secret_art_surprise_dispatch",
@@ -107,13 +107,13 @@
 				"C1 adds up to 4 extra cardamoms (1 per 8000 Max HP) — a scaling buff on the summon's projectile count, not a damage scaling on existing hits. Flagged on the C1 constellation entry; not modeled on the burst summon."
 			],
 			"application": [
-				{ "frame": 38, "element": "dendro" },
-				{ "frame": 180, "element": "dendro" },
-				{ "frame": 180, "element": "dendro" },
-				{ "frame": 800, "element": "dendro" },
+				{ "frame": 38, "element": "dendro", "units": 2 },
+				{ "frame": 180, "element": "dendro", "units": 1 },
+				{ "frame": 180, "element": "dendro", "units": 1 },
+				{ "frame": 800, "element": "dendro", "units": 1 },
 				{ "frame": 818, "element": "dendro" },
 				{ "frame": 836, "element": "dendro" },
-				{ "frame": 854, "element": "dendro" }
+				{ "frame": 854, "element": "dendro", "units": 1 }
 			]
 		}
 	],

@@ -65,7 +65,7 @@
 			"tags": [],
 			"effects": [],
 			"description": "Unleashes a frigid blast, dealing Cryo DMG to opponents in front of Kaeya.",
-			"application": [{ "frame": 28, "element": "cryo" }]
+			"application": [{ "frame": 28, "element": "cryo", "units": 2 }]
 		},
 		{
 			"id": "kaeya__burst__glacial_waltz",

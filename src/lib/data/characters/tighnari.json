@@ -71,7 +71,7 @@
 				"Vijnana-Khanda Field spawnsAt=15 (skillRelease constant in gcsim). Actual impact frame is skillRelease + travel (default travel=5 → frame 20). spawnsAt uses the release frame per recipe convention."
 			],
 			"caveat": "Not modeled: Vijnana Suffusion's Wreath Arrow charge-time reduction — the shot is shown at full base charge time even while the buff is active.",
-			"application": [{ "frame": 20, "element": "dendro" }]
+			"application": [{ "frame": 20, "element": "dendro", "units": 1 }]
 		},
 		{
 			"id": "tighnari__burst__fashioners_tanglevine_shaft",
@@ -86,16 +86,16 @@
 			"effects": [],
 			"description": "Combines the power of all seeds to fire 6 Tanglevine Shafts that can track opponents and deal Dendro DMG.\nAfter they hit, the Tanglevine Shafts will create a secondary wave of Tanglevine Shafts that can also track nearby opponents and deal Dendro DMG on hit.",
 			"application": [
-				{ "frame": 112, "element": "dendro" },
+				{ "frame": 112, "element": "dendro", "units": 1 },
 				{ "frame": 117, "element": "dendro" },
 				{ "frame": 120, "element": "dendro" },
-				{ "frame": 121, "element": "dendro" },
+				{ "frame": 121, "element": "dendro", "units": 1 },
 				{ "frame": 126, "element": "dendro" },
 				{ "frame": 128, "element": "dendro" },
-				{ "frame": 147, "element": "dendro" },
+				{ "frame": 147, "element": "dendro", "units": 1 },
 				{ "frame": 153, "element": "dendro" },
 				{ "frame": 160, "element": "dendro" },
-				{ "frame": 161, "element": "dendro" },
+				{ "frame": 161, "element": "dendro", "units": 1 },
 				{ "frame": 171, "element": "dendro" },
 				{ "frame": 175, "element": "dendro" }
 			]

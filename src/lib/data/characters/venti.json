@@ -75,7 +75,7 @@
 						"Hold E earliest cancel in gcsim is skillHoldFrames[action.ActionHighPlunge] = 116f (CanQueueAfter = 116). ActionHighPlunge is not a standard JSON key — not recorded in frames. After Hold E, Venti is airborne; typical follow-up is a high plunge (enforced by gcsim: high_plunge requires last action = hold skill with hold != 0).",
 						"All other action keys (N, Q, D, J) fall back to InitAbilSlice default = 289 (AnimationLength) — omitted per recipe rule."
 					],
-					"application": [{ "frame": 74, "element": "anemo" }]
+					"application": [{ "frame": 74, "element": "anemo", "units": 2 }]
 				}
 			],
 			"tags": ["summon"],
@@ -84,7 +84,7 @@
 				"'summon' tag inherited from generator. No summons[] authored: skill deals AoE anemo hit, and per A1 passive creates a 20s upcurrent on Hold — but gcsim does not model the upcurrent (asc.go explicitly: 'A1 is not implemented and will likely never be implemented'). Reviewer to decide whether to remove tag or author upcurrent as a summon/buff."
 			],
 			"description": "O wind upon which all hymns and songs fly, bear these earth-walkers up into the sky!\n\nPress\nSummons a Wind Domain at the opponent's location, dealing AoE Anemo DMG and launching opponents into the air.\n\nHold\nSummons an even larger Wind Domain with Venti as the epicenter, dealing AoE Anemo DMG and launching affected opponents into the air.\nAfter unleashing the Hold version of this ability, Venti rides the wind into the air.\n\nOpponents hit by Skyward Sonnet will fall to the ground slowly.",
-			"application": [{ "frame": 51, "element": "anemo" }]
+			"application": [{ "frame": 51, "element": "anemo", "units": 2 }]
 		},
 		{
 			"id": "venti__burst__winds_grand_ode",

@@ -15,9 +15,17 @@
  * every hit, ICD-suppressed or not, and `icd.ts` stays the only thing that decides
  * whether one lands. ⛔ Never pre-apply ICD here.
  *
- * ⛔ `units` is NOT authored — the gauge that reads it lands in L5, and putting a
- * number in front of its only consumer is the orphaned-data class
- * `orphanedSchema.test.ts` exists to catch. The audit reports it so L5 starts measured.
+ * ↻ `units` IS authored since L5d — the gauge that reads it landed at L5c, which is
+ * the order contract C3's split table asked for (⛔ it was deliberately withheld
+ * before that, because a number in front of its only consumer is the orphaned-data
+ * class `orphanedSchema.test.ts` exists to catch).
+ *
+ * ⚓ AUTHORED ON EVERY MEASURED ENTRY, 1U INCLUDED. The default is 1U, so writing it
+ * out looks redundant — it is not, for the same reason `[]` and absent differ on the
+ * list itself: absent must keep meaning WE DID NOT MEASURE THIS. Collapsing a measured
+ * 1U into silence is the exact conflation L4d had to undo one landing earlier. The
+ * entries that legitimately carry no units are the ones gcsim's own ICD suppressed,
+ * which log no durability at all.
  *
  * Usage:  node scripts/migrate-application-schema.mjs [--write] [--char <id>]
  */
@@ -28,6 +36,7 @@ import { join } from 'node:path';
 import { format, resolveConfig } from 'prettier';
 
 import { runDumper } from './lib/gcsim-dump.mjs';
+import { DURABILITY_PER_UNIT } from './lib/gcsim.mjs';
 import {
 	CHAR_DIR,
 	driverSetsFor,
@@ -65,6 +74,9 @@ async function main() {
 
 	const prettierOptions = { ...(await resolveConfig(chars[0].file)), parser: 'json' };
 	const stats = { authored: 0, empty: 0, uncovered: 0, files: 0, hits: 0 };
+	/** Distribution of the measured gauge units, printed so an unexpected value
+	 *  (a 0.5U, a 3U) is SEEN rather than quietly written into 123 files. */
+	const unitTally = new Map();
 	const uncovered = [];
 	const applyNothing = [];
 
@@ -105,6 +117,12 @@ async function main() {
 					// schema says absent means the hit applies nothing, and spelling it out
 					// would invite a reader to treat physical as an aura.
 					if (h.element && h.element !== 'physical') e.element = h.element;
+					// gcsim reports DURABILITY, 25 per gauge unit. ⚠️ Absent on a hit its
+					// own ICD suppressed — there was no application to measure.
+					if (typeof h.durability === 'number') {
+						e.units = Math.round((h.durability / DURABILITY_PER_UNIT) * 100) / 100;
+						unitTally.set(e.units, (unitTally.get(e.units) ?? 0) + 1);
+					}
 					return e;
 				});
 				stats.hits += hits.length;
@@ -126,6 +144,12 @@ async function main() {
 		`${stats.authored} abilities with hits (${stats.hits} applications) · ` +
 			`${stats.empty} APPLY NOTHING · ${stats.uncovered} with no reading · ` +
 			`${stats.files} files ${write ? 'written' : 'would change'}\n`
+	);
+	process.stderr.write(
+		`gauge units measured: ${[...unitTally.entries()]
+			.sort((a, b) => a[0] - b[0])
+			.map(([u, n]) => `${u}U ×${n}`)
+			.join(' · ')}\n`
 	);
 	process.stderr.write(`\n⚓ APPLY NOTHING (${applyNothing.length}):\n`);
 	for (const x of applyNothing) process.stderr.write(`  ${x}\n`);

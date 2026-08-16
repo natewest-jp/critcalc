@@ -114,11 +114,11 @@
 			],
 			"description": "Casts down Tengu Juurai: Titanbreaker, dealing AoE Electro DMG. Afterwards, Tengu Juurai: Titanbreaker spreads out into 4 consecutive bouts of Tengu Juurai: Stormcluster, dealing AoE Electro DMG.\nTengu Juurai: Titanbreaker and Tengu Juurai: Stormcluster can provide the active character within their AoE with the same ATK Bonus as given by the Elemental Skill, Tengu Stormcall.\n\nThe ATK Bonus provided by various kinds of Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect.",
 			"application": [
-				{ "frame": 51, "element": "electro" },
-				{ "frame": 100, "element": "electro" },
-				{ "frame": 100, "element": "electro" },
-				{ "frame": 100, "element": "electro" },
-				{ "frame": 100, "element": "electro" }
+				{ "frame": 51, "element": "electro", "units": 1 },
+				{ "frame": 100, "element": "electro", "units": 1 },
+				{ "frame": 100, "element": "electro", "units": 1 },
+				{ "frame": 100, "element": "electro", "units": 1 },
+				{ "frame": 100, "element": "electro", "units": 1 }
 			]
 		}
 	],

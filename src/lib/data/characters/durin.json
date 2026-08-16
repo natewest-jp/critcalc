@@ -163,7 +163,7 @@
 				"[A7] Caveat removed as working behavior: default-form selection and the following-dragon ticks (~0.98s, 20s) are shown; the un-modeled A4 dragon amp is noted on the Chaos Formed passive instead."
 			],
 			"application": [
-				{ "frame": 97, "element": "pyro" },
+				{ "frame": 97, "element": "pyro", "units": 1 },
 				{ "frame": 121, "element": "pyro" },
 				{ "frame": 154, "element": "pyro" }
 			]
@@ -207,22 +207,22 @@
 				"[A7] Caveat removed: auto-selection while darkForm is live is working behavior and the ~1.23s cadence (16 ticks) is shown; single-target-vs-AoE and 'harder-hitting' are out of scope (the tool shows no damage numbers and does not distinguish target counts)."
 			],
 			"application": [
-				{ "frame": 97, "element": "pyro" },
+				{ "frame": 97, "element": "pyro", "units": 1 },
 				{ "frame": 121, "element": "pyro" },
 				{ "frame": 154, "element": "pyro" },
-				{ "frame": 156, "element": "pyro" },
+				{ "frame": 156, "element": "pyro", "units": 1 },
 				{ "frame": 214, "element": "pyro" },
-				{ "frame": 273, "element": "pyro" },
+				{ "frame": 273, "element": "pyro", "units": 1 },
 				{ "frame": 332, "element": "pyro" },
-				{ "frame": 391, "element": "pyro" },
+				{ "frame": 391, "element": "pyro", "units": 1 },
 				{ "frame": 450, "element": "pyro" },
-				{ "frame": 508, "element": "pyro" },
+				{ "frame": 508, "element": "pyro", "units": 1 },
 				{ "frame": 567, "element": "pyro" },
-				{ "frame": 626, "element": "pyro" },
+				{ "frame": 626, "element": "pyro", "units": 1 },
 				{ "frame": 685, "element": "pyro" },
-				{ "frame": 744, "element": "pyro" },
+				{ "frame": 744, "element": "pyro", "units": 1 },
 				{ "frame": 802, "element": "pyro" },
-				{ "frame": 861, "element": "pyro" }
+				{ "frame": 861, "element": "pyro", "units": 1 }
 			]
 		}
 	],

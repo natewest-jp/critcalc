@@ -64,7 +64,7 @@
 			],
 			"description": "Aino throws a Musecatcher forward, dealing Hydro DMG and dragging her along behind it. When the dragging stops, Aino deals AoE Hydro DMG to nearby opponents.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the Musecatcher's throwing direction.",
 			"application": [
-				{ "frame": 15, "element": "hydro" },
+				{ "frame": 15, "element": "hydro", "units": 1 },
 				{ "frame": 33, "element": "hydro" }
 			]
 		},

@@ -2680,8 +2680,44 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 			id: a.id.replace('pyrostub', 'electrostub')
 		})) as Ability[]
 	} as CharacterData;
+	// ↻ L5c: the same holder with a lifetime long enough not to participate.
+	// ⚓ The cap and the lifetime are two rules, and the cap test measured both
+	// at once — it passed only because the COARSE aura never decayed, so every
+	// later hydro cast met a phantom electro aura, emitted a phantom
+	// electro-charged, and kept topping the count back up. With a real gauge the
+	// four reactions land 12s apart (the stub's own cooldown gates its recast)
+	// and a 30s lifetime can hold at most two of them at the read.
+	const neuvCapStub: CharacterData = {
+		...neuvAStub,
+		id: 'neuvcap',
+		name: 'NeuvCap',
+		displayName: 'NeuvCap',
+		passives: [
+			{
+				id: 'neuvcap__passive__a1',
+				name: 'A1',
+				abilityType: 'passive',
+				effects: [
+					{
+						type: 'gainStacks',
+						target: 'self',
+						trigger: {
+							type: 'onReaction',
+							source: 'team',
+							reaction: ['vaporize', 'electroCharged']
+						},
+						key: 'pastDraconicGlories',
+						amount: 1,
+						max: 3,
+						lifetime: 120
+					}
+				]
+			} as unknown as Ability
+		]
+	} as CharacterData;
 	const lookup = (n: string): CharacterData | null => {
 		if (n === 'NeuvA') return neuvAStub;
+		if (n === 'NeuvCap') return neuvCapStub;
 		if (n === 'NeuvSelf') return neuvSelfStub;
 		if (n === 'PyroStub') return pyroStub;
 		if (n === 'ElectroStub') return electroStub;
@@ -2713,11 +2749,17 @@ describe('parseNotation — onReaction gainStacks team-walk + rotation-wide accr
 		// Hydro), vape (Pyro on Hydro), EC (Electro on Hydro). Each adds 1
 		// stack; max=3 keeps cap.
 		const result = parseNotation(
-			'NeuvA E > PyroStub E > NeuvA E > ElectroStub E > NeuvA E > PyroStub E > NeuvA E > ElectroStub E > NeuvA E',
+			'NeuvCap E > PyroStub E > NeuvCap E > ElectroStub E > NeuvCap E > PyroStub E > NeuvCap E > ElectroStub E > NeuvCap E',
 			lookup,
 			8
 		);
-		const neuvBars = result.tracks.filter((t) => t.characterId === 'neuva').flatMap((t) => t.eBars);
+		// exactly four qualifying reactions, one per stub cast
+		expect(
+			result.events.filter((e) => e.kind === 'reaction' && e.characterId !== 'neuvcap')
+		).toHaveLength(4);
+		const neuvBars = result.tracks
+			.filter((t) => t.characterId === 'neuvcap')
+			.flatMap((t) => t.eBars);
 		const last = neuvBars[neuvBars.length - 1];
 		expect(last.stackContext?.get('pastDraconicGlories') ?? 0).toBe(3);
 	});
@@ -3894,39 +3936,47 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 	const team: Record<string, CharacterData> = { Sucrose: sucrose, Xingqiu: xingqiu, Xiao: xiao };
 	const lookup = (n: string): CharacterData | null => team[n] ?? null;
 
-	/** Reactions emitted by one character, in time order, with their source. */
-	const reactionsFrom = (notation: string, charId: string) =>
-		reactionsOf(parseNotation(notation, lookup, 8).events)
-			.filter((e) => e.characterId === charId)
-			.map((e) => [e.reaction, e.castKind]);
+	// ↻ REBASED AT L5c, and the rebase made these tests DIRECT. They used to
+	// count the swirls a swinger triggered, with a note that "anemo is the clean
+	// probe: swirl does not consume the aura it reads" — true of the coarse aura
+	// model and FALSE of a real gauge, where a swirl takes 0.5× the trigger. The
+	// question was always "did this swing apply?", and `parsed.applications` is
+	// the answer to exactly that, so the reaction is no longer in the way. ⚓ The
+	// counts below are unchanged from the ICD round; only the probe moved.
+	const applicationsFrom = (notation: string, charId: string) =>
+		parseNotation(notation, lookup, 8)
+			.applications.filter((a) => a.characterId === charId)
+			.map((a) => [a.element, a.castKind]);
 
-	// Anemo is the clean probe: swirl does not consume the aura it reads, so a
-	// count measures the ICD clock and nothing else. A pyro N5 into hydro would
-	// vaporize once and then be measuring aura consumption instead.
-	it('⛔ a catalyst N5 swirls TWICE, not five times — the whole reason ICD came first', () => {
-		expect(reactionsFrom('Xingqiu E > Sucrose N5', 'sucrose')).toEqual([
-			['hydroSwirl', 'normal'],
-			['hydroSwirl', 'normal']
+	it('⛔ a catalyst N5 applies TWICE, not five times — the whole reason ICD came first', () => {
+		expect(applicationsFrom('Xingqiu E > Sucrose N5', 'sucrose')).toEqual([
+			['anemo', 'normal'],
+			['anemo', 'normal']
 		]);
+		// …and the first one still swirls the hydro aura it met.
+		const rs = reactionsOf(parseNotation('Xingqiu E > Sucrose N5', lookup, 8).events)
+			.filter((e) => e.characterId === 'sucrose')
+			.map((e) => e.reaction);
+		expect(rs[0]).toBe('hydroSwirl');
 	});
 
 	it('the applications land on swings 1 and 4 — the 3-hit counter, not the 2.5s timer', () => {
-		const events = parseNotation('Xingqiu E > Sucrose N5', lookup, 8).events;
-		const swingEnds = events
+		const parsed = parseNotation('Xingqiu E > Sucrose N5', lookup, 8);
+		const swingEnds = parsed.events
 			.filter((e) => e.kind === 'action' && e.characterId === 'sucrose')
 			.map((e) => (e.kind === 'action' ? e.time + e.duration : 0));
-		const applied = reactionsOf(events)
-			.filter((e) => e.characterId === 'sucrose')
-			.map((e) => e.time);
+		const applied = parsed.applications
+			.filter((a) => a.characterId === 'sucrose')
+			.map((a) => a.time);
 		// Applied at the swing's HIT instant, the same one dispatchHit uses.
 		expect(applied).toEqual([swingEnds[0], swingEnds[3]]);
 	});
 
 	it('a catalyst charged attack applies EVERY time (gcsim ICDTagNone)', () => {
-		expect(reactionsFrom('Xingqiu E > Sucrose C C C', 'sucrose')).toEqual([
-			['hydroSwirl', 'charged'],
-			['hydroSwirl', 'charged'],
-			['hydroSwirl', 'charged']
+		expect(applicationsFrom('Xingqiu E > Sucrose C C C', 'sucrose')).toEqual([
+			['anemo', 'charged'],
+			['anemo', 'charged'],
+			['anemo', 'charged']
 		]);
 	});
 
@@ -3936,8 +3986,8 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 		// model the parser borrowed — puts them given the normal hit times
 		// alone. That is the reconciliation this round exists to make, asserted
 		// rather than asserted-about.
-		const events = parseNotation('Xingqiu E > Sucrose N1 C N1 C N1', lookup, 8).events;
-		const normalEnds = events
+		const parsed = parseNotation('Xingqiu E > Sucrose N1 C N1 C N1', lookup, 8);
+		const normalEnds = parsed.events
 			.filter((e) => e.kind === 'action' && e.characterId === 'sucrose' && e.action === 'normal')
 			.map((e) => (e.kind === 'action' ? e.time + e.duration : 0));
 		// ⚠️ FRAMES params against frame-valued swing times. `icdApplies` is
@@ -3946,29 +3996,27 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 		const predicted = simulateIcd(normalEnds, STANDARD_ICD_FRAMES)
 			.filter((h) => h.applies)
 			.map((h) => h.time);
-		const applied = reactionsOf(events)
-			.filter((e) => e.characterId === 'sucrose' && e.castKind === 'normal')
-			.map((e) => e.time);
-		expect(applied).toEqual(predicted);
-		// …and every CA applied, so they were present and simply untracked.
-		expect(reactionsFrom('Xingqiu E > Sucrose N1 C N1 C N1', 'sucrose')).toHaveLength(
-			predicted.length + 2
+		const sucroseApps = parsed.applications.filter((a) => a.characterId === 'sucrose');
+		expect(sucroseApps.filter((a) => a.castKind === 'normal').map((a) => a.time)).toEqual(
+			predicted
 		);
+		// …and every CA applied, so they were present and simply untracked.
+		expect(sucroseApps).toHaveLength(predicted.length + 2);
 	});
 
 	it('a physical swing spends no ICD budget — it applies nothing', () => {
-		// Xingqiu's sword normals are physical. They must neither react nor
+		// Xingqiu's sword normals are physical. They must neither apply nor
 		// silently consume a counter an infusion would later want.
-		expect(reactionsFrom('Sucrose E > Xingqiu N5', 'xingqiu')).toEqual([]);
+		expect(applicationsFrom('Sucrose E > Xingqiu N5', 'xingqiu')).toEqual([]);
 	});
 
 	it('an infused plunge applies on every landing (plunges carry no ICD)', () => {
 		// Xiao's burst stance infuses his plunges with anemo.
-		const rs = reactionsFrom('Xingqiu E > Xiao Q P P P', 'xiao');
-		expect(rs.filter(([, kind]) => kind === 'plunge')).toEqual([
-			['hydroSwirl', 'plunge'],
-			['hydroSwirl', 'plunge'],
-			['hydroSwirl', 'plunge']
+		const apps = applicationsFrom('Xingqiu E > Xiao Q P P P', 'xiao');
+		expect(apps.filter(([, kind]) => kind === 'plunge')).toEqual([
+			['anemo', 'plunge'],
+			['anemo', 'plunge'],
+			['anemo', 'plunge']
 		]);
 	});
 
@@ -3976,10 +4024,9 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 		// Xiao's skill has two charges, so both anemo casts land well inside
 		// 2.5s. Modelling one cast as one hit means a counter over cast events
 		// would delete the second, which in game lands several more anemo hits.
-		const rs = reactionsFrom('Xingqiu E > Xiao E E', 'xiao');
-		expect(rs).toEqual([
-			['hydroSwirl', 'skill'],
-			['hydroSwirl', 'skill']
+		expect(applicationsFrom('Xingqiu E > Xiao E E', 'xiao')).toEqual([
+			['anemo', 'skill'],
+			['anemo', 'skill']
 		]);
 	});
 });

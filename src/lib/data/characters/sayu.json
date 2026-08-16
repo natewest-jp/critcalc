@@ -64,8 +64,8 @@
 					"frames": { "anim": 110, "D": 109, "J": 109, "swap": 107 },
 					"cooldown": 6.2,
 					"application": [
-						{ "frame": 18, "element": "anemo" },
-						{ "frame": 68, "element": "anemo" }
+						{ "frame": 18, "element": "anemo", "units": 1 },
+						{ "frame": 68, "element": "anemo", "units": 1 }
 					]
 				}
 			],
@@ -77,8 +77,8 @@
 			],
 			"description": "The special technique of the Yoohoo Ninja Arts!\nSayu curls up into a rolling Fuufuu Windwheel and smashes into opponents at high speed, dealing Anemo DMG. When the duration ends, she unleashes a Fuufuu Whirlwind Kick, dealing AoE Anemo DMG.\n\nPress\nEnters the Fuufuu Windwheel state, rolling forward a short distance before using the Fuufuu Whirlwind Kick.\n\nHold\nRolls about continuously in the Fuufuu Windwheel state, increasing Sayu's resistance to interruption while within that state.\nDuring this time, Sayu can control the direction of her roll, and can use the skill again to end her Windwheel state early and unleash a stronger version of the Fuufuu Whirlwind Kick.\nThe Hold version of this skill can trigger Elemental Absorption.\n\nThis skill has a maximum duration of 10s and enters CD once its effects end. The longer Sayu remains in her Windwheel state, the longer the CD.\n\nElemental Absorption\nIf Sayu comes into contact with Hydro/Pyro/Cryo/Electro while in her Windwheel state, she will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use of this skill.",
 			"application": [
-				{ "frame": 7, "element": "anemo" },
-				{ "frame": 25, "element": "anemo" }
+				{ "frame": 7, "element": "anemo", "units": 1 },
+				{ "frame": 25, "element": "anemo", "units": 1 }
 			]
 		},
 		{
@@ -131,7 +131,7 @@
 				"[A7] Summon periodic heal targets the active character; in game it selects the lowest-HP-percentage active character nearby, which is not an expressible targeting primitive (already noted in existing curator residuals)."
 			],
 			"description": "The other super special technique of the Yoohoo Ninja Arts! It summons a pair of helping hands for Sayu.\nDeals Anemo DMG to nearby opponents and heals all nearby party members. The amount of HP restored is based on Sayu's ATK. This skill then summons a Muji-Muji Daruma.\n\nMuji-Muji Daruma\nAt specific intervals, the Daruma will take one of several actions based on the situation around it:\n·If the HP of nearby characters is above 70%, it will attack a nearby opponent, dealing Anemo DMG.\n·If there are active characters with 70% or less HP nearby, it will heal the active character with the lowest percentage HP left. If there are no opponents nearby, it will heal active characters nearby even if they have 70% HP or more.",
-			"application": [{ "frame": 12, "element": "anemo" }]
+			"application": [{ "frame": 12, "element": "anemo", "units": 1 }]
 		}
 	],
 	"passives": [

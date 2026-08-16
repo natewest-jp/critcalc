@@ -78,8 +78,8 @@
 				"↻ 2026-08-14 — the stand-in summon is retired. \"Curtain of Slumber\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast a 12s active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world. Bar geometry is unchanged apart from the spawn offset, which the shield window never had."
 			],
 			"application": [
-				{ "frame": 32, "element": "cryo" },
-				{ "frame": 450, "element": "cryo" },
+				{ "frame": 32, "element": "cryo", "units": 1 },
+				{ "frame": 450, "element": "cryo", "units": 1 },
 				{ "frame": 475, "element": "cryo" },
 				{ "frame": 499, "element": "cryo" },
 				{ "frame": 524, "element": "cryo" }

@@ -64,8 +64,8 @@
 					"input": ["hE"],
 					"frames": { "anim": 77, "N": 61, "Q": 59, "D": 60, "J": 61, "swap": 59 },
 					"application": [
-						{ "frame": 50, "element": "pyro" },
-						{ "frame": 62, "element": "pyro" }
+						{ "frame": 50, "element": "pyro", "units": 1 },
+						{ "frame": 62, "element": "pyro", "units": 1 }
 					]
 				}
 			],
@@ -85,10 +85,10 @@
 			],
 			"description": "The Traveler unleashes their inner flame, dealing AoE Pyro DMG.\n\nTap\nDeals AoE Pyro DMG, enters Nightsoul's Blessing, and produces Blazing Threshold pulses at intervals.\n\nHold\nDeals stronger AoE Pyro DMG and enters Nightsoul's Blessing with the Scorching Threshold effect: when nearby opponents take damage, a Pyro pulse triggers.",
 			"application": [
-				{ "frame": 24, "element": "pyro" },
+				{ "frame": 24, "element": "pyro", "units": 1 },
 				{ "frame": 90, "element": "pyro" },
 				{ "frame": 156, "element": "pyro" },
-				{ "frame": 222, "element": "pyro" },
+				{ "frame": 222, "element": "pyro", "units": 1 },
 				{ "frame": 288, "element": "pyro" },
 				{ "frame": 354, "element": "pyro" }
 			]
@@ -112,7 +112,7 @@
 				"C4 effect on burst (+30% Q DMG when in NS): not authored — would need conditional effect with state:nightsoulBlessing condition."
 			],
 			"description": "Releases all the Pyro power within, dealing massive AoE Pyro DMG and restoring Nightsoul points to the Traveler.",
-			"application": [{ "frame": 40, "element": "pyro" }]
+			"application": [{ "frame": 40, "element": "pyro", "units": 1 }]
 		}
 	],
 	"passives": [

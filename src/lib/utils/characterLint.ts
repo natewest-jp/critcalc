@@ -1001,13 +1001,23 @@ function lintCastAbility(
 					a.id
 				);
 			}
-			// ⛔ `units` belongs to L5 and has no consumer yet; authoring it early is
-			// exactly the orphaned-data class the schema guard exists to catch.
-			if (e.units !== undefined) {
+			// ↻ `units` is authored since L5d — its consumer, the gauge, landed at
+			// L5c (before then this rule REFUSED the field, which is the
+			// orphaned-data class the schema guard exists to catch).
+			//
+			// ⚠️ ABSENT IS LEGAL AND MEANS UNMEASURED — gcsim logs no durability for
+			// a hit its own ICD suppressed, and the sim falls back to 1U, flagged
+			// provisional. ⛔ Never make it required.
+			//
+			// The bound is a sanity check, not a vocabulary: the corpus measured
+			// 1U ×327, 2U ×58, 4U ×2, and a value outside 0–4 means the durability
+			// conversion (25 per unit) went wrong rather than that a new gauge size
+			// exists.
+			if (e.units !== undefined && !(typeof e.units === 'number' && e.units > 0 && e.units <= 4)) {
 				push(
 					'strict',
 					'application-invalid',
-					`${where} application[${i}].units is not authored until L5`,
+					`${where} application[${i}].units is not a gauge value in (0, 4] (got ${JSON.stringify(e.units)})`,
 					a.id
 				);
 			}

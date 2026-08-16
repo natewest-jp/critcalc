@@ -67,7 +67,7 @@
 			"tags": [],
 			"effects": [],
 			"description": "Hurls a Lightning Stiletto that annihilates her opponents like the swift thunder.\nWhen the Stiletto hits its target, it deals Electro DMG to opponents in a small AoE, and places a Stiletto Mark on the spot hit.\n\nHold\nHold to adjust the direction in which the Stiletto shall be thrown.\nStilettos thrown by the Hold attack mode can be suspended in mid-air, allowing Keqing to jump to them when using Stellar Restoration a second time.\n\nLightning Stiletto\n If Keqing uses Stellar Restoration again or uses a Charged Attack while its duration lasts, it will clear the Stiletto Mark and produce different effects:\n·If she uses Stellar Restoration again, she will blink to the location of the Mark and unleash one slashing attack that deals AoE Electro DMG. When blinking to a Stiletto that was thrown from a Holding attack, Keqing can leap across obstructing terrain.\n·If Keqing uses a Charged Attack, she will ignite a series of thundering cuts at the Mark's location, dealing AoE Electro DMG.",
-			"application": [{ "frame": 25, "element": "electro" }]
+			"application": [{ "frame": 25, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "keqing__skill__stellar_restoration_recast",
@@ -85,7 +85,7 @@
 				"C1 Thundering Might (2 particles on recast) and the C1 +50% ATK recast hit are semantically tied to THIS ability; both remain authored on the C1 constellation with manual/placeholder triggers — a future pass could gate them on chainStage index 1."
 			],
 			"description": "Using Stellar Restoration again while the Lightning Stiletto persists: Keqing blinks to the Mark's location and unleashes a slashing attack that deals AoE Electro DMG. Blinking to a Stiletto thrown from a Hold cast lets her leap across obstructing terrain.",
-			"application": [{ "frame": 16, "element": "electro" }]
+			"application": [{ "frame": 16, "element": "electro", "units": 2 }]
 		},
 		{
 			"id": "keqing__burst__starward_sword",
@@ -101,16 +101,16 @@
 			"effects": [],
 			"description": "Keqing unleashes the power of lightning, dealing Electro DMG in an AOE.\nShe then blends into the shadow of her blade, striking a series of thunderclap-blows to nearby opponents simultaneously that deal multiple instances of Electro DMG. The final attack deals massive AoE Electro DMG.",
 			"application": [
-				{ "frame": 56, "element": "electro" },
+				{ "frame": 56, "element": "electro", "units": 1 },
 				{ "frame": 82, "element": "electro" },
 				{ "frame": 93, "element": "electro" },
-				{ "frame": 104, "element": "electro" },
+				{ "frame": 104, "element": "electro", "units": 1 },
 				{ "frame": 115, "element": "electro" },
 				{ "frame": 126, "element": "electro" },
-				{ "frame": 137, "element": "electro" },
+				{ "frame": 137, "element": "electro", "units": 1 },
 				{ "frame": 148, "element": "electro" },
 				{ "frame": 159, "element": "electro" },
-				{ "frame": 197, "element": "electro" }
+				{ "frame": 197, "element": "electro", "units": 1 }
 			]
 		}
 	],

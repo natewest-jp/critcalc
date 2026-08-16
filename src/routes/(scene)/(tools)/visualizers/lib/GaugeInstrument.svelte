@@ -74,7 +74,9 @@
 		spread: 'Spread',
 		bloom: 'Bloom',
 		quickenBloom: 'Bloom (via Quicken)',
-		burning: 'Burning'
+		burning: 'Burning',
+		hyperbloom: 'Hyperbloom',
+		burgeon: 'Burgeon'
 	};
 
 	type PresetDef = {

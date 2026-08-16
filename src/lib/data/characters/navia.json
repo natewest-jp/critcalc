@@ -66,7 +66,7 @@
 					"input": ["hE"],
 					"frames": { "anim": 71, "N": 70, "D": 54, "J": 54, "swap": 69 },
 					"application": [
-						{ "frame": 50, "element": "geo" },
+						{ "frame": 50, "element": "geo", "units": 1 },
 						{ "frame": 105, "element": "geo" }
 					]
 				}
@@ -80,7 +80,7 @@
 				"Surging Blade (Arkhe: Ousia): delayed one-shot proc registered at 28f after cast, damage at +36f (total 64f from cast). ICD: 7s (arkheICDKey). Not a persistent summon — no summons[] entry authored."
 			],
 			"application": [
-				{ "frame": 20, "element": "geo" },
+				{ "frame": 20, "element": "geo", "units": 1 },
 				{ "frame": 75, "element": "geo" }
 			]
 		},
@@ -103,7 +103,7 @@
 				"Initial cannon blast (burstHitmark=104f) is the main burst damage instance, separate from the Cannon Fire Support summon.",
 				"Removed generator duration:12 — moved to summons[0].duration per recipe convention."
 			],
-			"application": [{ "frame": 104, "element": "geo" }]
+			"application": [{ "frame": 104, "element": "geo", "units": 2 }]
 		}
 	],
 	"passives": [

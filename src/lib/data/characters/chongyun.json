@@ -70,16 +70,16 @@
 					"label": "Infusion",
 					"duration": 2.9,
 					"application": [
-						{ "frame": 36, "element": "cryo" },
-						{ "frame": 655, "element": "cryo" }
+						{ "frame": 36, "element": "cryo", "units": 2 },
+						{ "frame": 655, "element": "cryo", "units": 1 }
 					]
 				},
 				{
 					"label": "Field",
 					"duration": 10,
 					"application": [
-						{ "frame": 36, "element": "cryo" },
-						{ "frame": 655, "element": "cryo" }
+						{ "frame": 36, "element": "cryo", "units": 2 },
+						{ "frame": 655, "element": "cryo", "units": 1 }
 					]
 				}
 			],
@@ -92,8 +92,8 @@
 			"effects": [],
 			"description": "Chongyun strikes the ground with his greatsword, causing a Cryo explosion in a circular AoE in front of him that deals Cryo DMG.\nAfter a short delay, the cold air created by the Cryo explosion will coalesce into a Chonghua Frost Field, within which all Sword, Claymore and Polearm-wielding characters' weapons will be infused with Cryo.",
 			"application": [
-				{ "frame": 36, "element": "cryo" },
-				{ "frame": 655, "element": "cryo" }
+				{ "frame": 36, "element": "cryo", "units": 2 },
+				{ "frame": 655, "element": "cryo", "units": 1 }
 			]
 		},
 		{
@@ -113,9 +113,9 @@
 			"effects": [],
 			"description": "Performing the secret hand seals, Chongyun summons 3 giant spirit blades in mid-air that fall to the earth one by one after a short delay, exploding as they hit the ground.\nWhen the spirit blades explode, they will deal AoE Cryo DMG and launch opponents.",
 			"application": [
-				{ "frame": 50, "element": "cryo" },
-				{ "frame": 59, "element": "cryo" },
-				{ "frame": 67, "element": "cryo" }
+				{ "frame": 50, "element": "cryo", "units": 1 },
+				{ "frame": 59, "element": "cryo", "units": 1 },
+				{ "frame": 67, "element": "cryo", "units": 1 }
 			]
 		}
 	],

@@ -83,7 +83,7 @@
 			],
 			"description": "Xinyan brandishes her instrument, dealing Pyro DMG on nearby opponents, forming a shield made out of her audience's passion.\nThe shield's DMG Absorption scales based on Xinyan's DEF and on the number of opponents hit.\n·Hitting 0–1 opponents grants Shield Level 1: Ad Lib.\n·Hitting 2 opponents grants Shield Level 2: Lead-In.\n·Hitting 3 or more opponents grants Shield Level 3: Rave, which will also deal intermittent Pyro DMG to nearby opponents.\n\nThe shield has the following special properties:\n·When unleashed, it infuses Xinyan with Pyro.\n·It has 250% DMG Absorption effectiveness against Pyro DMG.",
 			"activeDuration": 12,
-			"application": [{ "frame": 15, "element": "pyro" }]
+			"application": [{ "frame": 15, "element": "pyro", "units": 1 }]
 		},
 		{
 			"id": "xinyan__burst__riff_revolution",
@@ -99,13 +99,13 @@
 			"description": "Strumming rapidly, Xinyan launches nearby opponents and deals Physical DMG to them, hyping up the crowd.\nThe sheer intensity of the atmosphere will cause explosions that deal Pyro DMG to nearby opponents.",
 			"application": [
 				{ "frame": 22 },
-				{ "frame": 57, "element": "pyro" },
+				{ "frame": 57, "element": "pyro", "units": 1 },
 				{ "frame": 74, "element": "pyro" },
 				{ "frame": 91, "element": "pyro" },
-				{ "frame": 108, "element": "pyro" },
+				{ "frame": 108, "element": "pyro", "units": 1 },
 				{ "frame": 125, "element": "pyro" },
 				{ "frame": 142, "element": "pyro" },
-				{ "frame": 159, "element": "pyro" }
+				{ "frame": 159, "element": "pyro", "units": 1 }
 			]
 		}
 	],

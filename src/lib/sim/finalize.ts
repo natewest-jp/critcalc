@@ -29,6 +29,7 @@ import type { CastEvent, ReactionEvent, TimelineWindow } from '$lib/utils/rotati
 import type { SimContext } from './context';
 import type { CharacterTrack, InputBlock, ParsedRotation, TimelineBar } from './types';
 import { computeSummonDamageTicks, findSummonsForBar, summonSpan } from './summons';
+import { collectApplications } from './aura';
 
 /**
  * Authors the IR windows, stamps the owner uptimes, and projects the per-track
@@ -444,6 +445,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		totalDuration,
 		unknownTokens: ctx.unknownTokens,
 		events: ctx.events,
-		windows
+		windows,
+		applications: collectApplications(ctx)
 	};
 }

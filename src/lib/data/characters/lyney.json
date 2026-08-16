@@ -76,7 +76,7 @@
 				"If a Grin-Malkin Hat is on field when E is cast, the Hat explodes (skillExplode) dealing AoE Charged Attack DMG equal to a Pyrotechnic Strike. Not modeled in effects."
 			],
 			"description": "Lyney does a flourish with his hat, unleashing a firework surprise!\nWhen used, he will clear all current Prop Surplus stacks and deal AoE Pyro DMG to opponents in front of him. DMG will be increased according to the stacks cleared, and this will also regenerate Lyney's HP based on his Max HP.\n\nWhen a Grin-Malkin Hat created by Lyney is on the field, the fireworks will cause it to explode, dealing AoE Pyro DMG equal to that of a Pyrotechnic Strike.\nThe DMG dealt through the Grin-Malkin Hat in this way is considered Charged Attack DMG.",
-			"application": [{ "frame": 18, "element": "pyro" }]
+			"application": [{ "frame": 18, "element": "pyro", "units": 1 }]
 		},
 		{
 			"id": "lyney__burst__wondrous_trick_miracle_parade",
@@ -100,9 +100,9 @@
 			],
 			"description": "Unleashing his magic, Lyney turns himself into a Grin-Malkin Cat that can move around quickly. (Not to be mistaken for the Grin-Malkin Hat. They're two different props!)\nWhen the Grin-Malkin Cat gets close to opponents, it will send flames falling down on them, dealing at most 1 instance of Pyro DMG to each opponent. When the duration ends, he will dismiss the Grin-Malkin Cat and ignite fireworks that deal AoE Pyro DMG, summon 1 Grin-Malkin Hat, and grant himself 1 Prop Surplus stack.\n\nGrin-Malkin Cat can be actively canceled.",
 			"application": [
-				{ "frame": 112, "element": "pyro" },
-				{ "frame": 288, "element": "pyro" },
-				{ "frame": 563, "element": "pyro" }
+				{ "frame": 112, "element": "pyro", "units": 1 },
+				{ "frame": 288, "element": "pyro", "units": 1 },
+				{ "frame": 563, "element": "pyro", "units": 1 }
 			]
 		}
 	],

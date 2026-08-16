@@ -70,8 +70,8 @@
 				"DMG reduction (scales from Hydro DMG Bonus) — skipped: no dmgReduction Stat variant + scaling defensive mechanic not simulated"
 			],
 			"application": [
-				{ "frame": 12, "element": "hydro" },
-				{ "frame": 31, "element": "hydro" }
+				{ "frame": 12, "element": "hydro", "units": 1 },
+				{ "frame": 31, "element": "hydro", "units": 1 }
 			]
 		},
 		{

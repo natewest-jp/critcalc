@@ -126,7 +126,7 @@
 				"gcsim ConsumeEnergy(11) is a non-standard call distinct from the burst's true 60-energy cost (sourced from data_gen.textproto: burst_energy_cost=60). Authored energyCost=60.",
 				"A4 \"Wavechaser's Exploits\" stacks add 15%/30%/45% Max-HP flat DMG when consumed by Q (gcsim: 0.15 * stacks * MaxHP). Authored on the passive as a damage skeleton with manual trigger (inherited)."
 			],
-			"application": [{ "frame": 178, "element": "hydro" }]
+			"application": [{ "frame": 178, "element": "hydro", "units": 1 }]
 		}
 	],
 	"passives": [

@@ -10,7 +10,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 - characters: **123** authored · **111** with a gcsim source
 - FrameMaps: **1082** authored · **960** matching gcsim exactly · **35** disagreeing · **87** uncovered
 - skill/burst application schedules observed: **272** · unobserved: **16**
-- summon tick streams cross-checked: **57**
+- summon tick streams cross-checked: **53**
 
 ⛔ **No gcsim source (12)** — cannot be oracled at all, and nothing here may be written to them:
 
@@ -176,7 +176,7 @@ in the list) or a thing left in the world we have not modelled.
 | --- | --- | --- | --- |
 | aino | `aino__skill__musecatcher` | +15 hydro (1U) · +33 hydro [icd] |  |
 | aino | `aino__burst__precision_hydronic_cooler` | **—** | 9× Cool Your Jets Ducky |
-| albedo | `albedo__skill__abiogenesis_solar_isotoma` | **—** | 1× Abiogenesis: Solar Isotoma (Initial) |
+| albedo | `albedo__skill__abiogenesis_solar_isotoma` | +25 geo (1U) |  |
 | albedo | `albedo__burst__rite_of_progeniture_tectonic_tide` | +75 geo (1U) |  |
 | alhaitham | `alhaitham__skill__universality_an_elaboration_on_form` | +19 dendro (1U) |  |
 | alhaitham | `alhaitham__skill__universality_an_elaboration_on_form · hE` | +28 dendro (1U) |  |
@@ -185,7 +185,7 @@ in the list) or a thing left in the world we have not modelled.
 | aloy | `aloy__burst__prophecies_of_dawn` | +100 cryo (2U) |  |
 | amber | `amber__skill__explosive_puppet` | **—** | 1× Baron Bunny |
 | amber | `amber__burst__fiery_rain` | **—** | 18× Fiery Rain |
-| arataki_itto | `arataki_itto__skill__masatsu_zetsugi_akaushi_burst` | **—** | 1× Masatsu Zetsugi: Akaushi Burst! |
+| arataki_itto | `arataki_itto__skill__masatsu_zetsugi_akaushi_burst` | +18 geo (1U) |  |
 | arataki_itto | `arataki_itto__burst__royal_descent_behold_itto_the_evil` | **—** |  |
 | arlecchino | `arlecchino__skill__all_is_ash` | +17 pyro (1U) · +38 pyro (1U) · +338 pyro [icd] · +638 pyro (1U) |  |
 | arlecchino | `arlecchino__burst__balemoon_rising` | +110 pyro (1U) |  |
@@ -248,7 +248,7 @@ in the list) or a thing left in the world we have not modelled.
 | durin | `durin__skill__binary_form_convergence_and_division` | **—** |  |
 | durin | `durin__burst__principle_of_purity_as_the_light_shifts` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] | 13× Dragon of White Flame |
 | durin | `durin__burst__principle_of_darkness_as_the_stars_smolder` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] · +156 pyro (1U) · +214 pyro [icd] · +273 pyro (1U) · +332 pyro [icd] · +391 pyro (1U) · +450 pyro [icd] · +508 pyro (1U) · +567 pyro [icd] · +626 pyro (1U) · +685 pyro [icd] · +744 pyro (1U) · +802 pyro [icd] · +861 pyro (1U) |  |
-| emilie | `emilie__skill__fragrance_extraction` | +62 dendro [icd] | 10× Lumidouce Case (Summon), Lumidouce Case (Level 1) |
+| emilie | `emilie__skill__fragrance_extraction` | +37 dendro (1U) · +62 dendro [icd] | 9× Lumidouce Case (Level 1) |
 | emilie | `emilie__burst__aromatic_explication` | **—** | 10× Lumidouce Case (Level 3), Lumidouce Case (Level 1) |
 | escoffier | `escoffier__skill__lowtemperature_cooking` | +23 cryo (1U) · +83 cryo [icd] · +153 cryo (1U) · +212 cryo [icd] · +270 cryo (1U) · +329 cryo [icd] · +387 cryo (1U) · +446 cryo [icd] · +504 cryo (1U) · +563 cryo [icd] · +621 cryo (1U) · +680 cryo [icd] · +738 cryo (1U) · +797 cryo [icd] · +855 cryo (1U) |  |
 | escoffier | `escoffier__burst__scoring_cuts` | +92 cryo (2U) |  |
@@ -257,14 +257,14 @@ in the list) or a thing left in the world we have not modelled.
 | eula | `eula__burst__glacial_illumination` | +100 cryo (2U) · +600 physical |  |
 | faruzan | `faruzan__skill__wind_realm_of_nasamjnin` | +14 anemo (1U) |  |
 | faruzan | `faruzan__burst__the_winds_secret_ways` | +54 anemo (1U) |  |
-| fischl | `fischl__skill__nightrider` | **—** | 11× Oz (Summon), Oz (Skill) |
+| fischl | `fischl__skill__nightrider` | +38 electro (1U) | 10× Oz (Skill) |
 | fischl | `fischl__burst__midnight_phantasmagoria` | +18 electro (1U) | 10× Oz (Burst) |
 | flins | `flins__skill__ancient_rite_arcane_light` | +19 electro [icd] |  |
 | flins | `flins__skill__northland_spearstorm` | +23 electro (1U) |  |
 | flins | `flins__burst__ancient_ritual_cometh_the_night` | +93 electro (1U) · +110 electro [icd] · +119 electro [icd] · +164 electro [icd] |  |
 | freminet | `freminet__skill__pressurized_floe` | +29 cryo (1U) · +62 cryo [icd] |  |
 | freminet | `freminet__burst__shadowhunters_ambush` | +44 cryo (1U) |  |
-| furina | `furina__skill__salon_solitaire` | +110 hydro (1U) · +131 hydro (1U) · +137 hydro (1U) · +209 hydro [icd] · +307 hydro (1U) · +336 hydro [icd] · +405 hydro [icd] · +445 hydro (1U) · +498 hydro (1U) · +540 hydro (1U) · +595 hydro [icd] · +693 hydro (1U) · +744 hydro [icd] · +760 hydro (1U) · +792 hydro [icd] · +891 hydro (1U) | 1× Salon Solitaire: Ousia Bubble |
+| furina | `furina__skill__salon_solitaire` | +18 hydro (1U) · +110 hydro (1U) · +131 hydro (1U) · +137 hydro (1U) · +209 hydro [icd] · +307 hydro (1U) · +336 hydro [icd] · +405 hydro [icd] · +445 hydro (1U) · +498 hydro (1U) · +540 hydro (1U) · +595 hydro [icd] · +693 hydro (1U) · +744 hydro [icd] · +760 hydro (1U) · +792 hydro [icd] · +891 hydro (1U) |  |
 | furina | `furina__burst__let_the_people_rejoice` | +98 hydro (1U) |  |
 | gaming | `gaming__skill__bestial_ascent` | **—** |  |
 | gaming | `gaming__burst__suannis_gilded_dance` | +60 pyro (1U) |  |
@@ -310,7 +310,7 @@ in the list) or a thing left in the world we have not modelled.
 | layla | `layla__burst__dream_of_the_starstream_shaker` | **—** | 8× Starlight Slug |
 | lisa | `lisa__skill__violet_arc` | +22 electro (1U) |  |
 | lisa | `lisa__skill__violet_arc · hE` | +117 electro (2U) |  |
-| lisa | `lisa__burst__lightning_rose` | **—** | 28× Lightning Rose (Initial), Lightning Rose (Tick) |
+| lisa | `lisa__burst__lightning_rose` | +56 electro [icd] | 27× Lightning Rose (Tick) |
 | lynette | `lynette__skill__enigmatic_feint` | +28 anemo (1U) · +58 anemo [icd] |  |
 | lynette | `lynette__skill__enigmatic_feint · hE` | +51 anemo (1U) · +79 anemo [icd] |  |
 | lynette | `lynette__burst__magic_trick_astonishing_shift` | +18 anemo (1U) | 11× Bogglecat Box |
@@ -324,7 +324,7 @@ in the list) or a thing left in the world we have not modelled.
 | mika | `mika__burst__skyfeather_song` | **—** |  |
 | mona | `mona__skill__mirror_reflection_of_doom` | +329 hydro (1U) | 4× Mirror Reflection of Doom (Tick) |
 | mona | `mona__skill__mirror_reflection_of_doom · hE` | +344 hydro (1U) | 4× Mirror Reflection of Doom (Tick) |
-| mona | `mona__burst__stellaris_phantasm` | **—** | 3× Illusory Bubble (Initial), Illusory Bubble (Break), Illusory Bubble (Explosion) |
+| mona | `mona__burst__stellaris_phantasm` | +107 hydro (1U) · +587 physical · +588 hydro (2U) |  |
 | mualani | `mualani__skill__surfshark_wavebreaker` | **—** |  |
 | mualani | `mualani__burst__boomsharkalaka` | +178 hydro (1U) |  |
 | nahida | `nahida__skill__all_schemes_to_know` | +13 dendro (1U) |  |
@@ -348,8 +348,8 @@ in the list) or a thing left in the world we have not modelled.
 | noelle | `noelle__burst__sweeping_time` | +24 geo (1U) · +65 geo [icd] |  |
 | ororon | `ororon__skill__nights_sling` | +41 electro (1U) |  |
 | ororon | `ororon__burst__dark_voices_echo` | +36 electro (1U) | 9× Soundwave Collision DMG |
-| qiqi | `qiqi__skill__adeptus_art_herald_of_frost` | **—** | 10× Herald of Frost: Initial Damage, Herald of Frost: Skill Damage |
-| qiqi | `qiqi__burst__adeptus_art_preserver_of_fortune` | **—** | 2× Fortune-Preserving Talisman (Talisman application), Fortune-Preserving Talisman |
+| qiqi | `qiqi__skill__adeptus_art_herald_of_frost` | +32 cryo (1U) · +96 cryo [icd] · +231 cryo (1U) · +291 cryo [icd] · +426 cryo (1U) · +486 cryo [icd] · +621 cryo (1U) · +681 cryo [icd] · +816 cryo (1U) · +876 cryo [icd] |  |
+| qiqi | `qiqi__burst__adeptus_art_preserver_of_fortune` | +40 physical | 1× Fortune-Preserving Talisman |
 | raiden_shogun | `raiden_shogun__skill__transcendence_baleful_omen` | +51 electro (1U) |  |
 | raiden_shogun | `raiden_shogun__burst__secret_art_musou_shinsetsu` | +98 electro (2U) |  |
 | razor | `razor__skill__claw_and_thunder` | +32 electro (1U) |  |
@@ -416,7 +416,7 @@ in the list) or a thing left in the world we have not modelled.
 | wriothesley | `wriothesley__skill__icefang_rush` | **—** |  |
 | wriothesley | `wriothesley__burst__darkgold_wolfbite` | +99 cryo (1U) · +104 cryo [icd] · +109 cryo [icd] · +114 cryo (1U) · +119 cryo [icd] · +160 cryo [icd] | ⚠️ regular, no authored summon: Darkgold Wolfbite ×5/5f |
 | xiangling | `xiangling__skill__guoba_attack` | **—** | 4× Guoba |
-| xiangling | `xiangling__burst__pyronado` | **—** | 12× Pyronado Hit 1, Pyronado Hit 2, Pyronado, Pyronado Hit 3 |
+| xiangling | `xiangling__burst__pyronado` | +18 pyro (1U) · +33 pyro [icd] · +57 pyro [icd] | 9× Pyronado |
 | xianyun | `xianyun__skill__skyladder_1` | +3 anemo [icd] |  |
 | xianyun | `xianyun__burst__stars_gather_at_dusk` | +75 anemo (1U) |  |
 | xiao | `xiao__skill__lemniscatic_wind_cycling` | +4 anemo (1U) |  |
@@ -443,8 +443,8 @@ in the list) or a thing left in the world we have not modelled.
 | yun_jin | `yun_jin__skill__opening_flourish · hE` | +50 geo (2U) |  |
 | yun_jin | `yun_jin__skill__opening_flourish · hE` | +50 geo (2U) |  |
 | yun_jin | `yun_jin__burst__cliffbreakers_banner` | +35 geo (2U) |  |
-| zhongli | `zhongli__skill__dominus_lapidis` | **—** | 8× Stone Stele (Initial), Stone Stele (Tick) |
-| zhongli | `zhongli__skill__dominus_lapidis · hE` | **—** | 9× Stone Stele (Hold), Stone Stele (Initial), Stone Stele (Tick) |
+| zhongli | `zhongli__skill__dominus_lapidis` | +24 geo (2U) | 7× Stone Stele (Tick) |
+| zhongli | `zhongli__skill__dominus_lapidis · hE` | +48 geo (1U) · +48 geo [icd] | 7× Stone Stele (Tick) |
 | zhongli | `zhongli__burst__planet_befall` | +101 geo (4U) |  |
 
 ### No observed schedule (16)
@@ -480,10 +480,8 @@ tick leaves no `damage` event, and a heal tick is not a hit.
 | character | ability | authored (first / interval) | observed (first / interval × n) |
 | --- | --- | --- | --- |
 | aino | `precision_hydronic_cooler` | Cool Your Jets Ducky 123f / 90f | Cool Your Jets Ducky 133f / 90f × 9 |  |
-| albedo | `abiogenesis_solar_isotoma` | — | Abiogenesis: Solar Isotoma (Initial) 25f / —f × 1 |  |
 | amber | `explosive_puppet` | — | Baron Bunny 530f / —f × 1 |  |
 | amber | `fiery_rain` | — | Fiery Rain 84f / 12f × 18 |  |
-| arataki_itto | `masatsu_zetsugi_akaushi_burst` | — | Masatsu Zetsugi: Akaushi Burst! 18f / —f × 1 |  |
 | baizhu | `holistic_revivification` | — | Spiritvein Damage 252f / 146f × 5 |  |
 | chiori | `fluttering_hasode` | Tamoto 55f / 216f | Fluttering Hasode (Tamato) 60f / 216f × 4 |  |
 | citlali | `dawnfrost_darkstar` | Itzpapa 18f / 59f | — |  |
@@ -492,12 +490,12 @@ tick leaves no `damage` event, and a heal tick is not a hit.
 | diona | `signature_mix` | Drunken Mist 178f / 120f | Signature Mix (Tick) 178f / 120f × 6 |  |
 | durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame 97f / 59f | Dragon of White Flame 156f / 59f × 13 |  |
 | durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 97f / 74f | — |  |
-| emilie | `fragrance_extraction` | Lumidouce Case 16f / 90f | Lumidouce Case (Summon) 37f / —f × 1<br>Lumidouce Case (Level 1) 111f / 90f × 9 |  |
+| emilie | `fragrance_extraction` | Lumidouce Case 16f / 90f | Lumidouce Case (Level 1) 111f / 90f × 9 |  |
 | emilie | `aromatic_explication` | Lumidouce Case (Level 3) 96f / 42f | Lumidouce Case (Level 3) 126f / 36f × 4 ⚠️ irregular<br>Lumidouce Case (Level 1) 401f / 90f × 6 |  |
 | escoffier | `lowtemperature_cooking` | Cooking Mek (Cold Storage) 171f / 59f | — |  |
-| fischl | `nightrider` | Oz 82f / 59f | Oz (Summon) 38f / —f × 1<br>Oz (Skill) 92f / 59f × 10 |  |
+| fischl | `nightrider` | Oz 82f / 59f | Oz (Skill) 92f / 59f × 10 |  |
 | fischl | `midnight_phantasmagoria` | Oz 64f / 59f | Oz (Burst) 192f / 59f × 10 |  |
-| furina | `salon_solitaire` | Salon Solitaire 132f / 202f<br>Salon Solitaire 110f / 98f<br>Salon Solitaire 131f / 314f | Salon Solitaire: Ousia Bubble 18f / —f × 1 |  |
+| furina | `salon_solitaire` | Salon Solitaire 132f / 202f<br>Salon Solitaire 110f / 98f<br>Salon Solitaire 131f / 314f | — |  |
 | ganyu | `trail_of_the_qilin` | — | Ice Lotus 13f / 360f × 2 |  |
 | gorou | `juuga_forward_unto_victory` | General's Glory 31f / 90f | Crystal Collapse 122f / 90f × 5 |  |
 | ineffa | `cleaning_mode_carrier_frequency` | Birgitta 110f / 120f | Birgitta 110f / 119f × 7 |  |
@@ -509,15 +507,13 @@ tick leaves no `damage` event, and a heal tick is not a hit.
 | kuki_shinobu | `gyoei_narukami_kariyama_rite` | — | Gyoei Narukami Kariyama Rite 50f / 17f × 7 |  |
 | lauma | `runo_dawnless_rest_of_karsikko` | — | Frostgrove Sanctuary 62f / 117f × 8 |  |
 | layla | `dream_of_the_starstream_shaker` | — | Starlight Slug 114f / 90f × 8 |  |
-| lisa | `lightning_rose` | — | Lightning Rose (Initial) 56f / —f × 1<br>Lightning Rose (Tick) 119f / 30f × 27 |  |
+| lisa | `lightning_rose` | — | Lightning Rose (Tick) 119f / 30f × 27 |  |
 | lynette | `magic_trick_astonishing_shift` | — | Bogglecat Box 136f / 59f × 11 |  |
 | mona | `mirror_reflection_of_doom` | — | Mirror Reflection of Doom (Tick) 86f / 59f × 4 |  |
-| mona | `stellaris_phantasm` | — | Illusory Bubble (Initial) 107f / —f × 1<br>Illusory Bubble (Break) 587f / —f × 1<br>Illusory Bubble (Explosion) 588f / —f × 1 |  |
 | navia | `as_the_sunlit_skys_singing_salute` | — | Cannon Fire Support 163f / 42f × 17 |  |
 | ningguang | `jade_screen` | — | Jade Screen 17f / —f × 1 |  |
 | ororon | `dark_voices_echo` | Supersonic Oculus 60f / 60f | Soundwave Collision DMG 60f / 60f × 9 |  |
-| qiqi | `adeptus_art_herald_of_frost` | — | Herald of Frost: Initial Damage 32f / —f × 1<br>Herald of Frost: Skill Damage 96f / 135f × 9 |  |
-| qiqi | `adeptus_art_preserver_of_fortune` | — | Fortune-Preserving Talisman (Talisman application) 40f / —f × 1<br>Fortune-Preserving Talisman 82f / —f × 1 |  |
+| qiqi | `adeptus_art_preserver_of_fortune` | — | Fortune-Preserving Talisman 82f / —f × 1 |  |
 | rosaria | `rites_of_termination` | — | Rites of Termination (DoT) 176f / 120f × 4 |  |
 | sangonomiya_kokomi | `kurages_oath` | Bake-Kurage 24f / 120f | Bake-Kurage 24f / 120f × 7 |  |
 | sayu | `yoohoo_art_mujina_flurry` | — | Muji-Muji Daruma 145f / 90f × 6 |  |
@@ -529,10 +525,10 @@ tick leaves no `damage` event, and a heal tick is not a hit.
 | traveler_hydro | `rising_waters` | Rising Waters Bubble 34f / 30f | — |  |
 | venti | `winds_grand_ode` | — | Wind's Grand Ode 106f / 24f × 20 |  |
 | xiangling | `guoba_attack` | Guoba 126f / 100f | Guoba 126f / 100f × 4 |  |
-| xiangling | `pyronado` | Pyronado 56f / 73f | Pyronado Hit 1 18f / —f × 1<br>Pyronado Hit 2 33f / —f × 1<br>Pyronado 56f / 73f × 9<br>Pyronado Hit 3 57f / —f × 1 |  |
+| xiangling | `pyronado` | Pyronado 56f / 73f | Pyronado 56f / 73f × 9 |  |
 | xingqiu | `guhua_sword_fatal_rainscreen` | — | Xingqiu Orbital 44f / 135f × 7 |  |
 | xingqiu | `guhua_sword_raincutter` | — | Xingqiu Orbital 19f / 135f × 7 |  |
 | yae_miko | `yakan_evocation_sesshou_sakura` | Sesshou Sakura 120f / 176f | Sesshou Sakura Tick 121f / 176f × 5 |  |
 | yaoyao | `raphanus_sky_cluster` | — | Radish (Skill) 104f / 60f × 10 |  |
 | yumemizuki_mizuki | `anraku_secret_spring_therapy` | Mini Baku 183f / 90f | Munen Shockwave 201f / 90f × 8 |  |
-| zhongli | `dominus_lapidis` | Stone Stele 0f / 120f | Stone Stele (Initial) 24f / —f × 1<br>Stone Stele (Tick) 144f / 120f × 7 |  |
+| zhongli | `dominus_lapidis` | Stone Stele 0f / 120f | Stone Stele (Tick) 144f / 120f × 7 |  |

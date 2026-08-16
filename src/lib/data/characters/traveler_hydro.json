@@ -64,28 +64,28 @@
 					"input": ["hE"],
 					"frames": { "anim": 90, "N": 81, "Q": 81, "D": 74, "J": 74, "swap": 90 },
 					"application": [
-						{ "frame": 61, "element": "hydro" },
+						{ "frame": 61, "element": "hydro", "units": 1 },
 						{ "frame": 76, "element": "hydro" },
 						{ "frame": 91, "element": "hydro" },
 						{ "frame": 106, "element": "hydro" },
 						{ "frame": 121, "element": "hydro" },
 						{ "frame": 136, "element": "hydro" },
-						{ "frame": 151, "element": "hydro" },
+						{ "frame": 151, "element": "hydro", "units": 1 },
 						{ "frame": 166, "element": "hydro" },
 						{ "frame": 181, "element": "hydro" },
 						{ "frame": 196, "element": "hydro" },
 						{ "frame": 211, "element": "hydro" },
 						{ "frame": 226, "element": "hydro" },
-						{ "frame": 241, "element": "hydro" },
+						{ "frame": 241, "element": "hydro", "units": 1 },
 						{ "frame": 256, "element": "hydro" },
 						{ "frame": 271, "element": "hydro" },
 						{ "frame": 286, "element": "hydro" },
 						{ "frame": 301, "element": "hydro" },
 						{ "frame": 316, "element": "hydro" },
-						{ "frame": 331, "element": "hydro" },
+						{ "frame": 331, "element": "hydro", "units": 1 },
 						{ "frame": 346, "element": "hydro" },
 						{ "frame": 361, "element": "hydro" },
-						{ "frame": 372, "element": "hydro" },
+						{ "frame": 372, "element": "hydro", "units": 1 },
 						{ "frame": 376, "element": "hydro" },
 						{ "frame": 418, "element": "hydro" }
 					]
@@ -104,7 +104,7 @@
 			],
 			"description": "Unleashes a torrent that can cleanse the world.\n\nPress\nSends a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\n\nHold\nEnter Aiming Mode and constantly fire off Dewdrops in the direction in which you are aiming, dealing Hydro DMG to opponents they hit.\nWhen the skill ends, it will send a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\nSuffusion: When using the Hold configuration of this skill, if the Traveler's HP is higher than 50%, the DMG dealt by Dewdrops will increase based on the Traveler's Max HP, and the Traveler will lose a fixed amount of HP every second.\n\nArkhe: Pneuma\nAt certain intervals, after using Torrent Surge, this skill will unleash a Spiritbreath Thorn that pierces opponents, dealing Pneuma-aligned Hydro DMG.",
 			"application": [
-				{ "frame": 25, "element": "hydro" },
+				{ "frame": 25, "element": "hydro", "units": 1 },
 				{ "frame": 70, "element": "hydro" }
 			]
 		},
@@ -156,7 +156,7 @@
 				"Capability sweep 2026-07-28: C2 renamed from stale beta 'Liquid Drift' to release 'Trickling Purity' (genshin-db 5.2.12) — durationModifier source label updated. Description refreshed to genshin-db combat3 text."
 			],
 			"description": "Unleashes a slow-moving floating bubble that deals continuous Hydro DMG to nearby opponents.",
-			"application": [{ "frame": 34, "element": "hydro" }]
+			"application": [{ "frame": 34, "element": "hydro", "units": 1 }]
 		}
 	],
 	"passives": [

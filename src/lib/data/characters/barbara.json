@@ -106,17 +106,17 @@
 			],
 			"description": "Summons water droplets resembling musical notes that form a Melody Loop, dealing Hydro DMG to surrounding opponents and applying the Wet status to them.\n\nMelody Loop\n·On hit, Barbara's Normal Attacks heal your own party members and nearby teammates for a certain amount of HP, which scales with Barbara's Max HP.\n·On hit, Barbara's Charged Attack generates 4 times the amount of healing.\n·Periodically regenerates your own active character's HP.\n·Applies the Wet status to the character and to opponents who come in contact with them.",
 			"application": [
-				{ "frame": 3, "element": "hydro" },
+				{ "frame": 3, "element": "hydro", "units": 1 },
 				{ "frame": 42, "element": "hydro" },
 				{ "frame": 78, "element": "hydro" },
-				{ "frame": 93, "element": "hydro" },
-				{ "frame": 183, "element": "hydro" },
+				{ "frame": 93, "element": "hydro", "units": 1 },
+				{ "frame": 183, "element": "hydro", "units": 1 },
 				{ "frame": 273, "element": "hydro" },
-				{ "frame": 363, "element": "hydro" },
+				{ "frame": 363, "element": "hydro", "units": 1 },
 				{ "frame": 453, "element": "hydro" },
-				{ "frame": 543, "element": "hydro" },
+				{ "frame": 543, "element": "hydro", "units": 1 },
 				{ "frame": 633, "element": "hydro" },
-				{ "frame": 723, "element": "hydro" },
+				{ "frame": 723, "element": "hydro", "units": 1 },
 				{ "frame": 813, "element": "hydro" }
 			]
 		},
