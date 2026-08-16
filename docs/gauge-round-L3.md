@@ -356,6 +356,22 @@ guessed at in advance.
 ⚠️⚠️ Preserve the six aliases in §1 exactly. When a container moves onto `SimContext`,
 the record pushed into the collector must remain the SAME OBJECT.
 
+**Progress** — `notationParser.ts` **5,051 → 3,320 lines**, differ green at every step:
+
+| ✅  | commit | families                                       | parser |
+| --- | ------ | ---------------------------------------------- | -----: |
+| ✅  | L3c/1  | `charState` + `context`                        |  4,878 |
+| ✅  | L3c/2  | `conditions`                                   |  4,542 |
+| ✅  | L3c/3  | `resolve` + `tokens`                           |  4,176 |
+| ✅  | L3c/4  | `summons` (and `findCastSummons` retired)      |  4,028 |
+| ✅  | L3c/5  | `hits` + `stacks`                              |  3,320 |
+| ⏳  | L3c/6… | `extensions` `infusions` `shields` `cooldowns` |        |
+| ⏳  |        | `states` `aura` `cast` `actions` `finalize`    |        |
+
+⚠️ The five families landed so far were module-level functions; the ones left are
+CLOSURES over parse-scope state, so each gains a `ctx` parameter. That is where the
+aliasing warning starts to bite.
+
 **Done when:** `parseNotation` is the façade + `run.ts`, and the differ is green.
 
 ### L3d — the swap
@@ -436,7 +452,15 @@ The clock must not introduce an unbounded loop or a recursion.
 
 ## 9. Findings parked during the extraction
 
-_(filled as they surface — see §7's scope-creep rule)_
+_(see §7's scope-creep rule — recorded, not fixed, unless the differ proves inert)_
+
+🐛 **The two "MUST STAY IDENTICAL" summon resolvers had already drifted** (L3c/4).
+`findCastSummons` took `CharacterData | null | undefined`, `findSummonsForBar` took
+`CharacterData | undefined`. Behaviourally identical — `if (!char)` catches both — so
+this was never a bug, and it landed with the merge rather than being parked. ⚓ Worth
+keeping as evidence for the ruling: the drift arrived in the one place a "keep these
+in sync" comment cannot help, which is the argument for deleting the fork rather than
+strengthening the warning.
 
 ---
 
