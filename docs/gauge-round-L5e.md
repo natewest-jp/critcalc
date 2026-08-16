@@ -1,6 +1,6 @@
 # L5e — summon ticks apply their element (the recall half)
 
-**Status:** planned 2026-08-16 · not started
+**Status:** 🔄 in progress — L5e-a shipped 2026-08-16 (`637a175`); L5e-b next
 **Reads:** [`gauge-round.md`](gauge-round.md) (the contract) · [`gauge-round-L5.md`](gauge-round-L5.md)
 (the gauge, and this landing's decomposition in its §5) · [`gauge-round-L3.md`](gauge-round-L3.md)
 (the clock)
@@ -162,8 +162,17 @@ this adds a third.
 
 Each is one commit, gates green (`vitest` · `check` · `lint` · `build`) before the next.
 
-- **L5e-a** — extract `summonEndAt`; finalize calls it. **Zero behaviour change**, and
-  the L3 corpus differ is the gate that it is zero.
+- **L5e-a** ✅ **SHIPPED 2026-08-16 (`637a175`)** — `summonSpan` replaced by the pair the
+  two call sites need: `summonSpawnAt(...)` + `summonEndAt({ spawnAt, barUptime, summon,
+index, swapOutAt })`, with the swap clamp folded INSIDE so an unclamped end can no
+  longer be obtained. Recast stayed at the call site as planned.
+  ⚠️ **The plan named the wrong gate: the L3 corpus differ does not exist** — it died with
+  the frozen parser copy at L3e, and what survives (`projections.test.ts`) asserts
+  coverage, no-throw and all-finite but **NOT values**, so a green vitest cannot gate a
+  geometry refactor. Proven instead by dumping the full IR over that same corpus (314
+  parses, 1,921 windows, 616 of them summons) before and after: **byte-identical**.
+  ⚓ And the dump was verified against a seeded one-frame perturbation FIRST, so it is not
+  green because nothing ran (L3's own lesson). Throwaway, deleted in the same turn.
 - **L5e-b** — the live chain: spawn hook, chained ticks, liveness at fire. Applications
   reach the gauge. ⚠️ **This is the behaviour change** — measured by the oracle, gated by
   Nate's eyes, ⛔ never by IR equality.
