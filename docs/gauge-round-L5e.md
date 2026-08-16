@@ -340,8 +340,41 @@ later frame.
 
 Measured: **4 inversions in 464 applications across all 123 characters, ZERO
 cross-element** — a summon and its caster share an element, which is what keeps it from
-changing a reaction. ⛔ The sort is not the fix; fixing the FEED means scheduling before
-the advance, which moves event ids and is its own landing.
+changing a reaction. ⛔ The sort is not the fix.
+
+#### The fix, and why it is queued BEHIND L6
+
+⚓ **The fix is to schedule BEFORE the advance** — capture the cast's applications and the
+summon chain while `clock.now` is still `castStart`, so nothing clamps and tasks fire in
+true frame order. Mechanically that is a move of two call sites inside `handleCast`.
+
+⚠️⚠️ **Its cost is that it MOVES EVENT IDS.** Ids are assigned in emission order and are
+visible in the IR, and `BuffWindow.id` order is a documented invariant that two row
+projections sort by — the round's own notes call it _"the single most dangerous hidden
+coupling in the refactor"._ So it needs L3's treatment: a corpus IR comparison, expected
+diffs enumerated, and Nate's eyes on the timeline. A half-session, ⛔ not a patch, and
+⛔ never slipped in alongside feature work.
+
+**Sequencing decision (2026-08-16): do L6 first.**
+
+1. **Nothing observable changes today.** Zero cross-element inversions means no reaction,
+   no buff window and no rendered bar differs. Fixing it now buys invisible correctness.
+2. **L6 is the test.** It draws the aura lane — the first surface where application
+   TIMING is directly visible rather than inferred through reactions. If a 38-frame
+   displacement can ever show, it shows there, and then the fix has evidence behind it.
+3. **The risk profile is wrong for a quiet commit.** An id-moving change looks inert and
+   shifts rows on screen; it wants its own landing with a differ.
+
+⚠️ **What would flip this:** a **cross-element** inversion becoming reachable — a summon
+whose element differs from its caster's (Xilonen-shaped). None tick today. ⚓ Re-run the
+census rather than re-deriving it: parse `<name> E Q` for every character and count
+adjacent pairs where `applications[i].time < applications[i-1].time`, flagging those whose
+elements differ.
+
+⛔ **Two fixes considered and rejected**, so they are not re-proposed: making
+`gauge.advanceTo` tolerate a backwards frame (hides the defect rather than fixing it), and
+moving summon ticks to `Band.LAND` (papers over the clamp with a band that lies about what
+the task is).
 
 ⏭ The 30-application curation half is **separate work, not a sub-landing here** — it has
 its own visible-change gate (§1) and does not block any of the above.

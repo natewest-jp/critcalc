@@ -785,8 +785,9 @@ were made: "the ceiling is DATA" (above), and L5e §3.3's "a summon tick needs n
 gate", which was generalised from Xiangling alone — Oz applies ~1 in 3, so it is
 PER-ABILITY exactly as L4d's census said.
 
-⚠️ **Open, and deliberately not fixed here:** `ParsedRotation.applications` is sorted at
-the projection, but the FEED order is not time-ordered — the cast pipeline advances the
+⚠️ **Open, and deliberately queued BEHIND L6** (decision recorded in L5e's §3.5 with the
+reasoning, the flip condition and two rejected alternatives): `ParsedRotation.applications`
+is sorted at the projection, but the FEED order is not time-ordered — the cast pipeline advances the
 clock before the emitters run, so a cast's own application is clamped and `Band.TICK`
 sorts ahead of `Band.LAND` at the clamped frame. 4 inversions in 464 applications, none
 cross-element. Fixing the feed moves event ids and is its own landing.
