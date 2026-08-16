@@ -138,8 +138,23 @@ function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 				lastByKey.set(key, t);
 			});
 		};
-		for (const bar of track.eBars) emit(bar, 'skill');
-		for (const bar of track.qBars) emit(bar, 'burst');
+		// ↻ 2026-08-16 (L5e-a½) — CAST ORDER, not ability-family order. This
+		// walked every eBar then every qBar, which made `lastByKey` mean "last
+		// emitted" rather than "last cast", so recast truncation could shorten a
+		// window whose cast had not happened yet. ⚓ The parser had the identical
+		// defect and this reconstruction faithfully reproduced it — which is the
+		// honest outcome for an independent oracle written from the same mental
+		// model, and the reason it stayed invisible until Fischl's burst Oz was
+		// given the `terminatesOn` it was missing.
+		// ⚠️ Still re-derived rather than imported: the point of this function is
+		// to reach the same geometry down a different path, so ⛔ don't collapse
+		// it onto `summonEndAt`.
+		const bars: [TimelineBar, 'skill' | 'burst'][] = [
+			...track.eBars.map((b): [TimelineBar, 'skill' | 'burst'] => [b, 'skill']),
+			...track.qBars.map((b): [TimelineBar, 'skill' | 'burst'] => [b, 'burst'])
+		];
+		bars.sort((a, b) => a[0].start - b[0].start);
+		for (const [bar, kind] of bars) emit(bar, kind);
 	}
 	return out;
 }

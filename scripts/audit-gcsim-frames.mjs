@@ -60,12 +60,26 @@ function authoredTicks(ability) {
 		for (const e of s.effects ?? []) {
 			const t = e.trigger;
 			if (t?.type !== 'summonTick' || e.type !== 'damage') continue;
+			// ⚠️⚠️ AN ABSENT `firstTickDelay` DEFAULTS TO THE INTERVAL, NOT ZERO.
+			// This read `?? 0` until 2026-08-16 (gauge round L5e-a½) and so
+			// described a model we do not have — `collectSummonTicks` walks from
+			// `spawnAt + (firstTickDelay ?? interval)`, which is the ONLY walk
+			// there is. Eleven summons author no delay, and on them the old
+			// default manufactured a phantom discrepancy exactly one interval
+			// wide: Columbina's Gravity Ripple and Durin's White Flame were
+			// reported 117f and 59f "wrong" and are in fact EXACT, and Gorou and
+			// Kuki land within 1–2 frames. ⚓ The same failure mode L4d recorded
+			// for the reaction oracle — an audit that restates a rule instead of
+			// calling it comes to measure a model that no longer exists.
+			// ⛔ Do not re-derive this default here; mirror the walk.
+			const interval = f(t.interval ?? 0);
 			out.push({
 				label: s.label,
 				kind: e.type,
 				spawnsAt: s.spawnsAt ?? 0,
-				firstTick: (s.spawnsAt ?? 0) + f(t.firstTickDelay ?? 0),
-				interval: f(t.interval ?? 0)
+				firstTick:
+					(s.spawnsAt ?? 0) + (t.firstTickDelay !== undefined ? f(t.firstTickDelay) : interval),
+				interval
 			});
 		}
 	}

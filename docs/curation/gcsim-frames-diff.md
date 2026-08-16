@@ -484,26 +484,26 @@ tick leaves no `damage` event, and a heal tick is not a hit.
 | amber | `fiery_rain` | — | Fiery Rain 84f / 12f × 18 |  |
 | baizhu | `holistic_revivification` | — | Spiritvein Damage 252f / 146f × 5 |  |
 | chiori | `fluttering_hasode` | Tamoto 55f / 216f | Fluttering Hasode (Tamato) 60f / 216f × 4 |  |
-| citlali | `dawnfrost_darkstar` | Itzpapa 18f / 59f | — |  |
+| citlali | `dawnfrost_darkstar` | Itzpapa 77f / 59f | — |  |
 | collei | `trumpcard_kitty` | — | Trump-Card Kitty (Leap) 68f / 30f × 12 |  |
-| columbina | `eternal_tides` | Gravity Ripple 21f / 117f | Skill (DoT) 138f / 117f × 7 |  |
+| columbina | `eternal_tides` | Gravity Ripple 138f / 117f | Skill (DoT) 138f / 117f × 7 |  |
 | diona | `signature_mix` | Drunken Mist 178f / 120f | Signature Mix (Tick) 178f / 120f × 6 |  |
-| durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame 97f / 59f | Dragon of White Flame 156f / 59f × 13 |  |
-| durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 97f / 74f | — |  |
-| emilie | `fragrance_extraction` | Lumidouce Case 16f / 90f | Lumidouce Case (Level 1) 111f / 90f × 9 |  |
-| emilie | `aromatic_explication` | Lumidouce Case (Level 3) 96f / 42f | Lumidouce Case (Level 3) 126f / 36f × 4 ⚠️ irregular<br>Lumidouce Case (Level 1) 401f / 90f × 6 |  |
+| durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame 156f / 59f | Dragon of White Flame 156f / 59f × 13 |  |
+| durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 171f / 74f | — |  |
+| emilie | `fragrance_extraction` | Lumidouce Case 106f / 90f | Lumidouce Case (Level 1) 111f / 90f × 9 |  |
+| emilie | `aromatic_explication` | Lumidouce Case (Level 3) 138f / 42f | Lumidouce Case (Level 3) 126f / 36f × 4 ⚠️ irregular<br>Lumidouce Case (Level 1) 401f / 90f × 6 |  |
 | escoffier | `lowtemperature_cooking` | Cooking Mek (Cold Storage) 171f / 59f | — |  |
 | fischl | `nightrider` | Oz 82f / 59f | Oz (Skill) 92f / 59f × 10 |  |
 | fischl | `midnight_phantasmagoria` | Oz 64f / 59f | Oz (Burst) 192f / 59f × 10 |  |
 | furina | `salon_solitaire` | Salon Solitaire 132f / 202f<br>Salon Solitaire 110f / 98f<br>Salon Solitaire 131f / 314f | — |  |
 | ganyu | `trail_of_the_qilin` | — | Ice Lotus 13f / 360f × 2 |  |
-| gorou | `juuga_forward_unto_victory` | General's Glory 31f / 90f | Crystal Collapse 122f / 90f × 5 |  |
+| gorou | `juuga_forward_unto_victory` | General's Glory 121f / 90f | Crystal Collapse 122f / 90f × 5 |  |
 | ineffa | `cleaning_mode_carrier_frequency` | Birgitta 110f / 120f | Birgitta 110f / 119f × 7 |  |
 | ineffa | `supreme_instruction_cyclonic_exterminator` | Birgitta 153f / 120f | Birgitta 153f / 119f × 7 |  |
 | kaedehara_kazuha | `kazuha_slash` | — | Kazuha Slash (DoT) 140f / 117f × 5 |  |
 | kaeya | `glacial_waltz` | — | Glacial Waltz 53f / 40f × 13 |  |
 | kinich | `hail_to_the_almighty_dragonlord` | Ajaw 253f / 147f | — |  |
-| kuki_shinobu | `sanctifying_ring` | Grass Ring of Sanctification 23f / 90f | Grass Ring of Sanctification 115f / 90f × 8 |  |
+| kuki_shinobu | `sanctifying_ring` | Grass Ring of Sanctification 113f / 90f | Grass Ring of Sanctification 115f / 90f × 8 |  |
 | kuki_shinobu | `gyoei_narukami_kariyama_rite` | — | Gyoei Narukami Kariyama Rite 50f / 17f × 7 |  |
 | lauma | `runo_dawnless_rest_of_karsikko` | — | Frostgrove Sanctuary 62f / 117f × 8 |  |
 | layla | `dream_of_the_starstream_shaker` | — | Starlight Slug 114f / 90f × 8 |  |
@@ -531,4 +531,4 @@ tick leaves no `damage` event, and a heal tick is not a hit.
 | yae_miko | `yakan_evocation_sesshou_sakura` | Sesshou Sakura 120f / 176f | Sesshou Sakura Tick 121f / 176f × 5 |  |
 | yaoyao | `raphanus_sky_cluster` | — | Radish (Skill) 104f / 60f × 10 |  |
 | yumemizuki_mizuki | `anraku_secret_spring_therapy` | Mini Baku 183f / 90f | Munen Shockwave 201f / 90f × 8 |  |
-| zhongli | `dominus_lapidis` | Stone Stele 0f / 120f | Stone Stele (Tick) 144f / 120f × 7 |  |
+| zhongli | `dominus_lapidis` | Stone Stele 144f / 120f | Stone Stele (Tick) 144f / 120f × 7 |  |

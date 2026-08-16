@@ -108,6 +108,7 @@
 					"duration": 10,
 					"spawnsAt": 1,
 					"mobility": "stationary",
+					"terminatesOn": "recast",
 					"durationModifiers": [
 						{
 							"source": "C6: Evernight Raven",

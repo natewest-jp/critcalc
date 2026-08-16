@@ -265,8 +265,26 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 				lastSummonWindowByKey.set(key, win);
 			});
 		};
-		for (const bar of track.eBars) emitSummon(bar, 'skill');
-		for (const bar of track.qBars) emitSummon(bar, 'burst');
+		// ⚓⚓ CAST ORDER, NOT ABILITY-FAMILY ORDER (gauge round L5e-a½). This
+		// walked every eBar and then every qBar, which made
+		// `lastSummonWindowByKey` mean "last EMITTED" rather than "last CAST" —
+		// so recast truncation could shorten a window whose cast had not
+		// happened yet. It was unreachable only by luck: skills are emitted
+		// first and the one summon a burst and a skill share (Fischl's Oz)
+		// carried `terminatesOn` on the skill alone, so the branch never saw a
+		// cross-family predecessor. Authoring the burst's missing flag reached
+		// it immediately, and `Fischl Q E` produced an Oz window ending 2.75s
+		// BEFORE it started.
+		// ⚓ Cast order is also what L5e-b's live chain necessarily sees, so
+		// this is the two paths agreeing rather than a local patch.
+		const summonBars: [TimelineBar, 'skill' | 'burst'][] = [
+			...track.eBars.map((b): [TimelineBar, 'skill' | 'burst'] => [b, 'skill']),
+			...track.qBars.map((b): [TimelineBar, 'skill' | 'burst'] => [b, 'burst'])
+		];
+		// ⚠ Stable, and ties keep skill-before-burst — the order the two loops
+		// gave for bars at the same frame, so a simultaneous pair is unmoved.
+		summonBars.sort((a, b) => a[0].start - b[0].start);
+		for (const [bar, kind] of summonBars) emitSummon(bar, kind);
 	}
 
 	// 6b. Nightsoul-Burst fire events (post-P4 #5 arc, phase 3 — the greedy
