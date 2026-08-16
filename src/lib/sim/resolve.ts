@@ -1,0 +1,281 @@
+/**
+ * src/lib/sim/resolve.ts
+ *
+ * "Which ability is this token, and what are its numbers?" — the resolution
+ * layer between a token and the cast it becomes (gauge-round L3c, lifted
+ * verbatim out of `notationParser.ts`).
+ *
+ * ⚓ Resolution is STATE-DEPENDENT, which is the reason the gauge round could
+ * not split the parse into "schedule then simulate" (gauge-round.md §2, F1):
+ * `resolveActiveAbility` takes the live state set, so Cyno's `Q N1 N2` resolves
+ * in-stance normals only because the Q already ran. Every function here takes
+ * the state it needs as an argument for exactly that reason.
+ */
+
+import type {
+	Ability,
+	AbilityVariant,
+	ActionKey,
+	CastAbility,
+	DurationModifier,
+	NormalAbility,
+	NormalHit
+} from '$lib/types/ability';
+import {
+	getActiveDuration,
+	getActiveDurationModifiers,
+	getSummonActivatesAt
+} from '$lib/types/ability';
+import { FPS, framesOf } from '$lib/utils/frames';
+import { GENERIC_CHARGE_FRAMES, GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
+import { applyModifiers, DEFAULT_ASCENSION, evalCondition, type ChainIndex } from './conditions';
+
+/** Fallback cast time when no E/Q frame data is present on the ability (FRAMES).
+ *  Sourced from the data-derived generic profile (genericProfile.ts) so a
+ *  frameless skill/burst gets a realistic cast length, not a magic constant. */
+const E_CAST_F = GENERIC_SKILL.castSwap;
+const Q_CAST_F = GENERIC_BURST.castSwap;
+
+/**
+ * Resolves E/Q cast time (FRAMES) from frame data, selecting the cancel window
+ * for the given next-action key. The caller passes the `matchVariant`-resolved
+ * variant (e.g. hE, h1E, h2E, sQ) whose frames replace the base's.
+ * Characters authored without FrameMaps (pre-release stubs with no gcsim
+ * source) fall back to the generic cast constants instead of killing the parse.
+ *
+ * ⚓ A FrameMap was always frames; this used to divide them into a seconds
+ * clock. The clock is frames now (C1), so the value passes through untouched.
+ */
+export function resolveEQCastTime(
+	ability: CastAbility,
+	variant: AbilityVariant | undefined,
+	nextKey: ActionKey
+): number {
+	const frameMap = variant?.frames ?? ability.frames;
+	if (!frameMap) return ability.abilityType === 'burst' ? Q_CAST_F : E_CAST_F;
+	// A few curated FrameMaps lack the canonical `swap` key (qiqi skill, Mika
+	// hE variant); fall back to the longest defined cancel window rather than
+	// letting undefined poison the cursor with NaN.
+	const swapFallback = frameMap.swap ?? Math.max(0, ...Object.values(frameMap));
+	return frameMap[nextKey] ?? swapFallback;
+}
+
+/**
+ * Resolves cast time (FRAMES) for a single hit in a normal-attack combo.
+ * `index` is the 0-based hit index (normalCounter or explicit N1→0, N2→1 …).
+ * Returns null when hits data is absent (caller should skip the cursor advance).
+ */
+export function resolveNormalCastTime(
+	hits: NormalHit[] | undefined,
+	index: number,
+	nextKey: ActionKey
+): number | null {
+	if (!hits?.length) return null;
+	const hit = hits[Math.min(index, hits.length - 1)];
+	return hit.frames[nextKey] ?? hit.frames.swap;
+}
+
+/**
+ * Resolves cast time (FRAMES) for a charged attack.
+ * Bow characters use `chargeHits[]`; all others use `chargeFrames`.
+ * Token 'C'/'C2' → last entry (full charge); 'C1' → first entry.
+ * Returns null when the relevant frame data is absent.
+ */
+export function resolveChargeCastTime(
+	ability: NormalAbility,
+	charToken: string,
+	nextKey: ActionKey,
+	isBow: boolean
+): number | null {
+	if (isBow) {
+		const hits = ability.chargeHits;
+		if (!hits?.length) return null;
+		const index = charToken === 'C1' ? 0 : hits.length - 1;
+		return hits[index].frames[nextKey] ?? hits[index].frames.swap;
+	} else {
+		// Frameless (uncurated / Blank) → generic charge profile, so a charged
+		// attack advances the cursor realistically instead of by zero.
+		const frameMap = ability.chargeFrames ?? GENERIC_CHARGE_FRAMES;
+		return frameMap[nextKey] ?? frameMap.swap;
+	}
+}
+
+/**
+ * Resolves the active-window duration and modifiers for a cast, accounting for
+ * variant overrides. Precedence (most specific wins):
+ *   1. variant.summons[0]     — variant-level summon override
+ *   2. variant.duration       — variant-level legacy override
+ *   3. variant.activeDuration — variant-level instant window (2026-08-14)
+ *   4. ability.summons[0]     — base summon (via getActiveDuration accessor)
+ *   5. ability.duration       — base legacy (via getActiveDuration accessor)
+ *   6. ability.activeDuration — base instant window (via the same accessor)
+ *
+ * ⚠ RUNGS 3 AND 4 ARE THE ORDER THAT MATTERS. A variant's own instant window
+ * has to outrank the BASE ability's summon, or Zhongli's hold-E — a 20s Jade
+ * Shield cast off a base whose Stone Stele runs 30s — would draw a 30s bar the
+ * moment its stand-in summon was retired. Every other variant field already
+ * behaves this way; this one just has a base-level rival that is easy to miss.
+ *
+ * Variant modifier arrays **replace** the base's array — a curator who lists
+ * modifiers on a variant has opted that variant out of the base set.
+ */
+export function resolveActiveDuration(
+	ability: CastAbility,
+	variant: AbilityVariant | undefined
+): { duration: number; modifiers: DurationModifier[] | undefined } {
+	// ⚠️ Every rung reads AUTHORED SECONDS and returns FRAMES (C1). The accessors
+	// (`getActiveDuration`) are shared with the Team Builder, which is
+	// seconds-native — so the conversion belongs here, at the parser's edge, and
+	// NOT inside them.
+	const variantSummon = variant?.summons?.[0];
+	if (variantSummon) {
+		return {
+			duration: framesOf(variantSummon.duration),
+			modifiers: variantSummon.durationModifiers
+		};
+	}
+	if (variant?.duration !== undefined) {
+		return { duration: framesOf(variant.duration), modifiers: variant.durationModifiers };
+	}
+	if (variant?.activeDuration !== undefined) {
+		return { duration: framesOf(variant.activeDuration), modifiers: variant.durationModifiers };
+	}
+	return {
+		duration: framesOf(getActiveDuration(ability)),
+		modifiers: getActiveDurationModifiers(ability)
+	};
+}
+
+/**
+ * Resolves cooldown, duration, and summon spawn frame for an ability cast,
+ * merging variant overrides and applying modifiers at DEFAULT_ASCENSION.
+ * Variant fields take precedence; modifiers (from the base ability) are
+ * applied on top. `resolvedStates` allows state-gated modifiers (e.g.
+ * duringSummon) to activate.
+ *
+ * Returns `summonActivatesAt` in 60fps frames; the renderer offsets the active
+ * bar by this value. Variant summons override variant.summonActivatesAt
+ * override the base ability's summons[0].spawnsAt / persistent summonActivatesAt.
+ */
+/**
+ * Resolves stance-related fields for an ability + token combination, with
+ * variant overrides applied. Used at cast-open time to decide whether to
+ * open a stance window, what named state (if any) to attach, and whether
+ * the window closes on character swap.
+ *
+ * Variant fields fully replace base values when explicitly present (per the
+ * AbilityVariant convention); the `!== undefined` check distinguishes
+ * "variant didn't set this field" from "variant set it to false/undefined."
+ *
+ * Reference: Mavuika Hold-E (variant input ["hE"]) overrides the base skill's
+ * behavior: "instant" → "stance" + opensState: "nightsoulBlessing" so the
+ * Flamestrider mode opens a real bike-NS window without splitting into two
+ * skill abilities.
+ */
+export function resolveStanceFields(
+	ability: CastAbility,
+	variant: AbilityVariant | undefined
+): {
+	behavior: 'instant' | 'persistent' | 'stance';
+	opensState?: import('$lib/types/ability').State;
+	terminatesOnSwap: boolean;
+} {
+	const behavior = variant?.behavior !== undefined ? variant.behavior : ability.behavior;
+	if (behavior !== 'stance') return { behavior, terminatesOnSwap: false };
+	const baseStance = ability.behavior === 'stance';
+	const opensState =
+		variant?.opensState !== undefined
+			? variant.opensState
+			: baseStance
+				? ability.opensState
+				: undefined;
+	const terminatesOnSwap =
+		variant?.terminatesOnSwap !== undefined
+			? variant.terminatesOnSwap
+			: baseStance
+				? ability.terminatesOnSwap === true
+				: false;
+	return { behavior, opensState, terminatesOnSwap };
+}
+
+export function resolveAbilityTiming(
+	ability: CastAbility,
+	variant: AbilityVariant | undefined,
+	resolvedStates: ReadonlySet<string> = new Set(),
+	constellationLevel = 0,
+	chainIndex: ChainIndex = new Map(),
+	stacks?: ReadonlyMap<string, number>
+): { cooldown: number; duration: number; summonActivatesAt: number } {
+	const cooldown = applyModifiers(
+		framesOf(variant?.cooldown ?? ability.cooldown),
+		variant?.cooldownModifiers ?? ability.cooldownModifiers,
+		DEFAULT_ASCENSION,
+		resolvedStates,
+		constellationLevel,
+		chainIndex,
+		stacks,
+		FPS // a `flat` cooldown modifier is authored in seconds
+	);
+	const { duration: baseDur, modifiers: durMods } = resolveActiveDuration(ability, variant);
+	const duration = applyModifiers(
+		baseDur,
+		durMods,
+		DEFAULT_ASCENSION,
+		resolvedStates,
+		constellationLevel,
+		chainIndex,
+		stacks,
+		FPS // ditto for a `flat` duration modifier
+	);
+	const variantSummon = variant?.summons?.[0];
+	const summonActivatesAt = variantSummon
+		? (variantSummon.spawnsAt ?? 0)
+		: (variant?.summonActivatesAt ?? getSummonActivatesAt(ability));
+	// Non-instant abilities authored without a duration (pre-release data gaps)
+	// yield undefined here; sanitize to 0 so downstream window math
+	// (stanceWindows end = start + duration, bar uptime) never sees NaN.
+	return {
+		cooldown,
+		duration: Number.isFinite(duration) ? duration : 0,
+		summonActivatesAt
+	};
+}
+
+// ---------------------------------------------------------------------------
+// Stance-aware ability resolution
+// ---------------------------------------------------------------------------
+
+/**
+ * Finds the best-matching ability of the given type for the current resolved
+ * states. Prefers conditioned abilities whose condition is definitively met
+ * (e.g. an in-stance variant when `inStance` is in resolvedStates) over
+ * unconditioned base abilities. Returns undefined if no match exists.
+ */
+export function resolveActiveAbility<K extends Ability['abilityType']>(
+	char: import('$lib/types/character').CharacterData,
+	abilityType: K,
+	resolvedStates: ReadonlySet<string>,
+	constellationLevel = 0,
+	chainIndex: ChainIndex = new Map(),
+	stacks?: ReadonlyMap<string, number>
+): Extract<Ability, { abilityType: K }> | undefined {
+	const candidates = char.abilities.filter(
+		(a): a is Extract<Ability, { abilityType: K }> => a.abilityType === abilityType
+	);
+	// Prefer a conditioned ability whose condition is definitively satisfied.
+	const conditioned = candidates.find(
+		(a) =>
+			a.conditions !== undefined &&
+			evalCondition(
+				a.conditions,
+				DEFAULT_ASCENSION,
+				resolvedStates,
+				constellationLevel,
+				chainIndex,
+				stacks
+			) === true
+	);
+	if (conditioned) return conditioned;
+	// Fall back to the unconditioned base ability.
+	return candidates.find((a) => a.conditions === undefined);
+}
