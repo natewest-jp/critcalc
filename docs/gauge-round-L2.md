@@ -318,6 +318,13 @@ not move. ⛔ Not the bytes — see §3b.
 
 ## 10. Outcome
 
+✅ **VISUALLY VERIFIED 2026-08-16 (⚓ Nate): the timeline and the PNG export both
+render correctly.** That closes this landing's one claim the machines could not
+close — the oracle proves the parser's numbers are unchanged, and e2e proves
+nothing throws, but neither can see a bar land a pixel off. Geometry now flows
+through three new conversion seams (the two `RotationTimeline` wrappers and the
+exporter's `x()`), and all three are confirmed good.
+
 ✅ **Landed 2026-08-16.** All four gates green: **1474 tests**, `npm run check`,
 `npm run lint`, `npm run build`. The plan above held — every ruling in §5 survived
 contact, and no contract in `gauge-round.md` needed amending.

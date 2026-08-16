@@ -512,7 +512,7 @@ stripping today. Consumers to update: `GaugeInstrument.svelte:13`, `workspace.ts
 `pkg/reactable/*_test.go`, the cap is parameterised, and the eight uncovered branches the
 audit listed have coverage.
 
-### L2 — Integer frames ✅ SHIPPED 2026-08-16
+### L2 — Integer frames ✅ SHIPPED 2026-08-16 (visually verified)
 
 The IR and the parser's internal clock are integer frames. `framesOf` (in
 `$lib/utils/frames.ts`) is the one rounding site; seconds return only at the surface.
