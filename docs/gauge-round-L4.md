@@ -1,6 +1,7 @@
 # L4 — Frame re-derivation + the application schema
 
-**Status:** planned · 2026-08-16 · the data track of [the gauge round](gauge-round.md)
+**Status:** ✅ SHIPPED · merged `95e91a3` (⚠️ cite the MERGE, not the branch tip) ·
+2026-08-16 · the data track of [the gauge round](gauge-round.md)
 **Goal:** re-derive every frame value from gcsim in a shape that does not lie about its
 fallback, and author — for the first time — **when an ability's element actually lands**.
 
@@ -748,9 +749,15 @@ Chrome's run also hit the documented upstream teardown hang,
 [playwright#39753](https://github.com/microsoft/playwright/issues/39753), which is why it
 took 5.7 min against WebKit's 1.3; ⛔ not ours to bisect).
 
-⏳ **Open: Nate's eyes on the timeline and the PNG.** Timings moved deliberately — cursor
-advances got longer where the `swap` fallback was understating, and reactions now land on
-their hitmarks instead of at cast start.
+✅ **Visually verified (⚓ Nate 2026-08-16), live tool and PNG export both.** The verdict
+is the one this landing wanted: _"different, but not suspiciously different."_ Two
+specifics worth keeping, because they are the predicted shapes showing up by name:
+
+- **Bennett's E nudged a touch longer** — the `swap` fallback was understating a cursor
+  advance, exactly §1.4's class.
+- ⚓ **Kazuha's buffs fire LATER in his attack string** — the buff no longer starts at
+  cast-start because the element now lands on its hitmark. That is L4d visible on screen,
+  and it is the single clearest confirmation that the round did what it said.
 
 ### Tests that changed, and why
 

@@ -639,9 +639,11 @@ geometry from cast events (a second copy of a parser rule); and `moonsignRows.ts
 ⚓ **The differ is the gate and it mostly exists.** Baseline: **51 files / 1467 tests / 2.7 s**
 — fast enough to run on every edit, which is what makes a strangler this size sane.
 
-### L4 — Frame re-derivation + application schema ✅ SHIPPED 2026-08-16
+### L4 — Frame re-derivation + application schema ✅ SHIPPED 2026-08-16 (`95e91a3`)
 
-📄 **Full record: [`gauge-round-L4.md`](gauge-round-L4.md)**
+📄 **Full record: [`gauge-round-L4.md`](gauge-round-L4.md)** · ✅ **visually verified**
+(⚓ Nate: _"different, but not suspiciously different"_ — Bennett's E a touch longer, and
+Kazuha's buffs firing later in his attack string, which is the hitmark becoming accurate).
 
 ⚡ **The method changed a third time, and it is the best of the three.** L0 retired
 static Go parsing in favour of RUNNING gcsim's CLI; L4 links gcsim as a **library** from
