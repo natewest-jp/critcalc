@@ -1,0 +1,612 @@
+// scripts/gcsim-dump/main.go
+//
+// Reads gcsim as a LIBRARY and dumps, per character and per ability:
+//
+//   1. the exact action-cancel slice  — `action.Info.Frames(next)` for every next
+//      action, plus the animation length at `action.InvalidAction`
+//   2. the elemental-application schedule — every `damage` and `element` log event
+//      that follows the cast, with its frame offset
+//
+// ⚓ Both come out of the same call, which is why the gauge round's C4b insists on
+// ONE re-extraction pass. See docs/gauge-round-L4.md.
+//
+// ⚓ `action.InvalidAction` is index 0 of the slice and BOTH of gcsim's constructors
+// fill it with the `animation` argument — `InitAbilSlice(animation)` fills every slot,
+// `InitNormalCancelSlice(hitmark, animation)` fills every slot then overrides the six
+// cancel slots with `hitmark`. That is how gcsim itself reads the animation length back
+// out (`AnimationLength: skillFrames[action.InvalidAction]`), and it is what makes our
+// fallback observable rather than inferred.
+//
+// ⛔ This is a review-candidate generator against an external source, never an
+// auto-fixer — the same contract as audit-genshin-db-diff.mjs. It writes JSON to
+// stdout and touches nothing.
+//
+// Build: not directly. `scripts/lib/gcsim-dump.mjs` materialises a shim Go module
+// into scratch/ (this file + a go.mod derived from gcsim's own + a `replace`), builds
+// it offline against the module cache, and runs it.
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"sort"
+
+	"github.com/genshinsim/gcsim/pkg/avatar"
+	"github.com/genshinsim/gcsim/pkg/core"
+	"github.com/genshinsim/gcsim/pkg/core/action"
+	"github.com/genshinsim/gcsim/pkg/core/attributes"
+	"github.com/genshinsim/gcsim/pkg/core/info"
+	"github.com/genshinsim/gcsim/pkg/core/keys"
+	"github.com/genshinsim/gcsim/pkg/core/player"
+	"github.com/genshinsim/gcsim/pkg/core/player/character"
+	"github.com/genshinsim/gcsim/pkg/enemy"
+	_ "github.com/genshinsim/gcsim/pkg/simulation"
+	"github.com/genshinsim/gcsim/pkg/testhelper"
+)
+
+// ---------------------------------------------------------------------------
+// Our ActionKey vocabulary → gcsim's action enum
+// ---------------------------------------------------------------------------
+
+// ⚠️ `A` (aim) and `lP` (low plunge) are dumped for completeness but our FrameMap has
+// no key for either: a bow's aimed shot resolves through `chargeHits` and we do not
+// model low plunges separately.
+var nextKeys = []struct {
+	name string
+	act  action.Action
+}{
+	{"anim", action.InvalidAction},
+	{"N", action.ActionAttack},
+	{"C", action.ActionCharge},
+	{"E", action.ActionSkill},
+	{"Q", action.ActionBurst},
+	{"D", action.ActionDash},
+	{"J", action.ActionJump},
+	{"P", action.ActionHighPlunge},
+	{"A", action.ActionAim},
+	{"swap", action.ActionSwap},
+}
+
+// ---------------------------------------------------------------------------
+// The driver table
+// ---------------------------------------------------------------------------
+
+// Step is one action executed before the ability under test, to reach a mode the
+// default (grounded, out-of-stance, resource-free) capture cannot see.
+type Step struct {
+	Action string         `json:"action"`
+	Params map[string]int `json:"params,omitempty"`
+	Repeat int            `json:"repeat,omitempty"`
+}
+
+// CaptureSet is a labelled group of abilities captured behind a shared prerequisite.
+// The unlabelled default set always runs; driver entries ADD sets, they never replace
+// it — an in-stance normal is a second reading of the same character, not a correction
+// of the first.
+type CaptureSet struct {
+	Label    string   `json:"label"`
+	Prereq   []Step   `json:"prereq"`
+	Captures []string `json:"captures"`
+}
+
+type DriverEntry struct {
+	// Abilities the default pass should not attempt (gcsim hard-errors on them for a
+	// reason we already understand, and the error is noise rather than a finding).
+	Skip []string     `json:"skip,omitempty"`
+	Sets []CaptureSet `json:"sets,omitempty"`
+	Note string       `json:"note,omitempty"`
+}
+
+// ---------------------------------------------------------------------------
+// Output shape
+// ---------------------------------------------------------------------------
+
+type Application struct {
+	Frame int    `json:"frame"`
+	Abil  string `json:"abil"`
+	Tag   string `json:"tag"`
+	// Element as gcsim reports it on the DAMAGE event — present for every hit,
+	// applied or ICD-suppressed. "physical" means it applies nothing.
+	Element string `json:"element"`
+	// Durability of the application, when one actually landed. ⚠️ Absent means the
+	// hit was ICD-suppressed, NOT that it carries no gauge (C4: the authored value is
+	// the nominal cap, not the applied rate).
+	Durability *float64 `json:"durability,omitempty"`
+	Applied    bool     `json:"applied"`
+}
+
+type AbilityDump struct {
+	Key           string         `json:"key"`
+	Action        string         `json:"action"`
+	Params        map[string]int `json:"params,omitempty"`
+	Prereq        []Step         `json:"prereq,omitempty"`
+	Frames        map[string]int `json:"frames,omitempty"`
+	AnimLength    int            `json:"animationLength,omitempty"`
+	CanQueueAfter int            `json:"canQueueAfter,omitempty"`
+	Applications  []Application  `json:"applications"`
+	Err           string         `json:"error,omitempty"`
+}
+
+type CharDump struct {
+	NormalHitNum int           `json:"normalHitNum"`
+	Weapon       string        `json:"weapon"`
+	Abilities    []AbilityDump `json:"abilities"`
+}
+
+// ---------------------------------------------------------------------------
+// Core construction
+// ---------------------------------------------------------------------------
+
+func makeCore(k keys.Char, cons int) (*core.Core, *character.CharWrapper, error) {
+	c, err := core.New(core.Opt{Seed: 1, Debug: true})
+	if err != nil {
+		return nil, nil, err
+	}
+	a := avatar.New(c, info.Point{X: 0, Y: 0}, 1)
+	c.Combat.SetPlayer(a)
+	e := enemy.New(c, info.EnemyProfile{
+		Level:  100,
+		Resist: make(map[attributes.Element]float64),
+		Pos:    info.Coord{X: 0, Y: 0, R: 1},
+	})
+	c.Combat.AddEnemy(e)
+	c.Combat.DefaultTarget = e.Key()
+
+	// ⚠️ DullBlade for everyone, deliberately: a 1★ sword has no passive at all, so
+	// nothing in the weapon slot can apply an element, trigger a reaction, reset a
+	// cooldown or infuse an attack. gcsim does not validate weapon TYPE here, which is
+	// what makes one inert weapon enough. Same reasoning as INERT_WEAPONS in
+	// scripts/lib/gcsim.mjs — this is the stricter version of it.
+	prof := testhelper.DefaultProfile(k, keys.DullBlade)
+	prof.Base.Cons = cons
+	prof.Talents = info.TalentProfile{Attack: 9, Skill: 9, Burst: 9}
+	idx, err := c.AddChar(prof)
+	if err != nil {
+		return nil, nil, fmt.Errorf("addchar: %w", err)
+	}
+	c.Player.SetActive(idx)
+	if err := c.Init(); err != nil {
+		return nil, nil, fmt.Errorf("init: %w", err)
+	}
+	// ⚠️ The dumper calls ability functions DIRECTLY, bypassing Player.Exec — no
+	// cooldown, energy or stamina gate. That is what makes it exhaustive; it also
+	// means a resource-dependent branch dumps its resource-free reading.
+	c.Flags.IgnoreBurstEnergy = true
+	return c, c.Player.ActiveChar(), nil
+}
+
+func actionByName(name string) (action.Action, bool) {
+	switch name {
+	case "attack":
+		return action.ActionAttack, true
+	case "charge":
+		return action.ActionCharge, true
+	case "aim":
+		return action.ActionAim, true
+	case "skill":
+		return action.ActionSkill, true
+	case "burst":
+		return action.ActionBurst, true
+	case "dash":
+		return action.ActionDash, true
+	case "jump":
+		return action.ActionJump, true
+	case "high_plunge":
+		return action.ActionHighPlunge, true
+	case "low_plunge":
+		return action.ActionLowPlunge, true
+	}
+	return action.InvalidAction, false
+}
+
+func abilityFunc(ch *character.CharWrapper, t action.Action) func(map[string]int) (action.Info, error) {
+	switch t {
+	case action.ActionCharge:
+		return ch.ChargeAttack
+	case action.ActionDash:
+		return ch.Dash
+	case action.ActionJump:
+		return ch.Jump
+	case action.ActionAim:
+		return ch.Aimed
+	case action.ActionSkill:
+		return ch.Skill
+	case action.ActionBurst:
+		return ch.Burst
+	case action.ActionAttack:
+		return ch.Attack
+	case action.ActionHighPlunge:
+		return ch.HighPlungeAttack
+	case action.ActionLowPlunge:
+		return ch.LowPlungeAttack
+	default:
+		return ch.Walk
+	}
+}
+
+// ---------------------------------------------------------------------------
+// The default capture list
+// ---------------------------------------------------------------------------
+
+type spec struct {
+	key    string
+	action string
+	params map[string]int
+}
+
+// ⚠️ `travel: 0` on every aimed shot is deliberate. gcsim's `travel` default of 10 is
+// a SIMULATION POLICY, not game data (76 sites), and it lands inside the observed
+// hitmark. Pinning it to zero measures "frames until the arrow leaves the bow", which
+// is the distance-independent number. ⛔ Never ingest a travel-inclusive figure as
+// measured frame data.
+func defaultSpecs(normalHitNum int) []spec {
+	out := make([]spec, 0, normalHitNum+9)
+	for i := range normalHitNum {
+		out = append(out, spec{fmt.Sprintf("N%d", i+1), "attack", map[string]int{}})
+	}
+	return append(out,
+		spec{"C", "charge", map[string]int{}},
+		spec{"A", "aim", map[string]int{"travel": 0}},
+		spec{"hA", "aim", map[string]int{"hold": 1, "travel": 0}},
+		spec{"P", "high_plunge", map[string]int{"collision": 0}},
+		spec{"lP", "low_plunge", map[string]int{"collision": 0}},
+		spec{"E", "skill", map[string]int{}},
+		spec{"hE", "skill", map[string]int{"hold": 1}},
+		spec{"h2E", "skill", map[string]int{"hold": 2}},
+		spec{"Q", "burst", map[string]int{}},
+	)
+}
+
+// ---------------------------------------------------------------------------
+// Pass A — the cancel slice
+// ---------------------------------------------------------------------------
+//
+// One core per capture set, abilities called back to back with NO clock advance.
+// ⚓ `Attack()` advances NormalCounter via `defer`, and `frames.NewAttackFunc` captures
+// the counter in the return statement — so calling it N times walks the combo and each
+// reading is the right index. A gcsim refactor of that idiom would silently shift every
+// normal by one; the audit's match rate against the authored corpus is the canary.
+
+// ⚠️ NAMED RETURN, and it is load-bearing. With a bare `return d` the deferred recover
+// mutates a local the caller never sees, so a panicking ability came back as the ZERO
+// AbilityDump — no key, no error — and the audit reported it as "not captured" rather
+// than as the gcsim panic it was. Three characters were mis-classified that way.
+func captureFrames(ch *character.CharWrapper, c *core.Core, s spec) (d AbilityDump) {
+	d = AbilityDump{Key: s.key, Action: s.action, Params: s.params, Applications: []Application{}}
+	t, ok := actionByName(s.action)
+	if !ok {
+		d.Err = "unknown action " + s.action
+		return d
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			d = AbilityDump{Key: s.key, Action: s.action, Params: s.params,
+				Applications: []Application{}, Err: fmt.Sprintf("panic: %v", r)}
+		}
+	}()
+	if t == action.ActionHighPlunge || t == action.ActionLowPlunge {
+		_ = c.Player.SetAirborne(player.AirborneXianyun)
+	}
+	evt, err := abilityFunc(ch, t)(s.params)
+	if err != nil {
+		d.Err = err.Error()
+		return d
+	}
+	d.Frames = map[string]int{}
+	for _, nk := range nextKeys {
+		d.Frames[nk.name] = evt.Frames(nk.act)
+	}
+	d.AnimLength = evt.AnimationLength
+	d.CanQueueAfter = evt.CanQueueAfter
+	return d
+}
+
+// ---------------------------------------------------------------------------
+// Pass B — the application schedule
+// ---------------------------------------------------------------------------
+//
+// A FRESH core per ability: execute the prerequisites, then the ability, then advance
+// the clock. ⚓ Because only one ability under test ever ran, every event after its cast
+// frame belongs to it by construction — which is what dissolves L0's attribution
+// heuristic. Summon ticks are still in the stream (they belong to the cast too); the
+// audit separates them by `abil` string against the authored summon names.
+
+type logEvent struct {
+	Event string         `json:"event"`
+	Frame int            `json:"frame"`
+	Msg   string         `json:"msg"`
+	Logs  map[string]any `json:"logs"`
+}
+
+func advance(c *core.Core, n int) {
+	for range n {
+		c.F++
+		c.Tick()
+	}
+}
+
+// runStep executes one prerequisite and advances the clock by the CANCEL window for
+// whatever comes next — not by the full animation.
+//
+// ⚠️ The distinction is load-bearing for normals: gcsim resets NormalCounter after an
+// idle timeout, so walking a combo at animation cadence can silently drop back to N1
+// and every "N4" reading would really be an N1. Advancing by `Frames(next)` is both the
+// realistic cadence and the one that keeps the combo alive.
+func runStep(c *core.Core, ch *character.CharWrapper, st Step, next action.Action) error {
+	t, ok := actionByName(st.Action)
+	if !ok {
+		return fmt.Errorf("unknown prereq action %q", st.Action)
+	}
+	reps := max(st.Repeat, 1)
+	for i := range reps {
+		if t == action.ActionHighPlunge || t == action.ActionLowPlunge {
+			_ = c.Player.SetAirborne(player.AirborneXianyun)
+		}
+		evt, err := abilityFunc(ch, t)(st.Params)
+		if err != nil {
+			return err
+		}
+		c.Player.SetActionUsed(c.Player.Active(), t, &evt)
+		// Intermediate repeats chain into themselves; the last one chains into `next`.
+		chain := t
+		if i == reps-1 {
+			chain = next
+		}
+		advance(c, evt.Frames(chain))
+	}
+	return nil
+}
+
+// runPrereq walks a capture set's prerequisite chain, recovering from a panic rather
+// than taking the whole roster down with it. ⚠️ gcsim panics rather than errors on some
+// impossible states (`unexpected charges less than 0`), and a dumper that dies on one
+// character's driver row is a dumper nobody can iterate with.
+func runPrereq(c *core.Core, ch *character.CharWrapper, steps []Step, after action.Action) (fail string) {
+	defer func() {
+		if r := recover(); r != nil {
+			fail = fmt.Sprintf("prereq panic: %v", r)
+		}
+	}()
+	for i, st := range steps {
+		next := after
+		if i < len(steps)-1 {
+			next, _ = actionByName(steps[i+1].Action)
+		}
+		if err := runStep(c, ch, st, next); err != nil {
+			return "prereq " + st.Action + ": " + err.Error()
+		}
+	}
+	return ""
+}
+
+// comboPrefix: reaching N4 means swinging N1–N3 first. ⚓ Pass B uses a FRESH core per
+// ability — that is what makes attribution exact — so the combo index has to be walked
+// rather than inherited from pass A.
+func comboPrefix(key string) int {
+	var n int
+	if _, err := fmt.Sscanf(key, "N%d", &n); err == nil && n > 1 {
+		return n - 1
+	}
+	return 0
+}
+
+func captureApplications(k keys.Char, cons int, prereq []Step, s spec, horizon int) (out []Application, fail string) {
+	out = []Application{}
+	c, ch, err := makeCore(k, cons)
+	if err != nil {
+		return out, err.Error()
+	}
+	t, ok := actionByName(s.action)
+	if !ok {
+		return out, "unknown action " + s.action
+	}
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fail = fmt.Sprintf("panic: %v", r)
+			}
+		}()
+		c.F = 0
+		c.Tick()
+		steps := append([]Step{}, prereq...)
+		if n := comboPrefix(s.key); n > 0 {
+			steps = append(steps, Step{Action: "attack", Params: map[string]int{}, Repeat: n})
+		}
+		if msg := runPrereq(c, ch, steps, t); msg != "" {
+			fail = msg
+			return
+		}
+		if t == action.ActionHighPlunge || t == action.ActionLowPlunge {
+			_ = c.Player.SetAirborne(player.AirborneXianyun)
+		}
+		castFrame := c.F
+		evt, err := abilityFunc(ch, t)(s.params)
+		if err != nil {
+			fail = err.Error()
+			return
+		}
+		c.Player.SetActionUsed(c.Player.Active(), t, &evt)
+		advance(c, horizon)
+
+		raw, derr := c.Log.Dump()
+		if derr != nil {
+			fail = "log dump: " + derr.Error()
+			return
+		}
+		var events []logEvent
+		if err := json.Unmarshal(raw, &events); err != nil {
+			fail = "log parse: " + err.Error()
+			return
+		}
+		// ⚓ The DAMAGE stream is the NOMINAL hit schedule — gcsim emits it even when
+		// ICD zeroes the application — and the ELEMENT stream is the post-ICD subset.
+		// C3 authors from the first; C4's post-ICD contract is served by icd.ts.
+		type key struct {
+			frame int
+			abil  string
+		}
+		applied := map[key]float64{}
+		for _, e := range events {
+			if e.Event == "element" && e.Msg == "application" && e.Frame >= castFrame {
+				abil, _ := e.Logs["abil"].(string)
+				dur, _ := e.Logs["dur"].(float64)
+				applied[key{e.Frame, abil}] = dur
+			}
+		}
+		hits := []Application{}
+		for _, e := range events {
+			if e.Event != "damage" || e.Frame < castFrame {
+				continue
+			}
+			abil, _ := e.Logs["abil"].(string)
+			ele, _ := e.Logs["ele"].(string)
+			tagf, _ := e.Logs["attack-tag"].(float64)
+			app := Application{
+				Frame:   e.Frame - castFrame,
+				Abil:    abil,
+				Tag:     tagName(int(tagf)),
+				Element: ele,
+			}
+			if dur, ok := applied[key{e.Frame, abil}]; ok {
+				d := dur
+				app.Durability = &d
+				app.Applied = true
+			}
+			hits = append(hits, app)
+		}
+		sort.SliceStable(hits, func(i, j int) bool { return hits[i].Frame < hits[j].Frame })
+		out = hits
+	}()
+	return out, fail
+}
+
+func tagName(t int) string {
+	switch t {
+	case 1:
+		return "normal"
+	case 2:
+		return "charged"
+	case 3:
+		return "plunge"
+	case 4:
+		return "skill"
+	case 6:
+		return "burst"
+	}
+	return fmt.Sprint(t)
+}
+
+// ---------------------------------------------------------------------------
+
+type options struct {
+	Cons    int                    `json:"cons"`
+	Horizon int                    `json:"horizon"`
+	Only    string                 `json:"only"`
+	Drivers map[string]DriverEntry `json:"drivers"`
+	// Skip pass B entirely — pass A alone answers the FrameMap question and runs in
+	// well under a second for the whole roster.
+	FramesOnly bool `json:"framesOnly"`
+}
+
+func main() {
+	var opt options
+	opt.Horizon = 900
+	if len(os.Args) > 1 {
+		if err := json.Unmarshal([]byte(os.Args[1]), &opt); err != nil {
+			fmt.Fprintln(os.Stderr, "bad options json:", err)
+			os.Exit(2)
+		}
+	}
+	if opt.Horizon <= 0 {
+		opt.Horizon = 900
+	}
+
+	out := map[string]*CharDump{}
+	var names []keys.Char
+	for k := range core.NewCharFuncMap {
+		names = append(names, k)
+	}
+	sort.Slice(names, func(i, j int) bool { return names[i].String() < names[j].String() })
+
+	for _, k := range names {
+		name := k.String()
+		if opt.Only != "" && name != opt.Only {
+			continue
+		}
+		drv := opt.Drivers[name]
+		skip := map[string]bool{}
+		for _, s := range drv.Skip {
+			skip[s] = true
+		}
+
+		probe, ch, err := makeCore(k, opt.Cons)
+		if err != nil {
+			out[name] = &CharDump{Abilities: []AbilityDump{{Key: "-", Err: err.Error()}}}
+			continue
+		}
+		cd := &CharDump{NormalHitNum: ch.NormalHitNum, Weapon: ch.Weapon.Key.String()}
+		_ = probe
+
+		// The unlabelled default set always runs; driver entries ADD sets.
+		sets := append([]CaptureSet{{Label: "", Prereq: nil}}, drv.Sets...)
+		for _, set := range sets {
+			c, ch, err := makeCore(k, opt.Cons)
+			if err != nil {
+				cd.Abilities = append(cd.Abilities, AbilityDump{Key: set.Label, Err: err.Error()})
+				continue
+			}
+			// ⚠️ Prerequisites advance the clock, in BOTH passes. A no-advance version
+			// looked tempting (a mode flag is set at execution, not later) and panics:
+			// Ayato's second Skill inside the same frame drives his charge count below
+			// zero. Advancing by the cancel window is short enough that no stance
+			// window expires under it.
+			prereqErr := runPrereq(c, ch, set.Prereq, action.ActionAttack)
+
+			specs := defaultSpecs(ch.NormalHitNum)
+			if len(set.Captures) > 0 {
+				want := map[string]bool{}
+				for _, w := range set.Captures {
+					want[w] = true
+				}
+				filtered := specs[:0:0]
+				for _, s := range specs {
+					if want[s.key] {
+						filtered = append(filtered, s)
+					}
+				}
+				specs = filtered
+			}
+
+			for _, s := range specs {
+				if skip[s.key] {
+					continue
+				}
+				d := captureFrames(ch, c, s)
+				if set.Label != "" {
+					d.Key = s.key + "@" + set.Label
+					d.Prereq = set.Prereq
+				}
+				if prereqErr != "" && d.Err == "" {
+					d.Err = prereqErr
+				}
+				if !opt.FramesOnly && d.Err == "" {
+					apps, aerr := captureApplications(k, opt.Cons, set.Prereq, s, opt.Horizon)
+					d.Applications = apps
+					if aerr != "" {
+						d.Err = "applications: " + aerr
+					}
+				}
+				cd.Abilities = append(cd.Abilities, d)
+			}
+		}
+		out[name] = cd
+	}
+
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", " ")
+	if err := enc.Encode(out); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
