@@ -33,7 +33,6 @@ import type {
 	AuraElement,
 	CastAbility,
 	Condition,
-	DurationExtension,
 	Element,
 	NormalAbility,
 	NormalHit,
@@ -45,7 +44,6 @@ import type {
 } from '$lib/types/ability';
 import {
 	getPersistentBehavior,
-	getDurationExtensions,
 	getDefaultDamageTag,
 	getNormalHitDamageTag,
 	getCooldownStartsAtStanceEnd
@@ -74,7 +72,6 @@ import {
 	evalCondition,
 	findChainStage,
 	matchVariant,
-	reactionMatchesTrigger,
 	resolveEffectiveCharges,
 	type ChainIndex,
 	type ConditionContext
@@ -99,6 +96,7 @@ import {
 	syncOnReactionToStackState,
 	syncSourceLifetimeToStackState
 } from '$lib/sim/stacks';
+import { dispatchOnCastExtensions, dispatchOnReactionExtensions } from '$lib/sim/extensions';
 import { computeSummonDamageTicks, findSummonsForBar, summonSpan } from '$lib/sim/summons';
 
 // Re-export the IR surface so consumers can import event/window types straight
@@ -1068,129 +1066,8 @@ export function parseNotation(
 		}
 	};
 
-	/** Fires `onCast`-trigger duration extensions on the currently-active stance
-	 *  window for the given character, against the cast event described by
-	 *  `castType` at time `castTime`. Caller passes the pre-cast state snapshot
-	 *  + per-character resolution context for evalCondition. Other trigger types
-	 *  (onReaction, onHit, ...) are accepted in schema but not dispatched yet. */
-	const dispatchOnCastExtensions = (
-		charId: string,
-		castType: 'skill' | 'burst',
-		castTime: number,
-		preStates: ReadonlySet<string>,
-		constellation: number,
-		chainIdx: ChainIndex,
-		stacks: ReadonlyMap<string, number> | undefined
-	): void => {
-		// Gate on the window still being OPEN at cast time — cs.stance is
-		// deliberately never cleared (swap-close only clamps `end`, for drain
-		// settling), so presence alone would let a cast long after the stance
-		// died retroactively extend the dead window. Mirrors the summon path's
-		// `endTime > castTime` check.
-		const st = getCharState(charId).stance;
-		if (!st || st.end <= castTime) return;
-		const exts = getDurationExtensions(st.ownerAbility);
-		if (!exts || exts.length === 0) return;
-		const counts = st.extCounts;
-		const lastFires = st.extLastFire;
-		for (let idx = 0; idx < exts.length; idx++) {
-			const ext = exts[idx];
-			if (ext.trigger.type !== 'onCast') continue;
-			if (ext.trigger.ability !== undefined && ext.trigger.ability !== castType) continue;
-			const condResult = evalCondition(
-				ext.conditions,
-				DEFAULT_ASCENSION,
-				preStates,
-				constellation,
-				chainIdx,
-				stacks
-			);
-			if (condResult !== true) continue;
-			const used = counts.get(idx) ?? 0;
-			if (ext.maxExtensions !== undefined && used >= ext.maxExtensions) continue;
-			const lastFire = lastFires.get(idx) ?? -Infinity;
-			if (ext.procCooldown !== undefined && castTime - lastFire < framesOf(ext.procCooldown))
-				continue;
-			const delta = framesOf(ext.delta);
-			st.end += delta;
-			st.ownerUptime += delta;
-			counts.set(idx, used + 1);
-			lastFires.set(idx, castTime);
-		}
-	};
-
-	/** Fires `onReaction`-trigger duration extensions on the character's
-	 *  currently-active stance window AND any active summon-bound
-	 *  `durationExtensions[]`, against the synthetic reaction event. The
-	 *  summon-extension path is needed for Collei A4 (Cuilein-Anbar zone) where
-	 *  the extensions live on the burst's `summons[0].durationExtensions`
-	 *  rather than a stance owner. */
-	const dispatchOnReactionExtensions = (
-		charId: string,
-		emittedReaction: Reaction,
-		castTime: number,
-		preStates: ReadonlySet<string>,
-		constellation: number,
-		chainIdx: ChainIndex,
-		stacks: ReadonlyMap<string, number> | undefined
-	): void => {
-		const dispatch = (
-			extensions: DurationExtension[] | undefined,
-			counts: Map<number, number> | undefined,
-			lastFires: Map<number, number> | undefined,
-			extendWindow: (delta: number) => void
-		): void => {
-			if (!extensions || extensions.length === 0 || !counts || !lastFires) return;
-			for (let idx = 0; idx < extensions.length; idx++) {
-				const ext = extensions[idx];
-				if (ext.trigger.type !== 'onReaction') continue;
-				if (!reactionMatchesTrigger(emittedReaction, ext.trigger.reaction)) continue;
-				const condResult = evalCondition(
-					ext.conditions,
-					DEFAULT_ASCENSION,
-					preStates,
-					constellation,
-					chainIdx,
-					stacks
-				);
-				if (condResult !== true) continue;
-				const used = counts.get(idx) ?? 0;
-				if (ext.maxExtensions !== undefined && used >= ext.maxExtensions) continue;
-				const lastFire = lastFires.get(idx) ?? -Infinity;
-				if (ext.procCooldown !== undefined && castTime - lastFire < framesOf(ext.procCooldown))
-					continue;
-				// extendWindow bumps both the gating end and the owner-bar uptime
-				// accumulator (P4 — the owner bar is stamped at finalize, not here).
-				extendWindow(framesOf(ext.delta));
-				counts.set(idx, used + 1);
-				lastFires.set(idx, castTime);
-			}
-		};
-
-		const cs = getCharState(charId);
-
-		// Stance window: walk owner ability's durationExtensions[] (Mizuki A1
-		// shape — extensions on the stance ability itself). Only while the
-		// window is still open at cast time (never cleared), same gate as the
-		// summon path below.
-		const st = cs.stance;
-		if (st && st.end > castTime) {
-			dispatch(getDurationExtensions(st.ownerAbility), st.extCounts, st.extLastFire, (delta) => {
-				st.end += delta;
-				st.ownerUptime += delta;
-			});
-		}
-
-		// Summon window: walk summons[0].durationExtensions[] when active
-		// (Collei A4 shape — extensions on the burst's spawned summon).
-		const summonOwner = cs.summonExt;
-		if (summonOwner && summonOwner.endTime > castTime) {
-			dispatch(summonOwner.extensions, summonOwner.counts, summonOwner.lastFires, (delta) => {
-				summonOwner.endTime += delta;
-				summonOwner.ownerUptime += delta;
-			});
-		}
-	};
+	// ⚓ durationExtensions dispatch (feedback edge F2) MOVED to
+	// `$lib/sim/extensions.ts` (L3c).
 
 	/** Register a shield window when the active cast spawns a shield. Two
 	 *  authoring conventions covered:
@@ -1639,6 +1516,7 @@ export function parseNotation(
 		const stacksSnapshot = stackState.size > 0 ? new Map(stackState) : undefined;
 		for (const r of reactions) {
 			dispatchOnReactionExtensions(
+				ctx,
 				char.id,
 				r,
 				time,
@@ -2385,6 +2263,7 @@ export function parseNotation(
 				// Dispatch onCast durationExtensions on the (possibly just-opened)
 				// stance owner. Cyno's burst-stance + in-stance E recast fires here.
 				dispatchOnCastExtensions(
+					ctx,
 					char.id,
 					kind,
 					castStart,
