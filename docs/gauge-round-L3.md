@@ -306,14 +306,38 @@ the only one that is safe to take ungated.
 
 **Done when:** the clock is tested and unused, and the amendment is recorded.
 
-### L3b — the differ, against an unchanged parser
+### L3b — the differ, against an unchanged parser ✅ (2026-08-16)
 
-Freeze `notationParser.legacy.ts`; write the three-surface comparator and the corpus
-driver. It must report **identical** on day one — a differ that starts red proves
-nothing.
+`notationParser.legacy.ts` frozen verbatim (header comment only);
+`src/lib/sim/parserDiffer.ts` holds the three-surface comparator and
+`parserDiffer.test.ts` the corpus: **123 characters × C0 and C6** on the roster
+notation, plus **33 multi-character scenarios** (the twelve L0 oracle fixtures
+verbatim, then shields / stances / transients / multi-summon / charge queues /
+drain / seals / infusions / faction / NB / brackets / waits / a 20-cycle / unknown
+tokens / a fifth character), each run again at C6 with a populated loadout. Green on
+day one, as it must be. **10 tests, 0.2 s** — cheap enough to run on every edit,
+which is what makes a strangler this size sane.
 
-**Done when:** the differ passes over the full corpus with both engines being the
-same code, and its failure output is legible (first divergence, with context).
+⚓ **The differ was itself verified against a REAL perturbation, not just seeded
+ones.** `DASH_FRAMES 21 → 22` in the live parser — and it came back GREEN, because
+neither the roster notation nor any scenario used `D` or `J`. That is the failure
+mode a differ has: green because both engines agree, or green because neither ran
+the branch. Three floors now guard it, and each caught something:
+
+- corpus size (`≥120` characters, `≥30` scenarios) — a resolved-to-nothing glob
+  makes `runAll([])` return `[]`, which reads exactly like agreement;
+- every id in the fixture loadout **resolves** — ⚠️ two of the first eight did not
+  (`emblem_of_severed_fate`, `the_catch` are not in the curated set), and an
+  unresolvable `artifactSetId` skips the whole artifact branch in silence;
+- every buff-window **source family** is reached — `artifact`, `character`,
+  `faction`, `weapon`, asserted as an exact set.
+
+With `D`/`J` added, the same perturbation fails loudly on 12 characters with the
+three-line report the design called for (STRICT line, CANONICAL verdict,
+PROJECTIONS line naming the row that moved).
+
+**Done when:** ✅ the differ passes over the full corpus with both engines being the
+same code; its failure output is legible; and it is proven to SEE a real change.
 
 ### L3c — extraction, one family per commit
 
@@ -375,6 +399,18 @@ are behaviour, not defensiveness. So is `MAX_EXPANDED_TOKENS` truncating silentl
 form (nine authored-but-unread findings in one day, per `orphanedSchema.test.ts`).
 ⛔ Record them in §9 below; do not fix them inside the strangler. The exception is a
 finding the differ proves INERT over the corpus, which can land with its proof.
+
+⚠️ **`orphanedSchema.test.ts` is blinded while the frozen copy exists.** It matches
+property ACCESS across the code roots, and the legacy copy accesses everything the
+live parser used to. So a field that goes dead in the live parser mid-extraction
+keeps a consumer and the guard stays green. ⏭ Re-run it as a deliberate check at
+L3e, once the copy is deleted — that is the only run in this landing that means
+anything.
+
+⚠️ **A differ can be green because nothing ran.** Three floors now guard that
+(L3b) and each of them caught a real hole on the first pass. ⛔ When adding a
+scenario, do not assume it reaches the branch it is named after — perturb the branch
+and watch the differ go red.
 
 ⚠️ **`parseNotation` is called from a synchronous `$derived` on every keystroke**
 (`RotationTimeline.svelte:362`, the only production call site). A throw there unwinds
