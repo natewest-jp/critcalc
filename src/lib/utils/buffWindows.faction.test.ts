@@ -28,6 +28,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseNotation } from './notationParser';
 import { factionProvenanceOf } from './effectCollection';
+import { framesOf } from './frames';
 import type { CharacterData } from '$lib/types/character';
 
 const DIR = 'src/lib/data/characters';
@@ -123,9 +124,11 @@ describe('faction bonuses reach the planner', () => {
 				// Sliced windows (active-target segmentation) carry the full span
 				// separately in `duration`; unsliced ones are start→end.
 				const span = w.duration ?? w.end - w.start;
+				// The window is in FRAMES; the effect's `duration` is authored in
+				// SECONDS. Exact, not approximate — a frame span is an integer.
 				const authored = w.effects[0].duration;
 				if (authored == null) continue;
-				expect(span, `${holder.id} window ${w.id}`).toBeCloseTo(authored, 5);
+				expect(span, `${holder.id} window ${w.id}`).toBe(framesOf(authored));
 			}
 		}
 	});

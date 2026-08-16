@@ -46,6 +46,7 @@ import type { CharacterData } from '$lib/types/character';
 import type { LoadoutEntry } from '$lib/stores';
 import { getArtifactSetById } from '$lib/data/artifactLookup';
 import { getWeaponById } from '$lib/data/weaponLookup';
+import { framesOf } from '$lib/utils/frames';
 import {
 	getCharacterEffectsForAfterDuration,
 	getCharacterEffectsForCast,
@@ -210,7 +211,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			add(ev: ReactionEvent, effect: BuffEffect | ResShredEffect): void {
 				const debuff = effect.type === 'resShred';
 				const start = ev.time;
-				const end = start + effect.duration!;
+				const end = start + framesOf(effect.duration!);
 				// ⚠ SOURCE JOINS THE MERGE KEY (2026-08-15). A faction bonus firing
 				// off the same reaction event, for the same span, is still a
 				// different claim under a different name — Durin's base A1 shred and
@@ -481,7 +482,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						});
 						if (barEffects.length === 0) continue;
 						const buffStart = cast.fieldStart;
-						const buffEnd = buffStart + barEffects[0].duration!;
+						const buffEnd = buffStart + framesOf(barEffects[0].duration!);
 						emit({
 							characterId: track.characterId,
 							start: buffStart,
@@ -539,7 +540,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						);
 						if (barEffects.length === 0) continue;
 						const buffStart = afterDurationStart(cast);
-						const buffEnd = buffStart + barEffects[0].duration!;
+						const buffEnd = buffStart + framesOf(barEffects[0].duration!);
 						emit({
 							characterId: track.characterId,
 							start: buffStart,
@@ -581,7 +582,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						});
 						if (barEffects.length === 0) continue;
 						const buffStart = cast.fieldStart;
-						const buffEnd = buffStart + barEffects[0].duration!;
+						const buffEnd = buffStart + framesOf(barEffects[0].duration!);
 						emit({
 							characterId: track.characterId,
 							start: buffStart,
@@ -603,7 +604,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						const resShredEndPool = dedupResShredByElement(group.effects.filter(resShredBase));
 						if (resShredEndPool.length === 0) continue;
 						const buffStart = afterDurationStart(cast);
-						const buffEnd = buffStart + resShredEndPool[0].duration!;
+						const buffEnd = buffStart + framesOf(resShredEndPool[0].duration!);
 						emit({
 							characterId: track.characterId,
 							start: buffStart,
@@ -683,7 +684,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						});
 						if (barEffects.length === 0) continue;
 						const buffStart = hit.time;
-						const buffEnd = buffStart + barEffects[0].duration!;
+						const buffEnd = buffStart + framesOf(barEffects[0].duration!);
 						if (
 							lastWin &&
 							buffStart <= lastWin.end &&
@@ -730,7 +731,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						});
 						if (barEffects.length === 0) continue;
 						const buffStart = hit.time;
-						const buffEnd = buffStart + barEffects[0].duration!;
+						const buffEnd = buffStart + framesOf(barEffects[0].duration!);
 						if (
 							lastWin &&
 							buffStart <= lastWin.end &&
@@ -843,7 +844,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				if (qualifiedEffectsNB.length > 0) {
 					for (const nb of nbBars) {
 						const buffStart = nb.start;
-						const buffEnd = buffStart + qualifiedEffectsNB[0].duration!;
+						const buffEnd = buffStart + framesOf(qualifiedEffectsNB[0].duration!);
 						emit({
 							characterId: track.characterId,
 							start: buffStart,
@@ -882,7 +883,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				for (const [abilityClass, casts] of castSets) {
 					for (const cast of casts) {
 						const buffStart = cast.fieldStart;
-						const buffEnd = buffStart + effects[0].duration!;
+						const buffEnd = buffStart + framesOf(effects[0].duration!);
 						emit({
 							characterId: track.characterId,
 							start: buffStart,
@@ -1030,7 +1031,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 
 				for (const part of partitions.values()) {
 					const debuff = part[0].effect.type === 'resShred';
-					const duration = part[0].effect.duration!;
+					const duration = framesOf(part[0].effect.duration!);
 					// `procCooldown` is the set's own ICD (Tenacity: 0.5s), clocked PER
 					// SHAPE. Distinct from the refresh-merge below — the ICD decides
 					// whether a hit triggers at all, the merge decides whether a trigger
@@ -1045,7 +1046,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							if (q.effect.trigger.type !== 'onHit') continue;
 							if (!onHitTriggerMatches(q.effect.trigger, hit, track.characterId)) continue;
 							if (hit.time < (procReady.get(q.shape) ?? -Infinity)) continue;
-							const icd = typeof q.effect.procCooldown === 'number' ? q.effect.procCooldown : 0;
+							const icd =
+								typeof q.effect.procCooldown === 'number' ? framesOf(q.effect.procCooldown) : 0;
 							procReady.set(q.shape, hit.time + icd);
 							seen.add(q.shape);
 							fired.push(q.rep);
@@ -1157,12 +1159,13 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		for (const [icdKey, effects] of byIcd) {
 			const first = effects[0];
 			const rawIcd = first.procCooldown;
-			const icd =
+			const icd = framesOf(
 				rawIcd == null
 					? 0
 					: typeof rawIcd === 'number'
 						? rawIcd
-						: rawIcd.refinementValues[refinementIndex];
+						: rawIcd.refinementValues[refinementIndex]
+			);
 			const procReady = procReadyAt.get(icdKey) ?? 0;
 			if (swapTime < procReady) continue;
 			procReadyAt.set(icdKey, swapTime + icd);
@@ -1171,10 +1174,10 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				characterId: holderId,
 				receiverId,
 				start: swapTime,
-				end: swapTime + first.duration!,
+				end: swapTime + framesOf(first.duration!),
 				effects,
 				refinementIndex,
-				duration: first.duration!,
+				duration: framesOf(first.duration!),
 				procCooldown: icd > 0 ? icd : undefined,
 				isMutuallyExclusive: effects.length > 1,
 				source: { type: 'weapon', weaponId: weapon.id, trigger: triggerType }
@@ -1300,7 +1303,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							? {
 									startValue: firstValue.startValue,
 									stepValue: firstValue.stepValue,
-									stepInterval: firstValue.stepInterval,
+									stepInterval: framesOf(firstValue.stepInterval),
 									cap: firstValue.cap
 								}
 							: undefined;
@@ -1309,11 +1312,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							? {
 									startValue: firstValue.startValue,
 									endValue: firstValue.endValue ?? 0,
-									duration: barEffects[0].duration!
+									duration: framesOf(barEffects[0].duration!)
 								}
 							: undefined;
 					const buffStart = cast.fieldStart;
-					const buffEnd = buffStart + barEffects[0].duration!;
+					const buffEnd = buffStart + framesOf(barEffects[0].duration!);
 
 					const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
 					for (const receiverTrack of tracks) {
@@ -1428,7 +1431,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					});
 					if (barEffects.length === 0) continue;
 					const buffStart = hit.time;
-					const buffEnd = buffStart + barEffects[0].duration!;
+					const buffEnd = buffStart + framesOf(barEffects[0].duration!);
 					const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
 					for (const receiverTrack of tracks) {
 						const segStart = Math.max(buffStart, receiverTrack.activeStart);
@@ -1621,7 +1624,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					});
 					if (barEffects.length === 0) continue;
 					const buffStart = cast.fieldStart;
-					const buffEnd = buffStart + barEffects[0].duration!;
+					const buffEnd = buffStart + framesOf(barEffects[0].duration!);
 					emit({
 						characterId: sourceTrack.characterId,
 						receiverId: sourceTrack.characterId,
@@ -1697,7 +1700,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					});
 					if (barEffects.length === 0) continue;
 					const buffStart = hit.time;
-					const buffEnd = buffStart + barEffects[0].duration!;
+					const buffEnd = buffStart + framesOf(barEffects[0].duration!);
 					emit({
 						characterId: sourceTrack.characterId,
 						receiverId: sourceTrack.characterId,
@@ -1741,7 +1744,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				if (selfEffectsNB.length > 0) {
 					for (const nb of nbBars) {
 						const buffStart = nb.start;
-						const buffEnd = buffStart + selfEffectsNB[0].duration!;
+						const buffEnd = buffStart + framesOf(selfEffectsNB[0].duration!);
 						emit({
 							characterId: sourceTrack.characterId,
 							receiverId: sourceTrack.characterId,

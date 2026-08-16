@@ -8,6 +8,7 @@
  * formatters is guarded separately by the corpus parity test (phase 4–6).
  */
 
+import { framesOf } from '$lib/utils/frames';
 import { describe, it, expect } from 'vitest';
 import { parseNotation } from './notationParser';
 import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
@@ -122,7 +123,7 @@ describe('buff windows — team surface', () => {
 		expect(team[0].primaryStat).toBe('atk');
 		expect(team[0].bars).toHaveLength(2);
 		expect(team[0].bars[0].start).toBe(0);
-		expect(team[0].bars[0].end).toBe(8);
+		expect(team[0].bars[0].end).toBe(framesOf(8));
 	});
 
 	it('summon spawn offset shifts the buff start (fieldStart)', () => {
@@ -132,8 +133,8 @@ describe('buff windows — team surface', () => {
 			summons: [{ name: 'Zone', duration: 10, spawnsAt: 60 }]
 		});
 		const { team } = run('Spawner E', [c]);
-		expect(team[0].bars[0].start).toBe(1); // 60f offset
-		expect(team[0].bars[0].end).toBe(9);
+		expect(team[0].bars[0].start).toBe(60); // 60f offset
+		expect(team[0].bars[0].end).toBe(framesOf(9));
 	});
 
 	it('constellation-gated effect only fires at the required level', () => {
@@ -179,8 +180,8 @@ describe('buff windows — team surface', () => {
 		expect(team).toHaveLength(1);
 		expect(team[0].key).toBe('stancer::char::E::afterDuration');
 		expect(team[0].sourceLabel).toBe('Stancer E (end)');
-		expect(team[0].bars[0].start).toBe(6);
-		expect(team[0].bars[0].end).toBe(16);
+		expect(team[0].bars[0].start).toBe(framesOf(6));
+		expect(team[0].bars[0].end).toBe(framesOf(16));
 	});
 
 	it('NB-triggered team buffs fire once per NB event even across repeated segments', () => {
@@ -300,7 +301,11 @@ describe('buff windows — received surface', () => {
 		expect(received).toHaveLength(1);
 		expect(received[0].characterId).toBe('selfy');
 		expect(received[0].sourceLabel).toBe('Selfy E');
-		expect(received[0].bars[0]).toMatchObject({ start: 0, end: 12, duration: 12 });
+		expect(received[0].bars[0]).toMatchObject({
+			start: 0,
+			end: framesOf(12),
+			duration: framesOf(12)
+		});
 	});
 
 	it('a self buff gated on offField is dropped (self is always on-field)', () => {
@@ -325,8 +330,8 @@ describe('buff windows — received surface', () => {
 		// First slice covers the source's own on-field span; the LAST slice
 		// (RecvB is on field when the rotation ends) extends to the buff end.
 		expect(aRow.bars[0].start).toBe(0);
-		expect(bRow.bars[0].end).toBe(10);
-		expect(bRow.bars[0].duration).toBe(10);
+		expect(bRow.bars[0].end).toBe(framesOf(10));
+		expect(bRow.bars[0].duration).toBe(framesOf(10));
 	});
 
 	it('TTDS-style swap procs fire on swap-out, honor the ICD, and skip same-character continuations', () => {
@@ -342,7 +347,7 @@ describe('buff windows — received surface', () => {
 		expect(ttdsRows).toHaveLength(1);
 		expect(ttdsRows[0].characterId).toBe('driver');
 		expect(ttdsRows[0].bars).toHaveLength(1);
-		expect(ttdsRows[0].bars[0].procCooldown).toBe(20);
+		expect(ttdsRows[0].bars[0].procCooldown).toBe(framesOf(20));
 		// Consecutive same-character segments are one field presence: no proc.
 		const cont = run('Carrier E > Carrier E', [a, b], {}, loadout);
 		expect(cont.received).toHaveLength(0);
@@ -416,8 +421,8 @@ describe('buff windows — per-swing onHit deltas (phase 6)', () => {
 		// Two swings (1/3s apart) → two non-overlapping windows anchored at
 		// the swing ENDS (≈0.333s / ≈0.667s), not one at the block end.
 		expect(team[0].bars).toHaveLength(2);
-		expect(team[0].bars[0].start).toBeCloseTo(1 / 3, 5);
-		expect(team[0].bars[1].start).toBeCloseTo(2 / 3, 5);
+		expect(team[0].bars[0].start).toBe(framesOf(1 / 3));
+		expect(team[0].bars[1].start).toBe(framesOf(2 / 3));
 	});
 
 	it('overlapping same-shape swing hits REFRESH one window in place', () => {
@@ -433,8 +438,8 @@ describe('buff windows — per-swing onHit deltas (phase 6)', () => {
 		const { team } = run('Refresher N2', [c]);
 		expect(team).toHaveLength(1);
 		expect(team[0].bars).toHaveLength(1); // merged
-		expect(team[0].bars[0].start).toBeCloseTo(1 / 3, 5); // first swing end
-		expect(team[0].bars[0].end).toBeCloseTo(2 / 3 + 7, 5); // refreshed off the last
+		expect(team[0].bars[0].start).toBe(framesOf(1 / 3)); // first swing end
+		expect(team[0].bars[0].end).toBe(framesOf(2 / 3 + 7)); // refreshed off the last
 	});
 });
 
@@ -463,7 +468,7 @@ describe('buff windows — real-kit deltas (Yanfei A1, Flins C2)', () => {
 		// window whose end trails the LAST swing by 7s.
 		expect(nRow!.bars).toHaveLength(1);
 		const bar = nRow!.bars[0];
-		expect(bar.end - bar.start).toBeGreaterThan(7 - 1e-9);
+		expect(bar.end - bar.start).toBeGreaterThanOrEqual(framesOf(7));
 		// The E cast itself is an Electro hit too — its own row exists.
 		expect(team.some((r) => r.key === 'flins::char::E::resShred')).toBe(true);
 	});
@@ -486,8 +491,8 @@ describe('variant effects resolve per cast token', () => {
 			const w = run(n, [diona]).rotation.windows.find((x) => x.kind === 'shield');
 			return w ? w.end - w.start : undefined;
 		};
-		expect(dur('Diona E')).toBeCloseTo(4.8, 6);
-		expect(dur('Diona hE')).toBeCloseTo(12, 6);
+		expect(dur('Diona E')).toBe(framesOf(4.8));
+		expect(dur('Diona hE')).toBe(framesOf(12));
 	});
 
 	it('Shenhe: the hold buff runs 15s where the tap runs 10s', async () => {
@@ -496,8 +501,8 @@ describe('variant effects resolve per cast token', () => {
 			const bar = run(n, [shenhe]).team[0].bars[0];
 			return bar.end - bar.start;
 		};
-		expect(span('Shenhe E')).toBeCloseTo(10, 6);
-		expect(span('Shenhe hE')).toBeCloseTo(15, 6);
+		expect(span('Shenhe E')).toBe(framesOf(10));
+		expect(span('Shenhe hE')).toBe(framesOf(15));
 	});
 
 	// ⚓ REPLACE, NOT ADD. Eula's base skill carries no effects and her hold
@@ -522,7 +527,7 @@ describe('variant effects resolve per cast token', () => {
 		const held = run('Zhongli hE', [zhongli]);
 		const shield = held.rotation.windows.find((w) => w.kind === 'shield');
 		expect(shield).toBeTruthy();
-		expect(shield!.end - shield!.start).toBeCloseTo(20, 6);
+		expect(shield!.end - shield!.start).toBe(framesOf(20));
 		expect(held.team.some((r) => r.kind === 'debuff')).toBe(true);
 	});
 
@@ -535,8 +540,8 @@ describe('variant effects resolve per cast token', () => {
 			const w = run(n, [yunJin]).rotation.windows.find((x) => x.kind === 'shield');
 			return w ? w.end - w.start : undefined;
 		};
-		expect(dur('Yun Jin E')).toBeCloseTo(0.2, 6);
-		expect(dur('Yun Jin hE')).toBeCloseTo(0.8, 6);
+		expect(dur('Yun Jin E')).toBe(framesOf(0.2));
+		expect(dur('Yun Jin hE')).toBe(framesOf(0.8));
 	});
 });
 
@@ -579,7 +584,7 @@ describe('artifact onHit — summon-borne hits', () => {
 		expect(rows).toHaveLength(1);
 		expect(rows[0].bars).toHaveLength(1);
 		// Ticks at +2/4/6/8/10 each re-trigger inside the open 3s window.
-		expect(rows[0].bars[0].end - rows[0].bars[0].start).toBeGreaterThan(10);
+		expect(rows[0].bars[0].end - rows[0].bars[0].start).toBeGreaterThan(framesOf(10));
 	});
 
 	it('⛔ a HEAL-only summon carries nothing — a heal tick is not a hit', () => {
@@ -588,7 +593,7 @@ describe('artifact onHit — summon-borne hits', () => {
 		// The E cast itself still hits, so the set fires once for its 3s.
 		expect(rows).toHaveLength(1);
 		expect(rows[0].bars).toHaveLength(1);
-		expect(rows[0].bars[0].end - rows[0].bars[0].start).toBeCloseTo(3, 6);
+		expect(rows[0].bars[0].end - rows[0].bars[0].start).toBe(framesOf(3));
 	});
 
 	it('a summon with no damage effect at all leaves the same 3s stub', () => {
@@ -596,7 +601,7 @@ describe('artifact onHit — summon-borne hits', () => {
 		c.abilities[1] = mkSkill('holder', { summons: [{ label: 'Inert', duration: 12 }] });
 		const { team } = run('Holder E ~14s', [c], {}, tenacity);
 		const rows = team.filter((r) => r.key.includes('tenacity_of_the_millelith'));
-		expect(rows[0].bars[0].end - rows[0].bars[0].start).toBeCloseTo(3, 6);
+		expect(rows[0].bars[0].end - rows[0].bars[0].start).toBe(framesOf(3));
 	});
 
 	// Deepwood authors its shred TWICE (once keyed to skill hits, once to burst).
@@ -633,7 +638,7 @@ describe('artifact onHit — real characters', () => {
 		const [xingqiu, xiangling] = await Promise.all([load('xingqiu'), load('xiangling')]);
 		const xq = span(run('Xingqiu E Q ~20s', [xingqiu], {}, tenacity).team);
 		const xl = span(run('Xiangling E Q ~20s', [xiangling], {}, tenacity).team);
-		expect(xq).toBeCloseTo(3, 6);
+		expect(xq).toBe(framesOf(3));
 		// Observed 10.1s — Guoba's ticks, merged. Asserted loosely so a Guoba
 		// cadence recuration moves the number without breaking the invariant.
 		expect(xl).toBeGreaterThan(6);
@@ -723,7 +728,7 @@ describe('buff rows — refresh merge', () => {
 		expect(team[0].bars).toHaveLength(1);
 		expect(team[0].bars[0].start).toBe(0);
 		// Spans to the SECOND cast's end, not the first's.
-		expect(team[0].bars[0].end).toBeGreaterThan(12);
+		expect(team[0].bars[0].end).toBeGreaterThan(framesOf(12));
 		// ⚓ The IR is untouched — two triggers, still two windows.
 		expect(rotation.windows.filter((w) => w.kind === 'buff')).toHaveLength(2);
 	});
@@ -793,8 +798,8 @@ describe('onState / post-stance buffs — triggers that were authored and never 
 		const { team } = run('Hu Tao E ~14s > Xingqiu E', [huTao, xingqiu]);
 		const bars = barsOf(team, 'hu_tao::char::E::afterDuration');
 		expect(bars).toHaveLength(1);
-		expect(bars[0].start).toBeCloseTo(9, 6);
-		expect(bars[0].end).toBeCloseTo(17, 6);
+		expect(bars[0].start).toBe(framesOf(9));
+		expect(bars[0].end).toBe(framesOf(17));
 	});
 
 	it('🐛 a stance ends at its DURATION even when the holder stays on field past it', async () => {
@@ -809,7 +814,7 @@ describe('onState / post-stance buffs — triggers that were authored and never 
 		const stance = rotation.windows.find(
 			(w) => w.kind === 'state' && w.name === 'inStance' && w.characterId === 'hu_tao'
 		)!;
-		expect(stance.end - stance.start).toBeCloseTo(9, 6);
+		expect(stance.end - stance.start).toBe(framesOf(9));
 	});
 
 	it('a swap BEFORE the stance duration still truncates it', async () => {
@@ -819,7 +824,7 @@ describe('onState / post-stance buffs — triggers that were authored and never 
 		const stance = rotation.windows.find(
 			(w) => w.kind === 'state' && w.name === 'inStance' && w.characterId === 'hu_tao'
 		)!;
-		expect(stance.end - stance.start).toBeLessThan(9);
+		expect(stance.end - stance.start).toBeLessThan(framesOf(9));
 	});
 
 	it('Citlali C2 spans her SHIELD window — an onState buff has no duration of its own', async () => {
@@ -835,8 +840,8 @@ describe('onState / post-stance buffs — triggers that were authored and never 
 		)!;
 		const bars = barsOf(team, 'citlali::char::onState::em');
 		expect(bars).toHaveLength(1);
-		expect(bars[0].start).toBeCloseTo(shield.start, 6);
-		expect(bars[0].end).toBeCloseTo(shield.end, 6);
+		expect(bars[0].start).toBe(shield.start);
+		expect(bars[0].end).toBe(shield.end);
 	});
 
 	it('…and nothing below C2, since the constellation is the holder’s gate', async () => {

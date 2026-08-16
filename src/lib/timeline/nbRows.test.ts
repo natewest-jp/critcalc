@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { computeNBBars, type NBBar } from './nbRows';
 import { parseNotation } from '$lib/utils/notationParser';
+import { framesOf } from '$lib/utils/frames';
 import type { TimelineEvent } from '$lib/utils/notationParser';
 import type { CharacterData } from '$lib/types/character';
 import type { Ability } from '$lib/types/ability';
@@ -77,7 +78,8 @@ function legacyComputeNBBars(
 	natlanCount: number
 ): NBBar[] {
 	if (natlanCount === 0) return [];
-	const cd = natlanCount >= 3 ? 9 : natlanCount === 2 ? 12 : 18;
+	// The team NB clock: 18/12/9 SECONDS by Natlan count, on a frames-native IR.
+	const cd = natlanCount >= 3 ? framesOf(9) : natlanCount === 2 ? framesOf(12) : framesOf(18);
 	const triggers: number[] = [];
 	for (const ev of events) {
 		if (ev.kind === 'cast') {
@@ -134,14 +136,14 @@ describe('computeNBBars (projection of parser NB events)', () => {
 	it('casts fire the NB clock; in-cooldown casts are suppressed (18s @ 1 Natlan)', () => {
 		const bars = parseAndCompare('NatSword E Q');
 		expect(bars.length).toBe(1);
-		expect(bars[0]).toEqual({ start: 0, cooldown: 18 });
+		expect(bars[0]).toEqual({ start: 0, cooldown: framesOf(18) });
 	});
 
 	it('catalyst input-token anchors trigger; movement does not; per-block cadence holds', () => {
 		// N3 anchor at t=0 fires; the follow-up swings and the D are not
 		// triggers; the E lands inside the 18s window and is suppressed.
 		const bars = parseAndCompare('NatCat N3 D E');
-		expect(bars).toEqual([{ start: 0, cooldown: 18 }]);
+		expect(bars).toEqual([{ start: 0, cooldown: framesOf(18) }]);
 	});
 
 	it('non-catalyst normals never trigger', () => {
@@ -156,21 +158,21 @@ describe('computeNBBars (projection of parser NB events)', () => {
 		const one = parseAndCompare('NatSword E', [natSword]);
 		const two = parseAndCompare('NatSword E', [natSword, natCat]);
 		const three = parseAndCompare('NatSword E', [natSword, natCat, natThird, null]);
-		expect(one[0].cooldown).toBe(18);
-		expect(two[0].cooldown).toBe(12);
-		expect(three[0].cooldown).toBe(9);
+		expect(one[0].cooldown).toBe(framesOf(18));
+		expect(two[0].cooldown).toBe(framesOf(12));
+		expect(three[0].cooldown).toBe(framesOf(9));
 	});
 
 	it('slot roster supplies Natlan membership even when never typed in the notation', () => {
 		// A non-Natlan character's casts still fire the team NB clock as long
 		// as a slot holds a Natlan unit.
 		const bars = parseAndCompare('Plain E', [plain, natSword]);
-		expect(bars).toEqual([{ start: 0, cooldown: 18 }]);
+		expect(bars).toEqual([{ start: 0, cooldown: framesOf(18) }]);
 	});
 
 	it('without a slot roster, team context falls back to the notation-derived team', () => {
 		const bars = parseAndCompare('Plain E > NatSword E');
 		expect(bars.length).toBe(1);
-		expect(bars[0]).toEqual({ start: 0, cooldown: 18 });
+		expect(bars[0]).toEqual({ start: 0, cooldown: framesOf(18) });
 	});
 });

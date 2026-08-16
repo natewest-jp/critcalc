@@ -6,10 +6,21 @@
  * PNG exporter (timelineExport.ts) render. Extracted in P4 step 3e from the
  * two arithmetically identical inline twins.
  *
- * Returns geometric segments in TIMELINE SECONDS. Each consumer applies its
- * own pixel projection (barGeom / barGeomW) and its own per-role styling
- * (DOM classes vs. canvas fills). Only the case selection and the start/span
- * math live here — styling stays consumer-side, faithful to each medium.
+ * ⚓ UNIT-AGNOSTIC, and deliberately so. Every line here is addition, comparison
+ * or `Math.max`, so the segments come back in whatever unit the caller's bar was
+ * in: the planner passes FRAMES (gauge-round.md C1), the Team Builder's Compare
+ * passes SECONDS via `barCycles`. ⛔ Do not "fix" this to one unit — one chart
+ * would then have to convert around a module it shares.
+ *
+ * ⚠️ It was NOT agnostic until 2026-08-16: `summonActivatesAt` is authored in
+ * frames and this file divided it by 60 into a bar whose other fields were
+ * seconds — a genuinely mixed-unit expression. Deleting that division is what
+ * made the module general; Compare never sets the field, so its term is 0 there.
+ *
+ * Each consumer applies its own pixel projection (barGeom / barGeomW) and its
+ * own per-role styling (DOM classes vs. canvas fills). Only the case selection
+ * and the start/span math live here — styling stays consumer-side, faithful to
+ * each medium.
  *
  * The three cases:
  *   1. Sac-proc reset — a single dim continuation bar (CD reset to 0).
@@ -33,11 +44,11 @@ export type BarPhaseRole = 'uptime' | 'uptimeFlush' | 'uptimeDim' | 'overflow' |
 
 export interface BarPhaseSegment {
 	role: BarPhaseRole;
-	/** Segment start in timeline seconds. */
+	/** Segment start, in the caller's time unit (frames for the planner). */
 	start: number;
-	/** Segment span in seconds (fed to the consumer's pixel projection). */
+	/** Segment span, same unit as `start` (fed to the consumer's projection). */
 	span: number;
-	/** Cooldown seconds for the ghost-track label — present on `ghost` only. */
+	/** Cooldown for the ghost-track label — present on `ghost` only. */
 	cooldown?: number;
 	/** Which repetition of the cycle this segment belongs to (0 = the first, the
 	 *  one that actually happened). Set only by `repeatCycles` for the Team
@@ -70,10 +81,10 @@ export interface BarPhaseBar {
  * single-phase layout (the lifetime is drawn on the lane, not the E/Q row).
  */
 export function barPhases(bar: BarPhaseBar, hasSummon: boolean): BarPhaseSegment[] {
-	const fieldOffset = (bar.summonActivatesAt ?? 0) / 60;
+	const fieldOffset = bar.summonActivatesAt ?? 0;
 	const fieldStart = bar.start + fieldOffset;
 
-	// Seconds from the bar's start until the ability is castable again. ⚠ THIS
+	// Time from the bar's start until the ability is castable again. ⚠ THIS
 	// IS NOT `bar.cooldown` — a cooldown whose CLOCK starts late ends late, and
 	// the tail's END is where a reader looks to answer "when can I recast".
 	// `bar.cooldown` survives as the ghost's LABEL, because the label's job is

@@ -1,6 +1,6 @@
 # L2 — Integer frames
 
-**Status:** planned · 2026-08-16
+**Status:** ✅ SHIPPED 2026-08-16
 **Landing:** [`gauge-round.md`](gauge-round.md) §L2, against contract **C1**.
 **Shape:** no behaviour change. The timeline must render identically.
 
@@ -20,13 +20,13 @@ boundaries converts the whole machine.
 
 Measured on `main`:
 
-| surface                                                            | count                             |
-| ------------------------------------------------------------------ | --------------------------------- |
-| `/60` · `*60` sites in production code                             | **17** (13 parser, 4 consumers)   |
-| bare seconds constants inside the parser's arithmetic              | **1** (`MIN_ACTIVE_S = 0.5`)      |
-| `parseNotation` production call sites                              | **1** (`RotationTimeline:362`)    |
-| time-bearing test files                                            | 15 (~758 `expect`s)               |
-| …of which lines carrying a decimal literal                         | **~163**                          |
+| surface                                               | count                           |
+| ----------------------------------------------------- | ------------------------------- |
+| `/60` · `*60` sites in production code                | **17** (13 parser, 4 consumers) |
+| bare seconds constants inside the parser's arithmetic | **1** (`MIN_ACTIVE_S = 0.5`)    |
+| `parseNotation` production call sites                 | **1** (`RotationTimeline:362`)  |
+| time-bearing test files                               | 15 (~758 `expect`s)             |
+| …of which lines carrying a decimal literal            | **~163**                        |
 
 ⚠️ The one bare constant is the important number here. A parser full of seconds
 literals would be a migration full of judgement calls; a parser with **one** is a
@@ -63,22 +63,22 @@ Everything in this landing is one of these four.
 The long list, and the one that must be exhaustive. A missed field is a bar
 **60× too short** — loud, but only if a test covers it.
 
-| field                                                  | read at                                                  |
-| ------------------------------------------------------ | -------------------------------------------------------- |
-| `cooldown` (ability + variant)                         | `resolveAbilityTiming`                                   |
-| `duration` / `activeDuration` / `summons[].duration`   | `resolveActiveDuration`, `registerShieldOnCast`, `summonSpan` |
-| `CooldownModifier.value` **when `type === 'flat'`**     | `applyModifiers` — ⚠️ see §4                             |
-| `chainStage.window`                                    | `advanceChain`                                           |
-| `DurationExtension.delta` / `.procCooldown`            | both extension dispatchers                               |
-| `gainStacks.lifetime` / `.sourceLifetime`              | 4 dispatch + 3 sync sites                                |
-| `gainStacks.drain.ratePerSecond`                       | `applyDrain` — ⚠️ **a RATE**, see §4                      |
-| `Effect.procCooldown`                                  | onHit + onShieldEnd dispatch, weapon cdReset             |
-| `summonTick.interval` / `.firstTickDelay`              | `collectSummonTicks`                                     |
-| `shield` / `infuse` `Effect.duration`                  | `registerShieldOnCast`, `registerInfusionsOnCast`        |
-| `TransientStateSpec.duration`                          | `openTransientState`                                     |
-| every `effect.duration` in `buffWindows.ts`            | **~25 sites**, all `buffStart + duration`                |
-| `rampParams.stepInterval`, `decayParams.duration`      | `buffWindows.ts` window authoring                        |
-| `GLEAM_WINDOW_S = 20`                                  | `moonsignRows.ts:14`                                     |
+| field                                                | read at                                                       |
+| ---------------------------------------------------- | ------------------------------------------------------------- |
+| `cooldown` (ability + variant)                       | `resolveAbilityTiming`                                        |
+| `duration` / `activeDuration` / `summons[].duration` | `resolveActiveDuration`, `registerShieldOnCast`, `summonSpan` |
+| `CooldownModifier.value` **when `type === 'flat'`**  | `applyModifiers` — ⚠️ see §4                                  |
+| `chainStage.window`                                  | `advanceChain`                                                |
+| `DurationExtension.delta` / `.procCooldown`          | both extension dispatchers                                    |
+| `gainStacks.lifetime` / `.sourceLifetime`            | 4 dispatch + 3 sync sites                                     |
+| `gainStacks.drain.ratePerSecond`                     | `applyDrain` — ⚠️ **a RATE**, see §4                          |
+| `Effect.procCooldown`                                | onHit + onShieldEnd dispatch, weapon cdReset                  |
+| `summonTick.interval` / `.firstTickDelay`            | `collectSummonTicks`                                          |
+| `shield` / `infuse` `Effect.duration`                | `registerShieldOnCast`, `registerInfusionsOnCast`             |
+| `TransientStateSpec.duration`                        | `openTransientState`                                          |
+| every `effect.duration` in `buffWindows.ts`          | **~25 sites**, all `buffStart + duration`                     |
+| `rampParams.stepInterval`, `decayParams.duration`    | `buffWindows.ts` window authoring                             |
+| `GLEAM_WINDOW_S = 20`                                | `moonsignRows.ts:14`                                          |
 
 Literal constants that are seconds today and become frame counts:
 
@@ -90,7 +90,7 @@ Literal constants that are seconds today and become frame counts:
 
 ### B2 — IN: authored **frames** → frames (delete the `/ 60`)
 
-These fields were **always** frames; the parser was converting them *down* into a
+These fields were **always** frames; the parser was converting them _down_ into a
 seconds clock. Every one of these edits makes the code shorter.
 
 `FrameMap` values (4 resolvers + the plunge site) · `summonActivatesAt` (3 sites) ·
@@ -154,7 +154,7 @@ resolution, and charges are not a time at all — so the conversion cannot go in
 🐛 **`icd.ts` is unit-agnostic but its constant is not.** `icdApplies` only ever computes
 `time - timerStart >= timer`, so it is correct in any unit the caller is consistent in
 — but `STANDARD_ICD.timer = 2.5` is seconds, and the instrument shares it.
-⚓ **Make frames primary and derive seconds for the instrument**: gcsim's ICD *is* 150
+⚓ **Make frames primary and derive seconds for the instrument**: gcsim's ICD _is_ 150
 frames, so this is the truer statement anyway, and it keeps the module's own
 "one model, two shapes" law rather than minting a second constant that can drift.
 
@@ -175,8 +175,12 @@ and that chart's data path is derived capabilities — seconds, with no frame an
 `RotationTimeline` already funnels every geometry call through them:
 
 ```ts
-function xForTime(f: number)              { return projectX(f / 60, scale); }
-function barGeom(startF: number, spanF: number) { return projectBar(startF / 60, spanF / 60, scale); }
+function xForTime(f: number) {
+	return projectX(f / 60, scale);
+}
+function barGeom(startF: number, spanF: number) {
+	return projectBar(startF / 60, spanF / 60, scale);
+}
 ```
 
 ⚡ **Consequence: the renderer's ~20 `barGeom(...)` template call sites change by
@@ -253,7 +257,7 @@ boundary.
 2. **The parser: B2 first (delete `/ 60`), then B1 (add `framesOf`), then B3.**
    ⚓ B2 before B1 deliberately — the `/ 60` deletions are the sites where the code
    was already fighting the unit, and doing them first means the remaining seconds
-   reads are the only unconverted things left, which makes B1's perimeter *visible*.
+   reads are the only unconverted things left, which makes B1's perimeter _visible_.
 3. **`buffWindows.ts`** — the ~25 `effect.duration` reads + ramp/decay params.
 4. **The IR type doc-comments** in `rotationEvents.ts` — every `(seconds)` becomes
    `(frames)`. ⚠️ Not cosmetic: these comments are the contract every future consumer
@@ -264,7 +268,7 @@ boundary.
    view-model field read only by the planner page's `{…}s` readout).
 7. **`scripts/audit-gcsim-reactions.mjs`** — the oracle reads IR times to build its
    application stream. ⚠️ It compares against gcsim, which is **frames-native**, so
-   this step *removes* a conversion rather than adding one.
+   this step _removes_ a conversion rather than adding one.
 8. **The tests** — ~163 decimal-carrying lines, mechanical.
 
 ---
@@ -298,7 +302,7 @@ not move. ⛔ Not the bytes — see §3b.
   The wrappers (§5) are why they need no edit.
 - ⛔ `buffWindows.ts:980-981, 1025` — `${effect.duration}` inside dedup/partition **keys**.
   Those are shape identities over authored data, not times in arithmetic. Leave them;
-  convert the sibling read at `:1033` that *is* arithmetic.
+  convert the sibling read at `:1033` that _is_ arithmetic.
 
 ### More of what C1 cashes in (found by the consumer survey)
 
@@ -309,3 +313,74 @@ not move. ⛔ Not the bytes — see §3b.
   because a frame count in seconds genuinely has decimals.
 - `mergeRefreshedBars.ts:80` and three siblings in `buffWindows.ts` — `start <= end`
   exact boundary tests deciding merge-vs-emit on a float coincidence.
+
+---
+
+## 10. Outcome
+
+✅ **Landed 2026-08-16.** All four gates green: **1474 tests**, `npm run check`,
+`npm run lint`, `npm run build`. The plan above held — every ruling in §5 survived
+contact, and no contract in `gauge-round.md` needed amending.
+
+### ⚓⚓ The oracle says it exactly
+
+Re-running L0 against the L2 parser reproduces the baseline **number for number**:
+
+| metric                                   | L0 baseline | after L2   |
+| ---------------------------------------- | ----------- | ---------- |
+| applications — ours                      | 63          | **63** ✅  |
+| applications — gcsim                     | 200         | **200** ✅ |
+| we apply, gcsim does not                 | 1           | **1** ✅   |
+| gcsim applies, we do not                 | 138         | **138** ✅ |
+| element mismatch on a paired application | 0           | **0** ✅   |
+
+⚓ Stronger than §3b predicted — it did not merely hold the counts, it held every one
+of the twelve per-fixture rows. The half-frame snapping is real but landed nowhere
+that a reaction could notice.
+
+### 🐛 …and it earned its keep on the way there
+
+The first re-run reported gcsim at **215**, not 200. That is a ~7.5% move, and it had
+a ready-made explanation sitting right there: L0 documented that gcsim is
+non-deterministic and that its counts flicker. ⚠️ **It was not flicker.** A second and
+third run gave 216 and 215 — a systematic offset wearing noise as a costume.
+
+The cause was in the harness: `audit-gcsim-reactions.mjs` sized gcsim's run with
+`Math.ceil(parsed.totalDuration + 10)`, and **gcsim's `duration` option is SECONDS**
+while `totalDuration` had just become frames. Every fixture was asking gcsim to
+simulate ~30× longer than the rotation, and the extra summon ticks it dutifully
+produced looked exactly like plausible RNG.
+
+⚓ **The lesson is the check, not the bug.** Nothing else in the round would have
+caught this: it is in a script, so no test covers it; it produced a plausible number,
+not a crash; and the explanation for waving it through was already written down and
+true in general. What caught it was comparing against a **recorded** baseline instead
+of trusting the reasoning — which is the entire argument for building L0 first.
+
+⚠️ Second-order note worth keeping: the fix's first cut added a `$lib` import at the
+top of that script, ahead of `./lib/alias-hook.mjs` — whose header says in capitals
+that it must be first, because it is what makes `$lib` resolvable at all. It belongs
+in the dynamic-import block with the parser.
+
+### What the plan under-called
+
+⚠️ **Rebasing "the failing assertions" is not the whole job.** A bound like
+`expect(bar.start).toBeGreaterThan(10)` does not FAIL when the value becomes 610 — it
+passes, trivially and forever, and stops testing anything. Roughly a dozen of these
+sat beside the assertions that did fail, usually as the other half of a
+`toBeGreaterThan` / `toBeLessThan` pair. ⛔ Iterating until green would have left every
+one of them dead. They only surface from a deliberate sweep for time-valued
+assertions carrying a bare number.
+
+⚓ The same sweep is what turned ~40 `toBeCloseTo(x, 6)` into exact `toBe(x)`. Frame
+times are integers, so a tolerance no longer expresses caution — it hides the ±1-frame
+disagreements L3's differ will exist to catch.
+
+### Two small things that came free
+
+- `applyModifiers` gained an explicit `flatScale` parameter rather than a conversion
+  inside it, because it serves cooldowns, durations **and** charge counts, and a
+  charge count is not a time. The signature now says so.
+- `GENERIC_SKILL.cooldown` / `GENERIC_BURST.cooldown` are read for the first time.
+  The no-ability fallbacks had duplicated their values as bare `12` / `15` literals;
+  the constants existed for exactly this and were authored-but-unread.

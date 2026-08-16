@@ -6,13 +6,20 @@
  *   Bennett Q > Kazuha hE P > Xiangling Q E > Fischl E N1 N2 ~2s
  *
  * Time model:
+ *   ⚓ THE CLOCK IS INTEGER FRAMES AT 60fps, and so is every time field on the
+ *   IR (gauge-round.md contract C1). Authored SECONDS are converted at the read
+ *   site by `framesOf`, which is the one rounding in the system; seconds come
+ *   back only at presentation, where a bare `/ 60` is self-evidently a display.
+ *   ⛔ Don't reintroduce a seconds value here to "make a site readable" — the
+ *   whole benefit is that a number in this file needs no unit asked of it.
+ *
  *   - All Q/E bars for a character start at a local cursor that begins at
  *     that character's active-start.
- *   - Q advances the local cursor by Q_CAST_S, E by E_CAST_S.
- *   - ~Xs advances the cursor by X seconds (pure time advance, no label).
- *   - ~?s is a placeholder meaning "duration unset" — advances by MIN_ACTIVE_S
+ *   - Q advances the local cursor by Q_CAST_F, E by E_CAST_F.
+ *   - ~Xs advances the cursor by X seconds, rounded to frames on the way in.
+ *   - ~?s is a placeholder meaning "duration unset" — advances by MIN_ACTIVE_F
  *     and flags the track so the renderer can show a visual warning.
- *   - Swapping costs swapFrames/60 seconds before the next character starts.
+ *   - Swapping costs swapFrames before the next character starts.
  *   - ( ) marks optional actions (KQM-compatible); contents are label tokens
  *     rendered with lower opacity.
  *   - [ ] bracket groups (e.g. [N2D]x3) are preserved as label tokens.
@@ -65,6 +72,7 @@ import {
 	type IcdClock
 } from '$lib/utils/icd';
 import { computeTeamEnabledReactions, computeTeamFactionCounts } from '$lib/utils/teamComposition';
+import { FPS, framesOf } from '$lib/utils/frames';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import {
 	GENERIC_NORMAL_HITS,
@@ -102,11 +110,11 @@ export type {
  *  Kept as the renderer's per-track iteration surface; the cast event is
  *  the source of truth. */
 export type TimelineBar = {
-	start: number; // seconds
-	uptime: number; // seconds (0 = instant)
-	cooldown: number; // seconds
+	start: number; // frames
+	uptime: number; // frames (0 = instant)
+	cooldown: number; // frames
 	label: string; // notation token displayed on the bar (e.g. "Q", "hE")
-	castTime: number; // seconds — duration of the cast animation (used for active-bar overlay)
+	castTime: number; // frames — duration of the cast animation (used for active-bar overlay)
 	/** Absolute time this cast's clock is mechanically ready again (mirrors
 	 *  `CastEvent.readyAt`). The ghost-CD tail ENDS here.
 	 *
@@ -154,8 +162,8 @@ export type InputBlockKind =
 
 /** A discrete per-input building block in the active row. */
 export type InputBlock = {
-	start: number; // seconds — absolute timeline position
-	duration: number; // seconds — block width
+	start: number; // frames — absolute timeline position
+	duration: number; // frames — block width
 	parts: string[]; // display labels e.g. ["N5"], ["Q"], ["hE"]
 	kind: InputBlockKind;
 	/** The element this input LANDED with, when it landed with one — which is
@@ -171,8 +179,8 @@ export type CharacterTrack = {
 	characterId: string;
 	displayName: string;
 	element: string;
-	activeStart: number; // seconds
-	activeEnd: number; // seconds
+	activeStart: number; // frames
+	activeEnd: number; // frames
 	/** Per-input building blocks in the active row, chronological order. */
 	inputBlocks: InputBlock[];
 	hasUnsetDuration: boolean; // true when ~?s was encountered
@@ -253,15 +261,19 @@ export type ParsedRotation = {
 
 /** Global dash/jump duration approximation (60fps). Character-specific values deferred. */
 const DASH_FRAMES = 21;
-/** Fallback cast time when no E/Q frame data is present on the ability (seconds).
+/** Fallback cast time when no E/Q frame data is present on the ability (FRAMES).
  *  Sourced from the data-derived generic profile (genericProfile.ts) so a
  *  frameless skill/burst gets a realistic cast length, not a magic constant. */
-const E_CAST_S = GENERIC_SKILL.castSwap / 60;
-const Q_CAST_S = GENERIC_BURST.castSwap / 60;
-const MIN_ACTIVE_S = 0.5; // minimum on-field time when no ~Xs is specified
+const E_CAST_F = GENERIC_SKILL.castSwap;
+const Q_CAST_F = GENERIC_BURST.castSwap;
+/** Minimum on-field time when no ~Xs is specified — 0.5s at 60fps. */
+const MIN_ACTIVE_F = 30;
+/** Fallback cooldowns for an uncurated character with no ability data at all. */
+const FALLBACK_SKILL_CD_F = framesOf(GENERIC_SKILL.cooldown);
+const FALLBACK_BURST_CD_F = framesOf(GENERIC_BURST.cooldown);
 
 /**
- * Ceiling on a single `~Xs` time advance, in seconds.
+ * Ceiling on a single `~Xs` time advance, expressed in FRAMES.
  *
  * ⚠️ This guard was missing entirely: the site read `if (isFinite(delta))` and
  * nothing else, so `Ifa ~99999999s` — FOURTEEN typed characters — parsed happily
@@ -274,8 +286,12 @@ const MIN_ACTIVE_S = 0.5; // minimum on-field time when no ~Xs is specified
  * per-token ceiling, so it does NOT bound total duration on its own: a document
  * full of small waits still sums. `rulerTicks` in RotationTimeline carries its
  * own independent cap for that, and both are needed.
+ *
+ * ⚠️ Written as `3600 * FPS` rather than 216000 so the hour it means stays
+ * legible — and so C6's frame-loop cap derives from this one expression instead
+ * of a second magic number that can drift away from it.
  */
-const MAX_TIME_ADVANCE_S = 3600;
+const MAX_TIME_ADVANCE_F = 3600 * FPS;
 
 // Assumed ascension level for all characters (affects modifier eligibility).
 const DEFAULT_ASCENSION = 4;
@@ -531,7 +547,18 @@ export function findChainStage(cond: Condition | undefined): ChainStageCondition
 	return undefined;
 }
 
-/** Applies a list of modifiers to a base value, skipping any with unresolvable conditions. */
+/**
+ * Applies a list of modifiers to a base value, skipping any with unresolvable
+ * conditions.
+ *
+ * ⚠️⚠️ THIS FUNCTION IS POLYMORPHIC IN UNIT, which is why the frames migration
+ * could not simply convert inside it. A `percent` modifier is a ratio and is
+ * unit-free. A `flat` modifier ADDS ITS VALUE — and the three callers disagree
+ * about what a value means: cooldown and duration are authored SECONDS against a
+ * base that is now FRAMES (C1), while `resolveEffectiveCharges` passes a CHARGE
+ * COUNT, which is not a time at all. Hence `flatScale`, set by the caller who
+ * knows.
+ */
 function applyModifiers(
 	base: number,
 	modifiers: CooldownModifier[] | undefined,
@@ -539,7 +566,10 @@ function applyModifiers(
 	resolvedStates: ReadonlySet<string> = new Set(),
 	constellationLevel = 0,
 	chainIndex: ChainIndex = new Map(),
-	stacks?: ReadonlyMap<string, number>
+	stacks?: ReadonlyMap<string, number>,
+	/** Multiplier applied to a `flat` modifier's value before it is added.
+	 *  `FPS` at the two time-valued call sites; 1 (the default) for charges. */
+	flatScale = 1
 ): number {
 	if (!modifiers?.length) return base;
 	let result = base;
@@ -555,7 +585,8 @@ function applyModifiers(
 			) !== true
 		)
 			continue;
-		result = mod.type === 'percent' ? result * (1 + mod.value / 100) : result + mod.value;
+		result =
+			mod.type === 'percent' ? result * (1 + mod.value / 100) : result + mod.value * flatScale;
 	}
 	return Math.max(0, result);
 }
@@ -627,7 +658,7 @@ function resolveEffectiveCharges(
  *
  * Currently detects `duringSummon`: any stationary persistent Q or E cast whose
  * active summon window covers `cursor`. The window starts at
- * cast.time + summonActivatesAt/60 and ends uptime seconds later. Works both
+ * cast.time + summonActivatesAt and ends `uptime` frames later. Works both
  * within a segment and across segments — callers pass all of this character's
  * casts emitted so far.
  *
@@ -653,7 +684,7 @@ function inferredStates(
 ): Set<string> {
 	const states = new Set<string>();
 	const activeDuringSummon = (c: CastEvent) => {
-		const activatesAt = c.summonActivatesAt / 60;
+		const activatesAt = c.summonActivatesAt;
 		return c.time + activatesAt <= cursor && cursor < c.time + activatesAt + c.uptime;
 	};
 
@@ -749,11 +780,14 @@ function peekActionKey(tokens: Token[], j: number, isBow: boolean): ActionKey {
 }
 
 /**
- * Resolves E/Q cast time (seconds) from frame data, selecting the cancel window
+ * Resolves E/Q cast time (FRAMES) from frame data, selecting the cancel window
  * for the given next-action key. The caller passes the `matchVariant`-resolved
  * variant (e.g. hE, h1E, h2E, sQ) whose frames replace the base's.
  * Characters authored without FrameMaps (pre-release stubs with no gcsim
  * source) fall back to the generic cast constants instead of killing the parse.
+ *
+ * ⚓ A FrameMap was always frames; this used to divide them into a seconds
+ * clock. The clock is frames now (C1), so the value passes through untouched.
  */
 function resolveEQCastTime(
 	ability: CastAbility,
@@ -761,16 +795,16 @@ function resolveEQCastTime(
 	nextKey: ActionKey
 ): number {
 	const frameMap = variant?.frames ?? ability.frames;
-	if (!frameMap) return ability.abilityType === 'burst' ? Q_CAST_S : E_CAST_S;
+	if (!frameMap) return ability.abilityType === 'burst' ? Q_CAST_F : E_CAST_F;
 	// A few curated FrameMaps lack the canonical `swap` key (qiqi skill, Mika
 	// hE variant); fall back to the longest defined cancel window rather than
 	// letting undefined poison the cursor with NaN.
 	const swapFallback = frameMap.swap ?? Math.max(0, ...Object.values(frameMap));
-	return (frameMap[nextKey] ?? swapFallback) / 60;
+	return frameMap[nextKey] ?? swapFallback;
 }
 
 /**
- * Resolves cast time (seconds) for a single hit in a normal-attack combo.
+ * Resolves cast time (FRAMES) for a single hit in a normal-attack combo.
  * `index` is the 0-based hit index (normalCounter or explicit N1→0, N2→1 …).
  * Returns null when hits data is absent (caller should skip the cursor advance).
  */
@@ -781,11 +815,11 @@ function resolveNormalCastTime(
 ): number | null {
 	if (!hits?.length) return null;
 	const hit = hits[Math.min(index, hits.length - 1)];
-	return (hit.frames[nextKey] ?? hit.frames.swap) / 60;
+	return hit.frames[nextKey] ?? hit.frames.swap;
 }
 
 /**
- * Resolves cast time (seconds) for a charged attack.
+ * Resolves cast time (FRAMES) for a charged attack.
  * Bow characters use `chargeHits[]`; all others use `chargeFrames`.
  * Token 'C'/'C2' → last entry (full charge); 'C1' → first entry.
  * Returns null when the relevant frame data is absent.
@@ -800,12 +834,12 @@ function resolveChargeCastTime(
 		const hits = ability.chargeHits;
 		if (!hits?.length) return null;
 		const index = charToken === 'C1' ? 0 : hits.length - 1;
-		return (hits[index].frames[nextKey] ?? hits[index].frames.swap) / 60;
+		return hits[index].frames[nextKey] ?? hits[index].frames.swap;
 	} else {
 		// Frameless (uncurated / Blank) → generic charge profile, so a charged
 		// attack advances the cursor realistically instead of by zero.
 		const frameMap = ability.chargeFrames ?? GENERIC_CHARGE_FRAMES;
-		return (frameMap[nextKey] ?? frameMap.swap) / 60;
+		return frameMap[nextKey] ?? frameMap.swap;
 	}
 }
 
@@ -832,17 +866,27 @@ function resolveActiveDuration(
 	ability: CastAbility,
 	variant: AbilityVariant | undefined
 ): { duration: number; modifiers: DurationModifier[] | undefined } {
+	// ⚠️ Every rung reads AUTHORED SECONDS and returns FRAMES (C1). The accessors
+	// (`getActiveDuration`) are shared with the Team Builder, which is
+	// seconds-native — so the conversion belongs here, at the parser's edge, and
+	// NOT inside them.
 	const variantSummon = variant?.summons?.[0];
 	if (variantSummon) {
-		return { duration: variantSummon.duration, modifiers: variantSummon.durationModifiers };
+		return {
+			duration: framesOf(variantSummon.duration),
+			modifiers: variantSummon.durationModifiers
+		};
 	}
 	if (variant?.duration !== undefined) {
-		return { duration: variant.duration, modifiers: variant.durationModifiers };
+		return { duration: framesOf(variant.duration), modifiers: variant.durationModifiers };
 	}
 	if (variant?.activeDuration !== undefined) {
-		return { duration: variant.activeDuration, modifiers: variant.durationModifiers };
+		return { duration: framesOf(variant.activeDuration), modifiers: variant.durationModifiers };
 	}
-	return { duration: getActiveDuration(ability), modifiers: getActiveDurationModifiers(ability) };
+	return {
+		duration: framesOf(getActiveDuration(ability)),
+		modifiers: getActiveDurationModifiers(ability)
+	};
 }
 
 /**
@@ -906,13 +950,14 @@ function resolveAbilityTiming(
 	stacks?: ReadonlyMap<string, number>
 ): { cooldown: number; duration: number; summonActivatesAt: number } {
 	const cooldown = applyModifiers(
-		variant?.cooldown ?? ability.cooldown,
+		framesOf(variant?.cooldown ?? ability.cooldown),
 		variant?.cooldownModifiers ?? ability.cooldownModifiers,
 		DEFAULT_ASCENSION,
 		resolvedStates,
 		constellationLevel,
 		chainIndex,
-		stacks
+		stacks,
+		FPS // a `flat` cooldown modifier is authored in seconds
 	);
 	const { duration: baseDur, modifiers: durMods } = resolveActiveDuration(ability, variant);
 	const duration = applyModifiers(
@@ -922,7 +967,8 @@ function resolveAbilityTiming(
 		resolvedStates,
 		constellationLevel,
 		chainIndex,
-		stacks
+		stacks,
+		FPS // ditto for a `flat` duration modifier
 	);
 	const variantSummon = variant?.summons?.[0];
 	const summonActivatesAt = variantSummon
@@ -1069,7 +1115,7 @@ function expandBrackets(tokens: Token[]): Token[] {
 // ---------------------------------------------------------------------------
 
 /**
- * Returns the effective proc cooldown (seconds) for the cdReset effect on the
+ * Returns the effective proc cooldown (FRAMES) for the cdReset effect on the
  * character's equipped weapon, or null if none. Resolves ScaledValue using the
  * stored weaponRefinement (defaults to R1 when absent).
  */
@@ -1091,7 +1137,7 @@ function getWeaponCdResetCooldown(
 	);
 	if (!effect?.procCooldown) return null;
 	const refinementIndex = (entry.weaponRefinement ?? 1) - 1;
-	return resolveScaledValue(effect.procCooldown, refinementIndex);
+	return framesOf(resolveScaledValue(effect.procCooldown, refinementIndex));
 }
 
 // ---------------------------------------------------------------------------
@@ -1215,9 +1261,8 @@ function summonSpan(
 	summon: Summon,
 	index: number
 ): { start: number; end: number } {
-	const start =
-		barStart + (index === 0 ? (barSummonActivatesAt ?? 0) : (summon.spawnsAt ?? 0)) / 60;
-	return { start, end: start + (index === 0 ? barUptime : summon.duration) };
+	const start = barStart + (index === 0 ? (barSummonActivatesAt ?? 0) : (summon.spawnsAt ?? 0));
+	return { start, end: start + (index === 0 ? barUptime : framesOf(summon.duration)) };
 }
 
 /**
@@ -1252,9 +1297,13 @@ function collectSummonTicks(
 		if (eff.trigger.type !== 'summonTick') continue;
 		if (!accept(eff)) continue;
 		if (evalCondition(eff.conditions, 4, new Set(), cLevel) === false) continue;
-		const interval = eff.trigger.interval;
+		// ⚓ Authored seconds → frames BEFORE the walk, not inside it. An integer
+		// interval added repeatedly is exact; the float seconds this replaced
+		// drifted a little further with every tick across a 20s summon.
+		const interval = framesOf(eff.trigger.interval);
 		if (!(interval > 0)) continue;
-		const firstDelay = eff.trigger.firstTickDelay ?? interval;
+		const firstDelay =
+			eff.trigger.firstTickDelay !== undefined ? framesOf(eff.trigger.firstTickDelay) : interval;
 		for (let t = spawnAt + firstDelay; t < endAt; t += interval) {
 			ticks.push({ time: t, effect: eff });
 		}
@@ -1389,7 +1438,7 @@ function dispatchGainStacks(
 				// for `lifetime` seconds. Append `amount` instances all at the
 				// same expiry-time (cast time + lifetime). Saturation drops
 				// oldest first when total would exceed `max`.
-				const expiry = castTime + fx.lifetime;
+				const expiry = castTime + framesOf(fx.lifetime);
 				const instances = stackInstances.get(fx.key) ?? [];
 				for (let i = 0; i < effAmount; i++) instances.push(expiry);
 				if (fx.max !== undefined && instances.length > fx.max) {
@@ -1725,7 +1774,7 @@ function reactionMatchesTrigger(
  *  cast (never cleared — swap-close only clamps `end`, mirroring the old
  *  never-deleted `stanceWindows` entry). */
 type StanceRecord = {
-	/** Absolute window end (seconds). Extended by durationExtensions, clamped to
+	/** Absolute window end (FRAMES). Extended by durationExtensions, clamped to
 	 *  the swap-out time when the owner terminatesOnSwap. */
 	end: number;
 	/** Whether the window terminates on swap-out. Recorded at open time so
@@ -1742,7 +1791,7 @@ type StanceRecord = {
 	castRef: CastEvent;
 	/** Character that owns the stance (for the `stance` TimelineWindow). */
 	characterId: string;
-	/** Absolute window start = cast start (for the `stance` TimelineWindow). */
+	/** Absolute window start = cast start, FRAMES (for the `stance` TimelineWindow). */
 	start: number;
 	/** Which cast opened the window (skill/burst) — the window's `source`. */
 	source: 'skill' | 'burst';
@@ -1906,7 +1955,7 @@ function dispatchGainStacksOnReaction(
 				const hcs = getCharState(holder.id);
 				const holderState = hcs.onReactionStacks;
 				if (fx.lifetime !== undefined) {
-					const expiry = castTime + fx.lifetime;
+					const expiry = castTime + framesOf(fx.lifetime);
 					const holderInstances = hcs.onReactionStackInstances;
 					const instances = holderInstances.get(fx.key) ?? [];
 					for (let i = 0; i < effAmount; i++) instances.push(expiry);
@@ -2084,7 +2133,7 @@ function dispatchGainStacksOnHit(
 				// Effect-level ICD (Escoffier C6: 0.5s). ScaledValue procCooldowns
 				// are weapon-shaped and don't occur on character effects.
 				const pc = fx.procCooldown;
-				const pcNum = typeof pc === 'number' ? pc : undefined;
+				const pcNum = typeof pc === 'number' ? framesOf(pc) : undefined;
 				if (pcNum !== undefined && pcNum > 0) {
 					const fxKey = `${src.id}#${effIdx}`;
 					const last = hcs.onHitProcLastFire.get(fxKey) ?? -Infinity;
@@ -2108,7 +2157,7 @@ function dispatchGainStacksOnHit(
 					const charMap = hcs.sourceLifetime;
 					const keyMap = charMap.get(fx.key) ?? new Map<string, number>();
 					if (!charMap.has(fx.key)) charMap.set(fx.key, keyMap);
-					const expiry = hit.time + fx.sourceLifetime;
+					const expiry = hit.time + framesOf(fx.sourceLifetime);
 					keyMap.set(hit.characterId, expiry);
 					// saturate at max: drop earliest-expiry entries until size <= max
 					if (fx.max !== undefined && keyMap.size > fx.max) {
@@ -2121,7 +2170,7 @@ function dispatchGainStacksOnHit(
 				} else if (isSelf) {
 					// Segment-scoped grant — mirrors the onCast dispatch branches.
 					if (fx.lifetime !== undefined) {
-						const expiry = hit.time + fx.lifetime;
+						const expiry = hit.time + framesOf(fx.lifetime);
 						const instances = segStackInstances.get(fx.key) ?? [];
 						for (let i = 0; i < effAmount; i++) instances.push(expiry);
 						if (fx.max !== undefined && instances.length > fx.max) {
@@ -2137,7 +2186,7 @@ function dispatchGainStacksOnHit(
 					if (fx.drain) hcs.drainAnchors.set(fx.key, hit.time);
 				} else if (fx.lifetime !== undefined) {
 					// team/others — rotation-wide instance accrual (onReaction shape).
-					const expiry = hit.time + fx.lifetime;
+					const expiry = hit.time + framesOf(fx.lifetime);
 					const instances = hcs.onHitStackInstances.get(fx.key) ?? [];
 					for (let i = 0; i < effAmount; i++) instances.push(expiry);
 					if (fx.max !== undefined && instances.length > fx.max) {
@@ -2333,7 +2382,7 @@ export function parseNotation(
 	loadoutMap?: Record<string, LoadoutEntry>,
 	teamCharacters?: (CharacterData | null)[]
 ): ParsedRotation {
-	const swapS = swapFrames / 60;
+	const swapF = swapFrames;
 	const raw = notation.trim();
 	if (!raw)
 		return {
@@ -2452,7 +2501,7 @@ export function parseNotation(
 		if (spec.consumes) {
 			for (const name of spec.consumes) closeStateWindows(cs, characterId, name, openAt);
 		}
-		const stateEnd = openAt + spec.duration;
+		const stateEnd = openAt + framesOf(spec.duration);
 		cs.states.set(spec.state, stateEnd);
 		stateWindowRecs.push({
 			characterId,
@@ -2555,7 +2604,7 @@ export function parseNotation(
 		}
 		return cs;
 	};
-	let cursor = 0; // rotation clock (seconds)
+	let cursor = 0; // rotation clock (FRAMES — see the time model in the header)
 
 	// E3 v1.5 — rotation-wide aura state for synthetic reaction emission.
 	// Persists across segments: once applied, auras stick (no decay) until
@@ -2675,7 +2724,7 @@ export function parseNotation(
 				// site below is where the extra summons became visible.
 				const summon = findSummonsForBar(holder, c.ability, c.label, c.abilityId)[0];
 				if (!summon) continue;
-				const start = c.time + c.summonActivatesAt / 60;
+				const start = c.time + c.summonActivatesAt;
 				if (t >= start && t < start + c.uptime) {
 					states.add('duringSummon');
 					break;
@@ -2746,7 +2795,7 @@ export function parseNotation(
 			// Terminal stage: reset chain to index 0.
 			charChain.delete(kind);
 		} else {
-			charChain.set(kind, { index: stage.index + 1, expiresAt: cursor + stage.window });
+			charChain.set(kind, { index: stage.index + 1, expiresAt: cursor + framesOf(stage.window) });
 		}
 	};
 
@@ -2791,9 +2840,11 @@ export function parseNotation(
 			const used = counts.get(idx) ?? 0;
 			if (ext.maxExtensions !== undefined && used >= ext.maxExtensions) continue;
 			const lastFire = lastFires.get(idx) ?? -Infinity;
-			if (ext.procCooldown !== undefined && castTime - lastFire < ext.procCooldown) continue;
-			st.end += ext.delta;
-			st.ownerUptime += ext.delta;
+			if (ext.procCooldown !== undefined && castTime - lastFire < framesOf(ext.procCooldown))
+				continue;
+			const delta = framesOf(ext.delta);
+			st.end += delta;
+			st.ownerUptime += delta;
 			counts.set(idx, used + 1);
 			lastFires.set(idx, castTime);
 		}
@@ -2837,10 +2888,11 @@ export function parseNotation(
 				const used = counts.get(idx) ?? 0;
 				if (ext.maxExtensions !== undefined && used >= ext.maxExtensions) continue;
 				const lastFire = lastFires.get(idx) ?? -Infinity;
-				if (ext.procCooldown !== undefined && castTime - lastFire < ext.procCooldown) continue;
+				if (ext.procCooldown !== undefined && castTime - lastFire < framesOf(ext.procCooldown))
+					continue;
 				// extendWindow bumps both the gating end and the owner-bar uptime
 				// accumulator (P4 — the owner bar is stamped at finalize, not here).
-				extendWindow(ext.delta);
+				extendWindow(framesOf(ext.delta));
 				counts.set(idx, used + 1);
 				lastFires.set(idx, castTime);
 			}
@@ -2932,7 +2984,7 @@ export function parseNotation(
 			if (eff.duration === undefined || eff.duration <= 0) continue;
 			windows.push({
 				ability: castKind,
-				endTime: castTime + eff.duration,
+				endTime: castTime + framesOf(eff.duration),
 				...(eff.label !== undefined ? { label: eff.label } : {})
 			});
 		}
@@ -2960,7 +3012,7 @@ export function parseNotation(
 				// convention, so it rides along rather than being lost.
 				windows.push({
 					ability: castKind,
-					endTime: castTime + primary.duration,
+					endTime: castTime + framesOf(primary.duration),
 					label: primary.label
 				});
 			}
@@ -2992,7 +3044,7 @@ export function parseNotation(
 		for (const w of windows) {
 			const dur = w.endTime - castTime;
 			w.coveredBySummon = shieldSummons.some(
-				(s) => (s.effects?.length ?? 0) === 0 && Math.abs(s.duration - dur) < 1e-9
+				(s) => (s.effects?.length ?? 0) === 0 && framesOf(s.duration) === dur
 			);
 		}
 		const existing = getCharState(char.id).shields;
@@ -3077,7 +3129,7 @@ export function parseNotation(
 						);
 						if (condResult !== true) continue;
 						const pc = fx.procCooldown;
-						const pcNum = typeof pc === 'number' ? pc : undefined;
+						const pcNum = typeof pc === 'number' ? framesOf(pc) : undefined;
 						if (pcNum !== undefined && pcNum > 0) {
 							const charMap = getCharState(listener.id).shieldEndProcCooldown;
 							const fxKey = `${node.id}#${effIdx}`;
@@ -3123,12 +3175,18 @@ export function parseNotation(
 				seenKeys.add(fx.key);
 				const charAnchors = cs.drainAnchors;
 				const last = charAnchors.get(fx.key);
+				// ⚠️⚠️ `ratePerSecond` IS A RATE, NOT A DURATION — ⛔ do not run it
+				// through `framesOf`. `elapsed` is frames (C1), so the seconds the
+				// rate is quoted against have to come back out of the elapsed side.
+				// Skirk's Serpent's Subtlety drains 7/sec; miss this and she drains
+				// 420/sec and the resource is gone by the next token.
+				const perFrame = fx.drain.ratePerSecond / FPS;
 				if (currentStates.has(fx.drain.state)) {
 					if (last !== undefined) {
 						const elapsed = cursor - last;
 						if (elapsed > 0) {
 							const current = stackState.get(fx.key) ?? 0;
-							const decayed = Math.max(0, current - fx.drain.ratePerSecond * elapsed);
+							const decayed = Math.max(0, current - perFrame * elapsed);
 							stackState.set(fx.key, decayed);
 						}
 					}
@@ -3139,7 +3197,7 @@ export function parseNotation(
 					if (stateEnd !== undefined && stateEnd > last) {
 						const elapsed = stateEnd - last;
 						const current = stackState.get(fx.key) ?? 0;
-						const decayed = Math.max(0, current - fx.drain.ratePerSecond * elapsed);
+						const decayed = Math.max(0, current - perFrame * elapsed);
 						stackState.set(fx.key, decayed);
 					}
 					charAnchors.delete(fx.key);
@@ -3248,7 +3306,7 @@ export function parseNotation(
 				receiver,
 				element: fx.element,
 				start: castTime,
-				end: castTime + fx.duration,
+				end: castTime + framesOf(fx.duration),
 				...(fx.conditions !== undefined ? { conditions: fx.conditions } : {})
 			});
 		}
@@ -3822,9 +3880,9 @@ export function parseNotation(
 					cooldown: cd,
 					readyAt: cdStartsAtStanceEnd
 						? castStart + dur + cd
-						: castStart + (active.cooldownStartDelay ?? 0) / 60 + cd,
+						: castStart + (active.cooldownStartDelay ?? 0) + cd,
 					summonActivatesAt: spawn,
-					fieldStart: castStart + (spawn ?? 0) / 60,
+					fieldStart: castStart + (spawn ?? 0),
 					stackContext: stacks
 				};
 				events.push(castEvent);
@@ -4077,18 +4135,18 @@ export function parseNotation(
 					abilityId: char.id,
 					label: tok.text,
 					time: localCursor,
-					castTime: Q_CAST_S,
+					castTime: Q_CAST_F,
 					uptime: 0,
-					cooldown: 15,
-					readyAt: localCursor + 15,
+					cooldown: FALLBACK_BURST_CD_F,
+					readyAt: localCursor + FALLBACK_BURST_CD_F,
 					summonActivatesAt: 0,
 					fieldStart: localCursor
 				};
 				events.push(fallbackQ);
 				castRecords.push({ ev: fallbackQ, track });
 				charCasts.push(fallbackQ);
-				cs.qReadyAt = localCursor + 15;
-				localCursor += Q_CAST_S;
+				cs.qReadyAt = localCursor + FALLBACK_BURST_CD_F;
+				localCursor += Q_CAST_F;
 			} else {
 				// No-ability fallback (E): single charge keyed by bare charId, 12s CD.
 				if (!eChargeQueues.has(char.id)) eChargeQueues.set(char.id, [0]);
@@ -4102,18 +4160,18 @@ export function parseNotation(
 					abilityId: char.id,
 					label: tok.text,
 					time: localCursor,
-					castTime: E_CAST_S,
+					castTime: E_CAST_F,
 					uptime: 0,
-					cooldown: 12,
-					readyAt: localCursor + 12,
+					cooldown: FALLBACK_SKILL_CD_F,
+					readyAt: localCursor + FALLBACK_SKILL_CD_F,
 					summonActivatesAt: 0,
 					fieldStart: localCursor
 				};
 				events.push(fallbackE);
 				castRecords.push({ ev: fallbackE, track });
 				charCasts.push(fallbackE);
-				queue[0] = localCursor + 12;
-				localCursor += E_CAST_S;
+				queue[0] = localCursor + FALLBACK_SKILL_CD_F;
+				localCursor += E_CAST_F;
 				lastEText = tok.text;
 			}
 		};
@@ -4129,13 +4187,15 @@ export function parseNotation(
 				const m = tok.text.match(/^~([\d.]+)s/);
 				if (m) {
 					const delta = parseFloat(m[1]);
-					// isFinite alone let `~99999999s` through — see MAX_TIME_ADVANCE_S.
-					if (isFinite(delta)) localCursor += Math.min(delta, MAX_TIME_ADVANCE_S);
+					// isFinite alone let `~99999999s` through — see MAX_TIME_ADVANCE_F.
+					// ⚠️ `~0.017s` is legal input and rounds to a single frame; that is the
+					// honest answer, not a floor worth guarding.
+					if (isFinite(delta)) localCursor += Math.min(framesOf(delta), MAX_TIME_ADVANCE_F);
 				}
 			} else if (tok.kind === 'unset-time') {
-				emitAction({ action: 'unset', label: '~?', time: localCursor, duration: MIN_ACTIVE_S });
+				emitAction({ action: 'unset', label: '~?', time: localCursor, duration: MIN_ACTIVE_F });
 				track.hasUnsetDuration = true;
-				localCursor += MIN_ACTIVE_S;
+				localCursor += MIN_ACTIVE_F;
 			} else if (tok.kind === 'optional') {
 				// Optional actions in parentheses are omitted from the timeline entirely.
 				// No label is emitted and no cursor advance occurs.
@@ -4375,7 +4435,7 @@ export function parseNotation(
 						: undefined;
 					const plungeFrames = plungeVariant?.frames ?? activeNormal?.plungeFrames;
 					if (plungeFrames) {
-						const castS = (plungeFrames[nextKey] ?? plungeFrames.swap) / 60;
+						const castS = plungeFrames[nextKey] ?? plungeFrames.swap;
 						const blockStart = localCursor;
 						// Catalyst / infused plunges (e.g. Xiao's Q-stance) are elemental —
 						// the shared infusion rule (actionElement.ts). An unresolvable plunge
@@ -4454,15 +4514,15 @@ export function parseNotation(
 						action: t === 'D' ? 'dash' : 'jump',
 						label: t,
 						time: blockStart,
-						duration: DASH_FRAMES / 60
+						duration: DASH_FRAMES
 					});
-					localCursor += DASH_FRAMES / 60;
+					localCursor += DASH_FRAMES;
 				}
 			}
 		}
 
 		// Ensure minimum on-field width
-		if (localCursor <= cursor) localCursor = cursor + MIN_ACTIVE_S;
+		if (localCursor <= cursor) localCursor = cursor + MIN_ACTIVE_F;
 
 		track.activeEnd = localCursor;
 		tracks.push(track);
@@ -4541,7 +4601,7 @@ export function parseNotation(
 					// moved off the front.
 					const queue = eChargeQueues.get(cs.stance.ownerAbility.id);
 					if (queue && staleReadyAt !== undefined) {
-						const idx = queue.findIndex((t) => Math.abs(t - staleReadyAt) < 1e-9);
+						const idx = queue.indexOf(staleReadyAt);
 						if (idx !== -1) {
 							queue[idx] = readyAt;
 							queue.sort((a, b) => a - b);
@@ -4564,7 +4624,7 @@ export function parseNotation(
 
 		// Swap time before the next character enters
 		if (i < segments.length - 1) {
-			cursor = localCursor + swapS;
+			cursor = localCursor + swapF;
 		} else {
 			cursor = localCursor;
 		}
@@ -4818,7 +4878,7 @@ export function parseNotation(
 			: teamChars;
 		const natlanCount = nbTeam.filter((c) => c.region === 'Natlan').length;
 		if (natlanCount > 0) {
-			const nbCd = natlanCount >= 3 ? 9 : natlanCount === 2 ? 12 : 18;
+			const nbCd = framesOf(natlanCount >= 3 ? 9 : natlanCount === 2 ? 12 : 18);
 			const catalystIds = new Set(nbTeam.filter((c) => c.weapon === 'catalyst').map((c) => c.id));
 			// Triggers: every E/Q cast; for catalyst characters, every input-token
 			// ANCHOR action except movement/unset (per-block cadence, not

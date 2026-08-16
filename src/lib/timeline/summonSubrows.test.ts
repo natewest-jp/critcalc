@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeSummonSubrows, computeSummonTicks, findCastSummons } from './summonSubrows';
+import { framesOf } from '$lib/utils/frames';
 import type { TimelineBar, TimelineWindow } from '$lib/utils/notationParser';
 import type { Ability, Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
@@ -13,6 +14,12 @@ import type { SlottedTrack } from './types';
 // The tracks supply sub-row ordering + the Summon object (for tick markers);
 // the windows supply the final spans. Fixtures therefore build both, exactly as
 // the parser+renderer pair would at runtime.
+//
+// TIME UNIT: the IR is FRAMES (gauge-round.md C1). The helpers below take
+// SECONDS — the unit these game facts were authored in — and snap them with
+// `framesOf`, so a fixture still reads as the timing it encodes. The one
+// exception is `summonActivatesAt`, which is authored in FRAMES on the ability
+// and is written here as a bare frame count.
 // ---------------------------------------------------------------------------
 
 function mkSummon(over: Partial<Summon> = {}): Summon {
@@ -54,8 +61,16 @@ function mkChar(id: string, skillSummon?: Summon, burstSummon?: Summon): Charact
 	} as CharacterData;
 }
 
-function mkBar(start: number, over: Partial<TimelineBar> = {}): TimelineBar {
-	return { start, uptime: 10, cooldown: 12, label: 'E', castTime: 0.5, ...over };
+/** `startSec` in seconds; the bar's own fields land in frames. */
+function mkBar(startSec: number, over: Partial<TimelineBar> = {}): TimelineBar {
+	return {
+		start: framesOf(startSec),
+		uptime: framesOf(10),
+		cooldown: framesOf(12),
+		label: 'E',
+		castTime: framesOf(0.5),
+		...over
+	};
 }
 
 function mkTrack(
@@ -68,7 +83,7 @@ function mkTrack(
 		displayName: characterId,
 		element: 'electro',
 		activeStart: 0,
-		activeEnd: 10,
+		activeEnd: framesOf(10),
 		inputBlocks: [],
 		hasUnsetDuration: false,
 		eBars: [],
@@ -79,15 +94,22 @@ function mkTrack(
 }
 
 /** A parser summon window (spawn offset + swap/recast truncation already
- *  applied, as the finalize pass emits it). */
+ *  applied, as the finalize pass emits it). Spans given in seconds. */
 function mkWin(
 	characterId: string,
-	start: number,
-	end: number,
+	startSec: number,
+	endSec: number,
 	source: 'skill' | 'burst',
 	label = 'Oz'
 ): TimelineWindow {
-	return { kind: 'summon', characterId, label, start, end, source };
+	return {
+		kind: 'summon',
+		characterId,
+		label,
+		start: framesOf(startSec),
+		end: framesOf(endSec),
+		source
+	};
 }
 
 function run(
@@ -130,7 +152,7 @@ describe('computeSummonSubrows — basics', () => {
 
 	it('projects each summon window onto a bar, taking the span from the window', () => {
 		const char = mkChar('fischl', mkSummon());
-		// Bar geometry (start 2, summonActivatesAt 30) is IGNORED — the window is
+		// Bar geometry (start 2s, summonActivatesAt 30f) is IGNORED — the window is
 		// authoritative (parser already applied the +0.5s spawn offset).
 		const tracks = [mkTrack('fischl', 1, { eBars: [mkBar(2, { summonActivatesAt: 30 })] })];
 		const windows = [mkWin('fischl', 2.5, 12.5, 'skill')];
@@ -139,7 +161,7 @@ describe('computeSummonSubrows — basics', () => {
 				slotIdx: 1,
 				characterId: 'fischl',
 				label: 'Oz',
-				bars: [{ start: 2.5, end: 12.5, source: 'skill', ticks: [] }]
+				bars: [{ start: framesOf(2.5), end: framesOf(12.5), source: 'skill', ticks: [] }]
 			}
 		]);
 	});
@@ -179,9 +201,9 @@ describe('computeSummonSubrows — basics', () => {
 		];
 		const rows = run(tracks, windows, [char]);
 		expect(rows[0].bars.map((b) => [b.start, b.source])).toEqual([
-			[0.3, 'skill'],
-			[25.6, 'skill'],
-			[5.15, 'burst']
+			[framesOf(0.3), 'skill'],
+			[framesOf(25.6), 'skill'],
+			[framesOf(5.15), 'burst']
 		]);
 	});
 
@@ -215,7 +237,14 @@ describe('computeSummonSubrows — window projection + ticks', () => {
 			[mkWin('fischl', 0, 6, 'skill')],
 			[char]
 		);
-		expect(rows[0].bars).toEqual([{ start: 0, end: 6, source: 'skill', ticks: [2, 4] }]);
+		expect(rows[0].bars).toEqual([
+			{
+				start: 0,
+				end: framesOf(6),
+				source: 'skill',
+				ticks: [framesOf(2), framesOf(4)]
+			}
+		]);
 	});
 
 	it('projects multiple windows on one key as chronological bars', () => {
@@ -227,8 +256,18 @@ describe('computeSummonSubrows — window projection + ticks', () => {
 			[char]
 		);
 		expect(rows[0].bars).toHaveLength(2);
-		expect(rows[0].bars[0]).toEqual({ start: 0, end: 6, source: 'skill', ticks: [2, 4] });
-		expect(rows[0].bars[1]).toEqual({ start: 6, end: 16, source: 'skill', ticks: [8, 10, 12, 14] });
+		expect(rows[0].bars[0]).toEqual({
+			start: 0,
+			end: framesOf(6),
+			source: 'skill',
+			ticks: [framesOf(2), framesOf(4)]
+		});
+		expect(rows[0].bars[1]).toEqual({
+			start: framesOf(6),
+			end: framesOf(16),
+			source: 'skill',
+			ticks: [framesOf(8), framesOf(10), framesOf(12), framesOf(14)]
+		});
 	});
 
 	it('respects the constellation level when gating tick effects', () => {
@@ -248,7 +287,11 @@ describe('computeSummonSubrows — window projection + ticks', () => {
 		const windows = [mkWin('fischl', 0, 8, 'skill')];
 		expect(run(tracks, windows, [char], {}).length).toBe(1);
 		expect(run(tracks, windows, [char], {})[0].bars[0].ticks).toEqual([]);
-		expect(run(tracks, windows, [char], { fischl: 2 })[0].bars[0].ticks).toEqual([2, 4, 6]);
+		expect(run(tracks, windows, [char], { fischl: 2 })[0].bars[0].ticks).toEqual([
+			framesOf(2),
+			framesOf(4),
+			framesOf(6)
+		]);
 	});
 
 	it('carries the source field from the window', () => {
@@ -273,7 +316,11 @@ describe('computeSummonTicks', () => {
 				} as unknown as NonNullable<Summon['effects']>[number]
 			]
 		});
-		expect(computeSummonTicks(summon, 10, 20, 0)).toEqual([11, 14, 17]);
+		expect(computeSummonTicks(summon, framesOf(10), framesOf(20), 0)).toEqual([
+			framesOf(11),
+			framesOf(14),
+			framesOf(17)
+		]);
 	});
 
 	it('abstains for constellation-gated tick effects below the level', () => {
@@ -287,8 +334,13 @@ describe('computeSummonTicks', () => {
 				} as unknown as NonNullable<Summon['effects']>[number]
 			]
 		});
-		expect(computeSummonTicks(summon, 0, 10, 0)).toEqual([]);
-		expect(computeSummonTicks(summon, 0, 10, 2)).toEqual([0 + 2, 4, 6, 8]);
+		expect(computeSummonTicks(summon, 0, framesOf(10), 0)).toEqual([]);
+		expect(computeSummonTicks(summon, 0, framesOf(10), 2)).toEqual([
+			framesOf(2),
+			framesOf(4),
+			framesOf(6),
+			framesOf(8)
+		]);
 	});
 });
 

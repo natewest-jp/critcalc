@@ -1,11 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { barPhases, type BarPhaseBar, type BarPhaseSegment } from './barPhases';
+import { framesOf } from '$lib/utils/frames';
 
 /**
  * Expected segments are computed BY HAND from the pre-3e inline arithmetic
  * (RotationTimeline.svelte E/Q rows + timelineExport.ts collectBarPhases,
  * the two identical twins). Fixtures use binary-exact values (multiples of
  * 0.5) so exact structural equality holds without float slop.
+ *
+ * ⚓ UNIT NOTE (2026-08-16). `barPhases` is unit-agnostic — the planner feeds it
+ * FRAMES, the Team Builder's Compare chart feeds it SECONDS — so most cases here
+ * are bare numbers in no unit at all and stay that way. The exception is any bar
+ * carrying `summonActivatesAt`: that field is authored in FRAMES on the ability,
+ * so the bar it rides is by construction a planner (frames) bar and its other
+ * fields are written with `framesOf`.
  */
 
 const base: BarPhaseBar = {
@@ -33,10 +41,21 @@ describe('barPhases — case 1: sac-proc reset', () => {
 	});
 
 	it('applies the summonActivatesAt field offset to the dim bar start', () => {
-		// summonActivatesAt 30 → fieldOffset 0.5 → fieldStart 2.5; span = uptime = 3
+		// FRAMES bar. summonActivatesAt 30f → fieldStart 2s + 30f = 2.5s; span = uptime = 3s
 		expect(
-			barPhases(bar({ start: 2, uptime: 3, summonActivatesAt: 30, sacProcFired: true }), false)
-		).toEqual([{ role: 'uptimeDim', start: 2.5, span: 3 }] satisfies BarPhaseSegment[]);
+			barPhases(
+				bar({
+					start: framesOf(2),
+					castTime: framesOf(0.5),
+					uptime: framesOf(3),
+					summonActivatesAt: 30,
+					sacProcFired: true
+				}),
+				false
+			)
+		).toEqual([
+			{ role: 'uptimeDim', start: framesOf(2.5), span: framesOf(3) }
+		] satisfies BarPhaseSegment[]);
 	});
 
 	it('takes precedence over the stance/summon branches (hasSummon true, uptime > 0)', () => {
@@ -56,13 +75,22 @@ describe('barPhases — case 2A: stance, cooldown outlasts window', () => {
 	});
 
 	it('applies the field offset to both the uptime bar and the ghost', () => {
-		// summonActivatesAt 60 → fieldOffset 1 → fieldStart 3; cooldown 12 >= 1+6=7 → case A
-		// cdSpan = 12 - 1 - 6 = 5; ghost start = 3 + 6 = 9
+		// FRAMES bar. summonActivatesAt 60f = 1s → fieldStart 3s; cooldown 12s >= 1+6=7s → case A
+		// cdSpan = 12 - 1 - 6 = 5s; ghost start = 3 + 6 = 9s
 		expect(
-			barPhases(bar({ start: 2, cooldown: 12, uptime: 6, summonActivatesAt: 60 }), false)
+			barPhases(
+				bar({
+					start: framesOf(2),
+					castTime: framesOf(0.5),
+					cooldown: framesOf(12),
+					uptime: framesOf(6),
+					summonActivatesAt: 60
+				}),
+				false
+			)
 		).toEqual([
-			{ role: 'uptime', start: 3, span: 6 },
-			{ role: 'ghost', start: 9, span: 5, cooldown: 12 }
+			{ role: 'uptime', start: framesOf(3), span: framesOf(6) },
+			{ role: 'ghost', start: framesOf(9), span: framesOf(5), cooldown: framesOf(12) }
 		] satisfies BarPhaseSegment[]);
 	});
 
@@ -86,13 +114,22 @@ describe('barPhases — case 2B: stance, window outlasts cooldown', () => {
 	});
 
 	it('applies the field offset to phase-1 span and overflow start', () => {
-		// summonActivatesAt 60 → fieldOffset 1 → fieldStart 3; cooldown 5 < 1+8=9 → case B
-		// phase1 span = 5 - 1 = 4; overflow start = 2 + 5 = 7; overflow span = 1 + 8 - 5 = 4
+		// FRAMES bar. summonActivatesAt 60f = 1s → fieldStart 3s; cooldown 5s < 1+8=9s → case B
+		// phase1 span = 5 - 1 = 4s; overflow start = 2 + 5 = 7s; overflow span = 1 + 8 - 5 = 4s
 		expect(
-			barPhases(bar({ start: 2, cooldown: 5, uptime: 8, summonActivatesAt: 60 }), false)
+			barPhases(
+				bar({
+					start: framesOf(2),
+					castTime: framesOf(0.5),
+					cooldown: framesOf(5),
+					uptime: framesOf(8),
+					summonActivatesAt: 60
+				}),
+				false
+			)
 		).toEqual([
-			{ role: 'uptimeFlush', start: 3, span: 4 },
-			{ role: 'overflow', start: 7, span: 4 }
+			{ role: 'uptimeFlush', start: framesOf(3), span: framesOf(4) },
+			{ role: 'overflow', start: framesOf(7), span: framesOf(4) }
 		] satisfies BarPhaseSegment[]);
 	});
 });

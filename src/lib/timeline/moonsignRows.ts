@@ -5,13 +5,15 @@
  * non-Moonsign characters. Pure — extracted from RotationTimeline.svelte.
  */
 
+import { framesOf } from '$lib/utils/frames';
 import type { TimelineEvent } from '$lib/utils/notationParser';
 import type { MergedEffectDisplay } from './types';
 import type { MoonsignRow } from './types';
 import { mergeRefreshedBars } from './mergeRefreshedBars';
 
-/** Ascendant Gleam's grant, in seconds, per qualifying cast. */
-const GLEAM_WINDOW_S = 20;
+/** Ascendant Gleam's grant per qualifying cast — a 20s game fact, carried in
+ *  FRAMES because the windows it lands on are (gauge-round.md C1). */
+const GLEAM_WINDOW_F = framesOf(20);
 
 /**
  * For each non-Moonsign slot, collects all E/Q cast times for that character
@@ -44,7 +46,7 @@ export function computeMoonsignRows(
 		}
 		times.sort((a, b) => a - b);
 		const merged = mergeRefreshedBars(
-			times.map((start) => ({ start, end: start + GLEAM_WINDOW_S, effects: NO_SHAPE }))
+			times.map((start) => ({ start, end: start + GLEAM_WINDOW_F, effects: NO_SHAPE }))
 		);
 		return {
 			slotIdx,

@@ -13,6 +13,7 @@ const shieldEndsOf = (events: TimelineEvent[]): ShieldEndEvent[] =>
 import type { CharacterData } from '$lib/types/character';
 import type { Ability, Element } from '$lib/types/ability';
 import { GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
+import { framesOf } from '$lib/utils/frames';
 import ganyuJson from '$lib/data/characters/ganyu.json';
 import dilucJson from '$lib/data/characters/diluc.json';
 import durinJson from '$lib/data/characters/durin.json';
@@ -36,7 +37,7 @@ import keqingJson from '$lib/data/characters/keqing.json';
 import sucroseJson from '$lib/data/characters/sucrose.json';
 import xingqiuJson from '$lib/data/characters/xingqiu.json';
 import xiaoForIcd from '$lib/data/characters/xiao.json';
-import { simulateIcd, STANDARD_ICD } from './icd';
+import { simulateIcd, STANDARD_ICD_FRAMES } from './icd';
 import bennettInfJson from '$lib/data/characters/bennett.json';
 import xingqiuInfJson from '$lib/data/characters/xingqiu.json';
 import ganyuInfJson from '$lib/data/characters/ganyu.json';
@@ -57,8 +58,8 @@ describe('parseNotation — charge queue baseline (Bug #1 no-regression)', () =>
 		const ganyuTrack = result.tracks.find((t) => t.characterId === 'ganyu')!;
 		expect(ganyuTrack.eBars).toHaveLength(2);
 		// cooldownStartDelay=10 frames → 10/60 + 10s = ~10.17s
-		expect(ganyuTrack.eBars[1].start).toBeGreaterThan(10);
-		expect(ganyuTrack.eBars[1].start).toBeLessThan(10.5);
+		expect(ganyuTrack.eBars[1].start).toBeGreaterThan(framesOf(10));
+		expect(ganyuTrack.eBars[1].start).toBeLessThan(framesOf(10.5));
 	});
 
 	it('Ganyu C2 (2 charges), no Sac Bow: third E waits for first charge to return', () => {
@@ -67,10 +68,10 @@ describe('parseNotation — charge queue baseline (Bug #1 no-regression)', () =>
 		const ganyuTrack = result.tracks.find((t) => t.characterId === 'ganyu')!;
 		expect(ganyuTrack.eBars).toHaveLength(3);
 		expect(ganyuTrack.eBars[0].start).toBe(0);
-		expect(ganyuTrack.eBars[1].start).toBeLessThan(1); // charge 2 available immediately
+		expect(ganyuTrack.eBars[1].start).toBeLessThan(framesOf(1)); // charge 2 available immediately
 		// E3 must wait for a charge to come off CD.
-		expect(ganyuTrack.eBars[2].start).toBeGreaterThan(10);
-		expect(ganyuTrack.eBars[2].start).toBeLessThan(10.5);
+		expect(ganyuTrack.eBars[2].start).toBeGreaterThan(framesOf(10));
+		expect(ganyuTrack.eBars[2].start).toBeLessThan(framesOf(10.5));
 	});
 });
 
@@ -92,7 +93,7 @@ describe('parseNotation — Sacrificial Bow proc (Bug #1)', () => {
 		// Without the fix: queue[0] after the sort is the OTHER charge, so the
 		// proc overwrites the wrong slot and the consumed charge keeps its 10s
 		// CD. E3 ends up starting ~10.17s in. With the fix, E3 starts ~0.9s.
-		expect(ganyuTrack.eBars[2].start).toBeLessThan(2);
+		expect(ganyuTrack.eBars[2].start).toBeLessThan(framesOf(2));
 	});
 });
 
@@ -107,7 +108,7 @@ describe('parseNotation — character cdReset (Kazuha C1: Q resets E)', () => {
 		expect(track.eBars).toHaveLength(2);
 		// E1 at t=0; E2 must wait for E CD. With Q cast in between (a couple
 		// seconds), E2 still needs to clear the 6s CD on E1.
-		expect(track.eBars[1].start).toBeGreaterThan(5);
+		expect(track.eBars[1].start).toBeGreaterThan(framesOf(5));
 	});
 
 	it('with C1: Q-cast resets E CD, so the next E is castable immediately', () => {
@@ -121,7 +122,7 @@ describe('parseNotation — character cdReset (Kazuha C1: Q resets E)', () => {
 		// 5.4s base E CD.
 		const qEnd = track.qBars[0].start + track.qBars[0].castTime;
 		expect(track.eBars[1].start).toBeGreaterThanOrEqual(qEnd);
-		expect(track.eBars[1].start).toBeLessThan(qEnd + 0.1);
+		expect(track.eBars[1].start).toBeLessThan(qEnd + framesOf(0.1));
 	});
 });
 
@@ -184,9 +185,9 @@ describe('parseNotation — variant-level modifiers (Bug #3)', () => {
 		const holdCd = holdResult.tracks[0].eBars[0].cooldown;
 
 		// Base tap: 10s unmodified.
-		expect(tapCd).toBe(10);
+		expect(tapCd).toBe(framesOf(10));
 		// Hold: 10 + (-4) = 6s from the variant's own modifier.
-		expect(holdCd).toBe(6);
+		expect(holdCd).toBe(framesOf(6));
 	});
 });
 
@@ -195,23 +196,25 @@ describe('parseNotation — chainStage (Diluc E1→E2→E3)', () => {
 	const lookup = (name: string): CharacterData | null => (name === 'Diluc' ? diluc : null);
 
 	// Each stage's cast-time when the next token is E (peekActionKey → 'E', so frames.E).
-	const e1CastBeforeE = 31 / 60; // E1 frames.E = 31
-	const e2CastBeforeE = 37 / 60; // E2 frames.E = 37
-	const e1CastBeforeSwap = 30 / 60; // frames.swap = 30 (end-of-segment fallback)
+	// ⚓ Bare frame counts since the frames migration — these used to be the same
+	// numbers divided by 60 and compared with a tolerance.
+	const e1CastBeforeE = 31; // E1 frames.E = 31
+	const e2CastBeforeE = 37; // E2 frames.E = 37
+	const e1CastBeforeSwap = 30; // frames.swap = 30 (end-of-segment fallback)
 
 	it('three Es fire stages 1, 2, 3 with their distinct cast times', () => {
 		const result = parseNotation('Diluc E E E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'diluc')!;
 		expect(track.eBars).toHaveLength(3);
 		// Distinct cast-times prove each stage was selected (not the same E1 three times).
-		expect(track.eBars[0].castTime).toBeCloseTo(e1CastBeforeE, 5);
-		expect(track.eBars[1].castTime).toBeCloseTo(e2CastBeforeE, 5);
-		// E3 is the last token in the segment → swap fallback (66/60).
-		expect(track.eBars[2].castTime).toBeCloseTo(66 / 60, 5);
+		expect(track.eBars[0].castTime).toBe(e1CastBeforeE);
+		expect(track.eBars[1].castTime).toBe(e2CastBeforeE);
+		// E3 is the last token in the segment → swap fallback (66f).
+		expect(track.eBars[2].castTime).toBe(66);
 		// And they line up sequentially.
 		expect(track.eBars[0].start).toBe(0);
-		expect(track.eBars[1].start).toBeCloseTo(e1CastBeforeE, 5);
-		expect(track.eBars[2].start).toBeCloseTo(e1CastBeforeE + e2CastBeforeE, 5);
+		expect(track.eBars[1].start).toBe(e1CastBeforeE);
+		expect(track.eBars[2].start).toBe(e1CastBeforeE + e2CastBeforeE);
 	});
 
 	it('fourth E (after terminal) waits for the chain CD to reset and fires E1 again', () => {
@@ -220,10 +223,10 @@ describe('parseNotation — chainStage (Diluc E1→E2→E3)', () => {
 		expect(track.eBars).toHaveLength(4);
 		// After E3 (terminal), chain resets to 0. E1 has cooldown 10s — its queue still
 		// holds 10s from the first cast, so the 4th press waits until t≈10.
-		expect(track.eBars[3].start).toBeGreaterThanOrEqual(10);
-		expect(track.eBars[3].start).toBeLessThan(11);
-		// And it's E1 again — last token → swap fallback (30/60).
-		expect(track.eBars[3].castTime).toBeCloseTo(e1CastBeforeSwap, 5);
+		expect(track.eBars[3].start).toBeGreaterThanOrEqual(framesOf(10));
+		expect(track.eBars[3].start).toBeLessThan(framesOf(11));
+		// And it's E1 again — last token → swap fallback (30f).
+		expect(track.eBars[3].castTime).toBe(e1CastBeforeSwap);
 	});
 
 	it('E after a long pause (window expired) resolves back to E1', () => {
@@ -231,11 +234,11 @@ describe('parseNotation — chainStage (Diluc E1→E2→E3)', () => {
 		const result = parseNotation('Diluc E ~5s E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'diluc')!;
 		expect(track.eBars).toHaveLength(2);
-		// The second E should be E1 (cast time → swap fallback, 30/60), not E2.
+		// The second E should be E1 (cast time → swap fallback, 30f), not E2.
 		// E1's queue had 10s cooldown — even though the chain window expired,
 		// E1's queue still gates the next press until t≈10.
-		expect(track.eBars[1].castTime).toBeCloseTo(e1CastBeforeSwap, 5);
-		expect(track.eBars[1].start).toBeGreaterThanOrEqual(10);
+		expect(track.eBars[1].castTime).toBe(e1CastBeforeSwap);
+		expect(track.eBars[1].start).toBeGreaterThanOrEqual(framesOf(10));
 	});
 });
 
@@ -244,21 +247,21 @@ describe('parseNotation — chainStage (Keqing first cast → blink recast)', ()
 	const lookup = (name: string): CharacterData | null => (name === 'Keqing' ? keqing : null);
 
 	// First cast frames: E=35 (next token E), swap=28. Recast frames: no E key → swap=42 fallback.
-	const firstCastBeforeE = 35 / 60;
-	const recastBeforeSwap = 42 / 60;
+	const firstCastBeforeE = 35;
+	const recastBeforeSwap = 42;
 
 	it('second E within the window fires the blink recast, not blocked by the 7.5s first-cast CD', () => {
 		const result = parseNotation('Keqing E E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'keqing')!;
 		expect(track.eBars).toHaveLength(2);
 		// Distinct cast-times prove stage 1 (recast) was selected, not the first cast twice.
-		expect(track.eBars[0].castTime).toBeCloseTo(firstCastBeforeE, 5);
-		expect(track.eBars[1].castTime).toBeCloseTo(recastBeforeSwap, 5);
+		expect(track.eBars[0].castTime).toBe(firstCastBeforeE);
+		expect(track.eBars[1].castTime).toBe(recastBeforeSwap);
 		// First cast sets a 7.5s CD; the recast has cooldown 0 (own queue), so it fires
 		// immediately after the first cast rather than waiting out the CD.
-		expect(track.eBars[0].cooldown).toBe(7.5);
+		expect(track.eBars[0].cooldown).toBe(framesOf(7.5));
 		expect(track.eBars[1].cooldown).toBe(0);
-		expect(track.eBars[1].start).toBeCloseTo(firstCastBeforeE, 5);
+		expect(track.eBars[1].start).toBe(firstCastBeforeE);
 	});
 
 	it('third E (after the terminal recast) resets to the first cast and waits out the 7.5s CD', () => {
@@ -267,8 +270,8 @@ describe('parseNotation — chainStage (Keqing first cast → blink recast)', ()
 		expect(track.eBars).toHaveLength(3);
 		// Recast is terminal → chain resets to stage 0. The first cast's queue still holds
 		// its 7.5s CD (+cooldownStartDelay), so the 3rd press waits until ~7.5s+.
-		expect(track.eBars[2].start).toBeGreaterThanOrEqual(7.5);
-		expect(track.eBars[2].cooldown).toBe(7.5);
+		expect(track.eBars[2].start).toBeGreaterThanOrEqual(framesOf(7.5));
+		expect(track.eBars[2].cooldown).toBe(framesOf(7.5));
 	});
 
 	it('second E after the ~5.33s window expires resolves back to the first cast', () => {
@@ -277,8 +280,8 @@ describe('parseNotation — chainStage (Keqing first cast → blink recast)', ()
 		expect(track.eBars).toHaveLength(2);
 		// Window (5.33s) expired → second E is the first cast again (cooldown 7.5, not the
 		// recast's 0), gated by the first cast's CD.
-		expect(track.eBars[1].cooldown).toBe(7.5);
-		expect(track.eBars[1].start).toBeGreaterThanOrEqual(7.5);
+		expect(track.eBars[1].cooldown).toBe(framesOf(7.5));
+		expect(track.eBars[1].start).toBeGreaterThanOrEqual(framesOf(7.5));
 	});
 });
 
@@ -324,20 +327,20 @@ describe('parseNotation — summon-level durationModifiers gated by constellatio
 		const result = parseNotation('Iansan Q', lookup, 20);
 		const track = result.tracks.find((t) => t.characterId === 'iansan')!;
 		expect(track.qBars).toHaveLength(1);
-		expect(track.qBars[0].uptime).toBeCloseTo(12, 2);
+		expect(track.qBars[0].uptime).toBe(framesOf(12));
 	});
 
 	it('at C6, Iansan Q summon bar uptime extends to 15s (12 + 3)', () => {
 		const result = parseNotation('Iansan Q', lookup, 25, { iansan: 6 });
 		const track = result.tracks.find((t) => t.characterId === 'iansan')!;
 		expect(track.qBars).toHaveLength(1);
-		expect(track.qBars[0].uptime).toBeCloseTo(15, 2);
+		expect(track.qBars[0].uptime).toBe(framesOf(15));
 	});
 
 	it('at C5, the C6-gated modifier does not apply (still 12s)', () => {
 		const result = parseNotation('Iansan Q', lookup, 20, { iansan: 5 });
 		const track = result.tracks.find((t) => t.characterId === 'iansan')!;
-		expect(track.qBars[0].uptime).toBeCloseTo(12, 2);
+		expect(track.qBars[0].uptime).toBe(framesOf(12));
 	});
 });
 
@@ -354,7 +357,7 @@ describe('parseNotation — durationExtensions[] onCast dispatch (Cyno burst sta
 		const result = parseNotation('Cyno Q', lookup, 25);
 		const track = result.tracks.find((t) => t.characterId === 'cyno')!;
 		expect(track.qBars).toHaveLength(1);
-		expect(track.qBars[0].uptime).toBeCloseTo(11.87, 2);
+		expect(track.qBars[0].uptime).toBe(framesOf(11.87));
 	});
 
 	it('Q E extends the stance bar by exactly +4s for the first in-stance E', () => {
@@ -362,20 +365,20 @@ describe('parseNotation — durationExtensions[] onCast dispatch (Cyno burst sta
 		// burst's durationExtensions[] fires once.
 		const result = parseNotation('Cyno Q E', lookup, 25);
 		const track = result.tracks.find((t) => t.characterId === 'cyno')!;
-		expect(track.qBars[0].uptime).toBeCloseTo(11.87 + 4, 2);
+		expect(track.qBars[0].uptime).toBe(framesOf(11.87 + 4));
 	});
 
 	it('Q E E extends by +8s (two consecutive in-stance E casts)', () => {
 		const result = parseNotation('Cyno Q E E', lookup, 30);
 		const track = result.tracks.find((t) => t.characterId === 'cyno')!;
-		expect(track.qBars[0].uptime).toBeCloseTo(11.87 + 8, 2);
+		expect(track.qBars[0].uptime).toBe(framesOf(11.87 + 8));
 	});
 
 	it('Q E E E caps at maxExtensions: 2 — third E does not extend further', () => {
 		const result = parseNotation('Cyno Q E E E', lookup, 35);
 		const track = result.tracks.find((t) => t.characterId === 'cyno')!;
 		// Stance bar should reflect 2 extensions (8s) total, not 3 (12s).
-		expect(track.qBars[0].uptime).toBeCloseTo(11.87 + 8, 2);
+		expect(track.qBars[0].uptime).toBe(framesOf(11.87 + 8));
 	});
 
 	it('E without an active stance does not fire any extension', () => {
@@ -439,24 +442,24 @@ describe('parseNotation — stacks condition + {key:N} assertion', () => {
 		const result = parseNotation('Stub E E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'stackstub')!;
 		expect(track.eBars).toHaveLength(2);
-		expect(track.eBars[0].cooldown).toBe(5);
-		expect(track.eBars[1].cooldown).toBe(5);
+		expect(track.eBars[0].cooldown).toBe(framesOf(5));
+		expect(track.eBars[1].cooldown).toBe(framesOf(5));
 		// Second E waits for base 5s cooldown to expire (cooldown clock starts
 		// at cast time, so E2 can fire exactly at t=5s).
-		expect(track.eBars[1].start).toBeCloseTo(5, 1);
+		expect(track.eBars[1].start).toBe(framesOf(5));
 	});
 
 	it('after {declension:4}, E resolves the loaded skill (cd 20)', () => {
 		const result = parseNotation('Stub {declension:4} E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'stackstub')!;
 		expect(track.eBars).toHaveLength(1);
-		expect(track.eBars[0].cooldown).toBe(20);
+		expect(track.eBars[0].cooldown).toBe(framesOf(20));
 	});
 
 	it('stacks below min still resolve the base skill', () => {
 		const result = parseNotation('Stub {declension:3} E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'stackstub')!;
-		expect(track.eBars[0].cooldown).toBe(5);
+		expect(track.eBars[0].cooldown).toBe(framesOf(5));
 	});
 
 	it('a later assertion overrides the earlier count', () => {
@@ -464,8 +467,8 @@ describe('parseNotation — stacks condition + {key:N} assertion', () => {
 		const result = parseNotation('Stub {declension:4} E ~10s {declension:0} E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'stackstub')!;
 		expect(track.eBars).toHaveLength(2);
-		expect(track.eBars[0].cooldown).toBe(20);
-		expect(track.eBars[1].cooldown).toBe(5);
+		expect(track.eBars[0].cooldown).toBe(framesOf(20));
+		expect(track.eBars[1].cooldown).toBe(framesOf(5));
 	});
 
 	it('stack state resets between segments (per-character)', () => {
@@ -474,8 +477,8 @@ describe('parseNotation — stacks condition + {key:N} assertion', () => {
 		const result = parseNotation('Stub {declension:4} E > Stub E', lookup, 8);
 		const track1 = result.tracks[0];
 		const track2 = result.tracks[1];
-		expect(track1.eBars[0].cooldown).toBe(20);
-		expect(track2.eBars[0].cooldown).toBe(5);
+		expect(track1.eBars[0].cooldown).toBe(framesOf(20));
+		expect(track2.eBars[0].cooldown).toBe(framesOf(5));
 	});
 
 	it('the assertion token does not advance the cursor or emit a block', () => {
@@ -649,8 +652,8 @@ describe('parseNotation — cooldownStartsAtStanceEnd (stance-cooldown round, 20
 		const result = parseNotation('Xilonen E E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'xilonen')!;
 		expect(track.eBars).toHaveLength(2);
-		expect(track.eBars[1].start).toBeCloseTo(16, 3);
-		expect(track.eBars[0].readyAt).toBeCloseTo(16, 3);
+		expect(track.eBars[1].start).toBe(framesOf(16));
+		expect(track.eBars[0].readyAt).toBe(framesOf(16));
 	});
 
 	it('Xilonen: swapping off her ends Nightsoul, so the E comes back at swap + 7', () => {
@@ -661,9 +664,9 @@ describe('parseNotation — cooldownStartsAtStanceEnd (stance-cooldown round, 20
 		const tracks = result.tracks.filter((t) => t.characterId === 'xilonen');
 		const first = tracks[0].eBars[0];
 		const recast = tracks[tracks.length - 1].eBars[0];
-		expect(recast.start).toBeCloseTo(first.readyAt!, 3);
-		expect(recast.start).toBeGreaterThan(7); // the clock did start, at the swap
-		expect(recast.start).toBeLessThan(9); // …and nowhere near the old 16
+		expect(recast.start).toBe(first.readyAt);
+		expect(recast.start).toBeGreaterThan(framesOf(7)); // the clock did start, at the swap
+		expect(recast.start).toBeLessThan(framesOf(9)); // …and nowhere near the old 16
 	});
 
 	it('an ability with a small cooldownStartDelay is untouched (Nahida, 11f)', () => {
@@ -671,14 +674,14 @@ describe('parseNotation — cooldownStartsAtStanceEnd (stance-cooldown round, 20
 		// SetCDWithDelay transcriptions and share none of this behavior.
 		const result = parseNotation('Nahida E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'nahida')!;
-		expect(track.eBars[0].readyAt).toBeCloseTo(5 + 11 / 60, 3);
+		expect(track.eBars[0].readyAt).toBe(framesOf(5) + 11);
 	});
 
 	it('an ability with no delay at all is untouched (Bennett)', () => {
 		// 5s base, less the 20% his ascension passive Rekindle takes off = 4.0.
 		const result = parseNotation('Bennett E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'bennett')!;
-		expect(track.eBars[0].readyAt).toBeCloseTo(4, 3);
+		expect(track.eBars[0].readyAt).toBe(framesOf(4));
 	});
 });
 
@@ -731,17 +734,17 @@ describe('parseNotation — cooldownStartsAtStanceEnd + early exit (swap closes 
 		// Both surfaces have to agree — the ghost tail reads `readyAt`, the
 		// placement reads the charge queue, and a fix that moved only one would
 		// put the bar's tail and the next cast in different places.
-		expect(first.readyAt).toBeLessThan(16);
-		expect(recast.start).toBeCloseTo(first.readyAt!, 3);
-		expect(recast.start - first.start).toBeLessThan(9);
-		expect(recast.start).toBeGreaterThan(7);
+		expect(first.readyAt).toBeLessThan(framesOf(16));
+		expect(recast.start).toBe(first.readyAt);
+		expect(recast.start - first.start).toBeLessThan(framesOf(9));
+		expect(recast.start).toBeGreaterThan(framesOf(7));
 	});
 
 	it('with no swap the same ability still waits the full stance + CD', () => {
 		const result = parseNotation('Stancer E E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'stancer')!;
 		expect(track.eBars).toHaveLength(2);
-		expect(track.eBars[1].start).toBeCloseTo(16, 3);
+		expect(track.eBars[1].start).toBe(framesOf(16));
 	});
 });
 
@@ -2125,14 +2128,14 @@ describe('parseNotation — Mizuki A1 stance extension (E3 v1.5)', () => {
 		const result = parseNotation('Yumemizuki Mizuki E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'yumemizuki_mizuki')!;
 		expect(track.eBars).toHaveLength(1);
-		expect(track.eBars[0].uptime).toBeCloseTo(5, 2);
+		expect(track.eBars[0].uptime).toBe(framesOf(5));
 	});
 
 	it('after Pyro applicator, Mizuki E swirls and extends stance by +2.5s', () => {
 		// Diluc E applies pyro; Mizuki E swirls, A1 fires once → +2.5s extension.
 		const result = parseNotation('Diluc E > Yumemizuki Mizuki E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'yumemizuki_mizuki')!;
-		expect(track.eBars[0].uptime).toBeCloseTo(5 + 2.5, 2);
+		expect(track.eBars[0].uptime).toBe(framesOf(5 + 2.5));
 	});
 
 	it('Pyro → Mizuki E Q: max 2 extensions reached (+5s total)', () => {
@@ -2141,14 +2144,14 @@ describe('parseNotation — Mizuki A1 stance extension (E3 v1.5)', () => {
 		// second extension (+2.5s more = +5s total, the in-game cap).
 		const result = parseNotation('Diluc E > Yumemizuki Mizuki E Q', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'yumemizuki_mizuki')!;
-		expect(track.eBars[0].uptime).toBeCloseTo(5 + 5, 2);
+		expect(track.eBars[0].uptime).toBe(framesOf(5 + 5));
 	});
 
 	it('Anemo only (no aura applicator): Mizuki E does not extend its own stance', () => {
 		// Just to confirm cold-start guard at the stance owner — no swirl fires.
 		const result = parseNotation('Yumemizuki Mizuki E Q', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'yumemizuki_mizuki')!;
-		expect(track.eBars[0].uptime).toBeCloseTo(5, 2);
+		expect(track.eBars[0].uptime).toBe(framesOf(5));
 	});
 });
 
@@ -2162,14 +2165,14 @@ describe('parseNotation — Collei A4 summon extension (E3 v1.5)', () => {
 		const result = parseNotation('Collei Q', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'collei')!;
 		expect(track.qBars).toHaveLength(1);
-		expect(track.qBars[0].uptime).toBeCloseTo(6, 2);
+		expect(track.qBars[0].uptime).toBe(framesOf(6));
 	});
 
 	it('after Pyro applicator, Collei Q triggers burning and zone extends +1s', () => {
 		// Diluc E pyro → Collei Q dendro on pyro → burning emitted → +1s zone.
 		const result = parseNotation('Diluc E > Collei Q', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'collei')!;
-		expect(track.qBars[0].uptime).toBeCloseTo(6 + 1, 2);
+		expect(track.qBars[0].uptime).toBe(framesOf(6 + 1));
 	});
 });
 
@@ -2455,7 +2458,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 		const ev = shieldEndsOf(result.events).find((e) => e.characterId === 'shielder');
 		expect(ev).toBeDefined();
 		expect(ev!.ability).toBe('skill');
-		expect(ev!.time).toBeCloseTo(12, 2);
+		expect(ev!.time).toBe(framesOf(12));
 	});
 
 	it('emits ShieldEndEvent at rotation end when no later cast forces dispatch', () => {
@@ -2464,7 +2467,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 		const result = parseNotation('Shielder E', lookup, 8, { shielder: 4 });
 		const ev = shieldEndsOf(result.events).find((e) => e.characterId === 'shielder');
 		expect(ev).toBeDefined();
-		expect(ev!.time).toBeCloseTo(12, 2);
+		expect(ev!.time).toBe(framesOf(12));
 	});
 
 	it('emits ShieldEndEvent at expiry for Effect.type:"shield" with onCast trigger (burst)', () => {
@@ -2477,7 +2480,7 @@ describe('parseNotation — onShieldEnd primitive (2026-05-14)', () => {
 			(e) => e.characterId === 'effectshielder' && e.ability === 'burst'
 		);
 		expect(ev).toBeDefined();
-		expect(ev!.time).toBeCloseTo(15, 2);
+		expect(ev!.time).toBe(framesOf(15));
 	});
 
 	it('procCooldown suppresses Listener C6 between back-to-back shield ends within 5s', () => {
@@ -2779,7 +2782,7 @@ describe('parseNotation — character cdReset does not leak to teammates (sweep 
 		const qEnd = kazuhaTrack.qBars[0].start + kazuhaTrack.qBars[0].castTime;
 		// Second E right after Q — well under the 5.4s C1-modified E CD.
 		expect(kazuhaTrack.eBars[1].start).toBeGreaterThanOrEqual(qEnd);
-		expect(kazuhaTrack.eBars[1].start).toBeLessThan(qEnd + 0.1);
+		expect(kazuhaTrack.eBars[1].start).toBeLessThan(qEnd + framesOf(0.1));
 	});
 });
 
@@ -2846,9 +2849,9 @@ describe('parseNotation — E cooldown wait re-resolves the active variant (swee
 		const track = result.tracks.find((t) => t.characterId === 'cyno')!;
 		expect(track.eBars).toHaveLength(4);
 		const last = track.eBars[3];
-		expect(last.cooldown).toBe(7.5);
-		expect(last.start).toBeGreaterThan(19.8);
-		expect(last.start).toBeLessThan(19.95);
+		expect(last.cooldown).toBe(framesOf(7.5));
+		expect(last.start).toBeGreaterThan(framesOf(19.8));
+		expect(last.start).toBeLessThan(framesOf(19.95));
 	});
 
 	it('Skirk: drain decay owed over the cooldown wait is applied before the next grant', () => {
@@ -2862,7 +2865,7 @@ describe('parseNotation — E cooldown wait re-resolves the active variant (swee
 		const result = parseNotation('Skirk E E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'skirk')!;
 		expect(track.eBars).toHaveLength(2);
-		expect(track.eBars[1].start).toBeCloseTo(8, 1);
+		expect(track.eBars[1].start).toBe(framesOf(8));
 		expect(track.eBars[1].stackContext?.get('serpentsSubtlety')).toBe(45);
 	});
 });
@@ -2881,7 +2884,7 @@ describe('parseNotation — stance extensions stop at stance end (sweep 2026-07-
 		const result = parseNotation('Bennett E > Mizuki E ~25s Q', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'yumemizuki_mizuki')!;
 		expect(track.eBars).toHaveLength(1);
-		expect(track.eBars[0].uptime).toBe(7.5);
+		expect(track.eBars[0].uptime).toBe(framesOf(7.5));
 	});
 });
 
@@ -3002,8 +3005,8 @@ describe('parseNotation — frameless / malformed abilities parse gracefully (re
 		expect(track.eBars).toHaveLength(1);
 		expect(track.qBars).toHaveLength(1);
 		// Falls back to the data-derived generic profile cast (genericProfile.ts).
-		expect(track.eBars[0].castTime).toBe(GENERIC_SKILL.castSwap / 60);
-		expect(track.qBars[0].castTime).toBe(GENERIC_BURST.castSwap / 60);
+		expect(track.eBars[0].castTime).toBe(GENERIC_SKILL.castSwap);
+		expect(track.qBars[0].castTime).toBe(GENERIC_BURST.castSwap);
 	});
 
 	it('stance ability with an absent duration produces finite window math, not NaN', () => {
@@ -3056,11 +3059,11 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		// Symphony: label sQ, variant cooldown 0, variant frames (swap=81).
 		expect(qBars[1].label).toBe('sQ');
 		expect(qBars[1].cooldown).toBe(0);
-		expect(qBars[1].castTime).toBeCloseTo(81 / 60, 6);
+		expect(qBars[1].castTime).toBe(81);
 		// Bypass: cast well before the 15s clock, which the final Q still honors.
-		expect(qBars[1].start).toBeLessThan(15);
+		expect(qBars[1].start).toBeLessThan(framesOf(15));
 		expect(qBars[2].label).toBe('Q');
-		expect(qBars[2].start).toBeCloseTo(15, 6);
+		expect(qBars[2].start).toBe(framesOf(15));
 		// The symphonyWindow is cast-opened (provenance → the Spearstorm cast)
 		// and CONSUMED by the sQ cast (end clamped to its start).
 		const wins = stateWindows(result, 'symphonyWindow');
@@ -3068,15 +3071,15 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		const casts = result.events.filter((e) => e.kind === 'cast');
 		const opener = casts.find((c) => c.id === wins[0].sourceCastId);
 		expect(opener?.abilityId).toBe('flins__skill__northland_spearstorm');
-		expect(wins[0].end).toBeCloseTo(qBars[1].start, 6);
+		expect(wins[0].end).toBe(qBars[1].start);
 	});
 
 	it('Flins: out-of-window sQ falls back to the base burst (conditions gate the variant)', () => {
 		const result = parseNotation('Flins sQ', lookup, 8);
 		const qBars = result.tracks[0].qBars;
 		expect(qBars[0].label).toBe('sQ');
-		expect(qBars[0].cooldown).toBe(15); // base Cometh the Night CD
-		expect(qBars[0].castTime).toBeCloseTo(91 / 60, 6); // base frames, not symphony's
+		expect(qBars[0].cooldown).toBe(framesOf(15)); // base Cometh the Night CD
+		expect(qBars[0].castTime).toBe(91); // base frames, not symphony's
 	});
 
 	it('Flins: casting Symphony consumes the window — a second sQ resolves base', () => {
@@ -3084,7 +3087,7 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		const qBars = result.tracks[0].qBars;
 		expect(qBars).toHaveLength(2);
 		expect(qBars[0].cooldown).toBe(0); // in-window Symphony
-		expect(qBars[1].cooldown).toBe(15); // window consumed → base
+		expect(qBars[1].cooldown).toBe(framesOf(15)); // window consumed → base
 	});
 
 	it('Flins: symphonyWindow terminates on swap-out', () => {
@@ -3092,11 +3095,11 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		const wins = stateWindows(result, 'symphonyWindow');
 		expect(wins).toHaveLength(1);
 		// Clamped to Flins's first-segment end, not the full 6s.
-		expect(wins[0].end).toBeCloseTo(result.tracks[0].activeEnd, 6);
+		expect(wins[0].end).toBe(result.tracks[0].activeEnd);
 		// Post-swap sQ is outside the window → base burst.
 		const flinsTracks = result.tracks.filter((t) => t.characterId === 'flins');
 		const lastQ = flinsTracks[flinsTracks.length - 1].qBars[0];
-		expect(lastQ.cooldown).toBe(15);
+		expect(lastQ.cooldown).toBe(framesOf(15));
 	});
 
 	it('Varesa C2: any plunge opens apexDrive; sQ resolves Volcano Kablam (1s CD, window sourced to the plunge action event)', () => {
@@ -3104,8 +3107,8 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		const qBars = result.tracks[0].qBars;
 		expect(qBars).toHaveLength(1);
 		expect(qBars[0].label).toBe('sQ');
-		expect(qBars[0].cooldown).toBe(1);
-		expect(qBars[0].castTime).toBeCloseTo(42 / 60, 6); // volcanic frames (swap fallback)
+		expect(qBars[0].cooldown).toBe(framesOf(1));
+		expect(qBars[0].castTime).toBe(42); // volcanic frames (swap fallback)
 		const wins = stateWindows(result, 'apexDrive');
 		expect(wins).toHaveLength(1);
 		expect(wins[0].sourceCastId).toBeUndefined(); // opened by a plunge, not a cast
@@ -3115,16 +3118,16 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		expect(plunge).toBeTruthy();
 		expect(wins[0].sourceActionId).toBe(plunge!.id);
 		if (plunge!.kind === 'action') {
-			expect(wins[0].start).toBeCloseTo(plunge!.time + plunge!.duration, 6);
+			expect(wins[0].start).toBe(plunge!.time + plunge!.duration);
 		}
 		// Consumed by the Kablam cast.
-		expect(wins[0].end).toBeCloseTo(qBars[0].start, 6);
+		expect(wins[0].end).toBe(qBars[0].start);
 	});
 
 	it('Varesa C0: a plunge outside Fiery Passion opens nothing — sQ falls back to Guardian Vent', () => {
 		const result = parseNotation('Varesa P sQ', lookup, 8);
 		const qBars = result.tracks[0].qBars;
-		expect(qBars[0].cooldown).toBe(18); // base Vent CD
+		expect(qBars[0].cooldown).toBe(framesOf(18)); // base Vent CD
 		expect(stateWindows(result, 'apexDrive')).toHaveLength(0);
 	});
 
@@ -3135,8 +3138,8 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		const result = parseNotation('Varesa Q P sQ', lookup, 8);
 		const qBars = result.tracks[0].qBars;
 		expect(qBars).toHaveLength(2);
-		expect(qBars[1].start).toBeCloseTo(18, 6);
-		expect(qBars[1].cooldown).toBe(18);
+		expect(qBars[1].start).toBe(framesOf(18));
+		expect(qBars[1].cooldown).toBe(framesOf(18));
 	});
 
 	it('Varesa: in-Fiery-Passion plunge opens apexDrive with a free burst slot → Kablam fires', () => {
@@ -3146,7 +3149,7 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		const qBars = result.tracks[0].qBars;
 		expect(qBars).toHaveLength(2);
 		expect(qBars[1].label).toBe('sQ');
-		expect(qBars[1].cooldown).toBe(1);
+		expect(qBars[1].cooldown).toBe(framesOf(1));
 	});
 });
 
@@ -3165,7 +3168,7 @@ describe('parseNotation — variant conditions gate variant resolution (Varka re
 
 	it('tap E out of stance resolves the base stance opener (16s CD, opens Sturm und Drang)', () => {
 		const result = parseNotation('Varka E', lookup, 8);
-		expect(result.tracks[0].eBars[0].cooldown).toBe(16);
+		expect(result.tracks[0].eBars[0].cooldown).toBe(framesOf(16));
 		expect(
 			result.windows.some(
 				(w) => w.kind === 'state' && w.name === 'inStance' && w.characterId === 'varka'
@@ -3181,9 +3184,9 @@ describe('parseNotation — variant conditions gate variant resolution (Varka re
 		// separate-ability re-author (Flins Northland Spearstorm pattern).
 		const result = parseNotation('Varka E E > Diluc E', lookup, 8);
 		const eBars = result.tracks[0].eBars;
-		expect(eBars[0].cooldown).toBe(16); // opener
-		expect(eBars[1].cooldown).toBe(16); // charge free at ~16.3s → stance over → base
-		expect(eBars[1].start).toBeGreaterThan(12); // waited past the stance window
+		expect(eBars[0].cooldown).toBe(framesOf(16)); // opener
+		expect(eBars[1].cooldown).toBe(framesOf(16)); // charge free at ~16.3s → stance over → base
+		expect(eBars[1].start).toBeGreaterThan(framesOf(12)); // waited past the stance window
 	});
 });
 
@@ -3209,15 +3212,12 @@ describe('parseNotation — action-level events (post-P4 #2)', () => {
 		expect(acts.every((a) => a.blockId === acts[0].id)).toBe(true);
 		expect(acts[0].blockId).toBe(acts[0].id); // anchor anchors itself
 		for (let i = 1; i < acts.length; i++) {
-			expect(acts[i].time).toBeCloseTo(acts[i - 1].time + acts[i - 1].duration, 9);
+			expect(acts[i].time).toBe(acts[i - 1].time + acts[i - 1].duration);
 		}
 		const block = result.tracks[0].inputBlocks.find((b) => b.parts[0] === 'N5');
 		expect(block).toBeTruthy();
 		expect(block!.start).toBe(acts[0].time);
-		expect(block!.duration).toBeCloseTo(
-			acts.reduce((s, a) => s + a.duration, 0),
-			9
-		);
+		expect(block!.duration).toBe(acts.reduce((s, a) => s + a.duration, 0));
 	});
 
 	it('consecutive N tokens continue the combo across separate blocks', () => {
@@ -3259,8 +3259,8 @@ describe('parseNotation — action-level events (post-P4 #2)', () => {
 	it('dash/jump/unset tokens emit their action events', () => {
 		const result = parseNotation('Diluc N1 D J ~?s N1', lookup, 8);
 		const acts = actionsOf(result.events);
-		expect(acts.find((a) => a.action === 'dash')?.duration).toBeCloseTo(21 / 60, 9);
-		expect(acts.find((a) => a.action === 'jump')?.duration).toBeCloseTo(21 / 60, 9);
+		expect(acts.find((a) => a.action === 'dash')?.duration).toBe(21);
+		expect(acts.find((a) => a.action === 'jump')?.duration).toBe(21);
 		const unset = acts.find((a) => a.action === 'unset');
 		expect(unset?.label).toBe('~?');
 		expect(unset?.abilityId).toBeUndefined();
@@ -3290,17 +3290,17 @@ describe('parseNotation — Durin dual-form (post-P4 #2 normal-opened state)', (
 		const result = parseNotation('Durin E E Q', lookup, 8);
 		const eBars = result.tracks[0].eBars;
 		expect(eBars).toHaveLength(2);
-		expect(eBars[0].cooldown).toBe(12); // the tap
+		expect(eBars[0].cooldown).toBe(framesOf(12)); // the tap
 		expect(eBars[1].cooldown).toBe(0); // the commit — no CD wait, no clock write
-		expect(eBars[1].start).toBeCloseTo(15 / 60, 6); // fired immediately (E→E cancel)
+		expect(eBars[1].start).toBe(15); // fired immediately (E→E cancel)
 		// transmuting opened at the tap, consumed by the commit.
 		const trans = stateWindows(result, 'transmuting');
 		expect(trans).toHaveLength(1);
-		expect(trans[0].end).toBeCloseTo(eBars[1].start, 6);
+		expect(trans[0].end).toBe(eBars[1].start);
 		// whiteForm 30s from the commit, sourced to its cast.
 		const white = stateWindows(result, 'whiteForm');
 		expect(white).toHaveLength(1);
-		expect(white[0].end - white[0].start).toBeCloseTo(30, 6);
+		expect(white[0].end - white[0].start).toBe(framesOf(30));
 		expect(white[0].sourceCastId).toBeDefined();
 		// Q resolves the default White burst.
 		expect(burstCast(result)?.abilityId).toBe(
@@ -3320,11 +3320,11 @@ describe('parseNotation — Durin dual-form (post-P4 #2 normal-opened state)', (
 		const dark = stateWindows(result, 'darkForm');
 		expect(dark).toHaveLength(1);
 		expect(dark[0].sourceActionId).toBe(nEv.id);
-		expect(dark[0].start).toBeCloseTo(nEv.time + nEv.duration, 6);
-		expect(dark[0].end - dark[0].start).toBeCloseTo(30, 6);
+		expect(dark[0].start).toBe(nEv.time + nEv.duration);
+		expect(dark[0].end - dark[0].start).toBe(framesOf(30));
 		// The commit consumed transmuting.
 		const trans = stateWindows(result, 'transmuting');
-		expect(trans[0].end).toBeCloseTo(dark[0].start, 6);
+		expect(trans[0].end).toBe(dark[0].start);
 		// Q auto-resolves the Dark burst + Dark Decay dragon.
 		expect(burstCast(result)?.abilityId).toBe(
 			'durin__burst__principle_of_darkness_as_the_stars_smolder'
@@ -3354,7 +3354,7 @@ describe('parseNotation — Durin dual-form (post-P4 #2 normal-opened state)', (
 		expect(dark).toHaveLength(1);
 		const white = stateWindows(result, 'whiteForm');
 		expect(white).toHaveLength(1);
-		expect(dark[0].end).toBeCloseTo(white[0].start, 6);
+		expect(dark[0].end).toBe(white[0].start);
 		expect(burstCast(result)?.abilityId).toBe(
 			'durin__burst__principle_of_purity_as_the_light_shifts'
 		);
@@ -3887,7 +3887,10 @@ describe('parseNotation — N/C/P feed the aura behind the ICD clock (ICD round,
 		const normalEnds = events
 			.filter((e) => e.kind === 'action' && e.characterId === 'sucrose' && e.action === 'normal')
 			.map((e) => (e.kind === 'action' ? e.time + e.duration : 0));
-		const predicted = simulateIcd(normalEnds, STANDARD_ICD)
+		// ⚠️ FRAMES params against frame-valued swing times. `icdApplies` is
+		// unit-agnostic, so feeding it the seconds constant here silently predicted
+		// an application on every swing (the timer never appeared to run).
+		const predicted = simulateIcd(normalEnds, STANDARD_ICD_FRAMES)
 			.filter((h) => h.applies)
 			.map((h) => h.time);
 		const applied = reactionsOf(events)

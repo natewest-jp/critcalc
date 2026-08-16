@@ -50,6 +50,7 @@ const OUT_PATH = join(REPO_ROOT, 'docs/curation/gcsim-reaction-diff.md');
 
 const { parseNotation } = await import('../src/lib/utils/notationParser.ts');
 const { tokenizeNotation } = await import('../src/lib/utils/tokenizer.ts');
+const { FPS } = await import('../src/lib/utils/frames.ts');
 const { createIcdClock, icdApplies, icdTagFor, resolveActionIcd } =
 	await import('../src/lib/utils/icd.ts');
 
@@ -184,7 +185,13 @@ function diffFixture(fixture) {
 	for (const c of unmapped) problems.push(`${c.id} has no weapon type; cannot build a config`);
 	if (!team.length) return { fixture, skipped: 'no resolvable team', problems };
 
-	const duration = Math.ceil(parsed.totalDuration + 10);
+	// ⚠️⚠️ gcsim's `duration` option is SECONDS; `parsed.totalDuration` is FRAMES
+	// (gauge-round.md C1). Missing this division told gcsim to simulate ~30×
+	// longer than the rotation, and the extra summon ticks it accumulated read as
+	// perfectly plausible RNG drift on its side of the diff — 200 applications
+	// became 215. ⚓ The only thing that caught it was checking the oracle's
+	// counts against the recorded baseline instead of trusting the reasoning.
+	const duration = Math.ceil(parsed.totalDuration / FPS + 10);
 	let config;
 	try {
 		config = buildConfig({ team, lines, swapFrames: 8, duration });
@@ -356,9 +363,11 @@ function render(results, commit) {
 		for (const row of r.rows) {
 			const o = row.ours;
 			const t = row.theirs;
-			const oursCell = o ? `${o.element} @ ${o.time.toFixed(2)}s (${o.kind})` : '—';
+			const oursCell = o ? `${o.element} @ ${f2s(o.time)}s (${o.kind})` : '—';
 			const theirsCell = t ? `${t.element} @ ${f2s(t.frame)}s (${t.attackTag})` : '—';
-			const delta = o && t ? `${Math.round(t.frame - o.time * 60)}` : '';
+			// ⚓ Both sides are FRAMES now (gauge-round.md C1) — gcsim always was, and
+			// since 2026-08-16 so is our IR. This used to convert ours up to meet it.
+			const delta = o && t ? `${t.frame - o.time}` : '';
 			const units = t ? `${t.units}U` : '';
 			const abil = t ? t.ability : '';
 			const flag = !o ? ' 🔴' : !t ? ' 🟠' : o.element !== t.element ? ' 🟡' : '';
@@ -413,7 +422,7 @@ function render(results, commit) {
 		}
 		L.push('');
 		L.push(
-			`- **ours:** ${r.ourReactions.length ? r.ourReactions.map((x) => `${x.reaction}@${x.time.toFixed(2)}s`).join(', ') : '_none_'}`
+			`- **ours:** ${r.ourReactions.length ? r.ourReactions.map((x) => `${x.reaction}@${f2s(x.time)}s`).join(', ') : '_none_'}`
 		);
 		L.push(
 			`- **gcsim:** ${r.theirReactions.length ? r.theirReactions.map((x) => `${x.reaction}@${f2s(x.frame)}s`).join(', ') : '_none_'}`

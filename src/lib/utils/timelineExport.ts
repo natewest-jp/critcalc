@@ -48,6 +48,7 @@
  * color changes there, change it here.
  */
 
+import { FPS } from '$lib/utils/frames';
 import { elementPalette, shiftHue, desaturate } from '$lib/utils/elementColors';
 import { barPhases } from '$lib/timeline/barPhases';
 import {
@@ -378,7 +379,15 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	const ox = PAD + snap.labelW;
 	const oy = PAD + headerH;
 
-	const x = (t: number) => ox + Math.round(t * snap.scale);
+	// ⚓ The export's own frames→px seam, mirroring the two wrappers in
+	// RotationTimeline: the snapshot carries FRAMES (gauge-round.md C1) while
+	// `snap.scale` is px per SECOND. `barGeomW` below derives from this, so the
+	// division lands once. ⚠ `snap.ticks` are ALREADY seconds — the component
+	// computes them off the seconds-native `rulerTicks` — so they skip it.
+	const x = (f: number) => ox + Math.round((f / FPS) * snap.scale);
+
+	/** FRAMES → the "12.5s" readout, matching the live component's label. */
+	const secondsLabel = (frames: number) => Math.round((frames / FPS) * 10) / 10;
 
 	// ── Gridlines (z:0) — from the ruler's seam down to the lanes' end ──
 	ctx.strokeStyle = GRID;
@@ -907,7 +916,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			ctx.font = `600 9px ${SANS}`;
 			ctx.textAlign = 'center';
 			haloText(
-				`${Math.round(g.cd * 10) / 10}s`,
+				`${secondsLabel(g.cd)}s`,
 				g.px + g.pw / 2,
 				g.py + g.ph / 2 + 3,
 				...elementHalo(g.barColor)
@@ -997,7 +1006,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				ctx.fillStyle = '#fff';
 				ctx.textAlign = 'center';
 				haloText(
-					`${ev.cooldown}s`,
+					`${secondsLabel(ev.cooldown)}s`,
 					px + pw / 2,
 					laneTop + snap.buffRowH / 2 + 3,
 					NB_HALO_TIGHT,

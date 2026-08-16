@@ -37,10 +37,16 @@
 	const iconFor = (stat: string) => BUFF_STAT_ICON[stat as Stat];
 	const labelFor = (stat: string) => BUFF_STAT_LABEL[stat as Stat] ?? stat;
 
-	// Durations arrive as raw float arithmetic (window end − start), which
-	// carries IEEE noise like 12.000000000000002 — snap to 2dp for display
-	// (Number() drops the trailing zeros: 12, 4.5, 0.25).
-	const fmtSecs = (n: number) => Number(n.toFixed(2));
+	// Durations and ICDs arrive in FRAMES (gauge-round.md C1) — this is the
+	// display seam that turns them back into seconds, and the only place in this
+	// component that knows the unit.
+	//
+	// ↻ 2026-08-16: the 2dp snap used to be here because the values were raw
+	// float arithmetic (window end − start) carrying IEEE noise like
+	// 12.000000000000002. That noise is gone — a frame span is an exact integer.
+	// The rounding stays for a better reason: 754 frames really is 12.566…s, and
+	// nobody wants to read that. (Number() drops trailing zeros: 12, 4.5, 0.25.)
+	const fmtSecs = (frames: number) => Number((frames / 60).toFixed(2));
 </script>
 
 <div

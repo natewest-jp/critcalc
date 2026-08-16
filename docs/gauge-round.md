@@ -512,7 +512,25 @@ stripping today. Consumers to update: `GaugeInstrument.svelte:13`, `workspace.ts
 `pkg/reactable/*_test.go`, the cap is parameterised, and the eight uncovered branches the
 audit listed have coverage.
 
-### L2 — Integer frames (no behaviour change)
+### L2 — Integer frames ✅ SHIPPED 2026-08-16
+
+The IR and the parser's internal clock are integer frames. `framesOf` (in
+`$lib/utils/frames.ts`) is the one rounding site; seconds return only at the surface.
+⚓ **The L0 oracle reproduces its baseline number for number** — 63 / 200 / 1 / 138 / 0,
+and every one of the twelve per-fixture rows — so "no behaviour change" is measured,
+not argued.
+
+Rulings that made it small: `barGeometry` stays SECONDS (Compare shares it, and the
+planner's two local wrappers absorb the seam, so ~20 template call sites changed by
+nothing); `barPhases` became UNIT-AGNOSTIC by deleting the one `/ 60` that made it
+mixed-unit; `icd.ts` made frames primary and derives seconds for the instrument.
+
+🐛 It also caught a bug in its own verification: the oracle sized gcsim's run from
+`totalDuration`, whose unit had just changed, and the resulting 200→215 drift was
+indistinguishable from gcsim's documented RNG until it was checked against the
+recorded baseline. Full record: [`gauge-round-L2.md`](gauge-round-L2.md) §10.
+
+#### The original plan for this landing
 
 Flip the IR **and the parser's internal clock** to integer frames in one pass.
 

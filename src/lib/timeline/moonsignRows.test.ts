@@ -1,13 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { computeMoonsignRows } from './moonsignRows';
+import { framesOf } from '$lib/utils/frames';
 import type { TimelineEvent } from '$lib/utils/notationParser';
 
 let nextId = 0;
+/** `at` is authored in SECONDS for readability; the IR is frames. */
 function mkCast(
 	characterId: string,
-	time: number,
+	at: number,
 	ability: 'skill' | 'burst' = 'skill'
 ): TimelineEvent {
+	const time = framesOf(at);
 	return {
 		kind: 'cast',
 		id: nextId++,
@@ -16,10 +19,10 @@ function mkCast(
 		abilityId: characterId,
 		label: ability === 'burst' ? 'Q' : 'E',
 		time,
-		castTime: 0.5,
+		castTime: framesOf(0.5),
 		uptime: 0,
-		cooldown: 10,
-		readyAt: time + 10,
+		cooldown: framesOf(10),
+		readyAt: time + framesOf(10),
 		summonActivatesAt: 0,
 		fieldStart: time
 	};
@@ -42,15 +45,17 @@ describe('computeMoonsignRows', () => {
 	it('merges overlapping windows into one covered span', () => {
 		const events = [mkCast('c', 8, 'skill'), mkCast('c', 1, 'burst'), mkCast('d', 3, 'skill')];
 		const rows = computeMoonsignRows(events, [2], ['a', 'b', 'c', 'd']);
-		expect(rows).toEqual([{ slotIdx: 2, windows: [{ start: 1, duration: 27 }] }]);
+		expect(rows).toEqual([
+			{ slotIdx: 2, windows: [{ start: framesOf(1), duration: framesOf(27) }] }
+		]);
 	});
 
 	it('emits one 20s window per cast when they do NOT overlap', () => {
 		const events = [mkCast('c', 0, 'skill'), mkCast('c', 25, 'burst')];
 		const rows = computeMoonsignRows(events, [2], ['a', 'b', 'c', 'd']);
 		expect(rows[0].windows).toEqual([
-			{ start: 0, duration: 20 },
-			{ start: 25, duration: 20 }
+			{ start: 0, duration: framesOf(20) },
+			{ start: framesOf(25), duration: framesOf(20) }
 		]);
 	});
 
@@ -58,23 +63,23 @@ describe('computeMoonsignRows', () => {
 		const events = [mkCast('c', 0, 'skill'), mkCast('other', 5), mkCast('c', 9, 'skill')];
 		const rows = computeMoonsignRows(events, [0], ['c', 'other', 'blank', 'blank']);
 		// Both inside 20s of each other — one span, 0 → 29.
-		expect(rows[0].windows).toEqual([{ start: 0, duration: 29 }]);
+		expect(rows[0].windows).toEqual([{ start: 0, duration: framesOf(29) }]);
 	});
 
 	it('ignores non-cast events', () => {
 		const events: TimelineEvent[] = [
 			mkCast('c', 4, 'skill'),
-			{ kind: 'shieldEnd', id: 90, characterId: 'c', ability: 'skill', time: 2 },
+			{ kind: 'shieldEnd', id: 90, characterId: 'c', ability: 'skill', time: framesOf(2) },
 			{
 				kind: 'reaction',
 				id: 91,
 				characterId: 'c',
 				reaction: 'vaporize',
-				time: 3,
+				time: framesOf(3),
 				castKind: 'skill'
 			}
 		];
 		const rows = computeMoonsignRows(events, [0], ['c', 'x', 'y', 'z']);
-		expect(rows[0].windows).toEqual([{ start: 4, duration: 20 }]);
+		expect(rows[0].windows).toEqual([{ start: framesOf(4), duration: framesOf(20) }]);
 	});
 });

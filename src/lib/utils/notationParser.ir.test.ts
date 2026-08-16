@@ -26,8 +26,13 @@ import { describe, it, expect } from 'vitest';
 import { parseNotation, type ParsedRotation, type TimelineBar } from './notationParser';
 import type { CharacterData } from '$lib/types/character';
 import { findCastSummons } from '$lib/timeline/summonSubrows';
+import { framesOf } from '$lib/utils/frames';
 
-const EPS = 1e-6;
+/** ⚓ ZERO, not an epsilon. Every IR time is an integer frame count since
+ *  2026-08-16 (gauge-round.md C1), so the comparisons below are exact — and
+ *  keeping a tolerance would quietly hide the ±1-frame disagreements the L3
+ *  refactor is going to need this test to catch. ⛔ Do not reintroduce one. */
+const EPS = 0;
 
 const modules = import.meta.glob('../data/characters/*.json', { eager: true });
 const all: CharacterData[] = Object.values(modules).map(
@@ -82,8 +87,7 @@ type SummonTuple = {
 	end: number;
 	source: 'skill' | 'burst';
 };
-const tupleKey = (t: SummonTuple) =>
-	`${t.characterId}|${t.label}|${t.source}|${t.start.toFixed(6)}|${t.end.toFixed(6)}`;
+const tupleKey = (t: SummonTuple) => `${t.characterId}|${t.label}|${t.source}|${t.start}|${t.end}`;
 
 /** Independently reconstruct the expected summon spans from bar geometry — the
  *  spawn-offset + terminatesOn swap/recast truncation `computeSummonSubrows`
@@ -114,8 +118,8 @@ function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 			// secondary reads its own authored spawnsAt/duration.
 			findCastSummons(char, kind, bar.label, bar.abilityId).forEach((summon, i) => {
 				const spawnAt =
-					bar.start + (i === 0 ? (bar.summonActivatesAt ?? 0) : (summon.spawnsAt ?? 0)) / 60;
-				let endAt = spawnAt + (i === 0 ? bar.uptime : summon.duration);
+					bar.start + (i === 0 ? (bar.summonActivatesAt ?? 0) : (summon.spawnsAt ?? 0));
+				let endAt = spawnAt + (i === 0 ? bar.uptime : framesOf(summon.duration));
 				if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
 				if (endAt <= spawnAt) return;
 				const key = `${track.characterId}::${summon.label}`;
@@ -291,7 +295,7 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 	const nbEvents = events.filter((e) => e.kind === 'nightsoulBurst');
 	for (let i = 0; i < nbEvents.length; i++) {
 		const nb = nbEvents[i];
-		expect([18, 12, 9], `nb event cooldown discrete`).toContain(nb.cooldown);
+		expect([18, 12, 9].map(framesOf), `nb event cooldown discrete`).toContain(nb.cooldown);
 		expect(nb.characterId.length, 'nb event carries its trigger character').toBeGreaterThan(0);
 		expect(nb.cooldown, 'one NB cooldown per parse').toBe(nbEvents[0].cooldown);
 		if (i > 0) {
@@ -369,7 +373,7 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 						c.ability === kind &&
 						c.characterId === track.characterId &&
 						c.label === bar.label &&
-						Math.abs(c.time - bar.start) < EPS
+						c.time === bar.start
 				);
 				expect(hits.length, `bar ${track.characterId} ${kind} ${bar.label}@${bar.start}`).toBe(1);
 				matched++;
@@ -406,7 +410,7 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 			w.source === 'burst'
 				? result.tracks.filter((t) => t.characterId === w.characterId).flatMap((t) => t.qBars)
 				: result.tracks.filter((t) => t.characterId === w.characterId).flatMap((t) => t.eBars);
-		const owner = bars.find((b) => Math.abs(b.start - w.start) < EPS);
+		const owner = bars.find((b) => b.start === w.start);
 		expect(owner, `stance owner bar for ${w.characterId}@${w.start}`).toBeTruthy();
 		if (!owner) continue;
 		if (w.transient) {
@@ -418,7 +422,7 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 		}
 		const geomEnd = owner.start + owner.uptime;
 		if (opts.strictStanceGeom) {
-			expect(Math.abs(geomEnd - w.end)).toBeLessThan(1e-6);
+			expect(geomEnd).toBe(w.end);
 		} else {
 			expect(w.end).toBeLessThanOrEqual(geomEnd + EPS);
 		}

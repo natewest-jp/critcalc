@@ -20,6 +20,12 @@
  * parsing, so a close-event's time isn't knowable at open time — and every
  * consumer wants spans anyway ("windows not numbers" constitution).
  *
+ * ⚓ EVERY TIME FIELD BELOW IS AN INTEGER COUNT OF 60fps FRAMES (gauge-round.md
+ * contract C1) — event `time`s, window `start`/`end`s, durations, cooldowns and
+ * spawn offsets alike. Authored seconds are converted once, at the parser's read
+ * sites, by `framesOf`. A consumer that wants seconds divides by 60 where it
+ * draws or prints; ⛔ nothing converts on the way in.
+ *
  * Types only — no runtime imports, safe for both the parser and the pure
  * timeline modules.
  */
@@ -42,26 +48,26 @@ export type CastEvent = {
 	/** Token text as typed, e.g. "E", "hE", "Q" — drives variant-sensitive
 	 *  consumers (plunge selection, trigger filters) and the bar label. */
 	label: string;
-	/** Absolute cast start (seconds). */
+	/** Absolute cast start (FRAMES). */
 	time: number;
-	/** Cast animation duration (seconds). */
+	/** Cast animation duration (FRAMES). */
 	castTime: number;
-	/** Active-window duration in seconds (0 = instant). Final value: stance/
+	/** Active-window duration in FRAMES (0 = instant). Final value: stance/
 	 *  summon extension deltas are stamped here by the parser's finalize pass
 	 *  before the bars are projected. */
 	uptime: number;
-	/** Cooldown seconds (variant/modifier-resolved). Drives the ghost-CD tail:
+	/** Cooldown in FRAMES (variant/modifier-resolved). Drives the ghost-CD tail:
 	 *  the rendered CD track spans up to `time + cooldown`. */
 	cooldown: number;
 	/** Absolute time the consumed charge/burst clock is mechanically ready
-	 *  again — `time + cooldownStartDelay/60 + cooldown`, or the hitmark time
+	 *  again — `time + cooldownStartDelay + cooldown`, or the hitmark time
 	 *  when a Sacrificial-series proc reset the CD. Can differ from
 	 *  `time + cooldown` (the visual ghost tail) when cooldownStartDelay > 0. */
 	readyAt: number;
 	/** Frames (60fps) from cast start until the spawned summon becomes active.
 	 *  0 when the ability spawns nothing (then `fieldStart === time`). */
 	summonActivatesAt: number;
-	/** Cast start plus the summon spawn offset (seconds). Equals `time`
+	/** Cast start plus the summon spawn offset (FRAMES). Equals `time`
 	 *  when the ability spawns nothing. */
 	fieldStart: number;
 	/** True when a Sacrificial-series proc fired on this cast (CD reset to 0);
@@ -116,10 +122,10 @@ export type ActionEvent = {
 	 *  (anchor events satisfy `blockId === id`). One projected InputBlock per
 	 *  group; the contiguity key for per-token-granularity consumers. */
 	blockId: number;
-	/** Absolute start of this swing/action (seconds). Frameless swings of one
+	/** Absolute start of this swing/action (FRAMES). Frameless swings of one
 	 *  token share their block's start time. */
 	time: number;
-	/** Animation seconds this swing advances the cursor; 0 when frame data
+	/** Animation FRAMES this swing advances the cursor; 0 when frame data
 	 *  is absent (frameless kits keep today's zero-width block). */
 	duration: number;
 	/** Resolved normal-ability id (N/C/P only, when one resolved) — the
@@ -149,7 +155,8 @@ export type NightsoulBurstEvent = {
 	/** The character whose cast/action triggered this fire. */
 	characterId: string;
 	time: number;
-	/** Team-size-derived NB cooldown: 18s (1 Natlan unit) / 12s (2) / 9s (3+). */
+	/** Team-size-derived NB cooldown in FRAMES: 18s (1 Natlan unit) / 12s (2) /
+	 *  9s (3+) — i.e. 1080 / 720 / 540. */
 	cooldown: number;
 };
 
@@ -181,10 +188,12 @@ type WindowProvenance = {
 export type BuffRampParams = {
 	startValue: number;
 	stepValue: number;
+	/** FRAMES between steps (authored as seconds; converted at derivation). */
 	stepInterval: number;
 	cap?: number;
 };
-/** Decaying BuffValue parameters (same purpose as {@link BuffRampParams}). */
+/** Decaying BuffValue parameters (same purpose as {@link BuffRampParams}).
+ *  `duration` is FRAMES. */
 export type BuffDecayParams = { startValue: number; endValue: number; duration: number };
 
 /** What produced a buff window — enough structure for the thin row
@@ -237,7 +246,8 @@ export type BuffWindowSource =
 			abilityClass?: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge';
 	  };
 
-/** Span records. `end` is final — extensions and truncations applied. */
+/** Span records. `start`/`end` are FRAMES and `end` is final — extensions and
+ *  truncations applied. */
 export type TimelineWindow =
 	/** A named state window. Covers three openers under ONE vocabulary
 	 *  (post-P4 #4 — the former `stance` kind merged in):
@@ -332,10 +342,10 @@ export type TimelineWindow =
 			 *  window's own list. Set on resShred cast/block rows and
 			 *  afterDuration rows. */
 			poolFirstEffect?: Effect;
-			/** Full logical buff duration (an active-target slice's span may
-			 *  be shorter); received-surface windows only. */
+			/** Full logical buff duration in FRAMES (an active-target slice's span
+			 *  may be shorter); received-surface windows only. */
 			duration?: number;
-			/** Window-open instant for ramp/decay gradient anchoring. */
+			/** Window-open instant for ramp/decay gradient anchoring (FRAMES). */
 			buffStart?: number;
 			rampParams?: BuffRampParams;
 			decayParams?: BuffDecayParams;

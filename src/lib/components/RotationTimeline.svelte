@@ -33,6 +33,7 @@
 		barGeom as projectBar,
 		rulerTicks
 	} from '$lib/timeline/barGeometry';
+	import { FPS } from '$lib/utils/frames';
 	import type { CharReceivedBuffBar, MergedEffectDisplay, SlottedTrack } from '$lib/timeline/types';
 	import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
@@ -309,7 +310,9 @@
 		const ramp = bar.rampParams;
 		if (!ramp || bar.buffStart == null) return undefined;
 		const rampDur =
-			ramp.cap != null ? ((ramp.cap - ramp.startValue) / ramp.stepValue) * ramp.stepInterval : 10;
+			ramp.cap != null
+				? ((ramp.cap - ramp.startValue) / ramp.stepValue) * ramp.stepInterval
+				: 10 * FPS;
 		const p0 = Math.min(1, Math.max(0, (bar.start - bar.buffStart) / rampDur));
 		const p1 = Math.min(1, Math.max(0, (bar.end - bar.buffStart) / rampDur));
 		const o0 = ENVELOPE_MIN + p0 * (1 - ENVELOPE_MIN);
@@ -736,7 +739,7 @@
 			max = Math.max(max, ev.time);
 			if (ev.kind !== 'cast') continue;
 			max = Math.max(max, ev.time + ev.cooldown);
-			if (ev.uptime > 0) max = Math.max(max, ev.time + ev.summonActivatesAt / 60 + ev.uptime);
+			if (ev.uptime > 0) max = Math.max(max, ev.time + ev.summonActivatesAt + ev.uptime);
 		}
 		for (const track of rotation.tracks) {
 			max = Math.max(max, track.activeEnd);
@@ -754,14 +757,19 @@
 		for (const row of weaponProcRows) {
 			for (const bar of row.bars) max = Math.max(max, bar.end);
 		}
-		const viewportSeconds = trackScrollWidth > 0 ? trackScrollWidth / scale : 25;
-		return Math.max(max + 2, viewportSeconds, 25);
+		// ⚠️ `scale` is px per SECOND, so the viewport width converts to frames via
+		// the same seam the geometry wrappers use. The tail pad (2s) and the floor
+		// (25s) are frame counts now — they are axis lengths, not px.
+		const viewportFrames = trackScrollWidth > 0 ? (trackScrollWidth / scale) * FPS : 25 * FPS;
+		return Math.max(max + 2 * FPS, viewportFrames, 25 * FPS);
 	});
-	let totalWidth = $derived(Math.round(totalDuration * scale));
+	let totalWidth = $derived(Math.round((totalDuration / FPS) * scale));
 
 	// ⛔ `majorTicks` is gone (2026-08-11): it existed only to draw gridlines for
 	// the 5s marks, and every tick draws one now.
-	let ticks = $derived(rulerTicks(totalDuration, scale));
+	// ⚠ `rulerTicks` walks SECONDS (its 1s/2s/5s step ladder and `t % 5` major
+	// rule are seconds rules, and Compare shares it) — so the axis converts here.
+	let ticks = $derived(rulerTicks(totalDuration / FPS, scale));
 
 	// ---------------------------------------------------------------------------
 	// Geometry helpers
@@ -771,13 +779,26 @@
 	 *  $lib/timeline/barGeometry — they close over this component's live `scale`
 	 *  so every existing call site stays unchanged. The pure module is shared
 	 *  with the Team Builder's Compare bars so the two renderers can never
-	 *  drift. */
-	function xForTime(t: number): number {
-		return projectX(t, scale);
+	 *  drift.
+	 *
+	 *  ⚓⚓ THESE TWO FUNCTIONS ARE THE FRAMES→SECONDS SEAM, and they are the
+	 *  reason the ~20 `barGeom(...)` call sites in the template below did not
+	 *  change when the IR went frames-native (gauge-round.md C1). Everything on
+	 *  the parser side of this line is frames; `scale` is px per SECOND, because
+	 *  `barGeometry` is shared with Compare, whose data has no frame in it.
+	 *  ⛔ Don't push the division outward into the call sites — one seam that is
+	 *  named is worth twenty that are not. */
+	/** FRAMES → the "12.5s" readout. ⚓ The surface is the ONE place the frames
+	 *  contract lets a value go back to seconds; naming it keeps the four call
+	 *  sites below from each growing their own `/ 60`. */
+	const secondsLabel = (frames: number): number => Math.round((frames / FPS) * 10) / 10;
+
+	function xForTime(f: number): number {
+		return projectX(f / FPS, scale);
 	}
 
-	function barGeom(start: number, span: number): { left: number; width: number } {
-		return projectBar(start, span, scale);
+	function barGeom(startF: number, spanF: number): { left: number; width: number } {
+		return projectBar(startF / FPS, spanF / FPS, scale);
 	}
 
 	/** Cap a buff-bar label's width at the NEXT bar's left edge. Inset = bar
@@ -908,7 +929,7 @@
 		const teamNames = slotCharacters
 			.filter((c): c is NonNullable<typeof c> => c != null)
 			.map((c) => c.displayName);
-		const total = Math.round(rotation.totalDuration * 10) / 10;
+		const total = secondsLabel(rotation.totalDuration);
 		const withSummon = (
 			char: (typeof slotCharacters)[number],
 			source: 'skill' | 'burst',
@@ -1161,7 +1182,9 @@
 	// direction-of-flow contract).
 
 	$effect(() => {
-		pv.totalDuration = rotation.totalDuration;
+		// ⚓ Published in SECONDS: its only consumer is band B's `{…}s` readout on
+		// the planner page, so the conversion belongs at the publish, not there.
+		pv.totalDuration = rotation.totalDuration / FPS;
 	});
 
 	// ---------------------------------------------------------------------------
@@ -1411,8 +1434,7 @@
 														{GHOST_FILL_MIX}%, transparent)"
 													>
 														{#if g.width > 32}
-															<span class="rp-bar-cd-label"
-																>{Math.round((seg.cooldown ?? 0) * 10) / 10}s</span
+															<span class="rp-bar-cd-label">{secondsLabel(seg.cooldown ?? 0)}s</span
 															>
 														{/if}
 													</div>
@@ -1524,8 +1546,7 @@
 														{GHOST_FILL_MIX}%, transparent)"
 													>
 														{#if g.width > 32}
-															<span class="rp-bar-cd-label"
-																>{Math.round((seg.cooldown ?? 0) * 10) / 10}s</span
+															<span class="rp-bar-cd-label">{secondsLabel(seg.cooldown ?? 0)}s</span
 															>
 														{/if}
 													</div>
@@ -1722,7 +1743,7 @@
 											<div class="rp-nb-bar" style:left="{cd.left}px" style:width="{cd.width}px">
 												<span class="rp-bar-cast-label">NB</span>
 												{#if cd.width > 40}
-													<span class="rp-bar-cd-label">{ev.cooldown}s</span>
+													<span class="rp-bar-cd-label">{secondsLabel(ev.cooldown)}s</span>
 												{/if}
 											</div>
 										{/each}

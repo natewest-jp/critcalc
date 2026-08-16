@@ -19,18 +19,35 @@
 
 import type { WeaponType } from '$lib/types/weapon';
 import type { NormalActionKind } from '$lib/utils/actionElement';
+import { FPS } from '$lib/utils/frames';
 
 export type IcdParams = {
-	/** Timer length in seconds (0 = every hit applies) */
+	/** Timer length. ⚠️ UNIT IS THE CALLER'S — see the note on `icdApplies`. */
 	timer: number;
 	/** Counter length: every `hits`-th hit applies (1 = every hit applies) */
 	hits: number;
 };
 
-export const STANDARD_ICD: IcdParams = { timer: 2.5, hits: 3 };
+/**
+ * Standard ICD in FRAMES — the primary statement of the rule.
+ *
+ * ⚓ Frames rather than seconds because that is what the game and gcsim actually
+ * carry: 150 frames, not 2.5 seconds. The seconds form below is derived from it
+ * so the two can never disagree (gauge-round.md C1).
+ */
+export const STANDARD_ICD_FRAMES: IcdParams = { timer: 150, hits: 3 };
 
-/** gcsim's `ICDTagNone` as instrument params: every hit applies. The parser
- *  spells the same case as a `null` cadence instead — see `resolveActionIcd`. */
+/** Standard ICD in SECONDS — the Visualizers' ICD instrument, whose axis, its
+ *  presets and its readouts are all seconds because that is what a reader
+ *  thinks in. **Derived**, never restated. */
+export const STANDARD_ICD: IcdParams = {
+	timer: STANDARD_ICD_FRAMES.timer / FPS,
+	hits: STANDARD_ICD_FRAMES.hits
+};
+
+/** gcsim's `ICDTagNone` as instrument params: every hit applies. Unit-free — a
+ *  zero timer is zero in any unit. The parser spells the same case as a `null`
+ *  cadence instead — see `resolveActionIcd`. */
 export const NO_ICD: IcdParams = { timer: 0, hits: 1 };
 
 export type IcdHit = {
@@ -57,7 +74,13 @@ export const createIcdClock = (): IcdClock => ({ timerStart: -Infinity, count: 0
 
 /** Advance `clock` by one hit at `time` and report whether it applies its
  *  element. Mutates the clock — a hit that is offered to the clock is a hit
- *  that happened, whether or not it applied. */
+ *  that happened, whether or not it applied.
+ *
+ *  ⚓ UNIT-AGNOSTIC. The only time arithmetic here is `time - timerStart >= timer`,
+ *  so this is correct in whatever unit the caller is consistent in: the parser
+ *  feeds it FRAMES with `STANDARD_ICD_FRAMES`, the instrument feeds it SECONDS
+ *  with `STANDARD_ICD`. ⛔ Don't "fix" it to one unit — serving both from one
+ *  implementation is the point (gauge-round.md C1/C5). */
 export function icdApplies(clock: IcdClock, time: number, { timer, hits }: IcdParams): IcdHit {
 	if (time - clock.timerStart >= timer - EPS) {
 		clock.timerStart = time;
@@ -118,6 +141,10 @@ export const icdTagFor = (kind: NormalActionKind): IcdTag =>
  * - Bespoke groups (Pole Extra Attack's 0.5s timer, Ayaka's and Yae's charged
  *   groups) collapse to standard. icd.md tracks this as the schema gap.
  *
+ * ⚠️ RETURNS FRAMES. This is the PARSER's resolver — the rotation clock is
+ * frames (gauge-round.md C1) — so the cadence it hands back must be too. The
+ * instrument never calls this; it picks its own params in seconds.
+ *
  * @param kind         normal / charged / plunge
  * @param weapon       the character's weapon type
  * @param abilityNoICD the resolved normal ability's `noICD` (Mualani's
@@ -131,5 +158,5 @@ export function resolveActionIcd(
 	if (abilityNoICD) return null;
 	if (kind === 'plunge') return null;
 	if (kind === 'charged' && weapon === 'catalyst') return null;
-	return STANDARD_ICD;
+	return STANDARD_ICD_FRAMES;
 }
