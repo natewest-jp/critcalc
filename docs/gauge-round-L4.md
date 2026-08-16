@@ -732,9 +732,25 @@ describe". It drifted anyway, in the one place the promise had not been kept.
 - ⚠️ **The dispatch context is captured at the cast while the aura is read at the land.**
   Deliberate: the aura is the thing whose timing was wrong, and re-resolving a state set
   inside a scheduled closure is L5's problem, when reactions stop being synthesized.
+- ⚠️ **The corpus's one surviving `plungeVariant`** (Kazuha's "After Hold E") has no
+  gcsim analogue, so it was preserved — which leaves it holding low-plunge-shaped numbers
+  while `plungeFrames` beside it now holds the high plunge. One row, named here rather
+  than left to be rediscovered.
 - ⚠️ **The queue is drained at the end but the reported duration is the pre-drain frame.**
   Klee's mines land 240 frames after her E and must fire; they are not more rotation,
   and letting the drain move `clock.now` would stretch the timeline ruler.
+
+### Gates
+
+`vitest 1493` · `check` · `lint` · `build` · the L0 oracle re-measured · **`test:e2e`
+73 + 73** (both engine lines read separately, per the ⚠️ in the verification policy —
+Chrome's run also hit the documented upstream teardown hang,
+[playwright#39753](https://github.com/microsoft/playwright/issues/39753), which is why it
+took 5.7 min against WebKit's 1.3; ⛔ not ours to bisect).
+
+⏳ **Open: Nate's eyes on the timeline and the PNG.** Timings moved deliberately — cursor
+advances got longer where the `swap` fallback was understating, and reactions now land on
+their hitmarks instead of at cast start.
 
 ### Tests that changed, and why
 
