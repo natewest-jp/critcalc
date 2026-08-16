@@ -1,6 +1,6 @@
 # L5e — summon ticks apply their element (the recall half)
 
-**Status:** 🔄 in progress — L5e-a (`637a175`) + L5e-a½ (`7d63949`) shipped 2026-08-16; L5e-b next, ⚠️ pending the §3.3 ICD decision
+**Status:** 🔄 in progress — L5e-a (`637a175`) + L5e-a½ (`7d63949`) shipped 2026-08-16; §3.3 ICD decision MADE — L5e-a¾ (annotation) then L5e-b (the chain)
 **Reads:** [`gauge-round.md`](gauge-round.md) (the contract) · [`gauge-round-L5.md`](gauge-round-L5.md)
 (the gauge, and this landing's decomposition in its §5) · [`gauge-round-L3.md`](gauge-round-L3.md)
 (the clock)
@@ -165,8 +165,54 @@ majority; Oz is in the minority. ⛔ A blanket rule in either direction is wrong
 ⚠️⚠️ **This lands L5e-b straight on the schema gap L4 named as its top one** (per-ability
 ICD tag + group). Un-gated, Oz over-applies electro roughly 3×; gated by default,
 Xiangling's 65 applications — **the bulk of this landing's 84** — would be wrong instead.
-The narrow fix is a per-summon opt-in so the two cases can differ; ⛔ do not reach for a
-corpus-wide default, which is what `icd.md` forbids annotating.
+
+#### ⚓ THE DECISION — default STANDARD, annotate `none`, enumerate the residue
+
+⚓⚓ **The gcsim dump already answers this and no Go had to be read.** `main.go` records
+`applied` per damage event — true only when the element stream carried an application at
+that frame, i.e. the POST-ICD subset — so every summon's gate is measurable from the
+capture the frames audit already runs. Measured on the 35 multi-hit series belonging to
+characters whose summons we tick, against `icd.ts` at `STANDARD_ICD_FRAMES`
+(`{timer: 150, hits: 3}`):
+
+| verdict                             | series | meaning                                                                             |
+| ----------------------------------- | -----: | ----------------------------------------------------------------------------------- |
+| `NONE` — every tick applies         |  **7** | Pyronado, Guoba, Birgitta, Bake-Kurage, Columbina, Sesshou Sakura, one Salon Member |
+| `STANDARD` — `icd.ts` reproduces it | **15** | Grass Ring, Lumidouce, Crystal Collapse, Gust Surge, Lea Lotus, …                   |
+| `OTHER` — neither                   | **13** | Oz (3 vs 4), Stone Stele (3 vs 4), White Flame (7 vs 5), Gentilhomme (2 vs 4)       |
+
+**So: absent ⇒ STANDARD ICD; author `none` on the seven.** The reasoning, in order of
+weight:
+
+1. **Gated is the majority.** 28 of 35 series are gated in some form and only 7 are not,
+   so ⚓ the ANNOTATION is the minority — which is exactly what `icd.md`'s rule against
+   mass-annotating a default asks for, rather than in tension with it.
+2. **Standard is the closer wrong answer for `OTHER`.** Oz measures 3, standard predicts
+   4, ungated would give 10. Every `OTHER` row is nearer standard than nothing.
+3. **It is measured, not guessed** — no ICD group is invented, and the seven are read off
+   the same oracle the corpus's frames and applications came from.
+4. **Unmeasured summons fail conservatively.** The 12 characters with no gcsim source
+   default to standard, which under-applies rather than manufacturing the phantom
+   reactions this whole round exists to delete.
+5. **It gets this landing's biggest contributors exactly right**: Pyronado and Guoba are
+   two of the seven, and they are **65 of the 84**.
+
+⚠️ **Residual, stated not hidden: the 13 `OTHER` series stay wrong**, by ±1–2 on a series
+in almost every case (worst: Furina's Gentilhomme Usher, 2 measured vs 4 predicted). They
+are real gcsim ICD GROUPS with their own timers — the L4 schema gap in full view — and
+closing them is per-ability group data, ⛔ its own L4-family landing and not a blocker
+here. The split cuts both ways (Oz and the stele tighter than standard, Durin's White
+Flame and Escoffier's Parfait looser), so ⛔ there is no single fudge factor to reach for.
+
+**Shape:** a per-summon annotation, because a summon's ticks are ONE gcsim attack with one
+tag. Absent ⇒ standard; `'none'` ⇒ ungated. ⛔ Do not make it a free-form group name until
+there is a consumer for one — that is `twoPiece`'s mistake (declared, read by nobody).
+⚠️ The clock is keyed `${characterId}:summon:${label}` per L5 §5, which matches the
+isolated dump's scope: a summon's counter is its own and is shared with nothing.
+
+**Where it comes from:** ⚓ in-pattern with L4 — `audit-gcsim-frames.mjs` grows an
+applied/total column in §5 and REPORTS the verdict; a migration writes it. ⛔ The audit
+never authors.
 
 ⚓ Silver lining worth stating: **65 of the 84 are Xiangling's, and those are verified
 exact** — count, interval and phase. So the majority of this landing's value does not
@@ -250,10 +296,14 @@ index, swapOutAt })`, with the swap clamp folded INSIDE so an unclamped end can 
   collapsed onto `summonEndAt`.
   ⏭ **Nate has not looked at this yet** — Fischl draws ONE Oz lane handing off at the
   recast, and Zhongli's stele markers shift 2.4 s later.
-- **L5e-b** — the live chain: spawn hook, chained ticks, liveness at fire. Applications
-  reach the gauge. ⚠️ **This is the behaviour change** — measured by the oracle, gated by
-  Nate's eyes, ⛔ never by IR equality. ⚠️ Needs the ICD decision from §3.3 made first:
-  ungated is right for 65 of the 84 and wrong for Oz.
+- ⏭ **L5e-a¾ — the ICD annotation** (§3.3's decision): the audit reports applied/total per
+  summon series, a migration authors `'none'` on the seven, and the schema gains the
+  field. ⚠️ **No behaviour change on its own** — nothing reads it until L5e-b, so it gates
+  on the corpus IR being byte-identical, exactly like L5e-a.
+- **L5e-b** — the live chain: spawn hook, chained ticks, liveness at fire, ticks gated
+  through `icd.ts` on the per-summon clock. Applications reach the gauge. ⚠️ **This is the
+  behaviour change** — measured by the oracle, gated by Nate's eyes, ⛔ never by IR
+  equality.
 - **L5e-c** — measure, record, merge. Oracle re-run, residue enumerated, `gauge-round.md`
   §5 updated, memory written, `test:e2e` before the merge.
 
