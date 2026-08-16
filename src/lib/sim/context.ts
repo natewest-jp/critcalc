@@ -29,6 +29,7 @@ import type { LoadoutEntry } from '$lib/stores';
 import type { CastEvent, TimelineEvent } from '$lib/utils/rotationEvents';
 import type { IcdClock } from '$lib/utils/icd';
 import { type AuraState, createAuraState } from './aura';
+import type { CastKinds } from './states';
 import {
 	type CharState,
 	createCharState,
@@ -144,6 +145,11 @@ export type SimContext = {
 	/** Per-character cast events emitted so far — the mid-parse record
 	 *  `computeCurrentStates` reads for duringSummon detection. */
 	castsByChar: Map<string, CastEvent[]>;
+	/** Incremental "has this character ever cast a skill / a burst" index over
+	 *  `castsByChar`. ⚠️ Not a convenience — it is the guard that stops
+	 *  `inferredStates` walking every cast for a kind the character has never
+	 *  used, which was 76% of parse time before it existed (see states.ts). */
+	castKindsByChar: Map<string, CastKinds>;
 	/**
 	 * E-charge queues, keyed by ABILITY id (not character id): stance characters
 	 * keep independent charge queues per skill variant — Cyno's out-of-stance E
@@ -205,6 +211,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 			return cs;
 		},
 		castsByChar: new Map(),
+		castKindsByChar: new Map(),
 		eChargeQueues: new Map(),
 
 		aura: createAuraState(),
