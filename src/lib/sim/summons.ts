@@ -75,26 +75,72 @@ export function findSummonsForBar(
 }
 
 /**
- * The span of one summon within its cast. ⚠ THE PRIMARY IS NOT COMPUTED THE
- * SAME WAY AS THE REST, and that asymmetry is load-bearing: `summons[0]` is
- * what the ability's geometry accessors already resolved into the cast, so its
- * spawn comes from `summonActivatesAt` (which a persistent-summon override or a
- * variant may have retargeted) and its lifetime from the bar's `uptime` (which
- * `durationExtensions` may have grown mid-parse — Collei's Cuilein-Anbar). A
- * secondary summon went through neither, so it reads its OWN authored fields.
- * Today all three multi-summon abilities pair equal durations at different
- * spawn frames, so this only shifts starts — but a secondary with its own
- * duration will be right rather than inheriting the primary's.
+ * Where one summon spawns within its cast.
+ *
+ * ⚠ THE PRIMARY IS NOT COMPUTED THE SAME WAY AS THE REST, and that asymmetry is
+ * load-bearing: `summons[0]` is what the ability's geometry accessors already
+ * resolved into the cast, so its spawn comes from `summonActivatesAt` (which a
+ * persistent-summon override or a variant may have retargeted). A secondary
+ * summon went through neither, so it reads its OWN authored `spawnsAt`.
+ *
+ * ⚠ The two fields carry DIFFERENT UNITS and both are handled right here:
+ * `summonActivatesAt` is already frames, `Summon.spawnsAt` is authored in
+ * frames (see its declaration), and `Summon.duration` — read by `summonEndAt`
+ * below — is authored in SECONDS. ⛔ Don't "harmonise" them.
  */
-export function summonSpan(
+export function summonSpawnAt(
 	barStart: number,
 	barSummonActivatesAt: number | undefined,
-	barUptime: number,
 	summon: Summon,
 	index: number
-): { start: number; end: number } {
-	const start = barStart + (index === 0 ? (barSummonActivatesAt ?? 0) : (summon.spawnsAt ?? 0));
-	return { start, end: start + (index === 0 ? barUptime : framesOf(summon.duration)) };
+): number {
+	return barStart + (index === 0 ? (barSummonActivatesAt ?? 0) : (summon.spawnsAt ?? 0));
+}
+
+/**
+ * When one summon ends — ⚓ THE ONE ANSWER, so that a live path and finalize
+ * cannot hold two (gauge round L5e-a).
+ *
+ * ⚓⚓ THIS EXISTS TO BE RECOMPUTED, not called once. L5e schedules summon ticks
+ * on the clock and each tick re-asks "am I still alive?" at its own instant;
+ * finalize asks once, at the end. Both get the same answer because they supply
+ * the same facts observed at different times — ⛔ which is the whole point, and
+ * the alternative (a parallel live registry recomputing the geometry beside
+ * this one) is the `findCastSummons`/`findSummonsForBar` trap this round has
+ * already paid for once.
+ *
+ * ⚠ So pass `barUptime` FRESH on every call. `durationExtensions` grow it
+ * mid-parse (Collei's Cuilein-Anbar), so a value snapshotted at the cast is a
+ * different — and wrong — question.
+ *
+ * ⚠ The primary/secondary split again: `summons[0]` takes its lifetime from the
+ * BAR's uptime, a secondary from its own authored `duration`. Today all three
+ * multi-summon abilities pair equal durations at different spawn frames, so
+ * this only shifts starts — but a secondary with its own duration will be right
+ * rather than inheriting the primary's.
+ *
+ * ⛔ RECAST TRUNCATION IS DELIBERATELY NOT HERE, and folding it in would be a
+ * mistake rather than a convenience. It is not a property of one summon's end:
+ * finalize expresses it by shortening the PRIOR window on the same key, and a
+ * live tick chain expresses it by stopping. One function pretending to cover
+ * both would have to take the other window as an argument, which is how a
+ * shared helper turns back into two implementations wearing one name.
+ *
+ * ⚠ `terminatesOn` is read off the SUMMON, so a stationary turret can outlive
+ * the swap that ends the field it spawned beside.
+ */
+export function summonEndAt(args: {
+	spawnAt: number;
+	/** ⚠ The bar's CURRENT uptime — see the note above. */
+	barUptime: number;
+	summon: Summon;
+	index: number;
+	/** The owner's next swap-out, or `Infinity` when they never leave. */
+	swapOutAt?: number;
+}): number {
+	const { spawnAt, barUptime, summon, index, swapOutAt = Infinity } = args;
+	const natural = spawnAt + (index === 0 ? barUptime : framesOf(summon.duration));
+	return summon.terminatesOn === 'swap' && swapOutAt < natural ? swapOutAt : natural;
 }
 
 /**

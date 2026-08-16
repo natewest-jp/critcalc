@@ -28,7 +28,7 @@ import { deriveBuffWindows } from '$lib/utils/buffWindows';
 import type { CastEvent, ReactionEvent, TimelineWindow } from '$lib/utils/rotationEvents';
 import type { SimContext } from './context';
 import type { CharacterTrack, InputBlock, ParsedRotation, TimelineBar } from './types';
-import { computeSummonDamageTicks, findSummonsForBar, summonSpan } from './summons';
+import { computeSummonDamageTicks, findSummonsForBar, summonEndAt, summonSpawnAt } from './summons';
 import { collectApplications } from './aura';
 
 /**
@@ -231,17 +231,19 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			// keeps the id it has always had and the extras land after it — the
 			// lane ordering in summonSubrows follows the same walk.
 			findSummonsForBar(summonChar, kind, bar.label, bar.abilityId).forEach((summon, i) => {
-				const { start: spawnAt, end } = summonSpan(
-					bar.start,
-					bar.summonActivatesAt,
-					bar.uptime,
+				// ⚓ Both geometry answers come from `summons.ts` (L5e-a) so the
+				// live tick path L5e-b adds cannot end up holding a second copy.
+				// The swap clamp lives inside `summonEndAt`; recast truncation
+				// stays here, below, because it shortens the PRIOR window rather
+				// than this one — see that function's ⛔ note.
+				const spawnAt = summonSpawnAt(bar.start, bar.summonActivatesAt, summon, i);
+				const endAt = summonEndAt({
+					spawnAt,
+					barUptime: bar.uptime,
 					summon,
-					i
-				);
-				// ⚠ terminatesOn is read off the SUMMON, so a stationary turret
-				// can outlive the swap that ends the field it spawned beside.
-				let endAt = end;
-				if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
+					index: i,
+					swapOutAt
+				});
 				if (endAt <= spawnAt) return;
 				const key = `${track.characterId}::${summon.label}`;
 				// Recast truncation: shorten the still-open prior window on this key.
