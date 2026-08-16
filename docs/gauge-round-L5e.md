@@ -1,6 +1,6 @@
 # L5e — summon ticks apply their element (the recall half)
 
-**Status:** 🔄 in progress — L5e-a (`637a175`) + L5e-a½ (`7d63949`) shipped 2026-08-16; L5e-a¾ (`ab2701d`) shipped — **L5e-b, the live chain, is next and is the last step**
+**Status:** ✅ **SHIPPED + verified 2026-08-16** — `637a175` · `7d63949` · `ab2701d` · `d5764a6` · `87f3b09`
 **Reads:** [`gauge-round.md`](gauge-round.md) (the contract) · [`gauge-round-L5.md`](gauge-round-L5.md)
 (the gauge, and this landing's decomposition in its §5) · [`gauge-round-L3.md`](gauge-round-L3.md)
 (the clock)
@@ -316,12 +316,32 @@ index, swapOutAt })`, with the swap clamp folded INSIDE so an unclamped end can 
   already fills the codebase with matching text, so that name would be permanently
   unverifiable. Found by deleting every access and watching the guard stay GREEN; renamed
   and watched it go RED. ⚓ **A guard is only as strong as its key name is unique.**
-- **L5e-b** — the live chain: spawn hook, chained ticks, liveness at fire, ticks gated
-  through `icd.ts` on the per-summon clock. Applications reach the gauge. ⚠️ **This is the
-  behaviour change** — measured by the oracle, gated by Nate's eyes, ⛔ never by IR
-  equality.
-- **L5e-c** — measure, record, merge. Oracle re-run, residue enumerated, `gauge-round.md`
-  §5 updated, memory written, `test:e2e` before the merge.
+- **L5e-b** ✅ **SHIPPED (`d5764a6`)** — the live chain. Applications **57 → 145**, tier-2
+  agreement **72 → 121** of 263, extra **0**, mismatch **0**. ✅ Verified by Nate in the
+  browser: _"everything looking right, no buffs moved that I could see"._
+  🐛 **The oracle was sizing its run too short** — the 3 "we apply and gcsim does not" were
+  all Zhongli stele ticks past gcsim's horizon, i.e. ours being RIGHT. Sized off the
+  longest window end now (which is why gcsim's own total moved 201 → 216).
+  ⛔ **Never accept an `extra` without checking it against the horizon first.**
+- **L5e-c** ✅ **SHIPPED (`87f3b09`)** — six tests on `applications`, each verified by
+  BREAKING it. ⚠️ Two paths stay untested because the corpus cannot reach them (no ticking
+  summon declares `terminatesOn: 'swap'` or carries `durationExtensions`) — ⛔ don't cover
+  them with a fixture summon. Gates green incl. **e2e 73 + 73**.
+
+### ⚠️⚠️ STILL OPEN — the `applications` feed order
+
+`collectApplications` sorts, so the PROJECTION is time-ordered; the order the gauge was
+FED is not. The cast pipeline advances the clock through the cast animation before the
+emitters run, so a cast's own application is scheduled into the past and clamped to `now`
+(what `clock.latecomers` counts) — and `Band.TICK` (10) sorts ahead of `Band.LAND` (20) at
+that clamped frame, so a summon's first tick can be offered before the cast that spawned
+it. `gauge.advanceTo` is `while (frame < target)`, so the earlier application lands at the
+later frame.
+
+Measured: **4 inversions in 464 applications across all 123 characters, ZERO
+cross-element** — a summon and its caster share an element, which is what keeps it from
+changing a reaction. ⛔ The sort is not the fix; fixing the FEED means scheduling before
+the advance, which moves event ids and is its own landing.
 
 ⏭ The 30-application curation half is **separate work, not a sub-landing here** — it has
 its own visible-change gate (§1) and does not block any of the above.

@@ -756,18 +756,44 @@ claim was made: the `origin` attribution token (no reachable case — an interna
 application provably cannot react), the gauge wake-up task (nothing to dispatch, so it
 is pure cost), and the plan's own "both halves or neither".
 
-⏭ **L5e — summon ticks applying — is its own landing.** The prediction that buff bars
-would vanish without it was measured and is false: on five realistic rotations not one
-buff window moved. The recall gap is real (82 of 251 aura samples) but it is decoupled,
-and closing it means moving summon-window authorship into the live path rather than
-copying its geometry. 📄 **Planned: [`gauge-round-L5e.md`](gauge-round-L5e.md).**
+### L5e — summon ticks apply their element ✅ SHIPPED 2026-08-16 — _the recall half_
 
-↻ **The gap is decomposed, and L5's "the ceiling is mostly DATA" was backwards.** There
-are **ZERO** summons we fail to author; **84 of the 144** missing applications are summons
-we already tick correctly and simply do not feed the gauge (Pyronado 45, Guoba 20, Oz 15,
-Stone Stele 4), 30 are summons lacking a damage tick, and 30 are other gaps — led by
-Fischl's A4 coordinated attack and Nahida's Tri-Karma, ⚓ neither of which is a summon at
-all. **So L5e is engine work and is not gated on curation.**
+📄 **Full record: [`gauge-round-L5e.md`](gauge-round-L5e.md)** · ✅ **visually verified**
+(⚓ Nate: _"everything looking right, no buffs moved that I could see"_).
+
+Four sub-landings: `summonEndAt` extracted so finalize and the live path share one
+answer (`637a175`); two data bugs the phase check surfaced (`7d63949`); the ICD gate
+authored (`ab2701d`); the live chain (`d5764a6`); its test (`87f3b09`).
+
+|              |                                                                                                      |
+| ------------ | ---------------------------------------------------------------------------------------------------- |
+| applications | ours **57 → 145**; gcsim applies-and-we-do-not **143 → 71**; extra **0**; element mismatch **0**     |
+| tier 2       | agree **72 → 121** of 263 · gcsim-only **82 → 45** · mean \|Δ\| **0.223U → 0.174U**                  |
+| shape        | ⚓ the chain is ONE TICK AT A TIME, liveness re-asked at every fire — ⛔ never a parallel registry   |
+| gate         | `icdGate` on the `summonTick` TRIGGER (absent = standard, `'none'` = ungated) — 6 effects, 5 summons |
+| perf         | 490 s rotation / 480 applications **10.2 ms**; 300 stacked hour-waits **36.3 ms**                    |
+
+⚓ **The decomposition that shaped it, and retired a claim.** L5's record said the recall
+ceiling was mostly DATA. Measured, it is backwards: of the 144 missing applications, **84
+are summons we already tick correctly and simply never fed the gauge**, 30 are summons
+lacking a damage tick (curation), and 30 are neither — led by Fischl's A4 coordinated
+attack and Nahida's Tri-Karma, ⚓ neither of which is a summon at all. **There are ZERO
+summons we fail to author.**
+
+↻ **Two rulings were overturned by measurement mid-landing**, both recorded where they
+were made: "the ceiling is DATA" (above), and L5e §3.3's "a summon tick needs no ICD
+gate", which was generalised from Xiangling alone — Oz applies ~1 in 3, so it is
+PER-ABILITY exactly as L4d's census said.
+
+⚠️ **Open, and deliberately not fixed here:** `ParsedRotation.applications` is sorted at
+the projection, but the FEED order is not time-ordered — the cast pipeline advances the
+clock before the emitters run, so a cast's own application is clamped and `Band.TICK`
+sorts ahead of `Band.LAND` at the clamped frame. 4 inversions in 464 applications, none
+cross-element. Fixing the feed moves event ids and is its own landing.
+
+⏭ **The residue L5e does not close:** 30 applications of curation (a damage tick series
+on 24 existing summons), 30 of other gaps, and the 13 `OTHER` ICD series that are neither
+standard nor none — real gcsim ICD groups, which is L4's named top schema gap.
 
 **Done when (met):** the oracle diff is materially better than the L0 baseline, with
 residual divergences enumerated and explained. ⚓ **L5 merges on a measured improvement,
