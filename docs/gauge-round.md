@@ -181,9 +181,21 @@ What it kills, concretely:
 - Three inconsistent epsilon conventions (`icd.ts` `1e-9`, `gauge.ts` `1e-6`, `.toFixed(6)`
   test keys) — the smell that the unit was wrong.
 
-⚠️ **Three suspicious authored values** are not near-whole and were probably not derived from
-frames at all: Furina's `3.369` / `1.626` / `5.231` tick intervals. Re-derive from gcsim in L2
-rather than rounding them.
+✅ **RESOLVED 2026-08-16 — the suspicious values are not a data bug.** Six of Furina's
+Salon Solitaire values (three `interval`, three `firstTickDelay`) are not near-whole, and the
+reason is that ⚓ **they were never frame counts: they are statistical MEANS of a genuinely
+randomised tick.** gcsim carries the same numbers to three decimals
+(`chevalmarinIntervalMean = 97.5858` ↔ our `1.626`; `usherIntervalMean = 202.138` ↔ `3.369`;
+`crabalettaIntervalMean = 313.859` ↔ `5.231`) and samples each tick from an
+empirically-measured left-skewed distribution — `usherIntervalStddev = 5`, with a per-tick
+offset clamped to **±7 frames** (`internal/characters/furina/skill.go:52`, citing a
+measurement spreadsheet).
+
+So: **round them like everything else.** A ±0.5-frame rounding is noise against a ±7-frame
+real spread, and our value is already the correct mean. ⛔ Do not "re-derive" them — there is
+no integer to recover. ⚠️ Record instead that Furina's ticks are one of the places where the
+GAME is stochastic and a deterministic planner necessarily reports a mean; it is also a second
+source of the oracle's non-determinism, so Furina fixtures will always wobble.
 
 ⚠️ **`~Xs` accepts arbitrary decimals** (`~0.017s` is legal user text). Round at
 tokenization; that is the one place user input enters the clock.
@@ -513,7 +525,8 @@ parser's time math is `frames / 60` additions.
 ⚓ **Exactly one rounding site:** JSON seconds → `Math.round(s * 60)` at the read site.
 
 **Done when:** 1467 tests green with exact integer assertions replacing epsilon comparisons,
-the 47 non-whole-frame values are enumerated and the three suspicious ones re-derived, and
+the 47 non-whole-frame values are enumerated (⚓ Furina's six are already resolved above — they
+are means of a randomised tick and simply round), and
 the timeline renders identically.
 
 ### L3 — The clock-driven core (no behaviour change) — _the big one_

@@ -310,6 +310,11 @@ identical runs. Application counts flickered 199/200 across the corpus.
 the modal run, and **flags any fixture whose runs disagreed** — turning a silent baseline
 wobble into a stated property. ⛔ Do not "fix" this by patching gcsim.
 
+⚠️ A second source found later: **some of the randomness is the GAME's, not gcsim's.** Furina's
+Salon Solitaire ticks are sampled from an empirically-measured left-skewed distribution with a
+per-tick offset of ±7 frames (`internal/characters/furina/skill.go:52`). Any Furina fixture will
+wobble no matter what, and a deterministic planner can only ever report the mean.
+
 ### ⚠️⚠️ Reactions leave FOUR kinds of trace, not one
 
 The plan listed three. The fourth is the one that matters, and the first pass of the harness
