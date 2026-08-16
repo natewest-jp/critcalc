@@ -196,9 +196,36 @@ export type SimContext = {
 	 * consumes it.
 	 */
 	aura: AuraState;
-	/** Elemental-application ICD clocks, keyed `${characterId}:${icdTag}`.
-	 *  Rotation-wide like the aura: a swap-out neither resets nor freezes one. */
+	/** Elemental-application ICD clocks, keyed `${characterId}:${icdTag}`, and —
+	 *  since L5e-b — `${characterId}:summon:${label}` for a summon's tick series.
+	 *  Rotation-wide like the aura: a swap-out neither resets nor freezes one.
+	 *  ⚓ A summon's counter is ITS OWN and is shared with nothing, which is what
+	 *  the isolated gcsim capture measures. ⛔ Never fold a summon onto its
+	 *  caster's normal-attack clock. */
 	icdClocks: Map<string, IcdClock>;
+	/** When each character most recently went off-field, FRAMES (gauge round
+	 *  L5e-b). Written as a segment OPENS, so it is the live answer to the
+	 *  question finalize answers by scanning forward through `tracks`.
+	 *
+	 *  ⚓ "Most recently" and finalize's "FIRST swap-out after the spawn" agree
+	 *  wherever it matters, because a tick chain checks liveness at every fire
+	 *  and therefore DIES at the first violation — it can never survive to see a
+	 *  later swap-out and mistake it for the first. ⚠️ That equivalence is a
+	 *  property of the chaining (L5e §2), not of this map; ⛔ don't reuse it
+	 *  somewhere that reads the value once. */
+	lastSwapOutAt: Map<string, number>;
+	/** Generation per `${characterId}::${summonLabel}` — bumped when a summon
+	 *  that declares `terminatesOn: 'recast'` respawns (gauge round L5e-b). A
+	 *  running tick chain compares its captured generation on every fire and
+	 *  stops when it no longer matches, which is how a recast truncates the
+	 *  chain without anything having to CANCEL a scheduled task.
+	 *
+	 *  ⚓ The generation-stamp pattern `gauge.ts` already uses for its EC and
+	 *  Burning chains, for the identical reason: a superseded chain must not be
+	 *  able to act after the thing that superseded it.
+	 *  ⚠️ Bumped ONLY for a recast-terminating summon, mirroring finalize —
+	 *  a summon without the flag spawning twice leaves both windows alive. */
+	summonChainGen: Map<string, number>;
 	/** Timed elemental infusions granted by `infuse` Effects. */
 	infusionWindows: InfusionWindow[];
 };
@@ -249,6 +276,8 @@ export function createSimContext(input: SimContextInput): SimContext {
 
 		aura: createAuraState(),
 		icdClocks: new Map(),
+		lastSwapOutAt: new Map(),
+		summonChainGen: new Map(),
 		infusionWindows: []
 	};
 }

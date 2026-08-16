@@ -15,13 +15,20 @@
  * the point of this landing: nothing can be SCHEDULED against a time that two
  * variables disagree about.
  *
- * ⏸️ THE TASK QUEUE IS EMPTY AT L3, DELIBERATELY, and that is worth stating
- * plainly rather than dressing up. Everything the parse currently defers is
- * order-VISIBLE — the shieldEnd drain, the Nightsoul derivation, the summon-tick
- * hits all move event ids if they fire on a task instead of in a sweep (L3 plan
- * §4.2) — so this landing installs the clock and changes no behaviour. Every
- * `clock.advance` below is already the hook: the moment L5 schedules a gauge
- * tick or a summon hit, it fires in order at every one of these sites for free.
+ * ↻ THE TASK QUEUE IS NO LONGER EMPTY. It was at L3, deliberately, and the
+ * prediction made there held exactly: every `clock.advance` below was already
+ * the hook, so scheduling needed no new plumbing at any of these sites. Two
+ * things ride it now — a cast's own applications at `Band.LAND` (L4d), and a
+ * summon's tick chain at `Band.TICK` (L5e-b), each tick rescheduling only the
+ * next one and re-checking liveness when it fires.
+ *
+ * ⚠️ What stayed OFF the queue is still deliberate: the shieldEnd drain and the
+ * Nightsoul derivation are order-VISIBLE — moving them moves event ids — so
+ * they remain end-of-parse sweeps, and ⛔ `buffWindows` remains a finalize
+ * projection (L3 plan §4.2). ⚠️⚠️ The summon-tick HIT synthesis at finalize
+ * step 6c is NOT the same thing as the tick chain here: the hits feed
+ * `deriveBuffWindows` and must keep their order; the chain feeds the gauge.
+ * ⛔ Do not "unify" them — one rule (`summonTickSeries`), two readers.
  *
  * ⚠️ Order-of-operations is this parser's top bug class. The cast pipeline's
  * shared step order is frozen (see `handleCast`), and so is the settle order
@@ -46,7 +53,7 @@ import { resolveActionElement } from '$lib/utils/actionElement';
 import { FPS, frameAt, framesOf } from '$lib/utils/frames';
 import { GENERIC_NORMAL_HITS, GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
 import type { ActionEvent, CastEvent } from '$lib/utils/rotationEvents';
-import { Band, createClock } from './clock';
+import { createClock } from './clock';
 import type { SimContext } from './context';
 import type { CharacterTrack } from './types';
 import type { HitEvent } from './hits';
@@ -87,7 +94,7 @@ import {
 	getCharacterCdResetTargets,
 	getWeaponCdResetCooldown
 } from './cooldowns';
-import { emitReactionsAtCast, emitReactionsAtSwing } from './aura';
+import { emitReactionsAtCast, emitReactionsAtSwing, scheduleSummonTicks } from './aura';
 
 /** Global dash/jump duration approximation (60fps). Character-specific values deferred. */
 const DASH_FRAMES = 21;
@@ -134,9 +141,6 @@ export function runRotation(
 	lookupChar: (name: string) => CharacterData | null
 ): number {
 	const clock = createClock();
-	// ⛔ The bands are referenced so a future scheduler cannot silently import a
-	// second ordering. Nothing schedules at L3 — see the header.
-	void Band;
 
 	for (let i = 0; i < segments.length; i++) {
 		const tokens = segments[i];
@@ -161,6 +165,20 @@ export function runRotation(
 		const qAbility = char.abilities.find(
 			(a): a is Extract<Ability, { abilityType: 'burst' }> => a.abilityType === 'burst'
 		);
+
+		// ⚓ A SWAP-OUT, OBSERVED LIVE (gauge round L5e-b). Finalize answers "when
+		// did this character next go off-field" by scanning FORWARD through the
+		// finished tracks; a summon tick firing mid-parse cannot. So record it as
+		// it happens: everyone who was on field before this segment and is not on
+		// it now has just swapped out, at this instant.
+		// ⚠️ Only the IMMEDIATELY PRECEDING track's character, never every prior
+		// one: walking them all would stamp a later swap-out over a character who
+		// has been off-field for ages, and consecutive segments owned by the same
+		// character are not a swap-out at all. Both halves are precisely
+		// finalize's "the next track with a DIFFERENT characterId".
+		const prevTrack = ctx.tracks[ctx.tracks.length - 1];
+		if (prevTrack && prevTrack.characterId !== char.id)
+			ctx.lastSwapOutAt.set(prevTrack.characterId, clock.now);
 
 		const track: CharacterTrack = {
 			characterId: char.id,
@@ -765,6 +783,27 @@ export function runRotation(
 					// ⛔ Not variant-overridable — `AbilityVariant` has no `noICD`, and
 					// adding one would author a field with no data behind it.
 					active.noICD,
+					states,
+					charConstellationLevel,
+					chainIdx,
+					stackState
+				);
+				// ⚓ Summon ticks now apply their element too (gauge round L5e-b).
+				// Scheduled AFTER the cast's own applications so a cast and the
+				// summon it spawns land in cast-then-tick order at the same frame,
+				// and after the summonExt registration above so the chain can read
+				// the extension record LIVE rather than a copy.
+				scheduleSummonTicks(
+					ctx,
+					clock,
+					char,
+					kind,
+					tok.text,
+					active.id,
+					castStart,
+					spawn,
+					castEvent,
+					cs.summonExt?.castRef === castEvent ? cs.summonExt : undefined,
 					states,
 					charConstellationLevel,
 					chainIdx,

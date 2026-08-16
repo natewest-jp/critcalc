@@ -29,9 +29,16 @@
  * finished application list at finalize.
  */
 
-import type { Element, ElementalApplication, Reaction } from '$lib/types/ability';
+import type { Effect, Element, ElementalApplication, Reaction } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
-import { createIcdClock, icdApplies, icdTagFor, resolveActionIcd } from '$lib/utils/icd';
+import {
+	createIcdClock,
+	icdApplies,
+	icdTagFor,
+	resolveActionIcd,
+	STANDARD_ICD_FRAMES
+} from '$lib/utils/icd';
+import { findSummonsForBar, summonEndAt, summonSpawnAt, summonTickSeries } from './summons';
 import type { NormalActionKind } from '$lib/utils/actionElement';
 import type { ReactionEvent } from '$lib/utils/rotationEvents';
 import { createGauge, type ElementId, type Gauge } from '$lib/utils/gauge';
@@ -352,6 +359,143 @@ export function emitReactionsAtSwing(
 		constellation,
 		chainIdx: getChainIndexMap(ctx, char.id, time),
 		stacks: stackState.size > 0 ? new Map(stackState) : undefined
+	});
+}
+
+/**
+ * ⚓⚓ SUMMON TICKS APPLY THEIR ELEMENT (gauge round L5e-b) — the RECALL half.
+ *
+ * Until now a summon ticked on the timeline and applied nothing to the aura, so
+ * the things that actually sustain an element in game — Guoba, Oz, Bake-Kurage,
+ * the rain swords — contributed no gauge at all. Measured, that was **84 of the
+ * 144 applications gcsim makes and we did not**.
+ *
+ * ⚓⚓ THE CHAIN IS ONE TICK AT A TIME, AND THAT IS THE WHOLE DESIGN. A summon's
+ * END is computed at FINALIZE and nowhere else — it needs the post-extension
+ * uptime, the owner's next swap-out, and truncation from a recast that has not
+ * happened yet. So rather than COPY that geometry into a live registry (the
+ * `findCastSummons`/`findSummonsForBar` trap this round already paid for once),
+ * each fired tick schedules only the NEXT one and re-asks "am I still alive?" at
+ * its own instant.
+ *
+ * ⚓ Why that is answerable: THE CLOCK IS MONOTONIC. A tick at T fires with
+ * everything before T already parsed, and nothing after T can shorten a window
+ * that already contains T. So the question is never about the future:
+ *
+ *   uptime      read LIVE off the extension record (⛔ never a cast-time copy)
+ *   swap-out    `ctx.lastSwapOutAt`, written as a segment opens
+ *   recast      a generation stamp; a superseded chain simply stops
+ *
+ * ⚠️ Known cost, documented not silent (L5e §2): an extension that lands AFTER a
+ * chain has stopped cannot revive its tail. Corpus extensions arrive while the
+ * summon is still up, so this is a simplification we are choosing.
+ *
+ * ⚠️⚠️ The finalize-time hit synthesis (finalize step 6c) STAYS WHERE IT IS. It
+ * feeds `deriveBuffWindows`, and moving it would move `hits` order — the one
+ * thing L3 refused to spend. This is a SECOND READER of `summonTickSeries`,
+ * ⛔ never a second copy of the walk.
+ */
+export function scheduleSummonTicks(
+	ctx: SimContext,
+	clock: Clock,
+	char: CharacterData,
+	kind: 'skill' | 'burst',
+	label: string,
+	abilityId: string | undefined,
+	castTime: number,
+	summonActivatesAt: number | undefined,
+	castEvent: { uptime: number },
+	extRec: { ownerUptime: number } | undefined,
+	preStates: ReadonlySet<string>,
+	constellation: number,
+	chainIdx: ChainIndex,
+	stackState: Map<string, number>
+): void {
+	const cLevel = ctx.constellationLevels?.[char.id] ?? 0;
+	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
+
+	findSummonsForBar(char, kind, label, abilityId).forEach((summon, index) => {
+		const spawnAt = summonSpawnAt(castTime, summonActivatesAt, summon, index);
+		const key = `${char.id}::${summon.label}`;
+		// ⚠️ Bumped ONLY for a recast-terminating summon, mirroring finalize's
+		// truncation exactly: one without the flag spawning twice leaves both
+		// windows — and therefore both chains — alive.
+		if (summon.terminatesOn === 'recast')
+			ctx.summonChainGen.set(key, (ctx.summonChainGen.get(key) ?? 0) + 1);
+		const generation = ctx.summonChainGen.get(key) ?? 0;
+
+		/** The summon's end AS OF NOW — recomputed at every fire, never cached. */
+		const endNow = (): number =>
+			summonEndAt({
+				spawnAt,
+				// ⚓ LIVE. `durationExtensions` accumulate into the extension
+				// record and finalize stamps the cast event only at the end, so
+				// `castEvent.uptime` is the PRE-extension value mid-parse and
+				// Collei's Cuilein-Anbar would tick short. ⛔ Never snapshot this.
+				barUptime: extRec ? extRec.ownerUptime : castEvent.uptime,
+				summon,
+				index,
+				// ⚠️ Only a swap-out AFTER this spawn can end this summon; an
+				// earlier one belongs to a previous life of the same character.
+				swapOutAt: (() => {
+					const s = ctx.lastSwapOutAt.get(char.id);
+					return s !== undefined && s > spawnAt ? s : Infinity;
+				})()
+			});
+
+		for (const series of summonTickSeries(summon, cLevel, (e) => e.type === 'damage')) {
+			const element = (series.effect as Extract<Effect, { type: 'damage' }>).element;
+			// ⛔ A physical (element-less) tick applies nothing and must not reach
+			// a clock — the same rule a physical swing follows.
+			if (!element) continue;
+			// ⚓ Per SERIES, not per summon: Furina's Salon Solitaire carries three
+			// and they measure as three different gates.
+			const icdKey = `${char.id}:summon:${summon.label}:${series.index}`;
+			const ungated =
+				series.effect.trigger.type === 'summonTick' && series.effect.trigger.icdGate === 'none';
+
+			const fire = (at: number): void => {
+				// Superseded by a recast, or the summon is gone. Either way the
+				// chain simply ends — ⛔ nothing has to cancel a scheduled task.
+				if ((ctx.summonChainGen.get(key) ?? 0) !== generation) return;
+				if (at >= endNow()) return;
+
+				let applies = true;
+				if (!ungated) {
+					let icd = ctx.icdClocks.get(icdKey);
+					if (!icd) {
+						icd = createIcdClock();
+						ctx.icdClocks.set(icdKey, icd);
+					}
+					applies = icdApplies(icd, at, STANDARD_ICD_FRAMES).applies;
+				}
+				if (applies) {
+					offerApplication(ctx, {
+						time: at,
+						characterId: char.id,
+						element,
+						// ⚠️ No per-tick units are authored anywhere in the corpus and
+						// gcsim's summon hits are overwhelmingly 25 durability, so this
+						// is the 1U default — provisional, like a swing's.
+						units: DEFAULT_UNITS,
+						provisionalUnits: true,
+						castKind: kind,
+						preStates,
+						constellation,
+						chainIdx,
+						stacks
+					});
+				}
+				// ⚠️ Scheduled whether or not the tick APPLIED: an ICD-suppressed
+				// hit still happened, still spent its counter slot, and the series
+				// must not stop because of it.
+				const next = at + series.interval;
+				if (next < endNow()) clock.schedule(next, Band.TICK, () => fire(next));
+			};
+
+			const first = spawnAt + series.firstDelay;
+			if (first < endNow()) clock.schedule(first, Band.TICK, () => fire(first));
+		}
 	});
 }
 

@@ -171,23 +171,60 @@ export function collectSummonTicks(
 	accept: (effect: Effect) => boolean
 ): { time: number; effect: Effect }[] {
 	const ticks: { time: number; effect: Effect }[] = [];
-	for (const eff of summon.effects ?? []) {
-		if (eff.trigger.type !== 'summonTick') continue;
-		if (!accept(eff)) continue;
-		if (evalCondition(eff.conditions, 4, new Set(), cLevel) === false) continue;
-		// ⚓ Authored seconds → frames BEFORE the walk, not inside it. An integer
-		// interval added repeatedly is exact; the float seconds this replaced
-		// drifted a little further with every tick across a 20s summon.
-		const interval = framesOf(eff.trigger.interval);
-		if (!(interval > 0)) continue;
-		const firstDelay =
-			eff.trigger.firstTickDelay !== undefined ? framesOf(eff.trigger.firstTickDelay) : interval;
-		for (let t = spawnAt + firstDelay; t < endAt; t += interval) {
-			ticks.push({ time: t, effect: eff });
+	for (const s of summonTickSeries(summon, cLevel, accept)) {
+		for (let t = spawnAt + s.firstDelay; t < endAt; t += s.interval) {
+			ticks.push({ time: t, effect: s.effect });
 		}
 	}
 	ticks.sort((a, b) => a.time - b.time);
 	return ticks;
+}
+
+/** One accepted `summonTick` series: which effect, and its cadence in FRAMES. */
+export type SummonTickSeries = {
+	effect: Effect;
+	/** Index into `summon.effects` — stable per authored summon, and the thing
+	 *  that keeps two series on ONE summon (Furina's three Salon Members) from
+	 *  sharing an ICD counter. */
+	index: number;
+	interval: number;
+	firstDelay: number;
+};
+
+/**
+ * ⚓ THE ONE ACCEPTANCE RULE for a summon's tick series — which effects tick,
+ * and on what cadence — with the walk above and L5e-b's live tick chain as its
+ * two readers. ⛔ Neither may re-derive any line of this; a chain that accepted
+ * a different set from the one the lane DRAWS would fire buffs off markers
+ * nobody can see, or draw markers that buff nothing.
+ *
+ * ⚓ Authored seconds → frames HERE, once, never inside a walk. An integer
+ * interval added repeatedly is exact; the float seconds this replaced drifted a
+ * little further with every tick across a 20 s summon.
+ *
+ * ⚓ The ascension/state arguments to `evalCondition` are the RENDERER's
+ * (`4`, no states) rather than the parse's live state, and that is load-bearing
+ * for the same reason — it makes the ticks a viewer SEES exactly the ticks that
+ * fire. ⚠️ An unresolvable runtime condition abstains (no ticks), matching the
+ * summon lane.
+ */
+export function summonTickSeries(
+	summon: Summon,
+	cLevel: number,
+	accept: (effect: Effect) => boolean
+): SummonTickSeries[] {
+	const out: SummonTickSeries[] = [];
+	(summon.effects ?? []).forEach((eff, index) => {
+		if (eff.trigger.type !== 'summonTick') return;
+		if (!accept(eff)) return;
+		if (evalCondition(eff.conditions, 4, new Set(), cLevel) === false) return;
+		const interval = framesOf(eff.trigger.interval);
+		if (!(interval > 0)) return;
+		const firstDelay =
+			eff.trigger.firstTickDelay !== undefined ? framesOf(eff.trigger.firstTickDelay) : interval;
+		out.push({ effect: eff, index, interval, firstDelay });
+	});
+	return out;
 }
 
 /** Tick timestamps for EVERY `summonTick` effect — the summon lane's markers.

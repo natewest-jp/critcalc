@@ -214,7 +214,19 @@ function diffFixture(fixture) {
 	// perfectly plausible RNG drift on its side of the diff — 200 applications
 	// became 215. ⚓ The only thing that caught it was checking the oracle's
 	// counts against the recorded baseline instead of trusting the reasoning.
-	const duration = Math.ceil(parsed.totalDuration / FPS + 10);
+	//
+	// ⚓ AND THE PAD MUST COVER THE LONGEST-LIVED WINDOW, not just the last action
+	// (gauge round L5e-b). Once summon ticks apply, a summon outlives the final
+	// token by its whole duration — Zhongli's 30 s stele cast at t=5 is still
+	// ticking at t=35 — so a run sized off `totalDuration` alone stops early and
+	// every late tick reads as "we apply and gcsim does not". It reported 3 such
+	// phantoms, all of them ours being RIGHT and the oracle not having been asked
+	// to look. ⛔ Never accept an `extra` without checking it against the horizon.
+	const lastWindowEnd = (parsed.windows ?? []).reduce(
+		(m, w) => (Number.isFinite(w.end) && w.end > m ? w.end : m),
+		0
+	);
+	const duration = Math.ceil(Math.max(parsed.totalDuration, lastWindowEnd) / FPS + 10);
 	let config;
 	try {
 		config = buildConfig({ team, lines, swapFrames: 8, duration });
