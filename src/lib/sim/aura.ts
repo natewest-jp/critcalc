@@ -67,8 +67,15 @@ export type AuraApplication = {
 };
 
 /** An application plus the dispatch context captured where it was decided.
+ *
  *  ⚠️ For a cast that context is captured at the CAST and the aura it meets is
- *  live at the LAND — deliberate, and unchanged from L4d. */
+ *  live at the LAND — deliberate, and what L4d's note already described.
+ *
+ *  ↻ The STACK snapshot moved to match (L5c). It used to be taken inside the
+ *  scheduled closure, i.e. at the land instant, while states/constellation/chain
+ *  index were all cast-time — so one of the four disagreed with the other three
+ *  and with the sentence describing them. ⚓ A context is a moment, not a
+ *  per-field choice. */
 type Offer = AuraApplication & {
 	preStates: ReadonlySet<string>;
 	constellation: number;

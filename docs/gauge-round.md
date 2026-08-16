@@ -731,16 +731,38 @@ sim. This is how the round decays if we skip it.
 **Done when:** every curated ability has an application list, a lint rule requires one, and
 the provisional set is enumerated and surfaced.
 
-### L5 — The gauge replaces the coarse aura — _the payoff_
+### L5 — The gauge replaces the coarse aura ✅ SHIPPED 2026-08-16 — _the payoff_
 
-`AuraState` and `computeReactionsForApplication` are deleted. The sim feeds post-ICD
-applications to the gauge; reaction events become gauge output. F2 stops being a hazard and
-becomes ordinary scheduling, and the three order-dependent consumers work **by construction**
-rather than by cap.
+📄 **Full record: [`gauge-round-L5.md`](gauge-round-L5.md)**
 
-**Done when:** the oracle diff is materially better than the L0 baseline, with residual
-divergences enumerated and explained. ⚓ **L5 merges on a measured improvement, not on being
-finished.**
+`AuraState`'s flags, `computeReactionsForApplication` and
+`updateAuraStateAfterApplication` are deleted. `ctx.aura` is a live `Gauge`, fed post-ICD
+applications at their own instants; reaction events are gauge output translated by
+`sim/reactionBridge.ts`, the one module that knows both vocabularies.
+
+|                 |                                                                                                          |
+| --------------- | -------------------------------------------------------------------------------------------------------- |
+| shape           | ⚓ `createGauge()` streaming + `simulateGauge` REWRITTEN ON IT — the `icd.ts` pair, so they cannot drift |
+| cores           | dendro cores added (30f spawn delay, 6 s life, cap 5) so hyperbloom/burgeon survive the swap             |
+| `units`         | authored — **1U ×327, 2U ×58, 4U ×2** (Beidou Q, Zhongli Q)                                              |
+| new IR-adjacent | `ParsedRotation.applications` — what the gauge was fed, so ⛔ the oracle never replays our rules again   |
+| measured        | phantom reactions **31 → 19**; trajectory (tier 2) is a comparison for the first time                    |
+| perf            | 234 s rotation **4.2 ms**; 64.8M frames of idle **3.4 ms**                                               |
+
+↻ **Three things were written and then removed or corrected**, each recorded where the
+claim was made: the `origin` attribution token (no reachable case — an internal
+application provably cannot react), the gauge wake-up task (nothing to dispatch, so it
+is pure cost), and the plan's own "both halves or neither".
+
+⏭ **L5e — summon ticks applying — is its own landing.** The prediction that buff bars
+would vanish without it was measured and is false: on five realistic rotations not one
+buff window moved. The recall gap is real (82 of 251 aura samples) but it is decoupled,
+and closing it means moving summon-window authorship into the live path rather than
+copying its geometry — the full design is in L5's §5.
+
+**Done when (met):** the oracle diff is materially better than the L0 baseline, with
+residual divergences enumerated and explained. ⚓ **L5 merges on a measured improvement,
+not on being finished.**
 
 ### L6 — Surface and honesty
 

@@ -33,6 +33,32 @@ would look worse while being more correct in isolation.
 reach (summon ticks feeding it).** The recall we cannot reach is DATA (summons the
 corpus does not author at all) and is enumerated, not fixed, here.
 
+### ↻ MEASURED, AND THE PREDICTION ABOVE WAS WRONG
+
+The claim that buff bars would **vanish** without the recall half was reasoning, and
+it does not survive contact. Measured on five realistic rotations (Hu Tao vape, a
+Kazuha VV team, a freeze team, Nilou bloom, Raiden hyper), branch against `main` run
+in its own worktree so neither borrows the other's modules:
+
+| rotation     | buff windows | reactions        |
+| ------------ | ------------ | ---------------- |
+| hutao vape   | 4 → 4        | 2 → 2 vaporize   |
+| kazuha vv    | 6 → 6        | 1 → 1 pyroSwirl  |
+| freeze       | 1 → 1        | 5 → **3** frozen |
+| nilou bloom  | 4 → 4        | 1 → **2** bloom  |
+| raiden hyper | 2 → 2        | 1 → 1 vaporize   |
+
+⚓ **Not one buff window moved**, and the two reaction counts that changed moved the
+right way — freeze down because a freeze CONSUMES its auras, bloom up because the
+gauge models the quicken/bloom chain the flag set could not. The buff surface a
+player looks at is dominated by cast-triggered effects, not reaction-triggered ones;
+the reaction surface is where the model was wrong, and it is the smaller half.
+
+⚠️ This does NOT retire the recall half — it is still 82 of 251 aura samples the
+oracle says we are missing, and the §1 rows above stay true. It retires the coupling
+between them: **precision could ship without recall**, which is why L5e became its
+own landing rather than a blocker on this one.
+
 ---
 
 ## 2. The shape — one model, two shapes (the `icd.ts` precedent)
@@ -189,21 +215,56 @@ The gcsim dumper already measures durability and the report already prints `(1U)
 `(2U)`. One migration pass over the 233 abilities with applications. ⛔ Review-candidate
 generator → `migrate-application-schema.mjs` writes; the audit never does.
 
-### L5e — summon ticks apply their element ⚓ THE RECALL HALF
+### L5e — summon ticks apply their element ⚓ THE RECALL HALF · ⏭ ITS OWN LANDING
 
-Summon damage ticks become `Band.TICK` tasks that offer their element to the gauge,
-behind a per-summon ICD clock.
+**Not shipped in this branch, and that is a scope decision with a measurement behind
+it** (§1's amendment): the buff surface does not collapse without it, so precision
+shipped alone rather than waiting. What remains is the recall gap — **82 of 251 aura
+samples gcsim has that we do not**, almost entirely summons ticking off-field.
 
-⚠️⚠️ **The finalize-time hit synthesis (step 6c) STAYS WHERE IT IS.** It exists because
-a summon's final end is only known after recast/swap truncation, and it feeds
-`deriveBuffWindows`. Moving it would move `hits` order — the one thing L3 refused to
-spend. The tick APPLICATION is a separate consumer of the same
-`computeSummonDamageTicks` rule, so there is one rule with two readers, ⛔ never two
-copies of the walk.
+⚠️⚠️ **The reason it is not a bolt-on: a summon's END is computed at FINALIZE and
+nowhere else.** `finalize.ts` step 6 needs three things the parse does not have in
+hand at the cast — the post-extension `bar.uptime`, the owner's next swap-out (the
+activeStart of the next track owned by someone else), and recast truncation from a
+cast that has not happened yet. A tick task has to ask "is this summon still alive at
+my instant", and the only current answer lives in a pass that runs after every tick
+would have fired.
 
-Live truncation is handled the way the contract's table says (§2): the tick task
-re-checks the summon's liveness when it FIRES, so a recast or a `terminatesOnSwap` that
-lands earlier in clock time simply stops the chain.
+⛔ **Do NOT answer it with a second geometry.** A parallel live registry that
+recomputes spawn/end alongside finalize's is the `findCastSummons` /
+`findSummonsForBar` trap the round already paid for once — two copies wearing a MUST
+STAY IDENTICAL warning, which had silently drifted by the time they were merged.
+
+⚓ **The design that works, worked out here so the next session does not re-derive
+it:** the summon's end is genuinely a LIVE question, so move the authority rather
+than copy it.
+
+1. Extract one `summonEndAt(spawnAt, uptime, summon, index, swapOutAt, recastAt)` and
+   have both sites call it. Each supplies its own inputs; they agree because the
+   inputs are the same facts observed at different times (the owner's first swap-out
+   after the spawn IS finalize's `swapOutAt`; a recast at R IS finalize's truncation
+   to the new spawn).
+2. Chain the ticks ONE AT A TIME: each fired tick schedules the next and checks
+   liveness against the current end when it fires. Truncation then needs no
+   cancellation — a recast or a swap earlier in clock time simply ends the chain,
+   which is the contract's own "expiry is a task that re-checks validity on fire"
+   (§2's table).
+   ⚠️ Known cost: an extension that lands AFTER a chain has stopped cannot revive its
+   tail. Extensions in the corpus arrive while the summon is still up, so this is a
+   documented simplification, not a silent one.
+3. The tick's element goes through a per-summon ICD clock keyed
+   `${characterId}:summon:${label}` — ⛔ never the caster's normal-attack clock.
+
+⚠️⚠️ **The finalize-time hit synthesis (step 6c) STAYS WHERE IT IS regardless.** It
+feeds `deriveBuffWindows`, and moving it moves `hits` order, which is the one thing L3
+refused to spend. The tick APPLICATION is a second reader of the same
+`computeSummonDamageTicks` rule — ⛔ one rule, two readers, never two copies of the
+walk.
+
+⚠️ And a large part of the recall gap is DATA, not engine: many summons gcsim ticks
+are not authored in our corpus at all (Kaeya's Glacial Waltz ticks 13× in gcsim and we
+have no summon for it). `docs/curation/gcsim-frames-diff.md` §5 enumerates them. That
+part is L4-family curation work and ⛔ is not a reason to hold L5e either.
 
 ### L5f — measure, record, merge
 
@@ -216,13 +277,32 @@ Oracle re-run, the residue enumerated, `gauge-round.md` §5 updated, memory writ
 
 ⚓ **Quote the recorded baseline, never recompute it** (memory `project_gauge_round`).
 
-| metric                       | L0 baseline | post-L4 | L5 target                 |
-| ---------------------------- | ----------- | ------- | ------------------------- |
-| applications — ours          | 63          | 57      | up, toward gcsim's 201    |
-| **we apply, gcsim does not** | 1           | 0       | stays 0                   |
-| **gcsim applies, we do not** | 138         | 144     | down                      |
-| element mismatch             | 0           | 0       | stays 0                   |
-| aura trajectory (tier 2)     | —           | —       | **first comparison ever** |
+| metric                       | L0 baseline | post-L4 | **post-L5** |
+| ---------------------------- | ----------- | ------- | ----------- |
+| applications — ours          | 63          | 57      | 57          |
+| **we apply, gcsim does not** | 1           | 0       | **0**       |
+| **gcsim applies, we do not** | 138         | 144     | 143         |
+| element mismatch             | 0           | 0       | **0**       |
+| reaction events — ours       | 31          | 31      | **19**      |
+
+⚓ **The reaction drop IS the landing.** Twelve of our thirty-one reactions were
+phantoms off auras that should have been gone — the class the round opened on (a melt
+at t=120.95 s off a Cryo aura the game loses by t≈13).
+
+**Tier 2, the trajectory — a comparison for the first time.** 251 aura samples, one
+per gcsim application, of every aura on the target at that instant:
+
+| after | agree (≤0.16U) | 🟡 drift | 🔴 theirs only | 🟠 ours only | mean \|Δ\| |
+| ----- | -------------- | -------- | -------------- | ------------ | ---------- |
+| L5c   | 61             | 65       | 88             | 36           | 0.268U     |
+| L5d   | **72**         | 60       | 82             | 37           | **0.224U** |
+
+⚠️ The 82 is the recall half and is L5e's to close; the 37 are ours-only auras, mostly
+the tail of one we are holding too long because nothing has re-applied over it.
+
+Perf: a 234 s rotation parses in **4.2 ms**, and 300 stacked `~3600s` waits — 64.8
+million frames — in **3.4 ms**. The idle skip is what makes the second number
+possible.
 
 ⚓ **Tier 2 is L5's real scoreboard.** gcsim logs the aura gauge before and after every
 application; the oracle already records it and says _"REFERENCE ONLY until L5."_ L5
