@@ -65,6 +65,13 @@ import type {
 	TeamBuffSubrow,
 	WeaponProcSubrow
 } from '$lib/timeline/types';
+import {
+	auraSpanLabels,
+	auraSpanPoints,
+	auraUnitLines,
+	type AuraLane
+} from '$lib/timeline/auraPlot';
+import type { AuraKey } from '$lib/utils/gauge';
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
 
@@ -149,6 +156,29 @@ const UI_PROVISIONAL = '#f6d365';
 // tint with), so it mirrors the gradient's TOP stop, as it always has.
 const PORTRAIT_BG = '#1f2635'; // --surface-well (ctx-dark) → --slate-900
 
+// ── Aura-lane mod colours (gauge round L6) ──────────────────────────────────
+// ⚠ The five elemental mods go through `elementPalette`, which is itself the
+// guarded mirror of --el-*; only the four that are NOT elements need literals
+// here. They are reaction STATES rather than auras of an element (see
+// $lib/utils/auraDisplay.ts), so they carry --rx-* hues and have no palette
+// entry to borrow.
+const RX_FROZEN = '#cbeaf3';
+const RX_QUICKEN = '#46c865';
+const RX_BURNING = '#d76822';
+const RX_BURNING_FUEL = '#84b46a';
+
+const AURA_MOD_COLOR: Record<AuraKey, string> = {
+	pyro: elementPalette('pyro').main,
+	hydro: elementPalette('hydro').main,
+	cryo: elementPalette('cryo').main,
+	electro: elementPalette('electro').main,
+	dendro: elementPalette('dendro').main,
+	frozen: RX_FROZEN,
+	quicken: RX_QUICKEN,
+	burning: RX_BURNING,
+	burningFuel: RX_BURNING_FUEL
+};
+
 /** Test-only: the hand-maintained mirror, exported so
  *  timelineExport.mirror.test.ts can assert it against app.css /
  *  RotationTimeline.svelte. The mirror stops being trust-based — if a token
@@ -162,7 +192,11 @@ export const PALETTE_MIRROR = {
 	MUTED,
 	INK,
 	BAR_FILL,
-	PORTRAIT_BG
+	PORTRAIT_BG,
+	RX_FROZEN,
+	RX_QUICKEN,
+	RX_BURNING,
+	RX_BURNING_FUEL
 } as const;
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
@@ -266,6 +300,20 @@ export type TimelineSnapshot = {
 	moonsignRows: MoonsignRow[];
 	moonsignTop: number | null;
 	moonsignH: number;
+	/** The target-aura lane (gauge round L6). `auraTop` is null when nothing
+	 *  ever landed and the lane is not drawn — same rule as NB/moonsign. */
+	auraLane: AuraLane;
+	auraTop: number | null;
+	// ⛔ No `auraH`. `nbH`/`moonsignH` exist because the painter centres a lane
+	// label in them and closes them with a rule; this lane is bottom-most and
+	// top-labels its rows, so a height here would be a field with no reader.
+	auraPlotH: number;
+	auraMarkerH: number;
+	auraTickH: number;
+	auraMinPx: number;
+	auraLabelMinSpan: number;
+	auraLabelMinGap: number;
+	auraLabelMinRow: number;
 	statIconFor: (stat: string) => string | undefined;
 	avatarFor: (slotIdx: number) => string | null;
 	elementGlyphFor: (element: string | undefined) => string | null;
@@ -892,11 +940,25 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// Lane separators are top-only (mirrors the live border-top scheme): a
 	// lane's closing line is drawn ONLY when another lane follows, so the
 	// bottom-most lane leaves no line before the ruler gap.
-	if (snap.nbTop !== null || snap.moonsignTop !== null) {
+	// ↻ Gauge round L6: the aura lane joins the "another lane follows" test, so
+	// the rule stays "a lane closes only when something comes after it" rather
+	// than becoming an enumeration of pairs.
+	const laneFollows = (after: 'teamBuffs' | 'nb' | 'moonsign') => {
+		const later = [
+			after === 'teamBuffs' ? snap.nbTop : null,
+			after === 'teamBuffs' || after === 'nb' ? snap.moonsignTop : null,
+			snap.auraTop
+		];
+		return later.some((t) => t !== null);
+	};
+	if (laneFollows('teamBuffs')) {
 		hline(oy + snap.rulerH + snap.teamBuffsTop + snap.teamBuffsH);
 	}
-	if (snap.nbTop !== null && snap.moonsignTop !== null) {
+	if (snap.nbTop !== null && laneFollows('nb')) {
 		hline(oy + snap.rulerH + snap.nbTop + snap.nbH);
+	}
+	if (snap.moonsignTop !== null && snap.auraTop !== null) {
+		hline(oy + snap.rulerH + snap.moonsignTop + snap.moonsignH);
 	}
 
 	// z:0 — ghosts (chroma-dropped before mixing — recessive structure; the
@@ -1068,6 +1130,123 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		});
 	}
 
+	// ── Target aura lane (gauge round L6) ──
+	// ⚓ THE SHAPE COMES FROM THE SAME FUNCTIONS THE SCREEN USES. `auraSpanPoints`
+	// maps a span into the caller's pixel space and `auraSpanLabels` decides which
+	// names survive; here they are walked with `lineTo` instead of joined into an
+	// SVG `d`. A mirror that re-derives the shape is not a mirror.
+	if (snap.auraTop !== null) {
+		const laneY = oy + snap.rulerH + snap.auraTop;
+		const plotTop = laneY + snap.auraMarkerH + snap.auraTickH + 2;
+		const plotBase = plotTop + snap.auraPlotH;
+		const yOf = (u: number) => plotBase - (u / snap.auraLane.uMax) * snap.auraPlotH;
+
+		// Reaction markers — pip + family name, in the ruler's neutral ink. ⚠ A
+		// reaction is not an element and must not borrow one.
+		ctx.fillStyle = MUTED;
+		ctx.font = `600 9px ${SANS}`;
+		ctx.textAlign = 'left';
+		snap.auraLane.markers.forEach((marker, mi) => {
+			const mx = x(marker.time);
+			const next = snap.auraLane.markers[mi + 1];
+			ctx!.fillRect(mx - 1, laneY + snap.auraMarkerH - 6, 3, 3);
+			// ⚠ 26, matching the screen's threshold: below it the label is DROPPED,
+			// not truncated — a two-character stub names nothing and still crowds
+			// the pip beside it.
+			const room = next ? x(next.time) - mx - 8 : Infinity;
+			if (room < 26) return;
+			ctx!.save();
+			ctx!.beginPath();
+			ctx!.rect(mx + 5, laneY, Math.min(room, 200), snap.auraMarkerH);
+			ctx!.clip();
+			ctx!.fillText(marker.label, mx + 5, laneY + snap.auraMarkerH - 4);
+			ctx!.restore();
+		});
+
+		// Application ticks, with the --ui-provisional foot under a defaulted
+		// unit value (the squiggle rule).
+		const tickY = laneY + snap.auraMarkerH;
+		for (const tick of snap.auraLane.ticks) {
+			ctx.fillStyle = elementPalette(tick.element).main;
+			ctx.globalAlpha = 0.75;
+			ctx.fillRect(x(tick.time), tickY, 2, snap.auraTickH);
+			ctx.globalAlpha = 1;
+			if (tick.provisional) {
+				ctx.fillStyle = UI_PROVISIONAL;
+				ctx.fillRect(x(tick.time), tickY + snap.auraTickH - 2, 2, 2);
+			}
+		}
+
+		// The one datum, under everything: whole units below the ceiling.
+		ctx.strokeStyle = GRID;
+		for (const u of auraUnitLines(snap.auraLane.uMax)) {
+			const gy = Math.round(yOf(u)) + 0.5;
+			ctx.beginPath();
+			// ⚓ `ox`, i.e. x(0) — the datum belongs to the PLOT, not the page, and
+			// starting it at the label column's edge only happens to coincide.
+			ctx.moveTo(ox, gy);
+			ctx.lineTo(ox + snap.totalWidth, gy);
+			ctx.stroke();
+		}
+
+		// Every span walked once: the gradient area, then the line on top of it.
+		const walk = (pts: Array<[number, number]>) => {
+			ctx!.beginPath();
+			pts.forEach(([px, py], i) => (i ? ctx!.lineTo(px, py) : ctx!.moveTo(px, py)));
+		};
+		for (const series of snap.auraLane.series) {
+			const color = AURA_MOD_COLOR[series.mod];
+			for (const span of series.spans) {
+				const pts = auraSpanPoints(span, x, yOf, snap.auraMinPx);
+				if (pts.length === 0) continue;
+				// ⚠ The fuel draws as a bare dashed line with NO area — bookkeeping,
+				// not an aura on the target.
+				if (!series.dash) {
+					// ⚓ The fade is anchored to the SPAN'S OWN PEAK, not the plot's
+					// ceiling, so a shallow aura is not drawn as the faint tail of a
+					// gradient it never reaches. The screen's objectBoundingBox gradient
+					// resolves to exactly this.
+					const top = pts.reduce((m, [, py]) => Math.min(m, py), plotBase);
+					const grad = ctx.createLinearGradient(0, top, 0, plotBase);
+					grad.addColorStop(0, alpha(color, 0.34));
+					grad.addColorStop(1, alpha(color, 0));
+					ctx.fillStyle = grad;
+					walk(pts);
+					ctx.lineTo(pts[pts.length - 1][0], plotBase);
+					ctx.lineTo(pts[0][0], plotBase);
+					ctx.closePath();
+					ctx.fill();
+				}
+				ctx.strokeStyle = color;
+				ctx.lineWidth = 2;
+				ctx.lineJoin = 'round';
+				ctx.lineCap = 'round';
+				ctx.setLineDash(series.dash ? series.dash.split(' ').map(Number) : []);
+				walk(pts);
+				ctx.stroke();
+				ctx.setLineDash([]);
+			}
+		}
+
+		// Series names, where each aura first appears.
+		ctx.font = `600 8px ${SANS}`;
+		ctx.textAlign = 'left';
+		for (const entry of auraSpanLabels(
+			snap.auraLane.series,
+			x,
+			yOf,
+			snap.auraLabelMinSpan,
+			snap.auraLabelMinGap,
+			snap.auraLabelMinRow
+		)) {
+			ctx.fillStyle = AURA_MOD_COLOR[entry.mod];
+			ctx.fillText(
+				entry.label.toUpperCase(),
+				x(entry.span.start) + 4,
+				Math.max(plotTop + 7, yOf(entry.span.openingU) - 3)
+			);
+		}
+	}
 	// ── Label column ──
 	// Opaque backing (below the notation header) so long ghost bars never
 	// bleed under the labels
@@ -1154,6 +1333,27 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			laneLabelX,
 			oy + snap.rulerH + snap.moonsignTop + snap.moonsignH / 2 + 3
 		);
+	if (snap.auraTop !== null) {
+		// ⚓ THE ONE PLACE THE EXPORT IS BETTER THAN THE SCREEN, and it costs
+		// nothing: the PNG kept its label column when the live chart gave it up
+		// (abutting round), so the mod names can sit OUTSIDE the plot here
+		// instead of over their own bars. Same names, more room.
+		ctx.fillText('TARGET AURA', laneLabelX, oy + snap.rulerH + snap.auraTop + 9);
+		const plotTop = oy + snap.rulerH + snap.auraTop + snap.auraMarkerH + snap.auraTickH + 2;
+		// ⚓ THE LEGEND AND THE CEILING ARE EXPORT-ONLY, and they are the clearest
+		// case yet for this file being a DOCUMENT rather than a screenshot (see the
+		// header). On screen a reader hovers the plot for a full readout and each
+		// aura names itself where it appears; a shared PNG has neither, so the
+		// column the live chart gave up earns its keep by carrying both the y
+		// ceiling and every mod in the plot.
+		ctx.font = `600 8px ${SANS}`;
+		ctx.fillStyle = MUTED;
+		ctx.fillText(`${snap.auraLane.uMax}U`, laneLabelX, plotTop + 7);
+		snap.auraLane.series.forEach((series, si) => {
+			ctx!.fillStyle = AURA_MOD_COLOR[series.mod];
+			ctx!.fillText(series.label.toUpperCase(), laneLabelX, plotTop + 19 + si * 10);
+		});
+	}
 
 	// ── Footer: title left, watermark right ──
 	const fy = h - PAD / 2 - 4;

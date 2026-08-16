@@ -13,6 +13,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { PALETTE_MIRROR } from './timelineExport';
 import { elementColors } from './elementColors';
+import { AURA_MOD_META } from './auraDisplay';
 
 const appCss = readFileSync(fileURLToPath(new URL('../../app.css', import.meta.url)), 'utf8');
 const timelineSvelte = readFileSync(
@@ -20,10 +21,21 @@ const timelineSvelte = readFileSync(
 	'utf8'
 );
 
-/** A :root-level declaration (tab-indented) — comments mentioning the token
- *  without a `:` don't match. */
+/**
+ * A :root-level declaration (tab-indented).
+ *
+ * 🐛 ⚠ THE VALUE MAY NOT CROSS A NEWLINE, and that is the whole guard against
+ * a COMMENT shadowing the real declaration. `[^;]` matches newlines, so
+ * `--rx-quicken: when an element closes on a UI colour, spend LIGHTNESS. Hue`
+ * — prose in the block comment above the token — matched, ran on across lines
+ * to the next `;` anywhere in the file, and handed back a paragraph. The old
+ * note here claimed comments were safe because they lack a `:`; that is true of
+ * most of them and false of every one written as `--token: explanation`, which
+ * is how this file explains its tokens. Found by adding the first token whose
+ * comment is written that way (gauge round L6).
+ */
 function cssToken(name: string, src = appCss): string {
-	const m = new RegExp(`^\\s*${name}:\\s*([^;]+);`, 'm').exec(src);
+	const m = new RegExp(`^\\s*${name}:\\s*([^;\\n]+);`, 'm').exec(src);
 	if (!m) throw new Error(`token ${name} not found`);
 	return m[1].trim();
 }
@@ -129,6 +141,34 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		// ↻ 2026-08-11: and that surface is the WELL rung now — --sp-avatar-fill
 		// is one ground with the element travelling down it, and this is its top.
 		expect(PALETTE_MIRROR.PORTRAIT_BG).toBe(resolve(ctxToken('.ctx-dark', '--surface-well')));
+		// The aura lane's four non-elemental mods (gauge round L6). The five
+		// elemental ones need no entry — they go through `elementPalette`, which
+		// this file already guards below.
+		expect(PALETTE_MIRROR.RX_FROZEN).toBe(resolve(cssToken('--rx-frozen')));
+		expect(PALETTE_MIRROR.RX_QUICKEN).toBe(resolve(cssToken('--rx-quicken')));
+		expect(PALETTE_MIRROR.RX_BURNING).toBe(resolve(cssToken('--rx-burning')));
+		expect(PALETTE_MIRROR.RX_BURNING_FUEL).toBe(resolve(cssToken('--rx-burning-fuel')));
+	});
+
+	// ⚠ The colours are only half the mirror — the SCREEN reads its --rx-*
+	// through `auraDisplay.ts` as `var()` references, so a mod pointing at the
+	// wrong token would keep both this test and the CSS honest while still
+	// drawing the wrong hue in one of the two surfaces. This pins the mapping.
+	it('every aura mod names the same token on screen as in the export', () => {
+		const expected: Record<string, string> = {
+			frozen: '--rx-frozen',
+			quicken: '--rx-quicken',
+			burning: '--rx-burning',
+			burningFuel: '--rx-burning-fuel',
+			pyro: '--el-pyro-main',
+			hydro: '--el-hydro-main',
+			cryo: '--el-cryo-main',
+			electro: '--el-electro-main',
+			dendro: '--el-dendro-main'
+		};
+		for (const [mod, token] of Object.entries(expected)) {
+			expect(AURA_MOD_META[mod as keyof typeof AURA_MOD_META].color).toBe(`var(${token})`);
+		}
 	});
 
 	// ↻ 2026-08-11: the bar fill became a MATERIAL (--glass-bar), and one for

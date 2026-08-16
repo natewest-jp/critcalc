@@ -41,7 +41,7 @@ import {
 import { findSummonsForBar, summonEndAt, summonSpawnAt, summonTickSeries } from './summons';
 import type { NormalActionKind } from '$lib/utils/actionElement';
 import type { ReactionEvent } from '$lib/utils/rotationEvents';
-import { createGauge, type ElementId, type Gauge } from '$lib/utils/gauge';
+import { createGauge, type ElementId, type Gauge, type SeriesInterval } from '$lib/utils/gauge';
 import { framesOf } from '$lib/utils/frames';
 import type { SimContext } from './context';
 import { Band, type Clock } from './clock';
@@ -104,8 +104,23 @@ export type AuraState = {
 export function createAuraState(): AuraState {
 	// ⚠️ No `maxFrames`: a cap belongs to an instrument charting hand-placed
 	// applications, and a rotation must never be silently truncated mid-parse.
-	// ⛔ No series sampling either — nothing draws an aura lane until L6.
-	return { gauge: createGauge(), offers: [] };
+	//
+	// ⚓⚓ SAMPLING IS ON SINCE L6, AND THE LANE MUST READ THIS GAUGE — ⛔ never a
+	// re-run of `simulateGauge` over `ParsedRotation.applications`. That list is
+	// SORTED at the projection and the feed order is not (see
+	// `collectApplications`), so a re-run charts a model the parse did not run.
+	// The round has already paid for a second copy of the truth once (L4d, when
+	// the oracle replayed the parser's rules and reported a baseline for an
+	// engine we no longer had). The series the lane draws is the one the gauge
+	// actually produced.
+	//
+	// ⚠️ Cost, measured: sampling roughly doubles the gauge's per-frame work
+	// (0.081 → 0.182 ms over a 1U aura's whole lifetime). It cannot reach the
+	// idle time C6 exists to bound — `advanceTo`'s idle skip runs BEFORE
+	// `stepFrame`, so no sample is taken for a frame nothing happens in, and
+	// continuous work stays bounded by aura lifetime rather than rotation
+	// length. Heavy fixture (311 s, 230 applications) parses in 4.8 ms.
+	return { gauge: createGauge({ sampling: true }), offers: [] };
 }
 
 /**
@@ -497,6 +512,46 @@ export function scheduleSummonTicks(
 			if (first < endNow()) clock.schedule(first, Band.TICK, () => fire(first));
 		}
 	});
+}
+
+/**
+ * ⚓ How far past the end the gauge is walked so the aura's TAIL is drawn.
+ *
+ * The live gauge is caught up lazily — it only ever advances to the next
+ * application — so at the last token it is parked at the last application's
+ * frame and the aura it is still carrying has no samples after that. The lane's
+ * whole second half ("here is where you lost it") is that decay, so finalize
+ * settles the gauge before closing the series.
+ *
+ * ⚓ The bound is DERIVED, and over-shooting is free: `advanceTo` walks only
+ * while the gauge is non-idle and JUMPS the moment every aura is spent, so a
+ * generous constant costs nothing and a tight one risks a clipped tail. The
+ * longest an aura can outlive its last application is a top-up onto the slowest
+ * decay rate — a 1U fresh aura decays at 0.8 / (2.5 + 7) ≈ 0.0842 U/s and keeps
+ * that rate when topped up, so at the 3.2U ceiling it runs 38 s. Frozen, EC and
+ * Burning all drain faster or are bounded by their fuel. 60 s is that with
+ * margin.
+ */
+const AURA_SETTLE_F = 60 * 60;
+
+/**
+ * The aura trajectory this parse produced, closed off after the tail has
+ * decayed — the aura lane's substrate (gauge round L6).
+ *
+ * ⚠️ Advancing here runs the gauge's own internal tasks (Burning and EC ticks)
+ * past the end of the rotation, and their events are deliberately DROPPED: we
+ * never call `takeEvents`, so nothing dispatches and no IR event is added. That
+ * is sound for exactly the reason the wake-up task is unnecessary (see
+ * `offerApplication`) — the only internal applicator is the Burning chain and
+ * its Pyro provably cannot react. ⚠️ If that ever changes, a reaction after the
+ * last cast becomes real and this settle has to emit it.
+ */
+export function collectAuraSeries(ctx: SimContext, totalDuration: number): SeriesInterval[] {
+	const lastOffer = ctx.aura.offers.length
+		? ctx.aura.offers[ctx.aura.offers.length - 1].time
+		: totalDuration;
+	ctx.aura.gauge.advanceTo(Math.max(totalDuration, lastOffer) + AURA_SETTLE_F);
+	return ctx.aura.gauge.closeSeries();
 }
 
 /** The applications this parse put on the target, in time order — the public

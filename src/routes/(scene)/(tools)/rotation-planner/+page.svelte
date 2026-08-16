@@ -257,14 +257,21 @@
 	 *  exist before the column is on screen to say so. */
 	let slotCaveats = $derived(collectSlotCaveats(slots.map((id) => getLoadedCharacter(id))));
 
+	/** ↻ Gauge round L6: the panel has TWO reasons to have content now — the
+	 *  slotted kits' caveats, and the standing "how the aura is modelled" block
+	 *  that goes with the target-aura lane. Gating on caveats alone would have
+	 *  hidden the modelling limits from exactly the rotations most likely to
+	 *  want them: a fully-curated team has no caveats and still gets a gauge. */
+	let hasNotes = $derived(slotCaveats.length > 0 || pv.hasAura);
+
 	$effect(() => {
-		pv.hasCaveats = slotCaveats.length > 0;
+		pv.hasCaveats = hasNotes;
 		// A rebuild that leaves nothing to annotate closes the panel; the band's
 		// own button is disabled in the same breath by the flag above.
-		if (slotCaveats.length === 0) pv.showNotes = false;
+		if (!hasNotes) pv.showNotes = false;
 	});
 
-	let showAside = $derived(pv.showNotes && slotCaveats.length > 0);
+	let showAside = $derived(pv.showNotes && hasNotes);
 </script>
 
 <section class="rotation-page">
@@ -451,7 +458,7 @@
 
 <!-- ── The aside column: the notes ────────────────────────────────────────── -->
 {#snippet asideColumn()}
-	<RotationNotes entries={slotCaveats} />
+	<RotationNotes entries={slotCaveats} showAuraNote={pv.hasAura} />
 {/snippet}
 
 <style>

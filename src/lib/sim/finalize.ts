@@ -29,7 +29,7 @@ import type { CastEvent, ReactionEvent, TimelineWindow } from '$lib/utils/rotati
 import type { SimContext } from './context';
 import type { CharacterTrack, InputBlock, ParsedRotation, TimelineBar } from './types';
 import { computeSummonDamageTicks, findSummonsForBar, summonEndAt, summonSpawnAt } from './summons';
-import { collectApplications } from './aura';
+import { collectApplications, collectAuraSeries } from './aura';
 
 /**
  * Authors the IR windows, stamps the owner uptimes, and projects the per-track
@@ -466,6 +466,11 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		unknownTokens: ctx.unknownTokens,
 		events: ctx.events,
 		windows,
-		applications: collectApplications(ctx)
+		applications: collectApplications(ctx),
+		// ⚠️ AFTER `collectApplications`, and the order is not free: this settles
+		// the gauge past the last application so the decay tail is sampled, which
+		// closes the open series intervals. Reading the applications first keeps
+		// the two projections describing the same instant of the gauge's life.
+		auraSeries: collectAuraSeries(ctx, totalDuration)
 	};
 }

@@ -69,6 +69,30 @@
 </section>
 
 <section>
+	<h2 id="aura">The target's aura</h2>
+	<p>
+		The bottom lane is the enemy. One row per element currently stuck to them, and the height of
+		each bar is how much gauge is left — so you can see an aura land, decay, get topped up, and get
+		eaten by a reaction. The gaps are the point: they are where the next trigger has nothing to
+		react with.
+	</p>
+	<p>
+		Above the rows, a fine tick marks every hit that applied an element, and a labelled dot marks
+		every reaction it caused. Compound states get their own rows too — Frozen, Quicken, Burning and
+		the dendro fuel that feeds it are different objects from the auras that made them, with
+		different decay, so they are drawn separately.
+	</p>
+	<p>
+		<strong>What it assumes.</strong> One enemy, standing still, applying nothing back at you — no Pyro
+		from a Blazing Axe Mage, and no auras you did not put there. Hits land on their listed timing, a swing
+		that connects several times counts as one application, and Shatter is not modelled. Where we do not
+		have a measured gauge strength for a hit we use 1U and mark that tick yellow. Everything else — the
+		×0.8 aura tax, decay rates, unit multipliers, the crystallize cooldown, dendro cores and their spawn
+		delay — follows the same model the Gauge Explorer teaches.
+	</p>
+</section>
+
+<section>
 	<h2 id="team">Team, weapons and constellations</h2>
 	<p>
 		<strong>The notation is the team.</strong> Whoever your rotation names, in the order it names them,
