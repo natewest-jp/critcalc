@@ -133,10 +133,17 @@
 				"Burst frames: burstFrames[0]=InitAbilSlice(67), ActionDash/Jump=42 ActionSwap=51. Per Q-spec swap/N/E/D/J — N/E default to animLen=67.",
 				"Cooldown: SetCDWithDelay(burst, 900f, burstStart=35). EnergyMax=60. ConsumeEnergy(37) drains 37 energy from teammates.",
 				"C1 Aftershock: party members within radius +10% CR + interrupt RES. Schema-fit: would need a 'duringSummon' state condition on a team buff; possible but not authored — flagged.",
-				"C4 Shoreline: -5 Energy per enemy hit (max 25 from one cast). Authored conceptually but per-hit-energy-callback not modeled."
+				"C4 Shoreline: -5 Energy per enemy hit (max 25 from one cast). Authored conceptually but per-hit-energy-callback not modeled.",
+				"application[]: gcsim internal/characters/traveler/common/geo/burst.go, Traveler.Burst — the 4 shockwaves are QueueAttackWithSnap on the CAST (AttackTagElementalBurst) at burstHitmark+(i+1)*15 with burstHitmark=51, i=0..3 → frames 66/81/96/111. ai.Durability=50 → units 2. ai.Element=attributes.Geo. Nominal schedule per contract C4; gcsim's own ICDTagTravelerWakeOfEarth/ICDGroupDefault suppresses 2 of the 4 (matches gcsim-frames-diff.md §5 row 'Wake of Earth 66f / 15f × 4 · 2/4 standard').",
+				"NO summon tick series: the 'Wake of Earth Wall' summon is construct.GeoConstructTravellerBurst (burst.go type wall / newWall) and carries NO AttackInfo at all — it deals zero damage. The §5 summon row is the cast's own 4 shockwaves mis-attributed by abil name ('Wake of Earth'), not a wall cadence. summons[0].effects stays empty."
 			],
 			"description": "Energy from deep underground bursts forth, dealing AoE Geo DMG and forming a Stone Stele that deals continuous AoE Geo DMG to opponents within its AoE.",
-			"application": []
+			"application": [
+				{ "frame": 66, "element": "geo", "units": 2 },
+				{ "frame": 81, "element": "geo", "units": 2 },
+				{ "frame": 96, "element": "geo", "units": 2 },
+				{ "frame": 111, "element": "geo", "units": 2 }
+			]
 		}
 	],
 	"passives": [
