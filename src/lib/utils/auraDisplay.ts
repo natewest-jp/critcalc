@@ -23,7 +23,7 @@
  * it has become something with a different decay curve.
  */
 
-import type { AuraKey } from '$lib/utils/gauge';
+import type { AuraKey, SeriesInterval } from '$lib/utils/gauge';
 import type { Reaction } from '$lib/types/ability';
 
 export type AuraModMeta = {
@@ -215,3 +215,31 @@ export const REACTION_FAMILY: Record<Reaction, string> = {
 	lunarBloom: 'Lunar-Bloom',
 	lunarCharged: 'Lunar-Charged'
 };
+
+/**
+ * The y ceiling a gauge chart draws to, in units: the peak rounded UP to a half
+ * unit, and FLOORED AT 2.
+ *
+ * ⚓ Floored so a rotation that only ever lands 0.8U auras does not draw them
+ * full-height and imply a saturated target. The floor is what makes the plot's
+ * height mean something ABSOLUTE rather than relative to the best moment. 2U is
+ * a taxed 2.5U application, comfortably above the 1U default everything
+ * unmeasured lands at.
+ *
+ * ⚓ ONE CEILING, TWO CHARTS (2026-08-17). The Gauge Explorer and the planner's
+ * aura lane each had their own copy of `Math.max(2, Math.ceil(peak * 2) / 2)` —
+ * byte-identical, and nothing kept them that way. ⚠️ That duplication had
+ * already caused real confusion: the two charts LOOK like they scale
+ * differently (the Explorer labels its unit axis and the lane did not), so the
+ * lane was reported as the one with a fixed ceiling. Same law as `icd.ts` and
+ * `gauge.ts` — one model, several shapes.
+ *
+ * ⛔ Don't lower the floor to make a shallow rotation fill the plot. That
+ * emptiness IS the finding, and a 0.8U aura drawn at full height says
+ * "saturated" — the exact reading the floor exists to prevent. If the ceiling
+ * reads as arbitrary, LABEL the datum (both charts now do); do not move it.
+ */
+export function auraUMax(series: SeriesInterval[]): number {
+	const peak = series.reduce((m, s) => s.points.reduce((n, p) => Math.max(n, p.u), m), 0);
+	return Math.max(2, Math.ceil(peak * 2) / 2);
+}

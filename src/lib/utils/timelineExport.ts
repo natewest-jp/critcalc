@@ -1198,6 +1198,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 
 		// The one datum, under everything: whole units below the ceiling.
 		ctx.strokeStyle = GRID;
+		ctx.font = `600 8px ${SANS}`;
+		ctx.textAlign = 'left';
 		for (const u of auraUnitLines(snap.auraLane.uMax)) {
 			const gy = Math.round(yOf(u)) + 0.5;
 			ctx.beginPath();
@@ -1206,6 +1208,12 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			ctx.moveTo(ox, gy);
 			ctx.lineTo(ox + snap.totalWidth, gy);
 			ctx.stroke();
+			// Named at its left end, mirroring `.rp-aura-unit-label`. ⚠ The export
+			// ALSO carries the ceiling in its label column, and this is not a
+			// duplicate of it: the column says how high the plot goes, the rule
+			// says where one unit is. A reader needs both to place a line.
+			ctx.fillStyle = MUTED;
+			ctx.fillText(`${u}U`, ox + 3, gy - 3);
 		}
 
 		// Every span walked once: the gradient area, then the line on top of it.

@@ -751,6 +751,10 @@
 	// the same instant but different gauges do NOT collide, and Burning-on-Pyro
 	// is exactly that pair.
 	const AURA_LABEL_MIN_ROW = 12;
+	// 🎛️ The unit datum's own label — inset from the plot's left edge, and lifted
+	// so it sits on the rule's shoulder rather than across it.
+	const AURA_UNIT_LABEL_X = 3;
+	const AURA_UNIT_LABEL_LIFT = 3;
 	// ══ THE MARKER ROW'S LABEL RULE (2026-08-17) ══════════════════════════════
 	// ⚠ MEASURED, NOT GUESSED. This used to be `room >= 26`, a stand-in for "the
 	// shortest family name that survives" — so anything between 26px and its own
@@ -1793,7 +1797,18 @@
 							>
 								<svg class="rp-aura-svg" width={totalWidth} height={AURA_PLOT_H} aria-hidden="true">
 									<!-- The one datum: whole units below the ceiling, so the y
-							     axis can be read without hovering. Under the fills. -->
+							     axis can be read without hovering. Under the fills.
+
+							     ⚓ NAMED AT ITS LEFT END (⚓ NATE 2026-08-17). An unlabelled
+							     rule tells a theorycrafter what they already know and tells
+							     everyone else nothing — it reads as chart furniture rather
+							     than as a QUANTITY, so a 0.8U aura under it looks like a
+							     short bar instead of "most of one unit". The Gauge Explorer
+							     has labelled its unit axis since it was built; this is the
+							     lane catching up, and it is what stops the 2U ceiling
+							     reading as arbitrary (see `auraUMax`).
+							     ⚠ It SCROLLS with the plot, like the lane names — one datum
+							     stated where the chart begins. -->
 									{#each auraUnitRules as u (u)}
 										<line
 											x1="0"
@@ -1802,6 +1817,11 @@
 											y2={auraYOf(u)}
 											stroke="var(--rp-grid)"
 										/>
+										<text
+											class="rp-aura-unit-label"
+											x={AURA_UNIT_LABEL_X}
+											y={auraYOf(u) - AURA_UNIT_LABEL_LIFT}>{u}U</text
+										>
 									{/each}
 									<defs>
 										<!-- The fill fades OUT toward the baseline so overlapping
@@ -3445,6 +3465,14 @@
 	   permanent legend that is not on top of the data; the halo is what keeps it
 	   off its own fill. The PNG export does have somewhere — see its label
 	   column. */
+	/* The unit datum's label — the rule's own voice, not the series names'. A
+	   reading that competed with the auras would be furniture shouting. */
+	.rp-aura-unit-label {
+		font-size: 8px;
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-mid);
+		fill: var(--chart-dim);
+	}
 	.rp-aura-series-name {
 		position: absolute;
 		z-index: 3;

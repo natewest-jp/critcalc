@@ -44,11 +44,17 @@ import type { TimelineEvent } from '$lib/utils/rotationEvents';
 import {
 	AURA_MOD_META,
 	AURA_MOD_ORDER,
+	auraUMax,
 	REACTION_FAMILY,
 	REACTION_LABEL,
 	REACTION_SUSTAINED_BY
 } from '$lib/utils/auraDisplay';
 import { FPS } from '$lib/utils/frames';
+
+// ⚓ The ceiling lives in auraDisplay now — ONE definition shared with the Gauge
+// Explorer. Re-exported here because this module's consumers have always asked
+// it for the lane's geometry, and where the arithmetic lives is not their news.
+export { auraUMax } from '$lib/utils/auraDisplay';
 
 /** A sample of one aura. Frames + units — ⚓ the gauge speaks seconds, the
  *  timeline speaks frames, and this module is the conversion's only site. */
@@ -117,20 +123,6 @@ export type AuraLane = {
 	// bug class is data with no consumer (`orphanedSchema.test.ts`), and the
 	// cheapest time to not have one is before it exists.
 };
-
-/**
- * The y ceiling, rounded UP to a half unit and floored at 2.
- *
- * ⚓ Floored so a rotation that only ever lands 0.8U auras does not draw them
- * full-height and imply a saturated target: the floor is what makes the plot's
- * height mean something absolute rather than relative to the best moment. 2U is
- * a taxed 2.5U application, comfortably above the 1U default everything
- * unmeasured lands at.
- */
-export function auraUMax(series: SeriesInterval[]): number {
-	const peak = series.reduce((m, s) => s.points.reduce((n, p) => Math.max(n, p.u), m), 0);
-	return Math.max(2, Math.ceil(peak * 2) / 2);
-}
 
 /**
  * The lane with nothing in it — what the planner substitutes when the AURA
