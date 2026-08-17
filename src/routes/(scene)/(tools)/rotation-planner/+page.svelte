@@ -17,10 +17,10 @@
 	import { afterNavigate, goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { claimVeilReady, afterPaint } from '$lib/landing/veilReady';
-	import { rotationTabs as rt, TAB_LIMIT } from '$lib/rotationTabs.svelte';
+	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { documentBar as db } from '$lib/documentBar.svelte';
-	import { siteSettings } from '$lib/stores';
+	import { savedNotations, siteSettings } from '$lib/stores';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 	import {
 		plannerView as pv,
@@ -60,28 +60,34 @@
 		// the recipient's own constellations. Loadout is likewise tab-scoped.
 		const importedCon = { ...shared.constellations };
 		const label = 'Shared rotation';
-		const active = rt.activeTab;
-		const pristine = rt.tabs.length === 1 && !active.notation.trim() && !active.savedId;
-		const atLimit = rt.tabs.length >= TAB_LIMIT;
-		if (pristine || atLimit) {
-			// Reuse the current tab (empty first-load, or no room for a new one).
-			rt.tabs = rt.tabs.map((t) =>
-				t.id === rt.activeTabId ? { ...t, label, savedId: undefined } : t
-			);
-			rt.notation = shared.notation;
-			rt.tabLoadout = shared.loadout;
-			rt.tabCon = importedCon;
-		} else {
-			rt.openTab({
-				label,
-				notation: shared.notation,
-				tabLoadout: shared.loadout,
-				tabCon: importedCon
-			});
+		const doc = {
+			label,
+			notation: shared.notation,
+			tabLoadout: shared.loadout,
+			tabCon: importedCon
+		};
+		if (rt.adopt(doc)) {
+			db.showNotice('Loaded shared rotation');
+			return;
 		}
-		db.showNotice(
-			atLimit && !pristine ? 'Loaded — tab replaced (limit reached)' : 'Loaded shared rotation'
-		);
+		// ⚓ EVERY TAB IS OCCUPIED, SO THE LINK GOES TO THE BANK — ⛔ never over a
+		// tab with work in it (see `rotationTabs.adopt` for what this replaced).
+		//
+		// The reader clicked a link expecting to RECEIVE something, so refusing
+		// outright is the one answer that fails them twice: the param has already
+		// been stripped by then, so there is nothing left to retry. Parking it in
+		// Saved Rotations delivers the content, costs one entry they can delete,
+		// keeps all six tabs, and uses a surface that is already one button away
+		// in the same band. ⛔ Not a confirm dialog either — tool surfaces here are
+		// non-modal, and a blocking prompt on a link the user just opened
+		// interrupts a flow they did not start.
+		savedNotations.save({
+			name: label,
+			notation: shared.notation,
+			tabLoadout: shared.loadout,
+			tabCon: importedCon
+		});
+		db.showNotice('Tabs full — saved to Saved Rotations');
 	}
 
 	// On first load: warm the avatar cache and register this tool's bench-band
@@ -180,8 +186,10 @@
 			)
 		].slice(0, 4);
 		if (ids.length > 0) {
-			const { replacedTab } = rt.importTeam(ids);
-			db.showNotice(replacedTab ? 'Team loaded — tab replaced (limit reached)' : 'Team loaded');
+			// ⚠ Same rule as a shared link, one line away — `importTeam` had the
+			// identical clobber-the-active-tab bug, and two answers to "where does
+			// an incoming document go" is how they drift.
+			db.showNotice(rt.importTeam(ids) ? 'Team loaded' : 'Tabs full — close one to load a team');
 		}
 	});
 

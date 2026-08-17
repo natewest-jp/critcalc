@@ -124,6 +124,10 @@
 		if (teamParam) {
 			const imported = parseTeamParam(teamParam, (id) => rosterIds.has(id));
 			const ids = imported.filter((s): s is string => s !== null);
+			// ⚠ May decline when all six tabs hold work (`rotationTabs.adopt`). The
+			// TB has no document notice of its own, and the team is still right
+			// here to re-send once a tab is free — so this stays a quiet no-op
+			// rather than growing a toast surface for one edge.
 			if (ids.length > 0) rt.importTeam(ids, 'Imported team');
 		}
 		if (swapParam !== null) {
