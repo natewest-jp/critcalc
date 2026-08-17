@@ -113,12 +113,28 @@
 					"label": "Gyoei Narukami Kariyama Rite",
 					"duration": 2,
 					"spawnsAt": 50,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": { "type": "summonTick", "interval": 0.283, "firstTickDelay": 0 },
+							"scaling": 6.4886,
+							"stat": "hp",
+							"element": "electro",
+							"_curatorNotes": [
+								"gcsim internal/characters/kuki/burst.go, func Burst(): the field queues QueueAttackWithSnap on a fixed loop `for i := burstStart; i < count*interval+burstStart; i += interval` with const burstStart = 50, interval := 2 * 60 / 7 = 17 frames (integer division), count = 7. So ticks land at cast-relative frames 50,67,84,…,152. interval = 17/60 = 0.283s; firstTickDelay = (50 − spawnsAt 50)/60 = 0. Matches the measured row in docs/curation/gcsim-frames-diff.md §5 (50f / 17f × 7).",
+								"Scaling: the tick's AttackInfo has Mult: 0 and FlatDmg: c.MaxHP() * burst[c.TalentLvlBurst()] — it is a pure Max-HP-scaling hit, hence stat 'hp'. burst[9] (talent level 10, 0-based) = 0.064886 in zz_kukishinobu.dm.go (comment: 'burst: GyoeiNarukamiKariyamaRite - Single Instance DMG: {0} Max HP'), stored as percentage points 6.4886. Cross-check: talent sidecar row 'Single Instance DMG' 10th value = '6.5% Max HP'.",
+								"Element/ICD: AttackInfo Element: attributes.Electro, Durability: 25 (1U), ICDTag: ICDTagElementalBurst + ICDGroup: ICDGroupDefault — standard ICD, and the measured row's verdict is 3/7 'standard', so no icdGate is annotated.",
+								"Tick COUNT is HP-conditional, not constellation-conditional: gcsim sets count = 12 when CurrentHPRatio() <= 0.5 (comment says 'can be 11 at low HP'; the code says 12), which is why the sidecar 'Duration' row reads 2.0s/3.5s. The C0/high-HP series (7 ticks over the authored 2s duration) is what is authored; the low-HP extension has no schema expression (HP is not a Condition subject) and the existing duration of 2 is left untouched. C1 only widens the AoE radius (r 4.0 → 6) and changes neither cadence nor count."
+							]
+						}
+					]
 				}
 			],
 			"_curatorNotes": [
 				"HP-conditional duration: gcsim uses count=7 ticks (base, ~2s) or count=12 ticks (when HP ≤50%, ~4s from cast), interval=17 frames, burstStart=50. HP condition is not supported by durationModifiers schema (constellation-only). Reviewer to decide representation. gcsim comment notes '11 at low HP' but code sets 12.",
-				"Continuous electro DMG effects not authored (field deals electro DMG per tick, scales on Shinobu Max HP). Reviewer to model field tick effects."
+				"Field tick damage authored 2026-08-17 as a summonTick damage effect on the Gyoei Narukami Kariyama Rite summon (see that effect's own notes). The cast itself lands no hit — application[] stays the empty positive statement; every hit belongs to the field."
 			],
 			"description": "Stabs an evil-excoriating blade into the ground, creating a field that cleanses the area of all that is foul, dealing continuous Electro DMG to opponents within its AoE based on Shinobu's Max HP.\nIf Shinobu's HP is less than or equal to 50% when this skill is used, the field will last longer.",
 			"application": []
