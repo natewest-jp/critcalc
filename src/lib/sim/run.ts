@@ -623,9 +623,34 @@ export function runRotation(
 					queue!.sort((a, b) => a - b);
 				}
 
-				clock.advance(clock.now + castTime);
+				// ⚓⚓ THE CAST PIPELINE SCHEDULES BEFORE IT ADVANCES (2026-08-17).
+				// The clock does NOT move here — it moves at the very BOTTOM of this
+				// branch, once every emitter below has queued its work. The pipeline
+				// therefore runs with `clock.now === castStart`, so a task landing
+				// INSIDE the cast animation is queued at its own frame instead of
+				// being clamped forward to the animation's end.
+				//
+				// ⚠️ Why the clamp was not harmless: `gauge.advanceTo` is
+				// `while (frame < target)`, so a backwards advance is a NO-OP and an
+				// application offered out of order lands at the LATER offer's frame.
+				// Measured over the projections corpus, the clamp produced 130
+				// out-of-order offers, **37 of them CROSS-ELEMENT** — a Xiangling
+				// Pyronado tick reaching the gauge 30 frames before the Xingqiu hydro
+				// it should have followed, which decides which way the vaporize runs.
+				// ⛔ The sort in `collectApplications` was never the fix: it made the
+				// projection honest and left the feed wrong.
+				//
+				// ⚠️⚠️ The `<name> E Q` census this defect was first measured with
+				// reports 4 inversions and ZERO cross-element, and that is a property
+				// of the CENSUS rather than of the engine — a summon and its caster
+				// share an element, so ONE character can never exhibit the case.
+				// ⛔ Never re-scope this measurement to a single character again.
+				//
+				// `castEnd` is the instant the clock will reach; it is named so the two
+				// consumers below read exactly what they read when the advance was here.
+				const castEnd = castStart + castTime;
 				if (!isBurst) lastEText = tok.text; // plunge-variant selection
-				advanceChain(ctx, active, char.id, kind, clock.now);
+				advanceChain(ctx, active, char.id, kind, castEnd);
 
 				// Q only: character cdReset — refund a charge on each affected
 				// ability whose CD the burst resets (Kazuha C1: Q resets E).
@@ -642,11 +667,11 @@ export function runRotation(
 								if (q.length === 0) continue;
 								// Refund only charges still on CD; never push an
 								// already-ready charge later.
-								q[0] = Math.min(q[0], clock.now);
+								q[0] = Math.min(q[0], castEnd);
 								q.sort((a, b) => a - b);
 							}
 						} else if (target === 'burst') {
-							cs.qReadyAt = clock.now;
+							cs.qReadyAt = castEnd;
 						}
 					}
 				}
@@ -762,13 +787,16 @@ export function runRotation(
 					stackState,
 					variantCtx
 				);
-				// Emit synthetic reactions for this cast and dispatch to onReaction
-				// consumers (gainStacks + durationExtensions). Fires after
-				// stance/summon registration so the just-opened stance owner /
-				// just-spawned summon can receive extensions from this cast. Aura
-				// state updates after dispatch so this cast sees pre-cast aura.
-				// The cast instant fed to the reaction/extension emitters is
-				// `castStart` (the exact pre-advance cursor) for both kinds.
+				// Queue this cast's own applications, each at the frame `application[]`
+				// says it lands. Registered after stance/summon registration so the
+				// just-opened stance owner / just-spawned summon can receive the
+				// extensions a resulting reaction dispatches.
+				// ⚠️ SCHEDULING, not emitting: the offers reach the gauge when the
+				// advance at the bottom of this branch passes their frames, so a hit at
+				// frame 18 of a 79-frame animation is dispatched at 18 — ahead of a
+				// teammate's summon tick at 30, which is the whole point of the 2026-08-17
+				// reordering. A hit that lands PAST the animation simply waits for a
+				// later advance, which is equally what should happen.
 				emitReactionsAtCast(
 					ctx,
 					clock,
@@ -788,11 +816,14 @@ export function runRotation(
 					chainIdx,
 					stackState
 				);
-				// ⚓ Summon ticks now apply their element too (gauge round L5e-b).
-				// Scheduled AFTER the cast's own applications so a cast and the
-				// summon it spawns land in cast-then-tick order at the same frame,
-				// and after the summonExt registration above so the chain can read
-				// the extension record LIVE rather than a copy.
+				// ⚓ Summon ticks apply their element too (gauge round L5e-b). Queued
+				// after the summonExt registration above so the chain reads the
+				// extension record LIVE rather than a copy.
+				// ⚠️ Insertion order no longer decides anything between these two
+				// emitters — both queue at TRUE frames now, and the clock orders them.
+				// At an EQUAL frame `Band.TICK` still precedes `Band.LAND`, which is the
+				// band contract (a consequence of what is already running, before the
+				// thing that is starting) and costs nothing: the two carry the same time.
 				scheduleSummonTicks(
 					ctx,
 					clock,
@@ -842,6 +873,13 @@ export function runRotation(
 					chainIdx,
 					stacks
 				);
+				// ⚓ The cast's animation, run LAST — see `castEnd` above. Every task
+				// this cast queued at a frame inside the animation fires HERE, in true
+				// (frame, band) order, alongside anything an earlier cast left pending:
+				// a summon tick from a previous cast and this cast's own hit now reach
+				// the gauge in the order they happen. ⛔ Nothing that reads the cast's
+				// own decisions may be added below this line.
+				clock.advance(castEnd);
 			} else if (isBurst) {
 				// No-ability fallback (Q): generic 15s CD.
 				// No resolved variant — key the abilityId by the bare charId.

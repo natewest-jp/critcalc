@@ -121,13 +121,14 @@ export function createAuraState(): AuraState {
 	// applications, and a rotation must never be silently truncated mid-parse.
 	//
 	// ⚓⚓ SAMPLING IS ON SINCE L6, AND THE LANE MUST READ THIS GAUGE — ⛔ never a
-	// re-run of `simulateGauge` over `ParsedRotation.applications`. That list is
-	// SORTED at the projection and the feed order is not (see
-	// `collectApplications`), so a re-run charts a model the parse did not run.
-	// The round has already paid for a second copy of the truth once (L4d, when
-	// the oracle replayed the parser's rules and reported a baseline for an
-	// engine we no longer had). The series the lane draws is the one the gauge
-	// actually produced.
+	// re-run of `simulateGauge` over `ParsedRotation.applications`. ⚠️ The reason
+	// is NOT that the list is mis-ordered — the feed is in true time order since
+	// 2026-08-17 and `collectApplications` no longer sorts. It is that a re-run is
+	// a SECOND COPY of the truth, and this round has already paid for one (L4d,
+	// where the oracle replayed the parser's rules and reported a baseline for an
+	// engine we no longer had). A replay also cannot see the gauge's internal
+	// chain (Burning fuel, EC ticks, core spawns), so it would chart a model the
+	// parse did not run. The series the lane draws is the one the gauge produced.
 	//
 	// ⚠️ Cost, measured: sampling roughly doubles the gauge's per-frame work
 	// (0.081 → 0.182 ms over a 1U aura's whole lifetime). It cannot reach the
@@ -577,35 +578,29 @@ export function collectAuraSeries(ctx: SimContext, totalDuration: number): Serie
 /** The applications this parse put on the target, in time order — the public
  *  projection of `AuraState.offers`, authored onto `ParsedRotation` at finalize. */
 export function collectApplications(ctx: SimContext): AuraApplication[] {
-	// ⚠️⚠️ SORTED, because OFFER ORDER IS NOT ALWAYS TIME ORDER and this field is
-	// documented as the latter (gauge round L5e-b).
+	// ⚓⚓ OFFER ORDER IS TIME ORDER, AND THIS IS THE PLACE THAT USED TO PRETEND SO.
 	//
-	// The cast pipeline advances the clock through the cast animation BEFORE the
-	// emitters run, so a cast's own application at, say, frame 18 is scheduled
-	// when `clock.now` is already 79 and gets CLAMPED to 79 — that is what the
-	// clock's `latecomers` counter has always counted. Harmless while everything
-	// clamped to one frame fired in insertion order; L5e-b put a second BAND at
-	// the same clamped frame, and `Band.TICK` (10) sorts ahead of `Band.LAND`
-	// (20), so a summon's first tick can be OFFERED before the cast hit that
-	// spawned it even though its nominal frame is later.
+	// L5e-b shipped a `.sort()` here with a note saying the sort was NOT the fix:
+	// the cast pipeline advanced the clock through the cast animation before its
+	// emitters ran, so a hit at frame 18 of a 79-frame animation was scheduled at
+	// a `clock.now` of 79 and CLAMPED there (what `Clock.latecomers` counts), and
+	// with L5e-b's summon ticks queued at `Band.TICK` (10) against the cast's
+	// `Band.LAND` (20) at that same clamped frame, a summon could reach the gauge
+	// before the cast that spawned it. The sort made this projection honest and
+	// left the GAUGE — which is fed in offer order and whose `advanceTo` no-ops
+	// backwards — reading a rotation that never happened.
 	//
-	// ⚠️ The gauge therefore sees them in that order too, and `advanceTo` is
-	// `while (frame < target)` — a backwards advance is a NO-OP, so the earlier
-	// application lands at the later frame. Measured corpus-wide over `<name> E Q`
-	// for all 123 characters: **4 inversions in 464 applications, none of them
-	// cross-element** — a summon and its caster share an element, which is what
-	// keeps it from changing a reaction. ⛔ Do not read this sort as the fix: it
-	// makes the PROJECTION honest, not the feed order. Fixing the feed means
-	// scheduling before the advance, which moves event ids and is its own
-	// landing.
-	return [...ctx.aura.offers]
-		.sort((a, b) => a.time - b.time)
-		.map((o) => ({
-			time: o.time,
-			characterId: o.characterId,
-			element: o.element,
-			units: o.units,
-			provisionalUnits: o.provisionalUnits,
-			castKind: o.castKind
-		}));
+	// The pipeline schedules before it advances since 2026-08-17 (`run.ts`,
+	// `castEnd`), so the clock orders every application by its own frame and the
+	// sort has nothing left to do. ⛔ It is deliberately NOT kept "for safety":
+	// a sort here would silently absorb the defect's return, and the invariant is
+	// pinned over the whole corpus instead (`notationParser.ir.test.ts`).
+	return ctx.aura.offers.map((o) => ({
+		time: o.time,
+		characterId: o.characterId,
+		element: o.element,
+		units: o.units,
+		provisionalUnits: o.provisionalUnits,
+		castKind: o.castKind
+	}));
 }

@@ -265,6 +265,25 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 		if (i > 0) expect(events[i].time).toBeGreaterThanOrEqual(events[i - 1].time - EPS);
 	}
 
+	// ⚓⚓ APPLICATIONS ARE IN FEED ORDER, AND FEED ORDER IS TIME ORDER (2026-08-17).
+	// `collectApplications` used to SORT this list, which made the projection
+	// honest while the gauge — fed in offer order, and whose `advanceTo` no-ops
+	// backwards — went on applying an out-of-order application at the LATER
+	// offer's frame. ⚠️ This assertion is the whole guarantee now that the sort
+	// is gone, and it must run over MULTI-CHARACTER rotations to mean anything:
+	// the defect's original `<name> E Q` census reported zero cross-element
+	// inversions because a summon and its caster share an element, so one
+	// character cannot exhibit the case that matters.
+	for (let i = 1; i < result.applications.length; i++) {
+		const prev = result.applications[i - 1];
+		const app = result.applications[i];
+		expect(
+			app.time,
+			`application[${i}] (${app.characterId} ${app.element}@${app.time}) reaches the gauge ` +
+				`after application[${i - 1}] (${prev.characterId} ${prev.element}@${prev.time})`
+		).toBeGreaterThanOrEqual(prev.time - EPS);
+	}
+
 	// windows finite + end >= start.
 	for (const w of windows) {
 		expect(Number.isFinite(w.start), `${w.kind} window start finite`).toBe(true);
