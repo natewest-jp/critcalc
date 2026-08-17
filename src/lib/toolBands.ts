@@ -7,9 +7,8 @@
  * row jumped 192px sideways between the benched tools and the Visualizers.
  *
  * They are TWO SEPARATE BANDS standing clear of the tool surface, with the
- * bench ribbon proud of the whole stack:
+ * bench ribbon running the whole stack's height beside them:
  *
- *     ▓▓▓▓▓▓▓▓                          ← ribbon, RIBBON_OVERHANG_Y proud
  *     ▓▓▓▓▓▓▓▓▒▒▒▒  ▒▒▒▒      ▒▒▒ ▒▒    ← band A: NO BAND. Free glass controls
  *     ▓▓▓▓▓▓▓▓                            standing on the scene.  BAND_A_H
  *     ▓▓▓▓▓▓▓▓                          ← BAND_GAP of bare scene
@@ -18,6 +17,11 @@
  *     ▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░    ← the tool surface
  *     ▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░
  *     ▓▓▓▓▓▓▓▓
+ *
+ * ↻ ⚓ NATE 2026-08-17: THE RIBBON'S TOP EDGE IS BAND A'S TOP EDGE — the two
+ * ▓ and ▒ runs start on the same line above, where the strip used to open
+ * RIBBON_OVERHANG_Y (12px) earlier. See that constant for why the cards do not
+ * move when it changes.
  *
  * ↻ ⚓ NATE 2026-08-09, THE SECOND MOVE: BAND A LOST ITS BAND. The split above
  * was the structural half of a purpose Nate had in mind; this is the purpose.

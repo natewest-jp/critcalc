@@ -176,6 +176,10 @@ export const BENCH_COLUMN_H = 4 * BENCH_SLOT_H;
 // beside it. Its height is therefore MEASURED from the dock (which stretches
 // with the frame), not summed from the cards; the cards keep their track-group
 // alignment at the top and the tail below them is deliberately empty.
+// ⚠️ BOTH HALVES OF THAT ARE NOW RETIRED and the paragraph is kept as history:
+// the TAIL round (2026-08-12) replaced the measured stretch with a pointed,
+// content-sized box, and RIBBON_OVERHANG_Y went to 0 on 2026-08-17. What
+// survives is the middle sentence — the cards' track-group alignment.
 //
 // ↻ ABUTTING ROUND (⚓ NATE 2026-08-07): the tools no longer TUCK UNDER the
 // strip — each begins at its right edge, and the strip stands alone on the
@@ -295,8 +299,26 @@ export const RIBBON_DOCK_LEFT = -(TOOL_INSET + FRAME_BORDER);
  * happens to have, so it always reads as the taller object. The bottom half of
  * that retired with the stretch: the strip ends in a POINT now, and a point
  * does not overhang anything, it just stops. Only RIBBON_HEAD reads this.
+ *
+ * ↻ 12 → 0 (⚓ NATE 2026-08-17): THE TOP EDGE MEETS BAND A'S. The last thing
+ * the overhang was still doing was the tall-bench idea's other half — reading
+ * as the taller object — and with a pointed bottom the strip already terminates
+ * differently from everything beside it, so the 12px was buying a difference
+ * that the silhouette states more clearly on its own. What it COST is an edge
+ * that lines up with nothing: the topmost horizontal in the tool, 12px above
+ * the row of document controls it stands beside.
+ *
+ * ⚠ THE CARDS DO NOT MOVE, and the algebra is why this is safe to change on
+ * its own: the card column sits at `ribbon top + RIBBON_CHROME + RIBBON_HEAD`,
+ * RIBBON_HEAD adds this value back, and the dock subtracts it from the stack
+ * top — so it cancels exactly. Zero is not a special case of that; it is the
+ * same sum with the term gone.
+ *
+ * ⛔ Kept as a named constant at 0 rather than deleted. It is the ONE knob for
+ * this relationship, and inlining zero would leave the next person adding a
+ * `top: -Npx` somewhere in ToolStack instead.
  */
-export const RIBBON_OVERHANG_Y = 12;
+export const RIBBON_OVERHANG_Y = 0;
 
 /**
  * The planner's track rows, measured from its surface's top. The card column
