@@ -106,63 +106,45 @@ export function reactionProcEffects(
 	effects: Effect[] | undefined,
 	constellation: number,
 	preStates: ReadonlySet<string>
-): ReactionProcEffect[] {
-	const out: ReactionProcEffect[] = [];
-	for (const eff of effects ?? []) {
-		if (eff.type !== 'damage') continue;
-		if (eff.trigger.type !== 'onReaction') continue;
-		if (!eff.application || eff.application.length === 0) continue;
+): { effect: ReactionProcEffect; index: number }[] {
+	const out: { effect: ReactionProcEffect; index: number }[] = [];
+	(effects ?? []).forEach((eff, index) => {
+		if (eff.type !== 'damage') return;
+		if (eff.trigger.type !== 'onReaction') return;
+		if (!eff.application || eff.application.length === 0) return;
 		if (evalCondition(eff.conditions, DEFAULT_ASCENSION, preStates, constellation) === false)
-			continue;
-		out.push(eff as ReactionProcEffect);
-	}
+			return;
+		out.push({ effect: eff as ReactionProcEffect, index });
+	});
 	return out;
 }
 
-type ArmArgs = {
-	ctx: SimContext;
-	holderId: string;
-	effects: Effect[] | undefined;
-	start: number;
-	endNow: () => number;
-	isCurrent?: () => boolean;
-	preStates: ReadonlySet<string>;
-	constellation: number;
-	chainIdx: ChainIndex;
-	stacks?: Map<string, number>;
-	castKind: 'skill' | 'burst';
-};
-
 /**
- * Arm every reaction-proc effect in `effects` for this holder.
+ * Arm ONE listener.
  *
- * ⚓ KEYED BY THE AUTHORED EFFECT OBJECT. Effects are stable references off the
- * loaded character JSON, so identity is exact and free — the same reason
- * `effectCollection`'s faction provenance is a `WeakMap`. It also gets Fischl
- * right for nothing: his skill's Oz and his burst's Oz are two authored objects,
- * so each keeps its own record and the generation stamp decides which one is
- * live. ⛔ A synthesised string key would have collapsed them into one.
+ * ⚓⚓ KEYED BY THE ENTITY, NOT BY THE AUTHORED OBJECT, and that is the whole
+ * correctness of the cooldown. Fischl's A4 is authored TWICE — once on the
+ * skill's Oz and once on the burst's Oz — because either cast can be the one
+ * that put Oz on the field. In game there is only ever ONE Oz and ONE 0.5 s ICD,
+ * so two records would hand the burst's Oz a fresh clock the instant it replaced
+ * the skill's: measured, that fired A4 twice **0.38 s apart**. The key is
+ * `holder::host::index` — the identity `ctx.summonChainGen` already uses — so the
+ * two authored copies ARE one listener, while two different procs on one host
+ * stay separate (the Furina lesson L5e's `icdKey` records).
  *
- * ⚠️ A re-arm REPLACES the record and carries `lastFire` forward: re-casting
- * Nahida's E refreshes the Seed's 25 s but does not refund the 2.5 s interval.
+ * ⚠️ A re-arm therefore REPLACES the record and CARRIES `lastFire` FORWARD: the
+ * burst's Oz inherits the skill's Oz's cooldown, and re-casting Nahida's E
+ * refreshes the Seed's 25 s without refunding the 2.5 s interval.
  */
-function armReactionProcs(args: ArmArgs): void {
-	const { ctx, holderId, effects, preStates, constellation } = args;
-	for (const eff of reactionProcEffects(effects, constellation, preStates)) {
-		ctx.reactionProcs.set(eff, {
-			holderId,
-			effect: eff,
-			start: args.start,
-			endNow: args.endNow,
-			isCurrent: args.isCurrent ?? (() => true),
-			lastFire: ctx.reactionProcs.get(eff)?.lastFire ?? -Infinity,
-			preStates,
-			constellation,
-			chainIdx: args.chainIdx,
-			stacks: args.stacks,
-			castKind: args.castKind
-		});
-	}
+function armOne(
+	ctx: SimContext,
+	key: string,
+	listener: Omit<ReactionProcListener, 'lastFire'>
+): void {
+	ctx.reactionProcs.set(key, {
+		...listener,
+		lastFire: ctx.reactionProcs.get(key)?.lastFire ?? -Infinity
+	});
 }
 
 /**
@@ -177,6 +159,8 @@ function armReactionProcs(args: ArmArgs): void {
 export function armCastReactionProcs(args: {
 	ctx: SimContext;
 	holderId: string;
+	/** The resolved ability's id — the host half of the listener key. */
+	abilityId: string;
 	effects: Effect[] | undefined;
 	castTime: number;
 	preStates: ReadonlySet<string>;
@@ -185,16 +169,20 @@ export function armCastReactionProcs(args: {
 	stacks?: Map<string, number>;
 	castKind: 'skill' | 'burst';
 }): void {
-	for (const eff of reactionProcEffects(args.effects, args.constellation, args.preStates)) {
-		const armedFor = eff.trigger.armedFor;
+	for (const { effect, index } of reactionProcEffects(
+		args.effects,
+		args.constellation,
+		args.preStates
+	)) {
+		const armedFor = effect.trigger.armedFor;
 		if (armedFor === undefined || !(armedFor > 0)) continue;
 		const end = args.castTime + framesOf(armedFor);
-		armReactionProcs({
-			ctx: args.ctx,
+		armOne(args.ctx, `${args.holderId}::cast:${args.abilityId}::${index}`, {
 			holderId: args.holderId,
-			effects: [eff],
+			effect,
 			start: args.castTime,
 			endNow: () => end,
+			isCurrent: () => true,
 			preStates: args.preStates,
 			constellation: args.constellation,
 			chainIdx: args.chainIdx,
@@ -204,9 +192,10 @@ export function armCastReactionProcs(args: {
 	}
 }
 
-/** Arm a summon's listeners. ⚓ It borrows the tick chain's own `endNow` and
+/** Arm a summon's listeners. ⚓ Each borrows the tick chain's own `endNow` and
  *  generation check, so a swap-out, a duration extension or a recast reaches it
- *  through the one answer the ticks already use. */
+ *  through the one answer the ticks already use — and the host key is the
+ *  summon's LABEL, so Fischl's two authored Ozes are one entity. */
 export function armSummonReactionProcs(args: {
 	ctx: SimContext;
 	holderId: string;
@@ -220,19 +209,24 @@ export function armSummonReactionProcs(args: {
 	stacks?: Map<string, number>;
 	castKind: 'skill' | 'burst';
 }): void {
-	armReactionProcs({
-		ctx: args.ctx,
-		holderId: args.holderId,
-		effects: args.summon.effects,
-		start: args.spawnAt,
-		endNow: args.endNow,
-		isCurrent: args.isCurrent,
-		preStates: args.preStates,
-		constellation: args.constellation,
-		chainIdx: args.chainIdx,
-		stacks: args.stacks,
-		castKind: args.castKind
-	});
+	for (const { effect, index } of reactionProcEffects(
+		args.summon.effects,
+		args.constellation,
+		args.preStates
+	)) {
+		armOne(args.ctx, `${args.holderId}::summon:${args.summon.label}::${index}`, {
+			holderId: args.holderId,
+			effect,
+			start: args.spawnAt,
+			endNow: args.endNow,
+			isCurrent: args.isCurrent,
+			preStates: args.preStates,
+			constellation: args.constellation,
+			chainIdx: args.chainIdx,
+			stacks: args.stacks,
+			castKind: args.castKind
+		});
+	}
 }
 
 /** Who caused the reaction — as much of it as the source filter needs. */

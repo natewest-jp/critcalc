@@ -856,6 +856,7 @@ export function runRotation(
 				armCastReactionProcs({
 					ctx,
 					holderId: char.id,
+					abilityId: active.id,
 					// ⚠️ A variant's `effects` REPLACE the base's, like every other
 					// variant array — the same rule `application[]` follows above.
 					effects: variant?.effects ?? active.effects,

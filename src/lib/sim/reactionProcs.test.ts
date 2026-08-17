@@ -59,13 +59,14 @@ const listener = (
 
 const ctxWith = (listeners: ReactionProcListener[], activeCharId?: string): SimContext =>
 	({
-		reactionProcs: new Map(listeners.map((l) => [l.effect as Effect, l])),
+		reactionProcs: new Map(listeners.map((l, i) => [`listener:${i}`, l])),
 		activeCharId
 	}) as unknown as SimContext;
 
 describe('reactionProcEffects — the one acceptance rule', () => {
 	it('takes a damage + onReaction effect that carries an application[]', () => {
 		expect(reactionProcEffects([procEffect()], 0, new Set())).toHaveLength(1);
+		expect(reactionProcEffects([procEffect(), procEffect()], 0, new Set())[1].index).toBe(1);
 	});
 
 	it('refuses one with no application[] — that is how every other damage effect stays inert', () => {
@@ -272,5 +273,50 @@ describe('Nahida — Tri-Karma Purification, end to end', () => {
 		expect(procs).toEqual([3.2, 7.3, 10.25, 13.2]);
 		for (let i = 1; i < procs.length; i++)
 			expect(procs[i] - procs[i - 1]).toBeGreaterThanOrEqual(2.5);
+	});
+});
+
+describe('Fischl — A4 Thundering Retribution, end to end', () => {
+	/** Every electro application Fischl put on the target, in seconds. */
+	const fischlApps = (notation: string) => appsOf(notation, 'fischl').map(([t]) => t);
+
+	it("⚓ does NOT fire off Oz's own reaction, which is the whole point", () => {
+		// ⚠️⚠️ THE CASE. In `Nahida E Q > Fischl E Q > Fischl N3` Fischl is on field
+		// throughout and Oz aggravates the Quicken aura on every tick — 4.30, 7.25,
+		// 10.20, 13.15. gcsim fires A4 four frames after each of them, because Oz's
+		// AttackEvent carries Fischl's ActorIndex and its check is
+		// `ActorIndex != Player.Active()`. In game Oz is not the active character.
+		//
+		// So the only A4 here is at 3.22 — four frames after 3.15, which is
+		// FISCHL'S OWN E hit (`application[]` frame 38), not a tick. Every later
+		// entry is a bare Oz tick with no proc behind it.
+		expect(fischlApps('Nahida E Q > Fischl E Q > Fischl N3')).toEqual([
+			3.15, 3.22, 3.53, 4.3, 7.25, 10.2, 13.15
+		]);
+	});
+
+	it('fires off the reaction a DIFFERENT active character caused', () => {
+		// Barbara's Hydro electro-charges Oz's Electro while she is on field: the
+		// active character triggered it, Oz is up, so A4 procs 4 frames later —
+		// 2.52→2.58, 3.05→3.12, 6.05→6.12, 9.05→9.12. This is `source: 'active'`
+		// doing the thing `source: 'self'` could not.
+		expect(fischlApps('Barbara E > Fischl E Q > Barbara N3')).toEqual([
+			1.65, 1.72, 2.03, 2.58, 2.8, 3.12, 5.75, 6.12, 8.7, 9.12, 11.65
+		]);
+	});
+
+	it('⚓ keeps ONE 0.5 s cooldown across both authored Ozes', () => {
+		// A4 is authored on the skill's Oz and on the burst's Oz, because either
+		// cast can be the one that put Oz on the field — but there is only ever one
+		// Oz. Keyed by the authored object instead of the entity, the burst's copy
+		// took a fresh clock the moment it replaced the skill's and fired again
+		// 0.38 s after 1.72. The gaps between consecutive procs hold the ICD.
+		const procs = [1.72, 2.58, 3.12, 6.12, 9.12];
+		for (let i = 1; i < procs.length; i++)
+			expect(procs[i] - procs[i - 1]).toBeGreaterThanOrEqual(0.5);
+		expect(fischlApps('Barbara E > Fischl E Q > Barbara N3')).toEqual(
+			expect.arrayContaining(procs)
+		);
+		expect(fischlApps('Barbara E > Fischl E Q > Barbara N3')).not.toContain(2.1);
 	});
 });

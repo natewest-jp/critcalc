@@ -24,7 +24,7 @@
  */
 
 import type { CharacterData } from '$lib/types/character';
-import type { Condition, Effect, Element } from '$lib/types/ability';
+import type { Condition, Element } from '$lib/types/ability';
 import type { LoadoutEntry } from '$lib/stores';
 import type { ActionEvent, CastEvent, TimelineEvent } from '$lib/utils/rotationEvents';
 import type { IcdClock } from '$lib/utils/icd';
@@ -231,12 +231,14 @@ export type SimContext = {
 	infusionWindows: InfusionWindow[];
 	/**
 	 * Armed reaction-proc listeners — the FOURTH application source
-	 * (mark-triggered round, 2026-08-17). Keyed by the AUTHORED EFFECT OBJECT, so
-	 * Fischl's skill-Oz and burst-Oz keep separate records without a synthesised
-	 * key; iteration order is arming order, which is what makes dispatch
-	 * deterministic. See `reactionProcs.ts`.
+	 * (mark-triggered round, 2026-08-17). ⚓ Keyed by the ENTITY that hosts the
+	 * listener (`holder::host::index`), never by the authored effect object:
+	 * Fischl's A4 is authored on BOTH Ozes and there is only ever one Oz, so the
+	 * two copies must share one record and one proc cooldown. Iteration order is
+	 * arming order, which is what makes dispatch deterministic.
+	 * See `reactionProcs.ts`.
 	 */
-	reactionProcs: Map<Effect, ReactionProcListener>;
+	reactionProcs: Map<string, ReactionProcListener>;
 	/**
 	 * Whose segment the clock is currently inside, or `undefined` before the
 	 * first. ⚓ Written where a segment OPENS, which is exactly where the clock

@@ -1,6 +1,6 @@
 # Mark- and reaction-triggered off-field damage
 
-**Status:** 🔄 in progress · branch `feat/mark-triggered-damage`
+**Status:** ✅ shipped 2026-08-17 · branch `feat/mark-triggered-damage`
 **Reads:** [`gauge-round-L5.md`](gauge-round-L5.md) (the gauge, and the no-wake-up ruling) ·
 [`gauge-round-L5e.md`](gauge-round-L5e.md) (summon ticks — the third application source, and
 the pattern this one copies) · memory `mark_triggered_damage`
@@ -178,27 +178,82 @@ own N3 from Oz's tick — which is precisely gcsim's defect (§1).
 
 Each is one commit; `vitest` · `check` · `lint` · `build` green before the next.
 
-- **A — the engine.** Schema, registry, dispatch, lint, tests. Behaviour-zero until
-  something is authored (nothing in the corpus carries an `onReaction` damage effect with
-  an `application[]`).
-- **B — Nahida.** Tri-Karma. Measure.
-- **C — Fischl.** A4 on Oz, authored to the GAME. Measure, and expect the oracle not to
-  move much (§1).
+- **A — the engine** ✅ `0719850`. Schema, registry, dispatch, lint, unit tests.
+  Behaviour-zero by construction: nothing in the corpus carried an `onReaction` damage
+  effect with an `application[]`.
+- **B — Nahida** ✅ `6a643e2`. Tri-Karma, `armedFor: 25`, `source: 'team'`, 1.5U.
+- **C — Fischl** ✅. A4 on BOTH Ozes, `source: 'active'`, authored to the GAME.
+
+### ⚠️ What landing C found: two authored copies, two cooldown clocks
+
+A4 must be authored on the skill's Oz **and** the burst's Oz, because either cast can be
+the one that put Oz on the field. The first cut keyed listeners by the authored effect
+OBJECT — which reads well and is exactly how `effectCollection` keys faction provenance —
+and it was wrong here: the burst's Oz replaced the skill's and took a **fresh** ICD clock
+with it, firing A4 twice **0.38 s apart** against a 0.5 s cooldown.
+
+⚓ **A listener belongs to the ENTITY, not to the JSON object that describes it.** Keyed
+`holder::host::index` — the identity `ctx.summonChainGen` already uses — the two authored
+copies are one listener, a re-arm carries `lastFire` forward, and two different procs on
+one host still stay apart (the Furina lesson L5e's `icdKey` records).
 
 ## 5. The measurement
 
-⚓ Quote the recorded baseline, never recompute it.
+⚓ Quote the recorded baseline, never recompute it. Oracle: 12 fixtures, gcsim `d146b6d06`.
 
-| metric                       | before     | after A | after B | after C |
-| ---------------------------- | ---------- | ------- | ------- | ------- |
-| applications — ours          | 169        |         |         |         |
-| applications — gcsim         | 216        |         |         |         |
-| **gcsim applies, we do not** | **50**     |         |         |         |
-| we apply, gcsim does not     | 3          |         |         |         |
-| element mismatch             | 0          |         |         |         |
-| tier-2 agreeing              | 134 of 277 |         |         |         |
-| mean \|Δ\|                   | 0.174U     |         |         |         |
+| metric                       | before     | after B (Nahida) | after C (Fischl) |
+| ---------------------------- | ---------- | ---------------- | ---------------- |
+| applications — ours          | 169        | 174              | **183**          |
+| applications — gcsim         | 216        | 215              | 215              |
+| **gcsim applies, we do not** | **50**     | 45               | **39**           |
+| we apply, gcsim does not     | 3          | 4                | 7                |
+| element mismatch             | 0          | 0                | **0**            |
+| tier-2 agreeing              | 134 of 277 | 139 of 279       | 136 of 278       |
+| mean \|Δ\|                   | 0.174U     | 0.165U           | 0.170U           |
 
-⚠️ Closing 8 applications will not move the missing count by 8 — a new application creates
-reactions, which move the trajectory and can consume auras gcsim's run still has. ⚓ Read
-which bucket moved, never the raw count.
+⚠️ **Tier 2 moved the wrong way at C and it is not a regression — but that claim needs
+its evidence, so here it is per fixture.**
+
+| fixture      | ours    | missing | extra | tier-2 agree | drift | 🔴    | 🟠    |
+| ------------ | ------- | ------- | ----- | ------------ | ----- | ----- | ----- |
+| crystallize  | 16 → 19 | 11 → 8  | 0 → 0 | 8 → 9        | 6 → 7 | 1 → 0 | 2 → 1 |
+| electro-chg. | 13 → 18 | 4 → 2   | 0 → 3 | 12 → 12      | 7 → 5 | 1 → 3 | 8 → 9 |
+| quicken      | 11 → 12 | 6 → 5   | 1 → 1 | **12 → 9**   | 4 → 6 | 9→10  | 5 → 3 |
+
+Crystallize improves on every axis. Electro-charged trades drift for two 🔴 rows. The −3
+is entirely the quicken fixture, and it is **a one-frame sampling artifact**: gcsim samples
+the target's aura BEFORE each of its own applications, our whole chain runs one frame early
+(every paired row in the corpus reads Δ = 1), so at gcsim's A4 instant of 3.23 s our A4 at
+3.22 s has already quickened the Dendro away and gcsim's has not. Two rows that read
+`dendro 1.20/1.20, quicken 0.55/0.55` became `0.20/1.20, 1.00/0.55`. ⚓ Both engines do the
+same thing; the sample lands between them.
+
+The rest of the residue is owned elsewhere and named:
+
+- **The quicken fixture's ten 🔴 electro rows are a GAUGE gap, not this round's.** gcsim
+  holds an Electro aura alongside Quicken and we do not; it was 9 before this landing.
+- **The Oz ICD group** (`docs/icd-group-round.md` b) — our Oz applies 4 per window where
+  `ICDGroupFischl` gives 3, so our reaction stream is denser than gcsim's. Two of the
+  three new "we apply, gcsim does not" are bare Oz ticks; the third is an A4 following a
+  Barbara electro-charge that gcsim's run no longer has because its auras lapsed first.
+- **Xingqiu's Orbital**, refused by decision at L5e (application-only AND positional), is
+  why four of the bloom fixture's five Tri-Karma procs cannot happen here: our run has no
+  Hydro left to bloom with.
+
+⚓ **And the A4 rows the oracle still lists as missing are the ones §1 predicted.** Every
+one of them is a gcsim proc off Oz's own reaction. ⛔ Closing them would mean encoding the
+defect.
+
+### What Fischl's A4 does fire on
+
+Worth stating, because the curator note has called A4 unreliable since the A7 pass and
+that is still true — but it is not zero. Measured: the active character's own hit that
+causes an Electro reaction with Oz up. In `Barbara E > Fischl E Q > Barbara N3` it fires
+four times off BARBARA's hits, which is the `source: 'active'` case doing exactly what
+`source: 'self'` never could.
+
+⚠️ One data-shape note: Barbara's Melody Loop is authored as her E's own `application[]`
+rather than a summon, so its Hydro counts as the active character's own hit. gcsim agrees
+(the Melody Loop's `ActorIndex` is Barbara's), so nothing diverges — but if that ring is
+ever re-authored as a summon, these procs go away, and that would be a data change with a
+behaviour consequence.
