@@ -52,6 +52,7 @@
 		EMPTY_AURA_LANE,
 		type AuraMarker
 	} from '$lib/timeline/auraPlot';
+	import { buildAuraLog } from '$lib/timeline/auraLog';
 	import { AURA_MOD_META, AURA_MOD_ORDER } from '$lib/utils/auraDisplay';
 	import { gaugesAt } from '$lib/utils/gauge';
 	import { barPhases } from '$lib/timeline/barPhases';
@@ -398,6 +399,14 @@
 		return char.id.startsWith('traveler') ? 'Traveler' : char.displayName;
 	}
 
+	/** Character id → the name a reader sees, for the aura log and the marker
+	 *  tooltip. ⚠ Falls back to the ID rather than an em dash: in a LOG an
+	 *  unresolved name still has to be attributable to something. */
+	function displayNameOf(id: string): string {
+		const char = getLoadedCharacter(id);
+		return char ? slotLabel(char) : id;
+	}
+
 	let rotation = $derived.by(() => {
 		try {
 			return parseNotation(
@@ -714,11 +723,19 @@
 	// lane nobody draws costs a walk of every application and every reaction in
 	// the rotation on each keystroke, and the aura layer is OFF by default, so
 	// this is the common path rather than an edge case.
-	let auraLane = $derived(
-		showAura
+	// ↻ 2026-08-17: TWO READERS NOW, and the gate had to widen to match. The side
+	// column's aura LOG is the same projection in words (`buildAuraLog`), and it
+	// is deliberately not tied to the layer — wanting the transcript without the
+	// chart is a real want — so the lane is computed when EITHER surface is on and
+	// they share the one walk. ⛔ Don't give the log its own `computeAuraLane`
+	// call: two projections of one thing is how a row and the mark above it come
+	// to disagree.
+	let laneSource = $derived(
+		showAura || pv.showLog
 			? computeAuraLane(rotation.auraSeries, rotation.applications, rotation.events)
 			: EMPTY_AURA_LANE
 	);
+	let auraLane = $derived(showAura ? laneSource : EMPTY_AURA_LANE);
 	/** ⚠ A module-level constant, not an inline literal: a fresh object each
 	 *  time would make `auraLane` a new value on every unrelated re-run, and
 	 *  every derived below it recomputes off its identity. */
@@ -1516,6 +1533,28 @@
 		// The aura lane's presence is the notes panel's second gate — see
 		// `plannerView.hasAura`.
 		pv.hasAura = showAuraLane;
+	});
+
+	// ══ THE AURA LOG, PUBLISHED TO THE SIDE COLUMN (2026-08-17) ═══════════════
+	// ⚠ `hasAuraLog` reads `rotation.applications`, NOT the lane: the lane is
+	// gated on two toggles and this answers "is there anything to read", which
+	// must be true before the button that opens the panel is enabled. Gating the
+	// button on the panel's own state would make it un-openable.
+	$effect(() => {
+		pv.hasAuraLog = rotation.applications.length > 0;
+	});
+	$effect(() => {
+		// ⚠ EMPTY UNLESS THE PANEL IS OPEN. A heavy rotation makes a few hundred
+		// rows, and this runs on every keystroke; `laneSource` is already gated the
+		// same way, so with the panel shut neither the walk nor this projection
+		// happens at all.
+		pv.auraLog = pv.showLog ? buildAuraLog(laneSource, displayNameOf) : [];
+	});
+	$effect(() => {
+		// Content went away under an open panel — the same courtesy the notes get.
+		// ⛔ `closeIfShowing`, not a bare assignment: an empty rotation must not
+		// close the NOTES panel as a side effect.
+		if (!pv.hasAuraLog) pv.closeIfShowing('log');
 	});
 
 	// ---------------------------------------------------------------------------
