@@ -24,7 +24,7 @@
 	 *   (audition on the TB; open the Source on the planner).
 	 * - ⚓ IT ENDS IN A POINT (tail round 2026-08-12), Genshin's banner shape:
 	 *   square top, straight sides, a tapered tail. Its height is now simply
-	 *   its CONTENT — top chrome + RIBBON_HEAD + the four cards + the tail —
+	 *   its CONTENT — top chrome + the head + the four cards + the tail —
 	 *   and it does not animate at all.
 	 *
 	 *   That replaced a strip MEASURED against its tool's dock and stretched to
@@ -58,7 +58,7 @@
 		RIBBON_FRAME_R_TIGHT,
 		RIBBON_FRAME_R_WIDE,
 		RIBBON_CHROME,
-		RIBBON_HEAD,
+		ribbonHead,
 		RIBBON_TAIL_H,
 		RIBBON_W,
 		ribbonClipPath,
@@ -99,9 +99,13 @@
 	// One chrome, not two — the tail IS the space under the last card, and its
 	// first TAIL_LEAD px are straight, so that space is more generous than the
 	// 12px it replaces rather than less.
-	const boxH = $derived(
-		RIBBON_CHROME + RIBBON_HEAD + heights.reduce((a, b) => a + b, 0) + RIBBON_TAIL_H
-	);
+	// ↻ 2026-08-17: the head is a FUNCTION of the planner's published track top,
+	// which grows when a lane rides above the time axis. Read here rather than
+	// per-tool — see `benchBand.trackTop` for why the Team Builder must carry
+	// the same head as empty ribbon instead of keeping its own.
+	const head = $derived(ribbonHead(benchBand.trackTop));
+
+	const boxH = $derived(RIBBON_CHROME + head + heights.reduce((a, b) => a + b, 0) + RIBBON_TAIL_H);
 
 	// Resolved card characters. Index entries satisfy SlotPortrait's SlotChar
 	// shape and are available eagerly (no payload wait). A 'blank' slot shows
@@ -161,7 +165,7 @@
 	class="bb ctx-dark"
 	style:width="{RIBBON_W}px"
 	style:height="{boxH}px"
-	style:padding="{RIBBON_CHROME + RIBBON_HEAD}px {RIBBON_CHROME}px {RIBBON_TAIL_H}px"
+	style:padding="{RIBBON_CHROME + head}px {RIBBON_CHROME}px {RIBBON_TAIL_H}px"
 	style:clip-path="path('{ribbonClipPath(boxH)}')"
 	style:--bb-pad="{RIBBON_PAD}px"
 >

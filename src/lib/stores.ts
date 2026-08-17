@@ -294,12 +294,51 @@ type SiteSettings = {
 	 * that's the number players actually know.
 	 */
 	swapPing: number;
+	/**
+	 * ── THE PLANNER'S TIMELINE LAYERS (2026-08-17) ──────────────────────────
+	 *
+	 * What the timeline draws BESIDE ability timings. Both are toggled from
+	 * band B; a reader who wants only "when does each cast happen" can turn
+	 * both off and get exactly that.
+	 *
+	 * ⚠ WHY THESE PERSIST WHEN ZOOM DOES NOT (plannerView's header says view
+	 * state is deliberately not stored). Zoom is per-LOOK — you set it for the
+	 * rotation in front of you and it means nothing tomorrow. A layer toggle is
+	 * per-TASTE: "I read timelines without buff rows" is a standing preference,
+	 * and making someone re-hide them every session would be the tool
+	 * forgetting something it was told. They live here rather than in
+	 * plannerView for that reason alone.
+	 *
+	 * ⛔ NOT part of the document, and never in the `?r=` codec (format '2').
+	 * A shared link carries a rotation, not the recipient's reading preferences
+	 * — and a link that silently hid the recipient's buff rows would be a
+	 * defect they could not attribute.
+	 */
+	showAuraLane: boolean;
+	showTimelineBuffs: boolean;
 };
+
+/**
+ * The resting layers, exported because band B's "Reset view" restores exactly
+ * these — ⛔ two copies of this pair is how a reset comes to disagree with a
+ * fresh browser.
+ *
+ * ⚓ NATE 2026-08-17: buffs ON, auras OFF — the view as it shipped at L6's
+ * merge. The aura lane is the most technical surface in the tool and it is the
+ * one thing here a reader should have to opt into; the buff rows have been part
+ * of the timeline's answer since long before it, so hiding them by default
+ * would change what the planner IS for everyone who never finds the toggle.
+ */
+export const TIMELINE_LAYER_DEFAULTS = {
+	showAuraLane: false,
+	showTimelineBuffs: true
+} as const;
 
 const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	useNewOutfits: false,
 	travelerVariant: 'aether',
-	swapPing: 60 // a typical "decent connection"; ≈ 7 swap-delay frames
+	swapPing: 60, // a typical "decent connection"; ≈ 7 swap-delay frames
+	...TIMELINE_LAYER_DEFAULTS
 };
 
 function loadSiteSettings(): SiteSettings {
@@ -337,6 +376,11 @@ function createSiteSettingsStore() {
 		},
 		setSwapPing(value: number) {
 			store.update((prev) => persist({ ...prev, swapPing: value }));
+		},
+		/** One setter for both timeline layers — they are the same KIND of
+		 *  preference and band B's reset writes them together. */
+		setTimelineLayers(next: Partial<Pick<SiteSettings, 'showAuraLane' | 'showTimelineBuffs'>>) {
+			store.update((prev) => persist({ ...prev, ...next }));
 		}
 	};
 }

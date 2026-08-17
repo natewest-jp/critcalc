@@ -2291,15 +2291,18 @@
 						ribbon fades in place.
 					</li>
 					<li>
-						<strong>The bench ribbon is TALLER than the tool beside it</strong> (↻ 2026-08-06). Each
-						dock stretches with its frame — top/bottom insets, never a height — and the strip stands
-						<code>RIBBON_OVERHANG_Y</code> (12px) proud at <em>both</em> ends, so it always reads as
-						the object in front. Consequences to respect: nothing may live in the column beneath it
-						(the planner's lane names moved into their own lanes; the Team Builder's team readout
-						moved to the work zone's top strip), the cards stay aligned to the planner's track
-						groups via
-						<code>RIBBON_HEAD</code>, and the tail below the fourth card is <em>deliberately</em> empty
-						— a container slightly taller than its contents.
+						<strong>The bench ribbon opens on band A's top edge</strong> (↻ 2026-08-17, ⚓ Nate). It
+						used to stand <code>RIBBON_OVERHANG_Y</code> (12px) proud at <em>both</em> ends so it
+						read as the object in front; the tail round took the bottom half of that away (a point
+						terminates, it does not overhang), and the top half was buying a difference the
+						silhouette already states — at the cost of the topmost horizontal in the tool lining up
+						with nothing. The constant survives at <strong>0</strong>: it is still the one knob for
+						this relationship, and the cards do not move when it changes, because
+						<code>RIBBON_HEAD</code> adds back exactly what the dock subtracts. Consequences to
+						respect: nothing may live in the column beneath the strip (the planner's lane names
+						moved into their own lanes; the Team Builder's team readout moved to the work zone's top
+						strip), and the cards stay aligned to the planner's track groups via
+						<code>RIBBON_HEAD</code>.
 					</li>
 					<li>
 						<strong>The ribbon's frame is TWO strokes on one box</strong> — same inset, same color,

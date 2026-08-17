@@ -45,7 +45,8 @@
 		auraSpanLabels,
 		auraSpanPoints,
 		auraUnitLines,
-		computeAuraLane
+		computeAuraLane,
+		EMPTY_AURA_LANE
 	} from '$lib/timeline/auraPlot';
 	import { AURA_MOD_META, AURA_MOD_ORDER, REACTION_LABEL } from '$lib/utils/auraDisplay';
 	import { gaugesAt } from '$lib/utils/gauge';
@@ -103,6 +104,30 @@
 	// meet. Aliased locally because the geometry below reads `scale` dozens of
 	// times and `pv.scale` at every site would bury it.
 	const scale = $derived(pv.scale);
+
+	// ══ THE LAYERS (2026-08-17) ═══════════════════════════════════════════════
+	// What the chart draws BESIDE ability timings. Both are band-B toggles that
+	// persist in siteSettings (see the note on `showAuraLane` there for why
+	// these persist when zoom does not).
+	//
+	// ⚓ THE CUT IS: a bar that says when an ability IS stays; a bar that says
+	// what an ability GRANTS goes. So E/Q pills and their ghost tails, the
+	// active row, input blocks, cast markers and swap connectors are never
+	// hidden — and neither are SUMMONS or SHIELDS (⚓ Nate 2026-08-17: a shield
+	// is a MECHANIC, not a buff. It is a thing standing in the world with a
+	// duration, read the way a summon's field is read, and it shares that lane).
+	// What goes: received buff rows, weapon-proc rows, the team-buff lane, the
+	// Nightsoul-burst lane and the Ascendant Gleam lane.
+	//
+	// ⚠ GATED AT THE PROJECTION, NOT AT THE MARKUP, and that is the whole trick:
+	// every height, the shared aux reserve, the bench's published slot metrics
+	// and the PNG snapshot are all computed FROM these arrays, so an empty array
+	// collapses the rows, shrinks the slot blocks and shortens the bench cards
+	// with no second code path to keep in step. ⛔ Don't add `{#if showBuffs}`
+	// around the rows and leave the projections running — that is the version
+	// where the layout keeps paying for what it no longer draws.
+	let showBuffs = $derived($siteSettings.showTimelineBuffs);
+	let showAura = $derived($siteSettings.showAuraLane);
 
 	// Swap ping (network latency, ms) lives in site settings (chrome ⚙ overlay);
 	// the timeline converts it to swap-delay frames for the parser. gcsim's
@@ -435,7 +460,7 @@
 	// NB fire events are PARSER-derived since post-P4 #5 phase 3 (the parser
 	// receives slotCharacters and emits `nightsoulBurst` events); this is a
 	// pure filter of the event stream.
-	let nbBars = $derived(computeNBBars(rotation.events));
+	let nbBars = $derived(showBuffs ? computeNBBars(rotation.events) : []);
 
 	let effectiveLoadout = $derived.by(() => {
 		const allIds = new Set([...Object.keys($loadout), ...Object.keys(tabLoadout)]);
@@ -464,14 +489,18 @@
 	// Post-P4 #5 phase 5: the buff MEANING is parser-derived (`buff` windows
 	// in rotation.windows — the parser receives slotCharacters, constellations,
 	// and the loadout); these projections only group + format.
-	let teamBuffRows = $derived(projectTeamBuffRows(rotation.windows, getLoadedCharacter));
+	let teamBuffRows = $derived(
+		showBuffs ? projectTeamBuffRows(rotation.windows, getLoadedCharacter) : []
+	);
 
-	let weaponProcRows = $derived(computeWeaponProcRows(rotation.windows, effectiveLoadout));
+	let weaponProcRows = $derived(
+		showBuffs ? computeWeaponProcRows(rotation.windows, effectiveLoadout) : []
+	);
 
 	// Per-character received buff bars (TTDS, Widsith, active-target slices,
 	// self buffs) — projection of the parser's buff windows.
 	let charReceivedBuffRows = $derived(
-		projectCharReceivedBuffRows(rotation.windows, getLoadedCharacter)
+		showBuffs ? projectCharReceivedBuffRows(rotation.windows, getLoadedCharacter) : []
 	);
 
 	// Total stacked subrow count per slot: weapon proc ICD rows + received buff subrows.
@@ -608,29 +637,65 @@
 	// back to being a guard rather than a governor — it binds on empty and
 	// near-empty rotations only. Any slack lands BELOW the last aux row (every
 	// row is positioned from the slot's top), where it is least noticeable.
-	function slotBlockH(slotIdx: number): number {
+	function slotNaturalH(slotIdx: number): number {
 		const buffRows = slotBuffRowsReserved(slotIdx);
 		const buffH = buffRows > 0 ? buffRows * CHAR_BUFF_ROW_STRIDE - 2 : 0;
-		return Math.max(BENCH_SLOT_MIN_H, buffRowsTopForSlot(slotIdx) + buffH + CHAR_PAD_BOTTOM);
+		return buffRowsTopForSlot(slotIdx) + buffH + CHAR_PAD_BOTTOM;
 	}
 
-	// Cumulative Y offsets per slot, accounting for variable block heights.
-	// Used by swap connectors which span vertically between slots.
-	let slotTopOffsets = $derived(
-		characterSlots.reduce((acc, _id, i) => {
-			acc.push(i === 0 ? 0 : acc[i - 1] + slotBlockH(i - 1));
-			return acc;
-		}, [] as number[])
+	// 🐛 ONE HEIGHT FOR ALL FOUR SLOTS, and this is the aux reserve's own stated
+	// property finally being TRUE rather than nearly true (2026-08-17).
+	//
+	// The reserve hands every slot the same NUMBER OF ROWS and splits it between
+	// the summon lane and the buff stack — but each of those two areas drops its
+	// TRAILING 2px gap when it is empty (`rows > 0 ? rows * STRIDE - 2 : 0`, and
+	// the summon lane does the same). So a slot with rows in both areas paid −4,
+	// a slot with rows in only one paid −2, and the four blocks came out up to
+	// 2px apart with an identical row budget.
+	//
+	// That was almost invisible while received-buff rows were always on: they
+	// pushed the reserve high enough that every slot kept at least one of each.
+	// The LAYER TOGGLE makes it the common case — with buffs hidden the split is
+	// summons-only, so any slot with fewer summons than the busiest one lands on
+	// the other side of the ±2. Measured: 108/110/110/108 on a four-character
+	// rotation, which the bench's cards mirror exactly, so the misalignment
+	// arrives on the one coupling the ribbon exists to guarantee.
+	//
+	// ⚓ Taking the MAX rather than chasing the gap term: the property wanted here
+	// is "the four blocks are the same height", and a max says that directly and
+	// survives whatever the next row kind does with its own trailing gap. Costs
+	// at most 2px on the slots that were shorter, which lands below the last aux
+	// row where the block note above already says slack is least noticeable.
+	//
+	// ⚠ The BENCH_SLOT_MIN_H floor moved here with it and still means what it
+	// meant — see the note above; applying it once to the max is the same answer
+	// it gave per slot.
+	let slotBlockH = $derived(
+		Math.max(BENCH_SLOT_MIN_H, ...characterSlots.map((_, i) => slotNaturalH(i)))
 	);
 
-	let teamBuffsH = $derived(auxLaneH(teamBuffRows.length));
+	// Cumulative Y offsets per slot. ↻ The blocks are uniform now, so this is an
+	// arithmetic series — kept as a walk because every consumer indexes it and a
+	// multiply would read as if the heights could still differ.
+	let slotTopOffsets = $derived(characterSlots.map((_, i) => i * slotBlockH));
+
+	// ── Which below-slot lanes are on screen ─────────────────────────────────
+	// ⚠ ONE ANSWER EACH, read by the height math, the markup AND the PNG
+	// snapshot. The team-buff lane keeps its own long-standing rule (present at
+	// full height even with no rows — the empty lane is the "no team buffs here"
+	// signal); the layer toggle is a different question and removes it outright.
+	let showTeamBuffsLane = $derived(showBuffs);
+	let showNbLane = $derived(showBuffs && teamComp.natlanCount >= 1);
+	let showMoonsignLane = $derived(showBuffs && teamComp.hasAscendantGleam);
+
+	let teamBuffsH = $derived(showTeamBuffsLane ? auxLaneH(teamBuffRows.length) : 0);
 	// NB events all stack onto a single sub-row; the lane is always 1-row tall.
 	let nbLaneH = $derived(auxLaneH(1));
 	// moonsignLaneH is declared further down, after moonsignRows.
 
 	// Moonsign buff windows — see src/lib/timeline/moonsignRows.ts.
 	let moonsignRows = $derived(
-		teamComp.hasAscendantGleam
+		showMoonsignLane
 			? computeMoonsignRows(rotation.events, teamComp.nonMoonsignSlots, characterSlots)
 			: []
 	);
@@ -641,9 +706,19 @@
 	// $lib/timeline/auraPlot.ts for the shape, and for why it is ONE overlaid
 	// plot rather than a row per mod (⚓ Nate measured the premise the rows were
 	// built on and it was false: auras barely coexist).
+	// ⚠ GATED ON THE TOGGLE AT THE PROJECTION, like the buff rows — computing a
+	// lane nobody draws costs a walk of every application and every reaction in
+	// the rotation on each keystroke, and the aura layer is OFF by default, so
+	// this is the common path rather than an edge case.
 	let auraLane = $derived(
-		computeAuraLane(rotation.auraSeries, rotation.applications, rotation.events)
+		showAura
+			? computeAuraLane(rotation.auraSeries, rotation.applications, rotation.events)
+			: EMPTY_AURA_LANE
 	);
+	/** ⚠ A module-level constant, not an inline literal: a fresh object each
+	 *  time would make `auraLane` a new value on every unrelated re-run, and
+	 *  every derived below it recomputes off its identity. */
+	let showAuraLane = $derived(auraLane.series.length > 0);
 	// The reaction labels' band and the application ticks' strip both sit ABOVE
 	// the plot — a point stream reads as an annotation of the continuum under it,
 	// and putting the ticks between the labels and the plot keeps each closer to
@@ -673,8 +748,26 @@
 	// is exactly that pair.
 	const AURA_LABEL_MIN_ROW = 12;
 	let auraLaneH = $derived(
-		auraLane.series.length > 0 ? AURA_MARKER_H + AURA_TICK_H + AURA_PLOT_H + AUX_LANE_PAD_Y * 2 : 0
+		showAuraLane ? AURA_MARKER_H + AURA_TICK_H + AURA_PLOT_H + AUX_LANE_PAD_Y * 2 : 0
 	);
+
+	/**
+	 * THE HEADER — everything above the first track row, measured from the
+	 * surface's top: the aura lane, then the ruler.
+	 *
+	 * ⚓ ONE NUMBER, and it has three readers that must never disagree about
+	 * where the tracks begin — the on-screen layout, the BENCH (published via
+	 * `claimMetrics`, so the cards keep labelling their track groups) and the
+	 * PNG export's origin. That agreement used to rest on the bench's
+	 * `RIBBON_FRAME_TOP_INSET` being hand-copied from RULER_H, which held only
+	 * while the header contained exactly one thing.
+	 *
+	 * ⚠ It is therefore ZOOM-INDEPENDENT but LAYER-dependent: toggling the aura
+	 * lane moves every track row, the bench's card column and the export
+	 * together, in one step, with no animation (the ribbon has not animated
+	 * since the tail round).
+	 */
+	let headerH = $derived(RULER_H + auraLaneH);
 	/** Units → px within the plot box. ⚓ The plot draws at 1:1 (one SVG spanning
 	 *  the whole track, no viewBox stretch), which is what lets the gauge line be
 	 *  a real STROKE — the row form could only ever be a fill. */
@@ -725,8 +818,13 @@
 	const publishBenchMetrics = benchBand.claimMetrics();
 	$effect(() => {
 		publishBenchMetrics(
-			characterSlots.map((_, i) => slotBlockH(i)),
-			characterSlots.map((id, i) => id === 'blank' && tracksBySlot[i].length > 0)
+			characterSlots.map(() => slotBlockH),
+			characterSlots.map((id, i) => id === 'blank' && tracksBySlot[i].length > 0),
+			// ⚠ The third value is the HEADER's height — how far the first track
+			// row sits below the surface's top — and it is published rather than
+			// mirrored on the bench side because it is no longer a constant. See
+			// `benchBand.trackTop`.
+			headerH
 		);
 	});
 	onDestroy(() => publishBenchMetrics(null));
@@ -770,6 +868,29 @@
 			if (!trackScrollEl || !rulerScrollEl) return;
 			rulerScrollEl.scrollLeft = trackScrollEl.scrollLeft;
 		});
+	}
+
+	/**
+	 * The header strip's wheel, handed to the tracks (2026-08-17).
+	 *
+	 * The strip is `overflow: hidden` — that is what makes it a follower — so a
+	 * gesture over it did nothing at all. That was invisible while the strip held
+	 * only the ruler (nobody scrolls a chart by its axis), and stopped being
+	 * invisible the moment the AURA LANE moved up here: it is a chart occupying
+	 * a third of the header, and a chart that will not scroll under the cursor
+	 * reads as broken.
+	 *
+	 * ⚠ HORIZONTAL ONLY, deliberately. Over the tracks a vertical wheel scrolls
+	 * the PAGE (the scroller is x-only), so forwarding deltaY would give the
+	 * header a behaviour the surface it mirrors does not have. Writing
+	 * `trackScrollEl.scrollLeft` fires its scroll event, which brings the strip
+	 * back into line through the existing mirror — the follower is never written
+	 * from two places.
+	 */
+	function onHeaderWheel(e: WheelEvent) {
+		if (!trackScrollEl || e.deltaX === 0) return;
+		trackScrollEl.scrollLeft += e.deltaX;
+		e.preventDefault();
 	}
 
 	// Pointer guard while scrolling. Chrome freezes hover processing during an
@@ -987,15 +1108,15 @@
 		return `left:${x}px;top:${yTop}px;width:${w}px;height:${yBottom - yTop}px;border-radius:${radius}`;
 	}
 
-	// Full content height of the track area (ruler + slots + lanes) — sizes the
-	// PNG export canvas.
+	// Full height of the chart column (header + slots + lanes) — sizes the PNG
+	// export canvas. ↻ 2026-08-17: the aura band is inside `headerH` now rather
+	// than a term at the end; the SUM is unchanged, which is the point.
 	let contentH = $derived(
-		RULER_H +
-			characterSlots.reduce((acc, _id, i) => acc + slotBlockH(i), 0) +
+		headerH +
+			characterSlots.length * slotBlockH +
 			teamBuffsH +
-			(teamComp.natlanCount >= 1 ? nbLaneH : 0) +
-			(teamComp.hasAscendantGleam ? moonsignLaneH : 0) +
-			auraLaneH
+			(showNbLane ? nbLaneH : 0) +
+			(showMoonsignLane ? moonsignLaneH : 0)
 	);
 
 	// ---------------------------------------------------------------------------
@@ -1009,9 +1130,9 @@
 		// Lanes open directly under the 4th track group (the ribbon-clearance
 		// gap retired with the tall bench — the strip clears the lanes by
 		// standing over the whole label column instead).
-		const slotsBottom = slotTopOffsets[3] + slotBlockH(3);
-		const nbVisible = teamComp.natlanCount >= 1;
-		const moonVisible = teamComp.hasAscendantGleam;
+		const slotsBottom = slotTopOffsets[3] + slotBlockH;
+		const nbVisible = showNbLane;
+		const moonVisible = showMoonsignLane;
 		const teamNames = slotCharacters
 			.filter((c): c is NonNullable<typeof c> => c != null)
 			.map((c) => c.displayName);
@@ -1042,7 +1163,7 @@
 					// No-frame-map (uncurated, non-Blank) → dire N/C/P treatment in export.
 					isApprox: char != null && !isCurated(char) && char.id !== 'blank',
 					consLevel: char ? effectiveConLevel(char.id) : 0,
-					blockH: slotBlockH(i),
+					blockH: slotBlockH,
 					qRowTop: qRowTopForSlot(i),
 					activeRowTop: activeRowOffsetForSlot(i),
 					buffRowsTop: buffRowsTopForSlot(i),
@@ -1092,10 +1213,11 @@
 			moonsignTop: moonVisible ? slotsBottom + teamBuffsH + (nbVisible ? nbLaneH : 0) : null,
 			moonsignH: moonsignLaneH,
 			auraLane,
-			auraTop:
-				auraLane.series.length > 0
-					? slotsBottom + teamBuffsH + (nbVisible ? nbLaneH : 0) + (moonVisible ? moonsignLaneH : 0)
-					: null,
+			// ⚠ A HEIGHT, NOT A TOP (2026-08-17). The lane moved above the ruler, so
+			// its position is no longer a distance down the lane stack — it OPENS the
+			// chart column, and every track offset the export computes is pushed down
+			// by exactly this. 0 = the layer is off, or the rotation landed nothing.
+			auraHeaderH: auraLaneH,
 			auraPlotH: AURA_PLOT_H,
 			auraMarkerH: AURA_MARKER_H,
 			auraTickH: AURA_TICK_H,
@@ -1288,7 +1410,7 @@
 	$effect(() => {
 		// The aura lane's presence is the notes panel's second gate — see
 		// `plannerView.hasAura`.
-		pv.hasAura = auraLane.series.length > 0;
+		pv.hasAura = showAuraLane;
 	});
 
 	// ---------------------------------------------------------------------------
@@ -1453,17 +1575,195 @@
 				class="rp-ruler-scroll scroll-fade-x"
 				bind:this={rulerScrollEl}
 				use:scrollFade={{ axis: 'x' }}
+				onwheel={onHeaderWheel}
 			>
-				<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
-				     rise to the seam, labels above them. -->
-				<div class="rp-ruler" style:width="{totalWidth}px" style:height="{RULER_H}px">
-					{#each ticks as tick (tick.t)}
-						<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
-							{#if tick.major && tick.t > 0}
-								<span class="rp-tick-label">{tick.t}s</span>
-							{/if}
+				<!-- ONE width-sized box for the whole header, so the aura plot and the
+				     ruler cannot disagree about how long the rotation is — they are two
+				     readings of the same x axis and the width is stated once. -->
+				<div class="rp-header-inner" style:width="{totalWidth}px">
+					<!-- ══ TARGET AURA lane (L6; moved here 2026-08-17) ═══════════════
+				     The first surface the gauge has. Three bands, top to bottom,
+				     each closer to what it describes: reaction labels, then the
+				     applications that caused them, then the auras those left
+				     behind. Rendered only when something ever landed — an
+				     all-physical rotation has no aura to draw and gets no lane,
+				     the same rule the NB and moonsign lanes follow.
+
+				     ⚓ NATE: IT SITS ABOVE THE TIME AXIS. It shipped at the bottom
+				     of the track area, ~600px from the ticks it is read against;
+				     here the ruler becomes a SHARED axis with a chart on either
+				     side of it, which is the same DAW convention that put the axis
+				     on the top edge in the first place.
+
+				     ⚠ IT IS IN THE RULER'S STRIP, NOT THE TRACK SCROLLER, so it is
+				     a scroll FOLLOWER: `rulerScrollEl.scrollLeft` is mirrored from
+				     the tracks. That is what keeps the notes panel from pushing it
+				     (the whole reason this strip exists) — and it costs the wheel,
+				     which the strip's own handler forwards back. -->
+					{#if showAuraLane}
+						<div class="rp-aura-lane" style:height="{auraLaneH}px">
+							<!-- Reaction markers. ⚓ THE PAYOFF: reactions have been in the
+						     IR since P4 and drawn NOWHERE — the player saw the buff
+						     bars a reaction caused but never the reaction itself. -->
+							<div class="rp-aura-markers" style:height="{AURA_MARKER_H}px">
+								<span class="rp-lane-name">TARGET AURA</span>
+								{#each auraLane.markers as marker, mi (marker.time)}
+									{@const next = auraLane.markers[mi + 1]}
+									{@const room = next ? xForTime(next.time) - xForTime(marker.time) - 8 : Infinity}
+									<!-- svelte-ignore a11y_no_static_element_interactions -->
+									<div
+										class="rp-aura-marker"
+										style:left="{xForTime(marker.time)}px"
+										onmouseenter={(e) =>
+											showTooltip(e, {
+												sourceLabel: `Reaction · ${secondsLabel(marker.time)}s`,
+												effects: marker.entries.map((entry) => ({
+													stat: REACTION_LABEL[entry.reaction],
+													displayValue: getLoadedCharacter(entry.characterId)?.displayName ?? '—'
+												})),
+												isMutuallyExclusive: false
+											})}
+										onmouseleave={hideTooltip}
+									>
+										<span class="rp-aura-marker-pip"></span>
+										<!-- ⚠ DROPPED, not truncated, when the next marker is close. A
+									     cap alone left two-character stubs ("Bl", "Hy") that name
+									     nothing and still cost the pip its clearance; the pip on its
+									     own is honest ("a reaction happened here") and the tooltip
+									     still says which. 26px is roughly the shortest family name
+									     that survives at this size. -->
+										{#if room >= 26}
+											<span
+												class="rp-aura-marker-label"
+												style:max-width={next ? `${room}px` : undefined}>{marker.label}</span
+											>
+										{/if}
+									</div>
+								{/each}
+							</div>
+
+							<!-- Application ticks — every gauge the rotation put on the
+						     target. ⚓ The tick carries its ELEMENT'S colour (it belongs
+						     to the row below it); the --ui-provisional FOOT is the
+						     squiggle rule: we took this application, and its unit value
+						     is our 1U stand-in rather than measured data. -->
+							<div class="rp-aura-ticks" style:height="{AURA_TICK_H}px">
+								{#each auraLane.ticks as tick, ti (ti)}
+									<!-- svelte-ignore a11y_no_static_element_interactions -->
+									<span
+										class="rp-aura-tick"
+										class:rp-aura-tick--provisional={tick.provisional}
+										style:left="{xForTime(tick.time)}px"
+										style:background={pal(tick.element).main}
+										onmouseenter={(e) =>
+											showTooltip(e, {
+												sourceLabel: `${getLoadedCharacter(tick.characterId)?.displayName ?? tick.characterId} · ${secondsLabel(tick.time)}s`,
+												effects: [
+													{
+														stat: `${tick.element[0].toUpperCase()}${tick.element.slice(1)} applied`,
+														displayValue: `${tick.units}U`
+													},
+													// ⚓ THE SQUIGGLE RULE IN WORDS. The yellow foot says a
+													// value is a stand-in; only here can it say WHICH value
+													// and what would replace it. A provenance mark the reader
+													// cannot resolve is just a blemish.
+													...(tick.provisional
+														? [
+																{
+																	stat: 'Gauge strength',
+																	displayValue: 'not measured — 1U assumed'
+																}
+															]
+														: [])
+												],
+												isMutuallyExclusive: false
+											})}
+										onmouseleave={hideTooltip}
+									></span>
+								{/each}
+							</div>
+
+							<!-- ⚓ ONE OVERLAID PLOT, drawn at 1:1 across the whole track.
+						     A single SVG at the track's own width means no viewBox
+						     stretch — which is what makes the gauge LINE possible, and
+						     the line is what lets two auras cross legibly where two
+						     solid areas would have gone to mud. -->
+							<!-- svelte-ignore a11y_no_static_element_interactions -->
+							<div
+								class="rp-aura-plot"
+								style:height="{AURA_PLOT_H}px"
+								onmousemove={onAuraMove}
+								onmouseleave={onAuraLeave}
+							>
+								<svg class="rp-aura-svg" width={totalWidth} height={AURA_PLOT_H} aria-hidden="true">
+									<!-- The one datum: whole units below the ceiling, so the y
+							     axis can be read without hovering. Under the fills. -->
+									{#each auraUnitRules as u (u)}
+										<line
+											x1="0"
+											x2={totalWidth}
+											y1={auraYOf(u)}
+											y2={auraYOf(u)}
+											stroke="var(--rp-grid)"
+										/>
+									{/each}
+									<defs>
+										<!-- The fill fades OUT toward the baseline so overlapping
+									     auras stay separable; the colour lives in the line. -->
+										{#each auraPaths as p (p.id)}
+											{#if p.fill}
+												<linearGradient id="rp-aura-{p.id}" x1="0" y1="0" x2="0" y2="1">
+													<stop offset="0%" stop-color={p.color} stop-opacity="0.34" />
+													<stop offset="100%" stop-color={p.color} stop-opacity="0" />
+												</linearGradient>
+											{/if}
+										{/each}
+									</defs>
+									{#each auraPaths as p (p.id)}
+										{#if p.fill}
+											<path d={p.fill} fill="url(#rp-aura-{p.id})" />
+										{/if}
+									{/each}
+									<!-- Lines last, so a short aura is never buried under a
+								     taller one's fill. -->
+									{#each auraPaths as p (p.id)}
+										<path
+											d={p.line}
+											fill="none"
+											stroke={p.color}
+											stroke-width="2"
+											stroke-dasharray={p.dash ?? 'none'}
+											stroke-linejoin="round"
+											stroke-linecap="round"
+										/>
+									{/each}
+								</svg>
+								{#each auraLabels as entry (entry.mod + entry.span.start)}
+									<span
+										class="rp-aura-series-name"
+										style:color={entry.color}
+										style:left="{xForTime(entry.span.start) + 4}px"
+										style:top="{Math.max(0, auraYOf(entry.span.openingU) - 11)}px"
+										>{entry.label}</span
+									>
+								{/each}
+								{#if auraCursorX !== null}
+									<span class="rp-aura-crosshair" style:left="{auraCursorX}px"></span>
+								{/if}
+							</div>
 						</div>
-					{/each}
+					{/if}
+					<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
+				     rise to the seam, labels above them. -->
+					<div class="rp-ruler" style:height="{RULER_H}px">
+						{#each ticks as tick (tick.t)}
+							<div class="rp-tick" class:major={tick.major} style:left="{tick.x}px">
+								{#if tick.major && tick.t > 0}
+									<span class="rp-tick-label">{tick.t}s</span>
+								{/if}
+							</div>
+						{/each}
+					</div>
 				</div>
 			</div>
 			<!-- The view cluster (total · zoom · Notes) used to ride this strip's
@@ -1525,7 +1825,7 @@
 							     whatever the bar is; the /lab board judged it this way. -->
 							<div
 								class="rp-char-block"
-								style:height="{slotBlockH(slotIdx)}px"
+								style:height="{slotBlockH}px"
 								style:--label-halo={char ? shiftHue(p.bar, 0, -30, 1) : undefined}
 							>
 								<!-- E row -->
@@ -1853,47 +2153,52 @@
 							 is no column left to name a lane from. A bar that starts at 0s
 							 covers it, which is the intended trade: the bar says what it is
 							 (label + tooltip) better than the lane's name does. -->
-						<div class="rp-team-buffs" style:height="{teamBuffsH}px">
-							{#if teamBuffRows.length > 0}
-								<span class="rp-lane-name">TEAM BUFFS</span>
-								<div class="rp-team-buff-rows">
-									{#each teamBuffRows as subrow (subrow.key)}
-										<div class="rp-team-buff-subrow">
-											{#each subrow.bars as bar, bi (bi)}
-												{@const g = barGeom(bar.start, bar.end - bar.start)}
-												{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
-												<!-- svelte-ignore a11y_no_static_element_interactions -->
-												<div
-													class="rp-team-buff-bar"
-													style:left="{g.left}px"
-													style:width="{g.width}px"
-													onmouseenter={(e) =>
-														showTooltip(e, {
-															sourceLabel: subrow.sourceLabel,
-															effects: bar.effects,
-															isMutuallyExclusive: false,
-															duration: bar.end - bar.start
-														})}
-													onmouseleave={hideTooltip}
-												>
-													{#if icon}
-														<img src={icon} alt="" class="rp-buff-icon" />
-													{/if}
-													<span
-														class="rp-buff-label"
-														style:max-width={labelCapPx(g, subrow.bars[bi + 1], !!icon)}
-														>{subrow.sourceLabel}</span
+						<!-- ⚠ The layer toggle removes the lane OUTRIGHT; the empty-lane
+						     rule above is about a rotation that grants nothing, which is a
+						     different statement and still worth its 16px. -->
+						{#if showTeamBuffsLane}
+							<div class="rp-team-buffs" style:height="{teamBuffsH}px">
+								{#if teamBuffRows.length > 0}
+									<span class="rp-lane-name">TEAM BUFFS</span>
+									<div class="rp-team-buff-rows">
+										{#each teamBuffRows as subrow (subrow.key)}
+											<div class="rp-team-buff-subrow">
+												{#each subrow.bars as bar, bi (bi)}
+													{@const g = barGeom(bar.start, bar.end - bar.start)}
+													{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
+													<!-- svelte-ignore a11y_no_static_element_interactions -->
+													<div
+														class="rp-team-buff-bar"
+														style:left="{g.left}px"
+														style:width="{g.width}px"
+														onmouseenter={(e) =>
+															showTooltip(e, {
+																sourceLabel: subrow.sourceLabel,
+																effects: bar.effects,
+																isMutuallyExclusive: false,
+																duration: bar.end - bar.start
+															})}
+														onmouseleave={hideTooltip}
 													>
-												</div>
-											{/each}
-										</div>
-									{/each}
-								</div>
-							{/if}
-						</div>
+														{#if icon}
+															<img src={icon} alt="" class="rp-buff-icon" />
+														{/if}
+														<span
+															class="rp-buff-label"
+															style:max-width={labelCapPx(g, subrow.bars[bi + 1], !!icon)}
+															>{subrow.sourceLabel}</span
+														>
+													</div>
+												{/each}
+											</div>
+										{/each}
+									</div>
+								{/if}
+							</div>
+						{/if}
 
 						<!-- NB (Nightsoul Burst) lane -->
-						{#if teamComp.natlanCount >= 1}
+						{#if showNbLane}
 							<div class="rp-nb-lane" style:height="{nbLaneH}px">
 								<span class="rp-lane-name">NIGHTSOUL BURSTS</span>
 								<div class="rp-nb-rows">
@@ -1913,7 +2218,7 @@
 						{/if}
 
 						<!-- Moonsign lane -->
-						{#if teamComp.hasAscendantGleam}
+						{#if showMoonsignLane}
 							<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
 								<span class="rp-lane-name">ASCENDANT GLEAM</span>
 								<div class="rp-moonsign-rows">
@@ -1954,174 +2259,6 @@
 											{/each}
 										</div>
 									{/each}
-								</div>
-							</div>
-						{/if}
-
-						<!-- ══ TARGET AURA lane (gauge round L6) ══════════════════════
-						     The first surface the gauge has. Three bands, top to bottom,
-						     each closer to what it describes: reaction labels, then the
-						     applications that caused them, then the auras those left
-						     behind. Rendered only when something ever landed — an
-						     all-physical rotation has no aura to draw and gets no lane,
-						     the same rule the NB and moonsign lanes follow. -->
-						{#if auraLane.series.length > 0}
-							<div class="rp-aura-lane" style:height="{auraLaneH}px">
-								<!-- Reaction markers. ⚓ THE PAYOFF: reactions have been in the
-								     IR since P4 and drawn NOWHERE — the player saw the buff
-								     bars a reaction caused but never the reaction itself. -->
-								<div class="rp-aura-markers" style:height="{AURA_MARKER_H}px">
-									<span class="rp-lane-name">TARGET AURA</span>
-									{#each auraLane.markers as marker, mi (marker.time)}
-										{@const next = auraLane.markers[mi + 1]}
-										{@const room = next
-											? xForTime(next.time) - xForTime(marker.time) - 8
-											: Infinity}
-										<!-- svelte-ignore a11y_no_static_element_interactions -->
-										<div
-											class="rp-aura-marker"
-											style:left="{xForTime(marker.time)}px"
-											onmouseenter={(e) =>
-												showTooltip(e, {
-													sourceLabel: `Reaction · ${secondsLabel(marker.time)}s`,
-													effects: marker.entries.map((entry) => ({
-														stat: REACTION_LABEL[entry.reaction],
-														displayValue: getLoadedCharacter(entry.characterId)?.displayName ?? '—'
-													})),
-													isMutuallyExclusive: false
-												})}
-											onmouseleave={hideTooltip}
-										>
-											<span class="rp-aura-marker-pip"></span>
-											<!-- ⚠ DROPPED, not truncated, when the next marker is close. A
-											     cap alone left two-character stubs ("Bl", "Hy") that name
-											     nothing and still cost the pip its clearance; the pip on its
-											     own is honest ("a reaction happened here") and the tooltip
-											     still says which. 26px is roughly the shortest family name
-											     that survives at this size. -->
-											{#if room >= 26}
-												<span
-													class="rp-aura-marker-label"
-													style:max-width={next ? `${room}px` : undefined}>{marker.label}</span
-												>
-											{/if}
-										</div>
-									{/each}
-								</div>
-
-								<!-- Application ticks — every gauge the rotation put on the
-								     target. ⚓ The tick carries its ELEMENT'S colour (it belongs
-								     to the row below it); the --ui-provisional FOOT is the
-								     squiggle rule: we took this application, and its unit value
-								     is our 1U stand-in rather than measured data. -->
-								<div class="rp-aura-ticks" style:height="{AURA_TICK_H}px">
-									{#each auraLane.ticks as tick, ti (ti)}
-										<!-- svelte-ignore a11y_no_static_element_interactions -->
-										<span
-											class="rp-aura-tick"
-											class:rp-aura-tick--provisional={tick.provisional}
-											style:left="{xForTime(tick.time)}px"
-											style:background={pal(tick.element).main}
-											onmouseenter={(e) =>
-												showTooltip(e, {
-													sourceLabel: `${getLoadedCharacter(tick.characterId)?.displayName ?? tick.characterId} · ${secondsLabel(tick.time)}s`,
-													effects: [
-														{
-															stat: `${tick.element[0].toUpperCase()}${tick.element.slice(1)} applied`,
-															displayValue: `${tick.units}U`
-														},
-														// ⚓ THE SQUIGGLE RULE IN WORDS. The yellow foot says a
-														// value is a stand-in; only here can it say WHICH value
-														// and what would replace it. A provenance mark the reader
-														// cannot resolve is just a blemish.
-														...(tick.provisional
-															? [
-																	{
-																		stat: 'Gauge strength',
-																		displayValue: 'not measured — 1U assumed'
-																	}
-																]
-															: [])
-													],
-													isMutuallyExclusive: false
-												})}
-											onmouseleave={hideTooltip}
-										></span>
-									{/each}
-								</div>
-
-								<!-- ⚓ ONE OVERLAID PLOT, drawn at 1:1 across the whole track.
-								     A single SVG at the track's own width means no viewBox
-								     stretch — which is what makes the gauge LINE possible, and
-								     the line is what lets two auras cross legibly where two
-								     solid areas would have gone to mud. -->
-								<!-- svelte-ignore a11y_no_static_element_interactions -->
-								<div
-									class="rp-aura-plot"
-									style:height="{AURA_PLOT_H}px"
-									onmousemove={onAuraMove}
-									onmouseleave={onAuraLeave}
-								>
-									<svg
-										class="rp-aura-svg"
-										width={totalWidth}
-										height={AURA_PLOT_H}
-										aria-hidden="true"
-									>
-										<!-- The one datum: whole units below the ceiling, so the y
-									     axis can be read without hovering. Under the fills. -->
-										{#each auraUnitRules as u (u)}
-											<line
-												x1="0"
-												x2={totalWidth}
-												y1={auraYOf(u)}
-												y2={auraYOf(u)}
-												stroke="var(--rp-grid)"
-											/>
-										{/each}
-										<defs>
-											<!-- The fill fades OUT toward the baseline so overlapping
-											     auras stay separable; the colour lives in the line. -->
-											{#each auraPaths as p (p.id)}
-												{#if p.fill}
-													<linearGradient id="rp-aura-{p.id}" x1="0" y1="0" x2="0" y2="1">
-														<stop offset="0%" stop-color={p.color} stop-opacity="0.34" />
-														<stop offset="100%" stop-color={p.color} stop-opacity="0" />
-													</linearGradient>
-												{/if}
-											{/each}
-										</defs>
-										{#each auraPaths as p (p.id)}
-											{#if p.fill}
-												<path d={p.fill} fill="url(#rp-aura-{p.id})" />
-											{/if}
-										{/each}
-										<!-- Lines last, so a short aura is never buried under a
-										     taller one's fill. -->
-										{#each auraPaths as p (p.id)}
-											<path
-												d={p.line}
-												fill="none"
-												stroke={p.color}
-												stroke-width="2"
-												stroke-dasharray={p.dash ?? 'none'}
-												stroke-linejoin="round"
-												stroke-linecap="round"
-											/>
-										{/each}
-									</svg>
-									{#each auraLabels as entry (entry.mod + entry.span.start)}
-										<span
-											class="rp-aura-series-name"
-											style:color={entry.color}
-											style:left="{xForTime(entry.span.start) + 4}px"
-											style:top="{Math.max(0, auraYOf(entry.span.openingU) - 11)}px"
-											>{entry.label}</span
-										>
-									{/each}
-									{#if auraCursorX !== null}
-										<span class="rp-aura-crosshair" style:left="{auraCursorX}px"></span>
-									{/if}
 								</div>
 							</div>
 						{/if}
@@ -2579,11 +2716,21 @@
 		   ramp at different rates. A follower needs no scrollbar gutter. */
 		--scroll-fade: 48px;
 	}
+	/* ↻ 2026-08-17: the strip carries the AURA LANE above the ruler, so its
+	   contents are a column and the width is stated ONCE, on this box. Two
+	   readings of one x axis cannot be allowed to disagree about how long the
+	   rotation is. */
+	.rp-header-inner {
+		display: flex;
+		flex-direction: column;
+	}
 	/* No seam under the ruler (round two, with the slot separators). The ticks
 	   rising to the axis line ARE the axis; a rule beneath them was saying the
 	   same thing a second time, in the heaviest way available. */
 	.rp-ruler {
 		position: relative;
+		/* Its width comes from .rp-header-inner now — see there. */
+		width: 100%;
 	}
 	/* ══ A TICK IS THE TOP OF ITS OWN GRIDLINE (⚓ NATE 2026-08-11) ════════════
 	   ⚓ "Unify the tickmarks with their lines — either remove the tickmarks and

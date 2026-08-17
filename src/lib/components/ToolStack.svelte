@@ -24,8 +24,13 @@
 	// back out past --tool-pad-x and the frame's own border. The stack's padding
 	// box already starts at the content margin, so the anchor is simply left: 0,
 	// top/bottom: -RIBBON_OVERHANG_Y — and, crucially, it now spans the BANDS
-	// TOO, which is the whole point of the round: the ribbon stands proud of the
+	// TOO, which is the whole point of the round: the ribbon stands beside the
 	// entire tool object, not just its surface.
+	//
+	// ↻ 2026-08-17: RIBBON_OVERHANG_Y is 0 — the strip's top edge is band A's
+	// top edge (⚓ Nate). The insets are still written through the constant
+	// rather than dropped, because "the dock spans the stack, offset by the
+	// overhang" is the relationship; the overhang merely happens to be nothing.
 	//
 	// One dock definition instead of two also closes the drift the abutting round
 	// found the hard way (the TB's bench zone was pinned at 189 while
@@ -89,8 +94,8 @@
 	{#if benched}
 		<!-- The RIBBON's dock: an invisible, ribbon-sized anchor the (tools)
 		     layout measures to place the bench strip. It spans the stack — bands
-		     AND surface — and stands RIBBON_OVERHANG_Y proud at both ends, so the
-		     strip always reads as the taller object beside the whole tool.
+		     AND surface — offset by RIBBON_OVERHANG_Y, which is 0 since
+		     2026-08-17: the strip's top edge and band A's are the same line.
 		     Absolute insets resolve against .tool-stack's PADDING box, which
 		     begins at the content margin (the padding-left is what holds the tool
 		     off the ribbon's column), so left: 0 IS the content margin. -->

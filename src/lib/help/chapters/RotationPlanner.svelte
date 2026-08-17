@@ -71,16 +71,24 @@
 <section>
 	<h2 id="aura">The target's aura</h2>
 	<p>
-		The bottom lane is the enemy. One row per element currently stuck to them, and the height of
-		each bar is how much gauge is left — so you can see an aura land, decay, get topped up, and get
-		eaten by a reaction. The gaps are the point: they are where the next trigger has nothing to
-		react with.
+		The lane above the time axis is the enemy. It is one plot with a line per element currently
+		stuck to them, and the height of each line is how much gauge is left — so you can see an aura
+		land, decay, get topped up, and get eaten by a reaction. The gaps are the point: they are where
+		the next trigger has nothing to react with. Hover anywhere on it to read every aura at that
+		instant.
 	</p>
 	<p>
-		Above the rows, a fine tick marks every hit that applied an element, and a labelled dot marks
-		every reaction it caused. Compound states get their own rows too — Frozen, Quicken, Burning and
-		the dendro fuel that feeds it are different objects from the auras that made them, with
-		different decay, so they are drawn separately.
+		Above the plot, a fine tick marks every hit that applied an element, and a labelled dot marks
+		every reaction it caused. Compound states get their own lines — Frozen, Quicken, Burning and the
+		dendro fuel that feeds it are different objects from the auras that made them, with different
+		decay, so they are drawn separately.
+	</p>
+	<p>
+		<strong>Turning it on.</strong> The aura lane is off until you ask for it:
+		<em>Auras</em> in the view bar. Its neighbour, <em>Buffs</em>, hides the buff bars, weapon
+		procs, Nightsoul bursts and Ascendant Gleam — turn both off for a chart of ability timings and
+		nothing else. Summons and shields stay either way: they are things standing in the world, not
+		effects granted to your team.
 	</p>
 	<p>
 		<strong>What it assumes.</strong> One enemy, standing still, applying nothing back at you — no Pyro
