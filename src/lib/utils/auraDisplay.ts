@@ -62,7 +62,14 @@ export const AURA_MOD_META: Record<AuraKey, AuraModMeta> = {
 		label: 'Fuel',
 		icon: 'dendro',
 		color: 'var(--rx-burning-fuel)',
-		dash: '5 4',
+		// ↻ '5 4' → '9 5' (⚓ NATE 2026-08-17): at 5px on / 4px off, drawn with the
+		// ROUND caps every aura line wears, each dash rendered as a lozenge and the
+		// series read as a badly-aliased solid line rather than a deliberate dashed
+		// one. ⚠️ The cap is the other half of the fix — a dashed path must be drawn
+		// BUTT-capped, or every dash grows half its stroke-width at each end and the
+		// gaps close up. Both renderers do that now; ⛔ don't lengthen this without
+		// checking the cap.
+		dash: '9 5',
 		compound: true
 	},
 	hydro: { label: 'Hydro', icon: 'hydro', color: 'var(--el-hydro-main)' },

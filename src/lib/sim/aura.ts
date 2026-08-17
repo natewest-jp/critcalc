@@ -68,8 +68,23 @@ export type AuraApplication = {
 	/** Gauge units, pre-tax. `1` when the ability does not author one. */
 	units: number;
 	castKind: ReactionEvent['castKind'];
-	/** The units figure is a default rather than measured data (L6 marks a bar
-	 *  drawn from one `--ui-provisional`). */
+	/**
+	 * This application's gauge strength is a stand-in for data an author could
+	 * supply — the aura lane marks it `--ui-provisional`.
+	 *
+	 * ↻ NARROWED 2026-08-17 (⚓ Nate). It used to be true for every defaulted
+	 * value, which meant it fired on swings and summon ticks too — and those are
+	 * ~75% of a typical rotation's applications, so the strip read as almost
+	 * entirely uncertain and the mark pointed at no work anybody could do.
+	 *
+	 * ⚓ THE LINE IS "COULD SOMEONE MEASURE THIS?", not "did we default it":
+	 *   · a cast with no `application[]` at all, or an entry with no `units` →
+	 *     TRUE. The corpus could carry the number and does not.
+	 *   · a normal/charged/plunge swing, or a summon tick → FALSE. No per-swing
+	 *     or per-tick units exist anywhere, in our data or gcsim's, and gcsim's
+	 *     own hits are overwhelmingly 25 durability. 1U is the RULE there, and an
+	 *     exception would be recorded in the wikis and in gcsim (⚓ Nate).
+	 */
 	provisionalUnits: boolean;
 };
 
@@ -339,8 +354,11 @@ export function emitReactionsAtCast(
  *  counter, so an untracked source can't reset a counter it shares a tag
  *  with (`resolveActionIcd` carries the case list).
  *
- *  ⚠️ A swing's gauge is the 1U default: no per-swing units are authored, and
- *  gcsim's own normals are overwhelmingly 25 durability. */
+ *  ⚠️ A swing's gauge is 1U, and ⛔ it is NOT flagged provisional (2026-08-17).
+ *  No per-swing units are authored anywhere in the corpus and gcsim's own
+ *  normals are overwhelmingly 25 durability, so this is the RULE for a swing
+ *  rather than a stand-in for a value someone could go and measure. See
+ *  `provisionalUnits` for the line the flag now draws. */
 export function emitReactionsAtSwing(
 	ctx: SimContext,
 	char: CharacterData,
@@ -368,7 +386,7 @@ export function emitReactionsAtSwing(
 		characterId: char.id,
 		element,
 		units: DEFAULT_UNITS,
-		provisionalUnits: true,
+		provisionalUnits: false,
 		castKind: kind,
 		preStates,
 		constellation,
@@ -490,10 +508,12 @@ export function scheduleSummonTicks(
 						characterId: char.id,
 						element,
 						// ⚠️ No per-tick units are authored anywhere in the corpus and
-						// gcsim's summon hits are overwhelmingly 25 durability, so this
-						// is the 1U default — provisional, like a swing's.
+						// gcsim's summon hits are overwhelmingly 25 durability — so 1U is
+						// the RULE for a tick, ⛔ not a stand-in, and it is not flagged.
+						// ⚓ Nate 2026-08-17: an exception would be recorded in the wikis
+						// and in gcsim, and none is.
 						units: DEFAULT_UNITS,
-						provisionalUnits: true,
+						provisionalUnits: false,
 						castKind: kind,
 						preStates,
 						constellation,

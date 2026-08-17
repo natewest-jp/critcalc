@@ -768,11 +768,15 @@
 	const AURA_LABEL_MIN_ROW = 12;
 	// 🎛️ The unit datum's own label — inset from the plot's left edge, and lifted
 	// so it sits on the rule's shoulder rather than across it.
-	const AURA_UNIT_LABEL_X = 3;
-	const AURA_UNIT_LABEL_LIFT = 3;
-	/** …and how far it hangs below the CEILING's rule, which sits on the top edge
-	 *  where a lifted label would be clipped away. */
-	const AURA_UNIT_LABEL_DROP = 8;
+	const AURA_UNIT_LABEL_X = 2;
+	/** Baseline nudge that optically centres 8px type on its rule. ⚠ Centring a
+	 *  label centres its BOX, not its INK (the sub-pixel laws) — this is the
+	 *  correction, tuned against Chrome as that law requires. */
+	const AURA_UNIT_LABEL_MID = 3;
+	/** Where the rule resumes after yielding room to its own label. */
+	const AURA_UNIT_RULE_INSET = 20;
+	/** The highest baseline that still keeps 8px type inside the plot box. */
+	const AURA_UNIT_LABEL_MIN_Y = 7;
 	// ══ THE MARKER ROW'S LABEL RULE (2026-08-17) ══════════════════════════════
 	// ⚠ MEASURED, NOT GUESSED. This used to be `room >= 26`, a stand-in for "the
 	// shortest family name that survives" — so anything between 26px and its own
@@ -1851,22 +1855,32 @@
 										/>
 									{/each}
 									{#each auraUnitRules as u (u)}
+										<!-- ⚓ THE LABEL SITS ON THE LINE AND THE LINE STARTS AFTER IT
+										     (⚓ NATE 2026-08-17), which is how the Gauge Explorer reads:
+										     there the label lives in a left gutter and the rule begins
+										     at the plot's edge. This lane has no gutter — it is 1:1 with
+										     time — so the rule yields the first AURA_UNIT_RULE_INSET px
+										     instead. ⛔ Don't centre the label WITHOUT breaking the
+										     rule: a hairline through 8px type is unreadable, and that
+										     is why it used to hang above the line. -->
 										<line
-											x1="0"
+											x1={AURA_UNIT_RULE_INSET}
 											x2={totalWidth}
 											y1={auraYOf(u)}
 											y2={auraYOf(u)}
 											stroke="var(--rp-grid)"
 										/>
-										<!-- ⚠ The label hangs BELOW the topmost rule and above every
-										     other one: the ceiling's rule sits on the plot's very top
-										     edge, so a lifted label would be clipped out of the box. -->
+										<!-- ⚠ CLAMPED at the top. The ceiling's rule sits on y=0, so a
+										     truly centred label there is half outside the SVG and gets
+										     CLIPPED — which is what happened the first time this was
+										     centred. The Explorer can centre every label because its
+										     labels live in a left gutter OUTSIDE the plot; this lane has
+										     no gutter, so the top one rides just inside instead. -->
 										<text
 											class="rp-aura-unit-label"
 											x={AURA_UNIT_LABEL_X}
-											y={u >= auraLane.uMax
-												? auraYOf(u) + AURA_UNIT_LABEL_DROP
-												: auraYOf(u) - AURA_UNIT_LABEL_LIFT}>{u}U</text
+											y={Math.max(AURA_UNIT_LABEL_MIN_Y, auraYOf(u) + AURA_UNIT_LABEL_MID)}
+											>{u}U</text
 										>
 									{/each}
 									<defs>
@@ -1896,7 +1910,7 @@
 											stroke-width="2"
 											stroke-dasharray={p.dash ?? 'none'}
 											stroke-linejoin="round"
-											stroke-linecap="round"
+											stroke-linecap={p.dash ? 'butt' : 'round'}
 										/>
 									{/each}
 								</svg>

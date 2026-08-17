@@ -117,11 +117,19 @@
 	.bt-tooltip--above {
 		transform: translateX(-50%) translateY(-100%);
 	}
+	/* ⛔ NOT UPPERCASED (⚓ NATE 2026-08-17), and the reason is a unit rather than
+	   a taste: `text-transform: uppercase` turned every "4.2s" into "4.2S", which
+	   reads as a 5 at this size — and a capital S is a DIFFERENT unit (siemens).
+	   Units are case-sensitive and a CSS transform cannot know that.
+	   ⚠ It is also the wrong register for this line. The uppercase idiom belongs
+	   to KICKERS — short category words — and this label is data: a character
+	   name, a separator and a measurement, all of which carry their own casing.
+	   The kicker weight, tracking and colour stay, which is what made it read as
+	   a header in the first place. */
 	.bt-source {
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-bold);
 		letter-spacing: var(--ls-wider);
-		text-transform: uppercase;
 		color: var(--muted);
 		border-bottom: 1px solid var(--frame-line);
 		padding-bottom: 4px;
