@@ -109,6 +109,55 @@ function authoredTicks(ability) {
 }
 
 // ---------------------------------------------------------------------------
+// The measured ICD cadence of one stream
+// ---------------------------------------------------------------------------
+
+/** Our model's standard, restated only as a COMPARISON target — the numbers come
+ *  from `icd.ts`, never from a literal here. */
+const STANDARD_PAIR = { timer: STANDARD_ICD_FRAMES.timer, period: STANDARD_ICD_FRAMES.hits };
+
+/**
+ * Collapse a stream's per-hit `icd` readings to one cadence.
+ *
+ * ⚓ gcsim keys ICD state by `(character, tag)` and the tag is a property of the
+ * ability, so every hit of one `abil` reads the same group — `mixed` is therefore
+ * a FINDING (two abilities sharing a log string), not a shape to average over.
+ *
+ * ⛔ Carries no group name. The four numbers ARE the group
+ * (docs/icd-group-round.md §2 / §6a).
+ */
+function streamIcd(hits) {
+	const seen = hits.map((h) => h.icd).filter(Boolean);
+	if (!seen.length) return null;
+	const sig = (x) => `${x.none}|${x.timer}|${x.period}|${x.applies}|${x.mult}|${x.regular}`;
+	const first = seen[0];
+	return { ...first, mixed: seen.some((x) => sig(x) !== sig(first)) };
+}
+
+/** What the schema would have to say to reproduce a measured cadence:
+ *  `'none'` · `'standard'` (absent) · an `IcdWindow` · or `null` when the
+ *  measurement is unavailable. */
+function icdGateFor(icd) {
+	if (!icd) return null;
+	if (icd.none) return 'none';
+	if (icd.timer === STANDARD_PAIR.timer && icd.period === STANDARD_PAIR.period) return 'standard';
+	return { timer: icd.timer, ...(icd.period ? { every: icd.period } : {}) };
+}
+
+/** A measured cadence in the report's own shorthand. ⚓ `first only` is `every`
+ *  absent — a counter the window can never reach. */
+function fmtIcd(icd) {
+	if (!icd) return '—';
+	if (icd.none) return '`none`';
+	const period = icd.period ? `every ${icd.period}` : 'first only';
+	const mult = icd.mult !== 1 ? ` · ×${icd.mult}` : '';
+	// ⚠️ `applies` is the half `(timer, period)` cannot state: four groups run at
+	// a regular period and then STOP for the rest of the window.
+	const cap = icd.regular && icd.period ? '' : icd.applies > 1 ? ` · ${icd.applies} max` : '';
+	return `${icd.timer}f / ${period}${cap}${mult}${icd.mixed ? ' ⚠️ **mixed**' : ''}`;
+}
+
+// ---------------------------------------------------------------------------
 
 function main() {
 	const args = process.argv.slice(2);
@@ -148,6 +197,18 @@ function main() {
 	const tickRows = [];
 	let matched = 0;
 	let authored = 0;
+	// ⚓ Probe coverage, reported rather than assumed. `OnEnemyDamage` fires from a
+	// zero-delay task, so whether `c.F` at callback time is still the hit's frame is
+	// an empirical question — and a hole would show up as a hit with no cadence, not
+	// as an error. ⛔ Don't drop this line; it is the only thing that says the join
+	// held.
+	const icdCoverage = { hits: 0, seen: 0 };
+	for (const cd of Object.values(dump.characters))
+		for (const a of cd.abilities ?? [])
+			for (const x of a.applications ?? []) {
+				icdCoverage.hits++;
+				if (x.icd) icdCoverage.seen++;
+			}
 
 	for (const char of chars) {
 		const gk = gcsimKeyFor(char.id);
@@ -282,12 +343,19 @@ function main() {
 			// ⛔ the series must NOT be annotated on the strength of it.
 			for (const o of observed) {
 				const frames = streams.get(o.abil);
-				const applied = ticks.filter((x) => x.abil === o.abil && x.applied).length;
+				const mine = ticks.filter((x) => x.abil === o.abil);
+				const applied = mine.filter((x) => x.applied).length;
 				const clock = createIcdClock();
 				let std = 0;
 				for (const fr of frames) if (icdApplies(clock, fr, STANDARD_ICD_FRAMES).applies) std++;
 				o.applied = applied;
 				o.std = std;
+				// ⚓ The CADENCE ITSELF, read off gcsim's exported group tables through
+				// the shim's `OnEnemyDamage` probe (§6a). The verdict below measures its
+				// EFFECT on this one stream; this is the rule that produced the effect,
+				// and it is what a migration can be written from.
+				o.icd = streamIcd(mine);
+				o.gate = icdGateFor(o.icd);
 				o.verdict =
 					applied === std
 						? applied === frames.length
@@ -318,6 +386,7 @@ function main() {
 		applicationRows,
 		noApplication,
 		tickRows,
+		icdCoverage,
 		median
 	});
 
@@ -356,6 +425,9 @@ function renderReport(d) {
 		`- skill/burst application schedules observed: **${d.applicationRows.length}** · unobserved: **${d.noApplication.length}**`
 	);
 	p(`- summon tick streams cross-checked: **${d.tickRows.length}**`);
+	p(
+		`- hits carrying a measured gcsim ICD cadence: **${d.icdCoverage.seen}** of **${d.icdCoverage.hits}**`
+	);
 	p();
 	if (d.noSource.length) {
 		p(
@@ -490,10 +562,19 @@ function renderReport(d) {
 	p('⛔ such a series must NOT be annotated. `other` is a real gcsim ICD group we cannot');
 	p('yet express — see docs/gauge-round-L5e.md §3.3.');
 	p();
+	p('↻ **And the CADENCE is measured too now** (icd-group-round §6a). The `gcsim` column');
+	p("is gcsim's own group data — its reset window in frames, and how many hits apart an");
+	p('application falls inside it — read off `ICDGroupResetTimer` /');
+	p('`ICDGroupEleApplicationSequence` by a probe in the dumper, because the debug log does');
+	p('not carry the tag or the group at all. ⛔ **Numbers, never group names**: gcsim has 58');
+	p('and their entire content is this pair. `first only` means no second hit of the window');
+	p('ever applies; `N max` means the group applies N times at that period and then stops,');
+	p('which the pair alone cannot state.');
+	p();
 	p(
-		'| character | ability | authored (first / interval · icd) | observed (first / interval × n · applied) |'
+		'| character | ability | authored (first / interval · icd) | observed (first / interval × n · applied) | gcsim cadence |'
 	);
-	p('| --- | --- | --- | --- |');
+	p('| --- | --- | --- | --- | --- |');
 	for (const t of d.tickRows) {
 		const a = t.authored.length
 			? t.authored
@@ -514,16 +595,45 @@ function renderReport(d) {
 					})
 					.join('<br>')
 			: '—';
-		const agree =
-			t.authored.length === t.observed.length &&
-			t.authored.every((x) =>
-				t.observed.some((y) => y.first === x.firstTick && y.interval === x.interval)
-			);
-		p(
-			`| ${t.id} | \`${t.path.split('__').pop()}\` | ${a} | ${o} | ${agree ? '' : ''}`.concat(' |')
-		);
+		const cad = t.observed.length ? t.observed.map((x) => fmtIcd(x.icd)).join('<br>') : '—';
+		p(`| ${t.id} | \`${t.path.split('__').pop()}\` | ${a} | ${o} | ${cad} |`);
 	}
 	p();
+
+	// --- the b worklist -----------------------------------------------------
+	p('### 5b. Tick series whose measured cadence is neither standard nor none');
+	p();
+	p("⚓ **The migration worklist for the ICD-group round's sub-landing b.** Each row is a");
+	p("summon tick series whose gcsim group is a real window our schema's default (2.5s /");
+	p('every 3rd hit) does not reproduce. The proposal column is the exact pair to author;');
+	p('⛔ this report never writes it.');
+	p();
+	p('⚠️ A row is a REVIEW CANDIDATE, not a correction. Two reasons to leave one alone:');
+	p('the series may already agree with standard on this fixture (the `applied/total`');
+	p("column will say `standard` or `either`), and a group carrying an `N max` cap can't be");
+	p('stated in full — authoring the pair gets the cadence and drops the cap.');
+	p();
+	const work = [];
+	for (const t of d.tickRows) {
+		for (const o of t.observed) {
+			if (!o.gate || o.gate === 'standard' || o.gate === 'none') continue;
+			work.push({ id: t.id, path: t.path.split('__').pop(), o });
+		}
+	}
+	if (!work.length) {
+		p('_None — every measured tick series is standard or none._');
+		p();
+	} else {
+		p('| character | ability | stream | applied/total | gcsim cadence | proposal |');
+		p('| --- | --- | --- | --- | --- | --- |');
+		for (const w of work) {
+			const every = w.o.gate.every ? `, "every": ${w.o.gate.every}` : '';
+			p(
+				`| ${w.id} | \`${w.path}\` | ${w.o.abil} | ${w.o.applied}/${w.o.n} \`${w.o.verdict}\` | ${fmtIcd(w.o.icd)} | \`{ "timer": ${w.o.gate.timer}${every} }\` |`
+			);
+		}
+		p();
+	}
 
 	return L.join('\n');
 }

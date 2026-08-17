@@ -35,7 +35,9 @@ import (
 	"github.com/genshinsim/gcsim/pkg/avatar"
 	"github.com/genshinsim/gcsim/pkg/core"
 	"github.com/genshinsim/gcsim/pkg/core/action"
+	"github.com/genshinsim/gcsim/pkg/core/attacks"
 	"github.com/genshinsim/gcsim/pkg/core/attributes"
+	"github.com/genshinsim/gcsim/pkg/core/event"
 	"github.com/genshinsim/gcsim/pkg/core/info"
 	"github.com/genshinsim/gcsim/pkg/core/keys"
 	"github.com/genshinsim/gcsim/pkg/core/player"
@@ -114,6 +116,146 @@ type Application struct {
 	// the nominal cap, not the applied rate).
 	Durability *float64 `json:"durability,omitempty"`
 	Applied    bool     `json:"applied"`
+	// The CADENCE gcsim gates this hit by — see IcdInfo. Absent means the probe saw
+	// no `OnEnemyDamage` for this hit; ⛔ never read that as "no ICD".
+	Icd *IcdInfo `json:"icd,omitempty"`
+}
+
+// ---------------------------------------------------------------------------
+// gcsim's element-application ICD, as NUMBERS
+// ---------------------------------------------------------------------------
+
+// IcdInfo is gcsim's element-application ICD for one hit, reduced to the numbers
+// that carry all of it. ⛔ IT DELIBERATELY CARRIES NO GROUP NAME: gcsim has 58 of
+// them, that is a taxonomy we would have to maintain, and its entire content is
+// the fields below (docs/icd-group-round.md §6a).
+//
+// gcsim's model (`pkg/target/icd.go`, `WillApplyEle`): state is keyed
+// `(character, ICDTag)` — the TAG, never the group. The GROUP contributes exactly
+// two table lookups, both exported `var`s in
+// `pkg/core/attacks/icd_groups.dm.go`:
+//
+//	ICDGroupResetTimer[grp]              a reset window, in frames
+//	ICDGroupEleApplicationSequence[grp]  a per-hit multiplier on the durability
+//
+// A hit reads `seq[counter]`, increments the counter, and past the end of the
+// array reads the LAST entry rather than zero. The counter is zeroed by a
+// one-shot task at first-hit + `timer − 1`, not by a sliding window.
+//
+// ⚠️ There is a second, parallel pair (`ICDGroupDamageSequence`,
+// `GroupTagDamageMult`) for reaction-damage ICD. ⛔ Not ours; not read here.
+type IcdInfo struct {
+	// gcsim's `ICDTagNone`: `WillApplyEle` returns 1 before it so much as looks
+	// at the group, so every number below is meaningless when this is set.
+	None bool `json:"none"`
+	// `ICDGroupResetTimer[grp]`, in FRAMES.
+	Timer int `json:"timer"`
+	// How many hits apart applications fall inside the window — the index of the
+	// SECOND non-zero entry of the sequence. **0 means there is no second one**,
+	// i.e. only the window's first hit applies. ⚓ This is `IcdWindow.every`.
+	Period int `json:"period"`
+	// How many hits of the window apply at all: non-zero entries in the
+	// sequence. ⚠️ NOT always `ceil(len/period)` — four groups apply two or
+	// three times at a regular period and then stop for the rest of the window,
+	// which `(timer, period)` alone cannot say. Emitted so the report can flag
+	// them rather than silently rounding them off.
+	Applies int `json:"applies"`
+	// The multiplier the FIRST application of the window carries — `seq[0]`.
+	// 1 for every group but one, which carries 1.5. ⚓ A gauge STRENGTH, which
+	// belongs beside the application in `units`, ⛔ never in a cadence model.
+	Mult float64 `json:"mult"`
+	// Whether the sequence's non-zero entries are evenly spaced at `Period` all
+	// the way to the last one. False is the `Applies` caveat above.
+	Regular bool `json:"regular"`
+}
+
+func icdInfoFor(tag attacks.ICDTag, grp attacks.ICDGroup) IcdInfo {
+	if tag == attacks.ICDTagNone {
+		return IcdInfo{None: true}
+	}
+	out := IcdInfo{}
+	if int(grp) >= 0 && int(grp) < len(attacks.ICDGroupResetTimer) {
+		out.Timer = attacks.ICDGroupResetTimer[grp]
+	}
+	if int(grp) < 0 || int(grp) >= len(attacks.ICDGroupEleApplicationSequence) {
+		return out
+	}
+	seq := attacks.ICDGroupEleApplicationSequence[grp]
+	if len(seq) == 0 {
+		return out
+	}
+	out.Mult = seq[0]
+	var hits []int
+	for i, v := range seq {
+		if v > 0 {
+			hits = append(hits, i)
+		}
+	}
+	out.Applies = len(hits)
+	if len(hits) > 1 {
+		out.Period = hits[1] - hits[0]
+		out.Regular = true
+		for i := 1; i < len(hits); i++ {
+			if hits[i]-hits[i-1] != out.Period {
+				out.Regular = false
+				break
+			}
+		}
+	} else {
+		// One application per window is regular by construction.
+		out.Regular = true
+	}
+	return out
+}
+
+// appKey pairs a hit's frame with the ability string gcsim logs it under — the
+// same join the application capture already uses to marry the `damage` and
+// `element` streams.
+type appKey struct {
+	frame int
+	abil  string
+}
+
+// icdProbe records the ICD numbers of every hit the core lands.
+//
+// ⚓⚓ SUBSCRIBED IN THE SHIM, AND IT HAS TO BE. gcsim's debug log does NOT carry
+// the tag or the group: `pkg/enemy/attack.go`'s damage event writes `target` /
+// `attack-tag` / `ele` / `damage` / `crit` / `amp` / `cata` / `abil` /
+// `source_frame` and nothing more, so there is no log column to parse. Linking
+// gcsim as a LIBRARY is what makes the live `AttackInfo` reachable — ⛔ do not
+// patch the checkout to log the fields; it is a `replace` target and a fork is a
+// maintenance liability.
+//
+// ⚠️ `OnEnemyDamage` rather than `OnEnemyHit`: the latter is emitted at
+// `attack.go:32` behind `grpMult > 0`, the REACTION-damage group's multiplier, so
+// it silently skips the later hits of a window on the eight groups whose damage
+// sequence zeroes them (Yelan's Breakthrough, Cyno's bolts, Ayaka's and Yae's
+// charged groups…). Those hits still emit a `damage` log line, so keying off the
+// gated event would leave holes exactly where a cadence is most interesting.
+//
+// ⚠️ `OnEnemyDamage` is emitted from a zero-delay task, but `Tasks.Run()` drains
+// re-entrant additions inside the same `Tick`, so `c.F` at callback time is still
+// the frame of the hit. Verified by coverage: the probe accounts for every hit in
+// the damage stream across the roster.
+type icdProbe struct {
+	m map[appKey]IcdInfo
+	n int
+}
+
+func subscribeIcd(c *core.Core) *icdProbe {
+	p := &icdProbe{m: map[appKey]IcdInfo{}}
+	c.Events.Subscribe(event.OnEnemyDamage, func(args ...any) {
+		atk, ok := args[1].(*info.AttackEvent)
+		if !ok {
+			return
+		}
+		p.n++
+		// ⚠️ Last write wins on a collision, which is sound because the tag and
+		// the group are properties of the ability rather than of the hit: two
+		// hits sharing (frame, abil) share their cadence too.
+		p.m[appKey{c.F, atk.Info.Abil}] = icdInfoFor(atk.Info.ICDTag, atk.Info.ICDGroup)
+	}, "critcalc-icd-probe")
+	return p
 }
 
 type AbilityDump struct {
@@ -397,6 +539,9 @@ func captureApplications(k keys.Char, cons int, prereq []Step, s spec, horizon i
 	if err != nil {
 		return out, err.Error()
 	}
+	// ⚓ Only pass B subscribes. Pass A never advances the clock, so nothing there
+	// ever lands a hit for the probe to see.
+	icd := subscribeIcd(c)
 	t, ok := actionByName(s.action)
 	if !ok {
 		return out, "unknown action " + s.action
@@ -442,16 +587,12 @@ func captureApplications(k keys.Char, cons int, prereq []Step, s spec, horizon i
 		// ⚓ The DAMAGE stream is the NOMINAL hit schedule — gcsim emits it even when
 		// ICD zeroes the application — and the ELEMENT stream is the post-ICD subset.
 		// C3 authors from the first; C4's post-ICD contract is served by icd.ts.
-		type key struct {
-			frame int
-			abil  string
-		}
-		applied := map[key]float64{}
+		applied := map[appKey]float64{}
 		for _, e := range events {
 			if e.Event == "element" && e.Msg == "application" && e.Frame >= castFrame {
 				abil, _ := e.Logs["abil"].(string)
 				dur, _ := e.Logs["dur"].(float64)
-				applied[key{e.Frame, abil}] = dur
+				applied[appKey{e.Frame, abil}] = dur
 			}
 		}
 		hits := []Application{}
@@ -468,10 +609,14 @@ func captureApplications(k keys.Char, cons int, prereq []Step, s spec, horizon i
 				Tag:     tagName(int(tagf)),
 				Element: ele,
 			}
-			if dur, ok := applied[key{e.Frame, abil}]; ok {
+			if dur, ok := applied[appKey{e.Frame, abil}]; ok {
 				d := dur
 				app.Durability = &d
 				app.Applied = true
+			}
+			if ic, ok := icd.m[appKey{e.Frame, abil}]; ok {
+				v := ic
+				app.Icd = &v
 			}
 			hits = append(hits, app)
 		}

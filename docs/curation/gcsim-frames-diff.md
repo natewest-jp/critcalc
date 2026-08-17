@@ -11,6 +11,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 - FrameMaps: **1082** authored · **960** matching gcsim exactly · **35** disagreeing · **87** uncovered
 - skill/burst application schedules observed: **272** · unobserved: **16**
 - summon tick streams cross-checked: **53**
+- hits carrying a measured gcsim ICD cadence: **2631** of **2631**
 
 ⛔ **No gcsim source (12)** — cannot be oracled at all, and nothing here may be written to them:
 
@@ -485,58 +486,95 @@ the interval exceeds the 2.5s timer so standard and none are indistinguishable, 
 ⛔ such a series must NOT be annotated. `other` is a real gcsim ICD group we cannot
 yet express — see docs/gauge-round-L5e.md §3.3.
 
-| character | ability | authored (first / interval · icd) | observed (first / interval × n · applied) |
-| --- | --- | --- | --- |
-| aino | `precision_hydronic_cooler` | Cool Your Jets Ducky 123f / 90f · `standard` | Cool Your Jets Ducky 133f / 90f × 9 · 5/9 `standard` |  |
-| amber | `explosive_puppet` | — | Baron Bunny 530f / —f × 1 · 1/1 `either` |  |
-| amber | `fiery_rain` | Fiery Rain 84f / 12f · `standard` | Fiery Rain 84f / 12f × 18 · 13/18 `other` |  |
-| baizhu | `holistic_revivification` | Pulsing Clarity 252f / 146f · `none` | Spiritvein Damage 252f / 146f × 5 · 5/5 `none` |  |
-| chiori | `fluttering_hasode` | Tamoto 55f / 216f · `standard` | Fluttering Hasode (Tamato) 60f / 216f × 4 · 3/4 `other` |  |
-| citlali | `dawnfrost_darkstar` | Itzpapa 77f / 59f · `standard` | — |  |
-| collei | `trumpcard_kitty` | Cuilein-Anbar 68f / 30f · `standard` | Trump-Card Kitty (Leap) 68f / 30f × 12 · 2/12 `other` |  |
-| columbina | `eternal_tides` | Gravity Ripple 138f / 117f · `none` | Skill (DoT) 138f / 117f × 7 · 7/7 `none` |  |
-| diona | `signature_mix` | Drunken Mist 178f / 120f · `standard` | Signature Mix (Tick) 178f / 120f × 6 · 3/6 `standard` |  |
-| durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame 156f / 59f · `standard` | Dragon of White Flame 156f / 59f × 13 · 7/13 `other` |  |
-| durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 171f / 74f · `standard` | — |  |
-| emilie | `fragrance_extraction` | Lumidouce Case 106f / 90f · `standard` | Lumidouce Case (Level 1) 111f / 90f × 9 · 5/9 `standard` |  |
-| emilie | `aromatic_explication` | Lumidouce Case (Level 3) 138f / 42f · `standard` | Lumidouce Case (Level 3) 126f / 36f × 4 ⚠️ irregular · 2/4 `standard`<br>Lumidouce Case (Level 1) 401f / 90f × 6 · 3/6 `standard` |  |
-| escoffier | `lowtemperature_cooking` | Cooking Mek (Cold Storage) 171f / 59f · `standard` | — |  |
-| fischl | `nightrider` | Oz 82f / 59f · `standard` | Oz (Skill) 92f / 59f × 10 · 3/10 `other` |  |
-| fischl | `midnight_phantasmagoria` | Oz 64f / 59f · `standard` | Oz (Burst) 192f / 59f × 10 · 3/10 `other` |  |
-| furina | `salon_solitaire` | Salon Solitaire 132f / 202f · `standard`<br>Salon Solitaire 110f / 98f · `standard`<br>Salon Solitaire 131f / 314f · `standard` | — |  |
-| ganyu | `trail_of_the_qilin` | — | Ice Lotus 13f / 360f × 2 · 2/2 `either` |  |
-| gorou | `juuga_forward_unto_victory` | General's Glory 121f / 90f · `standard` | Crystal Collapse 122f / 90f × 5 · 3/5 `standard` |  |
-| ineffa | `cleaning_mode_carrier_frequency` | Birgitta 110f / 120f · `none` | Birgitta 110f / 119f × 7 · 7/7 `none` |  |
-| ineffa | `supreme_instruction_cyclonic_exterminator` | Birgitta 153f / 120f · `none` | Birgitta 153f / 119f × 7 · 7/7 `none` |  |
-| kaedehara_kazuha | `kazuha_slash` | Autumn Whirlwind 140f / 117f · `none` | Kazuha Slash (DoT) 140f / 117f × 5 · 5/5 `none` |  |
-| kaeya | `glacial_waltz` | Glacial Waltz 53f / 40f · `standard`<br>Glacial Waltz 53f / 30f · `standard` | Glacial Waltz 53f / 40f × 13 · 7/13 `standard` |  |
-| kinich | `hail_to_the_almighty_dragonlord` | Ajaw 253f / 147f · `standard` | — |  |
-| kuki_shinobu | `sanctifying_ring` | Grass Ring of Sanctification 113f / 90f · `standard` | Grass Ring of Sanctification 115f / 90f × 8 · 4/8 `standard` |  |
-| kuki_shinobu | `gyoei_narukami_kariyama_rite` | Gyoei Narukami Kariyama Rite 50f / 17f · `standard` | Gyoei Narukami Kariyama Rite 50f / 17f × 7 · 3/7 `standard` |  |
-| lauma | `runo_dawnless_rest_of_karsikko` | Frostgrove Sanctuary 62f / 117f · `none` | Frostgrove Sanctuary 62f / 117f × 8 · 8/8 `none` |  |
-| layla | `dream_of_the_starstream_shaker` | Celestial Dreamsphere 114f / 90f · `standard` | Starlight Slug 114f / 90f × 8 · 4/8 `standard` |  |
-| lisa | `lightning_rose` | Lightning Rose 119f / 30f · `standard` | Lightning Rose (Tick) 119f / 30f × 27 · 11/27 `standard` |  |
-| lynette | `magic_trick_astonishing_shift` | Bogglecat Box 136f / 59f · `standard` | Bogglecat Box 136f / 59f × 11 · 4/11 `standard` |  |
-| mona | `mirror_reflection_of_doom` | Phantom 86f / 59f · `standard` | Mirror Reflection of Doom (Tick) 86f / 59f × 4 · 2/4 `standard` |  |
-| navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support 163f / 42f · `standard` | Cannon Fire Support 163f / 42f × 17 · 6/17 `other` |  |
-| ningguang | `jade_screen` | — | Jade Screen 17f / —f × 1 · 1/1 `either` |  |
-| ororon | `dark_voices_echo` | Supersonic Oculus 60f / 60f · `standard` | Soundwave Collision DMG 60f / 60f × 9 · 3/9 `standard` |  |
-| qiqi | `adeptus_art_preserver_of_fortune` | — | Fortune-Preserving Talisman 82f / —f × 1 · 1/1 `either` |  |
-| rosaria | `rites_of_termination` | Ice Lance 176f / 120f · `none` | Rites of Termination (DoT) 176f / 120f × 4 · 4/4 `none` |  |
-| sangonomiya_kokomi | `kurages_oath` | Bake-Kurage 24f / 120f · `none` | Bake-Kurage 24f / 120f × 7 · 7/7 `none` |  |
-| sayu | `yoohoo_art_mujina_flurry` | Muji-Muji Daruma 145f / 90f · `standard` | Muji-Muji Daruma 145f / 90f × 6 · 3/6 `standard` |  |
-| sigewinne | `rebound_hydrotherapy` | Bolstering Bubblebalm 35f / 107f · `standard` | Rebound Hydrotherapy 35f / 107f × 5 · 3/5 `standard` |  |
-| sucrose | `forbidden_creation_isomer_75_type_ii` | Large Wind Spirit 137f / 113f · `none` | Forbidden Creation-Isomer 75/Type II 137f / 113f × 3 · 3/3 `none` |  |
-| traveler_anemo | `gust_surge` | Gust Surge 94f / 30f · `standard` | Gust Surge 94f / 30f × 9 · 4/9 `standard` |  |
-| traveler_dendro | `surgent_manifestation` | LeaLotus Lamp 91f / 90f · `standard` | Lea Lotus Lamp 91f / 90f × 8 · 4/8 `standard` |  |
-| traveler_geo | `wake_of_earth` | — | Wake of Earth 66f / 15f × 4 · 2/4 `standard` |  |
-| traveler_hydro | `rising_waters` | Rising Waters Bubble 34f / 30f · `standard` | — |  |
-| venti | `winds_grand_ode` | Stormeye 106f / 24f · `standard` | Wind's Grand Ode 106f / 24f × 20 · 7/20 `other` |  |
-| xiangling | `guoba_attack` | Guoba 126f / 100f · `none` | Guoba 126f / 100f × 4 · 4/4 `none` |  |
-| xiangling | `pyronado` | Pyronado 56f / 73f · `none` | Pyronado 56f / 73f × 9 · 9/9 `none` |  |
-| xingqiu | `guhua_sword_fatal_rainscreen` | — | Xingqiu Orbital 44f / 135f × 7 · 7/7 `none` |  |
-| xingqiu | `guhua_sword_raincutter` | — | Xingqiu Orbital 19f / 135f × 7 · 7/7 `none` |  |
-| yae_miko | `yakan_evocation_sesshou_sakura` | Sesshou Sakura 120f / 176f · `standard` | Sesshou Sakura Tick 121f / 176f × 5 · 5/5 `either` |  |
-| yaoyao | `raphanus_sky_cluster` | Yuegui: Throwing Mode 105f / 60f · `standard` | Radish (Skill) 104f / 60f × 10 · 4/10 `standard` |  |
-| yumemizuki_mizuki | `anraku_secret_spring_therapy` | Mini Baku 183f / 90f · `standard` | Munen Shockwave 201f / 90f × 8 · 4/8 `standard` |  |
-| zhongli | `dominus_lapidis` | Stone Stele 144f / 120f · `standard` | Stone Stele (Tick) 144f / 120f × 7 · 3/7 `other` |  |
+↻ **And the CADENCE is measured too now** (icd-group-round §6a). The `gcsim` column
+is gcsim's own group data — its reset window in frames, and how many hits apart an
+application falls inside it — read off `ICDGroupResetTimer` /
+`ICDGroupEleApplicationSequence` by a probe in the dumper, because the debug log does
+not carry the tag or the group at all. ⛔ **Numbers, never group names**: gcsim has 58
+and their entire content is this pair. `first only` means no second hit of the window
+ever applies; `N max` means the group applies N times at that period and then stops,
+which the pair alone cannot state.
+
+| character | ability | authored (first / interval · icd) | observed (first / interval × n · applied) | gcsim cadence |
+| --- | --- | --- | --- | --- |
+| aino | `precision_hydronic_cooler` | Cool Your Jets Ducky 123f / 90f · `standard` | Cool Your Jets Ducky 133f / 90f × 9 · 5/9 `standard` | 150f / every 3 |
+| amber | `explosive_puppet` | — | Baron Bunny 530f / —f × 1 · 1/1 `either` | `none` |
+| amber | `fiery_rain` | Fiery Rain 84f / 12f · `standard` | Fiery Rain 84f / 12f × 18 · 13/18 `other` | 60f / every 3 |
+| baizhu | `holistic_revivification` | Pulsing Clarity 252f / 146f · `none` | Spiritvein Damage 252f / 146f × 5 · 5/5 `none` | `none` |
+| chiori | `fluttering_hasode` | Tamoto 55f / 216f · `standard` | Fluttering Hasode (Tamato) 60f / 216f × 4 · 3/4 `other` | 114f / first only |
+| citlali | `dawnfrost_darkstar` | Itzpapa 77f / 59f · `standard` | — | — |
+| collei | `trumpcard_kitty` | Cuilein-Anbar 68f / 30f · `standard` | Trump-Card Kitty (Leap) 68f / 30f × 12 · 2/12 `other` | 180f / first only |
+| columbina | `eternal_tides` | Gravity Ripple 138f / 117f · `none` | Skill (DoT) 138f / 117f × 7 · 7/7 `none` | `none` |
+| diona | `signature_mix` | Drunken Mist 178f / 120f · `standard` | Signature Mix (Tick) 178f / 120f × 6 · 3/6 `standard` | 150f / every 3 |
+| durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame 156f / 59f · `standard` | Dragon of White Flame 156f / 59f × 13 · 7/13 `other` | 90f / first only |
+| durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 171f / 74f · `standard` | — | — |
+| emilie | `fragrance_extraction` | Lumidouce Case 106f / 90f · `standard` | Lumidouce Case (Level 1) 111f / 90f × 9 · 5/9 `standard` | 120f / first only |
+| emilie | `aromatic_explication` | Lumidouce Case (Level 3) 138f / 42f · `standard` | Lumidouce Case (Level 3) 126f / 36f × 4 ⚠️ irregular · 2/4 `standard`<br>Lumidouce Case (Level 1) 401f / 90f × 6 · 3/6 `standard` | 150f / every 3<br>120f / first only |
+| escoffier | `lowtemperature_cooking` | Cooking Mek (Cold Storage) 171f / 59f · `standard` | — | — |
+| fischl | `nightrider` | Oz 82f / 59f · `standard` | Oz (Skill) 92f / 59f × 10 · 3/10 `other` | 300f / every 4 |
+| fischl | `midnight_phantasmagoria` | Oz 64f / 59f · `standard` | Oz (Burst) 192f / 59f × 10 · 3/10 `other` | 300f / every 4 |
+| furina | `salon_solitaire` | Salon Solitaire 132f / 202f · `standard`<br>Salon Solitaire 110f / 98f · `standard`<br>Salon Solitaire 131f / 314f · `standard` | — | — |
+| ganyu | `trail_of_the_qilin` | — | Ice Lotus 13f / 360f × 2 · 2/2 `either` | `none` |
+| gorou | `juuga_forward_unto_victory` | General's Glory 121f / 90f · `standard` | Crystal Collapse 122f / 90f × 5 · 3/5 `standard` | 150f / every 3 |
+| ineffa | `cleaning_mode_carrier_frequency` | Birgitta 110f / 120f · `none` | Birgitta 110f / 119f × 7 · 7/7 `none` | `none` |
+| ineffa | `supreme_instruction_cyclonic_exterminator` | Birgitta 153f / 120f · `none` | Birgitta 153f / 119f × 7 · 7/7 `none` | `none` |
+| kaedehara_kazuha | `kazuha_slash` | Autumn Whirlwind 140f / 117f · `none` | Kazuha Slash (DoT) 140f / 117f × 5 · 5/5 `none` | `none` |
+| kaeya | `glacial_waltz` | Glacial Waltz 53f / 40f · `standard`<br>Glacial Waltz 53f / 30f · `standard` | Glacial Waltz 53f / 40f × 13 · 7/13 `standard` | 150f / every 3 |
+| kinich | `hail_to_the_almighty_dragonlord` | Ajaw 253f / 147f · `standard` | — | — |
+| kuki_shinobu | `sanctifying_ring` | Grass Ring of Sanctification 113f / 90f · `standard` | Grass Ring of Sanctification 115f / 90f × 8 · 4/8 `standard` | 150f / every 3 |
+| kuki_shinobu | `gyoei_narukami_kariyama_rite` | Gyoei Narukami Kariyama Rite 50f / 17f · `standard` | Gyoei Narukami Kariyama Rite 50f / 17f × 7 · 3/7 `standard` | 150f / every 3 |
+| lauma | `runo_dawnless_rest_of_karsikko` | Frostgrove Sanctuary 62f / 117f · `none` | Frostgrove Sanctuary 62f / 117f × 8 · 8/8 `none` | `none` |
+| layla | `dream_of_the_starstream_shaker` | Celestial Dreamsphere 114f / 90f · `standard` | Starlight Slug 114f / 90f × 8 · 4/8 `standard` | 150f / every 3 |
+| lisa | `lightning_rose` | Lightning Rose 119f / 30f · `standard` | Lightning Rose (Tick) 119f / 30f × 27 · 11/27 `standard` | 150f / every 3 |
+| lynette | `magic_trick_astonishing_shift` | Bogglecat Box 136f / 59f · `standard` | Bogglecat Box 136f / 59f × 11 · 4/11 `standard` | 150f / every 3 |
+| mona | `mirror_reflection_of_doom` | Phantom 86f / 59f · `standard` | Mirror Reflection of Doom (Tick) 86f / 59f × 4 · 2/4 `standard` | 150f / every 3 |
+| navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support 163f / 42f · `standard` | Cannon Fire Support 163f / 42f × 17 · 6/17 `other` | 720f / every 3 |
+| ningguang | `jade_screen` | — | Jade Screen 17f / —f × 1 · 1/1 `either` | `none` |
+| ororon | `dark_voices_echo` | Supersonic Oculus 60f / 60f · `standard` | Soundwave Collision DMG 60f / 60f × 9 · 3/9 `standard` | 180f / first only |
+| qiqi | `adeptus_art_preserver_of_fortune` | — | Fortune-Preserving Talisman 82f / —f × 1 · 1/1 `either` | 150f / every 3 |
+| rosaria | `rites_of_termination` | Ice Lance 176f / 120f · `none` | Rites of Termination (DoT) 176f / 120f × 4 · 4/4 `none` | `none` |
+| sangonomiya_kokomi | `kurages_oath` | Bake-Kurage 24f / 120f · `none` | Bake-Kurage 24f / 120f × 7 · 7/7 `none` | `none` |
+| sayu | `yoohoo_art_mujina_flurry` | Muji-Muji Daruma 145f / 90f · `standard` | Muji-Muji Daruma 145f / 90f × 6 · 3/6 `standard` | 150f / every 3 |
+| sigewinne | `rebound_hydrotherapy` | Bolstering Bubblebalm 35f / 107f · `standard` | Rebound Hydrotherapy 35f / 107f × 5 · 3/5 `standard` | 120f / first only |
+| sucrose | `forbidden_creation_isomer_75_type_ii` | Large Wind Spirit 137f / 113f · `none` | Forbidden Creation-Isomer 75/Type II 137f / 113f × 3 · 3/3 `none` | `none` |
+| traveler_anemo | `gust_surge` | Gust Surge 94f / 30f · `standard` | Gust Surge 94f / 30f × 9 · 4/9 `standard` | 150f / every 3 |
+| traveler_dendro | `surgent_manifestation` | LeaLotus Lamp 91f / 90f · `standard` | Lea Lotus Lamp 91f / 90f × 8 · 4/8 `standard` | 150f / every 3 |
+| traveler_geo | `wake_of_earth` | — | Wake of Earth 66f / 15f × 4 · 2/4 `standard` | 150f / every 3 |
+| traveler_hydro | `rising_waters` | Rising Waters Bubble 34f / 30f · `standard` | — | — |
+| venti | `winds_grand_ode` | Stormeye 106f / 24f · `standard` | Wind's Grand Ode 106f / 24f × 20 · 7/20 `other` | 60f / every 3 |
+| xiangling | `guoba_attack` | Guoba 126f / 100f · `none` | Guoba 126f / 100f × 4 · 4/4 `none` | `none` |
+| xiangling | `pyronado` | Pyronado 56f / 73f · `none` | Pyronado 56f / 73f × 9 · 9/9 `none` | `none` |
+| xingqiu | `guhua_sword_fatal_rainscreen` | — | Xingqiu Orbital 44f / 135f × 7 · 7/7 `none` | `none` |
+| xingqiu | `guhua_sword_raincutter` | — | Xingqiu Orbital 19f / 135f × 7 · 7/7 `none` | `none` |
+| yae_miko | `yakan_evocation_sesshou_sakura` | Sesshou Sakura 120f / 176f · `standard` | Sesshou Sakura Tick 121f / 176f × 5 · 5/5 `either` | 150f / every 3 |
+| yaoyao | `raphanus_sky_cluster` | Yuegui: Throwing Mode 105f / 60f · `standard` | Radish (Skill) 104f / 60f × 10 · 4/10 `standard` | 150f / first only |
+| yumemizuki_mizuki | `anraku_secret_spring_therapy` | Mini Baku 183f / 90f · `standard` | Munen Shockwave 201f / 90f × 8 · 4/8 `standard` | 150f / every 3 |
+| zhongli | `dominus_lapidis` | Stone Stele 144f / 120f · `standard` | Stone Stele (Tick) 144f / 120f × 7 · 3/7 `other` | 150f / every 3 |
+
+### 5b. Tick series whose measured cadence is neither standard nor none
+
+⚓ **The migration worklist for the ICD-group round's sub-landing b.** Each row is a
+summon tick series whose gcsim group is a real window our schema's default (2.5s /
+every 3rd hit) does not reproduce. The proposal column is the exact pair to author;
+⛔ this report never writes it.
+
+⚠️ A row is a REVIEW CANDIDATE, not a correction. Two reasons to leave one alone:
+the series may already agree with standard on this fixture (the `applied/total`
+column will say `standard` or `either`), and a group carrying an `N max` cap can't be
+stated in full — authoring the pair gets the cadence and drops the cap.
+
+| character | ability | stream | applied/total | gcsim cadence | proposal |
+| --- | --- | --- | --- | --- | --- |
+| amber | `fiery_rain` | Fiery Rain | 13/18 `other` | 60f / every 3 | `{ "timer": 60, "every": 3 }` |
+| chiori | `fluttering_hasode` | Fluttering Hasode (Tamato) | 3/4 `other` | 114f / first only | `{ "timer": 114 }` |
+| collei | `trumpcard_kitty` | Trump-Card Kitty (Leap) | 2/12 `other` | 180f / first only | `{ "timer": 180 }` |
+| durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame | 7/13 `other` | 90f / first only | `{ "timer": 90 }` |
+| emilie | `fragrance_extraction` | Lumidouce Case (Level 1) | 5/9 `standard` | 120f / first only | `{ "timer": 120 }` |
+| emilie | `aromatic_explication` | Lumidouce Case (Level 1) | 3/6 `standard` | 120f / first only | `{ "timer": 120 }` |
+| fischl | `nightrider` | Oz (Skill) | 3/10 `other` | 300f / every 4 | `{ "timer": 300, "every": 4 }` |
+| fischl | `midnight_phantasmagoria` | Oz (Burst) | 3/10 `other` | 300f / every 4 | `{ "timer": 300, "every": 4 }` |
+| navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support | 6/17 `other` | 720f / every 3 | `{ "timer": 720, "every": 3 }` |
+| ororon | `dark_voices_echo` | Soundwave Collision DMG | 3/9 `standard` | 180f / first only | `{ "timer": 180 }` |
+| sigewinne | `rebound_hydrotherapy` | Rebound Hydrotherapy | 3/5 `standard` | 120f / first only | `{ "timer": 120 }` |
+| venti | `winds_grand_ode` | Wind's Grand Ode | 7/20 `other` | 60f / every 3 | `{ "timer": 60, "every": 3 }` |
+| yaoyao | `raphanus_sky_cluster` | Radish (Skill) | 4/10 `standard` | 150f / first only | `{ "timer": 150 }` |
