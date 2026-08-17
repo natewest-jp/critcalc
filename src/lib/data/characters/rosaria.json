@@ -88,6 +88,28 @@
 							"value": 4,
 							"conditions": { "type": "constellation", "level": 2 }
 						}
+					],
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 2,
+								"icdGate": "none"
+							},
+							"scaling": 237.6,
+							"stat": "atk",
+							"element": "cryo",
+							"_curatorNotes": [
+								"gcsim internal/characters/rosaria/burst.go, func Burst: inside QueueCharTask(…, 56) (the lance landing) the loop `for i := 120; i < dur; i += 120` queues the 'Rites of Termination (DoT)' AttackInfo — interval 120f = 2.000s, first tick 120f after the lance lands. spawnsAt is 56f, so firstTickDelay = (176 - 56) / 60 = 2.000s; matches the measured row 176f / 120f × 4.",
+								"scaling = burstDot[9] = 2.376 in zz_rosaria.dm.go (index 9 = talent level 10), cross-checked against talent sidecar row 'Ice Lance DoT' = 237.6%.",
+								"stat atk: ai.Mult is the DoT's only scaling term, no snap modification in burst.go.",
+								"icdGate none: the DoT AttackInfo sets ICDTag: attacks.ICDTagNone (Durability 25 = 1U); measured verdict is 4/4 `none`.",
+								"C0 dur = 510f → 4 ticks. C2 adds 240f (dur = 750f) → 6 ticks; that variance is already carried by the existing C2 durationModifier extending the summon, so no constellation-gated second series is authored."
+							]
+						}
 					]
 				}
 			],
