@@ -209,6 +209,9 @@ const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 // is not loaded at all, so leaving the old name here would have silently
 // dropped every exported label onto a system sans — a failure that renders
 // perfectly and is only visible by comparing a PNG to the screen.
+/** Mirrors AURA_UNIT_RULE_INSET in RotationTimeline — the gap a unit rule
+ *  leaves for its own label. */
+const AURA_UNIT_RULE_INSET = 20;
 const SANS = '"IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
 
 // ── Color math (stand-ins for CSS color-mix in srgb) ────────────────────────
@@ -1223,15 +1226,18 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			ctx.beginPath();
 			// ⚓ `ox`, i.e. x(0) — the datum belongs to the PLOT, not the page, and
 			// starting it at the label column's edge only happens to coincide.
-			ctx.moveTo(ox, gy);
+			// ⚠ The rule yields its first px to its own label, mirroring the screen:
+			// the label sits ON the line, so the line cannot run through it.
+			ctx.moveTo(ox + AURA_UNIT_RULE_INSET, gy);
 			ctx.lineTo(ox + snap.totalWidth, gy);
 			ctx.stroke();
-			// Named at its left end, mirroring `.rp-aura-unit-label`. ⚠ The export
-			// ALSO carries the ceiling in its label column, and this is not a
-			// duplicate of it: the column says how high the plot goes, the rule
-			// says where one unit is. A reader needs both to place a line.
+			// ⚠ The export ALSO carries the ceiling in its label column, and this is
+			// not a duplicate: the column says how high the plot goes, the rule says
+			// where one unit is. A reader needs both to place a line.
 			ctx.fillStyle = MUTED;
-			ctx.fillText(`${u}U`, ox + 3, gy - 3);
+			// ⚠ Clamped at the top for the same reason as the screen: a centred label
+			// on the ceiling's rule would sit half outside the plot.
+			ctx.fillText(`${u}U`, ox + 2, Math.max(plotTop + 7, gy + 3));
 		}
 
 		// Every span walked once: the gradient area, then the line on top of it.
@@ -1265,7 +1271,11 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				ctx.strokeStyle = color;
 				ctx.lineWidth = 2;
 				ctx.lineJoin = 'round';
-				ctx.lineCap = 'round';
+				// ⚠ A DASHED path must be BUTT-capped, or every dash grows half its
+				// stroke-width at each end and the gaps close up — which is what made
+				// the fuel series read as a badly-aliased solid line. Mirrors the
+				// screen; see `burningFuel.dash`.
+				ctx.lineCap = series.dash ? 'butt' : 'round';
 				ctx.setLineDash(series.dash ? series.dash.split(' ').map(Number) : []);
 				walk(pts);
 				ctx.stroke();

@@ -201,6 +201,17 @@ export function computeAuraLane(
 		marker.label = [...new Set(marker.entries.map((e) => REACTION_FAMILY[e.reaction]))].join(' · ');
 	}
 
+	// ⚓ BOOKKEEPING SERIES DRAW LAST (2026-08-17). `AURA_MOD_ORDER` groups a mod
+	// under the aura it derives from, which is right for stacking rows and wrong
+	// for PAINT: it put `burningFuel` (index 2) before `dendro` (index 7), and
+	// during a burn those two follow almost the same curve — so dendro's solid
+	// stroke painted straight over the fuel's dashed one and the pair read as a
+	// single badly-aliased line. 🐛 That is what the dash looked broken FOR; the
+	// dash itself was fine. Sorting here rather than reordering AURA_MOD_ORDER
+	// keeps the row grammar intact — ⚠️ `sort` is stable, so everything else holds
+	// its declared order.
+	series.sort((a, b) => (a.dash ? 1 : 0) - (b.dash ? 1 : 0));
+
 	const markers = collapseReactionRuns(perFrame, gaugeSeries);
 	// ⚓ THE RUN CARRIES ITS COUNT IN ITS NAME — "Electro-Charged ×4".
 	//

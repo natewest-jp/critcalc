@@ -70,17 +70,31 @@
 	// get MORE instructive rather than less: a single Hydro hit really does clear
 	// a Pyro aura, and that is the lesson.
 	//
-	// ⚠️ TWO EXCEPTIONS, and each is here because the mechanic is INVISIBLE
-	// without a size difference — ⛔ not because the chart looked better:
-	//   · Top-Up needs two different sizes, or "the first application's decay
-	//     rate is inherited" has nothing to show: two 1U applications share a
-	//     rate, so the whole point would be unobservable.
-	//   · Reverse Melt needs an aura big enough to SURVIVE its first trigger,
-	//     which is the entire content of "the weak direction only nibbles". 🐛 A
-	//     first cut tried to build it from two 1U Pyro hits and was wrong about
-	//     the model: a same-element re-application TOPS UP to the new value, it
-	//     does not stack, so two 1U hits leave the same 0.8U aura one does. 2U it
-	//     is — and the note says so rather than pretending otherwise.
+	// ⚠️ THE EXCEPTIONS ARE ALL ONE EXCEPTION: a scenario keeps a larger first
+	// application ONLY where the mechanic is INVISIBLE without a size difference.
+	// ⛔ Never because the chart looked better.
+	//
+	// 🐛 AND THE TRAP THAT PRODUCED MOST OF THEM, twice, in two different
+	// scenarios: a same-element re-application TOPS UP to the new value, it does
+	// not STACK. So two 1U hits leave exactly the 0.8U aura one hit does, and
+	// every "build it up with small hits" idea is silently a no-op. ⛔ Don't
+	// reach for repeated 1U applications to make a bigger aura.
+	//
+	//   · Top-Up — two different sizes, or "the first application's decay rate is
+	//     inherited" has nothing to show: equal applications share a rate.
+	//   · Reverse Melt (2U) — the aura must SURVIVE its first trigger, which is
+	//     the entire content of "the weak direction only nibbles".
+	//   · Vaporize (2U) — so the ×2 consumption is VISIBLE rather than implied: a
+	//     1U trigger clearing a 1U aura looks like any other clear.
+	//   · Freeze (2U) — the note promises "leftover Hydro underneath", and a 1U
+	//     aura is entirely consumed, so there was none.
+	//   · Electro-Charged (2U Hydro) — the lesson is that the SMALLER gauge runs
+	//     out first, which two equal auras cannot show. ⚠️ Its note previously
+	//     claimed the asymmetry while the demo showed symmetry.
+	//   · Quicken (1.5U) — ⚓ Nate: at 1U the Quicken line lands on top of the
+	//     Dendro one and reads as the same object, when they are unrelated and
+	//     decay differently. 1.5U is also exactly what Nahida's skill applies,
+	//     which is the meta Quicken enabler.
 	const PRESETS: PresetDef[] = [
 		{
 			id: 'single',
@@ -100,9 +114,9 @@
 		{
 			id: 'vape',
 			label: 'Vaporize',
-			note: 'Hydro on Pyro is the strong direction: the trigger takes 2× its own gauge. A 1U Hydro hit can remove 2U of Pyro — which is why one vape usually clears the aura outright.',
+			note: 'Hydro on Pyro is the strong direction: the trigger takes 2× its own gauge. A single 1U Hydro hit clears a 2U Pyro aura outright — which is why one vape usually leaves nothing behind.',
 			apps: [
-				[0, 'pyro', 1],
+				[0, 'pyro', 2],
 				[2.5, 'hydro', 1]
 			]
 		},
@@ -140,30 +154,29 @@
 		{
 			id: 'ec',
 			label: 'Electro-Charged',
-			note: 'Hydro and Electro coexist; each tick drains 0.4U from BOTH gauges until one side empties. Two Hydro hits outlast one Electro.',
+			note: 'Hydro and Electro coexist, and each tick drains 0.4U from BOTH gauges — so the SMALLER aura runs out first and the reaction stops with the bigger one still on the target. A 2U Hydro aura outlives a 1U Electro one.',
 			apps: [
-				[0, 'hydro', 1],
-				[0.5, 'hydro', 1],
-				[1.5, 'electro', 1]
+				[0, 'hydro', 2],
+				[1, 'electro', 1]
 			]
 		},
 		{
 			id: 'freeze',
 			label: 'Freeze',
-			note: 'Frozen forms at 2 × min(aura, trigger) and decays on its own accelerating clock; leftover Hydro keeps ticking down underneath.',
+			note: 'Frozen forms at 2 × min(aura, trigger) and decays on its own accelerating clock; the leftover Hydro keeps ticking down underneath it.',
 			apps: [
-				[0, 'hydro', 1],
+				[0, 'hydro', 2],
 				[1.5, 'cryo', 1]
 			]
 		},
 		{
 			id: 'quicken',
 			label: 'Quicken',
-			note: 'Quicken forms 1:1 and lives 5 × gauge + 6s. Aggravate hits on it consume nothing — but the same hit can re-Quicken off leftover Dendro.',
+			note: 'Quicken forms 1:1 and lives 5 × gauge + 6s. Aggravate hits on it consume nothing — but the same hit can re-Quicken off leftover Dendro. Nahida applies 1.5U, which is what separates the Quicken line from the Dendro one underneath it.',
 			apps: [
-				[0, 'dendro', 1],
-				[1.5, 'electro', 1],
-				[3, 'electro', 1]
+				[0, 'dendro', 1.5],
+				[1, 'electro', 1],
+				[2, 'electro', 1]
 			]
 		},
 		{
@@ -178,20 +191,23 @@
 		{
 			id: 'burning',
 			label: 'Burning',
-			note: 'Burning = a fixed 2U aura plus a hidden fuel gauge draining at 0.4 U/s, re-applying 1U Pyro to the target every 0.25s until the fuel runs dry.',
+			note: 'Burning = a fixed 2U aura plus a hidden fuel gauge draining at 0.4 U/s, re-applying 1U Pyro to the target every 0.25s until the fuel runs dry. Feeding it more Dendro extends the burn.',
 			apps: [
 				[0, 'dendro', 1],
-				[2, 'pyro', 1]
+				[1, 'pyro', 1],
+				[2, 'dendro', 1]
 			]
 		},
 		{
 			id: 'pyroec',
-			label: 'Pyro on EC',
+			// ⚓ NATE: "Overvape" is the name players use for this interaction; "Pyro
+			// on EC" described the inputs rather than the thing being demonstrated.
+			label: 'Overvape',
 			note: 'One Pyro hit on an Electro-Charged target triggers Overload AND Vaporize — leftover trigger gauge flows down the reaction priority list.',
 			apps: [
 				[0, 'hydro', 1],
-				[0.5, 'electro', 1],
-				[1.5, 'pyro', 1]
+				[1, 'electro', 1],
+				[2, 'pyro', 1]
 			]
 		}
 	];
@@ -344,18 +360,24 @@
 	const svgH = $derived(stripY0 + stripRows.length * ROW_H + 6);
 
 	const paths = $derived(
-		sim.series.map(({ key, points }) => {
-			const d = points
-				.map((p, i) => `${i ? 'L' : 'M'}${xOf(p.t).toFixed(1)},${yOf(p.u).toFixed(1)}`)
-				.join(' ');
-			// Area fill under each aura line — 'volume' of aura on the enemy.
-			// The hidden fuel gauge stays a bare dashed line.
-			const fillD =
-				key === 'burningFuel'
-					? null
-					: `${d} L${xOf(points[points.length - 1].t).toFixed(1)},${plotY1} L${xOf(points[0].t).toFixed(1)},${plotY1} Z`;
-			return { meta: MOD_META[key], d, fillD };
-		})
+		sim.series
+			.map(({ key, points }) => {
+				const d = points
+					.map((p, i) => `${i ? 'L' : 'M'}${xOf(p.t).toFixed(1)},${yOf(p.u).toFixed(1)}`)
+					.join(' ');
+				// Area fill under each aura line — 'volume' of aura on the enemy.
+				// The hidden fuel gauge stays a bare dashed line.
+				const fillD =
+					key === 'burningFuel'
+						? null
+						: `${d} L${xOf(points[points.length - 1].t).toFixed(1)},${plotY1} L${xOf(points[0].t).toFixed(1)},${plotY1} Z`;
+				return { meta: MOD_META[key], d, fillD };
+			})
+			// ⚓ Bookkeeping series (the dashed fuel) paint LAST — see the same note
+			// in auraPlot's computeAuraLane. MOD_ORDER groups a mod under the aura it
+			// derives from, which puts burningFuel before dendro; during a burn the
+			// two curves nearly coincide, so the solid one covered the dashed one.
+			.sort((a, b) => (a.meta.dash ? 1 : 0) - (b.meta.dash ? 1 : 0))
 	);
 
 	const applyEvents = $derived(
@@ -373,7 +395,9 @@
 				x: xOf(e.time),
 				n: e.appIndex + 1,
 				color: `var(--el-${e.element}-main)`,
-				gauge: `${e.gauge}U`,
+				// ⛔ No "U" suffix — see the pill's note. The axis and the panel below
+				// both say what the unit is; the disc only has room for the number.
+				gauge: `${e.gauge}`,
 				labels: names.length > 2 ? [...names.slice(0, 2), `+${names.length - 2} more`] : names
 			};
 		})
@@ -571,12 +595,19 @@
 						</text>
 					{/each}
 					<circle cx={m.x} cy={MARKER_PILL_CY} r={MARKER_PILL_R} fill={m.color} />
+					<!-- ⚠ THE NUMBER ONLY, and set CONDENSED (2026-08-17). "1.5U" bled
+					     out of the disc on both sides at the regular face; the U was the
+					     part paying rent it did not earn, because the y axis is labelled
+					     in U and the panel below opens by defining the unit. Condensed
+					     buys the rest of the headroom — ⚠ it is a STATIC 400/600 face
+					     (the weight ladder folds there), so 700 resolves to 600 and that
+					     is fine at this size. -->
 					<text
 						x={m.x}
 						y={MARKER_PILL_CY + 3.5}
-						style="fill: var(--bright-ink)"
-						font-size="9.5"
-						font-weight="700"
+						style="fill: var(--bright-ink); font-family: var(--font-condensed)"
+						font-size="10"
+						font-weight="600"
 						text-anchor="middle"
 					>
 						{m.gauge}
@@ -610,6 +641,7 @@
 						stroke-width="2"
 						stroke-dasharray={p.meta.dash ?? 'none'}
 						stroke-linejoin="round"
+						stroke-linecap={p.meta.dash ? 'butt' : 'round'}
 					/>
 				{/each}
 
