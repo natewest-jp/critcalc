@@ -30,6 +30,7 @@
 	} from './lib/workspace';
 	import { decodeInstrumentParam, encodeInstrumentParam } from '$lib/utils/instrumentUrl';
 	import { TOOL_GUTTER } from '$lib/toolGutter';
+	import { scrollFade } from '$lib/actions/scrollFade';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 
 	/**
@@ -291,7 +292,11 @@
 			{#each INSTRUMENTS as inst (inst.id)}
 				{@const slot = slotOf(inst.id)}
 				<section class="ws-tile" class:ws-hidden={slot === -1} style:order={slot}>
-					<div class="ws-body">
+					<!-- THE TILE IS THE VIEWPORT (2026-08-17). See .ws-body's rule for
+					     what was wrong before; the mask is unconditional and inert
+					     until there is something to scroll, which is what makes it
+					     safe on the narrow layout where the page scrolls instead. -->
+					<div class="ws-body scroll-fade" use:scrollFade>
 						{#if slot !== -1 || everSlotted.has(inst.id)}
 							{#if inst.id === 'crit'}
 								<CritInstrument bind:this={handles.crit} />
@@ -427,17 +432,58 @@
 		flex: 1;
 		min-height: 0;
 		min-width: 0;
+		/* 🎛️ The roll-off. Shorter than the roster's 32 because what passes an
+		   instrument's edge is a PANEL — a card with its own border, whose top
+		   rule wants to dissolve rather than sit half-dimmed for a third of its
+		   own height. */
+		--scroll-fade: 24px;
 	}
 
 	@media (min-width: 1024px) {
-		/* Fill the viewport below the bands; instruments manage their own
-		   internal scroll. The band stack and its gap come out of the budget —
-		   BAND_STACK_TO_SURFACE, passed down by ToolStack. */
+		/* Fill the viewport below the bands. The band stack and its gap come out
+		   of the budget — BAND_STACK_TO_SURFACE, passed down by ToolStack.
+		   🐛 --band-gap WAS MISSING from this sum (2026-08-17). The bands stopped
+		   abutting on 2026-08-09 and this calc was never told, so the workspace
+		   was 4px taller than its slot for eight days — a permanent 4px of page
+		   scroll that the 213px overflow above was hiding. ⚠ Every term of
+		   BAND_STACK_TO_SURFACE has to be here, and the reason they are spelled
+		   out rather than passed as one number is that ToolStack publishes the
+		   parts, not the total; if a third band ever appears, this is the sum
+		   that has to learn about it. */
 		.ws {
 			height: calc(
 				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 0.5rem) -
-					var(--tool-pad-bottom, 3rem) - var(--band-a-h) - var(--band-b-h) - var(--band-stack-gap)
+					var(--tool-pad-bottom, 3rem) - var(--band-a-h) - var(--band-gap) - var(--band-b-h) -
+					var(--band-stack-gap)
 			);
+			/* 🐛 THE ROW HAD TO BE PINNED, and this one declaration is the whole
+			   fix (⚓ NATE 2026-08-17: the Visualizers should not page-scroll).
+			   `.ws` had a definite height and every instrument declared
+			   `height: 100%; overflow-y: auto` — but the implicit row was `auto`,
+			   whose minimum is its item's MIN-CONTENT size, so the row grew past
+			   the container, the instrument was never taller than its own box, its
+			   scroller never engaged, and the excess fell through to .tool-shell.
+			   Measured at 2-up on a 997px window: 796px of `.ws` holding 1053px
+			   tiles, and 213px of page scroll that took both bands off the top.
+			   ⚠ minmax(0, 1fr), not `1fr` — `1fr` is `minmax(auto, 1fr)` and the
+			   `auto` minimum is exactly the term that was doing the damage. Same
+			   law as .ws-body's min-width note, one axis over. */
+			grid-template-rows: minmax(0, 1fr);
+		}
+		/* ⚓ THE TILE IS THE VIEWPORT, not the instrument. Eight instrument roots
+		   each carried their own (inert) `overflow-y: auto`; the scroll lives here
+		   instead, because the roll-off mask needs `use:scrollFade` attached to
+		   the scroller and there is one tile against eight roots. The instrument
+		   keeps `height: 100%` — that is what fills a slot a short instrument does
+		   not need all of, and it resolves for the first time now.
+		   ⚠ In the media query with the height, deliberately: below 1024px `.ws`
+		   has no definite height, so this would be a scroller that can never
+		   scroll — and the narrow layout page-scrolling is correct. */
+		.ws-body {
+			overflow-y: auto;
+			/* A fling inside a tile must not chain to the shell once the tile is
+			   at its end — the shell is the surface this round just stopped using. */
+			overscroll-behavior-y: contain;
 		}
 	}
 </style>
