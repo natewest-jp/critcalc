@@ -1,6 +1,11 @@
 # The Gauge Round
 
-**Status:** planning · opened 2026-08-16
+**Status:** ✅ **COMPLETE** — opened 2026-08-16, L0→L6 merged and pushed 2026-08-16
+(`8893da5`), the `applications` feed-order fix 2026-08-17 (`d0a87e5`). Every landing is
+visually verified by Nate, real Safari included. ⏭ The residue is DATA, not engine: 30
+applications of curation (a damage tick series on 24 existing summons — ⚠️ a VISIBLE
+change, see L5e §1), 30 other schema gaps, and the 13 `OTHER` ICD series that need L4's
+named top schema gap (per-ability ICD tag + group).
 **Goal:** replace the coarse aura model with a real elemental-gauge simulation, and move the
 rotation planner from a token-driven interpreter to a clock-driven state machine so that
 simulation has somewhere honest to live.
@@ -785,7 +790,7 @@ were made: "the ceiling is DATA" (above), and L5e §3.3's "a summon tick needs n
 gate", which was generalised from Xiangling alone — Oz applies ~1 in 3, so it is
 PER-ABILITY exactly as L4d's census said.
 
-✅ **CLOSED 2026-08-17** (`ad48627`, recorded in L5e's own doc): the cast pipeline
+✅ **CLOSED 2026-08-17** (`d0a87e5`, recorded in L5e's own doc): the cast pipeline
 SCHEDULES BEFORE IT ADVANCES, so `ParsedRotation.applications` is in feed order and feed
 order is time order — the sort is gone and the invariant is pinned over the corpus.
 ⚠️⚠️ **The census that measured this defect is what hid its size.** Re-run verbatim
@@ -805,8 +810,8 @@ not on being finished.**
 
 ### L6 — Surface and honesty ✅
 
-📄 **Full record: [`gauge-round-L6.md`](gauge-round-L6.md)** · built, gates green,
-⏳ awaiting Nate's eyes.
+📄 **Full record: [`gauge-round-L6.md`](gauge-round-L6.md)** · shipped, gates green,
+✅ verified by Nate on the live tool and in real Safari.
 
 The **target-aura lane**: ONE overlaid plot, a line per aura mod with the fill fading out
 beneath it, with application ticks and reaction markers riding above. Reactions have been

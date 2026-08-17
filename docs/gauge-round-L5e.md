@@ -328,7 +328,7 @@ index, swapOutAt })`, with the swap clamp folded INSIDE so an unclamped end can 
   summon declares `terminatesOn: 'swap'` or carries `durationExtensions`) — ⛔ don't cover
   them with a fixture summon. Gates green incl. **e2e 73 + 73**.
 
-### ✅ CLOSED — the `applications` feed order (2026-08-17, `ad48627`)
+### ✅ CLOSED — the `applications` feed order (2026-08-17, `d0a87e5`)
 
 `collectApplications` used to SORT, so the projection was time-ordered while the order the
 gauge was FED was not. The cast pipeline advanced the clock through the cast animation
@@ -399,7 +399,8 @@ instead, and was verified the only way a guard can be: by reverting `run.ts` and
   missing (50 → 52 points in that case).
 
 Gates green: vitest **1570**, `check`, `lint`, `build`, and **e2e 73 + 73** (the
-worker-teardown errors are the documented upstream Chrome bug, exit 0).
+worker-teardown errors are the documented upstream Chrome bug, exit 0). ✅ **Verified by
+Nate on the live tool AND in real Safari** — merged as `d0a87e5`.
 
 #### The oracle is byte-identical
 

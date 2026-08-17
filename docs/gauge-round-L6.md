@@ -7,8 +7,8 @@ That push carried the whole gauge round: 60 commits, L0 through L6, which until 
 been entirely local.
 ↻ **THE REFINEMENT PASS LANDED 2026-08-17** — the lane moved to the timeline's HEADER,
 above the time axis, and became an opt-in LAYER. See [§9](#9-the-reposition-2026-08-17).
-⏳ **Open:** real Safari (still — and the reposition re-opens it), and the PNG's own
-appearance under the new geometry.
+✅ **Real Safari CLEARED 2026-08-17** (⚓ Nate: _"Safari's green"_), through the event-log
+round and the feed-order fix. ⏳ Open: the PNG's own appearance under the new geometry.
 Follows [L5e](gauge-round-L5e.md); the round's contract is [gauge-round.md](gauge-round.md).
 
 L6 is the landing where the gauge becomes something a player can look at. Everything
@@ -319,14 +319,14 @@ key into the IR (the bridge exists to stop that); it is a multiplier field on
   lane with its label column. Edge cases clean — empty notation, a physical-only rotation
   (no lane, correctly), a rotation with no reactions, four characters.
 - `npm run test:e2e` — **73 + 73 on both engines**, run against each of the two commits.
-- ✅ **Nate's eyes**, on the live tool, typing rotations. ⏳ Real **Safari** is still
-  unverified — this landing is entirely visual, so the backlog re-opens at one.
+- ✅ **Nate's eyes**, on the live tool, typing rotations, and ✅ **real Safari, cleared
+  2026-08-17** (⚓ Nate: _"Safari's green"_) after the reposition and the feed-order fix.
 
 ---
 
 ## 8. Residue
 
-- ✅ **The `applications` feed order** — CLOSED 2026-08-17 (`ad48627`, recorded in the
+- ✅ **The `applications` feed order** — CLOSED 2026-08-17 (`d0a87e5`, recorded in the
   L5e doc). L6 was the reason it was queued, and L6 is where it showed: in 19 corpus cases
   the lane drew its application pip at the true frame while the LINE stepped later, with
   identical applications and identical events. ⚓ The pip and the line it points into agree
