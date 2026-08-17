@@ -662,6 +662,29 @@ export type Trigger =
 			 * `STANDARD_ICD_FRAMES`, on a clock of the series' own. `'none'` means
 			 * every tick applies, gcsim's `ICDTagNone`.
 			 *
+			 * ↻ **AND SINCE 2026-08-17 IT CAN ALSO CARRY A MEASURED WINDOW**
+			 * (ICD-group round, sub-landing b). An `IcdWindow` is gcsim's own group
+			 * reduced to its two load-bearing numbers, the same shape
+			 * `chargedIcdWindow` already carries and the same shape `IcdParams`
+			 * always had — so consuming one needed no new ICD mechanism, only a
+			 * resolver willing to return something other than the standard.
+			 *
+			 * ⚓ THE KEY WAS REUSED RATHER THAN A SECOND ONE MINTED, deliberately:
+			 * this name is already unique and already has a consumer, and a fresh
+			 * key would have had to earn both again (see the naming note below —
+			 * that trap has been paid for once).
+			 *
+			 * ⚠️ Absent is STILL the measured majority and icd.md's rule against
+			 * mass-annotating a default is untouched: 13 of the 35 oracled series
+			 * carry a window, and ⛔ a series standard already reproduces stays
+			 * bare. Author one only from `gcsim-frames-diff.md` §5b, which measures
+			 * the group directly rather than inferring it from the applied count.
+			 *
+			 * ⚠️ One thing a window cannot say: four of gcsim's groups apply two or
+			 * three times at a regular period and then STOP for the rest of the
+			 * window. `(timer, every)` has no room for that cap, so authoring the
+			 * pair gets the cadence and drops it. §5b's `N max` marks those.
+			 *
 			 * ⚠️⚠️ IT LIVES ON THE TRIGGER, NOT THE SUMMON, and Furina is why:
 			 * Salon Solitaire is ONE authored summon carrying THREE tick series,
 			 * and they measure differently — Chevalmarin is standard, Gentilhomme
@@ -676,11 +699,9 @@ export type Trigger =
 			 * Sesshou Sakura, Furina's Crabaletta). Annotating those would assert
 			 * a measurement nobody made.
 			 *
-			 * ⛔ NOT a free-form gcsim ICD-group name. 13 series are neither
-			 * standard nor none — real groups with their own timers, L4's named
-			 * top schema gap — and they stay wrong by ±1–2 hits until something
-			 * can consume a group. Declaring a field no consumer reads is
-			 * `twoPiece`'s mistake.
+			 * ⛔ STILL NOT a free-form gcsim ICD-group name. gcsim has 58 of them,
+			 * that is a taxonomy we would have to maintain, and its entire content
+			 * is the two numbers `IcdWindow` carries.
 			 *
 			 * ⚠️⚠️ THE NAME IS LOAD-BEARING — this key is deliberately not called
 			 * `icd`. `orphanedSchema.test.ts` matches property ACCESS by key
@@ -698,7 +719,7 @@ export type Trigger =
 			 * key in a comma'd list would stand in for a real consumer. Keep
 			 * discussion of it phrased so no such mention appears.
 			 */
-			icdGate?: 'none';
+			icdGate?: 'none' | IcdWindow;
 	  };
 
 /** Known gameplay state keys used in conditions and triggers. */

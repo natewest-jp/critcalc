@@ -98,9 +98,12 @@ function authoredTicks(ability) {
 				// re-measures it against the dump's own post-ICD `applied` flag —
 				// the same reason the frame rows are diffed rather than trusted.
 				// ⛔ The audit never WRITES it.
-				// ⚠️ This access is also what keeps the key visible to
-				// `orphanedSchema.test.ts` until the parser consumes it at L5e-b;
-				// deleting it turns the guard red, which was verified deliberately.
+				// ↻ It no longer carries the `orphanedSchema` guard: the sim reads the
+				// key for real since the ICD-group round's b, so this access is a
+				// cross-check and nothing more. ⚓ And the check got STRICTER there —
+				// it compares the authored RULE against gcsim's own group numbers
+				// rather than against an applied count, which is what caught two
+				// series whose notes called a bespoke group standard.
 				icdGate: t.icdGate ?? 'standard'
 			});
 		}
@@ -143,6 +146,24 @@ function icdGateFor(icd) {
 	if (icd.timer === STANDARD_PAIR.timer && icd.period === STANDARD_PAIR.period) return 'standard';
 	return { timer: icd.timer, ...(icd.period ? { every: icd.period } : {}) };
 }
+
+/** An AUTHORED gate in the same shorthand the measured column uses, so the two
+ *  can be read against each other at a glance. ⚓ Since sub-landing b the field
+ *  can hold a window, and printing an object here read `[object Object]`. */
+function fmtGate(gate) {
+	if (gate === 'standard' || gate === 'none') return `\`${gate}\``;
+	return `${gate.timer}f / ${gate.every ? `every ${gate.every}` : 'first only'}`;
+}
+
+/** Do an authored gate and a measured cadence say the same thing? ⚠️ Compared as
+ *  the RULE, not as the applied count — which is the whole point of §6a. */
+const gateAgrees = (authored, measured) =>
+	authored === measured ||
+	(typeof authored === 'object' &&
+		typeof measured === 'object' &&
+		measured !== null &&
+		authored.timer === measured.timer &&
+		(authored.every ?? null) === (measured.every ?? null));
 
 /** A measured cadence in the report's own shorthand. ⚓ `first only` is `every`
  *  absent — a counter the window can never reach. */
@@ -578,19 +599,25 @@ function renderReport(d) {
 	for (const t of d.tickRows) {
 		const a = t.authored.length
 			? t.authored
-					.map((x) => `${x.label} ${x.firstTick}f / ${x.interval}f · \`${x.icdGate}\``)
+					.map((x) => `${x.label} ${x.firstTick}f / ${x.interval}f · ${fmtGate(x.icdGate)}`)
 					.join('<br>')
 			: '—';
 		const o = t.observed.length
 			? t.observed
 					.map((x) => {
 						// ⚠️ Flagged only when the AUTHORED claim contradicts the
-						// measurement — a lone `other` is a known limit, not a defect.
-						const claim = t.authored.length === 1 ? t.authored[0].icdGate : null;
-						const bad =
-							claim && (x.verdict === 'none' || x.verdict === 'standard')
-								? claim !== x.verdict
-								: false;
+						// measurement. ↻ Since sub-landing b the comparison is against
+						// the measured RULE (`gate`) rather than against the applied
+						// COUNT — which is stricter, and is what caught two series whose
+						// notes called a bespoke group standard because its effect on one
+						// cadence happened to coincide.
+						// ⚠️ And only when the pairing is ONE-to-ONE. Emilie's burst has
+						// one authored series against two measured streams on different
+						// groups, so an id-join flagged a deliberate choice; §5b marks
+						// that shape "pair by eye" instead.
+						const claim =
+							t.authored.length === 1 && t.observed.length === 1 ? t.authored[0].icdGate : null;
+						const bad = claim && x.gate ? !gateAgrees(claim, x.gate) : false;
 						return `${x.abil} ${x.first}f / ${x.interval ?? '—'}f × ${x.n}${x.spread > 2 ? ' ⚠️ irregular' : ''} · ${x.applied}/${x.n} \`${x.verdict}\`${bad ? ' ⚠️ **authored disagrees**' : ''}`;
 					})
 					.join('<br>')
@@ -600,36 +627,53 @@ function renderReport(d) {
 	}
 	p();
 
-	// --- the b worklist -----------------------------------------------------
+	// --- the window census --------------------------------------------------
 	p('### 5b. Tick series whose measured cadence is neither standard nor none');
 	p();
-	p("⚓ **The migration worklist for the ICD-group round's sub-landing b.** Each row is a");
-	p("summon tick series whose gcsim group is a real window our schema's default (2.5s /");
-	p('every 3rd hit) does not reproduce. The proposal column is the exact pair to author;');
-	p('⛔ this report never writes it.');
+	p('⚓ **The census sub-landing b was written from**, and the standing check on it. Each');
+	p("row is a summon tick series whose gcsim group is a real window our schema's default");
+	p('(2.5 s / every 3rd hit) does not reproduce. `authored` is what the data currently');
+	p('says; ⛔ this report never writes it.');
 	p();
-	p('⚠️ A row is a REVIEW CANDIDATE, not a correction. Two reasons to leave one alone:');
-	p('the series may already agree with standard on this fixture (the `applied/total`');
-	p("column will say `standard` or `either`), and a group carrying an `N max` cap can't be");
-	p('stated in full — authoring the pair gets the cadence and drops the cap.');
+	p('⚠️ A row is a REVIEW CANDIDATE, not a correction, and **pairing is by eye** — the');
+	p('stream named here must be the one our authored series MODELS. Emilie is the case:');
+	p('gcsim runs her burst case at Level 3 on the default group and only the decayed');
+	p('Level-1 stream carries her bespoke one, so her burst is deliberately left bare.');
+	p();
+	p("⚠️ A group carrying an `N max` cap can't be stated in full — authoring the pair gets");
+	p('the cadence and drops the cap.');
 	p();
 	const work = [];
 	for (const t of d.tickRows) {
 		for (const o of t.observed) {
 			if (!o.gate || o.gate === 'standard' || o.gate === 'none') continue;
-			work.push({ id: t.id, path: t.path.split('__').pop(), o });
+			// ⚠️ Only ONE-to-ONE rows get a verdict. With two observed streams under
+			// one authored series the pairing is a judgement — Emilie's burst is
+			// exactly that, and a naive id-join called her deliberately-bare series
+			// a mismatch against a stream it does not model.
+			const claim =
+				t.authored.length === 1 && t.observed.length === 1 ? t.authored[0].icdGate : null;
+			work.push({
+				id: t.id,
+				path: t.path.split('__').pop(),
+				o,
+				state: !claim
+					? `⚠️ pair by eye (${t.authored.length} authored / ${t.observed.length} observed) — currently ${t.authored.length === 1 ? fmtGate(t.authored[0].icdGate) : '—'}`
+					: gateAgrees(claim, o.gate)
+						? '✅ authored'
+						: `⛔ ${fmtGate(claim)}`
+			});
 		}
 	}
 	if (!work.length) {
 		p('_None — every measured tick series is standard or none._');
 		p();
 	} else {
-		p('| character | ability | stream | applied/total | gcsim cadence | proposal |');
+		p('| character | ability | stream | applied/total | gcsim cadence | authored |');
 		p('| --- | --- | --- | --- | --- | --- |');
 		for (const w of work) {
-			const every = w.o.gate.every ? `, "every": ${w.o.gate.every}` : '';
 			p(
-				`| ${w.id} | \`${w.path}\` | ${w.o.abil} | ${w.o.applied}/${w.o.n} \`${w.o.verdict}\` | ${fmtIcd(w.o.icd)} | \`{ "timer": ${w.o.gate.timer}${every} }\` |`
+				`| ${w.id} | \`${w.path}\` | ${w.o.abil} | ${w.o.applied}/${w.o.n} \`${w.o.verdict}\` | ${fmtIcd(w.o.icd)} | ${w.state} |`
 			);
 		}
 		p();

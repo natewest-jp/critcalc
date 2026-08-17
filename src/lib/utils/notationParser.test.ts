@@ -2175,11 +2175,25 @@ describe('parseNotation — Collei A4 summon extension (E3 v1.5)', () => {
 		expect(track.qBars[0].uptime).toBe(framesOf(6));
 	});
 
-	it('after Pyro applicator, Collei Q triggers burning and zone extends +1s', () => {
-		// Diluc E pyro → Collei Q dendro on pyro → burning emitted → +1s zone.
+	it('after Pyro applicator, Collei Q triggers burning and the zone extends to its cap', () => {
+		// Diluc E pyro → Collei Q dendro on pyro → burning emitted → the zone
+		// extends. ↻ **This asserted +1s until 2026-08-17 and now asserts the +3s
+		// CAP** (ICD-group round b): the Cuilein-Anbar leaps carry gcsim's
+		// ICDGroupColleiBurst, a 180f window in which only the first tick applies,
+		// so 2 of the 12 leaps land where 5 used to. ⚓ Fewer dendro applications
+		// give MORE extensions, which is the opposite of the obvious guess and the
+		// reason this test's number is worth reading: at the old cadence the dendro
+		// gauge was topped up continuously and the Pyro was spent inside one
+		// Burning, while now the Pyro survives between leaps and re-ignites — three
+		// separate `burning` reactions (1.05s / 4.77s / 7.77s) rather than one.
+		//
+		// ⚠️ The +3s is also the in-game cap, which the summon's own curator note
+		// predicted we would UNDER-fire ("a Collei E Q fires up to 2 extensions").
+		// That note's reasoning was about teammate reactions and stands; this is a
+		// second-order effect of the ICD window, not a fix for it.
 		const result = parseNotation('Diluc E > Collei Q', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'collei')!;
-		expect(track.qBars[0].uptime).toBe(framesOf(6 + 1));
+		expect(track.qBars[0].uptime).toBe(framesOf(6 + 3));
 	});
 });
 

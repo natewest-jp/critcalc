@@ -37,9 +37,11 @@ import type {
 	Reaction
 } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
+import type { IcdParams } from '$lib/utils/icd';
 import {
 	createIcdClock,
 	icdApplies,
+	icdParamsFor,
 	icdTagFor,
 	resolveActionIcd,
 	STANDARD_ICD_FRAMES
@@ -607,8 +609,17 @@ export function scheduleSummonTicks(
 			// ⚓ Per SERIES, not per summon: Furina's Salon Solitaire carries three
 			// and they measure as three different gates.
 			const icdKey = `${char.id}:summon:${summon.label}:${series.index}`;
-			const ungated =
-				series.effect.trigger.type === 'summonTick' && series.effect.trigger.icdGate === 'none';
+			// ⚓ THREE CASES, and they are not a scale (ICD-group round b): `'none'`
+			// is gcsim's `ICDTagNone` — every tick applies and NO clock is touched;
+			// an `IcdWindow` is a MEASURED (timer, period) pair replacing the
+			// standard; absent is the standard, which is the measured majority.
+			// ⚠️ `null` is not `NO_ICD` here for the same reason it is not in
+			// `resolveActionIcd`: an untracked series must not reset a counter, and
+			// the clock is only created inside the gated branch.
+			const gate =
+				series.effect.trigger.type === 'summonTick' ? series.effect.trigger.icdGate : undefined;
+			const params: IcdParams | null =
+				gate === 'none' ? null : gate ? icdParamsFor(gate) : STANDARD_ICD_FRAMES;
 
 			const fire = (at: number): void => {
 				// Superseded by a recast, or the summon is gone. Either way the
@@ -617,13 +628,13 @@ export function scheduleSummonTicks(
 				if (at >= endNow()) return;
 
 				let applies = true;
-				if (!ungated) {
+				if (params) {
 					let icd = ctx.icdClocks.get(icdKey);
 					if (!icd) {
 						icd = createIcdClock();
 						ctx.icdClocks.set(icdKey, icd);
 					}
-					applies = icdApplies(icd, at, STANDARD_ICD_FRAMES).applies;
+					applies = icdApplies(icd, at, params).applies;
 				}
 				if (applies) {
 					offerApplication(ctx, clock, {

@@ -262,15 +262,23 @@ describe('Nahida — Tri-Karma Purification, end to end', () => {
 		expect(outside).toEqual([[0.22, 1]]);
 	});
 
-	it('holds the 2.5 s interval across a dense aggravate stream', () => {
+	it('holds the 2.5 s interval across an aggravate stream, and now tracks gcsim', () => {
 		// The oracle's quicken fixture. gcsim puts Tri-Karma at 3.22 / 8.47 / 13.38
-		// off its own reaction stream; ours differs after the first because Oz's ICD
-		// group is not modelled (docs/icd-group-round.md b) and our Oz applies more
-		// often — ⚠️ so the CADENCE is what this pins, not agreement with gcsim.
+		// off its own reaction stream.
+		//
+		// ↻ **This read [3.2, 7.3, 10.25, 13.2] until 2026-08-17** and its comment
+		// named exactly why: Oz's ICD group was unmodelled, so our Oz applied more
+		// often and drove more aggravates. Sub-landing b authored it
+		// (ICDGroupFischl, 300f / every 4th), and the first two procs now agree with
+		// gcsim's first two — the third does not arrive, which is ⚓ the
+		// counter-SHARING half of the same fault and is held: gcsim keys ICD by
+		// `(character, tag)` and gives BOTH Ozes `ICDTagElementalArt` from one
+		// function, so its counter spans the recast while ours restarts per series
+		// (docs/icd-group-round.md §4).
 		const procs = appsOf('Nahida E Q > Fischl E Q > Fischl N3', 'nahida')
 			.filter(([, u]) => u === 1.5)
 			.map(([t]) => t);
-		expect(procs).toEqual([3.2, 7.3, 10.25, 13.2]);
+		expect(procs).toEqual([3.2, 8.28]);
 		for (let i = 1; i < procs.length; i++)
 			expect(procs[i] - procs[i - 1]).toBeGreaterThanOrEqual(2.5);
 	});
@@ -282,26 +290,37 @@ describe('Fischl — A4 Thundering Retribution, end to end', () => {
 
 	it("⚓ does NOT fire off Oz's own reaction, which is the whole point", () => {
 		// ⚠️⚠️ THE CASE. In `Nahida E Q > Fischl E Q > Fischl N3` Fischl is on field
-		// throughout and Oz aggravates the Quicken aura on every tick — 4.30, 7.25,
-		// 10.20, 13.15. gcsim fires A4 four frames after each of them, because Oz's
-		// AttackEvent carries Fischl's ActorIndex and its check is
+		// throughout and Oz aggravates the Quicken aura on every tick that applies —
+		// 4.30, 8.23, 10.20. gcsim fires A4 four frames after each of them, because
+		// Oz's AttackEvent carries Fischl's ActorIndex and its check is
 		// `ActorIndex != Player.Active()`. In game Oz is not the active character.
 		//
 		// So the only A4 here is at 3.22 — four frames after 3.15, which is
 		// FISCHL'S OWN E hit (`application[]` frame 38), not a tick. Every later
 		// entry is a bare Oz tick with no proc behind it.
+		//
+		// ↻ The tick times moved 2026-08-17 (ICD-group round b authored
+		// ICDGroupFischl, 300f / every 4th): 7.25 and 13.15 are gone and 8.23 is
+		// new. ⚓ WHAT THE TEST IS FOR DID NOT MOVE — one A4, at Fischl's own hit.
 		expect(fischlApps('Nahida E Q > Fischl E Q > Fischl N3')).toEqual([
-			3.15, 3.22, 3.53, 4.3, 7.25, 10.2, 13.15
+			3.15, 3.22, 3.53, 4.3, 8.23, 10.2
 		]);
 	});
 
 	it('fires off the reaction a DIFFERENT active character caused', () => {
 		// Barbara's Hydro electro-charges Oz's Electro while she is on field: the
 		// active character triggered it, Oz is up, so A4 procs 4 frames later —
-		// 2.52→2.58, 3.05→3.12, 6.05→6.12, 9.05→9.12. This is `source: 'active'`
+		// 1.65→1.72, 2.52→2.58, 3.05→3.12, 9.05→9.12. This is `source: 'active'`
 		// doing the thing `source: 'self'` could not.
+		//
+		// ↻ Retimed 2026-08-17 with ICDGroupFischl (b): the Oz ticks that apply are
+		// now 2.80 / 6.73 / 8.70 rather than 2.80 / 5.75 / 11.65, and ⚓ Barbara's
+		// ring tick at 6.05 consequently procs NOTHING — the Electro from 2.80 has
+		// decayed by then and there is no aura left to electro-charge. A proc is a
+		// consequence of a reaction, so a rule that changes applications changes
+		// this list twice over.
 		expect(fischlApps('Barbara E > Fischl E Q > Barbara N3')).toEqual([
-			1.65, 1.72, 2.03, 2.58, 2.8, 3.12, 5.75, 6.12, 8.7, 9.12, 11.65
+			1.65, 1.72, 2.03, 2.58, 2.8, 3.12, 6.73, 8.7, 9.12
 		]);
 	});
 
@@ -311,7 +330,11 @@ describe('Fischl — A4 Thundering Retribution, end to end', () => {
 		// Oz. Keyed by the authored object instead of the entity, the burst's copy
 		// took a fresh clock the moment it replaced the skill's and fired again
 		// 0.38 s after 1.72. The gaps between consecutive procs hold the ICD.
-		const procs = [1.72, 2.58, 3.12, 6.12, 9.12];
+		//
+		// ↻ 6.12 dropped 2026-08-17 (b): its reaction no longer happens, per the
+		// test above. ⚓ The three surviving gaps still bracket the 0.5 s and the
+		// 2.1 s exclusion is untouched, which is the whole assertion.
+		const procs = [1.72, 2.58, 3.12, 9.12];
 		for (let i = 1; i < procs.length; i++)
 			expect(procs[i] - procs[i - 1]).toBeGreaterThanOrEqual(0.5);
 		expect(fischlApps('Barbara E > Fischl E Q > Barbara N3')).toEqual(

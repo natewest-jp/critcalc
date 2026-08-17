@@ -104,7 +104,12 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.7, "firstTickDelay": 0.15 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.7,
+								"firstTickDelay": 0.15,
+								"icdGate": { "timer": 720, "every": 3 }
+							},
 							"scaling": 77.67,
 							"stat": "atk",
 							"element": "geo",
@@ -113,7 +118,7 @@
 								"Interval = the modal gap. gcsim's loop alternates 42/42/48f (tick%3==2 → nextTick=48, else 42); two of every three gaps are 42f, so interval = 42/60 = 0.7s. Our schema has one interval per series, so the authored cadence runs ~30f (0.5s) ahead of gcsim by the 17th tick. Tick count matches: (12 − 0.15) / 0.7 → 17 ticks, and the gcsim-frames-diff row observes 17.",
 								"scaling: gcsim zz_navia.dm.go burst[1] (\"Cannon Fire Support DMG\") index 9 = 0.7767 → 77.67%. Sidecar docs/curation/talents/navia.json talents.burst row \"Cannon Fire Support DMG\" L10 = 77.7% (rounded); gcsim's unrounded value preferred.",
 								"stat: ai.Mult is the only scaling on the AttackInfo and there is no snap modification, so it is plain ATK.",
-								"ICD left bare (standard) deliberately: gcsim sets ICDTag=ICDTagElementalBurst with ICDGroup=ICDGroupNaviaBurst, a bespoke group we cannot express, and the measured row's verdict is 'other' (6/17), not 'none'.",
+								"icdGate authored 2026-08-17 (ICD-group round b), superseding the note that said the group could not be expressed: ICDGroupNaviaBurst's table entry (pkg/core/attacks/icd_groups.dm.go) is a 720f reset window with every 3rd hit applying. Measured 6/17 applied against standard ICD's 9. ⚓ The 12s window is longer than the burst itself, so the counter never gets a reset mid-burst — the TIMER is what makes the difference here, not the period, which is standard's own.",
 								"Durability 25 on the tick AttackInfo → 1U, the schema default for a summon tick series."
 							]
 						}

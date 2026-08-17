@@ -42,6 +42,24 @@ export type LintIssue = {
 // Vocabulary sets — kept aligned with src/lib/types/ability.ts
 // ---------------------------------------------------------------------------
 
+/**
+ * Standard element-application ICD, restated for D.27b's "did a curator annotate
+ * the default" check.
+ *
+ * ⚠️⚠️ RESTATED, NOT IMPORTED, AND THAT IS FORCED. `scripts/generate-character-index.mjs`
+ * imports this module under bare Node type-stripping, so ⛔ **this file must stay
+ * free of runtime imports** — a value import of `$lib/utils/icd` breaks `prebuild`
+ * with `Cannot find package '$lib'`, which no test or `svelte-check` run can see.
+ * (Type-only imports are fine; they are stripped.) Same reason the vocabulary sets
+ * below are copies rather than references.
+ *
+ * ⚓ The drift this accepts is covered elsewhere: `gcsim-frames-diff.md` §5 flags an
+ * authored gate that disagrees with the measured group, so a stale number here
+ * cannot quietly bless a wrong annotation. Source of truth is
+ * `STANDARD_ICD_FRAMES` in `$lib/utils/icd`.
+ */
+const STANDARD_ICD_FRAMES = { timer: 150, hits: 3 };
+
 /** The 7 character-assignable elements. Used for character.element,
  *  NormalAbility.infusion, and the `infuse` Effect — Physical is not a
  *  valid character element. */
@@ -1216,6 +1234,46 @@ function lintSummonEffects(
 						`summonTick effect on summon "${s.label}" has negative firstTickDelay (${eff.trigger.firstTickDelay})`,
 						a.id
 					);
+				}
+				// (D.27b) icdGate window shape — FRAMES, not seconds.
+				//
+				// ⚠️⚠️ THE SAME UNIT TRAP A.4b EXISTS FOR, AND HERE THE TWO UNITS SIT
+				// IN THE SAME OBJECT: `interval` two lines up is in SECONDS and this
+				// is in FRAMES. A curator reaching for "1s" writes `1` and gets a
+				// window that has expired before the next tick, which reads as "every
+				// tick applies" — the exact over-claim the field exists to stop.
+				// gcsim's smallest real group timer is 6 frames, so anything under
+				// that is a unit error rather than a value.
+				const gate = eff.trigger.icdGate;
+				if (gate && gate !== 'none') {
+					if (!isPositiveInt(gate.timer) || gate.timer < 6) {
+						push(
+							'strict',
+							'summon-tick-icd-window-invalid',
+							`summonTick icdGate.timer on summon "${s.label}" must be a positive integer of FRAMES (got ${gate.timer}); gcsim's smallest group timer is 6, and the interval beside it is in SECONDS`,
+							a.id
+						);
+					}
+					if (gate.every !== undefined && !isPositiveInt(gate.every)) {
+						push(
+							'strict',
+							'summon-tick-icd-window-invalid',
+							`summonTick icdGate.every on summon "${s.label}" must be a positive integer when present (got ${gate.every}); omit it to mean "only the first tick of the window applies"`,
+							a.id
+						);
+					}
+					// ⚓ A window equal to the standard is the DEFAULT spelled out, and
+					// icd.md forbids annotating the default: absent already means this,
+					// and a redundant annotation asserts a measurement as if it were a
+					// finding.
+					if (gate.timer === STANDARD_ICD_FRAMES.timer && gate.every === STANDARD_ICD_FRAMES.hits) {
+						push(
+							'strict',
+							'summon-tick-icd-window-invalid',
+							`summonTick icdGate on summon "${s.label}" restates the standard window (${gate.timer}f / every ${gate.every}); omit it — absent means standard`,
+							a.id
+						);
+					}
 				}
 			}
 		}

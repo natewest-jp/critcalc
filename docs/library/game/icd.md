@@ -140,12 +140,26 @@ We model elemental-application ICD **binary**, not as full sequences:
   Sharky's Bite is the sole holder there). See "What the planner models" below for why the
   skill/burst holders are still inert, which is now a stated consequence rather than an
   unwired field.
-- ⚠️ **Gap — bespoke cadences aren't representable.** Every-other application, the 8-hit
-  Burning cadence, Traveler groups, Nahida's `1.5` gauge, the `1,1` reaction groups, or
-  Oz's exact 4-hit/5 s cadence collapse to either "standard" or "none" in our data. If a
-  future instrument needs exact off-field application counts, this is the schema gap to
-  fill; until then, cross-check gcsim's `icd_groups_gen.go` for the true cadence and pick
-  the closer of standard/none, noting the approximation in `_curatorNotes`.
+- ↻ **`IcdWindow` — a MEASURED bespoke cadence, on two keys** (ICD-group round, 2026-08-17).
+  `{ timer, every? }` is gcsim's group reduced to the two numbers that carry all of it: the
+  reset window in **FRAMES**, and how many hits apart an application falls inside it
+  (`every` absent = only the first). ⚓ All 58 of gcsim's groups reduce to this pair, and it
+  is the shape `IcdParams` in `icd.ts` always had, so consuming one needed **no new ICD
+  mechanism** — only a resolver willing to return something other than the standard.
+  - **`NormalAbility.chargedIcdWindow`** — a charged attack's window. 16 characters,
+    19 abilities. ⛔ Never a `weapon === 'polearm'` branch: 16 of 19 with Xiao, Raiden and
+    Emilie on the default and Ayato, a sword user, carrying the polearm group.
+  - **`summonTick.icdGate`** — a tick series' window, alongside its `'none'`. 14 series
+    across 11 characters, migrated from measured group data (Oz's 300f/every-4, Collei's
+    180f/first-only, Venti's and Amber's 60f/every-3, Navia's 720f/every-3).
+- ⚠️ **What is still not representable.** A CAST's own window (per-ability tag/group on
+  skills and bursts, where 112 of 166 gcsim skills are `ICDTagNone` and our schema has no
+  way to say which); gcsim's **counter SHARING** across everything one character emits
+  under one tag, which is an engine question and not a data one
+  (`docs/icd-group-round.md` §4, held); the four groups that apply two or three times at a
+  regular period and then **STOP** for the rest of the window; the `1,1` reaction groups
+  (axis #2, below); and Nahida's `1.5` gauge, which is deliberately **not** in the cadence
+  model — a gauge STRENGTH lives beside the application that carries it, as `units`.
 - **Reaction-damage ICD** (axis #2) is **not modeled** — the tools visualize element
   _application_, not reaction-damage-instance gating. (Aura/gauge decay and reaction
   _consumption_ are a separate concern handled in the crit-viz `gauge.ts`; see
@@ -178,7 +192,7 @@ the batch form written in terms of the streaming one so they cannot drift.
   apply every time (same census over `charge.go` — every catalyst in the roster).
 - ⚠️ **Knowingly divergent, both bounded:** a melee infused CA shares the _normal_ counter
   for 24 characters in gcsim and gets its own here (worst case one extra application per
-  2.5 s); bespoke groups collapse to standard, per the schema gap above.
+  2.5 s); a CAST's bespoke group still collapses to standard, per the gap above.
 - A **physical** swing reaches no clock at all — it applies nothing, and a hit that
   applies nothing spends no budget, so a physical string followed by an infusion starts
   the infused counter fresh.
@@ -189,9 +203,16 @@ presets over a uniform attack string, showing which hits apply.
 
 ## Curator signal
 
-- Ability's every hit applies its element (Fandom/gcsim tag = `None`) → set `noICD: true`.
-- Anything else → **leave the field off** (standard ICD is the assumed default). Don't
-  invent a cadence we can't store; note the real one in `_curatorNotes` if it's unusual.
+- Ability's every hit applies its element (Fandom/gcsim tag = `None`) → set `noICD: true`,
+  or `'none'` on a tick series' gate.
+- A CHARGED attack or a SUMMON TICK SERIES on a bespoke group → author its measured
+  `{ timer, every? }`. ⚓ **From the group's own numbers**, which
+  `docs/curation/gcsim-frames-diff.md` §5b reports — ⛔ never inferred from an applied
+  count, because a count says only THAT standard is wrong and never what is right. Two
+  series were recorded as "standard" for exactly that reason and were wrong.
+- Anything else → **leave the field off** (standard ICD is the assumed default), and ⛔
+  never annotate a series whose group IS standard. Don't invent a cadence we can't store;
+  note the real one in `_curatorNotes` if it's unusual.
 - Looking up a specific ability: the Fandom [`Internal_Cooldown/Data`](https://genshin-impact.fandom.com/wiki/Internal_Cooldown/Data)
   table, or gcsim `internal/characters/{id}/` — search the `ICDTag`/`ICDGroup` on each
   `Attack`/`Snapshot`.

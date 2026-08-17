@@ -107,7 +107,12 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.4, "firstTickDelay": 0.2 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.4,
+								"firstTickDelay": 0.2,
+								"icdGate": { "timer": 60, "every": 3 }
+							},
 							"scaling": 67.68,
 							"stat": "atk",
 							"element": "anemo",
@@ -115,7 +120,7 @@
 								"gcsim internal/characters/venti/burst.go Burst(): `for i := range 20 { Tasks.Add(func(){ QueueAttackWithSnap(ai, snap, ap, 0, cb) }, 106+24*i) }` — 20 ticks, first at cast-frame 106, 24f interval (source comment: '8 second duration, tick every .4 second'). interval = 24/60 = 0.4s; firstTickDelay = (106 − spawnsAt 94)/60 = 0.2s. Agrees with the measured row (gcsim-frames-diff §5: Wind's Grand Ode 106f / 24f × 20).",
 								"Mult = burstDot[c.TalentLvlBurst()]; zz_venti.dm.go `burstDot` index 9 = 0.6768 → 67.68% ATK at talent level 10. Sidecar docs/curation/talents/venti.json burst row 'DoT' 10th value = 67.7% (genshin-db rounding of the same number).",
 								"ai.Element = attributes.Anemo, Durability 25 (1U), snapshot taken at frame 104 off ATK, hence stat 'atk'.",
-								"ICD: ICDTag = ICDTagElementalBurstAnemo, ICDGroup = ICDGroupVenti — a gcsim ICD group our schema cannot express (measured verdict `other`, 7 of 20 ticks applied). Left bare (= standard ICD) deliberately; do NOT annotate icdGate. Schema gap.",
+								"icdGate authored 2026-08-17 (ICD-group round b), closing the schema gap this note recorded: ICDGroupVenti's table entry (pkg/core/attacks/icd_groups.dm.go) is a 60f reset window with every 3rd hit applying. Measured 7 of 20 ticks applied against standard ICD's 8. ⚓ The period is standard's own; it is the 1s TIMER under a 24f interval that binds — the counter is reset constantly, so the window's first-hit slot does most of the work.",
 								"NOT authored: the Elemental Absorption series (burstAbsorbDot index 9 = 0.3384 → 33.84%, 15 ticks at 24f, burstAbsorbedTicks()). Its element is whichever of Pyro/Hydro/Cryo/Electro the Stormeye contacts — a runtime condition we cannot express — and it only fires when an absorb check succeeds."
 							]
 						}

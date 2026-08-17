@@ -145,12 +145,17 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.98 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.98,
+								"icdGate": { "timer": 90 }
+							},
 							"scaling": 170.4,
 							"stat": "atk",
 							"element": "pyro",
 							"_curatorNotes": [
-								"Dragon of White Flame periodic AoE Pyro tick, 170.4% ATK at T10 (gcsim burst.go burstWhiteDoT[9]=1.70352). 20 ticks, interval 58.8f = 0.98s (burstTicksWhite=20, burstIntervalWhite=58.8). Follows the active character. A4 Primordial Fusion amp (up to +75% on the first 10 ticks, +3% per 100 ATK) is NOT baked in — dynamic ATK-scaling, per-tick consumption."
+								"Dragon of White Flame periodic AoE Pyro tick, 170.4% ATK at T10 (gcsim burst.go burstWhiteDoT[9]=1.70352). 20 ticks, interval 58.8f = 0.98s (burstTicksWhite=20, burstIntervalWhite=58.8). Follows the active character. A4 Primordial Fusion amp (up to +75% on the first 10 ticks, +3% per 100 ATK) is NOT baked in — dynamic ATK-scaling, per-tick consumption.",
+								"icdGate authored 2026-08-17 (ICD-group round b): gcsim burst.go:120 sets ICDGroupDurinBurstWhite on this tick, whose table entry is a 90f reset window in which only the FIRST hit applies. Measured 7/13 applied against standard ICD's 6. ⚠️ The Dark Decay counterpart is deliberately NOT authored — gcsim gives it ICDGroupDurinBurstBlack (120f, first only), but the oracle has no capture of the dark form (the driver cannot reach it), and an unmeasured pair is a claim rather than data."
 							]
 						}
 					]
