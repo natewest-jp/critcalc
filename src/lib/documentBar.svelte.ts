@@ -69,6 +69,12 @@ class DocumentBarState {
 	loadOpen = $state(false);
 	/** Two-step destructive confirm for "reset this document". */
 	resetConfirm = $state(false);
+	/**
+	 * A shared link arrived with every tab occupied, so it was parked in the
+	 * bank under this name. Rendered by the (tools) layout as a modal that must
+	 * be ACKNOWLEDGED — see `showParked`.
+	 */
+	parked = $state<string | null>(null);
 
 	exporters = $state<DocumentExporters | null>(null);
 
@@ -99,6 +105,29 @@ class DocumentBarState {
 		clearTimeout(this.#noticeTimer);
 		this.notice = msg;
 		this.#noticeTimer = setTimeout(() => (this.notice = null), 2200);
+	}
+
+	/**
+	 * Report that a shared rotation was parked in the bank because every tab was
+	 * occupied.
+	 *
+	 * ⚓ A MODAL, NOT A NOTICE (⚓ NATE 2026-08-17), and the difference is what
+	 * happens when it is MISSED. Every other outcome here is confirmable by
+	 * looking — "Saved" leaves a linked tab, "Team loaded" leaves a team — so a
+	 * 2.2s line in band A is enough. This one leaves the planner looking exactly
+	 * as it did, so a reader who misses the line concludes the link is broken and
+	 * clicks it again, and every retry banks another copy. The failure COMPOUNDS,
+	 * silently, and is caused by the report being quiet.
+	 *
+	 * ⚠️ This is not a breach of the non-modal-tools principle. That reserves
+	 * modals for meta surfaces and asks whether a surface REASONS AGAINST its
+	 * surroundings (→ non-modal) or is a focused read (→ modal acceptable). This
+	 * is neither: it is a one-shot REPORT of something that already happened,
+	 * with nothing to reason against, and the principle's own text allows "a tiny
+	 * confirm". ⛔ Don't take it as licence for tool features.
+	 */
+	showParked(name: string) {
+		this.parked = name;
 	}
 
 	registerExporters(ex: DocumentExporters) {

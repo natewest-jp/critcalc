@@ -19,6 +19,7 @@
 	import ChromeModals from '$lib/components/ChromeModals.svelte';
 	import BenchBand from '$lib/components/BenchBand.svelte';
 	import SavedNotationsOverlay from '$lib/components/SavedNotationsOverlay.svelte';
+	import TabsFullDialog from '$lib/components/TabsFullDialog.svelte';
 	import { TOOLS } from './lib/toolChrome';
 	import { prewarmPlannerCharacters } from './lib/prewarmPlanner';
 	import { rotationTabs, TAB_LIMIT } from '$lib/rotationTabs.svelte';
@@ -899,6 +900,21 @@
 		onLoad={(entry) => documentBar.load(entry)}
 		onLoadNewTab={(entry) => documentBar.loadNewTab(entry)}
 		onClose={() => (documentBar.loadOpen = false)}
+	/>
+{/if}
+
+<!-- A shared link that had nowhere to land. Rendered HERE for the same reason
+     as the bank: it reports on the DOCUMENT, and it must outlive the page that
+     raised it (opening the bank from it navigates nothing, but a tool pan
+     mid-dialog would otherwise take the message with it). -->
+{#if documentBar.parked}
+	<TabsFullDialog
+		name={documentBar.parked}
+		onOpenBank={() => {
+			documentBar.parked = null;
+			documentBar.loadOpen = true;
+		}}
+		onClose={() => (documentBar.parked = null)}
 	/>
 {/if}
 
