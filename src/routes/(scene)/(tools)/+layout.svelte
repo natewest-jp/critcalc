@@ -955,9 +955,23 @@
 		   subtract both). 0.5rem holds content at the 72px top the site-chrome
 		   probe pins; the dire border's fade-terminator rationale for that
 		   number retired with the border — retune freely. The bottom pad lets
-		   content end clear of the viewport edge. */
+		   content end clear of the viewport edge.
+
+		   ↻ ⚓ NATE 2026-08-17: the bottom pad is 1.5rem, and the 24px it gives
+		   back was SPENT — it funds the aura plot's 56 → 80 (AURA_PLOT_H). The
+		   trade is why it moved: measured, the planner's chart frame lives in
+		   `viewport − 300px` of fixed page, so at 1080p a heavy four-character
+		   rotation was ALREADY ~30px into a page scroll and the lane had no
+		   room to grow at the screen size most people are on. 24px still ends
+		   content clear of the viewport edge, which is this pad's whole job.
+		   ⚠ IT IS THREE TOOLS' MONEY, not the planner's: both viewport-fit
+		   surfaces subtract this pad (.tool-stack--fill and the Visualizers'
+		   .ws), so they get the same 24px as taller instruments. That is a
+		   bonus, not an accident — ⛔ don't "fix" it by scoping the pad to the
+		   planner, which would put the three tools' bottom edges on different
+		   lines for the first time. */
 		--tool-pad-top: 0.5rem;
-		--tool-pad-bottom: 3rem;
+		--tool-pad-bottom: 1.5rem;
 		/* ROUNDED to whole pixels, deliberately. This pad is the tool frames'
 		   left edge, and the bench ribbon docks by measuring an anchor inside
 		   that frame — so a fractional pad puts the whole strip at a fractional

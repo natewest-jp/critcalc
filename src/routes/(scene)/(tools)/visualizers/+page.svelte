@@ -453,7 +453,7 @@
 		.ws {
 			height: calc(
 				100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 0.5rem) -
-					var(--tool-pad-bottom, 3rem) - var(--band-a-h) - var(--band-gap) - var(--band-b-h) -
+					var(--tool-pad-bottom, 1.5rem) - var(--band-a-h) - var(--band-gap) - var(--band-b-h) -
 					var(--band-stack-gap)
 			);
 			/* 🐛 THE ROW HAD TO BE PINNED, and this one declaration is the whole

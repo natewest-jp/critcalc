@@ -196,7 +196,7 @@
 	   are .tool-shell's, inherited; the fallbacks match its declarations. */
 	.tool-stack--fill {
 		height: calc(
-			100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 0.5rem) - var(--tool-pad-bottom, 3rem)
+			100svh - var(--chrome-h, 64px) - var(--tool-pad-top, 0.5rem) - var(--tool-pad-bottom, 1.5rem)
 		);
 	}
 	.tool-stack--fill .tool-surface {
