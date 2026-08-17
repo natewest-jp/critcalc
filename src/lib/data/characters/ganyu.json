@@ -71,7 +71,16 @@
 			"effects": [],
 			"description": "Leaving a single Ice Lotus behind, Ganyu dashes backward, shunning all impurity and dealing AoE Cryo DMG.\n\nIce Lotus\n·Continuously taunts surrounding opponents, attracting them to attack it.\n·Endurance scales based on Ganyu's Max HP.\n·Blooms profusely when destroyed or once its duration ends, dealing AoE Cryo DMG.",
 			"behavior": "instant",
-			"application": []
+			"_curatorNotes": [
+				"application[]: gcsim internal/characters/ganyu/skill.go Skill() queues TWO hits from ONE AttackInfo (Abil \"Ice Lotus\", AttackTagElementalArt, Element Cryo, Durability 25 -> 1U, ICDTagNone): QueueAttackWithSnap(..., 13) the flower hit and QueueAttackWithSnap(..., 373) the bloom when the 6s lotus ends (13 + 360). Both are cast-relative, so both are authored here.",
+				"gcsim-frames-diff.md §5 measured BOTH hits and agrees exactly: \"Ice Lotus 13f / 360f × 2 · 2/2 either\" — first at 13f, second 360f later (= 373f), both applied. It is reported there as a cadence only because the oracle groups a stream by its Abil string and this ability declares an Ice Lotus summon; there is no gcsim entity or timer behind it (§4's cast column is \"—\" with \"2× Ice Lotus\" beside it for the same reason).",
+				"Not a summonTick series: two discrete QueueAttackWithSnap calls, no Tasks.Add/QueueCharTask period, so the Ice Lotus summon keeps zero effects.",
+				"Multiplier for both hits is lotus[c.TalentLvlSkill()] (zz_ganyu.dm.go const `lotus`, index 9 = 2.376) = sidecar docs/curation/talents/ganyu.json talents.skill row \"Skill DMG\" 10th value 237.6%. Cross-checked only; no scaling authored because these are cast applications, not a damage effect."
+			],
+			"application": [
+				{ "frame": 13, "element": "cryo", "units": 1 },
+				{ "frame": 373, "element": "cryo", "units": 1 }
+			]
 		},
 		{
 			"id": "ganyu__burst__celestial_shower",
