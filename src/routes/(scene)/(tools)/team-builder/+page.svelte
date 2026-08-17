@@ -53,6 +53,7 @@
 	import { positionIcon, functionIcon, POSITION_LABEL, FUNCTION_LABEL } from '$lib/utils/roleIcons';
 	import { MAX_COMPARE, lensFacet, type CapRowKey } from './lib/compare';
 	import { facetsProvidedBy, parseTeamParam, type TeamSlot } from './lib/team';
+	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 
 	// ---------------------------------------------------------------------------
 	// Roster (eager index; full payloads stay lazy behind the detail card)
@@ -116,7 +117,10 @@
 		const altsParam = url.searchParams.get('alts');
 		const swapParam = url.searchParams.get('swap');
 		if (!teamParam && !altsParam && !swapParam) return;
-		history.replaceState(history.state, '', url.pathname + url.hash);
+		// ⛔ Not $app/navigation's replaceState — see stripDeepLinkParams. This is
+		// the call site that carried NO reason at all, and `?swap=` arrives here
+		// cold from a shared audition link.
+		stripDeepLinkParams(url);
 		if (teamParam) {
 			const imported = parseTeamParam(teamParam, (id) => rosterIds.has(id));
 			const ids = imported.filter((s): s is string => s !== null);

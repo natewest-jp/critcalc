@@ -30,6 +30,7 @@
 	} from './lib/workspace';
 	import { decodeInstrumentParam, encodeInstrumentParam } from '$lib/utils/instrumentUrl';
 	import { TOOL_GUTTER } from '$lib/toolGutter';
+	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 
 	/**
 	 * 🎛️ Bare scene BETWEEN two instruments — the widest gap inside this tool.
@@ -140,14 +141,15 @@
 	// afterNavigate, NOT onMount (team-builder lessons): SPA mounts run before
 	// location updates; afterNavigate also fires for the navigation that
 	// REMOVES this component (guard nav.to); read nav.to.url, never
-	// window.location; strip with NATIVE history.replaceState (the
-	// $app/navigation version throws pre-router-init on cold load).
+	// window.location. ⛔ The strip goes through `stripDeepLinkParams` — see that
+	// file for why it must NOT use $app/navigation's replaceState, and for the
+	// dev warning that is the accepted price.
 	afterNavigate(async (nav) => {
 		const url = nav.to?.url;
 		if (!url || !url.pathname.startsWith('/visualizers')) return;
 		const param = url.searchParams.get('i');
 		if (!param) return;
-		history.replaceState(history.state, '', url.pathname + url.hash);
+		stripDeepLinkParams(url);
 		const decoded = await decodeInstrumentParam(param);
 		if (!decoded || !INSTRUMENTS.some((i) => i.id === decoded.id)) return;
 		const id = decoded.id as InstrumentId;

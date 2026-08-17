@@ -21,6 +21,7 @@
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { documentBar as db } from '$lib/documentBar.svelte';
 	import { siteSettings } from '$lib/stores';
+	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 	import {
 		plannerView as pv,
 		ZOOM_DEFAULT,
@@ -157,8 +158,10 @@
 		const teamParam = url.searchParams.get('team');
 		if (!param && !teamParam) return;
 		// Strip the params regardless of outcome so a refresh/re-share is clean
-		// and a bad link doesn't linger in the address bar.
-		history.replaceState(history.state, '', url.pathname + url.hash);
+		// and a bad link doesn't linger in the address bar. ⛔ Not
+		// $app/navigation's replaceState — see stripDeepLinkParams; taking that
+		// advice makes every cold-loaded share link silently do nothing.
+		stripDeepLinkParams(url);
 		if (param) {
 			const shared = await decodeRotation(param);
 			if (!shared) {
@@ -420,35 +423,19 @@
 			>
 				<Mark name="note" />
 				Notes
-				{#if pv.hasCaveats}
-					<!-- Notification mark: notes exist for the loaded characters.
-					     Nate's artwork (assets-src/tools/notification.svg) — a disc
-					     with a glyph, drawn rather than typeset. The two fills are
-					     wired to tokens rather than the SVG's baked hexes so a
-					     palette change carries through.
-					     ↻ 2026-08-12: the glyph is --chrome (#ffffff), not --text.
-					     ⚓ Nate asked for the ! to be white and the red to be one of
-					     our UI colours; the disc was ALREADY --ui-danger, so only the
-					     ink moved. --text is parchment-100 — the right ink on a slate
-					     ground and slightly warm/dim on a saturated red disc, where
-					     the mark wants maximum separation in the smallest space we
-					     draw anything. --chrome is the site's one white. -->
-					<svg class="rp-notes-badge" viewBox="0 0 24 24" aria-hidden="true"
-						><g transform="matrix(1,0,0,1,-273.029018,-202.228283)">
-							<g>
-								<g transform="matrix(0.575277,0,0,0.575277,146.251428,151.449127)">
-									<circle cx="241.236" cy="109.129" r="20.86" fill="var(--ui-danger)" />
-								</g>
-								<g transform="matrix(1,0,0,1,-2.378613,7.691546)">
-									<path
-										d="M287.339,210.822L287.495,210.822C287.975,210.822 288.411,210.985 288.799,211.317C289.203,211.663 289.404,212.098 289.404,212.623L289.404,212.775L289.396,212.852C289.39,212.885 289.384,212.909 289.384,212.925C289.384,213.273 289.218,213.648 288.84,214.026C288.478,214.387 288.083,214.562 287.662,214.57L287.535,214.589L287.271,214.589C287.246,214.589 287.222,214.587 287.197,214.582C287.165,214.576 287.141,214.57 287.124,214.57C286.714,214.57 286.319,214.399 285.951,214.03C285.591,213.67 285.412,213.239 285.412,212.739L285.412,212.683L285.427,212.698C285.423,212.677 285.421,212.655 285.421,212.632L285.421,212.61L285.419,212.607L285.422,212.593C285.432,212.155 285.613,211.749 285.98,211.381C286.353,211.009 286.805,210.822 287.339,210.822ZM285.538,200.334L285.538,199.894C285.538,199.03 286.205,198.484 287.681,198.484L287.715,198.486L287.827,198.494C287.827,198.494 288.021,198.509 287.827,198.494C288.334,198.5 288.685,198.655 288.898,198.903C289.103,199.141 289.228,199.513 289.228,200.031L289.228,200.479L289.226,200.527L289.218,200.619L289.217,200.629L289.208,200.842L289.207,200.863C289.202,200.93 289.199,200.995 289.199,201.056L289.197,201.094L289.178,201.322C289.165,201.472 289.16,201.722 289.16,202.072C289.16,202.444 289.098,203.162 288.971,204.225C288.848,205.262 288.753,206.181 288.685,206.982C288.614,207.812 288.546,208.359 288.486,208.621C288.395,209.014 288.053,209.293 287.369,209.293L287.242,209.293C287.009,209.293 286.817,209.224 286.662,209.099C286.463,208.939 286.315,208.67 286.264,208.271C285.779,204.394 285.538,201.748 285.538,200.334Z"
-										fill="var(--chrome)"
-									/>
-								</g>
-							</g>
-						</g></svg
-					>
-				{/if}
+				<!-- ⛔ THE `!` BADGE IS RETIRED (⚓ NATE 2026-08-17), and the reason is
+				     that its job was taken over by its NEIGHBOURS. It existed because
+				     Notes stood alone at the end of band B and a reader might never look
+				     there; with Auras and Buffs beside it the eye goes to that cluster
+				     anyway, so the mark was charging for attention already bought —
+				     ⚓ Nate: it "does trigger some people with OCD". The button still
+				     disables itself when there is nothing to annotate, which is the
+				     honest half of the signal and the half that never nagged.
+				     ⚠ The artwork survives at assets-src/tools/notification.svg. If a
+				     badge is ever wanted again, ⛔ don't redraw it: it is Nate's, its two
+				     fills were wired to --ui-danger/--chrome rather than the SVG's baked
+				     hexes, and it carried a 6° rotation so it read as stuck on rather
+				     than typeset. -->
 			</button>
 		{/snippet}
 
@@ -603,27 +590,5 @@
 		display: flex;
 		align-items: center;
 		gap: 0.2rem;
-	}
-
-	.rp-notes-btn {
-		/* positions the unread badge */
-		position: relative;
-	}
-
-	.rp-notes-badge {
-		position: absolute;
-		top: -4px;
-		right: -5px;
-		/* 12px renders a 12px disc: the circle fills the 24x24 viewBox
-		   edge-to-edge (centre 12,12, r 12 after the artwork's transforms). */
-		width: 12px;
-		height: 12px;
-		/* 🎛️ ⚓ NATE 2026-08-12. A notification mark set dead upright reads as
-		   typeset; a few degrees off is what makes it read as a stuck-on badge.
-		   ⚠ The disc is centred in its own viewBox, so the default 50% 50% origin
-		   turns the glyph in place and the badge's own box does not move —
-		   nothing about the button's layout is touched. */
-		transform: rotate(6deg);
-		pointer-events: none;
 	}
 </style>
