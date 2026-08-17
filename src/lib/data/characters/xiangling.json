@@ -70,7 +70,8 @@
 				"swap": 63
 			},
 			"_curatorNotes": [
-				"N3 has two hitmarks [11, 18] and N4 has four hitmarks [5, 15, 24, 29]; cancel frames sourced from last hitmark per recipe. N5 gcsim sets C=500 with comment 'this action is illegal' — omitted. High plunge exists in gcsim (swap=63, N=58, E=60, Q=60; no D/J set) but not represented (recipe uses lowPlungeFrames only). gcsim restricts LowPlungeAttack to AirborneXianyun context — plunge returns error unless launched by Xianyun E; reviewer may want to add a plunge caveat."
+				"N3 has two hitmarks [11, 18] and N4 has four hitmarks [5, 15, 24, 29]; cancel frames sourced from last hitmark per recipe. N5 gcsim sets C=500 with comment 'this action is illegal' — omitted. High plunge exists in gcsim (swap=63, N=58, E=60, Q=60; no D/J set) but not represented (recipe uses lowPlungeFrames only). gcsim restricts LowPlungeAttack to AirborneXianyun context — plunge returns error unless launched by Xianyun E; reviewer may want to add a plunge caveat.",
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
 			],
 			"sections": [
 				{
@@ -97,6 +98,9 @@
 				"Q": 58,
 				"D": 75,
 				"swap": 62
+			},
+			"chargedIcdWindow": {
+				"timer": 30
 			}
 		},
 		{

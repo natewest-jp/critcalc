@@ -15,17 +15,66 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "N6", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 30, "hit": 11, "N": 18 } },
-				{ "name": "N2", "frames": { "anim": 30, "hit": 9, "N": 13 } },
-				{ "name": "N3", "frames": { "anim": 28, "hit": 8, "N": 19 } },
-				{ "name": "N4", "frames": { "anim": 34, "hit": 16, "C": 33 } },
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 30,
+						"hit": 11,
+						"N": 18
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 30,
+						"hit": 9,
+						"N": 13
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 28,
+						"hit": 8,
+						"N": 19
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 34,
+						"hit": 16,
+						"C": 33
+					}
+				},
 				{
 					"name": "N5",
-					"frames": { "anim": 31, "N": 27, "E": 5, "Q": 5, "D": 5, "J": 5, "swap": 4 }
+					"frames": {
+						"anim": 31,
+						"N": 27,
+						"E": 5,
+						"Q": 5,
+						"D": 5,
+						"J": 5,
+						"swap": 4
+					}
 				},
-				{ "name": "N6", "frames": { "anim": 54, "hit": 29 } }
+				{
+					"name": "N6",
+					"frames": {
+						"anim": 54,
+						"hit": 29
+					}
+				}
 			],
-			"chargeFrames": { "anim": 47, "E": 33, "Q": 33, "D": 4, "J": 4, "swap": 31 },
+			"chargeFrames": {
+				"anim": 47,
+				"E": 33,
+				"Q": 33,
+				"D": 4,
+				"J": 4,
+				"swap": 31
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -43,14 +92,26 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, causing stone spears to fall along his path.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, causing stone spears to fall along his path.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"chargedIcdWindow": {
+				"timer": 30
+			},
+			"_curatorNotes": [
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
+			]
 		},
 		{
 			"id": "zhongli__skill__dominus_lapidis",
 			"name": "Dominus Lapidis",
 			"input": ["E", "pE", "tE"],
 			"abilityType": "skill",
-			"frames": { "anim": 38, "N": 37, "D": 23, "J": 23, "swap": 37 },
+			"frames": {
+				"anim": 38,
+				"N": 37,
+				"D": 23,
+				"J": 23,
+				"swap": 37
+			},
 			"cooldown": 4,
 			"summons": [
 				{
@@ -61,7 +122,11 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 2.4 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 2.4
+							},
 							"scaling": 57.6,
 							"stat": "atk",
 							"element": "geo"
@@ -73,7 +138,11 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 96, "D": 55, "J": 55 },
+					"frames": {
+						"anim": 96,
+						"D": 55,
+						"J": 55
+					},
 					"cooldown": 12,
 					"tags": ["shield", "summon"],
 					"summons": [],
@@ -81,7 +150,10 @@
 						{
 							"type": "shield",
 							"target": "active",
-							"trigger": { "type": "onCast", "ability": "skill" },
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
 							"duration": 20,
 							"durationType": "refresh",
 							"scaling": 23.04,
@@ -92,14 +164,20 @@
 						{
 							"type": "resShred",
 							"target": "enemy",
-							"trigger": { "type": "onCast", "ability": "skill" },
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
 							"duration": 20,
 							"value": -20
 						},
 						{
 							"type": "resShred",
 							"target": "enemy",
-							"trigger": { "type": "onCast", "ability": "skill" },
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
 							"duration": 20,
 							"element": "physical",
 							"value": -20
@@ -114,8 +192,15 @@
 					],
 					"activeDuration": 20,
 					"application": [
-						{ "frame": 48, "element": "geo", "units": 1 },
-						{ "frame": 48, "element": "geo" }
+						{
+							"frame": 48,
+							"element": "geo",
+							"units": 1
+						},
+						{
+							"frame": 48,
+							"element": "geo"
+						}
 					]
 				}
 			],
@@ -127,14 +212,25 @@
 			],
 			"description": "Every mountain, rock and inch of land is filled with the power of Geo, but those who can wield such powers freely are few and far between.\n\nPress\nCommands the power of earth to create a Stone Stele.\n\nHold\nCauses nearby Geo energy to explode, causing the following effects:\n·If their maximum number hasn't been reached, creates a Stone Stele.\n·Creates a shield of jade. The shield's DMG Absorption scales based on Zhongli's Max HP.\n·Deals AoE Geo DMG.\n·If there are nearby targets with the Geo element, it will drain a large amount of Geo element from a maximum of 2 such targets. This effect does not cause DMG.\n\nStone Stele\nWhen created, deals AoE Geo DMG.\nAdditionally, it will intermittently resonate with other nearby Geo constructs, dealing Geo DMG to nearby opponents.\nThe Stone Stele is considered a Geo construct that can both be climbed and used to block attacks.\nOnly one Stele created by Zhongli himself may initially exist at any one time.\n\nJade Shield\nPossesses 150% DMG Absorption against all Elemental and Physical DMG.\nCharacters protected by the Jade Shield will decrease the Elemental RES and Physical RES of opponents in a small AoE by 20%. This effect cannot be stacked.",
 			"behavior": "instant",
-			"application": [{ "frame": 24, "element": "geo", "units": 2 }]
+			"application": [
+				{
+					"frame": 24,
+					"element": "geo",
+					"units": 2
+				}
+			]
 		},
 		{
 			"id": "zhongli__burst__planet_befall",
 			"name": "Planet Befall",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": { "anim": 139, "D": 123, "J": 123, "swap": 138 },
+			"frames": {
+				"anim": 139,
+				"D": 123,
+				"J": 123,
+				"swap": 138
+			},
 			"cooldown": 12,
 			"duration": 4,
 			"durationModifiers": [
@@ -142,7 +238,10 @@
 					"source": "C4: Topaz, Unbreakable and Fearless",
 					"type": "flat",
 					"value": 2,
-					"conditions": { "type": "constellation", "level": 4 }
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					}
 				}
 			],
 			"tags": [],
@@ -153,7 +252,13 @@
 			],
 			"description": "Brings a falling meteor down to earth, dealing massive Geo DMG to opponents caught in its AoE and applying the Petrification status to them.\n\nPetrification\nOpponents affected by the Petrification status cannot move.",
 			"behavior": "instant",
-			"application": [{ "frame": 101, "element": "geo", "units": 4 }]
+			"application": [
+				{
+					"frame": 101,
+					"element": "geo",
+					"units": 4
+				}
+			]
 		}
 	],
 	"passives": [
@@ -171,46 +276,76 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 1.39 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 1.39
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "chargeFlatDmg",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 1.39 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 1.39
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "plungeFlatDmg",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 1.39 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 1.39
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "skillFlatDmg",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 1.9 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 1.9
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "burstFlatDmg",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 33 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 33
+					},
 					"snapshottable": false
 				}
 			],

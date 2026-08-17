@@ -17,15 +17,55 @@
 			"tags": [],
 			"_curatorNotes": [
 				"No plunge.go in gcsim character dir — plungeFrames not available.",
-				"N4 ActionCharge=500 in gcsim attack.go, marked as 'TODO: this action is illegal' — omitted from hits[3].frames."
+				"N4 ActionCharge=500 in gcsim attack.go, marked as 'TODO: this action is illegal' — omitted from hits[3].frames.",
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
 			],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 33, "hit": 11, "N": 23, "C": 27 } },
-				{ "name": "N2", "frames": { "anim": 33, "hit": 12, "N": 26, "C": 28 } },
-				{ "name": "N3", "frames": { "anim": 46, "hit": 25, "N": 33, "C": 36 } },
-				{ "name": "N4", "frames": { "anim": 67, "hit": 33, "N": 64 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 33,
+						"hit": 11,
+						"N": 23,
+						"C": 27
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 33,
+						"hit": 12,
+						"N": 26,
+						"C": 28
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 46,
+						"hit": 25,
+						"N": 33,
+						"C": 36
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 67,
+						"hit": 33,
+						"N": 64
+					}
+				}
 			],
-			"chargeFrames": { "anim": 65, "N": 58, "E": 58, "Q": 58, "D": 27, "J": 27, "swap": 57 },
+			"chargeFrames": {
+				"anim": 65,
+				"N": 58,
+				"E": 58,
+				"Q": 58,
+				"D": 27,
+				"J": 27,
+				"swap": 57
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -43,7 +83,10 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"chargedIcdWindow": {
+				"timer": 30
+			}
 		},
 		{
 			"id": "chevreuse__skill__shortrange_rapid_interdiction_fire",
@@ -51,7 +94,12 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 31, "D": 23, "J": 25, "swap": 24 },
+			"frames": {
+				"anim": 31,
+				"D": 23,
+				"J": 25,
+				"swap": 24
+			},
 			"cooldown": 15,
 			"cooldownStartDelay": 18,
 			"tags": ["heal"],
@@ -59,7 +107,10 @@
 				{
 					"type": "heal",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 12,
 					"scaling": 4.8,
 					"stat": "hp",
@@ -77,17 +128,37 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 26, "N": 25, "D": 21, "J": 23, "swap": 23 },
+					"frames": {
+						"anim": 26,
+						"N": 25,
+						"D": 21,
+						"J": 23,
+						"swap": 23
+					},
 					"application": [
-						{ "frame": 19, "element": "pyro", "units": 1 },
-						{ "frame": 55, "element": "pyro" }
+						{
+							"frame": 19,
+							"element": "pyro",
+							"units": 1
+						},
+						{
+							"frame": 55,
+							"element": "pyro"
+						}
 					]
 				}
 			],
 			"description": "Chevreuse quickly shoulders her musket and fires at her opponent(s), dealing AoE Pyro DMG.\nFor a short duration after Chevreuse fires a shot, she will continuously restore HP to your active character on the field. The amount healed is based on her Max HP.\nHold to fire in a different fashion.\n\nHold\nEnter Aiming Mode, locking a target in her sights to fire a precise interdiction shot. If Chevreuse has an Overcharged Ball, then she will fire the Overcharged Ball instead, dealing greater Pyro DMG in a larger area.\nChevreuse gains 1 Overcharged Ball every time a nearby character in the party triggers an Overloaded reaction, and can have up to 1 Overcharged Ball at a time.\n\nArkhe: Ousia\nPeriodically, after Chevreuse's Short-Range Rapid Interdiction Fire hits, a Surging Blade will be called forth that deals Ousia-aligned Pyro DMG.",
 			"application": [
-				{ "frame": 25, "element": "pyro", "units": 1 },
-				{ "frame": 59, "element": "pyro" }
+				{
+					"frame": 25,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 59,
+					"element": "pyro"
+				}
 			]
 		},
 		{
@@ -96,22 +167,60 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 61, "N": 57, "E": 59, "D": 57, "J": 57, "swap": 56 },
+			"frames": {
+				"anim": 61,
+				"N": 57,
+				"E": 59,
+				"D": 57,
+				"J": 57,
+				"swap": 56
+			},
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
 			"description": "Chevreuse fires an explosive grenade at opponents with her musket, dealing AoE Pyro DMG. After the projectile hits, it will split into many secondary explosive shells.\nThe secondary explosive shells will burst after a short interval, dealing Pyro DMG to nearby opponents.",
 			"application": [
-				{ "frame": 59, "element": "pyro", "units": 2 },
-				{ "frame": 83, "element": "pyro", "units": 1 },
-				{ "frame": 92, "element": "pyro" },
-				{ "frame": 92, "element": "pyro" },
-				{ "frame": 101, "element": "pyro", "units": 1 },
-				{ "frame": 101, "element": "pyro", "units": 1 },
-				{ "frame": 110, "element": "pyro" },
-				{ "frame": 110, "element": "pyro" },
-				{ "frame": 119, "element": "pyro" }
+				{
+					"frame": 59,
+					"element": "pyro",
+					"units": 2
+				},
+				{
+					"frame": 83,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 92,
+					"element": "pyro"
+				},
+				{
+					"frame": 92,
+					"element": "pyro"
+				},
+				{
+					"frame": 101,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 101,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 110,
+					"element": "pyro"
+				},
+				{
+					"frame": 110,
+					"element": "pyro"
+				},
+				{
+					"frame": 119,
+					"element": "pyro"
+				}
 			]
 		}
 	],
@@ -127,7 +236,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": "overloaded" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "overloaded"
+					},
 					"duration": 6,
 					"element": "electro",
 					"value": -40
@@ -135,7 +247,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": "overloaded" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "overloaded"
+					},
 					"duration": 6,
 					"element": "pyro",
 					"value": -40
@@ -155,7 +270,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 30,
 					"durationType": "fixed",
 					"source": "character",
@@ -192,10 +309,15 @@
 					"trigger": {
 						"type": "onHit",
 						"abilityType": "skill",
-						"filter": { "damageTag": "skillHold" }
+						"filter": {
+							"damageTag": "skillHold"
+						}
 					},
 					"procCooldown": 10,
-					"conditions": { "type": "constellation", "level": 2 },
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"scaling": 120,
 					"stat": "atk",
 					"element": "pyro"
@@ -240,14 +362,18 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 10,
 					"stat": "hp"
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
@@ -258,7 +384,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",

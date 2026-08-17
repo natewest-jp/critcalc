@@ -16,19 +16,55 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 17, "hit": 7, "C": 20 } },
-				{ "name": "N2", "frames": { "anim": 21, "hit": 16, "N": 29 } },
-				{ "name": "N3", "frames": { "anim": 62, "hit": 40 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 17,
+						"hit": 7,
+						"C": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 21,
+						"hit": 16,
+						"N": 29
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 62,
+						"hit": 40
+					}
+				}
 			],
-			"chargeFrames": { "anim": 65, "N": 53, "E": 52, "Q": 52, "D": 20, "J": 20, "swap": 52 },
-			"plungeFrames": { "anim": 77, "N": 60, "E": 61, "Q": 60, "J": 76, "swap": 63 },
+			"chargeFrames": {
+				"anim": 65,
+				"N": 53,
+				"E": 52,
+				"Q": 52,
+				"D": 20,
+				"J": 20,
+				"swap": 52
+			},
+			"plungeFrames": {
+				"anim": 77,
+				"N": 60,
+				"E": 61,
+				"Q": 60,
+				"J": 76,
+				"swap": 63
+			},
 			"_curatorNotes": [
 				"Normals: 3-hit polearm chain. attackHitmarks = [[7], [16], [27, 40]] — N3 has 2 sub-hits at 27 and 40, last hit gates the cancel window. attackFrames per gcsim attack.go.",
 				"N1: ActionAttack default = 17 (animation length per InitNormalCancelSlice(7, 17)); per recipe rule N omitted on N1. Explicit ActionCharge = 20 → C key.",
 				"N2: ActionAttack = 29 explicit override (next-normal-into-N3 cancel). Default cancel = 21 → swap.",
 				"N3: final hit hitmark = 40, animation length = 62 → swap. ActionCharge = 500 in gcsim is flagged as illegal action; not authored. Per recipe key-set (non-bow final = swap+N only, no C), C is dropped on the final hit. ActionAttack at default → N omitted.",
 				"Charge: chargeHitmark = 20 (D/J cancel at the hitmark frame). Standard polearm CA shape. ActionAttack = 53, ActionSkill = 52, ActionBurst = 52, ActionSwap = 52.",
-				"Plunges are gated on AirborneXianyun in gcsim — Escoffier can only plunge when launched by Xianyun support. Authored low plunge variant; high plunge has near-identical frames (swap=63, N=60, E=61, Q=60, D=76). ActionDash = 75 explicit; ActionJump = 76 (animation default) → J omitted per convention."
+				"Plunges are gated on AirborneXianyun in gcsim — Escoffier can only plunge when launched by Xianyun support. Authored low plunge variant; high plunge has near-identical frames (swap=63, N=60, E=61, Q=60, D=76). ActionDash = 75 explicit; ActionJump = 76 (animation default) → J omitted per convention.",
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
 			],
 			"sections": [
 				{
@@ -48,7 +84,17 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 3 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward thrust.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 76, "N": 59, "E": 58, "Q": 58, "D": 75, "swap": 61 }
+			"lowPlungeFrames": {
+				"anim": 76,
+				"N": 59,
+				"E": 58,
+				"Q": 58,
+				"D": 75,
+				"swap": 61
+			},
+			"chargedIcdWindow": {
+				"timer": 30
+			}
 		},
 		{
 			"id": "escoffier__skill__lowtemperature_cooking",
@@ -56,7 +102,12 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 35, "N": 32, "Q": 32, "swap": 31 },
+			"frames": {
+				"anim": 35,
+				"N": 32,
+				"Q": 32,
+				"swap": 31
+			},
 			"cooldown": 15,
 			"cooldownStartDelay": 22,
 			"tags": ["summon"],
@@ -70,7 +121,11 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.975, "firstTickDelay": 2.467 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.975,
+								"firstTickDelay": 2.467
+							},
 							"scaling": 216,
 							"stat": "atk",
 							"element": "cryo"
@@ -92,21 +147,74 @@
 			],
 			"description": "Behold the true meaning of \"cooking\"! Escoffier will demonstrate different cooking techniques when you Tap or Hold this skill, but rest assured, each of them is Fontaine's pride and joy.\n\nTap\nActivates her All-Spectrum Multi-Use Cooking Mek in its Cold Storage mode and deals AoE Cryo DMG to nearby opponents.\n\nCooking Mek: Cold Storage Mode\nFollows the current active character and fires Frosty Parfaits at nearby opponents at intervals, dealing Cryo DMG.\n\nArkhe: Ousia\nAt intervals, Escoffier will summon a Surging Blade when activating her Cooking Mek in Cold Storage mode, dealing Ousia-aligned AoE Cryo DMG.\n\nHold\nActivates her All-Spectrum Multi-Use Cooking Mek's Off-the-Cuff Cookery Mode.",
 			"application": [
-				{ "frame": 23, "element": "cryo", "units": 1 },
-				{ "frame": 83, "element": "cryo" },
-				{ "frame": 153, "element": "cryo", "units": 1 },
-				{ "frame": 212, "element": "cryo" },
-				{ "frame": 270, "element": "cryo", "units": 1 },
-				{ "frame": 329, "element": "cryo" },
-				{ "frame": 387, "element": "cryo", "units": 1 },
-				{ "frame": 446, "element": "cryo" },
-				{ "frame": 504, "element": "cryo", "units": 1 },
-				{ "frame": 563, "element": "cryo" },
-				{ "frame": 621, "element": "cryo", "units": 1 },
-				{ "frame": 680, "element": "cryo" },
-				{ "frame": 738, "element": "cryo", "units": 1 },
-				{ "frame": 797, "element": "cryo" },
-				{ "frame": 855, "element": "cryo", "units": 1 }
+				{
+					"frame": 23,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 83,
+					"element": "cryo"
+				},
+				{
+					"frame": 153,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 212,
+					"element": "cryo"
+				},
+				{
+					"frame": 270,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 329,
+					"element": "cryo"
+				},
+				{
+					"frame": 387,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 446,
+					"element": "cryo"
+				},
+				{
+					"frame": 504,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 563,
+					"element": "cryo"
+				},
+				{
+					"frame": 621,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 680,
+					"element": "cryo"
+				},
+				{
+					"frame": 738,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 797,
+					"element": "cryo"
+				},
+				{
+					"frame": 855,
+					"element": "cryo",
+					"units": 1
+				}
 			]
 		},
 		{
@@ -115,7 +223,11 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 110, "E": 109, "swap": 108 },
+			"frames": {
+				"anim": 110,
+				"E": 109,
+				"swap": 108
+			},
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": ["heal"],
@@ -123,7 +235,10 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"scaling": 309.6576,
 					"stat": "atk"
 				}
@@ -137,7 +252,13 @@
 				"Burst element is Cryo (attributes.Cryo); hits are AttackTagElementalBurst with ICDTagNone."
 			],
 			"description": "Displaying her exceptional knife skills, Escoffier deals AoE Cryo DMG and restores HP to all nearby party members based on her ATK.",
-			"application": [{ "frame": 92, "element": "cryo", "units": 2 }]
+			"application": [
+				{
+					"frame": 92,
+					"element": "cryo",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -149,7 +270,10 @@
 				{
 					"type": "heal",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 9,
 					"scaling": 138.24,
 					"stat": "atk"
@@ -170,7 +294,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"duration": 12,
 					"element": "cryo",
 					"value": -55
@@ -178,7 +305,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"duration": 12,
 					"element": "hydro",
 					"value": -55
@@ -205,13 +335,18 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 1 },
+							{
+								"type": "constellation",
+								"level": 1
+							},
 							{
 								"type": "teamElementCount",
 								"elements": ["hydro", "cryo"],
@@ -243,14 +378,24 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "stacks", "key": "coldDish", "min": 1 }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "stacks",
+								"key": "coldDish",
+								"min": 1
+							}
 						]
 					},
 					"source": "character",
@@ -258,7 +403,10 @@
 					"value": {
 						"type": "perStack",
 						"key": "coldDish",
-						"per": { "stat": "atk", "ratio": 240 },
+						"per": {
+							"stat": "atk",
+							"ratio": 240
+						},
 						"maxStacks": 5
 					},
 					"snapshottable": false
@@ -316,8 +464,14 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "state", "state": "duringSummon" }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
 						]
 					},
 					"procCooldown": 0.5,

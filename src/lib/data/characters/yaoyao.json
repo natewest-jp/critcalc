@@ -16,14 +16,53 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 22, "C": 22 } },
-				{ "name": "N2", "frames": { "anim": 31, "hit": 16, "N": 22, "C": 25 } },
-				{ "name": "N3", "frames": { "anim": 51, "hit": 31, "N": 41, "C": 37 } },
-				{ "name": "N4", "frames": { "anim": 59, "hit": 21 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 28,
+						"hit": 13,
+						"N": 22,
+						"C": 22
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 31,
+						"hit": 16,
+						"N": 22,
+						"C": 25
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 51,
+						"hit": 31,
+						"N": 41,
+						"C": 37
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 59,
+						"hit": 21
+					}
+				}
 			],
-			"chargeFrames": { "anim": 55, "N": 49, "E": 49, "Q": 50, "D": 24, "J": 24, "swap": 49 },
+			"chargeFrames": {
+				"anim": 55,
+				"N": 49,
+				"E": 49,
+				"Q": 50,
+				"D": 24,
+				"J": 24,
+				"swap": 49
+			},
 			"_curatorNotes": [
-				"No plunge.go in gcsim character dir — plungeFrames not available. | N3 is a two-hit normal (hitmarks at frames 12 and 31 from cast start per attackHitmarks[2]=[12,31]); frames extracted from last hitmark (31) per recipe convention. | N4: ActionAttack has no explicit override (AnimationLength=59 from InitNormalCancelSlice default) — N key omitted. ActionCharge=500 is flagged as illegal in gcsim (TODO comment) — C key omitted for final normal."
+				"No plunge.go in gcsim character dir — plungeFrames not available. | N3 is a two-hit normal (hitmarks at frames 12 and 31 from cast start per attackHitmarks[2]=[12,31]); frames extracted from last hitmark (31) per recipe convention. | N4: ActionAttack has no explicit override (AnimationLength=59 from InitNormalCancelSlice default) — N key omitted. ActionCharge=500 is flagged as illegal in gcsim (TODO comment) — C key omitted for final normal.",
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
 			],
 			"sections": [
 				{
@@ -42,7 +81,10 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"chargedIcdWindow": {
+				"timer": 30
+			}
 		},
 		{
 			"id": "yaoyao__skill__raphanus_sky_cluster",
@@ -50,7 +92,12 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 52, "D": 49, "J": 48, "swap": 50 },
+			"frames": {
+				"anim": 52,
+				"D": 49,
+				"J": 48,
+				"swap": 50
+			},
 			"cooldown": 15,
 			"cooldownStartDelay": 15,
 			"summons": [
@@ -63,7 +110,11 @@
 						{
 							"type": "heal",
 							"target": "team",
-							"trigger": { "type": "summonTick", "interval": 1, "firstTickDelay": 0.7 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1,
+								"firstTickDelay": 0.7
+							},
 							"scaling": 3.09,
 							"stat": "hp",
 							"flat": 363.203
@@ -71,7 +122,11 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 1, "firstTickDelay": 0.7 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1,
+								"firstTickDelay": 0.7
+							},
 							"scaling": 53.856,
 							"stat": "atk",
 							"element": "dendro",
@@ -103,7 +158,14 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 63, "N": 58, "E": 57, "D": 58, "J": 57, "swap": 56 },
+			"frames": {
+				"anim": 63,
+				"N": 58,
+				"E": 57,
+				"D": 58,
+				"J": 57,
+				"swap": 56
+			},
 			"cooldown": 20,
 			"summons": [
 				{
@@ -116,7 +178,11 @@
 						{
 							"type": "heal",
 							"target": "team",
-							"trigger": { "type": "summonTick", "interval": 1, "firstTickDelay": 0.7 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1,
+								"firstTickDelay": 0.7
+							},
 							"scaling": 3.63,
 							"stat": "hp",
 							"flat": 427.299
@@ -135,16 +201,49 @@
 			],
 			"description": "At the enjoinment of a certain adeptus, Yuegui's full potential can be unleashed in an emergency, dealing Dendro DMG to nearby opponents and entering an (in some sense) unsurpassed Adeptal Legacy state.\n\nAdeptal Legacy\n·White Jade Radishes generated will be changed to heal and deal DMG according to this skill. Explosions will heal all nearby party members, and the Dendro DMG that they deal will be viewed as Elemental Burst DMG instead.\n·Summons \"Yuegui: Jumping Mode\" at intervals until their limit has been reached. The behavior of this version of Yuegui is the same as that of \"Yuegui: Throwing Mode\" in the Elemental Skill, Raphanus Sky Cluster. A maximum of 3 Yuegui: Jumping Mode can exist at any one time.\n·Yaoyao's Movement SPD is increased by 15%.\n·Yaoyao's Dendro RES will be increased.\n\nThe Adeptal Legacy state will end once Yaoyao is off-field, and all remaining Yuegui: Jumping Mode will be cleared once this state ends.",
 			"application": [
-				{ "frame": 16, "element": "dendro", "units": 1 },
-				{ "frame": 145, "element": "dendro", "units": 1 },
-				{ "frame": 203, "element": "dendro" },
-				{ "frame": 205, "element": "dendro" },
-				{ "frame": 262, "element": "dendro", "units": 1 },
-				{ "frame": 263, "element": "dendro" },
-				{ "frame": 265, "element": "dendro" },
-				{ "frame": 322, "element": "dendro" },
-				{ "frame": 323, "element": "dendro" },
-				{ "frame": 325, "element": "dendro" }
+				{
+					"frame": 16,
+					"element": "dendro",
+					"units": 1
+				},
+				{
+					"frame": 145,
+					"element": "dendro",
+					"units": 1
+				},
+				{
+					"frame": 203,
+					"element": "dendro"
+				},
+				{
+					"frame": 205,
+					"element": "dendro"
+				},
+				{
+					"frame": 262,
+					"element": "dendro",
+					"units": 1
+				},
+				{
+					"frame": 263,
+					"element": "dendro"
+				},
+				{
+					"frame": 265,
+					"element": "dendro"
+				},
+				{
+					"frame": 322,
+					"element": "dendro"
+				},
+				{
+					"frame": 323,
+					"element": "dendro"
+				},
+				{
+					"frame": 325,
+					"element": "dendro"
+				}
 			]
 		}
 	],
@@ -163,7 +262,9 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "hp%",
@@ -186,7 +287,9 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
@@ -223,7 +326,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
@@ -253,7 +358,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 75,
 					"stat": "atk",
 					"element": "dendro"
@@ -261,7 +368,9 @@
 				{
 					"type": "heal",
 					"target": "active",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 7.5,
 					"stat": "hp"
 				}

@@ -857,6 +857,33 @@ function lintNormal(
 		}
 	}
 
+	// (A.4b) chargedIcdWindow shape — FRAMES, not seconds.
+	//
+	// ⚠️⚠️ The unit trap this exists for: `summonTick.interval` beside it is in
+	// SECONDS while this is in FRAMES, so a curator reaching for "0.5s" writes
+	// `0.5` and silently gets a window that expires before the swing lands —
+	// which reads as "every charged attack applies", the very thing the field is
+	// supposed to STOP over-claiming. The smallest real group timer in gcsim's
+	// table is 6 frames, so anything under that is a unit error and not a value.
+	if (a.chargedIcdWindow) {
+		if (!isPositiveInt(a.chargedIcdWindow.timer) || a.chargedIcdWindow.timer < 6) {
+			push(
+				'strict',
+				'charged-icd-window-invalid',
+				`chargedIcdWindow.timer must be a positive integer of FRAMES (got ${a.chargedIcdWindow.timer}); gcsim's smallest group timer is 6`,
+				a.id
+			);
+		}
+		if (a.chargedIcdWindow.every !== undefined && !isPositiveInt(a.chargedIcdWindow.every)) {
+			push(
+				'strict',
+				'charged-icd-window-invalid',
+				`chargedIcdWindow.every must be a positive integer when present (got ${a.chargedIcdWindow.every}); omit it to mean "only the first hit of the window applies"`,
+				a.id
+			);
+		}
+	}
+
 	// (A.4) chargeFrames vs chargeHits mutually exclusive
 	if (a.chargeFrames && a.chargeHits) {
 		push(

@@ -16,16 +16,56 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 32, "hit": 11, "N": 20 } },
-				{ "name": "N2", "frames": { "anim": 33, "hit": 16 } },
-				{ "name": "N3", "frames": { "anim": 48, "hit": 39, "C": 43 } },
-				{ "name": "N4", "frames": { "anim": 69, "hit": 43 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 32,
+						"hit": 11,
+						"N": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 33,
+						"hit": 16
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 48,
+						"hit": 39,
+						"C": 43
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 69,
+						"hit": 43
+					}
+				}
 			],
-			"chargeFrames": { "anim": 53, "E": 52, "Q": 52, "D": 29, "J": 28, "swap": 51 },
-			"plungeFrames": { "anim": 82, "N": 62, "E": 62, "Q": 62, "swap": 66 },
+			"chargeFrames": {
+				"anim": 53,
+				"E": 52,
+				"Q": 52,
+				"D": 29,
+				"J": 28,
+				"swap": 51
+			},
+			"plungeFrames": {
+				"anim": 82,
+				"N": 62,
+				"E": 62,
+				"Q": 62,
+				"swap": 66
+			},
 			"_curatorNotes": [
 				"High plunge frames exist in gcsim (highPlungeFrames in plunge.go) but lowPlungeFrames used per recipe convention. High plunge frames omitted.",
-				"N1: ActionCharge (C) defaults to AnimationLength=32 (not explicitly set in gcsim); omitted. N2: ActionAttack (N) and ActionCharge (C) both at AnimLen=33; omitted. N4: ActionCharge set to 500 in gcsim with comment 'TODO: this action is illegal; need better way to handle it' — omitted."
+				"N1: ActionCharge (C) defaults to AnimationLength=32 (not explicitly set in gcsim); omitted. N2: ActionAttack (N) and ActionCharge (C) both at AnimLen=33; omitted. N4: ActionCharge set to 500 in gcsim with comment 'TODO: this action is illegal; need better way to handle it' — omitted.",
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
 			],
 			"sections": [
 				{
@@ -45,14 +85,28 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 81, "N": 59, "E": 59, "Q": 60, "D": 79, "swap": 65 }
+			"lowPlungeFrames": {
+				"anim": 81,
+				"N": 59,
+				"E": 59,
+				"Q": 60,
+				"D": 79,
+				"swap": 65
+			},
+			"chargedIcdWindow": {
+				"timer": 30
+			}
 		},
 		{
 			"id": "candace__skill__sacred_rite_herons_sanctum",
 			"name": "Sacred Rite: Heron's Sanctum",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": { "anim": 26, "Q": 25, "swap": 25 },
+			"frames": {
+				"anim": 26,
+				"Q": 25,
+				"swap": 25
+			},
 			"cooldown": 6,
 			"cooldownStartDelay": 14,
 			"variants": [
@@ -65,10 +119,19 @@
 							"source": "C4: Sentinel Oath",
 							"type": "flat",
 							"value": -3,
-							"conditions": { "type": "constellation", "level": 4 }
+							"conditions": {
+								"type": "constellation",
+								"level": 4
+							}
 						}
 					],
-					"frames": { "anim": 113, "N": 112, "Q": 112, "J": 111, "swap": 110 },
+					"frames": {
+						"anim": 113,
+						"N": 112,
+						"Q": 112,
+						"J": 111,
+						"swap": 110
+					},
 					"_curatorNotes": [
 						"input:['hE'] — the Hold variant is selected by the hE token; without it the variant was unreachable and hE fell back to base (Tap) timing/frames/shield. Fixed 2026-07-15; removed the redundant input-less 'Press' variant (its cooldown 6 = base, so Tap resolves off the base ability). Same unreachable-Hold-variant bug exists on diona/razor/shenhe/venti — see [[curator-notes-deferral-survey]].",
 						"Hold variant cooldownStartDelay is 89 frames (gcsim: skillCDStarts[1]=89); AbilityVariant has no cooldownStartDelay field — OPEN schema gap (see [[curator-notes-deferral-survey]]; 12 chars affected). Hold CD-start delay under-renders by (89-14)/60 = 1.25s until that field lands.",
@@ -79,14 +142,23 @@
 						{
 							"type": "shield",
 							"target": "self",
-							"trigger": { "type": "onCast", "ability": "skill" },
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
 							"duration": 1.52,
 							"scaling": 21.6,
 							"stat": "hp",
 							"flat": 2542.43
 						}
 					],
-					"application": [{ "frame": 91, "element": "hydro", "units": 1 }]
+					"application": [
+						{
+							"frame": 91,
+							"element": "hydro",
+							"units": 1
+						}
+					]
 				}
 			],
 			"caveat": "A brief personal guard that lasts only through the cast, not a lasting party shield. Its extra effectiveness against Hydro DMG is not modeled.",
@@ -101,7 +173,10 @@
 				{
 					"type": "shield",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 0.27,
 					"scaling": 21.6,
 					"stat": "hp",
@@ -110,14 +185,26 @@
 			],
 			"description": "Candace's fighting style is capable of warding off an entire tide of foes.\n\nTap\nRushes forward with her shield, dealing Hydro DMG to opponents in front of her.\n\nHold\nRaises her shield to block incoming attacks from nearby opponents, forming a barrier that absorbs DMG based on her Max HP and absorbs Hydro DMG 250% more effectively. This barrier lasts until the Elemental Skill is unleashed.\nAfter holding for a certain period of time, Candace will finish charging, and when the skill button is released, the skill duration expires, or when the barrier is broken, she will perform a leaping strike that deals Hydro DMG to opponents in front of her.",
 			"behavior": "instant",
-			"application": [{ "frame": 16, "element": "hydro", "units": 1 }]
+			"application": [
+				{
+					"frame": 16,
+					"element": "hydro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "candace__burst__sacred_rite_wagtails_tide",
 			"name": "Sacred Rite: Wagtail's Tide",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": { "anim": 51, "N": 50, "D": 50, "J": 50, "swap": 49 },
+			"frames": {
+				"anim": 51,
+				"N": 50,
+				"D": 50,
+				"J": 50,
+				"swap": 49
+			},
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
@@ -131,7 +218,10 @@
 							"source": "C1: Returning Heiress of the Scarlet Sands",
 							"type": "flat",
 							"value": 3,
-							"conditions": { "type": "constellation", "level": 1 }
+							"conditions": {
+								"type": "constellation",
+								"level": 1
+							}
 						}
 					]
 				}
@@ -145,16 +235,25 @@
 				{
 					"type": "infuse",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 9,
 					"durationType": "fixed",
 					"element": "hydro",
-					"conditions": { "type": "weaponType", "weapons": ["sword", "claymore", "polearm"] }
+					"conditions": {
+						"type": "weaponType",
+						"weapons": ["sword", "claymore", "polearm"]
+					}
 				},
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 9,
 					"durationType": "fixed",
 					"source": "character",
@@ -166,7 +265,13 @@
 			"caveat": "The Normal Attack bonus applies only to elemental Normal Attack DMG — physical hits don't benefit.",
 			"description": "Raising her weapon on high, Candace calls upon a divine blessing that deals AoE Hydro DMG based on her Max HP and continuously confers the Prayer of the Crimson Crown on your active character.\n\nPrayer of the Crimson Crown\nThis effect has the following properties:\n·Characters deal increased Elemental DMG with their Normal Attacks.\n·Whenever a character takes the field, they will unleash a rippling wave of water that deals Hydro DMG to nearby opponents. There is a limited number of waves that can be triggered in the duration of this skill.\n·Sword, Claymore, and Polearm-wielding characters under this effect will obtain a Hydro Infusion.",
 			"behavior": "instant",
-			"application": [{ "frame": 33, "element": "hydro", "units": 1 }]
+			"application": [
+				{
+					"frame": 33,
+					"element": "hydro",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -240,7 +345,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 15,
 					"stat": "hp",
 					"element": "hydro"

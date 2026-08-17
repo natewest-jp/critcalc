@@ -29,7 +29,13 @@
  * finished application list at finalize.
  */
 
-import type { Effect, Element, ElementalApplication, Reaction } from '$lib/types/ability';
+import type {
+	Effect,
+	Element,
+	ElementalApplication,
+	IcdWindow,
+	Reaction
+} from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import {
 	createIcdClock,
@@ -369,10 +375,11 @@ export function emitReactionsAtSwing(
 	time: number,
 	preStates: ReadonlySet<string>,
 	constellation: number,
-	stackState: Map<string, number>
+	stackState: Map<string, number>,
+	chargedIcdWindow?: IcdWindow
 ): void {
 	if (!element) return;
-	const params = resolveActionIcd(kind, char.weapon, abilityNoICD);
+	const params = resolveActionIcd(kind, char.weapon, abilityNoICD, chargedIcdWindow);
 	if (params) {
 		const key = `${char.id}:${icdTagFor(kind)}`;
 		let clock = ctx.icdClocks.get(key);

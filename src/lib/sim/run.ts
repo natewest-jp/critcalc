@@ -1144,6 +1144,10 @@ export function runRotation(
 					// Offer the charged shot to the aura. A catalyst CA and a bow's
 					// aimed shot both apply; only the bow's runs a counter (a
 					// catalyst's is gcsim `ICDTagNone`) — resolveActionIcd holds it.
+					// ⚓ `chargedIcdWindow` comes off the RESOLVED normal ability, so a
+					// stance's charged attack answers with its own measurement rather
+					// than the base ability's — the same resolution `noICD` beside it
+					// already relies on.
 					emitReactionsAtSwing(
 						ctx,
 						char,
@@ -1153,7 +1157,8 @@ export function runRotation(
 						clock.now,
 						computeCurrentStates(clock.now),
 						charConstellationLevel,
-						stackState
+						stackState,
+						activeNormal?.chargedIcdWindow
 					);
 					// Parser-private charged hit (onHit wiring): swing-END time. The
 					// abilityName carries the bow chargeHit sub-name (C1 → first
