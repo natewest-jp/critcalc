@@ -46,11 +46,13 @@
 		auraSpanPoints,
 		auraUnitLines,
 		auraMarkerLabels,
+		auraMarkerRows,
+		auraReactionsAt,
 		computeAuraLane,
 		EMPTY_AURA_LANE,
 		type AuraMarker
 	} from '$lib/timeline/auraPlot';
-	import { AURA_MOD_META, AURA_MOD_ORDER, REACTION_LABEL } from '$lib/utils/auraDisplay';
+	import { AURA_MOD_META, AURA_MOD_ORDER } from '$lib/utils/auraDisplay';
 	import { gaugesAt } from '$lib/utils/gauge';
 	import { barPhases } from '$lib/timeline/barPhases';
 	import { computeMoonsignRows } from '$lib/timeline/moonsignRows';
@@ -1519,27 +1521,17 @@
 	 * span and its tick count and lists each distinct trigger once.
 	 */
 	function markerTooltip(marker: AuraMarker): TooltipPayload {
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- a local dedupe, alive for one call and never state
-		const seen = new Set<string>();
-		// ⚠ TooltipEffectRow, not MergedEffectDisplay — these rows name a REACTION,
-		// which is prose, not a `Stat`. See the note on TooltipPayload.effects.
-		const rows: TooltipEffectRow[] = [];
-		for (const entry of marker.entries) {
-			const key = `${entry.reaction}::${entry.characterId}`;
-			if (seen.has(key)) continue;
-			seen.add(key);
-			rows.push({
-				stat: REACTION_LABEL[entry.reaction],
-				displayValue: getLoadedCharacter(entry.characterId)?.displayName ?? '—'
-			});
-		}
-		if (marker.count > 1) rows.push({ stat: 'Ticks', displayValue: `${marker.count}` });
 		return {
 			sourceLabel:
 				marker.count > 1
 					? `Reaction · ${secondsLabel(marker.time)}–${secondsLabel(marker.endTime)}s`
 					: `Reaction · ${secondsLabel(marker.time)}s`,
-			effects: rows,
+			// ⚠ ONE ROW PER REACTION, built in the projection so the uniqueness is
+			// testable — see `auraMarkerRows` for the duplicate-key crash it closes.
+			effects: auraMarkerRows(
+				marker,
+				(id) => getLoadedCharacter(id)?.displayName ?? '—'
+			) satisfies TooltipEffectRow[],
 			isMutuallyExclusive: false
 		};
 	}
@@ -1570,15 +1562,21 @@
 		// the same cursor already exists because overlaid series cannot be hovered
 		// individually. A RUN is a containment test (it has width); a discrete
 		// reaction is a proximity test.
-		const reach = (AURA_CROSSHAIR_REACH / scale) * FPS;
-		for (const marker of auraLane.markers) {
-			if (frames < marker.time - reach || frames > marker.endTime + reach) continue;
+		// ⚠ Merged by name in the projection — two episodes of one reaction can
+		// both be in reach, and two rows sharing a name is a duplicate key as well
+		// as a worse card.
+		for (const hit of auraReactionsAt(
+			auraLane.markers,
+			frames,
+			(AURA_CROSSHAIR_REACH / scale) * FPS
+		)) {
 			rows.push({
-				stat: marker.label,
-				displayValue:
-					marker.count > 1
-						? `${secondsLabel(marker.time)}–${secondsLabel(marker.endTime)}s`
-						: `${secondsLabel(marker.time)}s`
+				stat: hit.label,
+				displayValue: hit.spans
+					.map(([start, end]) =>
+						end > start ? `${secondsLabel(start)}–${secondsLabel(end)}s` : `${secondsLabel(start)}s`
+					)
+					.join(', ')
 			});
 		}
 		showTooltip(

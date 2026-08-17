@@ -45,6 +45,7 @@ import {
 	AURA_MOD_META,
 	AURA_MOD_ORDER,
 	REACTION_FAMILY,
+	REACTION_LABEL,
 	REACTION_SUSTAINED_BY
 } from '$lib/utils/auraDisplay';
 import { FPS } from '$lib/utils/frames';
@@ -463,4 +464,62 @@ export function auraUnitLines(uMax: number): number[] {
 	const out: number[] = [];
 	for (let u = 1; u < uMax; u++) out.push(u);
 	return out;
+}
+
+/**
+ * One tooltip row per REACTION on a marker — ⛔ never one per entry.
+ *
+ * 🐛 THE FOURTH KEYED-`{#each}` COLLISION IN THIS COMPONENT (2026-08-17). A
+ * collapsed Electro-Charged run carries an entry per tick, and two ticks
+ * triggered by different characters produced two rows whose `stat` was the same
+ * word — which `BuffTooltip` keyed its `{#each}` by, so hovering the label threw
+ * `each_key_duplicate`. The archive's rule is that every `(expr)` in an each is
+ * a crash surface and must be collision-free; this makes the collection itself
+ * unique, and the tooltip stopped keying on prose in the same pass.
+ *
+ * ⚓ It is also the better card. "Electro-Charged · Xingqiu" above
+ * "Electro-Charged · Raiden" repeats the name for the same reason the marker row
+ * used to — one reaction, said once, with everyone who triggered it.
+ */
+export function auraMarkerRows(
+	marker: AuraMarker,
+	nameOf: (characterId: string) => string
+): Array<{ stat: string; displayValue: string }> {
+	const byReaction = new Map<Reaction, string[]>();
+	for (const entry of marker.entries) {
+		const names = byReaction.get(entry.reaction) ?? [];
+		const name = nameOf(entry.characterId);
+		if (!names.includes(name)) names.push(name);
+		byReaction.set(entry.reaction, names);
+	}
+	return [...byReaction].map(([reaction, names]) => ({
+		stat: REACTION_LABEL[reaction],
+		displayValue: names.join(', ')
+	}));
+}
+
+/**
+ * The reaction runs the crosshair is standing in, merged by name.
+ *
+ * ⚠️ MERGED FOR THE SAME REASON as `auraMarkerRows`: two episodes of one
+ * reaction can both be within reach, and two rows sharing a name is both a
+ * duplicate key and a worse card.
+ *
+ * A run has WIDTH so it is a containment test; a discrete reaction is a point,
+ * so `reach` is what makes it answerable at all — a cursor is one pixel and an
+ * instant-exact test would report "no reaction" everywhere but one column.
+ */
+export function auraReactionsAt(
+	markers: AuraMarker[],
+	frames: number,
+	reach: number
+): Array<{ label: string; spans: Array<[number, number]> }> {
+	const byLabel = new Map<string, Array<[number, number]>>();
+	for (const marker of markers) {
+		if (frames < marker.time - reach || frames > marker.endTime + reach) continue;
+		const spans = byLabel.get(marker.label) ?? [];
+		spans.push([marker.time, marker.endTime]);
+		byLabel.set(marker.label, spans);
+	}
+	return [...byLabel].map(([label, spans]) => ({ label, spans }));
 }

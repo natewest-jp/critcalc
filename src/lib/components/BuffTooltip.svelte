@@ -59,7 +59,22 @@
 	{#if tip.isMutuallyExclusive}
 		<div class="bt-mutual">one of:</div>
 	{/if}
-	{#each tip.effects as fx (fx.stat)}
+	<!-- ⛔ KEYED BY POSITION, NOT BY `stat` (2026-08-17) — this closes a class
+	     rather than an instance. `(fx.stat)` asserts an invariant no caller can
+	     honour: `stat` is documented as possibly being free PROSE rather than a
+	     `Stat` key, so two rows naming one reaction — "Electro-Charged · Xingqiu"
+	     over "Electro-Charged · Raiden" — collide and Svelte throws
+	     `each_key_duplicate`. That was the FOURTH keyed-each crash in this area
+	     (archive_bug_lessons), whose rule is that every `(expr)` here is a crash
+	     surface and must be collision-free.
+	     ⚓ The index IS the identity here: the tooltip is rebuilt whole on every
+	     hover, and `.bt-row` carries no transition, no input and no focus, so
+	     there is nothing to preserve ACROSS renders that position does not say.
+	     ⚠ The callers were made unique-by-construction in the same pass anyway —
+	     see `auraMarkerRows` — because duplicate rows were a bad CARD as well as
+	     a bad key. Both halves are load-bearing; ⛔ don't restore the `stat` key
+	     on the grounds that the callers behave now. -->
+	{#each tip.effects as fx, i (i)}
 		<div class="bt-row">
 			{#if iconFor(fx.stat)}
 				<img src={iconFor(fx.stat)} alt="" class="bt-icon" />
