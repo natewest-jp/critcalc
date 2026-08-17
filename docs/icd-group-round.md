@@ -52,9 +52,16 @@ Measured over the whole table:
 ICD mechanism, and anyone starting it should not build one.** It needs data, and a
 resolver willing to return something other than the standard.
 
-⚠️ **The 1.5× multiplier needs nothing either.** Nahida's Tri-Karma already carries
-`units: 1.5` in her authored `application[]`, measured from the same dump. ⛔ Do not add a
-multiplier to the ICD model to express it — that would be two sources for one number.
+⚠️ **The 1.5× multiplier still does not belong in the ICD model** — but ↻ **not for the
+reason first written here.** This document originally claimed Nahida's Tri-Karma "already
+carries `units: 1.5` in her authored `application[]`". It does not, and **no `units: 1.5`
+exists anywhere in the corpus** — her list holds one 1U entry for the cast's own hit, and
+Tri-Karma is not authored at all. The 1.5U is gcsim's, in the oracle's column.
+
+⚓ The conclusion survives its evidence: a gauge STRENGTH belongs beside the application
+that carries it, which is where `units` already lives, ⛔ not in a cadence model. But the
+field is unwritten, so **whoever authors Tri-Karma writes the corpus's first 1.5U** — see
+§5, and ⛔ do not treat this as solved.
 
 ## 3. ⚠️⚠️ The residue is NOT all groups — it splits three ways
 
