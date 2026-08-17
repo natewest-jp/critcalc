@@ -34,18 +34,75 @@
 			],
 			"description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 24, "hit": 9, "N": 19 } },
-				{ "name": "N2", "frames": { "anim": 27, "hit": 13, "N": 23 } },
-				{ "name": "N3", "frames": { "anim": 34, "hit": 28, "N": 31 } },
-				{ "name": "N4", "frames": { "anim": 52, "hit": 32, "N": 44 } },
-				{ "name": "N5", "frames": { "anim": 66, "hit": 40 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 24,
+						"hit": 9,
+						"N": 19
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 27,
+						"hit": 13,
+						"N": 23
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 34,
+						"hit": 28,
+						"N": 31
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 52,
+						"hit": 32,
+						"N": 44
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 66,
+						"hit": 40
+					}
+				}
 			],
-			"chargeFrames": { "anim": 69, "D": 22, "J": 22, "swap": 66 },
-			"plungeFrames": { "anim": 80, "N": 60, "E": 60, "Q": 60, "D": 77, "swap": 67 },
+			"chargeFrames": {
+				"anim": 69,
+				"D": 22,
+				"J": 22,
+				"swap": 66
+			},
+			"plungeFrames": {
+				"anim": 80,
+				"N": 60,
+				"E": 60,
+				"Q": 60,
+				"D": 77,
+				"swap": 67
+			},
 			"_curatorNotes": [
-				"N1–N4 ActionCharge values are at InitNormalCancelSlice animation defaults (not explicitly set by gcsim author) and are omitted — reviewer may add if needed. N3 and N5 each have two hitmarks (N3: 19f+28f, N5: 26f+40f); last hitmark used as cancel-frame source per recipe. N5 has no explicit ActionAttack line so N is omitted (animation default=66). High plunge frames also modeled in gcsim but not represented here (recipe: use lowPlungeFrames). High plunge effective frames for reviewer reference: { swap: 67, N: 60, E: 60, Q: 60, D: 77 }."
+				"N1–N4 ActionCharge values are at InitNormalCancelSlice animation defaults (not explicitly set by gcsim author) and are omitted — reviewer may add if needed. N3 and N5 each have two hitmarks (N3: 19f+28f, N5: 26f+40f); last hitmark used as cancel-frame source per recipe. N5 has no explicit ActionAttack line so N is omitted (animation default=66). High plunge frames also modeled in gcsim but not represented here (recipe: use lowPlungeFrames). High plunge effective frames for reviewer reference: { swap: 67, N: 60, E: 60, Q: 60, D: 77 }.",
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
 			],
-			"lowPlungeFrames": { "anim": 78, "N": 59, "E": 60, "Q": 59, "D": 77, "swap": 66 }
+			"lowPlungeFrames": {
+				"anim": 78,
+				"N": 59,
+				"E": 60,
+				"Q": 59,
+				"D": 77,
+				"swap": 66
+			},
+			"chargedIcdWindow": {
+				"timer": 30
+			}
 		},
 		{
 			"id": "rosaria__skill__ravaging_confession",
@@ -56,12 +113,25 @@
 			"cooldownStartDelay": 23,
 			"tags": [],
 			"effects": [],
-			"frames": { "anim": 51, "D": 38, "J": 40, "swap": 50 },
+			"frames": {
+				"anim": 51,
+				"D": 38,
+				"J": 40,
+				"swap": 50
+			},
 			"behavior": "instant",
 			"description": "Rosaria swiftly shifts her position to appear behind her opponent, then stabs and slashes them with her polearm, dealing Cryo DMG.\nThis ability cannot be used to travel behind opponents of a larger build.",
 			"application": [
-				{ "frame": 24, "element": "cryo", "units": 1 },
-				{ "frame": 38, "element": "cryo", "units": 1 }
+				{
+					"frame": 24,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 38,
+					"element": "cryo",
+					"units": 1
+				}
 			]
 		},
 		{
@@ -73,7 +143,12 @@
 			"tags": ["summon"],
 			"energyCost": 60,
 			"effects": [],
-			"frames": { "anim": 70, "D": 57, "J": 59, "swap": 69 },
+			"frames": {
+				"anim": 70,
+				"D": 57,
+				"J": 59,
+				"swap": 69
+			},
 			"behavior": "instant",
 			"summons": [
 				{
@@ -86,7 +161,10 @@
 							"source": "C2: Land Without Promise",
 							"type": "flat",
 							"value": 4,
-							"conditions": { "type": "constellation", "level": 2 }
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							}
 						}
 					],
 					"effects": [
@@ -115,8 +193,16 @@
 			],
 			"description": "Rosaria's unique take on this prayer ritual: First, she swings her weapon to slash surrounding opponents; then, she summons a frigid Ice Lance that strikes the ground. Both actions deal Cryo DMG.\nWhile active, the Ice Lance periodically releases a blast of cold air, dealing Cryo DMG to surrounding opponents.",
 			"application": [
-				{ "frame": 15, "element": "cryo", "units": 1 },
-				{ "frame": 56, "element": "cryo", "units": 1 }
+				{
+					"frame": 15,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 56,
+					"element": "cryo",
+					"units": 1
+				}
 			]
 		}
 	],
@@ -129,7 +215,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"duration": 5,
 					"durationType": "fixed",
 					"source": "character",
@@ -151,7 +240,10 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -220,7 +312,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "burst" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
 					"duration": 10,
 					"element": "physical",
 					"value": -20,

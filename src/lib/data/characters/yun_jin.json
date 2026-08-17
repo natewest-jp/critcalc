@@ -16,17 +16,59 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 25, "hit": 15, "N": 20 } },
-				{ "name": "N2", "frames": { "anim": 29, "hit": 13, "N": 22 } },
-				{ "name": "N3", "frames": { "anim": 32, "hit": 23, "N": 31 } },
-				{ "name": "N4", "frames": { "anim": 46, "hit": 23, "N": 45 } },
-				{ "name": "N5", "frames": { "anim": 67, "hit": 15 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 25,
+						"hit": 15,
+						"N": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 29,
+						"hit": 13,
+						"N": 22
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 32,
+						"hit": 23,
+						"N": 31
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 46,
+						"hit": 23,
+						"N": 45
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 67,
+						"hit": 15
+					}
+				}
 			],
-			"chargeFrames": { "anim": 59, "E": 58, "Q": 58, "D": 29, "J": 29, "swap": 57 },
+			"chargeFrames": {
+				"anim": 59,
+				"E": 58,
+				"Q": 58,
+				"D": 29,
+				"J": 29,
+				"swap": 57
+			},
 			"_curatorNotes": [
 				"No plunge.go in gcsim character dir — plungeFrames not available.",
 				"N3 deals two hits (gcsim attackHitmarks[2] = [8, 23]); cancel frames sourced from last hitmark (23).",
-				"N4 deals two hits (gcsim attackHitmarks[3] = [11, 23]); cancel frames sourced from last hitmark (23)."
+				"N4 deals two hits (gcsim attackHitmarks[3] = [11, 23]); cancel frames sourced from last hitmark (23).",
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
 			],
 			"sections": [
 				{
@@ -45,7 +87,10 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"chargedIcdWindow": {
+				"timer": 30
+			}
 		},
 		{
 			"id": "yun_jin__skill__opening_flourish",
@@ -59,7 +104,10 @@
 				{
 					"type": "shield",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 0.2,
 					"scaling": 21.6,
 					"stat": "hp",
@@ -68,7 +116,12 @@
 				}
 			],
 			"behavior": "instant",
-			"frames": { "anim": 59, "D": 49, "J": 48, "swap": 59 },
+			"frames": {
+				"anim": 59,
+				"D": 49,
+				"J": 48,
+				"swap": 59
+			},
 			"variants": [
 				{
 					"label": "Hold Lv.1",
@@ -76,7 +129,13 @@
 					"cooldown": 9,
 					"tags": ["shield", "summon"],
 					"behavior": "instant",
-					"frames": { "anim": 95, "N": 96, "D": 85, "J": 85, "swap": 95 },
+					"frames": {
+						"anim": 95,
+						"N": 96,
+						"D": 85,
+						"J": 85,
+						"swap": 95
+					},
 					"_curatorNotes": [
 						"cooldownStartDelay for Hold Lv.1 is 48 frames (gcsim skillCDStarts[1] = 48); schema gap — AbilityVariant has no cooldownStartDelay field.",
 						"Shield duration: 50 frames = 0.8s (gcsim skillHitmarks[1] = 50).",
@@ -87,7 +146,10 @@
 						{
 							"type": "shield",
 							"target": "self",
-							"trigger": { "type": "onCast", "ability": "skill" },
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
 							"duration": 0.8,
 							"scaling": 21.6,
 							"stat": "hp",
@@ -95,7 +157,13 @@
 							"label": "Opening Flourish Shield"
 						}
 					],
-					"application": [{ "frame": 50, "element": "geo", "units": 2 }]
+					"application": [
+						{
+							"frame": 50,
+							"element": "geo",
+							"units": 2
+						}
+					]
 				},
 				{
 					"label": "Hold Lv.2",
@@ -103,7 +171,13 @@
 					"cooldown": 9,
 					"tags": ["shield", "summon"],
 					"behavior": "instant",
-					"frames": { "anim": 138, "N": 140, "D": 129, "J": 129, "swap": 138 },
+					"frames": {
+						"anim": 138,
+						"N": 140,
+						"D": 129,
+						"J": 129,
+						"swap": 138
+					},
 					"_curatorNotes": [
 						"cooldownStartDelay for Hold Lv.2 is 90 frames (gcsim skillCDStarts[2] = 90); schema gap — AbilityVariant has no cooldownStartDelay field.",
 						"Shield duration: 93 frames = 1.6s (gcsim skillHitmarks[2] = 93).",
@@ -114,7 +188,10 @@
 						{
 							"type": "shield",
 							"target": "self",
-							"trigger": { "type": "onCast", "ability": "skill" },
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
 							"duration": 1.6,
 							"scaling": 21.6,
 							"stat": "hp",
@@ -122,7 +199,13 @@
 							"label": "Opening Flourish Shield"
 						}
 					],
-					"application": [{ "frame": 50, "element": "geo", "units": 2 }]
+					"application": [
+						{
+							"frame": 50,
+							"element": "geo",
+							"units": 2
+						}
+					]
 				}
 			],
 			"_curatorNotes": [
@@ -135,7 +218,13 @@
 			],
 			"description": "Ms. Yun may just be acting out fights on stage, but her skills with the spear are real enough to defend against her foes.\n\nPress\nFlourishes her polearm in a cloud-grasping stance, dealing Geo DMG.\n\nHold\nTakes up the Opening Flourish stance and charges up, forming a shield. DMG Absorption is based on Yun Jin's Max HP and has 150% effectiveness against all Elemental DMG and Physical DMG. The shield lasts until she finishes unleashing her Elemental Skill.\nWhen the skill is released, when its duration ends, or when the shield breaks, Yun Jin will unleash the charged energy as an attack, dealing Geo DMG.\nBased on the time spent charging, it will either unleash an attack at Charge Level 1 or Level 2.",
 			"activeDuration": 0.2,
-			"application": [{ "frame": 13, "element": "geo", "units": 2 }]
+			"application": [
+				{
+					"frame": 13,
+					"element": "geo",
+					"units": 2
+				}
+			]
 		},
 		{
 			"id": "yun_jin__burst__cliffbreakers_banner",
@@ -150,17 +239,29 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": { "type": "scaling", "stat": "def", "ratio": 57.89 },
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 57.89
+					},
 					"snapshottable": false
 				}
 			],
 			"behavior": "instant",
-			"frames": { "anim": 57, "D": 42, "J": 41, "swap": 55 },
+			"frames": {
+				"anim": 57,
+				"D": 42,
+				"J": 41,
+				"swap": 55
+			},
 			"_curatorNotes": [
 				"Flying Cloud Flag Formation is a team buff (all party members), not a physical entity — no summons[] needed. Duration 12s (720 frames), 30 stacks per character tracked independently (gcsim: char.SetTag(burstBuffKey, 30) + AddStatus(burstBuffKey, 720, true)). Buff damage and stack application occur at frame 35 (gcsim burstHitmark = 35).",
 				"Main buff mechanic (burstBuff * DEF as flat Normal Attack DMG add per hit, consuming one stack) authored 2026-07-12 (A3 pass) as a normalFlatDmg team buff: 57.89% DEF at talent level 10 (sidecar 'DMG Increase' row, 10th column). snapshottable: false — kit text says 'based on Yun Jin's current DEF' and KQM TCL confirms the burst does not snapshot (DEF read dynamically at each Normal Attack hit; gcsim burstProc reads TotalDef at hit time).",
@@ -169,7 +270,13 @@
 				"C2 (Normal Attack DMG +15% for team, 12s) and C6 (Normal ATK SPD +12% while stacks remain) both trigger at burstHitmark via c2() / c6(). See constellation _curatorNotes."
 			],
 			"description": "Deals AoE Geo DMG and grants all nearby party members a Flying Cloud Flag Formation.\n\nFlying Cloud Flag Formation\nWhen Normal Attack DMG is dealt to opponents, Bonus DMG will be dealt based on Yun Jin's current DEF.\n\nThe effects of this skill will be cleared after a set duration or after being triggered a specific number of times.\nWhen one Normal Attack hits multiple opponents, the effect is triggered multiple times according to the number of opponents hit. The number of times that the effect is triggered is counted independently for each member of the party with Flying Cloud Flag Formation.",
-			"application": [{ "frame": 35, "element": "geo", "units": 2 }]
+			"application": [
+				{
+					"frame": 35,
+					"element": "geo",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -187,7 +294,10 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "normal" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
 					"scaling": 11.5,
 					"stat": "def"
 				}
@@ -226,7 +336,10 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",

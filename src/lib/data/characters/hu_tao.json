@@ -16,15 +16,72 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 20, "hit": 12, "N": 14 } },
-				{ "name": "N2", "frames": { "anim": 16, "hit": 9, "N": 12 } },
-				{ "name": "N3", "frames": { "anim": 26, "hit": 17, "C": 23 } },
-				{ "name": "N4", "frames": { "anim": 31, "hit": 22, "N": 29 } },
-				{ "name": "N5", "frames": { "anim": 28, "N": 37, "C": 48, "swap": 28 } },
-				{ "name": "N6", "frames": { "anim": 72, "hit": 23 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 20,
+						"hit": 12,
+						"N": 14
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 16,
+						"hit": 9,
+						"N": 12
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 26,
+						"hit": 17,
+						"C": 23
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 31,
+						"hit": 22,
+						"N": 29
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 28,
+						"N": 37,
+						"C": 48,
+						"swap": 28
+					}
+				},
+				{
+					"name": "N6",
+					"frames": {
+						"anim": 72,
+						"hit": 23
+					}
+				}
 			],
-			"chargeFrames": { "anim": 62, "N": 57, "E": 53, "Q": 54, "D": 26, "J": 24, "swap": 62 },
-			"plungeFrames": { "anim": 61, "N": 58, "E": 59, "Q": 59, "J": 74, "swap": 61 },
+			"chargeFrames": {
+				"anim": 62,
+				"N": 57,
+				"E": 53,
+				"Q": 54,
+				"D": 26,
+				"J": 24,
+				"swap": 62
+			},
+			"plungeFrames": {
+				"anim": 61,
+				"N": 58,
+				"E": 59,
+				"Q": 59,
+				"J": 74,
+				"swap": 61
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -47,36 +104,114 @@
 				"N5 has two hitmarks (16, 26); swap reflects the last hitmark per recipe convention.",
 				"N6 C-cancel is illegal in gcsim (ActionCharge = 500 with TODO comment); omitted.",
 				"Base charged-attack hitmark = 19 (gcsim). High plunge variants exist in gcsim but are not represented per recipe.",
-				"gcsim restricts plunge to AirborneXianyun-launched only — this is a sim limitation, not an in-game one. plungeFrames sourced from gcsim's lowPlungeFrames; in-game any post-jump plunge works."
+				"gcsim restricts plunge to AirborneXianyun-launched only — this is a sim limitation, not an in-game one. plungeFrames sourced from gcsim's lowPlungeFrames; in-game any post-jump plunge works.",
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
 			],
-			"lowPlungeFrames": { "anim": 61, "N": 58, "E": 59, "Q": 59, "J": 74, "swap": 61 }
+			"lowPlungeFrames": {
+				"anim": 61,
+				"N": 58,
+				"E": 59,
+				"Q": 59,
+				"J": 74,
+				"swap": 61
+			},
+			"chargedIcdWindow": {
+				"timer": 30
+			}
 		},
 		{
 			"id": "hu_tao__normal__paramita_papilio",
 			"name": "Secret Spear of Wangsheng (Paramita Papilio)",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": { "type": "state", "state": "inStance" },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
 			"infusion": "pyro",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 20, "hit": 12, "N": 14 } },
-				{ "name": "N2", "frames": { "anim": 16, "hit": 9, "N": 12 } },
-				{ "name": "N3", "frames": { "anim": 26, "hit": 17, "C": 23 } },
-				{ "name": "N4", "frames": { "anim": 31, "hit": 22, "N": 29 } },
-				{ "name": "N5", "frames": { "anim": 28, "N": 36, "C": 48, "swap": 28 } },
-				{ "name": "N6", "frames": { "anim": 72, "hit": 23 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 20,
+						"hit": 12,
+						"N": 14
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 16,
+						"hit": 9,
+						"N": 12
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 26,
+						"hit": 17,
+						"C": 23
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 31,
+						"hit": 22,
+						"N": 29
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 28,
+						"N": 36,
+						"C": 48,
+						"swap": 28
+					}
+				},
+				{
+					"name": "N6",
+					"frames": {
+						"anim": 72,
+						"hit": 23
+					}
+				}
 			],
-			"chargeFrames": { "anim": 42, "Q": 33, "D": 3, "J": 3, "swap": 42 },
-			"plungeFrames": { "anim": 61, "N": 58, "E": 58, "Q": 58, "swap": 61 },
+			"chargeFrames": {
+				"anim": 42,
+				"Q": 33,
+				"D": 3,
+				"J": 3,
+				"swap": 42
+			},
+			"plungeFrames": {
+				"anim": 61,
+				"N": 58,
+				"E": 58,
+				"Q": 58,
+				"swap": 61
+			},
 			"caveat": "Charged-attack cancel timing into dash or jump varies with the preceding normal; the timing shown is for a standalone charged attack.",
 			"description": "Hu Tao's normal-attack combo while in the Paramita Papilio stance. The 6-hit string and base frame timings match the standard combo, but all hits are converted to Pyro DMG and benefit from Paramita Papilio's flat ATK bonus.",
 			"_curatorNotes": [
 				"Frame deltas vs base normal: N5 N-cancel 36 (vs 37); N6 swap 27 (vs 23). PP chargeFrames hitmark = 3 (vs 19 base).",
 				"Plunge frames sourced from gcsim's lowPlungeFramesB (Paramita variant). gcsim does not set ActionDash or ActionJump on lowPlungeFramesB — D and J omitted per recipe rule. Plunges deal Pyro DMG with IgnoreInfusion in gcsim.",
-				"[A7] Charged-attack dash/jump cancel windows are position-dependent: N1→D=1, N2→D=4, N3–N5→D=2–3 frames; the authored chargeFrames reflect a standalone CA cast."
+				"[A7] Charged-attack dash/jump cancel windows are position-dependent: N1→D=1, N2→D=4, N3–N5→D=2–3 frames; the authored chargeFrames reflect a standalone CA cast.",
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
 			],
-			"lowPlungeFrames": { "anim": 61, "N": 58, "E": 58, "Q": 58, "swap": 61 }
+			"lowPlungeFrames": {
+				"anim": 61,
+				"N": 58,
+				"E": 58,
+				"Q": 58,
+				"swap": 61
+			},
+			"chargedIcdWindow": {
+				"timer": 30
+			}
 		},
 		{
 			"id": "hu_tao__skill__guide_to_afterlife",
@@ -86,18 +221,31 @@
 			"cooldown": 16,
 			"cooldownStartDelay": 14,
 			"duration": 9,
-			"frames": { "anim": 52, "N": 29, "Q": 28, "D": 37, "J": 37 },
+			"frames": {
+				"anim": 52,
+				"N": 29,
+				"Q": 28,
+				"D": 37,
+				"J": 37
+			},
 			"tags": [],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 9,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 6.26 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 6.26
+					},
 					"snapshottable": false
 				}
 			],
@@ -109,7 +257,11 @@
 			],
 			"behavior": "stance",
 			"terminatesOnSwap": true,
-			"application": [{ "frame": 14 }]
+			"application": [
+				{
+					"frame": 14
+				}
+			]
 		},
 		{
 			"id": "hu_tao__burst__spirit_soother",
@@ -118,7 +270,12 @@
 			"abilityType": "burst",
 			"cooldown": 15,
 			"cooldownStartDelay": 62,
-			"frames": { "anim": 98, "N": 97, "E": 97, "swap": 95 },
+			"frames": {
+				"anim": 98,
+				"N": 97,
+				"E": 97,
+				"swap": 95
+			},
 			"tags": ["heal"],
 			"energyCost": 60,
 			"caveat": "DMG and heal are boosted at ≤50% HP (not modeled).",
@@ -126,7 +283,10 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": { "type": "onHit", "abilityType": "burst" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
 					"scaling": 10.2,
 					"stat": "hp"
 				}
@@ -138,7 +298,13 @@
 				"Spirit Soother does NOT end Paramita Papilio (gcsim onExitField only fires on swap; burst.go has no DeleteStatMod for paramita). PP and Q can run concurrently."
 			],
 			"behavior": "instant",
-			"application": [{ "frame": 66, "element": "pyro", "units": 2 }]
+			"application": [
+				{
+					"frame": 66,
+					"element": "pyro",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -151,7 +317,10 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "afterDuration", "ability": "skill" },
+					"trigger": {
+						"type": "afterDuration",
+						"ability": "skill"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
@@ -169,8 +338,13 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "selfHpBelow", "threshold": 50 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "selfHpBelow",
+						"threshold": 50
+					},
 					"source": "character",
 					"stat": "pyroDmgBonus",
 					"value": 33,
@@ -218,7 +392,9 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",

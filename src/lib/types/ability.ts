@@ -1436,7 +1436,60 @@ export type NormalAbility = AbilityCommon & {
 	 *  Forward-looking curation annotation: no consumer reads it yet (the planner
 	 *  is deliberately "windows not gauges"). See docs/library/game/icd.md. */
 	noICD?: boolean;
+	/**
+	 * ⚓ A MEASURED non-standard element-application window for this character's
+	 * CHARGED attack. Absent means the standard 2.5 s / every-third-hit default.
+	 *
+	 * ⚠️⚠️ **It is per-CHARACTER data and deliberately not a weapon-type rule**,
+	 * which is what a census of gcsim's `charge.go` files showed after the
+	 * opposite was assumed. 16 of the 19 oracled polearm users carry gcsim's
+	 * `ICDGroupPoleExtraAttack` (a 0.5 s window in which only the first hit
+	 * applies, so in practice every charged attack applies) — but **Xiao,
+	 * Raiden and Emilie are on the default**, and **Ayato, a sword user, is
+	 * not**. ⛔ So this may never move into `resolveActionIcd` as a
+	 * `weapon === 'polearm'` branch beside the plunge and catalyst rules: those
+	 * two are near-universal censuses (165/166 and all of them) and this is 84%
+	 * with named counter-examples.
+	 *
+	 * ⚠️ Raiden is a counter-example twice over and shows why the field is
+	 * scoped to the charged attack alone: inside Musou Isshin her charged attack
+	 * is tagged as a NORMAL attack in gcsim, so it shares the normal counter
+	 * rather than carrying a window of its own. That is unmodelled.
+	 *
+	 * ⚓ Shape is gcsim's own group data reduced to its two load-bearing numbers
+	 * (`pkg/core/attacks/icd_groups.dm.go`): the reset `timer` in FRAMES, and
+	 * `every` — how many hits apart an application falls inside that window,
+	 * absent meaning ONLY THE FIRST does. All 58 of gcsim's groups reduce to
+	 * this pair; ⛔ never carry gcsim's group NAMES, which is a 58-entry
+	 * taxonomy we would have to maintain and whose whole content is these two
+	 * numbers.
+	 *
+	 * ⚠️ Reachable only when the swing is elemental: a bare polearm charged
+	 * attack is Physical and applies nothing, so this is spent by a stance
+	 * infusion (Hu Tao, Cyno, Flins) or one granted by a teammate — which is
+	 * why it is authored on every character gcsim measures rather than only on
+	 * the self-infusers. See docs/icd-group-round.md.
+	 */
+	chargedIcdWindow?: IcdWindow;
 	tags?: AbilityTag[];
+};
+
+/**
+ * A measured non-standard element-application ICD, in gcsim's terms reduced to
+ * the two numbers that carry all of it: a reset window and how often a hit
+ * applies inside it.
+ *
+ * ⚓ This is the same shape `IcdParams` in `$lib/utils/icd` already had —
+ * `{ timer, hits }` IS `(window, period)` — so consuming one needs no new
+ * mechanism, only a resolver willing to return something other than the
+ * standard. `every` absent maps to an unreachable counter, i.e. only the first
+ * hit of each window applies.
+ */
+export type IcdWindow = {
+	/** Reset window in FRAMES (60fps). gcsim's `ICDGroupResetTimer`. */
+	timer: number;
+	/** Every `every`-th hit applies inside the window. Absent = only the first. */
+	every?: number;
 };
 
 /** Plunge-variant override selected by the preceding E token text. */

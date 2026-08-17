@@ -17,6 +17,7 @@
 //
 // Reference: docs/library/game/icd.md.
 
+import type { IcdWindow } from '$lib/types/ability';
 import type { WeaponType } from '$lib/types/weapon';
 import type { NormalActionKind } from '$lib/utils/actionElement';
 import { FPS } from '$lib/utils/frames';
@@ -178,17 +179,44 @@ export const icdTagFor = (kind: IcdActionKind): IcdTag =>
  * ⚠️ This is where `noICD` on a SKILL or BURST finally has a reader — it was
  * declared and inert, with the schema comment saying so.
  *
+ * ↻ **AND ONE OF THOSE BESPOKE GROUPS IS NOW AUTHORED RATHER THAN COLLAPSED**
+ * (2026-08-17). `NormalAbility.chargedIcdWindow` carries a MEASURED window for a
+ * charged attack, and it wins over the standard default. ⚠️⚠️ It arrives as DATA
+ * and ⛔ must never become a `weapon === 'polearm'` branch alongside the two
+ * rules above: those are near-universal censuses (plunges 165/166, catalyst
+ * charged attacks all of them) while this one is **16 of 19 with named
+ * counter-examples** — Xiao, Raiden and Emilie sit on the default, and Ayato,
+ * who wields a sword, does not. A blanket rule here would be wrong four ways.
+ *
+ * ⚠️ Order is load-bearing: `noICD` and the plunge/catalyst rules still come
+ * FIRST, because "applies always and touches no clock" is a stronger statement
+ * than any window and an authored window must not resurrect a counter those
+ * cases deliberately never touch.
+ *
  * @param kind         normal / charged / plunge / skill / burst
  * @param weapon       the character's weapon type
  * @param abilityNoICD the resolved ability's `noICD`
+ * @param authored     a measured non-standard window for this action, if any
  */
 export function resolveActionIcd(
 	kind: IcdActionKind,
 	weapon: WeaponType | undefined,
-	abilityNoICD: boolean | undefined
+	abilityNoICD: boolean | undefined,
+	authored?: IcdWindow
 ): IcdParams | null {
 	if (abilityNoICD) return null;
 	if (kind === 'plunge') return null;
 	if (kind === 'charged' && weapon === 'catalyst') return null;
+	// ⚓ `every` absent means only the first hit of the window applies, which the
+	// counter expresses as one it can never reach — the branch in `icdApplies` is
+	// `count > hits`, so Infinity simply never fires and the timer alone drives
+	// applications. ⛔ Don't spell it as a large finite number; that invites a
+	// reader to wonder what happens at hit 999.
+	// ⚠️ Gated on the kind HERE rather than trusting the caller: the field names
+	// the charged attack, three call sites share this signature, and a normal
+	// swing handed a charged window would be gated by a number nobody measured
+	// for it.
+	if (kind === 'charged' && authored)
+		return { timer: authored.timer, hits: authored.every ?? Infinity };
 	return STANDARD_ICD_FRAMES;
 }
