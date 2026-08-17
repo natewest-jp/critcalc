@@ -22,19 +22,58 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": { "anim": 35, "N": 30, "C": 26, "E": 21, "Q": 21, "D": 21, "J": 23, "swap": 21 }
+					"frames": {
+						"anim": 35,
+						"N": 30,
+						"C": 26,
+						"E": 21,
+						"Q": 21,
+						"D": 21,
+						"J": 23,
+						"swap": 21
+					}
 				},
-				{ "name": "N2", "frames": { "anim": 31, "hit": 13, "N": 22, "C": 23 } },
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 31,
+						"hit": 13,
+						"N": 22,
+						"C": 23
+					}
+				},
 				{
 					"name": "N3",
-					"frames": { "anim": 45, "N": 38, "C": 37, "E": 24, "Q": 24, "D": 26, "J": 25, "swap": 24 }
+					"frames": {
+						"anim": 45,
+						"N": 38,
+						"C": 37,
+						"E": 24,
+						"Q": 24,
+						"D": 26,
+						"J": 25,
+						"swap": 24
+					}
 				},
 				{
 					"name": "N4",
-					"frames": { "anim": 71, "C": 69, "E": 40, "Q": 40, "D": 39, "J": 39, "swap": 39 }
+					"frames": {
+						"anim": 71,
+						"C": 69,
+						"E": 40,
+						"Q": 40,
+						"D": 39,
+						"J": 39,
+						"swap": 39
+					}
 				}
 			],
-			"chargeFrames": { "anim": 65, "D": 21, "J": 21, "swap": 21 },
+			"chargeFrames": {
+				"anim": 65,
+				"D": 21,
+				"J": 21,
+				"swap": 21
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -60,14 +99,49 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 32, "N": 28, "C": 28, "D": 27, "J": 26, "swap": 25 },
+			"frames": {
+				"anim": 32,
+				"N": 28,
+				"C": 28,
+				"D": 27,
+				"J": 26,
+				"swap": 25
+			},
 			"cooldown": 5,
 			"cooldownStartDelay": 11,
 			"tags": ["coordinatedAttack"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "any",
+						"source": "team",
+						"armedFor": 25
+					},
+					"procCooldown": 2.5,
+					"scaling": 185.8,
+					"stat": "atk",
+					"flatScaling": {
+						"stat": "em",
+						"ratio": 371.5
+					},
+					"element": "dendro",
+					"application": [
+						{
+							"frame": 3,
+							"element": "dendro",
+							"units": 1.5
+						}
+					]
+				}
+			],
 			"_curatorNotes": [
 				"behavior changed from 'stance' to 'instant': Nahida's E does not replace normals/charge for any duration. The Seed of Skandha mark (1500 frames = 25s) is applied to enemies, not a caster-side entity — omitted from summons[]. Top-level duration: 25 removed; it was the enemy debuff lifetime, not an ability-side duration.",
-				"Tri-Karma Purification: reactive proc triggered on any elemental reaction on Seed-marked enemies, or on Bloom/Burgeon/Hyperbloom damage (gcsim: subscribes to OnEnemyDamage filtered to those AttackTags, plus all reaction events via ReactionEventStartDelim loop). ICD: 2.5s base (reduced by electroCount * burstTriKarmaCDReduction during Shrine of Maya). Deals Dendro DMG based on ATK and EM. Not modeled in effects[] — needs reviewer pass.",
+				"Tri-Karma Purification: MODELLED 2026-08-17 as a damage effect on an onReaction trigger with an application[] — the fourth source that reaches the gauge (docs/mark-triggered-damage-round.md). source 'team' because gcsim subscribes to every reaction event with no actor filter (nahida.go Init, ReactionEventStartDelim loop) and to OnEnemyDamage filtered to Bloom/Burgeon/Hyperbloom, both of which our 'any' covers. armedFor 25 is the Seed of Skandha's lifetime (skill.go skillMarkKey, 1500 frames); the Seed is a state on the ENEMY, so it is deliberately not a summons[] entry and not an activeDuration. procCooldown 2.5 is triKarmaInterval's base.",
+				"Tri-Karma applies 1.5U, the corpus's first. skill.go writes Durability: 25, but ICDGroupNahidaSkill's sequence is {1.5, 0, 0, …} on a 1s timer (pkg/core/attacks/icd_groups.dm.go) and pkg/enemy/attack.go multiplies incoming durability by that entry — so a proc lands at 37.5 durability. With a 2.5s trigger interval the group never binds, so every proc is 1.5U. Application frame 3 = QueueAttackWithSnap's delay argument. Values at talent 10: triKarmaAtk[9]=1.8576, triKarmaEM[9]=3.7152, matching the sidecar's \"185.8% ATK+371.5% Elemental Mastery\".",
+				"NOT modelled, each for a stated reason. (1) The burst's trigger-interval reduction (burstTriKarmaCDReduction, -0.446s per Electro teammate at talent 10, only inside Shrine of Maya): procCooldown has no conditional form, and measured on the oracle fixtures the interval is never the binding constraint — observed gaps are 4.9-5.6s against a 2.5s floor. (2) C6 Karmic Oblivion, a second Tri-Karma at 200% ATK + 400% EM on a 0.2s ICD, six per burst: it is gated on an on-field state (c6ActiveKey) the parser does not track. (3) The proc does not enter the finalize hit stream, so it does not trigger Deepwood or any other artifact onHit set — true in game, and its own landing.",
 				"Inherited trigger: 'manual' on effects (effects[] is empty here). Underlying Tri-Karma proc: likely onReaction with Seed of Skandha condition + onDmg for bloom-type AttackTags. Target scope: all Seed-marked enemies (multi-target AoE on the skill mark group)."
 			],
 			"variants": [
@@ -89,11 +163,24 @@
 						"Hold E has parametric total frame count: Frames(next) = hold + skillHoldFrames[next], where hold = max(min(p['hold'], 300), 1) - 1 ∈ [0, 299]. Frames recorded above are at min-hold (hold=0). At max-hold (hold=299): swap=356, N=356, Q=361, D=358, J=361.",
 						"cooldownStartDelay for Hold variant is parametric: hold + 30 frames. At min-hold (hold=0): 30 frames. At max-hold (hold=299): 329 frames. AbilityVariant has no cooldownStartDelay schema field — reviewer to decide whether to extend the schema or model only the min-hold value."
 					],
-					"application": [{ "frame": 33, "element": "dendro", "units": 1 }]
+					"application": [
+						{
+							"frame": 33,
+							"element": "dendro",
+							"units": 1
+						}
+					]
 				}
 			],
 			"description": "Sends forth karmic bonds of wood and tree from her side, dealing AoE Dendro DMG and marking up to 8 opponents hit with the Seed of Skandha.\nWhen held, this skill will trigger differently.\n\nHold\nEnters Aiming Mode, which will allow you to select a limited number of opponents within a limited area. During this time, Nahida's resistance to interruption will be increased.\nWhen released, this skill deals Dendro DMG to these opponents and marks them with the Seed of Skandha.\nAiming Mode will last up to 5s and can select a maximum of 8 opponents.\n\nSeed of Skandha\nOpponents who have been marked by the Seed of Skandha will be linked to one another up till a certain distance.\nAfter you trigger Elemental Reactions on opponents who are affected by the Seeds of Skandha or when they take DMG from Dendro Cores (including Burgeon and Hyperbloom DMG), Nahida will unleash Tri-Karma Purification on the opponents and all connected opponents, dealing Dendro DMG based on her ATK and Elemental Mastery.\nYou can trigger at most 1 Tri-Karma Purification within a short period of time.",
-			"application": [{ "frame": 13, "element": "dendro", "units": 1 }]
+			"application": [
+				{
+					"frame": 13,
+					"element": "dendro",
+					"units": 1
+				}
+			],
+			"caveat": "Tri-Karma Purification fires at most once every 2.5s. Not modeled: the shorter interval the burst grants with Electro teammates, and the extra C6 proc."
 		},
 		{
 			"id": "nahida__burst__illusory_heart",
@@ -101,12 +188,20 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 112, "swap": 111 },
+			"frames": {
+				"anim": 112,
+				"swap": 111
+			},
 			"cooldown": 13.5,
 			"tags": [],
 			"energyCost": 50,
 			"summons": [
-				{ "label": "Shrine of Maya", "duration": 15, "spawnsAt": 66, "mobility": "stationary" }
+				{
+					"label": "Shrine of Maya",
+					"duration": 15,
+					"spawnsAt": 66,
+					"mobility": "stationary"
+				}
 			],
 			"effects": [],
 			"_curatorNotes": [
@@ -129,7 +224,10 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -157,7 +255,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "skillDmgBonus",
 					"value": 80,
@@ -169,7 +269,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "critRate",
 					"value": 24,
@@ -210,7 +312,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -220,7 +324,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",
@@ -262,7 +368,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -292,7 +400,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 200,
 					"stat": "atk",
 					"element": "dendro"

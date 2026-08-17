@@ -13,12 +13,12 @@ no artifacts, no substats — none of which affect elemental application.
 
 | metric | count |
 | --- | --- |
-| applications — ours | 169 |
+| applications — ours | 174 |
 | applications — gcsim | 215 |
-| **we apply, gcsim does not** | **3** |
-| **gcsim applies, we do not** | **49** |
+| **we apply, gcsim does not** | **4** |
+| **gcsim applies, we do not** | **45** |
 | element mismatch on a paired application | 0 |
-| reaction events — ours | 43 |
+| reaction events — ours | 53 |
 | reaction damage instances — gcsim | 77 |
 
 ⚠️ The two reaction rows count different things — ours is one event per
@@ -32,12 +32,12 @@ every aura on the target at that instant, in taxed units.
 
 | metric | count |
 | --- | --- |
-| aura samples compared | 276 |
-| **agree** (within 0.16U) | **133** |
-| 🟡 drift (both present, further apart) | 60 |
+| aura samples compared | 279 |
+| **agree** (within 0.16U) | **138** |
+| 🟡 drift (both present, further apart) | 55 |
 | 🔴 aura gcsim has and we do not | 27 |
-| 🟠 aura we have and gcsim does not | 56 |
-| mean \|Δ\| where both present | 0.174U |
+| 🟠 aura we have and gcsim does not | 59 |
+| mean \|Δ\| where both present | 0.166U |
 
 ## melt — cryo aura then pyro
 
@@ -351,16 +351,17 @@ Compare presence and rough magnitude, never equality.
 Nahida E Q > Fischl E Q > Fischl N3
 ```
 
-applications ours **7** / gcsim **16** · extra 0 · missing 9 · element mismatch 0 · reactions ours **5** / gcsim **14**
+applications ours **11** / gcsim **16** · extra 1 · missing 6 · element mismatch 0 · reactions ours **15** / gcsim **14**
 
 ### 1. Applications
 
 | char | # | ours | gcsim | Δ frames | units | ability |
 | --- | --- | --- | --- | --- | --- | --- |
 | nahida | 0 | dendro @ 0.22s (skill) | dendro @ 0.23s (skill) | 1 | 1U | All Schemes to Know (Press) |
-| nahida 🔴 | 1 | — | dendro @ 3.22s (skill) |  | 1.5U | Tri-Karma Purification |
-| nahida 🔴 | 2 | — | dendro @ 8.47s (skill) |  | 1.5U | Tri-Karma Purification |
-| nahida 🔴 | 3 | — | dendro @ 13.38s (skill) |  | 1.5U | Tri-Karma Purification |
+| nahida | 1 | dendro @ 3.20s (skill) | dendro @ 3.22s (skill) | 1 | 1.5U | Tri-Karma Purification |
+| nahida | 2 | dendro @ 7.30s (skill) | dendro @ 8.47s (skill) | 70 | 1.5U | Tri-Karma Purification |
+| nahida | 3 | dendro @ 10.25s (skill) | dendro @ 13.38s (skill) | 188 | 1.5U | Tri-Karma Purification |
+| nahida 🟠 | 4 | dendro @ 13.20s (skill) | — |  |  |  |
 | fischl | 0 | electro @ 3.15s (skill) | electro @ 3.17s (skill) | 1 | 1U | Oz (Summon) |
 | fischl | 1 | electro @ 3.53s (burst) | electro @ 3.23s (skill) | -18 | 1U | Thundering Retribution (A4) |
 | fischl | 2 | electro @ 4.30s (burst) | electro @ 3.55s (burst) | -45 | 1U | Midnight Phantasmagoria |
@@ -383,26 +384,26 @@ application it makes, so one row per application is a sample of the true aura
 across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
 durability, 25 per unit).
 
-agree **7** · 🟡 drift 11 · 🔴 aura we do not have 7 · 🟠 aura they do not have 6
+agree **12** · 🟡 drift 4 · 🔴 aura we do not have 9 · 🟠 aura they do not have 5
 
 | t | char | aura before (ours/gcsim) |
 | --- | --- | --- |
 | 0.23s | nahida | 🟠 dendro 0.80/— |
 | 3.17s | fischl | 🔴 dendro —/0.55, 🟠 quicken 0.55/— |
-| 3.22s | nahida | quicken 0.55/0.55 |
-| 3.23s | fischl | 🔴 dendro —/1.20, quicken 0.55/0.55 |
-| 3.55s | fischl | 🔴 dendro —/0.16, 🟡 quicken 0.53/0.97, 🟠 electro 0.80/— |
-| 4.07s | fischl | 🟡 quicken 0.50/0.92, 🟠 electro 0.76/— |
-| 4.13s | fischl | electro 0.75/0.79, 🟡 quicken 0.49/0.92 |
-| 8.42s | fischl | 🟡 electro 0.70/0.44, 🟡 quicken 0.22/0.53 |
-| 8.47s | nahida | electro 0.70/0.80, 🟡 quicken 0.22/0.52 |
-| 8.48s | fischl | 🟡 quicken 0.22/0.79, 🟠 electro 0.70/— |
-| 9.40s | fischl | electro 0.62/0.72, 🟡 quicken 0.16/0.72 |
-| 9.47s | fischl | 🟡 electro 0.61/0.79, 🟡 quicken 0.15/0.72 |
-| 13.33s | fischl | 🟡 electro 0.78/0.47, 🔴 quicken —/0.41 |
-| 13.38s | nahida | electro 0.78/0.80, 🔴 quicken —/0.40 |
-| 13.40s | fischl | 🔴 quicken —/0.79, 🟠 electro 0.78/— |
-| 15.30s | fischl | electro 0.62/0.64, 🔴 quicken —/0.64 |
+| 3.22s | nahida | quicken 0.55/0.55, 🟠 dendro 1.20/— |
+| 3.23s | fischl | dendro 1.20/1.20, quicken 0.55/0.55 |
+| 3.55s | fischl | dendro 0.16/0.16, quicken 1.00/0.97 |
+| 4.07s | fischl | quicken 0.95/0.92, 🟠 dendro 0.10/— |
+| 4.13s | fischl | 🔴 electro —/0.79, quicken 0.95/0.92, 🟠 dendro 0.10/— |
+| 8.42s | fischl | 🔴 electro —/0.44, 🟡 quicken 0.71/0.53 |
+| 8.47s | nahida | 🔴 electro —/0.80, 🟡 quicken 0.70/0.52 |
+| 8.48s | fischl | quicken 0.70/0.79 |
+| 9.40s | fischl | 🔴 electro —/0.72, quicken 0.63/0.72 |
+| 9.47s | fischl | 🔴 electro —/0.79, quicken 0.62/0.72 |
+| 13.33s | fischl | 🔴 electro —/0.47, 🟡 quicken 0.79/0.41 |
+| 13.38s | nahida | 🔴 electro —/0.80, 🟡 quicken 0.78/0.40 |
+| 13.40s | fischl | quicken 0.78/0.79 |
+| 15.30s | fischl | 🔴 electro —/0.64, quicken 0.63/0.64 |
 
 ### 3. Reactions
 
@@ -413,11 +414,11 @@ Compare presence and rough magnitude, never equality.
 
 | reaction | ours | gcsim |
 | --- | --- | --- |
-| aggravate | 4 | 11 |
-| quicken | 1 | — |
-| spread | — | 3 |
+| aggravate | 5 | 11 |
+| quicken | 6 | — |
+| spread | 4 | 3 |
 
-- **ours:** quicken@3.15s, aggravate@3.53s, aggravate@4.30s, aggravate@7.25s, aggravate@10.20s
+- **ours:** quicken@3.15s, spread@3.20s, aggravate@3.53s, quicken@3.53s, aggravate@4.30s, quicken@4.30s, aggravate@7.25s, spread@7.30s, quicken@7.30s, aggravate@10.20s, spread@10.25s, quicken@10.25s, aggravate@13.15s, spread@13.20s, quicken@13.20s
 - **gcsim:** spread@3.22s, aggravate@3.23s, aggravate@3.55s, aggravate@4.07s, aggravate@4.13s, aggravate@8.42s, spread@8.47s, aggravate@8.48s, aggravate@9.40s, aggravate@9.47s, aggravate@13.33s, spread@13.38s, aggravate@13.40s, aggravate@15.30s
 
 ## bloom
@@ -426,14 +427,14 @@ Compare presence and rough magnitude, never equality.
 Nahida E Q > Xingqiu E Q
 ```
 
-applications ours **3** / gcsim **15** · extra 0 · missing 12 · element mismatch 0 · reactions ours **2** / gcsim **6**
+applications ours **4** / gcsim **15** · extra 0 · missing 11 · element mismatch 0 · reactions ours **2** / gcsim **6**
 
 ### 1. Applications
 
 | char | # | ours | gcsim | Δ frames | units | ability |
 | --- | --- | --- | --- | --- | --- | --- |
 | nahida | 0 | dendro @ 0.22s (skill) | dendro @ 0.23s (skill) | 1 | 1U | All Schemes to Know (Press) |
-| nahida 🔴 | 1 | — | dendro @ 2.78s (skill) |  | 1.5U | Tri-Karma Purification |
+| nahida | 1 | dendro @ 2.77s (skill) | dendro @ 2.78s (skill) | 1 | 1.5U | Tri-Karma Purification |
 | nahida 🔴 | 2 | — | dendro @ 8.30s (skill) |  | 1.5U | Tri-Karma Purification |
 | nahida 🔴 | 3 | — | dendro @ 13.87s (skill) |  | 1.5U | Tri-Karma Purification |
 | nahida 🔴 | 4 | — | dendro @ 19.43s (skill) |  | 1.5U | Tri-Karma Purification |
@@ -457,19 +458,19 @@ application it makes, so one row per application is a sample of the true aura
 across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
 durability, 25 per unit).
 
-agree **1** · 🟡 drift 1 · 🔴 aura we do not have 8 · 🟠 aura they do not have 1
+agree **1** · 🟡 drift 3 · 🔴 aura we do not have 6 · 🟠 aura they do not have 5
 
 | t | char | aura before (ours/gcsim) |
 | --- | --- | --- |
 | 0.23s | nahida | 🟠 dendro 0.80/— |
 | 2.73s | xingqiu | 🟡 dendro 0.09/0.59 |
-| 2.78s | nahida | dendro 0.08/0.09 |
-| 3.05s | xingqiu | 🔴 dendro —/1.18 |
-| 3.27s | xingqiu | 🔴 dendro —/0.66 |
-| 5.52s | xingqiu | — |
-| 7.77s | xingqiu | 🔴 hydro —/0.61 |
-| 8.30s | nahida | 🔴 hydro —/0.76 |
-| 10.02s | xingqiu | — |
+| 2.78s | nahida | 🟡 dendro 1.20/0.09 |
+| 3.05s | xingqiu | 🟡 dendro 0.68/1.18 |
+| 3.27s | xingqiu | dendro 0.66/0.66 |
+| 5.52s | xingqiu | 🟠 dendro 0.47/— |
+| 7.77s | xingqiu | 🔴 hydro —/0.61, 🟠 dendro 0.28/— |
+| 8.30s | nahida | 🔴 hydro —/0.76, 🟠 dendro 0.23/— |
+| 10.02s | xingqiu | 🟠 dendro 0.09/— |
 | 12.27s | xingqiu | 🔴 hydro —/0.61 |
 | 13.87s | nahida | 🔴 hydro —/0.67 |
 | 14.52s | xingqiu | — |
@@ -670,6 +671,10 @@ Compare presence and rough magnitude, never equality.
 ```
 Fischl E Q > Ningguang E N3 > Zhongli E
 ```
+
+**Translation notes**
+
+- ⚠️ gcsim is non-deterministic on this fixture (application counts across runs: 28, 27, 27) — the modal run is reported. Some kits roll dice (random normal-attack variants, proc chances) and no CLI flag pins the seed.
 
 applications ours **16** / gcsim **27** · extra 0 · missing 11 · element mismatch 0 · reactions ours **4** / gcsim **6**
 
