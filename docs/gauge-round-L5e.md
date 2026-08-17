@@ -1,6 +1,8 @@
 # L5e — summon ticks apply their element (the recall half)
 
 **Status:** ✅ **SHIPPED + verified 2026-08-16** — `637a175` · `7d63949` · `ab2701d` · `d5764a6` · `87f3b09`
+✅ **Feed order fixed 2026-08-17** (`d0a87e5`) · ✅ **The curation residue closed 2026-08-17**
+(branch `curation/l5e-summon-ticks`, §4's last block)
 **Reads:** [`gauge-round.md`](gauge-round.md) (the contract) · [`gauge-round-L5.md`](gauge-round-L5.md)
 (the gauge, and this landing's decomposition in its §5) · [`gauge-round-L3.md`](gauge-round-L3.md)
 (the clock)
@@ -413,6 +415,95 @@ not instead of them.
 
 ⏭ The 30-application curation half is **separate work, not a sub-landing here** — it has
 its own visible-change gate (§1) and does not block any of the above.
+
+### ✅ CLOSED — the curation half (2026-08-17, branch `curation/l5e-summon-ticks`)
+
+Twenty-three characters, twenty-five sites, one commit each. Each site was researched by
+its own agent against `~/Code/gcsim` and its talent sidecar and then re-derived from
+scratch by an adversarial verifier; the evidence for every number lives in the summon's
+`_curatorNotes`, naming the Go function and the sidecar row.
+
+| metric                          | post-feed-order | **after**       |
+| ------------------------------- | --------------- | --------------- |
+| applications — ours             | 145             | **169**         |
+| **gcsim applies, we do not**    | 70              | **50**          |
+| we apply, gcsim does not        | 0               | **3**           |
+| element mismatch                | 0               | **0**           |
+| tier-2 agreeing                 | 121 of 263      | **134 of 277**  |
+| 🔴 aura gcsim has and we do not | 45              | **27**          |
+
+⚓⚓ **The result worth reading is not the count — it is that the residue is now ENTIRELY
+the two named schema gaps.** Of the 50 remaining: **16** application-only ticks · **13**
+Nahida's Tri-Karma and Fischl's A4 · **17** ICD-group residue on Oz, the Stone Stele and
+Pyronado · 4 stray cast applications. ⚓ **Not one is a summon we author that ticks in
+game and says nothing here.** §1's "there are ZERO summons we fail to author" now has its
+counterpart: there are zero authored summons whose measured damage cadence we withhold.
+
+#### 🆕 The schema gap this round FOUND: an application-only tick
+
+⚓ **A tick can apply an element and deal no damage, and we cannot say so.** gcsim's
+`AttackInfo` for Xingqiu's Orbital and Barbara's Melody Loop carries **no `Mult` at all**
+— Barbara's is explicit, `ai.Mult = 0` with a `// 0 DMG attack` comment. Our gauge is
+reachable only through `(e) => e.type === 'damage'` (`aura.ts`), so authoring one needs a
+`scaling: 0` placeholder that the outlier audit flags and that draws a damage marker
+which lies. ⛔ Both sites were REFUSED for that reason, and they are **16 of the 50** —
+the single largest remaining bucket. ⚠️ Xingqiu is worse than one refusal: `applyOrbital`
+EXTENDS one entity keyed `orbitalKey` rather than spawning a second, so authoring the
+same series on both the skill's Rain Swords and the burst's Rainbow Bladework would
+double-apply through every normal rotation.
+
+⚠️ This also retires a line of §1's: "24 abilities own a summon with no damage tick" was
+right about the count and wrong to call all of it curation. Five of the twenty-five sites
+were not tick series at all — Amber's Baron Bunny, Ganyu's Ice Lotus, Ningguang's Jade
+Screen, Qiqi's Talisman and the Geo Traveler's Wake of Earth are **single cast hits**,
+authored into `application[]` where they belong. ⚓ **A `× 1` row in §5 is not a cadence**:
+the report groups a stream by its gcsim ability STRING and files it under the summon
+whenever the ability declares one, so a cast's own hits appear in the summon column
+whenever gcsim names them after the ability. Three of the five were `application: []` —
+the positive claim that the cast applies nothing — and were simply wrong.
+
+#### ⚠️ The over-application the round has to own
+
+The three new "we apply, gcsim does not" are understood, and ⛔ neither is a horizon
+artifact (L5e-b's rule): two are Collei's leaps and one is Sucrose's fourth tick.
+
+- **`other`-group series over-apply, and by more than "±1–2".** §3.3 justified the bare
+  default on Oz, where standard predicts 4 against a measured 3. It does not hold at
+  speed: `ICDGroupColleiBurst` is a 180f reset, so at a 0.5 s cadence **exactly one leap
+  applies in game** where our standard default lets four through. Venti measures 7 of 20,
+  Navia 6 of 17. ⚓ The ranking in §3.3 is still right — standard is nearer than ungated
+  in every case — but the residual is a factor, not an offset, on a fast series.
+- **Tick count is derived from `duration`, and there is no cap.** Sucrose's `duration`
+  counts from the SPAWN while gcsim's status counts from the CAST; Mona's 4 s window
+  spans a fifth tick where gcsim's loop caps at `i < 300`; Kuki's 2 s spans 120f against
+  gcsim's 119. ⚠️ It is a **pre-existing corpus class**, not something this wave
+  introduced — the same off-by-one already sits on Aino's Ducky, Kuki's Grass Ring, Kaeya
+  and Durin — but a tick that applies an element is the first consumer that makes it
+  visible. ⛔ Do not fix it by nudging a `duration` that the kit text states: the honest
+  shape is a tick CAP in the schema.
+
+#### What else was found and deliberately not authored
+
+Each is recorded in its character's `_curatorNotes`. **Elemental Absorption** on Venti,
+Sucrose, Kazuha and Lynette rides the same cadence with a real multiplier, but its
+element is chosen once at runtime and a tick series cannot say "whichever element this
+field touches". **Lauma's tick is ATK + EM** and a damage effect carries one stat, so the
+EM addend is dropped. **Sayu's Daruma** chooses between attacking and healing on the
+active character's HP; **Kuki's rite** runs twelve ticks below 50% HP — HP is not a
+condition subject. And **Lisa's existing frame-56 application** describes a hit gcsim
+gives `Durability: 0`, so it claims 1U provisional where the game applies nothing.
+
+⚓ **Kaeya is the one that needed the constellation gate.** C6 adds a fourth icicle, which
+is a CADENCE change (`offset := 120 / count`, 40f → 30f) rather than a damage bonus, so it
+is two mutually-exclusive series — `summonTickSeries` evaluates `conditions` against the
+live level, and one C0 number with a prose note would have been wrong for every C6 Kaeya
+on a timeline.
+
+⚠️ **The verifier stage earned the round.** Three of the eighteen authored series were
+written onto the ABILITY's `effects[]` instead of the summon's — a strict `characterLint`
+D.28 error AND completely inert data, the exact bug class `orphanedSchema.test.ts` exists
+for — and were caught and moved. ⛔ Never run an authoring fan-out on this schema without
+an independent re-derivation pass behind it.
 
 ---
 
