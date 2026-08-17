@@ -21,6 +21,7 @@
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { documentBar as db } from '$lib/documentBar.svelte';
 	import { savedNotations, siteSettings } from '$lib/stores';
+	import { get } from 'svelte/store';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 	import {
 		plannerView as pv,
@@ -81,13 +82,28 @@
 		// in the same band. ⛔ Not a confirm dialog either — tool surfaces here are
 		// non-modal, and a blocking prompt on a link the user just opened
 		// interrupts a flow they did not start.
-		savedNotations.save({
-			name: label,
-			notation: shared.notation,
-			tabLoadout: shared.loadout,
-			tabCon: importedCon
-		});
-		db.showNotice('Tabs full — saved to Saved Rotations');
+		//
+		// ⚠ DEDUPED ON THE WAY IN. Even with the dialog, a reader can legitimately
+		// open the same link twice — from the same message, or after a refresh —
+		// and every arrival would otherwise add another identical entry. Matching
+		// on the NOTATION (not the name, which is always "Shared rotation") means
+		// two genuinely different links still bank separately, and the same one
+		// twice does not.
+		const already = get(savedNotations).some(
+			(e) => e.name === label && e.notation === shared.notation
+		);
+		if (!already) {
+			savedNotations.save({
+				name: label,
+				notation: shared.notation,
+				tabLoadout: shared.loadout,
+				tabCon: importedCon
+			});
+		}
+		// ⚓ A MODAL, NOT A NOTICE (⚓ Nate) — this outcome leaves the planner
+		// looking untouched, so a 2.2s line in band A reads as "nothing happened"
+		// and the reader clicks the link again. See documentBar.showParked.
+		db.showParked(label);
 	}
 
 	// On first load: warm the avatar cache and register this tool's bench-band
