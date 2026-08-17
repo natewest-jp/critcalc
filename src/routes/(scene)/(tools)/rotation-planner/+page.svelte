@@ -569,10 +569,17 @@
 		     several-hundred-row transcript costs more than it explains. -->
 		<div class="rp-log-panel">
 			<div class="rp-log-head">Target aura</div>
+			<!-- ⚓ THE TWO CHANNELS ARE SCALARS IN SECONDS, both brokered by
+			     plannerView — see its note. `hover` lights the rows the chart's
+			     cursor stands on; `onHover` drives the chart's own crosshair from
+			     here; `onSeek` scrolls the timeline to the instant a row names. -->
 			<EventLog
 				rows={pv.auraLog}
 				empty="This rotation puts nothing on the target."
 				lead={auraLimits}
+				hover={pv.auraHover}
+				onHover={(seconds) => (pv.logHover = seconds)}
+				onSeek={(seconds) => pv.scrollToSeconds?.(seconds)}
 			/>
 		</div>
 	{:else}

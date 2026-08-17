@@ -41,6 +41,15 @@
 		/** Seconds. Omitted on a row that belongs to the one above it. */
 		time?: number;
 		/**
+		 * Seconds — the END of a run, for rows that name a span rather than an
+		 * instant ("Electro-Charged ×4"). ⚠ HIGHLIGHTING ONLY: the time COLUMN
+		 * still prints the start alone, because a range there is twice the width
+		 * of every other row. A run has width, so "is the cursor on this row" is a
+		 * containment test where a discrete event's is proximity — the same split
+		 * `auraReactionsAt` already makes on the chart.
+		 */
+		endTime?: number;
+		/**
 		 * The element disc. `text` is the gauge units — see the note above.
 		 *
 		 * ⚓ `color` IS THE `bar` RUNG, NOT `main` (⚓ NATE 2026-08-17: "I simply
@@ -56,6 +65,20 @@
 		tone: EventLogTone;
 	};
 
+	/**
+	 * Where the reader is pointing on the CHART, in seconds, with the reach that
+	 * pixel covers at the current zoom.
+	 *
+	 * ⚓ SECONDS, NOT FRAMES, in both directions across this seam. The rows are
+	 * already in seconds because that is what they PRINT, and a channel whose
+	 * unit matches its consumer is one conversion nobody has to remember.
+	 * ⚓ THE REACH COMES FROM THE CHART because only the chart knows its zoom — a
+	 * pixel is 1/20th of a second at one end of the zoom range and 1/120th at the
+	 * other. ⛔ Don't hard-code a tolerance here; it would be wrong at every zoom
+	 * but one.
+	 */
+	export type EventLogHover = { at: number; reach: number };
+
 	/** Both tools' one time format. ⚠ TWO DECIMALS, and it is not fussiness: the
 	 *  planner's events land on FRAMES (1/60s), so a single decimal would print
 	 *  three consecutive casts as the same instant. The column is tabular, so the
@@ -69,10 +92,28 @@
 	let {
 		rows,
 		empty = 'Nothing to report.',
-		lead
+		lead,
+		hover = null,
+		onHover,
+		onSeek
 	}: {
 		rows: EventLogRow[];
 		empty?: string;
+		/** Where the chart's cursor is — the rows under it light up. */
+		hover?: EventLogHover | null;
+		/**
+		 * The reverse channel: which instant the reader is pointing at IN THE LOG,
+		 * so the chart can draw its own cursor there. ⚓ ONE CROSSHAIR, TWO
+		 * DRIVERS — the chart already had this cursor for its own pointer, so the
+		 * log borrows the vocabulary rather than inventing a second highlight.
+		 */
+		onHover?: (seconds: number | null) => void;
+		/**
+		 * "Take me there." Given, every row becomes a real button and the log
+		 * becomes keyboard-navigable; omitted, the rows stay inert paragraphs —
+		 * which is the Gauge Explorer, whose chart is never scrolled.
+		 */
+		onSeek?: (seconds: number) => void;
 		/**
 		 * Standing content above the transcript — the planner puts the aura's
 		 * modelling limits here.
@@ -84,30 +125,137 @@
 		 */
 		lead?: Snippet;
 	} = $props();
+
+	/**
+	 * Each row plus the two things the template cannot work out on its own: the
+	 * instant it stands for, and whether the chart's cursor is on it.
+	 *
+	 * ⚓ A ROW WITH NO TIME INHERITS THE ONE ABOVE IT, for both. That is already
+	 * what a timeless row MEANS here — it hangs under its lead — so a reaction
+	 * lights up with the application that caused it and seeks to the same place.
+	 * ⛔ Don't make sub rows unhighlightable "because they have no time": that
+	 * would leave a lit application with a dark consequence under it, which reads
+	 * as the pair being unrelated.
+	 */
+	const marked = $derived.by(() => {
+		let lastAt: number | undefined;
+		let lastActive = false;
+		return rows.map((row) => {
+			if (row.time !== undefined) lastAt = row.time;
+			const at = row.time ?? lastAt;
+			const active =
+				row.time === undefined
+					? lastActive
+					: hover !== null &&
+						hover.at >= row.time - hover.reach &&
+						hover.at <= (row.endTime ?? row.time) + hover.reach;
+			lastActive = active;
+			return { row, at, active };
+		});
+	});
+
+	// ── Keyboard: ONE tab stop, arrows to walk ────────────────────────────────
+	// ⚠ A ROVING TABINDEX, not 300 tab stops. A rotation makes a few hundred rows
+	// and making each a focus stop would put the whole transcript between the Log
+	// button and everything after it. One row is reachable at a time and the
+	// arrows move which — the standard pattern, and the reason the rows can be
+	// real <button>s at all.
+	let kbIndex = $state(0);
+	let rowEls = $state<(HTMLElement | undefined)[]>([]);
+
+	function focusRow(i: number) {
+		const next = Math.max(0, Math.min(marked.length - 1, i));
+		kbIndex = next;
+		rowEls[next]?.focus();
+	}
+	function onRowKey(e: KeyboardEvent, i: number) {
+		if (e.key === 'ArrowDown') focusRow(i + 1);
+		else if (e.key === 'ArrowUp') focusRow(i - 1);
+		else if (e.key === 'Home') focusRow(0);
+		else if (e.key === 'End') focusRow(marked.length - 1);
+		else return;
+		e.preventDefault();
+	}
+
+	/**
+	 * Hover is read at the CONTAINER, not per row.
+	 *
+	 * ⚠ `mouseover` (which bubbles) with a `closest` lookup, rather than 300
+	 * `mouseenter` handlers — mouseenter does not bubble, so per-row is the only
+	 * other option and it is one listener per row on a list this long.
+	 */
+	function onListOver(e: Event) {
+		if (!onHover) return;
+		const el = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-el-at]');
+		const at = el?.dataset.elAt;
+		onHover(at === undefined ? null : Number(at));
+	}
 </script>
 
-<div class="el-log">
+<!-- ⚠ `focusin`/`focusout` ALONGSIDE the mouse pair, and not only to satisfy the
+     a11y rule: arrowing down the log with the keyboard should move the chart's
+     crosshair exactly as hovering does, or the whole link is mouse-only. They
+     BUBBLE where `focus`/`blur` do not, which is what lets one listener on the
+     container serve every row.
+     ⚠ The rule asks literally for `focus`, which CANNOT do this job: it does not
+     bubble, so on a container it would only fire for the container itself and
+     every row would be missed. `focusin` is the bubbling form and is the whole
+     point — the keyboard path is covered, which is what the rule is protecting.
+     ⛔ Don't "fix" this by adding a dead `onfocus` beside them. -->
+<!-- svelte-ignore a11y_mouse_events_have_key_events -->
+<div
+	class="el-log"
+	onmouseover={onListOver}
+	onmouseleave={() => onHover?.(null)}
+	onfocusin={onListOver}
+	onfocusout={() => onHover?.(null)}
+	role="presentation"
+>
 	{@render lead?.()}
 	{#if rows.length === 0}
 		<p class="el-empty">{empty}</p>
 	{:else}
-		{#each rows as row, i (i)}
-			<p class="el-row el-row--{row.tone}">
-				<span class="el-time">{row.time === undefined ? '' : fmtLogTime(row.time)}</span>
-				<span class="el-body">
-					{#if row.pip}
-						<span
-							class="el-pip"
-							class:el-pip--provisional={row.pip.provisional}
-							style:background={row.pip.color}
-							style:--label-halo={row.pip.halo}>{row.pip.text}</span
-						>
-					{/if}{row.text}
-				</span>
-			</p>
+		{#each marked as { row, at, active }, i (i)}
+			{#if onSeek}
+				<!-- ⚠ A REAL BUTTON, so Enter and Space seek without a keydown handler
+				     of our own, and so the row announces itself as actionable. -->
+				<button
+					bind:this={rowEls[i]}
+					type="button"
+					class="el-row el-row--{row.tone}"
+					class:el-row--active={active}
+					class:el-row--seekable={at !== undefined}
+					data-el-at={at}
+					tabindex={i === kbIndex ? 0 : -1}
+					disabled={at === undefined}
+					onkeydown={(e) => onRowKey(e, i)}
+					onfocus={() => (kbIndex = i)}
+					onclick={() => at !== undefined && onSeek?.(at)}
+				>
+					{@render rowContent(row)}
+				</button>
+			{:else}
+				<p class="el-row el-row--{row.tone}" class:el-row--active={active} data-el-at={at}>
+					{@render rowContent(row)}
+				</p>
+			{/if}
 		{/each}
 	{/if}
 </div>
+
+{#snippet rowContent(row: EventLogRow)}
+	<span class="el-time">{row.time === undefined ? '' : fmtLogTime(row.time)}</span>
+	<span class="el-body">
+		{#if row.pip}
+			<span
+				class="el-pip"
+				class:el-pip--provisional={row.pip.provisional}
+				style:background={row.pip.color}
+				style:--label-halo={row.pip.halo}>{row.pip.text}</span
+			>
+		{/if}{row.text}
+	</span>
+{/snippet}
 
 <style>
 	/* Fills whatever box it is given and scrolls inside it — the Explorer hands it
@@ -148,6 +296,38 @@
 		margin: 0;
 		font-size: var(--fs-lg);
 		line-height: 1.25rem;
+		/* The seekable variant is a <button>; strip the UA's chrome so both forms
+		   are the same object and the ladder above still governs their ink. ⚠ The
+		   negative margin + matching padding is what lets the lit row's fill reach
+		   past the text without the rows themselves moving. */
+		width: 100%;
+		text-align: left;
+		font-family: inherit;
+		background: none;
+		border: none;
+		border-radius: 3px;
+		padding: 1px 4px;
+		margin-inline: -4px;
+	}
+
+	.el-row--seekable {
+		cursor: pointer;
+	}
+	.el-row--seekable:hover {
+		background: var(--fill-hover);
+	}
+	.el-row--seekable:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: -1px;
+	}
+	/* ⚓ THE CHART'S CURSOR IS ON THIS ROW. A FILL, not a colour change: the ink
+	   ladder is already carrying tone (lead / consequence / bookkeeping), so
+	   brightening a row would collide with what its shade already says. A ground
+	   is a different axis, so a lit BOOKKEEPING row still reads as bookkeeping.
+	   ⛔ Not the gold selection fill — nothing here is selected; this is an echo
+	   of where the pointer is, and it leaves the moment the pointer does. */
+	.el-row--active {
+		background: var(--fill-hover);
 	}
 
 	/* ⚠ Tabular figures, or the column is right-aligned and still ragged: the
