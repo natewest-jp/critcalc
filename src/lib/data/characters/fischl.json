@@ -123,11 +123,15 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 0.983,
-								"firstTickDelay": 1.067
+								"firstTickDelay": 1.067,
+								"icdGate": { "timer": 300, "every": 4 }
 							},
 							"scaling": 159.84,
 							"stat": "atk",
-							"element": "electro"
+							"element": "electro",
+							"_curatorNotes": [
+								"icdGate authored 2026-08-17 (ICD-group round b): gcsim skill.go:145 sets ICDGroupFischl on the Oz tick, whose table entry (pkg/core/attacks/icd_groups.dm.go) is a 300f reset window with every 4th hit applying inside it. Measured 3/10 applied against standard ICD's 4. ⚓ This is the series docs/icd-group-round.md §3 prices the whole sub-landing on — 8 oracle applications across both Ozes, and the ONE genuinely-group row in that residue."
+							]
 						},
 						{
 							"type": "damage",
@@ -222,11 +226,15 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 0.983,
-								"firstTickDelay": 1.05
+								"firstTickDelay": 1.05,
+								"icdGate": { "timer": 300, "every": 4 }
 							},
 							"scaling": 159.84,
 							"stat": "atk",
-							"element": "electro"
+							"element": "electro",
+							"_curatorNotes": [
+								"icdGate authored 2026-08-17 (ICD-group round b): gcsim burst.go:58 sets ICDGroupFischl on the burst Oz tick — the SAME group as the skill's, which is why both Ozes carry the same pair. 300f reset window, every 4th hit applies. Measured 3/10 applied against standard ICD's 4."
+							]
 						},
 						{
 							"type": "damage",

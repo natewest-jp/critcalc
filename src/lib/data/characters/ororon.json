@@ -80,10 +80,18 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 1, "firstTickDelay": 0.4 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1,
+								"firstTickDelay": 0.4,
+								"icdGate": { "timer": 180 }
+							},
 							"scaling": 59.76,
 							"stat": "atk",
-							"element": "electro"
+							"element": "electro",
+							"_curatorNotes": [
+								"icdGate authored 2026-08-17 (ICD-group round b): gcsim burst.go:88 sets ICDGroupOroronElementalBurst on the Soundwave Collision tick, whose table entry is a 180f reset window in which only the FIRST hit applies. Measured 3/9 applied, which standard also gives at this 60f interval — authored on the GROUP, since the coincidence does not survive a different cadence (and C4's 0.75× tick rate, unmodelled, is exactly such a cadence)."
+							]
 						}
 					]
 				}

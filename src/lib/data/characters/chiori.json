@@ -61,10 +61,18 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 3.6, "firstTickDelay": 0.6 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 3.6,
+								"firstTickDelay": 0.6,
+								"icdGate": { "timer": 114 }
+							},
 							"scaling": 147.74,
 							"stat": "atk",
-							"element": "geo"
+							"element": "geo",
+							"_curatorNotes": [
+								"icdGate authored 2026-08-17 (ICD-group round b): gcsim kinu.go:53 sets ICDGroupChioriSkill on the Tamoto slash, whose table entry is a 114f reset window in which only the FIRST hit applies. Measured 3/4 applied, the same as standard gives — at a 216f interval every tick opens its own window either way, so this is authored on the GROUP and not on a moved count."
+							]
 						}
 					]
 				}

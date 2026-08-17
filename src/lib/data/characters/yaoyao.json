@@ -125,7 +125,8 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 1,
-								"firstTickDelay": 0.7
+								"firstTickDelay": 0.7,
+								"icdGate": { "timer": 150 }
 							},
 							"scaling": 53.856,
 							"stat": "atk",
@@ -133,7 +134,7 @@
 							"_curatorNotes": [
 								"Radish DMG tick authored 2026-08-17 (gauge round L5e residue). gcsim yaoyao/yaoyao.go Init() → c.skillRadishAI: Element Dendro, Durability 25 (1U), Mult skillRadishDMG[TalentLvlSkill()]; zz_yaoyao.dm.go skillRadishDMG index 9 (TL10) = 0.53856 → 53.856%. Cross-check sidecar docs/curation/talents/yaoyao.json talents.skill.rows[0] 'White Jade Radish DMG' col 10 = '53.9%'.",
 								"Cadence from yuegui.go: newYueguiThrow sets ThinkInterval=29 for the first throw, and throw() resets ThinkInterval=60 → interval 60f = 1s. Each throw does QueueCharTask(..., travelDelay-1 = 12) and then QueueAttackWithSnap(delay 1), so the first hit lands 29+12+1 = 42f after spawn → firstTickDelay 0.700 (same frame as the sibling radish heal, which is Tasks.Add on the identical delay). ⚠️ The gcsim-frames-diff §5 row measures first hit at 104f from cast start; spawnsAt is 63 (skillCDStart 15 + yueguiThrowSpawn 48), giving 41f = 0.683 — a 1-frame disagreement with the Go. Authored the Go number per the curation rule; observed interval 60f × 10 agrees exactly.",
-								"No icdGate: skillRadishAI uses ICDTagElementalArt / ICDGroupYaoyaoRadishSkill and the measured row's verdict is 'standard' (4/10 applied), which is the schema default.",
+								"icdGate authored 2026-08-17 (ICD-group round b), correcting this note's original 'standard' reading: skillRadishAI uses ICDGroupYaoyaoRadishSkill, whose table entry (pkg/core/attacks/icd_groups.dm.go) shares standard's 150f timer but applies only the FIRST hit of each window rather than every 3rd. Measured 4/10, which standard also gives at this 60f interval — which is exactly how the old note came to call the group standard when only its EFFECT on one cadence was observable. ⚠️ It does not survive a different cadence: at C6, or with a second Yuegui coexisting, the two rules diverge.",
 								"C6 variance NOT authored as a series: yuegui.go throw() fires yg.c6(target) on throwCounter 2 and 5 (the 3rd and 6th skill-Yuegui throws only, c6TravelDelay 20) — an extra Mega Radish entity with its own multiplier, not a change to this cadence or tick count. C0 authored; C6's extra radishes remain unmodelled here.",
 								"Not modelled: up to 2 Yuegui: Throwing Mode can coexist (existing geometry note), so a real double-skill rotation applies twice this cadence. Radishes thrown while Adeptal Legacy is active switch to burstRadishAI (yuegui.go getInfos) — a different multiplier and ICD group on the same summon; only the skill-state series is authored."
 							]

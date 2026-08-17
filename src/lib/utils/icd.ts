@@ -51,6 +51,25 @@ export const STANDARD_ICD: IcdParams = {
  *  cadence instead — see `resolveActionIcd`. */
 export const NO_ICD: IcdParams = { timer: 0, hits: 1 };
 
+/**
+ * An authored `IcdWindow` as clock params.
+ *
+ * ⚓ ONE TRANSLATION, and it has two callers on purpose — `resolveActionIcd` for
+ * a charged attack's window and the summon-tick series for its own. The pair IS
+ * `IcdParams`, so this is a rename rather than a conversion; keeping it in one
+ * place is the same law `simulateIcd`-over-`icdApplies` follows.
+ *
+ * ⚓ `every` absent means only the first hit of the window applies, which the
+ * counter expresses as one it can never reach — the branch in `icdApplies` is
+ * `count > hits`, so Infinity simply never fires and the timer alone drives
+ * applications. ⛔ Don't spell it as a large finite number; that invites a
+ * reader to wonder what happens at hit 999.
+ */
+export const icdParamsFor = (w: IcdWindow): IcdParams => ({
+	timer: w.timer,
+	hits: w.every ?? Infinity
+});
+
 export type IcdHit = {
 	time: number;
 	applies: boolean;
@@ -207,16 +226,10 @@ export function resolveActionIcd(
 	if (abilityNoICD) return null;
 	if (kind === 'plunge') return null;
 	if (kind === 'charged' && weapon === 'catalyst') return null;
-	// ⚓ `every` absent means only the first hit of the window applies, which the
-	// counter expresses as one it can never reach — the branch in `icdApplies` is
-	// `count > hits`, so Infinity simply never fires and the timer alone drives
-	// applications. ⛔ Don't spell it as a large finite number; that invites a
-	// reader to wonder what happens at hit 999.
 	// ⚠️ Gated on the kind HERE rather than trusting the caller: the field names
 	// the charged attack, three call sites share this signature, and a normal
 	// swing handed a charged window would be gated by a number nobody measured
 	// for it.
-	if (kind === 'charged' && authored)
-		return { timer: authored.timer, hits: authored.every ?? Infinity };
+	if (kind === 'charged' && authored) return icdParamsFor(authored);
 	return STANDARD_ICD_FRAMES;
 }

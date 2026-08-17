@@ -76,12 +76,17 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 1.5 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5,
+								"icdGate": { "timer": 120 }
+							},
 							"scaling": 151.2,
 							"stat": "atk",
 							"element": "dendro",
 							"_curatorNotes": [
-								"Canonical assumption: Level 2 case (scent upgrade reached quickly in sustained combat vs Burning targets). Ladder @T10: L1 = 71.28% single hit / L2 = 151.2% ×2 hits per 1.5s tick (second hit +18f) / L3 (burst-only) = 391%. Marker shows tick start; the L2 double-hit and per-level dynamics (gcsim lumidouce.go: Mult skillLumidouce[level-1]) are not per-marker modeled."
+								"Canonical assumption: Level 2 case (scent upgrade reached quickly in sustained combat vs Burning targets). Ladder @T10: L1 = 71.28% single hit / L2 = 151.2% ×2 hits per 1.5s tick (second hit +18f) / L3 (burst-only) = 391%. Marker shows tick start; the L2 double-hit and per-level dynamics (gcsim lumidouce.go: Mult skillLumidouce[level-1]) are not per-marker modeled.",
+								"icdGate authored 2026-08-17 (ICD-group round b): gcsim lumidouce.go:66 sets ICDGroupEmilieLumidouce on the case's tick, whose table entry is a 120f reset window in which only the FIRST hit applies. Measured 5/9 applied, which standard also gives at this 90f interval — authored on the GROUP, not on the coincidence. ⚠️ Her BURST's case is deliberately left bare, and pairing by eye is why: gcsim runs the Level-3 phase on ICDGroupDefault and only the decayed Level-1 stream carries this group, while the burst's authored series models the Level-3 phase."
 							]
 						}
 					]

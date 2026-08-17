@@ -1,13 +1,15 @@
 # The ICD-group round — what a per-ability ICD group would buy
 
-**Status:** 🟡 **PARTLY SHIPPED.** Sub-landing **c** landed 2026-08-17 (the charged-attack
-window).
+**Status:** 🟢 **a, b and c are SHIPPED** (2026-08-17 / 18). ⛔ **d stays HELD** — see §6d
+and §9.
 
-⏭ **a + b are QUEUED — this is the next session's work** (⚓ Nate 2026-08-17). ⛔ **d is
-HELD, deliberately, and is not part of that session** — see §6d for what it is waiting on.
+- **c** — the charged-attack window (`chargedIcdWindow`, 16 characters).
+- **a** — the shim reads gcsim's group and the audit reports the cadence (§6a, §9).
+- **b** — `icdGate` generalised to `'none' | IcdWindow`, 14 tick series migrated (§6b, §9).
 
-✅ The dependency the old header warned about is RESOLVED: the Nahida/Fischl primitive
-shipped and did **not** change a/b/d's shape (§5). ⛔ Don't go looking for it.
+⚓ **§9 IS THE RECORD** — what moved, in which direction, and the per-fixture account the
+fork in §6b demanded. Read it before quoting any number from §3 or §8: those are the
+BEFORE, and they stay as written.
 
 **Reads:** [`gauge-round-L5e.md`](gauge-round-L5e.md) §3.3 (where the default was chosen)
 · [`gauge-round-L4.md`](gauge-round-L4.md) (the schema gap, first named) ·
@@ -184,7 +186,7 @@ Physical and applies nothing. It is spent by a stance infusion (Hu Tao, Cyno, Fl
 granted by a teammate, which is why it is authored on every character gcsim measures rather
 than only on the self-infusers.
 
-### ⏭ a — the dumper and the audit report the pair · **QUEUED**
+### ✅ a — the dumper and the audit report the pair (SHIPPED 2026-08-17)
 
 `scripts/gcsim-dump/main.go` emits `(timer, period)` per attack, read from gcsim's own
 exported tables; `audit-gcsim-frames.mjs` §5 grows a column beside the existing
@@ -211,7 +213,27 @@ every other capture decision.
 ⚠️ `OnEnemyHit` is gated on `grpMult > 0` at its emit site — check whether that suppresses
 any hit we care about before choosing between the two events.
 
-### ⏭ b — `icdGate` generalises · **QUEUED**
+✅ **It does, so `OnEnemyDamage` is what shipped.** `grpMult` is the REACTION-damage group's
+multiplier, and eight groups zero it for the later hits of a window (Yelan's Breakthrough,
+Cyno's bolts, Ayaka's and Yae's charged groups, Xiao's dash…). Those hits still emit a
+`damage` log line, so keying off the gated event would have left holes exactly where a
+cadence is most interesting.
+
+⚠️ `OnEnemyDamage` is emitted from a ZERO-DELAY TASK rather than synchronously, so whether
+`c.F` at callback time is still the hit's frame was an open question — `Tasks.Run()` drains
+re-entrant additions inside the same `Tick`, so it is. ⚓ That is an empirical claim and the
+report carries the line that proves it: **hits carrying a measured cadence, 2631 of 2631**.
+⛔ Don't delete that line; a broken join would show up as a hit with no cadence, never as an
+error.
+
+⚓ **FOUR numbers shipped, not two.** The plan said `(timer, period)`; a third is needed and
+a fourth is free. `applies` — how many hits of the window apply at all — is the half the
+pair cannot state, because four groups run at a regular period and then **STOP** for the
+rest of the window (Arlecchino, Chevreuse, Layla, Charlotte's Kamera). `mult` is the first
+application's multiplier, 1 everywhere but Nahida's group. Both are numbers off the same
+exported table, so the rule against importing 58 NAMES is untouched.
+
+### ✅ b — `icdGate` generalises (SHIPPED 2026-08-18)
 
 Today `'none' | absent`. It would become `'none' | IcdWindow`, reusing the key rather than
 minting one — ⚠️ that name is already unique and already has a consumer, which is the
@@ -296,3 +318,149 @@ the mark-triggered round:
 ⚠️ **This round has no visual surface**, which is what makes it unattended-friendly — but
 applications changing DOES move the aura lane's pips, so 👤 **a morning Safari glance is
 owed** on a Nahida/Fischl rotation. ⛔ It is not a merge blocker; it is not zero either.
+
+---
+
+## 9. ✅ What a + b actually did (2026-08-17 / 18)
+
+### 9.1 a — behaviour-zero, and the premise held
+
+§6a's verified premise was right and its warning about `OnEnemyHit` was worth taking: see
+the ✅ block there. Probe coverage **2631 of 2631** hits. The only thing that moved is
+`gcsim-frames-diff.md`, which grew a **gcsim cadence** column in §5 and a **§5b** census.
+
+⚓ **§5b's own count vindicated the schema comment.** `icdGate`'s JSDoc had claimed "13
+series are neither standard nor none" from an applied-count inference; measuring the groups
+directly gives **exactly 13**. It also confirmed §3's headline first-hand — `ICDGroupFischl`
+is 300f / every 4 against our 150f / every 3, on both Ozes.
+
+### 9.2 b — 14 series across 11 characters
+
+`icdGate?: 'none' | IcdWindow`; the translation to clock params is **one** function
+(`icdParamsFor` in `icd.ts`), shared with `chargedIcdWindow`'s resolver so the two shapes
+cannot drift. Lint **D.27b** guards the window, including the unit trap — ⚠️⚠️ `interval`
+two lines up is SECONDS and this is FRAMES, in the same authored object — and refuses a
+window that merely restates the standard.
+
+Authored: amber (60f/×3) · chiori (114f/first) · collei (180f/first) · durin White
+(90f/first) · emilie SKILL (120f/first) · fischl ×2 (300f/×4) · navia (720f/×3) · ororon
+(180f/first) · sigewinne ×3, base + both variants (120f/first) · venti (60f/×3) · yaoyao
+(150f/first).
+
+⛔ **Three measured-adjacent series deliberately NOT authored**, each for a stated reason:
+
+- **Emilie's BURST.** ⚠️⚠️ **The pairing trap, and §5b now names it in prose.** Her burst
+  shows in §5b at 120f/first — but that is the **Level-1** stream, and gcsim runs the
+  **Level-3** phase her authored series models on `ICDGroupDefault`. An id-join would have
+  authored a window onto a series that is genuinely standard. ⚓ Pair by the stream OUR
+  SERIES MODELS, never by the character.
+- **Durin's Dark Decay.** gcsim gives it `ICDGroupDurinBurstBlack` (120f/first) but the
+  oracle has no capture of the dark form, and an unmeasured pair is a claim, not data.
+- **Furina's Salon Solitaire** (1800f/×2, three series) — same, uncaptured.
+
+⚓ **Five of the 14 measured as `standard` on their fixture and were authored anyway**
+(Emilie's skill, Ororon, Sigewinne ×3, Yaoyao). Their GROUPS are not standard; their
+EFFECTS coincided at the one cadence the fixture drives. ⚠️⚠️ **That coincidence is how two
+curator notes came to assert the wrong thing** — Sigewinne's and Yaoyao's both said
+"ICDGroupSigewinne / ICDGroupYaoyaoRadishSkill → standard ICD", and both are now corrected
+in place. **An applied count says only THAT the default is wrong, never what is right**, and
+before a there was nothing else to read. The audit's disagreement check moved to the RULE
+for the same reason.
+
+### 9.3 The measurement, and the fork
+
+`node scripts/audit-gcsim-reactions.mjs`, 12 fixtures:
+
+| metric                          |     before |      after |                           |
+| ------------------------------- | ---------: | ---------: | ------------------------- |
+| applications — ours             |        183 |        174 |                           |
+| **we apply, gcsim does not**    |      **7** |      **2** | ✅ the round's own target |
+| gcsim applies, we do not        |         39 |         44 | ⚠️ see below              |
+| element mismatch                |          0 |          0 |                           |
+| tier-2 agreeing                 | 136 of 278 | 135 of 275 |                           |
+| 🟠 aura we have, gcsim does not |         57 |         54 | ✅                        |
+| mean \|Δ\|                      |    0.173U¹ |     0.167U | ✅                        |
+
+¹ §8 records 0.170U; the reproduced baseline is 0.173U. gcsim is **non-deterministic** on
+the electro-charged and crystallize fixtures (Ningguang's random normal variants), so the
+last digit of this row moves run to run. ⚠️ Don't chase it.
+
+⚓ **§7 said watch mean |Δ| and the paired-row count, ⛔ never the raw missing count** — and
+this is exactly the split it anticipated. **Over-application, which is what §3 priced the
+round on, fell 7 → 2**; mean |Δ| improved; the aura-we-invented count fell. The missing
+count rose **because we now apply less**, which mechanically leaves more gcsim rows
+unpaired.
+
+**Per fixture, as §6b's fork requires** (⛔ the direction is not assertable without this):
+
+| fixture                                | ours  | extra   | missing |                                                          |
+| -------------------------------------- | ----- | ------- | ------- | -------------------------------------------------------- |
+| electro-charged (Barbara/Fischl)       | 18→16 | **3→1** | 2→2     | ✅ clean                                                 |
+| burning (Collei/Xiangling)             | 21→19 | **2→0** | 3→3     | ✅ clean — Collei's leaps now match gcsim's 2/12 EXACTLY |
+| quicken (Nahida/Fischl)                | 12→9  | 1→0     | 5→7     | ⚠️ Oz, below                                             |
+| crystallize (Fischl/Ningguang/Zhongli) | 19→18 | 0→0     | 8→10    | ⚠️ Oz, + one gcsim non-determinism                       |
+| long rotation                          | 28→27 | 0→0     | 2→3     | ⚠️ Oz, below                                             |
+| the other 7                            | —     | —       | —       | unchanged                                                |
+
+⚓⚓ **EVERY new miss is Fischl's Oz, and the cause is §4 — not the window.** Read directly
+off gcsim's source while landing this:
+
+```
+skill.go:51   Abil "Oz (Summon)"       ICDTagNone          ICDGroupFischl
+skill.go:142  Abil "Oz (%v)"  ← BOTH   ICDTagElementalArt  ICDGroupFischl
+burst.go:33   "Midnight Phantasmagoria" ICDTagElementalBurst ICDGroupFischl
+asc.go:49     "Thundering Retribution (A4)" ICDTagNone      ICDGroupFischl
+```
+
+Three findings in four lines:
+
+1. ⚓ **ONE function emits both "Oz (Skill)" and "Oz (Burst)"** — `fmt.Sprintf("Oz (%v)",
+src)` — under ONE tag, so in gcsim the recast Oz **inherits the skill Oz's counter**
+   mid-window. We key a fresh clock per series. That is why gcsim's Oz applications come
+   0.98 s apart in places (two consecutive ticks) where no per-series clock can put them.
+   ⛔ **This is d, and it is held.**
+2. **The A4 proc is `ICDTagNone`** — ungated in gcsim, and every A4 row in the oracle is a
+   proc the game does not make (gcsim's `ActorIndex` defect, recorded by the mark-triggered
+   round). ⛔ **The oracle is the wrong target for A4**, so roughly half the new 🔴 rows are
+   rows we are right to be missing.
+3. **`Oz (Summon)`** — the E cast's own hit — is also `ICDTagNone`, which is why it is
+   unaffected.
+
+⚓ **Verdict: landed.** The pairs are gcsim's own measured numbers, the metric the round set
+out to move improved, and the counter-metric's every increment is attributable to a
+sub-landing that is deliberately not open. ⛔ Do not "fix" the missing count by loosening a
+window.
+
+### 9.4 Second-order effects, all in tests
+
+Four unit assertions changed value, and ⚓ **none changed meaning**. All are recorded at
+their site with what moved and why.
+
+- **`reactionProcs.test.ts` ×3.** Fewer Oz applications ⇒ fewer aggravates/electro-charges
+  ⇒ fewer procs. ⚓ Nahida's Tri-Karma now **agrees with gcsim's first two** (3.2 / 8.28
+  against 3.22 / 8.47) where it used to fire four times — the test's own comment had named
+  this round as the reason it did not. ⚠️ A proc is a consequence of a reaction, so one of
+  these lists changed **twice over**: Barbara's ring tick at 6.05 s procs nothing now
+  because the Electro it would have reacted with has decayed.
+- **`notationParser.test.ts` — Collei's A4 zone extension went +1s → +3s (the cap).**
+  ⚓⚓ **Fewer dendro applications give MORE extensions**, which is the opposite of the
+  obvious guess: at the old cadence the dendro gauge was topped up continuously and the
+  Pyro was spent inside a single Burning, while now the Pyro survives between leaps and
+  re-ignites — three separate `burning` reactions rather than one. ⚠️ Worth knowing that a
+  cadence change can move a downstream count UPWARD.
+
+### 9.5 ⚠️⚠️ One trap caught by `npm run build` and by nothing else
+
+D.27b wants the standard's numbers to refuse a redundant annotation, so the first cut
+imported `STANDARD_ICD_FRAMES` into `characterLint.ts`. **That breaks `prebuild`:**
+`scripts/generate-character-index.mjs` imports the lint under bare Node type-stripping, so
+⛔ **`characterLint.ts` must stay free of RUNTIME imports** (type-only imports are stripped
+and are fine). The failure is `Cannot find package '$lib'`, and ⚠️ **vitest, `npm run check`
+and `npm run lint` were all GREEN across it** — Vite resolves the alias for every one of
+them. Only the production build sees it, which is the standing rule about the build being
+the real gate, earning its place again.
+
+The constant is therefore a local copy with the reason on it, matching how that file already
+handles every vocabulary set. ⚓ Its drift is covered: §5 of the frames report flags an
+authored gate that disagrees with the measured group, so a stale copy cannot quietly bless a
+wrong annotation.
