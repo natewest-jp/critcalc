@@ -45,7 +45,8 @@
 		auraSpanLabels,
 		auraSpanPoints,
 		auraUnitLines,
-		computeAuraLane
+		computeAuraLane,
+		EMPTY_AURA_LANE
 	} from '$lib/timeline/auraPlot';
 	import { AURA_MOD_META, AURA_MOD_ORDER, REACTION_LABEL } from '$lib/utils/auraDisplay';
 	import { gaugesAt } from '$lib/utils/gauge';
@@ -103,6 +104,30 @@
 	// meet. Aliased locally because the geometry below reads `scale` dozens of
 	// times and `pv.scale` at every site would bury it.
 	const scale = $derived(pv.scale);
+
+	// ══ THE LAYERS (2026-08-17) ═══════════════════════════════════════════════
+	// What the chart draws BESIDE ability timings. Both are band-B toggles that
+	// persist in siteSettings (see the note on `showAuraLane` there for why
+	// these persist when zoom does not).
+	//
+	// ⚓ THE CUT IS: a bar that says when an ability IS stays; a bar that says
+	// what an ability GRANTS goes. So E/Q pills and their ghost tails, the
+	// active row, input blocks, cast markers and swap connectors are never
+	// hidden — and neither are SUMMONS or SHIELDS (⚓ Nate 2026-08-17: a shield
+	// is a MECHANIC, not a buff. It is a thing standing in the world with a
+	// duration, read the way a summon's field is read, and it shares that lane).
+	// What goes: received buff rows, weapon-proc rows, the team-buff lane, the
+	// Nightsoul-burst lane and the Ascendant Gleam lane.
+	//
+	// ⚠ GATED AT THE PROJECTION, NOT AT THE MARKUP, and that is the whole trick:
+	// every height, the shared aux reserve, the bench's published slot metrics
+	// and the PNG snapshot are all computed FROM these arrays, so an empty array
+	// collapses the rows, shrinks the slot blocks and shortens the bench cards
+	// with no second code path to keep in step. ⛔ Don't add `{#if showBuffs}`
+	// around the rows and leave the projections running — that is the version
+	// where the layout keeps paying for what it no longer draws.
+	let showBuffs = $derived($siteSettings.showTimelineBuffs);
+	let showAura = $derived($siteSettings.showAuraLane);
 
 	// Swap ping (network latency, ms) lives in site settings (chrome ⚙ overlay);
 	// the timeline converts it to swap-delay frames for the parser. gcsim's
@@ -435,7 +460,7 @@
 	// NB fire events are PARSER-derived since post-P4 #5 phase 3 (the parser
 	// receives slotCharacters and emits `nightsoulBurst` events); this is a
 	// pure filter of the event stream.
-	let nbBars = $derived(computeNBBars(rotation.events));
+	let nbBars = $derived(showBuffs ? computeNBBars(rotation.events) : []);
 
 	let effectiveLoadout = $derived.by(() => {
 		const allIds = new Set([...Object.keys($loadout), ...Object.keys(tabLoadout)]);
@@ -464,14 +489,18 @@
 	// Post-P4 #5 phase 5: the buff MEANING is parser-derived (`buff` windows
 	// in rotation.windows — the parser receives slotCharacters, constellations,
 	// and the loadout); these projections only group + format.
-	let teamBuffRows = $derived(projectTeamBuffRows(rotation.windows, getLoadedCharacter));
+	let teamBuffRows = $derived(
+		showBuffs ? projectTeamBuffRows(rotation.windows, getLoadedCharacter) : []
+	);
 
-	let weaponProcRows = $derived(computeWeaponProcRows(rotation.windows, effectiveLoadout));
+	let weaponProcRows = $derived(
+		showBuffs ? computeWeaponProcRows(rotation.windows, effectiveLoadout) : []
+	);
 
 	// Per-character received buff bars (TTDS, Widsith, active-target slices,
 	// self buffs) — projection of the parser's buff windows.
 	let charReceivedBuffRows = $derived(
-		projectCharReceivedBuffRows(rotation.windows, getLoadedCharacter)
+		showBuffs ? projectCharReceivedBuffRows(rotation.windows, getLoadedCharacter) : []
 	);
 
 	// Total stacked subrow count per slot: weapon proc ICD rows + received buff subrows.
@@ -608,29 +637,65 @@
 	// back to being a guard rather than a governor — it binds on empty and
 	// near-empty rotations only. Any slack lands BELOW the last aux row (every
 	// row is positioned from the slot's top), where it is least noticeable.
-	function slotBlockH(slotIdx: number): number {
+	function slotNaturalH(slotIdx: number): number {
 		const buffRows = slotBuffRowsReserved(slotIdx);
 		const buffH = buffRows > 0 ? buffRows * CHAR_BUFF_ROW_STRIDE - 2 : 0;
-		return Math.max(BENCH_SLOT_MIN_H, buffRowsTopForSlot(slotIdx) + buffH + CHAR_PAD_BOTTOM);
+		return buffRowsTopForSlot(slotIdx) + buffH + CHAR_PAD_BOTTOM;
 	}
 
-	// Cumulative Y offsets per slot, accounting for variable block heights.
-	// Used by swap connectors which span vertically between slots.
-	let slotTopOffsets = $derived(
-		characterSlots.reduce((acc, _id, i) => {
-			acc.push(i === 0 ? 0 : acc[i - 1] + slotBlockH(i - 1));
-			return acc;
-		}, [] as number[])
+	// 🐛 ONE HEIGHT FOR ALL FOUR SLOTS, and this is the aux reserve's own stated
+	// property finally being TRUE rather than nearly true (2026-08-17).
+	//
+	// The reserve hands every slot the same NUMBER OF ROWS and splits it between
+	// the summon lane and the buff stack — but each of those two areas drops its
+	// TRAILING 2px gap when it is empty (`rows > 0 ? rows * STRIDE - 2 : 0`, and
+	// the summon lane does the same). So a slot with rows in both areas paid −4,
+	// a slot with rows in only one paid −2, and the four blocks came out up to
+	// 2px apart with an identical row budget.
+	//
+	// That was almost invisible while received-buff rows were always on: they
+	// pushed the reserve high enough that every slot kept at least one of each.
+	// The LAYER TOGGLE makes it the common case — with buffs hidden the split is
+	// summons-only, so any slot with fewer summons than the busiest one lands on
+	// the other side of the ±2. Measured: 108/110/110/108 on a four-character
+	// rotation, which the bench's cards mirror exactly, so the misalignment
+	// arrives on the one coupling the ribbon exists to guarantee.
+	//
+	// ⚓ Taking the MAX rather than chasing the gap term: the property wanted here
+	// is "the four blocks are the same height", and a max says that directly and
+	// survives whatever the next row kind does with its own trailing gap. Costs
+	// at most 2px on the slots that were shorter, which lands below the last aux
+	// row where the block note above already says slack is least noticeable.
+	//
+	// ⚠ The BENCH_SLOT_MIN_H floor moved here with it and still means what it
+	// meant — see the note above; applying it once to the max is the same answer
+	// it gave per slot.
+	let slotBlockH = $derived(
+		Math.max(BENCH_SLOT_MIN_H, ...characterSlots.map((_, i) => slotNaturalH(i)))
 	);
 
-	let teamBuffsH = $derived(auxLaneH(teamBuffRows.length));
+	// Cumulative Y offsets per slot. ↻ The blocks are uniform now, so this is an
+	// arithmetic series — kept as a walk because every consumer indexes it and a
+	// multiply would read as if the heights could still differ.
+	let slotTopOffsets = $derived(characterSlots.map((_, i) => i * slotBlockH));
+
+	// ── Which below-slot lanes are on screen ─────────────────────────────────
+	// ⚠ ONE ANSWER EACH, read by the height math, the markup AND the PNG
+	// snapshot. The team-buff lane keeps its own long-standing rule (present at
+	// full height even with no rows — the empty lane is the "no team buffs here"
+	// signal); the layer toggle is a different question and removes it outright.
+	let showTeamBuffsLane = $derived(showBuffs);
+	let showNbLane = $derived(showBuffs && teamComp.natlanCount >= 1);
+	let showMoonsignLane = $derived(showBuffs && teamComp.hasAscendantGleam);
+
+	let teamBuffsH = $derived(showTeamBuffsLane ? auxLaneH(teamBuffRows.length) : 0);
 	// NB events all stack onto a single sub-row; the lane is always 1-row tall.
 	let nbLaneH = $derived(auxLaneH(1));
 	// moonsignLaneH is declared further down, after moonsignRows.
 
 	// Moonsign buff windows — see src/lib/timeline/moonsignRows.ts.
 	let moonsignRows = $derived(
-		teamComp.hasAscendantGleam
+		showMoonsignLane
 			? computeMoonsignRows(rotation.events, teamComp.nonMoonsignSlots, characterSlots)
 			: []
 	);
@@ -641,9 +706,19 @@
 	// $lib/timeline/auraPlot.ts for the shape, and for why it is ONE overlaid
 	// plot rather than a row per mod (⚓ Nate measured the premise the rows were
 	// built on and it was false: auras barely coexist).
+	// ⚠ GATED ON THE TOGGLE AT THE PROJECTION, like the buff rows — computing a
+	// lane nobody draws costs a walk of every application and every reaction in
+	// the rotation on each keystroke, and the aura layer is OFF by default, so
+	// this is the common path rather than an edge case.
 	let auraLane = $derived(
-		computeAuraLane(rotation.auraSeries, rotation.applications, rotation.events)
+		showAura
+			? computeAuraLane(rotation.auraSeries, rotation.applications, rotation.events)
+			: EMPTY_AURA_LANE
 	);
+	/** ⚠ A module-level constant, not an inline literal: a fresh object each
+	 *  time would make `auraLane` a new value on every unrelated re-run, and
+	 *  every derived below it recomputes off its identity. */
+	let showAuraLane = $derived(auraLane.series.length > 0);
 	// The reaction labels' band and the application ticks' strip both sit ABOVE
 	// the plot — a point stream reads as an annotation of the continuum under it,
 	// and putting the ticks between the labels and the plot keeps each closer to
@@ -673,7 +748,7 @@
 	// is exactly that pair.
 	const AURA_LABEL_MIN_ROW = 12;
 	let auraLaneH = $derived(
-		auraLane.series.length > 0 ? AURA_MARKER_H + AURA_TICK_H + AURA_PLOT_H + AUX_LANE_PAD_Y * 2 : 0
+		showAuraLane ? AURA_MARKER_H + AURA_TICK_H + AURA_PLOT_H + AUX_LANE_PAD_Y * 2 : 0
 	);
 	/** Units → px within the plot box. ⚓ The plot draws at 1:1 (one SVG spanning
 	 *  the whole track, no viewBox stretch), which is what lets the gauge line be
@@ -725,7 +800,7 @@
 	const publishBenchMetrics = benchBand.claimMetrics();
 	$effect(() => {
 		publishBenchMetrics(
-			characterSlots.map((_, i) => slotBlockH(i)),
+			characterSlots.map(() => slotBlockH),
 			characterSlots.map((id, i) => id === 'blank' && tracksBySlot[i].length > 0)
 		);
 	});
@@ -991,10 +1066,10 @@
 	// PNG export canvas.
 	let contentH = $derived(
 		RULER_H +
-			characterSlots.reduce((acc, _id, i) => acc + slotBlockH(i), 0) +
+			characterSlots.length * slotBlockH +
 			teamBuffsH +
-			(teamComp.natlanCount >= 1 ? nbLaneH : 0) +
-			(teamComp.hasAscendantGleam ? moonsignLaneH : 0) +
+			(showNbLane ? nbLaneH : 0) +
+			(showMoonsignLane ? moonsignLaneH : 0) +
 			auraLaneH
 	);
 
@@ -1009,9 +1084,9 @@
 		// Lanes open directly under the 4th track group (the ribbon-clearance
 		// gap retired with the tall bench — the strip clears the lanes by
 		// standing over the whole label column instead).
-		const slotsBottom = slotTopOffsets[3] + slotBlockH(3);
-		const nbVisible = teamComp.natlanCount >= 1;
-		const moonVisible = teamComp.hasAscendantGleam;
+		const slotsBottom = slotTopOffsets[3] + slotBlockH;
+		const nbVisible = showNbLane;
+		const moonVisible = showMoonsignLane;
 		const teamNames = slotCharacters
 			.filter((c): c is NonNullable<typeof c> => c != null)
 			.map((c) => c.displayName);
@@ -1042,7 +1117,7 @@
 					// No-frame-map (uncurated, non-Blank) → dire N/C/P treatment in export.
 					isApprox: char != null && !isCurated(char) && char.id !== 'blank',
 					consLevel: char ? effectiveConLevel(char.id) : 0,
-					blockH: slotBlockH(i),
+					blockH: slotBlockH,
 					qRowTop: qRowTopForSlot(i),
 					activeRowTop: activeRowOffsetForSlot(i),
 					buffRowsTop: buffRowsTopForSlot(i),
@@ -1092,10 +1167,9 @@
 			moonsignTop: moonVisible ? slotsBottom + teamBuffsH + (nbVisible ? nbLaneH : 0) : null,
 			moonsignH: moonsignLaneH,
 			auraLane,
-			auraTop:
-				auraLane.series.length > 0
-					? slotsBottom + teamBuffsH + (nbVisible ? nbLaneH : 0) + (moonVisible ? moonsignLaneH : 0)
-					: null,
+			auraTop: showAuraLane
+				? slotsBottom + teamBuffsH + (nbVisible ? nbLaneH : 0) + (moonVisible ? moonsignLaneH : 0)
+				: null,
 			auraPlotH: AURA_PLOT_H,
 			auraMarkerH: AURA_MARKER_H,
 			auraTickH: AURA_TICK_H,
@@ -1288,7 +1362,7 @@
 	$effect(() => {
 		// The aura lane's presence is the notes panel's second gate — see
 		// `plannerView.hasAura`.
-		pv.hasAura = auraLane.series.length > 0;
+		pv.hasAura = showAuraLane;
 	});
 
 	// ---------------------------------------------------------------------------
@@ -1525,7 +1599,7 @@
 							     whatever the bar is; the /lab board judged it this way. -->
 							<div
 								class="rp-char-block"
-								style:height="{slotBlockH(slotIdx)}px"
+								style:height="{slotBlockH}px"
 								style:--label-halo={char ? shiftHue(p.bar, 0, -30, 1) : undefined}
 							>
 								<!-- E row -->
@@ -1853,47 +1927,52 @@
 							 is no column left to name a lane from. A bar that starts at 0s
 							 covers it, which is the intended trade: the bar says what it is
 							 (label + tooltip) better than the lane's name does. -->
-						<div class="rp-team-buffs" style:height="{teamBuffsH}px">
-							{#if teamBuffRows.length > 0}
-								<span class="rp-lane-name">TEAM BUFFS</span>
-								<div class="rp-team-buff-rows">
-									{#each teamBuffRows as subrow (subrow.key)}
-										<div class="rp-team-buff-subrow">
-											{#each subrow.bars as bar, bi (bi)}
-												{@const g = barGeom(bar.start, bar.end - bar.start)}
-												{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
-												<!-- svelte-ignore a11y_no_static_element_interactions -->
-												<div
-													class="rp-team-buff-bar"
-													style:left="{g.left}px"
-													style:width="{g.width}px"
-													onmouseenter={(e) =>
-														showTooltip(e, {
-															sourceLabel: subrow.sourceLabel,
-															effects: bar.effects,
-															isMutuallyExclusive: false,
-															duration: bar.end - bar.start
-														})}
-													onmouseleave={hideTooltip}
-												>
-													{#if icon}
-														<img src={icon} alt="" class="rp-buff-icon" />
-													{/if}
-													<span
-														class="rp-buff-label"
-														style:max-width={labelCapPx(g, subrow.bars[bi + 1], !!icon)}
-														>{subrow.sourceLabel}</span
+						<!-- ⚠ The layer toggle removes the lane OUTRIGHT; the empty-lane
+						     rule above is about a rotation that grants nothing, which is a
+						     different statement and still worth its 16px. -->
+						{#if showTeamBuffsLane}
+							<div class="rp-team-buffs" style:height="{teamBuffsH}px">
+								{#if teamBuffRows.length > 0}
+									<span class="rp-lane-name">TEAM BUFFS</span>
+									<div class="rp-team-buff-rows">
+										{#each teamBuffRows as subrow (subrow.key)}
+											<div class="rp-team-buff-subrow">
+												{#each subrow.bars as bar, bi (bi)}
+													{@const g = barGeom(bar.start, bar.end - bar.start)}
+													{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
+													<!-- svelte-ignore a11y_no_static_element_interactions -->
+													<div
+														class="rp-team-buff-bar"
+														style:left="{g.left}px"
+														style:width="{g.width}px"
+														onmouseenter={(e) =>
+															showTooltip(e, {
+																sourceLabel: subrow.sourceLabel,
+																effects: bar.effects,
+																isMutuallyExclusive: false,
+																duration: bar.end - bar.start
+															})}
+														onmouseleave={hideTooltip}
 													>
-												</div>
-											{/each}
-										</div>
-									{/each}
-								</div>
-							{/if}
-						</div>
+														{#if icon}
+															<img src={icon} alt="" class="rp-buff-icon" />
+														{/if}
+														<span
+															class="rp-buff-label"
+															style:max-width={labelCapPx(g, subrow.bars[bi + 1], !!icon)}
+															>{subrow.sourceLabel}</span
+														>
+													</div>
+												{/each}
+											</div>
+										{/each}
+									</div>
+								{/if}
+							</div>
+						{/if}
 
 						<!-- NB (Nightsoul Burst) lane -->
-						{#if teamComp.natlanCount >= 1}
+						{#if showNbLane}
 							<div class="rp-nb-lane" style:height="{nbLaneH}px">
 								<span class="rp-lane-name">NIGHTSOUL BURSTS</span>
 								<div class="rp-nb-rows">
@@ -1913,7 +1992,7 @@
 						{/if}
 
 						<!-- Moonsign lane -->
-						{#if teamComp.hasAscendantGleam}
+						{#if showMoonsignLane}
 							<div class="rp-moonsign-lane" style:height="{moonsignLaneH}px">
 								<span class="rp-lane-name">ASCENDANT GLEAM</span>
 								<div class="rp-moonsign-rows">
@@ -1965,7 +2044,7 @@
 						     behind. Rendered only when something ever landed — an
 						     all-physical rotation has no aura to draw and gets no lane,
 						     the same rule the NB and moonsign lanes follow. -->
-						{#if auraLane.series.length > 0}
+						{#if showAuraLane}
 							<div class="rp-aura-lane" style:height="{auraLaneH}px">
 								<!-- Reaction markers. ⚓ THE PAYOFF: reactions have been in the
 								     IR since P4 and drawn NOWHERE — the player saw the buff

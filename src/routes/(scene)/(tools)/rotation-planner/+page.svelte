@@ -20,6 +20,7 @@
 	import { rotationTabs as rt, TAB_LIMIT } from '$lib/rotationTabs.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { documentBar as db } from '$lib/documentBar.svelte';
+	import { siteSettings, TIMELINE_LAYER_DEFAULTS } from '$lib/stores';
 	import {
 		plannerView as pv,
 		ZOOM_DEFAULT,
@@ -272,6 +273,17 @@
 	});
 
 	let showAside = $derived(pv.showNotes && hasNotes);
+
+	/** 🐛 THE LAYERS ARE PART OF "THE VIEW", so they are part of whether there is
+	 *  a view to reset. Without this the Reset button stays DISABLED while the
+	 *  zoom sits at its default — which is exactly the state someone is in when
+	 *  they have only toggled a layer — and the click that would put the chart
+	 *  back does nothing. Caught in the browser, not by a gate: every unit is
+	 *  green either way, because the bug is a disabled attribute. */
+	let layersAtRest = $derived(
+		$siteSettings.showAuraLane === TIMELINE_LAYER_DEFAULTS.showAuraLane &&
+			$siteSettings.showTimelineBuffs === TIMELINE_LAYER_DEFAULTS.showTimelineBuffs
+	);
 </script>
 
 <section class="rotation-page">
@@ -320,8 +332,8 @@
 		{/snippet}
 
 		{#snippet bandBRight()}
-			<!-- Back to the resting view: the zoom AND the notes panel, which is
-			     the whole of band B's state — hence "Reset view" rather than
+			<!-- Back to the resting view: the zoom, the notes panel AND the layers
+			     — the whole of band B's state — hence "Reset view" rather than
 			     "Reset zoom", which would under-describe what it does. It sits
 			     left of the zoom group because that is the control it most often
 			     undoes. Inert when there is nothing to undo, like the zoom
@@ -329,9 +341,9 @@
 			<button
 				class="btn btn--sm rp-reset"
 				type="button"
-				aria-label="Reset the view to its resting zoom"
-				title="Back to the resting zoom, and close the notes panel"
-				disabled={pv.scale === ZOOM_DEFAULT && !pv.showNotes}
+				aria-label="Reset the view to its resting state"
+				title="Back to the resting zoom and layers, and close the notes panel"
+				disabled={pv.scale === ZOOM_DEFAULT && !pv.showNotes && layersAtRest}
 				onclick={() => pv.reset()}
 			>
 				<Mark name="reset" />
@@ -362,6 +374,48 @@
 					disabled={pv.scale >= ZOOM_MAX}
 					onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="plus" /></button
 				>
+			</div>
+			<!-- ══ THE LAYERS (2026-08-17) ══════════════════════════════════════
+			     What the chart draws besides ability timings. Band B is the VIEW,
+			     so this is where they belong; ⛔ NOT the Settings modal, and ⛔ not
+			     a "Layers ∨" menu, which was considered and rejected. There are
+			     two, so a menu is an abstraction with no user — and the point of a
+			     stripped-down chart is that it ANNOUNCES itself. A lit plate says
+			     "buffs are hidden" at a glance; a closed menu turns "why is my
+			     timeline empty" into a hunt.
+
+			     ⚠ NEVER DISABLED, unlike Notes. Whether the current rotation
+			     happens to produce an aura changes on every keystroke, so a
+			     control gated on it would grey in and out while you type. These
+			     state a standing preference — draw this layer when there is one —
+			     which is answerable at all times, including on an empty tab. -->
+			<div class="rp-layers" role="group" aria-label="Timeline layers">
+				<button
+					class="btn btn--sm"
+					class:is-active={$siteSettings.showAuraLane}
+					type="button"
+					aria-pressed={$siteSettings.showAuraLane}
+					title="Draw the target's elemental gauge, with applications and reactions"
+					onclick={() =>
+						siteSettings.setTimelineLayers({ showAuraLane: !$siteSettings.showAuraLane })}
+				>
+					<Mark name="aura" />
+					Auras
+				</button>
+				<button
+					class="btn btn--sm"
+					class:is-active={$siteSettings.showTimelineBuffs}
+					type="button"
+					aria-pressed={$siteSettings.showTimelineBuffs}
+					title="Draw buff bars, weapon procs, Nightsoul bursts and Ascendant Gleam"
+					onclick={() =>
+						siteSettings.setTimelineLayers({
+							showTimelineBuffs: !$siteSettings.showTimelineBuffs
+						})}
+				>
+					<Mark name="buff" />
+					Buffs
+				</button>
 			</div>
 			<button
 				class="btn btn--sm rp-notes-btn"
@@ -546,6 +600,16 @@
 	/* Track/thumb styling comes from the shared .slider (app.css). */
 	.rp-zoom-slider {
 		width: 88px;
+	}
+
+	/* The two layer toggles read as ONE control — "what is drawn" — so they sit
+	   at the tighter intra-group gap the zoom cluster uses rather than band B's
+	   own item gap. Same reasoning, same number: a group is a thing whose parts
+	   answer one question. Bare flex, no plate — see .rp-zoom. */
+	.rp-layers {
+		display: flex;
+		align-items: center;
+		gap: 0.2rem;
 	}
 
 	.rp-notes-btn {

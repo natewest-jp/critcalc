@@ -20,7 +20,16 @@
  * This is view state, deliberately NOT persisted and NOT part of the document:
  * a zoom level is not something you save or share, and nothing here belongs in
  * a saved-team entry.
+ *
+ * ⚠ ONE EXCEPTION, AND IT IS DELIBERATE (2026-08-17): the two LAYER toggles
+ * (auras / buffs) are band-B controls like these, but they live in
+ * `siteSettings` and DO persist. The line is per-look vs per-taste — see the
+ * note on `showAuraLane` there. They are not mirrored into this class: a second
+ * copy of a stored value is how the two drift, so band B and the timeline both
+ * read the store directly and only `reset()` below reaches across.
  */
+
+import { siteSettings, TIMELINE_LAYER_DEFAULTS } from '$lib/stores';
 
 export const ZOOM_MIN = 20;
 export const ZOOM_MAX = 120;
@@ -37,14 +46,20 @@ class PlannerViewState {
 	hasCaveats = $state(false);
 	totalDuration = $state(0);
 	/**
-	 * The rotation put something on the target, so the aura lane is drawn — and
-	 * the notes panel therefore has its standing "how the aura is modelled"
-	 * block to show (gauge round L6).
+	 * The aura lane is ON SCREEN — the rotation put something on the target AND
+	 * the layer is switched on — so the notes panel has its standing "how the
+	 * aura is modelled" block to show (gauge round L6).
 	 *
 	 * ⚠ A SECOND REASON THE NOTES PANEL CAN OPEN. It used to be gated on slot
 	 * caveats alone, which would have made the modelling limits unreachable for
 	 * exactly the rotations most likely to need them: a fully-curated team has
 	 * no caveats and still gets a gauge.
+	 *
+	 * ⚠ "DRAWN", NOT "EXISTS" (2026-08-17). The flag folds in the layer toggle,
+	 * because the block it gates states the limits OF THE LANE — with the lane
+	 * hidden there is nothing on screen for those limits to qualify, and a
+	 * caveat-free team would open the Notes panel to explain a chart that is not
+	 * there.
 	 */
 	hasAura = $state(false);
 
@@ -55,11 +70,20 @@ class PlannerViewState {
 	/**
 	 * Back to the resting view. The timeline closes the notes panel itself when
 	 * a rebuild leaves no caveats to show, so this only has to handle the
-	 * user-facing pair.
+	 * user-facing controls.
+	 *
+	 * ⚠ THE LAYERS ARE PART OF "THE VIEW" and are restored here too (2026-08-17)
+	 * — the button says "Reset view" rather than "Reset zoom" precisely because
+	 * it means the whole of band B's state, and a reset that left the buff rows
+	 * hidden would make the label a lie in the one situation someone reaches for
+	 * it: the timeline does not look how they expect and they want it back.
+	 * Reaching into another store from here is the cost of not keeping a second
+	 * copy of the flags; it is one call, at the one site that needs it.
 	 */
 	reset() {
 		this.scale = ZOOM_DEFAULT;
 		this.showNotes = false;
+		siteSettings.setTimelineLayers({ ...TIMELINE_LAYER_DEFAULTS });
 	}
 }
 

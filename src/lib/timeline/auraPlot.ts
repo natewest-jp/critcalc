@@ -119,6 +119,24 @@ export function auraUMax(series: SeriesInterval[]): number {
 	return Math.max(2, Math.ceil(peak * 2) / 2);
 }
 
+/**
+ * The lane with nothing in it — what the planner substitutes when the AURA
+ * LAYER is switched off (2026-08-17), so no consumer downstream has to learn a
+ * null.
+ *
+ * ⚠ ONE frozen instance, deliberately. Consumers are `$derived`, and a fresh
+ * object per evaluation would change identity on every unrelated re-run and
+ * re-derive the paths, the labels and the unit rules for a lane that draws
+ * nothing. `series: []` is the same "no lane" signal an all-physical rotation
+ * produces, so the render gate stays one test rather than two.
+ */
+export const EMPTY_AURA_LANE: AuraLane = Object.freeze({
+	series: [],
+	uMax: auraUMax([]),
+	ticks: [],
+	markers: []
+});
+
 /** Project the parsed rotation's aura trajectory into the lane's plot. */
 export function computeAuraLane(
 	gaugeSeries: SeriesInterval[],

@@ -93,6 +93,26 @@ const MARKS = {
 
 	// ── Band B and general controls ─────────────────────────────────────────
 	note: 'FileText',
+	/**
+	 * The planner's two LAYER toggles (2026-08-17): what the timeline draws
+	 * besides ability timings.
+	 *
+	 * ⚓ Both name the layer's own SHAPE rather than its subject, which is the
+	 * only register available here. "Buff" and "aura" are mechanics with no
+	 * picture — there is no glyph for a granted stat — but each toggle governs a
+	 * body of marks the reader can see, so the mark can say which body.
+	 *   `aura`  → Activity, a pulse LINE: the lane is one overlaid plot whose
+	 *             height is a gauge, and it is the only lane not made of bars.
+	 *   `buff`  → Sparkles, the conventional "granted effect" glyph, and the
+	 *             right counterpart precisely because it is NOT a chart shape:
+	 *             the two toggles govern different kinds of object and the pair
+	 *             should not read as two views of one.
+	 * ⚠ NOT `Zap` for either — a lightning bolt is Electro in this domain, and a
+	 * mark that names an element on a control that governs all of them is worse
+	 * than no mark.
+	 */
+	aura: 'Activity',
+	buff: 'Sparkles',
 	plus: 'Plus',
 	minus: 'Minus',
 	close: 'X',
