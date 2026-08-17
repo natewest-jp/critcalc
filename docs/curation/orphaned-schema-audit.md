@@ -110,6 +110,18 @@ key with no schema at all — worth folding into `_curatorNotes` or declaring.
   dynamically, not by literal — pass-B false positives.
 - **Provenance keys** (`curatedAt`, `draftedBy`, `generatedAt`, …) — documentation by
   design, like `_curatorNotes`.
+- **Effect-level `application[]` + `onReaction.armedFor` / `source: 'active'`**
+  (mark-triggered round, 2026-08-17) — read by `sim/reactionProcs.ts` and pinned by its
+  tests. ⚠️⚠️ **Pass A cannot see the first one**: it matches by KEY NAME, and
+  `application` is already the ability-level field's name, so a green run proves nothing
+  about the effect-level one. That is the L5e-a¾ lesson accepted deliberately here —
+  one vocabulary for "what lands and when" was judged worth more than a guard-friendly
+  synonym, which is how `onStanceEnd`/`afterDuration` became an orphan in the first
+  place. ⛔ Don't rename it; ⚓ do keep `reactionProcs.test.ts` if the module moves.
+  ⚠️ Deliberately NOT wired anywhere else: a reaction proc draws no timeline bar (it
+  grants nothing) and does not enter the finalize hit stream (so it triggers no artifact
+  `onHit` set, which IS a divergence from the game — recorded in Nahida's curator notes
+  and in `docs/mark-triggered-damage-round.md` §3.4).
 
 ---
 

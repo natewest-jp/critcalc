@@ -574,6 +574,13 @@ export type Trigger =
 			 * (characterLint B.12c). An effect hosted on `summons[].effects[]` needs
 			 * no `armedFor`: the summon's own liveness IS the window, and it is
 			 * answered by the one `summonEndAt`.
+			 *
+			 * ⚠️ The window opens at the CAST, not at the hit that applies the mark
+			 * — in game Nahida's Seed lands with her skill's hitmark 13 frames later,
+			 * so ours is 13 frames early at both ends. Stated rather than modelled:
+			 * naming which of a cast's `application[]` entries does the marking is a
+			 * second schema field for a fifth of a second, and the mark is never the
+			 * limiting factor at the START (nothing has reacted yet).
 			 */
 			armedFor?: number;
 	  }
