@@ -5,8 +5,10 @@ rotations and it's leaving me stunned… what we have is already almost entirely
 of it"_). ✅ **MERGED + PUSHED 2026-08-16 — `8893da5`** (⚠️ cite the merge, not the branch tip).
 That push carried the whole gauge round: 60 commits, L0 through L6, which until then had
 been entirely local.
-⏳ **Open:** real Safari, and a refinement pass Nate has asked for but not yet specified
-(⛔ ask, don't guess — the knobs already on the table are in §8).
+↻ **THE REFINEMENT PASS LANDED 2026-08-17** — the lane moved to the timeline's HEADER,
+above the time axis, and became an opt-in LAYER. See [§9](#9-the-reposition-2026-08-17).
+⏳ **Open:** real Safari (still — and the reposition re-opens it), and the PNG's own
+appearance under the new geometry.
 Follows [L5e](gauge-round-L5e.md); the round's contract is [gauge-round.md](gauge-round.md).
 
 L6 is the landing where the gauge becomes something a player can look at. Everything
@@ -342,3 +344,98 @@ key into the IR (the bridge exists to stop that); it is a multiplier field on
   finding, and lowering the floor to 1U would make a shallow aura read as maxed, which is
   the exact problem the floor exists for. The unit rule is what turns the headroom from
   blank space into a scale.
+
+---
+
+## 9. The reposition (2026-08-17)
+
+⚓ **Nate, after living with the lane:** _"the aura-reaction track being right above the
+timeline, above its timing scale ticks and beneath band B."_ Plus a layer toggle for it,
+a second one for the buffs, and the bench's top edge brought level with band A's.
+
+### What moved, and why it reads better
+
+The lane shipped at the BOTTOM of the track area — roughly 600px from the ruler it is read
+against, which is the one relationship a gauge plot needs most. Above the axis, the ruler
+becomes a **shared axis with a chart on either side of it**: the same DAW convention that
+put it on the top edge in the first place, now doing twice the work.
+
+⚠️ **It lives in the RULER'S STRIP, not the track scroller.** That strip exists so the
+notes panel can never push the axis, and it is a scroll FOLLOWER — `overflow: hidden`,
+`scrollLeft` mirrored from the tracks. The lane inherits the mirror and the edge fade for
+free, and the two share ONE width-sized box (`.rp-header-inner`), because they are two
+readings of one x axis and the rotation's length must be stated once.
+
+🐛 **The follower cost the wheel**, and `onHeaderWheel` gives it back. Invisible while the
+strip held only the ruler — nobody scrolls a chart by its axis — and immediately visible
+when a third of the header is a chart. ⚠️ **Horizontal only**: over the tracks a vertical
+wheel scrolls the PAGE, so forwarding `deltaY` would give the header a behaviour the
+surface it mirrors does not have.
+
+### ⚓⚓ Anything above the first track row moves the BENCH
+
+This is the part worth carrying forward. The bench's cards each label a track group, and
+their column was positioned from `RIBBON_FRAME_TOP_INSET` — a constant **hand-copied from
+`RULER_H`**, with a comment admitting it. Sound while the header held exactly one thing.
+
+So the header's height is **published** now (`benchBand.trackTop`, through the same
+ownership-guarded channel as the slot heights) and `ribbonHead()` reads it. Landed as a
+separate behaviour-zero commit first, publishing `RULER_H`, so the lane's own diff is about
+the lane.
+
+⛔ **Never make the head per-tool.** The Team Builder has no ruler and no header, but its
+cards must land on the same screen y as the planner's or the four cards you are looking at
+slide on every RP↔TB crossing — and ⚓ the ribbon's whole job across that seam is to be the
+thing that does not change (the tail round). The TB reads the same head and carries the
+surplus as empty ribbon, in the region already earmarked for the decorative motif.
+
+### The layers
+
+`(Auras)(Buffs)` in band B, which is the VIEW band. ⚓ The cut is **a bar that says when an
+ability IS stays; a bar that says what an ability GRANTS goes** — ⚓ Nate ruled SHIELDS a
+mechanic rather than a buff, so they stay with the summons whose lane they share.
+
+⚠️ **Gated at the projection, never the markup.** Every height, the shared aux reserve, the
+bench's published metrics and the PNG snapshot are computed FROM those arrays, so an empty
+array collapses everything with no second code path. ⛔ An `{#if}` around the rows is the
+version where the layout keeps paying for what it no longer draws.
+
+Defaults are **buffs on, auras off** — the view exactly as L6 merged. ⛔ Not in the `?r=`
+codec: a shared link carries a rotation, not the recipient's reading preferences.
+
+⛔ **A "Layers ∨" menu was considered and rejected.** Two toggles are not an abstraction's
+worth, and the point of a stripped chart is that it ANNOUNCES itself.
+
+### Two defects the browser pass caught that no gate could
+
+🐛 **The four slot blocks were up to 2px apart** with an identical row budget — the aux
+reserve's own "slots come out uniform" claim, false by a trailing-gap term that each of the
+summon lane and the buff stack drops when empty. Invisible while buff rows were always on;
+the toggle makes it the common case, and the bench mirrors slot heights exactly, so it
+landed on the one coupling the ribbon exists to guarantee. ⚓ Fixed by taking the MAX of the
+four natural heights — the property wanted is "the blocks are the same height", and a max
+says that directly.
+
+🐛 **"Reset view" was inert after a layer toggle**: its disabled test was
+`scale === default && !showNotes`, which is exactly the state you are in when you have only
+hidden a layer.
+
+⚠️ Both were green on every unit gate. The instrument that found them was a production
+preview with a real rotation in it.
+
+### Still not verified
+
+- **Safari.** Re-opened by this pass, which is entirely visual.
+- **The PNG's own appearance.** The export path runs clean and throws nothing, and its two
+  changed expressions were reviewed, but a canvas is Nate's eyes.
+- **A real-hardware wheel over the header.** The synthetic wheel reaches the handler and
+  moves the tracks by exactly `deltaX`; the harness's trusted scroll targets the page.
+
+### 🎛️ Knobs this pass leaves on the table
+
+- `AURA_PLOT_H` (56) is unchanged, and the lane is 79px in the header (13 marker + 6 ticks
+  - 56 plot + 2×2 pad). Every pixel of it is now above the fold on a 16:10 screen, which
+    is the argument for and against making it taller.
+- ⚠️ The lane lost the vertical GRIDLINES it had inside `.rp-tracks` — it is a sibling of
+  that layer now. Judged an improvement (the ticks sit directly beneath the plot, a closer
+  x reference than a gridline crossing it), but it is a look, so it is Nate's call.
