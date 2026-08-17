@@ -728,7 +728,22 @@
 	// and putting the ticks between the labels and the plot keeps each closer to
 	// the thing it describes.
 	const AURA_MARKER_H = 13;
-	const AURA_TICK_H = 6;
+	// ══ THE APPLICATION MARKER (unified with the Gauge Explorer, 2026-08-17) ═══
+	// ⚓ ONE GRAMMAR, read top to bottom in both tools: what it CAUSED (the
+	// reaction row above), what LANDED (this pill), and a HAIRLINE down into the
+	// gauge it changed. ↻ It was a 2px stub 6px tall — ⚓ Nate: "incredibly tiny
+	// touch points" — which named its element by colour alone and connected to
+	// nothing. The pill is a target; the hairline is what ties an application to
+	// the step it causes in the plot, which was previously left to the eye.
+	//
+	// ⚠️ SMALLER THAN THE EXPLORER'S PILL, and that is the density difference
+	// between the two tools rather than a style drift: the instrument draws at
+	// most MAX_GAUGE_APPS (8) and can afford 18px discs carrying text, while a
+	// heavy rotation makes ~230 applications. The unit VALUE therefore lives in
+	// this pill's tooltip, not inside it. ⛔ Don't put text in here without
+	// measuring a real rotation first.
+	const AURA_TICK_H = 10;
+	const AURA_PILL_R = 4;
 	// 🎛️ THE PLOT'S HEIGHT — the whole point of overlaying the mods.
 	//
 	// ⚓ FIXED, NOT PER-SERIES-COUNT, and that is a decision: a chart whose y axis
@@ -755,6 +770,9 @@
 	// so it sits on the rule's shoulder rather than across it.
 	const AURA_UNIT_LABEL_X = 3;
 	const AURA_UNIT_LABEL_LIFT = 3;
+	/** …and how far it hangs below the CEILING's rule, which sits on the top edge
+	 *  where a lifted label would be clipped away. */
+	const AURA_UNIT_LABEL_DROP = 8;
 	// ══ THE MARKER ROW'S LABEL RULE (2026-08-17) ══════════════════════════════
 	// ⚠ MEASURED, NOT GUESSED. This used to be `room >= 26`, a stand-in for "the
 	// shortest family name that survives" — so anything between 26px and its own
@@ -1273,6 +1291,7 @@
 			auraPlotH: AURA_PLOT_H,
 			auraMarkerH: AURA_MARKER_H,
 			auraTickH: AURA_TICK_H,
+			auraPillR: AURA_PILL_R,
 			auraMinPx: AURA_MIN_PX,
 			auraLabelMinSpan: AURA_LABEL_MIN_SPAN,
 			auraLabelMinGap: AURA_LABEL_MIN_GAP,
@@ -1747,7 +1766,11 @@
 						     to the row below it); the --ui-provisional FOOT is the
 						     squiggle rule: we took this application, and its unit value
 						     is our 1U stand-in rather than measured data. -->
-							<div class="rp-aura-ticks" style:height="{AURA_TICK_H}px">
+							<div
+								class="rp-aura-ticks"
+								style:height="{AURA_TICK_H}px"
+								style:--rp-pill-r="{AURA_PILL_R}px"
+							>
 								{#each auraLane.ticks as tick, ti (ti)}
 									<!-- svelte-ignore a11y_no_static_element_interactions -->
 									<span
@@ -1809,6 +1832,24 @@
 							     reading as arbitrary (see `auraUMax`).
 							     ⚠ It SCROLLS with the plot, like the lane names — one datum
 							     stated where the chart begins. -->
+									<!-- ⚓ THE HAIRLINE HALF OF THE APPLICATION MARKER, shared with
+									     the Gauge Explorer: each pill above drops a line into the
+									     gauge it changed, so the step in the plot is TIED to the hit
+									     that caused it instead of being left to the eye.
+									     ⚠ Drawn FIRST, under the rules and the auras — it is a
+									     pointer, not data, and an application whose line crossed a
+									     gauge line would read as a value. `stroke-opacity` is paint
+									     alpha, which the sub-pixel laws require here. -->
+									{#each auraLane.ticks as tick, ti (`h${ti}`)}
+										<line
+											x1={xForTime(tick.time)}
+											x2={xForTime(tick.time)}
+											y1="0"
+											y2={AURA_PLOT_H}
+											stroke={pal(tick.element).main}
+											stroke-opacity="0.22"
+										/>
+									{/each}
 									{#each auraUnitRules as u (u)}
 										<line
 											x1="0"
@@ -1817,10 +1858,15 @@
 											y2={auraYOf(u)}
 											stroke="var(--rp-grid)"
 										/>
+										<!-- ⚠ The label hangs BELOW the topmost rule and above every
+										     other one: the ceiling's rule sits on the plot's very top
+										     edge, so a lifted label would be clipped out of the box. -->
 										<text
 											class="rp-aura-unit-label"
 											x={AURA_UNIT_LABEL_X}
-											y={auraYOf(u) - AURA_UNIT_LABEL_LIFT}>{u}U</text
+											y={u >= auraLane.uMax
+												? auraYOf(u) + AURA_UNIT_LABEL_DROP
+												: auraYOf(u) - AURA_UNIT_LABEL_LIFT}>{u}U</text
 										>
 									{/each}
 									<defs>
@@ -3406,7 +3452,8 @@
 		pointer-events: none;
 	}
 
-	/* Application strip ─ one tick per gauge landed on the target. */
+	/* Application strip ─ one PILL per gauge landed on the target, sitting on the
+	   head of its hairline (which is drawn in the plot's SVG below). */
 	.rp-aura-ticks {
 		position: relative;
 		flex-shrink: 0;
@@ -3414,14 +3461,16 @@
 	.rp-aura-tick {
 		position: absolute;
 		bottom: 0;
-		width: 2px;
-		height: 100%;
+		width: calc(var(--rp-pill-r) * 2);
+		height: calc(var(--rp-pill-r) * 2);
+		/* Centred on its instant — the hairline below leaves from the same x. */
+		margin-left: calc(var(--rp-pill-r) * -1);
+		border-radius: 999px;
 		/* ⚠ Alpha in the PAINT, never element opacity — these are
-		   transform-adjacent hairlines and an opacity subtree rasterizes at
-		   rounded coordinates in WebKit (the sub-pixel laws). The inline
-		   background carries the element colour at full strength; the strip
-		   itself is what recedes. */
-		opacity: 0.75;
+		   transform-adjacent marks and an opacity subtree rasterizes at rounded
+		   coordinates in WebKit (the sub-pixel laws). The inline background
+		   carries the element colour; the strip itself is what recedes. */
+		opacity: 0.9;
 	}
 	/* ⚓ THE SQUIGGLE RULE, as a FOOT. --ui-provisional is a provenance
 	   statement — "we took this application and its unit value is a stand-in" —
@@ -3430,18 +3479,24 @@
 	   what is uncertain is the ground it stands on. Measured, most rotations run
 	   60–90% defaulted, so a nearly-solid yellow footline is the honest picture
 	   and not an error state. */
+	/* ↻ A RING, not a foot (2026-08-17). The mark moved with its host: a foot
+	   under a 2px stub became a ring around a disc, which keeps the rule intact —
+	   --ui-provisional is a statement about the VALUE, so it must not replace the
+	   element colour that is the pill's identity. ⚠ Drawn as a box-shadow rather
+	   than a border so the pill's diameter (and therefore its centring on the
+	   hairline) does not change when the flag does. */
 	.rp-aura-tick--provisional {
-		border-bottom: 2px solid var(--ui-provisional);
+		box-shadow: 0 0 0 1px var(--ui-provisional);
 	}
-	/* ⚠ A 2px-wide hover target is not a target. The PAINT stays 2px — it is a
-	   hairline annotation and widening it would crowd the strip at any real
-	   application density — and the HIT AREA is grown around it instead. Nearest
-	   in DOM order wins where two overlap, which for a dense burst means the
-	   later application, and that is the one a reader is pointing at. */
+	/* ⚠ The hit area is still grown past the paint. The pill is a real target now
+	   rather than a 2px stub, but at a dense burst the discs are only a few px
+	   apart and the extra ring makes pointing forgiving. Nearest in DOM order
+	   wins where two overlap, which means the later application — the one a
+	   reader is pointing at. */
 	.rp-aura-tick::after {
 		content: '';
 		position: absolute;
-		inset: -2px -3px;
+		inset: -2px;
 	}
 
 	/* ⚓ ONE PLOT, at 1:1 with the track. The row form's SVG was normalized and

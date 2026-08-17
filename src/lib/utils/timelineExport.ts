@@ -315,6 +315,9 @@ export type TimelineSnapshot = {
 	auraPlotH: number;
 	auraMarkerH: number;
 	auraTickH: number;
+	/** Radius of the application pill — the lane's half of the marker grammar
+	 *  shared with the Gauge Explorer. */
+	auraPillR: number;
 	auraMinPx: number;
 	auraLabelMinSpan: number;
 	auraLabelMinGap: number;
@@ -1182,17 +1185,32 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			}
 		}
 
-		// Application ticks, with the --ui-provisional foot under a defaulted
-		// unit value (the squiggle rule).
+		// ⚓ Application PILLS, each dropping a hairline into the gauge it changed —
+		// the grammar shared with the Gauge Explorer (2026-08-17). The
+		// --ui-provisional mark is a RING around the pill, not a foot under a
+		// stub: it states that the VALUE is a stand-in and must not replace the
+		// element colour that identifies the mark.
 		const tickY = laneY + snap.auraMarkerH;
+		const pillCy = tickY + snap.auraTickH - snap.auraPillR;
 		for (const tick of snap.auraLane.ticks) {
-			ctx.fillStyle = elementPalette(tick.element).main;
-			ctx.globalAlpha = 0.75;
-			ctx.fillRect(x(tick.time), tickY, 2, snap.auraTickH);
-			ctx.globalAlpha = 1;
+			const tx = x(tick.time);
+			// The hairline first, so the pill and everything in the plot sit over it.
+			ctx.strokeStyle = alpha(elementPalette(tick.element).main, 0.22);
+			ctx.lineWidth = 1;
+			ctx.beginPath();
+			ctx.moveTo(tx + 0.5, plotTop);
+			ctx.lineTo(tx + 0.5, plotTop + snap.auraPlotH);
+			ctx.stroke();
+			ctx.fillStyle = alpha(elementPalette(tick.element).main, 0.9);
+			ctx.beginPath();
+			ctx.arc(tx, pillCy, snap.auraPillR, 0, Math.PI * 2);
+			ctx.fill();
 			if (tick.provisional) {
-				ctx.fillStyle = UI_PROVISIONAL;
-				ctx.fillRect(x(tick.time), tickY + snap.auraTickH - 2, 2, 2);
+				ctx.strokeStyle = UI_PROVISIONAL;
+				ctx.lineWidth = 1;
+				ctx.beginPath();
+				ctx.arc(tx, pillCy, snap.auraPillR + 0.5, 0, Math.PI * 2);
+				ctx.stroke();
 			}
 		}
 

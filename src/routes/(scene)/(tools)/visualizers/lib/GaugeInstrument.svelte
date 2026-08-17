@@ -60,56 +60,78 @@
 		note: string;
 		apps: [number, ElementId, number][];
 	};
+	// ══ THE SCENARIOS (rewritten 2026-08-17, ⚓ NATE) ═════════════════════════
+	//
+	// ⚓ 1U IS THE DEFAULT, because it is what the game is made of. The corpus we
+	// measured is 1U ×327, 2U ×58, 4U ×2 — so a demo board built on 2U
+	// applications taught the arithmetic with numbers a player almost never
+	// meets, and every scenario read as "big hit lands, big thing happens". At 1U
+	// the same mechanics show up at the scale they actually occur, and several
+	// get MORE instructive rather than less: a single Hydro hit really does clear
+	// a Pyro aura, and that is the lesson.
+	//
+	// ⚠️ TWO EXCEPTIONS, and each is here because the mechanic is INVISIBLE
+	// without a size difference — ⛔ not because the chart looked better:
+	//   · Top-Up needs two different sizes, or "the first application's decay
+	//     rate is inherited" has nothing to show: two 1U applications share a
+	//     rate, so the whole point would be unobservable.
+	//   · Reverse Melt needs an aura big enough to SURVIVE its first trigger,
+	//     which is the entire content of "the weak direction only nibbles". 🐛 A
+	//     first cut tried to build it from two 1U Pyro hits and was wrong about
+	//     the model: a same-element re-application TOPS UP to the new value, it
+	//     does not stack, so two 1U hits leave the same 0.8U aura one does. 2U it
+	//     is — and the note says so rather than pretending otherwise.
 	const PRESETS: PresetDef[] = [
 		{
 			id: 'single',
 			label: 'Single Aura',
-			note: '2U Pyro lands as 1.6U after the ×0.8 aura tax, then decays out over 2.5 × 2 + 7 = 12s.',
-			apps: [[0, 'pyro', 2]]
+			note: '1U Pyro — the size of most hits in the game — lands as 0.8U after the ×0.8 aura tax, then decays out over 2.5 × 1 + 7 = 9.5s.',
+			apps: [[0, 'pyro', 1]]
 		},
 		{
 			id: 'topup',
 			label: 'Top-Up',
-			note: 'Re-applying the same element tops the gauge up but keeps the FIRST application’s decay rate — 4U onto a 1U aura drains at the slow 1U rate and lasts 38s.',
+			note: 'Re-applying the same element tops the gauge up but keeps the FIRST application’s decay rate — 2U onto a 1U aura refills it and still drains at the slow 1U rate.',
 			apps: [
 				[0, 'electro', 1],
-				[3, 'electro', 4]
+				[3, 'electro', 2]
 			]
 		},
 		{
 			id: 'vape',
 			label: 'Vaporize',
-			note: 'Hydro on Pyro is the strong direction: the trigger consumes 2× its own gauge.',
+			note: 'Hydro on Pyro is the strong direction: the trigger takes 2× its own gauge. A 1U Hydro hit can remove 2U of Pyro — which is why one vape usually clears the aura outright.',
 			apps: [
-				[0, 'pyro', 2],
+				[0, 'pyro', 1],
 				[2.5, 'hydro', 1]
 			]
 		},
 		{
 			id: 'melt',
 			label: 'Reverse Melt',
-			note: 'Cryo on Pyro is the weak direction (×0.5) — repeated 1U triggers only nibble at a 4U aura.',
+			note: 'Cryo on Pyro is the weak direction: the trigger removes only HALF its own gauge, so each 1U hit nibbles 0.5U off a 2U aura instead of clearing it. (The ×1.5 on the chart is the DAMAGE multiplier — a different number from what the reaction costs the aura.)',
 			apps: [
-				[0, 'pyro', 4],
+				[0, 'pyro', 2],
 				[2, 'cryo', 1],
-				[4, 'cryo', 1]
+				[4, 'cryo', 1],
+				[6, 'cryo', 1]
 			]
 		},
 		{
 			id: 'swirl',
 			label: 'Swirl',
-			note: 'Anemo consumes at ×0.5 and can never attach as an aura.',
+			note: 'Anemo consumes at ×0.5 and can never attach as an aura — it takes half a unit and leaves the rest behind.',
 			apps: [
-				[0, 'pyro', 2],
-				[2, 'anemo', 2]
+				[0, 'pyro', 1],
+				[2, 'anemo', 1]
 			]
 		},
 		{
 			id: 'crystallize',
 			label: 'Crystallize',
-			note: 'Geo consumes at ×0.5 with a 1s reaction cooldown — an attempt inside the window is blocked and takes no gauge at all.',
+			note: 'Geo consumes at ×0.5 with a 1s reaction cooldown — the attempt inside the window is blocked and takes no gauge at all.',
 			apps: [
-				[0, 'electro', 2],
+				[0, 'electro', 1],
 				[1, 'geo', 1],
 				[1.5, 'geo', 1],
 				[2.5, 'geo', 1]
@@ -118,10 +140,11 @@
 		{
 			id: 'ec',
 			label: 'Electro-Charged',
-			note: 'Hydro and Electro coexist; each tick drains 0.4U from BOTH gauges until one side empties.',
+			note: 'Hydro and Electro coexist; each tick drains 0.4U from BOTH gauges until one side empties. Two Hydro hits outlast one Electro.',
 			apps: [
-				[0, 'hydro', 2],
-				[1, 'electro', 2]
+				[0, 'hydro', 1],
+				[0.5, 'hydro', 1],
+				[1.5, 'electro', 1]
 			]
 		},
 		{
@@ -129,7 +152,7 @@
 			label: 'Freeze',
 			note: 'Frozen forms at 2 × min(aura, trigger) and decays on its own accelerating clock; leftover Hydro keeps ticking down underneath.',
 			apps: [
-				[0, 'hydro', 2],
+				[0, 'hydro', 1],
 				[1.5, 'cryo', 1]
 			]
 		},
@@ -138,7 +161,7 @@
 			label: 'Quicken',
 			note: 'Quicken forms 1:1 and lives 5 × gauge + 6s. Aggravate hits on it consume nothing — but the same hit can re-Quicken off leftover Dendro.',
 			apps: [
-				[0, 'dendro', 2],
+				[0, 'dendro', 1],
 				[1.5, 'electro', 1],
 				[3, 'electro', 1]
 			]
@@ -146,10 +169,10 @@
 		{
 			id: 'bloom',
 			label: 'Bloom',
-			note: 'Hydro is the weak side of Bloom (2:1) — a 2U Hydro trigger removes only 1U of Dendro and spawns a Dendro Core.',
+			note: 'Hydro is the weak side of Bloom (2:1) — a 1U Hydro trigger removes only 0.5U of Dendro and spawns a Dendro Core, leaving the rest of the aura behind.',
 			apps: [
-				[0, 'dendro', 2],
-				[2, 'hydro', 2]
+				[0, 'dendro', 1],
+				[2, 'hydro', 1]
 			]
 		},
 		{
@@ -157,7 +180,7 @@
 			label: 'Burning',
 			note: 'Burning = a fixed 2U aura plus a hidden fuel gauge draining at 0.4 U/s, re-applying 1U Pyro to the target every 0.25s until the fuel runs dry.',
 			apps: [
-				[0, 'dendro', 2],
+				[0, 'dendro', 1],
 				[2, 'pyro', 1]
 			]
 		},
@@ -166,9 +189,9 @@
 			label: 'Pyro on EC',
 			note: 'One Pyro hit on an Electro-Charged target triggers Overload AND Vaporize — leftover trigger gauge flows down the reaction priority list.',
 			apps: [
-				[0, 'hydro', 2],
-				[0.5, 'electro', 2],
-				[1.5, 'pyro', 2]
+				[0, 'hydro', 1],
+				[0.5, 'electro', 1],
+				[1.5, 'pyro', 1]
 			]
 		}
 	];
@@ -272,7 +295,12 @@
 	let graphW = $state(720);
 	const PADL = 58;
 	const PADR = 14;
-	const TOP = 64; // application marker band (3 label lines at 10px fit above)
+	// The application marker band: reaction words at the top, then the element
+	// pill, then the hairline down into the plot. ⚠ TOP must clear the pill —
+	// three 10px label lines plus the pill's diameter is what sets it.
+	const TOP = 64;
+	const MARKER_PILL_CY = 50;
+	const MARKER_PILL_R = 9;
 	const PLOT_H = 176;
 	const plotY1 = TOP + PLOT_H;
 	const AXIS_H = 24;
@@ -502,27 +530,39 @@
 				{/each}
 
 				<!-- Application markers -->
+				<!-- ══ THE APPLICATION MARKER (unified 2026-08-17, ⚓ NATE) ═══════════
+				     One grammar, read top to bottom, shared with the planner's aura
+				     lane: what it CAUSED, then what LANDED, then a hairline down into
+				     the gauge it changed.
+
+				     ⚓ REACTIONS SIT ABOVE THE PILL, not below it. They used to hang
+				     under the gauge value, which put the CONSEQUENCE further from the
+				     plot than the cause and read bottom-up. Above-to-below is now
+				     effect → application → the aura it acted on, in both tools.
+
+				     ⚓ THE PILL CARRIES THE UNIT, not the application's index. The
+				     index numbered nothing a reader could see — the applications
+				     editor below does not number its rows — while the unit is the one
+				     datum the whole instrument is about. -->
 				{#each markers as m (m.n)}
-					<line x1={m.x} y1={18} x2={m.x} y2={plotY1} stroke={m.color} stroke-opacity="0.28" />
-					<circle cx={m.x} cy={10} r="7.5" fill={m.color} />
-					<text
-						x={m.x}
-						y={13}
-						style="fill: var(--bright-ink)"
-						font-size="9.5"
-						font-weight="700"
-						text-anchor="middle"
-					>
-						{m.n}
-					</text>
-					<text x={m.x} y={27} fill={m.color} font-size="10" font-weight="700" text-anchor="middle">
-						{m.gauge}
-					</text>
+					<line
+						x1={m.x}
+						y1={MARKER_PILL_CY + MARKER_PILL_R}
+						x2={m.x}
+						y2={plotY1}
+						stroke={m.color}
+						stroke-opacity="0.28"
+					/>
+					<!-- ⚠ The stack grows UPWARD from just above the pill, rather than
+					     downward from a fixed top. One reaction is the common case, and
+					     anchoring to the top left it floating ~38px clear of the mark it
+					     belongs to; anchoring to the pill keeps cause and effect adjacent
+					     whether there are one or three. -->
 					{#each m.labels as label, li (li)}
 						<text
 							class="gx-word"
 							x={m.x}
-							y={39 + li * 11}
+							y={MARKER_PILL_CY - MARKER_PILL_R - 6 - (m.labels.length - 1 - li) * 11}
 							fill="var(--chart-ink)"
 							font-size="10"
 							text-anchor="middle"
@@ -530,6 +570,17 @@
 							{label}
 						</text>
 					{/each}
+					<circle cx={m.x} cy={MARKER_PILL_CY} r={MARKER_PILL_R} fill={m.color} />
+					<text
+						x={m.x}
+						y={MARKER_PILL_CY + 3.5}
+						style="fill: var(--bright-ink)"
+						font-size="9.5"
+						font-weight="700"
+						text-anchor="middle"
+					>
+						{m.gauge}
+					</text>
 				{/each}
 
 				<!-- Aura volume fills (gradient fades to transparent at the baseline,
