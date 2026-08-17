@@ -107,7 +107,34 @@
 			"tags": ["summon"],
 			"energyCost": 60,
 			"summons": [
-				{ "label": "Autumn Whirlwind", "duration": 8, "spawnsAt": 82, "mobility": "stationary" }
+				{
+					"label": "Autumn Whirlwind",
+					"duration": 8,
+					"spawnsAt": 82,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.95,
+								"firstTickDelay": 0.967,
+								"icdGate": "none"
+							},
+							"scaling": 216,
+							"stat": "atk",
+							"element": "anemo",
+							"_curatorNotes": [
+								"gcsim internal/characters/kazuha/burst.go, func Burst: the DoT AttackInfo (ai.Abil = \"Kazuha Slash (DoT)\") is queued 5 times at (burstFirstTick-(burstHitmark+1))+117*i from a task at burstHitmark+1 — absolute frames 140, 257, 374, 491, 608. burstFirstTick=140, burstHitmark=82, so interval 117f = 1.95s and firstTickDelay = (140 - spawnsAt 82)/60 = 0.967s.",
+								"Scaling: burstDot[9] = 2.16 in zz_kaedeharakazuha.dm.go (index 9 = talent level 10); cross-checked against sidecar docs/curation/talents/kaedehara_kazuha.json burst row 'DoT' 10th value = 216%. stat=atk (ai has no snap stat override; c.Snapshot(&ai) is an ATK snapshot).",
+								"icdGate 'none': ai.ICDTag = attacks.ICDTagNone in burst.go; gcsim-frames-diff §5 measured 5/5 'none'. Durability 25 = 1U per tick.",
+								"Not modelled: the Elemental Absorption DoT (aiAbsorb, burstEleDot[9] = 64.8%) rides the identical 117f cadence with the absorbed element (Hydro/Pyro/Cryo/Electro) — element is runtime-determined by AbsorbCheck, so there is no fixed element to author.",
+								"C2 (c2() in cons.go) adds a 0.5s EM-buff tick loop only; it does not change the damage cadence or tick count, so this series is constellation-invariant."
+							]
+						}
+					]
+				}
 			],
 			"description": "The signature technique of Kazuha's self-styled bladework — a single slash that strikes with the force of the first winds of autumn, dealing AoE Anemo DMG.\nThe blade's passage will leave behind a field named \"Autumn Whirlwind\" that periodically deals AoE Anemo DMG to opponents within its range.\n\nElemental Absorption\nIf Autumn Whirlwind comes into contact with Hydro/Pyro/Cryo/Electro, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
 			"behavior": "instant",
