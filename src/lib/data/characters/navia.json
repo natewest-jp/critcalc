@@ -95,13 +95,38 @@
 			"frames": { "anim": 127, "N": 102, "E": 102, "D": 103, "J": 103, "swap": 93 },
 			"tags": [],
 			"effects": [],
-			"summons": [{ "label": "Cannon Fire Support", "duration": 12, "spawnsAt": 154 }],
+			"summons": [
+				{
+					"label": "Cannon Fire Support",
+					"duration": 12,
+					"spawnsAt": 154,
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": { "type": "summonTick", "interval": 0.7, "firstTickDelay": 0.15 },
+							"scaling": 77.67,
+							"stat": "atk",
+							"element": "geo",
+							"_curatorNotes": [
+								"gcsim internal/characters/navia/burst.go Burst(): the QueueCharTask at burstDelay=154 queues Tasks.Add at offsets i, and each QueueAttack uses travel=9, so the first cannon hit lands at 154+0+9=163f from cast start. firstTickDelay = (163 − spawnsAt 154) / 60 = 0.15s.",
+								"Interval = the modal gap. gcsim's loop alternates 42/42/48f (tick%3==2 → nextTick=48, else 42); two of every three gaps are 42f, so interval = 42/60 = 0.7s. Our schema has one interval per series, so the authored cadence runs ~30f (0.5s) ahead of gcsim by the 17th tick. Tick count matches: (12 − 0.15) / 0.7 → 17 ticks, and the gcsim-frames-diff row observes 17.",
+								"scaling: gcsim zz_navia.dm.go burst[1] (\"Cannon Fire Support DMG\") index 9 = 0.7767 → 77.67%. Sidecar docs/curation/talents/navia.json talents.burst row \"Cannon Fire Support DMG\" L10 = 77.7% (rounded); gcsim's unrounded value preferred.",
+								"stat: ai.Mult is the only scaling on the AttackInfo and there is no snap modification, so it is plain ATK.",
+								"ICD left bare (standard) deliberately: gcsim sets ICDTag=ICDTagElementalBurst with ICDGroup=ICDGroupNaviaBurst, a bespoke group we cannot express, and the measured row's verdict is 'other' (6/17), not 'none'.",
+								"Durability 25 on the tick AttackInfo → 1U, the schema default for a summon tick series."
+							]
+						}
+					]
+				}
+			],
 			"description": "On the orders of the President of the Spina di Rosula, call for a magnificent Rosula Dorata Salute. Unleashes a massive cannon bombardment on opponents in front of her, dealing AoE Geo DMG and providing Cannon Fire Support for a duration afterward, periodically dealing Geo DMG to nearby opponents.\nWhen cannon attacks hit opponents, Navia will gain 1 stack of Crystal Shrapnel. This effect can be triggered up to once every 2.4s.",
 			"_curatorNotes": [
 				"Cannon Fire Support mobility omitted: in gcsim it targets random enemies within 10m of player position (player-proximal, not a fixed world point or literally caster-attached). Reviewer to decide 'stationary' vs 'follows' or omit.",
 				"Cannon Fire Support tick pattern: first tick at burstDelay=154f, then alternates 42/42/48f intervals (tick%3==2 → 48f, else 42f) for the full 720f = 12s window.",
 				"Initial cannon blast (burstHitmark=104f) is the main burst damage instance, separate from the Cannon Fire Support summon.",
-				"Removed generator duration:12 — moved to summons[0].duration per recipe convention."
+				"Removed generator duration:12 — moved to summons[0].duration per recipe convention.",
+				"2026-08-17 (L5e curation): authored the Cannon Fire Support tick series on summons[0].effects. C2 fires ONE extra Cannon Fire Support shot when Ceremonial Crystalshot hits (gcsim cons.go, c2IcdKey, once per E use) — that is an E-triggered shot, not a change to the burst summon's timer, so the C0 cadence is authored unconditionally and the C2 extra shot stays unmodelled."
 			],
 			"application": [{ "frame": 104, "element": "geo", "units": 2 }]
 		}
