@@ -24,12 +24,10 @@
  * ⚠ ONE EXCEPTION, AND IT IS DELIBERATE (2026-08-17): the two LAYER toggles
  * (auras / buffs) are band-B controls like these, but they live in
  * `siteSettings` and DO persist. The line is per-look vs per-taste — see the
- * note on `showAuraLane` there. They are not mirrored into this class: a second
- * copy of a stored value is how the two drift, so band B and the timeline both
- * read the store directly and only `reset()` below reaches across.
+ * note on `showAuraLane` there. They are not mirrored into this class at all: a
+ * second copy of a stored value is how the two drift, so band B and the timeline
+ * both read the store directly and nothing here touches them.
  */
-
-import { siteSettings, TIMELINE_LAYER_DEFAULTS } from '$lib/stores';
 
 export const ZOOM_MIN = 20;
 export const ZOOM_MAX = 120;
@@ -68,22 +66,22 @@ class PlannerViewState {
 	}
 
 	/**
-	 * Back to the resting view. The timeline closes the notes panel itself when
-	 * a rebuild leaves no caveats to show, so this only has to handle the
-	 * user-facing controls.
+	 * Back to the resting ZOOM, and nothing else.
 	 *
-	 * ⚠ THE LAYERS ARE PART OF "THE VIEW" and are restored here too (2026-08-17)
-	 * — the button says "Reset view" rather than "Reset zoom" precisely because
-	 * it means the whole of band B's state, and a reset that left the buff rows
-	 * hidden would make the label a lie in the one situation someone reaches for
-	 * it: the timeline does not look how they expect and they want it back.
-	 * Reaching into another store from here is the cost of not keeping a second
-	 * copy of the flags; it is one call, at the one site that needs it.
+	 * ↻ ⚓ NATE 2026-08-17: THE BUTTON NARROWED. It briefly meant "the whole of
+	 * band B's state" — zoom, the notes panel and the two layer toggles — which
+	 * is a defensible reading of "Reset view" and the wrong control to build. A
+	 * scale is a thing you fiddle with and want back; a panel and a layer are
+	 * things you deliberately opened, and sweeping them away as a side effect of
+	 * fixing your zoom is a control that does more than you asked. One button,
+	 * one job, and the label says which.
+	 *
+	 * ⛔ Do not re-add the panel or the layers here. The timeline still closes
+	 * the notes panel itself when a rebuild leaves nothing to annotate — that is
+	 * content disappearing, not a reset.
 	 */
 	reset() {
 		this.scale = ZOOM_DEFAULT;
-		this.showNotes = false;
-		siteSettings.setTimelineLayers({ ...TIMELINE_LAYER_DEFAULTS });
 	}
 }
 
