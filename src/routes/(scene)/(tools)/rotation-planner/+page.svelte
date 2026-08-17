@@ -7,6 +7,7 @@
 	import Mark from '$lib/components/Mark.svelte';
 	import TeamBonusesBlock from '$lib/components/TeamBonusesBlock.svelte';
 	import RotationNotes from '$lib/components/RotationNotes.svelte';
+	import EventLog from '$lib/components/EventLog.svelte';
 	import { collectSlotCaveats } from '$lib/timeline/slotCaveats';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { getLoadedCharacter, loadCharacter } from '$lib/data/characterData';
@@ -296,10 +297,15 @@
 		pv.hasCaveats = hasNotes;
 		// A rebuild that leaves nothing to annotate closes the panel; the band's
 		// own button is disabled in the same breath by the flag above.
-		if (!hasNotes) pv.showNotes = false;
+		// ⛔ `closeIfShowing`, not `aside = null` — a caveat-free team must not
+		// close the LOG panel as a side effect (2026-08-17).
+		if (!hasNotes) pv.closeIfShowing('notes');
 	});
 
-	let showAside = $derived(pv.showNotes && hasNotes);
+	/** ⚓ ONE COLUMN, TWO POSSIBLE OCCUPANTS — the aside is a slot and this is the
+	 *  single expression that decides what fills it (see ToolColumns' header, and
+	 *  `plannerView.AsidePanel` for why the exclusivity is in the state). */
+	let showAside = $derived((pv.showNotes && hasNotes) || (pv.showLog && pv.hasAuraLog));
 </script>
 
 <section class="rotation-page">
@@ -437,13 +443,34 @@
 					Buffs
 				</button>
 			</div>
+			<!-- ══ THE ASIDE'S TWO PANELS (2026-08-17) ═════════════════════════
+			     ⚓ TWO PEER TOGGLES, NOT A SEGMENTED PICKER. They share the column,
+			     so opening one closes the other — but each is also independently
+			     closeable, and a 3-state segment (Notes | Log | off) has no honest
+			     form. Two buttons that each toggle, with the exclusivity in the
+			     state, says exactly what happens. Same group as the layer plates
+			     above them and the same tight gap: both answer "what is on screen".
+			     ⚠ Each disables on its OWN content, which is why they are not one
+			     control — a rotation can easily have a log and no caveats. -->
+			<button
+				class="btn btn--sm rp-notes-btn"
+				class:is-active={pv.showLog}
+				type="button"
+				aria-label="Toggle the aura log"
+				title="The target's aura, application by application"
+				disabled={!pv.hasAuraLog}
+				onclick={() => pv.togglePanel('log')}
+			>
+				<Mark name="aura" />
+				Log
+			</button>
 			<button
 				class="btn btn--sm rp-notes-btn"
 				class:is-active={pv.showNotes}
 				type="button"
 				aria-label="Toggle notes panel"
 				disabled={!pv.hasCaveats}
-				onclick={() => (pv.showNotes = !pv.showNotes)}
+				onclick={() => pv.togglePanel('notes')}
 			>
 				<Mark name="note" />
 				Notes
@@ -516,7 +543,20 @@
 
 <!-- ── The aside column: the notes ────────────────────────────────────────── -->
 {#snippet asideColumn()}
-	<RotationNotes entries={slotCaveats} showAuraNote={pv.hasAura} />
+	{#if pv.showLog}
+		<!-- ⚓ THE LANE IN WORDS. The same projection the chart draws (see
+		     $lib/timeline/auraLog), so a row and the mark above it cannot disagree
+		     — and it says the one thing the chart cannot fit: WHO applied it.
+		     ⚠ The heading is inside the scroller's box rather than sticky: the
+		     column is one continuous reading and a 22px sticky bar over a
+		     several-hundred-row transcript costs more than it explains. -->
+		<div class="rp-log-panel">
+			<div class="rp-log-head">Target aura</div>
+			<EventLog rows={pv.auraLog} empty="This rotation puts nothing on the target." />
+		</div>
+	{:else}
+		<RotationNotes entries={slotCaveats} showAuraNote={pv.hasAura} />
+	{/if}
 {/snippet}
 
 <style>
@@ -614,5 +654,28 @@
 		display: flex;
 		align-items: center;
 		gap: 0.2rem;
+	}
+
+	/* The log fills the aside box and scrolls inside it — the same arrangement
+	   RotationNotes makes, for the same reason: the box's height is the main
+	   column's, so a long transcript scrolls in place and can never grow the
+	   tool. */
+	.rp-log-panel {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 10px 12px;
+	}
+	/* The kicker voice, matching the notes column's character headings — this is
+	   the same kind of object (a column heading), so it takes the same type. */
+	.rp-log-head {
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-widest);
+		text-transform: uppercase;
+		color: var(--muted);
+		flex-shrink: 0;
 	}
 </style>

@@ -14,6 +14,7 @@
 	import { AURA_MOD_META, AURA_MOD_ORDER, auraUMax } from '$lib/utils/auraDisplay';
 	import { MAX_GAUGE_APPS, MAX_GAUGE_TIME } from './workspace';
 	import Emphasis from '$lib/components/Emphasis.svelte';
+	import EventLog, { type EventLogRow } from '$lib/components/EventLog.svelte';
 	import { createPlayhead } from './playhead.svelte';
 	import { PLAYHEAD_SPEEDS } from './playhead';
 
@@ -587,22 +588,106 @@
 	const consumedText = (list: { mod: AuraKey; amount: number }[]) =>
 		list.map((c) => `−${fmtU(c.amount)} ${MOD_META[c.mod].label}`).join(', ');
 
+	// ══ THE LOG'S VOICE (tightened 2026-08-17, ⚓ NATE: "a bit wordy") ═════════
+	//
+	// ⚓ A LOG LINE SAYS WHAT CHANGED, not what the mechanic is called. Every row
+	// used to restate its own inputs — "Pyro 1U · applies 0.8U aura (×0.8 tax)"
+	// repeats the element, the size AND a rule, when the pip beside it already
+	// carries the size and the scenario note above already explains the tax.
+	// Stripped to the outcome, the column becomes scannable, which is the only
+	// thing a transcript is for.
+	//
+	// ⚠️ THE TEACHING DID NOT MOVE, it was already elsewhere: the ×0.8 tax is
+	// stated in the Single Aura scenario note, the reaction multipliers ride the
+	// reaction NAMES, and the unit is defined at the top of the Applications
+	// panel. ⛔ Don't restore an explanation here that another surface owns —
+	// three copies of one sentence is how they come to disagree.
+	// ⛔ NO `→`. The first cut wrote "Pyro → 0.8U", which reads well and is on the
+	// mark sweep's banned list (e2e/marks.spec.ts): an arrow is a CONTROL glyph
+	// here, not prose, and the sweep caught it. ⚠ The exemption the icon-set note
+	// grants `× · →` covers the help chapters' prose, which that spec skips by
+	// selector — a readout panel is not prose. "aura" carries the same meaning in
+	// a word the body face actually has.
 	function attachText(e: Extract<SimEvent, { kind: 'apply' }>): string {
 		switch (e.attach) {
 			case 'new':
-				return `applies ${fmtU(e.auraAfter)} aura (×0.8 tax)`;
+				return `aura ${fmtU(e.auraAfter)}`;
 			case 'topUp':
-				return `tops the aura up to ${fmtU(e.auraAfter)} — original decay rate kept`;
+				return `aura ${fmtU(e.auraAfter)} · topped up, rate kept`;
 			case 'pyroRefresh':
-				return `refreshes Pyro to ${fmtU(e.auraAfter)} and re-derives its decay rate`;
+				return `aura ${fmtU(e.auraAfter)} · refreshed, new rate`;
 			case 'tooWeak':
-				return 'weaker than the remaining Pyro — no effect on the aura';
+				return '· too weak to attach';
 			case 'none':
 				return e.element === 'anemo' || e.element === 'geo'
-					? 'Anemo/Geo never attach as an aura'
-					: 'trigger fully reacted — nothing attaches';
+					? '· never attaches'
+					: '· fully reacted';
 		}
 	}
+
+	/**
+	 * The transcript, in the shared row grammar (`$lib/components/EventLog`).
+	 *
+	 * ⚓ THE PIP CARRIES THE GAUGE, NOT THE ROW NUMBER (⚓ Nate) — see EventLog's
+	 * header. It makes a log line and its marker on the chart the same object.
+	 */
+	const logRowsOut = $derived.by(() => {
+		const rows: EventLogRow[] = [];
+		for (const row of logRows) {
+			if (row.kind === 'ecRun') {
+				rows.push({
+					time: row.t0,
+					// ⚠ The START only, with the count in the text — the lane reached the
+					// same answer for the same reason (`collapseReactionRuns`): a run's
+					// extent is a chart's job, and a range in a time column is twice the
+					// width of every other row's.
+					// ⚠ "ticks", not a bare "Electro-Charged ×N". The reaction itself
+					// already has its own row where it fired, so an unqualified repeat
+					// reads as the reaction happening N more times rather than as the
+					// drain it actually is. "from both" names what −0.4U comes off.
+					text:
+						row.count === 1
+							? 'Electro-Charged tick · −0.4U from both'
+							: `Electro-Charged ticks ×${row.count} · −0.4U from both`,
+					tone: 'quiet'
+				});
+				continue;
+			}
+			const e = row.event;
+			if (e.kind === 'apply') {
+				rows.push({
+					time: e.time,
+					pip: { text: `${e.gauge}`, color: `var(--el-${e.element}-main)` },
+					text: `${MOD_META[e.element as AuraKey]?.label ?? e.element} ${attachText(e)}`,
+					tone: 'lead'
+				});
+			} else if (e.kind === 'reaction') {
+				const parts: string[] = [REACTION_NAME[e.reaction]];
+				if (e.of && (e.reaction === 'swirl' || e.reaction === 'crystallize'))
+					parts[0] += ` (${MOD_META[e.of].label})`;
+				if (e.consumed.length) parts.push(consumedText(e.consumed));
+				else if (e.reaction === 'aggravate' || e.reaction === 'spread')
+					parts.push('no gauge spent');
+				else if (e.reaction === 'crystallizeBlocked') parts.push('inside the 1s cooldown');
+				if (e.spent > 0) parts.push(`−${fmtU(e.spent)} trigger`);
+				if (e.appIndex === null) parts.push('burning self-tick');
+				rows.push({ text: parts.join(' · '), tone: 'sub' });
+			} else if (e.kind === 'drained') {
+				rows.push({ time: e.time, text: `${MOD_META[e.mod].label} gone`, tone: 'quiet' });
+			} else if (e.kind === 'burningEnd') {
+				const swept = e.swept.length
+					? ` · ${e.swept.map((m) => MOD_META[m].label).join(', ')} swept`
+					: '';
+				rows.push({ time: e.time, text: `Burning ends${swept}`, tone: 'quiet' });
+			} else if (e.kind === 'core') {
+				// ⛔ The 🌱 that used to close this line went with the 🎲 in the crit
+				// sampler: an emoji is drawn by whichever fallback face the engine
+				// picks, in colour, at a weight nothing here chose.
+				rows.push({ time: e.time, text: 'Dendro Core', tone: 'quiet' });
+			}
+		}
+		return rows;
+	});
 
 	// ══ POINTER: THE BAND EDITS, THE PLOT SCRUBS ══════════════════════════════
 	// One spatial rule, and it is the grammar's own: everything ABOVE the plot
@@ -1163,65 +1248,14 @@
 				{/each}
 			{/if}
 
+			<!-- ⚓ THE ROW GRAMMAR IS SHARED WITH THE PLANNER'S SIDE COLUMN
+			     (2026-08-17) — see $lib/components/EventLog. Only the row BUILDING
+			     is local, because only this tool can see `crystallizeBlocked`, a
+			     reverse multiplier or a per-reaction consumption; the IR has
+			     collapsed all three by the time the planner reads it. -->
 			<p class="gx-sub">Event log</p>
 			<div class="gx-log">
-				{#each logRows as row, ri (ri)}
-					{#if row.kind === 'ecRun'}
-						<p class="gx-log-tick">
-							{row.count === 1
-								? `EC tick at ${fmtT(row.t0)}`
-								: `EC ticks ×${row.count} (${fmtT(row.t0)}–${fmtT(row.t1)})`}
-							— −0.4U Hydro &amp; Electro each
-						</p>
-					{:else if row.event.kind === 'apply'}
-						<p class="gx-log-apply">
-							<span class="gx-log-n" style:background="var(--el-{row.event.element}-main)">
-								{row.event.appIndex + 1}
-							</span>
-							<span class="gx-strong">{fmtT(row.event.time)}</span>
-							— {MOD_META[row.event.element as AuraKey]?.label ??
-								row.event.element[0].toUpperCase() + row.event.element.slice(1)}
-							{row.event.gauge}U · {attachText(row.event)}
-						</p>
-					{:else if row.event.kind === 'reaction'}
-						<p class="gx-log-reaction">
-							<span class="gx-strong">{REACTION_NAME[row.event.reaction]}</span>
-							{#if row.event.of && (row.event.reaction === 'swirl' || row.event.reaction === 'crystallize')}
-								({MOD_META[row.event.of].label})
-							{/if}
-							{#if row.event.consumed.length}
-								· {consumedText(row.event.consumed)}
-							{:else if row.event.reaction === 'aggravate' || row.event.reaction === 'spread'}
-								· no gauge consumed
-							{:else if row.event.reaction === 'crystallizeBlocked'}
-								· within the 1s cooldown — nothing happens
-							{/if}
-							{#if row.event.spent > 0}
-								· spends {fmtU(row.event.spent)} of the trigger
-							{/if}
-							{#if row.event.appIndex === null}
-								<span class="gx-dim">(burning self-tick)</span>
-							{/if}
-						</p>
-					{:else if row.event.kind === 'drained'}
-						<p class="gx-log-tick">
-							{fmtT(row.event.time)} — {MOD_META[row.event.mod].label} aura decays out
-						</p>
-					{:else if row.event.kind === 'burningEnd'}
-						<p class="gx-log-tick">
-							{fmtT(row.event.time)} — Burning ends{row.event.swept.length
-								? ` (${row.event.swept.map((m) => MOD_META[m].label).join(', ')} swept)`
-								: ''}
-						</p>
-					{:else if row.event.kind === 'core'}
-						<!-- The 🌱 that used to close this line is gone with the 🎲 in the
-						     crit sampler: an emoji is drawn by whichever fallback face the
-						     engine picks, in colour, at a weight nothing here chose. The
-						     die became a <Mark> because it was a CONTROL's glyph; this one
-						     was decoration on a log line and simply goes. -->
-						<p class="gx-log-tick">{fmtT(row.event.time)} — Dendro Core spawned</p>
-					{/if}
-				{/each}
+				<EventLog rows={logRowsOut} empty="Nothing lands on the target." />
 			</div>
 		</div>
 	</div>
@@ -1492,50 +1526,24 @@
 		color: var(--muted);
 	}
 
+	/* ⛔ `.gx-log-apply` / `-n` / `-reaction` / `-tick` and `.gx-dim` RETIRED
+	   (2026-08-17): the row grammar moved to the shared <EventLog>, so what is
+	   left here is the BOX that holds it — the height cap this panel wants, which
+	   is the one thing the shared component deliberately does not decide (the
+	   planner hands it a whole column instead). */
 	.gx-log {
 		display: grid;
-		gap: 0.35rem;
+		min-height: 0;
 		max-height: 21rem;
-		overflow-y: auto;
+		overflow: hidden;
 		padding-right: 0.3rem;
-	}
-
-	.gx-log p {
-		margin: 0;
-		font-size: var(--fs-lg);
-		line-height: 1.25rem;
-	}
-
-	.gx-log-apply {
-		color: var(--text);
-	}
-
-	.gx-log-n {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 15px;
-		height: 15px;
-		border-radius: 50%;
-		color: var(--bright-ink);
-		font-family: var(--font-body);
-		font-size: var(--fs-sm);
-		font-weight: var(--fw-bold);
-		vertical-align: 1px;
-	}
-
-	.gx-log-reaction {
-		color: var(--muted);
-		padding-left: 1.4rem;
-	}
-
-	.gx-log-tick {
-		color: color-mix(in srgb, var(--muted) 75%, transparent);
-		padding-left: 1.4rem;
-	}
-
-	.gx-dim {
-		color: color-mix(in srgb, var(--muted) 65%, transparent);
+		/* ⚠⚠ THE ANCHOR ON PAPER IS --muted, NOT --text. `.ctx-light` inverts the
+		   ink ladder — measured here, --text is #495366 and --muted #3b4255 — so
+		   handing EventLog its dark-context default would draw every application
+		   FAINTER than the reaction hanging under it. See that component's note;
+		   it takes one ink and derives the rest, precisely so this is a single
+		   declaration rather than three overrides. */
+		--el-ink: var(--muted);
 	}
 	/* ⛔ `.gx-app-line > .slider` RETIRED with the per-application time slider
 	   (2026-08-17) — time is dragged on the chart now, and the only slider left

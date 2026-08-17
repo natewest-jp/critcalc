@@ -14,8 +14,9 @@
  * bench and both tools.
  *
  * Direction of flow, so it stays legible:
- *   scale / showNotes   — WRITTEN by band B, READ by the timeline
- *   hasCaveats / total  — WRITTEN by the timeline, READ by band B
+ *   scale / aside            — WRITTEN by band B, READ by the timeline + page
+ *   hasCaveats / hasAuraLog
+ *     / total / auraLog      — WRITTEN by the timeline, READ by band B + page
  *
  * This is view state, deliberately NOT persisted and NOT part of the document:
  * a zoom level is not something you save or share, and nothing here belongs in
@@ -29,19 +30,55 @@
  * both read the store directly and nothing here touches them.
  */
 
+import type { EventLogRow } from '$lib/components/EventLog.svelte';
+
 export const ZOOM_MIN = 20;
 export const ZOOM_MAX = 120;
 export const ZOOM_STEP = 5;
 /** px per second — the timeline's resting zoom. */
 export const ZOOM_DEFAULT = 60;
 
+/**
+ * What the aside column is showing. ⚓ ONE COLUMN, ONE OCCUPANT (2026-08-17) —
+ * `ToolColumns` has always said the aside takes a single occupant and the tool
+ * decides in one expression; with a second panel wanting the same space, this
+ * IS that expression.
+ *
+ * ⚠ The exclusivity lives here rather than in the two buttons' handlers. Two
+ * booleans that must never both be true is a state a caller can get wrong, and
+ * the caller here is markup in a different file.
+ */
+export type AsidePanel = 'notes' | 'log' | null;
+
 class PlannerViewState {
 	/** px per second. */
 	scale = $state(ZOOM_DEFAULT);
-	showNotes = $state(false);
+	/** ⛔ Not two booleans — see AsidePanel. */
+	aside = $state<AsidePanel>(null);
+
+	get showNotes() {
+		return this.aside === 'notes';
+	}
+	get showLog() {
+		return this.aside === 'log';
+	}
+
+	/** Open a panel, or close it if it is already the one showing. */
+	togglePanel(panel: Exclude<AsidePanel, null>) {
+		this.aside = this.aside === panel ? null : panel;
+	}
+	/** Close a panel because its CONTENT went away — ⚠ only if it is the one
+	 *  showing, or an empty rotation would shut the other one too. */
+	closeIfShowing(panel: Exclude<AsidePanel, null>) {
+		if (this.aside === panel) this.aside = null;
+	}
 
 	/** Published by the timeline for band B's readout + the notes gate. */
 	hasCaveats = $state(false);
+	/** The rotation put something on the target, so there is a transcript to
+	 *  read. ⚠ Independent of the aura LAYER: the log is a second reading of the
+	 *  same events, and wanting the words without the chart is a real want. */
+	hasAuraLog = $state(false);
 	totalDuration = $state(0);
 	/**
 	 * The aura lane is ON SCREEN — the rotation put something on the target AND
@@ -60,6 +97,20 @@ class PlannerViewState {
 	 * there.
 	 */
 	hasAura = $state(false);
+
+	/**
+	 * The aura transcript for the side column, built by the timeline from the
+	 * lane it already draws (see `$lib/timeline/auraLog`).
+	 *
+	 * ⚠ IT CROSSES THROUGH HERE FOR THE SAME REASON `hasCaveats` DOES: the aside
+	 * is rendered by the PAGE and the lane lives in the timeline, which is the
+	 * page's `main` column — so there is no prop path between them that is not a
+	 * bind threaded two levels.
+	 * ⚠ The timeline leaves it EMPTY unless the log panel is open. Projecting a
+	 * few hundred rows on every keystroke for a column nobody has opened is the
+	 * same cost the aura lane is already gated against.
+	 */
+	auraLog = $state<EventLogRow[]>([]);
 
 	zoomBy(delta: number) {
 		this.scale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, this.scale + delta));
