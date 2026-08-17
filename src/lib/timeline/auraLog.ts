@@ -27,7 +27,7 @@
  */
 import type { EventLogRow } from '$lib/components/EventLog.svelte';
 import type { AuraLane } from './auraPlot';
-import { elementPalette } from '$lib/utils/elementColors';
+import { elementPalette, shiftHue } from '$lib/utils/elementColors';
 
 const FPS = 60;
 
@@ -46,6 +46,20 @@ const fmtUnits = (u: number) => `${Number(u.toFixed(2))}`;
  * that can fall out of step with the ids.
  */
 const elementLabel = (element: string) => element[0].toUpperCase() + element.slice(1);
+
+/**
+ * The pip's fill and its halo — ⚓ THE SAME PAIR THE CHART'S BARS USE.
+ *
+ * `bar` is the palette rung derived for "a fill with white written on it", and
+ * the halo is its dark shade at the identical `shiftHue(_, 0, −30)` the timeline
+ * computes per character block. ⛔ Not `main` with dark ink: that is the
+ * bright-chip idiom this chart retired in 2026-08-11 (⚓ Nate, again on
+ * 2026-08-17 for the pips).
+ */
+function pipPaint(element: string) {
+	const pal = elementPalette(element);
+	return { color: pal.bar, halo: shiftHue(pal.bar, 0, -30, 1) };
+}
 
 /**
  * Merge the lane's three streams into one time-ordered transcript.
@@ -88,7 +102,7 @@ export function buildAuraLog(
 				time: seconds,
 				pip: {
 					text: fmtUnits(tick.units),
-					color: elementPalette(tick.element).main,
+					...pipPaint(tick.element),
 					provisional: tick.provisional
 				},
 				text: `${nameOf(tick.characterId)} · ${element}`,

@@ -286,12 +286,13 @@
 	 *  exist before the column is on screen to say so. */
 	let slotCaveats = $derived(collectSlotCaveats(slots.map((id) => getLoadedCharacter(id))));
 
-	/** ↻ Gauge round L6: the panel has TWO reasons to have content now — the
-	 *  slotted kits' caveats, and the standing "how the aura is modelled" block
-	 *  that goes with the target-aura lane. Gating on caveats alone would have
-	 *  hidden the modelling limits from exactly the rotations most likely to
-	 *  want them: a fully-curated team has no caveats and still gets a gauge. */
-	let hasNotes = $derived(slotCaveats.length > 0 || pv.hasAura);
+	/** ↻ BACK TO CAVEATS ALONE (2026-08-17). Gauge round L6 had added `|| hasAura`
+	 *  so the standing "how the aura is modelled" block could reach a
+	 *  fully-curated team with no caveats — that block lives at the head of the
+	 *  aura LOG now, so this reason left with it, and keeping the second gate
+	 *  would open an EMPTY notes panel. `plannerView.hasAura` retired in the same
+	 *  breath: it existed for this expression and had no other reader. */
+	let hasNotes = $derived(slotCaveats.length > 0);
 
 	$effect(() => {
 		pv.hasCaveats = hasNotes;
@@ -306,6 +307,14 @@
 	 *  single expression that decides what fills it (see ToolColumns' header, and
 	 *  `plannerView.AsidePanel` for why the exclusivity is in the state). */
 	let showAside = $derived((pv.showNotes && hasNotes) || (pv.showLog && pv.hasAuraLog));
+
+	/** The aura's standing modelling limits — see the `auraLimits` snippet below
+	 *  for the sourcing rule that governs every line. */
+	const AURA_NOTES = [
+		'One enemy, and it never applies an element back at you — so no Pyro from a Blazing Axe Mage, and no auras you did not put there.',
+		'Hits land on their listed timing. A swing that hits several times counts as one application, and Shatter is not modelled.',
+		'A pip with a yellow ring means we are using a default gauge strength of 1U for that hit rather than a measured one.'
+	];
 </script>
 
 <section class="rotation-page">
@@ -414,20 +423,16 @@
 			     happens to produce an aura changes on every keystroke, so a
 			     control gated on it would grey in and out while you type. These
 			     state a standing preference — draw this layer when there is one —
-			     which is answerable at all times, including on an empty tab. -->
+			     which is answerable at all times, including on an empty tab.
+
+			     ↻ ⚓ NATE 2026-08-17, LATER THE SAME DAY: (Buffs)(Auras), reversing
+			     the (Auras)(Buffs) he asked for that morning. The order is not
+			     arbitrary now that the aura LOG sits immediately to the right — put
+			     Auras last and the two aura controls are adjacent, so the run reads
+			     buffs · auras · the aura's transcript rather than interleaving two
+			     subjects. ⚠ The pair is still ONE group at the tighter gap; only
+			     their order moved. -->
 			<div class="rp-layers" role="group" aria-label="Timeline layers">
-				<button
-					class="btn btn--sm"
-					class:is-active={$siteSettings.showAuraLane}
-					type="button"
-					aria-pressed={$siteSettings.showAuraLane}
-					title="Draw the target's elemental gauge, with applications and reactions"
-					onclick={() =>
-						siteSettings.setTimelineLayers({ showAuraLane: !$siteSettings.showAuraLane })}
-				>
-					<Mark name="aura" />
-					Auras
-				</button>
 				<button
 					class="btn btn--sm"
 					class:is-active={$siteSettings.showTimelineBuffs}
@@ -441,6 +446,18 @@
 				>
 					<Mark name="buff" />
 					Buffs
+				</button>
+				<button
+					class="btn btn--sm"
+					class:is-active={$siteSettings.showAuraLane}
+					type="button"
+					aria-pressed={$siteSettings.showAuraLane}
+					title="Draw the target's elemental gauge, with applications and reactions"
+					onclick={() =>
+						siteSettings.setTimelineLayers({ showAuraLane: !$siteSettings.showAuraLane })}
+				>
+					<Mark name="aura" />
+					Auras
 				</button>
 			</div>
 			<!-- ══ THE ASIDE'S TWO PANELS (2026-08-17) ═════════════════════════
@@ -461,7 +478,7 @@
 				disabled={!pv.hasAuraLog}
 				onclick={() => pv.togglePanel('log')}
 			>
-				<Mark name="aura" />
+				<Mark name="log" />
 				Log
 			</button>
 			<button
@@ -552,11 +569,45 @@
 		     several-hundred-row transcript costs more than it explains. -->
 		<div class="rp-log-panel">
 			<div class="rp-log-head">Target aura</div>
-			<EventLog rows={pv.auraLog} empty="This rotation puts nothing on the target." />
+			<EventLog
+				rows={pv.auraLog}
+				empty="This rotation puts nothing on the target."
+				lead={auraLimits}
+			/>
 		</div>
 	{:else}
-		<RotationNotes entries={slotCaveats} showAuraNote={pv.hasAura} />
+		<RotationNotes entries={slotCaveats} />
 	{/if}
+{/snippet}
+
+<!-- ══ HOW THE AURA IS MODELLED (gauge round L6; moved here 2026-08-17) ══════
+     ⚓ THE LIMITS BELONG BESIDE THE PICTURE, and the picture turned out to be
+     this column rather than the Notes panel it opened in: the log IS the aura's
+     data, so the caveat sits on top of the thing it qualifies instead of beside
+     a panel about somebody's kit. ⚓ Nate put it here the moment the column
+     existed.
+
+     ⚠️⚠️ RE-DERIVED FROM THE CODE, NOT COPIED. The round's own plan (§5, written
+     at L3) listed "no hyperbloom/burgeon core modelling" — which stopped being
+     true at L5b, when dendro cores landed in `gauge.ts` with a real spawn delay
+     and lifetime. A stale honesty note is worse than none: it under-claims in
+     public while the code has moved on, and a reader who checks once and finds
+     it wrong stops believing the rest of it.
+
+     ⛔ Do not add a line here without a source in the code. Each of these is one:
+       one enemy          — `gauge.ts` carries a single `ModState`
+       nothing back       — no path applies an aura the enemy owns
+       no Shatter         — `sim/reactionBridge.ts` leaves it unemitted
+       nominal schedule   — `application[]`'s contract C4 (types/ability.ts)
+       one hit per swing  — the hit stream's documented approximation
+       1U default         — `DEFAULT_UNITS` in `sim/aura.ts`, and what the
+                            ring-footed pips mark -->
+{#snippet auraLimits()}
+	<div class="rp-log-limits">
+		{#each AURA_NOTES as note (note)}
+			<p>{note}</p>
+		{/each}
+	</div>
 {/snippet}
 
 <style>
@@ -677,5 +728,24 @@
 		text-transform: uppercase;
 		color: var(--muted);
 		flex-shrink: 0;
+	}
+
+	/* The standing limits, at the head of the transcript and INSIDE its scroller
+	   — three paragraphs pinned over a several-hundred-row list would spend a
+	   third of the column permanently on something you read once. The rule under
+	   them is what separates a caveat about the model from the data itself. */
+	.rp-log-limits {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		padding-bottom: 10px;
+		margin-bottom: 4px;
+		border-bottom: 1px solid var(--frame-line);
+	}
+	.rp-log-limits p {
+		margin: 0;
+		font-size: var(--fs-sm);
+		line-height: var(--lh-normal);
+		color: color-mix(in srgb, var(--text) 75%, transparent);
 	}
 </style>
