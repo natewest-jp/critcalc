@@ -20,7 +20,7 @@
 	import { rotationTabs as rt, TAB_LIMIT } from '$lib/rotationTabs.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { documentBar as db } from '$lib/documentBar.svelte';
-	import { siteSettings, TIMELINE_LAYER_DEFAULTS } from '$lib/stores';
+	import { siteSettings } from '$lib/stores';
 	import {
 		plannerView as pv,
 		ZOOM_DEFAULT,
@@ -273,17 +273,6 @@
 	});
 
 	let showAside = $derived(pv.showNotes && hasNotes);
-
-	/** 🐛 THE LAYERS ARE PART OF "THE VIEW", so they are part of whether there is
-	 *  a view to reset. Without this the Reset button stays DISABLED while the
-	 *  zoom sits at its default — which is exactly the state someone is in when
-	 *  they have only toggled a layer — and the click that would put the chart
-	 *  back does nothing. Caught in the browser, not by a gate: every unit is
-	 *  green either way, because the bug is a disabled attribute. */
-	let layersAtRest = $derived(
-		$siteSettings.showAuraLane === TIMELINE_LAYER_DEFAULTS.showAuraLane &&
-			$siteSettings.showTimelineBuffs === TIMELINE_LAYER_DEFAULTS.showTimelineBuffs
-	);
 </script>
 
 <section class="rotation-page">
@@ -332,22 +321,26 @@
 		{/snippet}
 
 		{#snippet bandBRight()}
-			<!-- Back to the resting view: the zoom, the notes panel AND the layers
-			     — the whole of band B's state — hence "Reset view" rather than
-			     "Reset zoom", which would under-describe what it does. It sits
-			     left of the zoom group because that is the control it most often
-			     undoes. Inert when there is nothing to undo, like the zoom
-			     buttons at their limits. -->
+			<!-- ↻ ⚓ NATE 2026-08-17: THE ZOOM, AND NOTHING ELSE. This briefly meant
+			     the whole of band B's state — zoom, the notes panel and the two
+			     layers — which is a fair reading of "Reset view" and the wrong
+			     control: a scale is something you fiddle with and want back, while
+			     a panel and a layer are things you deliberately opened, and
+			     sweeping them away as a side effect of fixing your zoom does more
+			     than you asked. One button, one job, and the label says which.
+			     It sits left of the zoom group because that is what it undoes.
+			     Inert at the resting scale, like the zoom buttons at their
+			     limits. -->
 			<button
 				class="btn btn--sm rp-reset"
 				type="button"
-				aria-label="Reset the view to its resting state"
-				title="Back to the resting zoom and layers, and close the notes panel"
-				disabled={pv.scale === ZOOM_DEFAULT && !pv.showNotes && layersAtRest}
+				aria-label="Reset the zoom to its resting level"
+				title="Back to the resting zoom"
+				disabled={pv.scale === ZOOM_DEFAULT}
 				onclick={() => pv.reset()}
 			>
-				<Mark name="reset" />
-				Reset view
+				<Mark name="resetZoom" />
+				Reset zoom
 			</button>
 			<div class="rp-zoom" role="group" aria-label="Zoom">
 				<button

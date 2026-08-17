@@ -67,6 +67,14 @@ const MARKS = {
 	share: 'Share',
 	more: 'Ellipsis',
 	reset: 'RotateCcw',
+	/** The planner's zoom reset, against `reset` (RotateCcw) on a Visualizers
+	 *  tile: two "reset" controls at different scopes, so the MARK carries the
+	 *  scope — the same split `layout` already makes.
+	 *  ⚓ NATE 2026-08-17, and the mark followed a narrowing of the BUTTON: it
+	 *  used to reset "the view" (zoom + the notes panel + the layers) and now
+	 *  resets the zoom alone, so a general revert glyph over-promised. ListRestart
+	 *  reads as "put this scale back", not "undo what I did". */
+	resetZoom: 'ListRestart',
 	/** The notation composer's history pair (single truth, 2026-08-13). Every
 	 *  team edit is a text rewrite now, so undo is a first-class control on the
 	 *  box rather than a keystroke people have to know about.
@@ -112,7 +120,13 @@ const MARKS = {
 	 * than no mark.
 	 */
 	aura: 'Activity',
-	buff: 'Sparkles',
+	/** ↻ Sparkles → ChevronsUp (⚓ NATE 2026-08-17). Sparkles was the generic
+	 *  software glyph for "effects"; Genshin's own vocabulary for a buffed
+	 *  character is a pair of RISING CHEVRONS around them, so the double chevron
+	 *  is the picture a player of this game already reads as "buffed". It also
+	 *  survives 14px better — three stars at two sizes silt where two strokes do
+	 *  not. */
+	buff: 'ChevronsUp',
 	plus: 'Plus',
 	minus: 'Minus',
 	close: 'X',
