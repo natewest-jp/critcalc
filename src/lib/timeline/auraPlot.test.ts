@@ -175,11 +175,21 @@ describe('computeAuraLane', () => {
 });
 
 describe('auraUMax', () => {
-	// Floored so a rotation of 0.8U auras does not draw them full-height and
-	// imply a saturated target.
-	it('floors at 2U however small the peak', () => {
-		expect(auraUMax([interval('pyro', [[0, 0.8]])])).toBe(2);
-		expect(auraUMax([])).toBe(2);
+	// ↻ 2U → 1U (2026-08-17). The floor exists so a chart never loses its scale,
+	// not to reserve headroom: 1U is the size of nearly every application in the
+	// game (corpus 1U ×327, 2U ×58, 4U ×2), and a floor above it left the normal
+	// rotation drawing in the bottom 40% of its box. The ambiguity the higher
+	// floor defended against — "is this aura saturated?" — is answered by the
+	// NAMED datum both charts now draw.
+	it('floors at 1U however small the peak', () => {
+		expect(auraUMax([interval('pyro', [[0, 0.8]])])).toBe(1);
+		expect(auraUMax([])).toBe(1);
+	});
+
+	// ⚠ Still a floor, not fit-to-content: a 0.4U peak does not get a 0.5U
+	// ceiling, or two rotations' charts would stop being comparable.
+	it('does not drop below a whole unit', () => {
+		expect(auraUMax([interval('pyro', [[0, 0.4]])])).toBe(1);
 	});
 
 	it('rounds a larger peak UP to the next half unit', () => {
@@ -346,17 +356,18 @@ describe('auraSpanLabels', () => {
 });
 
 describe('auraUnitLines', () => {
-	// One faint datum at 1U is what makes a 2U ceiling inferable without hovering.
-	it('rules every whole unit strictly below the ceiling', () => {
-		expect(auraUnitLines(2)).toEqual([1]);
+	it('rules every whole unit up to and including the ceiling', () => {
+		expect(auraUnitLines(2)).toEqual([1, 2]);
 		expect(auraUnitLines(3.5)).toEqual([1, 2, 3]);
 	});
 
-	// ⛔ Never a line ON the ceiling: the plot's own top edge is that line, and a
-	// second one drawn over it reads as a value the aura failed to reach.
-	it('never rules the ceiling itself', () => {
-		expect(auraUnitLines(1)).toEqual([]);
-		expect(auraUnitLines(3)).toEqual([1, 2]);
+	// 🐛 THE REGRESSION THIS GUARDS. It used to stop STRICTLY below the ceiling,
+	// which was invisible while the floor was 2U (there was always a 1U rule
+	// inside the box). At the 1U floor that rule IS the ceiling, so a
+	// strictly-below ladder returned nothing — and the shallow rotations the
+	// lower floor exists to serve would have lost their only scale.
+	it('still names the datum at the 1U floor', () => {
+		expect(auraUnitLines(1)).toEqual([1]);
 	});
 });
 

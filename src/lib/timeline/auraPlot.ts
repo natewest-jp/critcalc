@@ -442,19 +442,26 @@ export function auraSpanLabels(
 }
 
 /**
- * The whole-unit gridlines strictly below the ceiling — 1U on a 2U plot.
+ * The whole-unit gridlines, up to AND INCLUDING the ceiling when it is a whole
+ * unit — [1] on a 1U plot, [1, 2] on a 2U one.
  *
  * ⚓ THE ONE PIECE OF CHART FURNITURE THIS LANE GETS, and it is here because the
  * plot's y axis is otherwise UNREADABLE without hovering: a shape that fills 40%
- * of its box says nothing until you know what the box is worth. One faint datum
- * makes the ceiling inferable at a glance and turns the headroom above a shallow
- * aura from empty space into a statement. ⛔ Not a full axis — no ticks, no
- * numbers on screen; the timeline sheds furniture on purpose and one line is the
- * whole budget.
+ * of its box says nothing until you know what the box is worth. One faint datum,
+ * NAMED (2026-08-17), makes the scale readable at a glance. ⛔ Not a full axis —
+ * no half-unit ticks; the timeline sheds furniture on purpose.
+ *
+ * ↻ IT USED TO STOP STRICTLY BELOW THE CEILING, which was fine only while the
+ * floor was 2U and there was always a 1U rule inside the box. With the floor at
+ * 1U (`AURA_UMAX_FLOOR`) that rule became the ceiling itself, and a strictly-
+ * below ladder returned NOTHING — the shallow rotations the lower floor exists
+ * to serve would have lost their only scale. ⚠️ The topmost rule therefore sits
+ * on the plot's very top edge; its label hangs BELOW the line rather than above
+ * it, or it would be clipped out of the box.
  */
 export function auraUnitLines(uMax: number): number[] {
 	const out: number[] = [];
-	for (let u = 1; u < uMax; u++) out.push(u);
+	for (let u = 1; u <= uMax; u++) out.push(u);
 	return out;
 }
 

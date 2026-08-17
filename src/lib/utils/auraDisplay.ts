@@ -218,28 +218,45 @@ export const REACTION_FAMILY: Record<Reaction, string> = {
 
 /**
  * The y ceiling a gauge chart draws to, in units: the peak rounded UP to a half
- * unit, and FLOORED AT 2.
- *
- * ⚓ Floored so a rotation that only ever lands 0.8U auras does not draw them
- * full-height and imply a saturated target. The floor is what makes the plot's
- * height mean something ABSOLUTE rather than relative to the best moment. 2U is
- * a taxed 2.5U application, comfortably above the 1U default everything
- * unmeasured lands at.
+ * unit, and floored at {@link AURA_UMAX_FLOOR}.
  *
  * ⚓ ONE CEILING, TWO CHARTS (2026-08-17). The Gauge Explorer and the planner's
- * aura lane each had their own copy of `Math.max(2, Math.ceil(peak * 2) / 2)` —
- * byte-identical, and nothing kept them that way. ⚠️ That duplication had
- * already caused real confusion: the two charts LOOK like they scale
- * differently (the Explorer labels its unit axis and the lane did not), so the
- * lane was reported as the one with a fixed ceiling. Same law as `icd.ts` and
- * `gauge.ts` — one model, several shapes.
- *
- * ⛔ Don't lower the floor to make a shallow rotation fill the plot. That
- * emptiness IS the finding, and a 0.8U aura drawn at full height says
- * "saturated" — the exact reading the floor exists to prevent. If the ceiling
- * reads as arbitrary, LABEL the datum (both charts now do); do not move it.
+ * aura lane each had their own copy of this arithmetic — byte-identical, with
+ * nothing keeping them that way. ⚠️ That duplication had already caused a real
+ * misreading: the two charts LOOK like they scale differently (the Explorer
+ * labelled its unit axis and the lane did not), so the lane was reported as the
+ * one with a fixed ceiling. Same law as `icd.ts` and `gauge.ts` — one model,
+ * several shapes.
  */
 export function auraUMax(series: SeriesInterval[]): number {
 	const peak = series.reduce((m, s) => s.points.reduce((n, p) => Math.max(n, p.u), m), 0);
-	return Math.max(2, Math.ceil(peak * 2) / 2);
+	return Math.max(AURA_UMAX_FLOOR, Math.ceil(peak * 2) / 2);
 }
+
+/**
+ * 🎛️ The shortest ceiling either gauge chart will draw to.
+ *
+ * ↻ 2U → 1U (⚓ NATE 2026-08-17), and the reasoning genuinely changed rather
+ * than being overruled. The 2U floor existed so a rotation that only ever lands
+ * 0.8U auras could not draw them full-height and imply a saturated target — the
+ * plot's height had to mean something ABSOLUTE, not "relative to the best
+ * moment". Two things retired that argument:
+ *
+ *   1. **The datum is named now.** Both charts label their whole-unit rules, so
+ *      a 0.8U aura reads as "just under the 1U line" rather than as "a tall
+ *      bar". The ambiguity the floor was defending against is answered by the
+ *      label, and answered better — a label states the scale, a floor only
+ *      hints at it by leaving room.
+ *   2. **1U IS the common case, measured.** The corpus is 1U ×327, 2U ×58,
+ *      4U ×2. A floor set above the size of nearly every application in the
+ *      game meant the normal rotation always drew in the bottom 40% of its box
+ *      and the empty top half said nothing.
+ *
+ * ⚠️ It is still a FLOOR, not "fit to content": the ceiling never drops below a
+ * whole unit, so charts of different rotations remain comparable at the bottom
+ * of the range, and a half-unit aura still reads as half of something.
+ *
+ * ⛔ Don't take it lower. Below 1U the y axis has no whole-unit rule to name
+ * (see `auraUnitLines`) and the plot becomes a shape with no scale at all.
+ */
+export const AURA_UMAX_FLOOR = 1;
