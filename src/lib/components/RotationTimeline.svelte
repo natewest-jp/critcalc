@@ -156,6 +156,17 @@
 	 *  back as --rp-frame-pad-x and the dock's inset is measured against it. */
 	const FRAME_PAD_X = 14;
 	const RULER_H = 28;
+	/**
+	 * THE HEADER — everything above the first track row, measured from the
+	 * surface's top. The ruler alone today; the aura lane joins it next.
+	 *
+	 * ⚓ ONE NUMBER, published to the bench (see the `claimMetrics` call below)
+	 * AND used by the PNG export's origin, so the strip's cards and the canvas
+	 * can never disagree with the screen about where the tracks begin. That
+	 * agreement used to rest on `RIBBON_FRAME_TOP_INSET` being hand-copied from
+	 * RULER_H, which was fine only while the header held exactly one thing.
+	 */
+	let headerH = $derived(RULER_H);
 	// ══ 🎛️ THE VERTICAL BUDGET (⚓ NATE 2026-08-11, rounds one and two) ═════════
 	// The chart sat too low once bands A and B took their shape above it, and on
 	// a 16:10 screen the fourth slot was near the fold. It began at 158px:
@@ -801,7 +812,12 @@
 	$effect(() => {
 		publishBenchMetrics(
 			characterSlots.map(() => slotBlockH),
-			characterSlots.map((id, i) => id === 'blank' && tracksBySlot[i].length > 0)
+			characterSlots.map((id, i) => id === 'blank' && tracksBySlot[i].length > 0),
+			// ⚠ The third value is the HEADER's height — how far the first track
+			// row sits below the surface's top — and it is published rather than
+			// mirrored on the bench side because it is no longer a constant. See
+			// `benchBand.trackTop`.
+			headerH
 		);
 	});
 	onDestroy(() => publishBenchMetrics(null));

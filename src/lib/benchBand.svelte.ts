@@ -331,7 +331,13 @@ export const RIBBON_OVERHANG_Y = 0;
  * RotationTimeline), so this is RULER_H alone and the whole chart, cards
  * included, rises 11px. That is the cheapest height this round recovers: it
  * costs nothing and removes two numbers from the sum.
- * ⚠ Still hand-mirrored from RULER_H. If the ruler's height moves, this moves.
+ *
+ * ↻ 2026-08-17: it is the RESTING value now, not the only one. The timeline
+ * PUBLISHES its live distance through `benchBand.trackTop`, because that
+ * distance stopped being a constant the moment a second band could sit above
+ * the ruler. This constant is what the ribbon uses before any timeline has been
+ * mounted — and it is still hand-mirrored from RULER_H, so ⚠ if the ruler's
+ * height moves, this moves.
  */
 export const RIBBON_FRAME_TOP_INSET = 28;
 
@@ -348,9 +354,18 @@ export const RIBBON_FRAME_TOP_INSET = 28;
  * has not moved relative to the timeline's track rows; there is simply more
  * ribbon above it. ⚓ NATE: that new emptiness is where the decorative motif
  * goes.
+ *
+ * ↻ 2026-08-17: A FUNCTION OF THE PUBLISHED TRACK TOP, not a constant. Called
+ * with `benchBand.trackTop`, which the planner's timeline publishes and both
+ * tools read — see that field for why the Team Builder must read the SAME
+ * number rather than keep its own.
  */
-export const RIBBON_HEAD =
-	BAND_STACK_TO_SURFACE + RIBBON_FRAME_TOP_INSET + RIBBON_OVERHANG_Y - RIBBON_CHROME;
+export function ribbonHead(trackTop: number): number {
+	return BAND_STACK_TO_SURFACE + trackTop + RIBBON_OVERHANG_Y - RIBBON_CHROME;
+}
+
+/** The head at rest — no timeline mounted, so no published track top. */
+export const RIBBON_HEAD = ribbonHead(RIBBON_FRAME_TOP_INSET);
 
 /** Resting ribbon interior above/below the card column — retained as the
  *  content-height reference for a bench with four baseline slots. Since the
@@ -559,6 +574,31 @@ class BenchBandState {
 	 *  destroy with the heights, and read only in planner mode. */
 	blankUsed = $state<boolean[]>([false, false, false, false]);
 
+	/**
+	 * How far the planner's FIRST TRACK ROW sits below its surface's top (px) —
+	 * the ruler, plus whatever else the timeline has put in its header.
+	 *
+	 * ⚓ IT IS PUBLISHED RATHER THAN MIRRORED because it stopped being a constant
+	 * (2026-08-17): the aura lane can ride above the time axis, and when it does
+	 * every track row moves down by its height. A hand-copied RULER_H would have
+	 * gone quietly wrong the first time that happened, which is exactly how
+	 * `RIBBON_FRAME_TOP_INSET`'s own note says the number behaves.
+	 *
+	 * ⚠⚠ ONE NUMBER FOR BOTH TOOLS, and this is the load-bearing part. The Team
+	 * Builder has no ruler and no header, but its cards must land on the SAME
+	 * screen y as the planner's or the four cards you are looking at slide on
+	 * every RP↔TB crossing — and the ribbon's whole job across that seam is to be
+	 * the thing that does not change (⚓ Nate, the tail round). So the TB reads
+	 * this too and simply carries the taller head as empty ribbon: the cost of a
+	 * planner-side layer lands as dead space in the region the decorative motif
+	 * was earmarked for, and never as movement.
+	 *
+	 * ⚠ RETAINED ON UNMOUNT like `slotHeights`, and for the same reason: it is a
+	 * property of how the plan is being READ, not of the component that happened
+	 * to measure it.
+	 */
+	trackTop = $state<number>(RIBBON_FRAME_TOP_INSET);
+
 	/** Register a tool page's bench affordances. Returns an unregister that
 	 *  clears only its own tool's entry, and only while that entry is still
 	 *  this registration — a re-mounted page must not be unregistered by its
@@ -577,14 +617,17 @@ class BenchBandState {
 	 *  Callers still publish null on destroy; it is now a no-op, kept as the
 	 *  signal it always was rather than removed from every call site. See
 	 *  `slotHeights` for why the last real measurement outlives its timeline. */
-	claimMetrics(): (heights: number[] | null, blankUsed?: boolean[]) => void {
+	claimMetrics(): (heights: number[] | null, blankUsed?: boolean[], trackTop?: number) => void {
 		const token = {};
 		this.#metricsOwner = token;
-		return (heights, blankUsed) => {
+		return (heights, blankUsed, trackTop) => {
 			if (this.#metricsOwner !== token) return;
 			if (!heights) return;
 			this.slotHeights = heights;
 			this.blankUsed = blankUsed ?? [false, false, false, false];
+			// ⚠ Only when supplied — the `null` destroy signal carries nothing, and
+			// an `undefined` here must not reset the head to its resting value.
+			if (trackTop !== undefined) this.trackTop = trackTop;
 		};
 	}
 
