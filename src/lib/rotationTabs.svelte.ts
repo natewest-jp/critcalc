@@ -271,6 +271,45 @@ class RotationTabsState {
 		this.loadWorkingState(newTab);
 	}
 
+	/**
+	 * Take an INCOMING document (a shared `?r=` link, a `?team=` hand-off) into a
+	 * tab, without ever destroying work. Returns false when there is nowhere for
+	 * it to go — the caller then parks it somewhere non-destructive.
+	 *
+	 * ⚓ ONE RULE, in one sentence: **an incoming document fills an EMPTY tab if
+	 * there is one, else opens a new tab, else does not land.**
+	 *
+	 * 🐛 WHAT THIS REPLACED, because it was silently destructive (2026-08-17).
+	 * Both callers used to reuse the ACTIVE tab when `tabs.length >= TAB_LIMIT` —
+	 * overwriting its notation, label, loadout and constellations, and telling
+	 * you afterwards with a 2.2s toast. At six tabs, clicking a friend's link
+	 * replaced whatever you were looking at, and if that tab was unsaved the work
+	 * was gone: there is no tab-level undo, and the composer's ⌘Z does not reach
+	 * a label or a loadout. ⚠️ It also picked the worst possible victim — the
+	 * ACTIVE tab is by definition the one you are working in.
+	 *
+	 * ⚠️ The empty-tab search is deliberately not limited to the at-limit case.
+	 * "Fill the empty tab I already have" is what a reader expects at any count,
+	 * and one rule that always holds is worth more than a cheaper rule with an
+	 * exception in it. An empty tab is a slot waiting for content.
+	 *
+	 * ⚠️ EMPTY means no notation AND no `savedId`. A tab linked to a bank entry
+	 * is not spare even when blank — the link is a thing the user made.
+	 */
+	adopt(partial: Omit<RotationTab, 'id'>): boolean {
+		const spare = this.tabs.find((t) => !t.notation.trim() && !t.savedId);
+		if (spare) {
+			this.flush();
+			this.tabs = this.tabs.map((t) => (t.id === spare.id ? { ...partial, id: t.id } : t));
+			this.activeTabId = spare.id;
+			this.loadWorkingState({ ...partial, id: spare.id });
+			return true;
+		}
+		if (this.tabs.length >= TAB_LIMIT) return false;
+		this.openTab(partial);
+		return true;
+	}
+
 	closeTab(id: string): void {
 		if (this.tabs.length <= 1) return;
 		this.flush();
@@ -419,29 +458,18 @@ class RotationTabsState {
 	// Team import (deep links: ?team= on either tool)
 	// -------------------------------------------------------------------------
 
-	/** Import a team by ids: reuse a pristine first tab (or the active tab at
-	 *  the limit), else open a new tab. Returns whether a tab was replaced.
-	 *  The team arrives as the notation it now IS — a run of bare-name segments,
-	 *  ready to have actions typed after each. */
-	importTeam(ids: string[], label = 'Imported team'): { replacedTab: boolean } {
+	/**
+	 * Import a team by ids. The team arrives as the notation it now IS — a run of
+	 * bare-name segments, ready to have actions typed after each.
+	 *
+	 * ↻ 2026-08-17: goes through {@link adopt}, so it fills an empty tab or opens
+	 * a new one and ⛔ never overwrites a tab with work in it. Returns false when
+	 * every tab is occupied; the caller says so. It used to replace the ACTIVE
+	 * tab at the limit — see `adopt` for why that was the wrong victim.
+	 */
+	importTeam(ids: string[], label = 'Imported team'): boolean {
 		const notation = foldTeamIntoNotation('', ids.slice(0, TEAM_SIZE));
-		const active = this.activeTab;
-		const pristine = this.tabs.length === 1 && !active.notation.trim() && !active.savedId;
-		const atLimit = this.tabs.length >= TAB_LIMIT;
-		if (pristine || atLimit) {
-			this.tabs = this.tabs.map((t) =>
-				t.id === this.activeTabId ? { ...t, label, savedId: undefined } : t
-			);
-		} else {
-			this.flush();
-			const newTab: RotationTab = { id: genId(), label, notation };
-			this.tabs = [...this.tabs, newTab];
-			this.activeTabId = newTab.id;
-		}
-		this.notation = notation;
-		this.tabLoadout = {};
-		this.tabCon = {};
-		return { replacedTab: atLimit && !pristine };
+		return this.adopt({ label, notation });
 	}
 }
 
