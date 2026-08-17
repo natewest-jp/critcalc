@@ -1197,7 +1197,7 @@ function lintSummonEffects(
 	for (const s of a.summons ?? []) {
 		for (const eff of s.effects ?? []) {
 			const location = `${a.id} summon "${s.label}"`;
-			lintEffect(c, location, eff, push, { isPassiveOrConstellation: false });
+			lintEffect(c, location, eff, push, { isPassiveOrConstellation: false, isSummon: true });
 
 			// (D.27) summonTick interval positive
 			if (eff.trigger.type === 'summonTick') {
@@ -1413,7 +1413,7 @@ function lintEffect(
 	location: string,
 	eff: Effect,
 	push: (sev: Severity, check: string, message: string, abilityId?: string) => void,
-	ctx: { isPassiveOrConstellation: boolean }
+	ctx: { isPassiveOrConstellation: boolean; isSummon?: boolean }
 ): void {
 	// (B.8) effects on passive/constellation with onCast/afterDuration must set trigger.ability
 	if (ctx.isPassiveOrConstellation) {
@@ -1542,15 +1542,92 @@ function lintEffect(
 				push('strict', 'invalid-reaction', `unknown reaction "${rx}"`, location);
 			}
 		}
-		const src = (eff.trigger as { source?: string }).source;
-		if (src !== undefined && src !== 'self' && src !== 'team') {
+		const src = eff.trigger.source;
+		if (src !== undefined && src !== 'self' && src !== 'team' && src !== 'active') {
 			push(
 				'strict',
 				'invalid-reaction-source',
-				`onReaction trigger source must be 'self' or 'team' (got ${JSON.stringify(src)})`,
+				`onReaction trigger source must be 'self', 'team' or 'active' (got ${JSON.stringify(src)})`,
 				location
 			);
 		}
+
+		// (B.12b) armedFor — the MARK's lifetime in seconds, so a positive number.
+		const armedFor = eff.trigger.armedFor;
+		if (armedFor !== undefined && !isPositiveNumber(armedFor)) {
+			push(
+				'strict',
+				'armed-for-invalid',
+				`onReaction trigger armedFor must be a positive number of seconds (got ${JSON.stringify(armedFor)})`,
+				location
+			);
+		}
+
+		// (B.12c) ⚓ A REACTION PROC MUST HAVE A WINDOW. A `damage` effect carrying
+		// an `application[]` is the fourth source that feeds the gauge
+		// (`sim/reactionProcs.ts`); armed by a cast it needs `armedFor`, and armed
+		// by a summon it needs none — the summon's own liveness is the window.
+		// ⛔ Without one it would listen for the rest of the rotation, which is
+		// never what a kit says, so the sim refuses to arm it and this reports why.
+		if (eff.type === 'damage' && eff.application && eff.application.length > 0) {
+			if (!ctx.isSummon && armedFor === undefined) {
+				push(
+					'strict',
+					'reaction-proc-unarmed',
+					`onReaction damage effect with application[] needs trigger.armedFor (the mark's lifetime in seconds) unless it is hosted on a summon`,
+					location
+				);
+			}
+			if (ctx.isSummon && armedFor !== undefined) {
+				push(
+					'strict',
+					'reaction-proc-double-window',
+					`onReaction damage effect on a summon must not set trigger.armedFor — the summon's own lifetime is the window`,
+					location
+				);
+			}
+		}
+	}
+
+	// (B.12d) An effect-level `application[]` — the FOURTH application source.
+	// ⚠️ Its absent case is NOT the ability's: on an ability an absent list means
+	// UNMEASURED, here it means "does not reach the aura". So an authored entry
+	// has to be complete — a frame, and a real element.
+	if (eff.type === 'damage' && eff.application !== undefined) {
+		if (eff.trigger.type !== 'onReaction') {
+			push(
+				'strict',
+				'effect-application-unread',
+				`effect-level application[] is only read on an onReaction trigger (got "${eff.trigger.type}") — a summon tick's application comes from the summonTick path`,
+				location
+			);
+		}
+		eff.application.forEach((app, i) => {
+			if (!Number.isFinite(app.frame) || app.frame < 0) {
+				push(
+					'strict',
+					'effect-application-frame-invalid',
+					`application[${i}].frame must be a non-negative frame offset from the trigger (got ${JSON.stringify(app.frame)})`,
+					location
+				);
+			}
+			if (app.element !== undefined && !DAMAGE_ELEMENTS.has(app.element)) {
+				push(
+					'strict',
+					'effect-application-element-invalid',
+					`application[${i}].element "${app.element}" is not a valid Element`,
+					location
+				);
+			}
+			if (app.units !== undefined && !isPositiveNumber(app.units)) {
+				push(
+					'strict',
+					'effect-application-units-invalid',
+					`application[${i}].units must be positive gauge units (got ${JSON.stringify(app.units)})`,
+					location
+				);
+			}
+		});
 	}
 
 	// (D.31b) onHit abilityType — one of the five hit classes, or a non-empty
