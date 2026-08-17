@@ -300,13 +300,17 @@ export type TimelineSnapshot = {
 	moonsignRows: MoonsignRow[];
 	moonsignTop: number | null;
 	moonsignH: number;
-	/** The target-aura lane (gauge round L6). `auraTop` is null when nothing
-	 *  ever landed and the lane is not drawn — same rule as NB/moonsign. */
+	/**
+	 * The target-aura lane (gauge round L6).
+	 *
+	 * ↻ 2026-08-17: `auraTop` became `auraHeaderH`, and the rename IS the change.
+	 * The lane moved ABOVE the ruler, so it no longer has a position within the
+	 * lane stack — it opens the chart column, and what the painter needs is how
+	 * far everything else is pushed down by it. **0 means not drawn** (the layer
+	 * is off, or the rotation landed nothing), which replaces the old `null`.
+	 */
 	auraLane: AuraLane;
-	auraTop: number | null;
-	// ⛔ No `auraH`. `nbH`/`moonsignH` exist because the painter centres a lane
-	// label in them and closes them with a rule; this lane is bottom-most and
-	// top-labels its rows, so a height here would be a field with no reader.
+	auraHeaderH: number;
 	auraPlotH: number;
 	auraMarkerH: number;
 	auraTickH: number;
@@ -421,11 +425,18 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.fillText(line, PAD, PAD + 8 + i * HEADER_LINE_H);
 	});
 
-	// Chart origin (tracks area starts right of the label column, below header).
-	// The ruler rides the TOP edge (DAW convention, mirrors the live
-	// component); track lanes start below it at oy + rulerH.
+	// Chart origin (tracks area starts right of the label column, below the
+	// notation header). The ruler rides the TOP edge (DAW convention, mirrors the
+	// live component); track lanes start below it at oy + rulerH.
+	//
+	// ⚠ `oy` IS THE RULER'S TOP, NOT THE CHART COLUMN'S (2026-08-17). The aura
+	// lane sits above the axis now, so the column opens `auraHeaderH` earlier.
+	// Defining the origin this way is deliberate: every `oy + snap.rulerH + …`
+	// below is a track offset and stays exactly as it was, so the lane's move is
+	// a change to TWO expressions here rather than to forty downstream.
 	const ox = PAD + snap.labelW;
-	const oy = PAD + headerH;
+	const chartTop = PAD + headerH;
+	const oy = chartTop + snap.auraHeaderH;
 
 	// ⚓ The export's own frames→px seam, mirroring the two wrappers in
 	// RotationTimeline: the snapshot carries FRAMES (gauge-round.md C1) while
@@ -444,7 +455,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		if (!tick.major) continue;
 		ctx.beginPath();
 		ctx.moveTo(ox + tick.x + 0.5, oy + snap.rulerH);
-		ctx.lineTo(ox + tick.x + 0.5, oy + snap.contentH);
+		// ⚠ Measured from `chartTop`: `contentH` is the WHOLE column including the
+		// aura band, and the gridlines start below the axis. Mirrors the screen,
+		// where the gridline layer lives in .rp-tracks and the header is a sibling.
+		ctx.lineTo(ox + tick.x + 0.5, chartTop + snap.contentH);
 		ctx.stroke();
 	}
 
@@ -940,15 +954,11 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// Lane separators are top-only (mirrors the live border-top scheme): a
 	// lane's closing line is drawn ONLY when another lane follows, so the
 	// bottom-most lane leaves no line before the ruler gap.
-	// ↻ Gauge round L6: the aura lane joins the "another lane follows" test, so
-	// the rule stays "a lane closes only when something comes after it" rather
-	// than becoming an enumeration of pairs.
-	const laneFollows = (after: 'teamBuffs' | 'nb' | 'moonsign') => {
-		const later = [
-			after === 'teamBuffs' ? snap.nbTop : null,
-			after === 'teamBuffs' || after === 'nb' ? snap.moonsignTop : null,
-			snap.auraTop
-		];
+	// ↻ 2026-08-17: the aura lane LEFT this test when it moved above the ruler.
+	// It is no longer something that "comes after" — moonsign is the bottom-most
+	// lane again, and closes only when nothing follows it, which is never.
+	const laneFollows = (after: 'teamBuffs' | 'nb') => {
+		const later = [after === 'teamBuffs' ? snap.nbTop : null, snap.moonsignTop];
 		return later.some((t) => t !== null);
 	};
 	if (laneFollows('teamBuffs')) {
@@ -957,9 +967,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	if (snap.nbTop !== null && laneFollows('nb')) {
 		hline(oy + snap.rulerH + snap.nbTop + snap.nbH);
 	}
-	if (snap.moonsignTop !== null && snap.auraTop !== null) {
-		hline(oy + snap.rulerH + snap.moonsignTop + snap.moonsignH);
-	}
+	// ⛔ No closing line under moonsign: it is bottom-most now, and the rule is
+	// "a lane closes only when something comes after it".
 
 	// z:0 — ghosts (chroma-dropped before mixing — recessive structure; the
 	// desaturate/mix pairing mirrors the DOM's ghost rules exactly)
@@ -1135,8 +1144,10 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 	// maps a span into the caller's pixel space and `auraSpanLabels` decides which
 	// names survive; here they are walked with `lineTo` instead of joined into an
 	// SVG `d`. A mirror that re-derives the shape is not a mirror.
-	if (snap.auraTop !== null) {
-		const laneY = oy + snap.rulerH + snap.auraTop;
+	if (snap.auraHeaderH > 0) {
+		// ⚓ The band OPENS the column, above the axis — `chartTop`, not an offset
+		// down the lane stack.
+		const laneY = chartTop;
 		const plotTop = laneY + snap.auraMarkerH + snap.auraTickH + 2;
 		const plotBase = plotTop + snap.auraPlotH;
 		const yOf = (u: number) => plotBase - (u / snap.auraLane.uMax) * snap.auraPlotH;
@@ -1333,13 +1344,13 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			laneLabelX,
 			oy + snap.rulerH + snap.moonsignTop + snap.moonsignH / 2 + 3
 		);
-	if (snap.auraTop !== null) {
+	if (snap.auraHeaderH > 0) {
 		// ⚓ THE ONE PLACE THE EXPORT IS BETTER THAN THE SCREEN, and it costs
 		// nothing: the PNG kept its label column when the live chart gave it up
 		// (abutting round), so the mod names can sit OUTSIDE the plot here
 		// instead of over their own bars. Same names, more room.
-		ctx.fillText('TARGET AURA', laneLabelX, oy + snap.rulerH + snap.auraTop + 9);
-		const plotTop = oy + snap.rulerH + snap.auraTop + snap.auraMarkerH + snap.auraTickH + 2;
+		ctx.fillText('TARGET AURA', laneLabelX, chartTop + 9);
+		const plotTop = chartTop + snap.auraMarkerH + snap.auraTickH + 2;
 		// ⚓ THE LEGEND AND THE CEILING ARE EXPORT-ONLY, and they are the clearest
 		// case yet for this file being a DOCUMENT rather than a screenshot (see the
 		// header). On screen a reader hovers the plot for a full readout and each
