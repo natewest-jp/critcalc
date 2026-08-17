@@ -110,17 +110,25 @@ with its own risk: Xiao's skill sits in a group whose reset timer is **5 frames*
 sharing naively across casts would delete his second E's application — the exact case the
 isolation was chosen to protect.
 
-## 5. ⏭ What may reshape all of this
+## 5. ✅ The primitive that was going to reshape this has SHIPPED
 
-⚓ **Do the Nahida Tri-Karma / Fischl A4 primitive first** (⚓ Nate 2026-08-17). It is 13
-oracle applications against this round's 8, and it closes a whole schema CLASS —
-mark- and passive-triggered off-field damage — rather than tightening one that exists.
+⚓ **The Nahida Tri-Karma / Fischl A4 round landed 2026-08-17** (`0719850` → `6a643e2` →
+`e26703a`, `docs/mark-triggered-damage-round.md`), and it did NOT mint a general ICD-group
+form — so this round's shape is unchanged and its question is still open.
 
-⚠️ And it plausibly changes this round's shape: Tri-Karma is `ICDGroupNahidaSkill`, one of
-the 58, and it is the **only** group carrying a 1.5× multiplier. Whatever primitive
-carries a mark-triggered hit will need somewhere to put a cadence and a gauge strength, and
-that may well be the same field this round would otherwise invent. ⛔ **Don't mint
-`icdGate`'s general form until that primitive has picked its shape.**
+What it did pick, and what that means here:
+
+- **Gauge strength lives in the effect's own `application[]`**, as `units`. Tri-Karma's
+  1.5U — `ICDGroupNahidaSkill`'s `{1.5, 0, …}` multiplier applied to `Durability: 25` — is
+  a measured NUMBER on the authored hit, not a group reference. ⚓ So the 1.5× multiplier
+  no longer argues for a group primitive: the one place it appears is already served.
+- **Cadence lives in `procCooldown`**, which the effect already had.
+- ⚠️ Tri-Karma's group also never binds in practice (a 1 s timer under a 2.5 s trigger
+  interval), so it is the weakest possible case for the general form.
+
+⛔ **The `icdGate` general form is therefore still unminted, and still should not be minted
+speculatively** — but the reason has changed. It is no longer "wait and see what the
+mark-triggered primitive needs"; it is the original one: no consumer needs it yet.
 
 ## 6. The sub-landings
 

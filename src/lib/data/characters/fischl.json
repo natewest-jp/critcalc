@@ -16,14 +16,51 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 25, "hit": 15 } },
-				{ "name": "N2", "frames": { "anim": 22, "hit": 11 } },
-				{ "name": "N3", "frames": { "anim": 38, "hit": 24 } },
-				{ "name": "N4", "frames": { "anim": 32, "hit": 26 } },
-				{ "name": "N5", "frames": { "anim": 67, "hit": 21 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 25,
+						"hit": 15
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 22,
+						"hit": 11
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 38,
+						"hit": 24
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 32,
+						"hit": 26
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 67,
+						"hit": 21
+					}
+				}
 			],
 			"chargeHits": [
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 96, "D": 86, "J": 86 } }
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 96,
+						"D": 86,
+						"J": 86
+					}
+				}
 			],
 			"sections": [
 				{
@@ -50,7 +87,12 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 43, "D": 14, "J": 16, "swap": 42 },
+			"frames": {
+				"anim": 43,
+				"D": 14,
+				"J": 16,
+				"swap": 42
+			},
 			"cooldown": 25,
 			"cooldownStartDelay": 18,
 			"snapshots": true,
@@ -68,17 +110,59 @@
 							"source": "C6: Evernight Raven",
 							"type": "flat",
 							"value": 2,
-							"conditions": { "type": "constellation", "level": 6 }
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							}
 						}
 					],
 					"effects": [
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.983, "firstTickDelay": 1.067 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.983,
+								"firstTickDelay": 1.067
+							},
 							"scaling": 159.84,
 							"stat": "atk",
 							"element": "electro"
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "onReaction",
+								"reaction": [
+									"overloaded",
+									"electroCharged",
+									"superConduct",
+									"stellarConduct",
+									"electroSwirl",
+									"electroCrystallize",
+									"hyperbloom",
+									"quicken",
+									"aggravate"
+								],
+								"source": "active"
+							},
+							"procCooldown": 0.5,
+							"conditions": {
+								"type": "ascension",
+								"min": 4
+							},
+							"scaling": 80,
+							"stat": "atk",
+							"element": "electro",
+							"application": [
+								{
+									"frame": 4,
+									"element": "electro",
+									"units": 1
+								}
+							],
+							"attribution": "A4: Undone Be Thy Sinful Hex"
 						}
 					]
 				}
@@ -88,7 +172,13 @@
 				"A6 rigor 2026-07-12: scaling corrected 247.32 → 159.84 (gcsim birdAtk[9]=1.5984; genshin-db sidecar Oz's ATK DMG L10 159.8%). Prior 247.32 matched no Fischl multiplier at any level."
 			],
 			"description": "Summons Oz. The night raven forged of darkness and lightning descends upon the land, dealing Electro DMG in a small AoE.\nFor the ability's duration, Oz will continuously attack nearby opponents with Freikugel.\n\nHold to adjust the location Oz will be summoned to.\nPress again any time during the ability's duration to once again summon him to Fischl's side.",
-			"application": [{ "frame": 38, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 38,
+					"element": "electro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "fischl__burst__midnight_phantasmagoria",
@@ -96,7 +186,12 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 148, "D": 115, "J": 115, "swap": 24 },
+			"frames": {
+				"anim": 148,
+				"D": 115,
+				"J": 115,
+				"swap": 24
+			},
 			"cooldown": 15,
 			"snapshots": true,
 			"noICD": true,
@@ -114,17 +209,59 @@
 							"source": "C6: Evernight Raven",
 							"type": "flat",
 							"value": 2,
-							"conditions": { "type": "constellation", "level": 6 }
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							}
 						}
 					],
 					"effects": [
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.983, "firstTickDelay": 1.05 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.983,
+								"firstTickDelay": 1.05
+							},
 							"scaling": 159.84,
 							"stat": "atk",
 							"element": "electro"
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "onReaction",
+								"reaction": [
+									"overloaded",
+									"electroCharged",
+									"superConduct",
+									"stellarConduct",
+									"electroSwirl",
+									"electroCrystallize",
+									"hyperbloom",
+									"quicken",
+									"aggravate"
+								],
+								"source": "active"
+							},
+							"procCooldown": 0.5,
+							"conditions": {
+								"type": "ascension",
+								"min": 4
+							},
+							"scaling": 80,
+							"stat": "atk",
+							"element": "electro",
+							"application": [
+								{
+									"frame": 4,
+									"element": "electro",
+									"units": 1
+								}
+							],
+							"attribution": "A4: Undone Be Thy Sinful Hex"
 						}
 					]
 				}
@@ -135,7 +272,13 @@
 				"A6 rigor 2026-07-12: scaling corrected 247.32 → 159.84 (gcsim queueOz Mult=birdAtk[9]=1.5984; same Oz per-tick multiplier as the skill)."
 			],
 			"description": "Summons Oz to spread his twin wings of twilight and defend Fischl.\nHas the following properties during the ability's duration:\n·Fischl takes on Oz's form, greatly increasing her Movement Speed.\n·Strikes nearby opponents with lightning, dealing Electro DMG to opponents she comes into contact with. Each opponent can only be struck once.\n·Once this ability's effects end, Oz will remain on the battlefield and attack his Prinzessin's foes. If Oz is already on the field, then this will reset the duration of his presence.",
-			"application": [{ "frame": 18, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 18,
+					"element": "electro",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -149,11 +292,13 @@
 			"id": "fischl__passive__undone_be_thy_sinful_hex",
 			"name": "Undone Be Thy Sinful Hex",
 			"abilityType": "passive",
-			"caveat": "Not modeled: the extra Electro DMG when the active character triggers an Electro reaction while Oz is on the field. Oz's ~1s cadence usually reacts first, and it doesn't fire on Oz's own reactions.",
+			"caveat": "Thundering Retribution only fires when the on-field character triggers the reaction. Oz's own reactions do not count, and Oz's roughly 1s cadence often takes the reaction first.",
 			"description": "If your current active character triggers an Electro-related Elemental Reaction when Oz is on the field, the opponent shall be stricken with Thundering Retribution that deals Electro DMG equal to 80% of Fischl's ATK.",
 			"_curatorNotes": [
-				"Not modelled. In practice Oz's ~1s attack cadence frequently steals the electro reaction before the active character can make it. A4 does not proc when Oz himself causes the reaction, making reliable activation highly aura-dependent and off-field-Fischl compositions rarely benefit. Revisit if on-field Fischl archetypes become relevant.",
-				"[A7] Dropped the concluding note that the A4 passive is unreliable in most off-field Fischl comps; this conclusion follows from the two kept reasons (Oz steals the reaction / doesn't proc on Oz's own reactions) and is already recorded in the existing curator note."
+				"MODELLED 2026-08-17 as a damage effect on an onReaction trigger, authored on OZ (both the skill's and the burst's summon) rather than here — the summon's own liveness is the \"when Oz is on the field\" gate, so no armedFor is needed. 80% ATK, Electro, 1U (Durability 25, ICDTagNone), 4 frames after the reaction, 0.5s ICD. Reaction list from asc.go's subscriptions: OnOverload, OnElectroCharged, OnSuperconduct, OnSwirlElectro, OnCrystallizeElectro, OnHyperbloom, OnQuicken, OnAggravate — plus stellarConduct, which replaces superConduct team-wide when an enabler is present. OnLunarCharged is omitted: we do not emit lunarCharged at all, so authoring it would be inert.",
+				"⚠️ source 'active' is what makes this RIGHT WHERE GCSIM IS WRONG, and the oracle should not be used to judge it. gcsim gates on ae.Info.ActorIndex != Player.Active(), and Oz's attacks carry Fischl's actor index — so with Fischl on field, Oz's own reactions pass the check. Measured in docs/curation/gcsim-reaction-diff.md's quicken fixture, EVERY Thundering Retribution gcsim emits lands exactly 4 frames after an Oz application, i.e. every one of them is a proc the game does not make. Our source 'active' refuses an application delivered by an entity, so those do not fire here and the oracle will keep reporting them missing. That is the correct outcome.",
+				"Two divergences kept small and deliberate: gcsim stores the 0.5s ICD on the ACTIVE character (so a swap refreshes it) while ours is per-effect, and A4's snapshot is Oz's rather than Fischl's current stats — neither affects elemental application, which is all this feeds today.",
+				"In practice Oz's ~1s attack cadence frequently steals the electro reaction before the active character can make it, making reliable activation highly aura-dependent; off-field-Fischl compositions rarely benefit."
 			]
 		}
 	],
@@ -188,7 +333,10 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"scaling": 20,
 					"stat": "hp"
 				}
@@ -222,8 +370,15 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onReaction", "reaction": "overloaded" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "overloaded"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 10,
 					"durationType": "refresh",
 					"target": ["self", "active"],
@@ -234,8 +389,15 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onReaction", "reaction": ["electroCharged", "lunarCharged"] },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["electroCharged", "lunarCharged"]
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 10,
 					"durationType": "refresh",
 					"target": ["self", "active"],

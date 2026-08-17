@@ -541,8 +541,48 @@ export type Trigger =
 			 *
 			 *  Renderer scoping: with `source: 'self'`, the dispatcher filters
 			 *  `reaction` IR events to those originating from the holder. With
-			 *  `source: 'team'`, all `reaction` events are walked. */
-			source?: 'self' | 'team';
+			 *  `source: 'team'`, all `reaction` events are walked.
+			 *
+			 *  ⚓ `'active'` (mark-triggered round, 2026-08-17) — the reaction must
+			 *  have been caused by the character the player is CONTROLLING, with
+			 *  their own cast or swing. Fischl's A4 is the case: "if your current
+			 *  active character triggers an Electro-related Elemental Reaction".
+			 *
+			 *  ⚠️⚠️ It is strictly narrower than "`'team'` filtered to the active
+			 *  character", and the difference is the whole point. A summon tick and
+			 *  a reaction proc carry their OWNER's id, so an id comparison alone
+			 *  counts Oz's reactions as Fischl's whenever Fischl is on field —
+			 *  which is exactly gcsim's `ActorIndex` defect (`fischl/asc.go`), and
+			 *  it is why every Thundering Retribution in the oracle fires 4 frames
+			 *  after an Oz application. The sim tags an entity-delivered
+			 *  application so this source can refuse it. See
+			 *  docs/mark-triggered-damage-round.md §1. */
+			source?: 'self' | 'team' | 'active';
+			/**
+			 * Seconds after the HOST CAST during which this trigger is armed — the
+			 * lifetime of the MARK a cast leaves on the target, not of the ability.
+			 *
+			 * ⚓ Nahida's Seed of Skandha (25 s) is the case and the reason the
+			 * field exists. The Seed is a state on the ENEMY, so it is not a
+			 * `summons[]` entry (which means a thing left in the WORLD — see
+			 * `Summon`), and it is not `activeDuration` either: that would claim
+			 * Nahida's E is ACTIVE for 25 s and grow its bar, when what persists is
+			 * a debuff on the target.
+			 *
+			 * ⚠️ Required on an ability-hosted `onReaction` effect that carries an
+			 * `application[]` — without it the trigger would listen forever
+			 * (characterLint B.12c). An effect hosted on `summons[].effects[]` needs
+			 * no `armedFor`: the summon's own liveness IS the window, and it is
+			 * answered by the one `summonEndAt`.
+			 *
+			 * ⚠️ The window opens at the CAST, not at the hit that applies the mark
+			 * — in game Nahida's Seed lands with her skill's hitmark 13 frames later,
+			 * so ours is 13 frames early at both ends. Stated rather than modelled:
+			 * naming which of a cast's `application[]` entries does the marking is a
+			 * second schema field for a fifth of a second, and the mark is never the
+			 * limiting factor at the START (nothing has reacted yet).
+			 */
+			armedFor?: number;
 	  }
 	| { type: 'onEnergy'; threshold: number }
 	| { type: 'onHPChange' }
@@ -1003,6 +1043,32 @@ export type Effect =
 			 *  is expressed as a percent of the source stat (50 = +50% of EM),
 			 *  matching the `scaling` field's percent convention. */
 			flatScaling?: { stat: ScalingStat; ratio: number };
+			/**
+			 * ⚓⚓ WHEN THIS EFFECT'S HITS LAND AND WHAT THEY APPLY — the FOURTH
+			 * source of elemental applications (mark-triggered round, 2026-08-17).
+			 * `frame` is relative to the TRIGGER, not to a cast.
+			 *
+			 * The gauge is fed from a cast's own `application[]`, an N/C/P swing, a
+			 * summon tick series — and, since this round, a `damage` effect on an
+			 * `onReaction` trigger: damage emitted by an OFF-FIELD character because
+			 * somebody else caused a reaction. Nahida's Tri-Karma Purification
+			 * (Dendro, **1.5U**, +3 frames) and Fischl's A4 Thundering Retribution
+			 * (Electro, 1U, +4 frames) are the two.
+			 *
+			 * ⚠️⚠️ THE ABSENT CASE IS NOT THE ABILITY'S. On an ability, an absent
+			 * `application[]` means UNMEASURED and falls back to the character's
+			 * element at the cast (see {@link SkillCommonFields.application}). Here
+			 * it means this effect does not reach the aura, which is the status quo
+			 * for every other `damage` effect in the corpus — a summon's ticks reach
+			 * it through the summon-tick path, not through this field.
+			 *
+			 * ⚓ The word and the type are shared with the ability-level field on
+			 * purpose: one vocabulary for "what lands and when". ⚠️ The cost is that
+			 * `orphanedSchema.test.ts` matches by KEY NAME and so cannot see this
+			 * field independently (the L5e-a¾ lesson) — the wiring is pinned by
+			 * `reactionProcs.test.ts` instead.
+			 */
+			application?: ElementalApplication[];
 	  })
 	| (EffectBase & {
 			type: 'heal';

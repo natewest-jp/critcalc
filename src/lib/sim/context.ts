@@ -30,6 +30,7 @@ import type { ActionEvent, CastEvent, TimelineEvent } from '$lib/utils/rotationE
 import type { IcdClock } from '$lib/utils/icd';
 import type { HitEvent } from './hits';
 import { type AuraState, createAuraState } from './aura';
+import type { ReactionProcListener } from './reactionProcs';
 import type { CastKinds } from './states';
 import type { CharacterTrack, TimelineBar } from './types';
 import {
@@ -228,6 +229,28 @@ export type SimContext = {
 	summonChainGen: Map<string, number>;
 	/** Timed elemental infusions granted by `infuse` Effects. */
 	infusionWindows: InfusionWindow[];
+	/**
+	 * Armed reaction-proc listeners — the FOURTH application source
+	 * (mark-triggered round, 2026-08-17). ⚓ Keyed by the ENTITY that hosts the
+	 * listener (`holder::host::index`), never by the authored effect object:
+	 * Fischl's A4 is authored on BOTH Ozes and there is only ever one Oz, so the
+	 * two copies must share one record and one proc cooldown. Iteration order is
+	 * arming order, which is what makes dispatch deterministic.
+	 * See `reactionProcs.ts`.
+	 */
+	reactionProcs: Map<string, ReactionProcListener>;
+	/**
+	 * Whose segment the clock is currently inside, or `undefined` before the
+	 * first. ⚓ Written where a segment OPENS, which is exactly where the clock
+	 * already stands at the boundary — so a task firing mid-segment reads the
+	 * character who is actually on field, not the one who cast it.
+	 *
+	 * ⚠️ Its ONE reader is `onReaction`'s `source: 'active'`, and it answers only
+	 * half of that question: an application delivered by a summon or a proc
+	 * carries its owner's id and must be refused even when the owner IS active
+	 * (`ReactionSource.viaEntity`).
+	 */
+	activeCharId?: string;
 };
 
 export type SimContextInput = {
@@ -278,6 +301,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		icdClocks: new Map(),
 		lastSwapOutAt: new Map(),
 		summonChainGen: new Map(),
-		infusionWindows: []
+		infusionWindows: [],
+		reactionProcs: new Map()
 	};
 }

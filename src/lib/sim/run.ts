@@ -95,6 +95,7 @@ import {
 	getWeaponCdResetCooldown
 } from './cooldowns';
 import { emitReactionsAtCast, emitReactionsAtSwing, scheduleSummonTicks } from './aura';
+import { armCastReactionProcs } from './reactionProcs';
 
 /** Global dash/jump duration approximation (60fps). Character-specific values deferred. */
 const DASH_FRAMES = 21;
@@ -179,6 +180,13 @@ export function runRotation(
 		const prevTrack = ctx.tracks[ctx.tracks.length - 1];
 		if (prevTrack && prevTrack.characterId !== char.id)
 			ctx.lastSwapOutAt.set(prevTrack.characterId, clock.now);
+
+		// ⚓ WHO IS ON FIELD, observed live (mark-triggered round, 2026-08-17) —
+		// read by `onReaction`'s `source: 'active'`. Set HERE, where the segment
+		// opens, because that is where the clock already stands: the swap advance
+		// at the bottom of the previous iteration has drained everything before
+		// this instant, so no pending task can fire under the wrong owner.
+		ctx.activeCharId = char.id;
 
 		const track: CharacterTrack = {
 			characterId: char.id,
@@ -840,6 +848,25 @@ export function runRotation(
 					chainIdx,
 					stackState
 				);
+				// ⚓ Arm this cast's REACTION PROCS (mark-triggered round, 2026-08-17)
+				// — Nahida's Tri-Karma, whose window is the Seed of Skandha's 25 s on
+				// the enemy rather than any ability's active bar. Armed BEFORE the
+				// applications above are allowed to land (the advance at the bottom of
+				// this branch), so a reaction the cast's own hit causes can fire it.
+				armCastReactionProcs({
+					ctx,
+					holderId: char.id,
+					abilityId: active.id,
+					// ⚠️ A variant's `effects` REPLACE the base's, like every other
+					// variant array — the same rule `application[]` follows above.
+					effects: variant?.effects ?? active.effects,
+					castTime: castStart,
+					preStates: states,
+					constellation: charConstellationLevel,
+					chainIdx,
+					stacks,
+					castKind: kind
+				});
 				// Parser-private hit for this cast (onHit wiring): dispatched at
 				// the same post-aura-update instant the legacy tail dispatch in
 				// emitReactionsAtCast used, now carrying the resolved damageTag/
@@ -1060,6 +1087,7 @@ export function runRotation(
 						// and 6 at the corpus cadence, not on all five.
 						emitReactionsAtSwing(
 							ctx,
+							clock,
 							char,
 							'normal',
 							nElement,
@@ -1150,6 +1178,7 @@ export function runRotation(
 					// already relies on.
 					emitReactionsAtSwing(
 						ctx,
+						clock,
 						char,
 						'charged',
 						cElement,
@@ -1264,6 +1293,7 @@ export function runRotation(
 						// plunge string applies on every landing.
 						emitReactionsAtSwing(
 							ctx,
+							clock,
 							char,
 							'plunge',
 							pElement,

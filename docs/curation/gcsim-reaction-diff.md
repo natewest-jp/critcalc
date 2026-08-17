@@ -13,12 +13,12 @@ no artifacts, no substats — none of which affect elemental application.
 
 | metric | count |
 | --- | --- |
-| applications — ours | 169 |
+| applications — ours | 183 |
 | applications — gcsim | 215 |
-| **we apply, gcsim does not** | **3** |
-| **gcsim applies, we do not** | **49** |
+| **we apply, gcsim does not** | **7** |
+| **gcsim applies, we do not** | **39** |
 | element mismatch on a paired application | 0 |
-| reaction events — ours | 43 |
+| reaction events — ours | 57 |
 | reaction damage instances — gcsim | 77 |
 
 ⚠️ The two reaction rows count different things — ours is one event per
@@ -32,12 +32,12 @@ every aura on the target at that instant, in taxed units.
 
 | metric | count |
 | --- | --- |
-| aura samples compared | 276 |
-| **agree** (within 0.16U) | **133** |
-| 🟡 drift (both present, further apart) | 60 |
-| 🔴 aura gcsim has and we do not | 27 |
-| 🟠 aura we have and gcsim does not | 56 |
-| mean \|Δ\| where both present | 0.174U |
+| aura samples compared | 278 |
+| **agree** (within 0.16U) | **136** |
+| 🟡 drift (both present, further apart) | 56 |
+| 🔴 aura gcsim has and we do not | 29 |
+| 🟠 aura we have and gcsim does not | 57 |
+| mean \|Δ\| where both present | 0.172U |
 
 ## melt — cryo aura then pyro
 
@@ -207,7 +207,7 @@ Compare presence and rough magnitude, never equality.
 Barbara E > Fischl E Q > Barbara N3
 ```
 
-applications ours **13** / gcsim **17** · extra 0 · missing 4 · element mismatch 0 · reactions ours **11** / gcsim **8**
+applications ours **18** / gcsim **17** · extra 3 · missing 2 · element mismatch 0 · reactions ours **13** / gcsim **8**
 
 ### 1. Applications
 
@@ -223,13 +223,16 @@ applications ours **13** / gcsim **17** · extra 0 · missing 4 · element misma
 | barbara 🔴 | 7 | — | hydro @ 15.07s (0) |  | 1U | Let the Show Begin♪ (Melody Loop) |
 | barbara 🔴 | 8 | — | hydro @ 18.07s (0) |  | 1U | Let the Show Begin♪ (Melody Loop) |
 | fischl | 0 | electro @ 1.65s (skill) | electro @ 1.67s (skill) | 1 | 1U | Oz (Summon) |
-| fischl | 1 | electro @ 2.03s (burst) | electro @ 1.73s (skill) | -18 | 1U | Thundering Retribution (A4) |
-| fischl | 2 | electro @ 2.80s (burst) | electro @ 2.05s (burst) | -45 | 1U | Midnight Phantasmagoria |
-| fischl | 3 | electro @ 5.75s (burst) | electro @ 2.45s (skill) | -198 | 1U | Thundering Retribution (A4) |
-| fischl | 4 | electro @ 8.70s (burst) | electro @ 3.13s (skill) | -334 | 1U | Thundering Retribution (A4) |
-| fischl | 5 | electro @ 11.65s (burst) | electro @ 3.65s (skill) | -480 | 1U | Oz (Burst) |
-| fischl 🔴 | 6 | — | electro @ 7.58s (skill) |  | 1U | Oz (Burst) |
-| fischl 🔴 | 7 | — | electro @ 9.55s (skill) |  | 1U | Oz (Burst) |
+| fischl | 1 | electro @ 1.72s (skill) | electro @ 1.73s (skill) | 1 | 1U | Thundering Retribution (A4) |
+| fischl | 2 | electro @ 2.03s (burst) | electro @ 2.05s (burst) | 1 | 1U | Midnight Phantasmagoria |
+| fischl | 3 | electro @ 2.58s (burst) | electro @ 2.45s (skill) | -8 | 1U | Thundering Retribution (A4) |
+| fischl | 4 | electro @ 2.80s (burst) | electro @ 3.13s (skill) | 20 | 1U | Thundering Retribution (A4) |
+| fischl | 5 | electro @ 3.12s (burst) | electro @ 3.65s (skill) | 32 | 1U | Oz (Burst) |
+| fischl | 6 | electro @ 5.75s (burst) | electro @ 7.58s (skill) | 110 | 1U | Oz (Burst) |
+| fischl | 7 | electro @ 6.12s (burst) | electro @ 9.55s (skill) | 206 | 1U | Oz (Burst) |
+| fischl 🟠 | 8 | electro @ 8.70s (burst) | — |  |  |  |
+| fischl 🟠 | 9 | electro @ 9.12s (burst) | — |  |  |  |
+| fischl 🟠 | 10 | electro @ 11.65s (burst) | — |  |  |  |
 
 🔴 gcsim applies and we do not · 🟠 we apply and gcsim does not · 🟡 different element
 
@@ -240,26 +243,26 @@ application it makes, so one row per application is a sample of the true aura
 across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
 durability, 25 per unit).
 
-agree **12** · 🟡 drift 7 · 🔴 aura we do not have 1 · 🟠 aura they do not have 8
+agree **12** · 🟡 drift 5 · 🔴 aura we do not have 3 · 🟠 aura they do not have 9
 
 | t | char | aura before (ours/gcsim) |
 | --- | --- | --- |
 | 0.07s | barbara | 🟠 hydro 0.80/— |
 | 1.57s | barbara | hydro 0.80/0.67 |
 | 1.67s | fischl | hydro 0.79/0.79, 🟠 electro 0.80/— |
-| 1.73s | fischl | electro 0.79/0.79, hydro 0.78/0.79 |
+| 1.73s | fischl | electro 0.80/0.79, hydro 0.78/0.79 |
 | 2.05s | fischl | 🟡 electro 0.80/0.37, hydro 0.36/0.36 |
 | 2.38s | barbara | electro 0.77/0.77, hydro 0.33/0.33 |
 | 2.45s | fischl | electro 0.76/0.77, 🟡 hydro 0.32/0.79 |
 | 3.07s | barbara | electro 0.38/0.35, 🟡 hydro 0.80/0.34 |
-| 3.13s | fischl | electro 0.37/0.34, hydro 0.79/0.79 |
-| 3.65s | fischl | 🟡 electro 0.33/0.76, hydro 0.75/0.75 |
-| 6.07s | barbara | 🟠 electro 0.37/—, 🟠 hydro 0.80/— |
-| 7.58s | fischl | 🟡 hydro 0.27/0.67 |
-| 9.07s | barbara | 🟠 electro 0.37/—, 🟠 hydro 0.80/— |
-| 9.55s | fischl | 🟡 hydro 0.36/0.76 |
-| 12.07s | barbara | 🟠 electro 0.36/—, 🟠 hydro 0.80/— |
-| 15.07s | barbara | 🟡 hydro 0.15/0.55 |
+| 3.13s | fischl | 🟡 electro 0.80/0.34, hydro 0.79/0.79 |
+| 3.65s | fischl | electro 0.76/0.76, hydro 0.75/0.75 |
+| 6.07s | barbara | 🟠 hydro 0.80/—, 🟠 electro 0.77/— |
+| 7.58s | fischl | 🔴 hydro —/0.67 |
+| 9.07s | barbara | 🟠 hydro 0.80/—, 🟠 electro 0.77/— |
+| 9.55s | fischl | 🟡 hydro 0.36/0.76, 🟠 electro 0.36/— |
+| 12.07s | barbara | 🟠 hydro 0.80/—, 🟠 electro 0.76/— |
+| 15.07s | barbara | 🔴 hydro —/0.55 |
 | 18.07s | barbara | 🔴 hydro —/0.55 |
 
 ### 3. Reactions
@@ -271,10 +274,10 @@ Compare presence and rough magnitude, never equality.
 
 | reaction | ours | gcsim |
 | --- | --- | --- |
-| electroCharged | 11 | — |
+| electroCharged | 13 | — |
 | electrocharged | — | 8 |
 
-- **ours:** electroCharged@1.65s, electroCharged@2.03s, electroCharged@2.52s, electroCharged@2.80s, electroCharged@3.05s, electroCharged@5.75s, electroCharged@6.05s, electroCharged@8.70s, electroCharged@9.05s, electroCharged@11.65s, electroCharged@12.05s
+- **ours:** electroCharged@1.65s, electroCharged@1.72s, electroCharged@2.03s, electroCharged@2.52s, electroCharged@2.58s, electroCharged@2.80s, electroCharged@3.05s, electroCharged@3.12s, electroCharged@6.05s, electroCharged@6.12s, electroCharged@9.05s, electroCharged@9.12s, electroCharged@12.05s
 - **gcsim:** electrocharged@1.83s, electrocharged@2.83s, electrocharged@3.83s, electrocharged@4.83s, electrocharged@7.75s, electrocharged@8.75s, electrocharged@9.72s, electrocharged@10.72s
 
 ## freeze
@@ -351,23 +354,24 @@ Compare presence and rough magnitude, never equality.
 Nahida E Q > Fischl E Q > Fischl N3
 ```
 
-applications ours **7** / gcsim **16** · extra 0 · missing 9 · element mismatch 0 · reactions ours **5** / gcsim **14**
+applications ours **12** / gcsim **16** · extra 1 · missing 5 · element mismatch 0 · reactions ours **16** / gcsim **14**
 
 ### 1. Applications
 
 | char | # | ours | gcsim | Δ frames | units | ability |
 | --- | --- | --- | --- | --- | --- | --- |
 | nahida | 0 | dendro @ 0.22s (skill) | dendro @ 0.23s (skill) | 1 | 1U | All Schemes to Know (Press) |
-| nahida 🔴 | 1 | — | dendro @ 3.22s (skill) |  | 1.5U | Tri-Karma Purification |
-| nahida 🔴 | 2 | — | dendro @ 8.47s (skill) |  | 1.5U | Tri-Karma Purification |
-| nahida 🔴 | 3 | — | dendro @ 13.38s (skill) |  | 1.5U | Tri-Karma Purification |
+| nahida | 1 | dendro @ 3.20s (skill) | dendro @ 3.22s (skill) | 1 | 1.5U | Tri-Karma Purification |
+| nahida | 2 | dendro @ 7.30s (skill) | dendro @ 8.47s (skill) | 70 | 1.5U | Tri-Karma Purification |
+| nahida | 3 | dendro @ 10.25s (skill) | dendro @ 13.38s (skill) | 188 | 1.5U | Tri-Karma Purification |
+| nahida 🟠 | 4 | dendro @ 13.20s (skill) | — |  |  |  |
 | fischl | 0 | electro @ 3.15s (skill) | electro @ 3.17s (skill) | 1 | 1U | Oz (Summon) |
-| fischl | 1 | electro @ 3.53s (burst) | electro @ 3.23s (skill) | -18 | 1U | Thundering Retribution (A4) |
-| fischl | 2 | electro @ 4.30s (burst) | electro @ 3.55s (burst) | -45 | 1U | Midnight Phantasmagoria |
-| fischl | 3 | electro @ 7.25s (burst) | electro @ 4.07s (skill) | -191 | 1U | Oz (Skill) |
-| fischl | 4 | electro @ 10.20s (burst) | electro @ 4.13s (skill) | -364 | 1U | Thundering Retribution (A4) |
-| fischl | 5 | electro @ 13.15s (burst) | electro @ 8.42s (skill) | -284 | 1U | Oz (Burst) |
-| fischl 🔴 | 6 | — | electro @ 8.48s (skill) |  | 1U | Thundering Retribution (A4) |
+| fischl | 1 | electro @ 3.22s (skill) | electro @ 3.23s (skill) | 1 | 1U | Thundering Retribution (A4) |
+| fischl | 2 | electro @ 3.53s (burst) | electro @ 3.55s (burst) | 1 | 1U | Midnight Phantasmagoria |
+| fischl | 3 | electro @ 4.30s (burst) | electro @ 4.07s (skill) | -14 | 1U | Oz (Skill) |
+| fischl | 4 | electro @ 7.25s (burst) | electro @ 4.13s (skill) | -187 | 1U | Thundering Retribution (A4) |
+| fischl | 5 | electro @ 10.20s (burst) | electro @ 8.42s (skill) | -107 | 1U | Oz (Burst) |
+| fischl | 6 | electro @ 13.15s (burst) | electro @ 8.48s (skill) | -280 | 1U | Thundering Retribution (A4) |
 | fischl 🔴 | 7 | — | electro @ 9.40s (skill) |  | 1U | Oz (Burst) |
 | fischl 🔴 | 8 | — | electro @ 9.47s (skill) |  | 1U | Thundering Retribution (A4) |
 | fischl 🔴 | 9 | — | electro @ 13.33s (skill) |  | 1U | Oz (Burst) |
@@ -383,26 +387,26 @@ application it makes, so one row per application is a sample of the true aura
 across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
 durability, 25 per unit).
 
-agree **7** · 🟡 drift 11 · 🔴 aura we do not have 7 · 🟠 aura they do not have 6
+agree **9** · 🟡 drift 6 · 🔴 aura we do not have 10 · 🟠 aura they do not have 3
 
 | t | char | aura before (ours/gcsim) |
 | --- | --- | --- |
 | 0.23s | nahida | 🟠 dendro 0.80/— |
 | 3.17s | fischl | 🔴 dendro —/0.55, 🟠 quicken 0.55/— |
-| 3.22s | nahida | quicken 0.55/0.55 |
-| 3.23s | fischl | 🔴 dendro —/1.20, quicken 0.55/0.55 |
-| 3.55s | fischl | 🔴 dendro —/0.16, 🟡 quicken 0.53/0.97, 🟠 electro 0.80/— |
-| 4.07s | fischl | 🟡 quicken 0.50/0.92, 🟠 electro 0.76/— |
-| 4.13s | fischl | electro 0.75/0.79, 🟡 quicken 0.49/0.92 |
-| 8.42s | fischl | 🟡 electro 0.70/0.44, 🟡 quicken 0.22/0.53 |
-| 8.47s | nahida | electro 0.70/0.80, 🟡 quicken 0.22/0.52 |
-| 8.48s | fischl | 🟡 quicken 0.22/0.79, 🟠 electro 0.70/— |
-| 9.40s | fischl | electro 0.62/0.72, 🟡 quicken 0.16/0.72 |
-| 9.47s | fischl | 🟡 electro 0.61/0.79, 🟡 quicken 0.15/0.72 |
-| 13.33s | fischl | 🟡 electro 0.78/0.47, 🔴 quicken —/0.41 |
-| 13.38s | nahida | electro 0.78/0.80, 🔴 quicken —/0.40 |
-| 13.40s | fischl | 🔴 quicken —/0.79, 🟠 electro 0.78/— |
-| 15.30s | fischl | electro 0.62/0.64, 🔴 quicken —/0.64 |
+| 3.22s | nahida | quicken 0.55/0.55, 🟠 dendro 1.20/— |
+| 3.23s | fischl | 🟡 dendro 0.20/1.20, 🟡 quicken 1.00/0.55 |
+| 3.55s | fischl | 🔴 dendro —/0.16, quicken 0.97/0.97 |
+| 4.07s | fischl | quicken 0.92/0.92 |
+| 4.13s | fischl | 🔴 electro —/0.79, quicken 0.92/0.92 |
+| 8.42s | fischl | 🔴 electro —/0.44, 🟡 quicken 0.71/0.53 |
+| 8.47s | nahida | 🔴 electro —/0.80, 🟡 quicken 0.70/0.52 |
+| 8.48s | fischl | quicken 0.70/0.79 |
+| 9.40s | fischl | 🔴 electro —/0.72, quicken 0.63/0.72 |
+| 9.47s | fischl | 🔴 electro —/0.79, quicken 0.62/0.72 |
+| 13.33s | fischl | 🔴 electro —/0.47, 🟡 quicken 0.79/0.41 |
+| 13.38s | nahida | 🔴 electro —/0.80, 🟡 quicken 0.78/0.40 |
+| 13.40s | fischl | quicken 0.78/0.79 |
+| 15.30s | fischl | 🔴 electro —/0.64, quicken 0.63/0.64 |
 
 ### 3. Reactions
 
@@ -413,11 +417,11 @@ Compare presence and rough magnitude, never equality.
 
 | reaction | ours | gcsim |
 | --- | --- | --- |
-| aggravate | 4 | 11 |
-| quicken | 1 | — |
-| spread | — | 3 |
+| aggravate | 6 | 11 |
+| quicken | 6 | — |
+| spread | 4 | 3 |
 
-- **ours:** quicken@3.15s, aggravate@3.53s, aggravate@4.30s, aggravate@7.25s, aggravate@10.20s
+- **ours:** quicken@3.15s, spread@3.20s, aggravate@3.22s, quicken@3.22s, aggravate@3.53s, quicken@3.53s, aggravate@4.30s, aggravate@7.25s, spread@7.30s, quicken@7.30s, aggravate@10.20s, spread@10.25s, quicken@10.25s, aggravate@13.15s, spread@13.20s, quicken@13.20s
 - **gcsim:** spread@3.22s, aggravate@3.23s, aggravate@3.55s, aggravate@4.07s, aggravate@4.13s, aggravate@8.42s, spread@8.47s, aggravate@8.48s, aggravate@9.40s, aggravate@9.47s, aggravate@13.33s, spread@13.38s, aggravate@13.40s, aggravate@15.30s
 
 ## bloom
@@ -426,14 +430,14 @@ Compare presence and rough magnitude, never equality.
 Nahida E Q > Xingqiu E Q
 ```
 
-applications ours **3** / gcsim **15** · extra 0 · missing 12 · element mismatch 0 · reactions ours **2** / gcsim **6**
+applications ours **4** / gcsim **15** · extra 0 · missing 11 · element mismatch 0 · reactions ours **2** / gcsim **6**
 
 ### 1. Applications
 
 | char | # | ours | gcsim | Δ frames | units | ability |
 | --- | --- | --- | --- | --- | --- | --- |
 | nahida | 0 | dendro @ 0.22s (skill) | dendro @ 0.23s (skill) | 1 | 1U | All Schemes to Know (Press) |
-| nahida 🔴 | 1 | — | dendro @ 2.78s (skill) |  | 1.5U | Tri-Karma Purification |
+| nahida | 1 | dendro @ 2.77s (skill) | dendro @ 2.78s (skill) | 1 | 1.5U | Tri-Karma Purification |
 | nahida 🔴 | 2 | — | dendro @ 8.30s (skill) |  | 1.5U | Tri-Karma Purification |
 | nahida 🔴 | 3 | — | dendro @ 13.87s (skill) |  | 1.5U | Tri-Karma Purification |
 | nahida 🔴 | 4 | — | dendro @ 19.43s (skill) |  | 1.5U | Tri-Karma Purification |
@@ -457,19 +461,19 @@ application it makes, so one row per application is a sample of the true aura
 across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
 durability, 25 per unit).
 
-agree **1** · 🟡 drift 1 · 🔴 aura we do not have 8 · 🟠 aura they do not have 1
+agree **1** · 🟡 drift 3 · 🔴 aura we do not have 6 · 🟠 aura they do not have 5
 
 | t | char | aura before (ours/gcsim) |
 | --- | --- | --- |
 | 0.23s | nahida | 🟠 dendro 0.80/— |
 | 2.73s | xingqiu | 🟡 dendro 0.09/0.59 |
-| 2.78s | nahida | dendro 0.08/0.09 |
-| 3.05s | xingqiu | 🔴 dendro —/1.18 |
-| 3.27s | xingqiu | 🔴 dendro —/0.66 |
-| 5.52s | xingqiu | — |
-| 7.77s | xingqiu | 🔴 hydro —/0.61 |
-| 8.30s | nahida | 🔴 hydro —/0.76 |
-| 10.02s | xingqiu | — |
+| 2.78s | nahida | 🟡 dendro 1.20/0.09 |
+| 3.05s | xingqiu | 🟡 dendro 0.68/1.18 |
+| 3.27s | xingqiu | dendro 0.66/0.66 |
+| 5.52s | xingqiu | 🟠 dendro 0.47/— |
+| 7.77s | xingqiu | 🔴 hydro —/0.61, 🟠 dendro 0.28/— |
+| 8.30s | nahida | 🔴 hydro —/0.76, 🟠 dendro 0.23/— |
+| 10.02s | xingqiu | 🟠 dendro 0.09/— |
 | 12.27s | xingqiu | 🔴 hydro —/0.61 |
 | 13.87s | nahida | 🔴 hydro —/0.67 |
 | 14.52s | xingqiu | — |
@@ -671,7 +675,7 @@ Compare presence and rough magnitude, never equality.
 Fischl E Q > Ningguang E N3 > Zhongli E
 ```
 
-applications ours **16** / gcsim **27** · extra 0 · missing 11 · element mismatch 0 · reactions ours **4** / gcsim **6**
+applications ours **19** / gcsim **27** · extra 0 · missing 8 · element mismatch 0 · reactions ours **5** / gcsim **6**
 
 ### 1. Applications
 
@@ -679,31 +683,31 @@ applications ours **16** / gcsim **27** · extra 0 · missing 11 · element mism
 | --- | --- | --- | --- | --- | --- | --- |
 | fischl | 0 | electro @ 0.63s (skill) | electro @ 0.65s (skill) | 1 | 1U | Oz (Summon) |
 | fischl | 1 | electro @ 1.02s (burst) | electro @ 1.03s (burst) | 1 | 1U | Midnight Phantasmagoria |
-| fischl | 2 | electro @ 1.78s (burst) | electro @ 1.62s (skill) | -10 | 1U | Thundering Retribution (A4) |
-| fischl | 3 | electro @ 4.73s (burst) | electro @ 2.63s (skill) | -126 | 1U | Oz (Burst) |
-| fischl | 4 | electro @ 7.68s (burst) | electro @ 2.98s (skill) | -282 | 1U | Thundering Retribution (A4) |
-| fischl | 5 | electro @ 10.63s (burst) | electro @ 5.15s (skill) | -329 | 1U | Thundering Retribution (A4) |
-| fischl 🔴 | 6 | — | electro @ 6.57s (skill) |  | 1U | Oz (Burst) |
-| fischl 🔴 | 7 | — | electro @ 8.53s (skill) |  | 1U | Oz (Burst) |
-| fischl 🔴 | 8 | — | electro @ 9.15s (skill) |  | 1U | Thundering Retribution (A4) |
-| fischl 🔴 | 9 | — | electro @ 11.15s (skill) |  | 1U | Thundering Retribution (A4) |
+| fischl | 2 | electro @ 1.60s (burst) | electro @ 1.62s (skill) | 1 | 1U | Thundering Retribution (A4) |
+| fischl | 3 | electro @ 1.78s (burst) | electro @ 2.63s (skill) | 51 | 1U | Oz (Burst) |
+| fischl | 4 | electro @ 3.45s (burst) | electro @ 2.98s (skill) | -28 | 1U | Thundering Retribution (A4) |
+| fischl | 5 | electro @ 4.73s (burst) | electro @ 4.12s (skill) | -37 | 1U | Thundering Retribution (A4) |
+| fischl | 6 | electro @ 5.30s (burst) | electro @ 6.57s (skill) | 76 | 1U | Oz (Burst) |
+| fischl | 7 | electro @ 7.68s (burst) | electro @ 8.53s (skill) | 51 | 1U | Oz (Burst) |
+| fischl | 8 | electro @ 10.63s (burst) | electro @ 9.10s (skill) | -92 | 1U | Thundering Retribution (A4) |
+| fischl 🔴 | 9 | — | electro @ 11.10s (skill) |  | 1U | Thundering Retribution (A4) |
 | ningguang | 0 | geo @ 1.53s (skill) | geo @ 1.55s (skill) | 1 | 1U | Jade Screen |
 | ningguang | 1 | geo @ 3.38s (normal) | geo @ 2.92s (normal) | -28 | 1U | Normal (Twirl) |
-| ningguang 🔴 | 2 | — | geo @ 3.88s (normal) |  | 1U | Normal (Right) |
-| zhongli | 0 | geo @ 5.23s (skill) | geo @ 5.08s (skill) | -9 | 2U | Stone Stele (Initial) |
-| zhongli | 1 | geo @ 7.23s (skill) | geo @ 9.08s (skill) | 111 | 1U | Stone Stele (Tick) |
-| zhongli | 2 | geo @ 11.23s (skill) | geo @ 11.08s (skill) | -9 | 1U | Stone Stele (Tick) |
-| zhongli | 3 | geo @ 15.23s (skill) | geo @ 13.08s (skill) | -129 | 1U | Stone Stele (Tick) |
-| zhongli | 4 | geo @ 19.23s (skill) | geo @ 15.08s (skill) | -249 | 1U | Stone Stele (Tick) |
-| zhongli | 5 | geo @ 23.23s (skill) | geo @ 17.08s (skill) | -369 | 1U | Stone Stele (Tick) |
-| zhongli | 6 | geo @ 27.23s (skill) | geo @ 19.08s (skill) | -489 | 1U | Stone Stele (Tick) |
-| zhongli | 7 | geo @ 31.23s (skill) | geo @ 21.08s (skill) | -609 | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 8 | — | geo @ 23.08s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 9 | — | geo @ 25.08s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 10 | — | geo @ 27.08s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 11 | — | geo @ 29.08s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 12 | — | geo @ 31.08s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 13 | — | geo @ 33.08s (skill) |  | 1U | Stone Stele (Tick) |
+| ningguang 🔴 | 2 | — | geo @ 4.05s (normal) |  | 1U | Normal (Left) |
+| zhongli | 0 | geo @ 5.23s (skill) | geo @ 5.03s (skill) | -12 | 2U | Stone Stele (Initial) |
+| zhongli | 1 | geo @ 7.23s (skill) | geo @ 9.03s (skill) | 108 | 1U | Stone Stele (Tick) |
+| zhongli | 2 | geo @ 11.23s (skill) | geo @ 11.03s (skill) | -12 | 1U | Stone Stele (Tick) |
+| zhongli | 3 | geo @ 15.23s (skill) | geo @ 13.03s (skill) | -132 | 1U | Stone Stele (Tick) |
+| zhongli | 4 | geo @ 19.23s (skill) | geo @ 15.03s (skill) | -252 | 1U | Stone Stele (Tick) |
+| zhongli | 5 | geo @ 23.23s (skill) | geo @ 17.03s (skill) | -372 | 1U | Stone Stele (Tick) |
+| zhongli | 6 | geo @ 27.23s (skill) | geo @ 19.03s (skill) | -492 | 1U | Stone Stele (Tick) |
+| zhongli | 7 | geo @ 31.23s (skill) | geo @ 21.03s (skill) | -612 | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 8 | — | geo @ 23.03s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 9 | — | geo @ 25.03s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 10 | — | geo @ 27.03s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 11 | — | geo @ 29.03s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 12 | — | geo @ 31.03s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 13 | — | geo @ 33.03s (skill) |  | 1U | Stone Stele (Tick) |
 
 🔴 gcsim applies and we do not · 🟠 we apply and gcsim does not · 🟡 different element
 
@@ -714,37 +718,37 @@ application it makes, so one row per application is a sample of the true aura
 across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
 durability, 25 per unit).
 
-agree **8** · 🟡 drift 6 · 🔴 aura we do not have 1 · 🟠 aura they do not have 2
+agree **9** · 🟡 drift 7 · 🔴 aura we do not have 0 · 🟠 aura they do not have 1
 
 | t | char | aura before (ours/gcsim) |
 | --- | --- | --- |
 | 0.65s | fischl | 🟠 electro 0.80/— |
 | 1.03s | fischl | electro 0.80/0.77 |
 | 1.55s | ningguang | 🟡 electro 0.26/0.76 |
-| 1.62s | fischl | electro 0.25/0.25 |
+| 1.62s | fischl | 🟡 electro 0.80/0.25 |
 | 2.63s | fischl | electro 0.73/0.71 |
 | 2.92s | ningguang | electro 0.70/0.78 |
 | 2.98s | fischl | 🟡 electro 0.70/0.27 |
-| 3.88s | ningguang | 🟡 electro 0.12/0.72 |
-| 5.08s | zhongli | electro 0.77/0.62 |
-| 5.15s | fischl | 🟠 electro 0.76/— |
-| 6.57s | fischl | 🔴 electro —/0.68 |
+| 4.05s | ningguang | electro 0.75/0.71 |
+| 4.12s | fischl | 🟡 electro 0.74/0.20 |
+| 5.03s | zhongli | electro 0.77/0.72 |
+| 6.57s | fischl | electro 0.69/0.59 |
 | 8.53s | fischl | electro 0.73/0.63 |
-| 9.08s | zhongli | electro 0.68/0.75 |
-| 9.15s | fischl | 🟡 electro 0.68/0.25 |
-| 11.08s | zhongli | electro 0.76/0.64 |
-| 11.15s | fischl | 🟡 electro 0.76/0.13 |
-| 13.08s | zhongli | 🟡 electro 0.09/0.64 |
-| 15.08s | zhongli | — |
-| 17.08s | zhongli | — |
-| 19.08s | zhongli | — |
-| 21.08s | zhongli | — |
-| 23.08s | zhongli | — |
-| 25.08s | zhongli | — |
-| 27.08s | zhongli | — |
-| 29.08s | zhongli | — |
-| 31.08s | zhongli | — |
-| 33.08s | zhongli | — |
+| 9.03s | zhongli | electro 0.69/0.76 |
+| 9.10s | fischl | 🟡 electro 0.68/0.25 |
+| 11.03s | zhongli | electro 0.77/0.64 |
+| 11.10s | fischl | 🟡 electro 0.76/0.13 |
+| 13.03s | zhongli | 🟡 electro 0.10/0.64 |
+| 15.03s | zhongli | — |
+| 17.03s | zhongli | — |
+| 19.03s | zhongli | — |
+| 21.03s | zhongli | — |
+| 23.03s | zhongli | — |
+| 25.03s | zhongli | — |
+| 27.03s | zhongli | — |
+| 29.03s | zhongli | — |
+| 31.03s | zhongli | — |
+| 33.03s | zhongli | — |
 
 ### 3. Reactions
 
@@ -756,10 +760,10 @@ Compare presence and rough magnitude, never equality.
 | reaction | ours | gcsim |
 | --- | --- | --- |
 | crystallize-electro | — | 6 |
-| electroCrystallize | 4 | — |
+| electroCrystallize | 5 | — |
 
-- **ours:** electroCrystallize@1.53s, electroCrystallize@3.38s, electroCrystallize@5.23s, electroCrystallize@11.23s
-- **gcsim:** crystallize-electro@1.93s, crystallize-electro@3.30s, crystallize-electro@5.47s, crystallize-electro@9.47s, crystallize-electro@11.47s, crystallize-electro@13.47s
+- **ours:** electroCrystallize@1.53s, electroCrystallize@3.38s, electroCrystallize@5.23s, electroCrystallize@7.23s, electroCrystallize@11.23s
+- **gcsim:** crystallize-electro@1.93s, crystallize-electro@3.30s, crystallize-electro@4.43s, crystallize-electro@9.42s, crystallize-electro@11.42s, crystallize-electro@13.42s
 
 ## plunge spam — never ICD-gated
 

@@ -56,6 +56,7 @@ import { dispatchOnReactionExtensions } from './extensions';
 import { dispatchGainStacksOnReaction } from './stacks';
 import { getChainIndexMap } from './cooldowns';
 import { toReactions } from './reactionBridge';
+import { armSummonReactionProcs, takeReactionProcs } from './reactionProcs';
 
 /**
  * One elemental application the rotation put on the target.
@@ -77,6 +78,10 @@ export type AuraApplication = {
 	/**
 	 * This application's gauge strength is a stand-in for data an author could
 	 * supply — the aura lane marks it `--ui-provisional`.
+	 *
+	 * (See `viaEntity` on `Offer` for the other axis the sim tracks — WHO
+	 * delivered the hit. It is deliberately not published here: it exists for one
+	 * source filter, not for a consumer of the IR.)
 	 *
 	 * ↻ NARROWED 2026-08-17 (⚓ Nate). It used to be true for every defaulted
 	 * value, which meant it fired on swings and summon ticks too — and those are
@@ -109,6 +114,19 @@ type Offer = AuraApplication & {
 	constellation: number;
 	chainIdx: ChainIndex;
 	stacks?: Map<string, number>;
+	/**
+	 * ⚓ WHO DELIVERED THE HIT (mark-triggered round, 2026-08-17). `true` when the
+	 * application came from something the character LEFT or TRIGGERED — a summon
+	 * tick or a reaction proc — rather than from their own cast or swing.
+	 *
+	 * ⚠️⚠️ Its one reader is `onReaction`'s `source: 'active'`, and without it
+	 * that filter is unimplementable: a summon tick carries its OWNER's
+	 * `characterId`, so "the active character triggered this reaction" would be
+	 * true of Oz's ticks whenever Fischl is on field. That is exactly gcsim's
+	 * `ActorIndex` defect — every Thundering Retribution in the oracle fires 4
+	 * frames after an Oz application — and the game does not work that way.
+	 */
+	viaEntity?: true;
 };
 
 export type AuraState = {
@@ -163,7 +181,7 @@ export function createAuraState(): AuraState {
  * inverts and the wake-up becomes REQUIRED — the reaction would otherwise be
  * noticed at the next application and dispatched late.
  */
-function offerApplication(ctx: SimContext, offer: Offer): void {
+function offerApplication(ctx: SimContext, clock: Clock, offer: Offer): void {
 	const { gauge, offers } = ctx.aura;
 	gauge.advanceTo(offer.time);
 	const index = offers.length;
@@ -181,13 +199,19 @@ function offerApplication(ctx: SimContext, offer: Offer): void {
 		const src = offers[e.appIndex];
 		if (!src) continue;
 		const time = framesOf(e.time);
-		for (const r of toReactions(e, ctx.team)) emitReaction(ctx, src, r, time);
+		for (const r of toReactions(e, ctx.team)) emitReaction(ctx, clock, src, r, time);
 	}
 }
 
-/** One reaction: the two dispatch paths, then the IR event. ⚠️ Order matters —
+/** One reaction: the three dispatch paths, then the IR event. ⚠️ Order matters —
  *  the dispatches are what feed F2 (a reaction moves a stance's end). */
-function emitReaction(ctx: SimContext, src: Offer, reaction: Reaction, time: number): void {
+function emitReaction(
+	ctx: SimContext,
+	clock: Clock,
+	src: Offer,
+	reaction: Reaction,
+	time: number
+): void {
 	dispatchOnReactionExtensions(
 		ctx,
 		src.characterId,
@@ -207,6 +231,7 @@ function emitReaction(ctx: SimContext, src: Offer, reaction: Reaction, time: num
 		new Map(ctx.team.teamChars.map((c) => [c.id, ctx.constellationLevels?.[c.id] ?? 0])),
 		ctx.getCharState
 	);
+	scheduleReactionProcs(ctx, clock, src, reaction, time);
 	ctx.events.push({
 		kind: 'reaction',
 		id: ctx.nextId(),
@@ -215,6 +240,70 @@ function emitReaction(ctx: SimContext, src: Offer, reaction: Reaction, time: num
 		time,
 		castKind: src.castKind
 	});
+}
+
+/**
+ * ⚓⚓ THE FOURTH APPLICATION SOURCE, dispatched (mark-triggered round). A
+ * `damage` effect on an `onReaction` trigger that carries an `application[]`
+ * lands its hits on the clock at `time + frame` — Nahida's Tri-Karma
+ * Purification (Dendro, 1.5U, +3f) and Fischl's A4 (Electro, 1U, +4f).
+ *
+ * ⚓ SCHEDULED, never offered here. The reaction we are dispatching arrived
+ * inside `offerApplication`'s own `takeEvents` loop, i.e. mid-`apply`, and
+ * offering a second application from there would advance the gauge while it is
+ * reporting on the first. A `Band.LAND` task at `time + frame` puts it exactly
+ * where a cast's own hit goes, ordered against every other application by the
+ * one clock. ⚠️ `time` IS `clock.now` (see the module head), so a zero-frame
+ * delay queues at this instant and runs after the current task rather than
+ * clamping.
+ *
+ * ⚠️ The listener's cooldown is spent in `takeReactionProcs`, at the TRIGGER
+ * instant — not when the hit lands. That is the same split a cast uses, and it
+ * is what makes the trigger interval mean what gcsim's status timer means.
+ */
+function scheduleReactionProcs(
+	ctx: SimContext,
+	clock: Clock,
+	src: Offer,
+	reaction: Reaction,
+	time: number
+): void {
+	if (ctx.reactionProcs.size === 0) return;
+	const fired = takeReactionProcs(
+		ctx,
+		{ characterId: src.characterId, viaEntity: src.viaEntity === true },
+		reaction,
+		time
+	);
+	for (const l of fired) {
+		for (const app of l.effect.application) {
+			// ⛔ A physical (element-less) entry applies nothing — the same rule a
+			// physical swing follows.
+			if (!app.element) continue;
+			const at = time + app.frame;
+			const element = app.element;
+			clock.schedule(at, Band.LAND, () => {
+				offerApplication(ctx, clock, {
+					time: at,
+					characterId: l.holderId,
+					element,
+					units: app.units ?? DEFAULT_UNITS,
+					// ⚓ "Could someone MEASURE this?" — yes: a proc's gauge is one
+					// number in gcsim's ICD group table, so an unauthored one is real
+					// missing work and says so.
+					provisionalUnits: app.units === undefined,
+					castKind: l.castKind,
+					preStates: l.preStates,
+					constellation: l.constellation,
+					chainIdx: l.chainIdx,
+					stacks: l.stacks,
+					// ⚓ A proc is delivered by the MARK, not by the character — so it
+					// can never itself count as "the active character triggered this".
+					viaEntity: true
+				});
+			});
+		}
+	}
 }
 
 /**
@@ -326,7 +415,7 @@ export function emitReactionsAtCast(
 	for (const app of resolveCastApplications(char, application, castKind, abilityNoICD)) {
 		const at = castTime + app.frame;
 		clock.schedule(at, Band.LAND, () => {
-			offerApplication(ctx, {
+			offerApplication(ctx, clock, {
 				time: at,
 				characterId: char.id,
 				element: app.element,
@@ -368,6 +457,7 @@ export function emitReactionsAtCast(
  *  `provisionalUnits` for the line the flag now draws. */
 export function emitReactionsAtSwing(
 	ctx: SimContext,
+	clock: Clock,
 	char: CharacterData,
 	kind: NormalActionKind,
 	element: Element | undefined,
@@ -381,15 +471,17 @@ export function emitReactionsAtSwing(
 	if (!element) return;
 	const params = resolveActionIcd(kind, char.weapon, abilityNoICD, chargedIcdWindow);
 	if (params) {
+		// ⚠️ Named `icd`, not `clock` — the rotation `Clock` is a parameter now
+		// (the reaction-proc dispatch needs it), and the two must not shadow.
 		const key = `${char.id}:${icdTagFor(kind)}`;
-		let clock = ctx.icdClocks.get(key);
-		if (!clock) {
-			clock = createIcdClock();
-			ctx.icdClocks.set(key, clock);
+		let icd = ctx.icdClocks.get(key);
+		if (!icd) {
+			icd = createIcdClock();
+			ctx.icdClocks.set(key, icd);
 		}
-		if (!icdApplies(clock, time, params).applies) return;
+		if (!icdApplies(icd, time, params).applies) return;
 	}
-	offerApplication(ctx, {
+	offerApplication(ctx, clock, {
 		time,
 		characterId: char.id,
 		element,
@@ -484,6 +576,29 @@ export function scheduleSummonTicks(
 				})()
 			});
 
+		/** Superseded by a recast? ⚓ Shared with the proc listener below so the
+		 *  two cannot disagree about which spawn is live. */
+		const isCurrent = (): boolean => (ctx.summonChainGen.get(key) ?? 0) === generation;
+
+		// ⚓ The summon's own REACTION PROCS (mark-triggered round, 2026-08-17) —
+		// Fischl's A4 rides Oz. Armed here, beside the ticks, because this is where
+		// the geometry already is: the listener borrows this exact `endNow`/
+		// `isCurrent` pair, so a swap-out, a duration extension or a recast reaches
+		// it through the one `summonEndAt` instead of a second copy.
+		armSummonReactionProcs({
+			ctx,
+			holderId: char.id,
+			summon,
+			spawnAt,
+			endNow,
+			isCurrent,
+			preStates,
+			constellation,
+			chainIdx,
+			stacks,
+			castKind: kind
+		});
+
 		for (const series of summonTickSeries(summon, cLevel, (e) => e.type === 'damage')) {
 			const element = (series.effect as Extract<Effect, { type: 'damage' }>).element;
 			// ⛔ A physical (element-less) tick applies nothing and must not reach
@@ -498,7 +613,7 @@ export function scheduleSummonTicks(
 			const fire = (at: number): void => {
 				// Superseded by a recast, or the summon is gone. Either way the
 				// chain simply ends — ⛔ nothing has to cancel a scheduled task.
-				if ((ctx.summonChainGen.get(key) ?? 0) !== generation) return;
+				if (!isCurrent()) return;
 				if (at >= endNow()) return;
 
 				let applies = true;
@@ -511,7 +626,7 @@ export function scheduleSummonTicks(
 					applies = icdApplies(icd, at, STANDARD_ICD_FRAMES).applies;
 				}
 				if (applies) {
-					offerApplication(ctx, {
+					offerApplication(ctx, clock, {
 						time: at,
 						characterId: char.id,
 						element,
@@ -526,7 +641,12 @@ export function scheduleSummonTicks(
 						preStates,
 						constellation,
 						chainIdx,
-						stacks
+						stacks,
+						// ⚓ Delivered by the SUMMON, not by the character — so a tick
+						// can never satisfy `onReaction`'s `source: 'active'`, even
+						// while its owner is the one on field. That is the whole
+						// difference between Fischl's A4 in game and in gcsim.
+						viaEntity: true
 					});
 				}
 				// ⚠️ Scheduled whether or not the tick APPLIED: an ICD-suppressed
