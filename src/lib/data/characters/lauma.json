@@ -69,7 +69,27 @@
 					"label": "Frostgrove Sanctuary",
 					"duration": 15,
 					"mobility": "stationary",
-					"terminatesOn": "recast"
+					"terminatesOn": "recast",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.95,
+								"firstTickDelay": 1.033,
+								"icdGate": "none"
+							},
+							"scaling": 172.8,
+							"stat": "atk",
+							"element": "dendro",
+							"_curatorNotes": [
+								"gcsim internal/characters/lauma/skill.go: Skill() queues frostgroveSantuaryTick ×skillTicks(8) at skillFirstTickDelay(62) + frostgroveSanctuaryInterval(117)·i — interval 117/60 = 1.95s, firstTickDelay (62 − spawnsAt 0)/60 = 1.033s. Tick AttackInfo: Element Dendro, Durability 25 (1U), ICDTag ICDTagNone → icdGate 'none' (gcsim-frames-diff §5 measured 8/8 none, 62f/117f ×8, matching exactly).",
+								"scaling = frostgroveSanctuaryAtk[9] = 1.728 (zz_lauma.dm.go) = 172.8% ATK at talent level 10; sidecar row 'Frostgrove Sanctuary Attack DMG' 10th value = '172.8% ATK+345.6% Elemental Mastery'. The EM addend (FlatDmg = EM × frostgroveSanctuaryEM[9] = 3.456) is not expressible in the single-stat damage effect and is omitted — schema gap, ATK term only.",
+								"C6 (c6OnFrostgroveTick, cons.go) adds a paired Lunar-Bloom hit per tick, but its AttackInfo has Durability 0 — it applies nothing and does not change this series' cadence or count, so no constellation-gated variant is authored."
+							]
+						}
+					]
 				}
 			],
 			"tags": ["summon"],
