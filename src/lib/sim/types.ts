@@ -147,9 +147,11 @@ export type ParsedRotation = {
 	 * round L6). Seconds and taxed units, `gauge.ts`'s own shape.
 	 *
 	 * ⚓⚓ THIS IS THE LIVE GAUGE'S OWN OUTPUT, NOT A RE-RUN. ⛔ Never rebuild it
-	 * by feeding `applications` to `simulateGauge`: that list is sorted and the
-	 * feed order is not, so a re-run would draw an aura the parse never had. Same
-	 * rule that put `applications` here in the first place.
+	 * by feeding `applications` to `simulateGauge`. ⚠️ The reason is no longer
+	 * that the list is mis-ordered — the feed has been in true time order since
+	 * 2026-08-17 — it is that a replay is a SECOND COPY of the truth and cannot
+	 * see the gauge's internal chain (Burning fuel, EC ticks, core spawns), so it
+	 * draws an aura the parse never had. Same rule that put `applications` here.
 	 *
 	 * ⚠️ Includes the decay tail past the last cast — the gauge is settled at
 	 * finalize (`collectAuraSeries`), because "where you lost it" is mostly what

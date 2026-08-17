@@ -785,12 +785,15 @@ were made: "the ceiling is DATA" (above), and L5e §3.3's "a summon tick needs n
 gate", which was generalised from Xiangling alone — Oz applies ~1 in 3, so it is
 PER-ABILITY exactly as L4d's census said.
 
-⚠️ **Open, and deliberately queued BEHIND L6** (decision recorded in L5e's §3.5 with the
-reasoning, the flip condition and two rejected alternatives): `ParsedRotation.applications`
-is sorted at the projection, but the FEED order is not time-ordered — the cast pipeline advances the
-clock before the emitters run, so a cast's own application is clamped and `Band.TICK`
-sorts ahead of `Band.LAND` at the clamped frame. 4 inversions in 464 applications, none
-cross-element. Fixing the feed moves event ids and is its own landing.
+✅ **CLOSED 2026-08-17** (`ad48627`, recorded in L5e's own doc): the cast pipeline
+SCHEDULES BEFORE IT ADVANCES, so `ParsedRotation.applications` is in feed order and feed
+order is time order — the sort is gone and the invariant is pinned over the corpus.
+⚠️⚠️ **The census that measured this defect is what hid its size.** Re-run verbatim
+(`<name> E Q`, 123 characters) it still reports 4 inversions and zero cross-element, and
+that is a property of the CENSUS: a summon and its caster share an element, so ONE
+character can never exhibit the case. Widened to the projections corpus it reports **130
+inversions, 37 cross-element** — the documented flip condition had already flipped.
+⚓ **Never scope a multi-character measurement to a single character.**
 
 ⏭ **The residue L5e does not close:** 30 applications of curation (a damage tick series
 on 24 existing summons), 30 of other gaps, and the 13 `OTHER` ICD series that are neither

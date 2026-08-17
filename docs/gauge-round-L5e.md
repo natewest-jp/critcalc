@@ -328,53 +328,84 @@ index, swapOutAt })`, with the swap clamp folded INSIDE so an unclamped end can 
   summon declares `terminatesOn: 'swap'` or carries `durationExtensions`) — ⛔ don't cover
   them with a fixture summon. Gates green incl. **e2e 73 + 73**.
 
-### ⚠️⚠️ STILL OPEN — the `applications` feed order
+### ✅ CLOSED — the `applications` feed order (2026-08-17, `ad48627`)
 
-`collectApplications` sorts, so the PROJECTION is time-ordered; the order the gauge was
-FED is not. The cast pipeline advances the clock through the cast animation before the
-emitters run, so a cast's own application is scheduled into the past and clamped to `now`
-(what `clock.latecomers` counts) — and `Band.TICK` (10) sorts ahead of `Band.LAND` (20) at
-that clamped frame, so a summon's first tick can be offered before the cast that spawned
-it. `gauge.advanceTo` is `while (frame < target)`, so the earlier application lands at the
-later frame.
+`collectApplications` used to SORT, so the projection was time-ordered while the order the
+gauge was FED was not. The cast pipeline advanced the clock through the cast animation
+before its emitters ran, so a cast's own application was scheduled into the past and
+clamped to `now` (what `Clock.latecomers` counts) — and with L5e-b's summon ticks queued
+at `Band.TICK` (10) against the cast's `Band.LAND` (20) at that clamped frame, a summon
+could reach the gauge before the cast that spawned it. `gauge.advanceTo` is
+`while (frame < target)`, so the earlier application landed at the later frame.
 
-Measured: **4 inversions in 464 applications across all 123 characters, ZERO
-cross-element** — a summon and its caster share an element, which is what keeps it from
-changing a reaction. ⛔ The sort is not the fix.
+#### ⚠️⚠️ The census is what hid the size of it
 
-#### The fix, and why it is queued BEHIND L6
+Re-run verbatim as this document specified — `<name> E Q` over all 123 characters — it
+still reports **4 inversions, ZERO cross-element**, reproducing the recorded number
+exactly. That is a property of the CENSUS, not of the engine: a summon and its caster
+share an element, so **one character can never exhibit the case that matters**, and the
+whole point of a rotation is more than one character. Widened to the projections corpus
+(123 characters × C0/C6 plus the 33 multi-character scenarios × with/without a loadout),
+the same measurement reports **130 inversions, 37 of them CROSS-ELEMENT** — led by a
+Xiangling Pyronado tick reaching the gauge 30 frames before the Xingqiu hydro it should
+have followed, which decides which way that cycle's vaporize runs and who gets credited
+with it.
 
-⚓ **The fix is to schedule BEFORE the advance** — capture the cast's applications and the
-summon chain while `clock.now` is still `castStart`, so nothing clamps and tasks fire in
-true frame order. Mechanically that is a move of two call sites inside `handleCast`.
+⚓ **The documented flip condition — "a cross-element inversion becoming reachable" — had
+already flipped, and the census as written could not see it.** ⛔ Never re-scope a
+multi-character measurement to a single character.
 
-⚠️⚠️ **Its cost is that it MOVES EVENT IDS.** Ids are assigned in emission order and are
-visible in the IR, and `BuffWindow.id` order is a documented invariant that two row
-projections sort by — the round's own notes call it _"the single most dangerous hidden
-coupling in the refactor"._ So it needs L3's treatment: a corpus IR comparison, expected
-diffs enumerated, and Nate's eyes on the timeline. A half-session, ⛔ not a patch, and
-⛔ never slipped in alongside feature work.
+#### The fix
 
-**Sequencing decision (2026-08-16): do L6 first.**
+Exactly the move planned: `castEnd` is named at the top of the cast pipeline, the two
+consumers that read the post-advance cursor (`advanceChain`, the burst `cdReset`) read it
+directly, and `clock.advance(castEnd)` runs LAST. The whole pipeline therefore schedules
+at `clock.now === castStart`, nothing clamps, and the clock orders every application by
+its own frame.
 
-1. **Nothing observable changes today.** Zero cross-element inversions means no reaction,
-   no buff window and no rendered bar differs. Fixing it now buys invisible correctness.
-2. **L6 is the test.** It draws the aura lane — the first surface where application
-   TIMING is directly visible rather than inferred through reactions. If a 38-frame
-   displacement can ever show, it shows there, and then the fix has evidence behind it.
-3. **The risk profile is wrong for a quiet commit.** An id-moving change looks inert and
-   shifts rows on screen; it wants its own landing with a differ.
+⛔ **The sort is GONE rather than kept for safety** — it would silently absorb the
+defect's return. The invariant is pinned over the corpus in `notationParser.ir.test.ts`
+instead, and was verified the only way a guard can be: by reverting `run.ts` and watching
+**12 tests go red**, one of them naming a cross-element pair
+(`fischl electro@107` → `bennett pyro@91`).
 
-⚠️ **What would flip this:** a **cross-element** inversion becoming reachable — a summon
-whose element differs from its caster's (Xilonen-shaped). None tick today. ⚓ Re-run the
-census rather than re-deriving it: parse `<name> E Q` for every character and count
-adjacent pairs where `applications[i].time < applications[i-1].time`, flagging those whose
-elements differ.
+#### What moved — 55 of 314 corpus cases
 
-⛔ **Two fixes considered and rejected**, so they are not re-proposed: making
-`gauge.advanceTo` tolerate a backwards frame (hides the defect rather than fixing it), and
-moving summon ticks to `Band.LAND` (papers over the clamp with a band that lies about what
-the task is).
+| surface                                                      | cases | what                                                                                                                                     |
+| ------------------------------------------------------------ | ----- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `tracks` (eBars/qBars/inputBlocks)                           | **0** | ⚓ no bar on the timeline moves                                                                                                          |
+| summon / shield / nb / moonsign / weaponProc / received rows | **0** |                                                                                                                                          |
+| `teamBuff` rows                                              | 7     | onReaction bars start earlier with their reaction; ⚓ no row added, removed or REORDERED — the `BuffWindow.id`-order hazard did not bite |
+| `events`                                                     | 34    | 17 id-only; 17 real (below)                                                                                                              |
+| `windows`                                                    | 26    | 19 provenance-id only; 7 geometry                                                                                                        |
+| `applications`                                               | 2     | one stale Oz tick per Fischl case                                                                                                        |
+| `auraSeries`                                                 | 41    | the trajectory                                                                                                                           |
+
+- **Reaction ids now precede the next cast's**, so id order agrees with time order — a
+  strengthening of the invariant the round called its most dangerous hidden coupling.
+- **Every reaction time that moved, moved EARLIER** — median −30 frames, max −58. Net
+  **+1 frozen and +1 electroCharged** (a Citlali/Furina pair the mis-ordering was
+  destroying outright) and **−2 vaporize** across 20 cycles, with Xiangling taking the
+  vaporize credit Xingqiu was wrongly collecting each cycle — which is why the 20-cycle
+  fixture grows ten more Instructor windows on her.
+- **Fischl lost one application per case**, and it was a bug: an Oz tick firing 55 frames
+  after its summon window had been truncated by the burst recast. The generation stamp
+  now lands at the cast rather than at the animation's end, so a tick inside the burst
+  animation is superseded, matching finalize's own truncation.
+- ⚓⚓ **19 of the 41 moved trajectories have IDENTICAL applications and events.** That is
+  the visible half: the aura lane drew its application pip at the true frame while the
+  line stepped later — Columbina's hydro pip at 8.05 s against a step at 8.15 s. ⚓ **The
+  pip and the line it points into now agree**, and the trajectory gains the samples it was
+  missing (50 → 52 points in that case).
+
+#### The oracle is byte-identical
+
+145 applications ours · **0** extra · **0** mismatch · tier-2 **122 of 264** agreeing at a
+mean |Δ| of **0.173U** — the same numbers before and after, and all 145 paired rows match
+on OUR column. ⚠️ Nine rows differ between two runs of the audit; every one of them moved
+on GCSIM's side, which is the documented ±1 flicker. ⚓ The twelve oracle fixtures simply
+do not reach the case — which is the argument for the corpus differ living beside them,
+not instead of them.
 
 ⏭ The 30-application curation half is **separate work, not a sub-landing here** — it has
 its own visible-change gate (§1) and does not block any of the above.

@@ -17,9 +17,11 @@
  * keeps its `SimEvent`s. The parse keeps only the resulting trajectory
  * (`auraSeries`) plus the IR's reaction events, so the amounts are not in the
  * planner's hands at all. ⛔ Don't reconstruct them by re-running the gauge over
- * `applications`: that list is SORTED and the feed order is not, so a re-run
- * describes a model the parse never had (gauge round L5e). If the amounts are
- * ever wanted here, they have to come from the sim recording them.
+ * `applications`: a replay is a second copy of the truth and cannot see the
+ * gauge's internal chain, so it describes a model the parse never had. ⚠️ It is
+ * NOT that the list is mis-ordered — that defect was fixed 2026-08-17 and the
+ * rule outlived its first reason. If the amounts are ever wanted here, they have
+ * to come from the sim recording them.
  *
  * What it says instead is the thing the instrument cannot: WHO. In the planner
  * an application is somebody's cast, and that attribution is the whole reason a
