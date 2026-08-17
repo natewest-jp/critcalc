@@ -115,10 +115,30 @@
 			"energyCost": 70,
 			"tags": ["taunt"],
 			"summons": [
-				{ "label": "Bogglecat Box", "duration": 12.6, "spawnsAt": 14, "mobility": "stationary" }
+				{
+					"label": "Bogglecat Box",
+					"duration": 12.6,
+					"spawnsAt": 14,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": { "type": "summonTick", "interval": 0.983, "firstTickDelay": 2.033 },
+							"scaling": 92.16,
+							"stat": "atk",
+							"element": "anemo",
+							"_curatorNotes": [
+								"gcsim internal/characters/lynette/bogglecatbox.go newBogglecatBox(): bogglecatAI Mult = bogglecat[c.TalentLvlBurst()], Element Anemo, Durability 25, ICDTag ElementalBurst / ICDGroup Default (standard ICD, so no icdGate). Loop `for t := burstFirstTick - burstSpawn; t <= b.Duration; t += burstTickInterval` = 11 ticks.",
+								"Cadence from burst.go consts: burstTickInterval = 59f -> 0.983s; burstFirstTick = 136f and burstSpawn = 14f, both cast-relative, so firstTickDelay = (136 - 14)/60 = 2.033s from spawn.",
+								"Scaling from zz_lynette.dm.go `bogglecat` array index 9 (talent lvl 10) = 0.9216 -> 92.16. Sidecar docs/curation/talents/lynette.json burst row 'Bogglecat Box DMG' 10th value = 92.2% (genshin-db rounds to 1dp); gcsim's exact value preferred."
+							]
+						}
+					]
+				}
 			],
-			"effects": [],
 			"_curatorNotes": [
+				"Vivid Shots are NOT authored as a tick series: they only exist after elemental absorption, their element is the absorbed one (not Lynette's), and gcsim queues them on a separate ICDTagElementalBurstAnemo counter. C2 doubles them (vividCount=2) and affects nothing about the Bogglecat Box ticks above.",
 				"Elemental Absorption: Bogglecat Box absorbs one of Pyro/Hydro/Cryo/Electro once per use (via HandleAttack or absorbCheck every 0.3s). After absorption, fires Vivid Shots of that element at burstVividInterval=134f (~2.2s) intervals for remaining duration. Reviewer to decide effect-row representation.",
 				"After elemental absorption, b.Kill() removes the box from the hittable gadget list but all vivid shot tasks are already queued and continue to run. Box duration is burstDuration=754f (12.6s) from spawn regardless of when absorption occurs."
 			],

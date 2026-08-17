@@ -84,6 +84,18 @@
 							"scaling": 5.04,
 							"stat": "hp",
 							"flat": 593.2341
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": { "type": "summonTick", "interval": 1.783, "firstTickDelay": 0 },
+							"scaling": 4.104,
+							"stat": "hp",
+							"element": "hydro",
+							"_curatorNotes": [
+								"Bolstering Bubblebalm damage tick authored 2026-08-17 (gauge-round residue: geometry-only summon that gcsim measures dealing damage). gcsim skill.go bolsteringBubblebalm() queues c.skillAttackInfo on every bounce, re-scheduling itself at bubbleHitInterval=107f → interval 1.783s; the first bounce is the task added at skillHitmark, which IS this summon's spawnsAt (press 35f) → firstTickDelay 0. generateSkillSnapshot(): FlatDmg = bolsteringBubblebalmDMG[TalentLvlSkill] * c.MaxHP() → stat 'hp'; index 9 (TL10) = 0.04104 → scaling 4.104, cross-checked against sidecar row 'Bolstering Bubblebalm DMG' col 10 = '4.10% Max HP'. Element Hydro, Durability 25 (1U). ICDTag=ICDTagElementalArt / ICDGroup=ICDGroupSigewinne → standard ICD, matching gcsim-frames-diff §5 (Rebound Hydrotherapy 35f / 107f × 5 · 3/5 'standard'); no icdGate annotation.",
+								"Tick COUNT is bubbleHitLimit (sigewinne.go: 5 base, +3 at C1 → 8) and is already expressed by the summon's duration 7.1s plus the C1 durationModifier +5.4s; the CADENCE is unchanged at C1, so no constellation-gated second series is authored. Hold-tier DMG bonus NOT authored: bubbleTierDamageMod() adds currentBubbleTier*bubbleTierBuff (0.05) DmgP to this exact attack and bubbleTierLoseTask drops a tier per bounce, so only the earliest bounces of h1E/h2E get +5%/+10% — the same decaying-per-tick gap already flagged for the tier healing bonus in the caveat. Interval written as 1.783 (107/60 to 3dp) rather than the sibling heal effect's legacy 1.78; same gcsim constant."
+							]
 						}
 					]
 				}
@@ -115,6 +127,17 @@
 									"scaling": 5.04,
 									"stat": "hp",
 									"flat": 593.2341
+								},
+								{
+									"type": "damage",
+									"target": "enemy",
+									"trigger": { "type": "summonTick", "interval": 1.783, "firstTickDelay": 0 },
+									"scaling": 4.104,
+									"stat": "hp",
+									"element": "hydro",
+									"_curatorNotes": [
+										"Same Bolstering Bubblebalm damage tick as the base E summon (AbilityVariant.summons REPLACES the base array, so each variant needs its own copy). gcsim skill.go bolsteringBubblebalm() at bubbleHitInterval=107f → 1.783s; first bounce at skillShortHoldHitmark=66f, which IS this summon's spawnsAt → firstTickDelay 0. bolsteringBubblebalmDMG[9]=0.04104 → scaling 4.104 of MaxHP (sidecar 'Bolstering Bubblebalm DMG' col 10 = '4.10% Max HP'). Hydro, Durability 25 (1U), ICDTagElementalArt/ICDGroupSigewinne → standard ICD, no icdGate."
+									]
 								}
 							]
 						}
@@ -147,6 +170,17 @@
 									"scaling": 5.04,
 									"stat": "hp",
 									"flat": 593.2341
+								},
+								{
+									"type": "damage",
+									"target": "enemy",
+									"trigger": { "type": "summonTick", "interval": 1.783, "firstTickDelay": 0 },
+									"scaling": 4.104,
+									"stat": "hp",
+									"element": "hydro",
+									"_curatorNotes": [
+										"Same Bolstering Bubblebalm damage tick as the base E summon (AbilityVariant.summons REPLACES the base array, so each variant needs its own copy). gcsim skill.go bolsteringBubblebalm() at bubbleHitInterval=107f → 1.783s; first bounce at skillHoldHitmark=90f, which IS this summon's spawnsAt → firstTickDelay 0. bolsteringBubblebalmDMG[9]=0.04104 → scaling 4.104 of MaxHP (sidecar 'Bolstering Bubblebalm DMG' col 10 = '4.10% Max HP'). Hydro, Durability 25 (1U), ICDTagElementalArt/ICDGroupSigewinne → standard ICD, no icdGate."
+									]
 								}
 							]
 						}

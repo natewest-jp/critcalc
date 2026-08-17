@@ -138,12 +138,13 @@
 			"_curatorNotes": [
 				"Fortune-Preserving Talisman is an enemy-attached status effect modeled as a summon (no mobility field, per Mona Illusory Bubble precedent). spawnsAt=40 from talismanAi QueueAttack(…, 40, 40, talismanCB) in burst.go, which fires before main DMG at burstHitmark=82. Duration 15s from e.AddStatus(talismanKey, 15*60).",
 				"STELLAR ROUND 2026-07-29. Enhanced (buff-field) text, Fandom 'Adeptus Art: Preserver of Fortune': 'Radiance: Stellar-Conduct: Deals an additional instance of Cryo DMG that is also considered Stellar-Conduct DMG.' Stellar-Conduct DMG scaling row 297.3–669%, TL10 = 535.2%; Advanced Properties list it as a separate 0U, no-ICD instance. Page category 'Direct Stellar-Conduct Talents' — damage magnitude, so caveat + note only, never a damage effect (same call as Sandrone C4). Gate is the Radiance: Stellar-Conduct state (Qiqi inside a Polestar Field), narrower than a teamEnablesReaction condition would express — nothing authored, so no gate needed here.",
+				"GAUGE ROUND 2026-08-17. The Talisman summon is NOT a tick series — gcsim's burst.go has no QueueCharTask/Tasks.Add on a period; the only thing the talismanKey status drives is talismanHealHook (heal to whoever damages the marked enemy, 1s ICD via talismanICDKey), which is healing, not damage, and is driven by the party's hits rather than a timer. Nothing added to summons[].effects. The burst's OWN Cryo hit was missing from application[] and is now authored: burst.go const burstHitmark = 82, ai{Element: attributes.Cryo, Durability: 50, Mult: burstDmg[c.TalentLvlBurst()]} → frame 82, cryo, 50/25 = 2U. The frame-40 entry stays element-less on purpose: talismanAi is AttackTagNone/ICDTagNone with Element attributes.Physical and no Mult (application-only marker attack).",
 				"STILL UNAUTHORED (pre-existing, unchanged by this round): the burst's own Talisman healing, 90–203% ATK+577–1,703 (TL10 = 162% ATK+1,270), once per second, active character only and only when they hit the marked target."
 			],
 			"behavior": "instant",
 			"description": "Qiqi releases the adeptus power sealed within her body, marking nearby opponents with a Fortune-Preserving Talisman that deals Cryo DMG.\n\nFortune-Preserving Talisman\nWhen opponents affected by this Talisman take DMG, the character that dealt this DMG regenerates HP.",
 			"caveat": "Not modeled: with the Witch's Revelation talent unlocked, a cast inside a Polestar Field adds a Cryo hit that counts as Stellar-Conduct DMG.",
-			"application": [{ "frame": 40 }]
+			"application": [{ "frame": 40 }, { "frame": 82, "element": "cryo", "units": 2 }]
 		}
 	],
 	"passives": [

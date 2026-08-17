@@ -64,12 +64,37 @@
 			"cooldown": 12,
 			"cooldownStartDelay": 24,
 			"tags": ["taunt"],
-			"summons": [{ "label": "Phantom", "duration": 4, "spawnsAt": 86, "mobility": "stationary" }],
+			"summons": [
+				{
+					"label": "Phantom",
+					"duration": 4,
+					"spawnsAt": 86,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": { "type": "summonTick", "interval": 0.983, "firstTickDelay": 0 },
+							"scaling": 57.6,
+							"stat": "atk",
+							"element": "hydro",
+							"_curatorNotes": [
+								"gcsim internal/characters/mona/skill.go Skill(): the DoT AttackInfo (Abil \"Mirror Reflection of Doom (Tick)\") is Mult: skillDot[c.TalentLvlSkill()], Element Hydro, Durability 25, ICDTag ICDTagElementalArt / ICDGroupDefault; loop `for i := skillHitmarks[hold]; i < 300; i += 59` gives 4 ticks at 86/145/204/263 (tap).",
+								"interval 59f / 60 = 0.983s. firstTickDelay = (86 observed first frame − 86 authored spawnsAt) / 60 = 0 — the summon spawns ON its first tick.",
+								"scaling 57.6 = skillDot[9] (0.576) in zz_mona.dm.go, cross-checked against docs/curation/talents/mona.json talents.skill row \"DoT\" 10th value 57.6%.",
+								"No icdGate: ICDTagElementalArt/ICDGroupDefault is standard ICD, and the gcsim-frames-diff row verdict is 2/4 `standard`.",
+								"Snapshot is c.Snapshot(&ai) with no stat substitution, so stat is atk.",
+								"⚠️ TICK-COUNT DIVERGENCE (verifier, 2026-08-17), geometry left alone: our series is bounded by the authored duration, not by a count. spawn 86f + duration 4s = end 326f, so collectSummonTicks emits 86/145/204/263/322 — FIVE ticks, one more than gcsim's four (its loop caps at `i < 300`, so 322 is out). Hold is the same shape (101/160/219/278/337 vs four). The extra tick is an OVER-count: one hydro application at ~5.37s that gcsim never produces. No honest in-schema fix exists — the schema has no tick cap; a duration of 2.95–3.93s would exclude the 5th tick but contradicts the ~4.05s lifetime the explosion measures; a firstTickDelay of 0.067 (4f) yields exactly four ticks at the cost of misstating the first tick's frame. Same class as the documented divergence on Collei's Trump-Card Kitty (an under-count there). Closing it needs a schema-level tick cap."
+							]
+						}
+					]
+				}
+			],
 			"effects": [],
 			"_curatorNotes": [
 				"Phantom summon spawns at first DoT tick (Tap E: frame 86, Hold E: frame 101) and explodes at skillHitmarks[hold]+243 frames (~4.05s after spawn). Duration rounded to 4s.",
 				"Hold E variant (skillFrames[1]): swap=73, Q=58, D=66, J=59; spawnsAt=101 — overrides summons[0].spawnsAt via variant.summons.",
-				"Phantom DoT ticks every 59 frames, 4 ticks total. Explosion at skillHitmarks[hold]+243 frames. DoT and explosion damage not authored as effects — needs reviewer pass.",
+				"Phantom DoT ticks every 59 frames, 4 ticks total — authored as a summonTick damage effect on summons[0] (and restated on the Hold variant's summon, whose array replaces this one). The explosion at skillHitmarks[hold]+243 frames is the ability's own application[] entry (frame 329 tap / 344 hold) and is NOT part of the tick series; its damage (skill[9] = 239.04%) is still unauthored.",
 				"A1 auto-Phantom during dash (50% explosion DMG, 2s duration after 2s of dash) not modeled — requires complex dash-duration trigger not covered in this pass."
 			],
 			"variants": [
@@ -78,7 +103,27 @@
 					"input": ["hE"],
 					"frames": { "anim": 80, "C": 76, "Q": 58, "D": 66, "J": 59, "swap": 73 },
 					"summons": [
-						{ "label": "Phantom", "duration": 4, "spawnsAt": 101, "mobility": "stationary" }
+						{
+							"label": "Phantom",
+							"duration": 4,
+							"spawnsAt": 101,
+							"mobility": "stationary",
+							"effects": [
+								{
+									"type": "damage",
+									"target": "enemy",
+									"trigger": { "type": "summonTick", "interval": 0.983, "firstTickDelay": 0 },
+									"scaling": 57.6,
+									"stat": "atk",
+									"element": "hydro",
+									"_curatorNotes": [
+										"Same series as the tap-E Phantom — restated because a variant's `summons` REPLACE the base ability's rather than merging, so omitting it would silently drop the DoT on hold E.",
+										"gcsim skill.go: the tick loop is `for i := skillHitmarks[hold]; i < 300; i += 59` with skillHitmarks[1] = 101, giving 4 ticks at 101/160/219/278. firstTickDelay = (101 − 101 spawnsAt) / 60 = 0.",
+										"⚠️ Same tick-count divergence as the tap Phantom — see the note on summons[0] of the base ability. Duration 4s from spawn 101f ends at 341f, so we emit a fifth tick at 337f that gcsim's `i < 300` cap excludes."
+									]
+								}
+							]
+						}
 					],
 					"application": [{ "frame": 344, "element": "hydro", "units": 1 }]
 				}

@@ -99,7 +99,25 @@
 					"label": "Celestial Dreamsphere",
 					"duration": 12,
 					"spawnsAt": 36,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 1.3 },
+							"scaling": 8.368,
+							"stat": "hp",
+							"element": "cryo",
+							"_curatorNotes": [
+								"Starlight Slug tick series authored 2026-08-17 from gcsim internal/characters/layla/burst.go `func (c *char) Burst`: `for delay := burstStart; delay < 12*60+burstStart; delay += 90` — 8 tasks on a fixed 90f period (interval 90/60 = 1.5s), each queueing one attack. Not a coordinated attack: the cadence is a Core.Tasks.Add timer, independent of the active character.",
+								"firstTickDelay 1.3 = (114f − spawnsAt 36f) / 60. 114f is the landing frame from cast start: burstStart 36 + tickRelease 56 + tickTravel 22 (`c.Core.QueueAttack(ai, …, tickRelease, tickRelease+travel, cb)`; travel defaults to tickTravel = 22, overridable by the `travel` param). Matches the gcsim-frames-diff §5 observed row 114f / 90f × 8.",
+								"scaling 8.368 = zz_layla.dm.go `burst` array index 9 (talent level 10) = 0.083678 of Max HP. Sidecar docs/curation/talents/layla.json row 'Starlight Slug DMG', 10th value '8.4% Max HP' — same number at genshin-db's display precision; gcsim's is used.",
+								"stat 'hp': the tick is `FlatDmg: burst[c.TalentLvlBurst()] * c.MaxHP()` with no Mult — Max-HP scaling, not ATK.",
+								"ICD left bare (standard): ai has ICDTag ICDTagElementalBurst / ICDGroup ICDGroupDefault, and the measured row's verdict is 4/8 standard. Durability 25 = 1U.",
+								"C6 Radiant Soulfire increases Starlight Slug DMG by 40% but changes neither the cadence nor the tick count, so no gated variant is authored."
+							]
+						}
+					]
 				}
 			],
 			"effects": [],

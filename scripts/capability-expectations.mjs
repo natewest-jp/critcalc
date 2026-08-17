@@ -383,6 +383,136 @@ export const EXPECTED = [
 		note: 'INCIDENTAL: Mini Baku Munen Shockwaves from uncollected snacks over the 12s burst (un-gated on Dreamdrifter) — secondary to her heal/EM-buff identity'
 	},
 
+	// ⚓ Blind-spot batch VERIFIED 2026-08-17 — the gauge round's L5e curation
+	// residue. Each of these summons was authored as a geometry-only shell (a
+	// lane with a lifetime and no effects) while gcsim measured it ticking
+	// damage, so the facet answered "no off-field damage" for seventeen
+	// characters who have it. The tick series were authored per-character from
+	// `~/Code/gcsim` with the cadence, multiplier, element and durability read
+	// out of the Go and cross-checked against each talent sidecar at level 10;
+	// evidence lives in each summon's `_curatorNotes`. ⚠️ Every one of these
+	// summons persists off-field — none declares `terminatesOn: 'swap'`, which
+	// `pushSummonCapabilities` deliberately ignores anyway.
+	{
+		id: 'amber',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'INCIDENTAL: Fiery Rain arrow volley (Pyro, fastest cadence 0.2s) lasts only 2s — real, but far from an off-field identity'
+	},
+	{
+		id: 'baizhu',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'INCIDENTAL: Pulsing Clarity Spiritvein DMG (Dendro every 2.43s on each shield refresh, 14s) — he is a healer/shielder first'
+	},
+	{
+		id: 'collei',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Cuilein-Anbar leaps (Dendro every 0.5s over the 6s zone) — her headline off-field Dendro'
+	},
+	{
+		id: 'kaedehara_kazuha',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Autumn Whirlwind DoT (Anemo every 1.95s, 8s) — the field that also carries his Swirl-absorption ticks'
+	},
+	{
+		id: 'kaeya',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Glacial Waltz icicles orbit and strike every 0.667s over 8s (0.5s at C6, which adds a fourth icicle)'
+	},
+	{
+		id: 'lauma',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'Frostgrove Sanctuary (Dendro every 1.95s, 15s) — stationary field, ungated by ICD'
+	},
+	{
+		id: 'layla',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Celestial Dreamsphere Starlight Slugs (Cryo every 1.5s, 12s, Max-HP scaling)'
+	},
+	{
+		id: 'lisa',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Lightning Rose discharges every 0.5s for 15s — her longest-standing off-field Electro'
+	},
+	{
+		id: 'lynette',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Bogglecat Box (Anemo every 0.983s, 12.6s); the absorbed-element Vivid Shots stay unmodelled'
+	},
+	{
+		id: 'mona',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'INCIDENTAL: Phantom DoT (Hydro every 0.983s) runs only 4s and is secondary to her Omen burst'
+	},
+	{
+		id: 'navia',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Cannon Fire Support (Geo roughly every 0.7s, 12s) — gcsim alternates 42/42/48f, authored at the modal gap'
+	},
+	{
+		id: 'rosaria',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Ice Lance DoT (Cryo every 2s, 8.5s) — ungated by ICD, so every tick applies'
+	},
+	{
+		id: 'sayu',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: "INCIDENTAL: the Muji-Muji Daruma's attack ticks (Anemo every 1.5s) — it heals instead when the active character is above 70% HP, and she is a healer first"
+	},
+	{
+		id: 'sigewinne',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'INCIDENTAL: Bolstering Bubblebalm bounces (Hydro every 1.783s) alongside its heal — she is a healer first'
+	},
+	{
+		id: 'sucrose',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'Large Wind Spirit DoT (Anemo every 1.883s) — the absorbed-element series stays unmodelled'
+	},
+	{
+		id: 'venti',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: "Stormeye (Anemo every 0.4s, 8s) — Wind's Grand Ode's whole damage profile is the tick series"
+	},
+	{
+		id: 'yaoyao',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'INCIDENTAL: Yuegui throws White Jade Radishes (Dendro every 1s, 10s) between heals — she is a healer first'
+	},
+
 	// Group A frame-curation (2026-07-14): frames recovered from gcsim main /
 	// open PRs (see ingest-character skill "locate the source"); effects authored
 	// the same pass.

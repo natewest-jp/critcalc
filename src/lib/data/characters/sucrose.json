@@ -110,6 +110,29 @@
 							"value": 2,
 							"conditions": { "type": "constellation", "level": 2 }
 						}
+					],
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.883,
+								"firstTickDelay": 0,
+								"icdGate": "none"
+							},
+							"scaling": 266.4,
+							"stat": "atk",
+							"element": "anemo",
+							"_curatorNotes": [
+								"gcsim burst.go Burst(): AttackInfo 'Forbidden Creation-Isomer 75/Type II' — Element Anemo, Durability 25, Mult burstDot[c.TalentLvlBurst()]; burstDot[9] = 2.664 in zz_sucrose.dm.go (// burst: ForbiddenCreationIsomer75TypeII - DoT). Sidecar docs/curation/talents/sucrose.json burst row 'DoT' 10th value = 266.4% — agrees.",
+								"Cadence from the loop `for i := 137; i <= duration+5; i += 113` (duration = 360 at C0): 113f = 1.883s interval, first tick at cast-frame 137. Authored summon spawnsAt is also 137, so firstTickDelay = (137 - 137) / 60 = 0.",
+								"ICD: ICDTag ICDTagNone in burst.go, and frames-diff §5 measured 3/3 `none` — hence icdGate 'none' (every tick applies).",
+								"stat: atk — snapshot is c.Snapshot(&ai) with no stat substitution.",
+								"Tick COUNT: gcsim emits 3 ticks at C0 (137/250/363) and 4 at C2 (duration 480 → +476f). Our geometry counts `duration` from SPAWN while gcsim's status counts from CAST, so the authored 6s window (137→497f) yields one extra tick at each constellation tier (4 at C0, 5 at C2). Geometry left as authored per the round's rule; recorded here rather than 'fixed'.",
+								"The Elemental Absorption ticks (burstAbsorb, aiAbs, same 113f cadence, absorbed element) remain unmodelled — see the ability-level curator note."
+							]
+						}
 					]
 				}
 			],

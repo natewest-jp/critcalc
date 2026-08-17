@@ -71,9 +71,11 @@
 			],
 			"_curatorNotes": [
 				"Jade Screen construct spawns at frame 0 (Constructs.New called directly, not in a task queue). Damage hitmark is at skillHitmark=17. C2 (Shock Effect) resets skill CD when the screen is destroyed (6s ICD), including when destroyed by Starshatter (Q).",
-				"Burst (Starshatter) also destroys the active Jade Screen via c.Core.Constructs.Destroy(c.lastScreen) and fires additional gem projectiles. The terminatesOn field records only 'recast' (new E cast); reviewer to decide if 'onBurst' also warrants representation."
+				"Burst (Starshatter) also destroys the active Jade Screen via c.Core.Constructs.Destroy(c.lastScreen) and fires additional gem projectiles. The terminatesOn field records only 'recast' (new E cast); reviewer to decide if 'onBurst' also warrants representation.",
+				"Application: gcsim internal/characters/ningguang/skill.go, func Skill — the single QueueAttackWithSnap is scheduled at skillHitmark=17 with ai.Element=attributes.Geo and ai.Durability=25 (=1U). Mult is skill[c.TalentLvlSkill()] from zz_ningguang.dm.go (skill[9]=4.1472), cross-checked against docs/curation/talents/ningguang.json row 'Skill DMG' 10th value 414.72%.",
+				"No tick series is authored for the Jade Screen summon and that is correct: the construct (screen.go) implements only construct.Construct — Key/Type/Expiry/Count/Direction/Pos plus an OnDestruct that resets skill CD at C2. It carries no AttackInfo and skill.go adds no QueueCharTask/Tasks.Add for a repeating hit, so the screen is a genuinely damage-free geometry shell."
 			],
-			"application": []
+			"application": [{ "frame": 17, "element": "geo", "units": 1 }]
 		},
 		{
 			"id": "ningguang__burst__starshatter",
