@@ -1609,20 +1609,42 @@
 	// chart is actually asked. A per-series hit target would also have had to
 	// pick a winner wherever two lines cross — exactly where the reader is most
 	// likely to be pointing.
-	let auraPointerX = $state<number | null>(null);
+	/** Where the pointer is ON THE LANE, in seconds — set by the plot, by a tick
+	 *  and by a reaction marker alike, so all three drive one focus. */
+	let lanePointerSeconds = $state<number | null>(null);
 	/**
-	 * ⚓ ONE CROSSHAIR, TWO DRIVERS (2026-08-17). The lane's own pointer draws it,
-	 * and so does hovering a row in the side column's aura LOG — the two surfaces
-	 * show the same events, so "where am I" should be answered by the same mark
-	 * rather than by a second highlight vocabulary invented for the log.
+	 * ⚓ ONE FOCUSED INSTANT, WHICHEVER SURFACE IS DRIVING (2026-08-17). The
+	 * lane's pointer sets it — over the plot, over an application pip or over a
+	 * reaction marker — and so does hovering a row in the side column's aura LOG.
+	 * Everything that lights up on either surface reads THIS: the crosshair, the
+	 * pips, the markers, and (through `pv.auraHover`) the log's own rows.
 	 *
 	 * ⚠ THE POINTER WINS. If it is on the lane, that is the authority; the log's
 	 * hover only speaks when the lane's does not. ⛔ Never both at once — two
 	 * cursors on one axis is a chart with two answers.
 	 */
-	let auraCursorX = $derived(
-		auraPointerX ?? (pv.logHover === null ? null : projectX(pv.logHover, scale))
-	);
+	let auraFocus = $derived(lanePointerSeconds ?? pv.logHover);
+	let auraCursorX = $derived(auraFocus === null ? null : projectX(auraFocus, scale));
+	/** How near the crosshair a discrete event counts as "here", in px. A
+	 *  reaction is a point and the cursor is a pixel, so an instant-exact test
+	 *  would answer "nothing here" everywhere except one column.
+	 *  ⚠ DECLARED ABOVE ITS FIRST READER, not beside the handler that grew it: a
+	 *  `$derived` is lazy but TypeScript still calls a const read above its
+	 *  declaration a TDZ error, and it is right to. */
+	const AURA_CROSSHAIR_REACH = 6;
+	/** The crosshair's reach in SECONDS at the current zoom — one number for
+	 *  "is this mark at the focused instant", shared with the log (see
+	 *  `pv.auraHover`) so both surfaces agree on what counts as here. */
+	let auraFocusReach = $derived(AURA_CROSSHAIR_REACH / scale);
+	/** Is this instant the focused one? ⚠ A point test; a run uses `auraRunLit`. */
+	const auraLit = (frames: number) =>
+		auraFocus !== null && Math.abs(frames / FPS - auraFocus) <= auraFocusReach;
+	/** A run has WIDTH, so containment rather than proximity — the same split the
+	 *  log's rows make with `endTime`, and `auraReactionsAt` before them. */
+	const auraRunLit = (from: number, to: number) =>
+		auraFocus !== null &&
+		auraFocus >= from / FPS - auraFocusReach &&
+		auraFocus <= to / FPS + auraFocusReach;
 
 	/**
 	 * One marker's card. ⚠ A RUN IS SUMMARISED, NOT ENUMERATED: twelve
@@ -1645,22 +1667,17 @@
 		};
 	}
 
-	/** How near the crosshair a discrete reaction counts as "here", in px. A
-	 *  reaction is a point and the cursor is a pixel, so an instant-exact test
-	 *  would answer "no reaction" everywhere except one column. */
-	const AURA_CROSSHAIR_REACH = 6;
-
 	function onAuraMove(e: MouseEvent) {
 		const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		const x = e.clientX - box.left;
-		auraPointerX = x;
 		const frames = (x / scale) * FPS;
+		lanePointerSeconds = frames / FPS;
 		// ⚠ PUBLISHED IN SECONDS WITH ITS REACH, so the log can light the rows the
 		// cursor is standing on. The reach is the same px→time conversion the
 		// tooltip below makes, and it has to travel: at ZOOM_MIN one pixel is a
 		// twentieth of a second and at ZOOM_MAX a hundred-and-twentieth, so a
 		// tolerance decided in the log would be wrong at every zoom but one.
-		pv.auraHover = { at: frames / FPS, reach: AURA_CROSSHAIR_REACH / scale };
+		pv.auraHover = { at: frames / FPS, reach: auraFocusReach };
 		// ⚓ `gaugesAt` is gauge.ts's own interpolation over its own series — ⛔ not
 		// a second reading of the trajectory. It wants SECONDS, which is what
 		// `rotation.auraSeries` is in; the plot's frames are the projection's.
@@ -1709,7 +1726,29 @@
 	}
 
 	function onAuraLeave() {
-		auraPointerX = null;
+		lanePointerSeconds = null;
+		pv.auraHover = null;
+		hideTooltip();
+	}
+
+	/**
+	 * A PIP OR A MARKER TAKES FOCUS TOO (⚓ NATE 2026-08-17). Hovering the plot
+	 * already lit the log's rows; hovering the marks above it — which are the
+	 * things the log is a list OF — did not, which made the link feel like it
+	 * only worked in the anonymous part of the lane.
+	 *
+	 * ⚠ It publishes the same `{at, reach}` the plot does rather than an event
+	 * identity, so the log's matching rule stays ONE rule. A consequence worth
+	 * having: hovering a reaction marker also lights the application row above
+	 * it, because they share a frame — which is exactly the pair the reader is
+	 * asking about.
+	 */
+	function onAuraMarkEnter(frames: number) {
+		lanePointerSeconds = frames / FPS;
+		pv.auraHover = { at: frames / FPS, reach: auraFocusReach };
+	}
+	function onAuraMarkLeave() {
+		lanePointerSeconds = null;
 		pv.auraHover = null;
 		hideTooltip();
 	}
@@ -1899,9 +1938,13 @@
 									<!-- svelte-ignore a11y_no_static_element_interactions -->
 									<div
 										class="rp-aura-marker"
+										class:rp-aura-marker--lit={auraRunLit(marker.time, marker.endTime)}
 										style:left="{xForTime(marker.time)}px"
-										onmouseenter={(e) => showTooltip(e, markerTooltip(marker))}
-										onmouseleave={hideTooltip}
+										onmouseenter={(e) => {
+											showTooltip(e, markerTooltip(marker));
+											onAuraMarkEnter(marker.time);
+										}}
+										onmouseleave={onAuraMarkLeave}
 									>
 										<span class="rp-aura-marker-pip"></span>
 										<!-- ⚠ DROPPED, never truncated — a two-character stub names
@@ -1933,9 +1976,11 @@
 									<span
 										class="rp-aura-tick"
 										class:rp-aura-tick--provisional={tick.provisional}
+										class:rp-aura-tick--lit={auraLit(tick.time)}
 										style:left="{xForTime(tick.time)}px"
 										style:background={pal(tick.element).main}
-										onmouseenter={(e) =>
+										onmouseenter={(e) => {
+											onAuraMarkEnter(tick.time);
 											showTooltip(e, {
 												sourceLabel: `${getLoadedCharacter(tick.characterId)?.displayName ?? tick.characterId} · ${secondsLabel(tick.time)}s`,
 												effects: [
@@ -1957,8 +2002,9 @@
 														: [])
 												],
 												isMutuallyExclusive: false
-											})}
-										onmouseleave={hideTooltip}
+											});
+										}}
+										onmouseleave={onAuraMarkLeave}
 									></span>
 								{/each}
 							</div>
@@ -3591,6 +3637,20 @@
 		   speaks in. */
 		background: var(--chart-dim);
 	}
+
+	/* ══ LIT — THIS MARK IS AT THE FOCUSED INSTANT (2026-08-17) ═══════════════
+	   ⚓ INK BRIGHTENS HERE, A GROUND FILLS IN THE LOG, and the difference is
+	   what each object is made of: a log row has AREA, so it can take a fill; a
+	   marker is two or three pixels of ink standing on the night, and a fill
+	   behind it would be a bigger object than the mark itself.
+	   ⚠ The label lifts with its pip — they are one mark, and lighting only the
+	   3px dot under a word that stays dim reads as a rendering glitch. */
+	.rp-aura-marker--lit .rp-aura-marker-pip {
+		background: var(--text);
+	}
+	.rp-aura-marker--lit .rp-aura-marker-label {
+		color: var(--text);
+	}
 	/* ⛔ NO `overflow`/`text-overflow` HERE ANY MORE (2026-08-17). They existed to
 	   cap a label at the room available, which is exactly the clipping that
 	   produced `Electro-C`; the label is now either drawn in full or not drawn at
@@ -3627,6 +3687,18 @@
 		   coordinates in WebKit (the sub-pixel laws). The inline background
 		   carries the element colour; the strip itself is what recedes. */
 		opacity: 0.9;
+	}
+
+	/* ⚓ A RING, because the pip's own body is the ELEMENT and must stay legible
+	   as one — recolouring it to say "focused" would cost the only thing it is
+	   there to say. White reads on every element hue at this size, and it is the
+	   hover register (⛔ gold means SELECTED, and nothing here is).
+	   ⚠ box-shadow rather than a border: a border would grow the 8px disc and
+	   shift it off its instant, since the pip is centred by a negative margin
+	   computed from its radius. */
+	.rp-aura-tick--lit {
+		opacity: 1;
+		box-shadow: 0 0 0 2px var(--chrome);
 	}
 	/* ⚓ THE SQUIGGLE RULE, as a FOOT. --ui-provisional is a provenance
 	   statement — "we took this application and its unit value is a stand-in" —
