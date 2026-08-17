@@ -11,7 +11,7 @@
 		type ReactionKind,
 		type SimEvent
 	} from '$lib/utils/gauge';
-	import { AURA_MOD_META, AURA_MOD_ORDER } from '$lib/utils/auraDisplay';
+	import { AURA_MOD_META, AURA_MOD_ORDER, auraUMax } from '$lib/utils/auraDisplay';
 	import { MAX_GAUGE_APPS, MAX_GAUGE_TIME } from './workspace';
 	import { createPlayhead } from './playhead.svelte';
 	import { PLAYHEAD_SPEEDS } from './playhead';
@@ -288,14 +288,12 @@
 	const displayT = $derived(
 		playhead.playing || scrubbing || playhead.t > 0 ? Math.min(playhead.t, domain) : null
 	);
-	const uMax = $derived(
-		Math.max(
-			2,
-			Math.ceil(
-				sim.series.reduce((m, s) => s.points.reduce((n, p) => Math.max(n, p.u), m), 0) * 2
-			) / 2
-		)
-	);
+	// ⚓ ONE CEILING, SHARED WITH THE PLANNER'S AURA LANE (2026-08-17). This was a
+	// byte-identical copy of `auraUMax`, with nothing keeping the two in step —
+	// and the duplication had already caused a real misreading, because the two
+	// charts look like they scale differently when the difference is that this
+	// one LABELS its unit axis. See auraDisplay for the floor's argument.
+	const uMax = $derived(auraUMax(sim.series));
 	const tickStep = $derived(domain <= 16 ? 1 : domain <= 32 ? 2 : 5);
 	const ticks = $derived(
 		Array.from({ length: Math.floor(domain / tickStep) + 1 }, (_, i) => i * tickStep)
