@@ -13,6 +13,7 @@
 	} from '$lib/utils/gauge';
 	import { AURA_MOD_META, AURA_MOD_ORDER, auraUMax } from '$lib/utils/auraDisplay';
 	import { MAX_GAUGE_APPS, MAX_GAUGE_TIME } from './workspace';
+	import Emphasis from '$lib/components/Emphasis.svelte';
 	import { createPlayhead } from './playhead.svelte';
 	import { PLAYHEAD_SPEEDS } from './playhead';
 
@@ -105,7 +106,7 @@
 		{
 			id: 'topup',
 			label: 'Top-Up',
-			note: 'Re-applying the same element tops the gauge up but keeps the FIRST application’s decay rate — 2U onto a 1U aura refills it and still drains at the slow 1U rate.',
+			note: 'Re-applying the same element tops the gauge up but keeps the **first** application’s decay rate — 2U onto a 1U aura refills it and still drains at the slow 1U rate.',
 			apps: [
 				[0, 'electro', 1],
 				[3, 'electro', 2]
@@ -123,7 +124,7 @@
 		{
 			id: 'melt',
 			label: 'Reverse Melt',
-			note: 'Cryo on Pyro is the weak direction: the trigger removes only HALF its own gauge, so each 1U hit nibbles 0.5U off a 2U aura instead of clearing it. (The ×1.5 on the chart is the DAMAGE multiplier — a different number from what the reaction costs the aura.)',
+			note: 'Cryo on Pyro is the weak direction: the trigger removes only **half** its own gauge, so each 1U hit nibbles 0.5U off a 2U aura instead of clearing it. (The ×1.5 on the chart is the **damage** multiplier — a different number from what the reaction costs the aura.)',
 			apps: [
 				[0, 'pyro', 2],
 				[2, 'cryo', 1],
@@ -144,17 +145,21 @@
 			id: 'crystallize',
 			label: 'Crystallize',
 			note: 'Geo consumes at ×0.5 with a 1s reaction cooldown — the attempt inside the window is blocked and takes no gauge at all.',
+			// ⚓ Nate's spacing: 0.8 / 1.6 / 2.4 still shows blocked-then-allowed (the
+			// 1.6 attempt falls inside 0.8's 1s window; 2.4 is clear of it) and stops
+			// the three names crowding. ⚠️ The stagger above is the general fix — this
+			// is just a demo that does not need to lean on it.
 			apps: [
 				[0, 'electro', 1],
-				[1, 'geo', 1],
-				[1.5, 'geo', 1],
-				[2.5, 'geo', 1]
+				[0.8, 'geo', 1],
+				[1.6, 'geo', 1],
+				[2.4, 'geo', 1]
 			]
 		},
 		{
 			id: 'ec',
 			label: 'Electro-Charged',
-			note: 'Hydro and Electro coexist, and each tick drains 0.4U from BOTH gauges — so the SMALLER aura runs out first and the reaction stops with the bigger one still on the target. A 2U Hydro aura outlives a 1U Electro one.',
+			note: 'Hydro and Electro coexist, and each tick drains 0.4U from **both** gauges — so the **smaller** aura runs out first and the reaction stops with the bigger one still on the target. A 2U Hydro aura outlives a 1U Electro one.',
 			apps: [
 				[0, 'hydro', 2],
 				[1, 'electro', 1]
@@ -203,7 +208,7 @@
 			// ⚓ NATE: "Overvape" is the name players use for this interaction; "Pyro
 			// on EC" described the inputs rather than the thing being demonstrated.
 			label: 'Overvape',
-			note: 'One Pyro hit on an Electro-Charged target triggers Overload AND Vaporize — leftover trigger gauge flows down the reaction priority list.',
+			note: 'One Pyro hit on an Electro-Charged target triggers Overload **and** Vaporize — leftover trigger gauge flows down the reaction priority list.',
 			apps: [
 				[0, 'hydro', 1],
 				[1, 'electro', 1],
@@ -402,6 +407,41 @@
 			};
 		})
 	);
+
+	/**
+	 * ⚓ REACTION LABELS STAGGER RATHER THAN COLLIDE (⚓ NATE 2026-08-17).
+	 *
+	 * Two applications close in time put two centred names on top of each other —
+	 * Crystallize's three geo hits were the case that showed it. Spacing that one
+	 * demo out fixes that one demo; a reader building their own can always land
+	 * two hits 0.3s apart, and the instrument exists to be edited.
+	 *
+	 * A greedy left-to-right pass: each marker takes the LOWEST tier whose last
+	 * occupant it clears, so an isolated label stays at tier 0 (adjacent to its
+	 * pill, where it belongs) and only a crowd climbs. ⛔ Not "alternate every
+	 * other one" — that lifts labels which had nothing to avoid.
+	 *
+	 * ⚠️ Width is ESTIMATED from the character count rather than measured. The
+	 * planner's lane measures because it decides whether to DROP a name and a
+	 * wrong answer there loses information; here a wrong answer costs a tier of
+	 * empty space, and the labels are a closed set of short reaction names. The
+	 * estimate is deliberately generous.
+	 */
+	const LABEL_CHAR_PX = 5.6;
+	const LABEL_TIER_PX = 11;
+	const markerTiers = $derived.by(() => {
+		const tierRight: number[] = [];
+		return markers.map((m) => {
+			if (m.labels.length === 0) return 0;
+			const widest = m.labels.reduce((w, l) => Math.max(w, l.length), 0) * LABEL_CHAR_PX;
+			const left = m.x - widest / 2;
+			const right = m.x + widest / 2;
+			let tier = 0;
+			while (tierRight[tier] !== undefined && tierRight[tier] > left) tier++;
+			tierRight[tier] = right;
+			return tier;
+		});
+	});
 	const cores = $derived(sim.events.filter((e) => e.kind === 'core'));
 
 	// ── Event log (burning self-ticks hidden; EC drains collapsed into runs) ──
@@ -568,7 +608,7 @@
 				     index numbered nothing a reader could see — the applications
 				     editor below does not number its rows — while the unit is the one
 				     datum the whole instrument is about. -->
-				{#each markers as m (m.n)}
+				{#each markers as m, mi (m.n)}
 					<line
 						x1={m.x}
 						y1={MARKER_PILL_CY + MARKER_PILL_R}
@@ -586,7 +626,11 @@
 						<text
 							class="gx-word"
 							x={m.x}
-							y={MARKER_PILL_CY - MARKER_PILL_R - 6 - (m.labels.length - 1 - li) * 11}
+							y={MARKER_PILL_CY -
+								MARKER_PILL_R -
+								6 -
+								(m.labels.length - 1 - li) * LABEL_TIER_PX -
+								markerTiers[mi] * LABEL_TIER_PX}
 							fill="var(--chart-ink)"
 							font-size="10"
 							text-anchor="middle"
@@ -711,7 +755,7 @@
 				{/each}
 			</div>
 			<p class="note">
-				{presetNote ?? 'Custom sequence — edit applications or pick a scenario.'}
+				<Emphasis text={presetNote ?? 'Custom sequence — edit applications or pick a scenario.'} />
 			</p>
 		</div>
 
