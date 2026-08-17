@@ -1609,7 +1609,20 @@
 	// chart is actually asked. A per-series hit target would also have had to
 	// pick a winner wherever two lines cross — exactly where the reader is most
 	// likely to be pointing.
-	let auraCursorX = $state<number | null>(null);
+	let auraPointerX = $state<number | null>(null);
+	/**
+	 * ⚓ ONE CROSSHAIR, TWO DRIVERS (2026-08-17). The lane's own pointer draws it,
+	 * and so does hovering a row in the side column's aura LOG — the two surfaces
+	 * show the same events, so "where am I" should be answered by the same mark
+	 * rather than by a second highlight vocabulary invented for the log.
+	 *
+	 * ⚠ THE POINTER WINS. If it is on the lane, that is the authority; the log's
+	 * hover only speaks when the lane's does not. ⛔ Never both at once — two
+	 * cursors on one axis is a chart with two answers.
+	 */
+	let auraCursorX = $derived(
+		auraPointerX ?? (pv.logHover === null ? null : projectX(pv.logHover, scale))
+	);
 
 	/**
 	 * One marker's card. ⚠ A RUN IS SUMMARISED, NOT ENUMERATED: twelve
@@ -1640,8 +1653,14 @@
 	function onAuraMove(e: MouseEvent) {
 		const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		const x = e.clientX - box.left;
-		auraCursorX = x;
+		auraPointerX = x;
 		const frames = (x / scale) * FPS;
+		// ⚠ PUBLISHED IN SECONDS WITH ITS REACH, so the log can light the rows the
+		// cursor is standing on. The reach is the same px→time conversion the
+		// tooltip below makes, and it has to travel: at ZOOM_MIN one pixel is a
+		// twentieth of a second and at ZOOM_MAX a hundred-and-twentieth, so a
+		// tolerance decided in the log would be wrong at every zoom but one.
+		pv.auraHover = { at: frames / FPS, reach: AURA_CROSSHAIR_REACH / scale };
 		// ⚓ `gaugesAt` is gauge.ts's own interpolation over its own series — ⛔ not
 		// a second reading of the trajectory. It wants SECONDS, which is what
 		// `rotation.auraSeries` is in; the plot's frames are the projection's.
@@ -1690,9 +1709,49 @@
 	}
 
 	function onAuraLeave() {
-		auraCursorX = null;
+		auraPointerX = null;
+		pv.auraHover = null;
 		hideTooltip();
 	}
+
+	/**
+	 * "Take me there" — the aura log's rows call this through `plannerView`.
+	 *
+	 * ⚠ CENTRED, not scrolled-to-the-edge. A log row names an instant, and an
+	 * instant parked against the left edge of the viewport has no context on the
+	 * side you were reading toward; the middle is the only position that shows
+	 * both. Clamped by the scroller itself, so an event near either end simply
+	 * lands as close as the content allows.
+	 * ⛔ Not `scrollIntoView` on a rendered mark: at low zoom several applications
+	 * share a pixel and there is no element that IS the instant — the arithmetic
+	 * is exact and the DOM is not.
+	 */
+	function scrollToSeconds(seconds: number) {
+		if (!trackScrollEl) return;
+		const el = trackScrollEl;
+		const target = projectX(seconds, scale) - el.clientWidth / 2;
+		// ⚠ THE NATIVE OPTION, deliberately: it is one line, the UA already honours
+		// `prefers-reduced-motion` for it, and the scroller clamps the target
+		// itself. A hand-rolled rAF tween lived here for an hour on the strength of
+		// a measurement that turned out to be an ARTEFACT — `behavior: 'smooth'`
+		// looked like a silent no-op on this element, and the real cause was that a
+		// BACKGROUNDED TAB freezes requestAnimationFrame, which is what smooth
+		// scrolling runs on. ⚠ Anything rAF-driven measures as broken when the tab
+		// under test is not the front one; check that before blaming the code.
+		el.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+	}
+	$effect(() => {
+		// ⚠ An effect with a cleanup, not onMount — see plannerView.scrollToSeconds
+		// for the tool-page revival this survives.
+		pv.scrollToSeconds = scrollToSeconds;
+		// ⚠ The identity test stops a stale instance's teardown from clearing a
+		// live handler — the tool-page revival case. It is safe to read here only
+		// because the field is NOT `$state`; see plannerView for the effect loop
+		// that taught us that.
+		return () => {
+			if (pv.scrollToSeconds === scrollToSeconds) pv.scrollToSeconds = null;
+		};
+	});
 
 	// Ascendant Gleam (Moonsign Team Bonus): non-Moonsign members grant a
 	// Lunar Reaction DMG Bonus on E/Q cast, scaling on a per-element stat

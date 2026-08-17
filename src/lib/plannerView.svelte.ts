@@ -30,7 +30,7 @@
  * both read the store directly and nothing here touches them.
  */
 
-import type { EventLogRow } from '$lib/components/EventLog.svelte';
+import type { EventLogHover, EventLogRow } from '$lib/components/EventLog.svelte';
 
 export const ZOOM_MIN = 20;
 export const ZOOM_MAX = 120;
@@ -101,6 +101,56 @@ class PlannerViewState {
 	 * same cost the aura lane is already gated against.
 	 */
 	auraLog = $state<EventLogRow[]>([]);
+
+	// ══ THE TWO HOVER CHANNELS (2026-08-17) ═══════════════════════════════════
+	//
+	// ⚓ TWO SCALARS, AND THAT IS THE WHOLE COUPLING. The chart and the log are
+	// siblings — the timeline is the surface's `main` box, the log its `aside` —
+	// and neither may reach into the other's DOM. Each publishes WHERE IT IS
+	// POINTING, in seconds, and the other decides what to do about it. Anything
+	// richer (a row index, an element ref, a scroll offset) would make the two
+	// components know each other's geometry, which is the coupling that is hard
+	// to undo later.
+	// ⚠ SECONDS both ways: the log's rows already print seconds, and the chart
+	// converts to px in one place anyway.
+
+	/** Where the pointer is ON THE CHART, with the reach one pixel covers at the
+	 *  current zoom — the log lights the rows under it. ⚠ The reach travels
+	 *  because only the chart knows its zoom. */
+	auraHover = $state<EventLogHover | null>(null);
+
+	/** Where the pointer is IN THE LOG — the chart draws its own cursor there.
+	 *  ⚓ It drives the crosshair the chart already had, so there is ONE highlight
+	 *  mechanism with two drivers rather than a second vocabulary. */
+	logHover = $state<number | null>(null);
+
+	/**
+	 * "Take me there" — set by the timeline, called by the log's rows.
+	 *
+	 * ⚠ A REGISTERED HANDLER, not a `seekTo: number` the timeline watches. A
+	 * one-shot command expressed as reactive state has to be CLEARED after it is
+	 * consumed, and a stale value re-firing on an unrelated re-render is exactly
+	 * the bug that shape produces. A function is called once, by name.
+	 * ⚠ Registered from an `$effect` with a cleanup rather than `onMount`, so it
+	 * survives the tool-page revival that has caught this project before
+	 * (project_tool_page_revival): A→B→A reuses the component and onMount never
+	 * runs again.
+	 *
+	 * 🐛 DELIBERATELY NOT `$state`, and it cost an hour to learn why. As reactive
+	 * state, the timeline's registering effect SELF-INVALIDATED: writing a `$state`
+	 * class field reads the old value to compare it, that read is tracked inside
+	 * the effect doing the writing, and the effect therefore depends on what it
+	 * sets. Measured: 4,004 console lines of register → cleanup → register on a
+	 * single page load, settling on a cleanup — so the handler was null and
+	 * clicking a log row did nothing at all, silently, because the call site is an
+	 * optional-call. ⚠ Wrapping the CLEANUP in `untrack` was not enough; the write
+	 * is the tracked read.
+	 * ⚓ And nothing needs to react to it: the log reads it at CLICK TIME. A plain
+	 * field is both the fix and the honest description. ⛔ Don't make it `$state`
+	 * to "be consistent" with its neighbours here — they are read during render
+	 * and this one is not.
+	 */
+	scrollToSeconds: ((seconds: number) => void) | null = null;
 
 	zoomBy(delta: number) {
 		this.scale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, this.scale + delta));

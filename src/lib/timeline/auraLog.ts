@@ -115,7 +115,10 @@ export function buildAuraLog(
 			entries.push({
 				time: tick.time,
 				order: 1,
-				row: { text: marker.label, tone: 'sub' }
+				// ⚠ No `time` — it hangs under the application above it — but it DOES
+				// carry `endTime`, which is highlighting-only. A run has width, so
+				// "is the chart's cursor on this row" has to be a containment test.
+				row: { endTime: marker.endTime / FPS, text: marker.label, tone: 'sub' }
 			});
 		}
 	}
@@ -126,7 +129,12 @@ export function buildAuraLog(
 		entries.push({
 			time: marker.time,
 			order: 1,
-			row: { time: marker.time / FPS, text: marker.label, tone: 'sub' }
+			row: {
+				time: marker.time / FPS,
+				endTime: marker.endTime / FPS,
+				text: marker.label,
+				tone: 'sub'
+			}
 		});
 	}
 
