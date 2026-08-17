@@ -129,9 +129,19 @@ test('the ICD timeline hands its hits off to a Gauge tile beside it', async ({ p
 	// The gauge opens BESIDE the source, not over it.
 	await expectLineup(page, ['ICD Timeline', 'Gauge Explorer']);
 	// The handoff caps at eight applications.
-	await expect(page.locator('.gx-app')).toHaveCount(Math.min(applying, 8));
+	// ↻ 2026-08-17: counted on the CHART, not in the panel. `.gx-app` was one
+	// editor block per application and the panel is a single inspector now — so
+	// this counts the markers instead, which is the better assertion anyway: it
+	// checks the applications ARRIVED rather than that a list was rendered.
+	await expect(page.locator('.gx-marker')).toHaveCount(Math.min(applying, 8));
 	// The gauge tile carries several `.note` paragraphs (the per-instrument copies
-	// folded into the global `.note` in the styleguide migration) — the handoff's
-	// is the lead one.
-	await expect(page.locator('.gx-panels .note').first()).toContainText('Custom sequence');
+	// folded into the global `.note` in the styleguide migration), and the
+	// scenario one is what reports an unrecognised sequence.
+	// ↻ 2026-08-17: matched by CONTENT rather than by `.first()`. The Applications
+	// panel moved to the head of the flow (see its note — CSS multicolumn was
+	// moving it between columns mid-edit), so a positional selector here would
+	// have been pinning panel ORDER from a test about a handoff.
+	await expect(
+		page.locator('.gx-panels .note').filter({ hasText: 'Custom sequence' })
+	).toBeVisible();
 });

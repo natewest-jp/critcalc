@@ -223,15 +223,70 @@
 	// little overlapping icons inside the scenario chips
 	const presetElements = (p: PresetDef): ElementId[] => [...new Set(p.apps.map(([, e]) => e))];
 
+	// ══ THE APPLICATION LIST (rebuilt 2026-08-17, ⚓ NATE) ═════════════════════
+	//
+	// ⚓ THE CHART OWNS **WHEN**, THE PANEL OWNS **WHAT**. An application's time is
+	// a position on the time axis, and it used to be set by a slider in a list
+	// hundreds of pixels below that axis — ⚓ Nate: "as you add more elemental
+	// applications you have to keep going downwards, but then to see the results
+	// you have to scroll upwards." Each row cost three stacked lines, so eight
+	// applications was ~800px of editor under a chart you had to keep looking at.
+	// Time is dragged on the marker band now; the panel is ONE inspector for the
+	// SELECTED application, so it no longer grows with the list at all.
+	//
+	// 🐛 AND IT CLOSES A REAL DISAGREEMENT. Every row's slider ranged over the
+	// whole domain independently, so an application could be dragged past its
+	// neighbours — ⚠ the SIMULATION was never wrong (`simulateGauge` sorts its
+	// input), but it hands `apply` events an `appIndex` in TIME order while the
+	// editor listed rows in INSERTION order, so the event log's #1 could be the
+	// panel's third row. Sorting the list by time makes the chart, the panel and
+	// the log one story.
+	type AppRow = Application & { id: number };
+	/** ⚠ IDENTITY, NOT POSITION. The list re-sorts under a drag, so every consumer
+	 *  — the selection, the in-flight drag, the keyed `{#each}` over the markers —
+	 *  has to name a row by something that survives the row moving. A bare index
+	 *  would hand the drag to whichever application it swapped past. */
+	let nextAppId = 0;
+	const makeRows = (apps: Application[]): AppRow[] =>
+		apps.map((a) => ({ ...a, id: nextAppId++ })).sort((a, b) => a.time - b.time);
+	const presetRows = (p: PresetDef): AppRow[] =>
+		makeRows(p.apps.map(([time, element, gauge]) => ({ time, element, gauge })));
+
 	let preset = $state('single');
-	let appRows = $state<Application[]>(
-		PRESETS[0].apps.map(([time, element, gauge]) => ({ time, element, gauge }))
-	);
+	// ⚠ Built once into a plain array first: `selectedId` needs the first row's id
+	// at init, and reading it back off the `$state` array is the "only captures
+	// the initial value" warning — which is exactly what is wanted here, but is
+	// better said than suppressed.
+	const initialRows = presetRows(PRESETS[0]);
+	let appRows = $state<AppRow[]>(initialRows);
 	let scrubbing = $state(false);
+	/**
+	 * ⚓ SOMETHING IS ALWAYS SELECTED while there is anything to select. The
+	 * inspector is the only editor now, so an empty one would be a panel that
+	 * changes height and a reader with no obvious way in; selecting the first
+	 * application by default means the panel is populated from first paint and
+	 * the ring on the chart teaches what the panel is pointed at.
+	 * ⛔ It is not an INDEX — see AppRow's note.
+	 */
+	let selectedId = $state<number>(initialRows[0]?.id ?? -1);
+	const selected = $derived(appRows.find((r) => r.id === selectedId) ?? null);
+
+	/** Keep the list in time order. ⚠ The comparator MUST match the one inside
+	 *  `simulateGauge`, and both must be stable, or `appIndex` stops addressing
+	 *  the row it describes — that is the coupling `markers` depends on. */
+	function resort() {
+		appRows.sort((a, b) => a.time - b.time);
+	}
+
+	function setRows(apps: Application[]) {
+		appRows = makeRows(apps);
+		selectedId = appRows[0]?.id ?? -1;
+	}
 
 	function loadPreset(p: PresetDef) {
 		preset = p.id;
-		appRows = p.apps.map(([time, element, gauge]) => ({ time, element, gauge }));
+		appRows = presetRows(p);
+		selectedId = appRows[0]?.id ?? -1;
 		playhead.stop();
 	}
 	const markCustom = () => {
@@ -242,11 +297,17 @@
 	function addRow() {
 		if (appRows.length >= MAX_APPS) return;
 		const last = appRows[appRows.length - 1];
-		appRows.push({
+		const row: AppRow = {
+			id: nextAppId++,
 			time: Math.min(MAX_GAUGE_TIME, (last?.time ?? 0) + 2),
 			element: 'pyro',
 			gauge: 1
-		});
+		};
+		appRows.push(row);
+		resort();
+		// The new one is what you are about to edit — and its marker carries the
+		// selection ring, which is the only thing saying WHERE on the chart it went.
+		selectedId = row.id;
 		markCustom();
 	}
 
@@ -288,7 +349,7 @@
 		if (s.v !== 1) return;
 		const apps = sanitizeApps(s.apps);
 		if (!apps) return;
-		appRows = apps;
+		setRows(apps);
 		preset =
 			typeof s.preset === 'string' && PRESETS.some((p) => p.id === s.preset) ? s.preset : 'custom';
 		playhead.stop();
@@ -298,13 +359,39 @@
 		if (kind !== 'applications') return;
 		const apps = sanitizeApps(payload);
 		if (!apps) return;
-		appRows = apps;
+		setRows(apps);
 		preset = 'custom';
 		playhead.stop();
 	}
-	function removeRow(i: number) {
+
+	/** Remove by identity, then hand the selection to the neighbour that took its
+	 *  place — so a run of deletes never has to be re-aimed, and the panel never
+	 *  empties while applications remain. */
+	function removeRow(id: number) {
+		const i = appRows.findIndex((r) => r.id === id);
+		if (i < 0) return;
 		appRows.splice(i, 1);
+		selectedId = (appRows[i] ?? appRows[i - 1])?.id ?? -1;
 		markCustom();
+	}
+
+	/** Clamp to the axis and snap to the 0.1s the whole instrument quantises to. */
+	const snapTime = (t: number) => Math.min(MAX_GAUGE_TIME, Math.max(0, Math.round(t * 10) / 10));
+
+	/** ⚠ The ONE write path for an application's time, shared by the drag, the
+	 *  stepper and the arrow keys: snap, then re-sort. ⛔ Don't set `row.time`
+	 *  anywhere else, and ⚠ pass the row you read OUT of `appRows` — a plain
+	 *  object you are about to push is not the reactive proxy the list stores, so
+	 *  mutating it writes nothing anyone re-renders for. */
+	function setTime(row: AppRow, t: number) {
+		const next = snapTime(t);
+		if (next === row.time) return;
+		row.time = next;
+		resort();
+		markCustom();
+	}
+	function nudge(row: AppRow, seconds: number) {
+		setTime(row, row.time + seconds);
 	}
 
 	const presetNote = $derived(PRESETS.find((p) => p.id === preset)?.note ?? null);
@@ -328,7 +415,23 @@
 	const stripY0 = plotY1 + AXIS_H;
 	const ROW_H = 18;
 
-	const domain = $derived(Math.max(Math.ceil(Math.max(sim.duration + 0.4, lastAppTime + 2)), 8));
+	const liveDomain = $derived(
+		Math.max(Math.ceil(Math.max(sim.duration + 0.4, lastAppTime + 2)), 8)
+	);
+	/**
+	 * 🐛 THE AXIS FREEZES FOR THE LENGTH OF A DRAG, and it has to.
+	 *
+	 * `liveDomain` grows with the LAST application's time, and x is a fraction of
+	 * the domain — so dragging the rightmost marker to the right pushes the axis
+	 * out from under it and the pill crawls away from the cursor, slower the
+	 * further you go. Pinning the domain at pointer-down makes the marker track
+	 * the pointer exactly; the axis re-fits on release.
+	 * ⚠ The consequence is real and intended: you cannot drag PAST the right edge
+	 * of the axis you started with. Let go and the axis has grown — the edge is a
+	 * thing you can see, which a rescaling one is not.
+	 */
+	let dragDomain = $state<number | null>(null);
+	const domain = $derived(dragDomain ?? liveDomain);
 
 	// ── Playback ─────────────────────────────────────────────────────────────
 	const playhead = createPlayhead(() => domain);
@@ -396,9 +499,20 @@
 						r.kind === 'reaction' && r.appIndex === e.appIndex
 				)
 				.map((r) => REACTION_NAME[r.reaction]);
+			// ⚠ `appIndex` INDEXES `appRows` — that is the whole reason the list is
+			// kept in time order (see AppRow). `simulateGauge` numbers its events by
+			// position in its own time-sorted copy, so the two agree as long as both
+			// sorts are stable and use the same comparator. ⛔ Never reach for
+			// `appRows[i]` by a marker's position in THIS array instead; a dropped
+			// past-the-cap application would silently shift everything after it.
+			const row = appRows[e.appIndex] as AppRow | undefined;
 			return {
 				x: xOf(e.time),
 				n: e.appIndex + 1,
+				id: row?.id ?? -1,
+				row,
+				time: e.time,
+				element: e.element,
 				color: `var(--el-${e.element}-main)`,
 				// ⛔ No "U" suffix — see the pill's note. The axis and the panel below
 				// both say what the unit is; the disc only has room for the number.
@@ -407,6 +521,7 @@
 			};
 		})
 	);
+	type Marker = (typeof markers)[number];
 
 	/**
 	 * ⚓ REACTION LABELS STAGGER RATHER THAN COLLIDE (⚓ NATE 2026-08-17).
@@ -489,25 +604,92 @@
 		}
 	}
 
-	// ── Pointer scrub: drag the playhead, but only while paused ────────────────
-	function chartT(e: PointerEvent): number {
-		const rect = (e.currentTarget as SVGSVGElement).getBoundingClientRect();
-		const x = e.clientX - rect.left;
+	// ══ POINTER: THE BAND EDITS, THE PLOT SCRUBS ══════════════════════════════
+	// One spatial rule, and it is the grammar's own: everything ABOVE the plot
+	// (y < TOP) belongs to the APPLICATIONS — drag a pill to move it, click bare
+	// band to add one there — and the plot and the strip below it belong to the
+	// PLAYHEAD. ⚠ The band used to scrub too; losing it costs 64px of a ~280px
+	// tall scrub target and buys direct manipulation of the thing the band is
+	// made of.
+	let svgEl = $state<SVGSVGElement | null>(null);
+
+	/** Client x → seconds, in the FROZEN domain if a drag is in flight. */
+	function timeAtX(clientX: number): number {
+		if (!svgEl) return 0;
+		const rect = svgEl.getBoundingClientRect();
+		const x = clientX - rect.left;
 		return Math.min(domain, Math.max(0, ((x - PADL) / (graphW - PADL - PADR)) * domain));
 	}
+
 	function onScrubDown(e: PointerEvent) {
 		if (playhead.playing) return;
 		scrubbing = true;
-		playhead.seek(chartT(e));
+		playhead.seek(timeAtX(e.clientX));
 		(e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
 	}
 	function onScrubMove(e: PointerEvent) {
-		if (scrubbing) playhead.seek(chartT(e));
+		if (scrubbing) playhead.seek(timeAtX(e.clientX));
 	}
 	function onScrubUp(e: PointerEvent) {
 		scrubbing = false;
 		const el = e.currentTarget as SVGSVGElement;
 		if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+	}
+
+	// ── Dragging an application along the band ────────────────────────────────
+	let dragId = $state<number | null>(null);
+
+	function onMarkerDown(e: PointerEvent, m: Marker) {
+		// ⛔ The SVG's scrub handler must not also see this — a marker press would
+		// otherwise fling the playhead to wherever you grabbed.
+		e.stopPropagation();
+		if (!m.row) return;
+		selectedId = m.id;
+		if (e.button !== 0) return;
+		dragId = m.id;
+		dragDomain = domain;
+		playhead.stop();
+		(e.currentTarget as Element).setPointerCapture(e.pointerId);
+	}
+	function onMarkerMove(e: PointerEvent) {
+		if (dragId === null) return;
+		const row = appRows.find((r) => r.id === dragId);
+		if (row) setTime(row, timeAtX(e.clientX));
+	}
+	function onMarkerUp(e: PointerEvent) {
+		const el = e.currentTarget as Element;
+		if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+		dragId = null;
+		dragDomain = null;
+	}
+	/** ⌨ The drag's equal, not its consolation: ← → nudge by the same 0.1s the
+	 *  pointer snaps to, Shift by a second, and Delete removes. */
+	function onMarkerKey(e: KeyboardEvent, m: Marker) {
+		if (!m.row) return;
+		const step = e.shiftKey ? 1 : 0.1;
+		if (e.key === 'ArrowLeft') nudge(m.row, -step);
+		else if (e.key === 'ArrowRight') nudge(m.row, step);
+		else if (e.key === 'Delete' || e.key === 'Backspace') removeRow(m.id);
+		else return;
+		e.preventDefault();
+		e.stopPropagation();
+	}
+
+	/** Bare band → a new application at that instant, with the resting element and
+	 *  size. ⚠ Guarded on the cap so the click cannot silently do nothing. */
+	function onBandDown(e: PointerEvent) {
+		e.stopPropagation();
+		if (appRows.length >= MAX_APPS || e.button !== 0) return;
+		const row: AppRow = {
+			id: nextAppId++,
+			time: snapTime(timeAtX(e.clientX)),
+			element: 'pyro',
+			gauge: 1
+		};
+		appRows.push(row);
+		resort();
+		selectedId = row.id;
+		markCustom();
 	}
 	const hoverGauges = $derived(
 		displayT === null
@@ -547,6 +729,7 @@
 		</div>
 		<div class="gx-graph" bind:clientWidth={graphW}>
 			<svg
+				bind:this={svgEl}
 				width={graphW}
 				height={svgH}
 				role="img"
@@ -608,7 +791,28 @@
 				     index numbered nothing a reader could see — the applications
 				     editor below does not number its rows — while the unit is the one
 				     datum the whole instrument is about. -->
-				{#each markers as m, mi (m.n)}
+				<!-- ⚓ THE BAND IS THE APPLICATIONS' GROUND (2026-08-17). Bare band
+				     adds one at that instant; a pill is dragged along it. It sits
+				     BEFORE the markers so every pill's own hit area wins the press,
+				     and it stops propagation so the SVG's scrub never sees either. -->
+				<rect
+					class="gx-add-zone"
+					class:gx-add-zone--full={appRows.length >= MAX_APPS}
+					x={PADL}
+					y="0"
+					width={Math.max(0, graphW - PADL - PADR)}
+					height={TOP}
+					fill="transparent"
+					onpointerdown={onBandDown}
+					role="presentation"
+				/>
+
+				<!-- ⚠ KEYED BY `m.id`, NOT BY POSITION OR BY `m.n`. Dragging one
+				     application past another re-sorts the list, which reorders this
+				     array — with a positional key Svelte would recycle nodes between
+				     two markers and the POINTER CAPTURE would go with the node rather
+				     than with the application under the finger. -->
+				{#each markers as m, mi (m.id)}
 					<line
 						x1={m.x}
 						y1={MARKER_PILL_CY + MARKER_PILL_R}
@@ -638,24 +842,72 @@
 							{label}
 						</text>
 					{/each}
-					<circle cx={m.x} cy={MARKER_PILL_CY} r={MARKER_PILL_R} fill={m.color} />
-					<!-- ⚠ THE NUMBER ONLY, and set CONDENSED (2026-08-17). "1.5U" bled
-					     out of the disc on both sides at the regular face; the U was the
-					     part paying rent it did not earn, because the y axis is labelled
-					     in U and the panel below opens by defining the unit. Condensed
-					     buys the rest of the headroom — ⚠ it is a STATIC 400/600 face
-					     (the weight ladder folds there), so 700 resolves to 600 and that
-					     is fine at this size. -->
-					<text
-						x={m.x}
-						y={MARKER_PILL_CY + 3.5}
-						style="fill: var(--bright-ink); font-family: var(--font-condensed)"
-						font-size="10"
-						font-weight="600"
-						text-anchor="middle"
+					<!-- ══ THE PILL IS THE TIME CONTROL ══════════════════════════════
+					     ⚓ It replaced a 0–15s slider sitting in a list far below the
+					     axis it addressed. The group carries the whole interaction so
+					     the ring, the disc and the invisible hit target move as one
+					     object, and it is a real focus stop — ⌨ arrows nudge, Delete
+					     removes, so the keyboard path is the drag's equal rather than
+					     its consolation.
+					     ⚠ THE HIT AREA IS BIGGER THAN THE DISC (r+6). At 9px the disc
+					     is a comfortable READ and a poor TARGET, and markers can land a
+					     few px apart. -->
+					<g
+						class="gx-marker"
+						class:gx-marker--held={dragId === m.id}
+						role="button"
+						tabindex="0"
+						aria-label="{m.element} {m.gauge}U at {m.time.toFixed(1)} seconds"
+						onpointerdown={(e) => onMarkerDown(e, m)}
+						onpointermove={onMarkerMove}
+						onpointerup={onMarkerUp}
+						onpointercancel={onMarkerUp}
+						onfocus={() => (selectedId = m.id)}
+						onkeydown={(e) => onMarkerKey(e, m)}
 					>
-						{m.gauge}
-					</text>
+						{#if m.id === selectedId}
+							<!-- GOLD for selected — the site's rule, and the only thing
+							     that says which application the panel below is editing. -->
+							<circle
+								cx={m.x}
+								cy={MARKER_PILL_CY}
+								r={MARKER_PILL_R + 3}
+								fill="none"
+								stroke="var(--accent)"
+								stroke-width="1.5"
+							/>
+						{/if}
+						<circle cx={m.x} cy={MARKER_PILL_CY} r={MARKER_PILL_R} fill={m.color} />
+						<!-- ⚠ THE NUMBER ONLY, and set CONDENSED (2026-08-17). "1.5U" bled
+						     out of the disc on both sides at the regular face; the U was the
+						     part paying rent it did not earn, because the y axis is labelled
+						     in U and the panel below opens by defining the unit. Condensed
+						     buys the rest of the headroom — ⚠ it is a STATIC 400/600 face
+						     (the weight ladder folds there), so 700 resolves to 600 and that
+						     is fine at this size.
+						     ⚠ INSIDE THE GROUP since the pill became draggable, and inert to
+						     the pointer: as a sibling it painted on top of the hit target, so
+						     a press landing on the digit fell through to the SVG and flung
+						     the playhead instead of grabbing the marker. -->
+						<text
+							x={m.x}
+							y={MARKER_PILL_CY + 3.5}
+							style="fill: var(--bright-ink); font-family: var(--font-condensed); pointer-events: none"
+							font-size="10"
+							font-weight="600"
+							text-anchor="middle"
+						>
+							{m.gauge}
+						</text>
+						<!-- The target, painted last so nothing sits over it. -->
+						<circle
+							cx={m.x}
+							cy={MARKER_PILL_CY}
+							r={MARKER_PILL_R + 6}
+							fill="transparent"
+							role="presentation"
+						/>
+					</g>
 				{/each}
 
 				<!-- Aura volume fills (gradient fades to transparent at the baseline,
@@ -736,6 +988,121 @@
 	</div>
 
 	<div class="gx-panels panels">
+		<!-- 🐛 APPLICATIONS IS FIRST, AND THAT IS A FIX RATHER THAN A PREFERENCE
+		     (2026-08-17). `.panels` is CSS multicolumn with the default
+		     `column-fill: balance`, so every panel's position depends on every
+		     other panel's HEIGHT — and shrinking this one from a per-application
+		     list to a fixed inspector put it right at the balance point. Measured:
+		     one click on an element chip moved it from x=32 to x=448 and back,
+		     because adding a Vaporize grew the event log by two lines. The panel
+		     under your cursor cannot jump columns while you use it.
+		     ⚓ Column one always begins with the first thing in the flow, so being
+		     first is what pins it; the two panels behind it are reading material
+		     and may reflow freely. ⚠ This also puts the editor under the LEFT end
+		     of the marker band it edits, which is where the hand already is. -->
+		<!-- ══ ONE INSPECTOR, NOT N EDITORS (2026-08-17, ⚓ NATE) ══════════════════
+		     This panel used to hold a three-line block per application and grew
+		     with the list; it is now a fixed-height editor for whichever marker
+		     carries the gold ring. ⚓ The chart owns WHEN (drag a pill, click the
+		     band); this owns WHAT. See the AppRow note in the script for why the
+		     old arrangement also let the panel and the event log number the same
+		     applications differently. -->
+		<div class="panel">
+			<p class="kicker">Applications</p>
+			<p class="note">
+				<Emphasis
+					text="Drag a marker along the top of the chart to move it in time, or click the empty strip to add one. U = gauge units, the invisible strength of an elemental application — **most hits are 1U**."
+				/>
+			</p>
+			{#if selected}
+				<div class="gx-inspector">
+					<div class="gx-app-line">
+						<div class="gx-elements" role="radiogroup" aria-label="Element">
+							{#each ELEMENTS as e (e)}
+								<button
+									class="chip chip--icon gx-el"
+									class:active={selected.element === e}
+									style:--chip-color="var(--el-{e}-main)"
+									role="radio"
+									aria-checked={selected.element === e}
+									aria-label={e}
+									title={e}
+									onclick={() => {
+										selected.element = e;
+										markCustom();
+									}}
+								>
+									<img src={elementIcon(e)} alt="" width="16" height="16" />
+								</button>
+							{/each}
+						</div>
+					</div>
+					<div class="gx-app-line">
+						<div class="gx-gauges" role="radiogroup" aria-label="Gauge units">
+							{#each GAUGE_OPTIONS as g (g)}
+								<button
+									class="chip chip--control chip--sm"
+									class:active={selected.gauge === g}
+									role="radio"
+									aria-checked={selected.gauge === g}
+									onclick={() => {
+										selected.gauge = g;
+										markCustom();
+									}}
+								>
+									{g}U
+								</button>
+							{/each}
+						</div>
+					</div>
+					<!-- ⚠ THE STEPPER IS NOT A SECOND TIME CONTROL, it is the FINE one.
+					     A drag crosses the axis in one gesture and lands within a tenth;
+					     these two buttons are how you land on the exact tenth, and how a
+					     keyboard reaches the same place without the chart. -->
+					<div class="gx-app-line gx-time-line">
+						<button
+							class="btn btn--sm btn--icon"
+							aria-label="Move earlier"
+							title="Move earlier — hold Shift for 1s"
+							disabled={selected.time <= 0}
+							onclick={(e) => nudge(selected, e.shiftKey ? -1 : -0.1)}
+						>
+							<Mark name="minus" />
+						</button>
+						<span class="gx-value gx-time-value">{selected.time.toFixed(1)}s</span>
+						<button
+							class="btn btn--sm btn--icon"
+							aria-label="Move later"
+							title="Move later — hold Shift for 1s"
+							disabled={selected.time >= MAX_GAUGE_TIME}
+							onclick={(e) => nudge(selected, e.shiftKey ? 1 : 0.1)}
+						>
+							<Mark name="plus" />
+						</button>
+						<button
+							class="gx-remove"
+							aria-label="Remove this application"
+							title="Remove this application"
+							onclick={() => removeRow(selected.id)}
+						>
+							×
+						</button>
+					</div>
+				</div>
+			{:else}
+				<p class="gx-meta">No applications — add one to start a sequence.</p>
+			{/if}
+			<!-- ⚠ DISABLED AT THE CAP RATHER THAN HIDDEN. The button used to vanish,
+			     which reads as the control having moved rather than as a limit; the
+			     count beside it is what makes the limit answerable. -->
+			<div class="gx-app-line gx-add-line">
+				<button class="btn gx-add" disabled={appRows.length >= MAX_APPS} onclick={addRow}>
+					+ Add application
+				</button>
+				<span class="gx-meta gx-app-count">{appRows.length} / {MAX_APPS}</span>
+			</div>
+		</div>
+
 		<div class="panel">
 			<p class="kicker">Example Scenarios</p>
 			<div class="chips gx-chips-dense">
@@ -757,73 +1124,6 @@
 			<p class="note">
 				<Emphasis text={presetNote ?? 'Custom sequence — edit applications or pick a scenario.'} />
 			</p>
-		</div>
-
-		<div class="panel">
-			<p class="kicker">Applications</p>
-			<p class="note">
-				U = gauge units, the invisible strength of an elemental application — most hits are 1U.
-			</p>
-			{#each appRows as row, i (i)}
-				<div class="gx-app">
-					<div class="gx-app-content">
-						<div class="gx-app-line">
-							<div class="gx-elements" role="radiogroup" aria-label="Element">
-								{#each ELEMENTS as e (e)}
-									<button
-										class="chip chip--icon gx-el"
-										class:active={row.element === e}
-										style:--chip-color="var(--el-{e}-main)"
-										aria-label={e}
-										title={e}
-										onclick={() => {
-											row.element = e;
-											markCustom();
-										}}
-									>
-										<img src={elementIcon(e)} alt="" width="16" height="16" />
-									</button>
-								{/each}
-							</div>
-						</div>
-						<div class="gx-app-line">
-							<div class="gx-gauges">
-								{#each GAUGE_OPTIONS as g (g)}
-									<button
-										class="chip chip--control chip--sm"
-										class:active={row.gauge === g}
-										onclick={() => {
-											row.gauge = g;
-											markCustom();
-										}}
-									>
-										{g}U
-									</button>
-								{/each}
-							</div>
-						</div>
-						<div class="gx-app-line">
-							<input
-								type="range"
-								min="0"
-								max="15"
-								step="0.1"
-								bind:value={row.time}
-								oninput={markCustom}
-								class="slider"
-								aria-label="Application time in seconds"
-							/>
-							<span class="gx-value">{row.time.toFixed(1)}s</span>
-						</div>
-					</div>
-					<button class="gx-remove" aria-label="Remove application" onclick={() => removeRow(i)}>
-						×
-					</button>
-				</div>
-			{/each}
-			{#if appRows.length < MAX_APPS}
-				<button class="btn gx-add" onclick={addRow}>+ Add application</button>
-			{/if}
 		</div>
 
 		<!-- ⚓ ONE PAPER CARD PER INSTRUMENT (2026-08-13). This was two panels —
@@ -971,6 +1271,48 @@
 		font-family: var(--font-condensed);
 	}
 
+	/* ── The marker band's two affordances ──────────────────────────────────── */
+
+	/* ⚠ THE CURSOR IS THE WHOLE ANNOUNCEMENT for both of these. Nothing is
+	   painted to say "this strip adds" or "this pill drags" — the band already
+	   carries reaction names, pills and hairlines, and a dashed outline or a
+	   hover plate under all of that would compete with the chart it annotates.
+	   `copy` and `grab` are the platform's own words for exactly these two acts,
+	   and the panel's note says them once in prose for anyone who never hovers. */
+	.gx-add-zone {
+		cursor: copy;
+	}
+	/* At the cap the strip still swallows the press (so it cannot fall through
+	   and fling the playhead) but stops claiming it will do something. */
+	.gx-add-zone--full {
+		cursor: default;
+	}
+
+	.gx-marker {
+		cursor: grab;
+	}
+	.gx-marker--held {
+		cursor: grabbing;
+	}
+	/* 🐛 THE UA RING HAS TO BE TURNED OFF BY HAND HERE. Everywhere else on the
+	   site the focusable things are `.btn` / `.chip` / `.field`, which the global
+	   reset already covers; a focusable SVG `<g>` is not any of those, so Chrome
+	   drew its own `outline: auto 5px` in ITS blue on `:focus` — which fired
+	   after every mouse DRAG, since dragging focuses the group. Measured:
+	   `:focus-visible` correctly did NOT match, so this was never our rule
+	   misfiring. ⛔ Don't "fix" that by dropping the tabindex — the marker is the
+	   only way to reach an application from the keyboard. */
+	.gx-marker:focus {
+		outline: none;
+	}
+	/* A real focus stop needs a real focus ring. ⚠ `outline` on an SVG group is
+	   drawn around its bounding box, which here is the hit circle — deliberately
+	   the largest child, so the ring frames the target rather than the disc. */
+	.gx-marker:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 1px;
+	}
+
 	/* Condensed trial: the 12-chip scenario row is the densest chip cluster */
 	.gx-chips-dense :global(.chip) {
 		font-family: var(--font-condensed);
@@ -1000,20 +1342,18 @@
 
 	/* ── Chips ──────────────────────────────────────────────────────────────── */
 
-	/* ── Application rows ───────────────────────────────────────────────────── */
+	/* ── The application inspector ──────────────────────────────────────────── */
 
-	.gx-app {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
-		border-radius: 3px;
-		background: var(--fill-rest);
-		overflow: hidden;
-	}
-
-	.gx-app-content {
+	/* ⛔ `.gx-app` / `.gx-app-content` RETIRED (2026-08-17) — they were the
+	   per-application block, and there is one editor now rather than N. What is
+	   left is the same well they painted, holding the selected application's
+	   element row, size row and time stepper. */
+	.gx-inspector {
 		display: grid;
 		gap: 0.45rem;
 		padding: 0.6rem 0.65rem;
+		border-radius: 3px;
+		background: var(--fill-rest);
 		min-width: 0;
 	}
 
@@ -1060,11 +1400,31 @@
 		border-radius: var(--r-round);
 	}
 
+	/* The time stepper sits at the row's start and the delete at its far end —
+	   ⚠ `margin-left: auto` rather than a spacer, so the row still collapses
+	   sensibly when the panel is narrow (.gx-app-line wraps). */
+	.gx-time-line > .gx-remove {
+		margin-left: auto;
+	}
+	.gx-time-value {
+		min-width: 3.4em;
+		text-align: center;
+	}
+
+	/* The add row: the button, and the count that makes its disabled state
+	   answerable. */
+	.gx-add-line {
+		justify-content: space-between;
+	}
+	.gx-app-count {
+		font-variant-numeric: tabular-nums;
+	}
+
 	.gx-remove {
 		align-self: stretch;
 		width: 26px;
 		border: none;
-		border-radius: 0 3px 3px 0;
+		border-radius: 3px;
 		background: none;
 		color: color-mix(in srgb, var(--muted) 80%, transparent);
 		font-size: var(--fs-2xl);
@@ -1177,9 +1537,7 @@
 	.gx-dim {
 		color: color-mix(in srgb, var(--muted) 65%, transparent);
 	}
-	/* the shared slider is width:100%; in the app rows it flexes beside the value */
-	.gx-app-line > .slider {
-		flex: 1 1 0;
-		width: auto;
-	}
+	/* ⛔ `.gx-app-line > .slider` RETIRED with the per-application time slider
+	   (2026-08-17) — time is dragged on the chart now, and the only slider left
+	   in this instrument is the transport's, which is not in an app line. */
 </style>
