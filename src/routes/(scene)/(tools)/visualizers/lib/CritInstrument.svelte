@@ -316,11 +316,12 @@
 	   would shadow the tile with this element's own width.
 	   A bespoke root rather than the shared .instrument: this is the one
 	   instrument with its own two-column layout, and .instrument's stacking grid
-	   would fight .cv-layout for the height. */
+	   would fight .cv-layout for the height.
+	   ⛔ Its `overflow-y: auto` went with .instrument's, and for the same reason:
+	   it never engaged, and the TILE is the viewport now (.ws-body). */
 	.cv-instrument {
 		height: 100%;
 		min-height: 0;
-		overflow-y: auto;
 	}
 
 	/* ── Layout ────────────────────────────────────────────────────────────── */

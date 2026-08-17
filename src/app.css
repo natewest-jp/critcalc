@@ -2615,7 +2615,24 @@ img {
 	cursor: pointer;
 }
 /* The native input stays in the DOM for keyboard + AT; it is visually
-   replaced, not removed. Never display:none it. */
+   replaced, not removed. Never display:none it.
+
+   🐛 THE LABEL MUST BE POSITIONED, and this is not cosmetic (2026-08-17). An
+   `position: absolute` box with no positioned ancestor resolves against the
+   nearest one ANYWHERE up the tree — so these 1px inputs sat at their static
+   position visually while belonging, for overflow purposes, to whatever
+   happened to be `relative` far above them. That let them ESCAPE an
+   intervening scroll container: the Crit instrument's two checkboxes resolved
+   against `.tool-stack`, reported a 1016px bottom inside a 740px tile, and
+   held the whole Visualizers page in a 75px scroll that nothing visible
+   accounted for. Latent for as long as these have existed; it only became
+   observable once the tile started clipping.
+   ⚠ Both labels take it, not just `.check` — `.toggle` is the same shape and
+   has simply never been inside a scroller yet. */
+.toggle,
+.check {
+	position: relative;
+}
 .toggle input,
 .check input {
 	position: absolute;
@@ -3324,11 +3341,24 @@ img {
    for the same reason. The Crit instrument keeps a bespoke root: it is the one
    instrument with its own two-column layout, so the grid here would fight it.
    NOT a container — the TILE owns `container-name: instrument`, so an
-   instrument sizes to the slot it's in, not to itself. */
+   instrument sizes to the slot it's in, not to itself.
+
+   ⛔ NO `overflow-y` HERE ANY MORE (2026-08-17). It said `overflow-y: auto` for
+   as long as this rule has existed and it NEVER ENGAGED — the same silent
+   failure as .tool-stack--fill's old `height: 100%` (see ToolStack), one axis
+   over and one layer down: the tile's grid row was `auto`, so it simply grew to
+   the instrument's natural height, the instrument was never taller than its box,
+   and the whole Visualizers page overflowed into the SHELL scroller instead.
+   Measured at 2-up: `.ws` capped at 796px with 1053px tiles inside it, and 213px
+   of page scroll that carried both bands off the top of the window.
+   ⚓ THE TILE IS THE VIEWPORT NOW, not the instrument — `.ws-body` scrolls and
+   wears the roll-off mask, because a scroller that fades at its edges needs the
+   action attached to it, and there is one tile against eight instrument roots.
+   `height: 100%` STAYS: it is what lets a short instrument fill its slot, and it
+   resolves for the first time now that the row is pinned. */
 .instrument {
 	height: 100%;
 	min-height: 0;
-	overflow-y: auto;
 	display: grid;
 	gap: 1rem;
 	align-content: start;
