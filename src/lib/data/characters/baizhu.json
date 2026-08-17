@@ -110,6 +110,24 @@
 							"scaling": 9.36,
 							"stat": "hp",
 							"flat": 1101.7205
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2.433,
+								"firstTickDelay": 4.2,
+								"icdGate": "none"
+							},
+							"scaling": 174.7152,
+							"stat": "atk",
+							"element": "dendro",
+							"_curatorNotes": [
+								"Spiritvein DMG authored 2026-08-17 as a summonTick damage effect on the Pulsing Clarity summon (it was the 'remains unauthored' finding in the note above). gcsim burst.go summonSpiritvein(): AttackInfo Element Dendro, Durability 25 (1U), ICDTag attacks.ICDTagNone → trigger icdGate 'none' (gcsim-frames-diff §5 measured 5/5 'none'). Mult burstAtk[9] = 1.747152 → scaling 174.7152, ATK-scaling (no snap/HP modification; sidecar 'Spiritvein DMG' 10th column '174.7%').",
+								"Cadence from gcsim burst.go Burst(): shields are summoned at frames 81 and burstFirstShield+burstFirstRefresh+burstRefreshRate*i = 223/369/515/661/807. summonSeamlessShield() fires summonSpiritvein() only when a shield already exists, so the first shield (81) produces none and the 5 refreshes do — interval burstRefreshRate 146f = 2.433s. QueueAttack lands the hit at burstTickRelease+burstTickTravel = 21+8 = 29f after the refresh, so the first Spiritvein lands at 223+29 = 252f = 4.2s from cast; Pulsing Clarity spawnsAt = 0, so firstTickDelay = 4.2. Matches the measured row (252f / 146f × 5).",
+								"Not modelled: the 6th Spiritvein from shield.go removeShield() (OnExpire/OnDamage-break) — the final shield expires at 807+burstShieldExpiry 152 = 959f ≈ 16.0s, outside the authored 14s window, and a shatter-triggered one has no fixed timing. C6 adds FlatDmg = 8% Max HP to each Spiritvein (already stubbed on the C6 node); it changes neither the cadence nor the tick count, so one C0 series is authored."
+							]
 						}
 					]
 				}
