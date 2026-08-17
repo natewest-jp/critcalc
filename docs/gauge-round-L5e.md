@@ -398,6 +398,9 @@ instead, and was verified the only way a guard can be: by reverting `run.ts` and
   pip and the line it points into now agree**, and the trajectory gains the samples it was
   missing (50 → 52 points in that case).
 
+Gates green: vitest **1570**, `check`, `lint`, `build`, and **e2e 73 + 73** (the
+worker-teardown errors are the documented upstream Chrome bug, exit 0).
+
 #### The oracle is byte-identical
 
 145 applications ours · **0** extra · **0** mismatch · tier-2 **122 of 264** agreeing at a
