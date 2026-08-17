@@ -1,11 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import {
+	auraMarkerLabels,
 	auraPathD,
 	auraSpanLabels,
 	auraSpanPoints,
 	auraUMax,
 	auraUnitLines,
 	computeAuraLane,
+	type AuraMarker,
 	type AuraSeries,
 	type AuraSpan
 } from './auraPlot';
@@ -353,5 +355,195 @@ describe('auraUnitLines', () => {
 	it('never rules the ceiling itself', () => {
 		expect(auraUnitLines(1)).toEqual([]);
 		expect(auraUnitLines(3)).toEqual([1, 2]);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Reaction RUNS, the label rule, and element-once naming (2026-08-17)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Hydro and Electro both alive across [t0, t1] seconds — the state that keeps
+ *  an Electro-Charged run one run. */
+const ecAuras = (t0: number, t1: number): SeriesInterval[] => [
+	interval('hydro', [
+		[t0, 0.8],
+		[t1, 0.4]
+	]),
+	interval('electro', [
+		[t0, 0.8],
+		[t1, 0.4]
+	])
+];
+
+describe('collapseReactionRuns (via computeAuraLane)', () => {
+	it('collapses consecutive Electro-Charged ticks into ONE marker with a span', () => {
+		const lane = computeAuraLane(
+			ecAuras(0, 10),
+			[],
+			[60, 120, 180, 240].map((t) => reaction(t, 'electroCharged'))
+		);
+		expect(lane.markers).toHaveLength(1);
+		expect(lane.markers[0].time).toBe(60);
+		expect(lane.markers[0].endTime).toBe(240);
+		expect(lane.markers[0].count).toBe(4);
+		// ⚓ The count rides the NAME — the marker draws no bracket (a run is
+		// narrower than its own label at resting zoom).
+		expect(lane.markers[0].label).toBe('Electro-Charged ×4');
+	});
+
+	// ⚠ The safety of the design: only reactions in REACTION_SUSTAINED_BY can
+	// ever merge. Two Vaporizes are two events and must stay two markers.
+	it('never collapses a DISCRETE reaction, however close together', () => {
+		const lane = computeAuraLane(
+			ecAuras(0, 10),
+			[],
+			[60, 62, 64].map((t) => reaction(t, 'vaporize'))
+		);
+		expect(lane.markers).toHaveLength(3);
+		expect(lane.markers.every((m) => m.count === 1)).toBe(true);
+		expect(lane.markers.every((m) => m.endTime === m.time)).toBe(true);
+	});
+
+	// Break condition 1: a different reaction between two ticks means something
+	// else happened, so they are two episodes.
+	it('splits a run when a different reaction lands between two ticks', () => {
+		const lane = computeAuraLane(
+			ecAuras(0, 10),
+			[],
+			[reaction(60, 'electroCharged'), reaction(90, 'overloaded'), reaction(120, 'electroCharged')]
+		);
+		expect(lane.markers.map((m) => m.label)).toEqual([
+			'Electro-Charged',
+			'Overload',
+			'Electro-Charged'
+		]);
+		expect(lane.markers.map((m) => m.count)).toEqual([1, 1, 1]);
+	});
+
+	// Break condition 2, and the one that needs the gauge: if a participating
+	// aura lapsed and came back, that is a second episode. Two DISJOINT hydro
+	// intervals, with the ticks either side of the gap.
+	it('splits a run when a sustaining aura lapsed in between', () => {
+		const series: SeriesInterval[] = [
+			interval('hydro', [
+				[1, 0.8],
+				[2, 0.1]
+			]),
+			interval('hydro', [
+				[5, 0.8],
+				[6, 0.1]
+			]),
+			interval('electro', [
+				[0, 0.8],
+				[10, 0.4]
+			])
+		];
+		const lane = computeAuraLane(
+			series,
+			[],
+			[reaction(60, 'electroCharged'), reaction(330, 'electroCharged')]
+		);
+		expect(lane.markers).toHaveLength(2);
+		expect(lane.markers.map((m) => m.count)).toEqual([1, 1]);
+	});
+
+	// A frame carrying a ticking reaction AND a discrete one is a compound
+	// event, not a tick — it must not swallow its neighbours.
+	it('does not merge a marker whose frame also carries a discrete reaction', () => {
+		const lane = computeAuraLane(
+			ecAuras(0, 10),
+			[],
+			[
+				reaction(60, 'electroCharged'),
+				reaction(120, 'electroCharged'),
+				reaction(120, 'overloaded'),
+				reaction(180, 'electroCharged')
+			]
+		);
+		expect(lane.markers).toHaveLength(3);
+		expect(lane.markers[1].label).toBe('Electro-Charged · Overload');
+		expect(lane.markers[1].count).toBe(1);
+	});
+});
+
+describe('auraMarkerLabels', () => {
+	const marker = (time: number, label: string): AuraMarker => ({
+		time,
+		endTime: time,
+		count: 1,
+		entries: [],
+		label
+	});
+	// One px per frame keeps the arithmetic readable: room === frame distance.
+	const xOf = (f: number) => f;
+	// One px per character.
+	const measure = (t: string) => t.length;
+
+	it('shows a label that fits and DROPS one that does not — never truncating', () => {
+		const markers = [marker(0, 'Vaporize'), marker(20, 'Electro-Charged'), marker(30, 'Swirl')];
+		// room to the next pip: 20 − 4 = 16 for the first (8 fits), 10 − 4 = 6 for
+		// the second (15 does not), Infinity for the last.
+		const shown = auraMarkerLabels(markers, xOf, measure, 4);
+		expect(shown.has(0)).toBe(true);
+		expect(shown.has(20)).toBe(false);
+		expect(shown.has(30)).toBe(true);
+	});
+
+	// The old rule was a flat 26px, which is what SLICED every longer name. A
+	// label is measured against its own width or it is not measured at all.
+	it("decides on the label's OWN width, not a constant", () => {
+		const short = [marker(0, 'Melt'), marker(10, 'x')];
+		const long = [marker(0, 'Electro-Charged'), marker(10, 'x')];
+		expect(auraMarkerLabels(short, xOf, measure, 0).has(0)).toBe(true);
+		expect(auraMarkerLabels(long, xOf, measure, 0).has(0)).toBe(false);
+	});
+
+	// Room belongs to the gap, not to the label — dropping one name must not
+	// hand its space to the next marker.
+	it('bounds room by the next pip whether or not that pip shows a label', () => {
+		const markers = [marker(0, 'Electro-Charged'), marker(5, 'Electro-Charged'), marker(10, 'ok')];
+		const shown = auraMarkerLabels(markers, xOf, measure, 0);
+		expect(shown.has(0)).toBe(false);
+		expect(shown.has(5)).toBe(false);
+		expect(shown.has(10)).toBe(true);
+	});
+
+	it('always lets the LAST marker speak — nothing follows it to crowd it', () => {
+		const shown = auraMarkerLabels([marker(0, 'A very long reaction name')], xOf, measure, 0);
+		expect(shown.has(0)).toBe(true);
+	});
+});
+
+describe('auraSpanLabels — an element names itself once', () => {
+	const wide = (start: number) => span(start, start + 999, [[start, 1]]);
+	const xOf = (f: number) => f;
+	const yOf = () => 0;
+
+	it('labels only the FIRST span of an element mod', () => {
+		const series: AuraSeries[] = [
+			{
+				mod: 'hydro',
+				label: 'Hydro',
+				color: 'c',
+				spans: [wide(0), wide(2000), wide(4000)]
+			}
+		];
+		const out = auraSpanLabels(series, xOf, yOf, 10, 10, 10);
+		expect(out).toHaveLength(1);
+		expect(out[0].span.start).toBe(0);
+	});
+
+	// ⚠ The four compound mods are exempt on purpose: their hues are ours, for
+	// states the game gives no colour to, so the word is news every time.
+	it('labels EVERY span of a compound mod', () => {
+		const series: AuraSeries[] = [
+			{
+				mod: 'frozen',
+				label: 'Frozen',
+				color: 'c',
+				spans: [wide(0), wide(2000), wide(4000)]
+			}
+		];
+		expect(auraSpanLabels(series, xOf, yOf, 10, 10, 10)).toHaveLength(3);
 	});
 });

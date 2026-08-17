@@ -45,8 +45,10 @@
 		auraSpanLabels,
 		auraSpanPoints,
 		auraUnitLines,
+		auraMarkerLabels,
 		computeAuraLane,
-		EMPTY_AURA_LANE
+		EMPTY_AURA_LANE,
+		type AuraMarker
 	} from '$lib/timeline/auraPlot';
 	import { AURA_MOD_META, AURA_MOD_ORDER, REACTION_LABEL } from '$lib/utils/auraDisplay';
 	import { gaugesAt } from '$lib/utils/gauge';
@@ -747,6 +749,45 @@
 	// the same instant but different gauges do NOT collide, and Burning-on-Pyro
 	// is exactly that pair.
 	const AURA_LABEL_MIN_ROW = 12;
+	// ══ THE MARKER ROW'S LABEL RULE (2026-08-17) ══════════════════════════════
+	// ⚠ MEASURED, NOT GUESSED. This used to be `room >= 26`, a stand-in for "the
+	// shortest family name that survives" — so anything between 26px and its own
+	// width was CLIPPED, and one Electro-Charged rotation read
+	// `Electro-C · Electro-Ch · Electro-Cha · Electro-Charge`. See
+	// `auraMarkerLabels`; the pad below is the pip plus its clearance.
+	const AURA_MARKER_LABEL_PAD = 10;
+	/** The marker label's type, for measurement only — it must MIRROR the
+	 *  `.rp-aura-marker-label` rule below (--fs-xs at --fw-semibold) and the
+	 *  export's own `600 9px SANS`. ⚠ `measureText` knows nothing about
+	 *  letter-spacing, so --ls-mid (0.04em) is added per character. */
+	const AURA_LABEL_FONT = '600 10px "IBM Plex Sans Variable", "IBM Plex Sans", sans-serif';
+	const AURA_LABEL_TRACKING = 0.4;
+	let labelMetrics: CanvasRenderingContext2D | null = null;
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- a pure memo of text metrics, keyed by string and never read reactively; making it a SvelteMap would invalidate every consumer the first time a new label is measured
+	const labelWidthCache = new Map<string, number>();
+	/**
+	 * How wide a marker label renders, in px.
+	 *
+	 * ⚠ A CANVAS, NOT THE DOM. The alternative is measuring a rendered span, which
+	 * is a forced layout per label per zoom change on a row that can hold dozens —
+	 * and the values never change, so they are cached by text.
+	 * ⚠ The `typeof document` guard is the SSR path: the timeline renders on the
+	 * server, where the lane is always empty (no notation yet) so nothing asks —
+	 * but a crash in a getter that "cannot be reached" is exactly the kind that is.
+	 */
+	function auraLabelWidth(text: string): number {
+		const cached = labelWidthCache.get(text);
+		if (cached !== undefined) return cached;
+		if (!labelMetrics && typeof document !== 'undefined') {
+			labelMetrics = document.createElement('canvas').getContext('2d');
+			if (labelMetrics) labelMetrics.font = AURA_LABEL_FONT;
+		}
+		const width = labelMetrics
+			? labelMetrics.measureText(text).width + text.length * AURA_LABEL_TRACKING
+			: text.length * 6;
+		labelWidthCache.set(text, width);
+		return width;
+	}
 	let auraLaneH = $derived(
 		showAuraLane ? AURA_MARKER_H + AURA_TICK_H + AURA_PLOT_H + AUX_LANE_PAD_Y * 2 : 0
 	);
@@ -783,6 +824,11 @@
 		)
 	);
 	let auraUnitRules = $derived(auraUnitLines(auraLane.uMax));
+	/** Which markers show their name — measured against the room to the next pip.
+	 *  Re-derives on zoom, which is what moves the room. */
+	let auraMarkerShown = $derived(
+		auraMarkerLabels(auraLane.markers, xForTime, auraLabelWidth, AURA_MARKER_LABEL_PAD)
+	);
 	/** Every span's polyline, pre-mapped once per zoom change — the fill and the
 	 *  line share it, and so does the PNG export by calling the same function. */
 	let auraPaths = $derived(
@@ -1467,6 +1513,42 @@
 	// likely to be pointing.
 	let auraCursorX = $state<number | null>(null);
 
+	/**
+	 * One marker's card. ⚠ A RUN IS SUMMARISED, NOT ENUMERATED: twelve
+	 * Electro-Charged entries would print twelve identical rows, so a run says its
+	 * span and its tick count and lists each distinct trigger once.
+	 */
+	function markerTooltip(marker: AuraMarker): TooltipPayload {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- a local dedupe, alive for one call and never state
+		const seen = new Set<string>();
+		// ⚠ TooltipEffectRow, not MergedEffectDisplay — these rows name a REACTION,
+		// which is prose, not a `Stat`. See the note on TooltipPayload.effects.
+		const rows: TooltipEffectRow[] = [];
+		for (const entry of marker.entries) {
+			const key = `${entry.reaction}::${entry.characterId}`;
+			if (seen.has(key)) continue;
+			seen.add(key);
+			rows.push({
+				stat: REACTION_LABEL[entry.reaction],
+				displayValue: getLoadedCharacter(entry.characterId)?.displayName ?? '—'
+			});
+		}
+		if (marker.count > 1) rows.push({ stat: 'Ticks', displayValue: `${marker.count}` });
+		return {
+			sourceLabel:
+				marker.count > 1
+					? `Reaction · ${secondsLabel(marker.time)}–${secondsLabel(marker.endTime)}s`
+					: `Reaction · ${secondsLabel(marker.time)}s`,
+			effects: rows,
+			isMutuallyExclusive: false
+		};
+	}
+
+	/** How near the crosshair a discrete reaction counts as "here", in px. A
+	 *  reaction is a point and the cursor is a pixel, so an instant-exact test
+	 *  would answer "no reaction" everywhere except one column. */
+	const AURA_CROSSHAIR_REACH = 6;
+
 	function onAuraMove(e: MouseEvent) {
 		const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
 		const x = e.clientX - box.left;
@@ -1476,10 +1558,29 @@
 		// a second reading of the trajectory. It wants SECONDS, which is what
 		// `rotation.auraSeries` is in; the plot's frames are the projection's.
 		const present = gaugesAt(rotation.auraSeries, frames / FPS);
-		const rows = AURA_MOD_ORDER.filter((mod) => (present[mod] ?? 0) > 0.01).map((mod) => ({
-			stat: AURA_MOD_META[mod].label,
-			displayValue: `${(present[mod] ?? 0).toFixed(2)}U`
-		}));
+		const rows: TooltipEffectRow[] = AURA_MOD_ORDER.filter((mod) => (present[mod] ?? 0) > 0.01).map(
+			(mod) => ({
+				stat: AURA_MOD_META[mod].label,
+				displayValue: `${(present[mod] ?? 0).toFixed(2)}U`
+			})
+		);
+		// ⚓ THE CROSSHAIR ANSWERS FOR THE MARKER ROW TOO (2026-08-17). Suppressing
+		// a label that does not fit is only honest if the name is still reachable,
+		// and this is the lane's own established answer to "too much to draw" —
+		// the same cursor already exists because overlaid series cannot be hovered
+		// individually. A RUN is a containment test (it has width); a discrete
+		// reaction is a proximity test.
+		const reach = (AURA_CROSSHAIR_REACH / scale) * FPS;
+		for (const marker of auraLane.markers) {
+			if (frames < marker.time - reach || frames > marker.endTime + reach) continue;
+			rows.push({
+				stat: marker.label,
+				displayValue:
+					marker.count > 1
+						? `${secondsLabel(marker.time)}–${secondsLabel(marker.endTime)}s`
+						: `${secondsLabel(marker.time)}s`
+			});
+		}
 		showTooltip(
 			e,
 			{
@@ -1607,36 +1708,33 @@
 						     bars a reaction caused but never the reaction itself. -->
 							<div class="rp-aura-markers" style:height="{AURA_MARKER_H}px">
 								<span class="rp-lane-name">TARGET AURA</span>
-								{#each auraLane.markers as marker, mi (marker.time)}
-									{@const next = auraLane.markers[mi + 1]}
-									{@const room = next ? xForTime(next.time) - xForTime(marker.time) - 8 : Infinity}
+								{#each auraLane.markers as marker (marker.time)}
+									<!-- ⚓ A RUN IS ONE MARKER. A ticking reaction (Electro-Charged,
+									     Lunar-Charged, Burning) collapses into a single marker whose
+									     name carries the count — see `collapseReactionRuns`. The pip
+									     marks the instant it STARTED; the span and the ticks are in
+									     the tooltip and under the crosshair.
+									     ⛔ It does NOT draw a bracket, and that was measured rather
+									     than judged: at resting zoom the label is wider than the run
+									     it names, so any extent from the pip reads as an underline of
+									     the text. -->
 									<!-- svelte-ignore a11y_no_static_element_interactions -->
 									<div
 										class="rp-aura-marker"
 										style:left="{xForTime(marker.time)}px"
-										onmouseenter={(e) =>
-											showTooltip(e, {
-												sourceLabel: `Reaction · ${secondsLabel(marker.time)}s`,
-												effects: marker.entries.map((entry) => ({
-													stat: REACTION_LABEL[entry.reaction],
-													displayValue: getLoadedCharacter(entry.characterId)?.displayName ?? '—'
-												})),
-												isMutuallyExclusive: false
-											})}
+										onmouseenter={(e) => showTooltip(e, markerTooltip(marker))}
 										onmouseleave={hideTooltip}
 									>
 										<span class="rp-aura-marker-pip"></span>
-										<!-- ⚠ DROPPED, not truncated, when the next marker is close. A
-									     cap alone left two-character stubs ("Bl", "Hy") that name
-									     nothing and still cost the pip its clearance; the pip on its
-									     own is honest ("a reaction happened here") and the tooltip
-									     still says which. 26px is roughly the shortest family name
-									     that survives at this size. -->
-										{#if room >= 26}
-											<span
-												class="rp-aura-marker-label"
-												style:max-width={next ? `${room}px` : undefined}>{marker.label}</span
-											>
+										<!-- ⚠ DROPPED, never truncated — a two-character stub names
+										     nothing and still costs the pip its clearance. The
+										     threshold is the label's OWN measured width now
+										     (`auraMarkerLabels`); it was a flat 26px, which sliced
+										     every name longer than that into a different-looking
+										     stub. The pip alone is honest ("a reaction happened
+										     here") and the tooltip still says which. -->
+										{#if auraMarkerShown.has(marker.time)}
+											<span class="rp-aura-marker-label">{marker.label}</span>
 										{/if}
 									</div>
 								{/each}
@@ -3254,6 +3352,15 @@
 		transform: translateX(-1px);
 		z-index: 3;
 	}
+	/* ⛔ NO RUN BRACKET, and the reason is geometry rather than taste (2026-08-17).
+	   A hairline from the pip to the run's last tick was built and reversed: at
+	   resting zoom a real Electro-Charged run measured 72px while its own label
+	   measured 82px, so the extent is SHORTER than the word above it and renders
+	   as an underline of the text — at --rp-grid (nearly invisible), at
+	   --chart-dim (a link underline), and with an end pip (two marks reading as
+	   two reactions, the exact confusion the collapse removes). The count lives
+	   in the NAME instead. ⚓ A chart cannot draw a duration narrower than the
+	   duration's own name; check that ratio before drawing an extent here. */
 	.rp-aura-marker-pip {
 		width: 3px;
 		height: 3px;
@@ -3264,14 +3371,19 @@
 		   speaks in. */
 		background: var(--chart-dim);
 	}
+	/* ⛔ NO `overflow`/`text-overflow` HERE ANY MORE (2026-08-17). They existed to
+	   cap a label at the room available, which is exactly the clipping that
+	   produced `Electro-C`; the label is now either drawn in full or not drawn at
+	   all (`auraMarkerLabels`), so a cap could only ever hide the fact that the
+	   measurement was wrong. ⚠ If a label ever overlaps its neighbour again, the
+	   bug is in AURA_LABEL_FONT drifting from this rule — fix the mirror, don't
+	   re-add the clip. */
 	.rp-aura-marker-label {
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
 		color: var(--chart-dim);
 		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: clip;
 		line-height: var(--lh-none);
 		pointer-events: none;
 	}

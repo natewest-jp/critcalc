@@ -66,6 +66,7 @@ import type {
 	WeaponProcSubrow
 } from '$lib/timeline/types';
 import {
+	auraMarkerLabels,
 	auraSpanLabels,
 	auraSpanPoints,
 	auraUnitLines,
@@ -1157,22 +1158,29 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		ctx.fillStyle = MUTED;
 		ctx.font = `600 9px ${SANS}`;
 		ctx.textAlign = 'left';
-		snap.auraLane.markers.forEach((marker, mi) => {
+		// ⚓ WHICH LABELS SURVIVE IS DECIDED BY THE SAME FUNCTION THE SCREEN USES,
+		// with the canvas supplying its own metrics (2026-08-17). That is the whole
+		// point of `auraMarkerLabels` taking a `measure`: a mirror that re-derives
+		// the rule is not a mirror, and this one is 9px where the screen is 10, so
+		// a shared THRESHOLD would have been wrong in one of the two.
+		const markerShown = auraMarkerLabels(
+			snap.auraLane.markers,
+			x,
+			(text) => ctx!.measureText(text).width,
+			8
+		);
+		for (const marker of snap.auraLane.markers) {
 			const mx = x(marker.time);
-			const next = snap.auraLane.markers[mi + 1];
-			ctx!.fillRect(mx - 1, laneY + snap.auraMarkerH - 6, 3, 3);
-			// ⚠ 26, matching the screen's threshold: below it the label is DROPPED,
-			// not truncated — a two-character stub names nothing and still crowds
-			// the pip beside it.
-			const room = next ? x(next.time) - mx - 8 : Infinity;
-			if (room < 26) return;
-			ctx!.save();
-			ctx!.beginPath();
-			ctx!.rect(mx + 5, laneY, Math.min(room, 200), snap.auraMarkerH);
-			ctx!.clip();
-			ctx!.fillText(marker.label, mx + 5, laneY + snap.auraMarkerH - 4);
-			ctx!.restore();
-		});
+			// ⛔ No run bracket here either — the screen dropped it because at
+			// resting zoom the label is wider than the run it names, so the extent
+			// reads as an underline. The count is in `marker.label`.
+			ctx.fillRect(mx - 1, laneY + snap.auraMarkerH - 6, 3, 3);
+			// ⛔ NO CLIP. The label is drawn in full or not at all — clipping is what
+			// produced `Electro-C` on screen, and a canvas clip would reproduce it.
+			if (markerShown.has(marker.time)) {
+				ctx.fillText(marker.label, mx + 5, laneY + snap.auraMarkerH - 4);
+			}
+		}
 
 		// Application ticks, with the --ui-provisional foot under a defaulted
 		// unit value (the squiggle rule).
