@@ -35,20 +35,76 @@ export type AuraModMeta = {
 	color: string;
 	/** SVG stroke-dasharray, for the one mod that is not really an aura. */
 	dash?: string;
+	/**
+	 * A reaction STATE rather than an element — the four the header note names.
+	 *
+	 * ⚓ MACHINE-READABLE BECAUSE THE LABEL RULE NEEDS IT (2026-08-17). The plot
+	 * names an element ONCE and a compound state EVERY time, and the reason is
+	 * what colour can say: this audience reads Hydro-blue and Electro-purple
+	 * without help (the `--el-*` ramps are Genshin's own, transcribed), so the
+	 * word is only news on first sight. `--rx-frozen` and `--rx-quicken` are OUR
+	 * hues for states the game gives no colour to, so their word is news every
+	 * time. See `auraSpanLabels`.
+	 *
+	 * ⛔ Don't infer this from the `--rx-` prefix in `color`. That is sniffing a
+	 * token name for a fact, and it would break silently the first time a state
+	 * borrowed an element ramp.
+	 */
+	compound?: true;
 };
 
 export const AURA_MOD_META: Record<AuraKey, AuraModMeta> = {
 	pyro: { label: 'Pyro', icon: 'pyro', color: 'var(--el-pyro-main)' },
-	burning: { label: 'Burning', icon: 'pyro', color: 'var(--rx-burning)' },
+	burning: { label: 'Burning', icon: 'pyro', color: 'var(--rx-burning)', compound: true },
 	// ⚠️ The fuel is the DENDRO being consumed, not an aura the target carries —
 	// dashed everywhere it is drawn so it reads as bookkeeping.
-	burningFuel: { label: 'Fuel', icon: 'dendro', color: 'var(--rx-burning-fuel)', dash: '5 4' },
+	burningFuel: {
+		label: 'Fuel',
+		icon: 'dendro',
+		color: 'var(--rx-burning-fuel)',
+		dash: '5 4',
+		compound: true
+	},
 	hydro: { label: 'Hydro', icon: 'hydro', color: 'var(--el-hydro-main)' },
 	cryo: { label: 'Cryo', icon: 'cryo', color: 'var(--el-cryo-main)' },
-	frozen: { label: 'Frozen', icon: 'cryo', color: 'var(--rx-frozen)' },
+	frozen: { label: 'Frozen', icon: 'cryo', color: 'var(--rx-frozen)', compound: true },
 	electro: { label: 'Electro', icon: 'electro', color: 'var(--el-electro-main)' },
 	dendro: { label: 'Dendro', icon: 'dendro', color: 'var(--el-dendro-main)' },
-	quicken: { label: 'Quicken', icon: 'dendro', color: 'var(--rx-quicken)' }
+	quicken: { label: 'Quicken', icon: 'dendro', color: 'var(--rx-quicken)', compound: true }
+};
+
+/**
+ * ⚓ WHICH REACTIONS TICK, and what keeps them ticking (2026-08-17).
+ *
+ * A reaction is one of two things and the lane has to draw them differently.
+ * Vaporize, Melt, Overload, Swirl, Crystallize, Bloom, Aggravate and the rest
+ * are DISCRETE — they happen at an instant, and naming each one is right.
+ * Electro-Charged, Lunar-Charged and Burning are CONTINUOUS STATES that tick
+ * for as long as the auras behind them coexist, so drawing each tick as its own
+ * named event says "this happened twelve times" when a player experienced one
+ * ongoing thing — and paints twelve copies of one long word across the row.
+ *
+ * ⚓ THIS IS ALREADY SETTLED ELSEWHERE, TWICE. The Gauge Explorer's event log
+ * collapses consecutive `ecTick`s into an `ecRun {t0, t1, count}` and hides
+ * burning self-ticks outright; `mergeRefreshedBars.ts` makes one bar with one
+ * label out of a buff re-applied before it expires. The aura lane was the last
+ * surface still treating a tick as an event.
+ *
+ * ⚠️ A reaction ABSENT from this map never merges, and that is the safety of the
+ * design: two Vaporizes half a second apart stay two markers, because they ARE
+ * two events. Only the entries here can ever collapse.
+ *
+ * The value is the mods that must be CONTINUOUSLY present for the run to be one
+ * run. Electro-Charged needs both auras alive; if either lapses and comes back,
+ * that is a second episode and gets a second marker. Burning is its own mod, so
+ * its presence IS the condition. ⚓ Deriving the break from the gauge means the
+ * rule needs no threshold — ⛔ never "markers closer together than N seconds",
+ * which is a guess wearing a number.
+ */
+export const REACTION_SUSTAINED_BY: Partial<Record<Reaction, AuraKey[]>> = {
+	electroCharged: ['hydro', 'electro'],
+	lunarCharged: ['hydro', 'electro'],
+	burning: ['burning']
 };
 
 /**

@@ -41,7 +41,12 @@ import type { AuraKey, SeriesInterval } from '$lib/utils/gauge';
 import type { AuraApplication } from '$lib/utils/notationParser';
 import type { Element, Reaction } from '$lib/types/ability';
 import type { TimelineEvent } from '$lib/utils/rotationEvents';
-import { AURA_MOD_META, AURA_MOD_ORDER, REACTION_FAMILY } from '$lib/utils/auraDisplay';
+import {
+	AURA_MOD_META,
+	AURA_MOD_ORDER,
+	REACTION_FAMILY,
+	REACTION_SUSTAINED_BY
+} from '$lib/utils/auraDisplay';
 import { FPS } from '$lib/utils/frames';
 
 /** A sample of one aura. Frames + units — ⚓ the gauge speaks seconds, the
@@ -84,7 +89,14 @@ export type AuraTick = {
 /** Every reaction that landed on one frame. ⚓ Grouped because one trigger can
  *  cause several and two markers at one x would overdraw each other. */
 export type AuraMarker = {
-	time: number; // frames
+	time: number; // frames — the run's START
+	/**
+	 * The run's LAST tick, in frames. Equal to `time` for a discrete reaction,
+	 * which is every reaction outside `REACTION_SUSTAINED_BY` (2026-08-17).
+	 */
+	endTime: number;
+	/** Ticks in the run. 1 for a discrete reaction. */
+	count: number;
 	entries: { reaction: Reaction; characterId: string }[];
 	/** The marker's visible text: the families, deduped, joined. */
 	label: string;
@@ -182,19 +194,151 @@ export function computeAuraLane(
 		if (ev.kind !== 'reaction') continue;
 		let marker = byFrame.get(ev.time);
 		if (!marker) {
-			marker = { time: ev.time, entries: [], label: '' };
+			// endTime/count are the DISCRETE defaults; `collapseReactionRuns` is the
+			// only thing that ever moves them.
+			marker = { time: ev.time, endTime: ev.time, count: 1, entries: [], label: '' };
 			byFrame.set(ev.time, marker);
 		}
 		marker.entries.push({ reaction: ev.reaction, characterId: ev.characterId });
 	}
-	const markers = [...byFrame.values()].sort((a, b) => a.time - b.time);
-	for (const marker of markers) {
+	const perFrame = [...byFrame.values()].sort((a, b) => a.time - b.time);
+	for (const marker of perFrame) {
 		// Deduped: two Swirls on one frame (two auras present) read "Swirl", not
 		// "Swirl · Swirl" — the tooltip still lists both with their elements.
 		marker.label = [...new Set(marker.entries.map((e) => REACTION_FAMILY[e.reaction]))].join(' · ');
 	}
 
+	const markers = collapseReactionRuns(perFrame, gaugeSeries);
+	// ⚓ THE RUN CARRIES ITS COUNT IN ITS NAME — "Electro-Charged ×4".
+	//
+	// ↻ This replaced a drawn BRACKET (a hairline from the pip to the run's last
+	// tick) and the reversal was geometric, not aesthetic: measured on a real
+	// rotation at resting zoom, the label is 82px and the run it names is 72px.
+	// An extent drawn from the pip is therefore SHORTER than the word above it, so
+	// it renders as an underline of the text rather than as a span — at every
+	// colour tried. ⛔ Don't re-attempt the bracket without checking the ratio
+	// first; a chart cannot draw a duration narrower than the duration's own name.
+	//
+	// ⚠ Set on `label` itself rather than a second `displayLabel`, so the string
+	// that is MEASURED is the string that renders — on both the screen and the
+	// canvas. Two fields is how those come to disagree.
+	for (const marker of markers) {
+		if (marker.count > 1) marker.label = `${marker.label} ×${marker.count}`;
+	}
+
 	return { series, uMax: auraUMax(gaugeSeries), ticks, markers };
+}
+
+/**
+ * ⚓ A RUN OF ONE TICKING REACTION IS ONE MARKER (2026-08-17).
+ *
+ * Electro-Charged ticking twelve times over twelve seconds is one episode, and
+ * drawing it as twelve named events both misreports it and paints twelve copies
+ * of a long word across a row that has no space for one. See
+ * `REACTION_SUSTAINED_BY` for the full argument and for the two places this
+ * codebase had already reached the same conclusion.
+ *
+ * TWO CONDITIONS, NEITHER OF THEM A THRESHOLD:
+ *
+ * 1. **Same label, adjacent.** The walk is in time order, so a marker with a
+ *    different label starts a new run by construction — a Vaporize between two
+ *    Electro-Charged ticks splits them, because something else happened.
+ * 2. **The auras behind it never lapsed.** `sustainedThroughout` asks the gauge
+ *    whether ONE interval of every participating mod covers the whole span. If
+ *    Hydro ran out and came back, that is a second episode and gets its own
+ *    marker. ⛔ Never "within N seconds of each other" — the gauge knows the
+ *    answer, so a number here would be a guess replacing a fact.
+ *
+ * ⚠️ A marker only merges when EVERY entry on it is a ticking reaction. A frame
+ * carrying "Electro-Charged · Overload" is a compound event, not a tick, and
+ * stays where it is.
+ */
+function collapseReactionRuns(markers: AuraMarker[], gaugeSeries: SeriesInterval[]): AuraMarker[] {
+	const out: AuraMarker[] = [];
+	for (const marker of markers) {
+		const mods = runMods(marker);
+		const prev = out[out.length - 1];
+		if (
+			prev &&
+			mods &&
+			prev.label === marker.label &&
+			sustainedThroughout(gaugeSeries, mods, prev.time, marker.time)
+		) {
+			prev.endTime = marker.time;
+			prev.count += 1;
+			prev.entries.push(...marker.entries);
+			continue;
+		}
+		out.push({ ...marker, endTime: marker.time, count: 1 });
+	}
+	return out;
+}
+
+/** The mods that must stay alive for this marker to be part of a run, or null
+ *  when any entry on it is a discrete reaction (which never merges). */
+function runMods(marker: AuraMarker): AuraKey[] | null {
+	const mods = new Set<AuraKey>();
+	for (const entry of marker.entries) {
+		const sustaining = REACTION_SUSTAINED_BY[entry.reaction];
+		if (!sustaining) return null;
+		for (const mod of sustaining) mods.add(mod);
+	}
+	return mods.size > 0 ? [...mods] : null;
+}
+
+/** Did ONE unbroken interval of every mod cover `[t0, t1]`? Intervals of a
+ *  single mod are disjoint by construction, so "one covers both ends" is the
+ *  same question as "the mod never lapsed in between". Frames in, seconds on
+ *  the series — the multiply is the seam. */
+function sustainedThroughout(
+	series: SeriesInterval[],
+	mods: AuraKey[],
+	t0: number,
+	t1: number
+): boolean {
+	return mods.every((mod) =>
+		series.some(
+			(s) =>
+				s.key === mod &&
+				s.points.length > 0 &&
+				s.points[0].t * FPS <= t0 &&
+				s.points[s.points.length - 1].t * FPS >= t1
+		)
+	);
+}
+
+/**
+ * Which markers get to show their name, left to right.
+ *
+ * ⚓ DROPPED, NEVER CLIPPED, AND MEASURED RATHER THAN GUESSED (2026-08-17). The
+ * rule was already "drop it" — the renderer's note says a two-character stub
+ * names nothing and still costs the pip its clearance — but it was enforced
+ * against a fixed 26px, chosen as "roughly the shortest family name". Every
+ * label between 26px and its own width therefore got SLICED, which is how one
+ * rotation came to read `Electro-C · Electro-Ch · Electro-Cha · Electro-Charge`:
+ * four truncations of one word, each looking like a different thing.
+ *
+ * ⚠️ `measure` is injected rather than computed here, exactly like `xOf`/`yOf`
+ * in `auraSpanLabels` — this module stays pure and testable, and the screen and
+ * the canvas each supply their own text metrics.
+ *
+ * ⚠️ Room is bounded by the NEXT marker's pip regardless of whether that marker
+ * shows its own label: dropping a name frees no space, because the space was
+ * never the label's to take.
+ */
+export function auraMarkerLabels(
+	markers: AuraMarker[],
+	xOf: (frames: number) => number,
+	measure: (text: string) => number,
+	padPx: number
+): Set<number> {
+	const shown = new Set<number>();
+	markers.forEach((marker, i) => {
+		const next = markers[i + 1];
+		const room = next ? xOf(next.time) - xOf(marker.time) - padPx : Infinity;
+		if (measure(marker.label) <= room) shown.add(marker.time);
+	});
+	return shown;
 }
 
 /**
@@ -269,7 +413,27 @@ export function auraSpanLabels(
 	minRowPx: number
 ): Array<{ mod: AuraKey; label: string; color: string; span: AuraSpan }> {
 	const candidates = series
-		.flatMap((s) => s.spans.map((span) => ({ mod: s.mod, label: s.label, color: s.color, span })))
+		.flatMap((s) =>
+			// ⚓ AN ELEMENT NAMES ITSELF ONCE; A COMPOUND STATE NAMES ITSELF EVERY
+			// TIME (2026-08-17). Under Electro-Charged the Hydro aura is consumed and
+			// re-applied constantly, so it fragments into four or five spans and the
+			// plot printed HYDRO four or five times — each correct alone, together
+			// just noise. The word was justified as being "news where the aura
+			// appears", and the SECOND appearance of Hydro is not news: this audience
+			// reads the `--el-*` ramps as element names already.
+			//
+			// ⚠️ The four compound mods are exempt and must stay exempt. Frozen,
+			// Quicken, Burning and the Fuel wear OUR `--rx-*` hues, for states the
+			// game gives no colour to, so their name is news at every appearance —
+			// and they are also the mods a reader is least able to infer from
+			// context. See `AuraModMeta.compound`.
+			(AURA_MOD_META[s.mod].compound ? s.spans : s.spans.slice(0, 1)).map((span) => ({
+				mod: s.mod,
+				label: s.label,
+				color: s.color,
+				span
+			}))
+		)
 		.sort((a, b) => a.span.start - b.span.start);
 	const out: typeof candidates = [];
 	const placed: Array<[number, number]> = [];
