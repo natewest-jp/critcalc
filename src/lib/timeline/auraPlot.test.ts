@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
 	auraMarkerLabels,
+	auraMarkerRows,
+	auraReactionsAt,
 	auraPathD,
 	auraSpanLabels,
 	auraSpanPoints,
@@ -545,5 +547,97 @@ describe('auraSpanLabels — an element names itself once', () => {
 			}
 		];
 		expect(auraSpanLabels(series, xOf, yOf, 10, 10, 10)).toHaveLength(3);
+	});
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Tooltip rows — 🐛 the fourth keyed-`{#each}` collision in this component
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('auraMarkerRows', () => {
+	const nameOf = (id: string) => ({ xingqiu: 'Xingqiu', raiden: 'Raiden' })[id] ?? id;
+
+	// The reported crash: a collapsed run carries an entry per tick, and two
+	// ticks from different characters produced two rows with the SAME `stat`,
+	// which BuffTooltip keyed its each by.
+	it('emits ONE row per reaction, however many entries triggered it', () => {
+		const lane = computeAuraLane(
+			ecAuras(0, 10),
+			[],
+			[
+				reaction(60, 'electroCharged', 'xingqiu'),
+				reaction(120, 'electroCharged', 'raiden'),
+				reaction(180, 'electroCharged', 'xingqiu')
+			]
+		);
+		expect(lane.markers).toHaveLength(1);
+		const rows = auraMarkerRows(lane.markers[0], nameOf);
+		expect(rows).toHaveLength(1);
+		expect(rows[0].stat).toBe('Electro-Charged');
+		// Everyone who triggered it, each named once and in first-seen order.
+		expect(rows[0].displayValue).toBe('Xingqiu, Raiden');
+	});
+
+	// The invariant the tooltip used to depend on, asserted where it can be kept.
+	it('never emits two rows with the same stat', () => {
+		const lane = computeAuraLane(
+			ecAuras(0, 10),
+			[],
+			[
+				reaction(60, 'electroCharged', 'xingqiu'),
+				reaction(60, 'overloaded', 'raiden'),
+				reaction(60, 'electroCharged', 'raiden')
+			]
+		);
+		const rows = auraMarkerRows(lane.markers[0], nameOf);
+		expect(new Set(rows.map((r) => r.stat)).size).toBe(rows.length);
+	});
+});
+
+describe('auraReactionsAt', () => {
+	const at = (time: number, endTime: number, label: string): AuraMarker => ({
+		time,
+		endTime,
+		count: endTime > time ? 2 : 1,
+		entries: [],
+		label
+	});
+
+	// A run has WIDTH, so standing inside it counts even far from either end.
+	it('reports a run the cursor is standing inside', () => {
+		const hits = auraReactionsAt([at(0, 600, 'Electro-Charged')], 300, 0);
+		expect(hits).toHaveLength(1);
+		expect(hits[0].spans).toEqual([[0, 600]]);
+	});
+
+	// A discrete reaction is a point; without reach it is answerable in exactly
+	// one column, which is not an answer.
+	it('needs REACH to find a discrete reaction, and honours it', () => {
+		expect(auraReactionsAt([at(100, 100, 'Vaporize')], 106, 0)).toHaveLength(0);
+		expect(auraReactionsAt([at(100, 100, 'Vaporize')], 106, 10)).toHaveLength(1);
+	});
+
+	// The other half of the duplicate-key fix: two episodes of one reaction in
+	// reach must not become two rows sharing a name.
+	it('merges two episodes of one reaction into a single row', () => {
+		const hits = auraReactionsAt(
+			[at(0, 100, 'Electro-Charged'), at(120, 200, 'Electro-Charged')],
+			110,
+			20
+		);
+		expect(hits).toHaveLength(1);
+		expect(hits[0].spans).toEqual([
+			[0, 100],
+			[120, 200]
+		]);
+	});
+
+	it('never emits two rows with the same label', () => {
+		const hits = auraReactionsAt(
+			[at(0, 100, 'Electro-Charged'), at(50, 150, 'Electro-Charged'), at(60, 60, 'Overload')],
+			60,
+			5
+		);
+		expect(new Set(hits.map((h) => h.label)).size).toBe(hits.length);
 	});
 });
