@@ -12,6 +12,7 @@
 		type SimEvent
 	} from '$lib/utils/gauge';
 	import { AURA_MOD_META, AURA_MOD_ORDER, auraUMax } from '$lib/utils/auraDisplay';
+	import { elementPalette, shiftHue } from '$lib/utils/elementColors';
 	import { MAX_GAUGE_APPS, MAX_GAUGE_TIME } from './workspace';
 	import Emphasis from '$lib/components/Emphasis.svelte';
 	import EventLog, { type EventLogRow } from '$lib/components/EventLog.svelte';
@@ -492,6 +493,22 @@
 	const applyEvents = $derived(
 		sim.events.filter((e): e is Extract<SimEvent, { kind: 'apply' }> => e.kind === 'apply')
 	);
+	/**
+	 * The application disc's fill and its halo, for the chart pill AND the log
+	 * pip — ⚓ they are the same object in the marker grammar, so a paint change
+	 * to one is a paint change to both.
+	 *
+	 * ↻ ⚓ NATE 2026-08-17: white on a halo, on the `bar` rung, replacing dark ink
+	 * on `main`. The planner's bars retired that idiom in 2026-08-11 and these
+	 * were the last of it. `bar` is the rung the palette derives for "a fill with
+	 * white written on it"; the halo is its dark shade at the timeline's own
+	 * shiftHue(_, 0, −30).
+	 */
+	function pipPaint(element: string) {
+		const pal = elementPalette(element);
+		return { color: pal.bar, halo: shiftHue(pal.bar, 0, -30, 1) };
+	}
+
 	const markers = $derived(
 		applyEvents.map((e) => {
 			const names = sim.events
@@ -514,7 +531,12 @@
 				row,
 				time: e.time,
 				element: e.element,
+				// ⚠ TWO RUNGS, ON PURPOSE. The HAIRLINE keeps `main` — it runs down
+				// into the plot and has to be the same ink as the curve it points at.
+				// The PILL takes `bar`, the rung that carries white (see pipPaint).
 				color: `var(--el-${e.element}-main)`,
+				pipColor: pipPaint(e.element).color,
+				halo: pipPaint(e.element).halo,
 				// ⛔ No "U" suffix — see the pill's note. The axis and the panel below
 				// both say what the unit is; the disc only has room for the number.
 				gauge: `${e.gauge}`,
@@ -657,7 +679,7 @@
 			if (e.kind === 'apply') {
 				rows.push({
 					time: e.time,
-					pip: { text: `${e.gauge}`, color: `var(--el-${e.element}-main)` },
+					pip: { text: `${e.gauge}`, ...pipPaint(e.element) },
 					text: `${MOD_META[e.element as AuraKey]?.label ?? e.element} ${attachText(e)}`,
 					tone: 'lead'
 				});
@@ -962,7 +984,7 @@
 								stroke-width="1.5"
 							/>
 						{/if}
-						<circle cx={m.x} cy={MARKER_PILL_CY} r={MARKER_PILL_R} fill={m.color} />
+						<circle cx={m.x} cy={MARKER_PILL_CY} r={MARKER_PILL_R} fill={m.pipColor} />
 						<!-- ⚠ THE NUMBER ONLY, and set CONDENSED (2026-08-17). "1.5U" bled
 						     out of the disc on both sides at the regular face; the U was the
 						     part paying rent it did not earn, because the y axis is labelled
@@ -973,11 +995,18 @@
 						     ⚠ INSIDE THE GROUP since the pill became draggable, and inert to
 						     the pointer: as a sibling it painted on top of the hit target, so
 						     a press landing on the digit fell through to the SVG and flung
-						     the playhead instead of grabbing the marker. -->
+						     the playhead instead of grabbing the marker.
+						     ↻ ⚓ NATE 2026-08-17: WHITE ON A HALO, matching the log's pip and
+						     the planner's bars — the disc took `bar` and the digit takes the
+						     chart's own two-shadow recipe. ⚠ `text-shadow` on SVG text, which
+						     is a CSS property SVG2 applies to <text>; the alternative
+						     (`paint-order: stroke fill`) draws a HARD outline and would not
+						     match the soft halo everywhere else on the site. -->
 						<text
+							class="gx-pill-num"
 							x={m.x}
 							y={MARKER_PILL_CY + 3.5}
-							style="fill: var(--bright-ink); font-family: var(--font-condensed); pointer-events: none"
+							style:--label-halo={m.halo}
 							font-size="10"
 							font-weight="600"
 							text-anchor="middle"
@@ -1303,6 +1332,19 @@
 
 	.gx-graph text.gx-word {
 		font-family: var(--font-condensed);
+	}
+
+	/* The gauge digit inside the application pill. ⚠ FULL-opacity #fff over the
+	   halo — alpha-reduced white lets the shadow bleed through the glyphs, which
+	   is the rule the timeline's halo block states and the reason nothing dimmed
+	   there carries one. */
+	.gx-graph text.gx-pill-num {
+		fill: #fff;
+		font-family: var(--font-condensed);
+		text-shadow:
+			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
+			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
+		pointer-events: none;
 	}
 
 	/* ── The marker band's two affordances ──────────────────────────────────── */

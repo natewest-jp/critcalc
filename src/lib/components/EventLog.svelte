@@ -40,8 +40,18 @@
 	export type EventLogRow = {
 		/** Seconds. Omitted on a row that belongs to the one above it. */
 		time?: number;
-		/** The element disc. `text` is the gauge units — see the note above. */
-		pip?: { text: string; color: string; provisional?: boolean };
+		/**
+		 * The element disc. `text` is the gauge units — see the note above.
+		 *
+		 * ⚓ `color` IS THE `bar` RUNG, NOT `main` (⚓ NATE 2026-08-17: "I simply
+		 * don't like dark ink on elemental colors… make their text white and give
+		 * them the same --halo treatment that bars have"). The disc is a tiny BAR
+		 * with white written on it, and `bar` is the rung the palette derives for
+		 * exactly that; `halo` is its dark shade, the thing that holds white ink
+		 * off a bright fill. ⚠ Both come from the caller because the two tools
+		 * name their elements differently on the way in.
+		 */
+		pip?: { text: string; color: string; halo?: string; provisional?: boolean };
 		text: string;
 		tone: EventLogTone;
 	};
@@ -54,10 +64,30 @@
 </script>
 
 <script lang="ts">
-	let { rows, empty = 'Nothing to report.' }: { rows: EventLogRow[]; empty?: string } = $props();
+	import type { Snippet } from 'svelte';
+
+	let {
+		rows,
+		empty = 'Nothing to report.',
+		lead
+	}: {
+		rows: EventLogRow[];
+		empty?: string;
+		/**
+		 * Standing content above the transcript — the planner puts the aura's
+		 * modelling limits here.
+		 *
+		 * ⚠ INSIDE THE SCROLLER, not stuck above it. Three paragraphs pinned over a
+		 * several-hundred-row list would spend a third of the column permanently on
+		 * something you read once; scrolling past it is the correct fate for a
+		 * standing note, and it still arrives first.
+		 */
+		lead?: Snippet;
+	} = $props();
 </script>
 
 <div class="el-log">
+	{@render lead?.()}
 	{#if rows.length === 0}
 		<p class="el-empty">{empty}</p>
 	{:else}
@@ -69,7 +99,8 @@
 						<span
 							class="el-pip"
 							class:el-pip--provisional={row.pip.provisional}
-							style:background={row.pip.color}>{row.pip.text}</span
+							style:background={row.pip.color}
+							style:--label-halo={row.pip.halo}>{row.pip.text}</span
 						>
 					{/if}{row.text}
 				</span>
@@ -155,11 +186,24 @@
 		padding: 0 3px;
 		margin-right: 0.4rem;
 		border-radius: var(--r-round);
-		color: var(--bright-ink);
 		font-family: var(--font-condensed);
 		font-size: var(--fs-sm);
 		font-weight: var(--fw-semibold);
 		vertical-align: 1px;
+		/* ↻ ⚓ NATE 2026-08-17: WHITE ON A HALO, not dark ink on the element. It
+		   was `--bright-ink` on the `main` rung, which is the bright-chip idiom the
+		   planner's bars retired in 2026-08-11 for the same reason — ⚓ "I simply
+		   don't like dark ink on elemental colors."
+		   ⚠ THE RECIPE IS THE CHART'S, VERBATIM (RotationTimeline's halo block):
+		   FULL-opacity #fff over two shadows in a dark shade of the fill's own
+		   hue. ⛔ Never alpha-reduced white here — the shadow bleeds through the
+		   glyphs, which is why nothing dimmed on the chart carries a halo either.
+		   The fallback is the chart's own near-black, for a caller that hands over
+		   a colour with no halo. */
+		color: #fff;
+		text-shadow:
+			color-mix(in srgb, var(--label-halo, #081225) 25%, transparent) 0px 1px 2px,
+			color-mix(in srgb, var(--label-halo, #081225) 50%, transparent) 0px 0px 6px;
 	}
 	/* ⚓ The same statement the chart's tick makes: "could someone MEASURE this?"
 	   — a ring rather than a recolour, so the element still names itself. */

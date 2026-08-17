@@ -80,23 +80,13 @@ class PlannerViewState {
 	 *  same events, and wanting the words without the chart is a real want. */
 	hasAuraLog = $state(false);
 	totalDuration = $state(0);
-	/**
-	 * The aura lane is ON SCREEN — the rotation put something on the target AND
-	 * the layer is switched on — so the notes panel has its standing "how the
-	 * aura is modelled" block to show (gauge round L6).
-	 *
-	 * ⚠ A SECOND REASON THE NOTES PANEL CAN OPEN. It used to be gated on slot
-	 * caveats alone, which would have made the modelling limits unreachable for
-	 * exactly the rotations most likely to need them: a fully-curated team has
-	 * no caveats and still gets a gauge.
-	 *
-	 * ⚠ "DRAWN", NOT "EXISTS" (2026-08-17). The flag folds in the layer toggle,
-	 * because the block it gates states the limits OF THE LANE — with the lane
-	 * hidden there is nothing on screen for those limits to qualify, and a
-	 * caveat-free team would open the Notes panel to explain a chart that is not
-	 * there.
-	 */
-	hasAura = $state(false);
+	// ⛔ `hasAura` RETIRED (2026-08-17). It existed for ONE expression — the notes
+	// panel's second gate, so gauge round L6's standing "how the aura is modelled"
+	// block could reach a fully-curated team with no caveats. That block moved to
+	// the head of the aura LOG, so the gate went with it and the flag had no other
+	// reader. ⚠ ⛔ `hasAuraLog` above is not a rename: it answers "is there a
+	// transcript", which is layer-independent, where this answered "is the lane
+	// drawn".
 
 	/**
 	 * The aura transcript for the side column, built by the timeline from the

@@ -127,6 +127,22 @@ const MARKS = {
 	 *  survives 14px better — three stars at two sizes silt where two strokes do
 	 *  not. */
 	buff: 'ChevronsUp',
+	/**
+	 * The planner's side-column TRANSCRIPT (2026-08-17), beside the Auras layer
+	 * toggle it reads the same data as.
+	 *
+	 * ⚓ NOT `aura` again. The two controls sit adjacent and do different things —
+	 * one draws a chart, one opens a list of lines — so sharing Activity's pulse
+	 * would say they were two views of one thing.
+	 * ⚓ `Logs` over `ClipboardClock`, which was the other candidate: at the 14px
+	 * band B runs, a clipboard with a clock inside it is two objects and a dial
+	 * inside a 24px stroke-only viewBox, and it silts to a grey blob — the same
+	 * legibility argument that moved `buff` off Sparkles. `Logs` is three
+	 * stacked rules with tick marks: it reads as a list of lines at any size, and
+	 * a list of lines is exactly what the panel is. ⚠ The clipboard also implies
+	 * a DOCUMENT you keep, and this is a live reading of the current rotation.
+	 */
+	log: 'Logs',
 	plus: 'Plus',
 	minus: 'Minus',
 	close: 'X',

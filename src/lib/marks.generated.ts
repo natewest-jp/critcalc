@@ -13,7 +13,7 @@ export type MarkNode = [tag: string, attrs: Record<string, string>];
 
 /** Every mark the site can render. The union is generated, so a typo in a
  *  `<Mark name="...">` is a type error rather than an empty box. */
-export type MarkName = 'save' | 'load' | 'share' | 'more' | 'reset' | 'resetZoom' | 'undo' | 'redo' | 'link' | 'copy' | 'image' | 'rename' | 'delete' | 'download' | 'upload' | 'note' | 'aura' | 'buff' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'dice' | 'play' | 'pause' | 'gated' | 'star' | 'uncurated' | 'warn' | 'forward' | 'back' | 'compare';
+export type MarkName = 'save' | 'load' | 'share' | 'more' | 'reset' | 'resetZoom' | 'undo' | 'redo' | 'link' | 'copy' | 'image' | 'rename' | 'delete' | 'download' | 'upload' | 'note' | 'aura' | 'buff' | 'log' | 'plus' | 'minus' | 'close' | 'check' | 'chevron' | 'search' | 'layout' | 'swap' | 'dice' | 'play' | 'pause' | 'gated' | 'star' | 'uncurated' | 'warn' | 'forward' | 'back' | 'compare';
 
 /** Lucide's native grid. The wrapper's viewBox — not a knob. */
 export const MARK_VIEWBOX = 24;
@@ -37,6 +37,7 @@ export const MARK_NODES: Record<MarkName, MarkNode[]> = {
 	note: [["path",{"d":"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"}],["path",{"d":"M14 2v5a1 1 0 0 0 1 1h5"}],["path",{"d":"M10 9H8"}],["path",{"d":"M16 13H8"}],["path",{"d":"M16 17H8"}]],
 	aura: [["path",{"d":"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"}]],
 	buff: [["path",{"d":"m17 11-5-5-5 5"}],["path",{"d":"m17 18-5-5-5 5"}]],
+	log: [["path",{"d":"M3 5h1"}],["path",{"d":"M3 12h1"}],["path",{"d":"M3 19h1"}],["path",{"d":"M8 5h1"}],["path",{"d":"M8 12h1"}],["path",{"d":"M8 19h1"}],["path",{"d":"M13 5h8"}],["path",{"d":"M13 12h8"}],["path",{"d":"M13 19h8"}]],
 	plus: [["path",{"d":"M5 12h14"}],["path",{"d":"M12 5v14"}]],
 	minus: [["path",{"d":"M5 12h14"}]],
 	close: [["path",{"d":"M18 6 6 18"}],["path",{"d":"m6 6 12 12"}]],

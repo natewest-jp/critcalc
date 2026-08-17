@@ -1529,11 +1529,11 @@
 		pv.totalDuration = rotation.totalDuration / FPS;
 	});
 
-	$effect(() => {
-		// The aura lane's presence is the notes panel's second gate — see
-		// `plannerView.hasAura`.
-		pv.hasAura = showAuraLane;
-	});
+	// ⛔ `pv.hasAura = showAuraLane` RETIRED (2026-08-17). It was the notes panel's
+	// second gate, so the standing aura-modelling block could reach a team with no
+	// caveats; that block moved to the head of the aura LOG, and the flag had no
+	// other reader. ⚠ `hasAuraLog` below is NOT its replacement — it asks whether
+	// there is anything to read, not whether the lane is drawn.
 
 	// ══ THE AURA LOG, PUBLISHED TO THE SIDE COLUMN (2026-08-17) ═══════════════
 	// ⚠ `hasAuraLog` reads `rotation.applications`, NOT the lane: the lane is
