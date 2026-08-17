@@ -1,9 +1,14 @@
 # The ICD-group round — what a per-ability ICD group would buy
 
 **Status:** 🟡 **PARTLY SHIPPED.** Sub-landing **c** landed 2026-08-17 (the charged-attack
-window). **a**, **b** and **d** are SCOPED AND DELIBERATELY NOT STARTED — see §6 for why,
-and ⛔ read §5 before opening any of them, because the Nahida/Fischl primitive may change
-their shape.
+window).
+
+⏭ **a + b are QUEUED — this is the next session's work** (⚓ Nate 2026-08-17). ⛔ **d is
+HELD, deliberately, and is not part of that session** — see §6d for what it is waiting on.
+
+✅ The dependency the old header warned about is RESOLVED: the Nahida/Fischl primitive
+shipped and did **not** change a/b/d's shape (§5). ⛔ Don't go looking for it.
+
 **Reads:** [`gauge-round-L5e.md`](gauge-round-L5e.md) §3.3 (where the default was chosen)
 · [`gauge-round-L4.md`](gauge-round-L4.md) (the schema gap, first named) ·
 `docs/library/game/icd.md` (the model, and the rule against mass-annotating a default)
@@ -179,7 +184,7 @@ Physical and applies nothing. It is spent by a stance infusion (Hu Tao, Cyno, Fl
 granted by a teammate, which is why it is authored on every character gcsim measures rather
 than only on the self-infusers.
 
-### ⏭ a — the dumper and the audit report the pair
+### ⏭ a — the dumper and the audit report the pair · **QUEUED**
 
 `scripts/gcsim-dump/main.go` emits `(timer, period)` per attack, read from gcsim's own
 exported tables; `audit-gcsim-frames.mjs` §5 grows a column beside the existing
@@ -187,7 +192,26 @@ applied/total verdict. ⛔ **Numbers, never gcsim's group NAMES** — 58 names i
 we would have to maintain and whose entire content is those two numbers. ⚓ In pattern with
 L4: the audit REPORTS, a migration writes.
 
-### ⏭ b — `icdGate` generalises
+⚠️⚠️ **VERIFIED PREMISE, and it is not the obvious one (2026-08-17).** gcsim's debug log
+does **NOT** carry `ICDTag` or `ICDGroup`: `pkg/enemy/attack.go`'s damage event writes
+`target` / `attack-tag` / `ele` / `damage` / `crit` / `amp` / `cata` / `abil` /
+`source_frame`, and nothing more. ⛔ **So this is not "parse a new log column"** — the
+existing capture correlates `damage` and `element` events by `(frame, abil)` and there is
+nothing there to read.
+
+⚓ **Subscribe in the SHIM instead.** `main.go` links gcsim as a library, so it can take
+`event.OnEnemyDamage` (or `OnEnemyHit`, emitted at `attack.go:32` with `(target, atk)`),
+read `atk.Info.ICDTag` / `atk.Info.ICDGroup` off the live `AttackInfo`, and look the pair
+up in `attacks.ICDGroupResetTimer[grp]` + `attacks.ICDGroupEleApplicationSequence[grp]` —
+both exported `var`s in `pkg/core/attacks/icd_groups.dm.go`. ⚓ **This is exactly what
+linking as a library was for (L4); ⛔ do NOT patch the gcsim checkout to log the fields.**
+It is a `replace` target, a fork is a maintenance liability, and the shim already owns
+every other capture decision.
+
+⚠️ `OnEnemyHit` is gated on `grpMult > 0` at its emit site — check whether that suppresses
+any hit we care about before choosing between the two events.
+
+### ⏭ b — `icdGate` generalises · **QUEUED**
 
 Today `'none' | absent`. It would become `'none' | IcdWindow`, reusing the key rather than
 minting one — ⚠️ that name is already unique and already has a consumer, which is the
@@ -197,10 +221,34 @@ mass-annotating a default is untouched.
 Worth **8** oracle applications (Oz), plus the unmeasured series on characters no fixture
 reaches.
 
-### ⏭ d — counter sharing by tag
+⚓ **Scope: summon tick SERIES only.** `icdGate` lives on the `summonTick` trigger and that
+is where it stays — Oz is a tick series, and widening it to casts is a different question
+with §4's counter-sharing sitting underneath it.
 
-§4. An engine change, not data. Worth **6** (the stele). ⛔ Do not start it without
-resolving Xiao's 5-frame group first.
+⚓ **THE ONE FORK, decided in advance so it is not decided at 3am.** §7 says this moves the
+oracle in BOTH directions. If the measured pairs come out net-WORSE on the headline count:
+**land it anyway, with the per-fixture evidence, and say so.** The pairs are gcsim's own
+measured numbers and standard is a stand-in for them; a scoreboard that prefers the
+stand-in is measuring agreement, not correctness. ⚠️ That is the same call the
+mark-triggered round made when tier 2 dipped on a one-frame sampling artifact — ⛔ but it
+is only legitimate WITH the per-fixture breakdown, never as a bare assertion. If the
+breakdown cannot explain the direction, ⛔ stop and write it up instead.
+
+### ⛔ d — counter sharing by tag · **HELD (⚓ Nate 2026-08-17)**
+
+§4. An engine change, not data. Worth **6** (the stele) — ⚓ **the smallest prize of the
+three and the largest blast radius**, which is why it is held rather than queued.
+
+⛔ **Do not open it in the a+b session.** It is not a task with an unresolved detail; it is
+an unresolved DESIGN QUESTION wearing a sub-landing's number. It would re-key the ICD clock
+from our per-cast / per-series isolation to `(character, gcsim tag)`, and §4 names the
+concrete case where the naive version is WRONG: Xiao's skill sits in a group whose reset
+timer is **5 frames**, so sharing across casts deletes his second E's application — the
+exact failure the isolation was chosen to prevent.
+
+⏭ **What it is waiting for:** a resolution to the Xiao case, brought to Nate as a DECISION
+with its evidence, ⛔ not shipped on a judgement call. Until then the stele's 6 stay
+documented as a known divergence, which is what they already are.
 
 ---
 
@@ -213,3 +261,38 @@ resolving Xiao's 5-frame group first.
 | **Importing 58 group names.**                                                    | ⛔ Emit the numbers. The name is not data.                                                       |
 | **Adding a gauge multiplier for Nahida's 1.5×.**                                 | ⛔ Already authored as `units: 1.5`. Two sources for one number is the fault, not the fix.       |
 | **Mass-annotating the default.**                                                 | icd.md forbids it. Absent means standard, and standard is the measured majority.                 |
+
+---
+
+## 8. The a+b session — run order, gates, and when to stop
+
+⚓ Written for a COLD context. Read §1–§5 first; they hold the numbers, and ⛔ the recorded
+baselines are quoted, never recomputed.
+
+1. **a** — instrument the shim (§6a's verified premise), grow the audit column, eyeball
+   the report. Behaviour-zero: no product code changes. Commit.
+2. **b** — generalise `icdGate`, migrate the measured pairs onto the tick series that need
+   them, measure. Commit on the result, whichever way it goes (§6b's fork).
+3. ⛔ **Stop.** Do not open **d**.
+
+**Gates per landing:** `npx vitest run` · `npm run check` · `npm run lint` · `npm run build`
+(~30 s together). **`test:e2e` before the merge only** — and ⛔ never piped through `tail`;
+capture whole and grep for TWO "N passed" lines ([[feedback_gate_cadence]]).
+
+**The measurement** is `node scripts/audit-gcsim-reactions.mjs` — recorded baseline after
+the mark-triggered round:
+
+| metric                       | baseline   |
+| ---------------------------- | ---------- |
+| applications — ours          | 183        |
+| **gcsim applies, we do not** | **39**     |
+| we apply, gcsim does not     | 7          |
+| element mismatch             | 0          |
+| tier-2 agreeing              | 136 of 278 |
+| mean \|Δ\|                   | 0.170U     |
+
+⚓ **Watch mean |Δ| and the paired-row count, ⛔ never the raw missing count alone** (§7).
+
+⚠️ **This round has no visual surface**, which is what makes it unattended-friendly — but
+applications changing DOES move the aura lane's pips, so 👤 **a morning Safari glance is
+owed** on a Nahida/Fischl rotation. ⛔ It is not a merge blocker; it is not zero either.
