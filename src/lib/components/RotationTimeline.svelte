@@ -752,7 +752,24 @@
 	// whole timeline jump mid-read. The cost is that a one-aura rotation pays for
 	// the same box a four-aura one does; the box is what makes them the same
 	// picture.
-	const AURA_PLOT_H = 56;
+	//
+	// ↻ 56 → 80 (⚓ NATE 2026-08-17). The lane became the planner's headline
+	// surface and 56px was reading as a strip rather than a chart — at the 1U
+	// ceiling a whole aura's rise and decay had 50px to happen in, and two
+	// overlaid mods sat inside each other's stroke.
+	//
+	// ⚠️ THE 24px WAS BOUGHT, NOT FOUND: --tool-pad-bottom went 3rem → 1.5rem in
+	// the same commit, so the net page cost is ZERO on every screen. That matters
+	// because the budget here is unforgiving — measured, the chart frame lives in
+	// `viewport − 300px` of fixed page (chrome + pads + both bands above, the
+	// bonuses strip + composer + bottom pad below), and at 1080p a heavy
+	// four-character rotation was already ~30px into a page scroll BEFORE this.
+	// ⛔ So don't grow this again without naming where the pixels come from; the
+	// next 24 would come out of track rows.
+	// ⛔ And ⛔ don't make it viewport-derived to dodge that: auraPlotH rides the
+	// PNG snapshot, so two readers would export visibly different charts of the
+	// same rotation.
+	const AURA_PLOT_H = 80;
 	// ⚠ The floor a LIVE aura is never drawn below. A 0.02U tail is a fraction of
 	// a pixel, and not drawing it reads as "the aura ended" a second before it
 	// did. ⛔ A gauge of exactly zero is not lifted — see `auraSpanPoints`.
