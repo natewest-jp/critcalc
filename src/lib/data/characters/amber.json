@@ -83,10 +83,12 @@
 				"C4 (It's Not Just Any Doll...) grants +1 skill charge → 2 total at C4+ (gcsim amber.go: Cons>=4 → SetNumCharges(ActionSkill, 2)). Authored as a chargeModifiers flat +1. E key = 33 = InitAbilSlice default (E→E cancel); gcsim's '// E -> E (C1 only)' comment is a mislabel — the gate is Cons>=4, not C1.",
 				"Hold E variant: all frames += hold parameter (variable), Baron Bunny spawnsAt = 45+hold, cooldownStartDelay = 5+hold. Variable offset not modeled in variants[]. Reviewer to decide if a variant entry is warranted.",
 				"Baron Bunny duration: b.Duration=484 frames / 60 = 8.067s, rounded to 8.1. spawnsAt=45 is the bunnyLand constant for tap E (hold=0). Hold E places bunny at 45+hold frames.",
+				"application[0] (frame 530, pyro, 2U) is Baron Bunny's EXPIRY EXPLOSION, not a hit of the E cast — a single event, so it belongs here rather than as a one-tick summonTick series. gcsim internal/characters/amber/bunny.go: makeBunny() sets b.Duration=484 and OnExpiry=b.explode; explode() calls QueueAttackEvent(b.ae, 1), so the hit lands at bunnyLand(45) + 484 + 1 = 530 frames from cast start, matching the measured row (Baron Bunny 530f × 1). Element Pyro and Durability 50 are literal on the ai in makeBunny() → units = 50/25 = 2. ICDTag is ICDTagNone; the measured verdict is `either` (single hit), so no gate is asserted. Damage scaling is bunnyExplode[9] = 2.2176 → 221.76% (sidecar talents.skill row 'Explosion DMG', 10th value 221.76%) but is NOT authored: this is the application list, which carries no multiplier.",
+				"Frame 530 is the TAP-E, uninterrupted case only. Hold E shifts it by +hold; C2 'Bunny Triggered' manual detonation (fully-charged Aimed Shot on the foot; gcsim aimed.go gates it on Cons >= 2 and calls manualExplode()) and the overload auto-detonation in bunny.go overloadExplode() both fire the same attack earlier, and neither trigger is modelable here.",
 				"C4 CD reduction: gcsim codes SetCDWithDelay(ActionSkill, 720, ...) at C4+ vs 900 frames base. 720/60=12s, modeled as -20% cooldownModifier. Reviewer to verify against in-game description."
 			],
 			"description": "The ever-reliable Baron Bunny takes the stage.\n\nBaron Bunny\n·Continuously taunts the enemy, drawing their fire.\n·Baron Bunny's HP scales with Amber's Max HP.\n·When destroyed or when its timer expires, Baron Bunny explodes, dealing AoE Pyro DMG.\n\nHold\nAdjusts the throwing direction of Baron Bunny.\nThe longer the button is held, the further the throw.",
-			"application": []
+			"application": [{ "frame": 530, "element": "pyro", "units": 2 }]
 		},
 		{
 			"id": "amber__burst__fiery_rain",
@@ -98,7 +100,28 @@
 			"cooldown": 12,
 			"cooldownStartDelay": 56,
 			"summons": [
-				{ "label": "Fiery Rain", "duration": 2, "spawnsAt": 72, "mobility": "stationary" }
+				{
+					"label": "Fiery Rain",
+					"duration": 2,
+					"spawnsAt": 72,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": { "type": "summonTick", "interval": 0.2, "firstTickDelay": 0.2 },
+							"scaling": 50.544,
+							"stat": "atk",
+							"element": "pyro",
+							"_curatorNotes": [
+								"gcsim internal/characters/amber/burst.go, func Burst: three QueueAttackWithSnap loops (i += 24, i += 36, i += 12, all `i <= 120`) fire 5 + 3 + 10 = 18 arrows at burstStart(72) + i. Earliest offset is i=12 → frame 84 and the modal gap is 12 frames, matching the measured row (Fiery Rain 84f / 12f × 18). interval = 12/60 = 0.2s; firstTickDelay = (84 − 72)/60 = 0.2s (observed first frame minus the summon's authored spawnsAt = burstStart).",
+								"scaling = burstTick[9] (talent level 10) = 0.50544 in zz_amber.dm.go, i.e. 50.544%. Cross-checks against the sidecar talents.burst row 'Fiery Rain DMG Per Wave', 10th value 50.5%, and against 'Total Fiery Rain DMG' 909.79% = 50.544 × 18. stat = atk: ai has no Mult modification and c.Snapshot(&ai) is the plain ATK snapshot. Element Pyro, Durability 25 (1U) are literal on the ai.",
+								"APPROXIMATION: our schema expresses one uniform cadence, so a 0.2s interval over the 2s window draws 9 ticks where gcsim fires 18 — gcsim's 18 arrows land on only 10 DISTINCT frames (every 12f from +12 to +120; the three loops stack duplicates on 24/36/48/72/96/108/120, with 72 carrying three), and `collectSummonTicks` walks `t < endAt`, so the arrow landing exactly at the summon's 2s end is dropped. Total damage is therefore understated; the aura cadence (the reason this series exists) is correct at its fastest rate.",
+								"No icdGate: the measured verdict is `other` (13/18) — gcsim uses ICDTagElementalBurst with ICDGroupAmber, a real gcsim ICD group we cannot express. Left bare, which the sim reads as standard ICD."
+							]
+						}
+					]
+				}
 			],
 			"tags": [],
 			"energyCost": 40,
