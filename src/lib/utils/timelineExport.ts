@@ -209,9 +209,6 @@ const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 // is not loaded at all, so leaving the old name here would have silently
 // dropped every exported label onto a system sans — a failure that renders
 // perfectly and is only visible by comparing a PNG to the screen.
-/** Mirrors AURA_UNIT_RULE_INSET in RotationTimeline — the gap a unit rule
- *  leaves for its own label. */
-const AURA_UNIT_RULE_INSET = 20;
 const SANS = '"IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif';
 
 // ── Color math (stand-ins for CSS color-mix in srgb) ────────────────────────
@@ -316,6 +313,9 @@ export type TimelineSnapshot = {
 	auraLane: AuraLane;
 	auraHeaderH: number;
 	auraPlotH: number;
+	/** Reserved px above the ceiling, so a line AT the ceiling is not clipped in
+	 *  half — see AURA_PLOT_HEAD on the screen side. */
+	auraPlotHead: number;
 	auraMarkerH: number;
 	auraTickH: number;
 	/** Radius of the application pill — the lane's half of the marker grammar
@@ -1157,7 +1157,8 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		const laneY = chartTop;
 		const plotTop = laneY + snap.auraMarkerH + snap.auraTickH + 2;
 		const plotBase = plotTop + snap.auraPlotH;
-		const yOf = (u: number) => plotBase - (u / snap.auraLane.uMax) * snap.auraPlotH;
+		const yOf = (u: number) =>
+			plotBase - (u / snap.auraLane.uMax) * (snap.auraPlotH - snap.auraPlotHead);
 
 		// Reaction markers — pip + family name, in the ruler's neutral ink. ⚠ A
 		// reaction is not an element and must not borrow one.
@@ -1226,18 +1227,17 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 			ctx.beginPath();
 			// ⚓ `ox`, i.e. x(0) — the datum belongs to the PLOT, not the page, and
 			// starting it at the label column's edge only happens to coincide.
-			// ⚠ The rule yields its first px to its own label, mirroring the screen:
-			// the label sits ON the line, so the line cannot run through it.
-			ctx.moveTo(ox + AURA_UNIT_RULE_INSET, gy);
+			ctx.moveTo(ox, gy);
 			ctx.lineTo(ox + snap.totalWidth, gy);
 			ctx.stroke();
-			// ⚠ The export ALSO carries the ceiling in its label column, and this is
-			// not a duplicate: the column says how high the plot goes, the rule says
-			// where one unit is. A reader needs both to place a line.
+			// ⚓ Named in the LABEL COLUMN, on the far side of 0s — the export has the
+			// gutter the screen had to borrow from the frame's padding. ⚠ Not a
+			// duplicate of the ceiling reading below it: the column says how high the
+			// plot goes, these say where each unit is.
 			ctx.fillStyle = MUTED;
-			// ⚠ Clamped at the top for the same reason as the screen: a centred label
-			// on the ceiling's rule would sit half outside the plot.
-			ctx.fillText(`${u}U`, ox + 2, Math.max(plotTop + 7, gy + 3));
+			ctx.textAlign = 'right';
+			ctx.fillText(`${u}U`, ox - 4, gy + 3);
+			ctx.textAlign = 'left';
 		}
 
 		// Every span walked once: the gradient area, then the line on top of it.

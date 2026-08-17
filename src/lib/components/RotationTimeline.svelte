@@ -768,15 +768,12 @@
 	const AURA_LABEL_MIN_ROW = 12;
 	// 🎛️ The unit datum's own label — inset from the plot's left edge, and lifted
 	// so it sits on the rule's shoulder rather than across it.
-	const AURA_UNIT_LABEL_X = 2;
-	/** Baseline nudge that optically centres 8px type on its rule. ⚠ Centring a
-	 *  label centres its BOX, not its INK (the sub-pixel laws) — this is the
-	 *  correction, tuned against Chrome as that law requires. */
-	const AURA_UNIT_LABEL_MID = 3;
-	/** Where the rule resumes after yielding room to its own label. */
-	const AURA_UNIT_RULE_INSET = 20;
-	/** The highest baseline that still keeps 8px type inside the plot box. */
-	const AURA_UNIT_LABEL_MIN_Y = 7;
+	// ⛔ AURA_UNIT_LABEL_X / _MID / _MIN_Y and AURA_UNIT_RULE_INSET all retired
+	// (2026-08-17). They positioned the unit labels INSIDE the plot — nudging a
+	// baseline, clamping the top one, and making the rule yield its first 20px so
+	// a hairline did not strike through 8px type. The labels moved to the frame's
+	// left gutter, where none of those problems exist; the CSS is the whole of
+	// their placement now.
 	// ══ THE MARKER ROW'S LABEL RULE (2026-08-17) ══════════════════════════════
 	// ⚠ MEASURED, NOT GUESSED. This used to be `room >= 26`, a stand-in for "the
 	// shortest family name that survives" — so anything between 26px and its own
@@ -837,10 +834,25 @@
 	 * since the tail round).
 	 */
 	let headerH = $derived(RULER_H + auraLaneH);
+	/**
+	 * 🎛️ HEADROOM ABOVE THE CEILING (⚓ NATE 2026-08-17). The ceiling used to map
+	 * to y=0, which put the top rule on the plot's very edge — so a line sitting
+	 * AT the ceiling (Burning's fixed 2U aura is the standing case) was drawn
+	 * half outside the box and clipped down the middle, and the top label could
+	 * not be centred on its own rule without being clipped too.
+	 *
+	 * ⚠️ It buys BOTH fixes at once, which is why it is a geometry change rather
+	 * than two label special-cases: with the rule a few px down, a value at the
+	 * ceiling draws its full stroke and every label centres by the same rule.
+	 * ⛔ Don't go back to clamping the top label — that was the workaround this
+	 * replaces.
+	 */
+	const AURA_PLOT_HEAD = 6;
 	/** Units → px within the plot box. ⚓ The plot draws at 1:1 (one SVG spanning
 	 *  the whole track, no viewBox stretch), which is what lets the gauge line be
 	 *  a real STROKE — the row form could only ever be a fill. */
-	const auraYOf = (u: number): number => AURA_PLOT_H - (u / auraLane.uMax) * AURA_PLOT_H;
+	const auraYOf = (u: number): number =>
+		AURA_PLOT_H - (u / auraLane.uMax) * (AURA_PLOT_H - AURA_PLOT_HEAD);
 	let auraLabels = $derived(
 		auraSpanLabels(
 			auraLane.series,
@@ -1293,6 +1305,7 @@
 			// by exactly this. 0 = the layer is off, or the rotation landed nothing.
 			auraHeaderH: auraLaneH,
 			auraPlotH: AURA_PLOT_H,
+			auraPlotHead: AURA_PLOT_HEAD,
 			auraMarkerH: AURA_MARKER_H,
 			auraTickH: AURA_TICK_H,
 			auraPillR: AURA_PILL_R,
@@ -1697,6 +1710,31 @@
 			     and a faded bar under a hard-cut time axis reads as two objects.
 			     Its scrollLeft is written programmatically, which still fires the
 			     scroll events the action listens for. -->
+			<!-- ⚓ THE UNIT DATUM'S LABELS, on the far side of the 0s line (⚓ NATE
+			     2026-08-17) — in the frame's own left padding, which is the only room
+			     that exists there: the ruler and the tracks below both begin at the
+			     frame's padding box, and the axis has to stay aligned with the bars it
+			     measures.
+			     ⚠⚠ A SIBLING OF THE SCROLLER, NOT A CHILD OF THE PLOT. The first attempt
+			     hung them off the plot's left edge, where `getBoundingClientRect`
+			     reported a perfectly good box and NOTHING PAINTED — `.rp-ruler-scroll`
+			     is `overflow: hidden` (that is what makes it a follower) and clips
+			     anything outside its content box. ⛔ Don't move them back inside.
+			     ⚓ Sitting outside the scroller also makes them a real LEGEND: they hold
+			     still while the chart scrolls under them, which is what a datum reading
+			     is for. -->
+			{#if showAuraLane}
+				<div
+					class="rp-aura-units"
+					style:top="{AURA_MARKER_H + AURA_TICK_H + AUX_LANE_PAD_Y}px"
+					style:height="{AURA_PLOT_H}px"
+					aria-hidden="true"
+				>
+					{#each auraUnitRules as u (u)}
+						<span class="rp-aura-unit-label" style:top="{auraYOf(u)}px">{u}U</span>
+					{/each}
+				</div>
+			{/if}
 			<div
 				class="rp-ruler-scroll scroll-fade-x"
 				bind:this={rulerScrollEl}
@@ -1854,34 +1892,23 @@
 											stroke-opacity="0.22"
 										/>
 									{/each}
+									<!-- ⚓ THE RULES RUN THE WHOLE TRACK; their labels live OUTSIDE
+									     it (⚓ NATE 2026-08-17), in the frame's own left padding on the
+									     far side of the 0s line — which is exactly how the Gauge
+									     Explorer reads, and it retires two workarounds at once: the
+									     rule no longer has to yield its first 20px to a label sitting
+									     on top of the data, and the label no longer has to dodge it.
+									     ⚠ The labels are NOT in this SVG (see .rp-aura-units below):
+									     the plot is inside the horizontal scroller and a datum legend
+									     that scrolled away would be useless. -->
 									{#each auraUnitRules as u (u)}
-										<!-- ⚓ THE LABEL SITS ON THE LINE AND THE LINE STARTS AFTER IT
-										     (⚓ NATE 2026-08-17), which is how the Gauge Explorer reads:
-										     there the label lives in a left gutter and the rule begins
-										     at the plot's edge. This lane has no gutter — it is 1:1 with
-										     time — so the rule yields the first AURA_UNIT_RULE_INSET px
-										     instead. ⛔ Don't centre the label WITHOUT breaking the
-										     rule: a hairline through 8px type is unreadable, and that
-										     is why it used to hang above the line. -->
 										<line
-											x1={AURA_UNIT_RULE_INSET}
+											x1="0"
 											x2={totalWidth}
 											y1={auraYOf(u)}
 											y2={auraYOf(u)}
 											stroke="var(--rp-grid)"
 										/>
-										<!-- ⚠ CLAMPED at the top. The ceiling's rule sits on y=0, so a
-										     truly centred label there is half outside the SVG and gets
-										     CLIPPED — which is what happened the first time this was
-										     centred. The Explorer can centre every label because its
-										     labels live in a left gutter OUTSIDE the plot; this lane has
-										     no gutter, so the top one rides just inside instead. -->
-										<text
-											class="rp-aura-unit-label"
-											x={AURA_UNIT_LABEL_X}
-											y={Math.max(AURA_UNIT_LABEL_MIN_Y, auraYOf(u) + AURA_UNIT_LABEL_MID)}
-											>{u}U</text
-										>
 									{/each}
 									<defs>
 										<!-- The fill fades OUT toward the baseline so overlapping
@@ -3534,13 +3561,32 @@
 	   permanent legend that is not on top of the data; the halo is what keeps it
 	   off its own fill. The PNG export does have somewhere — see its label
 	   column. */
-	/* The unit datum's label — the rule's own voice, not the series names'. A
-	   reading that competed with the auras would be furniture shouting. */
+	/* The unit datum's labels, in the frame's left padding on the far side of 0s.
+	   ⚠ NOT in the plot's SVG and NOT in the scroller: a datum legend that
+	   scrolled away with the chart would be useless exactly when a reader needs
+	   it. `right: 100%` hangs the column off the plot's left edge. */
+	.rp-aura-units {
+		position: absolute;
+		/* Out into .rp-frame's padding — the strip's own left edge is already inset
+		   by exactly that, so this walks back that far and no further. */
+		left: calc(var(--rp-frame-pad-x) * -1);
+		width: var(--rp-frame-pad-x);
+		pointer-events: none;
+		z-index: 1;
+	}
+	/* The rule's own voice, not the series names'. A reading that competed with
+	   the auras would be furniture shouting. */
 	.rp-aura-unit-label {
+		position: absolute;
+		right: 2px;
+		/* Centred ON its rule — the plot's headroom (AURA_PLOT_HEAD) is what makes
+		   that possible for the topmost one without clipping. */
+		transform: translateY(-50%);
 		font-size: 8px;
 		font-weight: var(--fw-semibold);
 		letter-spacing: var(--ls-mid);
-		fill: var(--chart-dim);
+		color: var(--chart-dim);
+		white-space: nowrap;
 	}
 	.rp-aura-series-name {
 		position: absolute;
