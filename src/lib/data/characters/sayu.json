@@ -105,6 +105,22 @@
 							"scaling": 143.8,
 							"stat": "atk",
 							"flat": 1100.8761
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 2.417 },
+							"scaling": 93.6,
+							"stat": "atk",
+							"element": "anemo",
+							"_curatorNotes": [
+								"gcsim burst.go Burst(): the Daruma tick loop `for i := 145 - tickTaskDelay; i < 145+540-tickTaskDelay; i += 90` runs inside a QueueCharTask at tickTaskDelay=20, so absolute tick frames are 145/235/325/415/505/595 — first tick 145f, interval 90f (1.5s), 6 ticks. Matches the measured row (gcsim-frames-diff §5: Muji-Muji Daruma 145f / 90f × 6).",
+								"Scaling from gcsim createBurstSnapshot(): Mult = burstSkill[c.TalentLvlBurst()]; zz_sayu.dm.go burstSkill[9] = 0.936 → 93.6% ATK at talent level 10. Cross-checked against sidecar row 'Muji-Muji Daruma DMG' column 10 = 93.6%. stat 'atk' — the AttackInfo carries no snap override and the C6 rider is added as FlatDmg, not a stat swap.",
+								"Element anemo, Durability 25 (1U), ICDTag ICDTagElementalBurst / ICDGroup ICDGroupDefault = standard ICD, so no icdGate annotation (measured verdict 3/6 `standard`).",
+								"firstTickDelay = (145 − summon spawnsAt 0) / 60 = 2.417s. The sibling heal on this summon carries 2.42 — the same number at 2dp; not touched, and spawnsAt/duration left exactly as authored per the round's rule.",
+								"C0 alternation: gcsim computes needAttack = enemy != nil && (!needHeal || hasC1), so at C0 a tick is EITHER this attack OR the heal, never both. The real gate is 'active character HP > 70%', which has no condition primitive (recipientHpBelow describes the heal's recipient, not this effect's enemy target), so the series is authored ungated — the attack branch is the common-play case (party above 70%) and the caveat covers the alternation. At C1 both fire on every tick; cadence and tick count are identical at every constellation.",
+								"C6 (Sleep O'Clock) adds FlatDmg = ATK × min(EM×0.002, 4.0) to this tick — an EM-scaled flat rider with no scaling-buff representation here; unchanged cadence. See the C6 node's notes."
+							]
 						}
 					]
 				}
@@ -119,7 +135,7 @@
 					"flat": 1270.2417
 				}
 			],
-			"caveat": "The Daruma's heal is shown on every tick, but against enemies it only heals while the active character is at 70% HP or lower — otherwise it attacks, which is not modeled. At C1 it does both at once.",
+			"caveat": "Both the Daruma's heal and its attack are drawn on every tick, but at C0 each tick is one or the other: it heals only while the active character is at 70% HP or lower, and attacks otherwise. At C1 it does both at once.",
 			"_curatorNotes": [
 				"Muji-Muji Daruma spawnsAt not sourced from an explicit gcsim constant. Initial AoE hits at burstHitmark=12; first Daruma tick scheduled at frame 145 per gcsim tick loop. Daruma likely spawns near the burst animation end (~frame 65) — no explicit spawn frame constant found; reviewer to confirm spawnsAt.",
 				"Daruma duration: gcsim tick loop schedules 6 ticks at frames 145–595 (~9.9s). In-game duration is 12s per genshin-db; using 12s.",
@@ -127,7 +143,7 @@
 				"Daruma periodic heal authored as a summonTick heal on the Muji-Muji Daruma summon (Diona Drunken Mist / Kuki Grass Ring shape). gcsim tick loop: first tick at frame 145, interval 90f (1.5s), exactly 6 ticks (frames 145/235/325/415/505/595; loop `for i:=125; i<665; i+=90`). Summon spawnsAt defaults to 0 → firstTickDelay 145/60 ≈ 2.42s. TL10: burstHealPP[9]=1.437696 (sidecar 'Muji-Muji Daruma Healing' col 10 = 143.8% ATK), burstHealFlat[9]=1100.8761 (sidecar '+1101'). Target 'active' (gcsim heals c.Core.Player.ActiveChar()); scales on ATK.",
 				"Tick-count vs duration mismatch: gcsim fires a fixed 6 ticks (loop stops at frame 595 ≈ 9.9s) but the summon duration is authored 12s (genshin-db display) — with firstTickDelay 2.42s + interval 1.5s the renderer derives 7 ticks over 12s. No tickCount primitive to pin the fixed 6; flagged for a future summon-tick-count schema pass.",
 				"Heal/damage alternation: per tick gcsim computes needHeal = IsWithinArea && (activeHP ≤ 0.7 || C1) and needAttack = enemy != nil && (!needHeal || C1). At C0 each Daruma tick is EITHER a heal (active char ≤70% HP) OR an Anemo attack (else) — mutually exclusive; C1 ignores the HP limit and does both. Heal gated via recipientHpBelow:70 (null-resolving → renders optimistically per convention) to express the low-HP-active-char targeting. Lowest-HP-target selection and the 'no enemy nearby → heal anyway' branch aren't expressible primitives; caveat covers the alternation.",
-				"Daruma attack tick NOT authored (heal-scoped finding; the mutually-exclusive damage can't be honestly gated — its real gate is 'active char HP > 70%', a non-recipient HP condition with no primitive). For a future pass: burstSkill[9]=0.936 → 93.6% ATK Anemo (sidecar 'Muji-Muji Daruma DMG' col 10 = 93.6%), targets nearest enemy, ICDTagElementalBurst. C6 adds EM-scaled riders (attack +min(EM×0.2%,400%) ATK FlatDmg; heal +min(EM×3,6000) flat) — not composed here; see C6 node notes. Initial cast Anemo AoE DMG rendered via FrameMap, not authored as an effect (corpus convention).",
+				"Daruma attack tick AUTHORED 2026-08-17 (gauge round L5e residue): 93.6% ATK Anemo on the same 145f/90f×6 cadence as the heal, ungated. The earlier decision to withhold it was heal-scoped and pre-dates summon ticks applying their element — leaving it out silently dropped six Anemo applications from every Sayu rotation. Its real gate ('active char HP > 70%') still has no primitive, so it is drawn alongside the heal and the caveat carries the alternation; see the effect's own notes. C6 adds EM-scaled riders (attack +min(EM×0.2%,400%) ATK FlatDmg; heal +min(EM×3,6000) flat) — not composed here; see C6 node notes. Initial cast Anemo AoE DMG rendered via FrameMap, not authored as an effect (corpus convention).",
 				"[A7] Summon periodic heal targets the active character; in game it selects the lowest-HP-percentage active character nearby, which is not an expressible targeting primitive (already noted in existing curator residuals)."
 			],
 			"description": "The other super special technique of the Yoohoo Ninja Arts! It summons a pair of helping hands for Sayu.\nDeals Anemo DMG to nearby opponents and heals all nearby party members. The amount of HP restored is based on Sayu's ATK. This skill then summons a Muji-Muji Daruma.\n\nMuji-Muji Daruma\nAt specific intervals, the Daruma will take one of several actions based on the situation around it:\n·If the HP of nearby characters is above 70%, it will attack a nearby opponent, dealing Anemo DMG.\n·If there are active characters with 70% or less HP nearby, it will heal the active character with the lowest percentage HP left. If there are no opponents nearby, it will heal active characters nearby even if they have 70% HP or more.",
