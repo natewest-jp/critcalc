@@ -326,10 +326,13 @@ key into the IR (the bridge exists to stop that); it is a multiplier field on
 
 ## 8. Residue
 
-- ⏭ **The `applications` feed order** (L5e §3.5) is still open and is now unblocked —
-  L6 was the reason it was queued, because the lane is the first surface where application
-  TIMING is visible rather than inferred. ⚠️ Re-run the inversion census before starting:
-  4 in 464, zero cross-element as of L5e.
+- ✅ **The `applications` feed order** — CLOSED 2026-08-17 (`ad48627`, recorded in the
+  L5e doc). L6 was the reason it was queued, and L6 is where it showed: in 19 corpus cases
+  the lane drew its application pip at the true frame while the LINE stepped later, with
+  identical applications and identical events. ⚓ The pip and the line it points into agree
+  now. ⚠️ The narrow `<name> E Q` census reproduced its 4-in-464 exactly and was
+  MEASURING THE WRONG THING — over the multi-character corpus it is 130 inversions, 37 of
+  them cross-element.
 - ⏭ Reaction direction on the IR (§6 above).
 - ⏭ The lane draws only what the gauge was fed, so L5e's own residue shows through it: the
   30 applications of curation (a damage tick on 24 existing summons), the 30 other gaps
