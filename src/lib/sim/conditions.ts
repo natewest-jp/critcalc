@@ -303,7 +303,25 @@ export function applyModifiers(
 	stacks?: ReadonlyMap<string, number>,
 	/** Multiplier applied to a `flat` modifier's value before it is added.
 	 *  `FPS` at the two time-valued call sites; 1 (the default) for charges. */
-	flatScale = 1
+	flatScale = 1,
+	/**
+	 * ⚓ TEAM SCOPE FOR A MODIFIER'S GATE (2026-08-18). Without this, a
+	 * `teamElementCount` / `teamFaction` condition on a modifier returns null and
+	 * the `!== true` test below SKIPS the modifier — silently, for a modifier the
+	 * game does apply.
+	 *
+	 * ⚠️⚠️ Note the asymmetry that made this a live bug: in a buff POOL a null
+	 * means "keep optimistically" (the effect survives to be re-filtered with real
+	 * scope later), but here there is no later — a cooldown is one number resolved
+	 * once, so the same null DROPS. Measured: Arataki Itto's C2 gives −1.5s
+	 * unconditionally plus −1.5s per Geo teammate; with two Geo allies the game
+	 * reaches 13.5s and the timeline drew 16.5s.
+	 *
+	 * ⛔ The fix is to SUPPLY THE CONTEXT, never to relax `!== true` to `!== false`.
+	 * Relaxing it would make every unresolvable modifier apply — an optimistic
+	 * shift across the whole corpus to fix two authored modifiers.
+	 */
+	context?: ConditionContext
 ): number {
 	if (!modifiers?.length) return base;
 	let result = base;
@@ -315,7 +333,8 @@ export function applyModifiers(
 				resolvedStates,
 				constellationLevel,
 				chainIndex,
-				stacks
+				stacks,
+				context
 			) !== true
 		)
 			continue;

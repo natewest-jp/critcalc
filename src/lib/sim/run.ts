@@ -535,7 +535,10 @@ export function runRotation(
 					states,
 					charConstellationLevel,
 					chainIdx,
-					stackState
+					stackState,
+					// ⚓ Team scope so a `teamElementCount`-gated cooldown modifier can
+					// RESOLVE rather than evaluate null and be skipped (Itto C2).
+					{ teamElementCounts: ctx.team.teamElementCountsByHolder.get(char.id) }
 				);
 
 				// Apply gainStacks matching this cast BEFORE the snapshot, so the
