@@ -1244,6 +1244,50 @@ function lintSummonEffects(
 				// tick applies" — the exact over-claim the field exists to stop.
 				// gcsim's smallest real group timer is 6 frames, so anything under
 				// that is a unit error rather than a value.
+				// (D.27d) tickCap shape, and ⛔ never a restatement of the derived
+				// count. ⚠️⚠️ The rule that makes this field honest: absent means the
+				// count comes from the summon's lifetime, which is right for 26 of
+				// the 37 series the oracle can compare. A cap that merely repeats
+				// `ceil((duration − firstTickDelay) / interval)` asserts a
+				// measurement nobody made and hides the day the duration changes.
+				const cap = eff.trigger.tickCap;
+				const capScaled = eff.trigger.tickCapScaling;
+				for (const [what, n] of [
+					['tickCap', cap],
+					['tickCapScaling.ticks', capScaled?.ticks]
+				] as const) {
+					if (n === undefined) continue;
+					if (!isPositiveInt(n)) {
+						push(
+							'strict',
+							'summon-tick-cap-invalid',
+							`summonTick ${what} on summon "${s.label}" must be a positive integer of TICKS (got ${n})`,
+							a.id
+						);
+					}
+				}
+				// ⚓ A bare `tickCapScaling` with no base cap is ALLOWED on purpose: a
+				// series derived at C0 and capped at C6 is a real shape. Nothing in
+				// the corpus needs it yet, so there is nothing to check.
+				if (cap !== undefined && isPositiveInt(cap) && typeof s.duration === 'number') {
+					const iv = Math.round((eff.trigger.interval ?? 0) * 60);
+					const first =
+						eff.trigger.firstTickDelay !== undefined
+							? Math.round(eff.trigger.firstTickDelay * 60)
+							: iv;
+					const end = Math.round(s.duration * 60);
+					if (iv > 0 && end > first) {
+						const derived = Math.ceil((end - first) / iv);
+						if (cap === derived) {
+							push(
+								'strict',
+								'summon-tick-cap-invalid',
+								`summonTick tickCap on summon "${s.label}" restates the derived count (${derived} from duration ${s.duration}s / interval ${eff.trigger.interval}s); omit it — absent means derived`,
+								a.id
+							);
+						}
+					}
+				}
 				const gate = eff.trigger.icdGate;
 				if (gate && gate !== 'none') {
 					if (!isPositiveInt(gate.timer) || gate.timer < 6) {

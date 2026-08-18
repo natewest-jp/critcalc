@@ -100,16 +100,29 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 2.42 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5,
+								"firstTickDelay": 2.42,
+								"tickCap": 6
+							},
 							"conditions": { "type": "recipientHpBelow", "threshold": 70 },
 							"scaling": 143.8,
 							"stat": "atk",
-							"flat": 1100.8761
+							"flat": 1100.8761,
+							"_curatorNotes": [
+								"tickCap 6, MIRRORING the damage series on this summon (tick-cap round, 2026-08-18): the Daruma picks healing OR attacking per tick on the active character's HP (noted elsewhere), but it is ONE schedule, so the two series must draw the same count. The oracle cannot measure a heal, so this rides the damage measurement."
+							]
 						},
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 2.417 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5,
+								"firstTickDelay": 2.417,
+								"tickCap": 6
+							},
 							"scaling": 93.6,
 							"stat": "atk",
 							"element": "anemo",
@@ -119,7 +132,8 @@
 								"Element anemo, Durability 25 (1U), ICDTag ICDTagElementalBurst / ICDGroup ICDGroupDefault = standard ICD, so no icdGate annotation (measured verdict 3/6 `standard`).",
 								"firstTickDelay = (145 − summon spawnsAt 0) / 60 = 2.417s. The sibling heal on this summon carries 2.42 — the same number at 2dp; not touched, and spawnsAt/duration left exactly as authored per the round's rule.",
 								"C0 alternation: gcsim computes needAttack = enemy != nil && (!needHeal || hasC1), so at C0 a tick is EITHER this attack OR the heal, never both. The real gate is 'active character HP > 70%', which has no condition primitive (recipientHpBelow describes the heal's recipient, not this effect's enemy target), so the series is authored ungated — the attack branch is the common-play case (party above 70%) and the caveat covers the alternation. At C1 both fire on every tick; cadence and tick count are identical at every constellation.",
-								"C6 (Sleep O'Clock) adds FlatDmg = ATK × min(EM×0.002, 4.0) to this tick — an EM-scaled flat rider with no scaling-buff representation here; unchanged cadence. See the C6 node's notes."
+								"C6 (Sleep O'Clock) adds FlatDmg = ATK × min(EM×0.002, 4.0) to this tick — an EM-scaled flat rider with no scaling-buff representation here; unchanged cadence. See the C6 node's notes.",
+								"tickCap 6 (tick-cap round, 2026-08-18): gcsim burst.go `for i := 145 - tickTaskDelay; i < 145+540-tickTaskDelay; i += 90` = six Muji-Muji Daruma ticks. Our duration-derived 7 was one long. Unchanged at C6."
 							]
 						}
 					]

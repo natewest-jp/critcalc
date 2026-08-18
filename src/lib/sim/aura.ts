@@ -46,7 +46,13 @@ import {
 	resolveActionIcd,
 	STANDARD_ICD_FRAMES
 } from '$lib/utils/icd';
-import { findSummonsForBar, summonEndAt, summonSpawnAt, summonTickSeries } from './summons';
+import {
+	findSummonsForBar,
+	summonEndAt,
+	summonSpawnAt,
+	summonTickSeries,
+	tickCapOf
+} from './summons';
 import type { NormalActionKind } from '$lib/utils/actionElement';
 import type { ReactionEvent } from '$lib/utils/rotationEvents';
 import { createGauge, type ElementId, type Gauge, type SeriesInterval } from '$lib/utils/gauge';
@@ -621,11 +627,32 @@ export function scheduleSummonTicks(
 			const params: IcdParams | null =
 				gate === 'none' ? null : gate ? icdParamsFor(gate) : STANDARD_ICD_FRAMES;
 
+			// ⚓ THE SECOND READER of the tick cap, and it MUST agree with
+			// `collectSummonTicks` — that walk draws the markers a reader counts on
+			// the summon lane and this chain feeds the gauge, so a divergence shows
+			// a marker that applies nothing or applies off a marker nobody drew.
+			// ⛔ Read the rule from `tickCapOf`; never re-derive it here.
+			// ⚠️ `fired` is per SERIES per SPAWN, which is what the closure already
+			// scopes — a recast builds a new chain and starts its own count, exactly
+			// as a recast restarts the walk.
+			const cap = tickCapOf(series.effect, cLevel);
+			let fired = 0;
+			// ⚠️ A cap lets the BOUNDARY tick through and no further: the window
+			// widens by one interval only when a cap is authored, mirroring
+			// `collectSummonTicks`. See the `tickCap` schema note for why gcsim
+			// lands that tick and our half-open walk does not.
+			// ⚓ Recomputed per call, never cached — `endNow()` is live, because a
+			// duration extension or a swap-out can move the end mid-chain.
+			const liveUntil = (): number => (cap === null ? endNow() : endNow() + series.interval);
+			const capReached = (): boolean => cap !== null && fired >= cap;
+
 			const fire = (at: number): void => {
 				// Superseded by a recast, or the summon is gone. Either way the
 				// chain simply ends — ⛔ nothing has to cancel a scheduled task.
 				if (!isCurrent()) return;
-				if (at >= endNow()) return;
+				if (at >= liveUntil()) return;
+				if (capReached()) return;
+				fired += 1;
 
 				let applies = true;
 				if (params) {
@@ -664,11 +691,14 @@ export function scheduleSummonTicks(
 				// hit still happened, still spent its counter slot, and the series
 				// must not stop because of it.
 				const next = at + series.interval;
-				if (next < endNow()) clock.schedule(next, Band.TICK, () => fire(next));
+				// ⚠️ Stop SCHEDULING at the cap too, not only firing: a capped series
+				// whose summon outlives its ticks would otherwise queue a task per
+				// interval for the rest of the window, each one an immediate no-op.
+				if (!capReached() && next < liveUntil()) clock.schedule(next, Band.TICK, () => fire(next));
 			};
 
 			const first = spawnAt + series.firstDelay;
-			if (first < endNow()) clock.schedule(first, Band.TICK, () => fire(first));
+			if (first < liveUntil()) clock.schedule(first, Band.TICK, () => fire(first));
 		}
 	});
 }

@@ -50,12 +50,40 @@ import {
 // recorded for the reaction oracle. ⚠️ Dynamic because `icd.ts` reaches `$lib` for `FPS`,
 // so it needs the resolver registered at the top of this file.
 const { createIcdClock, icdApplies, STANDARD_ICD_FRAMES } = await import('../src/lib/utils/icd.ts');
+// ⚓ Same law: the tick-CAP rule is imported, never restated. An audit that
+// re-derives a rule comes to measure a model we no longer have (L4d).
+const { tickCapOf, summonTickSeries } = await import('../src/lib/sim/summons.ts');
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const REPORT = join(REPO_ROOT, 'docs/curation/gcsim-frames-diff.md');
 
 const FPS = 60;
 const f = (seconds) => Math.round(seconds * FPS);
+
+/**
+ * ⚠️⚠️ HOW LONG THE DUMPER WATCHES AFTER EACH CAST, and it is load-bearing for the
+ * tick-COUNT column. At the 900-frame default, every summon that outlives 15 s reads
+ * SHORT — Zhongli's 31 s stele reported 7 ticks against our 14, Lisa 27 against 30 —
+ * and those are the horizon stopping, not a divergence. 2400 clears the longest
+ * authored summon (the stele's 1860 f plus its cast) with room to spare.
+ *
+ * ⚓ It is not enough on its own: `TICK_COUNT_MARGIN` below still suppresses the flag
+ * for any stream that runs close to the edge, because a NEW long summon must not
+ * silently become a finding the day it lands.
+ */
+const HORIZON = 2400;
+/** A stream whose last tick lands within this of the horizon is not count-checked. */
+const TICK_COUNT_MARGIN = 200;
+
+/**
+ * ⚓⚓ THE CONSTELLATION THE DUMP RUNS AT, and every constellation-aware read on OUR
+ * side must use this same number. It is one constant rather than two literals because
+ * the first cut was not: the dumper defaulted to C0 while the authored column resolved
+ * `tickCapOf` at C6, so Sigewinne's C1 cap of 8 was reported as disagreeing with
+ * gcsim's C0 measurement of 5 — three false findings, on exactly the three characters
+ * the constellation field was built for.
+ */
+const DUMP_CONS = 0;
 
 // ---------------------------------------------------------------------------
 // Application attribution
@@ -70,9 +98,19 @@ const f = (seconds) => Math.round(seconds * FPS);
 function authoredTicks(ability) {
 	const out = [];
 	for (const s of ability.summons ?? []) {
+		// ⚓ Through `summonTickSeries` rather than a raw scan of `effects`, so a
+		// CONSTELLATION-GATED series is resolved the way the sim resolves it — at
+		// `DUMP_CONS`, the level gcsim was run at. ⚠️ Kaeya is why: her two series are
+		// `not C6` / `C6` and mutually exclusive, so a raw scan reported "2 authored
+		// vs 1 observed" and suppressed her count check as ambiguous when the pairing
+		// is in fact exact.
+		const live = new Set(
+			summonTickSeries(s, DUMP_CONS, (x) => x.type === 'damage').map((x) => x.effect)
+		);
 		for (const e of s.effects ?? []) {
 			const t = e.trigger;
 			if (t?.type !== 'summonTick' || e.type !== 'damage') continue;
+			if (!live.has(e)) continue;
 			// ⚠️⚠️ AN ABSENT `firstTickDelay` DEFAULTS TO THE INTERVAL, NOT ZERO.
 			// This read `?? 0` until 2026-08-16 (gauge round L5e-a½) and so
 			// described a model we do not have — `collectSummonTicks` walks from
@@ -86,13 +124,25 @@ function authoredTicks(ability) {
 			// calling it comes to measure a model that no longer exists.
 			// ⛔ Do not re-derive this default here; mirror the walk.
 			const interval = f(t.interval ?? 0);
+			const firstDelay = t.firstTickDelay !== undefined ? f(t.firstTickDelay) : interval;
+			// ⚓ The tick COUNT the sim will actually fire, read back the same way
+			// the gate is (tick-cap round, 2026-08-18). ⛔ The derivation is NOT
+			// restated here — `tickCapOf` is the rule and this mirrors the walk in
+			// `collectSummonTicks`, including the one-interval widening a cap buys
+			// for the boundary tick.
+			const cap = tickCapOf(e, DUMP_CONS);
+			const end = s.duration !== undefined ? f(s.duration) : null;
+			const derived =
+				end !== null && interval > 0 ? Math.max(0, Math.ceil((end - firstDelay) / interval)) : null;
 			out.push({
 				label: s.label,
 				kind: e.type,
 				spawnsAt: s.spawnsAt ?? 0,
-				firstTick:
-					(s.spawnsAt ?? 0) + (t.firstTickDelay !== undefined ? f(t.firstTickDelay) : interval),
+				firstTick: (s.spawnsAt ?? 0) + firstDelay,
 				interval,
+				cap,
+				// What the sim fires: the cap when one is authored, else the walk.
+				ticks: cap ?? derived,
 				// ⚓ Read back so the annotation is SELF-CHECKING (L5e-a¾). Authoring
 				// a gate is a CLAIM about gcsim, and this is the report that
 				// re-measures it against the dump's own post-ICD `applied` flag —
@@ -206,7 +256,12 @@ function main() {
 	}
 
 	process.stderr.write('building + running the gcsim dumper…\n');
-	const dump = runDumper({ drivers: driverTable, only: only ? gcsimKeyFor(only) : '' });
+	const dump = runDumper({
+		cons: DUMP_CONS,
+		drivers: driverTable,
+		horizon: HORIZON,
+		only: only ? gcsimKeyFor(only) : ''
+	});
 
 	const noSource = [];
 	const mismatches = [];
@@ -354,7 +409,14 @@ function main() {
 						best = n;
 						modal = gp;
 					}
-				return { abil, first: frames[0], interval: modal, n: frames.length, spread: tally.size };
+				return {
+					abil,
+					first: frames[0],
+					last: frames[frames.length - 1],
+					interval: modal,
+					n: frames.length,
+					spread: tally.size
+				};
 			});
 			// ⚓ The measured ICD verdict per stream (L5e-a¾). gcsim's `applied` flag
 			// is the POST-ICD subset of the damage stream, so the gate is observable
@@ -599,7 +661,10 @@ function renderReport(d) {
 	for (const t of d.tickRows) {
 		const a = t.authored.length
 			? t.authored
-					.map((x) => `${x.label} ${x.firstTick}f / ${x.interval}f · ${fmtGate(x.icdGate)}`)
+					.map(
+						(x) =>
+							`${x.label} ${x.firstTick}f / ${x.interval}f × ${x.ticks ?? '—'}${x.cap !== null && x.cap !== undefined ? ' `cap`' : ''} · ${fmtGate(x.icdGate)}`
+					)
 					.join('<br>')
 			: '—';
 		const o = t.observed.length
@@ -618,7 +683,21 @@ function renderReport(d) {
 						const claim =
 							t.authored.length === 1 && t.observed.length === 1 ? t.authored[0].icdGate : null;
 						const bad = claim && x.gate ? !gateAgrees(claim, x.gate) : false;
-						return `${x.abil} ${x.first}f / ${x.interval ?? '—'}f × ${x.n}${x.spread > 2 ? ' ⚠️ irregular' : ''} · ${x.applied}/${x.n} \`${x.verdict}\`${bad ? ' ⚠️ **authored disagrees**' : ''}`;
+						// ⚠️ The tick-COUNT check is separate from the ICD one and is
+						// flagged separately: ours-vs-gcsim on `× n` says whether the
+						// SERIES runs the right length, `applied/total` says whether the
+						// gate is right. ⛔ A count mismatch is only meaningful on a
+						// one-to-one pairing and when gcsim's last tick is comfortably
+						// inside the dumper's horizon — Lisa reads 3 short purely
+						// because the horizon stops watching.
+						const mine =
+							t.authored.length === 1 && t.observed.length === 1 ? t.authored[0].ticks : null;
+						const nOff =
+							mine !== null &&
+							mine !== undefined &&
+							mine !== x.n &&
+							x.last <= HORIZON - TICK_COUNT_MARGIN;
+						return `${x.abil} ${x.first}f / ${x.interval ?? '—'}f × ${x.n}${x.spread > 2 ? ' ⚠️ irregular' : ''} · ${x.applied}/${x.n} \`${x.verdict}\`${bad ? ' ⚠️ **authored disagrees**' : ''}${nOff ? ` ⚠️ **count ${mine}→${x.n}**` : ''}`;
 					})
 					.join('<br>')
 			: '—';

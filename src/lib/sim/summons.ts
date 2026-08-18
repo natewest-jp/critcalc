@@ -172,12 +172,44 @@ export function collectSummonTicks(
 ): { time: number; effect: Effect }[] {
 	const ticks: { time: number; effect: Effect }[] = [];
 	for (const s of summonTickSeries(summon, cLevel, accept)) {
-		for (let t = spawnAt + s.firstDelay; t < endAt; t += s.interval) {
+		// ⚓ THE CAP IS A BOUND ON TOP OF THE WINDOW, never instead of it — a series
+		// stops at whichever comes first. ⚠️ The single exception is the BOUNDARY
+		// TICK: our walk is half-open, so a tick landing exactly on `endAt` is
+		// dropped, and gcsim's status-gated chains land it (Kaeya's status is
+		// `duration + hitmark + 1`, and that `+ 1` is deliberate). An authored cap
+		// widens the window by exactly ONE tick to say so, and ⛔ by no more.
+		const cap = tickCapOf(s.effect, cLevel);
+		const limit = cap === null ? endAt : endAt + s.interval;
+		let n = 0;
+		for (let t = spawnAt + s.firstDelay; t < limit; t += s.interval) {
+			if (cap !== null && n >= cap) break;
+			n += 1;
 			ticks.push({ time: t, effect: s.effect });
 		}
 	}
 	ticks.sort((a, b) => a.time - b.time);
 	return ticks;
+}
+
+/**
+ * The authored tick COUNT for one series, constellation applied, or `null` when
+ * the count is derived from the summon's lifetime (the measured majority).
+ *
+ * ⚓ Exported so the audit can read back exactly what the sim will do — an
+ * authored cap is a CLAIM about gcsim, and `audit-gcsim-frames.mjs` §5 is what
+ * re-measures it. ⛔ Never re-derive this rule there.
+ */
+export function tickCapOf(effect: Effect, cLevel: number): number | null {
+	if (effect.trigger.type !== 'summonTick') return null;
+	const t = effect.trigger;
+	// ⚠️ The constellation override REPLACES the base outright rather than adding
+	// to it — same contract as `BuffEffect.constellationScaling`. It is read even
+	// when no base cap is authored, so a series that is derived at C0 and capped
+	// at C6 can say exactly that.
+	const scaled = t.tickCapScaling;
+	if (scaled && evalCondition(scaled.conditions, 4, new Set(), cLevel) === true)
+		return scaled.ticks;
+	return t.tickCap ?? null;
 }
 
 /** One accepted `summonTick` series: which effect, and its cadence in FRAMES. */

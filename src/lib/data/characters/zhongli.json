@@ -125,11 +125,15 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 2,
-								"firstTickDelay": 2.4
+								"firstTickDelay": 2.4,
+								"tickCap": 15
 							},
 							"scaling": 57.6,
 							"stat": "atk",
-							"element": "geo"
+							"element": "geo",
+							"_curatorNotes": [
+								"tickCap 15 (tick-cap round, 2026-08-18): gcsim stele.go `resonance()` re-queues itself every 120f for as long as the construct lives, and skill.go creates it with `newStele(1860)` = 31s against the 30s the kit text states. Measured 15 at both C0 and C6; our duration-derived 14 was one short. Authored as a count rather than by nudging the stated 30s duration."
+							]
 						}
 					]
 				}
