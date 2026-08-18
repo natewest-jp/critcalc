@@ -155,6 +155,36 @@ final hit **crits** is decided by the **highest** contributor.
   keyed to regular Crystallize (Navia Shrapnel, elemental shields) still proc.
 - Affected by **Geo RES**. **Not** affected by enemy DEF or DEF Shred.
 
+#### ⏭ Modelling note — the Moondrifts are GEO CONSTRUCTS, and that has a tail (2026-08-18)
+
+⚠️ **What we model today:** the `lunarCrystallize` reaction is emitted (the sim's
+`reactionBridge` applies it ALONGSIDE a crystallize, since LCrys has no global ICD) and the
+`lunarCrystallize*` stat family exists. ⛔ **Moondrifts and Moondrift Harmony are NOT
+modelled at all** — no construct entity, no three-triggers counter, no damage.
+
+⚓ **The reason to record this now, before anyone needs it:** in gcsim a Moondrift is a
+first-class `GeoConstructLunarCrystallize`, and geo constructs are read by mechanics that
+have nothing to do with this reaction. `zhongli/stele.go`'s `resonance()` queues an extra
+stele hit **per non-stele construct within radius 8**, and `simulation/setup.go` turns Geo
+Resonance on for any Moondrift within 16. ⚓ So a Moondrift silently buffs a Zhongli in the
+same team, and modelling one without the other is a half-truth.
+
+⚓⚓ **And the positional objection that blocks Xingqiu's Orbital does NOT apply here.**
+`gauge-round-L5e.md` refuses proximity-gated applications at radius ≈ 1 (hugging the
+enemy); these checks are **8 / 16 / 20**, which ordinary combat satisfies. ⚠️ Better still,
+the usual cross-character objection — "the construct has to actually be alive" — dissolves
+for LCrys specifically: `TryAddLCr` **spawns up to three Moondrifts itself** whenever fewer
+than three are nearby, 9 s each. The reaction creates its own preconditions, so assuming
+they hold is not a fake.
+
+⏭ **Not urgent, and here is the honest reason:** the premier LCrys carry is **Zibai**, who
+is a frameless stub in our corpus (no frames, no effects on any of her three abilities), so
+there is nothing for the mechanic to hang off yet. ⚠️ The prerequisite is Zibai's curation
+(`ingest-character` skill), not this mechanic. When she lands, the order is: her kit first,
+then Moondrifts as an entity, then whether a construct-presence condition is worth minting
+for Zhongli's resonance — ⛔ never the resonance first, which is 6 oracle rows in one
+fixture and has no other consumer.
+
 ## Cross-cutting rules
 
 - **CRIT:** element-specific CRIT bonuses (e.g. `*CritDmg` stats) apply to the matching

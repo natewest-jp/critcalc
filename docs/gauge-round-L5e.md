@@ -466,6 +466,33 @@ honest shape, if one is ever wanted, is a hit whose application is conditional o
 proximity, and this project has no vocabulary for proximity and should be slow to grow
 one.
 
+##### ↻ AMENDMENT 2026-08-18 — proximity is a GRADED question, and 1.2 is the extreme end
+
+⚓ Nate, reviewing the above: **"in the general area" and "hugging the enemy" are not the
+same claim, and this refusal should not be quoted as if they were.** Measured, gcsim's own
+radii span more than an order of magnitude:
+
+| mechanic                                                | radius | what it means in play         |
+| ------------------------------------------------------- | -----: | ----------------------------- |
+| Barbara's Melody Loop                                   |      1 | ⛔ hugging                    |
+| Xingqiu's Orbital                                       |    1.2 | ⛔ hugging                    |
+| Xiangling's Pyronado spin                               |    2.5 | close                         |
+| Zhongli's stele resonance (`others` within `boxSize`)   |  **8** | ⚓ anywhere in the engagement |
+| Geo Resonance off a Moondrift (`setup.go`)              | **16** | ⚓ effectively always         |
+| Moondrift proximity for Harmony (`lunarcrystallize.go`) | **20** | ⚓ effectively always         |
+
+⚓ **So the refusal above is right at r ≈ 1 and is NOT a general rule.** A radius-8 or
+radius-16 check against a target that a player is fighting is satisfied in ordinary play,
+and asserting it is not the over-claim that asserting a 1.2-unit circle is. ⛔ Do not cite
+the Xingqiu decision as precedent for a wide-radius mechanic; cite this table instead.
+
+⚠️ Two things still make a wide-radius mechanic harder than it looks, and neither is
+proximity: it is a CROSS-CHARACTER RUNTIME dependency (Zhongli's stele only doubles while
+somebody else's construct is actually alive), and our condition vocabulary gates on team
+composition, not on another character's live entity. ⚓ **Lunar-Crystallize is the case
+where that objection disappears** — see `docs/library/game/lunar-reactions.md`, because the
+reaction spawns its own constructs.
+
 ⚠️ This also retires a line of §1's: "24 abilities own a summon with no damage tick" was
 right about the count and wrong to call all of it curation. Five of the twenty-five sites
 were not tick series at all — Amber's Baron Bunny, Ganyu's Ice Lotus, Ningguang's Jade

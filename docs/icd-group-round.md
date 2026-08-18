@@ -79,7 +79,7 @@ This is the correction the survey exists for. The oracle's ICD-shaped residue lo
 | ------------------------- | ---: | ------------------------------------------------------------------------------------ |
 | **Fischl's Oz**           |    8 | ⚓ **genuinely group** — `ICDGroupFischl` is 300f/period-4 against our 150f/period-3 |
 | **Zhongli's Stone Stele** |    6 | ⛔ **not group, and ↻ not counter sharing either** — see the correction below        |
-| **Xiangling's Pyronado**  |    3 | neither — ungated on both sides, so it is geometry or the sim horizon                |
+| **Xiangling's Pyronado**  |    3 | ⛔ **wrong too** — it is Burning's own Pyro, and Xiangling is EXACT (§10.1)          |
 
 ⚓ **So a per-ability group buys 8 in the oracle, not 17.** Quote that number, ⛔ don't
 re-derive the 17.
@@ -501,18 +501,56 @@ clock-key problem at all.
 
 All 44 `gcsim applies, we do not` rows in `gcsim-reaction-diff.md`, by cause:
 
-| cause                                                                                                                     |   apps | disposition                        |
-| ------------------------------------------------------------------------------------------------------------------------- | -----: | ---------------------------------- |
-| **Application-only ticks** — Xingqiu's Orbital 14, Barbara's Melody Loop 2, plus the 4 Tri-Karma procs downstream of them | **20** | ⛔ CLOSED BY DECISION (positional) |
-| **Geo-construct resonance** — the stele × Ningguang's Jade Screen                                                         |      6 | 🆕 unmodelled MECHANIC (§3)        |
-| **Oz** — 6 burst ticks + 1 Tri-Karma downstream                                                                           |      7 | geometry + phase, see 10.2         |
-| **gcsim's `ActorIndex` defect** — Fischl's A4                                                                             |      5 | ⛔ the ORACLE is wrong, not us     |
-| **Xiangling's Pyronado** — ungated both sides                                                                             |      3 | geometry / sim horizon             |
-| **Tail + timing** — Kaeya ×2, Ningguang ×1                                                                                |      3 | noise-level                        |
+| cause                                                                                                                     |   apps | disposition                         |
+| ------------------------------------------------------------------------------------------------------------------------- | -----: | ----------------------------------- |
+| **Application-only ticks** — Xingqiu's Orbital 14, Barbara's Melody Loop 2, plus the 4 Tri-Karma procs downstream of them | **20** | ⛔ CLOSED BY DECISION (positional)  |
+| **Geo-construct resonance** — the stele × Ningguang's Jade Screen                                                         |      6 | 🆕 unmodelled MECHANIC (§3)         |
+| **Oz** — 6 burst ticks + 1 Tri-Karma downstream                                                                           |      7 | geometry + phase, see 10.2          |
+| **gcsim's `ActorIndex` defect** — Fischl's A4                                                                             |      5 | ⛔ the ORACLE is wrong, not us      |
+| **Burning's own Pyro re-application** — filed under Pyronado by the ordinal pairing                                       |      3 | ⛔ ACCOUNTING, we already do it     |
+| **Boundary + RNG** — Kaeya ×2, Ningguang ×1                                                                               |      3 | localized, ⛔ not distributed noise |
 
 ⚓⚓ **Not one of the 44 is a rule we believe is wrong.** 20 are a refusal we made on
-purpose, 5 are the oracle being wrong, and the rest are geometry. ⚠️ Read that alongside
-the two `we apply, gcsim does not` rows and the **0** element mismatches.
+purpose, 5 are the oracle being wrong, 3 are pure accounting, and the rest is geometry.
+⚠️ Read that alongside the two `we apply, gcsim does not` rows and the **0** element
+mismatches.
+
+#### ⚠️⚠️ The report pairs by ORDINAL, so ONE unpaired insertion shifts every row after it
+
+Internalise this before reading any fixture table; it produced two of §3's wrong causes.
+
+**Xiangling looked like 3 missing Pyronado ticks and is in fact EXACT.** All 14 of her
+applications match gcsim within 1–2 frames. What gcsim has and we do not are three rows
+labelled `burning` (ability `19`) at 3.58 / 5.83 / 8.03 s — **Burning's own Pyro
+re-application**, which we model too (`gauge.ts`, `BURNING_ICD`: a 2 s reset over
+`1,0,0,0,0,0,0,0`) but resolve INSIDE the gauge, so it never enters
+`ParsedRotation.applications`. ⚓ Tier 2 settles it — at those three instants our Pyro reads
+**0.80/0.78, 0.77/0.75, 0.78/0.78**. Three unpaired insertions pushed our last three
+Pyronado ticks off the end of the ordinal join and they were reported 🔴.
+
+⛔ **And gcsim does NOT model a large-hitbox double-hit** (a hypothesis worth ruling out):
+`xiangling/burst.go` fires one spin hit per **73 frames**, flat, with an explicit
+`// TODO: proper hitbox` on the hit shape. Our authored 1.217 s interval IS that number.
+
+⚠️ The same split inflates tier 2: **11 of the 54 `aura we have and gcsim does not` rows
+are `burningFuel`**, a series we track separately and gcsim has no name for. Bookkeeping,
+not disagreement.
+
+### 10.1b The three "tail" rows are localized, not distributed noise
+
+⚓ Asked directly (⚓ Nate): do these turn up across all kinds of rotations? **No.** All
+three are boundary or RNG cases on named characters, and the other nine fixtures have
+zero.
+
+- **Kaeya ×2 — one tick past the summon's end.** Every Glacial Waltz application matches
+  within 1 frame; the single 🔴 is the icicle at 9.77 s, just outside our 8 s summon
+  (gcsim's status runs `burstDuration + burstHitmark + 1`). A per-character duration item.
+  ⚠️ The second Kaeya row — Frostgnaw in the long rotation — is the ordinal-pairing shadow
+  of the first, not an independent miss.
+- **Ningguang ×1 — gcsim's dice.** Her normals pick randomly among Left / Right / Twirl
+  with hitmarks 29 / 19 / 27 and different lockouts, so an `N3` lands on different frames
+  every run; the report already flags this fixture non-deterministic (28 / 27 / 28 across
+  runs). ⛔ Not modellable in a deterministic planner and not worth trying.
 
 ### 10.2 Why d would not collect the 7
 
