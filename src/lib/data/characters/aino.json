@@ -17,9 +17,30 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 48, "hit": 23, "N": 32 } },
-				{ "name": "N2", "frames": { "anim": 75, "hit": 20, "N": 43 } },
-				{ "name": "N3", "frames": { "anim": 93, "hit": 43, "N": 62 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 48,
+						"hit": 23,
+						"N": 32
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 75,
+						"hit": 20,
+						"N": 43
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 93,
+						"hit": 43,
+						"N": 62
+					}
+				}
 			],
 			"_curatorNotes": [
 				"Claymore normals: 3-hit Physical chain. attackHitmarks=[[23],[20],[35,43]]; N3 multi-hit, last=43 gates cancel. attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack overrides for next-N cancel; ActionCharge not overridden (defaults to animLen — included as C key for non-final hits per convention).",
@@ -51,7 +72,14 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 52, "N": 50, "Q": 50, "D": 39, "J": 38, "swap": 49 },
+			"frames": {
+				"anim": 52,
+				"N": 50,
+				"Q": 50,
+				"D": 39,
+				"J": 38,
+				"swap": 49
+			},
 			"cooldown": 10,
 			"cooldownStartDelay": 13,
 			"tags": [],
@@ -64,8 +92,15 @@
 			],
 			"description": "Aino throws a Musecatcher forward, dealing Hydro DMG and dragging her along behind it. When the dragging stops, Aino deals AoE Hydro DMG to nearby opponents.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the Musecatcher's throwing direction.",
 			"application": [
-				{ "frame": 15, "element": "hydro", "units": 1 },
-				{ "frame": 33, "element": "hydro" }
+				{
+					"frame": 15,
+					"element": "hydro",
+					"units": 1
+				},
+				{
+					"frame": 33,
+					"element": "hydro"
+				}
 			]
 		},
 		{
@@ -74,7 +109,15 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 60, "N": 55, "C": 55, "E": 55, "D": 56, "J": 56, "swap": 54 },
+			"frames": {
+				"anim": 60,
+				"N": 55,
+				"C": 55,
+				"E": 55,
+				"D": 56,
+				"J": 56,
+				"swap": 54
+			},
 			"cooldown": 13.5,
 			"energyCost": 50,
 			"tags": ["summon"],
@@ -88,11 +131,95 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 0 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5,
+								"firstTickDelay": 0.167
+							},
 							"scaling": 36.2,
 							"stat": "atk",
 							"element": "hydro",
-							"flatScaling": { "stat": "em", "ratio": 50 }
+							"flatScaling": {
+								"stat": "em",
+								"ratio": 50
+							},
+							"conditions": {
+								"type": "not",
+								"condition": {
+									"type": "teamFaction",
+									"faction": "moonsign",
+									"min": 2
+								}
+							},
+							"_curatorNotes": [
+								"The DEFAULT cadence. gcsim asc.go a1BurstEnhance returns (90f, radius 1, ICDGroupDefault) below Ascension 1 or Moonsign level 2; burst.go loops `for i := 0; i < 14.2*60; i += tickrate` scheduling each tick at `i + burstStart`.",
+								"firstTickDelay 0.167 is the TEN FRAMES of travel on every tick — gcsim queues each one with `QueueAttack(ai, ..., 0, 10)`, so the whole series lands 10f after it fires. ⚠️ It shifts the series rather than just the first tick, which is what a constant travel offset is. Before this the audit read authored 123f against observed 133f on every tick.",
+								"icdGate ABSENT = the standard window, which IS gcsim’s Default group here — ⛔ do not annotate it (icd.md forbids restating the default). Measured 5/10 applied."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.7,
+								"firstTickDelay": 0.167,
+								"icdGate": {
+									"timer": 108,
+									"every": 4
+								},
+								"tickCap": 21
+							},
+							"scaling": 36.2,
+							"stat": "atk",
+							"element": "hydro",
+							"flatScaling": {
+								"stat": "em",
+								"ratio": 50
+							},
+							"conditions": {
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							},
+							"attribution": "A1: Modular Efficiency Protocol (Moonsign: Ascendant Gleam)",
+							"_curatorNotes": [
+								"⚓⚓ THE ASCENDANT GLEAM CADENCE. gcsim asc.go a1BurstEnhance: at Ascension ≥ 1 AND GetMoonsignLevel() ≥ 2 the burst’s tickrate becomes 0.7*60 = 42f (from 90f), the radius 1 → 4, and the ICD group becomes ICDGroupAinoBurstMoonHit. ⚠️ It is not only a faster interval — all three change together, which is why this is a SECOND series rather than an interval override.",
+								"icdGate is ICDGroupAinoBurstMoonHit verbatim: 108f reset window, every 4th hit applies (pkg/core/attacks/icd_groups.dm.go:74,135). ⛔ Not the standard, and at a 42f interval the two are very different — the whole reason the group changes with the rate.",
+								"tickCap 21: gcsim’s loop bound is `i < 14.2*60` in steps of 42, i.e. 21 ticks, while the summon’s authored lifetime is 14s and our half-open walk over it yields 20. The cap is how the boundary tick is said — see the tickCap schema note.",
+								"⚠️⚠️ THE ORACLE CANNOT SEE THIS BRANCH. `scripts/gcsim-dump` runs one character in an empty core, where Aino’s own Moonsign is 1 and GetMoonsignLevel() < 2 — so the dump always measures the DEFAULT series and a green frames-diff proves nothing about this one. Authored from the Go, like `chargedIcdWindow` was.",
+								"⚓ This is what the A1 passive’s curator note asked for: it recorded the enhanced rate as unauthorable because \"teamFaction conditions on summon-effect triggers don’t currently resolve at parse time\". They do now — `finalize` is the one producer for a summon’s markers and it builds the condition context."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "onHit",
+								"source": "others",
+								"icdGate": "none"
+							},
+							"procCooldown": 5,
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							},
+							"scaling": 25,
+							"stat": "atk",
+							"flatScaling": {
+								"stat": "em",
+								"ratio": 150
+							},
+							"element": "hydro",
+							"application": [
+								{
+									"frame": 10,
+									"element": "hydro",
+									"units": 1
+								}
+							],
+							"attribution": "C2: The Principle of Transference in Gear Differentials",
+							"caveat": "Not modeled: it only fires while she is off-field, so a rotation that keeps her on field shows more of these than you would get."
 						}
 					]
 				}
@@ -118,7 +245,7 @@
 			"name": "Modular Efficiency Protocol",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"A1 (Moonsign Ascendant Gleam): Cool Your Jets Ducky tick rate increased (1.5s → 0.7s) and AoE radius (1 → 4). Authored on the burst caveat — the summon's base interval is 1.5s; the enhanced rate isn't separately authored since teamFaction conditions on summon-effect triggers don't currently resolve at parse time."
+				"A1 (Moonsign: Ascendant Gleam): Cool Your Jets Ducky’s tick rate goes 1.5s → 0.7s, its ICD group changes, and its radius goes 1 → 4. ↻ AUTHORED 2026-08-18 as a second, Moonsign-gated tick series on the burst’s summon — this note used to record it as unauthorable because \"teamFaction conditions on summon-effect triggers don’t currently resolve at parse time\", which is no longer true. ⚠️ The radius change stays unmodelled: we have no vocabulary for area."
 			],
 			"description": "Aino will be granted the corresponding buff effects based on the party's Moonsign.\n\nMoonsign: Ascendant Gleam: Her Elemental Burst **Precision Hydronic Cooler** is enhanced: The Cool Your Jets Ducky will fire water balls more frequently, and the water balls will deal AoE Hydro DMG over a larger area of effect."
 		},
@@ -142,10 +269,15 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": { "type": "constellation", "level": 1 },
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"source": "character",
 					"stat": "em",
 					"value": 80,
@@ -154,10 +286,15 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": { "type": "constellation", "level": 1 },
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"source": "character",
 					"stat": "em",
 					"value": 80,
@@ -176,9 +313,15 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"C2: when Aino is off-field AND burst is active AND active char hits enemy, fire a 25% ATK + 100% EM Hydro DMG hit. 5s ICD. gcsim c2Init subscribes to OnEnemyHit gated on burstKey active + Aino off-field + 5s ICD. Three deferred primitives: (1) off-field-conditional trigger; (2) on-active-char-hit trigger; (3) duringSummon-state condition (burst active). Original stub used `trigger: { type: 'onState', state: 'offField' }` which is not a valid Trigger union variant. Replaced with description-only entry."
+				"C2: when Aino is off-field AND the burst is active AND the active character hits an enemy, fire a 25% ATK + 100% EM Hydro hit on a 5s ICD. gcsim cons.go c2Init subscribes to OnEnemyHit gated on burstKey active + Aino off-field + c2IcdKey 5*60, landing 10f later (QueueAttack(..., 0, 10)).",
+				"↻ AUTHORED 2026-08-18. The three primitives its old note deferred all exist now: an `onHit` damage effect carrying an `application[]` is read by `sim/procs.ts` (coordinated-attack round), `source: \"others\"` is the off-field half, and hosting it on the burst’s summon makes the summon’s own liveness the \"burst is active\" window — so no `armedFor` and no `duringSummon` state are needed.",
+				"⚠️ `source: \"others\"` is one step wider than gcsim in exactly one place: gcsim also requires the hitter to BE the active character, and an off-field summon owned by a third party carries its owner’s id, so its ticks reach this where gcsim’s would not. `onHit` has no `\"active\"` source, and the mark-triggered round records why an id test alone cannot supply one.",
+				"FlatDmg is `em + a4Dmg()` in gcsim — the C2’s own 100% EM plus A4 Structured Power Booster’s +50% of EM on Elemental Burst DMG, which this hit counts as. Hence flatScaling 150, against the base tick’s 50 (A4 alone).",
+				"icdGate \"none\" is gcsim’s ICDTagNone on the C2 attack: every projection applies its full 1U Hydro, unlike the burst’s own ticks.",
+				"⚠️ THE EFFECT LIVES ON THE BURST’S SUMMON, not here — `aino__burst__precision_hydronic_cooler` → \"Cool Your Jets Ducky\" → effects[]. That is where the WINDOW is: gcsim gates the proc on `burstKey`, which is the same 14s the summon holds, so hosting it there makes the summon’s own liveness the arming window (no `armedFor`, and swap/recast truncation for free). ⚓ Same arrangement Fischl’s A4 uses on Oz. It also draws its markers on the duck’s lane, which is what the kit text describes: \"the Cool Your Jets Ducky will fire an additional water ball\"."
 			],
-			"description": "If Aino is off-field while the Focused Hydronic Cooling Zone of her Elemental Burst **Precision Hydronic Cooler** is active, when your active party member hits a nearby opponent with an attack, the Cool Your Jets Ducky will fire an additional water ball at that opponent, dealing AoE Hydro DMG equal to 25% of Aino's ATK and 100% of her Elemental Mastery. This DMG is considered Elemental Burst DMG. This effect can be triggered once every 5s."
+			"description": "If Aino is off-field while the Focused Hydronic Cooling Zone of her Elemental Burst **Precision Hydronic Cooler** is active, when your active party member hits a nearby opponent with an attack, the Cool Your Jets Ducky will fire an additional water ball at that opponent, dealing AoE Hydro DMG equal to 25% of Aino's ATK and 100% of her Elemental Mastery. This DMG is considered Elemental Burst DMG. This effect can be triggered once every 5s.",
+			"effects": []
 		},
 		{
 			"id": "aino__constellation__cake_and_the_art_of_mechanism_repair",
@@ -196,9 +339,15 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"procCooldown": 10,
-					"conditions": { "type": "constellation", "level": 4 },
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
 					"amount": 10
 				}
 			],
@@ -223,14 +372,24 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					},
 					"source": "character",
@@ -241,14 +400,24 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					},
 					"source": "character",
@@ -259,14 +428,24 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					},
 					"source": "character",
@@ -277,14 +456,24 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					},
 					"source": "character",
@@ -295,14 +484,24 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					},
 					"source": "character",
@@ -313,16 +512,26 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
+							{
+								"type": "constellation",
+								"level": 6
+							},
 							{
 								"type": "not",
-								"condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 }
+								"condition": {
+									"type": "teamFaction",
+									"faction": "moonsign",
+									"min": 2
+								}
 							}
 						]
 					},
@@ -334,16 +543,26 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
+							{
+								"type": "constellation",
+								"level": 6
+							},
 							{
 								"type": "not",
-								"condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 }
+								"condition": {
+									"type": "teamFaction",
+									"faction": "moonsign",
+									"min": 2
+								}
 							}
 						]
 					},
@@ -355,16 +574,26 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
+							{
+								"type": "constellation",
+								"level": 6
+							},
 							{
 								"type": "not",
-								"condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 }
+								"condition": {
+									"type": "teamFaction",
+									"faction": "moonsign",
+									"min": 2
+								}
 							}
 						]
 					},
@@ -376,16 +605,26 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
+							{
+								"type": "constellation",
+								"level": 6
+							},
 							{
 								"type": "not",
-								"condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 }
+								"condition": {
+									"type": "teamFaction",
+									"faction": "moonsign",
+									"min": 2
+								}
 							}
 						]
 					},
@@ -397,16 +636,26 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
+							{
+								"type": "constellation",
+								"level": 6
+							},
 							{
 								"type": "not",
-								"condition": { "type": "teamFaction", "faction": "moonsign", "min": 2 }
+								"condition": {
+									"type": "teamFaction",
+									"faction": "moonsign",
+									"min": 2
+								}
 							}
 						]
 					},

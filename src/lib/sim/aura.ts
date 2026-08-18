@@ -656,6 +656,19 @@ export function emitReactionsAtSwing(
  * thing L3 refused to spend. This is a SECOND READER of `summonTickSeries`,
  * ⛔ never a second copy of the walk.
  */
+/** The team facts a `summonTick` condition can be gated on — ⚓ the ONE shape,
+ *  shared with `finalize`'s marker walk so the two cannot answer differently.
+ *  Aino's burst ticks at 0.7s instead of 1.5s under `teamFaction: moonsign >= 2`. */
+function tickConditionCtx(ctx: SimContext): {
+	teamFactionCounts: ReadonlyMap<string, number>;
+	teamEnabledReactions: ReadonlySet<string>;
+} {
+	return {
+		teamFactionCounts: ctx.team.teamFactionCounts,
+		teamEnabledReactions: ctx.team.teamEnabledReactions
+	};
+}
+
 export function scheduleSummonTicks(
 	ctx: SimContext,
 	clock: Clock,
@@ -732,7 +745,18 @@ export function scheduleSummonTicks(
 			tickKey: `${char.id}::${summon.label}::${kind}::${spawnAt}`
 		});
 
-		for (const series of summonTickSeries(summon, cLevel, (e) => e.type === 'damage')) {
+		// ⚓⚓ THE SAME CONDITION CONTEXT `finalize` WALKS WITH. A team-gated series
+		// (Aino's Ascendant Gleam cadence) resolves to `null` without it, and ⚠️
+		// `summonTickSeries` drops only a DEFINITIVE false — so an unresolvable
+		// pair does not abstain, it fires BOTH. Measured while writing this: Aino
+		// drew 10 markers and applied 12 from two series running at once.
+		// ⛔ The markers a reader sees and the hits that fire read one answer.
+		for (const series of summonTickSeries(
+			summon,
+			cLevel,
+			(e) => e.type === 'damage',
+			tickConditionCtx(ctx)
+		)) {
 			const element = (series.effect as Extract<Effect, { type: 'damage' }>).element;
 			// ⛔ A physical (element-less) tick applies nothing and must not reach an
 			// ICD clock — the same rule a physical swing follows. ↻ It DOES still
@@ -763,7 +787,7 @@ export function scheduleSummonTicks(
 			// ⚠️ `fired` is per SERIES per SPAWN, which is what the closure already
 			// scopes — a recast builds a new chain and starts its own count, exactly
 			// as a recast restarts the walk.
-			const cap = tickCapOf(series.effect, cLevel);
+			const cap = tickCapOf(series.effect, cLevel, tickConditionCtx(ctx));
 			let fired = 0;
 			// ⚠️ A cap lets the BOUNDARY tick through and no further: the window
 			// widens by one interval only when a cap is authored, mirroring

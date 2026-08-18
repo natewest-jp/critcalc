@@ -497,7 +497,7 @@ which the pair alone cannot state.
 
 | character | ability | authored (first / interval · icd) | observed (first / interval × n · applied) | gcsim cadence |
 | --- | --- | --- | --- | --- |
-| aino | `precision_hydronic_cooler` | Cool Your Jets Ducky 123f / 90f × 10 · `standard` | Cool Your Jets Ducky 133f / 90f × 10 · 5/10 `standard` | 150f / every 3 |
+| aino | `precision_hydronic_cooler` | Cool Your Jets Ducky 133f / 90f × 10 · `standard`<br>Cool Your Jets Ducky 133f / 42f × 21 `cap` · 108f / every 4 | Cool Your Jets Ducky 133f / 90f × 10 · 5/10 `standard` | 150f / every 3 |
 | amber | `explosive_puppet` | — | Baron Bunny 530f / —f × 1 · 1/1 `either` | `none` |
 | amber | `fiery_rain` | Fiery Rain 84f / 12f × 9 · 60f / every 3 | Fiery Rain 84f / 12f × 18 · 13/18 `other` ⚠️ **count 9→18** | 60f / every 3 |
 | baizhu | `holistic_revivification` | Pulsing Clarity 252f / 146f × 5 · `none` | — | — |

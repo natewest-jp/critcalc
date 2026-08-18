@@ -155,3 +155,78 @@ describe('a recast truncates the running chain', () => {
 		expect(tickCount(eThenQ, wins[1].start)).toBe(tickCount(eOnly, wins[0].start));
 	});
 });
+
+// ── A tick series whose CADENCE is conditional (2026-08-18) ──────────────────
+//
+// ⚓ Two authors, two gate kinds. Aino's burst ticks at 0.7s instead of 1.5s
+// under Moonsign: Ascendant Gleam (`teamFaction`, a TEAM fact); Ororon's ticks
+// at 0.75s instead of 1s at C4 (`constellation`, a per-character fact). Both are
+// authored as TWO series with mutually exclusive conditions, which is what makes
+// the ICD group and the tick cap able to change with the rate.
+describe('a conditional cadence — the faster-tick class', () => {
+	const parseAt = (notation: string, cons: Record<string, number> = {}) =>
+		parseNotation(notation, lookup, 8, cons, {}, undefined);
+	const ticksOf = (notation: string, label: string, cons: Record<string, number> = {}) =>
+		parseAt(notation, cons)
+			.windows.filter((w) => w.kind === 'summon' && w.label === label)
+			.flatMap((w) => (w as { ticks?: number[] }).ticks ?? []);
+	const appsAt = (notation: string, characterId: string, cons: Record<string, number> = {}) =>
+		parseAt(notation, cons)
+			.applications.filter((a) => a.characterId === characterId)
+			.map((a) => +(a.time / 60).toFixed(2));
+
+	it('⚓ Aino ticks 10 times without a Moonsign partner and 21 times with one', () => {
+		// The TEAM decides the cadence, and nothing else about the rotation changes.
+		// ⚠️ Kaeya is not Moonsign; Nefer is. gcsim's `GetMoonsignLevel() >= 2` is
+		// two members, and Aino counts as one of them.
+		expect(ticksOf('Aino Q > Kaeya N5 N5 N5', 'Cool Your Jets Ducky')).toHaveLength(10);
+		expect(ticksOf('Aino Q > Nefer N5 N5 N5', 'Cool Your Jets Ducky')).toHaveLength(21);
+	});
+
+	it('⚓⚓ the markers and the applications read ONE answer', () => {
+		// ⚠️⚠️ THE BUG THIS EXISTS FOR. `summonTickSeries` drops only a DEFINITIVE
+		// false, so a pair of gated series whose condition is UNRESOLVABLE does not
+		// abstain — it fires BOTH. Measured before the fix: Aino drew 10 markers and
+		// applied 12, from two cadences running at once. The counts below are only
+		// consistent while both readers get the same condition context.
+		const slow = appsAt('Aino Q > Kaeya N5 N5 N5', 'aino');
+		const fast = appsAt('Aino Q > Nefer N5 N5 N5', 'aino');
+		// 10 ticks on the standard window apply every third; 21 ticks at 42f apply
+		// whenever the 108f timer has lapsed, i.e. every 126f.
+		expect(slow).toEqual([2.22, 5.22, 8.22, 11.22, 14.22]);
+		expect(fast).toEqual([2.22, 4.32, 6.42, 8.52, 10.62, 12.72, 14.82]);
+	});
+
+	it('⚓ the ICD GROUP travels with the rate, not just the interval', () => {
+		// Ascendant Gleam swaps `ICDGroupDefault` (150f / every 3) for
+		// `ICDGroupAinoBurstMoonHit` (108f / every 4). At 21 ticks under the OLD
+		// group the applications would fall every 150f; they fall every 126f.
+		const fast = appsAt('Aino Q > Nefer N5 N5 N5', 'aino');
+		const gaps = fast.slice(1).map((t, i) => +(t - fast[i]).toFixed(2));
+		expect(new Set(gaps)).toEqual(new Set([2.1]));
+	});
+
+	it('⚓ Ororon takes his faster cadence from a CONSTELLATION, not the team', () => {
+		expect(ticksOf('Ororon Q > Kaeya N5 N5', 'Supersonic Oculus')).toHaveLength(9);
+		expect(ticksOf('Ororon Q > Kaeya N5 N5', 'Supersonic Oculus', { ororon: 4 })).toHaveLength(12);
+		// ⚠️ And his gate does NOT travel with it — the group is a property of the
+		// attack rather than of the rate, so applications stay 3s apart either way.
+		expect(appsAt('Ororon Q > Kaeya N5 N5', 'ororon', { ororon: 4 })).toEqual([
+			0.6, 0.75, 3.75, 6.75
+		]);
+	});
+
+	it('⚓ Aino’s C2 fires off a TEAMMATE’s hit, on the duck’s own lane', () => {
+		// The coordinated attack: hosted on the burst's summon, so the summon's
+		// liveness is the window and its markers land where the kit says the water
+		// ball comes from. ⚠️ `source: 'others'` is the off-field half — her own
+		// swings must not fire it.
+		const base = ticksOf('Aino Q > Kaeya N5 N5 N5', 'Cool Your Jets Ducky').length;
+		const withC2 = ticksOf('Aino Q > Kaeya N5 N5 N5', 'Cool Your Jets Ducky', { aino: 2 }).length;
+		expect(withC2).toBeGreaterThan(base);
+		// Aino alone, swinging herself: her own hits are excluded, so nothing extra.
+		expect(ticksOf('Aino Q N5 N5 N5', 'Cool Your Jets Ducky', { aino: 2 })).toHaveLength(
+			ticksOf('Aino Q N5 N5 N5', 'Cool Your Jets Ducky').length
+		);
+	});
+});

@@ -16,13 +16,48 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 32, "hit": 12, "N": 24 } },
-				{ "name": "N2", "frames": { "anim": 53, "hit": 10, "N": 27 } },
-				{ "name": "N3", "frames": { "anim": 70, "hit": 20 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 32,
+						"hit": 12,
+						"N": 24
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 53,
+						"hit": 10,
+						"N": 27
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 70,
+						"hit": 20
+					}
+				}
 			],
 			"chargeHits": [
-				{ "name": "Aimed Shot", "frames": { "anim": 23, "D": 15, "J": 15, "swap": 23 } },
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 85, "D": 84, "J": 84 } }
+				{
+					"name": "Aimed Shot",
+					"frames": {
+						"anim": 23,
+						"D": 15,
+						"J": 15,
+						"swap": 23
+					}
+				},
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 85,
+						"D": 84,
+						"J": 84
+					}
+				}
 			],
 			"sections": [
 				{
@@ -49,7 +84,14 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 31, "N": 30, "C": 30, "Q": 30, "J": 30, "swap": 29 },
+			"frames": {
+				"anim": 31,
+				"N": 30,
+				"C": 30,
+				"Q": 30,
+				"J": 30,
+				"swap": 29
+			},
 			"cooldown": 15,
 			"cooldownStartDelay": 14,
 			"tags": [],
@@ -58,7 +100,13 @@
 				"3-bounce Spirit Orb (5 with C1 via c1ExtraBounce). Each bounce hits a separate enemy; not separately rendered (single E cast = single bar). The 15s post-skill window gates A1's Hydro/Electro Nightsoul-point gain — pure resource, not modelled."
 			],
 			"description": "Ororon manifests an ancient mystical technique from the Masters of the Night-Wind as a Spirit Orb of midnight shade and throws it at his foe, dealing Nightsoul-aligned Electro DMG.\nWhen other opponents are nearby, the Spirit Orb will bounce between them, dealing Nightsoul-aligned Electro DMG. Each time Night's Sling is used, each opponent can only be selected as a target once.\nAfter 3 bounces, or if there are no eligible targets left, the Orb will disappear.",
-			"application": [{ "frame": 41, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 41,
+					"element": "electro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "ororon__burst__dark_voices_echo",
@@ -66,7 +114,12 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 62, "D": 59, "J": 60, "swap": 61 },
+			"frames": {
+				"anim": 62,
+				"D": 59,
+				"J": 60,
+				"swap": 61
+			},
 			"cooldown": 15,
 			"tags": ["summon", "taunt"],
 			"energyCost": 60,
@@ -84,14 +137,49 @@
 								"type": "summonTick",
 								"interval": 1,
 								"firstTickDelay": 0.4,
-								"icdGate": { "timer": 180 }
+								"icdGate": {
+									"timer": 180
+								}
 							},
 							"scaling": 59.76,
 							"stat": "atk",
 							"element": "electro",
 							"_curatorNotes": [
-								"icdGate authored 2026-08-17 (ICD-group round b): gcsim burst.go:88 sets ICDGroupOroronElementalBurst on the Soundwave Collision tick, whose table entry is a 180f reset window in which only the FIRST hit applies. Measured 3/9 applied, which standard also gives at this 60f interval — authored on the GROUP, since the coincidence does not survive a different cadence (and C4's 0.75× tick rate, unmodelled, is exactly such a cadence)."
-							]
+								"icdGate authored 2026-08-17 (ICD-group round b): gcsim burst.go:88 sets ICDGroupOroronElementalBurst on the Soundwave Collision tick, whose table entry is a 180f reset window in which only the FIRST hit applies. Measured 3/9 applied, which standard also gives at this 60f interval — authored on the GROUP, since the coincidence does not survive a different cadence (and C4's 0.75× tick rate, unmodelled, is exactly such a cadence).",
+								"↻ 2026-08-18: split into two constellation-gated series. This is the C0 cadence — gcsim burstTick schedules at `60 * c4BurstInterval()` frames and c4BurstInterval returns 1.0 below C4."
+							],
+							"conditions": {
+								"type": "not",
+								"condition": {
+									"type": "constellation",
+									"level": 4
+								}
+							}
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.75,
+								"firstTickDelay": 0.15,
+								"icdGate": {
+									"timer": 180
+								}
+							},
+							"scaling": 59.76,
+							"stat": "atk",
+							"element": "electro",
+							"_curatorNotes": [
+								"⚓ THE C4 CADENCE. gcsim cons.go c4BurstInterval returns 0.75 at C4, and burst.go computes each tick’s delay as `int(60 * c4BurstInterval())` = 45f — so the interval is 0.75s and the FIRST tick lands at cast + 45f, i.e. 9f after the summon’s spawn at 36f (firstTickDelay 0.15).",
+								"icdGate is unchanged — the group is a property of the attack, not of the rate. ⚓ That is exactly what the base series’ own note predicted: it authored the group rather than the coincidence \"because the coincidence does not survive a different cadence (and C4’s 0.75× tick rate, unmodelled, is exactly such a cadence)\". It is modelled now, and the group carries over unchanged.",
+								"⚠️ Left uncapped: gcsim stops when `supersonic-oculus` (540f from cast) lapses, which lands within a tick of our window walk. ⛔ A cap here would assert a boundary nobody measured — the dumper runs at C0 and cannot see this branch."
+							],
+							"conditions": {
+								"type": "constellation",
+								"level": 4
+							},
+							"attribution": "C4: Reverence for the Wondrous Wind (faster ticks)"
 						}
 					]
 				}
@@ -104,7 +192,13 @@
 				"[A7] Taunt is surfaced only via the taunt tag as a placeholder; no dedicated taunt behavior is modeled."
 			],
 			"description": "Ororon works an ancient ritual, dealing Nightsoul-aligned AoE Electro DMG, summoning forth a Supersonic Oculus.\n\nSupersonic Oculus\n·Continuously taunts nearby opponents and attracts attacks from them.\n·Continuously rotates and fires off sonic waves that deal Nightsoul-aligned Electro DMG.",
-			"application": [{ "frame": 36, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 36,
+					"element": "electro",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -116,7 +210,10 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": ["electroCharged", "lunarCharged"] },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["electroCharged", "lunarCharged"]
+					},
 					"procCooldown": 1.8,
 					"scaling": 160,
 					"stat": "atk",
@@ -162,10 +259,16 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 9,
 					"durationType": "fixed",
-					"conditions": { "type": "constellation", "level": 2 },
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"source": "character",
 					"stat": "electroDmgBonus",
 					"value": 40,
@@ -193,8 +296,14 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "constellation", "level": 4 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
 					"amount": 8
 				}
 			],
