@@ -4,7 +4,7 @@
 > generator, never an auto-fixer** — gcsim is an implementation-level second
 > source, not the game. Where it and KQM disagree, evaluate both.
 
-**gcsim commit:** `d146b6d06` · **fixtures:** 12/12 ran
+**gcsim commit:** `d146b6d06` · **fixtures:** 17/17 ran
 
 Config: `hitlag=false` (we do not model hitlag), single target, 1★ weapons,
 no artifacts, no substats — none of which affect elemental application.
@@ -13,13 +13,13 @@ no artifacts, no substats — none of which affect elemental application.
 
 | metric | count |
 | --- | --- |
-| applications — ours | 176 |
-| applications — gcsim | 215 |
-| **we apply, gcsim does not** | **1** |
-| **gcsim applies, we do not** | **40** |
+| applications — ours | 224 |
+| applications — gcsim | 269 |
+| **we apply, gcsim does not** | **3** |
+| **gcsim applies, we do not** | **48** |
 | element mismatch on a paired application | 0 |
-| reaction events — ours | 51 |
-| reaction damage instances — gcsim | 77 |
+| reaction events — ours | 53 |
+| reaction damage instances — gcsim | 80 |
 
 ⚠️ The two reaction rows count different things — ours is one event per
 triggering application, gcsim's is one damage instance, and burning and
@@ -32,12 +32,12 @@ every aura on the target at that instant, in taxed units.
 
 | metric | count |
 | --- | --- |
-| aura samples compared | 274 |
-| **agree** (within 0.16U) | **135** |
-| 🟡 drift (both present, further apart) | 56 |
+| aura samples compared | 326 |
+| **agree** (within 0.16U) | **176** |
+| 🟡 drift (both present, further apart) | 63 |
 | 🔴 aura gcsim has and we do not | 29 |
-| 🟠 aura we have and gcsim does not | 54 |
-| mean \|Δ\| where both present | 0.165U |
+| 🟠 aura we have and gcsim does not | 58 |
+| mean \|Δ\| where both present | 0.151U |
 
 ## melt — cryo aura then pyro
 
@@ -669,10 +669,6 @@ Compare presence and rough magnitude, never equality.
 Fischl E Q > Ningguang E N3 > Zhongli E
 ```
 
-**Translation notes**
-
-- ⚠️ gcsim is non-deterministic on this fixture (application counts across runs: 28, 27, 27) — the modal run is reported. Some kits roll dice (random normal-attack variants, proc chances) and no CLI flag pins the seed.
-
 applications ours **19** / gcsim **27** · extra 0 · missing 8 · element mismatch 0 · reactions ours **5** / gcsim **6**
 
 ### 1. Applications
@@ -972,3 +968,311 @@ Compare presence and rough magnitude, never equality.
 
 - **ours:** melt@1.47s
 - **gcsim:** melt@1.40s
+
+## wave — Xingqiu rain swords
+
+```
+Xingqiu Q > Kaeya N5 N5 N5 N5
+```
+
+applications ours **12** / gcsim **19** · extra 0 · missing 7 · element mismatch 0 · reactions ours **0** / gcsim **0**
+
+### 1. Applications
+
+| char | # | ours | gcsim | Δ frames | units | ability |
+| --- | --- | --- | --- | --- | --- | --- |
+| xingqiu | 0 | hydro @ 1.13s (burst) | hydro @ 0.33s (0) | -48 | 1U | Xingqiu Orbital |
+| xingqiu | 1 | hydro @ 2.13s (burst) | hydro @ 1.25s (burst) | -53 | 1U | Guhua Sword: Raincutter |
+| xingqiu | 2 | hydro @ 3.13s (burst) | hydro @ 2.25s (burst) | -53 | 1U | Guhua Sword: Raincutter |
+| xingqiu | 3 | hydro @ 4.13s (burst) | hydro @ 2.58s (0) | -93 | 1U | Xingqiu Orbital |
+| xingqiu | 4 | hydro @ 5.13s (burst) | hydro @ 3.25s (burst) | -113 | 1U | Guhua Sword: Raincutter |
+| xingqiu | 5 | hydro @ 6.13s (burst) | hydro @ 4.30s (burst) | -110 | 1U | Guhua Sword: Raincutter |
+| xingqiu | 6 | hydro @ 7.13s (burst) | hydro @ 4.83s (0) | -138 | 1U | Xingqiu Orbital |
+| xingqiu | 7 | hydro @ 8.13s (burst) | hydro @ 5.30s (burst) | -170 | 1U | Guhua Sword: Raincutter |
+| xingqiu | 8 | hydro @ 9.13s (burst) | hydro @ 6.30s (burst) | -170 | 1U | Guhua Sword: Raincutter |
+| xingqiu | 9 | hydro @ 10.13s (burst) | hydro @ 7.08s (0) | -183 | 1U | Xingqiu Orbital |
+| xingqiu | 10 | hydro @ 11.13s (burst) | hydro @ 7.35s (burst) | -227 | 1U | Guhua Sword: Raincutter |
+| xingqiu | 11 | hydro @ 12.13s (burst) | hydro @ 8.35s (burst) | -227 | 1U | Guhua Sword: Raincutter |
+| xingqiu 🔴 | 12 | — | hydro @ 9.33s (0) |  | 1U | Xingqiu Orbital |
+| xingqiu 🔴 | 13 | — | hydro @ 9.35s (burst) |  | 1U | Guhua Sword: Raincutter |
+| xingqiu 🔴 | 14 | — | hydro @ 10.40s (burst) |  | 1U | Guhua Sword: Raincutter |
+| xingqiu 🔴 | 15 | — | hydro @ 11.40s (burst) |  | 1U | Guhua Sword: Raincutter |
+| xingqiu 🔴 | 16 | — | hydro @ 11.58s (0) |  | 1U | Xingqiu Orbital |
+| xingqiu 🔴 | 17 | — | hydro @ 12.40s (burst) |  | 1U | Guhua Sword: Raincutter |
+| xingqiu 🔴 | 18 | — | hydro @ 13.83s (0) |  | 1U | Xingqiu Orbital |
+
+🔴 gcsim applies and we do not · 🟠 we apply and gcsim does not · 🟡 different element
+
+### 2. Aura trajectory — ours / gcsim
+
+⚓ **L5's real scoreboard.** gcsim logs the target's gauge before every
+application it makes, so one row per application is a sample of the true aura
+across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
+durability, 25 per unit).
+
+agree **18** · 🟡 drift 0 · 🔴 aura we do not have 0 · 🟠 aura they do not have 0
+
+| t | char | aura before (ours/gcsim) |
+| --- | --- | --- |
+| 0.33s | xingqiu | — |
+| 1.25s | xingqiu | hydro 0.79/0.72 |
+| 2.25s | xingqiu | hydro 0.79/0.72 |
+| 2.58s | xingqiu | hydro 0.76/0.77 |
+| 3.25s | xingqiu | hydro 0.79/0.74 |
+| 4.30s | xingqiu | hydro 0.79/0.71 |
+| 4.83s | xingqiu | hydro 0.74/0.76 |
+| 5.30s | xingqiu | hydro 0.79/0.76 |
+| 6.30s | xingqiu | hydro 0.79/0.72 |
+| 7.08s | xingqiu | hydro 0.72/0.73 |
+| 7.35s | xingqiu | hydro 0.78/0.78 |
+| 8.35s | xingqiu | hydro 0.78/0.72 |
+| 9.33s | xingqiu | hydro 0.78/0.72 |
+| 9.35s | xingqiu | hydro 0.78/0.80 |
+| 10.40s | xingqiu | hydro 0.78/0.71 |
+| 11.40s | xingqiu | hydro 0.78/0.72 |
+| 11.58s | xingqiu | hydro 0.76/0.78 |
+| 12.40s | xingqiu | hydro 0.78/0.73 |
+| 13.83s | xingqiu | hydro 0.66/0.68 |
+
+### 3. Reactions
+
+⚠️ **These two columns do not count the same thing.** Ours is one event per
+triggering application; gcsim's is one damage INSTANCE, and burning and
+electro-charged TICK — so a single reaction there produces many rows.
+Compare presence and rough magnitude, never equality.
+
+_neither side reported a reaction._
+
+- **ours:** _none_
+- **gcsim:** _none_
+
+## wave — Thoma every-third collapse
+
+```
+Thoma Q > Kaeya N5 N5 N5 N5
+```
+
+applications ours **5** / gcsim **5** · extra 0 · missing 0 · element mismatch 0 · reactions ours **0** / gcsim **0**
+
+### 1. Applications
+
+| char | # | ours | gcsim | Δ frames | units | ability |
+| --- | --- | --- | --- | --- | --- | --- |
+| thoma | 0 | pyro @ 0.67s (burst) | pyro @ 0.68s (burst) | 1 | 2U | Crimson Ooyoroi |
+| thoma | 1 | pyro @ 1.25s (burst) | pyro @ 1.37s (burst) | 7 | 1U | Fiery Collapse |
+| thoma | 2 | pyro @ 4.25s (burst) | pyro @ 4.42s (burst) | 10 | 1U | Fiery Collapse |
+| thoma | 3 | pyro @ 7.25s (burst) | pyro @ 7.47s (burst) | 13 | 1U | Fiery Collapse |
+| thoma | 4 | pyro @ 10.25s (burst) | pyro @ 10.52s (burst) | 16 | 1U | Fiery Collapse |
+
+🔴 gcsim applies and we do not · 🟠 we apply and gcsim does not · 🟡 different element
+
+### 2. Aura trajectory — ours / gcsim
+
+⚓ **L5's real scoreboard.** gcsim logs the target's gauge before every
+application it makes, so one row per application is a sample of the true aura
+across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
+durability, 25 per unit).
+
+agree **3** · 🟡 drift 1 · 🔴 aura we do not have 0 · 🟠 aura they do not have 1
+
+| t | char | aura before (ours/gcsim) |
+| --- | --- | --- |
+| 0.68s | thoma | 🟠 pyro 1.60/— |
+| 1.37s | thoma | pyro 1.51/1.51 |
+| 4.42s | thoma | pyro 1.10/1.10 |
+| 7.47s | thoma | pyro 0.78/0.70 |
+| 10.52s | thoma | 🟡 pyro 0.78/0.54 |
+
+### 3. Reactions
+
+⚠️ **These two columns do not count the same thing.** Ours is one event per
+triggering application; gcsim's is one damage INSTANCE, and burning and
+electro-charged TICK — so a single reaction there produces many rows.
+Compare presence and rough magnitude, never equality.
+
+_neither side reported a reaction._
+
+- **ours:** _none_
+- **gcsim:** _none_
+
+## wave — Yelan three darts
+
+```
+Yelan Q > Kaeya N5 N5 N5 N5
+```
+
+applications ours **13** / gcsim **14** · extra 0 · missing 1 · element mismatch 0 · reactions ours **0** / gcsim **0**
+
+### 1. Applications
+
+| char | # | ours | gcsim | Δ frames | units | ability |
+| --- | --- | --- | --- | --- | --- | --- |
+| yelan | 0 | hydro @ 1.27s (burst) | hydro @ 1.28s (burst) | 1 | 2U | Depth-Clarion Dice |
+| yelan | 1 | hydro @ 1.97s (burst) | hydro @ 1.98s (burst) | 1 | 1U | Exquisite Throw |
+| yelan | 2 | hydro @ 2.97s (burst) | hydro @ 2.98s (burst) | 1 | 1U | Exquisite Throw |
+| yelan | 3 | hydro @ 3.97s (burst) | hydro @ 3.98s (burst) | 1 | 1U | Exquisite Throw |
+| yelan | 4 | hydro @ 4.97s (burst) | hydro @ 4.98s (burst) | 1 | 1U | Exquisite Throw |
+| yelan | 5 | hydro @ 5.97s (burst) | hydro @ 5.98s (burst) | 1 | 1U | Exquisite Throw |
+| yelan | 6 | hydro @ 6.97s (burst) | hydro @ 6.98s (burst) | 1 | 1U | Exquisite Throw |
+| yelan | 7 | hydro @ 7.97s (burst) | hydro @ 7.98s (burst) | 1 | 1U | Exquisite Throw |
+| yelan | 8 | hydro @ 8.97s (burst) | hydro @ 8.98s (burst) | 1 | 1U | Exquisite Throw |
+| yelan | 9 | hydro @ 9.97s (burst) | hydro @ 9.98s (burst) | 1 | 1U | Exquisite Throw |
+| yelan | 10 | hydro @ 10.97s (burst) | hydro @ 10.98s (burst) | 1 | 1U | Exquisite Throw |
+| yelan | 11 | hydro @ 11.97s (burst) | hydro @ 11.98s (burst) | 1 | 1U | Exquisite Throw |
+| yelan | 12 | hydro @ 12.97s (burst) | hydro @ 12.98s (burst) | 1 | 1U | Exquisite Throw |
+| yelan 🔴 | 13 | — | hydro @ 13.98s (burst) |  | 1U | Exquisite Throw |
+
+🔴 gcsim applies and we do not · 🟠 we apply and gcsim does not · 🟡 different element
+
+### 2. Aura trajectory — ours / gcsim
+
+⚓ **L5's real scoreboard.** gcsim logs the target's gauge before every
+application it makes, so one row per application is a sample of the true aura
+across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
+durability, 25 per unit).
+
+agree **13** · 🟡 drift 0 · 🔴 aura we do not have 0 · 🟠 aura they do not have 1
+
+| t | char | aura before (ours/gcsim) |
+| --- | --- | --- |
+| 1.28s | yelan | 🟠 hydro 1.60/— |
+| 1.98s | yelan | hydro 1.50/1.51 |
+| 2.98s | yelan | hydro 1.37/1.37 |
+| 3.98s | yelan | hydro 1.24/1.24 |
+| 4.98s | yelan | hydro 1.10/1.11 |
+| 5.98s | yelan | hydro 0.97/0.97 |
+| 6.98s | yelan | hydro 0.84/0.84 |
+| 7.98s | yelan | hydro 0.80/0.71 |
+| 8.98s | yelan | hydro 0.80/0.67 |
+| 9.98s | yelan | hydro 0.80/0.67 |
+| 10.98s | yelan | hydro 0.80/0.67 |
+| 11.98s | yelan | hydro 0.80/0.67 |
+| 12.98s | yelan | hydro 0.80/0.67 |
+| 13.98s | yelan | hydro 0.66/0.67 |
+
+### 3. Reactions
+
+⚠️ **These two columns do not count the same thing.** Ours is one event per
+triggering application; gcsim's is one damage INSTANCE, and burning and
+electro-charged TICK — so a single reaction there produces many rows.
+Compare presence and rough magnitude, never equality.
+
+_neither side reported a reaction._
+
+- **ours:** _none_
+- **gcsim:** _none_
+
+## proc — Raiden Eye off a summon
+
+```
+Fischl E > Raiden E ~12s
+```
+
+applications ours **9** / gcsim **8** · extra 1 · missing 0 · element mismatch 0 · reactions ours **0** / gcsim **0**
+
+### 1. Applications
+
+| char | # | ours | gcsim | Δ frames | units | ability |
+| --- | --- | --- | --- | --- | --- | --- |
+| fischl | 0 | electro @ 0.63s (skill) | electro @ 0.65s (skill) | 1 | 1U | Oz (Summon) |
+| fischl | 1 | electro @ 1.37s (skill) | electro @ 1.55s (skill) | 11 | 1U | Oz (Skill) |
+| fischl | 2 | electro @ 5.30s (skill) | electro @ 5.48s (skill) | 11 | 1U | Oz (Skill) |
+| fischl | 3 | electro @ 7.27s (skill) | electro @ 7.45s (skill) | 11 | 1U | Oz (Skill) |
+| raiden_shogun | 0 | electro @ 0.92s (skill) | electro @ 1.70s (skill) | 47 | 1U | Eye of Stormy Judgement |
+| raiden_shogun | 1 | electro @ 1.68s (skill) | electro @ 2.62s (skill) | 56 | 1U | Eye of Stormy Judgement (Strike) |
+| raiden_shogun | 2 | electro @ 3.42s (skill) | electro @ 5.57s (skill) | 129 | 1U | Eye of Stormy Judgement (Strike) |
+| raiden_shogun | 3 | electro @ 6.37s (skill) | electro @ 8.52s (skill) | 129 | 1U | Eye of Stormy Judgement (Strike) |
+| raiden_shogun 🟠 | 4 | electro @ 9.32s (skill) | — |  |  |  |
+
+🔴 gcsim applies and we do not · 🟠 we apply and gcsim does not · 🟡 different element
+
+### 2. Aura trajectory — ours / gcsim
+
+⚓ **L5's real scoreboard.** gcsim logs the target's gauge before every
+application it makes, so one row per application is a sample of the true aura
+across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
+durability, 25 per unit).
+
+agree **6** · 🟡 drift 1 · 🔴 aura we do not have 0 · 🟠 aura they do not have 1
+
+| t | char | aura before (ours/gcsim) |
+| --- | --- | --- |
+| 0.65s | fischl | 🟠 electro 0.80/— |
+| 1.55s | fischl | electro 0.78/0.72 |
+| 1.70s | raiden_shogun | electro 0.80/0.79 |
+| 2.62s | raiden_shogun | electro 0.72/0.72 |
+| 5.48s | fischl | 🟡 electro 0.78/0.56 |
+| 5.57s | raiden_shogun | electro 0.78/0.79 |
+| 7.45s | fischl | electro 0.78/0.64 |
+| 8.52s | raiden_shogun | electro 0.69/0.71 |
+
+### 3. Reactions
+
+⚠️ **These two columns do not count the same thing.** Ours is one event per
+triggering application; gcsim's is one damage INSTANCE, and burning and
+electro-charged TICK — so a single reaction there produces many rows.
+Compare presence and rough magnitude, never equality.
+
+_neither side reported a reaction._
+
+- **ours:** _none_
+- **gcsim:** _none_
+
+## proc — Albedo and Dehya fields
+
+```
+Albedo E > Dehya E > Kaeya N5 N5 N5
+```
+
+applications ours **9** / gcsim **8** · extra 1 · missing 0 · element mismatch 0 · reactions ours **2** / gcsim **3**
+
+### 1. Applications
+
+| char | # | ours | gcsim | Δ frames | units | ability |
+| --- | --- | --- | --- | --- | --- | --- |
+| albedo | 0 | geo @ 0.42s (skill) | geo @ 0.43s (skill) | 1 | 1U | Abiogenesis: Solar Isotoma (Initial) |
+| albedo | 1 | geo @ 0.67s (skill) | geo @ 1.02s (skill) | 21 | 1U | Abiogenesis: Solar Isotoma (Tick) |
+| albedo | 2 | geo @ 3.20s (skill) | geo @ 3.55s (skill) | 21 | 1U | Abiogenesis: Solar Isotoma (Tick) |
+| albedo | 3 | geo @ 7.67s (skill) | geo @ 8.15s (skill) | 29 | 1U | Abiogenesis: Solar Isotoma (Tick) |
+| dehya | 0 | pyro @ 0.98s (skill) | pyro @ 1.00s (skill) | 1 | 1U | Molten Inferno |
+| dehya | 1 | pyro @ 1.58s (skill) | pyro @ 2.07s (skill) | 29 | 1U | Molten Inferno (DoT) |
+| dehya | 2 | pyro @ 4.28s (skill) | pyro @ 5.12s (skill) | 50 | 1U | Molten Inferno (DoT) |
+| dehya | 3 | pyro @ 7.33s (skill) | pyro @ 8.17s (skill) | 50 | 1U | Molten Inferno (DoT) |
+| dehya 🟠 | 4 | pyro @ 9.83s (skill) | — |  |  |  |
+
+🔴 gcsim applies and we do not · 🟠 we apply and gcsim does not · 🟡 different element
+
+### 2. Aura trajectory — ours / gcsim
+
+⚓ **L5's real scoreboard.** gcsim logs the target's gauge before every
+application it makes, so one row per application is a sample of the true aura
+across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
+durability, 25 per unit).
+
+agree **1** · 🟡 drift 5 · 🔴 aura we do not have 0 · 🟠 aura they do not have 1
+
+| t | char | aura before (ours/gcsim) |
+| --- | --- | --- |
+| 0.43s | albedo | — |
+| 1.00s | dehya | 🟠 pyro 0.80/— |
+| 1.02s | albedo | pyro 0.80/0.80 |
+| 2.07s | dehya | 🟡 pyro 0.76/0.21 |
+| 3.55s | albedo | 🟡 pyro 0.13/0.68 |
+| 5.12s | dehya | 🟡 pyro 0.73/0.04 |
+| 8.15s | albedo | 🟡 pyro 0.23/0.54 |
+| 8.17s | dehya | 🟡 pyro 0.23/0.04 |
+
+### 3. Reactions
+
+⚠️ **These two columns do not count the same thing.** Ours is one event per
+triggering application; gcsim's is one damage INSTANCE, and burning and
+electro-charged TICK — so a single reaction there produces many rows.
+Compare presence and rough magnitude, never equality.
+
+| reaction | ours | gcsim |
+| --- | --- | --- |
+| crystallize-pyro | — | 3 |
+| pyroCrystallize | 2 | — |
+
+- **ours:** pyroCrystallize@3.20s, pyroCrystallize@7.67s
+- **gcsim:** crystallize-pyro@1.40s, crystallize-pyro@3.93s, crystallize-pyro@8.53s

@@ -251,6 +251,18 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 					const prev = lastSummonWindowByKey.get(key);
 					if (prev && prev.end > spawnAt) prev.end = spawnAt;
 				}
+				// ⚓ MARKERS THE PARSE MEASURED, for the series the projection cannot
+				// walk (coordinated-attack round, 2026-08-18): a `whileNormalAttacking`
+				// wave and an `onHit` damage proc fire when somebody swings or when
+				// the opponent is hit, which is a fact of the parse. ⚠️ Sorted here —
+				// a wave schedules its whole run at the swing that started it, so the
+				// pushes can interleave out of order with a summon tick's.
+				// ⚠️ Bounded by `[spawnAt, endAt)` so a landing whose travel carried it
+				// past the summon's end is not drawn outside the bar.
+				const measured = ctx.stateGatedTicks.get(
+					`${track.characterId}::${summon.label}::${kind}::${spawnAt}`
+				);
+				const ticks = measured?.filter((t) => t >= spawnAt && t < endAt).sort((a, b) => a - b);
 				const win: Extract<TimelineWindow, { kind: 'summon' }> = {
 					kind: 'summon',
 					characterId: track.characterId,
@@ -258,7 +270,8 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 					start: spawnAt,
 					end: endAt,
 					source: kind,
-					sourceCastId: ctx.castIdByBar.get(bar)
+					sourceCastId: ctx.castIdByBar.get(bar),
+					...(ticks && ticks.length > 0 ? { ticks } : {})
 				};
 				windows.push(win);
 				summonByWindow.set(win, summon);

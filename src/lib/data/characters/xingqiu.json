@@ -15,13 +15,54 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 35, "hit": 10, "N": 18 } },
-				{ "name": "N2", "frames": { "anim": 29, "hit": 13, "N": 24 } },
-				{ "name": "N3", "frames": { "anim": 35, "hit": 19, "N": 26 } },
-				{ "name": "N4", "frames": { "anim": 33, "hit": 17, "N": 28 } },
-				{ "name": "N5", "frames": { "anim": 66, "hit": 39 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 35,
+						"hit": 10,
+						"N": 18
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 29,
+						"hit": 13,
+						"N": 24
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 35,
+						"hit": 19,
+						"N": 26
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 33,
+						"hit": 17,
+						"N": 28
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 66,
+						"hit": 39
+					}
+				}
 			],
-			"chargeFrames": { "anim": 58, "E": 32, "Q": 32, "D": 20, "J": 20, "swap": 31 },
+			"chargeFrames": {
+				"anim": 58,
+				"E": 32,
+				"Q": 32,
+				"D": 20,
+				"J": 20,
+				"swap": 31
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -47,17 +88,30 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 67, "E": 65, "D": 31, "J": 34 },
+			"frames": {
+				"anim": 67,
+				"E": 65,
+				"D": 31,
+				"J": 34
+			},
 			"cooldown": 21,
 			"cooldownStartDelay": 10,
-			"summons": [{ "label": "Rain Swords", "duration": 15, "mobility": "follows" }],
+			"summons": [
+				{
+					"label": "Rain Swords",
+					"duration": 15,
+					"mobility": "follows"
+				}
+			],
 			"noICD": true,
 			"tags": ["heal"],
 			"effects": [
 				{
 					"type": "heal",
 					"target": "active",
-					"trigger": { "type": "onHPDecrease" },
+					"trigger": {
+						"type": "onHPDecrease"
+					},
 					"scaling": 6,
 					"stat": "hp",
 					"attribution": "A1: Hydropathic"
@@ -70,8 +124,16 @@
 				"DMG reduction (scales from Hydro DMG Bonus) — skipped: no dmgReduction Stat variant + scaling defensive mechanic not simulated"
 			],
 			"application": [
-				{ "frame": 12, "element": "hydro", "units": 1 },
-				{ "frame": 31, "element": "hydro", "units": 1 }
+				{
+					"frame": 12,
+					"element": "hydro",
+					"units": 1
+				},
+				{
+					"frame": 31,
+					"element": "hydro",
+					"units": 1
+				}
 			]
 		},
 		{
@@ -80,7 +142,13 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 40, "N": 33, "E": 33, "D": 33, "J": 33 },
+			"frames": {
+				"anim": 40,
+				"N": 33,
+				"E": 33,
+				"D": 33,
+				"J": 33
+			},
 			"cooldown": 20,
 			"summons": [
 				{
@@ -92,7 +160,35 @@
 							"source": "C2: Rainbow Upon the Azure Sky",
 							"type": "flat",
 							"value": 3,
-							"conditions": { "type": "constellation", "level": 2 }
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							}
+						}
+					],
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "whileNormalAttacking",
+								"interval": 1,
+								"icdGate": "none"
+							},
+							"scaling": 97.7,
+							"stat": "atk",
+							"element": "hydro",
+							"application": [
+								{
+									"frame": 20,
+									"element": "hydro",
+									"units": 1
+								}
+							],
+							"_curatorNotes": [
+								"Coordinated attack, authored 2026-08-18. gcsim xingqiu/xingqiu.go:38 registers a minazuki.Watcher on action.NormalAttackState with tickerFreq 60 and a 60f ICD key, firing summonSwordWave (burst.go:69) — Hydro, Durability 25, ICDTagElementalBurst/ICDGroupDefault, QueueAttackWithSnap delay 20. Talent row 'Sword Rain DMG' = 97.7% ATK at level 10 (docs/curation/talents/xingqiu.json).",
+								"⚠️ ONE HIT PER WAVE, not one per sword. A wave summons 2 or 3 swords alternating (2→3→5 at C6) and the corpus has no shape for a per-fire-index count; each sword is its own 97.7% hit, so `scaling` names ONE sword. icdGate 'none' is the KQM/kit claim the alternation exists to produce — burst.go's own comment: 'Each wave of Hydro Swords is capable of applying one (1) source of Hydro status'. gcsim reaches ~5 applications per 6 waves by running the swords through ICDGroupDefault; ours is the stated 1 per wave."
+							]
 						}
 					]
 				}
@@ -121,7 +217,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "hydroDmgBonus",
 					"value": 20,
@@ -155,12 +253,17 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit" },
+					"trigger": {
+						"type": "onHit"
+					},
 					"duration": 4,
 					"durationType": "refresh",
 					"element": "hydro",
 					"value": -15,
-					"conditions": { "type": "constellation", "level": 2 }
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
 				}
 			]
 		},

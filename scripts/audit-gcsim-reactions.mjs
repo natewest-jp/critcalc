@@ -87,7 +87,19 @@ const FIXTURES = [
 		name: 'long rotation — exercises decay',
 		notation: 'Kaeya E Q ~20s > Xiangling E Q ~20s > Fischl E Q ~20s > Kaeya E'
 	},
-	{ name: 'catalyst normals — ICD cadence', notation: 'Kaeya E > Klee N5 C N5 C' }
+	{ name: 'catalyst normals — ICD cadence', notation: 'Kaeya E > Klee N5 C N5 C' },
+	// ⚓⚓ THE COORDINATED-ATTACK FIXTURES (2026-08-18). The twelve above reach
+	// this mechanic almost not at all — they are nearly all E/Q casts, and a wave
+	// only fires while somebody is normal-attacking. Measured: the whole
+	// coordinated-attack round left the twelve BYTE-IDENTICAL, ours 176 either
+	// side, which is the survey's "a green oracle here proves nothing" happening.
+	// ⚠️ Kaeya's normals are PHYSICAL, so each fixture's applications are the
+	// coordinated attack's own and nothing else's.
+	{ name: 'wave — Xingqiu rain swords', notation: 'Xingqiu Q > Kaeya N5 N5 N5 N5' },
+	{ name: 'wave — Thoma every-third collapse', notation: 'Thoma Q > Kaeya N5 N5 N5 N5' },
+	{ name: 'wave — Yelan three darts', notation: 'Yelan Q > Kaeya N5 N5 N5 N5' },
+	{ name: 'proc — Raiden Eye off a summon', notation: 'Fischl E > Raiden E ~12s' },
+	{ name: 'proc — Albedo and Dehya fields', notation: 'Albedo E > Dehya E > Kaeya N5 N5 N5' }
 ];
 
 // ---------------------------------------------------------------------------

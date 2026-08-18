@@ -15,15 +15,62 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 15, "hit": 13 } },
-				{ "name": "N2", "frames": { "anim": 21, "hit": 13 } },
-				{ "name": "N3", "frames": { "anim": 38, "hit": 18 } },
-				{ "name": "N4", "frames": { "anim": 67, "hit": 29 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 15,
+						"hit": 13
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 21,
+						"hit": 13
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 38,
+						"hit": 18
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 67,
+						"hit": 29
+					}
+				}
 			],
 			"chargeHits": [
-				{ "name": "Aimed Shot", "frames": { "anim": 25, "D": 15, "J": 15, "swap": 25 } },
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 42, "D": 32, "J": 32 } },
-				{ "name": "Breakthrough Barb", "frames": { "anim": 42, "D": 32, "J": 32, "swap": 42 } }
+				{
+					"name": "Aimed Shot",
+					"frames": {
+						"anim": 25,
+						"D": 15,
+						"J": 15,
+						"swap": 25
+					}
+				},
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 42,
+						"D": 32,
+						"J": 32
+					}
+				},
+				{
+					"name": "Breakthrough Barb",
+					"frames": {
+						"anim": 42,
+						"D": 32,
+						"J": 32,
+						"swap": 42
+					}
+				}
 			],
 			"sections": [
 				{
@@ -52,13 +99,22 @@
 			"abilityType": "skill",
 			"cooldown": 10,
 			"cooldownStartDelay": 33,
-			"frames": { "anim": 42, "Q": 41, "D": 41, "J": 41, "swap": 40 },
+			"frames": {
+				"anim": 42,
+				"Q": 41,
+				"D": 41,
+				"J": 41,
+				"swap": 40
+			},
 			"chargeModifiers": [
 				{
 					"source": "C1: Enter the Plotters",
 					"type": "flat",
 					"value": 1,
-					"conditions": { "type": "constellation", "level": 1 }
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
 				}
 			],
 			"tags": [],
@@ -66,10 +122,15 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"durationType": "fixed",
 					"duration": 25,
-					"conditions": { "type": "constellation", "level": 4 },
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
 					"stat": "hp%",
 					"value": 40,
 					"snapshottable": false,
@@ -80,7 +141,13 @@
 			],
 			"description": "Fires off a Lifeline that allows her to move rapidly, entangling and marking opponents along its path. When the rapid movement ends, the Lifeline explodes, dealing Hydro DMG to marked opponents based on Yelan's Max HP.\n\nTap: Moves a short distance forward swiftly. Frames reflect tap E.\n\nHold: Engages continuous swift movement (resistance to interruption increased). Yelan can steer and end the movement early by pressing E again. Duration is player-controlled up to ~3s. gcsim does not yet implement hold E frame data — TODO: model hold E as a variant once KQM data is available.\n\nEach marked opponent on explosion grants Yelan a 34% chance to reset her Breakthrough state.",
 			"behavior": "instant",
-			"application": [{ "frame": 36, "element": "hydro", "units": 1 }]
+			"application": [
+				{
+					"frame": 36,
+					"element": "hydro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "yelan__burst__depthclarion_dice",
@@ -89,9 +156,57 @@
 			"abilityType": "burst",
 			"behavior": "instant",
 			"cooldown": 18,
-			"frames": { "anim": 93, "E": 92, "J": 91, "swap": 90 },
+			"frames": {
+				"anim": 93,
+				"E": 92,
+				"J": 91,
+				"swap": 90
+			},
 			"summons": [
-				{ "label": "Exquisite Throw", "duration": 15, "spawnsAt": 76, "mobility": "follows" }
+				{
+					"label": "Exquisite Throw",
+					"duration": 15,
+					"spawnsAt": 76,
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "whileNormalAttacking",
+								"interval": 1,
+								"icdGate": {
+									"timer": 120,
+									"every": 3
+								}
+							},
+							"scaling": 8.77,
+							"stat": "hp",
+							"element": "hydro",
+							"application": [
+								{
+									"frame": 20,
+									"element": "hydro",
+									"units": 1
+								},
+								{
+									"frame": 26,
+									"element": "hydro",
+									"units": 1
+								},
+								{
+									"frame": 32,
+									"element": "hydro",
+									"units": 1
+								}
+							],
+							"_curatorNotes": [
+								"Coordinated attack, authored 2026-08-18. gcsim yelan/yelan.go:61 registers a minazuki.Watcher on action.NormalAttackState with tickerFreq 60 and a 60f ICD key, firing summonExquisiteThrow (burst.go) — THREE darts at burstTravel(20) + i*6, Hydro, Durability 25, ICDTagYelanBurst/ICDGroupYelanBurst. Talent row 'Exquisite Throw DMG' = 8.77% Max HP ×3 at level 10, so `scaling` is ONE dart.",
+								"icdGate is gcsim's own ICDGroupYelanBurst verbatim — 120f timer, every 3rd hit applies (pkg/core/attacks/icd_groups.dm.go:127,188). With three darts a wave and waves 1s apart the counter never times out, so exactly one dart per wave applies, which is the kit's claim. ⚠️ docs/coordinated-attacks-survey.md read ICDGroupYelanBreakthrough (18f/every 4) here — that is her CHARGED attack's group, not this one."
+							]
+						}
+					]
+				}
 			],
 			"tags": ["coordinatedAttack"],
 			"energyCost": 70,
@@ -99,7 +214,9 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"durationType": "fixed",
 					"duration": 15,
 					"source": "passive",
@@ -115,7 +232,13 @@
 				}
 			],
 			"description": "Deals AoE Hydro DMG and creates an \"Exquisite Throw,\" which aids her in battle.\n\nExquisite Throw\nFollows the character around and will initiate a coordinated attack under the following circumstances, dealing Hydro DMG based on Yelan's Max HP:\n· Can occur once every second when your active character uses a Normal Attack.\n· Will occur each time Yelan's Lifeline explodes and hits opponents.",
-			"application": [{ "frame": 76, "element": "hydro", "units": 2 }]
+			"application": [
+				{
+					"frame": 76,
+					"element": "hydro",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -149,7 +272,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 14,
 					"stat": "hp",
 					"element": "hydro"

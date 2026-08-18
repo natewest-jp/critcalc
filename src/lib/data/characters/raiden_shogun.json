@@ -16,14 +16,61 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 24, "hit": 14, "N": 18 } },
-				{ "name": "N2", "frames": { "anim": 26, "hit": 9, "N": 13 } },
-				{ "name": "N3", "frames": { "anim": 36, "hit": 14, "N": 26 } },
-				{ "name": "N4", "frames": { "anim": 57, "hit": 27, "N": 41 } },
-				{ "name": "N5", "frames": { "anim": 50, "hit": 34 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 24,
+						"hit": 14,
+						"N": 18
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 26,
+						"hit": 9,
+						"N": 13
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 36,
+						"hit": 14,
+						"N": 26
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 57,
+						"hit": 27,
+						"N": 41
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 50,
+						"hit": 34
+					}
+				}
 			],
-			"chargeFrames": { "anim": 37, "D": 22, "J": 22, "swap": 36 },
-			"plungeFrames": { "anim": 99, "N": 61, "E": 60, "Q": 62, "D": 84, "J": 84, "swap": 65 },
+			"chargeFrames": {
+				"anim": 37,
+				"D": 22,
+				"J": 22,
+				"swap": 36
+			},
+			"plungeFrames": {
+				"anim": 99,
+				"N": 61,
+				"E": 60,
+				"Q": 62,
+				"D": 84,
+				"J": 84,
+				"swap": 65
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -42,40 +89,143 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 5 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an upward slash.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 96, "N": 60, "E": 59, "Q": 60, "D": 80, "J": 80, "swap": 62 }
+			"lowPlungeFrames": {
+				"anim": 96,
+				"N": 60,
+				"E": 59,
+				"Q": 60,
+				"D": 80,
+				"J": 80,
+				"swap": 62
+			}
 		},
 		{
 			"id": "raiden_shogun__normal__musou_isshin",
 			"name": "Musou Isshin",
 			"input": ["N1", "N2", "N3", "N4", "N5", "C"],
 			"abilityType": "normal",
-			"conditions": { "type": "state", "state": "inStance" },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
 			"infusion": "electro",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 21, "hit": 12, "N": 19 } },
-				{ "name": "N2", "frames": { "anim": 26, "hit": 13, "N": 16 } },
-				{ "name": "N3", "frames": { "anim": 34, "hit": 11, "N": 16 } },
-				{ "name": "N4", "frames": { "anim": 67, "hit": 33, "N": 44 } },
-				{ "name": "N5", "frames": { "anim": 59, "hit": 33 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 21,
+						"hit": 12,
+						"N": 19
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 26,
+						"hit": 13,
+						"N": 16
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 34,
+						"hit": 11,
+						"N": 16
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 67,
+						"hit": 33,
+						"N": 44
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 59,
+						"hit": 33
+					}
+				}
 			],
-			"chargeFrames": { "anim": 56, "D": 32, "J": 32 },
-			"plungeFrames": { "anim": 88, "N": 60, "E": 60, "Q": 60, "D": 83, "J": 81, "swap": 61 },
+			"chargeFrames": {
+				"anim": 56,
+				"D": 32,
+				"J": 32
+			},
+			"plungeFrames": {
+				"anim": 88,
+				"N": 60,
+				"E": 60,
+				"Q": 60,
+				"D": 83,
+				"J": 81,
+				"swap": 61
+			},
 			"caveat": "Plunging in this stance is only possible with Xianyun on the team; the plunge frames shown assume that setup.",
 			"description": "While in the Musou Isshin state, the Raiden Shogun wields her tachi in battle. Normal, Charged, and Plunging Attacks are infused with Electro DMG (cannot be overridden) and count as Elemental Burst DMG.",
 			"_curatorNotes": [
 				"[A7] Stored plunge frames are the low-plunge (Xianyun-assisted) values. Unused high-plunge: hitmark 51f (48+3), swap 61."
 			],
-			"lowPlungeFrames": { "anim": 85, "N": 58, "E": 59, "Q": 59, "D": 78, "J": 81, "swap": 60 }
+			"lowPlungeFrames": {
+				"anim": 85,
+				"N": 58,
+				"E": 59,
+				"Q": 59,
+				"D": 78,
+				"J": 81,
+				"swap": 60
+			}
 		},
 		{
 			"id": "raiden_shogun__skill__transcendence_baleful_omen",
 			"name": "Transcendence: Baleful Omen",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": { "anim": 37, "D": 17, "J": 17, "swap": 36 },
+			"frames": {
+				"anim": 37,
+				"D": 17,
+				"J": 17,
+				"swap": 36
+			},
 			"cooldown": 10,
 			"cooldownStartDelay": 6,
-			"summons": [{ "label": "Eye of Stormy Judgment", "duration": 25, "mobility": "follows" }],
+			"summons": [
+				{
+					"label": "Eye of Stormy Judgment",
+					"duration": 25,
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "onHit",
+								"source": "team"
+							},
+							"procCooldown": 0.9,
+							"scaling": 75.6,
+							"stat": "atk",
+							"element": "electro",
+							"application": [
+								{
+									"frame": 5,
+									"element": "electro",
+									"units": 1
+								}
+							],
+							"attribution": "Eye of Stormy Judgment",
+							"_curatorNotes": [
+								"Coordinated attack, authored 2026-08-18. gcsim raiden/skill.go:104 subscribes eyeOnDamage to event.OnEnemyDamage: any damaging hit from a character carrying the Eye buff (every party member gets it) fires a coordinated strike 5 frames later — Electro, Durability 25, ICDTagElementalArt/ICDGroupDefault — behind a 54f (0.9s) party-wide ICD. Talent row 'Coordinated ATK DMG' = 75.6% ATK at level 10.",
+								"⚓ THE STREAM IS ANY DAMAGE THE OPPONENT TAKES, SUMMON DAMAGE INCLUDED (⚓ Nate 2026-08-18, the round's one open design question). The in-game condition is that the opponent took DMG, so a fully-shielded enemy does not proc it — and we do not model a shielded enemy, so it reduces to every damage-dealing hit. `source: 'team'` with no abilityType filter is that.",
+								"icdGate ABSENT = the standard window, gcsim's Default group here; at a 0.9s proc cooldown Electro lands on every third strike. ⚠️ gcsim also skips EC, Burning and Hydro-swirl damage, which are sourced to the TARGET rather than to a character — we emit no hits for reaction damage at all, so the exclusion is free."
+							]
+						}
+					]
+				}
+			],
 			"tags": ["coordinatedAttack"],
 			"caveat": "The burst DMG bonus scales with each member's own burst energy cost, so it differs per party member; the timeline shows the buff window but not a single value.",
 			"_curatorNotes": [
@@ -86,18 +236,29 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"duration": 25,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "burstDmgBonus",
-					"value": { "type": "unknown", "description": "≈0.30% per energy cost (T10)" },
+					"value": {
+						"type": "unknown",
+						"description": "≈0.30% per energy cost (T10)"
+					},
 					"snapshottable": false
 				}
 			],
 			"description": "The Raiden Shogun unveils a shard of her Euthymia, dealing Electro DMG to nearby opponents, and granting nearby party members the Eye of Stormy Judgment.\n\nEye of Stormy Judgment\n·When characters with this buff attack and deal DMG to opponents, the Eye will unleash a coordinated attack, dealing AoE Electro DMG at the opponent's position. One coordinated attack every 0.9s per party.\n·Characters who gain the Eye of Stormy Judgment will have their Elemental Burst DMG increased based on the Energy Cost of their Elemental Burst during the Eye's 25s duration.",
 			"behavior": "instant",
-			"application": [{ "frame": 51, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 51,
+					"element": "electro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "raiden_shogun__burst__secret_art_musou_shinsetsu",
@@ -105,14 +266,26 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"terminatesOnSwap": true,
-			"frames": { "anim": 112, "N": 111, "E": 111, "D": 111, "swap": 110 },
+			"frames": {
+				"anim": 112,
+				"N": 111,
+				"E": 111,
+				"D": 111,
+				"swap": 110
+			},
 			"cooldown": 18,
 			"duration": 7,
 			"energyCost": 90,
 			"caveat": "Not modeled: Resolve stack count or the resulting DMG bonus.",
 			"description": "Gathering truths unnumbered and wishes uncounted, the Raiden Shogun unleashes the Musou no Hitotachi and deals AoE Electro DMG, using Musou Isshin in combat for a certain duration afterward. The DMG dealt by Musou no Hitotachi and Musou Isshin attacks is increased based on Chakra Desiderata Resolve stacks consumed.\n\nMusou Isshin\nWhile in this state, the Raiden Shogun wields her tachi in battle. Normal, Charged, and Plunging Attacks are infused with Electro DMG (cannot be overridden) and count as Elemental Burst DMG.\n\nChakra Desiderata\nWhen nearby party members (excluding Raiden) use their Elemental Bursts, the Raiden Shogun builds Resolve stacks based on the Energy Cost of those Bursts (max 60 stacks). Resolve stacks increase the DMG of the initial Musou no Hitotachi and Musou Isshin hits.",
 			"behavior": "stance",
-			"application": [{ "frame": 98, "element": "electro", "units": 2 }]
+			"application": [
+				{
+					"frame": 98,
+					"element": "electro",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -130,10 +303,15 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "electroDmgBonus",
-					"value": { "type": "unknown", "description": "0.4% per 1% ER above 100%" },
+					"value": {
+						"type": "unknown",
+						"description": "0.4% per 1% ER above 100%"
+					},
 					"snapshottable": false
 				}
 			],
@@ -172,14 +350,20 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "afterDuration", "ability": "burst" },
+					"trigger": {
+						"type": "afterDuration",
+						"ability": "burst"
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk%",
 					"value": 30,
 					"snapshottable": false,
-					"conditions": { "type": "constellation", "level": 4 }
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					}
 				}
 			]
 		},
