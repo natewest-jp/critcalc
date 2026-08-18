@@ -378,13 +378,13 @@
 			"id": "fischl__passive__undone_be_thy_sinful_hex",
 			"name": "Undone Be Thy Sinful Hex",
 			"abilityType": "passive",
-			"caveat": "Thundering Retribution only fires when the on-field character triggers the reaction. Oz's own reactions do not count, and Oz's roughly 1s cadence often takes the reaction first.",
 			"description": "If your current active character triggers an Electro-related Elemental Reaction when Oz is on the field, the opponent shall be stricken with Thundering Retribution that deals Electro DMG equal to 80% of Fischl's ATK.",
 			"_curatorNotes": [
 				"MODELLED 2026-08-17 as a damage effect on an onReaction trigger, authored on OZ (both the skill's and the burst's summon) rather than here — the summon's own liveness is the \"when Oz is on the field\" gate, so no armedFor is needed. 80% ATK, Electro, 1U (Durability 25, ICDTagNone), 4 frames after the reaction, 0.5s ICD. Reaction list from asc.go's subscriptions: OnOverload, OnElectroCharged, OnSuperconduct, OnSwirlElectro, OnCrystallizeElectro, OnHyperbloom, OnQuicken, OnAggravate — plus stellarConduct, which replaces superConduct team-wide when an enabler is present. OnLunarCharged is omitted: we do not emit lunarCharged at all, so authoring it would be inert.",
 				"⚠️ source 'active' is what makes this RIGHT WHERE GCSIM IS WRONG, and the oracle should not be used to judge it. gcsim gates on ae.Info.ActorIndex != Player.Active(), and Oz's attacks carry Fischl's actor index — so with Fischl on field, Oz's own reactions pass the check. Measured in docs/curation/gcsim-reaction-diff.md's quicken fixture, EVERY Thundering Retribution gcsim emits lands exactly 4 frames after an Oz application, i.e. every one of them is a proc the game does not make. Our source 'active' refuses an application delivered by an entity, so those do not fire here and the oracle will keep reporting them missing. That is the correct outcome.",
 				"Two divergences kept small and deliberate: gcsim stores the 0.5s ICD on the ACTIVE character (so a swap refreshes it) while ours is per-effect, and A4's snapshot is Oz's rather than Fischl's current stats — neither affects elemental application, which is all this feeds today.",
-				"In practice Oz's ~1s attack cadence frequently steals the electro reaction before the active character can make it, making reliable activation highly aura-dependent; off-field-Fischl compositions rarely benefit."
+				"In practice Oz's ~1s attack cadence frequently steals the electro reaction before the active character can make it, making reliable activation highly aura-dependent; off-field-Fischl compositions rarely benefit.",
+				"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): STALE — both claims are now working behavior. The A4 proc is authored on BOTH Ozes as a damage effect on {onReaction, source:`active`, icdGate:`none`}; `source:active` refuses an offer carrying viaEntity, which is exactly the \"Oz`s own reactions do not count\" rule. See docs/mark-triggered-damage-round.md."
 			]
 		}
 	],

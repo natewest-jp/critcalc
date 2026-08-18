@@ -189,7 +189,8 @@
 			"effects": [],
 			"caveat": "Not modeled: the taunt that draws opponents' attacks toward the Supersonic Oculus.",
 			"_curatorNotes": [
-				"Soundwave Collision DMG migrated to summons[0].effects[] (P3): gcsim burstTickHitmark=60f (=1s); first tick at 60f from cast = 24f after summon spawn (=0.4s firstTickDelay). Multiplier soundwave at TalentLvl 10 = 59.76% ATK Electro. C4 0.75× interval not authored as a constellationScaling on the trigger — schema currently doesn't support tick-interval scaling.",
+				"Soundwave Collision DMG migrated to summons[0].effects[] (P3): gcsim burstTickHitmark=60f (=1s); first tick at 60f from cast = 24f after summon spawn (=0.4s firstTickDelay). Multiplier soundwave at TalentLvl 10 = 59.76% ATK Electro.",
+				"↻ 2026-08-18: the last sentence of the note above USED to read \"C4 0.75× interval not authored as a constellationScaling on the trigger — schema currently doesn't support tick-interval scaling\". Both halves are dead. The C4 cadence IS authored, as a SECOND constellation-gated summonTick series on this same summon (summons[0].effects[1], 0.8s — deliberately NOT gcsim's 0.75s; read that series' own notes before touching it). And the shape is deliberately NOT a scaling on the trigger: a cadence change is authored as two mutually-exclusive series because the rate is not the only thing that moves (Aino's ICD group and tick count change with hers), so the two series carry their own icdGate/firstTickDelay independently. ⚠️ Gating drops only a DEFINITIVE false — a reader with no constellation context fires BOTH series.",
 				"Supersonic Oculus is stationary in-game — placed on the player's location at burst cast and stays there. mobility: \"stationary\" matches; gcsim's burstArea is captured at frame 0 and reused for all ticks.",
 				"[A7] Taunt is surfaced only via the taunt tag as a placeholder; no dedicated taunt behavior is modeled."
 			],
@@ -310,7 +311,9 @@
 				}
 			],
 			"_curatorNotes": [
-				"Two effects: (1) +25% Supersonic Oculus rotation speed — translates to faster ticks (1s → 0.75s interval); not modelled (we don't render per-tick emission). (2) +8 Energy to Ororon on Q cast — modelled as energy effect. The combined effect is roughly 25% more burst-tick damage which we can't render."
+				"Two effects: (1) +25% Supersonic Oculus rotation speed — a faster tick cadence on the burst's Supersonic Oculus. (2) +8 Energy to Ororon on Q cast — modelled as the energy effect on this entry.",
+				"↻ 2026-08-18: half (1) is MODELLED now, and the note above used to say otherwise (\"1s → 0.75s interval; not modelled (we don't render per-tick emission)… roughly 25% more burst-tick damage which we can't render\"). Two corrections. (a) It is authored — burst summons[0].effects[1] is a second summonTick series gated `constellation: 4`, with the C0 series gated `not constellation: 4`; the pair is mutually exclusive. (b) The interval is **0.8s, not 0.75s** — the C4 series deliberately diverges from gcsim's hardcoded 0.75 because \"25% faster\" is a RATE (÷1.25 = 0.8s). ⛔ Do not re-introduce 0.75 here; the reasoning lives on that series' notes.",
+				"↻ Also dead in the old note: \"we don't render per-tick emission\". Per-tick markers ARE drawn — finalize stamps TimelineWindow.ticks and the summon-lane projection reads them, so the marks a reader counts and the ticks that fire are one computation. ⚠️ The Team Builder's Compare lane is the surface that still lags: it takes the FIRST authored damage series and never consults effect `conditions`, so Ororon always shows the C0 1s cadence there regardless of the con lens. Damage MAGNITUDE remains unrendered site-wide, which is a constitution rule, not a gap."
 			],
 			"description": "The Supersonic Oculus summoned by the Elemental Burst Dark Voices Echo rotates 25% faster.\nAdditionally, Ororon will restore 8 Energy to himself after using Dark Voices Echo."
 		},

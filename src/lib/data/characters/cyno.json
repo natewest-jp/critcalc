@@ -370,13 +370,15 @@
 					"stat": "stellarConductReactionBonus",
 					"value": 80,
 					"snapshottable": false,
-					"caveat": "Shown at the full 80%; in game it stacks 5 × 16% on Normal and Charged hits — near-instant during the burst — and rides Together We Rise."
+					"_curatorNotes": [
+						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): effect-level caveat, no reader. Divergence retained here: shown at the full 80%; in game it stacks 5 × 16% on Normal and Charged hits (near-instant during the burst) and rides Together We Rise. ⏭ Move to the C2 entry-level caveat if it should warn."
+					]
 				}
 			],
 			"caveat": "Not modeled: the Electro DMG Bonus stacks (up to 5 x 10%). The Stellar-Conduct bonus is shown at max from the burst; in game it builds 16% per hit and follows whoever carries Together We Rise.",
 			"description": "When Cyno's Normal Attacks hit opponents, his Electro DMG Bonus will increase by 10% for 4s. This effect can be triggered once every 0.1s. Max 5 stacks.\n\nAdditionally, when characters affected by Together We Rise hit opponents with their Normal Attacks or Charged Attacks, their Stellar-Conduct DMG dealt is increased by 16%. This effect, which can trigger once every 0.1s, will remain active for the remaining duration of Together We Rise. Max 5 stacks.",
 			"_curatorNotes": [
-				"[A7] C2 has no effects[] authored, hence not modeled; it could be authored as an onHit gainStacks buff (max 5, +10% Electro DMG each) with a 0.1s procCooldown ICD, which the engine supports.",
+				"↻ [A7, corrected 2026-08-18] This note used to open \"C2 has no effects[] authored, hence not modeled\" — STALE since the Stellar pass (2026-07-29, next note) authored the `stellarConductReactionBonus` half. What is STILL unauthored is the OTHER half: +10% Electro DMG per Normal-Attack hit, 4s, max 5 stacks, 0.1s trigger interval. That remains an implement candidate and the engine does support its shape — an onHit `gainStacks` buff on `electroDmgBonus` (max 5, +10% each) with `procCooldown: 0.1`; `dispatchGainStacksOnHit` honours effect-level procCooldown per `${src.id}#${effIdx}` (src/lib/sim/stacks.ts:392, gate :431-440), and normals reach the hit stream per-swing.",
 				"[Stellar 2026-07-29, AUTHORED under Nate's bucket-5 ruling] Together We Rise holders gain +16% Stellar-Conduct DMG per stack on Normal/Charged hits, 0.1s trigger interval, max 5, lasting for the rest of Together We Rise (Fandom constellation `buff`; category 'Stellar-Conduct DMG Bonus' = bucket 5). Authored on the new `stellarConductReactionBonus` stat at the MAX stacked value (80) with target 'active' (mirrors C1's Together We Rise routing), duration 11.87s = the C1/burst window, teamEnablesReaction-gated. Stacked-at-max is the Noelle/Mona-C6 precedent — the agent's own analysis: max is reached almost immediately during the burst. Per-stack build-up and swap-following stack custody stay caveat-only (gainStacks is holder-bound)."
 			]
 		},
@@ -443,7 +445,8 @@
 			"caveat": "Not modeled: the Day of the Jackal stacks and the extra Duststalker Bolts they fire. With a Stellar-Conduct enabler in the party those become Starsame bolts dealing Stellar-Conduct DMG.",
 			"_curatorNotes": [
 				"[Stellar 2026-07-29] Current-patch changes (Fandom constellation `buff`): (a) a Together We Rise holder fires Duststalker Bolt - Starsame instead of the normal bolt - damage magnitude, not authored; (b) stack bookkeeping reworded to \"Max 8 stacks for each instance of Pactsworn Pathclearer\" and cancellation narrowed to the burst-sourced instance, both consequences of the skill now opening its own 6s instance.",
-				"[Stellar 2026-07-29] Nothing authored here before or after this pass: the per-hit stack consumption plus the 0.4s bolt cadence needs a consumeStacks onHit path the parser does not dispatch, and the bolts are damage magnitude."
+				"[Stellar 2026-07-29] Nothing authored here before or after this pass: the per-hit stack consumption plus the 0.4s bolt cadence needs a consumeStacks onHit path the parser does not dispatch, and the bolts are damage magnitude.",
+				"↻ 2026-08-18: half of the note above is STALE. `consumeStacks` on an `onHit` trigger IS dispatched now — `dispatchConsumeStacksOnHit` (src/lib/sim/stacks.ts:516, gate :531), called from src/lib/sim/run.ts:346, with characterLint opened to trigger.type 'onCast' or 'onHit' (src/lib/utils/characterLint.ts:2367-2374); Yanfei's Scarlet Seals are the live precedent. ⚠️ Still NOT authorable, for TWO surviving reasons: (a) the Duststalker Bolts are damage magnitude, which we don't render; (b) the 0.4s bolt cadence has NO primitive — the consume dispatcher does no procCooldown gating at all, deliberately (\"consume ICD semantics have no corpus consumer and are deliberately unspecified\", its doc comment at stacks.ts:505-514), so a Day-of-the-Jackal consume would fire on every single normal hit with nothing to rate-limit it. If (b) is ever wanted, the work item is procCooldown gating in `dispatchConsumeStacksOnHit` — Cyno C6 would be its first corpus consumer."
 			]
 		}
 	],

@@ -26,13 +26,38 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": { "anim": 34, "N": 31, "C": 23, "E": 6, "Q": 6, "D": 6, "J": 6, "swap": 16 }
+					"frames": {
+						"anim": 34,
+						"N": 31,
+						"C": 23,
+						"E": 6,
+						"Q": 6,
+						"D": 6,
+						"J": 6,
+						"swap": 16
+					}
 				},
 				{
 					"name": "N2",
-					"frames": { "anim": 41, "N": 38, "C": 32, "E": 2, "Q": 2, "D": 2, "J": 2, "swap": 23 }
+					"frames": {
+						"anim": 41,
+						"N": 38,
+						"C": 32,
+						"E": 2,
+						"Q": 2,
+						"D": 2,
+						"J": 2,
+						"swap": 23
+					}
 				},
-				{ "name": "N3", "frames": { "anim": 77, "hit": 37, "C": 49 } }
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 77,
+						"hit": 37,
+						"C": 49
+					}
+				}
 			],
 			"chargeFrames": {
 				"anim": 113,
@@ -99,11 +124,32 @@
 			],
 			"description": "Jumpy Dumpty is tons of boom-bang-fun! \nWhen thrown, Jumpy Dumpty bounces thrice, igniting and dealing AoE Pyro DMG with every bounce.\n\nOn the third bounce, the bomb splits into many mines.\nThe mines will explode upon contact with opponents, or after a short period of time, dealing AoE Pyro DMG.\n\nStarts with 2 charges.",
 			"behavior": "instant",
-			"frames": { "anim": 75, "N": 66, "C": 69, "E": 68, "Q": 34, "D": 37, "J": 35, "swap": 74 },
+			"frames": {
+				"anim": 75,
+				"N": 66,
+				"C": 69,
+				"E": 68,
+				"Q": 34,
+				"D": 37,
+				"J": 35,
+				"swap": 74
+			},
 			"application": [
-				{ "frame": 71, "element": "pyro", "units": 1 },
-				{ "frame": 240, "element": "pyro", "units": 1 },
-				{ "frame": 240, "element": "pyro", "units": 1 }
+				{
+					"frame": 71,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 240,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 240,
+					"element": "pyro",
+					"units": 1
+				}
 			]
 		},
 		{
@@ -123,35 +169,134 @@
 			"description": "Klee's Blazing Delight! For the duration of this ability, continuously summons Sparks 'n' Splash to attack nearby opponents, dealing AoE Pyro DMG.",
 			"behavior": "instant",
 			"summons": [
-				{ "label": "Sparks 'n' Splash", "duration": 10, "spawnsAt": 146, "terminatesOn": "swap" }
+				{
+					"label": "Sparks 'n' Splash",
+					"duration": 10,
+					"spawnsAt": 146,
+					"terminatesOn": "swap"
+				}
 			],
-			"frames": { "anim": 139, "D": 103, "J": 104, "swap": 101 },
+			"frames": {
+				"anim": 139,
+				"D": 103,
+				"J": 104,
+				"swap": 101
+			},
 			"application": [
-				{ "frame": 186, "element": "pyro", "units": 1 },
-				{ "frame": 198, "element": "pyro" },
-				{ "frame": 210, "element": "pyro" },
-				{ "frame": 294, "element": "pyro", "units": 1 },
-				{ "frame": 306, "element": "pyro" },
-				{ "frame": 306, "element": "pyro" },
-				{ "frame": 318, "element": "pyro", "units": 1 },
-				{ "frame": 318, "element": "pyro", "units": 1 },
-				{ "frame": 401, "element": "pyro", "units": 1 },
-				{ "frame": 413, "element": "pyro" },
-				{ "frame": 425, "element": "pyro", "units": 1 },
-				{ "frame": 425, "element": "pyro", "units": 1 },
-				{ "frame": 503, "element": "pyro" },
-				{ "frame": 515, "element": "pyro", "units": 1 },
-				{ "frame": 515, "element": "pyro", "units": 1 },
-				{ "frame": 527, "element": "pyro" },
-				{ "frame": 527, "element": "pyro" },
-				{ "frame": 610, "element": "pyro", "units": 1 },
-				{ "frame": 622, "element": "pyro" },
-				{ "frame": 634, "element": "pyro", "units": 1 },
-				{ "frame": 634, "element": "pyro", "units": 1 },
-				{ "frame": 718, "element": "pyro" },
-				{ "frame": 730, "element": "pyro", "units": 1 },
-				{ "frame": 730, "element": "pyro", "units": 1 },
-				{ "frame": 742, "element": "pyro" }
+				{
+					"frame": 186,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 198,
+					"element": "pyro"
+				},
+				{
+					"frame": 210,
+					"element": "pyro"
+				},
+				{
+					"frame": 294,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 306,
+					"element": "pyro"
+				},
+				{
+					"frame": 306,
+					"element": "pyro"
+				},
+				{
+					"frame": 318,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 318,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 401,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 413,
+					"element": "pyro"
+				},
+				{
+					"frame": 425,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 425,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 503,
+					"element": "pyro"
+				},
+				{
+					"frame": 515,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 515,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 527,
+					"element": "pyro"
+				},
+				{
+					"frame": 527,
+					"element": "pyro"
+				},
+				{
+					"frame": 610,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 622,
+					"element": "pyro"
+				},
+				{
+					"frame": 634,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 634,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 718,
+					"element": "pyro"
+				},
+				{
+					"frame": 730,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 730,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 742,
+					"element": "pyro"
+				}
 			]
 		}
 	],
@@ -175,10 +320,15 @@
 				{
 					"type": "energy",
 					"target": "team",
-					"trigger": { "type": "onHit", "abilityType": "charged" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
 					"amount": 2,
 					"procCooldown": 0.6,
-					"caveat": "Shown on every Charged Attack hit, but in game the Energy only flows when the hit is a CRIT."
+					"_curatorNotes": [
+						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): effect-level caveat, no reader — and the claim was also wrong about the surface. Kit fact retained: the Energy only flows when the Charged Attack hit CRITs."
+					]
 				}
 			],
 			"_curatorNotes": [
@@ -203,7 +353,10 @@
 					"type": "buff",
 					"source": "character",
 					"target": "self",
-					"trigger": { "type": "onHit", "abilityType": ["normal", "charged", "plunge", "skill"] },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["normal", "charged", "plunge", "skill"]
+					},
 					"duration": 12,
 					"durationType": "refresh",
 					"stat": "atk%",
@@ -226,7 +379,10 @@
 					"type": "resShred",
 					"shredStat": "def",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"duration": 10,
 					"value": -23.3
 				}
@@ -253,7 +409,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 555,
 					"stat": "atk",
 					"element": "pyro"
@@ -281,14 +439,20 @@
 				{
 					"type": "energy",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 10,
 					"amount": 3
 				},
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "Sparks 'n' Splash" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "Sparks 'n' Splash"
+					},
 					"duration": 25,
 					"durationType": "fixed",
 					"source": "character",

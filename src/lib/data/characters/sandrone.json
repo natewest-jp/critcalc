@@ -78,16 +78,27 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "stellarConductDmgBonus",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 0.7, "cap": 14 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 0.7,
+						"cap": 14
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onReaction", "reaction": "stellarConduct", "source": "team" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarConduct",
+						"source": "team"
+					},
 					"source": "character",
 					"stat": "cryoDmgBonus",
 					"value": 20,
@@ -98,7 +109,11 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onReaction", "reaction": "stellarConduct", "source": "team" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarConduct",
+						"source": "team"
+					},
 					"source": "character",
 					"stat": "electroDmgBonus",
 					"value": 20,
@@ -109,7 +124,11 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": "stellarConduct", "source": "team" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarConduct",
+						"source": "team"
+					},
 					"element": "physical",
 					"value": -40,
 					"duration": 4,
@@ -135,10 +154,17 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "em",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 8, "cap": 160 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 8,
+						"cap": 160
+					},
 					"snapshottable": false
 				}
 			],
@@ -158,12 +184,16 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "stellarConductReactionBonus",
 					"value": 30,
 					"snapshottable": false,
-					"caveat": "Shown always on; in game it applies only while Fagio is in Decoding mode."
+					"_curatorNotes": [
+						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): effect-level caveat, no reader. Divergence it described is real and still unmodelled — shown always on, in game only while Fagio is in Decoding mode. ⏭ If this needs to warn a player, it must move to the C1 ENTRY-level caveat."
+					]
 				}
 			],
 			"_curatorNotes": [
@@ -221,8 +251,13 @@
 				{
 					"type": "elevate",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 6 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"source": "character",
 					"reactions": ["stellarConduct"],
 					"value": 20,
@@ -231,13 +266,17 @@
 			],
 			"_curatorNotes": [
 				"C6 elevate AUTHORED 2026-07-29 (Stellar pass): 'all Stellar-Conduct DMG dealt by Sandrone is elevated by 20%' — now expressible since `stellarConduct` joined the Reaction union and effectCollection maps single-reaction elevations to `stellarConductDmgBonus` for display. Target self (her damage only), value 20, verified against the Fandom constellation page (utility markers: DMG Elevation / Stellar-Conduct DMG Elevation).",
-				"C6 still NOT modeled: the Condensed Cluster Beam adds up to 4 extra AoE instances at 100% ATK Cryo (80% ATK as Stellar-Conduct in a Polestar Field) on Sandrone's own third+ Decoding beams — damage magnitude on self on-field hits, FrameMap territory, and she is frameless."
+				"C6 still NOT modeled: the Condensed Cluster Beam adds up to 4 extra AoE instances at 100% ATK Cryo (80% ATK as Stellar-Conduct in a Polestar Field) on Sandrone's own third+ Decoding beams — damage magnitude on self on-field hits, FrameMap territory, and she is frameless.",
+				"⚠️ AUTHORED-BUT-INVISIBLE — verified 2026-08-18, and this is BY DESIGN, not a bug. The elevate above renders on NO surface. Read the note above carefully: `normalizeBuffLikeEffect` (src/lib/utils/effectCollection.ts:190) does map a single-reaction elevation to `stellarConductDmgBonus`, but it is only reached by the onCast / onHit / onState / onReaction / onTeamNightsoulBurst collectors — this effect's trigger is `passive`, so none of them ever see it. TeamBonusesBlock's `permanentConstellations` filters to `buff`/`resShred` (src/lib/components/TeamBonusesBlock.svelte:73-84), so it produces no always-on chip either, and `deriveCapabilities` maps no `elevate` to a capability (deriveCapabilities.ts:285), so the Team Builder is silent too. `elevate` RENDERING stays FROZEN (Nate 2026-07-14; re-confirmed in docs/curation/engine-capability-rubric.md D11, which unfroze only `stellarConduct` itself). ⛔ Don't 'fix' the invisibility by re-authoring this as a `buff` on `stellarConductDmgBonus` — that routes around the freeze and is Nate's call, not a curation one. The entry's own caveat is what the reader gets."
 			],
 			"description": "When Fagio fires a condensed beam for the third time while in **Decoding** mode, the beam becomes a more powerful Condensed Cluster Beam that fires continuously. This beam will deal up to 4 additional instances of AoE Cryo DMG at 100% of Sandrone's ATK on top of any subsequent original beam fired.\nRadiance: Stellar-Conduct: The Condensed Cluster Beam will instead deal 4 additional instances of AoE Cryo DMG at 80% of Sandrone's ATK. This DMG is considered Stellar-Conduct DMG.\nAdditionally, all Stellar-Conduct DMG dealt by Sandrone is **elevated** by 20%.",
 			"caveat": "Not modeled: the Condensed Cluster Beam's up-to-4 extra hits from the third beam of each Decoding period onward."
 		}
 	],
-	"meta": { "source": "genshin-db", "generatedAt": "2026-07-12T05:40:54.378Z" },
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-07-12T05:40:54.378Z"
+	},
 	"_curatorNotes": [
 		"Effects pass 2026-07-14 (Stages 1-3 only; no gcsim source exists for Sandrone — no frames, stays FRAMELESS_EXEMPT). CD/energy verified against docs/curation/talents/sandrone.json: E 4s, Q 15s / 60 energy — all PASS.",
 		"STELLAR PASS 2026-07-29 (Fandom-only evidence — gcsim has no Stellar implementation; pages fetched via the MediaWiki API: Light of Rationalisme, Stellar-Conduct, all six constellations, all three talents). Sandrone is an on-field Cryo claymore CARRY who is also THE Stellar-Conduct enabler. Landed this round: root `enablesReactions: ['stellarConduct']`; a new 'Light of Rationalisme' passive node (previously a genshin-db extraPassive documented only in these notes) carrying the team Base Stellar-Conduct DMG buff plus the Polestar Field's modelable baselines; C6's +20% elevate on her Stellar-Conduct DMG.",
