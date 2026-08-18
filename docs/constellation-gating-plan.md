@@ -1,6 +1,6 @@
 # A constellation effect is not gated by its own entry
 
-**Status:** ✅ **SHIPPED 2026-08-18.** Found earlier the same day during the Nicole
+**Status:** ✅ **SHIPPED 2026-08-18 — merge `a0f0b2f`.** Found earlier the same day during the Nicole
 session; ⚓ Nate bookmarked it for a session of its own. §1–§5 are the PREP, kept
 verbatim as the record of what was believed going in. **§7 is what landed and what
 it measured** — read that first if you are here to change something.
