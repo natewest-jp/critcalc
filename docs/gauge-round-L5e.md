@@ -569,6 +569,67 @@ artifact (L5e-b's rule): two are Collei's leaps and one is Sucrose's fourth tick
   and ⛔ not fixable by a duration nudge** — each needs its own gcsim loop-bound reading,
   which is the tick-CAP argument above with a second body of evidence behind it.
 
+##### 📋 The tick-CAP worklist, MEASURED (2026-08-18)
+
+⚓ Recorded so the round, if it is ever run, does not have to re-derive it — and so the
+size of the thing is on the record either way. Method: our derived count
+(`ceil((duration − firstDelay) / interval)`) against gcsim's observed stream length, at a
+**2400-frame** dumper horizon, restricted to abilities with exactly ONE authored damage
+series and ONE observed stream so the pairing is unambiguous.
+
+|                                           |  count |
+| ----------------------------------------- | -----: |
+| authored damage-tick series in the corpus | **49** |
+| unambiguously comparable                  | **37** |
+| ⇢ agree on tick count                     | **26** |
+| ⇢ disagree                                | **11** |
+| ambiguous, needs eyes                     |  **2** |
+
+| character · ability                     | ours | gcsim |                     Δ |
+| --------------------------------------- | ---: | ----: | --------------------: |
+| ⛔ amber `fiery_rain`                   |    9 |    18 |                    +9 |
+| collei `trumpcard_kitty`                |   11 |    12 |                    +1 |
+| kaedehara_kazuha `kazuha_slash`         |    4 |     5 |                    +1 |
+| kuki_shinobu `sanctifying_ring`         |    7 |     8 |                    +1 |
+| sigewinne `rebound_hydrotherapy`        |    4 |     5 |                    +1 |
+| yumemizuki_mizuki `anraku…`             |    7 |     8 |                    +1 |
+| zhongli `dominus_lapidis`               |   14 |    15 |                    +1 |
+| kuki_shinobu `gyoei_narukami_kariyama…` |    8 |     7 |                    −1 |
+| mona `mirror_reflection_of_doom`        |    5 |     4 |                    −1 |
+| sayu `yoohoo_art_mujina_flurry`         |    7 |     6 |                    −1 |
+| sucrose `forbidden_creation…`           |    4 |     3 |                    −1 |
+| ⚠️ emilie `aromatic_explication`        |    3 |     4 | ambiguous (2 streams) |
+| ⚠️ kaeya `glacial_waltz`                |   12 |    13 |  ambiguous (2 series) |
+
+⛔ **Amber is NOT a cap case and must stay out of scope.** Her Δ+9 is three overlapping
+arrow loops landing on 10 distinct frames; a count cannot express that shape and her
+`_curatorNotes` already say so.
+
+⚓ **So the real worklist is ~12 sites, and the sign goes both ways** — 6 under, 4 over,
+2 to disambiguate. ⚠️ Six of the twelve already have the gcsim bound written into their
+`_curatorNotes`: **Mona's says in as many words that "closing it needs a schema-level tick
+cap"**, and cites Collei as the under-count twin.
+
+⚠️ **The one design question, and it is real:** Sigewinne's tick count is
+constellation-scaled (`bubbleHitLimit` 5 → 8 at C1) and is currently expressed through a C1
+`durationModifier`. A flat `ticks` count cannot say that, so either the field takes the
+`constellationScaling` treatment other fields have, or Sigewinne keeps the duration route
+and is excluded. ⛔ Decide that BEFORE authoring, not at site 9.
+
+⚓ **Shape: a COUNT, not a time bound.** Mona is the proof — gcsim's loop caps at `i < 300`
+frames while her summon's measured lifetime is ~4.05 s, so the two bounds genuinely differ
+and only a count reads unambiguously off the Go.
+
+⚓ **Where it would go:** `summonTickSeries` is the ONE rule and already returns a series
+record, so the cap rides there — but ⚠️ there are deliberately **TWO readers**
+(`collectSummonTicks` → the timeline's visible markers, and `aura.ts`'s own chain → the
+gauge), and `run.ts` forbids unifying them. Both must honour the cap or the chart and the
+aura disagree.
+
+⚓ **The product argument is the stronger one.** This is not mainly ten oracle rows: the
+same cap fixes the tick MARKERS a reader counts on the planner's summon lane, and a tick
+count is something a skilled player knows by heart (⚓ Nate). Mizuki is on the list.
+
 #### What else was found and deliberately not authored
 
 Each is recorded in its character's `_curatorNotes`. **Elemental Absorption** on Venti,
