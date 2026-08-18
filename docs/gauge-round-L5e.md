@@ -617,13 +617,42 @@ reasoning:**
 - **Collei** — the summon carries `durationExtensions` (A4, +1 s ×3) and gcsim extends its
   status to match, so the tick count genuinely GROWS. A flat cap would freeze it at 12 and
   make the A4 window cosmetic. ⚓ **A cap and a duration extension do not compose**; this is
-  the rule to check first on any future site.
+  the rule to check first on any future site. ↻ **And the shortfall costs ZERO applications**
+  (measured): under `ICDGroupColleiBurst` (180 f, first hit only) the leaps apply at +68 f
+  and +248 f whether the series runs 11 ticks or 12, since the next window would open at
+  +428 f, past the last leap either way. One marker and a slightly understated total; ⛔
+  nothing the aura lane can see.
 - **Amber** — the 9-vs-18 gap is a SHAPE, not a count: three overlapping loops whose 18
   arrows land on 10 distinct frames with duplicates stacked. A cap would draw 10 evenly
   spaced markers where the game stacks them — a different lie.
-- **Emilie's burst** — the INTERVAL disagrees too (36 f observed and irregular against the
-  42 f we model), because gcsim fires volleys at random marked enemies. A count would paper
-  over a cadence question.
+- **Emilie's burst** — ↻ **the cadence question this raised turned out to be a real DEFECT,
+  and it is now fixed** (see below). The count stays uncapped because gcsim's fourth hit is
+  a STRAY.
+
+##### ↻ Emilie's Level-3 cadence was the MARK duration, not a cadence (2026-08-18)
+
+⚓ Nate asked whether we were averaging an irregular cadence. We were not — we had authored
+the wrong number, and it is fully derivable.
+
+`emilie/burst.go`: the volley task runs every `burstTickInterval` = **18 f** and picks a
+random enemy that does NOT carry `burstMarkKey`, marking it for `burstMarkDuration` =
+**42 f**. Single-target, the mark can only expire ON an 18 f volley boundary, so the
+deliberate re-target cadence is `ceil(42 / 18) × 18` = **54 f = 0.9 s** — not the 0.7 s the
+series carried, which was the mark duration read as if it were a period. The first hit is
+the first volley (18 f) plus `burstHitmark` (12 f) = 30 f after spawn, so `firstTickDelay`
+is 0.5 s.
+
+**Measured:** gcsim lands +126 / +180 / +234 f, and the corrected series now draws exactly
+those three frames.
+
+⚓ **The fourth gcsim hit at +162 f is a STRAY and stays unmodelled.** A volley fired while
+the enemy was still marked falls back to `CalcRandomPointFromCenter`, and that point's
+2.5-radius blast happened to cover the target. Positional and seeded — the same class as
+Ningguang's attack dice and the proximity refusal on Xingqiu's Orbital. ⚠️ The audit will
+keep flagging `count 3 → 4` here; **that flag is expected, not a backlog item.**
+
+⚓⚓ **The transferable lesson: a MARK/refresh window is not a cadence.** Read the loop's
+period and the gate separately, and take the cadence from where they intersect.
 
 ##### 📋 The tick-CAP worklist, MEASURED (2026-08-18)
 

@@ -509,7 +509,7 @@ which the pair alone cannot state.
 | durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame 156f / 59f × 20 · 90f / first only | Dragon of White Flame 156f / 59f × 20 · 10/20 `other` | 90f / first only |
 | durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 171f / 74f × 16 · `standard` | — | — |
 | emilie | `fragrance_extraction` | Lumidouce Case 106f / 90f × 14 · 120f / first only | Lumidouce Case (Level 1) 111f / 90f × 14 · 7/14 `standard` | 120f / first only |
-| emilie | `aromatic_explication` | Lumidouce Case (Level 3) 138f / 42f × 3 · `standard` | Lumidouce Case (Level 3) 126f / 36f × 4 ⚠️ irregular · 2/4 `standard`<br>Lumidouce Case (Level 1) 401f / 90f × 14 · 7/14 `standard` | 150f / every 3<br>120f / first only |
+| emilie | `aromatic_explication` | Lumidouce Case (Level 3) 126f / 54f × 3 · `standard` | Lumidouce Case (Level 3) 126f / 36f × 4 ⚠️ irregular · 2/4 `standard`<br>Lumidouce Case (Level 1) 401f / 90f × 14 · 7/14 `standard` | 150f / every 3<br>120f / first only |
 | escoffier | `lowtemperature_cooking` | Cooking Mek (Cold Storage) 171f / 59f × 18 · `standard` | — | — |
 | fischl | `nightrider` | Oz 82f / 59f × 10 · 300f / every 4 | Oz (Skill) 92f / 59f × 10 · 3/10 `other` | 300f / every 4 |
 | fischl | `midnight_phantasmagoria` | Oz 64f / 59f × 10 · 300f / every 4 | Oz (Burst) 192f / 59f × 10 · 3/10 `other` | 300f / every 4 |
