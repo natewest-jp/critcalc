@@ -16,12 +16,20 @@
  * gain until something has to fire at that instant.
  */
 
-import type { AbilityVariant, CastAbility } from '$lib/types/ability';
+import type { AbilityVariant, CastAbility, Effect } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import { framesOf } from '$lib/utils/frames';
 import type { SimContext } from './context';
-import { DEFAULT_ASCENSION, evalCondition } from './conditions';
-import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
+import {
+	DEFAULT_ASCENSION,
+	evalCondition,
+	type ChainIndex,
+	type ConditionContext
+} from './conditions';
+import {
+	effectSourcesAtConstellation,
+	getNonAbilityEffectsForCast
+} from '$lib/utils/effectCollection';
 
 /** Register a shield window when the active cast spawns a shield. Two
  *  authoring conventions covered:
@@ -49,7 +57,16 @@ import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
  *  Shatter-by-damage is NOT modelled — the planner has no enemy/HP state.
  *  Shield windows always fire `onShieldEnd` at scheduled expiry, with the
  *  same null-resolving "assumed to hold" convention as the rest of the
- *  planner's optimistic-render treatment. */
+ *  planner's optimistic-render treatment.
+ *
+ *  ⚓ CASE 2 HAS TWO HALVES SINCE 2026-08-18 — the cast ABILITY'S own effects
+ *  and the character's PASSIVE / unlocked-CONSTELLATION ones. It read only the
+ *  former, so a `shield` Effect authored on a constellation entry reached no
+ *  lane at ANY level: Beidou C1 and Yanfei C4 both grant a 15s shield off their
+ *  burst and neither had ever drawn. ⚠ NOT a leak and NOT the constellation
+ *  gate's doing (they drew nothing at C0 *or* C6) — it is the orphaned-schema
+ *  guard's blind spot, since `shield` effects ARE read, just not from this
+ *  source. See docs/constellation-shield-gap.md. */
 export function registerShieldOnCast(
 	ctx: SimContext,
 	char: CharacterData,
@@ -57,7 +74,12 @@ export function registerShieldOnCast(
 	castTime: number,
 	activeAbility: CastAbility,
 	variant: AbilityVariant | undefined,
-	sourceCastId: number
+	sourceCastId: number,
+	constellation: number,
+	states: ReadonlySet<string>,
+	chainIdx: ChainIndex,
+	stackState: Map<string, number>,
+	holderCtx: ConditionContext
 ): void {
 	// ⚠ VARIANT FIRST, for both halves. A variant's `effects` and `summons`
 	// each REPLACE the base ability's (see AbilityVariant in types/ability),
@@ -71,22 +93,58 @@ export function registerShieldOnCast(
 		ability: 'skill' | 'burst';
 		endTime: number;
 		label?: string;
+		/** Ability-hosted, as opposed to passive/constellation-hosted. Only the
+		 *  ability half may satisfy `authorsShieldEffect` or be reconciled
+		 *  against a stand-in summon — see both sites below. */
+		fromAbility: boolean;
 		coveredBySummon?: boolean;
 	}[] = [];
-	// Case 2 FIRST — it is the one that wins (see the precedence note above).
-	// `Effect.type === 'shield'` on the cast ability itself, with onCast
-	// trigger + explicit duration. Triggers gated on the cast type via
-	// `trigger.ability` (if set) must match the current cast.
-	for (const eff of abilityEffects) {
-		if (eff.type !== 'shield') continue;
-		if (eff.trigger.type !== 'onCast') continue;
-		if (eff.trigger.ability !== undefined && eff.trigger.ability !== castKind) continue;
-		if (eff.duration === undefined || eff.duration <= 0) continue;
+	/** Push a window for one qualifying shield Effect, or nothing.
+	 *
+	 *  ⚠ The conditions are judged here for BOTH halves, which is new in shape
+	 *  and a no-op in the corpus: no ability-hosted shield carries conditions,
+	 *  and every constellation-hosted one carries exactly its own entry's level,
+	 *  which `getNonAbilityEffectsForCast` has already applied at collection.
+	 *  Only a definitive `false` drops — same optimistic null-resolving rule
+	 *  `registerInfusionsOnCast` uses at the sibling call, and the same one this
+	 *  file's "a shield always survives to its scheduled expiry" rests on. */
+	const pushShield = (eff: Effect, fromAbility: boolean): void => {
+		if (eff.type !== 'shield') return;
+		if (eff.trigger.type !== 'onCast') return;
+		if (eff.trigger.ability !== undefined && eff.trigger.ability !== castKind) return;
+		if (eff.duration === undefined || eff.duration <= 0) return;
+		const verdict = evalCondition(
+			eff.conditions,
+			DEFAULT_ASCENSION,
+			states,
+			constellation,
+			chainIdx,
+			stackState,
+			holderCtx
+		);
+		if (verdict === false) return;
 		windows.push({
 			ability: castKind,
 			endTime: castTime + framesOf(eff.duration),
+			fromAbility,
 			...(eff.label !== undefined ? { label: eff.label } : {})
 		});
+	};
+	// Case 2 FIRST — it is the one that wins (see the precedence note above).
+	// `Effect.type === 'shield'` with an onCast trigger + explicit duration.
+	// Triggers gated on the cast type via `trigger.ability` (if set) must match
+	// the current cast.
+	//
+	// Half A — the RESOLVED cast ability's own effects.
+	for (const eff of abilityEffects) pushShield(eff, true);
+	// Half B — passives + unlocked constellations + faction bonuses.
+	// ⛔ NOT `getCharacterEffectsForCast`: that walks EVERY ability of this
+	// cast's type, and Lan Yan has three `skill` abilities of which only the
+	// base one shields — her stance follow-ups would each register a 12.5s
+	// shield they do not grant. The caller has already resolved which ability
+	// this cast is; half A is that ability, and this is the rest.
+	for (const eff of getNonAbilityEffectsForCast(char, constellation, castKind)) {
+		pushShield(eff, false);
 	}
 	// Case 1: summon-tagged shield ability — the FALLBACK, for kits whose
 	// shield has no Effect of its own AT ALL.
@@ -105,7 +163,17 @@ export function registerShieldOnCast(
 	// silently dropping its shield would be worse than a fallback nobody
 	// currently needs. If it ever fires again, `coveredBySummon` below is
 	// what stops the shield lane drawing what the summon lane already has.
-	if (windows.length === 0 && !authorsShieldEffect && abilityTags?.includes('shield')) {
+	// ⚠ THE GUARD ASKS ABOUT THE ABILITY HALF ONLY, both terms of it. A
+	// constellation-hosted shield must not satisfy `authorsShieldEffect` (it is
+	// not the ABILITY speaking) and must not suppress this fallback by merely
+	// existing — otherwise a C-shield would silently delete a kit's
+	// summon-inferred one. Nothing in the corpus is shaped that way today; the
+	// asymmetry is the point of writing it down.
+	if (
+		!windows.some((w) => w.fromAbility) &&
+		!authorsShieldEffect &&
+		abilityTags?.includes('shield')
+	) {
 		const primary = abilitySummons[0];
 		if (primary?.duration !== undefined && primary.duration > 0) {
 			// The stand-in summon's label IS the shield's name in this
@@ -113,11 +181,43 @@ export function registerShieldOnCast(
 			windows.push({
 				ability: castKind,
 				endTime: castTime + framesOf(primary.duration),
+				fromAbility: true,
 				label: primary.label
 			});
 		}
 	}
 	if (windows.length === 0) return;
+	// ⚓ ONE SPAN, ONE BAR (2026-08-18). Two shield Effects on one cast that
+	// resolve to the SAME span are one shield stated twice, not two shields —
+	// and the shield lane draws SPANS under the CASTER with no notion of a
+	// RECIPIENT, so a second window there is a second bar the reader cannot
+	// tell from the first (plus a second `shieldEnd`, which is the 2026-08-14
+	// double-window class back). ⚠ It collapses IDENTITY, not coincidence: a
+	// genuinely different LENGTH is a different shield and still draws its own
+	// bar. The ability half is pushed first, so the survivor keeps its
+	// provenance, and a name from either half is kept.
+	//
+	// ⏸️ DORMANT AS OF ITS OWN DAY, and kept for the same reason the summon
+	// fallback above is. Nicole's C2 was the one author — her skill's own
+	// "Shield of Blazing Light" re-granted at the same 20s — and it turned out
+	// to be a CO-OP statement ("nearby active party members" is plural only
+	// when several players each have an on-field character), so it was retired
+	// to a curator note rather than modelled. ⚓ The half-A/half-B pool is what
+	// makes a same-span pair reachable at all, so the guard outlives its
+	// author; `shields.test.ts` exercises it on a synthetic re-add of exactly
+	// the shape that was retired.
+	if (windows.length > 1) {
+		const bySpan = new Map<number, (typeof windows)[number]>();
+		for (const w of windows) {
+			const prev = bySpan.get(w.endTime);
+			if (!prev) {
+				bySpan.set(w.endTime, w);
+				continue;
+			}
+			if (prev.label === undefined && w.label !== undefined) prev.label = w.label;
+		}
+		if (bySpan.size !== windows.length) windows.splice(0, windows.length, ...bySpan.values());
+	}
 	// ── Is this shield ALREADY DRAWN, as a summon? ────────────────────────
 	// ⚓ 2026-08-14, and it is a reconciliation of two authoring conventions
 	// for one fact, not a heuristic about art. Before shield windows existed,
@@ -140,8 +240,15 @@ export function registerShieldOnCast(
 	// its active duration — deleting it would collapse a 12s bar to an instant
 	// pill. Retiring the convention properly means authoring `activeDuration`
 	// alongside, which is a data round with a visual verdict attached.
+	//
+	// ⚠ ABILITY-HOSTED WINDOWS ONLY (2026-08-18). A passive- or
+	// constellation-hosted shield has no stand-in summon twin — the convention
+	// this reconciles was only ever an ABILITY authoring one — so matching one
+	// against `summons[]` could only ever be a duration coincidence, which is
+	// exactly what the Thoma half of the test exists to refuse.
 	const shieldSummons = abilitySummons;
 	for (const w of windows) {
+		if (!w.fromAbility) continue;
 		const dur = w.endTime - castTime;
 		w.coveredBySummon = shieldSummons.some(
 			(s) => (s.effects?.length ?? 0) === 0 && framesOf(s.duration) === dur

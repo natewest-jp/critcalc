@@ -101,14 +101,22 @@ export function effectSourcesAtConstellation(char: CharacterData, cLevel: number
  * trigger binding explicitly (`onCast ability:`, `onHit abilityType:`,
  * `onReaction reaction:`), so the "no explicit ability → fire on BOTH casts"
  * fall-through never reaches one. `characterLint` C.17 holds that property. */
-export function effectSourcesOf(
-	char: CharacterData,
-	cLevel: number
-): Array<{
+export function effectSourcesOf(char: CharacterData, cLevel: number): EffectSource[] {
+	return [...effectSourcesAtConstellation(char, cLevel), ...factionSourcesOf(char)];
+}
+
+/** An effect host as the collectors below consume it — an ability, a passive, a
+ *  constellation entry or a faction bonus, reduced to the three fields trigger
+ *  matching reads. */
+type EffectSource = {
 	abilityType?: string;
 	effects?: Effect[];
 	variants?: { input?: string[]; effects?: Effect[] }[];
-}> {
+};
+
+/** The character's faction-bonus hosts, with provenance registered. Split out
+ *  of `effectSourcesOf` so the non-ability collector can reuse both. */
+function factionSourcesOf(char: CharacterData): EffectSource[] {
 	const factionSources = char.factionBonuses ?? [];
 	if (factionSources.length > 0 && !REGISTERED.has(char)) {
 		for (const fb of factionSources) {
@@ -118,9 +126,23 @@ export function effectSourcesOf(
 		}
 		REGISTERED.add(char);
 	}
+	return factionSources.map((fb) => ({ effects: fb.effects }));
+}
+
+/** `effectSourcesOf` MINUS `char.abilities` — passives + unlocked
+ *  constellations + faction bonuses.
+ *
+ *  ⚓ For a caller that has already RESOLVED which ability this cast is. The
+ *  full pool walks every ability of the cast's type, which is wrong the moment
+ *  a character has more than one: Lan Yan has three `skill` abilities and only
+ *  the base one shields, so a pool-wide walk would hand her stance follow-ups
+ *  a 12.5s shield they do not grant. A caller holding the resolved ability
+ *  reads its effects itself and asks this for the rest. */
+function nonAbilityEffectSourcesOf(char: CharacterData, cLevel: number): EffectSource[] {
 	return [
-		...effectSourcesAtConstellation(char, cLevel),
-		...factionSources.map((fb) => ({ effects: fb.effects }))
+		...(char.passives ?? []),
+		...unlockedConstellations(char, cLevel),
+		...factionSourcesOf(char)
 	];
 }
 
@@ -255,13 +277,11 @@ function effectsForCast(
 	return variant?.effects ?? src.effects ?? [];
 }
 
-export function getCharacterEffectsForCast(
-	char: CharacterData,
-	cLevel: number,
+function collectOnCastEffects(
+	sources: EffectSource[],
 	castType: 'skill' | 'burst',
-	castLabel?: string
+	castLabel: string | undefined
 ): Effect[] {
-	const sources = effectSourcesOf(char, cLevel);
 	const result: Effect[] = [];
 	for (const src of sources) {
 		for (const fx of effectsForCast(src, castLabel)) {
@@ -277,6 +297,34 @@ export function getCharacterEffectsForCast(
 		}
 	}
 	return normalizeBuffLikeEffects(result);
+}
+
+export function getCharacterEffectsForCast(
+	char: CharacterData,
+	cLevel: number,
+	castType: 'skill' | 'burst',
+	castLabel?: string
+): Effect[] {
+	return collectOnCastEffects(effectSourcesOf(char, cLevel), castType, castLabel);
+}
+
+/** The onCast effects this cast fires that are NOT hosted on a cast ability —
+ *  passives, unlocked constellations, faction bonuses (2026-08-18).
+ *
+ *  ⚓ The complement of the resolved ability's own `effects`, for a caller that
+ *  already holds that ability and must not have a second one of the same type
+ *  substituted for it (see `nonAbilityEffectSourcesOf`). `registerShieldOnCast`
+ *  is the author: a shield Effect on a constellation entry reached no lane at
+ *  any level until it read this pool — see docs/constellation-shield-gap.md.
+ *
+ *  ⚠ No `castLabel`: passives and constellations carry no `variants`, so there
+ *  is nothing for a cast label to resolve against. */
+export function getNonAbilityEffectsForCast(
+	char: CharacterData,
+	cLevel: number,
+	castType: 'skill' | 'burst'
+): Effect[] {
+	return collectOnCastEffects(nonAbilityEffectSourcesOf(char, cLevel), castType, undefined);
 }
 
 /** Collects `onHit` effects whose abilityType matches the cast class. Accepts
