@@ -797,7 +797,20 @@ export function runRotation(
 				// Register shield window if the cast spawns a shield (tags
 				// `['shield']` + summons[0] duration, or onCast Effect.type
 				// `'shield'` + duration). Beidou Q and Noelle/Zhongli E are canonical.
-				registerShieldOnCast(ctx, char, kind, castStart, active, variant, castId);
+				registerShieldOnCast(
+					ctx,
+					char,
+					kind,
+					castStart,
+					active,
+					variant,
+					castId,
+					charConstellationLevel,
+					states,
+					chainIdx,
+					stackState,
+					variantCtx
+				);
 				// Open any infusion windows this cast grants (Bennett Q, Candace Q,
 				// Kazuha C6, Dori C6, Lohen E). Registered BEFORE the reaction
 				// emission below for the same reason the shield is: a window this

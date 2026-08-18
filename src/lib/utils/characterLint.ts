@@ -1571,10 +1571,21 @@ function lintEffect(
 	if (ctx.isPassiveOrConstellation) {
 		const t = eff.trigger;
 		if ((t.type === 'onCast' || t.type === 'afterDuration') && !t.ability) {
+			// (B.8a) …and for a SHIELD it is not a preference. Since 2026-08-18
+			// `registerShieldOnCast` reads passive/constellation effects too, and
+			// its fall-through for an unbound onCast is the collectors' own —
+			// fire on BOTH casts. For a Kazuha-C6 infusion that is deliberate;
+			// for a shield it registers a whole extra bar on the wrong cast and
+			// a second `shieldEnd` with it. All four onCast shields hosted this
+			// way bind explicitly today, so this pins the property rather than
+			// fixing anything. See docs/constellation-shield-gap.md.
+			const sev = eff.type === 'shield' && t.type === 'onCast' ? 'strict' : 'warn';
 			push(
-				'warn',
-				'trigger-ability-missing',
-				`effect on passive/constellation with trigger ${t.type} should set trigger.ability (omit only when intentionally firing on both skill and burst, like Kazuha C6)`,
+				sev,
+				sev === 'strict' ? 'shield-trigger-ability-missing' : 'trigger-ability-missing',
+				sev === 'strict'
+					? `shield effect on passive/constellation must set trigger.ability — an unbound onCast shield registers a window on BOTH the skill and the burst`
+					: `effect on passive/constellation with trigger ${t.type} should set trigger.ability (omit only when intentionally firing on both skill and burst, like Kazuha C6)`,
 				location
 			);
 		}
