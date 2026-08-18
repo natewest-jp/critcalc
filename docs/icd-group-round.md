@@ -1,7 +1,7 @@
 # The ICD-group round — what a per-ability ICD group would buy
 
-**Status:** 🟢 **a, b and c are SHIPPED** (2026-08-17 / 18). ⛔ **d stays HELD** — see §6d
-and §9.
+**Status:** 🟢 **a, b and c are SHIPPED** (2026-08-17 / 18). ⛔ **d is CLOSED, not held** —
+§10, on evidence that arrived after b landed.
 
 - **c** — the charged-attack window (`chargedIcdWindow`, 16 characters).
 - **a** — the shim reads gcsim's group and the audit reports the cadence (§6a, §9).
@@ -78,11 +78,30 @@ This is the correction the survey exists for. The oracle's ICD-shaped residue lo
 | character                 | apps | cause                                                                                |
 | ------------------------- | ---: | ------------------------------------------------------------------------------------ |
 | **Fischl's Oz**           |    8 | ⚓ **genuinely group** — `ICDGroupFischl` is 300f/period-4 against our 150f/period-3 |
-| **Zhongli's Stone Stele** |    6 | ⛔ **not group at all** — the stele is `ICDGroupDefault`; it is COUNTER SHARING (§4) |
+| **Zhongli's Stone Stele** |    6 | ⛔ **not group, and ↻ not counter sharing either** — see the correction below        |
 | **Xiangling's Pyronado**  |    3 | neither — ungated on both sides, so it is geometry or the sim horizon                |
 
 ⚓ **So a per-ability group buys 8 in the oracle, not 17.** Quote that number, ⛔ don't
 re-derive the 17.
+
+### ↻⚠️⚠️ CORRECTION 2026-08-18 — the stele's 6 are GEO-CONSTRUCT RESONANCE
+
+This section originally filed Zhongli's 6 under §4's counter sharing. **That is wrong, and
+it mattered: those 6 were half of d's entire prize.** Measured in an isolated core, gcsim's
+stele applies on **8 of 16 ticks, 240f apart** — which is exactly what our model does, at
+`ICDGroupDefault`. ⚓ **In isolation we reproduce the stele perfectly.**
+
+The divergence is the FIXTURE. `zhongli/stele.go`'s `resonance()` queues one hit per stele
+**plus one per non-stele construct within radius 8**, and the crystallize fixture has
+Ningguang's Jade Screen sitting there. Two hits per tick against
+`ICDGroupDefault`'s `{1,0,0,1,0,0,…}` walks the counter twice as fast, so index 3 comes up
+on the very next tick and gcsim applies on **every** tick — the observed 2 s cadence
+against our 4 s.
+
+⚓ So it is an unmodelled MECHANIC (a Geo construct near a stele doubles its hits), not an
+ICD fault of any kind. ⛔ **d buys nothing here.** ⚠️ And the general shape is a warning
+about this whole survey: a fixture with a second character in it can make one character's
+cadence look wrong. Re-measure a suspect series in the ISOLATED core before attributing it.
 
 ### And the over-application is 1–3, not a factor
 
@@ -109,7 +128,10 @@ separate clock per summon series.
 
 That isolation is deliberate and documented (`resolveActionIcd`), justified on **112 of
 166 gcsim skills being `ICDTagNone`** — for those, sharing would change nothing. ⚠️ For
-the other 54 it does, and the stele is what it looks like when it bites.
+the other 54 it does. ↻ **The stele was cited here as what it looks like when it bites, and
+it is not** — see §3's correction; the stele matches us exactly in isolation. This section
+keeps its argument but has **lost its worked example**, which is worth knowing before
+pricing anything on it.
 
 ⛔ **This is not a data question and must not be folded into the group work.** It asks
 whether our clock key should become `(character, gcsim tag)`, which is an engine change
@@ -258,8 +280,9 @@ breakdown cannot explain the direction, ⛔ stop and write it up instead.
 
 ### ⛔ d — counter sharing by tag · **HELD (⚓ Nate 2026-08-17)**
 
-§4. An engine change, not data. Worth **6** (the stele) — ⚓ **the smallest prize of the
-three and the largest blast radius**, which is why it is held rather than queued.
+§4. An engine change, not data. Originally priced at **6** (the stele) — ↻ **which was a
+misattribution; see §3's correction and §10, where d is CLOSED.** Kept below as written
+because the reasoning about the Xiao case is still the reason not to do the naive version.
 
 ⛔ **Do not open it in the a+b session.** It is not a task with an unresolved detail; it is
 an unresolved DESIGN QUESTION wearing a sub-landing's number. It would re-key the ICD clock
@@ -464,3 +487,55 @@ The constant is therefore a local copy with the reason on it, matching how that 
 handles every vocabulary set. ⚓ Its drift is covered: §5 of the frames report flags an
 authored gate that disagrees with the measured group, so a stale copy cannot quietly bless a
 wrong annotation.
+
+---
+
+## 10. ⛔ d is CLOSED — and where the remaining 44 actually come from
+
+⚓ **Written 2026-08-18, after b landed, because b produced the evidence that priced d.**
+⛔ d is not "held pending the Xiao decision" any more; the Xiao decision is not worth
+taking, because the thing it would buy is smaller than §3 believed and is not mostly a
+clock-key problem at all.
+
+### 10.1 The whole residue, attributed
+
+All 44 `gcsim applies, we do not` rows in `gcsim-reaction-diff.md`, by cause:
+
+| cause                                                                                                                     |   apps | disposition                        |
+| ------------------------------------------------------------------------------------------------------------------------- | -----: | ---------------------------------- |
+| **Application-only ticks** — Xingqiu's Orbital 14, Barbara's Melody Loop 2, plus the 4 Tri-Karma procs downstream of them | **20** | ⛔ CLOSED BY DECISION (positional) |
+| **Geo-construct resonance** — the stele × Ningguang's Jade Screen                                                         |      6 | 🆕 unmodelled MECHANIC (§3)        |
+| **Oz** — 6 burst ticks + 1 Tri-Karma downstream                                                                           |      7 | geometry + phase, see 10.2         |
+| **gcsim's `ActorIndex` defect** — Fischl's A4                                                                             |      5 | ⛔ the ORACLE is wrong, not us     |
+| **Xiangling's Pyronado** — ungated both sides                                                                             |      3 | geometry / sim horizon             |
+| **Tail + timing** — Kaeya ×2, Ningguang ×1                                                                                |      3 | noise-level                        |
+
+⚓⚓ **Not one of the 44 is a rule we believe is wrong.** 20 are a refusal we made on
+purpose, 5 are the oracle being wrong, and the rest are geometry. ⚠️ Read that alongside
+the two `we apply, gcsim does not` rows and the **0** element mismatches.
+
+### 10.2 Why d would not collect the 7
+
+⚠️⚠️ **Our two Ozes ALREADY share one ICD clock.** `aura.ts` keys it
+`${char.id}:summon:${summon.label}:${series.index}` in a rotation-wide map, and both
+authored Ozes are `"Oz"` at index 0 — so the skill's and the burst's tick series draw on one
+counter today. ⛔ **The premise that d would fix Oz is false.** Whoever priced it (this
+document, §6b) had not checked the key.
+
+What actually differs on the long-rotation fixture is the summon's GEOMETRY: our burst Oz
+runs 45.12 → 55.12 while gcsim's spawns later and runs past 56.9, and our E-Oz is truncated
+by the recast before it gets the tick gcsim lands at 45.67. Those are spawn-time and
+lifetime questions, one per character, and ⛔ no clock re-key touches them.
+
+### 10.3 And the original d is bigger than it was ever priced
+
+Re-keying to `(character, gcsim tag)` needs a **per-ability ICD tag** the corpus does not
+have — ~300 authoring sites across skills and bursts — which was never in the estimate. On
+top of that sits §4's Xiao case, where the naive version is provably wrong. ⚓ **A ~300-site
+fan-out plus an unresolved design question, to collect a share of 7 rows that are mostly
+geometry, against a scoreboard where over-application is already down to 2.** That is a no.
+
+⏭ **If any of this is ever reopened, reopen the SPECIFIC thing, not d:** Oz's burst-summon
+spawn time and lifetime (7), or the Geo-construct resonance mechanic (6). Both are ordinary
+per-character curation with no engine change behind them. ⛔ Don't reopen "counter sharing"
+as a programme.
