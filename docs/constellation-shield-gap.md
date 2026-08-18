@@ -1,6 +1,6 @@
 # A constellation-hosted shield reaches no lane
 
-**Status:** ✅ **SHIPPED 2026-08-18. §7 is the record; §1–§6 are the PREP and two of
+**Status:** ✅ **SHIPPED 2026-08-18 (`53db108`). §7 is the record; §1–§6 are the PREP and two of
 their readings were wrong — see §7.1.** Found 2026-08-18 while landing the constellation
 gate (`docs/constellation-gating-plan.md`); ⚓ Nate asked whether to fix it in the same
 session and the answer was no — see §5.
