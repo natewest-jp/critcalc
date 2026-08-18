@@ -88,7 +88,8 @@
 				"Two-stage skill at hitmarks=[15, 33]: first stage drag-hit (65.6% ATK Hydro at lvl=10), second stage AoE (188.8% ATK Hydro at lvl=10). AttackTagElementalArt; 3 Hydro particles per cast (0.6s ICD, gated on first-hit only).",
 				"Cooldown: SetCDWithDelay(skill, 10*60, 13). Authored as cooldown:10 + cooldownStartDelay:13.",
 				"Frames: skillFrames=InitAbilSlice(52), ActionAttack/Burst/Walk=50 ActionDash=39 ActionJump=38 ActionSwap=49. Per E-spec swap/N/Q/D/J.",
-				"Hold variant (aiming mode for direction adjustment): not separately authored; cosmetic windup difference rather than a different action."
+				"Hold variant (aiming mode for direction adjustment): not separately authored; cosmetic windup difference rather than a different action.",
+				"units 1 authored on the second hit 2026-08-18: gcsim skill.go reuses ONE AttackInfo for both hitmarks (15 and 15+18), so both carry Durability 25. It was absent and therefore counted provisional, putting a --ui-provisional foot under a tick whose gauge is measured."
 			],
 			"description": "Aino throws a Musecatcher forward, dealing Hydro DMG and dragging her along behind it. When the dragging stops, Aino deals AoE Hydro DMG to nearby opponents.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the Musecatcher's throwing direction.",
 			"application": [
@@ -99,7 +100,8 @@
 				},
 				{
 					"frame": 33,
-					"element": "hydro"
+					"element": "hydro",
+					"units": 1
 				}
 			]
 		},
@@ -225,7 +227,6 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Under Moonsign: Ascendant Gleam (2 or more Moonsign characters) the water-ball tick interval drops from 1.5s to 0.7s. Shown at the base 1.5s rate; the faster rate is not modeled.",
 			"_curatorNotes": [
 				"Cool Your Jets Ducky: stationary turret summoned at burstStart=123f from cast, 14s duration. Fires a water ball every 1.5s base (0.7s w/ Moonsign Gleam via a1BurstEnhance). Per-tick: burst[lvl=10]=36.20% ATK Hydro + a4Dmg=50%×EM (Aino's EM) FlatDmg.",
 				"Authored as summons[] entry with summonTick effect at 1.5s interval. firstTickDelay=0 since the loop starts immediately after spawn (i=0 first tick at burstStart+0).",
@@ -233,7 +234,8 @@
 				"Cooldown: SetCD(burst, 13.5*60). Note: cooldown 13.5 < duration 14 — the planner will render Phase 2 (dim continuation) for the last 0.5s of the active duration after CD resets.",
 				"ConsumeEnergy(5) drains 5 energy from teammates; not modelled.",
 				"EnergyMax=50 (matches energyCost). C2 trigger (off-field active hits) and C6 reaction-DMG bonus are deferred — see constellation entries.",
-				"[A7] Caveat previously also stated the summon's AoE radius increases under Moonsign Ascendant Gleam (1 → 4); dropped from the user-facing caveat because the timeline does not display AoE radius, so it is not a divergence the user could be misled by. The radius change is already documented in the A1 passive (Modular Efficiency Protocol) curator note."
+				"[A7] Caveat previously also stated the summon's AoE radius increases under Moonsign Ascendant Gleam (1 → 4); dropped from the user-facing caveat because the timeline does not display AoE radius, so it is not a divergence the user could be misled by. The radius change is already documented in the A1 passive (Modular Efficiency Protocol) curator note.",
+				"↻ 2026-08-18: the ability caveat (\"Shown at the base 1.5s rate; the faster rate is not modeled\") was DELETED — the Ascendant Gleam cadence is authored as a second, Moonsign-gated tick series, so the timeline shows the right rate and the caveat guide forbids describing working behaviour. ⚠️ The Gleam radius change (1 → 4) stays unmodelled and gets no caveat either: the tool is single-target, so a larger AoE is not decision-relevant here."
 			],
 			"description": "Aino deploys a custom water-spraying device, the Cool Your Jets Ducky to establish a Focused Hydronic Cooling Zone.\nWhile active, the Cool Your Jets Ducky will periodically fire water balls at nearby opponents, dealing Hydro DMG.",
 			"application": []
