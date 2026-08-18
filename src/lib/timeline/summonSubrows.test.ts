@@ -100,15 +100,20 @@ function mkWin(
 	startSec: number,
 	endSec: number,
 	source: 'skill' | 'burst',
-	label = 'Oz'
-): TimelineWindow {
+	label = 'Oz',
+	/** ⚠️ The parse publishes a summon's markers since 2026-08-18 — this pass
+	 *  reads them rather than deriving them, so a fixture that wants ticks on a
+	 *  bar has to put them on the window. */
+	ticks?: number[]
+): Extract<TimelineWindow, { kind: 'summon' }> {
 	return {
 		kind: 'summon',
 		characterId,
 		label,
 		start: framesOf(startSec),
 		end: framesOf(endSec),
-		source
+		source,
+		...(ticks ? { ticks } : {})
 	};
 }
 
@@ -228,15 +233,15 @@ describe('computeSummonSubrows — window projection + ticks', () => {
 			]
 		});
 
-	it('feeds computeSummonTicks the window span (truncated end trims ticks)', () => {
+	// ↻ 2026-08-18: the tick WALK moved to `finalize` (one producer — see the note
+	// in computeSummonSubrows). These three used to drive `computeSummonTicks`
+	// THROUGH the projection; the derivation assertions moved down to that
+	// function, which still owns them, and what is left here is that a bar carries
+	// its window's ticks verbatim.
+	it('carries the window’s ticks onto the bar, verbatim', () => {
 		const char = mkChar('fischl', tickSummon());
-		// Parser-truncated window ends at 6 (terminatesOn:swap/recast baked in);
-		// ticks past 6 must not appear.
-		const rows = run(
-			[mkTrack('fischl', 0, { eBars: [mkBar(0)] })],
-			[mkWin('fischl', 0, 6, 'skill')],
-			[char]
-		);
+		const win = mkWin('fischl', 0, 6, 'skill', 'Oz', [framesOf(2), framesOf(4)]);
+		const rows = run([mkTrack('fischl', 0, { eBars: [mkBar(0)] })], [win], [char]);
 		expect(rows[0].bars).toEqual([
 			{
 				start: 0,
@@ -247,12 +252,38 @@ describe('computeSummonSubrows — window projection + ticks', () => {
 		]);
 	});
 
+	it('gives a window with no ticks an empty array, not undefined', () => {
+		const char = mkChar('fischl', tickSummon());
+		const rows = run(
+			[mkTrack('fischl', 0, { eBars: [mkBar(0)] })],
+			[mkWin('fischl', 0, 6, 'skill')],
+			[char]
+		);
+		expect(rows[0].bars[0].ticks).toEqual([]);
+	});
+
+	it('derives a span-truncated series — `computeSummonTicks`, where the walk lives', () => {
+		// Parser-truncated window ends at 6 (terminatesOn swap/recast baked in);
+		// ticks past 6 must not appear.
+		const summon = tickSummon();
+		expect(computeSummonTicks(summon, 0, framesOf(6), 0)).toEqual([framesOf(2), framesOf(4)]);
+		expect(computeSummonTicks(summon, framesOf(6), framesOf(16), 0)).toEqual([
+			framesOf(8),
+			framesOf(10),
+			framesOf(12),
+			framesOf(14)
+		]);
+	});
+
 	it('projects multiple windows on one key as chronological bars', () => {
 		const char = mkChar('fischl', tickSummon());
 		// A recast: parser truncated the first window at 6 and opened a second.
 		const rows = run(
 			[mkTrack('fischl', 0, { eBars: [mkBar(0), mkBar(6)] })],
-			[mkWin('fischl', 0, 6, 'skill'), mkWin('fischl', 6, 16, 'skill')],
+			[
+				mkWin('fischl', 0, 6, 'skill', 'Oz', [framesOf(2), framesOf(4)]),
+				mkWin('fischl', 6, 16, 'skill', 'Oz', [framesOf(8), framesOf(10)])
+			],
 			[char]
 		);
 		expect(rows[0].bars).toHaveLength(2);
@@ -266,7 +297,7 @@ describe('computeSummonSubrows — window projection + ticks', () => {
 			start: framesOf(6),
 			end: framesOf(16),
 			source: 'skill',
-			ticks: [framesOf(8), framesOf(10), framesOf(12), framesOf(14)]
+			ticks: [framesOf(8), framesOf(10)]
 		});
 	});
 
@@ -282,12 +313,10 @@ describe('computeSummonSubrows — window projection + ticks', () => {
 				} as unknown as NonNullable<Summon['effects']>[number]
 			]
 		});
-		const char = mkChar('fischl', gated);
-		const tracks = [mkTrack('fischl', 0, { eBars: [mkBar(0)] })];
-		const windows = [mkWin('fischl', 0, 8, 'skill')];
-		expect(run(tracks, windows, [char], {}).length).toBe(1);
-		expect(run(tracks, windows, [char], {})[0].bars[0].ticks).toEqual([]);
-		expect(run(tracks, windows, [char], { fischl: 2 })[0].bars[0].ticks).toEqual([
+		// ↻ Asserted on the WALK now, not through the projection — the gating lives
+		// in `collectSummonTicks` and the projection no longer derives anything.
+		expect(computeSummonTicks(gated, 0, framesOf(8), 0)).toEqual([]);
+		expect(computeSummonTicks(gated, 0, framesOf(8), 2)).toEqual([
 			framesOf(2),
 			framesOf(4),
 			framesOf(6)

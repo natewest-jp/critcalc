@@ -346,7 +346,10 @@ describe('Fischl — A4 Thundering Retribution, end to end', () => {
 // The coordinated attack — the two triggers added 2026-08-18
 // ---------------------------------------------------------------------------
 
-/** Every measured tick the parse published on a summon's window, in seconds. */
+/** Every tick the parse published on a summon's window, in seconds.
+ *  ⚠️ Since 2026-08-18 `ticks` is the WHOLE list — `finalize` is the one producer
+ *  for a summon's markers — so a series-specific assertion must compare counts
+ *  rather than expect an empty array. */
 const measuredTicks = (notation: string, label: string, cons: Record<string, number> = {}) =>
 	parseNotation(notation, lookup, 8, cons, {}, undefined)
 		.windows.filter((w) => w.kind === 'summon' && w.label === label)
@@ -404,8 +407,12 @@ describe('whileNormalAttacking — the wave', () => {
 	});
 
 	it('is constellation-gated for Fischl and silent at C0', () => {
-		expect(measuredTicks('Fischl E N5 N5 N5', 'Oz')).toEqual([]);
-		expect(measuredTicks('Fischl E N5 N5 N5', 'Oz', { fischl: 6 }).length).toBeGreaterThan(5);
+		// ⚠️ Oz's own tick series draws on the same lane, so the assertion is the
+		// DIFFERENCE: at C6 the wave adds markers on top of the ticks, and at C0 it
+		// adds none. Comparing against the C0 list is what isolates the wave.
+		const c0 = measuredTicks('Fischl E N5 N5 N5', 'Oz');
+		const c6 = measuredTicks('Fischl E N5 N5 N5', 'Oz', { fischl: 6 });
+		expect(c6.length).toBeGreaterThan(c0.length + 5);
 	});
 });
 

@@ -18,7 +18,7 @@
 import type { CastAbility, Effect, Element, Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import { framesOf } from '$lib/utils/frames';
-import { evalCondition } from './conditions';
+import { evalCondition, type ConditionContext } from './conditions';
 
 // ---------------------------------------------------------------------------
 // Summon resolution (for the P4 summon-window pass)
@@ -168,17 +168,18 @@ export function collectSummonTicks(
 	spawnAt: number,
 	endAt: number,
 	cLevel: number,
-	accept: (effect: Effect) => boolean
+	accept: (effect: Effect) => boolean,
+	context?: ConditionContext
 ): { time: number; effect: Effect }[] {
 	const ticks: { time: number; effect: Effect }[] = [];
-	for (const s of summonTickSeries(summon, cLevel, accept)) {
+	for (const s of summonTickSeries(summon, cLevel, accept, context)) {
 		// ⚓ THE CAP IS A BOUND ON TOP OF THE WINDOW, never instead of it — a series
 		// stops at whichever comes first. ⚠️ The single exception is the BOUNDARY
 		// TICK: our walk is half-open, so a tick landing exactly on `endAt` is
 		// dropped, and gcsim's status-gated chains land it (Kaeya's status is
 		// `duration + hitmark + 1`, and that `+ 1` is deliberate). An authored cap
 		// widens the window by exactly ONE tick to say so, and ⛔ by no more.
-		const cap = tickCapOf(s.effect, cLevel);
+		const cap = tickCapOf(s.effect, cLevel, context);
 		const limit = cap === null ? endAt : endAt + s.interval;
 		let n = 0;
 		for (let t = spawnAt + s.firstDelay; t < limit; t += s.interval) {
@@ -199,7 +200,11 @@ export function collectSummonTicks(
  * authored cap is a CLAIM about gcsim, and `audit-gcsim-frames.mjs` §5 is what
  * re-measures it. ⛔ Never re-derive this rule there.
  */
-export function tickCapOf(effect: Effect, cLevel: number): number | null {
+export function tickCapOf(
+	effect: Effect,
+	cLevel: number,
+	context?: ConditionContext
+): number | null {
 	if (effect.trigger.type !== 'summonTick') return null;
 	const t = effect.trigger;
 	// ⚠️ The constellation override REPLACES the base outright rather than adding
@@ -207,7 +212,10 @@ export function tickCapOf(effect: Effect, cLevel: number): number | null {
 	// when no base cap is authored, so a series that is derived at C0 and capped
 	// at C6 can say exactly that.
 	const scaled = t.tickCapScaling;
-	if (scaled && evalCondition(scaled.conditions, 4, new Set(), cLevel) === true)
+	if (
+		scaled &&
+		evalCondition(scaled.conditions, 4, new Set(), cLevel, undefined, undefined, context) === true
+	)
 		return scaled.ticks;
 	return t.tickCap ?? null;
 }
@@ -243,13 +251,17 @@ export type SummonTickSeries = {
 export function summonTickSeries(
 	summon: Summon,
 	cLevel: number,
-	accept: (effect: Effect) => boolean
+	accept: (effect: Effect) => boolean,
+	context?: ConditionContext
 ): SummonTickSeries[] {
 	const out: SummonTickSeries[] = [];
 	(summon.effects ?? []).forEach((eff, index) => {
 		if (eff.trigger.type !== 'summonTick') return;
 		if (!accept(eff)) return;
-		if (evalCondition(eff.conditions, 4, new Set(), cLevel) === false) return;
+		if (
+			evalCondition(eff.conditions, 4, new Set(), cLevel, undefined, undefined, context) === false
+		)
+			return;
 		const interval = framesOf(eff.trigger.interval);
 		if (!(interval > 0)) return;
 		const firstDelay =
@@ -265,9 +277,10 @@ export function computeSummonTicks(
 	summon: Summon,
 	spawnAt: number,
 	endAt: number,
-	cLevel: number
+	cLevel: number,
+	context?: ConditionContext
 ): number[] {
-	return collectSummonTicks(summon, spawnAt, endAt, cLevel, () => true).map((t) => t.time);
+	return collectSummonTicks(summon, spawnAt, endAt, cLevel, () => true, context).map((t) => t.time);
 }
 
 /**
@@ -287,9 +300,18 @@ export function computeSummonDamageTicks(
 	summon: Summon,
 	spawnAt: number,
 	endAt: number,
-	cLevel: number
+	cLevel: number,
+	context?: ConditionContext
 ): { time: number; element?: Element }[] {
-	return collectSummonTicks(summon, spawnAt, endAt, cLevel, (eff) => eff.type === 'damage').map(
-		(t) => ({ time: t.time, element: (t.effect as Extract<Effect, { type: 'damage' }>).element })
-	);
+	return collectSummonTicks(
+		summon,
+		spawnAt,
+		endAt,
+		cLevel,
+		(eff) => eff.type === 'damage',
+		context
+	).map((t) => ({
+		time: t.time,
+		element: (t.effect as Extract<Effect, { type: 'damage' }>).element
+	}));
 }

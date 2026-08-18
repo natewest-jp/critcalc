@@ -28,7 +28,13 @@ import { deriveBuffWindows } from '$lib/utils/buffWindows';
 import type { CastEvent, ReactionEvent, TimelineWindow } from '$lib/utils/rotationEvents';
 import type { SimContext } from './context';
 import type { CharacterTrack, InputBlock, ParsedRotation, TimelineBar } from './types';
-import { computeSummonDamageTicks, findSummonsForBar, summonEndAt, summonSpawnAt } from './summons';
+import {
+	collectSummonTicks,
+	computeSummonDamageTicks,
+	findSummonsForBar,
+	summonEndAt,
+	summonSpawnAt
+} from './summons';
 import { collectApplications, collectAuraSeries } from './aura';
 
 /**
@@ -195,6 +201,16 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	//    consumers can drop the geometry reconstruction). Reads the now-stamped
 	//    bar.uptime.
 	const charById = new Map(ctx.team.teamChars.map((c) => [c.id, c]));
+	// ⚓⚓ THE TEAM FACTS A TICK SERIES CAN BE GATED ON (2026-08-18). Aino's burst
+	// ticks twice as fast under Ascendant Gleam, which is `teamFaction: moonsign
+	// >= 2` — a condition that returns NULL without this context, and a series
+	// whose condition is unresolvable ABSTAINS. Built once, and handed to every
+	// summon-tick walk below so the markers a reader sees and the hits that fire
+	// are computed from the identical answer.
+	const tickCtx = {
+		teamFactionCounts: ctx.team.teamFactionCounts,
+		teamEnabledReactions: ctx.team.teamEnabledReactions
+	};
 	const lastSummonWindowByKey = new Map<string, Extract<TimelineWindow, { kind: 'summon' }>>();
 	// The resolved `Summon` behind each emitted window, kept parser-private for
 	// the off-field hit synthesis in step 6c. Recorded HERE because this is the
@@ -259,10 +275,6 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 				// pushes can interleave out of order with a summon tick's.
 				// ⚠️ Bounded by `[spawnAt, endAt)` so a landing whose travel carried it
 				// past the summon's end is not drawn outside the bar.
-				const measured = ctx.stateGatedTicks.get(
-					`${track.characterId}::${summon.label}::${kind}::${spawnAt}`
-				);
-				const ticks = measured?.filter((t) => t >= spawnAt && t < endAt).sort((a, b) => a - b);
 				const win: Extract<TimelineWindow, { kind: 'summon' }> = {
 					kind: 'summon',
 					characterId: track.characterId,
@@ -270,8 +282,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 					start: spawnAt,
 					end: endAt,
 					source: kind,
-					sourceCastId: ctx.castIdByBar.get(bar),
-					...(ticks && ticks.length > 0 ? { ticks } : {})
+					sourceCastId: ctx.castIdByBar.get(bar)
 				};
 				windows.push(win);
 				summonByWindow.set(win, summon);
@@ -379,12 +390,49 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// ⛔ Do not "fix" that by calling `dispatchHit` here: the ordering IS the
 	// problem, and a hit dispatched after the fact would apply its gain to a
 	// stack state that later hits have already read.
+	// ⚓⚓ ONE PRODUCER FOR A SUMMON'S MARKERS (2026-08-18). The fixed-cadence walk
+	// used to live in `computeSummonSubrows`, which meant the ticks a reader SEES
+	// and the ticks that FIRE were two computations required to agree — the law
+	// `collectSummonTicks` and the live chain both carry, and the "MUST STAY
+	// IDENTICAL" shape this codebase has already paid for once. They are one
+	// computation now, and the projection reads the result off the window.
+	//
+	// ⚓ It is also the only way a TEAM-GATED cadence can work at all: Aino's burst
+	// ticks twice as fast under Ascendant Gleam, which is a `teamFaction`
+	// condition, and the renderer has no team-faction context — it would have had
+	// to duplicate the parser's.
+	//
+	// ⚠️⚠️ IT RUNS HERE, NOT INSIDE `emitSummon`, AND THAT IS LOAD-BEARING. Recast
+	// truncation shortens the PRIOR window after it has already been pushed
+	// (`prev.end = spawnAt`), so a walk done at emission time uses an end that is
+	// about to change. Measured while writing this: Fischl's first Oz kept ten
+	// markers out at 82–613 frames on a window the burst had already cut to 44.
+	// ⛔ Never move this back up.
 	for (const win of windows) {
 		if (win.kind !== 'summon') continue;
 		const summon = summonByWindow.get(win);
 		if (!summon) continue;
 		const cLevel = ctx.constellationLevels?.[win.characterId] ?? 0;
-		for (const tick of computeSummonDamageTicks(summon, win.start, win.end, cLevel)) {
+		const measured =
+			ctx.stateGatedTicks.get(`${win.characterId}::${win.label}::${win.source}::${win.start}`) ??
+			[];
+		const ticks = [
+			...collectSummonTicks(summon, win.start, win.end, cLevel, () => true, tickCtx).map(
+				(t) => t.time
+			),
+			// ⚠️ Bounded by the FINAL span so a wave landing past the summon's end —
+			// or before a truncated window's start — is not drawn outside the bar.
+			...measured.filter((t) => t >= win.start && t < win.end)
+		].sort((a, b) => a - b);
+		if (ticks.length > 0) win.ticks = ticks;
+	}
+
+	for (const win of windows) {
+		if (win.kind !== 'summon') continue;
+		const summon = summonByWindow.get(win);
+		if (!summon) continue;
+		const cLevel = ctx.constellationLevels?.[win.characterId] ?? 0;
+		for (const tick of computeSummonDamageTicks(summon, win.start, win.end, cLevel, tickCtx)) {
 			ctx.hitRecords.push({
 				characterId: win.characterId,
 				time: tick.time,

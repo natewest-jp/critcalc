@@ -37,7 +37,6 @@ import {
 	type TimelineWindow
 } from '$lib/utils/notationParser';
 import { findSummonsForBar } from '$lib/sim/summons';
-import type { Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import type { SlottedTrack, SummonSubrow } from './types';
 
@@ -64,12 +63,18 @@ export { findCastSummons };
 export function computeSummonSubrows(
 	annotatedTracks: SlottedTrack[],
 	summonWindows: readonly TimelineWindow[],
-	constellationLevels: Record<string, number>,
+	/** ⚠️ RETAINED, UNREAD (2026-08-18). The tick walk this fed moved to
+	 *  `finalize`, which resolves the constellation itself — but the parameter
+	 *  stays so the two call sites (the timeline component and the projection
+	 *  bundle) do not move, and so a future per-slot projection has it in hand.
+	 *  ⛔ Do not reach for it to derive anything: this pass no longer computes. */
+	_constellationLevels: Record<string, number>,
 	getCharacter: (id: string) => CharacterData | null
 ): SummonSubrow[] {
 	// ── Pass 1: walk the slot-annotated tracks to fix sub-row order and resolve
-	//    each (characterId, summon.label, source) cast's Summon object for tick
-	//    computation. This walk NO LONGER computes spawn/end/truncation — those
+	//    each (characterId, summon.label, source) cast's summon for lane
+	//    registration. ↻ It no longer resolves the Summon OBJECT — the tick walk
+	//    that needed it moved to `finalize` (2026-08-18). This walk NO LONGER computes spawn/end/truncation — those
 	//    come from the parser windows below — but reproducing the pre-3c walk
 	//    order keeps sub-row stacking (the visible ordering within a slot)
 	//    byte-identical. Guards mirror the old emit(): skip zero-uptime bars and
@@ -95,7 +100,6 @@ export function computeSummonSubrows(
 	//    parser finalize pass.
 	const rowMap = new Map<string, SummonSubrow>();
 	const subrowOrder: SummonSubrow[] = [];
-	const summonByKey = new Map<string, Summon>();
 	// Walk index per summon-spawning cast, keyed characterId::label::source::start
 	// (start = the exact spawn time the parser stamps on the window, same float
 	// ops). Restores pre-3c per-lane bar order — see BAR-ORDER fidelity in the
@@ -111,7 +115,6 @@ export function computeSummonSubrows(
 		// One lane per summon, registered in authored order — the primary keeps
 		// the sub-row position it has always had and a secondary stacks under it.
 		findCastSummons(char, kind, bar.label, bar.abilityId).forEach((summon, i) => {
-			summonByKey.set(`${track.characterId}::${summon.label}::${kind}`, summon);
 			// ⚠ The spawn instant here is a LOOKUP KEY, not geometry — it has to
 			// reproduce the parser's window `start` exactly, or the re-sort below
 			// silently falls back to index 0 for every bar. It still has to match
@@ -151,17 +154,20 @@ export function computeSummonSubrows(
 		if (w.kind !== 'summon') continue;
 		const row = rowMap.get(`${w.characterId}::${w.label}`);
 		if (!row) continue; // character not slotted (dropped from annotatedTracks)
-		const summon = summonByKey.get(`${w.characterId}::${w.label}::${w.source}`);
-		const cLevel = constellationLevels[w.characterId] ?? 0;
-		const derived = summon ? computeSummonTicks(summon, w.start, w.end, cLevel) : [];
-		// ⚓ TWO SOURCES, ONE LANE (coordinated-attack round, 2026-08-18). A
-		// fixed-cadence series is WALKED here, which is what makes a drawn marker
-		// and a fired hit the same thing; a state-gated series has no cadence to
-		// walk, so the parse publishes the instants it measured on the window and
-		// they merge in. ⛔ Never teach this walk to guess a state-gated cadence —
-		// its fire times depend on when somebody swung.
-		const ticks = w.ticks?.length ? [...derived, ...w.ticks].sort((a, b) => a - b) : derived;
-		row.bars.push({ start: w.start, end: w.end, source: w.source, ticks });
+		// ⚓⚓ THE PARSE PUBLISHES A SUMMON'S TICKS; THIS DOES NOT DERIVE THEM
+		// (2026-08-18). Until now the fixed-cadence walk lived here and the
+		// state-gated instants came off the window, which made the ticks a reader
+		// SEES and the ticks that FIRE two computations required to agree — the
+		// "MUST STAY IDENTICAL" shape this file has already paid for once with
+		// `findCastSummons`/`findSummonsForBar`. `finalize` is the one producer now.
+		//
+		// ⚠️ It is also the only way a TEAM-GATED cadence can work: Aino's burst
+		// ticks twice as fast under Ascendant Gleam, which is a `teamFaction`
+		// condition, and this pass has no team-faction context — it would have had
+		// to duplicate the parser's, which is exactly the drift this removes.
+		//
+		// ⛔ Do not reintroduce a local walk for "just one case".
+		row.bars.push({ start: w.start, end: w.end, source: w.source, ticks: w.ticks ?? [] });
 	}
 
 	// The parser emits windows in start order (its final `windows.sort`), but the
