@@ -529,6 +529,24 @@ export type Trigger =
 			 *  dispatch walks the rotation-wide `hit` IR events and filters by this
 			 *  field at dispatch time. */
 			source?: 'self' | 'team' | 'others';
+			/**
+			 * Seconds after the HOST CAST during which this trigger is armed —
+			 * read ONLY by the damage-proc path (`sim/procs.ts`), i.e. by a
+			 * `damage` effect that carries an `application[]` (coordinated-attack
+			 * round, 2026-08-18).
+			 *
+			 * ⚓ A BUFF's `onHit` needs no window and must not carry one: it is
+			 * armed for as long as its holder is in the team, and `buffWindows`
+			 * derives its span from the hit it fires on. A damage proc is the
+			 * opposite — Beidou's Stormbreaker listens for 15 s and then stops,
+			 * and without a window it would listen for the rest of the rotation.
+			 *
+			 * ⚠️ Same contract as `onReaction.armedFor`: an effect hosted on
+			 * `summons[].effects[]` needs none, because the summon's own liveness
+			 * IS the window and it is answered by the one `summonEndAt`.
+			 * characterLint B.13b enforces both halves.
+			 */
+			armedFor?: number;
 	  }
 	| {
 			type: 'onReaction';
@@ -641,6 +659,50 @@ export type Trigger =
 	 *  Iansan A2). Does not fire when no NB events occur (no Natlan units in
 	 *  team — `nbBars` is empty). */
 	| { type: 'onTeamNightsoulBurst' }
+	/**
+	 * ⚓⚓ FIRES PERIODICALLY WHILE THE ACTIVE CHARACTER IS NORMAL-ATTACKING —
+	 * the coordinated-attack WAVE (2026-08-18). Xingqiu's Rain Swords, Yelan's
+	 * Exquisite Throw, Thoma's Fiery Collapse and Fischl's C6 Evernight Raven.
+	 *
+	 * ⚓⚓ IT IS NOT PER-HIT, AND THAT IS THE WHOLE REASON IT IS ITS OWN TRIGGER.
+	 * gcsim runs all four off `internal/template/minazuki`, a watcher on
+	 * `action.NormalAttackState`: while the ACTIVE character is inside the
+	 * normal-attack animation it fires every `interval`, and swing COUNT is
+	 * irrelevant — a slow two-hit string and a fast five-hit string produce the
+	 * same one wave per second. ⛔ An `onHit`-per-swing model is wrong in both
+	 * directions, which is the survey's headline finding.
+	 *
+	 * ⚠️ ONLY VALID ON `Summon.effects[]`. All four are hosted on a summon that
+	 * was already authored (Rainbow Bladework, Exquisite Throw, Scorching
+	 * Ooyoroi, Oz), so the summon's own liveness IS the window and there is one
+	 * `summonEndAt` answering it — the same arrangement `onReaction` uses.
+	 * characterLint B.13c enforces it.
+	 *
+	 * ⚠️ The effect must carry an `application[]`: unlike a summon tick, whose
+	 * element comes off the `damage` effect and lands at the tick instant, a wave
+	 * TRAVELS (Xingqiu 20 f, Yelan 20 f, Thoma 11 f, Fischl 10 f), and the frame
+	 * offset is what `application[]` exists to say.
+	 *
+	 * ⛔ THE MARKERS ARE NOT DERIVED BY THE PROJECTION. `collectSummonTicks`
+	 * cannot walk this series — its fire times depend on when somebody swung —
+	 * so `summonTickSeries` refuses it by type and the parse publishes the
+	 * instants it measured onto the summon window (`TimelineWindow.ticks`).
+	 *
+	 * - `interval` — seconds between waves while the state holds. 1 for all four.
+	 * - `icdGate` — as on `summonTick`: absent = standard ICD, `'none'` = every
+	 *   wave applies, an `IcdWindow` = a measured (timer, every) pair.
+	 *   ⚠️⚠️ Pair it with the stream OUR series MODELS (the Emilie rule). We model
+	 *   ONE hit per wave; gcsim models a wave's two-to-five swords individually
+	 *   and reaches "one application per wave" through `ICDGroupDefault`. So
+	 *   Xingqiu and Yelan carry `'none'` — the positive claim their kit text makes
+	 *   ("each wave of Hydro Swords can apply one source of Hydro") — while Thoma,
+	 *   whose wave IS one hit, is bare and gates on the standard.
+	 */
+	| {
+			type: 'whileNormalAttacking';
+			interval: number;
+			icdGate?: 'none' | IcdWindow;
+	  }
 	/** Fires periodically while the parent summon is active. Only valid on
 	 *  effects within `Summon.effects[]`. The timeline renders one marker per
 	 *  tick on the summon bar.
@@ -1125,6 +1187,15 @@ export type Effect =
 			 * somebody else caused a reaction. Nahida's Tri-Karma Purification
 			 * (Dendro, **1.5U**, +3 frames) and Fischl's A4 Thundering Retribution
 			 * (Electro, 1U, +4 frames) are the two.
+			 *
+			 * ↻ **TWO MORE TRIGGERS READ IT SINCE 2026-08-18** (the coordinated-attack
+			 * round), and they are the same idea reached from two other directions:
+			 * `whileNormalAttacking` (a wave fired because the ACTIVE character is
+			 * swinging — Xingqiu, Yelan, Thoma, Fischl C6) and `onHit` (a proc fired
+			 * because the opponent TOOK damage — Albedo, Beidou, Dehya, Raiden,
+			 * Nicole). ⚓ In every case the sentence is the same: this effect's own
+			 * hits land `frame` frames after the thing that triggered it. All four
+			 * readers are `sim/procs.ts`.
 			 *
 			 * ⚠️⚠️ THE ABSENT CASE IS NOT THE ABILITY'S. On an ability, an absent
 			 * `application[]` means UNMEASURED and falls back to the character's

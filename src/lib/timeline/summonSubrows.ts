@@ -153,7 +153,14 @@ export function computeSummonSubrows(
 		if (!row) continue; // character not slotted (dropped from annotatedTracks)
 		const summon = summonByKey.get(`${w.characterId}::${w.label}::${w.source}`);
 		const cLevel = constellationLevels[w.characterId] ?? 0;
-		const ticks = summon ? computeSummonTicks(summon, w.start, w.end, cLevel) : [];
+		const derived = summon ? computeSummonTicks(summon, w.start, w.end, cLevel) : [];
+		// ⚓ TWO SOURCES, ONE LANE (coordinated-attack round, 2026-08-18). A
+		// fixed-cadence series is WALKED here, which is what makes a drawn marker
+		// and a fired hit the same thing; a state-gated series has no cadence to
+		// walk, so the parse publishes the instants it measured on the window and
+		// they merge in. ⛔ Never teach this walk to guess a state-gated cadence —
+		// its fire times depend on when somebody swung.
+		const ticks = w.ticks?.length ? [...derived, ...w.ticks].sort((a, b) => a - b) : derived;
 		row.bars.push({ start: w.start, end: w.end, source: w.source, ticks });
 	}
 

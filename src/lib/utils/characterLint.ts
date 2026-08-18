@@ -19,6 +19,7 @@ import type {
 	Condition,
 	Effect,
 	ElementalApplication,
+	IcdWindow,
 	NormalAbility,
 	SkillAbility,
 	BurstAbility
@@ -41,6 +42,19 @@ export type LintIssue = {
 // ---------------------------------------------------------------------------
 // Vocabulary sets — kept aligned with src/lib/types/ability.ts
 // ---------------------------------------------------------------------------
+
+/**
+ * The trigger kinds that carry an effect-level `application[]` and feed the gauge
+ * through `sim/procs.ts` (coordinated-attack round, 2026-08-18).
+ *
+ * ⚠️⚠️ RESTATED, NOT IMPORTED, for the same forced reason as STANDARD_ICD_FRAMES
+ * below — this file must stay free of runtime imports. ⚓ The drift it accepts is
+ * one-directional and safe: the sim's `procEffects` is the authority on what gets
+ * ARMED, so a name missing here would let an effect past the lint that the sim
+ * still runs, and a name here that the sim drops shows up as an application the
+ * oracle says we never make.
+ */
+const PROC_TRIGGERS = ['onReaction', 'onHit', 'whileNormalAttacking'] as const;
 
 /**
  * Standard element-application ICD, restated for D.27b's "did a curator annotate
@@ -1204,6 +1218,55 @@ function lintCastAbility(
 	}
 }
 
+/**
+ * The `icdGate` window's shape, shared by `summonTick` and `whileNormalAttacking`
+ * (coordinated-attack round). ⚓ ONE check for one field — the two triggers carry
+ * the same key with the same meaning, and two copies of a unit trap is two
+ * chances to fix only one of them.
+ */
+function lintIcdGate(
+	gate: IcdWindow | 'none' | undefined,
+	what: string,
+	summonLabel: string,
+	abilityId: string,
+	push: (sev: Severity, check: string, message: string, abilityId?: string) => void
+): void {
+	if (!gate || gate === 'none') return;
+	// ⚠️⚠️ THE UNIT TRAP A.4b EXISTS FOR, AND HERE THE TWO UNITS SIT IN THE SAME
+	// OBJECT: `interval` beside it is in SECONDS and this is in FRAMES. A curator
+	// reaching for "1s" writes `1` and gets a window that has expired before the
+	// next tick, which reads as "every tick applies" — the exact over-claim the
+	// field exists to stop. gcsim's smallest real group timer is 6 frames, so
+	// anything under that is a unit error rather than a value.
+	if (!isPositiveInt(gate.timer) || gate.timer < 6) {
+		push(
+			'strict',
+			'summon-tick-icd-window-invalid',
+			`${what} icdGate.timer on summon "${summonLabel}" must be a positive integer of FRAMES (got ${gate.timer}); gcsim's smallest group timer is 6, and the interval beside it is in SECONDS`,
+			abilityId
+		);
+	}
+	if (gate.every !== undefined && !isPositiveInt(gate.every)) {
+		push(
+			'strict',
+			'summon-tick-icd-window-invalid',
+			`${what} icdGate.every on summon "${summonLabel}" must be a positive integer when present (got ${gate.every}); omit it to mean "only the first tick of the window applies"`,
+			abilityId
+		);
+	}
+	// ⚓ A window equal to the standard is the DEFAULT spelled out, and icd.md
+	// forbids annotating the default: absent already means this, and a redundant
+	// annotation asserts a measurement as if it were a finding.
+	if (gate.timer === STANDARD_ICD_FRAMES.timer && gate.every === STANDARD_ICD_FRAMES.hits) {
+		push(
+			'strict',
+			'summon-tick-icd-window-invalid',
+			`${what} icdGate on summon "${summonLabel}" restates the standard window (${gate.timer}f / every ${gate.every}); omit it — absent means standard`,
+			abilityId
+		);
+	}
+}
+
 /** Lint summon effects (P3 — Summon.effects[]). Walks each summon owned by a
  *  cast ability and validates its effects with the same rules as ability
  *  effects, plus summonTick-specific checks. */
@@ -1288,37 +1351,24 @@ function lintSummonEffects(
 						}
 					}
 				}
-				const gate = eff.trigger.icdGate;
-				if (gate && gate !== 'none') {
-					if (!isPositiveInt(gate.timer) || gate.timer < 6) {
-						push(
-							'strict',
-							'summon-tick-icd-window-invalid',
-							`summonTick icdGate.timer on summon "${s.label}" must be a positive integer of FRAMES (got ${gate.timer}); gcsim's smallest group timer is 6, and the interval beside it is in SECONDS`,
-							a.id
-						);
-					}
-					if (gate.every !== undefined && !isPositiveInt(gate.every)) {
-						push(
-							'strict',
-							'summon-tick-icd-window-invalid',
-							`summonTick icdGate.every on summon "${s.label}" must be a positive integer when present (got ${gate.every}); omit it to mean "only the first tick of the window applies"`,
-							a.id
-						);
-					}
-					// ⚓ A window equal to the standard is the DEFAULT spelled out, and
-					// icd.md forbids annotating the default: absent already means this,
-					// and a redundant annotation asserts a measurement as if it were a
-					// finding.
-					if (gate.timer === STANDARD_ICD_FRAMES.timer && gate.every === STANDARD_ICD_FRAMES.hits) {
-						push(
-							'strict',
-							'summon-tick-icd-window-invalid',
-							`summonTick icdGate on summon "${s.label}" restates the standard window (${gate.timer}f / every ${gate.every}); omit it — absent means standard`,
-							a.id
-						);
-					}
+				lintIcdGate(eff.trigger.icdGate, 'summonTick', s.label, a.id, push);
+			}
+
+			// (D.27e) ⚓ THE WAVE — `whileNormalAttacking`, the coordinated attack
+			// that fires while the ACTIVE character is normal-attacking
+			// (coordinated-attack round, 2026-08-18). Placement and shape are
+			// checked in lintEffect (B.13c); the cadence is checked here, beside the
+			// summon-tick one it mirrors.
+			if (eff.trigger.type === 'whileNormalAttacking') {
+				if (!isPositiveNumber(eff.trigger.interval)) {
+					push(
+						'strict',
+						'wave-interval-invalid',
+						`whileNormalAttacking effect on summon "${s.label}" requires a positive interval in SECONDS (got ${eff.trigger.interval})`,
+						a.id
+					);
 				}
+				lintIcdGate(eff.trigger.icdGate, 'whileNormalAttacking', s.label, a.id, push);
 			}
 		}
 
@@ -1691,16 +1741,103 @@ function lintEffect(
 		}
 	}
 
+	// (B.13b) ⚓ AN `onHit` DAMAGE PROC MUST HAVE A WINDOW AND A COOLDOWN
+	// (coordinated-attack round, 2026-08-18). Beidou's Stormbreaker, Raiden's Eye,
+	// Albedo's Transient Blossom, Dehya's Fiery Sanctum, Nicole's burst.
+	//
+	// ⚓ A BUFF on `onHit` needs neither and must not carry `armedFor`: it is armed
+	// for as long as its holder is on the team, and `buffWindows` derives its span
+	// from the hit. A damage proc is the opposite — without a window it listens for
+	// the rest of the rotation, and without a cooldown it fires on EVERY hit in a
+	// stream that now includes summon ticks and other procs.
+	if (eff.trigger.type === 'onHit') {
+		const isDamageProc = eff.type === 'damage' && !!eff.application && eff.application.length > 0;
+		const armedFor = eff.trigger.armedFor;
+		if (armedFor !== undefined && !isPositiveNumber(armedFor)) {
+			push(
+				'strict',
+				'armed-for-invalid',
+				`onHit trigger armedFor must be a positive number of seconds (got ${JSON.stringify(armedFor)})`,
+				location
+			);
+		}
+		if (armedFor !== undefined && !isDamageProc) {
+			push(
+				'strict',
+				'hit-proc-armed-for-unread',
+				`onHit trigger armedFor is read only by the damage-proc path — put it on a damage effect that carries an application[], or drop it`,
+				location
+			);
+		}
+		if (isDamageProc) {
+			if (!ctx.isSummon && armedFor === undefined) {
+				push(
+					'strict',
+					'hit-proc-unarmed',
+					`onHit damage effect with application[] needs trigger.armedFor (how long the proc listens, in seconds) unless it is hosted on a summon`,
+					location
+				);
+			}
+			if (ctx.isSummon && armedFor !== undefined) {
+				push(
+					'strict',
+					'hit-proc-double-window',
+					`onHit damage effect on a summon must not set trigger.armedFor — the summon's own lifetime is the window`,
+					location
+				);
+			}
+			// ⚓ The ICD is the whole mechanism. Every authored proc states one
+			// (0.9 s Raiden … 3 s Nicole), and `MIN_REPROC_F` is a one-frame
+			// termination floor, ⛔ never a stand-in for a real cooldown.
+			if (eff.procCooldown === undefined) {
+				push(
+					'strict',
+					'hit-proc-no-cooldown',
+					`onHit damage effect with application[] needs procCooldown — it listens to every damage-dealing hit, summon ticks included`,
+					location
+				);
+			}
+		}
+	}
+
+	// (B.13c) ⚓ A WAVE IS SUMMON-HOSTED, ALWAYS. All four authors (Xingqiu Q,
+	// Yelan Q, Thoma Q, Fischl C6) hang off a summon that was already authored, so
+	// the summon's own liveness IS the window — and its lane is where the measured
+	// fire markers are drawn. An ability-hosted wave would have neither.
+	if (eff.trigger.type === 'whileNormalAttacking') {
+		if (!ctx.isSummon) {
+			push(
+				'strict',
+				'wave-not-on-summon',
+				`whileNormalAttacking is only valid on a summon's effects[] — the summon's lifetime is the wave's window and its lane is where the fires are drawn`,
+				location
+			);
+		}
+		if (eff.type !== 'damage' || !eff.application || eff.application.length === 0) {
+			push(
+				'strict',
+				'wave-no-application',
+				`whileNormalAttacking must be a damage effect carrying an application[] — a wave TRAVELS, and the frame offset is what application[] says`,
+				location
+			);
+		}
+	}
+
 	// (B.12d) An effect-level `application[]` — the FOURTH application source.
 	// ⚠️ Its absent case is NOT the ability's: on an ability an absent list means
 	// UNMEASURED, here it means "does not reach the aura". So an authored entry
 	// has to be complete — a frame, and a real element.
 	if (eff.type === 'damage' && eff.application !== undefined) {
-		if (eff.trigger.type !== 'onReaction') {
+		// ↻ THREE triggers read it since the coordinated-attack round (2026-08-18):
+		// `onReaction` (somebody reacted), `onHit` (the opponent took damage) and
+		// `whileNormalAttacking` (the active character is swinging). ⚓ One list,
+		// shared with the sim's acceptance rule, so the lint can never accept an
+		// effect the sim ignores.
+		if (!(PROC_TRIGGERS as readonly string[]).includes(eff.trigger.type)) {
 			push(
 				'strict',
 				'effect-application-unread',
-				`effect-level application[] is only read on an onReaction trigger (got "${eff.trigger.type}") — a summon tick's application comes from the summonTick path`,
+				`effect-level application[] is only read on a proc trigger (${PROC_TRIGGERS.join(', ')}) — got "${eff.trigger.type}"; a summon tick's application comes from the summonTick path`,
 				location
 			);
 		}

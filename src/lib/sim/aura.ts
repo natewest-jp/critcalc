@@ -64,7 +64,14 @@ import { dispatchOnReactionExtensions } from './extensions';
 import { dispatchGainStacksOnReaction } from './stacks';
 import { getChainIndexMap } from './cooldowns';
 import { toReactions } from './reactionBridge';
-import { armSummonReactionProcs, takeReactionProcs } from './reactionProcs';
+import {
+	armSummonProcs,
+	takeHitProcs,
+	takeReactionProcs,
+	takeWaveFires,
+	type DamageEvent,
+	type ProcListener
+} from './procs';
 
 /**
  * One elemental application the rotation put on the target.
@@ -251,24 +258,89 @@ function emitReaction(
 }
 
 /**
- * ⚓⚓ THE FOURTH APPLICATION SOURCE, dispatched (mark-triggered round). A
- * `damage` effect on an `onReaction` trigger that carries an `application[]`
- * lands its hits on the clock at `time + frame` — Nahida's Tri-Karma
- * Purification (Dendro, 1.5U, +3f) and Fischl's A4 (Electro, 1U, +4f).
+ * ⚓⚓ THE FOURTH APPLICATION SOURCE, dispatched. A `damage` effect carrying an
+ * `application[]` lands its hits on the clock at `time + frame`.
  *
- * ⚓ SCHEDULED, never offered here. The reaction we are dispatching arrived
- * inside `offerApplication`'s own `takeEvents` loop, i.e. mid-`apply`, and
- * offering a second application from there would advance the gauge while it is
- * reporting on the first. A `Band.LAND` task at `time + frame` puts it exactly
- * where a cast's own hit goes, ordered against every other application by the
- * one clock. ⚠️ `time` IS `clock.now` (see the module head), so a zero-frame
- * delay queues at this instant and runs after the current task rather than
- * clamping.
+ * ⚓ ONE FIRING HALF FOR ALL THREE PROC TRIGGERS (coordinated-attack round,
+ * 2026-08-18) — a reaction proc (Nahida's Tri-Karma, Fischl's A4), a damage proc
+ * (Raiden's Eye, Albedo's blossom) and a wave (Xingqiu's rain swords) differ only
+ * in what SELECTED them; what they then do is identical. `procs.ts` owns the
+ * three selections, this owns the one dispatch.
  *
- * ⚠️ The listener's cooldown is spent in `takeReactionProcs`, at the TRIGGER
- * instant — not when the hit lands. That is the same split a cast uses, and it
- * is what makes the trigger interval mean what gcsim's status timer means.
+ * ⚓ SCHEDULED, never offered here. A reaction is dispatched from inside
+ * `offerApplication`'s own `takeEvents` loop, i.e. mid-`apply`, and offering a
+ * second application from there would advance the gauge while it is reporting on
+ * the first. A `Band.LAND` task at `time + frame` puts it exactly where a cast's
+ * own hit goes, ordered against every other application by the one clock.
+ * ⚠️ `time` IS `clock.now` for every caller, so a zero-frame delay queues at this
+ * instant and runs after the current task rather than clamping.
+ *
+ * ⚠️ The listener's cooldown is spent in the `take*` call, at the TRIGGER instant
+ * — not when the hit lands. That is the same split a cast uses, and it is what
+ * makes the trigger interval mean what gcsim's status timer means.
+ *
+ * ⚓ THE PROC'S OWN DAMAGE RE-ENTERS THE DAMAGE STREAM, once, at its earliest
+ * landing frame — a Transient Blossom procs a Raiden Eye, and gcsim agrees. It
+ * carries the listener's key so that listener refuses to hear itself
+ * (`takeHitProcs`), which is Raiden's own stated exclusion and the thing that
+ * bounds the loop.
  */
+function fireProc(ctx: SimContext, clock: Clock, l: ProcListener, time: number): void {
+	let earliest = Infinity;
+	for (const app of l.effect.application) {
+		const at = time + app.frame;
+		if (at < earliest) earliest = at;
+		// ⛔ A physical (element-less) entry applies nothing — the same rule a
+		// physical swing follows. ⚠️ It still DEALT damage, which is why the
+		// stream notification below is outside this loop.
+		if (!app.element) continue;
+		const element = app.element;
+		clock.schedule(at, Band.LAND, () => {
+			offerApplication(ctx, clock, {
+				time: at,
+				characterId: l.holderId,
+				element,
+				units: app.units ?? DEFAULT_UNITS,
+				// ⚓ "Could someone MEASURE this?" — yes: a proc's gauge is one
+				// number in gcsim's ICD group table, so an unauthored one is real
+				// missing work and says so.
+				provisionalUnits: app.units === undefined,
+				castKind: l.castKind,
+				preStates: l.preStates,
+				constellation: l.constellation,
+				chainIdx: l.chainIdx,
+				stacks: l.stacks,
+				// ⚓ A proc is delivered by the MARK or the ENTITY, not by the
+				// character — so it can never itself count as "the active character
+				// triggered this".
+				viaEntity: true
+			});
+		});
+	}
+	if (!Number.isFinite(earliest)) return;
+	const landing = earliest;
+	// ⚓ A marker on the host summon's lane, for the procs that ARE the summon
+	// hitting. See `ProcListener.tickKey` for why the reaction procs are not.
+	if (l.tickKey !== undefined) {
+		const list = ctx.stateGatedTicks.get(l.tickKey);
+		if (list) list.push(landing);
+		else ctx.stateGatedTicks.set(l.tickKey, [landing]);
+	}
+	clock.schedule(landing, Band.LAND, () => {
+		notifyDamage(ctx, clock, {
+			characterId: l.holderId,
+			time: landing,
+			abilityType: l.castKind,
+			element: l.effect.element,
+			damageTag: l.castKind,
+			abilityName: l.effect.attribution,
+			sourceEventId: -1,
+			procKey: l.key
+		});
+	});
+}
+
+/** The `onReaction` half — selection, then the shared dispatch. */
 function scheduleReactionProcs(
 	ctx: SimContext,
 	clock: Clock,
@@ -276,41 +348,63 @@ function scheduleReactionProcs(
 	reaction: Reaction,
 	time: number
 ): void {
-	if (ctx.reactionProcs.size === 0) return;
+	if (ctx.procs.size === 0) return;
 	const fired = takeReactionProcs(
 		ctx,
 		{ characterId: src.characterId, viaEntity: src.viaEntity === true },
 		reaction,
 		time
 	);
-	for (const l of fired) {
-		for (const app of l.effect.application) {
-			// ⛔ A physical (element-less) entry applies nothing — the same rule a
-			// physical swing follows.
-			if (!app.element) continue;
-			const at = time + app.frame;
-			const element = app.element;
-			clock.schedule(at, Band.LAND, () => {
-				offerApplication(ctx, clock, {
-					time: at,
-					characterId: l.holderId,
-					element,
-					units: app.units ?? DEFAULT_UNITS,
-					// ⚓ "Could someone MEASURE this?" — yes: a proc's gauge is one
-					// number in gcsim's ICD group table, so an unauthored one is real
-					// missing work and says so.
-					provisionalUnits: app.units === undefined,
-					castKind: l.castKind,
-					preStates: l.preStates,
-					constellation: l.constellation,
-					chainIdx: l.chainIdx,
-					stacks: l.stacks,
-					// ⚓ A proc is delivered by the MARK, not by the character — so it
-					// can never itself count as "the active character triggered this".
-					viaEntity: true
-				});
-			});
-		}
+	for (const l of fired) fireProc(ctx, clock, l, time);
+}
+
+/**
+ * ⚓⚓ ONE HIT THE OPPONENT TOOK, offered to every armed `onHit` damage proc
+ * (coordinated-attack round, 2026-08-18).
+ *
+ * ⚓ Nate settled the stream: Raiden's Eye of Stormy Judgment fires on ANY damage
+ * the opponent takes, summon damage included — the condition is that the enemy
+ * took DMG, and a shielded enemy (which we do not model) is the only thing that
+ * refuses it. So every damage-dealing hit this parse knows about is notified
+ * here: a cast's hit, an N/C/P swing, a summon damage tick, a reaction proc's
+ * landing and another damage proc's landing.
+ *
+ * ⛔ THIS IS NOT `dispatchHit`, on purpose. That one mutates live stack state in
+ * PARSE order, which is why the finalize-time summon hits feeding `buffWindows`
+ * are deliberately kept out of it (L5e). A proc listener holds no stack state, so
+ * it can be — and must be — notified at the hit's own clock instant.
+ *
+ * ⚠️ For an E/Q cast the record's `time` is the CAST START, the `HitEvent`
+ * convention every `onHit` consumer already reads. It is up to a second early on
+ * a slow burst; splitting it would give the corpus two answers to "when did this
+ * cast hit". See docs/coordinated-attacks-round.md §5.
+ */
+export function notifyDamage(ctx: SimContext, clock: Clock, dmg: DamageEvent): void {
+	if (ctx.procs.size === 0) return;
+	for (const l of takeHitProcs(ctx, dmg, dmg.time)) fireProc(ctx, clock, l, dmg.time);
+}
+
+/**
+ * ⚓⚓ ONE NORMAL-ATTACK SWING'S SPAN, offered to every armed wave listener — the
+ * coordinated-attack WAVE (Xingqiu Q, Yelan Q, Thoma Q, Fischl C6).
+ *
+ * ⚠️ CALL IT BEFORE THE CLOCK ADVANCES OVER THE SWING. The fires it schedules land
+ * INSIDE `[start, end)`, so they have to be queued while the clock still stands at
+ * the swing's start; queued after the advance they would be latecomers, clamped
+ * forward and reported. ⚓ That also puts a wave BEFORE the swing's own
+ * application, which is right — the swing applies at its END.
+ *
+ * See `takeWaveFires` for why a span rather than a chain of tasks.
+ */
+export function notifyNormalAttack(
+	ctx: SimContext,
+	clock: Clock,
+	spanStart: number,
+	spanEnd: number
+): void {
+	if (ctx.procs.size === 0) return;
+	for (const { listener, times } of takeWaveFires(ctx, spanStart, spanEnd)) {
+		for (const t of times) fireProc(ctx, clock, listener, t);
 	}
 }
 
@@ -593,7 +687,7 @@ export function scheduleSummonTicks(
 		// the geometry already is: the listener borrows this exact `endNow`/
 		// `isCurrent` pair, so a swap-out, a duration extension or a recast reaches
 		// it through the one `summonEndAt` instead of a second copy.
-		armSummonReactionProcs({
+		armSummonProcs({
 			ctx,
 			holderId: char.id,
 			summon,
@@ -604,14 +698,22 @@ export function scheduleSummonTicks(
 			constellation,
 			chainIdx,
 			stacks,
-			castKind: kind
+			castKind: kind,
+			// ⚠️ THE KEY IS `computeSummonSubrows`'s, character for character —
+			// `characterId::label::source::spawnAt`, with `spawnAt` the same integer
+			// finalize stamps on the window. Integer frames (C1) are what make that
+			// safe; before them this would have been a float-equality join.
+			tickKey: `${char.id}::${summon.label}::${kind}::${spawnAt}`
 		});
 
 		for (const series of summonTickSeries(summon, cLevel, (e) => e.type === 'damage')) {
 			const element = (series.effect as Extract<Effect, { type: 'damage' }>).element;
-			// ⛔ A physical (element-less) tick applies nothing and must not reach
-			// a clock — the same rule a physical swing follows.
-			if (!element) continue;
+			// ⛔ A physical (element-less) tick applies nothing and must not reach an
+			// ICD clock — the same rule a physical swing follows. ↻ It DOES still
+			// reach the clock, since the coordinated-attack round: a physical tick
+			// deals damage, and damage is what an `onHit` proc listens for. The
+			// corpus has none of these today (0 of 50 series) and the branch exists
+			// so the damage stream is complete by construction rather than by census.
 			// ⚓ Per SERIES, not per summon: Furina's Salon Solitaire carries three
 			// and they measure as three different gates.
 			const icdKey = `${char.id}:summon:${summon.label}:${series.index}`;
@@ -654,8 +756,8 @@ export function scheduleSummonTicks(
 				if (capReached()) return;
 				fired += 1;
 
-				let applies = true;
-				if (params) {
+				let applies = element !== undefined;
+				if (element !== undefined && params) {
 					let icd = ctx.icdClocks.get(icdKey);
 					if (!icd) {
 						icd = createIcdClock();
@@ -663,7 +765,7 @@ export function scheduleSummonTicks(
 					}
 					applies = icdApplies(icd, at, params).applies;
 				}
-				if (applies) {
+				if (applies && element !== undefined) {
 					offerApplication(ctx, clock, {
 						time: at,
 						characterId: char.id,
@@ -687,6 +789,19 @@ export function scheduleSummonTicks(
 						viaEntity: true
 					});
 				}
+				// ⚓ THE TICK IS DAMAGE, whether or not it applied. An ICD-suppressed
+				// tick still HIT, and a damage proc listens for the hit — this is the
+				// stream that lets Raiden's Eye fire off Oz (⚓ Nate's ruling, and the
+				// survey's named "must be settled before authoring").
+				notifyDamage(ctx, clock, {
+					characterId: char.id,
+					time: at,
+					abilityType: kind,
+					element,
+					damageTag: kind,
+					abilityName: summon.label,
+					sourceEventId: -1
+				});
 				// ⚠️ Scheduled whether or not the tick APPLIED: an ICD-suppressed
 				// hit still happened, still spent its counter slot, and the series
 				// must not stop because of it.

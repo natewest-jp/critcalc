@@ -94,8 +94,14 @@ import {
 	getCharacterCdResetTargets,
 	getWeaponCdResetCooldown
 } from './cooldowns';
-import { emitReactionsAtCast, emitReactionsAtSwing, scheduleSummonTicks } from './aura';
-import { armCastReactionProcs } from './reactionProcs';
+import {
+	emitReactionsAtCast,
+	emitReactionsAtSwing,
+	notifyDamage,
+	notifyNormalAttack,
+	scheduleSummonTicks
+} from './aura';
+import { armCastProcs } from './procs';
 
 /** Global dash/jump duration approximation (60fps). Character-specific values deferred. */
 const DASH_FRAMES = 21;
@@ -348,6 +354,19 @@ export function runRotation(
 				);
 			}
 			ctx.hitRecords.push(hit);
+			// ⚓ THE DAMAGE STREAM IS THIS STREAM (coordinated-attack round,
+			// 2026-08-18) — one hit the opponent took, offered to every armed
+			// `onHit` damage proc. Notified from inside `dispatchHit` rather than at
+			// its four call sites so a future hit site cannot forget it, and AFTER
+			// the stack dispatch so a proc can never observe half-applied stacks.
+			//
+			// ⚠️ It fires for a cast that deals no damage at all (a stance opener,
+			// Xiao's burst), because nothing in the corpus says a cast is damageless
+			// — `application: []` says it APPLIES nothing, which is a different
+			// claim. gcsim's `OnEnemyDamage` would not fire there. The same
+			// approximation every `onHit` buff already makes; §5 of the round doc
+			// carries it.
+			notifyDamage(ctx, clock, hit);
 		};
 
 		// Expand bracket repeat groups (e.g. 2[N5C] → N5 C N5 C) before the main
@@ -853,7 +872,7 @@ export function runRotation(
 				// the enemy rather than any ability's active bar. Armed BEFORE the
 				// applications above are allowed to land (the advance at the bottom of
 				// this branch), so a reaction the cast's own hit causes can fire it.
-				armCastReactionProcs({
+				armCastProcs({
 					ctx,
 					holderId: char.id,
 					abilityId: active.id,
@@ -1058,6 +1077,13 @@ export function runRotation(
 							element: nElement
 						});
 						anchorId ??= ev.id;
+						// ⚓⚓ THE WAVE'S SPAN (coordinated-attack round). One swing IS
+						// one stretch of gcsim's `NormalAttackState`, and consecutive
+						// swings abut — so an `N5` reads as one continuous state and a
+						// listener's cadence carries straight across it.
+						// ⚠️ BEFORE the advance: the fires land inside the span, so they
+						// have to be queued while the clock still stands at its start.
+						notifyNormalAttack(ctx, clock, clock.now, clock.now + (castS ?? 0));
 						if (castS !== null) clock.advance(clock.now + castS);
 						normalCounter++;
 						// Normal-opened transient state (post-P4 #2): the FIRST swing's

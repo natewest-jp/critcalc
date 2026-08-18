@@ -1,5 +1,5 @@
 /**
- * reactionProcs.test.ts — the selection half of the FOURTH application source.
+ * procs.test.ts — the selection half of the FOURTH application source.
  *
  * ⚓ TWO HALVES, AND THE SPLIT IS DELIBERATE. `takeReactionProcs` decides WHICH
  * armed listeners a reaction fires; `aura.ts` then schedules their hits. The
@@ -24,8 +24,8 @@ import {
 	reactionProcEffects,
 	takeReactionProcs,
 	type ReactionProcEffect,
-	type ReactionProcListener
-} from './reactionProcs';
+	type ProcListener
+} from './procs';
 
 /** A `damage` + `onReaction` + `application[]` effect — the accepted shape. */
 const procEffect = (over: Partial<ReactionProcEffect> = {}): Effect =>
@@ -40,10 +40,8 @@ const procEffect = (over: Partial<ReactionProcEffect> = {}): Effect =>
 		...over
 	}) as Effect;
 
-const listener = (
-	effect: Effect,
-	over: Partial<ReactionProcListener> = {}
-): ReactionProcListener => ({
+const listener = (effect: Effect, over: Partial<ProcListener> = {}): ProcListener => ({
+	key: 'listener',
 	holderId: 'holder',
 	effect: effect as ReactionProcEffect,
 	start: 0,
@@ -57,9 +55,9 @@ const listener = (
 	...over
 });
 
-const ctxWith = (listeners: ReactionProcListener[], activeCharId?: string): SimContext =>
+const ctxWith = (listeners: ProcListener[], activeCharId?: string): SimContext =>
 	({
-		reactionProcs: new Map(listeners.map((l, i) => [`listener:${i}`, l])),
+		procs: new Map(listeners.map((l, i) => [`listener:${i}`, l])),
 		activeCharId
 	}) as unknown as SimContext;
 

@@ -282,6 +282,26 @@ export type TimelineWindow =
 			start: number;
 			end: number;
 			source: 'skill' | 'burst';
+			/**
+			 * ⚓⚓ TICK INSTANTS THE PARSE MEASURED, for series the PROJECTION
+			 * cannot derive (coordinated-attack round, 2026-08-18). Frames.
+			 *
+			 * Every other summon lane draws its markers with `collectSummonTicks`,
+			 * which walks a fixed cadence over `[start, end)` — that is what makes
+			 * the ticks a viewer SEES exactly the hits that fire. A
+			 * `whileNormalAttacking` wave has no fixed cadence: it fires only while
+			 * somebody is normal-attacking, which is a fact of the parse and of
+			 * nothing else. So the ONE producer publishes here and
+			 * `computeSummonSubrows` merges these in.
+			 *
+			 * ⚓ Same law as `summonTick.tickCap`, reached from the other side:
+			 * there the two readers must honour one rule, here there is only one
+			 * reader BECAUSE there is only one producer. ⛔ Never teach the
+			 * projection to guess a state-gated cadence.
+			 *
+			 * Absent on every summon that has no such series.
+			 */
+			ticks?: number[];
 	  } & WindowProvenance)
 	/** A tracked shield's span (cast → scheduled expiry). */
 	| ({
