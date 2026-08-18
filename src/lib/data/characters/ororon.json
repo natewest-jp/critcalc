@@ -161,8 +161,8 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 0.75,
-								"firstTickDelay": 0.15,
+								"interval": 0.8,
+								"firstTickDelay": 0.2,
 								"icdGate": {
 									"timer": 180
 								}
@@ -171,9 +171,11 @@
 							"stat": "atk",
 							"element": "electro",
 							"_curatorNotes": [
-								"⚓ THE C4 CADENCE. gcsim cons.go c4BurstInterval returns 0.75 at C4, and burst.go computes each tick’s delay as `int(60 * c4BurstInterval())` = 45f — so the interval is 0.75s and the FIRST tick lands at cast + 45f, i.e. 9f after the summon’s spawn at 36f (firstTickDelay 0.15).",
-								"icdGate is unchanged — the group is a property of the attack, not of the rate. ⚓ That is exactly what the base series’ own note predicted: it authored the group rather than the coincidence \"because the coincidence does not survive a different cadence (and C4’s 0.75× tick rate, unmodelled, is exactly such a cadence)\". It is modelled now, and the group carries over unchanged.",
-								"⚠️ Left uncapped: gcsim stops when `supersonic-oculus` (540f from cast) lapses, which lands within a tick of our window walk. ⛔ A cap here would assert a boundary nobody measured — the dumper runs at C0 and cannot see this branch."
+								"⚓ THE C4 CADENCE. C4 reads \"The Supersonic Oculus … rotates 25% faster\", and gcsim burst.go schedules each tick at `int(60 * c4BurstInterval())` frames — the same expression drives the FIRST tick, so the delay from the summon’s 36f spawn moves with the interval.",
+								"⚠️⚠️ WE DIVERGE FROM gcsim HERE ON PURPOSE, BY 0.05s. `c4BurstInterval` returns a hardcoded **0.75**, i.e. an interval 25% SHORTER. The talent says 25% FASTER, which is a rate: ×1.25 speed is an interval of ÷1.25 = **0.8s** (48f), and the first tick lands 12f after the spawn. gcsim’s 0.75 is the common slip between \"25% faster\" and \"25% less\", and its value is a literal in the source rather than a measurement. ⚓ Authored to the kit text; ⚠️ this is a judgement, not a measurement, and it deserves an in-game check.",
+								"⚠️ The oracle cannot adjudicate it: `scripts/gcsim-dump` runs at C0, so §5 of the frames diff never reaches this branch. If the dumper ever gains constellation support this row will flag — which is the correct outcome, not a regression.",
+								"icdGate is unchanged — the group is a property of the attack, not of the rate. ⚓ Exactly what the base series’ own note predicted: it authored the group rather than the coincidence \"because the coincidence does not survive a different cadence (and C4’s 0.75× tick rate, unmodelled, is exactly such a cadence)\". It is modelled now, and the group carried over untouched.",
+								"⚠️ Left uncapped: gcsim stops when `supersonic-oculus` (540f from cast) lapses, which lands within a tick of our window walk. ⛔ A cap here would assert a boundary nobody measured."
 							],
 							"conditions": {
 								"type": "constellation",

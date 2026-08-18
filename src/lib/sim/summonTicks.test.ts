@@ -207,13 +207,16 @@ describe('a conditional cadence — the faster-tick class', () => {
 	});
 
 	it('⚓ Ororon takes his faster cadence from a CONSTELLATION, not the team', () => {
+		// 9 ticks at 1s; 11 at 0.8s ("rotates 25% faster" is a RATE — see the
+		// curator note, which records the 0.05s we deliberately differ from gcsim by).
 		expect(ticksOf('Ororon Q > Kaeya N5 N5', 'Supersonic Oculus')).toHaveLength(9);
-		expect(ticksOf('Ororon Q > Kaeya N5 N5', 'Supersonic Oculus', { ororon: 4 })).toHaveLength(12);
+		expect(ticksOf('Ororon Q > Kaeya N5 N5', 'Supersonic Oculus', { ororon: 4 })).toHaveLength(11);
 		// ⚠️ And his gate does NOT travel with it — the group is a property of the
 		// attack rather than of the rate, so applications stay 3s apart either way.
-		expect(appsAt('Ororon Q > Kaeya N5 N5', 'ororon', { ororon: 4 })).toEqual([
-			0.6, 0.75, 3.75, 6.75
-		]);
+		// ⚠️ 3.2s apart, not 3.0: the 180f timer lets the FIRST tick at or after it
+		// through, and at a 0.8s cadence that lands on the fourth. ⛔ A gate does not
+		// impose its own period on a series — it filters the series' own instants.
+		expect(appsAt('Ororon Q > Kaeya N5 N5', 'ororon', { ororon: 4 })).toEqual([0.6, 0.8, 4, 7.2]);
 	});
 
 	it('⚓ Aino’s C2 fires off a TEAMMATE’s hit, on the duck’s own lane', () => {
