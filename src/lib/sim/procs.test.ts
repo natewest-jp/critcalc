@@ -341,3 +341,120 @@ describe('Fischl — A4 Thundering Retribution, end to end', () => {
 		expect(fischlApps('Barbara E > Fischl E Q > Barbara N3')).not.toContain(2.1);
 	});
 });
+
+// ---------------------------------------------------------------------------
+// The coordinated attack — the two triggers added 2026-08-18
+// ---------------------------------------------------------------------------
+
+/** Every measured tick the parse published on a summon's window, in seconds. */
+const measuredTicks = (notation: string, label: string, cons: Record<string, number> = {}) =>
+	parseNotation(notation, lookup, 8, cons, {}, undefined)
+		.windows.filter((w) => w.kind === 'summon' && w.label === label)
+		.flatMap((w) => (w as { ticks?: number[] }).ticks ?? [])
+		.map((t) => +(t / 60).toFixed(2));
+
+describe('whileNormalAttacking — the wave', () => {
+	it('⚓ fires ONLY while somebody is swinging, and once per second while they are', () => {
+		// The mechanic in one assertion, and the reason it is not an onHit: nobody
+		// swings in the first rotation and the burst applies nothing at all, while
+		// the second — same burst, same 15 s — applies once per second of swinging.
+		expect(appsOf('Xingqiu Q ~14s', 'xingqiu')).toEqual([]);
+		const swinging = appsOf('Xingqiu Q > Kaeya N5 N5 N5 N5', 'xingqiu').map(([t]) => t);
+		expect(swinging).toHaveLength(12);
+		for (let i = 1; i < swinging.length; i++)
+			expect(+(swinging[i] - swinging[i - 1]).toFixed(2)).toBe(1);
+	});
+
+	it('⚓⚓ counts SECONDS, not swings — the survey’s headline, measured', () => {
+		// FIFTEEN swings either way. Diluc's three N5s run 737 frames and Kaeya's
+		// 515, and the wave counts are 13 and 9 — the ratio of the DURATIONS
+		// (1.43), not of the swing counts (1.00). ⛔ An onHit-per-swing model gives
+		// fifteen both times, which is wrong in both directions.
+		const slow = appsOf('Xingqiu Q > Diluc N5 N5 N5', 'xingqiu').length;
+		const fast = appsOf('Xingqiu Q > Kaeya N5 N5 N5', 'xingqiu').length;
+		expect([slow, fast]).toEqual([13, 9]);
+	});
+
+	it('carries the cadence across abutting N tokens, and restarts after a gap', () => {
+		// Consecutive normals are ONE animation state in game, so the waves must not
+		// re-trigger at each token boundary; a non-normal action between them ends
+		// the state and the next entry fires as soon as the interval has elapsed.
+		const continuous = appsOf('Xingqiu Q > Kaeya N1 N1 N1 N1 N1 N1', 'xingqiu').map(([t]) => t);
+		for (let i = 1; i < continuous.length; i++)
+			expect(continuous[i] - continuous[i - 1]).toBeGreaterThanOrEqual(1);
+	});
+
+	it('⚓ applies every THIRD collapse for Thoma — the gate, not the cooldown', () => {
+		// The wave lands every second (`ticks`) and Pyro every three (`applications`).
+		// ⚠️ That gap is what `icdGate` says and what `procCooldown` cannot.
+		const ticks = measuredTicks('Thoma Q > Kaeya N5 N5 N5 N5', 'Scorching Ooyoroi');
+		const apps = appsOf('Thoma Q > Kaeya N5 N5 N5 N5', 'thoma')
+			.map(([t]) => t)
+			.slice(1); // drop the burst's own cast application
+		expect(ticks.length).toBeGreaterThan(apps.length * 2);
+		for (let i = 1; i < apps.length; i++) expect(+(apps[i] - apps[i - 1]).toFixed(2)).toBe(3);
+	});
+
+	it('stops when the summon does', () => {
+		// The window is the summon's, answered by the one `summonEndAt` — so a
+		// string that outlives Rainbow Bladework's 15.55 s stops getting waves.
+		const long = measuredTicks('Xingqiu Q > Kaeya 8[N5]', 'Rainbow Bladework');
+		expect(long.length).toBeGreaterThan(10);
+		expect(Math.max(...long)).toBeLessThan(15.55);
+	});
+
+	it('is constellation-gated for Fischl and silent at C0', () => {
+		expect(measuredTicks('Fischl E N5 N5 N5', 'Oz')).toEqual([]);
+		expect(measuredTicks('Fischl E N5 N5 N5', 'Oz', { fischl: 6 }).length).toBeGreaterThan(5);
+	});
+});
+
+describe('onHit damage procs — the coordinated attack that answers damage', () => {
+	it('⚓⚓ fires off a SUMMON tick with nobody swinging — Nate’s ruling', () => {
+		// The round's one open design question. Raiden's Eye procs on any damage the
+		// opponent takes; Oz is the only thing hitting here, and the Eye answers it.
+		// ⛔ An active-character-swings model gives zero of these.
+		// ⚠️ 1.68 is her E cast's OWN application, not a strike — dropped, because a
+		// list that mixes the two cannot say anything about the strike cadence.
+		const eye = appsOf('Fischl E > Raiden E ~12s', 'raiden_shogun')
+			.map(([t]) => t)
+			.filter((t) => t !== 1.68);
+		expect(eye).toEqual([0.92, 3.42, 6.37, 9.32]);
+		// Every gap is the standard window, which is what the absent gate says.
+		for (let i = 1; i < eye.length; i++) expect(eye[i] - eye[i - 1]).toBeGreaterThan(2.4);
+	});
+
+	it('⚓ never fires off its OWN output, which is what bounds the loop', () => {
+		// Raiden alone, no other damage source: the Eye strikes once off her cast
+		// and then has nothing left to hear. gcsim states the same exclusion.
+		const alone = appsOf('Raiden E ~20s', 'raiden_shogun').map(([t]) => t);
+		expect(alone).toHaveLength(2);
+	});
+
+	it('⚓ hears ANOTHER proc’s landing, though — one field triggers the next', () => {
+		// A proc's own damage re-enters the stream, and gcsim agrees. Albedo's E
+		// cast fires a Transient Blossom at frame 40; Raiden's Eye, armed at 39,
+		// answers the BLOSSOM four frames later. Nothing else hits in this rotation.
+		expect(measuredTicks('Albedo E > Raiden E ~10s', 'Solar Isotoma')).toEqual([0.67]);
+		expect(measuredTicks('Albedo E > Raiden E ~10s', 'Eye of Stormy Judgment')).toEqual([0.73]);
+		// ⚓ And it stops there, because neither hears ITSELF. gcsim's Albedo and
+		// Dehya do, which is why theirs tick forever with no player input.
+		expect(appsOf('Albedo E > Raiden E ~10s', 'albedo')).toHaveLength(2);
+	});
+
+	it('⚓ Beidou takes only the active character’s normals and chargeds', () => {
+		// Her trigger carries the narrowing, not the engine. A rotation with casts
+		// and summon ticks but no swings gives her nothing beyond her own burst.
+		expect(appsOf('Beidou Q > Fischl E Q ~10s', 'beidou')).toHaveLength(1);
+		expect(appsOf('Beidou Q > Kaeya N5 N5 N5', 'beidou').length).toBeGreaterThan(1);
+	});
+
+	it('stops when `armedFor` runs out', () => {
+		// Thunderbeast's Targe is a 15 s status, not a summon — the window is the
+		// only thing that ends it, and without one the trigger would listen forever.
+		const inside = appsOf('Beidou Q > Kaeya N5 N5 N5', 'beidou').length;
+		const outside = appsOf('Beidou Q ~16s > Kaeya N5 N5 N5', 'beidou').length;
+		expect(inside).toBeGreaterThan(1);
+		expect(outside).toBe(1);
+	});
+});

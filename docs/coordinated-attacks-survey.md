@@ -1,7 +1,16 @@
 # Coordinated attacks — what is missing, and what it would take
 
-**Status:** 🔎 **SURVEY ONLY, nothing built.** Written 2026-08-18 at Nate's request, after
-the gauge round's residue was closed down to named gaps.
+**Status:** ✅ **SUPERSEDED — the round shipped the same day.** Read
+`docs/coordinated-attacks-round.md` instead; this is the BEFORE and is kept for the survey
+that shaped the build. Written 2026-08-18 at Nate's request, after the gauge round's
+residue was closed down to named gaps.
+
+⚠️ **Two things below are WRONG and the round measured both.** Yelan's ICD group is
+`ICDGroupYelanBurst` — 120 f, every 3rd — and the `18 f / every 4` in §2's table is
+`ICDGroupYelanBreakthrough`, her CHARGED attack's group. And §1 reads Nicole's inert
+`onHit` damage effect as a defect: measured, her Arcane Projection carries no `Durability`
+in gcsim, applies nothing, takes the ACTIVE character's element and is capped at four per
+burst — the effect being inert for the gauge is correct.
 
 > ⚓ **The headline: it is TWO mechanisms, not one, and the larger one is not
 > hit-triggered at all.** Anyone who opens this expecting "an `onHit` damage effect" will
