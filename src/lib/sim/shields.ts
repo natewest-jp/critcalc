@@ -21,6 +21,7 @@ import type { CharacterData } from '$lib/types/character';
 import { framesOf } from '$lib/utils/frames';
 import type { SimContext } from './context';
 import { DEFAULT_ASCENSION, evalCondition } from './conditions';
+import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
 
 /** Register a shield window when the active cast spawns a shield. Two
  *  authoring conventions covered:
@@ -203,12 +204,8 @@ export function dispatchShieldEnds(ctx: SimContext, currentTime: number): void {
 		// source/ability/procCooldown gating. v1 records the dispatch via
 		// the event stream above; no renderer-visible side effect yet.
 		for (const listener of ctx.team.teamChars) {
-			const sources = [
-				...listener.abilities,
-				...(listener.passives ?? []),
-				...(listener.constellations ?? [])
-			];
 			const listenerCons = ctx.constellationLevels?.[listener.id] ?? 0;
+			const sources = effectSourcesAtConstellation(listener, listenerCons);
 			for (let nodeIdx = 0; nodeIdx < sources.length; nodeIdx++) {
 				const node = sources[nodeIdx];
 				const effects = node.effects ?? [];

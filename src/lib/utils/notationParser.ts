@@ -46,6 +46,7 @@ import type { CharacterData } from '$lib/types/character';
 import type { Element } from '$lib/types/ability';
 import { tokenizeNotation } from '$lib/utils/tokenizer';
 import { computeTeamEnabledReactions, computeTeamFactionCounts } from '$lib/utils/teamComposition';
+import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
 import type { LoadoutEntry } from '$lib/stores';
 import { createSimContext } from '$lib/sim/context';
 import type { ParsedRotation } from '$lib/sim/types';
@@ -182,8 +183,14 @@ export function parseNotation(
 	// authors an onHit gainStacks/consumeStacks. Guards corpus-wide float
 	// identity of drain settling — without an onHit consumer, drain anchors
 	// advance ONLY at cast sites, exactly as before the wiring.
+	//
+	// ⚓ Constellation-gated (2026-08-18) via the shared collector: a locked
+	// entry's effect can never dispatch, so counting it here would run the
+	// settle for a consumer that does not exist. Census-checked byte-identical —
+	// the corpus authors no onHit gainStacks/consumeStacks on a constellation at
+	// all (the only two are Linnea C1 and Skirk C2, both `onCast`).
 	const teamHasOnHitStackEffects = teamChars.some((c) =>
-		[...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])].some((src) =>
+		effectSourcesAtConstellation(c, constellationByHolder.get(c.id) ?? 0).some((src) =>
 			(src.effects ?? []).some(
 				(fx) =>
 					(fx.type === 'gainStacks' || fx.type === 'consumeStacks') && fx.trigger.type === 'onHit'

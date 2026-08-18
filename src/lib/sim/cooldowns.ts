@@ -21,6 +21,7 @@ import { framesOf } from '$lib/utils/frames';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { SimContext } from './context';
 import { findChainStage } from './conditions';
+import { unlockedConstellations } from '$lib/utils/effectCollection';
 
 // ---------------------------------------------------------------------------
 // Weapon cdReset helper
@@ -60,8 +61,8 @@ export function getWeaponCdResetCooldown(
  * Returns the abilities (skill/burst) whose cooldowns should be reset when the
  * given character casts the named ability. Walks the character's burst,
  * passives, and constellations for `cdReset` effects with `source: "character"`
- * whose `trigger.ability` matches the cast that just fired. Constellation-gated
- * effects are filtered against the character's constellation level.
+ * whose `trigger.ability` matches the cast that just fired. Constellation ENTRIES
+ * above the character's level are dropped before their effects are read.
  *
  * Use case (v1): Kazuha C1 — burst reset of skill CD on Q-cast.
  */
@@ -71,6 +72,12 @@ export function getCharacterCdResetTargets(
 	constellationLevel: number
 ): Array<'skill' | 'burst'> {
 	const targets: Array<'skill' | 'burst'> = [];
+	// ⚓ The ENTRY's level is the gate (2026-08-18) — `effectSourcesAtConstellation`
+	// drops a locked constellation before its effects are ever seen. The
+	// effect-level `constellation` check below stays: it is what a passive or a
+	// FUTURE non-entry-level condition is judged by, and on a constellation
+	// entry it is pure duplication of the field (0 of 133 name a different
+	// level). See docs/constellation-gating-plan.md.
 	const sources: Array<{
 		effects?: {
 			type: string;
@@ -79,7 +86,7 @@ export function getCharacterCdResetTargets(
 			resets?: string;
 			conditions?: Condition;
 		}[];
-	}> = [...(char.passives ?? []), ...(char.constellations ?? [])];
+	}> = [...(char.passives ?? []), ...unlockedConstellations(char, constellationLevel)];
 	for (const node of sources) {
 		const effects = node.effects ?? [];
 		for (const eff of effects) {
@@ -87,7 +94,6 @@ export function getCharacterCdResetTargets(
 			if (eff.source !== 'character') continue;
 			if (eff.trigger.type !== 'onCast') continue;
 			if (eff.trigger.ability !== firingAbility) continue;
-			// Constellation gating: skip when the effect is gated above the player's level.
 			const cond = eff.conditions;
 			if (
 				cond &&

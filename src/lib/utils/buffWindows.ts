@@ -251,7 +251,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		ctx: ConditionContext,
 		qualifies: (e: Effect) => boolean
 	): ReactionPool[] => {
-		const qualified = getCharacterEffectsForOnReaction(char).filter(
+		const qualified = getCharacterEffectsForOnReaction(char, cLevel).filter(
 			(e): e is BuffEffect | ResShredEffect => {
 				if (e.duration == null) return false;
 				if (evalCondition(e.conditions, 4, new Set(), cLevel, undefined, undefined, ctx) === false)
@@ -437,8 +437,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				const hit = poolCache.get(label);
 				if (hit) return hit;
 				const merged = [
-					...getCharacterEffectsForCast(char, castType, label),
-					...getCharacterEffectsForOnHit(char, castType, label)
+					...getCharacterEffectsForCast(char, cLevel, castType, label),
+					...getCharacterEffectsForOnHit(char, cLevel, castType, label)
 				];
 				const built: CastPools = {
 					qualified: byProvenance(merged.filter(universalPool)).map((g) => ({
@@ -449,7 +449,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						prov: g.prov,
 						effects: dedupResShredByElement(g.effects)
 					})),
-					afterDuration: byProvenance(getCharacterEffectsForAfterDuration(char, castType, label))
+					afterDuration: byProvenance(
+						getCharacterEffectsForAfterDuration(char, cLevel, castType, label)
+					)
 				};
 				poolCache.set(label, built);
 				return built;
@@ -626,7 +628,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		// place (Flins C2's 7s Electro shred rides an NA string as one span).
 		const blockClassPairs: Array<'normal' | 'charged' | 'plunge'> = ['normal', 'charged', 'plunge'];
 		for (const blockClass of blockClassPairs) {
-			const onHitBlockEffects = getCharacterEffectsForOnHit(char, blockClass);
+			const onHitBlockEffects = getCharacterEffectsForOnHit(char, cLevel, blockClass);
 			if (onHitBlockEffects.length === 0) continue;
 			// No faction bonus authors an N/CA/P onHit trigger today. Partitioned
 			// anyway: the refresh-in-place `lastWin` below belongs to ONE source,
@@ -768,7 +770,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		// nothing ever put it in `resolvedStates`, so matching only `kind:'state'`
 		// would keep Citlali's bar invisible exactly as it has been.
 		if (firstTrackOfChar) {
-			for (const [state, stateEffects] of getCharacterEffectsForOnState(char)) {
+			for (const [state, stateEffects] of getCharacterEffectsForOnState(char, cLevel)) {
 				const spans = windows.filter(
 					(w) =>
 						w.characterId === track.characterId &&
@@ -814,7 +816,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		}
 
 		// ── onTeamNightsoulBurst team-target buffs (once per character) ──
-		const nbEffects = getCharacterEffectsForTeamNightsoulBurst(char);
+		const nbEffects = getCharacterEffectsForTeamNightsoulBurst(char, cLevel);
 		if (firstTrackOfChar && nbBars.length > 0 && nbEffects.length > 0) {
 			// No faction bonus authors an NB trigger today; partitioned for the
 			// same reason as the rest — a pool is one window, one span, one label.
@@ -1078,7 +1080,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		}
 
 		// ── Character onReaction effects (buff + resShred), once per character ──
-		const onReactionEffects = getCharacterEffectsForOnReaction(char);
+		const onReactionEffects = getCharacterEffectsForOnReaction(char, cLevel);
 		if (firstTrackOfChar && onReactionEffects.length > 0) {
 			const ownReactionEvents = reactionEvents.filter((ev) => ev.characterId === track.characterId);
 			const qualified = onReactionEffects.filter((e): e is BuffEffect | ResShredEffect => {
@@ -1246,8 +1248,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				if (hit) return hit;
 				const seenStats = new Set<string>();
 				const built = [
-					...getCharacterEffectsForCast(char, castType, label),
-					...getCharacterEffectsForOnHit(char, castType, label)
+					...getCharacterEffectsForCast(char, cLevel, castType, label),
+					...getCharacterEffectsForOnHit(char, cLevel, castType, label)
 				].filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (!isActiveTargetOnly(effect.target)) return false;
@@ -1429,7 +1431,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		// ── N/CA/P onHit active-target (PER-SWING hit anchored — phase-6) ──
 		const blockClassPairs: Array<'normal' | 'charged' | 'plunge'> = ['normal', 'charged', 'plunge'];
 		for (const blockClass of blockClassPairs) {
-			const onHitBlockList = getCharacterEffectsForOnHit(char, blockClass);
+			const onHitBlockList = getCharacterEffectsForOnHit(char, cLevel, blockClass);
 			if (onHitBlockList.length === 0) continue;
 			for (const blockGroup of byProvenance(onHitBlockList)) {
 				const seenStats = new Set<string>();
@@ -1617,8 +1619,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				if (cached) return cached;
 				const seenStats = new Set<string>();
 				const built = [
-					...getCharacterEffectsForCast(char, castType, label),
-					...getCharacterEffectsForOnHit(char, castType, label)
+					...getCharacterEffectsForCast(char, cLevel, castType, label),
+					...getCharacterEffectsForOnHit(char, cLevel, castType, label)
 				].filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (effect.target !== 'self') return false;
@@ -1695,7 +1697,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			teamElementCounts: teamElementCountsByHolder.get(char.id)
 		};
 		for (const blockClass of blockClassPairs) {
-			const onHitBlockSelf = getCharacterEffectsForOnHit(char, blockClass);
+			const onHitBlockSelf = getCharacterEffectsForOnHit(char, cLevel, blockClass);
 			if (onHitBlockSelf.length === 0) continue;
 			for (const selfBlockGroup of byProvenance(onHitBlockSelf)) {
 				const seenStats = new Set<string>();
@@ -1762,7 +1764,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		}
 
 		// ── onTeamNightsoulBurst self-target ──
-		const nbSelfPool = getCharacterEffectsForTeamNightsoulBurst(char);
+		const nbSelfPool = getCharacterEffectsForTeamNightsoulBurst(char, cLevel);
 		if (firstTrackOfChar && nbBars.length > 0 && nbSelfPool.length > 0) {
 			for (const nbSelfGroup of byProvenance(nbSelfPool)) {
 				const seenStatsNB = new Set<string>();

@@ -11,7 +11,7 @@
 
 import type { InputBlock } from '$lib/utils/notationParser';
 import { getDefaultDamageTag, type DamageTag, type TriggerFilterContext } from '$lib/types/ability';
-import type { Effect, EffectTarget, Stat } from '$lib/types/ability';
+import type { Ability, Effect, EffectTarget, Stat } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 
 /** Where on the character an effect came from, when that is a faction bonus
@@ -47,8 +47,53 @@ const FACTION_PROVENANCE = new WeakMap<Effect, FactionProvenance>();
  *  keeps `effectSourcesOf` cheap on the per-cast paths that call it in a loop. */
 const REGISTERED = new WeakSet<CharacterData>();
 
-/** The character's full effect surface: abilities + passives + constellations,
- *  and (since 2026-08-15) faction bonuses.
+/* ── The constellation gate (2026-08-18) ────────────────────────────────────
+ *
+ * ⚓ A CONSTELLATION ENTRY'S OWN `constellationLevel` IS THE GATE. It is
+ * described that way in CLAUDE.md and `deriveCapabilities` has always honoured
+ * it, but nothing on the planner path read it: every walk of a character's
+ * effect surface took `char.constellations` whole and gated only on each
+ * effect's own `conditions`. 184 constellation effects across 77 characters
+ * carry no such condition, so they were live at C0 — measured, 34 buff/debuff
+ * bars across 23 characters that should never have been drawn.
+ *
+ * ⛔ The fix is NOT to author 184 conditions. Making every curator restate the
+ * field is exactly what produced 184 misses. It is gated HERE, at collection,
+ * so a new constellation effect is gated by existing.
+ *
+ * ⚓ Safe because the 133 constellation effects that DO carry a constellation
+ * condition are pure duplication of their entry's level — none names a
+ * different level, none negates it — so an entry-level gate cannot change the
+ * meaning of a single authored effect. It can only stop the ungated ones from
+ * leaking. See docs/constellation-gating-plan.md.
+ *
+ * ⚠ `constellationScaling` is a DIFFERENT mechanism (it scales a buff's VALUE
+ * at a level, on an effect that is already unlocked) and must not be folded in.
+ * ⚠ Effects gated on `not(constellation N)` exist (Nicole's A1) but live on
+ * PASSIVES, so an entry-level gate never touches them. */
+
+/** The constellation entries unlocked at `cLevel`. */
+export function unlockedConstellations(char: CharacterData, cLevel: number): Ability[] {
+	const cons = char.constellations;
+	if (!cons || cons.length === 0) return [];
+	return cons.filter(
+		(c) => (c.abilityType === 'constellation' ? c.constellationLevel : 0) <= cLevel
+	);
+}
+
+/** The ability-shaped effect hosts a character has AT a constellation level:
+ *  abilities + passives + the unlocked constellations.
+ *
+ *  ⚓ This is the one idiom. It replaces
+ *  `[...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])]`,
+ *  which appeared ~15 times and never carried the level. Grep for the old shape
+ *  before adding a walk of your own. */
+export function effectSourcesAtConstellation(char: CharacterData, cLevel: number): Ability[] {
+	return [...char.abilities, ...(char.passives ?? []), ...unlockedConstellations(char, cLevel)];
+}
+
+/** The character's full effect surface at a constellation level: abilities +
+ *  passives + unlocked constellations, and (since 2026-08-15) faction bonuses.
  *
  * ⚠ A faction bonus is not ability-shaped — it has no `abilityType`, so it
  * takes the same path a passive does through the collectors' trigger matching.
@@ -56,7 +101,10 @@ const REGISTERED = new WeakSet<CharacterData>();
  * trigger binding explicitly (`onCast ability:`, `onHit abilityType:`,
  * `onReaction reaction:`), so the "no explicit ability → fire on BOTH casts"
  * fall-through never reaches one. `characterLint` C.17 holds that property. */
-export function effectSourcesOf(char: CharacterData): Array<{
+export function effectSourcesOf(
+	char: CharacterData,
+	cLevel: number
+): Array<{
 	abilityType?: string;
 	effects?: Effect[];
 	variants?: { input?: string[]; effects?: Effect[] }[];
@@ -71,9 +119,7 @@ export function effectSourcesOf(char: CharacterData): Array<{
 		REGISTERED.add(char);
 	}
 	return [
-		...char.abilities,
-		...(char.passives ?? []),
-		...(char.constellations ?? []),
+		...effectSourcesAtConstellation(char, cLevel),
 		...factionSources.map((fb) => ({ effects: fb.effects }))
 	];
 }
@@ -211,10 +257,11 @@ function effectsForCast(
 
 export function getCharacterEffectsForCast(
 	char: CharacterData,
+	cLevel: number,
 	castType: 'skill' | 'burst',
 	castLabel?: string
 ): Effect[] {
-	const sources = effectSourcesOf(char);
+	const sources = effectSourcesOf(char, cLevel);
 	const result: Effect[] = [];
 	for (const src of sources) {
 		for (const fx of effectsForCast(src, castLabel)) {
@@ -245,10 +292,11 @@ export function getCharacterEffectsForCast(
  *  helper is purely the candidate-pool collector. */
 export function getCharacterEffectsForOnHit(
 	char: CharacterData,
+	cLevel: number,
 	castType: 'skill' | 'burst' | 'normal' | 'charged' | 'plunge',
 	castLabel?: string
 ): Effect[] {
-	const sources = effectSourcesOf(char);
+	const sources = effectSourcesOf(char, cLevel);
 	const result: Effect[] = [];
 	const isInputClass = castType === 'normal' || castType === 'charged' || castType === 'plunge';
 	for (const src of sources) {
@@ -368,10 +416,11 @@ export function resolveCastContext(
  *  determines which host ability's duration binds the trigger. */
 export function getCharacterEffectsForAfterDuration(
 	char: CharacterData,
+	cLevel: number,
 	castType: 'skill' | 'burst',
 	castLabel?: string
 ): Effect[] {
-	const sources = effectSourcesOf(char);
+	const sources = effectSourcesOf(char, cLevel);
 	const result: Effect[] = [];
 	for (const src of sources) {
 		// Variant-resolved for SYMMETRY, not for a live case: no variant in the
@@ -399,9 +448,12 @@ export function getCharacterEffectsForAfterDuration(
  *  C2 (+250 EM to the team while her Opal Shield holds) is the only author
  *  today, and it drew nothing at all until 2026-08-15 because no consumer
  *  matched the trigger. See docs/curation/orphaned-schema-audit.md. */
-export function getCharacterEffectsForOnState(char: CharacterData): Map<string, Effect[]> {
+export function getCharacterEffectsForOnState(
+	char: CharacterData,
+	cLevel: number
+): Map<string, Effect[]> {
 	const byState = new Map<string, Effect[]>();
-	for (const src of effectSourcesOf(char)) {
+	for (const src of effectSourcesOf(char, cLevel)) {
 		for (const fx of src.effects ?? []) {
 			if (fx.trigger.type !== 'onState') continue;
 			const state = (fx.trigger as { state: string }).state;
@@ -418,8 +470,11 @@ export function getCharacterEffectsForOnState(char: CharacterData): Map<string, 
  *  is global (fires on every team NB event in `nbBars`), so there's no per-cast
  *  filtering — just gather candidates. Source-agnostic; passives/constellations
  *  carry these triggers in practice (Mavuika A1, Varesa A4, Xilonen A2, Ifa A1). */
-export function getCharacterEffectsForTeamNightsoulBurst(char: CharacterData): Effect[] {
-	const sources = effectSourcesOf(char);
+export function getCharacterEffectsForTeamNightsoulBurst(
+	char: CharacterData,
+	cLevel: number
+): Effect[] {
+	const sources = effectSourcesOf(char, cLevel);
 	const result: Effect[] = [];
 	for (const src of sources) {
 		for (const fx of src.effects ?? []) {
@@ -435,8 +490,8 @@ export function getCharacterEffectsForTeamNightsoulBurst(char: CharacterData): E
  *  Pairs with the parser's `reaction` IR events — the dispatcher matches
  *  each event against `trigger.reaction` and the effect's `conditions` per
  *  cast at fire time. */
-export function getCharacterEffectsForOnReaction(char: CharacterData): Effect[] {
-	const sources = effectSourcesOf(char);
+export function getCharacterEffectsForOnReaction(char: CharacterData, cLevel: number): Effect[] {
+	const sources = effectSourcesOf(char, cLevel);
 	const result: Effect[] = [];
 	for (const src of sources) {
 		for (const fx of src.effects ?? []) {

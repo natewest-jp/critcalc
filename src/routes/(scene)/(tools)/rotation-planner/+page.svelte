@@ -21,7 +21,7 @@
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { benchBand } from '$lib/benchBand.svelte';
 	import { documentBar as db } from '$lib/documentBar.svelte';
-	import { savedNotations, siteSettings } from '$lib/stores';
+	import { constellations, savedNotations, siteSettings } from '$lib/stores';
 	import { get } from 'svelte/store';
 	import { stripDeepLinkParams } from '../lib/deepLinkUrl';
 	import {
@@ -284,7 +284,18 @@
 	/** Caveats for the slotted kits. Computed HERE, not in the timeline and not
 	 *  in the notes column, because band B's Notes button has to know whether any
 	 *  exist before the column is on screen to say so. */
-	let slotCaveats = $derived(collectSlotCaveats(slots.map((id) => getLoadedCharacter(id))));
+	/** ⚓ The EFFECTIVE constellation map — the tab's Layer-2 override over the
+	 *  roster's Layer-1 default, the same resolution `RotationTimeline` feeds the
+	 *  parser. A caveat is gated by its constellation entry (2026-08-18), so the
+	 *  panel must be told which entries the reader actually has. */
+	let effectiveCon = $derived({ ...$constellations, ...rt.tabCon });
+
+	let slotCaveats = $derived(
+		collectSlotCaveats(
+			slots.map((id) => getLoadedCharacter(id)),
+			effectiveCon
+		)
+	);
 
 	/** ↻ BACK TO CAVEATS ALONE (2026-08-17). Gauge round L6 had added `|| hasAura`
 	 *  so the standing "how the aura is modelled" block could reach a

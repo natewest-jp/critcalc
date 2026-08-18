@@ -61,7 +61,7 @@ export function registerInfusionsOnCast(
 	stackState: Map<string, number>,
 	holderCtx: ConditionContext
 ): void {
-	for (const fx of getCharacterEffectsForCast(char, castKind, castLabel)) {
+	for (const fx of getCharacterEffectsForCast(char, constellation, castKind, castLabel)) {
 		if (fx.type !== 'infuse') continue;
 		if (fx.duration === undefined || fx.duration <= 0) continue;
 		const targets = Array.isArray(fx.target) ? fx.target : [fx.target];
