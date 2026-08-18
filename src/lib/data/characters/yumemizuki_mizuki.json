@@ -126,18 +126,34 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 1.5 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5,
+								"firstTickDelay": 1.5,
+								"tickCap": 8
+							},
 							"scaling": 235,
 							"stat": "em",
-							"flat": 692
+							"flat": 692,
+							"_curatorNotes": [
+								"tickCap 8, MIRRORING the damage series on this summon (tick-cap round, 2026-08-18): same interval and first delay, so it is one gcsim tick emitting both. The oracle cannot measure a heal, so this rides the damage measurement rather than a reading of its own."
+							]
 						},
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 1.5, "firstTickDelay": 1.5 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5,
+								"firstTickDelay": 1.5,
+								"tickCap": 8
+							},
 							"scaling": 127.01,
 							"stat": "atk",
-							"element": "anemo"
+							"element": "anemo",
+							"_curatorNotes": [
+								"tickCap 8 (tick-cap round, 2026-08-18): gcsim burst.go `for i := int(snackInterval); i <= burstDuration; i += snackInterval` with snackInterval 90 and burstDuration 720 - the bound is INCLUSIVE, so the tick landing exactly on the 12s end fires and our half-open walk dropped it. Measured 8 at both C0 and C6; we derived 7."
+							]
 						}
 					]
 				}

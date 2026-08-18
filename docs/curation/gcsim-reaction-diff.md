@@ -13,13 +13,13 @@ no artifacts, no substats — none of which affect elemental application.
 
 | metric | count |
 | --- | --- |
-| applications — ours | 174 |
-| applications — gcsim | 216 |
-| **we apply, gcsim does not** | **2** |
-| **gcsim applies, we do not** | **44** |
+| applications — ours | 176 |
+| applications — gcsim | 215 |
+| **we apply, gcsim does not** | **1** |
+| **gcsim applies, we do not** | **40** |
 | element mismatch on a paired application | 0 |
-| reaction events — ours | 52 |
-| reaction damage instances — gcsim | 78 |
+| reaction events — ours | 51 |
+| reaction damage instances — gcsim | 77 |
 
 ⚠️ The two reaction rows count different things — ours is one event per
 triggering application, gcsim's is one damage instance, and burning and
@@ -32,12 +32,12 @@ every aura on the target at that instant, in taxed units.
 
 | metric | count |
 | --- | --- |
-| aura samples compared | 275 |
+| aura samples compared | 274 |
 | **agree** (within 0.16U) | **135** |
 | 🟡 drift (both present, further apart) | 57 |
 | 🔴 aura gcsim has and we do not | 29 |
-| 🟠 aura we have and gcsim does not | 54 |
-| mean \|Δ\| where both present | 0.167U |
+| 🟠 aura we have and gcsim does not | 53 |
+| mean \|Δ\| where both present | 0.168U |
 
 ## melt — cryo aura then pyro
 
@@ -284,7 +284,7 @@ Compare presence and rough magnitude, never equality.
 Kaeya E Q > Mona E Q > Kaeya N3 N3
 ```
 
-applications ours **12** / gcsim **13** · extra 0 · missing 1 · element mismatch 0 · reactions ours **5** / gcsim **2**
+applications ours **13** / gcsim **13** · extra 0 · missing 0 · element mismatch 0 · reactions ours **5** / gcsim **2**
 
 ### 1. Applications
 
@@ -297,7 +297,7 @@ applications ours **12** / gcsim **13** · extra 0 · missing 1 · element misma
 | kaeya | 4 | cryo @ 6.42s (burst) | cryo @ 6.43s (burst) | 1 | 1U | Glacial Waltz |
 | kaeya | 5 | cryo @ 7.08s (burst) | cryo @ 7.10s (burst) | 1 | 1U | Glacial Waltz |
 | kaeya | 6 | cryo @ 9.08s (burst) | cryo @ 9.10s (burst) | 1 | 1U | Glacial Waltz |
-| kaeya 🔴 | 7 | — | cryo @ 9.77s (burst) |  | 1U | Glacial Waltz |
+| kaeya | 7 | cryo @ 9.75s (burst) | cryo @ 9.77s (burst) | 1 | 1U | Glacial Waltz |
 | mona | 0 | hydro @ 3.72s (skill) | hydro @ 3.73s (skill) | 1 | 1U | Mirror Reflection of Doom (Tick) |
 | mona | 1 | hydro @ 4.53s (burst) | hydro @ 4.55s (0) | 1 | 1U | Illusory Bubble (Initial) |
 | mona | 2 | hydro @ 6.67s (skill) | hydro @ 6.68s (skill) | 1 | 1U | Mirror Reflection of Doom (Tick) |
@@ -329,7 +329,7 @@ agree **9** · 🟡 drift 4 · 🔴 aura we do not have 4 · 🟠 aura they do n
 | 7.78s | mona | 🔴 cryo —/0.74, 🟡 frozen 1.47/0.73 |
 | 9.10s | kaeya | frozen 0.30/0.34, 🟠 cryo 0.80/— |
 | 9.48s | mona | cryo 0.77/0.77 |
-| 9.77s | kaeya | 🔴 frozen —/1.26, 🟠 cryo 0.74/— |
+| 9.77s | kaeya | 🔴 frozen —/1.26, 🟠 cryo 0.80/— |
 
 ### 3. Reactions
 
@@ -583,7 +583,7 @@ Compare presence and rough magnitude, never equality.
 Xiangling E Q > Sucrose N4 E Q N4
 ```
 
-applications ours **23** / gcsim **22** · extra 1 · missing 0 · element mismatch 0 · reactions ours **9** / gcsim **8**
+applications ours **22** / gcsim **22** · extra 0 · missing 0 · element mismatch 0 · reactions ours **8** / gcsim **8**
 
 ### 1. Applications
 
@@ -611,7 +611,6 @@ applications ours **23** / gcsim **22** · extra 1 · missing 0 · element misma
 | sucrose | 5 | anemo @ 7.33s (normal) | anemo @ 7.35s (normal) | 1 | 1U | Normal 3 |
 | sucrose | 6 | anemo @ 8.95s (burst) | anemo @ 8.97s (burst) | 1 | 1U | Forbidden Creation-Isomer 75/Type II |
 | sucrose | 7 | anemo @ 10.83s (burst) | anemo @ 10.85s (burst) | 1 | 1U | Forbidden Creation-Isomer 75/Type II |
-| sucrose 🟠 | 8 | anemo @ 12.72s (burst) | — |  |  |  |
 
 🔴 gcsim applies and we do not · 🟠 we apply and gcsim does not · 🟡 different element
 
@@ -658,10 +657,10 @@ Compare presence and rough magnitude, never equality.
 
 | reaction | ours | gcsim |
 | --- | --- | --- |
-| pyroSwirl | 9 | — |
+| pyroSwirl | 8 | — |
 | swirl-pyro | — | 8 |
 
-- **ours:** pyroSwirl@2.38s, pyroSwirl@3.83s, pyroSwirl@4.53s, pyroSwirl@5.88s, pyroSwirl@7.07s, pyroSwirl@7.33s, pyroSwirl@8.95s, pyroSwirl@10.83s, pyroSwirl@12.72s
+- **ours:** pyroSwirl@2.38s, pyroSwirl@3.83s, pyroSwirl@4.53s, pyroSwirl@5.88s, pyroSwirl@7.07s, pyroSwirl@7.33s, pyroSwirl@8.95s, pyroSwirl@10.83s
 - **gcsim:** swirl-pyro@2.42s, swirl-pyro@3.87s, swirl-pyro@4.57s, swirl-pyro@5.92s, swirl-pyro@7.10s, swirl-pyro@7.37s, swirl-pyro@8.98s, swirl-pyro@10.87s
 
 ## crystallize — geo on aura
@@ -672,9 +671,9 @@ Fischl E Q > Ningguang E N3 > Zhongli E
 
 **Translation notes**
 
-- ⚠️ gcsim is non-deterministic on this fixture (application counts across runs: 28, 27, 28) — the modal run is reported. Some kits roll dice (random normal-attack variants, proc chances) and no CLI flag pins the seed.
+- ⚠️ gcsim is non-deterministic on this fixture (application counts across runs: 28, 27, 27) — the modal run is reported. Some kits roll dice (random normal-attack variants, proc chances) and no CLI flag pins the seed.
 
-applications ours **18** / gcsim **28** · extra 0 · missing 10 · element mismatch 0 · reactions ours **5** / gcsim **7**
+applications ours **19** / gcsim **27** · extra 0 · missing 8 · element mismatch 0 · reactions ours **5** / gcsim **6**
 
 ### 1. Applications
 
@@ -686,28 +685,27 @@ applications ours **18** / gcsim **28** · extra 0 · missing 10 · element mism
 | fischl | 3 | electro @ 1.78s (burst) | electro @ 2.63s (skill) | 51 | 1U | Oz (Burst) |
 | fischl | 4 | electro @ 3.45s (burst) | electro @ 2.85s (skill) | -36 | 1U | Thundering Retribution (A4) |
 | fischl | 5 | electro @ 5.30s (burst) | electro @ 3.95s (skill) | -81 | 1U | Thundering Retribution (A4) |
-| fischl | 6 | electro @ 5.72s (burst) | electro @ 5.07s (skill) | -39 | 1U | Thundering Retribution (A4) |
-| fischl | 7 | electro @ 7.68s (burst) | electro @ 6.57s (skill) | -67 | 1U | Oz (Burst) |
-| fischl 🔴 | 8 | — | electro @ 8.53s (skill) |  | 1U | Oz (Burst) |
-| fischl 🔴 | 9 | — | electro @ 9.07s (skill) |  | 1U | Thundering Retribution (A4) |
-| fischl 🔴 | 10 | — | electro @ 11.07s (skill) |  | 1U | Thundering Retribution (A4) |
+| fischl | 6 | electro @ 5.72s (burst) | electro @ 6.57s (skill) | 51 | 1U | Oz (Burst) |
+| fischl | 7 | electro @ 7.68s (burst) | electro @ 8.53s (skill) | 51 | 1U | Oz (Burst) |
+| fischl 🔴 | 8 | — | electro @ 8.93s (skill) |  | 1U | Thundering Retribution (A4) |
+| fischl 🔴 | 9 | — | electro @ 10.93s (skill) |  | 1U | Thundering Retribution (A4) |
 | ningguang | 0 | geo @ 1.53s (skill) | geo @ 1.55s (skill) | 1 | 1U | Jade Screen |
 | ningguang | 1 | geo @ 3.38s (normal) | geo @ 2.78s (normal) | -36 | 1U | Normal (Right) |
 | ningguang 🔴 | 2 | — | geo @ 3.88s (normal) |  | 1U | Normal (Left) |
-| zhongli | 0 | geo @ 5.23s (skill) | geo @ 5.00s (skill) | -14 | 2U | Stone Stele (Initial) |
-| zhongli | 1 | geo @ 7.23s (skill) | geo @ 9.00s (skill) | 106 | 1U | Stone Stele (Tick) |
-| zhongli | 2 | geo @ 11.23s (skill) | geo @ 11.00s (skill) | -14 | 1U | Stone Stele (Tick) |
-| zhongli | 3 | geo @ 15.23s (skill) | geo @ 13.00s (skill) | -134 | 1U | Stone Stele (Tick) |
-| zhongli | 4 | geo @ 19.23s (skill) | geo @ 15.00s (skill) | -254 | 1U | Stone Stele (Tick) |
-| zhongli | 5 | geo @ 23.23s (skill) | geo @ 17.00s (skill) | -374 | 1U | Stone Stele (Tick) |
-| zhongli | 6 | geo @ 27.23s (skill) | geo @ 19.00s (skill) | -494 | 1U | Stone Stele (Tick) |
-| zhongli | 7 | geo @ 31.23s (skill) | geo @ 21.00s (skill) | -614 | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 8 | — | geo @ 23.00s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 9 | — | geo @ 25.00s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 10 | — | geo @ 27.00s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 11 | — | geo @ 29.00s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 12 | — | geo @ 31.00s (skill) |  | 1U | Stone Stele (Tick) |
-| zhongli 🔴 | 13 | — | geo @ 33.00s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli | 0 | geo @ 5.23s (skill) | geo @ 4.87s (skill) | -22 | 2U | Stone Stele (Initial) |
+| zhongli | 1 | geo @ 7.23s (skill) | geo @ 8.87s (skill) | 98 | 1U | Stone Stele (Tick) |
+| zhongli | 2 | geo @ 11.23s (skill) | geo @ 10.87s (skill) | -22 | 1U | Stone Stele (Tick) |
+| zhongli | 3 | geo @ 15.23s (skill) | geo @ 12.87s (skill) | -142 | 1U | Stone Stele (Tick) |
+| zhongli | 4 | geo @ 19.23s (skill) | geo @ 14.87s (skill) | -262 | 1U | Stone Stele (Tick) |
+| zhongli | 5 | geo @ 23.23s (skill) | geo @ 16.87s (skill) | -382 | 1U | Stone Stele (Tick) |
+| zhongli | 6 | geo @ 27.23s (skill) | geo @ 18.87s (skill) | -502 | 1U | Stone Stele (Tick) |
+| zhongli | 7 | geo @ 31.23s (skill) | geo @ 20.87s (skill) | -622 | 1U | Stone Stele (Tick) |
+| zhongli | 8 | geo @ 35.23s (skill) | geo @ 22.87s (skill) | -742 | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 9 | — | geo @ 24.87s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 10 | — | geo @ 26.87s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 11 | — | geo @ 28.87s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 12 | — | geo @ 30.87s (skill) |  | 1U | Stone Stele (Tick) |
+| zhongli 🔴 | 13 | — | geo @ 32.87s (skill) |  | 1U | Stone Stele (Tick) |
 
 🔴 gcsim applies and we do not · 🟠 we apply and gcsim does not · 🟡 different element
 
@@ -718,7 +716,7 @@ application it makes, so one row per application is a sample of the true aura
 across the rotation. Cells read `ours/theirs` in TAXED UNITS (gcsim reports
 durability, 25 per unit).
 
-agree **9** · 🟡 drift 6 · 🔴 aura we do not have 1 · 🟠 aura they do not have 2
+agree **9** · 🟡 drift 6 · 🔴 aura we do not have 1 · 🟠 aura they do not have 1
 
 | t | char | aura before (ours/gcsim) |
 | --- | --- | --- |
@@ -731,25 +729,24 @@ agree **9** · 🟡 drift 6 · 🔴 aura we do not have 1 · 🟠 aura they do n
 | 2.85s | fischl | 🟡 electro 0.71/0.28 |
 | 3.88s | ningguang | electro 0.76/0.71 |
 | 3.95s | fischl | 🟡 electro 0.76/0.21 |
-| 5.00s | zhongli | electro 0.67/0.71 |
-| 5.07s | fischl | 🟠 electro 0.66/— |
-| 6.57s | fischl | electro 0.73/0.67 |
+| 4.87s | zhongli | electro 0.68/0.72 |
+| 6.57s | fischl | electro 0.73/0.58 |
 | 8.53s | fischl | electro 0.73/0.63 |
-| 9.00s | zhongli | electro 0.69/0.76 |
-| 9.07s | fischl | 🟡 electro 0.68/0.26 |
-| 11.00s | zhongli | electro 0.52/0.64 |
-| 11.07s | fischl | 🟡 electro 0.52/0.13 |
-| 13.00s | zhongli | 🔴 electro —/0.64 |
-| 15.00s | zhongli | — |
-| 17.00s | zhongli | — |
-| 19.00s | zhongli | — |
-| 21.00s | zhongli | — |
-| 23.00s | zhongli | — |
-| 25.00s | zhongli | — |
-| 27.00s | zhongli | — |
-| 29.00s | zhongli | — |
-| 31.00s | zhongli | — |
-| 33.00s | zhongli | — |
+| 8.87s | zhongli | electro 0.70/0.77 |
+| 8.93s | fischl | 🟡 electro 0.69/0.27 |
+| 10.87s | zhongli | electro 0.53/0.64 |
+| 10.93s | fischl | 🟡 electro 0.53/0.13 |
+| 12.87s | zhongli | 🔴 electro —/0.64 |
+| 14.87s | zhongli | — |
+| 16.87s | zhongli | — |
+| 18.87s | zhongli | — |
+| 20.87s | zhongli | — |
+| 22.87s | zhongli | — |
+| 24.87s | zhongli | — |
+| 26.87s | zhongli | — |
+| 28.87s | zhongli | — |
+| 30.87s | zhongli | — |
+| 32.87s | zhongli | — |
 
 ### 3. Reactions
 
@@ -760,11 +757,11 @@ Compare presence and rough magnitude, never equality.
 
 | reaction | ours | gcsim |
 | --- | --- | --- |
-| crystallize-electro | — | 7 |
+| crystallize-electro | — | 6 |
 | electroCrystallize | 5 | — |
 
 - **ours:** electroCrystallize@1.53s, electroCrystallize@3.38s, electroCrystallize@5.23s, electroCrystallize@7.23s, electroCrystallize@11.23s
-- **gcsim:** crystallize-electro@1.93s, crystallize-electro@3.17s, crystallize-electro@4.27s, crystallize-electro@5.38s, crystallize-electro@9.38s, crystallize-electro@11.38s, crystallize-electro@13.38s
+- **gcsim:** crystallize-electro@1.93s, crystallize-electro@3.17s, crystallize-electro@4.27s, crystallize-electro@9.25s, crystallize-electro@11.25s, crystallize-electro@13.25s
 
 ## plunge spam — never ICD-gated
 
@@ -826,7 +823,7 @@ Compare presence and rough magnitude, never equality.
 Kaeya E Q ~20s > Xiangling E Q ~20s > Fischl E Q ~20s > Kaeya E
 ```
 
-applications ours **27** / gcsim **30** · extra 0 · missing 3 · element mismatch 0 · reactions ours **0** / gcsim **1**
+applications ours **28** / gcsim **30** · extra 0 · missing 2 · element mismatch 0 · reactions ours **0** / gcsim **1**
 
 ### 1. Applications
 
@@ -839,8 +836,8 @@ applications ours **27** / gcsim **30** · extra 0 · missing 3 · element misma
 | kaeya | 4 | cryo @ 6.42s (burst) | cryo @ 6.43s (burst) | 1 | 1U | Glacial Waltz |
 | kaeya | 5 | cryo @ 7.08s (burst) | cryo @ 7.10s (burst) | 1 | 1U | Glacial Waltz |
 | kaeya | 6 | cryo @ 9.08s (burst) | cryo @ 9.10s (burst) | 1 | 1U | Glacial Waltz |
-| kaeya | 7 | cryo @ 66.10s (skill) | cryo @ 9.77s (burst) | -3380 | 1U | Glacial Waltz |
-| kaeya 🔴 | 8 | — | cryo @ 65.85s (skill) |  | 2U | Frostgnaw |
+| kaeya | 7 | cryo @ 9.75s (burst) | cryo @ 9.77s (burst) | 1 | 1U | Glacial Waltz |
+| kaeya | 8 | cryo @ 66.10s (skill) | cryo @ 65.85s (skill) | -15 | 2U | Frostgnaw |
 | xiangling | 0 | pyro @ 23.23s (burst) | pyro @ 22.98s (burst) | -15 | 1U | Pyronado Hit 1 |
 | xiangling | 1 | pyro @ 23.87s (burst) | pyro @ 23.62s (burst) | -15 | 1U | Pyronado |
 | xiangling | 2 | pyro @ 24.38s (skill) | pyro @ 24.13s (skill) | -15 | 1U | Guoba |
@@ -883,7 +880,7 @@ agree **24** · 🟡 drift 2 · 🔴 aura we do not have 1 · 🟠 aura they do 
 | 6.43s | kaeya | cryo 0.80/0.81 |
 | 7.10s | kaeya | cryo 0.80/0.72 |
 | 9.10s | kaeya | 🟡 cryo 0.80/0.53 |
-| 9.77s | kaeya | cryo 0.71/0.71 |
+| 9.77s | kaeya | cryo 0.80/0.71 |
 | 22.98s | xiangling | — |
 | 23.62s | xiangling | pyro 0.77/0.75 |
 | 24.13s | xiangling | pyro 0.78/0.76 |

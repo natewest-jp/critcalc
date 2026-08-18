@@ -71,20 +71,42 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": { "type": "summonTick", "interval": 1.5 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5,
+								"tickCap": 8,
+								"tickCapScaling": {
+									"conditions": { "type": "constellation", "level": 2 },
+									"ticks": 10
+								}
+							},
 							"scaling": 5.4,
 							"stat": "hp",
 							"flat": 635.608,
-							"flatScaling": { "stat": "em", "ratio": 75 }
+							"flatScaling": { "stat": "em", "ratio": 75 },
+							"_curatorNotes": [
+								"tickCap 8 / 10 at C2, MIRRORING the damage series on this summon (tick-cap round, 2026-08-18): gcsim skill.go `bellTick` queues the attack AND calls Player.Heal in the same task before rescheduling itself, so the heal and the damage are one tick. Verified in source rather than inferred - the oracle cannot see a heal at all, since a heal tick leaves no damage event."
+							]
 						},
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 1.5 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5,
+								"tickCap": 8,
+								"tickCapScaling": {
+									"conditions": { "type": "constellation", "level": 2 },
+									"ticks": 10
+								}
+							},
 							"scaling": 45.43,
 							"stat": "atk",
 							"element": "electro",
-							"flatScaling": { "stat": "em", "ratio": 25 }
+							"flatScaling": { "stat": "em", "ratio": 25 },
+							"_curatorNotes": [
+								"tickCap 8 / 10 at C2 (tick-cap round, 2026-08-18): gcsim skill.go `skilldur := 720` (900 at C2) with bellTick self-rescheduling every 90f while the ring status is live, so the tick landing on the window boundary fires. Measured 8 at C0 and 10 at C6; our duration-derived counts were 7 and 9. The C2 override is required, not decorative - a flat cap would freeze the constellation at 8."
+							]
 						}
 					]
 				}
@@ -118,7 +140,12 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.283, "firstTickDelay": 0 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.283,
+								"firstTickDelay": 0,
+								"tickCap": 7
+							},
 							"scaling": 6.4886,
 							"stat": "hp",
 							"element": "electro",
@@ -126,7 +153,8 @@
 								"gcsim internal/characters/kuki/burst.go, func Burst(): the field queues QueueAttackWithSnap on a fixed loop `for i := burstStart; i < count*interval+burstStart; i += interval` with const burstStart = 50, interval := 2 * 60 / 7 = 17 frames (integer division), count = 7. So ticks land at cast-relative frames 50,67,84,…,152. interval = 17/60 = 0.283s; firstTickDelay = (50 − spawnsAt 50)/60 = 0. Matches the measured row in docs/curation/gcsim-frames-diff.md §5 (50f / 17f × 7).",
 								"Scaling: the tick's AttackInfo has Mult: 0 and FlatDmg: c.MaxHP() * burst[c.TalentLvlBurst()] — it is a pure Max-HP-scaling hit, hence stat 'hp'. burst[9] (talent level 10, 0-based) = 0.064886 in zz_kukishinobu.dm.go (comment: 'burst: GyoeiNarukamiKariyamaRite - Single Instance DMG: {0} Max HP'), stored as percentage points 6.4886. Cross-check: talent sidecar row 'Single Instance DMG' 10th value = '6.5% Max HP'.",
 								"Element/ICD: AttackInfo Element: attributes.Electro, Durability: 25 (1U), ICDTag: ICDTagElementalBurst + ICDGroup: ICDGroupDefault — standard ICD, and the measured row's verdict is 3/7 'standard', so no icdGate is annotated.",
-								"Tick COUNT is HP-conditional, not constellation-conditional: gcsim sets count = 12 when CurrentHPRatio() <= 0.5 (comment says 'can be 11 at low HP'; the code says 12), which is why the sidecar 'Duration' row reads 2.0s/3.5s. The C0/high-HP series (7 ticks over the authored 2s duration) is what is authored; the low-HP extension has no schema expression (HP is not a Condition subject) and the existing duration of 2 is left untouched. C1 only widens the AoE radius (r 4.0 → 6) and changes neither cadence nor count."
+								"Tick COUNT is HP-conditional, not constellation-conditional: gcsim sets count = 12 when CurrentHPRatio() <= 0.5 (comment says 'can be 11 at low HP'; the code says 12), which is why the sidecar 'Duration' row reads 2.0s/3.5s. The C0/high-HP series (7 ticks over the authored 2s duration) is what is authored; the low-HP extension has no schema expression (HP is not a Condition subject) and the existing duration of 2 is left untouched. C1 only widens the AoE radius (r 4.0 → 6) and changes neither cadence nor count.",
+								"tickCap 7 (tick-cap round, 2026-08-18): gcsim burst.go declares `count := 7` outright (12 below 50% HP, which we do not model and which is already noted). Our duration-derived 8 was one long. Unchanged at C6."
 							]
 						}
 					]

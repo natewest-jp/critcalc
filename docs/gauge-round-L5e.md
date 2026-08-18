@@ -569,6 +569,62 @@ artifact (L5e-b's rule): two are Collei's leaps and one is Sucrose's fourth tick
   and ⛔ not fixable by a duration nudge** — each needs its own gcsim loop-bound reading,
   which is the tick-CAP argument above with a second body of evidence behind it.
 
+##### ✅ THE TICK CAP SHIPPED (2026-08-18) — `summonTick.tickCap` / `tickCapScaling`
+
+⚓ Nate green-lit it on the product argument, not the oracle one: **a tick count is a
+number a skilled player knows by heart**, and the same cap fixes the MARKERS the summon
+lane draws. The worklist below is what it was written from and is left as the record.
+
+**Landed:** `tickCap?: number` and `tickCapScaling?: { conditions, ticks }` on the
+`summonTick` trigger · the rule in `tickCapOf` (`sim/summons.ts`) · honoured by BOTH
+readers (`collectSummonTicks` → the markers, `aura.ts`'s chain → the gauge) · lint
+**D.27d** (positive integer, and ⛔ refuses a cap that restates the derived count) · the
+audit's §5 grows `× n` on the authored side plus a `count n→m` flag.
+
+**14 damage sites + 4 heal siblings, across 11 characters.** Every one verified against
+gcsim at BOTH C0 and C6.
+
+| metric (12-fixture oracle)  | before |  after |
+| --------------------------- | -----: | -----: |
+| applications — ours         |    174 |    176 |
+| we apply, gcsim does not    |      2 |  **1** |
+| gcsim applies, we do not    |     44 | **40** |
+| element mismatch            |      0 |      0 |
+| 🟠 aura we have, they don't |     54 | **53** |
+
+⚓ **Both directions at once**, which the ICD landing could not manage. ⚠️ mean |Δ| reads
+0.167 → 0.168 U; that digit moves run to run on two non-deterministic fixtures and ⛔ is
+not a signal.
+
+⚠️⚠️ **THREE THINGS THAT WOULD HAVE BEEN BUGS, all caught by measuring rather than
+reasoning:**
+
+1. **The sibling HEAL series had to be capped too.** Four summons carry a heal and a
+   damage series on the identical cadence, and gcsim emits both from ONE task — Kuki's
+   `bellTick` queues the attack and calls `Player.Heal` before rescheduling itself.
+   Capping only the damage put 8 damage markers beside 7 heal markers on one summon. ⛔ The
+   oracle cannot catch this: a heal leaves no `damage` event, so the heal caps ride the
+   damage measurement and are justified in gcsim's SOURCE.
+2. **The audit resolved the cap at C6 while the dump ran at C0**, reporting Sigewinne,
+   Kuki and Sucrose as disagreeing — the three characters the constellation field exists
+   for. Now one `DUMP_CONS` constant feeds both.
+3. **The 900-frame default horizon** made every summon over ~15 s read short (Zhongli 7
+   against our 14). Raised to 2400, plus a margin guard so a future long summon cannot
+   silently become a finding.
+
+⛔ **Three sites deliberately NOT capped, each noted in its own `_curatorNotes`:**
+
+- **Collei** — the summon carries `durationExtensions` (A4, +1 s ×3) and gcsim extends its
+  status to match, so the tick count genuinely GROWS. A flat cap would freeze it at 12 and
+  make the A4 window cosmetic. ⚓ **A cap and a duration extension do not compose**; this is
+  the rule to check first on any future site.
+- **Amber** — the 9-vs-18 gap is a SHAPE, not a count: three overlapping loops whose 18
+  arrows land on 10 distinct frames with duplicates stacked. A cap would draw 10 evenly
+  spaced markers where the game stacks them — a different lie.
+- **Emilie's burst** — the INTERVAL disagrees too (36 f observed and irregular against the
+  42 f we model), because gcsim fires volleys at random marked enemies. A count would paper
+  over a cadence question.
+
 ##### 📋 The tick-CAP worklist, MEASURED (2026-08-18)
 
 ⚓ Recorded so the round, if it is ever run, does not have to re-derive it — and so the

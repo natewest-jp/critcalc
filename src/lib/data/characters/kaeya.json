@@ -86,7 +86,12 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.667, "firstTickDelay": 0 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.667,
+								"firstTickDelay": 0,
+								"tickCap": 13
+							},
 							"scaling": 139.68,
 							"stat": "atk",
 							"element": "cryo",
@@ -95,20 +100,27 @@
 								"gcsim internal/characters/kaeya/burst.go Burst(): count = 3 icicles, offset = 120/count = 40f, each icicle re-queues burstTickerFunc every 120f — so a target at the front is hit every 40f (0.667s). First icicle fires at burstHitmark = 53f, which is this summon's authored spawnsAt, so firstTickDelay = (53 - 53)/60 = 0.",
 								"Scaling from zz_kaeya.dm.go `burst` array index 9 (talent level 10) = 1.3968 → 139.68%. Sidecar docs/curation/talents/kaeya.json talents.burst row \"Skill DMG\" 10th value = 139.7%.",
 								"Element/durability from the AttackInfo in Burst(): attributes.Cryo, Durability 25 (1U). ICDTag ElementalBurst / ICDGroupDefault = standard ICD, so no icdGate (measured verdict: standard).",
-								"C6 (Glacial Whirlwind) adds a 4th icicle, which changes the cadence to 30f — authored as the sibling series below; this one is gated to NOT C6."
+								"C6 (Glacial Whirlwind) adds a 4th icicle, which changes the cadence to 30f — authored as the sibling series below; this one is gated to NOT C6.",
+								"tickCap 13 (tick-cap round, 2026-08-18): gcsim burst.go sets `Status.Add(burstKey, burstDuration + burstHitmark + 1)` - 480 + 53 + 1 - and that trailing +1 is deliberate, so the 13th icicle at frame 533, exactly 8.000s after the first, still sees a live status. Our window is half-open [53, 533) and dropped it. This is the reference case for the boundary tick."
 							]
 						},
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.5, "firstTickDelay": 0 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.5,
+								"firstTickDelay": 0,
+								"tickCap": 17
+							},
 							"scaling": 139.68,
 							"stat": "atk",
 							"element": "cryo",
 							"conditions": { "type": "constellation", "level": 6 },
 							"_curatorNotes": [
 								"C6 variant of the series above. gcsim internal/characters/kaeya/burst.go Burst(): `if c.Base.Cons == 6 { count++ }` → count = 4, offset = 120/4 = 30f, so a front target is hit every 30f (0.5s). Same first icicle at burstHitmark = 53f = spawnsAt, so firstTickDelay = 0.",
-								"Same AttackInfo as C0 (Mult burst[TalentLvlBurst()], attributes.Cryo, Durability 25, ICDTag ElementalBurst / ICDGroupDefault) — only the emitter count changes."
+								"Same AttackInfo as C0 (Mult burst[TalentLvlBurst()], attributes.Cryo, Durability 25, ICDTag ElementalBurst / ICDGroupDefault) — only the emitter count changes.",
+								"tickCap 17 (tick-cap round, 2026-08-18): the C6 series - four icicles at 30f offsets, each re-ticking every 120f inside the same `burstDuration + burstHitmark + 1` status. Measured 17 at C6 (5+4+4+4 across the four icicles); our duration-derived 16 was one short. Authored on this series rather than as a constellation override because the C6 cadence is already its own series."
 							]
 						}
 					]

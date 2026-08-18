@@ -120,7 +120,8 @@
 								"type": "summonTick",
 								"interval": 1.95,
 								"firstTickDelay": 0.967,
-								"icdGate": "none"
+								"icdGate": "none",
+								"tickCap": 5
 							},
 							"scaling": 216,
 							"stat": "atk",
@@ -130,7 +131,8 @@
 								"Scaling: burstDot[9] = 2.16 in zz_kaedeharakazuha.dm.go (index 9 = talent level 10); cross-checked against sidecar docs/curation/talents/kaedehara_kazuha.json burst row 'DoT' 10th value = 216%. stat=atk (ai has no snap stat override; c.Snapshot(&ai) is an ATK snapshot).",
 								"icdGate 'none': ai.ICDTag = attacks.ICDTagNone in burst.go; gcsim-frames-diff §5 measured 5/5 'none'. Durability 25 = 1U per tick.",
 								"Not modelled: the Elemental Absorption DoT (aiAbsorb, burstEleDot[9] = 64.8%) rides the identical 117f cadence with the absorbed element (Hydro/Pyro/Cryo/Electro) — element is runtime-determined by AbsorbCheck, so there is no fixed element to author.",
-								"C2 (c2() in cons.go) adds a 0.5s EM-buff tick loop only; it does not change the damage cadence or tick count, so this series is constellation-invariant."
+								"C2 (c2() in cons.go) adds a 0.5s EM-buff tick loop only; it does not change the damage cadence or tick count, so this series is constellation-invariant.",
+								"tickCap 5 (tick-cap round, 2026-08-18): gcsim burst.go `for i := range 5` queues exactly five Autumn Whirlwind DoT ticks - an explicit count, not a window, so our duration-derived 4 was one short. Measured 5 at both C0 and C6."
 							]
 						}
 					]

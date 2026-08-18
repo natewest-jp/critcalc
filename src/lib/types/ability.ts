@@ -720,6 +720,56 @@ export type Trigger =
 			 * discussion of it phrased so no such mention appears.
 			 */
 			icdGate?: 'none' | IcdWindow;
+			/**
+			 * ⚓ HOW MANY TICKS THE SERIES FIRES, when the count is not
+			 * `duration ÷ interval` (tick-cap round, 2026-08-18).
+			 *
+			 * Absent means the count is DERIVED from the summon's lifetime, which
+			 * is right for **26 of the 37** series the oracle can compare — ⛔ so
+			 * this is not a field to fill in by default, and icd.md's rule against
+			 * annotating a measured majority applies here too.
+			 *
+			 * ⚓⚓ IT IS A COUNT AND NOT A TIME BOUND, and Mona is the proof: gcsim's
+			 * loop caps her Mirror Reflection at `i < 300` FRAMES while the summon's
+			 * measured lifetime is ~4.05 s, so the two bounds genuinely disagree and
+			 * only a count reads unambiguously off the Go. ⛔ Never re-express one as
+			 * a shortened `duration` — that contradicts a lifetime the kit text
+			 * states, which is the fix `_curatorNotes` on Mona and Collei both
+			 * explicitly refuse.
+			 *
+			 * ⚠️ The divergence runs BOTH ways — six series tick one short of gcsim
+			 * and four one long — so ⛔ do not assume a cap only ever truncates.
+			 *
+			 * ⚠️⚠️ THE WINDOW IS STILL A BOUND. A cap never EXTENDS a series past the
+			 * summon's end; it only ever stops one earlier. The one exception the
+			 * corpus needs is the boundary tick — a tick landing exactly on
+			 * `spawn + duration`, which our half-open walk drops and gcsim's
+			 * status-gated chains land (Kaeya's `Status.Add(key, duration + hitmark
+			 * + 1)`, where the `+ 1` is deliberate). A cap of `n + 1` is how that is
+			 * said, and `collectSummonTicks` widens its bound by exactly one tick to
+			 * honour it. ⛔ It cannot buy more than that.
+			 *
+			 * Read `docs/gauge-round-L5e.md` §4 for the measured worklist.
+			 */
+			tickCap?: number;
+			/**
+			 * ⚓ A constellation-gated override of `tickCap` — Sigewinne's
+			 * `bubbleHitLimit` goes 5 → 8 at C1, and a flat count cannot say that.
+			 *
+			 * Same shape as `BuffEffect.constellationScaling` and
+			 * `gainStacks.constellationScaling`: when `conditions` evaluates
+			 * definitively true, `ticks` REPLACES the base `tickCap` outright — ⛔ it
+			 * is not an addend, so author the total.
+			 *
+			 * ⚠️⚠️ THE KEY IS DELIBERATELY NOT `constellationScaling`, and the reason
+			 * is the same one recorded on `icdGate`: `orphanedSchema.test.ts` matches
+			 * property ACCESS by key NAME, and two other schema branches already read
+			 * a key of that name — so reusing it here would be satisfied by THEIR
+			 * consumers no matter what, and this branch would be permanently
+			 * unverifiable. ⛔ Never name an authored key after one the codebase
+			 * already reads.
+			 */
+			tickCapScaling?: { conditions: Condition; ticks: number };
 	  };
 
 /** Known gameplay state keys used in conditions and triggers. */

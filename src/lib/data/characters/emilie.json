@@ -125,6 +125,7 @@
 							"stat": "atk",
 							"element": "dendro",
 							"_curatorNotes": [
+								"NO tickCap, deliberately (tick-cap round, 2026-08-18): gcsim measures four Level-3 hits to our three, but the INTERVAL disagrees too (36f observed and irregular, against the 42f this series models as a single-target effective cadence), because gcsim fires volleys at random marked enemies rather than on a fixed period. A count would paper over a cadence question. Related: the audit cannot check this pairing anyway - one authored series against two observed streams, since the case reverts to Level 1 mid-life.",
 								"Level 3 barrage: gcsim fires volleys every 0.3s at random marked enemies, with a 0.7s per-enemy mark (burst.go burstTickInterval/burstMarkDuration) — single-target effective cadence is one 391%-ATK hit per 0.7s, which is what the interval models. C4: +2s duration and 0.4s mark (faster per-target rate) not modeled. After the barrage (306f from cast) the case reverts to its previous E-level and resumes E-tick behavior for the remaining E duration — not modeled as a second summon."
 							]
 						}
