@@ -56,12 +56,38 @@ chains and have been promoted to Tier B (see below).
 These have a critcalc JSON but no gcsim character dir, so first-pass
 automation can't produce frame data. Revisit when gcsim adds them.
 
-| ID                                                                                                                                       | Reason                                                                                   |
-| ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `aether`, `lumine`                                                                                                                       | Travelers — gcsim splits per element under `traveler/<element>/`; needs bespoke handling |
-| `aino`, `columbina`, `durin`, `iansan`, `ifa`, `illuga`, `jahoda`, `kachina`, `linnea`, `manekin`, `manekina`, `nefer`, `zibai`, `varka` | Newer (post-Natlan)                                                                      |
+| ID                                                                                                                | Reason                                                                                   |
+| ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `aether`, `lumine`                                                                                                | Travelers — gcsim splits per element under `traveler/<element>/`; needs bespoke handling |
+| `aino`, `columbina`, `durin`, `iansan`, `ifa`, `illuga`, `jahoda`, `kachina`, `linnea`, `nefer`, `zibai`, `varka` | Newer (post-Natlan)                                                                      |
 
 `blank.json` is a template stub and is omitted from all counts.
+
+### ⛔ Manekin / Manekina — NOT SUPPORTED, and not a backlog item
+
+⚓ **Nate's ruling, 2026-08-18: we do not support them.** They are unavailable in any
+end-game mode — Miliastra Wonderland and the overworld only — so they are not roster
+characters in the sense this corpus is about. ⛔ This is a SCOPE decision, not a data gap:
+it does not resolve when gcsim adds them, and it does not resolve when their talent data
+fills in.
+
+They used to sit in the row above under "Newer (post-Natlan)", which read as _pending_ —
+that is the confusion this note exists to stop. Their character JSONs were retired
+2026-07-12 (`data-quality-plan.md`: "manekins retired"), and `wiki-capability-config.mjs`
+already ignores their one wiki title with the same reasoning ("event-only companion, not
+a playable roster character").
+
+⚠️ **Three pieces of residue will keep suggesting otherwise — none of them is live:**
+
+- `docs/curation/talents/manekin.json` / `manekina.json` — sidecars left from the
+  retirement.
+- `src/lib/data/index.json` still lists them. ⛔ That file has **no reader and no writer**
+  anywhere in the repo — it is a leftover of the retired external generator, not the
+  shipped eager index (`characterIndex.generated.ts`, 123 entries). Don't read it to
+  answer "is X in the corpus".
+- A roster diff against genshin-db reports them as "in genshin-db, not in ours". ⚓ That
+  is the intended state. The only other names in that diff are `Aether`/`Lumine`, which we
+  carry split per element.
 
 ---
 
