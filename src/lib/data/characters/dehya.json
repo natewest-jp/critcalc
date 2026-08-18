@@ -16,10 +16,34 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 31, "hit": 22 } },
-				{ "name": "N2", "frames": { "anim": 34, "hit": 26 } },
-				{ "name": "N3", "frames": { "anim": 43, "hit": 26 } },
-				{ "name": "N4", "frames": { "anim": 85, "hit": 41 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 31,
+						"hit": 22
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 34,
+						"hit": 26
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 43,
+						"hit": 26
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 85,
+						"hit": 41
+					}
+				}
 			],
 			"_curatorNotes": [
 				"No chargeFrames: Dehya's CA is sustained-stamina-drain (claymore-style), not the discrete-hit form. gcsim leaves it as `// TODO: charged attack`. Authored without chargeFrames; will need a separate pass when CA matters for rotation modelling.",
@@ -51,8 +75,20 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": { "type": "chainStage", "ability": "skill", "index": 0, "window": 12 },
-			"frames": { "anim": 39, "E": 30, "Q": 29, "D": 26, "J": 28, "swap": 25 },
+			"conditions": {
+				"type": "chainStage",
+				"ability": "skill",
+				"index": 0,
+				"window": 12
+			},
+			"frames": {
+				"anim": 39,
+				"E": 30,
+				"Q": 29,
+				"D": 26,
+				"J": 28,
+				"swap": 25
+			},
 			"cooldown": 20,
 			"cooldownStartDelay": 18,
 			"tags": ["coordinatedAttack"],
@@ -67,7 +103,42 @@
 							"source": "C2: The Sand-Blades Glittering (recast extension)",
 							"type": "flat",
 							"value": 6,
-							"conditions": { "type": "constellation", "level": 2 }
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							}
+						}
+					],
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "onHit",
+								"source": "team",
+								"icdGate": "none"
+							},
+							"procCooldown": 2.5,
+							"scaling": 108.4,
+							"stat": "atk",
+							"flatScaling": {
+								"stat": "hp",
+								"ratio": 1.86
+							},
+							"element": "pyro",
+							"application": [
+								{
+									"frame": 2,
+									"element": "pyro",
+									"units": 1
+								}
+							],
+							"attribution": "Fiery Sanctum Field",
+							"_curatorNotes": [
+								"Coordinated attack, authored 2026-08-18. gcsim dehya/skill.go:111 subscribes skillDmgHook to event.OnEnemyDamage while dehyaFieldKey is up: any damaging hit fires the field's own attack 2 frames later, behind a 150f status ICD. Talent row 'Field DMG' = 108.4% ATK + 1.86% Max HP at level 10.",
+								"icdGate 'none' is gcsim's ICDTagNone on skillAttackInfo (skill.go:220) — every field strike applies its full Pyro, which is why Dehya reads as a reliable off-field applier where Albedo does not.",
+								"⚠️ gcsim requires the target inside a radius-10 area around the field, a positional claim we have no vocabulary for; and it lets the field hear ITSELF, so gcsim's Dehya ticks every 2.5s with no player input. Ours never fires off its own output."
+							]
 						}
 					]
 				}
@@ -82,7 +153,13 @@
 				"[A7] Dropped the coordinated attack's stat scaling from the user caveat (DMG math is out of scope). Note: the prior caveat said 'DEF + HP' scaling, but the skill description scales the coordinated attack on ATK + Max HP — the DEF reference looks like an error worth verifying."
 			],
 			"description": "This art of Dehya's own invention changes its method of use depending on the combat situation.\n\nIndomitable Flame\nThis skill will be unleashed should there be no Fiery Sanctum field created by Dehya herself present at the time.\nDeals AoE Pyro DMG, and creates a field known as Fiery Sanctum.\n\nFiery Sanctum\nWhen an opponent within a Fiery Sanctum field takes DMG, the field will unleash a coordinated attack, dealing AoE Pyro DMG to them based on Dehya's ATK and Max HP. This effect can be triggered once every 2.5s.\nActive characters within this field have their resistance to interruption increased, and when such characters take DMG, a portion of that damage will be mitigated and flow into Redmane's Blood. Dehya will then take this DMG over 10s. When the mitigated DMG stored by Redmane's Blood reaches or goes over a certain percentage of Dehya's Max HP, she will stop mitigating DMG in this way.\n\nOnly 1 Fiery Sanctum created by Dehya herself can exist at the same time.",
-			"application": [{ "frame": 20, "element": "pyro", "units": 1 }]
+			"application": [
+				{
+					"frame": 20,
+					"element": "pyro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "dehya__skill__ranging_flame",
@@ -91,8 +168,19 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": { "type": "chainStage", "ability": "skill", "index": 1 },
-			"frames": { "anim": 74, "E": 45, "Q": 45, "D": 45, "J": 49, "swap": 44 },
+			"conditions": {
+				"type": "chainStage",
+				"ability": "skill",
+				"index": 1
+			},
+			"frames": {
+				"anim": 74,
+				"E": 45,
+				"Q": 45,
+				"D": 45,
+				"J": 49,
+				"swap": 44
+			},
 			"cooldown": 0,
 			"tags": [],
 			"effects": [],
@@ -103,7 +191,13 @@
 				"cooldown: 0 because gcsim doesn't call SetCD on the recast path; the 20s CD lives on Indomitable. The chain mechanic (window: 12 on stage 0) effectively gates Ranging Flame's availability."
 			],
 			"description": "Ranging Flame\nThis skill will be unleashed should a Fiery Sanctum field created by Dehya herself already exist.\nDehya will perform a leaping attack, dealing AoE Pyro DMG before recreating a Fiery Sanctum field at her new position.\nA Fiery Sanctum field created this way will inherit the remaining duration of the previous field.\n\nRanging Flame can be used only once throughout a single Fiery Sanctum field's duration.",
-			"application": [{ "frame": 40, "element": "pyro", "units": 1 }]
+			"application": [
+				{
+					"frame": 40,
+					"element": "pyro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "dehya__burst__leonine_bite",
@@ -111,7 +205,9 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "stance",
-			"frames": { "anim": 105 },
+			"frames": {
+				"anim": 105
+			},
 			"cooldown": 18,
 			"cooldownStartDelay": 1,
 			"duration": 4.1,
@@ -128,13 +224,37 @@
 			],
 			"description": "Unleashing her burning anger and casting her inconvenient blade aside, Dehya enters the Blazing Lioness state and increases her resistance to interruption.\nIn this state, Dehya will automatically and continuously unleash the Flame-Mane's Fists, dealing Pyro DMG based on her ATK and Max HP, and when its duration ends, she will unleash an Incineration Drive, dealing AoE Pyro DMG based on her ATK and Max HP.\nIf a Fiery Sanctum field created by Dehya's own Elemental Skill \"Molten Inferno\" exists when this ability is unleashed, Dehya will retrieve it, and then create another field once Blazing Lioness's duration expires. This field will take on the retrieved field's duration at the moment of its retrieval.\nIn this state, Dehya will be unable to cast her Elemental Skill, or perform Normal, Charged, and Plunging Attacks. \"Normal Attack: Sandstorm Assault\" and Elemental Skill \"Molten Inferno\" will be replaced by \"Roaring Barrage.\"\n\nRoaring Barrage\nUnleashing Roaring Barrage within 0.4s after each Flame-Mane's Fist strike will increase the speed at which the next Flame-Mane's Fist strike will be triggered.",
 			"application": [
-				{ "frame": 105, "element": "pyro", "units": 1 },
-				{ "frame": 155, "element": "pyro" },
-				{ "frame": 205, "element": "pyro" },
-				{ "frame": 255, "element": "pyro", "units": 1 },
-				{ "frame": 305, "element": "pyro" },
-				{ "frame": 355, "element": "pyro" },
-				{ "frame": 401, "element": "pyro", "units": 1 }
+				{
+					"frame": 105,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 155,
+					"element": "pyro"
+				},
+				{
+					"frame": 205,
+					"element": "pyro"
+				},
+				{
+					"frame": 255,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 305,
+					"element": "pyro"
+				},
+				{
+					"frame": 355,
+					"element": "pyro"
+				},
+				{
+					"frame": 401,
+					"element": "pyro",
+					"units": 1
+				}
 			]
 		}
 	],
@@ -156,7 +276,9 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 20,
 					"stat": "hp"
 				}
@@ -177,8 +299,13 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 1 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"source": "character",
 					"stat": "hp%",
 					"value": 20,
@@ -187,21 +314,39 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 1 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"source": "character",
 					"stat": "skillFlatDmg",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 3.6 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 3.6
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 1 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"source": "character",
 					"stat": "burstFlatDmg",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 6 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 6
+					},
 					"snapshottable": false
 				}
 			],
@@ -233,8 +378,13 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": { "type": "manual" },
-					"conditions": { "type": "constellation", "level": 4 },
+					"trigger": {
+						"type": "manual"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
 					"scaling": 2.5,
 					"stat": "hp"
 				}

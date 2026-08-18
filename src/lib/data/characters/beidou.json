@@ -15,11 +15,41 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 31, "hit": 23 } },
-				{ "name": "N2", "frames": { "anim": 36, "hit": 22 } },
-				{ "name": "N3", "frames": { "anim": 54, "hit": 45 } },
-				{ "name": "N4", "frames": { "anim": 36, "hit": 25 } },
-				{ "name": "N5", "frames": { "anim": 96, "hit": 43 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 31,
+						"hit": 23
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 36,
+						"hit": 22
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 54,
+						"hit": 45
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 36,
+						"hit": 25
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 96,
+						"hit": 43
+					}
+				}
 			],
 			"_curatorNotes": [
 				"N and C cancel frames not explicitly set in gcsim attack.go — all hits use InitNormalCancelSlice(hitmark, animLength) with no subsequent ActionAttack/ActionCharge overrides. AnimationLengths: N1=31, N2=36, N3=54, N4=36, N5=96. Only swap recorded per hit (= hitmark per InitNormalCancelSlice). KQM frame cross-check needed.",
@@ -52,7 +82,13 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 45, "N": 44, "D": 24, "J": 24, "swap": 44 },
+			"frames": {
+				"anim": 45,
+				"N": 44,
+				"D": 24,
+				"J": 24,
+				"swap": 44
+			},
 			"cooldown": 7.5,
 			"cooldownStartDelay": 4,
 			"tags": ["shield"],
@@ -65,14 +101,23 @@
 				{
 					"type": "shield",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"scaling": 25.9,
 					"stat": "hp",
 					"flat": 3050
 				}
 			],
 			"description": "Nothing to worry about. Should anyone raise a hand against her or her men, she will avenge it ten-fold with sword and thunder.\n\nPress\nAccumulating the power of lightning, Beidou swings her blade forward fiercely, dealing Electro DMG.\n\nHold\nLifts her weapon up as a shield. Max DMG absorbed scales off Beidou's Max HP.\nAttacks using the energy stored within the greatsword upon release or once this ability's duration expires, dealing Electro DMG. DMG dealt scales with the number of times Beidou is attacked in the skill's duration. The greatest DMG Bonus will be attained once this effect is triggered twice.\nThe shield possesses the following properties:\n·Has 250% Electro DMG Absorption Efficiency.\n·Applies the Electro element to Beidou upon activation.",
-			"application": [{ "frame": 23, "element": "electro", "units": 2 }]
+			"application": [
+				{
+					"frame": 23,
+					"element": "electro",
+					"units": 2
+				}
+			]
 		},
 		{
 			"id": "beidou__burst__stormbreaker",
@@ -80,16 +125,57 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 58, "N": 55, "D": 48, "J": 48, "swap": 46 },
+			"frames": {
+				"anim": 58,
+				"N": 55,
+				"D": 48,
+				"J": 48,
+				"swap": 46
+			},
 			"cooldown": 20,
 			"tags": ["coordinatedAttack"],
 			"energyCost": 80,
 			"_curatorNotes": [
-				"Thunderbeast's Targe is a 15-second self-status on Beidou (gcsim: AddStatus(burstKey, 900, false)). Not a spawned entity — not modeled as summons[]. `duration` field removed from ability level per recipe. Reviewer to decide representation for the 15s off-field lightning discharge window."
+				"Thunderbeast's Targe is a 15-second self-status on Beidou (gcsim: AddStatus(burstKey, 900, false)). Not a spawned entity — not modeled as summons[]. `duration` field removed from ability level per recipe. ↻ 2026-08-18 (coordinated-attack round): the 15s off-field lightning discharge window this note asked a reviewer to decide is now the `armedFor: 15` on the onHit damage effect below. ⛔ It is still not a summon and still not an `activeDuration` — the Targe grants Beidou DMG reduction and interruption resistance, it is not an ability that stays ACTIVE, and giving the Q bar a 15s uptime would claim otherwise."
 			],
-			"effects": [],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"source": "team",
+						"abilityType": ["normal", "charged"],
+						"armedFor": 15
+					},
+					"procCooldown": 1,
+					"scaling": 172.8,
+					"stat": "atk",
+					"element": "electro",
+					"application": [
+						{
+							"frame": 1,
+							"element": "electro",
+							"units": 1
+						}
+					],
+					"attribution": "Thunderbeast's Targe",
+					"_curatorNotes": [
+						"Coordinated attack, authored 2026-08-18 — this is the representation the note above asked a reviewer to decide. gcsim beidou/burst.go subscribes to event.OnEnemyDamage while burstKey is up and fires a Stormbreaker bounce 1 frame later, behind a 60f status ICD. Talent row 'Lightning DMG' = 172.8% ATK at level 10.",
+						"⚓ NARROWER THAN THE OTHER FOUR, AND IT SAYS SO IN ITS OWN TRIGGER: gcsim requires AttackTagNormal or AttackTagExtra AND the hitter to be the ACTIVE character. `abilityType: ['normal','charged']` is both halves — only the active character swings — so the rule stays on the effect rather than in the engine.",
+						"armedFor 15 rather than a summon: Thunderbeast's Targe is a status on Beidou, not a thing left in the world (see the ability note above). ⚠️ The consequence is that the bounces have no summon lane to draw markers on; they appear on the aura lane and in the aura log only.",
+						"icdGate ABSENT = the standard window, gcsim ICDTagElementalBurst/ICDGroupDefault; at a 1s proc cooldown Electro lands on every third bounce."
+					]
+				}
+			],
 			"description": "Recalling her slaying of the great beast Haishan, Beidou calls upon that monstrous strength and the lightning to create a Thunderbeast's Targe around herself, dealing Electro DMG to nearby opponents.\n\nThunderbeast's Targe\n·When Normal and Charged Attacks hit, they create a lightning discharge that can jump between opponents, dealing Electro DMG.\n·Increases the character's resistance to interruption, and decreases DMG taken.\n\nA maximum of 1 lightning discharge can be triggered per second.",
-			"application": [{ "frame": 28, "element": "electro", "units": 4 }]
+			"application": [
+				{
+					"frame": 28,
+					"element": "electro",
+					"units": 4
+				}
+			]
 		}
 	],
 	"passives": [
@@ -125,7 +211,10 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"procCooldown": 15,
 					"amount": 8
 				}
@@ -146,8 +235,14 @@
 				{
 					"type": "shield",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "constellation", "level": 1 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"duration": 15,
 					"scaling": 16,
 					"stat": "hp"
@@ -198,7 +293,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"element": "electro",
 					"value": -15
