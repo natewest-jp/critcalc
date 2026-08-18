@@ -124,7 +124,10 @@
 								"type": "summonTick",
 								"interval": 0.983,
 								"firstTickDelay": 1.067,
-								"icdGate": { "timer": 300, "every": 4 }
+								"icdGate": {
+									"timer": 300,
+									"every": 4
+								}
 							},
 							"scaling": 159.84,
 							"stat": "atk",
@@ -149,7 +152,8 @@
 									"quicken",
 									"aggravate"
 								],
-								"source": "active"
+								"source": "active",
+								"icdGate": "none"
 							},
 							"procCooldown": 0.5,
 							"conditions": {
@@ -166,7 +170,42 @@
 									"units": 1
 								}
 							],
-							"attribution": "A4: Undone Be Thy Sinful Hex"
+							"attribution": "A4: Undone Be Thy Sinful Hex",
+							"_curatorNotes": [
+								"icdGate 'none' authored 2026-08-18 (coordinated-attack round): gcsim fischl/asc.go:51 sets ICDTagNone on Thundering Retribution, so every proc applies its full gauge. ⚠️ Authored rather than left absent because absent now means STANDARD ICD for a proc, as it always has for a summon tick — before the gate existed this effect was ungated by omission, and the round made the omission mean something else."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "whileNormalAttacking",
+								"interval": 1,
+								"icdGate": {
+									"timer": 300,
+									"every": 4
+								}
+							},
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							},
+							"scaling": 30,
+							"stat": "atk",
+							"element": "electro",
+							"application": [
+								{
+									"frame": 10,
+									"element": "electro",
+									"units": 1
+								}
+							],
+							"attribution": "C6: Evernight Raven",
+							"_curatorNotes": [
+								"Coordinated attack, authored 2026-08-18. gcsim fischl/fischl.go:61 registers a minazuki.Watcher on action.NormalAttackState with tickerFreq 60 and NO ICD key, gated on ozActiveKey and firing c6Wave (cons.go) — Electro, Durability 25, ICDTagElementalArt/ICDGroupFischl, landing at ozTravel (10f), Mult 0.3 = 30% of Fischl's ATK.",
+								"icdGate is ICDGroupFischl verbatim (300f timer, every 4th), the same window Oz's own tick series carries. ⚠️ In gcsim the wave and Oz's ticks share ONE counter — same tag AND group — while ours are two, because an ICD counter here is keyed per listener/series. Ours therefore applies slightly more often at C6 than gcsim does; the alternative is a cross-series shared-counter key for one constellation case.",
+								"⚠️ gcsim's watcher passes an EMPTY icd key, so in gcsim every re-entry into the normal-attack state fires a wave regardless of how recently the last one landed. Ours gates entries on the interval like the other three. It shows only under rapid dash-cancel re-entry."
+							]
 						}
 					]
 				}
@@ -227,7 +266,10 @@
 								"type": "summonTick",
 								"interval": 0.983,
 								"firstTickDelay": 1.05,
-								"icdGate": { "timer": 300, "every": 4 }
+								"icdGate": {
+									"timer": 300,
+									"every": 4
+								}
 							},
 							"scaling": 159.84,
 							"stat": "atk",
@@ -252,7 +294,8 @@
 									"quicken",
 									"aggravate"
 								],
-								"source": "active"
+								"source": "active",
+								"icdGate": "none"
 							},
 							"procCooldown": 0.5,
 							"conditions": {
@@ -269,7 +312,42 @@
 									"units": 1
 								}
 							],
-							"attribution": "A4: Undone Be Thy Sinful Hex"
+							"attribution": "A4: Undone Be Thy Sinful Hex",
+							"_curatorNotes": [
+								"icdGate 'none' authored 2026-08-18 (coordinated-attack round): gcsim fischl/asc.go:51 sets ICDTagNone on Thundering Retribution, so every proc applies its full gauge. ⚠️ Authored rather than left absent because absent now means STANDARD ICD for a proc, as it always has for a summon tick — before the gate existed this effect was ungated by omission, and the round made the omission mean something else."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "whileNormalAttacking",
+								"interval": 1,
+								"icdGate": {
+									"timer": 300,
+									"every": 4
+								}
+							},
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							},
+							"scaling": 30,
+							"stat": "atk",
+							"element": "electro",
+							"application": [
+								{
+									"frame": 10,
+									"element": "electro",
+									"units": 1
+								}
+							],
+							"attribution": "C6: Evernight Raven",
+							"_curatorNotes": [
+								"Coordinated attack, authored 2026-08-18. gcsim fischl/fischl.go:61 registers a minazuki.Watcher on action.NormalAttackState with tickerFreq 60 and NO ICD key, gated on ozActiveKey and firing c6Wave (cons.go) — Electro, Durability 25, ICDTagElementalArt/ICDGroupFischl, landing at ozTravel (10f), Mult 0.3 = 30% of Fischl's ATK.",
+								"icdGate is ICDGroupFischl verbatim (300f timer, every 4th), the same window Oz's own tick series carries. ⚠️ In gcsim the wave and Oz's ticks share ONE counter — same tag AND group — while ours are two, because an ICD counter here is keyed per listener/series. Ours therefore applies slightly more often at C6 than gcsim does; the alternative is a cross-series shared-counter key for one constellation case.",
+								"⚠️ gcsim's watcher passes an EMPTY icd key, so in gcsim every re-entry into the normal-attack state fires a wave regardless of how recently the last one landed. Ours gates entries on the interval like the other three. It shows only under rapid dash-cancel re-entry."
+							]
 						}
 					]
 				}

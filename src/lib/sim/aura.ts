@@ -286,14 +286,40 @@ function emitReaction(
  * bounds the loop.
  */
 function fireProc(ctx: SimContext, clock: Clock, l: ProcListener, time: number): void {
+	// ⚓ THE PROC'S OWN ICD, and it is NOT `procCooldown`: the cooldown says how
+	// often this proc FIRES, the gate says how often a fire APPLIES. Raiden's Eye
+	// fires every 0.9 s and applies every third strike; Dehya's Sanctum fires every
+	// 2.5 s and applies every time.
+	//
+	// ⚠️ The counter is per LISTENER (`l.key`), i.e. per entity, exactly like a
+	// summon tick series' — so Fischl's two authored Ozes share one, and two procs
+	// on one host keep their own. ⚠️ `null` is not "no ICD" for the reason
+	// `resolveActionIcd` gives: an untracked stream must not reset a counter, so the
+	// clock is only created inside the gated branch.
+	const gate = l.effect.trigger.icdGate;
+	const params: IcdParams | null =
+		gate === 'none' ? null : gate ? icdParamsFor(gate) : STANDARD_ICD_FRAMES;
+
 	let earliest = Infinity;
 	for (const app of l.effect.application) {
 		const at = time + app.frame;
 		if (at < earliest) earliest = at;
 		// ⛔ A physical (element-less) entry applies nothing — the same rule a
 		// physical swing follows. ⚠️ It still DEALT damage, which is why the
-		// stream notification below is outside this loop.
+		// stream notification below is outside this loop, and it spends no counter
+		// slot for the same reason a physical swing does not.
 		if (!app.element) continue;
+		if (params) {
+			let icd = ctx.icdClocks.get(l.key);
+			if (!icd) {
+				icd = createIcdClock();
+				ctx.icdClocks.set(l.key, icd);
+			}
+			// ⚠️ Gated at the DECISION instant, not at the landing frame — the same
+			// split `takeCooldown` uses, and what keeps a multi-entry proc's own
+			// hits counting in authored order rather than in scheduling order.
+			if (!icdApplies(icd, at, params).applies) continue;
+		}
 		const element = app.element;
 		clock.schedule(at, Band.LAND, () => {
 			offerApplication(ctx, clock, {

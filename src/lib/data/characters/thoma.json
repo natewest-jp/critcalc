@@ -158,6 +158,30 @@
 								"level": 2
 							}
 						}
+					],
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "whileNormalAttacking",
+								"interval": 1
+							},
+							"scaling": 104.4,
+							"stat": "atk",
+							"element": "pyro",
+							"application": [
+								{
+									"frame": 11,
+									"element": "pyro",
+									"units": 1
+								}
+							],
+							"_curatorNotes": [
+								"Coordinated attack, authored 2026-08-18. gcsim thoma/thoma.go:43 registers a minazuki.Watcher on action.NormalAttackState with tickerFreq 60 and a 60f ICD key, firing summonFieryCollapse (burst.go) — ONE hit at travel 11, Pyro, Durability 25, ICDTagElementalBurst/ICDGroupDefault. Talent row 'Fiery Collapse DMG' = 104.4% ATK at level 10.",
+								"⚠️ icdGate is ABSENT on purpose: the wave is a single hit on gcsim's DEFAULT group, which is what absent already means, and icd.md forbids annotating the default. Consequence, and it is the game's: waves land every second and Pyro applies on every third — Thoma applies once per ~3s, not once per second."
+							]
+						}
 					]
 				}
 			],

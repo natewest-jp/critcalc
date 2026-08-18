@@ -530,6 +530,25 @@ export type Trigger =
 			 *  field at dispatch time. */
 			source?: 'self' | 'team' | 'others';
 			/**
+			 * ⚓ Elemental-application gating for THIS proc's own hits — the same
+			 * key, the same vocabulary and the same default as `summonTick.icdGate`
+			 * (coordinated-attack round, 2026-08-18). Absent = the standard ICD;
+			 * `'none'` = every fire applies (gcsim's `ICDTagNone`); an `IcdWindow` =
+			 * a measured (timer, every) pair.
+			 *
+			 * ⚠️⚠️ `procCooldown` IS NOT THIS. The cooldown says how often the proc
+			 * FIRES; this says how often a fire APPLIES. Raiden's Eye fires every
+			 * 0.9 s and applies Electro every third one; Dehya's Sanctum fires every
+			 * 2.5 s and applies every time. Confusing the two is how a proc comes to
+			 * paint a pip per fire.
+			 *
+			 * ⚠️⚠️ Pair it with the stream OUR effect MODELS, never with the
+			 * character (the Emilie rule). A coordinated wave is ONE hit here and two
+			 * to five swords in gcsim, so gcsim reaching "one application per wave"
+			 * through `ICDGroupDefault` is `'none'` in our stream.
+			 */
+			icdGate?: 'none' | IcdWindow;
+			/**
 			 * Seconds after the HOST CAST during which this trigger is armed —
 			 * read ONLY by the damage-proc path (`sim/procs.ts`), i.e. by a
 			 * `damage` effect that carries an `application[]` (coordinated-attack
@@ -576,6 +595,25 @@ export type Trigger =
 			 *  application so this source can refuse it. See
 			 *  docs/mark-triggered-damage-round.md §1. */
 			source?: 'self' | 'team' | 'active';
+			/**
+			 * ⚓ Elemental-application gating for THIS proc's own hits — the same
+			 * key, the same vocabulary and the same default as `summonTick.icdGate`
+			 * (coordinated-attack round, 2026-08-18). Absent = the standard ICD;
+			 * `'none'` = every fire applies (gcsim's `ICDTagNone`); an `IcdWindow` =
+			 * a measured (timer, every) pair.
+			 *
+			 * ⚠️⚠️ `procCooldown` IS NOT THIS. The cooldown says how often the proc
+			 * FIRES; this says how often a fire APPLIES. Raiden's Eye fires every
+			 * 0.9 s and applies Electro every third one; Dehya's Sanctum fires every
+			 * 2.5 s and applies every time. Confusing the two is how a proc comes to
+			 * paint a pip per fire.
+			 *
+			 * ⚠️⚠️ Pair it with the stream OUR effect MODELS, never with the
+			 * character (the Emilie rule). A coordinated wave is ONE hit here and two
+			 * to five swords in gcsim, so gcsim reaching "one application per wave"
+			 * through `ICDGroupDefault` is `'none'` in our stream.
+			 */
+			icdGate?: 'none' | IcdWindow;
 			/**
 			 * Seconds after the HOST CAST during which this trigger is armed — the
 			 * lifetime of the MARK a cast leaves on the target, not of the ability.
@@ -689,18 +727,32 @@ export type Trigger =
 	 * instants it measured onto the summon window (`TimelineWindow.ticks`).
 	 *
 	 * - `interval` — seconds between waves while the state holds. 1 for all four.
-	 * - `icdGate` — as on `summonTick`: absent = standard ICD, `'none'` = every
-	 *   wave applies, an `IcdWindow` = a measured (timer, every) pair.
-	 *   ⚠️⚠️ Pair it with the stream OUR series MODELS (the Emilie rule). We model
-	 *   ONE hit per wave; gcsim models a wave's two-to-five swords individually
-	 *   and reaches "one application per wave" through `ICDGroupDefault`. So
-	 *   Xingqiu and Yelan carry `'none'` — the positive claim their kit text makes
-	 *   ("each wave of Hydro Swords can apply one source of Hydro") — while Thoma,
-	 *   whose wave IS one hit, is bare and gates on the standard.
+	 * - `icdGate` — the shared proc gate; see its doc on `onReaction` above.
+	 *   ⚠️⚠️ Xingqiu and Yelan carry `'none'` — the positive claim their kit text
+	 *   makes ("each wave of Hydro Swords can apply one source of Hydro") — while
+	 *   Thoma, whose wave IS one hit, is bare and gates on the standard.
 	 */
 	| {
 			type: 'whileNormalAttacking';
 			interval: number;
+			/**
+			 * ⚓ Elemental-application gating for THIS proc's own hits — the same
+			 * key, the same vocabulary and the same default as `summonTick.icdGate`
+			 * (coordinated-attack round, 2026-08-18). Absent = the standard ICD;
+			 * `'none'` = every fire applies (gcsim's `ICDTagNone`); an `IcdWindow` =
+			 * a measured (timer, every) pair.
+			 *
+			 * ⚠️⚠️ `procCooldown` IS NOT THIS. The cooldown says how often the proc
+			 * FIRES; this says how often a fire APPLIES. Raiden's Eye fires every
+			 * 0.9 s and applies Electro every third one; Dehya's Sanctum fires every
+			 * 2.5 s and applies every time. Confusing the two is how a proc comes to
+			 * paint a pip per fire.
+			 *
+			 * ⚠️⚠️ Pair it with the stream OUR effect MODELS, never with the
+			 * character (the Emilie rule). A coordinated wave is ONE hit here and two
+			 * to five swords in gcsim, so gcsim reaching "one application per wave"
+			 * through `ICDGroupDefault` is `'none'` in our stream.
+			 */
 			icdGate?: 'none' | IcdWindow;
 	  }
 	/** Fires periodically while the parent summon is active. Only valid on
