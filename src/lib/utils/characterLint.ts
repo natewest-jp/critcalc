@@ -1741,6 +1741,33 @@ function lintEffect(
 		}
 	}
 
+	// (B.14) ⚓ `onFieldDelay` IS A PER-RECEIVER QUESTION, so it is only
+	// answerable on an `active`-target buff — the one scope where a slice knows
+	// WHO is receiving and when they arrived. On a team/self/enemy target there
+	// is nobody to have been standing there, and the field would read as a
+	// promise the projection cannot keep.
+	if (eff.type === 'buff' && eff.onFieldDelay !== undefined) {
+		// ⚠️ Restated rather than imported (`isActiveTargetOnly` in
+		// effectCollection.ts) for the reason at the head of this file: no runtime
+		// imports. One line, and the shape is `target === 'active'` exactly.
+		if (Array.isArray(eff.target) || eff.target !== 'active') {
+			push(
+				'strict',
+				'on-field-delay-not-active',
+				`onFieldDelay is only read on a target:'active' buff — a per-receiver slice is the only scope that knows how long the receiver has been on field`,
+				location
+			);
+		}
+		if (!isPositiveNumber(eff.onFieldDelay.seconds)) {
+			push(
+				'strict',
+				'on-field-delay-invalid',
+				`onFieldDelay.seconds must be a positive number of seconds (got ${JSON.stringify(eff.onFieldDelay.seconds)})`,
+				location
+			);
+		}
+	}
+
 	// (B.13b) ⚓ AN `onHit` DAMAGE PROC MUST HAVE A WINDOW AND A COOLDOWN
 	// (coordinated-attack round, 2026-08-18). Beidou's Stormbreaker, Raiden's Eye,
 	// Albedo's Transient Blossom, Dehya's Fiery Sanctum, Nicole's burst.

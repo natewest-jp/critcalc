@@ -1200,6 +1200,50 @@ export type Effect =
 				conditions: Condition;
 				value: BuffValue;
 			};
+			/**
+			 * ⚓ HOW LONG THE RECEIVER MUST HAVE BEEN ON FIELD before this buff
+			 * lands (Nicole, 2026-08-18) — "after the observed character has
+			 * remained on the field for 3s, their Grace of Kenosis is upgraded".
+			 *
+			 * ⚠️ ONLY MEANINGFUL ON `target: 'active'`, because a per-receiver
+			 * slice is the one scope where "how long have YOU been on field" is a
+			 * question with an answer — the same structural claim `activeCharFaction`
+			 * and `weaponType` make. The delay shifts each on-field segment's START
+			 * and leaves the buff's own end alone, so a receiver who swaps in with
+			 * less than `seconds` of the window left gets nothing at all, which is
+			 * the mechanic. characterLint B.14 enforces the target.
+			 *
+			 * ⚓⚓ THE WAIVER IS PART OF THE FIELD, NOT A SECOND EFFECT, and that is
+			 * forced rather than chosen: the active-target pass dedupes by `stat`
+			 * before it ever reaches per-segment evaluation, so a Hexerei copy and a
+			 * non-Hexerei copy of the same +300 ATK would collapse to whichever was
+			 * authored first. ⛔ Don't re-try the two-effect pattern
+			 * `activeCharFaction` recommends for a pair that shares a stat.
+			 *
+			 * ⚠️ It is a DELAY, not a ramp: the value is full the moment it lands.
+			 */
+			onFieldDelay?: {
+				/** Seconds on field before the buff applies. */
+				seconds: number;
+				/**
+				 * When the wait does not apply at all.
+				 *
+				 * ⚓ A `Condition`, not a bespoke key, because the two waivers this
+				 * mechanic has are already in that vocabulary and COMPOSE: Nicole's
+				 * Methexis upgrades a Hexerei character straight away
+				 * (`activeCharFaction`) and upgrades everybody straight away at C6
+				 * (`constellation`), which is one `any` of the two.
+				 *
+				 * ⚠️ Evaluated in the PER-SEGMENT scope, so `activeCharFaction` names
+				 * the RECEIVER — the same scope note `weaponType` carries. An
+				 * unresolvable condition does NOT waive (the wait stands), because a
+				 * delay that vanishes when we cannot answer would over-claim uptime.
+				 * ⚠️ It is a property of the receiver, not a team count: gcsim checks
+				 * a bare `char.IsHexerei` with no `GetHexereiCount()` gate, so a lone
+				 * Hexerei teammate still skips the wait. ⛔ Not `teamFaction`.
+				 */
+				waivedWhen?: Condition;
+			};
 			// canonicalAssumption was retired 2026-07-20 (cA-fold): it was used
 			// by 2 characters, its headlineValue always duplicated `value`, and
 			// its caveat never gained a render surface. Canonical-rotation

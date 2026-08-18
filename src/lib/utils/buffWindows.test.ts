@@ -850,3 +850,81 @@ describe('onState / post-stance buffs — triggers that were authored and never 
 		expect(barsOf(team, 'citlali::char::onState')).toHaveLength(0);
 	});
 });
+
+// ── onFieldDelay — "after the observed character has REMAINED on the field" ──
+//
+// Nicole's Methexis (2026-08-18). ⚓ The delay is per-RECEIVER, which is why it
+// only means anything on a `target: 'active'` buff: a per-segment slice is the
+// one scope that knows who is receiving and when they arrived.
+describe('onFieldDelay — a buff that waits for the receiver to stay', () => {
+	const load = async (id: string) =>
+		(await import(`$lib/data/characters/${id}.json`)).default as unknown as CharacterData;
+	/** [start, end] in seconds of every Guidance-of-Theosis slice a receiver got.
+	 *  ⚠️ Read off the WINDOWS, not the projected rows: a row's bars carry the
+	 *  effect's `stat` but not its `attribution`, and Nicole hands out more than
+	 *  one ATK buff. */
+	const guidance = (rotation: ReturnType<typeof run>['rotation'], receiverId: string) =>
+		rotation.windows
+			.filter(
+				(w) =>
+					w.kind === 'buff' &&
+					(w as { receiverId?: string }).receiverId === receiverId &&
+					((w as { effects?: { attribution?: string }[] }).effects ?? []).some((e) =>
+						/Methexis/.test(e.attribution ?? '')
+					)
+			)
+			.map((w) => [+(w.start / 60).toFixed(2), +(w.end / 60).toFixed(2)]);
+
+	it('⚓ makes a non-Hexerei receiver wait 3s and a Hexerei receiver wait none', async () => {
+		// THE ASK, in one assertion. Sucrose is Hexerei and Kaeya is not, so the
+		// same buff from the same cast starts at each one's swap-in +0s and +3s.
+		const [nicole, sucrose, kaeya] = await Promise.all([
+			load('nicole'),
+			load('sucrose'),
+			load('kaeya')
+		]);
+		const { rotation } = run('Nicole E > Sucrose N5 N5 > Kaeya N5 N5', [nicole, sucrose, kaeya]);
+		expect(guidance(rotation, 'sucrose')).toEqual([[0.65, 5.47]]);
+		expect(guidance(rotation, 'kaeya')).toEqual([[8.6, 20]]);
+	});
+
+	it('⚓ the waiver is the RECEIVER’s faction, not a team count', async () => {
+		// gcsim checks a bare `char.IsHexerei` with no GetHexereiCount() gate, so a
+		// lone Hexerei teammate still skips the wait — ⛔ this is not `teamFaction`.
+		// Two Hexerei members are in the party either way; what moves is WHO is
+		// receiving.
+		const [nicole, sucrose, kaeya] = await Promise.all([
+			load('nicole'),
+			load('sucrose'),
+			load('kaeya')
+		]);
+		const { rotation } = run('Nicole E > Kaeya N5 N5 > Sucrose N5 N5', [nicole, sucrose, kaeya]);
+		expect(guidance(rotation, 'kaeya')[0][0]).toBeGreaterThan(3);
+		expect(guidance(rotation, 'sucrose')[0][0]).toBeLessThan(6.5);
+	});
+
+	it('drops a receiver who swaps in with less than the delay left on field', async () => {
+		// The mechanic, not a rounding case: Nicole "observes" whoever is active and
+		// upgrades them once they have STAYED. A one-swing visit never qualifies.
+		const [nicole, kaeya, ganyu] = await Promise.all([
+			load('nicole'),
+			load('kaeya'),
+			load('ganyu')
+		]);
+		const brief = run('Nicole E > Kaeya N5 N5 > Ganyu N1', [nicole, kaeya, ganyu]).rotation;
+		expect(guidance(brief, 'ganyu')).toEqual([]);
+		// ⚠️ AND the previous receiver must still end at their OWN swap-out. The
+		// extension to the buff's end belongs to the last TRACK, not to the last
+		// surviving segment — dropping Ganyu's slice used to promote Kaeya's and run
+		// his Guidance straight through a swap-out that had already happened.
+		const kaeyaSlice = guidance(brief, 'kaeya')[0];
+		expect(kaeyaSlice[1]).toBeLessThan(20);
+	});
+
+	it('⚓ C6 waives the wait for everyone — the same field, composed', async () => {
+		const [nicole, kaeya] = await Promise.all([load('nicole'), load('kaeya')]);
+		const c0 = run('Nicole E > Kaeya N5 N5', [nicole, kaeya]).rotation;
+		const c6 = run('Nicole E > Kaeya N5 N5', [nicole, kaeya], { nicole: 6 }).rotation;
+		expect(guidance(c0, 'kaeya')[0][0] - guidance(c6, 'kaeya')[0][0]).toBeCloseTo(3, 1);
+	});
+});

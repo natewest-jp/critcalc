@@ -126,6 +126,14 @@ the ACTIVE character's rather than hers; and it is capped at four per burst. Her
 `damage` + `onHit` effect being inert for the gauge is CORRECT. ⚓ "Authored but unread" is
 not automatically a defect — check what the thing does before wiring it.
 
+↻ ⚓⚓ **CONFIRMED IN GAME 2026-08-18 (⚓ Nate), so this is settled and ⛔ not to be
+re-opened from the gcsim source alone:** an Arcane Projection deals Elemental DMG matching
+the active character's element, applies **no** elemental gauge, and causes **no** reactions.
+The tell that pointed at it was internal to gcsim's own file — every other hit Nicole makes
+carries `Durability: 25`, and the only two without it are the two projections, i.e. exactly
+the two whose element is BORROWED. ⚓ So the aura lane staying silent under her burst is the
+tool being RIGHT, and it gets no caveat for the same reason.
+
 ## 6. What is still out
 
 - ⛔ **A proc does not enter the finalize hit stream**, so it triggers no artifact `onHit`
