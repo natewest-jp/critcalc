@@ -174,7 +174,7 @@
 					"stat": "hp"
 				}
 			],
-			"caveat": "Each heal is one Sourcewater Droplet pickup — Droplets drop from the skill's Hold-mode Dewdrop hits, up to 4 per use, and must be collected. Pickups don't fire on their own; add each heal manually.",
+			"caveat": "Not modeled: the heal from picking up a Sourcewater Droplet. Droplets drop from the skill's Hold-mode Dewdrop hits, up to 4 per use, and must be collected.",
 			"_curatorNotes": [
 				"Capability sweep 2026-07-28: renamed from stale beta 'Suffusion'/'Outflow' to release A1 'Spotless Waters' (genshin-db 5.2.12 passive1; deleted the beta Pneuma-absorption note and the A6 2026-07-12 rename flag this resolves). 'Suffusion' is the skill's own HP-drain mechanic, not a passive.",
 				"Heal authored: 7% of the Traveler's Max HP per Sourcewater Droplet picked up, self, fixed (not talent-scaled), scales with Healing Bonus — gcsim traveler/common/hydro/asc.go:14-35 (droplet spawn on Hold-E Dewdrop hit, 60f ICD, cap 4 per skill use) + asc.go:38-56 (a1PickUp: Heal Src MaxHP*0.07). Pickup has no schema trigger primitive — manual trigger per the Sigewinne C2 shield precedent."
@@ -239,7 +239,7 @@
 					"stat": "hp"
 				}
 			],
-			"caveat": "The shield lasts only while the skill is in use and ends with it — no fixed duration is shown. It absorbs Hydro DMG with 250% effectiveness, and a Dewdrop hit refills it once every 2s.",
+			"caveat": "Not modeled: the shield, which has no fixed duration — it lasts only while the skill is in use and ends with it. It absorbs Hydro DMG with 250% effectiveness, and a Dewdrop hit refills it once every 2s.",
 			"_curatorNotes": [
 				"Capability sweep 2026-07-28: renamed from stale beta 'Tide Tributary' (the +20% Hydro DMG beta effect never shipped) to release C4 'Pouring Descent' (genshin-db 5.2.12); deleted the superseded beta skip-note and the A6 2026-07-12 rename flag this resolves.",
 				"Shield authored: Aquacrest Aegis, 10% of the Traveler's Max HP — gcsim traveler/common/hydro/cons.go:17-39 (shield add, HP 0.1*MaxHP, Ele Hydro), cons.go:41-56 (refresh/redeploy on Dewdrop hit, 2s ICD), cons.go:58-69 (c4Remove at skill end). Lifetime is channel-bound, so no duration is authored (Sigewinne C2 precedent); the shield Effect has no element field — the 250% Hydro absorption efficiency is caveat-only.",
@@ -271,7 +271,7 @@
 					"stat": "hp"
 				}
 			],
-			"caveat": "Each Sourcewater Droplet picked up heals only the nearby party member with the lowest HP percentage, for 6% of that member's Max HP. Pickups don't fire on their own; add each heal manually.",
+			"caveat": "Not modeled: the heal from picking up a Sourcewater Droplet. It reaches only the nearby party member with the lowest HP percentage, for 6% of that member's Max HP.",
 			"_curatorNotes": [
 				"Capability sweep 2026-07-28: renamed from stale beta 'Cresting Onslaught' (the E-CD-reset beta effect never shipped) to release C6 'Tides of Justice' (genshin-db 5.2.12); deleted the A6 2026-07-12 rename flag this resolves.",
 				"Heal authored: 6% of the RECEIVER's Max HP per Sourcewater Droplet picked up, targeting the lowest-HP% party member, scales with the Traveler's Healing Bonus — gcsim traveler/common/hydro/cons.go:71-95 (c6: HealTypePercent 0.06), fired from asc.go:63-65 inside a1PickUp. The heal Effect's stat 'hp' nominally reads as the holder's Max HP and target 'team' as everyone — both approximations are caveated; pickup has no schema trigger, so the trigger is manual (Sigewinne C2 precedent)."

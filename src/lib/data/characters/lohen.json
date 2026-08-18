@@ -85,7 +85,7 @@
 			"effects": [],
 			"description": "Performs a swift series of forward strikes, consuming all **Will to Win** and dealing Cryo DMG. This DMG will be increased based on the amount of Will to Win consumed. If Lohen is in **Masterstroke** mode when this is performed, the duration of Masterstroke will be extended by 1.65s.",
 			"behavior": "instant",
-			"caveat": "Not modeled: the on-field damage, which scales with how much Will to Win is consumed. With 2+ Hexerei in the team the Secret Rite N/CA DMG buff is shown on every cast, but in game it needs Will to Win at 50% or more.",
+			"caveat": "With 2+ Hexerei in the team the Secret Rite N/CA DMG buff is shown on every cast, but in game it needs Will to Win at 50% or more.",
 			"_curatorNotes": [
 				"[Hexerei] The Secret Rite N/CA DMG buff (see factionBonuses) is triggered by this Burst; the Will-to-Win >=50% threshold has no schema condition (Will to Win is an unmodeled internal resource), so the effect fires unconditionally on cast and the threshold is carried in the caveat. Source: KQM quickguide (https://keqingmains.com/q/lohen-quickguide/), fetched 2026-07-29.",
 				"Burst DMG scales with consumed Will to Win (0.40%/Point at TL10, sidecar 'DMG Increase From Will to Win') — a self on-field-DPS resource, not modeled. Base 118.8%×6 → 202.0%×6 at TL10 (self damage; no off-field / team capability).",
@@ -171,7 +171,7 @@
 				}
 			],
 			"description": "When in **Masterstroke** mode, after the special Elemental Skill **Etched Into Bone and Soul** hits an opponent or the Elemental Burst Manifest Judgment is unleashed, Lohen gains \"Evilsbane Blade\" for 4s: The next time Lohen hits an opponent with a Normal or Charged Attack while in Masterstroke mode, he will follow up with an additional strike that deals AoE Cryo DMG equal to 500% of his ATK, and increase the Elemental Mastery of other nearby party members by 200 for 8s. Evilsbane Blade can be triggered once every 4s.",
-			"caveat": "Not modeled: the Evilsbane Blade follow-up strike's own 500% ATK Cryo damage — on-field damage the timeline doesn't show.",
+			"caveat": "Shown from the skill or burst cast; in game the +200 EM needs Evilsbane Blade — armed by the burst or an Etched Into Bone and Soul hit — to land on a Normal or Charged Attack.",
 			"_curatorNotes": [
 				"C2 grants +200 EM to OTHER nearby party members (teamExcludingSelf) for 8s, once every 4s (procCooldown 4). Web-verified (KQM quickguide, Icy Veins). Gated on Masterstroke (state:inStance).",
 				"Trigger approximated as onHit (the Evilsbane follow-up fires on the next N/CA hit while in Masterstroke); the precise Evilsbane-Blade arming chain (armed by Etched-hit or Burst, 4s window) isn't modeled — procCooldown 4 stands in for the once-every-4s cap.",

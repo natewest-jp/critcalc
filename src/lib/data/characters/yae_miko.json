@@ -120,7 +120,7 @@
 			"name": "The Shrine's Sacred Shade",
 			"abilityType": "passive",
 			"description": "When casting Great Secret Art: Tenko Kenshin, each Sesshou Sakura destroyed resets the cooldown for 1 charge of Yakan Evocation: Sesshou Sakura.",
-			"caveat": "Not modeled: the extra lightning strike each skill cast fires when three Sesshou Sakura are already out. With a Stellar-Conduct enabler in the party that strike hits harder and counts as Stellar-Conduct DMG.",
+			"caveat": "Not modeled: the skill charge refunded for each Sesshou Sakura the burst destroys, or the extra lightning strike each skill cast fires when three are already out.",
 			"_curatorNotes": [
 				"No effect authored. gcsim implementation: a1() calls c.ResetActionCooldown(action.ActionSkill) once per Tenko Thunderbolt fired during burst. The schema has no `cdReset` trigger that fires per-thunderbolt or a 'reset N charges' representation. Reviewer to model — likely needs a new effect type (cdReset already exists on EffectBase) wired to the burst trigger with a per-totem multiplier.",
 				"[Stellar] Current-patch A1 addition, from the Fandom talent infobox `buff` field (buffType Revelation, The Shrine's Sacred Shade, fetched 2026-07-29): (a) PERMANENT — with at least 3 Sesshou Sakura nearby at once, casting the skill fires an additional lightning strike for Electro DMG at 40% of ATK; (b) STELLAR-GATED — 'Radiance: Stellar-Conduct' upgrades that strike to 50% of ATK and makes it count as Stellar-Conduct DMG. The CD-reset clause is unchanged.",
@@ -267,7 +267,7 @@
 				}
 			],
 			"description": "When Sesshou Sakura lightning hits opponents, the Electro DMG Bonus of all nearby party members is increased by 20% for 5s.",
-			"caveat": "Neither the Electro DMG bonus nor the energy restore fires on its own — toggle them on when a Sesshou Sakura lightning strike lands. The energy comes back at most once every 5s.",
+			"caveat": "Not modeled: the Electro DMG bonus or the energy restore from a Sesshou Sakura lightning strike.",
 			"_curatorNotes": [
 				"[Stellar] Current-patch C4 additions, from the Fandom constellation infobox `buff` field (buffType Revelation, Sakura Channeling, fetched 2026-07-29): the existing 20% Electro DMG Bonus / 5s clause now also restores 8 Elemental Energy to Yae (once every 5s), and 'Yae Miko's Elemental Burst DMG is increased by 100%'. Both PERMANENT — no Stellar-Conduct wording on the page, so no `teamEnablesReaction` gate.",
 				"[Stellar] Energy authored as `energy` target self amount 8 with procCooldown 5, on the same manual trigger as the sibling Electro buff (both fire off the Sesshou Sakura lightning hit, a summon tick with no dispatchable trigger — see the sibling's note). Burst DMG bonus authored as a passive-trigger self buff, burstDmgBonus 100, since it is unconditional at C4+. The pre-existing 20% Electro effect is untouched.",

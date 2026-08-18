@@ -83,7 +83,7 @@
 					"procCooldown": 0.3
 				}
 			],
-			"caveat": "In game the stance blocks Normal and Charged Attacks; typing N or C still shows a block on the timeline, so sequence valid actions yourself. Swirls extend it up to +5s, but only one is counted per skill or burst cast, so some rotations show a shorter stance.",
+			"caveat": "In game the stance blocks Normal and Charged Attacks; typing N or C still shows a block on the timeline, so sequence valid actions yourself.",
 			"_curatorNotes": [
 				"Dreamdrifter is the Nightsoul state for Mizuki — opensState: \"nightsoulBlessing\" + behavior: \"stance\" opens both inStance and nightsoulBlessing for the 5s window. terminatesOnSwap: true matches gcsim's OnCharacterSwap handler that calls cancelDreamDrifterState.",
 				"Re-pressing E during Dreamdrifter cancels the state in 1 frame; the parser's current model can't distinguish 'second E exits' from 'second E starts new stance' — the latter is what would happen, which is wrong but acceptable for v1.",
@@ -159,7 +159,7 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Each tick shows both a heal and a damage marker, but a snack resolves to only one — heal or explosion — so the markers aren't additive across ticks. Self-pickup doubles the heal, though the base amount is shown; pickup or explosion can also lag the marked tick by up to 4s.",
+			"caveat": "Each tick mark is one snack, and a snack resolves to either a heal or an explosion, never both. Self-pickup doubles the heal though the base amount is shown, and pickup or explosion can lag the mark by up to 4s.",
 			"_curatorNotes": [
 				"'grouping' tag added (capability sweep 2026-07-28): kit text — the burst 'pull[s] in nearby objects and opponents'; gcsim burst.go:40 carries the same comment. The pull happens once on the initial cast; tag only, no numeric effect.",
 				"Snack ticks (P3): gcsim snackInterval=1.5s starting at burstHitmark (=summon spawn). 8 snacks per 12s Mini Baku duration. Munen damage is the snackDMG multiplier (127.01% ATK Anemo at TL10). The 4s pickup window before auto-explode means actual damage timing differs from the rendered tick by up to 4s — accepted approximation.",

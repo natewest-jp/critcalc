@@ -187,7 +187,7 @@
 					"flat": 515
 				}
 			],
-			"caveat": "The ongoing heal fires only on the active character's Normal Attack hits, at most once every 2.5s over its 15s window — so a stretch without normals shows no healing.",
+			"caveat": "Not modeled: the 15s healing window — in game it heals the active character on their Normal Attack hits, at most once every 2.5s.",
 			"_curatorNotes": [
 				"Generator authored 'behavior: \"stance\"'; changed to 'instant'. Eagleplume is a 15s heal-on-normal-hit team buff — normals/charge are not replaced. Reviewer to decide if buff duration needs self-status representation.",
 				"Both heals authored 2026-07-12 at talent level 10. gcsim burst.go Burst(): initial heal = burstHealFirstF[9] + burstHealFirstP[9]*MaxHP, Heal Target -1 (all party) → target 'team'; sidecar 'Cast Healing' col 10 = '21.9% Max HP+2579' (burstHealFirstP[9]=0.219024, burstHealFirstF[9]=2578.6736). Authored as onCast(burst) heal, scaling 21.9% HP + flat 2579.",

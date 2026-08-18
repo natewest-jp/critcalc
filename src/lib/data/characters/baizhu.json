@@ -78,7 +78,7 @@
 					"flat": 1694.9546
 				}
 			],
-			"caveat": "Shown at cast, but in game the heal lands when the Sprite returns after its attacks — or right away if no opponents are nearby.",
+			"caveat": "The heal isn't shown on the timeline; in game it lands when the Sprite returns after its attacks, or right away if no opponents are nearby.",
 			"_curatorNotes": [
 				"Skill heal authored 2026-07-12 at talent level 10 as a single onCast (skill) team heal. gcsim skill.go skillHealing(): Player.Heal with Target -1 (all party members) → target 'team' (kit: 'healing all nearby party members'). Fires once after the Gossamer Sprite's attack chain completes and it returns (skillReturnTravel=51 frames after the last chain hit, or immediately via chain() when no enemy is found); represented as onCast since the schema has no delayed-single-heal trigger, so the return-travel delay is a timing simplification. TL10: skillHealPP[9]=0.144 (14.4% Max HP) + skillHealFlat[9]=1694.9546 (sidecar 'Healing' 10th column '14.40% Max HP+1695'). gcsim indexes the skill-heal arrays with TalentLvlBurst() — a gcsim quirk; at TL10 both talent indexers resolve to index 9, and in-game the heal scales with the Universal Diagnosis (Skill) talent."
 			],
@@ -152,7 +152,7 @@
 					"label": "Seamless Shield"
 				}
 			],
-			"caveat": "The absorption shown is one shield's; in game it refreshes about every 2.4s rather than stacking, so total protection is higher. Not modeled: the shield's much stronger Dendro absorption.",
+			"caveat": "Drawn as one continuous 14s shield; in game a new one is generated about every 2.4s, each replacing the last rather than stacking. Not modeled: the much stronger Dendro absorption.",
 			"behavior": "instant",
 			"description": "Enters the Pulsing Clarity state, creating a Seamless Shield that absorbs Dendro DMG with 250% effectiveness.\nWhile in this state, Baizhu will generate a new Seamless Shield every 2.5s.\n\nThe Seamless Shield will heal your own active character based on Baizhu's Max HP and attack opponents by unleashing Spiritveins, dealing Dendro DMG under the following circumstances:\n·When a character is under the protection of a Seamless Shield and a new Seamless Shield is generated.\n·When the Seamless Shield's effects expire, or when it is shattered.",
 			"application": []
@@ -183,7 +183,7 @@
 			"id": "baizhu__passive__all_things_are_of_the_earth",
 			"name": "All Things Are of the Earth",
 			"abilityType": "passive",
-			"caveat": "Characters healed by the burst's Seamless Shields deal up to 100% more Burning, Bloom, Hyperbloom, and Burgeon reaction DMG for 6s, based on his Max HP, plus up to 40% more Aggravate and Spread DMG. This buff isn't shown on the timeline.",
+			"caveat": "Not modeled: for 6s after being healed by the burst's Seamless Shields, a character deals up to 100% more Burning, Bloom, Hyperbloom, and Burgeon DMG and up to 40% more Aggravate and Spread DMG.",
 			"_curatorNotes": [
 				"Year of Verdant Favor scales with Baizhu's Max HP (cap 50,000): per 1,000 HP, Burning/Bloom/Hyperbloom/Burgeon reaction DMG +2% (max +100%), Aggravate/Spread DMG Bonus +0.8% (max +40%), Lunar-Bloom +0.7%; lasts 6s. Real trigger is 'healed by Seamless Shield' (gcsim baizhu/asc.go:51-80 — a4 fires inside summonSeamlessShieldHealing), target = the healed character.",
 				"Value-less self allDmgBonus generator artifact removed 2026-07-28 (capability sweep): it carried no value, the wrong trigger (onReaction:burning), and the wrong target (self). Not re-authorable — the Stat union has no bloom-family reaction DMG-bonus keys (Tier-2 reaction schema frozen), the healed-by-shield trigger has no primitive (onHeal unconsumed), and team allDmgBonus would grossly overstate a reaction-only bonus. Caveated instead."

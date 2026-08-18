@@ -176,7 +176,7 @@
 			"name": "You Shall Go Out With Joy",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "If the active character falls while under Favonian Favor, they instantly revive with full HP. This can happen once every 15 minutes.",
+			"caveat": "Not modeled: the 10% ATK SPD for the active character under Favonian Favor, and the revive if they fall (once every 15 minutes).",
 			"_curatorNotes": [
 				"Two effects: (1) ATK SPD +10% (flat) for active character under Favonian Favor — additive with A4 HP-scaling ATK SPD, so C6 cap is effectively 30% (gcsim: burstAttackSpeed = min(HP-based, 0.2) + 0.1). Still unauthored — needs reviewer pass. (2) Revival mechanic: resolved as caveat-only (capability sweep 2026-07-28) — gcsim cons.go:54-88 subscribes OnPlayerHPDrain, SetHPByRatio(1) when the Favonian Favor holder falls, c6Icd = 15*60*60 frames. Death-triggered revive: no on-death trigger primitive and no way to express a 15-minute once-per; a timeline heal effect would misrepresent it."
 			],

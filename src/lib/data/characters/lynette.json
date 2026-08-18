@@ -76,7 +76,7 @@
 					"stat": "hp"
 				}
 			],
-			"caveat": "The heal comes with a cost the timeline doesn't show: for 4s after Enigma Thrust hits, she loses about 6% of her current HP each second.",
+			"caveat": "Not modeled: the HP cost that comes with the heal — for 4s after the thrust hits, she loses about 6% of her current HP each second.",
 			"_curatorNotes": [
 				"behavior: 'stance' changed to 'instant' — the Hold E Pilfering Shadow movement phase does not replace Lynette's normal/charged attacks. Stance is reserved for N-replacement mechanics (Hu Tao, Cyno, Raiden, Furina).",
 				"Hold E Pilfering Shadow state: duration-bounded self-state with no spawned entity. Player controls movement; Shadowsign is applied to nearest enemy at 0.1s intervals. State ends on re-press or release. Duration is parametric (see Hold variant). Reviewer to decide self-buff/state representation.",

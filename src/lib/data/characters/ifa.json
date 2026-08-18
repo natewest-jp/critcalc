@@ -110,7 +110,7 @@
 				"Damage NOT authored (support; on-field, not decision-relevant for planner/Team-Builder capabilities): main hit burst_dmg TL10 = 915.3% ATK Anemo (sidecar 'Skill DMG' col 10 = 915.3%); Sedation Mark burst_mark TL10 = 196.1% ATK (sidecar 'Sedation Mark DMG' col 10) dealt in the ABSORBED aura element (Pyro>Hydro>Electro>Cryo priority, burst.go targetElement) when the sedative hits an enemy affected by Hydro/Pyro/Cryo/Electro, applying a Sedation Mark (max ~4). The variable-element reaction-enabling hit is not cleanly authorable (element depends on enemy aura)."
 			],
 			"description": "Fires a Therapeutic Sedative at a (temporarily aggressive) opponent. The sedative will explode on impact, creating a restraining wind current that pulls nearby objects and opponents in while dealing Nightsoul-aligned AoE Anemo DMG.\nWhen the Therapeutic Sedative hits an opponent affected by Hydro/Pyro/Cryo/Electro, it will apply a **Sedation Mark** to them.",
-			"caveat": "The restraining wind current that pulls nearby opponents together is shown only as a grouping effect; its duration isn't given in the kit text, so it isn't drawn as a timed field on the timeline."
+			"caveat": "Not modeled: how long the restraining wind current lasts — the game states no duration for it, so the pull isn't drawn as a timed field."
 		}
 	],
 	"passives": [

@@ -78,7 +78,7 @@
 				}
 			],
 			"effects": [],
-			"caveat": "The off-field ticks scale off both ATK and DEF in game, but only the ATK component is modeled. Hold E (aim mode, longer cast) isn't modeled separately, so tap-E timing is always used.",
+			"caveat": "Hold E (aim mode, longer cast) isn't modeled separately, so tap-E timing is always used.",
 			"_curatorNotes": [
 				"Tamoto interval slashes migrated to summons[0].effects[] (P3): gcsim skillDollAttackInterval=3.6s, skillDollStartDelay=0.6s firstTickDelay. ATK multiplier turretAtkScaling[9]=147.74% Geo at TalentLvl 10. DEF-scaling FlatDmg (turretDefScaling) not authored — schema's damage Effect carries one scaling only.",
 				"A1 Tailor-Made: post-skill window (~1.3s after the upward sweep) branches into Tapestry (force-swap + Seize the Moment coordinated attacks) or Tailoring (Geo infusion 5s) depending on the next input. Not modelled — branching on a post-cast input window isn't expressible in the current schema. The Geo infusion path would be modellable in isolation but the gating isn't.",
@@ -130,7 +130,7 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Fires whenever any party member creates a Geo Construct (including Tamoto). Construct spawns aren't tracked, so this is a manual toggle — turn it on when one is up.",
+			"caveat": "Not modeled: the Geo DMG Bonus from a nearby party member creating a Geo Construct, including Tamoto.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-12): manual trigger preserved because construct-spawn is a team-wide event without a corresponding primitive in the schema. Authoring `onConstructSpawned` would require (a) a new trigger type, (b) a `kind: \"construct\"` classifier on Summon, and (c) tagging the corpus's Geo-construct spawners (Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls + meteorite, Chiori's own Tamoto). Cost not justified for one current consumer; revisit if more construct-event mechanics appear.",
 				"[A7] Fuller Geo-Construct trigger examples (Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls, Chiori's own Tamoto) are already enumerated in the stub-with-caveat curator note; construct-spawn is a team-wide event with no corresponding trigger primitive."

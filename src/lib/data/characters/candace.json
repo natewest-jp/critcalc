@@ -161,7 +161,7 @@
 					]
 				}
 			],
-			"caveat": "A brief personal guard that lasts only through the cast, not a lasting party shield. Its extra effectiveness against Hydro DMG is not modeled.",
+			"caveat": "Not modeled: the shield's extra effectiveness against Hydro DMG.",
 			"_curatorNotes": [
 				"Shield authored 2026-07-12 at talent level 10 (sidecar 'Shield DMG Absorption' row, 10th column '21.6% Max HP+2542'; gcsim candace_gen.go skillShieldPct[9]=0.216, skillShieldFlat[9]=2542.4312 → scaling 21.6% Max HP + 2542.43 flat). Same absorption for both Tap and Hold — gcsim skill.go adds the shield unconditionally (skillShieldPct*MaxHP + skillShieldFlat) regardless of chargeLevel; only the lifetime differs.",
 				"Shield is transient: it expires at the skill hitmark (gcsim skill.go: Expires = c.Core.F + hitmark). Tap hitmark = skillHitmarks[0] = 16f → duration 0.27s (base effects). Hold hitmark = skillHitmarks[1] = 91f → duration 1.52s (Hold variant effects override). A1 Aegis of Crossed Arrows (getting hit during Hold finishes the charge instantly, gcsim windup=55 → hitmark 36f) shortens the Hold window when it procs; not modeled.",

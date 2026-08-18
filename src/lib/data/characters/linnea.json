@@ -89,7 +89,7 @@
 			"energyCost": 60,
 			"tags": ["heal", "summon"],
 			"effects": [],
-			"caveat": "If Lumi is already on the field on cast, in game her duration resets instead of spawning a new one. The timeline can't track her presence, so casting within 25s of the skill still shows a separate summon.",
+			"caveat": "Shown as a separate summon; in game a burst cast while Lumi is still out resets her duration instead of adding one.",
 			"_curatorNotes": [
 				"Initial heal at 97f (= summon spawn frame) + 5 ticks at 120f intervals (initialHeal + i*120 + 120, i=0..4). Total burst-heal duration ~12s (matching summon duration). Heal scaling at lvl=10: initial = burstInitialDef[9]=2.88 × DEF + burstInitialFlat[9]=1694.9546; tick = burstTickDef[9]=0.576 × DEF + burstTickFlat[9]=338.9909. Authored 2026-05-17 as two summonTick HealEffects on the Memo Heal Aura summon.",
 				"One-shot-on-spawn pattern: the initial heal Effect uses `interval: 13, firstTickDelay: 0` — since the renderer loop is `for (t = spawnAt + firstDelay; t < spawnAt + duration; t += interval)` (RotationTimeline.svelte computeSummonTicks), interval ≥ duration guarantees exactly one tick at spawn. The tick heal Effect uses `interval: 2, firstTickDelay: 2` to fire at t=2/4/6/8/10s (5 ticks within the 12s window).",

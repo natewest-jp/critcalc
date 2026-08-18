@@ -400,7 +400,7 @@
 				"[A7] Tier-3 headline +60% burstDmgBonus assumes 3 non-Skirk Cryo/Hydro teammates; tiers gate on teamElementCount, corresponding to in-game burst x1.05/x1.15/x1.6 of base."
 			],
 			"description": "When nearby Hydro party members' Hydro attacks hit opponents, or when nearby Cryo party members apart from Skirk hit opponents with Cryo attacks, Skirk will gain the \"Death's Crossing\" effect for 20s. Max 3 stacks, each stack's duration is counted independently.\nEach character can grant Skirk at most 1 \"Death's Crossing\" stack by this means.\nEach \"Death's Crossing\" stack increases the Normal Attack DMG dealt by Skirk in **Seven-Phase Flash** mode to 110%/120%/170% of its original DMG and the DMG dealt when using her Elemental Burst Havoc: Ruin to 105%/115%/160% of its original DMG.",
-			"caveat": "Assumes a full canonical team with 3 Cryo or Hydro teammates. With fewer eligible teammates, the lower Normal Attack (+10% / +20%) and Burst DMG (+5% / +15%) tiers fire instead."
+			"caveat": "The Normal Attack tier follows how many Cryo or Hydro teammates are in the party, though in game each must land a hit to grant a 20s Death's Crossing stack. The matching Burst DMG tier is not shown."
 		}
 	],
 	"constellations": [
@@ -551,7 +551,7 @@
 				"[A7] Tier-3 headline +40% ATK assumes 3 non-Skirk Cryo/Hydro teammates; tiers gate on teamElementCount (mirrors A4)."
 			],
 			"description": "Enhances the effects of the Ascension Talent **Return to Oblivion**: Each Death's Crossing stack also increases Skirk's ATK by 10%/20%/40%.\nYou must first unlock the Ascension Talent Return to Oblivion.",
-			"caveat": "Assumes a full canonical team with 3 Cryo or Hydro teammates. With fewer eligible teammates, the lower +10% / +20% ATK tiers fire instead."
+			"caveat": "The ATK tier follows how many Cryo or Hydro teammates are in the party; in game each must land a Cryo or Hydro hit to grant a 20s Death's Crossing stack."
 		},
 		{
 			"id": "skirk__constellation__end_of_wishes",

@@ -159,7 +159,7 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Only the Cryo branch's +20% CR (20s) is modeled, as a manual toggle you enable when the comp absorbs Cryo. Not modeled: Pyro's +30% ATK, Electro's N/CA energy regen, Hydro's resource cap.",
+			"caveat": "Not modeled: the absorption buffs — Cryo's +20% CR, Pyro's +30% ATK, Electro's N/CA energy regen, Hydro's resource cap.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. gcsim source: absorbCheckA1 at skill cast, max 2 of 4 elements per cast. Per-element conditional authoring intentionally skipped (recipe.md § 3.5). Re-evaluate if a multi-element-absorption primitive ever lands.",
 				"[A7] Caveat trimmed for length: the non-Cryo absorption branches each last 20s (Pyro +30% ATK, Electro N/CA energy regen); up to 2 of 4 elemental branches absorb per skill cast and the tool can't predict which elements are contacted, which is why the Cryo branch is authored as a manual toggle. (Already captured in the stub-with-caveat note above.)"

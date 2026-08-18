@@ -91,7 +91,7 @@
 				}
 			],
 			"description": "Purify the substance of souls and wishes to undergo **Essential Transmutation**. While transmuted, Durin's Elemental Skill Binary Form: Convergence and Division will be replaced with the special Elemental Skill Transmutation: Confirmation of Purity, and the Normal Attack Radiant Wingslash will be replaced with the special Elemental Skill Transmutation: Denial of Darkness.\n\nTransmutation: Confirmation of Purity\nDeal 1 instance of AoE Pyro DMG to nearby opponents, reverse Essential Transmutation, and enter the Confirmation of Purity state for 30s.\n\nTransmutation: Denial of Darkness\nDeal 3 consecutive instances of Pyro DMG to opponents in front, reverse Essential Transmutation, and enter the Denial of Darkness state for 30s.\n\nWhen Durin enters the Confirmation of Purity or Denial of Darkness state while in battle, he will restore a certain amount of Elemental Energy. Elemental Energy can be restored this way once every 6s.",
-			"caveat": "The opening press deals no damage and starts the 12s CD. A second E commits to the White (support) form; a Normal Attack commits to the Dark (damage) form instead — the chosen form lasts 30s and sets which Burst you get.",
+			"caveat": "A second E commits to the White (support) form; a Normal Attack commits to the Dark (damage) form instead. The chosen form lasts 30s and sets which Burst you get, though that window itself is not shown.",
 			"frames": { "anim": 49, "N": 16, "E": 15, "Q": 4, "D": 14, "J": 14, "swap": 13 },
 			"_curatorNotes": [
 				"Base frames = the opening tap E that enters Essential Transmutation (gcsim skill.go skillFrames, InitAbilSlice(49); ActionSwap=13, ActionAttack=16, ActionSkill=15, ActionBurst=4, ActionDash=14, ActionJump=14). The tap deals no damage and sets the 12s CD (SetCD(action.ActionSkill, 12*60)); the commits do not re-set CD (separate abilities with their own timing). CD/energy verified against the talent sidecar.",
@@ -236,7 +236,7 @@
 			"id": "durin__passive__light_manifest_of_the_divine_calculus",
 			"name": "Light Manifest of the Divine Calculus",
 			"abilityType": "passive",
-			"caveat": "The RES shred applies in the White form only. In the Dark form this passive instead gives +40% Vaporize and Melt DMG — 70% with 2 or more Hexerei on the team — which has no stat to show.",
+			"caveat": "The RES shred is shown in either form, but in game it applies in the White form only. Not modeled: the Dark form's +40% Vaporize and Melt DMG (70% with 2 or more Hexerei on the team).",
 			"effects": [
 				{
 					"type": "resShred",
@@ -362,7 +362,7 @@
 			"name": "Adamah's Redemption",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"caveat": "Not shown: a flat DMG bonus scaling off the caster's ATK — in the White form, teammates' N/C/P/E/Q hits each add 60% of the caster's ATK; in the Dark form, the caster's own Burst hits add 150%. It spans all attack types, with no single stat to represent it.",
+			"caveat": "Not shown: in the White form, teammates' N/C/P/E/Q hits each add 60% of the caster's ATK as flat DMG; in the Dark form, the caster's own Burst hits add 150%.",
 			"_curatorNotes": [
 				"gcsim cons.go c1Init/c1OnBurst: White → teammates each get 20 Cycle stacks (Tag c1Key=20); their N/C/P/E/Q hits (while Dragon of White Flame active + they are the active char) consume 1 stack for FlatDmg += 0.6*Durin.TotalAtk. Dark → Durin gets 20 stacks; his Burst hits consume 2 for FlatDmg += 1.5*Durin.TotalAtk. Source-ATK-scaled flat DMG added onto the recipient's hits across all attack classes — no matching all-attack FlatDmg buff stat, so unmodeled. Removed the two mismodeled genshin-db stub 'damage' effects (scaling 60/150 atk manual).",
 				"[A7] Compression drops the 20s stack lifetime and the per-hit consumption counts (White 1/hit, Dark 2/Burst-hit, refreshed on Burst) — kit detail, in curator notes."
@@ -474,7 +474,7 @@
 					"caveat": "Durin's Burst/dragon DMG ignores 30% of the enemy's DEF (70% in Dark form — the tool can't tell the forms apart, so it shows 30%)."
 				}
 			],
-			"caveat": "Shown as a 30% attacker-side DEF ignore on Burst and dragon DMG, but in the Dark form it is actually 70%. The White form additionally lowers the target's DEF by 30% for 6s, shown as a DEF-shred debuff.",
+			"caveat": "Shown as a 30% attacker-side DEF ignore on Burst and dragon DMG, but in the Dark form it is actually 70%. The White form's extra 30% DEF shred for 6s is shown after either Burst.",
 			"_curatorNotes": [
 				"gcsim cons.go c6DefIgnore/c6WhiteMakeCB: IgnoreDefPercent 0.3 (White) / 0.7 (Dark) on all Burst + dragon hits; White additionally applies a -0.3 DefMod to hit targets for 6s. DEF shred authored 2026-07-14 via resShred shredStat:'def' (G6). White/Dark 30%/70% DEF *ignore* authored 2026-07-14 via the defIgnore Stat (G7), target:self, value 30 (Dark 70% not distinguishable — caveat notes it). duringSummon can't distinguish White from Dark, so the shred shows on every Burst — caveat notes it. Removed the two mismodeled genshin-db stub 'damage' effects (scaling 30/40 def manual).",
 				"[A7] DEF ignore modeled as attacker-side defIgnore (value 30); the Dark-form 70% is not distinguished because the trigger is gated duringSummon. White DEF shred authored as resShred def -30 for 6s."

@@ -81,7 +81,7 @@
 			"tags": [],
 			"effects": [],
 			"description": "Hunts his prey using the techniques taught to him by his master and his lupical.\n\nPress\nSwings the Thunder Wolf Claw, dealing Electro DMG to opponents in front of Razor.\nUpon striking an opponent, Razor will gain an Electro Sigil, which increases his Energy Recharge rate.\nRazor can have up to 3 Electro Sigils simultaneously, and gaining a new Electro Sigil refreshes their duration.\n\nHold\nGathers Electro energy to unleash a lightning storm over a small AoE, causing massive Electro DMG, and clears all of Razor's Electro Sigils.\nEach Electro Sigil cleared in this manner will be converted into Energy for Razor.",
-			"caveat": "With 2 or more Hexerei in the party, overflowing Electro Sigils call down a lightning strike that returns 7 Energy. It doesn't fire on its own — add it manually.",
+			"caveat": "Not modeled: with 2 or more Hexerei in the party, an overflowing Electro Sigil calls down a lightning strike that returns 7 Energy.",
 			"application": [{ "frame": 32, "element": "electro", "units": 1 }]
 		},
 		{
@@ -267,7 +267,7 @@
 				}
 			],
 			"description": "Every 10s, Razor's sword charges up, causing the next Normal Attack to release lightning that deals 100% of Razor's ATK as Electro DMG.\nWhen Razor is not using Lightning Fang, a lightning strike on an opponent will grant Razor an Electro Sigil for Claw and Thunder.",
-			"caveat": "The CRIT Rate and CRIT DMG bonuses are shown after every Hold E and burst; in game they only land when Electro Sigils were actually consumed."
+			"caveat": "The CRIT Rate and CRIT DMG bonuses are shown after every skill cast and burst; in game they only land when Electro Sigils were actually consumed."
 		}
 	],
 	"factionBonuses": [

@@ -79,7 +79,7 @@
 			"opensState": "nightsoulBlessing",
 			"tags": [],
 			"effects": [],
-			"caveat": "Not modeled: the Hold grapple-aim variant (positional, out of scope). Charged attacks are disabled during the 10s Nightsoul Blessing window, but the timeline will still show one if you add it.",
+			"caveat": "Not modeled: the Hold form, which aims the grapple. Charged attacks are disabled during Nightsoul's Blessing, but the timeline will still show one if you add it.",
 			"_curatorNotes": [
 				"behavior: \"stance\" + opensState: \"nightsoulBlessing\" — Mizuki/Xilonen-shape. Opens both inStance and nightsoulBlessing for the 10s window. The in-stance N (Loop Shot) and in-stance E (Scalespiker Cannon) gate on nightsoulBlessing for crispness.",
 				"terminatesOnSwap: true — gcsim onExitField subscribes OnCharacterSwap and calls cancelNightsoul() when blessing is active.",

@@ -314,6 +314,7 @@
 			"name": "The Principle of Transference in Gear Differentials",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
+			"caveat": "Not modeled: the extra water ball only fires while she is off-field, so a rotation that keeps her on field shows more of them than you would get.",
 			"_curatorNotes": [
 				"C2: when Aino is off-field AND the burst is active AND the active character hits an enemy, fire a 25% ATK + 100% EM Hydro hit on a 5s ICD. gcsim cons.go c2Init subscribes to OnEnemyHit gated on burstKey active + Aino off-field + c2IcdKey 5*60, landing 10f later (QueueAttack(..., 0, 10)).",
 				"↻ AUTHORED 2026-08-18. The three primitives its old note deferred all exist now: an `onHit` damage effect carrying an `application[]` is read by `sim/procs.ts` (coordinated-attack round), `source: \"others\"` is the off-field half, and hosting it on the burst’s summon makes the summon’s own liveness the \"burst is active\" window — so no `armedFor` and no `duringSummon` state are needed.",

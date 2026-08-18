@@ -32,7 +32,7 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"caveat": "In the Skill's mode, Normal and Charged Attacks become DEF-scaling Geo and the 4th Normal adds a Lunar-Crystallize instance. This combo has no frame data yet, so it is not shown.",
+			"caveat": "In the Skill's mode, Normal and Charged Attacks become DEF-scaling Geo and the 4th Normal adds a Lunar-Crystallize instance. Neither the Geo conversion nor that extra hit is shown.",
 			"description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"_curatorNotes": [
 				"[A7] In-mode Normal/Charged Attacks deal Geo DMG that other infusions cannot override (kit detail; trimmed from the user caveat for length)."
@@ -56,7 +56,7 @@
 					"delta": 1.7
 				}
 			],
-			"caveat": "Not modeled: Phase Shift Radiance and the enhanced Skill it powers, Spirit Steed's Stride — DEF-scaling Geo hits whose 2nd is a Lunar-Crystallize reaction. These are on-field damage with no frame data, so only the mode window is shown.",
+			"caveat": "Not modeled: Phase Shift Radiance and the enhanced Skill it powers, Spirit Steed's Stride — DEF-scaling Geo hits whose 2nd is a Lunar-Crystallize reaction. Only the mode window is shown.",
 			"_curatorNotes": [
 				"Modeled as behavior:\"stance\" (Lunar Phase Shift mode): 15s window (sidecar 'Lunar Phase Shift Duration' col 10 = 15.0s), ends on swap-off (terminatesOnSwap:true, KQM: mode lasts '15s, until all Skill charges are consumed, or until she swaps off-field'). CD 18s (sidecar 'CD' col 10 = 18.0s).",
 				"durationExtensions: burst cast while in-stance extends the current mode by +1.7s (kit text: 'if Zibai is in the Lunar Phase Shift, the duration ... will extend by an additional 1.7s'). This replaces the genshin-db stub's spurious burst duration:1.7.",
@@ -76,7 +76,7 @@
 			"energyCost": 60,
 			"effects": [],
 			"behavior": "instant",
-			"caveat": "The two DEF-scaling Geo hits — the 2nd a Lunar-Crystallize reaction — have no frame data, so they are not shown.",
+			"caveat": "Not modeled: the two DEF-scaling Geo hits, the 2nd of which counts as a Lunar-Crystallize reaction.",
 			"_curatorNotes": [
 				"Two DEF-scaling Geo hits, 2nd considered Lunar-Crystallize reaction DMG (sidecar 'Skill 1/2-Hit DMG' col 10 = 228.5% / 319.9% DEF). Damage hits not authored — frameless, personal on-field DPS.",
 				"Removed the genshin-db stub's duration:1.7 — that value is the Lunar Phase Shift extension the Burst grants, not the Burst's own window. Modeled as a durationExtension on the Skill's stance instead. CD 15s (sidecar col 10 = 15.0s), Energy 60 (sidecar col 10 = 60)."

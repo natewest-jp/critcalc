@@ -216,7 +216,7 @@
 				"game8 cross-check: its 'CA restores 30% Max HP, cooldown 2s' matches the wiki, and the direction is indeed a heal (the base kit's HP *cost* is on in-stance Normal hits, not on the Charged Attack). Its 60%/80%/100% conversions and +30% Stellar-Conduct DMG also match. No numeric disagreement found.",
 				"Base kit unchanged this patch: A1, A4, Icefang Rush (CD 16s / 10s duration) and Darkgold Wolfbite (CD 15s / 60 energy) wiki pages still carry the 4.1 text and values — no permanent patch to apply, no CD change."
 			],
-			"caveat": "Shown whenever a Stellar-Conduct enabler is in the party; in game these enhancements also require standing inside the Polestar Field. Not modeled: the 3rd and 5th Repelling Fists and the enhanced Charged Attack dealing part of their DMG as Stellar-Conduct DMG."
+			"caveat": "Shown as always on; in game these enhancements need a Stellar-Conduct enabler in the party and require standing inside the Polestar Field. Not modeled: the 3rd and 5th Repelling Fists and the enhanced Charged Attack dealing part of their DMG as Stellar-Conduct DMG."
 		}
 	],
 	"constellations": [
@@ -245,7 +245,7 @@
 				"Stellar-Conduct round 2026-07-29 (wiki-only evidence): the Witch's Revelation rewrite of this constellation (Fandom Constellation Infobox `buff` field) keeps the base text and appends a 'Radiance: Stellar-Conduct' block — (a) after Luster: Vaulting Fist hits, the next Chilling-Penalty 5th Repelling Fist to hit within 5s deals 50% increased Stellar-Conduct DMG; (b) after that 5th Repelling Fist hits, Luster: Vaulting Fists hitting within 5s deal 50% increased DMG; (c) the 4s Chilling Penalty extension keys off Luster: Vaulting Fist instead of Rebuke: Vaulting Fist, still once per stance.",
 				"Not authored: (a) and (b) are single-instance-scoped DMG bonuses inside an alternating 5s ping-pong — a self stellarConductDmgBonus/allDmgBonus window would apply far more broadly than the game does. (c) is the same stance extension already blocked on onHit dispatch to stance owners. The pre-Revelation base text is unchanged this patch, so the existing (separately queued) allDmgBonus 200 effect is untouched."
 			],
-			"caveat": "Not modeled: with a Stellar-Conduct enabler in the party, the enhanced Charged Attack and the fifth Repelling Fist each give the other +50% DMG for 5s after they hit."
+			"caveat": "Not modeled: the enhanced Charged Attack extending Chilling Penalty by 4s, once per window — or, with a Stellar-Conduct enabler in the party, it and the fifth Repelling Fist each giving the other +50% DMG for 5s."
 		},
 		{
 			"id": "wriothesley__constellation__shackles_for_the_arrogant",
@@ -288,7 +288,7 @@
 				"Stellar-Conduct round 2026-07-29 (wiki-only evidence): the Witch's Revelation rewrite (Fandom Constellation Infobox `buff` field) replaces the whole overheal ATK SPD mechanic while in the Radiance: Stellar-Conduct state with an unconditional package — 25% less DMG taken, +20% ATK SPD for himself, +10% ATK SPD for other nearby party members. The 50% Max HP Rebuke heal is unchanged.",
 				"Not authored: there is no `atkSpd` Stat key and no damage-reduction Effect or Stat in the union (checked 2026-07-29), so neither half is expressible. This is the only team-facing piece of the Stellar layer on this character — worth revisiting if either primitive lands."
 			],
-			"caveat": "Not modeled: inside the Polestar Field the overheal effect is replaced by 25% less DMG taken and +20% ATK SPD for him, plus +10% ATK SPD for nearby party members."
+			"caveat": "Not modeled: the ATK SPD gained from overhealing, or the Polestar Field version that replaces it with 25% less DMG taken plus ATK SPD for him and for nearby party members."
 		},
 		{
 			"id": "wriothesley__constellation__mercy_for_the_wronged",
@@ -331,7 +331,7 @@
 				"Stellar-Conduct round 2026-07-29 (wiki-only evidence): the Witch's Revelation rewrite (Fandom Constellation Infobox `buff` field) changes this in the Radiance: Stellar-Conduct state — the +10% CRIT Rate / +80% CRIT DMG no longer scope to Rebuke: Vaulting Fist alone but cover every Chilling-Penalty-enhanced Repelling Fist plus Luster: Vaulting Fist, and the 5th Repelling Fist and Luster each spawn an extra icicle dealing 60% of its original DMG as Stellar-Conduct DMG.",
 				"Existing broad self critRate/critDmg effects left untouched (no current-patch evidence that the BASE constellation changed; the over-broad flag in the note above still stands outside the Radiance state, where under it the broad shape is closer to correct). Icicle DMG not authored — damage magnitude."
 			],
-			"caveat": "Not modeled: inside the Polestar Field the CRIT boosts cover every Chilling Penalty Repelling Fist and the enhanced Charged Attack, which also spawn extra icicles dealing Stellar-Conduct DMG."
+			"caveat": "Not modeled: the CRIT Rate and CRIT DMG boosts on the enhanced Charged Attack, or — inside the Polestar Field — their wider coverage of Chilling Penalty attacks and the extra icicles they spawn."
 		}
 	],
 	"meta": {

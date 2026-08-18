@@ -198,7 +198,7 @@
 			"id": "beidou__passive__polaris",
 			"name": "Polaris",
 			"abilityType": "passive",
-			"caveat": "Shown as 8 Energy per held release; in game it is 8 per stack of power, and only when the released hit connects. Not modeled: the 4s-per-stack skill CD cut, or the Radiance: Stellar-Conduct state gained inside a Polestar Field.",
+			"caveat": "Not modeled: the energy refund (8 per stack of power, and only when the released hit connects), the 4s-per-stack skill CD cut, or the Radiance: Stellar-Conduct state gained inside a Polestar Field.",
 			"_curatorNotes": [
 				"2026-07-29 Stellar-Conduct round: Polaris is Beidou's Witch's Revelation Passive (Fandom page 'Polaris', Change History = Luna VIII), unlocked by the world quest 'Witch's Revelation: Voyaging Instruction'. gcsim ships no Stellar code, so the Fandom wiki is the sole evidence for this whole passive.",
 				"Energy effect: wiki text — 'holding down to unleash Tidecaller and hitting the opponent also gives extra boosts based on the power accumulated: every stack active decreases Beidou's Elemental Skill CD by 4s, as well as regenerates 8 Elemental Energy for her. This effect can trigger once every 15s.' Authored as a FIXED amount 8 with procCooldown 15 on onCast skill: the per-stack multiplier is not expressible, and the tidecaller ability carries no press/hold variants, so the hold-release-that-hits gate cannot be attached. The stack ceiling is undocumented (1 stack / 0.8s held; the wiki says the skill can be held for up to 3s, itself flagged {{Verify}}).",

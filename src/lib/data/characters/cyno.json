@@ -251,7 +251,7 @@
 			"id": "cyno__passive__featherfall_judgment",
 			"name": "Featherfall Judgment",
 			"abilityType": "passive",
-			"caveat": "Not modeled: the Judication (Endseer) procs, whose intervals depend on active gameplay timing. With a Stellar-Conduct enabler in the party they fire Starsame bolts that deal Stellar-Conduct DMG - also not modeled.",
+			"caveat": "Not modeled: the Endseer stance and the Judication effect it enables — the skill DMG bonus and the Duststalker Bolts. With a Stellar-Conduct enabler in the party those bolts fire as Starsame, also not modeled.",
 			"description": "When Cyno is in the Pactsworn Pathclearer state, he will enter the Endseer stance at intervals. If he activates Secret Rite: Chasmic Soulfarer while affected by this stance, he will activate the Judication effect, increasing the DMG of this Secret Rite: Chasmic Soulfarer by 35%, and firing off 3 Duststalker Bolts that deal 100% of Cyno's ATK as Electro DMG.\nDuststalker Bolt DMG is considered Elemental Skill DMG.\n\nRadiance: Stellar-Conduct: When Judication is triggered, Cyno will instead fire 3 Duststalker Bolts - Starsame to his front, dealing Electro DMG at 200% of his ATK. This DMG is considered Stellar-Conduct DMG.",
 			"_curatorNotes": [
 				"[Stellar 2026-07-29] PERMANENT half: the talent no longer says \"the Pactsworn Pathclearer state activated by Sacred Rite: Wolf's Swiftness\" - just \"in the Pactsworn Pathclearer state\", so Endseer also ticks inside the 6s skill-opened window (Fandom `buff` field, buffType Revelation). Fandom Gameplay Notes still give the cadence: Endseer every 4s, each lasting 1.4s.",
@@ -420,7 +420,7 @@
 					"amount": 20
 				}
 			],
-			"caveat": "Not modeled: the 3 Energy for nearby party members on each qualifying reaction, up to 5 times per burst. The 20 Energy return is shown on any matching team reaction, though in game only a teammate carrying Together We Rise sends it.",
+			"caveat": "Not modeled: the Energy returns — 3 to nearby party members on each qualifying reaction, up to 5 times per burst, and the 20 a teammate carrying Together We Rise sends back.",
 			"_curatorNotes": [
 				"[Stellar 2026-07-29] PERMANENT half: Stellar-Conduct joined the qualifying reaction list in the constellation's base text (present in the Fandom `description` field, not only the `buff` field) - description updated, no gate.",
 				"[Stellar 2026-07-29] STELLAR-GATED half authored: 20 Elemental Energy to Cyno, once every 18s, when a Together We Rise holder triggers one of the listed reactions. Trigger is onReaction source 'team' (the schema has no 'others' for onReaction) gated on teamEnablesReaction {stellarConduct}; no state condition, because the receiving teammate only carries Together We Rise AFTER swapping off Cyno, which ends his Pactsworn Pathclearer - an inStance gate would be false exactly when the effect can fire.",

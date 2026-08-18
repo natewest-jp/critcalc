@@ -403,7 +403,7 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "The +12% CRIT Rate buff for her other party members fires when an enemy marked by her Blood Blossom dies. Enemy death isn't simulated, so it's a manual window — toggle it on when it applies.",
+			"caveat": "Not modeled: the +12% CRIT Rate for the rest of the party when an enemy marked by her own Blood Blossom dies. Enemy deaths aren't simulated.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-14, onTargetDied category): manual trigger preserved because enemy-death state is null-resolving in the planner (no enemy HP/death simulation). gcsim event is OnTargetDied filtered to enemies carrying Hu Tao's bbDebuff status. Re-evaluate if a death-tracking primitive ever lands. Duration / target / value are correct."
 			]

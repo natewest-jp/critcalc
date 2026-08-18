@@ -106,7 +106,7 @@
 				"[Hexerei 2026-07-29] No permanent (count-independent) patch on Varka: the only IsHexerei site is varka.go:43 (flag defaults on) feeding asc.go hexSkillCDReduction, which still returns 0.5s when the flag is on but fewer than 2 Hexerei are in the party — the whole enhancement is count-gated. No buff / energy / RES-shred / heal piece exists anywhere in the varka package (Hexerei appears at exactly 3 sites: varka.go:43, skill.go:194, asc.go:131-138)."
 			],
 			"description": "Manifest the true essence of Favonius Bladework with absolute power. Produces different effects depending on whether the skill is Tapped or Held.\n\nTap\nLeap forward and slash in one fluid motion, dealing AoE Anemo DMG and switching to **Sturm und Drang** mode.\nWhile in Sturm und Drang, Varka's Normal Attack and Charged Attack DMG is increased, and he cannot perform Plunging Attacks. Also, when performing Normal or Charged Attacks, Varka's dual-wielded claymores will deal corresponding Elemental DMG based on the Elemental Types of the characters in the party, respectively. This Elemental DMG cannot be overridden by infusions.\nAdditionally, when in Sturm und Drang, if there are Pyro, Hydro, Electro or Cryo characters in the party, Varka's Elemental Skill Windbound Execution will be converted to the special Elemental Skill, **Four Winds' Ascension**, dealing corresponding Elemental DMG and Anemo DMG. Additionally, Varka can also expend uses of the special Elemental Skill Four Winds' Ascension to perform a special Charged Attack, Azure Devour, that does not consume stamina to deal corresponding Elemental DMG and Anemo DMG.\n\nHold\nAfter charging for a while, leap forward. The duration of the charge will increase the distance of the leap.",
-			"caveat": "Not modeled: Azure Devour, the free-recasts, and the Four Winds' Ascension cooldown reduction from stance Normal Attacks (0.5s per hit, 1s with 2+ Hexerei). That special skill also can't be placed: a second E shares the base skill's cooldown, which isn't back up in the stance.",
+			"caveat": "Not modeled: Azure Devour, and the Four Winds' Ascension cooldown reduction from stance Normal Attacks (0.5s per hit, 1s with 2+ Hexerei). Four Winds itself can't be placed — a second E shares the base skill's cooldown, which isn't back up in the stance.",
 			"application": [{ "frame": 40, "element": "anemo", "units": 1 }]
 		},
 		{
@@ -154,7 +154,7 @@
 					}
 				}
 			],
-			"caveat": "Not modeled: the equal DMG Bonus to the highest-priority matching element (Pyro/Hydro/Electro/Cryo) that pairs with the shown Anemo bonus. The separate 140%/220% Normal/Charged/special-attack multiplier (from 2 Anemo, or 2 Anemo + 2 same-element) is also not modeled.",
+			"caveat": "Not modeled: the ATK-scaling Anemo and matching-element DMG Bonus, and the 140%/220% multiplier on stance Normal, Charged and special attacks (2 Anemo, or 2 Anemo plus 2 same-element).",
 			"_curatorNotes": [
 				"gcsim asc.go a1Init/a1UpdateBuff: a1Buff = min(TotalATK*0.1/1000, 0.25) applied to both AnemoP and the conversion element's DmgP; authored as anemoDmgBonus scaling{stat:atk, ratio:1, cap:25}. The matching-element half is omitted (which element depends on party priority Pyro>Hydro>Electro>Cryo).",
 				"The a1Multiplier (1.0/1.4/2.2 = deal 100%/140%/220% of original DMG on N/CA/Azure Devour/Four Winds) is a self DMG multiplier with no clean stat mapping and is composition-gated (2 Anemo and/or 2 same PHEC units); flagged, not authored.",
@@ -235,7 +235,7 @@
 					"element": "anemo"
 				}
 			],
-			"caveat": "The extra 800% ATK Anemo strike that accompanies the special in-stance actions (Four Winds' Ascension, Azure Devour) doesn't fire on its own — add it manually.",
+			"caveat": "Not modeled: the extra 800% ATK Anemo strike that accompanies the special in-stance actions (Four Winds' Ascension, Azure Devour).",
 			"_curatorNotes": [
 				"gcsim cons.go c2OnSpecialSkill: fires an Anemo hit with Mult=8 (800% ATK) at frame 10, queued from both fourWinds() and skillAzureDevour(). Trigger kept manual — there is no clean onCast filter for 'special in-stance skill only' (onCast skill would also fire on the stance-entering tap).",
 				"[A7] C2's extra strike is authored with a manual trigger because no clean onCast filter separates the special in-stance skill cast from the stance-entering tap (already in _curatorNotes)."

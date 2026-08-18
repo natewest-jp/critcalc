@@ -93,7 +93,7 @@
 					"flat": 635.608
 				}
 			],
-			"caveat": "The on-hit heals show on every Normal/Charged hit, but in game they only work during the 15s Melody Loop after casting. The periodic active-character regen (~every 5s) is shown once at cast, not as repeated ticks.",
+			"caveat": "The 15s Melody Loop isn't drawn, so nothing marks the window in which Normal and Charged hits heal. The periodic active-character regen (about every 5s) isn't shown either.",
 			"_curatorNotes": [
 				"Melody Loop is a duration-bounded self-status on the active character (15s base, terminates on recast), not a spawned entity — per recipe (§3 Behavior field, duration-bounded self-status) it is not authored on summons[]. Reviewer to author the self-buff representation. The Loop enables on-hit healing from Barbara's Normal Attacks (4× on Charged) and periodic active-character HP regen, and applies the Wet status to the bearer.",
 				"Melody Loop duration extension (A4 Encore): when active character gains Elemental Orb/Particle, Melody Loop extends by 1s (max +5s total). Fits the `durationExtensions[]` primitive (E5, 2026-05-10) but the matching trigger `onPickup` is not yet a schema primitive. Once Melody Loop is authored as a window (currently a duration-bounded self-status, no schema home) and `onPickup` lands, author there as `{ trigger: { type: 'onPickup' }, delta: 1, maxExtensions: 5 }`.",

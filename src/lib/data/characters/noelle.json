@@ -96,7 +96,7 @@
 					"flat": 226
 				}
 			],
-			"caveat": "Shown healing on every qualifying Normal or Charged hit, but each has only a ~59% chance to heal the party — rising to 100% at C1 while the burst is active. The proc chance is not modeled.",
+			"caveat": "Not modeled: the healing chance — each qualifying Normal or Charged hit has only a ~59% chance to heal the party, rising to 100% at C1 while the burst is active.",
 			"_curatorNotes": [
 				"Shield + heal effects authored 2026-07-12 at talent level 10 (gcsim skill.go + noelle_gen.go index 9; sidecar 'DMG Absorption' / 'Healing' / 'Healing Triggering Chance' rows, col 10).",
 				"Shield (Stone Armor): scaling 288% DEF + 1693.66 flat (gcsim shieldDef[9]=2.88, shieldFlat[9]=1693.6555; sidecar '288% DEF+1694'), duration 12s, label 'Stone Armor'. Target 'active' — gcsim adds a player shield (newShield → Shields.Add, Target -1) protecting the on-field character, same convention as the Devotion passive shield. 150% all-element/physical absorption efficiency not modelled.",

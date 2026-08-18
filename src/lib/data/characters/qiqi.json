@@ -231,7 +231,7 @@
 				"STELLAR ROUND 2026-07-29 — second effect ADDED. Enhanced (buff-field) text, Fandom 'Ascetics of Frost': 'Radiance: Stellar-Conduct: Qiqi also regenerates 6 Elemental Energy when the Herald of Frost's attacks and coordinated attacks hit opponents. This effect can trigger once every 6s.' Authored as a second energy effect (6, self, procCooldown 6) gated on `teamEnablesReaction: stellarConduct`; the base 2-Energy effect is untouched. trigger 'manual' mirrors the sibling effect — the Herald's ticks and its new coordinated attacks are not authored damage, so no onHit trigger could fire. Real gate is narrower (Radiance state = Qiqi inside a Polestar Field), stated in the caveat."
 			],
 			"description": "When the Herald of Frost hits an opponent marked by a Fortune-Preserving Talisman, Qiqi regenerates 2 Energy.",
-			"caveat": "The extra 6 Energy also needs a Polestar Field, and it comes off the Herald's own hits, which the timeline does not track."
+			"caveat": "Not modeled: the Energy regenerated when the Herald hits a Talisman-marked opponent, or the extra 6 Energy that also needs a Polestar Field."
 		},
 		{
 			"id": "qiqi__constellation__frozen_to_the_bone",
@@ -283,7 +283,7 @@
 				"STELLAR ROUND 2026-07-29 — heal ADDED. Enhanced (buff-field) text, Fandom 'Divine Suppression': 'Additionally, when the healing effect of Fortune-Preserving Talisman triggers, the nearby party member with the lowest HP percentage remaining will also receive an additional instance of healing for 180% of Qiqi's ATK.' PERMANENT patch — no 'Radiance:' prefix, no Polestar Field or Stellar-Conduct wording — so no stellar gate. Constellation fixed value (no talent-level table). target 'team' + trigger 'manual' follows the Traveler (Hydro) C6 precedent for lowest-HP-ally heals: no target primitive picks the lowest-HP member, and the parent Talisman heal is itself unauthored, so nothing could fire it automatically. Over-claim on scope is repaired by the caveat."
 			],
 			"description": "Targets marked by the Fortune-Preserving Talisman have their ATK decreased by 20%.",
-			"caveat": "Shown as a team heal, but in game only the nearby ally with the lowest HP percentage receives it, once per Talisman heal."
+			"caveat": "Not modeled: the extra heal on each Talisman heal — in game only the nearby ally with the lowest HP percentage receives it, not the whole party. The 20% ATK reduction on marked opponents is not shown either."
 		},
 		{
 			"id": "qiqi__constellation__crimson_lotus_bloom",

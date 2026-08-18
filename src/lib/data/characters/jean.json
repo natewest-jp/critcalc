@@ -134,7 +134,7 @@
 				"Migrated to onHit ability:normal 2026-05-09 (F1). The 50% proc chance is not modeled in the current effect schema — the heal renders on every Jean N hit, doubling its actual frequency. Acceptable approximation."
 			],
 			"description": "On hit, Jean's Normal Attacks have a 50% chance to regenerate HP equal to 15% of Jean's ATK for all party members.",
-			"caveat": "Shown on every Normal Attack hit; in game each hit has only a 50% chance to heal, so the timeline shows about double the real healing frequency."
+			"caveat": "Not modeled: the 50% chance — every Normal Attack hit is treated as healing, about double the real frequency."
 		},
 		{
 			"id": "jean__passive__let_the_wind_lead",

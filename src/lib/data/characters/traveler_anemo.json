@@ -155,7 +155,7 @@
 					"stat": "hp"
 				}
 			],
-			"caveat": "It fires only when Palm Vortex defeats an opponent, so add it manually where a kill happens. Shown as a single 2% heal; in game it restores 2% of Max HP each second for 5s, at most once every 5s.",
+			"caveat": "Not modeled: the heal when the skill defeats an opponent — 2% of Max HP each second for 5s, at most once every 5s.",
 			"_curatorNotes": [
 				"A4 heal authored (capability sweep 2026-07-28): gcsim traveler/common/anemo/asc.go:47-80 — on Palm Vortex kill (skill AttackTag check asc.go:59-61), 5 ticks of HealTypePercent 0.02 self at 1s intervals (asc.go:68-77), ICD 300f (asc.go:66). Authored as one manual 2% Max HP tick with procCooldown 5: no enemy-death trigger primitive exists and per-tick HoT cadence isn't expressible on a manual heal; kill timing is player-added. Supersedes the pre-sweep 'not authored' note."
 			],

@@ -187,7 +187,7 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Not modeled: the taunt, and C4's +25% tick-rate boost. Ticks are shown at the base 1s interval for every constellation — C4 shortens them to 0.75s.",
+			"caveat": "Not modeled: the taunt that draws opponents' attacks toward the Supersonic Oculus.",
 			"_curatorNotes": [
 				"Soundwave Collision DMG migrated to summons[0].effects[] (P3): gcsim burstTickHitmark=60f (=1s); first tick at 60f from cast = 24f after summon spawn (=0.4s firstTickDelay). Multiplier soundwave at TalentLvl 10 = 59.76% ATK Electro. C4 0.75× interval not authored as a constellationScaling on the trigger — schema currently doesn't support tick-interval scaling.",
 				"Supersonic Oculus is stationary in-game — placed on the player's location at burst cast and stays there. mobility: \"stationary\" matches; gcsim's burstArea is captured at frame 0 and reused for all ticks.",
@@ -233,7 +233,7 @@
 			"id": "ororon__passive__aspect_catalyst",
 			"name": "Aspect Catalyst",
 			"abilityType": "passive",
-			"caveat": "For 15s after the Spirit Orb hits an opponent, the active character's Normal, Charged, and Plunging Attack hits restore 3 Energy to them — and to him while he's off-field — up to 3 times, at most once per second. This Energy trickle isn't shown on the timeline.",
+			"caveat": "Not modeled: the Energy that Normal, Charged, and Plunging Attack hits restore to the active character — and to him while he's off-field — in the 15s after the Spirit Orb hits.",
 			"_curatorNotes": [
 				"Aspect Sigil: 15s window after Spirit Orb hits. Within window, active char's N/C/P hit grants 3 Energy to active + 3 to Ororon (if off-field), 1s ICD, max 3 procs. Not modelled — combination of post-skill state, active-char-hit gating, and proc-count cap isn't expressible in the schema. Energy generation as a buff effect would over-fire (~5x).",
 				"Caveat added 2026-07-28 (capability sweep). Confirmed base-kit flat Energy (not particles) per gcsim: skill.go:63 attaches makeA4cb to the Spirit Orb hit; asc.go:206-211 opens the 15s a4Key window; asc.go:162-199 AddEnergy(3) to active + AddEnergy(3) to off-field Ororon, 1s ICD, 3-proc cap. Energy effects have no onHit dispatch and maxProcs is an unbuilt P4 primitive, so the energy capability legitimately stays first-derivable at C4."

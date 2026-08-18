@@ -138,7 +138,7 @@
 			"id": "illuga__passive__demonhunters_dusk",
 			"name": "Demonhunter's Dusk",
 			"abilityType": "passive",
-			"caveat": "Not modeled: this adds to the Nightingale's Song damage bonus based on how many Hydro or Geo characters are in the party (he counts). Like that base bonus, it's a per-hit flat add on Geo attacks with no stat form — see the burst.",
+			"caveat": "Not modeled: the further Nightingale's Song DMG bonus from having Hydro or Geo characters in the party (he counts) — like the base bonus, a per-hit flat add on Geo attacks; see the burst.",
 			"_curatorNotes": [
 				"Ascension 4 passive. The two inherited 'damage / target: enemy' effects from the genshin-db stub were REMOVED — they misrepresented the mechanic (this is not autonomous damage Illuga deals; it augments the active character's own Geo hits via Nightingale's Song, an element-scoped per-hit flat-DMG add with no matching Stat primitive — see the burst's curator note).",
 				"TL-scaled values at party count 1/2/3 Hydro-or-Geo: base +7%/14%/24% of Illuga's EM; Lunar-Crystallize +48%/96%/160% of EM. Not authored as effects for the reason above; captured here + in the burst caveat/flags."

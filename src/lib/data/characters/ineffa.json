@@ -366,7 +366,7 @@
 					"element": "electro"
 				}
 			],
-			"caveat": "In game this also needs the C1 buff (active 20s after each skill cast); the timeline gates only on the Lunar-Charged reaction, so the hit over-shows when over 20s pass without a skill recast. Negligible in practice — the skill's CD is 16s.",
+			"caveat": "Not modeled: the extra Electro hit on a Lunar-Charged reaction, which in game also needs the C1 buff (active 20s after each skill cast).",
 			"_curatorNotes": [
 				"C6: when Ineffa has Carrier Flow Composite (c1Key active) AND a team Lunar-Charged proc fires, deal 135% ATK Lunar-Charged Electro AoE on Ineffa's location, 3.5s ICD (c6Init: c6IcdKey 3.5*60). Authored as damage effect with onReaction:lunarCharged + procCooldown:3.5 — cannot gate on Carrier Flow Composite (no schema for tracking the C1 status). Flagged in caveat.",
 				"[A7] The C1 buff referenced in the C6 gating caveat is named Carrier Flow Composite (rendered as 'the C1 buff' for compression)."

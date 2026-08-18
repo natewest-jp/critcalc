@@ -108,7 +108,7 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Only the robots' healing is shown; their damage ticks are not modeled. They deal damage only under Moonsign Ascendant Gleam (2+ Moonsign characters) and only of the absorbed element; at Nascent Gleam (1 Moonsign character) they only heal.",
+			"caveat": "Only the robots' healing is shown. Their damage ticks are not modeled — they fire only under Moonsign Ascendant Gleam (2+ Moonsign characters), and deal the absorbed element's DMG.",
 			"_curatorNotes": [
 				"Initial burst hit at hitmark=0f (immediately): 259.0% ATK Anemo elemental burst.",
 				"Robots: 2 robots base (+1 with A1 Electro), heal active char every 1.45s (87f) for burstHealFlat + burstHealPP×ATK = 1101.7 + 143.77% ATK at lvl=10. Heal authored with both `scaling: 143.77` (ATK%) and `flat: 1101.7` (talent-table flat addend) — 2026-05-09 Quick Schema Wins.",

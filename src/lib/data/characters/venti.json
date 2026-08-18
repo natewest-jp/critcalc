@@ -52,7 +52,7 @@
 					"description": "Fires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
 				}
 			],
-			"caveat": "With 2+ Hexerei in the party, Normal Attacks landed during the Stormeye become piercing Windsunder Arrows that can extend it by up to 2s. The Stormeye is always shown at 8s.",
+			"caveat": "With 2+ Hexerei in the party, Normal Attack hits during the Stormeye extend it by up to 2s. The Stormeye is always shown at 8s.",
 			"description": "Normal Attack\nPerforms up to 6 consecutive shots with a bow.\n\nCharged Attack\nPerforms a more precise Aimed Shot with increased DMG.\nWhile aiming, favorable winds will accumulate on the arrowhead. A fully charged wind arrow will deal Anemo DMG.\n\nPlunging Attack\nFires off a shower of arrows in mid-air before falling and striking the ground, dealing AoE DMG upon impact."
 		},
 		{
@@ -215,7 +215,7 @@
 				"[Hexerei] 2026-08-15: the two base -12% effects are now gated `not(teamFaction hexerei >=2)`. They previously carried NO condition, with the note that gating them off 'would erase the shred window entirely in a Hexerei team' — true at the time, because factionBonuses were not consumed by the planner. They are now (docs/faction-bonuses-round.md), so the mutual exclusion is both safe and REQUIRED: without it a Hexerei team draws the -12% and the -24% as two shred bars off one skill hit, which is not a thing that happens in game. The rule: a faction bonus that CHANGES AN EXISTING NUMBER re-authors it under a gate. Contrast C6 Storm of Defiance, whose shreds the rite leaves untouched and which therefore carry no gate.",
 				"[Hexerei] Same buff field, unauthored parts: after the burst Venti gains 'Wherever a Breeze Blows' and the skill CD is reset; a Windsunder Arrow hit has a 25% chance to grant it too. Wherever a Breeze Blows = press-skill deals 300% of original DMG, lasts 15s, consumed by the press. The 300% is damage-only. The CD reset is rotation-relevant but would be inert as a factionBonuses cdReset (not collected by the planner) — carried as a caveat instead."
 			],
-			"caveat": "Shown as 12% with the normal skill cooldown; with 2+ Hexerei in the party the drop is 24% and the burst resets the skill CD.",
+			"caveat": "With 2+ Hexerei in the party the burst also resets the skill CD; that reset is not modeled.",
 			"description": "Skyward Sonnet decreases opponents' Anemo RES and Physical RES by 12% for 10s.\nOpponents launched by Skyward Sonnet suffer an additional 12% Anemo RES and Physical RES decrease while airborne."
 		},
 		{
@@ -247,7 +247,7 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Orb and particle pickup aren't simulated, so this doesn't fire on its own — toggle it on for rotations that pick up particles. With 2+ Hexerei in the party it fires from the skill or burst instead, and also buffs the active character.",
+			"caveat": "Not modeled: orb and particle pickup, so below 2 Hexerei in the party this buff never appears. With 2+ Hexerei it fires from the skill or burst instead.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-14, onParticleReceived category): manual trigger preserved because particle pickup is non-deterministic in the planner (out-of-scope per tool constitution). gcsim source: event.OnParticleReceived gated on c.Core.Player.Active() == c.Index() — fires when ANY elemental orb/particle is caught by Venti on-field. Re-evaluate only if particle-gen modelling ever enters scope (unlikely).",
 				"[Hexerei] Fandom 'Hurricane of Freedom' constellation infobox, buffType=Hexerei buff field: under Secret Rite the trigger changes from orb/particle pickup to 'After unleashing his Elemental Skill Skyward Sonnet or Elemental Burst Wind's Grand Ode, Venti and his own active party members gain a 25% Anemo DMG Bonus for 10s.' Authored in factionBonuses as two onCast effects (skill, burst) with conditions all[teamFaction hexerei >=2, constellation 4], target ['self','active'] — 'his own active party members' read as the active character, mirroring the Fischl Secret Rite target shape.",

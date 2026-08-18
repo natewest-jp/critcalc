@@ -323,7 +323,7 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Shown as one 60% bonus; in game it stacks up to 3 times, one per second of movement. Not modeled: in a Hexerei party, Charged Attacks deal double DMG to enemies carrying an Omen.",
+			"caveat": "Not modeled: the Charged Attack DMG bonus, 60% per second of movement up to 3 stacks. Also not modeled: in a Hexerei party, Charged Attacks deal double DMG to enemies carrying an Omen.",
 			"description": "Upon entering Illusory Torrent, Mona gains a 60% increase to the DMG of her next Charged Attack per second of movement.\nA maximum DMG Bonus of 180% can be achieved in this manner. The effect lasts for no more than 8s."
 		}
 	],

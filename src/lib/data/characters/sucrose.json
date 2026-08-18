@@ -76,7 +76,7 @@
 				}
 			],
 			"tags": ["grouping"],
-			"caveat": "With 2+ Hexerei in the party this grants a party-wide DMG bonus for 15s; it is shown on all damage, but in game it only applies to Normal, Charged, Plunging, Skill and Burst DMG.",
+			"caveat": "The Hexerei DMG bonus is shown on all damage; in game it applies only to Normal, Charged, Plunging, Skill and Burst DMG.",
 			"effects": [],
 			"_curatorNotes": [
 				"C1 (Clustered Vacuum Field) grants +1 skill charge → 2 total at C1+ (gcsim sucrose.go: Cons>=1 → SetNumCharges(ActionSkill, 2)). Authored as a chargeModifiers flat +1. E key = 56 = skillFrames[ActionSkill] (E→E cancel), added to frames alongside.",
@@ -142,7 +142,7 @@
 					]
 				}
 			],
-			"caveat": "With 2+ Hexerei in the party this grants a DMG bonus for 20s, shown for the whole team; in game only Hexerei party members receive it.",
+			"caveat": "The Hexerei DMG bonus is shown for the whole team; in game only Hexerei party members receive it.",
 			"effects": [],
 			"_curatorNotes": [
 				"Elemental Absorption: burst can absorb one of Hydro/Pyro/Cryo/Electro (once per use), adding elemental DMG ticks alongside the anemo ticks (every ~113 frames). Not modeled. Reviewer should decide how to represent absorption DMG in the effects row.",
@@ -249,7 +249,7 @@
 			"name": "Chaotic Entropy",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "Doesn't fire on its own — toggle it on when the burst absorbs an element. Only the absorbed element benefits, so the shown team-wide +20% is an upper bound for teammates dealing other damage; Hexerei party members get a further 8.6%.",
+			"caveat": "Not modeled: the party-wide 20% DMG bonus for the absorbed element, or the further 8.6% Hexerei party members get.",
 			"_curatorNotes": [
 				"[Hexerei] Permanent patch, NOT count-gated: gcsim internal/characters/sucrose/cons.go:47-59 c6() adds .20 elemental DmgP to every party member and +0.0857142 more when that member's own IsHexerei is set — no GetHexereiCount() check. Per-receiver faction routing is not expressible (EffectTarget has no faction subset and the existing effect is target:'team'), so the extra 8.57142 is stated in the caveat rather than modeled; the authored value:20 is unchanged.",
 				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. The duration is intentionally left absent — the canonical burst-window-bound visualization is implicit; reviewer toggling the buff during a Sucrose Q window is the supported pattern. gcsim source: c6Absorb on every absorption tick, 6s base / 8s at C2+ (would need duration:6 + a durationModifier for C2 if ever upgraded to a deterministic trigger).",

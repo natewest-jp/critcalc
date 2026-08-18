@@ -204,7 +204,7 @@
 					"stat": "atk"
 				}
 			],
-			"caveat": "Heals only during the 10s Warming Up window after a teammate's Nightsoul Burst, and each heal needs her to regain Nightsoul points first — expect a few small heals per window.",
+			"caveat": "Not modeled: the heal in the 10s Warming Up window after a teammate's Nightsoul Burst, which needs her to regain Nightsoul points each time.",
 			"_curatorNotes": [
 				"Warming Up: triggered on team Nightsoul Burst event (event.OnNightsoulBurst), 10s buff window. During the window, every NS-restoration tick (which happens every 2.8s) heals active char for 60% Iansan's ATK. The onTeamNightsoulBurst trigger primitive landed 2026-05-09 (F2C).",
 				"Heal authored 2026-07-28 (capability sweep): onTeamNightsoulBurst + duration 10 + procCooldown 2.8 approximates the per-NS-restore tick cadence (Scale restore ticks aren't modeled directly). Not in gcsim (105-char roster checked); values from kit text — 60% ATK fixed, passives don't talent-scale. Backs Genshin's SURVIVABILITY role classification (her only heal/shield/cleanse/taunt mechanic).",
@@ -219,7 +219,7 @@
 			"name": "Starting's Never Easy",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"caveat": "She regains 15 Energy for herself as she spends Nightsoul points during Nightsoul's Blessing, at most once every 18s — this isn't shown on the timeline.",
+			"caveat": "Not modeled: the 15 Energy she restores for herself while spending Nightsoul points in the Nightsoul's Blessing state, at most once every 18s.",
 			"_curatorNotes": [
 				"C1: per 6 NS points consumed in NS Blessing, +15 Energy to Iansan, 18s ICD. Modelled internally via c1Points accumulator. Not authorable as a clean Effect — gating on NS-consumption-count + 18s ICD is two layers of state we don't track. Energy gain on NS depletion could be authored as an afterDuration trigger (gating on stance end) but that misrepresents the actual mechanic (the energy fires mid-stance, not on exit).",
 				"Caveat added 2026-07-28 (capability sweep). Self-only energy — even if authored, it would (correctly) not derive the team-battery facet, which requires a non-self target."

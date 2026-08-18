@@ -63,7 +63,7 @@
 			"effects": [],
 			"description": "Prune gently swings the Witchlure Bell, dealing Anemo DMG to nearby opponents. After this, the Bell will enter the Hunter-Seeker mode.\n\nWitchlure Bell: Hunter-Seeker\nIn this mode, the Witchlure Bell will follow the current active character, attacking surrounding opponents at intervals and dealing AoE Anemo DMG. This DMG is considered Elemental Burst DMG.",
 			"behavior": "instant",
-			"caveat": "The bell follows the active character, dealing AoE Anemo DMG on its own for 12s (16s at C6) — the main off-field damage. Its interval isn't stated in game, so it's shown as an active window without per-hit markers.",
+			"caveat": "The bell's hit interval isn't stated in game, so it's shown as an active window with no per-hit markers.",
 			"summons": [
 				{
 					"label": "Witchlure Bell (Hunter-Seeker)",
@@ -244,7 +244,7 @@
 					]
 				}
 			],
-			"caveat": "The +350 ATK for 5s is shown after any team reaction; in game the reaction must come from a teammate carrying Tolling Rally, and active teammates only receive it if they carry it too — gates the timeline doesn't track.",
+			"caveat": "The ATK bonus is shown after any team reaction; in game the reaction must come from a teammate carrying Tolling Rally, and active teammates only receive it if they carry it too.",
 			"description": "The duration of the Witchlure Bell's Hunter-Seeker mode from the Elemental Burst **The Bell Tolls! The Hunt Is On!** is extended by 4s.\nAdditionally, after party members affected by Tolling Rally trigger any Elemental Reaction, they will cause Prune and the other current active character(s) affected by Tolling Rally to gain 350 ATK for 5s.",
 			"_curatorNotes": [
 				"[A7] C6 buff targets [self, active] — Prune is explicitly included as a recipient here even though A4 excludes her from Tolling Rally itself; the 'recipient/trigger must carry Tolling Rally' gate is a runtime condition not expressible as a Condition leaf (already in _curatorNotes)."

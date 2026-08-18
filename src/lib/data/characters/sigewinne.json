@@ -451,7 +451,7 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "The CR / CD buffs come from healing (the skill's bubble bounces), which isn't tracked as its own event, so they don't fire automatically — toggle them on for Bubblebalm rotations.",
+			"caveat": "Not modeled: the CRIT Rate and CRIT DMG bonuses her healing grants.",
 			"_curatorNotes": [
 				"Stub-with-caveat + consolidation (decided 2026-05-14, onHeal category): consolidated 4 generator-artifact effects → 2 scaling-with-cap buffs using v0.4 (ca5c643) cap rendering. Formula (cons.go): +0.4% CR per 1000 MaxHP (ratio 0.0004 in percentage-per-HP form), cap +20% CR; +2.2% CD per 1000 MaxHP (ratio 0.0022), cap +110% CD. Duration 15s per proc. gcsim source: c6CritMode() called from bubbleHealing() and bubbleFinalHealing() (Bubblebalm bounces). onHeal primitive intentionally not built — Sigewinne C6 is the only practical consumer; the other 4 candidates require overheal/HP-state simulation that's out of scope. Re-evaluate only if those primitives ever land.",
 				"[A7] C6 is the corpus's only practical onHeal consumer; the other candidates (Gaming C2, Wriothesley A4/C2, Charlotte C1) need overheal/HP-state primitives that are out of scope. (This rationale is already recorded in the effect's _curatorNotes.)"
