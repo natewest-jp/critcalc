@@ -542,6 +542,33 @@ artifact (L5e-b's rule): two are Collei's leaps and one is Sucrose's fourth tick
   visible. ⛔ Do not fix it by nudging a `duration` that the kit text states: the honest
   shape is a tick CAP in the schema.
 
+  ↻ **MEASURED 2026-08-18, and the sign goes BOTH ways** (⚓ Nate asked what the oracle's
+  "tail" rows actually were). Our window is **half-open** — `aura.ts` fires while
+  `at < endNow()` — so a tick landing EXACTLY on the summon's end is dropped. Corpus-wide,
+  **11 damage-tick series land on that boundary**: amber `fiery_rain` · emilie
+  `aromatic_explication` · gorou `juuga` · kachina `go_go_turbo_twirly` · kaeya
+  `glacial_waltz` (both series) · kuki `sanctifying_ring` · lisa `lightning_rose` ·
+  traveler_dendro `surgent_manifestation` · traveler_hydro `rising_waters` · mizuki
+  `anraku`.
+
+  ⚓⚓ **Whether that is WRONG depends on how the gcsim character is written, and it splits
+  cleanly:**
+  - **A bounded `for` loop → we match EXACTLY.** Lisa is `for i := 0; i < 15*60; i += 30`
+    = 30 ticks and we derive 30; Gorou 5 = 5; Dendro Traveler 8 = 8. ⚠️ Lisa reads "27" in
+    the frames diff only because the dumper's 900-frame HORIZON stops watching — ⛔ not an
+    over-tick, and don't chase it.
+  - **A self-rescheduling chain gated on a STATUS → gcsim lands the boundary tick and we
+    drop it.** Kaeya is the exact case: `burstHitmark = 53`, `burstDuration = 480`, and
+    `Status.Add(burstKey, burstDuration + burstHitmark + 1)` — that **`+ 1` is deliberate**,
+    so the 13th icicle at frame 533 (exactly 8.000 s after the first) still sees a live
+    status. Our window is `[53, 533)` and 533 is not `< 533`. **One frame.** Same shape on
+    Kuki's Grass Ring and Mizuki's Mini Baku, and Emilie's burst case.
+
+  📌 **Four measurable one-tick misses** (kaeya, kuki `sanctifying_ring`, mizuki, emilie
+  `aromatic_explication`), each worth at most one application per rotation. ⛔ **Not fixed,
+  and ⛔ not fixable by a duration nudge** — each needs its own gcsim loop-bound reading,
+  which is the tick-CAP argument above with a second body of evidence behind it.
+
 #### What else was found and deliberately not authored
 
 Each is recorded in its character's `_curatorNotes`. **Elemental Absorption** on Venti,

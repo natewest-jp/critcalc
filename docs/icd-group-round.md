@@ -542,9 +542,15 @@ not disagreement.
 three are boundary or RNG cases on named characters, and the other nine fixtures have
 zero.
 
-- **Kaeya ×2 — one tick past the summon's end.** Every Glacial Waltz application matches
-  within 1 frame; the single 🔴 is the icicle at 9.77 s, just outside our 8 s summon
-  (gcsim's status runs `burstDuration + burstHitmark + 1`). A per-character duration item.
+- **Kaeya ×2 — we DROP a boundary tick, by one frame.** Every Glacial Waltz application
+  matches within 1 frame; the single 🔴 is the 13th icicle. gcsim: `burstHitmark = 53`,
+  `burstDuration = 480`, `Status.Add(burstKey, burstDuration + burstHitmark + 1)` — that
+  **`+ 1` is deliberate**, so the icicle at frame 533, exactly 8.000 s after the first,
+  still sees a live status. Our summon window is half-open, `[53, 533)`, and 533 is not
+  `< 533`. ⚓ **Not Kaeya-specific: 11 series land on that boundary and 4 measurably lose a
+  tick** — the full split, and why a bounded `for` loop in gcsim matches us exactly while a
+  status-gated chain does not, is in `gauge-round-L5e.md` §4 under "tick count is derived
+  from `duration`". ⛔ Not fixable by nudging a duration the kit text states.
   ⚠️ The second Kaeya row — Frostgnaw in the long rotation — is the ordinal-pairing shadow
   of the first, not an independent miss.
 - **Ningguang ×1 — gcsim's dice.** Her normals pick randomly among Left / Right / Twirl
