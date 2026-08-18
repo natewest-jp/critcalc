@@ -220,10 +220,47 @@ levels — no entry can fall through the gate for want of a level.
   summon's effects, never a constellation walk, and the corpus's constellation-hosted
   procs (Fischl C6's coordinated attack, authored on Oz) carry their own condition.
 
+### 🔒 The regression test (added 2026-08-18, same day)
+
+`src/lib/utils/constellationGating.test.ts`, 126 assertions, ~1s. Two halves,
+covering different failures:
+
+- **A corpus DIFFERENTIAL, not a snapshot** — for each of the 122 characters with
+  constellations, the real C0 parse must equal a C0 parse of the same character with
+  `constellations` emptied. ⚓ That is what makes it survive unrelated refactors: a
+  timing change, a new lane or a projection rewrite move BOTH sides equally. A
+  snapshot of expected windows would break on every one and teach the next reader to
+  re-bless it.
+- **A boundary unit test** on `unlockedConstellations` / `effectSourcesAtConstellation`
+  — a level-N entry live at N and dead at N−1. ⚓ The differential runs at C0, where
+  `<` and `<=` are indistinguishable (no entry is C0), so it is blind to an off-by-one
+  and this is what catches one.
+
+⚓ **Verified by seeded negative**, because a regression test nobody has watched fail is
+a decoration. Gate removed (`return cons`) → 3 boundary tests + **25** differential
+characters go red. `<=` → `<` → **only** the 3 boundary tests, which is exactly the
+split the two halves are for.
+
+⚠️⚠️ **The test's rotation is WIDER than the round's probe, and the leak is bigger than
+§7 measured above.** It drives each character's declared skill tokens plus `N1 N2 N3 C
+P Q` and a re-cast (the roster generator, mirrored a third time), then two reacting
+partners. Measured that way the leak is **25 characters and 59 windows**, against the
+probe's 23 and 34 — so **34/23 is a FLOOR, not a total**. The two extra characters are
+**Ganyu C1 and Mona C2, both `onHit` on a CHARGED attack** — a whole trigger class the
+probe's `E Q N5` never fired. ⚓ Applications and IR events are still **0** either way:
+the BARS-ONLY finding survives the wider rotation, which is the stronger claim.
+
+⚠️ Reachable is not reached: no `onReaction` constellation is among the 25 (Nahida's C2
+wants HER as the reaction source and does not fire there). The partners are what makes
+that class reachable when one is eventually authored ungated — ⛔ don't drop them
+because the count is currently zero.
+
 ### Gates
 
-`npm run check` ✅ · `npx vitest run` ✅ 1613/1613 · `npm run lint` ✅ · `npm run build` ✅.
-⚠️ **No vitest test moved**, which is worth knowing: the suite's C0 fixtures never
-touched any of the 34 bars, so the suite could not have caught this and did not confirm
-the fix either — the probe above is the whole evidence. `test:e2e` not run (no browser
+`npm run check` ✅ · `npx vitest run` ✅ (1613/1613 at the fix, 1739/1739 with the
+regression file) · `npm run lint` ✅ · `npm run build` ✅.
+⚠️ **No pre-existing vitest test moved**, which is worth knowing: the suite's C0
+fixtures never touched any of the leaking bars, so the suite could not have caught this
+and did not confirm the fix either — the probe was the whole evidence until the
+regression file above existed. `test:e2e` not run (no browser
 surface change beyond the two panels' contents).
