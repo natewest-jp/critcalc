@@ -205,8 +205,9 @@ levels — no entry can fall through the gate for want of a level.
   `variant?.effects ?? activeAbility.effects`, i.e. the CAST ability's own effects only,
   so a constellation-hosted `shield` effect reaches no shield window at any level. Seven
   constellation entries author one. That is a pre-existing orphaned-schema gap, out of
-  this round's scope — ⛔ don't "fix" it by widening `emitShield` to the constellation
-  walk without deciding what a C-gated shield's lane and label should be.
+  this round's scope. 📋 **Surveyed and prepped in `docs/constellation-shield-gap.md`** —
+  triaged it is 2 clean wires, 1 lane-design decision and 1 curation lookup, not seven
+  characters, and ⛔ it is NOT a leak: those shields draw nothing at C0 _or_ C6.
 
 ### Left alone, on purpose
 
