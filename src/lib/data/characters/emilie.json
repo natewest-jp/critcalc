@@ -120,12 +120,13 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.7 },
+							"trigger": { "type": "summonTick", "interval": 0.9, "firstTickDelay": 0.5 },
 							"scaling": 391,
 							"stat": "atk",
 							"element": "dendro",
 							"_curatorNotes": [
-								"NO tickCap, deliberately (tick-cap round, 2026-08-18): gcsim measures four Level-3 hits to our three, but the INTERVAL disagrees too (36f observed and irregular, against the 42f this series models as a single-target effective cadence), because gcsim fires volleys at random marked enemies rather than on a fixed period. A count would paper over a cadence question. Related: the audit cannot check this pairing anyway - one authored series against two observed streams, since the case reverts to Level 1 mid-life.",
+								"CADENCE CORRECTED 2026-08-18 (tick-cap round follow-up), and the old 0.7s was the MARK duration rather than a cadence. gcsim burst.go: the volley task runs every burstTickInterval = 18f and picks a random enemy that does NOT carry burstMarkKey, marking it for burstMarkDuration = 42f. Single-target, the mark can therefore only expire ON an 18f volley boundary, so the deliberate re-target cadence is ceil(42/18) x 18 = 54f = 0.9s, not 0.7s. First hit lands at the first volley (18f) plus burstHitmark (12f) = 30f after spawn, hence firstTickDelay 0.5. Measured: gcsim hits at +126/+180/+234, which is exactly what this now draws (spawnsAt 96 + 30, then 54f apart, three ticks inside the 2.8s window).",
+								"NO tickCap, deliberately: gcsim shows a FOURTH Level-3 hit at +162, and it is a STRAY - a volley fired while the enemy was still marked, which falls back to a random point in the area (CalcRandomPointFromCenter) whose 2.5-radius blast happened to cover the target. Positional and seeded, the same class as Ningguang's attack dice and the proximity refusal on Xingqiu's Orbital, so we model the deliberate spine and not the stray. ⚠️ The audit will keep flagging count 3 -> 4 for this reason; that flag is expected, not a backlog item.",
 								"Level 3 barrage: gcsim fires volleys every 0.3s at random marked enemies, with a 0.7s per-enemy mark (burst.go burstTickInterval/burstMarkDuration) — single-target effective cadence is one 391%-ATK hit per 0.7s, which is what the interval models. C4: +2s duration and 0.4s mark (faster per-target rate) not modeled. After the barrage (306f from cast) the case reverts to its previous E-level and resumes E-tick behavior for the remaining E duration — not modeled as a second summon."
 							]
 						}
