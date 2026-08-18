@@ -368,32 +368,12 @@
 						"type": "constellation",
 						"level": 2
 					}
-				},
-				{
-					"type": "shield",
-					"target": "team",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill"
-					},
-					"duration": 20,
-					"durationType": "refresh",
-					"scaling": 398.1,
-					"stat": "atk",
-					"flat": 3051,
-					"attribution": "C2 (Shield of Blazing Light — party)",
-					"caveat": "Absorbs Pyro DMG at 250% effectiveness.",
-					"_curatorNotes": [
-						"C2: nearby active party members also gain a Shield of Blazing Light on skill cast (same scaling as base: 398.1% Nicole ATK + 3051). Extends the base shield beyond the active character to the whole party.",
-						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0."
-					],
-					"conditions": {
-						"type": "constellation",
-						"level": 2
-					}
 				}
 			],
-			"description": "Enhances the effects of the Elemental Skill **Revelation: Uncreated Light**: **Grace of Kenosis** increases ATK by an additional 300 (which does not count toward this effect's ATK Bonus limit), while **Guidance of Theosis** decreases nearby opponents' Elemental RES based on the corresponding character's Elemental Type by 25%. This effect does not stack for the same Element.\nAdditionally, when Nicole unleashes her Elemental Skill Revelation: Uncreated Light, nearby active party members will also gain a Shield of Blazing Light."
+			"description": "Enhances the effects of the Elemental Skill **Revelation: Uncreated Light**: **Grace of Kenosis** increases ATK by an additional 300 (which does not count toward this effect's ATK Bonus limit), while **Guidance of Theosis** decreases nearby opponents' Elemental RES based on the corresponding character's Elemental Type by 25%. This effect does not stack for the same Element.\nAdditionally, when Nicole unleashes her Elemental Skill Revelation: Uncreated Light, nearby active party members will also gain a Shield of Blazing Light.",
+			"_curatorNotes": [
+				"⚓ The shield half of this C2 is CO-OP ONLY and is deliberately UNMODELLED (2026-08-18) — Kirara C2 is the house form. \"Nearby active party members\" is plural only in co-op, where each player has their own on-field character; in a single-player party there is exactly one active character and the skill's own Shield of Blazing Light (gcsim `Target: -1`, player-wide) already covers them. gcsim implements NO shield for this constellation at all — `cons.go` c2 is the +300 ATK buff and the RES ticker, both authored below. ⛔ It was briefly authored as a `target: 'team'` shield Effect and that was WRONG in two ways: the corpus renders this phrase as `target: 'active'` everywhere else (Illuga, Aino), and a team-target shield made the Team Builder claim Nicole shields the whole party at C2. See docs/constellation-shield-gap.md §7.3."
+			]
 		},
 		{
 			"id": "nicole__constellation__a_lamp_by_your_side_a_light_to_shine_the_way",
