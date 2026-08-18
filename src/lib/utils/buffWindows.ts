@@ -1318,17 +1318,62 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					const buffStart = cast.fieldStart;
 					const buffEnd = buffStart + framesOf(barEffects[0].duration!);
 
-					const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
-					for (const receiverTrack of tracks) {
-						const segStart = Math.max(buffStart, receiverTrack.activeStart);
+					// ⚓ HOW LONG THE RECEIVER HAS BEEN ON FIELD (Nicole, 2026-08-18).
+					// `onFieldDelay` shifts each segment's START and leaves the buff's
+					// own end alone, so a receiver who swaps in with less than the
+					// delay left in the window gets nothing — which is the mechanic:
+					// Nicole "observes" whoever is active and upgrades them once they
+					// have STAYED. ⚠️ Read off `barEffects[0]`, the same slot every
+					// other span field here comes from.
+					const delaySpec = barEffects[0].onFieldDelay;
+					const segments: Array<{
+						receiverId: string;
+						segStart: number;
+						segEnd: number;
+						/** ⚓ THE TRACK's index, not the segment's — see the `isLast` note. */
+						trackIdx: number;
+					}> = [];
+					for (let rti = 0; rti < tracks.length; rti++) {
+						const receiverTrack = tracks[rti];
+						// ⚓ The waiver is evaluated against the RECEIVER, answerable here
+						// for the same reason `activeCharFaction` is — this is the one
+						// scope where the receiver is concrete. ⚠️ Only a definitive TRUE
+						// waives: an unresolvable condition leaves the wait standing,
+						// because a delay that vanishes when we cannot answer would
+						// over-claim uptime.
+						const waived =
+							delaySpec?.waivedWhen !== undefined &&
+							evalCondition(delaySpec.waivedWhen, 4, new Set(), cLevel, undefined, undefined, {
+								teamFactionCounts,
+								activeCharFactions: new Set<string>(
+									getCharacter(receiverTrack.characterId)?.factions ?? []
+								),
+								receiverWeapon: getCharacter(receiverTrack.characterId)?.weapon
+							}) === true;
+						const delayF = delaySpec && !waived ? framesOf(delaySpec.seconds) : 0;
+						const segStart = Math.max(buffStart, receiverTrack.activeStart + delayF);
 						const segEnd = Math.min(buffEnd, receiverTrack.activeEnd);
 						if (segEnd <= segStart) continue;
-						segments.push({ receiverId: receiverTrack.characterId, segStart, segEnd });
+						segments.push({
+							receiverId: receiverTrack.characterId,
+							segStart,
+							segEnd,
+							trackIdx: rti
+						});
 					}
 
 					for (let si = 0; si < segments.length; si++) {
-						const { receiverId, segStart, segEnd } = segments[si];
-						const isLast = si === segments.length - 1;
+						const { receiverId, segStart, segEnd, trackIdx } = segments[si];
+						// ⚓ "STILL ON FIELD AT THE END", not "the last segment that
+						// survived". The extension to `buffEnd` exists because nobody
+						// swaps away from the final track — so it belongs to the LAST
+						// TRACK, and reading it off the segment array was only ever right
+						// while every track produced a segment.
+						// ⚠️ `onFieldDelay` broke that: a receiver who swaps in with less
+						// than the delay left gets no segment at all, which promoted the
+						// PREVIOUS receiver to "last" and ran their buff to the window's
+						// end — straight through a swap-out that had already happened.
+						const isLast = trackIdx === tracks.length - 1;
 						const sourceIsActive = receiverId === sourceTrack.characterId;
 						const segResolved = new Set<string>([sourceIsActive ? 'onField' : 'offField']);
 						const segNegated = new Set<string>([sourceIsActive ? 'offField' : 'onField']);

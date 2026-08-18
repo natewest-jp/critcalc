@@ -16,14 +16,41 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 26, "hit": 10, "N": 18, "C": 19 } },
-				{ "name": "N2", "frames": { "anim": 34, "hit": 8, "N": 22, "C": 17 } },
-				{ "name": "N3", "frames": { "anim": 67, "hit": 38, "N": 52, "C": 52 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 26,
+						"hit": 10,
+						"N": 18,
+						"C": 19
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 34,
+						"hit": 8,
+						"N": 22,
+						"C": 17
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 67,
+						"hit": 38,
+						"N": 52,
+						"C": 52
+					}
+				}
 			],
-			"chargeFrames": { "anim": 97, "hit": 64 },
+			"chargeFrames": {
+				"anim": 97,
+				"hit": 64
+			},
 			"_curatorNotes": [
 				"Frames from gcsim main (merged). attack.go attackHitmarks=[10,8,38], animations N1=26/N2=34/N3=67; per-hit overrides ActionAttack(N) & ActionCharge(C): N1 N=18 C=19, N2 N=22 C=17, N3 N=52 C=52. swap=hitmark (InitNormalCancelSlice). N1/CA windup (7/2/3 frames, state-dependent) not baked into base FrameMaps.",
-				"charge.go chargeHitmark=66, chargeFrames=InitAbilSlice(99) with Skill/Burst/Dash/Jump/Swap overridden to 66; N & C stay at the 99 animation default. Catalyst charged attack -> chargeFrames (not chargeHits).",
+				"charge.go: chargeHitmark=66 and chargeFrames=InitAbilSlice(99), but `ChargeAttack` returns every frame MINUS a `windup` of 2 when the previous state was Idle — so the authored 97/64 is the from-idle case, which is what the gcsim dump measures and what audit-gcsim-frames.mjs confirms. ⚠️ The raw constants and the authored numbers differ by exactly that windup; neither is wrong. Catalyst charged attack -> chargeFrames (not chargeHits).",
 				"No plunge.go in gcsim source; plunge frames not authored (plunge not rotation-relevant for Nicole)."
 			],
 			"sections": [
@@ -52,29 +79,49 @@
 			"abilityType": "skill",
 			"behavior": "instant",
 			"cooldown": 16,
-			"frames": { "anim": 42, "N": 40, "C": 40, "E": 33, "Q": 32, "D": 34, "J": 32, "swap": 31 },
+			"frames": {
+				"anim": 42,
+				"N": 40,
+				"C": 40,
+				"E": 33,
+				"Q": 32,
+				"D": 34,
+				"J": 32,
+				"swap": 31
+			},
 			"tags": ["shield"],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 15, "cap": 600 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 15,
+						"cap": 600
+					},
 					"snapshottable": false,
 					"attribution": "Grace of Kenosis",
 					"_curatorNotes": [
 						"Grace of Kenosis: flat ATK bonus to nearby party members = min(15% of Nicole's ATK, 600) at talent lvl 10 (skillBuffRatio[9]=0.15, skillBuffMax[9]=600). Computed once at cast from Nicole's ATK (gcsim skill.go c.skillBuff), fixed for 20s. Applies to the whole party including Nicole.",
-						"snapshottable=false pending confirmation: the recipient's ATK modifier is a live stat mod; unclear whether off-field DPS snapshot it. Flag-and-ask."
+						"✅ The ingest-time flag-and-ask on `snapshottable` is RESOLVED (2026-08-18): gcsim hands it out as a live `character.StatMod` (skill.go, `AddStatMod` with `modifier.NewBase(skillBuffKey, skillDur)`), not as part of any attack snapshot, so `snapshottable: false` stands. ⚠️ The VALUE is computed once at the cast from Nicole’s ATK and then fixed — that is the buff’s magnitude being snapshotted, not the recipient’s stat, and the two are different questions."
 					]
 				},
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"durationType": "refresh",
 					"scaling": 398.1,
@@ -93,7 +140,13 @@
 			"_curatorNotes": [
 				"Shield label \"Shield of Blazing Light\" taken verbatim from this ability's own description text (the game's wording, via genshin-db) — the shield lane renders it. ⛔ Kits whose text says only \"a shield\" (Diona, Candace, Xinyan, Lan Yan) keep the generic fallback rather than borrowing the ability name; gcsim's \"<Ability> (Shield)\" strings are its own internal convention, not in-game names."
 			],
-			"application": [{ "frame": 9, "element": "pyro", "units": 1 }]
+			"application": [
+				{
+					"frame": 9,
+					"element": "pyro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "nicole__burst__revelation_ladder_of_divine_ascent",
@@ -104,32 +157,54 @@
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": ["coordinatedAttack"],
-			"frames": { "anim": 128, "N": 117, "C": 120, "E": 116, "D": 118, "J": 117, "swap": 113 },
+			"frames": {
+				"anim": 128,
+				"N": 117,
+				"C": 120,
+				"E": 116,
+				"D": 118,
+				"J": 117,
+				"swap": 113
+			},
 			"effects": [
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "source": "team" },
-					"duration": 20,
+					"trigger": {
+						"type": "onHit",
+						"source": "team"
+					},
 					"procCooldown": 3,
 					"scaling": 180,
 					"stat": "atk",
 					"attribution": "Arcane Projection",
-					"caveat": "During Silent Contemplation (20s), when a nearby active party member hits an opponent, a coordinated Arcane Projection deals AoE Elemental DMG of that character's Element at 180% of their ATK, counted as their damage. Occurs once every 3s, up to 4 times per burst.",
+					"caveat": "During Silent Contemplation (20s), when the active character hits an opponent, an Arcane Projection deals AoE DMG of that character’s Element at 180% of their ATK, counted as theirs. Once every 3s, up to 4 times per burst.",
 					"_curatorNotes": [
-						"gcsim burst.go: burstKey status 20*60; projection deals burstProjection[9]=1.8 (180%) of the TRIGGERING character's ATK, element = char.Base.Element; burstICDKey=3*60; c.projections capped at 4 per burst. Projection lands projectionHitmark=30f after the triggering hit.",
-						"scaling stat 'atk' is a stand-in for the triggering character's ATK (the planner scales on the holder's stat). Element varies by triggering character, so element field is omitted. The 4-projection-per-burst cap is not modeled — timeline shows ticks bounded only by the 20s window and 3s ICD.",
-						"Nicole's own initial burst hit (570.2% ATK Pyro at T10, burstInitial[9]=5.7024) is on-field self damage, not a team-facing capability — not authored as an effect."
+						"gcsim burst.go: burstInit subscribes to OnEnemyHit while `silent-contemplation` is up (20*60 from burstHitmark+1); requires the hitter to be the ACTIVE character; burstICDKey 3*60; c.projections capped at 4 per burst; the projection lands projectionHitmark=30f after the triggering hit, with Mult burstProjection[9]=1.8 of the TRIGGERING character’s ATK and Element = char.Base.Element.",
+						"`scaling`/`stat` are a stand-in: the planner scales on the HOLDER’s stat and this scales on the triggering character’s. `element` is omitted because it varies with who triggered it.",
+						"⚠️⚠️ NO `application[]`, and that is a REFUSAL rather than an omission (2026-08-18). Two independent blockers. (a) gcsim gives the projection no `Durability` at all — and that is not sloppiness in this file: Nicole’s normals, charged, skill and burst initial ALL carry `Durability: 25`, and the only two hits without it are the two Arcane Projections (burst.go:157, cons.go:49), i.e. exactly the two whose element is BORROWED. (b) Even granting that it applies, the element is the triggering character’s and `application[].element` names a fixed Element — we have no vocabulary for \"whoever triggered this\". ⛔ Authoring a Pyro pip would be a claim about both.",
+						"⚓ What would change it: one line from someone who plays her — does an Arcane Projection apply the triggering character’s element? If yes, this becomes a proc in `sim/procs.ts` (`trigger.armedFor: 20`, `source` narrowed to the active character, `application[{frame: 30}]`) plus a way for an application to name the trigger’s element. ⛔ Until then `armedFor` is deliberately NOT authored either: an arming window on an effect nothing can arm is the partially-wired data `orphanedSchema` cannot see.",
+						"⚠️ `duration: 20` was removed in the same pass. On a `damage` effect nothing reads it — the buff path’s `.duration` accesses satisfy `orphanedSchema` by key name, which is that guard’s documented blind spot. The 20s is the burst’s `activeDuration` now, where a reader can see it.",
+						"⚠️ NOT modelled: the 4-projections-per-burst cap, and gcsim’s per-character projection hitbox offsets (a positional claim, the class docs/gauge-round-L5e.md refuses to grow a vocabulary for).",
+						"Nicole’s own initial burst hit (570.2% ATK Pyro at T10) is on-field self damage, not a team-facing capability — not authored as an effect; its Pyro is the ability-level `application[]`."
 					]
 				}
 			],
 			"caveat": "Not modeled: with 2 or more Hexerei characters in the party, Arcane Projections triggered by Hexerei members deal extra DMG equal to 300% of the caster's ATK.",
 			"_curatorNotes": [
+				"activeDuration 20 authored 2026-08-18: the burst \"switches to Silent Contemplation mode\" and gcsim holds `silent-contemplation` for 20*60 from burstHitmark+1 (burst.go:113). ⚠️ NOT `duration` and NOT a summon — nothing is left in the world; it is a mode on Nicole, which is exactly what `activeDuration` is for (see the shield/summon split). Without it the Q bar was an instant and the window the Arcane Projections live in was invisible.",
 				"HEXEREI Secret Rite (count-gated). gcsim asc.go:111-123 hexereiOnProjection: requires Nicole IsHexerei AND GetHexereiCount() >= 2 AND the triggering character IsHexerei; returns c.TotalAtk()*3, applied as AttackInfo.FlatDmg on the burst projection (burst.go:164) and on C1's Arcane Projection: Unity (cons.go:56).",
 				"Pure damage-magnitude enhancement to an existing hit (flat add, no new instance, no stat change) — recorded, not authored as an effect. Lives in factionBonuses as a description-only Secret Rite entry plus this caveat."
 			],
 			"description": "As Nicole weaves the path of anchored fate with golden threads of light, she deals AoE Pyro DMG and switches to Silent Contemplation mode.\nIn this mode, when nearby active party members hit an opponent, an Arcane Projection is summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type. This DMG scales based on the corresponding character's ATK and will be considered as having been dealt by them.\nThis effect can occur once every 3s, and can be triggered up to 4 times each time Nicole switches to Silent Contemplation mode.\n\nIt is worth noting that Hexerei characters' Arcane Projections appear to differ somehow in appearance from the others...",
-			"application": [{ "frame": 108, "element": "pyro", "units": 1 }]
+			"application": [
+				{
+					"frame": 108,
+					"element": "pyro",
+					"units": 1
+				}
+			],
+			"activeDuration": 20
 		}
 	],
 	"passives": [
@@ -141,7 +216,10 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -149,11 +227,29 @@
 					"value": 300,
 					"snapshottable": false,
 					"attribution": "A1: Methexis (Guidance of Theosis)",
-					"caveat": "Grace of Kenosis upgrades to Guidance of Theosis (+300 ATK) after the observed character stays on-field for 3s — instantly for Hexerei characters. Reverts to Grace of Kenosis when they leave the field (no longer reverts at C6).",
+					"caveat": "Grace of Kenosis upgrades to Guidance of Theosis (+300 ATK) once the observed character has been on field for 3s — immediately for a Hexerei character, and immediately for everyone at C6. It reverts when they leave the field, except at C6.",
 					"_curatorNotes": [
-						"A1 Methexis: gcsim asc.go a1Buff[ATK]=300, upgrade delay 3*60 (0 for Hexerei). Upgrade duration bounded by the remaining Grace of Kenosis window (<=20s); modeled as 20s fixed with the 3s-observe caveat.",
-						"HEXEREI permanent patch (NOT count-gated): gcsim asc.go:35-38 sets delay=0 on a bare `char.IsHexerei` check with no GetHexereiCount() gate — a Hexerei observed character gets Guidance of Theosis immediately, even as the only other Hexerei member. Value (+300 ATK) unchanged; only the 3s observation delay is skipped. Already surfaced in this effect's caveat."
-					]
+						"A1 Methexis: gcsim asc.go a1Buff[ATK]=300, granted on OnCharacterSwap to the INCOMING character after a 3*60 delay, and immediately when that character IsHexerei. The upgrade lasts the receiver’s remaining Grace of Kenosis window (a1UpgradeBuff with dur -1); asc.go deletes it from the OUTGOING character unless C6 (c6DeleteA1OnSwap).",
+						"↻ 2026-08-18: the delay and both waivers are AUTHORED now (`onFieldDelay`), where this used to be a flat active-target buff starting at the cast with the timing only in prose. ⚓ The Hexerei waiver is a property of the RECEIVER and is NOT count-gated — gcsim checks a bare `char.IsHexerei` with no GetHexereiCount() call, so a lone Hexerei teammate still skips the wait. ⛔ Not a `teamFaction` condition.",
+						"⚓ The C6 waiver is the second half of the same field: cons.go c6OnUpgrade upgrades every other member the moment Nicole’s own upgrades, so nobody waits. Composed as one `any`, which is why the waiver is a Condition rather than a bespoke faction key.",
+						"⚠️ The revert-on-swap-out needed no authoring: an active-target buff is already sliced per on-field segment, so leaving the field ends the slice, and only the LAST segment runs to the buff’s own end. ⚠️ NOT modelled: at C6 it stops reverting, so all four members hold it at once — a single active-target effect cannot say that, and the caveat carries it."
+					],
+					"onFieldDelay": {
+						"seconds": 3,
+						"waivedWhen": {
+							"type": "any",
+							"conditions": [
+								{
+									"type": "activeCharFaction",
+									"faction": "hexerei"
+								},
+								{
+									"type": "constellation",
+									"level": 6
+								}
+							]
+						}
+					}
 				}
 			],
 			"description": "For 20s after unleashing the Elemental Skill **Revelation: Uncreated Light**, Nicole will continuously \"observe\" the other current active party members. After the observed character has remained on the field for 3s, their **Grace of Kenosis** is upgraded to **Guidance of Theosis**, increasing their ATK by an additional 300. If the observed character is a Hexerei character, Grace of Kenosis is upgraded to Guidance of Theosis straight away.\nWhen characters other than Nicole who have Guidance of Theosis leave the field, their effect reverts to Grace of Kenosis."
@@ -166,7 +262,11 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onHit", "damageType": "elemental", "source": "team" },
+					"trigger": {
+						"type": "onHit",
+						"damageType": "elemental",
+						"source": "team"
+					},
 					"duration": 8,
 					"durationType": "refresh",
 					"source": "character",
@@ -176,7 +276,9 @@
 					"attribution": "A4: Philokalia",
 					"caveat": "Nicole's own Grace of Kenosis upgrades to Guidance of Theosis (+300 ATK) for 8s whenever a nearby active party member's Elemental DMG hits an opponent.",
 					"_curatorNotes": [
-						"A4 Philokalia: gcsim asc.go a4Init upgrades Nicole's own buff on active-member elemental hit for c6SelfBuffDur = 8s (C0). Self-only; boosts Nicole's ATK (marginally her shield/Grace scaling on subsequent casts). At C6 the self-upgrade duration is -1 (matches remaining Grace window)."
+						"A4 Philokalia: gcsim asc.go a4Init upgrades Nicole's own buff on active-member elemental hit for c6SelfBuffDur = 8s (C0). Self-only; boosts Nicole's ATK (marginally her shield/Grace scaling on subsequent casts). At C6 the self-upgrade duration is -1 (matches remaining Grace window).",
+						"⚠️ `source: ‘team’` is one step wider than gcsim, which requires the hitter to be the ACTIVE character (asc.go a4Init: `ae.Info.ActorIndex != c.Core.Player.Active()`). `onHit` has no `‘active’` source, and adding one for a self-buff would be the trap the mark-triggered round names: an entity carries its OWNER’s id, so an id test alone counts a summon’s tick as its owner’s. The over-fire is that an off-field summon’s elemental hit upgrades Nicole; it costs her +300 ATK on herself a little early.",
+						"⚠️ NOT modelled: at C6 `c6SelfBuffDur()` returns -1, so this self-upgrade lasts Nicole’s remaining Grace window instead of 8s. A duration has no `constellationScaling`, and a second C6-gated copy would be collapsed by the one-bar-per-stat rule — the same reason the C6 party-wide +300 is not authored as its own effect."
 					]
 				}
 			],
@@ -193,7 +295,10 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "source": "team" },
+					"trigger": {
+						"type": "onHit",
+						"source": "team"
+					},
 					"procCooldown": 6,
 					"scaling": 600,
 					"stat": "atk",
@@ -202,8 +307,14 @@
 					"_curatorNotes": [
 						"gcsim cons.go c1Init: OnEnemyHit by active char, c1ICDKey=6*60, Mult:6 (600%) of the triggering character's ATK, element = char.Base.Element, lands projectionHitmark=30f later. Independent of the burst — fires whenever the active char hits, not gated on Silent Contemplation.",
 						"scaling stat 'atk' is a stand-in for the triggering character's ATK; element omitted (varies). This damage effect does not itself derive an offFieldDamage capability (that comes from the burst coordinatedAttack tag at C0).",
-						"HEXEREI Secret Rite also applies here: cons.go:56 passes FlatDmg = hexereiOnProjection(char), so with 2+ Hexerei in the party a Unity projection triggered by a Hexerei member gains flat DMG equal to 300% of Nicole's ATK. Damage-magnitude only — not authored as an effect; the canonical player-facing note sits on the burst."
-					]
+						"HEXEREI Secret Rite also applies here: cons.go:56 passes FlatDmg = hexereiOnProjection(char), so with 2+ Hexerei in the party a Unity projection triggered by a Hexerei member gains flat DMG equal to 300% of Nicole's ATK. Damage-magnitude only — not authored as an effect; the canonical player-facing note sits on the burst.",
+						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0.",
+						"⚠️ Same two blockers as the burst’s Arcane Projection, and the same refusal: gcsim cons.go:49 gives it no `Durability`, and its element is the triggering character’s. ⛔ Do not author an `application[]` here without answering the burst’s question first — the two stand or fall together."
+					],
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
 				}
 			],
 			"description": "When the current active character of your own in the party hits an opponent, an additional special \"Arcane Projection: Unity\" will be summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type at 600% of their ATK. This DMG will be considered as having been dealt by the corresponding character.\nThis effect can trigger once every 6s."
@@ -217,7 +328,10 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -226,26 +340,42 @@
 					"snapshottable": false,
 					"attribution": "C2 (Grace of Kenosis +300)",
 					"_curatorNotes": [
-						"C2 adds +300 flat ATK to Grace of Kenosis for all nearby party members (does not count toward the base ATK Bonus limit). gcsim cons.go c2Buff[ATK]=300, added to all chars on skill cast for skillDur (20s)."
-					]
+						"C2 adds +300 flat ATK to Grace of Kenosis for all nearby party members (does not count toward the base ATK Bonus limit). gcsim cons.go c2Buff[ATK]=300, added to all chars on skill cast for skillDur (20s).",
+						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0."
+					],
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
 				},
 				{
 					"type": "resShred",
 					"target": "enemy",
 					"value": -25,
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"durationType": "refresh",
 					"attribution": "C2 (Guidance of Theosis RES shred)",
 					"caveat": "While the active character has Guidance of Theosis, nearby opponents' RES to that character's Element is reduced by 25%. Does not stack for the same Element.",
 					"_curatorNotes": [
-						"gcsim cons.go c2Ticker: -0.25 RES to the active char's element, re-applied every 0.3s (1s modifier) while they hold Guidance of Theosis (a1Key). Element varies by active character, so element field is omitted (derives as 'all'). Uptime follows Guidance (up to the 20s skill-buff window); modeled as 20s refresh."
-					]
+						"gcsim cons.go c2Ticker: -0.25 RES to the active char's element, re-applied every 0.3s (1s modifier) while they hold Guidance of Theosis (a1Key). Element varies by active character, so element field is omitted (derives as 'all'). Uptime follows Guidance (up to the 20s skill-buff window); modeled as 20s refresh.",
+						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0."
+					],
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
 				},
 				{
 					"type": "shield",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"durationType": "refresh",
 					"scaling": 398.1,
@@ -254,8 +384,13 @@
 					"attribution": "C2 (Shield of Blazing Light — party)",
 					"caveat": "Absorbs Pyro DMG at 250% effectiveness.",
 					"_curatorNotes": [
-						"C2: nearby active party members also gain a Shield of Blazing Light on skill cast (same scaling as base: 398.1% Nicole ATK + 3051). Extends the base shield beyond the active character to the whole party."
-					]
+						"C2: nearby active party members also gain a Shield of Blazing Light on skill cast (same scaling as base: 398.1% Nicole ATK + 3051). Extends the base shield beyond the active character to the whole party.",
+						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0."
+					],
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
 				}
 			],
 			"description": "Enhances the effects of the Elemental Skill **Revelation: Uncreated Light**: **Grace of Kenosis** increases ATK by an additional 300 (which does not count toward this effect's ATK Bonus limit), while **Guidance of Theosis** decreases nearby opponents' Elemental RES based on the corresponding character's Elemental Type by 25%. This effect does not stack for the same Element.\nAdditionally, when Nicole unleashes her Elemental Skill Revelation: Uncreated Light, nearby active party members will also gain a Shield of Blazing Light."
@@ -277,17 +412,46 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 70 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 70
+					},
 					"snapshottable": false,
 					"attribution": "C4 (Pathfinder's Blessing)",
 					"_curatorNotes": [
-						"[A7b] AUTHORED 2026-07-20 (implement-first): Pathfinder's Blessing as an active-target normalFlatDmg buff scaling 70% of the caster's ATK (gcsim cons.go c4Init: FlatDmg += 0.7*Nicole.TotalAtk), onCast skill / 20s fixed, mirroring the sibling C2 (+300 flat ATK) and C6 shapes which model the Guidance window optimistically. Single-class authoring (normalFlatDmg only) per the Escoffier C2 legibility precedent — in game the add covers N/CA/Plunge/E/Q from one shared pool."
-					]
+						"[A7b] AUTHORED 2026-07-20 (implement-first): Pathfinder's Blessing as an active-target normalFlatDmg buff scaling 70% of the caster's ATK (gcsim cons.go c4Init: FlatDmg += 0.7*Nicole.TotalAtk), onCast skill / 20s fixed, mirroring the sibling C2 (+300 flat ATK) and C6 shapes which model the Guidance window optimistically. Single-class authoring (normalFlatDmg only) per the Escoffier C2 legibility precedent — in game the add covers N/CA/Plunge/E/Q from one shared pool.",
+						"↻ 2026-08-18: `onFieldDelay` added. ⚓ Pathfinder’s Blessing is granted BY the Guidance upgrade (gcsim c4OnUpgrade is called from a1UpgradeBuff), so it inherits A1’s 3s observation and its Hexerei waiver exactly — it cannot start at the cast, which is what this used to claim.",
+						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0."
+					],
+					"onFieldDelay": {
+						"seconds": 3,
+						"waivedWhen": {
+							"type": "any",
+							"conditions": [
+								{
+									"type": "activeCharFaction",
+									"faction": "hexerei"
+								},
+								{
+									"type": "constellation",
+									"level": 6
+								}
+							]
+						}
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					}
 				}
 			],
 			"caveat": "Not modeled: it drops after 8 hits (one instance per opponent struck), so the shown window may run longer than the real one.",
@@ -314,7 +478,10 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -322,7 +489,14 @@
 					"value": 40,
 					"snapshottable": false,
 					"attribution": "C6: Guidance of Theosis",
-					"caveat": "Party members holding Guidance of Theosis ignore 40% of the enemy's DEF — at C6 the whole team holds it."
+					"caveat": "Party members holding Guidance of Theosis ignore 40% of the enemy's DEF — at C6 the whole team holds it.",
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"_curatorNotes": [
+						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0."
+					]
 				}
 			],
 			"_curatorNotes": [
