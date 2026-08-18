@@ -14,6 +14,7 @@
 
 import type { CharacterData } from '$lib/types/character';
 import type { Element } from '$lib/types/ability';
+import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
 
 export type SlotCaveat = {
 	/** "Skill" · "Burst" · "Passive" · "C4" — the ability's short kind label. */
@@ -34,9 +35,14 @@ export type SlotCaveatEntry = {
  * slot characters. Duplicate slots are listed once — the same kit twice is one
  * set of notes — and characters with nothing to annotate are dropped entirely,
  * so an empty result means the Notes button has nothing to open.
+ *
+ * `constellationLevels` is the EFFECTIVE map (the tab's Layer-2 override over
+ * the roster's Layer-1 default), so a locked constellation's caveat is not
+ * shown. Defaults to C0 for every character when omitted.
  */
 export function collectSlotCaveats(
-	slotCharacters: readonly (CharacterData | null)[]
+	slotCharacters: readonly (CharacterData | null)[],
+	constellationLevels: Readonly<Record<string, number>> = {}
 ): SlotCaveatEntry[] {
 	const seen = new Set<string>();
 	const entries: SlotCaveatEntry[] = [];
@@ -45,7 +51,11 @@ export function collectSlotCaveats(
 		if (!char || seen.has(char.id)) continue;
 		seen.add(char.id);
 
-		const caveats = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])]
+		// ⚓ A CONSTELLATION'S CAVEAT IS GATED BY ITS ENTRY (2026-08-18). This is
+		// the non-buff half of the same defect — a C6's note used to sit in the
+		// Notes panel of a C0 rotation, describing a kit the reader does not
+		// have. See docs/constellation-gating-plan.md.
+		const caveats = effectSourcesAtConstellation(char, constellationLevels[char.id] ?? 0)
 			.filter((a) => a.caveat)
 			.map((a) => ({
 				name: a.name,

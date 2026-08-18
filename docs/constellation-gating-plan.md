@@ -1,8 +1,9 @@
 # A constellation effect is not gated by its own entry
 
-**Status:** 🔴 **OPEN — measured, not built.** Found 2026-08-18 during the Nicole
-session; ⚓ Nate bookmarked it for a session of its own. This doc is the prep: the
-size, the shape, and the traps, so the next session starts from a plan.
+**Status:** ✅ **SHIPPED 2026-08-18.** Found earlier the same day during the Nicole
+session; ⚓ Nate bookmarked it for a session of its own. §1–§5 are the PREP, kept
+verbatim as the record of what was believed going in. **§7 is what landed and what
+it measured** — read that first if you are here to change something.
 
 ---
 
@@ -116,3 +117,113 @@ making every curator restate it is exactly what produced 184 misses.
   that moves should be a bar that should never have been there.
 - ⚠️ The gcsim oracles say NOTHING here (they measure applications, which do not move).
 - 👀 Nate's eyes on a C0 planner rotation for a couple of the §2 offenders.
+
+---
+
+## 7. ✅ What landed
+
+**The gate is `effectSourcesAtConstellation(char, cLevel)` in
+`src/lib/utils/effectCollection.ts`** — abilities + passives + the constellations
+unlocked at `cLevel`. It replaced the `[...abilities, ...passives, ...constellations]`
+idiom everywhere the walk DECIDES something, and `effectSourcesOf` took `cLevel` as a
+**required** parameter so a future collector cannot forget it — a miss is now a compile
+error rather than a silent leak.
+
+Sites changed:
+
+| file                    | what                                                                                                      |
+| ----------------------- | --------------------------------------------------------------------------------------------------------- |
+| `effectCollection.ts`   | the helper + `unlockedConstellations`; `effectSourcesOf(char, cLevel)`; all six collectors take the level |
+| `buffWindows.ts`        | 15 collector calls — every one already had `cLevel` in hand, as §4 predicted                              |
+| `infusions.ts`          | the one `getCharacterEffectsForCast` call (its `constellation` param)                                     |
+| `stacks.ts`             | 5 dispatchers + `applyDrain`; the 4 housekeeping walks deliberately NOT gated (see below)                 |
+| `shields.ts`            | the `onShieldEnd` listener walk                                                                           |
+| `cooldowns.ts`          | `getCharacterCdResetTargets` — the entry gate now precedes the effect-level check, which stays            |
+| `slotCaveats.ts`        | takes the effective constellation map; the planner page hands it `{...$constellations, ...rt.tabCon}`     |
+| `notationParser.ts:186` | the `teamHasOnHitStackEffects` guard                                                                      |
+
+### ⚓ The one place it is deliberately NOT applied
+
+`stacks.ts` has four walks that collect a KEY SPACE rather than decide a dispatch —
+`syncOnReactionToStackState`, `syncOnHitToStackState`, `syncSourceLifetimeToStackState`,
+`applyLifetimeExpiry`. They stay ungated, with the reason written at the site:
+
+- a key only a LOCKED constellation introduces can never be granted (its dispatcher IS
+  gated), so syncing or expiring it writes 0 over 0;
+- a key SHARED between an ability and a constellation is the bad case. Skirk's
+  `serpentsSubtlety` is granted by her skill **and** by her C2; Linnea's `fieldCatalog`
+  is granted by her C1 and that entry carries the **only** `lifetime` declaration for
+  the key. Gate the expiry walk and a stack the ability granted would never expire,
+  because the entry that says how long it lives is locked.
+
+⚓ **The rule: gate the walk that asks "does this fire", never the walk that asks
+"what keys exist".**
+
+### Measured
+
+The §2 prototype re-run as a before/after, per §6. Probe: `<name> E Q N5 > Kaeya N5 N5`,
+123 characters, `[char, Kaeya]` as the slot roster.
+
+|                                             | before    | after        |
+| ------------------------------------------- | --------- | ------------ |
+| characters whose **C0** parse changes       | —         | **23**       |
+| buff/debuff windows removed at C0           | —         | **34**       |
+| applications                                | —         | **0 delta**  |
+| IR events                                   | —         | **0 delta**  |
+| characters whose **C6** parse changes       | —         | **0**        |
+| C0 parse vs constellation-STRIPPED C0 parse | 23 differ | **0 differ** |
+
+✅ **The two convergences are the proof.** At C0 the real parse now equals the
+stripped-constellations parse — the leak is exactly closed, nothing more. At C6 the
+corpus is **byte-identical** either side — the gate never removes an effect the reader
+actually has. Applications and events did not move, confirming §2's BARS-ONLY reading.
+
+Ladder spot-check (the off-by-one): Razor's C4 shred appears **at C4**, his C6 crit pair
+**at C6**; Klee's C1 ATK% at C1, her C2 shred at C2.
+
+Two of the 23 are not a whole window disappearing but an effect leaving a POOL —
+Faruzan's C6 crit DMG was pooled into her A4 anemo-bonus window, Yun Jin's C2
+normal-DMG bonus into her burst's flat-DMG window. Both windows survive with one fewer
+effect, which is why a count-only diff shows them as unchanged.
+
+### The safety claim, independently re-derived
+
+Re-walked the corpus condition trees (including `not`/`all`/`any` nesting) rather than
+trusting §3: **133** constellation effects carry a constellation condition, **0** name a
+level other than their own entry's, **0** negate it. **184** carry none, across **77**
+characters. All 122 characters with constellations author exactly C1–C6 with numeric
+levels — no entry can fall through the gate for want of a level.
+
+### ⚠️ Two of §2's "worth eyeballing" list are NOT what they look like
+
+- **Ganyu C1 / Nahida C2** never showed in the 23-character diff because the probe
+  rotation (`E Q N5`) fires neither trigger — Ganyu's shred is `onHit` on a CHARGED
+  attack, Nahida's is `onReaction`. Re-probed directly, both behave: Ganyu's `resShred`
+  is absent at C0 and present at C1+. §2's list came from the STATIC census, so it names
+  candidates, not measured emitters.
+- **Traveler Hydro C4's shield is not a leak — it is unmodelled.** `emitShield` reads
+  `variant?.effects ?? activeAbility.effects`, i.e. the CAST ability's own effects only,
+  so a constellation-hosted `shield` effect reaches no shield window at any level. Seven
+  constellation entries author one. That is a pre-existing orphaned-schema gap, out of
+  this round's scope — ⛔ don't "fix" it by widening `emitShield` to the constellation
+  walk without deciding what a C-gated shield's lane and label should be.
+
+### Left alone, on purpose
+
+- ⛔ The **133 redundant conditions stay** (§4.4). They are harmless, they document
+  intent at the effect, and stripping them is a 133-file diff with no behavioural gain.
+- ⛔ **`deriveCapabilities` / `TeamBonusesBlock`** untouched — already correct, and
+  double-gating is how the Team Builder would start disagreeing with itself.
+- ⛔ **`constellationScaling`** untouched — a different mechanism (it scales an
+  already-unlocked effect's VALUE).
+- **Procs** need nothing: `armCastProcs`/`armSummonProcs` read a resolved ability's or
+  summon's effects, never a constellation walk, and the corpus's constellation-hosted
+  procs (Fischl C6's coordinated attack, authored on Oz) carry their own condition.
+
+### Gates
+
+`npm run check` ✅ · `npx vitest run` ✅ 1613/1613 · `npm run lint` ✅ · `npm run build` ✅.
+⚠️ **No vitest test moved**, which is worth knowing: the suite's C0 fixtures never
+touched any of the 34 bars, so the suite could not have caught this and did not confirm
+the fix either — the probe above is the whole evidence. `test:e2e` not run (no browser
+surface change beyond the two panels' contents).

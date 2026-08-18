@@ -27,6 +27,7 @@ import {
 	type ChainIndex
 } from './conditions';
 import { onHitTriggerMatches, type HitEvent } from './hits';
+import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
 
 // ---------------------------------------------------------------------------
 // gainStacks dispatch (E3 v1)
@@ -70,7 +71,7 @@ export function dispatchGainStacks(
 	castInput?: string,
 	stackInstances?: Map<string, number[]>
 ): void {
-	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	const sources = effectSourcesAtConstellation(char, constellationLevel);
 	for (const src of sources) {
 		for (const fx of src.effects ?? []) {
 			if (fx.type !== 'gainStacks') continue;
@@ -163,7 +164,7 @@ export function dispatchConsumeStacks(
 	castInput?: string,
 	stackInstances?: Map<string, number[]>
 ): void {
-	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	const sources = effectSourcesAtConstellation(char, constellationLevel);
 	for (const src of sources) {
 		for (const fx of src.effects ?? []) {
 			if (fx.type !== 'consumeStacks') continue;
@@ -239,11 +240,8 @@ export function dispatchGainStacksOnReaction(
 	getCharState: (charId: string) => CharState
 ): void {
 	for (const holder of allChars) {
-		const sources = [
-			...holder.abilities,
-			...(holder.passives ?? []),
-			...(holder.constellations ?? [])
-		];
+		const holderCons = constellationByHolder.get(holder.id) ?? 0;
+		const sources = effectSourcesAtConstellation(holder, holderCons);
 		for (const src of sources) {
 			for (const fx of src.effects ?? []) {
 				if (fx.type !== 'gainStacks') continue;
@@ -252,7 +250,6 @@ export function dispatchGainStacksOnReaction(
 				if (srcMode === 'self' && holder.id !== triggerCharId) continue;
 				if (!reactionMatchesTrigger(emittedReaction, fx.trigger.reaction)) continue;
 				const holderStates = resolvedStatesByHolder.get(holder.id) ?? new Set<string>();
-				const holderCons = constellationByHolder.get(holder.id) ?? 0;
 				const condResult = evalCondition(
 					fx.conditions,
 					DEFAULT_ASCENSION,
@@ -307,6 +304,26 @@ export function dispatchGainStacksOnReaction(
  *  downstream `stacks` Conditions evaluate uniformly against pre-cast
  *  state — mirrors `syncSourceLifetimeToStackState` for the onReaction
  *  variant. */
+/* ── ⚓ WHY THE FOUR HOUSEKEEPING WALKS BELOW ARE NOT CONSTELLATION-GATED ────
+ *
+ * `effectSourcesAtConstellation` gates every walk in this file that DECIDES
+ * something — the five dispatchers and `applyDrain`. The four below
+ * (`syncOnReactionToStackState`, `syncOnHitToStackState`,
+ * `syncSourceLifetimeToStackState`, `applyLifetimeExpiry`) do not decide; they
+ * collect a KEY SPACE and keep the per-segment copy of it in step. Gating them
+ * would be a no-op in the good case and a bug in the bad one:
+ *
+ *  · a key only a LOCKED constellation introduces can never be granted (its
+ *    dispatcher is gated), so syncing or expiring it writes 0 over 0;
+ *  · a key SHARED between an ability and a constellation is the bad case —
+ *    Skirk's `serpentsSubtlety` is granted by her skill and again by her C2,
+ *    and Linnea's `fieldCatalog` is granted by her C1 and carries the only
+ *    `lifetime` declaration for that key. Gate the expiry walk and a stack the
+ *    ability granted would never expire, because the entry that says how long
+ *    it lives is locked.
+ *
+ * ⚓ The rule: gate the walk that asks "does this fire", never the walk that
+ * asks "what keys exist". */
 export function syncOnReactionToStackState(
 	holder: CharacterData,
 	currentTime: number,
@@ -386,11 +403,8 @@ export function dispatchGainStacksOnHit(
 	segStackInstances: Map<string, number[]>
 ): void {
 	for (const holder of allChars) {
-		const sources = [
-			...holder.abilities,
-			...(holder.passives ?? []),
-			...(holder.constellations ?? [])
-		];
+		const holderCons = constellationByHolder.get(holder.id) ?? 0;
+		const sources = effectSourcesAtConstellation(holder, holderCons);
 		for (const src of sources) {
 			const effects = src.effects ?? [];
 			for (let effIdx = 0; effIdx < effects.length; effIdx++) {
@@ -400,7 +414,6 @@ export function dispatchGainStacksOnHit(
 				if (!onHitTriggerMatches(fx.trigger, hit, holder.id)) continue;
 				const isSelf = holder.id === hit.characterId;
 				const holderStates = getHolderStates(holder);
-				const holderCons = constellationByHolder.get(holder.id) ?? 0;
 				// Self-holder conditions read the hitter's live segment stack
 				// state; off-field holders have no segment state (their stack
 				// conditions resolve against an empty map — pre-existing gap).
@@ -510,11 +523,8 @@ export function dispatchConsumeStacksOnHit(
 	segStackInstances: Map<string, number[]>
 ): void {
 	for (const holder of allChars) {
-		const sources = [
-			...holder.abilities,
-			...(holder.passives ?? []),
-			...(holder.constellations ?? [])
-		];
+		const holderCons = constellationByHolder.get(holder.id) ?? 0;
+		const sources = effectSourcesAtConstellation(holder, holderCons);
 		for (const src of sources) {
 			for (const fx of src.effects ?? []) {
 				if (fx.type !== 'consumeStacks') continue;
@@ -522,7 +532,6 @@ export function dispatchConsumeStacksOnHit(
 				if (!onHitTriggerMatches(fx.trigger, hit, holder.id)) continue;
 				const isSelf = holder.id === hit.characterId;
 				const holderStates = getHolderStates(holder);
-				const holderCons = constellationByHolder.get(holder.id) ?? 0;
 				const condStacks = isSelf ? segStackState : new Map<string, number>();
 				const condResult = evalCondition(
 					fx.conditions,
@@ -678,7 +687,10 @@ export function applyDrain(
 	stackState: Map<string, number>
 ): void {
 	const cs = ctx.getCharState(char.id);
-	const sources = [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])];
+	const sources = effectSourcesAtConstellation(
+		char,
+		ctx.team.constellationByHolder.get(char.id) ?? 0
+	);
 	const seenKeys = new Set<string>();
 	for (const src of sources) {
 		for (const fx of src.effects ?? []) {
