@@ -18,15 +18,42 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": { "anim": 35, "N": 26, "C": 24, "E": 12, "Q": 12, "D": 12, "J": 11, "swap": 11 }
+					"frames": {
+						"anim": 35,
+						"N": 26,
+						"C": 24,
+						"E": 12,
+						"Q": 12,
+						"D": 12,
+						"J": 11,
+						"swap": 11
+					}
 				},
 				{
 					"name": "N2",
-					"frames": { "anim": 39, "N": 18, "C": 27, "E": 5, "Q": 5, "D": 6, "J": 5, "swap": 5 }
+					"frames": {
+						"anim": 39,
+						"N": 18,
+						"C": 27,
+						"E": 5,
+						"Q": 5,
+						"D": 6,
+						"J": 5,
+						"swap": 5
+					}
 				},
 				{
 					"name": "N3",
-					"frames": { "anim": 76, "N": 64, "C": 50, "E": 33, "Q": 33, "D": 34, "J": 34, "swap": 33 }
+					"frames": {
+						"anim": 76,
+						"N": 64,
+						"C": 50,
+						"E": 33,
+						"Q": 33,
+						"D": 34,
+						"J": 34,
+						"swap": 33
+					}
 				}
 			],
 			"chargeFrames": {
@@ -39,7 +66,13 @@
 				"J": 37,
 				"swap": 47
 			},
-			"plungeFrames": { "anim": 57, "N": 65, "Q": 65, "D": 41, "swap": 57 },
+			"plungeFrames": {
+				"anim": 57,
+				"N": 65,
+				"Q": 65,
+				"D": 41,
+				"swap": 57
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -68,21 +101,58 @@
 			"name": "Kuugo: Fushoudan",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": { "type": "state", "state": "inStance" },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
 			"infusion": "anemo",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 43, "hit": 15, "N": 30, "C": 31 } },
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 43,
+						"hit": 15,
+						"N": 30,
+						"C": 31
+					}
+				},
 				{
 					"name": "N2",
-					"frames": { "anim": 34, "N": 17, "C": 23, "E": 4, "Q": 6, "D": 5, "J": 5, "swap": 3 }
+					"frames": {
+						"anim": 34,
+						"N": 17,
+						"C": 23,
+						"E": 4,
+						"Q": 6,
+						"D": 5,
+						"J": 5,
+						"swap": 3
+					}
 				},
 				{
 					"name": "N3",
-					"frames": { "anim": 70, "N": 54, "C": 53, "E": 33, "Q": 33, "D": 32, "J": 33, "swap": 32 }
+					"frames": {
+						"anim": 70,
+						"N": 54,
+						"C": 53,
+						"E": 33,
+						"Q": 33,
+						"D": 32,
+						"J": 33,
+						"swap": 32
+					}
 				}
 			],
-			"chargeFrames": { "anim": 70, "N": 49, "C": 49, "E": 38, "Q": 38, "D": 38, "J": 38 },
+			"chargeFrames": {
+				"anim": 70,
+				"N": 49,
+				"C": 49,
+				"E": 38,
+				"Q": 38,
+				"D": 38,
+				"J": 38
+			},
 			"description": "While in the Windfavored state activated by Hanega: Song of the Wind, Wanderer's Normal Attacks are converted into Kuugo: Fushoudan and his Charged Attacks into Kuugo: Toufukai. Both deal Anemo DMG with increased AoE and damage; Kuugo: Toufukai does not consume Stamina. Plunging Attacks are disabled while hovering.",
 			"_curatorNotes": [
 				"In-stance N (Kuugo: Fushoudan) and CA (Kuugo: Toufukai) deal anemo DMG and are still tagged as Normal/Charged Attack DMG by the game. gcsim applies skillNABonus[talentLvlSkill] (N) and skillCABonus[talentLvlSkill] (CA) as a multiplicative bonus on top of the base Mult — these are stance-only damage scalings the schema can't represent on hits[]; reviewer to wire as a state-conditioned damage modifier.",
@@ -99,7 +169,9 @@
 			"abilityType": "skill",
 			"cooldown": 6,
 			"duration": 10,
-			"frames": { "anim": 28 },
+			"frames": {
+				"anim": 28
+			},
 			"tags": [],
 			"effects": [],
 			"description": "Concentrates the power of the winds to break free from the shackles of the earth, dealing AoE Anemo DMG before leaping into the air and entering the Windfavored state.\n\nWindfavored\nThe Wanderer cannot perform Plunging Attacks in this state. When he uses Normal and Charged Attacks, they will be converted into Kuugo: Fushoudan and Kuugo: Toufukai respectively; the DMG they deal and their AoE will be increased, and their DMG will be considered Normal and Charged Attack DMG respectively. Kuugo: Toufukai will not consume Stamina.\nThe Wanderer will hover persistently during this time. While this state is active, the Wanderer's movements gain the following properties:\n·Persistently consumes Kuugoryoku Points to maintain this hovering state.\n·When sprinting, additional Kuugoryoku Points will be consumed for the Wanderer to accelerate mid-air. Holding sprint will cause persistent Kuugoryoku Point consumption to maintain speed. This effect will replace his default sprint.\n·Jumping expends extra Kuugoryoku Points to increase hovering height. Holding jump will cause persistent Kuugoryoku Point consumption to keep increasing hovering height.\n\nRunning out of Kuugoryoku Points will end the Windfavored state.\nA second cast during the duration of Windfavored will also end it.",
@@ -113,7 +185,13 @@
 				"Element Absorption (recipe.md § 3.5): gcsim absorbCheckA1 absorbs up to 2 of Pyro/Hydro/Cryo/Electro at cast (5-radius circle around player), each granting a distinct Jade-Claimed Flower buff for 20s. Per recipe, no per-element conditional buffs authored; flagged on Jade-Claimed Flower passive.",
 				"Skydweller Points (gcsim: skydwellerPoints): resource pool starting at 100, max 100 (raised to 120 with Hydro absorption via A1), drains 1 per 6 frames passively, -15 per dash (A4-dependent), holding jump/sprint adds drain. State ends when points reach 0. Resource pool not modeled in the schema; flagged here for reviewer."
 			],
-			"application": [{ "frame": 2, "element": "anemo", "units": 1 }]
+			"application": [
+				{
+					"frame": 2,
+					"element": "anemo",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "wanderer__burst__kyougen_five_ceremonial_plays",
@@ -121,7 +199,13 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"frames": { "anim": 145, "N": 117, "C": 119, "D": 119, "J": 119 },
+			"frames": {
+				"anim": 145,
+				"N": 117,
+				"C": 119,
+				"D": 119,
+				"J": 119
+			},
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
@@ -134,11 +218,28 @@
 				"Damage shape: 5 hits delivered between frames 92 and 92+4*6=116 from cast (hitmarks [92, 98, 104, 110, 116]), at the same snapshot frame (gcsim burstSnapshotDelay = 55). burstSnapshotDelay carries a TODO comment in gcsim (`Determine correct Frame`); flagged for reviewer."
 			],
 			"application": [
-				{ "frame": 92, "element": "anemo", "units": 1 },
-				{ "frame": 98, "element": "anemo" },
-				{ "frame": 104, "element": "anemo" },
-				{ "frame": 110, "element": "anemo", "units": 1 },
-				{ "frame": 116, "element": "anemo" }
+				{
+					"frame": 92,
+					"element": "anemo",
+					"units": 1
+				},
+				{
+					"frame": 98,
+					"element": "anemo"
+				},
+				{
+					"frame": 104,
+					"element": "anemo"
+				},
+				{
+					"frame": 110,
+					"element": "anemo",
+					"units": 1
+				},
+				{
+					"frame": 116,
+					"element": "anemo"
+				}
 			]
 		}
 	],
@@ -151,7 +252,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -159,10 +262,11 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Only the Cryo branch's +20% CR (20s) is modeled, as a manual toggle you enable when the comp absorbs Cryo. Not modeled: Pyro's +30% ATK, Electro's N/CA energy regen, Hydro's resource cap.",
+			"caveat": "Not modeled: the absorption buffs — Cryo's +20% CRIT Rate and Pyro's +30% ATK never appear.",
 			"_curatorNotes": [
-				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. gcsim source: absorbCheckA1 at skill cast, max 2 of 4 elements per cast. Per-element conditional authoring intentionally skipped (recipe.md § 3.5). Re-evaluate if a multi-element-absorption primitive ever lands.",
-				"[A7] Caveat trimmed for length: the non-Cryo absorption branches each last 20s (Pyro +30% ATK, Electro N/CA energy regen); up to 2 of 4 elemental branches absorb per skill cast and the tool can't predict which elements are contacted, which is why the Cryo branch is authored as a manual toggle. (Already captured in the stub-with-caveat note above.)"
+				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): the Cryo +20% CR branch carries a `manual` trigger because absorbed-element state is null-resolving in the planner. gcsim source: absorbCheckA1 at skill cast, max 2 of 4 elements per cast. Per-element conditional authoring intentionally skipped (recipe.md § 3.5). ↻ 2026-08-18: the phrase \"manual trigger preserved\" implied a holding pen that still surfaces SOMETHING. It does not — a `manual` effect is authored but UNREACHABLE. grep for `'manual'` across src/lib and src/routes returns exactly one line, the type declaration itself (types/ability.ts), so there is no collector, no bar, no chip, no notation token and no toggle anywhere in the app; 167 such effects across 69 characters are in the same state. The whole disclosure here is the ability `caveat`, which is why it must not be trimmed away. ⏭ Re-evaluate if a multi-element-absorption primitive ever lands — ⚠️ and note that the gauge round did NOT deliver one: there is still no `absorb` path in src/lib/sim, so an absorbing Anemo ability applies only Anemo, and the absorption caveats on this character remain fully true.",
+				"[A7] Caveat trimmed for length: the non-Cryo absorption branches each last 20s (Pyro +30% ATK, Electro N/CA energy regen); up to 2 of 4 elemental branches absorb per skill cast and the tool can't predict which elements are contacted, which is why the Cryo branch is authored with a `manual` trigger. ⚠️ 2026-08-18: \"toggle\" was wrong — there is nothing to toggle; see the corrected stub-with-caveat note above. (Otherwise already captured there.)",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the absorption buffs — Cryo's +20% CR, Pyro's +30% ATK, Electro's N/CA energy regen, Hydro's resource cap.\""
 			]
 		},
 		{
@@ -173,7 +277,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 35,
 					"stat": "atk",
 					"element": "anemo"
@@ -196,7 +302,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 25,
 					"stat": "atk"
 				}
@@ -249,7 +357,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 40,
 					"stat": "atk"
 				}

@@ -22,10 +22,42 @@
 				"plungeFrames.J=66: InitAbilSlice(66) default (AnimationLength), not explicitly overridden in gcsim lowPlungeFrames init — may not represent a valid cancel frame; reviewer should verify"
 			],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 28, "hit": 17, "N": 17, "C": 20 } },
-				{ "name": "N2", "frames": { "anim": 38, "hit": 18, "N": 26, "C": 18 } },
-				{ "name": "N3", "frames": { "anim": 46, "hit": 28, "N": 33, "C": 28 } },
-				{ "name": "N4", "frames": { "anim": 65, "hit": 28, "N": 51, "C": 54 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 28,
+						"hit": 17,
+						"N": 17,
+						"C": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 38,
+						"hit": 18,
+						"N": 26,
+						"C": 18
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 46,
+						"hit": 28,
+						"N": 33,
+						"C": 28
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 65,
+						"hit": 28,
+						"N": 51,
+						"C": 54
+					}
+				}
 			],
 			"chargeFrames": {
 				"anim": 71,
@@ -37,7 +69,15 @@
 				"J": 54,
 				"swap": 54
 			},
-			"plungeFrames": { "anim": 68, "N": 59, "C": 49, "E": 46, "Q": 46, "D": 46, "swap": 51 },
+			"plungeFrames": {
+				"anim": 68,
+				"N": 59,
+				"C": 49,
+				"E": 46,
+				"Q": 46,
+				"D": 46,
+				"swap": 51
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -56,7 +96,15 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 4 attacks using Wind Spirits, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of her Wind Spirits, Sucrose plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground.",
-			"lowPlungeFrames": { "anim": 66, "N": 56, "C": 47, "E": 45, "Q": 45, "D": 45, "swap": 49 }
+			"lowPlungeFrames": {
+				"anim": 66,
+				"N": 56,
+				"C": 47,
+				"E": 45,
+				"Q": 45,
+				"D": 45,
+				"swap": 49
+			}
 		},
 		{
 			"id": "sucrose__skill__astable_anemohypostasis_creation_6308",
@@ -64,7 +112,16 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 68, "N": 57, "C": 56, "E": 56, "Q": 57, "D": 11, "J": 11, "swap": 56 },
+			"frames": {
+				"anim": 68,
+				"N": 57,
+				"C": 56,
+				"E": 56,
+				"Q": 57,
+				"D": 11,
+				"J": 11,
+				"swap": 56
+			},
 			"cooldown": 15,
 			"cooldownStartDelay": 9,
 			"chargeModifiers": [
@@ -72,19 +129,28 @@
 					"source": "C1: Clustered Vacuum Field",
 					"type": "flat",
 					"value": 1,
-					"conditions": { "type": "constellation", "level": 1 }
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
 				}
 			],
 			"tags": ["grouping"],
-			"caveat": "With 2+ Hexerei in the party this grants a party-wide DMG bonus for 15s; it is shown on all damage, but in game it only applies to Normal, Charged, Plunging, Skill and Burst DMG.",
 			"effects": [],
 			"_curatorNotes": [
 				"C1 (Clustered Vacuum Field) grants +1 skill charge → 2 total at C1+ (gcsim sucrose.go: Cons>=1 → SetNumCharges(ActionSkill, 2)). Authored as a chargeModifiers flat +1. E key = 56 = skillFrames[ActionSkill] (E→E cancel), added to frames alongside.",
 				"gcsim skillFrames has ActionCharge=56; C is not in the required key set for skill frames per recipe — omitted",
-				"[Hexerei] Small Wind Spirit party DMG bonus is count-gated (gcsim internal/characters/sucrose/asc.go:113-141 hexOnSkill — IsHexerei && GetHexereiCount() >= 2), 0.0571428 DmgP to every Chars() entry for 15*60 frames. Authored in factionBonuses as allDmgBonus 5.71428 / 15s / target team. gcsim restricts the mod to AttackTagNormal/Extra/Plunge/ElementalArt/ElementalArtHold/ElementalBurst — swirl and other reaction DMG are excluded; allDmgBonus over-covers, hence the caveat."
+				"[Hexerei] Small Wind Spirit party DMG bonus is count-gated (gcsim internal/characters/sucrose/asc.go:113-141 hexOnSkill — IsHexerei && GetHexereiCount() >= 2), 0.0571428 DmgP to every Chars() entry for 15*60 frames. Authored in factionBonuses as allDmgBonus 5.71428 / 15s / target team. gcsim restricts the mod to AttackTagNormal/Extra/Plunge/ElementalArt/ElementalArtHold/ElementalBurst — swirl and other reaction DMG are excluded; allDmgBonus over-covers, hence the caveat.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Secret Rite team buff bar drawn from her E (factionBonuses onCast skill, allDmgBonus 5.71%, 15s, team) prints an ALL-DMG claim; gcsim restricts it to Normal/Charged/Plunge/Skill/Burst attack tags, so the bar over-claims by covering swirl and other reaction DMG. Same blessed shape as the 'shown as All Elemental RES' example. Category: visible-divergence."
 			],
 			"description": "Creates a small Wind Spirit that pulls opponents and objects towards its location, launches opponents within its AoE, and deals Anemo DMG.",
-			"application": [{ "frame": 42, "element": "anemo", "units": 1 }]
+			"application": [
+				{
+					"frame": 42,
+					"element": "anemo",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "sucrose__burst__forbidden_creation_isomer_75_type_ii",
@@ -92,7 +158,15 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 65, "N": 49, "C": 48, "E": 48, "D": 47, "J": 47, "swap": 47 },
+			"frames": {
+				"anim": 65,
+				"N": 49,
+				"C": 48,
+				"E": 48,
+				"D": 47,
+				"J": 47,
+				"swap": 47
+			},
 			"cooldown": 20,
 			"cooldownStartDelay": 18,
 			"tags": ["grouping"],
@@ -108,7 +182,10 @@
 							"source": "C2: Beth: Unbound Form",
 							"type": "flat",
 							"value": 2,
-							"conditions": { "type": "constellation", "level": 2 }
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							}
 						}
 					],
 					"effects": [
@@ -122,7 +199,10 @@
 								"icdGate": "none",
 								"tickCap": 3,
 								"tickCapScaling": {
-									"conditions": { "type": "constellation", "level": 2 },
+									"conditions": {
+										"type": "constellation",
+										"level": 2
+									},
 									"ticks": 4
 								}
 							},
@@ -134,15 +214,16 @@
 								"Cadence from the loop `for i := 137; i <= duration+5; i += 113` (duration = 360 at C0): 113f = 1.883s interval, first tick at cast-frame 137. Authored summon spawnsAt is also 137, so firstTickDelay = (137 - 137) / 60 = 0.",
 								"ICD: ICDTag ICDTagNone in burst.go, and frames-diff §5 measured 3/3 `none` — hence icdGate 'none' (every tick applies).",
 								"stat: atk — snapshot is c.Snapshot(&ai) with no stat substitution.",
-								"Tick COUNT: gcsim emits 3 ticks at C0 (137/250/363) and 4 at C2 (duration 480 → +476f). Our geometry counts `duration` from SPAWN while gcsim's status counts from CAST, so the authored 6s window (137→497f) yields one extra tick at each constellation tier (4 at C0, 5 at C2). Geometry left as authored per the round's rule; recorded here rather than 'fixed'.",
+								"Tick COUNT: gcsim emits 3 ticks at C0 (137/250/363) and 4 at C2 (duration 480 → +476f). ↻ 2026-08-18 — THIS IS NO LONGER A LIVE RESIDUAL. The geometry is still as authored (our `duration` counts from SPAWN, gcsim's status counts from CAST, so the 6s window 137→497f would derive one tick too many at each tier — 4 at C0, 5 at C2) but the derived count is no longer what fires: the `tickCap: 3` / `tickCapScaling.ticks: 4` below, added by the tick-cap round the same day, clamps it to exactly gcsim's 3 and 4. ⛔ Do NOT read this note as an outstanding over-count and ⛔ do not 'fix' it by nudging the authored 6s duration — a cap is a COUNT, deliberately not a time bound, and the duration is the kit-stated lifetime.",
 								"The Elemental Absorption ticks (burstAbsorb, aiAbs, same 113f cadence, absorbed element) remain unmodelled — see the ability-level curator note.",
-								"tickCap 3 / 4 at C2 (tick-cap round, 2026-08-18): gcsim burst.go `for i := 137; i <= duration+5; i += 113` with `duration := 360` (480 at C2) gives three ticks base and four at C2. Our duration-derived 4 was one long at C0 and correct at C2, so the C2 override exists to keep the constellation case from being clamped by the base cap."
+								"tickCap 3 / 4 at C2 (tick-cap round, 2026-08-18): gcsim burst.go `for i := 137; i <= duration+5; i += 113` with `duration := 360` (480 at C2) gives three ticks base and four at C2. Our duration-derived 4 was one long at C0 and correct at C2, so the C2 override exists to keep the constellation case from being clamped by the base cap.",
+								"⚠️ The cap reaches the PLANNER and the GAUGE only. `tickCapOf` (src/lib/sim/summons.ts:203) is read by `collectSummonTicks` and by aura.ts's tick chain — the summon-lane markers, the PNG and the applications. It is NOT published to the Team Builder: `DerivedCapability.summon` carries `tickInterval`/`firstTickDelay` and no count (src/lib/capabilities/deriveCapabilities.ts `summonHost`), and Compare re-derives its own marks from interval-until-uptime (team-builder/lib/compare.ts `tickOffsets`, :201-205). So Compare still draws FOUR marks for this summon at C0 where the timeline draws three. Known TB lag, same class as `cooldownStartsAtStanceEnd` and `chargeModifiers`; ⛔ don't reconcile it by removing the cap."
 							]
 						}
 					]
 				}
 			],
-			"caveat": "With 2+ Hexerei in the party this grants a DMG bonus for 20s, shown for the whole team; in game only Hexerei party members receive it.",
+			"caveat": "The Hexerei DMG bonus is shown for the whole team; in game only Hexerei party members receive it.",
 			"effects": [],
 			"_curatorNotes": [
 				"Elemental Absorption: burst can absorb one of Hydro/Pyro/Cryo/Electro (once per use), adding elemental DMG ticks alongside the anemo ticks (every ~113 frames). Not modeled. Reviewer should decide how to represent absorption DMG in the effects row.",
@@ -158,11 +239,12 @@
 			"id": "sucrose__passive__catalyst_conversion",
 			"name": "Catalyst Conversion",
 			"abilityType": "passive",
-			"caveat": "Shown for the whole team, but in game only party members whose element matches the swirled one receive it — Anemo characters never do. Swirls of different elements run their own independent 8s windows.",
+			"caveat": "Shown for the whole team, but in game only party members whose element matches the swirled one receive it — Anemo characters never do.",
 			"_curatorNotes": [
 				"2026-08-15: target was 'self', which was simply wrong — the buff never lands on Sucrose in game (gcsim asc.go a1() skips any char whose Base.Element != the swirled element, and she is Anemo). It also meant the effect was DROPPED before rendering: buffWindows' onReaction branch requires targetsTeamOrActive(), so the +50 EM drew nothing on the timeline at all. Now target:'teamExcludingSelf' with the element filter stated in the caveat — EffectTarget still has no element-filtered team type, so this over-renders (shows for every teammate) rather than under-rendering to nothing.",
 				"2026-08-15: added 'stellarSwirl' to the reaction OR-array — current Fandom talent text reads 'triggers a Swirl or Stellar Swirl reaction' (gcsim predates this; its a1() subscribes to the four base swirl events only). Inert for now: computeReactionsForCast does not emit stellarSwirl until its 7.0 mechanics are confirmed (see the note at notationParser.ts computeReactionsForCast). Authored anyway so the key is in place when emission lands.",
-				"2026-05-14 (Shape A reaction-key migration): trigger updated from broad `'swirl'` to an OR-array of the element-specific swirl keys."
+				"2026-05-14 (Shape A reaction-key migration): trigger updated from broad `'swirl'` to an OR-array of the element-specific swirl keys.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Shown for the whole team, but in game only party members whose element matches the swirled one receive it — Anemo characters never do. Swirls of different elements run their own independent 8s windows.\""
 			],
 			"effects": [
 				{
@@ -196,12 +278,19 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "onHit", "abilityType": ["skill", "burst"] },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["skill", "burst"]
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": { "type": "scaling", "stat": "em", "ratio": 20 },
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 20
+					},
 					"snapshottable": true
 				}
 			],
@@ -249,18 +338,23 @@
 			"name": "Chaotic Entropy",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "Doesn't fire on its own — toggle it on when the burst absorbs an element. Only the absorbed element benefits, so the shown team-wide +20% is an upper bound for teammates dealing other damage; Hexerei party members get a further 8.6%.",
+			"caveat": "Not modeled: the party-wide 20% DMG bonus for the absorbed element, or the further 8.6% Hexerei party members get.",
 			"_curatorNotes": [
 				"[Hexerei] Permanent patch, NOT count-gated: gcsim internal/characters/sucrose/cons.go:47-59 c6() adds .20 elemental DmgP to every party member and +0.0857142 more when that member's own IsHexerei is set — no GetHexereiCount() check. Per-receiver faction routing is not expressible (EffectTarget has no faction subset and the existing effect is target:'team'), so the extra 8.57142 is stated in the caveat rather than modeled; the authored value:20 is unchanged.",
-				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. The duration is intentionally left absent — the canonical burst-window-bound visualization is implicit; reviewer toggling the buff during a Sucrose Q window is the supported pattern. gcsim source: c6Absorb on every absorption tick, 6s base / 8s at C2+ (would need duration:6 + a durationModifier for C2 if ever upgraded to a deterministic trigger).",
+				"Stub-with-caveat (decided 2026-05-14, onAbsorption category): manual trigger preserved because absorbed-element state is null-resolving in the planner. The duration is intentionally left absent. gcsim source: c6Absorb on every absorption tick, 6s base / 8s at C2+ (would need duration:6 + a durationModifier for C2 if ever upgraded to a deterministic trigger).",
+				"↻ 2026-08-18: the note above used to end \"the canonical burst-window-bound visualization is implicit; reviewer toggling the buff during a Sucrose Q window is the supported pattern\". THERE IS NO TOGGLE AND THERE NEVER WAS. `trigger: 'manual'` has exactly one occurrence in src/ — the type declaration itself (src/lib/types/ability.ts:649). Nothing dispatches it, nothing renders it, there is no UI that turns it on. Corpus-wide that is 167 manual effects over 69 characters reaching no planner surface (rubric N1/D3). ⛔ Never rewrite a manual-trigger caveat into 'add it manually' — 'Not modeled' is the accurate phrasing, and this ability's caveat already says exactly that.",
+				"⚠️ The effect is NOT entirely invisible, and that is worth knowing before anyone deletes it as dead weight: `deriveCapabilities` filters by effect TYPE, not by trigger, so this buff still produces a Team Builder capability claim — verified 2026-08-18, `deriveCharacterCapabilities('sucrose')` emits {kind:'buff', detail:'allDmgBonus', target:'team', minConstellation:6, source: constellation Chaotic Entropy}. The TB says Sucrose is a team allDmgBonus buffer at C6; the planner draws nothing.",
+				"⏭ WORK ITEM if this is ever upgraded: the blocker named above ('absorbed-element state is null-resolving') is still real — there is no absorption in the sim at all (rubric N13; grep for `absorb` over src/lib finds no path, and gauge.ts's anemo case emits `swirl` with an `of` key without re-applying the swirled element). What HAS changed since 2026-05-14 is that the surrounding machinery would carry it: an `onCast` buff on this constellation entry would draw, and constellation gating at collection (effectCollection.ts `effectSourcesAtConstellation`) now keeps a C6 bar and its caveat out of a C0 rotation for free. The missing primitive is an absorbed-element resolution, not a trigger or a gate.",
 				"[A7] C6's +20% DMG bonus fires per burst cast when the burst absorbs one of Pyro/Hydro/Cryo/Electro; the timeline can't resolve which element absorbs, so it is authored as a team-wide manual-trigger window rather than a per-element buff.",
-				"[A7] In game the bonus routes only to the absorbed element (e.g. a Pyro DMG bonus), so the rendered team-wide value is an upper bound for teammates dealing off-element damage."
+				"[A7] In game the bonus routes only to the absorbed element (e.g. a Pyro DMG bonus), so the rendered team-wide value is an upper bound for teammates dealing off-element damage. ↻ 2026-08-18: 'the rendered team-wide value' is stale for the same reason as the toggle above — the manual trigger renders NOTHING on the timeline, so there is no over-broad bar for a reader to mistake. The routing claim itself stays true and is the reason the ability caveat lists the bonus as not modeled rather than describing a bar."
 			],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",
@@ -280,8 +374,15 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onCast", "ability": "skill" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"target": "team",
@@ -292,8 +393,15 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 20,
 					"durationType": "refresh",
 					"target": "team",

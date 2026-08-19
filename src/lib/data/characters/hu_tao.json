@@ -194,13 +194,13 @@
 				"Q": 58,
 				"swap": 61
 			},
-			"caveat": "Charged-attack cancel timing into dash or jump varies with the preceding normal; the timing shown is for a standalone charged attack.",
 			"description": "Hu Tao's normal-attack combo while in the Paramita Papilio stance. The 6-hit string and base frame timings match the standard combo, but all hits are converted to Pyro DMG and benefit from Paramita Papilio's flat ATK bonus.",
 			"_curatorNotes": [
 				"Frame deltas vs base normal: N5 N-cancel 36 (vs 37); N6 swap 27 (vs 23). PP chargeFrames hitmark = 3 (vs 19 base).",
 				"Plunge frames sourced from gcsim's lowPlungeFramesB (Paramita variant). gcsim does not set ActionDash or ActionJump on lowPlungeFramesB — D and J omitted per recipe rule. Plunges deal Pyro DMG with IgnoreInfusion in gcsim.",
 				"[A7] Charged-attack dash/jump cancel windows are position-dependent: N1→D=1, N2→D=4, N3–N5→D=2–3 frames; the authored chargeFrames reflect a standalone CA cast.",
-				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Nominally the charged-attack block's cancel edge — but the authored D/J values are 3 frames against an in-game 1–4, so the divergence is 1–3 frames (~0.02–0.05s). At default zoom that is well under a pixel and at ZOOM_MAX it is a few px on a block nobody reads for D/J cancels. No player writing `N1 C` ever sees this. It also sits on an ability that fires the caveat for every Paramita cast (there is no per-variant caveat channel), so it pays a permanent line in a 262px column for an imperceptible edge. Category: approximation-disclosure."
 			],
 			"lowPlungeFrames": {
 				"anim": 61,
@@ -249,11 +249,11 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Not modeled: the 30% current-HP drain on cast.",
 			"_curatorNotes": [
 				"PP flat-ATK conversion: ratio 5.957 reflects ppatk[8] (talent 9 baseline). Per-talent table from gcsim hutao_gen.go: TL1–15 = 3.841 / 4.071 / 4.301 / 4.600 / 4.830 / 5.060 / 5.359 / 5.658 / 5.957 / 6.256 / 6.555 / 6.854 / 7.153 / 7.452 / 7.751.",
 				"Buff is capped at 400% of Hu Tao's BaseATK (gcsim: maxBonus = BaseATK * 4). Schema's scaling.cap is a fixed number; the cap here is caster-relative and not authored. Reviewer to model the cap once schema supports relative caps.",
-				"snapshottable: false chosen to match the Sanguine Rouge passive convention in this file. The buff value is computed once at cast and cached, but the field semantics in this codebase are 'does the buff freeze onto outgoing attacks at attack time' — verify this is the right reading for PP."
+				"snapshottable: false chosen to match the Sanguine Rouge passive convention in this file. The buff value is computed once at cast and cached, but the field semantics in this codebase are 'does the buff freeze onto outgoing attacks at attack time' — verify this is the right reading for PP.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The caveat talks about Hu Tao's HP, and there is no HP anywhere in the sim (N11: `ConditionContext` has six fields and none is HP) and no HP readout on any timeline surface. Nothing on screen is wrong, shorter, longer or missing because the drain is unmodelled — the E bar, its stance span and its ghost tail are all unaffected. Category: invisible-omission."
 			],
 			"behavior": "stance",
 			"terminatesOnSwap": true,
@@ -278,7 +278,6 @@
 			},
 			"tags": ["heal"],
 			"energyCost": 60,
-			"caveat": "DMG and heal are boosted at ≤50% HP (not modeled).",
 			"effects": [
 				{
 					"type": "heal",
@@ -295,7 +294,8 @@
 				"Heal scaling 7.875 = regen[8] (talent 9 baseline). Per-talent table: TL1–15 = 6.2625 / 6.6375 / 7.0125 / 7.500 / 7.875 / 8.250 / 8.7375 / 9.225 / 9.7125 / 10.200 / 10.6875 / 11.175 / 11.6625 / 12.150 / 12.6375.",
 				"Heal procs once per enemy hit by the burst, capped at 5 procs per cast (gcsim burstHealCount). Schema has no proc-cap-per-cast field; reviewer may add procCooldown or similar if needed.",
 				"Low-HP variant (≤50% HP at cast time): mult swaps to burstLow[talent] and heal swaps to regenLow[talent]. regenLow[8] = 10.5%. Not modeled as a separate variant; reviewer to decide whether a state-conditioned variant is warranted.",
-				"Spirit Soother does NOT end Paramita Papilio (gcsim onExitField only fires on swap; burst.go has no DeleteStatMod for paramita). PP and Q can run concurrently."
+				"Spirit Soother does NOT end Paramita Papilio (gcsim onExitField only fires on swap; burst.go has no DeleteStatMod for paramita). PP and Q can run concurrently.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Both halves name magnitudes the tool never prints: DMG is constitutionally out of scope (no damage math anywhere in src/lib/sim), and a `heal` effect draws no bar, no row and no number — Hu Tao's burst heal reaches no surface at any HP. The Q bar is identical above and below 50% HP, so no reader can be confused by the omission. Category: invisible-omission."
 			],
 			"behavior": "instant",
 			"application": [
@@ -403,9 +403,9 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "The +12% CRIT Rate buff for her other party members fires when an enemy marked by her Blood Blossom dies. Enemy death isn't simulated, so it's a manual window — toggle it on when it applies.",
 			"_curatorNotes": [
-				"Stub-with-caveat (decided 2026-05-14, onTargetDied category): manual trigger preserved because enemy-death state is null-resolving in the planner (no enemy HP/death simulation). gcsim event is OnTargetDied filtered to enemies carrying Hu Tao's bbDebuff status. Re-evaluate if a death-tracking primitive ever lands. Duration / target / value are correct."
+				"Stub-with-caveat (decided 2026-05-14, onTargetDied category): manual trigger preserved because enemy-death state is null-resolving in the planner (no enemy HP/death simulation). gcsim event is OnTargetDied filtered to enemies carrying Hu Tao's bbDebuff status. Re-evaluate if a death-tracking primitive ever lands. Duration / target / value are correct.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The missing team CRIT Rate bar. The effect IS authored (target `teamExcludingSelf`, 15s, +12% critRate) on a `manual` trigger, which per N1 reaches no planner surface at all — no bar, no chip, no toggle. A C4 Hu Tao owner looking at the team buff rows for a 15s crit bar finds a blank, and the second sentence tells them why so they stop hunting. Correctly gated: it only shows to readers at C4+. Category: expected-but-absent."
 			]
 		},
 		{

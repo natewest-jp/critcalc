@@ -647,6 +647,47 @@ function lintAbility(
 		}
 	}
 
+	// (E.28) ⛔ A CAVEAT MAY ONLY LIVE ON AN ABILITY-SHAPED HOST (2026-08-19).
+	//
+	// ⚓ The render surface is ability-shaped BY CONSTRUCTION: `collectSlotCaveats`
+	// (src/lib/timeline/slotCaveats.ts) maps `effectSourcesAtConstellation(...)` and
+	// emits `{ name, caveat, kind }` — the Notes panel prints the ability's NAME and
+	// KIND CHIP above each entry. An Effect has neither, so there is nothing to label
+	// it with; "teach slotCaveats to descend" is a new design question, not a fix.
+	//
+	// ⚠️⚠️ This was a SILENT DATA-LOSS BUG, not a tidiness rule. 20 effect-level
+	// caveats across 8 characters rendered to nobody, and 7 of them sat on abilities
+	// with no entry-level caveat at all — so those abilities warned the player about
+	// nothing. `scripts/caveat-lint.mjs` never scanned them either (it walks
+	// abilities/passives/constellations at entry level, and factionBonuses not at
+	// all), which is exactly why they drifted for a month.
+	//
+	// ⚠️ NO KEY-NAME CHECK CAN CATCH THIS CLASS. `caveat` is legal on AbilityCommon
+	// and illegal here — the defect is POSITIONAL. `orphanedSchema.test.ts` stayed
+	// green over all 20 because it asks "is this key read anywhere", and it is. The
+	// general form of this guard is corpus-wide positional validation against the TS
+	// types (generated JSON Schema, `additionalProperties: false`); this rule is the
+	// cheap, precise instance of it. See docs/curation/caveat-ruthless-pass-2026-08-19.md.
+	for (const [label, list] of [
+		['effects', (a as { effects?: unknown[] }).effects],
+		[
+			'summons[].effects',
+			((a as { summons?: { effects?: unknown[] }[] }).summons ?? []).flatMap((s) => s.effects ?? [])
+		]
+	] as const) {
+		for (const fx of list ?? []) {
+			if (fx && typeof fx === 'object' && typeof (fx as { caveat?: unknown }).caveat === 'string') {
+				push(
+					'strict',
+					'caveat-below-ability',
+					`caveat on ${label} reaches NO reader — only an ability/passive/constellation ENTRY renders. ` +
+						`Move it up to this entry's own caveat, or drop it.`,
+					a.id
+				);
+			}
+		}
+	}
+
 	// (E.25) description doesn't contain implementation phrases
 	const desc = (a as { description?: unknown }).description;
 	if (typeof desc === 'string') {

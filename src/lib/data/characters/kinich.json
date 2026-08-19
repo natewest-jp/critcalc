@@ -16,9 +16,30 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 47, "N": 30, "swap": 47 } },
-				{ "name": "N2", "frames": { "anim": 48, "N": 41, "swap": 48 } },
-				{ "name": "N3", "frames": { "anim": 79, "N": 75, "swap": 79 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 47,
+						"N": 30,
+						"swap": 47
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 48,
+						"N": 41,
+						"swap": 48
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 79,
+						"N": 75,
+						"swap": 79
+					}
+				}
 			],
 			"_curatorNotes": [
 				"Base normals (out-of-Nightsoul) are physical claymore strikes with hitmarks 21/22/44. Inside Nightsoul Blessing, the N input routes to Loop Shot (separate skill ability gated by state: \"nightsoulBlessing\").",
@@ -50,8 +71,19 @@
 			"input": ["N"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": { "type": "state", "state": "nightsoulBlessing" },
-			"frames": { "anim": 53, "N": 40, "E": 33, "Q": 35, "D": 26, "J": 32, "swap": 53 },
+			"conditions": {
+				"type": "state",
+				"state": "nightsoulBlessing"
+			},
+			"frames": {
+				"anim": 53,
+				"N": 40,
+				"E": 33,
+				"Q": 35,
+				"D": 26,
+				"J": 32,
+				"swap": 53
+			},
 			"cooldown": 0,
 			"noICD": true,
 			"tags": [],
@@ -71,7 +103,14 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "stance",
-			"frames": { "anim": 42, "N": 29, "Q": 27, "D": 42, "J": 42, "swap": 42 },
+			"frames": {
+				"anim": 42,
+				"N": 29,
+				"Q": 27,
+				"D": 42,
+				"J": 42,
+				"swap": 42
+			},
 			"cooldown": 18,
 			"cooldownStartDelay": 9,
 			"duration": 10,
@@ -79,7 +118,6 @@
 			"opensState": "nightsoulBlessing",
 			"tags": [],
 			"effects": [],
-			"caveat": "Not modeled: the Hold grapple-aim variant (positional, out of scope). Charged attacks are disabled during the 10s Nightsoul Blessing window, but the timeline will still show one if you add it.",
 			"_curatorNotes": [
 				"behavior: \"stance\" + opensState: \"nightsoulBlessing\" — Mizuki/Xilonen-shape. Opens both inStance and nightsoulBlessing for the 10s window. The in-stance N (Loop Shot) and in-stance E (Scalespiker Cannon) gate on nightsoulBlessing for crispness.",
 				"terminatesOnSwap: true — gcsim onExitField subscribes OnCharacterSwap and calls cancelNightsoul() when blessing is active.",
@@ -87,7 +125,8 @@
 				"cooldownStartDelay: 9 — gcsim schedules SetCD inside a Task at skillStart=9 frames after cast. Equivalent to SetCDWithDelay(skill, 18s, 9f).",
 				"Hold variant: gcsim adds +hold frames before Nightsoul entry (cap 300f / 5s); cooldownStartDelay grows accordingly. Not authored — tap form is the standard rotation case.",
 				"While already in Nightsoul, pressing E re-routes to Scalespiker Cannon (separate skill entry gated by state: \"nightsoulBlessing\"). The base entry above is the cold-open press (out-of-Nightsoul).",
-				"Particle generation: 5 Dendro particles on Scalespiker Cannon hit (gcsim particleCB), not on the cold-open E. Energy generation isn't modelled at the ability level."
+				"Particle generation: 5 Dendro particles on Scalespiker Cannon hit (gcsim particleCB), not on the cold-open E. Energy generation isn't modelled at the ability level.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Kept half: a charged-attack block drawn inside the Nightsoul's Blessing window, which the game refuses outright. Cut half: \"the Hold form, which aims the grapple\" — aiming is a positional mechanic with no timeline representation, and there is no per-variant caveat channel anyway (N18); an `hE` simply resolves to the tap, which the reader cannot see going wrong from this sentence. Category: visible-divergence."
 			],
 			"description": "Kinich uses his big-game hunting skills to either move swiftly or attack his opponent.\nWhen there is an opponent or object that can be attacked nearby, he will attach a grappling hook to the target and enter Nightsoul's Blessing with 0 Nightsoul points. If neither is nearby, he fires a grappling hook forward and swings in mid-air, and this Skill's CD is decreased by 60%.\nThis skill can be Held to release. When it is Held, Kinich can aim the grappling hook.\n\nNightsoul's Blessing: Kinich\nKinich's Nightsoul's Blessing lasts 10s and generates 2 Nightsoul points every second.\nIn this state, Kinich will hook onto a nearby opponent and perform a variable attack:\n·When using a Normal Attack, Kinich will fire Loop Shots as he loops around the grappled target based on his current movement direction, dealing Nightsoul-aligned Dendro DMG and generating 3 Nightsoul points. Loop Shot DMG is considered Elemental Skill DMG.\n·When Nightsoul points are at max, he can use the Elemental Skill \"Scalespiker Cannon\": Consume all Nightsoul points to deal Nightsoul-aligned Dendro DMG. When \"Scalespiker Cannon\" is Held, Kinich can aim this shot. After firing the Cannon, Kinich will try to grapple to its target.\nWhile in Nightsoul's Blessing, after grappling an opponent or firing \"Scalespiker Cannon,\" a Blind Spot will be generated next to the opponent. When Kinich enters this Blind Spot, it will disappear and he will generate 4 Nightsoul points.\nIf the grapple connection should snap due to exceeding the maximum distance or some other reason, using a Normal Attack will establish a new connection with a nearby opponent before performing Loop Shots.",
 			"application": []
@@ -98,8 +137,18 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": { "type": "state", "state": "nightsoulBlessing" },
-			"frames": { "anim": 100, "N": 59, "Q": 59, "D": 67, "J": 67, "swap": 100 },
+			"conditions": {
+				"type": "state",
+				"state": "nightsoulBlessing"
+			},
+			"frames": {
+				"anim": 100,
+				"N": 59,
+				"Q": 59,
+				"D": 67,
+				"J": 67,
+				"swap": 100
+			},
 			"cooldown": 0,
 			"tags": [],
 			"description": "While in Nightsoul Blessing with maximum Nightsoul points (20), pressing E consumes all points to fire Scalespiker Cannon — a single Dendro hit landing 12 frames after release. The cannon snapshot is taken before points drain (gcsim ScalespikerCannon flow). Frames here are the Tap variant (release at frame 35); Hold release shifts to frame 17 with up to 180 extra hold frames.",
@@ -117,7 +166,12 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 126, "N": 125, "D": 124, "swap": 126 },
+			"frames": {
+				"anim": 126,
+				"N": 125,
+				"D": 124,
+				"swap": 126
+			},
 			"cooldown": 18,
 			"cooldownStartDelay": 1,
 			"energyCost": 70,
@@ -132,7 +186,11 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 2.45, "firstTickDelay": 1.53 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2.45,
+								"firstTickDelay": 1.53
+							},
 							"scaling": 217.32,
 							"stat": "atk",
 							"element": "dendro"
@@ -149,12 +207,34 @@
 			],
 			"description": "Unleashes the power of the Almighty Dragonlord, K'uhul Ajaw (on a limited, conditional, restricted, contractual, partial, temporary basis), dealing Nightsoul-aligned AoE Dendro DMG. Ajaw will unleash his Dragon Breath at intervals, dealing Nightsoul-aligned AoE Dendro DMG.\nIf Kinich is in Nightsoul's Blessing when this is used, this Blessing's duration is extended by 1.7s.",
 			"application": [
-				{ "frame": 161, "element": "dendro", "units": 1 },
-				{ "frame": 253, "element": "dendro" },
-				{ "frame": 403, "element": "dendro", "units": 1 },
-				{ "frame": 553, "element": "dendro", "units": 1 },
-				{ "frame": 703, "element": "dendro", "units": 1 },
-				{ "frame": 848, "element": "dendro" }
+				{
+					"frame": 161,
+					"element": "dendro",
+					"units": 1
+				},
+				{
+					"frame": 253,
+					"element": "dendro"
+				},
+				{
+					"frame": 403,
+					"element": "dendro",
+					"units": 1
+				},
+				{
+					"frame": 553,
+					"element": "dendro",
+					"units": 1
+				},
+				{
+					"frame": 703,
+					"element": "dendro",
+					"units": 1
+				},
+				{
+					"frame": 848,
+					"element": "dendro"
+				}
 			]
 		}
 	],
@@ -176,22 +256,31 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 1,
 					"durationType": "fixed",
-					"conditions": { "type": "stacks", "key": "huntersExperience", "min": 1 },
+					"conditions": {
+						"type": "stacks",
+						"key": "huntersExperience",
+						"min": 1
+					},
 					"source": "character",
 					"stat": "skillFlatDmg",
 					"value": {
 						"type": "perStack",
 						"key": "huntersExperience",
-						"per": { "stat": "atk", "ratio": 320 },
+						"per": {
+							"stat": "atk",
+							"ratio": 320
+						},
 						"maxStacks": 2
 					},
 					"snapshottable": false
 				}
 			],
-			"caveat": "Stacks aren't tracked — assert them with `{huntersExperience:1}` (or 2) right before the Cannon press. Asserted before any other skill press, the buff bar shows on that cast instead of the Cannon.",
 			"_curatorNotes": [
 				"Hunter's Experience: nearby Nightsoul Burst → +1 stack (max 2, 15s). Each stack consumed on Scalespiker Cannon adds 320% ATK as FlatDmg to the Cannon hit (max-stack total = 640% ATK FlatDmg).",
 				"Migrated from the deferred-stacks placeholder to the perStack-scaling BuffValue primitive (2026-05-08). value: perStack with per: { stat: atk, ratio: 320 }, maxStacks: 2. Effective resolved value at render time = effective_stacks × 320 (e.g. 2 stacks → ~640% atk).",
@@ -199,7 +288,8 @@
 				"Stack acquisition (teammate Nightsoul Burst trigger) is a separate gap — schema has no team-Nightsoul-Burst event primitive. Stacks must be user-asserted; the planner doesn't infer them from rotation.",
 				"[A7] Hunter's Experience stacks come from a nearby party member's Nightsoul Burst (max 2); acquisition isn't inferred so they must be user-asserted.",
 				"[A7] Each stack consumed on Scalespiker Cannon adds 320% ATK as FlatDmg to the Cannon hit (max +640% ATK at 2 stacks) — damage math kept out of the user-facing caveat.",
-				"[A7] The 1s buff window is a placeholder; the in-game mechanic is a single-hit FlatDmg snapshot on the Cannon hit, not a duration buff."
+				"[A7] The 1s buff window is a placeholder; the in-game mechanic is a single-hit FlatDmg snapshot on the Cannon hit, not a duration buff.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Two pixels, both named. (1) With no assertion the Hunter's Experience buff bar does not draw at all — the reader gets a blank where a buff belongs. (2) With an assertion it draws on whichever skill press comes next, so it lands on a Loop Shot or the cold-open E instead of the Cannon (the trigger is bare `onCast skill`; the schema has no per-ability scoping inside `skill`). The second sentence is exactly the misplacement a reader would otherwise puzzle over. Category: visible-divergence."
 			],
 			"description": "After a nearby party member triggers a Nightsoul Burst, Kinich will gain 1 stack of Hunter's Experience that lasts 15s. Max 2 stacks. When Kinich uses Canopy Hunter: Riding High's Scalespiker Cannon, all stacks of Hunter's Experience will be consumed, with each stack consumed increasing the DMG dealt by this Cannon shot by 320% of Kinich's ATK."
 		}
@@ -224,9 +314,15 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"duration": 6,
-					"conditions": { "type": "constellation", "level": 2 },
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"element": "dendro",
 					"value": -30
 				}
@@ -253,8 +349,13 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 4 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
 					"source": "character",
 					"stat": "burstDmgBonus",
 					"value": 70,
@@ -282,8 +383,14 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
-					"conditions": { "type": "constellation", "level": 6 },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"scaling": 700,
 					"stat": "atk",
 					"element": "dendro"

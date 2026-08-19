@@ -12,8 +12,35 @@ A caveat repairs trust where the rotation-planner timeline **visibly diverges
 from in-game reality** or **silently omits something decision-relevant**.
 Nothing else.
 
-**The test:** _would a player who already knows this character be misled by the
-timeline without this note?_ If no, the caveat should not exist.
+⚓⚓ **THE TEST — NAME THE PIXEL** _(Nate, 2026-08-18; this TIGHTENS the older
+"would a player be misled" test, which was too permissive and let the column
+grow to 57% padding)_:
+
+> _"I only want caveats when the player might be confused or not understand
+> something on the screen — they know their character well and they wonder why
+> they see something different from what they expected, or genuinely when we
+> have to approximate something."_
+
+For every caveat, answer: **what does the player SEE that is wrong, approximate,
+or conspicuously missing?** You must be able to point at a specific rendered
+thing — a bar, its length, a marker, a tick, a printed value. **If you cannot
+name the pixel, the caveat does not exist.** Not "it's true", not "a
+completionist would want it": an entry that repairs no on-screen confusion is
+noise in a 262px column and it dilutes the ones that matter.
+
+⛔ **A general fact about the GAME is never a caveat**, even when true and
+unmodelled. Elemental shields absorbing their own element at 250%, how ICD
+works, how energy works — players know these, and the tool claims nothing about
+them on screen. (The 2026-08-19 pass cut this at six sites.)
+
+⚠️ **An under-claim is an omission, not a divergence.** If everything shown is
+correct and there is merely less of it, no pixel is wrong.
+
+⚠️ **"No window" means "no row", so an unmodelled buff leaves NO blank.**
+`projectCharReceivedBuffRows` builds rows FROM windows — an effect that emits
+none creates no row, so the timeline is merely quieter, not visibly holed.
+⛔ Do not justify a caveat by "the player would notice the gap" unless the
+missing thing has drawn neighbours to be measured against.
 
 Corollaries:
 
@@ -24,7 +51,22 @@ Corollaries:
 
 ## Where caveats render
 
-One surface: the planner NOTES panel — a narrow (240px) scrolling column that
+⛔⛔ **A CAVEAT MAY ONLY LIVE ON AN ABILITY-SHAPED HOST** — an ability, passive or
+constellation ENTRY. Never on an Effect, a summon's effect, or a factionBonus
+effect. **Enforced by characterLint E.28** (strict).
+
+⚓ The surface is ability-shaped by construction: `collectSlotCaveats` emits
+`{ name, caveat, kind }` and the panel prints the ability's NAME and KIND CHIP
+above each entry. An Effect has neither, so there is nothing to label it with.
+
+⚠️⚠️ This was silent DATA LOSS, not tidiness: 20 effect-level caveats rendered to
+nobody, and 7 sat on abilities with no entry-level caveat at all — those
+abilities warned the player about nothing. `caveat-lint.mjs` never scanned them
+either. ⚠️ No key-name check can catch this class — `caveat` is legal on
+AbilityCommon and illegal there, so the defect is POSITIONAL and
+`orphanedSchema.test.ts` stayed green over all 20.
+
+One surface: the planner NOTES panel — a narrow (262px) scrolling column that
 **already shows the character's name, the ability's kind chip (Skill / Burst /
 Normal / Passive / C1–C6), and the ability's name** directly above each caveat.
 Repeating any of those in prose is pure waste.
@@ -120,10 +162,22 @@ path is actually reachable — read the ability's `_curatorNotes` residuals
 (e.g. a variant can exist yet be blocked by a shared charge queue). A
 modeled-but-unreachable mechanic is a divergence, not working behavior.
 
-**Authored manual triggers are not "Not modeled"** _(wave-3 lesson)_: if the
-effect exists with a manual trigger, the honest phrasing is "doesn't fire on
-its own — add it manually" (it IS on the timeline once toggled). Reserve
-"Not modeled" for mechanics with no authored effect at all.
+⛔⛔ **STRUCK 2026-08-18 — the wave-3 "add it manually" lesson was FALSE and
+actively harmful.** It read: _"if the effect exists with a manual trigger, the
+honest phrasing is 'doesn't fire on its own — add it manually' (it IS on the
+timeline once toggled)."_ **There is no toggle and there never was one.**
+Verified by grep: `'manual'` occurs exactly ONCE in the whole codebase, at its
+own type declaration (`src/lib/types/ability.ts:649`). 167 manual-trigger
+effects across 69 characters reach **no surface whatsoever**. The lesson had
+produced 15 live caveats instructing players to use a control that does not
+exist; all 15 were rewritten in the 2026-08-18 refresh.
+
+⚓ **A manual-trigger effect is genuinely "Not modeled".** Authored is not
+rendered — never soften it, and never delete such a caveat on the grounds that
+the effect exists in the data.
+
+⚠️ The `{key:N}` notation token is a **stack-assert** that satisfies a `stacks`
+CONDITION. It cannot fire a `manual` TRIGGER. ⛔ Never rewrite one into the other.
 
 **Deletes need a who-renders check** _(wave-4 lesson)_: an effect being
 authored and reachable is not enough — ask who actually gets a visible
@@ -131,62 +185,26 @@ window. Target-resolution approximations (e.g. `['self','active']` collapsing
 onto the on-field holder) can silently drop a teammate's buff bar; that is a
 user-visible omission deserving a caveat, not a curator residual.
 
-## Capability rubric (for classifying implementDelete vs rewrite)
+## Capability rubric — MOVED
 
-### CAN model (wired end-to-end — stale caveats about these are implementDelete candidates)
+⛔ **The CAN / CANNOT lists that used to live here are gone.** They were written
+2026-07-19/20 and by 2026-08-18 were stale in **14 named places** — including a
+flat "no aura decay, no ICD, cast-only reactions" that three engine rounds had
+falsified, and a `stellarConduct` FROZEN entry that had shipped. Judging caveats
+against them produced wrong verdicts, which is what forced the 2026-08-18 refresh.
 
-- Cooldowns: `cooldown`, `cooldownModifiers`, base-ability `cooldownStartDelay`,
-  `charges`/`chargeModifiers` with per-variant E-charge queues, variant
-  `bypassesCooldown`, `cdReset` effects (character unconditional; weapon via
-  `procCooldown` — Sacrificial), ghost-CD tails.
-- Conditions that resolve definitively: `state`, `not/all/any`, `ascension`,
-  `constellation`, `teamFaction`, `teamElementCount`, `activeCharFaction`,
-  `weaponType`, `chainStage`, `stacks`.
-- Conditions that resolve _optimistically by design_ (render assumed-true +
-  caveat): `enemyHpBelow/Above`, `recipientHpBelow`, `enemyAffectedBy`,
-  `selfHpBelow/Above`. Caveats explaining these assumptions are **legitimate →
-  keep/rewrite, never implementDelete**.
-- Trigger dispatch: `onCast`, `onHit` (per-swing, with `damageType`/`filter`/
-  `source`), `onReaction`, `afterDuration`, `onTeamNightsoulBurst`, `passive`,
-  weapon `onSwapIn/Out`, artifact-4pc `onCast`/`onReaction`, `summonTick`.
-- Stacks: `gainStacks` on onCast/onHit/onReaction (`max`, decay shapes `drain`/
-  `lifetime`/`sourceLifetime`), `consumeStacks` **on onCast only**, per-effect
-  `procCooldown` ICDs, self-vs-team scoping.
-- Buff windows: refresh-merge, active-target slicing, all `BuffValue` kinds
-  (perStack, perTeamCount, scaling, ramping/decaying, canonicalAssumption
-  headline), `resShred` debuff windows.
-- Stances/states: `behavior:'stance'`, `opensState`, `terminatesOnSwap`,
-  `durationExtensions` (onCast + summon synthetic-reaction path), transient
-  states (`opensTransientState`, `actionOpensState`, `consumesState`).
-- Per-swing action events (N5 → 5 events, infusion resolution, `plungeVariants`
-  auto-selection, `chargeHits`), summons with ticks/`terminatesOn`, shields
-  (scheduled expiry + `shieldEnd`), nightsoulBurst lane.
+👉 **The current rubric is `docs/curation/engine-capability-rubric.md`** — CAN /
+**PARTIAL** / CANNOT / FROZEN, every claim carrying `file:line` evidence, plus a
+DELTAS section and a TRAPS section naming where an auditor is most likely to
+wrongly delete.
 
-### CANNOT model (real gaps — caveats about these are keep/rewrite)
+⚠️⚠️ **RE-DERIVE IT AT THE START OF EVERY CAVEAT PASS.** It is a snapshot of a
+moving engine, not a contract. The whole reason this section was deleted is that a
+rubric living inside a style guide reads as permanent when it is not.
 
-- `cooldownReduce` effect — **schema-only, parser deferred** (Arlecchino C4,
-  Gorou C2, Navia C1). The canonical implementDelete trap.
-- No `cooldownStartDelay` on Hold/tap _variants_ (base skill/burst only).
-- Multi-hit swings collapse to one hit (no `hitCount`) — hit-counting effects
-  undercount.
-- No `maxProcs` / per-window proc caps (Escoffier C6 cap).
-- `consumeStacks` on onHit/onReaction; `durationExtensions` on onHit/onReaction
-  (outside the summon path); summon non-tick effect triggers.
-- Unconsumed triggers: `onEnergy`, `onHPChange/Decrease/Increase`, `onHeal`,
-  `onState`, `onStack`, `manual`; `onShieldEnd`/`onStanceEnd` emit events but
-  don't drive buff windows.
-- Reactions are cast-only + optimistic: no aura decay, no absorbed elements,
-  no gauge/ICD simulation ("windows, not gauges").
-- Shield shatter-by-damage (expiry is scheduled, by design).
-- Out of scope by constitution: damage numbers/math, pickup-driven empowerment
-  (Neuvillette droplets, orb/particle collection), Bond of Life, field
-  redirect (Dehya/Xianyun), hitlag/attack-speed, multi-element absorption.
-
-### ⛔ FROZEN (Nate, 2026-07-14 — never implement, regardless of schema presence)
-
-- `elevate` rendering / reaction-DMG derivation; multi-reaction & non-lunar
-  elevate; `stellarConduct`; reaction-multiplier-vs-DMG-bonus distinction.
-- Any implementDelete verdict touching these is auto-rejected → rewrite.
+⚓ **PARTIAL is a first-class verdict input.** The old binary CAN/CANNOT is what
+produced the bad calls: a mechanic that works on the cast path and not the summon
+path is not a "CAN", and a blanket delete on it removes a true warning.
 
 ## Machine-readable lint config
 

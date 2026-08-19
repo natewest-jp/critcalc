@@ -15,13 +15,54 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "C", "P"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 33, "hit": 13, "N": 20 } },
-				{ "name": "N2", "frames": { "anim": 27, "hit": 9, "N": 17 } },
-				{ "name": "N3", "frames": { "anim": 46, "hit": 13, "N": 37 } },
-				{ "name": "N4", "frames": { "anim": 48, "hit": 25, "N": 44 } },
-				{ "name": "N5", "frames": { "anim": 60, "hit": 24 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 33,
+						"hit": 13,
+						"N": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 27,
+						"hit": 9,
+						"N": 17
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 46,
+						"hit": 13,
+						"N": 37
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 48,
+						"hit": 25,
+						"N": 44
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 60,
+						"hit": 24
+					}
+				}
 			],
-			"chargeFrames": { "anim": 55, "E": 41, "Q": 41, "D": 21, "J": 21, "swap": 44 },
+			"chargeFrames": {
+				"anim": 55,
+				"E": 41,
+				"Q": 41,
+				"D": 21,
+				"J": 21,
+				"swap": 44
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -47,14 +88,22 @@
 			"input": ["E", "tE", "pE"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 42, "D": 22, "J": 23, "swap": 41 },
+			"frames": {
+				"anim": 42,
+				"D": 22,
+				"J": 23,
+				"swap": 41
+			},
 			"cooldown": 5,
 			"cooldownModifiers": [
 				{
 					"source": "A1: Rekindle",
 					"type": "percent",
 					"value": -20,
-					"conditions": { "type": "ascension", "min": 1 }
+					"conditions": {
+						"type": "ascension",
+						"min": 1
+					}
 				},
 				{
 					"source": "A4: Fearnaught",
@@ -63,8 +112,14 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "ascension", "min": 4 },
-							{ "type": "state", "state": "duringSummon" }
+							{
+								"type": "ascension",
+								"min": 4
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
 						]
 					}
 				}
@@ -73,28 +128,68 @@
 				{
 					"label": "Hold Lv.1",
 					"input": ["h1E"],
-					"frames": { "anim": 98, "Q": 97, "D": 65, "J": 66, "swap": 96 },
+					"frames": {
+						"anim": 98,
+						"Q": 97,
+						"D": 65,
+						"J": 66,
+						"swap": 96
+					},
 					"cooldown": 7.5,
 					"application": [
-						{ "frame": 45, "element": "pyro", "units": 1 },
-						{ "frame": 57, "element": "pyro", "units": 1 }
+						{
+							"frame": 45,
+							"element": "pyro",
+							"units": 1
+						},
+						{
+							"frame": 57,
+							"element": "pyro",
+							"units": 1
+						}
 					]
 				},
 				{
 					"label": "Hold Lv.2",
 					"input": ["h2E"],
-					"frames": { "anim": 337, "N": 343, "E": 339, "Q": 339, "D": 231, "J": 240, "swap": 337 },
+					"frames": {
+						"anim": 337,
+						"N": 343,
+						"E": 339,
+						"Q": 339,
+						"D": 231,
+						"J": 240,
+						"swap": 337
+					},
 					"cooldown": 10,
 					"application": [
-						{ "frame": 112, "element": "pyro", "units": 1 },
-						{ "frame": 121, "element": "pyro", "units": 1 },
-						{ "frame": 166, "element": "pyro", "units": 1 }
+						{
+							"frame": 112,
+							"element": "pyro",
+							"units": 1
+						},
+						{
+							"frame": 121,
+							"element": "pyro",
+							"units": 1
+						},
+						{
+							"frame": 166,
+							"element": "pyro",
+							"units": 1
+						}
 					]
 				}
 			],
 			"tags": [],
 			"description": "Bennett puts all his fire and passion for adventuring into his sword. Results may vary based on how fired up he is...\n\nPress\nA single, swift flame strike that deals Pyro DMG.\n\nHold (Short)\nCharges up, resulting in different effects when unleashed based on the Charge Level.\n·Level 1: Strikes twice, dealing Pyro DMG and launching opponents.\n·Level 2: Unleashes 3 consecutive attacks that deal impressive Pyro DMG, but the last attack triggers an explosion that launches both Bennett and the enemy.\nBennett takes no damage from being launched.",
-			"application": [{ "frame": 16, "element": "pyro", "units": 2 }]
+			"application": [
+				{
+					"frame": 16,
+					"element": "pyro",
+					"units": 2
+				}
+			]
 		},
 		{
 			"id": "bennett__burst__fantastic_voyage",
@@ -102,7 +197,12 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 53, "D": 49, "J": 50, "swap": 51 },
+			"frames": {
+				"anim": 53,
+				"D": 49,
+				"J": 50,
+				"swap": 51
+			},
 			"cooldown": 15,
 			"cooldownStartDelay": 34,
 			"summons": [
@@ -115,44 +215,69 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": { "type": "summonTick", "interval": 1, "firstTickDelay": 1 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1,
+								"firstTickDelay": 1
+							},
 							"scaling": 10.8,
 							"stat": "hp",
 							"flat": 1270.24,
-							"conditions": { "type": "recipientHpBelow", "threshold": 70 }
+							"conditions": {
+								"type": "recipientHpBelow",
+								"threshold": 70
+							}
 						}
 					]
 				}
 			],
 			"tags": ["heal"],
 			"energyCost": 60,
-			"caveat": "The heal is shown on every field tick, but only characters at or below 70% HP are healed — above that they get the ATK buff instead.",
 			"_curatorNotes": [
 				"Inspiration Field continuous heal authored 2026-07-12 as a summonTick heal on the field summon (Diona Drunken Mist / Kuki Grass Ring shape). gcsim burst.go applyBennettField: 12 heal ticks every 60f (1s), first heal at burstStartFrame+60 = t=1s relative to field spawn — the t=0 tick (firstTick=true) buffs ATK only and does not heal. Authored as interval 1 / firstTickDelay 1 over the 12s field (ticks t=1..12 = 12 ticks). Heal targets c.Core.Player.ActiveChar() -> target 'active'. TL10: bursthpp[9]=0.108 (10.8% Max HP) + bursthp[9]=1270.2417 flat (sidecar 'Continuous Regeneration Per Sec' col 10 = '10.80% Max HP+1270'). Engine-applied Healing Bonus (gcsim Bonus: hpplus = stats[Heal]) is not authored — it's the recipient's stat, not part of the base heal.",
-				"Heal fires only when the active recipient's HP is below 70% (gcsim: !firstTick && active.CurrentHPRatio() < 0.7; kit text says '<= 70%'). Authored with condition recipientHpBelow 70 — the closest primitive, since the recipient is target 'active'. Planner cannot simulate HP so this resolves null and the heal renders optimistically on every tick; the caveat surfaces the threshold. C1 (Grand Expectation) removes the HP restriction on the ATK BONUS only — the heal's <70% gate is unchanged by constellation (gcsim heal check is not constellation-gated)."
+				"Heal fires only when the active recipient's HP is below 70% (gcsim: !firstTick && active.CurrentHPRatio() < 0.7; kit text says '<= 70%'). Authored with condition recipientHpBelow 70 — the closest primitive, since the recipient is target 'active'. Planner cannot simulate HP so this resolves null and the heal renders optimistically on every tick; the caveat surfaces the threshold. C1 (Grand Expectation) removes the HP restriction on the ATK BONUS only — the heal's <70% gate is unchanged by constellation (gcsim heal check is not constellation-gated).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The 12 heal tick marks on the Inspiration Field bar AND the ATK buff bar drawn beside them. The heal tick carries `recipientHpBelow: 70` and the ATK buff carries `any(C1, selfHpAbove: 70)` — both HP conditions return null (N11) and both draw, so the screen shows healing and the ATK buff running together on the same character for the whole 12s, which the game never does. Category: approximation-disclosure."
 			],
 			"description": "Bennett performs a jumping attack that deals Pyro DMG, creating an Inspiration Field.\n\nInspiration Field\n·If the health of a character within the AoE is equal to or falls below 70%, their health will continuously regenerate. The amount of HP restored scales off Bennett's Max HP.\n·If the health of a character within the AoE is higher than 70%, they gain an ATK Bonus that is based on Bennett's Base ATK.\n·Imbues characters within the AoE with Pyro.",
 			"effects": [
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": { "type": "scaling", "stat": "baseAtk", "ratio": 100.8 },
+					"value": {
+						"type": "scaling",
+						"stat": "baseAtk",
+						"ratio": 100.8
+					},
 					"snapshottable": true,
 					"conditions": {
 						"type": "any",
 						"conditions": [
-							{ "type": "constellation", "level": 1 },
-							{ "type": "selfHpAbove", "threshold": 70 }
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "selfHpAbove",
+								"threshold": 70
+							}
 						]
 					}
 				}
 			],
-			"application": [{ "frame": 37, "element": "pyro", "units": 2 }]
+			"application": [
+				{
+					"frame": 37,
+					"element": "pyro",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -186,14 +311,24 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": { "type": "scaling", "stat": "baseAtk", "ratio": 20 },
+					"value": {
+						"type": "scaling",
+						"stat": "baseAtk",
+						"ratio": 20
+					},
 					"snapshottable": true,
-					"conditions": { "type": "constellation", "level": 1 }
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
 				}
 			]
 		},
@@ -221,10 +356,15 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 135,
 					"stat": "atk",
-					"conditions": { "type": "constellation", "level": 4 }
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					}
 				}
 			]
 		},
@@ -245,7 +385,10 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -255,23 +398,38 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "weaponType", "weapons": ["sword", "claymore", "polearm"] }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "weaponType",
+								"weapons": ["sword", "claymore", "polearm"]
+							}
 						]
 					}
 				},
 				{
 					"type": "infuse",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 12,
 					"durationType": "fixed",
 					"element": "pyro",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "weaponType", "weapons": ["sword", "claymore", "polearm"] }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "weaponType",
+								"weapons": ["sword", "claymore", "polearm"]
+							}
 						]
 					}
 				}

@@ -16,14 +16,62 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 26, "hit": 17, "N": 25 } },
-				{ "name": "N2", "frames": { "anim": 27, "hit": 15, "N": 22 } },
-				{ "name": "N3", "frames": { "anim": 38, "hit": 15, "N": 26 } },
-				{ "name": "N4", "frames": { "anim": 42, "hit": 31, "N": 39 } },
-				{ "name": "N5", "frames": { "anim": 30, "hit": 16, "N": 24 } },
-				{ "name": "N6", "frames": { "anim": 79, "hit": 39 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 26,
+						"hit": 17,
+						"N": 25
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 27,
+						"hit": 15,
+						"N": 22
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 38,
+						"hit": 15,
+						"N": 26
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 42,
+						"hit": 31,
+						"N": 39
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 30,
+						"hit": 16,
+						"N": 24
+					}
+				},
+				{
+					"name": "N6",
+					"frames": {
+						"anim": 79,
+						"hit": 39
+					}
+				}
 			],
-			"chargeFrames": { "anim": 45, "E": 38, "Q": 37, "D": 16, "J": 16, "swap": 43 },
+			"chargeFrames": {
+				"anim": 45,
+				"E": 38,
+				"Q": 37,
+				"D": 16,
+				"J": 16,
+				"swap": 43
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -55,19 +103,77 @@
 			"name": "Whirlwind Thrust (Yaksha's Mask)",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": { "type": "state", "state": "inStance" },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
 			"infusion": "anemo",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 26, "hit": 17, "N": 25 } },
-				{ "name": "N2", "frames": { "anim": 27, "hit": 15, "N": 22 } },
-				{ "name": "N3", "frames": { "anim": 38, "hit": 15, "N": 26 } },
-				{ "name": "N4", "frames": { "anim": 42, "hit": 31, "N": 39 } },
-				{ "name": "N5", "frames": { "anim": 30, "hit": 16, "N": 24 } },
-				{ "name": "N6", "frames": { "anim": 79, "hit": 39 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 26,
+						"hit": 17,
+						"N": 25
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 27,
+						"hit": 15,
+						"N": 22
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 38,
+						"hit": 15,
+						"N": 26
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 42,
+						"hit": 31,
+						"N": 39
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 30,
+						"hit": 16,
+						"N": 24
+					}
+				},
+				{
+					"name": "N6",
+					"frames": {
+						"anim": 79,
+						"hit": 39
+					}
+				}
 			],
-			"chargeFrames": { "anim": 45, "E": 38, "Q": 37, "D": 16, "J": 16, "swap": 43 },
-			"plungeFrames": { "anim": 62, "N": 60, "E": 59, "D": 60, "J": 61, "swap": 62 },
+			"chargeFrames": {
+				"anim": 45,
+				"E": 38,
+				"Q": 37,
+				"D": 16,
+				"J": 16,
+				"swap": 43
+			},
+			"plungeFrames": {
+				"anim": 62,
+				"N": 60,
+				"E": 59,
+				"D": 60,
+				"J": 61,
+				"swap": 62
+			},
 			"description": "Xiao's normal-attack combo while under the effects of Bane of All Evil. The 6-hit string and CA share the base frame timings (gcsim does not branch attack/charge frames on the burst flag), but all hits are converted to Anemo DMG and gain a flat DMG bonus that scales over the stance window. Plunge frames are sourced from gcsim's lowPlungeFramesX (in-stance plunge variant).",
 			"_curatorNotes": [
 				"N and CA cancel frames are identical to the base normal — gcsim's attackFrames and chargeFrames slices are not branched on burstBuffKey. Only attackHitboxes (slightly larger) and the per-hit hitlag (N1-1: 0 → 0.6f; CA: 0.04*60) differ in gcsim, plus the Snapshot-time element/ICD overrides.",
@@ -81,7 +187,14 @@
 			"name": "Lemniscatic Wind Cycling",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": { "anim": 37, "N": 24, "E": 24, "Q": 24, "D": 35, "swap": 35 },
+			"frames": {
+				"anim": 37,
+				"N": 24,
+				"E": 24,
+				"Q": 24,
+				"D": 35,
+				"swap": 35
+			},
 			"cooldown": 10,
 			"tags": [],
 			"charges": 2,
@@ -90,7 +203,10 @@
 					"source": "C1: Dissolution Eon: Destroyer of Worlds",
 					"type": "flat",
 					"value": 1,
-					"conditions": { "type": "constellation", "level": 1 }
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
 				}
 			],
 			"effects": [],
@@ -101,21 +217,31 @@
 				"A4 (Dissolution Eon: Heaven Fall): each cast grants a stacking +15% E DMG buff (max 3 stacks, 7s duration, refreshes on stack). Authored as a passive effect skeleton may need a separate normalDmgBonus-style 'skillDmgBonus' self-buff with stacks; current schema lacks a stacks field — flag on the passive.",
 				"C6 (Conqueror of Evil: Guardian Yaksha): while in burst, Plunge hitting ≥2 opponents grants +1 E charge immediately and ignores E CD for 1s (gcsim: 1.2s / 72 frames). Not modelled here; flagged on the C6 entry."
 			],
-			"application": [{ "frame": 4, "element": "anemo", "units": 1 }]
+			"application": [
+				{
+					"frame": 4,
+					"element": "anemo",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "xiao__burst__bane_of_all_evil",
 			"name": "Bane of All Evil",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": { "anim": 82, "D": 59, "J": 60, "swap": 66 },
+			"frames": {
+				"anim": 82,
+				"D": 59,
+				"J": 60,
+				"swap": 66
+			},
 			"cooldown": 18,
 			"cooldownStartDelay": 29,
 			"duration": 15,
 			"tags": [],
 			"energyCost": 70,
 			"effects": [],
-			"caveat": "Not modeled: the HP drain each second while the stance is active.",
 			"description": "Xiao dons the Yaksha Mask that set gods and demons trembling millennia ago.\n\nYaksha's Mask\n·Greatly increases Xiao's jumping ability.\n·Increases his attack AoE and attack DMG.\n·Converts attack DMG into Anemo DMG, which cannot be overridden by any other elemental infusion.\n\nIn this state, Xiao will continuously lose HP.\nThe effects of this skill end when Xiao leaves the field.",
 			"behavior": "stance",
 			"terminatesOnSwap": true,
@@ -126,7 +252,8 @@
 				"terminatesOnSwap: true sourced from gcsim's onExitField subscription on OnCharacterSwap, which DeleteStatus(burstBuffKey) and a1Key.",
 				"A1 (Conqueror of Evil: Tamer of Demons) DMG bonus is a self-buff that stacks 1→5 over 12s (5% per 3s) during the stance, capped at 25%. The inherited manual-trigger skeleton on the passive collapses this to a single +25%; reviewer to model the ramp.",
 				"Anemo conversion of N/C/P during the stance is handled in gcsim's Snapshot (forces a.Element = Anemo for AttackTagNormal / AttackTagExtra / AttackTagPlunge) and is represented here by the in-stance normal entry's infusion: anemo. Burst itself does not perform an absorption check (no aiAbs/absorbCheck in burst.go) — recipe §3.5 absorption flag does NOT apply to Xiao despite being listed alongside other anemo bursts.",
-				"[A7] Caveat HP-drain specifics (demoted, kept concise in the note above): 3.0%/2.5%/2.0% of current HP per second at talent levels 1/6/13 — drain decreases with talent level. Already fully captured in the A6 rigor 2026-07-12 curator note on this ability."
+				"[A7] Caveat HP-drain specifics (demoted, kept concise in the note above): 3.0%/2.5%/2.0% of current HP per second at talent levels 1/6/13 — drain decreases with talent level. Already fully captured in the A6 rigor 2026-07-12 curator note on this ability.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The tool has no HP state at all, and the drain does not shorten the burst in game either — the 15s stance bar we draw is the right length. Nothing on screen claims otherwise. Category: invisible-omission."
 			],
 			"application": []
 		}
@@ -140,7 +267,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",
@@ -197,8 +326,13 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "selfHpBelow", "threshold": 50 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "selfHpBelow",
+						"threshold": 50
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "def%",

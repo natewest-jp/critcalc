@@ -18,15 +18,41 @@
 			"hits": [
 				{
 					"name": "N1",
-					"frames": { "anim": 34, "N": 18, "C": 20, "E": 10, "Q": 9, "D": 10, "J": 7, "swap": 13 }
+					"frames": {
+						"anim": 34,
+						"N": 18,
+						"C": 20,
+						"E": 10,
+						"Q": 9,
+						"D": 10,
+						"J": 7,
+						"swap": 13
+					}
 				},
 				{
 					"name": "N2",
-					"frames": { "anim": 38, "N": 37, "C": 36, "E": 21, "Q": 20, "D": 21, "J": 21, "swap": 21 }
+					"frames": {
+						"anim": 38,
+						"N": 37,
+						"C": 36,
+						"E": 21,
+						"Q": 20,
+						"D": 21,
+						"J": 21,
+						"swap": 21
+					}
 				},
 				{
 					"name": "N3",
-					"frames": { "anim": 98, "N": 73, "E": 41, "Q": 40, "D": 41, "J": 41, "swap": 41 }
+					"frames": {
+						"anim": 98,
+						"N": 73,
+						"E": 41,
+						"Q": 40,
+						"D": 41,
+						"J": 41,
+						"swap": 41
+					}
 				}
 			],
 			"chargeFrames": {
@@ -64,7 +90,11 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "stance",
-			"frames": { "anim": 50, "Q": 34, "swap": 30 },
+			"frames": {
+				"anim": 50,
+				"Q": 34,
+				"swap": 30
+			},
 			"cooldown": 15,
 			"cooldownStartDelay": 23,
 			"duration": 5,
@@ -83,26 +113,56 @@
 					"procCooldown": 0.3
 				}
 			],
-			"caveat": "In game the stance blocks Normal and Charged Attacks; typing N or C still shows a block on the timeline, so sequence valid actions yourself. Swirls extend it up to +5s, but only one is counted per skill or burst cast, so some rotations show a shorter stance.",
+			"caveat": "In game the stance blocks Normal and Charged Attacks; typing N or C still shows a block on the timeline, so sequence valid actions yourself.",
 			"_curatorNotes": [
 				"Dreamdrifter is the Nightsoul state for Mizuki — opensState: \"nightsoulBlessing\" + behavior: \"stance\" opens both inStance and nightsoulBlessing for the 5s window. terminatesOnSwap: true matches gcsim's OnCharacterSwap handler that calls cancelDreamDrifterState.",
 				"Re-pressing E during Dreamdrifter cancels the state in 1 frame; the parser's current model can't distinguish 'second E exits' from 'second E starts new stance' — the latter is what would happen, which is wrong but acceptable for v1.",
 				"Drift cloud emits Cryo-tagged-no-actually-Anemo damage every ~0.75s (cloudHitInterval=45, cloudFirstHit=18) for the stance duration. P3 (Summon.effects[]) gap — flag and migrate when proposal lands.",
-				"A1 Bright Moon's Restless Voice authored 2026-05-10 (E3 v1.5): durationExtensions[] on the skill (Dreamdrifter stance), trigger onReaction swirl, +2.5s per fire, max 2, 0.3s ICD. Parser cast-only emission fires swirl on E and Q anemo casts; drift-cloud ticks and per-N anemo aren't modeled, so the extension may under-fire vs in-game. Practical: typical E + Q rotation extends to the in-game max (+5s); pure-E or zero-Q rotations under-fire by 50%.",
+				"↻ 2026-08-18: the P3 \"Summon.effects[] gap\" the note above asks for was RESOLVED, in a different shape — the drift cloud is authored as this ability's own `application[]` (8 anemo entries: frame 2 for the cast's AoE, then 45f apart = the gcsim cloudHitInterval), so the cloud's ELEMENT reaches the gauge and its swirls drive the A1 extension below. ⛔ Do not migrate it to `summons[]`: a summon means a thing LEFT IN THE WORLD, and Dreamdrifter is a stance whose span the E bar already draws. What genuinely remains unauthored is the cloud's DAMAGE cadence (no summon lane row, no tick marks) — that is the only half of this note still open.",
+				"A1 Bright Moon's Restless Voice authored 2026-05-10 (E3 v1.5): durationExtensions[] on the skill (Dreamdrifter stance), trigger onReaction swirl, +2.5s per fire, max 2, 0.3s ICD. ↻ 2026-08-18: the under-fire warning that used to close this note is RETIRED and all three of its clauses are dead. It read \"parser cast-only emission fires swirl on E and Q anemo casts; drift-cloud ticks and per-N anemo aren't modeled … pure-E or zero-Q rotations under-fire by 50%\". Today reactions come OUT OF A REAL GAUGE rather than being assumed at the cast (sim/aura.ts `offerApplication` → `emitReaction` → `dispatchOnReactionExtensions`); the drift-cloud hits ARE modelled, as this ability's `application[]` entries; and N/C/P swings apply in their own right. The extension fires off whichever of those applications actually swirls, under the cast's own ICD clock (standard 150f/every-3, so three of the eight cloud entries apply) — enough for both +2.5s fires whenever a swirlable aura is up, and correctly ZERO fires when the enemy carries none. ⚠️ The one bound that survives: only the character who CAUSED a reaction extends their own window (dispatchOnReactionExtensions is keyed to `src.characterId`), so a teammate's swirl inside Dreamdrifter never extends it — which MATCHES this kit (\"when Yumemizuki Mizuki triggers Swirl\") and is therefore not a divergence for her, unlike Collei's zone where it is one.",
 				"Swirl DMG team buff (EM-scaled) is the headline mechanic — gcsim adds it via AddReactBonusMod which we don't have a primitive for. Swirl-specific damage scaling per teammate's Swirl event isn't expressible. The Anemo character constitution treats this as a swirl modifier, not a flat buff, so a buff on swirl/anemoDmgBonus isn't quite right either.",
 				"[A7] In-game the Dreamdrifter stance blocks Normal/Charged; only Q, swap, dash, and re-press-E (which exits) are valid inputs. Base stance window is 5s. The tool does not gate invalid actions, so N/C typed during the window render as blocks that wouldn't fire in game.",
-				"[A7] A1 extension: +2.5s per swirl, max 2 (=+5s). Cast-only reaction emission fires one swirl per anemo E/Q cast, so a typical E...Q reaches the +5s in-game max while pure-E or zero-Q rotations under-fire by ~50%; per-N anemo hits and drift-cloud ticks aren't counted (accepted approximation)."
+				"[A7] A1 extension: +2.5s per swirl, max 2 (=+5s). ↻ 2026-08-18: the rest of this line — \"cast-only reaction emission … pure-E or zero-Q rotations under-fire by ~50%; per-N anemo hits and drift-cloud ticks aren't counted\" — was a duplicate of the A1 note above and is stale for the same reasons. Drift-cloud hits and swings both reach the gauge now; whether the extension fires depends on the enemy's aura, not on how many casts are in the rotation."
 			],
 			"description": "Weaves memories of lovely dreams, entering a Dreamdrifter state where Yumemizuki Mizuki floats above the ground, and dealing 1 instance of AoE Anemo DMG to nearby opponents.\n\nDreamdrifter\n·While in the Dreamdrifter state, Yumemizuki Mizuki will continuously drift forward, dealing AoE Anemo DMG to nearby opponents at regular intervals.\n·During this time, Yumemizuki Mizuki can control her direction of drift, and the pick-up distance of Yumemi Style Special Snacks from the Elemental Burst Anraku Secret Spring Therapy will be increased.\n·Increases the Swirl DMG that nearby party members deal based on Yumemizuki Mizuki's Elemental Mastery.\n·Dreamdrifter will end when Mizuki leaves the field or uses her Elemental Skill again.",
 			"application": [
-				{ "frame": 2, "element": "anemo", "units": 1 },
-				{ "frame": 48, "element": "anemo", "units": 1 },
-				{ "frame": 93, "element": "anemo" },
-				{ "frame": 138, "element": "anemo", "units": 1 },
-				{ "frame": 183, "element": "anemo" },
-				{ "frame": 228, "element": "anemo", "units": 1 },
-				{ "frame": 273, "element": "anemo" },
-				{ "frame": 318, "element": "anemo", "units": 1 }
+				{
+					"frame": 2,
+					"element": "anemo",
+					"units": 1
+				},
+				{
+					"frame": 48,
+					"element": "anemo",
+					"units": 1
+				},
+				{
+					"frame": 93,
+					"element": "anemo"
+				},
+				{
+					"frame": 138,
+					"element": "anemo",
+					"units": 1
+				},
+				{
+					"frame": 183,
+					"element": "anemo"
+				},
+				{
+					"frame": 228,
+					"element": "anemo",
+					"units": 1
+				},
+				{
+					"frame": 273,
+					"element": "anemo"
+				},
+				{
+					"frame": 318,
+					"element": "anemo",
+					"units": 1
+				}
 			]
 		},
 		{
@@ -111,7 +171,14 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 94, "N": 93, "C": 92, "E": 93, "D": 91, "J": 93 },
+			"frames": {
+				"anim": 94,
+				"N": 93,
+				"C": 92,
+				"E": 93,
+				"D": 91,
+				"J": 93
+			},
 			"cooldown": 15,
 			"cooldownStartDelay": 1,
 			"tags": ["heal", "summon", "grouping"],
@@ -159,17 +226,24 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Each tick shows both a heal and a damage marker, but a snack resolves to only one — heal or explosion — so the markers aren't additive across ticks. Self-pickup doubles the heal, though the base amount is shown; pickup or explosion can also lag the marked tick by up to 4s.",
+			"caveat": "Each tick mark is one snack, and a snack resolves to either a heal or an explosion, never both. Pickup or explosion can lag the mark by up to 4s.",
 			"_curatorNotes": [
 				"'grouping' tag added (capability sweep 2026-07-28): kit text — the burst 'pull[s] in nearby objects and opponents'; gcsim burst.go:40 carries the same comment. The pull happens once on the initial cast; tag only, no numeric effect.",
 				"Snack ticks (P3): gcsim snackInterval=1.5s starting at burstHitmark (=summon spawn). 8 snacks per 12s Mini Baku duration. Munen damage is the snackDMG multiplier (127.01% ATK Anemo at TL10). The 4s pickup window before auto-explode means actual damage timing differs from the rendered tick by up to 4s — accepted approximation.",
 				"Snack heal authored 2026-07-12 (resolves the 'tag without effect' audit finding: burst tagged heal had no heal effect). gcsim mizuki/snack.go onPickedUp(): Heal Src = (mizuki.Stat(EM) * snackHealEM[TL] + snackHealFlat[TL]) * healMultiplier, Target: activeChar.Index(). mizuki_gen.go snackHealEM[9]=2.35008 → scaling 235 (% of EM); snackHealFlat[9]=692.10645 → flat 692. Cross-checks sidecar row 'Snack Pick-Up HP Regeneration' TL10 = '235.0% Elemental Mastery+692'. Authored as target 'active' (gcsim heals the active char = the party member who walks into the snack), scaling 235 stat em + flat 692.",
 				"Pickup is not a schema trigger primitive — same known gap as Neuvillette Sourcewater droplets (tier-c-guide 'Pickup-driven empowerment') and the traveler_hydro summon-collectible shape. Modeled on the summon's existing snack-spawn cadence (summonTick 1.5s, firstTickDelay 1.5) as the honest best-fit, mirroring the Diona Drunken Mist / Kuki Grass Ring burst summonTick heal+damage pairs. Unlike those two (which heal AND damage every tick), Mizuki's heal and Munen damage are MUTUALLY EXCLUSIVE per snack — each spawn becomes one or the other — so the parallel heal+damage markers are two possible outcomes of the same snack, not additive; called out in the caveat.",
 				"Two nuances not expressible in the schema, covered by caveat only: (1) the HP<70% gate (gcsim snackHealTriggerHpRatio=0.7) that routes pickup to heal-vs-explode — no per-recipient-HP heal gate primitive; (2) the healMultiplier=2.0 self-double when the active char IS Mizuki (self-pickup heals twice) — no per-recipient-identity heal scaling; authored at base 1×. C4 (Buds Warm Lucid Springs) makes every pickup do BOTH heal and damage + 5 Energy — that constellation branch remains description-only per the C4 node's existing note.",
-				"[A7] Heal branch: pickup at HP<70% heals 235% EM + 692 flat (TL10). Explosion branch: pickup at HP>70%, or auto-explode after 4s uncollected, deals 127.01% ATK Anemo. 8 snacks over the 12s summon at a 1.5s spawn cadence. (All already recorded in the burst's existing curator notes.)"
+				"[A7] Heal branch: pickup at HP<70% heals 235% EM + 692 flat (TL10). Explosion branch: pickup at HP>70%, or auto-explode after 4s uncollected, deals 127.01% ATK Anemo. 8 snacks over the 12s summon at a 1.5s spawn cadence. (All already recorded in the burst's existing curator notes.)",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Each tick mark is one snack, and a snack resolves to either a heal or an explosion, never both. Self-pickup doubles the heal though the base amount is shown, and pickup or explosion can lag the mark by up to 4s.\""
 			],
 			"description": "Summons forth countless lovely dreams and nightmares that pull in nearby objects and opponents, dealing AoE Anemo DMG and summoning a Mini Baku.\n\nMini Baku:\nFollows the current active character. At regular intervals, the Mini Baku will create 1 Yumemi Style Special Snack nearby. After one of your own party members picks up a Special Snack, if their HP is higher than 70%, the Snack will explode and unleash a Munen Shockwave, dealing 1 instance of AoE Anemo DMG to nearby opponents. Otherwise, it will heal the character who picked it up based on Yumemizuki Mizuki's Elemental Mastery. When Yumemizuki Mizuki triggers healing by picking up a Yumemi Style Special Snack, the amount of healing is increased by 100%. If a Snack is not picked up after a period of time, it will explode and release a Munen Shockwave, dealing 1 instance of AoE Anemo DMG to nearby opponents.",
-			"application": [{ "frame": 93, "element": "anemo", "units": 2 }]
+			"application": [
+				{
+					"frame": 93,
+					"element": "anemo",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -178,7 +252,7 @@
 			"name": "Bright Moon's Restless Voice",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Swirl-triggered Dreamdrifter extension (+2.5s, max 2 extensions, 0.3s ICD) authored on the skill's durationExtensions[] (E3 v1.5, 2026-05-10). See skill _curatorNotes for parser caveat about cast-only emission."
+				"Swirl-triggered Dreamdrifter extension (+2.5s, max 2 extensions, 0.3s ICD) authored on the skill's durationExtensions[] (E3 v1.5, 2026-05-10). ↻ 2026-08-18: this used to send the reader to a skill note about \"cast-only emission\" — that caveat is retired; see the corrected A1 note on the skill. The extension is driven by the live gauge off Mizuki's own applications, drift-cloud hits included."
 			],
 			"description": "When Yumemizuki Mizuki triggers Swirl while in her Dreamdrifter state, Dreamdrifter's duration increases by 2.5s. This effect can trigger once every 0.3s for a maximum of 2 times per Dreamdrifter state."
 		},
@@ -190,10 +264,15 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 4,
 					"durationType": "fixed",
-					"conditions": { "type": "state", "state": "nightsoulBlessing" },
+					"conditions": {
+						"type": "state",
+						"state": "nightsoulBlessing"
+					},
 					"source": "character",
 					"stat": "em",
 					"value": 100,
@@ -223,8 +302,14 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 1 },
-							{ "type": "state", "state": "nightsoulBlessing" }
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "state",
+								"state": "nightsoulBlessing"
+							}
 						]
 					},
 					"scaling": 1100,

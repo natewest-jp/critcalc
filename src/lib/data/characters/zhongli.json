@@ -397,9 +397,9 @@
 			"name": "Chrysos, Bounty of Dominator",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "When the Jade Shield takes a hit, 40% of that damage heals the current active character. Each instance heals up to 8% of Max HP.",
 			"_curatorNotes": [
-				"Caveat-only (capability sweep 2026-07-28): gcsim shield.go:73-93 (shd.OnDamage) — heal = 0.4 * incident dmg to the active character, capped at 0.08 * MaxHP per instance. Heal value is a function of incoming enemy damage (no fixed scaling%×stat shape) and the trigger (shield taking a hit) has no Effect-trigger primitive, so no heal effect is authorable."
+				"Caveat-only (capability sweep 2026-07-28): gcsim shield.go:73-93 (shd.OnDamage) — heal = 0.4 * incident dmg to the active character, capped at 0.08 * MaxHP per instance. Heal value is a function of incoming enemy damage (no fixed scaling%×stat shape) and the trigger (shield taking a hit) has no Effect-trigger primitive, so no heal effect is authorable.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A caveat-only C6 entry with no effects: it names a damage-proportional heal, and neither heals nor incoming damage have any rendered form — shield shatter-by-damage is explicitly design, not backlog (shields.ts:8-10), and the constitution forbids damage math outright. Nothing on the timeline changes whether this exists or not. It is also constellation-gated, so it can only ever reach a C6 reader, for whom it still repairs nothing. Zhongli's Jade Shield bar itself draws correctly and is untouched by the delete. Category: invisible-omission."
 			],
 			"description": "When the Jade Shield takes DMG, 40% of that incoming DMG is converted to HP for the current character.\nA single instance of regeneration cannot exceed 8% of that character's Max HP."
 		}

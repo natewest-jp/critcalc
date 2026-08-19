@@ -17,10 +17,42 @@
 			"duration": 5,
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 54, "hit": 27, "N": 38, "C": 41 } },
-				{ "name": "N2", "frames": { "anim": 66, "hit": 24, "N": 46, "C": 48 } },
-				{ "name": "N3", "frames": { "anim": 72, "hit": 19, "N": 31, "C": 40 } },
-				{ "name": "N4", "frames": { "anim": 112, "hit": 41, "N": 106, "C": 109 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 54,
+						"hit": 27,
+						"N": 38,
+						"C": 41
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 66,
+						"hit": 24,
+						"N": 46,
+						"C": 48
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 72,
+						"hit": 19,
+						"N": 31,
+						"C": 40
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 112,
+						"hit": 41,
+						"N": 106,
+						"C": 109
+					}
+				}
 			],
 			"chargeFrames": {
 				"anim": 200,
@@ -32,7 +64,15 @@
 				"J": 79,
 				"swap": 79
 			},
-			"plungeFrames": { "anim": 82, "N": 53, "C": 52, "E": 52, "Q": 52, "D": 42, "swap": 64 },
+			"plungeFrames": {
+				"anim": 82,
+				"N": 53,
+				"C": 52,
+				"E": 52,
+				"Q": 52,
+				"D": 42,
+				"swap": 64
+			},
 			"_curatorNotes": [
 				"Charged attack uses a parametric spinning mechanic (claymore spin + finisher). chargeFrames here are for the minimum case: single spin + finisher from standing (windup=56f). ActionDash/Jump/Swap are explicitly set to 0 in gcsim's chargeFrames and resolved to the spin hitmark (frame 23) via a custom Frames closure — effective cancel = windup(56)+23 = 79. N/E/Q values include spinFrames(23)+transFrames(13) added to the base table values. Windup is state-dependent: 56 from standing, 45 after N3, 44 after dash, 41 after another CA, 47 after plunge. Additional spins increase all N/E/Q values by 23f per extra spin. Reviewer to decide final representation.",
 				"High plunge exists in gcsim (highPlungeFrames: hitmark=42, swap=64, N=53, E=52, Q=52, D=42); not represented here per recipe. Low plunge (hitmark=39) used for plungeFrames. ActionJump not explicitly set in lowPlungeFrames (defaults to AnimationLength=80) — omitted per InitAbilSlice rule."
@@ -55,7 +95,15 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 80, "N": 51, "C": 51, "E": 51, "Q": 50, "D": 39, "swap": 62 }
+			"lowPlungeFrames": {
+				"anim": 80,
+				"N": 51,
+				"C": 51,
+				"E": 51,
+				"Q": 50,
+				"D": 39,
+				"swap": 62
+			}
 		},
 		{
 			"id": "noelle__skill__breastplate",
@@ -63,7 +111,15 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 78, "N": 12, "C": 13, "E": 14, "Q": 14, "D": 11, "J": 11 },
+			"frames": {
+				"anim": 78,
+				"N": 12,
+				"C": 13,
+				"E": 14,
+				"Q": 14,
+				"D": 11,
+				"J": 11
+			},
 			"cooldown": 24,
 			"cooldownStartDelay": 6,
 			"tags": ["heal", "shield", "summon"],
@@ -71,7 +127,10 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 12,
 					"durationType": "refresh",
 					"scaling": 288,
@@ -82,7 +141,11 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "onHit", "abilityType": "normal", "source": "self" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"source": "self"
+					},
 					"scaling": 38.3,
 					"stat": "def",
 					"flat": 226
@@ -90,13 +153,16 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "onHit", "abilityType": "charged", "source": "self" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged",
+						"source": "self"
+					},
 					"scaling": 38.3,
 					"stat": "def",
 					"flat": 226
 				}
 			],
-			"caveat": "Shown healing on every qualifying Normal or Charged hit, but each has only a ~59% chance to heal the party — rising to 100% at C1 while the burst is active. The proc chance is not modeled.",
 			"_curatorNotes": [
 				"Shield + heal effects authored 2026-07-12 at talent level 10 (gcsim skill.go + noelle_gen.go index 9; sidecar 'DMG Absorption' / 'Healing' / 'Healing Triggering Chance' rows, col 10).",
 				"Shield (Stone Armor): scaling 288% DEF + 1693.66 flat (gcsim shieldDef[9]=2.88, shieldFlat[9]=1693.6555; sidecar '288% DEF+1694'), duration 12s, label 'Stone Armor'. Target 'active' — gcsim adds a player shield (newShield → Shields.Add, Target -1) protecting the on-field character, same convention as the Devotion passive shield. 150% all-element/physical absorption efficiency not modelled.",
@@ -104,11 +170,18 @@
 				"C4's explosion is authored on the constellation node via onShieldEnd source:self ability:skill and fires at the shield window's scheduled expiry. ↻ 2026-08-14: that window used to come from the summons[] Stone Armor entry and now comes from this ability's own shield Effect — one window either way, so C4 is unaffected. gcsim re-adding a new shield overwrites the old one via the OnOverwrite hook (also explodes at C4); the planner models the refresh but not the overwrite-explosion.",
 				"[A7] In game the heal only procs while the skill's Stone Armor shield is active; the tool approximates this via host-ability onHit window scoping (Thoma Crimson Ooyoroi precedent) rather than an explicit shield-up condition, since 'duringSummon' would not resolve for a follows-mobility instant-skill summon.",
 				"↻ 2026-08-14 — the stand-in summon is retired. \"Stone Armor\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast its active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world.",
-				"The shield Effect finally carries its own `duration: 12`. It was authored WITHOUT one for two different reasons in succession: first as a workaround for registerShieldOnCast running its two conventions as a union (which would have double-fired C4's onShieldEnd Geo explosion), then, once that became a precedence, because the summon still said it. With the summon gone the Effect is the only statement left, and C4 keeps firing off the single window it produces."
+				"The shield Effect finally carries its own `duration: 12`. It was authored WITHOUT one for two different reasons in succession: first as a workaround for registerShieldOnCast running its two conventions as a union (which would have double-fired C4's onShieldEnd Geo explosion), then, once that became a precedence, because the summon still said it. With the summon gone the Effect is the only statement left, and C4 keeps firing off the single window it produces.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The two onHit heal effects it qualifies produce no bar, no marker and no printed value on the planner, so a probability attached to them has nothing to correct. The shield — the one thing on this ability that DOES draw a lane — is not what the caveat is about. Category: invisible-omission."
 			],
 			"description": "Summons protective stone armor, dealing Geo DMG to surrounding opponents and creating a shield. The shield's DMG Absorption scales based on Noelle's DEF.\nThe shield has the following properties:\n·When Noelle's Normal and Charged Attacks hit a target, they have a certain chance to regenerate HP for all characters.\n·Possesses 150% DMG Absorption efficiency against all Elemental and Physical DMG.\n\nThe amount of HP healed when regeneration is triggered scales based on Noelle's DEF.",
 			"activeDuration": 12,
-			"application": [{ "frame": 14, "element": "geo", "units": 2 }]
+			"application": [
+				{
+					"frame": 14,
+					"element": "geo",
+					"units": 2
+				}
+			]
 		},
 		{
 			"id": "noelle__burst__sweeping_time",
@@ -116,7 +189,14 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 121, "N": 83, "C": 82, "E": 82, "D": 81, "J": 81 },
+			"frames": {
+				"anim": 121,
+				"N": 83,
+				"C": 82,
+				"E": 82,
+				"D": 81,
+				"J": 81
+			},
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": [],
@@ -128,8 +208,15 @@
 			],
 			"description": "Gathering the strength of stone around her weapon, Noelle strikes the opponents surrounding her within a large AoE, dealing Geo DMG.\nAfterwards, Noelle gains the following effects:\n·Larger attack AoE.\n·Converts attack DMG to Geo DMG that cannot be overridden by any other elemental infusion.\n·Increased ATK that scales based on her DEF.",
 			"application": [
-				{ "frame": 24, "element": "geo", "units": 1 },
-				{ "frame": 65, "element": "geo" }
+				{
+					"frame": 24,
+					"element": "geo",
+					"units": 1
+				},
+				{
+					"frame": 65,
+					"element": "geo"
+				}
 			]
 		}
 	],
@@ -142,13 +229,24 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "ascension", "min": 1 },
-							{ "type": "state", "state": "offField" },
-							{ "type": "recipientHpBelow", "threshold": 30 }
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "state",
+								"state": "offField"
+							},
+							{
+								"type": "recipientHpBelow",
+								"threshold": 30
+							}
 						]
 					},
 					"duration": 20,
@@ -201,7 +299,11 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "onShieldEnd", "source": "self", "ability": "skill" },
+					"trigger": {
+						"type": "onShieldEnd",
+						"source": "self",
+						"ability": "skill"
+					},
 					"scaling": 400,
 					"stat": "atk",
 					"element": "geo"
@@ -228,13 +330,23 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "constellation", "level": 6 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"duration": 16.3,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
-					"value": { "type": "scaling", "stat": "def", "ratio": 50 },
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 50
+					},
 					"snapshottable": false
 				}
 			],

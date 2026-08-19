@@ -16,14 +16,65 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 27, "hit": 12, "N": 14, "C": 23 } },
-				{ "name": "N2", "frames": { "anim": 25, "hit": 10, "N": 13, "C": 20 } },
-				{ "name": "N3", "frames": { "anim": 41, "hit": 18, "N": 24, "C": 19 } },
-				{ "name": "N4", "frames": { "anim": 56, "hit": 35, "N": 41, "C": 41 } },
-				{ "name": "N5", "frames": { "anim": 59, "hit": 39, "C": 39 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 27,
+						"hit": 12,
+						"N": 14,
+						"C": 23
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 25,
+						"hit": 10,
+						"N": 13,
+						"C": 20
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 41,
+						"hit": 18,
+						"N": 24,
+						"C": 19
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 56,
+						"hit": 35,
+						"N": 41,
+						"C": 41
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 59,
+						"hit": 39,
+						"C": 39
+					}
+				}
 			],
-			"chargeFrames": { "anim": 52, "D": 19, "J": 19, "swap": 49 },
-			"plungeFrames": { "anim": 76, "N": 65, "E": 64, "Q": 63, "D": 47, "swap": 51 },
+			"chargeFrames": {
+				"anim": 52,
+				"D": 19,
+				"J": 19,
+				"swap": 49
+			},
+			"plungeFrames": {
+				"anim": 76,
+				"N": 65,
+				"E": 64,
+				"Q": 63,
+				"D": 47,
+				"swap": 51
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -49,21 +100,70 @@
 				"High plunge variants exist in gcsim but are not represented per recipe; lowPlungeFrames used for plungeFrames. lowPlungeFrames[ActionJump] not set in gcsim — J omitted.",
 				"Combo-counter persistence: gcsim preserves NormalCounter across DashState and SkillState (savedNormalCounter mechanic), enabling N continues after dash/E. Description-level mechanic; planner may not model this."
 			],
-			"lowPlungeFrames": { "anim": 75, "N": 62, "E": 63, "Q": 64, "D": 44, "swap": 49 }
+			"lowPlungeFrames": {
+				"anim": 75,
+				"N": 62,
+				"E": 63,
+				"Q": 64,
+				"D": 44,
+				"swap": 49
+			}
 		},
 		{
 			"id": "wriothesley__normal__forceful_fists_of_frost_chilling_penalty",
 			"name": "Forceful Fists of Frost (Chilling Penalty)",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": { "type": "state", "state": "inStance" },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 27, "hit": 12, "N": 14, "C": 23 } },
-				{ "name": "N2", "frames": { "anim": 25, "hit": 10, "N": 13, "C": 20 } },
-				{ "name": "N3", "frames": { "anim": 41, "hit": 18, "N": 24, "C": 19 } },
-				{ "name": "N4", "frames": { "anim": 56, "hit": 35, "N": 41, "C": 41 } },
-				{ "name": "N5", "frames": { "anim": 59, "hit": 39, "C": 39 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 27,
+						"hit": 12,
+						"N": 14,
+						"C": 23
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 25,
+						"hit": 10,
+						"N": 13,
+						"C": 20
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 41,
+						"hit": 18,
+						"N": 24,
+						"C": 19
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 56,
+						"hit": 35,
+						"N": 41,
+						"C": 41
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 59,
+						"hit": 39,
+						"C": 39
+					}
+				}
 			],
 			"description": "Wriothesley's normal-attack combo while in the Chilling Penalty state from Icefang Rush. The 5-press combo and frame timings are identical to the base normal — gcsim uses the same attackFrames slice — but each hit's damage is multiplied by an additional skill-talent coefficient and consumes a fixed portion of Wriothesley's HP. No element conversion (already Cryo).",
 			"_curatorNotes": [
@@ -83,13 +183,22 @@
 			"cooldown": 16,
 			"cooldownStartDelay": 1,
 			"duration": 10,
-			"frames": { "anim": 29, "N": 15, "Q": 5, "D": 21, "J": 20, "swap": 19 },
+			"frames": {
+				"anim": 29,
+				"N": 15,
+				"Q": 5,
+				"D": 21,
+				"J": 20,
+				"swap": 19
+			},
 			"tags": [],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -117,7 +226,10 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"frames": { "anim": 133, "swap": 94 },
+			"frames": {
+				"anim": 133,
+				"swap": 94
+			},
 			"tags": [],
 			"energyCost": 60,
 			"effects": [],
@@ -130,12 +242,32 @@
 				"C2 adds 40% × a4Stack to Q DMG (snap.Stats[DmgP] += 0.4 * a4Stack at cast). Not authored — depends on a4Stack runtime which schema cannot express."
 			],
 			"application": [
-				{ "frame": 99, "element": "cryo", "units": 1 },
-				{ "frame": 104, "element": "cryo" },
-				{ "frame": 109, "element": "cryo" },
-				{ "frame": 114, "element": "cryo", "units": 1 },
-				{ "frame": 119, "element": "cryo" },
-				{ "frame": 160, "element": "cryo" }
+				{
+					"frame": 99,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 104,
+					"element": "cryo"
+				},
+				{
+					"frame": 109,
+					"element": "cryo"
+				},
+				{
+					"frame": 114,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 119,
+					"element": "cryo"
+				},
+				{
+					"frame": 160,
+					"element": "cryo"
+				}
 			]
 		}
 	],
@@ -148,8 +280,14 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": { "type": "onHit", "abilityType": "charged" },
-					"conditions": { "type": "selfHpBelow", "threshold": 60 },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"conditions": {
+						"type": "selfHpBelow",
+						"threshold": 60
+					},
 					"procCooldown": 5,
 					"scaling": 30,
 					"stat": "hp"
@@ -170,9 +308,9 @@
 			"description": "When Wriothesley's current HP increases or decreases, if he is in the Chilling Penalty state conferred by Icefang Rush, Chilling Penalty will gain one stack of Prosecution Edict. Max 5 stacks. Each stack will increase Wriothesley's ATK by 6%.",
 			"_curatorNotes": [
 				"Intentionally not authored per stub-with-caveat philosophy 2026-05-14 (onPlayerHit + onHeal categories — both HP-change subscriptions are null-resolving in the planner; HP state isn't simulated). Probable shape if a primitive ever lands: type:'buff', target:'self', stat:'atk%', value: scaling on stack count (6% × stacks, max 5 stacks = 30%), trigger gated on stance + HP-change subscription. gcsim source: subscribes to OnPlayerHPDrain and OnHeal; stacks reset when stance ends (resetA4 called on each Skill cast).",
-				"Stance ATK% buff is applied via applyA4 when E is cast and recomputed dynamically each frame — modifier.NewBaseWithHitlag for a 10s+1f duration matching stance lifetime."
-			],
-			"caveat": "Not modeled: the Prosecution Edict ATK buff (up to +30% ATK) gained on HP changes while in the Chilling Penalty state."
+				"Stance ATK% buff is applied via applyA4 when E is cast and recomputed dynamically each frame — modifier.NewBaseWithHitlag for a 10s+1f duration matching stance lifetime.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The received-buff lane under Wriothesley during his 10s Chilling Penalty stance bar. A player who knows him expects an ATK% bar riding that stance and finds the lane empty — the passive authors no effect at all, and its real trigger (onHit/onHeal HP change) is rubric N6, unconsumed. A 10s, stance-wide, up-to-30% ATK buff is exactly the shape the buff lane exists to draw, so its blank is a real confusion. Category: expected-but-absent."
+			]
 		},
 		{
 			"id": "wriothesley__passive__there_shall_be_an_unveiling_for_injustice",
@@ -182,8 +320,13 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
 					"source": "character",
 					"stat": "stellarConductReactionBonus",
 					"value": 30,
@@ -192,12 +335,21 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": { "type": "onHit", "abilityType": "charged" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "teamEnablesReaction", "reaction": "stellarConduct" },
-							{ "type": "selfHpBelow", "threshold": 60 }
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarConduct"
+							},
+							{
+								"type": "selfHpBelow",
+								"threshold": 60
+							}
 						]
 					},
 					"procCooldown": 2,
@@ -214,9 +366,10 @@
 				"NOT authored (damage magnitude, per the tool constitution): the 3rd and 5th Chilling-Penalty Repelling Fists dealing 60%/80% and Luster: Vaulting Fist dealing 100% of their original Cryo DMG as Stellar-Conduct DMG. Wiki wording is ambiguous between converting those hits and adding a separate Stellar-Conduct instance; either reading is DMG output, not a stat.",
 				"NOT authored: Polestar Field internals and the Base Reaction Coefficient hit ledger (1 → 1.45 + 0.05 per recorded Cryo/Electro hit, max 12), per docs/library/game/stellar-reactions.md — unmodelable by Nate's call. Note the wiki's own table starts at 1.45 for 1 hit, which resolves the NEEDS-CONFIRM in that doc's step reading.",
 				"game8 cross-check: its 'CA restores 30% Max HP, cooldown 2s' matches the wiki, and the direction is indeed a heal (the base kit's HP *cost* is on in-stance Normal hits, not on the Charged Attack). Its 60%/80%/100% conversions and +30% Stellar-Conduct DMG also match. No numeric disagreement found.",
-				"Base kit unchanged this patch: A1, A4, Icefang Rush (CD 16s / 10s duration) and Darkgold Wolfbite (CD 15s / 60 energy) wiki pages still carry the 4.1 text and values — no permanent patch to apply, no CD change."
+				"Base kit unchanged this patch: A1, A4, Icefang Rush (CD 16s / 10s duration) and Darkgold Wolfbite (CD 15s / 60 energy) wiki pages still carry the 4.1 text and values — no permanent patch to apply, no CD change.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Shown as always on; in game these enhancements need a Stellar-Conduct enabler in the party and require standing inside the Polestar Field. Not modeled: the 3rd and 5th Repelling Fists and the enhanced Charged Attack dealing part of their DMG as Stellar-Conduct DMG.\""
 			],
-			"caveat": "Shown whenever a Stellar-Conduct enabler is in the party; in game these enhancements also require standing inside the Polestar Field. Not modeled: the 3rd and 5th Repelling Fists and the enhanced Charged Attack dealing part of their DMG as Stellar-Conduct DMG."
+			"caveat": "Shown as always on; in game these enhancements need a Stellar-Conduct enabler in the party and require standing inside the Polestar Field."
 		}
 	],
 	"constellations": [
@@ -229,7 +382,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",
@@ -243,9 +398,10 @@
 				"Stance-extension component (Rebuke hit while in-stance extends duration by 4s, once per stance) is not authored. Schema has no per-stance-window proc-cap field. Reviewer to extend.",
 				"C1 also adds a second Gracious Rebuke trigger: N5 hit during stance also generates one. Stack-source diversification not modeled.",
 				"Stellar-Conduct round 2026-07-29 (wiki-only evidence): the Witch's Revelation rewrite of this constellation (Fandom Constellation Infobox `buff` field) keeps the base text and appends a 'Radiance: Stellar-Conduct' block — (a) after Luster: Vaulting Fist hits, the next Chilling-Penalty 5th Repelling Fist to hit within 5s deals 50% increased Stellar-Conduct DMG; (b) after that 5th Repelling Fist hits, Luster: Vaulting Fists hitting within 5s deal 50% increased DMG; (c) the 4s Chilling Penalty extension keys off Luster: Vaulting Fist instead of Rebuke: Vaulting Fist, still once per stance.",
-				"Not authored: (a) and (b) are single-instance-scoped DMG bonuses inside an alternating 5s ping-pong — a self stellarConductDmgBonus/allDmgBonus window would apply far more broadly than the game does. (c) is the same stance extension already blocked on onHit dispatch to stance owners. The pre-Revelation base text is unchanged this patch, so the existing (separately queued) allDmgBonus 200 effect is untouched."
+				"Not authored: (a) and (b) are single-instance-scoped DMG bonuses inside an alternating 5s ping-pong — a self stellarConductDmgBonus/allDmgBonus window would apply far more broadly than the game does. (c) is the same stance extension already blocked on onHit dispatch to stance owners. The pre-Revelation base text is unchanged this patch, so the existing (separately queued) allDmgBonus 200 effect is untouched.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the enhanced Charged Attack extending Chilling Penalty by 4s, once per window — or, with a Stellar-Conduct enabler in the party, it and the fifth Repelling Fist each giving the other +50% DMG for 5s.\""
 			],
-			"caveat": "Not modeled: with a Stellar-Conduct enabler in the party, the enhanced Charged Attack and the fifth Repelling Fist each give the other +50% DMG for 5s after they hit."
+			"caveat": "Not modeled: the enhanced Charged Attack extending Chilling Penalty by 4s once per window, so the skill's active span is shown 4s short."
 		},
 		{
 			"id": "wriothesley__constellation__shackles_for_the_arrogant",
@@ -256,9 +412,9 @@
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. gcsim cons.go c2: snap.Stats[DmgP] += 0.4 * a4Stack at burst-cast time. Probable shape: type:'buff', target:'self', stat:'allDmgBonus' (or burstDmgBonus), value scaling on a4 stack count (40% × stacks, max 5 = 200%), trigger onCast burst, conditions: requires inStance at cast time + a4 stack count > 0. Schema has no stack-count condition.",
 				"Stellar-Conduct round 2026-07-29 (wiki-only evidence): the Witch's Revelation rewrite (Fandom Constellation Infobox `buff` field) keeps the 40%-per-stack burst bonus and adds a branch that fires at 5 Prosecution Edict stacks — in the Radiance: Stellar-Conduct state the Chilling-Penalty 3rd/5th Repelling Fists go to 90%/120% and Luster: Vaulting Fist to 150% of their original Cryo DMG as Stellar-Conduct DMG; outside that state Normal Attacks and Charged Attacks deal 125%/130% of their original DMG.",
-				"Not authored: both branches are damage magnitudes, and both hang off the Prosecution Edict stack count, which is untracked (A4 stacks are already flagged unmodeled). The non-Stellar 125%/130% branch is a PERMANENT patch (no enabler needed) but is equally unmodelable — a stack-gated instance multiplier, not a stat buff. No enabler-negated condition authored: the real gate is the Radiance state, not merely the absence of an enabler."
-			],
-			"caveat": "Not modeled: at 5 Prosecution Edict stacks, Normal and Charged Attacks deal 125% and 130% of their DMG — or, inside the Polestar Field, stronger Stellar-Conduct hits instead."
+				"Not authored: both branches are damage magnitudes, and both hang off the Prosecution Edict stack count, which is untracked (A4 stacks are already flagged unmodeled). The non-Stellar 125%/130% branch is a PERMANENT patch (no enabler needed) but is equally unmodelable — a stack-gated instance multiplier, not a stat buff. No enabler-negated condition authored: the real gate is the Radiance state, not merely the absence of an enabler.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Every clause is a damage multiplier on an attack instance — 125%/130% of DMG, or a stronger Stellar-Conduct hit. The planner draws no damage anywhere (tool constitution, FROZEN section), so nothing on screen is wrong, short, or missing. The gating stack count is itself invisible (no stack counter exists on any surface), so there is not even a blank the player could notice. Category: invisible-omission."
+			]
 		},
 		{
 			"id": "wriothesley__constellation__punishment_for_the_frauds",
@@ -276,7 +432,9 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 50,
 					"stat": "hp"
 				}
@@ -286,9 +444,9 @@
 				"Inherited heal skeleton (50% MaxHP) corresponds to the C4 upgrade of A1's Rebuke heal — replaces the 30% in the base passive. Probable trigger: onHit charged-attack (Rebuke), conditions hpBelow60 OR inStance with 2.5s/5s ICD depending on C1. Reviewer to wire.",
 				"The ATK SPD overheal mechanic is not authored. Two branches: on-field self +20% ATK SPD for 4s, off-field team +10% for 6s. Trigger event is OnHeal with overheal>0 condition — schema has no overheal trigger. Reviewer to extend or flag.",
 				"Stellar-Conduct round 2026-07-29 (wiki-only evidence): the Witch's Revelation rewrite (Fandom Constellation Infobox `buff` field) replaces the whole overheal ATK SPD mechanic while in the Radiance: Stellar-Conduct state with an unconditional package — 25% less DMG taken, +20% ATK SPD for himself, +10% ATK SPD for other nearby party members. The 50% Max HP Rebuke heal is unchanged.",
-				"Not authored: there is no `atkSpd` Stat key and no damage-reduction Effect or Stat in the union (checked 2026-07-29), so neither half is expressible. This is the only team-facing piece of the Stellar layer on this character — worth revisiting if either primitive lands."
-			],
-			"caveat": "Not modeled: inside the Polestar Field the overheal effect is replaced by 25% less DMG taken and +20% ATK SPD for him, plus +10% ATK SPD for nearby party members."
+				"Not authored: there is no `atkSpd` Stat key and no damage-reduction Effect or Stat in the union (checked 2026-07-29), so neither half is expressible. This is the only team-facing piece of the Stellar layer on this character — worth revisiting if either primitive lands.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — There is no `atkSpd` Stat key and no damage-reduction Effect or Stat in the union (the curator note confirms both, checked 2026-07-29), so ATK SPD and DMG reduction are categories the tool never depicts for ANY character — like damage numbers. The trigger is overheal, which has no schema shape either. No bar is short, none is missing from a place the tool otherwise fills. Category: invisible-omission."
+			]
 		},
 		{
 			"id": "wriothesley__constellation__mercy_for_the_wronged",
@@ -306,7 +464,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -316,7 +476,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",
@@ -329,9 +491,9 @@
 				"Inherited skeletons treat +10% CR / +80% CD as self-buffs, but in gcsim these are snapshot-time additions only on Rebuke: Vaulting Fist (cons.go addC6Buff: snap.Stats[CR/CD] += during the C1 callback path). They do NOT buff other attacks. Probable shape: trigger onCast charged-attack, conditions hpBelow60 OR inStance + Rebuke-active. Schema has no Rebuke-instance scoping; reviewer to model.",
 				"Second icicle (100% Base DMG of Rebuke: Vaulting Fist) is authored in gcsim charge.go as a duplicated QueueAttackWithSnap when c6Attack is true. Damage instance not authored as separate effect; reviewer to add.",
 				"Stellar-Conduct round 2026-07-29 (wiki-only evidence): the Witch's Revelation rewrite (Fandom Constellation Infobox `buff` field) changes this in the Radiance: Stellar-Conduct state — the +10% CRIT Rate / +80% CRIT DMG no longer scope to Rebuke: Vaulting Fist alone but cover every Chilling-Penalty-enhanced Repelling Fist plus Luster: Vaulting Fist, and the 5th Repelling Fist and Luster each spawn an extra icicle dealing 60% of its original DMG as Stellar-Conduct DMG.",
-				"Existing broad self critRate/critDmg effects left untouched (no current-patch evidence that the BASE constellation changed; the over-broad flag in the note above still stands outside the Radiance state, where under it the broad shape is closer to correct). Icicle DMG not authored — damage magnitude."
-			],
-			"caveat": "Not modeled: inside the Polestar Field the CRIT boosts cover every Chilling Penalty Repelling Fist and the enhanced Charged Attack, which also spawn extra icicles dealing Stellar-Conduct DMG."
+				"Existing broad self critRate/critDmg effects left untouched (no current-patch evidence that the BASE constellation changed; the over-broad flag in the note above still stands outside the Radiance state, where under it the broad shape is closer to correct). Icicle DMG not authored — damage magnitude.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — with a bar shape. The +10% CR / +80% CD are snapshot-time additions on ONE charged-attack instance (gcsim cons.go addC6Buff, per the curator note) — a per-instance snapshot bonus has no duration, so there is no bar the buff lane would ever draw for it, unlike the stance-wide A4 ATK buff kept above. The extra icicles are damage magnitude, and the Polestar Field half is unreachable trivia. The two authored `manual` effects draw nothing (rubric N1) and correctly so — authoring them would over-apply. Category: invisible-omission."
+			]
 		}
 	],
 	"meta": {

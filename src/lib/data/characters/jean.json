@@ -16,13 +16,53 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 25, "hit": 13, "N": 22 } },
-				{ "name": "N2", "frames": { "anim": 20, "hit": 6, "N": 14 } },
-				{ "name": "N3", "frames": { "anim": 31, "hit": 17, "N": 28 } },
-				{ "name": "N4", "frames": { "anim": 49, "hit": 37, "N": 44 } },
-				{ "name": "N5", "frames": { "anim": 68, "hit": 25 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 25,
+						"hit": 13,
+						"N": 22
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 20,
+						"hit": 6,
+						"N": 14
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 31,
+						"hit": 17,
+						"N": 28
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 49,
+						"hit": 37,
+						"N": 44
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 68,
+						"hit": 25
+					}
+				}
 			],
-			"chargeFrames": { "anim": 57, "Q": 56, "D": 36, "J": 36, "swap": 39 },
+			"chargeFrames": {
+				"anim": 57,
+				"Q": 56,
+				"D": 36,
+				"J": 36,
+				"swap": 39
+			},
 			"_curatorNotes": [
 				"Plunge frames: no plunge.go exists for Jean in gcsim; plunge frame data not available from source."
 			],
@@ -51,18 +91,29 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 46, "D": 28, "J": 28, "swap": 45 },
+			"frames": {
+				"anim": 46,
+				"D": 28,
+				"J": 28,
+				"swap": 45
+			},
 			"cooldown": 6,
 			"cooldownStartDelay": 19,
 			"tags": ["grouping"],
 			"effects": [],
-			"caveat": "Only the held version pulls opponents in — a tap launches them away instead.",
 			"_curatorNotes": [
 				"Hold mechanic: skill can be held up to 5s (300 frames). Tap frames recorded here (hold=0). Actual animation = skillFrames[action] + hold; cooldownStartDelay = (skillHitmark + hold) - 2 = 21 + hold - 2, so varies with hold duration. Tap cooldownStartDelay = 19. C1 grants +40% DMG when held ≥1s (≥60 frames). Reviewer to decide if a hold variant entry is needed.",
-				"'grouping' tag added (capability sweep 2026-07-28): wiki Vacuum Field table lists Gale Blade (Hold) as a pulling vacuum (radius 10m, strength 2; C1 doubles to 4 — gcsim cons.go:13 'Increases the pulling speed of Gale Blade after holding for more than 1s'). Hold-only — the tap launches instead — hence the caveat; no hold variant exists yet (see note above)."
+				"'grouping' tag added (capability sweep 2026-07-28): wiki Vacuum Field table lists Gale Blade (Hold) as a pulling vacuum (radius 10m, strength 2; C1 doubles to 4 — gcsim cons.go:13 'Increases the pulling speed of Gale Blade after holding for more than 1s'). Hold-only — the tap launches instead — hence the caveat; no hold variant exists yet (see note above).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Enemy displacement (pull vs launch) has no planner surface — no lane, no marker, no bar shows where opponents are. The `grouping` tag it qualifies reaches only the Team Builder facet, and an authored caveat reaches exactly ONE surface, the planner Notes panel (rubric N17), so it cannot repair that claim even in principle. Category: invisible-omission."
 			],
 			"description": "Focusing the might of the formless wind around her blade, Jean releases a miniature storm, launching opponents in the direction she aims at, dealing massive Anemo DMG.\n\nHold\nAt the cost of continued stamina consumption, Jean can command the whirlwind to pull surrounding opponents and objects towards her front.\nDirection can be adjusted.\nCharacter is immobile during skill duration.",
-			"application": [{ "frame": 21, "element": "anemo", "units": 2 }]
+			"application": [
+				{
+					"frame": 21,
+					"element": "anemo",
+					"units": 2
+				}
+			]
 		},
 		{
 			"id": "jean__burst__dandelion_breeze",
@@ -70,7 +121,12 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 90, "N": 88, "E": 89, "swap": 88 },
+			"frames": {
+				"anim": 90,
+				"N": 88,
+				"E": 89,
+				"swap": 88
+			},
 			"cooldown": 20,
 			"cooldownStartDelay": 38,
 			"tags": ["heal", "cleanse"],
@@ -79,7 +135,10 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"scaling": 452.16,
 					"stat": "atk",
 					"flat": 3389
@@ -95,7 +154,11 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": { "type": "summonTick", "interval": 1, "firstTickDelay": 1 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1,
+								"firstTickDelay": 1
+							},
 							"scaling": 45.22,
 							"stat": "atk",
 							"flat": 339
@@ -105,14 +168,26 @@
 			],
 			"_curatorNotes": [
 				"Heal effects authored 2026-07-12 at talent level 10: Field Activation Healing 452.16% ATK + 3389 (instant, all party members, on cast) + Continuous Regeneration 45.22% ATK + 339 per second (active character within the field only). Tick cadence verified against gcsim burst.go: first heal tick at frame 100 (1s after field spawn at frame 40), then every 60 frames; heal targets c.Core.Player.Active() gated on IsWithinArea — hence target: active, not team.",
-				"Field also continuously imbues the active character with Anemo (self-swirl mechanic in gcsim — see burst.go ReactWithSelf, ticks alongside each heal tick); not modeled — no infusion-of-recipient primitive for summon fields."
+				"Field also continuously imbues the active character with Anemo (self-swirl mechanic in gcsim — see burst.go ReactWithSelf, ticks alongside each heal tick); not modeled — no infusion-of-recipient primitive for summon fields.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The application named is to the ACTIVE CHARACTER, not to the opponent. The aura lane charts the enemy's gauge only — a character-side aura does not exist in the model at any level, so no pip, line or log row was ever due. The field's three enemy-side Anemo applications ARE authored (frames 40/55/640) and do draw. Category: invisible-omission."
 			],
 			"description": "Calling upon the wind's protection, Jean creates a swirling Dandelion Field, launching surrounding opponents and dealing Anemo DMG.\nAt the same time, she instantly regenerates a large amount of HP for all party members. The amount of HP restored scales off Jean's ATK.\n\nDandelion Field\n·Continuously regenerates HP of characters within the AoE and continuously imbues them with Anemo.\n·Deals Anemo DMG to opponents entering or exiting the Dandelion Field.",
-			"caveat": "Not modeled: the field's continuous Anemo application (self-swirl) to the active character standing inside it.",
 			"application": [
-				{ "frame": 40, "element": "anemo", "units": 2 },
-				{ "frame": 55, "element": "anemo", "units": 2 },
-				{ "frame": 640, "element": "anemo", "units": 2 }
+				{
+					"frame": 40,
+					"element": "anemo",
+					"units": 2
+				},
+				{
+					"frame": 55,
+					"element": "anemo",
+					"units": 2
+				},
+				{
+					"frame": 640,
+					"element": "anemo",
+					"units": 2
+				}
 			]
 		}
 	],
@@ -125,16 +200,19 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "onHit", "abilityType": "normal" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
 					"scaling": 15,
 					"stat": "atk"
 				}
 			],
 			"_curatorNotes": [
-				"Migrated to onHit ability:normal 2026-05-09 (F1). The 50% proc chance is not modeled in the current effect schema — the heal renders on every Jean N hit, doubling its actual frequency. Acceptable approximation."
+				"Migrated to onHit ability:normal 2026-05-09 (F1). The 50% proc chance is not modeled in the current effect schema — the heal renders on every Jean N hit, doubling its actual frequency. Acceptable approximation.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — and the \"double the frequency\" is doubling something that is drawn ZERO times. A `heal` Effect reaches no planner surface (grep: nothing in src/lib/timeline or buffWindows.ts reads type 'heal'); the only heal a reader ever sees is a summonTick heal, as a generic tick MARK, and this is an onHit heal on a passive with no summon. There is no heal cadence on screen to be wrong. Category: invisible-omission."
 			],
-			"description": "On hit, Jean's Normal Attacks have a 50% chance to regenerate HP equal to 15% of Jean's ATK for all party members.",
-			"caveat": "Shown on every Normal Attack hit; in game each hit has only a 50% chance to heal, so the timeline shows about double the real healing frequency."
+			"description": "On hit, Jean's Normal Attacks have a 50% chance to regenerate HP equal to 15% of Jean's ATK for all party members."
 		},
 		{
 			"id": "jean__passive__let_the_wind_lead",
@@ -183,7 +261,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 10,
 					"element": "anemo",
 					"value": -40

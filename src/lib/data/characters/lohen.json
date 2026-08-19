@@ -46,8 +46,14 @@
 			"terminatesOnSwap": true,
 			"durationExtensions": [
 				{
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "state", "state": "inStance" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
 					"delta": 1.65
 				}
 			],
@@ -57,13 +63,16 @@
 				{
 					"type": "infuse",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 13,
 					"durationType": "fixed",
 					"element": "cryo"
 				}
 			],
-			"caveat": "Not modeled: the special skill Etched Into Bone and Soul and the Joy / Will to Win resources — on-field mechanics the timeline doesn't show.",
+			"caveat": "Not modeled: the special Elemental Skill Etched Into Bone and Soul — there is no token for it, so the casts a Lohen player makes inside Masterstroke draw nothing.",
 			"_curatorNotes": [
 				"No gcsim source (not on main, no open PR as of 2026-07-14) — frames impossible; Lohen stays in FRAMELESS_EXEMPT. Stages 1–3 only.",
 				"Masterstroke = a stance (behavior: stance, terminatesOnSwap true) verified by web sources: mode ends when Lohen leaves the field and resets Joy / Will to Win to 0. Base duration 13.0s (sidecar 'Masterstroke' row, talent-level-invariant).",
@@ -71,7 +80,8 @@
 				"Joy (self, cap 100, spent on Etched Into Bone and Soul — up to 3 casts, 5 at C6) and Will to Win (built by teammates, cap 100 / 300 at C1, spent by Burst) are internal on-field-DPS resources — not team-facing capabilities, not modeled.",
 				"Cryo application ICD (~6 instances per 5s on empowered attacks) not modeled — no frames. Mechanics source: KQM quickguide.",
 				"[Hexerei] The Secret Rite (see factionBonuses) also triggers when the special Elemental Skill Etched Into Bone and Soul HITS an opponent. That special skill is not an authored ability (no ability id, no Joy model), so only the Burst trigger path is modeled; the hit path is unmodelable, not omitted by choice. Source: KQM quickguide (https://keqingmains.com/q/lohen-quickguide/), fetched 2026-07-29.",
-				"[A7] Rewrite dropped the working-behavior description of the modeled stance (Masterstroke 13s; behavior:'stance' + terminatesOnSwap) and the modeled Cryo self-infusion. Also dropped the sourcing detail that nearby teammates build Will to Win for Lohen (already covered in _curatorNotes) — the resource itself is retained in the rewrite as a not-modeled on-field resource."
+				"[A7] Rewrite dropped the working-behavior description of the modeled stance (Masterstroke 13s; behavior:'stance' + terminatesOnSwap) and the modeled Cryo self-infusion. Also dropped the sourcing detail that nearby teammates build Will to Win for Lohen (already covered in _curatorNotes) — the resource itself is retained in the rewrite as a not-modeled on-field resource.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the special skill Etched Into Bone and Soul and the Joy / Will to Win resources — on-field mechanics the timeline doesn't show.\""
 			]
 		},
 		{
@@ -85,7 +95,7 @@
 			"effects": [],
 			"description": "Performs a swift series of forward strikes, consuming all **Will to Win** and dealing Cryo DMG. This DMG will be increased based on the amount of Will to Win consumed. If Lohen is in **Masterstroke** mode when this is performed, the duration of Masterstroke will be extended by 1.65s.",
 			"behavior": "instant",
-			"caveat": "Not modeled: the on-field damage, which scales with how much Will to Win is consumed. With 2+ Hexerei in the team the Secret Rite N/CA DMG buff is shown on every cast, but in game it needs Will to Win at 50% or more.",
+			"caveat": "With 2+ Hexerei in the team the Secret Rite N/CA DMG buff is shown on every cast, but in game it needs Will to Win at 50% or more.",
 			"_curatorNotes": [
 				"[Hexerei] The Secret Rite N/CA DMG buff (see factionBonuses) is triggered by this Burst; the Will-to-Win >=50% threshold has no schema condition (Will to Win is an unmodeled internal resource), so the effect fires unconditionally on cast and the threshold is carried in the caveat. Source: KQM quickguide (https://keqingmains.com/q/lohen-quickguide/), fetched 2026-07-29.",
 				"Burst DMG scales with consumed Will to Win (0.40%/Point at TL10, sidecar 'DMG Increase From Will to Win') — a self on-field-DPS resource, not modeled. Base 118.8%×6 → 202.0%×6 at TL10 (self damage; no off-field / team capability).",
@@ -120,21 +130,24 @@
 					},
 					"duration": 8,
 					"durationType": "refresh",
-					"conditions": { "type": "state", "state": "inStance" },
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
 					"source": "character",
 					"stat": "atk%",
 					"value": 15,
 					"snapshottable": false
 				}
 			],
-			"caveat": "The buff is shown only on the on-field character — in game the teammate who triggered the reaction also keeps their +15% ATK, which the timeline doesn't show.",
 			"_curatorNotes": [
 				"A4 Flippant Masterpiece: +15% ATK to the reaction-triggering teammate AND Lohen, 8s, refreshing. Values web-verified (KQM quickguide, Fandom, Icy Veins). Gated on Masterstroke (state:inStance).",
 				"Trigger source: kit text says 'another nearby party member' triggers the reaction (i.e. not Lohen). The onReaction trigger has no 'others' source (only 'self'/'team'), so 'team' is used as the closest approximation — in canonical play the reaction is triggered by a teammate anyway (Lohen is the on-field Cryo applier).",
 				"Reaction list covers the Cryo-involving reactions: Melt, Frozen, Superconduct, Cryo Swirl, Cryo Crystallize. (Shatter is deliberately excluded — it is not a 'Cryo reaction' in the in-game sense.)",
 				"target ['self','active']: the buff reaches Lohen plus the reacting character; normalizes to 'active' for the capability facet. In practice the reactor is often an off-field applier, which the 'active' target can't perfectly express — flagged.",
 				"snapshottable: false chosen conservatively (dynamic on-field ATK buff); no source confirms snapshot-onto-attack behavior.",
-				"[A7] Deleted because the caveat only restated the fully-modeled A4 buff (onReaction, source:team, +15 atk%, 8s refresh, gated state:inStance, target ['self','active']) — working behavior the timeline renders. The only genuine divergences are curator-facing and already in _curatorNotes: source:'team' stands in for the kit's 'another nearby party member' (onReaction has no 'others' source), and target 'active' cannot perfectly express an off-field reactor. Not surfaced to users."
+				"[A7] Deleted because the caveat only restated the fully-modeled A4 buff (onReaction, source:team, +15 atk%, 8s refresh, gated state:inStance, target ['self','active']) — working behavior the timeline renders. The only genuine divergences are curator-facing and already in _curatorNotes: source:'team' stands in for the kit's 'another nearby party member' (onReaction has no 'others' source), and target 'active' cannot perfectly express an off-field reactor. Not surfaced to users.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The +15% ATK received-buff bar lands on the ACTIVE character's row (target ['self','active']). In game it belongs to the character who triggered the Cryo reaction — often an off-field applier — so the bar is on the wrong row and the reactor's row is blank. A player who knows the kit looks for it on the reactor and finds nothing. Category: visible-divergence."
 			]
 		}
 	],
@@ -159,11 +172,16 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "onHit" },
+					"trigger": {
+						"type": "onHit"
+					},
 					"duration": 8,
 					"durationType": "refresh",
 					"procCooldown": 4,
-					"conditions": { "type": "state", "state": "inStance" },
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
 					"source": "character",
 					"stat": "em",
 					"value": 200,
@@ -171,12 +189,15 @@
 				}
 			],
 			"description": "When in **Masterstroke** mode, after the special Elemental Skill **Etched Into Bone and Soul** hits an opponent or the Elemental Burst Manifest Judgment is unleashed, Lohen gains \"Evilsbane Blade\" for 4s: The next time Lohen hits an opponent with a Normal or Charged Attack while in Masterstroke mode, he will follow up with an additional strike that deals AoE Cryo DMG equal to 500% of his ATK, and increase the Elemental Mastery of other nearby party members by 200 for 8s. Evilsbane Blade can be triggered once every 4s.",
-			"caveat": "Not modeled: the Evilsbane Blade follow-up strike's own 500% ATK Cryo damage — on-field damage the timeline doesn't show.",
+			"caveat": "Shown from the skill or burst cast; in game the +200 EM needs Evilsbane Blade — armed by the burst or an Etched Into Bone and Soul hit — to land on a Normal or Charged Attack.",
 			"_curatorNotes": [
 				"C2 grants +200 EM to OTHER nearby party members (teamExcludingSelf) for 8s, once every 4s (procCooldown 4). Web-verified (KQM quickguide, Icy Veins). Gated on Masterstroke (state:inStance).",
-				"Trigger approximated as onHit (the Evilsbane follow-up fires on the next N/CA hit while in Masterstroke); the precise Evilsbane-Blade arming chain (armed by Etched-hit or Burst, 4s window) isn't modeled — procCooldown 4 stands in for the once-every-4s cap.",
+				"Trigger authored as onHit (in game the Evilsbane follow-up fires on the next N/CA hit while in Masterstroke); the precise Evilsbane-Blade arming chain (armed by Etched-hit or Burst, 4s window) isn't modeled — no arming/consume primitive exists for it.",
+				"↻ 2026-08-18: this onHit does NOT dispatch off an N/CA hit, so the approximation the note above described was never what the timeline drew. `getCharacterEffectsForOnHit` (src/lib/utils/effectCollection.ts, the `isInputClass` → `continue` branch) EXCLUDES a passive/constellation-hosted `onHit` that declares no `trigger.abilityType` from the N/CA/P per-swing pass — otherwise it would fire on every swing — and instead admits it for castType skill AND burst. So the +200 EM bar is drawn from the E cast and again from the Q cast, anchored at the cast instant, never at a swing. That is what the ability caveat now discloses; ⛔ don't \"fix\" it by adding `trigger.abilityType: [\"normal\",\"charged\"]`, which would move the bar onto every N/CA hit and drop the arming gate entirely.",
+				"↻ 2026-08-18: `procCooldown: 4` stands in for NOTHING — it is honoured on the gainStacks, damage-proc, artifact-4pc-onHit, weapon-swap-proc, onShieldEnd and durationExtensions paths only, never on a character `buff`/`resShred` bar. Those pools read `evalTriggerFilter` alone (src/lib/utils/buffWindows.ts; the only `procCooldown` reads in that file are the artifact branch at ~:1052 and the weapon swap-proc branch at ~:1163). Cast E and Q inside 4s and TWO 8s EM bars draw. Rubric D4/P2, `docs/curation/engine-capability-rubric.md`. The field stays because 4s is the correct authored datum for the in-game cap, not because a reader exists.",
+				"⚠️ The `conditions: {state: inStance}` Masterstroke gate does not restrict this bar either. Buff-window evaluation calls `evalCondition` with an EMPTY resolvedStates set, so a kit state resolves null and the effect renders optimistically (rubric D6 — 88 such conditions over 36 characters). The bar draws from an E/Q cast whether or not Lohen is in Masterstroke.",
 				"The 500% ATK AoE Cryo follow-up is Lohen's own on-field damage — not off-field/team damage, not authored.",
-				"[A7] Rewrite dropped the description of the modeled +200 EM buff (effect: onHit, target teamExcludingSelf, em 200, 8s refresh, procCooldown 4 approximating the once-every-4s cap, gated state:inStance) — working behavior shown on the timeline. Kept only the not-modeled 500% ATK Cryo follow-up (self on-field) damage."
+				"[A7] Rewrite dropped the description of the modeled +200 EM buff (effect: onHit, target teamExcludingSelf, em 200, 8s refresh, procCooldown 4 approximating the once-every-4s cap, gated state:inStance) — working behavior shown on the timeline. Kept only the not-modeled 500% ATK Cryo follow-up (self on-field) damage. ⚠️ Read this as a record of the A7 pass, not as current behaviour — the parenthetical's \"procCooldown 4 approximating the cap\" and \"gated state:inStance\" are both corrected by the ↻ notes above, and the caveat has since been rewritten to say the bar is shown from the skill or burst cast."
 			]
 		},
 		{
@@ -229,8 +250,15 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 6,
 					"durationType": "refresh",
 					"target": "self",
@@ -241,8 +269,15 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 6,
 					"durationType": "refresh",
 					"target": "self",
@@ -260,5 +295,8 @@
 			]
 		}
 	],
-	"meta": { "source": "genshin-db", "generatedAt": "2026-07-12T05:40:54.372Z" }
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-07-12T05:40:54.372Z"
+	}
 }

@@ -16,9 +16,33 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 10, "N": 15, "C": 18, "swap": 10 } },
-				{ "name": "N2", "frames": { "anim": 13, "N": 20, "C": 19, "swap": 13 } },
-				{ "name": "N3", "frames": { "anim": 42, "N": 90, "C": 81, "swap": 42 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 10,
+						"N": 15,
+						"C": 18,
+						"swap": 10
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 13,
+						"N": 20,
+						"C": 19,
+						"swap": 13
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 42,
+						"N": 90,
+						"C": 81,
+						"swap": 42
+					}
+				}
 			],
 			"chargeFrames": {
 				"anim": 62,
@@ -30,7 +54,15 @@
 				"J": 45,
 				"swap": 62
 			},
-			"plungeFrames": { "anim": 57, "N": 50, "C": 50, "E": 38, "Q": 50, "D": 42, "swap": 57 },
+			"plungeFrames": {
+				"anim": 57,
+				"N": 50,
+				"C": 50,
+				"E": 38,
+				"Q": 50,
+				"D": 42,
+				"swap": 57
+			},
 			"_curatorNotes": [
 				"FrameMaps from gcsim UNMERGED gcsim PR #2639 (frame origin: PR #2639, dir internal/characters/ifa/); may shift before merge.",
 				"Normal hits: attack.go attackHitmarks = [10, 13, 42], attackFrames init. N1 = InitNormalCancelSlice(10, 27), ActionAttack=15, ActionCharge=18. N2 = InitNormalCancelSlice(13, 31), ActionAttack=20, ActionCharge=19. N3 = InitNormalCancelSlice(42, 90), ActionCharge=81 (ActionAttack not overridden, so N=animation=90). swap = hitmark per convention.",
@@ -68,14 +100,27 @@
 			"terminatesOnSwap": false,
 			"cooldown": 7.5,
 			"cooldownStartsAtStanceEnd": true,
-			"frames": { "anim": 31, "C": 28, "E": 17, "Q": 5, "D": 28, "swap": 31 },
+			"frames": {
+				"anim": 31,
+				"C": 28,
+				"E": 17,
+				"Q": 5,
+				"D": 28,
+				"swap": 31
+			},
 			"tags": ["heal"],
 			"effects": [
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "onHit", "abilityType": "normal" },
-					"conditions": { "type": "state", "state": "nightsoulBlessing" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "nightsoulBlessing"
+					},
 					"scaling": 36.3,
 					"stat": "em",
 					"flat": 105.9
@@ -101,16 +146,24 @@
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": ["grouping"],
-			"frames": { "anim": 76, "N": 79, "C": 79, "E": 79, "D": 78, "J": 79, "swap": 76 },
+			"frames": {
+				"anim": 76,
+				"N": 79,
+				"C": 79,
+				"E": 79,
+				"D": 78,
+				"J": 79,
+				"swap": 76
+			},
 			"effects": [],
 			"_curatorNotes": [
 				"Burst frames from gcsim UNMERGED gcsim PR #2639. burst.go grounded cast set burstFramesGrounded = InitAbilSlice(95), ActionAttack/Charge/Skill/Jump=79, ActionDash=78, ActionSwap=76. Authored the grounded set (default standalone Q). A faster in-Nightsoul set exists (burstFramesNS = InitAbilSlice(79), ActionAttack=67, ActionCharge/Skill=68, ActionDash=64) used when cast while hovering — not modeled as a variant.",
 				"Cooldown: burst.go SetCD(ActionBurst, 15*60) = 15s (sidecar CD 15.0s). Energy cost 60 (sidecar; EnergyMax=60). No SetCDWithDelay -> no cooldownStartDelay. burstHitmark=41, sedationMarkHitmark=38.",
 				"tag 'grouping': the burst's Therapeutic Sedative explodes into a restraining wind current that pulls nearby objects/opponents in (KQM quickguide). Base wind-current duration NOT authored as a summon — gcsim burst.go models only the single burst hit + Sedation Mark callback, no ticking field, and the game gives no explicit base duration (C4 extends the current 'to 3s'); per 'never fake timing' the pull window is left unmodeled and surfaced only via the grouping tag.",
-				"Damage NOT authored (support; on-field, not decision-relevant for planner/Team-Builder capabilities): main hit burst_dmg TL10 = 915.3% ATK Anemo (sidecar 'Skill DMG' col 10 = 915.3%); Sedation Mark burst_mark TL10 = 196.1% ATK (sidecar 'Sedation Mark DMG' col 10) dealt in the ABSORBED aura element (Pyro>Hydro>Electro>Cryo priority, burst.go targetElement) when the sedative hits an enemy affected by Hydro/Pyro/Cryo/Electro, applying a Sedation Mark (max ~4). The variable-element reaction-enabling hit is not cleanly authorable (element depends on enemy aura)."
+				"Damage NOT authored (support; on-field, not decision-relevant for planner/Team-Builder capabilities): main hit burst_dmg TL10 = 915.3% ATK Anemo (sidecar 'Skill DMG' col 10 = 915.3%); Sedation Mark burst_mark TL10 = 196.1% ATK (sidecar 'Sedation Mark DMG' col 10) dealt in the ABSORBED aura element (Pyro>Hydro>Electro>Cryo priority, burst.go targetElement) when the sedative hits an enemy affected by Hydro/Pyro/Cryo/Electro, applying a Sedation Mark (max ~4). The variable-element reaction-enabling hit is not cleanly authorable (element depends on enemy aura).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The blank under the Q. The burst is tagged `grouping` and authors no summon, so it draws one instant cast bar and nothing else — where every other grouping field a player has seen in this tool (Venti's Stormeye, Sucrose, Kazuha) gets a bar in the summon lane with a length they can plan around. ⚠️ THE WEAKEST KEEP IN THIS BATCH and the one genuine coin-flip: no drawn thing is wrong, the missing quantity is one the game itself never states, and a player therefore has no specific expectation to violate. Flagging rather than deciding — if Nate wants the column tighter, delete this one first. Category: expected-but-absent."
 			],
-			"description": "Fires a Therapeutic Sedative at a (temporarily aggressive) opponent. The sedative will explode on impact, creating a restraining wind current that pulls nearby objects and opponents in while dealing Nightsoul-aligned AoE Anemo DMG.\nWhen the Therapeutic Sedative hits an opponent affected by Hydro/Pyro/Cryo/Electro, it will apply a **Sedation Mark** to them.",
-			"caveat": "The restraining wind current that pulls nearby opponents together is shown only as a grouping effect; its duration isn't given in the kit text, so it isn't drawn as a timed field on the timeline."
+			"description": "Fires a Therapeutic Sedative at a (temporarily aggressive) opponent. The sedative will explode on impact, creating a restraining wind current that pulls nearby objects and opponents in while dealing Nightsoul-aligned AoE Anemo DMG.\nWhen the Therapeutic Sedative hits an opponent affected by Hydro/Pyro/Cryo/Electro, it will apply a **Sedation Mark** to them."
 		}
 	],
 	"passives": [
@@ -122,7 +175,10 @@
 				{
 					"type": "elevate",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 10,
 					"durationType": "refresh",
 					"source": "character",
@@ -133,7 +189,10 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 10,
 					"durationType": "refresh",
 					"source": "character",
@@ -160,7 +219,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onTeamNightsoulBurst" },
+					"trigger": {
+						"type": "onTeamNightsoulBurst"
+					},
 					"duration": 10,
 					"durationType": "refresh",
 					"source": "character",
@@ -185,8 +246,14 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "onHit", "abilityType": "normal" },
-					"conditions": { "type": "state", "state": "nightsoulBlessing" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "nightsoulBlessing"
+					},
 					"procCooldown": 8,
 					"amount": 6
 				}
@@ -222,7 +289,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -253,7 +323,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 120,
 					"stat": "atk",
 					"element": "anemo"
@@ -265,5 +337,8 @@
 			"description": "When Ifa uses the Hold version of his **Supporting Fire**, there is a 50% chance that he will fire an additional Tonicshot that deals 120% of Ifa's ATK as Anemo DMG. This DMG is considered Normal Attack DMG.\nAdditionally, when he is not in combat, Ifa will consume 20% less Nightsoul points and Phlogiston in his Nightsoul's Blessing state."
 		}
 	],
-	"meta": { "source": "genshin-db", "generatedAt": "2026-04-06T11:45:40.699Z" }
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.699Z"
+	}
 }

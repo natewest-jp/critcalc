@@ -16,13 +16,58 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 40, "hit": 21, "N": 31, "C": 31 } },
-				{ "name": "N2", "frames": { "anim": 50, "hit": 26, "N": 42, "C": 42 } },
-				{ "name": "N3", "frames": { "anim": 59, "hit": 39, "N": 46, "C": 47 } },
-				{ "name": "N4", "frames": { "anim": 61, "hit": 30, "N": 60 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 40,
+						"hit": 21,
+						"N": 31,
+						"C": 31
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 50,
+						"hit": 26,
+						"N": 42,
+						"C": 42
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 59,
+						"hit": 39,
+						"N": 46,
+						"C": 47
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 61,
+						"hit": 30,
+						"N": 60
+					}
+				}
 			],
-			"chargeFrames": { "anim": 48, "Q": 50, "D": 40, "J": 40, "swap": 50 },
-			"plungeFrames": { "anim": 83, "N": 54, "C": 55, "E": 40, "Q": 53, "D": 41, "swap": 65 },
+			"chargeFrames": {
+				"anim": 48,
+				"Q": 50,
+				"D": 40,
+				"J": 40,
+				"swap": 50
+			},
+			"plungeFrames": {
+				"anim": 83,
+				"N": 54,
+				"C": 55,
+				"E": 40,
+				"Q": 53,
+				"D": 41,
+				"swap": 65
+			},
 			"_curatorNotes": [
 				"Base normals are 4-hit physical claymore strikes (Ring mode, the default armament state). N3 lands 3 hits (hitmarks 28/33/39) and N2 lands 2 (14/26); per recipe, swap reflects the last hitmark only.",
 				"Inside Nightsoul Blessing (= Burst's Crucible of Death and Life window), N input routes to Flamestrider Strikes — separate normal ability gated on state: \"nightsoulBlessing\" with 5-hit Pyro chain.",
@@ -47,22 +92,73 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 4 consecutive claymore strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an especially powerful Severing Splendor strike toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 80, "N": 51, "C": 52, "E": 37, "Q": 51, "D": 37, "swap": 62 }
+			"lowPlungeFrames": {
+				"anim": 80,
+				"N": 51,
+				"C": 52,
+				"E": 37,
+				"Q": 51,
+				"D": 37,
+				"swap": 62
+			}
 		},
 		{
 			"id": "mavuika__normal__flamestrider_strikes",
 			"name": "Flamestrider Strikes",
 			"input": ["N1", "N2", "N3", "N4", "N5", "P"],
 			"abilityType": "normal",
-			"conditions": { "type": "state", "state": "nightsoulBlessing" },
+			"conditions": {
+				"type": "state",
+				"state": "nightsoulBlessing"
+			},
 			"infusion": "pyro",
 			"tags": [],
 			"hits": [
-				{ "name": "Flamestrider 1", "frames": { "anim": 39, "hit": 19, "N": 23, "C": 33 } },
-				{ "name": "Flamestrider 2", "frames": { "anim": 46, "hit": 24, "N": 32, "C": 35 } },
-				{ "name": "Flamestrider 3", "frames": { "anim": 50, "hit": 31, "N": 35, "C": 40 } },
-				{ "name": "Flamestrider 4", "frames": { "anim": 44, "hit": 13, "N": 27, "C": 29 } },
-				{ "name": "Flamestrider 5", "frames": { "anim": 70, "hit": 37, "N": 68, "C": 64 } }
+				{
+					"name": "Flamestrider 1",
+					"frames": {
+						"anim": 39,
+						"hit": 19,
+						"N": 23,
+						"C": 33
+					}
+				},
+				{
+					"name": "Flamestrider 2",
+					"frames": {
+						"anim": 46,
+						"hit": 24,
+						"N": 32,
+						"C": 35
+					}
+				},
+				{
+					"name": "Flamestrider 3",
+					"frames": {
+						"anim": 50,
+						"hit": 31,
+						"N": 35,
+						"C": 40
+					}
+				},
+				{
+					"name": "Flamestrider 4",
+					"frames": {
+						"anim": 44,
+						"hit": 13,
+						"N": 27,
+						"C": 29
+					}
+				},
+				{
+					"name": "Flamestrider 5",
+					"frames": {
+						"anim": 70,
+						"hit": 37,
+						"N": 68,
+						"C": 64
+					}
+				}
 			],
 			"plungeFrames": {
 				"anim": 80,
@@ -77,7 +173,7 @@
 			"_curatorNotes": [
 				"5-hit Pyro chain (vs 4-hit physical base) gated by state: \"nightsoulBlessing\". Hitmarks 19/24/31/13/37. Each strike consumes ~1 NS point (gcsim reduceNightsoulPoints on each NA hit).",
 				"infusion: \"pyro\" — gcsim ai.Element=Pyro + IgnoreInfusion=true on bike normals. Schema's infusion field renders the element correctly even though IgnoreInfusion has no schema-level analog (Mavuika's infusion can't be overridden by other elements).",
-				"chargeFrames omitted: bike charge attack (Flamestrider CA) is a continuous-spin attack with dynamic timing (50f minimum, 375f maximum, custom hit calculation per bikeChargeAttackSpinFrames=45f). The schema's static FrameMap can't represent this; gcsim handles it with custom logic in BikeCharge. The C key falls back to swap.",
+				"chargeFrames omitted: bike charge attack (Flamestrider CA) is a continuous-spin attack with dynamic timing (50f minimum, 375f maximum, custom hit calculation per bikeChargeAttackSpinFrames=45f). The schema's static FrameMap can't represent this; gcsim handles it with custom logic in BikeCharge. ↻ 2026-08-18: this note used to end \"The C key falls back to swap\", which was wrong twice over. (1) There is no per-ability map to fall back WITHIN — with `chargeFrames` absent, `resolveChargeCastTime` substitutes the corpus-median `GENERIC_CHARGE_FRAMES` wholesale (src/lib/sim/resolve.ts:98; the map is anim 57 / N 51 / E 46 / Q 49 / D 25 / J 24 / swap 45, src/lib/data/genericProfile.ts:41). (2) FrameMap fallback is `anim`, NEVER `swap` — `frameAt` (src/lib/utils/frames.ts:66) is the one resolver, and the old `fm[key] ?? fm.swap` idiom it replaced understated a charged attack after a normal by a median 22 frames (L4b). Conclusion unchanged: a C during Flamestrider is timed as a generic charged attack, not as the bike spin.",
 				"plungeFrames sourced from gcsim highBikePlungeFrames. Bike plunge fires Flamestrider Plunge (skillPlunge mult, Pyro). Low-bike plunge variant (swap=75, N=60, C=60) not authored — high plunge is the canonical case via CA-leap.",
 				"Bike CA + bike plunge inherit C2 FlatDmg buffs (chargeFlatDmg/plungeFlatDmg via burstFlatDmg shared-stat in schema's terminology). C2 buffs authored on the constellation entry."
 			],
@@ -98,7 +194,14 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 28, "N": 18, "C": 19, "E": 19, "Q": 18, "swap": 24 },
+			"frames": {
+				"anim": 28,
+				"N": 18,
+				"C": 19,
+				"E": 19,
+				"Q": 18,
+				"swap": 24
+			},
 			"cooldown": 15,
 			"cooldownStartDelay": 18,
 			"tags": ["summon"],
@@ -106,12 +209,23 @@
 				{
 					"label": "Hold (Flamestrider)",
 					"input": ["hE"],
-					"frames": { "anim": 43, "D": 42, "J": 42, "swap": 34 },
+					"frames": {
+						"anim": 43,
+						"D": 42,
+						"J": 42,
+						"swap": 34
+					},
 					"behavior": "stance",
 					"duration": 9,
 					"terminatesOnSwap": true,
 					"opensState": "nightsoulBlessing",
-					"application": [{ "frame": 16, "element": "pyro", "units": 1 }]
+					"application": [
+						{
+							"frame": 16,
+							"element": "pyro",
+							"units": 1
+						}
+					]
 				}
 			],
 			"effects": [],
@@ -130,13 +244,41 @@
 			],
 			"description": "Calling upon her authority over \"conflict,\" Mavuika summons the All-Fire Armaments passed down through the line of human Archons, dealing Nightsoul-aligned Pyro DMG.\nAfter using this, Mavuika's Nightsoul points are restored to max value, and she enters the Nightsoul's Blessing state.\n\nAll-Fire Armaments\nHas different forms when Tapped or Held.\n\nTap\n\"Divine Name Unleashed\": The All-Fire Armaments manifest as a Ring of Searing Radiance. The Ring follows the current active character and attacks nearby opponents at intervals, dealing Nightsoul-aligned Pyro DMG.\n\nHold\n\"Ancient Name Unbound\": The All-Fire Armaments manifest as a Flamestrider. In this state, Mavuika can ride the Flamestrider at high speed, or activate its hidden backup propulsion module to temporarily cross various terrain types and glide in mid-air. Mavuika's Normal, Charged, and Plunging Attacks will also be converted to deal Nightsoul-aligned Pyro DMG which cannot be overridden. When sprinting, she also deals Nightsoul-aligned Pyro DMG to opponents along her path.\n\nWhile in the Nightsoul's Blessing state, Tapping the Elemental Skill can switch the All-Fire Armaments' form. The Armaments will disappear once Mavuika's Nightsoul's Blessing state ends.",
 			"application": [
-				{ "frame": 16, "element": "pyro", "units": 1 },
-				{ "frame": 120, "element": "pyro", "units": 1 },
-				{ "frame": 240, "element": "pyro", "units": 1 },
-				{ "frame": 360, "element": "pyro", "units": 1 },
-				{ "frame": 480, "element": "pyro", "units": 1 },
-				{ "frame": 600, "element": "pyro", "units": 1 },
-				{ "frame": 720, "element": "pyro", "units": 1 }
+				{
+					"frame": 16,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 120,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 240,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 360,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 480,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 600,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 720,
+					"element": "pyro",
+					"units": 1
+				}
 			]
 		},
 		{
@@ -145,7 +287,15 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "stance",
-			"frames": { "anim": 141, "N": 116, "C": 116, "E": 116, "D": 116, "J": 116, "swap": 116 },
+			"frames": {
+				"anim": 141,
+				"N": 116,
+				"C": 116,
+				"E": 116,
+				"D": 116,
+				"J": 116,
+				"swap": 116
+			},
 			"cooldown": 18,
 			"duration": 7,
 			"energyCost": 100,
@@ -153,7 +303,6 @@
 			"opensState": "nightsoulBlessing",
 			"tags": [],
 			"effects": [],
-			"caveat": "Runs on Fighting Spirit, not Energy — the Energy cost of 100 shown here is really the 50% threshold of a 200-point Fighting Spirit pool. The 7s window covers only Crucible of Death and Life; the actual bike/Nightsoul time runs ~1s longer, not modeled.",
 			"_curatorNotes": [
 				"behavior: \"stance\" + opensState: \"nightsoulBlessing\" + duration: 7 + terminatesOnSwap: true. The 7s reflects burstDuration (= Crucible of Death and Life window), during which gcsim nightsoulConsumptionMul returns 0 (NS drain is paused). After Crucible expires, NS drains the residual 10 points granted at burst hitmark; total bike+NS window is ~8s but the Crucible's clean 7s is the gameplay-relevant slice.",
 				"terminatesOnSwap: true — gcsim onExitField subscribes OnCharacterSwap and deletes burstKey + exits bike if active. Matches Mizuki/Xilonen-shape behavior.",
@@ -163,10 +312,17 @@
 				"Fighting Spirit gain: gcsim subscribes OnNightsoulConsume (any char's NS consumption → +consumed amount) and OnEnemyDamage (teammate normal attacks → +1.5 FS per hit, 0.1s ICD). Pure resource flow, not modelled per the constitution.",
 				"C2 +200 baseAtk during NS Blessing modelled on the C2 constellation entry. C2 in-bike FlatDmg additions (NA/CA/Q at 60%/90%/120% ATK respectively) also modelled there.",
 				"[A7] Caveat trimmed to the Fighting-Spirit-not-Energy divergence plus the ~1s-longer real window. Already in curator notes: energyCost 100 = 50% of the 200 Fighting Spirit threshold, C1's 250 cap (~60% threshold), and the 7s = Crucible / ~8s-total residual drain (frozen Nightsoul drain during Crucible, then the 10 points granted at burst hitmark drain at ~9 pts/sec).",
-				"[A7] To preserve: Mavuika has no in-game Energy bar (gcsim EnergyMax=0), and her skill's particle generation (5 Pyro, 0.5s ICD) does not fuel her own burst readiness — it feeds teammates' Energy."
+				"[A7] To preserve: Mavuika has no in-game Energy bar (gcsim EnergyMax=0), and her skill's particle generation (5 Pyro, 0.5s ICD) does not fuel her own burst readiness — it feeds teammates' Energy.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The surviving half names the Q bar's own width: the burst stance draws 7s where the real bike/Nightsoul time is ~8s, so the swap point a reader takes off the bar is a second early. The dropped half names a pixel that does not exist on the surface this caveat reaches — the planner prints energy cost NOWHERE (it is drawn only on the Team Builder's detail card and Compare lane, which have no caveat channel), and the planner gates no burst on energy at all, so her Q behaves exactly like everyone else's and nothing in the timeline looks wrong. Category: visible-divergence."
 			],
 			"description": "Let the people's inner voices reach the divine throne in the heavens.\nMavuika's Elemental Burst is not reliant on Energy, but instead, on \"Fighting Spirit.\"\n\nFighting Spirit\nWhen Mavuika has at least 50% Fighting Spirit, she can consume it all to unleash her Elemental Burst.\nMavuika can obtain Fighting Spirit via the following methods:\n· When in combat, Nightsoul points consumed by nearby party members are converted to Fighting Spirit.\n· When nearby party members' Normal Attacks hit opponents, Mavuika gains 1.5 Fighting Spirit. This can trigger once every 0.1s.\n\nAfter using this, Mavuika gains 10 Nightsoul points and enters the Nightsoul's Blessing state. Riding her Flamestrider high in the air, she uses a powerful Sunfell Slice against opponents on the ground, dealing Nightsoul-aligned AoE Pyro DMG and entering the \"Crucible of Death and Life\" state.\n\nCrucible of Death and Life\nDuring this time, Mavuika's various actions will no longer consume Nightsoul points, and her interruption resistance is increased. Also, the DMG dealt by Sunfell Slice and \"Ancient Name Unbound\"'s Normal and Charged Attacks is increased based on the amount of Fighting Spirit she has when using the Elemental Burst.\nCrucible of Death and Life will be canceled when Mavuika leaves the field.",
-			"application": [{ "frame": 106, "element": "pyro", "units": 1 }]
+			"application": [
+				{
+					"frame": 106,
+					"element": "pyro",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -178,7 +334,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onTeamNightsoulBurst" },
+					"trigger": {
+						"type": "onTeamNightsoulBurst"
+					},
 					"duration": 10,
 					"durationType": "refresh",
 					"source": "character",
@@ -200,12 +358,18 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",
-					"value": { "type": "decaying", "startValue": 40 },
+					"value": {
+						"type": "decaying",
+						"startValue": 40
+					},
 					"snapshottable": false
 				}
 			],
@@ -241,12 +405,20 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "state", "state": "nightsoulBlessing" }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "state",
+								"state": "nightsoulBlessing"
+							}
 						]
 					},
 					"source": "character",
@@ -257,57 +429,93 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "state", "state": "nightsoulBlessing" }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "state",
+								"state": "nightsoulBlessing"
+							}
 						]
 					},
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 60 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 60
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "state", "state": "nightsoulBlessing" }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "state",
+								"state": "nightsoulBlessing"
+							}
 						]
 					},
 					"source": "character",
 					"stat": "chargeFlatDmg",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 90 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 90
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "state", "state": "nightsoulBlessing" }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "state",
+								"state": "nightsoulBlessing"
+							}
 						]
 					},
 					"source": "character",
 					"stat": "burstFlatDmg",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 120 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 120
+					},
 					"snapshottable": false
 				}
 			],
-			"caveat": "In Ring of Searing Radiance form, the ring also cuts nearby opponents' DEF by 20% while Nightsoul's Blessing lasts. The timeline only tracks the Flamestrider form, so this debuff is not shown.",
 			"_curatorNotes": [
 				"Four passive-trigger buffs gated on (constellation 2) + (state nightsoulBlessing): (1) +200 Base ATK while in NS — gcsim c2Init AddStatMod with BaseATK=200; (2) Bike N FlatDmg +60% ATK; (3) Bike CA FlatDmg +90% ATK; (4) Sunfell Slice FlatDmg +120% ATK. The N/CA/Q buffs are technically scoped to bike state only (gcsim returns 0 if armamentState != bike), but in our model nightsoulBlessing only opens via burst (which forces bike), so the gate is equivalent in practice.",
 				"Removed prior placeholder damage effect (scaling 120 ATK with manual trigger) — the 120% is a burstFlatDmg buff value scaled on Sunfell, not a one-shot damage event.",
-				"Ring's -20% DEF debuff (gcsim internal/characters/mavuika/cons.go:63-82 c2Ring: DefMod -0.2, 0.5s modifier re-queued every 18f, only while isRingFollowing — below C6 that means armamentState == ring per cons.go:129-134): the shredStat:'def' primitive exists now, but our model has no Ring-form state (Tap E stays instant, no NS window) and nightsoulBlessing represents the Flamestrider/bike only — where this C2 slice does NOT apply below C6. Authoring it would draw the debuff exactly in the form where it is inactive; caveated instead. Capability sweep 2026-07-28. (The C6 slice, where the ring follows the bike, IS authored — see the C6 entry.)"
+				"Ring's -20% DEF debuff (gcsim internal/characters/mavuika/cons.go:63-82 c2Ring: DefMod -0.2, 0.5s modifier re-queued every 18f, only while isRingFollowing — below C6 that means armamentState == ring per cons.go:129-134): the shredStat:'def' primitive exists now, but our model has no Ring-form state (Tap E stays instant, no NS window) and nightsoulBlessing represents the Flamestrider/bike only — where this C2 slice does NOT apply below C6. Authoring it would draw the debuff exactly in the form where it is inactive; caveated instead. Capability sweep 2026-07-28. (The C6 slice, where the ring follows the bike, IS authored — see the C6 entry.)",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A 20% DEF-shred debuff bar — the exact bar we DO draw for her at C6 — is missing after a Tap E at C2. Tap E is modelled as an instant with no Nightsoul window at all, so the reader gets no stance bar and no debuff row where the game gives both. The asymmetry is what makes it confusing: the same shred appears on the timeline at C6 and vanishes at C2, which reads as a bug rather than a form distinction. Category: expected-but-absent."
 			],
 			"description": "When in the Nightsoul's Blessing State, Mavuika's Base ATK is increased by 200, and she obtains the following effects based on All-Fire Armaments' form:\n· Ring of Searing Radiance: Nearby opponents' DEF is decreased by 20%.\n· Flamestrider: Mavuika's Normal Attacks, Charged Attacks, and her Sunfell Slice from the Elemental Burst Hour of Burning Skies deal 60%, 90%, and 120% of her ATK as increased DMG respectively."
 		},
@@ -346,8 +554,14 @@
 					"type": "resShred",
 					"shredStat": "def",
 					"target": "enemy",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "constellation", "level": 6 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"duration": 7,
 					"durationType": "fixed",
 					"value": -20
@@ -356,19 +570,27 @@
 					"type": "resShred",
 					"shredStat": "def",
 					"target": "enemy",
-					"trigger": { "type": "onCast", "ability": "skill", "input": ["hE"] },
-					"conditions": { "type": "constellation", "level": 6 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"duration": 9,
 					"durationType": "fixed",
 					"value": -20
 				}
 			],
-			"caveat": "The Scorching Ring's 20% DEF cut is shown for the full Flamestrider window after the Burst or a held Skill; in game it ends early if she swaps out. Not modeled: the Ring-form crash attacks and the following ring's 500% ATK Pyro pulses.",
+			"caveat": "The Scorching Ring's 20% DEF cut is shown for the full Flamestrider window after the Burst or a held Skill; in game it ends early if she swaps out. Not modeled: the following ring's Pyro pulses every 3s.",
 			"_curatorNotes": [
 				"Three effects: (1) Ring hit → Flamestrider trigger 200% ATK Pyro (0.5s ICD). Ring summon entity isn't modelled (no summons[] entry on the skill); the on-Ring-hit trigger has no schema primitive. Removed prior placeholder damage effect (200 ATK manual). (2) Bike → Ring follower summons every 3s for 500% ATK Pyro AoE. Tick-based summon emission is P3 (Summon.effects[]) gap. Removed prior placeholder damage effect (500 ATK manual). (3) Out-of-combat NS regeneration: pure resource flow, not modelled.",
 				"Both (1) and (2) become authorable when the Ring is added as a summon (P3). For now, damage stays description-only.",
 				"C6 Scorching Ring DEF shred authored (capability sweep 2026-07-28): gcsim internal/characters/mavuika/cons.go:129-134 — at Cons >= 6 isRingFollowing() returns true unconditionally, so the c2Ring DefMod -0.2 (cons.go:76-79, 0.5s modifier re-queued every 18f = continuous) applies while riding the Flamestrider. Two onCast resShred shredStat:'def' effects whose durations mirror our modeled Nightsoul windows (burst 7s, hE 9s) — gcsim has no fixed per-application duration, the shred rides the whole NS window. Deviation from the sweep proposal: the passive+state shape would derive but never render (resShred windows require onCast/onHit/afterDuration + duration), so the Durin-C6 onCast fallback is used; the state condition is dropped because the triggering casts are exactly the NS openers (constellation:6 alone gates it).",
-				"buffWindows does not apply the onCast input filter to resShred pools, so the skill-hosted window also renders on Tap E — acceptable: at C6 (which implies C2) the Ring form's own DEF shred applies after Tap E in game too (Tap E also enters NS Blessing there)."
+				"buffWindows does not apply the onCast input filter to resShred pools, so the skill-hosted window also renders on Tap E — acceptable: at C6 (which implies C2) the Ring form's own DEF shred applies after Tap E in game too (Tap E also enters NS Blessing there).",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"The Scorching Ring's 20% DEF cut is shown for the full Flamestrider window after the Burst or a held Skill; in game it ends early if she swaps out. Not modeled: the Ring-form crash attacks and the following ring's 500% ATK Pyro pulses.\""
 			],
 			"description": "The All-Fire Armaments from the Elemental Skill The Named Moment receive all-round improvements:\n· Ring of Searing Radiance: When the Ring's attacks hit opponents, a Flamestrider will crash into the struck opponent, dealing 200% of ATK as Nightsoul-aligned AoE Pyro DMG.\n· Flamestrider: When Mavuika is riding the Flamestrider, she will also summon a Scorching Ring of Searing Radiance to follow her, which will decrease nearby opponents' DEF by 20% and deal 500% of ATK as Nightsoul-aligned AoE Pyro DMG to nearby opponents once every 3s. Mavuika's terrain-crossing abilities will also be further improved.\n\nAdditionally, when Mavuika is riding her Flamestrider and is not in combat, when her Nightsoul points drop to 5, she will gain 80 Nightsoul points. This effect can trigger once every 15s."
 		}

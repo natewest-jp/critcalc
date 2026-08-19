@@ -16,13 +16,52 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 24, "hit": 18, "N": 19 } },
-				{ "name": "N2", "frames": { "anim": 27, "hit": 12, "N": 12 } },
-				{ "name": "N3", "frames": { "anim": 42, "hit": 32, "N": 40 } },
-				{ "name": "N4", "frames": { "anim": 35, "hit": 23, "N": 32 } },
-				{ "name": "N5", "frames": { "anim": 60, "hit": 21 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 24,
+						"hit": 18,
+						"N": 19
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 27,
+						"hit": 12,
+						"N": 12
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 42,
+						"hit": 32,
+						"N": 40
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 35,
+						"hit": 23,
+						"N": 32
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 60,
+						"hit": 21
+					}
+				}
 			],
-			"chargeFrames": { "anim": 44, "N": 66, "Q": 67, "swap": 45 },
+			"chargeFrames": {
+				"anim": 44,
+				"N": 66,
+				"Q": 67,
+				"swap": 45
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -52,13 +91,46 @@
 			"name": "Swift Hunt",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": { "type": "state", "state": "inStance" },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
 			"infusion": "electro",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 18, "E": 11, "Q": 10, "D": 8, "J": 8, "swap": 8 } },
-				{ "name": "N2", "frames": { "anim": 17, "E": 10, "Q": 10, "D": 8, "J": 8, "swap": 8 } },
-				{ "name": "N3", "frames": { "anim": 20, "E": 11, "Q": 11, "D": 9, "J": 9, "swap": 9 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 18,
+						"E": 11,
+						"Q": 10,
+						"D": 8,
+						"J": 8,
+						"swap": 8
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 17,
+						"E": 10,
+						"Q": 10,
+						"D": 8,
+						"J": 8,
+						"swap": 8
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 20,
+						"E": 11,
+						"Q": 11,
+						"D": 9,
+						"J": 9,
+						"swap": 9
+					}
+				}
 			],
 			"description": "Clorinde's normal-attack chain while in the Night Vigil stance. Replaces the standard 5-hit string with a 3-hit pistolet shot cycle. All hits deal Electro DMG that cannot be overridden by infusions, and Charged Attacks are disabled while in stance.",
 			"_curatorNotes": [
@@ -73,7 +145,14 @@
 			"name": "Hunter's Vigil",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": { "anim": 33, "N": 31, "E": 32, "D": 6, "J": 25, "swap": 25 },
+			"frames": {
+				"anim": 33,
+				"N": 31,
+				"E": 32,
+				"D": 6,
+				"J": 25,
+				"swap": 25
+			},
 			"cooldown": 16,
 			"cooldownStartDelay": 6,
 			"duration": 7.5,
@@ -82,7 +161,6 @@
 			"description": "Preparing her pistolet, she enters the \"Night Vigil\" state, using steel and shot together. In this state, Clorinde's Normal Attacks will be transformed into \"Swift Hunt\" pistolet attacks, and the DMG dealt is converted into Electro DMG that cannot be overridden by infusions, and she will be unable to use Charged Attacks. Using her Elemental Skill will transform it into \"Impale the Night\": Perform a lunging attack, dealing Electro DMG. The DMG done through the aforementioned method is considered Normal Attack DMG.\n\nSwift Hunt\n· When her Bond of Life is equal to or greater than 100% of her max HP: Performs a pistolet shot.\n· When her Bond of Life is less than 100%, firing her pistolet will grant her Bond of Life, with the amount gained based on her max HP. The shots she fires can pierce opponents, and DMG dealt to opponents in their path is increased.\n\nImpale the Night\nThe current percentage value of Clorinde's Bond of Life determines its effect:\n· When the Bond of Life value is 0%, perform a normal lunging strike;\n· When the Bond of Life value is less than 100% of her max HP, Clorinde is healed based on the Bond of Life value, and the AoE of the lunging attack and the DMG dealt is increased;\n· When the value of the Bond of Life is equal to or greater than 100% of her max HP, use Impale the Night: Pact. The healing multiplier is increased, and the AoE and DMG dealt by the lunge is increased even further.\n\nIn addition, when Clorinde is in the Night Vigil state, healing effects other than Impale the Night will not take effect and will instead be converted into a Bond of Life that is a percentage of the healing that would have been received.\n\nClorinde will exit the \"Night Vigil\" state when she leaves the field.\n\nArkhe: Ousia\nPeriodically, when Clorinde's Swift Hunt shots strike opponents, she will summon a Surging Blade at the position hit that deals Ousia-aligned Electro DMG.",
 			"behavior": "stance",
 			"terminatesOnSwap": true,
-			"caveat": "Bond of Life isn't tracked, so the self-heal from Impale the Night and its gains from Swift Hunt and the burst aren't shown. While Night Vigil is active, most other incoming healing converts to Bond of Life instead of restoring HP.",
 			"_curatorNotes": [
 				"Pattern 2 — multi-skill stance. First E press activates Night Vigil; subsequent E presses fire 'Impale the Night' (separate ability entry: clorinde__skill__impale_the_night). Mirror of Cyno's secret_rite_chasmic_soulfarer / mortuary_rite shape, but with the in-stance skill variant gated by E (not Q).",
 				"Stance duration: gcsim AddStatus(skillStateKey, skillStart + 60*skillStateDuration[0]) = 6 + 450 = 456f. The 6-frame skillStart is pre-active; effective in-stance duration is skillStateDuration[0] = 7.5s. Authored 7.5s to match the user-visible duration.",
@@ -93,7 +171,8 @@
 				"Heal effect DELIBERATELY unauthored (2026-07-12 tag-without-effect wave, orchestrator decision): the Impale the Night self-heal is 100% Bond-of-Life-scaled — gcsim skill.go skillHeal: amount = CurrentHPDebt() × bolMult, where bolMult = skillLungeLowBOLHeal=1.04 (<100% BoL branch) / skillLungeFullBOLHeal=1.10 (Pact, ≥100% BoL) / no heal at 0% BoL; sidecar 'Impale the Night Healing' row = 0%/104%/110% Bond of Life, constant across talent levels. Bond of Life has no ScalingStat representation, so ANY authored scaling+stat pair would be a fake number in the detail card (a wave agent's scaling:104+stat:hp placeholder was reverted per never-fake-values; traveler_hydro pickup-heal precedent — stays a documented audit gap until a BoL primitive exists). Self-heal targeting confirmed: gcsim skillHeal Caller=Target=c.Index(). It fires on in-stance E (Impale the Night), NOT the stance-opening press, queued at skillHealFrame=6. Heal takes Healing Bonus (gcsim Bonus: c.Stat(attributes.Heal)).",
 				"Night Vigil healing conversion (gcsim heal.go ReceiveHeal): while the stance is active, incoming heals from other sources (any heal whose Message is not prefixed 'Impale the Night') are suppressed and converted to Bond of Life at healingBOL=0.80, raised to 1.0 at A4+ (Lawful Remuneration; DEFAULT_ASCENSION=4). Conversion not modeled (Bond of Life untracked).",
 				"tags ['heal', 'summon'] retained from generator. The 'heal' tag remains the honest capability signal (self-heal, size untrackable — see caveat). The 'summon' tag corresponds to the Arkhe: Ousia Surging Blade (periodic Electro proc on Swift Hunt hits — gcsim arkheCD, hitmark 42f); not authored as a summons[] entry and out of scope for this heal-tag pass.",
-				"[A7] Impale the Night self-heal scales with current Bond of Life (largest at full BoL, none at 0%) — dropped from the caveat as kit explanation per style guide; size stays untrackable without a BoL primitive."
+				"[A7] Impale the Night self-heal scales with current Bond of Life (largest at full BoL, none at 0%) — dropped from the caveat as kit explanation per style guide; size stays untrackable without a BoL primitive.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A cast-triggered heal draws nothing on the planner for ANY character — grep finds no 'heal' consumer in src/lib/timeline or buffWindows; only summon-tick heals put a mark on a summon lane, and Clorinde has none. So \"the self-heal isn't shown\" describes a blank that is uniform corpus-wide, not a Clorinde divergence. The second sentence is kit text about an out-of-scope mechanic (Bond of Life is on the FROZEN list) with no HP anywhere on screen to be wrong. Category: invisible-omission."
 			],
 			"application": []
 		},
@@ -102,8 +181,19 @@
 			"name": "Impale the Night",
 			"input": ["E"],
 			"abilityType": "skill",
-			"conditions": { "type": "state", "state": "inStance" },
-			"frames": { "anim": 43, "N": 24, "E": 24, "Q": 24, "D": 25, "J": 25, "swap": 42 },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"frames": {
+				"anim": 43,
+				"N": 24,
+				"E": 24,
+				"Q": 24,
+				"D": 25,
+				"J": 25,
+				"swap": 42
+			},
 			"cooldown": 0,
 			"description": "In-stance E variant. While Night Vigil is active, casting E performs a lunging strike (Impale the Night). DMG and healing scale with Clorinde's current Bond of Life percentage; at ≥100% BoL, the lunge becomes 'Impale the Night: Pact' (3-hit + heal).",
 			"behavior": "instant",
@@ -114,14 +204,26 @@
 				"No stanceExtension — Impale does not extend the Night Vigil window in gcsim.",
 				"C6 Glimbright Shade trigger: 'when Clorinde uses Impale the Night: Pact' is one of the C6 proc conditions — flagged on the C6 constellation, not authored here."
 			],
-			"application": [{ "frame": 11, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 11,
+					"element": "electro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "clorinde__burst__last_lightfall",
 			"name": "Last Lightfall",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": { "anim": 128, "N": 127, "E": 127, "D": 127, "swap": 127 },
+			"frames": {
+				"anim": 128,
+				"N": 127,
+				"E": 127,
+				"D": 127,
+				"swap": 127
+			},
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
@@ -135,11 +237,28 @@
 				"Burst hitmarks (5-hit AoE): [97, 103, 109, 115, 121]. Single damage scalar per hit (burstDamage[talent]); recorded conceptually as one damage event in the planner."
 			],
 			"application": [
-				{ "frame": 97, "element": "electro", "units": 1 },
-				{ "frame": 103, "element": "electro" },
-				{ "frame": 109, "element": "electro" },
-				{ "frame": 115, "element": "electro", "units": 1 },
-				{ "frame": 121, "element": "electro" }
+				{
+					"frame": 97,
+					"element": "electro",
+					"units": 1
+				},
+				{
+					"frame": 103,
+					"element": "electro"
+				},
+				{
+					"frame": 109,
+					"element": "electro"
+				},
+				{
+					"frame": 115,
+					"element": "electro",
+					"units": 1
+				},
+				{
+					"frame": 121,
+					"element": "electro"
+				}
 			]
 		}
 	],
@@ -152,7 +271,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 15,
 					"scaling": 20,
 					"stat": "atk",
@@ -173,7 +294,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -198,7 +321,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 30,
 					"stat": "atk",
 					"element": "electro"
@@ -277,7 +402,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -288,7 +415,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -299,7 +428,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 200,
 					"stat": "atk",
 					"element": "electro"

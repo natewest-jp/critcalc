@@ -146,7 +146,8 @@
 				"Tri-Karma Purification: MODELLED 2026-08-17 as a damage effect on an onReaction trigger with an application[] — the fourth source that reaches the gauge (docs/mark-triggered-damage-round.md). source 'team' because gcsim subscribes to every reaction event with no actor filter (nahida.go Init, ReactionEventStartDelim loop) and to OnEnemyDamage filtered to Bloom/Burgeon/Hyperbloom, both of which our 'any' covers. armedFor 25 is the Seed of Skandha's lifetime (skill.go skillMarkKey, 1500 frames); the Seed is a state on the ENEMY, so it is deliberately not a summons[] entry and not an activeDuration. procCooldown 2.5 is triKarmaInterval's base.",
 				"Tri-Karma applies 1.5U, the corpus's first. skill.go writes Durability: 25, but ICDGroupNahidaSkill's sequence is {1.5, 0, 0, …} on a 1s timer (pkg/core/attacks/icd_groups.dm.go) and pkg/enemy/attack.go multiplies incoming durability by that entry — so a proc lands at 37.5 durability. With a 2.5s trigger interval the group never binds, so every proc is 1.5U. Application frame 3 = QueueAttackWithSnap's delay argument. Values at talent 10: triKarmaAtk[9]=1.8576, triKarmaEM[9]=3.7152, matching the sidecar's \"185.8% ATK+371.5% Elemental Mastery\".",
 				"NOT modelled, each for a stated reason. (1) The burst's trigger-interval reduction (burstTriKarmaCDReduction, -0.446s per Electro teammate at talent 10, only inside Shrine of Maya): procCooldown has no conditional form, and measured on the oracle fixtures the interval is never the binding constraint — observed gaps are 4.9-5.6s against a 2.5s floor. (2) C6 Karmic Oblivion, a second Tri-Karma at 200% ATK + 400% EM on a 0.2s ICD, six per burst: it is gated on an on-field state (c6ActiveKey) the parser does not track. (3) The proc does not enter the finalize hit stream, so it does not trigger Deepwood or any other artifact onHit set — true in game, and its own landing.",
-				"Inherited trigger: 'manual' on effects (effects[] is empty here). Underlying Tri-Karma proc: likely onReaction with Seed of Skandha condition + onDmg for bloom-type AttackTags. Target scope: all Seed-marked enemies (multi-target AoE on the skill mark group)."
+				"Inherited trigger: 'manual' on effects (effects[] is empty here). Underlying Tri-Karma proc: likely onReaction with Seed of Skandha condition + onDmg for bloom-type AttackTags. Target scope: all Seed-marked enemies (multi-target AoE on the skill mark group).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Sentence 1 describes the modelled 2.5s procCooldown — working behavior. The Electro-teammate interval reduction changes nothing on screen: the character's own curator note measures observed reaction gaps of 4.9–5.6s against a 2.5s floor, so the interval is never the binding constraint and no extra pip would ever draw. The C6 half would only add applications to the aura lane (OFF by default) / aura log (an opt-in aside), and it is authored on the BASE skill so it also shows at C0 where it is irrelevant. Tri-Karma is an onReaction proc, not summon-hosted, so it produces no summon-lane tick markers and no bar at all on the default timeline. Category: working-behavior."
 			],
 			"variants": [
 				{
@@ -183,8 +184,7 @@
 					"element": "dendro",
 					"units": 1
 				}
-			],
-			"caveat": "Tri-Karma Purification fires at most once every 2.5s. Not modeled: the shorter interval the burst grants with Electro teammates, and the extra C6 proc."
+			]
 		},
 		{
 			"id": "nahida__burst__illusory_heart",
@@ -310,7 +310,8 @@
 				"Lunar-Bloom variant not authored: gcsim also handles AttackTagDirectLunarBloom separately (CR += 0.1, CD += 0.2 — additive, not set). This +10% CR and +20% CD for Lunar-Bloom is completely absent from the skeleton.",
 				"DEF shred authored (capability sweep 2026-07-28): gcsim internal/characters/nahida/cons.go:53-71 — AddDefMod -0.3, 480f = 8s, fired on event.OnQuicken/OnAggravate/OnSpread from any team member against Seed-marked enemies. Seed-of-Skandha enemy-mark state is not trackable; effect is unconditioned per the Citlali/Chevreuse/Durin onReaction-resShred precedent (Seeds are up whenever E has run) — Seed scope caveated on the ability.",
 				"Trigger: inherited 'manual' needs reviewer replacement. Actual trigger: onEnemyHit with AttackTag in {Burning, Bloom, Hyperbloom, Burgeon, BountifulCore, DirectLunarBloom} AND enemy has Seed of Skandha status. All apply to enemy target.",
-				"A6 rigor 2026-07-12: critRate value corrected 10 → 20, critDmg value corrected 10 → 100 (in-JSON description 'fixed at 20% and 100%' + gcsim cons.go c2(): CR += 0.2, CD = 1). Targeting/trigger rework (should be enemy reaction-crit, not self buff) and missing Lunar-Bloom effect still pending per notes above."
+				"A6 rigor 2026-07-12: critRate value corrected 10 → 20, critDmg value corrected 10 → 100 (in-JSON description 'fixed at 20% and 100%' + gcsim cons.go c2(): CR += 0.2, CD = 1). Targeting/trigger rework (should be enemy reaction-crit, not self buff) and missing Lunar-Bloom effect still pending per notes above.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The −30% DEF debuff bar. The resShred is deliberately authored unconditioned (the Seed mark is enemy state we cannot track), so the bar draws off any team Quicken/Aggravate/Spread — including a rotation where Nahida never casts E, or one where a teammate reacts on an unmarked target. The current wording reads as pure kit explanation and never says the bar is what is over-claiming; the rewrite names it. Placement on the C2 entry is correct — it is gated to readers who have C2. Category: approximation-disclosure."
 			],
 			"effects": [
 				{
@@ -350,7 +351,6 @@
 					"value": -30
 				}
 			],
-			"caveat": "The DEF reduction only affects opponents marked by Seeds of Skandha from the Skill.",
 			"description": "Opponents that are marked by Seeds of Skandha applied by Nahida herself will be affected by the following effects:\n· Burning, Bloom, Hyperbloom, and Burgeon Reaction DMG they receive can score CRIT Hits. CRIT Rate and CRIT DMG are fixed at 20% and 100% respectively. CRIT Rate from this effect stacks with CRIT Rate from similar effects that allow these Elemental Reactions to CRIT.\n· Within 8s of being affected by Quicken, Aggravate, or Spread, DEF is decreased by 30%.\n· The CRIT Rate and CRIT DMG of Lunar-Bloom DMG received are increased by 10% and 20% respectively."
 		},
 		{

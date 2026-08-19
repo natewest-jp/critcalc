@@ -16,16 +16,64 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 21, "hit": 11, "N": 14 } },
-				{ "name": "N2", "frames": { "anim": 22, "hit": 10, "N": 21 } },
-				{ "name": "N3", "frames": { "anim": 33, "hit": 20 } },
-				{ "name": "N4", "frames": { "anim": 28, "hit": 18, "C": 26 } },
-				{ "name": "N5", "frames": { "anim": 53, "hit": 16 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 21,
+						"hit": 11,
+						"N": 14
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 22,
+						"hit": 10,
+						"N": 21
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 33,
+						"hit": 20
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 28,
+						"hit": 18,
+						"C": 26
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 53,
+						"hit": 16
+					}
+				}
 			],
-			"chargeFrames": { "anim": 76, "E": 67, "Q": 67, "D": 32, "J": 30, "swap": 29 },
-			"plungeFrames": { "anim": 77, "N": 59, "E": 60, "Q": 61, "D": 46, "J": 76, "swap": 63 },
+			"chargeFrames": {
+				"anim": 76,
+				"E": 67,
+				"Q": 67,
+				"D": 32,
+				"J": 30,
+				"swap": 29
+			},
+			"plungeFrames": {
+				"anim": 77,
+				"N": 59,
+				"E": 60,
+				"Q": 61,
+				"D": 46,
+				"J": 76,
+				"swap": 63
+			},
 			"_curatorNotes": [
-				"High plunge frames exist in gcsim (highPlungeFrames) but are not represented; recipe uses lowPlungeFrames only.",
+				"↻ 2026-08-18 (stale-note pass): RESOLVED, no gap remains. This note used to read \"High plunge frames exist in gcsim (highPlungeFrames) but are not represented; recipe uses lowPlungeFrames only.\" The L4b field split changed what the fields MEAN: `plungeFrames` is the HIGH plunge and is the DEFAULT for `P`/`hP`, and `lowPlungeFrames` is the `lP` token only (declared src/lib/types/ability.ts:1721; resolved at src/lib/sim/run.ts:1266-1286, `lP` → `lowPlungeFrames ?? plungeFrames`). Both are authored here and both match gcsim internal/characters/qiqi/plunge.go:36-54 verbatim — plungeFrames = highPlungeFrames (InitAbilSlice 77; Attack 59, Skill 60, Burst 61, Dash 46 = highPlungeHitmark, Jump 76, Swap 63); lowPlungeFrames = lowPlungeFrames (InitAbilSlice 76; Attack 58, Skill 59, Burst 59, Dash 46 = lowPlungeHitmark, Swap 61 — gcsim sets no ActionJump on the low slice, so ours omits it and falls back to `anim`). ⚠️ gcsim's ActionWalk (75 / no high value) is deliberately absent from both: `W` (walk-cancel) is REFUSED, not pending.",
 				"N5 ActionCharge=500 is flagged in gcsim as 'TODO: this action is illegal' — omitted from N5 frames.",
 				"chargeFrames: ActionAttack (N-cancel from CA) is not explicitly set in gcsim InitAbilSlice — omitted per recipe rule."
 			],
@@ -47,7 +95,14 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 76, "N": 58, "E": 59, "Q": 59, "D": 46, "swap": 61 }
+			"lowPlungeFrames": {
+				"anim": 76,
+				"N": 58,
+				"E": 59,
+				"Q": 59,
+				"D": 46,
+				"swap": 61
+			}
 		},
 		{
 			"id": "qiqi__skill__adeptus_art_herald_of_frost",
@@ -57,16 +112,31 @@
 			"cooldown": 30,
 			"cooldownStartDelay": 3,
 			"cooldownModifiers": [
-				{ "source": "Witch's Revelation: Seven Sacred Treasures", "type": "flat", "value": -15 }
+				{
+					"source": "Witch's Revelation: Seven Sacred Treasures",
+					"type": "flat",
+					"value": -15
+				}
 			],
 			"tags": ["heal"],
-			"frames": { "anim": 57, "Q": 58, "D": 6, "J": 5 },
+			"frames": {
+				"anim": 57,
+				"Q": 58,
+				"D": 6,
+				"J": 5
+			},
 			"effects": [
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "onHit", "abilityType": "normal" },
-					"conditions": { "type": "state", "state": "duringSummon" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
 					"scaling": 19.008,
 					"stat": "atk",
 					"flat": 148.309
@@ -74,8 +144,14 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "onHit", "abilityType": "charged" },
-					"conditions": { "type": "state", "state": "duringSummon" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
 					"scaling": 19.008,
 					"stat": "atk",
 					"flat": 148.309
@@ -92,7 +168,11 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": { "type": "summonTick", "interval": 4.5, "firstTickDelay": 0 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 4.5,
+								"firstTickDelay": 0
+							},
 							"scaling": 125.28,
 							"stat": "atk",
 							"flat": 991.287
@@ -112,16 +192,51 @@
 			"description": "Using the Icevein Talisman, Qiqi brings forth the Herald of Frost, dealing Cryo DMG to surrounding opponents.\n\nHerald of Frost\n·On hit, Qiqi's Normal and Charged Attacks regenerate HP for your own party members and nearby teammates. Healing scales based on Qiqi's ATK.\n·Periodically regenerates your active character's HP.\n·Follows the character around, dealing Cryo DMG to opponents in their path.",
 			"caveat": "The 15s cooldown assumes the Witch's Revelation talent Seven Sacred Treasures is unlocked; without it the cooldown is 30s. Not modeled: the Herald's coordinated attacks on the active character's hits.",
 			"application": [
-				{ "frame": 32, "element": "cryo", "units": 1 },
-				{ "frame": 96, "element": "cryo" },
-				{ "frame": 231, "element": "cryo", "units": 1 },
-				{ "frame": 291, "element": "cryo" },
-				{ "frame": 426, "element": "cryo", "units": 1 },
-				{ "frame": 486, "element": "cryo" },
-				{ "frame": 621, "element": "cryo", "units": 1 },
-				{ "frame": 681, "element": "cryo" },
-				{ "frame": 816, "element": "cryo", "units": 1 },
-				{ "frame": 876, "element": "cryo" }
+				{
+					"frame": 32,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 96,
+					"element": "cryo"
+				},
+				{
+					"frame": 231,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 291,
+					"element": "cryo"
+				},
+				{
+					"frame": 426,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 486,
+					"element": "cryo"
+				},
+				{
+					"frame": 621,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 681,
+					"element": "cryo"
+				},
+				{
+					"frame": 816,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 876,
+					"element": "cryo"
+				}
 			]
 		},
 		{
@@ -132,19 +247,40 @@
 			"cooldown": 20,
 			"tags": [],
 			"energyCost": 80,
-			"frames": { "anim": 115, "N": 113, "E": 113, "J": 114, "swap": 112 },
+			"frames": {
+				"anim": 115,
+				"N": 113,
+				"E": 113,
+				"J": 114,
+				"swap": 112
+			},
 			"effects": [],
-			"summons": [{ "label": "Fortune-Preserving Talisman", "duration": 15, "spawnsAt": 40 }],
+			"summons": [
+				{
+					"label": "Fortune-Preserving Talisman",
+					"duration": 15,
+					"spawnsAt": 40
+				}
+			],
 			"_curatorNotes": [
 				"Fortune-Preserving Talisman is an enemy-attached status effect modeled as a summon (no mobility field, per Mona Illusory Bubble precedent). spawnsAt=40 from talismanAi QueueAttack(…, 40, 40, talismanCB) in burst.go, which fires before main DMG at burstHitmark=82. Duration 15s from e.AddStatus(talismanKey, 15*60).",
 				"STELLAR ROUND 2026-07-29. Enhanced (buff-field) text, Fandom 'Adeptus Art: Preserver of Fortune': 'Radiance: Stellar-Conduct: Deals an additional instance of Cryo DMG that is also considered Stellar-Conduct DMG.' Stellar-Conduct DMG scaling row 297.3–669%, TL10 = 535.2%; Advanced Properties list it as a separate 0U, no-ICD instance. Page category 'Direct Stellar-Conduct Talents' — damage magnitude, so caveat + note only, never a damage effect (same call as Sandrone C4). Gate is the Radiance: Stellar-Conduct state (Qiqi inside a Polestar Field), narrower than a teamEnablesReaction condition would express — nothing authored, so no gate needed here.",
 				"GAUGE ROUND 2026-08-17. The Talisman summon is NOT a tick series — gcsim's burst.go has no QueueCharTask/Tasks.Add on a period; the only thing the talismanKey status drives is talismanHealHook (heal to whoever damages the marked enemy, 1s ICD via talismanICDKey), which is healing, not damage, and is driven by the party's hits rather than a timer. Nothing added to summons[].effects. The burst's OWN Cryo hit was missing from application[] and is now authored: burst.go const burstHitmark = 82, ai{Element: attributes.Cryo, Durability: 50, Mult: burstDmg[c.TalentLvlBurst()]} → frame 82, cryo, 50/25 = 2U. The frame-40 entry stays element-less on purpose: talismanAi is AttackTagNone/ICDTagNone with Element attributes.Physical and no Mult (application-only marker attack).",
-				"STILL UNAUTHORED (pre-existing, unchanged by this round): the burst's own Talisman healing, 90–203% ATK+577–1,703 (TL10 = 162% ATK+1,270), once per second, active character only and only when they hit the marked target."
+				"STILL UNAUTHORED (pre-existing, unchanged by this round): the burst's own Talisman healing, 90–203% ATK+577–1,703 (TL10 = 162% ATK+1,270), once per second, active character only and only when they hit the marked target.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — it talks about an extra DAMAGE instance. The curator note records it as a separate 0U, no-ICD instance, so even the aura lane would gain no pip from it, and damage magnitude is FROZEN out of scope tool-wide. Nothing on the timeline is wrong or missing whether the talent is unlocked or not. Category: invisible-omission."
 			],
 			"behavior": "instant",
 			"description": "Qiqi releases the adeptus power sealed within her body, marking nearby opponents with a Fortune-Preserving Talisman that deals Cryo DMG.\n\nFortune-Preserving Talisman\nWhen opponents affected by this Talisman take DMG, the character that dealt this DMG regenerates HP.",
-			"caveat": "Not modeled: with the Witch's Revelation talent unlocked, a cast inside a Polestar Field adds a Cryo hit that counts as Stellar-Conduct DMG.",
-			"application": [{ "frame": 40 }, { "frame": 82, "element": "cryo", "units": 2 }]
+			"application": [
+				{
+					"frame": 40
+				},
+				{
+					"frame": 82,
+					"element": "cryo",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -163,10 +299,10 @@
 			"abilityType": "passive",
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. A4: on N/CA hit, 50% proc chance to apply Fortune-Preserving Talisman (6s) to the hit enemy, with 30s ICD on Qiqi (a4ICDKey). Implemented in burst.go:onNACAHitHook(). Does not overwrite a longer existing talisman (gcsim conditional). Reviewer to decide effect-row representation.",
-				"STELLAR ROUND 2026-07-29. Enhanced (buff-field) text, Fandom 'A Glimpse Into Arcanum': 'Radiance: Stellar-Conduct: The effect now has a 100% chance to trigger, and cooldown time is reduced to 15s.' Radiance-gated (Qiqi inside a Polestar Field). Two unmodelable pieces: a proc-chance change (no probability primitive) and a CONDITIONAL cooldown change (cooldownModifiers can express a gate, but this ICD belongs to an effect that is itself unauthored) → deferred CD-modification queue. Caveat only."
+				"STELLAR ROUND 2026-07-29. Enhanced (buff-field) text, Fandom 'A Glimpse Into Arcanum': 'Radiance: Stellar-Conduct: The effect now has a 100% chance to trigger, and cooldown time is reduced to 15s.' Radiance-gated (Qiqi inside a Polestar Field). Two unmodelable pieces: a proc-chance change (no probability primitive) and a CONDITIONAL cooldown change (cooldownModifiers can express a gate, but this ICD belongs to an effect that is itself unauthored) → deferred CD-modification queue. Caveat only.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Fortune-Preserving Talisman is a lane bar this tool already draws — the burst authors it as a 15s summon, so the player has a named span in front of them. At A4 the same Talisman goes up off Normal/Charged hits and no second bar ever appears, which is a blank in a lane the character already populates. The Polestar upgrade half (100% chance, 15s ICD) is an unmodeled tweak to an unmodeled proc and names no pixel — drop it. Category: expected-but-absent."
 			],
-			"description": "When Qiqi hits opponents with her Normal and Charged Attacks, she has a 50% chance to apply a Fortune-Preserving Talisman to them for 6s. This effect can only occur once every 30s.",
-			"caveat": "Not modeled: the Fortune-Preserving Talisman applied here, or its upgrade inside a Polestar Field to a guaranteed application on a 15s cooldown."
+			"description": "When Qiqi hits opponents with her Normal and Charged Attacks, she has a 50% chance to apply a Fortune-Preserving Talisman to them for 6s. This effect can only occur once every 30s."
 		},
 		{
 			"id": "qiqi__passive__seven_sacred_treasures",
@@ -176,8 +312,14 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "skill" },
-					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"source": "character",
@@ -188,8 +330,14 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "skill" },
-					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"source": "character",
@@ -216,22 +364,34 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"effects": [
-				{ "type": "energy", "target": "self", "trigger": { "type": "manual" }, "amount": 2 },
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "manual" },
-					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
+					"trigger": {
+						"type": "manual"
+					},
+					"amount": 2
+				},
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "manual"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
 					"procCooldown": 6,
 					"amount": 6
 				}
 			],
 			"_curatorNotes": [
 				"trigger: 'manual' is inherited from generator; reviewer to replace. Probable trigger: onHit from Herald of Frost deployable damage (skill tick) hitting a Fortune-Preserving Talisman-marked enemy. In gcsim, c1() callback is appended to Herald tick AttackEvents and checks e.StatusIsActive(talismanKey) (cons.go:c1()). Energy +2 per qualifying hit; no per-hit ICD modeled in gcsim. Target scope: self.",
-				"STELLAR ROUND 2026-07-29 — second effect ADDED. Enhanced (buff-field) text, Fandom 'Ascetics of Frost': 'Radiance: Stellar-Conduct: Qiqi also regenerates 6 Elemental Energy when the Herald of Frost's attacks and coordinated attacks hit opponents. This effect can trigger once every 6s.' Authored as a second energy effect (6, self, procCooldown 6) gated on `teamEnablesReaction: stellarConduct`; the base 2-Energy effect is untouched. trigger 'manual' mirrors the sibling effect — the Herald's ticks and its new coordinated attacks are not authored damage, so no onHit trigger could fire. Real gate is narrower (Radiance state = Qiqi inside a Polestar Field), stated in the caveat."
+				"STELLAR ROUND 2026-07-29 — second effect ADDED. Enhanced (buff-field) text, Fandom 'Ascetics of Frost': 'Radiance: Stellar-Conduct: Qiqi also regenerates 6 Elemental Energy when the Herald of Frost's attacks and coordinated attacks hit opponents. This effect can trigger once every 6s.' Authored as a second energy effect (6, self, procCooldown 6) gated on `teamEnablesReaction: stellarConduct`; the base 2-Energy effect is untouched. trigger 'manual' mirrors the sibling effect — the Herald's ticks and its new coordinated attacks are not authored damage, so no onHit trigger could fire. Real gate is narrower (Radiance state = Qiqi inside a Polestar Field), stated in the caveat.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — it talks about ENERGY regeneration. The planner has no energy surface at all: both effects are `energy` on a `manual` trigger (nothing consumes manual, and energy effects have no planner consumer even on wired triggers), and no bar, marker, counter or tooltip anywhere prints energy gained. There is no pixel that is wrong, and none the player would look for. Category: invisible-omission."
 			],
-			"description": "When the Herald of Frost hits an opponent marked by a Fortune-Preserving Talisman, Qiqi regenerates 2 Energy.",
-			"caveat": "The extra 6 Energy also needs a Polestar Field, and it comes off the Herald's own hits, which the timeline does not track."
+			"description": "When the Herald of Frost hits an opponent marked by a Fortune-Preserving Talisman, Qiqi regenerates 2 Energy."
 		},
 		{
 			"id": "qiqi__constellation__frozen_to_the_bone",
@@ -242,8 +402,13 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
 					"source": "character",
 					"stat": "atk%",
 					"value": 50,
@@ -273,17 +438,21 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 180,
 					"stat": "atk"
 				}
 			],
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. C4: enemies marked by Fortune-Preserving Talisman have their ATK decreased by 20%. Enemy ATK debuff; not implemented in gcsim cons.go. Reviewer to decide schema representation (enemy debuff target model). (The ATK-decrease half is still unauthored after the 2026-07-29 Stellar round.)",
-				"STELLAR ROUND 2026-07-29 — heal ADDED. Enhanced (buff-field) text, Fandom 'Divine Suppression': 'Additionally, when the healing effect of Fortune-Preserving Talisman triggers, the nearby party member with the lowest HP percentage remaining will also receive an additional instance of healing for 180% of Qiqi's ATK.' PERMANENT patch — no 'Radiance:' prefix, no Polestar Field or Stellar-Conduct wording — so no stellar gate. Constellation fixed value (no talent-level table). target 'team' + trigger 'manual' follows the Traveler (Hydro) C6 precedent for lowest-HP-ally heals: no target primitive picks the lowest-HP member, and the parent Talisman heal is itself unauthored, so nothing could fire it automatically. Over-claim on scope is repaired by the caveat."
+				"STELLAR ROUND 2026-07-29 — heal ADDED. Enhanced (buff-field) text, Fandom 'Divine Suppression': 'Additionally, when the healing effect of Fortune-Preserving Talisman triggers, the nearby party member with the lowest HP percentage remaining will also receive an additional instance of healing for 180% of Qiqi's ATK.' PERMANENT patch — no 'Radiance:' prefix, no Polestar Field or Stellar-Conduct wording — so no stellar gate. Constellation fixed value (no talent-level table). target 'team' + trigger 'manual' follows the Traveler (Hydro) C6 precedent for lowest-HP-ally heals: no target primitive picks the lowest-HP member, and the parent Talisman heal is itself unauthored, so nothing could fire it automatically.",
+				"↻ 2026-08-18 (stale-note pass) — ⛔ THE LAST SENTENCE OF THE NOTE ABOVE WAS WRONG AND HAS BEEN CUT. It read \"Over-claim on scope is repaired by the caveat.\" A caveat CANNOT repair it: an authored `Ability.caveat` reaches exactly ONE surface, the planner's Notes panel (`slotCaveats.ts` → `RotationNotes.svelte:47`, the only render in src), and it never reaches the Team Builder. `deriveCapabilities` applies NO trigger gate — `effectCapability` maps `heal` straight to `{ kind: 'heal' }` and `normalizeTarget('team')` → 'team' — so measured (deriveCharacterCapabilities, 2026-08-18) this node emits `{ kind: 'heal', target: 'team', minConstellation: 4, caveats: [] }` into the TB's provenance card. The TB therefore states that Qiqi's C4 heals the WHOLE PARTY, with no caveat channel to qualify it, while the planner shows nothing at all (`manual` has exactly one mention in src — the type declaration at ability.ts:649 — so 167 manual effects across 69 characters draw no bar, no marker and no chip).",
+				"↻ 2026-08-18 — ⏭ WORK ITEM / NATE'S CALL, same shape as the Nicole C2 shield ruling that shipped 2026-08-18: an inert `manual` effect with a wrong `target` is NOT harmless, because `target` reaches `deriveCapabilities` even when the trigger reaches nothing. Nicole C2 was resolved by the Kirara C2 house form — the entry keeps its `description`, carries NO `effects`, and a curator note says why. The same option applies here (the in-game scope is ONE ally, the lowest HP% nearby, not the team), and the alternative — leaving the effect and narrowing `target` — is no better, since no target primitive picks the lowest-HP member and `active` would be a different wrong claim. ⛔ Not changed here: this pass is notes only. Whichever way it goes, a char-JSON edit needs `npm run generate-character-index`. The 20% enemy ATK debuff half is still unauthored and still needs an enemy-debuff target model.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — on the surface this caveat reaches. The heal is `trigger: manual` — 167 manual effects corpus-wide draw no bar, no marker, no chip — and its parent Talisman heal is unauthored too, so the planner shows nothing to be wrong about. The enemy ATK debuff likewise has no lane. ⚠️ The character's own curator note is right that the WRONG `target: 'team'` reaches deriveCapabilities and makes the Team Builder claim a party-wide C4 heal — but N17 is decisive: an authored caveat renders only in the planner's Notes panel and can never reach that card. The fix there is the Kirara-C2-style data ruling already queued for Nate, not this text. Category: invisible-omission."
 			],
-			"description": "Targets marked by the Fortune-Preserving Talisman have their ATK decreased by 20%.",
-			"caveat": "Shown as a team heal, but in game only the nearby ally with the lowest HP percentage receives it, once per Talisman heal."
+			"description": "Targets marked by the Fortune-Preserving Talisman have their ATK decreased by 20%."
 		},
 		{
 			"id": "qiqi__constellation__crimson_lotus_bloom",
@@ -301,17 +470,20 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"scaling": 50,
 					"stat": "hp"
 				}
 			],
 			"_curatorNotes": [
 				"Migrated to onCast burst 2026-05-09 (F1). 50% MaxHP team heal authored. The revival mechanic (dead → alive) is outside the current schema; the 15min ICD is not modeled (gcsim doesn't enforce it either). Heal portion only.",
-				"STELLAR ROUND 2026-07-29 — nothing authored. Enhanced (buff-field) text, Fandom 'Rite of Resurrection': after the burst Qiqi gains 4 stacks of Glimpse of Mystery (12s, refreshed by re-casting the burst); when the current active character OTHER than Qiqi deals Stellar-Conduct DMG, 1 stack is consumed and that DMG is increased by 600% of Qiqi's ATK. Fandom utility tag: 'Stellar-Conduct Additive Base DMG Bonus' — the additive-base-DMG term of the Stellar formula, i.e. damage magnitude, not a stat buff, so no effect (constitution). The stack ledger (per-hit consumption keyed to another character's Stellar-Conduct DMG) is also unmodelable. No 'Radiance:' prefix, but it names Stellar-Conduct and cannot fire without an enabler in the party."
+				"STELLAR ROUND 2026-07-29 — nothing authored. Enhanced (buff-field) text, Fandom 'Rite of Resurrection': after the burst Qiqi gains 4 stacks of Glimpse of Mystery (12s, refreshed by re-casting the burst); when the current active character OTHER than Qiqi deals Stellar-Conduct DMG, 1 stack is consumed and that DMG is increased by 600% of Qiqi's ATK. Fandom utility tag: 'Stellar-Conduct Additive Base DMG Bonus' — the additive-base-DMG term of the Stellar formula, i.e. damage magnitude, not a stat buff, so no effect (constitution). The stack ledger (per-hit consumption keyed to another character's Stellar-Conduct DMG) is also unmodelable. No 'Radiance:' prefix, but it names Stellar-Conduct and cannot fire without an enabler in the party.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — it is an additive base-DMG term, i.e. damage magnitude, which this tool never renders for anyone (constitution + the FROZEN list). The stack ledger it describes buffs nothing we draw, so no bar is short, wrong or missing; a reader at C6 sees the authored 50% Max HP team heal and a burst bar that are both correct. Category: invisible-omission."
 			],
-			"description": "Using Adeptus Art: Preserver of Fortune revives all fallen party members nearby and regenerates 50% of their HP.\nThis effect can only occur once every 15 mins.",
-			"caveat": "Not modeled: the Glimpse of Mystery stacks gained after the burst, which add 600% of the caster's ATK to a teammate's Stellar-Conduct DMG (4 stacks, 12s)."
+			"description": "Using Adeptus Art: Preserver of Fortune revives all fallen party members nearby and regenerates 50% of their HP.\nThis effect can only occur once every 15 mins."
 		}
 	],
 	"meta": {

@@ -160,7 +160,7 @@
 					]
 				}
 			],
-			"caveat": "The three off-field Gravity Interference hits fire only when Gravity fills from party Lunar reactions (about every 6s), and only the one matching the dominant reaction lands — never all three at once. This timing is not modeled.",
+			"caveat": "Not modeled: the three off-field Gravity Interference hits. They fire only when Gravity fills from party Lunar reactions (about every 6s), and only the one matching the dominant reaction lands.",
 			"description": "Awaken Moonbound Tides, dealing AoE Hydro DMG and summoning **Gravity Ripple**.\nGravity Ripple will follow the active character on the field, while continuously dealing AoE Hydro DMG to surrounding opponents. While Gravity Ripple is on the field, and nearby party members trigger Lunar reactions or inflict Lunar Reaction DMG, Columbina will accrue a special Gravity. Once Gravity is accumulated to its limit, different types of damage will be dealt to enemies based on the type of Lunar Reaction that has accumulated the most Gravity for Columbina.\nMoonsign: Ascendant Gleam: Gravity Ripple inflicts AoE Hydro DMG over a wider area.",
 			"_curatorNotes": [
 				"Frames 2026-07-14 from gcsim skill.go: skillFrames = InitAbilSlice(41); ActionCharge=40, Skill=28, Burst=28, Dash=27, Jump=32, Swap=26. swap=ActionSwap=26; N=InitAbilSlice default 41 (ActionAttack not overridden). CD: SetCDWithDelay(action.ActionSkill, 17*60, 20) -> cooldown 17s, cooldownStartDelay 20. Skill self-DMG skill[9]=0.30096=30.1% Max HP (Hydro, hitmark 21) follows the FrameMap convention, not authored as an effect.",
@@ -283,9 +283,9 @@
 				}
 			],
 			"description": "When triggering **Gravity Interference**, Columbina gains the Lunacy effect, increasing her CRIT Rate by 5% for 10s. This effect can be stacked up to 3 times.",
-			"caveat": "Self-only, not a team buff — it stacks whenever Gravity Interference fires, so it's added manually (up to 3 stacks, +15% CRIT Rate). That cadence depends on party Lunar reactions, which aren't modeled.",
 			"_curatorNotes": [
-				"A1 (Ascension 1): gcsim asc.go a1OGravityTick — CR = 0.05 * min(stacks,3), 10s window refreshed on each Gravity Interference. Self-only; not a team buff."
+				"A1 (Ascension 1): gcsim asc.go a1OGravityTick — CR = 0.05 * min(stacks,3), 10s window refreshed on each Gravity Interference. Self-only; not a team buff.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Her received-buff row stays empty where a +5%/+10%/+15% CRIT Rate bar would sit — the effect is manual-trigger, so no bar draws at any point in the rotation. The pixel is the blank row; the second sentence only restates the Gravity cadence the skill caveat already establishes, so it is paying for column space twice. Category: expected-but-absent."
 			]
 		},
 		{
@@ -302,9 +302,9 @@
 			"name": "Lunar Vigil",
 			"abilityType": "passive",
 			"description": "If one of your party members is incapacitated while in the Nod-Krai or Frost Moon regions, Columbina will revive this character. The amount of HP the character will have upon revival is based on Columbina's Friendship Level. This effect can occur once every 100s. This effect does not trigger in Domains, Trounce Domains, or the Spiral Abyss.\nAdditionally, Columbina appears to have a special affinity for certain animals who are influenced by kuuvahki...",
-			"caveat": "Not modeled: the revival — once every 100s in the Nod-Krai or Frost Moon regions, a fallen party member is revived with HP based on Friendship Level. It doesn't work in Domains, Trounce Domains, or the Spiral Abyss.",
 			"_curatorNotes": [
-				"Passive4 'Lunar Vigil' ingested from genshin-db 5.2.12 (capability sweep 2026-07-28). Effect-empty by design: revival HP scales with Friendship Level (account progression — no talent-level-10 value exists), no revive/on-death trigger primitive exists, and the effect is disabled in Domains, Trounce Domains, and the Spiral Abyss (all instanced combat). Not implemented in gcsim (no match in ~/Code/gcsim/internal/characters/columbina/)."
+				"Passive4 'Lunar Vigil' ingested from genshin-db 5.2.12 (capability sweep 2026-07-28). Effect-empty by design: revival HP scales with Friendship Level (account progression — no talent-level-10 value exists), no revive/on-death trigger primitive exists, and the effect is disabled in Domains, Trounce Domains, and the Spiral Abyss (all instanced combat). Not implemented in gcsim (no match in ~/Code/gcsim/internal/characters/columbina/).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Revival has no timeline representation of any kind — there is no death, no HP and no party-state surface anywhere in the planner, so nothing on screen is wrong or missing. It is also disabled in every instanced fight a rotation is planned for, and its magnitude depends on Friendship Level, which the tool has no notion of. Pure kit trivia in a 262px column. Category: invisible-omission."
 			]
 		}
 	],
@@ -409,11 +409,13 @@
 				}
 			],
 			"description": "Unleashing her Elemental Skill Eternal Tides will immediately trigger an effect equivalent to the effect of **Gravity Interference**. This effect can be triggered once every 15s.\nMoonsign: Ascendant Gleam\nWhen Gravity Interference is triggered, if the Lunar reaction type that has accumulated the most Gravity for Columbina is:\n· Lunar-Charged: Your current active character will recover 6 Energy.\n· Lunar-Bloom: Your active character's interruption resistance will be increased for 8s.\n· Lunar-Crystallize: Summons a Rainsea Shield. The Rainsea Shield's DMG absorption is based on 12% of Columbina's Max HP, and it will absorb Hydro DMG with 250% effectiveness for 8s.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
-			"caveat": "The shield, 6 Energy, and interruption resistance all appear, but only one fires per Gravity Interference — chosen by the dominant Lunar reaction, and that timing isn't modeled.",
+			"caveat": "Not modeled: the Rainsea Shield or the interruption resistance boost — only one branch fires per Gravity Interference, chosen by the dominant Lunar reaction.",
 			"_curatorNotes": [
 				"C1: gcsim cons.go c1OnSkill (E cast -> gravityTick, 15s ICD) and c1OnGravityTick — Lunar-Charged: active +6 energy; Lunar-Crystallize: Rainsea Shield HP=0.12*MaxHP, 8s (shield.ColumbinaC1, self-targeted). Lunar-Bloom interruption-res branch is kit text (gcsim models the LC/LCr branches). All gated on Moonsign: Ascendant Gleam -> teamFaction moonsign min:2. Manual triggers because Gravity Interference cadence is unmodelable. Elevate increment +1.5% (gcsim elevation[1]=0.015).",
 				"Prior stub had a spurious C1 damage effect (12% HP hydro) — C1 adds no new damage scaling (it re-triggers the base Gravity Interference); removed.",
-				"[A7] Rainsea Shield's 250% Hydro-DMG absorption effectiveness is not modeled; it is shown as a generic 12% Max HP shield."
+				"[A7] Rainsea Shield's 250% Hydro-DMG absorption effectiveness is not modeled; it is shown as a generic 12% Max HP shield.",
+				"↻ 2026-08-18: the [A7] line above is WRONG about the fallback — the Rainsea Shield is not shown as a generic shield, it is not shown AT ALL, at any constellation level. All three C1 branches are `trigger: 'manual'`, and `manual` reaches no surface anywhere: `pushShield` (sim/shields.ts:111-115) requires `onCast` with a positive `duration`, and the only `'manual'` mention in src is the type declaration itself (types/ability.ts:649) — no collector, no proc, no chip, no notation token. So the 250% Hydro absorption is a second-order gap on a shield that never draws, and the ability-level `caveat` (which DOES render, gated to C1+) already states the real absence. ⚠️ The constellation-shield wire (53db108) does NOT reach this — it only widened the `onCast` walk to non-ability effect sources; docs/curation/engine-capability-rubric.md P26 names Columbina C1 as one of the five non-ability shields that still draw nothing. ⏭ The blocker is unchanged and is not the shield primitive: Gravity Interference cadence has no primitive, which is why these are `manual` in the first place.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the shield, 6 Energy, and interruption resistance — only one of the three fires per Gravity Interference, chosen by the dominant Lunar reaction.\""
 			]
 		},
 		{
@@ -549,10 +551,10 @@
 				}
 			],
 			"description": "Rate of accumulating **Gravity** increases by 34%. \nWhen Gravity Interference is triggered, Columbina will receive the Lunar Brilliance effect, which increases her Max HP by 40% for 8s.\nMoonsign: Ascendant Gleam:\nWhen Lunar Brilliance is active, if, during the current trigger of Gravity Interference, the Lunar reaction type that has accumulated the most Gravity for Columbina is:\n· Lunar-Charged: ATK of your current active character increases. Increase in ATK is equal to 1% of Columbina's Max HP.\n· Lunar-Bloom: Elemental Mastery of your current active character increases. Increase in Elemental Mastery is equal to 0.35% of Columbina's Max HP.\n· Lunar-Crystallize: DEF of your current active character increases. Increase in DEF is equal to 1% of Columbina's Max HP.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 7%.",
-			"caveat": "The +40% Max HP fires with every Gravity Interference; the ATK, EM, and DEF conversions (each a share of her Max HP) are mutually exclusive — only the one matching the dominant reaction lands. That timing and the +34% Gravity rate aren’t modeled.",
 			"_curatorNotes": [
 				"C2 re-authored 2026-07-14 (replaces flagged broken stub). gcsim cons.go c2Init/c2OnGravityTick: c2Buff HPP=0.4 (Lunar Brilliance +40% Max HP, 8s, self, applied on every Gravity Interference regardless of Moonsign). Active-char conversions gated on Moonsign level >=2 (teamFaction moonsign min:2): ATK += 0.01*MaxHP (ratio 1), EM += 0.0035*MaxHP (ratio 0.35), DEF += 0.01*MaxHP (ratio 1) — all flat stats scaling on Columbina's Max HP, 8s, mutually exclusive by dominant reaction. Elevate increment +7% (gcsim elevation[2]=0.085 cumulative; C1 1.5 + C2 7 = 8.5). +34% gravity rate (c2GravityRate) unmodeled — no gravity primitive.",
-				"NOTE: ability.ts stat-key JSDoc credits 'Columbina C2 per-reaction-element CRIT DMG' — that is actually C6 (CRIT DMG); C2 does ATK/EM/DEF conversions. Comment mislabel, not editable from this file."
+				"NOTE: ability.ts stat-key JSDoc credits 'Columbina C2 per-reaction-element CRIT DMG' — that is actually C6 (CRIT DMG); C2 does ATK/EM/DEF conversions. Comment mislabel, not editable from this file.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Four authored buffs (self +40% Max HP, and active-target ATK/EM/DEF conversions) are all manual-trigger, so her row and the active character's row draw no bars where the game gives a stack of them every ~6s. The +34% Gravity accrual rate has no pixel at all — Gravity is not a bar, a meter or a marker anywhere in the tool, so a rate change to it cannot look wrong. Category: expected-but-absent."
 			]
 		},
 		{
@@ -605,10 +607,10 @@
 				}
 			],
 			"description": "When **Gravity Interference** is triggered, 4 Elemental Energy will be restored to Columbina;\nAdditionally, if the Lunar reaction type that accumulates the most Gravity for Columbina is Lunar-Charged, Lunar-Bloom, or Lunar-Crystallize, the Lunar Reaction DMG dealt by this instance of Gravity Interference is increased by 12.5%/2.5%/12.5% of Columbina's Max HP respectively. This effect can be triggered at most once every 15s.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 1.5%.",
-			"caveat": "Not modeled: the 4 Energy she regains on each Gravity Interference, and the bonus DMG folded into that hit (12.5% / 2.5% / 12.5% of her Max HP, by dominant Lunar reaction, once per 15s).",
 			"_curatorNotes": [
 				"C4: gcsim cons.go c4OnGravityTickFlatDMG — self +4 energy on every Gravity Interference (self-only, unmodelable timing), plus flat DMG add to the Gravity Interference hit: LunarCharge/LunarCrystallize 0.125*MaxHP, LunarBloom 0.025*MaxHP, 15s ICD. Flat add belongs on the Gravity Interference (skill) damage but is reaction-conditional and would need a Max-HP flatScaling on an unmodelable-timing hit; left as a note. Elevate increment +1.5% (gcsim elevation[4]=0.115 cumulative). Prior stub C4 onReaction-crystallize damage effect removed.",
-				"C4 self +4 energy not authored: self-only, and Gravity Interference cadence (its trigger) is not simulable."
+				"C4 self +4 energy not authored: self-only, and Gravity Interference cadence (its trigger) is not simulable.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — in both halves. Energy regain is rendered nowhere in the planner. And the second half is a DAMAGE MAGNITUDE folded into an existing hit — the tool never prints damage numbers by constitution, and the hit itself is the already-caveated Gravity Interference, so nothing changes size, colour or position on screen whether C4 is owned or not. This is the clearest delete in the batch: three Gravity caveats already tell the reader those hits are absent, and this one adds only arithmetic the tool would never show. Category: invisible-omission."
 			]
 		},
 		{
@@ -678,9 +680,9 @@
 				}
 			],
 			"description": "For 8s after characters in the **Lunar Domain** trigger a Lunar reaction, based on the elements involved in the reaction, the CRIT DMG of the corresponding Elemental DMG done by all party members is increased by 80%. The CRIT DMG-increasing effects for the same Elemental Type do not stack.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 7%.",
-			"caveat": "Shown as one generic +80% CRIT DMG bar, but in game it covers only the elements in the triggering Lunar reaction — a Lunar-Charged reaction buffs Electro and Hydro. It also needs the burst's Lunar Domain active and a Lunar reaction inside it, which isn't modeled.",
 			"_curatorNotes": [
-				"C6: gcsim cons.go c6Init — c6Buff CD=0.8 (+80% CRIT DMG) added per element bucket keyed by the triggering Lunar reaction (LC->Electro+Hydro, LB->Dendro+Hydro, LCr->Geo+Hydro), 8s, requires the burst's Lunar Domain react-bonus mod active. Authored as generic team critDmg 80 with caveat (element-specific critDmg stats would need runtime knowledge of which reaction fired). Elevate increment +7% (gcsim elevation[6]=0.20 cumulative)."
+				"C6: gcsim cons.go c6Init — c6Buff CD=0.8 (+80% CRIT DMG) added per element bucket keyed by the triggering Lunar reaction (LC->Electro+Hydro, LB->Dendro+Hydro, LCr->Geo+Hydro), 8s, requires the burst's Lunar Domain react-bonus mod active. Authored as generic team critDmg 80 with caveat (element-specific critDmg stats would need runtime knowledge of which reaction fired). Elevate increment +7% (gcsim elevation[6]=0.20 cumulative).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A +80% team CRIT DMG bar is the single largest buff in her kit and no bar draws — the effect is authored but manual-trigger. A C6 owner casting Q and seeing only the three Reaction Bonus rows would reasonably assume the tool has it covered. Trimmed only to drop the worked Lunar-Charged example, which is kit explanation and not needed to read the blank row. Category: expected-but-absent."
 			]
 		}
 	],

@@ -160,12 +160,12 @@
 				"J": 28,
 				"swap": 43
 			},
-			"caveat": "Not modeled: plunges are disabled in this form.",
 			"_curatorNotes": [
 				"In-stance normals: same frame data as base (gcsim shares attackFrames between Attack() and skillAttack()), only Element=Electro and ICD/scaling differ. AttackTagNormal preserved (still normal-typed). IgnoreInfusion:true blocks override.",
 				"Damage: skillAttack[i] multipliers per skillAttack_1..5 in flins_gen.go. N1=110.6%, N2=111.7%, N3=131.1%, N4=2×83.4%, N5=180.0% Electro at TalentLvl 10.",
 				"Authored as a normal-typed dual variant with state condition (varesa/cyno-shape). Plunging is disabled — flagged in caveat.",
-				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A plunge block (`P`) drawn inside the Manifest Flame stance window — the parser accepts the token and renders an action block for an action the game refuses. The pixel is real; the current wording (\"Not modeled: X is disabled\") reads as if plunges are MISSING from the chart rather than wrongly PRESENT, so the reader cannot tell what to look at. Retarget it on the drawn block, matching Kinich's sibling phrasing for the identical case. Category: visible-divergence."
 			],
 			"chargedIcdWindow": {
 				"timer": 30
@@ -251,7 +251,7 @@
 				"C2 Devil's Wall: +50% ATK Electro Lunar-Charged DMG on next NA within 6s after Spearstorm — the action-event substrate landed (post-P4 #2, 2026-07-17) but the effect stays unmodeled: onHit dispatch from actions is unwired (substrate-only) and Lunar-Charged DMG is Tier-2-frozen. Full status in the C2 _curatorNotes.",
 				"[A7] Thunderous Symphony hit figures (single Lunar-Charged Electro hit, 171.7% ATK at talent 10; +258.7% ATK extra hit under Moonsign: Ascendant Gleam) are damage math — out of scope for user caveats; already recorded in the burst _curatorNotes."
 			],
-			"caveat": "Type `sQ` within 6s of casting this to fire the 30-energy replacement Burst; plain Q still casts the full 80-energy Burst.",
+			"caveat": "In game the Burst is replaced for 6s after this cast; the timeline still shows a plain `Q` as the full 80-energy Burst, so type `sQ` for the 30-energy one.",
 			"description": "Flins summons a flurry of spears in front, dealing AoE Electro DMG and causing his Elemental Burst Ancient Ritual: Cometh the Night to be replaced with the special Elemental Burst Thunderous Symphony for the next 6s.\nThe base CD of Northland Spearstorm is 6s and will not be affected by other effects.",
 			"application": [
 				{

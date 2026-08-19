@@ -187,11 +187,12 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Not modeled: the taunt, and C4's +25% tick-rate boost. Ticks are shown at the base 1s interval for every constellation — C4 shortens them to 0.75s.",
 			"_curatorNotes": [
-				"Soundwave Collision DMG migrated to summons[0].effects[] (P3): gcsim burstTickHitmark=60f (=1s); first tick at 60f from cast = 24f after summon spawn (=0.4s firstTickDelay). Multiplier soundwave at TalentLvl 10 = 59.76% ATK Electro. C4 0.75× interval not authored as a constellationScaling on the trigger — schema currently doesn't support tick-interval scaling.",
+				"Soundwave Collision DMG migrated to summons[0].effects[] (P3): gcsim burstTickHitmark=60f (=1s); first tick at 60f from cast = 24f after summon spawn (=0.4s firstTickDelay). Multiplier soundwave at TalentLvl 10 = 59.76% ATK Electro.",
+				"↻ 2026-08-18: the last sentence of the note above USED to read \"C4 0.75× interval not authored as a constellationScaling on the trigger — schema currently doesn't support tick-interval scaling\". Both halves are dead. The C4 cadence IS authored, as a SECOND constellation-gated summonTick series on this same summon (summons[0].effects[1], 0.8s — deliberately NOT gcsim's 0.75s; read that series' own notes before touching it). And the shape is deliberately NOT a scaling on the trigger: a cadence change is authored as two mutually-exclusive series because the rate is not the only thing that moves (Aino's ICD group and tick count change with hers), so the two series carry their own icdGate/firstTickDelay independently. ⚠️ Gating drops only a DEFINITIVE false — a reader with no constellation context fires BOTH series.",
 				"Supersonic Oculus is stationary in-game — placed on the player's location at burst cast and stays there. mobility: \"stationary\" matches; gcsim's burstArea is captured at frame 0 and reused for all ticks.",
-				"[A7] Taunt is surfaced only via the taunt tag as a placeholder; no dedicated taunt behavior is modeled."
+				"[A7] Taunt is surfaced only via the taunt tag as a placeholder; no dedicated taunt behavior is modeled.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Supersonic Oculus draws a 9s summon bar with its damage tick marks and all of that is correct; aggro/positioning has no representation anywhere in the timeline, so nothing on screen is wrong or missing. The 'taunt' tag is a Team Builder capability label, and caveats never reach the Team Builder (rubric N17). Category: invisible-omission."
 			],
 			"description": "Ororon works an ancient ritual, dealing Nightsoul-aligned AoE Electro DMG, summoning forth a Supersonic Oculus.\n\nSupersonic Oculus\n·Continuously taunts nearby opponents and attracts attacks from them.\n·Continuously rotates and fires off sonic waves that deal Nightsoul-aligned Electro DMG.",
 			"application": [
@@ -233,10 +234,10 @@
 			"id": "ororon__passive__aspect_catalyst",
 			"name": "Aspect Catalyst",
 			"abilityType": "passive",
-			"caveat": "For 15s after the Spirit Orb hits an opponent, the active character's Normal, Charged, and Plunging Attack hits restore 3 Energy to them — and to him while he's off-field — up to 3 times, at most once per second. This Energy trickle isn't shown on the timeline.",
 			"_curatorNotes": [
 				"Aspect Sigil: 15s window after Spirit Orb hits. Within window, active char's N/C/P hit grants 3 Energy to active + 3 to Ororon (if off-field), 1s ICD, max 3 procs. Not modelled — combination of post-skill state, active-char-hit gating, and proc-count cap isn't expressible in the schema. Energy generation as a buff effect would over-fire (~5x).",
-				"Caveat added 2026-07-28 (capability sweep). Confirmed base-kit flat Energy (not particles) per gcsim: skill.go:63 attaches makeA4cb to the Spirit Orb hit; asc.go:206-211 opens the 15s a4Key window; asc.go:162-199 AddEnergy(3) to active + AddEnergy(3) to off-field Ororon, 1s ICD, 3-proc cap. Energy effects have no onHit dispatch and maxProcs is an unbuilt P4 primitive, so the energy capability legitimately stays first-derivable at C4."
+				"Caveat added 2026-07-28 (capability sweep). Confirmed base-kit flat Energy (not particles) per gcsim: skill.go:63 attaches makeA4cb to the Spirit Orb hit; asc.go:206-211 opens the 15s a4Key window; asc.go:162-199 AddEnergy(3) to active + AddEnergy(3) to off-field Ororon, 1s ICD, 3-proc cap. Energy effects have no onHit dispatch and maxProcs is an unbuilt P4 primitive, so the energy capability legitimately stays first-derivable at C4.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — There is no energy meter, energy lane or energy number anywhere in the planner — burst bars are placed by cooldown alone — so an unmodelled energy refund changes no rendered thing. Ororon's own C4 authors an `energy` effect that is equally inert and carries no caveat. Category: invisible-omission."
 			],
 			"description": "After the Elemental Skill Night's Sling's Spirit Orb hits an opponent, Ororon will gain the Aspect Sigil effect for 15s.\n\nAspect Sigil\nWhen a nearby active party member hits an opponent with Normal, Charged, or Plunging Attacks, that character will restore 3 Energy. If Ororon is off-field, Ororon will also restore 3 Energy. This effect can trigger once every 1s, and can trigger 3 times per duration."
 		}
@@ -310,7 +311,9 @@
 				}
 			],
 			"_curatorNotes": [
-				"Two effects: (1) +25% Supersonic Oculus rotation speed — translates to faster ticks (1s → 0.75s interval); not modelled (we don't render per-tick emission). (2) +8 Energy to Ororon on Q cast — modelled as energy effect. The combined effect is roughly 25% more burst-tick damage which we can't render."
+				"Two effects: (1) +25% Supersonic Oculus rotation speed — a faster tick cadence on the burst's Supersonic Oculus. (2) +8 Energy to Ororon on Q cast — modelled as the energy effect on this entry.",
+				"↻ 2026-08-18: half (1) is MODELLED now, and the note above used to say otherwise (\"1s → 0.75s interval; not modelled (we don't render per-tick emission)… roughly 25% more burst-tick damage which we can't render\"). Two corrections. (a) It is authored — burst summons[0].effects[1] is a second summonTick series gated `constellation: 4`, with the C0 series gated `not constellation: 4`; the pair is mutually exclusive. (b) The interval is **0.8s, not 0.75s** — the C4 series deliberately diverges from gcsim's hardcoded 0.75 because \"25% faster\" is a RATE (÷1.25 = 0.8s). ⛔ Do not re-introduce 0.75 here; the reasoning lives on that series' notes.",
+				"↻ Also dead in the old note: \"we don't render per-tick emission\". Per-tick markers ARE drawn — finalize stamps TimelineWindow.ticks and the summon-lane projection reads them, so the marks a reader counts and the ticks that fire are one computation. ⚠️ The Team Builder's Compare lane is the surface that still lags: it takes the FIRST authored damage series and never consults effect `conditions`, so Ororon always shows the C0 1s cadence there regardless of the con lens. Damage MAGNITUDE remains unrendered site-wide, which is a constitution rule, not a gap."
 			],
 			"description": "The Supersonic Oculus summoned by the Elemental Burst Dark Voices Echo rotates 25% faster.\nAdditionally, Ororon will restore 8 Energy to himself after using Dark Voices Echo."
 		},

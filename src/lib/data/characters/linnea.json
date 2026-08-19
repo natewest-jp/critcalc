@@ -17,15 +17,49 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 17, "N": 21, "swap": 17 } },
-				{ "name": "N2", "frames": { "anim": 12, "N": 26, "swap": 12 } },
-				{ "name": "N3", "frames": { "anim": 27, "N": 43, "swap": 27 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 17,
+						"N": 21,
+						"swap": 17
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 12,
+						"N": 26,
+						"swap": 12
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 27,
+						"N": 43,
+						"swap": 27
+					}
+				}
 			],
 			"chargeHits": [
-				{ "name": "Aimed Shot", "frames": { "anim": 23, "D": 15, "J": 15, "swap": 23 } },
+				{
+					"name": "Aimed Shot",
+					"frames": {
+						"anim": 23,
+						"D": 15,
+						"J": 15,
+						"swap": 23
+					}
+				},
 				{
 					"name": "Fully-Charged Aimed Shot",
-					"frames": { "anim": 94, "D": 86, "J": 86, "swap": 94 }
+					"frames": {
+						"anim": 94,
+						"D": 86,
+						"J": 86,
+						"swap": 94
+					}
 				}
 			],
 			"_curatorNotes": [
@@ -59,13 +93,27 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 20, "N": 20, "Q": 20, "D": 33, "J": 20, "swap": 20 },
+			"frames": {
+				"anim": 20,
+				"N": 20,
+				"Q": 20,
+				"D": 33,
+				"J": 20,
+				"swap": 20
+			},
 			"cooldown": 18,
 			"cooldownStartDelay": 1,
 			"tags": ["summon"],
-			"summons": [{ "label": "Lumi", "duration": 25, "spawnsAt": 36, "mobility": "stationary" }],
+			"summons": [
+				{
+					"label": "Lumi",
+					"duration": 25,
+					"spawnsAt": 36,
+					"mobility": "stationary"
+				}
+			],
 			"effects": [],
-			"caveat": "Lumi is shown as a 25s summon with no damage ticks. Her three power forms — and the repeated-Tap path into the Ultimate Power hit — are not modeled.",
+			"caveat": "Lumi is shown as a 25s summon with no damage ticks.",
 			"_curatorNotes": [
 				"Skill cast: spawns Lumi after 36f (skillRecastDur). Lumi attacks at intervals defined by skillSuperInterval=[111, 63, 144] (Super Power form) or skillStandardInterval=340f (Standard Power form). Skill duration 25s (skillDur).",
 				"behavior:instant + summons[] is the layla/ineffa pattern. Lumi authored as a 25s stationary summon without effects (the variable-cadence multi-form attack pattern doesn't fit summonTick which assumes constant interval).",
@@ -73,8 +121,11 @@
 				"Frames: skillFrames=InitAbilSlice(33), ActionAttack/Aim/Skill/Burst/Jump/Swap=20 ActionWalk=33. Per E-spec swap/N/Q/D/J — D defaults to animLen=33.",
 				"Skill recast: skillRecastFrames=InitAbilSlice(10) — 0.6s recast window between presses. After 3 recasts, Lumi performs Million Ton Crush (Lunar-Crystallize Reaction DMG, 50f hitmark) and switches to Standard Power form. Recast variant frames not authored as a separate ability — the recast cadence is choreography the user manages mentally.",
 				"C1 Field Catalog stacks: E-cast accrual authored on C1 via gainStacks onCast (E3 v1, 2026-05-10). Per-stack consumer rendering still deferred — see C1 curator notes for what remains.",
-				"Moondrift Harmony: a Lunar-Crystallize-trigger-event Linnea opens via her own attacks (gcsim c2TriggerMoonDrift, OnMoondriftHarmony). Gates C1, C2, C4 effects. E3 v1.5 (2026-05-10) parser cast-only emission would fire `lunarCrystallize` on Linnea's E if Moonsign team has 2+ members AND opposing PHEC aura applied. NOT authored as a separate gainStacks(onReaction lunarCrystallize) entry on C1 because the existing onCast skill grant already covers the E-press path; adding an onReaction entry would double-count for E presses (12 stacks instead of 6). Lumi-attack-driven Moondrift Harmony (the other in-game trigger) isn't reachable in cast-only emission since Lumi's attacks aren't authored as summon ticks — accepted gap.",
-				"[A7] Caveat detail (from prior caveat prose): Lumi's three forms and cadences — Super Power (Pound-Pound 111f / Heavy Overdrive 63f / Pound-Pound 144f cycle), Standard Power (Million Ton Crush at 50f then ~5.7s ticks), Ultimate Power (3 E-recasts within 0.6s each, firing Million Ton Crush). Rendered as a 25s stationary summon with no per-tick damage; the variable cadence + form transitions would need a per-summon sub-state machine that isn't available. Tap-E recast gated by skillRecastKey; not authored as a separate ability variant because the 3-tap → Million Ton Crush cadence doesn't fit chainStage cleanly."
+				"Moondrift Harmony: a Lunar-Crystallize-trigger-event Linnea opens via her own attacks (gcsim c2TriggerMoonDrift, OnMoondriftHarmony). Gates C1, C2, C4 effects. E3 v1.5 (2026-05-10): parser emission would fire `lunarCrystallize` on Linnea's E if the Moonsign team has 2+ members AND an opposing PHEC aura is applied. NOT authored as a separate gainStacks(onReaction lunarCrystallize) entry on C1 because the existing onCast skill grant already covers the E-press path; adding an onReaction entry would double-count for E presses (12 stacks instead of 6) — that decision is unaffected by anything below and still stands.",
+				"↻ 2026-08-18: the 'cast-only emission' premise the Moondrift note above was written on is DEAD (gauge round L0–L6). Reactions are produced by a real gauge fed by FOUR application sources — a cast's own `application[]`, N/C/P swings, summon damage-tick chains, and procs — and `lunarCrystallize` is emitted ALONGSIDE crystallize whenever 2+ Moonsign characters are in the slot roster (`src/lib/sim/reactionBridge.ts` `toReactions`, gated on `hasMoonsignTeam`, which `notationParser.ts:165` sets at moonsignCount >= 2). So the old sentence 'Lumi-attack-driven Moondrift Harmony isn't reachable in cast-only emission' names a scope that no longer exists. The residual is now purely a DATA gap and says nothing about emission: Lumi carries NO `summonTick` effects (summons[0] has no `effects` array), so her attacks put nothing into the gauge and cause no reaction. Why the cadence is still unauthored, and what it would take, is the next note.",
+				"[A7] Caveat detail (from prior caveat prose): Lumi's three forms and cadences — Super Power (Pound-Pound 111f / Heavy Overdrive 63f / Pound-Pound 144f cycle), Standard Power (Million Ton Crush at 50f then ~5.7s ticks), Ultimate Power (3 E-recasts within 0.6s each, firing Million Ton Crush). Rendered as a 25s stationary summon with no per-tick damage; the variable cadence + form transitions would need a per-summon sub-state machine that isn't available. Tap-E recast gated by skillRecastKey; not authored as a separate ability variant because the 3-tap → Million Ton Crush cadence doesn't fit chainStage cleanly.",
+				"↻ 2026-08-18 — WHAT AUTHORING LUMI'S TICKS WOULD NOW TAKE (turning the deferral above, and C1's deferred item (b), into a work item). Everything the E3 v1.5 deferral was waiting on exists: a summon `damage` effect on a `summonTick` trigger feeds the gauge through the live tick chain (`src/lib/sim/aura.ts`), carries its own `application[]` and may declare `icdGate`, and `summonTick.tickCap` (2026-08-18) bounds a series by COUNT. What still does not fit is the reason for the original deferral — `summonTick` has ONE constant `interval` per series, and Super Power cycles 111f / 63f / 144f. ⚠️ The 2026-08-18 conditional-cadence primitive does NOT solve this: it is two MUTUALLY EXCLUSIVE series selected by `conditions` (Aino under Ascendant Gleam, Ororon C4), not a sequence of phases within one form. ⚠️ Encoding the cycle as three series sharing one 318f period (firstTickDelay 111 / 174 / 318) is expressible but would be WRONG on ICD: the application clock key is `${char.id}:summon:${label}:${series.index}` (aura.ts, per SERIES on purpose — Furina's three Salon members measure as three gates), so three series take three independent counters where the game shares one, and Lumi would over-apply Geo. Untried and unmeasured; measure against gcsim before authoring.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Lumi is shown as a 25s summon with no damage ticks. Her three power forms — and the repeated-Tap path into the Ultimate Power hit — are not modeled.\""
 			],
 			"description": "Adventure with Lumi! Depending on how you Tap, Lumi attacks in different forms.\n\nTap\nLumi strikes in a **Super Power Form**, attacking nearby enemies continuously, dealing AoE Geo DMG. If there are Moondrifts nearby, Lumi will also deal AoE Geo DMG to nearby enemies, which will be considered Lunar-Crystallize Reaction DMG.\n\nContinuous Tapping\nTime to show what we're really capable of! After using her Elemental Skill, Linnea will feed Lumi sparkling gemstones when her Elemental Skill or Normal Attack is Tapped repeatedly. A full-bellied Lumi will strike in her **Ultimate Power Form**, dealing an especially powerful instance of AoE Geo DMG that is considered Lunar-Crystallize Reaction DMG, switching to **Standard Power Form**.\nAdditionally, tapping the Elemental Skill increases Linnea's interruption resistance."
 		},
@@ -84,15 +135,23 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 108, "N": 110, "E": 109, "D": 110, "J": 110, "swap": 108 },
+			"frames": {
+				"anim": 108,
+				"N": 110,
+				"E": 109,
+				"D": 110,
+				"J": 110,
+				"swap": 108
+			},
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": ["heal", "summon"],
 			"effects": [],
-			"caveat": "If Lumi is already on the field on cast, in game her duration resets instead of spawning a new one. The timeline can't track her presence, so casting within 25s of the skill still shows a separate summon.",
+			"caveat": "Shown as a separate summon; in game a burst cast while Lumi is still out resets her duration instead of adding one.",
 			"_curatorNotes": [
 				"Initial heal at 97f (= summon spawn frame) + 5 ticks at 120f intervals (initialHeal + i*120 + 120, i=0..4). Total burst-heal duration ~12s (matching summon duration). Heal scaling at lvl=10: initial = burstInitialDef[9]=2.88 × DEF + burstInitialFlat[9]=1694.9546; tick = burstTickDef[9]=0.576 × DEF + burstTickFlat[9]=338.9909. Authored 2026-05-17 as two summonTick HealEffects on the Memo Heal Aura summon.",
-				"One-shot-on-spawn pattern: the initial heal Effect uses `interval: 13, firstTickDelay: 0` — since the renderer loop is `for (t = spawnAt + firstDelay; t < spawnAt + duration; t += interval)` (RotationTimeline.svelte computeSummonTicks), interval ≥ duration guarantees exactly one tick at spawn. The tick heal Effect uses `interval: 2, firstTickDelay: 2` to fire at t=2/4/6/8/10s (5 ticks within the 12s window).",
+				"One-shot-on-spawn pattern: the initial heal Effect uses `interval: 13, firstTickDelay: 0` — the tick walk is `for (t = spawnAt + firstDelay; t < limit; t += interval)`, so an interval ≥ the summon's lifetime guarantees exactly one tick, at spawn. The tick heal Effect uses `interval: 2, firstTickDelay: 2` to fire at t=2/4/6/8/10s (5 ticks within the 12s window).",
+				"↻ 2026-08-18, two corrections to the reasoning above — the authored NUMBERS are unchanged and still produce the intended 1 + 5 ticks. (1) That loop is no longer the renderer's: `computeSummonTicks` / `collectSummonTicks` live parser-side in `src/lib/sim/summons.ts`, and since 2026-08-18 `finalize` walks them ONCE and stamps `TimelineWindow.ticks`, which the projection then reads (`src/lib/timeline/summonSubrows.ts`) — the ticks a reader counts and the ticks that fire are one computation now. Its bound is the window's FINAL end (recast/swap truncation already applied), not a literal `spawnAt + duration`. (2) The one-shot no longer has to be smuggled through the loop bound: `summonTick.tickCap` (2026-08-18) states the COUNT directly, so `tickCap: 1` would say what this means instead of relying on 13 ≥ 12. ⚠️ Leaving `interval: 13` is safe today, but it is a coincidence rather than a claim — anything that lengthens the Memo Heal Aura past 13s (a `durationModifiers` entry, a constellation extension) silently turns the one-shot into a repeating heal, where a cap would not. ⚠️ If the cap is ever authored, note that `collectSummonTicks` widens the walk by exactly ONE interval when a cap is present so the boundary tick lands; with `tickCap: 1` that is still one tick at spawn.",
 				"Burst frames: burstFrames=InitAbilSlice(110), ActionSkill=109 ActionSwap=108. Per Q-spec swap/N/E/D/J — N/D/J default to animLen=110.",
 				"Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(5) drains 5 energy from teammates.",
 				"Q-after-E reset behavior not modeled: gcsim's burst either resets existing Lumi's duration OR enters Super Power if Lumi is absent, but the planner can't distinguish these states. Heal Effects render unconditionally on Q cast (they live on the Memo Heal Aura summon, not on Lumi); a Q after an active E still spawns a fresh Memo Heal Aura visually, while in-game it would just refresh Lumi's duration. The healing itself is correct since the burst's heal mechanic is independent of Lumi's form/state."
@@ -108,7 +167,11 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": { "type": "summonTick", "interval": 13, "firstTickDelay": 0 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 13,
+								"firstTickDelay": 0
+							},
 							"scaling": 288,
 							"stat": "def",
 							"flat": 1694.9546
@@ -116,7 +179,11 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 2 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 2
+							},
 							"scaling": 57.6,
 							"stat": "def",
 							"flat": 338.9909
@@ -135,7 +202,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 25,
 					"element": "geo",
 					"value": -15
@@ -143,18 +213,25 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onCast", "ability": "skill" },
-					"conditions": { "type": "teamFaction", "faction": "moonsign", "min": 2 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "moonsign",
+						"min": 2
+					},
 					"duration": 25,
 					"element": "geo",
 					"value": -15
 				}
 			],
-			"caveat": "The Geo RES decrease only affects opponents near Lumi. If Lumi leaves the field early or enemies move away, the effect ends sooner than shown.",
 			"_curatorNotes": [
 				"A1 authored 2026-07-28 (capability sweep): -15% Geo RES on enemies near Lumi (in game re-applied continuously while Lumi is present, 1.5s per-tick ICD via a1Ticker every 60f), modeled as an onCast-skill resShred with duration 25 = Lumi's authored summon lifetime. Ascendant Gleam's further -15% is a second identical entry gated on teamFaction moonsign min 2 — the same gate as the C6 elevate. Linnea is absent from the local gcsim checkout; values are from kit text.",
 				"Burst-cast Lumi (summoned fresh when she is absent, otherwise duration reset) does not retrigger the shred here — accepted gap, consistent with the burst's existing Lumi-presence caveat; adding an onCast-burst mirror would double-render on standard E-then-Q rotations.",
-				"Original stub had two `manual`-trigger resShred effects (one Physical, one Geo at -15%). Removed — manual triggers don't render and only the Geo resShred is correct (the Physical entry was a generator hallucination — A1 only shreds Geo)."
+				"Original stub had two `manual`-trigger resShred effects (one Physical, one Geo at -15%). Removed — manual triggers don't render and only the Geo resShred is correct (the Physical entry was a generator hallucination — A1 only shreds Geo).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The −15% Geo RES debuff bar (two of them in a 2+ Moonsign team), drawn as a flat 25s span from the skill cast. Its length is an assumption — it is authored as `duration: 25` to match Lumi's authored lifetime, with no proximity gate and no tie to Lumi's actual window, so the bar renders the optimistic maximum every time. \"ends sooner than shown\" names the bar's END. Category: approximation-disclosure."
 			],
 			"description": "When Lumi is present on the field, the Geo RES of opponents near Lumi will decrease by 15%.\n\nMoonsign: Ascendant Gleam: Linnea's Elemental Skill **Countermeasure: Lumi's Battle Cry!** and Elemental Burst **Memo: Survival Guide in Extreme Conditions** are enhanced. After summoning Lumi, the Geo RES of opponents near Lumi will be further decreased by 15%."
 		},
@@ -166,24 +243,42 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "activeCharFaction", "faction": "moonsign" },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "activeCharFaction",
+						"faction": "moonsign"
+					},
 					"source": "character",
 					"stat": "em",
-					"value": { "type": "scaling", "stat": "def", "ratio": 5 },
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 5
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"conditions": {
 						"type": "not",
-						"condition": { "type": "activeCharFaction", "faction": "moonsign" }
+						"condition": {
+							"type": "activeCharFaction",
+							"faction": "moonsign"
+						}
 					},
 					"source": "character",
 					"stat": "em",
-					"value": { "type": "scaling", "stat": "def", "ratio": 5 },
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 5
+					},
 					"snapshottable": false
 				}
 			],
@@ -204,36 +299,67 @@
 				{
 					"type": "gainStacks",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
-					"conditions": { "type": "constellation", "level": 1 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"key": "fieldCatalog",
 					"amount": 6,
 					"max": 18,
 					"lifetime": 10,
 					"constellationScaling": {
-						"conditions": { "type": "constellation", "level": 6 },
+						"conditions": {
+							"type": "constellation",
+							"level": 6
+						},
 						"amount": 18
 					}
 				},
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onReaction", "reaction": "lunarCrystallize", "source": "team" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "lunarCrystallize",
+						"source": "team"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 1 },
-							{ "type": "stacks", "key": "fieldCatalog", "min": 1 }
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "stacks",
+								"key": "fieldCatalog",
+								"min": 1
+							}
 						]
 					},
 					"duration": 1,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "lunarCrystallizeFlatDmg",
-					"value": { "type": "scaling", "stat": "def", "ratio": 75 },
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 75
+					},
 					"constellationScaling": {
-						"conditions": { "type": "constellation", "level": 6 },
-						"value": { "type": "scaling", "stat": "def", "ratio": 150 }
+						"conditions": {
+							"type": "constellation",
+							"level": 6
+						},
+						"value": {
+							"type": "scaling",
+							"stat": "def",
+							"ratio": 150
+						}
 					},
 					"snapshottable": false
 				}
@@ -242,7 +368,9 @@
 				"C1 (Field Catalog stacks): on E cast OR Moondrift Harmony trigger, gain 6 stacks (max 18, 10s lifetime in-game). Consumed by team Lunar-Crystallize hits for +75% DEF FlatDmg per stack (1 stack per hit). When Lumi performs Million Ton Crush (Ultimate Power form), up to 5 stacks consumed at +150% DEF FlatDmg per stack.",
 				"E3 v1 authored 2026-05-10: gainStacks effect on C1 (key: fieldCatalog, amount: 6, max: 18, onCast skill). The parser walks the rotation and accumulates fieldCatalog stacks per Linnea E cast; the count saturates at 18 per the cap. Stacks reset on swap-out (per-segment scope), matching the existing assertion-form reset semantics. E3 v2.x (2026-05-11): added `lifetime: 10` — each granted stack expires 10s after grant. Parser maintains a per-segment `stackInstances` map of expiry timestamps; `applyLifetimeExpiry` runs at every cast event and drops expired instances. Saturation drops oldest first when a +6 grant would push past 18 (matches in-game pool-refresh behavior). E3 v2.x (2026-05-11): added `constellationScaling: { conditions: cons:6, amount: 18 }` — at C6 the per-E grant becomes 18 (max-out) instead of 6 per the C6 enhancement. The consumer buff also gets `constellationScaling` on its scaling ratio (75 → 150 at C6) to model the C6 'consume double stacks for 1.5× DMG' (since the consumer is per-hit and stacks≥1 fires optimistically, the only observable change is the bonus value).",
 				"2026-05-11 (E2/E3 follow-up): per-Lunar-Crystallize-hit consumer authored. Stat `lunarCrystallizeFlatDmg` added to Stat union; `onReaction.source: 'team'` added so the trigger fires on any teammate's Lunar-Crystallize, not just Linnea's own. Bar fires at each lunarCrystallize event with `+75% × DEF` (per-hit, not perStack — the description says 1 stack consumed per hit at +75% DEF, so the per-hit bonus is a fixed scaling regardless of stack count). Duration 1s for visualization (the actual modifier is instantaneous on the hit). Gated on stacks≥1 via the existing `stacks` condition (resolves null at render time → optimistic-fire); the bar will over-fire after stacks are exhausted, which is acceptable per the constitution.",
-				"Still deferred: (a) Million Ton Crush multi-stack consumption (5 stacks/cast at +150% DEF each — would need perStack value form + a custom in-stance-Lumi-Ultimate-Power trigger); (b) Moondrift Harmony from Lumi attacks (would require summon-tick reaction emission — out of v1.5 cast-only scope). The C6 enhanced grant (18 per E) and the C6 ×2 consumption / +150% DEF bonus are now both modeled via constellationScaling on the C1 gainStacks (amount override) and the C1 consumer buff (value override)."
+				"Still deferred: (a) Million Ton Crush multi-stack consumption (5 stacks/cast at +150% DEF each — would need perStack value form + a custom in-stance-Lumi-Ultimate-Power trigger); (b) Moondrift Harmony from Lumi attacks.",
+				"↻ 2026-08-18, on deferred item (b): its stated blocker — 'would require summon-tick reaction emission, out of v1.5 cast-only scope' — is GONE. Summon damage ticks apply their element and feed the gauge (gauge round L5e), and `reactionBridge` emits `lunarCrystallize` alongside crystallize on a 2+ Moonsign team. What blocks (b) now is DATA, not emission: Lumi is authored with no `summonTick` effects at all. The skill node's [A7] follow-up note records the variable-cadence reason and exactly what authoring them would take.",
+				"⚠️ 2026-08-18, on the C6 half of this entry. The C6 enhanced GRANT (18 per E) is modeled via `constellationScaling` on the C1 gainStacks amount and IS read — `src/lib/sim/stacks.ts` applies the amount override at all three gainStacks dispatch sites. The C6 ×2 consumption / +150% DEF bonus on the C1 CONSUMER buff is NOT: `constellationScaling` has no reader in `buffWindows.ts` or `buffDisplay.ts` (grep — its only consumers in src/lib are those three stacks.ts amount sites plus `summons.ts` tickCapScaling), so at C6 this bar still draws and still prints the BASE 75% × DEF. The bar renders, so every naive who-renders check passes; the NUMBER is wrong. Not a Linnea bug and not fixable in this JSON — one of six corpus buffs in this state (Illuga A ×3, Linnea C1, Skirk, Varesa, Xianyun A4). ⛔ Do not 'fix' it by hard-coding 150 here; that would be wrong at C1–C5."
 			],
 			"description": "When unleashing Elemental Skill **Countermeasure: Lumi's Battle Cry!**, or when triggering Moondrift Harmony, Linnea gains 6 stacks of the Field Catalog effect for 10s. Max 18 stacks. When nearby party members deal Lunar-Crystallize Reaction DMG, consume 1 stack of Field Catalog to increase the DMG dealt. The increase in DMG is equal to 75% of Linnea's DEF.\nAdditionally, when Lumi uses Million Ton Crush in her **Ultimate Power Form**, Linnea can consume up to 5 stacks of Field Catalog. Each stack will increase the DMG dealt by 150% of Linnea's DEF."
 		},
@@ -290,12 +418,21 @@
 				{
 					"type": "elevate",
 					"target": "team",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					},
 					"source": "character",

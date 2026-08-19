@@ -164,10 +164,13 @@
 				"J": 81,
 				"swap": 61
 			},
-			"caveat": "Plunging in this stance is only possible with Xianyun on the team; the plunge frames shown assume that setup.",
 			"description": "While in the Musou Isshin state, the Raiden Shogun wields her tachi in battle. Normal, Charged, and Plunging Attacks are infused with Electro DMG (cannot be overridden) and count as Elemental Burst DMG.",
 			"_curatorNotes": [
-				"[A7] Stored plunge frames are the low-plunge (Xianyun-assisted) values. Unused high-plunge: hitmark 51f (48+3), swap 61."
+				"[A7] Stored plunge frames are the low-plunge (Xianyun-assisted) values. Unused high-plunge: hitmark 51f (48+3), swap 61. ⚠️ HISTORICAL — the field this describes no longer exists in that form; see the ↻ below.",
+				"↻ 2026-08-18 (stale since the L4b frame-shape migration, 1c37968): the plunge maps are now TWO fields and the HIGH plunge is the default. `plungeFrames` is the HIGH plunge and is what the bare `P` and `hP` tokens resolve; `lowPlungeFrames` is `lP` ONLY (src/lib/sim/run.ts ~:1286, `isLowPlunge ? (lowPlungeFrames ?? plungeFrames) : plungeFrames`). So the map the A7 note called \"unused\" is the authored default, and the map it called \"stored\" is now the `lP`-only fallback. ⛔ Any plunge note in this corpus predating L4b is describing a different field — re-read it against the two names before trusting it.",
+				"Both maps re-verified against gcsim 2026-08-18, internal/characters/raiden/plunge.go — the STANCE (BurstKey active) variants, i.e. `highPlungeFramesB`/`lowPlungeFramesB` in that file's init(), not the grounded pair used by abilities[0] Origin. plungeFrames = highPlungeFramesB: InitAbilSlice(88), Attack 60, Skill 60, Burst 60, Dash 83, Jump 81, Swap 61 — matches. lowPlungeFrames = lowPlungeFramesB: InitAbilSlice(85), 58/59/59/78/81, Swap 60 — matches. Hitmarks are `highPlungeHitmarkB = 48 + 3 = 51` and `lowPlungeHitmarkB = 46 + 3 = 49` (plunge.go:32-34). Neither map authors a `hit` field and neither should: `hit` is `InitNormalCancelSlice`'s hitmark tier and gcsim builds both plunges with `InitAbilSlice`, which has no such tier.",
+				"⚠️ The ability caveat's Xianyun claim survives the field split and covers BOTH maps: gcsim's `LowPlungeAttack` AND `HighPlungeAttack` (plunge.go:88-98, :181-191) return \"can only be used while airborne\" for anything other than `player.AirborneXianyun`, so switching the default from low to high did not make an unassisted plunge legal here.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The plunge block drawn inside her burst stance — both that it draws at all and how wide it is. gcsim refuses both HighPlungeAttack and LowPlungeAttack here for anything other than AirborneXianyun, so a `P` written inside Musou Isshin renders a bar for an action the game will not let you take, at frames measured for the assisted case. Re-verified against gcsim 2026-08-18 and explicitly noted as surviving the L4b high/low field split. Category: approximation-disclosure."
 			],
 			"lowPlungeFrames": {
 				"anim": 85,
@@ -227,10 +230,10 @@
 				}
 			],
 			"tags": ["coordinatedAttack"],
-			"caveat": "The burst DMG bonus scales with each member's own burst energy cost, so it differs per party member; the timeline shows the buff window but not a single value.",
 			"_curatorNotes": [
 				"A6 rigor 2026-07-12: burst DMG bonus per-energy corrected ≈0.35% → ≈0.30% (T10) (gcsim skillBurstBonus[9]=0.003; sidecar 0.30% Per Energy)",
-				"[A7] Per-member value = mult × that member's burst energy cost; ≈0.30% per energy at T10 per the existing A6 rigor note."
+				"[A7] Per-member value = mult × that member's burst energy cost; ≈0.30% per energy at T10 per the existing A6 rigor note.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The value is authored as `{type:'unknown', description:'≈0.30% per energy cost (T10)'}`, and `formatBuffDisplayValue` prints that description verbatim on the bar — so the bar ALREADY reads '≈0.30% per energy cost (T10)'. The caveat spends a third of the column restating what the bar says about itself. Nothing on screen is wrong or approximate: the 25s window is right, and the per-member formula is the honest label. Category: working-behavior."
 			],
 			"effects": [
 				{
@@ -276,7 +279,6 @@
 			"cooldown": 18,
 			"duration": 7,
 			"energyCost": 90,
-			"caveat": "Not modeled: Resolve stack count or the resulting DMG bonus.",
 			"description": "Gathering truths unnumbered and wishes uncounted, the Raiden Shogun unleashes the Musou no Hitotachi and deals AoE Electro DMG, using Musou Isshin in combat for a certain duration afterward. The DMG dealt by Musou no Hitotachi and Musou Isshin attacks is increased based on Chakra Desiderata Resolve stacks consumed.\n\nMusou Isshin\nWhile in this state, the Raiden Shogun wields her tachi in battle. Normal, Charged, and Plunging Attacks are infused with Electro DMG (cannot be overridden) and count as Elemental Burst DMG.\n\nChakra Desiderata\nWhen nearby party members (excluding Raiden) use their Elemental Bursts, the Raiden Shogun builds Resolve stacks based on the Energy Cost of those Bursts (max 60 stacks). Resolve stacks increase the DMG of the initial Musou no Hitotachi and Musou Isshin hits.",
 			"behavior": "stance",
 			"application": [
@@ -285,6 +287,9 @@
 					"element": "electro",
 					"units": 2
 				}
+			],
+			"_curatorNotes": [
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Resolve is a resource counter and its payoff is a DMG bonus — the tool has no resource readout anywhere, and damage magnitude is frozen out of scope by the constitution. Nothing about the Q bar, its width, its cooldown tail or any marker changes with Resolve, so no player looking at the chart is confused by its absence. Category: invisible-omission."
 			]
 		}
 	],

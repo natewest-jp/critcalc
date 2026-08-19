@@ -15,11 +15,51 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 27, "hit": 13, "N": 19, "C": 20 } },
-				{ "name": "N2", "frames": { "anim": 25, "hit": 7, "N": 18, "C": 21 } },
-				{ "name": "N3", "frames": { "anim": 43, "hit": 22, "N": 37, "C": 30 } },
-				{ "name": "N4", "frames": { "anim": 23, "hit": 11, "N": 19, "C": 20 } },
-				{ "name": "N5", "frames": { "anim": 72, "hit": 35, "N": 67, "C": 48 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 27,
+						"hit": 13,
+						"N": 19,
+						"C": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 25,
+						"hit": 7,
+						"N": 18,
+						"C": 21
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 43,
+						"hit": 22,
+						"N": 37,
+						"C": 30
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 23,
+						"hit": 11,
+						"N": 19,
+						"C": 20
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 72,
+						"hit": 35,
+						"N": 67,
+						"C": 48
+					}
+				}
 			],
 			"chargeFrames": {
 				"anim": 53,
@@ -63,23 +103,73 @@
 			"input": ["N1", "N2", "N3", "N4", "N5", "C"],
 			"abilityType": "normal",
 			"infusion": "cryo",
-			"conditions": { "type": "state", "state": "inStance" },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 30, "hit": 12, "N": 12, "C": 13 } },
-				{ "name": "N2", "frames": { "anim": 43, "hit": 11, "N": 21, "C": 12 } },
-				{ "name": "N3", "frames": { "anim": 42, "hit": 23, "N": 31, "C": 34 } },
-				{ "name": "N4", "frames": { "anim": 60, "hit": 27, "N": 33, "C": 40 } },
-				{ "name": "N5", "frames": { "anim": 72, "hit": 25, "N": 51, "C": 42 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 30,
+						"hit": 12,
+						"N": 12,
+						"C": 13
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 43,
+						"hit": 11,
+						"N": 21,
+						"C": 12
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 42,
+						"hit": 23,
+						"N": 31,
+						"C": 34
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 60,
+						"hit": 27,
+						"N": 33,
+						"C": 40
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 72,
+						"hit": 25,
+						"N": 51,
+						"C": 42
+					}
+				}
 			],
-			"chargeFrames": { "anim": 54, "C": 53, "Q": 43, "D": 27, "J": 28, "swap": 42 },
-			"caveat": "Not modeled: after the in-stance burst, normal hits deal bonus DMG on a repeating 0.1s trigger (up to 10 times), raised further by Void Rifts absorbed during that burst.",
+			"chargeFrames": {
+				"anim": 54,
+				"C": 53,
+				"Q": 43,
+				"D": 27,
+				"J": 28,
+				"swap": 42
+			},
 			"_curatorNotes": [
 				"In-stance normals: separate 5-hit Cryo chain with different frames + scaling. attackSkillHitmarks=[[12],[11],[11,23],[11,27],[25]]; attackSkillFrames built via InitNormalCancelSlice with skillAttack[N] multipliers.",
 				"Authored as a normal-typed dual variant with state:inStance condition (varesa/cyno-shape). IgnoreInfusion:true blocks Pyro/Hydro/Electro infusion override.",
 				"Charge in stance: chargeSkillFrames=InitAbilSlice(54), ActionCharge=53 ActionBurst=43 ActionDash=27 ActionJump=28 ActionWalk=52 ActionSwap=42. ActionSkill not overridden (Skirk can't recast E in-stance per NextQueueItemIsValid). E key omitted from chargeFrames. CA in stance is a 3-hit sequence (chargeSkillHitmarks=[28, 37, 46]) with absorbVoidRiftCB on each hit — not separately rendered.",
 				"Damage: skillAttack[N] multipliers apply skillAttack_1..5 with a4MultAttack scaling (1.0/1.1/1.2/1.7 based on getA4Stacks). A4 stack count gates on team Cryo/Hydro hits — see passive Return to Oblivion.",
-				"[A7] All Shall Wither has no matching primitive: no per-normal-hit proc-counted damage bonus with a 10-proc cap, compounded by Void-Rift-count scaling. The in-stance Cryo infusion (IgnoreInfusion blocks Pyro/Hydro/Electro override) is modeled correctly via the infusion:cryo variant, so it was dropped as working behavior."
+				"[A7] All Shall Wither has no matching primitive: no per-normal-hit proc-counted damage bonus with a 10-proc cap, compounded by Void-Rift-count scaling. The in-stance Cryo infusion (IgnoreInfusion blocks Pyro/Hydro/Electro override) is modeled correctly via the infusion:cryo variant, so it was dropped as working behavior.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — on this entry. It is a near word-for-word duplicate of the Havoc: Extinction caveat two entries down — and Extinction is the cast that grants All Shall Wither, so that is the entry where a reader looks for a buff bar and finds none. What this one names on its own is a per-hit damage magnitude, which the timeline never draws for anybody. Category: invisible-omission."
 			]
 		},
 		{
@@ -90,13 +180,24 @@
 			"behavior": "stance",
 			"duration": 12.57,
 			"terminatesOnSwap": true,
-			"frames": { "anim": 43, "N": 21, "C": 21, "Q": 31, "D": 29, "J": 30, "swap": 29 },
+			"frames": {
+				"anim": 43,
+				"N": 21,
+				"C": 21,
+				"Q": 31,
+				"D": 29,
+				"J": 30,
+				"swap": 29
+			},
 			"cooldown": 8,
 			"variants": [
 				{
 					"label": "Hold (Rapid Movement)",
 					"input": ["hE"],
-					"frames": { "anim": 18, "swap": 15 },
+					"frames": {
+						"anim": 18,
+						"swap": 15
+					},
 					"behavior": "instant",
 					"application": []
 				}
@@ -106,16 +207,27 @@
 				{
 					"type": "gainStacks",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill", "input": ["E"] },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["E"]
+					},
 					"key": "serpentsSubtlety",
 					"amount": 45,
 					"max": 100,
-					"drain": { "ratePerSecond": 7, "state": "inStance" }
+					"drain": {
+						"ratePerSecond": 7,
+						"state": "inStance"
+					}
 				},
 				{
 					"type": "gainStacks",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill", "input": ["hE"] },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
 					"key": "serpentsSubtlety",
 					"amount": 45,
 					"max": 100
@@ -142,7 +254,15 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 151, "N": 100, "C": 102, "E": 102, "D": 102, "J": 102, "swap": 101 },
+			"frames": {
+				"anim": 151,
+				"N": 100,
+				"C": 102,
+				"E": 102,
+				"D": 102,
+				"J": 102,
+				"swap": 101
+			},
 			"cooldown": 15,
 			"energyCost": 50,
 			"tags": [],
@@ -150,7 +270,10 @@
 				{
 					"type": "consumeStacks",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"key": "serpentsSubtlety",
 					"amount": "all"
 				},
@@ -158,10 +281,17 @@
 					"type": "buff",
 					"source": "character",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 2.6,
 					"durationType": "fixed",
-					"conditions": { "type": "stacks", "key": "serpentsSubtlety", "min": 51 },
+					"conditions": {
+						"type": "stacks",
+						"key": "serpentsSubtlety",
+						"min": 51
+					},
 					"stat": "burstDmgBonus",
 					"value": {
 						"type": "perStack",
@@ -172,7 +302,10 @@
 					},
 					"snapshottable": true,
 					"constellationScaling": {
-						"conditions": { "type": "constellation", "level": 2 },
+						"conditions": {
+							"type": "constellation",
+							"level": 2
+						},
 						"value": {
 							"type": "perStack",
 							"key": "serpentsSubtlety",
@@ -183,23 +316,45 @@
 					}
 				}
 			],
-			"caveat": "This burst spends Serpent's Subtlety, not Energy — it needs at least 50 and consumes everything accumulated. The timeline shows an Energy cost and doesn't enforce the 50 minimum, so it may fire when you'd lack enough in game.",
 			"_curatorNotes": [
 				"Out-of-stance burst (Havoc: Ruin): 5 hits at burstHitmarks=[109, 111, 114, 125, 135] for burstDoT scaling, plus a Final hit at 158f for burstFinal scaling. Both gated on (burstDoT/burstFinal + bonusSS × burstBonus) × a4MultBurst (1.0/1.05/1.15/1.60 based on getA4Stacks).",
 				"Burst frames: burstFrames=InitAbilSlice(151), ActionAttack=100 ActionCharge=102 ActionSkill=102 ActionDash=102 ActionJump=102 ActionSwap=101. Per Q-spec swap/N/E/D/J.",
 				"Cooldown: SetCDWithDelay(burst, 15*60, 0). EnergyMax=0; ConsumeSerpentsSubtlety(0) drains all SS on cast — modelled by the `consumeStacks` effect with `amount: 'all'`.",
-				"Bonus DMG from SS (modelled E3 v2.x): every SS over 50 (max +12 at C0, +22 at C2) → +1% burstDmgBonus per stack-over-threshold. Authored as a self buff with `value: { type: perStack, key: serpentsSubtlety, threshold: 50, maxStacks: 12, per: 1 }`, with constellationScaling raising maxStacks to 22 at C2. Buff `duration: 2.6` covers the burst's hit window (final hit at 158f from cast). Bar is gated on `stacks: { key: serpentsSubtlety, min: 51 }` so it only renders when the bonus is non-zero. consumeStacks fires AFTER the bar's stackContext snapshot is taken; the bar reflects pre-consume SS, the post-consume value carries forward at 0. a4MultBurst (Death's Crossing 1.0×–1.6×) is still NOT modelled (per-character-source on-team stack accumulator gap).",
+				"Bonus DMG from SS (modelled E3 v2.x): every SS over 50 (max +12 at C0, +22 at C2) → +1% burstDmgBonus per stack-over-threshold. Authored as a self buff with `value: { type: perStack, key: serpentsSubtlety, threshold: 50, maxStacks: 12, per: 1 }`, with constellationScaling raising maxStacks to 22 at C2 (⚠️ INERT on the bar — see the ↻ note below). Buff `duration: 2.6` covers the burst's hit window (final hit at 158f from cast). Bar is gated on `stacks: { key: serpentsSubtlety, min: 51 }` — ⚠️ which does NOT keep it off the chart at zero SS; see the ↻ note below. consumeStacks fires AFTER the bar's stackContext snapshot is taken; the bar reflects pre-consume SS, the post-consume value carries forward at 0. a4MultBurst (Death's Crossing 1.0×–1.6×) is still NOT modelled (per-character-source on-team stack accumulator gap).",
 				"Variant Havoc: Extinction is authored as a separate burst entry below, gated on state:inStance. Extinction does NOT consume SS (no `consumeStacks` on its effects array) and does NOT carry the perStack bonus buff (the bonus is bound to Havoc: Ruin only).",
-				"[A7] The over-50 SS bonus DMG IS modeled (perStack buff, threshold 50, cap +12 / +22 at C2, snapshotting pre-consume SS via consumeStacks). energyCost=50 is a lint placeholder mirroring the SS threshold, not real Energy. The unmodeled part is purely the cast-time SS>=50 availability gate, which the planner does not enforce."
+				"[A7] The over-50 SS bonus DMG IS modeled (perStack buff, threshold 50, cap +12 / +22 at C2, snapshotting pre-consume SS via consumeStacks). energyCost=50 is a lint placeholder mirroring the SS threshold, not real Energy. The unmodeled part is purely the cast-time SS>=50 availability gate, which the planner does not enforce.",
+				"↻ 2026-08-18 (stale-note pass), CORRECTION 1 of 2 — ⚠️⚠️ THE `stacks: { min: 51 }` GATE FAILS OPEN. It filters the bar only when a stack SNAPSHOT exists. `run.ts:559` takes the snapshot only for a non-empty map (`const stacks = stackState.size > 0 ? new Map(stackState) : undefined`), and `conditions.ts:143-153` returns **null**, not false, when there is no stack context — an unresolvable condition renders OPTIMISTICALLY. ⚠️⚠️ Worse, `stackState` is PER-SEGMENT (run.ts:258-263: \"Resets at segment start so a swap-out clears the resource pool\"), so any swap away from Skirk and back empties SS as far as the snapshot is concerned. Measured at C0 (parseNotation, 2026-08-18): `Skirk Q` → bar DRAWS, no stackContext. `Skirk hE > Fischl E > Skirk Q` → bar DRAWS, no stackContext. `Skirk hE ~14s Q` (SS 45) → correctly filtered, no bar. `Skirk hE ~14s hE ~14s Q` (SS 90) → draws with stackContext 90. So the gate behaves as the note above claims ONLY when the SS was accrued in the SAME segment as the burst, which is not how a Skirk rotation is usually written. ⛔ Not a data defect and not fixed here — the fix is engine-side (either snapshot an empty map, or treat an unresolvable `stacks` condition as false on this surface), and it is a decision about three-valued logic, not about Skirk.",
+				"↻ 2026-08-18 (stale-note pass), CORRECTION 2 of 2 — `constellationScaling` on this buff's VALUE is INERT. It is read only by the `gainStacks` amount override (src/lib/sim/stacks.ts:107, :263, :442) and by `summonTick.tickCapScaling` (src/lib/sim/summons.ts:211); it appears NOWHERE in `buffWindows.ts` or `buffDisplay.ts`. So the bar prints the base `maxStacks: 12` cap at C2 as well, and the C2 raise to 22 reaches no surface — the bar DRAWS, so a naive who-renders check passes and the number is still wrong. Corpus-wide there are six authored `BuffEffect.constellationScaling` uses in this state (Illuga A ×3, Linnea C1, this one, Varesa, Xianyun A4). ⛔ Do not \"fix\" this in the data: the field is the right shape, the missing reader is in buffWindows/buffDisplay. See also the C2 node's note, which makes the same claim.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Q bar itself, placed at a moment the game would refuse the cast. Serpent's Subtlety IS tracked and IS on screen (the burst's +% Burst DMG bar is a perStack value read off the pool), so a reader reasonably assumes the 50 gate is enforced too; it is not. ⚠ The middle clause is stale on this surface: no planner surface prints energyCost — grep finds it only in the Team Builder's DetailCard ('· 50 energy') and Compare lane ('50 en'), and an authored caveat never reaches either (N17). Drop that clause; keep the un-enforced minimum. Category: approximation-disclosure."
 			],
 			"description": "Skirk's Elemental Burst is not reliant on Elemental Energy but instead on **Serpent's Subtlety**.\nWhen Skirk has at least 50 Serpent's Subtlety, she can expend all her Serpent's Subtlety to unleash her Elemental Burst, ripping the space before her apart and using rapid consecutive slashes that deal AoE Cryo DMG. At the same time, the DMG dealt by an instance of this Elemental Burst will be increased by every point of Serpent's Subtlety over 50 when it is unleashed. Up to 12 points can be counted for this purpose.",
 			"application": [
-				{ "frame": 109, "element": "cryo", "units": 1 },
-				{ "frame": 111, "element": "cryo" },
-				{ "frame": 114, "element": "cryo" },
-				{ "frame": 125, "element": "cryo", "units": 1 },
-				{ "frame": 135, "element": "cryo" },
-				{ "frame": 158, "element": "cryo" }
+				{
+					"frame": 109,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 111,
+					"element": "cryo"
+				},
+				{
+					"frame": 114,
+					"element": "cryo"
+				},
+				{
+					"frame": 125,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 135,
+					"element": "cryo"
+				},
+				{
+					"frame": 158,
+					"element": "cryo"
+				}
 			]
 		},
 		{
@@ -208,20 +363,30 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"conditions": { "type": "state", "state": "inStance" },
-			"frames": { "anim": 41, "N": 39, "C": 39, "D": 40, "J": 40, "swap": 39 },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"frames": {
+				"anim": 41,
+				"N": 39,
+				"C": 39,
+				"D": 40,
+				"J": 40,
+				"swap": 39
+			},
 			"cooldown": 15,
 			"energyCost": 50,
 			"tags": [],
 			"effects": [],
-			"caveat": "Not modeled: the 'All Shall Wither' bonus this grants — after it, normal hits deal extra DMG on a repeating 0.1s trigger (up to 10 times), scaled higher by Void Rifts absorbed during the cast.",
 			"_curatorNotes": [
 				"In-stance burst variant (gated on state:inStance). Triggers only when in Seven-Phase Flash. Does NOT consume Serpent's Subtlety; does NOT exit the stance — Seven-Phase Flash continues until SS depletes, swap, or stance duration ends.",
 				"Burst frames: burstSkillFrames=InitAbilSlice(41), ActionAttack/Charge=39 ActionDash=40 ActionJump=40 ActionSwap=39. Per Q-spec swap/N/D/J (E omitted — can't recast E in stance).",
 				"Cooldown: SetCDWithDelay(burst, 15*60, 0). Same 15s as Havoc: Ruin.",
 				"All Shall Wither: 12.5s buff (burstExtinctKey), 10-proc cap, 0.1s ICD per proc (burstICDKey). Each qualifying N hit gains +burstDMG[voids][lvl] DmgP. Not authored — schema has no per-NA proc-counted dmgBonus primitive (similar to the lacking onHit-from-summon trigger).",
 				"Void Rifts absorbed during cast: c.absorbVoidRifts() returns count 0-3, used to index burstDMG[voids][lvl] for All Shall Wither bonus. Void Rifts are A1-spawned by team Frozen/Superconduct/Cryo-Swirl/Cryo-Crystallize reactions — not modeled.",
-				"[A7] All Shall Wither has no matching primitive: per-normal-hit proc-counted bonus with a 10-proc cap plus Void-Rift-count scaling (0-3 rifts -> +0/+1/+2/+3, gcsim burstDMG[voids][lvl]). Correctly modeled and dropped: this variant consumes no SS and does not exit the stance."
+				"[A7] All Shall Wither has no matching primitive: per-normal-hit proc-counted bonus with a 10-proc cap plus Void-Rift-count scaling (0-3 rifts -> +0/+1/+2/+3, gcsim burstDMG[voids][lvl]). Correctly modeled and dropped: this variant consumes no SS and does not exit the stance.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The missing buff bar under the in-stance Q. In game this cast grants a named buff that lasts until Seven-Phase Flash ends; on the timeline the Q bar draws and the buff row stays empty — in the same lane where Skirk's A4 +70% Normal Attack bar does draw, so the blank reads as 'nothing happened'. Cut the Void-Rift scaling half: rift absorption is disclosed at Reason Beyond Reason and repeating it here is the third of four Void Rift mentions on one character. Category: expected-but-absent."
 			],
 			"description": "A special Elemental Burst that can be used even without consuming Serpent's Subtlety.\nAfter using it, Skirk will gain the \"All Shall Wither\" effect, which will last until Seven-Phase Flash ends. After unlocking the Ascension Talent **Reason Beyond Reason**, she can also absorb nearby Void Rifts.\nWhile \"All Shall Wither\" is active, every 0.1s, after Skirk's Normal Attack hits an opponent, that Normal Attack will deal increased DMG. If she absorbed any Void Rifts while using Havoc: Extinction, this Normal Attack's DMG will be further increased based on the number of Rifts absorbed.",
 			"application": []
@@ -232,10 +397,10 @@
 			"id": "skirk__passive__reason_beyond_reason",
 			"name": "Reason Beyond Reason",
 			"abilityType": "passive",
-			"caveat": "Not modeled: Void Rifts — reaction-spawned pickups absorbed for Serpent's Subtlety. In a standard Freeze team the SS pool stays full from other sources, so their absence does not change rotation choices.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-17, gadget category): Void Rifts share the same gadget-collectible primitive gap as Neuvillette's Sourcewater Droplets. Per the curation philosophy, the cost of building gadget state + per-rift onAbsorb triggers is high while canonical-Freeze auto-fulfills the SS pool — visualizing rifts wouldn't change rotation decisions. The stub IS the final state; caveat surfaces in the ability caveats panel.",
-				"[A7] Void Rifts: gadget collectibles spawned by team Frozen/Superconduct/Cryo-Swirl/Cryo-Crystallize (2.5s ICD, max 3 on field, ~17.6s lifetime), absorbed by in-stance CA, Hold-E, or Havoc: Extinction for +8 SS each. Same gadget-primitive gap as Neuvillette droplets; canonical Freeze (Escoffier + Hydro) auto-fills the SS pool."
+				"[A7] Void Rifts: gadget collectibles spawned by team Frozen/Superconduct/Cryo-Swirl/Cryo-Crystallize (2.5s ICD, max 3 on field, ~17.6s lifetime), absorbed by in-stance CA, Hold-E, or Havoc: Extinction for +8 SS each. Same gadget-primitive gap as Neuvillette droplets; canonical Freeze (Escoffier + Hydro) auto-fills the SS pool.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The number printed on the burst's +% Burst DMG bar. That bar is a perStack value over the tracked Serpent's Subtlety pool (threshold 50, cap +12 / +22 at C2); each unmodeled rift is +8 SS, so the pool we count from — and the percentage we print — undercounts the game. The current second sentence names no pixel and actively argues the caveat away ('does not change rotation choices'); replacing it with the printed-value consequence is what earns this one its place, and it lets C1 and C6 go. Category: approximation-disclosure."
 			],
 			"description": "When nearby party members trigger Frozen, Superconduct, Cryo Swirl, or Cryo Crystallize reactions against opponents, a Void Rift will be created near this opponent. This effect can be triggered once every 2.5s. 3 Void Rifts created by Skirk herself can exist on the field at once.\n\nSkirk can use the following methods to absorb nearby Void Rifts:\n· When she hits an opponent with a Charged Attack in her **Seven-Phase Flash** mode.\n· When she uses the special Elemental Burst Havoc: Extinction while in Seven-Phase Flash mode.\n· When she Holds her Elemental Skill Havoc: Warp to engage in rapid movement.\n\nEach Rift absorbed will grant her 8 **Serpent's Subtlety** points."
 		},
@@ -247,14 +412,23 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 12.57,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "ascension", "min": 4 },
-							{ "type": "state", "state": "inStance" },
+							{
+								"type": "ascension",
+								"min": 4
+							},
+							{
+								"type": "state",
+								"state": "inStance"
+							},
 							{
 								"type": "teamElementCount",
 								"elements": ["cryo", "hydro"],
@@ -271,14 +445,23 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 12.57,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "ascension", "min": 4 },
-							{ "type": "state", "state": "inStance" },
+							{
+								"type": "ascension",
+								"min": 4
+							},
+							{
+								"type": "state",
+								"state": "inStance"
+							},
 							{
 								"type": "teamElementCount",
 								"elements": ["cryo", "hydro"],
@@ -295,14 +478,23 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 12.57,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "ascension", "min": 4 },
-							{ "type": "state", "state": "inStance" },
+							{
+								"type": "ascension",
+								"min": 4
+							},
+							{
+								"type": "state",
+								"state": "inStance"
+							},
 							{
 								"type": "teamElementCount",
 								"elements": ["cryo", "hydro"],
@@ -322,13 +514,19 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 2.6,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "ascension", "min": 4 },
+							{
+								"type": "ascension",
+								"min": 4
+							},
 							{
 								"type": "teamElementCount",
 								"elements": ["cryo", "hydro"],
@@ -345,13 +543,19 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 2.6,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "ascension", "min": 4 },
+							{
+								"type": "ascension",
+								"min": 4
+							},
 							{
 								"type": "teamElementCount",
 								"elements": ["cryo", "hydro"],
@@ -368,13 +572,19 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 2.6,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "ascension", "min": 4 },
+							{
+								"type": "ascension",
+								"min": 4
+							},
 							{
 								"type": "teamElementCount",
 								"elements": ["cryo", "hydro"],
@@ -400,7 +610,7 @@
 				"[A7] Tier-3 headline +60% burstDmgBonus assumes 3 non-Skirk Cryo/Hydro teammates; tiers gate on teamElementCount, corresponding to in-game burst x1.05/x1.15/x1.6 of base."
 			],
 			"description": "When nearby Hydro party members' Hydro attacks hit opponents, or when nearby Cryo party members apart from Skirk hit opponents with Cryo attacks, Skirk will gain the \"Death's Crossing\" effect for 20s. Max 3 stacks, each stack's duration is counted independently.\nEach character can grant Skirk at most 1 \"Death's Crossing\" stack by this means.\nEach \"Death's Crossing\" stack increases the Normal Attack DMG dealt by Skirk in **Seven-Phase Flash** mode to 110%/120%/170% of its original DMG and the DMG dealt when using her Elemental Burst Havoc: Ruin to 105%/115%/160% of its original DMG.",
-			"caveat": "Assumes a full canonical team with 3 Cryo or Hydro teammates. With fewer eligible teammates, the lower Normal Attack (+10% / +20%) and Burst DMG (+5% / +15%) tiers fire instead."
+			"caveat": "The Normal Attack tier follows how many Cryo or Hydro teammates are in the party, though in game each must land a hit to grant a 20s Death's Crossing stack. The matching Burst DMG tier is not shown."
 		}
 	],
 	"constellations": [
@@ -409,10 +619,10 @@
 			"name": "Far to Fall",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"caveat": "Not modeled: the crystal blade added on each Void Rift absorbed, since Void Rifts are not simulated. In a standard Freeze team it is a predictable damage rider that does not shift rotation choices.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-17, gadget category): downstream of A1's Void Rift gap. Per the curation philosophy, the cost of building the gadget primitive + per-rift onAbsorb trigger is high while the bonus is canonical-rotation-invisible. The stub IS the final state.",
-				"[A7] C1 crystal blade: 500% ATK Cryo per absorbed rift, counted as CA. Downstream of the A1 Void Rift gadget gap (damage numbers are out of scope anyway)."
+				"[A7] C1 crystal blade: 500% ATK Cryo per absorbed rift, counted as CA. Downstream of the A1 Void Rift gadget gap (damage numbers are out of scope anyway).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A 500% ATK blade per absorbed rift is a damage magnitude — no bar, no marker, no tick was ever going to carry it, and the caveat's own closing sentence says it changes nothing. The Void Rift gap that a reader can actually see the effect of (a low Serpent's Subtlety count on the burst bar) is disclosed once, at A1. Category: invisible-omission."
 			],
 			"description": "Enhances the effects of the Ascension Talent **Reason Beyond Reason**: Every Void Rift absorbed will summon a crystal blade to attack nearby opponents, dealing 500% of Skirk's ATK as Cryo DMG. This DMG is considered Charged Attack DMG.\nYou must first unlock the Ascension Talent Reason Beyond Reason."
 		},
@@ -425,14 +635,23 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 12.5,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "state", "state": "inStance" }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "state",
+								"state": "inStance"
+							}
 						]
 					},
 					"source": "character",
@@ -443,15 +662,21 @@
 				{
 					"type": "gainStacks",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
-					"conditions": { "type": "constellation", "level": 2 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"key": "serpentsSubtlety",
 					"amount": 10,
 					"max": 100
 				}
 			],
 			"_curatorNotes": [
-				"C2 has three effects: (1) +10 SS on E cast (any tap or hold) — modelled E3 v2.x as a `gainStacks` effect on this constellation, gated on Cons:2, no input filter (fires on Tap-E and Hold-E alike); (2) +10 to the SS-bonus cap for Havoc: Ruin (raises max bonus from +12 SS counted to +22) — modelled via the burst's perStack `constellationScaling` (maxStacks 12→22 at C2); (3) +70% ATK for 12.5s after Havoc: Extinction (ends if Seven-Phase Flash ends earlier).",
+				"C2 has three effects: (1) +10 SS on E cast (any tap or hold) — modelled E3 v2.x as a `gainStacks` effect on this constellation, gated on Cons:2, no input filter (fires on Tap-E and Hold-E alike); (2) +10 to the SS-bonus cap for Havoc: Ruin (raises max bonus from +12 SS counted to +22) — authored as the burst's perStack `constellationScaling` (maxStacks 12→22 at C2), ⚠️ which reaches NO surface — `BuffEffect.constellationScaling` is read only by the gainStacks amount override and by tickCapScaling, never by buffWindows/buffDisplay, so the bar prints the base cap of 12 at C2 too (2026-08-18; full detail on the burst node's ↻ notes); (3) +70% ATK for 12.5s after Havoc: Extinction (ends if Seven-Phase Flash ends earlier).",
 				"Effect (3) authored as self buff with onCast burst trigger, duration 12.5, conditions: all of [constellation:2, state:inStance]. The state:inStance condition restricts the buff to Havoc: Extinction casts (not Havoc: Ruin) — the parser stamps inStance per cast, so this resolves correctly.",
 				"Note: the effect is gcsim-modelled to also auto-end when skillKey ends (Seven-Phase Flash exit). Schema has no 'ends-when-state-ends' modifier; the 12.5s window is rendered fully even after stance exit. Acceptable trade-off."
 			],
@@ -473,14 +698,23 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 12.57,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 4 },
-							{ "type": "ascension", "min": 4 },
+							{
+								"type": "constellation",
+								"level": 4
+							},
+							{
+								"type": "ascension",
+								"min": 4
+							},
 							{
 								"type": "teamElementCount",
 								"elements": ["cryo", "hydro"],
@@ -497,14 +731,23 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 12.57,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 4 },
-							{ "type": "ascension", "min": 4 },
+							{
+								"type": "constellation",
+								"level": 4
+							},
+							{
+								"type": "ascension",
+								"min": 4
+							},
 							{
 								"type": "teamElementCount",
 								"elements": ["cryo", "hydro"],
@@ -521,14 +764,23 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 12.57,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 4 },
-							{ "type": "ascension", "min": 4 },
+							{
+								"type": "constellation",
+								"level": 4
+							},
+							{
+								"type": "ascension",
+								"min": 4
+							},
 							{
 								"type": "teamElementCount",
 								"elements": ["cryo", "hydro"],
@@ -548,10 +800,10 @@
 			],
 			"_curatorNotes": [
 				"C4: 2026-05-14 migrated to teamElementCount gating alongside A4. Each tier of Death's Crossing now corresponds to a non-Skirk Cryo/Hydro teammate count (1/2/3+ → +10%/+20%/+40% atk%). Gated on Cons:4 + Asc:4. trigger=onCast skill with duration matching stance window so the bar is visible during Skirk's in-stance segments. Tier-3 carries canonicalAssumption for the canonical-team framing (mirrors A4 tier-3).",
-				"[A7] Tier-3 headline +40% ATK assumes 3 non-Skirk Cryo/Hydro teammates; tiers gate on teamElementCount (mirrors A4)."
+				"[A7] Tier-3 headline +40% ATK assumes 3 non-Skirk Cryo/Hydro teammates; tiers gate on teamElementCount (mirrors A4).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Measured at C4 with the same rotation: an atk%=40 bar draws on every E cast (folded into the same window as the A4 +70%), tiered from party composition alone with no Death's Crossing stack ever earned. A player who has not yet swapped to a teammate sees the top ATK tier already lit. One sentence, one screen fact. Category: approximation-disclosure."
 			],
-			"description": "Enhances the effects of the Ascension Talent **Return to Oblivion**: Each Death's Crossing stack also increases Skirk's ATK by 10%/20%/40%.\nYou must first unlock the Ascension Talent Return to Oblivion.",
-			"caveat": "Assumes a full canonical team with 3 Cryo or Hydro teammates. With fewer eligible teammates, the lower +10% / +20% ATK tiers fire instead."
+			"description": "Enhances the effects of the Ascension Talent **Return to Oblivion**: Each Death's Crossing stack also increases Skirk's ATK by 10%/20%/40%.\nYou must first unlock the Ascension Talent Return to Oblivion."
 		},
 		{
 			"id": "skirk__constellation__end_of_wishes",
@@ -565,10 +817,10 @@
 			"name": "To the Source",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "Not modeled: this relies on Void Rifts, which are not simulated — the stacks, their coordinated attacks, and the in-stance damage reduction are absent. In a standard Freeze team it does not affect rotation choices.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-17, gadget category): downstream of A1's Void Rift gap. Three consumer-side primitive gaps stack on top (perStack damage scaling, onHit-from-N3/N5 trigger, on-character-hurt trigger) — even if the gadget primitive landed, the consumers would each need their own primitive build. Cost/value firmly favors stub. The stub IS the final state.",
-				"[A7] C6 Havoc: Sever consumers: Q consumes all stacks (750% ATK/stack Cryo); in-stance N3/N5 hit consumes a stack for 3x 180% ATK coordinated attacks; taking DMG in stance consumes a stack for 80% DR + 3x 180% ATK. All downstream of the A1 Void Rift gadget gap; damage numbers are out of scope regardless."
+				"[A7] C6 Havoc: Sever consumers: Q consumes all stacks (750% ATK/stack Cryo); in-stance N3/N5 hit consumes a stack for 3x 180% ATK coordinated attacks; taking DMG in stance consumes a stack for 80% DR + 3x 180% ATK. All downstream of the A1 Void Rift gadget gap; damage numbers are out of scope regardless.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — a reader can find. Coordinated attacks are drawn as tick marks on a HOST summon's bar (Xingqiu, Yelan, Thoma, Fischl C6) — Skirk has no summon and therefore no row for the marks to be missing from, so there is no blank to notice. Damage reduction has no surface for any character, and the stack source is the already-disclosed Void Rift gap. The closing sentence again argues its own irrelevance. Category: invisible-omission."
 			],
 			"description": "Each Void Rift Skirk absorbs via the effects of the Ascension Talent **Reason Beyond Reason** will grant her 1 Havoc: Sever stack. She can consume such stacks to initiate coordinated attacks and decrease the DMG she takes while in **Seven-Phase Flash** mode. These stacks last for 15s, and each stack's duration is counted independently (max 3 stacks).\nYou must first unlock the Ascension Talent \"Reason Beyond Reason.\"\n\nHavoc: Sever\n· When Skirk uses the Elemental Burst Havoc: Ruin, she will consume all Havoc: Sever stacks to initiate a coordinated attack in which each Havoc: Sever stack will deal 750% of Skirk's ATK as Cryo DMG. This DMG is considered Elemental Burst DMG.\n· When she uses Normal Attacks while in Seven-Phase Flash mode, 1 Havoc: Sever stack will be consumed when her third or fifth sequenced attacks hit an opponent to launch 3 coordinated attacks. Each coordinated attack deals 180% of Skirk's ATK as Cryo DMG. This damage is considered Normal Attack DMG.\n· When Skirk takes DMG while in Seven-Phase Flash mode, 1 Havoc: Sever stack will be consumed to decrease this DMG instance by 80% and attack nearby opponents 3 times, with each attack dealing 180% of Skirk's ATK as Cryo DMG. This DMG is considered Charged Attack DMG."
 		}

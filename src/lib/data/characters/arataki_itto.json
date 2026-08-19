@@ -16,13 +16,54 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 41, "hit": 23, "N": 33 } },
-				{ "name": "N2", "frames": { "anim": 36, "hit": 25, "C": 27 } },
-				{ "name": "N3", "frames": { "anim": 43, "hit": 16, "C": 21 } },
-				{ "name": "N4", "frames": { "anim": 83, "hit": 48, "C": 52 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 41,
+						"hit": 23,
+						"N": 33
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 36,
+						"hit": 25,
+						"C": 27
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 43,
+						"hit": 16,
+						"C": 21
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 83,
+						"hit": 48,
+						"C": 52
+					}
+				}
 			],
-			"chargeFrames": { "anim": 130, "D": 89, "J": 89, "swap": 130 },
-			"plungeFrames": { "anim": 87, "N": 53, "C": 53, "E": 51, "Q": 51, "D": 40, "swap": 62 },
+			"chargeFrames": {
+				"anim": 130,
+				"D": 89,
+				"J": 89,
+				"swap": 130
+			},
+			"plungeFrames": {
+				"anim": 87,
+				"N": 53,
+				"C": 53,
+				"E": 51,
+				"Q": 51,
+				"D": 40,
+				"swap": 62
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -50,38 +91,105 @@
 				"In-stance N (Raging Oni King): same frame slices as base (gcsim does not differ). Differences are: (a) larger hitbox (attackHitboxes[1] vs [0]); (b) stack grants on N1/N3 instead of N2/N4 (q-attack source); (c) Geo infusion via Snapshot override. The in-stance N is authored as a separate `normal` ability with `conditions: state=inStance` + infusion=geo, mirroring frames identically.",
 				"Per-character note in recipe-tier-b.md mentions a Saichigiri-after-N3 mechanic (charged-only-at-N3) and C1 +1 skill charge — neither is present in gcsim source. C1 grants 2 Superlative Superstrength stacks, not a skill charge; no chargeModifiers authored. The N3-CA distinction is the standard CA-state machine (Saichi vs stack-CA), not an N3-specific mechanic."
 			],
-			"lowPlungeFrames": { "anim": 83, "N": 49, "C": 49, "E": 48, "Q": 49, "D": 37, "swap": 60 }
+			"lowPlungeFrames": {
+				"anim": 83,
+				"N": 49,
+				"C": 49,
+				"E": 48,
+				"Q": 49,
+				"D": 37,
+				"swap": 60
+			}
 		},
 		{
 			"id": "arataki_itto__normal__fight_club_legend_oni_king",
 			"name": "Fight Club Legend (Raging Oni King)",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": { "type": "state", "state": "inStance" },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
 			"infusion": "geo",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 41, "hit": 23, "N": 33 } },
-				{ "name": "N2", "frames": { "anim": 36, "hit": 25, "C": 27 } },
-				{ "name": "N3", "frames": { "anim": 43, "hit": 16, "C": 21 } },
-				{ "name": "N4", "frames": { "anim": 83, "hit": 48, "C": 52 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 41,
+						"hit": 23,
+						"N": 33
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 36,
+						"hit": 25,
+						"C": 27
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 43,
+						"hit": 16,
+						"C": 21
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 83,
+						"hit": 48,
+						"C": 52
+					}
+				}
 			],
-			"chargeFrames": { "anim": 130, "D": 89, "J": 89, "swap": 130 },
-			"plungeFrames": { "anim": 87, "N": 53, "C": 53, "E": 51, "Q": 51, "D": 40, "swap": 62 },
+			"chargeFrames": {
+				"anim": 130,
+				"D": 89,
+				"J": 89,
+				"swap": 130
+			},
+			"plungeFrames": {
+				"anim": 87,
+				"N": 53,
+				"C": 53,
+				"E": 51,
+				"Q": 51,
+				"D": 40,
+				"swap": 62
+			},
 			"description": "Itto's normal-attack combo while in the Raging Oni King stance. The 4-hit string uses identical frame timings to the base combo, but all hits are converted to Geo DMG (cannot be overridden), gain a +10% ATK SPD buff during normals, and grant Superlative Superstrength stacks on the 1st and 3rd strikes (instead of 2nd/4th).",
 			"_curatorNotes": [
 				"Frames mirror the base normal — gcsim uses the same attackFrames slices in/out of Q stance. The differences are mechanical (hitbox, stack-grant timing, infusion, ATK SPD buff), not frame-level.",
 				"Q stance grants +10% ATK SPD on normals (gcsim burstAtkSpdKey, only applies during NormalAttackState) — not authored as a buff effect; reviewer to decide. ATK SPD scales hitmarks at runtime per gcsim, but the schema doesn't encode this for the planner.",
 				"Stack-grant change in Q stance: N1 and N3 each grant 1 stack (instead of base N2=1 / N4=2). Mechanical only; no schema impact."
 			],
-			"lowPlungeFrames": { "anim": 83, "N": 49, "C": 49, "E": 48, "Q": 49, "D": 37, "swap": 60 }
+			"lowPlungeFrames": {
+				"anim": 83,
+				"N": 49,
+				"C": 49,
+				"E": 48,
+				"Q": 49,
+				"D": 37,
+				"swap": 60
+			}
 		},
 		{
 			"id": "arataki_itto__skill__masatsu_zetsugi_akaushi_burst",
 			"name": "Masatsu Zetsugi: Akaushi Burst!",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": { "anim": 42, "C": 28, "E": 28, "D": 28, "J": 28, "swap": 41 },
+			"frames": {
+				"anim": 42,
+				"C": 28,
+				"E": 28,
+				"D": 28,
+				"J": 28,
+				"swap": 41
+			},
 			"cooldown": 10,
 			"cooldownStartDelay": 14,
 			"tags": ["taunt"],
@@ -103,21 +211,35 @@
 				"Hold variant (adjust throw angle) not authored — gcsim does not differentiate frames; in-game it only re-aims.",
 				"Stamina-cost override during Q stance (gcsim ActionStam returns 0 for ActionCharge while Itto has SSS stacks > 0) — Pattern 5 (no animation change), not authored."
 			],
-			"application": [{ "frame": 18, "element": "geo", "units": 1 }]
+			"application": [
+				{
+					"frame": 18,
+					"element": "geo",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "arataki_itto__burst__royal_descent_behold_itto_the_evil",
 			"name": "Royal Descent: Behold, Itto the Evil!",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": { "anim": 91, "D": 84, "J": 85, "swap": 90 },
+			"frames": {
+				"anim": 91,
+				"D": 84,
+				"J": 85,
+				"swap": 90
+			},
 			"cooldown": 18,
 			"cooldownModifiers": [
 				{
 					"source": "C2: Stay a While and Listen Up",
 					"type": "flat",
 					"value": -1.5,
-					"conditions": { "type": "constellation", "level": 2 }
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
 				},
 				{
 					"source": "C2: Stay a While and Listen Up",
@@ -126,8 +248,16 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "teamElementCount", "elements": ["geo"], "comparison": ">=", "value": 1 }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["geo"],
+								"comparison": ">=",
+								"value": 1
+							}
 						]
 					}
 				},
@@ -138,8 +268,16 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "teamElementCount", "elements": ["geo"], "comparison": ">=", "value": 2 }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["geo"],
+								"comparison": ">=",
+								"value": 2
+							}
 						]
 					}
 				}
@@ -151,7 +289,6 @@
 			"terminatesOnSwap": true,
 			"effects": [],
 			"description": "Time to show 'em the might of the Arataki Gang! For a time, Itto lets out his inner Raging Oni King, wielding his Oni King's Kanabou in battle.\nThis state has the following special properties:\n· Converts Itto's Normal, Charged, and Plunging Attacks to Geo DMG. This cannot be overridden.\n· Increases Itto's Normal Attack SPD. Also increases his ATK based on his DEF.\n· On hit, the 1st and 3rd strikes of his attack combo will each grant Arataki Itto 1 stack of Superlative Superstrength.\n· Decreases Itto's Elemental and Physical RES by 20%.\n\nThe Raging Oni King state will be cleared when Itto leaves the field.",
-			"caveat": "Not modeled: the stance lowers his own Elemental and Physical RES by 20% while it lasts.",
 			"_curatorNotes": [
 				"Stance duration = 11s (base game value; matches genshin-db description and the 660-frame base in gcsim's `burstDuration = 660 + 90 + 45 // barely cover basic combo` — the +90+45 frames are gcsim padding to cover combo tail, not actual stance duration). gcsim's burstBuffKey StatMod uses 795 frames (13.25s); reviewer may prefer that value if matching gcsim exactly.",
 				"terminatesOnSwap=true: gcsim onExitField subscribes to OnCharacterSwap and deletes burstBuffKey when Itto swaps off-field.",
@@ -159,7 +296,9 @@
 				"Enemy resShred DELETED (capability sweep 2026-07-28): the -20% RES drop is a SELF debuff on Itto, not an enemy shred — gcsim burst.go:36 kit comment 'Decreases Itto's Elemental and Physical RES by 20%', and burst.go:38-110 contains no enemy ResistMod at all (only self StatMods for DEF→ATK and atk speed). The 2026-05-09 F1 migration note's 'gcsim applies via Snapshot debuff' claim was false. Self RES drop is caveated instead; negative-value self buff effects (allElementalRes/physicalRes -20) intentionally NOT authored — renderer untested for negative buffs (orchestrator call).",
 				"Burst frames: ActionAttack/ActionSkill/ActionBurst not explicitly set in gcsim (default to anim=91); N/E omitted per recipe silent-default rule. The intended Q→N/E cancel is 91f if reviewer wants to add it.",
 				"C1: 2 SSS stacks at ~75f after Q + 1 stack every 30f for 60–120f (gcsim cons.go c1) — not authored; SSS economy is not represented in the schema.",
-				"C2: CD reduction AUTHORED 2026-07-20 (A7b pilot, Nate implement-first): three flat -1.5s cooldownModifiers on the burst, gated constellation:2 + teamElementCount(geo excl-self) >= 0/1/2 — gcsim counts Geo members incl. Itto statically at init (cap 3), and Itto is Geo, so excl-self >= 0/1/2 is exactly equivalent. The 6-energy-per-Geo-member restore (cap 18) stays unauthored: energy generation is out of scope by constitution."
+				"C2: CD reduction AUTHORED 2026-07-20 (A7b pilot, Nate implement-first): three flat -1.5s cooldownModifiers on the burst, gated constellation:2 + teamElementCount(geo excl-self) >= 0/1/2 — gcsim counts Geo members incl. Itto statically at init (cap 3), and Itto is Geo, so excl-self >= 0/1/2 is exactly equivalent. The 6-energy-per-Geo-member restore (cap 18) stays unauthored: energy generation is out of scope by constitution.",
+				"⚠️⚠️ 2026-08-18 — AUTHORED IS NOT WIRED. Of the three rungs above, only the unconditional constellation:2 one ever fires. `applyModifiers` (src/lib/sim/conditions.ts:296-321) evaluates a modifier's conditions with SIX arguments and no `ConditionContext`, so `teamElementCount` returns null (conditions.ts:168-173) and the `!== true` gate skips both Geo-ally rungs — silently, with no lint or type complaint. Measured consequence: the planner draws 16.5s at C2 in every party, against 13.5s in game with two Geo allies. ⛔ Do not read the 2026-07-20 line above as \"divergence closed\" — the ability caveat that stated the 3s gap was deleted then on exactly that false conclusion. The fix is threading a context into `applyModifiers` (parser), not more data here. See the C2 entry's notes for the same warning from the other side.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — it is a survivability stat on Itto himself, deliberately unauthored (negative-value self buffs were left out as an orchestrator call), and nothing about the stance bar, its width, its cooldown or any marker would move if it were. No player reads a timeline to learn their own RES. ⚠ SEPARATELY, and not this caveat: rubric D8/P5 flags this ABILITY as the host of a real, currently uncaveated divergence — Itto's C2 team-composition cooldownModifiers are skipped silently (`applyModifiers` passes no ConditionContext, so `teamElementCount` returns null), so the Q pill draws a 16.5s cooldown at C2 in every party against 13.5s in game with two Geo allies. That caveat was deleted in 2026-07-20 on a false 'divergence eliminated' and the rubric calls its restoration the highest-value row. Recommend replacing this text rather th"
 			],
 			"application": []
 		}
@@ -182,7 +321,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 35,
 					"stat": "def"
 				}
@@ -211,7 +352,9 @@
 			"constellationLevel": 2,
 			"description": "After using Royal Descent: Behold, Itto the Evil!, each party member whose Element is Geo will decrease that skill's CD by 1.5s and restore 6 Energy to Arataki Itto.\nCD can be decreased by up to 4.5s in this manner. Max 18 Energy can be restored in this manner.",
 			"_curatorNotes": [
-				"Note: description says 'decrease that skill's CD' but the gcsim implementation reduces ActionBurst cooldown (the burst's own CD) — this matches the in-game effect (Q-CD reduction, not E-CD). Reviewer to verify schema-expressible team-comp-conditional CD reductions; not authored."
+				"Note: description says 'decrease that skill's CD' but the gcsim implementation reduces ActionBurst cooldown (the burst's own CD) — this matches the in-game effect (Q-CD reduction, not E-CD).",
+				"↻ 2026-08-18. \"Reviewer to verify schema-expressible team-comp-conditional CD reductions; not authored\" is WRONG and has been since 2026-07-20 — it IS authored. Three flat -1.5s `cooldownModifiers` live on the burst (`arataki_itto__burst__royal_descent_behold_itto_the_evil`), gated constellation:2 + teamElementCount(geo, excl-self) >= 0/1/2; the authoring rationale is in that ability's own `_curatorNotes`. ⛔ Do not author a fourth rung here.",
+				"⚠️⚠️ BUT TWO OF THE THREE RUNGS ARE INERT AT RUNTIME, so the divergence this constellation causes is NOT closed. `applyModifiers` (src/lib/sim/conditions.ts:296-321) calls `evalCondition` with six arguments and passes NO `ConditionContext`, and `teamElementCount` returns null without `context.teamElementCounts` (conditions.ts:168-173); a null is dropped by the `!== true` gate. Only the unconditional constellation:2 rung fires, so the planner draws an 18 − 1.5 = 16.5s burst cooldown at C2 no matter the party, where the game gives 13.5s with two Geo allies. ⚠️ The 2026-07-20 pass recorded this divergence as eliminated and the ability's caveat was deleted on that basis; the 3s gap is still there. Fixing it means threading a `ConditionContext` into `applyModifiers` — a parser change, not a data change. ⚠️ The Team Builder is worse still: Compare prints raw `ability.cooldown` (18s) with no modifiers at all."
 			]
 		},
 		{
@@ -230,7 +373,10 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "afterDuration", "ability": "burst" },
+					"trigger": {
+						"type": "afterDuration",
+						"ability": "burst"
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -241,7 +387,10 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "afterDuration", "ability": "burst" },
+					"trigger": {
+						"type": "afterDuration",
+						"ability": "burst"
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -269,9 +418,9 @@
 			"constellationLevel": 6,
 			"description": "Arataki Itto's Charged Attacks deal +70% CRIT DMG. Additionally, when he uses Arataki Kesagiri, he has a 50% chance to not consume stacks of Superlative Superstrength.",
 			"_curatorNotes": [
-				"No effects authored. Two parts: (a) +70% CRIT DMG on all Charged Attacks (gcsim cons.go c6: AttackMod gated on AttackTagExtra, permanent at C6) — schema can express as a self buff with stat=critDmg on chargeAttack hits, but generator did not author it; reviewer to wire. (b) 50% chance to not consume SSS stacks on Kesagiri — SSS economy not modelable, flag only."
-			],
-			"caveat": "Not modeled: the +70% CRIT DMG on Charged Attacks."
+				"No effects authored. Two parts: (a) +70% CRIT DMG on all Charged Attacks (gcsim cons.go c6: AttackMod gated on AttackTagExtra, permanent at C6) — schema can express as a self buff with stat=critDmg on chargeAttack hits, but generator did not author it; reviewer to wire. (b) 50% chance to not consume SSS stacks on Kesagiri — SSS economy not modelable, flag only.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A flat permanent damage-stat bonus: no bar, no marker, no timing consequence — the charged-attack blocks on the timeline are identical with and without it. DMG% is named in the rubric's own out-of-scope list, and the tool never claims to enumerate a character's full stat sheet. The second half of the C6 (50% chance not to consume Superlative Superstrength) is resource economy the schema does not represent and is not caveated either, correctly. Category: invisible-omission."
+			]
 		}
 	],
 	"meta": {

@@ -16,11 +16,37 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 24, "hit": 12, "N": 20 } },
-				{ "name": "N2", "frames": { "anim": 27, "hit": 9, "N": 21 } },
-				{ "name": "N3", "frames": { "anim": 58, "hit": 17 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 24,
+						"hit": 12,
+						"N": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 27,
+						"hit": 9,
+						"N": 21
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 58,
+						"hit": 17
+					}
+				}
 			],
-			"chargeFrames": { "anim": 43, "N": 42, "D": 27, "J": 27, "swap": 27 },
+			"chargeFrames": {
+				"anim": 43,
+				"N": 42,
+				"D": 27,
+				"J": 27,
+				"swap": 27
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -52,13 +78,36 @@
 			"name": "Sword Dance",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": { "type": "state", "state": "inStance" },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
 			"infusion": "hydro",
 			"tags": [],
 			"hits": [
-				{ "name": "Sword Dance 1", "frames": { "anim": 20, "hit": 14, "N": 18 } },
-				{ "name": "Sword Dance 2", "frames": { "anim": 23, "hit": 12 } },
-				{ "name": "Luminous Illusion", "frames": { "anim": 60, "hit": 35, "N": 55 } }
+				{
+					"name": "Sword Dance 1",
+					"frames": {
+						"anim": 20,
+						"hit": 14,
+						"N": 18
+					}
+				},
+				{
+					"name": "Sword Dance 2",
+					"frames": {
+						"anim": 23,
+						"hit": 12
+					}
+				},
+				{
+					"name": "Luminous Illusion",
+					"frames": {
+						"anim": 60,
+						"hit": 35,
+						"N": 55
+					}
+				}
 			],
 			"description": "While Nilou is in the Pirouette state (after the initial Dance of Haftkarsvar cast) or the Lunar Prayer state (8s after a Sword Dance combo), her Normal Attacks become Sword Dance steps that are converted to Hydro DMG and treated as Elemental Skill DMG. Each press cycles through three steps: Sword Dance 1 (frame 14), Sword Dance 2 (frame 12), and the third step Luminous Illusion (frame 35).",
 			"_curatorNotes": [
@@ -74,7 +123,14 @@
 			"name": "Dance of Haftkarsvar",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": { "anim": 21, "N": 19, "E": 19, "D": 17, "J": 17, "swap": 21 },
+			"frames": {
+				"anim": 21,
+				"N": 19,
+				"E": 19,
+				"D": 17,
+				"J": 17,
+				"swap": 21
+			},
 			"cooldown": 18,
 			"tags": [],
 			"behavior": "stance",
@@ -91,7 +147,10 @@
 							"source": "C1: Dance of the Waning Moon",
 							"type": "flat",
 							"value": 6,
-							"conditions": { "type": "constellation", "level": 1 }
+							"conditions": {
+								"type": "constellation",
+								"level": 1
+							}
 						}
 					]
 				}
@@ -108,15 +167,31 @@
 				"Nilou is not implementable as a Tier B stance character without losing fidelity to the underlying state machine: shared step counter between SD and WS, two distinct end-states (Lunar Prayer vs Tranquility Aura), and the gating of E during Lunar Prayer. The current draft captures the dominant E E E E rotation cleanly and flags the rest.",
 				"[A7] The Tranquility Aura is authored on the base skill so the canonical E-E-E-E rotation (initial cast → WS1 → WS2 → WS3) displays correctly even though in-game it spawns only after WS3 — rationale already covered in existing notes. The dropped second short-rotation example was 'E E swap'. Lunar Prayer begins 8s after a Sword Dance combo."
 			],
-			"application": [{ "frame": 16, "element": "hydro", "units": 1 }]
+			"application": [
+				{
+					"frame": 16,
+					"element": "hydro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "nilou__skill__whirling_steps_1",
 			"name": "Whirling Steps 1",
 			"input": ["E"],
 			"abilityType": "skill",
-			"conditions": { "type": "state", "state": "inStance" },
-			"frames": { "anim": 31, "N": 27, "E": 27, "D": 26, "J": 27, "swap": 31 },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"frames": {
+				"anim": 31,
+				"N": 27,
+				"E": 27,
+				"D": 26,
+				"J": 27,
+				"swap": 31
+			},
 			"cooldown": 0,
 			"tags": [],
 			"behavior": "instant",
@@ -126,15 +201,31 @@
 				"Frames: gcsim whirlingStepsFrames[0] = InitAbilSlice(33) with overrides ActionAttack=27, ActionSkill=27, ActionDash=26, ActionJump=27, ActionSwap=31. Hit at whirlingStepsHitMarks[0] = 21.",
 				"Cooldown 0: gcsim does not call SetCD inside WhirlingSteps. ActionReady override grants E availability during Pirouette regardless of base 18s skill CD."
 			],
-			"application": [{ "frame": 21, "element": "hydro" }]
+			"application": [
+				{
+					"frame": 21,
+					"element": "hydro"
+				}
+			]
 		},
 		{
 			"id": "nilou__skill__whirling_steps_2",
 			"name": "Whirling Steps 2",
 			"input": ["E"],
 			"abilityType": "skill",
-			"conditions": { "type": "state", "state": "inStance" },
-			"frames": { "anim": 62, "N": 40, "E": 32, "Q": 40, "D": 36, "J": 37, "swap": 62 },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"frames": {
+				"anim": 62,
+				"N": 40,
+				"E": 32,
+				"Q": 40,
+				"D": 36,
+				"J": 37,
+				"swap": 62
+			},
 			"cooldown": 0,
 			"tags": [],
 			"behavior": "instant",
@@ -143,15 +234,28 @@
 				"Frames: gcsim whirlingStepsFrames[1] = InitAbilSlice(62) with overrides ActionAttack=40, ActionSkill=32, ActionBurst=40, ActionDash=36, ActionJump=37. Hit at whirlingStepsHitMarks[1] = 29. Note swap=62 (no override) — the WS2 cancel slice keeps the InitAbilSlice default.",
 				"Same parser-broken caveat as WS1: this entry is not selected by the parser; WS1 wins for all in-stance E presses currently. Reviewer to add chain-state condition once schema supports it."
 			],
-			"application": [{ "frame": 21, "element": "hydro" }]
+			"application": [
+				{
+					"frame": 21,
+					"element": "hydro"
+				}
+			]
 		},
 		{
 			"id": "nilou__skill__whirling_steps_3",
 			"name": "Water Wheel (Whirling Steps 3)",
 			"input": ["E"],
 			"abilityType": "skill",
-			"conditions": { "type": "state", "state": "inStance" },
-			"frames": { "anim": 61, "D": 57, "J": 57, "swap": 61 },
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"frames": {
+				"anim": 61,
+				"D": 57,
+				"J": 57,
+				"swap": 61
+			},
 			"cooldown": 0,
 			"tags": [],
 			"behavior": "instant",
@@ -162,14 +266,25 @@
 				"Same parser-broken caveat as WS1/WS2: this entry is not currently selected by the parser. Frame data captured for future wire-up.",
 				"C4 trigger: c4cb() in gcsim cons.go fires when SD3 (skillStep == 2) lands an enemy hit during Pirouette — that path is the SwordDance variant, not WhirlingSteps. So C4's energy + burst-damage buff is gated by Sword Dance N3, not WS3. Authored on C4 entry."
 			],
-			"application": [{ "frame": 21, "element": "hydro" }]
+			"application": [
+				{
+					"frame": 21,
+					"element": "hydro"
+				}
+			]
 		},
 		{
 			"id": "nilou__burst__dance_of_abzendegi_distant_dreams_listening_spring",
 			"name": "Dance of Abzendegi: Distant Dreams, Listening Spring",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": { "anim": 110, "N": 108, "E": 108, "J": 109, "swap": 107 },
+			"frames": {
+				"anim": 110,
+				"N": 108,
+				"E": 108,
+				"J": 109,
+				"swap": 107
+			},
 			"cooldown": 18,
 			"tags": [],
 			"energyCost": 70,
@@ -182,8 +297,16 @@
 				"C4 buff applies here when triggered: +50% burst DMG for 8s. Authored on C4 entry."
 			],
 			"application": [
-				{ "frame": 91, "element": "hydro", "units": 1 },
-				{ "frame": 212, "element": "hydro", "units": 1 }
+				{
+					"frame": 91,
+					"element": "hydro",
+					"units": 1
+				},
+				{
+					"frame": 212,
+					"element": "hydro",
+					"units": 1
+				}
 			]
 		}
 	],
@@ -196,7 +319,10 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 10,
 					"durationType": "refresh",
 					"source": "character",
@@ -215,7 +341,12 @@
 									"value": 1
 								}
 							},
-							{ "type": "teamElementCount", "elements": ["dendro"], "comparison": ">=", "value": 1 }
+							{
+								"type": "teamElementCount",
+								"elements": ["dendro"],
+								"comparison": ">=",
+								"value": 1
+							}
 						]
 					}
 				}
@@ -261,20 +392,32 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "damageType": "elemental" },
+					"trigger": {
+						"type": "onHit",
+						"damageType": "elemental"
+					},
 					"duration": 10,
 					"element": "hydro",
 					"value": -35,
-					"conditions": { "type": "constellation", "level": 2 }
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
 				},
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": "bloom" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "bloom"
+					},
 					"duration": 10,
 					"element": "dendro",
 					"value": -35,
-					"conditions": { "type": "constellation", "level": 2 }
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
 				}
 			],
 			"description": "After characters affected by the Golden Chalice's Bounty deal Hydro DMG to an opponent, that opponent's Hydro RES will be decreased by 35% for 10s. After dealing Bloom or Lunar-Bloom DMG to opponents, their Dendro RES will be decreased by 35% for 10s.\nYou must first unlock the Ascension Talent \"Court of Dancing Petals.\"",
@@ -299,19 +442,29 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"value": 15,
-					"conditions": { "type": "constellation", "level": 4 }
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					}
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"stat": "burstDmgBonus",
 					"value": 50,
-					"conditions": { "type": "constellation", "level": 4 }
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					}
 				}
 			],
 			"description": "After the third dance step of Dance of Haftkarsvar's Pirouette hits opponents, Nilou will gain 15 Elemental Energy, and DMG from her Dance of Abzendegi: Distant Dreams, Listening Spring will be increased by 50% for 8s.",
@@ -337,18 +490,38 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"stat": "critRate",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 0.0006, "cap": 30 },
-					"conditions": { "type": "constellation", "level": 6 }
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 0.0006,
+						"cap": 30
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					}
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"stat": "critDmg",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 0.0012, "cap": 60 },
-					"conditions": { "type": "constellation", "level": 6 }
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 0.0012,
+						"cap": 60
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					}
 				}
 			],
 			"description": "For every 1,000 points of Max HP, Nilou's CRIT Rate and CRIT DMG will increase by 0.6% and 1.2% respectively.\nThe maximum increase in CRIT Rate and CRIT DMG via this method is 30% and 60% respectively.",

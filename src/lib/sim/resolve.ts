@@ -28,7 +28,13 @@ import {
 } from '$lib/types/ability';
 import { FPS, frameAt, framesOf } from '$lib/utils/frames';
 import { GENERIC_CHARGE_FRAMES, GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
-import { applyModifiers, DEFAULT_ASCENSION, evalCondition, type ChainIndex } from './conditions';
+import {
+	applyModifiers,
+	DEFAULT_ASCENSION,
+	evalCondition,
+	type ChainIndex,
+	type ConditionContext
+} from './conditions';
 
 /** Fallback cast time when no E/Q frame data is present on the ability (FRAMES).
  *  Sourced from the data-derived generic profile (genericProfile.ts) so a
@@ -204,7 +210,10 @@ export function resolveAbilityTiming(
 	resolvedStates: ReadonlySet<string> = new Set(),
 	constellationLevel = 0,
 	chainIndex: ChainIndex = new Map(),
-	stacks?: ReadonlyMap<string, number>
+	stacks?: ReadonlyMap<string, number>,
+	/** Team scope for a modifier's own gate — see `applyModifiers`. Absent means a
+	 *  team-composition-gated modifier cannot resolve and is skipped. */
+	context?: ConditionContext
 ): { cooldown: number; duration: number; summonActivatesAt: number } {
 	const cooldown = applyModifiers(
 		framesOf(variant?.cooldown ?? ability.cooldown),
@@ -214,7 +223,8 @@ export function resolveAbilityTiming(
 		constellationLevel,
 		chainIndex,
 		stacks,
-		FPS // a `flat` cooldown modifier is authored in seconds
+		FPS, // a `flat` cooldown modifier is authored in seconds
+		context
 	);
 	const { duration: baseDur, modifiers: durMods } = resolveActiveDuration(ability, variant);
 	const duration = applyModifiers(
@@ -225,7 +235,8 @@ export function resolveAbilityTiming(
 		constellationLevel,
 		chainIndex,
 		stacks,
-		FPS // ditto for a `flat` duration modifier
+		FPS, // ditto for a `flat` duration modifier
+		context
 	);
 	const variantSummon = variant?.summons?.[0];
 	const summonActivatesAt = variantSummon

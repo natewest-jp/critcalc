@@ -128,10 +128,11 @@
 					"stat": "atk",
 					"flat": 3051,
 					"attribution": "Shield of Blazing Light",
-					"caveat": "Absorbs Pyro DMG at 250% effectiveness (absorption bonus vs Pyro not modelled).",
 					"_curatorNotes": [
 						"Shield of Blazing Light scales on Nicole's ATK: 398.1% ATK + 3051 at talent lvl 10 (skillShieldAtk[9]=3.981312, skillShieldFlat[9]=3050.9045). gcsim shield.go, Expires = F + 20*60.",
-						"Base shield (target 'active', per gcsim shield Target:-1) protects the on-field character. C2 extends a Shield of Blazing Light to nearby party members (separate effect on the C2 entry)."
+						"Base shield (target 'active', per gcsim shield Target:-1) protects the on-field character. ↻ 2026-08-18: the second half of this note is STALE — there is no longer a C2 shield effect. C2's \"nearby active party members will also gain a Shield of Blazing Light\" is CO-OP ONLY and is deliberately unmodelled; the C2 entry carries the +300 ATK buff and the RES ticker and nothing else. Reasoning and the two ways the retired `target: 'team'` authoring was wrong are on the C2 entry's own notes; record in docs/constellation-shield-gap.md §7.3.",
+						"⚠️ 2026-08-18, SURFACE not content: the `caveat` on this effect reaches NO reader. `collectSlotCaveats` (timeline/slotCaveats.ts:58-67) walks ability/passive/constellation hosts and reads `a.caveat` only, `scripts/caveat-lint.mjs:89-98` scans the same three lists, and `deriveCapabilities` builds its own labels from Conditions and never reads this string — `Effect` has no rendered caveat channel at all. So the 250%-Pyro-absorption divergence is currently disclosed nowhere. The DIVERGENCE itself is real and unchanged (shields carry no per-element efficiency; sim/shields.ts:8-10 has no absorption or HP state). ⏭ If it should reach a player, it has to move to this ability's own `caveat` — which is a caveat-round decision, not a data one.",
+						"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Nicole's Shield of Blazing Light draws as a labelled bar on the summon lane; no shield in the tool renders absorption at all, so nothing on screen claims otherwise. The caveat is about a game-wide rule (every elemental shield absorbs its own element at 250%) and is also effect-level, so it reaches no reader today. Nate's named example. Category: general-game-knowledge."
 					],
 					"label": "Shield of Blazing Light"
 				}
@@ -178,7 +179,6 @@
 					"scaling": 180,
 					"stat": "atk",
 					"attribution": "Arcane Projection",
-					"caveat": "Not modeled: the coordinated Arcane Projections themselves — the bar shows the 20s window they fire in, not the individual hits.",
 					"_curatorNotes": [
 						"gcsim burst.go: burstInit subscribes to OnEnemyHit while `silent-contemplation` is up (20*60 from burstHitmark+1); requires the hitter to be the ACTIVE character; burstICDKey 3*60; c.projections capped at 4 per burst; the projection lands projectionHitmark=30f after the triggering hit, with Mult burstProjection[9]=1.8 of the TRIGGERING character’s ATK and Element = char.Base.Element.",
 						"`scaling`/`stat` are a stand-in: the planner scales on the HOLDER’s stat and this scales on the triggering character’s. `element` is omitted because it varies with who triggered it.",
@@ -186,15 +186,17 @@
 						"⚠️ Consequence, and it is deliberate: with no `application[]` the effect is not armed as a proc (`sim/procs.ts` accepts only a damage effect that carries one), so `trigger.armedFor` is NOT authored either — an arming window on an effect nothing can arm is the partially-wired data `orphanedSchema` cannot see. The 20s lives on the ability as `activeDuration`, where a reader can see it.",
 						"⚠️ `duration: 20` was removed from this effect in the same pass. On a `damage` effect nothing reads it — the buff path’s `.duration` accesses satisfy `orphanedSchema` by key name, which is that guard’s documented blind spot.",
 						"⚠️ NOT modelled: the 4-projections-per-burst cap, and gcsim’s per-character projection hitbox offsets (a positional claim, the class docs/gauge-round-L5e.md refuses to grow a vocabulary for).",
-						"Nicole’s own initial burst hit (570.2% ATK Pyro at T10) is on-field self damage, not a team-facing capability — not authored as an effect; its Pyro is the ability-level `application[]`."
+						"Nicole’s own initial burst hit (570.2% ATK Pyro at T10) is on-field self damage, not a team-facing capability — not authored as an effect; its Pyro is the ability-level `application[]`.",
+						"⚠️ 2026-08-18, SURFACE not content: the `caveat` on this effect reaches NO reader — `collectSlotCaveats` (timeline/slotCaveats.ts:58-67) reads `caveat` on ability/passive/constellation hosts only, and `Effect` has no rendered caveat channel. Of this burst's two caveat strings only the ABILITY-level Hexerei one renders (in the Notes panel, and the whole panel is behind band B's Notes button and mutually exclusive with the aura log). So \"the bar shows the 20s window, not the individual Arcane Projections\" is currently told to nobody. ⚠️ The claim itself is still accurate and is worth keeping somewhere: with no `application[]` this effect is not armed as a proc at all (`procEffects` at sim/procs.ts:156-159 rejects a damage effect carrying none), which is the SETTLED decision recorded above — so what a reader sees is the `activeDuration: 20` span and nothing inside it.",
+						"↻ CAVEAT PROMOTED 2026-08-19: an effect-level caveat reaches no reader; moved to the entry that renders."
 					]
 				}
 			],
-			"caveat": "Not modeled: with 2 or more Hexerei characters in the party, Arcane Projections triggered by Hexerei members deal extra DMG equal to 300% of the caster's ATK.",
 			"_curatorNotes": [
 				"activeDuration 20 authored 2026-08-18: the burst \"switches to Silent Contemplation mode\" and gcsim holds `silent-contemplation` for 20*60 from burstHitmark+1 (burst.go:113). ⚠️ NOT `duration` and NOT a summon — nothing is left in the world; it is a mode on Nicole, which is exactly what `activeDuration` is for (see the shield/summon split). Without it the Q bar was an instant and the window the Arcane Projections live in was invisible.",
 				"HEXEREI Secret Rite (count-gated). gcsim asc.go:111-123 hexereiOnProjection: requires Nicole IsHexerei AND GetHexereiCount() >= 2 AND the triggering character IsHexerei; returns c.TotalAtk()*3, applied as AttackInfo.FlatDmg on the burst projection (burst.go:164) and on C1's Arcane Projection: Unity (cons.go:56).",
-				"Pure damage-magnitude enhancement to an existing hit (flat add, no new instance, no stat change) — recorded, not authored as an effect. Lives in factionBonuses as a description-only Secret Rite entry plus this caveat."
+				"Pure damage-magnitude enhancement to an existing hit (flat add, no new instance, no stat change) — recorded, not authored as an effect. Lives in factionBonuses as a description-only Secret Rite entry plus this caveat.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Pure damage magnitude (a flat add to a hit we never draw and never size). The tool renders no DMG numbers anywhere, so no bar, marker or value changes with or without the rite. Note: factionBonuses[hexerei].description says the rite is 'surfaced as a caveat on the burst' — that sentence needs re-wording if this is removed. Category: invisible-omission."
 			],
 			"description": "As Nicole weaves the path of anchored fate with golden threads of light, she deals AoE Pyro DMG and switches to Silent Contemplation mode.\nIn this mode, when nearby active party members hit an opponent, an Arcane Projection is summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type. This DMG scales based on the corresponding character's ATK and will be considered as having been dealt by them.\nThis effect can occur once every 3s, and can be triggered up to 4 times each time Nicole switches to Silent Contemplation mode.\n\nIt is worth noting that Hexerei characters' Arcane Projections appear to differ somehow in appearance from the others...",
 			"application": [
@@ -227,12 +229,13 @@
 					"value": 300,
 					"snapshottable": false,
 					"attribution": "A1: Methexis (Guidance of Theosis)",
-					"caveat": "Grace of Kenosis upgrades to Guidance of Theosis (+300 ATK) once the observed character has been on field for 3s — immediately for a Hexerei character, and immediately for everyone at C6. It reverts when they leave the field, except at C6.",
 					"_curatorNotes": [
 						"A1 Methexis: gcsim asc.go a1Buff[ATK]=300, granted on OnCharacterSwap to the INCOMING character after a 3*60 delay, and immediately when that character IsHexerei. The upgrade lasts the receiver’s remaining Grace of Kenosis window (a1UpgradeBuff with dur -1); asc.go deletes it from the OUTGOING character unless C6 (c6DeleteA1OnSwap).",
 						"↻ 2026-08-18: the delay and both waivers are AUTHORED now (`onFieldDelay`), where this used to be a flat active-target buff starting at the cast with the timing only in prose. ⚓ The Hexerei waiver is a property of the RECEIVER and is NOT count-gated — gcsim checks a bare `char.IsHexerei` with no GetHexereiCount() call, so a lone Hexerei teammate still skips the wait. ⛔ Not a `teamFaction` condition.",
 						"⚓ The C6 waiver is the second half of the same field: cons.go c6OnUpgrade upgrades every other member the moment Nicole’s own upgrades, so nobody waits. Composed as one `any`, which is why the waiver is a Condition rather than a bespoke faction key.",
-						"⚠️ The revert-on-swap-out needed no authoring: an active-target buff is already sliced per on-field segment, so leaving the field ends the slice, and only the LAST segment runs to the buff’s own end. ⚠️ NOT modelled: at C6 it stops reverting, so all four members hold it at once — a single active-target effect cannot say that, and the caveat carries it."
+						"⚠️ The revert-on-swap-out needed no authoring: an active-target buff is already sliced per on-field segment, so leaving the field ends the slice, and only the LAST segment runs to the buff’s own end. ⚠️ NOT modelled: at C6 it stops reverting, so all four members hold it at once — a single active-target effect cannot say that, and the caveat carries it.",
+						"⚠️ 2026-08-18: \"the caveat carries it\" is NOT TRUE as things stand — that caveat sits on this EFFECT, and an effect-level `caveat` reaches no reader (`collectSlotCaveats`, timeline/slotCaveats.ts:58-67, reads `caveat` on ability/passive/constellation hosts only; `Effect` has no rendered caveat channel). The C6 no-revert divergence is currently disclosed nowhere. ⚠️⚠️ If it is moved to the passive's own `caveat` to fix that, KEEP the \"at C6\" wording in the sentence: `slotCaveats` gates a caveat by its host ENTRY's constellation level, and a PASSIVE has no entry level, so the note will show at C0 too — the prefix is the only thing that makes it honest there. ⛔ Do not solve it by moving the text onto the C6 constellation entry: the buff being described is the A1's, and this file already keeps A1 and C6 separate for that reason.",
+						"↻ CAVEAT PROMOTED 2026-08-19: an effect-level caveat reaches no reader; moved to the entry that renders."
 					],
 					"onFieldDelay": {
 						"seconds": 3,
@@ -252,7 +255,8 @@
 					}
 				}
 			],
-			"description": "For 20s after unleashing the Elemental Skill **Revelation: Uncreated Light**, Nicole will continuously \"observe\" the other current active party members. After the observed character has remained on the field for 3s, their **Grace of Kenosis** is upgraded to **Guidance of Theosis**, increasing their ATK by an additional 300. If the observed character is a Hexerei character, Grace of Kenosis is upgraded to Guidance of Theosis straight away.\nWhen characters other than Nicole who have Guidance of Theosis leave the field, their effect reverts to Grace of Kenosis."
+			"description": "For 20s after unleashing the Elemental Skill **Revelation: Uncreated Light**, Nicole will continuously \"observe\" the other current active party members. After the observed character has remained on the field for 3s, their **Grace of Kenosis** is upgraded to **Guidance of Theosis**, increasing their ATK by an additional 300. If the observed character is a Hexerei character, Grace of Kenosis is upgraded to Guidance of Theosis straight away.\nWhen characters other than Nicole who have Guidance of Theosis leave the field, their effect reverts to Grace of Kenosis.",
+			"caveat": "Not modeled: at C6 the upgrade no longer reverts when a character leaves the field, so the whole party holds it at once."
 		},
 		{
 			"id": "nicole__passive__philokalia",
@@ -274,15 +278,17 @@
 					"value": 300,
 					"snapshottable": false,
 					"attribution": "A4: Philokalia",
-					"caveat": "Nicole's own Grace of Kenosis upgrades to Guidance of Theosis (+300 ATK) for 8s whenever a nearby active party member's Elemental DMG hits an opponent.",
 					"_curatorNotes": [
 						"A4 Philokalia: gcsim asc.go a4Init upgrades Nicole's own buff on active-member elemental hit for c6SelfBuffDur = 8s (C0). Self-only; boosts Nicole's ATK (marginally her shield/Grace scaling on subsequent casts). At C6 the self-upgrade duration is -1 (matches remaining Grace window).",
 						"⚠️ `source: ‘team’` is one step wider than gcsim, which requires the hitter to be the ACTIVE character (asc.go a4Init: `ae.Info.ActorIndex != c.Core.Player.Active()`). `onHit` has no `‘active’` source, and adding one for a self-buff would be the trap the mark-triggered round names: an entity carries its OWNER’s id, so an id test alone counts a summon’s tick as its owner’s. The over-fire is that an off-field summon’s elemental hit upgrades Nicole; it costs her +300 ATK on herself a little early.",
-						"⚠️ NOT modelled: at C6 `c6SelfBuffDur()` returns -1, so this self-upgrade lasts Nicole’s remaining Grace window instead of 8s. A duration has no `constellationScaling`, and a second C6-gated copy would be collapsed by the one-bar-per-stat rule — the same reason the C6 party-wide +300 is not authored as its own effect."
+						"↻ 2026-08-18: ⚠️⚠️ THE DIVERGENCE ABOVE IS WRONG IN THE OTHER DIRECTION — there is no over-fire, because `source` is never read on this path. A character-hosted `onHit` buff window is pooled by `getCharacterEffectsForOnHit` and filtered by `evalTriggerFilter` alone; `onHitTriggerMatches` — the only function that answers `source` / `damageType` / `abilityType` — is called at exactly three sites, none of them a character buff pool (utils/buffWindows.ts:1049 is the ARTIFACT branch, sim/stacks.ts:414 and :532, sim/procs.ts:396). So both `source: 'team'` and `damageType: 'elemental'` are inert here. What actually draws: this effect is a PASSIVE-hosted `onHit` with no `trigger.abilityType`, which `getCharacterEffectsForOnHit` (utils/effectCollection.ts:352-366) excludes from the N/CA/P pass outright and admits for castType skill|burst — so the bar is anchored at NICOLE'S OWN skill and burst casts (`cast.fieldStart`, buffWindows.ts:1676) and fires off nobody's hits at all. The effect-level `caveat` beside this note states exactly that and is the accurate description; ⚠️ it also reaches no reader, being effect-level (slotCaveats.ts:58-67). ⛔ Do not \"fix\" the divergence by narrowing `source` to a value that does not exist — the gap is that the character onHit pools do not consult the trigger at all, and it is corpus-wide (rubric P2), not Nicole's.",
+						"⚠️ NOT modelled: at C6 `c6SelfBuffDur()` returns -1, so this self-upgrade lasts Nicole’s remaining Grace window instead of 8s. A duration has no `constellationScaling`, and a second C6-gated copy would be collapsed by the one-bar-per-stat rule — the same reason the C6 party-wide +300 is not authored as its own effect.",
+						"↻ CAVEAT PROMOTED 2026-08-19: an effect-level caveat reaches no reader; moved to the entry that renders."
 					]
 				}
 			],
-			"description": "When Elemental DMG from nearby active party members hits an opponent, Nicole's own **Grace of Kenosis** effect is upgraded to **Guidance of Theosis** for 8s."
+			"description": "When Elemental DMG from nearby active party members hits an opponent, Nicole's own **Grace of Kenosis** effect is upgraded to **Guidance of Theosis** for 8s.",
+			"caveat": "Shown at her own skill and burst casts; in game the upgrade instead triggers whenever a nearby active party member's Elemental DMG hits an opponent."
 		}
 	],
 	"constellations": [
@@ -303,13 +309,13 @@
 					"scaling": 600,
 					"stat": "atk",
 					"attribution": "C1: Arcane Projection: Unity",
-					"caveat": "When your active character hits an opponent, an extra Arcane Projection deals AoE Elemental DMG of that character's Element at 600% of their ATK, counted as their damage. Once every 6s.",
 					"_curatorNotes": [
 						"gcsim cons.go c1Init: OnEnemyHit by active char, c1ICDKey=6*60, Mult:6 (600%) of the triggering character's ATK, element = char.Base.Element, lands projectionHitmark=30f later. Independent of the burst — fires whenever the active char hits, not gated on Silent Contemplation.",
 						"scaling stat 'atk' is a stand-in for the triggering character's ATK; element omitted (varies). This damage effect does not itself derive an offFieldDamage capability (that comes from the burst coordinatedAttack tag at C0).",
 						"HEXEREI Secret Rite also applies here: cons.go:56 passes FlatDmg = hexereiOnProjection(char), so with 2+ Hexerei in the party a Unity projection triggered by a Hexerei member gains flat DMG equal to 300% of Nicole's ATK. Damage-magnitude only — not authored as an effect; the canonical player-facing note sits on the burst.",
-						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0.",
-						"⚓ Applies no element either, same ruling and same source as the burst’s Arcane Projection (⚓ Nate, 2026-08-18) — the two stand or fall together, and both are settled. ⛔ No `application[]`."
+						"conditions authored 2026-08-18 because a constellation effect was NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collected every constellation effect and gated only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0. ↻ SAME DAY, later: the constellation-gating round (`a0f0b2f`) fixed that at the source — `effectSourcesAtConstellation` (utils/effectCollection.ts:76-93) drops a locked entry at COLLECTION, so a constellation effect is now gated by its entry everywhere that decides something. This condition is therefore pure duplication and is KEPT deliberately (⛔ do not strip it — it documents intent at the effect, and all 133 such conditions in the corpus were verified to name exactly their own entry's level), but ⛔ do not repeat the claim above: a NEW constellation effect no longer needs one to avoid drawing at C0.",
+						"⚓ Applies no element either, same ruling and same source as the burst’s Arcane Projection (⚓ Nate, 2026-08-18) — the two stand or fall together, and both are settled. ⛔ No `application[]`.",
+						"↻ CAVEAT PROMOTED 2026-08-19: an effect-level caveat reaches no reader; moved to the entry that renders."
 					],
 					"conditions": {
 						"type": "constellation",
@@ -317,7 +323,8 @@
 					}
 				}
 			],
-			"description": "When the current active character of your own in the party hits an opponent, an additional special \"Arcane Projection: Unity\" will be summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type at 600% of their ATK. This DMG will be considered as having been dealt by the corresponding character.\nThis effect can trigger once every 6s."
+			"description": "When the current active character of your own in the party hits an opponent, an additional special \"Arcane Projection: Unity\" will be summoned to perform a Coordinated Attack against the opponent, dealing AoE Elemental DMG of the character's corresponding Elemental Type at 600% of their ATK. This DMG will be considered as having been dealt by the corresponding character.\nThis effect can trigger once every 6s.",
+			"caveat": "Not modeled: the extra Arcane Projections, which in game fire off the active character's hits once every 6s."
 		},
 		{
 			"id": "nicole__constellation__i_will_guide_you_and_show_you_the_path_you_should_tread",
@@ -359,10 +366,10 @@
 					"duration": 20,
 					"durationType": "refresh",
 					"attribution": "C2 (Guidance of Theosis RES shred)",
-					"caveat": "While the active character has Guidance of Theosis, nearby opponents' RES to that character's Element is reduced by 25%. Does not stack for the same Element.",
 					"_curatorNotes": [
 						"gcsim cons.go c2Ticker: -0.25 RES to the active char's element, re-applied every 0.3s (1s modifier) while they hold Guidance of Theosis (a1Key). Element varies by active character, so element field is omitted (derives as 'all'). Uptime follows Guidance (up to the 20s skill-buff window); modeled as 20s refresh.",
-						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0."
+						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0.",
+						"↻ CAVEAT PROMOTED 2026-08-19: an effect-level caveat reaches no reader; moved to the entry that renders."
 					],
 					"conditions": {
 						"type": "constellation",
@@ -373,7 +380,8 @@
 			"description": "Enhances the effects of the Elemental Skill **Revelation: Uncreated Light**: **Grace of Kenosis** increases ATK by an additional 300 (which does not count toward this effect's ATK Bonus limit), while **Guidance of Theosis** decreases nearby opponents' Elemental RES based on the corresponding character's Elemental Type by 25%. This effect does not stack for the same Element.\nAdditionally, when Nicole unleashes her Elemental Skill Revelation: Uncreated Light, nearby active party members will also gain a Shield of Blazing Light.",
 			"_curatorNotes": [
 				"⚓ The shield half of this C2 is CO-OP ONLY and is deliberately UNMODELLED (2026-08-18) — Kirara C2 is the house form. \"Nearby active party members\" is plural only in co-op, where each player has their own on-field character; in a single-player party there is exactly one active character and the skill's own Shield of Blazing Light (gcsim `Target: -1`, player-wide) already covers them. gcsim implements NO shield for this constellation at all — `cons.go` c2 is the +300 ATK buff and the RES ticker, both authored below. ⛔ It was briefly authored as a `target: 'team'` shield Effect and that was WRONG in two ways: the corpus renders this phrase as `target: 'active'` everywhere else (Illuga, Aino), and a team-target shield made the Team Builder claim Nicole shields the whole party at C2. See docs/constellation-shield-gap.md §7.3."
-			]
+			],
+			"caveat": "Shown as All Elemental RES for the full 20s; in game only the active character's own Element is shredded, and only while they hold Guidance of Theosis."
 		},
 		{
 			"id": "nicole__constellation__a_lamp_by_your_side_a_light_to_shine_the_way",
@@ -469,13 +477,13 @@
 					"value": 40,
 					"snapshottable": false,
 					"attribution": "C6: Guidance of Theosis",
-					"caveat": "Party members holding Guidance of Theosis ignore 40% of the enemy's DEF — at C6 the whole team holds it.",
 					"conditions": {
 						"type": "constellation",
 						"level": 6
 					},
 					"_curatorNotes": [
-						"⚠️ conditions authored 2026-08-18: a constellation effect is NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collects every constellation effect and gates only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0."
+						"conditions authored 2026-08-18 because a constellation effect was NOT gated by its entry’s `constellationLevel` anywhere in the planner — `buffWindows` collected every constellation effect and gated only on the effect’s own `conditions` (Bennett C1/C4/C6 all author theirs). Without it this drew at C0. ↻ SAME DAY, later: the constellation-gating round (`a0f0b2f`) fixed that at the source — `effectSourcesAtConstellation` (utils/effectCollection.ts:76-93) drops a locked entry at COLLECTION, so a constellation effect is now gated by its entry everywhere that decides something. This condition is therefore pure duplication and is KEPT deliberately (⛔ do not strip it — it documents intent at the effect, and all 133 such conditions in the corpus were verified to name exactly their own entry's level), but ⛔ do not repeat the claim above: a NEW constellation effect no longer needs one to avoid drawing at C0.",
+						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): described WORKING behavior end to end — team-target onCast buff on defIgnore, gated constellation 6, the best-covered path in deriveBuffWindows. Warned of nothing."
 					]
 				}
 			],
