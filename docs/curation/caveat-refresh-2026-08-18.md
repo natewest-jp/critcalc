@@ -1,5 +1,8 @@
 # Caveat Refresh — 2026-08-18
 
+> ⏭ **What this round left open lives in `docs/curation/caveat-open-items.md`** — the 29 unlanded
+> trims, the positional-schema round, and the engine/data flags.
+
 > Corpus-wide re-audit of all **261** user-facing `caveat` strings after the gauge (L0–L6), ICD,
 > ICD-group, mark-triggered, coordinated-attack, tick-cap, constellation-gating and
 > constellation-shield rounds. Branch `curation/caveat-refresh`.

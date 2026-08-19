@@ -1,5 +1,8 @@
 # Ruthless Caveat Pass — 2026-08-19
 
+> ⏭ **What this round left open lives in `docs/curation/caveat-open-items.md`** — the 29 unlanded
+> trims, the positional-schema round, and the engine/data flags.
+
 > Second pass over all **249** caveats under Nate's tightened rule.
 >
 > ✅ **APPLIED 2026-08-19 — Nate approved ALL deletions.** 141 removed, 28 trimmed, 6 promoted;
