@@ -151,7 +151,6 @@
 				}
 			],
 			"description": "Purify the substance of souls and wishes to undergo **Essential Transmutation**. While transmuted, Durin's Elemental Skill Binary Form: Convergence and Division will be replaced with the special Elemental Skill Transmutation: Confirmation of Purity, and the Normal Attack Radiant Wingslash will be replaced with the special Elemental Skill Transmutation: Denial of Darkness.\n\nTransmutation: Confirmation of Purity\nDeal 1 instance of AoE Pyro DMG to nearby opponents, reverse Essential Transmutation, and enter the Confirmation of Purity state for 30s.\n\nTransmutation: Denial of Darkness\nDeal 3 consecutive instances of Pyro DMG to opponents in front, reverse Essential Transmutation, and enter the Denial of Darkness state for 30s.\n\nWhen Durin enters the Confirmation of Purity or Denial of Darkness state while in battle, he will restore a certain amount of Elemental Energy. Elemental Energy can be restored this way once every 6s.",
-			"caveat": "A second E commits to the White (support) form; a Normal Attack commits to the Dark (damage) form instead. The chosen form lasts 30s and sets which Burst you get, though that window itself is not shown.",
 			"frames": {
 				"anim": 49,
 				"N": 16,
@@ -164,7 +163,8 @@
 			"_curatorNotes": [
 				"Base frames = the opening tap E that enters Essential Transmutation (gcsim skill.go skillFrames, InitAbilSlice(49); ActionSwap=13, ActionAttack=16, ActionSkill=15, ActionBurst=4, ActionDash=14, ActionJump=14). The tap deals no damage and sets the 12s CD (SetCD(action.ActionSkill, 12*60)); the commits do not re-set CD (separate abilities with their own timing). CD/energy verified against the talent sidecar.",
 				"DUAL-FORM MODEL — WIRED 2026-07-17 (post-P4 #2, the 'normal-attack opens a mode state' primitive; Nate 2026-07-15 chose faithful auto-tracking over a user-assertion workaround). (1) This tap opens `transmuting` (6s, gcsim skillWindowDur) via opensTransientState — behavior is `instant`, not stance: the tap itself has no lasting on-field mode. (2) WHITE commit = durin__skill__transmutation_confirmation_of_purity, a separate skill gated state:transmuting (Flins Northland-Spearstorm pattern). (3) DARK commit = durin__normal__transmutation_denial_of_darkness, a state-gated normal whose actionOpensState.normal opens `darkForm` — the post-P4 #2 primitive. (4) BURST reads the form: base Q = White (default); durin__burst__principle_of_darkness_as_the_stars_smolder is gated state:darkForm and carries the Dragon of Dark Decay. Both commits `consumes` the window + the opposite form (gcsim DeleteStatus pairs). The former input-less placeholder variants are deleted; their frames live on the new abilities.",
-				"[A7] Compression drops: the 6s Essential Transmutation window duration; White commit = single AoE Pyro hit, Dark commit = 3 front Pyro hits (both frame-represented, in curator notes)."
+				"[A7] Compression drops: the 6s Essential Transmutation window duration; White commit = single AoE Pyro hit, Dark commit = 3 front Pyro hits (both frame-represented, in curator notes).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The 30s darkForm/whiteForm window draws NO bar anywhere — `openTransientState` pushes a state window record and no timeline projection renders state windows (grep of src/lib/timeline finds no 'state' lane). The player commits a form, sees an ordinary N block, and the 30s window that decides the next Q bar's identity is a blank. The trim drops the (support)/(damage) role gloss, which is kit trivia. Category: expected-but-absent."
 			],
 			"application": []
 		},
@@ -401,7 +401,7 @@
 			"id": "durin__passive__light_manifest_of_the_divine_calculus",
 			"name": "Light Manifest of the Divine Calculus",
 			"abilityType": "passive",
-			"caveat": "The RES shred is shown in either form, but in game it applies in the White form only. Not modeled: the Dark form's +40% Vaporize and Melt DMG (70% with 2 or more Hexerei on the team).",
+			"caveat": "The RES shred is shown in either form, but in game it applies in the White form only.",
 			"effects": [
 				{
 					"type": "resShred",
@@ -557,7 +557,8 @@
 			"_curatorNotes": [
 				"gcsim asc.go a1Init: gated on c.StatusIsActive(burstKeyWhite) (Dragon of White Flame active), modeled here as state:duringSummon. Fires on team Overloaded / Burning / Pyro-Swirl / Pyro-Crystallize reactions (a1ReactToElements) shredding Pyro RES + the partner element's RES by 20% for 6s. A separate onEnemyDamage hook also shreds Pyro + Dendro RES when a Burning opponent takes Pyro or Dendro DMG — not authored as an onHit effect (the Burning-reaction path above covers the common case). Hexerei bonus: hexereiA1Bonus()=1.75 with GetHexereiCount()>=2, i.e. -35% instead of -20% — faction-count dependent, not modeled. Dark form (a1OnBurst isWhite=false) adds a ReactBonusMod of +40% to Durin's Amped (Vaporize/Melt) hits — no vaporize/melt DMG-bonus stat primitive, so unmodeled.",
 				"[A7] Base shred is authored per reaction (Pyro plus electro/anemo/geo/dendro partner element, -20%, 6s refresh) and is shown; only the 35% Hexerei-count upgrade and the Dark-form +40% Vaporize/Melt are omissions.",
-				"[Hexerei 2026-08-15] RE-AUTHORED. The five faction shreds were -15 ADDITIVE on top of the five base -20 (base + faction = the in-game -35), which was correct arithmetic and unrenderable: once factionBonuses reach the planner (docs/faction-bonuses-round.md) that draws TEN debuff bars where a reader expects five. The faction five now carry the FULL -35 and the base five are gated `not(teamFaction hexerei >=2)`, so exactly one bar per element renders in either world — -20% solo, -35% in a Hexerei team. ⛔ The alternative, teaching the projection to SUM co-located shreds, was measured and rejected: eight characters have same-element shred pairs and they are overwhelmingly ALTERNATIVES, not addends (Faruzan's two -30% Anemo entries are one shred under two condition branches, and summing them shows -60%; Venti's Breeze -12% and Storm of Defiance -20% genuinely stack but must stay separate, because provenance is the point). Durin was the only true addend pair in the corpus, and only because his -15% modified his own shred. [Hexerei 2026-07-29] Secret Rite authored in top-level factionBonuses. gcsim asc.go:138-148 hexereiA1Bonus() returns 1.75 only when IsHexerei AND Core.Player.GetHexereiCount() >= 2 — count-gated, so every A1 value is x1.75 (asc.go:58,64,82,105): res shred -0.20 -> -0.35, Dark-form Amped ReactBonusMod 0.40 -> 0.70. Authored as five ADDITIVE resShred effects of -15 (mirroring the five A1 base effects, same triggers, same duringSummon gate wrapped in an `all` with teamFaction hexerei min 2), so base -20 + faction -15 = the in-game -35; durations unchanged at 6s per the article ('all effects +75% except duration'). The Dark-form 40->70% Vaporize/Melt uplift is a self reaction-DMG multiplier with no stat primitive — caveat only, no effect. No bare IsHexerei permanent patches exist for Durin: durin.go:29-34 only reads the hexerei param (default enabled) and asc.go:139 is the sole consumer, always paired with the count check."
+				"[Hexerei 2026-08-15] RE-AUTHORED. The five faction shreds were -15 ADDITIVE on top of the five base -20 (base + faction = the in-game -35), which was correct arithmetic and unrenderable: once factionBonuses reach the planner (docs/faction-bonuses-round.md) that draws TEN debuff bars where a reader expects five. The faction five now carry the FULL -35 and the base five are gated `not(teamFaction hexerei >=2)`, so exactly one bar per element renders in either world — -20% solo, -35% in a Hexerei team. ⛔ The alternative, teaching the projection to SUM co-located shreds, was measured and rejected: eight characters have same-element shred pairs and they are overwhelmingly ALTERNATIVES, not addends (Faruzan's two -30% Anemo entries are one shred under two condition branches, and summing them shows -60%; Venti's Breeze -12% and Storm of Defiance -20% genuinely stack but must stay separate, because provenance is the point). Durin was the only true addend pair in the corpus, and only because his -15% modified his own shred. [Hexerei 2026-07-29] Secret Rite authored in top-level factionBonuses. gcsim asc.go:138-148 hexereiA1Bonus() returns 1.75 only when IsHexerei AND Core.Player.GetHexereiCount() >= 2 — count-gated, so every A1 value is x1.75 (asc.go:58,64,82,105): res shred -0.20 -> -0.35, Dark-form Amped ReactBonusMod 0.40 -> 0.70. Authored as five ADDITIVE resShred effects of -15 (mirroring the five A1 base effects, same triggers, same duringSummon gate wrapped in an `all` with teamFaction hexerei min 2), so base -20 + faction -15 = the in-game -35; durations unchanged at 6s per the article ('all effects +75% except duration'). The Dark-form 40->70% Vaporize/Melt uplift is a self reaction-DMG multiplier with no stat primitive — caveat only, no effect. No bare IsHexerei permanent patches exist for Durin: durin.go:29-34 only reads the hexerei param (default enabled) and asc.go:139 is the sole consumer, always paired with the count check.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"The RES shred is shown in either form, but in game it applies in the White form only. Not modeled: the Dark form's +40% Vaporize and Melt DMG (70% with 2 or more Hexerei on the team).\""
 			],
 			"description": "Durin will trigger different buffs depending on the form that his power manifests as when he unleashes his Elemental Burst. When that form is:\n\nDragon of White Flame\nAfter nearby party members trigger Burning, Overloaded, Pyro Swirl, or Pyro Crystallize reactions on an opponent, or deal Pyro DMG or Dendro DMG to an opponent affected by Burning, that opponent's Pyro RES, and the RES for the corresponding Element involved in the reaction, are decreased by 20% for 6s.\n\nDragon of Dark Decay\nDurin's Vaporize DMG is increased by 40% and his Melt DMG is increased by 40%."
 		},
@@ -565,9 +566,9 @@
 			"id": "durin__passive__chaos_formed_like_the_night",
 			"name": "Chaos Formed Like the Night",
 			"abilityType": "passive",
-			"caveat": "The first 10 dragon ticks after the Burst each gain up to +75% DMG, scaling with ATK (+3% per 100 ATK). This dynamic amp is not folded into the tick values shown.",
 			"_curatorNotes": [
-				"gcsim asc.go a4OnBurst/a4Dmg: on Burst, 10 Primordial Fusion stacks for 20s; each Dragon of White Flame / Dark Decay tick consumes 1 stack for +min(TotalAtk/100*0.03, 0.75) multiplicative DMG. Dynamic ATK-scaling amp on autonomous summon ticks with a per-tick consumption budget — no clean primitive; left out of the summonTick scaling. Replaced the mismodeled genshin-db stub effect (damage scaling:3 stat:atk manual), which misrepresented an ATK-scaling self-amp as a 3%-ATK damage instance."
+				"gcsim asc.go a4OnBurst/a4Dmg: on Burst, 10 Primordial Fusion stacks for 20s; each Dragon of White Flame / Dark Decay tick consumes 1 stack for +min(TotalAtk/100*0.03, 0.75) multiplicative DMG. Dynamic ATK-scaling amp on autonomous summon ticks with a per-tick consumption budget — no clean primitive; left out of the summonTick scaling. Replaced the mismodeled genshin-db stub effect (damage scaling:3 stat:atk manual), which misrepresented an ATK-scaling self-amp as a 3%-ATK damage instance.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — It says the amp is \"not folded into the tick values shown\" — there are no tick values on screen. A summon-lane tick mark says the tick HAPPENED; the tool renders no damage magnitudes at all (tool constitution). The passive authors no effects, so no bar is missing either. This is a pure DMG% omission dressed as a rendering divergence. Category: invisible-omission."
 			],
 			"description": "After unleashing an Elemental Burst, Durin gains the Primordial Fusion of Forms effect for 20s: Durin gains 10 stacks of Primordial Fusion. When a periodic attack from Dragon of White Flame or Dragon of Dark Decay deals DMG, 1 stack of Primordial Fusion will be consumed to increase the DMG dealt by 3% of the original DMG for every 100 ATK. A maximum of 75% additional DMG can be dealt this way. When a single attack from Dragon of White Flame or Dragon of Dark Decay hits multiple opponents, only one stack of Primordial Fusion is consumed.\nPrimordial Fusion stacks are reset when the Elemental Burst is unleashed again."
 		}
@@ -578,10 +579,10 @@
 			"name": "Adamah's Redemption",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"caveat": "Not shown: in the White form, teammates' N/C/P/E/Q hits each add 60% of the caster's ATK as flat DMG; in the Dark form, the caster's own Burst hits add 150%.",
 			"_curatorNotes": [
 				"gcsim cons.go c1Init/c1OnBurst: White → teammates each get 20 Cycle stacks (Tag c1Key=20); their N/C/P/E/Q hits (while Dragon of White Flame active + they are the active char) consume 1 stack for FlatDmg += 0.6*Durin.TotalAtk. Dark → Durin gets 20 stacks; his Burst hits consume 2 for FlatDmg += 1.5*Durin.TotalAtk. Source-ATK-scaled flat DMG added onto the recipient's hits across all attack classes — no matching all-attack FlatDmg buff stat, so unmodeled. Removed the two mismodeled genshin-db stub 'damage' effects (scaling 60/150 atk manual).",
-				"[A7] Compression drops the 20s stack lifetime and the per-hit consumption counts (White 1/hit, Dark 2/Burst-hit, refreshed on Burst) — kit detail, in curator notes."
+				"[A7] Compression drops the 20s stack lifetime and the per-hit consumption counts (White 1/hit, Dark 2/Burst-hit, refreshed on Burst) — kit detail, in curator notes.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The blank on the buff lane. C1 is a named, 20s, Burst-granted team buff, and flat-DMG buffs ARE a shape we render as bars elsewhere (Cyno's own A4 draws normalFlatDmg/skillFlatDmg) — the gap here is only a missing all-attack-class FlatDmg Stat key, not the no-damage-numbers rule. So a C1 player casts Q, looks at the team buff rows, and correctly expects a 20s bar that never appears. The trim drops the 60%/150% magnitudes, which are the half we would never print. Category: expected-but-absent."
 			],
 			"description": "After casting his Elemental Burst, Durin's effects will vary depending on the form of his Elemental Burst:\n· Principle of Purity: As the Light Shifts: All other nearby party members gain 20 stacks of Cycle of Enlightenment lasting 20s. When nearby active characters deal Normal Attack, Charged Attack, Plunging Attack, Elemental Skill, or Elemental Burst DMG, 1 stack of Cycle of Enlightenment will be consumed to increase the DMG dealt by 60% of Durin's ATK. Stack counts for characters in the party who have Cycle of Enlightenment are managed individually.\n· Principle of Darkness: As the Stars Smolder: Durin gains 20 stacks of Cycle of Enlightenment lasting 20s. When Durin deals Elemental Burst DMG, 2 stacks of Cycle of Enlightenment will be consumed to increase the DMG dealt by 150% of Durin's ATK.\n\nWhen an Elemental Burst is used, Cycle of Enlightenment stacks will be refreshed."
 		},
@@ -590,7 +591,6 @@
 			"name": "Unground Visions",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"caveat": "After the Burst, party members' +50% Pyro DMG on qualifying team reactions is shown, but the matching +50% to the reaction's other element is not modeled.",
 			"effects": [
 				{
 					"type": "buff",
@@ -621,7 +621,8 @@
 			],
 			"_curatorNotes": [
 				"gcsim cons.go c2Init/c2MakeBuff: gated on burstKeyWhite OR burstKeyBlack active (modeled as duringSummon — works in both forms, unlike A1). On the listed team reactions, every party member gets +0.5 DmgP for the reaction's element(s) for 6s. Authored the Pyro +50% (the guaranteed component, since Pyro is always one side of these reactions); the partner-element +50% (electro/anemo/geo/dendro/hydro/cryo per reaction) is not authored as separate per-element buffs — same shape as A1, high authoring cost, capability already surfaced. Constellation level 2 gate is implicit via the host entry.",
-				"[A7] Compression drops the reaction list and the 20s trigger window / 6s buff duration (shown on the buff bar). The un-authored partner element is electro/anemo/geo/dendro/hydro/cryo per reaction — same shape as A1, deferred as high authoring cost."
+				"[A7] Compression drops the reaction list and the 20s trigger window / 6s buff duration (shown on the buff bar). The un-authored partner element is electro/anemo/geo/dendro/hydro/cryo per reaction — same shape as A1, deferred as high authoring cost.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — One team buff bar draws (+50% Pyro DMG, 6s refresh) where the game gives two. The drawn bar is what makes the absence conspicuous — a player who Vaporizes reads the lane, sees Pyro covered and Hydro not, and concludes C2 only buffs Pyro. One sentence, no trivia; already at the right size. Category: expected-but-absent."
 			],
 			"description": "For 20s after Durin uses an Elemental Burst, after nearby party members trigger Vaporize, Melt, Burning, Overloaded, Pyro Swirl, or Pyro Crystallize reactions, or deal Pyro DMG or Dendro DMG to an opponent affected by Burning, all nearby party members gain a 50% increase to their Pyro DMG and to the corresponding elemental DMG involved in the reaction for 6s."
 		},
@@ -637,7 +638,6 @@
 			"name": "Emanare's Source",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"caveat": "Not modeled: the 30% chance for a hit to skip consuming C1's Cycle of Enlightenment stacks.",
 			"effects": [
 				{
 					"type": "buff",
@@ -653,7 +653,8 @@
 			],
 			"_curatorNotes": [
 				"gcsim cons.go c4Init: unconditional AttackMod DmgP += 0.4 on AttackTagElementalBurst (always active at C4). Modeled as an always-on self burstDmgBonus +40. The c4c1ConsumeMult() 30% no-consume roll on Cycle stacks is a C1-interaction detail, not modeled. Constellation level 4 gate implicit via the host entry.",
-				"[A7] The +40% Burst DMG is authored as an always-on self burstDmgBonus buff (shown), so it is dropped from the caveat as working behavior."
+				"[A7] The +40% Burst DMG is authored as an always-on self burstDmgBonus buff (shown), so it is dropped from the caveat as working behavior.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — twice over. Cycle of Enlightenment stacks are not modelled at all (C1 authors no effects), and the planner has no stack counter anywhere — so this is an RNG modifier on a mechanic with no surface. Nothing on screen changes whether the roll exists or not. The renderable half of C4 (+40% burst DMG) is authored and draws, which the curator note already records. Category: invisible-omission."
 			],
 			"description": "Durin's Elemental Burst DMG is increased by 40%. Additionally, when effects that consume Cycle of Enlightenment stacks are triggered as part of the Constellation **Adamah's Redemption**, there is a 30% chance that no Cycle of Enlightenment stacks will be consumed."
 		},
@@ -685,7 +686,9 @@
 					"duration": 6,
 					"durationType": "refresh",
 					"value": -30,
-					"caveat": "White form only: after the Dragon of White Flame hits an opponent, that opponent's DEF drops 30% for 6s (refreshes while the dragon is out). Shown on every Burst — the tool can't tell White from Dark form."
+					"_curatorNotes": [
+						"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — an effect-level `caveat` reaches no reader (slotCaveats walks ability-shaped hosts only; `Effect` has no caveat field). And it needs no promotion: its content is already sentence 2 of the C6 ENTRY caveat, which does render (\"The White form's extra 30% DEF shred for 6s is shown after either Burst\"). Deleting loses nothing. Category: unreachable-surface."
+					]
 				},
 				{
 					"type": "buff",

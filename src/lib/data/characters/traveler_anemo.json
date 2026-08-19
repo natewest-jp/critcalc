@@ -16,13 +16,54 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
-				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
-				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
-				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
-				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 28,
+						"hit": 13,
+						"N": 17
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 28,
+						"hit": 13,
+						"N": 26
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 36,
+						"hit": 16,
+						"N": 32
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 45,
+						"hit": 30,
+						"N": 39
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 69,
+						"hit": 25
+					}
+				}
 			],
-			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
+			"chargeFrames": {
+				"anim": 55,
+				"E": 37,
+				"Q": 36,
+				"D": 20,
+				"J": 20,
+				"swap": 44
+			},
 			"_curatorNotes": [
 				"Sword normals: 5-hit Physical chain. Authored using Male (Aether) frames; Female (Lumine) frames differ slightly (e.g. N1 hitmark 16 vs 13). attackHitmarks (Male) = [13, 13, 16, 30, 25]; attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack overrides give next-N cancel. N5 ActionCharge=500 (illegal) — final-hit C key omitted per convention.",
 				"Charge: 2-hit CA at chargeHitmarks=[9,20] (last=20 gates D/J). chargeFrames=InitAbilSlice(55), ActionSkill=37 ActionBurst=36 ActionDash/Jump=20 ActionSwap=44. Standard sword CA shape.",
@@ -54,7 +95,13 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 74, "Q": 76, "D": 30, "J": 31, "swap": 66 },
+			"frames": {
+				"anim": 74,
+				"Q": 76,
+				"D": 30,
+				"J": 31,
+				"swap": 66
+			},
 			"cooldown": 5,
 			"cooldownStartDelay": 29,
 			"tags": [],
@@ -62,31 +109,66 @@
 				{
 					"label": "Hold (Max)",
 					"input": ["hE"],
-					"frames": { "anim": 160, "D": 116, "J": 116, "swap": 151 },
+					"frames": {
+						"anim": 160,
+						"D": 116,
+						"J": 116,
+						"swap": 151
+					},
 					"cooldown": 8,
 					"application": [
-						{ "frame": 31, "element": "anemo", "units": 1 },
-						{ "frame": 46, "element": "anemo" },
-						{ "frame": 66, "element": "anemo" },
-						{ "frame": 81, "element": "anemo", "units": 1 },
-						{ "frame": 96, "element": "anemo" },
-						{ "frame": 111, "element": "anemo" },
-						{ "frame": 116, "element": "anemo", "units": 1 }
+						{
+							"frame": 31,
+							"element": "anemo",
+							"units": 1
+						},
+						{
+							"frame": 46,
+							"element": "anemo"
+						},
+						{
+							"frame": 66,
+							"element": "anemo"
+						},
+						{
+							"frame": 81,
+							"element": "anemo",
+							"units": 1
+						},
+						{
+							"frame": 96,
+							"element": "anemo"
+						},
+						{
+							"frame": 111,
+							"element": "anemo"
+						},
+						{
+							"frame": 116,
+							"element": "anemo",
+							"units": 1
+						}
 					]
 				}
 			],
 			"effects": [],
-			"caveat": "Not modeled: the Hold whirlwind absorbing a nearby Cryo, Pyro, Hydro, or Electro aura to convert its ticks to that element. Its timing is approximate, and the individual cutting ticks aren't shown.",
 			"_curatorNotes": [
 				"Tap E (Palm Vortex Initial Storm): hitmark=34f, 316.8% ATK Anemo at lvl=10 (skillInitialStorm). 2 Anemo particles per cast (0.6s ICD).",
 				"Cooldown: SetCDWithDelay(skill, 5*60, hitmark-5=29). Tap-E CD is 5s.",
 				"Hold-E variant: skillHoldDelayFrames + hitmark of 31 + 5×15 + 5 = 121f baseline (final-Storm happens at 116f after the 6 cutting ticks). 8s cooldown when fully held (≥2 ticks). Authored as variant with input ['hE'] + cooldown:8. Frame values approximated.",
 				"Tap-E frames (Male): skillPressFrames[0]=InitAbilSlice(74), ActionBurst=76 ActionDash=30 ActionJump=31 ActionSwap=66.",
 				"Anemo absorption: during Hold-E (and burst Gust Surge), Traveler scans for nearby auras to absorb. Once absorbed, subsequent ticks deal absorbed-element DMG instead of Anemo. Same multi-element-absorption gap as Wanderer/Kazuha; not modeled.",
-				"[A7] Hold variant per-tick damage and its 6-tick continuous-cutting + final-Storm sequence (first tick ~31f, +15f intervals, +5f Initial→Max transition) are not modeled as separate hits; the variant's timing is approximate. Frame breakdown already in _curatorNotes."
+				"[A7] Hold variant per-tick damage and its 6-tick continuous-cutting + final-Storm sequence (first tick ~31f, +15f intervals, +5f Initial→Max transition) are not modeled as separate hits; the variant's timing is approximate. Frame breakdown already in _curatorNotes.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Absorption half: the Hold's seven authored application entries all read anemo, so every aura-lane pip and every swirl marker during a hold-E is Anemo where the game would show Pyro/Hydro/Cryo/Electro — rubric N13 says these stay fully true. Timing half: the variant's own frames are stamped 'approximated' in the curator notes, so the hold-E bar's WIDTH and where the next token lands are a guess — a bar length the player reads directly. Dropped clause: 'individual cutting ticks aren't shown' — no cast on any character shows sub-hits, and it is already stated tool-level in AURA_NOTES. Category: visible-divergence."
 			],
 			"description": "Aether/Lumine summons a vortex of wind, drawing enemies and objects in toward herself.\n\nTap\nUnleashes a small wind vortex that deals Anemo DMG to opponents in front of her.\n\nHold\nThe whirlwind continuously sucks in surrounding objects and opponents, dealing continuous Anemo DMG. After releasing, the whirlwind strikes again, causing AoE Anemo DMG and launching opponents.",
-			"application": [{ "frame": 34, "element": "anemo", "units": 1 }]
+			"application": [
+				{
+					"frame": 34,
+					"element": "anemo",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "traveler_anemo__burst__gust_surge",
@@ -94,7 +176,13 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 110, "E": 109, "D": 96, "J": 96, "swap": 100 },
+			"frames": {
+				"anim": 110,
+				"E": 109,
+				"D": 96,
+				"J": 96,
+				"swap": 100
+			},
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": ["summon", "grouping"],
@@ -108,7 +196,11 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.5, "firstTickDelay": 0 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.5,
+								"firstTickDelay": 0
+							},
 							"scaling": 67.68,
 							"stat": "atk",
 							"element": "anemo"
@@ -149,15 +241,17 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"procCooldown": 5,
 					"scaling": 2,
 					"stat": "hp"
 				}
 			],
-			"caveat": "Not modeled: the heal when the skill defeats an opponent — 2% of Max HP each second for 5s, at most once every 5s.",
 			"_curatorNotes": [
-				"A4 heal authored (capability sweep 2026-07-28): gcsim traveler/common/anemo/asc.go:47-80 — on Palm Vortex kill (skill AttackTag check asc.go:59-61), 5 ticks of HealTypePercent 0.02 self at 1s intervals (asc.go:68-77), ICD 300f (asc.go:66). Authored as one manual 2% Max HP tick with procCooldown 5: no enemy-death trigger primitive exists and per-tick HoT cadence isn't expressible on a manual heal; kill timing is player-added. Supersedes the pre-sweep 'not authored' note."
+				"A4 heal authored (capability sweep 2026-07-28): gcsim traveler/common/anemo/asc.go:47-80 — on Palm Vortex kill (skill AttackTag check asc.go:59-61), 5 ticks of HealTypePercent 0.02 self at 1s intervals (asc.go:68-77), ICD 300f (asc.go:66). Authored as one manual 2% Max HP tick with procCooldown 5: no enemy-death trigger primitive exists and per-tick HoT cadence isn't expressible on a manual heal; kill timing is player-added. Supersedes the pre-sweep 'not authored' note.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — It describes an on-kill heal. Two independent reasons there is no pixel: heal effects reach NO timeline surface for any character (grep over src/lib/timeline finds no 'heal' consumer; rubric's C15 correction confirms a heal reaches no buff row), and 'defeats an opponent' is not expressible in notation — the planner has no enemy or HP state. The authored effect is heal/manual/self anyway, which is the largest dead-data class in the corpus. Nothing on screen is wrong or conspicuously blank. Category: invisible-omission."
 			],
 			"description": "Palm Vortex kills regenerate 2% HP for 5s. This effect can only occur once every 5s."
 		}
@@ -214,7 +308,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "burst" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
 					"duration": 10,
 					"element": "anemo",
 					"value": -20

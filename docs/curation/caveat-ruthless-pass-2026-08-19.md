@@ -1,6 +1,14 @@
 # Ruthless Caveat Pass — 2026-08-19
 
-> Second pass over all **249** caveats under Nate's tightened rule. ⛔ **NOTHING APPLIED — this is a decision document.**
+> Second pass over all **249** caveats under Nate's tightened rule.
+>
+> ✅ **APPLIED 2026-08-19 — Nate approved ALL deletions.** 141 removed, 28 trimmed, 6 promoted;
+> **249 → 107**. Taking every deletion also RULED on the open question below (an unrendered buff
+> leaves no noticeable blank — YES). Per-caveat verdicts kept in `caveat-ruthless-verdicts.json`.
+>
+> ⏭ **29 trims did not land**: the pass marked them trim but proposed no replacement text, so there
+> was nothing to apply mechanically. They keep their current, longer text and are the one piece of
+> this round still open.
 
 ## The rule (Nate, 2026-08-18)
 

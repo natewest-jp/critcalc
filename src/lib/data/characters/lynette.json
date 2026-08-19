@@ -22,13 +22,58 @@
 				"gcsim plunge.go restricts plunge to AirborneXianyun state only — Lynette cannot plunge normally without a prior Xianyun E in gcsim."
 			],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 30, "hit": 17, "N": 24, "C": 25 } },
-				{ "name": "N2", "frames": { "anim": 27, "hit": 13, "N": 16, "C": 25 } },
-				{ "name": "N3", "frames": { "anim": 47, "hit": 31, "N": 35 } },
-				{ "name": "N4", "frames": { "anim": 68, "hit": 29, "N": 60 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 30,
+						"hit": 17,
+						"N": 24,
+						"C": 25
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 27,
+						"hit": 13,
+						"N": 16,
+						"C": 25
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 47,
+						"hit": 31,
+						"N": 35
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 68,
+						"hit": 29,
+						"N": 60
+					}
+				}
 			],
-			"chargeFrames": { "anim": 51, "N": 42, "E": 31, "Q": 32, "D": 13, "J": 13, "swap": 13 },
-			"plungeFrames": { "anim": 75, "N": 59, "E": 58, "Q": 59, "D": 47, "swap": 61 },
+			"chargeFrames": {
+				"anim": 51,
+				"N": 42,
+				"E": 31,
+				"Q": 32,
+				"D": 13,
+				"J": 13,
+				"swap": 13
+			},
+			"plungeFrames": {
+				"anim": 75,
+				"N": 59,
+				"E": 58,
+				"Q": 59,
+				"D": 47,
+				"swap": 61
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -47,7 +92,14 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 73, "N": 58, "E": 58, "Q": 58, "D": 45, "swap": 59 }
+			"lowPlungeFrames": {
+				"anim": 73,
+				"N": 58,
+				"E": 58,
+				"Q": 58,
+				"D": 45,
+				"swap": 59
+			}
 		},
 		{
 			"id": "lynette__skill__enigmatic_feint",
@@ -55,7 +107,15 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 58, "N": 43, "E": 44, "Q": 45, "D": 44, "J": 43, "swap": 42 },
+			"frames": {
+				"anim": 58,
+				"N": 43,
+				"E": 44,
+				"Q": 45,
+				"D": 44,
+				"J": 43,
+				"swap": 42
+			},
 			"cooldown": 12,
 			"cooldownStartDelay": 26,
 			"chargeModifiers": [
@@ -63,7 +123,10 @@
 					"source": "C4: Tacit Coordination",
 					"type": "flat",
 					"value": 1,
-					"conditions": { "type": "constellation", "level": 4 }
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					}
 				}
 			],
 			"tags": ["heal"],
@@ -71,37 +134,62 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"scaling": 25,
 					"stat": "hp"
 				}
 			],
-			"caveat": "Not modeled: the HP cost that comes with the heal — for 4s after the thrust hits, she loses about 6% of her current HP each second.",
 			"_curatorNotes": [
 				"behavior: 'stance' changed to 'instant' — the Hold E Pilfering Shadow movement phase does not replace Lynette's normal/charged attacks. Stance is reserved for N-replacement mechanics (Hu Tao, Cyno, Raiden, Furina).",
 				"Hold E Pilfering Shadow state: duration-bounded self-state with no spawned entity. Player controls movement; Shadowsign is applied to nearest enemy at 0.1s intervals. State ends on re-press or release. Duration is parametric (see Hold variant). Reviewer to decide self-buff/state representation.",
 				"Surging Blade (Arkhe: Ousia): fires with each Enigma Thrust use subject to skillAlignedICD=10s (600f). Press E: fires at frame 58 from cast start (skillPressAlignedHitmark). Hold E: fires at duration+44f from cast start (duration+skillHoldEndAlignedHitmark). Element: Anemo, Ousia-aligned. Not authored as effect — needs reviewer pass.",
-				"Heal authored (capability sweep 2026-07-28): gcsim skill.go:208-221 makeSkillHealAndDrainCB — on Enigma Thrust enemy hit, once per cast, Heal Src=0.25*MaxHP to self; fixed 25% (not talent-scaled). Both Tap and Hold attach the same callback (skill.go:80-99/104-121), so onHit skill covers both variants. The drain half (skill.go:224-241: 6% CurrentHP/s for 4s, 3 ticks at 60f intervals starting 1s after hit) has no schema primitive — surfaced in the caveat."
+				"Heal authored (capability sweep 2026-07-28): gcsim skill.go:208-221 makeSkillHealAndDrainCB — on Enigma Thrust enemy hit, once per cast, Heal Src=0.25*MaxHP to self; fixed 25% (not talent-scaled). Both Tap and Hold attach the same callback (skill.go:80-99/104-121), so onHit skill covers both variants. The drain half (skill.go:224-241: 6% CurrentHP/s for 4s, 3 ticks at 60f intervals starting 1s after hit) has no schema primitive — surfaced in the caveat.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The heal it hangs off draws nothing (no planner consumer for cast/onHit heal effects), and there is no HP anywhere in the sim — `src/lib/sim/` carries no HP or absorption state at all. A drain on an unrendered heal, expressed in a resource the tool does not have, cannot repair a confusion on screen. Category: invisible-omission."
 			],
 			"variants": [
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 76, "N": 64, "E": 64, "Q": 64, "D": 63, "J": 66, "swap": 62 },
+					"frames": {
+						"anim": 76,
+						"N": 64,
+						"E": 64,
+						"Q": 64,
+						"D": 63,
+						"J": 66,
+						"swap": 62
+					},
 					"_curatorNotes": [
 						"Frames recorded at minimum hold (hold param=1, internal duration=35f). Formula: skillHoldEndFrames[action]+duration where duration=clamp(hold,1,150)+34. At max hold (hold=150, duration=184f): swap=211, N=213, E=213, Q=213, D=212, J=215.",
 						"cooldownStartDelay for Hold = duration + skillHoldEndCDStart (14f). At min hold: 35+14=49f; at max hold: 184+14=198f. Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to decide extension."
 					],
 					"application": [
-						{ "frame": 51, "element": "anemo", "units": 1 },
-						{ "frame": 79, "element": "anemo" }
+						{
+							"frame": 51,
+							"element": "anemo",
+							"units": 1
+						},
+						{
+							"frame": 79,
+							"element": "anemo"
+						}
 					]
 				}
 			],
 			"description": "Flicks her mantle and executes an Enigma Thrust, dealing Anemo DMG.\nWhen the Enigma Thrust hits an opponent, it will restore Lynette's HP based on her Max HP, and in the 4s afterward, she will lose a certain amount of HP per second.\nBased on whether you press or hold this ability, she will use Enigma Thrust differently.\n\nPress\nShe swiftly uses an Enigma Thrust.\n\nHold\nLynette will enter a high-speed Pilfering Shadow state and apply Shadowsign to a nearby opponent. You can control her movement direction during this state, and you can end it prematurely by using this skill again.\nWhen this high-speed state ends, Lynette will unleash her Enigma Thrust. If there is an opponent with Shadowsign applied to them nearby, Lynette will approach them in a flash before using Enigma Thrust.\n\nA maximum of 1 opponent can have Shadowsign at any one time. When this opponent gets too far from Lynette, the Shadowsign will be canceled.\n\nArkhe: Ousia\nAt specific intervals, Lynette will unleash a Surging Blade when she uses Enigma Thrust, dealing Ousia-aligned Anemo DMG.",
 			"application": [
-				{ "frame": 28, "element": "anemo", "units": 1 },
-				{ "frame": 58, "element": "anemo" }
+				{
+					"frame": 28,
+					"element": "anemo",
+					"units": 1
+				},
+				{
+					"frame": 58,
+					"element": "anemo"
+				}
 			]
 		},
 		{
@@ -110,7 +198,13 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 56, "N": 55, "D": 46, "J": 44, "swap": 43 },
+			"frames": {
+				"anim": 56,
+				"N": 55,
+				"D": 46,
+				"J": 44,
+				"swap": 43
+			},
 			"cooldown": 18,
 			"energyCost": 70,
 			"tags": ["taunt"],
@@ -124,7 +218,11 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.983, "firstTickDelay": 2.033 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.983,
+								"firstTickDelay": 2.033
+							},
 							"scaling": 92.16,
 							"stat": "atk",
 							"element": "anemo",
@@ -143,7 +241,13 @@
 				"After elemental absorption, b.Kill() removes the box from the hittable gadget list but all vivid shot tasks are already queued and continue to run. Box duration is burstDuration=754f (12.6s) from spawn regardless of when absorption occurs."
 			],
 			"description": "Lynette raises her mantle high, dealing AoE Anemo DMG, using skillful sleight of hand to make a giant Bogglecat Box appear!\n\nBogglecat Box\n·Taunts nearby opponents, attracting their attacks.\n·Deals Anemo DMG to nearby opponents at intervals.\n·When the Bogglecat Box comes into contact with Hydro/Pyro/Cryo/Electro, it will gain the corresponding element and additionally fire Vivid Shots that will deal DMG from that element at intervals.\nElemental Absorption of this kind will only occur once during this ability's duration.",
-			"application": [{ "frame": 18, "element": "anemo", "units": 1 }]
+			"application": [
+				{
+					"frame": 18,
+					"element": "anemo",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -221,7 +325,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 6,
 					"durationType": "fixed",
 					"source": "character",

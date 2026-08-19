@@ -209,7 +209,6 @@
 				}
 			],
 			"description": "Arlecchino's great wing of Balemoon Bloodfire beats as she absorbs and clears Blood-Debt Directives around her. She deals AoE Pyro DMG before clearing the CD of All Is Ash and healing herself. The healing is based on her Bond of Life value and ATK.",
-			"caveat": "Heals only the caster — no other character's healing can reach her. Shown as the 150% ATK portion only; in game the heal also scales with Bond of Life, which is not tracked.",
 			"behavior": "instant",
 			"_curatorNotes": [
 				"Energy cost reads as 60 in data_gen.textproto, but gcsim only `c.ConsumeEnergy(12)` on cast. Likely a built-in 80% energy refund or sim convention; in-game burst window confirms 60 to fill but consumption may differ. Authored as 60 (the standard energy bar size); reviewer to verify in-game.",
@@ -217,7 +216,8 @@
 				"Burst FlatDmg += c6Amount() = TotalAtk × 7.0 × (CurrentHPDebt / MaxHP) at hitmark — BoL-scaling buff (Cons ≥ 6 only), not authored. Schema has no BoL-runtime-scaling encoder.",
 				"Self-heal authored 2026-07-12 as an onCast(burst) heal, target 'self'. gcsim burst.go balemoonRisingHeal (QueueCharTask at frame 123): amt = 1.5 × CurrentHPDebt + 1.5 × TotalAtk. The ReceiveHeal filter in arlecchino.go (lines 83-88) returns 0 for any healing whose Caller≠self or Message≠'Balemoon Rising (Heal)' — she is un-healable by anyone else (Blood-Debt identity). Only the ATK portion is authored: scaling 150, stat atk (sidecar burst 'Amount of HP Restored' = '150.0% Bond of Life+150.0% ATK', constant across talent levels; gcsim 1.5×TotalAtk). The 1.5 × CurrentHPDebt (150% of current Bond of Life) portion is NOT modeled — Bond of Life is not a ScalingStat and the planner doesn't track HP debt at runtime; flagged in the ability caveat.",
 				"Burst CD 15s with 0-frame delay; cooldownStartDelay omitted per recipe.",
-				"C4 reduces this burst's CD by 2s and grants 15 energy on each successful directive absorb (10s ICD). Not authored — schema has no `cooldownReduction` or `addEnergy` effect type."
+				"C4 reduces this burst's CD by 2s and grants 15 energy on each successful directive absorb (10s ICD). Not authored — schema has no `cooldownReduction` or `addEnergy` effect type.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — and the caveat's own middle clause is false about the screen. It says \"Shown as the 150% ATK portion only\" — but nothing is shown: a `heal` effect reaches no planner surface (no heal lane, no heal row, and the onCast trigger keeps it out of the chip strip too). Sentence 1 is a kit fact about who can heal her, which the tool never depicts either way; sentence 2 is a scaling magnitude with no bar to print it on, and Bond of Life is on the standing out-of-scope list. ⚠️ Worth noting the caveat reads as if the planner displays a heal figure it does not display. Category: invisible-omission."
 			],
 			"application": [
 				{

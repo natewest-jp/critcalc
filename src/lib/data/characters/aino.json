@@ -221,7 +221,9 @@
 								}
 							],
 							"attribution": "C2: The Principle of Transference in Gear Differentials",
-							"caveat": "Not modeled: it only fires while she is off-field, so a rotation that keeps her on field shows more of these than you would get."
+							"_curatorNotes": [
+								"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — because nothing renders it: `Effect` has no `caveat` field and slotCaveats only walks ability/passive/constellation entries (N17), so this string reaches no reader. Its content is not lost — the C2 constellation ENTRY already carries the same sentence and does render (gated to C2+, which is exactly the audience). Delete the copy rather than promote it; promoting would duplicate the C2 line in the same panel. Category: unreachable-surface."
+							]
 						}
 					]
 				}
@@ -314,14 +316,14 @@
 			"name": "The Principle of Transference in Gear Differentials",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"caveat": "Not modeled: the extra water ball only fires while she is off-field, so a rotation that keeps her on field shows more of them than you would get.",
 			"_curatorNotes": [
 				"C2: when Aino is off-field AND the burst is active AND the active character hits an enemy, fire a 25% ATK + 100% EM Hydro hit on a 5s ICD. gcsim cons.go c2Init subscribes to OnEnemyHit gated on burstKey active + Aino off-field + c2IcdKey 5*60, landing 10f later (QueueAttack(..., 0, 10)).",
 				"↻ AUTHORED 2026-08-18. The three primitives its old note deferred all exist now: an `onHit` damage effect carrying an `application[]` is read by `sim/procs.ts` (coordinated-attack round), `source: \"others\"` is the off-field half, and hosting it on the burst’s summon makes the summon’s own liveness the \"burst is active\" window — so no `armedFor` and no `duringSummon` state are needed.",
 				"⚠️ `source: \"others\"` is one step wider than gcsim in exactly one place: gcsim also requires the hitter to BE the active character, and an off-field summon owned by a third party carries its owner’s id, so its ticks reach this where gcsim’s would not. `onHit` has no `\"active\"` source, and the mark-triggered round records why an id test alone cannot supply one.",
 				"FlatDmg is `em + a4Dmg()` in gcsim — the C2’s own 100% EM plus A4 Structured Power Booster’s +50% of EM on Elemental Burst DMG, which this hit counts as. Hence flatScaling 150, against the base tick’s 50 (A4 alone).",
 				"icdGate \"none\" is gcsim’s ICDTagNone on the C2 attack: every projection applies its full 1U Hydro, unlike the burst’s own ticks.",
-				"⚠️ THE EFFECT LIVES ON THE BURST’S SUMMON, not here — `aino__burst__precision_hydronic_cooler` → \"Cool Your Jets Ducky\" → effects[]. That is where the WINDOW is: gcsim gates the proc on `burstKey`, which is the same 14s the summon holds, so hosting it there makes the summon’s own liveness the arming window (no `armedFor`, and swap/recast truncation for free). ⚓ Same arrangement Fischl’s A4 uses on Oz. It also draws its markers on the duck’s lane, which is what the kit text describes: \"the Cool Your Jets Ducky will fire an additional water ball\"."
+				"⚠️ THE EFFECT LIVES ON THE BURST’S SUMMON, not here — `aino__burst__precision_hydronic_cooler` → \"Cool Your Jets Ducky\" → effects[]. That is where the WINDOW is: gcsim gates the proc on `burstKey`, which is the same 14s the summon holds, so hosting it there makes the summon’s own liveness the arming window (no `armedFor`, and swap/recast truncation for free). ⚓ Same arrangement Fischl’s A4 uses on Oz. It also draws its markers on the duck’s lane, which is what the kit text describes: \"the Cool Your Jets Ducky will fire an additional water ball\".",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Extra tick markers drawn on the Cool Your Jets Ducky's summon-lane bar (published as `TimelineWindow.ticks` by the proc registry) plus their pips on the aura lane and rows in the aura log. The proc is fully wired — it carries `application[]`, so it fires, applies 1U Hydro and marks the lane — and its `source: \"others\"` gate is one step wider than gcsim's (the curator note says so: a third party's off-field summon tick reaches it), while gcsim additionally requires Aino herself to be off-field. So the lane can show water balls the game would not fire, on a 5s cadence, during on-field Aino segments. Marker count on a lane is the most countable thing in the planner. Category: visible-divergence."
 			],
 			"description": "If Aino is off-field while the Focused Hydronic Cooling Zone of her Elemental Burst **Precision Hydronic Cooler** is active, when your active party member hits a nearby opponent with an attack, the Cool Your Jets Ducky will fire an additional water ball at that opponent, dealing AoE Hydro DMG equal to 25% of Aino's ATK and 100% of her Elemental Mastery. This DMG is considered Elemental Burst DMG. This effect can be triggered once every 5s.",
 			"effects": []

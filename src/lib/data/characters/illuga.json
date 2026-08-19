@@ -61,13 +61,13 @@
 			"energyCost": 60,
 			"effects": [],
 			"behavior": "instant",
-			"caveat": "Not modeled: the 20s Nightingale's Song boost — a per-hit flat add to the active character's Geo damage, scaling off the caster's Elemental Mastery and much larger on Lunar-Crystallize hits. The crit and EM buffs it grants are shown on the A1 passive.",
 			"_curatorNotes": [
 				"genshin-db stub artifact fixed: behavior 'stance' → 'instant' (removed the stance 'duration' field). Haunted Night's Oriole-Song is a 20s buff STATE, not a weapon stance: it does not convert Illuga's normals and it persists while Illuga is OFF-field (stacks are consumed by nearby ACTIVE party members' Geo hits). KQM quickguide: 'No stance/field mode.' The 20s window surfaces via the Torchforger's Covenant / C4 buff bars (each duration 20).",
 				"Nightingale's Song DMG bonus deliberately NOT authored as an effect. It is a per-hit FLAT damage add scoped to the Geo element (base TL10 = 60.5% of Illuga's EM; Lunar-Crystallize TL10 = 406.7% of EM; A4 adds a further 7/14/24% EM base and 48/96/160% EM Lunar-Crystallize for 1/2/3 Hydro-or-Geo party members). The Stat vocabulary has no element-scoped flat-DMG key (flat-DMG stats are attack-class-scoped: normalFlatDmg…burstFlatDmg; lunarCrystallizeFlatDmg exists but authoring only the Lunar-Crystallize sliver while the far-more-common base Geo portion stays unmodelable would misrepresent the kit). Stubbed with a user caveat instead — see flags.",
 				"On-cast AoE Geo DMG unauthored (no FrameMap source). Sidecar Skill DMG TL10 = 1488.96% EM + 744.48% DEF. Burst grants 21 base Nightingale's Song stacks + 5 per Geo Construct on the field at cast or created during the window, max +15 (so up to 36 stacks). Duration 20s, CD 15s, energy 60 — all confirmed vs sidecar.",
 				"Casting this burst grants the team Lightkeeper's Oath — authored on Torchforger's Covenant (onCast trigger, fires on skill or burst).",
-				"[A7] Dropped-from-caveat game-term definition: Lunar-Crystallize = a Geo reaction against a Moon-charged aura."
+				"[A7] Dropped-from-caveat game-term definition: Lunar-Crystallize = a Geo reaction against a Moon-charged aura.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — It talks about a per-hit FLAT DMG add — a damage magnitude, which the tool never renders for anyone (damage math is constitutionally out of scope). The 20s window itself IS on screen: the A1 passive's onCast buffs (critRate/geoCritDmg/em, duration 20) and the C4 DEF buff all fire on the burst cast and draw 20s bars, which the caveat's own second sentence admits. Second sentence is pure working-behavior. Category: invisible-omission."
 			],
 			"description": "Light the lamp, dealing AoE Geo DMG, and gain Haunted Night's Oriole-Song effect for 20s. When this effect is active, Illuga gains 21 stacks of **Nightingale's Song**. When Normal Attacks, Charged Attacks, Plunging Attacks, Elemental Skills, and Elemental Bursts of nearby active party members deal Geo DMG to opponents, 1 stack of Nightingale's Song is consumed to increase the DMG dealt. Increase in DMG is based on Illuga's Elemental Mastery. If DMG is inflicted by Lunar-Crystallize, DMG dealt will increase further.\nWhen Geo DMG dealt in this manner hits multiple opponents, multiple stacks of Nightingale's Song will be consumed, depending on how many opponents are hit.\n\nAdditionally, if there are Geo Constructs created by nearby party members on the battlefield while Illuga unleashes his Elemental Burst, or when nearby party members create Geo Constructs while Haunted Night's Oriole-Song is active, every Geo Construct on the battlefield will allow Illuga to gain 5 additional stacks of Nightingale's Song. Within 20s after unleashing his Elemental Burst, Illuga can gain a maximum of 15 additional stacks of Nightingale's Song this way.\n\nWhen all stacks of Nightingale's Song have been consumed, or when the state's duration ends, the Haunted Night's Oriole-Song effect will end."
 		}
@@ -82,7 +82,9 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "onCast" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -90,14 +92,19 @@
 					"value": 5,
 					"snapshottable": false,
 					"constellationScaling": {
-						"conditions": { "type": "constellation", "level": 6 },
+						"conditions": {
+							"type": "constellation",
+							"level": 6
+						},
 						"value": 10
 					}
 				},
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "onCast" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -105,15 +112,24 @@
 					"value": 10,
 					"snapshottable": false,
 					"constellationScaling": {
-						"conditions": { "type": "constellation", "level": 6 },
+						"conditions": {
+							"type": "constellation",
+							"level": 6
+						},
 						"value": 30
 					}
 				},
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "onCast" },
-					"conditions": { "type": "teamFaction", "faction": "moonsign", "min": 2 },
+					"trigger": {
+						"type": "onCast"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "moonsign",
+						"min": 2
+					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -121,7 +137,10 @@
 					"value": 50,
 					"snapshottable": false,
 					"constellationScaling": {
-						"conditions": { "type": "constellation", "level": 6 },
+						"conditions": {
+							"type": "constellation",
+							"level": 6
+						},
 						"value": 80
 					}
 				}
@@ -140,10 +159,10 @@
 			"id": "illuga__passive__demonhunters_dusk",
 			"name": "Demonhunter's Dusk",
 			"abilityType": "passive",
-			"caveat": "Not modeled: the further Nightingale's Song DMG bonus from having Hydro or Geo characters in the party (he counts) — like the base bonus, a per-hit flat add on Geo attacks; see the burst.",
 			"_curatorNotes": [
 				"Ascension 4 passive. The two inherited 'damage / target: enemy' effects from the genshin-db stub were REMOVED — they misrepresented the mechanic (this is not autonomous damage Illuga deals; it augments the active character's own Geo hits via Nightingale's Song, an element-scoped per-hit flat-DMG add with no matching Stat primitive — see the burst's curator note).",
-				"TL-scaled values at party count 1/2/3 Hydro-or-Geo: base +7%/14%/24% of Illuga's EM; Lunar-Crystallize +48%/96%/160% of EM. Not authored as effects for the reason above; captured here + in the burst caveat/flags."
+				"TL-scaled values at party count 1/2/3 Hydro-or-Geo: base +7%/14%/24% of Illuga's EM; Lunar-Crystallize +48%/96%/160% of EM. Not authored as effects for the reason above; captured here + in the burst caveat/flags.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Same flat per-hit Geo DMG add as the burst caveat, one tier deeper, and this passive entry authors no effects at all — nothing of it was ever going to be a bar, a marker or a chip. \"see the burst\" points at a caveat that also dies. Category: invisible-omission."
 			],
 			"description": "**Nightingale's Song**'s effects are enhanced: When there are 1/2/3 Hydro or Geo characters in the party, Nightingale's Song will further increase DMG. Increase in DMG is equal to 7%/14%/24% of Illuga's Elemental Mastery. If this aforementioned DMG is inflicted by a Lunar-Crystallize reaction, increase in DMG is equal to 48%/96%/160% of Illuga's Elemental Mastery."
 		}
@@ -186,10 +205,15 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 400,
 					"stat": "em",
-					"flatScaling": { "stat": "def", "ratio": 200 },
+					"flatScaling": {
+						"stat": "def",
+						"ratio": 200
+					},
 					"element": "geo"
 				}
 			],
@@ -214,8 +238,14 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "constellation", "level": 4 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -247,5 +277,8 @@
 			"description": "Enhances the Lightkeeper's Oath effect of the Ascension Talent **Torchforger's Covenant**: For Geo DMG dealt to opponents, CRIT Rate is increased by 10%, CRIT DMG is increased by 30%.\n\nMoonsign: Ascendant Gleam:\nWhen characters are affected by Lightkeeper's Oath, Elemental Mastery is increased by 80.\nYou must first unlock the Ascension Talent \"Torchforger's Covenant.\""
 		}
 	],
-	"meta": { "source": "genshin-db", "generatedAt": "2026-04-06T11:45:40.699Z" }
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-04-06T11:45:40.699Z"
+	}
 }

@@ -46,8 +46,14 @@
 			"terminatesOnSwap": true,
 			"durationExtensions": [
 				{
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "state", "state": "inStance" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
 					"delta": 1.65
 				}
 			],
@@ -57,13 +63,16 @@
 				{
 					"type": "infuse",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 13,
 					"durationType": "fixed",
 					"element": "cryo"
 				}
 			],
-			"caveat": "Not modeled: the special skill Etched Into Bone and Soul and the Joy / Will to Win resources — on-field mechanics the timeline doesn't show.",
+			"caveat": "Not modeled: the special Elemental Skill Etched Into Bone and Soul — there is no token for it, so the casts a Lohen player makes inside Masterstroke draw nothing.",
 			"_curatorNotes": [
 				"No gcsim source (not on main, no open PR as of 2026-07-14) — frames impossible; Lohen stays in FRAMELESS_EXEMPT. Stages 1–3 only.",
 				"Masterstroke = a stance (behavior: stance, terminatesOnSwap true) verified by web sources: mode ends when Lohen leaves the field and resets Joy / Will to Win to 0. Base duration 13.0s (sidecar 'Masterstroke' row, talent-level-invariant).",
@@ -71,7 +80,8 @@
 				"Joy (self, cap 100, spent on Etched Into Bone and Soul — up to 3 casts, 5 at C6) and Will to Win (built by teammates, cap 100 / 300 at C1, spent by Burst) are internal on-field-DPS resources — not team-facing capabilities, not modeled.",
 				"Cryo application ICD (~6 instances per 5s on empowered attacks) not modeled — no frames. Mechanics source: KQM quickguide.",
 				"[Hexerei] The Secret Rite (see factionBonuses) also triggers when the special Elemental Skill Etched Into Bone and Soul HITS an opponent. That special skill is not an authored ability (no ability id, no Joy model), so only the Burst trigger path is modeled; the hit path is unmodelable, not omitted by choice. Source: KQM quickguide (https://keqingmains.com/q/lohen-quickguide/), fetched 2026-07-29.",
-				"[A7] Rewrite dropped the working-behavior description of the modeled stance (Masterstroke 13s; behavior:'stance' + terminatesOnSwap) and the modeled Cryo self-infusion. Also dropped the sourcing detail that nearby teammates build Will to Win for Lohen (already covered in _curatorNotes) — the resource itself is retained in the rewrite as a not-modeled on-field resource."
+				"[A7] Rewrite dropped the working-behavior description of the modeled stance (Masterstroke 13s; behavior:'stance' + terminatesOnSwap) and the modeled Cryo self-infusion. Also dropped the sourcing detail that nearby teammates build Will to Win for Lohen (already covered in _curatorNotes) — the resource itself is retained in the rewrite as a not-modeled on-field resource.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the special skill Etched Into Bone and Soul and the Joy / Will to Win resources — on-field mechanics the timeline doesn't show.\""
 			]
 		},
 		{
@@ -120,21 +130,24 @@
 					},
 					"duration": 8,
 					"durationType": "refresh",
-					"conditions": { "type": "state", "state": "inStance" },
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
 					"source": "character",
 					"stat": "atk%",
 					"value": 15,
 					"snapshottable": false
 				}
 			],
-			"caveat": "The buff is shown only on the on-field character — in game the teammate who triggered the reaction also keeps their +15% ATK, which the timeline doesn't show.",
 			"_curatorNotes": [
 				"A4 Flippant Masterpiece: +15% ATK to the reaction-triggering teammate AND Lohen, 8s, refreshing. Values web-verified (KQM quickguide, Fandom, Icy Veins). Gated on Masterstroke (state:inStance).",
 				"Trigger source: kit text says 'another nearby party member' triggers the reaction (i.e. not Lohen). The onReaction trigger has no 'others' source (only 'self'/'team'), so 'team' is used as the closest approximation — in canonical play the reaction is triggered by a teammate anyway (Lohen is the on-field Cryo applier).",
 				"Reaction list covers the Cryo-involving reactions: Melt, Frozen, Superconduct, Cryo Swirl, Cryo Crystallize. (Shatter is deliberately excluded — it is not a 'Cryo reaction' in the in-game sense.)",
 				"target ['self','active']: the buff reaches Lohen plus the reacting character; normalizes to 'active' for the capability facet. In practice the reactor is often an off-field applier, which the 'active' target can't perfectly express — flagged.",
 				"snapshottable: false chosen conservatively (dynamic on-field ATK buff); no source confirms snapshot-onto-attack behavior.",
-				"[A7] Deleted because the caveat only restated the fully-modeled A4 buff (onReaction, source:team, +15 atk%, 8s refresh, gated state:inStance, target ['self','active']) — working behavior the timeline renders. The only genuine divergences are curator-facing and already in _curatorNotes: source:'team' stands in for the kit's 'another nearby party member' (onReaction has no 'others' source), and target 'active' cannot perfectly express an off-field reactor. Not surfaced to users."
+				"[A7] Deleted because the caveat only restated the fully-modeled A4 buff (onReaction, source:team, +15 atk%, 8s refresh, gated state:inStance, target ['self','active']) — working behavior the timeline renders. The only genuine divergences are curator-facing and already in _curatorNotes: source:'team' stands in for the kit's 'another nearby party member' (onReaction has no 'others' source), and target 'active' cannot perfectly express an off-field reactor. Not surfaced to users.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The +15% ATK received-buff bar lands on the ACTIVE character's row (target ['self','active']). In game it belongs to the character who triggered the Cryo reaction — often an off-field applier — so the bar is on the wrong row and the reactor's row is blank. A player who knows the kit looks for it on the reactor and finds nothing. Category: visible-divergence."
 			]
 		}
 	],
@@ -159,11 +172,16 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "onHit" },
+					"trigger": {
+						"type": "onHit"
+					},
 					"duration": 8,
 					"durationType": "refresh",
 					"procCooldown": 4,
-					"conditions": { "type": "state", "state": "inStance" },
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
 					"source": "character",
 					"stat": "em",
 					"value": 200,
@@ -232,8 +250,15 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 6,
 					"durationType": "refresh",
 					"target": "self",
@@ -244,8 +269,15 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 6,
 					"durationType": "refresh",
 					"target": "self",
@@ -263,5 +295,8 @@
 			]
 		}
 	],
-	"meta": { "source": "genshin-db", "generatedAt": "2026-07-12T05:40:54.372Z" }
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-07-12T05:40:54.372Z"
+	}
 }

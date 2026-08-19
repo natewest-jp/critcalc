@@ -15,10 +15,34 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 36, "hit": 23 } },
-				{ "name": "N2", "frames": { "anim": 48, "hit": 29 } },
-				{ "name": "N3", "frames": { "anim": 52, "hit": 26 } },
-				{ "name": "N4", "frames": { "anim": 71, "hit": 35 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 36,
+						"hit": 23
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 48,
+						"hit": 29
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 52,
+						"hit": 26
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 71,
+						"hit": 35
+					}
+				}
 			],
 			"tags": [],
 			"sections": [
@@ -52,7 +76,12 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 44, "Q": 43, "J": 45, "swap": 42 },
+			"frames": {
+				"anim": 44,
+				"Q": 43,
+				"J": 45,
+				"swap": 42
+			},
 			"cooldown": 6,
 			"cooldownStartDelay": 14,
 			"tags": [],
@@ -61,11 +90,24 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 110, "D": 109, "J": 109, "swap": 107 },
+					"frames": {
+						"anim": 110,
+						"D": 109,
+						"J": 109,
+						"swap": 107
+					},
 					"cooldown": 6.2,
 					"application": [
-						{ "frame": 18, "element": "anemo", "units": 1 },
-						{ "frame": 68, "element": "anemo", "units": 1 }
+						{
+							"frame": 18,
+							"element": "anemo",
+							"units": 1
+						},
+						{
+							"frame": 68,
+							"element": "anemo",
+							"units": 1
+						}
 					]
 				}
 			],
@@ -77,8 +119,16 @@
 			],
 			"description": "The special technique of the Yoohoo Ninja Arts!\nSayu curls up into a rolling Fuufuu Windwheel and smashes into opponents at high speed, dealing Anemo DMG. When the duration ends, she unleashes a Fuufuu Whirlwind Kick, dealing AoE Anemo DMG.\n\nPress\nEnters the Fuufuu Windwheel state, rolling forward a short distance before using the Fuufuu Whirlwind Kick.\n\nHold\nRolls about continuously in the Fuufuu Windwheel state, increasing Sayu's resistance to interruption while within that state.\nDuring this time, Sayu can control the direction of her roll, and can use the skill again to end her Windwheel state early and unleash a stronger version of the Fuufuu Whirlwind Kick.\nThe Hold version of this skill can trigger Elemental Absorption.\n\nThis skill has a maximum duration of 10s and enters CD once its effects end. The longer Sayu remains in her Windwheel state, the longer the CD.\n\nElemental Absorption\nIf Sayu comes into contact with Hydro/Pyro/Cryo/Electro while in her Windwheel state, she will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use of this skill.",
 			"application": [
-				{ "frame": 7, "element": "anemo", "units": 1 },
-				{ "frame": 25, "element": "anemo", "units": 1 }
+				{
+					"frame": 7,
+					"element": "anemo",
+					"units": 1
+				},
+				{
+					"frame": 25,
+					"element": "anemo",
+					"units": 1
+				}
 			]
 		},
 		{
@@ -87,7 +137,11 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 65, "D": 64, "swap": 64 },
+			"frames": {
+				"anim": 65,
+				"D": 64,
+				"swap": 64
+			},
 			"cooldown": 20,
 			"energyCost": 80,
 			"tags": ["heal", "summon"],
@@ -106,7 +160,10 @@
 								"firstTickDelay": 2.42,
 								"tickCap": 6
 							},
-							"conditions": { "type": "recipientHpBelow", "threshold": 70 },
+							"conditions": {
+								"type": "recipientHpBelow",
+								"threshold": 70
+							},
 							"scaling": 143.8,
 							"stat": "atk",
 							"flat": 1100.8761,
@@ -143,13 +200,15 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"scaling": 165.9,
 					"stat": "atk",
 					"flat": 1270.2417
 				}
 			],
-			"caveat": "Both the Daruma's heal and its attack are drawn on every tick, but at C0 each tick is one or the other: it heals only while the active character is at 70% HP or lower, and attacks otherwise. At C1 it does both at once.",
 			"_curatorNotes": [
 				"Muji-Muji Daruma spawnsAt not sourced from an explicit gcsim constant. Initial AoE hits at burstHitmark=12; first Daruma tick scheduled at frame 145 per gcsim tick loop. Daruma likely spawns near the burst animation end (~frame 65) — no explicit spawn frame constant found; reviewer to confirm spawnsAt.",
 				"Daruma duration: gcsim tick loop schedules 6 ticks at frames 145–595 (~9.9s). In-game duration is 12s per genshin-db; using 12s.",
@@ -158,10 +217,17 @@
 				"Tick-count vs duration mismatch: gcsim fires a fixed 6 ticks (loop stops at frame 595 ≈ 9.9s) but the summon duration is authored 12s (genshin-db display) — with firstTickDelay 2.42s + interval 1.5s a duration-derived walk gives 7 ticks over 12s. ↻ 2026-08-18: RESOLVED — the primitive this note asked for shipped as `summonTick.tickCap` (tick-cap round). BOTH series on this summon now carry `tickCap: 6`, `tickCapOf` in sim/summons.ts bounds the walk and `collectSummonTicks` publishes the six markers the parse actually fires, so the planner draws 6 and no longer derives 7. ⛔ Do not 'fix' the 12s duration to 9.9s to make the arithmetic come out — a cap is a COUNT, not a time bound, and the 12s is what the kit displays. ⚠️ Still divergent on ONE surface: the Team Builder's Compare/Audition lane re-derives ticks as duration÷interval with no cap parameter (compare.ts `tickOffsets`, and the capability record carries only interval/firstTickDelay), so the Daruma draws 6 marks in the planner and 7 in Compare.",
 				"Heal/damage alternation: per tick gcsim computes needHeal = IsWithinArea && (activeHP ≤ 0.7 || C1) and needAttack = enemy != nil && (!needHeal || C1). At C0 each Daruma tick is EITHER a heal (active char ≤70% HP) OR an Anemo attack (else) — mutually exclusive; C1 ignores the HP limit and does both. Heal gated via recipientHpBelow:70 (null-resolving → renders optimistically per convention) to express the low-HP-active-char targeting. Lowest-HP-target selection and the 'no enemy nearby → heal anyway' branch aren't expressible primitives; caveat covers the alternation.",
 				"Daruma attack tick AUTHORED 2026-08-17 (gauge round L5e residue): 93.6% ATK Anemo on the same 145f/90f×6 cadence as the heal, ungated. The earlier decision to withhold it was heal-scoped and pre-dates summon ticks applying their element — leaving it out silently dropped six Anemo applications from every Sayu rotation. Its real gate ('active char HP > 70%') still has no primitive, so it is drawn alongside the heal and the caveat carries the alternation; see the effect's own notes. C6 adds EM-scaled riders (attack +min(EM×0.2%,400%) ATK FlatDmg; heal +min(EM×3,6000) flat) — not composed here; see C6 node notes. Initial cast Anemo AoE DMG rendered via FrameMap, not authored as an effect (corpus convention).",
-				"[A7] Summon periodic heal targets the active character; in game it selects the lowest-HP-percentage active character nearby, which is not an expressible targeting primitive (already noted in existing curator residuals)."
+				"[A7] Summon periodic heal targets the active character; in game it selects the lowest-HP-percentage active character nearby, which is not an expressible targeting primitive (already noted in existing curator residuals).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — that a reader can resolve. The Daruma is ONE sub-row (`summonSubrows` keys by summon label) whose `ticks` are a bare `number[]` with no heal-vs-damage identity, and the two series sit at firstTickDelay 2.417 and 2.42 with the same 1.5s interval and the same `tickCap: 6` — 0.003s apart, under half a pixel even at ZOOM_MAX. The lane shows six marks at six correct instants either way; \"both are drawn\" is an internal fact about the data, not something on screen. The one place it could bite (an extra Anemo application on the aura lane) is off by default, isn't what the caveat says, and the curator's own note calls the attack branch the common-play case. Category: invisible-omission."
 			],
 			"description": "The other super special technique of the Yoohoo Ninja Arts! It summons a pair of helping hands for Sayu.\nDeals Anemo DMG to nearby opponents and heals all nearby party members. The amount of HP restored is based on Sayu's ATK. This skill then summons a Muji-Muji Daruma.\n\nMuji-Muji Daruma\nAt specific intervals, the Daruma will take one of several actions based on the situation around it:\n·If the HP of nearby characters is above 70%, it will attack a nearby opponent, dealing Anemo DMG.\n·If there are active characters with 70% or less HP nearby, it will heal the active character with the lowest percentage HP left. If there are no opponents nearby, it will heal active characters nearby even if they have 70% HP or more.",
-			"application": [{ "frame": 12, "element": "anemo", "units": 1 }]
+			"application": [
+				{
+					"frame": 12,
+					"element": "anemo",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -229,7 +295,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk%",
@@ -238,7 +306,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk%",

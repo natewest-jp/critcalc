@@ -17,12 +17,44 @@
 			"duration": 5,
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 33, "hit": 25 } },
-				{ "name": "N2", "frames": { "anim": 39, "hit": 27 } },
-				{ "name": "N3", "frames": { "anim": 64, "hit": 47 } },
-				{ "name": "N4", "frames": { "anim": 94, "hit": 35 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 33,
+						"hit": 25
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 39,
+						"hit": 27
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 64,
+						"hit": 47
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 94,
+						"hit": 35
+					}
+				}
 			],
-			"plungeFrames": { "anim": 82, "N": 53, "C": 53, "E": 52, "Q": 53, "D": 40, "swap": 66 },
+			"plungeFrames": {
+				"anim": 82,
+				"N": 53,
+				"C": 53,
+				"E": 52,
+				"Q": 53,
+				"D": 40,
+				"swap": 66
+			},
 			"_curatorNotes": [
 				"N1–N4 frames: gcsim uses InitNormalCancelSlice(hitmark, animation) with no explicit ActionAttack or ActionCharge overrides for any hit — N and C remain at AnimationLength defaults and are omitted per recipe. Hitmarks (= swap values): N1=25, N2=27, N3=47, N4=35. AnimationLengths: N1=33, N2=39, N3=64, N4=94.",
 				"Charged attack not implemented in gcsim (// TODO: charged attack in attack.go). chargeFrames cannot be sourced.",
@@ -46,7 +78,15 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 81, "N": 51, "C": 51, "E": 51, "Q": 51, "D": 38, "swap": 64 }
+			"lowPlungeFrames": {
+				"anim": 81,
+				"N": 51,
+				"C": 51,
+				"E": 51,
+				"Q": 51,
+				"D": 38,
+				"swap": 64
+			}
 		},
 		{
 			"id": "xinyan__skill__sweeping_fervor",
@@ -54,7 +94,13 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 62, "N": 53, "Q": 54, "D": 54, "J": 53 },
+			"frames": {
+				"anim": 62,
+				"N": 53,
+				"Q": 54,
+				"D": 54,
+				"J": 53
+			},
 			"cooldown": 18,
 			"cooldownStartDelay": 13,
 			"tags": ["shield", "summon"],
@@ -62,7 +108,10 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 12,
 					"durationType": "refresh",
 					"scaling": 187.3,
@@ -70,7 +119,6 @@
 					"flat": 1101
 				}
 			],
-			"caveat": "Shown at its lowest strength, from hitting 0–1 opponents; hitting 2 or 3+ opponents gives progressively stronger shields that aren't reflected. Not modeled: the top tier's periodic Pyro DMG, and the shield's extra effectiveness against Pyro DMG.",
 			"_curatorNotes": [
 				"Shield effect authored 2026-07-12 at Level 1 (Ad Lib), the unconditional floor granted regardless of opponents hit (gcsim skill.go: updateShield(1) queued at skillShieldStart=28f when no XinyanSkill shield exists; c.shieldLevel defaults to 1 in xinyan.go). TL10 values: scaling 187.3% DEF + 1101 flat (sidecar 'Shield Level 1 DMG Absorption' 10th col '187.3% DEF+1101'; gcsim xinyan_gen.go shieldLevel1[9]=1.87272, shieldLevel1Flat[9]=1101.2996). DEF snapshotted at cast (snap.Stats.TotalDEF()). target 'active': gcsim shield.go Target=-1 = party shield protecting the on-field character (Thoma/Diona precedent). durationType 'refresh': recast replaces the shield and refreshes 12s (12*60f in updateShield; summon terminatesOn recast).",
 				"Shield LEVEL is gated on the number of OPPONENTS HIT, not team composition. gcsim skill.go increments hitOpponents per enemy in the attack callback: hitOpponents >= shieldLevel2Requirement (default 2) → Level 2, >= shieldLevel3Requirement (default 3) → Level 3; A1 (asc.go a1) lowers each requirement by 1. Higher-tier TL10 values NOT authored (no enemyCount Condition primitive; planner has no enemy-count model) — surfaced via caveat only. Level 2 (Lead-In): 220.3% DEF + 1296 (shieldLevel2[9]=2.2032, shieldLevel2Flat[9]=1295.6465). Level 3 (Rave): 259.2% DEF + 1524 (shieldLevel3[9]=2.592, shieldLevel3Flat[9]=1524.29). NOT modeled via teamElementCount(pyro): that condition counts Pyro allies, an unrelated mechanic — see orchestrator flag.",
@@ -79,11 +127,18 @@
 				"[A7] Caveat tier names dropped for length: Level 1 Ad Lib (0–1 opponents hit), Level 2 Lead-In (2 opponents), Level 3 Rave (3+ opponents).",
 				"[A7] A1 ascension passive lowers the Level 2 / Level 3 opponent thresholds to 1 and 2; it is already surfaced as its own passive panel entry, so it was dropped from the skill caveat to avoid duplication.",
 				"[A7] Pyro absorption effectiveness is 2.5x (250% DMG Absorption vs Pyro per skill description); exact multiplier demoted, qualitative 'extra effectiveness against Pyro' claim retained.",
-				"↻ 2026-08-14 — the stand-in summon is retired. \"Shield\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast a 12s active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world. Bar geometry is unchanged apart from the spawn offset, which the shield window never had."
+				"↻ 2026-08-14 — the stand-in summon is retired. \"Shield\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast a 12s active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world. Bar geometry is unchanged apart from the spawn offset, which the shield window never had.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — on all three halves. (1) 'Shown at its lowest strength' — VERIFIED against the renderer: `computeShieldSubrows` (shieldRows.ts:44-85) builds a row from a label and a span only, and no absorption strength is printed on the shield bar, in a tooltip, or anywhere else in the planner. A tier value the tool never shows cannot look wrong. (2) The Level-3 Pyro DoT belongs to a tier that does not exist in our data, so there is no bar it shortens or marker it removes. (3) 'extra effectiveness against Pyro DMG' is the literal Nicole case — general game knowledge about elemental shields, and the timeline shows absorption for no shield at all. The 12s Shield bar itself is correct (`activeDuration: 12`, `durationType: refresh`) and stays correct after the delete. Category: invisible-omission."
 			],
 			"description": "Xinyan brandishes her instrument, dealing Pyro DMG on nearby opponents, forming a shield made out of her audience's passion.\nThe shield's DMG Absorption scales based on Xinyan's DEF and on the number of opponents hit.\n·Hitting 0–1 opponents grants Shield Level 1: Ad Lib.\n·Hitting 2 opponents grants Shield Level 2: Lead-In.\n·Hitting 3 or more opponents grants Shield Level 3: Rave, which will also deal intermittent Pyro DMG to nearby opponents.\n\nThe shield has the following special properties:\n·When unleashed, it infuses Xinyan with Pyro.\n·It has 250% DMG Absorption effectiveness against Pyro DMG.",
 			"activeDuration": 12,
-			"application": [{ "frame": 15, "element": "pyro", "units": 1 }]
+			"application": [
+				{
+					"frame": 15,
+					"element": "pyro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "xinyan__burst__riff_revolution",
@@ -91,21 +146,51 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 87, "N": 86, "swap": 86 },
+			"frames": {
+				"anim": 87,
+				"N": 86,
+				"swap": 86
+			},
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": [],
 			"effects": [],
 			"description": "Strumming rapidly, Xinyan launches nearby opponents and deals Physical DMG to them, hyping up the crowd.\nThe sheer intensity of the atmosphere will cause explosions that deal Pyro DMG to nearby opponents.",
 			"application": [
-				{ "frame": 22 },
-				{ "frame": 57, "element": "pyro", "units": 1 },
-				{ "frame": 74, "element": "pyro" },
-				{ "frame": 91, "element": "pyro" },
-				{ "frame": 108, "element": "pyro", "units": 1 },
-				{ "frame": 125, "element": "pyro" },
-				{ "frame": 142, "element": "pyro" },
-				{ "frame": 159, "element": "pyro", "units": 1 }
+				{
+					"frame": 22
+				},
+				{
+					"frame": 57,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 74,
+					"element": "pyro"
+				},
+				{
+					"frame": 91,
+					"element": "pyro"
+				},
+				{
+					"frame": 108,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 125,
+					"element": "pyro"
+				},
+				{
+					"frame": 142,
+					"element": "pyro"
+				},
+				{
+					"frame": 159,
+					"element": "pyro",
+					"units": 1
+				}
 			]
 		}
 	],
@@ -146,7 +231,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
@@ -175,8 +262,14 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
-					"conditions": { "type": "constellation", "level": 4 },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
 					"duration": 12,
 					"durationType": "refresh",
 					"element": "physical",
@@ -204,11 +297,20 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 6 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"source": "character",
 					"stat": "atk",
-					"value": { "type": "scaling", "stat": "def", "ratio": 50 },
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 50
+					},
 					"snapshottable": false
 				}
 			],

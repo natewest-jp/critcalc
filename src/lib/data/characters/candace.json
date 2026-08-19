@@ -161,12 +161,12 @@
 					]
 				}
 			],
-			"caveat": "Not modeled: the shield's extra effectiveness against Hydro DMG.",
 			"_curatorNotes": [
 				"Shield authored 2026-07-12 at talent level 10 (sidecar 'Shield DMG Absorption' row, 10th column '21.6% Max HP+2542'; gcsim candace_gen.go skillShieldPct[9]=0.216, skillShieldFlat[9]=2542.4312 → scaling 21.6% Max HP + 2542.43 flat). Same absorption for both Tap and Hold — gcsim skill.go adds the shield unconditionally (skillShieldPct*MaxHP + skillShieldFlat) regardless of chargeLevel; only the lifetime differs.",
 				"Shield is transient: it expires at the skill hitmark (gcsim skill.go: Expires = c.Core.F + hitmark). Tap hitmark = skillHitmarks[0] = 16f → duration 0.27s (base effects). Hold hitmark = skillHitmarks[1] = 91f → duration 1.52s (Hold variant effects override). A1 Aegis of Crossed Arrows (getting hit during Hold finishes the charge instantly, gcsim windup=55 → hitmark 36f) shortens the Hold window when it procs; not modeled.",
 				"Target 'self': gcsim Player.Shields.Add uses Target = c.Index() (Candace's own index) — this is Candace's personal guard shield during her cast, not a party shield that persists across swaps (unlike Thoma/Diona 'active' shields). Candace is on-field for the whole cast, so 'self' resolves correctly.",
-				"250% Hydro DMG Absorption Bonus not modeled (no per-element shield-efficiency primitive — same gap as Thoma Pyro / Diona Cryo shield notes)."
+				"250% Hydro DMG Absorption Bonus not modeled (no per-element shield-efficiency primitive — same gap as Thoma Pyro / Diona Cryo shield notes).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — this is the exact case Nate named. Every elemental shield absorbs its own element at 250%, and the tool models no absorption for ANY shield (shields.ts: no HP or enemy state; a shield bar always runs its authored span). Nothing on screen looks wrong, and the fact is not specific to Candace. Category: general-game-knowledge."
 			],
 			"tags": ["shield"],
 			"effects": [
@@ -229,7 +229,8 @@
 			"_curatorNotes": [
 				"Infuse + normalDmgBonus AUTHORED (capability sweep 2026-07-28): (a) hydro infusion — gcsim burst.go:91-97 AddWeaponInfuse(Hydro, Normal/Extra/Plunge) for Claymore/Spear/Sword on the active char, refreshed every 30f while 'candace-q' active (Bennett C6 is the weaponType-conditioned precedent); (b) +20% elemental Normal Attack DMG — gcsim burst.go:139 DmgP=0.2 HARDCODED (flat 20% at every talent level, not talent-scaled), burst.go:146-149 AttackTagNormal + non-Physical/NoElement only (caveated; the Stat union's normalDmgBonus is unscoped by element).",
 				"Duration 9s base per gcsim burst.go:54-57 (540f). C1 extends to 12s (720f) — EffectBase has no durationModifiers, so both effects stay at base 9s and the C1 extension is recorded here only (orchestrator call: no condition-twin duplicate effects); the summon lane already carries the C1 durationModifier.",
-				"Still unauthored: on-swap waves — up to 3 waves of hydro burst DMG triggered on character swap (gcsim burstSwap, waveCount capped at 3); no character-effect swap trigger primitive."
+				"Still unauthored: on-swap waves — up to 3 waves of hydro burst DMG triggered on character swap (gcsim burstSwap, waveCount capped at 3); no character-effect swap trigger primitive.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The 9s \"+20% Normal Attack DMG\" received-buff bar (stat `normalDmgBonus`, target active), which the stat vocabulary cannot scope by element. It draws for whoever is on field — including a bow or catalyst holder, whose infusion the sibling `infuse` effect correctly withholds by `weaponType`, so every one of their normals is physical and gets none of it. The bar promises more than the game pays, and it draws beside the tinted normals that show the promise being kept for melee. Category: visible-divergence."
 			],
 			"effects": [
 				{
@@ -262,7 +263,6 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "The Normal Attack bonus applies only to elemental Normal Attack DMG — physical hits don't benefit.",
 			"description": "Raising her weapon on high, Candace calls upon a divine blessing that deals AoE Hydro DMG based on her Max HP and continuously confers the Prayer of the Crimson Crown on your active character.\n\nPrayer of the Crimson Crown\nThis effect has the following properties:\n·Characters deal increased Elemental DMG with their Normal Attacks.\n·Whenever a character takes the field, they will unleash a rippling wave of water that deals Hydro DMG to nearby opponents. There is a limited number of waves that can be triggered in the duration of this skill.\n·Sword, Claymore, and Polearm-wielding characters under this effect will obtain a Hydro Infusion.",
 			"behavior": "instant",
 			"application": [

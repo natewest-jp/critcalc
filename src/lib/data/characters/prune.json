@@ -45,10 +45,11 @@
 			"effects": [],
 			"description": "Unleash the wind's might to defeat the evil witch and save Descartes! Prune strikes the Witchlure Bell with her Banehunter Oathhammer, dealing Anemo DMG.\nIf Prune triggers Swirl on an opponent using this attack, Ring-A-Ding-Ding! Hexhunter Chime will be changed to Clang Clang! Witch-tribution Comes! for the next 6s.\n\nClang Clang! Witch-tribution Comes!\nPrune's hammer is now enshrouded by the element involved in the previous Swirl reaction, causing **Banehunter Oathhammer** to undergo Elemental Conversion. When activated with a Press, Prune will leap up and kick the Banehunter Oathhammer forward, dealing Elemental DMG of the corresponding type to opponents in front of her.",
 			"behavior": "instant",
-			"caveat": "Not modeled: the stronger element-converted form gained for 6s after triggering Swirl, or its hit timing. That converted hit is what powers the team DMG buff (Tolling Rally).",
+			"caveat": "The Tolling Rally team buff is shown after every skill hit; in game only the element-converted hammer, available for 6s after a Swirl, grants it.",
 			"_curatorNotes": [
 				"No gcsim source and no verified frame data — character stays frameless (FRAMELESS_EXEMPT). Skill CD 15s confirmed against sidecar. The Clang Clang conversion (204.6%→485.8% @T10 vs base 167.4%→397.7%) is a conditional alternate Press unlocked by a prior Swirl; not modelled as a separate AbilityVariant because the distinction is only decision-relevant with frame timing, which is unavailable. Base skill also generates 5 Anemo particles on first hit (KQM quickguide).",
-				"[A7] The converted follow-up form is 'Clang Clang! Witch-tribution Comes!'; the base cast and the converted form aren't modeled as separate variants because there is no verified frame data source for their hit timing (already in _curatorNotes)."
+				"[A7] The converted follow-up form is 'Clang Clang! Witch-tribution Comes!'; the base cast and the converted form aren't modeled as separate variants because there is no verified frame data source for their hit timing (already in _curatorNotes).",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the stronger element-converted form gained for 6s after triggering Swirl, or its hit timing. That converted hit is what powers the team DMG buff (Tolling Rally).\""
 			]
 		},
 		{
@@ -63,7 +64,6 @@
 			"effects": [],
 			"description": "Prune gently swings the Witchlure Bell, dealing Anemo DMG to nearby opponents. After this, the Bell will enter the Hunter-Seeker mode.\n\nWitchlure Bell: Hunter-Seeker\nIn this mode, the Witchlure Bell will follow the current active character, attacking surrounding opponents at intervals and dealing AoE Anemo DMG. This DMG is considered Elemental Burst DMG.",
 			"behavior": "instant",
-			"caveat": "The bell's hit interval isn't stated in game, so it's shown as an active window with no per-hit markers.",
 			"summons": [
 				{
 					"label": "Witchlure Bell (Hunter-Seeker)",
@@ -74,13 +74,17 @@
 							"source": "C6: And That's the Story! Share It With Your Friends!",
 							"type": "flat",
 							"value": 4,
-							"conditions": { "type": "constellation", "level": 6 }
+							"conditions": {
+								"type": "constellation",
+								"level": 6
+							}
 						}
 					]
 				}
 			],
 			"_curatorNotes": [
-				"Burst CD 18s, energy 70, Hunter-Seeker duration 12s all confirmed against sidecar. Witchlure Bell modelled as a follows-summon for its active-window lane. Its periodic AoE Anemo DMG (Witchlure Bell DMG 167.3% @T10) is NOT authored as a summonTick effect: no gcsim source and the official talent text states no interval (\"at intervals\"), so the tick cadence is unverifiable — authoring one would fake timing. Third-party build guides estimate ~2s, but that is not an official/gcsim value. Consequently the off-field DMG capability is currently under-claimed (summon tag present; summonTick damage withheld). Revisit if gcsim adds Prune. C6 extends the mode by 4s (durationModifier)."
+				"Burst CD 18s, energy 70, Hunter-Seeker duration 12s all confirmed against sidecar. Witchlure Bell modelled as a follows-summon for its active-window lane. Its periodic AoE Anemo DMG (Witchlure Bell DMG 167.3% @T10) is NOT authored as a summonTick effect: no gcsim source and the official talent text states no interval (\"at intervals\"), so the tick cadence is unverifiable — authoring one would fake timing. Third-party build guides estimate ~2s, but that is not an official/gcsim value. Consequently the off-field DMG capability is currently under-claimed (summon tag present; summonTick damage withheld). Revisit if gcsim adds Prune. C6 extends the mode by 4s (durationModifier).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Witchlure Bell's summon-lane bar, which carries NO tick marks while every other authored summon in the tool carries them. A player reading a 12s off-field damage window with a bare bar has to ask whether the bell hits at all; this says why the marks are absent and that the omission is honest (no gcsim source, no stated interval — authoring one would fake timing). Prose is already tight and pixel-first. Category: expected-but-absent."
 			]
 		}
 	],
@@ -98,7 +102,10 @@
 						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"],
 						"source": "self"
 					},
-					"conditions": { "type": "state", "state": "duringSummon" },
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
 					"scaling": 150,
 					"stat": "atk",
 					"attribution": "A1: Verdict and Punishment",
@@ -117,7 +124,10 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"duration": 5,
 					"durationType": "refresh",
 					"source": "character",
@@ -150,7 +160,10 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"procCooldown": 1.8,
 					"amount": 2,
 					"attribution": "C1: With a Vow to Rescue, the Journey Begins",
@@ -170,7 +183,10 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 12,
 					"durationType": "refresh",
 					"source": "character",
@@ -183,8 +199,11 @@
 					]
 				}
 			],
-			"caveat": "During the burst, her ATK rises by 10%, then a further 5% each time the Witchlure Bell or a converted Banehunter Oathhammer hits, up to 40%. Shown at the 10% starting value.",
-			"description": "During the Elemental Burst **The Bell Tolls! The Hunt Is On!**, when the Witchlure Bell is in Hunter-Seeker mode, Prune gains the Hunt the Witch effect: Prune's ATK increases by 10%, and when the Witchlure Bell and the **Banehunter Oathhammer** that has undergone Elemental Conversion hits an opponent, it further increases her ATK by 5%. Prune's ATK can be increased by up to 40% in this way.\nThe original instance of the above effect will be removed if \"The Bell Tolls! The Hunt Is On!\" is used again during this time."
+			"caveat": "Shown at her +10% starting ATK; in game each Witchlure Bell or converted hammer hit adds 5% more, up to 40%.",
+			"description": "During the Elemental Burst **The Bell Tolls! The Hunt Is On!**, when the Witchlure Bell is in Hunter-Seeker mode, Prune gains the Hunt the Witch effect: Prune's ATK increases by 10%, and when the Witchlure Bell and the **Banehunter Oathhammer** that has undergone Elemental Conversion hits an opponent, it further increases her ATK by 5%. Prune's ATK can be increased by up to 40% in this way.\nThe original instance of the above effect will be removed if \"The Bell Tolls! The Hunt Is On!\" is used again during this time.",
+			"_curatorNotes": [
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"During the burst, her ATK rises by 10%, then a further 5% each time the Witchlure Bell or a converted Banehunter Oathhammer hits, up to 40%. Shown at the 10% starting value.\""
+			]
 		},
 		{
 			"id": "prune__constellation__the_caravan_exits_the_mountain_pass_the_scenery_once_more_changed",
@@ -203,7 +222,10 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"scaling": 80,
 					"stat": "atk",
 					"attribution": "C4: Looking Back Following the Wind, One's Shadow Still Halved",
@@ -231,7 +253,11 @@
 				{
 					"type": "buff",
 					"target": ["self", "active"],
-					"trigger": { "type": "onReaction", "reaction": "any", "source": "team" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "any",
+						"source": "team"
+					},
 					"duration": 5,
 					"durationType": "refresh",
 					"source": "character",
@@ -260,8 +286,16 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onReaction", "reaction": "any", "source": "team" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "any",
+						"source": "team"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 5,
 					"durationType": "refresh",
 					"target": "self",
@@ -281,7 +315,11 @@
 						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"],
 						"source": "team"
 					},
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 5,
 					"durationType": "refresh",
 					"target": "active",
@@ -296,7 +334,10 @@
 			]
 		}
 	],
-	"meta": { "source": "genshin-db", "generatedAt": "2026-07-12T05:40:54.377Z" },
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-07-12T05:40:54.377Z"
+	},
 	"_curatorNotes": [
 		"Stages 1-3 effects-only curation 2026-07-14 (no gcsim source, no open PR — frames impossible; stays FRAMELESS_EXEMPT). Mechanics sourced from KQM quickguide + KQM TCL library + genshinguides + official talent text (genshin-db). CD/energy/duration cross-checked against docs/curation/talents/prune.json (all PASS). Team-facing capabilities: A4 Tolling Rally (team allDmgBonus, Prune-ATK-scaled), C6 flat ATK (self+active), burst Witchlure Bell (off-field summon). Known gap: bell tick cadence unverifiable → off-field DMG under-claimed (see burst _curatorNotes).",
 		"Hexerei layer added 2026-07-29 (Luna VII): factions=['hexerei'] + Secret Rite from the Witch's Eve Rite passive 'Witchseeker's Vow'. Sole evidence is the Fandom wiki talent infobox (pageid 457454, MediaWiki API fetch) — Prune has no gcsim implementation, so no source backstop exists for these values. No permanent (ungated) kit patch found: the rite text describes only the two count-gated ATK buffs, and the Prune page's talent/constellation text shows no revised values, so no regular kit structure was touched."

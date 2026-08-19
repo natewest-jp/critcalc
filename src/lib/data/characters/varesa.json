@@ -16,11 +16,41 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 23, "N": 33, "C": 23, "swap": 23 } },
-				{ "name": "N2", "frames": { "anim": 7, "N": 30, "C": 17, "swap": 7 } },
-				{ "name": "N3", "frames": { "anim": 33, "N": 45, "C": 32, "swap": 33 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 23,
+						"N": 33,
+						"C": 23,
+						"swap": 23
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 7,
+						"N": 30,
+						"C": 17,
+						"swap": 7
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 33,
+						"N": 45,
+						"C": 32,
+						"swap": 33
+					}
+				}
 			],
-			"chargeFrames": { "anim": 139, "N": 142, "C": 141, "E": 142, "swap": 139 },
+			"chargeFrames": {
+				"anim": 139,
+				"N": 142,
+				"C": 141,
+				"E": 142,
+				"swap": 139
+			},
 			"plungeFrames": {
 				"anim": 37,
 				"N": 40,
@@ -35,7 +65,10 @@
 				"plunge": {
 					"state": "apexDrive",
 					"duration": 2.33,
-					"conditions": { "type": "constellation", "level": 2 }
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
 				}
 			},
 			"_curatorNotes": [
@@ -69,14 +102,48 @@
 			"name": "Fiery Passion Strikes",
 			"input": ["N1", "N2", "N3", "C", "P"],
 			"abilityType": "normal",
-			"conditions": { "type": "state", "state": "nightsoulBlessing" },
+			"conditions": {
+				"type": "state",
+				"state": "nightsoulBlessing"
+			},
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 17, "N": 29, "C": 31, "swap": 17 } },
-				{ "name": "N2", "frames": { "anim": 29, "N": 39, "C": 25, "swap": 29 } },
-				{ "name": "N3", "frames": { "anim": 37, "N": 63, "C": 37, "swap": 37 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 17,
+						"N": 29,
+						"C": 31,
+						"swap": 17
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 29,
+						"N": 39,
+						"C": 25,
+						"swap": 29
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 37,
+						"N": 63,
+						"C": 37,
+						"swap": 37
+					}
+				}
 			],
-			"chargeFrames": { "anim": 138, "N": 142, "E": 141, "Q": 141, "D": 142, "swap": 138 },
+			"chargeFrames": {
+				"anim": 138,
+				"N": 142,
+				"E": 141,
+				"Q": 141,
+				"D": 142,
+				"swap": 138
+			},
 			"plungeFrames": {
 				"anim": 45,
 				"N": 47,
@@ -87,7 +154,12 @@
 				"J": 79,
 				"swap": 45
 			},
-			"actionOpensState": { "plunge": { "state": "apexDrive", "duration": 2.33 } },
+			"actionOpensState": {
+				"plunge": {
+					"state": "apexDrive",
+					"duration": 2.33
+				}
+			},
 			"_curatorNotes": [
 				"In-Fiery-Passion normals (Nightsoul state) — separate normal ability gated by state: \"nightsoulBlessing\". Hitmarks 17/29/37 (vs base 23/7/33), all Electro. Larger hitboxes per fieryAttackHitboxes.",
 				"Fiery Passion charged attack costs 0 stamina (gcsim ActionStam during skillStatus / nightsoulBlessing). chargeFrames sourced from gcsim fieryChargeFrames init (swap=138, N/E/Q/D explicit overrides; ActionCharge unset → defaults to InitAbilSlice 143 = AnimationLength, omitted).",
@@ -101,7 +173,15 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 21, "N": 22, "C": 22, "Q": 22, "D": 37, "J": 37, "swap": 21 },
+			"frames": {
+				"anim": 21,
+				"N": 22,
+				"C": 22,
+				"Q": 22,
+				"D": 37,
+				"J": 37,
+				"swap": 21
+			},
 			"cooldown": 9,
 			"charges": 2,
 			"tags": [],
@@ -109,41 +189,77 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "ascension", "min": 1 },
-							{ "type": "not", "condition": { "type": "state", "state": "nightsoulBlessing" } }
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "state",
+									"state": "nightsoulBlessing"
+								}
+							}
 						]
 					},
 					"duration": 5,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "plungeFlatDmg",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 50 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 50
+					},
 					"constellationScaling": {
-						"conditions": { "type": "constellation", "level": 1 },
-						"value": { "type": "scaling", "stat": "atk", "ratio": 180 }
+						"conditions": {
+							"type": "constellation",
+							"level": 1
+						},
+						"value": {
+							"type": "scaling",
+							"stat": "atk",
+							"ratio": 180
+						}
 					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "ascension", "min": 1 },
-							{ "type": "state", "state": "nightsoulBlessing" }
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "state",
+								"state": "nightsoulBlessing"
+							}
 						]
 					},
 					"duration": 5,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "plungeFlatDmg",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 180 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 180
+					},
 					"snapshottable": false
 				}
 			],
@@ -156,7 +272,13 @@
 				"Hold version not authored: schema lacks a `hE` distinct from `E` for stance-entry behavior change. Pressing hE in the parser will fall through to base E. Acceptable since Sudden Onrush is a movement/positional state."
 			],
 			"description": "With footwork swift as lightning and fierce as thunder, Varesa displays the true spirit of lucha libre, rushing forward a certain distance and dealing Nightsoul-aligned Electro DMG to opponents in her path.\nAfter using this Skill, Varesa gains 20 Nightsoul points and gains the \"Follow-Up Strike\" effect: Varesa has increased interruption resistance during this time, and upon pressing her Normal Attack, she will quickly unleash a Charged Attack that does not consume Stamina. \"Follow-Up Strike\" will be canceled after Varesa uses a Charged Attack.\nShe will use different techniques based on whether the skill is Tapped or Held.\n\nTap\nQuickly rush a certain distance forward.\n\nHold\nVaresa enters the Nightsoul's Blessing state and switches to Sudden Onrush mode.\n\nHas 2 charges. When Varesa enters the Fiery Passion state, she will obtain an additional Tap charge of her Elemental Skill and its DMG will be increased.",
-			"application": [{ "frame": 5, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 5,
+					"element": "electro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "varesa__skill__fiery_passion_rush",
@@ -164,8 +286,20 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"conditions": { "type": "state", "state": "nightsoulBlessing" },
-			"frames": { "anim": 21, "N": 23, "C": 23, "E": 22, "Q": 22, "D": 38, "J": 39, "swap": 21 },
+			"conditions": {
+				"type": "state",
+				"state": "nightsoulBlessing"
+			},
+			"frames": {
+				"anim": 21,
+				"N": 23,
+				"C": 23,
+				"E": 22,
+				"Q": 22,
+				"D": 38,
+				"J": 39,
+				"swap": 21
+			},
 			"cooldown": 9,
 			"charges": 2,
 			"tags": [],
@@ -182,7 +316,15 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "stance",
-			"frames": { "anim": 90, "N": 93, "E": 90, "Q": 122, "D": 93, "J": 122, "swap": 90 },
+			"frames": {
+				"anim": 90,
+				"N": 93,
+				"E": 90,
+				"Q": 122,
+				"D": 93,
+				"J": 122,
+				"swap": 90
+			},
 			"cooldown": 18,
 			"duration": 15,
 			"energyCost": 70,
@@ -194,11 +336,21 @@
 					"input": ["sQ"],
 					"behavior": "instant",
 					"duration": 0,
-					"frames": { "anim": 42, "N": 46, "E": 45, "D": 43, "J": 47, "swap": 42 },
+					"frames": {
+						"anim": 42,
+						"N": 46,
+						"E": 45,
+						"D": 43,
+						"J": 47,
+						"swap": 42
+					},
 					"cooldown": 1,
 					"energyCost": 30,
 					"damageTag": "plunge",
-					"conditions": { "type": "state", "state": "apexDrive" },
+					"conditions": {
+						"type": "state",
+						"state": "apexDrive"
+					},
 					"consumesState": "apexDrive",
 					"effects": []
 				}
@@ -208,23 +360,39 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 4 },
-							{ "type": "not", "condition": { "type": "state", "state": "nightsoulBlessing" } }
+							{
+								"type": "constellation",
+								"level": 4
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "state",
+									"state": "nightsoulBlessing"
+								}
+							}
 						]
 					},
 					"source": "character",
 					"stat": "plungeFlatDmg",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 500, "cap": 20000 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 500,
+						"cap": 20000
+					},
 					"snapshottable": false
 				}
 			],
-			"caveat": "Type sQ within the 2.33s Apex Drive window — opened by a plunge during Fiery Passion, or any plunge at C2 — to cast Volcano Kablam, the 30-energy plunge secondary burst.",
 			"_curatorNotes": [
 				"behavior: \"stance\" + opensState: \"nightsoulBlessing\" + duration: 15 + terminatesOnSwap: false — Fiery Passion lasts 15s, persists across swap, and ends on NS-point exhaustion (gcsim EnterTimedBlessing(40, 15*60, ...)). The points-drain exit isn't modelled — Nightsoul POINTS are not a tracked resource, so the window always runs its authored 15s. ↻ 2026-08-18: the old parenthetical reason \"(windows not gauges)\" is retired. There IS a real gauge now (utils/gauge.ts driven from sim/aura.ts), it just holds the ENEMY's elemental aura and never a character's kit resource, so the slogan no longer describes anything. See the FP-plunge note on Fiery Passion Strikes for the exit a stance-cancel primitive would need.",
 				"energyCost: 70 (gcsim data_gen burst_energy_cost). cooldown 18 / cooldownStartDelay omitted — gcsim SetCD(burst, 18*60) called immediately at cast (no delay).",
@@ -232,10 +400,17 @@
 				"Re-press inside FP: gcsim re-fills NS to 40 points (max) and re-enters via generatePlungeNightsoul. Same 70-energy cost. Frames identical to base burst (no separate variant needed).",
 				"Volcano Kablam variant WIRED via the KQM `sQ` token (2026-07-17): gated on the `apexDrive` transient state a plunge opens (see the normals' actionOpensState.plunge); consumesState closes the window at cast (gcsim DeleteStatus at kablamHitmark — modelled at cast start). CD semantics per gcsim varesa.go ActionReady: kablam IS gated by the shared burst CD slot (AvailableCDCharge check) and volcanicKablam() then SetCD(burst, 1*60) — so the variant keeps the default shared-clock behavior with cooldown: 1 (NO bypassesCooldown, unlike Flins Symphony). behavior: instant + duration: 0 override the base stance so sQ neither re-opens nightsoulBlessing nor renders a 15s window. Frames: volcanicFrames=InitAbilSlice(47), ActionAttack=46 ActionSkill=45 ActionDash=43 ActionSwap=42 → J=47 (animLen default). kablamHitmark=42, mult kablam[lvl], AttackTagPlunge (damageTag: plunge), ConsumeEnergyPartial(0, 30). C6 placeholder-buff removal note retained: CR/CD per-ability scoping isn't expressible; the +30 energy effect stays on C6.",
 				"C4 Diligent Refinement: when burst is cast OUTSIDE FP and OUTSIDE Apex Drive, Varesa gains a 15s plunge-flat-DMG buff: +500% ATK as flat damage (capped at 20,000). gcsim c4Burst() adds the status; c4FlatBonus() returns min(TotalAtk*5, 20000). Modelled with constellationScaling primitive's cap field (Xianyun-shape). The 'cancel on plunge ground impact' and the 'in-FP/Apex variant: +100% Q DMG' branch are partially modelled — the +100% Q DMG is on the C4 constellation entry as burstDmgBonus +100 gated on (constellation 4) AND (state nightsoulBlessing).",
-				"C2 Apex Drive on every plunge: removes the in-FP gate. With C2, plunges always trigger Apex Drive, enabling Volcano Kablam outside FP. ↻ 2026-08-18: this IS modelled, and the \"Not modelled (Apex Drive itself isn't modelled)\" that used to close the line contradicted the Volcano Kablam note four entries above it in this same array. By the Horns carries `actionOpensState.plunge` = apexDrive / 2.33s gated {constellation: 2}; Fiery Passion Strikes carries the same entry unconditioned; `sQ` resolves the Volcano Kablam variant off that state either way (gcsim getApexDrive: `Cons < 2 && !HasBlessing → return`). Apex Drive has been a real transient state since the post-P4 primitive landed 2026-07-17."
+				"C2 Apex Drive on every plunge: removes the in-FP gate. With C2, plunges always trigger Apex Drive, enabling Volcano Kablam outside FP. ↻ 2026-08-18: this IS modelled, and the \"Not modelled (Apex Drive itself isn't modelled)\" that used to close the line contradicted the Volcano Kablam note four entries above it in this same array. By the Horns carries `actionOpensState.plunge` = apexDrive / 2.33s gated {constellation: 2}; Fiery Passion Strikes carries the same entry unconditioned; `sQ` resolves the Volcano Kablam variant off that state either way (gcsim getApexDrive: `Cons < 2 && !HasBlessing → return`). Apex Drive has been a real transient state since the post-P4 primitive landed 2026-07-17.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Nothing on screen is wrong, approximate or missing — Apex Drive is a real transient state, `sQ` resolves the Volcano Kablam variant correctly at C0 and C2, and the variant draws its own instant bar with its own cooldown and energy cost. This is notation documentation (how to type a token) plus a kit recap, and the KQM notation reference is where that belongs. ⚠ Varesa DOES have a real unstated divergence — the 15s Fiery Passion pill runs its authored span because Nightsoul points are not tracked — but the caveat does not say that, and I am not authoring new prose this round. Category: kit-explanation."
 			],
 			"description": "Leaps into the air before using the momentum of the drop to unleash a powerful flying kick, dealing Nightsoul-aligned AoE Electro DMG to opponents — just like those heroes of justice in woven scrolls for kids!\nAfter using this Skill, Varesa's Nightsoul points will be restored to maximum and she will enter the Fiery Passion state.\n\nIn the Fiery Passion state, Varesa's Elemental Burst will deal a greater amount of Nightsoul-aligned AoE Electro DMG.\n\nAdditionally, she will briefly activate Apex Drive after using a Plunging Attack while in her Fiery Passion state.\n\nApex Drive\nIncreases Varesa's interruption resistance. While affected by Apex Drive, Varesa can ignore her Elemental Burst CD and consume less Energy to use her special Elemental Burst, \"Guardian Vent: Volcano Kablam\": This causes her to use the especially powerful Plunging Attack, the \"Thunderous Tornado Eruption,\" which deals Nightsoul-aligned AoE Electro DMG upon landing before causing her to exit Apex Drive. This DMG is considered Plunging Attack DMG.\nVaresa will exit Apex Drive after using her Elemental Skill.",
-			"application": [{ "frame": 88, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 88,
+					"element": "electro",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -256,7 +431,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onTeamNightsoulBurst" },
+					"trigger": {
+						"type": "onTeamNightsoulBurst"
+					},
 					"duration": 12,
 					"durationType": "refresh",
 					"source": "character",
@@ -292,8 +469,14 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "onHit", "abilityType": "plunge" },
-					"conditions": { "type": "constellation", "level": 2 },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "plunge"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"amount": 11.5
 				}
 			],
@@ -319,12 +502,20 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 4 },
-							{ "type": "state", "state": "nightsoulBlessing" }
+							{
+								"type": "constellation",
+								"level": 4
+							},
+							{
+								"type": "state",
+								"state": "nightsoulBlessing"
+							}
 						]
 					},
 					"source": "character",
@@ -355,12 +546,21 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "onHit", "abilityType": "plunge" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "plunge"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "state", "state": "nightsoulBlessing" }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "state",
+								"state": "nightsoulBlessing"
+							}
 						]
 					},
 					"amount": 30

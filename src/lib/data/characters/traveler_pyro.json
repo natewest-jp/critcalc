@@ -16,13 +16,54 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
-				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
-				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
-				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
-				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 28,
+						"hit": 13,
+						"N": 17
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 28,
+						"hit": 13,
+						"N": 26
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 36,
+						"hit": 16,
+						"N": 32
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 45,
+						"hit": 30,
+						"N": 39
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 69,
+						"hit": 25
+					}
+				}
 			],
-			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
+			"chargeFrames": {
+				"anim": 55,
+				"E": 37,
+				"Q": 36,
+				"D": 20,
+				"J": 20,
+				"swap": 44
+			},
 			"_curatorNotes": [
 				"Normal/charge frames + scaling shared across all Traveler element variants (Male/Aether)."
 			],
@@ -54,7 +95,12 @@
 			"duration": 12,
 			"opensState": "nightsoulBlessing",
 			"terminatesOnSwap": false,
-			"frames": { "anim": 49, "D": 31, "J": 31, "swap": 48 },
+			"frames": {
+				"anim": 49,
+				"D": 31,
+				"J": 31,
+				"swap": 48
+			},
 			"cooldown": 18,
 			"cooldownStartDelay": 19,
 			"tags": [],
@@ -62,15 +108,30 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 77, "N": 61, "Q": 59, "D": 60, "J": 61, "swap": 59 },
+					"frames": {
+						"anim": 77,
+						"N": 61,
+						"Q": 59,
+						"D": 60,
+						"J": 61,
+						"swap": 59
+					},
 					"application": [
-						{ "frame": 50, "element": "pyro", "units": 1 },
-						{ "frame": 62, "element": "pyro", "units": 1 }
+						{
+							"frame": 50,
+							"element": "pyro",
+							"units": 1
+						},
+						{
+							"frame": 62,
+							"element": "pyro",
+							"units": 1
+						}
 					]
 				}
 			],
 			"effects": [],
-			"caveat": "Shown for the full 12s, but the Nightsoul state drains at 7 points/sec from a max of 42 — empty in about 6s unless refreshed. The burst restores points up to 4 times; the drain and refresh are not modeled.",
+			"caveat": "Shown for the full 12s, but the Nightsoul state empties in about 6s unless the burst refreshes it.",
 			"_curatorNotes": [
 				"Tap E (Flowfire Blade Tap): hits enemy at skillTapHitmark=24f, then enters NS Blessing at +19f (enterNightsoulDelay). Initiates a Blazing Threshold pulse loop at 66f intervals (blazingThresholdInterval). Per-pulse blazingThreshold[lvl=10]=50.54% ATK Pyro.",
 				"Hold E variant: skillHoldHitmark=50f for the explicit Hold DMG (holdDMG[lvl=10]=177.84% ATK Pyro). Also enters NS Blessing + opens Scorching Threshold state (which fires 81.4% ATK Pyro on enemy hit, 3s ICD per scorchingThresholdICDKey).",
@@ -81,16 +142,37 @@
 				"C2 (Spreading Flames): on E cast, +30% ATK to active for 8s. Authorable; skipped for terseness.",
 				"C4 (Brightening Embers): +30% Q DMG when in NS Blessing. Authorable as conditional buff effect; skipped.",
 				"[A7] Flavor context: Traveler is the only non-Natlan character to use the Nightsoul system — worth mentioning to explain why the drain/refresh mechanics matter.",
-				"[A7] The burst restores 7 Nightsoul points per refresh, up to 4 times (+28 total, filling toward the 42 cap); the per-refresh amount is already detailed in the burst's curator notes."
+				"[A7] The burst restores 7 Nightsoul points per refresh, up to 4 times (+28 total, filling toward the 42 cap); the per-refresh amount is already detailed in the burst's curator notes.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Shown for the full 12s, but the Nightsoul state drains at 7 points/sec from a max of 42 — empty in about 6s unless refreshed. The burst restores points up to 4 times; the drain and refresh are not modeled.\""
 			],
 			"description": "The Traveler unleashes their inner flame, dealing AoE Pyro DMG.\n\nTap\nDeals AoE Pyro DMG, enters Nightsoul's Blessing, and produces Blazing Threshold pulses at intervals.\n\nHold\nDeals stronger AoE Pyro DMG and enters Nightsoul's Blessing with the Scorching Threshold effect: when nearby opponents take damage, a Pyro pulse triggers.",
 			"application": [
-				{ "frame": 24, "element": "pyro", "units": 1 },
-				{ "frame": 90, "element": "pyro" },
-				{ "frame": 156, "element": "pyro" },
-				{ "frame": 222, "element": "pyro", "units": 1 },
-				{ "frame": 288, "element": "pyro" },
-				{ "frame": 354, "element": "pyro" }
+				{
+					"frame": 24,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 90,
+					"element": "pyro"
+				},
+				{
+					"frame": 156,
+					"element": "pyro"
+				},
+				{
+					"frame": 222,
+					"element": "pyro",
+					"units": 1
+				},
+				{
+					"frame": 288,
+					"element": "pyro"
+				},
+				{
+					"frame": 354,
+					"element": "pyro"
+				}
 			]
 		},
 		{
@@ -99,7 +181,11 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 49, "E": 48, "swap": 47 },
+			"frames": {
+				"anim": 49,
+				"E": 48,
+				"swap": 47
+			},
 			"cooldown": 18,
 			"energyCost": 70,
 			"tags": [],
@@ -112,7 +198,13 @@
 				"C4 effect on burst (+30% Q DMG when in NS): not authored — would need conditional effect with state:nightsoulBlessing condition."
 			],
 			"description": "Releases all the Pyro power within, dealing massive AoE Pyro DMG and restoring Nightsoul points to the Traveler.",
-			"application": [{ "frame": 40, "element": "pyro", "units": 1 }]
+			"application": [
+				{
+					"frame": 40,
+					"element": "pyro",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [

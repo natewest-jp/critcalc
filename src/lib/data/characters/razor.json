@@ -16,12 +16,44 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 45, "hit": 25 } },
-				{ "name": "N2", "frames": { "anim": 33, "hit": 16 } },
-				{ "name": "N3", "frames": { "anim": 47, "hit": 13 } },
-				{ "name": "N4", "frames": { "anim": 116, "hit": 38 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 45,
+						"hit": 25
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 33,
+						"hit": 16
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 47,
+						"hit": 13
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 116,
+						"hit": 38
+					}
+				}
 			],
-			"plungeFrames": { "anim": 87, "N": 58, "E": 58, "Q": 58, "D": 46, "J": 86, "swap": 71 },
+			"plungeFrames": {
+				"anim": 87,
+				"N": 58,
+				"E": 58,
+				"Q": 58,
+				"D": 46,
+				"J": 86,
+				"swap": 71
+			},
 			"_curatorNotes": [
 				"N and C cancel frames not explicitly set in gcsim attack.go — all 4 hits use InitNormalCancelSlice(hitmark, animLength) with no subsequent ActionAttack/ActionCharge overrides. AnimationLengths: N1=45, N2=33, N3=47, N4=116. Only swap recorded per hit (= hitmark). KQM frame cross-check needed.",
 				"chargeFrames not available: Razor's charged attack is a stamina-drain spinning slash (claymore type); no charge.go in gcsim character dir. Note: Lightning Fang (Q) disables charged attacks for its duration. Reviewer to source chargeFrames from KQM or game testing.",
@@ -46,7 +78,14 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 4 consecutive strikes.\n\nCharged Attack\nDrains Stamina over time to perform continuous spinning attacks against all nearby opponents.\nAt the end of the sequence, performs a more powerful slash. \n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": { "anim": 86, "N": 56, "E": 57, "Q": 57, "D": 44, "swap": 69 }
+			"lowPlungeFrames": {
+				"anim": 86,
+				"N": 56,
+				"E": 57,
+				"Q": 57,
+				"D": 44,
+				"swap": 69
+			}
 		},
 		{
 			"id": "razor__skill__claw_and_thunder",
@@ -54,7 +93,13 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 74, "N": 70, "Q": 69, "D": 31, "J": 31 },
+			"frames": {
+				"anim": 74,
+				"N": 70,
+				"Q": 69,
+				"D": 31,
+				"J": 31
+			},
 			"cooldown": 6,
 			"cooldownStartDelay": 30,
 			"variants": [
@@ -62,12 +107,24 @@
 					"label": "Hold",
 					"input": ["hE"],
 					"cooldown": 10,
-					"frames": { "anim": 103, "N": 102, "D": 52, "J": 52, "swap": 91 },
+					"frames": {
+						"anim": 103,
+						"N": 102,
+						"D": 52,
+						"J": 52,
+						"swap": 91
+					},
 					"_curatorNotes": [
 						"Hold variant cooldownStartDelay = 52 (skillHoldCDStarts[0] in gcsim). AbilityVariant has no cooldownStartDelay field — schema gap; reviewer to extend if needed. Inside-Q Hold cooldownStartDelay also = 52 (skillHoldCDStarts[1]).",
 						"Hold Q-cancel: ActionBurst not explicitly set in skillHoldFrames[0] — stays at InitAbilSlice default (103 = AnimationLength). Omitted per rule. gcsim comment labels InitAbilSlice(103) as 'Hold E -> Q', suggesting 103f as Q-cancel; reviewer to verify."
 					],
-					"application": [{ "frame": 55, "element": "electro", "units": 1 }]
+					"application": [
+						{
+							"frame": 55,
+							"element": "electro",
+							"units": 1
+						}
+					]
 				}
 			],
 			"_curatorNotes": [
@@ -76,13 +133,19 @@
 				"A1 passive (Awakening) reduces skill CD by 18% at Ascension 1+: Press base 6s → ~4.92s, Hold base 10s → ~8.2s (gcsim: a1CDReduction multiplies by 0.82). Base cooldowns in JSON are pre-A1 values. Also resets skill CD on Q cast (a1CDReset called at burstHitmark=32).",
 				"Inside-Q Press cooldownStartDelay = 31 (skillPressCDStarts[1]). Base (outside-Q) Press cooldownStartDelay = 30 recorded on ability.",
 				"Hexerei Secret Rite (current-patch, count-gated) hangs off this ability's sigil counter: gcsim skill.go:207-217 clamps c.sigils to 3 and calls thunderFallCB() on overflow; asc.go:50-89 gates it on IsHexerei && GetHexereiCount() >= 2, then queues a 150% ATK Electro strike (\"Surge of Lightning\", Mult 1.5, hitmark 37) and AddEnergy 7 at 74f, with hexereiICDKey = 60+74 frames (so the next proc is possible 1s after the energy lands → procCooldown 1). Overflow itself (gaining a sigil at 3/3) is not schema-expressible, so the energy effect is authored on factionBonuses with a manual trigger; the 150% ATK strike is left unauthored per the damage-multiplier rule.",
-				"Hexerei permanent (gcsim skill.go:198): with C6, each sigil grant adds 3 sigils instead of 1 (`if c.IsHexerei && c.Base.Cons >= 6 { sigils = 3 }`) — bare IsHexerei, no count gate. Sigil cap stays 3, so the practical change is reaching cap (and Secret Rite overflow) in one Press hit. Not modelable: the sigil counter itself is not in the schema."
+				"Hexerei permanent (gcsim skill.go:198): with C6, each sigil grant adds 3 sigils instead of 1 (`if c.IsHexerei && c.Base.Cons >= 6 { sigils = 3 }`) — bare IsHexerei, no count gate. Sigil cap stays 3, so the practical change is reaching cap (and Secret Rite overflow) in one Press hit. Not modelable: the sigil counter itself is not in the schema.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The caveat talks about an energy refund and a damage strike. The planner has no energy surface at all (Q rows draw cooldowns, never energy), and the strike is damage-only under the constitution and is authored nowhere. Nothing on the timeline is wrong, short, missing or approximate because of this — the reader is being told about a mechanic that never had a place on a Gantt chart. Category: invisible-omission."
 			],
 			"tags": [],
 			"effects": [],
 			"description": "Hunts his prey using the techniques taught to him by his master and his lupical.\n\nPress\nSwings the Thunder Wolf Claw, dealing Electro DMG to opponents in front of Razor.\nUpon striking an opponent, Razor will gain an Electro Sigil, which increases his Energy Recharge rate.\nRazor can have up to 3 Electro Sigils simultaneously, and gaining a new Electro Sigil refreshes their duration.\n\nHold\nGathers Electro energy to unleash a lightning storm over a small AoE, causing massive Electro DMG, and clears all of Razor's Electro Sigils.\nEach Electro Sigil cleared in this manner will be converted into Energy for Razor.",
-			"caveat": "Not modeled: with 2 or more Hexerei in the party, an overflowing Electro Sigil calls down a lightning strike that returns 7 Energy.",
-			"application": [{ "frame": 32, "element": "electro", "units": 1 }]
+			"application": [
+				{
+					"frame": 32,
+					"element": "electro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "razor__burst__lightning_fang",
@@ -90,7 +153,13 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 74, "N": 73, "D": 58, "J": 57, "swap": 63 },
+			"frames": {
+				"anim": 74,
+				"N": 73,
+				"D": 58,
+				"J": 57,
+				"swap": 63
+			},
 			"cooldown": 20,
 			"tags": ["summon"],
 			"energyCost": 80,
@@ -104,7 +173,13 @@
 			],
 			"effects": [],
 			"description": "Summons the Wolf Within, which deals Electro DMG to all nearby opponents. This clears all of Razor's Electro Sigils, which will be converted into Elemental Energy for him.\nThe Wolf Within will fight alongside Razor for the skill's duration.\n\nThe Wolf Within\n·Strikes alongside Razor's normal attacks, dealing Electro DMG.\n·Raises Razor's ATK SPD and Electro RES.\n·Causes Razor to be immune to DMG inflicted by the Electro-Charged status.\n·Disables Razor's Charged Attacks.\n·Increases Razor's resistance to interruption.\n\nThese effects end when Razor leaves the battlefield.\nWhen Razor leaves the field, a maximum of 10 Energy will be returned to him based off the duration remaining on this skill.",
-			"application": [{ "frame": 32, "element": "electro", "units": 2 }]
+			"application": [
+				{
+					"frame": 32,
+					"element": "electro",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -151,8 +226,13 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "enemyHpBelow", "threshold": 30 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "enemyHpBelow",
+						"threshold": 30
+					},
 					"source": "character",
 					"stat": "critRate",
 					"value": 10,
@@ -185,7 +265,9 @@
 					"trigger": {
 						"type": "onHit",
 						"abilityType": "skill",
-						"filter": { "damageTag": "skill" }
+						"filter": {
+							"damageTag": "skill"
+						}
 					},
 					"duration": 7,
 					"value": -15
@@ -216,7 +298,11 @@
 					"type": "buff",
 					"source": "character",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill", "input": ["hE"] },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"stat": "critRate",
@@ -227,7 +313,11 @@
 					"type": "buff",
 					"source": "character",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill", "input": ["hE"] },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"stat": "critDmg",
@@ -238,7 +328,10 @@
 					"type": "buff",
 					"source": "character",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"stat": "critRate",
@@ -249,7 +342,10 @@
 					"type": "buff",
 					"source": "character",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"stat": "critDmg",
@@ -259,7 +355,10 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "normal" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal"
+					},
 					"procCooldown": 10,
 					"scaling": 100,
 					"stat": "atk",
@@ -279,8 +378,14 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "manual" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "manual"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"procCooldown": 1,
 					"amount": 7,
 					"_curatorNotes": [

@@ -32,10 +32,11 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"caveat": "In the Skill's mode, Normal and Charged Attacks become DEF-scaling Geo and the 4th Normal adds a Lunar-Crystallize instance. Neither the Geo conversion nor that extra hit is shown.",
+			"caveat": "In the Skill's mode, Normal and Charged Attacks deal Geo DMG. The timeline still treats them as Physical, so they apply no Geo and cause no reactions.",
 			"description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"_curatorNotes": [
-				"[A7] In-mode Normal/Charged Attacks deal Geo DMG that other infusions cannot override (kit detail; trimmed from the user caveat for length)."
+				"[A7] In-mode Normal/Charged Attacks deal Geo DMG that other infusions cannot override (kit detail; trimmed from the user caveat for length).",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"In the Skill's mode, Normal and Charged Attacks become DEF-scaling Geo and the 4th Normal adds a Lunar-Crystallize instance. Neither the Geo conversion nor that extra hit is shown.\""
 			]
 		},
 		{
@@ -51,18 +52,25 @@
 			"effects": [],
 			"durationExtensions": [
 				{
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "state", "state": "inStance" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
 					"delta": 1.7
 				}
 			],
-			"caveat": "Not modeled: Phase Shift Radiance and the enhanced Skill it powers, Spirit Steed's Stride — DEF-scaling Geo hits whose 2nd is a Lunar-Crystallize reaction. Only the mode window is shown.",
+			"caveat": "Only the mode window is shown — Spirit Steed's Stride, the enhanced Skill you cast from inside it, has no place on the timeline.",
 			"_curatorNotes": [
 				"Modeled as behavior:\"stance\" (Lunar Phase Shift mode): 15s window (sidecar 'Lunar Phase Shift Duration' col 10 = 15.0s), ends on swap-off (terminatesOnSwap:true, KQM: mode lasts '15s, until all Skill charges are consumed, or until she swaps off-field'). CD 18s (sidecar 'CD' col 10 = 18.0s).",
 				"durationExtensions: burst cast while in-stance extends the current mode by +1.7s (kit text: 'if Zibai is in the Lunar Phase Shift, the duration ... will extend by an additional 1.7s'). This replaces the genshin-db stub's spurious burst duration:1.7.",
 				"Removed the genshin-db stub's spurious tags:[\"summon\"] — Lunar Phase Shift is a self stance/mode, not a summoned entity.",
 				"NOT MODELED (personal on-field DPS, no gcsim source / frameless): Phase Shift Radiance economy (KQM: +10/s passive, +5 per Normal hit on a 0.5s ICD; C1 +100 on Skill cast and 5 charges; C6 +50% gain rate), and Spirit Steed's Stride enhanced Skill (needs >=70 Radiance; two DEF-scaling Geo hits, 2nd is Lunar-Crystallize; sidecar 'Spirit Steed's Stride 1/2-Hit DMG' col 10 = 310.6% / 253.7% DEF). Particle gen: 2/3 chance of 1 particle per hit in mode, 2s ICD (KQM). Moonsign: Ascendant Gleam — in mode the 4th Normal adds a Lunar-Crystallize instance (sidecar 'Lunar Phase Shift 4-Hit Additional DMG' col 10 = 53.0% DEF). None of these are team-facing; all require radiance simulation the planner does not do.",
-				"[A7] In-mode Geo conversion of Normal/Charged Attacks is retained on the Normal-attack caveat; dropped here to avoid duplication."
+				"[A7] In-mode Geo conversion of Normal/Charged Attacks is retained on the Normal-attack caveat; dropped here to avoid duplication.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: Phase Shift Radiance and the enhanced Skill it powers, Spirit Steed's Stride — DEF-scaling Geo hits whose 2nd is a Lunar-Crystallize reaction. Only the mode window is shown.\""
 			],
 			"description": "Summoning a shadow of her former powers, she switches to the **Lunar Phase Shift** mode.\nIn this mode, Zibai's Normal Attacks and Charged Attacks will deal Geo DMG that cannot be overridden by other infusions, and she can accrue special Phase Shift Radiance through different methods. Zibai can consume Phase Shift Radiance to unleash the special Elemental Skill Spirit Steed's Stride.\n\nMoonsign: Ascendant Gleam\nWhile in the Lunar Phase Shift mode, when Zibai performs Normal Attacks, the fourth attack will deal an additional instance of Geo DMG, which is considered Lunar-Crystallize Reaction DMG."
 		},
@@ -76,10 +84,10 @@
 			"energyCost": 60,
 			"effects": [],
 			"behavior": "instant",
-			"caveat": "Not modeled: the two DEF-scaling Geo hits, the 2nd of which counts as a Lunar-Crystallize reaction.",
 			"_curatorNotes": [
 				"Two DEF-scaling Geo hits, 2nd considered Lunar-Crystallize reaction DMG (sidecar 'Skill 1/2-Hit DMG' col 10 = 228.5% / 319.9% DEF). Damage hits not authored — frameless, personal on-field DPS.",
-				"Removed the genshin-db stub's duration:1.7 — that value is the Lunar Phase Shift extension the Burst grants, not the Burst's own window. Modeled as a durationExtension on the Skill's stance instead. CD 15s (sidecar col 10 = 15.0s), Energy 60 (sidecar col 10 = 60)."
+				"Removed the genshin-db stub's duration:1.7 — that value is the Lunar Phase Shift extension the Burst grants, not the Burst's own window. Modeled as a durationExtension on the Skill's stance instead. CD 15s (sidecar col 10 = 15.0s), Energy 60 (sidecar col 10 = 60).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Q bar draws with its cooldown, its energy cost, its +1.7s stance extension and a Geo application on the aura lane. What the caveat names is the hit COUNT and their DEF scalings (damage magnitude, out of scope) plus a hit 'counting as' Lunar-Crystallize Reaction DMG, which is the frozen reaction-DMG-derivation distinction and not a gauge event the lane could ever mark. Category: invisible-omission."
 			],
 			"description": "Zibai operates the Jadelight Canopy, dealing two instances of Geo DMG, with the second damage instance being considered Lunar-Crystallize Reaction DMG.\nWhen cast, if Zibai is in the **Lunar Phase Shift**, the duration of the current Lunar Phase Shift will extend by an additional 1.7s."
 		}
@@ -102,12 +110,16 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "def%",
 					"value": {
 						"type": "perTeamCount",
-						"count": { "elements": ["geo"] },
+						"count": {
+							"elements": ["geo"]
+						},
 						"per": 15,
 						"cap": 45
 					},
@@ -122,12 +134,16 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "em",
 					"value": {
 						"type": "perTeamCount",
-						"count": { "elements": ["hydro"] },
+						"count": {
+							"elements": ["hydro"]
+						},
 						"per": 60,
 						"cap": 180
 					},
@@ -140,9 +156,9 @@
 					}
 				}
 			],
-			"caveat": "These self buffs scale with your team: +15% DEF per other Geo ally (cap +45%) and +60 EM per Hydro ally (cap +180). Shown as a per-ally rate — multiply by the number of qualifying allies.",
 			"_curatorNotes": [
-				"Self buff conditioned on team composition — NOT a buff Zibai gives the team. The genshin-db stub had this backwards (target:team, +60 EM to the party); corrected to two self buffs. Values are per-qualifying-member (fixed constants from kit text, no per-count multiplier primitive), so authored at the single-member amount with a caveat noting it scales per member. teamElementCount counts non-holder members, so Zibai's own Geo is correctly excluded."
+				"Self buff conditioned on team composition — NOT a buff Zibai gives the team. The genshin-db stub had this backwards (target:team, +60 EM to the party); corrected to two self buffs. Values are per-qualifying-member (fixed constants from kit text, no per-count multiplier primitive), so authored at the single-member amount with a caveat noting it scales per member. teamElementCount counts non-holder members, so Zibai's own Geo is correctly excluded.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — THE VALUE IN THE ALWAYS-ON CHIP TOOLTIP. `perTeamCount` is never resolved x count (rubric P10) — the tooltip prints the formula '+15%/geo ally (cap 45%)', so the reader must do the multiplication. The first sentence is deleted because it merely restates the numbers the chip already prints and the kit description already says; the second sentence is the only screen-relevant half. Rubric D5 names Zibai's per-ally scaling as a true omission to keep. Category: approximation-disclosure."
 			],
 			"description": "Other Geo party members increase Zibai's DEF by 15% each. Hydro party members increase her Elemental Mastery by 60 each."
 		}
@@ -167,14 +183,20 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"source": "character",
 					"stat": "lunarCrystallizeDmgBonus",
 					"value": 30,
 					"snapshottable": false,
 					"duration": 15,
 					"durationType": "fixed",
-					"conditions": { "type": "state", "state": "inStance" }
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					}
 				}
 			],
 			"caveat": "Shown as a fixed 15s team window, but in game it lasts only while she is in the Lunar Phase Shift mode — it ends early if she swaps off-field.",

@@ -35,12 +35,50 @@
 			"description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"_curatorNotes": ["No plunge.go in gcsim character dir — plungeFrames not available."],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 32, "hit": 15, "N": 21, "C": 21 } },
-				{ "name": "N2", "frames": { "anim": 34, "hit": 13, "N": 21, "C": 21 } },
-				{ "name": "N3", "frames": { "anim": 47, "hit": 15, "N": 39, "C": 39 } },
-				{ "name": "N4", "frames": { "anim": 62, "hit": 21, "N": 71 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 32,
+						"hit": 15,
+						"N": 21,
+						"C": 21
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 34,
+						"hit": 13,
+						"N": 21,
+						"C": 21
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 47,
+						"hit": 15,
+						"N": 39,
+						"C": 39
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 62,
+						"hit": 21,
+						"N": 71
+					}
+				}
 			],
-			"chargeFrames": { "anim": 67, "E": 42, "Q": 42, "D": 10, "J": 10, "swap": 42 }
+			"chargeFrames": {
+				"anim": 67,
+				"E": 42,
+				"Q": 42,
+				"D": 10,
+				"J": 10,
+				"swap": 42
+			}
 		},
 		{
 			"id": "dahlia__skill__immersive_ordinance",
@@ -53,23 +91,50 @@
 			"effects": [],
 			"description": "Time for a fun little trick! Summons the Sacramental Shower in different ways depending on whether you Tap or Hold it.\n\nTap\nAfter a short prayer, summons the Sacramental Shower in front.\n\nHold\nEngages in continuous prayer, and when done, summons forth a Sacramental Shower in the designated position.\n\nSacramental Shower\nWhen opponents or nearby party members touch the Sacramental Shower, different effects will occur depending on the one who touches it:\nIf an opponent touches the Shower, it will explode and deal AoE Hydro DMG to nearby opponents.\nIf a nearby party member touches it, it will bounce the one who touches it high in the air.\n\nOnly 1 Sacramental Shower summoned by Dahlia himself can be on the field at once.",
 			"behavior": "instant",
-			"caveat": "Not modeled: the Sacramental Shower summon. Its lifetime isn't known, so no window is shown for it.",
 			"_curatorNotes": [
 				"Sacramental Shower summons[] entries removed (was duration: 0 placeholder). gcsim doesn't track the entity's lifetime and we have no other authoritative source. Re-add when KQM / in-game data lands; spawnsAt was 27 (Tap) / 28 (Hold).",
 				"Hold E (hE) cooldownStartDelay=21 differs from Tap cooldownStartDelay=23. Schema gap: AbilityVariant has no cooldownStartDelay field; reviewer decides whether to extend schema.",
 				"[A7] Ability caveat demoted kit detail: the Sacramental Shower is touch-triggered — nearby party members bounce off it, opponents make it explode.",
-				"[A7] Ability caveat demoted rationale: its duration is not tracked by gcsim and has no canonical source, so no window is surfaced (a fabricated window would mislead). Already captured in curator notes."
+				"[A7] Ability caveat demoted rationale: its duration is not tracked by gcsim and has no canonical source, so no window is surfaced (a fabricated window would mislead). Already captured in curator notes.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The hold-E leaves a Sacramental Shower standing in the world, and the summon lane shows NO row for it — a blank where every other world-leaving summon (Oz, Guoba, Baizhu's Pulsing Clarity) gets a labelled bar with ticks. The second sentence is what stops the blank reading as a bug: the lifetime has no canonical source, so a fabricated window would be worse than none. Category: expected-but-absent."
 			],
-			"frames": { "anim": 53, "N": 32, "E": 36, "Q": 33, "D": 31, "J": 29, "swap": 31 },
+			"frames": {
+				"anim": 53,
+				"N": 32,
+				"E": 36,
+				"Q": 33,
+				"D": 31,
+				"J": 29,
+				"swap": 31
+			},
 			"variants": [
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 33, "N": 35, "Q": 35, "D": 33, "J": 32, "swap": 33 },
-					"application": [{ "frame": 27, "element": "hydro", "units": 1 }]
+					"frames": {
+						"anim": 33,
+						"N": 35,
+						"Q": 35,
+						"D": 33,
+						"J": 32,
+						"swap": 33
+					},
+					"application": [
+						{
+							"frame": 27,
+							"element": "hydro",
+							"units": 1
+						}
+					]
 				}
 			],
-			"application": [{ "frame": 27, "element": "hydro", "units": 1 }]
+			"application": [
+				{
+					"frame": 27,
+					"element": "hydro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "dahlia__burst__radiant_psalter",
@@ -83,7 +148,10 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 12,
 					"durationType": "fixed",
 					"scaling": 6.048,
@@ -100,13 +168,26 @@
 			],
 			"description": "Appeals to the divine with earnestness and song, dealing AoE Hydro DMG to nearby opponents and granting his party members Favonian Favor, summoning a Shield of Sacred Favor.\nThe Shield of Sacred Favor's DMG absorption is based on Dahlia's Max HP, and it will absorb Hydro DMG with 250% effectiveness.\n\nFavonian Favor\nWhile this effect is active, 1 Benison stack may be consumed to summon a new Shield of Sacred Favor when an existing Shield is broken via DMG.\n\nDahlia can obtain Benison via the following methods:\n· He will gain 1 Benison stack when his own active party member hits opponents 4 times with Normal Attacks while affected by Favonian Favor.\n· After triggering the effect of his Ascension Talent, \"The Wind's Gentle Grace\" (You must first unlock this Ascension Talent.)\nDahlia can gain a maximum of 4 Benison stacks per Favonian Favor duration.",
 			"behavior": "instant",
-			"caveat": "The shield absorbs Hydro DMG at 250% effectiveness, which the shown window doesn't reflect. Only the initial shield is shown; when it breaks it re-forms by spending a Benison stack (up to 4 per cast), which the timeline omits.",
 			"_curatorNotes": [
 				"Favonian Favor is a 12s duration-bounded self-status (C4 extends to 15s, gcsim: favonianFavorDuration = 12*60 + c4FavonianFavorBonusDur()). Not modeled as summons[] — no spawned entity in world space. Shield of Sacred Favor first applies at frame 31 (burstShieldInitial) and regenerates from Benison stacks (max 4 per Favonian Favor window; gained via 4 NA hits on-field or 2 via A1 Frozen trigger). Shield effect authored 2026-07-12 (see effects[]); still pending reviewer: Favonian Favor ATK SPD self-buff and Benison stack tracking.",
-				"Shield label \"Shield of Sacred Favor\" taken verbatim from this ability's own description text (the game's wording, via genshin-db) — the shield lane renders it. ⛔ Kits whose text says only \"a shield\" (Diona, Candace, Xinyan, Lan Yan) keep the generic fallback rather than borrowing the ability name; gcsim's \"<Ability> (Shield)\" strings are its own internal convention, not in-game names."
+				"Shield label \"Shield of Sacred Favor\" taken verbatim from this ability's own description text (the game's wording, via genshin-db) — the shield lane renders it. ⛔ Kits whose text says only \"a shield\" (Diona, Candace, Xinyan, Lan Yan) keep the generic fallback rather than borrowing the ability name; gcsim's \"<Ability> (Shield)\" strings are its own internal convention, not in-game names.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — on both halves. Sentence 1 is THE case that prompted this round — every elemental shield absorbs its own element at 250%, no shield bar in the tool shows absorption, so nothing on screen looks wrong. Sentence 2: shield shatter-by-damage is a stated non-goal (a shield bar always runs its full authored span, and the planner has no enemy or HP state), and because the Benison stacks RE-FORM the shield, the drawn 12s span is what the game gives anyway — the re-form changes nothing about the bar's start, end or length. Category: general-game-knowledge."
 			],
-			"frames": { "anim": 55, "N": 53, "E": 52, "D": 51, "J": 51, "swap": 52 },
-			"application": [{ "frame": 30, "element": "hydro", "units": 2 }]
+			"frames": {
+				"anim": 55,
+				"N": 53,
+				"E": 52,
+				"D": 51,
+				"J": 51,
+				"swap": 52
+			},
+			"application": [
+				{
+					"frame": 30,
+					"element": "hydro",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -176,9 +257,9 @@
 			"name": "You Shall Go Out With Joy",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"caveat": "Not modeled: the 10% ATK SPD for the active character under Favonian Favor, and the revive if they fall (once every 15 minutes).",
 			"_curatorNotes": [
-				"Two effects: (1) ATK SPD +10% (flat) for active character under Favonian Favor — additive with A4 HP-scaling ATK SPD, so C6 cap is effectively 30% (gcsim: burstAttackSpeed = min(HP-based, 0.2) + 0.1). Still unauthored — needs reviewer pass. (2) Revival mechanic: resolved as caveat-only (capability sweep 2026-07-28) — gcsim cons.go:54-88 subscribes OnPlayerHPDrain, SetHPByRatio(1) when the Favonian Favor holder falls, c6Icd = 15*60*60 frames. Death-triggered revive: no on-death trigger primitive and no way to express a 15-minute once-per; a timeline heal effect would misrepresent it."
+				"Two effects: (1) ATK SPD +10% (flat) for active character under Favonian Favor — additive with A4 HP-scaling ATK SPD, so C6 cap is effectively 30% (gcsim: burstAttackSpeed = min(HP-based, 0.2) + 0.1). Still unauthored — needs reviewer pass. (2) Revival mechanic: resolved as caveat-only (capability sweep 2026-07-28) — gcsim cons.go:54-88 subscribes OnPlayerHPDrain, SetHPByRatio(1) when the Favonian Favor holder falls, c6Icd = 15*60*60 frames. Death-triggered revive: no on-death trigger primitive and no way to express a 15-minute once-per; a timeline heal effect would misrepresent it.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Attack speed is not in the Stat union at all — no ATK SPD buff is authorable or renderable for ANY character (Mika's whole Soulwind buff and Yun Jin's C6 are handled as curator notes, which is the house pattern), so no bar anywhere claims or omits it, and the only downstream effect would be normal-attack block widths being ~10% wide. The revive is a death-triggered, once-per-15-minutes mechanic with no timeline representation and nothing a player would look for on a Gantt chart. If the ATK SPD half is ever wanted back it belongs in a tool-level line, not on one C6 entry. Category: invisible-omission."
 			],
 			"description": "The current active character affected by the Elemental Burst **Radiant Psalter**'s Favonian Favor has their ATK SPD increased by 10%.\nAdditionally, when an active character affected by Favonian Favor falls, immediately:\n· Revive them.\n· Restore their HP to 100%.\nThis effect can trigger once every 15 minutes."
 		}

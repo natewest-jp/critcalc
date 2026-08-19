@@ -12,8 +12,35 @@ A caveat repairs trust where the rotation-planner timeline **visibly diverges
 from in-game reality** or **silently omits something decision-relevant**.
 Nothing else.
 
-**The test:** _would a player who already knows this character be misled by the
-timeline without this note?_ If no, the caveat should not exist.
+⚓⚓ **THE TEST — NAME THE PIXEL** _(Nate, 2026-08-18; this TIGHTENS the older
+"would a player be misled" test, which was too permissive and let the column
+grow to 57% padding)_:
+
+> _"I only want caveats when the player might be confused or not understand
+> something on the screen — they know their character well and they wonder why
+> they see something different from what they expected, or genuinely when we
+> have to approximate something."_
+
+For every caveat, answer: **what does the player SEE that is wrong, approximate,
+or conspicuously missing?** You must be able to point at a specific rendered
+thing — a bar, its length, a marker, a tick, a printed value. **If you cannot
+name the pixel, the caveat does not exist.** Not "it's true", not "a
+completionist would want it": an entry that repairs no on-screen confusion is
+noise in a 262px column and it dilutes the ones that matter.
+
+⛔ **A general fact about the GAME is never a caveat**, even when true and
+unmodelled. Elemental shields absorbing their own element at 250%, how ICD
+works, how energy works — players know these, and the tool claims nothing about
+them on screen. (The 2026-08-19 pass cut this at six sites.)
+
+⚠️ **An under-claim is an omission, not a divergence.** If everything shown is
+correct and there is merely less of it, no pixel is wrong.
+
+⚠️ **"No window" means "no row", so an unmodelled buff leaves NO blank.**
+`projectCharReceivedBuffRows` builds rows FROM windows — an effect that emits
+none creates no row, so the timeline is merely quieter, not visibly holed.
+⛔ Do not justify a caveat by "the player would notice the gap" unless the
+missing thing has drawn neighbours to be measured against.
 
 Corollaries:
 
@@ -23,6 +50,21 @@ Corollaries:
 - Curator reasoning, sources, frame numbers, schema/field talk → `_curatorNotes`.
 
 ## Where caveats render
+
+⛔⛔ **A CAVEAT MAY ONLY LIVE ON AN ABILITY-SHAPED HOST** — an ability, passive or
+constellation ENTRY. Never on an Effect, a summon's effect, or a factionBonus
+effect. **Enforced by characterLint E.28** (strict).
+
+⚓ The surface is ability-shaped by construction: `collectSlotCaveats` emits
+`{ name, caveat, kind }` and the panel prints the ability's NAME and KIND CHIP
+above each entry. An Effect has neither, so there is nothing to label it with.
+
+⚠️⚠️ This was silent DATA LOSS, not tidiness: 20 effect-level caveats rendered to
+nobody, and 7 sat on abilities with no entry-level caveat at all — those
+abilities warned the player about nothing. `caveat-lint.mjs` never scanned them
+either. ⚠️ No key-name check can catch this class — `caveat` is legal on
+AbilityCommon and illegal there, so the defect is POSITIONAL and
+`orphanedSchema.test.ts` stayed green over all 20.
 
 One surface: the planner NOTES panel — a narrow (262px) scrolling column that
 **already shows the character's name, the ability's kind chip (Skill / Burst /

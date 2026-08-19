@@ -16,18 +16,59 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 28, "hit": 13, "N": 17 } },
-				{ "name": "N2", "frames": { "anim": 28, "hit": 13, "N": 26 } },
-				{ "name": "N3", "frames": { "anim": 36, "hit": 16, "N": 32 } },
-				{ "name": "N4", "frames": { "anim": 45, "hit": 30, "N": 39 } },
-				{ "name": "N5", "frames": { "anim": 69, "hit": 25 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 28,
+						"hit": 13,
+						"N": 17
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 28,
+						"hit": 13,
+						"N": 26
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 36,
+						"hit": 16,
+						"N": 32
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 45,
+						"hit": 30,
+						"N": 39
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 69,
+						"hit": 25
+					}
+				}
 			],
-			"chargeFrames": { "anim": 55, "E": 37, "Q": 36, "D": 20, "J": 20, "swap": 44 },
-			"caveat": "Not modeled: Foreign Aqualis, unlocked by the True Moon quest — stat bonuses for each element resonated with, plus an empowered Charged Attack that spends or restores HP depending on current HP. These bonuses depend on account progress.",
+			"chargeFrames": {
+				"anim": 55,
+				"E": 37,
+				"Q": 36,
+				"D": 20,
+				"J": 20,
+				"swap": 44
+			},
 			"_curatorNotes": [
 				"Normal/charge frames + scaling shared across all Traveler element variants (Male/Aether).",
 				"Capability sweep 2026-07-28: renamed from stale beta 'Foreign Aquablade' to release 'Foreign Stream' (genshin-db 5.2.12 combat1); sections/description refreshed to live text. Frames unchanged.",
-				"Foreign Aqualis (quest-unlocked additional talent) is UPSTREAM-BLOCKED: absent from genshin-db 5.2.12. Per-resonated-element stat bonuses + Blade of Many Waters stacks (party HP-shift gained, max 3) enabling Charged Attack: Tidebound (15s CD; above 50% HP drains 10% Max HP for bonus DMG, below 50% heals 25% Max HP on hit). Resonance-count and party-HP-fluctuation triggers have no primitives; caveated only."
+				"Foreign Aqualis (quest-unlocked additional talent) is UPSTREAM-BLOCKED: absent from genshin-db 5.2.12. Per-resonated-element stat bonuses + Blade of Many Waters stacks (party HP-shift gained, max 3) enabling Charged Attack: Tidebound (15s CD; above 50% HP drains 10% Max HP for bonus DMG, below 50% heals 25% Max HP on hit). Resonance-count and party-HP-fluctuation triggers have no primitives; caveated only.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — nothing on the timeline changes with the quest. The stat bonuses are unauthored (no chip is drawn, so no chip is wrong), and the empowered Charged Attack differs only in DAMAGE and HP cost, neither of which this tool renders for any character; the C block's timing and its Hydro application are identical either way. This is an upstream-blocked kit addition explained in prose, not a repair to something on screen. Category: invisible-omission."
 			],
 			"sections": [
 				{
@@ -54,7 +95,14 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 45, "N": 44, "Q": 44, "D": 40, "J": 41, "swap": 43 },
+			"frames": {
+				"anim": 45,
+				"N": 44,
+				"Q": 44,
+				"D": 40,
+				"J": 41,
+				"swap": 43
+			},
 			"cooldown": 10,
 			"cooldownStartDelay": 24,
 			"tags": [],
@@ -62,37 +110,120 @@
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 90, "N": 81, "Q": 81, "D": 74, "J": 74, "swap": 90 },
+					"frames": {
+						"anim": 90,
+						"N": 81,
+						"Q": 81,
+						"D": 74,
+						"J": 74,
+						"swap": 90
+					},
 					"application": [
-						{ "frame": 61, "element": "hydro", "units": 1 },
-						{ "frame": 76, "element": "hydro" },
-						{ "frame": 91, "element": "hydro" },
-						{ "frame": 106, "element": "hydro" },
-						{ "frame": 121, "element": "hydro" },
-						{ "frame": 136, "element": "hydro" },
-						{ "frame": 151, "element": "hydro", "units": 1 },
-						{ "frame": 166, "element": "hydro" },
-						{ "frame": 181, "element": "hydro" },
-						{ "frame": 196, "element": "hydro" },
-						{ "frame": 211, "element": "hydro" },
-						{ "frame": 226, "element": "hydro" },
-						{ "frame": 241, "element": "hydro", "units": 1 },
-						{ "frame": 256, "element": "hydro" },
-						{ "frame": 271, "element": "hydro" },
-						{ "frame": 286, "element": "hydro" },
-						{ "frame": 301, "element": "hydro" },
-						{ "frame": 316, "element": "hydro" },
-						{ "frame": 331, "element": "hydro", "units": 1 },
-						{ "frame": 346, "element": "hydro" },
-						{ "frame": 361, "element": "hydro" },
-						{ "frame": 372, "element": "hydro", "units": 1 },
-						{ "frame": 376, "element": "hydro" },
-						{ "frame": 418, "element": "hydro" }
+						{
+							"frame": 61,
+							"element": "hydro",
+							"units": 1
+						},
+						{
+							"frame": 76,
+							"element": "hydro"
+						},
+						{
+							"frame": 91,
+							"element": "hydro"
+						},
+						{
+							"frame": 106,
+							"element": "hydro"
+						},
+						{
+							"frame": 121,
+							"element": "hydro"
+						},
+						{
+							"frame": 136,
+							"element": "hydro"
+						},
+						{
+							"frame": 151,
+							"element": "hydro",
+							"units": 1
+						},
+						{
+							"frame": 166,
+							"element": "hydro"
+						},
+						{
+							"frame": 181,
+							"element": "hydro"
+						},
+						{
+							"frame": 196,
+							"element": "hydro"
+						},
+						{
+							"frame": 211,
+							"element": "hydro"
+						},
+						{
+							"frame": 226,
+							"element": "hydro"
+						},
+						{
+							"frame": 241,
+							"element": "hydro",
+							"units": 1
+						},
+						{
+							"frame": 256,
+							"element": "hydro"
+						},
+						{
+							"frame": 271,
+							"element": "hydro"
+						},
+						{
+							"frame": 286,
+							"element": "hydro"
+						},
+						{
+							"frame": 301,
+							"element": "hydro"
+						},
+						{
+							"frame": 316,
+							"element": "hydro"
+						},
+						{
+							"frame": 331,
+							"element": "hydro",
+							"units": 1
+						},
+						{
+							"frame": 346,
+							"element": "hydro"
+						},
+						{
+							"frame": 361,
+							"element": "hydro"
+						},
+						{
+							"frame": 372,
+							"element": "hydro",
+							"units": 1
+						},
+						{
+							"frame": 376,
+							"element": "hydro"
+						},
+						{
+							"frame": 418,
+							"element": "hydro"
+						}
 					]
 				}
 			],
 			"effects": [],
-			"caveat": "Not modeled: the Hold mode's up to 22 Dewdrop damage ticks and its HP drain — each Dewdrop scales with Max HP and costs 4% of current HP (only above 50% HP). Only the cast is shown.",
 			"_curatorNotes": [
 				"Tap E (Aquacrest Saber Press): Torrent Surge at hitmark=25f, 340.7% ATK Hydro at lvl=10 (skillPress). Spiritbreath Thorn (Pneuma Arkhe) at +45f, 59.04% ATK Hydro, 9s ICD per spiritbreathThornICDKey.",
 				"Cooldown: SetCDWithDelay(skill, 10*60, 24).",
@@ -100,12 +231,20 @@
 				"Frames Tap-E: skillPressFrames[0]=InitAbilSlice(45), ActionAttack=44 ActionBurst=44 ActionDash=40 ActionJump=41 ActionWalk=44 ActionSwap=43.",
 				"A4 (Clear Waters): Hold-E HP consumed accumulates +45% as Torrent Surge FlatDmg, max 5000 bonus DMG. Not authored — composite scaling on HP-drained-amount. gcsim skill.go:321-332 (drain 0.04*CurrentHP per Dewdrop, a4Bonus += drain*0.45).",
 				"Capability sweep 2026-07-28: deleted stale beta note 'C4 (Tide Tributary): +20% Hydro DMG on E cast' — the release C4 is 'Pouring Descent' (Aquacrest Aegis shield), authored on the constellation entry. Description refreshed to genshin-db 5.2.12 combat2 text (beta '22 Dewdrops' wording replaced).",
-				"[A7] Original caveat: each Dewdrop's per-hit flat damage scales with Max HP via dewdropBonus[lvl]; the HP-cost-per-tick combined with per-hit flat-DMG-on-Max-HP scaling does not fit a single-scaling damage effect, which is why per-tick damage and HP costs are left unmodeled and only the frame variant is authored."
+				"[A7] Original caveat: each Dewdrop's per-hit flat damage scales with Max HP via dewdropBonus[lvl]; the HP-cost-per-tick combined with per-hit flat-DMG-on-Max-HP scaling does not fit a single-scaling damage effect, which is why per-tick damage and HP costs are left unmodeled and only the frame variant is authored.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — and the closing claim is now stale. The Hold variant authors a full 24-entry `application[]` running out to frame 418, so the aura lane DOES pip the Dewdrop channel — 'only the cast is shown' reads as false the moment the lane is on. What is genuinely absent is per-tick DAMAGE (never rendered for anyone) and the HP cost (the sim carries no HP state at all, tool-wide). Neither shortens a bar, moves a marker or blanks a lane the tool otherwise fills. Category: invisible-omission."
 			],
 			"description": "Unleashes a torrent that can cleanse the world.\n\nPress\nSends a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\n\nHold\nEnter Aiming Mode and constantly fire off Dewdrops in the direction in which you are aiming, dealing Hydro DMG to opponents they hit.\nWhen the skill ends, it will send a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\nSuffusion: When using the Hold configuration of this skill, if the Traveler's HP is higher than 50%, the DMG dealt by Dewdrops will increase based on the Traveler's Max HP, and the Traveler will lose a fixed amount of HP every second.\n\nArkhe: Pneuma\nAt certain intervals, after using Torrent Surge, this skill will unleash a Spiritbreath Thorn that pierces opponents, dealing Pneuma-aligned Hydro DMG.",
 			"application": [
-				{ "frame": 25, "element": "hydro", "units": 1 },
-				{ "frame": 70, "element": "hydro" }
+				{
+					"frame": 25,
+					"element": "hydro",
+					"units": 1
+				},
+				{
+					"frame": 70,
+					"element": "hydro"
+				}
 			]
 		},
 		{
@@ -114,7 +253,12 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 78, "N": 76, "J": 77, "swap": 76 },
+			"frames": {
+				"anim": 78,
+				"N": 76,
+				"J": 77,
+				"swap": 76
+			},
 			"cooldown": 20,
 			"energyCost": 80,
 			"tags": [],
@@ -129,14 +273,21 @@
 							"source": "C2: Trickling Purity",
 							"type": "flat",
 							"value": 3,
-							"conditions": { "type": "constellation", "level": 2 }
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							}
 						}
 					],
 					"effects": [
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.5, "firstTickDelay": 0 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.5,
+								"firstTickDelay": 0
+							},
 							"scaling": 183.36,
 							"stat": "atk",
 							"element": "hydro"
@@ -145,7 +296,6 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Not modeled: the C2 -30% bubble movement-speed reduction — the slower drift isn't shown. Its +3s duration is applied, so damage ticks run at the base 0.5s interval over the full window.",
 			"_curatorNotes": [
 				"Burst spawns Rising Waters bubble at burstFirstHitmark[0]=34f from cast. Bubble drifts forward (1.5 tiles/tick, 0.5s/tick = 8 ticks over 4s base; 14 ticks over 7s with C2). Per-tick burstDot[lvl=10]=183.36% ATK Hydro.",
 				"Authored as summons[] with summonTick effect at 0.5s interval, firstTickDelay 0.",
@@ -153,10 +303,17 @@
 				"Cooldown: SetCD(burst, 20*60). EnergyMax=80. ConsumeEnergy(consumeEnergyFrame[0]=4) drains 4 energy from teammates.",
 				"Bubble follows a fixed forward path from cast position — modeled as stationary (movement isn't visualized in our planner).",
 				"[A7] C2 was authored as a +3s duration modifier on the burst's Rising Waters Bubble summon (4s -> 7s). Original caveat framed the -30% movement-speed reduction as yielding 14 ticks vs 8 by slowing drift to 0.7s/tile; per curator notes the 14-tick count actually follows from the +3s duration (7s / 0.5s tick interval), which is modeled, so the movement-speed omission does not change tick count.",
-				"Capability sweep 2026-07-28: C2 renamed from stale beta 'Liquid Drift' to release 'Trickling Purity' (genshin-db 5.2.12) — durationModifier source label updated. Description refreshed to genshin-db combat3 text."
+				"Capability sweep 2026-07-28: C2 renamed from stale beta 'Liquid Drift' to release 'Trickling Purity' (genshin-db 5.2.12) — durationModifier source label updated. Description refreshed to genshin-db combat3 text.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Sentence one is a positional/movement mechanic — the bubble's drift speed has no representation on a time axis and the summon is deliberately authored `stationary` because movement is not visualised anywhere. Sentence two describes WORKING behavior: the C2 +3s is applied as a durationModifier and the 0.5s ticks run over the widened window, which is exactly what the lane draws. Nothing wrong, nothing missing. Category: invisible-omission."
 			],
 			"description": "Unleashes a slow-moving floating bubble that deals continuous Hydro DMG to nearby opponents.",
-			"application": [{ "frame": 34, "element": "hydro", "units": 1 }]
+			"application": [
+				{
+					"frame": 34,
+					"element": "hydro",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -168,16 +325,21 @@
 				{
 					"type": "heal",
 					"target": "self",
-					"trigger": { "type": "manual" },
-					"conditions": { "type": "ascension", "min": 1 },
+					"trigger": {
+						"type": "manual"
+					},
+					"conditions": {
+						"type": "ascension",
+						"min": 1
+					},
 					"scaling": 7,
 					"stat": "hp"
 				}
 			],
-			"caveat": "Not modeled: the heal from picking up a Sourcewater Droplet. Droplets drop from the skill's Hold-mode Dewdrop hits, up to 4 per use, and must be collected.",
 			"_curatorNotes": [
 				"Capability sweep 2026-07-28: renamed from stale beta 'Suffusion'/'Outflow' to release A1 'Spotless Waters' (genshin-db 5.2.12 passive1; deleted the beta Pneuma-absorption note and the A6 2026-07-12 rename flag this resolves). 'Suffusion' is the skill's own HP-drain mechanic, not a passive.",
-				"Heal authored: 7% of the Traveler's Max HP per Sourcewater Droplet picked up, self, fixed (not talent-scaled), scales with Healing Bonus — gcsim traveler/common/hydro/asc.go:14-35 (droplet spawn on Hold-E Dewdrop hit, 60f ICD, cap 4 per skill use) + asc.go:38-56 (a1PickUp: Heal Src MaxHP*0.07). Pickup has no schema trigger primitive — manual trigger per the Sigewinne C2 shield precedent."
+				"Heal authored: 7% of the Traveler's Max HP per Sourcewater Droplet picked up, self, fixed (not talent-scaled), scales with Healing Bonus — gcsim traveler/common/hydro/asc.go:14-35 (droplet spawn on Hold-E Dewdrop hit, 60f ICD, cap 4 per skill use) + asc.go:38-56 (a1PickUp: Heal Src MaxHP*0.07). Pickup has no schema trigger primitive — manual trigger per the Sigewinne C2 shield precedent.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — pickup-driven mechanics are on the FROZEN out-of-scope list (droplet/orb collection), the effect is `manual` so it reaches no planner surface, and heals draw no bar in the planner regardless. There is no lane where a droplet or its heal would sit, so its absence cannot be noticed; the second sentence is pure kit explanation on top. Category: invisible-omission."
 			],
 			"description": "After the Dewdrop fired by the Hold Mode of the Aquacrest Saber hits an opponent, a Sourcewater Droplet will be generated near to the Traveler. If the Traveler picks it up, they will restore 7% HP.\n1 Droplet can be created this way every second, and each use of Aquacrest Saber can create 4 Droplets at most."
 		},
@@ -234,16 +396,20 @@
 				{
 					"type": "shield",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"scaling": 10,
 					"stat": "hp"
 				}
 			],
-			"caveat": "Not modeled: the shield, which has no fixed duration — it lasts only while the skill is in use and ends with it. It absorbs Hydro DMG with 250% effectiveness, and a Dewdrop hit refills it once every 2s.",
+			"caveat": "Not modeled: the Aquacrest Aegis shield, so no shield bar appears — it lasts only while the skill is in use, which has no fixed length.",
 			"_curatorNotes": [
 				"Capability sweep 2026-07-28: renamed from stale beta 'Tide Tributary' (the +20% Hydro DMG beta effect never shipped) to release C4 'Pouring Descent' (genshin-db 5.2.12); deleted the superseded beta skip-note and the A6 2026-07-12 rename flag this resolves.",
 				"Shield authored: Aquacrest Aegis, 10% of the Traveler's Max HP — gcsim traveler/common/hydro/cons.go:17-39 (shield add, HP 0.1*MaxHP, Ele Hydro), cons.go:41-56 (refresh/redeploy on Dewdrop hit, 2s ICD), cons.go:58-69 (c4Remove at skill end). Lifetime is channel-bound, so no duration is authored (Sigewinne C2 precedent); the shield Effect has no element field — the 250% Hydro absorption efficiency is caveat-only.",
-				"⚓ This draws NO shield bar, at any constellation level, and that is correct (2026-08-18). `registerShieldOnCast` requires an explicit `duration > 0`, and the Aquacrest Aegis has no fixed lifetime to author — it ends when the skill does, and the skill is `behavior: 'instant'` with no active window to bind to. ⛔ Inventing a duration would be faking timing. Modelling it needs a channel/stance window on the skill first. See docs/constellation-shield-gap.md."
+				"⚓ This draws NO shield bar, at any constellation level, and that is correct (2026-08-18). `registerShieldOnCast` requires an explicit `duration > 0`, and the Aquacrest Aegis has no fixed lifetime to author — it ends when the skill does, and the skill is `behavior: 'instant'` with no active window to bind to. ⛔ Inventing a duration would be faking timing. Modelling it needs a channel/stance window on the skill first. See docs/constellation-shield-gap.md.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the shield, which has no fixed duration — it lasts only while the skill is in use and ends with it. It absorbs Hydro DMG with 250% effectiveness, and a Dewdrop hit refills it once every 2s.\""
 			],
 			"description": "When using Aquacrest Saber, an Aquacrest Aegis that can absorb 10% of the Traveler's Max HP in DMG will be created and will absorb Hydro DMG with 250% effectiveness. It will persist until the Traveler finishes using the skill.\nOnce every 2s, after a Dewdrop hits an opponent, if the Traveler is being protected by Aquacrest Aegis, the DMG Absorption of the Aegis will be restored to 10% of the Traveler's Max HP. If the Traveler is not presently being protected by an Aegis, one will be redeployed."
 		},
@@ -266,15 +432,17 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 6,
 					"stat": "hp"
 				}
 			],
-			"caveat": "Not modeled: the heal from picking up a Sourcewater Droplet. It reaches only the nearby party member with the lowest HP percentage, for 6% of that member's Max HP.",
 			"_curatorNotes": [
 				"Capability sweep 2026-07-28: renamed from stale beta 'Cresting Onslaught' (the E-CD-reset beta effect never shipped) to release C6 'Tides of Justice' (genshin-db 5.2.12); deleted the A6 2026-07-12 rename flag this resolves.",
-				"Heal authored: 6% of the RECEIVER's Max HP per Sourcewater Droplet picked up, targeting the lowest-HP% party member, scales with the Traveler's Healing Bonus — gcsim traveler/common/hydro/cons.go:71-95 (c6: HealTypePercent 0.06), fired from asc.go:63-65 inside a1PickUp. The heal Effect's stat 'hp' nominally reads as the holder's Max HP and target 'team' as everyone — both approximations are caveated; pickup has no schema trigger, so the trigger is manual (Sigewinne C2 precedent)."
+				"Heal authored: 6% of the RECEIVER's Max HP per Sourcewater Droplet picked up, targeting the lowest-HP% party member, scales with the Traveler's Healing Bonus — gcsim traveler/common/hydro/cons.go:71-95 (c6: HealTypePercent 0.06), fired from asc.go:63-65 inside a1PickUp. The heal Effect's stat 'hp' nominally reads as the holder's Max HP and target 'team' as everyone — both approximations are caveated; pickup has no schema trigger, so the trigger is manual (Sigewinne C2 precedent).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — — same pickup class as A1: FROZEN out of scope, `manual` trigger (no bar, no marker, no chip), and heals have no planner lane anyway. ⚠️ Same TB residue as Qiqi C4 — `target: 'team'` on an inert effect makes the Team Builder claim a party-wide heal — but a caveat cannot reach that card (N17), so this is a data ruling for Nate, not text worth 262px in the Notes panel. Category: invisible-omission."
 			],
 			"description": "When the Traveler picks up a Sourcewater Droplet, they will restore HP to a nearby party member with the lowest remaining HP percentage based on 6% of said member's Max HP."
 		}

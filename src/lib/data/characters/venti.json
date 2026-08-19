@@ -23,18 +23,72 @@
 				"[Hexerei] Fandom 'Divine Marksmanship' talent infobox, buffType=Hexerei buff field (Luna III): under Hexerei: Secret Rite, while the Stormeye is active Venti's Normal Attacks convert to enemy-piercing Windsunder Arrows dealing extra Anemo DMG along the path; NA hits extend the Stormeye duration by 1s and its CD by 0.5s, once per 0.1s, max 2 times per burst. Nothing authored: the NA conversion and the extra DMG are damage-only (constitution), and onHit-driven durationExtensions are outside the wired summon path. Caveat carries the Stormeye-duration divergence."
 			],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 30, "hit": 27 } },
-				{ "name": "N2", "frames": { "anim": 38, "hit": 19 } },
-				{ "name": "N3", "frames": { "anim": 33, "hit": 28 } },
-				{ "name": "N4", "frames": { "anim": 31, "hit": 28 } },
-				{ "name": "N5", "frames": { "anim": 22, "hit": 17 } },
-				{ "name": "N6", "frames": { "anim": 98, "hit": 49 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 30,
+						"hit": 27
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 38,
+						"hit": 19
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 33,
+						"hit": 28
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 31,
+						"hit": 28
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 22,
+						"hit": 17
+					}
+				},
+				{
+					"name": "N6",
+					"frames": {
+						"anim": 98,
+						"hit": 49
+					}
+				}
 			],
 			"chargeHits": [
-				{ "name": "Aimed Shot", "frames": { "anim": 23, "D": 15, "J": 15, "swap": 23 } },
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 94, "D": 86, "J": 86 } }
+				{
+					"name": "Aimed Shot",
+					"frames": {
+						"anim": 23,
+						"D": 15,
+						"J": 15,
+						"swap": 23
+					}
+				},
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 94,
+						"D": 86,
+						"J": 86
+					}
+				}
 			],
-			"plungeFrames": { "anim": 58, "swap": 58 },
+			"plungeFrames": {
+				"anim": 58,
+				"swap": 58
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -61,7 +115,14 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 98, "N": 22, "E": 22, "Q": 22, "D": 22, "J": 22 },
+			"frames": {
+				"anim": 98,
+				"N": 22,
+				"E": 22,
+				"Q": 22,
+				"D": 22,
+				"J": 22
+			},
 			"cooldown": 6,
 			"cooldownStartDelay": 21,
 			"variants": [
@@ -69,13 +130,22 @@
 					"label": "Hold",
 					"input": ["hE"],
 					"cooldown": 15,
-					"frames": { "anim": 289, "P": 116 },
+					"frames": {
+						"anim": 289,
+						"P": 116
+					},
 					"_curatorNotes": [
 						"Hold variant cooldownStartDelay = 34 frames (vs Press = 21 on base skill). Schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to extend schema or document. From skill.go: SetCDWithDelay(ActionSkill, 900, 34).",
 						"Hold E earliest cancel in gcsim is skillHoldFrames[action.ActionHighPlunge] = 116f (CanQueueAfter = 116). ActionHighPlunge is not a standard JSON key — not recorded in frames. After Hold E, Venti is airborne; typical follow-up is a high plunge (enforced by gcsim: high_plunge requires last action = hold skill with hold != 0).",
 						"All other action keys (N, Q, D, J) fall back to InitAbilSlice default = 289 (AnimationLength) — omitted per recipe rule."
 					],
-					"application": [{ "frame": 74, "element": "anemo", "units": 2 }]
+					"application": [
+						{
+							"frame": 74,
+							"element": "anemo",
+							"units": 2
+						}
+					]
 				}
 			],
 			"tags": ["summon"],
@@ -84,7 +154,13 @@
 				"'summon' tag inherited from generator. No summons[] authored: skill deals AoE anemo hit, and per A1 passive creates a 20s upcurrent on Hold — but gcsim does not model the upcurrent (asc.go explicitly: 'A1 is not implemented and will likely never be implemented'). Reviewer to decide whether to remove tag or author upcurrent as a summon/buff."
 			],
 			"description": "O wind upon which all hymns and songs fly, bear these earth-walkers up into the sky!\n\nPress\nSummons a Wind Domain at the opponent's location, dealing AoE Anemo DMG and launching opponents into the air.\n\nHold\nSummons an even larger Wind Domain with Venti as the epicenter, dealing AoE Anemo DMG and launching affected opponents into the air.\nAfter unleashing the Hold version of this ability, Venti rides the wind into the air.\n\nOpponents hit by Skyward Sonnet will fall to the ground slowly.",
-			"application": [{ "frame": 51, "element": "anemo", "units": 2 }]
+			"application": [
+				{
+					"frame": 51,
+					"element": "anemo",
+					"units": 2
+				}
+			]
 		},
 		{
 			"id": "venti__burst__winds_grand_ode",
@@ -92,7 +168,11 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 95, "J": 94, "swap": 93 },
+			"frames": {
+				"anim": 95,
+				"J": 94,
+				"swap": 93
+			},
 			"cooldown": 15,
 			"cooldownStartDelay": 81,
 			"tags": ["grouping"],
@@ -111,7 +191,10 @@
 								"type": "summonTick",
 								"interval": 0.4,
 								"firstTickDelay": 0.2,
-								"icdGate": { "timer": 60, "every": 3 }
+								"icdGate": {
+									"timer": 60,
+									"every": 3
+								}
 							},
 							"scaling": 67.68,
 							"stat": "atk",
@@ -156,7 +239,10 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "afterDuration", "ability": "burst" },
+					"trigger": {
+						"type": "afterDuration",
+						"ability": "burst"
+					},
 					"amount": 15
 				}
 			],
@@ -188,25 +274,39 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"duration": 10,
 					"element": "anemo",
 					"value": -12,
 					"conditions": {
 						"type": "not",
-						"condition": { "type": "teamFaction", "faction": "hexerei", "min": 2 }
+						"condition": {
+							"type": "teamFaction",
+							"faction": "hexerei",
+							"min": 2
+						}
 					}
 				},
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"duration": 10,
 					"element": "physical",
 					"value": -12,
 					"conditions": {
 						"type": "not",
-						"condition": { "type": "teamFaction", "faction": "hexerei", "min": 2 }
+						"condition": {
+							"type": "teamFaction",
+							"faction": "hexerei",
+							"min": 2
+						}
 					}
 				}
 			],
@@ -236,10 +336,16 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"conditions": {
 						"type": "not",
-						"condition": { "type": "teamFaction", "faction": "hexerei", "min": 2 }
+						"condition": {
+							"type": "teamFaction",
+							"faction": "hexerei",
+							"min": 2
+						}
 					},
 					"duration": 10,
 					"durationType": "fixed",
@@ -249,12 +355,12 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Not modeled: orb and particle pickup, so below 2 Hexerei in the party this buff never appears. With 2+ Hexerei it fires from the skill or burst instead.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-14, onParticleReceived category): manual trigger preserved because particle pickup is non-deterministic in the planner (out-of-scope per tool constitution). gcsim source: event.OnParticleReceived gated on c.Core.Player.Active() == c.Index() — fires when ANY elemental orb/particle is caught by Venti on-field. Re-evaluate only if particle-gen modelling ever enters scope (unlikely).",
 				"[Hexerei] Fandom 'Hurricane of Freedom' constellation infobox, buffType=Hexerei buff field: under Secret Rite the trigger changes from orb/particle pickup to 'After unleashing his Elemental Skill Skyward Sonnet or Elemental Burst Wind's Grand Ode, Venti and his own active party members gain a 25% Anemo DMG Bonus for 10s.' Authored in factionBonuses as two onCast effects (skill, burst) with conditions all[teamFaction hexerei >=2, constellation 4], target ['self','active'] — 'his own active party members' read as the active character, mirroring the Fischl Secret Rite target shape.",
 				"[Hexerei] 2026-08-15: the base manual-trigger effect is now gated `not(teamFaction hexerei >=2)`. The rite REPLACES the trigger (orb/particle pickup becomes a skill/burst cast), it does not add a second buff — so once factionBonuses render (docs/faction-bonuses-round.md), leaving the toggle available in a Hexerei team would let a reader stack a manual 25% on top of the automatic 25% that already fires. Below 2 Hexerei the toggle is unchanged and is still the only way this buff appears.",
-				"[A7] Original user text noted the C4 buff fires only while Venti is active on-field at pickup; dropped from the rewrite as a minor nuance since the buff is a manual toggle regardless of on-field state. Already documented in the existing curator notes (gcsim OnParticleReceived gated on Active()==Index)."
+				"[A7] Original user text noted the C4 buff fires only while Venti is active on-field at pickup; dropped from the rewrite as a minor nuance since the buff is a manual toggle regardless of on-field state. Already documented in the existing curator notes (gcsim OnParticleReceived gated on Active()==Index).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A blank where a +25% Anemo DMG bar belongs. The base effect is `trigger: 'manual'` gated `not(hexerei ≥ 2)`, so in an ordinary team a C4 owner sees no bar at any point in the rotation, and the first sentence explains the blank. ⛔ The SECOND sentence is `working-behavior` — the Hexerei path genuinely fires as two authored onCast factionBonuses effects and draws correctly, so it describes the tool doing its job and should come out. Category: expected-but-absent."
 			],
 			"description": "When Venti picks up an Elemental Orb or Particle, he receives a 25% Anemo DMG Bonus for 10s."
 		},
@@ -274,7 +380,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "burst" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
 					"duration": 10,
 					"element": "anemo",
 					"value": -20
@@ -282,7 +391,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "burst" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
 					"duration": 10,
 					"value": -20
 				}
@@ -312,8 +424,15 @@
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
-							{ "type": "state", "state": "duringSummon" }
+							{
+								"type": "teamFaction",
+								"faction": "hexerei",
+								"min": 2
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
 						]
 					},
 					"duration": 4,
@@ -333,12 +452,22 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
-							{ "type": "constellation", "level": 2 }
+							{
+								"type": "teamFaction",
+								"faction": "hexerei",
+								"min": 2
+							},
+							{
+								"type": "constellation",
+								"level": 2
+							}
 						]
 					},
 					"duration": 10,
@@ -348,12 +477,22 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
-							{ "type": "constellation", "level": 2 }
+							{
+								"type": "teamFaction",
+								"faction": "hexerei",
+								"min": 2
+							},
+							{
+								"type": "constellation",
+								"level": 2
+							}
 						]
 					},
 					"duration": 10,
@@ -370,12 +509,22 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
-							{ "type": "constellation", "level": 4 }
+							{
+								"type": "teamFaction",
+								"faction": "hexerei",
+								"min": 2
+							},
+							{
+								"type": "constellation",
+								"level": 4
+							}
 						]
 					},
 					"duration": 10,
@@ -388,12 +537,22 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "teamFaction", "faction": "hexerei", "min": 2 },
-							{ "type": "constellation", "level": 4 }
+							{
+								"type": "teamFaction",
+								"faction": "hexerei",
+								"min": 2
+							},
+							{
+								"type": "constellation",
+								"level": 4
+							}
 						]
 					},
 					"duration": 10,

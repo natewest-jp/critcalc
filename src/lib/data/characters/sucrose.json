@@ -22,10 +22,42 @@
 				"plungeFrames.J=66: InitAbilSlice(66) default (AnimationLength), not explicitly overridden in gcsim lowPlungeFrames init — may not represent a valid cancel frame; reviewer should verify"
 			],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 28, "hit": 17, "N": 17, "C": 20 } },
-				{ "name": "N2", "frames": { "anim": 38, "hit": 18, "N": 26, "C": 18 } },
-				{ "name": "N3", "frames": { "anim": 46, "hit": 28, "N": 33, "C": 28 } },
-				{ "name": "N4", "frames": { "anim": 65, "hit": 28, "N": 51, "C": 54 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 28,
+						"hit": 17,
+						"N": 17,
+						"C": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 38,
+						"hit": 18,
+						"N": 26,
+						"C": 18
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 46,
+						"hit": 28,
+						"N": 33,
+						"C": 28
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 65,
+						"hit": 28,
+						"N": 51,
+						"C": 54
+					}
+				}
 			],
 			"chargeFrames": {
 				"anim": 71,
@@ -37,7 +69,15 @@
 				"J": 54,
 				"swap": 54
 			},
-			"plungeFrames": { "anim": 68, "N": 59, "C": 49, "E": 46, "Q": 46, "D": 46, "swap": 51 },
+			"plungeFrames": {
+				"anim": 68,
+				"N": 59,
+				"C": 49,
+				"E": 46,
+				"Q": 46,
+				"D": 46,
+				"swap": 51
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -56,7 +96,15 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 4 attacks using Wind Spirits, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and deals AoE Anemo DMG after a short casting time.\n\nPlunging Attack\nCalling upon the power of her Wind Spirits, Sucrose plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground.",
-			"lowPlungeFrames": { "anim": 66, "N": 56, "C": 47, "E": 45, "Q": 45, "D": 45, "swap": 49 }
+			"lowPlungeFrames": {
+				"anim": 66,
+				"N": 56,
+				"C": 47,
+				"E": 45,
+				"Q": 45,
+				"D": 45,
+				"swap": 49
+			}
 		},
 		{
 			"id": "sucrose__skill__astable_anemohypostasis_creation_6308",
@@ -64,7 +112,16 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 68, "N": 57, "C": 56, "E": 56, "Q": 57, "D": 11, "J": 11, "swap": 56 },
+			"frames": {
+				"anim": 68,
+				"N": 57,
+				"C": 56,
+				"E": 56,
+				"Q": 57,
+				"D": 11,
+				"J": 11,
+				"swap": 56
+			},
 			"cooldown": 15,
 			"cooldownStartDelay": 9,
 			"chargeModifiers": [
@@ -72,19 +129,28 @@
 					"source": "C1: Clustered Vacuum Field",
 					"type": "flat",
 					"value": 1,
-					"conditions": { "type": "constellation", "level": 1 }
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
 				}
 			],
 			"tags": ["grouping"],
-			"caveat": "The Hexerei DMG bonus is shown on all damage; in game it applies only to Normal, Charged, Plunging, Skill and Burst DMG.",
 			"effects": [],
 			"_curatorNotes": [
 				"C1 (Clustered Vacuum Field) grants +1 skill charge → 2 total at C1+ (gcsim sucrose.go: Cons>=1 → SetNumCharges(ActionSkill, 2)). Authored as a chargeModifiers flat +1. E key = 56 = skillFrames[ActionSkill] (E→E cancel), added to frames alongside.",
 				"gcsim skillFrames has ActionCharge=56; C is not in the required key set for skill frames per recipe — omitted",
-				"[Hexerei] Small Wind Spirit party DMG bonus is count-gated (gcsim internal/characters/sucrose/asc.go:113-141 hexOnSkill — IsHexerei && GetHexereiCount() >= 2), 0.0571428 DmgP to every Chars() entry for 15*60 frames. Authored in factionBonuses as allDmgBonus 5.71428 / 15s / target team. gcsim restricts the mod to AttackTagNormal/Extra/Plunge/ElementalArt/ElementalArtHold/ElementalBurst — swirl and other reaction DMG are excluded; allDmgBonus over-covers, hence the caveat."
+				"[Hexerei] Small Wind Spirit party DMG bonus is count-gated (gcsim internal/characters/sucrose/asc.go:113-141 hexOnSkill — IsHexerei && GetHexereiCount() >= 2), 0.0571428 DmgP to every Chars() entry for 15*60 frames. Authored in factionBonuses as allDmgBonus 5.71428 / 15s / target team. gcsim restricts the mod to AttackTagNormal/Extra/Plunge/ElementalArt/ElementalArtHold/ElementalBurst — swirl and other reaction DMG are excluded; allDmgBonus over-covers, hence the caveat.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Secret Rite team buff bar drawn from her E (factionBonuses onCast skill, allDmgBonus 5.71%, 15s, team) prints an ALL-DMG claim; gcsim restricts it to Normal/Charged/Plunge/Skill/Burst attack tags, so the bar over-claims by covering swirl and other reaction DMG. Same blessed shape as the 'shown as All Elemental RES' example. Category: visible-divergence."
 			],
 			"description": "Creates a small Wind Spirit that pulls opponents and objects towards its location, launches opponents within its AoE, and deals Anemo DMG.",
-			"application": [{ "frame": 42, "element": "anemo", "units": 1 }]
+			"application": [
+				{
+					"frame": 42,
+					"element": "anemo",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "sucrose__burst__forbidden_creation_isomer_75_type_ii",
@@ -92,7 +158,15 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 65, "N": 49, "C": 48, "E": 48, "D": 47, "J": 47, "swap": 47 },
+			"frames": {
+				"anim": 65,
+				"N": 49,
+				"C": 48,
+				"E": 48,
+				"D": 47,
+				"J": 47,
+				"swap": 47
+			},
 			"cooldown": 20,
 			"cooldownStartDelay": 18,
 			"tags": ["grouping"],
@@ -108,7 +182,10 @@
 							"source": "C2: Beth: Unbound Form",
 							"type": "flat",
 							"value": 2,
-							"conditions": { "type": "constellation", "level": 2 }
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							}
 						}
 					],
 					"effects": [
@@ -122,7 +199,10 @@
 								"icdGate": "none",
 								"tickCap": 3,
 								"tickCapScaling": {
-									"conditions": { "type": "constellation", "level": 2 },
+									"conditions": {
+										"type": "constellation",
+										"level": 2
+									},
 									"ticks": 4
 								}
 							},
@@ -159,11 +239,12 @@
 			"id": "sucrose__passive__catalyst_conversion",
 			"name": "Catalyst Conversion",
 			"abilityType": "passive",
-			"caveat": "Shown for the whole team, but in game only party members whose element matches the swirled one receive it — Anemo characters never do. Swirls of different elements run their own independent 8s windows.",
+			"caveat": "Shown for the whole team, but in game only party members whose element matches the swirled one receive it — Anemo characters never do.",
 			"_curatorNotes": [
 				"2026-08-15: target was 'self', which was simply wrong — the buff never lands on Sucrose in game (gcsim asc.go a1() skips any char whose Base.Element != the swirled element, and she is Anemo). It also meant the effect was DROPPED before rendering: buffWindows' onReaction branch requires targetsTeamOrActive(), so the +50 EM drew nothing on the timeline at all. Now target:'teamExcludingSelf' with the element filter stated in the caveat — EffectTarget still has no element-filtered team type, so this over-renders (shows for every teammate) rather than under-rendering to nothing.",
 				"2026-08-15: added 'stellarSwirl' to the reaction OR-array — current Fandom talent text reads 'triggers a Swirl or Stellar Swirl reaction' (gcsim predates this; its a1() subscribes to the four base swirl events only). Inert for now: computeReactionsForCast does not emit stellarSwirl until its 7.0 mechanics are confirmed (see the note at notationParser.ts computeReactionsForCast). Authored anyway so the key is in place when emission lands.",
-				"2026-05-14 (Shape A reaction-key migration): trigger updated from broad `'swirl'` to an OR-array of the element-specific swirl keys."
+				"2026-05-14 (Shape A reaction-key migration): trigger updated from broad `'swirl'` to an OR-array of the element-specific swirl keys.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Shown for the whole team, but in game only party members whose element matches the swirled one receive it — Anemo characters never do. Swirls of different elements run their own independent 8s windows.\""
 			],
 			"effects": [
 				{
@@ -197,12 +278,19 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "onHit", "abilityType": ["skill", "burst"] },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["skill", "burst"]
+					},
 					"duration": 8,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
-					"value": { "type": "scaling", "stat": "em", "ratio": 20 },
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 20
+					},
 					"snapshottable": true
 				}
 			],
@@ -264,7 +352,9 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",
@@ -284,8 +374,15 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onCast", "ability": "skill" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 15,
 					"durationType": "refresh",
 					"target": "team",
@@ -296,8 +393,15 @@
 				{
 					"type": "buff",
 					"source": "character",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "teamFaction", "faction": "hexerei", "min": 2 },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamFaction",
+						"faction": "hexerei",
+						"min": 2
+					},
 					"duration": 20,
 					"durationType": "refresh",
 					"target": "team",

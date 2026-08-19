@@ -16,14 +16,51 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 25, "hit": 14 } },
-				{ "name": "N2", "frames": { "anim": 28, "hit": 13 } },
-				{ "name": "N3", "frames": { "anim": 37, "hit": 19 } },
-				{ "name": "N4", "frames": { "anim": 38, "hit": 19 } },
-				{ "name": "N5", "frames": { "anim": 45, "hit": 32 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 25,
+						"hit": 14
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 28,
+						"hit": 13
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 37,
+						"hit": 19
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 38,
+						"hit": 19
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 45,
+						"hit": 32
+					}
+				}
 			],
 			"chargeHits": [
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 96, "D": 86, "J": 86 } }
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 96,
+						"D": 86,
+						"J": 86
+					}
+				}
 			],
 			"_curatorNotes": [
 				"A1 (Immovable Will): when Crowfeather Cover is active, the Fully-Charged Aimed Shot uses reduced charge-time frames — gcsim models this as a distinct frame set (aimedA1Frames: swap=60, D=50, J=50). This is Sara's primary gameplay CA pattern (E → CA during cover). chargeHits[] records the standard non-A1 frames; reviewer should decide how to represent the A1 variant.",
@@ -54,7 +91,13 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 52, "N": 29, "Q": 32, "J": 51, "swap": 50 },
+			"frames": {
+				"anim": 52,
+				"N": 29,
+				"Q": 32,
+				"J": 51,
+				"swap": 50
+			},
 			"cooldown": 10,
 			"cooldownStartDelay": 7,
 			"tags": ["summon"],
@@ -62,12 +105,19 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 6,
 					"durationType": "refresh",
 					"source": "character",
 					"stat": "atk",
-					"value": { "type": "scaling", "stat": "baseAtk", "ratio": 77.33 },
+					"value": {
+						"type": "scaling",
+						"stat": "baseAtk",
+						"ratio": 77.33
+					},
 					"snapshottable": true
 				}
 			],
@@ -87,7 +137,14 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 80, "N": 78, "E": 57, "D": 58, "J": 58, "swap": 56 },
+			"frames": {
+				"anim": 80,
+				"N": 78,
+				"E": 57,
+				"D": 58,
+				"J": 58,
+				"swap": 56
+			},
 			"cooldown": 20,
 			"cooldownStartDelay": 47,
 			"energyCost": 80,
@@ -96,12 +153,19 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 9.2,
 					"durationType": "refresh",
 					"source": "character",
 					"stat": "atk",
-					"value": { "type": "scaling", "stat": "baseAtk", "ratio": 77.33 },
+					"value": {
+						"type": "scaling",
+						"stat": "baseAtk",
+						"ratio": 77.33
+					},
 					"snapshottable": true
 				}
 			],
@@ -114,11 +178,31 @@
 			],
 			"description": "Casts down Tengu Juurai: Titanbreaker, dealing AoE Electro DMG. Afterwards, Tengu Juurai: Titanbreaker spreads out into 4 consecutive bouts of Tengu Juurai: Stormcluster, dealing AoE Electro DMG.\nTengu Juurai: Titanbreaker and Tengu Juurai: Stormcluster can provide the active character within their AoE with the same ATK Bonus as given by the Elemental Skill, Tengu Stormcall.\n\nThe ATK Bonus provided by various kinds of Tengu Juurai will not stack, and their effects and duration will be determined by the last Tengu Juurai to take effect.",
 			"application": [
-				{ "frame": 51, "element": "electro", "units": 1 },
-				{ "frame": 100, "element": "electro", "units": 1 },
-				{ "frame": 100, "element": "electro", "units": 1 },
-				{ "frame": 100, "element": "electro", "units": 1 },
-				{ "frame": 100, "element": "electro", "units": 1 }
+				{
+					"frame": 51,
+					"element": "electro",
+					"units": 1
+				},
+				{
+					"frame": 100,
+					"element": "electro",
+					"units": 1
+				},
+				{
+					"frame": 100,
+					"element": "electro",
+					"units": 1
+				},
+				{
+					"frame": 100,
+					"element": "electro",
+					"units": 1
+				},
+				{
+					"frame": 100,
+					"element": "electro",
+					"units": 1
+				}
 			]
 		}
 	],
@@ -184,10 +268,16 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 6,
 					"durationType": "refresh",
-					"conditions": { "type": "constellation", "level": 6 },
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"source": "character",
 					"stat": "electroCritDmg",
 					"value": 60,
@@ -196,10 +286,16 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 9.2,
 					"durationType": "refresh",
-					"conditions": { "type": "constellation", "level": 6 },
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"source": "character",
 					"stat": "electroCritDmg",
 					"value": 60,

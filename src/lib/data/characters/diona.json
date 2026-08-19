@@ -17,15 +17,60 @@
 			"tags": [],
 			"_curatorNotes": ["No plunge.go in gcsim character dir — plungeFrames not available."],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 30, "hit": 19 } },
-				{ "name": "N2", "frames": { "anim": 21, "hit": 11 } },
-				{ "name": "N3", "frames": { "anim": 44, "hit": 21 } },
-				{ "name": "N4", "frames": { "anim": 21, "hit": 10 } },
-				{ "name": "N5", "frames": { "anim": 73, "hit": 38 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 30,
+						"hit": 19
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 21,
+						"hit": 11
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 44,
+						"hit": 21
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 21,
+						"hit": 10
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 73,
+						"hit": 38
+					}
+				}
 			],
 			"chargeHits": [
-				{ "name": "Aimed Shot", "frames": { "anim": 23, "D": 15, "J": 15, "swap": 23 } },
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 94, "D": 86, "J": 86 } }
+				{
+					"name": "Aimed Shot",
+					"frames": {
+						"anim": 23,
+						"D": 15,
+						"J": 15,
+						"swap": 23
+					}
+				},
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 94,
+						"D": 86,
+						"J": 86
+					}
+				}
 			],
 			"sections": [
 				{
@@ -52,7 +97,14 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 34, "N": 33, "Q": 33, "D": 11, "J": 11, "swap": 16 },
+			"frames": {
+				"anim": 34,
+				"N": 33,
+				"Q": 33,
+				"D": 11,
+				"J": 11,
+				"swap": 16
+			},
 			"cooldown": 6,
 			"cooldownStartDelay": 5,
 			"variants": [
@@ -60,12 +112,22 @@
 					"label": "Hold",
 					"input": ["hE"],
 					"cooldown": 15,
-					"frames": { "anim": 49, "N": 36, "Q": 37, "D": 31, "J": 31, "swap": 29 },
+					"frames": {
+						"anim": 49,
+						"N": 36,
+						"Q": 37,
+						"D": 31,
+						"J": 31,
+						"swap": 29
+					},
 					"effects": [
 						{
 							"type": "shield",
 							"target": "active",
-							"trigger": { "type": "onCast", "ability": "skill" },
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
 							"duration": 12,
 							"scaling": 22.68,
 							"stat": "hp",
@@ -73,11 +135,28 @@
 						}
 					],
 					"application": [
-						{ "frame": 34, "element": "cryo", "units": 1 },
-						{ "frame": 35, "element": "cryo" },
-						{ "frame": 36, "element": "cryo" },
-						{ "frame": 37, "element": "cryo", "units": 1 },
-						{ "frame": 38, "element": "cryo" }
+						{
+							"frame": 34,
+							"element": "cryo",
+							"units": 1
+						},
+						{
+							"frame": 35,
+							"element": "cryo"
+						},
+						{
+							"frame": 36,
+							"element": "cryo"
+						},
+						{
+							"frame": 37,
+							"element": "cryo",
+							"units": 1
+						},
+						{
+							"frame": 38,
+							"element": "cryo"
+						}
 					]
 				}
 			],
@@ -86,14 +165,17 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 4.8,
 					"scaling": 12.96,
 					"stat": "hp",
 					"flat": 1524.29
 				}
 			],
-			"caveat": "Assumes every paw lands — 2 on Press, 5 on Hold — so absorption and duration are shown at maximum. Fewer hits give a weaker, shorter shield.",
+			"caveat": "Assumes every paw lands — 2 on Press, 5 on Hold — so the shield is drawn at its full length. Fewer hits give a shorter one.",
 			"_curatorNotes": [
 				"Shield effects authored 2026-07-12 at talent level 10 (sidecar 'Base Shield DMG Absorption' row, 10th column: 13.0% Max HP + 1524; gcsim pawShieldPer[9]=0.1296, pawShieldFlat[9]=1524.29). Base effects[] = Press: scaling 12.96% Max HP, duration 4.8s (2 paws × pawDur[9]=2.4s). Hold variant overrides with ×1.75 absorption bonus: 12.96 × 1.75 = 22.68% Max HP, duration 12s (5 paws × 2.4s). Assumes all paws hit — per-paw shield formation/duration-stacking (gcsim pawsPewPew shield extension, capped at 5 × pawDur) not expressible.",
 				"↻ 2026-08-18 (stale-note pass): CLOSED, and the note was already false when the flag found it. It used to read \"Schema gap: shield Effect has no `flat` field (heal does) — the flat absorption portion (1524.29 Press / 2667.51 Hold at TL10) is dropped.\" `ShieldEffect.flat` was added 2026-07-12 — src/lib/types/ability.ts:1331-1336 names DIONA +1524 as one of the three cases that motivated it (with Thoma +1525 and Yun Jin +2542) — and BOTH shield effects in this file author it (base 1524.29, Hold variant 2667.51). Nothing is dropped at the data layer.",
@@ -104,12 +186,20 @@
 				"Creates a Cryo shield on hit; shield HP scales with Diona's Max HP and number of paws landed (Press fires 2 paws, Hold fires 5 paws; Hold gets 1.75x bonus). Shield duration from pawDur[] table in skill.go — depends on how many paws hit. Shield is a caster-status buff (not a spawned entity); no summons[] authored.",
 				"Hold variant cooldownStartDelay = 29 (skillHoldHitmark in gcsim) — AbilityVariant has no cooldownStartDelay field; recorded here per recipe schema-gap note.",
 				"Press variant cooldownStartDelay = 5 (skillPressHitmark). Base ability cooldownStartDelay reflects Press variant.",
-				"[A7] Shield duration = 2.4s per paw landed at talent level 10 (pawDur[9]); the caveat text now conveys the paws-scaling qualitatively. Already recorded in existing curator notes."
+				"[A7] Shield duration = 2.4s per paw landed at talent level 10 (pawDur[9]); the caveat text now conveys the paws-scaling qualitatively. Already recorded in existing curator notes.",
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Assumes every paw lands — 2 on Press, 5 on Hold — so absorption and duration are shown at maximum. Fewer hits give a weaker, shorter shield.\""
 			],
 			"description": "Fires an Icy Paw that deals Cryo DMG to opponents and forms a shield on hit.\nThe shield's DMG Absorption scales based on Diona's Max HP, and its duration scales off the number of Icy Paws that hit their target.\n\nPress\nRapidly fires off 2 Icy Paws.\n\nHold\nDashes back quickly before firing 5 Icy Paws.\nThe shield created by a Hold attack will gain a 75% DMG Absorption Bonus.\n\nThe shield has a 250% Cryo DMG Absorption Bonus, and will cause your active character to become affected by Cryo at the point of formation for a short duration.",
 			"application": [
-				{ "frame": 10, "element": "cryo", "units": 1 },
-				{ "frame": 11, "element": "cryo" }
+				{
+					"frame": 10,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 11,
+					"element": "cryo"
+				}
 			]
 		},
 		{
@@ -118,7 +208,12 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 64, "D": 43, "J": 44, "swap": 41 },
+			"frames": {
+				"anim": 64,
+				"D": 43,
+				"J": 44,
+				"swap": 41
+			},
 			"cooldown": 20,
 			"cooldownStartDelay": 41,
 			"energyCost": 80,
@@ -134,7 +229,11 @@
 						{
 							"type": "heal",
 							"target": "active",
-							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 2 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 2
+							},
 							"scaling": 9.6,
 							"stat": "hp",
 							"flat": 1129.1
@@ -142,7 +241,11 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 2 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 2
+							},
 							"scaling": 94.75,
 							"stat": "atk",
 							"element": "cryo"
@@ -150,7 +253,6 @@
 					]
 				}
 			],
-			"caveat": "The heal is shown on every tick, but only the active character standing inside the field is healed. Anyone outside its limited vertical range receives nothing.",
 			"_curatorNotes": [
 				"Heal + Cryo tick authored 2026-07-12 at talent level 10. Tick cadence verified against gcsim burst.go ('ticks every 2s, first tick at t=2s relative to field start... 6 ticks') and KQM TCL/wiki (first activation 2s after field start, every 2s, 6 activations). Authored as summonTick interval 2 / firstTickDelay 2 on the Drunken Mist summon — with duration 12.5 that yields ticks at t=2..12 (6 ticks), matching gcsim.",
 				"Heal per tick TL10: 9.60% of Diona's Max HP + 1129.1 flat (sidecar 'HP Regeneration Over Time' 10th column '9.60% Max HP+1129'; gcsim burstHealPer[9]=0.096048, burstHealFlat[9]=1129.1038). Target 'active' — gcsim heals c.Core.Player.Active() only when within the field area; KQM confirms 'characters within the AoE'. NOTE: capability fixture (scripts/capability-expectations.mjs) expects target 'team' for this heal — fixture appears wrong vs in-game behavior; flagged for orchestrator, not editable in this pass's scope.",
@@ -158,10 +260,17 @@
 				"Cryo tick TL10: 94.75% ATK (sidecar 'Continuous Field DMG' 10th column 94.8%; gcsim burstDot[9]=0.94752), snapshotted at cast (QueueAttackWithSnap). Initial cast hit (144% ATK at TL10, hitmark 58f) not authored as an effect — planner renders cast damage via FrameMap, matching corpus convention.",
 				"Field duration: kit table says 12s; gcsim status 'diona-q' runs 750f = 12.5s from field start ('apparently lasts for 12.5'). summons.duration 12.5 kept from frames pass.",
 				"A4 Drunkards' Farce (enemy ATK -10% in field) remains unauthored — not implemented in gcsim, see passive node note.",
-				"[A7] Field is stationary (summon mobility 'stationary'); the caveat's 'standing inside the field' conveys the fixed-position sense for users."
+				"[A7] Field is stationary (summon mobility 'stationary'); the caveat's 'standing inside the field' conveys the fixed-position sense for users.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The summon lane draws tick marks that say a tick FIRED; it never names a recipient, and the heal is already authored `target: 'active'`, so the tool is not claiming a team heal. What is left is positioning — standing inside the field, the vertical range — which the tool has no geometry for and never draws. Working behaviour plus a positional omission. Category: invisible-omission."
 			],
 			"description": "Tosses out a special cold brew that deals AoE Cryo DMG and creates a Drunken Mist in an AoE.\n\nDrunken Mist\n·Deals continuous Cryo DMG to opponents within the AoE.\n·Continuously regenerates the HP of characters within the AoE.",
-			"application": [{ "frame": 58, "element": "cryo", "units": 1 }]
+			"application": [
+				{
+					"frame": 58,
+					"element": "cryo",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -184,13 +293,13 @@
 			"id": "diona__passive__choice_treasures",
 			"name": "Choice Treasures",
 			"abilityType": "passive",
-			"caveat": "Not modeled: the three extra paws fired when the party triggers Superconduct, Stellar-Conduct, or Cryo Swirl within 20s of the skill. They deal DMG only — no particles and no shield, and can occur once every 3.5s.",
 			"_curatorNotes": [
 				"Witch's Revelation Passive (additional talent unlocked by the 'Witch's Revelation: Special Blend's Instruction' quest; Lunar Arcanum II The High Priestess, Reversed). Authored 2026-07-29 from the Fandom wiki page 'Choice Treasures' (Talent Infobox |info, rev. 2026-07-15) and 'Witch's Revelation Passive'. gcsim has no Stellar implementation as of 5d1ec8c79 — wiki is the sole source per docs/library/game/stellar-reactions.md.",
 				"No effects authored. Clause 1 (auto-fired Icy Paws on team Superconduct / Stellar-Conduct / Cryo Swirl, 20s window after Icy Paws, once per 3.5s) is pure DMG output: the wiki text explicitly states these paws 'cannot generate Elemental Particles, nor will they generate a shield upon hitting opponents', so there is NO team-facing shield or energy hook to author. Damage magnitude is out of scope per the tool constitution. NOTE: the game8 summary implied a shield component — wiki contradicts it; trust the wiki.",
 				"Clause 1 is NOT stellar-gated: Superconduct and Cryo Swirl fire it with no enabler present, so no teamEnablesReaction condition applies. Its own gates (20s post-skill window + 3.5s proc CD) would need a damage-emitting effect to hang on; none exists.",
 				"Clause 2 ('when inside a Polestar Field, Diona will enter the Radiance: Stellar-Conduct state') carries no stat payload of its own — it is the unlock for the C6 'Radiance: Stellar-Conduct' block, which IS authored (see the C6 node). Polestar Fields only exist while Stellar-Conduct is enabled, which is why the C6 effect is gated on teamEnablesReaction:stellarConduct.",
-				"No scaling sidecar row exists for this talent (docs/curation/talents/diona.json predates the Revelation passive); the wiki page lists scale_att1 = ATK but publishes no per-level table."
+				"No scaling sidecar row exists for this talent (docs/curation/talents/diona.json predates the Revelation passive); the wiki page lists scale_att1 = ATK but publishes no per-level table.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — that can be named. The paws are explicitly damage-only — the wiki text the curator note quotes says they generate no particles and no shield — so no bar, no shield span and no energy is missing. The one candidate pixel would be extra Cryo application pips on the aura lane, but no source gives these paws a gauge, so the caveat cannot honestly claim it; the rest (the 20s window, the 3.5s cadence) is cadence for something the tool never draws. Category: invisible-omission."
 			],
 			"description": "Within 20s after using the Elemental Skill Icy Paws, Diona will also fire off three Icy Paws when party members trigger Superconduct, Stellar-Conduct, or Cryo Swirl reactions. Icy Paws fired this way cannot generate Elemental Particles, nor will they generate a shield upon hitting opponents. This effect can occur once every 3.5s.\nAdditionally, when inside a Polestar Field, Diona will enter the Radiance: Stellar-Conduct state."
 		}
@@ -208,7 +317,10 @@
 				{
 					"type": "energy",
 					"target": "self",
-					"trigger": { "type": "afterDuration", "ability": "burst" },
+					"trigger": {
+						"type": "afterDuration",
+						"ability": "burst"
+					},
 					"amount": 15
 				}
 			],
@@ -268,7 +380,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
@@ -278,7 +392,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "hp%",
 					"value": 25,
@@ -287,8 +403,14 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
 					"duration": 12.5,
 					"durationType": "fixed",
 					"source": "character",
@@ -299,8 +421,14 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
 					"duration": 12.5,
 					"durationType": "fixed",
 					"source": "character",
@@ -311,8 +439,14 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "burst" },
-					"conditions": { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "teamEnablesReaction",
+						"reaction": "stellarConduct"
+					},
 					"duration": 12.5,
 					"durationType": "fixed",
 					"source": "character",

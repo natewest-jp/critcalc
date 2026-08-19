@@ -16,12 +16,47 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 22, "hit": 17, "N": 19 } },
-				{ "name": "N2", "frames": { "anim": 33, "hit": 16, "N": 22 } },
-				{ "name": "N3", "frames": { "anim": 42, "hit": 32, "N": 41 } },
-				{ "name": "N4", "frames": { "anim": 59, "hit": 37 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 22,
+						"hit": 17,
+						"N": 19
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 33,
+						"hit": 16,
+						"N": 22
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 42,
+						"hit": 32,
+						"N": 41
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 59,
+						"hit": 37
+					}
+				}
 			],
-			"chargeFrames": { "anim": 44, "N": 39, "E": 39, "Q": 39, "D": 26, "J": 26, "swap": 26 },
+			"chargeFrames": {
+				"anim": 44,
+				"N": 39,
+				"E": 39,
+				"Q": 39,
+				"D": 26,
+				"J": 26,
+				"swap": 26
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -47,7 +82,15 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 51, "N": 42, "E": 30, "Q": 43, "D": 42, "J": 42, "swap": 49 },
+			"frames": {
+				"anim": 51,
+				"N": 42,
+				"E": 30,
+				"Q": 43,
+				"D": 42,
+				"J": 42,
+				"swap": 49
+			},
 			"cooldown": 16,
 			"cooldownStartDelay": 19,
 			"tags": ["summon"],
@@ -65,7 +108,9 @@
 								"type": "summonTick",
 								"interval": 3.6,
 								"firstTickDelay": 0.6,
-								"icdGate": { "timer": 114 }
+								"icdGate": {
+									"timer": 114
+								}
 							},
 							"scaling": 147.74,
 							"stat": "atk",
@@ -78,15 +123,21 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Hold E (aim mode, longer cast) isn't modeled separately, so tap-E timing is always used.",
 			"_curatorNotes": [
 				"Tamoto interval slashes migrated to summons[0].effects[] (P3): gcsim skillDollAttackInterval=3.6s, skillDollStartDelay=0.6s firstTickDelay. ATK multiplier turretAtkScaling[9]=147.74% Geo at TalentLvl 10. DEF-scaling FlatDmg (turretDefScaling) not authored — schema's damage Effect carries one scaling only.",
 				"A1 Tailor-Made: post-skill window (~1.3s after the upward sweep) branches into Tapestry (force-swap + Seize the Moment coordinated attacks) or Tailoring (Geo infusion 5s) depending on the next input. Not modelled — branching on a post-cast input window isn't expressible in the current schema. The Geo infusion path would be modellable in isolation but the gating isn't.",
 				"Hold E: variant has different cast frames (skillFrames[1] swap=87, hitmark=37) and cooldownStartDelay=34 vs Tap's 19. Skipped — Tap is the rotation-relevant form; gcsim's Hold frames are sparse (D/J default to animation length and aren't explicitly measured).",
-				"[A7] Precise off-field-tick scaling (ATK 147.74% at talent 10) and the omitted DEF-scaling flat-damage layer (turretDefScaling) are already documented in the summon-migration curator note above; the schema's damage Effect carries one scaling only, which is why the DEF component is unauthored."
+				"[A7] Precise off-field-tick scaling (ATK 147.74% at talent 10) and the omitted DEF-scaling flat-damage layer (turretDefScaling) are already documented in the summon-migration curator note above; the schema's damage Effect carries one scaling only, which is why the DEF component is unauthored.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The E bar itself. There is no `hE` variant authored, so an `hE` token resolves to the base ability and the bar draws the tap's cast frames and the tap's `cooldownStartDelay` (19 vs the hold's 34) — the bar's width, the swap connector after it, and where the cooldown tail ends are all the wrong cast's numbers. A Chiori player writing hold-E and seeing tap spacing is the exact confusion this repairs. Category: approximation-disclosure."
 			],
 			"description": "Dashes nimbly forward with silken steps. Once this dash ends, Chiori will summon the automaton doll \"Tamoto\" beside her and sweep her blade upward, dealing AoE Geo DMG to nearby opponents based on her ATK and DEF.\nHolding the Skill will cause it to behave differently.\n\nHold\nEnter Aiming Mode to adjust the dash direction.\n\nTamoto\n· Will slash at nearby opponents at intervals, dealing AoE Geo DMG based on Chiori's ATK and DEF.\n· While active, if there are nearby Geo Construct(s) or Geo Construct(s) are created nearby, an additional Tamoto will be summoned next to your active character. Only 1 additional Tamoto can be summoned in this manner, and its duration is independently counted.",
-			"application": [{ "frame": 21, "element": "geo", "units": 1 }]
+			"application": [
+				{
+					"frame": 21,
+					"element": "geo",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "chiori__burst__hiyoku_twin_blades",
@@ -94,13 +145,24 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 101, "E": 100, "D": 100, "swap": 99 },
+			"frames": {
+				"anim": 101,
+				"E": 100,
+				"D": 100,
+				"swap": 99
+			},
 			"cooldown": 13.5,
 			"tags": [],
 			"energyCost": 50,
 			"effects": [],
 			"description": "Twin blades leave their sheaths as Chiori slices with the clean cuts of a master tailor, dealing AoE Geo DMG based on her ATK and DEF.",
-			"application": [{ "frame": 92, "element": "geo", "units": 2 }]
+			"application": [
+				{
+					"frame": 92,
+					"element": "geo",
+					"units": 2
+				}
+			]
 		}
 	],
 	"passives": [
@@ -121,7 +183,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
@@ -130,10 +194,10 @@
 					"snapshottable": false
 				}
 			],
-			"caveat": "Not modeled: the Geo DMG Bonus from a nearby party member creating a Geo Construct, including Tamoto.",
 			"_curatorNotes": [
 				"Stub-with-caveat (decided 2026-05-12): manual trigger preserved because construct-spawn is a team-wide event without a corresponding primitive in the schema. Authoring `onConstructSpawned` would require (a) a new trigger type, (b) a `kind: \"construct\"` classifier on Summon, and (c) tagging the corpus's Geo-construct spawners (Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls + meteorite, Chiori's own Tamoto). Cost not justified for one current consumer; revisit if more construct-event mechanics appear.",
-				"[A7] Fuller Geo-Construct trigger examples (Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls, Chiori's own Tamoto) are already enumerated in the stub-with-caveat curator note; construct-spawn is a team-wide event with no corresponding trigger primitive."
+				"[A7] Fuller Geo-Construct trigger examples (Noelle shield, Zhongli pillar, Albedo flower, Geo Traveler walls, Chiori's own Tamoto) are already enumerated in the stub-with-caveat curator note; construct-spawn is a team-wide event with no corresponding trigger primitive.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A blank next to a lane that is right there. The effect is `trigger: 'manual'`, so it draws no bar and does not even reach the always-on chip strip (which requires `trigger.type === 'passive'`). Chiori's own Tamoto summon lane renders on every rotation, and the +20% Geo DMG bar the player expects to accompany it is simply absent — the caveat names Tamoto specifically, which is what makes the blank legible. Category: expected-but-absent."
 			],
 			"description": "When a nearby party member creates a Geo Construct, Chiori will gain 20% Geo DMG Bonus for 20s."
 		}
@@ -192,11 +256,20 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 6 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": { "type": "scaling", "stat": "def", "ratio": 235 },
+					"value": {
+						"type": "scaling",
+						"stat": "def",
+						"ratio": 235
+					},
 					"snapshottable": false
 				}
 			],

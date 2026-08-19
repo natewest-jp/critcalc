@@ -134,7 +134,6 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Not modeled: the Hold-cast Off-the-Cuff Cookery Mode — only the Tap form (Cold Storage Mode) is shown.",
 			"_curatorNotes": [
 				"Tap (Cold Storage Mode): single instant Cryo hit at frame 23 (skillInital 90.72% ATK at TL10), then spawns the Cooking Mek which follows the active character.",
 				"Cooking Mek: 20s lifetime (skillDur). Frosty Parfait ticks at skillFirstTickDelay=148f (2.467s) with skillInterval=58.5f (0.975s) between ticks. Status duration is technically 1318f (≈21.97s = 148 + 20×58.5) but skillDur/summon lifetime caps rendered ticks at 20s. At ~17 ticks fit in the 20s window. skillDot multiplier = 216% ATK Cryo at TL10 (skillDot[9]=2.16).",
@@ -143,7 +142,8 @@
 				"particleCB: 4 Cryo particles per cast on enemy hit, 0.2s ICD via particleICDKey. Energy generation is not modelled at the ability level.",
 				"summonTick interval and firstTickDelay are recorded in seconds (not frames) to match the schema's existing P3 summonTick conventions; values rounded to 3 decimal places.",
 				"[A7] Hold mode (Off-the-Cuff Cookery) has no upstream simulation; only Tap (Cold Storage) is authored. Re-author if a substantive Hold-form kit difference lands upstream.",
-				"[A7] Surging Blade Arkhe-Ousia hit (~60% ATK per cast, 10s ICD) pulled from the user caveat: it fires once per cast, the persistent Cooking Mek ticks stand in for its damage flow, and the timeline does not draw damage hits anyway. Detail already in the existing curator notes."
+				"[A7] Surging Blade Arkhe-Ousia hit (~60% ATK per cast, 10s ICD) pulled from the user caveat: it fires once per cast, the persistent Cooking Mek ticks stand in for its damage flow, and the timeline does not draw damage hits anyway. Detail already in the existing curator notes.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The E bar itself. `hE` tokenizes fine and Escoffier authors no hold variant, so matchVariant falls back to the base ability — a hold cast draws the TAP form's 15s cooldown, its 35f cast and a \"Cooking Mek (Cold Storage)\" summon lane with 17 Cryo tick marks, none of which is the mode the player asked for. This is also the sanctioned use of the parent-ability caveat channel (N18: variants have no caveat field). Category: visible-divergence."
 			],
 			"description": "Behold the true meaning of \"cooking\"! Escoffier will demonstrate different cooking techniques when you Tap or Hold this skill, but rest assured, each of them is Fontaine's pride and joy.\n\nTap\nActivates her All-Spectrum Multi-Use Cooking Mek in its Cold Storage mode and deals AoE Cryo DMG to nearby opponents.\n\nCooking Mek: Cold Storage Mode\nFollows the current active character and fires Frosty Parfaits at nearby opponents at intervals, dealing Cryo DMG.\n\nArkhe: Ousia\nAt intervals, Escoffier will summon a Surging Blade when activating her Cooking Mek in Cold Storage mode, dealing Ousia-aligned AoE Cryo DMG.\n\nHold\nActivates her All-Spectrum Multi-Use Cooking Mek's Off-the-Cuff Cookery Mode.",
 			"application": [

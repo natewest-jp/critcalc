@@ -16,12 +16,12 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"tags": [],
-			"caveat": "Not modeled: Boom Badges. Normal Attack, Skill, and Burst DMG each grant a badge for 20s, and 1/2/3 badges raise the Boom-Boom Strike to 115%/130%/150% DMG.",
 			"_curatorNotes": [
 				"Current-patch Boom Badge system (article evidence, no gcsim source available): one badge per DMG type dealt (Normal Attack / Skill / Burst), each lasting 20s on its own independent timer, max 1 badge per type. At 1/2/3 badges the Boom-Boom Strike deals 115%/130%/150% of its original DMG. Pure own-hit DMG multiplier with per-type stack machinery — not authorable as an effect (site constitution: no damage math); surfaced via the caveat instead.",
 				"9f lag: gcsim adds 9 frames to swap/N/C cancel frames when normals are used immediately after skill, burst, or dash state (attackFramesWithLag). Values here are base attackFrames (no lag). Effective with lag: N1 swap=25, N=40, C=32; N2 swap=32, N=47, C=41.",
 				"chargeFrames: gcsim applies 14-frame windup when charged attack is used after N2 (NormalCounter==1), N3 (NormalCounter==2), or SkillState. Values recorded are raw slice values before windup subtraction. Effective with windup: swap=90, N=45, E=45, Q=45, D=17, J=16.",
-				"plungeFrames: high plunge also exists in gcsim (highPlungeFrames: swap=53, N=60, E=61, Q=48, D=48, J=68). Low plunge used here as standard rotation plunge."
+				"plungeFrames: high plunge also exists in gcsim (highPlungeFrames: swap=53, N=60, E=61, Q=48, D=48, J=68). Low plunge used here as standard rotation plunge.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Badges are a pure own-hit DMG multiplier (115%/130%/150%) — damage math, constitutionally frozen and never printed anywhere. Stacks have no counter on any surface either (there is no stack readout in the planner), so an authored badge system would have changed no bar, no marker and no tick. Three quarters of the text is a scaling table, which is the definition of trivia in a 262px column. It also sits on the base normal ability, so it fires for every Klee rotation. Category: invisible-omission."
 			],
 			"hits": [
 				{
@@ -162,9 +162,9 @@
 			"tags": ["summon"],
 			"energyCost": 60,
 			"effects": [],
-			"caveat": "Not modeled: with 2 or more Hexerei characters in the party, the Normal Attack string stops resetting for its duration and every third attack spends a Spark for an extra strike.",
 			"_curatorNotes": [
-				"Hexerei Secret Rite (article evidence, no gcsim source available; ≥2 Hexerei in party): during Sparks 'n' Splash the Normal Attack sequence does not reset, and the 3rd attack consumes 1 Spark to fire an extra attack equivalent to the Boom-Boom Strike. Attack-sequence machinery plus an own-hit DMG instance with no published scaling — authored as a factionBonuses entry with a description only (no effects); the mechanic is surfaced via the caveat."
+				"Hexerei Secret Rite (article evidence, no gcsim source available; ≥2 Hexerei in party): during Sparks 'n' Splash the Normal Attack sequence does not reset, and the 3rd attack consumes 1 Spark to fire an extra attack equivalent to the Boom-Boom Strike. Attack-sequence machinery plus an own-hit DMG instance with no published scaling — authored as a factionBonuses entry with a description only (no effects); the mechanic is surfaced via the caveat.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — that a reader could point at. \"The Normal Attack string stops resetting\" is an input-sequence fact — the timeline draws exactly the swings the player TYPED, so no drawn block is wrong; and \"every third attack spends a Spark for an extra strike\" is an extra DMG instance whose only renderable residue (a Pyro application pip) belongs to an unauthored, Spark-stock-gated, Hexerei-gated mechanic behind the opt-in aura lane (P25). This is kit explanation for a Hexerei team, not a repair of anything on screen. Category: kit-explanation."
 			],
 			"description": "Klee's Blazing Delight! For the duration of this ability, continuously summons Sparks 'n' Splash to attack nearby opponents, dealing AoE Pyro DMG.",
 			"behavior": "instant",
@@ -305,10 +305,10 @@
 			"id": "klee__passive__pounding_surprise",
 			"name": "Pounding Surprise",
 			"abilityType": "passive",
-			"caveat": "Not modeled: the Spark stock — the Skill and Burst each grant one and up to 3 are held for stamina-free Charged Attacks.",
 			"_curatorNotes": [
 				"Current-patch A1 rework (article evidence, no gcsim source available): sparks still come from Jumpy Dumpty and Normal Attack hits at a 50% chance, but the Skill and the Burst now grant 1 Spark each, and up to 3 Sparks can be held at once. A Charged Attack still consumes 1 for a stamina-free strike with +50% DMG. Stack machinery plus an own-hit DMG multiplier — not authorable as effects; caveat only. The `description` field below still carries the pre-rework kit text (genshin-db has not been regenerated for this patch).",
-				"Effect not yet authored — needs reviewer pass. A1 Pounding Surprise: gcsim grants 'a1-spark' status (30s duration, 5s ICD between procs) on E bounce/mine hit and normal attack hit, with 50% proc chance each. Explosive Spark is consumed by the next Charged Attack: 0 Stamina cost + 50% additive DMG bonus (stats[DmgP] += 0.5). Likely onHit trigger on E/normal, self-buff on charged attack. Ascension 1 gated."
+				"Effect not yet authored — needs reviewer pass. A1 Pounding Surprise: gcsim grants 'a1-spark' status (30s duration, 5s ICD between procs) on E bounce/mine hit and normal attack hit, with 50% proc chance each. Explosive Spark is consumed by the next Charged Attack: 0 Stamina cost + 50% additive DMG bonus (stats[DmgP] += 0.5). Likely onHit trigger on E/normal, self-buff on charged attack. Ascension 1 gated.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Its two payloads are stamina (not modelled anywhere, and the planner will draw a `C` swing whether or not you could afford it in game) and a +50% own-hit DMG bonus (frozen). No spark counter, no resource lane, no bar length changes. A player who reads this learns something true about Klee and nothing about the chart in front of them. Category: invisible-omission."
 			],
 			"description": "When Jumpy Dumpty and Normal Attacks deal DMG, Klee has a 50% chance to obtain an Explosive Spark.\nThis Explosive Spark is consumed by the next Charged Attack, which costs no Stamina and deals 50% increased DMG."
 		},

@@ -16,14 +16,62 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 21, "hit": 12, "N": 20 } },
-				{ "name": "N2", "frames": { "anim": 21, "hit": 13, "N": 17 } },
-				{ "name": "N3", "frames": { "anim": 46, "hit": 21, "N": 45 } },
-				{ "name": "N4", "frames": { "anim": 38, "hit": 27, "N": 36 } },
-				{ "name": "N5", "frames": { "anim": 66, "hit": 31 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 21,
+						"hit": 12,
+						"N": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 21,
+						"hit": 13,
+						"N": 17
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 46,
+						"hit": 21,
+						"N": 45
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 38,
+						"hit": 27,
+						"N": 36
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 66,
+						"hit": 31
+					}
+				}
 			],
-			"chargeFrames": { "anim": 46, "N": 38, "E": 38, "Q": 38, "D": 24, "J": 24 },
-			"plungeFrames": { "anim": 78, "N": 69, "E": 70, "Q": 69, "D": 47, "swap": 62 },
+			"chargeFrames": {
+				"anim": 46,
+				"N": 38,
+				"E": 38,
+				"Q": 38,
+				"D": 24,
+				"J": 24
+			},
+			"plungeFrames": {
+				"anim": 78,
+				"N": 69,
+				"E": 70,
+				"Q": 69,
+				"D": 47,
+				"swap": 62
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -49,7 +97,14 @@
 				"Heizou plunge gating in gcsim: plunge can only fire when AirborneXianyun (Xianyun-launched). This is a sim-side limitation, not in-game (Heizou plunges normally with any jump). plungeFrames sourced from gcsim's lowPlungeFrames; ActionJump is not explicitly set on lowPlungeFrames so J omitted per recipe. highPlungeFrames exist in gcsim but are not represented per recipe convention (low plunge is the standard rotation animation).",
 				"Pattern 4 / 3 hybrid (Tier B): Declension stack mechanic gates the SKILL's damage at 4 stacks (Conviction → Heartstopper Strike (Max Stacks) per gcsim ai.Abil), not the charged attack. Per-character note in recipe-tier-b.md prescribes a stack-gated CA variant, but gcsim source shows the 4-stack tier sharing identical chargeFrames with the base CA — there are no separate frame slices to record. Stack-gated damage is documented on the skill's _curatorNotes; no second normal entry authored. Reviewer to confirm representation."
 			],
-			"lowPlungeFrames": { "anim": 75, "N": 68, "E": 67, "Q": 67, "D": 44, "swap": 60 }
+			"lowPlungeFrames": {
+				"anim": 75,
+				"N": 68,
+				"E": 67,
+				"Q": 67,
+				"D": 44,
+				"swap": 60
+			}
 		},
 		{
 			"id": "shikanoin_heizou__skill__heartstopper_strike",
@@ -57,14 +112,30 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"cooldown": 10,
-			"frames": { "anim": 39, "D": 30, "J": 30, "swap": 30 },
+			"frames": {
+				"anim": 39,
+				"D": 30,
+				"J": 30,
+				"swap": 30
+			},
 			"variants": [
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 219, "D": 210, "J": 210, "swap": 210 },
+					"frames": {
+						"anim": 219,
+						"D": 210,
+						"J": 210,
+						"swap": 210
+					},
 					"cooldown": 10,
-					"application": [{ "frame": 200, "element": "anemo", "units": 2 }]
+					"application": [
+						{
+							"frame": 200,
+							"element": "anemo",
+							"units": 2
+						}
+					]
 				}
 			],
 			"tags": [],
@@ -80,7 +151,13 @@
 				"Per-stack damage scaling (skill base mult): Mult = skill[talent] + decStack * decBonus[talent]. Not authored as a separate buff/scaling — schema has no 'stack count' state condition. Reviewer to decide representation.",
 				"Particle generation scales with decStack: 0/1 stacks=2 particles, 2/3 stacks=2-3 particles (50% chance for 3rd), 4 stacks=3 particles. Particle ICD 12 frames (0.2s). Particle output is not modeled in this codebase; flag for completeness."
 			],
-			"application": [{ "frame": 20, "element": "anemo", "units": 2 }]
+			"application": [
+				{
+					"frame": 20,
+					"element": "anemo",
+					"units": 2
+				}
+			]
 		},
 		{
 			"id": "shikanoin_heizou__burst__windmuster_kick",
@@ -88,7 +165,13 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 12,
-			"frames": { "anim": 72, "N": 71, "E": 71, "J": 70, "swap": 69 },
+			"frames": {
+				"anim": 72,
+				"N": 71,
+				"E": 71,
+				"J": 70,
+				"swap": 69
+			},
 			"tags": ["grouping"],
 			"energyCost": 40,
 			"effects": [],
@@ -100,7 +183,16 @@
 				"Windmuster Iris is a per-enemy delayed elemental DMG instance keyed off the enemy's existing aura (Pyro/Hydro/Electro/Cryo priority). Not modeled as a summon (no spawned entity). Element absorption-style mechanic — flag for reviewer; this is similar in flavor to recipe.md § 3.5 Elemental Absorption but applies per-enemy on burst hit rather than at cast.",
 				"energyCost=40 from data_gen.textproto (burst_energy_cost). gcsim burst.go also calls c.ConsumeEnergy(3) — likely an unrelated/secondary internal hook; not modeled."
 			],
-			"application": [{ "frame": 34 }, { "frame": 34, "element": "anemo", "units": 1 }]
+			"application": [
+				{
+					"frame": 34
+				},
+				{
+					"frame": 34,
+					"element": "anemo",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -121,7 +213,10 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
@@ -187,32 +282,57 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 1,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "stacks", "key": "declension", "min": 1 }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "stacks",
+								"key": "declension",
+								"min": 1
+							}
 						]
 					},
 					"source": "character",
 					"stat": "critRate",
-					"value": { "type": "perStack", "key": "declension", "per": 4, "maxStacks": 4 },
+					"value": {
+						"type": "perStack",
+						"key": "declension",
+						"per": 4,
+						"maxStacks": 4
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 1,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "stacks", "key": "declension", "min": 4 }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "stacks",
+								"key": "declension",
+								"min": 4
+							}
 						]
 					},
 					"source": "character",
@@ -222,12 +342,12 @@
 				}
 			],
 			"description": "Each Declension stack will increase the CRIT Rate of the Heartstopper Strike unleashed by 4%. When Heizou possesses Conviction, this Heartstopper Strike's CRIT DMG is increased by 32%.",
-			"caveat": "These CRIT bonuses only appear when you assert the stack count — add `{declension:N}` before E (N = 1–4). Shown as a 1s window, but it's a per-hit CRIT modifier on that cast, not a lasting buff.",
 			"_curatorNotes": [
 				"C6 +32% CD on Conviction: gcsim cons.go c6 returns cd=0.32 when decStack==4. Modelled as a buff with stacks condition (declension >= 4) and onCast skill trigger; 1s placeholder duration since this is a per-hit modifier, not a duration buff. Removed prior placeholder critRate/critDmg buffs (manual trigger, no scoping, no duration → permanent character-wide buff which over-applied).",
 				"+4% CR per Declension stack (max +16% at 4 stacks): authored via the perStack BuffValue primitive (2026-05-08). Effective value at render time is `min(asserted_stacks, 4) * 4`. Gated on stacks: declension >= 1 so the buff bar only renders on E casts the user actually stack-asserted.",
 				"Per-cast filtering works (2026-05-08): the parser stamps stackContext onto each TimelineBar at cast time, and the timeline evaluates effect conditions against that snapshot — so both buffs render only on E casts where the user asserted declension stacks, not unconditionally.",
-				"[A7] Dropped from caveat during A7 compression: the two C6 buffs render correctly when the stack count is asserted (+4% CR per Declension stack, +32% CD at 4-stack Conviction) — these are working behavior, not a limitation. The former 'v1 can't scope it more tightly' note refers to the 1s placeholder duration, a known limitation since both are per-hit CRIT modifiers on the cast rather than duration buffs."
+				"[A7] Dropped from caveat during A7 compression: the two C6 buffs render correctly when the stack count is asserted (+4% CR per Declension stack, +32% CD at 4-stack Conviction) — these are working behavior, not a limitation. The former 'v1 can't scope it more tightly' note refers to the 1s placeholder duration, a known limitation since both are per-hit CRIT modifiers on the cast rather than duration buffs.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — TWO pixels, one per sentence. (1) A C6 player casts E and finds NO received-buff bar at all — the two effects are gated on `stacks: declension`, which resolves definitively (C22), so an unasserted cast draws nothing; the blank is the confusion and the caveat is the only place the fix is stated. (2) When it does draw, the bar is a 1s placeholder span — an authored stand-in for a per-hit modifier that has no duration, i.e. a bar width the player must not read as literal. Correctly gated to C6 readers by `slotCaveats`. Category: expected-but-absent."
 			]
 		}
 	],

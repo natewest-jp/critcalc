@@ -16,16 +16,57 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 33, "hit": 12, "N": 20 } },
-				{ "name": "N2", "frames": { "anim": 40, "hit": 14, "N": 36 } },
-				{ "name": "N3", "frames": { "anim": 67, "hit": 38, "N": 82 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 33,
+						"hit": 12,
+						"N": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 40,
+						"hit": 14,
+						"N": 36
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 67,
+						"hit": 38,
+						"N": 82
+					}
+				}
 			],
 			"chargeHits": [
-				{ "name": "Aimed Shot", "frames": { "anim": 23, "D": 14, "J": 14, "swap": 23 } },
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 94, "D": 86, "J": 86 } },
+				{
+					"name": "Aimed Shot",
+					"frames": {
+						"anim": 23,
+						"D": 14,
+						"J": 14,
+						"swap": 23
+					}
+				},
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 94,
+						"D": 86,
+						"J": 86
+					}
+				},
 				{
 					"name": "Fully-Charged Aimed Shot (Mini-Stration Bubble)",
-					"frames": { "anim": 112, "D": 103, "J": 103, "swap": 112 }
+					"frames": {
+						"anim": 112,
+						"D": 103,
+						"J": 103,
+						"swap": 112
+					}
 				}
 			],
 			"_curatorNotes": [
@@ -57,7 +98,11 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 41, "N": 39, "C": 40 },
+			"frames": {
+				"anim": 41,
+				"N": 39,
+				"C": 40
+			},
 			"cooldown": 18,
 			"cooldownStartDelay": 16,
 			"tags": ["heal"],
@@ -73,7 +118,10 @@
 							"source": "C1: \"Can the Happiest of Spirits Understand Anxiety?\"",
 							"type": "flat",
 							"value": 5.4,
-							"conditions": { "type": "constellation", "level": 1 }
+							"conditions": {
+								"type": "constellation",
+								"level": 1
+							}
 						}
 					],
 					"effects": [
@@ -86,7 +134,10 @@
 								"firstTickDelay": 0,
 								"tickCap": 5,
 								"tickCapScaling": {
-									"conditions": { "type": "constellation", "level": 1 },
+									"conditions": {
+										"type": "constellation",
+										"level": 1
+									},
 									"ticks": 8
 								}
 							},
@@ -104,10 +155,15 @@
 								"type": "summonTick",
 								"interval": 1.783,
 								"firstTickDelay": 0,
-								"icdGate": { "timer": 120 },
+								"icdGate": {
+									"timer": 120
+								},
 								"tickCap": 5,
 								"tickCapScaling": {
-									"conditions": { "type": "constellation", "level": 1 },
+									"conditions": {
+										"type": "constellation",
+										"level": 1
+									},
 									"ticks": 8
 								}
 							},
@@ -128,7 +184,9 @@
 				{
 					"label": "Short Hold",
 					"input": ["h1E"],
-					"frames": { "anim": 56 },
+					"frames": {
+						"anim": 56
+					},
 					"summons": [
 						{
 							"label": "Bolstering Bubblebalm",
@@ -140,7 +198,10 @@
 									"source": "C1: \"Can the Happiest of Spirits Understand Anxiety?\"",
 									"type": "flat",
 									"value": 5.4,
-									"conditions": { "type": "constellation", "level": 1 }
+									"conditions": {
+										"type": "constellation",
+										"level": 1
+									}
 								}
 							],
 							"effects": [
@@ -153,7 +214,10 @@
 										"firstTickDelay": 0,
 										"tickCap": 5,
 										"tickCapScaling": {
-											"conditions": { "type": "constellation", "level": 1 },
+											"conditions": {
+												"type": "constellation",
+												"level": 1
+											},
 											"ticks": 8
 										}
 									},
@@ -171,10 +235,15 @@
 										"type": "summonTick",
 										"interval": 1.783,
 										"firstTickDelay": 0,
-										"icdGate": { "timer": 120 },
+										"icdGate": {
+											"timer": 120
+										},
 										"tickCap": 5,
 										"tickCapScaling": {
-											"conditions": { "type": "constellation", "level": 1 },
+											"conditions": {
+												"type": "constellation",
+												"level": 1
+											},
 											"ticks": 8
 										}
 									},
@@ -189,12 +258,19 @@
 							]
 						}
 					],
-					"application": [{ "frame": 106, "element": "hydro" }]
+					"application": [
+						{
+							"frame": 106,
+							"element": "hydro"
+						}
+					]
 				},
 				{
 					"label": "Hold",
 					"input": ["h2E"],
-					"frames": { "anim": 89 },
+					"frames": {
+						"anim": 89
+					},
 					"summons": [
 						{
 							"label": "Bolstering Bubblebalm",
@@ -206,7 +282,10 @@
 									"source": "C1: \"Can the Happiest of Spirits Understand Anxiety?\"",
 									"type": "flat",
 									"value": 5.4,
-									"conditions": { "type": "constellation", "level": 1 }
+									"conditions": {
+										"type": "constellation",
+										"level": 1
+									}
 								}
 							],
 							"effects": [
@@ -219,7 +298,10 @@
 										"firstTickDelay": 0,
 										"tickCap": 5,
 										"tickCapScaling": {
-											"conditions": { "type": "constellation", "level": 1 },
+											"conditions": {
+												"type": "constellation",
+												"level": 1
+											},
 											"ticks": 8
 										}
 									},
@@ -237,10 +319,15 @@
 										"type": "summonTick",
 										"interval": 1.783,
 										"firstTickDelay": 0,
-										"icdGate": { "timer": 120 },
+										"icdGate": {
+											"timer": 120
+										},
 										"tickCap": 5,
 										"tickCapScaling": {
-											"conditions": { "type": "constellation", "level": 1 },
+											"conditions": {
+												"type": "constellation",
+												"level": 1
+											},
 											"ticks": 8
 										}
 									},
@@ -255,10 +342,14 @@
 							]
 						}
 					],
-					"application": [{ "frame": 130, "element": "hydro" }]
+					"application": [
+						{
+							"frame": 130,
+							"element": "hydro"
+						}
+					]
 				}
 			],
-			"caveat": "Not modeled: the one-time self-heal (50% Max HP) when the bubble stops bouncing, the held-cast healing boost on early bounces (+5% / +10%), and Bond of Life from the skill's Sourcewater Droplets.",
 			"_curatorNotes": [
 				"Per-bounce team heal authored 2026-07-12 as a summonTick heal on all three Bolstering Bubblebalm summons (base E + h1E + h2E variants — AbilityVariant.summons replaces the base array, so each needs its own copy). Kuki Sanctifying Ring summonTick-heal shape. gcsim skill.go bubbleHealing() heals every party member EXCEPT Sigewinne (loop skips other.Index()==c.Index()) → target 'teamExcludingSelf'. Cadence: bubbleHitInterval=107f (interval 1.78s); first bounce fires at skillHitmark (=summon spawnsAt: press 35f / shortHold 66f / hold 90f), i.e. delay 0 from spawn → firstTickDelay:0. TL10 (index 9): bolsteringBubblebalmHealingPct[9]=0.0504 (5.04% Max HP) + bolsteringBubblebalmHealingFlat[9]=593.2341 (sidecar 'Bolstering Bubblebalm Healing' col 10 = '5.04% Max HP+593'). No EM/other-stat rider, so no flatScaling.",
 				"Final-bounce self heal NOT authored as an effect: gcsim bubbleFinalHealing() heals ONLY Sigewinne for finalBounceHealing[9]=0.5 (50% Max HP), once, on the last bounce (tick==bubbleHitLimit-1: base tick 4, C1 tick 7). No summon-end / final-tick trigger primitive exists to place a one-shot heal at the end of the bounce chain — documented in the caveat instead. This is the source of the fixture's target:'team' (per-bounce is teammates-only; Sigewinne is covered by the final heal).",
@@ -268,10 +359,16 @@
 				"Arkhe: Ousia (Spiritbreath Thorn) not authored: each bubble bounce calls surgingBladeTask which fires Ousia-aligned Hydro DMG at skillAlignedHitmark=40f with 10s ICD (skillAlignedICD=600f), FlatDmg = surgingBladeDMG[talentLv] * MaxHP (skill.go). Effect not yet authored — needs reviewer pass.",
 				"Bubble bounce mechanics: base 5 bounces (bubbleHitLimit=5) at 107f intervals (bubbleHitInterval=107). C1 adds 3 bounces (bubbleHitLimit+=3 → 8). Duration = (bubbleHitLimit-1)*107/60: base 4*107/60=7.1s, C1 7*107/60=12.5s (+5.4s). First bounce at spawnsAt per variant (press=35f, shortHold=66f, hold=90f).",
 				"Schema gap — Short Hold variant (h1E) cooldownStartDelay=40f (skillShortHoldCDStart=40 in skill.go). AbilityVariant has no cooldownStartDelay field; reviewer to extend schema.",
-				"Schema gap — Hold variant (h2E) cooldownStartDelay=66f (skillHoldCDStart=66 in skill.go). AbilityVariant has no cooldownStartDelay field; reviewer to extend schema."
+				"Schema gap — Hold variant (h2E) cooldownStartDelay=66f (skillHoldCDStart=66 in skill.go). AbilityVariant has no cooldownStartDelay field; reviewer to extend schema.",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — on all three counts. Heal effects reach no planner surface whatsoever (no heal lane, no heal row — grep for a heal branch in src/lib/timeline and buffWindows returns nothing), so neither the final-bounce self-heal nor the +5%/+10% held-cast boost could show anywhere. The bubble's bounce MARKERS are already correct — `tickCap` 5 / 8-at-C1 is authored and the summon lane draws heal ticks too. Bond of Life is on the standing out-of-scope list. Three magnitudes with no bar to be wrong. Category: invisible-omission."
 			],
 			"description": "Blows a Bolstering Bubblebalm that can stimulate blood flow and help patients drift off to sleep using a bubblegun specially made in the Fortress of Meropide.\nBolstering Bubblebalms will bounce between nearby opponents, dealing Hydro DMG based on Sigewinne's max HP to opponents it hits. When it bounces, it will restore HP to all nearby party members except Sigewinne herself. The amount healed is based on Sigewinne's max HP.\nAfter bouncing 5 times, the Bolstering Bubblebalm will disappear and restore HP to Sigewinne based on her max HP value.\nWhen no opponents are present, the Bolstering Bubblebalm will bounce nearby. Only one Bolstering Bubblebalm created by a Sigewinne may exist at once.\nWhen Held, the Bolstering Bubblebalm can be boosted to an even bigger size.\n\nHold\nEnter Aiming Mode to begin blowing an even bigger, even more breathtaking Bolstering Bubblebalm!\nThe Bolstering Bubblebalm will grow bigger the longer the skill is Held, until it grows up to two tiers in size. Each tier it grows increases its DMG by 5% and healing by 5%. When a Bolstering Bubblebalm bounces, it will drop down a tier in size, until it returns to being a normal Bolstering Bubblebalm.\nAfter weaker opponents are hit by big Bolstering Bubblebalms, they will be imprisoned and will be unable to move.\n\nIn addition, 2 Sourcewater Droplets will be created near Sigewinne when she uses this Skill. Each Sourcewater Droplet Sigewinne collects will grant her a Bond of Life worth 10% of her Max HP.\nWhen Sigewinne's Bond of Life is cleared, she regains 1 Elemental Energy for every 2,000 HP worth of the Bond of Life that was cleared. Sigewinne can regain up to 5 Elemental Energy in this way.\n\nArkhe: Ousia\nBolstering Bubblebalms periodically call down a Surging Blade on the position they hit, dealing Ousia-aligned Hydro DMG based on Sigewinne's max HP.",
-			"application": [{ "frame": 75, "element": "hydro" }]
+			"application": [
+				{
+					"frame": 75,
+					"element": "hydro"
+				}
+			]
 		},
 		{
 			"id": "sigewinne__burst__super_saturated_syringing",
@@ -279,7 +376,14 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 245, "N": 269, "E": 271, "D": 241, "J": 241, "swap": 245 },
+			"frames": {
+				"anim": 245,
+				"N": 269,
+				"E": 271,
+				"D": 241,
+				"J": 241,
+				"swap": 245
+			},
 			"cooldown": 18,
 			"cooldownStartDelay": 1,
 			"tags": [],
@@ -291,12 +395,32 @@
 			],
 			"description": "Takes out a special Fortress of Meropide-made syringe and assault the area in front with waves of kindness and medicine, dealing AoE Hydro DMG based on Sigewinne's max HP.\nIn addition, Sigewinne absorbs up to 2 nearby Sourcewater Droplets within a certain range when she uses this skill.",
 			"application": [
-				{ "frame": 99, "element": "hydro", "units": 1 },
-				{ "frame": 124, "element": "hydro" },
-				{ "frame": 149, "element": "hydro" },
-				{ "frame": 174, "element": "hydro" },
-				{ "frame": 199, "element": "hydro" },
-				{ "frame": 224, "element": "hydro", "units": 1 }
+				{
+					"frame": 99,
+					"element": "hydro",
+					"units": 1
+				},
+				{
+					"frame": 124,
+					"element": "hydro"
+				},
+				{
+					"frame": 149,
+					"element": "hydro"
+				},
+				{
+					"frame": 174,
+					"element": "hydro"
+				},
+				{
+					"frame": 199,
+					"element": "hydro"
+				},
+				{
+					"frame": 224,
+					"element": "hydro",
+					"units": 1
+				}
 			]
 		}
 	],
@@ -309,7 +433,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 18,
 					"durationType": "fixed",
 					"source": "character",
@@ -320,7 +446,10 @@
 				{
 					"type": "buff",
 					"target": "teamExcludingSelf",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 18,
 					"durationType": "fixed",
 					"source": "character",
@@ -367,15 +496,23 @@
 				{
 					"type": "shield",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 30,
 					"stat": "hp"
 				},
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
-					"conditions": { "type": "constellation", "level": 2 },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"duration": 8,
 					"durationType": "refresh",
 					"element": "hydro",
@@ -384,8 +521,14 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "burst" },
-					"conditions": { "type": "constellation", "level": 2 },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"duration": 8,
 					"durationType": "refresh",
 					"element": "hydro",
@@ -431,30 +574,44 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critRate",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 0.0004, "cap": 20 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 0.0004,
+						"cap": 20
+					},
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",
-					"value": { "type": "scaling", "stat": "hp", "ratio": 0.0022, "cap": 110 },
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 0.0022,
+						"cap": 110
+					},
 					"snapshottable": false
 				}
 			],
-			"caveat": "Not modeled: the CRIT Rate and CRIT DMG bonuses her healing grants.",
 			"_curatorNotes": [
 				"Stub-with-caveat + consolidation (decided 2026-05-14, onHeal category): consolidated 4 generator-artifact effects → 2 scaling-with-cap buffs using v0.4 (ca5c643) cap rendering. Formula (cons.go): +0.4% CR per 1000 MaxHP (ratio 0.0004 in percentage-per-HP form), cap +20% CR; +2.2% CD per 1000 MaxHP (ratio 0.0022), cap +110% CD. Duration 15s per proc. gcsim source: c6CritMode() called from bubbleHealing() and bubbleFinalHealing() (Bubblebalm bounces). onHeal primitive intentionally not built — Sigewinne C6 is the only practical consumer; the other 4 candidates require overheal/HP-state simulation that's out of scope. Re-evaluate only if those primitives ever land.",
-				"[A7] C6 is the corpus's only practical onHeal consumer; the other candidates (Gaming C2, Wriothesley A4/C2, Charlotte C1) need overheal/HP-state primitives that are out of scope. (This rationale is already recorded in the effect's _curatorNotes.)"
+				"[A7] C6 is the corpus's only practical onHeal consumer; the other candidates (Gaming C2, Wriothesley A4/C2, Charlotte C1) need overheal/HP-state primitives that are out of scope. (This rationale is already recorded in the effect's _curatorNotes.)",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A blank where a self buff bar belongs. Both effects are `trigger: 'manual'`, which reaches no bar, no chip and no toggle (rubric N1), so a C6 owner reading her rows sees the bubble lane ticking heals and NO CRIT bar on her received-buff row — while every other character's CRIT buffs in the same team draw as bars. The absence is the misleading thing, and the caveat is constellation-gated so it reaches only the readers who own it. Category: expected-but-absent."
 			],
 			"description": "When Sigewinne performs healing, she will increase the CRIT Rate and CRIT DMG of her Super Saturated Syringing based on her Max HP. Every 1,000 Max HP she has will increase CRIT Rate by 0.4% and CRIT DMG by 2.2% for 15s. The maximum increase achievable this way is 20% CRIT Rate and 110% CRIT DMG."
 		}

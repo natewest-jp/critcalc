@@ -17,12 +17,51 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 10, "N": 15, "C": 40, "swap": 10 } },
-				{ "name": "N2", "frames": { "anim": 8, "N": 20, "C": 38, "swap": 8 } },
-				{ "name": "N3", "frames": { "anim": 26, "N": 49, "C": 62, "swap": 26 } },
-				{ "name": "N4", "frames": { "anim": 22, "N": 51, "swap": 22 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 10,
+						"N": 15,
+						"C": 40,
+						"swap": 10
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 8,
+						"N": 20,
+						"C": 38,
+						"swap": 8
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 26,
+						"N": 49,
+						"C": 62,
+						"swap": 26
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 22,
+						"N": 51,
+						"swap": 22
+					}
+				}
 			],
-			"chargeFrames": { "anim": 28, "N": 29, "E": 48, "Q": 48, "D": 48, "J": 48, "swap": 28 },
+			"chargeFrames": {
+				"anim": 28,
+				"N": 29,
+				"E": 48,
+				"Q": 48,
+				"D": 48,
+				"J": 48,
+				"swap": 28
+			},
 			"caveat": "Only the basic Charged Attack is shown. Not modeled: the Slither movement state, and the multi-hit Phantasm Performance CA that replaces it in Shadow Dance while Verdant Dew is available.",
 			"_curatorNotes": [
 				"Catalyst normals: 4-hit Dendro chain. attackHitmarks=[10,8,26,22]; N3 is two-hit (10f and 26f QueueAttacks); attackFrames built via InitNormalCancelSlice. Per-hit ActionAttack overrides: N1=15, N2=20, N3=49, N4=51 (final N4 same as animLen).",
@@ -59,7 +98,14 @@
 			"behavior": "stance",
 			"duration": 9,
 			"terminatesOnSwap": true,
-			"frames": { "anim": 25, "N": 26, "Q": 38, "D": 38, "J": 38, "swap": 25 },
+			"frames": {
+				"anim": 25,
+				"N": 26,
+				"Q": 38,
+				"D": 38,
+				"J": 38,
+				"swap": 25
+			},
 			"cooldown": 9,
 			"cooldownStartDelay": 22,
 			"charges": 2,
@@ -81,18 +127,25 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 118, "N": 119, "E": 119, "D": 120, "J": 120, "swap": 118 },
+			"frames": {
+				"anim": 118,
+				"N": 119,
+				"E": 119,
+				"D": 120,
+				"J": 120,
+				"swap": 118
+			},
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": [],
 			"effects": [],
-			"caveat": "Not modeled: the per-stack DMG bonus the burst gains from consuming Veil of Falsehood stacks on cast (max 3, or 5 at C2). Shown at the zero-stack base.",
 			"_curatorNotes": [
 				"2-hit Dendro burst at hitmarks [26, 46]: vow[0]/vow[2] scaling × ATK + vow[1]/vow[3] × EM (FlatDmg). On cast, ConsumeVeilStacks() drains all current Veil stacks and applies a 90f DmgP bonus to both burst hits = stacks × veil[0]. Veil resource not modeled — see skill _curatorNotes.",
 				"Burst frames: burstFrames=InitAbilSlice(131), ActionAttack=119 ActionSkill=119 ActionDash/Jump=120 ActionSwap=118 ActionWalk=119. Per Q-spec swap/N/E/D/J.",
 				"Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(60) drains 60 energy from teammates (entire personal energy bar).",
 				"burstAnimationLength=131. Q→Charge has two branches: 131 (basic CA) or 124 (Phantasm CA available) — not authored as separate frame entries; planner uses Q→Charge=131 default. Schema lacks per-state Q-cancel-frame variants.",
-				"[A7] Per-stack burst DMG bonus is sourced from the veil[0] scaling table at Talent Level 10 (also noted in the burst _curatorNotes as stacks × veil[0])."
+				"[A7] Per-stack burst DMG bonus is sourced from the veil[0] scaling table at Talent Level 10 (also noted in the burst _curatorNotes as stacks × veil[0]).",
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — \"Shown at the zero-stack base\" names nothing that is shown — the tool renders no damage numbers anywhere (constitution: visualize mechanics, never calculate verdicts), so a DMG bonus has no bar, no value and no place a reader could notice it missing. The burst pill's width, cooldown and energy are all unaffected by Veil stacks. Damage math is FROZEN and stays in `_curatorNotes`, where it already is. Category: invisible-omission."
 			],
 			"description": "Grant \"revelation\" to the mysteries of the false through Thoth's true sight, dealing AoE Dendro DMG to opponents ahead. When unleashed, Nefer will consume all **Veils of Falsehood** to increase the DMG dealt by the current Elemental Burst."
 		}
@@ -158,10 +211,16 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 13.5,
 					"durationType": "fixed",
-					"conditions": { "type": "constellation", "level": 4 },
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
 					"element": "dendro",
 					"value": -20
 				}
@@ -188,12 +247,21 @@
 				{
 					"type": "elevate",
 					"target": "self",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					},
 					"source": "character",
