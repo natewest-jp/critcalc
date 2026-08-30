@@ -16,6 +16,45 @@ EM formula** and **resolved the Columbina bucket question** (both below).
 
 ## What they are
 
+> ## ↻ CORRECTED 2026-08-31 (⚓ Nate) — read this before the section below
+>
+> The conversion model is now unified with Stellar's, and **two things this file
+> and the code used to say were wrong**:
+>
+> 1. ⛔ **There is no 2-Moonsign requirement.** Lunar reactions need an **enabler**
+>    in the party, exactly like Stellar — ONE suffices, and enablement is
+>    per-reaction. The old `hasMoonsignTeam` (`moonsignCount >= 2`) gate is
+>    DELETED; `enablesReactions` is now declared on Ineffa, Flins, Columbina
+>    (lunarCharged) and Zibai, Columbina, Linnea (lunarCrystallize).
+> 2. ⛔ **Lunar-Crystallize is a CLEAN REPLACEMENT of HYDRO crystallize only** — it
+>    was emitted ALONGSIDE any crystallize. With an enabler present, no Hydro
+>    Crystallize shards spawn at all (Moondrifts replace them), but **pyro, cryo
+>    and electro crystallize still occur normally alongside it**.
+>
+> ⚠️ **Lunar-Charged was NEVER EMITTED** until this date, so every
+> `lunarCharged` trigger in the corpus was dead — including Ineffa's and Flins's,
+> which list it and nothing else. Now converts from `electroCharged`.
+>
+> 3. ⚓⚓ **Lunar-Bloom ADDS, it does not replace** — the one `mode: 'add'` row in
+>    the table. With an enabler (Lauma, Nefer, Columbina) a Bloom **is** also a
+>    Lunar-Bloom, so both are emitted. But the Bloom fully happens: the core left
+>    on the field is an **ordinary Bloom core**, and Lunar-Bloom leaves nothing of
+>    its own and deals no damage by itself (only a talent naming it deals direct
+>    LB damage). What it does is stack **Verdant Dew** and arm **Lunar-Bloom
+>    buffs** — which is exactly why the event must still be emitted.
+>
+> ⚠️⚠️ **Add-mode has a hazard replace-mode does not.** Two events fire for one
+> in-game reaction, so an `onReaction` trigger listing BOTH `bloom` and
+> `lunarBloom` fires **twice**. ⛔ For an add pair list ONE side: `bloom` alone to
+> catch every bloom (the base always occurs), or `lunarBloom` alone when the
+> effect is lunar-specific. Corrected on Collei, Tighnari and Neuvillette.
+> ⚠️ Under **replace** this cannot happen — only one of the pair is ever emitted,
+> which is why the other ten both-listing effects in the corpus are fine.
+>
+> ⛔⛔ **A buff on the base is NOT a buff on the converted reaction** — see
+> [`stellar-reactions.md`](stellar-reactions.md) § "A buff on the base". The
+> conversion table itself lives in `src/lib/sim/reactionBridge.ts`.
+
 Lunar Reactions are a set of reactions **enabled when a party contains characters
 with a Moonsign Benediction passive**. They **convert pre-existing reactions into
 their Lunar variants**. Only limited 5-star characters (Nod-Krai) carry the

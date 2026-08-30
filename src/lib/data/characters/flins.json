@@ -8,6 +8,7 @@
 	"affiliation": "Lightkeepers",
 	"region": "Nod-Krai",
 	"rarity": 5,
+	"enablesReactions": ["lunarCharged"],
 	"factions": ["moonsign"],
 	"abilities": [
 		{

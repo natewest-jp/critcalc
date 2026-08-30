@@ -16,13 +16,44 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 24, "hit": 16 } },
-				{ "name": "N2", "frames": { "anim": 25, "hit": 14 } },
-				{ "name": "N3", "frames": { "anim": 43, "hit": 22 } },
-				{ "name": "N4", "frames": { "anim": 65, "hit": 32 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 24,
+						"hit": 16
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 25,
+						"hit": 14
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 43,
+						"hit": 22
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 65,
+						"hit": 32
+					}
+				}
 			],
 			"chargeHits": [
-				{ "name": "Fully-Charged Aimed Shot", "frames": { "anim": 96, "D": 86, "J": 86 } }
+				{
+					"name": "Fully-Charged Aimed Shot",
+					"frames": {
+						"anim": 96,
+						"D": 86,
+						"J": 86
+					}
+				}
 			],
 			"_curatorNotes": ["No plunge.go in gcsim character dir — plungeFrames not available."],
 			"sections": [
@@ -50,15 +81,30 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 68, "N": 65, "E": 67, "D": 54, "J": 53, "swap": 66 },
+			"frames": {
+				"anim": 68,
+				"N": 65,
+				"E": 67,
+				"D": 54,
+				"J": 53,
+				"swap": 66
+			},
 			"cooldown": 12,
 			"cooldownStartDelay": 20,
 			"tags": [],
 			"effects": [],
 			"description": "Throws out a Floral Ring that deals 1 instance of Dendro DMG to targets it comes into contact with.\nThe Floral Ring will return after a set time, dealing Dendro DMG once again.",
 			"application": [
-				{ "frame": 34, "element": "dendro", "units": 1 },
-				{ "frame": 138, "element": "dendro", "units": 1 }
+				{
+					"frame": 34,
+					"element": "dendro",
+					"units": 1
+				},
+				{
+					"frame": 138,
+					"element": "dendro",
+					"units": 1
+				}
 			]
 		},
 		{
@@ -67,7 +113,11 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 67, "N": 65, "swap": 66 },
+			"frames": {
+				"anim": 67,
+				"N": 65,
+				"swap": 66
+			},
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
@@ -88,8 +138,7 @@
 									"spread",
 									"bloom",
 									"hyperbloom",
-									"burgeon",
-									"lunarBloom"
+									"burgeon"
 								]
 							},
 							"delta": 1,
@@ -107,7 +156,9 @@
 								"type": "summonTick",
 								"interval": 0.5,
 								"firstTickDelay": 0.717,
-								"icdGate": { "timer": 180 }
+								"icdGate": {
+									"timer": 180
+								}
 							},
 							"scaling": 77.8,
 							"stat": "atk",
@@ -125,7 +176,13 @@
 			],
 			"effects": [],
 			"description": "Trusty Cuilein-Anbar comes to save the day!\nThrows the doll named Cuilein-Anbar, causing an explosion that deals AoE Dendro DMG, creating a Cuilein-Anbar Zone. Cuilein-Anbar will bounce around within this zone, dealing AoE Dendro DMG.",
-			"application": [{ "frame": 25, "element": "dendro", "units": 1 }]
+			"application": [
+				{
+					"frame": 25,
+					"element": "dendro",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -137,7 +194,10 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": "burning" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "burning"
+					},
 					"duration": 3,
 					"scaling": 40,
 					"stat": "atk",
@@ -176,7 +236,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 3,
 					"scaling": 40,
 					"stat": "atk",
@@ -205,7 +267,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -235,7 +299,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 200,
 					"stat": "atk",
 					"element": "dendro",

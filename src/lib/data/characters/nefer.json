@@ -8,6 +8,7 @@
 	"affiliation": "Curatorium of Secrets",
 	"region": "Nod-Krai",
 	"rarity": 5,
+	"enablesReactions": ["lunarBloom"],
 	"factions": ["moonsign"],
 	"abilities": [
 		{

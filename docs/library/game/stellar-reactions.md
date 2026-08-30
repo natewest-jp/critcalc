@@ -5,8 +5,10 @@ Nate's trigger-model explanation (2026-07-29, recorded in project memory
 `hexerei-stellar-todo`). gcsim had no Stellar implementation as of `5d1ec8c79`
 (2026-07-26) — **wiki + Nate are the arbiters for now** (the Hexerei round showed
 gcsim can be off on current-patch details anyway).
-**Game version reflected:** current patch (Sandrone's release, pre-7.0). 7.0 adds
-more Stellar-Conduct enablers and the first Stellar Swirl enablers.
+**Game version reflected:** ↻ **7.0 (genshin-db 5.2.13, ingested 2026-08-31)** —
+Stellar Swirl went live and the enabler roster grew from one to three. The
+pre-7.0 edition of this file is preserved in git history; the tables below are
+current.
 **See also:** [`lunar-reactions.md`](lunar-reactions.md) (the structural template —
 Stellar is the 7.x generation following 6.x Lunar), [`elevation.md`](elevation.md),
 [`elemental-reactions.md`](elemental-reactions.md), [`factions.md`](factions.md).
@@ -35,10 +37,185 @@ before it:
   unconditional kit patches with no reaction gate at all (the Hexerei round had the
   same split — per-effect verification required).
 
-| Stellar reaction    | Converts     | Enabled by (current patch) | Live buffed characters            |
-| ------------------- | ------------ | -------------------------- | --------------------------------- |
-| **Stellar-Conduct** | Superconduct | **Sandrone** (only)        | known roster — see curation round |
-| **Stellar Swirl**   | Swirl        | none yet (7.0)             | some buffs already live           |
+| Stellar reaction    | Converts                    | Enabled by (7.0)                      | Live buffed characters                                          |
+| ------------------- | --------------------------- | ------------------------------------- | --------------------------------------------------------------- |
+| **Stellar-Conduct** | Superconduct                | **Sandrone · Odette · Cryo Traveler** | Wriothesley, Yae Miko, Qiqi, Cyno, Beidou, Diona                |
+| **Stellar Swirl**   | Cryo Swirl ⚠️ NEEDS-CONFIRM | **Sandrone · Odette · Cryo Traveler** | Kazuha, Sucrose, Sayu, Heizou, Mizuki, Varka, Ifa, Prune, Skirk |
+
+⚓ **All three enablers convert BOTH reactions, via one shared passive shape.**
+"Stellar Jubilee: <name>" is the house form, identical across the three but for
+the ATK ratio (Sandrone 0.7%/cap 14% · Odette 0.7%/cap 14% · Cryo Traveler
+0.35%/cap 7%):
+
+> "When a party member triggers a **Superconduct or Cryo Swirl** reaction, it
+> becomes a **Stellar-Conduct or Stellar Swirl** reaction instead, and the Base
+> DMG of said reaction is also increased by X% for every 100 points of ATK."
+
+⚓⚓ **RESOLVED (⚓ Nate, 2026-08-31): Stellar Swirl is CRYO SWIRL ONLY**, and it
+is enabler-gated exactly like Stellar-Conduct. Diona and Sucrose carry Stellar
+Swirl wording in their kits now, but they trigger plain Cryo Swirl until an
+enabler (Sandrone / Odette / Cryo Traveler) joins the party — then **every** Cryo
+Swirl converts automatically.
+
+⛔ **This is a fact about the REACTION, not about the enabler's element.** All
+three enablers are Cryo, so the observed data cannot distinguish "Cryo Swirl is
+the base" from "the swirl matching the enabler's element" — the mechanic is
+stated the first way. Cryo Swirl is Stellar Swirl's base exactly as Superconduct
+is Stellar-Conduct's. ⛔ Don't generalise on a future non-Cryo enabler without
+re-confirming. Implemented in `src/lib/sim/reactionBridge.ts`; ⚠️ `SWIRL_OF`
+maps both `cryo` and `frozen` to `cryoSwirl`, so a swirl off a frozen aura
+converts too.
+
+## ⚓⚓ A BUFF ON THE BASE IS NOT A BUFF ON THE CONVERTED REACTION
+
+⚓ Nate, 2026-08-31 — **the single most important rule for authoring these, and an
+earlier draft of this file asserted the exact opposite.**
+
+**In a Sandrone party, Diona's C6 Superconduct bonus does NOT fire.** No
+Superconduct is happening. Buffs to newer-generation reactions are granted by
+**explicitly naming them**, and usually at a different scaling, because the newer
+reactions carry extra terms in their damage formula (they can CRIT, among other
+things).
+
+Consequences for authoring, and they are the opposite of what you might reach for:
+
+- ⛔ **Do NOT make a converted reaction "satisfy" a listener for its base.** A
+  subsumption rule was considered and is REJECTED.
+- ⛔ **Do NOT pair up OR-arrays whose kit text was not itself updated.** An effect
+  going dark in an enabler party is **CORRECT**, not a defect to repair.
+- ✅ **Author exactly what the kit text says.** For responding to a reaction, the
+  text IS the authority.
+- ⚠️ **This differs from TRIGGERING**, and the distinction is real: any party
+  member can _cause_ a converted reaction without naming it (see the model
+  above), but only an effect that _names_ it is buffed by it. ⛔ Don't collapse
+  the two.
+
+⚠️ **So the corpus is already correct where it looks unpaired.** Venti, Lohen,
+Clorinde and Diona list a base reaction without its converted counterpart, and
+that is right — their kit texts were not rewritten. ⛔ **Nothing here needs a
+lint rule and nothing needs a bulk fix.** The only characters that DO need the
+converted reaction added are the ones whose 7.0 text now names it — the eight
+Anemo kits rewritten to "Swirl or Stellar Swirl".
+
+⛔ **`enablesReactions` is the ARMING SWITCH.** A conversion is inert until some
+character declares the reaction. Declare enablers only when the corpus is ready
+for their teams to convert.
+
+## ⚓ The RADIANCE idiom — how to author a Radiance-gated effect
+
+⚓ Nate, 2026-08-31. **Radiance needs no new schema** — it is a composition of two
+conditions we already have, and writing it down once is what keeps Sandrone,
+Odette and Cryo Traveler saying the same thing.
+
+**The mechanics, as stated:**
+
+- A **Polestar Field** is created only by Stellar-Conduct reactions/DMG; a
+  **Stellar Vortex** only by Stellar Swirl.
+- A character is in **Radiance: Stellar-Conduct** while inside a Polestar Field,
+  and in **Radiance: Stellar Swirl** for **8s** after a nearby party member
+  triggers a Stellar Swirl.
+- ⚓ **Both can exist at once** (a team fielding Conduct and Swirl triggerers
+  together), and ⚓⚓ **on any one-or-the-other split, Stellar-Conduct WINS.**
+  Cryo Traveler's kit suits both playstyles and plays as the Conduct variant
+  when both are up.
+
+**The idiom.** ⚠️ Enablement alone cannot separate the two — all three enablers
+enable BOTH reactions, so `teamEnablesReaction` is true for Conduct in every
+Swirl team. What distinguishes them is whether the team can actually PRODUCE the
+base reaction, which is an element question. For a Cryo holder:
+
+```jsonc
+// Radiance: Stellar-Conduct — Superconduct needs an Electro teammate.
+{ "type": "all", "conditions": [
+    { "type": "teamEnablesReaction", "reaction": "stellarConduct" },
+    { "type": "teamElementCount", "elements": ["electro"], "comparison": ">=", "value": 1 }
+] }
+
+// Radiance: Stellar Swirl — Cryo Swirl needs an Anemo teammate, AND Conduct
+// must not be available, because Conduct takes precedence.
+{ "type": "all", "conditions": [
+    { "type": "teamEnablesReaction", "reaction": "stellarSwirl" },
+    { "type": "teamElementCount", "elements": ["anemo"], "comparison": ">=", "value": 1 },
+    { "type": "not", "condition": { /* the whole Conduct condition above */ } }
+] }
+```
+
+⚓ **The `not` IS the precedence rule** — one clause, no new state, and it makes
+the two branches mutually exclusive by construction rather than by convention.
+
+⚠️ **`teamElementCount` excludes the HOLDER** (documented on the type). That is
+right here: Odette is Cryo and supplies the Cryo half herself, so what the
+condition must find is the _other_ element.
+
+⚠️ **The two Radiances are not the same KIND of object**, and it changes what you
+author. Conduct is field-presence, so under the assume-entered rule it is a
+standing condition with no duration. Swirl is a genuine **8s window** off a
+trigger. ⛔ Don't author Swirl as a standing condition just because Conduct is
+one.
+
+⛔ **A Radiance branch is not a caveat.** Both branches are authorable, so a kit
+that splits its numbers gets two effects, not one effect plus prose.
+
+## Stellar Vortex — what Stellar Swirl actually produces
+
+⚓ Nate, 2026-08-31, from the in-game tutorial. ⚠️ **Stellar Swirl has NO FIELD**
+— it does not use a Polestar Field, and none of Stellar-Conduct's in-field
+baselines (+20% Cryo/Electro, −40% Physical RES) apply to it.
+
+- Stellar Swirl deals an instance of **Anemo DMG** and generates a **Stellar
+  Vortex** — unbounded, no field geometry; **at most one** on the field within a
+  certain range.
+- Repeated Stellar Swirls **level the Vortex** (Lv. 2 after a certain count); a
+  higher level explodes for more AoE Cryo DMG over a wider area.
+- It **explodes after a certain time OR a certain number of triggers**, dealing
+  **AoE Cryo DMG** that **can CRIT**. On explosion it also grants nearby
+  characters one **higher jump** for a short time.
+- After a trigger, nearby characters enter **Radiance: Stellar Swirl for 8s**.
+
+**What of this we can model, and what we deliberately cannot:**
+
+| Mechanic                           | Modelable? | Why                                                                 |
+| ---------------------------------- | ---------- | ------------------------------------------------------------------- |
+| Radiance: Stellar Swirl, **8s**    | ✅         | A stated duration on a temporal trigger.                            |
+| Radiance: Stellar-Conduct          | ✅         | Gated on a **Polestar Field** — ⚓ assume we are inside it (below). |
+| Vortex explosion timing / count    | ⛔         | "a certain time", "a certain number" — ⛔ never fake timing.        |
+| Vortex level, AoE size, jump grant | ⛔         | Positional//traversal; outside what the tools draw.                 |
+
+⚓⚓ **A FIELD IS ASSUMED ENTERED** (⚓ Nate, 2026-08-31). We cannot simulate
+entering and exiting a Polestar Field, and we do not try: a field is treated like
+**any other character's dropped field — the play is happening inside it**. Field
+footprints are generously sized and the player realistically always is. ⛔ So
+"it's positional" is NOT a reason to leave a field effect unauthored, and an
+earlier draft of this file got that wrong.
+
+⚠️ This is the house rule already, not a new one — Sandrone's in-field baselines
+(+20% Cryo/Electro team, −40% Physical RES) were authored on exactly this
+assumption in the 2026-07-29 round. **Radiance: Stellar-Conduct is authorable on
+the same footing.**
+
+⚓ The Conduct radiance is SPATIAL and the Swirl radiance is TEMPORAL — still
+worth holding onto, because it changes the SHAPE of what you author (an
+assumed-on state vs. an 8s window off a trigger), even though both are
+authorable. It is stated in one sentence of the shared enabler passive and is
+easy to read past.
+
+⚓ **"Stellar Glimmer" is the UMBRELLA term for the family, not a twelfth
+reaction** (7.0 wording, on Sandrone / Odette / Cryo Traveler only). Sandrone's
+reworked burst: the ray "is considered **the corresponding** Stellar Glimmer
+reaction DMG"; "Radiance: Stellar Glimmer" replaced the per-reaction Radiance
+state names. ⛔ **It gets no `Reaction` union member** — the union stays
+per-reaction. It gets family-wide **Stat** keys instead, on the `lunarDmgBonus`
+precedent: `stellarGlimmerDmgBonus` / `stellarGlimmerReactionBonus`.
+
+**Stat keys (all live as of 2026-08-31):**
+
+| Bucket                     | Stellar-Conduct               | Stellar Swirl               | Family-wide (Glimmer)         |
+| -------------------------- | ----------------------------- | --------------------------- | ----------------------------- |
+| 3 — own multiplicative     | `stellarConductDmgBonus`      | `stellarSwirlDmgBonus`      | `stellarGlimmerDmgBonus`      |
+| 5 — additive with EM bonus | `stellarConductReactionBonus` | `stellarSwirlReactionBonus` | `stellarGlimmerReactionBonus` |
+
+Label rule unchanged: wiki category "\<Reaction\> DMG Bonus" → `*ReactionBonus`;
+"Base DMG Bonus" → `*DmgBonus`.
 
 Example: Diona + Electro teammates trigger Superconduct. Add Sandrone → every
 Superconduct becomes Stellar-Conduct AND Diona's Stellar-Conduct-related buffs

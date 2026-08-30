@@ -103,8 +103,6 @@ export type InfusionWindow = {
 export type TeamContext = {
 	/** Distinct characters named in the notation, in first-appearance order. */
 	teamChars: CharacterData[];
-	/** ≥2 Moonsign members — enables `lunarCrystallize` emission on geo casts. */
-	hasMoonsignTeam: boolean;
 	teamEnabledReactions: ReadonlySet<string>;
 	teamFactionCounts: ReadonlyMap<string, number>;
 	/** Per-holder element counts, holder excluded (mirrors the renderer). */

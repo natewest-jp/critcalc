@@ -8,6 +8,7 @@
 	"affiliation": "Clink-Clank Krumkake Craftshop",
 	"region": "Nod-Krai",
 	"rarity": 5,
+	"enablesReactions": ["lunarCharged"],
 	"factions": ["moonsign"],
 	"abilities": [
 		{
@@ -281,8 +282,10 @@
 					"source": "character",
 					"stat": "lunarChargedDmgBonus",
 					"value": {
-						"type": "unknown",
-						"description": "+2.5% per 100 ATK Ineffa has, max +50%"
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 2.5,
+						"cap": 50
 					},
 					"snapshottable": false
 				}
@@ -380,5 +383,8 @@
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.700Z",
 		"curatedAt": "2026-05-08"
-	}
+	},
+	"_curatorNotes": [
+		"AUTHORED 2026-08-31: C1 \"Increases Lunar-Charged DMG by 2.5% for every 100 ATK Ineffa has, up to a maximum of 50%.\" ⚠️ Needed NO new schema — no threshold — it was simply left as an `unknown` placeholder. Found by the offset census rather than caused by it."
+	]
 }

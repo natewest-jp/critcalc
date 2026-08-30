@@ -84,9 +84,14 @@ export function formatBuffDisplayValue(
 		typeof value.ratio === 'number' ? value.ratio : value.ratio.refinementValues[refinementIndex];
 	const scalingLabel = scalingStatLabel(value.stat);
 	const scalingCap = value.cap != null ? ` (cap ${value.cap})` : '';
+	// ⚠️ The offset must SHOW. A reader who sees "~1% ATK (cap 20)" and does not
+	// see "above 1000" will read a buff the character does not have at low ATK —
+	// which is the whole reason these kits went unauthored before the field
+	// existed. It sits before the cap so the phrase reads as the kit states it.
+	const scalingOver = value.offset != null ? ` above ${value.offset}` : '';
 	// ratio is in percentage points (see BuffValue.scaling JSDoc) — display
 	// directly as `~{ratio}% {stat}` without further scaling.
-	return `~${ratioNum}% ${scalingLabel}${scalingCap}`;
+	return `~${ratioNum}% ${scalingLabel}${scalingOver}${scalingCap}`;
 }
 
 /** Friendly display name for the source stat of a scaling/perStack value.
@@ -115,6 +120,14 @@ const SCALING_STAT_LABEL: Partial<Record<Stat, string>> = {
 	def: 'DEF',
 	'def%': 'DEF',
 	em: 'EM',
+	// ⚠️ A MISSING ENTRY LEAKS THE RAW KEY. `scalingStatLabel` falls through to
+	// the Stat name, so an unlabelled stat renders "~40% energyRecharge above
+	// 100" instead of "~40% ER". Both of these were caught that way on their
+	// first render. ⚓ The invariant: EVERY stat the corpus scales on needs a
+	// row here. Census 2026-08-31 — atk, baseAtk, critRate, def, em,
+	// energyRecharge, healingBonus, hp — all eight are now present.
+	energyRecharge: 'ER',
+	critRate: 'CRIT Rate',
 	healingBonus: 'Healing Bonus'
 };
 

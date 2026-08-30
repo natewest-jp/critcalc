@@ -93,6 +93,12 @@ export type Stat =
 	| 'baseAtk'
 	| 'em'
 	| 'hp'
+	/** Energy Recharge, as a percentage (100 = no bonus). ⚓ Added 2026-08-31 as a
+	 *  SCALING SOURCE first: Raiden's A4 ("+0.4% per 1% ER above 100%") and
+	 *  Alyosha's A2 ("+0.35% E/Q DMG per 1% ER, cap 70%") both scale off it, and
+	 *  neither could be authored at all until it existed. ⚠️ Pairs with
+	 *  `BuffValue.scaling.offset` — both of those kits state a threshold. */
+	| 'energyRecharge'
 	| 'def'
 	| 'critRate'
 	| 'critDmg'
@@ -127,9 +133,21 @@ export type Stat =
 	| 'lunarCrystallizeDmgBonus'
 	// Stellar Reaction Base DMG Bonus — the Stellar bucket-3 analogue of the
 	// lunar*DmgBonus family (its own multiplicative bracket in the Stellar
-	// formula, provided by specific passives). stellarSwirl's stat waits for
-	// 7.0 mechanics confirmation. See docs/library/game/stellar-reactions.md.
+	// formula, provided by specific passives).
+	// See docs/library/game/stellar-reactions.md.
 	| 'stellarConductDmgBonus'
+	| 'stellarSwirlDmgBonus'
+	// ⚓ "Stellar Glimmer" is 7.0's UMBRELLA term for the Stellar reaction
+	// family, not a twelfth reaction — Sandrone's reworked burst reads "is
+	// considered THE CORRESPONDING Stellar Glimmer reaction DMG", and
+	// "Radiance: Stellar Glimmer" replaced the per-reaction Radiance states.
+	// So this is the family-wide key (the `lunarDmgBonus` precedent): it buffs
+	// Stellar-Conduct AND Stellar Swirl at once. ⛔ Do NOT add a `stellarGlimmer`
+	// member to `Reaction` — the union stays per-reaction, and a curator who
+	// wants "both" reaches for this stat, never a new reaction.
+	// Authors: Odette C4/C6, Sandrone + Odette + Cryo Traveler A4 ("the Base DMG
+	// of said reaction", where "said reaction" is either one).
+	| 'stellarGlimmerDmgBonus'
 	// Reaction Bonus (formula "bucket 5") — additive WITH the EM bonus inside
 	// the EM bracket: `(1 + EM Bonus + Reaction Bonus)`. A DIFFERENT bracket
 	// than the *DmgBonus family above (which multiplies on its own), hence its
@@ -143,6 +161,9 @@ export type Stat =
 	| 'electroChargedReactionBonus'
 	| 'bloomReactionBonus'
 	| 'stellarConductReactionBonus'
+	| 'stellarSwirlReactionBonus'
+	// Family-wide, per the stellarGlimmerDmgBonus note above.
+	| 'stellarGlimmerReactionBonus'
 	| 'lunarChargedReactionBonus'
 	| 'lunarBloomReactionBonus'
 	| 'lunarCrystallizeReactionBonus'
@@ -1081,6 +1102,27 @@ export type BuffValue =
 			stat: Stat;
 			ratio: number | ScaledValue;
 			cap?: number;
+			/** ⚓ THE THRESHOLD the stat must EXCEED before the buff scales at all
+			 *  — "+1% per 100 ATK **above 1,000**", "+0.6% per 1% HP **above 30%**
+			 *  Max HP", "+0.4% per 1% ER **above 100%**". In the host stat's own
+			 *  units, so the contribution is `(ratio / 100) × max(0, stat − offset)`.
+			 *
+			 *  ⚠️ Omitting it on a kit that states one is a real OVER-CLAIM, not a
+			 *  rounding error: Arlecchino at exactly 1,000 ATK would read +10% where
+			 *  the true value is 0. That is why the seven corpus holders below were
+			 *  left UNAUTHORED rather than authored without it.
+			 *
+			 *  Known holders (2026-08-31 census): Arlecchino (ATK > 1000),
+			 *  Neuvillette (HP% > 30), Prune (ATK > 2000), Raiden (ER > 100%),
+			 *  Nahida (EM > 200), Nefer (EM > 500), Zibai (pts > 70),
+			 *  Odette (ATK > 1000). ⛔ Not speculative — added with eight consumers.
+			 *  ⚓ Baizhu's "each 1,000 Max HP that does NOT exceed 50,000" looks like
+			 *  the mirror shape (a ceiling on the INPUT) but needs nothing new: the
+			 *  scaling is linear through the origin, so capping the OUTPUT at
+			 *  `(50000 / 1000) × ratio` is arithmetically identical. `cap` already
+			 *  expresses him, and he is the corpus's only instance of that phrasing.
+			 *  ⛔ Don't mint an input-ceiling field for it. */
+			offset?: number;
 	  }
 	| {
 			/** Value exists but depends on runtime inputs (e.g. a character's ER or energy cost) that the planner cannot resolve. The description is shown verbatim in tooltips. */

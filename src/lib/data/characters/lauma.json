@@ -8,6 +8,7 @@
 	"affiliation": "Frostmoon Scions",
 	"region": "Nod-Krai",
 	"rarity": 5,
+	"enablesReactions": ["lunarBloom"],
 	"factions": ["moonsign"],
 	"abilities": [
 		{
@@ -21,11 +22,40 @@
 				"No plunge.go in gcsim character dir — plungeFrames not available."
 			],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 29, "hit": 14, "C": 17 } },
-				{ "name": "N2", "frames": { "anim": 33, "hit": 11, "C": 19 } },
-				{ "name": "N3", "frames": { "anim": 38, "hit": 16, "C": 33 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 29,
+						"hit": 14,
+						"C": 17
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 33,
+						"hit": 11,
+						"C": 19
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 38,
+						"hit": 16,
+						"C": 33
+					}
+				}
 			],
-			"chargeFrames": { "anim": 64, "N": 61, "C": 63, "E": 63, "Q": 63, "J": 49, "swap": 49 },
+			"chargeFrames": {
+				"anim": 64,
+				"N": 61,
+				"C": 63,
+				"E": 63,
+				"Q": 63,
+				"J": 49,
+				"swap": 49
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -51,14 +81,28 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 42, "N": 38, "C": 38, "Q": 38, "D": 37, "J": 38, "swap": 36 },
+			"frames": {
+				"anim": 42,
+				"N": 38,
+				"C": 38,
+				"Q": 38,
+				"D": 37,
+				"J": 38,
+				"swap": 36
+			},
 			"cooldown": 12,
 			"cooldownStartDelay": 13,
 			"variants": [
 				{
 					"label": "Hold",
 					"input": ["hE"],
-					"frames": { "anim": 56, "N": 57, "Q": 58, "J": 57, "swap": 56 },
+					"frames": {
+						"anim": 56,
+						"N": 57,
+						"Q": 58,
+						"J": 57,
+						"swap": 56
+					},
 					"_curatorNotes": [
 						"Hold variant requires ≥1 Verdant Dew (c.Core.Player.VerdantDew()); gcsim returns an error if VerdantDew=0. Verdant Dew is a team-level resource not yet modeled in the schema. D omitted — ActionDash not explicitly set in skillFrames[1]; stays at InitAbilSlice default 64 (AnimationLength)."
 					]
@@ -97,7 +141,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"duration": 10,
 					"durationType": "refresh",
 					"element": "dendro",
@@ -106,7 +153,10 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onHit", "abilityType": "skill" },
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill"
+					},
 					"duration": 10,
 					"durationType": "refresh",
 					"element": "hydro",
@@ -119,7 +169,13 @@
 				"Moon Song: Hold variant grants 1 Moon Song stack per Verdant Dew consumed (max 3 per cast). If Moon Song is active when Burst is used (or Burst is active when Moon Song is gained), each stack ×6 = additional Pale Hymn, once per burst use. Unspent Moon Song expires after 15s. Effect not authored — needs reviewer pass."
 			],
 			"description": "Silently incants an ancient hymn, summoning a **Frostgrove Sanctuary** with different effects depending on whether you Tap or Hold.\n\nTap\nIntone a Hymn of Hunting, dealing AoE Dendro DMG.\n\nHold\nCan be unleashed when you have at least 1 **Verdant Dew**. Lauma consumes all Verdant Dew and intones a Hymn of Eternal Rest, dealing one regular instance of AoE Dendro DMG and another instance of AoE Dendro DMG that is considered Lunar-Bloom DMG. Each Verdant Dew consumed will give Lauma one stack of **Moon Song**. Each time you Hold to cast an Elemental Skill, a maximum of 3 Verdant Dew can be consumed in this way.\n\nAdditionally, when Lauma's Elemental Skill or attacks from Frostgrove Sanctuary hit an opponent, that opponent's Dendro RES and Hydro RES will be decreased for 10s.",
-			"application": [{ "frame": 16, "element": "dendro", "units": 1 }]
+			"application": [
+				{
+					"frame": 16,
+					"element": "dendro",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "lauma__burst__runo_all_hearts_become_the_beating_moon",
@@ -127,7 +183,14 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 115, "N": 111, "C": 110, "E": 110, "D": 111, "swap": 109 },
+			"frames": {
+				"anim": 115,
+				"N": 111,
+				"C": 110,
+				"E": 110,
+				"D": 111,
+				"swap": 109
+			},
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": [],
@@ -170,7 +233,10 @@
 				{
 					"type": "heal",
 					"target": "active",
-					"trigger": { "type": "onReaction", "reaction": "lunarBloom" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "lunarBloom"
+					},
 					"procCooldown": 1.9,
 					"scaling": 500,
 					"stat": "em"
@@ -190,21 +256,33 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 500,
 					"stat": "em"
 				},
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast", "ability": "burst" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
 					"duration": 15,
 					"durationType": "fixed",
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					},
 					"source": "character",
@@ -252,7 +330,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 185,
 					"stat": "em",
 					"element": "dendro"
@@ -260,7 +340,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 150,
 					"stat": "em",
 					"element": "dendro"
@@ -268,12 +350,21 @@
 				{
 					"type": "elevate",
 					"target": "team",
-					"trigger": { "type": "passive" },
+					"trigger": {
+						"type": "passive"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 6 },
-							{ "type": "teamFaction", "faction": "moonsign", "min": 2 }
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "teamFaction",
+								"faction": "moonsign",
+								"min": 2
+							}
 						]
 					},
 					"source": "character",
