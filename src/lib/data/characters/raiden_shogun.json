@@ -314,13 +314,19 @@
 					"source": "character",
 					"stat": "electroDmgBonus",
 					"value": {
-						"type": "unknown",
-						"description": "0.4% per 1% ER above 100%"
+						"type": "scaling",
+						"stat": "energyRecharge",
+						"ratio": 40,
+						"offset": 100
 					},
 					"snapshottable": false
 				}
 			],
-			"description": "Each 1% above 100% Energy Recharge that the Raiden Shogun possesses grants her:\n·0.6% greater Energy restoration from Musou Isshin\n·0.4% Electro DMG Bonus."
+			"description": "Each 1% above 100% Energy Recharge that the Raiden Shogun possesses grants her:\n·0.6% greater Energy restoration from Musou Isshin\n·0.4% Electro DMG Bonus.",
+			"_curatorNotes": [
+				"AUTHORED 2026-08-31: was a `type: \"unknown\"` placeholder (\"0.4% per 1% ER above 100%\") because neither half of the shape existed — `energyRecharge` was not a Stat and `BuffValue.scaling` had no `offset`. Both landed this session, so the real value is now expressible: 0.4 percentage points of Electro DMG Bonus per 1% ER above 100. ⛔ NO cap — the kit states none (unlike Alyosha's A2, which caps at 70%). ⚠️ The OTHER half of this passive (+0.6% Energy restoration from Musou Isshin per 1% ER) stays unauthored: it scales an energy-restoration mechanic, not a Stat, and we model no such buff.",
+				"⚠️ CORRECTION 2026-08-31, same session: first authored `ratio: 0.4`, wrong by 100×. \"0.4% Electro DMG per 1% ER above 100%\" is 40% OF the excess ER, so ratio is 40. ⚓ ratio is VALUE PER 100 STAT UNITS (BuffValue JSDoc: contribution = (ratio/100) × stat), which is why a \"per 1% ER\" kit reads as ratio 40, not 0.4. Cross-check: Mona's \"20% of her Energy Recharge rate\" is ratio 20; at ER 200 Raiden gains (40/100) × (200−100) = 40% Electro DMG."
+			]
 		}
 	],
 	"constellations": [

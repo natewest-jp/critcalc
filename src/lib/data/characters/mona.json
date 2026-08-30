@@ -12,7 +12,8 @@
 	"_curatorNotes": [
 		"Hexerei layer authored 2026-07-29. gcsim mona/mona.go:38-43 — IsHexerei defaults to enabled, so a bare `IsHexerei` check is a PERMANENT kit patch and only `GetHexereiCount() >= 2` is Secret-Rite (count-gated).",
 		"COUNT-GATED (Secret Rite, gcsim asc.go:86-198): both pieces are unauthorable, so `factionBonuses` is intentionally absent (CharacterData JSDoc: 'Empty/absent on characters with no contributing effects'). (a) astralGlowGainCB (asc.go:86-105, wired on attack.go:59 and charge.go:67) — N/CA hits grant Astral Glow of Mercury stacks (0.1s ICD, max 3, 8s lifetime); hexInit (asc.go:158-181) gives every OTHER party member a ReactBonusMod of +5% Vaporize DMG per stack, consuming all stacks on trigger. No vaporize-DMG-bonus stat exists and reaction-DMG derivation is FROZEN (caveat-style-guide § FROZEN), so this is caveated on the normal-attack ability, not modeled. (b) omenRefreshCB (asc.go:110-156) — N/CA hits on an Omen-affected foe extend Omen by 2s (0.5s ICD), up to 4 refreshes = +8s; burst.go:149-151 seeds that budget (`SetTag(omenKey, 4)` under a bare IsHexerei check). `durationExtensions` on onHit is on the CANNOT list, so this is caveated too.",
-		"PERMANENT PATCHES (bare IsHexerei): C1 off-field 160% reaction bonus (cons.go:63-68), C2 party-wide +80 EM on CA hit (cons.go:133-160) and the guaranteed post-burst CA window (burst.go:61-63 + cons.go:120-126), C4 +15% CRIT DMG for Hexerei members (cons.go:180-183, 227-229), C6 doubled CA multiplier vs Omen/Bubble targets and the off-field nearby-Omen stack ticker (cons.go:260-283, 324-352). Only the C2 EM buff and the C4 CRIT DMG buff are stat buffs; the rest are damage multipliers or proc machinery."
+		"PERMANENT PATCHES (bare IsHexerei): C1 off-field 160% reaction bonus (cons.go:63-68), C2 party-wide +80 EM on CA hit (cons.go:133-160) and the guaranteed post-burst CA window (burst.go:61-63 + cons.go:120-126), C4 +15% CRIT DMG for Hexerei members (cons.go:180-183, 227-229), C6 doubled CA multiplier vs Omen/Bubble targets and the off-field nearby-Omen stack ticker (cons.go:260-283, 324-352). Only the C2 EM buff and the C4 CRIT DMG buff are stat buffs; the rest are damage multipliers or proc machinery.",
+		"AUTHORED 2026-08-31: \"Increases Mona's Hydro DMG Bonus by a degree equivalent to 20% of her Energy Recharge rate.\" ⛔ No offset and no cap — the kit states neither. Unblocked by the new `energyRecharge` Stat."
 	],
 	"abilities": [
 		{
@@ -298,8 +299,9 @@
 					"source": "character",
 					"stat": "hydroDmgBonus",
 					"value": {
-						"type": "unknown",
-						"description": "+20% of Mona's Energy Recharge"
+						"type": "scaling",
+						"stat": "energyRecharge",
+						"ratio": 20
 					},
 					"snapshottable": false
 				}
