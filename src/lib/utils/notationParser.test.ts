@@ -36,6 +36,7 @@ import xiaoJson from '$lib/data/characters/xiao.json';
 import keqingJson from '$lib/data/characters/keqing.json';
 import sucroseJson from '$lib/data/characters/sucrose.json';
 import xingqiuJson from '$lib/data/characters/xingqiu.json';
+import noelleJson from '$lib/data/characters/noelle.json';
 import xiaoForIcd from '$lib/data/characters/xiao.json';
 import { simulateIcd, STANDARD_ICD_FRAMES } from './icd';
 import bennettInfJson from '$lib/data/characters/bennett.json';
@@ -2250,33 +2251,48 @@ describe('parseNotation — bloom core lifecycle (E3 v1.5)', () => {
 	});
 });
 
-describe('parseNotation — lunarCrystallize gating (E3 v1.5)', () => {
-	// Linnea is geo + Moonsign. With 1 Moonsign in the team, lunarCrystallize
-	// does NOT emit. With 2+ Moonsign chars in the team, it does.
+describe('parseNotation — lunarCrystallize gating', () => {
+	// ↻ REWRITTEN 2026-08-31. Was "E3 v1.5" gating: 2+ Moonsign members opened
+	// lunarCrystallize, emitted ALONGSIDE any crystallize. ⚓ Nate: wrong twice.
+	// It is enabler-gated (Linnea alone suffices — she IS an enabler) and it
+	// cleanly replaces HYDRO crystallize only.
 	const linnea = linneaForTest as unknown as CharacterData;
 	const flins = flinsForTest as unknown as CharacterData;
 	const diluc = dilucJson as unknown as CharacterData;
+	const xingqiu = xingqiuJson as unknown as CharacterData;
+	const noelle = noelleJson as unknown as CharacterData;
 	const lookup = (n: string): CharacterData | null => {
 		if (n === 'Linnea') return linnea;
 		if (n === 'Flins') return flins;
 		if (n === 'Diluc') return diluc;
+		if (n === 'Xingqiu') return xingqiu;
+		if (n === 'Noelle') return noelle;
 		return null;
 	};
 
-	it('solo Moonsign (1) + pyro applicator: geo cast emits pyroCrystallize but NOT lunarCrystallize', () => {
+	// ⚠️ A PYRO aura is the control, and it is the half the old suite got wrong:
+	// an enabler in the party does NOT make every crystallize lunar.
+	it('enabler + pyro applicator: pyroCrystallize, and NO lunarCrystallize', () => {
 		const result = parseNotation('Diluc E > Linnea E', lookup, 8);
-		const reactionsByType = new Set(reactionsOf(result.events).map((ev) => ev.reaction));
-		expect(reactionsByType.has('pyroCrystallize')).toBe(true);
-		expect(reactionsByType.has('lunarCrystallize')).toBe(false);
+		const seen = new Set(reactionsOf(result.events).map((ev) => ev.reaction));
+		expect(seen.has('pyroCrystallize')).toBe(true);
+		expect(seen.has('lunarCrystallize')).toBe(false);
 	});
 
-	it('two Moonsign + pyro applicator: geo cast emits both crystallize AND lunarCrystallize', () => {
-		// Linnea + Flins are both Moonsign → 2-Moonsign team → lunarCrystallize gated open.
-		const result = parseNotation('Diluc E > Linnea E > Flins E', lookup, 8);
-		const linneaCrys = reactionsOf(result.events).filter(
-			(ev) => ev.characterId === 'linnea' && ev.reaction === 'lunarCrystallize'
-		);
-		expect(linneaCrys.length).toBeGreaterThanOrEqual(1);
+	it('enabler + HYDRO applicator: lunarCrystallize REPLACES hydroCrystallize', () => {
+		// ⚓ ONE enabler suffices — Linnea alone, no second Moonsign member.
+		const result = parseNotation('Xingqiu E > Linnea E', lookup, 8);
+		const seen = new Set(reactionsOf(result.events).map((ev) => ev.reaction));
+		expect(seen.has('lunarCrystallize')).toBe(true);
+		expect(seen.has('hydroCrystallize')).toBe(false);
+	});
+
+	it('NO enabler + hydro applicator: plain hydroCrystallize', () => {
+		// Noelle is geo and is NOT a lunarCrystallize enabler.
+		const result = parseNotation('Xingqiu E > Noelle E', lookup, 8);
+		const seen = new Set(reactionsOf(result.events).map((ev) => ev.reaction));
+		expect(seen.has('hydroCrystallize')).toBe(true);
+		expect(seen.has('lunarCrystallize')).toBe(false);
 	});
 });
 

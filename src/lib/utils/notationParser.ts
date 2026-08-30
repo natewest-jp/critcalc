@@ -151,7 +151,6 @@ export function parseNotation(
 	// of effects). Walks all unique character IDs across segments.
 	const seenChars = new Set<string>();
 	const teamChars: CharacterData[] = [];
-	let moonsignCount = 0;
 	for (const seg of segments) {
 		const charTok = seg[0];
 		if (!charTok || charTok.kind !== 'character') continue;
@@ -160,9 +159,7 @@ export function parseNotation(
 		if (seenChars.has(c.id)) continue;
 		seenChars.add(c.id);
 		teamChars.push(c);
-		if ((c.factions ?? []).includes('moonsign')) moonsignCount++;
 	}
-	const hasMoonsignTeam = moonsignCount >= 2;
 
 	// Reactions the party enables (Stellar model). Prefers the SLOT roster:
 	// an enabler's mere presence in the party converts the base reaction
@@ -221,7 +218,6 @@ export function parseNotation(
 		loadoutMap,
 		team: {
 			teamChars,
-			hasMoonsignTeam,
 			teamEnabledReactions,
 			teamFactionCounts,
 			teamElementCountsByHolder,
