@@ -8,6 +8,7 @@
 	"affiliation": "Silvermoon Hall",
 	"region": "Nod-Krai",
 	"rarity": 5,
+	"enablesReactions": ["lunarCharged", "lunarCrystallize", "lunarBloom"],
 	"factions": ["moonsign"],
 	"abilities": [
 		{

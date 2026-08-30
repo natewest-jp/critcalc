@@ -283,7 +283,7 @@
 					"target": "self",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"],
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl", "stellarSwirl"],
 						"source": "team"
 					},
 					"duration": 8,
@@ -302,7 +302,7 @@
 					"target": "self",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"],
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl", "stellarSwirl"],
 						"source": "team"
 					},
 					"duration": 8,
@@ -379,7 +379,7 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"]
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl", "stellarSwirl"]
 					},
 					"duration": 10,
 					"durationType": "refresh",
@@ -413,7 +413,7 @@
 					"target": "self",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"],
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl", "stellarSwirl"],
 						"source": "team"
 					},
 					"duration": 8,
@@ -447,5 +447,8 @@
 	"meta": {
 		"source": "genshin-db",
 		"generatedAt": "2026-04-06T11:45:40.725Z"
-	}
+	},
+	"_curatorNotes": [
+		"↻ 7.0 (genshin-db 5.2.13, 2026-08-31): kit text rewritten from \"Swirl\" to \"Swirl or Stellar Swirl\", so `stellarSwirl` joins the trigger. ⚓ Needed because a Stellar Swirl enabler (Sandrone/Odette/Cryo Traveler) REPLACES every Cryo Swirl party-wide — without this the effect would go dark in those teams. ⛔ Only added where HoYo actually renamed the text: a buff on the base reaction is NOT a buff on the converted one, so characters whose text was left alone (Venti, Lohen) stay as-is."
+	]
 }
