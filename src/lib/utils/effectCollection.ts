@@ -169,28 +169,49 @@ export function isActiveTargetOnly(target: EffectTarget | EffectTarget[]): boole
 	return !Array.isArray(target) && target === 'active';
 }
 
-/** Maps a single Lunar reaction to the matching `lunar*DmgBonus` stat key
- *  used by display formatting and de-dup. Returns null for reactions
- *  outside the rendered set (Columbina-style multi-reaction "all lunar"
- *  cases and any non-Lunar elevation are not yet rendered). */
-function elevateReactionToDisplayStat(
-	reaction: import('$lib/types/ability').Reaction
-): Stat | null {
+type Rx = import('$lib/types/ability').Reaction;
+
+/** ⚓ FAMILY elevations — a kit that elevates "all Stellar Glimmer" or "all
+ *  Lunar" reaction DMG names the WHOLE family, and the family has its own
+ *  umbrella stat. Matched as a SET so order in the JSON cannot matter.
+ *  ⚠️ Without this a family elevation falls through the `length !== 1` guard
+ *  below and renders NOTHING — which is how Sandrone's C6 would have gone dark
+ *  the moment 7.0 widened it from Stellar-Conduct to both Stellar reactions. */
+const FAMILY_ELEVATIONS: ReadonlyArray<{ members: readonly Rx[]; stat: Stat }> = [
+	{ members: ['stellarConduct', 'stellarSwirl'], stat: 'stellarGlimmerDmgBonus' },
+	{ members: ['lunarCharged', 'lunarBloom', 'lunarCrystallize'], stat: 'lunarDmgBonus' }
+];
+
+function familyElevationStat(reactions: readonly Rx[]): Stat | null {
+	for (const f of FAMILY_ELEVATIONS) {
+		if (f.members.length !== reactions.length) continue;
+		if (f.members.every((m) => reactions.includes(m))) return f.stat;
+	}
+	return null;
+}
+
+/** Maps a single Lunar/Stellar reaction to the matching `*DmgBonus` stat key
+ *  used by display formatting and de-dup. Returns null for reactions outside
+ *  the rendered set. Whole-family elevations go through `familyElevationStat`. */
+function elevateReactionToDisplayStat(reaction: Rx): Stat | null {
 	if (reaction === 'lunarCharged') return 'lunarChargedDmgBonus';
 	if (reaction === 'lunarBloom') return 'lunarBloomDmgBonus';
 	if (reaction === 'lunarCrystallize') return 'lunarCrystallizeDmgBonus';
 	if (reaction === 'stellarConduct') return 'stellarConductDmgBonus';
+	if (reaction === 'stellarSwirl') return 'stellarSwirlDmgBonus';
 	return null;
 }
 
 /** Converts an `elevate` effect into a synthesized `buff` effect for renderer
- *  ingestion. Single-reaction elevations map to the matching `lunar*DmgBonus`
- *  stat; multi-reaction elevations return null (not yet rendered). All other
- *  effect types pass through unchanged. */
+ *  ingestion. Single-reaction elevations map to the matching `*DmgBonus` stat;
+ *  a whole FAMILY maps to that family's umbrella stat; anything else returns
+ *  null (not rendered). All other effect types pass through unchanged. */
 function normalizeBuffLikeEffect(effect: Effect): Effect | null {
 	if (effect.type !== 'elevate') return effect;
-	if (effect.reactions.length !== 1) return null;
-	const stat = elevateReactionToDisplayStat(effect.reactions[0]);
+	const stat =
+		effect.reactions.length === 1
+			? elevateReactionToDisplayStat(effect.reactions[0])
+			: familyElevationStat(effect.reactions);
 	if (!stat) return null;
 	const synthesized: Effect = {
 		type: 'buff',

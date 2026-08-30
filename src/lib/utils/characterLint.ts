@@ -139,15 +139,20 @@ const STATS = new Set([
 	'hydroDmgBonus',
 	'pyroDmgBonus',
 	'lunarDmgBonus',
+	'energyRecharge',
 	'lunarChargedDmgBonus',
 	'lunarBloomDmgBonus',
 	'lunarCrystallizeDmgBonus',
 	'stellarConductDmgBonus',
+	'stellarSwirlDmgBonus',
+	'stellarGlimmerDmgBonus',
 	'superConductReactionBonus',
 	'cryoSwirlReactionBonus',
 	'electroChargedReactionBonus',
 	'bloomReactionBonus',
 	'stellarConductReactionBonus',
+	'stellarSwirlReactionBonus',
+	'stellarGlimmerReactionBonus',
 	'lunarChargedReactionBonus',
 	'lunarBloomReactionBonus',
 	'lunarCrystallizeReactionBonus',
@@ -2501,6 +2506,25 @@ function lintEffect(
 					`buff value object is neither ScaledValue nor a tagged variant (scaling/unknown/ramping/decaying/perStack/perTeamCount)`,
 					location
 				);
+			}
+			// (D.38) scaling `offset` — the THRESHOLD the stat must exceed. Must be
+			// a finite positive number in the host stat's units. ⚠️ Zero is not a
+			// legal offset: it means "no threshold", which is what OMITTING it
+			// says, and an authored 0 reads as a deliberate claim that the kit
+			// states one. Keeps the display honest ("above 0" is noise).
+			if (obj.type === 'scaling' && obj.offset !== undefined) {
+				if (
+					typeof obj.offset !== 'number' ||
+					!Number.isFinite(obj.offset as number) ||
+					(obj.offset as number) <= 0
+				) {
+					push(
+						'strict',
+						'scaling-offset-invalid',
+						`scaling buff value offset must be a positive finite number (got ${JSON.stringify(obj.offset)}); omit it when the kit states no threshold`,
+						location
+					);
+				}
 			}
 			// (D.31) decaying shape — startValue finite, endValue finite when
 			// present (default 0).
