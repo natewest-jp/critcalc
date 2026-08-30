@@ -1,0 +1,139 @@
+{
+	"id": "alyosha",
+	"name": "Alyosha",
+	"displayName": "Alyosha",
+	"element": "electro",
+	"weapon": "polearm",
+	"gender": "Male",
+	"affiliation": "Snezhnaya",
+	"rarity": 4,
+	"abilities": [
+		{
+			"id": "alyosha__normal__skirmishing_spear",
+			"name": "Skirmishing Spear",
+			"input": ["N"],
+			"abilityType": "normal",
+			"tags": [],
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 4 consecutive spear strikes and applies the **Hunter's Mark** to the opponent hit by the final strike.\n"
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Consumes a certain amount of Stamina to lunge forward, dealing damage to opponents in his path.\n"
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes and applies the **Hunter's Mark** to the opponent hit by the final strike.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents in his path.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+		},
+		{
+			"id": "alyosha__skill__thunderbolt_strike",
+			"name": "Thunderbolt Strike",
+			"input": ["E"],
+			"abilityType": "skill",
+			"cooldown": 15,
+			"duration": 15,
+			"tags": [],
+			"effects": [],
+			"description": "Follows his hunter's instincts. Tap or hold to produce different effects as well as apply the **Hunter's Mark** effect to the hit opponents.\n\nTapping\nFires at opponents in front of him, dealing AoE Electro DMG.\n\nHolding\nEnters aiming mode, then targets opponents within a certain area in front of him. Alyosha's Interruption RES is enhanced when in this mode.\nAt the end of the button hold, he deals Electro DMG to the targeted opponents.",
+			"behavior": "instant"
+		},
+		{
+			"id": "alyosha__burst__hunters_advance",
+			"name": "Hunter's Advance",
+			"input": ["Q"],
+			"abilityType": "burst",
+			"cooldown": 18,
+			"duration": 14,
+			"energyCost": 70,
+			"tags": [],
+			"effects": [],
+			"description": "Summons his trusted companion Tugarin to fight alongside him on the field. This also turns an area in front of him into a Fulgurite Hunting Field for a short time.\n\nFulgurite Hunting Field\n· Continuously taunts nearby opponents to incite them to attack.\n· Every 2s, deals an instance of AoE Electro DMG to any opponent that enters the field.\n\nTugarin\n· If there are any opponents nearby, Tugarin will quickly move close to an opponent and maul them every 2s, dealing Electro DMG.\n· If an opponent affected by the Hunter's Mark effect is hit, the Hunter's Mark will also be activated.\n· Where there are multiple opponents, Tugarin will attack those affected by the Hunter's Mark effect first.",
+			"behavior": "instant"
+		}
+	],
+	"passives": [
+		{
+			"id": "alyosha__passive__awakened_by_the_baying_hounds",
+			"name": "Awakened by the Baying Hounds",
+			"abilityType": "passive",
+			"description": "When **Tugarin** attacks, it will also restore HP to nearby active characters at 120% of Alyosha's ATK."
+		},
+		{
+			"id": "alyosha__passive__suffer_the_winter_wheat_will",
+			"name": "Suffer the Winter Wheat Will",
+			"abilityType": "passive",
+			"description": "Increases the DMG Alyosha deals with his Elemental Skill and Elemental Burst by 0.35% for every 1% of his Energy Recharge. Up to a 70% increase can be obtained in this way."
+		},
+		{
+			"id": "alyosha__passive__into_the_fray",
+			"name": "Into the Fray",
+			"abilityType": "passive",
+			"description": "Alyosha will enter the Radiance: Stellar-Conduct state when inside a **Polestar Field**.\nRadiance: Stellar-Conduct: The Hunter's Precision effect obtained when the **Hunter's Mark** is activated will also increase Stellar-Conduct reaction DMG dealt by the character when on the field by 20%."
+		}
+	],
+	"constellations": [
+		{
+			"id": "alyosha__constellation__frostvale_thunderclap",
+			"name": "Frostvale Thunderclap",
+			"abilityType": "constellation",
+			"constellationLevel": 1,
+			"effects": [],
+			"description": "Alyosha regenerates 15 Elemental Energy when nearby party members trigger an Electro-related reaction on an opponent. This effect can trigger once every 18s."
+		},
+		{
+			"id": "alyosha__constellation__howl_from_afar",
+			"name": "Howl From Afar",
+			"abilityType": "constellation",
+			"constellationLevel": 2,
+			"effects": [],
+			"description": "The duration of the Elemental Burst Hunter's Advance is extended by 6s.\nAdditionally, each time **Tugarin** attacks the opponent, he will also apply the **Hunter's Mark** to a target. This effect does not activate existing Hunter's Marks."
+		},
+		{
+			"id": "alyosha__constellation__friendly_call",
+			"name": "Friendly Call",
+			"abilityType": "constellation",
+			"constellationLevel": 3,
+			"effects": [],
+			"description": "Increases the Level of the Elemental Skill Thunderbolt Strike by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "alyosha__constellation__harvest_the_spoils",
+			"name": "Harvest the Spoils",
+			"abilityType": "constellation",
+			"constellationLevel": 4,
+			"effects": [],
+			"description": "When **Tugarin** attacks, he will also restore 60% of Alyosha's ATK as HP to the nearby party member with the lowest HP by percentage."
+		},
+		{
+			"id": "alyosha__constellation__when_the_nightbird_falls_silent",
+			"name": "When the Nightbird Falls Silent",
+			"abilityType": "constellation",
+			"constellationLevel": 5,
+			"effects": [],
+			"description": "Increases the Level of the Elemental Burst Hunter's Advance by 3.\nMaximum upgrade level is 15."
+		},
+		{
+			"id": "alyosha__constellation__standard_reclaimed",
+			"name": "Standard Reclaimed",
+			"abilityType": "constellation",
+			"constellationLevel": 6,
+			"effects": [],
+			"description": "The Hunter's Precision effect obtained from activating a **Hunter's Mark** can now stack, max 2 stacks. When the stack count reaches 2, characters affected by Hunter's Precision will also have their Elemental Mastery increased by 100 if they are on the field."
+		}
+	],
+	"meta": {
+		"source": "genshin-db",
+		"generatedAt": "2026-08-30T22:22:37.554Z"
+	},
+	"_curatorNotes": [
+		"⚠️ STAGE-0 CORRECTION 2026-08-31: `ingest-character.mjs` put \"Into the Fray\" in the sidecar's `extraPassives` instead of the character JSON. The split is PURELY POSITIONAL — passive1/2 in, passive3/4 out — a convention that held while passive3 was utility, and that 7.0 BROKE by putting the Stellar Jubilee converter passive in that slot. This one is load-bearing (it is what makes the character a Stellar enabler), so it was moved back by hand. ⚠️ passive4 stays out and that is correct — it is genuine minimap-utility."
+	]
+}

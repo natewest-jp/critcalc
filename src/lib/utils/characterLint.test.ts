@@ -1905,7 +1905,15 @@ const FRAMELESS_EXEMPT = new Set([
 	'lohen',
 	'prune',
 	'sandrone',
-	'zibai'
+	'zibai',
+	// 7.0, ingested 2026-08-31. ⛔ gcsim has NOTHING for either — not on
+	// origin/main, not in any open PR, and a repo-wide PR search across all
+	// states returns only a 2022 typo fix. So Stage 4 is blocked: no FrameMaps,
+	// no `application[]`, no `chargedIcdWindow` (⚠️ Alyosha is a polearm, so
+	// that last one is a live question the moment gcsim ships him). Both apply
+	// their element provisionally at the cast until then.
+	'alyosha',
+	'odette'
 ]);
 
 describe('FrameMap coverage', () => {
