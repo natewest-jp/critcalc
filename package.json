@@ -44,7 +44,7 @@
 		"eslint": "^9.39.2",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.14.0",
-		"genshin-db": "^5.2.12",
+		"genshin-db": "^5.2.13",
 		"globals": "^17.3.0",
 		"jsonc-parser": "^3.3.1",
 		"lucide": "^1.30.0",
