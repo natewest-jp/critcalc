@@ -23,8 +23,13 @@ import type { Page } from '@playwright/test';
  * is the audit's job (`scripts/audit-capabilities.mjs`). This is UI behavior.
  */
 
-/** 122 = 123 character JSONs minus the `blank` placeholder the grid filters out. */
-const ROSTER_SIZE = 122;
+/** 124 = 125 character JSONs minus the `blank` placeholder the grid filters out.
+ *  ⚠️ HARDCODED ON PURPOSE — deriving it from the corpus would make the test
+ *  agree with whatever the app renders, which is the one thing it exists to
+ *  check. ⛔ So it must be bumped by hand on every character ingest; the
+ *  ingest-character recipe's Stage 3 says so. Last bumped 2026-08-31 (+Odette,
+ *  +Alyosha). */
+const ROSTER_SIZE = 124;
 
 const matchCount = async (page: Page) => parseInt(await page.locator('.tb-count').innerText(), 10);
 
@@ -55,11 +60,20 @@ test.describe('roster and facets', () => {
 		expect(names).toContain('Bennett');
 		expect(names, 'Jean matches on a passive-derived heal').toContain('Jean');
 
-		// The bucket collects only capability-UNKNOWN characters. Since the
-		// 2026-07-23 two-tool split gave the frameless stubs complete Stage 1–3
-		// capabilities, none are unknown — the stubs filter into the main grid
-		// flagged by the frame chip, and the bucket does not render.
-		await expect(page.locator('.tb-stubs')).toHaveCount(0);
+		// The bucket collects only capability-UNKNOWN characters. ↻ 2026-08-31:
+		// it renders again, and that is the honesty machinery WORKING, not a
+		// regression. Between the 2026-07-23 two-tool split and now, every
+		// frameless stub had complete Stage 1–3 capabilities, so nothing was
+		// unknown and the bucket stayed empty. Odette and Alyosha were ingested
+		// at Stage 0 with no effects authored yet, so they are genuinely
+		// capability-unknown and the tool is right to bucket them.
+		// ⛔ Do NOT "fix" this back to 0 — that would be asserting that a
+		// half-curated character reads as fully known. It returns to 0 on its
+		// own once their Stage 2 effects land.
+		await expect(
+			page.locator('.tb-stubs'),
+			'uncurated bucket renders for Stage-0 stubs'
+		).toHaveCount(1);
 	});
 
 	test('stacked facets intersect (AND, not OR)', async ({ page }) => {
@@ -370,7 +384,7 @@ test.describe('audition', () => {
 		while ((await page.locator('.cmp-lenses .chip.active').count()) > 0) {
 			await page.locator('.cmp-lenses .chip.active').first().click();
 		}
-		await expect(page.locator('.tb-cand')).toHaveCount(122 - 4);
+		await expect(page.locator('.tb-cand')).toHaveCount(ROSTER_SIZE - 4);
 
 		await page.locator('.tb-cand', { hasText: 'Furina' }).first().click();
 		await page.locator('.cmp-take').first().waitFor();
@@ -416,7 +430,7 @@ test.describe('audition', () => {
 
 		// Turning it off is still the escape hatch to everyone outside the team.
 		await page.locator('.cmp-lenses .chip.active').click();
-		await expect(page.locator('.tb-cand')).toHaveCount(122 - 4);
+		await expect(page.locator('.tb-cand')).toHaveCount(ROSTER_SIZE - 4);
 	});
 
 	test('an audition borrows the comparison and gives it back', async ({ page, seed }) => {
