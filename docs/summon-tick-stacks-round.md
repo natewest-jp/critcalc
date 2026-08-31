@@ -1,8 +1,10 @@
 # Summon ticks → the stack machinery — spec
 
-> **Status: SPECCED, NOT STARTED.** Written 2026-08-31 during Alyosha's Stage 2,
-> at ⚓ Nate's request: queue the engine-touching half so it does not get mixed
-> into a curation pass. ⛔ Nothing here is built.
+> **Status: CENSUS DONE 2026-08-31, NOT BUILT.** Written during Alyosha's Stage 2
+> at ⚓ Nate's request; the census in §7 ran immediately after and **overturns
+> this document's central assumption**. ⚠️⚠️ **Read §7 before §3 and §5** — the
+> blast radius §3 warns about is measured at ZERO, and the round's real value is
+> a correction this repo currently describes as already made.
 
 ## 1. The gap, stated exactly
 
@@ -102,3 +104,122 @@ firing **unintentionally**. That set is the cost side of the measurement.
 - `docs/curation/engine-capability-rubric.md` § TRAPS — "Summon damage ticks are
   in THREE different streams with three different answers".
 - `src/lib/data/characters/alyosha.json` — the burst's caveat and notes.
+
+## 7. ⚓⚓ THE CENSUS (2026-08-31) — what it actually measured
+
+Run over all 123 character JSONs plus the weapon and artifact sets, matching
+each `onHit` trigger against a synthesized tick hit's real shape
+(`finalize.ts` step 6c: `abilityType`/`damageTag` = the spawning cast's class,
+`abilityName` = the summon's label, `hitIndex` absent).
+
+### 7a. ⚓⚓ The stack half's blast radius is ZERO
+
+**The corpus holds FIVE `onHit` stack effects in total, and all five are
+excluded from summon ticks by their own triggers:**
+
+| holder  | effect        | key         | excluded by                                    |
+| ------- | ------------- | ----------- | ---------------------------------------------- |
+| alyosha | gainStacks    | huntersMark | `abilityType: 'normal'` + `filter.hitIndex: 3` |
+| alyosha | consumeStacks | huntersMark | `abilityType: 'normal'` + `filter.hitIndex: 3` |
+| yanfei  | gainStacks ×2 | seal        | `abilityType: 'normal'`                        |
+| yanfei  | consumeStacks | seal        | `abilityType: 'charged'`                       |
+
+No weapon in the corpus carries an `onHit` trigger at all. Three artifact sets
+do (Deepwood, Tenacity, Silken Moon) and **none carries stacks**.
+
+⛔ **So §3's "the blast radius is corpus-wide" is FALSE, and the step-6c-shaped
+before/after it calls for is not needed for this half.** Dispatching ticks into
+the stack machinery changes the behaviour of exactly nothing that exists today.
+It is pure capability, and its only customer is Alyosha's Tugarin.
+
+⚠️ That cuts both ways: with one customer, the stack half is cheap and safe but
+carries almost no value on its own. **The value is all in 7b.**
+
+### 7b. ⚠️⚠️ THE BUFF/SHRED HALF IS THE ROUND, AND THIS REPO SAYS IT IS DONE
+
+`finalize.ts`'s step-6c comment claims the four characters it names got an
+uptime correction:
+
+> "FOUR characters leave a damaging summon AND hold an `onHit` effect that
+> summon can fire — Emilie (C2), Escoffier (A-passive), Anemo Traveler (C6),
+> Xiangling (C1) … For those the effect already fired at the CAST instant, so
+> this is an uptime correction rather than a from-nothing gain."
+
+**It is not.** Measured — `Xiangling E` at C1 draws ONE pyro shred window,
+`0.22 → 6.22s`, while Guoba ticks at `2.10 / 3.77 / 5.43 / 7.10`. Tick-anchored
+with its 6s refresh it would run to `13.10s`. The window opens at the cast and
+never refreshes.
+
+⚓ The cause is the split the capability rubric names and the 6c comment does
+not: the **artifact** branch reads the raw list
+(`hits.filter(h => h.characterId === track.characterId)`, `buffWindows.ts`
+~:1014), while the **character** branch reads `hitsForTrack` (:284), which
+selects `normal | charged | plunge`. Synthesized ticks are `skill | burst`, so
+they reach the artifact sets and nothing else.
+
+⚠️⚠️ **Two in-repo claims were in direct conflict and one had to be measured to
+settle it.** The rubric (2026-08-18, probe-derived) is right; the 6c comment
+(2026-08-15) is wrong, and wrong in the direction that makes this round look
+already-done. ⛔ Fix that comment whenever this is picked up, whether or not the
+round ships.
+
+### 7c. What the correction is worth — 11 characters, measured
+
+Each effect's window today ends at `cast + duration`; tick-anchored it would end
+at `last tick + duration`. Both computed from the authored cadence and cap:
+
+| holder         | effect                   | summon                    | ticks | last tick | today ends | would end | gain        |
+| -------------- | ------------------------ | ------------------------- | ----- | --------- | ---------- | --------- | ----------- |
+| emilie         | Dendro RES −30 (C2)      | Lumidouce Case (E)        | 14    | 21.00s    | 10.00s     | 31.00s    | **+21.00s** |
+| escoffier      | Cryo/Hydro RES −55 (A)   | Cooking Mek (E)           | 18    | 19.04s    | 12.00s     | 31.04s    | **+19.04s** |
+| lauma          | Dendro/Hydro RES −25 (E) | Frostgrove Sanctuary      | 8     | 14.68s    | 10.00s     | 24.68s    | **+14.68s** |
+| navia          | Geo RES −20 (C4)         | Cannon Fire Support (Q)   | 17    | 11.35s    | 8.00s      | 19.35s    | **+11.35s** |
+| rosaria        | Physical RES −20 (C6)    | Ice Lance (Q)             | 4     | 8.00s     | 10.00s     | 18.00s    | **+8.00s**  |
+| venti          | Anemo RES −20 (C6)       | Stormeye (Q)              | 20    | 7.80s     | 10.00s     | 17.80s    | **+7.80s**  |
+| sigewinne      | Hydro RES −35 (C2)       | Bolstering Bubblebalm (E) | 5     | 7.13s     | 8.00s      | 15.13s    | **+7.13s**  |
+| xiangling      | Pyro RES −15 (C1)        | Guoba (E)                 | 4     | 6.88s     | 6.00s      | 12.88s    | **+6.88s**  |
+| traveler_anemo | Anemo RES −20 (C6)       | Gust Surge (Q)            | 9     | 4.00s     | 10.00s     | 14.00s    | **+4.00s**  |
+| emilie         | Dendro RES −30 (C2)      | Lumidouce Case Lv3 (Q)    | 3     | 2.30s     | 10.00s     | 12.30s    | **+2.30s**  |
+| sucrose        | team EM +20% (A4)        | Q Wind Spirit             | —     | —         | —          | —         | see note    |
+
+⚓ **Every one of these is right to make tick-anchored, and the kit text says so
+by NAME** — checked one at a time, not assumed: Sigewinne's C2 reads "after
+Rebound Hydrotherapy's **Bolstering Bubblebalm** … hits an opponent"; Venti's
+and Anemo Traveler's read "Targets who take DMG from **Wind's Grand Ode** /
+**Gust Surge**"; Navia's names the burst whose Cannon Fire Support ticks are the
+hits; Xiangling's curator note already records that her C1 fires on Guoba's hit
+callbacks in gcsim. ⛔ None of these is a guess about intent.
+
+### 7d. ⚠️⚠️ THE ONE REAL RISK, AND IT IS NOT THE ONE §3 PREDICTED
+
+**Nicole's A4 Philokalia.** `source: 'team'`, no `abilityType`, no filter — the
+only corpus effect that would newly fire off **every other character's** summon
+ticks (43 of them leave a damaging summon). Her kit text:
+
+> "When Elemental DMG from nearby **ACTIVE** party members hits an opponent,
+> Nicole's own Grace of Kenosis effect is upgraded to Guidance of Theosis."
+
+⚓⚓ **A summon tick is delivered by an ENTITY whose owner may be off field**, so
+firing this off Oz while Fischl is benched contradicts the word "active". This
+is exactly the distinction the mark-triggered round already built for
+`onReaction.source` — `viaEntity`, and a `'active'` source that refuses an
+entity-delivered offer — and **`onHit.source` has no `'active'` member**.
+
+⛔ So the round needs that member before it can dispatch ticks into character
+buff pools, or Nicole silently gains permanent uptime she should not have.
+⚠️ She is the ONLY holder affected; every other Half-B effect is `source:
+'self'` and scoped to its own summon.
+
+## 8. ⏭ Revised shape
+
+Two halves, and the census says they are **independently shippable and should
+ship in this order**:
+
+1. **Half B — tick hits reach character `onHit` buff/shred pools.** All the
+   measured value (11 characters, +2.3s to +21s), a local change beside a branch
+   that already does it for artifacts, and one prerequisite:
+   `onHit.source: 'active'` for Nicole. ⚠️ Also fix the step-6c comment.
+2. **Half A — tick hits reach the stack dispatchers.** Zero corpus effects
+   change; one customer (Alyosha's Tugarin, which needs BOTH halves — Half B
+   anchors the buff at the tick, Half A consumes the mark so it fires once at
+   C0 rather than on every tick).
