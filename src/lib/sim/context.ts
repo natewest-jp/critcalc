@@ -251,6 +251,24 @@ export type SimContext = {
 	 */
 	stateGatedTicks: Map<string, number[]>;
 	/**
+	 * The stack snapshot a summon tick dispatched against, keyed
+	 * `characterId::label::time` (summon-tick stacks round, 2026-08-31).
+	 *
+	 * ⚓⚓ THE LIVE CHAIN DISPATCHES THE TICK; FINALIZE STAMPS ITS SNAPSHOT ONTO THE
+	 * SYNTHESIZED HIT. The two walks are required to agree already (`tickCapOf` is
+	 * read by both), and the join is the one this file's `stateGatedTicks` already
+	 * uses — an integer-frame time under a character and a summon label.
+	 *
+	 * ⚠️⚠️ WITHOUT IT A STACK-GATED BUFF DRAWS ON EVERY TICK. `deriveBuffWindows`
+	 * drops an effect only on a DEFINITIVE false, and a `stacks` Condition with no
+	 * map to read is unresolvable, not false — so an un-stamped tick hit would
+	 * hand Alyosha a permanent Hunter's Precision bar rather than the one
+	 * activation the mark pays for.
+	 *
+	 * Post-gain, pre-consume, exactly like `HitEvent.stacks` everywhere else.
+	 */
+	tickStacks: Map<string, ReadonlyMap<string, number>>;
+	/**
 	 * Whose segment the clock is currently inside, or `undefined` before the
 	 * first. ⚓ Written where a segment OPENS, which is exactly where the clock
 	 * already stands at the boundary — so a task firing mid-segment reads the
@@ -314,6 +332,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		summonChainGen: new Map(),
 		infusionWindows: [],
 		procs: new Map(),
-		stateGatedTicks: new Map()
+		stateGatedTicks: new Map(),
+		tickStacks: new Map()
 	};
 }

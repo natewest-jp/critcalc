@@ -1359,6 +1359,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 	// rotation-wide), so it needs its own first-track guard — the cast/block
 	// sites below are naturally per-track and do not.
 	const reactionActiveDispatched = new Set<string>();
+	/** Once-per-character guard for the summon-tick active-target pass — the
+	 *  received-surface twin of `firstTrackOfChar` in the team-surface loop. */
+	const tickActiveDispatched = new Set<string>();
 	for (let sti = 0; sti < tracks.length; sti++) {
 		const sourceTrack = tracks[sti];
 		const char = getCharacter(sourceTrack.characterId);
@@ -1670,6 +1673,152 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							sourceActionId: hit.sourceEventId,
 							source: { type: 'character', trigger: 'block', abilityClass: blockClass }
 						});
+					}
+				}
+			}
+		}
+
+		// ── Summon-tick onHit active-target (PER-TICK anchored, 2026-08-31) ──
+		//
+		// ⚓⚓ THE RECEIVED-SURFACE HALF OF THE SUMMON-TICK PASS. The team-surface
+		// one above covers a shred or a team buff; this covers a buff aimed at
+		// whoever is ON FIELD, which is the shape Alyosha's Hunter's Precision
+		// takes ("all nearby party members … when they are on the field"). Without
+		// it a tick could CONSUME the mark and draw nothing — strictly worse than
+		// not dispatching the tick at all.
+		//
+		// ⚠️ Half B deliberately left this surface out and said to re-run the
+		// census before adding it. Re-run 2026-08-31: it is still exactly one
+		// holder — Alyosha, whose burst's activation effects are the only
+		// active-target onHit buffs in the corpus on a character who leaves a
+		// ticking summon. ⛔ The other missing surface (`target: 'self'`) still has
+		// no author and still stays out.
+		//
+		// ⚠️ ROTATION-WIDE per character, not per track — the same `firstTrackOfChar`
+		// reason the team-surface pass carries: the summon ticks while its owner is
+		// off field, and track-scoping would cut the window at every swap.
+		if (!tickActiveDispatched.has(sourceTrack.characterId)) {
+			tickActiveDispatched.add(sourceTrack.characterId);
+			const tickHits = hits
+				.filter((h) => h.viaEntity === true && h.characterId === sourceTrack.characterId)
+				.slice()
+				.sort((a, b) => a.time - b.time);
+			for (const castType of ['skill', 'burst'] as const) {
+				if (tickHits.length === 0) break;
+				const classHits = tickHits.filter((h) => h.abilityType === castType);
+				if (classHits.length === 0) continue;
+				const onHitTickList = getCharacterEffectsForOnHit(char, cLevel, castType);
+				if (onHitTickList.length === 0) continue;
+				for (const tickGroup of byProvenance(onHitTickList)) {
+					const seenStats = new Set<string>();
+					const activeEffects = tickGroup.effects.filter((effect): effect is BuffEffect => {
+						if (effect.type !== 'buff') return false;
+						if (!isActiveTargetOnly(effect.target)) return false;
+						if (effect.duration == null) return false;
+						if (
+							evalCondition(
+								effect.conditions,
+								4,
+								new Set(),
+								cLevel,
+								undefined,
+								undefined,
+								receivedBaseCtx
+							) === false
+						)
+							return false;
+						if (seenStats.has(effect.stat)) return false;
+						seenStats.add(effect.stat);
+						return true;
+					});
+					if (activeEffects.length === 0) continue;
+					for (const hit of classHits) {
+						const filterCtx = hitFilterCtx(hit);
+						const barEffects = activeEffects.filter((effect) => {
+							if (effect.trigger.type !== 'onHit') return false;
+							if (!onHitTriggerMatches(effect.trigger, hit, sourceTrack.characterId)) return false;
+							if (
+								evalCondition(
+									effect.conditions,
+									4,
+									new Set(),
+									cLevel,
+									undefined,
+									hit.stacks,
+									receivedBaseCtx
+								) === false
+							)
+								return false;
+							return evalTriggerFilter(effect.trigger.filter, filterCtx);
+						});
+						if (barEffects.length === 0) continue;
+						const buffStart = hit.time;
+						const buffEnd = buffStart + framesOf(barEffects[0].duration!);
+						// Sliced across on-field windows exactly like the cast and
+						// per-swing paths — the buff follows whoever is active, so one
+						// activation becomes one window per receiver it covers.
+						const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
+						for (let rti = 0; rti < tracks.length; rti++) {
+							const receiverTrack = tracks[rti];
+							// ⚓⚓ THE LAST TRACK RUNS TO INFINITY, and this pass is the
+							// first that needed saying so. Every other active-target site
+							// anchors at a CAST or a SWING, which is inside a track by
+							// construction; a summon TICK is the first anchor that can
+							// land after the notation's last action — `Alyosha E Q` is
+							// 2.32s long and Tugarin mauls until 14.73s. Clamping to the
+							// last track's `activeEnd` drew nothing at all there.
+							// ⚠️ It is the same claim the `isLast ? buffEnd` clamp below
+							// already makes (the last covered receiver keeps the buff to
+							// its natural end) — nobody swaps away after the rotation
+							// stops. ⛔ Not `totalDuration`: the summon lane already draws
+							// past it, so a buff its ticks raise must be allowed to too.
+							const trackEnd = rti === tracks.length - 1 ? Infinity : receiverTrack.activeEnd;
+							const segStart = Math.max(buffStart, receiverTrack.activeStart);
+							const segEnd = Math.min(buffEnd, trackEnd);
+							if (segEnd <= segStart) continue;
+							segments.push({ receiverId: receiverTrack.characterId, segStart, segEnd });
+						}
+						for (let si = 0; si < segments.length; si++) {
+							const { receiverId, segStart, segEnd } = segments[si];
+							const isLast = si === segments.length - 1;
+							const sourceIsActive = receiverId === sourceTrack.characterId;
+							const segResolved = new Set<string>([sourceIsActive ? 'onField' : 'offField']);
+							const segNegated = new Set<string>([sourceIsActive ? 'offField' : 'onField']);
+							const receiverChar = getCharacter(receiverId);
+							const segCtx: ConditionContext = {
+								teamFactionCounts,
+								negatedStates: segNegated,
+								activeCharFactions: new Set<string>(receiverChar?.factions ?? []),
+								receiverWeapon: receiverChar?.weapon
+							};
+							const segEffects = barEffects.filter(
+								(effect) =>
+									evalCondition(
+										effect.conditions,
+										4,
+										segResolved,
+										cLevel,
+										undefined,
+										hit.stacks,
+										segCtx
+									) !== false
+							);
+							if (segEffects.length === 0) continue;
+							emit({
+								characterId: sourceTrack.characterId,
+								receiverId,
+								start: segStart,
+								end: isLast ? buffEnd : segEnd,
+								effects: segEffects.length !== barEffects.length ? segEffects : barEffects,
+								stackContext: hit.stacks,
+								duration: buffEnd - buffStart,
+								// ⚓ The same `source` the CAST pool stamps, so the tick
+								// windows land in the cast's row and `mergeRefreshedBars`
+								// fuses them at the projection.
+								sourceCastId: hit.sourceEventId >= 0 ? hit.sourceEventId : undefined,
+								source: { type: 'character', trigger: 'cast', abilityClass: castType }
+							});
+						}
 					}
 				}
 			}

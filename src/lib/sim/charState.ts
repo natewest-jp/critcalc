@@ -132,6 +132,25 @@ export type CharState = {
 	 *  `${nodeId}#${effectIndex}` → last fire time. Escoffier C6's 0.5s ICD
 	 *  is the canonical consumer; mirrors `shieldEndProcCooldown`. */
 	onHitProcLastFire: Map<string, number>;
+	/** ⚓⚓ THE HOME OF A `scope: 'rotation'` STACK KEY (2026-08-31). Everything
+	 *  above it in this record is rotation-wide because the HOLDER may be off
+	 *  field when the trigger fires; this pair is rotation-wide because the
+	 *  RESOURCE outlives a segment — Alyosha's Hunter's Mark is a state on the
+	 *  opponent with its own 15s clock. The two reasons are independent and the
+	 *  containers are kept apart so neither field's name lies about what is in
+	 *  it (an `onCast` grant lives here too, which `onHitStacks` could not say).
+	 *
+	 *  ⚠️ AUTHORITATIVE, and the live segment pool is its MIRROR: writes land
+	 *  here first and are copied into `stackState`/`stackInstances` whenever the
+	 *  holder has one, so every existing reader keeps reading the segment map.
+	 *  ⛔ Never read one without the other having been synced — that is what
+	 *  `syncRotationStacksToStackState` is for. */
+	rotationStacks: Map<string, number>;
+	/** Per-instance expiry stamps for lifetime-bearing rotation-scoped grants.
+	 *  Expired lazily by `applyRotationLifetimeExpiry`, which is the rotation
+	 *  twin of `applyLifetimeExpiry` and runs at the same settle points PLUS at
+	 *  every summon tick (the one dispatch site that has no segment pool). */
+	rotationStackInstances: Map<string, number[]>;
 };
 
 /** A character's state at rotation start: no casts, no windows, every clock
@@ -153,6 +172,8 @@ export function createCharState(): CharState {
 		drainAnchors: new Map(),
 		onHitStacks: new Map(),
 		onHitStackInstances: new Map(),
-		onHitProcLastFire: new Map()
+		onHitProcLastFire: new Map(),
+		rotationStacks: new Map(),
+		rotationStackInstances: new Map()
 	};
 }

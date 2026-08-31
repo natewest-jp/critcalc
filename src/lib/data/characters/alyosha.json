@@ -46,6 +46,7 @@
 					"key": "huntersMark",
 					"amount": 1,
 					"max": 2,
+					"scope": "rotation",
 					"lifetime": 15
 				},
 				{
@@ -92,6 +93,7 @@
 			"_curatorNotes": [
 				"THE HUNTER'S MARK MODEL lives across the normal ability and the skill, and this is the half the 4th swing owns. The Fandom Hunter's Mark tooltip is the authority: \"When this effect is applied to an opponent who is already under the Hunter's Mark effect, it will activate Hunter's Mark instead, which removes said mark and grants all nearby party members the Hunter's Precision effect, which increases their ATK when they are on the field.\" So the mark is a state on the ENEMY that a SECOND application consumes — modelled as a stack resource, since the tools model one opponent.",
 				"⚠️ THE GATE IS `min: 2`, NOT `min: 1`, AND THAT IS DELIBERATE. Both dispatch pipelines run gains → stack snapshot → consumes (sim/run.ts handleCast, sim/run.ts dispatchHit), so THIS application is already counted when the buff reads the snapshot. \"A mark already existed\" is therefore \"the count reached 2\". Verified in source before authoring; ⛔ do not 'fix' it to 1 — that would grant the buff on the very first mark, which the game does not.",
+				"↻ THERE ARE THREE ACTIVATION SITES, not two: this swing, the skill cast, and — since 2026-08-31 — every maul from Tugarin (see the burst's notes). All three read the same `huntersMark` resource, which is `scope: 'rotation'` and therefore survives a swap; the burst's gate differs from these two because C2 applies a mark on the same maul that activates one.",
 				"lifetime 15 = the Hunter's Mark Duration row of the skill's scaling table (15.0s at every talent level). max 2 with amount 1 means a third application cannot accrue — unreachable anyway, since the second consumes the pool. Per-grant expiry (not drain) is the right decay shape: a lone unconsumed mark simply times out.",
 				"filter.hitIndex 3 = the 4th swing, which is the only one that marks (\"applies the Hunter's Mark to the opponent hit by the final strike\"). Alyosha is frameless, so the swing counter is the raw normal counter and N4 lands on index 3."
 			]
@@ -113,6 +115,7 @@
 					"key": "huntersMark",
 					"amount": 1,
 					"max": 2,
+					"scope": "rotation",
 					"lifetime": 15
 				},
 				{
@@ -155,10 +158,9 @@
 				"Hunter's Precision: 21.2% ATK at talent level 10 (skill scaling row \"Hunter's Precision ATK Bonus\"), 15s (\"Hunter's Precision Duration\"). target 'active' because the tooltip grants it to \"all nearby party members\" but the ATK increase applies to them \"when they are on the field\" — which is exactly what a per-receiver active slice expresses. The wiki's own Into the Fray wording says the same thing the other way round: \"all currently active party members\".",
 				"The ability-level `duration: 15` the generator wrote was the Hunter's Mark Duration row, not an active window. Removed — this is an instant cast with no window, and a stray duration on an instant ability is dead data that a future accessor could resurrect as a bar nobody authored.",
 				"Particle generation is 5 per cast with a 12s internal cooldown (Fandom Gameplay Notes). No consumer today; recorded here rather than authored.",
-				"⚠️⚠️ THE MARK IS ENEMY-SIDE BUT ITS CONTAINER IS PER-SEGMENT, which is the caveat above and a real divergence. `stackState`/`stackInstances` are declared inside the per-segment loop (sim/run.ts) and reset at every segment start, so `Alyosha N4 > Fischl E > Alyosha E` draws NO bar where the game gives one — and so does `Alyosha N4 > Alyosha E`, two segments of the SAME character. Measured, not assumed. ⛔ Not fixable by authoring: no per-effect scope switches the container. The rotation-wide pool that exists (`CharState.sourceLifetime`, a Map<key, Map<sourceId, expiry>>) is shaped for a different mechanic (per-SOURCE slots) and has zero corpus authors.",
-				"⚓ IT IS THE SAME ROOT CAUSE AS THE OPEN HALF-A ROUND (docs/summon-tick-stacks-round.md): a summon tick fires while its owner may be off field — i.e. during another character's segment, where the owner has no live stack map at all. So 'let a tick dispatch stacks' is not a wiring job; it needs a rotation-wide home for an enemy-side resource first. ⛔ Don't wire the tick chain into the per-segment dispatchers and call it done."
-			],
-			"caveat": "The Hunter's Mark is dropped when you swap away, so the ATK bonus won't show if you mark an opponent, swap out, and activate it after swapping back. In game the mark lasts 15s."
+				"⚠️⚠️ THE MARK IS ENEMY-SIDE AND SO IS ITS CONTAINER, since 2026-08-31: both gainStacks effects for `huntersMark` declare `scope: 'rotation'`, which stores the resource on the holder's CharState instead of the per-segment pool and mirrors it back into that pool at every settle point. Before it, `Alyosha N4 > Fischl E > Alyosha E` drew NO bar where the game gives one — and so did `Alyosha N4 > Alyosha E`, two segments of the same character — which is what the skill's caveat used to say. ⚠️ Declare the scope on EVERY grant of the key, not just the first: lint D.39 (gainstacks-scope-disagreement) checks that they agree, and an omission is invisible.",
+				"⛔ THE SCOPE IS NOT `trigger.source`. That field says who may FIRE the effect; `scope` says where the stacks LIVE, and Hunter's Mark is `source: 'self'` and rotation-scoped at the same time. It is also what makes Tugarin's maul reachable at all — a summon tick fires while its owner may be off field, i.e. inside another character's segment, where a segment-scoped pool does not exist. See the burst's notes."
+			]
 		},
 		{
 			"id": "alyosha__burst__hunters_advance",
@@ -168,7 +170,130 @@
 			"cooldown": 18,
 			"energyCost": 70,
 			"tags": ["summon", "taunt", "heal"],
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst",
+						"filter": {
+							"abilityName": "Tugarin"
+						}
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "huntersMark",
+								"min": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "constellation",
+									"level": 2
+								}
+							}
+						]
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 21.2,
+					"snapshottable": false
+				},
+				{
+					"type": "consumeStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst",
+						"filter": {
+							"abilityName": "Tugarin"
+						}
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "huntersMark",
+								"min": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "constellation",
+									"level": 2
+								}
+							}
+						]
+					},
+					"key": "huntersMark",
+					"amount": 1
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst",
+						"filter": {
+							"abilityName": "Tugarin"
+						}
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "huntersMark",
+								"min": 2
+							},
+							{
+								"type": "constellation",
+								"level": 2
+							}
+						]
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 21.2,
+					"snapshottable": false
+				},
+				{
+					"type": "consumeStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst",
+						"filter": {
+							"abilityName": "Tugarin"
+						}
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "huntersMark",
+								"min": 2
+							},
+							{
+								"type": "constellation",
+								"level": 2
+							}
+						]
+					},
+					"key": "huntersMark",
+					"amount": 1
+				}
+			],
 			"description": "Summons his trusted companion Tugarin to fight alongside him on the field. This also turns an area in front of him into a Fulgurite Hunting Field for a short time.\n\nFulgurite Hunting Field\n· Continuously taunts nearby opponents to incite them to attack.\n· Every 2s, deals an instance of AoE Electro DMG to any opponent that enters the field.\n\nTugarin\n· If there are any opponents nearby, Tugarin will quickly move close to an opponent and maul them every 2s, dealing Electro DMG.\n· If an opponent affected by the Hunter's Mark effect is hit, the Hunter's Mark will also be activated.\n· Where there are multiple opponents, Tugarin will attack those affected by the Hunter's Mark effect first.",
 			"behavior": "instant",
 			"summons": [
@@ -254,12 +379,13 @@
 					]
 				}
 			],
-			"caveat": "Tugarin's attacks don't activate the Hunter's Mark here, so the ATK bonus won't appear or refresh during the burst the way it does in game.",
 			"_curatorNotes": [
 				"TWO summons from one cast, both resolved since 2026-08-14. The Fulgurite Hunting Field is the stationary taunt zone (\"Every 2s, deals an instance of AoE Electro DMG to any opponent that enters the field\", 134.93% ATK at T10); Tugarin is the companion that closes on a target (\"maul them every 2s\", 90.4% ATK at T10). Both run the burst's 14s and both take C2's +6s.",
-				"⛔ THE CAVEAT IS THE ONE REAL GAP AND IT IS AN ENGINE GAP, NOT A DATA ONE. Tugarin's maul activates an existing Hunter's Mark in game (\"If an opponent affected by the Hunter's Mark effect is hit, the Hunter's Mark will also be activated\"), and in play it is the PRIMARY activator. A summon damage tick reaches the damage-proc registry (notifyDamage → ctx.procs, live on the clock since gauge round L5e) and the synthesized hit list deriveBuffWindows reads — but it reaches NEITHER the stack dispatchers nor any character onHit buff bar, because hitsForTrack filters to normal|charged|plunge inside the holder's own on-field track and a synthesized tick is tagged skill|burst. Queued as its own round; ⚠️ CLAUDE.md's stated reason for the gap (a finalize-time tick cannot be interleaved without a two-pass parse) is now PARTLY STALE, since the L5e tick chain fires live on the clock.",
+				"⚓⚓ TUGARIN'S MAUL ACTIVATES THE HUNTER'S MARK, wired 2026-08-31 (docs/summon-tick-stacks-round.md §10). The burst carries the activation half as a `consumeStacks` + a Hunter's Precision `buff`, both on `trigger: onHit / abilityType: burst` with `filter.abilityName: 'Tugarin'` — the filter is load-bearing twice over: it keeps the burst's OWN cast hit from activating (its abilityName is \"Hunter's Advance\"), and it names the summon the kit text names. ⚠️ The Fulgurite Hunting Field is deliberately NOT an activator: the clause sits inside Tugarin's own bullet list. No pixel turns on it either way — both summons tick on the same 2s cadence from the same spawn, so the two readings land on identical instants.",
+				"⚠️⚠️ THE ACTIVATION GATE IS `min: 1` BELOW C2 AND `min: 2` AT C2, as two mutually-exclusive pairs (the Odette idiom), and that is the C2 non-activation clause modelled rather than approximated. Both dispatch pipelines run gains → stack snapshot → consumes, so C2's own per-maul application is ALREADY counted when the buff reads the snapshot: at C2 \"a mark existed before this maul\" is \"the count reached 2\", exactly as it is for the skill and N4. Measured: `Alyosha Q` at C0 activates nothing (no mark), at C2 nothing on the first maul and every maul after. ⛔ A single `min: 1` gate would have activated on that first maul, which is the double-fire the round's spec warned about.",
+				"⚠️ The consume is `amount: 1`, NOT `'all'` — the opposite of the skill's and N4's. Activation removes the one mark it activated; at C2 the same maul has just applied a fresh one, and `'all'` would wipe that too and halve the cadence to every other maul.",
 				"firstTickDelay is left at the default (= interval) on all three series: the kit says \"every 2s\" and nothing states an offset from the cast. ⛔ Never faked. Likewise no icdGate anywhere here — gcsim has no Alyosha, so nothing has been measured and a bare series correctly means 'standard'.",
-				"C2's second half — \"each time Tugarin attacks the opponent, he will also apply the Hunter's Mark to a target. This effect does not activate existing Hunter's Marks\" — is unauthored for the same reason as the caveat: it is a per-tick grant of a stack resource, which a summon tick cannot dispatch. ⚠️ Note the explicit non-activation clause: at C2 Tugarin APPLIES on every tick and ACTIVATES separately, which is what makes Hunter's Precision continuous there and 15s-from-the-first-tick at C0.",
+				"C2's second half — \"each time Tugarin attacks the opponent, he will also apply the Hunter's Mark to a target. This effect does not activate existing Hunter's Marks\" — is authored on the C2 entry as a per-maul `gainStacks` on the same Tugarin-filtered trigger, gated by the entry itself. It is what makes Hunter's Precision continuous at C2 and a single 15s window at C0.",
 				"⚠️ SUMMON ORDER IS LOAD-BEARING AND TUGARIN IS FIRST ON PURPOSE. Only summons[0] takes its lifetime from the BAR (and so only its durationModifiers are read); a secondary uses its own authored `duration` flat. So C2's +6s can reach exactly one of the two, and Tugarin gets it — he is what the kit text leads with, he carries the damage and both heals, and his length is what a player tracks. Measured before choosing: at C2 the primary ran to 20.73s and the secondary stayed at 14.73s whichever way round they were authored. The Fulgurite Hunting Field's short bar at C2 is caveated on the C2 entry."
 			]
 		}
@@ -405,6 +531,111 @@
 					"stat": "stellarConductReactionBonus",
 					"value": 20,
 					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst",
+						"filter": {
+							"abilityName": "Tugarin"
+						}
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamEnablesReaction",
+										"reaction": "stellarConduct"
+									},
+									{
+										"type": "teamElementCount",
+										"elements": ["cryo"],
+										"comparison": ">=",
+										"value": 1
+									}
+								]
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "stacks",
+										"key": "huntersMark",
+										"min": 1
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "constellation",
+											"level": 2
+										}
+									}
+								]
+							}
+						]
+					},
+					"source": "character",
+					"stat": "stellarConductReactionBonus",
+					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst",
+						"filter": {
+							"abilityName": "Tugarin"
+						}
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamEnablesReaction",
+										"reaction": "stellarConduct"
+									},
+									{
+										"type": "teamElementCount",
+										"elements": ["cryo"],
+										"comparison": ">=",
+										"value": 1
+									}
+								]
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "stacks",
+										"key": "huntersMark",
+										"min": 2
+									},
+									{
+										"type": "constellation",
+										"level": 2
+									}
+								]
+							}
+						]
+					},
+					"source": "character",
+					"stat": "stellarConductReactionBonus",
+					"value": 20,
+					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
@@ -457,11 +688,28 @@
 			"name": "Howl From Afar",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"effects": [],
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst",
+						"filter": {
+							"abilityName": "Tugarin"
+						}
+					},
+					"key": "huntersMark",
+					"amount": 1,
+					"max": 2,
+					"scope": "rotation",
+					"lifetime": 15
+				}
+			],
 			"description": "The duration of the Elemental Burst Hunter's Advance is extended by 6s.\nAdditionally, each time **Tugarin** attacks the opponent, he will also apply the **Hunter's Mark** to a target. This effect does not activate existing Hunter's Marks.",
 			"_curatorNotes": [
 				"The +6s half IS modelled, as a flat durationModifier on BOTH of the burst's summons (source \"C2: Howl From Afar\"), mirroring Kuki's C2 ring extension. It is authored on the summons rather than here because a durationModifier belongs to the window it lengthens; it carries its own constellation condition, since an entry-level gate does not reach an ability-hosted modifier.",
-				"The mark half is unauthored: \"each time Tugarin attacks the opponent, he will also apply the Hunter's Mark to a target. This effect does not activate existing Hunter's Marks.\" A per-tick grant of a stack resource needs summon ticks to reach the stack dispatchers, which is the same engine gap the burst's caveat names. ⚠️ The non-activation clause matters for anyone implementing it: at C2 Tugarin APPLIES on every tick while the base kit's separate activation still fires, which is what makes Hunter's Precision effectively continuous at C2 and 15s-from-the-first-tick at C0.",
+				"✓ The mark half is AUTHORED here (2026-08-31): a `gainStacks` on `onHit / burst / filter.abilityName: 'Tugarin'`, amount 1, max 2, lifetime 15, `scope: 'rotation'`. No explicit constellation condition — the entry IS the gate. ⚠️ The non-activation clause is honoured by the burst's `min: 2` branch, not here: this effect only APPLIES, and the burst decides what activates. See the burst's notes for why min:2 is the same claim as the skill's.",
 				"⚠️ The +6s reaches Tugarin only, and that is a limit of how a cast's second summon takes its length (its own authored duration, flat) rather than an authoring choice that could be made differently — see the burst's notes. Caveated here because the wrong bar is only visible to a reader who HAS C2, which is exactly who a constellation caveat reaches."
 			],
 			"caveat": "At C2 the burst runs 20s, but the Fulgurite Hunting Field's bar still ends at 14s — only Tugarin's is extended."
@@ -534,6 +782,37 @@
 						"type": "stacks",
 						"key": "huntersMark",
 						"min": 2
+					},
+					"source": "character",
+					"stat": "em",
+					"value": 100,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "burst",
+						"filter": {
+							"abilityName": "Tugarin"
+						}
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "huntersMark",
+								"min": 2
+							},
+							{
+								"type": "constellation",
+								"level": 2
+							}
+						]
 					},
 					"source": "character",
 					"stat": "em",

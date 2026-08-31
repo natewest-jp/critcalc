@@ -530,6 +530,33 @@ export function lintCharacter(c: CharacterData): LintIssue[] {
 		}
 	}
 
+	// (D.39) STACK SCOPE IS A PROPERTY OF THE KEY, so every gainStacks effect
+	// that grants it must say the same thing. ⛔ Not the `drain` convention of
+	// declaring once on the first grant: `scope` is one enum, so a disagreement
+	// is checkable here — while an OMISSION is invisible, and would silently
+	// revert the key to `'segment'` the day the declaring effect is edited away.
+	// Reference: Alyosha's `huntersMark`, the only corpus author.
+	{
+		const scopesByKey = new Map<string, Set<string>>();
+		for (const src of [...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])]) {
+			for (const fx of src.effects ?? []) {
+				if (fx.type !== 'gainStacks') continue;
+				const set = scopesByKey.get(fx.key) ?? new Set<string>();
+				set.add(fx.scope ?? 'segment');
+				scopesByKey.set(fx.key, set);
+			}
+		}
+		for (const [key, scopes] of scopesByKey) {
+			if (scopes.size > 1) {
+				push(
+					'strict',
+					'gainstacks-scope-disagreement',
+					`gainStacks key "${key}" is granted with disagreeing scopes (${[...scopes].sort().join(', ')}); a key has ONE home — declare the same scope on every grant of it`
+				);
+			}
+		}
+	}
+
 	// FactionBonus effects also need linting
 	for (const fb of factionBonuses) {
 		for (const eff of fb.effects ?? []) {
@@ -2384,6 +2411,32 @@ function lintEffect(
 				`onHit gainStacks with source "${eff.trigger.source}" accrues rotation-wide and must declare a decay shape (sourceLifetime or lifetime)`,
 				location
 			);
+		}
+		// (B.13j) gainStacks scope — the two legal values, and ⛔ NOT on a
+		// team/others onHit grant. Those already accrue rotation-wide via
+		// `CharState.onHitStacks`, for a different reason (the HOLDER may be off
+		// field, rather than the RESOURCE outliving a segment) — declaring a scope
+		// there would give one key two homes and split its count between them.
+		if (eff.scope !== undefined) {
+			if (eff.scope !== 'segment' && eff.scope !== 'rotation') {
+				push(
+					'strict',
+					'gainstacks-scope-invalid',
+					`gainStacks scope must be "segment" or "rotation" (got ${JSON.stringify(eff.scope)})`,
+					location
+				);
+			} else if (
+				eff.scope === 'rotation' &&
+				eff.trigger.type === 'onHit' &&
+				(eff.trigger.source === 'team' || eff.trigger.source === 'others')
+			) {
+				push(
+					'strict',
+					'gainstacks-scope-redundant',
+					`onHit gainStacks with source "${eff.trigger.source}" already accrues rotation-wide on the holder's CharState; declaring scope "rotation" would split the key between two containers`,
+					location
+				);
+			}
 		}
 	}
 

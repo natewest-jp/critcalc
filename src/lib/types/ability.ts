@@ -1504,8 +1504,9 @@ export type Effect =
 			 *  for stacks the planner can't infer (Heizou Declension, Yanfei Seals —
 			 *  counts that depend on action history beyond what the parser models).
 			 *
-			 *  Stack state is per-character, per-segment — resets when the holder
-			 *  swaps out, matching the assertion-form reset semantics. Cap is
+			 *  Stack state is per-character and, by default, per-SEGMENT — it
+			 *  resets when the holder swaps out, matching the assertion-form reset
+			 *  semantics. ↻ A key can now say otherwise: see `scope` below. Cap is
 			 *  saturating: gainStacks beyond `max` clamps the count.
 			 *
 			 *  `onCast`, `onReaction`, and `onHit` triggers all dispatch
@@ -1536,6 +1537,43 @@ export type Effect =
 			/** Saturating cap on total stack count. Stacks beyond this clamp at
 			 *  `max`. Optional — when absent, the resource grows unbounded. */
 			max?: number;
+			/** Where the resource LIVES (summon-tick stacks round, 2026-08-31).
+			 *
+			 *  ⚓⚓ A STACK KEY NAMES A RESOURCE, AND A RESOURCE EITHER SURVIVES A
+			 *  SWAP OR IT DOES NOT. `'segment'` (the default, and every corpus key
+			 *  but one) is a pool the holder carries while on field: it resets when
+			 *  they swap out, which is the modelled behaviour for Yanfei's Scarlet
+			 *  Seals and Heizou's Declension. `'rotation'` is a resource that keeps
+			 *  its own clock regardless of who is on field — Alyosha's Hunter's
+			 *  Mark is a state on the OPPONENT, so `N4 > Fischl E > E` must find the
+			 *  mark still there, and so must a maul from Tugarin landing while
+			 *  Alyosha is benched.
+			 *
+			 *  ⚠️ Declared on EVERY gainStacks effect for the key, and they must
+			 *  AGREE (lint D.39). ⛔ NOT the `drain` convention of declaring once on
+			 *  the first grant: `drain` is a spec with values that could drift, this
+			 *  is one enum whose disagreement a lint can catch outright — while its
+			 *  OMISSION on a grant is invisible, and would silently revert the key to
+			 *  `'segment'` the day the declaring effect is edited away.
+			 *  `consumeStacks` never declares it: a key has ONE home, and the
+			 *  consume side resolves it from the grants that named it.
+			 *
+			 *  ⚠️⚠️ It is NOT `trigger.source`. That field says who may FIRE the
+			 *  effect (`'team'`/`'others'` grants already accrue rotation-wide
+			 *  because the holder may be off field when the trigger lands); this one
+			 *  says where the stacks THEMSELVES live, and the two are independent —
+			 *  Hunter's Mark is `source: 'self'` and rotation-scoped.
+			 *
+			 *  ⚓ A rotation-scoped key is stored on the holder's `CharState` and
+			 *  MIRRORED into the live segment pool at every settle point, so every
+			 *  existing read (`cast.stackContext`, `hit.stacks`, a `stacks`
+			 *  Condition) is unchanged — the scope decides the container, never the
+			 *  reader. It is also the one scope a SUMMON TICK can dispatch into: a
+			 *  tick fires while its owner may be off field, i.e. inside another
+			 *  character's segment, where a segment-scoped pool does not exist.
+			 *
+			 *  Reference: Alyosha `huntersMark` (the only corpus author). */
+			scope?: 'segment' | 'rotation';
 			/** Continuous-rate decay applied to the named resource while `state`
 			 *  is active for the holder. Drains apply lazily at every cast event
 			 *  (decay = ratePerSecond × elapsed-since-last-update); when a cast

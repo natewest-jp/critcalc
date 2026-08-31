@@ -396,19 +396,18 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// put through `dispatchHit`, so `gainStacks`/`consumeStacks` never see them.
 	// That machinery mutates live state in PARSE order, and a finalize-time hit
 	// cannot be interleaved into a stream that has already been consumed without
-	// a two-pass parse. Buff and resShred effects carry no stack state, so those
-	// are correct here; a summon tick feeding a STACK effect stays unmodelled.
-	// ⛔ Do not "fix" that by calling `dispatchHit` here: the ordering IS the
-	// problem, and a hit dispatched after the fact would apply its gain to a
-	// stack state that later hits have already read.
+	// a two-pass parse. ⛔ Do not "fix" that by calling `dispatchHit` here: the
+	// ordering IS the problem, and a hit dispatched after the fact would apply
+	// its gain to a stack state that later hits have already read.
 	//
-	// ⏭ The right place for that is the LIVE tick chain in `sim/aura.ts`, which
-	// already fires at a real parse-order instant and already calls
-	// `notifyDamage` from there — so the two-pass objection does not apply to it.
-	// ⚓ Censused 2026-08-31: the corpus holds FIVE `onHit` stack effects in total
-	// (Yanfei ×3, Alyosha ×2) and every one is gated to `normal`/`charged`, so
-	// wiring that path changes the behaviour of nothing that exists today. Its
-	// only customer is Alyosha's Tugarin. See `docs/summon-tick-stacks-round.md`.
+	// ✅ AND THE STACK MACHINERY IS REACHED ANYWAY, from the other end
+	// (Half A, 2026-08-31). The LIVE tick chain in `sim/aura.ts` fires at a real
+	// parse-order instant and already calls `notifyDamage` from there, so the
+	// two-pass objection never applied to it: `dispatchEntityHitStacks` runs the
+	// gains → snapshot → consumes there, and THIS hit carries the snapshot it
+	// took (`stacks`, joined through `ctx.tickStacks`). ⚓ The two are one tick
+	// seen twice — the one that FIRED and the one that is RECORDED — so ⛔ never
+	// dispatch from both ends. See `docs/summon-tick-stacks-round.md` §10.
 
 	// ⚓ FLAGGED `viaEntity`, and it is what makes `onHit.source: 'active'`
 	// answerable. A tick carries its OWNER's id while its owner may be off field,
@@ -472,7 +471,16 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 				// wants a summon-borne buff traced back to. `-1` is unreachable
 				// (ids count from 0, bars↔casts are 1:1 by construction); it is
 				// here so a missing link cannot fabricate a bogus event join.
-				sourceEventId: win.sourceCastId ?? -1
+				sourceEventId: win.sourceCastId ?? -1,
+				// ⚓⚓ THE STACKS THE LIVE CHAIN DISPATCHED AGAINST (Half A,
+				// 2026-08-31). The tick that FIRED is in `sim/aura.ts`, on the clock,
+				// where the stack machinery can be mutated in parse order; this hit
+				// is its record for `deriveBuffWindows`, which needs the same
+				// post-gain pre-consume snapshot every other hit carries.
+				// ⚠️⚠️ Absent is not "no stacks" — it is UNRESOLVABLE, and a `stacks`
+				// Condition that cannot resolve is not dropped. Without this stamp a
+				// stack-gated buff draws on EVERY tick.
+				stacks: ctx.tickStacks.get(`${win.characterId}::${summon.label}::${tick.time}`)
 			});
 		}
 	}

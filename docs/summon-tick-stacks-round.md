@@ -1,6 +1,6 @@
 # Summon ticks → the stack machinery — spec
 
-> **Status: ✅ HALF B SHIPPED 2026-08-31. Half A specced, not built.**
+> **Status: ✅ BOTH HALVES SHIPPED 2026-08-31. §10 is Half A's record.**
 > ⚠️ §9 is the record of what landed; §1–§5 are the BEFORE and §3's central
 > claim was measured false.
 >
@@ -219,11 +219,11 @@ buff pools, or Nicole silently gains permanent uptime she should not have.
 Two halves, and the census says they are **independently shippable and should
 ship in this order**:
 
-1. **Half B — tick hits reach character `onHit` buff/shred pools.** All the
+1. **Half B — tick hits reach character `onHit` buff/shred pools.** ✅ SHIPPED, §9. All the
    measured value (11 characters, +2.3s to +21s), a local change beside a branch
    that already does it for artifacts, and one prerequisite:
    `onHit.source: 'active'` for Nicole. ⚠️ Also fix the step-6c comment.
-2. **Half A — tick hits reach the stack dispatchers.** Zero corpus effects
+2. **Half A — tick hits reach the stack dispatchers.** ✅ SHIPPED, §10. Zero corpus effects
    change; one customer (Alyosha's Tugarin, which needs BOTH halves — Half B
    anchors the buff at the tick, Half A consumes the mark so it fires once at
    C0 rather than on every tick).
@@ -282,7 +282,7 @@ vs a predicted 17.80s) because that table walked the authored cadence against
 the authored duration, and the parse applies spawn offsets and truncation.
 ⚓ The parse is the authority; the table was for pricing, not for asserting.
 
-### ⏭ Still open
+### ⏭ Still open — ✅ CLOSED 2026-08-31 BY §10. Everything below is the BEFORE.
 
 **Half A** — zero corpus effects, one customer (Alyosha's Tugarin), and it
 belongs on the LIVE tick chain in `sim/aura.ts`, not on the finalize synthesis.
@@ -316,3 +316,154 @@ partial job: the census found no active-target and no self-target onHit buff on
 a character who leaves a ticking summon. ⛔ Re-run the census before adding
 them; ⚓ and if one is ever added, Nicole's `'active'` source is what stops her
 A4 riding every teammate's summon.
+
+## 10. ✅ HALF A — SHIPPED 2026-08-31
+
+`gainStacks.scope` · the live tick chain dispatches stacks · the tick's stack
+snapshot · the active-target tick surface · Alyosha's Tugarin authored.
+
+### 10a. ⚓⚓ The container decision (⚓ Nate)
+
+**A stack key names a RESOURCE, and a resource either survives a swap or it does
+not.** That is a property of the key, so it is DECLARED:
+`gainStacks.scope: 'segment' | 'rotation'`, default `'segment'`, which is every
+corpus key but one. A rotation-scoped key lives in `CharState.rotationStacks` /
+`rotationStackInstances` and is MIRRORED into the live segment pool at every
+settle point, so ⛔ not one existing reader changed — `cast.stackContext`,
+`hit.stacks` and every `stacks` Condition keep reading the segment map. The scope
+decides the container, never the reader.
+
+⚠️⚠️ **It is a different axis from `trigger.source`, and conflating them is the
+trap.** `source` says who may FIRE the effect — `'team'`/`'others'` grants
+already accrue rotation-wide on `CharState.onHitStacks`, because the HOLDER may
+be off field. `scope` says where the stacks THEMSELVES live. Hunter's Mark is
+`source: 'self'` **and** rotation-scoped: it is a state on the OPPONENT. The two
+containers are kept apart so neither field's name lies about its contents (an
+`onCast` grant lives in the new one, which `onHitStacks` could not say), and lint
+`gainstacks-scope-redundant` refuses `scope: 'rotation'` on a team/others grant
+rather than letting one key have two homes.
+
+⚓⚓ **And it is what makes the tick dispatch structural rather than remembered.**
+The tick chain is handed a **NULL** segment pool, so a segment-scoped grant is
+skipped BY CONSTRUCTION — there is nowhere for it to land, and `poolsFor`
+returning `null` is the round's decision written down at the site. ⛔ Never hand
+those dispatchers the on-field character's pool "so they work": that pool belongs
+to whoever happens to be on field, which is exactly the bug §9 warned about.
+
+⚠️ **Declare the scope on EVERY grant of the key** — ⛔ NOT the `drain`
+convention of declaring once on the first. `drain` is a spec with values that
+could drift; `scope` is one enum whose disagreement lint D.39
+(`gainstacks-scope-disagreement`) catches outright, while its **omission** is
+invisible and would silently revert the key to `'segment'` the day the declaring
+effect is edited away.
+
+### 10b. What else had to land, and why neither was optional
+
+1. **The active-target tick surface** (`buffWindows.ts`). Half B covered the
+   TEAM surface and said to re-run the census before adding the other two.
+   Re-run: Hunter's Precision is `target: 'active'` ("all nearby party members …
+   when they are on the field"), so without this pass a tick would CONSUME the
+   mark and draw nothing — ⛔ strictly worse than not dispatching at all. The
+   `target: 'self'` surface still has no author and still stays out.
+   ⚓⚓ **The last track runs to Infinity here**, and this pass is the first that
+   needed saying so: every other active-target site anchors at a CAST or a SWING,
+   which is inside a track by construction, while a tick can land after the
+   notation's last action — `Alyosha E Q` is 2.32 s long and Tugarin mauls until
+   14.73 s. Clamping to the last track's `activeEnd` drew nothing at all. It is
+   the same claim the existing `isLast ? buffEnd` clamp already makes.
+2. **The tick's stack SNAPSHOT** (`ctx.tickStacks`, stamped by finalize's 6c).
+   ⚠️⚠️ **A `stacks` Condition with no map is UNRESOLVABLE, not false**, and
+   `deriveBuffWindows` drops only a definitive false — so an un-stamped tick hit
+   hands out a permanent bar. Measured on the way: `Alyosha Q` at C0 drew
+   Hunter's Precision off **every** maul with no mark to activate.
+   ⚓ **An empty map and `undefined` are not the same answer.**
+   `rotationStackSnapshot` returns an empty map for a holder who declares the key
+   and holds none of it (`0 < min` ⇒ false, no bar) and `undefined` for a holder
+   with no such key — which is what leaves every other summon in the corpus with
+   the `stackContext` it already had. The join is
+   `characterId::label::time`, the one `stateGatedTicks` already uses.
+
+### 10c. The authoring — ⚓ the C0/C2 asymmetry is MODELLED, not approximated
+
+- **`min: 1` below C2, `min: 2` at C2**, as two mutually-exclusive pairs (the
+  Odette idiom). Both dispatch pipelines run **gains → snapshot → consumes**, so
+  C2's own per-maul application is already counted when the buff reads the
+  snapshot: at C2 "a mark existed before this maul" IS "the count reached 2",
+  exactly as it is for the skill and N4 (§4's warning, answered).
+- **The consume is `amount: 1`, not `'all'`** — the opposite of the skill's.
+  Activation removes the one mark it activated; at C2 the same maul has just
+  applied a fresh one, and `'all'` would wipe that too and halve the cadence.
+- ⚠️ **The two-effect mutually-exclusive pattern is normally FORBIDDEN for a
+  pair sharing a `stat`** (the active-target pass dedupes by stat and keeps
+  whichever was authored first — the `activeCharFaction` trap). It is safe here
+  only because the discriminator is a `constellation` condition, which resolves
+  DEFINITIVELY in the pre-filter that runs _before_ the stat dedupe. ⛔ Don't
+  copy the pattern with a discriminator that cannot resolve there.
+- `filter.abilityName: 'Tugarin'` is load-bearing twice: it keeps the burst's own
+  cast hit from activating (its abilityName is "Hunter's Advance"), and it names
+  the summon the kit text names. ⚠️ The Fulgurite Hunting Field is deliberately
+  not an activator (the clause sits inside Tugarin's bullet list) — and **no
+  pixel turns on it**, because both summons tick on the same 2 s cadence from the
+  same spawn.
+
+### 10d. Measured
+
+Corpus differential, `<name> E Q N1 C P E Q` **and**
+`<name> E Q > Kaeya E N1 ~4s > <name> N1 N2 N3 N4 E Q`, at C0 and C6 over all
+123 characters, before vs after:
+
+- **45 windows added, 1 moved, and exactly ONE character touched.** The other
+  122 are **byte-identical** at both levels and in both rotations.
+- **Applications and IR events: 0 delta, everywhere.** Same finding as the
+  constellation-gating round — this is a BARS-ONLY change, so no gauge-round
+  measurement is contaminated.
+- The engine change measured **byte-identical on its own**, before any authoring:
+  all five corpus `onHit` stack effects are `normal`/`charged`-gated, exactly as
+  §7a predicted.
+- ⚠️ The one **moved** window is a real consequence and not a loss: at C0 an
+  N4-anchored activation at 12.70 s becomes two maul-anchored ones at 10.73 s and
+  12.73 s. Tugarin now consumes each mark as it lands, so the activation is
+  attributed to the maul that actually caused it.
+- Behaviour, checked case by case against the kit text: `Alyosha E Q` at C0 →
+  ONE activation, at the first maul, 15 s. At C2 → every maul, continuous, ending
+  15 s after the last. `Alyosha Q` at C0 → **nothing** (no mark to activate). At
+  C2 → nothing on the first maul, every maul after. `Alyosha N4 > Fischl E >
+Alyosha E` and `Alyosha N4 > Alyosha E` → the bar the skill's caveat said was
+  missing. The projection fuses the per-tick windows into **one row, one bar**.
+
+🔒 **`src/lib/sim/summonTickStacks.test.ts`**, seeded-negative verified — four
+mutations, each going red where it should: the tick dispatch disabled (3), the
+scope ignored so rotation keys write the segment pool (6), the active-target tick
+pass neutered (3), the snapshot forced to `undefined` (3). ⚠️ Its stub pair
+asserts the container decision at the DISPATCHER, with no notation involved: a
+segment-scoped grant reached by a tick lands in **none** of the three pools.
+
+⚠️ **Half B's sweep (`utils/summonTickBuffs.test.ts`) was NARROWED, not
+relaxed.** It asserts a window whose SPAN exceeds its effect's duration, which is
+the team surface's shape (one window extended in place). An active-target
+activation is a per-RECEIVER slice — several windows of exactly the effect's
+duration, fused at the projection — so Alyosha would have failed a true assertion
+about the wrong shape. ⛔ Don't relax that span check to accommodate him; his
+guard asserts the projected BAR instead.
+
+### 10e. Two caveats retired, none added
+
+The skill's ("the Hunter's Mark is dropped when you swap away") and the burst's
+("Tugarin's attacks don't activate the Hunter's Mark here") both named pixels
+that are now correct. ⚓ Nothing replaced them: on the NAME THE PIXEL test there
+is no bar, marker or printed value left that is wrong here. C6's second-stack
+caveat and C2's summon-length caveat are untouched.
+
+### 10f. ⏭ What this unblocks and did NOT do
+
+**Skirk's Serpent's Subtlety.** It is a meter on Skirk that survives a swap in
+game, and the E3 v2 hand-off records the operational limit "structure E and Q in
+a single segment — a cross-segment Q after E loses the SS carry".
+`scope: 'rotation'` on its three `gainStacks` effects would retire that. ⛔ Kept
+out of this round deliberately and flagged in Skirk's own curator notes: SS is
+the corpus's one **drain**-bearing key, and `drainAnchors` is ALREADY
+rotation-level while its pool is per-segment, so `applyDrain`'s
+settle-after-state-ends regime has never had a resource to act on across a swap.
+That interaction is unmeasured and wants its own before/after, not a ride-along.
+⚠️ Re-check the burst's `consumeStacks: 'all'` and its fails-open `min: 51` gate
+under the new scope before flipping it.

@@ -6,13 +6,28 @@
  * bring rotation-wide accrual into scope, continuous drain, and lifetime expiry
  * (gauge-round L3c — lifted verbatim out of `notationParser.ts`).
  *
- * ⚠️ TWO SCOPES LIVE HERE AND THEY ARE NOT INTERCHANGEABLE. A `source: 'self'`
+ * ⚠️ THREE SCOPES LIVE HERE AND THEY ARE NOT INTERCHANGEABLE. A `source: 'self'`
  * grant writes the hitter's PER-SEGMENT pool, so a swap clears it (Yanfei's
  * Scarlet Seals); a `'team'`/`'others'` grant accrues ROTATION-WIDE on the
  * holder's `CharState`, because the holder may be off-field when it fires
  * (Neuvillette A1). The sync functions are the bridge, and each one owns
  * exactly one key class — ⛔ do not widen one to "also handle" another's keys:
  * syncing a self-sourced key here would zero a fresh segment's own accrual.
+ *
+ * ↻ THE THIRD IS `gainStacks.scope: 'rotation'` (summon-tick stacks round,
+ * 2026-08-31), and ⚠️⚠️ IT IS A DIFFERENT AXIS FROM THE OTHER TWO. `source` says
+ * who may FIRE the effect; `scope` says where the stacks LIVE. A rotation-scoped
+ * key is `source: 'self'` and still survives a swap, because the resource is not
+ * the holder's to carry — Alyosha's Hunter's Mark is a state on the OPPONENT.
+ * Its home is `CharState.rotationStacks`, MIRRORED into the live segment pool at
+ * every settle point so every existing reader keeps reading the segment map.
+ *
+ * ⚓⚓ AND IT IS THE ONE SCOPE A SUMMON TICK CAN WRITE. A tick fires while its
+ * owner may be off field — inside another character's segment, where the owner
+ * has no segment pool at all — so the tick dispatchers are handed a NULL segment
+ * pool and a segment-scoped grant is skipped BY CONSTRUCTION rather than by a
+ * rule someone has to remember. ⛔ Never hand them a live segment pool "so they
+ * work": that pool belongs to whoever happens to be on field.
  */
 
 import type { Reaction } from '$lib/types/ability';
@@ -28,6 +43,187 @@ import {
 } from './conditions';
 import { onHitTriggerMatches, type HitEvent } from './hits';
 import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
+
+// ---------------------------------------------------------------------------
+// Stack SCOPE — where a key's stacks live (summon-tick stacks round, 2026-08-31)
+// ---------------------------------------------------------------------------
+
+/** A stack container: the counts and, for `lifetime` keys, the per-instance
+ *  expiry lists that back them. The per-segment pair and the rotation-wide pair
+ *  have the same shape on purpose — the dispatchers below pick one and are
+ *  otherwise identical. */
+export type StackPools = {
+	state: Map<string, number>;
+	instances: Map<string, number[]>;
+};
+
+export type StackScope = 'segment' | 'rotation';
+
+const scopeCache = new WeakMap<CharacterData, Map<string, StackScope>>();
+
+/** Every key this character declares a non-default `scope` for.
+ *
+ *  ⚓ UNGATED BY CONSTELLATION, and that is the constellation-gating round's own
+ *  rule: gate the walk that asks "does this fire", never the walk that asks
+ *  "what keys exist". A key's home cannot depend on the reader's C-level — if it
+ *  did, the same resource would live in two containers at C0 and C6.
+ *
+ *  ⚠️ First declaration wins HERE, but the authoring rule is the opposite of
+ *  `drain`'s: every grant of the key declares the scope and lint D.39 rejects a
+ *  disagreement — so "first wins" can never pick between two answers, and a
+ *  grant that quietly omitted it would be caught before it reverted the key to
+ *  `'segment'`. */
+export function stackScopesOf(char: CharacterData): Map<string, StackScope> {
+	const cached = scopeCache.get(char);
+	if (cached) return cached;
+	const m = new Map<string, StackScope>();
+	for (const src of [...char.abilities, ...(char.passives ?? []), ...(char.constellations ?? [])]) {
+		for (const fx of src.effects ?? []) {
+			if (fx.type !== 'gainStacks') continue;
+			if (fx.scope === undefined) continue;
+			if (m.has(fx.key)) continue;
+			m.set(fx.key, fx.scope);
+		}
+	}
+	scopeCache.set(char, m);
+	return m;
+}
+
+/** Where `key` lives for this character. Absent declaration ⇒ `'segment'`, which
+ *  is every corpus key but Alyosha's `huntersMark`. */
+export function stackScopeOf(char: CharacterData, key: string): StackScope {
+	return stackScopesOf(char).get(key) ?? 'segment';
+}
+
+/** The pools a `source: 'self'` grant/consume of `key` must write — or `null`
+ *  when there is NOWHERE for it to land, which is a segment-scoped key reached
+ *  by a summon tick. ⚓ Returning null is the container decision made explicit:
+ *  the caller drops the fire rather than inventing a home for it.
+ *
+ *  A rotation-scoped key writes `CharState` and carries the segment pool along
+ *  as a `mirror`, so the very next read of `stackState` — including the
+ *  post-gain snapshot `dispatchHit` takes one line later — already sees it. */
+function poolsFor(
+	hcs: CharState,
+	char: CharacterData,
+	key: string,
+	seg: StackPools | null
+): { write: StackPools; mirror: StackPools | null } | null {
+	if (stackScopeOf(char, key) === 'rotation')
+		return {
+			write: { state: hcs.rotationStacks, instances: hcs.rotationStackInstances },
+			mirror: seg
+		};
+	return seg ? { write: seg, mirror: null } : null;
+}
+
+/** Copies one key from the authoritative pool into the mirror. ⚠️ The instance
+ *  list is COPIED, not aliased: the segment copy is rewritten wholesale by the
+ *  sync and an alias would let a segment-scoped mutation reach the rotation
+ *  pool. */
+function mirrorKey(target: { write: StackPools; mirror: StackPools | null }, key: string): void {
+	if (!target.mirror) return;
+	const count = target.write.state.get(key);
+	if (count === undefined) target.mirror.state.delete(key);
+	else target.mirror.state.set(key, count);
+	const inst = target.write.instances.get(key);
+	if (inst === undefined) target.mirror.instances.delete(key);
+	else target.mirror.instances.set(key, [...inst]);
+}
+
+const NO_STACKS: ReadonlyMap<string, number> = new Map();
+
+/** What a holder's `stacks` Conditions should read at a dispatch site: their
+ *  live segment pool when they have one, with their rotation-scoped keys laid
+ *  over the top.
+ *
+ *  ⚠️ The overlay is a no-op for a mirrored self-holder (the mirror already
+ *  agrees) and is what makes a rotation-scoped key readable at a site that has
+ *  no segment pool at all — a summon tick, or an off-field holder whose stack
+ *  conditions previously resolved against an empty map. */
+function stackReadView(
+	hcs: CharState,
+	seg: Map<string, number> | null
+): ReadonlyMap<string, number> {
+	if (hcs.rotationStacks.size === 0) return seg ?? NO_STACKS;
+	const m = new Map<string, number>(seg ?? []);
+	for (const [k, v] of hcs.rotationStacks) m.set(k, v);
+	return m;
+}
+
+/** The holder's rotation-scoped stacks as a snapshot a `stacks` Condition can
+ *  RESOLVE against, or `undefined` when they declare no such key.
+ *
+ *  ⚠️⚠️ AN EMPTY MAP AND `undefined` ARE NOT THE SAME ANSWER, and the difference
+ *  is a bar. A `stacks` Condition with no map is UNRESOLVABLE, and
+ *  `deriveBuffWindows` drops an effect only on a definitive false — so a holder
+ *  who declares the key and currently holds none of it must hand over an empty
+ *  map (`count 0 < min` ⇒ false, no bar), while a holder with no such key hands
+ *  over nothing and every other summon in the corpus keeps the `stackContext` it
+ *  had. Measured: `Alyosha Q` at C0 drew Hunter's Precision off every maul with
+ *  no mark to activate, until this returned the empty map. */
+export function rotationStackSnapshot(
+	char: CharacterData,
+	hcs: CharState
+): ReadonlyMap<string, number> | undefined {
+	const scopes = stackScopesOf(char);
+	let snapshot: Map<string, number> | undefined;
+	for (const [key, scope] of scopes) {
+		if (scope !== 'rotation') continue;
+		snapshot ??= new Map<string, number>();
+		snapshot.set(key, hcs.rotationStacks.get(key) ?? 0);
+	}
+	return snapshot;
+}
+
+/** Drops expired instances from a holder's ROTATION-scoped lifetime keys — the
+ *  rotation twin of `applyLifetimeExpiry`, which deliberately skips them.
+ *  ⚠️ Runs at every settle point AND at every summon tick: the tick is the one
+ *  dispatch site with no settle in front of it, and a mark that timed out
+ *  mid-burst must not be activated by the next maul. */
+export function applyRotationLifetimeExpiry(
+	char: CharacterData,
+	cursor: number,
+	getCharState: (charId: string) => CharState
+): void {
+	const scopes = stackScopesOf(char);
+	if (scopes.size === 0) return;
+	const hcs = getCharState(char.id);
+	if (hcs.rotationStackInstances.size === 0) return;
+	for (const [key, scope] of scopes) {
+		if (scope !== 'rotation') continue;
+		const instances = hcs.rotationStackInstances.get(key);
+		if (!instances || instances.length === 0) continue;
+		const remaining = instances.filter((expiry) => expiry > cursor);
+		if (remaining.length === instances.length) continue;
+		hcs.rotationStackInstances.set(key, remaining);
+		hcs.rotationStacks.set(key, remaining.length);
+	}
+}
+
+/** Expires, then mirrors, the holder's rotation-scoped keys into the live
+ *  segment pool. The `scope: 'rotation'` analog of `syncOnHitToStackState`, and
+ *  called from the same settle points — ⛔ it must not be folded into that one:
+ *  it owns a different key class and reads a different container. */
+export function syncRotationStacksToStackState(
+	holder: CharacterData,
+	currentTime: number,
+	stackState: Map<string, number>,
+	stackInstances: Map<string, number[]>,
+	getCharState: (charId: string) => CharState
+): void {
+	const scopes = stackScopesOf(holder);
+	if (scopes.size === 0) return;
+	applyRotationLifetimeExpiry(holder, currentTime, getCharState);
+	const hcs = getCharState(holder.id);
+	for (const [key, scope] of scopes) {
+		if (scope !== 'rotation') continue;
+		stackState.set(key, hcs.rotationStacks.get(key) ?? 0);
+		const inst = hcs.rotationStackInstances.get(key);
+		if (inst === undefined) stackInstances.delete(key);
+		else stackInstances.set(key, [...inst]);
+	}
+}
 
 // ---------------------------------------------------------------------------
 // gainStacks dispatch (E3 v1)
@@ -61,6 +257,8 @@ import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
  */
 export function dispatchGainStacks(
 	char: CharacterData,
+	/** The holder's `CharState` — the home of any `scope: 'rotation'` key. */
+	hcs: CharState,
 	castType: 'skill' | 'burst',
 	castTime: number,
 	resolvedStates: ReadonlySet<string>,
@@ -115,19 +313,33 @@ export function dispatchGainStacks(
 				);
 				if (csResult === true) effAmount = fx.constellationScaling.amount;
 			}
-			if (fx.lifetime !== undefined && stackInstances) {
+			// ⚓ THE SCOPE PICKS THE CONTAINER, and nothing below it changes: a
+			// rotation-scoped key writes `CharState` and is mirrored straight back
+			// into the segment pool, so the cast's own post-grant snapshot (taken
+			// one line after this call returns) sees it either way.
+			const seg: StackPools | null = stackInstances
+				? { state: stackState, instances: stackInstances }
+				: null;
+			const target = poolsFor(hcs, char, fx.key, seg);
+			if (fx.lifetime !== undefined && target) {
 				// E3 v2.x lifetime: each granted instance lives independently
 				// for `lifetime` seconds. Append `amount` instances all at the
 				// same expiry-time (cast time + lifetime). Saturation drops
 				// oldest first when total would exceed `max`.
 				const expiry = castTime + framesOf(fx.lifetime);
-				const instances = stackInstances.get(fx.key) ?? [];
+				const instances = target.write.instances.get(fx.key) ?? [];
 				for (let i = 0; i < effAmount; i++) instances.push(expiry);
 				if (fx.max !== undefined && instances.length > fx.max) {
 					instances.splice(0, instances.length - fx.max);
 				}
-				stackInstances.set(fx.key, instances);
-				stackState.set(fx.key, instances.length);
+				target.write.instances.set(fx.key, instances);
+				target.write.state.set(fx.key, instances.length);
+				mirrorKey(target, fx.key);
+			} else if (stackScopeOf(char, fx.key) === 'rotation') {
+				const current = hcs.rotationStacks.get(fx.key) ?? 0;
+				const next = current + effAmount;
+				hcs.rotationStacks.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
+				stackState.set(fx.key, hcs.rotationStacks.get(fx.key)!);
 			} else {
 				const current = stackState.get(fx.key) ?? 0;
 				const next = current + effAmount;
@@ -156,6 +368,8 @@ export function dispatchGainStacks(
  */
 export function dispatchConsumeStacks(
 	char: CharacterData,
+	/** The holder's `CharState` — the home of any `scope: 'rotation'` key. */
+	hcs: CharState,
 	castType: 'skill' | 'burst',
 	resolvedStates: ReadonlySet<string>,
 	constellationLevel: number,
@@ -187,17 +401,25 @@ export function dispatchConsumeStacks(
 				stackState
 			);
 			if (condResult !== true) continue;
+			// ⚓ The consume side never declares a scope — a key has ONE home and
+			// this resolves it from the grant that named it.
+			const seg: StackPools = {
+				state: stackState,
+				instances: stackInstances ?? new Map<string, number[]>()
+			};
+			const target = poolsFor(hcs, char, fx.key, seg)!;
 			if (fx.amount === 'all') {
-				stackState.set(fx.key, 0);
-				stackInstances?.delete(fx.key);
+				target.write.state.set(fx.key, 0);
+				target.write.instances.delete(fx.key);
 			} else {
-				const current = stackState.get(fx.key) ?? 0;
-				stackState.set(fx.key, Math.max(0, current - fx.amount));
-				const instances = stackInstances?.get(fx.key);
+				const current = target.write.state.get(fx.key) ?? 0;
+				target.write.state.set(fx.key, Math.max(0, current - fx.amount));
+				const instances = target.write.instances.get(fx.key);
 				if (instances && instances.length > 0) {
 					instances.splice(0, Math.min(fx.amount, instances.length));
 				}
 			}
+			mirrorKey(target, fx.key);
 		}
 	}
 }
@@ -399,8 +621,10 @@ export function dispatchGainStacksOnHit(
 	getHolderStates: (holder: CharacterData) => ReadonlySet<string>,
 	constellationByHolder: Map<string, number>,
 	getCharState: (charId: string) => CharState,
-	segStackState: Map<string, number>,
-	segStackInstances: Map<string, number[]>
+	/** ⚓ NULL AT A SUMMON TICK — the tick has no segment pool to write, so a
+	 *  segment-scoped grant is skipped rather than landing on whoever is on
+	 *  field. See the file header. */
+	segPools: StackPools | null
 ): void {
 	for (const holder of allChars) {
 		const holderCons = constellationByHolder.get(holder.id) ?? 0;
@@ -417,7 +641,12 @@ export function dispatchGainStacksOnHit(
 				// Self-holder conditions read the hitter's live segment stack
 				// state; off-field holders have no segment state (their stack
 				// conditions resolve against an empty map — pre-existing gap).
-				const condStacks = isSelf ? segStackState : new Map<string, number>();
+				// ↻ Plus the holder's own rotation-scoped keys, which is what lets
+				// a mark be READ at a site with no segment pool at all.
+				const condStacks = stackReadView(
+					getCharState(holder.id),
+					isSelf && segPools ? segPools.state : null
+				);
 				const condResult = evalCondition(
 					fx.conditions,
 					DEFAULT_ASCENSION,
@@ -466,21 +695,28 @@ export function dispatchGainStacksOnHit(
 						}
 					}
 				} else if (isSelf) {
-					// Segment-scoped grant — mirrors the onCast dispatch branches.
+					// ⚓ `self` — the SCOPE picks the container (segment by default,
+					// `CharState` for a rotation-scoped key), and a null target means
+					// there is nowhere for this grant to land: a segment-scoped key
+					// reached by a summon tick. ⛔ Don't "fix" that by falling back to
+					// the on-field character's pool.
+					const target = poolsFor(hcs, holder, fx.key, segPools);
+					if (!target) continue;
 					if (fx.lifetime !== undefined) {
 						const expiry = hit.time + framesOf(fx.lifetime);
-						const instances = segStackInstances.get(fx.key) ?? [];
+						const instances = target.write.instances.get(fx.key) ?? [];
 						for (let i = 0; i < effAmount; i++) instances.push(expiry);
 						if (fx.max !== undefined && instances.length > fx.max) {
 							instances.splice(0, instances.length - fx.max);
 						}
-						segStackInstances.set(fx.key, instances);
-						segStackState.set(fx.key, instances.length);
+						target.write.instances.set(fx.key, instances);
+						target.write.state.set(fx.key, instances.length);
 					} else {
-						const current = segStackState.get(fx.key) ?? 0;
+						const current = target.write.state.get(fx.key) ?? 0;
 						const next = current + effAmount;
-						segStackState.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
+						target.write.state.set(fx.key, fx.max !== undefined ? Math.min(next, fx.max) : next);
 					}
+					mirrorKey(target, fx.key);
 					if (fx.drain) hcs.drainAnchors.set(fx.key, hit.time);
 				} else if (fx.lifetime !== undefined) {
 					// team/others — rotation-wide instance accrual (onReaction shape).
@@ -519,8 +755,8 @@ export function dispatchConsumeStacksOnHit(
 	getHolderStates: (holder: CharacterData) => ReadonlySet<string>,
 	constellationByHolder: Map<string, number>,
 	getCharState: (charId: string) => CharState,
-	segStackState: Map<string, number>,
-	segStackInstances: Map<string, number[]>
+	/** ⚓ NULL AT A SUMMON TICK — see the gain dispatcher's note. */
+	segPools: StackPools | null
 ): void {
 	for (const holder of allChars) {
 		const holderCons = constellationByHolder.get(holder.id) ?? 0;
@@ -532,7 +768,10 @@ export function dispatchConsumeStacksOnHit(
 				if (!onHitTriggerMatches(fx.trigger, hit, holder.id)) continue;
 				const isSelf = holder.id === hit.characterId;
 				const holderStates = getHolderStates(holder);
-				const condStacks = isSelf ? segStackState : new Map<string, number>();
+				const condStacks = stackReadView(
+					getCharState(holder.id),
+					isSelf && segPools ? segPools.state : null
+				);
 				const condResult = evalCondition(
 					fx.conditions,
 					DEFAULT_ASCENSION,
@@ -543,8 +782,14 @@ export function dispatchConsumeStacksOnHit(
 				);
 				if (condResult !== true) continue;
 				const hcs = getCharState(holder.id);
-				const state = isSelf ? segStackState : hcs.onHitStacks;
-				const instances = isSelf ? segStackInstances : hcs.onHitStackInstances;
+				const target = isSelf
+					? poolsFor(hcs, holder, fx.key, segPools)
+					: {
+							write: { state: hcs.onHitStacks, instances: hcs.onHitStackInstances },
+							mirror: null
+						};
+				if (!target) continue;
+				const { state, instances } = target.write;
 				if (fx.amount === 'all') {
 					state.set(fx.key, 0);
 					instances.delete(fx.key);
@@ -556,6 +801,7 @@ export function dispatchConsumeStacksOnHit(
 						inst.splice(0, Math.min(fx.amount, inst.length));
 					}
 				}
+				mirrorKey(target, fx.key);
 			}
 		}
 	}
@@ -764,6 +1010,10 @@ export function applyLifetimeExpiry(
 				(fx.trigger.source === 'team' || fx.trigger.source === 'others')
 			)
 				continue;
+			// ↻ And rotation-scoped keys, owned by `applyRotationLifetimeExpiry`
+			// via `syncRotationStacksToStackState` — same reason as the two above:
+			// the segment copy here is a MIRROR the sync has just rewritten.
+			if (stackScopeOf(char, fx.key) === 'rotation') continue;
 			if (seenKeys.has(fx.key)) continue;
 			seenKeys.add(fx.key);
 			const instances = stackInstances.get(fx.key);

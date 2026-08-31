@@ -82,6 +82,7 @@ import {
 	dispatchGainStacks,
 	dispatchGainStacksOnHit,
 	syncOnHitToStackState,
+	syncRotationStacksToStackState,
 	syncOnReactionToStackState,
 	syncSourceLifetimeToStackState
 } from './stacks';
@@ -317,6 +318,9 @@ export function runRotation(
 			syncSourceLifetimeToStackState(char, t, stackState, ctx.getCharState);
 			syncOnReactionToStackState(char, t, stackState, stackInstances, ctx.getCharState);
 			syncOnHitToStackState(char, t, stackState, stackInstances, ctx.getCharState);
+			// ↻ And the rotation-scoped keys, which is what makes a mark applied in
+			// a PREVIOUS segment readable in this one (summon-tick stacks round).
+			syncRotationStacksToStackState(char, t, stackState, stackInstances, ctx.getCharState);
 		};
 
 		// Dispatches a parser-private hit: gains → stacks snapshot → consumes →
@@ -333,14 +337,17 @@ export function runRotation(
 				// segment's `computeCurrentStates`; see its decl).
 				const getHolderStates = (holder: CharacterData): ReadonlySet<string> =>
 					holderStatesAt(ctx, holder, hit.time);
+				// ⚠️ A live segment pool HERE and null on the summon-tick chain — the
+				// hitter is the on-field character by construction at every one of
+				// this function's four call sites.
+				const segPools = { state: stackState, instances: stackInstances };
 				dispatchGainStacksOnHit(
 					ctx.team.teamChars,
 					hit,
 					getHolderStates,
 					ctx.team.constellationByHolder,
 					ctx.getCharState,
-					stackState,
-					stackInstances
+					segPools
 				);
 				if (hit.stacks === undefined && stackState.size > 0) hit.stacks = new Map(stackState);
 				dispatchConsumeStacksOnHit(
@@ -349,8 +356,7 @@ export function runRotation(
 					getHolderStates,
 					ctx.team.constellationByHolder,
 					ctx.getCharState,
-					stackState,
-					stackInstances
+					segPools
 				);
 			}
 			ctx.hitRecords.push(hit);
@@ -488,6 +494,13 @@ export function runRotation(
 				// frozen settle order, not a reorder: syncs team/others-sourced
 				// onHit accrual into the segment before conditions read it.
 				syncOnHitToStackState(char, castStart, stackState, stackInstances, ctx.getCharState);
+				syncRotationStacksToStackState(
+					char,
+					castStart,
+					stackState,
+					stackInstances,
+					ctx.getCharState
+				);
 				const chainIdx = getChainIndexMap(ctx, char.id, castStart);
 				// Resolve the active variant (chain-stage + state + stack aware).
 				const active =
@@ -547,6 +560,7 @@ export function runRotation(
 				// stream and is read by the snapshot).
 				dispatchGainStacks(
 					char,
+					cs,
 					kind,
 					castStart,
 					states,
@@ -606,6 +620,7 @@ export function runRotation(
 				// pre-consume value the perStack BuffValue consumer needs to read.
 				dispatchConsumeStacks(
 					char,
+					cs,
 					kind,
 					states,
 					charConstellationLevel,
