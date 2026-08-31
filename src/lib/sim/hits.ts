@@ -54,6 +54,19 @@ export type HitEvent = {
 	hitIndex?: number;
 	stacks?: ReadonlyMap<string, number>;
 	sourceEventId: number;
+	/**
+	 * ⚓⚓ DELIVERED BY AN ENTITY, NOT BY THE CHARACTER — a summon's damage tick,
+	 * synthesized at finalize (step 6c). Absent on every hit a character landed
+	 * itself: an E/Q cast, a normal, a charged, a plunge.
+	 *
+	 * ⚓ The word and the meaning are shared with `offerApplication`'s flag of the
+	 * same name (mark-triggered round, 2026-08-17), deliberately: one vocabulary
+	 * for "this came from the summon, whose owner may be off field". A tick
+	 * carries its OWNER's `characterId`, so an id comparison alone cannot tell
+	 * the two apart — which is gcsim's `ActorIndex` defect, and the reason
+	 * `source: 'active'` needs this flag rather than a name check.
+	 */
+	viaEntity?: true;
 };
 // NB: the type export above is for the parser-side buff-window derivation
 // (`buffWindows.ts`) ONLY — hit records remain OUTSIDE the public IR event
@@ -74,6 +87,10 @@ export function onHitTriggerMatches(
 	const srcMode = trigger.source ?? 'self';
 	if (srcMode === 'self' && holderId !== hit.characterId) return false;
 	if (srcMode === 'others' && holderId === hit.characterId) return false;
+	// ⚓ `'active'` is `'team'` minus what an ENTITY delivered. A cast or swing hit
+	// is the on-field character's by construction, so this one clause is the whole
+	// of the distinction — see the source doc on the trigger.
+	if (srcMode === 'active' && hit.viaEntity) return false;
 	if (trigger.abilityType !== undefined) {
 		// Array form matches any listed class under one effect (one shared
 		// procCooldown clock — Escoffier C6's NA/CA/PL 0.5s ICD).

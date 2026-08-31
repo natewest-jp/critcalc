@@ -269,7 +269,7 @@
 					"trigger": {
 						"type": "onHit",
 						"damageType": "elemental",
-						"source": "team"
+						"source": "active"
 					},
 					"duration": 8,
 					"durationType": "refresh",
@@ -288,7 +288,10 @@
 				}
 			],
 			"description": "When Elemental DMG from nearby active party members hits an opponent, Nicole's own **Grace of Kenosis** effect is upgraded to **Guidance of Theosis** for 8s.",
-			"caveat": "Shown at her own skill and burst casts; in game the upgrade instead triggers whenever a nearby active party member's Elemental DMG hits an opponent."
+			"caveat": "Shown at her own skill and burst casts; in game the upgrade instead triggers whenever a nearby active party member's Elemental DMG hits an opponent.",
+			"_curatorNotes": [
+				"↻ 2026-08-31 (summon-tick round): trigger source 'team' → 'active'. The talent reads \"When Elemental DMG from nearby ACTIVE party members hits an opponent\", and a summon's damage tick is delivered by an ENTITY whose owner may be standing off field — a tick carries its owner's id, so an id comparison cannot tell the two apart. Under 'team' this would have upgraded Grace of Kenosis off every teammate's Oz/Guoba/Stormeye tick for whole rotations. ⚓ BYTE-IDENTICAL today: 'active' differs from 'team' only in refusing an entity-delivered hit, and no pass feeds those to a self-target buff yet. Authored now so the corpus is already correct when one does — this is the ONLY corpus effect with source 'team' and no ability-class filter, i.e. the only one a tick could reach indiscriminately."
+			]
 		}
 	],
 	"constellations": [

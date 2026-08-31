@@ -759,6 +759,144 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			}
 		}
 
+		// ── Summon-tick onHit pools (2026-08-31) ──
+		//
+		// ⚓⚓ A SUMMON'S TICKS FIRE ITS OWNER'S `onHit` EFFECTS. Xiangling's C1
+		// Pyro shred is stated on Guoba's hits, Sigewinne's C2 names "Bolstering
+		// Bubblebalm", Venti's C6 names "Wind's Grand Ode" — but until this pass
+		// the only hit a `skill`/`burst` onHit effect ever saw was the CAST's own,
+		// so every one of them opened at the cast and never refreshed. Measured
+		// before the fix: `Xiangling E` at C1 drew 0.22 → 6.22s while Guoba ticked
+		// at 2.10 / 3.77 / 5.43 / 7.10, where the truth is 0.22 → 13.10s.
+		// Eleven characters were under-claiming by +2.3s to +21s.
+		//
+		// ⚠️ ROTATION-WIDE, not per-track — hence `firstTrackOfChar`, the same
+		// guard and the same reason the artifact onHit branch carries one. A
+		// summon ticks while its owner is OFF FIELD; scoping these to the holder's
+		// active span would cut the window at every swap and report a fraction of
+		// the real uptime.
+		//
+		// ⚓ IT EMITS ONE WINDOW PER TICK AND LETS THE PROJECTION FUSE THEM. The
+		// `source` is deliberately the same `{ trigger: 'cast', abilityClass }` the
+		// cast pool stamps, so these land in the SAME ROW (`teamBuffRows` keys
+		// cast/block rows on character + ability label) and `mergeRefreshedBars`
+		// collapses the cast window and the tick windows into one covered span.
+		// ⛔ Not by extending the cast window in place: that window's pool can also
+		// hold `onCast` effects, which a tick must not refresh.
+		//
+		// ⚠️ TEAM SURFACE ONLY, and that is measured rather than partial. The
+		// 2026-08-31 census found every affected effect is either a `resShred`
+		// (13 of them) or a team-target buff (Sucrose A4). The one self-target
+		// holder, Nicole's A4, is authored `source: 'active'` precisely so a tick
+		// does NOT fire it, and no active-target onHit buff in the corpus sits on a
+		// character who leaves a ticking summon. ⛔ Don't add the other two
+		// surfaces speculatively; re-run the census first.
+		if (firstTrackOfChar) {
+			const tickHits = hits
+				.filter((h) => h.viaEntity === true && h.characterId === track.characterId)
+				.slice()
+				.sort((a, b) => a.time - b.time);
+			if (tickHits.length > 0) {
+				for (const castType of ['skill', 'burst'] as const) {
+					const onHitTickEffects = getCharacterEffectsForOnHit(char, cLevel, castType);
+					if (onHitTickEffects.length === 0) continue;
+					const classHits = tickHits.filter((h) => h.abilityType === castType);
+					if (classHits.length === 0) continue;
+					for (const tickGroup of byProvenance(onHitTickEffects)) {
+						// Only effects whose trigger is genuinely an onHit — the
+						// collector also returns nothing else, but the pools below
+						// are shared shapes and the narrowing keeps that honest.
+						const emitPass = <T extends BuffEffect | ResShredEffect>(
+							pool: T[],
+							debuff: boolean
+						): void => {
+							if (pool.length === 0) return;
+							let lastWin: BuffWindow | undefined;
+							for (const hit of classHits) {
+								if (
+									!pool.some(
+										(e) =>
+											e.trigger.type === 'onHit' &&
+											onHitTriggerMatches(e.trigger, hit, track.characterId)
+									)
+								)
+									continue;
+								const filterCtx = hitFilterCtx(hit);
+								const barEffects = pool.filter((effect) => {
+									if (effect.trigger.type !== 'onHit') return false;
+									if (!onHitTriggerMatches(effect.trigger, hit, track.characterId)) return false;
+									if (
+										evalCondition(
+											effect.conditions,
+											4,
+											new Set(),
+											cLevel,
+											undefined,
+											hit.stacks,
+											baseCtx
+										) === false
+									)
+										return false;
+									return evalTriggerFilter(effect.trigger.filter, filterCtx);
+								});
+								if (barEffects.length === 0) continue;
+								const buffStart = hit.time;
+								const buffEnd = buffStart + framesOf(barEffects[0].duration!);
+								if (
+									lastWin &&
+									buffStart <= lastWin.end &&
+									sameEffects(lastWin.effects, barEffects) &&
+									sameStacks(lastWin.stackContext, hit.stacks)
+								) {
+									lastWin.end = buffEnd;
+									continue;
+								}
+								lastWin = emit({
+									characterId: track.characterId,
+									start: buffStart,
+									end: buffEnd,
+									debuff: debuff || undefined,
+									effects: barEffects,
+									stackContext: hit.stacks,
+									poolFirstEffect: debuff ? pool[0] : undefined,
+									sourceCastId: hit.sourceEventId >= 0 ? hit.sourceEventId : undefined,
+									source: { type: 'character', trigger: 'cast', abilityClass: castType }
+								});
+							}
+						};
+						const seenTickStats = new Set<string>();
+						emitPass(
+							tickGroup.effects
+								.filter((effect): effect is BuffEffect => {
+									if (effect.type !== 'buff') return false;
+									if (!targetsTeamOrActive(effect.target)) return false;
+									if (isActiveTargetOnly(effect.target)) return false;
+									if (effect.duration == null) return false;
+									return (
+										evalCondition(
+											effect.conditions,
+											4,
+											new Set(),
+											cLevel,
+											undefined,
+											undefined,
+											baseCtx
+										) !== false
+									);
+								})
+								.filter((effect) => {
+									if (seenTickStats.has(effect.stat)) return false;
+									seenTickStats.add(effect.stat);
+									return true;
+								}),
+							false
+						);
+						emitPass(dedupResShredByElement(tickGroup.effects.filter(resShredBase)), true);
+					}
+				}
+			}
+		}
+
 		// ── onState team-target buffs (once per character) ──
 		//
 		// ⚓ The span IS the state's window. Every other trigger here measures a

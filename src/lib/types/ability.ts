@@ -548,8 +548,25 @@ export type Trigger =
 			 *  Mirrors `onReaction.source` with the addition of `'others'` for
 			 *  Skirk A4 Death's Crossing ("apart from Skirk"). Renderer scoping:
 			 *  dispatch walks the rotation-wide `hit` IR events and filters by this
-			 *  field at dispatch time. */
-			source?: 'self' | 'team' | 'others';
+			 *  field at dispatch time.
+			 *
+			 *  ⚓ `'active'` (summon-tick round, 2026-08-31) — the hit must have been
+			 *  landed by the character the player is CONTROLLING, with their own cast
+			 *  or swing. Nicole's A4 Philokalia is the case and the reason it exists:
+			 *  "when Elemental DMG from nearby ACTIVE party members hits an opponent".
+			 *
+			 *  ⚠️⚠️ It is strictly narrower than `'team'`, and the difference is a
+			 *  summon. Once summon damage ticks reach this gate, a tick carries its
+			 *  OWNER's `characterId` while its owner may be standing off field — so
+			 *  `'team'` would have Nicole's upgrade riding Oz for the whole rotation.
+			 *  The tick is flagged `viaEntity` at synthesis and this source refuses
+			 *  it. ⛔ Never reach for an id comparison instead: that is exactly the
+			 *  distinction an id cannot make (see `HitEvent.viaEntity`).
+			 *
+			 *  ⚠️ Every cast/normal/charged/plunge hit is by construction the active
+			 *  character's — the parser emits them only for the segment character —
+			 *  so `'active'` differs from `'team'` in precisely one respect today. */
+			source?: 'self' | 'team' | 'others' | 'active';
 			/**
 			 * ⚓ Elemental-application gating for THIS proc's own hits — the same
 			 * key, the same vocabulary and the same default as `summonTick.icdGate`
