@@ -344,11 +344,10 @@ export type TimelineSnapshot = {
 	 *  `auraHeaderH`, so every `oy`-relative offset below stays byte-identical
 	 *  whether the strip is there or not. */
 	gadgetRows: GadgetRow[];
-	/** Row height for a binary gadget (capacity 1) and for a counted one.
-	 *  ⚠️ Chosen by the gadget's CAPACITY, never by the rotation's own peak —
-	 *  see gadgetRows.ts. */
-	gadgetBarH: number;
-	gadgetProfileH: number;
+	/** ⚠️ A row's height is `2r + (capacity − 1) × pitch` — set by the gadget's
+	 *  CAPACITY, never by the rotation's own peak. See gadgetRows.ts. */
+	gadgetDotR: number;
+	gadgetSlotPitch: number;
 	gadgetRowGap: number;
 	statIconFor: (stat: string) => string | undefined;
 	avatarFor: (slotIdx: number) => string | null;
@@ -1332,45 +1331,35 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		// the same reason the screen puts them there. `plotBase + 2` clears the
 		// plot's own bottom margin, which the screen spends as a CSS margin and
 		// the canvas has to add by hand.
-		// ⚓ A COUNT PROFILE PER ROW, mirroring the screen: height is how many of
-		// that gadget are live, against a ceiling fixed by the KIND. ⛔ Not a pile
-		// of translucent spans — measured, cores overlap 66% of the time they are
-		// live, and five stacked at 52% alpha composite to 97% opaque.
+		// ⚓ ONE LIFE PER MARK, mirroring the screen: a spawn dot, a thin leader and
+		// an end mark, each on the slot the projection assigned it. ⛔ Not a stack
+		// of translucent spans and ⛔ not a count profile — the first saturated
+		// (five at 52% alpha composite to 97% opaque) and the second could say how
+		// many but never which.
 		let gadgetY = plotBase + 2;
 		for (const row of snap.gadgetRows) {
-			const rowH = row.capacity > 1 ? snap.gadgetProfileH : snap.gadgetBarH;
-			const yOf = (n: number) => gadgetY + rowH - (Math.min(n, row.capacity) / row.capacity) * rowH;
-			if (row.runs.length > 0) {
-				// The fill, faded toward the baseline exactly as the screen's gradient
-				// does — the LINE carries the shape and a solid area would bury the
-				// step it exists to show.
-				const grad = ctx.createLinearGradient(0, gadgetY, 0, gadgetY + rowH);
-				grad.addColorStop(0, alpha(GADGET_COLOR[row.kind], 0.55));
-				grad.addColorStop(1, alpha(GADGET_COLOR[row.kind], 0.16));
-				ctx.fillStyle = grad;
+			const rowH = snap.gadgetDotR * 2 + (row.capacity - 1) * snap.gadgetSlotPitch;
+			const color = GADGET_COLOR[row.kind];
+			for (const bar of row.bars) {
+				const y = gadgetY + rowH - snap.gadgetDotR - (bar.slot ?? 0) * snap.gadgetSlotPitch;
+				const x0 = x(bar.start);
+				const x1 = x(bar.end);
+				ctx.strokeStyle = alpha(color, 0.55);
+				ctx.lineWidth = 1;
 				ctx.beginPath();
-				ctx.moveTo(x(row.runs[0].start), gadgetY + rowH);
-				for (const run of row.runs) {
-					ctx.lineTo(x(run.start), yOf(run.count));
-					ctx.lineTo(x(run.end), yOf(run.count));
-				}
-				ctx.lineTo(x(row.runs[row.runs.length - 1].end), gadgetY + rowH);
-				ctx.closePath();
+				ctx.moveTo(x0, y + 0.5);
+				ctx.lineTo(x1, y + 0.5);
+				ctx.stroke();
+				ctx.fillStyle = alpha(color, 0.95);
+				ctx.beginPath();
+				ctx.arc(x0, y, snap.gadgetDotR, 0, Math.PI * 2);
 				ctx.fill();
-				// ⚠ SQUARE STEPS — the count changes at an instant, so a sloped join
-				// would draw a transition the game does not have.
-				ctx.strokeStyle = alpha(GADGET_COLOR[row.kind], 0.85);
+				// A consumed life terminates in chrome — how it ended, not just when.
+				ctx.strokeStyle = alpha(bar.endReason === 'consumed' ? BAR_LABEL : color, 0.9);
 				ctx.lineWidth = 1.5;
-				ctx.lineJoin = 'miter';
 				ctx.beginPath();
-				let first = true;
-				for (const run of row.runs) {
-					if (first) {
-						ctx.moveTo(x(run.start), yOf(run.count));
-						first = false;
-					} else ctx.lineTo(x(run.start), yOf(run.count));
-					ctx.lineTo(x(run.end), yOf(run.count));
-				}
+				ctx.moveTo(x1, y - 2.5);
+				ctx.lineTo(x1, y + 2.5);
 				ctx.stroke();
 			}
 			gadgetY += rowH + snap.gadgetRowGap;

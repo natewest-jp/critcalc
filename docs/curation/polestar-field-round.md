@@ -321,7 +321,16 @@ clocks; this is the one the bar's value can be checked against.
   identical tiles merge into ONE 14s bar, which is the true shape of a debuff
   that does not change while the field stands. Measured: 8 field bars → 5.
 
-### 7.3 ↻⚓⚓ A gadget row is a COUNT PROFILE, and the measurement reversed the first cut
+### 7.3 ↻ A gadget row is a count profile — ⛔ SUPERSEDED SAME DAY by §7.4
+
+> ⚠️ **This is the SECOND of three cuts and it did not survive contact.** The
+> measurement below is what still stands and is why the strip needed designing
+> against overlap at all; the count profile is what that measurement was used to
+> justify, and ⚓ Nate read it live: "elegant, but it isn't quite working in
+> practice." §7.4 is what shipped. Kept because the reasoning is what §7.4
+> inherits — ⛔ don't re-derive the overlap numbers.
+
+#### The measurement, and the profile it argued for — ↻⚓⚓ A gadget row is a COUNT PROFILE, and the measurement reversed the first cut
 
 ⚓ Nate: overlapping core bars made it "really difficult to see where one core
 begins and another ends". Measured before designing, over 122 corpus rotations
@@ -375,3 +384,57 @@ plot's crosshair stay on the same focused instant.
 row of 13 runs stepping to 5 cores, tooltip "5 cores · oldest leaves in 1.90s",
 12 of 13 runs dimmed on hover. A Prism+bloom rotation draws a 27px strip: 7px
 Prism row, 16px core row. No console errors; PNG export mirrors the profile.
+
+### 7.4 ⚓ WHAT SHIPPED: a life is a dot, a thin line and an end mark
+
+⚓ Nate, having read the profile live: _"what about using a dot for when a bloom
+core is spawned, just like the Visualizers instrument, but also give it a thin
+line extending to the right of it, with a small tick at the end of the line to
+show where it expires?"_
+
+⚓⚓ **THE PROFILE ANSWERED THE WRONG HALF.** §7.3's argument — that identity is
+worthless because cores are consumed oldest-first — is true about the ENGINE and
+false about the READER. A staircase says how many are up and structurally cannot
+say WHICH, and somebody looking at the strip is looking at a particular core:
+where it came from, how long it has left. ⚠️ The oldest-first consumption rule
+makes identity irrelevant to the SIMULATION, and that is not the same claim.
+
+The mark is the Gauge Explorer's own core dot (`GaugeInstrument.svelte` draws
+`<circle r=4 fill=var(--rx-dendro-core)>`) given a duration — ⚓ one grammar
+across the two tools, the same convergence the application marker made.
+
+⚠️⚠️ **THE OVERLAP MEASUREMENT IN §7.3 STILL BINDS, which is why a life gets a
+SLOT.** 66% of the time any core is live at least two are, so on one baseline two
+leader lines would run through each other and the reader would be counting dots
+to recover what the chart should be showing. `assignSlots` is greedy interval
+colouring — lowest slot whose previous occupant has left — into a band of
+`capacity` lines, filled from the BOTTOM so a busier moment is a taller stack
+(the one thing the profile did well, kept).
+
+⚓ **This is NOT the sub-row pattern rejected in the options.** That one sized the
+lane to whatever the rotation peaked at, so two charts of the same team could
+disagree about their own height. The band is always `capacity` slots — a game
+fact (`MAX_CORES` = 5), not a measurement — so an empty slot is just empty.
+Row height is `2r + (capacity − 1) × pitch`: **4px** for a Prism, **16px** for
+cores, no worse than the profile it replaced.
+
+⚓ **The end mark says HOW it ended, not just when**: a core that ran out
+terminates in its own colour, one a Hyperbloom ATE terminates in `--chrome`. That
+second fact is the one only the gauge can tell you, and it is the whole reason
+the round taught `gauge.ts` to emit `coreEnd` at all.
+
+🐛 **A defect the browser check caught and reasoning would not have.** The hit
+areas were full-row-height rects, which overlap COMPLETELY — so the last life
+drawn swallowed the pointer from every one that began before it, and a
+mid-rotation core could not be hovered at all. They cover their own SLOT now
+(5px, a hair wider than the 3px pitch because 3px is not a pointer target); two
+lives in one slot never overlap in time by construction, so per-slot rects cannot
+collide. ⚠️ Playwright reported it as a hover timeout naming the intercepting
+`<rect>`, not as a wrong picture — ⛔ a screenshot would have looked perfect.
+
+**Measured.** `Nilou E Q > Nahida E Q > Xingqiu E Q > Kokomi E Q` → 11 lives
+across all five slots (cy 14/11/8/5/2), hover isolates one and dims ten.
+`Sandrone E Q > Fischl E Q > Nahida E Q > Xingqiu E Q` → a 24px strip: a 4px
+Prism row (one life, 7.00s) over a 16px core row whose two lives both end in
+chrome, tooltip reading "Ended · consumed by a reaction". No console errors; the
+PNG export mirrors dot, leader and end mark.

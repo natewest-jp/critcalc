@@ -40,7 +40,7 @@
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummons } from '$lib/timeline/summonSubrows';
 	import { computeShieldSubrows } from '$lib/timeline/shieldRows';
-	import { computeGadgetRows, type GadgetRun } from '$lib/timeline/gadgetRows';
+	import { computeGadgetRows } from '$lib/timeline/gadgetRows';
 	import {
 		auraPathD,
 		auraSpanLabels,
@@ -862,43 +862,32 @@
 	// two teams that do pay get a row each. ⛔ Don't give the strip a resting
 	// height so the layout "stops jumping": that is 20px taken from every reader
 	// to spare two.
-	// 🎛️ TWO ROW HEIGHTS, CHOSEN BY THE GADGET'S CAPACITY — ⛔ never by the
-	// rotation's own peak. A Prism can never exceed one, so its profile is a
-	// full-height fill and it stays the slim bar it always was; cores draw
-	// against a fixed ceiling of five and need enough height for the steps
-	// between to be legible (16px ≈ 3px a step).
-	const GADGET_BAR_H = 7;
-	const GADGET_PROFILE_H = 16;
+	// 🎛️ A ROW IS A BAND OF `capacity` LINES, ⛔ never sized to the rotation's own
+	// peak — a Prism can only ever be one, cores can be five (MAX_CORES). The
+	// slot pitch is what sets the height, so the two rows differ by their gadget's
+	// nature rather than by what this particular rotation happened to do.
+	const GADGET_DOT_R = 2;
+	const GADGET_SLOT_PITCH = 3;
+	/** 🎛️ The pointer target's height per life. ⚠ Wider than the slot pitch on
+	 *  purpose — 3px is not a target — so neighbouring slots overlap by half a
+	 *  pixel each and the nearer-drawn wins there. That is the right trade: the
+	 *  alternative is a life nobody can hover. */
+	const GADGET_HIT_H = 5;
 	const GADGET_ROW_GAP = 2;
-	const gadgetRowH = (capacity: number) => (capacity > 1 ? GADGET_PROFILE_H : GADGET_BAR_H);
+	const gadgetRowH = (capacity: number) => GADGET_DOT_R * 2 + (capacity - 1) * GADGET_SLOT_PITCH;
+	/** Slot 0 sits at the BOTTOM — a busier moment is a taller stack, which is the
+	 *  one thing the count profile this replaced did well. */
+	const gadgetSlotY = (slot: number, capacity: number) =>
+		gadgetRowH(capacity) - GADGET_DOT_R - slot * GADGET_SLOT_PITCH;
 	let gadgetRows = $derived(showAura ? computeGadgetRows(rotation.windows) : []);
 	let gadgetStripH = $derived(
 		gadgetRows.reduce((h, r) => h + gadgetRowH(r.capacity) + GADGET_ROW_GAP, 0)
 	);
-	/** The run the cursor is standing on, `${kind}:${index}` — everything else in
+	/** The life the cursor is standing on, `${kind}:${index}` — everything else in
 	 *  its row dims. ⚠ Keyed by ROW TOO: two rows are two independent charts and
 	 *  hovering one must not dim the other. */
 	let gadgetHover = $state<string | null>(null);
 
-	/**
-	 * A count profile as an SVG path: a staircase across the row, closed along
-	 * the baseline so it fills.
-	 *
-	 * ⚓ SQUARE STEPS, NOT A SMOOTHED LINE. The count is an integer that changes
-	 * at an instant — a core spawns or it does not — so a slope between two runs
-	 * would draw a transition the game does not have. Same reason the aura plot
-	 * interpolates (a gauge really is continuous) and this does not.
-	 */
-	function gadgetPath(runs: GadgetRun[], capacity: number, h: number): string {
-		if (runs.length === 0) return '';
-		const yOf = (n: number) => h - (Math.min(n, capacity) / capacity) * h;
-		let d = `M ${xForTime(runs[0].start)} ${h}`;
-		for (const run of runs) {
-			d += ` L ${xForTime(run.start)} ${yOf(run.count)} L ${xForTime(run.end)} ${yOf(run.count)}`;
-		}
-		d += ` L ${xForTime(runs[runs.length - 1].end)} ${h} Z`;
-		return d;
-	}
 	let auraLaneH = $derived(
 		showAuraLane ? AURA_MARKER_H + AURA_TICK_H + AURA_PLOT_H + gadgetStripH + AUX_LANE_PAD_Y * 2 : 0
 	);
@@ -1395,8 +1384,8 @@
 			auraMarkerH: AURA_MARKER_H,
 			auraTickH: AURA_TICK_H,
 			gadgetRows,
-			gadgetBarH: GADGET_BAR_H,
-			gadgetProfileH: GADGET_PROFILE_H,
+			gadgetDotR: GADGET_DOT_R,
+			gadgetSlotPitch: GADGET_SLOT_PITCH,
 			gadgetRowGap: GADGET_ROW_GAP,
 			auraPillR: AURA_PILL_R,
 			auraMinPx: AURA_MIN_PX,
@@ -2194,104 +2183,108 @@
 											}}
 										>
 											<svg width={totalWidth} height={h} aria-hidden="true">
-												<defs>
-													<linearGradient
-														id="gadget-fade-{row.kind}"
-														gradientUnits="userSpaceOnUse"
-														x1="0"
-														y1="0"
-														x2="0"
-														y2={h}
-													>
-														<stop offset="0" stop-color={row.color} stop-opacity="0.55" />
-														<stop offset="1" stop-color={row.color} stop-opacity="0.16" />
-													</linearGradient>
-												</defs>
-												<!-- The profile, drawn whole and then re-lit per run. ⚠ The fill
-												     fades toward the baseline for the same reason the aura plot's
-												     does: the LINE is what carries the shape, and a solid area
-												     would bury the step it is there to show. -->
-												<path
-													d={gadgetPath(row.runs, row.capacity, h)}
-													fill="url(#gadget-fade-{row.kind})"
-													stroke="none"
-												/>
-												<!-- ⚓ ONE RECT PER RUN, and it does three jobs at once: the hit
-												     area, the dimming mask, and the lit state. Hovering isolates
-												     the run under the cursor — the profile's own unit, and the
-												     only unambiguous thing to isolate when the spans beneath it
-												     overlap. -->
-												{#each row.runs as run, ri (ri)}
-													{@const isHovered = gadgetHover === `${row.kind}:${ri}`}
-													{@const dimmed = gadgetHover !== null && !isHovered}
-													<rect
-														x={xForTime(run.start)}
-														y="0"
-														width={Math.max(1, xForTime(run.end) - xForTime(run.start))}
-														height={h}
-														fill={dimmed ? 'var(--frame-bg)' : 'transparent'}
-														fill-opacity={dimmed ? 0.55 : 1}
+												{#each row.bars as bar, bi (bi)}
+													{@const y = gadgetSlotY(bar.slot ?? 0, row.capacity)}
+													{@const x0 = xForTime(bar.start)}
+													{@const x1 = xForTime(bar.end)}
+													{@const dimmed =
+														gadgetHover !== null && gadgetHover !== `${row.kind}:${bi}`}
+													<g
+														class="rp-gadget-life"
+														class:rp-gadget-life--dim={dimmed}
 														onmouseenter={(e) => {
-															gadgetHover = `${row.kind}:${ri}`;
-															onAuraMarkEnter(run.start);
+															gadgetHover = `${row.kind}:${bi}`;
+															onAuraMarkEnter(bar.start);
 															showTooltip(e, {
-																sourceLabel: `${row.label} · ${secondsLabel(run.start)}–${secondsLabel(run.end)}s`,
+																sourceLabel: `${row.label} · ${secondsLabel(bar.start)}s`,
 																effects: [
 																	{
-																		stat: row.capacity > 1 ? 'On the field' : 'Standing',
-																		displayValue:
-																			row.capacity > 1
-																				? `${run.count} ${run.count === 1 ? 'core' : 'cores'}`
-																				: `${((run.end - run.start) / FPS).toFixed(2)}s`
+																		stat: 'On the field',
+																		displayValue: `${((bar.end - bar.start) / FPS).toFixed(2)}s`
 																	},
-																	// ⚓ THE NEXT STEP DOWN IS THE QUESTION A BLOOM PLAYER
-																	// IS ASKING. Cores are consumed oldest-first, so what
-																	// matters is not which one is which but when the pile
-																	// next gets smaller.
-																	...(row.capacity > 1 && run.count > 0
+																	// ⚓ How many were up alongside it — the question the
+																	// count profile answered, kept as a number now that
+																	// the drawing is per-entity again.
+																	...(row.capacity > 1
 																		? [
 																				{
-																					stat: 'Oldest leaves in',
-																					displayValue: `${(
-																						(Math.min(
-																							...row.bars
-																								.filter(
-																									(b) => b.start <= run.start && b.end > run.start
-																								)
-																								.map((b) => b.end)
-																						) -
-																							run.start) /
-																						FPS
-																					).toFixed(2)}s`
+																					stat: 'Alongside',
+																					displayValue: `${
+																						row.bars.filter(
+																							(b) => b.start <= bar.start && b.end > bar.start
+																						).length
+																					} live`
 																				}
 																			]
 																		: []),
-																	...(row.bars.some(
-																		(b) => b.end === run.start && b.endReason === 'consumed'
-																	)
-																		? [
-																				{
-																					stat: 'Just now',
-																					displayValue: 'one consumed by a reaction'
-																				}
-																			]
-																		: [])
+																	...(bar.endReason === 'consumed'
+																		? [{ stat: 'Ended', displayValue: 'consumed by a reaction' }]
+																		: bar.endReason === 'popped'
+																			? [
+																					{
+																						stat: 'Ended',
+																						displayValue: 'pushed out by a newer core'
+																					}
+																				]
+																			: [])
 																],
 																isMutuallyExclusive: false
 															});
 														}}
-													/>
+													>
+														<!-- The hit area. ⚠ Its own rect because a 1px line and a
+														     2px dot are not something a pointer can find; it is
+														     `fill: transparent` rather than `fill-opacity: 0` so it
+														     still takes events.
+														     ⚠️⚠️ IT COVERS THIS LIFE'S SLOT, NOT THE WHOLE ROW.
+														     Full-height rects overlap each other completely, so the
+														     LAST life drawn swallowed the pointer from every one
+														     that began before it — measured, a mid-rotation core
+														     could not be hovered at all. Two lives in one slot
+														     never overlap in time by construction, so per-slot
+														     rects cannot collide. -->
+														<rect
+															x={x0 - GADGET_DOT_R}
+															y={y - GADGET_HIT_H / 2}
+															width={Math.max(6, x1 - x0 + GADGET_DOT_R * 2)}
+															height={GADGET_HIT_H}
+															fill="transparent"
+														/>
+														<!-- The life: spawn dot → thin leader → end mark. ⚓ The dot
+														     is the Gauge Explorer's own core marker, given a
+														     duration — one grammar across the two tools. -->
+														<line
+															x1={x0}
+															y1={y}
+															x2={x1}
+															y2={y}
+															stroke={row.color}
+															stroke-opacity={dimmed ? 0.16 : 0.55}
+															stroke-width="1"
+														/>
+														<circle
+															cx={x0}
+															cy={y}
+															r={GADGET_DOT_R}
+															fill={row.color}
+															fill-opacity={dimmed ? 0.22 : 0.95}
+														/>
+														<!-- ⚓ THE END MARK SAYS HOW IT ENDED, not just when. A core
+														     that ran out and one a Hyperbloom ATE are different
+														     facts, and the second is the one the gauge alone can
+														     tell you — so a consumed life terminates in chrome
+														     rather than in its own colour. -->
+														<line
+															{x1}
+															y1={y - 2.5}
+															x2={x1}
+															y2={y + 2.5}
+															stroke={bar.endReason === 'consumed' ? 'var(--chrome)' : row.color}
+															stroke-opacity={dimmed ? 0.22 : 0.9}
+															stroke-width="1.5"
+														/>
+													</g>
 												{/each}
-												<!-- The staircase itself, over the mask so a dimmed run keeps its
-												     shape and only loses its emphasis. -->
-												<path
-													d={gadgetPath(row.runs, row.capacity, h)}
-													fill="none"
-													stroke={row.color}
-													stroke-opacity="0.85"
-													stroke-width="1.5"
-													stroke-linejoin="miter"
-												/>
 											</svg>
 										</div>
 									{/each}
@@ -3955,15 +3948,18 @@
 	.rp-gadget-row svg {
 		display: block;
 		/* ⚠ Sized in the markup at the track's own width, like the aura plot — a
-		   percentage width would stretch the staircase and give a 1.5px stroke a
-		   non-uniform weight (the objectBoundingBox trap). */
+		   percentage width would stretch every dot into an ellipse and give the
+		   1px leader a non-uniform weight (the objectBoundingBox trap). */
 	}
-	/* ⚠ ALPHA IN THE PAINT — `fill-opacity` / `stroke-opacity`, never element
-	   `opacity` on a transform-placed subtree (sub-pixel laws). The dimming mask
-	   paints --frame-bg over the runs the cursor is not on, so an isolated run
-	   keeps its own colour rather than the rest being repainted in a duller one. */
-	.rp-gadget-row rect {
-		transition: fill-opacity var(--t-snap);
+	/* ⚠ ALPHA IN THE PAINT — `fill-opacity` / `stroke-opacity` per element, never
+	   element `opacity` on a transform-placed subtree (sub-pixel laws). Dimming
+	   is therefore a value change on each mark rather than a wash over the group,
+	   which is why the transition names the two properties. */
+	.rp-gadget-life line,
+	.rp-gadget-life circle {
+		transition:
+			stroke-opacity var(--t-snap),
+			fill-opacity var(--t-snap);
 	}
 	.rp-aura-svg {
 		display: block;

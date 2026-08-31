@@ -28,36 +28,30 @@
  * cost every rotation 20px to serve bloom and Stellar teams would not be worth
  * it. ⛔ Don't give a kind a permanent row.
  *
- * ↻⚓⚓ A ROW IS A COUNT PROFILE, NOT A PILE OF SPANS (2026-09-01, ⚓ Nate) — and
- * the reversal came from MEASURING the overlap the first cut assumed it could
- * paint through. Over 122 corpus rotations with a bloom-capable pair, peak
- * concurrency was 2 in 79 of them, 3 in 9, and 4–5 in 7 — and **66% of the time
- * any core is live, at least two are**. Purpose-built bloom teams measure
- * 59–75%. So overlap is not the exception here, it is the resting state, and
- * translucent spans were making the one claim they cannot keep: at 52% alpha
- * five stacked spans composite to 97% opaque, so "darker means more" saturates
- * by the third core.
+ * ↻⚓ A LIFE IS A DOT, A THIN LINE AND AN END MARK (2026-09-01, ⚓ Nate) — the
+ * Gauge Explorer's core marker, given a duration. It replaced a count profile
+ * that was elegant on paper and did not read: a staircase tells you HOW MANY are
+ * up and refuses to tell you WHICH, and a bloom player looking at the strip is
+ * looking for a particular core's life.
  *
- * ⚠️⚠️ THIS IS THE OPPOSITE FINDING TO THE AURA LANE'S, and both came from the
- * same instrument. L6 collapsed the aura ROWS into one plot because ⚓ Nate
- * measured that auras barely coexist; the strip goes the other way because
- * gadgets almost always do. ⛔ Neither result may be assumed for the other —
- * count the case.
+ * ⚠️⚠️ THE OVERLAP IS STILL THE THING TO DESIGN AGAINST, and the measurement that
+ * killed the first cut (translucent stacked bars) still stands. Over 122 corpus
+ * rotations with a bloom-capable pair, peak concurrency was 2 in 79, 3 in 9 and
+ * 4–5 in 7 — and **66% of the time any core is live, at least two are**. That is
+ * why a life gets a SLOT (see `assignSlots`) rather than sharing one baseline:
+ * per-entity marks only stay legible if two entities cannot draw through each
+ * other.
  *
- * ⚓ IDENTITY IS NEARLY WORTHLESS HERE, which is what makes the profile a
- * straight win rather than a trade. Cores are consumed OLDEST-FIRST, so "which
- * core did my Hyperbloom eat" is a question nobody asks; the real ones are *is
- * one up*, *how many*, and *when does the next one drop* — and a step down
- * answers the third exactly where five overlapping spans answered none of them.
- * The individual spans survive in `bars` for the tooltip.
+ * ⚠️⚠️ THE OPPOSITE FINDING TO THE AURA LANE'S, from the same instrument. L6
+ * collapsed the aura ROWS into one plot because ⚓ Nate measured that auras
+ * barely coexist; the strip needs the opposite because gadgets almost always do.
+ * ⛔ Neither result may be assumed for the other — count the case.
  *
- * ⚠️ THE CAPACITY IS A PROPERTY OF THE KIND, NEVER OF THE ROTATION. A Prism can
- * never exceed one (presences are merged before they are emitted) so it draws at
- * capacity 1 — a full-height fill, i.e. the plain bar it always was, and the
- * degenerate case of the same grammar. Cores draw against a FIXED ceiling of 5,
- * so the y axis means the same thing in every rotation. ⛔ Never scale the axis
- * to the rotation's own peak: two charts of the same team would then disagree
- * about what half-height means.
+ * ⚠️ THE BAND'S HEIGHT IS A PROPERTY OF THE KIND, NEVER OF THE ROTATION. A Prism
+ * can never exceed one (presences are merged before they are emitted) so its row
+ * is one line; cores get a band of five, which is `MAX_CORES` and a game fact.
+ * ⛔ Never size the band to a rotation's own peak — two charts of the same team
+ * would then have different heights and could not be compared.
  */
 
 import type { TimelineWindow } from '$lib/utils/notationParser';
@@ -66,31 +60,22 @@ export type GadgetBar = {
 	start: number;
 	end: number;
 	/** Set when the world took it back before its nominal end — a core eaten by
-	 *  a Hyperbloom. Read by the tooltip; ⛔ never re-derive an end from it. */
+	 *  a Hyperbloom. Read by the tooltip and by the end mark's colour; ⛔ never
+	 *  re-derive an end from it. */
 	endReason?: 'consumed' | 'popped';
-};
-
-/** One run of CONSTANT live count — the profile's unit, and the thing the
- *  cursor isolates. A run ends where a gadget spawns or leaves. */
-export type GadgetRun = {
-	start: number;
-	end: number;
-	/** How many of this gadget are live across the run. */
-	count: number;
+	/** Which line of the band this life draws on, 0 at the bottom. Assigned by
+	 *  {@link assignSlots}; absent only before that runs. */
+	slot?: number;
 };
 
 export type GadgetRow = {
 	kind: 'prism' | 'core';
 	label: string;
 	color: string;
-	/** The y ceiling — how many of this kind can be live at once. ⚠️ Of the KIND,
-	 *  not of this rotation (see the header). */
+	/** How many of this kind can be live at once — the band's slot count.
+	 *  ⚠️ Of the KIND, not of this rotation (see the header). */
 	capacity: number;
-	/** The individual lives, kept for the tooltip. ⛔ Not the drawing. */
 	bars: GadgetBar[];
-	/** The drawing: runs of constant count, contiguous, count 0 included so a
-	 *  renderer can walk one list and never guess at a gap. */
-	runs: GadgetRun[];
 };
 
 /** ⚠️ ORDER IS FIXED, not emission-derived: a strip whose rows swap places
@@ -111,32 +96,40 @@ const ROW_ORDER = [
 ];
 
 /**
- * Bars → runs of constant live count.
+ * ⚓⚓ EVERY GADGET GETS ITS OWN SLOT IN A FIXED BAND — greedy interval colouring:
+ * each life takes the lowest slot whose previous occupant has already left.
  *
- * ⚠️ A SWEEP OVER BOUNDARIES, not a sample per frame: the strip is drawn at
- * whatever zoom the reader chose, and a fixed-interval sample would alias a
- * one-frame gap between two cores into either a phantom or a miss. Ends are
- * processed before starts at the same instant, so a core that expires exactly
- * where the next spawns reads as a handover and not as a moment of two.
+ * ⚠️⚠️ THIS IS WHAT MAKES A PER-ENTITY DRAWING SURVIVE THE OVERLAP. Measured, 66%
+ * of the time any core is live at least two are, so a single baseline would run
+ * two lives' leader lines through each other and the reader would be counting
+ * dots to recover what the chart should be showing. With slots, two concurrent
+ * cores are two lines at two heights and nothing has to be inferred.
+ *
+ * ⚓ IT IS NOT THE SUB-ROW PATTERN THAT WAS REJECTED. That one sized the lane to
+ * whatever the rotation happened to peak at, so two charts of the same team could
+ * disagree about their own height. The band here is `capacity` slots ALWAYS —
+ * a game fact (`MAX_CORES`), not a measurement — so an empty slot is just empty
+ * and the row is the same height in every rotation.
+ *
+ * ⚠️ Slots fill from the BOTTOM, so a busier moment is a taller stack: the one
+ * thing the count profile did well, kept.
  */
-function runsOf(bars: GadgetBar[]): GadgetRun[] {
-	if (bars.length === 0) return [];
-	const points = new Set<number>();
-	for (const b of bars) {
-		points.add(b.start);
-		points.add(b.end);
-	}
-	const edges = [...points].sort((a, b) => a - b);
-	const runs: GadgetRun[] = [];
-	for (let i = 0; i < edges.length - 1; i++) {
-		const start = edges[i];
-		const end = edges[i + 1];
-		const count = bars.filter((b) => b.start <= start && b.end > start).length;
-		const open = runs[runs.length - 1];
-		if (open && open.count === count && open.end === start) open.end = end;
-		else runs.push({ start, end, count });
-	}
-	return runs;
+function assignSlots(bars: GadgetBar[], capacity: number): GadgetBar[] {
+	const freeFrom: number[] = [];
+	return bars.map((bar) => {
+		let slot = freeFrom.findIndex((end) => end <= bar.start);
+		if (slot === -1) {
+			slot = freeFrom.length;
+			freeFrom.push(bar.end);
+		} else {
+			freeFrom[slot] = bar.end;
+		}
+		// ⚠️ A gadget past the band's capacity is CLAMPED into the top slot rather
+		// than dropped. It cannot happen today — the gauge caps live cores at the
+		// same number this band is built from — but a silently missing life is the
+		// worse failure of the two, and a doubled-up top line is visibly odd.
+		return { ...bar, slot: Math.min(slot, capacity - 1) };
+	});
 }
 
 export function computeGadgetRows(windows: ReadonlyArray<TimelineWindow>): GadgetRow[] {
@@ -156,7 +149,7 @@ export function computeGadgetRows(windows: ReadonlyArray<TimelineWindow>): Gadge
 		const bars = byKind.get(row.kind);
 		if (!bars || bars.length === 0) continue;
 		const sorted = bars.sort((a, b) => a.start - b.start || a.end - b.end);
-		out.push({ ...row, bars: sorted, runs: runsOf(sorted) });
+		out.push({ ...row, bars: assignSlots(sorted, row.capacity) });
 	}
 	return out;
 }
