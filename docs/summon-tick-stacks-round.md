@@ -284,10 +284,32 @@ the authored duration, and the parse applies spawn offsets and truncation.
 
 ### ⏭ Still open
 
-**Half A** — unchanged from §7a: zero corpus effects, one customer (Alyosha's
-Tugarin), and it belongs on the LIVE tick chain in `sim/aura.ts`, not on the
-finalize synthesis. ⚠️ Alyosha needs both halves — B anchors the buff at the
-tick, A consumes the mark so it fires once at C0 rather than on every maul.
+**Half A** — zero corpus effects, one customer (Alyosha's Tugarin), and it
+belongs on the LIVE tick chain in `sim/aura.ts`, not on the finalize synthesis.
+⚠️ Alyosha needs both halves — B anchors the buff at the tick, A consumes the
+mark so it fires once at C0 rather than on every maul.
+
+⚠️⚠️ **AND IT IS NOT A WIRING JOB — IT NEEDS A CONTAINER DECISION FIRST**, found
+while closing Half B and measured rather than reasoned. `stackState` and
+`stackInstances` are declared INSIDE the per-segment loop (`sim/run.ts` ~:263,
+inside the `for (… segments …)` at ~:152) and reset at every segment start. A
+summon tick fires while its owner may be off field — that is the whole point of
+Tugarin — i.e. during ANOTHER character's segment, where the owner has no live
+stack map at all. There is nowhere for the tick's mutation to land.
+
+⚓ The same defect is already visible in what Half B could not fix: Alyosha's
+Hunter's Mark is a state on the ENEMY that lasts 15 s, but its container is
+per-segment, so `Alyosha N4 > Fischl E > Alyosha E` draws no ATK bar where the
+game gives one — and so does `Alyosha N4 > Alyosha E`, two segments of the same
+character. Caveated on his skill; ⛔ not fixable by authoring.
+
+So Half A's real first question is **where an enemy-side, rotation-wide resource
+lives**. The one rotation-wide pool that exists — `CharState.sourceLifetime`,
+`Map<key, Map<sourceCharId, expiry>>` — is shaped for a different mechanic
+(per-SOURCE slots, refresh-on-same-source) and has **zero corpus authors**.
+⛔ Don't wire the tick chain into the per-segment dispatchers and call it done:
+that would fire a tick into a map that is either absent or belongs to whoever
+happens to be on field.
 
 ⚠️ **The two surfaces this pass does NOT cover** are a measured omission, not a
 partial job: the census found no active-target and no self-target onHit buff on
