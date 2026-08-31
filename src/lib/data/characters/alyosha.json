@@ -31,7 +31,70 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes and applies the **Hunter's Mark** to the opponent hit by the final strike.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents in his path.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes and applies the **Hunter's Mark** to the opponent hit by the final strike.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents in his path.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"filter": {
+							"hitIndex": 3
+						}
+					},
+					"key": "huntersMark",
+					"amount": 1,
+					"max": 2,
+					"lifetime": 15
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"filter": {
+							"hitIndex": 3
+						}
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "huntersMark",
+						"min": 2
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 21.2,
+					"snapshottable": false
+				},
+				{
+					"type": "consumeStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"filter": {
+							"hitIndex": 3
+						}
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "huntersMark",
+						"min": 2
+					},
+					"key": "huntersMark",
+					"amount": "all"
+				}
+			],
+			"_curatorNotes": [
+				"THE HUNTER'S MARK MODEL lives across the normal ability and the skill, and this is the half the 4th swing owns. The Fandom Hunter's Mark tooltip is the authority: \"When this effect is applied to an opponent who is already under the Hunter's Mark effect, it will activate Hunter's Mark instead, which removes said mark and grants all nearby party members the Hunter's Precision effect, which increases their ATK when they are on the field.\" So the mark is a state on the ENEMY that a SECOND application consumes — modelled as a stack resource, since the tools model one opponent.",
+				"⚠️ THE GATE IS `min: 2`, NOT `min: 1`, AND THAT IS DELIBERATE. Both dispatch pipelines run gains → stack snapshot → consumes (sim/run.ts handleCast, sim/run.ts dispatchHit), so THIS application is already counted when the buff reads the snapshot. \"A mark already existed\" is therefore \"the count reached 2\". Verified in source before authoring; ⛔ do not 'fix' it to 1 — that would grant the buff on the very first mark, which the game does not.",
+				"lifetime 15 = the Hunter's Mark Duration row of the skill's scaling table (15.0s at every talent level). max 2 with amount 1 means a third application cannot accrue — unreachable anyway, since the second consumes the pool. Per-grant expiry (not drain) is the right decay shape: a lone unconsumed mark simply times out.",
+				"filter.hitIndex 3 = the 4th swing, which is the only one that marks (\"applies the Hunter's Mark to the opponent hit by the final strike\"). Alyosha is frameless, so the swing counter is the raw normal counter and N4 lands on index 3."
+			]
 		},
 		{
 			"id": "alyosha__skill__thunderbolt_strike",
@@ -39,11 +102,60 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"cooldown": 15,
-			"duration": 15,
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast"
+					},
+					"key": "huntersMark",
+					"amount": 1,
+					"max": 2,
+					"lifetime": 15
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast"
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "huntersMark",
+						"min": 2
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 21.2,
+					"snapshottable": false
+				},
+				{
+					"type": "consumeStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast"
+					},
+					"conditions": {
+						"type": "stacks",
+						"key": "huntersMark",
+						"min": 2
+					},
+					"key": "huntersMark",
+					"amount": "all"
+				}
+			],
 			"description": "Follows his hunter's instincts. Tap or hold to produce different effects as well as apply the **Hunter's Mark** effect to the hit opponents.\n\nTapping\nFires at opponents in front of him, dealing AoE Electro DMG.\n\nHolding\nEnters aiming mode, then targets opponents within a certain area in front of him. Alyosha's Interruption RES is enhanced when in this mode.\nAt the end of the button hold, he deals Electro DMG to the targeted opponents.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"_curatorNotes": [
+				"The skill's half of the Hunter's Mark model — read the normal ability's notes first; they carry the mechanic and the `min: 2` reasoning. Both the tap and the hold apply the mark (\"Tap or hold to produce different effects as well as apply the Hunter's Mark effect to the hit opponents\"), so one unconditioned onCast grant covers both and no hold variant is authored: the tap/hold difference is damage scaling and interruption RES, neither of which is an effect.",
+				"Hunter's Precision: 21.2% ATK at talent level 10 (skill scaling row \"Hunter's Precision ATK Bonus\"), 15s (\"Hunter's Precision Duration\"). target 'active' because the tooltip grants it to \"all nearby party members\" but the ATK increase applies to them \"when they are on the field\" — which is exactly what a per-receiver active slice expresses. The wiki's own Into the Fray wording says the same thing the other way round: \"all currently active party members\".",
+				"The ability-level `duration: 15` the generator wrote was the Hunter's Mark Duration row, not an active window. Removed — this is an instant cast with no window, and a stray duration on an instant ability is dead data that a future accessor could resurrect as a bar nobody authored.",
+				"Particle generation is 5 per cast with a 12s internal cooldown (Fandom Gameplay Notes). No consumer today; recorded here rather than authored."
+			]
 		},
 		{
 			"id": "alyosha__burst__hunters_advance",
@@ -51,12 +163,102 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 18,
-			"duration": 14,
 			"energyCost": 70,
-			"tags": [],
+			"tags": ["summon", "taunt", "heal"],
 			"effects": [],
 			"description": "Summons his trusted companion Tugarin to fight alongside him on the field. This also turns an area in front of him into a Fulgurite Hunting Field for a short time.\n\nFulgurite Hunting Field\n· Continuously taunts nearby opponents to incite them to attack.\n· Every 2s, deals an instance of AoE Electro DMG to any opponent that enters the field.\n\nTugarin\n· If there are any opponents nearby, Tugarin will quickly move close to an opponent and maul them every 2s, dealing Electro DMG.\n· If an opponent affected by the Hunter's Mark effect is hit, the Hunter's Mark will also be activated.\n· Where there are multiple opponents, Tugarin will attack those affected by the Hunter's Mark effect first.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"summons": [
+				{
+					"label": "Tugarin",
+					"duration": 14,
+					"mobility": "follows",
+					"durationModifiers": [
+						{
+							"source": "C2: Howl From Afar",
+							"type": "flat",
+							"value": 6,
+							"conditions": {
+								"type": "constellation",
+								"level": 2
+							}
+						}
+					],
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2
+							},
+							"scaling": 90.4,
+							"stat": "atk",
+							"element": "electro"
+						},
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2
+							},
+							"conditions": {
+								"type": "ascension",
+								"min": 1
+							},
+							"scaling": 120,
+							"stat": "atk",
+							"_curatorNotes": [
+								"A1 Awakened by the Baying Hounds, hosted HERE rather than on the passive entry because a summonTick trigger is only valid inside summons[].effects[] (lint D.28). It therefore carries its own ascension gate — the entry-level constellation gate does not reach an effect hosted on an ability, so a summon-hosted passive/constellation effect must state its own condition."
+							]
+						},
+						{
+							"type": "heal",
+							"target": "team",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2
+							},
+							"conditions": {
+								"type": "constellation",
+								"level": 4
+							},
+							"scaling": 60,
+							"stat": "atk",
+							"_curatorNotes": [
+								"C4 Harvest the Spoils. ⚠️ target 'team' OVER-CLAIMS by design and this is the honest best fit: the constellation heals \"the nearby party member with the lowest HP by percentage\" — exactly one member, chosen at runtime. There is no lowest-HP target in the vocabulary, 'active' would be wrong (it can reach an off-field character) and dropping it would hide a real heal. Same summon-hosted gating rule as the A1 heal above."
+							]
+						}
+					]
+				},
+				{
+					"label": "Fulgurite Hunting Field",
+					"duration": 14,
+					"mobility": "stationary",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2
+							},
+							"scaling": 134.93,
+							"stat": "atk",
+							"element": "electro"
+						}
+					]
+				}
+			],
+			"caveat": "Tugarin's attacks don't activate the Hunter's Mark here, so the ATK bonus won't appear or refresh during the burst the way it does in game.",
+			"_curatorNotes": [
+				"TWO summons from one cast, both resolved since 2026-08-14. The Fulgurite Hunting Field is the stationary taunt zone (\"Every 2s, deals an instance of AoE Electro DMG to any opponent that enters the field\", 134.93% ATK at T10); Tugarin is the companion that closes on a target (\"maul them every 2s\", 90.4% ATK at T10). Both run the burst's 14s and both take C2's +6s.",
+				"⛔ THE CAVEAT IS THE ONE REAL GAP AND IT IS AN ENGINE GAP, NOT A DATA ONE. Tugarin's maul activates an existing Hunter's Mark in game (\"If an opponent affected by the Hunter's Mark effect is hit, the Hunter's Mark will also be activated\"), and in play it is the PRIMARY activator. A summon damage tick reaches the damage-proc registry (notifyDamage → ctx.procs, live on the clock since gauge round L5e) and the synthesized hit list deriveBuffWindows reads — but it reaches NEITHER the stack dispatchers nor any character onHit buff bar, because hitsForTrack filters to normal|charged|plunge inside the holder's own on-field track and a synthesized tick is tagged skill|burst. Queued as its own round; ⚠️ CLAUDE.md's stated reason for the gap (a finalize-time tick cannot be interleaved without a two-pass parse) is now PARTLY STALE, since the L5e tick chain fires live on the clock.",
+				"firstTickDelay is left at the default (= interval) on all three series: the kit says \"every 2s\" and nothing states an offset from the cast. ⛔ Never faked. Likewise no icdGate anywhere here — gcsim has no Alyosha, so nothing has been measured and a bare series correctly means 'standard'.",
+				"C2's second half — \"each time Tugarin attacks the opponent, he will also apply the Hunter's Mark to a target. This effect does not activate existing Hunter's Marks\" — is unauthored for the same reason as the caveat: it is a per-tick grant of a stack resource, which a summon tick cannot dispatch. ⚠️ Note the explicit non-activation clause: at C2 Tugarin APPLIES on every tick and ACTIVATES separately, which is what makes Hunter's Precision continuous there and 15s-from-the-first-tick at C0.",
+				"⚠️ SUMMON ORDER IS LOAD-BEARING AND TUGARIN IS FIRST ON PURPOSE. Only summons[0] takes its lifetime from the BAR (and so only its durationModifiers are read); a secondary uses its own authored `duration` flat. So C2's +6s can reach exactly one of the two, and Tugarin gets it — he is what the kit text leads with, he carries the damage and both heals, and his length is what a player tracks. Measured before choosing: at C2 the primary ran to 20.73s and the secondary stayed at 14.73s whichever way round they were authored. The Fulgurite Hunting Field's short bar at C2 is caveated on the C2 entry."
+			]
 		}
 	],
 	"passives": [
@@ -64,19 +266,151 @@
 			"id": "alyosha__passive__awakened_by_the_baying_hounds",
 			"name": "Awakened by the Baying Hounds",
 			"abilityType": "passive",
-			"description": "When **Tugarin** attacks, it will also restore HP to nearby active characters at 120% of Alyosha's ATK."
+			"description": "When **Tugarin** attacks, it will also restore HP to nearby active characters at 120% of Alyosha's ATK.",
+			"_curatorNotes": [
+				"AUTHORED, but on the summon rather than here: a summonTick trigger is only legal inside summons[].effects[] (lint D.28), so the 120% ATK heal lives on Tugarin in the burst's summons[1] with its own `ascension: 1` gate. ⛔ Don't re-author it here — that would draw the heal twice."
+			]
 		},
 		{
 			"id": "alyosha__passive__suffer_the_winter_wheat_will",
 			"name": "Suffer the Winter Wheat Will",
 			"abilityType": "passive",
-			"description": "Increases the DMG Alyosha deals with his Elemental Skill and Elemental Burst by 0.35% for every 1% of his Energy Recharge. Up to a 70% increase can be obtained in this way."
+			"description": "Increases the DMG Alyosha deals with his Elemental Skill and Elemental Burst by 0.35% for every 1% of his Energy Recharge. Up to a 70% increase can be obtained in this way.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "skillDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "energyRecharge",
+						"ratio": 35,
+						"cap": 70
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "burstDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "energyRecharge",
+						"ratio": 35,
+						"cap": 70
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"\"0.35% for every 1% of his Energy Recharge, up to 70%\" — ⚓ ratio is VALUE PER 100 STAT UNITS, so 0.35%/1% ER is `ratio: 35`, not 0.35. Cap 70 puts the ceiling at 200% ER, which is what KQM's quick guide states independently.",
+				"⛔ NO `offset`. Unlike Raiden's A4 (\"above 100%\") this kit states no threshold — it scales linearly from zero ER, and 35 × 2.00 = 70 confirms the cap sits exactly at 200% with no subtraction. Authoring an offset here would under-claim by 35 points.",
+				"Two effects because the bonus covers Elemental Skill AND Elemental Burst DMG and the two are separate stat keys; there is no combined key and inventing one for a single holder is not warranted."
+			]
 		},
 		{
 			"id": "alyosha__passive__into_the_fray",
 			"name": "Into the Fray",
 			"abilityType": "passive",
-			"description": "Alyosha will enter the Radiance: Stellar-Conduct state when inside a **Polestar Field**.\nRadiance: Stellar-Conduct: The Hunter's Precision effect obtained when the **Hunter's Mark** is activated will also increase Stellar-Conduct reaction DMG dealt by the character when on the field by 20%."
+			"description": "Alyosha will enter the Radiance: Stellar-Conduct state when inside a **Polestar Field**.\nRadiance: Stellar-Conduct: The Hunter's Precision effect obtained when the **Hunter's Mark** is activated will also increase Stellar-Conduct reaction DMG dealt by the character when on the field by 20%.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamEnablesReaction",
+										"reaction": "stellarConduct"
+									},
+									{
+										"type": "teamElementCount",
+										"elements": ["cryo"],
+										"comparison": ">=",
+										"value": 1
+									}
+								]
+							},
+							{
+								"type": "stacks",
+								"key": "huntersMark",
+								"min": 2
+							}
+						]
+					},
+					"source": "character",
+					"stat": "stellarConductReactionBonus",
+					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"filter": {
+							"hitIndex": 3
+						}
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamEnablesReaction",
+										"reaction": "stellarConduct"
+									},
+									{
+										"type": "teamElementCount",
+										"elements": ["cryo"],
+										"comparison": ">=",
+										"value": 1
+									}
+								]
+							},
+							{
+								"type": "stacks",
+								"key": "huntersMark",
+								"min": 2
+							}
+						]
+					},
+					"source": "character",
+					"stat": "stellarConductReactionBonus",
+					"value": 20,
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"⛔ ALYOSHA IS NOT AN ENABLER. \"Into the Fray\" is NOT a \"Stellar Jubilee: …\" passive — it converts nothing and grants no Base DMG bonus. It only upgrades Hunter's Precision while he is in the Radiance: Stellar-Conduct state, so `enablesReactions` is deliberately absent from this character. The enablers are Sandrone, Odette and Cryo Traveler.",
+				"Bucket 5, not bucket 3: the wiki says \"increase Stellar-Conduct DMG dealt by all currently active party members by 20%\" with no \"Base DMG\" wording, which is the Reaction Bonus bracket (additive with the EM bonus) — `stellarConductReactionBonus`, the same key Wriothesley, Qiqi, Cyno C2 and Diona C6 carry. Sandrone's `stellarGlimmerDmgBonus` is the OTHER bracket and this is not it.",
+				"The Radiance: Stellar-Conduct condition follows the idiom in docs/library/game/stellar-reactions.md. Alyosha is Electro and supplies that half himself, so what the condition must find is a CRYO teammate — `teamElementCount` excludes the holder by definition. No `not(...)` precedence clause is needed: his kit names only the Conduct radiance, never Stellar Swirl.",
+				"⚠️ `teamElementCount` does not resolve for an active-target buff (the received-buff context omits team element counts), so this renders optimistically in any team with a Conduct enabler. That is the same treatment Gorou's Geo tiers get and it is not a caveat: the bar is right whenever the player has actually built the team the constellation describes.",
+				"It rides the same activation gate as Hunter's Precision itself (`stacks huntersMark min 2`) and the same two sites — the E cast and the marking 4th swing. See the normal ability's notes for why the gate is 2."
+			]
 		}
 	],
 	"constellations": [
@@ -85,8 +419,35 @@
 			"name": "Frostvale Thunderclap",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"effects": [],
-			"description": "Alyosha regenerates 15 Elemental Energy when nearby party members trigger an Electro-related reaction on an opponent. This effect can trigger once every 18s."
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": [
+							"electroCharged",
+							"lunarCharged",
+							"superConduct",
+							"stellarConduct",
+							"overloaded",
+							"quicken",
+							"aggravate",
+							"hyperbloom",
+							"electroSwirl"
+						],
+						"source": "team"
+					},
+					"procCooldown": 18,
+					"amount": 15
+				}
+			],
+			"description": "Alyosha regenerates 15 Elemental Energy when nearby party members trigger an Electro-related reaction on an opponent. This effect can trigger once every 18s.",
+			"_curatorNotes": [
+				"\"An Electro-related reaction\" is a category, not a named reaction, so it is expanded to the game's own enumeration of that category — the identical nine-reaction list Cyno's C4 spells out in words (\"Electro-Charged, Lunar-Charged, Superconduct, Stellar-Conduct, Overloaded, Quicken, Aggravate, Hyperbloom, or an Electro Swirl\"). ⚓ Listing both Superconduct and Stellar-Conduct is correct HERE and is not the pair-up the conversion model forbids: that rule is about RESPONDING to a named reaction, and this trigger names a class.",
+				"source 'team' = \"when nearby party members trigger\". procCooldown 18 = \"once every 18s\".",
+				"⚠️ INERT ON EVERY SURFACE, and knowingly: `energy` effects have no planner consumer at all — no energy bar, no particle marker, no meter — the same finding Cyno's and Durin's notes record. Authored as the honest record of the constellation, not as something the timeline shows. No caveat: nothing is drawn, so no pixel is wrong."
+			]
 		},
 		{
 			"id": "alyosha__constellation__howl_from_afar",
@@ -94,7 +455,13 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"effects": [],
-			"description": "The duration of the Elemental Burst Hunter's Advance is extended by 6s.\nAdditionally, each time **Tugarin** attacks the opponent, he will also apply the **Hunter's Mark** to a target. This effect does not activate existing Hunter's Marks."
+			"description": "The duration of the Elemental Burst Hunter's Advance is extended by 6s.\nAdditionally, each time **Tugarin** attacks the opponent, he will also apply the **Hunter's Mark** to a target. This effect does not activate existing Hunter's Marks.",
+			"_curatorNotes": [
+				"The +6s half IS modelled, as a flat durationModifier on BOTH of the burst's summons (source \"C2: Howl From Afar\"), mirroring Kuki's C2 ring extension. It is authored on the summons rather than here because a durationModifier belongs to the window it lengthens; it carries its own constellation condition, since an entry-level gate does not reach an ability-hosted modifier.",
+				"The mark half is unauthored: \"each time Tugarin attacks the opponent, he will also apply the Hunter's Mark to a target. This effect does not activate existing Hunter's Marks.\" A per-tick grant of a stack resource needs summon ticks to reach the stack dispatchers, which is the same engine gap the burst's caveat names. ⚠️ The non-activation clause matters for anyone implementing it: at C2 Tugarin APPLIES on every tick while the base kit's separate activation still fires, which is what makes Hunter's Precision effectively continuous at C2 and 15s-from-the-first-tick at C0.",
+				"⚠️ The +6s reaches Tugarin only, and that is a limit of how a cast's second summon takes its length (its own authored duration, flat) rather than an authoring choice that could be made differently — see the burst's notes. Caveated here because the wrong bar is only visible to a reader who HAS C2, which is exactly who a constellation caveat reaches."
+			],
+			"caveat": "At C2 the burst runs 20s, but the Fulgurite Hunting Field's bar still ends at 14s — only Tugarin's is extended."
 		},
 		{
 			"id": "alyosha__constellation__friendly_call",
@@ -110,7 +477,10 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"effects": [],
-			"description": "When **Tugarin** attacks, he will also restore 60% of Alyosha's ATK as HP to the nearby party member with the lowest HP by percentage."
+			"description": "When **Tugarin** attacks, he will also restore 60% of Alyosha's ATK as HP to the nearby party member with the lowest HP by percentage.",
+			"_curatorNotes": [
+				"AUTHORED on Tugarin (burst summons[1]) rather than here — a summonTick trigger is only legal inside summons[].effects[] — with its own `constellation: 4` gate. ⚠️ Its target and why it over-claims are documented at the effect."
+			]
 		},
 		{
 			"id": "alyosha__constellation__when_the_nightbird_falls_silent",
@@ -125,8 +495,56 @@
 			"name": "Standard Reclaimed",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [],
-			"description": "The Hunter's Precision effect obtained from activating a **Hunter's Mark** can now stack, max 2 stacks. When the stack count reaches 2, characters affected by Hunter's Precision will also have their Elemental Mastery increased by 100 if they are on the field."
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "huntersMark",
+						"min": 2
+					},
+					"source": "character",
+					"stat": "em",
+					"value": 100,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"filter": {
+							"hitIndex": 3
+						}
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "huntersMark",
+						"min": 2
+					},
+					"source": "character",
+					"stat": "em",
+					"value": 100,
+					"snapshottable": false
+				}
+			],
+			"description": "The Hunter's Precision effect obtained from activating a **Hunter's Mark** can now stack, max 2 stacks. When the stack count reaches 2, characters affected by Hunter's Precision will also have their Elemental Mastery increased by 100 if they are on the field.",
+			"caveat": "The ATK bonus doubles at two Hunter's Precision stacks and the +100 EM needs both; the timeline shows one stack's ATK and grants the EM from the first activation.",
+			"_curatorNotes": [
+				"The +100 EM is authored at the same two activation sites as Hunter's Precision itself, target 'active' (\"currently active party members\" / \"if they are on the field\").",
+				"⛔ WHAT IS NOT MODELLED IS THE SECOND STACK, and the caveat says so. Counting Hunter's Precision stacks would need a second stack resource granted per activation, whose gate would have to read the FIRST resource's post-grant value inside one dispatch — a dependency on intra-cast effect ordering that nothing documents and nothing guards. `BuffEffect.stacks` {maxStacks, durationModel} is not the answer either: it has NO consumer anywhere (the only maxStacks reader is the perStack BuffValue), so authoring it would render nothing and assert something no test could check.",
+				"⛔ `constellationScaling` was also considered for the doubled ATK and rejected: it draws the bar but prints the BASE value at every constellation (the presence-vs-reachability trap in docs/curation/engine-capability-rubric.md), so it would have produced a bar claiming 21.2% while asserting in data that it was 42.4%. A caveat that names the single-stack value is honest; a field that silently prints the wrong one is not."
+			]
 		}
 	],
 	"meta": {
