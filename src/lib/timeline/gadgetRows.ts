@@ -104,10 +104,16 @@ export type GadgetRow = {
  *  between two rotations is unreadable. The Prism sits nearest the plot because
  *  it is the one whose buffs the reader is about to look for in the lane below. */
 const ROW_ORDER = [
+	// ⚓ AN ENTITY THAT HAS AN ELEMENT WEARS IT (⚓ Nate 2026-09-01). A Starlight
+	// Prism is Cryo in game and a Moondrift is Geo; a minted --rx-* hue for
+	// either was a primitive standing in for one we already have, and the strip
+	// reads better against the aura plot when a gadget answers to the same
+	// palette its reaction does. ⛔ Only the two that are NOT an element keep
+	// their own: a dendro core and a thundercloud are their own objects.
 	{
 		kind: 'prism' as const,
 		label: 'Starlight Prism',
-		color: 'var(--rx-starlight-prism)',
+		color: 'var(--el-cryo-main)',
 		capacity: 1
 	},
 	{
@@ -118,9 +124,13 @@ const ROW_ORDER = [
 		// Lunar-Charged restarts its clock rather than adding a second cloud.
 		capacity: 1
 	},
-	// ⚠️ Three, because a Lunar-Crystallize TOPS THE FIELD UP to three rather than
-	// adding one.
-	{ kind: 'moondrift' as const, label: 'Moondrift', color: 'var(--rx-moondrift)', capacity: 3 },
+	// ⚠️⚠️ CAPACITY 1, THOUGH THERE ARE ALWAYS THREE (⚓ Nate). A Lunar-Crystallize
+	// tops the field up to three and Moondrift Harmony refreshes all three at
+	// once, so they appear and lapse TOGETHER — measured, a partial field is
+	// unreachable. A three-deep axis therefore drew one number forever, spending
+	// 8px of strip on a count that never varies. The three lives stay in `bars`,
+	// so the disc's tooltip still says "3 at once".
+	{ kind: 'moondrift' as const, label: 'Moondrift', color: 'var(--el-geo-main)', capacity: 1 },
 	// ⚓ 5 is `MAX_CORES` in gauge.ts (KQM: a sixth Bloom pops the oldest). ⚠️ Not
 	// imported — this module is a pure projection with no runtime imports, and
 	// the number is a stated game fact rather than an implementation detail. If

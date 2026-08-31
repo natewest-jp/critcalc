@@ -18,6 +18,7 @@
  *   · `n === 0 ? 20 : 28 + n` → `20 + n` (the discontinuity) — value tests red;
  *   · the ledger reading its OWN window instead of the previous one — red;
  *   · dropping the creating-hit exclusion — red;
+ *   · excluding every conduct trigger rather than only the initial one — red;
  *   · refresh EXTENDING (`end += lifetime`) instead of replacing — red;
  *   · grants not clipped to the presence end — red.
  */
@@ -169,7 +170,24 @@ describe('the ledger', () => {
 		expect(tiles[1].fieldStacks).toBe(1);
 	});
 
-	it('strikes off ONE application per trigger, not every one sharing its frame', () => {
+	it('DOES count the hits that refresh it — only the initial one is exempt', () => {
+		// ⚠️⚠️ "The INITIAL hit that created the Prism is not included" — one hit,
+		// not one per trigger. A rule excluding every conduct would have been
+		// written as "hits that trigger Stellar-Conduct are not included", and
+		// measured against the lane's own dots the every-trigger reading ran the
+		// ledger about one short per window (⚓ Nate). ⛔ Don't re-flip this on a
+		// re-reading alone: there is no oracle here, gcsim has no Stellar-Conduct.
+		const tiles = buffTiles(
+			derive(
+				[conduct(0, 'ganyu'), conduct(2, 'ganyu')],
+				[app(0, 'cryo', 'ganyu'), app(2, 'cryo', 'ganyu'), app(3, 'cryo', 'ganyu')]
+			)
+		);
+		// [0,4) holds all three; only the 0s creator is struck off.
+		expect(tiles[1].fieldStacks).toBe(2);
+	});
+
+	it("strikes off ONE application, not every one sharing the creator's frame", () => {
 		// ⚠️⚠️ Why the exclusion resolves INDICES rather than comparing times: a
 		// cast that applies two elements on one frame would otherwise lose BOTH,
 		// undercounting a ledger whose whole job is to count.

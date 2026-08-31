@@ -169,19 +169,20 @@ const RX_QUICKEN = '#46c865';
 const RX_BURNING = '#d76822';
 const RX_BURNING_FUEL = '#84b46a';
 // ── Gadget-strip colours (Polestar-Field round, 2026-09-01) ─────────────────
-// ⚠ Two more --rx-* literals, for the same reason as the four above: a dendro
-// core and a Starlight Prism are ENTITIES, not auras of an element, so neither
-// has an --el-* palette entry to borrow.
+// ⚠ One more --rx-* literal, for the same reason as the four above: a dendro
+// core and a thundercloud are their own OBJECTS, not auras of an element, so
+// neither has an --el-* entry to borrow. ⚓ The Prism and the Moondrift DO have
+// one (Cryo, Geo) and take it.
 const RX_DENDRO_CORE = '#e2ec6f';
-const RX_STARLIGHT_PRISM = '#c9b6ff';
 const RX_THUNDERCLOUD = '#5f9ec4';
-const RX_MOONDRIFT = '#cfc7ae';
 
+// ⚓ The two with a real element go through `elementPalette`, the guarded mirror
+// of --el-*; only the two that are their own object need a literal.
 const GADGET_COLOR: Record<GadgetRow['kind'], string> = {
 	core: RX_DENDRO_CORE,
-	prism: RX_STARLIGHT_PRISM,
+	prism: elementPalette('cryo').main,
 	thundercloud: RX_THUNDERCLOUD,
-	moondrift: RX_MOONDRIFT
+	moondrift: elementPalette('geo').main
 };
 
 const AURA_MOD_COLOR: Record<AuraKey, string> = {
@@ -215,9 +216,7 @@ export const PALETTE_MIRROR = {
 	RX_BURNING,
 	RX_BURNING_FUEL,
 	RX_DENDRO_CORE,
-	RX_STARLIGHT_PRISM,
-	RX_THUNDERCLOUD,
-	RX_MOONDRIFT
+	RX_THUNDERCLOUD
 } as const;
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';

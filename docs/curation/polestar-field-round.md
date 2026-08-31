@@ -704,3 +704,75 @@ every mutation listed goes red on the test aimed at it, and nothing else.
 ⚠️ These test the PRODUCERS, not the corpus. Every rule in them is a game fact,
 so the inputs are hand-built reaction/application streams — ⛔ a corpus fixture
 would couple the assertions to whichever characters happen to react today.
+
+## 10. Two corrections and two colour calls, 2026-09-01
+
+### 10.1 ⚠️⚠️ THE LEDGER WAS EXCLUDING TOO MUCH — only the INITIAL hit is exempt
+
+⚓ Nate counted the buff bars against the lane's own application dots and found
+the ledger low by about one per window. He was right, and the cause is a reading
+of one sentence.
+
+§6.3 struck off **every** Stellar-Conduct's triggering application, on the
+argument that each is "a hit that created the Prism". The literal reading is the
+correct one: _"The **initial** hit that created the Prism is not included"_ — a
+rule excluding every conduct would have been written as "hits that trigger
+Stellar-Conduct are not included". `creatingHitIndices` → `creatingHitIndex`,
+resolving **one** application per PRESENCE rather than one per trigger.
+
+Measured on `Odette E E > Alyosha E Q` at Alyosha C2, whose Prism runs
+1.60–27.33s: counts per 4s window went **0/3/2/2/1/1/0 → 0/5/4/4/3/2/0**, i.e.
++2 in most windows, which is exactly the refresh triggers that were being struck
+off.
+
+⚠️ **A text-reading call with NO oracle** — gcsim has no Stellar-Conduct at all —
+so the evidence that decided it is a reader counting dots against a bar. ⛔ Don't
+re-flip it on a re-reading alone.
+
+⚓ **And the dots ARE the right thing to count against**: `applications` is the
+stream the gauge was fed, i.e. post-ICD by construction, so "hits that apply an
+element (as limited by Internal Cooldown)" is its definition rather than an
+approximation of it. ⚠️ Two applications CAN share a frame from one character —
+a cast and a summon tick keep separate ICD counters (⚓ "counters are NOT shared
+across casts") — and that is why the exclusion resolves an index rather than
+comparing times.
+
+### 10.2 ⚓ A LEDGER BAR NEVER MERGES — the cadence is the mechanic
+
+⚓ Nate: "I did Odette EE > Alyosha EQ and saw it do 4s windows twice and then
+randomly the third window is 8s… it's always either 8s or 12s."
+
+Not random: `mergeRefreshedBars` was fusing consecutive grant cycles that paid
+the same number, so two identical 4s tiles drew as one 8s bar and three as 12s.
+
+⚓ **The merge law still holds; this row is outside it.** "A buff re-applied
+before it expires is ONE covered span" is about a refresh landing at an arbitrary
+moment, where a seam would re-encode a cast marker one row up. The Polestar
+Field's 4s reset is not that — **the CADENCE IS THE MECHANIC**: the count resets
+and the buff is re-granted on a clock, so fusing two cycles that happened to pay
+the same number hides the thing the row exists to show, and leaves an 8s bar with
+two answers to "how many were recorded".
+
+⚠️ Only bars carrying a count are held out, so the field's SHRED still merges
+into one span across the presence: −40% is flat, and its tiles are one debuff
+stated four times.
+
+### 10.3 An entity that HAS an element wears it
+
+⚓ Nate: the Prism is Cryo in game and a Moondrift is Geo. Both minted `--rx-*`
+hues are **retired** — they were primitives standing in for ones we already had —
+and the two rows take `--el-cryo-main` / `--el-geo-main`. ⛔ The other two keep
+their own: a dendro core and a thundercloud are their own objects, not auras of
+an element. (For the record, the swap widens the strip's own separations: Prism ↔
+Thundercloud goes ΔE .174 → **.232**; Moondrift ↔ Core .142, unchanged in spirit.
+⚓ Nate's call that Moondrift-vs-Core conflation is not a concern.)
+
+### 10.4 ⚠️⚠️ The Moondrift row is ONE HIGH, though there are always three
+
+⚓ Nate: "even though there are three Moondrifts, there are always three — they
+appear and disappear together." Confirmed by the model rather than assumed: a
+Lunar-Crystallize tops the field up to three and Harmony refreshes all three at
+once, so a **partial field is unreachable** — which the guard's own fixtures
+demonstrate. A three-deep axis was therefore drawing one number forever and
+spending 8px of strip on a count that never varies. Capacity 1; the three lives
+stay in `bars`, so the disc's tooltip still reads "3 at once".

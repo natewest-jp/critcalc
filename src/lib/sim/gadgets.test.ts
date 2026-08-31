@@ -69,6 +69,9 @@ describe('the Thundercloud', () => {
 });
 
 describe('the Moondrift field', () => {
+	// ⚠️ The three lives stay in the IR — they are three entities — but the STRIP
+	// draws the row one high (capacity 1), because they appear and lapse together
+	// and a three-deep axis would draw one number forever. See gadgetRows.ts.
 	it('drops THREE at once on the first Lunar-Crystallize, each lasting 9s', () => {
 		// ⚓⚓ gcsim spawns `3 − nearby`, so one reaction on an empty field is three
 		// drifts — ⛔ not one.

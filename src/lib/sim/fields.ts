@@ -98,34 +98,40 @@ export function polestarDmgBonus(n: number): number {
 // Polestar Field needs the triggers back, for the ledger below.
 
 /**
- * ⚠️ THE FIELD-CREATING HITS, as application INDICES.
+ * ⚠️ THE FIELD-CREATING HIT, as an application INDEX.
  *
  * Stated on the Fandom page: "The initial hit that created the Prism is not
- * included." Every conduct trigger is excluded, not just the first — each is a
- * hit that created the Prism, and the text's "initial" distinguishes the
- * creating hit from the recorded ones rather than singling out the first of
- * several refreshes.
+ * included."
  *
- * ⚠️⚠️ ONE APPLICATION PER TRIGGER, WHICH IS WHY THIS RESOLVES INDICES RATHER
- * THAN COMPARING TIMES. A reaction event carries the instant and the character
- * whose application caused it, and measured (`Sandrone E Q > Fischl E Q >
- * Ganyu E Q N3 C`) all six conducts land on the exact frame of a recorded
- * application with no rounding drift — but a cast that applies two elements on
- * one frame would have BOTH struck off by a time test, undercounting a ledger
- * whose whole job is to count. Consuming one match per trigger cannot.
+ * ↻⚠️⚠️ **ONE HIT PER PRESENCE, NOT ONE PER TRIGGER** (2026-09-01). The first
+ * cut struck off every Stellar-Conduct's trigger on the reading that each is "a
+ * hit that created the Prism". ⚓ Nate counted the bars against the lane's own
+ * application dots and found the ledger low by about one per window — which is
+ * exactly the refresh triggers. The literal reading is the right one: **"the
+ * INITIAL hit" is doing real work in that sentence**; a rule excluding every
+ * conduct would have been written as "hits that trigger Stellar-Conduct are not
+ * included".
+ *
+ * ⚠️ This is a text-reading call with NO oracle behind it — gcsim has no
+ * Stellar-Conduct at all — so the evidence that decided it is a reader counting
+ * dots against a bar. ⛔ Don't re-flip it on a re-reading alone.
+ *
+ * ⚠️⚠️ IT RESOLVES AN INDEX RATHER THAN COMPARING TIMES. A reaction event carries
+ * the instant and the character whose application caused it, and measured
+ * (`Sandrone E Q > Fischl E Q > Ganyu E Q N3 C`) every conduct lands on the exact
+ * frame of a recorded application with no rounding drift — but a cast that
+ * applies two elements on one frame would have BOTH struck off by a time test,
+ * undercounting a ledger whose whole job is to count. Striking off one match
+ * cannot.
  */
-function creatingHitIndices(
+function creatingHitIndex(
 	applications: readonly AuraApplication[],
-	triggers: readonly ReactionEvent[]
+	trigger: ReactionEvent
 ): Set<number> {
-	const excluded = new Set<number>();
-	for (const t of triggers) {
-		const i = applications.findIndex(
-			(a, idx) => !excluded.has(idx) && a.time === t.time && a.characterId === t.characterId
-		);
-		if (i >= 0) excluded.add(i);
-	}
-	return excluded;
+	const i = applications.findIndex(
+		(a) => a.time === trigger.time && a.characterId === trigger.characterId
+	);
+	return new Set(i >= 0 ? [i] : []);
 }
 
 /**
@@ -227,7 +233,7 @@ export function deriveFieldWindows(input: {
 	let nextId = input.nextBuffId;
 
 	for (const presence of mergePresences(conducts, PRISM_LIFETIME_F)) {
-		const excluded = creatingHitIndices(input.applications, presence.triggers);
+		const excluded = creatingHitIndex(input.applications, presence.triggers[0]);
 		gadgets.push({
 			kind: 'gadget',
 			gadget: 'prism',

@@ -192,16 +192,23 @@ export function projectTeamBuffRows(
 	// expires is ONE covered span. The display comparison is nearly the whole
 	// test — a team bar has no envelope or ICD to disagree about.
 	//
-	// ⚠️ THE ONE GATE: the Polestar Field's recorded-hit count. It is printed in
-	// the tooltip but deliberately not in `effects`, so two abutting grant cycles
-	// with DIFFERENT counts and the same value — which happens at the 40% cap,
-	// where 12 hits and 15 both pay 40 — would merge into one bar that then has
-	// two answers to "how many were recorded". Requiring the counts to agree
-	// leaves the merge doing what it was built for (one covered span, one label)
-	// and keeps every surviving seam meaning something.
+	// ⚠️⚠️ THE ONE GATE: A LEDGER BAR NEVER MERGES (⚓ Nate 2026-09-01, who read
+	// two 4s grants fuse into an 8s bar and could not tell what it meant).
+	//
+	// ⚓ THE MERGE LAW STILL HOLDS; THIS ROW IS OUTSIDE IT. "A buff re-applied
+	// before it expires is ONE covered span" is about a refresh landing at an
+	// arbitrary moment, where the seam would re-encode a cast marker one row up.
+	// The Polestar Field's 4s reset is not that: the CADENCE IS THE MECHANIC —
+	// the count resets and the buff is re-granted on a clock — so fusing two
+	// cycles that happened to pay the same number hides the thing the row exists
+	// to show, and leaves an 8s bar with two answers to "how many were recorded".
+	//
+	// ⚠️ Only bars carrying a count are held out, which is why the field's SHRED
+	// still merges into one span across the whole presence: −40% is flat, so its
+	// tiles are one debuff stated four times.
 	return [...rowMap].map(([key, row]) => ({
 		...row,
-		bars: mergeRefreshedBars(row.bars, (a, b) => a.stacks === b.stacks),
+		bars: mergeRefreshedBars(row.bars, (a, b) => a.stacks === undefined && b.stacks === undefined),
 		key
 	}));
 }
