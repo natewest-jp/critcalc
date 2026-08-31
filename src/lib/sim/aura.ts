@@ -61,7 +61,15 @@ import type { SimContext } from './context';
 import { Band, type Clock } from './clock';
 import { type ChainIndex } from './conditions';
 import { dispatchOnReactionExtensions } from './extensions';
-import { dispatchGainStacksOnReaction } from './stacks';
+import {
+	applyRotationLifetimeExpiry,
+	dispatchConsumeStacksOnHit,
+	dispatchGainStacksOnHit,
+	dispatchGainStacksOnReaction,
+	rotationStackSnapshot
+} from './stacks';
+import { holderStatesAt } from './states';
+import type { HitEvent } from './hits';
 import { getChainIndexMap } from './cooldowns';
 import { toReactions } from './reactionBridge';
 import {
@@ -669,6 +677,61 @@ function tickConditionCtx(ctx: SimContext): {
 	};
 }
 
+/**
+ * ⚓⚓ A SUMMON TICK REACHES THE STACK MACHINERY (Half A, 2026-08-31) — the fifth
+ * and last consumer of the damage a summon deals, after the gauge, the damage
+ * procs, the artifact `onHit` branch and (since Half B) the character `onHit`
+ * buff pools.
+ *
+ * ⚓ IT RUNS HERE, ON THE LIVE CHAIN, AND NOT AT FINALIZE. The stack dispatchers
+ * mutate state in PARSE order and a later hit reads what an earlier one wrote —
+ * so a finalize-time hit cannot be interleaved into a stream that has already
+ * been consumed. The live chain has a real parse-order instant (the clock is
+ * monotonic: a tick at T fires with everything before T already parsed), which
+ * is exactly what `notifyDamage` beside it already exploits.
+ *
+ * ⚓⚓ THE SEGMENT POOL IS NULL, ON PURPOSE. A tick fires while its owner may be
+ * off field, i.e. inside another character's segment, where the owner has no
+ * segment stack map at all. Passing null makes a segment-scoped grant a
+ * structural no-op instead of a rule someone has to remember — only a
+ * `scope: 'rotation'` key, which has a home of its own, can be written from
+ * here. ⛔ Never hand this the on-field character's pool.
+ *
+ * Returns the post-gain, pre-consume snapshot of the OWNER's rotation-scoped
+ * stacks — the same convention `dispatchHit` uses, for the same reader.
+ */
+function dispatchEntityHitStacks(
+	ctx: SimContext,
+	owner: CharacterData,
+	hit: HitEvent
+): ReadonlyMap<string, number> | undefined {
+	// ⚠️ Expire FIRST. This is the one dispatch site with no settle in front of
+	// it, so a mark that timed out mid-burst would otherwise be activated by the
+	// next maul.
+	for (const holder of ctx.team.teamChars)
+		applyRotationLifetimeExpiry(holder, hit.time, ctx.getCharState);
+	const getHolderStates = (holder: CharacterData): ReadonlySet<string> =>
+		holderStatesAt(ctx, holder, hit.time);
+	dispatchGainStacksOnHit(
+		ctx.team.teamChars,
+		hit,
+		getHolderStates,
+		ctx.team.constellationByHolder,
+		ctx.getCharState,
+		null
+	);
+	const snapshot = rotationStackSnapshot(owner, ctx.getCharState(hit.characterId));
+	dispatchConsumeStacksOnHit(
+		ctx.team.teamChars,
+		hit,
+		getHolderStates,
+		ctx.team.constellationByHolder,
+		ctx.getCharState,
+		null
+	);
+	return snapshot;
+}
+
 export function scheduleSummonTicks(
 	ctx: SimContext,
 	clock: Clock,
@@ -843,15 +906,28 @@ export function scheduleSummonTicks(
 				// tick still HIT, and a damage proc listens for the hit — this is the
 				// stream that lets Raiden's Eye fire off Oz (⚓ Nate's ruling, and the
 				// survey's named "must be settled before authoring").
-				notifyDamage(ctx, clock, {
+				const tickHit: HitEvent = {
 					characterId: char.id,
 					time: at,
 					abilityType: kind,
 					element,
 					damageTag: kind,
 					abilityName: summon.label,
+					// ⚓ Delivered by the SUMMON — the same flag, word for word, that
+					// finalize stamps on the hit it synthesizes for this same tick.
+					viaEntity: true,
 					sourceEventId: -1
-				});
+				};
+				// ⚠️ BEFORE `notifyDamage`, so a damage proc can never observe
+				// half-applied stacks — the ordering `dispatchHit` already documents.
+				// Guarded by the same team flag every other onHit stack dispatch is:
+				// without an onHit stack consumer on the team there is nothing to
+				// dispatch to.
+				if (ctx.team.teamHasOnHitStackEffects) {
+					const snapshot = dispatchEntityHitStacks(ctx, char, tickHit);
+					if (snapshot) ctx.tickStacks.set(`${char.id}::${summon.label}::${at}`, snapshot);
+				}
+				notifyDamage(ctx, clock, tickHit);
 				// ⚠️ Scheduled whether or not the tick APPLIED: an ICD-suppressed
 				// hit still happened, still spent its counter slot, and the series
 				// must not stop because of it.

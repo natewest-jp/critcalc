@@ -48,6 +48,7 @@ import { parseNotation } from './notationParser';
 import { onHitTriggerMatches, type HitEvent } from '$lib/sim/hits';
 import type { CharacterData } from '$lib/types/character';
 import type { Effect, Trigger } from '$lib/types/ability';
+import { isActiveTargetOnly } from './effectCollection';
 
 const modules = import.meta.glob('../data/characters/*.json', { eager: true });
 const all: CharacterData[] = Object.values(modules).map(
@@ -105,7 +106,8 @@ function syntheticTickHits(c: CharacterData): HitEvent[] {
 	return out;
 }
 
-/** Buff/shred effects one of THIS character's own ticks can actually fire.
+/** Buff/shred effects one of THIS character's own ticks can actually fire ON THE
+ *  TEAM SURFACE — the pass this file guards.
  *
  *  ⚓ Selection goes through `onHitTriggerMatches` — the same gate the pass
  *  uses — rather than a hand-rolled copy of it, exactly the way
@@ -113,7 +115,18 @@ function syntheticTickHits(c: CharacterData): HitEvent[] {
  *  ASSERTION is still on the parse; only the "who should qualify" question
  *  borrows the shared primitive, and a class mismatch is precisely what a loose
  *  filter gets wrong (Kinich holds a skill-class shred and a BURST-spawned
- *  summon, so no tick of his can ever reach it). */
+ *  summon, so no tick of his can ever reach it).
+ *
+ *  ↻ ⚠️ ACTIVE-TARGET BUFFS ARE EXCLUDED, and that is a SURFACE distinction, not
+ *  a loosening (summon-tick stacks round, 2026-08-31). They are fired by a
+ *  different pass with a different output shape: a team-surface window is
+ *  extended IN PLACE by the next tick, so its SPAN is the signature this file
+ *  asserts on, while an active-target window is a per-RECEIVER slice and one
+ *  activation is several windows that `mergeRefreshedBars` fuses at the
+ *  projection. Asserting a long span on a slice would be asserting the wrong
+ *  thing about the right behaviour. Alyosha is the only corpus holder and his
+ *  guard is `src/lib/sim/summonTickStacks.test.ts`, which asserts the projected
+ *  BAR. ⛔ Don't "fix" this by relaxing the span assertion below. */
 function tickReachableOnHit(c: CharacterData): Effect[] {
 	const ticks = syntheticTickHits(c);
 	if (ticks.length === 0) return [];
@@ -123,6 +136,7 @@ function tickReachableOnHit(c: CharacterData): Effect[] {
 			if (e.type !== 'buff' && e.type !== 'resShred') return false;
 			if (e.trigger?.type !== 'onHit') return false;
 			if (e.duration == null) return false;
+			if (e.type === 'buff' && isActiveTargetOnly(e.target)) return false;
 			const trigger = e.trigger as Extract<Trigger, { type: 'onHit' }>;
 			return ticks.some((h) => onHitTriggerMatches(trigger, h, c.id));
 		})
