@@ -335,6 +335,14 @@ export const EXPECTED = [
 		note: 'Birgitta stationary turret (Electro every 2s, 20s), spawned by both E and Q'
 	},
 	{
+		id: 'traveler_cryo',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		confidence: 'check',
+		note: 'Frostpierce Star follows the party for 12s (15s at C4) firing ice crystals at 38.51% ATK Cryo. EXPECTED TO SHOW AS A GAP: the firing interval is stated in no source (genshin-db 5.2.13 has no interval label, the Fandom talent page is a stub with empty Gameplay Notes, gcsim has no Cryo Traveler), so no summonTick series is authored and nothing derives. This entry is the backlog item — resolve it by authoring the cadence, never by deleting the expectation.'
+	},
+	{
 		id: 'ororon',
 		kind: 'offFieldDamage',
 		minCon: 0,

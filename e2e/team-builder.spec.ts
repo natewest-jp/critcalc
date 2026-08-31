@@ -29,7 +29,7 @@ import type { Page } from '@playwright/test';
  *  check. ⛔ So it must be bumped by hand on every character ingest; the
  *  ingest-character recipe's Stage 3 says so. Last bumped 2026-08-31 (+Odette,
  *  +Alyosha). */
-const ROSTER_SIZE = 124;
+const ROSTER_SIZE = 125;
 
 const matchCount = async (page: Page) => parseInt(await page.locator('.tb-count').innerText(), 10);
 
