@@ -400,7 +400,7 @@
 	// Portrait-column display name: travelers read as just "Traveler" — the
 	// element glyph beside the name carries the variant. NOTATION stays
 	// element-qualified ("Anemo Traveler") so typed rotations can address a
-	// specific variant (Cryo Traveler lands soon); only this label diverges.
+	// specific variant; only this label diverges. (Cryo landed 2026-08-31.)
 	function slotLabel(char: { id: string; displayName: string }): string {
 		return char.id.startsWith('traveler') ? 'Traveler' : char.displayName;
 	}
