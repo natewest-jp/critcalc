@@ -151,7 +151,27 @@ export type SimEvent =
 	| { kind: 'ecTick'; time: number; drained: number }
 	| { kind: 'burningTick'; time: number }
 	| { kind: 'burningEnd'; time: number; swept: AuraKey[] }
-	| { kind: 'core'; time: number };
+	/** A Bloom happened — the marker the Gauge Explorer has drawn since L5b.
+	 *  ⚠️ This is the BLOOM's instant, not the core's: the core itself is on the
+	 *  field `CORE_SPAWN_DELAY` frames later and has its own pair of events. */
+	| { kind: 'core'; time: number }
+	/**
+	 * ⚓ A CORE IS A THING LEFT IN THE WORLD, and the gadget strip draws its
+	 * LIFE (Polestar-Field round, 2026-09-01). Spawn carries the id so an end
+	 * can be paired to it, and the nominal `expiry` so a consumer needs none of
+	 * this module's constants to draw a core nobody touched. ⚠️ SECONDS, like
+	 * every `time` in this union.
+	 */
+	| { kind: 'coreSpawn'; time: number; id: number; expiry: number }
+	/**
+	 * ⚓⚓ THE HALF THAT CANNOT BE DERIVED. A core's spawn and its nominal 6s are
+	 * both computable from the Bloom, but a core EATEN by a Hyperbloom at 2s is
+	 * not — and that instant is exactly what the lane exists to show. Without
+	 * this event the strip would keep drawing a core the rotation already spent.
+	 * `expired` needs no event: the queue is pruned lazily on read, so nothing
+	 * fires, and the end is `spawn + CORE_LIFETIME` by construction.
+	 */
+	| { kind: 'coreEnd'; time: number; id: number; reason: 'consumed' | 'popped' };
 
 export type SeriesPoint = { t: number; u: number };
 /** One continuous lifetime of one aura; a mod re-applied later gets a new interval */
@@ -309,7 +329,10 @@ type Sim = {
 	 *  read rather than by a scheduled task — a core that nobody triggers has no
 	 *  consequence to fire, and a task whose only job is to check back later is
 	 *  precisely the cost the jumping clock exists to avoid. */
-	cores: number[];
+	cores: { id: number; expiry: number }[];
+	/** Next core id. Cores are a QUEUE of expiries and consumption shifts the
+	 *  oldest, so a spawn and its end can only be paired by an explicit id. */
+	nextCoreId: number;
 	/** Applications past `maxFrames`, reported rather than silently dropped. */
 	dropped: number;
 	tasks: Map<number, (() => void)[]>;
@@ -503,18 +526,35 @@ function burningTick(S: Sim, gen: number) {
 /** A Bloom's core, on the field `CORE_SPAWN_DELAY` frames later. */
 function spawnCore(S: Sim) {
 	schedule(S, S.frame + CORE_SPAWN_DELAY, () => {
-		S.cores = S.cores.filter((expiry) => expiry > S.frame);
+		S.cores = S.cores.filter((c) => c.expiry > S.frame);
 		// A sixth core pops the oldest rather than being refused.
-		if (S.cores.length >= MAX_CORES) S.cores.shift();
-		S.cores.push(S.frame + CORE_LIFETIME);
+		if (S.cores.length >= MAX_CORES) {
+			const popped = S.cores.shift();
+			if (popped)
+				S.events.push({
+					kind: 'coreEnd',
+					time: S.frame / FPS,
+					id: popped.id,
+					reason: 'popped'
+				});
+		}
+		const core = { id: S.nextCoreId++, expiry: S.frame + CORE_LIFETIME };
+		S.cores.push(core);
+		S.events.push({
+			kind: 'coreSpawn',
+			time: S.frame / FPS,
+			id: core.id,
+			expiry: core.expiry / FPS
+		});
 	});
 }
 
 /** Take one live core, oldest first. `false` when there is none to take. */
 function consumeCore(S: Sim): boolean {
-	S.cores = S.cores.filter((expiry) => expiry > S.frame);
-	if (!S.cores.length) return false;
-	S.cores.shift();
+	S.cores = S.cores.filter((c) => c.expiry > S.frame);
+	const core = S.cores.shift();
+	if (!core) return false;
+	S.events.push({ kind: 'coreEnd', time: S.frame / FPS, id: core.id, reason: 'consumed' });
 	return true;
 }
 
@@ -931,6 +971,7 @@ function createGaugeInternal({
 		burningIcd: createIcdClock(),
 		crysGcdUntil: -1,
 		cores: [],
+		nextCoreId: 0,
 		dropped: 0,
 		tasks: new Map(),
 		events: [],

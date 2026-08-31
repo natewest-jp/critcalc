@@ -36,6 +36,7 @@ import {
 	summonSpawnAt
 } from './summons';
 import { collectApplications, collectAuraSeries } from './aura';
+import { deriveFieldWindows } from './fields';
 
 /**
  * Authors the IR windows, stamps the owner uptimes, and projects the per-track
@@ -556,17 +557,56 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		}
 	}
 
+	// 9. The gauge's own two projections, HOISTED out of the return literal
+	// (Polestar-Field round, 2026-09-01) because step 10 needs both: the field's
+	// ledger reads `applications`, and the settle inside `collectAuraSeries` is
+	// what records a core spawned after the last cast.
+	// ⚠️ The order between these two is NOT free and has not changed: the settle
+	// advances the gauge past the last application to sample the decay tail, so
+	// reading the applications first keeps the two projections describing the
+	// same instant of the gauge's life.
+	const applications = collectApplications(ctx);
+	const auraSeries = collectAuraSeries(ctx, totalDuration);
+
+	// 10. Gadgets — things a reaction left in the world, belonging to no
+	// character (see the `gadget` arm of TimelineWindow).
+	{
+		for (const rec of ctx.gadgetRecs) {
+			windows.push({
+				kind: 'gadget',
+				gadget: rec.kind,
+				label: 'Dendro Core',
+				start: rec.start,
+				// ⛔ NOT the nominal end when something took it: a core eaten by a
+				// Hyperbloom at 2s is not on the field for the remaining 4.
+				end: rec.end ?? rec.nominalEnd,
+				...(rec.endReason !== undefined ? { endReason: rec.endReason } : {})
+			});
+		}
+
+		// ⚓ The Prism and its grant cycles. The buff ids continue the derivation
+		// above — `projectTeamBuffRows` orders rows by first-window id, so two
+		// windows sharing an id would make the row order depend on sort stability.
+		const buffCount = windows.reduce((n, w) => n + (w.kind === 'buff' ? 1 : 0), 0);
+		const fields = deriveFieldWindows({
+			reactionEvents: ctx.events.filter((e): e is ReactionEvent => e.kind === 'reaction'),
+			applications,
+			nextBuffId: buffCount
+		});
+		for (const w of fields.gadgets) windows.push(w);
+		for (const w of fields.buffs) windows.push(w);
+		if (fields.gadgets.length > 0 || ctx.gadgetRecs.length > 0) {
+			windows.sort((a, b) => a.start - b.start || a.end - b.end);
+		}
+	}
+
 	return {
 		tracks: ctx.tracks,
 		totalDuration,
 		unknownTokens: ctx.unknownTokens,
 		events: ctx.events,
 		windows,
-		applications: collectApplications(ctx),
-		// ⚠️ AFTER `collectApplications`, and the order is not free: this settles
-		// the gauge past the last application so the decay tail is sampled, which
-		// closes the open series intervals. Reading the applications first keeps
-		// the two projections describing the same instant of the gauge's life.
-		auraSeries: collectAuraSeries(ctx, totalDuration)
+		applications,
+		auraSeries
 	};
 }

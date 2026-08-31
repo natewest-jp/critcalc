@@ -40,6 +40,7 @@
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummons } from '$lib/timeline/summonSubrows';
 	import { computeShieldSubrows } from '$lib/timeline/shieldRows';
+	import { computeGadgetRows } from '$lib/timeline/gadgetRows';
 	import {
 		auraPathD,
 		auraSpanLabels,
@@ -847,8 +848,28 @@
 		labelWidthCache.set(text, width);
 		return width;
 	}
+	// ══ THE GADGET STRIP (Polestar-Field round, 2026-09-01) ═══════════════════
+	// ⚓ WHAT THE REACTION LEFT BEHIND, under the plot's baseline — the fourth
+	// clause of the lane's top-to-bottom sentence (caused → landed → the gauge it
+	// changed → what is still in the world). It sits BELOW the 0U datum on
+	// purpose: a core and a Prism are entities, not gauge, and drawing them
+	// inside the plot would put them on an axis that does not measure them.
+	//
+	// ⚠️⚠️ ITS HEIGHT IS CONDITIONAL, AND THAT IS WHAT PAYS FOR IT. `headerH`
+	// moves the bench and spends a viewport budget `--tool-pad-bottom` has
+	// already been raided once for (see AURA_PLOT_H's note). A rotation with no
+	// bloom and no Stellar enabler — nearly all of them — pays ZERO here, and the
+	// two teams that do pay get a row each. ⛔ Don't give the strip a resting
+	// height so the layout "stops jumping": that is 20px taken from every reader
+	// to spare two.
+	const GADGET_ROW_H = 7;
+	const GADGET_ROW_GAP = 2;
+	let gadgetRows = $derived(showAura ? computeGadgetRows(rotation.windows) : []);
+	let gadgetStripH = $derived(
+		gadgetRows.length ? gadgetRows.length * (GADGET_ROW_H + GADGET_ROW_GAP) : 0
+	);
 	let auraLaneH = $derived(
-		showAuraLane ? AURA_MARKER_H + AURA_TICK_H + AURA_PLOT_H + AUX_LANE_PAD_Y * 2 : 0
+		showAuraLane ? AURA_MARKER_H + AURA_TICK_H + AURA_PLOT_H + gadgetStripH + AUX_LANE_PAD_Y * 2 : 0
 	);
 
 	/**
@@ -1342,6 +1363,9 @@
 			auraPlotHead: AURA_PLOT_HEAD,
 			auraMarkerH: AURA_MARKER_H,
 			auraTickH: AURA_TICK_H,
+			gadgetRows,
+			gadgetRowH: GADGET_ROW_H,
+			gadgetRowGap: GADGET_ROW_GAP,
 			auraPillR: AURA_PILL_R,
 			auraMinPx: AURA_MIN_PX,
 			auraLabelMinSpan: AURA_LABEL_MIN_SPAN,
@@ -2115,6 +2139,57 @@
 									<span class="rp-aura-crosshair" style:left="{auraCursorX}px"></span>
 								{/if}
 							</div>
+							<!-- ⚓ WHAT THE REACTION LEFT IN THE WORLD. Under the baseline
+							     because these are ENTITIES, not gauge: a dendro core and a
+							     Starlight Prism have lifetimes but no units, and putting
+							     them inside the plot would hang them off an axis that does
+							     not measure them.
+							     ⚠ A core's bar ends where something ATE it — that instant
+							     comes from the gauge's own events and cannot be derived from
+							     the Bloom, which is the whole reason the strip is worth its
+							     pixels rather than being a nominal 6s stub. -->
+							{#if gadgetRows.length > 0}
+								<div class="rp-gadget-strip" style:height="{gadgetStripH}px">
+									{#each gadgetRows as row (row.kind)}
+										<div class="rp-gadget-row" style:height="{GADGET_ROW_H}px">
+											{#each row.bars as bar, bi (bi)}
+												<!-- svelte-ignore a11y_no_static_element_interactions -->
+												<span
+													class="rp-gadget-bar"
+													class:rp-gadget-bar--taken={bar.endReason !== undefined}
+													style:left="{xForTime(bar.start)}px"
+													style:width="{Math.max(2, xForTime(bar.end) - xForTime(bar.start))}px"
+													style:background="color-mix(in srgb, {row.color} 52%, transparent)"
+													onmouseenter={(e) => {
+														onAuraMarkEnter(bar.start);
+														showTooltip(e, {
+															sourceLabel: `${row.label} · ${secondsLabel(bar.start)}s`,
+															effects: [
+																{
+																	stat: 'On the field',
+																	displayValue: `${((bar.end - bar.start) / FPS).toFixed(2)}s`
+																},
+																...(bar.endReason === 'consumed'
+																	? [{ stat: 'Ended', displayValue: 'consumed by a reaction' }]
+																	: bar.endReason === 'popped'
+																		? [
+																				{
+																					stat: 'Ended',
+																					displayValue: 'pushed out by a newer core'
+																				}
+																			]
+																		: [])
+															],
+															isMutuallyExclusive: false
+														});
+													}}
+													onmouseleave={onAuraMarkLeave}
+												></span>
+											{/each}
+										</div>
+									{/each}
+								</div>
+							{/if}
 						</div>
 					{/if}
 					<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
@@ -3735,6 +3810,38 @@
 		position: relative;
 		flex: 1;
 		margin: 2px 0;
+	}
+	/* ══ THE GADGET STRIP ══════════════════════════════════════════════════════
+	   ⚠ `flex-shrink: 0`, like the marker and tick bands: `.rp-aura-plot` is
+	   `flex: 1` (basis 0, grow 1) and would otherwise eat this strip's height —
+	   the plot's inline height is a statement of intent that the flex-grow
+	   honours only because `auraLaneH` accounts for every band exactly. */
+	.rp-gadget-strip {
+		position: relative;
+		flex-shrink: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.rp-gadget-row {
+		position: relative;
+		flex-shrink: 0;
+	}
+	/* ⚠ ALPHA IN THE PAINT, never element `opacity` — the bars are
+	   transform-adjacent and the sub-pixel laws forbid an opacity subtree here.
+	   ⚓ The translucency is not decoration: up to five cores are live at once and
+	   overlapping spans DARKEN, so the row reads as a count without spending a
+	   pixel of height on sub-rows. */
+	.rp-gadget-bar {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		border-radius: var(--r-xs);
+	}
+	/* A gadget the world took back before its nominal end — the lit edge marks
+	   the instant, which is the half of a core's life nothing else can tell you. */
+	.rp-gadget-bar--taken {
+		box-shadow: inset -2px 0 0 0 var(--chrome);
 	}
 	.rp-aura-svg {
 		display: block;

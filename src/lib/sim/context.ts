@@ -72,6 +72,29 @@ export type ShieldWindowRec = {
 
 export type WeaponProcRec = { start: number; end: number; sourceCastId: number };
 
+/**
+ * ⚓ A GADGET: A THING A REACTION LEFT IN THE WORLD (Polestar-Field round,
+ * 2026-09-01). A dendro core, a Starlight Prism — an entity with a lifetime
+ * that belongs to NO character, which is why it cannot ride the summon lane
+ * (`computeSummonSubrows` groups under the caster, and any party member's
+ * reaction can make one of these).
+ *
+ * `end` is written when the world takes it back: a core eaten by a Hyperbloom
+ * ends at the Hyperbloom. ⚠️ A record whose `end` is still absent at finalize
+ * ran its nominal life — see `nominalEnd`.
+ */
+export type GadgetRec = {
+	kind: 'core';
+	/** Identity from the gauge, so a spawn and its end can be paired. */
+	id: number;
+	start: number;
+	/** The end the gadget reaches untouched (FRAMES). */
+	nominalEnd: number;
+	/** Set when something took it early. */
+	end?: number;
+	endReason?: 'consumed' | 'popped';
+};
+
 /** An infusion granted by an `infuse` Effect (⚠️ a DIFFERENT mechanism from
  *  `NormalAbility.infusion`, which is a field on a stance's normal ability and
  *  needs no tracking — the stance IS the window). Windows are never truncated:
@@ -163,6 +186,10 @@ export type SimContext = {
 	summonExtRecs: SummonExtRecord[];
 	stateWindowRecs: StateWindowRec[];
 	shieldWindowRecs: ShieldWindowRec[];
+	/** Gadgets the gauge left in the world (dendro cores). ⚓ Written from the
+	 *  gauge's own events rather than derived — a core's spawn is computable
+	 *  from its Bloom but the instant a Hyperbloom EATS it is not. */
+	gadgetRecs: GadgetRec[];
 	weaponProcBars: Map<string, WeaponProcRec[]>;
 
 	// ── per-character state ───────────────────────────────────────────────────
@@ -311,6 +338,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		summonExtRecs: [],
 		stateWindowRecs: [],
 		shieldWindowRecs: [],
+		gadgetRecs: [],
 		weaponProcBars: new Map(),
 
 		charStates,

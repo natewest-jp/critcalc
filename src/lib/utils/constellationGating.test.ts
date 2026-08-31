@@ -130,7 +130,10 @@ function digest(r: ParsedRotation) {
 				const effects = (anyW.effects as Record<string, unknown>[] | undefined) ?? [];
 				return [
 					w.kind,
-					w.characterId,
+					// ⚠️ A `gadget` window belongs to no character (Polestar-Field
+					// round) — it is the one arm with no `characterId`, and the
+					// differential's signature just leaves that column empty.
+					anyW.characterId ?? '',
 					anyW.name ?? '',
 					anyW.label ?? '',
 					w.start,

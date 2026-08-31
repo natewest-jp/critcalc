@@ -3402,7 +3402,10 @@ describe('parseNotation — Durin dual-form (post-P4 #2 normal-opened state)', (
 	const durin = durinJson as unknown as CharacterData;
 	const lookup = (n: string): CharacterData | null => (n === 'Durin' ? durin : null);
 	const stateWindows = (r: ReturnType<typeof parseNotation>, name: string) =>
-		r.windows.filter((w) => w.kind === 'state' && w.name === name);
+		r.windows.filter(
+			(w): w is Extract<ReturnType<typeof parseNotation>['windows'][number], { kind: 'state' }> =>
+				w.kind === 'state' && w.name === name
+		);
 	const burstCast = (r: ReturnType<typeof parseNotation>) =>
 		r.events.find(
 			(e): e is Extract<TimelineEvent, { kind: 'cast' }> =>

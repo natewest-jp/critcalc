@@ -1294,6 +1294,14 @@
 	--rx-burning: #d76822; /* the ember, banked below pyro's flame */
 	--rx-burning-fuel: #84b46a;
 	--rx-dendro-core: #e2ec6f;
+	/* The Starlight Prism a Stellar-Conduct leaves behind (Polestar-Field round,
+	   2026-09-01) — the gadget strip's second occupant beside the dendro core.
+	   ⚠ MEASURED, not reasoned, per the rule above: nearest neighbour anywhere in
+	   the el/rx/ui grid is --el-electro-main at ΔE .129, against a grid whose own
+	   closest pair sits at .037. Violet-white rather than a fifth green or blue
+	   because Stellar-Conduct is the Cryo+Electro reaction and the strip reads
+	   beside both of those hues. */
+	--rx-starlight-prism: #c9b6ff;
 
 	/* Typography — single source of truth. Bitter is display/branding AND every
 	   MAIN HEADER (⚓ Nate 2026-08-09 — see the h1–h6 rule for the split that

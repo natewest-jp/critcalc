@@ -115,6 +115,15 @@ export function projectTeamBuffRows(
 					: src.trigger;
 			rowKey = `${w.characterId}::faction::${src.faction}::${src.bonusName}::${scope}::${effects[0].stat}${w.debuff ? '::resShred' : ''}`;
 			explicitKind = w.debuff ? 'debuff' : 'buff';
+		} else if (src.type === 'field') {
+			// ⚓⚓ NAMED AFTER THE FIELD, WHICH IS THE WHOLE POINT OF THE ARM. Any
+			// party member's Stellar-Conduct raises the same Polestar Field, so the
+			// row key carries NO character — two enablers in one party draw ONE row,
+			// where the retired per-enabler mirror drew two identical bars labelled
+			// after two different characters.
+			sourceLabel = src.fieldName;
+			rowKey = `field::${src.fieldId}${w.debuff ? '::resShred' : ''}`;
+			explicitKind = w.debuff ? 'debuff' : 'buff';
 		} else {
 			const set = getArtifactSetById(src.setId);
 			sourceLabel = set?.name ?? src.setId;

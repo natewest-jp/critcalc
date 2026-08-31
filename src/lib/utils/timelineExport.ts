@@ -72,6 +72,7 @@ import {
 	auraUnitLines,
 	type AuraLane
 } from '$lib/timeline/auraPlot';
+import type { GadgetRow } from '$lib/timeline/gadgetRows';
 import type { AuraKey } from '$lib/utils/gauge';
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
@@ -167,6 +168,17 @@ const RX_FROZEN = '#cbeaf3';
 const RX_QUICKEN = '#46c865';
 const RX_BURNING = '#d76822';
 const RX_BURNING_FUEL = '#84b46a';
+// ── Gadget-strip colours (Polestar-Field round, 2026-09-01) ─────────────────
+// ⚠ Two more --rx-* literals, for the same reason as the four above: a dendro
+// core and a Starlight Prism are ENTITIES, not auras of an element, so neither
+// has an --el-* palette entry to borrow.
+const RX_DENDRO_CORE = '#e2ec6f';
+const RX_STARLIGHT_PRISM = '#c9b6ff';
+
+const GADGET_COLOR: Record<GadgetRow['kind'], string> = {
+	core: RX_DENDRO_CORE,
+	prism: RX_STARLIGHT_PRISM
+};
 
 const AURA_MOD_COLOR: Record<AuraKey, string> = {
 	pyro: elementPalette('pyro').main,
@@ -197,7 +209,9 @@ export const PALETTE_MIRROR = {
 	RX_FROZEN,
 	RX_QUICKEN,
 	RX_BURNING,
-	RX_BURNING_FUEL
+	RX_BURNING_FUEL,
+	RX_DENDRO_CORE,
+	RX_STARLIGHT_PRISM
 } as const;
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
@@ -325,6 +339,13 @@ export type TimelineSnapshot = {
 	auraLabelMinSpan: number;
 	auraLabelMinGap: number;
 	auraLabelMinRow: number;
+	/** The gadget strip's rows (Polestar-Field round, 2026-09-01) — things a
+	 *  reaction left in the world. ⚠️ Its height is already inside
+	 *  `auraHeaderH`, so every `oy`-relative offset below stays byte-identical
+	 *  whether the strip is there or not. */
+	gadgetRows: GadgetRow[];
+	gadgetRowH: number;
+	gadgetRowGap: number;
 	statIconFor: (stat: string) => string | undefined;
 	avatarFor: (slotIdx: number) => string | null;
 	elementGlyphFor: (element: string | undefined) => string | null;
@@ -1300,6 +1321,30 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				x(entry.span.start) + 4,
 				Math.max(plotTop + 7, yOf(entry.span.openingU) - 3)
 			);
+		}
+
+		// ── The gadget strip, under the baseline ──
+		// ⚓ Below the plot because a core and a Prism are ENTITIES, not gauge —
+		// the same reason the screen puts them there. `plotBase + 2` clears the
+		// plot's own bottom margin, which the screen spends as a CSS margin and
+		// the canvas has to add by hand.
+		let gadgetY = plotBase + 2;
+		for (const row of snap.gadgetRows) {
+			// ⚠ 0.52 alpha, mirroring the screen's `color-mix(… 52%, transparent)`:
+			// overlapping cores DARKEN, which is how the row says how many are live
+			// without spending height on sub-rows.
+			ctx.fillStyle = alpha(GADGET_COLOR[row.kind], 0.52);
+			for (const bar of row.bars) {
+				const bx = x(bar.start);
+				ctx.fillRect(bx, gadgetY, Math.max(2, x(bar.end) - bx), snap.gadgetRowH);
+			}
+			// The lit edge marking a gadget the world took back early.
+			ctx.fillStyle = BAR_LABEL;
+			for (const bar of row.bars) {
+				if (bar.endReason === undefined) continue;
+				ctx.fillRect(x(bar.end) - 2, gadgetY, 2, snap.gadgetRowH);
+			}
+			gadgetY += snap.gadgetRowH + snap.gadgetRowGap;
 		}
 	}
 	// ── Label column ──

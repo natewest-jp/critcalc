@@ -84,6 +84,22 @@
 		decay, so they are drawn separately.
 	</p>
 	<p>
+		<strong>Under the plot: what the reaction left behind.</strong> Some reactions leave a thing standing
+		in the world rather than an aura on the enemy, and those get their own strip below the baseline —
+		a Dendro Core from a Bloom, a Starlight Prism from a Stellar-Conduct. A core's bar ends where something
+		ate it, so a Hyperbloom visibly spends one. The strip only appears when your rotation makes one of
+		these.
+	</p>
+	<p>
+		<strong>The Polestar Field.</strong> A Starlight Prism sustains a Polestar Field around it, and the
+		field's buffs are their own row in the team buffs — not one enabler's, because any party member's
+		Stellar-Conduct raises the same field. Its Cryo and Electro bonus is not a flat number: the field
+		records the Cryo and Electro hits that applied an element, resets the count every 4s, and pays out
+		on what it counted — 20% with nothing recorded, then 29% at one hit up to 40% at twelve. That is why
+		the row's value changes from one 4s block to the next. We assume you are standing in the field; we
+		do not model walking out of it.
+	</p>
+	<p>
 		<strong>Turning it on.</strong> The aura lane is off until you ask for it:
 		<em>Auras</em> in the view bar. Its neighbour, <em>Buffs</em>, hides the buff bars, weapon
 		procs, Nightsoul bursts and Ascendant Gleam — turn both off for a chart of ability timings and

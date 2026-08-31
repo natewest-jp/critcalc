@@ -366,6 +366,9 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 	// start (a window can't open before the cast that opened it).
 	const castById = new Map(events.filter((e) => e.kind === 'cast').map((e) => [e.id, e] as const));
 	for (const w of windows) {
+		// ⚓ A gadget has no cast to be provenance FOR — any party member's
+		// reaction leaves the same core or Prism (Polestar-Field round).
+		if (w.kind === 'gadget') continue;
 		if (w.sourceCastId === undefined) continue;
 		const src = castById.get(w.sourceCastId);
 		expect(src, `${w.kind} window sourceCastId ${w.sourceCastId} resolves to a cast`).toBeTruthy();
@@ -378,6 +381,7 @@ function assertCore(result: ParsedRotation, opts: { strictStanceGeom: boolean })
 	// an `action` event by the same character at/before the window start, and
 	// a window never carries both provenance ids.
 	for (const w of windows) {
+		if (w.kind === 'gadget') continue;
 		if (w.sourceActionId === undefined) continue;
 		expect(w.sourceCastId, `${w.kind} window carries at most one provenance id`).toBeUndefined();
 		const src = actionById.get(w.sourceActionId);
