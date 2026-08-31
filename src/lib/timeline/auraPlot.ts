@@ -91,6 +91,28 @@ export type AuraTick = {
 	units: number;
 	/** The unit value is our default, not measured data — the squiggle rule. */
 	provisional: boolean;
+	/**
+	 * ⚠️⚠️ HOW MANY APPLICATIONS LANDED ON THIS FRAME, when more than one did —
+	 * the count this pill is standing in for (2026-09-01).
+	 *
+	 * ⚓ A pill is drawn at `xForTime(time)`, so applications sharing a frame draw
+	 * at the SAME x and every one after the first is invisible. Measured, that is
+	 * rare corpus-wide (0.3% of applications, 5% of rotations) but it is the one
+	 * case a reader can NEVER resolve: near-coincident pills separate as you zoom
+	 * in, exactly-coincident ones never do.
+	 *
+	 * ⚠️ It matters because a number elsewhere on the chart is counted from these:
+	 * the Polestar Field's ledger counts applications, and a reader counting PILLS
+	 * to check it will come up short. ⚓ Nate found exactly that — Alyosha's two
+	 * burst summons tick on one 2s cadence and both apply Electro, so three of his
+	 * twenty-one applications are hidden and the field's tooltip read one high
+	 * against the visible marks.
+	 *
+	 * ⛔ The pills are NOT grouped into one: the aura LOG reads this same list and
+	 * already lists both, which is the surface where a reader can see them
+	 * separately. This says the number; the log says the detail.
+	 */
+	sameFrame?: number;
 };
 
 /** Every reaction that landed on one frame. ⚓ Grouped because one trigger can
@@ -171,12 +193,19 @@ export function computeAuraLane(
 		});
 	}
 
+	// ⚠️ Counted by FRAME, not by pixel — the lane has no scale (the renderer owns
+	// zoom), which is the same rule the reaction markers follow. Sub-pixel
+	// crowding at low zoom stays the renderer's problem and resolves on zoom;
+	// this is the case that does not.
+	const perFrameApps = new Map<number, number>();
+	for (const a of applications) perFrameApps.set(a.time, (perFrameApps.get(a.time) ?? 0) + 1);
 	const ticks: AuraTick[] = applications.map((a) => ({
 		time: a.time,
 		characterId: a.characterId,
 		element: a.element,
 		units: a.units,
-		provisional: a.provisionalUnits
+		provisional: a.provisionalUnits,
+		...((perFrameApps.get(a.time) ?? 1) > 1 ? { sameFrame: perFrameApps.get(a.time) } : {})
 	}));
 
 	// ⚠️ Grouped by exact frame rather than by pixel: the lane has no scale yet

@@ -814,3 +814,59 @@ Ordered by what a next session would actually pick up.
 6. ⛔ The Thundercloud's lightning ticks and the Moondrift Harmony ATTACK are
    deliberately unmodelled — both deal damage that would have to reach the gauge
    and neither is authored anywhere in the corpus.
+
+## 12. ⚠️⚠️ The ledger reads high against the CHART, and the ledger is right
+
+⚓ Nate, after §10 landed: "now I think we're overcounting … it always seems to be
+1 more than I can count for applications", across several teams and points, and
+with the creating-hit exclusion confirmed working.
+
+**The arithmetic is correct.** Hand-verified per tile against its own window on
+both of his teams — every tile's count equals (applications of Cryo/Electro in
+the preceding 4s) − (the creating hit, in the first window only). No tile
+mismatched.
+
+**The chart is what is short.** The lane draws one pill per application at
+`xForTime(time)`, and a pill is 8px across, so two applications closer than 8px
+of screen draw as one mark. Measured over 123 corpus rotations:
+
+| zoom                     | pills overlapping a neighbour |
+| ------------------------ | ----------------------------- |
+| 20 px/s (`ZOOM_MIN`)     | 1164 of 3003 — **38.8%**      |
+| 60 px/s (`ZOOM_DEFAULT`) | 711 of 3003 — **23.7%**       |
+| 120 px/s (`ZOOM_MAX`)    | 62 of 3003 — **2.1%**         |
+
+On Nate's own rotations at the default zoom: `Sandrone E Q > Fischl E Q > Ganyu
+E Q N3 C` shows **17 pills for 21 recorded applications**, and `Odette E E >
+Alyosha E Q` shows **18 for 21**. So counting marks under-counts, and the bar
+reads high by exactly the number of hidden applications in that window — a small,
+apparently consistent offset that is really a function of zoom.
+
+⚓⚓ **TWO SUB-CAUSES, AND ONLY ONE OF THEM RESOLVES.** Near-coincident
+applications separate as you zoom in — Sandrone's rotation reaches 21 of 21 at
+`ZOOM_MAX`. **Exactly-coincident ones never do**: Alyosha stays at 18 of 21 at
+any zoom, because his burst carries TWO summons (Tugarin and the Fulgurite
+Hunting Field) that tick on one 2s cadence and both apply Electro — three of his
+applications are permanently behind another mark.
+
+⚠️ Corpus-wide, exact-frame duplicates are rare — **0.3% of applications, 5% of
+rotations** — which is why this reads as an Alyosha-shaped problem rather than a
+general one.
+
+**The fix is a disclosure, not a re-count.** `AuraTick.sameFrame` carries how many
+applications share a pill's frame, and the tooltip states it ("On this frame · 2
+applications"). ⛔ The pills are NOT grouped into one: the aura LOG reads the same
+list and already lists both separately, so the detail has a home — this only
+stops the chart from lying about how many marks there are. ⚠️ Near-coincident
+pills are left to zoom, which is the lane's standing rule ("the lane has no scale
+— sub-pixel crowding at low zoom is the renderer's problem").
+
+⚓ **What is NOT wrong here, checked rather than assumed**: two applications on one
+frame from one character are legitimate under our model — a summon's ICD counter
+is its own (`${char}:summon:${label}:${index}`), so two entities hitting together
+each apply. ⚠️ Whether Alyosha's two summons SHOULD both apply is a curation
+question his kit cannot answer today: gcsim has nothing for him, so both tick
+series are deliberately bare (no `icdGate`, no `application[]`) — see
+[[project_stage2_odette_alyosha]]. ⛔ Do not "fix" it by making the ledger skip
+duplicates: that would put a display problem into the arithmetic, and the gauge
+receives both applications regardless.

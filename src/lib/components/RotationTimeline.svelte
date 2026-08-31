@@ -2152,6 +2152,21 @@
 														stat: `${tick.element[0].toUpperCase()}${tick.element.slice(1)} applied`,
 														displayValue: `${tick.units}U`
 													},
+													// ⚠️⚠️ WHAT THIS PILL IS STANDING IN FOR. Applications on
+													// one frame draw at one x, so all but the first are
+													// invisible — and the Polestar Field's ledger counts
+													// APPLICATIONS, so a reader checking that number against
+													// the marks would come up short with nothing to explain
+													// the gap. ⚓ Near-coincident pills separate as you zoom;
+													// these never do, which is why the count is stated.
+													...(tick.sameFrame
+														? [
+																{
+																	stat: 'On this frame',
+																	displayValue: `${tick.sameFrame} applications`
+																}
+															]
+														: []),
 													// ⚓ THE SQUIGGLE RULE IN WORDS. The yellow foot says a
 													// value is a stand-in; only here can it say WHICH value
 													// and what would replace it. A provenance mark the reader
