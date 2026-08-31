@@ -176,12 +176,12 @@ and expired dendro cores since L5b and the parse threw every one away** —
 dropped the rest (`if (e.kind !== 'reaction') continue`). Four entities belong
 to this class, all team-scoped, all previously homeless:
 
-| gadget              | engine status before                                     | now                        |
-| ------------------- | -------------------------------------------------------- | -------------------------- |
-| **Dendro Core**     | fully modelled in `gauge.ts`, events discarded           | ✅ drawn                   |
-| **Starlight Prism** | `stellarConduct` already an IR reaction event            | ✅ drawn                   |
-| **Thundercloud**    | gcsim: a flat status, `LcKey`, `5.5*60` frames           | ⏭ next, needs gauge state |
-| **Moondrift**       | gcsim: 3 Geo constructs, `lcrDur = 9*60`, position-gated | ⏭ next, needs a ruling    |
+| gadget              | engine status before                                     | now                                              |
+| ------------------- | -------------------------------------------------------- | ------------------------------------------------ |
+| **Dendro Core**     | fully modelled in `gauge.ts`, events discarded           | ✅ drawn                                         |
+| **Starlight Prism** | `stellarConduct` already an IR reaction event            | ✅ drawn                                         |
+| **Thundercloud**    | gcsim: a flat status, `LcKey`, `5.5*60` frames           | ✅ shipped, §8 — ⛔ and it needed NO gauge state |
+| **Moondrift**       | gcsim: 3 Geo constructs, `lcrDur = 9*60`, position-gated | ✅ shipped, §8                                   |
 
 ⚠️⚠️ **HALF A CORE'S LIFE IS DERIVABLE AND THAT IS THE TRAP.** Spawn is
 `Bloom + CORE_SPAWN_DELAY` and the nominal end is `+ CORE_LIFETIME` — but a core
@@ -265,7 +265,7 @@ each with a `_curatorNotes` line saying why and that it is not a gap. ⚓ **Cryo
 Traveler will need no mirror at all** — an enabler needs `enablesReactions` and
 nothing else for the field to appear.
 
-### 6.7 Still open
+### 6.7 Still open — ⚠️ as of §6 only; see §8–§10 for what has since closed
 
 - ⚠️ **Radiance is still authored as a STANDING condition** under the
   assume-entered house rule, while the Prism bar is now a window. A reader can
@@ -776,3 +776,41 @@ once, so a **partial field is unreachable** — which the guard's own fixtures
 demonstrate. A three-deep axis was therefore drawing one number forever and
 spending 8px of strip on a count that never varies. Capacity 1; the three lives
 stay in `bars`, so the disc's tooltip still reads "3 at once".
+
+## 11. What is still open when the round ends (2026-09-01)
+
+Ordered by what a next session would actually pick up.
+
+1. ⏱️ **`npm run test:e2e` has NOT been run** across the whole round — it is the
+   pre-merge gate and this branch has not merged. Last green: `00103c9`. The
+   round touched the planner's header geometry, `headerH`, the bench's published
+   `trackTop` and the PNG export, so it is exactly the kind of change the browser
+   suite exists for. ⚓ Run it before merging `feat/polestar-field`.
+2. 👁️ **Safari is unverified.** Real visual work landed (a new strip, two new
+   element-coloured rows, an `overflow: visible` SVG, a `color-mix`-free flat
+   fill) and the policy is unchanged: Playwright WebKit catches throws, not
+   rendering. The backlog is one item — this round.
+3. ⚠️ **Radiance is still a STANDING condition** while the Prism is a window, so
+   a reader can watch the field lapse with a Radiance-gated buff still drawing.
+   ⚓ Recommendation on record (Nate asked, 2026-09-01): **don't wire it**, on an
+   asymmetry rather than on cost — our conduct emission is a FLOOR, not a truth
+   (40 oracle misses remain, applications default to 1U, off-field gaps are
+   documented), so every emission gap that today costs a MARKER would instead
+   silently delete a buff the player really has. Under-drawing a marker is a
+   visible omission; under-drawing a buff is an invisible wrong answer. ⚓ **The
+   revisit trigger is concrete**: when `gcsim-frames-diff.md` shows no missing
+   Cryo/Electro applications for a Stellar team, the argument flips. ⚠️ Note the
+   field's OWN buffs are already Prism-gated — this is only the character-side
+   Radiance riders.
+4. The **aura LOG** has no gadget rows (its grammar is WHEN · WHAT LANDED · WHAT
+   IT DID, and a gadget is neither an application nor a reaction).
+5. ⛔ **Entity-as-CONDITION stays unmodelled** and is the biggest remaining gap
+   the strip makes visible: "if there are thunderclouds nearby" (Ineffa A1,
+   Flins's burst), Moondrift Harmony triggers (Linnea C1/C2/C4/C6, Albedo C4,
+   Columbina C6, Goldenfrost Bound Oath, Nighttime Whispers). ⚓ The entities now
+   EXIST in the IR as windows, so a condition that asks "is one standing at this
+   instant" is newly answerable — but it is the same time-varying-condition work
+   item as Radiance in item 3, and ⛔ should be taken with it or not at all.
+6. ⛔ The Thundercloud's lightning ticks and the Moondrift Harmony ATTACK are
+   deliberately unmodelled — both deal damage that would have to reach the gauge
+   and neither is authored anywhere in the corpus.
