@@ -40,7 +40,7 @@
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummons } from '$lib/timeline/summonSubrows';
 	import { computeShieldSubrows } from '$lib/timeline/shieldRows';
-	import { computeGadgetRows, type GadgetBar } from '$lib/timeline/gadgetRows';
+	import { computeGadgetRows, type GadgetBar, type GadgetRun } from '$lib/timeline/gadgetRows';
 	import {
 		auraPathD,
 		auraSpanLabels,
@@ -862,68 +862,82 @@
 	// two teams that do pay get a row each. ⛔ Don't give the strip a resting
 	// height so the layout "stops jumping": that is 20px taken from every reader
 	// to spare two.
-	// 🎛️ THE DOT FILLS ITS ROW; THE LINE KEEPS ITS LANE (⚓ NATE 2026-09-01).
+	// ══ THE GADGET ROW: MARKS FOR EVENTS, AN AREA FOR STATE ═══════════════════
 	//
-	// ⚓ THE TWO MARKS CARRY DIFFERENT JOBS, so they get different geometry. The
-	// spawn dot answers "when did a core appear", which is the question asked most
-	// and from furthest away, so it takes the whole row's height. Only the LINE
-	// has to avoid its neighbours, and it is the thing that can afford to be 1px.
-	// ⚠️ Two consequences, both accepted on purpose (⚓ Nate): a leader CROSSES the
-	// dots of cores spawned later, and every line except the middle lane leaves
-	// its own dot OFF-CENTRE.
+	// ⚓⚓ A MINIATURE OF THE PLOT ABOVE IT. The aura lane reads points-over-
+	// continuum — application pills above, the gauge beneath — and this row says
+	// the same sentence about the world instead of about the enemy: a dot where a
+	// core appeared, an area for how many are standing.
 	//
-	// ⚠️ SLOTS RUN CENTRE-OUT, not bottom-up, and that is what the dot's geometry
-	// forces: a full-row dot is centred on the row, so the FIRST life's line has
-	// to be centred too or the commonest case in the strip — one core, alone —
-	// draws a line leaving the side of its own disc. Later lanes alternate above
-	// and below it. ↻ It was bottom-up while the row was a count profile, where
-	// "busier is taller" was the whole reading; the dots carry that now.
-	const GADGET_SLOT_PITCH = 3;
-	/** 🎛️ Floor on the dot radius so a capacity-1 row (the Prism) is still a mark
-	 *  a reader can see — without it, `2r` alone makes that row 4px of hairline. */
-	const GADGET_MIN_DOT_R = 4;
+	// ⚓ AND THE REASON THREE EARLIER CUTS THRASHED: a dendro core's DURATION IS A
+	// CONSTANT (6s unless something eats it), so every per-life duration mark was
+	// ink spent on the one quantity that never varies. ⛔ Don't bring one back.
 	const GADGET_ROW_GAP = 2;
-	const gadgetRowH = (capacity: number) =>
-		Math.max(GADGET_MIN_DOT_R * 2, 4 + (capacity - 1) * GADGET_SLOT_PITCH);
-	/** The spawn disc: as tall as its row, always centred. */
-	const gadgetDotR = (capacity: number) => gadgetRowH(capacity) / 2;
-	/** Lane 0 is the row's centre line — the dot's own axis — and each lane after
-	 *  it steps alternately above and below. */
-	const gadgetSlotY = (slot: number, capacity: number) => {
-		const centre = gadgetRowH(capacity) / 2;
-		const step = Math.ceil(slot / 2) * GADGET_SLOT_PITCH;
-		return centre + (slot % 2 === 1 ? -step : step);
-	};
-	/** 🎛️ The end mark. ⚓ KEPT, and as a DOT rather than a tick, because the
-	 *  leaders now cross other cores' discs: without a positive terminator, a line
-	 *  that has stopped and a line passing under a disc look the same. A tick read
-	 *  as chart furniture at this size; a dot reads as the same object the life
-	 *  started with, smaller. */
-	const GADGET_END_R = 1.75;
+	const GADGET_PROFILE_H = 16;
+	/** A counted row needs height for its steps; a binary one (the Prism) is just
+	 *  its own dot tall. */
+	const gadgetRowH = (capacity: number) => (capacity > 1 ? GADGET_PROFILE_H : AURA_PILL_R * 2);
+	/** ⚓ THE SAME DISC AS AN APPLICATION PILL (⚓ Nate) — one mark size for "a
+	 *  thing happened at this instant" across the whole header, and SOLID, because
+	 *  a spawn is a fact and not a provenance hedge. Dots ride the row's TOP edge:
+	 *  events above the state they caused, which is the plot's own arrangement. */
+	const gadgetDotCy = AURA_PILL_R;
 
 	/**
-	 * One life's hover, shared by the leader's hit lane and the disc's.
+	 * The live-count area as a path: a staircase across the row, closed along the
+	 * baseline.
 	 *
-	 * ⚓ EXTRACTED BECAUSE THE MARK IS DRAWN IN PASSES. A life is no longer one
-	 * group — its disc, leader and terminator are painted in three separate
-	 * sweeps so the layering is uniform — so the two hit areas that mean "this
-	 * life" are in two different passes and have to agree by construction.
+	 * ⚓ SQUARE STEPS. The count is an integer that changes at an instant — a core
+	 * spawns or it does not — so a slope between two runs would draw a transition
+	 * the game does not have. (The plot above interpolates because a gauge really
+	 * is continuous; ⛔ the two are not the same kind of series.)
 	 */
-	function gadgetLifeEnter(
-		e: MouseEvent,
-		row: { kind: string; label: string; capacity: number; bars: GadgetBar[] },
-		bar: GadgetBar,
-		index: number
-	) {
-		gadgetHover = `${row.kind}:${index}`;
+	function gadgetPath(runs: GadgetRun[], capacity: number, h: number): string {
+		if (runs.length === 0) return '';
+		const yOf = (n: number) => h - (Math.min(n, capacity) / capacity) * h;
+		let d = `M ${xForTime(runs[0].start)} ${h}`;
+		for (const run of runs) {
+			d += ` L ${xForTime(run.start)} ${yOf(run.count)} L ${xForTime(run.end)} ${yOf(run.count)}`;
+		}
+		return d + ` L ${xForTime(runs[runs.length - 1].end)} ${h} Z`;
+	}
+
+	type GadgetRowShape = { kind: string; label: string; capacity: number; bars: GadgetBar[] };
+
+	/** A run's hover: the count, STATED — "is it four or five" is exactly what an
+	 *  area at ~3px a step cannot answer on its own (⚓ Nate). */
+	function gadgetRunEnter(e: MouseEvent, row: GadgetRowShape, run: GadgetRun, index: number) {
+		gadgetHover = `${row.kind}:run:${index}`;
+		onAuraMarkEnter(run.start);
+		const consumedHere = row.bars.filter(
+			(b) => b.end === run.start && b.endReason === 'consumed'
+		).length;
+		showTooltip(e, {
+			sourceLabel: `${row.label} · ${secondsLabel(run.start)}–${secondsLabel(run.end)}s`,
+			effects: [
+				{
+					stat: row.capacity > 1 ? 'On the field' : 'Standing',
+					displayValue:
+						row.capacity > 1
+							? `${run.count} ${run.count === 1 ? 'core' : 'cores'}`
+							: `${((run.end - run.start) / FPS).toFixed(2)}s`
+				},
+				...(consumedHere > 0
+					? [{ stat: 'Just now', displayValue: `${consumedHere} consumed by a reaction` }]
+					: [])
+			],
+			isMutuallyExclusive: false
+		});
+	}
+
+	/** A spawn dot's hover: this bloom, and what it joined. */
+	function gadgetDotEnter(e: MouseEvent, row: GadgetRowShape, bar: GadgetBar, index: number) {
+		gadgetHover = `${row.kind}:dot:${index}`;
 		onAuraMarkEnter(bar.start);
 		showTooltip(e, {
 			sourceLabel: `${row.label} · ${secondsLabel(bar.start)}s`,
 			effects: [
 				{ stat: 'On the field', displayValue: `${((bar.end - bar.start) / FPS).toFixed(2)}s` },
-				// ⚓ How many were up alongside it — the one thing the count profile
-				// this replaced said well, kept as a number now that the drawing is
-				// per-entity.
 				...(row.capacity > 1
 					? [
 							{
@@ -935,9 +949,9 @@
 						]
 					: []),
 				...(bar.endReason === 'consumed'
-					? [{ stat: 'Ended', displayValue: 'consumed by a reaction' }]
+					? [{ stat: 'Ends', displayValue: 'consumed by a reaction' }]
 					: bar.endReason === 'popped'
-						? [{ stat: 'Ended', displayValue: 'pushed out by a newer core' }]
+						? [{ stat: 'Ends', displayValue: 'pushed out by a newer core' }]
 						: [])
 			],
 			isMutuallyExclusive: false
@@ -1448,9 +1462,8 @@
 			auraMarkerH: AURA_MARKER_H,
 			auraTickH: AURA_TICK_H,
 			gadgetRows,
-			gadgetMinDotR: GADGET_MIN_DOT_R,
-			gadgetSlotPitch: GADGET_SLOT_PITCH,
-			gadgetEndR: GADGET_END_R,
+			gadgetProfileH: GADGET_PROFILE_H,
+			gadgetDotR: AURA_PILL_R,
 			gadgetRowGap: GADGET_ROW_GAP,
 			auraPillR: AURA_PILL_R,
 			auraMinPx: AURA_MIN_PX,
@@ -2238,7 +2251,6 @@
 								<div class="rp-gadget-strip" style:height="{gadgetStripH}px">
 									{#each gadgetRows as row (row.kind)}
 										{@const h = gadgetRowH(row.capacity)}
-										{@const r = gadgetDotR(row.capacity)}
 										<!-- svelte-ignore a11y_no_static_element_interactions -->
 										<div
 											class="rp-gadget-row"
@@ -2248,86 +2260,62 @@
 												onAuraMarkLeave();
 											}}
 										>
-											<!-- ⚠️ FIVE PASSES, NOT ONE GROUP PER LIFE, and the order IS the
-											     design. Painting a whole life at a time would put an early
-											     core's leader on top of a later core's disc and vice versa
-											     depending only on spawn order; here every disc is under every
-											     leader, and every terminator is over both. -->
 											<svg width={totalWidth} height={h} aria-hidden="true">
-												<!-- 1. The spawn discs, full row height. ⚠ A faint rim as well as
-												     a fill: two blooms close together overlap, and without an
-												     edge the pair reads as one wide smear — the exact confusion
-												     this strip exists to remove. -->
-												{#each row.bars as bar, bi (`d${bi}`)}
-													{@const dim = gadgetHover !== null && gadgetHover !== `${row.kind}:${bi}`}
-													<circle
-														cx={xForTime(bar.start)}
-														cy={h / 2}
-														r={r - 0.5}
-														fill={row.color}
-														fill-opacity={dim ? 0.08 : 0.26}
-														stroke={row.color}
-														stroke-opacity={dim ? 0.15 : 0.5}
-														stroke-width="1"
-													/>
-												{/each}
-												<!-- 2. The leaders, each in its own lane. -->
-												{#each row.bars as bar, bi (`l${bi}`)}
-													{@const dim = gadgetHover !== null && gadgetHover !== `${row.kind}:${bi}`}
-													{@const y = gadgetSlotY(bar.slot ?? 0, row.capacity)}
-													<line
-														x1={xForTime(bar.start)}
-														y1={y}
-														x2={xForTime(bar.end)}
-														y2={y}
-														stroke={row.color}
-														stroke-opacity={dim ? 0.18 : 0.75}
-														stroke-width="1"
-													/>
-												{/each}
-												<!-- 3. The end marks. ⚓ A life that ran out ends in its own
-												     colour; one a Hyperbloom ATE ends in chrome — how it
-												     ended, not just when, and the fact only the gauge knows. -->
-												{#each row.bars as bar, bi (`e${bi}`)}
-													{@const dim = gadgetHover !== null && gadgetHover !== `${row.kind}:${bi}`}
-													<circle
-														cx={xForTime(bar.end)}
-														cy={gadgetSlotY(bar.slot ?? 0, row.capacity)}
-														r={GADGET_END_R}
-														fill={bar.endReason === 'consumed' ? 'var(--chrome)' : row.color}
-														fill-opacity={dim ? 0.25 : 0.95}
-													/>
-												{/each}
-												<!-- 4. Hit areas for the leaders — each life's own LANE, never the
-												     whole row. ⚠️⚠️ Full-height rects overlap completely, so the
-												     last life drawn swallowed the pointer from every earlier one
-												     and a mid-rotation core could not be hovered at all. Two
-												     lives in one lane never overlap in time, so lane-height
-												     rects cannot collide. -->
-												{#each row.bars as bar, bi (`hl${bi}`)}
-													{@const y = gadgetSlotY(bar.slot ?? 0, row.capacity)}
+												<defs>
+													<linearGradient
+														id="gadget-fade-{row.kind}"
+														gradientUnits="userSpaceOnUse"
+														x1="0"
+														y1="0"
+														x2="0"
+														y2={h}
+													>
+														<stop offset="0" stop-color={row.color} stop-opacity="0.5" />
+														<stop offset="1" stop-color={row.color} stop-opacity="0.14" />
+													</linearGradient>
+												</defs>
+												<!-- STATE: how many are standing. ⚠ The fill fades toward the
+												     baseline for the same reason the plot's does — the step is
+												     the shape, and a solid area buries it. -->
+												<path
+													d={gadgetPath(row.runs, row.capacity, h)}
+													fill="url(#gadget-fade-{row.kind})"
+													stroke="none"
+												/>
+												<path
+													d={gadgetPath(row.runs, row.capacity, h)}
+													fill="none"
+													stroke={row.color}
+													stroke-opacity={gadgetHover ? 0.5 : 0.8}
+													stroke-width="1.5"
+													stroke-linejoin="miter"
+												/>
+												<!-- Hit areas for the state, one per run — the count is what a
+												     reader cannot get off a 3px step, so every run can be asked. -->
+												{#each row.runs as run, ri (`r${ri}`)}
 													<rect
-														x={xForTime(bar.start)}
-														y={y - GADGET_SLOT_PITCH / 2 - 1}
-														width={Math.max(6, xForTime(bar.end) - xForTime(bar.start))}
-														height={GADGET_SLOT_PITCH + 2}
-														fill="transparent"
-														onmouseenter={(e) => gadgetLifeEnter(e, row, bar, bi)}
-													/>
-												{/each}
-												<!-- 5. Hit areas for the discs, LAST so a disc wins the pointer
-												     over any leader crossing it. ⚓ The disc is the mark a reader
-												     is aiming at — it is the biggest thing in the row and the
-												     one they came to find — so within its own width it should
-												     answer, even though a stranger's line passes through. -->
-												{#each row.bars as bar, bi (`hd${bi}`)}
-													<rect
-														x={xForTime(bar.start) - r}
+														x={xForTime(run.start)}
 														y="0"
-														width={r * 2}
+														width={Math.max(1, xForTime(run.end) - xForTime(run.start))}
 														height={h}
 														fill="transparent"
-														onmouseenter={(e) => gadgetLifeEnter(e, row, bar, bi)}
+														onmouseenter={(e) => gadgetRunEnter(e, row, run, ri)}
+													/>
+												{/each}
+												<!-- EVENTS: one solid disc per spawn, the application pill's own
+												     size. ⚓ Painted LAST so a mark is never behind the state it
+												     caused, and hit LAST for the same reason — the dot is what a
+												     reader is aiming at. -->
+												{#each row.bars as bar, bi (`d${bi}`)}
+													{@const dim =
+														gadgetHover !== null && gadgetHover !== `${row.kind}:dot:${bi}`}
+													<circle
+														cx={xForTime(bar.start)}
+														cy={gadgetDotCy}
+														r={AURA_PILL_R}
+														fill={row.color}
+														fill-opacity={dim ? 0.55 : 1}
+														onmouseenter={(e) => gadgetDotEnter(e, row, bar, bi)}
 													/>
 												{/each}
 											</svg>
@@ -4000,7 +3988,7 @@
 	   element `opacity` on a transform-placed subtree (sub-pixel laws). Dimming
 	   is therefore a value change on each mark rather than a wash over the group,
 	   which is why the transition names the two properties. */
-	.rp-gadget-row line,
+	.rp-gadget-row path,
 	.rp-gadget-row circle {
 		transition:
 			stroke-opacity var(--t-snap),

@@ -345,11 +345,10 @@ export type TimelineSnapshot = {
 	 *  whether the strip is there or not. */
 	gadgetRows: GadgetRow[];
 	/** ⚠️ A row's height is set by the gadget's CAPACITY, never by the rotation's
-	 *  own peak: `max(2 × minDotR, 4 + (capacity − 1) × pitch)`. The spawn disc
-	 *  fills that height; only the LEADER keeps a lane. See gadgetRows.ts. */
-	gadgetMinDotR: number;
-	gadgetSlotPitch: number;
-	gadgetEndR: number;
+	 *  own peak — a counted row gets `gadgetProfileH`, a binary one its own dot.
+	 *  See gadgetRows.ts. */
+	gadgetProfileH: number;
+	gadgetDotR: number;
 	gadgetRowGap: number;
 	statIconFor: (stat: string) => string | undefined;
 	avatarFor: (slotIdx: number) => string | null;
@@ -1333,44 +1332,50 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		// the same reason the screen puts them there. `plotBase + 2` clears the
 		// plot's own bottom margin, which the screen spends as a CSS margin and
 		// the canvas has to add by hand.
-		// ⚓ ONE LIFE PER MARK, mirroring the screen: a full-height spawn disc, a
-		// thin leader in its own lane, a small terminator. ⛔ Not a stack of
-		// translucent spans and ⛔ not a count profile — the first saturated (five
-		// at 52% alpha composite to 97% opaque) and the second could say how many
-		// but never which.
-		// ⚠️ THE PASSES ARE THE DESIGN, here as on screen: every disc under every
-		// leader, every terminator over both.
+		// ⚓ MARKS FOR EVENTS, AN AREA FOR STATE — mirroring the screen, and a
+		// miniature of the plot above it. ⛔ Not a per-life duration mark of any
+		// kind: a dendro core's life is a CONSTANT, so drawing eleven identical 6s
+		// spans encoded nothing and read as clutter (three cuts proved it).
 		let gadgetY = plotBase + 2;
 		for (const row of snap.gadgetRows) {
-			const rowH = Math.max(snap.gadgetMinDotR * 2, 4 + (row.capacity - 1) * snap.gadgetSlotPitch);
-			const r = rowH / 2;
+			const rowH = row.capacity > 1 ? snap.gadgetProfileH : snap.gadgetDotR * 2;
 			const color = GADGET_COLOR[row.kind];
-			const laneY = (slot: number) => {
-				const step = Math.ceil(slot / 2) * snap.gadgetSlotPitch;
-				return gadgetY + r + (slot % 2 === 1 ? -step : step);
-			};
-			for (const bar of row.bars) {
-				ctx.fillStyle = alpha(color, 0.26);
-				ctx.strokeStyle = alpha(color, 0.5);
-				ctx.lineWidth = 1;
+			const yOf = (n: number) => gadgetY + rowH - (Math.min(n, row.capacity) / row.capacity) * rowH;
+			if (row.runs.length > 0) {
+				const grad = ctx.createLinearGradient(0, gadgetY, 0, gadgetY + rowH);
+				grad.addColorStop(0, alpha(color, 0.5));
+				grad.addColorStop(1, alpha(color, 0.14));
+				ctx.fillStyle = grad;
 				ctx.beginPath();
-				ctx.arc(x(bar.start), gadgetY + r, Math.max(0.5, r - 0.5), 0, Math.PI * 2);
+				ctx.moveTo(x(row.runs[0].start), gadgetY + rowH);
+				for (const run of row.runs) {
+					ctx.lineTo(x(run.start), yOf(run.count));
+					ctx.lineTo(x(run.end), yOf(run.count));
+				}
+				ctx.lineTo(x(row.runs[row.runs.length - 1].end), gadgetY + rowH);
+				ctx.closePath();
 				ctx.fill();
+				// ⚠ SQUARE STEPS — the count changes at an instant, so a sloped join
+				// would draw a transition the game does not have.
+				ctx.strokeStyle = alpha(color, 0.8);
+				ctx.lineWidth = 1.5;
+				ctx.lineJoin = 'miter';
+				ctx.beginPath();
+				let first = true;
+				for (const run of row.runs) {
+					if (first) {
+						ctx.moveTo(x(run.start), yOf(run.count));
+						first = false;
+					} else ctx.lineTo(x(run.start), yOf(run.count));
+					ctx.lineTo(x(run.end), yOf(run.count));
+				}
 				ctx.stroke();
 			}
+			// The spawn discs, last — a mark is never behind the state it caused.
+			ctx.fillStyle = color;
 			for (const bar of row.bars) {
-				const y = laneY(bar.slot ?? 0);
-				ctx.strokeStyle = alpha(color, 0.75);
-				ctx.lineWidth = 1;
 				ctx.beginPath();
-				ctx.moveTo(x(bar.start), y + 0.5);
-				ctx.lineTo(x(bar.end), y + 0.5);
-				ctx.stroke();
-			}
-			for (const bar of row.bars) {
-				ctx.fillStyle = alpha(bar.endReason === 'consumed' ? BAR_LABEL : color, 0.95);
-				ctx.beginPath();
-				ctx.arc(x(bar.end), laneY(bar.slot ?? 0), snap.gadgetEndR, 0, Math.PI * 2);
+				ctx.arc(x(bar.start), gadgetY + snap.gadgetDotR, snap.gadgetDotR, 0, Math.PI * 2);
 				ctx.fill();
 			}
 			gadgetY += rowH + snap.gadgetRowGap;

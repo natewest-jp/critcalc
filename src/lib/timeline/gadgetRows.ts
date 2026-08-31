@@ -28,30 +28,41 @@
  * cost every rotation 20px to serve bloom and Stellar teams would not be worth
  * it. ⛔ Don't give a kind a permanent row.
  *
- * ↻⚓ A LIFE IS A DOT, A THIN LINE AND AN END MARK (2026-09-01, ⚓ Nate) — the
- * Gauge Explorer's core marker, given a duration. It replaced a count profile
- * that was elegant on paper and did not read: a staircase tells you HOW MANY are
- * up and refuses to tell you WHICH, and a bloom player looking at the strip is
- * looking for a particular core's life.
+ * ↻⚓⚓ EVENTS AS MARKS, STATE AS AN AREA — the strip is a MINIATURE OF THE PLOT
+ * ABOVE IT (2026-09-01, the fourth and final cut). A solid dot for every spawn,
+ * a stepped area for how many are live. ⚓ That is the aura lane's own grammar
+ * one row up — points for what happened, a continuum for what is true — so the
+ * whole header reads with one vocabulary top to bottom.
  *
- * ⚠️⚠️ THE OVERLAP IS STILL THE THING TO DESIGN AGAINST, and the measurement that
- * killed the first cut (translucent stacked bars) still stands. Over 122 corpus
+ * ⚓⚓ THE INSIGHT THAT ENDED THREE CUTS OF THRASHING: **A DENDRO CORE'S DURATION
+ * IS A CONSTANT.** Every core lives exactly `CORE_LIFETIME` (6s) unless something
+ * eats it. So eleven individual 6s leaders were spending all of the row's ink on
+ * the one quantity that never varies — the only facts a life carries are WHEN IT
+ * SPAWNED and WHETHER IT ENDED EARLY. ⛔ Do not reintroduce a per-life duration
+ * mark: it encodes nothing, and it is what made every previous cut read as
+ * clutter (⚓ Nate, on the third: "is it four or five bloom cores...").
+ *
+ * The three superseded cuts and what each got wrong, so none is re-proposed:
+ *   1. translucent stacked spans — five at 52% alpha composite to 97% opaque, so
+ *      "darker means more" saturates by the third core;
+ *   2. a bare count profile — says how many, structurally cannot say WHICH;
+ *   3. per-life dot + lane + terminator — says which, at the cost of 33 marks in
+ *      a 16px row, and the count became unreadable.
+ * ⚓ The area answers 2's question and the dots answer 3's, and together they
+ * cost one path plus one dot per bloom.
+ *
+ * ⚠️⚠️ THE OVERLAP MEASUREMENT IS WHY STATE NEEDS AN AREA AT ALL. Over 122 corpus
  * rotations with a bloom-capable pair, peak concurrency was 2 in 79, 3 in 9 and
- * 4–5 in 7 — and **66% of the time any core is live, at least two are**. That is
- * why a life gets a SLOT (see `assignSlots`) rather than sharing one baseline:
- * per-entity marks only stay legible if two entities cannot draw through each
- * other.
+ * 4–5 in 7 — **66% of the time any core is live, at least two are**. ⚠️⚠️ That is
+ * the OPPOSITE of the aura lane's finding from the same instrument (L6 collapsed
+ * the aura ROWS because ⚓ Nate measured that auras barely coexist) — ⛔ neither
+ * result may be assumed for the other, count the case.
  *
- * ⚠️⚠️ THE OPPOSITE FINDING TO THE AURA LANE'S, from the same instrument. L6
- * collapsed the aura ROWS into one plot because ⚓ Nate measured that auras
- * barely coexist; the strip needs the opposite because gadgets almost always do.
- * ⛔ Neither result may be assumed for the other — count the case.
- *
- * ⚠️ THE BAND'S HEIGHT IS A PROPERTY OF THE KIND, NEVER OF THE ROTATION. A Prism
- * can never exceed one (presences are merged before they are emitted) so its row
- * is one line; cores get a band of five, which is `MAX_CORES` and a game fact.
- * ⛔ Never size the band to a rotation's own peak — two charts of the same team
- * would then have different heights and could not be compared.
+ * ⚠️ THE CEILING IS A PROPERTY OF THE KIND, NEVER OF THE ROTATION. Cores draw
+ * against a fixed 5 (`MAX_CORES`, a game fact); a Prism can never exceed one, so
+ * its area is the plain presence bar it always was. ⛔ Never scale to a
+ * rotation's own peak — two charts of the same team would then disagree about
+ * what half-height means.
  */
 
 import type { TimelineWindow } from '$lib/utils/notationParser';
@@ -63,19 +74,19 @@ export type GadgetBar = {
 	 *  a Hyperbloom. Read by the tooltip and by the end mark's colour; ⛔ never
 	 *  re-derive an end from it. */
 	endReason?: 'consumed' | 'popped';
-	/** Which line of the band this life draws on, 0 at the bottom. Assigned by
-	 *  {@link assignSlots}; absent only before that runs. */
-	slot?: number;
 };
 
 export type GadgetRow = {
 	kind: 'prism' | 'core';
 	label: string;
 	color: string;
-	/** How many of this kind can be live at once — the band's slot count.
+	/** How many of this kind can be live at once — the area's y ceiling.
 	 *  ⚠️ Of the KIND, not of this rotation (see the header). */
 	capacity: number;
+	/** Every life, for the spawn dots and their tooltips. */
 	bars: GadgetBar[];
+	/** The area: runs of constant live count. */
+	runs: GadgetRun[];
 };
 
 /** ⚠️ ORDER IS FIXED, not emission-derived: a strip whose rows swap places
@@ -95,41 +106,34 @@ const ROW_ORDER = [
 	{ kind: 'core' as const, label: 'Dendro Core', color: 'var(--rx-dendro-core)', capacity: 5 }
 ];
 
+/** One run of CONSTANT live count — the area's unit, and what the cursor reads.
+ *  A run ends wherever a gadget spawns or leaves. */
+export type GadgetRun = {
+	start: number;
+	end: number;
+	count: number;
+};
+
 /**
- * ⚓⚓ EVERY GADGET GETS ITS OWN SLOT IN A FIXED BAND — greedy interval colouring:
- * each life takes the lowest slot whose previous occupant has already left.
+ * Bars → runs of constant live count.
  *
- * ⚠️⚠️ THIS IS WHAT MAKES A PER-ENTITY DRAWING SURVIVE THE OVERLAP. Measured, 66%
- * of the time any core is live at least two are, so a single baseline would run
- * two lives' leader lines through each other and the reader would be counting
- * dots to recover what the chart should be showing. With slots, two concurrent
- * cores are two lines at two heights and nothing has to be inferred.
- *
- * ⚓ IT IS NOT THE SUB-ROW PATTERN THAT WAS REJECTED. That one sized the lane to
- * whatever the rotation happened to peak at, so two charts of the same team could
- * disagree about their own height. The band here is `capacity` slots ALWAYS —
- * a game fact (`MAX_CORES`), not a measurement — so an empty slot is just empty
- * and the row is the same height in every rotation.
- *
- * ⚠️ Slots fill from the BOTTOM, so a busier moment is a taller stack: the one
- * thing the count profile did well, kept.
+ * ⚠️ A SWEEP OVER BOUNDARIES, not a sample per frame: the strip draws at whatever
+ * zoom the reader chose, and a fixed-interval sample would alias a one-frame gap
+ * between two cores into either a phantom or a miss.
  */
-function assignSlots(bars: GadgetBar[], capacity: number): GadgetBar[] {
-	const freeFrom: number[] = [];
-	return bars.map((bar) => {
-		let slot = freeFrom.findIndex((end) => end <= bar.start);
-		if (slot === -1) {
-			slot = freeFrom.length;
-			freeFrom.push(bar.end);
-		} else {
-			freeFrom[slot] = bar.end;
-		}
-		// ⚠️ A gadget past the band's capacity is CLAMPED into the top slot rather
-		// than dropped. It cannot happen today — the gauge caps live cores at the
-		// same number this band is built from — but a silently missing life is the
-		// worse failure of the two, and a doubled-up top line is visibly odd.
-		return { ...bar, slot: Math.min(slot, capacity - 1) };
-	});
+function runsOf(bars: GadgetBar[]): GadgetRun[] {
+	if (bars.length === 0) return [];
+	const edges = [...new Set(bars.flatMap((b) => [b.start, b.end]))].sort((a, b) => a - b);
+	const runs: GadgetRun[] = [];
+	for (let i = 0; i < edges.length - 1; i++) {
+		const start = edges[i];
+		const end = edges[i + 1];
+		const count = bars.filter((b) => b.start <= start && b.end > start).length;
+		const open = runs[runs.length - 1];
+		if (open && open.count === count && open.end === start) open.end = end;
+		else runs.push({ start, end, count });
+	}
+	return runs;
 }
 
 export function computeGadgetRows(windows: ReadonlyArray<TimelineWindow>): GadgetRow[] {
@@ -149,7 +153,7 @@ export function computeGadgetRows(windows: ReadonlyArray<TimelineWindow>): Gadge
 		const bars = byKind.get(row.kind);
 		if (!bars || bars.length === 0) continue;
 		const sorted = bars.sort((a, b) => a.start - b.start || a.end - b.end);
-		out.push({ ...row, bars: assignSlots(sorted, row.capacity) });
+		out.push({ ...row, bars: sorted, runs: runsOf(sorted) });
 	}
 	return out;
 }

@@ -490,3 +490,53 @@ cy=8, lanes at 2/5/8/11/14. Prism+bloom: a 28px strip — an 8px Prism row (disc
 r=3.5, single lane) over a 16px core row whose two lives both terminate in
 chrome. Disc and leader hover both resolve to the same life; no console errors;
 the PNG export mirrors all three marks in the same three passes.
+
+### 7.6 ⚓⚓ WHAT SHIPPED: marks for events, an area for state
+
+⚓ Nate, after reading the third cut live: the leaders are "just too busy to read
+easily — _is it four or five bloom cores_". ⚓ And the priority he set: **simplify
+it visually.**
+
+⚓⚓ **THE INSIGHT THAT ENDED THE THRASHING: A DENDRO CORE'S DURATION IS A
+CONSTANT.** Every core lives exactly `CORE_LIFETIME` (6s) unless something eats
+it, and the spawn delay is a constant 30 frames. So eleven individual 6s leaders
+were spending the whole row's ink on the one quantity that never varies — the
+only facts a life carries are **when it spawned** and **whether it ended early**.
+That is why every per-life cut read as clutter rather than as data, and it is the
+thing none of the three earlier attempts noticed. ⛔ Never reintroduce a per-life
+duration mark.
+
+**The row is now the plot above it, in miniature**: a solid disc per spawn
+(`AURA_PILL_R` — ⚓ Nate: the same size as an application pill, so one mark size
+means "a thing happened at this instant" across the whole header), over a stepped
+area for how many are standing. Points for what happened, a continuum for what is
+true — one vocabulary, top to bottom.
+
+**The four cuts, and what each got wrong:**
+
+| cut   | shape                                       | defect                                                                                      |
+| ----- | ------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| 1     | translucent stacked spans                   | five at 52% alpha composite to 97% opaque — "darker means more" saturates by the third core |
+| 2     | bare count profile (§7.3)                   | says how many, structurally cannot say WHICH                                                |
+| 3     | per-life dot + lane + terminator (§7.4–7.5) | says which, at 33 marks in a 16px row; the count became unreadable                          |
+| **4** | **discs + area (this)**                     | **the area answers 2's question, the discs answer 3's — one path plus one dot per bloom**   |
+
+⚠️ **The exact count lives in the RUN's tooltip** ("4 cores"), because ~3px a step
+is not something a reader can count off — which is precisely the question Nate
+was left with. The disc's tooltip answers the other one: this bloom's life, and
+how many it joined.
+
+⚓ **The end mark is GONE, and nothing was lost**: a step down IS the end, and a
+consumed core's step is reported in the run tooltip ("1 consumed by a reaction").
+The `--chrome` terminator was carrying that fact when there was no area to carry
+it.
+
+⚠️ Everything upstream is untouched: `assignSlots` and the per-life lanes are
+deleted, `runsOf` is restored, and `gauge.ts`'s `coreEnd` events are still what
+make an early step-down possible at all.
+
+**Measured.** Bloom-heavy: one 16px row, **11 discs and 2 paths — 13 visible
+marks, down from 33** — 13 runs behind them for the count tooltip. Prism+bloom: a
+28px strip, an 8px Prism row (one disc, one run) over the core row, whose run
+tooltip reads "1 core · Just now 1 consumed by a reaction". No console errors;
+the PNG export mirrors both passes.
