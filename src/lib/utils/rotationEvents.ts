@@ -237,6 +237,29 @@ export type BuffWindowSource =
 	 *  general row branches to read it would re-key all 24 and re-shape bars on
 	 *  characters with nothing to do with factions. See
 	 *  docs/faction-bonuses-round.md. */
+	/**
+	 * ⚓⚓ A REACTION'S FIELD, WHICH BELONGS TO NOBODY (Polestar-Field round,
+	 * 2026-09-01). Its own arm for the same reason `faction` has one: the row
+	 * must be named after the FIELD, not after whoever happened to trigger it.
+	 *
+	 * A Polestar Field is created by ANY party member's Stellar-Conduct, so a
+	 * team fielding two enablers used to draw two identical bars — one per
+	 * enabler carrying a private mirror of the same three effects. Named after
+	 * the field there is exactly one row however many enablers are present, and
+	 * the bar says the true thing: this is what the field does, not what
+	 * Sandrone does.
+	 *
+	 * ⚠️ The window still carries a `characterId` (whoever triggered the
+	 * reaction that opened it) — real provenance, and it keeps every consumer
+	 * that expects a source character working. Only the LABEL comes from here.
+	 */
+	| {
+			type: 'field';
+			/** Stable key for the row (`polestar`). */
+			fieldId: string;
+			/** The row's label — the field's in-game name. */
+			fieldName: string;
+	  }
 	| {
 			type: 'faction';
 			faction: string;
@@ -325,6 +348,34 @@ export type TimelineWindow =
 			 *  survives, and a kit re-authored that way would need it again. */
 			coveredBySummon?: true;
 	  } & WindowProvenance)
+	/**
+	 * ⚓⚓ A THING A REACTION LEFT IN THE WORLD (Polestar-Field round,
+	 * 2026-09-01) — a dendro core, a Starlight Prism.
+	 *
+	 * ⚓ IT HAS NO `characterId`, AND THAT IS THE WHOLE POINT. Every other span
+	 * in this union belongs to somebody: a summon to its caster, a shield to the
+	 * character wearing it, a buff to a giver and a receiver. A gadget belongs to
+	 * the WORLD — any party member's Bloom leaves the same core, any party
+	 * member's Stellar-Conduct leaves the same Prism — which is why it cannot
+	 * ride the summon lane (`computeSummonSubrows` groups under the caster) and
+	 * why the gadget strip sits in the team-scoped aura header instead.
+	 *
+	 * ⚠️ `end` is FINAL like every other window's, and for a gadget that means
+	 * the earlier of its nominal life and the moment something took it —
+	 * `endReason` says which. ⛔ Never re-derive the end from a spawn plus a
+	 * lifetime: a core eaten by a Hyperbloom at 2s has a nominal end at 6s, and
+	 * drawing the nominal one is drawing a core that is not there.
+	 */
+	| {
+			kind: 'gadget';
+			gadget: 'core' | 'prism' | 'thundercloud' | 'moondrift';
+			/** The strip's label for this entity. */
+			label: string;
+			start: number;
+			end: number;
+			/** Present when the world took it back before its nominal end. */
+			endReason?: 'consumed' | 'popped';
+	  }
 	/** A weapon-proc ICD span (e.g. Sacrificial reset on cooldown). */
 	| ({ kind: 'weaponProc'; characterId: string; start: number; end: number } & WindowProvenance)
 	/** One buff/debuff application span (post-P4 #5 — who-buffs-whom-when,
@@ -371,5 +422,22 @@ export type TimelineWindow =
 			decayParams?: BuffDecayParams;
 			procCooldown?: number;
 			isMutuallyExclusive?: boolean;
+			/**
+			 * ⚓ THE LEDGER COUNT THAT SET THIS WINDOW'S VALUE (`field` source only,
+			 * 2026-09-01) — the Cryo/Electro hits the Prism recorded in the 4s
+			 * before this grant cycle opened.
+			 *
+			 * ⚠️⚠️ IT IS THE PREVIOUS WINDOW'S COUNT, NOT A LIVE ONE. "Every 4s the
+			 * count is reset, and buffs lasting 4s are granted" — so the number that
+			 * PAID FOR this bar was finished before the bar began. In game the
+			 * on-screen counter is meanwhile accumulating toward the NEXT grant;
+			 * they are two different clocks and this is the one the bar's value can
+			 * be checked against.
+			 *
+			 * ⛔ Not `stackContext`, which is the trigger-time snapshot the
+			 * `perStack` formatter reads — overloading it would put a number into a
+			 * value formatter that has no business resolving it.
+			 */
+			fieldStacks?: number;
 			source: BuffWindowSource;
 	  } & WindowProvenance);

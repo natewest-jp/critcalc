@@ -377,49 +377,6 @@
 						"cap": 14
 					},
 					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "team",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "stellarConduct",
-						"source": "team"
-					},
-					"source": "character",
-					"stat": "cryoDmgBonus",
-					"value": 20,
-					"duration": 4,
-					"durationType": "refresh",
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "team",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "stellarConduct",
-						"source": "team"
-					},
-					"source": "character",
-					"stat": "electroDmgBonus",
-					"value": 20,
-					"duration": 4,
-					"durationType": "refresh",
-					"snapshottable": false
-				},
-				{
-					"type": "resShred",
-					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "stellarConduct",
-						"source": "team"
-					},
-					"element": "physical",
-					"value": -40,
-					"duration": 4,
-					"durationType": "refresh"
 				}
 			],
 			"_curatorNotes": [
@@ -428,7 +385,8 @@
 				"⚓ Nate, 2026-08-31: this is the last round the mirror should be needed. Tracking the Starlight Prism as a real entity — 7s, refreshed by every Stellar-Conduct, with the buffs hanging off IT — is specced in docs/curation/polestar-field-round.md. Cryo Traveler will be the third character to need this copy.",
 				"The 4s duration and refresh come from the wiki wording (\"Every 4s, the count is reset, and buffs lasting 4s are granted\") and are a DIFFERENT clock from the Prism's own 7s lifetime. ⛔ Not merged: the grant cycle is what the bars mean today.",
 				"NOT authored, and unchanged from Sandrone's reasoning: the Base Reaction Coefficient (1 → 1.45 at one recorded hit, +0.05 per further hit, cap 2 at 12) and the variable half of the DMG bonus (28% + 1% per recorded hit, up to 40%). Both ride the Prism's per-4s ledger of applying Cryo/Electro hits, which has no primitive.",
-				"Her own Radiance states are used as CONDITIONS on C2 and C6 rather than modelled as state windows — see the Radiance idiom in docs/library/game/stellar-reactions.md."
+				"Her own Radiance states are used as CONDITIONS on C2 and C6 rather than modelled as state windows — see the Radiance idiom in docs/library/game/stellar-reactions.md.",
+				"⚓⚓ THE THREE POLESTAR FIELD EFFECTS WERE REMOVED HERE 2026-09-01 AND ARE NOT A GAP. They were a MIRROR: +20% Cryo DMG, +20% Electro DMG and −40% enemy Physical RES are properties of the Polestar Field, which ANY party member's Stellar-Conduct creates — not of this character. Each enabler carried a private copy only because the corpus had no home for reaction-level data, and the cost was real twice over: a party fielding two enablers drew two identical bars, and the copy printed the field's ZERO-HIT baseline (+20%) as though it were the value, when the ledger takes it to 29% at one recorded Cryo/Electro hit and 40% at twelve. The field is now produced by the parse itself (`src/lib/sim/fields.ts`), draws its own Prism span in the gadget strip, and recomputes the bonus per 4s grant cycle. ⛔ Do not re-author these on a new enabler — an enabler needs `enablesReactions` and nothing else for the field to appear."
 			]
 		}
 	],

@@ -41,6 +41,12 @@
 	import { computeSummonSubrows, findCastSummons } from '$lib/timeline/summonSubrows';
 	import { computeShieldSubrows } from '$lib/timeline/shieldRows';
 	import {
+		computeGadgetRows,
+		type GadgetBar,
+		type GadgetRun,
+		type GadgetSpawn
+	} from '$lib/timeline/gadgetRows';
+	import {
 		auraPathD,
 		auraSpanLabels,
 		auraSpanPoints,
@@ -847,8 +853,161 @@
 		labelWidthCache.set(text, width);
 		return width;
 	}
+	// ══ THE GADGET STRIP (Polestar-Field round, 2026-09-01) ═══════════════════
+	// ⚓ WHAT THE REACTION LEFT BEHIND, under the plot's baseline — the fourth
+	// clause of the lane's top-to-bottom sentence (caused → landed → the gauge it
+	// changed → what is still in the world). It sits BELOW the 0U datum on
+	// purpose: a core and a Prism are entities, not gauge, and drawing them
+	// inside the plot would put them on an axis that does not measure them.
+	//
+	// ⚠️⚠️ ITS HEIGHT IS CONDITIONAL, AND THAT IS WHAT PAYS FOR IT. `headerH`
+	// moves the bench and spends a viewport budget `--tool-pad-bottom` has
+	// already been raided once for (see AURA_PLOT_H's note). A rotation with no
+	// bloom and no Stellar enabler — nearly all of them — pays ZERO here, and the
+	// two teams that do pay get a row each. ⛔ Don't give the strip a resting
+	// height so the layout "stops jumping": that is 20px taken from every reader
+	// to spare two.
+	// ══ THE GADGET ROW: MARKS FOR EVENTS, AN AREA FOR STATE ═══════════════════
+	//
+	// ⚓⚓ A MINIATURE OF THE PLOT ABOVE IT. The aura lane reads points-over-
+	// continuum — application pills above, the gauge beneath — and this row says
+	// the same sentence about the world instead of about the enemy: a dot where a
+	// core appeared, an area for how many are standing.
+	//
+	// ⚓ AND THE REASON THREE EARLIER CUTS THRASHED: a dendro core's DURATION IS A
+	// CONSTANT (6s unless something eats it), so every per-life duration mark was
+	// ink spent on the one quantity that never varies. ⛔ Don't bring one back.
+	const GADGET_ROW_GAP = 2;
+	const GADGET_PROFILE_H = 16;
+	/** A counted row needs height for its steps; a binary one (the Prism) is just
+	 *  its own dot tall. */
+	const gadgetRowH = (capacity: number) => (capacity > 1 ? GADGET_PROFILE_H : AURA_PILL_R * 2);
+	/** ⚓ THE SAME DISC AS AN APPLICATION PILL (⚓ Nate) — one mark size for "a
+	 *  thing happened at this instant" across the whole header, and SOLID, because
+	 *  a spawn is a fact and not a provenance hedge. Dots ride the row's TOP edge:
+	 *  events above the state they caused, which is the plot's own arrangement. */
+	const gadgetDotCy = AURA_PILL_R;
+
+	/**
+	 * 🎛️ THE STATE'S FILL. ⚠ ONE FLAT ALPHA, ⛔ no gradient and ⛔ no outline
+	 * (⚓ Nate 2026-09-01) — the knob to turn if a single core reads too faint,
+	 * since a lone core is only a fifth of the row deep.
+	 */
+	const GADGET_FILL_ALPHA = 0.35;
+
+	/**
+	 * The live-count staircase, as a filled shape.
+	 *
+	 * ⚓ IT HANGS FROM THE TOP (⚓ Nate): the row's baseline is its TOP edge, where
+	 * the spawn discs sit, and each live core steps the boundary DOWN. So the
+	 * discs read as the surface and the state as what is suspended beneath them —
+	 * a disc and the step it caused share an edge and read as one gesture.
+	 *
+	 * ⚓ FILL ONLY, WHICH IS WHAT UNIFIES THE TWO ROWS (⚓ Nate). A stroked
+	 * boundary made the core row a CHART and the Prism row a bar with a line on
+	 * it — two idioms in a 28px strip. Without it both rows say the same thing in
+	 * the same way: a solid dot for the event, a translucent shape for the state,
+	 * and the Prism's shape is simply the degenerate one-step case.
+	 * ⚠️ It also retires an outline defect rather than just a taste: the stroke
+	 * traced the CLOSED path, so it drew the baseline and both end walls too —
+	 * three edges that were never data.
+	 *
+	 * ⚓ SQUARE STEPS. The count is an integer that changes at an instant — a core
+	 * spawns or it does not — so a slope between two runs would draw a transition
+	 * the game does not have. (The plot above interpolates because a gauge really
+	 * is continuous; ⛔ the two are not the same kind of series.)
+	 */
+	function gadgetStair(runs: GadgetRun[], capacity: number, h: number): string {
+		if (runs.length === 0) return '';
+		const yOf = (n: number) => (Math.min(n, capacity) / capacity) * h;
+		let d = `M ${xForTime(runs[0].start)} 0`;
+		for (const run of runs) {
+			d += ` L ${xForTime(run.start)} ${yOf(run.count)} L ${xForTime(run.end)} ${yOf(run.count)}`;
+		}
+		return d + ` L ${xForTime(runs[runs.length - 1].end)} 0 Z`;
+	}
+
+	type GadgetRowShape = { kind: string; label: string; capacity: number; bars: GadgetBar[] };
+
+	/** A run's hover: the count, STATED — "is it four or five" is exactly what an
+	 *  area at ~3px a step cannot answer on its own (⚓ Nate). */
+	function gadgetRunEnter(e: MouseEvent, row: GadgetRowShape, run: GadgetRun, index: number) {
+		gadgetHover = `${row.kind}:run:${index}`;
+		onAuraMarkEnter(run.start);
+		const consumedHere = row.bars.filter(
+			(b) => b.end === run.start && b.endReason === 'consumed'
+		).length;
+		showTooltip(e, {
+			sourceLabel: `${row.label} · ${secondsLabel(run.start)}–${secondsLabel(run.end)}s`,
+			effects: [
+				{
+					stat: row.capacity > 1 ? 'On the field' : 'Standing',
+					displayValue:
+						row.capacity > 1
+							? `${run.count} ${run.count === 1 ? 'core' : 'cores'}`
+							: `${((run.end - run.start) / FPS).toFixed(2)}s`
+				},
+				...(consumedHere > 0
+					? [{ stat: 'Just now', displayValue: `${consumedHere} consumed by a reaction` }]
+					: [])
+			],
+			isMutuallyExclusive: false
+		});
+	}
+
+	/** A spawn disc's hover: what appeared here, and what it joined. */
+	function gadgetDotEnter(e: MouseEvent, row: GadgetRowShape, spawn: GadgetSpawn, index: number) {
+		gadgetHover = `${row.kind}:dot:${index}`;
+		onAuraMarkEnter(spawn.time);
+		const first = spawn.bars[0];
+		const ends = new Set(spawn.bars.map((b) => b.end));
+		showTooltip(e, {
+			sourceLabel: `${row.label} · ${secondsLabel(spawn.time)}s`,
+			effects: [
+				// ⚠ A group's lives can END at different instants even though they
+				// began together (one eaten, the rest expiring), so the duration is
+				// only stated when they agree.
+				...(ends.size === 1
+					? [
+							{
+								stat: 'On the field',
+								displayValue: `${((first.end - spawn.time) / FPS).toFixed(2)}s`
+							}
+						]
+					: []),
+				...(spawn.bars.length > 1
+					? [{ stat: 'Spawned', displayValue: `${spawn.bars.length} at once` }]
+					: []),
+				...(row.capacity > 1
+					? [
+							{
+								stat: 'Alongside',
+								displayValue: `${
+									row.bars.filter((b) => b.start <= spawn.time && b.end > spawn.time).length
+								} live`
+							}
+						]
+					: []),
+				...(spawn.bars.some((b) => b.endReason === 'consumed')
+					? [{ stat: 'Ends', displayValue: 'consumed by a reaction' }]
+					: spawn.bars.some((b) => b.endReason === 'popped')
+						? [{ stat: 'Ends', displayValue: 'pushed out by a newer core' }]
+						: [])
+			],
+			isMutuallyExclusive: false
+		});
+	}
+	let gadgetRows = $derived(showAura ? computeGadgetRows(rotation.windows) : []);
+	let gadgetStripH = $derived(
+		gadgetRows.reduce((h, r) => h + gadgetRowH(r.capacity) + GADGET_ROW_GAP, 0)
+	);
+	/** The life the cursor is standing on, `${kind}:${index}` — everything else in
+	 *  its row dims. ⚠ Keyed by ROW TOO: two rows are two independent charts and
+	 *  hovering one must not dim the other. */
+	let gadgetHover = $state<string | null>(null);
+
 	let auraLaneH = $derived(
-		showAuraLane ? AURA_MARKER_H + AURA_TICK_H + AURA_PLOT_H + AUX_LANE_PAD_Y * 2 : 0
+		showAuraLane ? AURA_MARKER_H + AURA_TICK_H + AURA_PLOT_H + gadgetStripH + AUX_LANE_PAD_Y * 2 : 0
 	);
 
 	/**
@@ -1342,6 +1501,11 @@
 			auraPlotHead: AURA_PLOT_HEAD,
 			auraMarkerH: AURA_MARKER_H,
 			auraTickH: AURA_TICK_H,
+			gadgetRows,
+			gadgetProfileH: GADGET_PROFILE_H,
+			gadgetDotR: AURA_PILL_R,
+			gadgetFillAlpha: GADGET_FILL_ALPHA,
+			gadgetRowGap: GADGET_ROW_GAP,
 			auraPillR: AURA_PILL_R,
 			auraMinPx: AURA_MIN_PX,
 			auraLabelMinSpan: AURA_LABEL_MIN_SPAN,
@@ -1988,6 +2152,21 @@
 														stat: `${tick.element[0].toUpperCase()}${tick.element.slice(1)} applied`,
 														displayValue: `${tick.units}U`
 													},
+													// ⚠️⚠️ WHAT THIS PILL IS STANDING IN FOR. Applications on
+													// one frame draw at one x, so all but the first are
+													// invisible — and the Polestar Field's ledger counts
+													// APPLICATIONS, so a reader checking that number against
+													// the marks would come up short with nothing to explain
+													// the gap. ⚓ Near-coincident pills separate as you zoom;
+													// these never do, which is why the count is stated.
+													...(tick.sameFrame
+														? [
+																{
+																	stat: 'On this frame',
+																	displayValue: `${tick.sameFrame} applications`
+																}
+															]
+														: []),
 													// ⚓ THE SQUIGGLE RULE IN WORDS. The yellow foot says a
 													// value is a stand-in; only here can it say WHICH value
 													// and what would replace it. A provenance mark the reader
@@ -2115,6 +2294,78 @@
 									<span class="rp-aura-crosshair" style:left="{auraCursorX}px"></span>
 								{/if}
 							</div>
+							<!-- ⚓ WHAT THE REACTION LEFT IN THE WORLD. Under the baseline
+							     because these are ENTITIES, not gauge: a dendro core and a
+							     Starlight Prism have lifetimes but no units, and putting
+							     them inside the plot would hang them off an axis that does
+							     not measure them.
+							     ⚠ A core's bar ends where something ATE it — that instant
+							     comes from the gauge's own events and cannot be derived from
+							     the Bloom, which is the whole reason the strip is worth its
+							     pixels rather than being a nominal 6s stub. -->
+							{#if gadgetRows.length > 0}
+								<div class="rp-gadget-strip" style:height="{gadgetStripH}px">
+									{#each gadgetRows as row (row.kind)}
+										{@const h = gadgetRowH(row.capacity)}
+										<!-- svelte-ignore a11y_no_static_element_interactions -->
+										<div
+											class="rp-gadget-row"
+											style:height="{h}px"
+											onmouseleave={() => {
+												gadgetHover = null;
+												onAuraMarkLeave();
+											}}
+										>
+											<svg width={totalWidth} height={h} aria-hidden="true">
+												<!-- STATE: how many are standing, as ONE translucent shape.
+												     ⛔ No gradient and ⛔ no outline — the fill alone is what
+												     lets this row and the Prism's read as the same object. -->
+												<path
+													d={gadgetStair(row.runs, row.capacity, h)}
+													fill={row.color}
+													fill-opacity={GADGET_FILL_ALPHA}
+													stroke="none"
+												/>
+												<!-- Hit areas for the state, one per run — the count is what a
+												     reader cannot get off a 3px step, so every run can be asked. -->
+												{#each row.runs as run, ri (`r${ri}`)}
+													<rect
+														x={xForTime(run.start)}
+														y="0"
+														width={Math.max(1, xForTime(run.end) - xForTime(run.start))}
+														height={h}
+														fill="transparent"
+														onmouseenter={(e) => gadgetRunEnter(e, row, run, ri)}
+													/>
+												{/each}
+												<!-- EVENTS: one solid disc per spawn, the application pill's own
+												     size. ⚓ Painted LAST so a mark is never behind the state it
+												     caused, and hit LAST for the same reason — the dot is what a
+												     reader is aiming at. -->
+												<!-- ⚓ HOVER IS A RING, NOT A DIMMING (⚓ Nate). Dimming was
+												     answering "which life is this" — a question the row stopped
+												     asking when the leaders went; what is left is "which SPAWN am
+												     I pointing at", and that wants a mark ON the thing rather
+												     than a wash over everything else. The ring is the aura tick's
+												     own lit state (`box-shadow: 0 0 0 2px var(--chrome)`), in the
+												     form SVG can carry it. -->
+												{#each row.spawns as spawn, si (`d${si}`)}
+													<circle
+														cx={xForTime(spawn.time)}
+														cy={gadgetDotCy}
+														r={AURA_PILL_R}
+														fill={row.color}
+														stroke="var(--chrome)"
+														stroke-width="2"
+														stroke-opacity={gadgetHover === `${row.kind}:dot:${si}` ? 1 : 0}
+														onmouseenter={(e) => gadgetDotEnter(e, row, spawn, si)}
+													/>
+												{/each}
+											</svg>
+										</div>
+									{/each}
+								</div>
+							{/if}
 						</div>
 					{/if}
 					<!-- Ruler — the frame's TOP time axis (DAW convention): ticks
@@ -2529,7 +2780,7 @@
 											<div class="rp-team-buff-subrow">
 												{#each subrow.bars as bar, bi (bi)}
 													{@const g = barGeom(bar.start, bar.end - bar.start)}
-													{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
+													{@const icon = subrow.icon ?? BUFF_STAT_ICON[subrow.primaryStat]}
 													<!-- svelte-ignore a11y_no_static_element_interactions -->
 													<div
 														class="rp-team-buff-bar"
@@ -2538,7 +2789,25 @@
 														onmouseenter={(e) =>
 															showTooltip(e, {
 																sourceLabel: subrow.sourceLabel,
-																effects: bar.effects,
+																// ⚓ THE COUNT UNDER THE VALUE. A Polestar Field bar's
+																// number is a payout, and the ledger that paid it is
+																// the thing a player recognises — Genshin shows the
+																// count on screen while you play. It rides BELOW the
+																// stats rather than replacing them.
+																// ⚠️ It is the count from the PREVIOUS 4s, which is
+																// what set this bar; the in-game counter is meanwhile
+																// filling toward the next grant. Two clocks — this is
+																// the one this bar can be checked against.
+																effects:
+																	bar.stacks === undefined
+																		? bar.effects
+																		: [
+																				...bar.effects,
+																				{
+																					stat: 'Recorded hits',
+																					displayValue: `${bar.stacks} in the previous 4s`
+																				}
+																			],
 																isMutuallyExclusive: false,
 																duration: bar.end - bar.start
 															})}
@@ -3735,6 +4004,48 @@
 		position: relative;
 		flex: 1;
 		margin: 2px 0;
+	}
+	/* ══ THE GADGET STRIP ══════════════════════════════════════════════════════
+	   ⚠ `flex-shrink: 0`, like the marker and tick bands: `.rp-aura-plot` is
+	   `flex: 1` (basis 0, grow 1) and would otherwise eat this strip's height —
+	   the plot's inline height is a statement of intent that the flex-grow
+	   honours only because `auraLaneH` accounts for every band exactly. */
+	.rp-gadget-strip {
+		position: relative;
+		flex-shrink: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.rp-gadget-row {
+		position: relative;
+		flex-shrink: 0;
+	}
+	.rp-gadget-row svg {
+		display: block;
+		/* ⚠️ THE HOVER RING NEEDS TO PAINT OUTSIDE THE BOX. An SVG root clips to its
+		   viewport by default, and a spawn disc is exactly as tall as its row — a
+		   dot at cy = r touches both edges — so the 2px ring was shaved off the top
+		   on the core row and off BOTH edges on the Prism's, whose row is one dot
+		   tall. ⛔ Not fixed by shrinking the disc: it is deliberately the
+		   application pill's size (⚓ Nate), and ⛔ not by padding the row, which
+		   would spend strip height on a state that is only visible under the
+		   cursor. The overhang is 1px into a 2px row gap, so it collides with
+		   nothing. */
+		overflow: visible;
+		/* ⚠ Sized in the markup at the track's own width, like the aura plot — a
+		   percentage width would stretch every dot into an ellipse and give the
+		   1px leader a non-uniform weight (the objectBoundingBox trap). */
+	}
+	/* ⚠ ALPHA IN THE PAINT — `fill-opacity` / `stroke-opacity` per element, never
+	   element `opacity` on a transform-placed subtree (sub-pixel laws). Dimming
+	   is therefore a value change on each mark rather than a wash over the group,
+	   which is why the transition names the two properties. */
+	.rp-gadget-row path,
+	.rp-gadget-row circle {
+		transition:
+			stroke-opacity var(--t-snap),
+			fill-opacity var(--t-snap);
 	}
 	.rp-aura-svg {
 		display: block;

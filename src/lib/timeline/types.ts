@@ -16,13 +16,27 @@ export type ResShredEffect = Extract<Effect, { type: 'resShred' }>;
 
 export type MergedEffectDisplay = { stat: Stat; displayValue: string };
 
-export type TeamBuffBar = { start: number; end: number; effects: MergedEffectDisplay[] };
+export type TeamBuffBar = {
+	start: number;
+	end: number;
+	effects: MergedEffectDisplay[];
+	/** The Polestar Field's recorded-hit count for this grant cycle — the number
+	 *  that set the bar's value. ⚠️ Carried OUTSIDE `effects` on purpose: it is
+	 *  not a stat, and putting it in the display list would make it part of the
+	 *  refresh-merge key. The merge gets its own equality test instead. */
+	stacks?: number;
+};
 
 export type TeamBuffSubrow = {
 	characterId: string;
 	primaryStat: Stat;
 	bars: TeamBuffBar[];
 	sourceLabel: string;
+	/** Row-level icon override. ⚠️ The default is keyed by STAT
+	 *  (`BUFF_STAT_ICON`), which is right for a character's buff and wrong for a
+	 *  row whose identity is not its stat: the Polestar Field's Cryo bonus would
+	 *  wear a Cryo pip and read as somebody's Cryo buff. */
+	icon?: string;
 	/** Whether the row is a buff on the team or a shred on the enemy.
 	 *  ⛔ NOT PAINT — the debuff bar variant was deleted 2026-08-11 (⚓ Nate:
 	 *  "there's really no need to colour-split the buff/debuff bars. They're

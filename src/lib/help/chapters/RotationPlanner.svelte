@@ -84,11 +84,38 @@
 		decay, so they are drawn separately.
 	</p>
 	<p>
-		<strong>Turning it on.</strong> The aura lane is off until you ask for it:
-		<em>Auras</em> in the view bar. Its neighbour, <em>Buffs</em>, hides the buff bars, weapon
-		procs, Nightsoul bursts and Ascendant Gleam — turn both off for a chart of ability timings and
-		nothing else. Summons and shields stay either way: they are things standing in the world, not
-		effects granted to your team.
+		<strong>Under the plot: what the reaction left behind.</strong> Some reactions leave a thing standing
+		in the world rather than an aura on the enemy, and those get their own strip below the baseline: a
+		Dendro Core from a Bloom, a Starlight Prism from a Stellar-Conduct, a Thundercloud from a Lunar-Charged,
+		Moondrifts from a Lunar-Crystallize. Each row is a dot where something appeared over a shape showing
+		how many are standing — so a step down is one expiring, or one being spent. Hover the shape to read
+		the count, or a dot to read what appeared there. The strip only appears when your rotation makes one
+		of these.
+	</p>
+	<p>
+		<strong>What each one does.</strong> A Dendro Core arrives half a second after its Bloom and lasts
+		6s, and a Hyperbloom or Burgeon consumes the oldest one standing — you can watch the count drop as
+		you spend them. A Starlight Prism lasts 7s and any further Stellar-Conduct refreshes it. A Thundercloud
+		lasts 5.5s, and there is only ever one: another Lunar-Charged restarts its clock rather than adding
+		a second. A Lunar-Crystallize tops the field up to three Moondrifts at once, each lasting 9s, and
+		keeps refreshing them while you keep reacting. We draw these because they are things you can see and
+		time; what they hit for is not modelled.
+	</p>
+	<p>
+		<strong>The Polestar Field.</strong> A Starlight Prism sustains a Polestar Field around it, and the
+		field's buffs are their own row in the team buffs — not one enabler's, because any party member's
+		Stellar-Conduct raises the same field. Its Cryo and Electro bonus is not a flat number: the field
+		records the Cryo and Electro hits that applied an element, resets the count every 4s, and pays out
+		on what it counted — 20% with nothing recorded, then 29% at one hit up to 40% at twelve. That is why
+		the row's value changes from one 4s block to the next. We assume you are standing in the field; we
+		do not model walking out of it.
+	</p>
+	<p>
+		<strong>Turning it off.</strong> <em>Auras</em> in the view bar hides the lane and the strip
+		under it. Its neighbour, <em>Buffs</em>, hides the buff bars, weapon procs, Nightsoul bursts and
+		Ascendant Gleam — turn both off for a chart of ability timings and nothing else. Summons and
+		shields stay either way: they are things standing in the world, not effects granted to your
+		team.
 	</p>
 	<p>
 		<strong>What it assumes.</strong> One enemy, standing still, applying nothing back at you — no Pyro

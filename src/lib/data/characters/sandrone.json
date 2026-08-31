@@ -92,49 +92,6 @@
 						"cap": 14
 					},
 					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "team",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "stellarConduct",
-						"source": "team"
-					},
-					"source": "character",
-					"stat": "cryoDmgBonus",
-					"value": 20,
-					"duration": 4,
-					"durationType": "refresh",
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "team",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "stellarConduct",
-						"source": "team"
-					},
-					"source": "character",
-					"stat": "electroDmgBonus",
-					"value": 20,
-					"duration": 4,
-					"durationType": "refresh",
-					"snapshottable": false
-				},
-				{
-					"type": "resShred",
-					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": "stellarConduct",
-						"source": "team"
-					},
-					"element": "physical",
-					"value": -40,
-					"duration": 4,
-					"durationType": "refresh"
 				}
 			],
 			"_curatorNotes": [
@@ -145,7 +102,8 @@
 				"NOT authored: the Base Reaction Coefficient (1 → 1.45 at one recorded hit, +0.05 per further hit, cap 2 at 12 hits). Unmodelable per the library doc. ⚠️ DISCREPANCY: docs/library/game/stellar-reactions.md assumes '1.4 + 0.05n' (1.45 at n=1); the Fandom Provided Buffs table reads '1 + 40% + 5% per hit' and its table lists 1.45 at 1 hit — so the doc's NEEDS-CONFIRM is resolved in favor of the table, but its prose ('starts at 1.4') should be corrected to 1.45.",
 				"Also unmodelable: 'when Sandrone is within a Polestar Field, she enters the Radiance: Stellar-Conduct state' — the Radiance state gates her own DMG conversions (A1, C2, C6) and there is no field-presence primitive.",
 				"↻ 7.0 RE-AUTHOR 2026-08-31 (genshin-db 5.2.13). HoYo generalised every \"Stellar-Conduct\" reference in this kit to \"Stellar Glimmer\" — the umbrella covering Stellar-Conduct AND Stellar Swirl — and split the numbers where the two differ. Descriptions re-synced from genshin-db; stats re-keyed to the umbrella family. The A4 now converts Superconduct OR Cryo Swirl (→ Stellar-Conduct or Stellar Swirl) and raises \"the Base DMG of said reaction\" — either one — so the 0.7%/100 ATK (cap 14) buff moved from `stellarConductDmgBonus` to the family-wide `stellarGlimmerDmgBonus`. She is declared an enabler of BOTH.",
-				"↻ CAVEAT REMOVED 2026-08-31: it said the Polestar Field buffs \"are not simulated\". ⚓ Nate ruled a field is treated like any other dropped field — assume the play is inside it — so there is no on-screen divergence left to repair. Under name-the-pixel the caveat does not exist."
+				"↻ CAVEAT REMOVED 2026-08-31: it said the Polestar Field buffs \"are not simulated\". ⚓ Nate ruled a field is treated like any other dropped field — assume the play is inside it — so there is no on-screen divergence left to repair. Under name-the-pixel the caveat does not exist.",
+				"⚓⚓ THE THREE POLESTAR FIELD EFFECTS WERE REMOVED HERE 2026-09-01 AND ARE NOT A GAP. They were a MIRROR: +20% Cryo DMG, +20% Electro DMG and −40% enemy Physical RES are properties of the Polestar Field, which ANY party member's Stellar-Conduct creates — not of this character. Each enabler carried a private copy only because the corpus had no home for reaction-level data, and the cost was real twice over: a party fielding two enablers drew two identical bars, and the copy printed the field's ZERO-HIT baseline (+20%) as though it were the value, when the ledger takes it to 29% at one recorded Cryo/Electro hit and 40% at twelve. The field is now produced by the parse itself (`src/lib/sim/fields.ts`), draws its own Prism span in the gadget strip, and recomputes the bonus per 4s grant cycle. ⛔ Do not re-author these on a new enabler — an enabler needs `enablesReactions` and nothing else for the field to appear."
 			],
 			"description": "Sandrone will enter the Radiance: Stellar-Conduct state when she is inside a **Polestar Field**, or the Radiance: Stellar Swirl state for 8s after a nearby party member triggers a Stellar Swirl reaction.\nWhen a party member triggers a Superconduct or Cryo Swirl reaction, it becomes a Stellar-Conduct or Stellar Swirl reaction instead, and the Base DMG of the aforementioned reaction is also increased by 0.7% for every 100 points of Sandrone's ATK. A maximum increase of 14% can be obtained in this way."
 		},

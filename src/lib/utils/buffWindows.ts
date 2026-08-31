@@ -909,10 +909,15 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		// would keep Citlali's bar invisible exactly as it has been.
 		if (firstTrackOfChar) {
 			for (const [state, stateEffects] of getCharacterEffectsForOnState(char, cLevel)) {
+				// ⚠️ A TYPE PREDICATE, because `TimelineWindow` grew an arm with no
+				// `characterId` (the `gadget` kind — a thing that belongs to nobody).
+				// The kind test has to come FIRST in each branch so it narrows before
+				// the character test reads a field only some arms have.
 				const spans = windows.filter(
-					(w) =>
-						w.characterId === track.characterId &&
-						(state === 'shielded' ? w.kind === 'shield' : w.kind === 'state' && w.name === state)
+					(w): w is Extract<TimelineWindow, { kind: 'state' } | { kind: 'shield' }> =>
+						state === 'shielded'
+							? w.kind === 'shield' && w.characterId === track.characterId
+							: w.kind === 'state' && w.name === state && w.characterId === track.characterId
 				);
 				if (spans.length === 0) continue;
 				for (const stateGroup of byProvenance(stateEffects)) {

@@ -187,6 +187,45 @@ export function createAuraState(): AuraState {
 }
 
 /**
+ * ⚓ A DENDRO CORE'S LIFE, TAKEN FROM THE GAUGE RATHER THAN DERIVED FROM IT
+ * (Polestar-Field round, 2026-09-01).
+ *
+ * The gauge has spawned and expired cores since L5b and the parse discarded
+ * every one of them — `offerApplication` drained the event queue looking for
+ * reactions and dropped the rest. Half of a core's life IS derivable (a Bloom
+ * marker plus `CORE_SPAWN_DELAY` plus `CORE_LIFETIME`), which is exactly why
+ * deriving it would be a trap: the other half — a Hyperbloom eating the core at
+ * 2s, a sixth Bloom popping the oldest — is not, and a strip that kept drawing a
+ * core the rotation already spent would lie in the one place the reader is
+ * looking.
+ *
+ * ⚠️ Frames on the way in: `SimEvent.time` is SECONDS, like everything the
+ * gauge says.
+ */
+function recordGadgetEvent(
+	ctx: SimContext,
+	e:
+		| { kind: 'coreSpawn'; time: number; id: number; expiry: number }
+		| { kind: 'coreEnd'; time: number; id: number; reason: 'consumed' | 'popped' }
+): void {
+	if (e.kind === 'coreSpawn') {
+		ctx.gadgetRecs.push({
+			kind: 'core',
+			id: e.id,
+			start: framesOf(e.time),
+			nominalEnd: framesOf(e.expiry)
+		});
+		return;
+	}
+	// ⚠️ A linear scan, deliberately: cores are capped at 5 live and a rotation
+	// makes a handful, so an index would be bookkeeping nobody reads.
+	const rec = ctx.gadgetRecs.find((g) => g.kind === 'core' && g.id === e.id && g.end === undefined);
+	if (!rec) return;
+	rec.end = framesOf(e.time);
+	rec.endReason = e.reason;
+}
+
+/**
  * Offer one application to the gauge at its own instant, then dispatch whatever
  * came back.
  *
@@ -212,6 +251,10 @@ function offerApplication(ctx: SimContext, clock: Clock, offer: Offer): void {
 	gauge.apply(offer.element as ElementId, offer.units, index);
 
 	for (const e of gauge.takeEvents()) {
+		if (e.kind === 'coreSpawn' || e.kind === 'coreEnd') {
+			recordGadgetEvent(ctx, e);
+			continue;
+		}
 		if (e.kind !== 'reaction') continue;
 		// ⚓ Unreachable by construction — the only internal applicator is the
 		// Burning chain, and nothing that reacts with Pyro can coexist with a
@@ -981,6 +1024,17 @@ export function collectAuraSeries(ctx: SimContext, totalDuration: number): Serie
 		? ctx.aura.offers[ctx.aura.offers.length - 1].time
 		: totalDuration;
 	ctx.aura.gauge.advanceTo(Math.max(totalDuration, lastOffer) + AURA_SETTLE_F);
+	// ⚓ THE GADGET EVENTS ARE TAKEN HERE AND THE REACTIONS ARE STILL DROPPED,
+	// and the difference is DISPATCH, not tidiness. The paragraph above refuses
+	// the settle's reactions because a reaction has consequences — buff windows,
+	// stack grants, procs — that would fire after the parse believed itself
+	// finished. A core SPAWN has none: it is drawn and nothing else reads it. A
+	// Bloom on the last frame of a rotation really does leave a core on the
+	// field 30 frames later, and dropping it would draw a Bloom marker with
+	// nothing under it.
+	for (const e of ctx.aura.gauge.takeEvents()) {
+		if (e.kind === 'coreSpawn' || e.kind === 'coreEnd') recordGadgetEvent(ctx, e);
+	}
 	return ctx.aura.gauge.closeSeries();
 }
 

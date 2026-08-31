@@ -1294,6 +1294,13 @@
 	--rx-burning: #d76822; /* the ember, banked below pyro's flame */
 	--rx-burning-fuel: #84b46a;
 	--rx-dendro-core: #e2ec6f;
+	/* The Thundercloud a Lunar-Charged sustains. ⚠ MEASURED, per the rule above —
+	   nearest neighbour anywhere in the el/rx/ui grid is --el-hydro-main at
+	   ΔE .109, against a grid whose own closest pair sits at .037.
+	   ⛔ THE PRISM AND THE MOONDRIFT HAVE NO TOKEN HERE, on purpose: both have a
+	   real element in game (Cryo, Geo) and wear --el-* instead. A minted hue for
+	   either was a primitive standing in for one we already had. */
+	--rx-thundercloud: #5f9ec4;
 
 	/* Typography — single source of truth. Bitter is display/branding AND every
 	   MAIN HEADER (⚓ Nate 2026-08-09 — see the h1–h6 rule for the split that

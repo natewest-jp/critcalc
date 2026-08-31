@@ -72,6 +72,7 @@ import {
 	auraUnitLines,
 	type AuraLane
 } from '$lib/timeline/auraPlot';
+import type { GadgetRow } from '$lib/timeline/gadgetRows';
 import type { AuraKey } from '$lib/utils/gauge';
 
 // ── Palette mirror (RotationTimeline.svelte <style>) ────────────────────────
@@ -167,6 +168,22 @@ const RX_FROZEN = '#cbeaf3';
 const RX_QUICKEN = '#46c865';
 const RX_BURNING = '#d76822';
 const RX_BURNING_FUEL = '#84b46a';
+// ── Gadget-strip colours (Polestar-Field round, 2026-09-01) ─────────────────
+// ⚠ One more --rx-* literal, for the same reason as the four above: a dendro
+// core and a thundercloud are their own OBJECTS, not auras of an element, so
+// neither has an --el-* entry to borrow. ⚓ The Prism and the Moondrift DO have
+// one (Cryo, Geo) and take it.
+const RX_DENDRO_CORE = '#e2ec6f';
+const RX_THUNDERCLOUD = '#5f9ec4';
+
+// ⚓ The two with a real element go through `elementPalette`, the guarded mirror
+// of --el-*; only the two that are their own object need a literal.
+const GADGET_COLOR: Record<GadgetRow['kind'], string> = {
+	core: RX_DENDRO_CORE,
+	prism: elementPalette('cryo').main,
+	thundercloud: RX_THUNDERCLOUD,
+	moondrift: elementPalette('geo').main
+};
 
 const AURA_MOD_COLOR: Record<AuraKey, string> = {
 	pyro: elementPalette('pyro').main,
@@ -197,7 +214,9 @@ export const PALETTE_MIRROR = {
 	RX_FROZEN,
 	RX_QUICKEN,
 	RX_BURNING,
-	RX_BURNING_FUEL
+	RX_BURNING_FUEL,
+	RX_DENDRO_CORE,
+	RX_THUNDERCLOUD
 } as const;
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
@@ -325,6 +344,19 @@ export type TimelineSnapshot = {
 	auraLabelMinSpan: number;
 	auraLabelMinGap: number;
 	auraLabelMinRow: number;
+	/** The gadget strip's rows (Polestar-Field round, 2026-09-01) — things a
+	 *  reaction left in the world. ⚠️ Its height is already inside
+	 *  `auraHeaderH`, so every `oy`-relative offset below stays byte-identical
+	 *  whether the strip is there or not. */
+	gadgetRows: GadgetRow[];
+	/** ⚠️ A row's height is set by the gadget's CAPACITY, never by the rotation's
+	 *  own peak — a counted row gets `gadgetProfileH`, a binary one its own dot.
+	 *  See gadgetRows.ts. */
+	gadgetProfileH: number;
+	gadgetDotR: number;
+	/** 🎛️ The state shape's flat alpha — ⛔ no gradient, ⛔ no outline. */
+	gadgetFillAlpha: number;
+	gadgetRowGap: number;
 	statIconFor: (stat: string) => string | undefined;
 	avatarFor: (slotIdx: number) => string | null;
 	elementGlyphFor: (element: string | undefined) => string | null;
@@ -1300,6 +1332,52 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				x(entry.span.start) + 4,
 				Math.max(plotTop + 7, yOf(entry.span.openingU) - 3)
 			);
+		}
+
+		// ── The gadget strip, under the baseline ──
+		// ⚓ Below the plot because a core and a Prism are ENTITIES, not gauge —
+		// the same reason the screen puts them there. `plotBase + 2` clears the
+		// plot's own bottom margin, which the screen spends as a CSS margin and
+		// the canvas has to add by hand.
+		// ⚓ MARKS FOR EVENTS, AN AREA FOR STATE — mirroring the screen, and a
+		// miniature of the plot above it. ⛔ Not a per-life duration mark of any
+		// kind: a dendro core's life is a CONSTANT, so drawing eleven identical 6s
+		// spans encoded nothing and read as clutter (three cuts proved it).
+		let gadgetY = plotBase + 2;
+		for (const row of snap.gadgetRows) {
+			const rowH = row.capacity > 1 ? snap.gadgetProfileH : snap.gadgetDotR * 2;
+			const color = GADGET_COLOR[row.kind];
+			// ⚓ THE STAIR HANGS FROM THE TOP, mirroring the screen: the row's
+			// baseline is its top edge, where the discs sit, and each live core
+			// steps the boundary DOWN.
+			// ⚓ FILL ONLY — ⛔ no gradient, ⛔ no outline. That is what lets the core
+			// row and the Prism row read as the same object rather than as a chart
+			// beside a bar, and it retires an outline that was drawing the baseline
+			// and both end walls along with the data.
+			const yOf = (n: number) => gadgetY + (Math.min(n, row.capacity) / row.capacity) * rowH;
+			if (row.runs.length > 0) {
+				ctx.fillStyle = alpha(color, snap.gadgetFillAlpha);
+				ctx.beginPath();
+				ctx.moveTo(x(row.runs[0].start), gadgetY);
+				for (const run of row.runs) {
+					ctx.lineTo(x(run.start), yOf(run.count));
+					ctx.lineTo(x(run.end), yOf(run.count));
+				}
+				ctx.lineTo(x(row.runs[row.runs.length - 1].end), gadgetY);
+				ctx.closePath();
+				ctx.fill();
+			}
+			// The spawn discs, last — a mark is never behind the state it caused.
+			// ⚠ ONE PER SPAWN INSTANT, not per life: a Lunar-Crystallize tops the
+			// field up to three at once, and three identical discs at one x is
+			// redundant ink for a count the area already carries.
+			ctx.fillStyle = color;
+			for (const spawn of row.spawns) {
+				ctx.beginPath();
+				ctx.arc(x(spawn.time), gadgetY + snap.gadgetDotR, snap.gadgetDotR, 0, Math.PI * 2);
+				ctx.fill();
+			}
+			gadgetY += rowH + snap.gadgetRowGap;
 		}
 	}
 	// ── Label column ──
