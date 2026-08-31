@@ -344,10 +344,12 @@ export type TimelineSnapshot = {
 	 *  `auraHeaderH`, so every `oy`-relative offset below stays byte-identical
 	 *  whether the strip is there or not. */
 	gadgetRows: GadgetRow[];
-	/** ⚠️ A row's height is `2r + (capacity − 1) × pitch` — set by the gadget's
-	 *  CAPACITY, never by the rotation's own peak. See gadgetRows.ts. */
-	gadgetDotR: number;
+	/** ⚠️ A row's height is set by the gadget's CAPACITY, never by the rotation's
+	 *  own peak: `max(2 × minDotR, 4 + (capacity − 1) × pitch)`. The spawn disc
+	 *  fills that height; only the LEADER keeps a lane. See gadgetRows.ts. */
+	gadgetMinDotR: number;
 	gadgetSlotPitch: number;
+	gadgetEndR: number;
 	gadgetRowGap: number;
 	statIconFor: (stat: string) => string | undefined;
 	avatarFor: (slotIdx: number) => string | null;
@@ -1331,36 +1333,45 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		// the same reason the screen puts them there. `plotBase + 2` clears the
 		// plot's own bottom margin, which the screen spends as a CSS margin and
 		// the canvas has to add by hand.
-		// ⚓ ONE LIFE PER MARK, mirroring the screen: a spawn dot, a thin leader and
-		// an end mark, each on the slot the projection assigned it. ⛔ Not a stack
-		// of translucent spans and ⛔ not a count profile — the first saturated
-		// (five at 52% alpha composite to 97% opaque) and the second could say how
-		// many but never which.
+		// ⚓ ONE LIFE PER MARK, mirroring the screen: a full-height spawn disc, a
+		// thin leader in its own lane, a small terminator. ⛔ Not a stack of
+		// translucent spans and ⛔ not a count profile — the first saturated (five
+		// at 52% alpha composite to 97% opaque) and the second could say how many
+		// but never which.
+		// ⚠️ THE PASSES ARE THE DESIGN, here as on screen: every disc under every
+		// leader, every terminator over both.
 		let gadgetY = plotBase + 2;
 		for (const row of snap.gadgetRows) {
-			const rowH = snap.gadgetDotR * 2 + (row.capacity - 1) * snap.gadgetSlotPitch;
+			const rowH = Math.max(snap.gadgetMinDotR * 2, 4 + (row.capacity - 1) * snap.gadgetSlotPitch);
+			const r = rowH / 2;
 			const color = GADGET_COLOR[row.kind];
+			const laneY = (slot: number) => {
+				const step = Math.ceil(slot / 2) * snap.gadgetSlotPitch;
+				return gadgetY + r + (slot % 2 === 1 ? -step : step);
+			};
 			for (const bar of row.bars) {
-				const y = gadgetY + rowH - snap.gadgetDotR - (bar.slot ?? 0) * snap.gadgetSlotPitch;
-				const x0 = x(bar.start);
-				const x1 = x(bar.end);
-				ctx.strokeStyle = alpha(color, 0.55);
+				ctx.fillStyle = alpha(color, 0.26);
+				ctx.strokeStyle = alpha(color, 0.5);
 				ctx.lineWidth = 1;
 				ctx.beginPath();
-				ctx.moveTo(x0, y + 0.5);
-				ctx.lineTo(x1, y + 0.5);
-				ctx.stroke();
-				ctx.fillStyle = alpha(color, 0.95);
-				ctx.beginPath();
-				ctx.arc(x0, y, snap.gadgetDotR, 0, Math.PI * 2);
+				ctx.arc(x(bar.start), gadgetY + r, Math.max(0.5, r - 0.5), 0, Math.PI * 2);
 				ctx.fill();
-				// A consumed life terminates in chrome — how it ended, not just when.
-				ctx.strokeStyle = alpha(bar.endReason === 'consumed' ? BAR_LABEL : color, 0.9);
-				ctx.lineWidth = 1.5;
-				ctx.beginPath();
-				ctx.moveTo(x1, y - 2.5);
-				ctx.lineTo(x1, y + 2.5);
 				ctx.stroke();
+			}
+			for (const bar of row.bars) {
+				const y = laneY(bar.slot ?? 0);
+				ctx.strokeStyle = alpha(color, 0.75);
+				ctx.lineWidth = 1;
+				ctx.beginPath();
+				ctx.moveTo(x(bar.start), y + 0.5);
+				ctx.lineTo(x(bar.end), y + 0.5);
+				ctx.stroke();
+			}
+			for (const bar of row.bars) {
+				ctx.fillStyle = alpha(bar.endReason === 'consumed' ? BAR_LABEL : color, 0.95);
+				ctx.beginPath();
+				ctx.arc(x(bar.end), laneY(bar.slot ?? 0), snap.gadgetEndR, 0, Math.PI * 2);
+				ctx.fill();
 			}
 			gadgetY += rowH + snap.gadgetRowGap;
 		}

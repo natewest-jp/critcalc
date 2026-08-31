@@ -438,3 +438,55 @@ across all five slots (cy 14/11/8/5/2), hover isolates one and dims ten.
 Prism row (one life, 7.00s) over a 16px core row whose two lives both end in
 chrome, tooltip reading "Ended · consumed by a reaction". No console errors; the
 PNG export mirrors dot, leader and end mark.
+
+### 7.5 ⚓ The dot fills its row; the leader keeps its lane
+
+⚓ Nate, refining §7.4: _"the dots are very visually useful for seeing when a core
+was spawned, but they don't need to be kept smaller to allow for stacking if the
+lines can carry that purpose."_
+
+⚓⚓ **THE TWO MARKS CARRY DIFFERENT JOBS, SO THEY GET DIFFERENT GEOMETRY.** The
+spawn disc answers "when did a core appear" — the question asked most, and from
+furthest away — so it takes the row's whole height. Only the LEADER has to avoid
+its neighbours, and the leader is the part that can afford to be 1px. §7.4 had
+both marks paying the stacking tax; only one of them owes it.
+
+Two consequences, both accepted deliberately (⚓ Nate asked to test them): a
+leader **crosses the discs** of cores spawned after it, and every lane but the
+centre leaves its own disc **off-centre**.
+
+⚠️ **SLOTS RUN CENTRE-OUT NOW, and the dot's geometry forces it.** A full-row disc
+is centred on the row, so lane 0 has to be the centre line or the commonest case
+in the strip — one core, alone — draws a leader leaving the side of its own disc.
+Later lanes alternate above and below. ↻ Bottom-up was right while the row was a
+count profile, where "busier is taller" was the entire reading; the discs carry
+that now.
+
+⚓ **THE END MARK IS KEPT, AND AS A DOT.** Nate offered dropping it. It earns its
+place precisely because of the first accepted consequence: now that leaders cross
+other cores' discs, _a line that has stopped and a line passing under a disc look
+identical_ without a positive terminator. A dot rather than a tick because a tick
+read as chart furniture at this size, where a small dot reads as the same object
+the life started with. A consumed life still ends in `--chrome`.
+
+⚠️ **A faint RIM on the disc, not just a fill** — two blooms close together
+overlap, and without an edge the pair reads as one wide smear, which is the exact
+confusion the strip exists to remove.
+
+⚠️⚠️ **FIVE PAINTING PASSES, NOT ONE GROUP PER LIFE, AND THE ORDER IS THE DESIGN.**
+Painting a whole life at a time would put an early core's leader over a later
+core's disc or under it depending only on spawn order. Passes give one rule:
+every disc under every leader, every terminator over both. The hit areas are the
+last two passes — leaders by LANE (the §7.4 defect: full-height rects overlap
+completely and the last life drawn swallows every earlier one), then discs, so a
+disc wins the pointer within its own width even though a stranger's leader
+crosses it. ⚓ The disc is what a reader is aiming at.
+
+⚠️ The Prism row grew 4px → 8px: its disc is as tall as its row like every other,
+and a capacity-1 row without a floor on the radius is 4px of hairline.
+
+**Measured.** Bloom-heavy: one 16px row, 11 lives, discs r=7.5 all centred at
+cy=8, lanes at 2/5/8/11/14. Prism+bloom: a 28px strip — an 8px Prism row (disc
+r=3.5, single lane) over a 16px core row whose two lives both terminate in
+chrome. Disc and leader hover both resolve to the same life; no console errors;
+the PNG export mirrors all three marks in the same three passes.
