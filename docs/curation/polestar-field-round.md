@@ -811,7 +811,15 @@ Ordered by what a next session would actually pick up.
    EXIST in the IR as windows, so a condition that asks "is one standing at this
    instant" is newly answerable — but it is the same time-varying-condition work
    item as Radiance in item 3, and ⛔ should be taken with it or not at all.
-6. ⛔ The Thundercloud's lightning ticks and the Moondrift Harmony ATTACK are
+6. 🆕 **A curation follow-up with a trigger**: Alyosha's burst carries two summons
+   that tick on one 2s cadence and both apply Electro (§12). Legitimate under our
+   model — a summon's ICD counter is its own — but unverifiable, because gcsim has
+   nothing for him. ⏭ **When gcsim ships his frames, check whether the two series
+   are OFFSET.** If they are, the two applications separate on their own and the
+   coincidence disappears; if they are not, the question becomes whether the two
+   entities should share one ICD counter. ⛔ Either way, don't pre-empt it by
+   editing his JSON on a guess — his tick series are deliberately bare.
+7. ⛔ The Thundercloud's lightning ticks and the Moondrift Harmony ATTACK are
    deliberately unmodelled — both deal damage that would have to reach the gauge
    and neither is authored anywhere in the corpus.
 
