@@ -935,7 +935,19 @@ export type State =
 	/** Durin: 30s Denial of Darkness form (gcsim `denial-of-darkness`) —
 	 *  gates the Principle of Darkness burst. Opened by the Dark commit
 	 *  (a Normal Attack during `transmuting`); displaced by the White commit. */
-	| 'darkForm';
+	| 'darkForm'
+	/** Odette: the 6s window opened by BOTH her skill and her burst, during
+	 *  which her Elemental Skill is replaced by the special skill Adagio: Coda
+	 *  at Dawn's Tolling. Two openers is the whole reason it is a transient
+	 *  state rather than a chain stage — a chain has one entry point.
+	 *
+	 *  ⚠️ Her kit states the gate twice and not identically: the talent text
+	 *  says "for 6s after unleashing" (both abilities), while the Solo Dance
+	 *  Double tooltip says "when there is a Dance Double summoned by Odette
+	 *  nearby", which would be 20s. The 6s is authored because it is the number
+	 *  the talent states and it is the tighter of the two; ⛔ don't switch to
+	 *  the summon's lifetime without an in-game check. */
+	| 'codaWindow';
 
 /**
  * Post-action transient state — a short named gating window opened by an
