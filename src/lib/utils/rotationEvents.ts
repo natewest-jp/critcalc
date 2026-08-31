@@ -422,5 +422,22 @@ export type TimelineWindow =
 			decayParams?: BuffDecayParams;
 			procCooldown?: number;
 			isMutuallyExclusive?: boolean;
+			/**
+			 * ⚓ THE LEDGER COUNT THAT SET THIS WINDOW'S VALUE (`field` source only,
+			 * 2026-09-01) — the Cryo/Electro hits the Prism recorded in the 4s
+			 * before this grant cycle opened.
+			 *
+			 * ⚠️⚠️ IT IS THE PREVIOUS WINDOW'S COUNT, NOT A LIVE ONE. "Every 4s the
+			 * count is reset, and buffs lasting 4s are granted" — so the number that
+			 * PAID FOR this bar was finished before the bar began. In game the
+			 * on-screen counter is meanwhile accumulating toward the NEXT grant;
+			 * they are two different clocks and this is the one the bar's value can
+			 * be checked against.
+			 *
+			 * ⛔ Not `stackContext`, which is the trigger-time snapshot the
+			 * `perStack` formatter reads — overloading it would put a number into a
+			 * value formatter that has no business resolving it.
+			 */
+			fieldStacks?: number;
 			source: BuffWindowSource;
 	  } & WindowProvenance);

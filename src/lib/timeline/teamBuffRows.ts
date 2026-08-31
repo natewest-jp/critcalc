@@ -34,6 +34,14 @@ type BuffWindow = Extract<TimelineWindow, { kind: 'buff' }>;
 
 const AB_LABEL = { skill: 'E', burst: 'Q', normal: 'N', charged: 'CA', plunge: 'P' } as const;
 
+/** ⚓ A FIELD'S ROW IS NAMED AND MARKED AFTER THE REACTION THAT MADE IT, not
+ *  after the stat it happens to grant. The Polestar Field grants a Cryo bonus
+ *  and an Electro one; keyed by stat the row would wear whichever came first and
+ *  read as somebody's elemental buff. */
+const FIELD_ICON: Record<string, string> = {
+	polestar: '/assets/elements/flat-white/stellar.png'
+};
+
 export function projectTeamBuffRows(
 	windows: ReadonlyArray<TimelineWindow>,
 	getCharacter: (id: string) => CharacterData | null
@@ -69,6 +77,7 @@ export function projectTeamBuffRows(
 		let rowKey: string;
 		let sourceLabel: string;
 		let explicitKind: 'buff' | 'debuff' | undefined;
+		let rowIcon: string | undefined;
 		if (src.type === 'character') {
 			if (src.trigger === 'cast' || src.trigger === 'block') {
 				const lbl = AB_LABEL[src.abilityClass!];
@@ -116,6 +125,7 @@ export function projectTeamBuffRows(
 			rowKey = `${w.characterId}::faction::${src.faction}::${src.bonusName}::${scope}::${effects[0].stat}${w.debuff ? '::resShred' : ''}`;
 			explicitKind = w.debuff ? 'debuff' : 'buff';
 		} else if (src.type === 'field') {
+			rowIcon = FIELD_ICON[src.fieldId];
 			// ⚓⚓ NAMED AFTER THE FIELD, WHICH IS THE WHOLE POINT OF THE ARM. Any
 			// party member's Stellar-Conduct raises the same Polestar Field, so the
 			// row key carries NO character — two enablers in one party draw ONE row,
@@ -148,7 +158,12 @@ export function projectTeamBuffRows(
 			primaryStat = (w.effects[0] as BuffEffect).stat;
 		}
 
-		const bar: TeamBuffBar = { start: w.start, end: w.end, effects };
+		const bar: TeamBuffBar = {
+			start: w.start,
+			end: w.end,
+			effects,
+			...(w.fieldStacks !== undefined ? { stacks: w.fieldStacks } : {})
+		};
 		const existing = rowMap.get(rowKey);
 		if (existing) {
 			existing.bars.push(bar);
@@ -158,6 +173,7 @@ export function projectTeamBuffRows(
 				primaryStat,
 				bars: [bar],
 				sourceLabel,
+				...(rowIcon !== undefined ? { icon: rowIcon } : {}),
 				...(explicitKind !== undefined
 					? { kind: explicitKind }
 					: w.debuff
@@ -173,12 +189,19 @@ export function projectTeamBuffRows(
 	// archived each_key_duplicate lesson).
 	//
 	// Bars refresh-merge per row (2026-08-15): a buff re-applied before it
-	// expires is ONE covered span. No extra gate here — a team bar is
-	// `{start, end, effects}` with no envelope or ICD to disagree about, so the
-	// display comparison is the whole test.
+	// expires is ONE covered span. The display comparison is nearly the whole
+	// test — a team bar has no envelope or ICD to disagree about.
+	//
+	// ⚠️ THE ONE GATE: the Polestar Field's recorded-hit count. It is printed in
+	// the tooltip but deliberately not in `effects`, so two abutting grant cycles
+	// with DIFFERENT counts and the same value — which happens at the 40% cap,
+	// where 12 hits and 15 both pay 40 — would merge into one bar that then has
+	// two answers to "how many were recorded". Requiring the counts to agree
+	// leaves the merge doing what it was built for (one covered span, one label)
+	// and keeps every surviving seam meaning something.
 	return [...rowMap].map(([key, row]) => ({
 		...row,
-		bars: mergeRefreshedBars(row.bars),
+		bars: mergeRefreshedBars(row.bars, (a, b) => a.stacks === b.stacks),
 		key
 	}));
 }

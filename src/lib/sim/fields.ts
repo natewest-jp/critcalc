@@ -282,7 +282,14 @@ export function deriveFieldWindows(input: {
 				end,
 				source: { type: 'field' as const, fieldId: 'polestar', fieldName: 'Polestar Field' }
 			};
-			buffs.push({ ...base, id: nextId++, effects: buffEffects });
+			buffs.push({ ...base, id: nextId++, effects: buffEffects, fieldStacks: recorded });
+			// ⚠️ THE SHRED CARRIES NO LEDGER COUNT, AND THAT IS THE POINT. −40%
+			// Physical RES is stated flat — it does not move with the recorded hits
+			// — so a "recorded hits: 5" line on its tooltip would invite exactly the
+			// wrong inference. Leaving it off also lets the refresh-merge do its job:
+			// four abutting tiles with identical display and no count to disagree
+			// about collapse into ONE bar spanning the field, which is the true
+			// shape of a debuff that never changes while the field stands.
 			buffs.push({ ...base, id: nextId++, effects: shred, debuff: true });
 		}
 	}

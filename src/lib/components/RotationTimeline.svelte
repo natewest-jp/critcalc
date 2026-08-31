@@ -2604,7 +2604,7 @@
 											<div class="rp-team-buff-subrow">
 												{#each subrow.bars as bar, bi (bi)}
 													{@const g = barGeom(bar.start, bar.end - bar.start)}
-													{@const icon = BUFF_STAT_ICON[subrow.primaryStat]}
+													{@const icon = subrow.icon ?? BUFF_STAT_ICON[subrow.primaryStat]}
 													<!-- svelte-ignore a11y_no_static_element_interactions -->
 													<div
 														class="rp-team-buff-bar"
@@ -2613,7 +2613,25 @@
 														onmouseenter={(e) =>
 															showTooltip(e, {
 																sourceLabel: subrow.sourceLabel,
-																effects: bar.effects,
+																// ⚓ THE COUNT UNDER THE VALUE. A Polestar Field bar's
+																// number is a payout, and the ledger that paid it is
+																// the thing a player recognises — Genshin shows the
+																// count on screen while you play. It rides BELOW the
+																// stats rather than replacing them.
+																// ⚠️ It is the count from the PREVIOUS 4s, which is
+																// what set this bar; the in-game counter is meanwhile
+																// filling toward the next grant. Two clocks — this is
+																// the one this bar can be checked against.
+																effects:
+																	bar.stacks === undefined
+																		? bar.effects
+																		: [
+																				...bar.effects,
+																				{
+																					stat: 'Recorded hits',
+																					displayValue: `${bar.stacks} in the previous 4s`
+																				}
+																			],
 																isMutuallyExclusive: false,
 																duration: bar.end - bar.start
 															})}

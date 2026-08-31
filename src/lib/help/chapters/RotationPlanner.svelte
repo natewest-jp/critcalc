@@ -100,11 +100,11 @@
 		do not model walking out of it.
 	</p>
 	<p>
-		<strong>Turning it on.</strong> The aura lane is off until you ask for it:
-		<em>Auras</em> in the view bar. Its neighbour, <em>Buffs</em>, hides the buff bars, weapon
-		procs, Nightsoul bursts and Ascendant Gleam — turn both off for a chart of ability timings and
-		nothing else. Summons and shields stay either way: they are things standing in the world, not
-		effects granted to your team.
+		<strong>Turning it off.</strong> <em>Auras</em> in the view bar hides the lane and the strip
+		under it. Its neighbour, <em>Buffs</em>, hides the buff bars, weapon procs, Nightsoul bursts and
+		Ascendant Gleam — turn both off for a chart of ability timings and nothing else. Summons and
+		shields stay either way: they are things standing in the world, not effects granted to your
+		team.
 	</p>
 	<p>
 		<strong>What it assumes.</strong> One enemy, standing still, applying nothing back at you — no Pyro

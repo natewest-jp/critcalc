@@ -323,14 +323,22 @@ type SiteSettings = {
  * these — ⛔ two copies of this pair is how a reset comes to disagree with a
  * fresh browser.
  *
- * ⚓ NATE 2026-08-17: buffs ON, auras OFF — the view as it shipped at L6's
- * merge. The aura lane is the most technical surface in the tool and it is the
- * one thing here a reader should have to opt into; the buff rows have been part
- * of the timeline's answer since long before it, so hiding them by default
- * would change what the planner IS for everyone who never finds the toggle.
+ * ↻ ⚓ NATE 2026-09-01: **BOTH ON.** The original call below (auras OFF) was
+ * made the day the lane shipped, when it was one plot and the newest thing in
+ * the tool. Since then it has taken the reposition above the axis, the shared
+ * marker grammar, the event log, the crosshair and now the gadget strip — "the
+ * lane has become so much of a feature it's time to make it the default". ⚠️ The
+ * argument that retired is "a reader should have to opt into the most technical
+ * surface": a lane nobody finds the toggle for is a lane nobody has, and the
+ * reason it looked technical was that it was unfinished.
+ *
+ * ⚓ The ORIGINAL reasoning, kept because half of it still stands — the buff
+ * rows have been part of the timeline's answer since long before the lane, so
+ * hiding them by default would change what the planner IS for everyone who
+ * never finds the toggle. That is why this pair has only ever moved one way.
  */
 export const TIMELINE_LAYER_DEFAULTS = {
-	showAuraLane: false,
+	showAuraLane: true,
 	showTimelineBuffs: true
 } as const;
 
