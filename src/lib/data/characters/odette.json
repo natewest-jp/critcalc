@@ -7,6 +7,7 @@
 	"gender": "Female",
 	"affiliation": "Korolevskiy Troupe",
 	"rarity": 5,
+	"enablesReactions": ["stellarConduct", "stellarSwirl"],
 	"abilities": [
 		{
 			"id": "odette__normal__snow_swan_variation",
@@ -39,11 +40,83 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"cooldown": 15,
-			"duration": 20,
-			"tags": [],
+			"tags": ["summon"],
 			"effects": [],
 			"description": "With slow, graceful dance steps, Odette deals AoE Cryo DMG to the opponent, and also summons her **Solo Dance Double** to the field.\nIf a Dance Double summoned by Odette is already on the field, this will re-summon the Dance Double and reset its duration.\n\nSolo Dance Double\nAlternates between the Plume and Wing dance moves, periodically attacking nearby opponents and dealing to them AoE Cryo DMG.\nAdditionally, for 6s after unleashing the Elemental Skill Adagio: Phantom Night Dancers, Odette's Elemental Skill Adagio: Phantom Night Dancers will become the special Elemental Skill **Adagio: Coda at Dawn's Tolling** instead, where a dance duet deals AoE Cryo DMG to nearby opponents over time. Then, when the duet ends, she deals another instance of AoE Cryo DMG that is considered Stellar-Conduct or Stellar Swirl DMG.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"opensTransientState": {
+				"state": "codaWindow",
+				"duration": 6
+			},
+			"summons": [
+				{
+					"label": "Solo Dance Double",
+					"duration": 20,
+					"terminatesOn": "recast",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 4,
+								"firstTickDelay": 2
+							},
+							"scaling": 77.5,
+							"stat": "atk",
+							"element": "cryo",
+							"_curatorNotes": [
+								"The \"Plume\" dance move. See the skill's notes for why the alternation is authored as two 4s series rather than one 2s series."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 4,
+								"firstTickDelay": 4
+							},
+							"scaling": 92.6,
+							"stat": "atk",
+							"element": "cryo",
+							"_curatorNotes": [
+								"The \"Wing\" dance move — the same 4s cadence, offset by one move."
+							]
+						}
+					]
+				}
+			],
+			"_curatorNotes": [
+				"⚓ THE DANCE DOUBLE'S CADENCE IS STATED, so it is authored rather than left blank: Fandom's Gameplay Notes on this talent read \"Solo Dance Double will perform one dance move every 2s\", and the talent text says it \"Alternates between the Plume and Wing dance moves\". Two series at 4s, offset by 2s, is that sentence — markers land every 2s and each move keeps its own scaling (77.5% / 92.6% ATK at T10). ⛔ Not one 2s series: that would have to pick one of the two scalings and state it for both.",
+				"⚠️ WHICH MOVE LEADS IS THE ONE GUESS, and it costs nothing visible: the tools draw no damage numbers, so the two series differ on screen only in their marker times, which are identical either way round. Plume is authored first because the talent text and the scaling table both list it first.",
+				"terminatesOn 'recast' = \"If a Dance Double summoned by Odette is already on the field, this will re-summon the Dance Double and reset its duration\" plus \"A maximum of one Solo Dance Double summoned by Odette is allowed on the field at any one time\". ⚠️ The BURST carries the same flag and the same label deliberately — truncation keys on characterId::label, so a burst re-summon has to shorten the skill's window (the Fischl Oz lesson).",
+				"No `mobility` is authored. The Double \"dances a duet with her\" and the burst \"summons it to her side\", which suggests it neither strictly follows nor is strictly planted; nothing states it, so the field is left off rather than guessed.",
+				"The ability-level `duration: 20` the generator wrote was the Solo Dance Double Duration row. Moved onto the summon, where it is read.",
+				"Particle generation is 5 with a 12s internal cooldown, off either the Skill DMG or the Coda DoT (Fandom Gameplay Notes). No consumer today.",
+				"opensTransientState opens the 6s `codaWindow`, which is what makes the sibling ability \"Adagio: Coda at Dawn's Tolling\" resolve on the next E. See that ability's notes."
+			]
+		},
+		{
+			"id": "odette__skill__adagio_coda_at_dawns_tolling",
+			"name": "Adagio: Coda at Dawn's Tolling",
+			"input": ["E"],
+			"abilityType": "skill",
+			"conditions": {
+				"type": "state",
+				"state": "codaWindow"
+			},
+			"cooldown": 15,
+			"behavior": "instant",
+			"tags": [],
+			"effects": [],
+			"description": "Odette's special Elemental Skill, which deals AoE Cryo DMG to nearby opponents over time. Then, when the dance duet ends, she deals another instance of AoE Cryo DMG that is considered Stellar-Conduct DMG. During the dance duet, Odette can control the direction of the dance steps.\nRadiance: Stellar Glimmer: The DMG dealt when the dance duet ends is changed to AoE Cryo DMG of the corresponding Stellar reaction type.\n\nAdditionally, after Odette unleashes the special Elemental Skill Adagio: Coda at Dawn's Tolling, should she be in the Radiance: Stellar Glimmer state while her Dance Double is still on the field, the Dance Double's two dance move types will also deal additional AoE Cryo DMG of the corresponding Stellar Glimmer reaction type.",
+			"_curatorNotes": [
+				"A SEPARATE ABILITY ON THE SAME INPUT, gated on `codaWindow`, following Durin's Transmutation pattern rather than a variant. A variant would share the base skill's charge queue, so the base's own 15s cooldown — started by the very cast that opens the window — would block the Coda for the whole 6s it is supposed to be available. A distinct ability id gets its own queue and its own 15s clock, which is what the scaling table's separate \"Coda at Dawn's Tolling CD\" row describes.",
+				"⛔ It deliberately does NOT consume `codaWindow`. `consumesState` is a variant-only field and the only ability-level way to close a window is to open another one, which would mean inventing a state to stand for nothing. The cost is bounded: a THIRD E inside 6s resolves to the Coda again and waits on its cooldown. That is degenerate notation, and arguably what the game does too — the button is the Coda for those 6s.",
+				"No effects and no active window. Its DoT is three instances of AoE Cryo DMG (172.5% ATK at T10) before a finisher considered Stellar-Conduct or Stellar Swirl (550.37% / 825.55% ATK) — all of it the cast's own damage, which is frame territory, not effect territory. The duet's length is stated only as \"over time\"; ⛔ never invented, so no activeDuration is authored.",
+				"The tooltip's last paragraph — the Dance Double's two moves dealing ADDITIONAL Stellar Glimmer DMG after a Coda while she is in a Radiance state — is unauthored. It is extra damage on an existing tick series, and the tools draw no damage magnitude, so it has no surface to reach."
+			]
 		},
 		{
 			"id": "odette__burst__presto_bluebird_finale",
@@ -51,12 +124,74 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"cooldown": 15,
-			"duration": 20,
 			"energyCost": 60,
-			"tags": [],
-			"effects": [],
+			"tags": ["summon"],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "stellarGlimmerReactionBonus",
+					"value": 50,
+					"snapshottable": false
+				}
+			],
 			"description": "With quick, lively dance steps, Odette deals multiple instances of AoE Cryo DMG, and summons her **Solo Dance Double**. She also gains Snow Swan's Dream, which increases the Stellar Glimmer reaction DMG Odette deals.\nAdditionally, for 6s after unleashing the Elemental Burst Presto: Bluebird Finale, Odette's Elemental Skill Adagio: Phantom Night Dancers will be replaced with the special Elemental Skill **Adagio: Coda at Dawn's Tolling** instead.\n\nIf there is a Solo Dance Double summoned by Odette on the field, it will be summoned to her side with its duration refreshed.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"opensTransientState": {
+				"state": "codaWindow",
+				"duration": 6
+			},
+			"summons": [
+				{
+					"label": "Solo Dance Double",
+					"duration": 20,
+					"terminatesOn": "recast",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 4,
+								"firstTickDelay": 2
+							},
+							"scaling": 77.5,
+							"stat": "atk",
+							"element": "cryo",
+							"_curatorNotes": [
+								"The \"Plume\" dance move. See the skill's notes for why the alternation is authored as two 4s series rather than one 2s series."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 4,
+								"firstTickDelay": 4
+							},
+							"scaling": 92.6,
+							"stat": "atk",
+							"element": "cryo",
+							"_curatorNotes": [
+								"The \"Wing\" dance move — the same 4s cadence, offset by one move."
+							]
+						}
+					]
+				}
+			],
+			"_curatorNotes": [
+				"Snow Swan's Dream: +50% Stellar Glimmer reaction DMG for 20s (burst scaling rows \"Snow Swan's Dream Stellar Glimmer Reaction DMG Bonus\" and \"Snow Swan's Dream Duration\"). Bucket 5 — the wiki names the row \"Reaction DMG Bonus\", which is the Reaction Bonus bracket (additive with the EM bonus), not the Base DMG bracket Dance of Aurore feeds.",
+				"The burst summons or refreshes the SAME Solo Dance Double as the skill — same label, same 20s, same recast truncation. ⚠️ Both must carry `terminatesOn: 'recast'` or two live windows would overlap.",
+				"It opens the same 6s `codaWindow` the skill does (\"for 6s after unleashing the Elemental Burst … will be replaced with the special Elemental Skill\"), which is why that window is a transient state with two openers rather than a chain stage.",
+				"The three slashes (198.3% ATK ×3) and the final slash (306.5%) are the cast's own damage — frame territory."
+			]
 		}
 	],
 	"passives": [
@@ -64,19 +199,237 @@
 			"id": "odette__passive__spring_rite_of_the_chosen_one",
 			"name": "Spring Rite of the Chosen One",
 			"abilityType": "passive",
-			"description": "When Odette summons her **Solo Dance Double**, she also obtains 4 stacks of **Marvelous Splendor**."
+			"description": "When Odette summons her **Solo Dance Double**, she also obtains 4 stacks of **Marvelous Splendor**.",
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "constellation",
+							"level": 1
+						}
+					},
+					"key": "marvelousSplendor",
+					"amount": 4,
+					"max": 4,
+					"drain": {
+						"ratePerSecond": 1,
+						"state": "offField"
+					}
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "constellation",
+							"level": 1
+						}
+					},
+					"key": "marvelousSplendor",
+					"amount": 4,
+					"max": 4
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
+					"key": "marvelousSplendor",
+					"amount": 6,
+					"max": 6
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
+					"key": "marvelousSplendor",
+					"amount": 6,
+					"max": 6
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "marvelousSplendor",
+						"min": 1
+					},
+					"source": "character",
+					"stat": "stellarGlimmerReactionBonus",
+					"value": {
+						"type": "perStack",
+						"key": "marvelousSplendor",
+						"per": 15
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "marvelousSplendor",
+						"min": 1
+					},
+					"source": "character",
+					"stat": "stellarGlimmerReactionBonus",
+					"value": {
+						"type": "perStack",
+						"key": "marvelousSplendor",
+						"per": 15
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"MARVELOUS SPLENDOR'S EFFECT IS NOT IN THE TALENT TEXT — genshin-db's description says only that she \"obtains 4 stacks\". The Fandom Extra Effect tooltip is where it lives: \"Every stack of Marvelous Splendor active increases the character's Stellar Glimmer DMG by 15%. This lasts until her Dance Double exits the field or when she summons her Solo Dance Double again. When Odette is off-field, she loses 1 stack of Marvelous Splendor every second, while other nearby party members gain the corresponding number of Marvelous Splendor stacks at the same time.\"",
+				"⚓ FOUR gainStacks EFFECTS, NOT TWO, and the split is the point: the stacks are SET to a count on each summon, not added, and there is no set-form. Two mutually-exclusive constellation branches give the right ceiling on both sides — 4/max 4 below C1, 6/max 6 at C1 and above (\"Odette also gains 2 stacks\") — where a single effect with constellationScaling would clamp C1 back to 4, and a single effect with max 6 would let an E→Q chain accrue 8→6 at C0 where the game gives 4. Same idiom as Ororon's constellation-gated tick series.",
+				"⚠️ ONE DRAIN SPEC PER KEY, so C1's faster decay is not modelled. The parser looks the drain up by resource key, so the 1/s declared on the first branch governs at every constellation; C1's \"the rate at which Marvelous Splendor is removed is sped up to 2 stacks per second\" and C6's \"her own Marvelous Splendor stacks will no longer decrease\" both ride it. ⚠️ No caveat: the buff's value is read from a snapshot taken at the cast, so the drain rate changes no printed number and no bar length — nothing on screen differs.",
+				"⛔ THE TRANSFER TO TEAMMATES IS UNMODELLED. Off-field she loses a stack per second and \"other nearby party members gain the corresponding number\" — a per-second migration of a resource between characters, which no primitive expresses and which depends on how long she stays off field. Her own stacks are authored; the teammates' copies are not. This is also why C6's elevation is gated on HER stack count rather than each receiver's.",
+				"duration 20 on the buff = the Solo Dance Double's lifetime, which is what the tooltip means by \"until her Dance Double exits the field\". `perStack` with no maxStacks: the gainStacks `max` is the real ceiling and stating it twice would need its own constellation branch."
+			]
 		},
 		{
 			"id": "odette__passive__pathetique_of_pateticheskaya",
 			"name": "Pathetique of Pateticheskaya",
 			"abilityType": "passive",
-			"description": "For every 100 ATK Odette has over 1,000, her Stellar Glimmer DMG is additionally increased by 1.5% of the original DMG. She can deal up to 30% more additional DMG in this way."
+			"description": "For every 100 ATK Odette has over 1,000, her Stellar Glimmer DMG is additionally increased by 1.5% of the original DMG. She can deal up to 30% more additional DMG in this way.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "stellarGlimmerDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 1.5,
+						"cap": 30,
+						"offset": 1000
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"⚓ THE `offset` HOLDER THE SCHEMA WAS EXPECTING. \"For every 100 ATK Odette has over 1,000\" is a THRESHOLD the stat must exceed, and she is named in the field's own 2026-08-31 census. ratio 1.5 (per 100 ATK), cap 30, offset 1000. Without the offset this would read +15% at exactly 1,000 ATK, where the true value is 0.",
+				"⚠️ THE BUCKET IS ONE BRACKET OFF AND THIS IS DELIBERATE (Nate's call, 2026-08-31). Fandom's Gameplay Note is explicit: \"The DMG increase increases the Base DMG Multiplier directly, and is not a Reaction Base DMG Bonus\" — bucket 1 of the Stellar formula, for which no Stat key exists. `stellarGlimmerDmgBonus` is bucket 3 and renders as \"Base Stellar Glimmer DMG\", `stellarGlimmerReactionBonus` is bucket 5; neither is right and the first is closest. ⛔ A bucket-1 key was considered and rejected — one holder, and the tools draw no damage numbers, so the two brackets differ only in a label.",
+				"The Note's second half — \"it only applies to Stellar Glimmer DMG dealt directly by Odette, and not any indirect Stellar Glimmer reaction DMG she contributes to\" — is already expressed by `target: 'self'`."
+			]
 		},
 		{
 			"id": "odette__passive__stellar_jubilee_dance_of_aurore",
 			"name": "Stellar Jubilee: Dance of Aurore",
 			"abilityType": "passive",
-			"description": "Odette will enter the Radiance: Stellar-Conduct state when she is inside a **Polestar Field**, or the Radiance: Stellar Swirl state for 8s after a nearby party member triggers a Stellar Swirl reaction.\nWhen a party member triggers a Superconduct or Cryo Swirl reaction, it becomes a Stellar-Conduct or Stellar Swirl reaction instead, and the Base DMG of said reaction is also increased by 0.7% for every 100 points of Odette's ATK. A maximum increase of 14% can be obtained in this way."
+			"description": "Odette will enter the Radiance: Stellar-Conduct state when she is inside a **Polestar Field**, or the Radiance: Stellar Swirl state for 8s after a nearby party member triggers a Stellar Swirl reaction.\nWhen a party member triggers a Superconduct or Cryo Swirl reaction, it becomes a Stellar-Conduct or Stellar Swirl reaction instead, and the Base DMG of said reaction is also increased by 0.7% for every 100 points of Odette's ATK. A maximum increase of 14% can be obtained in this way.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "stellarGlimmerDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 0.7,
+						"cap": 14
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarConduct",
+						"source": "team"
+					},
+					"source": "character",
+					"stat": "cryoDmgBonus",
+					"value": 20,
+					"duration": 4,
+					"durationType": "refresh",
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarConduct",
+						"source": "team"
+					},
+					"source": "character",
+					"stat": "electroDmgBonus",
+					"value": 20,
+					"duration": 4,
+					"durationType": "refresh",
+					"snapshottable": false
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "stellarConduct",
+						"source": "team"
+					},
+					"element": "physical",
+					"value": -40,
+					"duration": 4,
+					"durationType": "refresh"
+				}
+			],
+			"_curatorNotes": [
+				"THE SECOND STELLAR ENABLER. `enablesReactions: ['stellarConduct', 'stellarSwirl']` at the character root is what converts every party Superconduct and every party Cryo Swirl, and what satisfies every teammate's teamEnablesReaction gate. The passive is the house \"Stellar Jubilee: …\" shape, identical to Sandrone's Light of Rationalisme but for the name — same 0.7% per 100 ATK, same 14% cap, same family-wide `stellarGlimmerDmgBonus` (bucket 3, \"the Base DMG of said reaction\").",
+				"⚠️⚠️ THE THREE POLESTAR FIELD EFFECTS ARE A DELIBERATE MIRROR OF SANDRONE'S, NOT A SECOND SOURCE OF THEM. +20% Cryo and Electro DMG to characters in the field and −40% enemy Physical RES are properties of the FIELD any Stellar-Conduct creates, not of the character who enabled it — but the corpus has no home for reaction-level data, so each enabler carries a copy. Without it an Odette-without-Sandrone team would show nothing for a field its own reactions create. ⚠️ The cost: a party fielding BOTH enablers draws two identical bars, one per source character. No values are summed on screen, so it reads as redundant rather than wrong.",
+				"⚓ Nate, 2026-08-31: this is the last round the mirror should be needed. Tracking the Starlight Prism as a real entity — 7s, refreshed by every Stellar-Conduct, with the buffs hanging off IT — is specced in docs/curation/polestar-field-round.md. Cryo Traveler will be the third character to need this copy.",
+				"The 4s duration and refresh come from the wiki wording (\"Every 4s, the count is reset, and buffs lasting 4s are granted\") and are a DIFFERENT clock from the Prism's own 7s lifetime. ⛔ Not merged: the grant cycle is what the bars mean today.",
+				"NOT authored, and unchanged from Sandrone's reasoning: the Base Reaction Coefficient (1 → 1.45 at one recorded hit, +0.05 per further hit, cap 2 at 12) and the variable half of the DMG bonus (28% + 1% per recorded hit, up to 40%). Both ride the Prism's per-4s ledger of applying Cryo/Electro hits, which has no primitive.",
+				"Her own Radiance states are used as CONDITIONS on C2 and C6 rather than modelled as state windows — see the Radiance idiom in docs/library/game/stellar-reactions.md."
+			]
 		}
 	],
 	"constellations": [
@@ -86,15 +439,348 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"effects": [],
-			"description": "After unleashing the special Elemental Skill **Adagio: Coda at Dawn's Tolling**, at the dance duet's end Odette will deal an additional instance of Cryo AoE DMG to nearby opponents that is considered:\nRadiance: Stellar-Conduct or when not in a Radiance state: Stellar-Conduct reaction DMG at 300% of Odette's ATK;\nRadiance: Stellar Swirl: Stellar Swirl reaction DMG at 450% of Odette's ATK.\n\nAdditionally, the Ascension Talent \"Spring Rite of the Chosen One\" is also enhanced: now, when the **Solo Dance Double** is summoned, Odette also gains 2 stacks of **Marvelous Splendor**. When Odette is off-field, the rate at which Marvelous Splendor is removed is sped up to 2 stacks per second."
+			"description": "After unleashing the special Elemental Skill **Adagio: Coda at Dawn's Tolling**, at the dance duet's end Odette will deal an additional instance of Cryo AoE DMG to nearby opponents that is considered:\nRadiance: Stellar-Conduct or when not in a Radiance state: Stellar-Conduct reaction DMG at 300% of Odette's ATK;\nRadiance: Stellar Swirl: Stellar Swirl reaction DMG at 450% of Odette's ATK.\n\nAdditionally, the Ascension Talent \"Spring Rite of the Chosen One\" is also enhanced: now, when the **Solo Dance Double** is summoned, Odette also gains 2 stacks of **Marvelous Splendor**. When Odette is off-field, the rate at which Marvelous Splendor is removed is sped up to 2 stacks per second.",
+			"_curatorNotes": [
+				"The +2 Marvelous Splendor stacks ARE modelled — see the A1 passive's four constellation-branched gainStacks effects (4/max 4 below C1, 6/max 6 at C1 and up). ⛔ Don't add a fifth grant here; that would double the C1 count.",
+				"The faster off-field removal (2 stacks per second) is not modelled: one drain spec exists per resource key. ⚠️ Nothing on screen depends on it — the buff's value is read from a cast-time snapshot — so it is a note, not a caveat.",
+				"The additional Cryo AoE instance at the duet's end (300% ATK as Stellar-Conduct, 450% as Stellar Swirl) is unauthored: it is the cast's own damage, and the tools draw no damage magnitude."
+			]
 		},
 		{
 			"id": "odette__constellation__i_must_see_the_snow_swans_unseen_dream_for_myself_she_thought",
 			"name": "\"I Must See the Snow Swan's Unseen Dream for Myself, She Thought\"",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"effects": [],
-			"description": "The Ascension Talent \"Spring Rite of the Chosen One\" is enhanced as follows: every stack of **Marvelous Splendor** active also increases the character's ATK by 7%.\nAdditionally, if Odette is in the **Radiance: Stellar Glimmer** state when there is a **Solo Dance Double** on the field, opponents near the Dance Double will also have their corresponding Elemental RES lowered by 20%.\n·Radiance: Stellar-Conduct: Cryo and Electro.\n·Radiance: Stellar Swirl: Cryo and Anemo."
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "marvelousSplendor",
+						"min": 1
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": {
+						"type": "perStack",
+						"key": "marvelousSplendor",
+						"per": 7
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "marvelousSplendor",
+						"min": 1
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": {
+						"type": "perStack",
+						"key": "marvelousSplendor",
+						"per": 7
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "any",
+						"conditions": [
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamEnablesReaction",
+										"reaction": "stellarConduct"
+									},
+									{
+										"type": "teamElementCount",
+										"elements": ["electro"],
+										"comparison": ">=",
+										"value": 1
+									}
+								]
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamEnablesReaction",
+										"reaction": "stellarSwirl"
+									},
+									{
+										"type": "teamElementCount",
+										"elements": ["anemo"],
+										"comparison": ">=",
+										"value": 1
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "all",
+											"conditions": [
+												{
+													"type": "teamEnablesReaction",
+													"reaction": "stellarConduct"
+												},
+												{
+													"type": "teamElementCount",
+													"elements": ["electro"],
+													"comparison": ">=",
+													"value": 1
+												}
+											]
+										}
+									}
+								]
+							}
+						]
+					},
+					"element": "cryo",
+					"value": -20
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarConduct"
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["electro"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
+					},
+					"element": "electro",
+					"value": -20
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarSwirl"
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["anemo"],
+								"comparison": ">=",
+								"value": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "all",
+									"conditions": [
+										{
+											"type": "teamEnablesReaction",
+											"reaction": "stellarConduct"
+										},
+										{
+											"type": "teamElementCount",
+											"elements": ["electro"],
+											"comparison": ">=",
+											"value": 1
+										}
+									]
+								}
+							}
+						]
+					},
+					"element": "anemo",
+					"value": -20
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "any",
+						"conditions": [
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamEnablesReaction",
+										"reaction": "stellarConduct"
+									},
+									{
+										"type": "teamElementCount",
+										"elements": ["electro"],
+										"comparison": ">=",
+										"value": 1
+									}
+								]
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamEnablesReaction",
+										"reaction": "stellarSwirl"
+									},
+									{
+										"type": "teamElementCount",
+										"elements": ["anemo"],
+										"comparison": ">=",
+										"value": 1
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "all",
+											"conditions": [
+												{
+													"type": "teamEnablesReaction",
+													"reaction": "stellarConduct"
+												},
+												{
+													"type": "teamElementCount",
+													"elements": ["electro"],
+													"comparison": ">=",
+													"value": 1
+												}
+											]
+										}
+									}
+								]
+							}
+						]
+					},
+					"element": "cryo",
+					"value": -20
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarConduct"
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["electro"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
+					},
+					"element": "electro",
+					"value": -20
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamEnablesReaction",
+								"reaction": "stellarSwirl"
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["anemo"],
+								"comparison": ">=",
+								"value": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "all",
+									"conditions": [
+										{
+											"type": "teamEnablesReaction",
+											"reaction": "stellarConduct"
+										},
+										{
+											"type": "teamElementCount",
+											"elements": ["electro"],
+											"comparison": ">=",
+											"value": 1
+										}
+									]
+								}
+							}
+						]
+					},
+					"element": "anemo",
+					"value": -20
+				}
+			],
+			"description": "The Ascension Talent \"Spring Rite of the Chosen One\" is enhanced as follows: every stack of **Marvelous Splendor** active also increases the character's ATK by 7%.\nAdditionally, if Odette is in the **Radiance: Stellar Glimmer** state when there is a **Solo Dance Double** on the field, opponents near the Dance Double will also have their corresponding Elemental RES lowered by 20%.\n·Radiance: Stellar-Conduct: Cryo and Electro.\n·Radiance: Stellar Swirl: Cryo and Anemo.",
+			"_curatorNotes": [
+				"\"Every stack of Marvelous Splendor active also increases the character's ATK by 7%\" — the same resource the A1 buff reads, so `perStack` on the same key. target 'self': the stacks are hers, and the transfer to teammates is unmodelled (see A1).",
+				"⚓ THE RES SHRED IS THE RADIANCE IDIOM, three effects per cast rather than two branches of two. Cryo is shredded under EITHER radiance, Electro only under Stellar-Conduct, Anemo only under Stellar Swirl — so the element that appears in both branches is authored once under an `any`. At most two ever draw, because the Swirl condition wraps the Conduct condition in `not`, which IS the precedence rule (\"where more than one state can be triggered, Radiance: Stellar-Conduct shall apply first\").",
+				"She is Cryo, so `teamElementCount` — which excludes the holder — looks for the OTHER half of each reaction: an Electro teammate for Superconduct, an Anemo teammate for Cryo Swirl. The teamEnablesReaction clause is redundant on her own kit (she is the enabler) and is kept so the idiom reads the same on every character that copies it.",
+				"duration 20 and the two cast triggers stand in for \"while there is a Solo Dance Double on the field\" — the Double's own lifetime, spawned by either cast. There is no enemy-proximity model, so \"opponents near the Dance Double\" is treated as the play happening there, the same house rule fields already get.",
+				"Six effects and not three because a constellation-hosted onCast effect must bind its trigger ability (lint B.8), so skill and burst each need their own."
+			]
 		},
 		{
 			"id": "odette__constellation__ill_chase_the_shouting_wind_along_climbing_alone_as_i_go",
@@ -109,8 +795,28 @@
 			"name": "\"Up, Up the Long, Delirious, Burning Blue\"",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"effects": [],
-			"description": "The Elemental Burst Presto: Bluebird Finale is enhanced as follows: when Odette obtains Snow Swan's Dream, Stellar Glimmer reaction DMG dealt by other nearby party members is increased by 50% of Snow Swan Dream's effects.\n\nAdditionally, when a party member deals Stellar Glimmer reaction DMG to an opponent, Odette will also join in with a coordinated attack, dealing an instance of AoE Cryo DMG. This effect, which can trigger once every 3.5s, will be considered:\n·Radiance: Stellar-Conduct or when not in a Radiance state: Stellar-Conduct reaction DMG at 66% of Odette's ATK.\n·Radiance: Stellar Swirl: Stellar Swirl reaction DMG at 99% of Odette's ATK."
+			"effects": [
+				{
+					"type": "buff",
+					"target": "teamExcludingSelf",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "stellarGlimmerReactionBonus",
+					"value": 25,
+					"snapshottable": false
+				}
+			],
+			"description": "The Elemental Burst Presto: Bluebird Finale is enhanced as follows: when Odette obtains Snow Swan's Dream, Stellar Glimmer reaction DMG dealt by other nearby party members is increased by 50% of Snow Swan Dream's effects.\n\nAdditionally, when a party member deals Stellar Glimmer reaction DMG to an opponent, Odette will also join in with a coordinated attack, dealing an instance of AoE Cryo DMG. This effect, which can trigger once every 3.5s, will be considered:\n·Radiance: Stellar-Conduct or when not in a Radiance state: Stellar-Conduct reaction DMG at 66% of Odette's ATK.\n·Radiance: Stellar Swirl: Stellar Swirl reaction DMG at 99% of Odette's ATK.",
+			"_curatorNotes": [
+				"\"Stellar Glimmer reaction DMG dealt by other nearby party members is increased by 50% of Snow Swan Dream's effects\" — half of the burst's own +50%, so +25%, on the same stat, for the same 20s, to everyone but her. `teamExcludingSelf` because she already has the full 50% from the burst.",
+				"⛔ THE COORDINATED ATTACK IS UNAUTHORED, and would be inert if it were. \"When a party member deals Stellar Glimmer reaction DMG, Odette will also join in with a coordinated attack … once every 3.5s\" is a damage proc on an onReaction trigger — the shape the mark-triggered round built — but the proc registry rejects a damage effect that carries no application[], and application[] is measured from gcsim, which has nothing for Odette. Author it in the same pass that unblocks Stage 4. ⚠️ No caveat: an unauthored proc draws no row, so there is no blank to explain.",
+				"Its two branches, for whoever authors it later: Stellar-Conduct (or no Radiance state) at 66% of ATK, Stellar Swirl at 99%."
+			]
 		},
 		{
 			"id": "odette__constellation__oh_i_have_slipped_the_surly_bonds_of_earth",
@@ -125,8 +831,91 @@
 			"name": "\"Put Out My Hand, and Touched the Face of the Divine\"",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"effects": [],
-			"description": "The Ascension Talent \"Spring Rite of the Chosen One\" is enhanced as follows: When Odette grants **Marvelous Splendor** to all nearby party members, her own Marvelous Splendor stacks will no longer decrease.\nAdditionally, characters affected by Marvelous Splendor have their Stellar Glimmer reaction DMG dealt to opponents **elevated** by 25%, and Stellar Glimmer reaction DMG dealt by Odette is elevated by an additional 20%."
+			"effects": [
+				{
+					"type": "elevate",
+					"source": "character",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "marvelousSplendor",
+						"min": 1
+					},
+					"reactions": ["stellarConduct", "stellarSwirl"],
+					"value": 25,
+					"snapshottable": false
+				},
+				{
+					"type": "elevate",
+					"source": "character",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "marvelousSplendor",
+						"min": 1
+					},
+					"reactions": ["stellarConduct", "stellarSwirl"],
+					"value": 25,
+					"snapshottable": false
+				},
+				{
+					"type": "elevate",
+					"source": "character",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "marvelousSplendor",
+						"min": 1
+					},
+					"reactions": ["stellarConduct", "stellarSwirl"],
+					"value": 20,
+					"snapshottable": false
+				},
+				{
+					"type": "elevate",
+					"source": "character",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "marvelousSplendor",
+						"min": 1
+					},
+					"reactions": ["stellarConduct", "stellarSwirl"],
+					"value": 20,
+					"snapshottable": false
+				}
+			],
+			"description": "The Ascension Talent \"Spring Rite of the Chosen One\" is enhanced as follows: When Odette grants **Marvelous Splendor** to all nearby party members, her own Marvelous Splendor stacks will no longer decrease.\nAdditionally, characters affected by Marvelous Splendor have their Stellar Glimmer reaction DMG dealt to opponents **elevated** by 25%, and Stellar Glimmer reaction DMG dealt by Odette is elevated by an additional 20%.",
+			"_curatorNotes": [
+				"Two elevations, matching the two sentences: everyone affected by Marvelous Splendor gets +25%, and Odette gets \"an additional 20%\" on top — so 45% for her, expressed as a separate self effect rather than a single 45 that would over-claim for the team.",
+				"⚓ A FAMILY ELEVATION RENDERS. `['stellarConduct', 'stellarSwirl']` is matched as a SET by FAMILY_ELEVATIONS in effectCollection.ts and synthesized onto the umbrella `stellarGlimmerDmgBonus`, the same route Sandrone's C6 takes since 7.0 widened it. ⛔ Don't split it into two single-reaction effects: that would draw two bars for one talent line.",
+				"Gated on her own Marvelous Splendor stacks standing in for \"characters affected by Marvelous Splendor\" — the per-teammate transfer is unmodelled (see A1), and her stacks are the only count that exists.",
+				"\"Her own Marvelous Splendor stacks will no longer decrease\" is not modelled: one drain spec exists per resource key. ⚠️ Same reasoning as C1's faster drain — the buff value is read from a cast-time snapshot, so no printed number or bar length changes."
+			]
 		}
 	],
 	"meta": {

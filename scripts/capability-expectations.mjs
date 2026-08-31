@@ -35,6 +35,14 @@
 export const EXPECTED = [
 	// ------------------------------------------------------------------ heal
 	{
+		id: 'alyosha',
+		kind: 'heal',
+		minCon: 0,
+		target: 'active',
+		fromAbilityType: 'burst',
+		note: 'A1 Awakened by the Baying Hounds — Tugarin heals the active character 120% ATK on every 2s maul for the burst duration; authored on the summon, since a summonTick trigger is only legal there'
+	},
+	{
 		id: 'baizhu',
 		kind: 'heal',
 		minCon: 0,
@@ -304,6 +312,20 @@ export const EXPECTED = [
 		minCon: 0,
 		fromAbilityType: 'skill',
 		note: 'Cooking Mek follows the active char, Frosty Parfaits every ~0.98s for 20s'
+	},
+	{
+		id: 'alyosha',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'burst',
+		note: 'two summons from one burst — the Fulgurite Hunting Field (stationary taunt zone, Electro every 2s) and Tugarin (companion, Electro every 2s); both run 14s, 20s at C2'
+	},
+	{
+		id: 'odette',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: 'Solo Dance Double alternates Plume and Wing every 2s for 20s, Cryo; spawned by BOTH E and Q, one at a time'
 	},
 	{
 		id: 'ineffa',
@@ -630,6 +652,22 @@ export const EXPECTED = [
 	// ---------------------------------------------- Stellar-Conduct wave 2026-07-29
 	// Witch's Revelation kit patches + teamEnablesReaction-gated buffs.
 	// Evidence: Fandom (no gcsim Stellar code exists); Nate's trigger model.
+	{
+		id: 'alyosha',
+		kind: 'buff',
+		family: 'atk',
+		minCon: 0,
+		target: 'active',
+		note: "Hunter's Precision — activating a Hunter's Mark grants +21.2% ATK to the on-field character for 15s; his whole support identity, plus a Stellar-Conduct Reaction Bonus rider and +100 EM at C6"
+	},
+	{
+		id: 'odette',
+		kind: 'buff',
+		family: 'dmg',
+		minCon: 0,
+		target: 'team',
+		note: "Dance of Aurore: team Base Stellar Glimmer DMG (0.7%/100 ATK cap 14) + the Polestar Field baselines (+20% Cryo/Electro); Marvelous Splendor and Snow Swan's Dream are self-facing, C4/C6 reach the team"
+	},
 	{
 		id: 'sandrone',
 		kind: 'buff',

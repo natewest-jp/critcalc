@@ -19,11 +19,11 @@ The facet under-reports availability.
 
 - _none_
 
-## Target mismatch (0)
+## Target mismatch (1)
 
 Derived beneficiary differs from in-game behavior.
 
-- _none_
+- **nicole** — expected shield target=team, derived targets: active
 
 ## Expected source ability not curated (0)
 
@@ -63,13 +63,15 @@ Verify these kits genuinely offer nothing team-facing.
 - **tartaglia** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 - **traveler_pyro** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 
-## Uncurated stubs (6)
+## Uncurated stubs (8)
 
 Excluded from capability trust; shown honestly in the UI.
 
+- **alyosha** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **illuga** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **kachina** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **lohen** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
+- **odette** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **prune** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **sandrone** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **zibai** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
