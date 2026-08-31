@@ -238,7 +238,7 @@
 			"_curatorNotes": [
 				"A1 — Scaling heal: 300 HP base + 1.2 HP per EM point on any Swirl trigger (Cryo/Electro/Hydro/Pyro), ICD 2s (120 frames), active-character-only condition. gcsim: heal = 300 + EM×1.2, subscribes to OnSwirl{Cryo,Electro,Hydro,Pyro}. Flat 300 HP component is authorable; EM-scaling component (1.2 × EM) is a scaling heal — reviewer to decide effect authoring."
 			],
-			"description": "When Sayu triggers a Swirl reaction while active, she heals all your characters and nearby allies for 300 HP. She will also heal an additional 1.2 HP for every point of Elemental Mastery she has.\nThis effect can be triggered once every 2s."
+			"description": "When Sayu triggers a Swirl or Stellar Swirl reaction while active, she heals all your characters and nearby allies for 300 HP. She will also heal an additional 1.2 HP for every point of Elemental Mastery she has.\nThis effect can be triggered once every 2s."
 		},
 		{
 			"id": "sayu__passive__no_work_today",
@@ -277,7 +277,7 @@
 			"_curatorNotes": [
 				"Effect not yet authored — energy recovery: 1.2 Energy per Swirl trigger, ICD 2s, active-character condition (shares ICD logic with A1 in gcsim via a1() if c.Base.Cons >= 4). Reviewer to author."
 			],
-			"description": "Sayu recovers 1.2 Energy when she triggers a Swirl reaction.\nThis effect occurs once every 2s."
+			"description": "Sayu recovers 1.2 Energy when she triggers a Swirl or Stellar Swirl reaction while on-field.\nThis effect occurs once every 2s."
 		},
 		{
 			"id": "sayu__constellation__speed_comes_first",

@@ -217,7 +217,7 @@
 				"[A7] Caveat trimmed to the shown Lunar-Charged buff's fixed-60-point canonical assumption. The Swirl + Electro-Charged share (the passive's headline: +1.5% each per Rescue Essentials point, +90% at 60 points) is authored as multi-reaction elevate, which is frozen/unrendered and maps to no capability, so it never surfaces — the old '+90% shown' framing was inaccurate and was dropped rather than restated.",
 				"[A7] Rescue Essentials = total party Nightsoul, cap 150 (C0) / 200 (C2); per-point rates +1.5% Swirl, +1.5% Electro-Charged, +0.2% Lunar-Charged. 60 points is the fixed C0 reference magnitude the source used for the authored values (Swirl/EC 90%, Lunar-Charged 12%)."
 			],
-			"description": "When Ifa is in the Nightsoul's Blessing state, every 1 Nightsoul point out of the total in his entire party will grant him 1 **Rescue Essentials** point. Rescue Essentials will increase the Swirl, Electro-Charged, and Lunar-Charged DMG dealt by nearby party members."
+			"description": "When Ifa is in the Nightsoul's Blessing state, every 1 Nightsoul point out of the current total in his entire party will grant him 1 **Rescue Essentials** point. Rescue Essentials will increase the Swirl, Stellar Swirl, Electro-Charged, and Lunar-Charged reaction DMG dealt by nearby party members."
 		},
 		{
 			"id": "ifa__passive__mutual_aid_agreement",
