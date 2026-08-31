@@ -1340,26 +1340,34 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		for (const row of snap.gadgetRows) {
 			const rowH = row.capacity > 1 ? snap.gadgetProfileH : snap.gadgetDotR * 2;
 			const color = GADGET_COLOR[row.kind];
-			const yOf = (n: number) => gadgetY + rowH - (Math.min(n, row.capacity) / row.capacity) * rowH;
+			// ⚓ THE STAIR HANGS FROM THE TOP, mirroring the screen: the row's
+			// baseline is its top edge, where the discs sit, and each live core
+			// steps the boundary DOWN.
+			const yOf = (n: number) => gadgetY + (Math.min(n, row.capacity) / row.capacity) * rowH;
 			if (row.runs.length > 0) {
+				// ⚠ Bottom-to-top fade: the boundary line is the LOW edge here, so the
+				// fill is strongest where the line is and thins toward the surface.
 				const grad = ctx.createLinearGradient(0, gadgetY, 0, gadgetY + rowH);
-				grad.addColorStop(0, alpha(color, 0.5));
-				grad.addColorStop(1, alpha(color, 0.14));
+				grad.addColorStop(0, alpha(color, 0.14));
+				grad.addColorStop(1, alpha(color, 0.5));
 				ctx.fillStyle = grad;
 				ctx.beginPath();
-				ctx.moveTo(x(row.runs[0].start), gadgetY + rowH);
+				ctx.moveTo(x(row.runs[0].start), gadgetY);
 				for (const run of row.runs) {
 					ctx.lineTo(x(run.start), yOf(run.count));
 					ctx.lineTo(x(run.end), yOf(run.count));
 				}
-				ctx.lineTo(x(row.runs[row.runs.length - 1].end), gadgetY + rowH);
+				ctx.lineTo(x(row.runs[row.runs.length - 1].end), gadgetY);
 				ctx.closePath();
 				ctx.fill();
-				// ⚠ SQUARE STEPS — the count changes at an instant, so a sloped join
+				// ⚠ The OPEN walk for the stroke — closing it would draw the baseline
+				// and both ends, which is the outlined box this replaced.
+				// ⚠ SQUARE STEPS: the count changes at an instant, so a sloped join
 				// would draw a transition the game does not have.
 				ctx.strokeStyle = alpha(color, 0.8);
 				ctx.lineWidth = 1.5;
 				ctx.lineJoin = 'miter';
+				ctx.lineCap = 'butt';
 				ctx.beginPath();
 				let first = true;
 				for (const run of row.runs) {

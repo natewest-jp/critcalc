@@ -884,22 +884,32 @@
 	const gadgetDotCy = AURA_PILL_R;
 
 	/**
-	 * The live-count area as a path: a staircase across the row, closed along the
-	 * baseline.
+	 * The live-count staircase. ⚓ IT HANGS FROM THE TOP (⚓ Nate): the row's
+	 * baseline is its TOP edge, where the spawn discs sit, and each live core
+	 * steps the boundary DOWN. So the discs read as the surface and the state as
+	 * what is suspended beneath them — a shape that says "this much is going on"
+	 * without the reader having to find a floor.
+	 *
+	 * ⚓ TWO PATHS FROM ONE WALK, exactly as the aura plot does it (`auraPathD`
+	 * with and without a baseline): the CLOSED one is the fill and the OPEN one is
+	 * the line. ⚠️ Stroking the closed path is what made it read as an OUTLINED
+	 * BOX — the closure runs back along the baseline and up the ends, drawing
+	 * three edges that are not data.
 	 *
 	 * ⚓ SQUARE STEPS. The count is an integer that changes at an instant — a core
 	 * spawns or it does not — so a slope between two runs would draw a transition
 	 * the game does not have. (The plot above interpolates because a gauge really
 	 * is continuous; ⛔ the two are not the same kind of series.)
 	 */
-	function gadgetPath(runs: GadgetRun[], capacity: number, h: number): string {
+	function gadgetStair(runs: GadgetRun[], capacity: number, h: number, close = false): string {
 		if (runs.length === 0) return '';
-		const yOf = (n: number) => h - (Math.min(n, capacity) / capacity) * h;
-		let d = `M ${xForTime(runs[0].start)} ${h}`;
+		const yOf = (n: number) => (Math.min(n, capacity) / capacity) * h;
+		const head = close ? `M ${xForTime(runs[0].start)} 0 L` : 'M';
+		let d = `${head} ${xForTime(runs[0].start)} ${yOf(runs[0].count)}`;
 		for (const run of runs) {
 			d += ` L ${xForTime(run.start)} ${yOf(run.count)} L ${xForTime(run.end)} ${yOf(run.count)}`;
 		}
-		return d + ` L ${xForTime(runs[runs.length - 1].end)} ${h} Z`;
+		return close ? d + ` L ${xForTime(runs[runs.length - 1].end)} 0 Z` : d;
 	}
 
 	type GadgetRowShape = { kind: string; label: string; capacity: number; bars: GadgetBar[] };
@@ -2270,25 +2280,34 @@
 														x2="0"
 														y2={h}
 													>
-														<stop offset="0" stop-color={row.color} stop-opacity="0.5" />
-														<stop offset="1" stop-color={row.color} stop-opacity="0.14" />
+														<!-- ⚠ The fade runs BOTTOM-TO-TOP because the shape does: the
+														     boundary line is the low edge and the baseline is the
+														     top, so the fill is strongest where the line is and thins
+														     toward the surface. Same argument as the plot's fade —
+														     the LINE carries the colour. -->
+														<stop offset="0" stop-color={row.color} stop-opacity="0.14" />
+														<stop offset="1" stop-color={row.color} stop-opacity="0.5" />
 													</linearGradient>
 												</defs>
 												<!-- STATE: how many are standing. ⚠ The fill fades toward the
 												     baseline for the same reason the plot's does — the step is
 												     the shape, and a solid area buries it. -->
 												<path
-													d={gadgetPath(row.runs, row.capacity, h)}
+													d={gadgetStair(row.runs, row.capacity, h, true)}
 													fill="url(#gadget-fade-{row.kind})"
 													stroke="none"
 												/>
+												<!-- ⚠ The OPEN walk, not the closed one: stroking the fill path
+												     draws the baseline and both ends too, which is the outlined
+												     box this replaced. -->
 												<path
-													d={gadgetPath(row.runs, row.capacity, h)}
+													d={gadgetStair(row.runs, row.capacity, h)}
 													fill="none"
 													stroke={row.color}
-													stroke-opacity={gadgetHover ? 0.5 : 0.8}
+													stroke-opacity="0.8"
 													stroke-width="1.5"
 													stroke-linejoin="miter"
+													stroke-linecap="butt"
 												/>
 												<!-- Hit areas for the state, one per run — the count is what a
 												     reader cannot get off a 3px step, so every run can be asked. -->
@@ -2306,15 +2325,22 @@
 												     size. ⚓ Painted LAST so a mark is never behind the state it
 												     caused, and hit LAST for the same reason — the dot is what a
 												     reader is aiming at. -->
+												<!-- ⚓ HOVER IS A RING, NOT A DIMMING (⚓ Nate). Dimming was
+												     answering "which life is this" — a question the row stopped
+												     asking when the leaders went; what is left is "which SPAWN am
+												     I pointing at", and that wants a mark ON the thing rather
+												     than a wash over everything else. The ring is the aura tick's
+												     own lit state (`box-shadow: 0 0 0 2px var(--chrome)`), in the
+												     form SVG can carry it. -->
 												{#each row.bars as bar, bi (`d${bi}`)}
-													{@const dim =
-														gadgetHover !== null && gadgetHover !== `${row.kind}:dot:${bi}`}
 													<circle
 														cx={xForTime(bar.start)}
 														cy={gadgetDotCy}
 														r={AURA_PILL_R}
 														fill={row.color}
-														fill-opacity={dim ? 0.55 : 1}
+														stroke="var(--chrome)"
+														stroke-width="2"
+														stroke-opacity={gadgetHover === `${row.kind}:dot:${bi}` ? 1 : 0}
 														onmouseenter={(e) => gadgetDotEnter(e, row, bar, bi)}
 													/>
 												{/each}

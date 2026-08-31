@@ -540,3 +540,35 @@ marks, down from 33** — 13 runs behind them for the count tooltip. Prism+bloom
 28px strip, an 8px Prism row (one disc, one run) over the core row, whose run
 tooltip reads "1 core · Just now 1 consumed by a reaction". No console errors;
 the PNG export mirrors both passes.
+
+### 7.7 The stair hangs from the top, and hover is a ring
+
+⚓ Nate, three refinements to §7.6, all accepted as stated:
+
+**1. The steps stack DOWNWARD.** The row's baseline is its TOP edge — where the
+spawn discs already sit — and each live core steps the boundary down. ⚓ The
+discs read as the surface and the state as what is suspended beneath them, which
+is a shape you can take in without first locating a floor. ⚠️ It also puts the
+mark and the state it caused on the same edge: a disc and the step under it are
+one gesture.
+
+**2. One line, and a bottom-to-top fade — ⛔ not an outline.** The previous cut
+stroked the CLOSED fill path, so it drew the baseline and both end walls as well:
+three edges that are not data, which is what read as a box. ⚓ Two paths from one
+walk now, exactly as the aura plot does it (`auraPathD` with and without a
+baseline): the closed one fills, the OPEN one strokes. The gradient runs
+bottom-to-top because the shape does — the boundary line is the low edge here, so
+the fill is strongest where the line is and thins toward the surface. Same
+argument as the plot's own fade: the LINE carries the colour.
+
+**3. Hover is a RING on the dot, and all dimming is gone.** ⚓ Dimming was
+answering "which life is this" — a question the row stopped asking when the
+per-life leaders went. What is left is "which spawn am I pointing at", and that
+wants a mark ON the thing rather than a wash over everything else. The ring is the
+aura tick's own lit state (`box-shadow: 0 0 0 2px var(--chrome)`) in the form SVG
+can carry it, so the two marks light the same way in the two bands.
+
+**Measured.** Fill path starts `M 178 0 L 178 3.2` (closed, baseline at the top)
+and the stroke path `M 178 3.2` (open); gradient stops 0.14 → 0.5 top to bottom;
+hovering the third disc rings exactly one and leaves every fill untouched. No
+console errors; the PNG export mirrors all three.
