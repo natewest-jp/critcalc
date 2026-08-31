@@ -60,20 +60,26 @@ test.describe('roster and facets', () => {
 		expect(names).toContain('Bennett');
 		expect(names, 'Jean matches on a passive-derived heal').toContain('Jean');
 
-		// The bucket collects only capability-UNKNOWN characters. ↻ 2026-08-31:
-		// it renders again, and that is the honesty machinery WORKING, not a
-		// regression. Between the 2026-07-23 two-tool split and now, every
-		// frameless stub had complete Stage 1–3 capabilities, so nothing was
-		// unknown and the bucket stayed empty. Odette and Alyosha were ingested
-		// at Stage 0 with no effects authored yet, so they are genuinely
-		// capability-unknown and the tool is right to bucket them.
-		// ⛔ Do NOT "fix" this back to 0 — that would be asserting that a
-		// half-curated character reads as fully known. It returns to 0 on its
-		// own once their Stage 2 effects land.
+		// The bucket collects only capability-UNKNOWN characters, and it has now
+		// gone empty → 1 → empty again inside nine days. That round trip is the
+		// honesty machinery working, and the arc is worth keeping:
+		//   · until 2026-08-30 every frameless stub had complete Stage 1–3
+		//     capabilities, so nothing was unknown and the bucket stayed empty;
+		//   · 2026-08-31 Odette and Alyosha were ingested at Stage 0 with no
+		//     effects authored, so they were genuinely unknown and this
+		//     assertion was flipped to 1 (b8816df) with a note saying it would
+		//     "return to 0 on its own once their Stage 2 effects land";
+		//   · later that day it did. Both now derive real capabilities, so
+		//     neither is unknown and the bucket is empty again.
+		// ⛔ Don't read a 0 here as "the bucket is dead code" — flip it back the
+		// day a character is ingested at Stage 0, which is the only state that
+		// fills it. ⚠️ And it is Stage 2, not frames, that empties it: both
+		// characters are still frameless and still read as "not yet curated" in
+		// the roster.
 		await expect(
 			page.locator('.tb-stubs'),
-			'uncurated bucket renders for Stage-0 stubs'
-		).toHaveCount(1);
+			'no uncurated bucket once every stub has authored capabilities'
+		).toHaveCount(0);
 	});
 
 	test('stacked facets intersect (AND, not OR)', async ({ page }) => {

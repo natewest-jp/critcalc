@@ -369,12 +369,24 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// disabled every hit-triggered artifact set (Deepwood Memories, Tenacity of
 	// the Millelith, Silken Moon's Serenade — all three authored, none reachable).
 	//
-	// Corpus reach beyond the artifacts, measured 2026-08-15: FOUR characters
+	// ↻⚠️⚠️ THIS PARAGRAPH USED TO CLAIM AN UPTIME CORRECTION IT DID NOT MAKE, and
+	// the claim stood from 2026-08-15 to 2026-08-31. It read: "FOUR characters
 	// leave a damaging summon AND hold an `onHit` effect that summon can fire —
-	// Emilie (C2), Escoffier (A-passive), Anemo Traveler (C6), Xiangling (C1),
-	// every one of them a resShred. For those the effect already fired at the
-	// CAST instant, so this is an uptime correction rather than a from-nothing
-	// gain; the artifact sets are the from-nothing case.
+	// Emilie (C2), Escoffier (A-passive), Anemo Traveler (C6), Xiangling (C1) …
+	// For those the effect already fired at the CAST instant, so this is an
+	// uptime correction rather than a from-nothing gain."
+	//
+	// ⛔ It was not. Synthesizing the hits was necessary and not sufficient: the
+	// CHARACTER buff pools read `hitsForTrack`, which selects
+	// `normal | charged | plunge`, and these hits are `skill | burst` — so until
+	// the summon-tick pass landed (2026-08-31) they reached the ARTIFACT branch
+	// and nothing else. Measured at the time: `Xiangling E` at C1 drew one pyro
+	// shred window 0.22 → 6.22s while Guoba ticked at 2.10 / 3.77 / 5.43 / 7.10.
+	// The capability rubric had it right and this comment had it wrong.
+	//
+	// ⚓ The lesson worth keeping: a hit reaching `hitRecords` is not a hit
+	// reaching a CONSUMER, and this file cannot see which consumers select it.
+	// Eleven characters were under-claiming by up to 21s behind that sentence.
 	//
 	// Runs HERE, at finalize, because a summon's FINAL end is only known once
 	// step 6's recast/swap truncation has landed. Synthesizing during the parse
@@ -384,12 +396,24 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// put through `dispatchHit`, so `gainStacks`/`consumeStacks` never see them.
 	// That machinery mutates live state in PARSE order, and a finalize-time hit
 	// cannot be interleaved into a stream that has already been consumed without
-	// a two-pass parse. Buff and resShred effects carry no stack state — which is
-	// all three artifact sets and the bulk of the character cases — so those are
-	// correct today; a summon tick feeding a STACK effect stays unmodelled.
+	// a two-pass parse. Buff and resShred effects carry no stack state, so those
+	// are correct here; a summon tick feeding a STACK effect stays unmodelled.
 	// ⛔ Do not "fix" that by calling `dispatchHit` here: the ordering IS the
 	// problem, and a hit dispatched after the fact would apply its gain to a
 	// stack state that later hits have already read.
+	//
+	// ⏭ The right place for that is the LIVE tick chain in `sim/aura.ts`, which
+	// already fires at a real parse-order instant and already calls
+	// `notifyDamage` from there — so the two-pass objection does not apply to it.
+	// ⚓ Censused 2026-08-31: the corpus holds FIVE `onHit` stack effects in total
+	// (Yanfei ×3, Alyosha ×2) and every one is gated to `normal`/`charged`, so
+	// wiring that path changes the behaviour of nothing that exists today. Its
+	// only customer is Alyosha's Tugarin. See `docs/summon-tick-stacks-round.md`.
+
+	// ⚓ FLAGGED `viaEntity`, and it is what makes `onHit.source: 'active'`
+	// answerable. A tick carries its OWNER's id while its owner may be off field,
+	// so an id comparison cannot tell a tick from a swing — the same distinction,
+	// under the same name, that `offerApplication` draws for reaction procs.
 	// ⚓⚓ ONE PRODUCER FOR A SUMMON'S MARKERS (2026-08-18). The fixed-cadence walk
 	// used to live in `computeSummonSubrows`, which meant the ticks a reader SEES
 	// and the ticks that FIRE were two computations required to agree — the law
@@ -442,6 +466,8 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 				// per-effect override on a `summonTick` damage effect to prefer.
 				damageTag: win.source,
 				abilityName: summon.label,
+				// ⚓ Delivered by the SUMMON. See the note above.
+				viaEntity: true,
 				// Provenance is the CAST that spawned the summon — what a reader
 				// wants a summon-borne buff traced back to. `-1` is unreachable
 				// (ids count from 0, bars↔casts are 1:1 by construction); it is
@@ -453,8 +479,9 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// ⚠ Appended, NOT merged by time into the existing records. `hitsForTrack`
 	// (buffWindows) only ever selects `normal`/`charged`/`plunge`, so a skill/
 	// burst-tagged summon hit is invisible to the per-swing passes and cannot
-	// perturb their order-sensitive refresh-merge. The one consumer that wants
-	// these sorts its own selection.
+	// perturb their order-sensitive refresh-merge. ⚠️ The two consumers that DO
+	// want these — the artifact onHit branch and, since 2026-08-31, the
+	// summon-tick onHit pass — each sort their own selection.
 
 	// 7. Sort the event stream by time (stable).
 	ctx.events.sort((a, b) => a.time - b.time);

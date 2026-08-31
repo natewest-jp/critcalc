@@ -1,6 +1,10 @@
 # Summon ticks → the stack machinery — spec
 
-> **Status: CENSUS DONE 2026-08-31, NOT BUILT.** Written during Alyosha's Stage 2
+> **Status: ✅ HALF B SHIPPED 2026-08-31. Half A specced, not built.**
+> ⚠️ §9 is the record of what landed; §1–§5 are the BEFORE and §3's central
+> claim was measured false.
+>
+> **(previous status: CENSUS DONE 2026-08-31, NOT BUILT.)** Written during Alyosha's Stage 2
 > at ⚓ Nate's request; the census in §7 ran immediately after and **overturns
 > this document's central assumption**. ⚠️⚠️ **Read §7 before §3 and §5** — the
 > blast radius §3 warns about is measured at ZERO, and the round's real value is
@@ -223,3 +227,92 @@ ship in this order**:
    change; one customer (Alyosha's Tugarin, which needs BOTH halves — Half B
    anchors the buff at the tick, Half A consumes the mark so it fires once at
    C0 rather than on every tick).
+
+## 9. ✅ HALF B — SHIPPED 2026-08-31
+
+`viaEntity` on `HitEvent` · `onHit.source: 'active'` · the summon-tick onHit pass
+in `deriveBuffWindows` · Nicole re-authored · the step-6c comment corrected.
+
+### What changed
+
+1. **`HitEvent.viaEntity`** — set by finalize's step-6c synthesis, absent on
+   every hit a character landed itself. ⚓ Same word and same meaning as
+   `offerApplication`'s flag: one vocabulary for "the summon delivered this, and
+   its owner may be off field".
+2. **`Trigger.onHit.source` gained `'active'`**, and `onHitTriggerMatches`
+   refuses a `viaEntity` hit for it. ⚠️ Every cast/normal/charged/plunge hit is
+   the active character's by construction, so this ONE clause is the whole of
+   the distinction.
+3. **The summon-tick onHit pass** — rotation-wide per character
+   (`firstTrackOfChar`, the artifact branch's guard and its reason: a summon
+   ticks while its owner is off field, so track-scoping would cut the window at
+   every swap). One window per tick with the block pass's refresh-merge.
+   ⚓ It stamps the SAME `source` the cast pool does, so the tick windows land in
+   the cast's row and `mergeRefreshedBars` fuses them at the projection.
+   ⛔ Not by extending the cast window in place — that pool can also hold
+   `onCast` effects, which a tick must not refresh.
+4. **Nicole's A4** → `source: 'active'`. ⚓ Byte-identical today and authored
+   anyway: she is the only corpus effect with `source: 'team'` and no
+   ability-class filter, i.e. the only one a tick could reach indiscriminately.
+5. **The step-6c comment** — see §7b. Corrected in place, with the lesson kept:
+   a hit reaching `hitRecords` is not a hit reaching a CONSUMER, and that file
+   cannot see which consumers select it.
+
+### Measured
+
+Corpus differential, `<name> E Q N1 C P E Q` at C0 and C6 over all 123
+characters, before vs after:
+
+- **19 windows added, 0 lost, 0 changed.** Purely additive.
+- **10 characters affected** — emilie, escoffier, lauma, navia, rosaria,
+  sigewinne, sucrose, traveler_anemo, venti, xiangling. Every other character is
+  **byte-identical**. ⚓ That is 10 of the census's 11: the eleventh is Nicole,
+  whose effect is self-target and therefore untouched by a team-surface pass —
+  which is also why her `'active'` source is a forward guard rather than
+  today's fix.
+- **No new ROWS.** Row-level check: Xiangling C1 goes from one bar `0.22 →
+6.22s` to one bar **`0.22 → 13.10s`**; Venti C6 `1.57 → 11.57s` → `1.57 →
+19.37s`; Emilie C2 `0.27 → 10.27s` → `0.27 → 31.27s`.
+- 🔒 **Seeded negative**: neutering the pass's tick selection returns the corpus
+  dump to byte-identical with the baseline — so the 19 windows are this pass's
+  doing and the other three changes are inert on their own.
+
+⚠️ The measured ends run slightly LONGER than §7c's analytic table (Venti 19.37s
+vs a predicted 17.80s) because that table walked the authored cadence against
+the authored duration, and the parse applies spawn offsets and truncation.
+⚓ The parse is the authority; the table was for pricing, not for asserting.
+
+### ⏭ Still open
+
+**Half A** — zero corpus effects, one customer (Alyosha's Tugarin), and it
+belongs on the LIVE tick chain in `sim/aura.ts`, not on the finalize synthesis.
+⚠️ Alyosha needs both halves — B anchors the buff at the tick, A consumes the
+mark so it fires once at C0 rather than on every maul.
+
+⚠️⚠️ **AND IT IS NOT A WIRING JOB — IT NEEDS A CONTAINER DECISION FIRST**, found
+while closing Half B and measured rather than reasoned. `stackState` and
+`stackInstances` are declared INSIDE the per-segment loop (`sim/run.ts` ~:263,
+inside the `for (… segments …)` at ~:152) and reset at every segment start. A
+summon tick fires while its owner may be off field — that is the whole point of
+Tugarin — i.e. during ANOTHER character's segment, where the owner has no live
+stack map at all. There is nowhere for the tick's mutation to land.
+
+⚓ The same defect is already visible in what Half B could not fix: Alyosha's
+Hunter's Mark is a state on the ENEMY that lasts 15 s, but its container is
+per-segment, so `Alyosha N4 > Fischl E > Alyosha E` draws no ATK bar where the
+game gives one — and so does `Alyosha N4 > Alyosha E`, two segments of the same
+character. Caveated on his skill; ⛔ not fixable by authoring.
+
+So Half A's real first question is **where an enemy-side, rotation-wide resource
+lives**. The one rotation-wide pool that exists — `CharState.sourceLifetime`,
+`Map<key, Map<sourceCharId, expiry>>` — is shaped for a different mechanic
+(per-SOURCE slots, refresh-on-same-source) and has **zero corpus authors**.
+⛔ Don't wire the tick chain into the per-segment dispatchers and call it done:
+that would fire a tick into a map that is either absent or belongs to whoever
+happens to be on field.
+
+⚠️ **The two surfaces this pass does NOT cover** are a measured omission, not a
+partial job: the census found no active-target and no self-target onHit buff on
+a character who leaves a ticking summon. ⛔ Re-run the census before adding
+them; ⚓ and if one is ever added, Nicole's `'active'` source is what stops her
+A4 riding every teammate's summon.
