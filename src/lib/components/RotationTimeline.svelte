@@ -40,7 +40,12 @@
 	import { computeWeaponProcRows } from '$lib/timeline/weaponProcRows';
 	import { computeSummonSubrows, findCastSummons } from '$lib/timeline/summonSubrows';
 	import { computeShieldSubrows } from '$lib/timeline/shieldRows';
-	import { computeGadgetRows, type GadgetBar, type GadgetRun } from '$lib/timeline/gadgetRows';
+	import {
+		computeGadgetRows,
+		type GadgetBar,
+		type GadgetRun,
+		type GadgetSpawn
+	} from '$lib/timeline/gadgetRows';
 	import {
 		auraPathD,
 		auraSpanLabels,
@@ -950,27 +955,42 @@
 		});
 	}
 
-	/** A spawn dot's hover: this bloom, and what it joined. */
-	function gadgetDotEnter(e: MouseEvent, row: GadgetRowShape, bar: GadgetBar, index: number) {
+	/** A spawn disc's hover: what appeared here, and what it joined. */
+	function gadgetDotEnter(e: MouseEvent, row: GadgetRowShape, spawn: GadgetSpawn, index: number) {
 		gadgetHover = `${row.kind}:dot:${index}`;
-		onAuraMarkEnter(bar.start);
+		onAuraMarkEnter(spawn.time);
+		const first = spawn.bars[0];
+		const ends = new Set(spawn.bars.map((b) => b.end));
 		showTooltip(e, {
-			sourceLabel: `${row.label} · ${secondsLabel(bar.start)}s`,
+			sourceLabel: `${row.label} · ${secondsLabel(spawn.time)}s`,
 			effects: [
-				{ stat: 'On the field', displayValue: `${((bar.end - bar.start) / FPS).toFixed(2)}s` },
+				// ⚠ A group's lives can END at different instants even though they
+				// began together (one eaten, the rest expiring), so the duration is
+				// only stated when they agree.
+				...(ends.size === 1
+					? [
+							{
+								stat: 'On the field',
+								displayValue: `${((first.end - spawn.time) / FPS).toFixed(2)}s`
+							}
+						]
+					: []),
+				...(spawn.bars.length > 1
+					? [{ stat: 'Spawned', displayValue: `${spawn.bars.length} at once` }]
+					: []),
 				...(row.capacity > 1
 					? [
 							{
 								stat: 'Alongside',
 								displayValue: `${
-									row.bars.filter((b) => b.start <= bar.start && b.end > bar.start).length
+									row.bars.filter((b) => b.start <= spawn.time && b.end > spawn.time).length
 								} live`
 							}
 						]
 					: []),
-				...(bar.endReason === 'consumed'
+				...(spawn.bars.some((b) => b.endReason === 'consumed')
 					? [{ stat: 'Ends', displayValue: 'consumed by a reaction' }]
-					: bar.endReason === 'popped'
+					: spawn.bars.some((b) => b.endReason === 'popped')
 						? [{ stat: 'Ends', displayValue: 'pushed out by a newer core' }]
 						: [])
 			],
@@ -2314,16 +2334,16 @@
 												     than a wash over everything else. The ring is the aura tick's
 												     own lit state (`box-shadow: 0 0 0 2px var(--chrome)`), in the
 												     form SVG can carry it. -->
-												{#each row.bars as bar, bi (`d${bi}`)}
+												{#each row.spawns as spawn, si (`d${si}`)}
 													<circle
-														cx={xForTime(bar.start)}
+														cx={xForTime(spawn.time)}
 														cy={gadgetDotCy}
 														r={AURA_PILL_R}
 														fill={row.color}
 														stroke="var(--chrome)"
 														stroke-width="2"
-														stroke-opacity={gadgetHover === `${row.kind}:dot:${bi}` ? 1 : 0}
-														onmouseenter={(e) => gadgetDotEnter(e, row, bar, bi)}
+														stroke-opacity={gadgetHover === `${row.kind}:dot:${si}` ? 1 : 0}
+														onmouseenter={(e) => gadgetDotEnter(e, row, spawn, si)}
 													/>
 												{/each}
 											</svg>

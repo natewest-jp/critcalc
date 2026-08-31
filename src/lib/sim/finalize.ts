@@ -37,6 +37,7 @@ import {
 } from './summons';
 import { collectApplications, collectAuraSeries } from './aura';
 import { deriveFieldWindows } from './fields';
+import { deriveGadgetWindows } from './gadgets';
 
 /**
  * Authors the IR windows, stamps the owner uptimes, and projects the per-track
@@ -595,7 +596,14 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		});
 		for (const w of fields.gadgets) windows.push(w);
 		for (const w of fields.buffs) windows.push(w);
-		if (fields.gadgets.length > 0 || ctx.gadgetRecs.length > 0) {
+		// The other reaction-spawned entities — a Thundercloud, a field of
+		// Moondrifts. ⚓ Same stream, no gauge state: both are walks over reaction
+		// events the IR already carries.
+		const otherGadgets = deriveGadgetWindows(
+			ctx.events.filter((e): e is ReactionEvent => e.kind === 'reaction')
+		);
+		for (const w of otherGadgets) windows.push(w);
+		if (fields.gadgets.length > 0 || otherGadgets.length > 0 || ctx.gadgetRecs.length > 0) {
 			windows.sort((a, b) => a.start - b.start || a.end - b.end);
 		}
 	}

@@ -1302,6 +1302,15 @@
 	   because Stellar-Conduct is the Cryo+Electro reaction and the strip reads
 	   beside both of those hues. */
 	--rx-starlight-prism: #c9b6ff;
+	/* The two lunar gadgets (2026-09-01): the Thundercloud a Lunar-Charged
+	   sustains and the Moondrifts a Lunar-Crystallize drops. ⚠ MEASURED, per the
+	   rule above — nearest neighbour anywhere in the el/rx/ui grid is
+	   --el-hydro-main at ΔE .109 and --rx-frozen at ΔE .107 respectively, against
+	   a grid whose own closest pair sits at .037; they clear each other at .196
+	   and the Prism at .174 / .136. Storm blue and moonlit sand rather than a
+	   second violet, because the Prism already holds that end. */
+	--rx-thundercloud: #5f9ec4;
+	--rx-moondrift: #cfc7ae;
 
 	/* Typography — single source of truth. Bitter is display/branding AND every
 	   MAIN HEADER (⚓ Nate 2026-08-09 — see the h1–h6 rule for the split that

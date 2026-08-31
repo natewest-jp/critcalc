@@ -609,3 +609,98 @@ hit-tests there. ⛔ Don't conclude from a rect that a stroke is missing.
 **Measured.** Both rows: one path at `fill-opacity: 0.35`, zero gradients, zero
 stroked paths; hovering a disc rings exactly one and the ring hit-tests 0.5px
 above and below its row. Gates green; the PNG export mirrors the flat fill.
+
+---
+
+## 8. Thunderclouds and Moondrifts, 2026-09-01
+
+The strip's other two occupants, from `docs/curation/polestar-field-round.md`
+§6.2's own table. ⚓ **NEITHER NEEDED A LINE OF GAUGE WORK** — `lunarCharged` and
+`lunarCrystallize` have been IR reaction events since the 7.0 reaction-conversion
+round, so both are a walk over a stream that already existed, exactly as the
+Prism is. ⛔ Don't reach for new gauge state for a gadget whose spawn condition is
+a reaction. (Verified before building: `Ineffa E Q > Fischl E Q > Xingqiu E Q N3`
+emits 10 `lunarCharged`; `Zibai E Q > Xingqiu E Q > Noelle E Q N3` emits
+`lunarCrystallize`.)
+
+### 8.1 The Thundercloud — one cloud, 5.5s, refreshed
+
+gcsim `pkg/reactable/lunarcharged.go`: `Status.Add(LcKey, 5.5*60)`, with its own
+comment — "the LC cloud lasts 5.5s, or lifetime is extended to last another
+5.5s". ⚠️ It is a STATUS, not a count, so a second Lunar-Charged **restarts the
+clock** rather than adding a second cloud: capacity 1, and the same
+replace-refresh rule the Prism uses. `mergePresences` is now shared between them
+(⚓ one rule for "an entity refreshed by repeat triggers"; `fields.ts` keeps only
+the ledger's need for the trigger list).
+
+### 8.2 Moondrifts — ⚓⚓ a top-up to three, and a refresh on a full field
+
+gcsim `lunarcrystallize.go`. Two rules that read as oddities until you see the
+source, and both are the reason this file has a guard test:
+
+- ⚓⚓ **A Lunar-Crystallize TOPS THE FIELD UP to three, it does not add one**
+  (`for i := range 3 - moondriftsNearby`). The first reaction on an empty field
+  drops **three at once**, each `lcrDur` = 9s.
+- ⚓⚓ **On a full field it REFRESHES instead**, via Moondrift Harmony:
+  `extendNearbyLunarCrystallizeConstructDur` sets every drift's expiry to
+  `now + lcrDur`. ⚠️ Without that branch a stocked field would quietly expire
+  under a player who is still reacting.
+- ⚠️⚠️ **TWO SEPARATE THREES, and conflating them is the trap.** Harmony needs
+  three drifts STANDING _and_ `lcrCountKey >= 3` — a counter incremented by every
+  Lunar-Crystallize (cap 6) and spent three at a time. So the second reaction on
+  a full field does **nothing at all**, and the third fires. ⚠️ Both of the
+  guard's first-draft expectations were wrong on exactly this, and the CODE was
+  right — the tests were corrected, not the model.
+- Harmony's own ICD is `lcrHitmarks[last]` = **37 frames**. ⚠️⚠️ The counter alone
+  blocks most bursts, so a fixture only exercises the ICD if it rebuilds the
+  counter to 3 _inside_ those 37 frames — the first ICD test passed under a
+  seeded mutation that deleted the ICD entirely, and had to be rebuilt around
+  frames 0/12/24/26/28/30.
+
+⚠️ Position is dropped, as everywhere: gcsim gates both on `distance < 20` from
+the player, and the house rule since 2026-08-31 is that a field is assumed
+entered.
+
+⛔ **NOT MODELLED, deliberately**: the Thundercloud's lightning ticks and the
+Moondrift Harmony ATTACK. Both deal damage that would have to reach the gauge,
+neither is authored anywhere in the corpus, and inventing a cadence is
+`⛔ never fake timing` twice over. Several kits read these entities as a
+CONDITION ("if there are thunderclouds nearby" — Ineffa A1, Flins's burst) and
+that stays unmodelled too; the entity's LIFE is what the strip draws, and it is
+stated exactly.
+
+### 8.3 One disc per spawn INSTANT, not per life
+
+⚠️ A Moondrift top-up spawns three at one instant, which drew three identical
+discs at one x — redundant ink for a count the area already carries.
+`GadgetRow.spawns` groups lives by start; the tooltip says "3 at once" instead.
+⚠️ A group's lives can END apart (one eaten, the rest expiring), so the duration
+is printed only when they agree.
+
+### 8.4 Colours
+
+Measured on the same discipline as the Prism's: `--rx-thundercloud: #5f9ec4`
+(nearest neighbour `--el-hydro-main`, ΔE .109) and `--rx-moondrift: #cfc7ae`
+(nearest `--rx-frozen`, ΔE .107), against a grid whose own closest pair is .037.
+They clear each other at .196 and the Prism at .174 / .136. ⚠️ Storm blue and
+moonlit sand rather than a second violet, because the Prism already holds that
+end of the wheel.
+
+## 9. The guards (2026-09-01)
+
+⚓ Approved by Nate as a promotion. Two files, both **seeded-negative verified** —
+every mutation listed goes red on the test aimed at it, and nothing else.
+
+- **`src/lib/sim/fields.test.ts`** (14): `polestarDmgBonus`'s discontinuity and
+  cap; the Prism's 7s and replace-refresh; the 4s tiling and its clip; the ledger
+  reading the PREVIOUS window; Cryo/Electro only; the creating-hit exclusion, and
+  that it strikes off ONE application per trigger rather than every one sharing a
+  frame. Seeds: value → `20 + n`; ledger → own window; exclusion removed; refresh
+  → extend; grants unclipped.
+- **`src/lib/sim/gadgets.test.ts`** (11): the cloud's 5.5s and single instance;
+  the Moondrift top-up, the Harmony refresh, the counter gate and the ICD. Seeds:
+  top-up → add-one; Harmony refresh removed; ICD removed; counter gate removed.
+
+⚠️ These test the PRODUCERS, not the corpus. Every rule in them is a game fact,
+so the inputs are hand-built reaction/application streams — ⛔ a corpus fixture
+would couple the assertions to whichever characters happen to react today.

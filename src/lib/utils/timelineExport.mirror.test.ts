@@ -151,6 +151,8 @@ describe('timelineExport palette mirror ↔ app.css', () => {
 		// The gadget strip's two entities (Polestar-Field round).
 		expect(PALETTE_MIRROR.RX_DENDRO_CORE).toBe(resolve(cssToken('--rx-dendro-core')));
 		expect(PALETTE_MIRROR.RX_STARLIGHT_PRISM).toBe(resolve(cssToken('--rx-starlight-prism')));
+		expect(PALETTE_MIRROR.RX_THUNDERCLOUD).toBe(resolve(cssToken('--rx-thundercloud')));
+		expect(PALETTE_MIRROR.RX_MOONDRIFT).toBe(resolve(cssToken('--rx-moondrift')));
 	});
 
 	// ⚠ The colours are only half the mirror — the SCREEN reads its --rx-*

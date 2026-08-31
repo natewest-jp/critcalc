@@ -85,10 +85,21 @@
 	</p>
 	<p>
 		<strong>Under the plot: what the reaction left behind.</strong> Some reactions leave a thing standing
-		in the world rather than an aura on the enemy, and those get their own strip below the baseline —
-		a Dendro Core from a Bloom, a Starlight Prism from a Stellar-Conduct. A core's bar ends where something
-		ate it, so a Hyperbloom visibly spends one. The strip only appears when your rotation makes one of
-		these.
+		in the world rather than an aura on the enemy, and those get their own strip below the baseline: a
+		Dendro Core from a Bloom, a Starlight Prism from a Stellar-Conduct, a Thundercloud from a Lunar-Charged,
+		Moondrifts from a Lunar-Crystallize. Each row is a dot where something appeared over a shape showing
+		how many are standing — so a step down is one expiring, or one being spent. Hover the shape to read
+		the count, or a dot to read what appeared there. The strip only appears when your rotation makes one
+		of these.
+	</p>
+	<p>
+		<strong>What each one does.</strong> A Dendro Core arrives half a second after its Bloom and lasts
+		6s, and a Hyperbloom or Burgeon consumes the oldest one standing — you can watch the count drop as
+		you spend them. A Starlight Prism lasts 7s and any further Stellar-Conduct refreshes it. A Thundercloud
+		lasts 5.5s, and there is only ever one: another Lunar-Charged restarts its clock rather than adding
+		a second. A Lunar-Crystallize tops the field up to three Moondrifts at once, each lasting 9s, and
+		keeps refreshing them while you keep reacting. We draw these because they are things you can see and
+		time; what they hit for is not modelled.
 	</p>
 	<p>
 		<strong>The Polestar Field.</strong> A Starlight Prism sustains a Polestar Field around it, and the

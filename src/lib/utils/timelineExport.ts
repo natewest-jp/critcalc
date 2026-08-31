@@ -174,10 +174,14 @@ const RX_BURNING_FUEL = '#84b46a';
 // has an --el-* palette entry to borrow.
 const RX_DENDRO_CORE = '#e2ec6f';
 const RX_STARLIGHT_PRISM = '#c9b6ff';
+const RX_THUNDERCLOUD = '#5f9ec4';
+const RX_MOONDRIFT = '#cfc7ae';
 
 const GADGET_COLOR: Record<GadgetRow['kind'], string> = {
 	core: RX_DENDRO_CORE,
-	prism: RX_STARLIGHT_PRISM
+	prism: RX_STARLIGHT_PRISM,
+	thundercloud: RX_THUNDERCLOUD,
+	moondrift: RX_MOONDRIFT
 };
 
 const AURA_MOD_COLOR: Record<AuraKey, string> = {
@@ -211,7 +215,9 @@ export const PALETTE_MIRROR = {
 	RX_BURNING,
 	RX_BURNING_FUEL,
 	RX_DENDRO_CORE,
-	RX_STARLIGHT_PRISM
+	RX_STARLIGHT_PRISM,
+	RX_THUNDERCLOUD,
+	RX_MOONDRIFT
 } as const;
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
@@ -1363,10 +1369,13 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 				ctx.fill();
 			}
 			// The spawn discs, last — a mark is never behind the state it caused.
+			// ⚠ ONE PER SPAWN INSTANT, not per life: a Lunar-Crystallize tops the
+			// field up to three at once, and three identical discs at one x is
+			// redundant ink for a count the area already carries.
 			ctx.fillStyle = color;
-			for (const bar of row.bars) {
+			for (const spawn of row.spawns) {
 				ctx.beginPath();
-				ctx.arc(x(bar.start), gadgetY + snap.gadgetDotR, snap.gadgetDotR, 0, Math.PI * 2);
+				ctx.arc(x(spawn.time), gadgetY + snap.gadgetDotR, snap.gadgetDotR, 0, Math.PI * 2);
 				ctx.fill();
 			}
 			gadgetY += rowH + snap.gadgetRowGap;

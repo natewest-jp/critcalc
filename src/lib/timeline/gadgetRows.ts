@@ -76,15 +76,26 @@ export type GadgetBar = {
 	endReason?: 'consumed' | 'popped';
 };
 
+/** ⚓ ONE DISC PER INSTANT, not per life. A Lunar-Crystallize tops the field up
+ *  to three AT ONCE, so drawing a life apiece put three identical discs at one x
+ *  — redundant ink for a count the area already carries. `bars` is what spawned
+ *  here, so the tooltip can still say how many. */
+export type GadgetSpawn = {
+	time: number;
+	bars: GadgetBar[];
+};
+
 export type GadgetRow = {
-	kind: 'prism' | 'core';
+	kind: 'prism' | 'core' | 'thundercloud' | 'moondrift';
 	label: string;
 	color: string;
 	/** How many of this kind can be live at once — the area's y ceiling.
 	 *  ⚠️ Of the KIND, not of this rotation (see the header). */
 	capacity: number;
-	/** Every life, for the spawn dots and their tooltips. */
+	/** Every life — the substrate for both projections below. */
 	bars: GadgetBar[];
+	/** The marks: one per distinct spawn instant. */
+	spawns: GadgetSpawn[];
 	/** The area: runs of constant live count. */
 	runs: GadgetRun[];
 };
@@ -99,6 +110,17 @@ const ROW_ORDER = [
 		color: 'var(--rx-starlight-prism)',
 		capacity: 1
 	},
+	{
+		kind: 'thundercloud' as const,
+		label: 'Thundercloud',
+		color: 'var(--rx-thundercloud)',
+		// ⚠️ ONE cloud, ever — gcsim keeps it as a STATUS, not a count, so a second
+		// Lunar-Charged restarts its clock rather than adding a second cloud.
+		capacity: 1
+	},
+	// ⚠️ Three, because a Lunar-Crystallize TOPS THE FIELD UP to three rather than
+	// adding one.
+	{ kind: 'moondrift' as const, label: 'Moondrift', color: 'var(--rx-moondrift)', capacity: 3 },
 	// ⚓ 5 is `MAX_CORES` in gauge.ts (KQM: a sixth Bloom pops the oldest). ⚠️ Not
 	// imported — this module is a pure projection with no runtime imports, and
 	// the number is a stated game fact rather than an implementation detail. If
@@ -153,7 +175,13 @@ export function computeGadgetRows(windows: ReadonlyArray<TimelineWindow>): Gadge
 		const bars = byKind.get(row.kind);
 		if (!bars || bars.length === 0) continue;
 		const sorted = bars.sort((a, b) => a.start - b.start || a.end - b.end);
-		out.push({ ...row, bars: sorted, runs: runsOf(sorted) });
+		const spawns: GadgetSpawn[] = [];
+		for (const bar of sorted) {
+			const open = spawns[spawns.length - 1];
+			if (open && open.time === bar.start) open.bars.push(bar);
+			else spawns.push({ time: bar.start, bars: [bar] });
+		}
+		out.push({ ...row, bars: sorted, spawns, runs: runsOf(sorted) });
 	}
 	return out;
 }

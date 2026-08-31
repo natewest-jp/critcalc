@@ -46,6 +46,7 @@ import { framesOf } from '$lib/utils/frames';
 import type { Effect } from '$lib/types/ability';
 import type { ReactionEvent, TimelineWindow } from '$lib/utils/rotationEvents';
 import type { AuraApplication } from './aura';
+import { mergePresences } from './gadgets';
 
 type BuffWindow = Extract<TimelineWindow, { kind: 'buff' }>;
 type GadgetWindow = Extract<TimelineWindow, { kind: 'gadget' }>;
@@ -91,34 +92,10 @@ export function polestarDmgBonus(n: number): number {
 	return 28 + Math.min(n, MAX_RECORDED_HITS);
 }
 
-/** One continuous presence of the field: a Prism, plus every refresh of it. */
-type Presence = { start: number; end: number; characterId: string; triggers: ReactionEvent[] };
-
-/**
- * ⚓ REFRESH REPLACES, IT DOES NOT EXTEND. A new Stellar-Conduct resets the Prism
- * to a full 7s. ⛔ `durationExtensions` cannot express that — they ADD a delta,
- * they reach only the reacting character's own `summons[0]`, and they cap at
- * `maxExtensions`. So presences are built here: overlapping 7s spans collapse
- * into one, whose end is the LAST trigger's + 7s.
- */
-function collectPresences(conducts: ReactionEvent[]): Presence[] {
-	const out: Presence[] = [];
-	for (const ev of [...conducts].sort((a, b) => a.time - b.time)) {
-		const open = out[out.length - 1];
-		if (open && ev.time <= open.end) {
-			open.end = ev.time + PRISM_LIFETIME_F;
-			open.triggers.push(ev);
-			continue;
-		}
-		out.push({
-			start: ev.time,
-			end: ev.time + PRISM_LIFETIME_F,
-			characterId: ev.characterId,
-			triggers: [ev]
-		});
-	}
-	return out;
-}
+// ⚓ The presence merge is SHARED with the other reaction gadgets (`gadgets.ts`):
+// a Prism, a Thundercloud and a Moondrift field all refresh by REPLACEMENT, and
+// one rule for that is what stops three entities drifting apart. Only the
+// Polestar Field needs the triggers back, for the ledger below.
 
 /**
  * ⚠️ THE FIELD-CREATING HITS, as application INDICES.
@@ -249,7 +226,7 @@ export function deriveFieldWindows(input: {
 	const buffs: BuffWindow[] = [];
 	let nextId = input.nextBuffId;
 
-	for (const presence of collectPresences(conducts)) {
+	for (const presence of mergePresences(conducts, PRISM_LIFETIME_F)) {
 		const excluded = creatingHitIndices(input.applications, presence.triggers);
 		gadgets.push({
 			kind: 'gadget',

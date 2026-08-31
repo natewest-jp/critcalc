@@ -368,7 +368,7 @@ export type TimelineWindow =
 	 */
 	| {
 			kind: 'gadget';
-			gadget: 'core' | 'prism';
+			gadget: 'core' | 'prism' | 'thundercloud' | 'moondrift';
 			/** The strip's label for this entity. */
 			label: string;
 			start: number;
