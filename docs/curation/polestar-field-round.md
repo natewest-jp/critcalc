@@ -572,3 +572,40 @@ can carry it, so the two marks light the same way in the two bands.
 and the stroke path `M 178 3.2` (open); gradient stops 0.14 → 0.5 top to bottom;
 hovering the third disc rings exactly one and leaves every fill untouched. No
 console errors; the PNG export mirrors all three.
+
+### 7.8 One material for both rows: a solid dot and a translucent shape
+
+⚓ Nate, on seeing the Prism row share the core row's gradient-and-outline: the
+two rows should be the same object. **⛔ No gradient and ⛔ no outline** — the
+state is one flat translucent fill, the dots stay fully opaque.
+
+⚓⚓ **THE OUTLINE WAS MAKING THEM TWO IDIOMS.** With a stroked boundary the core
+row read as a CHART and the Prism row as a bar with a line on it — two grammars
+in a 28px strip. Fill-only, both rows say the same sentence the same way: a solid
+dot for the event, a translucent shape for the state, and the Prism's shape is
+simply the degenerate one-step case of the core row's staircase. ⚠️ It also
+retires a defect rather than only a taste: the stroke traced the CLOSED path, so
+it drew the baseline and both end walls along with the data.
+
+🎛️ `GADGET_FILL_ALPHA` (0.35) is the knob if a single core reads too faint — a
+lone core is only a fifth of the row deep, and the line used to be what carried
+it.
+
+🐛 **And the hover ring was being clipped** (⚓ Nate): an SVG root clips to its
+viewport, and a spawn disc is exactly as tall as its row — a dot at `cy = r`
+touches both edges — so the 2px ring lost its top on the core row and BOTH edges
+on the Prism's, whose row is one dot tall. Fixed with `overflow: visible` on the
+row's svg; the overhang is 1px into a 2px row gap and collides with nothing.
+⛔ Not fixed by shrinking the disc (it is deliberately the application pill's
+size) and ⛔ not by padding the row (that spends strip height on a state only
+visible under the cursor).
+
+⚠️⚠️ **A MEASUREMENT TRAP worth remembering**: Chrome's `getBoundingClientRect`
+on an SVG shape reports the FILL box and not the stroke, so the first check after
+the fix read "0px outside the row" and looked like the clip had survived. The
+decisive probe is `elementFromPoint` just outside the edge — a painted stroke
+hit-tests there. ⛔ Don't conclude from a rect that a stroke is missing.
+
+**Measured.** Both rows: one path at `fill-opacity: 0.35`, zero gradients, zero
+stroked paths; hovering a disc rings exactly one and the ring hit-tests 0.5px
+above and below its row. Gates green; the PNG export mirrors the flat fill.

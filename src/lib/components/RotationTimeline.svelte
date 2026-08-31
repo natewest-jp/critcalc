@@ -884,32 +884,42 @@
 	const gadgetDotCy = AURA_PILL_R;
 
 	/**
-	 * The live-count staircase. ⚓ IT HANGS FROM THE TOP (⚓ Nate): the row's
-	 * baseline is its TOP edge, where the spawn discs sit, and each live core
-	 * steps the boundary DOWN. So the discs read as the surface and the state as
-	 * what is suspended beneath them — a shape that says "this much is going on"
-	 * without the reader having to find a floor.
+	 * 🎛️ THE STATE'S FILL. ⚠ ONE FLAT ALPHA, ⛔ no gradient and ⛔ no outline
+	 * (⚓ Nate 2026-09-01) — the knob to turn if a single core reads too faint,
+	 * since a lone core is only a fifth of the row deep.
+	 */
+	const GADGET_FILL_ALPHA = 0.35;
+
+	/**
+	 * The live-count staircase, as a filled shape.
 	 *
-	 * ⚓ TWO PATHS FROM ONE WALK, exactly as the aura plot does it (`auraPathD`
-	 * with and without a baseline): the CLOSED one is the fill and the OPEN one is
-	 * the line. ⚠️ Stroking the closed path is what made it read as an OUTLINED
-	 * BOX — the closure runs back along the baseline and up the ends, drawing
-	 * three edges that are not data.
+	 * ⚓ IT HANGS FROM THE TOP (⚓ Nate): the row's baseline is its TOP edge, where
+	 * the spawn discs sit, and each live core steps the boundary DOWN. So the
+	 * discs read as the surface and the state as what is suspended beneath them —
+	 * a disc and the step it caused share an edge and read as one gesture.
+	 *
+	 * ⚓ FILL ONLY, WHICH IS WHAT UNIFIES THE TWO ROWS (⚓ Nate). A stroked
+	 * boundary made the core row a CHART and the Prism row a bar with a line on
+	 * it — two idioms in a 28px strip. Without it both rows say the same thing in
+	 * the same way: a solid dot for the event, a translucent shape for the state,
+	 * and the Prism's shape is simply the degenerate one-step case.
+	 * ⚠️ It also retires an outline defect rather than just a taste: the stroke
+	 * traced the CLOSED path, so it drew the baseline and both end walls too —
+	 * three edges that were never data.
 	 *
 	 * ⚓ SQUARE STEPS. The count is an integer that changes at an instant — a core
 	 * spawns or it does not — so a slope between two runs would draw a transition
 	 * the game does not have. (The plot above interpolates because a gauge really
 	 * is continuous; ⛔ the two are not the same kind of series.)
 	 */
-	function gadgetStair(runs: GadgetRun[], capacity: number, h: number, close = false): string {
+	function gadgetStair(runs: GadgetRun[], capacity: number, h: number): string {
 		if (runs.length === 0) return '';
 		const yOf = (n: number) => (Math.min(n, capacity) / capacity) * h;
-		const head = close ? `M ${xForTime(runs[0].start)} 0 L` : 'M';
-		let d = `${head} ${xForTime(runs[0].start)} ${yOf(runs[0].count)}`;
+		let d = `M ${xForTime(runs[0].start)} 0`;
 		for (const run of runs) {
 			d += ` L ${xForTime(run.start)} ${yOf(run.count)} L ${xForTime(run.end)} ${yOf(run.count)}`;
 		}
-		return close ? d + ` L ${xForTime(runs[runs.length - 1].end)} 0 Z` : d;
+		return d + ` L ${xForTime(runs[runs.length - 1].end)} 0 Z`;
 	}
 
 	type GadgetRowShape = { kind: string; label: string; capacity: number; bars: GadgetBar[] };
@@ -1474,6 +1484,7 @@
 			gadgetRows,
 			gadgetProfileH: GADGET_PROFILE_H,
 			gadgetDotR: AURA_PILL_R,
+			gadgetFillAlpha: GADGET_FILL_ALPHA,
 			gadgetRowGap: GADGET_ROW_GAP,
 			auraPillR: AURA_PILL_R,
 			auraMinPx: AURA_MIN_PX,
@@ -2271,43 +2282,14 @@
 											}}
 										>
 											<svg width={totalWidth} height={h} aria-hidden="true">
-												<defs>
-													<linearGradient
-														id="gadget-fade-{row.kind}"
-														gradientUnits="userSpaceOnUse"
-														x1="0"
-														y1="0"
-														x2="0"
-														y2={h}
-													>
-														<!-- ⚠ The fade runs BOTTOM-TO-TOP because the shape does: the
-														     boundary line is the low edge and the baseline is the
-														     top, so the fill is strongest where the line is and thins
-														     toward the surface. Same argument as the plot's fade —
-														     the LINE carries the colour. -->
-														<stop offset="0" stop-color={row.color} stop-opacity="0.14" />
-														<stop offset="1" stop-color={row.color} stop-opacity="0.5" />
-													</linearGradient>
-												</defs>
-												<!-- STATE: how many are standing. ⚠ The fill fades toward the
-												     baseline for the same reason the plot's does — the step is
-												     the shape, and a solid area buries it. -->
-												<path
-													d={gadgetStair(row.runs, row.capacity, h, true)}
-													fill="url(#gadget-fade-{row.kind})"
-													stroke="none"
-												/>
-												<!-- ⚠ The OPEN walk, not the closed one: stroking the fill path
-												     draws the baseline and both ends too, which is the outlined
-												     box this replaced. -->
+												<!-- STATE: how many are standing, as ONE translucent shape.
+												     ⛔ No gradient and ⛔ no outline — the fill alone is what
+												     lets this row and the Prism's read as the same object. -->
 												<path
 													d={gadgetStair(row.runs, row.capacity, h)}
-													fill="none"
-													stroke={row.color}
-													stroke-opacity="0.8"
-													stroke-width="1.5"
-													stroke-linejoin="miter"
-													stroke-linecap="butt"
+													fill={row.color}
+													fill-opacity={GADGET_FILL_ALPHA}
+													stroke="none"
 												/>
 												<!-- Hit areas for the state, one per run — the count is what a
 												     reader cannot get off a 3px step, so every run can be asked. -->
@@ -4006,6 +3988,16 @@
 	}
 	.rp-gadget-row svg {
 		display: block;
+		/* ⚠️ THE HOVER RING NEEDS TO PAINT OUTSIDE THE BOX. An SVG root clips to its
+		   viewport by default, and a spawn disc is exactly as tall as its row — a
+		   dot at cy = r touches both edges — so the 2px ring was shaved off the top
+		   on the core row and off BOTH edges on the Prism's, whose row is one dot
+		   tall. ⛔ Not fixed by shrinking the disc: it is deliberately the
+		   application pill's size (⚓ Nate), and ⛔ not by padding the row, which
+		   would spend strip height on a state that is only visible under the
+		   cursor. The overhang is 1px into a 2px row gap, so it collides with
+		   nothing. */
+		overflow: visible;
 		/* ⚠ Sized in the markup at the track's own width, like the aura plot — a
 		   percentage width would stretch every dot into an ellipse and give the
 		   1px leader a non-uniform weight (the objectBoundingBox trap). */
