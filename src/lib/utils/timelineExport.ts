@@ -344,7 +344,11 @@ export type TimelineSnapshot = {
 	 *  `auraHeaderH`, so every `oy`-relative offset below stays byte-identical
 	 *  whether the strip is there or not. */
 	gadgetRows: GadgetRow[];
-	gadgetRowH: number;
+	/** Row height for a binary gadget (capacity 1) and for a counted one.
+	 *  ⚠️ Chosen by the gadget's CAPACITY, never by the rotation's own peak —
+	 *  see gadgetRows.ts. */
+	gadgetBarH: number;
+	gadgetProfileH: number;
 	gadgetRowGap: number;
 	statIconFor: (stat: string) => string | undefined;
 	avatarFor: (slotIdx: number) => string | null;
@@ -1328,23 +1332,48 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 		// the same reason the screen puts them there. `plotBase + 2` clears the
 		// plot's own bottom margin, which the screen spends as a CSS margin and
 		// the canvas has to add by hand.
+		// ⚓ A COUNT PROFILE PER ROW, mirroring the screen: height is how many of
+		// that gadget are live, against a ceiling fixed by the KIND. ⛔ Not a pile
+		// of translucent spans — measured, cores overlap 66% of the time they are
+		// live, and five stacked at 52% alpha composite to 97% opaque.
 		let gadgetY = plotBase + 2;
 		for (const row of snap.gadgetRows) {
-			// ⚠ 0.52 alpha, mirroring the screen's `color-mix(… 52%, transparent)`:
-			// overlapping cores DARKEN, which is how the row says how many are live
-			// without spending height on sub-rows.
-			ctx.fillStyle = alpha(GADGET_COLOR[row.kind], 0.52);
-			for (const bar of row.bars) {
-				const bx = x(bar.start);
-				ctx.fillRect(bx, gadgetY, Math.max(2, x(bar.end) - bx), snap.gadgetRowH);
+			const rowH = row.capacity > 1 ? snap.gadgetProfileH : snap.gadgetBarH;
+			const yOf = (n: number) => gadgetY + rowH - (Math.min(n, row.capacity) / row.capacity) * rowH;
+			if (row.runs.length > 0) {
+				// The fill, faded toward the baseline exactly as the screen's gradient
+				// does — the LINE carries the shape and a solid area would bury the
+				// step it exists to show.
+				const grad = ctx.createLinearGradient(0, gadgetY, 0, gadgetY + rowH);
+				grad.addColorStop(0, alpha(GADGET_COLOR[row.kind], 0.55));
+				grad.addColorStop(1, alpha(GADGET_COLOR[row.kind], 0.16));
+				ctx.fillStyle = grad;
+				ctx.beginPath();
+				ctx.moveTo(x(row.runs[0].start), gadgetY + rowH);
+				for (const run of row.runs) {
+					ctx.lineTo(x(run.start), yOf(run.count));
+					ctx.lineTo(x(run.end), yOf(run.count));
+				}
+				ctx.lineTo(x(row.runs[row.runs.length - 1].end), gadgetY + rowH);
+				ctx.closePath();
+				ctx.fill();
+				// ⚠ SQUARE STEPS — the count changes at an instant, so a sloped join
+				// would draw a transition the game does not have.
+				ctx.strokeStyle = alpha(GADGET_COLOR[row.kind], 0.85);
+				ctx.lineWidth = 1.5;
+				ctx.lineJoin = 'miter';
+				ctx.beginPath();
+				let first = true;
+				for (const run of row.runs) {
+					if (first) {
+						ctx.moveTo(x(run.start), yOf(run.count));
+						first = false;
+					} else ctx.lineTo(x(run.start), yOf(run.count));
+					ctx.lineTo(x(run.end), yOf(run.count));
+				}
+				ctx.stroke();
 			}
-			// The lit edge marking a gadget the world took back early.
-			ctx.fillStyle = BAR_LABEL;
-			for (const bar of row.bars) {
-				if (bar.endReason === undefined) continue;
-				ctx.fillRect(x(bar.end) - 2, gadgetY, 2, snap.gadgetRowH);
-			}
-			gadgetY += snap.gadgetRowH + snap.gadgetRowGap;
+			gadgetY += rowH + snap.gadgetRowGap;
 		}
 	}
 	// ── Label column ──

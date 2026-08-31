@@ -282,3 +282,96 @@ nothing else for the field to appear.
   promotion that needs approval. `deriveFieldWindows` and `polestarDmgBonus` are
   pure and the obvious unit targets; the honest seeded negative would be
   neutering the creating-hit exclusion and the previous-window count.
+
+---
+
+## 7. Follow-ups, 2026-09-01 (same day)
+
+### 7.1 The aura lane is ON by default
+
+⚓ Nate: "our aura track has become so much of a feature, I think it's time to
+make it on as the default". `TIMELINE_LAYER_DEFAULTS.showAuraLane` → `true`.
+⚠️ The argument that retires is the original one — "a reader should have to opt
+into the most technical surface" — made the day the lane shipped, when it was one
+plot. It has since taken the reposition above the axis, the shared marker
+grammar, the event log, the crosshair and the gadget strip: **a lane nobody finds
+the toggle for is a lane nobody has**, and the reason it read as technical was
+that it was unfinished. ⚓ The other half of that note still stands and is why
+this pair has only ever moved one way: hiding the BUFF rows by default would
+change what the planner is.
+
+### 7.2 The field's tooltip carries its ledger, and the row wears stellar
+
+🆕 **`TimelineWindow.fieldStacks`** — the recorded-hit count that set a window's
+value, printed under the stats. ⚠️⚠️ **It is the PREVIOUS 4s's count, and the
+tooltip says so**: the number that paid for this bar was finished before the bar
+began, while the in-game counter is meanwhile filling toward the next grant. Two
+clocks; this is the one the bar's value can be checked against.
+
+- ⛔ **Not in `effects`**, so it stays out of the refresh-merge key — but
+  `mergeRefreshedBars` gets an equality gate instead (`a.stacks === b.stacks`),
+  because at the 40% cap twelve recorded hits and fifteen both pay 40 and a
+  merged bar must not have two answers to how many were recorded.
+- 🆕 **`TeamBuffSubrow.icon`** overrides `BUFF_STAT_ICON`, which is keyed by
+  STAT — right for a character's buff, wrong for a row whose identity is not its
+  stat. The field's Cryo bonus was wearing a Cryo pip and reading as somebody's
+  elemental buff; it wears `stellar.png` now.
+- ⚠️ **The shred carries NO count**: −40% Physical RES is flat, so a count on its
+  tooltip invites the wrong inference — and leaving it off lets four abutting
+  identical tiles merge into ONE 14s bar, which is the true shape of a debuff
+  that does not change while the field stands. Measured: 8 field bars → 5.
+
+### 7.3 ↻⚓⚓ A gadget row is a COUNT PROFILE, and the measurement reversed the first cut
+
+⚓ Nate: overlapping core bars made it "really difficult to see where one core
+begins and another ends". Measured before designing, over 122 corpus rotations
+with a bloom-capable pair:
+
+| peak concurrent cores | rotations |
+| --------------------- | --------- |
+| 1                     | 26        |
+| 2                     | 79        |
+| 3                     | 9         |
+| 4–5                   | 7         |
+
+and **66% of the time any core is live, at least two are** (purpose-built bloom
+teams: 59–75%). So the strip's first cut had it backwards — overlap is the
+resting state, not the exception — and the translucent-span rendering was making
+a claim it cannot keep: at 52% alpha five stacked spans composite to **97%
+opaque**, so "darker means more" saturates by the third core.
+
+⚠️⚠️ **THIS IS THE OPPOSITE FINDING TO THE AURA LANE'S, from the same
+instrument.** L6 collapsed the aura ROWS into one plot because ⚓ Nate measured
+that auras barely coexist; the strip goes the other way because gadgets almost
+always do. ⛔ Neither result may be assumed for the other — count the case.
+
+⚓ **Identity is nearly worthless here, which is what makes the profile a win
+rather than a trade.** Cores are consumed OLDEST-FIRST, so "which core did my
+Hyperbloom eat" is a question nobody asks; the real ones are _is one up_, _how
+many_, _when does the next one drop_ — and a step down answers the third exactly
+where overlapping spans answered none of them. The individual lives survive in
+`GadgetRow.bars` for the tooltip ("Oldest leaves in 1.90s").
+
+**Shape:** `runsOf` sweeps the bar BOUNDARIES (⛔ never a fixed-interval sample,
+which would alias a one-frame gap into a phantom or a miss) into runs of constant
+count; the row draws them as a square staircase — ⚓ square because the count
+changes at an instant, so a sloped join would draw a transition the game does not
+have — filled with the plot's own fade-to-baseline so the LINE carries the shape.
+
+⚠️ **CAPACITY IS A PROPERTY OF THE KIND, NEVER OF THE ROTATION.** A Prism can
+never exceed one (presences merge before emission), so it draws at capacity 1 —
+a full-height fill, i.e. the plain bar it always was, and the degenerate case of
+one grammar; cores draw against a FIXED ceiling of 5. ⛔ Never scale the axis to
+a rotation's own peak: two charts of the same team would then disagree about what
+half-height means. Row height follows capacity (7px binary / 16px counted), so it
+is stable across rotations too.
+
+**Hover isolation** (⚓ Nate): one `<rect>` per run does three jobs — hit area,
+dimming mask and lit state. The run is the only unambiguous thing to isolate when
+the spans beneath it overlap. It rides `onAuraMarkEnter`, so the log and the
+plot's crosshair stay on the same focused instant.
+
+**Measured:** `Nilou E Q > Nahida E Q > Xingqiu E Q > Kokomi E Q` draws one 16px
+row of 13 runs stepping to 5 cores, tooltip "5 cores · oldest leaves in 1.90s",
+12 of 13 runs dimmed on hover. A Prism+bloom rotation draws a 27px strip: 7px
+Prism row, 16px core row. No console errors; PNG export mirrors the profile.
