@@ -323,7 +323,7 @@
 				"[A7] The per-source 1s ICD (each character can grant at most 1 stack per second) is not enforced: the buff effects carry no procCooldown, so stacks can appear to build faster than the game allows (matches existing _curatorNotes 'Per-source 1s ICD (a4ICDKey) not modeled').",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Two buff bars DO draw on a party Swirl — Normal DMG Bonus and Charged DMG Bonus — and both print +7.5%. The effect declares `stacks: {maxStacks: 4}`, which nothing reads: a stackable buff draws as one undifferentiated bar with the per-stack value, so a Varka player who knows the talent gives up to +30% reads 7.5% and wonders why. That is the printed-value pixel. Both existing halves are trimmed away: the specials it 'also boosts' cannot be placed on the timeline in the first place (already caveated on the skill), and the 1s-per-source ICD changes no drawn value because no stack count is rendered. Category: visible-divergence."
 			],
-			"description": "When nearby party members trigger Swirl reaction(s), Varka gains one stack of Azure Fang's Oath, increasing the DMG dealt by his Normal Attacks, Charged Attacks, special Charged Attack Azure Devour and special Elemental Skill **Four Winds' Ascension** by 7.5% for 8s. Max 4 stacks. Each character can grant Varka with 1 stack of Azure Fang's Oath every second this way."
+			"description": "When nearby party members trigger a Swirl or Stellar Swirl reaction, Varka gains 1 stack of Azure Fang's Oath, increasing the DMG dealt by his Normal Attacks, Charged Attacks, special Charged Attack Azure Devour and special Elemental Skill **Four Winds' Ascension** by 7.5% for 8s. Max 4 stacks. Each character can grant Varka with 1 stack of Azure Fang's Oath every second this way."
 		}
 	],
 	"constellations": [
@@ -393,7 +393,7 @@
 				"gcsim cons.go c4Init/makeC4CB: on Varka's own Swirl (atk.Info.ActorIndex == c.Index()) every character gets +0.2 AnemoP and +0.2 of the swirled element's DmgP for 10*60 frames. onReaction source defaults to 'self' (Varka's swirls only), matching gcsim's actor check. The matching-element DmgB half is omitted (element varies by which swirl fired).",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A team buff bar DRAWS on Varka's Swirl reading +20% Anemo DMG Bonus, and it is the whole of what the reader sees — the game grants a second, equal bonus to the swirled element that has no bar. The caveat points straight at the drawn bar ('the shown 20%') and says it is half the grant. Prose is already tight; leave it. Category: visible-divergence."
 			],
-			"description": "When Varka triggers a Swirl reaction, based on the Elemental Types involved in the reaction, all nearby party members gain a 20% Anemo DMG Bonus and the corresponding Elemental DMG Bonus for 10s."
+			"description": "When Varka triggers a Swirl or Stellar Swirl reaction, based on the Elemental Types involved in the reaction, all nearby party members gain a 20% Anemo DMG Bonus and the corresponding Elemental DMG Bonus for 10s."
 		},
 		{
 			"id": "varka__constellation__fill_high_the_cup_with_fine_wine_for_tyrants_come_and_go",

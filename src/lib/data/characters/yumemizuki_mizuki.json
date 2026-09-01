@@ -124,7 +124,7 @@
 				"[A7] In-game the Dreamdrifter stance blocks Normal/Charged; only Q, swap, dash, and re-press-E (which exits) are valid inputs. Base stance window is 5s. The tool does not gate invalid actions, so N/C typed during the window render as blocks that wouldn't fire in game.",
 				"[A7] A1 extension: +2.5s per swirl, max 2 (=+5s). ↻ 2026-08-18: the rest of this line — \"cast-only reaction emission … pure-E or zero-Q rotations under-fire by ~50%; per-N anemo hits and drift-cloud ticks aren't counted\" — was a duplicate of the A1 note above and is stale for the same reasons. Drift-cloud hits and swings both reach the gauge now; whether the extension fires depends on the enemy's aura, not on how many casts are in the rotation."
 			],
-			"description": "Weaves memories of lovely dreams, entering a Dreamdrifter state where Yumemizuki Mizuki floats above the ground, and dealing 1 instance of AoE Anemo DMG to nearby opponents.\n\nDreamdrifter\n·While in the Dreamdrifter state, Yumemizuki Mizuki will continuously drift forward, dealing AoE Anemo DMG to nearby opponents at regular intervals.\n·During this time, Yumemizuki Mizuki can control her direction of drift, and the pick-up distance of Yumemi Style Special Snacks from the Elemental Burst Anraku Secret Spring Therapy will be increased.\n·Increases the Swirl DMG that nearby party members deal based on Yumemizuki Mizuki's Elemental Mastery.\n·Dreamdrifter will end when Mizuki leaves the field or uses her Elemental Skill again.",
+			"description": "Weaves memories of lovely dreams, entering a Dreamdrifter state where Yumemizuki Mizuki floats above the ground, and dealing 1 instance of AoE Anemo DMG to nearby opponents.\n\nDreamdrifter\n·While in the Dreamdrifter state, Yumemizuki Mizuki will continuously drift forward, dealing AoE Anemo DMG to nearby opponents at regular intervals.\n·During this time, Yumemizuki Mizuki can control her direction of drift, and the pick-up distance of Yumemi Style Special Snacks from the Elemental Burst Anraku Secret Spring Therapy will be increased.\n·Increases the Swirl DMG and Stellar Swirl reaction DMG that nearby party members deal based on Yumemizuki Mizuki's Elemental Mastery.\n·Dreamdrifter will end when Mizuki leaves the field or uses her Elemental Skill again.",
 			"application": [
 				{
 					"frame": 2,
@@ -254,7 +254,7 @@
 			"_curatorNotes": [
 				"Swirl-triggered Dreamdrifter extension (+2.5s, max 2 extensions, 0.3s ICD) authored on the skill's durationExtensions[] (E3 v1.5, 2026-05-10). ↻ 2026-08-18: this used to send the reader to a skill note about \"cast-only emission\" — that caveat is retired; see the corrected A1 note on the skill. The extension is driven by the live gauge off Mizuki's own applications, drift-cloud hits included."
 			],
-			"description": "When Yumemizuki Mizuki triggers Swirl while in her Dreamdrifter state, Dreamdrifter's duration increases by 2.5s. This effect can trigger once every 0.3s for a maximum of 2 times per Dreamdrifter state."
+			"description": "When Yumemizuki Mizuki triggers a Swirl or Stellar Swirl reaction while in her Dreamdrifter state, Dreamdrifter's duration increases by 2.5s. This effect can trigger once every 0.3s for a maximum of 2 times per Dreamdrifter state."
 		},
 		{
 			"id": "yumemizuki_mizuki__passive__thoughts_by_day_bring_dreams_by_night",
@@ -297,7 +297,7 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl", "stellarSwirl"]
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"]
 					},
 					"conditions": {
 						"type": "all",
@@ -315,12 +315,37 @@
 					"scaling": 1100,
 					"stat": "em",
 					"element": "anemo"
+				},
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["stellarSwirl"]
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 1
+							},
+							{
+								"type": "state",
+								"state": "nightsoulBlessing"
+							}
+						]
+					},
+					"scaling": 550,
+					"stat": "em",
+					"element": "anemo"
 				}
 			],
 			"_curatorNotes": [
-				"Twenty-Three Nights' Awaiting: per-enemy debuff applied every 3.5s during Dreamdrifter, lasts 3s. Anemo Swirl on affected enemy: +1,100% EM as bonus DMG. Modelled as a damage effect on swirl reaction gated by nightsoulBlessing state — the per-enemy debuff state isn't gateable, so this fires on any swirl during Dreamdrifter, slightly over-applying. Updated scaling from 100% (existing placeholder) to 1100% per description."
+				"Twenty-Three Nights' Awaiting: per-enemy debuff applied every 3.5s during Dreamdrifter, lasts 3s. Anemo Swirl on affected enemy: +1,100% EM as bonus DMG. Modelled as a damage effect on swirl reaction gated by nightsoulBlessing state — the per-enemy debuff state isn't gateable, so this fires on any swirl during Dreamdrifter, slightly over-applying. Updated scaling from 100% (existing placeholder) to 1100% per description.",
+				"🐛 ↻ 7.0 (genshin-db 5.2.13, 2026-08-31): SPLIT INTO TWO EFFECTS, and this was a live over-claim rather than a prose lag. The Stellar rollout added `stellarSwirl` to the OR-array on 2026-08-31 without noticing that the same patch also SPLIT the value — the kit now reads \"increased by 1,100% and 550% of Mizuki's Elemental Mastery, respectively\", so a Stellar Swirl was drawing DOUBLE. ⚠️ Authored as two mutually-exclusive effects (base swirls 1,100% · stellarSwirl 550%) rather than one effect with a conditional value: replacement is clean, so exactly one of the two can ever fire for a given reaction event, and a `stellarSwirl` event is never also a `cryoSwirl` event. ⚓ The general lesson: when a 7.0 rename adds a converted reaction to a trigger, re-read the NUMBERS too — of the fifteen revised entries only this one and Sandrone's C4 split their values, and the other thirteen really were renames."
 			],
-			"description": "When Yumemizuki Mizuki is in the Dreamdrifter state, she will continuously apply the \"Twenty-Three Nights' Awaiting\" effect to nearby opponents for 3s every 3.5s. When an opponent is affected by Anemo DMG-triggered Swirl reactions while the aforementioned effect is active, the effect will be canceled and this Swirl instance has its DMG against this opponent increased by 1,100% of Mizuki's Elemental Mastery."
+			"description": "When Yumemizuki Mizuki is in the Dreamdrifter state, she will continuously apply the \"Twenty-Three Nights' Awaiting\" effect to nearby opponents for 3s every 3.5s. When an opponent has a Swirl or Stellar Swirl reaction triggered against them by Anemo DMG while the aforementioned effect is active, the effect will be canceled, and this Swirl or Stellar Swirl instance deals DMG against this opponent increased by 1,100% and 550% of Mizuki's Elemental Mastery, respectively."
 		},
 		{
 			"id": "yumemizuki_mizuki__constellation__your_echo_i_meet_in_dreams",
@@ -362,9 +387,10 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"_curatorNotes": [
-				"Swirl can crit during Dreamdrifter: CR fixed 30%, CDmg fixed 100%. Schema doesn't have per-reaction crit overrides; Swirl in our model isn't subject to crit at all. Description-only."
+				"Swirl can crit during Dreamdrifter: CR fixed 30%, CDmg fixed 100%. Schema doesn't have per-reaction crit overrides; Swirl in our model isn't subject to crit at all. Description-only.",
+				"↻ 7.0 (genshin-db 5.2.13, 2026-08-31): gained a second clause — Stellar Swirl DMG from those characters also gets +10% CRIT Rate and +20% CRIT DMG. Still description-only for the same reason as the first clause: the schema has no per-reaction crit override and Swirl is not subject to crit in our model at all."
 			],
-			"description": "While Yumemizuki Mizuki is in the Dreamdrifter state, Swirl DMG dealt by nearby party members can score CRIT Hits, with CRIT Rate fixed at 30%, and CRIT DMG fixed at 100%."
+			"description": "While Yumemizuki Mizuki is in the Dreamdrifter state, Swirl reaction DMG dealt by nearby party members can score CRIT Hits, with CRIT Rate fixed at 30%, and CRIT DMG fixed at 100%. Any Stellar Swirl reaction DMG dealt by these characters will also have its CRIT Rate and CRIT DMG increased by 10% and 20%, respectively."
 		}
 	],
 	"meta": {

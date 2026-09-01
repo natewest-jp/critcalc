@@ -2,10 +2,13 @@ import { AVAILABLE_AVATARS, NEWFIT_AVATARS } from '$lib/data/newfitAvatars';
 
 export type AvatarSize = 'full' | 'circle' | 'side';
 
-/** The six element-traveler ids share one avatar pair: aether.webp /
+/** EVERY element-traveler id shares one avatar pair: aether.webp /
  *  lumine.webp (both with -newfit variants). Which one renders is a site
  *  setting (siteSettings.travelerVariant, default aether) — callers pass it
- *  through explicitly so avatar bindings stay reactive to the setting. */
+ *  through explicitly so avatar bindings stay reactive to the setting.
+ *  ⚓ A NEW VARIANT NEEDS NO NEW ASSET — `slugifyCharacterId` maps the whole
+ *  `traveler_*` family onto this pair, which is why Cryo shipped with none
+ *  (2026-08-31). ⚠️ It does add a card to `e2e/traveler.spec.ts`'s count. */
 export type TravelerVariant = 'aether' | 'lumine';
 
 function slugifyCharacterId(id: string, traveler: TravelerVariant): string {

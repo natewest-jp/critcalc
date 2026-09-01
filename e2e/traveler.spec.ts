@@ -10,7 +10,16 @@ import { test, expect, openTool, openRoster, KEYS } from './fixtures/critcalc';
  * img-regression fix, so the URL lives in the inline style, not a `src`.
  */
 
-/** The six traveler cards' background-image URLs. */
+/**
+ * How many Traveler element variants the roster carries — 7 since Cryo landed
+ * 2026-08-31. ⚓ Every `traveler_*` id resolves to the SAME `aether`/`lumine`
+ * portrait slug, so a new variant needs no new asset but does add a card here.
+ * ⚠️ `ROSTER_SIZE` in team-builder.spec.ts does not cover this — a new Traveler
+ * moves two e2e counts, and nothing else in the gate suite notices either.
+ */
+const TRAVELER_VARIANTS = 7;
+
+/** The traveler cards' background-image URLs — one per element variant. */
 async function travelerPortraits(page: import('@playwright/test').Page) {
 	await openRoster(page);
 	await page.locator('.cg-rail .field').fill('traveler');
@@ -19,10 +28,10 @@ async function travelerPortraits(page: import('@playwright/test').Page) {
 	return imgs.evaluateAll((els) => els.map((e) => (e as HTMLElement).style.backgroundImage));
 }
 
-test('defaults to Aether across all six traveler cards', async ({ page }) => {
+test('defaults to Aether across every traveler card', async ({ page }) => {
 	await openTool(page, '/team-builder');
 	const srcs = await travelerPortraits(page);
-	expect(srcs).toHaveLength(6);
+	expect(srcs).toHaveLength(TRAVELER_VARIANTS);
 	expect(
 		srcs.every((s) => s.includes('aether')),
 		`got ${srcs[0]}`
@@ -33,7 +42,7 @@ test('the stored variant flips every portrait to Lumine', async ({ page, seed })
 	await seed({ settings: { travelerVariant: 'lumine' } });
 	await openTool(page, '/team-builder');
 	const srcs = await travelerPortraits(page);
-	expect(srcs).toHaveLength(6);
+	expect(srcs).toHaveLength(TRAVELER_VARIANTS);
 	expect(
 		srcs.every((s) => s.includes('lumine')),
 		`got ${srcs[0]}`

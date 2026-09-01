@@ -7,11 +7,11 @@ do not edit by hand. Ground truth lives in `scripts/capability-expectations.mjs`
 This is the Team Builder curation backlog: each finding is a place where the
 capability facets would answer differently from the game.
 
-## Expected capability missing entirely (0)
+## Expected capability missing entirely (1)
 
 Highest priority — the facet answers "no" where the game says "yes".
 
-- _none_
+- **traveler_cryo** — expected offFieldDamage (C0) — nothing derives ⚠️check — Frostpierce Star follows the party for 12s (15s at C4) firing ice crystals at 38.51% ATK Cryo. EXPECTED TO SHOW AS A GAP: the firing interval is stated in no source (genshin-db 5.2.13 has no interval label, the Fandom talent page is a stub with empty Gameplay Notes, gcsim has no Cryo Traveler), so no summonTick series is authored and nothing derives. This entry is the backlog item — resolve it by authoring the cadence, never by deleting the expectation.
 
 ## Constellation gate later than in-game (0)
 
@@ -63,7 +63,7 @@ Verify these kits genuinely offer nothing team-facing.
 - **tartaglia** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 - **traveler_pyro** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 
-## Uncurated stubs (8)
+## Uncurated stubs (9)
 
 Excluded from capability trust; shown honestly in the UI.
 
@@ -74,6 +74,7 @@ Excluded from capability trust; shown honestly in the UI.
 - **odette** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **prune** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **sandrone** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
+- **traveler_cryo** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **zibai** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 
 ## Fixture ids not in roster (0)
