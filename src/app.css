@@ -3238,6 +3238,21 @@ img {
    explanatory paragraph, not a caption. */
 .note {
 	margin: 0;
+	/* ⚠ A MEASURE, and it is the one thing the panel was silently supplying.
+	   The note above is right that the dominant note lives in a .panel — and a
+	   panel bounds it, which is why 205 uses went unbounded without anyone
+	   noticing. A note that sits DIRECTLY on a chart has no panel, so it
+	   inherits the tile: measured, .ar-chart's note reflows to 1104px / 160
+	   characters per line on a 3440px display.
+
+	   56ch is derived from this site's own typography, not from a style guide:
+	   .prose p measures 49.2ch and .prose li 53.3ch, so this sits just above the
+	   established prose column. Measured against every rendered .note (19 of
+	   them), the widest legitimate one is 43ch — so this is INERT on 17 of 19
+	   and bites only the two readings of the one defect. Every .note is
+	   text-align: start, so a max-width cannot shift one sideways.
+	   Full derivation: docs/responsive-survey-2026-09-01.md § W1. */
+	max-width: 56ch;
 	font-size: var(--fs-lg);
 	line-height: var(--lh-relaxed);
 	color: var(--muted);
