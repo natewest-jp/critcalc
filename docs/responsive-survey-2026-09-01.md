@@ -621,3 +621,108 @@ arithmetic.
 
 ⚠️ Items 1–4 are layout and measurable. Item 5 is taste and is the one that
 actually gates "is this good on a phone".
+
+---
+
+# Part III — status and the pick-up list (2026-09-04)
+
+## ✅ Shipped from this survey
+
+|                                                      |                       |
+| ---------------------------------------------------- | --------------------- |
+| **W1** — `.note` bounded to 56ch                     | `ba589b7`             |
+| **N1** — the chrome's collapsing logo, + the compass | `dd93dcd` → `af5cccb` |
+
+⚓ **N1's fix went further than N1.** The bar now states a priority order it never
+had: brand and actions are incompressible (`minmax(max-content, 1fr)` flanks,
+each child naming its own column), and the centre is the only collapsible
+occupant. Below **47.5rem** the tool switcher, About and Help fold into a compass
+overlay; the wordmark and the settings cog stay. Measured 310.8px of demand in a
+320px bar, 9.2px of slack.
+
+⚠️⚠️ **Two lessons from the fix that outlive it:**
+
+- **The width sweep could not see the alignment bug it introduced.** `display:
+none` on `.chrome-center` removed a grid item, so the action cluster shifted
+  into column 2 and right-aligned against the _centre_ track. Nothing
+  overflowed, every box was the right size — the element was simply in the wrong
+  column, which is a question no overflow metric asks. ⚓ Nate caught it in a
+  phone preview. The sweep now carries a gap-to-right-edge assertion.
+- **The first breakpoint choice was measurably wrong and only re-measurement
+  caught it.** 40rem was tuned for a bar that _dropped_ the wordmark (~460px of
+  demand); keeping it means the full form needs 664.8px, so 641–672 was
+  over-subscribed and the Settings glyph ran 8px off-screen. ⚓ **A fix at one
+  end of a range can move the failure rather than remove it — re-measure the
+  whole ladder, not the end you were working on.**
+
+## ⏭ The pick-up list, in the order § 9 recommends
+
+### 1. 🐛 Band B is unreachable below ~768px — a bug before it is a feature
+
+Atlas/Roster/Compare sits past the right edge, so **the Team Builder is stuck on
+whichever view it opened with**; an automated pass could not click "Roster" at
+320, 360, 390, 430 or 560. Same missing priority rule as the chrome had, one band
+down — and the chrome's fix (name the columns, make one occupant the collapsible
+one, fold the rest into a disclosure) is the template.
+
+### 2. Horizontal bench — the 240/260px unlock
+
+Worth **240px** on the planner, **260px** on the Team Builder; alone it takes the
+TB from 620 → 360. `ToolStack` already carries the seam
+(`--stack-inset = benched ? TOOL_INSET : 0`). Aim for **≤88px including its gap**
+(measured phone budget: chrome 64 + bands 93 + pad 24, tool gets 663 of 844); the
+existing 78px card height works, the card needs a new _width_ (~87px vs 200).
+⚠️⚠️ **Orientation should be responsive** — vertical ribbon on desk, horizontal
+below the tool breakpoint — because horizontal trades the planner's abundant axis
+for its scarce one (CLAUDE.md records the vertical as already tight).
+
+### 3. Aside/filter column as a band-B modal — the tablet density win
+
+Buys **0px of minimum width** (it does not render narrow at all) but on the
+Roster at 768px it is **1 column today vs 5** with the rail gone. `ASIDE_W` is 262. Applies equally to the planner's Notes and aura Log.
+
+### 4. `pointer: coarse` — the round that decides whether a phone build feels good
+
+**10–17 live controls per tool are under 24px at EVERY width**, so this is a
+desktop target-size question the mobile survey happened to find:
+`.bb-act` **16×28** (8 per tool) · `.btn--icon` / `.band-menu-trigger` **26×22**
+· `.slider` **88×4** · `.sp-lo-zone` 24×26 · `.sp-cons-chip` 26×26.
+⛔ All inside hand-tuned geometry, so this is a `@media (pointer: coarse)` block
+growing hit areas without touching the desk rendering — ⛔ never a resize of the
+shared numbers. `.slider` is the natural first: it can grow its hit box
+invisibly (`padding-block` + `background-clip: content-box`).
+⚓ **A different axis from width** — a tablet at 1024px is coarse, a laptop at
+1024px is not, so ⛔ it must not join the width table.
+
+### 5. Visualizers — where surplus width should go
+
+The instrument gives **100% of surplus to the chart and 0% to the apparatus**.
+Forced to one slot at 3440: chart **3376px**, four panels at ~361px, **~1930px of
+dead space** beside them. A time-series converts width into resolution; a 2D plot
+at 3376×600 is the same thing stretched. Wants a per-instrument destination
+policy — cap the aspect on the non-time-series instruments and give the surplus
+to the panel column. ⚓ The `.note` fix was the first instance of this principle.
+
+### 6. Team Builder cards — a token nudge, not a new card
+
+`--cg-tile-min` is 118px: **2-across at 390, 3-across at 430**, missing
+3-across@390 by 6px of tile. ~110 buys it and 131px already ships in some
+configs — ⚠️ but 118 is a floor Nate set ([[project_tb_card_round]],
+7-across-at-150), so try it and judge; 2-across is still a working roster.
+
+### 7. Smaller, unscheduled
+
+- **N2** — `.doc-tabs` clips its label by 41–46px below ~700px.
+- **N3** — TB `.rolecard-id` clips up to ~800px, so the TB's cut belongs at 800,
+  ⛔ not at its 562px shell minimum.
+- `.ftr__legal` runs to 143 CPL, but its `max-width: 62rem` is **authored and
+  deliberate** — noted, ⛔ not a defect.
+
+## ⏭ The breakpoint table (§ 5) is still a proposal
+
+Nothing in it has landed. ⚠️ It now has one more real user: SiteChrome's compact
+swap moved 40rem → **47.5rem**, so `roomy` has two consumers (HelpAreaShell and
+the chrome) and `compact` has two (ChromeOverlay, and AtlasView's stray 620px
+still wanting absorption). ⛔ The constraint stands: **custom properties do not
+work in media queries**, so this must be a documented table plus a vitest grep
+guard, never tokens.

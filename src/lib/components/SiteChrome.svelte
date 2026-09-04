@@ -441,6 +441,23 @@
 		--chrome-glyph-size: 33px;
 	}
 
+	/* 🎛️ OPTICAL LIFT, ⚓ NATE 2026-09-04 — 2px, by eye, and it is the same
+	   correction the brand mark carries as --brand-lift. The compass's visual
+	   centre is not its geometric one: the hanging loop puts ink at the top
+	   that the disc does not balance below, so a box-centred mark sits low
+	   beside the cog. Centring centres the BOX, never the INK (/styleguide
+	   § Laws).
+
+	   ⚠ `position: relative`, not a transform and not a margin. A margin would
+	   be re-split by the button's `place-items: center` and move the glyph only
+	   1px; a transform would make the mark transform-placed, which is the
+	   condition the sub-pixel law cares about. This shifts paint alone, by a
+	   whole pixel count, and takes the layout with it nowhere. */
+	.chrome-btn--nav .chrome-glyph {
+		position: relative;
+		top: -2px;
+	}
+
 	/* Narrow viewports: the wordmark is the first thing to go — the logo alone
 	   still reads as the brand and still returns home, which buys the switcher
 	   and the glyph cluster the room they need. 40rem is where measurement put
