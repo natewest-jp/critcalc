@@ -89,6 +89,10 @@ type SummonTuple = {
 };
 const tupleKey = (t: SummonTuple) => `${t.characterId}|${t.label}|${t.source}|${t.start}|${t.end}`;
 
+/** Stand-in label for a shared window whose OCCUPANTS the oracle cannot name.
+ *  ⛔ Not a real summon label — it never leaves this file. */
+const FOLLOW_STATE = '\u0000followState';
+
 /** Independently reconstruct the expected summon spans from bar geometry — the
  *  spawn-offset + terminatesOn swap/recast truncation `computeSummonSubrows`
  *  owned pre-3c, re-derived here from `result.tracks` (a distinct code path from
@@ -112,31 +116,58 @@ function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 		}
 		const emit = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
 			if (bar.uptime <= 0) return;
+			// ⚓⚓ A `summonsFollowState` CAST CANNOT BE RECONSTRUCTED FROM GEOMETRY,
+			// and that is the honest answer rather than a gap (Arkhe round, landing
+			// c). Which lineup occupies the window — and when it changes hands —
+			// depends on the character's STATE at an instant inside the window, which
+			// is exactly what this oracle has no access to. So it stops naming the
+			// occupants and states the invariant it CAN reach independently: the
+			// occupants TILE the shared window exactly. ⚠️ That is not a weaker
+			// assertion than the equality it replaces — it is the one that would
+			// catch a hand-off leaving a gap, an overlap, or a window running past
+			// the cast's own end, which is every way the cut can go wrong.
+			const castAbility = char?.abilities.find((a) => a.id === bar.abilityId);
+			if (
+				castAbility &&
+				(castAbility as unknown as Record<string, unknown>).summonsFollowState === true
+			) {
+				const spawnAt = bar.start + (bar.summonActivatesAt ?? 0);
+				out.push({
+					characterId: track.characterId,
+					label: FOLLOW_STATE,
+					start: spawnAt,
+					end: spawnAt + bar.uptime,
+					source: kind
+				});
+				return;
+			}
 			// ↻ 2026-08-14: one tuple per summon, mirroring the parser's move off
 			// `summons[0]`. The primary reads the BAR's spawn/uptime (the geometry
 			// the ability accessors already resolved, extensions included); a
 			// secondary reads its own authored spawnsAt/duration.
-			findCastSummons(char, kind, bar.label, bar.abilityId).forEach((summon, i) => {
-				const spawnAt =
-					bar.start + (i === 0 ? (bar.summonActivatesAt ?? 0) : (summon.spawnsAt ?? 0));
-				let endAt = spawnAt + (i === 0 ? bar.uptime : framesOf(summon.duration));
-				if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
-				if (endAt <= spawnAt) return;
-				const key = `${track.characterId}::${summon.label}`;
-				if (summon.terminatesOn === 'recast') {
-					const prev = lastByKey.get(key);
-					if (prev && prev.end > spawnAt) prev.end = spawnAt;
+			findCastSummons(char, kind, bar.label, bar.abilityId, bar.variantLabel ?? null).forEach(
+				(summon, i) => {
+					const spawnAt =
+						bar.start + (i === 0 ? (bar.summonActivatesAt ?? 0) : (summon.spawnsAt ?? 0));
+					let endAt = spawnAt + (i === 0 ? bar.uptime : framesOf(summon.duration));
+					if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
+					if (endAt <= spawnAt) return;
+					const key = `${track.characterId}::${summon.label}`;
+					if (summon.terminatesOn === 'recast') {
+						const prev = lastByKey.get(key);
+						if (prev && prev.end > spawnAt) prev.end = spawnAt;
+					}
+					const t: SummonTuple = {
+						characterId: track.characterId,
+						label: summon.label,
+						start: spawnAt,
+						end: endAt,
+						source: kind
+					};
+					out.push(t);
+					lastByKey.set(key, t);
 				}
-				const t: SummonTuple = {
-					characterId: track.characterId,
-					label: summon.label,
-					start: spawnAt,
-					end: endAt,
-					source: kind
-				};
-				out.push(t);
-				lastByKey.set(key, t);
-			});
+			);
 		};
 		// ↻ 2026-08-16 (L5e-a½) — CAST ORDER, not ability-family order. This
 		// walked every eBar then every qBar, which made `lastByKey` mean "last
@@ -176,7 +207,44 @@ function assertSummonWindowsMatchGeometry(result: ParsedRotation): void {
 		}));
 
 	const expected = reconstructSummonWindows(result);
-	expect(parserTuples.map(tupleKey).sort()).toEqual(expected.map(tupleKey).sort());
+
+	// Shared windows first: consume the parser tuples that tile each one, then
+	// hold the remainder to the exact-equality rule that has always applied.
+	const shared = expected.filter((t) => t.label === FOLLOW_STATE);
+	const remaining = new Set(parserTuples);
+	for (const win of shared) {
+		const occupants = [...remaining]
+			.filter(
+				(t) =>
+					t.characterId === win.characterId &&
+					t.source === win.source &&
+					t.start >= win.start &&
+					t.end <= win.end
+			)
+			.sort((a, b) => a.start - b.start);
+		for (const o of occupants) remaining.delete(o);
+		expect(occupants.length, `${win.characterId} shared window has an occupant`).toBeGreaterThan(0);
+		expect(occupants[0].start, `${win.characterId} first occupant starts at the spawn`).toBe(
+			win.start
+		);
+		expect(
+			occupants[occupants.length - 1].end,
+			`${win.characterId} last occupant ends at the shared end`
+		).toBe(win.end);
+		for (let i = 1; i < occupants.length; i++) {
+			expect(
+				occupants[i].start,
+				`${win.characterId} occupant ${i} begins where ${i - 1} ended (no gap, no overlap)`
+			).toBe(occupants[i - 1].end);
+		}
+	}
+
+	expect([...remaining].map(tupleKey).sort()).toEqual(
+		expected
+			.filter((t) => t.label !== FOLLOW_STATE)
+			.map(tupleKey)
+			.sort()
+	);
 }
 
 /** Post-P4 #2: reconstruct every track's `inputBlocks` PURELY from the IR

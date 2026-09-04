@@ -144,15 +144,33 @@ describe('computeSummonSubrows — basics', () => {
 		expect(
 			run([mkTrack('plain', 0, { eBars: [mkBar(0, { uptime: 0 })] })], [], [noSummon])
 		).toEqual([]);
-		// Character with a cast but no summon-bearing ability: even a stray window
-		// finds no registered lane and is dropped.
+		// ↻ 2026-09-04 (Arkhe round, landing c): a window for a SLOTTED character
+		// no longer needs a bar-registered lane — it mints one. This assertion used
+		// to read "even a stray window finds no registered lane and is dropped",
+		// and that contract had to go: a `summonsFollowState` cast hands its window
+		// to a lineup the CAST never resolved (Furina's Charged Attack replacing the
+		// Salon Members with the Singer off an Ousia cast), so pass 1 cannot
+		// enumerate the lanes any more. ⚠️ The old behaviour was not a safety net
+		// being removed — pass 1 and pass 2 resolved through the SAME function with
+		// the same arguments, so a "stray window" was unreachable in a real parse
+		// and only a synthetic input could produce one.
 		expect(
 			run(
 				[mkTrack('plain', 0, { eBars: [mkBar(0)] })],
 				[mkWin('plain', 0, 10, 'skill')],
 				[noSummon]
 			)
-		).toEqual([]);
+		).toEqual([
+			{
+				slotIdx: 0,
+				characterId: 'plain',
+				label: 'Oz',
+				bars: [{ start: 0, end: framesOf(10), source: 'skill', ticks: [] }]
+			}
+		]);
+		// ⚓ What the drop still guards, and the reason the slot is looked up rather
+		// than assumed: a window for a character with NO SLOT has nowhere to go.
+		expect(run([], [mkWin('plain', 0, 10, 'skill')], [noSummon])).toEqual([]);
 	});
 
 	it('projects each summon window onto a bar, taking the span from the window', () => {

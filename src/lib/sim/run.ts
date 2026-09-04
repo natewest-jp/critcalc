@@ -72,7 +72,7 @@ import {
 	closeStateWindows,
 	holderStatesAt,
 	inferredStates,
-	openTransientState
+	applyTransientState
 } from './states';
 import {
 	applyDrain,
@@ -98,6 +98,7 @@ import {
 import {
 	emitReactionsAtCast,
 	emitReactionsAtSwing,
+	handOffLineup,
 	notifyDamage,
 	notifyNormalAttack,
 	scheduleSummonTicks
@@ -601,6 +602,7 @@ export function runRotation(
 					characterId: char.id,
 					ability: kind,
 					abilityId: active.id,
+					variantLabel: variant?.label,
 					label: tok.text,
 					time: castStart,
 					castTime,
@@ -768,7 +770,7 @@ export function runRotation(
 					// behavior staying instant so a variant that overrides to stance
 					// doesn't double-open.
 					if (stance.behavior === 'instant') {
-						openTransientState(
+						applyTransientState(
 							ctx,
 							active.opensTransientState,
 							cs,
@@ -889,6 +891,7 @@ export function runRotation(
 					kind,
 					tok.text,
 					active.id,
+					variant?.label,
 					castStart,
 					spawn,
 					castEvent,
@@ -898,6 +901,29 @@ export function runRotation(
 					chainIdx,
 					stackState
 				);
+				// ⚓ A CAST WHOSE SUMMONS FOLLOW A STATE holds its window open for
+				// whichever lineup the state names (Arkhe round, 2026-09-04). Recorded
+				// here, acted on at the state's next edge — see the charged branch.
+				// ⚠️ Recorded even when the cast spawned nothing resolvable: the window
+				// is the ability's, not the occupant's, and a flip into a lineup that
+				// DOES have summons must still find it.
+				if (active.summonsFollowState) {
+					ctx.followStateCasts.set(char.id, {
+						castId,
+						kind,
+						label: tok.text,
+						abilityId: active.id,
+						ability: active,
+						spawnAt: castStart + (spawn ?? 0),
+						variantLabel: variant?.label ?? null,
+						preStates: states,
+						constellation: charConstellationLevel,
+						chainIdx,
+						stackState,
+						castEvent,
+						extRec: cs.summonExt?.castRef === castEvent ? cs.summonExt : undefined
+					});
+				}
 				// ⚓ Arm this cast's REACTION PROCS (mark-triggered round, 2026-08-17)
 				// — Nahida's Tri-Karma, whose window is the Seed of Skandha's 25 s on
 				// the enemy rather than any ability's active bar. Armed BEFORE the
@@ -1126,7 +1152,7 @@ export function runRotation(
 						// commit (N during `transmuting` → `darkForm`) rides this.
 						const nSpec = activeNormal?.actionOpensState?.normal;
 						if (k === 0 && nSpec) {
-							openTransientState(
+							applyTransientState(
 								ctx,
 								nSpec,
 								cs,
@@ -1196,12 +1222,16 @@ export function runRotation(
 					// (notationFlags) — an unsupported token rather than an approximated
 					// one, because nothing is drawn for it.
 					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
+					// ⚓ ONE snapshot, taken BEFORE the action: it resolves the ability
+					// AND gates the charged opener below, so the two cannot disagree
+					// about the state the swing started in (Arkhe round).
+					const chargedStates = computeCurrentStates(clock.now);
 					// Explicit annotation: the chargeHits read in the hit block below
 					// otherwise forms a TS7022 inference cycle through this initializer.
 					const activeNormal: NormalAbility | undefined = resolveActiveAbility(
 						char,
 						'normal',
-						computeCurrentStates(clock.now),
+						chargedStates,
 						charConstellationLevel
 					);
 					const castS = activeNormal
@@ -1226,6 +1256,38 @@ export function runRotation(
 						element: cElement
 					});
 					if (castS !== null) clock.advance(clock.now + castS);
+					// Charged-opened transient state (Arkhe round, 2026-09-04): the
+					// action's END, the same instant the `normal` and `plunge` openers
+					// beside it use. Furina's Charged Attack TOGGLES `pneuma`, which is
+					// what decides the lineup her next Salon Solitaire summons.
+					//
+					// ⚠️ Gated on `blockStart`'s state snapshot — the one that resolved
+					// `activeNormal` — not on a fresh read after the advance. A toggle
+					// that re-read here would see its own edge on the very next token.
+					const cSpec = activeNormal?.actionOpensState?.charged;
+					if (cSpec) {
+						applyTransientState(
+							ctx,
+							cSpec,
+							cs,
+							char.id,
+							clock.now,
+							chargedStates,
+							charConstellationLevel,
+							{ sourceActionId: chargedEv.id }
+						);
+						// ⚓⚓ THE LINEUP HAND-OFF (Arkhe round, landing c). The state has
+						// just moved, so a cast whose summons FOLLOW it may now be holding
+						// the wrong occupant. Re-resolve against the state AFTER the edge
+						// and, if the answer changed, end the running summon here and spawn
+						// the new one with the remaining duration — gcsim's
+						// `if c.StatusIsActive(skillKey) { c.summonSinger(0) }`.
+						//
+						// ⚠️ AFTER `applyTransientState`, and that ordering is the whole
+						// thing: `computeCurrentStates` re-read before the edge returns the
+						// alignment we are leaving.
+						handOffLineup(ctx, clock, char, computeCurrentStates(clock.now), variantCtx);
+					}
 					// Offer the charged shot to the aura. A catalyst CA and a bow's
 					// aimed shot both apply; only the bow's runs a counter (a
 					// catalyst's is gcsim `ICDTagNone`) — resolveActionIcd holds it.
@@ -1334,7 +1396,7 @@ export function runRotation(
 						// cursor); provenance is the plunge's action event (post-P4 #2).
 						const pSpec = activeNormal?.actionOpensState?.plunge;
 						if (pSpec) {
-							openTransientState(
+							applyTransientState(
 								ctx,
 								pSpec,
 								cs,

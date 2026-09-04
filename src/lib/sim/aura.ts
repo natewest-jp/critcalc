@@ -59,7 +59,7 @@ import { createGauge, type ElementId, type Gauge, type SeriesInterval } from '$l
 import { framesOf } from '$lib/utils/frames';
 import type { SimContext } from './context';
 import { Band, type Clock } from './clock';
-import { type ChainIndex } from './conditions';
+import { matchVariant, type ChainIndex, type ConditionContext } from './conditions';
 import { dispatchOnReactionExtensions } from './extensions';
 import {
 	applyRotationLifetimeExpiry,
@@ -782,6 +782,15 @@ export function scheduleSummonTicks(
 	kind: 'skill' | 'burst',
 	label: string,
 	abilityId: string | undefined,
+	/** `CastEvent.variantLabel` — see `findSummonsForBar`. The live chain and
+	 *  finalize MUST resolve the same variant or the ticks that fire and the
+	 *  markers a reader sees describe two different lineups.
+	 *
+	 *  ⚓ `undefined` COERCES TO `null` below, which it may not do at
+	 *  `findSummonsForBar` in general — it is right here because both callers are
+	 *  cast-driven (a cast, or a lineup hand-off), so an absent label always means
+	 *  "resolved no variant" and never "I have no cast in hand". */
+	variantLabel: string | null | undefined,
 	castTime: number,
 	summonActivatesAt: number | undefined,
 	castEvent: { uptime: number },
@@ -794,7 +803,7 @@ export function scheduleSummonTicks(
 	const cLevel = ctx.constellationLevels?.[char.id] ?? 0;
 	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
 
-	findSummonsForBar(char, kind, label, abilityId).forEach((summon, index) => {
+	findSummonsForBar(char, kind, label, abilityId, variantLabel ?? null).forEach((summon, index) => {
 		const spawnAt = summonSpawnAt(castTime, summonActivatesAt, summon, index);
 		const key = `${char.id}::${summon.label}`;
 		// ⚠️ Bumped ONLY for a recast-terminating summon, mirroring finalize's
@@ -985,6 +994,97 @@ export function scheduleSummonTicks(
 			if (first < liveUntil()) clock.schedule(first, Band.TICK, () => fire(first));
 		}
 	});
+}
+
+/**
+ * ⚓⚓ HAND ONE LINEUP OFF TO THE NEXT, mid-window (Arkhe round, landing c).
+ *
+ * Called at a state EDGE, with the states as they are AFTER it. If the character
+ * is holding a `summonsFollowState` cast whose window still has time left, and
+ * the variant that state now resolves is not the one occupying it, the occupant
+ * changes: the running chain is retired and a fresh one is scheduled from this
+ * instant with the remaining duration.
+ *
+ * ⚓ IT REUSES THE RECAST MACHINERY RATHER THAN INVENTING A SECOND KIND OF END.
+ * Retiring the old chain is a `summonChainGen` bump on its key — the exact
+ * mechanism a recast already uses, whose `isCurrent()` check every scheduled
+ * tick and every armed summon proc already consults. ⛔ Nothing has to cancel a
+ * queued task, and no new liveness predicate enters the chain.
+ *
+ * ⚠️ The replacement spawns with `summonActivatesAt: 0` — gcsim passes 0, not
+ * the summon's own `spawnsAt`, because the spawn delay belongs to the cast
+ * animation and there is no second cast. Its cadence restarts from here, which
+ * is `summonSinger(0)` scheduling `singerInitialTick` afresh.
+ *
+ * ⚠️ The remaining duration is handed over as the new chain's `uptime`, so
+ * `summonEndAt`'s index-0 branch lands it exactly on the shared window's end.
+ * Read LIVE off the extension record for the same reason `endNow()` is.
+ */
+export function handOffLineup(
+	ctx: SimContext,
+	clock: Clock,
+	char: CharacterData,
+	statesAfterEdge: ReadonlySet<string>,
+	/** ⚓ HANDED IN, not rebuilt. It is the caller's `variantCtx` — the same object
+	 *  the cast resolved against — so the re-resolution cannot answer differently
+	 *  because a second construction of the context drifted. */
+	variantCtx: ConditionContext
+): void {
+	const held = ctx.followStateCasts.get(char.id);
+	if (!held) return;
+	const uptime = held.extRec ? held.extRec.ownerUptime : held.castEvent.uptime;
+	const sharedEnd = held.spawnAt + uptime;
+	// ⚠️ A stale entry is rejected HERE rather than cleared at the window's end —
+	// nothing fires at an expiry, so there is no moment to clear it in.
+	if (clock.now <= held.spawnAt || clock.now >= sharedEnd) return;
+
+	const next = matchVariant(
+		held.ability,
+		held.label,
+		statesAfterEdge,
+		held.constellation,
+		held.chainIdx,
+		held.stackState,
+		variantCtx
+	);
+	const nextLabel = next?.label ?? null;
+	if (nextLabel === held.variantLabel) return;
+
+	// Retire the outgoing lineup's chain(s) — the recast bump, on each summon the
+	// OLD occupant owned.
+	for (const summon of findSummonsForBar(
+		char,
+		held.kind,
+		held.label,
+		held.abilityId,
+		held.variantLabel
+	)) {
+		const key = `${char.id}::${summon.label}`;
+		ctx.summonChainGen.set(key, (ctx.summonChainGen.get(key) ?? 0) + 1);
+	}
+
+	held.variantLabel = nextLabel;
+	const changes = ctx.lineupChanges.get(held.castId) ?? [];
+	changes.push({ at: clock.now, variantLabel: nextLabel });
+	ctx.lineupChanges.set(held.castId, changes);
+
+	scheduleSummonTicks(
+		ctx,
+		clock,
+		char,
+		held.kind,
+		held.label,
+		held.abilityId,
+		nextLabel,
+		clock.now,
+		0,
+		{ uptime: sharedEnd - clock.now },
+		undefined,
+		held.preStates,
+		held.constellation,
+		held.chainIdx,
+		held.stackState
+	);
 }
 
 /**

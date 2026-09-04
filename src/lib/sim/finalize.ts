@@ -72,6 +72,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			label: ev.label,
 			castTime: ev.castTime,
 			abilityId: ev.abilityId,
+			variantLabel: ev.variantLabel,
 			summonActivatesAt: ev.summonActivatesAt,
 			sacProcFired: ev.sacProcFired,
 			stackContext: ev.stackContext
@@ -156,13 +157,26 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 
 	// 3. Named-state windows (swap-clamped ends). All transient-opened —
 	//    stance windows project from stanceWindowRecs above.
+	//
+	// ⚓ A TOGGLE THAT WAS NEVER FLIPPED BACK ENDS WHERE THE ROTATION DOES
+	// (Arkhe round, 2026-09-04). Its live end is `Infinity` — Furina stays in
+	// Pneuma until a Charged Attack says otherwise — but a window is a drawable
+	// span and every one of them is asserted finite corpus-wide.
+	//
+	// ⚠️⚠️ IT IS AN `isFinite` TEST, ⛔ NEVER `Math.min(rec.end, totalDuration)`.
+	// A state window is ALLOWED to outlive the rotation — the rotation ends when
+	// its last action does, not when the last thing it started finishes — and the
+	// corpus differential measured exactly that on four characters the moment the
+	// min was written: Varesa's nightsoulBlessing 1484→2384 against a 2112-frame
+	// rotation, plus Durin, Ifa and Pyro Traveler. A toggle already clamped by a
+	// swap or a `consumes` is finite and passes through untouched.
 	for (const rec of ctx.stateWindowRecs) {
 		windows.push({
 			kind: 'state',
 			characterId: rec.characterId,
 			name: rec.name,
 			start: rec.start,
-			end: rec.end,
+			end: Number.isFinite(rec.end) ? rec.end : totalDuration,
 			source: rec.source,
 			transient: true,
 			sourceCastId: rec.sourceCastId,
@@ -245,50 +259,81 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		}
 		const emitSummon = (bar: TimelineBar, kind: 'skill' | 'burst'): void => {
 			if (bar.uptime <= 0) return;
-			// One window PER SUMMON. Emitted in authored order so the primary
-			// keeps the id it has always had and the extras land after it — the
-			// lane ordering in summonSubrows follows the same walk.
-			findSummonsForBar(summonChar, kind, bar.label, bar.abilityId).forEach((summon, i) => {
-				// ⚓ Both geometry answers come from `summons.ts` (L5e-a) so the
-				// live tick path L5e-b adds cannot end up holding a second copy.
-				// The swap clamp lives inside `summonEndAt`; recast truncation
-				// stays here, below, because it shortens the PRIOR window rather
-				// than this one — see that function's ⛔ note.
-				const spawnAt = summonSpawnAt(bar.start, bar.summonActivatesAt, summon, i);
-				const endAt = summonEndAt({
-					spawnAt,
-					barUptime: bar.uptime,
-					summon,
-					index: i,
-					swapOutAt
-				});
-				if (endAt <= spawnAt) return;
-				const key = `${track.characterId}::${summon.label}`;
-				// Recast truncation: shorten the still-open prior window on this key.
-				if (summon.terminatesOn === 'recast') {
-					const prev = lastSummonWindowByKey.get(key);
-					if (prev && prev.end > spawnAt) prev.end = spawnAt;
-				}
-				// ⚓ MARKERS THE PARSE MEASURED, for the series the projection cannot
-				// walk (coordinated-attack round, 2026-08-18): a `whileNormalAttacking`
-				// wave and an `onHit` damage proc fire when somebody swings or when
-				// the opponent is hit, which is a fact of the parse. ⚠️ Sorted here —
-				// a wave schedules its whole run at the swing that started it, so the
-				// pushes can interleave out of order with a summon tick's.
-				// ⚠️ Bounded by `[spawnAt, endAt)` so a landing whose travel carried it
-				// past the summon's end is not drawn outside the bar.
-				const win: Extract<TimelineWindow, { kind: 'summon' }> = {
-					kind: 'summon',
-					characterId: track.characterId,
-					label: summon.label,
-					start: spawnAt,
-					end: endAt,
-					source: kind,
-					sourceCastId: ctx.castIdByBar.get(bar)
-				};
-				windows.push(win);
-				summonByWindow.set(win, summon);
-				lastSummonWindowByKey.set(key, win);
+			// ⚓⚓ ONE WINDOW, POSSIBLY SEVERAL OCCUPANTS (Arkhe round, landing c).
+			// A `summonsFollowState` cast hands its window from one lineup to the
+			// next when the gating state flips, and the parse RECORDED where — see
+			// `ctx.lineupChanges`. Each span becomes its own summon window, so the
+			// tick pass below measures each lineup's cadence from its own start,
+			// which is what gcsim's `summonSalonMembers(0)` does on the flip.
+			//
+			// ⚠️ A cast with NO changes yields exactly one span carrying the bar's
+			// own label, so the whole corpus goes down the identical path it always
+			// did — ⛔ don't special-case that into a fast path and give the common
+			// shape a second implementation.
+			const changes = ctx.lineupChanges.get(ctx.castIdByBar.get(bar) ?? -1) ?? [];
+			const spans: { variantLabel: string | null; from: number | null }[] = [
+				{ variantLabel: bar.variantLabel ?? null, from: null },
+				...changes.map((c) => ({ variantLabel: c.variantLabel, from: c.at }))
+			];
+			// The shared window's end, taken ONCE from the first occupant's geometry.
+			let sharedEnd = Infinity;
+			spans.forEach((span, si) => {
+				// One window PER SUMMON. Emitted in authored order so the primary
+				// keeps the id it has always had and the extras land after it — the
+				// lane ordering in summonSubrows follows the same walk.
+				findSummonsForBar(summonChar, kind, bar.label, bar.abilityId, span.variantLabel).forEach(
+					(summon, i) => {
+						// ⚓ Both geometry answers come from `summons.ts` (L5e-a) so the
+						// live tick path L5e-b adds cannot end up holding a second copy.
+						// The swap clamp lives inside `summonEndAt`; recast truncation
+						// stays here, below, because it shortens the PRIOR window rather
+						// than this one — see that function's ⛔ note.
+						// ⚠️ A REPLACEMENT SPAWNS WHERE THE FLIP WAS, with no delay of its own
+						// — gcsim passes 0 rather than the summon's `spawnsAt`, because the
+						// spawn delay belongs to a cast animation and there is no second cast.
+						const spawnAt = span.from ?? summonSpawnAt(bar.start, bar.summonActivatesAt, summon, i);
+						const naturalEnd = summonEndAt({
+							spawnAt,
+							barUptime: bar.uptime,
+							summon,
+							index: i,
+							swapOutAt
+						});
+						if (si === 0 && i === 0) sharedEnd = naturalEnd;
+						// ⚓ A LATER OCCUPANT INHERITS THE REMAINING DURATION, it does not start a
+						// fresh lifetime — so its end is the SHARED end, not its own `duration`.
+						// And every occupant is cut short by the flip that replaced it.
+						const nextFlip = spans[si + 1]?.from ?? Infinity;
+						const endAt = Math.min(span.from === null ? naturalEnd : sharedEnd, nextFlip);
+						if (endAt <= spawnAt) return;
+						const key = `${track.characterId}::${summon.label}`;
+						// Recast truncation: shorten the still-open prior window on this key.
+						if (summon.terminatesOn === 'recast') {
+							const prev = lastSummonWindowByKey.get(key);
+							if (prev && prev.end > spawnAt) prev.end = spawnAt;
+						}
+						// ⚓ MARKERS THE PARSE MEASURED, for the series the projection cannot
+						// walk (coordinated-attack round, 2026-08-18): a `whileNormalAttacking`
+						// wave and an `onHit` damage proc fire when somebody swings or when
+						// the opponent is hit, which is a fact of the parse. ⚠️ Sorted here —
+						// a wave schedules its whole run at the swing that started it, so the
+						// pushes can interleave out of order with a summon tick's.
+						// ⚠️ Bounded by `[spawnAt, endAt)` so a landing whose travel carried it
+						// past the summon's end is not drawn outside the bar.
+						const win: Extract<TimelineWindow, { kind: 'summon' }> = {
+							kind: 'summon',
+							characterId: track.characterId,
+							label: summon.label,
+							start: spawnAt,
+							end: endAt,
+							source: kind,
+							sourceCastId: ctx.castIdByBar.get(bar)
+						};
+						windows.push(win);
+						summonByWindow.set(win, summon);
+						lastSummonWindowByKey.set(key, win);
+					}
+				);
 			});
 		};
 		// ⚓⚓ CAST ORDER, NOT ABILITY-FAMILY ORDER (gauge round L5e-a½). This

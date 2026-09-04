@@ -51,7 +51,26 @@ export function findSummonsForBar(
 	char: CharacterData | null | undefined,
 	kind: 'skill' | 'burst',
 	label: string,
-	abilityId?: string
+	abilityId?: string,
+	/** What the PARSE resolved, as a THREE-STATE (Arkhe round, 2026-09-04):
+	 *
+	 *    string    — `matchVariant` chose that variant; use it by `label`.
+	 *    null      — `matchVariant` chose NONE; use the BASE ability's summons.
+	 *    undefined — the caller has no cast in hand; match by input token.
+	 *
+	 *  ⚠️⚠️ THE `null` ARM IS THE WHOLE POINT AND IT IS NOT DEFENSIVE PADDING.
+	 *  Collapsing it into `undefined` reads "no variant resolved" as "match by
+	 *  input", and the input match cannot separate two variants that share a
+	 *  token — it takes the FIRST. Furina's Ousia and Pneuma lineups are both
+	 *  `input: ["E"]`, so an OUSIA cast fell straight through to the Pneuma
+	 *  summon; measured on the staged data before this arm existed, every one of
+	 *  `E`, `C C E` and the Ousia half of `C E C E` drew the Singer.
+	 *
+	 *  ⚓ `null` also puts summons on the SAME rule the parser already applies to
+	 *  timing: `matchVariant` requires input match AND conditions, and an
+	 *  unsatisfied variant falls back to the base ability's cooldown and frames
+	 *  (see its doc). Before this, its summons did not follow. */
+	variantLabel?: string | null
 ): Summon[] {
 	if (!char) return [];
 	const candidates = char.abilities.filter((a): a is CastAbility => a.abilityType === kind);
@@ -60,7 +79,16 @@ export function findSummonsForBar(
 		candidates.find((a) => a.conditions === undefined) ??
 		candidates[0];
 	if (!ability) return [];
-	const variant = ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(label));
+	// ⛔ `undefined` is NOT `null` here — see the parameter's doc. The input match
+	// is the arm for a caller with no cast in hand (the renderer's `hasSummon`
+	// presence tests, and the unit tests' bare 3-arg form), never a fallback for
+	// a cast that resolved nothing.
+	const variant =
+		variantLabel === undefined
+			? ability.variants?.find((v) => (v.input as string[] | undefined)?.includes(label))
+			: variantLabel === null
+				? undefined
+				: ability.variants?.find((v) => v.label === variantLabel);
 	// ⚠ AN EMPTY `summons: []` ON A VARIANT MEANS "NONE", not "fall through".
 	// The `?.[0] ?? ability.summons?.[0]` chain this replaced could not express
 	// that — an empty array read as undefined and inherited the base's list —
