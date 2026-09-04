@@ -98,6 +98,7 @@ import {
 import {
 	emitReactionsAtCast,
 	emitReactionsAtSwing,
+	handOffLineup,
 	notifyDamage,
 	notifyNormalAttack,
 	scheduleSummonTicks
@@ -900,6 +901,29 @@ export function runRotation(
 					chainIdx,
 					stackState
 				);
+				// ⚓ A CAST WHOSE SUMMONS FOLLOW A STATE holds its window open for
+				// whichever lineup the state names (Arkhe round, 2026-09-04). Recorded
+				// here, acted on at the state's next edge — see the charged branch.
+				// ⚠️ Recorded even when the cast spawned nothing resolvable: the window
+				// is the ability's, not the occupant's, and a flip into a lineup that
+				// DOES have summons must still find it.
+				if (active.summonsFollowState) {
+					ctx.followStateCasts.set(char.id, {
+						castId,
+						kind,
+						label: tok.text,
+						abilityId: active.id,
+						ability: active,
+						spawnAt: castStart + (spawn ?? 0),
+						variantLabel: variant?.label ?? null,
+						preStates: states,
+						constellation: charConstellationLevel,
+						chainIdx,
+						stackState,
+						castEvent,
+						extRec: cs.summonExt?.castRef === castEvent ? cs.summonExt : undefined
+					});
+				}
 				// ⚓ Arm this cast's REACTION PROCS (mark-triggered round, 2026-08-17)
 				// — Nahida's Tri-Karma, whose window is the Seed of Skandha's 25 s on
 				// the enemy rather than any ability's active bar. Armed BEFORE the
@@ -1252,6 +1276,17 @@ export function runRotation(
 							charConstellationLevel,
 							{ sourceActionId: chargedEv.id }
 						);
+						// ⚓⚓ THE LINEUP HAND-OFF (Arkhe round, landing c). The state has
+						// just moved, so a cast whose summons FOLLOW it may now be holding
+						// the wrong occupant. Re-resolve against the state AFTER the edge
+						// and, if the answer changed, end the running summon here and spawn
+						// the new one with the remaining duration — gcsim's
+						// `if c.StatusIsActive(skillKey) { c.summonSinger(0) }`.
+						//
+						// ⚠️ AFTER `applyTransientState`, and that ordering is the whole
+						// thing: `computeCurrentStates` re-read before the edge returns the
+						// alignment we are leaving.
+						handOffLineup(ctx, clock, char, computeCurrentStates(clock.now), variantCtx);
 					}
 					// Offer the charged shot to the aura. A catalyst CA and a bow's
 					// aimed shot both apply; only the bow's runs a counter (a

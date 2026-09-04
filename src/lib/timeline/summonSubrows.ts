@@ -144,6 +144,10 @@ export function computeSummonSubrows(
 		);
 	};
 
+	/** Slot per character, for a lane that only a WINDOW knows about. */
+	const slotByChar = new Map<string, number>();
+	for (const track of annotatedTracks) slotByChar.set(track.characterId, track.slotIdx);
+
 	for (const track of annotatedTracks) {
 		for (const bar of track.eBars) registerBar(track, bar, 'skill');
 		for (const bar of track.qBars) registerBar(track, bar, 'burst');
@@ -155,8 +159,32 @@ export function computeSummonSubrows(
 	//    and the tick markers.
 	for (const w of summonWindows) {
 		if (w.kind !== 'summon') continue;
-		const row = rowMap.get(`${w.characterId}::${w.label}`);
-		if (!row) continue; // character not slotted (dropped from annotatedTracks)
+		const rowKey = `${w.characterId}::${w.label}`;
+		let row = rowMap.get(rowKey);
+		if (!row) {
+			// ⚓⚓ LANE IDENTITY COMES FROM THE WINDOW, NOT FROM THE BAR (Arkhe
+			// round, landing c). Pass 1 registers a lane per summon the BAR
+			// resolves, and that is no longer the whole set: a `summonsFollowState`
+			// cast can hand its window to a lineup the cast itself never spawned —
+			// Furina's Charged Attack replacing the Salon Members with the Singer
+			// off a cast that resolved OUSIA. Before this the lookup missed and the
+			// window was dropped on the `continue` below, SILENTLY: no lane, no bar,
+			// no warning, and the ticks went with it.
+			//
+			// ⚠️ The `continue` still guards the case it was written for — a
+			// character with no slot at all — which is why the slot is looked up
+			// rather than assumed.
+			const slotIdx = slotByChar.get(w.characterId);
+			if (slotIdx === undefined) continue; // character not slotted
+			row = { slotIdx, characterId: w.characterId, label: w.label, bars: [] };
+			rowMap.set(rowKey, row);
+			subrowOrder.push(row);
+		}
+		// A hand-off window spawns at a flip, not at a bar, so pass 1 minted no
+		// walk index for it. Give it one in window order — ⛔ leaving it absent
+		// makes the re-sort below read every such bar as index 0.
+		const wKey = `${w.characterId}::${w.label}::${w.source}::${w.start}`;
+		if (!walkIndex.has(wKey)) walkIndex.set(wKey, walkSeq++);
 		// ⚓⚓ THE PARSE PUBLISHES A SUMMON'S TICKS; THIS DOES NOT DERIVE THEM
 		// (2026-08-18). Until now the fixed-cadence walk lived here and the
 		// state-gated instants came off the window, which made the ticks a reader

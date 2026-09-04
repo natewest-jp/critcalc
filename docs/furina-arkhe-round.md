@@ -198,7 +198,7 @@ screen first.
 
 - **a** — ✅ **SHIPPED 2026-09-04.** See §6a.
 - **b** — ✅ **SHIPPED 2026-09-04.** See §6b.
-- **c** — the mid-window swap (§4c) + lane identity (§4d).
+- **c** — ✅ **SHIPPED 2026-09-04.** See §6c.
 - **d** — caveat retirement. The E's caveat and the two `_curatorNotes` paragraphs that
   say "Arkhe-state primitive still absent" all go. ⚓ Check them against NAME THE PIXEL
   rather than deleting on sight — the HP-drain multiplier and the A4 interval reduction
@@ -332,6 +332,79 @@ Furina's `heal/active/C0` capability went **`conditional: false` → `conditiona
 now carries `variant: "Pneuma"` provenance. That is the one index change in the whole
 landing, and it is a truer statement: her healing is conditional on being in Pneuma.
 ⚠️ A char-JSON edit of this shape needs `npm run generate-character-index`.
+
+### 6c. Landing c — the record
+
+**Measured: exactly ONE character moves, at C0 and C6.** The other 122 are byte-identical.
+
+| notation          | occupants of the one window                                   |
+| ----------------- | ------------------------------------------------------------- |
+| `Furina E`        | `Salon[18–1818]` 33 ticks — no flip, unchanged                |
+| `Furina E C`      | `Salon[18–86]` → `Singer[86–1818]` 14 ticks                   |
+| `Furina E C C`    | `Salon[18–100]` → `Singer[100–133]` → `Salon[133–1818]`       |
+| `Furina C E C`    | `Singer[57–136]` → `Salon[136–1857]`                          |
+| `Furina E ~25s C` | `Salon[18–1586]` 29 ticks → `Singer[1586–1818]` 2 ticks       |
+| `Furina E ~35s C` | `Salon[18–1818]` — the flip lands AFTER the window; no change |
+
+⚓ The replacement's cadence restarts from the flip: the Singer's first heal mark in
+`Furina E C` is at 351 = 86 + 63, which is gcsim's `singerInitialTick` scheduled afresh by
+`summonSinger(0)`. ⚠️ Every occupant ends at the SHARED end — a later lineup inherits the
+remaining duration, it does not start a lifetime of its own.
+
+On the differential's own rotation the Salon window goes `[18–1818]` with 22 ticks to
+`[18–288]` with 4, and a `Singer[288–1818]` appears with 13. Applications **28 → 11**.
+
+⚠️ The only other movement is REACTIONS, and it is the gauge answering correctly: with
+Furina no longer over-applying Hydro, Kaeya's Cryo survives as its own aura series and two
+Xingqiu reactions appear that the Hydro flood used to swallow. ⛔ Not drift.
+
+#### The design
+
+⚓⚓ **The parse records where the lineup changed; finalize cuts the window on it**
+(`ctx.lineupChanges`, keyed by cast id). The same law as `TimelineWindow.ticks` and the
+coordinated-attack round's fire times: the choice needs the character's state at an instant
+INSIDE the window, and finalize has no state left to ask.
+
+⚓ **Retiring the outgoing chain reuses the RECAST machinery** — a `summonChainGen` bump on
+its key, whose `isCurrent()` check every scheduled tick and every armed summon proc already
+consults. ⛔ Nothing cancels a queued task and no new liveness predicate enters the chain.
+
+⛔ **`summonsFollowState` is opt-in, and the general rule would be WRONG.** "Re-resolve a
+cast's summons whenever a gating state changes" sounds like the honest default and is not:
+a burst variant gated on `inStance` whose stance ends mid-window must keep the summon it
+spawned. A cast spawning a thing is the norm; a cast holding a slot something else can move
+into is the exception, and only a kit that says so may claim it.
+
+⚠️⚠️ **It re-resolves at state edges the parse can SEE — not at a timed window's silent
+expiry**, which fires no event. Sound only because the gating state is a TOGGLE, and
+**lint enforces exactly that**: a `summonsFollowState` ability's variants must gate on a
+state some `toggle: true` spec on the same character opens. Both halves seeded-negative
+verified (turn the toggle into a 6s window → red; drop the variant's gate → red).
+
+#### 🔒 Two tests changed, and both changes are the point
+
+- **`notationParser.ir.test.ts`'s independent oracle stops naming the occupants of a
+  followState window and asserts they TILE it instead** — first occupant at the spawn, last
+  at the shared end, each beginning exactly where the previous ended. ⚓ That is not a
+  weaker assertion than the tuple equality it replaces: it is the one that catches a gap,
+  an overlap, or a window running past the cast's own end, which is every way the cut can
+  go wrong. **Seeded-negative verified twice**: making a later occupant start a fresh
+  lifetime, and forgetting to cut the outgoing one, each turn it red.
+- **`summonSubrows.test.ts` no longer asserts that a stray window is dropped.** Lane
+  identity now comes from the WINDOW (§4d), because pass 1 cannot enumerate a lane the cast
+  never resolved. ⚠️ The old contract was not a safety net being removed — pass 1 and pass 2
+  resolved through the same function with the same arguments, so a stray window was
+  unreachable in a real parse. The drop still guards the case it was written for, and the
+  test now asserts that half explicitly: a window for a character with **no slot** has
+  nowhere to go.
+
+#### The caveat moved rather than went
+
+The lineup caveat is retired — it described exactly what landing c fixed. Applying NAME THE
+PIXEL to what is left, the strongest remaining claim is the Singer's **heal cadence**:
+Unheard Confession shortens its 2s interval by up to 16% at high Max HP, a cap essentially
+every built Furina reaches, so we draw ~15 marks where the game gives ~18. ⚠️ The Salon
+members' ±7-frame gcsim jitter stays in `_curatorNotes` — at ~2px it names no pixel.
 
 ## 7. Open
 

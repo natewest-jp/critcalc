@@ -605,6 +605,25 @@ function lintAbility(
 	// `actionOpensState.{normal,plunge,charged}`): unknown state names would
 	// silently never gate anything, so vocabulary is strict. `conditions` inside
 	// the specs are covered by the generic condition-shape walk.
+	// Every state a `toggle: true` spec anywhere on this character opens — the
+	// `summonsFollowState` guard further down needs it, and a toggle authored on
+	// the NORMAL ability is what gates a SKILL's variants (Furina), so it has to
+	// be a character-wide walk rather than a per-ability one.
+	const toggledStates = new Set<string>();
+	for (const other of [...c.abilities, ...(c.passives ?? []), ...(c.constellations ?? [])]) {
+		const raw = other as unknown as Record<string, unknown>;
+		const bags = [
+			raw.opensTransientState,
+			...Object.values((raw.actionOpensState ?? {}) as object)
+		];
+		for (const bag of bags) {
+			const spec = bag as { state?: unknown; toggle?: unknown } | undefined;
+			if (spec && spec.toggle === true && typeof spec.state === 'string') {
+				toggledStates.add(spec.state);
+			}
+		}
+	}
+
 	const specSites: { spec: unknown; where: string }[] = [];
 	const rawAbility = a as unknown as Record<string, unknown>;
 	if (rawAbility.opensTransientState !== undefined) {
@@ -686,6 +705,39 @@ function lintAbility(
 						);
 					}
 				}
+			}
+		}
+	}
+
+	// ⚓⚓ (NEW, Arkhe round) `summonsFollowState` RE-RESOLVES AT STATE EDGES THE
+	// PARSE CAN SEE, and a TIMED window's expiry is not one of them — it fires no
+	// event, so a lineup gated on a 6s window would keep the wrong occupant for
+	// the rest of the cast. The flag is therefore only sound when every state
+	// gating its variants is opened by a TOGGLE, which never expires.
+	// ⛔ Don't relax this to a warning: the failure is silent and looks correct.
+	if ((a as unknown as Record<string, unknown>).summonsFollowState === true) {
+		const gating = new Set<string>();
+		for (const v of ('variants' in a ? (a.variants ?? []) : []) as { conditions?: unknown }[]) {
+			walkConditions(v.conditions as Condition | undefined, (cond) => {
+				if (cond.type === 'state') gating.add(cond.state);
+			});
+		}
+		if (gating.size === 0) {
+			push(
+				'strict',
+				'summons-follow-state',
+				`summonsFollowState is set but no variant gates on a state — nothing could ever change the occupant`,
+				a.id
+			);
+		}
+		for (const name of gating) {
+			if (!toggledStates.has(name)) {
+				push(
+					'strict',
+					'summons-follow-state',
+					`summonsFollowState gates on "${name}", which no toggle on this character opens — a timed window expires with no event and the lineup would never hand back`,
+					a.id
+				);
 			}
 		}
 	}

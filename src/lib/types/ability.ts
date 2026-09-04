@@ -2046,6 +2046,38 @@ type SkillCommonFields = AbilityCommon & {
 	/** Entities spawned by this cast with their own lifetimes. When present,
 	 *  these supersede the ability's own `duration` for active-window rendering. */
 	summons?: Summon[];
+	/**
+	 * ⚓⚓ THE CAST OPENS ONE WINDOW AND ITS SUMMONS ARE ALTERNATIVE OCCUPANTS OF
+	 * IT (Arkhe round, 2026-09-04). Normally a cast spawns what its resolved
+	 * variant says and that is settled for the life of the window. With this
+	 * flag, a change in the state gating those variants mid-window REPLACES the
+	 * occupant: the old summon ends at the flip, the new one spawns there and
+	 * inherits the remaining duration. Furina's kit says it in those words —
+	 * "The Salon Members and Singer of Many Waters share a duration, and when
+	 * Furina uses her Charged Attack to change the guest type, the new guests
+	 * will inherit the remaining duration" — and gcsim implements it as
+	 * `if c.StatusIsActive(skillKey) { c.summonSinger(0) }` (`charge.go:61`).
+	 *
+	 * ⛔⛔ IT MUST BE OPT-IN AND THE GENERAL RULE WOULD BE WRONG. "Re-resolve a
+	 * cast's summons whenever a gating state changes" sounds like the honest
+	 * default and is not: a burst variant gated on `inStance` whose stance ends
+	 * mid-window must keep the summon it spawned. A cast spawning a thing is the
+	 * norm; a cast holding a slot something else can move into is the exception,
+	 * and only a kit that says so may claim it.
+	 *
+	 * ⚠️⚠️ IT RE-RESOLVES AT STATE EDGES THE PARSE CAN SEE — a toggle or an
+	 * opener — ⛔ NOT at a timed window's silent expiry, which fires no event.
+	 * That is sound only because the gating state is itself a TOGGLE, which never
+	 * expires; **lint enforces exactly that** (a `summonsFollowState` ability's
+	 * variants must gate on a state some `toggle: true` spec on the same
+	 * character opens). ⛔ Don't relax the lint without teaching the parse to
+	 * schedule expiries.
+	 *
+	 * ⚠️ A replacement spawns with NO delay — gcsim passes 0, not the summon's
+	 * own `spawnsAt` — and its tick cadence restarts from the flip. The bubble
+	 * delay is the cast animation's, and there is no second cast.
+	 */
+	summonsFollowState?: true;
 	variants?: AbilityVariant[];
 };
 
@@ -2152,6 +2184,38 @@ type BurstCommonFields = AbilityCommon & {
 	/** Entities spawned by this cast with their own lifetimes. When present,
 	 *  these supersede the ability's own `duration` for active-window rendering. */
 	summons?: Summon[];
+	/**
+	 * ⚓⚓ THE CAST OPENS ONE WINDOW AND ITS SUMMONS ARE ALTERNATIVE OCCUPANTS OF
+	 * IT (Arkhe round, 2026-09-04). Normally a cast spawns what its resolved
+	 * variant says and that is settled for the life of the window. With this
+	 * flag, a change in the state gating those variants mid-window REPLACES the
+	 * occupant: the old summon ends at the flip, the new one spawns there and
+	 * inherits the remaining duration. Furina's kit says it in those words —
+	 * "The Salon Members and Singer of Many Waters share a duration, and when
+	 * Furina uses her Charged Attack to change the guest type, the new guests
+	 * will inherit the remaining duration" — and gcsim implements it as
+	 * `if c.StatusIsActive(skillKey) { c.summonSinger(0) }` (`charge.go:61`).
+	 *
+	 * ⛔⛔ IT MUST BE OPT-IN AND THE GENERAL RULE WOULD BE WRONG. "Re-resolve a
+	 * cast's summons whenever a gating state changes" sounds like the honest
+	 * default and is not: a burst variant gated on `inStance` whose stance ends
+	 * mid-window must keep the summon it spawned. A cast spawning a thing is the
+	 * norm; a cast holding a slot something else can move into is the exception,
+	 * and only a kit that says so may claim it.
+	 *
+	 * ⚠️⚠️ IT RE-RESOLVES AT STATE EDGES THE PARSE CAN SEE — a toggle or an
+	 * opener — ⛔ NOT at a timed window's silent expiry, which fires no event.
+	 * That is sound only because the gating state is itself a TOGGLE, which never
+	 * expires; **lint enforces exactly that** (a `summonsFollowState` ability's
+	 * variants must gate on a state some `toggle: true` spec on the same
+	 * character opens). ⛔ Don't relax the lint without teaching the parse to
+	 * schedule expiries.
+	 *
+	 * ⚠️ A replacement spawns with NO delay — gcsim passes 0, not the summon's
+	 * own `spawnsAt` — and its tick cadence restarts from the flip. The bubble
+	 * delay is the cast animation's, and there is no second cast.
+	 */
+	summonsFollowState?: true;
 	variants?: AbilityVariant[];
 };
 

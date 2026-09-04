@@ -24,7 +24,7 @@
  */
 
 import type { CharacterData } from '$lib/types/character';
-import type { Condition, Element } from '$lib/types/ability';
+import type { CastAbility, Condition, Element } from '$lib/types/ability';
 import type { LoadoutEntry } from '$lib/stores';
 import type { ActionEvent, CastEvent, TimelineEvent } from '$lib/utils/rotationEvents';
 import type { IcdClock } from '$lib/utils/icd';
@@ -32,6 +32,7 @@ import type { HitEvent } from './hits';
 import { type AuraState, createAuraState } from './aura';
 import type { ProcListener } from './procs';
 import type { CastKinds } from './states';
+import type { ChainIndex } from './conditions';
 import type { CharacterTrack, TimelineBar } from './types';
 import {
 	type CharState,
@@ -83,6 +84,35 @@ export type WeaponProcRec = { start: number; end: number; sourceCastId: number }
  * ends at the Hyperbloom. ⚠️ A record whose `end` is still absent at finalize
  * ran its nominal life — see `nominalEnd`.
  */
+/**
+ * A live `summonsFollowState` cast — the state the flip site needs to hand one
+ * lineup off to the next. Everything here is fixed at the cast except
+ * `variantLabel`, which is the CURRENT occupant and is rewritten on each flip.
+ */
+export type FollowStateCast = {
+	castId: number;
+	kind: 'skill' | 'burst';
+	/** Token text as typed — `findSummonsForBar`'s input-match fallback wants it. */
+	label: string;
+	abilityId: string;
+	ability: CastAbility;
+	/** Where the FIRST occupant spawned; the shared window's start.
+	 *  ⛔ The window's END is deliberately NOT stored — it is computed at the flip
+	 *  from `extRec ?? castEvent`, the same "⚓ LIVE, never snapshot" rule the tick
+	 *  chain's `endNow()` follows, so a duration extension moves the hand-off. */
+	spawnAt: number;
+	/** The occupant right now — `null` when the base ability's summons are out. */
+	variantLabel: string | null;
+	/** The cast's own condition inputs, replayed at the flip so a variant gated
+	 *  on more than the toggled state still resolves the way the cast did. */
+	preStates: ReadonlySet<string>;
+	constellation: number;
+	chainIdx: ChainIndex;
+	stackState: Map<string, number>;
+	castEvent: CastEvent;
+	extRec: SummonExtRecord | undefined;
+};
+
 export type GadgetRec = {
 	kind: 'core';
 	/** Identity from the gauge, so a spawn and its end can be paired. */
@@ -252,6 +282,27 @@ export type SimContext = {
 	 *  ⚠️ Bumped ONLY for a recast-terminating summon, mirroring finalize —
 	 *  a summon without the flag spawning twice leaves both windows alive. */
 	summonChainGen: Map<string, number>;
+	/**
+	 * ⚓⚓ THE PARSE RECORDS WHERE A CAST'S LINEUP CHANGED; FINALIZE CUTS THE
+	 * WINDOW ON IT (Arkhe round, 2026-09-04). Keyed by the opening cast's event
+	 * id. An entry says "from `at`, this cast's summon is the one its `variantLabel`
+	 * resolves to" — Furina's Charged Attack flipping her Arkhe mid-Salon.
+	 *
+	 * ⚓ It is a RECORD, not a derivation, for the reason the tick markers are:
+	 * the choice needs the character's state at an instant inside the window, and
+	 * finalize has no state left to ask. The same law as `TimelineWindow.ticks`
+	 * and the coordinated-attack round's fire times — the parse publishes, the
+	 * projection does not guess.
+	 */
+	lineupChanges: Map<number, { at: number; variantLabel: string | null }[]>;
+	/**
+	 * The live `summonsFollowState` cast each character is currently holding open,
+	 * carrying everything the flip site needs to end one chain and start another.
+	 * ⚠️ At most ONE per character: a second cast of the same ability re-opens the
+	 * window rather than running two, and no character has two such abilities.
+	 * Cleared by nothing — a stale entry is rejected by its own `sharedEnd`.
+	 */
+	followStateCasts: Map<string, FollowStateCast>;
 	/** Timed elemental infusions granted by `infuse` Effects. */
 	infusionWindows: InfusionWindow[];
 	/**
@@ -358,6 +409,8 @@ export function createSimContext(input: SimContextInput): SimContext {
 		icdClocks: new Map(),
 		lastSwapOutAt: new Map(),
 		summonChainGen: new Map(),
+		lineupChanges: new Map(),
+		followStateCasts: new Map(),
 		infusionWindows: [],
 		procs: new Map(),
 		stateGatedTicks: new Map(),
