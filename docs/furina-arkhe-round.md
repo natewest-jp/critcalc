@@ -1,7 +1,8 @@
 # The Arkhe round — Furina's two lineups
 
-**Status:** 📋 SPEC, 2026-09-04. Nothing built. ⛔ This file is the BEFORE until a §
-below says otherwise.
+**Status:** ✅ **COMPLETE, 2026-09-04.** All four landings shipped — §6a–§6d are the
+record. ⛔ §1–§5 are the SPEC as written before any code; where a landing record
+contradicts them, the record wins.
 
 ⚓ **Nate's three rulings, 2026-09-04**, taken before any code:
 
@@ -199,10 +200,7 @@ screen first.
 - **a** — ✅ **SHIPPED 2026-09-04.** See §6a.
 - **b** — ✅ **SHIPPED 2026-09-04.** See §6b.
 - **c** — ✅ **SHIPPED 2026-09-04.** See §6c.
-- **d** — caveat retirement. The E's caveat and the two `_curatorNotes` paragraphs that
-  say "Arkhe-state primitive still absent" all go. ⚓ Check them against NAME THE PIXEL
-  rather than deleting on sight — the HP-drain multiplier and the A4 interval reduction
-  are still unmodelled and still name real pixels.
+- **d** — ✅ **SHIPPED 2026-09-04.** See §6d.
 
 ### 6a. Landing a — the record
 
@@ -406,13 +404,55 @@ Unheard Confession shortens its 2s interval by up to 16% at high Max HP, a cap e
 every built Furina reaches, so we draw ~15 marks where the game gives ~18. ⚠️ The Salon
 members' ±7-frame gcsim jitter stays in `_curatorNotes` — at ~2px it names no pixel.
 
+### 6d. Landing d — the record
+
+**Measured: Furina only, and the window COUNT is unchanged** (8 → 8 at C0, 12 → 12 at C6).
+Only value payloads moved; no geometry, no ticks, no applications. The other 122 characters
+are byte-identical.
+
+#### 🐛 The audit found a wrong pixel that had nothing to do with this round
+
+Furina's **signature mechanic drew two team bars reading `+0%` for 18 seconds.** Her burst's
+Fanfare buffs are authored `value: 0` as a placeholder for a number that needs HP-change
+simulation — and `formatBuffDisplayValue` prints a numeric value verbatim
+(`typeof value === 'number'` → `` `+${value}%` ``), so the placeholder reached the bar. Her
+C6 window did the same thing a third time.
+
+⚓ **The fix is `BuffValue` `{ type: 'unknown', description }`, which exists for exactly
+this** and renders the description in place of a number. ⛔ **The bars themselves are
+CORRECT and stay** — the 18s Fanfare window and the 10s C6 window are both real; only the
+number was unknowable. That is the difference between a bar that should not be drawn and a
+bar drawn with a lie in it.
+
+⚠️⚠️ **It was NOT a class.** A corpus sweep for a literal `value: 0` on a buff effect
+returns **0 across 0 characters** now that Furina's three are fixed — she was the only
+holder. ⛔ So this is not a queued round, and a future author reaching for `value: 0` as a
+placeholder should be pointed at `unknown` instead.
+
+#### Caveats and notes
+
+- The lineup caveat is retired; the E now carries the **Singer's heal cadence** instead
+  (A4 shortens the 2s interval by up to 16% at high Max HP — a cap essentially every built
+  Furina reaches — so we draw ~15 marks where the game gives ~18). It is the one surviving
+  claim that NAMES A PIXEL.
+- **Two `_curatorNotes` retired for saying the opposite of what is now true**: "ticks pause
+  in Pneuma … planner can't track arkhe, so ticks render for the whole window" (both halves
+  false since landing c) and the Singer's "Arkhe-state primitive still absent" paragraph.
+- **Kept, and deliberately**: the Salon members' ±7-frame gcsim jitter (~2px — names no
+  pixel) and the HP-drain multiplier (a damage multiplier, and we print no damage). ⚓ Both
+  are true statements about unmodelled mechanics, which is what `_curatorNotes` is for.
+
 ## 7. Open
 
 - ⛔ **The stale-`application[]` class (§2a) is NOT this round.** Ten other candidate
   sites, none measured.
 - **Furina's C6 splits on alignment** (`cons.go:78` — an Ousia team heal vs a Pneuma
   drain+bonus). With the alignment tracked it becomes expressible for the first time, but
-  the values are HP-scaling flat damage, which is still unmodelable — so it stays a
-  zero-value placeholder with a note. ⛔ Don't reach for it because the gate finally exists.
+  the values are HP-scaling flat damage, which is still unmodelable — so it stays ONE
+  window with an `unknown` value (↻ §6d: it was a zero-value placeholder, which drew a
+  `+0%` bar). ⛔ Don't reach for the split because the gate finally exists.
+- **Fanfare is still unsimulated**, and that is upstream of the gauge, not of this round:
+  it counts party HP CHANGES, which needs a health model the planner does not have. The
+  bars say `≈0.26% per Fanfare, up to ~78%` rather than a number.
 - **Window length stays 30s.** gcsim runs `skillMaxDuration` 1736f ≈ 28.9s; the kit table
   says 30.0s and the existing curator note chose the kit. ⛔ Not reopened here.
