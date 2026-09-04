@@ -329,6 +329,7 @@ the only gate that runs on authored data.
 Furina's `heal/active/C0` capability went **`conditional: false` → `conditional: true`** and
 now carries `variant: "Pneuma"` provenance. That is the one index change in the whole
 landing, and it is a truer statement: her healing is conditional on being in Pneuma.
+✅ **Verified on the roster surface by Nate, 2026-09-04.**
 ⚠️ A char-JSON edit of this shape needs `npm run generate-character-index`.
 
 ### 6c. Landing c — the record
@@ -444,8 +445,8 @@ placeholder should be pointed at `unknown` instead.
 
 ## 7. Open
 
-- ⛔ **The stale-`application[]` class (§2a) is NOT this round.** Ten other candidate
-  sites, none measured.
+- ⛔ **The stale-`application[]` class (§2a) is NOT this round** — but it is CENSUSED now.
+  See §8.
 - **Furina's C6 splits on alignment** (`cons.go:78` — an Ousia team heal vs a Pneuma
   drain+bonus). With the alignment tracked it becomes expressible for the first time, but
   the values are HP-scaling flat damage, which is still unmodelable — so it stays ONE
@@ -456,3 +457,35 @@ placeholder should be pointed at `unknown` instead.
   bars say `≈0.26% per Fanfare, up to ~78%` rather than a number.
 - **Window length stays 30s.** gcsim runs `skillMaxDuration` 1736f ≈ 28.9s; the kit table
   says 30.0s and the existing curator note chose the kit. ⛔ Not reopened here.
+
+---
+
+## 8. The stale-`application[]` class — the census (2026-09-04)
+
+§2a flagged ~11 candidate sites off a coarse test ("an `application[]` entry at or after the
+summon's first tick"). ⚓ **That test is mostly noise, and a cadence test replaces it**: an
+entry is suspect only if it lands ON the summon's predicted tick instants, not merely after
+the first one. On that test **escoffier, emilie and jean drop out entirely** — their late
+entries are genuine cast hits that outlast a summon's first tick, which is the false-positive
+class the coarse sweep could not see.
+
+⚠️⚠️ **And it is not ONE defect — it is three, with different fixes.** Sorting the survivors
+by what the array's cadence agrees with:
+
+| kind                            | characters                                                                          | what is actually wrong                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **A — a real double-count**     | **kinich** (5 of 6 entries track Ajaw at 253/403/553/703/848 against a 147f series) | the summon HAS the damage series, so both fire. Furina was this. **Fix: trim the array to the cast's own hits.**                                                                                                                                                                                                                                                                                                                                             |
+| **B — a MISSING damage series** | **yaoyao**, **charlotte**, **qiqi**                                                 | the summon is authored **heal-only**, and its damage applications were smuggled into the cast's array. ⚓ No double-count — a heal tick never reaches the gauge — but the aura is UNDER-fed once the array runs out (Yaoyao stops at frame 325 while Yuegui lives on) and the summon lane draws **no damage tick markers at all**. **Fix: author the damage `summonTick` series, then trim** — more work, and it needs the oracle for cadence AND ICD group. |
+| **C — a cadence disagreement**  | **durin** (both bursts)                                                             | the array is a uniform **~59f** cadence; the authored series says **74f**. One of the two is wrong and the data cannot say which. **Fix: re-measure against gcsim.**                                                                                                                                                                                                                                                                                         |
+| **false positive**              | **xiangling**                                                                       | one entry at 57 against a first tick at 56. Pyronado's three spins are 18/33/57 — the match is a COINCIDENCE.                                                                                                                                                                                                                                                                                                                                                |
+
+⚠️⚠️ **Subtraction cannot measure any of this, and that is the round's instrument lesson.**
+Parsing with `application[]` stripped and with the summon effects stripped does NOT
+decompose — ICD gating makes the two sources non-additive, so removing one can _raise_ the
+total (Durin measured 11 base against **12** with the array removed, because suppressed
+later hits stop being suppressed). ⛔ Never scope this class by differential arithmetic; the
+instrument is `scripts/audit-gcsim-reactions.mjs`, per character, against the oracle.
+
+✅ All six survivors ARE oracled (`~/Code/gcsim/internal/characters/`), so every one is
+adjudicable — unlike the 7.0 characters. ⚓ **Do B first**: it is the only kind that leaves a
+summon lane visibly empty, and it is the one whose fix adds data rather than removing it.
