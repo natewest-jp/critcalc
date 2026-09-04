@@ -43,13 +43,19 @@ export function openSettings(): void {
 /**
  * The compass — every destination on the site in one panel (2026-09-04).
  *
- * ⚠ It exists because the chrome bar is OVER-SUBSCRIBED below 40rem, measured:
- * brand 204.6 + three 34px glyphs + padding and gaps needs ~400px, and a
- * 320px phone has 320. Rather than shrink targets or drop the wordmark, the
- * whole navigation — tool switcher AND the three meta glyphs — folds into one
- * button, which costs 34px and leaves 41px of slack at 320. Tool switching and
- * About/Help/Settings are all NAVIGATION; splitting them across four controls
- * spends 120px on a distinction a phone reader does not need.
+ * ⚠ It exists because the chrome bar is OVER-SUBSCRIBED below 47.5rem,
+ * measured: brand 204.4 + three 34px glyphs + padding and gaps wants ~400px in
+ * a 320px bar. The tool switcher, About and Help fold in here; the form that
+ * ships is 310.8px with 9.2px of slack.
+ *
+ * ⚓ THE SETTINGS COG DELIBERATELY STAYS OUT (Nate 2026-09-04). About and Help
+ * are things you go and READ — they belong behind a navigation panel with
+ * every other destination. Settings is a control you REACH FOR mid-task, and
+ * burying that makes it feel further away than it is.
+ *
+ * ⚠ Settings is still LISTED in the panel as well, and ⛔ that is not a
+ * duplicate to tidy away: the cog is an unlabelled glyph, and a reader who
+ * does not recognise it will open this panel to look.
  * Derivation: docs/responsive-survey-2026-09-01.md § 8.2.
  */
 export function openNav(): void {

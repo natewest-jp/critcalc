@@ -7,10 +7,16 @@
 
 	// What the compass opens: every destination on the site, in one panel.
 	//
-	// ⚠ THE WHOLE POINT IS THAT IT HOLDS BOTH KINDS OF NAVIGATION. Below 40rem
-	// the chrome hides the tool switcher AND the three meta glyphs, because the
-	// bar cannot fit them beside a wordmark on a 320px phone (see openNav()).
-	// Everything they reach has to be reachable from here or it is unreachable.
+	// ⚠ THE WHOLE POINT IS THAT IT HOLDS BOTH KINDS OF NAVIGATION. Below 47.5rem
+	// the chrome hides the tool switcher, About and Help, because the bar cannot
+	// fit them beside a wordmark on a 320px phone (see openNav()). Everything
+	// they reach has to be reachable from here or it is unreachable.
+	//
+	// ⚠ Settings is listed even though its cog SURVIVES in the bar at that
+	// width. ⛔ That is not an oversight to tidy away: the cog is an unlabelled
+	// glyph, and a reader who does not recognise it will open this panel to
+	// look. An index that omits a destination because it happens to be
+	// reachable elsewhere makes people hunt.
 	//
 	// ⚠ NO DESCRIPTIONS, deliberately. Every line of user-facing copy on this
 	// site is Nate's (roadmap §13, the text rewrite), and `seo.ts` already
