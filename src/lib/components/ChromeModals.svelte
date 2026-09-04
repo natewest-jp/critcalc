@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ChromeOverlay from './ChromeOverlay.svelte';
 	import SettingsPanel from './SettingsPanel.svelte';
+	import NavPanel from './NavPanel.svelte';
 	import HelpAreaShell from './HelpAreaShell.svelte';
 	import { chromeModal, closeChromeModal } from './chromeModal.svelte';
 	import { AREAS } from '$lib/help/areas';
@@ -17,7 +18,11 @@
 	const state = $derived(chromeModal.current);
 </script>
 
-{#if state?.kind === 'settings'}
+{#if state?.kind === 'nav'}
+	<ChromeOverlay title="Go to" onClose={closeChromeModal} {onScene}>
+		<NavPanel />
+	</ChromeOverlay>
+{:else if state?.kind === 'settings'}
 	<ChromeOverlay title="Settings" onClose={closeChromeModal} {onScene}>
 		<SettingsPanel />
 	</ChromeOverlay>
