@@ -197,8 +197,7 @@ screen first.
 ## 6. Landings
 
 - **a** — ✅ **SHIPPED 2026-09-04.** See §6a.
-- **b** — Furina's authoring: the Pneuma variant, the `application[]` correction, the three
-  `icdGate`s. Measured at C0 and C6.
+- **b** — ✅ **SHIPPED 2026-09-04.** See §6b.
 - **c** — the mid-window swap (§4c) + lane identity (§4d).
 - **d** — caveat retirement. The E's caveat and the two `_curatorNotes` paragraphs that
   say "Arkhe-state primitive still absent" all go. ⚓ Check them against NAME THE PIXEL
@@ -268,6 +267,71 @@ cannot differ for her. ⚠️ It is a **pre-existing** divergence from the parse
 (it predates this round and would want `abilityId` too, which could move Durin), so it is
 ⛔ not widened into landing a. Re-check it if a character ever has a lineup with a summon
 and one without.
+
+### 6b. Landing b — the record
+
+**Measured: exactly ONE character moves, at C0 and C6.** The other 122 are byte-identical
+on the same differential landing a used.
+
+| notation        | lineup drawn                         | applications |
+| --------------- | ------------------------------------ | ------------ |
+| `Furina E`      | Salon Solitaire (33 ticks)           | **31 → 21**  |
+| `Furina C E`    | Singer of Many Waters (15 ticks)     | **31 → 0**   |
+| `Furina C C E`  | Salon Solitaire — flipped back       | 21           |
+| `Furina E C E`  | Salon, then Singer                   | 21           |
+| `Furina N1 C E` | Singer (the CA's windup is honoured) | 0            |
+
+⚓ **The 0 is the round's claim in one number.** `skillPneuma` queues no attack and the
+Singer only heals, so a Pneuma cast applies nothing at all — which is what
+`application: []` on the variant says out loud.
+
+On the differential's own rotation (`Furina E N1 N2 N3 C P Q E > …`) the two casts split
+cleanly: the first E is Ousia and keeps `Salon Solitaire@18`, the second is Pneuma and
+keeps `Singer of Many Waters@1210`, while `Salon@1218` and `Singer@10` — the halves that
+were never real — are gone. Applications **64 → 28**.
+
+⚠️ **Two knock-on movements, both correct and both worth expecting.** The Pneuma variant's
+frames are gcsim's (anim 57 vs Ousia's 54), so a Pneuma E is 3 frames longer and everything
+downstream — Xingqiu's summons, his resShred windows — shifts by exactly 3. And at C6 the
+placeholder buff moves with its cast. ⛔ Neither is drift to be "corrected" back.
+
+#### Authoring
+
+- **`State` gains `pneuma`** — ⛔ and no `ousia` beside it. Two states for one bit is a pair
+  that can disagree, and the default would then have to be asserted at the top of every
+  rotation. Absence IS Ousia.
+- **The toggle is on the NORMAL ability** (`actionOpensState.charged`), not the skill —
+  the Charged Attack is what flips the alignment; the skill only reads it.
+- **The Pneuma variant** carries its own frames, `application: []`, and the Singer.
+  ⛔ Not authored: gcsim's `pneumaCDDelay` of 10f (Ousia's is 0) — `AbilityVariant` has no
+  `cooldownStartDelay`, and 10 frames on a 20s cooldown is below what the ghost tail can
+  show. Not worth a schema field.
+- **Three `icdGate`s, and they are not the same gate** — Usher and Chevalmarin carry
+  `ICDGroupFurinaSalonSolitaire` (`{ timer: 1800, every: 2 }`), Crabaletta is `ICDTagNone`
+  (`'none'`). ⚓ Authored per SERIES, never once on the summon, precisely because the third
+  member is not on the group the other two share.
+
+#### 🐛 A pre-existing hole in the lint, found on the way
+
+`codaWindow` went into the `State` union in the Odette Stage-2 round and **never into
+`characterLint`'s `STATES` set** — and nothing noticed, because that vocabulary check runs
+only over `isCurated` characters and Odette is in `FRAMELESS_EXEMPT`. Her
+`opensTransientState.state` has never reached it. ⚠️⚠️ **Adding a `State` member is TWO
+edits, and the suite cannot tell you so when the character that needs it is frameless.**
+Both `codaWindow` and `pneuma` are in the set now.
+
+The lint also learned the round's two new shapes, each verified by seeded negative:
+`actionOpensState.charged` as a legal action class, and **exactly one of `duration` /
+`toggle`** — ⚠️ TypeScript already refuses the pair through the union's `never`s, but the
+character JSONs are cast to `CharacterData` rather than checked against it, so the lint is
+the only gate that runs on authored data.
+
+#### The Team Builder moved, and correctly
+
+Furina's `heal/active/C0` capability went **`conditional: false` → `conditional: true`** and
+now carries `variant: "Pneuma"` provenance. That is the one index change in the whole
+landing, and it is a truer statement: her healing is conditional on being in Pneuma.
+⚠️ A char-JSON edit of this shape needs `npm run generate-character-index`.
 
 ## 7. Open
 

@@ -210,7 +210,15 @@ const STATES = new Set([
 	'apexDrive',
 	'transmuting',
 	'whiteForm',
-	'darkForm'
+	'darkForm',
+	// ⚠️⚠️ `codaWindow` was added to the `State` union in the Odette Stage-2 round
+	// and NOT here, and nothing noticed for four days — this list is checked only
+	// for `isCurated` characters and Odette is in FRAMELESS_EXEMPT, so her
+	// `opensTransientState.state` never reached the vocabulary check at all.
+	// ⛔ Adding a State member is TWO edits; the suite cannot tell you when the
+	// character that needs it is frameless.
+	'codaWindow',
+	'pneuma'
 ]);
 
 const ABILITY_TYPES = new Set(['normal', 'skill', 'burst', 'passive', 'constellation']);
@@ -594,9 +602,9 @@ function lintAbility(
 	}
 
 	// (NEW post-P4 #2) Transient-state opener specs (`opensTransientState`,
-	// `actionOpensState.{normal,plunge}`): unknown state names would silently
-	// never gate anything, so vocabulary is strict. `conditions` inside the
-	// specs are covered by the generic condition-shape walk.
+	// `actionOpensState.{normal,plunge,charged}`): unknown state names would
+	// silently never gate anything, so vocabulary is strict. `conditions` inside
+	// the specs are covered by the generic condition-shape walk.
 	const specSites: { spec: unknown; where: string }[] = [];
 	const rawAbility = a as unknown as Record<string, unknown>;
 	if (rawAbility.opensTransientState !== undefined) {
@@ -605,11 +613,11 @@ function lintAbility(
 	const aos = rawAbility.actionOpensState as Record<string, unknown> | undefined;
 	if (aos !== undefined) {
 		for (const key of Object.keys(aos)) {
-			if (key !== 'normal' && key !== 'plunge') {
+			if (key !== 'normal' && key !== 'plunge' && key !== 'charged') {
 				push(
 					'strict',
 					'transient-state-spec',
-					`actionOpensState key "${key}" is not an action class (normal|plunge)`,
+					`actionOpensState key "${key}" is not an action class (normal|plunge|charged)`,
 					a.id
 				);
 			} else if (aos[key] !== undefined) {
@@ -618,7 +626,12 @@ function lintAbility(
 		}
 	}
 	for (const { spec, where } of specSites) {
-		const s = spec as { state?: unknown; duration?: unknown; consumes?: unknown };
+		const s = spec as {
+			state?: unknown;
+			duration?: unknown;
+			toggle?: unknown;
+			consumes?: unknown;
+		};
 		if (typeof s.state !== 'string' || !STATES.has(s.state)) {
 			push(
 				'strict',
@@ -627,11 +640,35 @@ function lintAbility(
 				a.id
 			);
 		}
-		if (typeof s.duration !== 'number' || !isFinite(s.duration) || s.duration <= 0) {
+		// ⚓ EXACTLY ONE OF `duration` / `toggle` (Arkhe round, 2026-09-04). The two
+		// arms are the two ways a state can END — by itself after N seconds, or
+		// only when the same action fires again — and a spec carrying both is not
+		// a longer toggle, it is an author who has not decided. ⚠️ TypeScript
+		// already refuses the pair via the union's `never`s, but the character
+		// JSONs are cast to `CharacterData` rather than checked against it, so
+		// this is the only gate that actually runs on authored data.
+		if (s.toggle !== undefined && s.toggle !== true) {
 			push(
 				'strict',
 				'transient-state-spec',
-				`${where}.duration must be a finite positive number`,
+				`${where}.toggle must be literally true when present (a toggle has no other setting)`,
+				a.id
+			);
+		}
+		if (s.toggle === true) {
+			if (s.duration !== undefined) {
+				push(
+					'strict',
+					'transient-state-spec',
+					`${where} sets both toggle and duration; a toggle has no length — it ends when the action fires again`,
+					a.id
+				);
+			}
+		} else if (typeof s.duration !== 'number' || !isFinite(s.duration) || s.duration <= 0) {
+			push(
+				'strict',
+				'transient-state-spec',
+				`${where}.duration must be a finite positive number (or set toggle: true instead)`,
 				a.id
 			);
 		}

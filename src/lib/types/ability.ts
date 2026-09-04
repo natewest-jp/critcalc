@@ -964,7 +964,19 @@ export type State =
 	 *  nearby", which would be 20s. The 6s is authored because it is the number
 	 *  the talent states and it is the tighter of the two; ⛔ don't switch to
 	 *  the summon's lifetime without an in-game check. */
-	| 'codaWindow';
+	| 'codaWindow'
+	/** Furina: her Arkhe alignment is PNEUMA. ⚓ THE ONLY TOGGLE STATE IN THE
+	 *  CORPUS, and the only one whose absence is itself a meaning — Furina
+	 *  starts in Ousia (gcsim `furina.go:61`) and her Charged Attack flips
+	 *  between the two forever, so `pneuma` names the non-default half and
+	 *  Ousia is "not pneuma". ⛔ Never mint an `ousia` beside it: two states for
+	 *  one bit is a pair that can disagree, and the default would then have to
+	 *  be asserted at the start of every rotation.
+	 *
+	 *  It gates the Pneuma VARIANT of Salon Solitaire, which is the whole point:
+	 *  the alignment at the instant of the cast decides whether the E summons
+	 *  the three Salon Members or the Singer of Many Waters. */
+	| 'pneuma';
 
 /**
  * Post-action transient state — a short named gating window opened by an

@@ -15,12 +15,53 @@
 			"input": ["N"],
 			"abilityType": "normal",
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 34, "hit": 15, "N": 31 } },
-				{ "name": "N2", "frames": { "anim": 28, "hit": 12, "N": 23 } },
-				{ "name": "N3", "frames": { "anim": 48, "hit": 21, "N": 36, "C": 45 } },
-				{ "name": "N4", "frames": { "anim": 58, "hit": 27, "N": 53 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 34,
+						"hit": 15,
+						"N": 31
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 28,
+						"hit": 12,
+						"N": 23
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 48,
+						"hit": 21,
+						"N": 36,
+						"C": 45
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 58,
+						"hit": 27,
+						"N": 53
+					}
+				}
 			],
-			"chargeFrames": { "anim": 33, "N": 37, "C": 47, "E": 47, "swap": 33 },
+			"chargeFrames": {
+				"anim": 33,
+				"N": 37,
+				"C": 47,
+				"E": 47,
+				"swap": 33
+			},
+			"actionOpensState": {
+				"charged": {
+					"state": "pneuma",
+					"toggle": true
+				}
+			},
 			"sections": [
 				{
 					"type": "normal",
@@ -38,14 +79,24 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Starts in Ousia alignment; Charged Attack toggles Arkhe alignment and switches the active Salon Solitaire guest.\n\nCA windup: 11 frames shorter when canceled from NormalAttackState (gcsim handles dynamically). Base chargeFrames listed here assume standalone CA cast. CA primarily functions as an alignment toggle in practice."
+			"description": "Starts in Ousia alignment; Charged Attack toggles Arkhe alignment and switches the active Salon Solitaire guest.\n\nCA windup: 11 frames shorter when canceled from NormalAttackState (gcsim handles dynamically). Base chargeFrames listed here assume standalone CA cast. CA primarily functions as an alignment toggle in practice.",
+			"_curatorNotes": [
+				"Arkhe toggle authored 2026-09-04 (Arkhe round, landing b). Furina's Charged Attack switches her Arkhe alignment, which decides which lineup her Elemental Skill summons. gcsim charge.go:59-75 flips a plain `c.arkhe` field at chargeHitmark - windup + 1 (33f, or 22f when chained off a normal); furina.go:61 initialises it to Ousia, so `pneuma` names the non-default half and its absence IS Ousia. Toggle rather than a timed window because nothing but another Charged Attack ever puts it back. NOT terminatesOnSwap: gcsim's field is a plain character field that survives swap-out, so the alignment you leave in is the one you return to. NOT MODELLED: the Arkhe bonus attacks the alignment also selects (Spiritbreath Thorn in Ousia, Surging Blade in Pneuma, 6s ICD each) — gcsim attack.go:67 gives them Durability 0, so they apply no element and have nothing to say on a timeline that does not print damage."
+			]
 		},
 		{
 			"id": "furina__skill__salon_solitaire",
 			"name": "Salon Solitaire",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": { "anim": 54, "N": 53, "C": 53, "D": 18, "J": 18, "swap": 53 },
+			"frames": {
+				"anim": 54,
+				"N": 53,
+				"C": 53,
+				"D": 18,
+				"J": 18,
+				"swap": 53
+			},
 			"cooldown": 20,
 			"summons": [
 				{
@@ -57,85 +108,93 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 3.369, "firstTickDelay": 1.908 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 3.369,
+								"firstTickDelay": 1.908,
+								"icdGate": {
+									"timer": 1800,
+									"every": 2
+								}
+							},
 							"scaling": 10.73,
 							"stat": "hp",
 							"element": "hydro",
 							"_curatorNotes": [
-								"Gentilhomme Usher. TL10: 10.73% of Furina's Max HP per attack (sidecar 'Gentilhomme Usher DMG' 10th column 10.73%; gcsim furina_gen.go skillUsher[9]=0.10728, FlatDmg = skillUsher[lvl] × MaxHP). Cadence from gcsim skill.go consts: usherIntervalMean 202.138f = 3.369s; firstTickDelay = usherInitialTick 74.5f + usherTravel 40f = 114.5f = 1.908s from summon spawn (marker lands at damage time, not attack start)."
+								"Gentilhomme Usher. TL10: 10.73% of Furina's Max HP per attack (sidecar 'Gentilhomme Usher DMG' 10th column 10.73%; gcsim furina_gen.go skillUsher[9]=0.10728, FlatDmg = skillUsher[lvl] × MaxHP). Cadence from gcsim skill.go consts: usherIntervalMean 202.138f = 3.369s; firstTickDelay = usherInitialTick 74.5f + usherTravel 40f = 114.5f = 1.908s from summon spawn (marker lands at damage time, not attack start).",
+								"icdGate authored 2026-09-04: gcsim skill.go:239 tags this ICDTagFurinaUsher on ICDGroupFurinaSalonSolitaire, whose reset timer is 1800f and whose sequence is {1,0,1,0,...} (icd_groups.dm.go:101,162) — every OTHER hit applies. The timer outlasts the summon, so the counter never resets in-window. Each member carries its own ICDTag, so the three series do not share a counter; ours are already keyed per series."
 							]
 						},
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 1.626, "firstTickDelay": 1.539 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.626,
+								"firstTickDelay": 1.539,
+								"icdGate": {
+									"timer": 1800,
+									"every": 2
+								}
+							},
 							"scaling": 5.82,
 							"stat": "hp",
 							"element": "hydro",
 							"_curatorNotes": [
-								"Surintendante Chevalmarin. TL10: 5.82% of Furina's Max HP per attack (sidecar 'Surintendante Chevalmarin DMG' 10th column 5.82%; gcsim skillChevalmarin[9]=0.058176). Cadence from gcsim skill.go: chevalmarinIntervalMean 97.5858f = 1.626s; firstTickDelay = chevalmarinInitialTick 72.3333f + chevalmarinTravel 20f = 92.3333f = 1.539s from summon spawn."
+								"Surintendante Chevalmarin. TL10: 5.82% of Furina's Max HP per attack (sidecar 'Surintendante Chevalmarin DMG' 10th column 5.82%; gcsim skillChevalmarin[9]=0.058176). Cadence from gcsim skill.go: chevalmarinIntervalMean 97.5858f = 1.626s; firstTickDelay = chevalmarinInitialTick 72.3333f + chevalmarinTravel 20f = 92.3333f = 1.539s from summon spawn.",
+								"icdGate authored 2026-09-04: gcsim skill.go:204 tags this ICDTagFurinaChevalmarin on ICDGroupFurinaSalonSolitaire — same 1800f / every-other window as the Usher."
 							]
 						},
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 5.231, "firstTickDelay": 1.877 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 5.231,
+								"firstTickDelay": 1.877,
+								"icdGate": "none"
+							},
 							"scaling": 14.92,
 							"stat": "hp",
 							"element": "hydro",
 							"_curatorNotes": [
-								"Mademoiselle Crabaletta. TL10: 14.92% of Furina's Max HP per attack (sidecar 'Mademoiselle Crabaletta DMG' 10th column 14.92%; gcsim skillCrabaletta[9]=0.149184). Cadence from gcsim skill.go: crabalettaIntervalMean 313.859f = 5.231s; firstTickDelay = crabalettaInitialTick 71.5926f + crabalettaTravel 41f = 112.5926f = 1.877s from summon spawn."
+								"Mademoiselle Crabaletta. TL10: 14.92% of Furina's Max HP per attack (sidecar 'Mademoiselle Crabaletta DMG' 10th column 14.92%; gcsim skillCrabaletta[9]=0.149184). Cadence from gcsim skill.go: crabalettaIntervalMean 313.859f = 5.231s; firstTickDelay = crabalettaInitialTick 71.5926f + crabalettaTravel 41f = 112.5926f = 1.877s from summon spawn.",
+								"icdGate 'none' authored 2026-09-04: gcsim skill.go:274 gives this member ICDTagNone on ICDGroupDefault — EVERY Crabaletta hit applies. It is the one member of the three not on the shared Salon Solitaire group, which is why the gate is authored per SERIES and not once on the summon."
 							]
 						}
-					]
-				},
-				{
-					"label": "Singer of Many Waters",
-					"duration": 30,
-					"spawnsAt": 10,
-					"mobility": "follows",
-					"effects": [
-						{
-							"type": "heal",
-							"target": "active",
-							"trigger": { "type": "summonTick", "interval": 2, "firstTickDelay": 1.05 },
-							"scaling": 8.64,
-							"stat": "hp",
-							"flat": 1016.97,
-							"_curatorNotes": [
-								"Singer of Many Waters (Pneuma lineup) heal authored 2026-07-12 as a summonTick heal on its OWN summon entry — the Pneuma alternate of the Salon Solitaire window. Furina's E summons EITHER the Ousia Salon Members OR the Pneuma Singer based on her current Arkhe (Charged Attack toggles the lineup, inheriting remaining duration). Placed on a separate summon (not the Salon Solitaire entry) so heal ticks don't share a lane with the Ousia damage ticks — the two lineups are mutually exclusive by Arkhe. TL10: skillSingerHealScale[9]=0.0864 (8.64% Max HP) + skillSingerHealFlat[9]=1016.9728 flat (sidecar 'Singer of Many Waters Healing' 10th column '8.64% Max HP+1017'). gcsim skill.go singerOfManyWaters(): heals c.Core.Player.Active() (single active char) → target 'active', Src = skillSingerHealFlat[lvl] + skillSingerHealScale[lvl]×MaxHP, Bonus = Healing Bonus; reads live MaxHP per tick (not snapshotted).",
-								"Cadence from gcsim skill.go consts: singerInterval 120f = 2.0s per tick. spawnsAt = pneumaCDDelay 10f (Pneuma bubble spawn delay); firstTickDelay = singerInitialTick (73 − pneumaCDDelay = 63f) = 1.05s from summon spawn (first heal lands at 10+63 = 73f from cast). Duration 30 kept to match the Salon Solitaire summon (kit table 30.0s; gcsim skillMaxDuration 1736f ≈ 28.9s).",
-								"A4 Unheard Confession heal-interval reduction (−0.4% per 1,000 Max HP, cap −16%; gcsim a4IntervalReduction shrinks singerInterval) NOT folded — base 2.0s interval authored, consistent with leaving the A4 Salon-Member DMG boost on the passive node. C4 (Furina +4 Energy when the Singer heals, 5s ICD) lives on the C4 node as description.",
-								"Arkhe-state primitive still absent: the planner can't track Ousia/Pneuma alignment, so this Singer heal lane and the Salon Member damage lane both render for the full summon window even though only one is active per Arkhe. See ability caveat."
-							]
-						}
-					]
+					],
+					"_curatorNotes": []
 				}
 			],
 			"tags": ["heal", "summon"],
-			"caveat": "Only one lineup is real per cast — Ousia summons the damage ticks, Pneuma the healing Singer. The timeline shows both because it can't track Arkhe alignment.",
+			"caveat": "Switching alignment with a Charged Attack should swap out the guests already on the field; the timeline keeps whichever lineup the cast summoned.",
 			"_curatorNotes": [
 				"Salon Member summonTick damage authored 2026-07-12 at talent level 10, per-member (three effects on the one Salon Solitaire summon entry — computeSummonTicks merges multiple summonTick series). All three scale off Furina's Max HP (stat 'hp'): gcsim skill.go builds each hit as FlatDmg = skillX[TalentLvlSkill] × MaxHP, Hydro, AttackTagElementalArt.",
 				"Cadences are gcsim's KQM-measured means (skill.go consts, sourced from the spreadsheet linked at skill.go:32). Real attack timing has stochastic jitter of up to ±7 frames per tick (calcSalonTick box-cox distribution, skill.go:52-60) — not modelable with fixed-interval summonTick; means used. Members attack only while Furina is in Ousia alignment; ticks pause in Pneuma (CA toggles lineup) — planner can't track arkhe, so ticks render for the whole summon window (see caveat).",
 				"HP-drain side NOT modeled: each member attack drains HP from party members above 50% HP (Chevalmarin 1.6% / Usher 2.4% / Crabaletta 3.6% of each member's Max HP — gcsim consumeAlliesHealth ratios, matching the talent-table 'HP Consumption' rows) and the attack gains +10% DMG per such ally (110/120/130/140% at 1/2/3/4). Authored at the base 100% multiplier — the multiplier depends on live party HP the planner can't simulate. In practice the 140% multiplier is near-permanent early in a rotation.",
 				"A4 Unheard Confession (+0.7% Salon Member DMG per 1,000 Max HP, cap 28%) not folded into the scalings — lives on the passive node as description.",
 				"spawnsAt 18 = Ousia bubble hitmark; gcsim summonSalonMembers(ousiaBubbleHitmark=18) schedules all member ticks from that spawn frame. Pneuma spawn delay is 10f — Ousia (default on-field alignment) chosen per the existing frames caveat. gcsim's skill status runs skillMaxDuration 1736f ≈ 28.9s from spawn; kit/talent table says 30.0s — existing duration 30 kept.",
-				"Singer of Many Waters (Pneuma) heal AUTHORED 2026-07-12 as a summonTick heal on its OWN summon entry (label 'Singer of Many Waters'), NOT on the Salon Solitaire entry — keeping heal and Ousia damage ticks on separate lanes since the lineups are Arkhe-exclusive. 2s interval (singerInterval 120f, reduced up to 16% by A4 — not folded); heals the active character (target 'active') for 8.64% Max HP + 1016.97 flat at TL10 (gcsim skillSingerHealScale/Flat[9]). Arkhe-state primitive still absent, so both lanes render for the full window regardless of alignment — see caveat.",
 				"Initial Ousia bubble cast hit (14.2% Max HP at TL10, hitmark 18f) not authored as an effect — planner renders cast damage via FrameMap, matching corpus convention (see Diona).",
-				"[A7] Frame timing in this entry reflects the Ousia lineup, the default on-field alignment; the Pneuma lineup's cast is negligibly longer (about 3 frames), so both are treated as interchangeable for timing purposes."
+				"[A7] Frame timing in this entry reflects the Ousia lineup, the default on-field alignment; the Pneuma lineup's cast is negligibly longer (about 3 frames), so both are treated as interchangeable for timing purposes.",
+				"↻ 2026-09-04 (Arkhe round, landing b): the two lineups are no longer both drawn. Ousia is the base ability and Pneuma is a state-gated variant, chosen by `pneuma` at the instant of the cast. The old `application[]` — 17 entries out to frame 891 — was an L4c dump of the SALON MEMBER TICKS captured as the cast's own hits; since gauge round L5e those ticks feed the gauge themselves, so the array was double-counting. Measured on `Furina E`: 31 applications before, 21 after (the correction plus the three icdGates). STILL UNMODELLED and now the ability's stated caveat: a Charged Attack mid-window should kill the running lineup and spawn the other one with the remaining duration (gcsim charge.go:61,68 — `if c.StatusIsActive(skillKey) { c.summonSinger(0) }`)."
 			],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onCast" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"duration": 10,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",
 					"value": 0,
 					"snapshottable": false,
-					"conditions": { "type": "constellation", "level": 6 },
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
 					"_curatorNotes": [
 						"C6 Center of Attention: Furina's NA/CA/plunge gain Hydro infusion + 18% MaxHP flat DMG bonus (not modelable as allDmgBonus — HP-scaling flat). Ousia: heals team 4% MaxHP per hit every 1s for 2.9s (up to 6 triggers). Pneuma: +25% MaxHP DMG per hit + 1% current HP drain from team (up to 6 triggers). Requires HP-scaling flat damage type."
 					]
@@ -144,23 +203,64 @@
 			"description": "Invites the guests of the Salon Solitaire to come forth and aid in Furina's performance. Will summon either the Salon Members or the Singer of Many Waters based on Furina's current Arkhe alignment.\n\nOusia\nFoaming bubbles like celebrants shall dance, dealing AoE Hydro DMG based on Furina's Max HP and summoning 3 Salon Members: the Ball Octopus-shaped Gentilhomme Usher, the Bubbly Seahorse-shaped Surintendante Chevalmarin, and the Armored Crab-shaped Mademoiselle Crabaletta.\nThey will attack nearby opponents at intervals, prioritizing the target of the active character, dealing Hydro DMG based on Max HP.\nWhen they attack, if character(s) with more than 50% HP are nearby, the Members will increase their current attack's power based on the number of such characters, and consume said characters' HP. If 1/2/3/4 (or more) characters meet these requirements, the Members' attacks will deal 110%/120%/130%/140% of their original DMG.\n\nPneuma\nSummons the Singer of Many Waters, who will heal nearby active character(s) based on Max HP at intervals.\n\nThe Salon Members and Singer of Many Waters share a duration, and when Furina uses her Charged Attack to change the guest type, the new guests will inherit the remaining duration.\nWhile the Salon Members or the Singer of Many Waters is on the field, Furina can move on the water's surface.",
 			"behavior": "instant",
 			"application": [
-				{ "frame": 18, "element": "hydro", "units": 1 },
-				{ "frame": 110, "element": "hydro", "units": 1 },
-				{ "frame": 131, "element": "hydro", "units": 1 },
-				{ "frame": 137, "element": "hydro", "units": 1 },
-				{ "frame": 209, "element": "hydro" },
-				{ "frame": 307, "element": "hydro", "units": 1 },
-				{ "frame": 336, "element": "hydro" },
-				{ "frame": 405, "element": "hydro" },
-				{ "frame": 445, "element": "hydro", "units": 1 },
-				{ "frame": 498, "element": "hydro", "units": 1 },
-				{ "frame": 540, "element": "hydro", "units": 1 },
-				{ "frame": 595, "element": "hydro" },
-				{ "frame": 693, "element": "hydro", "units": 1 },
-				{ "frame": 744, "element": "hydro" },
-				{ "frame": 760, "element": "hydro", "units": 1 },
-				{ "frame": 792, "element": "hydro" },
-				{ "frame": 891, "element": "hydro", "units": 1 }
+				{
+					"frame": 18,
+					"element": "hydro",
+					"units": 1
+				}
+			],
+			"variants": [
+				{
+					"label": "Pneuma",
+					"input": ["E"],
+					"conditions": {
+						"type": "state",
+						"state": "pneuma"
+					},
+					"frames": {
+						"anim": 57,
+						"N": 56,
+						"C": 56,
+						"D": 15,
+						"J": 18,
+						"swap": 56
+					},
+					"application": [],
+					"summons": [
+						{
+							"label": "Singer of Many Waters",
+							"duration": 30,
+							"spawnsAt": 10,
+							"mobility": "follows",
+							"effects": [
+								{
+									"type": "heal",
+									"target": "active",
+									"trigger": {
+										"type": "summonTick",
+										"interval": 2,
+										"firstTickDelay": 1.05
+									},
+									"scaling": 8.64,
+									"stat": "hp",
+									"flat": 1016.97,
+									"_curatorNotes": [
+										"Singer of Many Waters (Pneuma lineup) heal authored 2026-07-12 as a summonTick heal on its OWN summon entry — the Pneuma alternate of the Salon Solitaire window. Furina's E summons EITHER the Ousia Salon Members OR the Pneuma Singer based on her current Arkhe (Charged Attack toggles the lineup, inheriting remaining duration). Placed on a separate summon (not the Salon Solitaire entry) so heal ticks don't share a lane with the Ousia damage ticks — the two lineups are mutually exclusive by Arkhe. TL10: skillSingerHealScale[9]=0.0864 (8.64% Max HP) + skillSingerHealFlat[9]=1016.9728 flat (sidecar 'Singer of Many Waters Healing' 10th column '8.64% Max HP+1017'). gcsim skill.go singerOfManyWaters(): heals c.Core.Player.Active() (single active char) → target 'active', Src = skillSingerHealFlat[lvl] + skillSingerHealScale[lvl]×MaxHP, Bonus = Healing Bonus; reads live MaxHP per tick (not snapshotted).",
+										"Cadence from gcsim skill.go consts: singerInterval 120f = 2.0s per tick. spawnsAt = pneumaCDDelay 10f (Pneuma bubble spawn delay); firstTickDelay = singerInitialTick (73 − pneumaCDDelay = 63f) = 1.05s from summon spawn (first heal lands at 10+63 = 73f from cast). Duration 30 kept to match the Salon Solitaire summon (kit table 30.0s; gcsim skillMaxDuration 1736f ≈ 28.9s).",
+										"A4 Unheard Confession heal-interval reduction (−0.4% per 1,000 Max HP, cap −16%; gcsim a4IntervalReduction shrinks singerInterval) NOT folded — base 2.0s interval authored, consistent with leaving the A4 Salon-Member DMG boost on the passive node. C4 (Furina +4 Energy when the Singer heals, 5s ICD) lives on the C4 node as description.",
+										"Arkhe-state primitive still absent: the planner can't track Ousia/Pneuma alignment, so this Singer heal lane and the Salon Member damage lane both render for the full summon window even though only one is active per Arkhe. See ability caveat."
+									]
+								}
+							],
+							"_curatorNotes": []
+						}
+					],
+					"_curatorNotes": [
+						"THE PNEUMA LINEUP (Arkhe round, landing b, 2026-09-04). Furina's E summons EITHER the three Salon Members (Ousia, the base ability) OR the Singer of Many Waters (Pneuma); gcsim skill.go:85-92 switches on c.arkhe and calls skillOusia XOR skillPneuma. A VARIANT rather than a sibling ability because both lineups share ONE 20s cooldown and one charge queue, and E-charge queues are keyed by ability id — two siblings would let her double-cast. (Odette's Coda took the sibling fork for the opposite reason: it needed to ESCAPE the shared queue.)",
+						"application: [] is the POSITIVE claim that this cast applies nothing, and it is literally true: skillPneuma queues no attack at all, while skillOusia queues the Ousia bubble (25 durability = 1U Hydro at frame 18). The Singer only heals. Measured, `Furina C E` produces ZERO elemental applications.",
+						"Frames from gcsim skill.go init(): skillFrames[pneuma] = InitAbilSlice(57), Attack 56, Charge 56, Dash 15, Jump 18, Swap 56 — about 3 frames longer than the Ousia set the base ability carries, which the previous [A7] note treated as interchangeable because there was no way to tell the two casts apart. NOT authored: gcsim's pneumaCDDelay of 10f (Ousia's is 0) — AbilityVariant has no cooldownStartDelay, and 10 frames on a 20s cooldown is below what the ghost tail can show."
+					]
+				}
 			]
 		},
 		{
@@ -168,7 +268,15 @@
 			"name": "Let the People Rejoice",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": { "anim": 121, "N": 113, "C": 113, "E": 114, "D": 115, "J": 115, "swap": 111 },
+			"frames": {
+				"anim": 121,
+				"N": 113,
+				"C": 113,
+				"E": 114,
+				"D": 115,
+				"J": 115,
+				"swap": 111
+			},
 			"cooldown": 15,
 			"duration": 18,
 			"tags": [],
@@ -177,7 +285,9 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"duration": 18,
 					"durationType": "fixed",
 					"source": "burst",
@@ -191,7 +301,9 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onCast" },
+					"trigger": {
+						"type": "onCast"
+					},
 					"duration": 18,
 					"durationType": "fixed",
 					"source": "burst",
@@ -209,7 +321,13 @@
 			"_curatorNotes": [
 				"heal tag removed 2026-07-12: Let the People Rejoice grants Fanfare (DMG + INCOMING-healing bonus) — it does not itself heal. Furina heals via Salon Solitaire Pneuma (Singer of Many Waters), tagged on the skill."
 			],
-			"application": [{ "frame": 98, "element": "hydro", "units": 1 }]
+			"application": [
+				{
+					"frame": 98,
+					"element": "hydro",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -221,7 +339,9 @@
 				{
 					"type": "heal",
 					"target": "team",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 2,
 					"stat": "hp"
 				}
