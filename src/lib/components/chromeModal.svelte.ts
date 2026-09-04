@@ -20,6 +20,7 @@ import type { ChromeAreaId } from '$lib/help/areas';
 export type ChromeModalState =
 	| { kind: 'area'; area: ChromeAreaId; chapter: string }
 	| { kind: 'settings' }
+	| { kind: 'nav' }
 	| null;
 
 let state = $state<ChromeModalState>(null);
@@ -37,6 +38,22 @@ export function openArea(area: ChromeAreaId, chapter: string): void {
 
 export function openSettings(): void {
 	state = { kind: 'settings' };
+}
+
+/**
+ * The compass — every destination on the site in one panel (2026-09-04).
+ *
+ * ⚠ It exists because the chrome bar is OVER-SUBSCRIBED below 40rem, measured:
+ * brand 204.6 + three 34px glyphs + padding and gaps needs ~400px, and a
+ * 320px phone has 320. Rather than shrink targets or drop the wordmark, the
+ * whole navigation — tool switcher AND the three meta glyphs — folds into one
+ * button, which costs 34px and leaves 41px of slack at 320. Tool switching and
+ * About/Help/Settings are all NAVIGATION; splitting them across four controls
+ * spends 120px on a distinction a phone reader does not need.
+ * Derivation: docs/responsive-survey-2026-09-01.md § 8.2.
+ */
+export function openNav(): void {
+	state = { kind: 'nav' };
 }
 
 export function closeChromeModal(): void {

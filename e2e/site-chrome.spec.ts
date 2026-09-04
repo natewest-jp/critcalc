@@ -15,26 +15,43 @@ import type { Page } from '@playwright/test';
  * round is meant to redraw.
  */
 
+/**
+ * ⚠ ADDRESSED BY aria-label, NOT BY INDEX (2026-09-04). These were `.chrome-btn`
+ * nth(0..2) until the compass landed as a fourth button — hidden above 47.5rem,
+ * but still first in the DOM, so every index here silently shifted by one and
+ * pointed at the wrong overlay. A label is what the assertion actually means
+ * and it cannot be reordered out from under the test.
+ */
 const META = [
-	{ index: 0, title: 'About' },
-	{ index: 1, title: 'Help' },
-	{ index: 2, title: 'Settings' }
+	{ label: 'About critcalc', title: 'About' },
+	{ label: 'Help', title: 'Help' },
+	{ label: 'Settings', title: 'Settings' }
 ];
+
+/** The meta glyphs a reader can actually press at this viewport. */
+const metaBtn = (page: Page, label: string) => page.locator(`.chrome-btn[aria-label="${label}"]`);
 
 test.describe('one chrome, every surface', () => {
 	test('the brand, meta glyphs and tool switcher are consistent', async ({ page }) => {
 		await page.goto('/', { waitUntil: 'networkidle' });
 		const landingBrand = await page.locator('.chrome-brand').first().boundingBox();
-		const landingBtns = await page.locator('.chrome-btn').count();
+		const landingBtns = await page.locator('.chrome-btn:visible').count();
 		await expect(page.locator('.chrome-nav'), 'no tool switcher on the landing').toHaveCount(0);
 
 		await openTool(page, '/rotation-planner');
 		const toolBrand = await page.locator('.chrome-brand').first().boundingBox();
-		const toolBtns = await page.locator('.chrome-btn').count();
+		const toolBtns = await page.locator('.chrome-btn:visible').count();
 		await expect(page.locator('.chrome-nav'), 'the switcher appears inside a tool').toHaveCount(1);
 
+		// ⚠ :visible, not a raw count. The compass is in the DOM on every surface
+		// and display:none above 47.5rem, so a plain count reads 4 at the 1600px
+		// test viewport and says nothing about what a reader can press.
 		expect(landingBtns, 'three meta glyphs on the landing').toBe(3);
 		expect(toolBtns, 'the same three inside a tool').toBe(3);
+		await expect(
+			page.locator('.chrome-btn--nav'),
+			'the compass is the narrow form and stays hidden at desk width'
+		).toBeHidden();
 		// The brand is one object that does not jump between surfaces.
 		expect(landingBrand).toBeTruthy();
 		expect(toolBrand).toBeTruthy();
@@ -46,12 +63,12 @@ test.describe('one chrome, every surface', () => {
 
 test.describe('meta overlays never navigate', () => {
 	for (const surface of ['/', '/team-builder']) {
-		for (const { index, title } of META) {
+		for (const { label, title } of META) {
 			test(`${surface} — "${title}" opens and closes without moving the URL`, async ({ page }) => {
 				await page.goto(surface, { waitUntil: 'networkidle' });
 				const before = page.url();
 
-				await page.locator('.chrome-btn').nth(index).click();
+				await metaBtn(page, label).click();
 				const dialog = page.locator('[role="dialog"]');
 				await expect(dialog).toHaveAttribute('aria-label', title);
 				expect(page.url(), 'the overlay left the URL alone').toBe(before);
@@ -67,7 +84,7 @@ test.describe('meta overlays never navigate', () => {
 test.describe('help is contextual and non-destructive', () => {
 	test('the "?" opens the current tool\'s chapter and never remounts it', async ({ page }) => {
 		await openTool(page, '/rotation-planner');
-		await page.locator('.chrome-btn').nth(1).click();
+		await metaBtn(page, 'Help').click();
 		await page.locator('.area-chapter.is-current').waitFor();
 
 		await expect(page.locator('.area-chapter.is-current')).toHaveText('Rotation Planner');
@@ -99,7 +116,7 @@ test.describe('overlay containing blocks', () => {
 
 	async function overlayTransforms(page: Page, url: string) {
 		await page.goto(url, { waitUntil: 'networkidle' });
-		await page.locator('.chrome-btn').nth(1).click();
+		await metaBtn(page, 'Help').click();
 		await page.locator('.overlay-panel').waitFor();
 		await page.mouse.move(200, 200);
 		await page.mouse.move(1400, 800);

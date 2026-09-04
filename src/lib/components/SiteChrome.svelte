@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { Snippet } from 'svelte';
-	import { openArea, openSettings } from './chromeModal.svelte';
+	import { openArea, openNav, openSettings } from './chromeModal.svelte';
 	import { defaultChapter, helpChapterForPath } from '$lib/help/areas';
 	import { page } from '$app/state';
 
@@ -56,6 +56,41 @@
 	     filter — a hover halo — is gone now, but the rule stands: drawn shapes
 	     center identically in both engines.) -->
 	<nav class="chrome-actions" aria-label="Site">
+		<!-- THE COMPASS — every destination on the site, in one control.
+
+		     ⚠ It is NARROW-ONLY, and the pairing is the whole design: below
+		     40rem this appears and the three meta glyphs AND the centre tool
+		     switcher all leave, because the bar physically cannot hold them
+		     beside a wordmark. Measured, at 320px: brand 204.6 + padding 24 +
+		     track gaps 16 + three 34px glyphs = 399.8 in a 320px bar, versus
+		     278.6 with one. That 41px of slack is what lets `critcalc.app`
+		     survive on a phone instead of the logo silently collapsing to 0px,
+		     which is what it did before this round.
+		     Derivation: docs/responsive-survey-2026-09-01.md § 8.2.
+
+		     Artwork is Nate's, from assets-src/tools/navigation.svg — Genshin's
+		     own compass, chosen because it is the shape a player already reads
+		     as "where can I go". ⚠ Unlike the other three it is NOT a disc with
+		     a hole: it is a 53:62 PORTRAIT mark in three paths, so it sizes to
+		     25.6px wide at the shared 30px glyph height and cannot overflow the
+		     34px button. -->
+		<button class="chrome-btn chrome-btn--nav" aria-label="Go to" title="Go to" onclick={openNav}>
+			<svg
+				class="chrome-glyph is-compass"
+				viewBox="0 0 53 62"
+				fill-rule="evenodd"
+				aria-hidden="true"
+				><path
+					d="M26.001,2.767C20.976,2.769 19.892,4.244 20.249,4.818C20.466,5.167 21.671,5.888 23.704,6.227L23.407,7.016C23.37,7.115 23.317,7.208 23.252,7.291C20.576,6.838 18.417,5.815 17.643,4.973C15.91,3.089 19.03,-0 26.011,0C32.992,0 36.112,3.089 34.38,4.973C33.605,5.815 31.446,6.838 28.771,7.291C28.705,7.208 28.653,7.115 28.615,7.016L28.318,6.227C30.352,5.888 31.556,5.167 31.773,4.818C32.131,4.244 31.046,2.769 26.022,2.767L27.746,7.343C27.844,7.603 27.996,7.84 28.193,8.036C28.39,8.233 28.626,8.385 28.886,8.483L33.489,10.218L28.886,11.953C28.626,12.051 28.39,12.203 28.193,12.4C27.996,12.596 27.844,12.833 27.746,13.093L26.952,16.831C26.841,16.829 26.123,16.807 26.011,16.807C25.9,16.807 25.182,16.829 25.071,16.831L24.277,13.093C24.179,12.833 24.026,12.596 23.83,12.4C23.633,12.203 23.397,12.051 23.136,11.953L18.533,10.218L23.136,8.483C23.397,8.385 23.633,8.233 23.83,8.036C24.026,7.84 24.179,7.603 24.277,7.343L26.001,2.767ZM5.152,50.671C1.916,46.335 -0,40.958 -0,35.137C-0,23.898 7.143,14.315 17.132,10.683L22.809,12.822C22.945,12.873 23.069,12.953 23.173,13.057C23.276,13.16 23.356,13.284 23.407,13.42L24.094,16.874C14.589,17.547 7.682,25.461 7.682,35.137C7.682,37.922 8.305,40.563 9.418,42.928C8.078,45.404 6.523,48.214 5.152,50.671ZM34.026,18.423C32.166,17.568 30.116,17.029 27.928,16.874L28.615,13.42C28.667,13.284 28.747,13.16 28.85,13.057C28.953,12.953 29.077,12.873 29.214,12.822L34.891,10.683C37.294,11.556 39.532,12.775 41.546,14.277C39.162,15.607 36.446,17.11 34.026,18.423ZM46.87,19.602C50.106,23.938 52.023,29.315 52.023,35.137C52.023,49.493 40.367,61.148 26.011,61.148C20.19,61.148 14.813,59.231 10.477,55.996C12.934,54.625 15.744,53.07 18.219,51.729C20.585,52.843 23.226,53.466 26.011,53.466C36.127,53.466 44.34,45.253 44.34,35.137C44.34,32.302 43.748,29.618 42.67,27.223C43.995,24.778 45.522,22.019 46.87,19.602ZM48.831,12.317C48.831,12.317 40.978,26.18 38.445,31.254C36.589,34.973 33.633,42.759 33.633,42.759C33.633,42.759 25.848,45.714 22.128,47.571C17.055,50.104 3.191,57.956 3.191,57.956C3.191,57.956 11.044,44.093 13.577,39.019C15.434,35.3 18.389,27.514 18.389,27.514C18.389,27.514 26.175,24.559 29.894,22.703C34.968,20.17 48.831,12.317 48.831,12.317Z"
+				/><path
+					class="glyph-dim"
+					d="M12.021,37.975L7.706,36.077C7.69,35.765 7.682,35.452 7.682,35.137C7.682,34.821 7.69,34.508 7.706,34.196L15.041,30.97C14.11,33.291 12.943,36.093 12.021,37.975ZM21.845,24.166L25.071,16.831C25.382,16.815 25.696,16.807 26.011,16.807C26.327,16.807 26.64,16.815 26.952,16.831L28.849,21.147C26.968,22.069 24.166,23.235 21.845,24.166ZM40.001,32.298L44.317,34.196C44.333,34.508 44.34,34.821 44.34,35.137C44.34,35.452 44.333,35.765 44.317,36.077L36.982,39.303C37.913,36.982 39.079,34.18 40.001,32.298ZM30.177,46.107L26.952,53.442C26.64,53.458 26.327,53.466 26.011,53.466C25.696,53.466 25.382,53.458 25.071,53.442L23.173,49.127C25.054,48.204 27.857,47.038 30.177,46.107Z"
+				/><path
+					class="glyph-dim"
+					d="M34.882,26.266C34.882,26.266 31.829,31.655 30.845,33.627C30.123,35.073 28.974,38.099 28.974,38.099C28.974,38.099 25.948,39.248 24.502,39.97C22.53,40.954 17.141,44.007 17.141,44.007C17.141,44.007 20.193,38.618 21.178,36.646C21.9,35.2 23.048,32.174 23.048,32.174C23.048,32.174 26.075,31.025 27.521,30.303C29.493,29.319 34.882,26.266 34.882,26.266ZM30.999,30.149C29.899,30.752 28.854,31.314 28.191,31.645C27.117,32.181 25.197,32.947 24.208,33.333C23.822,34.322 23.056,36.242 22.52,37.316C22.189,37.979 21.627,39.024 21.024,40.124C22.124,39.521 23.169,38.959 23.832,38.628C24.906,38.092 26.825,37.326 27.814,36.94C28.201,35.951 28.966,34.031 29.503,32.957C29.834,32.294 30.396,31.249 30.999,30.149Z"
+				/></svg
+			>
+		</button>
 		<button
 			class="chrome-btn"
 			aria-label="About critcalc"
@@ -109,7 +144,28 @@
 	.site-chrome {
 		position: relative;
 		display: grid;
-		grid-template-columns: 1fr auto 1fr;
+		/* ⚠⚠ THE FLANKS ARE `minmax(max-content, 1fr)`, NOT `1fr`, AND THAT ONE
+		   WORD IS A BUG FIX (2026-09-04).
+
+		   Plain `1fr` put the two occupants that must NEVER disappear on the
+		   flexible tracks and the one that can safely collapse on the rigid
+		   one — exactly backwards. On a tool route the centre `auto` track is
+		   sized first, the action cluster's buttons carry `flex: none`, so the
+		   entire shortfall landed on the brand; and because the logo is a
+		   replaced element with a set height and `width: auto`, its min-content
+		   contribution resolves to ZERO. Measured, the site's home link was
+		   0px wide at 320 and 6px at 390 — it did not shrink gracefully, it
+		   vanished. (⛔ `flex: none` on the image does nothing: the GRID TRACK
+		   is what collapses, not the flex layout inside it.)
+
+		   `max-content` as the track MINIMUM keeps the centring the comment
+		   above argues for — both flanks still resolve to an equal `1fr`
+		   whenever there is room — while refusing to crush either one when
+		   there is not. Below 40rem the centre is empty anyway (the switcher
+		   lives in the compass), so the crowded case no longer arises at all.
+		   Measured + the rejected alternative: docs/responsive-survey-2026-09-01.md
+		   § N1 and § 8.2. */
+		grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
 		align-items: center;
 		gap: 0.9rem;
 		height: var(--chrome-h);
@@ -293,18 +349,50 @@
 	   --chrome-glyph-size gives all three genuinely equal marks. If the cog ever
 	   wants more reach to balance against the solid discs — its teeth have gaps
 	   where the discs do not — override the variable on .is-cog alone. */
+	.chrome-glyph,
+	.chrome-glyph .glyph-dim {
+		/* ⚠ STATED FOR BOTH, once. A child path does not inherit its parent's
+		   transition — the same trap the bench card's ::before extension hit
+		   (BenchBand.svelte) — so leaving this on .chrome-glyph alone would
+		   ease the compass's body while its two dim paths SNAPPED. */
+		transition: fill-opacity var(--t-quick);
+	}
+
 	.chrome-glyph {
 		display: block;
 		height: var(--chrome-glyph-size);
 		width: auto;
 		fill: currentColor;
 		fill-opacity: 0.85;
-		transition: fill-opacity var(--t-quick);
 	}
 
 	.chrome-btn:hover .chrome-glyph,
 	.chrome-btn:focus-visible .chrome-glyph {
 		fill-opacity: 1;
+	}
+
+	/* THE COMPASS'S SECOND TONE. Nate's artwork paints these two paths at
+	   rgb(179,179,179) against a white body — a 0.702 ratio, not an absolute
+	   colour. Restated as paint alpha at BOTH chrome states so the mark keeps
+	   the cluster's rest/hover contract (0.85 → 1, "change one, change all")
+	   instead of pinning itself to one of them: a hard fill-opacity here would
+	   have made the compass the only glyph that does not brighten on hover.
+	   ⛔ NOT a wrapping <g opacity>, which would multiply correctly but breaks
+	   the sub-pixel law — alpha belongs in the paint (/styleguide § Laws). */
+	.chrome-glyph .glyph-dim {
+		fill-opacity: 0.597; /* 0.85 × 0.702 */
+	}
+
+	.chrome-btn:hover .chrome-glyph .glyph-dim,
+	.chrome-btn:focus-visible .chrome-glyph .glyph-dim {
+		fill-opacity: 0.702; /* 1 × 0.702 */
+	}
+
+	/* The compass is the NARROW form of the whole navigation; above the compact
+	   breakpoint the switcher is in the centre and the three glyphs are on the
+	   right, so a fourth control reaching the same places would be redundant. */
+	.chrome-btn--nav {
+		display: none;
 	}
 
 	/* Narrow viewports: the wordmark is the first thing to go — the logo alone
@@ -315,13 +403,54 @@
 	   tools layout at the same breakpoint (it owns that markup, so it owns that
 	   rule). First pass only; a full mobile pass across the tools is its own
 	   job. */
-	@media (max-width: 40rem) {
+	/* ══ THE COMPACT SWAP (2026-09-04) ═══════════════════════════════════════
+	   Below 40rem the bar keeps its IDENTITY and folds its NAVIGATION, which is
+	   the reverse of what it used to do.
+
+	   It used to drop the wordmark here and keep three glyphs plus the tool
+	   switcher. That was the wrong half to give up: measured, the remaining
+	   occupants still needed ~400px in a 320px bar, so the deficit fell on the
+	   logo and the home link disappeared entirely (see the grid block above).
+	   Folding all navigation into the compass costs one control and buys 121px,
+	   which is what lets `critcalc.app` stay readable on a phone.
+
+	   ⚠⚠ THE SWITCH IS AT 47.5rem, NOT THE 40rem THIS BAR USED TO USE, AND THE
+	   OLD NUMBER WAS MEASURABLY WRONG FOR IT. 40rem was tuned for a bar that
+	   DROPPED the wordmark, which needs only ~460px. Keeping the wordmark means
+	   the full form needs padding 32 + brand 204 + gaps 28.8 + nav 274 + glyphs
+	   126 = 664.8px — so at 641–672 the bar was over-subscribed and the
+	   Settings glyph ran 8px off the right edge. Measured after the swap, which
+	   is the only reason it was caught: the fix for the 320px end moved the
+	   crowding up rather than removing it.
+
+	   ⛔ 42rem (672px) would be the tight fit and is deliberately NOT used: it
+	   would be a brand-new threshold, and the survey's § 5 argues this set must
+	   shrink rather than grow (AtlasView's stray 620px, 20px off the chrome's
+	   own stop, is the cautionary case). 47.5rem is already in the codebase —
+	   HelpAreaShell's — and clears the requirement by ~95px.
+
+	   ⚠ ChromeOverlay's own 40rem block is a DIFFERENT concern (overlay
+	   padding) and is untouched. */
+	@media (max-width: 47.5rem) {
 		.site-chrome {
 			gap: 0.5rem;
 			padding: 0 0.75rem;
 		}
 
-		.chrome-wordmark {
+		/* The host's centre snippet — the tool switcher — is reachable from the
+		   compass instead. ⚠ Hidden HERE rather than in the tools layout: the
+		   track has to collapse on every surface, and only this component owns
+		   one on all of them. */
+		.chrome-center {
+			display: none;
+		}
+
+		.chrome-btn--nav {
+			display: grid;
+		}
+
+		/* About / Help / Settings — all three live in the compass panel now. */
+		.chrome-btn:not(.chrome-btn--nav) {
 			display: none;
 		}
 

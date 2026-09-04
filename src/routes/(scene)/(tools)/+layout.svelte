@@ -1177,20 +1177,13 @@
 		z-index: 3;
 	}
 
-	/* Narrow: the switcher tightens on the same breakpoint where the shared
-	   chrome drops its wordmark, so the three tool labels keep clear of the
-	   brand and the glyph cluster. Kept here rather than in SiteChrome because
-	   this markup is ours — it renders into the chrome's center slot, and
-	   Svelte scopes styles to where the markup is authored. */
-	@media (max-width: 40rem) {
-		.chrome-nav {
-			gap: 0.9rem;
-		}
-
-		.chrome-nav-link {
-			font-size: var(--fs-xl);
-		}
-	}
+	/* (A narrow block tightened .chrome-nav's gap and label size at 40rem, for
+	   a version of this bar where the switcher stayed in the centre and the
+	   wordmark left. RETIRED 2026-09-04: the compass round inverted that trade,
+	   so below 40rem SiteChrome collapses .chrome-center entirely and these
+	   links are rendered by NavPanel instead. The rule could no longer fire —
+	   ⛔ and a media query that cannot match is worse than none, because the
+	   next reader will believe the switcher still has a narrow form. */
 
 	/* (A reduced-motion block for .chrome-nav-link stood here. Retired with the
 	   motion round — it spends --t-quick, and the band is zeroed at :root under
