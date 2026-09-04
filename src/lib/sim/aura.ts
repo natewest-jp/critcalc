@@ -782,6 +782,10 @@ export function scheduleSummonTicks(
 	kind: 'skill' | 'burst',
 	label: string,
 	abilityId: string | undefined,
+	/** `CastEvent.variantLabel` — see `findSummonsForBar`. The live chain and
+	 *  finalize MUST resolve the same variant or the ticks that fire and the
+	 *  markers a reader sees describe two different lineups. */
+	variantLabel: string | undefined,
 	castTime: number,
 	summonActivatesAt: number | undefined,
 	castEvent: { uptime: number },
@@ -794,7 +798,7 @@ export function scheduleSummonTicks(
 	const cLevel = ctx.constellationLevels?.[char.id] ?? 0;
 	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
 
-	findSummonsForBar(char, kind, label, abilityId).forEach((summon, index) => {
+	findSummonsForBar(char, kind, label, abilityId, variantLabel ?? null).forEach((summon, index) => {
 		const spawnAt = summonSpawnAt(castTime, summonActivatesAt, summon, index);
 		const key = `${char.id}::${summon.label}`;
 		// ⚠️ Bumped ONLY for a recast-terminating summon, mirroring finalize's

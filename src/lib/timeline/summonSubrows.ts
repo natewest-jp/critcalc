@@ -114,31 +114,34 @@ export function computeSummonSubrows(
 		const char = getCharacter(track.characterId);
 		// One lane per summon, registered in authored order — the primary keeps
 		// the sub-row position it has always had and a secondary stacks under it.
-		findCastSummons(char, kind, bar.label, bar.abilityId).forEach((summon, i) => {
-			// ⚠ The spawn instant here is a LOOKUP KEY, not geometry — it has to
-			// reproduce the parser's window `start` exactly, or the re-sort below
-			// silently falls back to index 0 for every bar. It still has to match
-			// summonSpan()'s primary/secondary split in notationParser.ts.
-			//
-			// ↻ 2026-08-16: it used to have to match the parser's FLOAT ARITHMETIC
-			// bit-for-bit as well — two independent expressions in two modules
-			// required to agree exactly on a `seconds + frames/60` sum. That was a
-			// live latent bug with no test on it; integer frames (gauge-round.md
-			// C1) removed the whole hazard, and this key is now an integer.
-			const spawnAt = bar.start + (i === 0 ? (bar.summonActivatesAt ?? 0) : (summon.spawnsAt ?? 0));
-			walkIndex.set(`${track.characterId}::${summon.label}::${kind}::${spawnAt}`, walkSeq++);
-			const key = `${track.characterId}::${summon.label}`;
-			if (!rowMap.has(key)) {
-				const row: SummonSubrow = {
-					slotIdx: track.slotIdx,
-					characterId: track.characterId,
-					label: summon.label,
-					bars: []
-				};
-				rowMap.set(key, row);
-				subrowOrder.push(row);
+		findCastSummons(char, kind, bar.label, bar.abilityId, bar.variantLabel ?? null).forEach(
+			(summon, i) => {
+				// ⚠ The spawn instant here is a LOOKUP KEY, not geometry — it has to
+				// reproduce the parser's window `start` exactly, or the re-sort below
+				// silently falls back to index 0 for every bar. It still has to match
+				// summonSpan()'s primary/secondary split in notationParser.ts.
+				//
+				// ↻ 2026-08-16: it used to have to match the parser's FLOAT ARITHMETIC
+				// bit-for-bit as well — two independent expressions in two modules
+				// required to agree exactly on a `seconds + frames/60` sum. That was a
+				// live latent bug with no test on it; integer frames (gauge-round.md
+				// C1) removed the whole hazard, and this key is now an integer.
+				const spawnAt =
+					bar.start + (i === 0 ? (bar.summonActivatesAt ?? 0) : (summon.spawnsAt ?? 0));
+				walkIndex.set(`${track.characterId}::${summon.label}::${kind}::${spawnAt}`, walkSeq++);
+				const key = `${track.characterId}::${summon.label}`;
+				if (!rowMap.has(key)) {
+					const row: SummonSubrow = {
+						slotIdx: track.slotIdx,
+						characterId: track.characterId,
+						label: summon.label,
+						bars: []
+					};
+					rowMap.set(key, row);
+					subrowOrder.push(row);
+				}
 			}
-		});
+		);
 	};
 
 	for (const track of annotatedTracks) {

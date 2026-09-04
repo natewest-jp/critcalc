@@ -72,6 +72,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			label: ev.label,
 			castTime: ev.castTime,
 			abilityId: ev.abilityId,
+			variantLabel: ev.variantLabel,
 			summonActivatesAt: ev.summonActivatesAt,
 			sacProcFired: ev.sacProcFired,
 			stackContext: ev.stackContext
@@ -156,13 +157,26 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 
 	// 3. Named-state windows (swap-clamped ends). All transient-opened —
 	//    stance windows project from stanceWindowRecs above.
+	//
+	// ⚓ A TOGGLE THAT WAS NEVER FLIPPED BACK ENDS WHERE THE ROTATION DOES
+	// (Arkhe round, 2026-09-04). Its live end is `Infinity` — Furina stays in
+	// Pneuma until a Charged Attack says otherwise — but a window is a drawable
+	// span and every one of them is asserted finite corpus-wide.
+	//
+	// ⚠️⚠️ IT IS AN `isFinite` TEST, ⛔ NEVER `Math.min(rec.end, totalDuration)`.
+	// A state window is ALLOWED to outlive the rotation — the rotation ends when
+	// its last action does, not when the last thing it started finishes — and the
+	// corpus differential measured exactly that on four characters the moment the
+	// min was written: Varesa's nightsoulBlessing 1484→2384 against a 2112-frame
+	// rotation, plus Durin, Ifa and Pyro Traveler. A toggle already clamped by a
+	// swap or a `consumes` is finite and passes through untouched.
 	for (const rec of ctx.stateWindowRecs) {
 		windows.push({
 			kind: 'state',
 			characterId: rec.characterId,
 			name: rec.name,
 			start: rec.start,
-			end: rec.end,
+			end: Number.isFinite(rec.end) ? rec.end : totalDuration,
 			source: rec.source,
 			transient: true,
 			sourceCastId: rec.sourceCastId,
@@ -248,7 +262,13 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			// One window PER SUMMON. Emitted in authored order so the primary
 			// keeps the id it has always had and the extras land after it — the
 			// lane ordering in summonSubrows follows the same walk.
-			findSummonsForBar(summonChar, kind, bar.label, bar.abilityId).forEach((summon, i) => {
+			findSummonsForBar(
+				summonChar,
+				kind,
+				bar.label,
+				bar.abilityId,
+				bar.variantLabel ?? null
+			).forEach((summon, i) => {
 				// ⚓ Both geometry answers come from `summons.ts` (L5e-a) so the
 				// live tick path L5e-b adds cannot end up holding a second copy.
 				// The swap clamp lives inside `summonEndAt`; recast truncation

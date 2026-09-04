@@ -72,7 +72,7 @@ import {
 	closeStateWindows,
 	holderStatesAt,
 	inferredStates,
-	openTransientState
+	applyTransientState
 } from './states';
 import {
 	applyDrain,
@@ -601,6 +601,7 @@ export function runRotation(
 					characterId: char.id,
 					ability: kind,
 					abilityId: active.id,
+					variantLabel: variant?.label,
 					label: tok.text,
 					time: castStart,
 					castTime,
@@ -768,7 +769,7 @@ export function runRotation(
 					// behavior staying instant so a variant that overrides to stance
 					// doesn't double-open.
 					if (stance.behavior === 'instant') {
-						openTransientState(
+						applyTransientState(
 							ctx,
 							active.opensTransientState,
 							cs,
@@ -889,6 +890,7 @@ export function runRotation(
 					kind,
 					tok.text,
 					active.id,
+					variant?.label,
 					castStart,
 					spawn,
 					castEvent,
@@ -1126,7 +1128,7 @@ export function runRotation(
 						// commit (N during `transmuting` → `darkForm`) rides this.
 						const nSpec = activeNormal?.actionOpensState?.normal;
 						if (k === 0 && nSpec) {
-							openTransientState(
+							applyTransientState(
 								ctx,
 								nSpec,
 								cs,
@@ -1196,12 +1198,16 @@ export function runRotation(
 					// (notationFlags) — an unsupported token rather than an approximated
 					// one, because nothing is drawn for it.
 					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
+					// ⚓ ONE snapshot, taken BEFORE the action: it resolves the ability
+					// AND gates the charged opener below, so the two cannot disagree
+					// about the state the swing started in (Arkhe round).
+					const chargedStates = computeCurrentStates(clock.now);
 					// Explicit annotation: the chargeHits read in the hit block below
 					// otherwise forms a TS7022 inference cycle through this initializer.
 					const activeNormal: NormalAbility | undefined = resolveActiveAbility(
 						char,
 						'normal',
-						computeCurrentStates(clock.now),
+						chargedStates,
 						charConstellationLevel
 					);
 					const castS = activeNormal
@@ -1226,6 +1232,27 @@ export function runRotation(
 						element: cElement
 					});
 					if (castS !== null) clock.advance(clock.now + castS);
+					// Charged-opened transient state (Arkhe round, 2026-09-04): the
+					// action's END, the same instant the `normal` and `plunge` openers
+					// beside it use. Furina's Charged Attack TOGGLES `pneuma`, which is
+					// what decides the lineup her next Salon Solitaire summons.
+					//
+					// ⚠️ Gated on `blockStart`'s state snapshot — the one that resolved
+					// `activeNormal` — not on a fresh read after the advance. A toggle
+					// that re-read here would see its own edge on the very next token.
+					const cSpec = activeNormal?.actionOpensState?.charged;
+					if (cSpec) {
+						applyTransientState(
+							ctx,
+							cSpec,
+							cs,
+							char.id,
+							clock.now,
+							chargedStates,
+							charConstellationLevel,
+							{ sourceActionId: chargedEv.id }
+						);
+					}
 					// Offer the charged shot to the aura. A catalyst CA and a bow's
 					// aimed shot both apply; only the bow's runs a counter (a
 					// catalyst's is gcsim `ICDTagNone`) — resolveActionIcd holds it.
@@ -1334,7 +1361,7 @@ export function runRotation(
 						// cursor); provenance is the plunge's action event (post-P4 #2).
 						const pSpec = activeNormal?.actionOpensState?.plunge;
 						if (pSpec) {
-							openTransientState(
+							applyTransientState(
 								ctx,
 								pSpec,
 								cs,

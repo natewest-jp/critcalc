@@ -45,6 +45,19 @@ export type CastEvent = {
 	/** id of the resolved ability variant actually cast (matches the
 	 *  E-charge-queue key for skills). */
 	abilityId: string;
+	/** `label` of the `matchVariant`-resolved AbilityVariant, when one matched.
+	 *
+	 *  ⚓⚓ THE ONLY THING THAT SURVIVES A VARIANT PAST THE PARSE (Arkhe round,
+	 *  2026-09-04). `abilityId` names the ABILITY and a variant has no id of its
+	 *  own, so summon resolution downstream re-finds the variant by INPUT TOKEN —
+	 *  which cannot separate two variants that share one. Furina's E is exactly
+	 *  that: `input: ["E"]` on both lineups, the choice made by her Arkhe
+	 *  alignment at the instant of the cast, and finalize has no state to ask.
+	 *
+	 *  ⚠️ It is the variant's `label`, not an index, because `summons.ts` runs
+	 *  renderer-side too and an index is meaningless once a variants array is
+	 *  reordered. `label` is REQUIRED on AbilityVariant, so there is always one. */
+	variantLabel?: string;
 	/** Token text as typed, e.g. "E", "hE", "Q" — drives variant-sensitive
 	 *  consumers (plunge selection, trigger filters) and the bar label. */
 	label: string;

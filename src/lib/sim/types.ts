@@ -52,6 +52,11 @@ export type TimelineBar = {
 	 *  Disambiguates summon resolution when a state-gated sibling ability
 	 *  shares the input token (Durin's dual-form bursts, post-P4 #2). */
 	abilityId?: string;
+	/** `label` of the resolved AbilityVariant (mirrors CastEvent.variantLabel).
+	 *  Disambiguates summon resolution when two VARIANTS of one ability share an
+	 *  input token — the sibling-ability case above, one rung down. Furina's
+	 *  Ousia/Pneuma lineups are the corpus's only pair (Arkhe round). */
+	variantLabel?: string;
 	/** Frames (60fps) from cast start until the summon becomes active. 0 when absent.
 	 *  Mirrors persistent-behavior summonActivatesAt; carried on the bar so the
 	 *  renderer and duringSummon detection don't need to re-query the ability. */

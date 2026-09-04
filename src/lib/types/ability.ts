@@ -975,18 +975,38 @@ export type State =
  *     window at cast start (Flins Northland Spearstorm → `symphonyWindow`).
  *   - `actionOpensState` on a normal ability, keyed by action class: the
  *     action's END opens the window — a plunge landing (Varesa plunge →
- *     `apexDrive`) or a normal attack's first-swing recovery (Durin's dark
- *     commit → `darkForm`).
+ *     `apexDrive`), a normal attack's first-swing recovery (Durin's dark
+ *     commit → `darkForm`), or a charged attack (Furina's Arkhe toggle).
  *
  * The window gates ability/variant `conditions` (e.g. a burst variant with
  * `conditions: { type: "state", state: "symphonyWindow" }`); a variant can
  * close it early via `consumesState`. Re-opening before expiry refreshes the
  * window (a new span record is emitted).
+ *
+ * ⚓ TWO SHAPES, AND THE AXIS IS WHAT ENDS THE STATE (Arkhe round, 2026-09-04).
+ * A WINDOW ends by itself, after `duration` seconds — that is every author but
+ * one. A TOGGLE ends only when the same action fires again: `toggle: true`, no
+ * duration, because there is no length to state. Furina's Charged Attack flips
+ * her Arkhe alignment and nothing else ever puts it back (gcsim `charge.go:59`
+ * writes a plain `c.arkhe` field with no timer).
+ *
+ * ⚓ NAME THE NON-DEFAULT HALF. A toggle is one state, not two: Furina's is
+ * `pneuma`, and its ABSENCE is Ousia. That is what makes the default free —
+ * no rotation has to declare the alignment it starts in.
+ *
+ * ⚠️ A toggle's live end is `Infinity` (it is true until something flips it),
+ * and finalize clamps the IR window to the rotation's end. ⛔ Never let the
+ * `Infinity` reach a `TimelineWindow` — `notationParser.ir.test.ts` requires a
+ * finite `end` on every window, which is the invariant that caught this.
+ *
+ * ⚠️ `terminatesOnSwap` is as meaningful on a toggle as on a window, and for
+ * Furina it must stay ABSENT: gcsim's `c.arkhe` is a plain character field that
+ * survives swap-out, so the alignment you left in is the one you come back to.
+ * Ours is had by omission (the clamp is opt-in) — ⛔ don't add the flag to
+ * "tidy up" a state that looks like it should end when she leaves.
  */
-export type TransientStateSpec = {
+type TransientStateCommon = {
 	state: State;
-	/** Window length in seconds from the opening action. */
-	duration: number;
 	/** Close the window when the owner swaps off-field (Flins: gcsim's
 	 *  exit-field hook deletes the symphony status). */
 	terminatesOnSwap?: boolean;
@@ -996,9 +1016,26 @@ export type TransientStateSpec = {
 	/** Named states to CLOSE when this window opens (gcsim DeleteStatus on
 	 *  the opening action) — a mode commit consumes its entry window and
 	 *  displaces the opposite mode (Durin: darkForm consumes transmuting +
-	 *  whiteForm). Clamps any open window records at the open instant. */
+	 *  whiteForm). Clamps any open window records at the open instant.
+	 *
+	 *  ⚠️ On a toggle this fires on the ON edge only — the OFF edge closes the
+	 *  state's own window and nothing else. A toggle that had to displace
+	 *  something in both directions would be two states, not one. */
 	consumes?: State[];
 };
+
+export type TransientStateSpec =
+	| (TransientStateCommon & {
+			/** Window length in seconds from the opening action. */
+			duration: number;
+			toggle?: never;
+	  })
+	| (TransientStateCommon & {
+			/** ⚓ The state flips instead of opening: ON if it is off, OFF if it is
+			 *  on. No `duration` — a toggle has no length, only an other edge. */
+			toggle: true;
+			duration?: never;
+	  });
 
 // ---------------------------------------------------------------------------
 // Modifiers
@@ -1835,11 +1872,21 @@ export type NormalAbility = AbilityCommon & {
 	/** Per-action-class transient-state openers (post-P4 #2 generalization of
 	 *  the former `plungeOpensState`). The window opens at the action's END:
 	 *  `plunge` at the plunge landing (Varesa Apex Drive), `normal` at the
-	 *  first swing's recovery — fired once per N token (Durin's dark commit).
-	 *  See {@link TransientStateSpec}. */
+	 *  first swing's recovery — fired once per N token (Durin's dark commit),
+	 *  `charged` at the charged attack's end (Furina's Arkhe toggle).
+	 *  See {@link TransientStateSpec}.
+	 *
+	 *  ⚠️ THE ACTION'S END, not its hitmark, and `charged` inherits that rather
+	 *  than arguing with it. gcsim flips Furina's Arkhe at
+	 *  `chargeHitmark − windup + 1` (33f, or 22f chained off a normal) where we
+	 *  fire a few frames later — unobservable, because the state gates her E and
+	 *  the frame maps put 53f between an E and a following CA and 47f the other
+	 *  way, so no cast can land inside the discrepancy. ⛔ Don't mint a
+	 *  hitmark-anchored opener for it. */
 	actionOpensState?: {
 		normal?: TransientStateSpec;
 		plunge?: TransientStateSpec;
+		charged?: TransientStateSpec;
 	};
 	/** Elemental infusion applied to N/C/P while this ability is active.
 	 *  Used on stance normals (e.g. Cyno's Pactsworn Pathclearer). */

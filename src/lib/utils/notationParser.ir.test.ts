@@ -116,27 +116,29 @@ function reconstructSummonWindows(result: ParsedRotation): SummonTuple[] {
 			// `summons[0]`. The primary reads the BAR's spawn/uptime (the geometry
 			// the ability accessors already resolved, extensions included); a
 			// secondary reads its own authored spawnsAt/duration.
-			findCastSummons(char, kind, bar.label, bar.abilityId).forEach((summon, i) => {
-				const spawnAt =
-					bar.start + (i === 0 ? (bar.summonActivatesAt ?? 0) : (summon.spawnsAt ?? 0));
-				let endAt = spawnAt + (i === 0 ? bar.uptime : framesOf(summon.duration));
-				if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
-				if (endAt <= spawnAt) return;
-				const key = `${track.characterId}::${summon.label}`;
-				if (summon.terminatesOn === 'recast') {
-					const prev = lastByKey.get(key);
-					if (prev && prev.end > spawnAt) prev.end = spawnAt;
+			findCastSummons(char, kind, bar.label, bar.abilityId, bar.variantLabel ?? null).forEach(
+				(summon, i) => {
+					const spawnAt =
+						bar.start + (i === 0 ? (bar.summonActivatesAt ?? 0) : (summon.spawnsAt ?? 0));
+					let endAt = spawnAt + (i === 0 ? bar.uptime : framesOf(summon.duration));
+					if (summon.terminatesOn === 'swap' && swapOutAt < endAt) endAt = swapOutAt;
+					if (endAt <= spawnAt) return;
+					const key = `${track.characterId}::${summon.label}`;
+					if (summon.terminatesOn === 'recast') {
+						const prev = lastByKey.get(key);
+						if (prev && prev.end > spawnAt) prev.end = spawnAt;
+					}
+					const t: SummonTuple = {
+						characterId: track.characterId,
+						label: summon.label,
+						start: spawnAt,
+						end: endAt,
+						source: kind
+					};
+					out.push(t);
+					lastByKey.set(key, t);
 				}
-				const t: SummonTuple = {
-					characterId: track.characterId,
-					label: summon.label,
-					start: spawnAt,
-					end: endAt,
-					source: kind
-				};
-				out.push(t);
-				lastByKey.set(key, t);
-			});
+			);
 		};
 		// ↻ 2026-08-16 (L5e-a½) — CAST ORDER, not ability-family order. This
 		// walked every eBar then every qBar, which made `lastByKey` mean "last

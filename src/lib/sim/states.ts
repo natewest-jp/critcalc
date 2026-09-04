@@ -158,13 +158,24 @@ export function closeStateWindows(
  * per-segment state would re-walk the array once per segment, restoring the
  * quadratic for a rotation with many segments.
  */
-// Open a post-action transient state (sQ primitive, generalized post-P4
+// Apply a post-action transient state (sQ primitive, generalized post-P4
 // #2): shared by the instant-cast `opensTransientState` site and the
 // per-action `actionOpensState` sites (plunge landing, normal first-swing
-// recovery). Evaluates the spec's conditions against the caller's state
-// snapshot, closes any `consumes` targets at the open instant, and pushes
-// the window record with the caller's provenance (cast XOR action id).
-export function openTransientState(
+// recovery, charged attack). Evaluates the spec's conditions against the
+// caller's state snapshot, closes any `consumes` targets at the open instant,
+// and pushes the window record with the caller's provenance (cast XOR action
+// id).
+//
+// ⚓ TWO SHAPES, ONE ENTRY POINT (Arkhe round, 2026-09-04). A spec with a
+// `duration` OPENS a window; a spec with `toggle: true` FLIPS the state — on if
+// it was off, off if it was on. The caller does not know or care which it holds,
+// which is why this stayed one function and the name lost "open".
+//
+// ⚠️ THE OFF EDGE IS `closeStateWindows` AND NOTHING ELSE. It does not consume,
+// it does not push a record, and it is deliberately NOT gated a second time on
+// `conditions` — a gate answers "may this action flip the state", and it has
+// already been asked above.
+export function applyTransientState(
 	ctx: SimContext,
 	spec: TransientStateSpec,
 	cs: CharState,
@@ -189,10 +200,18 @@ export function openTransientState(
 	) {
 		return;
 	}
+	if (spec.toggle === true && (cs.states.get(spec.state) ?? -Infinity) > openAt) {
+		closeStateWindows(ctx, cs, characterId, spec.state, openAt);
+		return;
+	}
 	if (spec.consumes) {
 		for (const name of spec.consumes) closeStateWindows(ctx, cs, characterId, name, openAt);
 	}
-	const stateEnd = openAt + framesOf(spec.duration);
+	// ⚠️ A toggle is live until something flips it, so its end is `Infinity` —
+	// and `finalizeParse` clamps the RECORD to the rotation's end before it
+	// becomes a window. ⛔ Never let the Infinity out of the parse: every
+	// `TimelineWindow.end` is asserted finite corpus-wide (notationParser.ir).
+	const stateEnd = spec.toggle === true ? Infinity : openAt + framesOf(spec.duration);
 	cs.states.set(spec.state, stateEnd);
 	ctx.stateWindowRecs.push({
 		characterId,
@@ -259,7 +278,13 @@ export function holderStatesAt(
 			// gates by whatever a secondary's spawn/lifetime happen to be,
 			// which is a semantic change nobody asked for; the lane-emission
 			// site below is where the extra summons became visible.
-			const summon = findSummonsForBar(holder, c.ability, c.label, c.abilityId)[0];
+			const summon = findSummonsForBar(
+				holder,
+				c.ability,
+				c.label,
+				c.abilityId,
+				c.variantLabel ?? null
+			)[0];
 			if (!summon) continue;
 			const start = c.time + c.summonActivatesAt;
 			if (t >= start && t < start + c.uptime) {
