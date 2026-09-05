@@ -629,3 +629,39 @@ duration ÷ interval, and here it does not.
 the corpus rotation; verified per form, `Durin Q` draws 20 White ticks from 156 and
 `Durin E N1 Q` draws 16 Dark ticks from 237, both matching gcsim's counts exactly. At C6
 three buff windows shift start — they ride the tick times, which are now right.
+
+### 9.4 ✅ Durin's Dark commit is a Pyro elemental hit, not a normal attack (⚓ Nate)
+
+⚓ **Nate's reading, and gcsim is unambiguous.** `attack.go:46` routes the attack button
+straight to `skillRecastBlack()` while `skillWindowKey` is live, and that builds an
+`AttackInfo` tagged `AttackTagElementalArt` / `ICDTagElementalArt` with **`Element: Pyro`,
+`Durability: 25`**. The N in `Durin E N1 Q` is not a normal attack at all — it is the
+alternative chain out of the opening E, and it was resolving as an ordinary physical
+claymore swing that applied nothing.
+
+**The fix is one field: `infusion: 'pyro'`** on `durin__normal__transmutation_denial_of_darkness`.
+⚓ Everything else was already right — that state-gated normal ability has existed since the
+post-P4 #2 dual-form work and already carries `skillRecastBlackFrames` and the `darkForm`
+opener; only its ELEMENT was never stated. `infusion` is the correct field for the same
+reason a stance's is: the window IS the ability's own gate, so nothing needs tracking —
+`resolveActiveAbility` picks it only while `transmuting` is live, and the commit closes that
+window through `actionOpensState.consumes`.
+
+⚠️ **ONE application, agreeing with gcsim for two independent reasons.** gcsim throws THREE
+hits (`skillBlackHitmarks {32, 37, 42}`) on `ICDGroupDurinSkill` — an 18f window, sequence
+`{1,0,0}` — so only the first applies; and our per-swing model is one hit per swing anyway.
+⚠️ Our swing walks Durin's NORMAL ICD counter rather than an elemental-art one, which is
+inert: every other Durin normal is PHYSICAL and a physical swing reaches no clock, so the
+commit is that counter's only user. ⛔ Don't mint a per-ability ICD tag for it.
+
+⛔ **No `hit` frame authored** though gcsim's first hitmark is 32: the FrameMap already states
+every key `frameAt()` can ask for, so `hit` would only be a fallback for a key that is
+present — inert — and the field means the hitmark of an `InitNormalCancelSlice`, whose
+E/Q/D/J/swap entries EQUAL it. This is an `InitAbilSlice` and they do not (48/45/42/41/43
+against 32), so authoring it would state something untrue to buy nothing.
+
+**Measured: ONE character, ONE new application** (frame 80, pyro, 1U) and the N1 action event
+gaining its element. 125 byte-identical. 🔒 Proven by DIFFERENTIAL rather than by the
+application alone — the Cryo Traveler rule: `Durin N1` on its own stays physical and applies
+nothing, `Durin E N1` is Pyro and applies once, and N2/N3 in the same rotation stay physical
+because the commit consumed `transmuting`.

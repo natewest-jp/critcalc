@@ -108,6 +108,7 @@
 					}
 				}
 			],
+			"infusion": "pyro",
 			"actionOpensState": {
 				"normal": {
 					"state": "darkForm",
@@ -119,7 +120,10 @@
 				"The Dark commit, WIRED via the post-P4 #2 normal-opened transient state (2026-07-17): a state-gated normal ability (conditions state:transmuting) that resolveActiveAbility prefers over Radiant Wingslash while the window is open; its first swing's recovery opens `darkForm` (30s, gcsim AddStatus(blackKey, 30*60)) and consumes transmuting + whiteForm (gcsim DeleteStatus(skillWindowKey)/(whiteKey)).",
 				"Frames = gcsim skill.go skillRecastBlackFrames (InitAbilSlice(67); ActionSwap=43, ActionAttack=64, ActionSkill=48, ActionBurst=45, ActionDash=42, ActionJump=41) — gcsim attack.go Attack() routes to skillRecastBlack while skillWindowKey is active, so the commit rides the N input with the recast's own animation. 3 hits 130.0%+95.8%+116.4% ATK Pyro at T10 (skillBlack[*][9]), hitmarks 32/37/42f. Frame-represented, not an effect.",
 				"Altitude caveats: an N3 token during the window cycles this single-entry hits array for every swing (per-token ability resolution — only the first swing is the real commit; the later swings' frames are approximate). A C or P token during the window resolves this ability and finds no chargeFrames/plungeFrames (zero-width block / dropped plunge) — the window is 6s, so this is a degenerate notation, not a rotation-relevant path.",
-				"[A7] Caveat removed. Follow-up N presses within one token during the window cycle the single-entry hits array, so only the first swing is the real commit and later swings are approximate — a degenerate, non-rotation-relevant path (already in this ability's curator notes)."
+				"[A7] Caveat removed. Follow-up N presses within one token during the window cycle the single-entry hits array, so only the first swing is the real commit and later swings are approximate — a degenerate, non-rotation-relevant path (already in this ability's curator notes).",
+				"↻ 2026-09-04 (⚓ Nate): infusion 'pyro'. THE DARK COMMIT IS NOT A NORMAL ATTACK — gcsim attack.go:46 routes the attack button straight to skillRecastBlack() while skillWindowKey is active, and that builds an AttackInfo tagged AttackTagElementalArt / ICDTagElementalArt with Element Pyro and Durability 25. It rides the N input and this ability's frames are already the recast's own, but its ELEMENT was still resolving as an ordinary physical claymore swing, so the commit applied nothing to the gauge. ⚓ `infusion` is the right field for the same reason a stance's is: the WINDOW is the ability's own gate, so nothing has to be tracked — `resolveActiveAbility` only picks this ability while `transmuting` is live, and the commit closes that window via actionOpensState.consumes.",
+				"⚠️ ONE application, and it agrees with gcsim for two independent reasons. gcsim throws THREE hits (skillBlackHitmarks {32, 37, 42}) on ICDGroupDurinSkill — an 18f window with sequence {1,0,0} — so only the first of the three applies; and our per-swing model is one hit per swing anyway (the documented approximation). ⚠️ Our swing walks Durin's NORMAL ICD counter rather than an elemental-art one, which is inert here: every other Durin normal is PHYSICAL and a physical swing reaches no clock at all, so this commit is the counter's only user. ⛔ Don't reach for a per-ability ICD tag on that account.",
+				"⛔ No `hit` frame authored though gcsim's first hitmark is 32. The FrameMap already states every key frameAt() can ask for (N/E/Q/D/J/swap), so `hit` would only ever be a fallback for a key that is present — inert — and the field's meaning is the hitmark of an InitNormalCancelSlice, whose E/Q/D/J/swap entries EQUAL it. This slice is an InitAbilSlice and they do not (48/45/42/41/43 against a hitmark of 32), so authoring it would state something untrue to buy nothing."
 			]
 		},
 		{
