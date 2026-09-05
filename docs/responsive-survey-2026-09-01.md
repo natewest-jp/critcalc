@@ -739,7 +739,9 @@ guard, never tokens.
 Three landings, each measured on the production build with a seeded
 four-character team before and after. Everything here is BELOW a threshold;
 desk widths (≥ 864px) are geometrically unchanged — column ribbon 224px,
-cards 200×78 on the Team Builder and 200×122 on the planner.
+cards 200×78 on the Team Builder and 200×122 on the planner. (The Team
+Builder's 2px at 320 is the Atlas's longest coverage chip, "Interruption
+Res ×", a pre-existing content stop of N3's class — not this round's.)
 
 ## ✅ What shipped
 
