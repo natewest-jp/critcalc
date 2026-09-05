@@ -85,7 +85,9 @@
 	}}
 >
 	{#if mark}<Mark name={mark} />{/if}
-	{#if label}{label}{/if}
+	<!-- The label in its own box so a host can fold it away at narrow widths
+	     (DocumentActions does, below BP.compact) while the mark stays. -->
+	{#if label}<span class="band-menu-label">{label}</span>{/if}
 	{#if !compact}<Mark name="chevron" size={11} />{/if}
 </button>
 

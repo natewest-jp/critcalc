@@ -55,7 +55,7 @@
 	import type { Snippet } from 'svelte';
 	import { siteSettings, type LoadoutEntry } from '$lib/stores';
 	import { getAvatar, getAvatarFallback } from '$lib/utils/getAvatar';
-	import { CARD_PORTRAIT } from '$lib/benchBand.svelte';
+	import { CARD_PORTRAIT, CARD_PORTRAIT_COMPACT } from '$lib/benchBand.svelte';
 	import { elementPalette } from '$lib/utils/elementColors';
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
 	import { artifactImagePath, getArtifactSetById } from '$lib/data/artifactLookup';
@@ -76,6 +76,7 @@
 	let {
 		slotId,
 		char,
+		compact = false,
 		conLevel,
 		loadoutEntry,
 		onSetCon,
@@ -89,6 +90,15 @@
 	}: {
 		/** Raw avatar id (the character id, or 'blank' for an empty slot). */
 		slotId: string;
+		/**
+		 * The COMPACT form (responsive round, 2026-09-05): the bench ribbon's
+		 * row, when four cards do not fit at full width. The disc and the rail on
+		 * one row, the value controls on the next, the name gone — the portrait
+		 * is the name at this size. Same 78px height as the full row form, by
+		 * construction (CARD_PORTRAIT_COMPACT is solved from it), so the strip
+		 * that holds four of these is one height whichever form they take.
+		 */
+		compact?: boolean;
 		/** Resolved character, or null while unresolved / empty. */
 		char: SlotChar;
 		/** Effective constellation level to display (already layer-resolved). */
@@ -258,7 +268,13 @@
      ⚠ NOT a redesign — the card-interior restyle to Nate's mockup (ringed
      portrait, circular chips) is its own queued round. This only makes the
      card legible on the ground it actually sits on. -->
-<div class="sp-card" style:--el={p.main} style:--sp-band="{CARD_PORTRAIT}px">
+<div
+	class="sp-card"
+	class:sp-card--compact={compact}
+	style:--el={p.main}
+	style:--sp-band="{CARD_PORTRAIT}px"
+	style:--sp-band-compact="{CARD_PORTRAIT_COMPACT}px"
+>
 	<!-- ONE band, three columns. `max-height: 100%` on the body is what keeps a
 	     card in a slot shorter than its own content from spilling instead of
 	     shrinking — see .sp-avatar-chip for the bug that taught us. -->
@@ -1176,5 +1192,78 @@
 	.sp-pip:hover {
 		background: var(--fill-hover);
 		color: var(--pip-color, var(--text));
+	}
+	/* ══ THE COMPACT FORM (responsive round, 2026-09-05) ═══════════════════════
+	   The same three parts, re-stacked for a card ~80px wide:
+
+	     ┌──┐╭────╮
+	     │⇄ │( 48 )        ← rail + disc, one row, the disc at CARD_PORTRAIT_COMPACT
+	     │✕ │╰────╯
+	     ⓒ ( ▣ ⚔¹ )        ← the value controls, full width
+	
+	   The NAME goes, and only the name: at this width the portrait is the
+	   name, and every other station survives — nothing a reader could do on a
+	   desk is lost on a phone. The card's own vertical padding goes with it
+	   (the ribbon's RIBBON_PAD is the inset here), which is what lets
+	   48 + 4 + 26 land on the full form's 78 exactly.
+
+	   ⚠ THE RAIL RE-SOLVES. --sp-rail-w's derivation above is for a 60px disc;
+	   at 48 the tile is 22 tall, the mark's worst corner sits 6px off the
+	   centre-line, the arc there is 0.76px right of disc.x, and W ≥ 3 + 14 −
+	   0.76 = 16.24 → 17. ⚠ --sp-rail-underlap is re-derived too: it is
+	   computed on .sp-card from the FULL band, and a custom property resolves
+	   where it is declared, not where it is read. */
+	.sp-card--compact {
+		padding: 0;
+	}
+	.sp-card--compact .sp-body {
+		--sp-band: var(--sp-band-compact);
+		--sp-rail-w: 17px;
+		--sp-rail-underlap: calc(var(--sp-band-compact) / 2);
+		height: auto;
+		max-height: none;
+		display: grid;
+		grid-template-columns: var(--sp-rail-w) auto minmax(0, 1fr);
+		grid-template-rows: var(--sp-band-compact) var(--sp-pill-h);
+		row-gap: var(--sp-rail-gap);
+		column-gap: 0;
+		align-items: stretch;
+	}
+	.sp-card--compact .sp-rail {
+		grid-row: 1;
+		grid-column: 1;
+	}
+	.sp-card--compact .sp-avatar-chip {
+		grid-row: 1;
+		grid-column: 2;
+		height: var(--sp-band-compact);
+	}
+	.sp-card--compact .sp-col {
+		grid-row: 2;
+		grid-column: 1 / -1;
+		display: flex;
+		margin: 0;
+		min-width: 0;
+	}
+	.sp-card--compact .sp-id-row {
+		display: none;
+	}
+	.sp-card--compact .sp-controls {
+		width: 100%;
+	}
+	/* The pill takes the row's remainder and its two zones SHARE it, down to a
+	   floor the 16px artwork still sits inside — this is where the card's floor
+	   (BENCH_ROW_CARD_MIN_W) comes from. */
+	.sp-card--compact .sp-loadout {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+	.sp-card--compact .sp-lo-zone {
+		flex: 1 1 0;
+		width: auto;
+		min-width: 20px;
+		/* Never wider than the desk zone — the artwork inside scales with the
+		   zone, and a zone that grew with a roomy card grew its icons with it. */
+		max-width: 24px;
 	}
 </style>

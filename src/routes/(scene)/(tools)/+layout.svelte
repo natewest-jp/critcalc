@@ -26,6 +26,8 @@
 	import { documentBar } from '$lib/documentBar.svelte';
 	import { savedNotations } from '$lib/stores';
 	import { TOOL_GUTTER } from '$lib/toolGutter';
+	import { benchBand } from '$lib/benchBand.svelte';
+	import { attachMediaFlags } from '$lib/media.svelte';
 
 	let { children } = $props();
 
@@ -40,6 +42,15 @@
 
 	onMount(() => {
 		rotationTabs.restore();
+
+		// The breakpoint flags (responsive round, 2026-09-05) — what the bench
+		// ribbon reads to pick its orientation and the Team Builder reads to
+		// fold its band B. Attached HERE because this layout outlives every
+		// tool page. The CSS halves of those decisions are pure @media blocks
+		// on the same literals and need nothing from this; when the ribbon's
+		// dock changes shape the ResizeObserver on it re-measures, so nothing
+		// here has to call snapBench either.
+		return attachMediaFlags();
 	});
 
 	// Auto-persist: persist() reads every persisted field, so this effect
@@ -239,7 +250,7 @@
 	 *  summed from the cards. */
 	function measureBenchAnchor(
 		path: string
-	): { x: number; y: number; h: number; anchorEl: HTMLElement } | null {
+	): { x: number; y: number; w: number; h: number; anchorEl: HTMLElement } | null {
 		if (!toolMain) return null;
 		const pages = [...toolMain.querySelectorAll<HTMLElement>(':scope > .tool-page')];
 		// Latest layer stamped with this path wins (matches the pan's own rule).
@@ -276,6 +287,11 @@
 		return {
 			x: Math.round(ar.left - mr.left - tx),
 			y: Math.round(ar.top - mr.top),
+			// WIDTH joined the contract with the row form (2026-09-05): a
+			// horizontal strip spans whatever its tool spans, so the ribbon reads
+			// it from the dock the way it always read its height's origin. The
+			// column form ignores it (RIBBON_W is a constant).
+			w: Math.round(ar.width),
 			h: Math.round(ar.height),
 			anchorEl: anchor
 		};
@@ -312,6 +328,7 @@
 			benchVisible = false;
 			return;
 		}
+		benchBand.dockW = a.w;
 		benchMount.style.transition = 'none';
 		benchMount.style.transform = `translate(${a.x}px, ${a.y}px)`;
 		benchMount.style.opacity = '';
@@ -347,6 +364,7 @@
 		// re-animate from there on a fresh full clock (the layers' own pattern).
 		cancelToolNavAnims(mount, true);
 		if (target) {
+			benchBand.dockW = target.w;
 			const wasDocked = benchVisible;
 			const dock = `translate(${target.x}px, ${target.y}px)`;
 			if (!wasDocked) {

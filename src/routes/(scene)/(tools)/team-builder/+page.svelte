@@ -21,6 +21,7 @@
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import { notationHasActions } from '$lib/utils/notationEdit';
 	import { benchBand } from '$lib/benchBand.svelte';
+	import { below } from '$lib/media.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
 	import ToolColumns from '$lib/components/ToolColumns.svelte';
 	// The Atlas cards fill their column now, so on a short viewport they CLIP —
@@ -420,6 +421,28 @@
 	/** The lens's current reading — band B's menu states it on the trigger, so
 	 *  the setting stays visible now that its eight segments are gone. */
 	const activeConMode = $derived(CON_MODES.find((m) => m.key === conMode) ?? CON_MODES[0]);
+
+	// ══ BAND B FOLDS BELOW BP.compact (responsive round, 2026-09-05) ═══════════
+	// 🐛 The bug it fixes: below ~430px the Atlas/Roster/Compare rail sat past
+	// the right edge and the Team Builder was STUCK on whichever view it opened
+	// with (survey § 8.4; measured — the rail's honest minimum is 229px, and
+	// with Clear team's 120 and the con lens's 110 beside it the row wants
+	// 467px). Same missing priority rule the site chrome had, one band down,
+	// and the same fix: the NAVIGATION is the incompressible occupant, the two
+	// flanking controls fold into one disclosure. ⚠ The threshold is the
+	// table's `compact` (40rem): the full row's content stop is 531px with the
+	// tool's pads, and 40rem is the first rung above it — see $lib/breakpoints.
+	const bandFolded = $derived(below('compact'));
+
+	// ══ THE FILTER DRAWER (responsive round, 2026-09-05) ═══════════════════════
+	// Below BP.toolMin the Roster's filter rail is a DRAWER (ToolColumns'
+	// sheet) rather than a column — at phone width the column left the grid
+	// ~80px, one tile of nothing beside 262px of chips. As a column the rail is
+	// simply PRESENT on the Roster; as a drawer it has to be ASKED for, so the
+	// Filters plate below exists only where the drawer does, and only there.
+	const sheetAside = $derived(below('toolMin'));
+	let filtersOpen = $state(false);
+	const showFiltersPlate = $derived(sheetAside && sourceTab === 'roster');
 
 	const OWNERSHIP_VIEWS: { key: OwnershipView; label: string; hint: string }[] = [
 		{ key: 'all', label: 'All', hint: 'Every character' },
@@ -959,48 +982,81 @@
      save/load/share the planner shows, because since the bench-band round both
      tools edit ONE working team. Band B is this tool's VIEW: which source you
      are browsing, and at which constellations you are reading it. -->
-<ToolStack benched fill>
-	{#snippet bandALeft()}
-		<DocumentTabs />
-	{/snippet}
+<!-- The con lens's options — one list, rendered by the lens's own menu at
+     desk width and by band B's fold below BP.compact. -->
+{#snippet conModeItems(close: () => void)}
+	{#each CON_MODES as m (m.key)}
+		<button
+			class="band-menu-item"
+			role="menuitemradio"
+			aria-checked={conMode === m.key}
+			onclick={() => {
+				close();
+				conMode = m.key;
+			}}
+		>
+			<span class="tb-conmode-mark">
+				{#if conMode === m.key}<Mark name="check" size={12} />{/if}
+			</span>
+			<span class="tb-conmode-label">{m.label}</span>
+			<span class="tb-conmode-hint">{m.hint}</span>
+		</button>
+	{/each}
+{/snippet}
 
-	{#snippet bandARight()}
-		<DocumentActions />
-	{/snippet}
-
-	{#snippet bandBLeft()}
+<!-- Band B's LEFT plate at desk width; below BP.compact it is handed to
+     ToolStack as `undefined` so the zone is not rendered at all — an empty zone
+     still costs its gap, and the rail would sit 4px off the tabs above it. -->
+{#snippet bandBLeftPlates()}
+	{#if showFiltersPlate}
+		<!-- Opens the filter drawer. `is-active` while it is open, like the
+		     planner's Log/Notes plates — the same "a panel is open" statement in
+		     the same register. The word folds with band B's others. -->
+		<button
+			class="btn tb-filters"
+			class:is-active={filtersOpen}
+			type="button"
+			aria-pressed={filtersOpen}
+			title="Filter the roster"
+			onclick={() => (filtersOpen = !filtersOpen)}
+		>
+			<Mark name="filter" />
+			<span class="tb-band-label">Filters</span>
+		</button>
+	{/if}
+	{#if !bandFolded}
 		<!-- ⛔ "BACK TO PLANNER →" IS NOT IN THIS BAND (⚓ Nate 2026-08-13). It lives
-		     beside "Cancel audition" in CompareView's titlebar and ONLY there — see
-		     that button for what it is actually for.
+	     beside "Cancel audition" in CompareView's titlebar and ONLY there — see
+	     that button for what it is actually for.
 
-		     ⚠ AN EARLIER PASS KEPT A COPY HERE, reasoning that `fromPlanner` outlives
-		     the audition and cancelling would otherwise STRAND you. That reasoning was
-		     wrong: `.chrome-nav` renders a link to every other tool on every tool page,
-		     so the way back is always one click away and this plate was never
-		     load-bearing. What it actually was is a second control for a trip the
-		     navigation already offers — and offers better, since a user who has learned
-		     the nav reaches for it from anywhere.
-		     ⛔ Do not re-add it to cover a "what if they cancel" case. The nav covers it. -->
+	     ⚠ AN EARLIER PASS KEPT A COPY HERE, reasoning that `fromPlanner` outlives
+	     the audition and cancelling would otherwise STRAND you. That reasoning was
+	     wrong: `.chrome-nav` renders a link to every other tool on every tool page,
+	     so the way back is always one click away and this plate was never
+	     load-bearing. What it actually was is a second control for a trip the
+	     navigation already offers — and offers better, since a user who has learned
+	     the nav reaches for it from anywhere.
+	     ⛔ Do not re-add it to cover a "what if they cancel" case. The nav covers it. -->
 
 		<!-- The team's one destructive action, moved out of the coverage read-out
-		     (⚓ NATE 2026-08-09) — that run is now a bare header on the scene with
-		     nowhere to hang a control, and a team action belongs in the band with
-		     the other team controls anyway.
-		     ↻ 2026-08-10: a PLATE at the row's height, detached from the band and
-		     mirroring the con lens at the far end, so the navigation rail sits
-		     between two peers. It is a plain .btn rather than .btn--danger: the
-		     danger variant is a deliberate ghost (it must not sit on screen
-		     looking pressable) and Nate asked for a solid ████ here. The
-		     destructive reading moves to the hover, which is where the hand
-		     actually is when it matters. -->
+	     (⚓ NATE 2026-08-09) — that run is now a bare header on the scene with
+	     nowhere to hang a control, and a team action belongs in the band with
+	     the other team controls anyway.
+	     ↻ 2026-08-10: a PLATE at the row's height, detached from the band and
+	     mirroring the con lens at the far end, so the navigation rail sits
+	     between two peers. It is a plain .btn rather than .btn--danger: the
+	     danger variant is a deliberate ghost (it must not sit on screen
+	     looking pressable) and Nate asked for a solid ████ here. The
+	     destructive reading moves to the hover, which is where the hand
+	     actually is when it matters. -->
 		<!-- ↻ 2026-08-13 (single truth): TWO STEPS WHEN THERE IS A ROTATION TO
-		     LOSE. The team is the notation now, so clearing the team deletes every
-		     slotted character's segments — on a written rotation that is the
-		     rotation. A team of four bare names has nothing to lose and still goes
-		     in one press; the confirm arms only once `notationHasActions` says
-		     otherwise, so the guard appears exactly when it earns its click.
-		     ⌘Z in the notation box is the other half of this: the deletion lands
-		     as an editor transaction, so a mistaken clear is one undo away. -->
+	     LOSE. The team is the notation now, so clearing the team deletes every
+	     slotted character's segments — on a written rotation that is the
+	     rotation. A team of four bare names has nothing to lose and still goes
+	     in one press; the confirm arms only once `notationHasActions` says
+	     otherwise, so the guard appears exactly when it earns its click.
+	     ⌘Z in the notation box is the other half of this: the deletion lands
+	     as an editor transaction, so a mistaken clear is one undo away. -->
 		<button
 			class="btn tb-clear"
 			class:btn--danger={clearArmed}
@@ -1020,6 +1076,16 @@
 			><Mark name={clearArmed ? 'warn' : 'close'} />
 			{clearArmed ? 'Clear rotation?' : 'Clear team'}</button
 		>
+	{/if}
+{/snippet}
+
+<ToolStack benched fill bandBLeft={!bandFolded || showFiltersPlate ? bandBLeftPlates : undefined}>
+	{#snippet bandALeft()}
+		<DocumentTabs />
+	{/snippet}
+
+	{#snippet bandARight()}
+		<DocumentActions />
 	{/snippet}
 
 	<!-- ── THE IN-TOOL NAVIGATION (⚓ NATE 2026-08-09, tuned 08-10) ───────────
@@ -1107,32 +1173,49 @@
 	{/snippet}
 
 	{#snippet bandBRight()}
-		<!-- The constellation LENS. It was an eight-segment C0…C6 + My roster
-		     rail — 356px, the widest single control on the site, for something
-		     you set once and rarely touch. A menu states the current reading in
-		     one chip and gives each option room for the sentence that explains
-		     it. -->
-		<BandMenu label={activeConMode.label} ariaLabel="Read capabilities at">
-			{#snippet items(close)}
-				{#each CON_MODES as m (m.key)}
+		{#if bandFolded}
+			<!-- THE FOLD. One plate where two stood: Clear team, then the con lens's
+			     options as the radio group they always were. The rail keeps the
+			     row; these are what it could do without seeing. -->
+			<BandMenu compact mark="more" ariaLabel="Team and reading options">
+				{#snippet items(close)}
 					<button
 						class="band-menu-item"
-						role="menuitemradio"
-						aria-checked={conMode === m.key}
+						class:band-menu-item--danger={clearArmed}
+						role="menuitem"
+						disabled={filledCount === 0}
 						onclick={() => {
-							close();
-							conMode = m.key;
+							if (clearArmed || !notationHasActions(rt.notation)) {
+								rt.clearTeam();
+								clearArmed = false;
+								close();
+							} else {
+								// Arm and STAY OPEN: the confirm is the same item re-read,
+								// and a menu that closed here would hide the question.
+								clearArmed = true;
+							}
 						}}
 					>
-						<span class="tb-conmode-mark">
-							{#if conMode === m.key}<Mark name="check" size={12} />{/if}
-						</span>
-						<span class="tb-conmode-label">{m.label}</span>
-						<span class="tb-conmode-hint">{m.hint}</span>
+						<Mark name={clearArmed ? 'warn' : 'close'} />
+						{clearArmed ? 'Clear rotation?' : 'Clear team'}
 					</button>
-				{/each}
-			{/snippet}
-		</BandMenu>
+					<div class="band-menu-rule"></div>
+					<div class="tb-fold-head" aria-hidden="true">Read capabilities at</div>
+					{@render conModeItems(close)}
+				{/snippet}
+			</BandMenu>
+		{:else}
+			<!-- The constellation LENS. It was an eight-segment C0…C6 + My roster
+			     rail — 356px, the widest single control on the site, for something
+			     you set once and rarely touch. A menu states the current reading in
+			     one chip and gives each option room for the sentence that explains
+			     it. -->
+			<BandMenu label={activeConMode.label} ariaLabel="Read capabilities at">
+				{#snippet items(close)}
+					{@render conModeItems(close)}
+				{/snippet}
+			</BandMenu>
+		{/if}
 	{/snippet}
 
 	{#snippet surface()}
@@ -1141,7 +1224,14 @@
 		     nothing to filter, so they get the full width. -->
 		<!-- asideBare: the rail paints its own groups, so the column is a gutter
 		     of objects rather than one box of sections. -->
-		<ToolColumns {main} aside={sourceTab === 'roster' ? rosterRail : undefined} asideBare />
+		<ToolColumns
+			{main}
+			aside={sourceTab === 'roster' && (!sheetAside || filtersOpen) ? rosterRail : undefined}
+			asideBare
+			sheet={sheetAside}
+			asideTitle="Filters"
+			onCloseAside={() => (filtersOpen = false)}
+		/>
 	{/snippet}
 </ToolStack>
 
@@ -1554,6 +1644,21 @@
 		align-items: center;
 		gap: var(--band-item-gap, 4px);
 	}
+	/* Below BP.compact ($lib/breakpoints.ts — 40rem) the three plates take the
+	   whole rail: with the flanks folded into one menu the rail is ~260px on a
+	   320px phone, and 76% of that is 65px a plate against "Compare"'s 71px of
+	   type. Rail-visible-at-both-ends is the desk read; on a phone the plates
+	   ARE the rail. ⚠ Literal from the table, by necessity. */
+	@media (max-width: 40rem) {
+		.tb-nav {
+			--nav-fill: 100%;
+		}
+		/* The Filters plate keeps its mark and folds its word, as band A's
+		   controls do — one rule for every band control below compact. */
+		.tb-band-label {
+			display: none;
+		}
+	}
 
 	/* Bitter, a full step up from the .tab it replaces (11px → 14px), and BOLD
 	   (⚓ Nate 2026-08-10 — semibold did not carry at this size against the
@@ -1632,6 +1737,17 @@
 		   panels), so the override retired rather than being restated. 7px of
 		   inset is still wrong here — it would put the line through the type. */
 		--frame-inset: 3px;
+	}
+
+	/* The fold's section heading — the kicker voice, since it labels a group of
+	   options rather than being one. */
+	.tb-fold-head {
+		padding: 6px 12px 2px;
+		font-size: var(--fs-sm);
+		font-weight: var(--fw-bold);
+		letter-spacing: var(--ls-widest);
+		text-transform: uppercase;
+		color: var(--muted);
 	}
 
 	/* Rests as a peer of every other band plate and only announces itself under

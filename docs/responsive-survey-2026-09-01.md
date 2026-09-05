@@ -657,6 +657,11 @@ none` on `.chrome-center` removed a grid item, so the action cluster shifted
 
 ## ⏭ The pick-up list, in the order § 9 recommends
 
+> ↻ **2026-09-05: items 1, 2 and 3 SHIPPED, and the slider half of item 4** —
+> see Part IV below for what landed, what it measured, and what it left for
+> Nate's eye. The entries under this heading are kept as the survey wrote
+> them; Part IV is the record.
+
 ### 1. 🐛 Band B is unreachable below ~768px — a bug before it is a feature
 
 Atlas/Roster/Compare sits past the right edge, so **the Team Builder is stuck on
@@ -726,3 +731,70 @@ the chrome) and `compact` has two (ChromeOverlay, and AtlasView's stray 620px
 still wanting absorption). ⛔ The constraint stands: **custom properties do not
 work in media queries**, so this must be a documented table plus a vitest grep
 guard, never tokens.
+
+---
+
+# Part IV — the narrow round shipped (2026-09-05, branch `feat/responsive-narrow-bench`)
+
+Three landings, each measured on the production build with a seeded
+four-character team before and after. Everything here is BELOW a threshold;
+desk widths (≥ 864px) are geometrically unchanged — column ribbon 224px,
+cards 200×78 on the Team Builder and 200×122 on the planner. (The Team
+Builder's 2px at 320 is the Atlas's longest coverage chip, "Interruption
+Res ×", a pre-existing content stop of N3's class — not this round's.)
+
+## ✅ What shipped
+
+|                                                             | what                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | where       |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- |
+| **The breakpoint table**                                    | `$lib/breakpoints.ts` names the five thresholds with the content fact that set each (`compact` 40rem · `roomy` 47.5rem · `toolMin` 54rem · `broad` 1500 · `vast` 1900); `$lib/media.svelte.ts` is its reactive JS half, attached once by the tools layout. Every `@media` still writes the literal and cites the table — custom properties do not work in media queries. ⛔ The vitest grep guard § 5 proposed is **not** added: a new test file is a promotion needing approval.                                                                | `083a461`   |
+| **The bench ROW** (item 2)                                  | Below `toolMin` the ribbon is a horizontal strip of four cards ABOVE the band stack, spanning the tool's width, one constant 102px tall (`BENCH_ROW_H`, reserved by ToolStack in pure CSS). Cards flex from the desk card's 200px down to a 72px floor; ≥ 172 they keep the full row form, below it SlotPortrait's new **compact** form re-stacks rail + 48px disc over the value controls, dropping only the name, at the same 78px. Compact cards cap at 84px and spread across the strip. 360 holds all four; 320 scrolls the strip by ~36px. | `083a461`   |
+| **Band B's fold, Team Builder** (item 1, the bug)           | Below `compact` Clear team and the con lens fold into one ⋯ menu; the navigation rail is the incompressible occupant and its three plates take the whole rail there.                                                                                                                                                                                                                                                                                                                                                                             | `083a461`   |
+| **Band A's fold**                                           | Below `compact` Save · Load · Share keep their marks and drop their words. Previously the tab strip shrank first (`min-width: 0`) and the cluster never did, so a 320px phone showed Save/Load/Share with **no document tab at all**.                                                                                                                                                                                                                                                                                                            | `083a461`   |
+| **Band B's fold, planner**                                  | Below `compact` every plate keeps its mark and drops its word, and the zoom loses its slider (−/+ step the same scale). The layer plates are still not a menu — a lit mark announces a stripped chart as a lit word does. This is what takes the planner's 564px end zone to ~210.                                                                                                                                                                                                                                                               | `083a461`   |
+| **The aside DRAWER** (item 3)                               | Below `toolMin` `ToolColumns` renders the same occupant as a right-anchored drawer over a scrim (portalled, `ctx-dark` re-declared, closed by scrim / ✕ / Escape). The planner's Log/Notes plates open it as they opened the column; the Team Builder gets a **Filters** plate (new `filter` mark, the funnel) on the Roster only, folding its word below `compact`.                                                                                                                                                                             | `46ffe31`   |
+| **`pointer: coarse`, the slider only** (item 4, first half) | The slider's box grows to 24px under a coarse pointer with the paint held on the 4px content box (`background-clip: content-box`), so nothing visible moves. ⚠ Not in the table — a different axis.                                                                                                                                                                                                                                                                                                                                              | this commit |
+
+## The numbers
+
+Shell overflow (`scrollWidth − clientWidth` on `.tool-shell`, the measure Part I settled on), production build, seeded team:
+
+| width | TB before | TB after | planner before | planner after |
+| ----- | --------- | -------- | -------------- | ------------- |
+| 320   | 238       | **2**    | 532            | **0**         |
+| 390   | 168       | **0**    | 462            | **0**         |
+| 430   | 128       | 0        | 422            | 0             |
+| 560   | 2         | 0        | 292            | 0             |
+| 640   | 0         | 0        | 212            | 0             |
+| 768   | 0         | 0        | 84             | 0             |
+
+Roster columns with the rail absent: **2 at 390, 5 at 768** — § 8.4 predicted 5.
+
+The rail's honest minimum, measured: labels 40.6 + 51.8 + 71.3 plus 3 × 19.2 of padding plus 2 gaps = **229px**. Clear team 120, the con lens 110. So the TB's full band B is 467 (+32 of pads = 531, the content stop `compact` sits above); folded it is 259. The planner's end zone is 564 as § 7 found (the "~260" in § 7's table was wrong; the chain's own line said 564).
+
+## ⚠️ What the round learned
+
+- **The card's compact switch is derived in BenchBand from the same arithmetic flex uses, NOT a container query.** `container-type: inline-size` implies layout containment, which makes each slot the containing block for the card's viewport-fixed popovers. The derived flag costs one `$derived` and traps nothing.
+- **A custom property resolves where it is DECLARED, not where it is read.** `--sp-rail-underlap: calc(var(--sp-band) / 2)` on `.sp-card` was already 30px by the time the compact form changed `--sp-band` on `.sp-body`; the compact rule has to re-derive it.
+- **An inline style cannot be overridden by a media query.** ToolStack's dock geometry moved from `style:top/bottom/width` to custom properties declared on the stack so the row form could restate it.
+- **164 was the wrong full-form floor, and only a screenshot said so.** The bench-card round's "84px column" is what the CONTROL ROW needs; a one-word name beside its badge needs ~92 ("Xiangling" is 70px of type at `--fs-lg`). 172 it is; a tablet in portrait lands at 175 and gets the complete card. The half-dozen longest single-word names still clip by a few px between 172 and ~190.
+- **An uncapped compact card grows its artwork.** At 560 the cards reached 123px and the loadout icons scaled with their zones. Capped at the natural 84 and spread with `space-between`.
+- **`padding-block` on a 4px border-box collapses the content to nothing.** The coarse slider states `height: 24px` explicitly.
+- **Two folds were needed that the survey did not list**: band A's (N2 was filed as "`.doc-tabs` clips below ~700" — the real failure at 320 was the tab GONE, because the action cluster never shrinks) and the planner's band B (§ 9 called it "band B collapsed to a menu" and the menu is the one shape the layer plates' ruling forbids; words → marks is the shape that keeps the ruling).
+
+## 👁 For Nate's eye — first cuts, not rulings
+
+1. **The row's placement** — ABOVE band A (chrome → bench → bands → surface). Between the bands and the surface was the alternative; above keeps the bands' two-row grid intact and reads as "the team heads the document".
+2. **The compact card** — rail + 48px disc over chip + pill, no name. The portrait is the name at this size; the `alt`/`aria` still carry it.
+3. **320 scrolls the strip** rather than getting a fifth arrangement. 360 holds four.
+4. **The planner's icon-only band B** below 640 — the layer plates still announce themselves lit, but without words.
+5. **The drawer's heading duplicates the aura log's own "Target aura" kicker** inside it; the column form needs that kicker, the drawer does not. Left as-is pending a call on whether the occupant or the drawer owns the title.
+6. **The hand-tuned targets** (`.bb-act` 16×28, `.btn--icon` 26×22, `.sp-lo-zone`, `.sp-cons-chip`) are untouched under `pointer: coarse` — the survey's ruling that resizing them is a design pass stands.
+
+## ⏭ Still open from this survey
+
+- **Item 5**, the Visualizers' surplus-width policy (§ 8.1) — untouched, independent.
+- **Item 6**, `--cg-tile-min` 118 → ~110 for 3-across at 390 — untouched; 2-across at 390 measured and works.
+- **N2/N3** as filed; AtlasView's stray `620px` (absorb into `compact` at 640, or state its content fact).
+- **The grep guard** for the table — proposed, awaiting approval.
+- **The e2e suite has no narrow-width spec** — every assertion runs at 1600. A phone-width smoke (band B reachable at 390, the drawer opens and closes) would be the natural promotion once Nate has judged the forms.
