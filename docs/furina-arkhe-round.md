@@ -589,16 +589,43 @@ gauge as a CAST application, not `viaEntity`. Correct for the gauge, but an `onR
 proc with `source: 'active'` would fire off a Herald swipe when it should not. No corpus
 consumer reaches it today.
 
-### 9.3 ⏭ Durin — open, and the largest
+### 9.3 ✅ Durin — tier 2, shipped
 
-**The Dark burst's `application[]` is the WHITE burst's stream.** Both arrays open
-`[97, 121, 154]` identically, and the Dark one continues at a uniform **58–59f** — which is
-`burstIntervalWhite` = 58.8 — on an ability whose own series is correctly **73.8f** =
-`burstIntervalBlack` = 73.6. ⚓ Almost certainly the dumper could not reach the state-gated
-Dark form (it runs one ability at C0 in an empty core) and captured White twice. Two further
-gaps on both bursts: **neither authors `firstTickDelay`** (gcsim: white 155.2f, black 175.4f)
-and **neither authors `tickCap`** (gcsim: `burstTicksWhite` 20, `burstTicksBlack` 16).
+⚠️⚠️ **HALF OF THIS SECTION'S FIRST DRAFT WAS WRONG, AND READING THE SOURCE IS WHAT FIXED
+IT.** The identical `[97, 121, 154]` head on both arrays is NOT a mis-capture: gcsim's
+`burstInitHitmark = {97, 97+24, 154}` is ONE slice shared by both forms, so White and Dark
+genuinely land their three opening hits on the same frames and only the multipliers differ.
+⛔ Two arrays agreeing is not evidence of duplication when the kit says they should.
 
-⚠️ The oracle structurally CANNOT adjudicate this one — the same blind spot Aino and Ororon
-have. Derive it from `burstIntervalBlack` + `burstFirstTickDelayBlack` and say so in the
-notes; ⛔ do not re-run the dumper and trust what comes back.
+**What IS wrong is the TAIL.** The Dark array continues past 154 at a uniform 58.8f starting
+at 156 = `ceil(burstFirstTickDelayWhite)` — the WHITE dragon's tick stream, on the DARK
+ability, whose own series correctly runs at 73.6f. So the Dark burst applied Pyro twice AND
+at the wrong cadence. ⚓ The White array was already right (its three hits, no tail) and is
+the shape copied across.
+
+Three fixes, all derived from `burst.go` because the dumper cannot reach this form:
+
+1. **Dark's array trimmed to `[97, 121, 154]`.**
+2. **`icdGate: {timer: 120}` on the Dark series.** `ICDGroupDurinBurstBlack` is a 2s window,
+   sequence `{1,0}`; absent meant the standard 2.5s/every-third, a different rule.
+   ⚠️⚠️ **The ICD-group round authored WHITE's gate and missed this one**, for the same reason
+   the white stream got into the array: `drivers.json` gives durin `darkForm: []` and it
+   "gets no row". ⚓ **A form the oracle cannot reach is where to look when a per-series field
+   is missing on one half of a pair.**
+3. **`firstTickDelay` on both** — ⚠️ and the honest accounting is that only one of them moves.
+   Absent does NOT mean zero: `summonTickSeries` defaults `firstDelay` to the INTERVAL
+   (`summons.ts:296`). White's default put the first tick at 155.8 against gcsim's 156, so
+   authoring 0.983 is a numeric no-op kept for exactness and symmetry. Dark's default put it
+   at 170.8 against gcsim's 176 — **five frames early, inherited by all 16 ticks** — so that
+   one is a real correction. The interval was also sharpened 1.23 → 1.227 (73.8f → 73.6f).
+
+⛔ **NO `tickCap`, and that was checked rather than assumed** — my own §9.3 draft claimed it
+was missing. gcsim fires `burstTicksWhite` 20 and `burstTicksBlack` 16, and our window
+(`spawnsAt` 97 + 20s) with these delays and intervals yields **exactly 20 and 16**. The
+tick-cap round's rule is that absent is right unless the count diverges from
+duration ÷ interval, and here it does not.
+
+**Measured: ONE character moves, 125 byte-identical at C0 and C6.** Applications 18 → 15 on
+the corpus rotation; verified per form, `Durin Q` draws 20 White ticks from 156 and
+`Durin E N1 Q` draws 16 Dark ticks from 237, both matching gcsim's counts exactly. At C6
+three buff windows shift start — they ride the tick times, which are now right.

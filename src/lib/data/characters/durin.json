@@ -233,6 +233,7 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 0.98,
+								"firstTickDelay": 0.983,
 								"icdGate": {
 									"timer": 90
 								}
@@ -242,7 +243,9 @@
 							"element": "pyro",
 							"_curatorNotes": [
 								"Dragon of White Flame periodic AoE Pyro tick, 170.4% ATK at T10 (gcsim burst.go burstWhiteDoT[9]=1.70352). 20 ticks, interval 58.8f = 0.98s (burstTicksWhite=20, burstIntervalWhite=58.8). Follows the active character. A4 Primordial Fusion amp (up to +75% on the first 10 ticks, +3% per 100 ATK) is NOT baked in — dynamic ATK-scaling, per-tick consumption.",
-								"icdGate authored 2026-08-17 (ICD-group round b): gcsim burst.go:120 sets ICDGroupDurinBurstWhite on this tick, whose table entry is a 90f reset window in which only the FIRST hit applies. Measured 7/13 applied against standard ICD's 6. ⚠️ The Dark Decay counterpart is deliberately NOT authored — gcsim gives it ICDGroupDurinBurstBlack (120f, first only), but the oracle has no capture of the dark form (the driver cannot reach it), and an unmeasured pair is a claim rather than data."
+								"icdGate authored 2026-08-17 (ICD-group round b): gcsim burst.go:120 sets ICDGroupDurinBurstWhite on this tick, whose table entry is a 90f reset window in which only the FIRST hit applies. Measured 7/13 applied against standard ICD's 6. ⚠️ The Dark Decay counterpart is deliberately NOT authored — gcsim gives it ICDGroupDurinBurstBlack (120f, first only), but the oracle has no capture of the dark form (the driver cannot reach it), and an unmeasured pair is a claim rather than data.",
+								"↻ 2026-09-04 (stale-application[] pass, tier 2): firstTickDelay 0.983 authored EXPLICITLY. ⚠️ It was absent, and absent does NOT mean zero — `summonTickSeries` defaults firstDelay to the INTERVAL (summons.ts:296), which put the first tick at 97 + 58.8 = 155.8 against gcsim's 156. So this is a no-op numerically and is authored for exactness and for symmetry with the Dark series, where the same default was 5 frames early. gcsim burst.go: burstFirstTickDelayWhite = 154 + 60 - 58.8 = 155.2, first task at ceil() = 156 from the cast; the summon spawns at 97 (burstInitHitmark[0]), so 59f = 0.983s from spawn.",
+								"⛔ NO tickCap, and that is checked rather than assumed: gcsim fires burstTicksWhite = 20, and our window (spawnsAt 97 + 20s) with this firstTickDelay and interval yields exactly 20. The tick-cap round's rule is that absent is right unless the count diverges from duration ÷ interval, and here it does not."
 							]
 						}
 					]
@@ -304,13 +307,20 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 1.23
+								"interval": 1.227,
+								"firstTickDelay": 1.317,
+								"icdGate": {
+									"timer": 120
+								}
 							},
 							"scaling": 233.7,
 							"stat": "atk",
 							"element": "pyro",
 							"_curatorNotes": [
-								"Dragon of Dark Decay periodic single-target Pyro tick, 233.7% ATK at T10 (gcsim burst.go burstBlackDoT[9]=2.33712). 16 ticks, interval 73.6f = 1.227s (burstTicksBlack=16, burstIntervalBlack=73.6). Follows the active character, targets one opponent. A4 Primordial Fusion amp not baked in (see the White tick note on the base Burst)."
+								"Dragon of Dark Decay periodic single-target Pyro tick, 233.7% ATK at T10 (gcsim burst.go burstBlackDoT[9]=2.33712). 16 ticks, interval 73.6f = 1.227s (burstTicksBlack=16, burstIntervalBlack=73.6). Follows the active character, targets one opponent. A4 Primordial Fusion amp not baked in (see the White tick note on the base Burst).",
+								"icdGate {timer: 120} authored: gcsim ICDGroupDurinBurstBlack (icd_groups.dm.go:95) is a 2s window with sequence {1,0} — only the first hit in the window applies. It was ABSENT, i.e. the standard 2.5s/every-third, which is a different rule. ⚠️ The White series has carried its own {timer: 90} all along; the two forms are on DIFFERENT ICD groups, which is why the gate belongs on the series and not on the character. ⚠️⚠️ The ICD-group round (2026-08-18) authored the WHITE series' gate and missed this one, and the reason is the same blind spot that let the white tick stream into this ability's application[]: the dumper runs one ability at C0 in an empty core and cannot reach a state-gated form, so drivers.json gives durin `darkForm: []` and it 'gets no row'. ⚓ A form the oracle cannot reach is where to look when a per-series field is missing on one half of a pair.",
+								"↻ 2026-09-04 (stale-application[] pass, tier 2): firstTickDelay 1.317 authored, and here it is a REAL correction. ⚠️ Absent does not mean zero — the default is the INTERVAL (summons.ts:296), which put the first tick at 97 + 73.8 = 170.8 against gcsim's 176: five frames early, and every one of the 16 ticks inherited it. gcsim burst.go: burstFirstTickDelayBlack = 154 + 95 - 73.6 = 175.4, first task at ceil() = 176 from the cast, so 79f = 1.317s from the summon's spawn at 97. Interval sharpened 1.23 → 1.227: burstIntervalBlack is 73.6f = 1.2267s and 1.23 was 73.8f, a 0.2f drift per tick.",
+								"⛔ NO tickCap, and that is checked rather than assumed: gcsim fires burstTicksBlack = 16, and our window (spawnsAt 97 + 20s) with this firstTickDelay and interval yields exactly 16. The tick-cap round's rule is that absent is right unless the count diverges from duration ÷ interval, and here it does not."
 							]
 						}
 					]
@@ -318,7 +328,8 @@
 			],
 			"_curatorNotes": [
 				"Split out of the base Burst's input-less variant 2026-07-17 (post-P4 #2) per the deferred design: gated state:darkForm so resolveActiveAbility auto-selects it only while the Dark form is live. Opening 3 hits at T10: 225.8%+183.2%+201.3% ATK Pyro (burstBlackInitial[*][9]); frame-represented via the shared burstFrames slice (gcsim burst.go uses one for both forms). Shares the single burst CD scalar + 70 energy cost with the White form.",
-				"[A7] Caveat removed: auto-selection while darkForm is live is working behavior and the ~1.23s cadence (16 ticks) is shown; single-target-vs-AoE and 'harder-hitting' are out of scope (the tool shows no damage numbers and does not distinguish target counts)."
+				"[A7] Caveat removed: auto-selection while darkForm is live is working behavior and the ~1.23s cadence (16 ticks) is shown; single-target-vs-AoE and 'harder-hitting' are out of scope (the tool shows no damage numbers and does not distinguish target counts).",
+				"↻ 2026-09-04 (stale-application[] pass, tier 2): application[] trimmed from [97, 121, 154, 156, 214, 273, 332, 391, 450, 508, 567, 626, 685, 744, 802, 861] to the three OPENING hits. ⚓⚓ The head [97, 121, 154] is CORRECT and is NOT a mis-capture — gcsim burst.go:17 `burstInitHitmark = {97, 97+24, 154}` is ONE slice shared by both forms, so White and Dark genuinely land their three opening hits on the same frames and only their multipliers differ. What was wrong is the TAIL: it starts at 156 = ceil(burstFirstTickDelayWhite 155.2) and steps 58.8f, which is `burstIntervalWhite` — the WHITE dragon's tick stream, on the DARK ability, whose own series correctly runs at 73.6f. So the Dark burst was applying Pyro twice AND at the wrong cadence. ⚓ The White burst's array was already right (its three hits, no tail) and is the shape copied here. ⚠️ The dumper cannot reach this form: scripts/gcsim-dump/drivers.json gives durin `darkForm: []` and notes it 'gets no row', so these numbers are DERIVED from gcsim source, not captured — ⛔ don't 'verify' them by re-running the dumper, which will report nothing."
 			],
 			"application": [
 				{
@@ -333,65 +344,6 @@
 				{
 					"frame": 154,
 					"element": "pyro"
-				},
-				{
-					"frame": 156,
-					"element": "pyro",
-					"units": 1
-				},
-				{
-					"frame": 214,
-					"element": "pyro"
-				},
-				{
-					"frame": 273,
-					"element": "pyro",
-					"units": 1
-				},
-				{
-					"frame": 332,
-					"element": "pyro"
-				},
-				{
-					"frame": 391,
-					"element": "pyro",
-					"units": 1
-				},
-				{
-					"frame": 450,
-					"element": "pyro"
-				},
-				{
-					"frame": 508,
-					"element": "pyro",
-					"units": 1
-				},
-				{
-					"frame": 567,
-					"element": "pyro"
-				},
-				{
-					"frame": 626,
-					"element": "pyro",
-					"units": 1
-				},
-				{
-					"frame": 685,
-					"element": "pyro"
-				},
-				{
-					"frame": 744,
-					"element": "pyro",
-					"units": 1
-				},
-				{
-					"frame": 802,
-					"element": "pyro"
-				},
-				{
-					"frame": 861,
-					"element": "pyro",
-					"units": 1
 				}
 			]
 		}
