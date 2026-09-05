@@ -373,6 +373,123 @@ export const RIBBON_HEAD = ribbonHead(RIBBON_FRAME_TOP_INSET);
 export const RIBBON_RESTING_H = BENCH_COLUMN_H + RIBBON_HEAD + 2 * RIBBON_CHROME;
 
 // ═══════════════════════════════════════════════════════════════════════════
+// THE ROW (responsive round, 2026-09-05) — below BP.toolMin the ribbon turns
+// HORIZONTAL: a strip of four cards ABOVE the band stack, spanning the tool's
+// full width, instead of a column beside it.
+//
+// ⚓ WHY IT EXISTS: the survey (docs/responsive-survey-2026-09-01.md § 7)
+// walked the planner's min-content chain and found its 852px minimum was
+// never the Gantt — the timeline scrolls — but ~240px of reserved ribbon
+// column plus a 564px control row. The column is this. Horizontal, the bench
+// hands the 240px back and the planner fits from ~600px; the Team Builder
+// from ~530px (and from 320 once its band B folds).
+//
+// ⚠⚠ WHY IT IS NOT HORIZONTAL EVERYWHERE: the trade is the planner's ABUNDANT
+// axis for its SCARCE one. Horizontal is scrollable and zoomable in a Gantt;
+// vertical is neither, and CLAUDE.md records the planner's vertical as already
+// spent to the last 24px. So the orientation is RESPONSIVE — a column where
+// width is cheap, a row where it is dear — and the seam is ToolStack's
+// `--stack-inset`, which already switched on `benched`.
+//
+// ⚠ IN THE ROW THE CARDS STOP LABELLING TRACK GROUPS. The column's whole
+// geometry (RIBBON_HEAD, the published slotHeights) exists to land card k on
+// the planner's k-th track group; a row has no rows to land on, so every card
+// takes the same height and the head is nothing. That is the one genuine loss
+// of the narrow form, and it is bounded: the bench is still the team editor,
+// only its alignment with the chart goes.
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * A row card's height — the same 78px as a column card at its floor, in BOTH
+ * of the card's forms (SlotPortrait's full row, and its compact stack below
+ * ~165px of width). ⚓ THAT EQUALITY IS DESIGNED, NOT INCIDENTAL: it is what
+ * lets the strip be one constant height across every narrow width, so
+ * ToolStack can reserve BENCH_ROW_H in pure CSS and nothing has to measure
+ * the bench to lay out the tool beneath it. The compact form's disc
+ * (CARD_PORTRAIT_COMPACT) is solved from it — see there.
+ */
+export const BENCH_ROW_CARD_H = BENCH_SLOT_MIN_H;
+
+/** The strip's full height in the row form: chrome above and below one card. */
+export const BENCH_ROW_H = BENCH_ROW_CARD_H + 2 * RIBBON_CHROME;
+
+/** Gap between cards in the row — the rail's own tile gap, so the strip reads
+ *  at one rhythm inside and out. */
+export const BENCH_ROW_CARD_GAP = 4;
+
+/**
+ * A row card's PREFERRED width — the desk card's, so that wherever four of
+ * them fit the row shows exactly the card the column shows. Below that the
+ * cards SHRINK (flex-basis, never a fixed width) down to the floor.
+ */
+export const BENCH_ROW_CARD_W = BENCH_CARD_W;
+
+/**
+ * 🎛️ The narrowest card that still takes the FULL row form; below it the card
+ * goes compact (SlotPortrait's `compact`). Rail 16 + disc 60 + inset 4 leaves
+ * a 92px column here — enough for the control row (84) and for a one-word
+ * name beside its 18px element badge up to ~70px of type ("Xiangling" at
+ * --fs-lg semibold is 70). ⚠ Measured on the first cut: 164 clipped that name,
+ * because the bench-card round's "84px column" is the CONTROL row's need, not
+ * the name's. A tablet in portrait (768) lands its four cards at 175, so this
+ * is what decides that it gets the complete card. The half-dozen longest
+ * single-word names (Neuvillette-class, ~82px) still clip by a few px between
+ * 172 and ~190 — the same class of compromise the two-line clamp already
+ * makes at 200, and not worth a third form.
+ */
+export const BENCH_ROW_CARD_FULL_MIN = 172;
+
+/**
+ * The compact card's NATURAL width, and its cap: max(rail 17 + disc 48, the
+ * control row 26 + 4 + 54) = 84. ⚠ Capped rather than left to grow, because
+ * the control row's pill zones flex — measured at 560px a compact card grew to
+ * 123px and its loadout ARTWORK grew with the zones. Between the floor and
+ * this cap the card shrinks; above it the strip spreads the four cards out
+ * instead (space-between), so a tablet-narrow strip reads as four stations
+ * across the width rather than four stretched ones.
+ */
+export const BENCH_ROW_CARD_COMPACT_W = 84;
+
+/**
+ * 🎛️ A row card's floor. The compact form's control row is a 26px chip + a 4px
+ * gap + the two-zone loadout pill, whose zones flex down to ~21px each here —
+ * the artwork inside them is 16px. Four cards at this floor need 72 × 4 + 3
+ * gaps + the strip's 24px of chrome = 324px, so a 360px phone holds all four
+ * and a 320px one scrolls the strip by ~36px. ⚠ 320 scrolling is a floor being
+ * protected, not a form being designed for.
+ */
+export const BENCH_ROW_CARD_MIN_W = 72;
+
+/**
+ * 🎛️ The compact card's portrait. Solved so the compact STACK (disc, gap, the
+ * 26px control row) is exactly as tall as the full ROW form's band:
+ *
+ *     BENCH_ROW_CARD_H 78 = disc + --sp-rail-gap 4 + --sp-pill-h 26
+ *
+ * → 48. ⚠ RE-SOLVE IF THE PILL HEIGHT OR THE RAIL GAP MOVES, or the two forms
+ * stop agreeing and the strip's height stops being a constant.
+ */
+export const CARD_PORTRAIT_COMPACT = BENCH_ROW_CARD_H - 4 - 26;
+
+/**
+ * The double frame as a plain rounded RECTANGLE ring — the row form's frame.
+ * The column's frame follows the tail (ribbonFramePath); a row has no tail,
+ * so its ring closes at the bottom the way it closes at the top. Same two
+ * calls, same two radii, same crossing arcs.
+ */
+export function ribbonFramePathRect(w: number, h: number, r: number): string {
+	const e = RIBBON_EDGE;
+	const b = RIBBON_FRAME_BORDER;
+	const ri = Math.max(0, r - b);
+	const rect = (x0: number, y0: number, x1: number, y1: number, rr: number) =>
+		`M ${x0 + rr},${y0} H ${x1 - rr} A ${rr},${rr} 0 0 1 ${x1},${y0 + rr}` +
+		`V ${y1 - rr} A ${rr},${rr} 0 0 1 ${x1 - rr},${y1}` +
+		`H ${x0 + rr} A ${rr},${rr} 0 0 1 ${x0},${y1 - rr}` +
+		`V ${y0 + rr} A ${rr},${rr} 0 0 1 ${x0 + rr},${y0} Z`;
+	return rect(e, e, w - e, h - e, r) + rect(e + b, e + b, w - e - b, h - e - b, ri);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // THE TAIL (⚓ NATE 2026-08-12) — the strip ENDS IN A POINT, Genshin's own
 // banner shape, and that single change retires a whole behaviour.
 //
@@ -598,6 +715,14 @@ class BenchBandState {
 	 * to measure it.
 	 */
 	trackTop = $state<number>(RIBBON_FRAME_TOP_INSET);
+
+	/**
+	 * The dock's measured WIDTH (px) — meaningful only in the row form (the
+	 * ribbon reads `below('toolMin')` for that), where the strip spans whatever
+	 * the tool spans. The column form's width is the constant RIBBON_W and
+	 * never reads this. Written by the (tools) layout at every dock measurement.
+	 */
+	dockW = $state(0);
 
 	/** Register a tool page's bench affordances. Returns an unregister that
 	 *  clears only its own tool's entry, and only while that entry is still

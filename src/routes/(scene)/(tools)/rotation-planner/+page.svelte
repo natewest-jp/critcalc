@@ -399,7 +399,7 @@
 				onclick={() => pv.reset()}
 			>
 				<Mark name="resetZoom" />
-				Reset zoom
+				<span class="rp-band-label">Reset zoom</span>
 			</button>
 			<div class="rp-zoom" role="group" aria-label="Zoom">
 				<button
@@ -462,7 +462,7 @@
 						})}
 				>
 					<Mark name="buff" />
-					Buffs
+					<span class="rp-band-label">Buffs</span>
 				</button>
 				<button
 					class="btn btn--sm"
@@ -474,7 +474,7 @@
 						siteSettings.setTimelineLayers({ showAuraLane: !$siteSettings.showAuraLane })}
 				>
 					<Mark name="aura" />
-					Auras
+					<span class="rp-band-label">Auras</span>
 				</button>
 			</div>
 			<!-- ══ THE ASIDE'S TWO PANELS (2026-08-17) ═════════════════════════
@@ -496,7 +496,7 @@
 				onclick={() => pv.togglePanel('log')}
 			>
 				<Mark name="log" />
-				Log
+				<span class="rp-band-label">Log</span>
 			</button>
 			<button
 				class="btn btn--sm rp-notes-btn"
@@ -507,7 +507,7 @@
 				onclick={() => pv.togglePanel('notes')}
 			>
 				<Mark name="note" />
-				Notes
+				<span class="rp-band-label">Notes</span>
 				<!-- ⛔ THE `!` BADGE IS RETIRED (⚓ NATE 2026-08-17), and the reason is
 				     that its job was taken over by its NEIGHBOURS. It existed because
 				     Notes stood alone at the end of band B and a reader might never look
@@ -719,6 +719,24 @@
 	/* Track/thumb styling comes from the shared .slider (app.css). */
 	.rp-zoom-slider {
 		width: 88px;
+	}
+
+	/* ══ THE FOLD (responsive round, 2026-09-05) ═══════════════════════════════
+	   Below BP.compact ($lib/breakpoints.ts — 40rem) band B's controls drop
+	   their WORDS and keep their MARKS, and the zoom loses its slider (−/+ step
+	   the same scale). This end zone is a fixed 564px — the planner's whole
+	   narrow-width problem once the bench is horizontal — and marks alone bring
+	   it to ~210px, which fits beside the Total readout down to 320.
+	   ⚠ The layer plates are NOT folded into a menu, and that ruling stands on
+	   a phone for the same reason it was made: a stripped chart must ANNOUNCE
+	   itself, and a lit mark announces exactly as a lit word does. What a
+	   reader loses is the word, and the `title`s still carry it.
+	   ⚠ Literal from the table, by necessity. */
+	@media (max-width: 40rem) {
+		.rp-band-label,
+		.rp-zoom-slider {
+			display: none;
+		}
 	}
 
 	/* The two layer toggles read as ONE control — "what is drawn" — so they sit

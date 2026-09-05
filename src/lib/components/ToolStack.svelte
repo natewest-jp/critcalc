@@ -10,7 +10,7 @@
 		BAND_RADIUS,
 		BAND_STACK_GAP
 	} from '$lib/toolBands';
-	import { RIBBON_OVERHANG_Y, RIBBON_W, TOOL_INSET } from '$lib/benchBand.svelte';
+	import { BENCH_ROW_H, RIBBON_OVERHANG_Y, RIBBON_W, TOOL_INSET } from '$lib/benchBand.svelte';
 
 	// ---------------------------------------------------------------------------
 	// THE TOOL STACK (toolbar round, ⚓ NATE 2026-08-07) — one component owning
@@ -81,6 +81,7 @@
 <div
 	class="tool-stack"
 	class:tool-stack--fill={fill}
+	class:tool-stack--benched={benched}
 	style:--band-a-h="{BAND_A_H}px"
 	style:--band-b-h="{BAND_B_H}px"
 	style:--band-ctrl-h="{BAND_CTRL_H}px"
@@ -90,6 +91,9 @@
 	style:--band-gap="{BAND_GAP}px"
 	style:--band-stack-gap="{BAND_STACK_GAP}px"
 	style:--stack-inset="{benched ? TOOL_INSET : 0}px"
+	style:--bench-row-h="{BENCH_ROW_H}px"
+	style:--dock-overhang="{RIBBON_OVERHANG_Y}px"
+	style:--ribbon-w="{RIBBON_W}px"
 >
 	{#if benched}
 		<!-- The RIBBON's dock: an invisible, ribbon-sized anchor the (tools)
@@ -99,13 +103,12 @@
 		     Absolute insets resolve against .tool-stack's PADDING box, which
 		     begins at the content margin (the padding-left is what holds the tool
 		     off the ribbon's column), so left: 0 IS the content margin. -->
-		<div
-			class="tool-stack-dock"
-			data-bench-anchor
-			style:top="-{RIBBON_OVERHANG_Y}px"
-			style:bottom="-{RIBBON_OVERHANG_Y}px"
-			style:width="{RIBBON_W}px"
-		></div>
+		<!-- ↻ 2026-09-05: the geometry moved from inline styles to the custom
+		     properties declared on the stack, because the dock has TWO shapes
+		     now — a column beside the stack, or a row above it below BP.toolMin
+		     — and an inline style cannot be overridden by the media query that
+		     picks the second one. -->
+		<div class="tool-stack-dock" data-bench-anchor></div>
 	{/if}
 
 	<!-- The band header. ↻ ⚓ NATE 2026-08-09/10, over two rounds: band A LOSES
@@ -206,12 +209,46 @@
 		flex-direction: column;
 	}
 
-	/* Measured by the layout, never painted. */
+	/* Measured by the layout, never painted. The COLUMN form: the ribbon's
+	   width, spanning the stack's height offset by the overhang. */
 	.tool-stack-dock {
 		position: absolute;
 		left: 0;
+		top: calc(-1 * var(--dock-overhang));
+		bottom: calc(-1 * var(--dock-overhang));
+		width: var(--ribbon-w);
 		pointer-events: none;
 		visibility: hidden;
+	}
+
+	/* ══ THE ROW FORM (responsive round, 2026-09-05) ══════════════════════════
+	   Below BP.toolMin ($lib/breakpoints.ts — 54rem, the planner's measured
+	   minimum WITH the column beside it) the bench ribbon turns horizontal and
+	   sits ABOVE the band stack, so the stack hands back the column it was
+	   holding off the ribbon and reserves the strip's height at its top instead.
+	   The dock becomes a full-width band at the top of the padding box, which
+	   is exactly what the ribbon then measures itself against.
+
+	   ⚠ THE LITERAL IS THE TABLE'S, BY HAND: custom properties do not work in
+	   media queries, so 54rem is written here and cited there. The ribbon's own
+	   orientation flag is set by the layout from matchMedia on the SAME string
+	   (belowQuery('toolMin')), which is what keeps the two halves on one number.
+	   ⚠ Reserved in pure CSS from a CONSTANT — BENCH_ROW_H — rather than a
+	   measured height, because the strip is designed to be one height in both
+	   of its card forms (see benchBand.svelte.ts § THE ROW); nothing here has
+	   to wait for the ribbon to mount to lay the tool out correctly. */
+	@media (max-width: 54rem) {
+		.tool-stack--benched {
+			padding-left: 0;
+			padding-top: calc(var(--bench-row-h) + var(--band-stack-gap));
+		}
+		.tool-stack--benched .tool-stack-dock {
+			top: 0;
+			bottom: auto;
+			right: 0;
+			width: auto;
+			height: var(--bench-row-h);
+		}
 	}
 
 	/* ↻ ⚓ NATE 2026-08-09: THE BANDS NO LONGER ABUT — they are split by

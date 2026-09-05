@@ -50,6 +50,7 @@
 	import { rotationTabs as rt } from '$lib/rotationTabs.svelte';
 	import {
 		benchBand,
+		BENCH_CARD_W,
 		BENCH_SLOT_H,
 		RIBBON_PAD,
 		// RIBBON_EDGE / RIBBON_FRAME_BORDER / RIBBON_RADIUS are no longer read
@@ -61,9 +62,19 @@
 		ribbonHead,
 		RIBBON_TAIL_H,
 		RIBBON_W,
+		RIBBON_RADIUS,
+		BENCH_ROW_H,
+		BENCH_ROW_CARD_H,
+		BENCH_ROW_CARD_GAP,
+		BENCH_ROW_CARD_W,
+		BENCH_ROW_CARD_FULL_MIN,
+		BENCH_ROW_CARD_COMPACT_W,
+		BENCH_ROW_CARD_MIN_W,
 		ribbonClipPath,
-		ribbonFramePath
+		ribbonFramePath,
+		ribbonFramePathRect
 	} from '$lib/benchBand.svelte';
+	import { below } from '$lib/media.svelte';
 	import { constellations, loadout, type LoadoutEntry } from '$lib/stores';
 
 	import { getCharacterIndexEntry } from '$lib/data/characterLookup';
@@ -105,7 +116,36 @@
 	// the same head as empty ribbon instead of keeping its own.
 	const head = $derived(ribbonHead(benchBand.trackTop));
 
-	const boxH = $derived(RIBBON_CHROME + head + heights.reduce((a, b) => a + b, 0) + RIBBON_TAIL_H);
+	// ══ THE ROW FORM (responsive round, 2026-09-05) ═══════════════════════════
+	// Below BP.toolMin the strip is HORIZONTAL: four cards in a row above the
+	// band stack, spanning the dock's measured width, one constant height. The
+	// column's whole vertical grammar — the head, the per-slot heights, the
+	// tail — is what lands each card on its planner track group, and a row has
+	// no track groups to land on; so none of it applies here, and the box is
+	// simply chrome + one card row + chrome. See benchBand.svelte.ts § THE ROW
+	// for why the orientation is responsive rather than one or the other.
+	const row = $derived(below('toolMin'));
+
+	const boxW = $derived(row ? benchBand.dockW : RIBBON_W);
+	const boxH = $derived(
+		row ? BENCH_ROW_H : RIBBON_CHROME + head + heights.reduce((a, b) => a + b, 0) + RIBBON_TAIL_H
+	);
+
+	// A row card's width is what flex hands it: BENCH_ROW_CARD_W when four fit,
+	// less down to the floor when they don't. The card takes its COMPACT form
+	// below its full width — decided HERE from the same arithmetic, rather than
+	// by a container query on the slot, because `container-type` implies layout
+	// containment and would make each slot the containing block for the card's
+	// viewport-fixed popovers.
+	const rowCardW = $derived(
+		row
+			? Math.max(
+					BENCH_ROW_CARD_MIN_W,
+					Math.min(BENCH_ROW_CARD_W, (boxW - 2 * RIBBON_CHROME - 3 * BENCH_ROW_CARD_GAP) / 4)
+				)
+			: BENCH_CARD_W
+	);
+	const compact = $derived(row && rowCardW < BENCH_ROW_CARD_FULL_MIN);
 
 	// Resolved card characters. Index entries satisfy SlotPortrait's SlotChar
 	// shape and are available eagerly (no payload wait). A 'blank' slot shows
@@ -161,13 +201,26 @@
      are loose siblings tucked under its edges, and it stands proud of them at top
      and bottom. Interior styling is interim — the card redesign (Nate's
      mockup) is its own follow-up round. -->
+<!-- ↻ 2026-09-05: TWO BOXES FROM ONE ELEMENT. The column keeps its generated
+     silhouette (a clip-path, because it ends in a point); the row is a plain
+     rounded rectangle and needs no clip at all — a border-radius on the ground
+     is the whole shape, and the frame ring below closes at the bottom exactly
+     as it does at the top. -->
 <div
 	class="bb ctx-dark"
-	style:width="{RIBBON_W}px"
+	class:bb--row={row}
+	style:width="{boxW}px"
 	style:height="{boxH}px"
-	style:padding="{RIBBON_CHROME + head}px {RIBBON_CHROME}px {RIBBON_TAIL_H}px"
-	style:clip-path="path('{ribbonClipPath(boxH)}')"
+	style:padding={row
+		? `${RIBBON_CHROME}px`
+		: `${RIBBON_CHROME + head}px ${RIBBON_CHROME}px ${RIBBON_TAIL_H}px`}
+	style:clip-path={row ? undefined : `path('${ribbonClipPath(boxH)}')`}
+	style:border-radius={row ? `${RIBBON_RADIUS}px` : undefined}
 	style:--bb-pad="{RIBBON_PAD}px"
+	style:--bb-card-gap="{BENCH_ROW_CARD_GAP}px"
+	style:--bb-card-w="{BENCH_ROW_CARD_W}px"
+	style:--bb-card-min-w="{BENCH_ROW_CARD_MIN_W}px"
+	style:--bb-card-compact-w="{BENCH_ROW_CARD_COMPACT_W}px"
 >
 	<!-- ── THE DOUBLE FRAME, NOW ONE SVG (tail round 2026-08-12) ──────────────
 	     It was two absolutely-positioned <span>s wearing CSS borders, which is
@@ -187,37 +240,52 @@
 	     The two paths still differ only in corner radius, so the wide arc cuts
 	     across the tight one exactly as before — the ornament is unchanged, it
 	     simply has nowhere to appear at the bottom any more. -->
-	<svg
-		class="bb-frame"
-		width={RIBBON_W}
-		height={boxH}
-		viewBox="0 0 {RIBBON_W} {boxH}"
-		aria-hidden="true"
-	>
-		<path d={ribbonFramePath(boxH, RIBBON_FRAME_R_TIGHT)} fill-rule="evenodd" />
-		<path d={ribbonFramePath(boxH, RIBBON_FRAME_R_WIDE)} fill-rule="evenodd" />
+	<svg class="bb-frame" width={boxW} height={boxH} viewBox="0 0 {boxW} {boxH}" aria-hidden="true">
+		<path
+			d={row
+				? ribbonFramePathRect(boxW, boxH, RIBBON_FRAME_R_TIGHT)
+				: ribbonFramePath(boxH, RIBBON_FRAME_R_TIGHT)}
+			fill-rule="evenodd"
+		/>
+		<path
+			d={row
+				? ribbonFramePathRect(boxW, boxH, RIBBON_FRAME_R_WIDE)
+				: ribbonFramePath(boxH, RIBBON_FRAME_R_WIDE)}
+			fill-rule="evenodd"
+		/>
 	</svg>
-	{#each rt.slots as _id, i (i)}
-		{@const char = chars[i]}
-		<div class="bb-slot" style:height="{heights[i]}px">
-			<SlotPortrait
-				slotId={char ? char.id : 'blank'}
-				{char}
-				conLevel={char ? effectiveCon(char.id) : 0}
-				loadoutEntry={char ? effectiveLoadout(char.id) : {}}
-				onSetCon={(level) => char && rt.setTabCon(char.id, level)}
-				onSetArtifact={(artId) => char && rt.setTabLoadout(char.id, { artifactSetId: artId })}
-				onSetWeapon={(wid, ref) =>
-					char && rt.setTabLoadout(char.id, { weaponId: wid, weaponRefinement: ref })}
-				onSetRefinement={(r) => char && rt.setTabLoadout(char.id, { weaponRefinement: r })}
-				onPortraitClick={portraitClickFor(char, i)}
-				portraitLabel={char && char.id !== 'blank'
-					? `Open ${char.displayName}`
-					: 'Choose a character for this slot'}
-				emptyLabel=""
+	<!-- The card run: a column at rest, a row below BP.toolMin. In the row the
+	     cards flex between their full and floor widths and the run SCROLLS
+	     sideways once even the floor does not fit (a 320px phone, by ~36px) —
+	     a scroller rather than a fifth arrangement, because 320 is a floor
+	     being protected, not a form being designed for. -->
+	<div class="bb-cards" class:bb-cards--row={row}>
+		{#each rt.slots as _id, i (i)}
+			{@const char = chars[i]}
+			<div
+				class="bb-slot"
+				class:bb-slot--compact={compact}
+				style:height="{row ? BENCH_ROW_CARD_H : heights[i]}px"
 			>
-				{#snippet actions()}
-					<!-- Uniform action set (Nate 2026-08-05): ✕ removes everywhere;
+				<SlotPortrait
+					slotId={char ? char.id : 'blank'}
+					{char}
+					{compact}
+					conLevel={char ? effectiveCon(char.id) : 0}
+					loadoutEntry={char ? effectiveLoadout(char.id) : {}}
+					onSetCon={(level) => char && rt.setTabCon(char.id, level)}
+					onSetArtifact={(artId) => char && rt.setTabLoadout(char.id, { artifactSetId: artId })}
+					onSetWeapon={(wid, ref) =>
+						char && rt.setTabLoadout(char.id, { weaponId: wid, weaponRefinement: ref })}
+					onSetRefinement={(r) => char && rt.setTabLoadout(char.id, { weaponRefinement: r })}
+					onPortraitClick={portraitClickFor(char, i)}
+					portraitLabel={char && char.id !== 'blank'
+						? `Open ${char.displayName}`
+						: 'Choose a character for this slot'}
+					emptyLabel=""
+				>
+					{#snippet actions()}
+						<!-- Uniform action set (Nate 2026-08-05): ✕ removes everywhere;
 					     ⇄ auditions on the TB but opens the character Source on the
 					     planner (stays in-tool). They stack in the card's left RAIL
 					     and split the portrait's height between them.
@@ -226,23 +294,23 @@
 					     sideways. The generic-Blank card gets LIVE actions (Nate
 					     2026-08-06): a deliberately-typed Blank is a placeholder the
 					     user may well want to swap a real character into. -->
-					{@const live = !!char}
-					<button
-						class="bb-act"
-						disabled={!live}
-						onclick={() => char && host?.onSwap(i, char.id)}
-						title={live && char
-							? mode === 'rp'
-								? 'Change who fills this slot'
-								: `Compare ${char.displayName} against replacements`
-							: undefined}
-						aria-label={live && char
-							? mode === 'rp'
-								? 'Change who fills this slot'
-								: `Audition replacements for ${char.displayName}`
-							: 'Swap (empty slot)'}
-					>
-						<!-- The shared mark set (Lucide via the generator), not hand-cut
+						{@const live = !!char}
+						<button
+							class="bb-act"
+							disabled={!live}
+							onclick={() => char && host?.onSwap(i, char.id)}
+							title={live && char
+								? mode === 'rp'
+									? 'Change who fills this slot'
+									: `Compare ${char.displayName} against replacements`
+								: undefined}
+							aria-label={live && char
+								? mode === 'rp'
+									? 'Change who fills this slot'
+									: `Audition replacements for ${char.displayName}`
+								: 'Swap (empty slot)'}
+						>
+							<!-- The shared mark set (Lucide via the generator), not hand-cut
 					     paths and certainly not the ⇄/✕ code points — those aren't in
 					     IBM Plex, so each engine drew its own fallback at its own size
 					     (Safari's ✕ came out visibly smaller than Chrome's). Strokes
@@ -251,23 +319,24 @@
 					     and it lands the ✕'s ink at 7px: exactly the height of the C0 /
 					     R1 digits beside it (--fs-xs, 10px). ⚓ NATE 2026-08-07; the
 					     hand-cut 14×12 / 9×9 they replaced were never a tuned target. -->
-						<Mark name="swap" />
-					</button>
-					<button
-						class="bb-act bb-act--remove"
-						disabled={!live}
-						onclick={() => rt.setSlot(i, null)}
-						title={live && char ? `Remove ${char.displayName} from team` : undefined}
-						aria-label={live && char
-							? `Remove ${char.displayName} from team`
-							: 'Remove (empty slot)'}
-					>
-						<Mark name="close" />
-					</button>
-				{/snippet}
-			</SlotPortrait>
-		</div>
-	{/each}
+							<Mark name="swap" />
+						</button>
+						<button
+							class="bb-act bb-act--remove"
+							disabled={!live}
+							onclick={() => rt.setSlot(i, null)}
+							title={live && char ? `Remove ${char.displayName} from team` : undefined}
+							aria-label={live && char
+								? `Remove ${char.displayName} from team`
+								: 'Remove (empty slot)'}
+						>
+							<Mark name="close" />
+						</button>
+					{/snippet}
+				</SlotPortrait>
+			</div>
+		{/each}
+	</div>
 </div>
 
 <style>
@@ -347,6 +416,42 @@
 		color: var(--frame-line-quiet);
 		fill: currentColor;
 		pointer-events: none;
+	}
+
+	/* The card run. A flex column that changes nothing about the column form —
+	   the slots carry explicit heights and shrink nowhere — so that the row form
+	   can be the same element turned sideways. */
+	.bb-cards {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-height: 0;
+		min-width: 0;
+	}
+	.bb-cards--row {
+		flex-direction: row;
+		/* No effect while the cards fill the strip (their basis is the desk
+		   card's width); it is what spreads four CAPPED compact cards across a
+		   strip wider than their sum. */
+		justify-content: space-between;
+		gap: var(--bb-card-gap);
+		overflow-x: auto;
+		overflow-y: hidden;
+		/* Its scrollbar would sit inside the frame ring, on the ground, where a
+		   permanent bar reads as a fifth control. Trackpads and thumbs scroll it
+		   without one; the strip only ever overflows by a few dozen px. */
+		scrollbar-width: none;
+	}
+	.bb-cards--row::-webkit-scrollbar {
+		display: none;
+	}
+	.bb-cards--row > .bb-slot {
+		flex: 0 1 var(--bb-card-w);
+		min-width: var(--bb-card-min-w);
+	}
+	.bb-cards--row > .bb-slot--compact {
+		flex-basis: var(--bb-card-compact-w);
+		max-width: var(--bb-card-compact-w);
 	}
 
 	.bb-slot {

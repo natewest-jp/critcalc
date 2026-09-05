@@ -56,7 +56,7 @@
 		onclick={() => db.save()}
 	>
 		<Mark name="save" />
-		{db.linked ? 'Save changes' : 'Save'}
+		<span class="da-label">{db.linked ? 'Save changes' : 'Save'}</span>
 	</button>
 
 	<button
@@ -69,7 +69,7 @@
 		}}
 	>
 		<Mark name="load" />
-		Load
+		<span class="da-label">Load</span>
 	</button>
 
 	<BandMenu label="Share" mark="share" disabled={!db.hasContent}>
@@ -213,5 +213,22 @@
 	.doc-btn-linked:hover {
 		background: var(--accent-hover-fill);
 		color: var(--accent);
+	}
+
+	/* ══ THE FOLD (responsive round, 2026-09-05) ═══════════════════════════════
+	   Below BP.compact ($lib/breakpoints.ts — 40rem) Save · Load · Share drop
+	   their WORDS and keep their marks. Band A has the chrome's own priority
+	   problem: the tab strip shrinks first (min-width: 0) and this cluster never
+	   does, so on a 320px phone the three labelled buttons (~340px with their
+	   gaps) left the document tab NO room at all — the row read as
+	   Save/Load/Share with no document to save. Marks alone are ~116px, which
+	   hands ~170px back to the tab whose label is the one thing here that
+	   cannot be guessed. The `title`s still carry the words; the ⋯ menu beside
+	   them never had any. ⚠ Literal from the table, by necessity. */
+	@media (max-width: 40rem) {
+		.da-label,
+		.doc-actions :global(.band-menu-label) {
+			display: none;
+		}
 	}
 </style>
