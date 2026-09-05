@@ -462,6 +462,14 @@ placeholder should be pointed at `unknown` instead.
 
 ## 8. The stale-`application[]` class — the census (2026-09-04)
 
+> ⛔⛔ **SUPERSEDED BY §9 IN FOUR OF ITS SIX VERDICTS.** This section was derived from data
+> SHAPE alone — which entries land on which predicted tick instants. Reading gcsim per
+> character overturned charlotte, qiqi and durin outright and rewrote the reason for yaoyao.
+> ⚓ **The thing shape could not see: `summonTick` is a FIXED INTERVAL, and half these
+> summons do not have one** — so an `application[]` carrying summon damage is sometimes the
+> only place that data CAN live, and is correct. Read §9; keep this only as the record of
+> how far a structural census gets before it needs the oracle.
+
 §2a flagged ~11 candidate sites off a coarse test ("an `application[]` entry at or after the
 summon's first tick"). ⚓ **That test is mostly noise, and a cadence test replaces it**: an
 entry is suspect only if it lands ON the summon's predicted tick instants, not merely after
@@ -489,3 +497,171 @@ instrument is `scripts/audit-gcsim-reactions.mjs`, per character, against the or
 ✅ All six survivors ARE oracled (`~/Code/gcsim/internal/characters/`), so every one is
 adjudicable — unlike the 7.0 characters. ⚓ **Do B first**: it is the only kind that leaves a
 summon lane visibly empty, and it is the one whose fix adds data rather than removing it.
+
+---
+
+## 9. The class against the ORACLE (2026-09-04) — and tier 1
+
+⚓⚓ **THE FINDING THAT REFRAMES EVERYTHING: `summonTick` IS A FIXED INTERVAL, AND HALF THESE
+SUMMONS DO NOT HAVE ONE.** §8 assumed that a summon's damage in a cast's `application[]` is
+always misplaced. It is not. Where the real cadence is irregular, the array is the ONLY
+place the data can live, and authoring it there is correct.
+
+| character               | §8 said              | the oracle says                                                       |
+| ----------------------- | -------------------- | --------------------------------------------------------------------- |
+| **yaoyao** (burst)      | missing series       | ✅ **confirmed** — and the SKILL already carries the identical series |
+| **charlotte** (burst)   | missing series       | ❌ **not a defect** — gcsim has no gadget at all                      |
+| **qiqi** (skill)        | missing series       | ❌ **not a defect** — the cadence is unexpressible                    |
+| **kinich** (burst)      | double-count         | ✅ **confirmed**                                                      |
+| **durin** (both bursts) | cadence disagreement | ⚠️ **worse, and different** — see §9.3                                |
+| **xiangling**           | coincidence          | ✅ confirmed                                                          |
+
+### 9.1 ✅ Tier 1 — shipped
+
+**Kinich.** `application[]` trimmed from `[161, 253, 403, 553, 703, 848]` to the burst's own
+hit alone (161 = gcsim `burstHitMark`). The rest were Ajaw's Dragon Breath lasers, and the
+`summonTick` series beside them has fired the same lasers into the gauge since L5e. ⚓ The
+series is CORRECT and untouched: gcsim schedules the first laser at `ajawFirstHitmark` 253
+and each queues the next at a RANDOM `ajawHitmarks{145,150}`, so our fixed 2.45s (147f) is
+the mean of a stochastic cadence — the Furina salon-member pattern — and `step == 7` stops
+the chain at 6 lasers against our window's 6 ticks.
+
+⚠️ **Not exact afterwards, and the residue is an ENGINE limit.** gcsim gives the burst's own
+hit and every laser the same `ICDTagElementalBurst`, so they walk ONE counter; we run the
+cast on its own clock and the series on `kinich:summon:Ajaw:0`. Measured, `Kinich Q` applies
+at 161/253/547/841 where gcsim suppresses the 253. ⛔ Not fixable in data — "counters are
+NOT shared across casts" is the standing rule.
+
+**Yaoyao.** The burst's radish DAMAGE series authored — the burst half of what the SKILL has
+carried since the L5e residue pass. Cadence is a genuine fixed interval (`ThinkInterval` 29
+then 60, plus `travelDelay` 13 → `firstTickDelay` 0.7s, `interval` 1s, identical to the
+skill's). Scaling 129.888% at TL10, two-source verified (gcsim `burstRadishDMG[9]` = 1.29888
+against the sidecar's "129.9%"). Gate `{timer: 90}` — ⚠️ the skill's is 150; **the two
+lineups are on different ICD groups**, which is why the gate is authored per SERIES.
+`application[]` trimmed to the cast's own hit at frame 16.
+
+⚓ **`tickCap: 4`, on BOTH series.** gcsim removes every Yuegui at `burstDur` = 360f **from
+the cast**, while our window is `spawnsAt` 104 + 6s = 464f. **A COUNT, never a time bound** —
+nudging the stated 6s duration would fix the ticks by making the ABILITY's bar wrong, since
+`summons[0].duration` is what resolves the bar's uptime. Exactly Mona's shape. ⚠️⚠️ And the
+sibling HEAL series needed the same cap: one gcsim task emits the radish's damage and its
+heal together, and the oracle cannot see the heal because it leaves no damage event.
+
+⚓⚓ **ONE Yuegui is modelled though the burst spawns THREE (104/162/221), and that is
+MEASURED.** All three radishes carry `ICDTagElementalBurst`, so they share one counter:
+gcsim's nine nominal throws gate down to applications at **145 and 262**, and one Yuegui on
+this cadence gates to **146 and 266** — the same two, within four frames. The extra two add
+DAMAGE and HEALING, which we do not print, and the ability caveat already states the healing
+frequency. ⛔ Don't author three summons for the gauge's sake: they share a label so they
+collapse into one lane as overlapping bars, each duration would have to encode "ends at cast
+
+- 360", and their ICD correctness would rest on a key collision. (⚓ Nate asked whether the
+  three are on-field-only — they are: `onExitField` kills them on any swap, which
+  `terminatesOn: 'swap'` already models.)
+
+**Measured: TWO characters move, 124 byte-identical at C0 and C6.** `Yaoyao Q` applies at
+16/146/266 (was ten array entries feeding the gauge); `Kinich Q` at 161/253/547/841, with the
+corpus rotation's applications 14 → 11. ⚠️ Kinich's Dendro Core window shifts 1115 → 1253 —
+a Bloom landing later off the corrected stream, not drift.
+
+🐛 **One artifact, pre-existing and now on one more summon.** Yaoyao's burst draws its tick
+markers DOUBLED (146,146,206,206…) because heal and damage share a cadence — the open
+8-summon issue in `gauge_round_l5e`. ⚠️ Her SKILL already did this, so the burst is now
+CONSISTENT with it rather than newly broken; ⛔ still don't dedupe without the corpus
+measurement that note asks for.
+
+### 9.2 ⛔ Charlotte and Qiqi — leave them alone
+
+**Charlotte's burst has no gadget in gcsim.** It is a cast scheduling 8 hits at hardcoded,
+IRREGULAR frames — `burstTickFrames = {95, 119, 143, 166, 179, 203, 226, 249}`, note the +13
+at 179 among otherwise ~24f steps. Her `application[]` is those frames plus the cast hit,
+which is correct authoring. The only real flaw is that our HEAL series approximates that
+irregular list at a fixed 0.4s, drawing 9 marks against gcsim's 8 and running to 293 where
+the last real tick is 249.
+
+**Qiqi's Herald damage is PAIRED swipes**, and gcsim's own comment says it is guessing:
+"Damage procs occur (in sec 0 = skill cast): 1.5, 3.75, 4.75, 7, 8, 10.25, 11.25, 13.5,
+14.5". Our array matches all nine exactly. A fixed interval cannot express a pair structure.
+Her heal series (4.5s × 4) matches gcsim's four heals.
+
+⚠️ **The cost of leaving them, stated rather than fixed**: their summon damage reaches the
+gauge as a CAST application, not `viaEntity`. Correct for the gauge, but an `onReaction`
+proc with `source: 'active'` would fire off a Herald swipe when it should not. No corpus
+consumer reaches it today.
+
+### 9.3 ✅ Durin — tier 2, shipped
+
+⚠️⚠️ **HALF OF THIS SECTION'S FIRST DRAFT WAS WRONG, AND READING THE SOURCE IS WHAT FIXED
+IT.** The identical `[97, 121, 154]` head on both arrays is NOT a mis-capture: gcsim's
+`burstInitHitmark = {97, 97+24, 154}` is ONE slice shared by both forms, so White and Dark
+genuinely land their three opening hits on the same frames and only the multipliers differ.
+⛔ Two arrays agreeing is not evidence of duplication when the kit says they should.
+
+**What IS wrong is the TAIL.** The Dark array continues past 154 at a uniform 58.8f starting
+at 156 = `ceil(burstFirstTickDelayWhite)` — the WHITE dragon's tick stream, on the DARK
+ability, whose own series correctly runs at 73.6f. So the Dark burst applied Pyro twice AND
+at the wrong cadence. ⚓ The White array was already right (its three hits, no tail) and is
+the shape copied across.
+
+Three fixes, all derived from `burst.go` because the dumper cannot reach this form:
+
+1. **Dark's array trimmed to `[97, 121, 154]`.**
+2. **`icdGate: {timer: 120}` on the Dark series.** `ICDGroupDurinBurstBlack` is a 2s window,
+   sequence `{1,0}`; absent meant the standard 2.5s/every-third, a different rule.
+   ⚠️⚠️ **The ICD-group round authored WHITE's gate and missed this one**, for the same reason
+   the white stream got into the array: `drivers.json` gives durin `darkForm: []` and it
+   "gets no row". ⚓ **A form the oracle cannot reach is where to look when a per-series field
+   is missing on one half of a pair.**
+3. **`firstTickDelay` on both** — ⚠️ and the honest accounting is that only one of them moves.
+   Absent does NOT mean zero: `summonTickSeries` defaults `firstDelay` to the INTERVAL
+   (`summons.ts:296`). White's default put the first tick at 155.8 against gcsim's 156, so
+   authoring 0.983 is a numeric no-op kept for exactness and symmetry. Dark's default put it
+   at 170.8 against gcsim's 176 — **five frames early, inherited by all 16 ticks** — so that
+   one is a real correction. The interval was also sharpened 1.23 → 1.227 (73.8f → 73.6f).
+
+⛔ **NO `tickCap`, and that was checked rather than assumed** — my own §9.3 draft claimed it
+was missing. gcsim fires `burstTicksWhite` 20 and `burstTicksBlack` 16, and our window
+(`spawnsAt` 97 + 20s) with these delays and intervals yields **exactly 20 and 16**. The
+tick-cap round's rule is that absent is right unless the count diverges from
+duration ÷ interval, and here it does not.
+
+**Measured: ONE character moves, 125 byte-identical at C0 and C6.** Applications 18 → 15 on
+the corpus rotation; verified per form, `Durin Q` draws 20 White ticks from 156 and
+`Durin E N1 Q` draws 16 Dark ticks from 237, both matching gcsim's counts exactly. At C6
+three buff windows shift start — they ride the tick times, which are now right.
+
+### 9.4 ✅ Durin's Dark commit is a Pyro elemental hit, not a normal attack (⚓ Nate)
+
+⚓ **Nate's reading, and gcsim is unambiguous.** `attack.go:46` routes the attack button
+straight to `skillRecastBlack()` while `skillWindowKey` is live, and that builds an
+`AttackInfo` tagged `AttackTagElementalArt` / `ICDTagElementalArt` with **`Element: Pyro`,
+`Durability: 25`**. The N in `Durin E N1 Q` is not a normal attack at all — it is the
+alternative chain out of the opening E, and it was resolving as an ordinary physical
+claymore swing that applied nothing.
+
+**The fix is one field: `infusion: 'pyro'`** on `durin__normal__transmutation_denial_of_darkness`.
+⚓ Everything else was already right — that state-gated normal ability has existed since the
+post-P4 #2 dual-form work and already carries `skillRecastBlackFrames` and the `darkForm`
+opener; only its ELEMENT was never stated. `infusion` is the correct field for the same
+reason a stance's is: the window IS the ability's own gate, so nothing needs tracking —
+`resolveActiveAbility` picks it only while `transmuting` is live, and the commit closes that
+window through `actionOpensState.consumes`.
+
+⚠️ **ONE application, agreeing with gcsim for two independent reasons.** gcsim throws THREE
+hits (`skillBlackHitmarks {32, 37, 42}`) on `ICDGroupDurinSkill` — an 18f window, sequence
+`{1,0,0}` — so only the first applies; and our per-swing model is one hit per swing anyway.
+⚠️ Our swing walks Durin's NORMAL ICD counter rather than an elemental-art one, which is
+inert: every other Durin normal is PHYSICAL and a physical swing reaches no clock, so the
+commit is that counter's only user. ⛔ Don't mint a per-ability ICD tag for it.
+
+⛔ **No `hit` frame authored** though gcsim's first hitmark is 32: the FrameMap already states
+every key `frameAt()` can ask for, so `hit` would only be a fallback for a key that is
+present — inert — and the field means the hitmark of an `InitNormalCancelSlice`, whose
+E/Q/D/J/swap entries EQUAL it. This is an `InitAbilSlice` and they do not (48/45/42/41/43
+against 32), so authoring it would state something untrue to buy nothing.
+
+**Measured: ONE character, ONE new application** (frame 80, pyro, 1U) and the N1 action event
+gaining its element. 125 byte-identical. 🔒 Proven by DIFFERENTIAL rather than by the
+application alone — the Cryo Traveler rule: `Durin N1` on its own stays physical and applies
+nothing, `Durin E N1` is Pyro and applies once, and N2/N3 in the same rotation stay physical
+because the commit consumed `transmuting`.

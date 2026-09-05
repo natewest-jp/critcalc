@@ -203,7 +203,9 @@
 				"Burst hits at burstHitMark=161 frames (2.68s after cast). Ajaw summon spawns at the slash hit; mobility \"follows\" since gcsim's QueueLaser fires from the active char's position toward primary target.",
 				"Dragon Breath laser ticks (P3): gcsim ajawHitmarks=[145,150]f randomised (avg 2.45s), first tick at ajawFirstHitmark=253f from cast = 92f from spawn (=1.53s firstTickDelay). dragonBreath multiplier 217.32% ATK Dendro at TalentLvl 10. The 6-laser cap (gcsim step==7 break) emerges naturally from interval×duration math: 1.53 + 5×2.45 = 13.78s, well within the 15s window.",
 				"Nightsoul extension: if Q is cast while Kinich is already in Nightsoul Blessing, the blessing duration is extended by 1.7s (gcsim SetNightsoulExitTimer +1.7×60). Not authored as a stanceExtension on the burst entry — stanceExtension's semantic is \"in-stance ability extends parent stance,\" but Q is cast outside the stance pattern (Q is its own instant burst, not an in-stance ability). The 1.7s is small enough that the visible window mismatch is acceptable.",
-				"Energy consumption delay 5f (gcsim ConsumeEnergy(5)) — not modelled separately."
+				"Energy consumption delay 5f (gcsim ConsumeEnergy(5)) — not modelled separately.",
+				"↻ 2026-09-04 (stale-application[] pass): application[] trimmed from [161, 253, 403, 553, 703, 848] to the burst's OWN hit alone. Frames 253/403/553/703/848 were Ajaw's Dragon Breath lasers, captured as the cast's hits by the L4c dump, which cannot tell a summon's damage from its caster's — and the Ajaw summonTick series beside them has fired the same lasers into the gauge since L5e, so the cast was applying Dendro twice. 161 is gcsim's burstHitMark (burst.go:21). The series is CORRECT and unchanged: gcsim schedules QueueLaser(1) at ajawFirstHitmark 253 and each laser queues the next at a RANDOM ajawHitmarks{145,150}, so our fixed 2.45s (147f) is the mean of a stochastic cadence — the Furina salon-member pattern — and `step == 7` stops the chain, giving 6 lasers against our window's 6 ticks.",
+				"⚠️ NOT exact after the trim, and the residue is an ENGINE limit rather than a data one: gcsim gives the burst's own hit and every Ajaw laser the same ICDTagElementalBurst, so all of them walk ONE counter, while we run the cast on its own clock and the series on `kinich:summon:Ajaw:0`. Measured, `Kinich Q` applies at 161/253/547/841 where gcsim would suppress the 253 as the second hit inside the burst hit's own 150f window. ⛔ Not fixable here — 'counters are NOT shared across casts' is the standing rule (docs/library/game/icd.md)."
 			],
 			"description": "Unleashes the power of the Almighty Dragonlord, K'uhul Ajaw (on a limited, conditional, restricted, contractual, partial, temporary basis), dealing Nightsoul-aligned AoE Dendro DMG. Ajaw will unleash his Dragon Breath at intervals, dealing Nightsoul-aligned AoE Dendro DMG.\nIf Kinich is in Nightsoul's Blessing when this is used, this Blessing's duration is extended by 1.7s.",
 			"application": [
@@ -211,29 +213,6 @@
 					"frame": 161,
 					"element": "dendro",
 					"units": 1
-				},
-				{
-					"frame": 253,
-					"element": "dendro"
-				},
-				{
-					"frame": 403,
-					"element": "dendro",
-					"units": 1
-				},
-				{
-					"frame": 553,
-					"element": "dendro",
-					"units": 1
-				},
-				{
-					"frame": 703,
-					"element": "dendro",
-					"units": 1
-				},
-				{
-					"frame": 848,
-					"element": "dendro"
 				}
 			]
 		}

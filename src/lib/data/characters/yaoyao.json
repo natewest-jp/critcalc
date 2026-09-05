@@ -184,11 +184,38 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 1,
-								"firstTickDelay": 0.7
+								"firstTickDelay": 0.7,
+								"tickCap": 4
 							},
 							"scaling": 3.63,
 							"stat": "hp",
-							"flat": 427.299
+							"flat": 427.299,
+							"_curatorNotes": [
+								"↻ 2026-09-04: tickCap 4. ⚠️ A SIBLING HEAL SERIES ON THE SAME CADENCE MUST BE CAPPED TOO (tick-cap round, docs/gauge-round-L5e.md §4) — one gcsim task emits the radish's damage and its heal together, and the oracle cannot see the heal because it leaves no damage event. Uncapped it drew 6 heal marks where gcsim throws 4."
+							]
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1,
+								"firstTickDelay": 0.7,
+								"icdGate": {
+									"timer": 90
+								},
+								"tickCap": 4
+							},
+							"scaling": 129.888,
+							"stat": "atk",
+							"element": "dendro",
+							"_curatorNotes": [
+								"Burst radish DMG authored 2026-09-04 (stale-application[] pass) — the burst half of the series the SKILL has carried since the L5e residue pass (2026-08-17). Yuegui throws a White Jade Radish that heals AND deals Dendro DMG; only the heal was authored here, so the damage lived in the cast's application[] instead and the summon lane drew no damage marks at all. gcsim yaoyao.go:50 burstRadishAI: Dendro, Durability 25 (1U), Mult burstRadishDMG[TalentLvlBurst()]; zz_yaoyao.dm.go burstRadishDMG[9] = 1.29888 → 129.888%, cross-checked against the talent sidecar's burst row '129.9%'.",
+								"Cadence is a genuine FIXED interval, unlike Charlotte's and Qiqi's: yuegui.go sets ThinkInterval 29 for the first throw then 60 thereafter, and the radish travels travelDelay 13 — so firstTickDelay = (29+13)/60 = 0.7s and interval = 1s, identical to the skill's.",
+								"icdGate timer 90: gcsim ICDGroupYaoyaoRadishBurst (icd_groups.dm.go:123) is a 1.5s window with sequence {1,0,0,0,0,0} — only the first hit in the window applies. ⚠️ The SKILL's is 150 (2.5s); the two lineups are on different groups, which is why the gate is authored per series and not once for the character.",
+								"tickCap 4: gcsim removes every Yuegui at burstDur = 360f FROM THE CAST (burst.go:54), while our summon window is spawnsAt 104 + 6s = 464f. ⚓ A COUNT, never a time bound — the tick-cap round's rule, and the same shape as Mona: nudging the stated 6s duration would fix the ticks by making the ABILITY's active window wrong, since summons[0].duration is what resolves the bar's uptime. Throws land at 146/206/266/326; 386 would fall past 360.",
+								"⚓⚓ ONE YUEGUI IS MODELLED THOUGH THE BURST SPAWNS THREE (frames 104/162/221, burst.go:52-54), and that is MEASURED, not a shortcut. All three radishes carry ICDTagElementalBurst, so they share ONE ICD counter: gcsim's nine nominal throws gate down to applications at 145 and 262, and one Yuegui on this cadence gates to 146 and 266 — the same two, within four frames. The extra two Yuegui add DAMAGE and HEALING, which we do not print, and the ability caveat already states the healing frequency. ⛔ Do not author three summons for the gauge's sake: they share a label so they would collapse into one lane as overlapping bars, their durations would each have to encode 'ends at cast + 360', and their ICD correctness would rest on a key collision."
+							]
 						}
 					]
 				}
@@ -201,7 +228,8 @@
 				"Generator behavior 'stance' changed to 'instant' — Adeptal Legacy state does NOT replace normals/charge; Yaoyao retains full action freedom during burst. | Generator top-level duration: 5s removed; gcsim burstDur = 6*60 = 6s — discrepancy with genshin-db value of 5s; reviewer to verify in-game. | Up to 3 Yuegui: Jumping Mode spawn sequentially at frames 104, 162, and 221 (per burst.go QueueCharTask calls); each has Duration=-1 (lives until burst ends via removeBurst()); only first spawn frame (104) modeled in spawnsAt. | Adeptal Legacy ends when Yaoyao leaves the field — gcsim subscribes to OnCharacterSwap via onExitField(); terminatesOn: 'swap' on the summon reflects this. | Adeptal Legacy also grants +15% movement speed and increased dendro RES — not in effects[] (empty from generator); reviewer to add. | Radishes thrown during Adeptal Legacy use burstRadishAI (AttackTagElementalBurst) instead of skillRadishAI; this tag switch is not represented in effects[].",
 				"Radish heal authored 2026-07-12 as a summonTick heal on Yuegui: Jumping Mode. Same throw cadence as the skill Yuegui (yuegui.go: first throw 29f after spawn, then every 60f; +13f radish travel → first heal ~0.7s, then 1s) → interval 1, firstTickDelay 0.7. TL10 heal: burstRadishHealing[0][9]=0.036303 (3.63% Max HP) + burstRadishHealing[1][9]=427.29947 (sidecar 'Adeptal Legacy White Jade Radish Healing' col 10 = '3.63% Max HP+427'). Snapshots Yaoyao's Max HP + Healing Bonus at Jumping-Yuegui spawn.",
 				"Target 'team': burst radishes heal ALL party members — gcsim getBurstHealInfo sets HealInfo.Target=-1 (heal-all, not reassigned to Active() in yuegui.go heal()), matching kit 'Explosions will heal all nearby party members.' Distinct from the skill radish's lowest-HP single AoE. Cadence understated: up to 3 Yuegui: Jumping Mode throw concurrently, and Yaoyao's own A1 Starscatter radishes (0.6s cadence while sprinting/jumping/running) also heal during Adeptal Legacy — only one summon's tick lane is modelled here. C6 Mega Radish heal (7.5% Max HP, active char) is authored separately on the C6 node.",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"The timeline shows one summon's once-per-second healing ticks, but up to 3 heal-summons run at once and extra radishes land while sprinting or jumping, so real healing is faster.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"The timeline shows one summon's once-per-second healing ticks, but up to 3 heal-summons run at once and extra radishes land while sprinting or jumping, so real healing is faster.\"",
+				"↻ 2026-09-04 (stale-application[] pass): application[] trimmed from [16, 145, 203, 205, 262, 263, 265, 322, 323, 325] to the burst's own hit at gcsim's burstInitialHitmark 16. Everything after it was the Yuegui radishes — the CLUSTERS (203/205, then 262/263/265, then 322/323/325) are the three Yuegui coming online at 104/162/221 — and they are now authored as the summon's own damage series, where they belong."
 			],
 			"description": "At the enjoinment of a certain adeptus, Yuegui's full potential can be unleashed in an emergency, dealing Dendro DMG to nearby opponents and entering an (in some sense) unsurpassed Adeptal Legacy state.\n\nAdeptal Legacy\n·White Jade Radishes generated will be changed to heal and deal DMG according to this skill. Explosions will heal all nearby party members, and the Dendro DMG that they deal will be viewed as Elemental Burst DMG instead.\n·Summons \"Yuegui: Jumping Mode\" at intervals until their limit has been reached. The behavior of this version of Yuegui is the same as that of \"Yuegui: Throwing Mode\" in the Elemental Skill, Raphanus Sky Cluster. A maximum of 3 Yuegui: Jumping Mode can exist at any one time.\n·Yaoyao's Movement SPD is increased by 15%.\n·Yaoyao's Dendro RES will be increased.\n\nThe Adeptal Legacy state will end once Yaoyao is off-field, and all remaining Yuegui: Jumping Mode will be cleared once this state ends.",
 			"application": [
@@ -209,44 +237,6 @@
 					"frame": 16,
 					"element": "dendro",
 					"units": 1
-				},
-				{
-					"frame": 145,
-					"element": "dendro",
-					"units": 1
-				},
-				{
-					"frame": 203,
-					"element": "dendro"
-				},
-				{
-					"frame": 205,
-					"element": "dendro"
-				},
-				{
-					"frame": 262,
-					"element": "dendro",
-					"units": 1
-				},
-				{
-					"frame": 263,
-					"element": "dendro"
-				},
-				{
-					"frame": 265,
-					"element": "dendro"
-				},
-				{
-					"frame": 322,
-					"element": "dendro"
-				},
-				{
-					"frame": 323,
-					"element": "dendro"
-				},
-				{
-					"frame": 325,
-					"element": "dendro"
 				}
 			]
 		}
