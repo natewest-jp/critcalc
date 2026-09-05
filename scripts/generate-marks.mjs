@@ -101,6 +101,11 @@ const MARKS = {
 
 	// ── Band B and general controls ─────────────────────────────────────────
 	note: 'FileText',
+	/** The Team Builder's filter drawer (responsive round, 2026-09-05): the
+	 *  roster's filter rail becomes a drawer below BP.toolMin, and this plate is
+	 *  what opens it. The funnel, the one glyph every product uses for "narrow
+	 *  this list"; `SlidersHorizontal` was considered and reads as settings. */
+	filter: 'Filter',
 	/**
 	 * The planner's two LAYER toggles (2026-08-17): what the timeline draws
 	 * besides ability timings.

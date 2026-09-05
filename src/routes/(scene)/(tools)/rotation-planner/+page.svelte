@@ -1,6 +1,7 @@
 <script lang="ts">
 	import RotationTimeline from '$lib/components/RotationTimeline.svelte';
 	import ToolStack from '$lib/components/ToolStack.svelte';
+	import { below } from '$lib/media.svelte';
 	import ToolColumns from '$lib/components/ToolColumns.svelte';
 	import DocumentTabs from '$lib/components/DocumentTabs.svelte';
 	import DocumentActions from '$lib/components/DocumentActions.svelte';
@@ -532,7 +533,17 @@
 			     which painted its own groups and wanted the column to be a gutter
 			     of objects. The NOTES keep the box — they are one continuous
 			     reading and would look shredded in rows. -->
-			<ToolColumns {main} aside={showAside ? asideColumn : undefined} />
+			<!-- Below BP.toolMin the aside is a DRAWER over the chart rather than a
+			     column beside it (ToolColumns' sheet): the Log/Notes plates open
+			     it exactly as they open the column, and closing it nulls the same
+			     state they toggle. -->
+			<ToolColumns
+				{main}
+				aside={showAside ? asideColumn : undefined}
+				sheet={below('toolMin')}
+				asideTitle={pv.showLog ? 'Target aura' : 'Notes'}
+				onCloseAside={() => (pv.aside = null)}
+			/>
 		{/snippet}
 	</ToolStack>
 

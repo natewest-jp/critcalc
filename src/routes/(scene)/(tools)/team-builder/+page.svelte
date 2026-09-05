@@ -434,6 +434,16 @@
 	// tool's pads, and 40rem is the first rung above it — see $lib/breakpoints.
 	const bandFolded = $derived(below('compact'));
 
+	// ══ THE FILTER DRAWER (responsive round, 2026-09-05) ═══════════════════════
+	// Below BP.toolMin the Roster's filter rail is a DRAWER (ToolColumns'
+	// sheet) rather than a column — at phone width the column left the grid
+	// ~80px, one tile of nothing beside 262px of chips. As a column the rail is
+	// simply PRESENT on the Roster; as a drawer it has to be ASKED for, so the
+	// Filters plate below exists only where the drawer does, and only there.
+	const sheetAside = $derived(below('toolMin'));
+	let filtersOpen = $state(false);
+	const showFiltersPlate = $derived(sheetAside && sourceTab === 'roster');
+
 	const OWNERSHIP_VIEWS: { key: OwnershipView; label: string; hint: string }[] = [
 		{ key: 'all', label: 'All', hint: 'Every character' },
 		{ key: 'owned', label: 'Owned', hint: 'Only characters you’ve marked as owned' },
@@ -997,8 +1007,25 @@
 <!-- Band B's LEFT plate at desk width; below BP.compact it is handed to
      ToolStack as `undefined` so the zone is not rendered at all — an empty zone
      still costs its gap, and the rail would sit 4px off the tabs above it. -->
-{#snippet clearTeamPlate()}
-	<!-- ⛔ "BACK TO PLANNER →" IS NOT IN THIS BAND (⚓ Nate 2026-08-13). It lives
+{#snippet bandBLeftPlates()}
+	{#if showFiltersPlate}
+		<!-- Opens the filter drawer. `is-active` while it is open, like the
+		     planner's Log/Notes plates — the same "a panel is open" statement in
+		     the same register. The word folds with band B's others. -->
+		<button
+			class="btn tb-filters"
+			class:is-active={filtersOpen}
+			type="button"
+			aria-pressed={filtersOpen}
+			title="Filter the roster"
+			onclick={() => (filtersOpen = !filtersOpen)}
+		>
+			<Mark name="filter" />
+			<span class="tb-band-label">Filters</span>
+		</button>
+	{/if}
+	{#if !bandFolded}
+		<!-- ⛔ "BACK TO PLANNER →" IS NOT IN THIS BAND (⚓ Nate 2026-08-13). It lives
 	     beside "Cancel audition" in CompareView's titlebar and ONLY there — see
 	     that button for what it is actually for.
 
@@ -1011,7 +1038,7 @@
 	     the nav reaches for it from anywhere.
 	     ⛔ Do not re-add it to cover a "what if they cancel" case. The nav covers it. -->
 
-	<!-- The team's one destructive action, moved out of the coverage read-out
+		<!-- The team's one destructive action, moved out of the coverage read-out
 	     (⚓ NATE 2026-08-09) — that run is now a bare header on the scene with
 	     nowhere to hang a control, and a team action belongs in the band with
 	     the other team controls anyway.
@@ -1022,7 +1049,7 @@
 	     looking pressable) and Nate asked for a solid ████ here. The
 	     destructive reading moves to the hover, which is where the hand
 	     actually is when it matters. -->
-	<!-- ↻ 2026-08-13 (single truth): TWO STEPS WHEN THERE IS A ROTATION TO
+		<!-- ↻ 2026-08-13 (single truth): TWO STEPS WHEN THERE IS A ROTATION TO
 	     LOSE. The team is the notation now, so clearing the team deletes every
 	     slotted character's segments — on a written rotation that is the
 	     rotation. A team of four bare names has nothing to lose and still goes
@@ -1030,28 +1057,29 @@
 	     otherwise, so the guard appears exactly when it earns its click.
 	     ⌘Z in the notation box is the other half of this: the deletion lands
 	     as an editor transaction, so a mistaken clear is one undo away. -->
-	<button
-		class="btn tb-clear"
-		class:btn--danger={clearArmed}
-		class:is-confirming={clearArmed}
-		disabled={filledCount === 0}
-		title={clearArmed
-			? 'Confirm: delete every team member’s segments from the notation'
-			: 'Empty every slot in the working team'}
-		onclick={() => {
-			if (clearArmed || !notationHasActions(rt.notation)) {
-				rt.clearTeam();
-				clearArmed = false;
-			} else {
-				clearArmed = true;
-			}
-		}}
-		><Mark name={clearArmed ? 'warn' : 'close'} />
-		{clearArmed ? 'Clear rotation?' : 'Clear team'}</button
-	>
+		<button
+			class="btn tb-clear"
+			class:btn--danger={clearArmed}
+			class:is-confirming={clearArmed}
+			disabled={filledCount === 0}
+			title={clearArmed
+				? 'Confirm: delete every team member’s segments from the notation'
+				: 'Empty every slot in the working team'}
+			onclick={() => {
+				if (clearArmed || !notationHasActions(rt.notation)) {
+					rt.clearTeam();
+					clearArmed = false;
+				} else {
+					clearArmed = true;
+				}
+			}}
+			><Mark name={clearArmed ? 'warn' : 'close'} />
+			{clearArmed ? 'Clear rotation?' : 'Clear team'}</button
+		>
+	{/if}
 {/snippet}
 
-<ToolStack benched fill bandBLeft={bandFolded ? undefined : clearTeamPlate}>
+<ToolStack benched fill bandBLeft={!bandFolded || showFiltersPlate ? bandBLeftPlates : undefined}>
 	{#snippet bandALeft()}
 		<DocumentTabs />
 	{/snippet}
@@ -1196,7 +1224,14 @@
 		     nothing to filter, so they get the full width. -->
 		<!-- asideBare: the rail paints its own groups, so the column is a gutter
 		     of objects rather than one box of sections. -->
-		<ToolColumns {main} aside={sourceTab === 'roster' ? rosterRail : undefined} asideBare />
+		<ToolColumns
+			{main}
+			aside={sourceTab === 'roster' && (!sheetAside || filtersOpen) ? rosterRail : undefined}
+			asideBare
+			sheet={sheetAside}
+			asideTitle="Filters"
+			onCloseAside={() => (filtersOpen = false)}
+		/>
 	{/snippet}
 </ToolStack>
 
@@ -1617,6 +1652,11 @@
 	@media (max-width: 40rem) {
 		.tb-nav {
 			--nav-fill: 100%;
+		}
+		/* The Filters plate keeps its mark and folds its word, as band A's
+		   controls do — one rule for every band control below compact. */
+		.tb-band-label {
+			display: none;
 		}
 	}
 
