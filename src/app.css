@@ -3356,6 +3356,29 @@ img {
 	cursor: pointer;
 }
 
+/* ── THE COARSE-POINTER HIT BOX (responsive round, 2026-09-05) ─────────────
+   The survey (§ 3) found the slider's box IS its painted 4px track — the
+   smallest live target on the site, at every width. Under a coarse pointer
+   the box grows to 24px of padding and the paint stays on the content box,
+   so nothing visible moves: the track is still 4px, the thumb still rides
+   it, and a thumb landing 10px off the line still takes.
+   ⚠ `pointer: coarse` is a DIFFERENT AXIS from width and deliberately not in
+   the breakpoint table — a tablet at 1024px is coarse, a laptop at 1024px is
+   not. This is the one control whose hit box can grow invisibly; the others
+   the survey named (.bb-act, .btn--icon, .sp-lo-zone) sit inside hand-tuned
+   geometry and wait for Nate's eye. */
+@media (pointer: coarse) {
+	.slider {
+		/* border-box everywhere (the reset), so the HEIGHT is the whole 24 and
+		   the padding leaves the 4px content box the paint lands on — a bare
+		   `padding-block` on a 4px box would collapse the content to 0 and
+		   paint nothing. */
+		height: 24px;
+		padding-block: 10px;
+		background-clip: content-box;
+	}
+}
+
 /* The root of a Visualizers instrument: fills its workspace tile and scrolls
    internally, stacking its sections (chart, then .panels) from the top. Was
    SEVEN byte-identical copies before the slot-count round — the same
