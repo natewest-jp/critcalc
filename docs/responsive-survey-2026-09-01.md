@@ -784,6 +784,10 @@ The rail's honest minimum, measured: labels 40.6 + 51.8 + 71.3 plus 3 × 19.2 of
 
 ## 👁 For Nate's eye — first cuts, not rulings
 
+> ↻ **2026-09-08: ACCEPTED.** Nate checked the round on a live phone — "very
+> good" — and merged it as `fd4113c`. Items 1–4 below are the design now, not
+> proposals; 5 and 6 stay open (see the next section).
+
 1. **The row's placement** — ABOVE band A (chrome → bench → bands → surface). Between the bands and the surface was the alternative; above keeps the bands' two-row grid intact and reads as "the team heads the document".
 2. **The compact card** — rail + 48px disc over chip + pill, no name. The portrait is the name at this size; the `alt`/`aria` still carry it.
 3. **320 scrolls the strip** rather than getting a fifth arrangement. 360 holds four.
