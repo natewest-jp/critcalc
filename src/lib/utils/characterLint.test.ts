@@ -1917,10 +1917,11 @@ const FRAMELESS_EXEMPT = new Set([
 	// Travelers — element splits are hand-built). Its NORMAL frames are real,
 	// derived from a three-way census (six byte-identical Traveler JSONs, the
 	// same attackHitmarks in all six gcsim traveler/common packages, identical
-	// genshin-db multipliers), but gcsim has NO Cryo Traveler — no
-	// internal/characters/traveler/cryo on origin/main, and a repo-wide PR
-	// search finds nothing — so its E/Q have no FrameMaps and Stage 4 is
-	// blocked, exactly as for alyosha and odette.
+	// genshin-db multipliers), but gcsim has no Cryo Traveler on main. The one
+	// source is DRAFT PR #2742 (2026-09-06), whose E/Q slices are literally
+	// "Placeholder using DMC frames" — so its E/Q still have no FrameMaps. What
+	// the draft DID state (2026-09-15) is the Frostpierce Star's cadence, which
+	// is authored; Stage 4 proper waits for the PR to land.
 	'traveler_cryo'
 ]);
 

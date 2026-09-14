@@ -113,17 +113,69 @@
 								"level": 4
 							}
 						}
+					],
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 3,
+								"firstTickDelay": 1.25
+							},
+							"scaling": 38.51,
+							"stat": "atk",
+							"element": "cryo"
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 3,
+								"firstTickDelay": 1.3
+							},
+							"scaling": 38.51,
+							"stat": "atk",
+							"element": "cryo"
+						}
+					],
+					"_curatorNotes": [
+						"Source: gcsim DRAFT PR #2742 \"Add Cryo Traveler\" (Charlie-Zheng, head 46a15b390, 2026-09-06; count sheet credited to Kolibri). ⚠️ Its E/Q cancel slices are marked \"TODO: Placeholder using DMC frames\", so NO FrameMaps and NO application[] are taken from it and the character stays FRAMELESS_EXEMPT — but its skill.go states the crystal cadence the kit never did, and that is what is authored here (2026-09-15). Re-check every number when the PR lands.",
+						"Cadence (skill.go): the ticker first fires 60f after the cast and then every 180f (skillInterval = 3*60); each tick queues TWO crystals with hitmarks 5 and 8 plus the default 10f travel, so they land at +15 and +18 — authored as two series on one 3s cadence, first ticks 1.25s and 1.3s from the cast (spawnsAt 0), the Alyosha two-summons-one-cadence shape. Over the 12s Star that is 4 ticks / 8 crystals, 5 / 10 at C4 (gcsim status 12s + 60f + 180f at C4, ticker at 60,240,…,780 → 5 fires). Both crystals are ICDTagElementalArt / ICDGroupDefault → the standard gate, so no icdGate. Ice Crystal DMG 38.51% ATK at talent level 10 (sidecar).",
+						"Not modelled: under Radiance: Stellar-Conduct the ticker stops and a crystal fires on each of the Traveler's own Normal/Charged/Plunging hits (0.2s ICD) — the proc registry needs an application frame the draft cannot give (the crystal travels)."
 					]
 				}
 			],
-			"effects": [],
-			"caveat": "The Frostpierce Star's bar shows how long it lasts, but not its ice crystals — how often it fires them is not stated anywhere yet.",
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"filter": {
+							"abilityName": "Frostpierce Star"
+						}
+					},
+					"key": "frostglow",
+					"amount": 1,
+					"max": 8,
+					"scope": "rotation",
+					"_curatorNotes": [
+						"Frostglow: +1 per ice-crystal hit, max 8 (skillStacksMax). Granted by the Star's synthesized tick hits on the Alyosha/Tugarin pattern (onHit skill + filter.abilityName), so the tick dispatchers can reach it — which requires scope rotation, and the kit agrees: the stacks live on the Traveler across swaps and only lapse 30s out of combat, so no lifetime is authored."
+					]
+				}
+			],
+			"caveat": "The Star's crystal ticks (two every 3s) come from gcsim's unreleased draft, not from the game text; the cast itself is still untimed.",
 			"_curatorNotes": [
 				"⚠️⚠️ THE ICE-CRYSTAL CADENCE IS THE ONE MISSING NUMBER, AND MOST OF THE UNAUTHORED KIT HANGS OFF IT. The talent says the Star \"periodically fires ice crystals\" and never says how often. Checked 2026-08-31: genshin-db 5.2.13 has no interval label (its combat2 attributes are Skill DMG / Ice Crystal DMG / Duration / CD only), the Fandom talent page is a {{Stub}} with its Gameplay Notes section commented out and empty, and gcsim has no Cryo Traveler at all. ⛔ So no summonTick series is authored — never fake timing — and the summon is a presence bar with no tick markers. Ice Crystal DMG is 38.51% ATK Cryo at talent level 10 and is ready to author the moment a cadence is stated.",
 				"⛔ THE Radiance: Stellar-Conduct BRANCH IS ALSO UNAUTHORED, and for a different reason. It IS fully specified — the Star stops firing on an interval and instead fires one crystal whenever the Traveler lands a Normal, Charged or Plunging attack, once every 0.2s — which is the coordinated-attack round's onHit damage-proc shape, summon-hosted so the Star's own liveness is the window. But `sim/procs.ts` registers a proc only when the effect carries a non-empty application[], and the crystal TRAVELS, so its frame offset is a measurement nobody has made. Authoring `frame: 0` would be inventing a travel time; authoring the effect without application[] would be inert data. Both halves of this series unblock together the moment gcsim ships the character.",
 				"Skill DMG 165.02% ATK Cryo at talent level 10; no on-cast damage effect is authored because the corpus does not author them (one instance across 123 characters).",
 				"Frostpierce Star duration is 12s, and C4 takes it to 15s via durationModifiers rather than a separate summon — the modifier carries its own `constellation` gate because it lives on the SKILL, not on the C4 entry, so collection-time constellation gating does not reach it.",
-				"⛔ `duration` is deliberately NOT set on the ability. The Star's lifetime belongs to summons[0]; a stray ability-level `duration` on an instant cast is the pattern twelve abilities already carry and no accessor reads."
+				"⛔ `duration` is deliberately NOT set on the ability. The Star's lifetime belongs to summons[0]; a stray ability-level `duration` on an instant cast is the pattern twelve abilities already carry and no accessor reads.",
+				"Source: gcsim DRAFT PR #2742 \"Add Cryo Traveler\" (Charlie-Zheng, head 46a15b390, 2026-09-06; count sheet credited to Kolibri). ⚠️ Its E/Q cancel slices are marked \"TODO: Placeholder using DMC frames\", so NO FrameMaps and NO application[] are taken from it and the character stays FRAMELESS_EXEMPT — but its skill.go states the crystal cadence the kit never did, and that is what is authored here (2026-09-15). Re-check every number when the PR lands.",
+				"↻ 2026-09-15: the crystal cadence is stated now — see the summon's notes. Frostglow is authored on this ability as a rotation-scoped stack key, which unblocks C2 and C6 below and the burst's consume."
 			],
 			"description": "Stabs at the opponent with the Traveler's weapon, which releases an ice-cold fog. This deals Cryo DMG to opponents up ahead and forms a Frostpierce Star next to the Traveler.\n\nFrostpierce Star\n· Follows your own party members around the field and periodically fires ice crystals at nearby opponents, dealing Cryo DMG.\nRadiance: Stellar-Conduct: The Frostpierce Star will no longer fire ice crystals at opponents at intervals but will instead fire an ice crystal at opponents in a coordinated attack when the Traveler hits an opponent with a Normal Attack, Charged Attack, or Plunging Attack. This effect can trigger once every 0.2s.\n· When an opponent is hit with an ice crystal, the Traveler gains 1 stack of **Frostglow** (max 8 stacks).\n· When not in combat, Frostglow expires after 30s."
 		},
@@ -136,11 +188,26 @@
 			"cooldown": 15,
 			"energyCost": 60,
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "consumeStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast"
+					},
+					"key": "frostglow",
+					"amount": "all",
+					"_curatorNotes": [
+						"\"When cast, the Traveler consumes all existing stacks of Frostglow\" — gcsim zeroes flostglowStacks inside the burst task. Consumed AFTER the cast-time snapshot, so C6's per-stack read sees the stacks that were spent."
+					]
+				}
+			],
 			"_curatorNotes": [
 				"Ice Javelin DMG 99.24% ATK Cryo per strike at talent level 10, 3 strikes, +2 more when 8 Frostglow stacks are consumed. The Stellar branches change the per-strike number rather than the count: Stellar-Conduct 66.16%, Stellar Swirl 99.24%.",
 				"⛔ FROSTGLOW IS NOT AUTHORED AS A STACK RESOURCE, and the blocker is upstream: stacks are granted by ice-crystal hits, and the crystal series has no cadence (see the skill's notes). A gainStacks key nothing can grant would draw nothing and would make C6's perStack bar permanently empty, so the whole Frostglow chain — the +5.0%/stack burst DMG bonus, the two extra strikes at 8 stacks, and C6 — waits on the same number.",
-				"⛔ \"Radiance: Stellar Glimmer: DMG from the current Elemental Burst is changed to Cryo DMG of the corresponding Stellar Glimmer reaction type\" is a damage-TYPE conversion and has no home in this schema — the tool draws no damage numbers, so there is no on-screen quantity for it to change. Description-only, deliberately."
+				"⛔ \"Radiance: Stellar Glimmer: DMG from the current Elemental Burst is changed to Cryo DMG of the corresponding Stellar Glimmer reaction type\" is a damage-TYPE conversion and has no home in this schema — the tool draws no damage numbers, so there is no on-screen quantity for it to change. Description-only, deliberately.",
+				"Source: gcsim DRAFT PR #2742 \"Add Cryo Traveler\" (Charlie-Zheng, head 46a15b390, 2026-09-06; count sheet credited to Kolibri). ⚠️ Its E/Q cancel slices are marked \"TODO: Placeholder using DMC frames\", so NO FrameMaps and NO application[] are taken from it and the character stays FRAMELESS_EXEMPT — but its skill.go states the crystal cadence the kit never did, and that is what is authored here (2026-09-15). Re-check every number when the PR lands.",
+				"↻ 2026-09-15: consumeStacks authored. Still description-only: the per-stack multiplier on the javelin (a damage number) and the +2 strikes at 8 stacks (an application[] the draft's placeholder frames cannot state — burstTickHitmarks 60/75/81/87/93 from a burstSpawnFrame of 55 are recorded here for when the PR lands)."
 			],
 			"description": "Generates an ice javelin with the power of Cryo, then directs it at enemies to deal multiple instances of Cryo DMG.\nWhen cast, the Traveler consumes all existing stacks of Frostglow, which in turn increases the DMG dealt by this Elemental Burst. When 8 stacks of **Frostglow** are consumed, the number of DMG instances caused by the javelins is also increased.\n\n**Radiance: Stellar Glimmer**: DMG from the current Elemental Burst is changed to Cryo DMG of the corresponding Stellar Glimmer reaction type."
 		}
@@ -273,10 +340,32 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"⛔ UNAUTHORED, BLOCKED ON THE SAME MISSING NUMBER AS THE SKILL. The +60 EM to the active character is triggered by an ice-crystal hit, and the crystal series has no stated cadence, so there is no event for the buff to hang off. It would be an active-target onHit buff on the Star's tick — the surface the summon-tick round wired in 2026-08-31 — and it becomes authorable the moment the interval is known.",
+				"[superseded 2026-09-15 — cadence stated by gcsim draft PR #2742] ⛔ UNAUTHORED, BLOCKED ON THE SAME MISSING NUMBER AS THE SKILL. The +60 EM to the active character is triggered by an ice-crystal hit, and the crystal series has no stated cadence, so there is no event for the buff to hang off. It would be an active-target onHit buff on the Star's tick — the surface the summon-tick round wired in 2026-08-31 — and it becomes authorable the moment the interval is known.",
 				"The 60 → 120 upgrade is a second gate on top ('when a character affected by the effect triggers a Stellar Glimmer reaction or deals Stellar Glimmer reaction DMG'), which the schema can express as a second mutually-exclusive effect; it waits on the same trigger."
 			],
-			"description": "The active character's Elemental Mastery is increased by 60 for 5s when an opponent is hit by an ice crystal fired by the Elemental Skill **Ice Fog Piercer**.\nAdditionally, when a character affected by the aforementioned effect triggers a Stellar Glimmer reaction or deals Stellar Glimmer reaction DMG, the Elemental Mastery boost described above will be increased to 120 for its duration."
+			"description": "The active character's Elemental Mastery is increased by 60 for 5s when an opponent is hit by an ice crystal fired by the Elemental Skill **Ice Fog Piercer**.\nAdditionally, when a character affected by the aforementioned effect triggers a Stellar Glimmer reaction or deals Stellar Glimmer reaction DMG, the Elemental Mastery boost described above will be increased to 120 for its duration.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"filter": {
+							"abilityName": "Frostpierce Star"
+						}
+					},
+					"duration": 5,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "em",
+					"value": 60,
+					"snapshottable": false,
+					"_curatorNotes": [
+						"+60 EM to the ACTIVE character for 5s on each ice-crystal hit (gcsim c2CB: a 5s EM stat mod on ActiveChar, refreshed per hit). Active-target tick buff on the Hunter's Precision precedent. The 60 → 120 upgrade (the affected character triggers or deals Stellar Glimmer DMG while buffed) is not modelled — its gate is an event on the RECEIVER inside the window, which no Condition expresses."
+					]
+				}
+			]
 		},
 		{
 			"id": "traveler_cryo__constellation__glacial_shard",
@@ -308,9 +397,48 @@
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"_curatorNotes": [
-				"⛔ UNAUTHORED, BLOCKED ON FROSTGLOW. The shape is a teamExcludingSelf `stellarGlimmerReactionBonus` buff on burst cast, `perStack` at 5 per stack with a 40 cap and a 15s window — but the stacks are granted by ice-crystal hits, and that series has no cadence (see the skill's notes). A perStack bar over a key nothing grants reads as a permanent zero, which is worse than no row."
+				"[superseded 2026-09-15 — Frostglow is a stack key now] ⛔ UNAUTHORED, BLOCKED ON FROSTGLOW. The shape is a teamExcludingSelf `stellarGlimmerReactionBonus` buff on burst cast, `perStack` at 5 per stack with a 40 cap and a 15s window — but the stacks are granted by ice-crystal hits, and that series has no cadence (see the skill's notes). A perStack bar over a key nothing grants reads as a permanent zero, which is worse than no row."
 			],
-			"description": "Every stack of **Frostglow** consumed when using the Elemental Burst **Frostbound Javelin** increases Stellar Glimmer reaction DMG dealt by other party members by 5% for 15s. A maximum 40% increase can be obtained in this way."
+			"description": "Every stack of **Frostglow** consumed when using the Elemental Burst **Frostbound Javelin** increases Stellar Glimmer reaction DMG dealt by other party members by 5% for 15s. A maximum 40% increase can be obtained in this way.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "teamExcludingSelf",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "stacks",
+								"key": "frostglow",
+								"min": 1
+							}
+						]
+					},
+					"source": "character",
+					"stat": "stellarGlimmerReactionBonus",
+					"value": {
+						"type": "perStack",
+						"key": "frostglow",
+						"per": 5,
+						"maxStacks": 8,
+						"cap": 40
+					},
+					"snapshottable": false,
+					"_curatorNotes": [
+						"5% Stellar Glimmer reaction DMG per Frostglow stack consumed by the burst, 15s, cap 40% (gcsim c6OnBurst: AddReactBonusMod over the three Stellar attack tags, 0.05 × stacks). \"Other party members\" → teamExcludingSelf. Read at cast from the pre-consume snapshot."
+					]
+				}
+			]
 		}
 	],
 	"meta": {
