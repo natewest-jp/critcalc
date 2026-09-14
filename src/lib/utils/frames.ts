@@ -73,6 +73,16 @@ export const swapFramesForPing = (pingMs: number): number =>
 const HIT_KEYS: ReadonlySet<string> = new Set(['E', 'Q', 'D', 'J', 'swap']);
 
 /**
+ * Resolve with THIS key to get the animation length — the "no cancel" answer.
+ * It is literally the `anim` field's name, so `frameAt` finds it as an explicit
+ * entry and never consults the hitmark tier. Human timing's "full animations"
+ * is its one author (`$lib/sim/humanTiming.ts`).
+ */
+export const FULL_ANIMATION_KEY = 'anim' as const;
+/** What a resolver may be asked for: the next action, or the whole animation. */
+export type CancelKey = import('$lib/types/ability').ActionKey | typeof FULL_ANIMATION_KEY;
+
+/**
  * Resolve one entry of a FrameMap: how long until the given next action.
  *
  * ⚓⚓ **THE ONE PLACE THE FALLBACK LIVES.** Before L4b this was written inline as

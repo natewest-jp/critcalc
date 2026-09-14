@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { constellations, loadout, ownership, savedNotations, siteSettings } from '$lib/stores';
 	import Mark from './Mark.svelte';
-	import { swapFramesForPing } from '$lib/utils/frames';
+	import { FPS, swapFramesForPing } from '$lib/utils/frames';
+	import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
 	import {
 		downloadBackup,
 		parseBackup,
@@ -124,6 +125,85 @@
 				>
 			</div>
 		</div>
+	</section>
+
+	<section class="sp-section">
+		<h2 class="kicker sp-section-title">Human timing</h2>
+		<p class="sp-lede">
+			The rotation planner is frame-perfect by default: every cancel lands on the first frame the
+			game allows, the way a macro plays. The <strong>Human</strong> button on the planner's toolbar times
+			it the way a person does. These settings say what that changes.
+		</p>
+
+		<div class="sp-row">
+			<span class="sp-label">
+				<span class="sp-name">What it adjusts</span>
+				<span class="sp-desc">
+					Padding adds a few frames before every input the game does not buffer — a skill after a
+					normal attack, an aimed shot, the first press after a swap. Full animations let each
+					action finish instead of cancelling it.
+				</span>
+			</span>
+			<div class="segment sp-segment" role="radiogroup" aria-label="What human timing adjusts">
+				{#each [['padding', 'Padding'], ['animations', 'Animations'], ['both', 'Both']] as const as [value, label] (value)}
+					<button
+						class="btn"
+						class:is-active={$siteSettings.humanTimingMode === value}
+						role="radio"
+						aria-checked={$siteSettings.humanTimingMode === value}
+						onclick={() => siteSettings.setHumanTiming({ humanTimingMode: value })}>{label}</button
+					>
+				{/each}
+			</div>
+		</div>
+
+		<div class="sp-row">
+			<span class="sp-label">
+				<span class="sp-name">Input padding</span>
+				<span class="sp-desc">
+					Frames added before each unbuffered input. KQM's starting point for a human player is 10;
+					lower it if you play tight, raise it if you don't.
+				</span>
+			</span>
+			<div class="sp-slider-ctl">
+				<input
+					class="slider sp-slider"
+					type="range"
+					min={HUMAN_PAD_MIN_F}
+					max={HUMAN_PAD_MAX_F}
+					step="1"
+					value={$siteSettings.humanTimingPadFrames}
+					oninput={(e) =>
+						siteSettings.setHumanTiming({ humanTimingPadFrames: Number(e.currentTarget.value) })}
+					aria-label="Input padding in frames"
+				/>
+				<span class="sp-slider-value"
+					>{$siteSettings.humanTimingPadFrames}f · {(
+						$siteSettings.humanTimingPadFrames / FPS
+					).toFixed(2)}s</span
+				>
+			</div>
+		</div>
+
+		<label class="sp-row">
+			<span class="sp-label">
+				<span class="sp-name">Show padding</span>
+				<span class="sp-desc">
+					Draw the padding as a hatched sliver on the active row, so you can see where the time
+					went.
+				</span>
+			</span>
+			<span class="toggle">
+				<input
+					type="checkbox"
+					checked={$siteSettings.showHumanPadding}
+					onchange={() =>
+						siteSettings.setHumanTiming({ showHumanPadding: !$siteSettings.showHumanPadding })}
+				/>
+				<span class="toggle-track"><span class="toggle-thumb"></span></span>
+				<span class="toggle-label">{$siteSettings.showHumanPadding ? 'On' : 'Off'}</span>
+			</span>
+		</label>
 	</section>
 
 	<section class="sp-section">
@@ -288,6 +368,15 @@
 	}
 
 	.sp-desc {
+		font-size: var(--fs-md);
+		color: var(--muted);
+		line-height: var(--lh-snug);
+	}
+
+	/* A section-level lede (Human timing): one paragraph before the rows, in
+	   the row description's voice — it introduces the plate the rows serve. */
+	.sp-lede {
+		margin: 0 0 0.75rem;
 		font-size: var(--fs-md);
 		color: var(--muted);
 		line-height: var(--lh-snug);

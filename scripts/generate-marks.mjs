@@ -239,7 +239,12 @@ const MARKS = {
 	 * survivable, but it is rendered at 16 in the card's hover bar rather than
 	 * the default 14 so it has room to resolve. If it has to shrink, it fails.
 	 */
-	compare: 'Scale'
+	compare: 'Scale',
+	/** The planner's Human timing plate (2026-09-14): a person's hand on the
+	 *  button. Chosen over `Pointer` (sparser ink), `PersonStanding` (reads as
+	 *  an accessibility affordance in a row of chart controls), and the pace
+	 *  animals (`Turtle`/`Snail` say "you are slow" about the reader). */
+	hand: 'Hand'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');

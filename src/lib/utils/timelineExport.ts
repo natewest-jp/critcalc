@@ -812,6 +812,25 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					const approxToken = slot.isApprox && kind !== 'skill' && kind !== 'burst';
 					if (kind === 'unset') {
 						return;
+					} else if (kind === 'pad') {
+						// Human timing's padding — mirrors `.rp-input-block--pad`: a
+						// 135° hatch of 2px white at .22 on a 6px period, over the
+						// strip, no divider, no label.
+						ctx!.save();
+						ctx!.beginPath();
+						ctx!.rect(bx, rowTop + 1, bw, snap.activeRowH - 2);
+						ctx!.clip();
+						ctx!.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+						ctx!.lineWidth = 2;
+						const h = snap.activeRowH - 2;
+						for (let d = -h; d < bw + h; d += 6) {
+							ctx!.beginPath();
+							ctx!.moveTo(bx + d, rowTop + 1 + h);
+							ctx!.lineTo(bx + d + h, rowTop + 1);
+							ctx!.stroke();
+						}
+						ctx!.restore();
+						return;
 					} else if (approxToken) {
 						const [dr, dg, db] = hexToRgb(UI_PROVISIONAL);
 						const grad = ctx!.createLinearGradient(bx, 0, bx + bw, 0);

@@ -15,7 +15,6 @@
 import type {
 	Ability,
 	AbilityVariant,
-	ActionKey,
 	CastAbility,
 	DurationModifier,
 	NormalAbility,
@@ -26,7 +25,7 @@ import {
 	getActiveDurationModifiers,
 	getSummonActivatesAt
 } from '$lib/types/ability';
-import { FPS, frameAt, framesOf } from '$lib/utils/frames';
+import { FPS, frameAt, framesOf, type CancelKey } from '$lib/utils/frames';
 import { GENERIC_CHARGE_FRAMES, GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
 import {
 	applyModifiers,
@@ -55,7 +54,7 @@ const Q_CAST_F = GENERIC_BURST.castAnim;
 export function resolveEQCastTime(
 	ability: CastAbility,
 	variant: AbilityVariant | undefined,
-	nextKey: ActionKey
+	nextKey: CancelKey
 ): number {
 	const frameMap = variant?.frames ?? ability.frames;
 	if (!frameMap) return ability.abilityType === 'burst' ? Q_CAST_F : E_CAST_F;
@@ -74,7 +73,7 @@ export function resolveEQCastTime(
 export function resolveNormalCastTime(
 	hits: NormalHit[] | undefined,
 	index: number,
-	nextKey: ActionKey
+	nextKey: CancelKey
 ): number | null {
 	if (!hits?.length) return null;
 	const hit = hits[Math.min(index, hits.length - 1)];
@@ -90,7 +89,7 @@ export function resolveNormalCastTime(
 export function resolveChargeCastTime(
 	ability: NormalAbility,
 	charToken: string,
-	nextKey: ActionKey,
+	nextKey: CancelKey,
 	isBow: boolean
 ): number | null {
 	if (isBow) {

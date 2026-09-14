@@ -34,6 +34,7 @@
 		rulerTicks
 	} from '$lib/timeline/barGeometry';
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
+	import type { HumanTiming } from '$lib/sim/humanTiming';
 	import type { CharReceivedBuffBar, MergedEffectDisplay, SlottedTrack } from '$lib/timeline/types';
 	import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
@@ -145,6 +146,18 @@
 	// ONE conversion in `$lib/utils/frames` (KQM's measured ping + 90 ms — ⛔ not
 	// gcsim's `ping × 0.12`, which this line carried until 2026-09-14).
 	let swapFrames = $derived(swapFramesForPing($siteSettings.swapPing));
+
+	// Human timing (2026-09-14): the band B plate turns the three Settings
+	// values into the ONE object the parse takes (`$lib/sim/humanTiming.ts`).
+	// The mode is a three-way choice, so a lit plate always does something.
+	let humanTiming = $derived.by((): HumanTiming | null => {
+		if (!$siteSettings.humanTiming) return null;
+		const mode = $siteSettings.humanTimingMode;
+		return {
+			padFrames: mode === 'animations' ? 0 : $siteSettings.humanTimingPadFrames,
+			fullAnimations: mode !== 'padding'
+		};
+	});
 
 	// ---------------------------------------------------------------------------
 	// Layout constants (px)
@@ -425,7 +438,8 @@
 				// Slot roster (post-P4 #5 arc): NB derivation + team-scoped buff
 				// context read the SLOTS, which can hold members never typed in
 				// the notation.
-				slotCharacters
+				slotCharacters,
+				humanTiming
 			);
 		} catch (e) {
 			console.error('parseNotation threw:', e);
@@ -1083,7 +1097,17 @@
 		)
 	);
 
-	let annotatedTracks = $derived(mapTracksToSlots(rotation.tracks, characterSlots));
+	// The padding sliver is a DISPLAY choice; the parse pads either way. Stripped
+	// here, once, so the live chart and the PNG snapshot read the same blocks.
+	let displayTracks = $derived(
+		$siteSettings.showHumanPadding
+			? rotation.tracks
+			: rotation.tracks.map((t) => ({
+					...t,
+					inputBlocks: t.inputBlocks.filter((b) => b.kind !== 'pad')
+				}))
+	);
+	let annotatedTracks = $derived(mapTracksToSlots(displayTracks, characterSlots));
 
 	// Group tracks by slot index for rendering character blocks
 	let tracksBySlot = $derived(
@@ -4457,6 +4481,21 @@
 	.rp-input-block--unset {
 		background: transparent;
 		box-shadow: none;
+	}
+	/* Human timing's padding (2026-09-14): the time a player spent between two
+	   inputs the game did not buffer. A hatched sliver OVER the active strip —
+	   the character is on field and idle, so the strip shows through and the
+	   hatch says "nothing was pressed". No divider: it is a gap, not a token.
+	   Mirrored by the PNG export's `pad` branch. */
+	.rp-input-block--pad {
+		background: repeating-linear-gradient(
+			135deg,
+			rgba(255, 255, 255, 0.22) 0 2px,
+			transparent 2px 6px
+		);
+		box-shadow: none;
+		border-right: none;
+		padding: 0;
 	}
 	/* ↻ 2026-08-11: 0.85 white → full (⚓ Nate, "all labels back to white"). The
 	   active strip is opaque so this is not a legibility-over-scene fix, but the

@@ -77,7 +77,11 @@ export type InputBlockKind =
 	| 'skill'
 	| 'burst'
 	| 'movement'
-	| 'unset';
+	| 'unset'
+	/** Human timing's padding: frames a player spent between two inputs the
+	 *  game did not buffer. Carries no label; drawn as a hatched sliver of the
+	 *  active strip. Present only when the planner's Human plate is lit. */
+	| 'pad';
 
 /** A discrete per-input building block in the active row. */
 export type InputBlock = {

@@ -13,6 +13,7 @@
  */
 
 import { browser } from '$app/environment';
+import { HUMAN_PAD_MAX_F, HUMAN_PAD_MIN_F } from '$lib/sim/humanTiming';
 import type { LoadoutEntry } from '$lib/stores';
 
 // Must stay in sync with the private key constants in stores.ts.
@@ -78,6 +79,23 @@ function sanitizeSiteSettings(v: unknown): Record<string, unknown> | undefined {
 		// Legacy frame-based backups: convert to ping-ms (gcsim: frames = ping × 0.12).
 		out.swapPing = clamp(Math.round(v.swapFrames / 0.12), 0, 200);
 	}
+	// Human timing (2026-09-14) — the plate and its three settings.
+	if (typeof v.humanTiming === 'boolean') out.humanTiming = v.humanTiming;
+	if (
+		v.humanTimingMode === 'padding' ||
+		v.humanTimingMode === 'animations' ||
+		v.humanTimingMode === 'both'
+	) {
+		out.humanTimingMode = v.humanTimingMode;
+	}
+	if (typeof v.humanTimingPadFrames === 'number' && Number.isFinite(v.humanTimingPadFrames)) {
+		out.humanTimingPadFrames = clamp(
+			Math.round(v.humanTimingPadFrames),
+			HUMAN_PAD_MIN_F,
+			HUMAN_PAD_MAX_F
+		);
+	}
+	if (typeof v.showHumanPadding === 'boolean') out.showHumanPadding = v.showHumanPadding;
 	return out;
 }
 
