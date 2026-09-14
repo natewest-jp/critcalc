@@ -352,14 +352,14 @@
 
 		{#snippet bandBLeft()}
 			<!-- ══ THE LEFT ZONE (⚓ NATE 2026-09-14) ═════════════════════════════
-			     The zoom cluster and Human timing, ahead of the rail. Band B had gone
-			     right-heavy — seven plates queued at the end and the rail's whole run
-			     empty but for the readout — so the SCALE controls and the one plate
-			     that changes the TOTAL sit on the left, and the right zone keeps what
-			     is DRAWN (the layers) and what is OPEN (the aside panels). Human
-			     timing is last, touching the rail: it is the control that moves the
-			     number at the rail's leading edge, so the cause sits beside its
-			     effect. The zone is plates on the bare scene like the right one. -->
+			     The zoom cluster, ahead of the rail. Band B had gone right-heavy —
+			     seven plates queued at the end and the rail's whole run empty but
+			     for the readout — so the SCALE controls sit on the left, and the
+			     right zone keeps what is DRAWN (the layers), what TIME the parse
+			     keeps (Human timing) and what is OPEN (the aside panels). ↻ Human
+			     timing rode here for one try and went back: beside the rail it read
+			     as part of the zoom cluster. The zone is plates on the bare scene
+			     like the right one. -->
 			<!-- ↻ ⚓ NATE 2026-08-17: THE ZOOM, AND NOTHING ELSE. This briefly meant
 			     the whole of band B's state — zoom, the notes panel and the two
 			     layers — which is a fair reading of "Reset view" and the wrong
@@ -410,29 +410,6 @@
 					onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="plus" /></button
 				>
 			</div>
-			<!-- ══ HUMAN TIMING (2026-09-14) ═══════════════════════════════════
-			     Its own group, NOT a third layer plate: the layers change what the
-			     chart DRAWS, this changes what time the parse KEEPS. ⚓ Nate: it
-			     sits BEFORE the layers, between the zoom and Buffs — after them it
-			     split Auras from the Log, which belong together. Same laws as
-			     the layers — never disabled, nothing resets it, per taste
-			     (`siteSettings`), ⛔ never in the `?r=` codec — and a lit plate is
-			     the announcement that the chart is padded. What it does is set in
-			     Settings (a three-way choice, so it can never be lit and idle);
-			     the model and its authority live in `$lib/sim/humanTiming.ts`. -->
-			<div class="rp-layers" role="group" aria-label="Human timing">
-				<button
-					class="btn btn--sm"
-					class:is-active={$siteSettings.humanTiming}
-					type="button"
-					aria-pressed={$siteSettings.humanTiming}
-					title="Time the rotation as a person plays it: pad the inputs the game does not buffer, let animations finish. Configure in Settings."
-					onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
-				>
-					<Mark name="hand" />
-					<span class="rp-band-label">Human timing</span>
-				</button>
-			</div>
 		{/snippet}
 
 		<!-- ══ BAND B IS A 3-UP NOW (⚓ NATE 2026-08-12) ══════════════════════════
@@ -466,6 +443,31 @@
 		{/snippet}
 
 		{#snippet bandBRight()}
+			<!-- ══ HUMAN TIMING (2026-09-14) ═══════════════════════════════════
+			     Its own group, NOT a third layer plate: the layers change what the
+			     chart DRAWS, this changes what time the parse KEEPS. ⚓ Nate, over
+			     three tries: it sits FIRST in the right zone, ahead of Buffs — after
+			     the layers it split Auras from the Log, which belong together, and
+			     on the left beside the rail it read as part of the zoom cluster.
+			     Same laws as
+			     the layers — never disabled, nothing resets it, per taste
+			     (`siteSettings`), ⛔ never in the `?r=` codec — and a lit plate is
+			     the announcement that the chart is padded. What it does is set in
+			     Settings (a three-way choice, so it can never be lit and idle);
+			     the model and its authority live in `$lib/sim/humanTiming.ts`. -->
+			<div class="rp-layers" role="group" aria-label="Human timing">
+				<button
+					class="btn btn--sm"
+					class:is-active={$siteSettings.humanTiming}
+					type="button"
+					aria-pressed={$siteSettings.humanTiming}
+					title="Time the rotation as a person plays it: pad the inputs the game does not buffer, let animations finish. Configure in Settings."
+					onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
+				>
+					<Mark name="hand" />
+					<span class="rp-band-label">Human timing</span>
+				</button>
+			</div>
 			<!-- ══ THE LAYERS (2026-08-17) ══════════════════════════════════════
 			     What the chart draws besides ability timings. Band B is the VIEW,
 			     so this is where they belong; ⛔ NOT the Settings modal, and ⛔ not
