@@ -1903,7 +1903,6 @@ const FRAMELESS_EXEMPT = new Set([
 	'illuga',
 	'kachina',
 	'lohen',
-	'prune',
 	'sandrone',
 	'zibai',
 	// 7.0, ingested 2026-08-31. ⛔ gcsim has NOTHING for Alyosha — not on
