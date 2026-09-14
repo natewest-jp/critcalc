@@ -33,7 +33,56 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 30,
+						"hit": 13,
+						"N": 14,
+						"C": 21
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 33,
+						"hit": 16,
+						"N": 21,
+						"C": 21
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 57,
+						"hit": 32,
+						"N": 45,
+						"C": 52
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 80,
+						"hit": 43,
+						"N": 66
+					}
+				}
+			],
+			"chargeFrames": {
+				"anim": 66,
+				"N": 63,
+				"E": 64,
+				"Q": 64,
+				"D": 23,
+				"J": 23,
+				"swap": 61
+			},
+			"_curatorNotes": [
+				"No chargedIcdWindow authored, deliberately: PR #2677 tags the charge ICDTagNone with ICDGroupPoleExtraAttack — the TAG governs (none = every hit applies), which our per-action model cannot say, and the swing is physical anyway. Revisit if the merged form changes the tag."
+			]
 		},
 		{
 			"id": "illuga__skill__dawnbearing_songbird",
@@ -46,10 +95,53 @@
 			"behavior": "instant",
 			"_curatorNotes": [
 				"genshin-db stub artifacts fixed: behavior 'persistent' → 'instant' and the spurious 'summon' tag removed. Aedon is a one-shot dash-strike (Tap: dashes forward; Hold: aim then dash), not a lingering summon/field — KQM quickguide + Fandom confirm no persistent entity.",
-				"On-cast Geo DMG unauthored (no FrameMap source — no gcsim, char stays FRAMELESS_EXEMPT). Sidecar Press DMG TL10 = 868.61% EM + 434.3% DEF; Hold DMG TL10 = 1085.76% EM + 542.88% DEF. Generates ~4.5 Geo particles on hit (Icy Veins / genshin.gg) — particle gen isn't modeled by the effect schema.",
-				"Casting this skill also grants the team the Lightkeeper's Oath buff — authored on the Torchforger's Covenant passive with an onCast trigger (fires on skill OR burst)."
+				"[superseded 2026-09-15 — frames from gcsim PR #2677] On-cast Geo DMG unauthored (no FrameMap source — no gcsim, char stays FRAMELESS_EXEMPT). Sidecar Press DMG TL10 = 868.61% EM + 434.3% DEF; Hold DMG TL10 = 1085.76% EM + 542.88% DEF. Generates ~4.5 Geo particles on hit (Icy Veins / genshin.gg) — particle gen isn't modeled by the effect schema.",
+				"Casting this skill also grants the team the Lightkeeper's Oath buff — authored on the Torchforger's Covenant passive with an onCast trigger (fires on skill OR burst).",
+				"FrameMaps + application[] written by migrate-frames-shape --seed / migrate-application-schema against gcsim PR #2677 \"Added Illuga\" (head db0153ae4, 2026-09-09, UNMERGED — review is CHANGES_REQUESTED on mechanics, not on frames; counts credited to caramielle). May shift before merge; re-run the writers when it lands.",
+				"Tap: hitmark 27, SetCDWithDelay(15*60, 24) → cooldownStartDelay 24. Both forms are ICDTagNone / ICDGroupDefault."
 			],
-			"description": "Summons the trusty messenger bird, \"Aedon.\" Different effects are produced depending on whether the skill is Tapped or Held.\n\nTap\nAedon dashes towards enemies in front, dealing Geo DMG to enemies it comes into contact with.\n\nHold\nEnter aiming mode, and command Aedon to dash towards opponents being aimed at, dealing Geo DMG to opponents it comes into contact with."
+			"description": "Summons the trusty messenger bird, \"Aedon.\" Different effects are produced depending on whether the skill is Tapped or Held.\n\nTap\nAedon dashes towards enemies in front, dealing Geo DMG to enemies it comes into contact with.\n\nHold\nEnter aiming mode, and command Aedon to dash towards opponents being aimed at, dealing Geo DMG to opponents it comes into contact with.",
+			"frames": {
+				"anim": 47,
+				"N": 38,
+				"Q": 38,
+				"D": 37,
+				"J": 39,
+				"swap": 36
+			},
+			"application": [
+				{
+					"frame": 27,
+					"element": "geo",
+					"units": 1
+				}
+			],
+			"cooldownStartDelay": 24,
+			"variants": [
+				{
+					"label": "Hold",
+					"input": ["hE"],
+					"frames": {
+						"anim": 58,
+						"N": 50,
+						"Q": 50,
+						"D": 50,
+						"J": 49,
+						"swap": 49
+					},
+					"cooldownStartDelay": 33,
+					"application": [
+						{
+							"frame": 36,
+							"element": "geo",
+							"units": 1
+						}
+					],
+					"_curatorNotes": [
+						"Hold variant read by hand from PR #2677 skill.go (skillHoldFrames = InitAbilSlice(58); N/Q 50, D 50, J 49, swap 49; hitmark 36; SetCDWithDelay(15*60, 33)). The migration does not seed variants. Effects inherit the base (Hold only aims Aedon; ICDTagNone, 25 durability — same shape as Tap)."
+					]
+				}
+			]
 		},
 		{
 			"id": "illuga__burst__shadowless_reflection",
@@ -64,12 +156,27 @@
 			"_curatorNotes": [
 				"genshin-db stub artifact fixed: behavior 'stance' → 'instant' (removed the stance 'duration' field). Haunted Night's Oriole-Song is a 20s buff STATE, not a weapon stance: it does not convert Illuga's normals and it persists while Illuga is OFF-field (stacks are consumed by nearby ACTIVE party members' Geo hits). KQM quickguide: 'No stance/field mode.' The 20s window surfaces via the Torchforger's Covenant / C4 buff bars (each duration 20).",
 				"Nightingale's Song DMG bonus deliberately NOT authored as an effect. It is a per-hit FLAT damage add scoped to the Geo element (base TL10 = 60.5% of Illuga's EM; Lunar-Crystallize TL10 = 406.7% of EM; A4 adds a further 7/14/24% EM base and 48/96/160% EM Lunar-Crystallize for 1/2/3 Hydro-or-Geo party members). The Stat vocabulary has no element-scoped flat-DMG key (flat-DMG stats are attack-class-scoped: normalFlatDmg…burstFlatDmg; lunarCrystallizeFlatDmg exists but authoring only the Lunar-Crystallize sliver while the far-more-common base Geo portion stays unmodelable would misrepresent the kit). Stubbed with a user caveat instead — see flags.",
-				"On-cast AoE Geo DMG unauthored (no FrameMap source). Sidecar Skill DMG TL10 = 1488.96% EM + 744.48% DEF. Burst grants 21 base Nightingale's Song stacks + 5 per Geo Construct on the field at cast or created during the window, max +15 (so up to 36 stacks). Duration 20s, CD 15s, energy 60 — all confirmed vs sidecar.",
+				"[superseded 2026-09-15 — frames from gcsim PR #2677] On-cast AoE Geo DMG unauthored (no FrameMap source). Sidecar Skill DMG TL10 = 1488.96% EM + 744.48% DEF. Burst grants 21 base Nightingale's Song stacks + 5 per Geo Construct on the field at cast or created during the window, max +15 (so up to 36 stacks). Duration 20s, CD 15s, energy 60 — all confirmed vs sidecar.",
 				"Casting this burst grants the team Lightkeeper's Oath — authored on Torchforger's Covenant (onCast trigger, fires on skill or burst).",
 				"[A7] Dropped-from-caveat game-term definition: Lunar-Crystallize = a Geo reaction against a Moon-charged aura.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — It talks about a per-hit FLAT DMG add — a damage magnitude, which the tool never renders for anyone (damage math is constitutionally out of scope). The 20s window itself IS on screen: the A1 passive's onCast buffs (critRate/geoCritDmg/em, duration 20) and the C4 DEF buff all fire on the burst cast and draw 20s bars, which the caveat's own second sentence admits. Second sentence is pure working-behavior. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — It talks about a per-hit FLAT DMG add — a damage magnitude, which the tool never renders for anyone (damage math is constitutionally out of scope). The 20s window itself IS on screen: the A1 passive's onCast buffs (critRate/geoCritDmg/em, duration 20) and the C4 DEF buff all fire on the burst cast and draw 20s bars, which the caveat's own second sentence admits. Second sentence is pure working-behavior. Category: invisible-omission.",
+				"FrameMaps + application[] written by migrate-frames-shape --seed / migrate-application-schema against gcsim PR #2677 \"Added Illuga\" (head db0153ae4, 2026-09-09, UNMERGED — review is CHANGES_REQUESTED on mechanics, not on frames; counts credited to caramielle). May shift before merge; re-run the writers when it lands.",
+				"Hitmark 48, SetCD 15s (no delay). The burst status (Nightingale's Song) is 20s in the PR."
 			],
-			"description": "Light the lamp, dealing AoE Geo DMG, and gain Haunted Night's Oriole-Song effect for 20s. When this effect is active, Illuga gains 21 stacks of **Nightingale's Song**. When Normal Attacks, Charged Attacks, Plunging Attacks, Elemental Skills, and Elemental Bursts of nearby active party members deal Geo DMG to opponents, 1 stack of Nightingale's Song is consumed to increase the DMG dealt. Increase in DMG is based on Illuga's Elemental Mastery. If DMG is inflicted by Lunar-Crystallize, DMG dealt will increase further.\nWhen Geo DMG dealt in this manner hits multiple opponents, multiple stacks of Nightingale's Song will be consumed, depending on how many opponents are hit.\n\nAdditionally, if there are Geo Constructs created by nearby party members on the battlefield while Illuga unleashes his Elemental Burst, or when nearby party members create Geo Constructs while Haunted Night's Oriole-Song is active, every Geo Construct on the battlefield will allow Illuga to gain 5 additional stacks of Nightingale's Song. Within 20s after unleashing his Elemental Burst, Illuga can gain a maximum of 15 additional stacks of Nightingale's Song this way.\n\nWhen all stacks of Nightingale's Song have been consumed, or when the state's duration ends, the Haunted Night's Oriole-Song effect will end."
+			"description": "Light the lamp, dealing AoE Geo DMG, and gain Haunted Night's Oriole-Song effect for 20s. When this effect is active, Illuga gains 21 stacks of **Nightingale's Song**. When Normal Attacks, Charged Attacks, Plunging Attacks, Elemental Skills, and Elemental Bursts of nearby active party members deal Geo DMG to opponents, 1 stack of Nightingale's Song is consumed to increase the DMG dealt. Increase in DMG is based on Illuga's Elemental Mastery. If DMG is inflicted by Lunar-Crystallize, DMG dealt will increase further.\nWhen Geo DMG dealt in this manner hits multiple opponents, multiple stacks of Nightingale's Song will be consumed, depending on how many opponents are hit.\n\nAdditionally, if there are Geo Constructs created by nearby party members on the battlefield while Illuga unleashes his Elemental Burst, or when nearby party members create Geo Constructs while Haunted Night's Oriole-Song is active, every Geo Construct on the battlefield will allow Illuga to gain 5 additional stacks of Nightingale's Song. Within 20s after unleashing his Elemental Burst, Illuga can gain a maximum of 15 additional stacks of Nightingale's Song this way.\n\nWhen all stacks of Nightingale's Song have been consumed, or when the state's duration ends, the Haunted Night's Oriole-Song effect will end.",
+			"frames": {
+				"anim": 65,
+				"D": 64,
+				"J": 64,
+				"swap": 62
+			},
+			"application": [
+				{
+					"frame": 48,
+					"element": "geo",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
