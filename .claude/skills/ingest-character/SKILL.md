@@ -269,8 +269,16 @@ main` (the checkout drifts commits behind; a released char is often already
    main — see step 1). To read a PR's frame source without checking it out:
    `git -C ~/Code/gcsim fetch origin pull/<PR#>/head && git -C ~/Code/gcsim show FETCH_HEAD:internal/characters/<name>/attack.go`
    (likewise `skill.go`, `burst.go`, `*_gen.go` for the sidecar cross-check).
-   Note in `_curatorNotes` that frames came from an unmerged PR (#N) — they may
-   shift before merge.
+   ⚓ Better (2026-09-15): check the PR head out in the clone and run the
+   WRITERS against it — `git -C ~/Code/gcsim fetch origin pull/<PR#>/head:pr-<PR#>
+&& git -C ~/Code/gcsim checkout pr-<PR#>`, then the three commands above,
+   then `git -C ~/Code/gcsim checkout main`. The shim builds against whatever
+   is checked out (a July-based PR still compiled against the Go 1.27 shim), so
+   nothing is hand-read. ⚠️ Read the PR's review thread first: a
+   `InitAbilSlice(733)` can be a summon's lifetime standing in as an animation
+   (Kachina), and a "Placeholder using DMC frames" comment means NO frames at
+   all (Cryo Traveler's draft). Note in `_curatorNotes` that frames came from
+   an unmerged PR (#N) — they may shift before merge.
 3. **Neither hits** → genuinely no gcsim source yet. Author everything else
    (Stages 1–3: cooldowns, energy, durations, all effects, tags — FrameMaps,
    `application[]` and gcsim-only summon tick cadences are blocked) and leave
@@ -287,16 +295,31 @@ values directly — the cancel slice is `action.Info.Frames(next)` and the
 animation length is index 0 of it, so there is nothing to interpret. Run:
 
 ```
-node scripts/audit-gcsim-frames.mjs --char <id>          # what gcsim says vs what we ship
-node scripts/migrate-frames-shape.mjs --write --char <id>       # FrameMaps
-node scripts/migrate-application-schema.mjs --write --char <id> # application[]
+node scripts/audit-gcsim-frames.mjs --char <id>                  # what gcsim says vs what we ship
+node scripts/migrate-frames-shape.mjs --seed --write --char <id>  # FrameMaps (⚠️ --seed for a FRAMELESS char)
+node scripts/migrate-application-schema.mjs --write --char <id>   # application[]
 ```
+
+⚠️⚠️ **`--seed` is what makes this true for a frameless character (2026-09-15).**
+The migration only ever REWROTE maps that existed, so a stub with `hits: []`
+and no `frames` got nothing from it — the recipe claimed otherwise and was
+wrong for exactly the character it was written for. `--seed` creates an empty
+slot wherever the dumper has a covered reading (N1…Nk, C, P, lP, E, Q, and a
+conditioned sibling via its `drivers.json` row) and deletes any seed the pass
+could not fill. ⛔ It does not create VARIANTS — a hold form (`hE`) is a
+hand-read entry with an `input` and `label` (Illuga, 2026-09-15). Nor does it
+write `cooldownStartDelay` — read `SetCDWithDelay`'s third argument yourself.
 
 ⚠️ **A new character needs `anim`, `hit` AND `application[]`, and the last is
 the one nothing else will notice is missing.** `characterLint` requires `anim`;
 nothing requires an application list, and a character without one silently
 falls back to "applies its element at the cast", which is the defect the gauge
-round exists to remove. The migration writes all three.
+round exists to remove. ⚠️ Read the written application[] against the source
+before committing it: a capture that needs a PREREQUISITE (a sibling behind a
+state) also sees the prerequisite's own summon ticking through the horizon —
+the Furina stale-application class — and a hit gcsim authors with no
+`Durability` (a direct Stellar-Conduct hit) is listed nominal but applies
+nothing (Odette's Coda, 2026-09-15).
 
 **Shape reminders the migration assumes you know (L4b/L4c, and later):**
 
