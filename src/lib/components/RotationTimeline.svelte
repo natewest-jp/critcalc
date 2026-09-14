@@ -4488,14 +4488,15 @@
 	   hatch says "nothing was pressed". No divider: it is a gap, not a token.
 	   Mirrored by the PNG export's `pad` branch. */
 	.rp-input-block--pad {
-		/* 🎛️ ↻ Nate 2026-09-14: "slightly more unobtrusive" — 2px at .22 on a
-		   6px period read as a PATTERN; 1px at .14 on an 8px period reads as a
-		   texture. The three numbers are mirrored by name in timelineExport's
-		   PAD_HATCH_* constants. */
+		/* 🎛️ ↻ Nate 2026-09-14, two tries: 2px at .22 on a 6px period was
+		   "slightly" too loud; 1px at .14 on 8px (the BOOKMARK — a texture, kept
+		   as the fallback) lost the weight he liked. This is the 2px hatch made
+		   fainter, not thinner. The three numbers are mirrored by name in
+		   timelineExport's PAD_HATCH_* constants. */
 		background: repeating-linear-gradient(
 			135deg,
-			rgba(255, 255, 255, 0.14) 0 1px,
-			transparent 1px 8px
+			rgba(255, 255, 255, 0.12) 0 2px,
+			transparent 2px 6px
 		);
 		box-shadow: none;
 		border-right: none;

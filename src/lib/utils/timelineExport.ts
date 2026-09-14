@@ -85,9 +85,9 @@ import type { AuraKey } from '$lib/utils/gauge';
 // app.css), so the chart's ground went #262c38 → #1f2635.
 /** 🎛️ The human-padding hatch (2026-09-14) — MIRRORS `.rp-input-block--pad` in
  *  RotationTimeline: stroke width, alpha and period. Change both or neither. */
-const PAD_HATCH_W = 1;
-const PAD_HATCH_ALPHA = 0.14;
-const PAD_HATCH_PERIOD = 8;
+const PAD_HATCH_W = 2;
+const PAD_HATCH_ALPHA = 0.12;
+const PAD_HATCH_PERIOD = 6;
 
 const CHART_BG = '#1f2635'; // --rp-chart-bg → --surface-well → --slate-900
 // ↻ 2026-08-10: both moved because --border did — the line roles dropped to the

@@ -350,37 +350,16 @@
 			<DocumentActions />
 		{/snippet}
 
-		<!-- ══ BAND B IS A 3-UP NOW (⚓ NATE 2026-08-12) ══════════════════════════
-		     "Move both the NOTES and the zoom slider and its +/- buttons to
-		     outside the band B's glass like MY ROSTER ∨ on the Team Builder — but
-		     please keep the band extending to fill the distance. Basically,
-		     maintaining one layer of glass, not stacked glass."
-
-		     The controls were glass plates sitting INSIDE a glass band, so every
-		     one of them composited two stops of the same material — the thing the
-		     Team Builder's split fixed on its own band a round earlier. Filling
-		     bandBCenter switches ToolStack to the 3-up: the BAND stops painting,
-		     the centre zone becomes the only ground in the row, and the flanking
-		     controls become plates on the bare scene.
-
-		     ⚠ WHAT GOES IN THE RAIL IS THE READOUT, not nothing. Nate asked for
-		     the band to keep "extending to fill the distance", and an empty strip
-		     would do that — but the Total is the one thing here that is not a
-		     control, and a strip is exactly what a readout wants to sit on. The
-		     left zone is therefore empty and the rail takes the whole run from
-		     the content margin to the controls. -->
-		{#snippet bandBCenter()}
-			<!-- What the chart is showing: how long the rotation runs. A readout,
-			     not a control — it leads band B the way the tabs lead band A. -->
-			{#if pv.totalDuration > 0}
-				<span class="rp-total">
-					<span class="rp-total-key">Total</span>
-					{Math.round(pv.totalDuration * 10) / 10}s
-				</span>
-			{/if}
-		{/snippet}
-
-		{#snippet bandBRight()}
+		{#snippet bandBLeft()}
+			<!-- ══ THE LEFT ZONE (⚓ NATE 2026-09-14) ═════════════════════════════
+			     The zoom cluster and Human timing, ahead of the rail. Band B had gone
+			     right-heavy — seven plates queued at the end and the rail's whole run
+			     empty but for the readout — so the SCALE controls and the one plate
+			     that changes the TOTAL sit on the left, and the right zone keeps what
+			     is DRAWN (the layers) and what is OPEN (the aside panels). Human
+			     timing is last, touching the rail: it is the control that moves the
+			     number at the rail's leading edge, so the cause sits beside its
+			     effect. The zone is plates on the bare scene like the right one. -->
 			<!-- ↻ ⚓ NATE 2026-08-17: THE ZOOM, AND NOTHING ELSE. This briefly meant
 			     the whole of band B's state — zoom, the notes panel and the two
 			     layers — which is a fair reading of "Reset view" and the wrong
@@ -389,6 +368,9 @@
 			     sweeping them away as a side effect of fixing your zoom does more
 			     than you asked. One button, one job, and the label says which.
 			     It sits left of the zoom group because that is what it undoes.
+			     ↻ ⚓ Nate 2026-09-14: the word is "Reset" now, not "Reset zoom" —
+			     the cluster moved to the band's LEFT, away from every other
+			     button, so the slider beside it says what is being reset.
 			     Inert at the resting scale, like the zoom buttons at their
 			     limits. -->
 			<button
@@ -400,7 +382,7 @@
 				onclick={() => pv.reset()}
 			>
 				<Mark name="resetZoom" />
-				<span class="rp-band-label">Reset zoom</span>
+				<span class="rp-band-label">Reset</span>
 			</button>
 			<div class="rp-zoom" role="group" aria-label="Zoom">
 				<button
@@ -448,9 +430,42 @@
 					onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
 				>
 					<Mark name="hand" />
-					<span class="rp-band-label">Human</span>
+					<span class="rp-band-label">Human timing</span>
 				</button>
 			</div>
+		{/snippet}
+
+		<!-- ══ BAND B IS A 3-UP NOW (⚓ NATE 2026-08-12) ══════════════════════════
+		     "Move both the NOTES and the zoom slider and its +/- buttons to
+		     outside the band B's glass like MY ROSTER ∨ on the Team Builder — but
+		     please keep the band extending to fill the distance. Basically,
+		     maintaining one layer of glass, not stacked glass."
+
+		     The controls were glass plates sitting INSIDE a glass band, so every
+		     one of them composited two stops of the same material — the thing the
+		     Team Builder's split fixed on its own band a round earlier. Filling
+		     bandBCenter switches ToolStack to the 3-up: the BAND stops painting,
+		     the centre zone becomes the only ground in the row, and the flanking
+		     controls become plates on the bare scene.
+
+		     ⚠ WHAT GOES IN THE RAIL IS THE READOUT, not nothing. Nate asked for
+		     the band to keep "extending to fill the distance", and an empty strip
+		     would do that — but the Total is the one thing here that is not a
+		     control, and a strip is exactly what a readout wants to sit on.
+		     ↻ 2026-09-14: the left zone is no longer empty (see bandBLeft), so
+		     the rail runs from the zoom cluster to the layer plates. -->
+		{#snippet bandBCenter()}
+			<!-- What the chart is showing: how long the rotation runs. A readout,
+			     not a control — it leads band B the way the tabs lead band A. -->
+			{#if pv.totalDuration > 0}
+				<span class="rp-total">
+					<span class="rp-total-key">Total</span>
+					{Math.round(pv.totalDuration * 10) / 10}s
+				</span>
+			{/if}
+		{/snippet}
+
+		{#snippet bandBRight()}
 			<!-- ══ THE LAYERS (2026-08-17) ══════════════════════════════════════
 			     What the chart draws besides ability timings. Band B is the VIEW,
 			     so this is where they belong; ⛔ NOT the Settings modal, and ⛔ not
