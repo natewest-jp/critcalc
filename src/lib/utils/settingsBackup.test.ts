@@ -96,6 +96,27 @@ describe('parseBackup', () => {
 		expect(res.data['critcalc:siteSettings']).toEqual({ swapPing: 200 });
 	});
 
+	it('sanitizes human timing: clamps the pad, drops a bad mode, keeps the booleans', () => {
+		const res = parseBackup(
+			envelope({
+				'critcalc:siteSettings': {
+					humanTiming: true,
+					humanTimingMode: 'faster',
+					humanTimingPadFrames: 99,
+					showHumanPadding: false
+				}
+			})
+		);
+		expect(res.ok).toBe(true);
+		if (!res.ok) return;
+		// bad mode dropped; pad clamped to the slider's ceiling; booleans kept
+		expect(res.data['critcalc:siteSettings']).toEqual({
+			humanTiming: true,
+			humanTimingPadFrames: 20,
+			showHumanPadding: false
+		});
+	});
+
 	it('migrates a legacy frame-based backup to swap ping', () => {
 		const res = parseBackup(envelope({ 'critcalc:siteSettings': { swapFrames: 12 } }));
 		expect(res.ok).toBe(true);

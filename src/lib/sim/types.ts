@@ -15,6 +15,7 @@
  */
 
 import type { Element } from '$lib/types/ability';
+import type { HumanPadAfter } from './humanTiming';
 import type { TimelineEvent, TimelineWindow } from '$lib/utils/rotationEvents';
 import type { AuraApplication } from './aura';
 import type { SeriesInterval } from '$lib/utils/gauge';
@@ -96,6 +97,8 @@ export type InputBlock = {
 	 *  on physical inputs, on movement, and on E/Q blocks (a cast always carries
 	 *  the caster's element, so the track answers for those). */
 	element?: Element;
+	/** `kind: 'pad'` only — what the padding followed, for the tooltip. */
+	padAfter?: HumanPadAfter;
 };
 
 export type CharacterTrack = {

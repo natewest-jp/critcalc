@@ -390,7 +390,7 @@
 					type="button"
 					aria-label="Zoom out"
 					disabled={pv.scale <= ZOOM_MIN}
-					onclick={() => pv.zoomBy(-ZOOM_STEP)}><Mark name="minus" /></button
+					onclick={() => pv.zoomBy(-ZOOM_STEP)}><Mark name="zoomOut" /></button
 				>
 				<input
 					type="range"
@@ -407,7 +407,7 @@
 					type="button"
 					aria-label="Zoom in"
 					disabled={pv.scale >= ZOOM_MAX}
-					onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="plus" /></button
+					onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="zoomIn" /></button
 				>
 			</div>
 		{/snippet}
@@ -772,20 +772,40 @@
 		width: 88px;
 	}
 
-	/* ══ THE FOLD (responsive round, 2026-09-05) ═══════════════════════════════
-	   Below BP.compact ($lib/breakpoints.ts — 40rem) band B's controls drop
-	   their WORDS and keep their MARKS, and the zoom loses its slider (−/+ step
-	   the same scale). This end zone is a fixed 564px — the planner's whole
-	   narrow-width problem once the bench is horizontal — and marks alone bring
-	   it to ~210px, which fits beside the Total readout down to 320.
+	/* ══ THE FOLD (responsive round, 2026-09-05; ↻ moved 2026-09-14) ═══════════
+	   Band B's controls drop their WORDS and keep their MARKS, and the zoom
+	   loses its slider (−/+ step the same scale). ↻ ⚓ Nate 2026-09-14: the fold
+	   is BP.toolMin ($lib/breakpoints.ts — 54rem), not BP.compact (40rem), and
+	   the reason is measured. The Human timing plate took the full form from
+	   564px of plates to ~654, and the rail needs ~92 for the Total, so the row
+	   wants ~754px of band. The band is the viewport less 32 below toolMin, so
+	   words fit only from 786 — and the range 641–786 is where the bench is
+	   already a ROW, so folding with it costs nothing new. Above toolMin the
+	   band also loses the bench COLUMN (~276), so even without the slider the
+	   full form wants a ~938px viewport: 864–938 is a KNOWN 74px window where
+	   the Total's last digits sit under the first right-zone plate. ⛔ Not
+	   closed with a new rung (a fact about one row is not a breakpoint) and
+	   ⛔ not with a container query (layout containment would trap the plates'
+	   popovers).
 	   ⚠ The layer plates are NOT folded into a menu, and that ruling stands on
 	   a phone for the same reason it was made: a stripped chart must ANNOUNCE
 	   itself, and a lit mark announces exactly as a lit word does. What a
 	   reader loses is the word, and the `title`s still carry it.
 	   ⚠ Literal from the table, by necessity. */
-	@media (max-width: 40rem) {
+	@media (max-width: 54rem) {
 		.rp-band-label,
 		.rp-zoom-slider {
+			display: none;
+		}
+	}
+	/* Below BP.compact (40rem) the marks-only row still wants ~354px of band
+	   and a 320 phone gives 288, so the Total spilled 20px under the Human
+	   timing plate on the very form Nate verified. Two things go: the Reset
+	   plate (the steppers still walk the scale back) and the Total's KEY (the
+	   number alone, beside the zoom, reads as the length). Fits from 323. */
+	@media (max-width: 40rem) {
+		.rp-reset,
+		.rp-total-key {
 			display: none;
 		}
 	}

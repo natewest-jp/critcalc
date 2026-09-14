@@ -35,6 +35,7 @@
 	} from '$lib/timeline/barGeometry';
 	import { FPS, swapFramesForPing } from '$lib/utils/frames';
 	import type { HumanTiming } from '$lib/sim/humanTiming';
+	import type { InputBlock } from '$lib/sim/types';
 	import type { CharReceivedBuffBar, MergedEffectDisplay, SlottedTrack } from '$lib/timeline/types';
 	import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
@@ -1108,6 +1109,27 @@
 				}))
 	);
 	let annotatedTracks = $derived(mapTracksToSlots(displayTracks, characterSlots));
+
+	/** The padding sliver's tooltip — names the pixel: how long, and what it
+	 *  followed. A swap's pad is the wait for the incoming character to appear. */
+	function padTitle(block: InputBlock): string {
+		const f = block.duration;
+		const s = (f / FPS).toFixed(2);
+		const after: Record<NonNullable<InputBlock['padAfter']>, string> = {
+			normal: 'a normal attack',
+			charged: 'a charged attack',
+			plunge: 'a plunge',
+			skill: 'a skill',
+			burst: 'a burst',
+			dash: 'a dash',
+			jump: 'a jump',
+			swap: 'the swap'
+		};
+		const what = block.padAfter ? after[block.padAfter] : 'an action';
+		return block.padAfter === 'swap'
+			? `Human timing: ${f} frames (${s}s) after the swap — nothing buffers until the new character appears.`
+			: `Human timing: ${f} frames (${s}s) after ${what}, before an input the game does not buffer.`;
+	}
 
 	// Group tracks by slot index for rendering character blocks
 	let tracksBySlot = $derived(
@@ -2697,9 +2719,11 @@
 												style:border-right={bi === track.inputBlocks.length - 1
 													? 'none'
 													: undefined}
-												title={isApprox && block.kind !== 'skill' && block.kind !== 'burst'
-													? 'No frame data yet — cast animations and normal attacks use generic timings.'
-													: undefined}
+												title={block.kind === 'pad'
+													? padTitle(block)
+													: isApprox && block.kind !== 'skill' && block.kind !== 'burst'
+														? 'No frame data yet — cast animations and normal attacks use generic timings.'
+														: undefined}
 											>
 												{#each block.parts as part (part)}
 													<span

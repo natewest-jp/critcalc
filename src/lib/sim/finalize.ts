@@ -140,7 +140,8 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 				start: pad.start,
 				duration: pad.duration,
 				parts: [],
-				kind: 'pad'
+				kind: 'pad',
+				padAfter: pad.after
 			});
 		}
 		for (const [track, items] of trackItems) {
