@@ -32,7 +32,59 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 4 consecutive spear strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to lunge forward, dealing damage to opponents along the way.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 31,
+						"hit": 11,
+						"N": 18,
+						"C": 20
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 52,
+						"hit": 18,
+						"N": 41,
+						"C": 41
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 52,
+						"hit": 21,
+						"N": 44,
+						"C": 45
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 51,
+						"hit": 16
+					}
+				}
+			],
+			"chargeFrames": {
+				"anim": 55,
+				"N": 50,
+				"E": 50,
+				"Q": 50,
+				"D": 50,
+				"J": 50,
+				"swap": 49
+			},
+			"chargedIcdWindow": {
+				"timer": 30
+			},
+			"_curatorNotes": [
+				"FrameMaps + application[] written by migrate-frames-shape --seed / migrate-application-schema against gcsim PR #2697 \"feat: add Kachina\" (head 72cff3530, 2026-07-25, UNMERGED — CHANGES_REQUESTED since 2026-08-12 and stale; counts credited to caramielle). May shift before merge; re-run the writers when it lands. ⚠️ Reviewers flagged that the mounted dash/charged frames are missing and the mount/dismount recast slice is a flat 30f, so neither is authored here.",
+				"Charged-attack element-application ICD: the PR tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow on the 16-character precedent (Xiangling, Hu Tao, Zhongli …); the swing itself is physical, so it only matters under an infusion."
+			]
 		},
 		{
 			"id": "kachina__skill__go_go_turbo_twirly",
@@ -56,7 +108,9 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 2
+								"interval": 1.967,
+								"firstTickDelay": 2.383,
+								"tickCap": 6
 							},
 							"scaling": 114.8,
 							"stat": "def",
@@ -66,11 +120,27 @@
 								"ratio": 20
 							},
 							"_curatorNotes": [
-								"Independent (dismounted) slam: 114.8% DEF @ talent level 10 (sidecar 'Turbo Twirly Independent DMG', index 9). flatScaling def ratio 20 folds in A4 'The Weight of Stone' (+20% of Kachina's DEF to Turbo Twirly's DMG); assumed active per the max-investment authoring convention (A4 gate not expressed so it isn't dropped at A0-A3). Mounted normal-attack slam is a separate, higher row (158.0% DEF @T10) driven on-field and not authored here. Independent slam cadence 'once every 2 seconds' is web-verified (Fandom / KQM quick guide). Summon duration 12s is APPROXIMATE — Turbo Twirly's lifetime is gated by Kachina's 60 Nightsoul points draining per action (moving/jumping/attacking), NOT a fixed timer; no gcsim source exists to pin the independent-only lifetime and it is thinly documented. Snapshot behavior (DEF snapshot vs dynamic) unverified — flagged."
+								"Independent (dismounted) slam: 114.8% DEF @ talent level 10 (sidecar 'Turbo Twirly Independent DMG', index 9). flatScaling def ratio 20 folds in A4 'The Weight of Stone' (+20% of Kachina's DEF to Turbo Twirly's DMG); assumed active per the max-investment authoring convention (A4 gate not expressed so it isn't dropped at A0-A3). Mounted normal-attack slam is a separate, higher row (158.0% DEF @T10) driven on-field and not authored here. Independent slam cadence 'once every 2 seconds' is web-verified (Fandom / KQM quick guide). Summon duration 12s is APPROXIMATE — Turbo Twirly's lifetime is gated by Kachina's 60 Nightsoul points draining per action (moving/jumping/attacking), NOT a fixed timer; no gcsim source exists to pin the independent-only lifetime and it is thinly documented. Snapshot behavior (DEF snapshot vs dynamic) unverified — flagged.",
+								"↻ 2026-09-15, cadence from PR #2697 skill.go: the independent slam is queued 143f after the cast, then every 118f (1.967s); each hit spends 10 of the 60 Nightsoul points, so exactly SIX land when nothing else drains them — the oracle's 6× Turbo Twirly. tickCap 6 is a COUNT on the kit's approximate 12s window (the sixth lands at 12.22s, which the cap's one-interval widening admits); ⛔ never nudge the duration."
 							]
 						}
 					]
 				}
+			],
+			"frames": {
+				"anim": 57,
+				"N": 56,
+				"E": 51,
+				"Q": 30,
+				"D": 55,
+				"J": 57,
+				"swap": 44
+			},
+			"application": [],
+			"cooldownStartDelay": 10,
+			"_curatorNotes": [
+				"FrameMaps + application[] written by migrate-frames-shape --seed / migrate-application-schema against gcsim PR #2697 \"feat: add Kachina\" (head 72cff3530, 2026-07-25, UNMERGED — CHANGES_REQUESTED since 2026-08-12 and stale; counts credited to caramielle). May shift before merge; re-run the writers when it lands. ⚠️ Reviewers flagged that the mounted dash/charged frames are missing and the mount/dismount recast slice is a flat 30f, so neither is authored here.",
+				"⚠️ anim is a STAND-IN: the PR writes InitAbilSlice(733) — the Turbo Twirly's whole 12.2s lifetime, so gcsim's queue treats the mount as one long action (the Ifa 631-swap idiom). Painting a 733f cast bar would be wrong, so anim is the largest MEASURED cancel (J 57); N 56 / E 51 / Q 30 / D 55 / swap 44 are the PR's. SetCDWithDelay(skill CD, 10) → cooldownStartDelay 10. The cast itself applies nothing (application []); every Geo hit is the Twirly's."
 			]
 		},
 		{
@@ -84,10 +154,28 @@
 			"energyCost": 70,
 			"effects": [],
 			"_curatorNotes": [
-				"The on-cast AoE nuke (692.6% DEF @ talent level 10, sidecar 'Skill DMG' index 9) is Kachina's on-field burst hit and belongs in a FrameMap, which cannot be authored — no gcsim source exists for Kachina (frameless / FRAMELESS_EXEMPT). duration:12 represents the Turbo Drill Field window. The field's own utility (larger Turbo Twirly AoE + movement speed while mounted) is not a modelable team stat buff; its decision-relevant buff is the C4 active-character DEF% (authored on the C4 entry). 'summon' tag retained for the field/construct it deploys. CD 18s, energy 70, field 12s all confirmed against the talent sidecar."
+				"[superseded 2026-09-15 — frames from gcsim PR #2697] The on-cast AoE nuke (692.6% DEF @ talent level 10, sidecar 'Skill DMG' index 9) is Kachina's on-field burst hit and belongs in a FrameMap, which cannot be authored — no gcsim source exists for Kachina (frameless / FRAMELESS_EXEMPT). duration:12 represents the Turbo Drill Field window. The field's own utility (larger Turbo Twirly AoE + movement speed while mounted) is not a modelable team stat buff; its decision-relevant buff is the C4 active-character DEF% (authored on the C4 entry). 'summon' tag retained for the field/construct it deploys. CD 18s, energy 70, field 12s all confirmed against the talent sidecar.",
+				"FrameMaps + application[] written by migrate-frames-shape --seed / migrate-application-schema against gcsim PR #2697 \"feat: add Kachina\" (head 72cff3530, 2026-07-25, UNMERGED — CHANGES_REQUESTED since 2026-08-12 and stale; counts credited to caramielle). May shift before merge; re-run the writers when it lands. ⚠️ Reviewers flagged that the mounted dash/charged frames are missing and the mount/dismount recast slice is a flat 30f, so neither is authored here.",
+				"Hitmark 35, SetCDWithDelay(burst CD, 1) — a 1f delay is below anything the chart resolves and is not authored."
 			],
 			"description": "Striking the ground, Kachina deals AoE Geo DMG based on her DEF and creates a Turbo Drill Field.\nThe Field increases Turbo Twirly's attack AoE and its Movement SPD when Kachina is riding it.\n\nIf Kachina's own Turbo Twirly is present when this is used, the Turbo Twirly will be summoned to her side.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"frames": {
+				"anim": 75,
+				"N": 56,
+				"C": 56,
+				"E": 53,
+				"D": 53,
+				"J": 53,
+				"swap": 50
+			},
+			"application": [
+				{
+					"frame": 35,
+					"element": "geo",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [

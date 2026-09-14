@@ -1900,9 +1900,8 @@ describe('roster-wide parse smoke test', () => {
 
 const FRAMELESS_EXEMPT = new Set([
 	'blank',
-	// Illuga left 2026-09-15: frames from the UNMERGED gcsim PR #2677,
-	// provenance in his notes; re-run the writers on merge.
-	'kachina',
+	// Illuga and Kachina left 2026-09-15: frames from UNMERGED gcsim PRs
+	// (#2677 / #2697), provenance in their notes; re-run the writers on merge.
 	'lohen',
 	'sandrone',
 	'zibai',
