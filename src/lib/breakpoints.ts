@@ -51,6 +51,20 @@ export const BP = {
 	 * column back to the tool — see benchBand.svelte.ts.
 	 */
 	toolMin: '54rem',
+	/**
+	 * `wide` — 68rem / 1088px. ⚓ THE PLANNER'S BAND B IN FULL FORM beside the
+	 * bench column (2026-09-14). The Human timing plate, the full-height zoom
+	 * steppers and the slider's plate took band B's zones to 268 + 426px, and
+	 * the rail needs ~103 for the Total, so the full form (every word, the
+	 * slider) demands ~806px of band; above `toolMin` the band is the viewport
+	 * less ~276 (the bench column), so it fits from ~1082. Measured before the
+	 * rung: the Total spilled under the first right-zone plate by 24px at 1040
+	 * and 37px at 900. Below this rung band B keeps its MARKS and drops its
+	 * WORDS and the slider — the fold `compact` used to own, moved up because
+	 * the row it governs grew. ⚠️ A fact about the planner, as `toolMin` is;
+	 * the Team Builder's band B does not need it.
+	 */
+	wide: '68rem',
 	/** `broad` — the Team Builder's tile-density step-up (existing, 2 uses). */
 	broad: '1500px',
 	/** `vast` — the Team Builder's second tile-density step-up (existing, 2 uses). */

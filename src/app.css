@@ -2091,16 +2091,20 @@
    ⚠ So --band-ctrl-h is a BAND B number now, not a stack-wide one. BAND_A_H is
    still 36 and deliberately so: it is the ROW, not the control.
 
-   ⚠ THE ICON-ONLY CONTROLS ARE THE STATED EXCEPTION in band B — "except for
-   their slightly smaller + and ... buttons". A square 36px plate holding one
-   14px glyph reads as a missing label, not as a peer. */
+   ↻ ⚓ NATE 2026-09-14: THE ICON-ONLY EXCEPTION IS WITHDRAWN. It was stated
+   as "except for their slightly smaller + and ... buttons", because a square
+   36px plate holding one 14px glyph read as a missing label. The planner's
+   steppers now wear magnifiers (ZoomIn/ZoomOut) sized UP to the plate (18px),
+   so the glyph fills the square the way a word fills its plate, and the row
+   stands at one height with no exception. (Only the planner's zoom uses this
+   rule; the Visualizers' icon buttons live inside tiles, not on band B.) */
 .band-b .tab,
 .band-b .btn {
 	height: var(--band-ctrl-h);
 }
 .band-b .btn--icon {
-	height: calc(var(--band-ctrl-h) - 10px);
-	min-width: calc(var(--band-ctrl-h) - 10px);
+	height: var(--band-ctrl-h);
+	min-width: var(--band-ctrl-h);
 }
 
 /* THE SELECTED DOCUMENT TAB moved UP into the shared selected-glass rule (see

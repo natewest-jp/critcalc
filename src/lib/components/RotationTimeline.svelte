@@ -2707,15 +2707,11 @@
 												class="rp-input-block rp-input-block--{block.kind}"
 												style:left="{blockLeft}px"
 												style:width="{blockW}px"
-												style:background={isApprox &&
-												block.kind !== 'skill' &&
-												block.kind !== 'burst'
-													? 'linear-gradient(to right, color-mix(in srgb, var(--ui-provisional) 20%, transparent), transparent)'
-													: block.kind === 'skill' ||
-														  block.kind === 'burst' ||
-														  block.kind === 'elemental-normal'
-														? `color-mix(in srgb, ${block.element ? pal(block.element).bar : p.bar} 50%, var(--rp-active))`
-														: undefined}
+												style:background={block.kind === 'skill' ||
+												block.kind === 'burst' ||
+												block.kind === 'elemental-normal'
+													? `color-mix(in srgb, ${block.element ? pal(block.element).bar : p.bar} 50%, var(--rp-active))`
+													: undefined}
 												style:border-right={bi === track.inputBlocks.length - 1
 													? 'none'
 													: undefined}
@@ -4546,8 +4542,15 @@
 	   neither: it is a statement about what WE know. The class keeps its
 	   --danger suffix for now — renaming it means touching the projection that
 	   emits it, and the token is the part that was lying. */
+	/* ↻ ⚓ Nate 2026-09-14: a no-frames token is the ORDINARY strip with its
+	   label in --ui-provisional — the left-to-right provisional gradient is
+	   retired (it was also what the human-timing sliver inherited on a
+	   frameless character, which is how it came up), and the label goes from a
+	   55/45 mix with white to the provisional ink itself, so the one mark that
+	   says "approximate" is the word, not a wash behind it. Mirrored in the PNG
+	   export (`approxToken`). */
 	.rp-active-text--danger {
-		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--ui-provisional));
+		color: var(--ui-provisional);
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */

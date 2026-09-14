@@ -390,24 +390,30 @@
 					type="button"
 					aria-label="Zoom out"
 					disabled={pv.scale <= ZOOM_MIN}
-					onclick={() => pv.zoomBy(-ZOOM_STEP)}><Mark name="zoomOut" /></button
+					onclick={() => pv.zoomBy(-ZOOM_STEP)}><Mark name="zoomOut" size={18} /></button
 				>
-				<input
-					type="range"
-					min={ZOOM_MIN}
-					max={ZOOM_MAX}
-					step={ZOOM_STEP}
-					bind:value={pv.scale}
-					class="slider rp-zoom-slider"
-					aria-label="Zoom"
-					title="Zoom — pixels per second"
-				/>
+				<!-- ⚓ Nate 2026-09-14: the slider rides a glass plate of its own. Bare
+				     over the scene it read fine beside 26px steppers; once every band B
+				     control stands at the full control height the naked track is the
+				     one thing in the row without a ground. -->
+				<span class="rp-zoom-slider-plate">
+					<input
+						type="range"
+						min={ZOOM_MIN}
+						max={ZOOM_MAX}
+						step={ZOOM_STEP}
+						bind:value={pv.scale}
+						class="slider rp-zoom-slider"
+						aria-label="Zoom"
+						title="Zoom — pixels per second"
+					/>
+				</span>
 				<button
 					class="btn btn--sm btn--icon"
 					type="button"
 					aria-label="Zoom in"
 					disabled={pv.scale >= ZOOM_MAX}
-					onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="zoomIn" /></button
+					onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="zoomIn" size={18} /></button
 				>
 			</div>
 		{/snippet}
@@ -767,7 +773,17 @@
 		gap: 0.2rem;
 	}
 
-	/* Track/thumb styling comes from the shared .slider (app.css). */
+	/* Track/thumb styling comes from the shared .slider (app.css). The PLATE is
+	   a .btn's face at the band's control height — the same object the
+	   steppers either side of it are — with the track centred in it. */
+	.rp-zoom-slider-plate {
+		display: inline-flex;
+		align-items: center;
+		height: var(--band-ctrl-h);
+		padding: 0 0.65rem;
+		border-radius: var(--r-sm);
+		background: var(--btn-face);
+	}
 	.rp-zoom-slider {
 		width: 88px;
 	}
@@ -775,26 +791,25 @@
 	/* ══ THE FOLD (responsive round, 2026-09-05; ↻ moved 2026-09-14) ═══════════
 	   Band B's controls drop their WORDS and keep their MARKS, and the zoom
 	   loses its slider (−/+ step the same scale). ↻ ⚓ Nate 2026-09-14: the fold
-	   is BP.toolMin ($lib/breakpoints.ts — 54rem), not BP.compact (40rem), and
-	   the reason is measured. The Human timing plate took the full form from
-	   564px of plates to ~654, and the rail needs ~92 for the Total, so the row
-	   wants ~754px of band. The band is the viewport less 32 below toolMin, so
-	   words fit only from 786 — and the range 641–786 is where the bench is
-	   already a ROW, so folding with it costs nothing new. Above toolMin the
-	   band also loses the bench COLUMN (~276), so even without the slider the
-	   full form wants a ~938px viewport: 864–938 is a KNOWN 74px window where
-	   the Total's last digits sit under the first right-zone plate. ⛔ Not
-	   closed with a new rung (a fact about one row is not a breakpoint) and
-	   ⛔ not with a container query (layout containment would trap the plates'
+	   is BP.wide ($lib/breakpoints.ts — 68rem), a rung minted for exactly this
+	   row, not BP.compact (40rem). The Human timing plate, the full-height
+	   steppers and the slider's plate took the full form to ~806px of band
+	   (zones 268 + 426, rail ~103 for the Total, gaps), and above BP.toolMin the
+	   band also gives up the bench COLUMN (~276), so the full form fits only
+	   from a ~1082 viewport — below it the Total spilled under the first
+	   right-zone plate (37px at 900, 24px at 1040). One monotonic fold at the
+	   rung beats a words-on window at 786–864 (bench row) that closes again at
+	   864: a reader widening a window should see the words arrive once.
+	   ⛔ Not a container query (layout containment would trap the plates'
 	   popovers).
 	   ⚠ The layer plates are NOT folded into a menu, and that ruling stands on
 	   a phone for the same reason it was made: a stripped chart must ANNOUNCE
 	   itself, and a lit mark announces exactly as a lit word does. What a
 	   reader loses is the word, and the `title`s still carry it.
 	   ⚠ Literal from the table, by necessity. */
-	@media (max-width: 54rem) {
+	@media (max-width: 68rem) {
 		.rp-band-label,
-		.rp-zoom-slider {
+		.rp-zoom-slider-plate {
 			display: none;
 		}
 	}
@@ -802,11 +817,18 @@
 	   and a 320 phone gives 288, so the Total spilled 20px under the Human
 	   timing plate on the very form Nate verified. Two things go: the Reset
 	   plate (the steppers still walk the scale back) and the Total's KEY (the
-	   number alone, beside the zoom, reads as the length). Fits from 323. */
+	   number alone, beside the zoom, reads as the length). And the steppers,
+	   36px squares since the icon-height exception was withdrawn, narrow to
+	   28px plates (the 18px glyph keeps 5px a side) — without it the number
+	   spilled 10px at 320 again. Measured: at 320 the number ends 12px short
+	   of the rail's edge (2px into its padding), and clear of it from 340. */
 	@media (max-width: 40rem) {
 		.rp-reset,
 		.rp-total-key {
 			display: none;
+		}
+		.rp-zoom > .btn--icon {
+			min-width: calc(var(--band-ctrl-h) - 8px);
 		}
 	}
 
