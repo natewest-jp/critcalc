@@ -774,15 +774,18 @@
 	}
 
 	/* Track/thumb styling comes from the shared .slider (app.css). The PLATE is
-	   a .btn's face at the band's control height — the same object the
-	   steppers either side of it are — with the track centred in it. */
+	   the same object the steppers either side of it are: a pane at the band's
+	   control height with the track centred in it. ⚠ Its ground is --surface,
+	   NOT --btn-face — in a 3-up zone every .btn is repainted to --surface (=
+	   --glass-panel via .ctx-glass; app.css "band--3up > .band-zone .btn"), and
+	   a first cut on --btn-face was visibly a different glass (⚓ Nate). */
 	.rp-zoom-slider-plate {
 		display: inline-flex;
 		align-items: center;
 		height: var(--band-ctrl-h);
 		padding: 0 0.65rem;
 		border-radius: var(--r-sm);
-		background: var(--btn-face);
+		background: var(--surface);
 	}
 	.rp-zoom-slider {
 		width: 88px;
