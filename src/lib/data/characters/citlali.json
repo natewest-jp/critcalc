@@ -120,7 +120,7 @@
 			"description": "Summons \"allies\" from the starry skies and the vast earth, hurling forth an ice storm to bombard the area in front and deal Nightsoul-aligned AoE Cryo DMG. This restores a set amount of Nightsoul points for Citlali, and also summons a Spiritvessel Skull near a maximum of 3 opponents within the AoE, with 1 Skull for each opponent. Spiritvessel Skulls explode after some time, dealing Nightsoul-aligned AoE Cryo DMG and restoring a set amount of Nightsoul points for Citlali.",
 			"application": [
 				{ "frame": 118, "element": "cryo", "units": 2 },
-				{ "frame": 210, "element": "cryo", "units": 1 }
+				{ "frame": 232, "element": "cryo", "units": 1 }
 			]
 		}
 	],
