@@ -33,7 +33,7 @@
 		barGeom as projectBar,
 		rulerTicks
 	} from '$lib/timeline/barGeometry';
-	import { FPS } from '$lib/utils/frames';
+	import { FPS, swapFramesForPing } from '$lib/utils/frames';
 	import type { CharReceivedBuffBar, MergedEffectDisplay, SlottedTrack } from '$lib/timeline/types';
 	import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
@@ -141,9 +141,10 @@
 	let showAura = $derived($siteSettings.showAuraLane);
 
 	// Swap ping (network latency, ms) lives in site settings (chrome ⚙ overlay);
-	// the timeline converts it to swap-delay frames for the parser. gcsim's
-	// relationship: frames ≈ ping × 2 × 60 / 1000 = ping × 0.12.
-	let swapFrames = $derived(Math.round($siteSettings.swapPing * 0.12));
+	// the timeline converts it to swap-delay frames for the parser through the
+	// ONE conversion in `$lib/utils/frames` (KQM's measured ping + 90 ms — ⛔ not
+	// gcsim's `ping × 0.12`, which this line carried until 2026-09-14).
+	let swapFrames = $derived(swapFramesForPing($siteSettings.swapPing));
 
 	// ---------------------------------------------------------------------------
 	// Layout constants (px)

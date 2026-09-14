@@ -42,6 +42,28 @@ export const FPS = 60;
 export const framesOf = (seconds: number): number => Math.round(seconds * FPS);
 
 /**
+ * The fixed part of a character swap, in ms, on top of network latency.
+ *
+ * ⚓ KQM's measurement (TCL, "Frames" evidence page): **Swap Latency = Network
+ * Latency + 90 ms**, from ~75 data points (input appearance → HP-bar change), and
+ * stated there as a correction to BOTH the TCL's older `ping + 50` and gcsim's
+ * implied `2 × ping`. Until 2026-09-14 this planner shipped gcsim's form
+ * (`frames = ping × 0.12`), which agrees with the measurement only near 100 ms
+ * and is optimistic below it — at 20 ms it gave 2 frames where the measured swap
+ * is 7. ⛔ Not a knob: it is a measured constant of the game, not of the player.
+ */
+export const SWAP_BASE_MS = 90;
+
+/**
+ * Swap ping (ms, the value Genshin shows top-right) → swap-delay frames, the
+ * ONE conversion. `RotationTimeline` feeds the result to `parseNotation` as
+ * `swapFrames`; the Settings panel prints it beside the slider so the number a
+ * player sets and the number the chart uses cannot drift.
+ */
+export const swapFramesForPing = (pingMs: number): number =>
+	Math.round(((pingMs + SWAP_BASE_MS) / 1000) * FPS);
+
+/**
  * The keys `InitNormalCancelSlice` overrides with the hitmark. Everything else in
  * a normal's slice is the animation length.
  *

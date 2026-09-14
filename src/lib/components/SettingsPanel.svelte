@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { constellations, loadout, ownership, savedNotations, siteSettings } from '$lib/stores';
 	import Mark from './Mark.svelte';
+	import { swapFramesForPing } from '$lib/utils/frames';
 	import {
 		downloadBackup,
 		parseBackup,
@@ -103,8 +104,8 @@
 			<span class="sp-label">
 				<span class="sp-name">Swap ping</span>
 				<span class="sp-desc">
-					Your network latency — the ms value Genshin shows top-right. The rotation planner adds a
-					matching delay to every character swap so timings reflect real play.
+					Your network latency — the ms value Genshin shows top-right. A swap takes your ping plus
+					about 90 ms, so the rotation planner delays every character swap by that much.
 				</span>
 			</span>
 			<div class="sp-slider-ctl">
@@ -118,7 +119,9 @@
 					oninput={(e) => siteSettings.setSwapPing(Number(e.currentTarget.value))}
 					aria-label="Swap ping in milliseconds"
 				/>
-				<span class="sp-slider-value">{$siteSettings.swapPing}ms</span>
+				<span class="sp-slider-value"
+					>{$siteSettings.swapPing}ms · {swapFramesForPing($siteSettings.swapPing)}f</span
+				>
 			</div>
 		</div>
 	</section>
@@ -308,6 +311,7 @@
 		color: var(--muted);
 		min-width: 3.4rem;
 		text-align: right;
+		white-space: nowrap;
 	}
 
 	/* Export / Import are .btn--primary, not the plain ghost: they are the row's

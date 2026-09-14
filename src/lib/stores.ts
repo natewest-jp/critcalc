@@ -289,9 +289,9 @@ type SiteSettings = {
 	travelerVariant: 'aether' | 'lumine';
 	/**
 	 * Network latency in milliseconds — the value Genshin shows top-right. The
-	 * rotation planner converts it to swap-delay frames (gcsim's relationship:
-	 * frames ≈ ping × 0.12) so timings reflect real play. Stored as ms because
-	 * that's the number players actually know.
+	 * rotation planner converts it to swap-delay frames (`swapFramesForPing` in
+	 * `$lib/utils/frames`: KQM's measured ping + 90 ms) so timings reflect real
+	 * play. Stored as ms because that's the number players actually know.
 	 */
 	swapPing: number;
 	/**
@@ -345,7 +345,7 @@ export const TIMELINE_LAYER_DEFAULTS = {
 const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	useNewOutfits: false,
 	travelerVariant: 'aether',
-	swapPing: 60, // a typical "decent connection"; ≈ 7 swap-delay frames
+	swapPing: 60, // a typical "decent connection"; 9 swap-delay frames (60 + 90 ms)
 	...TIMELINE_LAYER_DEFAULTS
 };
 
@@ -354,8 +354,10 @@ function loadSiteSettings(): SiteSettings {
 	try {
 		const parsed = JSON.parse(localStorage.getItem(SITE_SETTINGS_KEY) ?? '{}');
 		const merged: SiteSettings = { ...SITE_SETTINGS_DEFAULTS, ...parsed };
-		// Migrate the legacy frame-based setting to ping-ms (gcsim: frames = ping
-		// × 0.12, so ping = frames / 0.12).
+		// Migrate the legacy frame-based setting to ping-ms. ⚠️ Inverts the OLD
+		// gcsim relationship (frames = ping × 0.12) ON PURPOSE: that is the formula
+		// the stored frames were authored under, and the PING is what persists —
+		// the current ping → frames conversion is `swapFramesForPing`.
 		if (typeof parsed.swapPing !== 'number' && typeof parsed.swapFrames === 'number') {
 			merged.swapPing = Math.round(parsed.swapFrames / 0.12);
 		}
