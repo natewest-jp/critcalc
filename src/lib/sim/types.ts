@@ -15,6 +15,7 @@
  */
 
 import type { Element } from '$lib/types/ability';
+import type { HumanPadAfter } from './humanTiming';
 import type { TimelineEvent, TimelineWindow } from '$lib/utils/rotationEvents';
 import type { AuraApplication } from './aura';
 import type { SeriesInterval } from '$lib/utils/gauge';
@@ -77,7 +78,11 @@ export type InputBlockKind =
 	| 'skill'
 	| 'burst'
 	| 'movement'
-	| 'unset';
+	| 'unset'
+	/** Human timing's padding: frames a player spent between two inputs the
+	 *  game did not buffer. Carries no label; drawn as a hatched sliver of the
+	 *  active strip. Present only when the planner's Human plate is lit. */
+	| 'pad';
 
 /** A discrete per-input building block in the active row. */
 export type InputBlock = {
@@ -92,6 +97,8 @@ export type InputBlock = {
 	 *  on physical inputs, on movement, and on E/Q blocks (a cast always carries
 	 *  the caster's element, so the track answers for those). */
 	element?: Element;
+	/** `kind: 'pad'` only — what the padding followed, for the tooltip. */
+	padAfter?: HumanPadAfter;
 };
 
 export type CharacterTrack = {

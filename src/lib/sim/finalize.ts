@@ -132,6 +132,18 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			blocksByAnchor.set(ev.blockId, block);
 			pushItem(track, ev.blockId, block);
 		}
+		// Human pads (2026-09-14): one label-less block each, sorted into place by
+		// the id minted when the pad was inserted — after the action it follows,
+		// before the one it delays.
+		for (const pad of ctx.humanPads) {
+			pushItem(pad.track, pad.id, {
+				start: pad.start,
+				duration: pad.duration,
+				parts: [],
+				kind: 'pad',
+				padAfter: pad.after
+			});
+		}
 		for (const [track, items] of trackItems) {
 			items.sort((a, b) => a.id - b.id);
 			track.inputBlocks = items.map((i) => i.block);

@@ -7,6 +7,7 @@
  */
 
 import { writable } from 'svelte/store';
+import { HUMAN_PAD_DEFAULT_F } from '$lib/sim/humanTiming';
 import { browser } from '$app/environment';
 
 // ---------------------------------------------------------------------------
@@ -289,11 +290,29 @@ type SiteSettings = {
 	travelerVariant: 'aether' | 'lumine';
 	/**
 	 * Network latency in milliseconds — the value Genshin shows top-right. The
-	 * rotation planner converts it to swap-delay frames (gcsim's relationship:
-	 * frames ≈ ping × 0.12) so timings reflect real play. Stored as ms because
-	 * that's the number players actually know.
+	 * rotation planner converts it to swap-delay frames (`swapFramesForPing` in
+	 * `$lib/utils/frames`: KQM's measured ping + 90 ms) so timings reflect real
+	 * play. Stored as ms because that's the number players actually know.
 	 */
 	swapPing: number;
+	/**
+	 * ── HUMAN TIMING (2026-09-14) ─────────────────────────────────────────────
+	 *
+	 * The planner's Human plate (band B): pad the inputs the game does not
+	 * buffer and/or let animations finish, so the chart shows a person's
+	 * rotation rather than a macro's. `humanTiming` is the plate; the other
+	 * three are what it does, set in the Settings modal. ⚓ `humanTimingMode` is
+	 * a three-way choice rather than two checkboxes so the plate can never be
+	 * lit and do nothing. Per TASTE like the layers, ⛔ never in the `?r=`
+	 * codec — a shared link stays frame-perfect for a reader who has not opted
+	 * in. Model + authority: `$lib/sim/humanTiming.ts`.
+	 */
+	humanTiming: boolean;
+	humanTimingMode: HumanTimingMode;
+	/** Frames added after every non-buffered input (KQM's starting point is 10). */
+	humanTimingPadFrames: number;
+	/** Draw the padding as a sliver on the active row (the parse pads either way). */
+	showHumanPadding: boolean;
 	/**
 	 * ── THE PLANNER'S TIMELINE LAYERS (2026-08-17) ──────────────────────────
 	 *
@@ -342,10 +361,20 @@ export const TIMELINE_LAYER_DEFAULTS = {
 	showTimelineBuffs: true
 } as const;
 
+export type HumanTimingMode = 'padding' | 'animations' | 'both';
+
+export const HUMAN_TIMING_DEFAULTS = {
+	humanTiming: false,
+	humanTimingMode: 'both' as HumanTimingMode,
+	humanTimingPadFrames: HUMAN_PAD_DEFAULT_F,
+	showHumanPadding: true
+};
+
 const SITE_SETTINGS_DEFAULTS: SiteSettings = {
 	useNewOutfits: false,
 	travelerVariant: 'aether',
-	swapPing: 60, // a typical "decent connection"; ≈ 7 swap-delay frames
+	...HUMAN_TIMING_DEFAULTS,
+	swapPing: 60, // a typical "decent connection"; 9 swap-delay frames (60 + 90 ms)
 	...TIMELINE_LAYER_DEFAULTS
 };
 
@@ -354,8 +383,10 @@ function loadSiteSettings(): SiteSettings {
 	try {
 		const parsed = JSON.parse(localStorage.getItem(SITE_SETTINGS_KEY) ?? '{}');
 		const merged: SiteSettings = { ...SITE_SETTINGS_DEFAULTS, ...parsed };
-		// Migrate the legacy frame-based setting to ping-ms (gcsim: frames = ping
-		// × 0.12, so ping = frames / 0.12).
+		// Migrate the legacy frame-based setting to ping-ms. ⚠️ Inverts the OLD
+		// gcsim relationship (frames = ping × 0.12) ON PURPOSE: that is the formula
+		// the stored frames were authored under, and the PING is what persists —
+		// the current ping → frames conversion is `swapFramesForPing`.
 		if (typeof parsed.swapPing !== 'number' && typeof parsed.swapFrames === 'number') {
 			merged.swapPing = Math.round(parsed.swapFrames / 0.12);
 		}
@@ -384,6 +415,11 @@ function createSiteSettingsStore() {
 		},
 		setSwapPing(value: number) {
 			store.update((prev) => persist({ ...prev, swapPing: value }));
+		},
+		/** One setter for the plate and its three settings — the same kind of
+		 *  preference, written from two surfaces (band B and the modal). */
+		setHumanTiming(next: Partial<Pick<SiteSettings, keyof typeof HUMAN_TIMING_DEFAULTS>>) {
+			store.update((prev) => persist({ ...prev, ...next }));
 		},
 		/** One setter for both timeline layers — they are the same KIND of
 		 *  preference and band B's reset writes them together. */

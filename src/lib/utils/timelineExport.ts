@@ -83,6 +83,12 @@ import type { AuraKey } from '$lib/utils/gauge';
 // declaration text, so these stay literals and stay checked.
 // ↻ 2026-08-11: slate-900 merged with slate-950 (⚓ Nate — see the ramp in
 // app.css), so the chart's ground went #262c38 → #1f2635.
+/** 🎛️ The human-padding hatch (2026-09-14) — MIRRORS `.rp-input-block--pad` in
+ *  RotationTimeline: stroke width, alpha and period. Change both or neither. */
+const PAD_HATCH_W = 2;
+const PAD_HATCH_ALPHA = 0.12;
+const PAD_HATCH_PERIOD = 6;
+
 const CHART_BG = '#1f2635'; // --rp-chart-bg → --surface-well → --slate-900
 // ↻ 2026-08-10: both moved because --border did — the line roles dropped to the
 // two most transparent stops (--line-edge → --line-soft, ⚓ Nate), and these
@@ -807,17 +813,31 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					const bx = x(block.start);
 					const bw = barGeomW(block.start, block.duration);
 					const kind = block.kind;
-					// No-frame-map N/C/P (everything but E/Q): provisional gradient fill
-					// left→right, mirroring the on-screen linear-gradient.
+					// No-frame-map N/C/P (everything but E/Q): the ordinary strip with
+					// its label in the provisional ink — ↻ 2026-09-14, the gradient
+					// wash is retired (mirrors .rp-active-text--danger).
 					const approxToken = slot.isApprox && kind !== 'skill' && kind !== 'burst';
 					if (kind === 'unset') {
 						return;
-					} else if (approxToken) {
-						const [dr, dg, db] = hexToRgb(UI_PROVISIONAL);
-						const grad = ctx!.createLinearGradient(bx, 0, bx + bw, 0);
-						grad.addColorStop(0, `rgba(${dr}, ${dg}, ${db}, 0.25)`);
-						grad.addColorStop(1, `rgba(${dr}, ${dg}, ${db}, 0)`);
-						ctx!.fillStyle = grad;
+					} else if (kind === 'pad') {
+						// Human timing's padding — mirrors `.rp-input-block--pad`: a
+						// 135° hatch of PAD_HATCH_W px white at PAD_HATCH_ALPHA on a
+						// PAD_HATCH_PERIOD px period, over the strip, no divider, no label.
+						ctx!.save();
+						ctx!.beginPath();
+						ctx!.rect(bx, rowTop + 1, bw, snap.activeRowH - 2);
+						ctx!.clip();
+						ctx!.strokeStyle = `rgba(255, 255, 255, ${PAD_HATCH_ALPHA})`;
+						ctx!.lineWidth = PAD_HATCH_W;
+						const h = snap.activeRowH - 2;
+						for (let d = -h; d < bw + h; d += PAD_HATCH_PERIOD) {
+							ctx!.beginPath();
+							ctx!.moveTo(bx + d, rowTop + 1 + h);
+							ctx!.lineTo(bx + d + h, rowTop + 1);
+							ctx!.stroke();
+						}
+						ctx!.restore();
+						return;
 					} else if (kind === 'skill' || kind === 'burst' || kind === 'elemental-normal') {
 						// ⚠️ The BLOCK's element, falling back to the slot's — an
 						// infused swing does not land in the swinger's own element
@@ -843,7 +863,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					}
 					// label — provisional tinted on no-frame-map N/C/P tokens (mirrors
 					// .rp-active-text--danger)
-					ctx!.fillStyle = approxToken ? mix('#ffffff', UI_PROVISIONAL, 50) : '#fff';
+					ctx!.fillStyle = approxToken ? UI_PROVISIONAL : '#fff';
 					ctx!.font = `600 10px ${SANS}`;
 					ctx!.textAlign = 'left';
 					ctx!.fillText(block.parts.join(''), bx + 4, rowTop + snap.activeRowH / 2 + 3, bw - 6);

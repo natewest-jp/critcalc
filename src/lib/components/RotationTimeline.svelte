@@ -33,7 +33,9 @@
 		barGeom as projectBar,
 		rulerTicks
 	} from '$lib/timeline/barGeometry';
-	import { FPS } from '$lib/utils/frames';
+	import { FPS, swapFramesForPing } from '$lib/utils/frames';
+	import type { HumanTiming } from '$lib/sim/humanTiming';
+	import type { InputBlock } from '$lib/sim/types';
 	import type { CharReceivedBuffBar, MergedEffectDisplay, SlottedTrack } from '$lib/timeline/types';
 	import { projectTeamBuffRows } from '$lib/timeline/teamBuffRows';
 	import { projectCharReceivedBuffRows } from '$lib/timeline/charReceivedBuffRows';
@@ -141,9 +143,22 @@
 	let showAura = $derived($siteSettings.showAuraLane);
 
 	// Swap ping (network latency, ms) lives in site settings (chrome ⚙ overlay);
-	// the timeline converts it to swap-delay frames for the parser. gcsim's
-	// relationship: frames ≈ ping × 2 × 60 / 1000 = ping × 0.12.
-	let swapFrames = $derived(Math.round($siteSettings.swapPing * 0.12));
+	// the timeline converts it to swap-delay frames for the parser through the
+	// ONE conversion in `$lib/utils/frames` (KQM's measured ping + 90 ms — ⛔ not
+	// gcsim's `ping × 0.12`, which this line carried until 2026-09-14).
+	let swapFrames = $derived(swapFramesForPing($siteSettings.swapPing));
+
+	// Human timing (2026-09-14): the band B plate turns the three Settings
+	// values into the ONE object the parse takes (`$lib/sim/humanTiming.ts`).
+	// The mode is a three-way choice, so a lit plate always does something.
+	let humanTiming = $derived.by((): HumanTiming | null => {
+		if (!$siteSettings.humanTiming) return null;
+		const mode = $siteSettings.humanTimingMode;
+		return {
+			padFrames: mode === 'animations' ? 0 : $siteSettings.humanTimingPadFrames,
+			fullAnimations: mode !== 'padding'
+		};
+	});
 
 	// ---------------------------------------------------------------------------
 	// Layout constants (px)
@@ -424,7 +439,8 @@
 				// Slot roster (post-P4 #5 arc): NB derivation + team-scoped buff
 				// context read the SLOTS, which can hold members never typed in
 				// the notation.
-				slotCharacters
+				slotCharacters,
+				humanTiming
 			);
 		} catch (e) {
 			console.error('parseNotation threw:', e);
@@ -1082,7 +1098,38 @@
 		)
 	);
 
-	let annotatedTracks = $derived(mapTracksToSlots(rotation.tracks, characterSlots));
+	// The padding sliver is a DISPLAY choice; the parse pads either way. Stripped
+	// here, once, so the live chart and the PNG snapshot read the same blocks.
+	let displayTracks = $derived(
+		$siteSettings.showHumanPadding
+			? rotation.tracks
+			: rotation.tracks.map((t) => ({
+					...t,
+					inputBlocks: t.inputBlocks.filter((b) => b.kind !== 'pad')
+				}))
+	);
+	let annotatedTracks = $derived(mapTracksToSlots(displayTracks, characterSlots));
+
+	/** The padding sliver's tooltip — names the pixel: how long, and what it
+	 *  followed. A swap's pad is the wait for the incoming character to appear. */
+	function padTitle(block: InputBlock): string {
+		const f = block.duration;
+		const s = (f / FPS).toFixed(2);
+		const after: Record<NonNullable<InputBlock['padAfter']>, string> = {
+			normal: 'a normal attack',
+			charged: 'a charged attack',
+			plunge: 'a plunge',
+			skill: 'a skill',
+			burst: 'a burst',
+			dash: 'a dash',
+			jump: 'a jump',
+			swap: 'the swap'
+		};
+		const what = block.padAfter ? after[block.padAfter] : 'an action';
+		return block.padAfter === 'swap'
+			? `Human timing: ${f} frames (${s}s) after the swap — nothing buffers until the new character appears.`
+			: `Human timing: ${f} frames (${s}s) after ${what}, before an input the game does not buffer.`;
+	}
 
 	// Group tracks by slot index for rendering character blocks
 	let tracksBySlot = $derived(
@@ -2660,21 +2707,19 @@
 												class="rp-input-block rp-input-block--{block.kind}"
 												style:left="{blockLeft}px"
 												style:width="{blockW}px"
-												style:background={isApprox &&
-												block.kind !== 'skill' &&
-												block.kind !== 'burst'
-													? 'linear-gradient(to right, color-mix(in srgb, var(--ui-provisional) 20%, transparent), transparent)'
-													: block.kind === 'skill' ||
-														  block.kind === 'burst' ||
-														  block.kind === 'elemental-normal'
-														? `color-mix(in srgb, ${block.element ? pal(block.element).bar : p.bar} 50%, var(--rp-active))`
-														: undefined}
+												style:background={block.kind === 'skill' ||
+												block.kind === 'burst' ||
+												block.kind === 'elemental-normal'
+													? `color-mix(in srgb, ${block.element ? pal(block.element).bar : p.bar} 50%, var(--rp-active))`
+													: undefined}
 												style:border-right={bi === track.inputBlocks.length - 1
 													? 'none'
 													: undefined}
-												title={isApprox && block.kind !== 'skill' && block.kind !== 'burst'
-													? 'No frame data yet — cast animations and normal attacks use generic timings.'
-													: undefined}
+												title={block.kind === 'pad'
+													? padTitle(block)
+													: isApprox && block.kind !== 'skill' && block.kind !== 'burst'
+														? 'No frame data yet — cast animations and normal attacks use generic timings.'
+														: undefined}
 											>
 												{#each block.parts as part (part)}
 													<span
@@ -4457,6 +4502,26 @@
 		background: transparent;
 		box-shadow: none;
 	}
+	/* Human timing's padding (2026-09-14): the time a player spent between two
+	   inputs the game did not buffer. A hatched sliver OVER the active strip —
+	   the character is on field and idle, so the strip shows through and the
+	   hatch says "nothing was pressed". No divider: it is a gap, not a token.
+	   Mirrored by the PNG export's `pad` branch. */
+	.rp-input-block--pad {
+		/* 🎛️ ⚓ Nate 2026-09-14: 2px at .12 on a 6px period — the first cut's
+		   weight (he liked it) at roughly half its alpha (.22 was "slightly" too
+		   loud). A 1px/.14/8px try read as texture and lost the weight; discarded.
+		   The three numbers are mirrored by name in timelineExport's PAD_HATCH_*
+		   constants. */
+		background: repeating-linear-gradient(
+			135deg,
+			rgba(255, 255, 255, 0.12) 0 2px,
+			transparent 2px 6px
+		);
+		box-shadow: none;
+		border-right: none;
+		padding: 0;
+	}
 	/* ↻ 2026-08-11: 0.85 white → full (⚓ Nate, "all labels back to white"). The
 	   active strip is opaque so this is not a legibility-over-scene fix, but the
 	   token names on it are the chart's most-read text and they now match every
@@ -4477,8 +4542,15 @@
 	   neither: it is a statement about what WE know. The class keeps its
 	   --danger suffix for now — renaming it means touching the projection that
 	   emits it, and the token is the part that was lying. */
+	/* ↻ ⚓ Nate 2026-09-14: a no-frames token is the ORDINARY strip with its
+	   label in --ui-provisional — the left-to-right provisional gradient is
+	   retired (it was also what the human-timing sliver inherited on a
+	   frameless character, which is how it came up), and the label goes from a
+	   55/45 mix with white to the provisional ink itself, so the one mark that
+	   says "approximate" is the word, not a wash behind it. Mirrored in the PNG
+	   export (`approxToken`). */
 	.rp-active-text--danger {
-		color: color-mix(in srgb, rgba(255, 255, 255, 0.9) 55%, var(--ui-provisional));
+		color: var(--ui-provisional);
 	}
 
 	/* ── E/Q row left-edge badge ──────────────────────────────── */

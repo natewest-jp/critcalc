@@ -34,6 +34,7 @@ import type { ProcListener } from './procs';
 import type { CastKinds } from './states';
 import type { ChainIndex } from './conditions';
 import type { CharacterTrack, TimelineBar } from './types';
+import type { HumanPadAfter, HumanTiming } from './humanTiming';
 import {
 	type CharState,
 	createCharState,
@@ -180,6 +181,8 @@ export type TeamContext = {
 export type SimContext = {
 	// ── inputs ────────────────────────────────────────────────────────────────
 	swapF: number;
+	/** Human timing (`$lib/sim/humanTiming.ts`); `null` = frame-perfect, the default. */
+	humanTiming: HumanTiming | null;
 	constellationLevels?: Record<string, number>;
 	loadoutMap?: Record<string, LoadoutEntry>;
 	team: TeamContext;
@@ -202,6 +205,18 @@ export type SimContext = {
 	 *  are projections of casts). ⚠️ `ev` is the LIVE event: finalize stamps
 	 *  extension uptimes onto it before the bars are built. */
 	castRecords: { ev: CastEvent; track: CharacterTrack }[];
+	/** Every human pad the run inserted, in emission order — projected by
+	 *  finalize into `pad` input blocks on the track it landed in. ⚓ NOT an IR
+	 *  event: a pad is not something that happened, it is time nobody used. The
+	 *  `id` is minted from the event counter so a pad sorts between the action
+	 *  it follows and the one it delays. */
+	humanPads: {
+		id: number;
+		track: CharacterTrack;
+		start: number;
+		duration: number;
+		after: HumanPadAfter;
+	}[];
 	/** Action events with their owning track, in emission order; the finalize
 	 *  pass projects `track.inputBlocks` from these, grouped by `blockId`. */
 	actionRecords: { ev: ActionEvent; track: CharacterTrack }[];
@@ -362,6 +377,7 @@ export type SimContext = {
 
 export type SimContextInput = {
 	swapF: number;
+	humanTiming?: HumanTiming | null;
 	constellationLevels?: Record<string, number>;
 	loadoutMap?: Record<string, LoadoutEntry>;
 	team: TeamContext;
@@ -372,6 +388,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 	let nextEventId = 0;
 	return {
 		swapF: input.swapF,
+		humanTiming: input.humanTiming ?? null,
 		constellationLevels: input.constellationLevels,
 		loadoutMap: input.loadoutMap,
 		team: input.team,
@@ -380,6 +397,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		unknownTokens: [],
 		events: [],
 		castRecords: [],
+		humanPads: [],
 		actionRecords: [],
 		hitRecords: [],
 		castIdByBar: new Map(),

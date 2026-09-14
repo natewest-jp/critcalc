@@ -239,7 +239,20 @@ const MARKS = {
 	 * survivable, but it is rendered at 16 in the card's hover bar rather than
 	 * the default 14 so it has room to resolve. If it has to shrink, it fails.
 	 */
-	compare: 'Scale'
+	compare: 'Scale',
+	/** The planner's Human timing plate (2026-09-14): a person's hand on the
+	 *  button. Chosen over `Pointer` (sparser ink), `PersonStanding` (reads as
+	 *  an accessibility affordance in a row of chart controls), and the pace
+	 *  animals (`Turtle`/`Snail` say "you are slow" about the reader). */
+	hand: 'Hand',
+	/** The planner's zoom steppers (⚓ Nate 2026-09-14): a magnifier with its
+	 *  sign reads as ZOOM with no slider beside it — below the fold the slider
+	 *  is gone and a bare `plus` read as "add". `plus`/`minus` stay for the
+	 *  Visualizers' steppers, which step a VALUE. ⚠️ A glyph with a sign inside
+	 *  a magnifier is sparse-topped; if it silts at band size, size it by ink
+	 *  area per button, never via the shared glyph size. */
+	zoomIn: 'ZoomIn',
+	zoomOut: 'ZoomOut'
 };
 
 const licenseText = await readFile(LICENSE, 'utf8').catch(() => '');

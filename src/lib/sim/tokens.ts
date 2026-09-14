@@ -56,6 +56,28 @@ export function peekActionKey(tokens: Token[], j: number, isBow: boolean): Actio
 	return 'swap';
 }
 
+/**
+ * The input a human pad would sit in front of, or `null` when there is none:
+ * the next token is a wait (`~1s`), an unset `~?`, or something we do not
+ * simulate, or the rotation simply ends here. ⚓ `peekActionKey` answers
+ * 'swap' for all of those because the SLICE question has a right answer there
+ * (the animation runs out); the PAD question does not — a player who typed a
+ * wait is already waiting, and nothing follows the last action at all.
+ * `swapFollows` says whether a real swap comes after this segment's last token.
+ */
+export function peekHumanPadTarget(
+	tokens: Token[],
+	j: number,
+	isBow: boolean,
+	swapFollows: boolean
+): ActionKey | null {
+	let k = j + 1;
+	while (tokens[k]?.kind === 'label' && tokens[k].text === 'W') k++;
+	if (!tokens[k]) return swapFollows ? 'swap' : null;
+	const key = peekActionKey(tokens, j, isBow);
+	return key === 'swap' ? null : key;
+}
+
 // ---------------------------------------------------------------------------
 // Bracket expansion
 // ---------------------------------------------------------------------------

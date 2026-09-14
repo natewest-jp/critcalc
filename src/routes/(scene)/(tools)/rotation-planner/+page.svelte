@@ -350,6 +350,74 @@
 			<DocumentActions />
 		{/snippet}
 
+		{#snippet bandBLeft()}
+			<!-- ══ THE LEFT ZONE (⚓ NATE 2026-09-14) ═════════════════════════════
+			     The zoom cluster, ahead of the rail. Band B had gone right-heavy —
+			     seven plates queued at the end and the rail's whole run empty but
+			     for the readout — so the SCALE controls sit on the left, and the
+			     right zone keeps what is DRAWN (the layers), what TIME the parse
+			     keeps (Human timing) and what is OPEN (the aside panels). ↻ Human
+			     timing rode here for one try and went back: beside the rail it read
+			     as part of the zoom cluster. The zone is plates on the bare scene
+			     like the right one. -->
+			<!-- ↻ ⚓ NATE 2026-08-17: THE ZOOM, AND NOTHING ELSE. This briefly meant
+			     the whole of band B's state — zoom, the notes panel and the two
+			     layers — which is a fair reading of "Reset view" and the wrong
+			     control: a scale is something you fiddle with and want back, while
+			     a panel and a layer are things you deliberately opened, and
+			     sweeping them away as a side effect of fixing your zoom does more
+			     than you asked. One button, one job, and the label says which.
+			     It sits left of the zoom group because that is what it undoes.
+			     ↻ ⚓ Nate 2026-09-14: the word is "Reset" now, not "Reset zoom" —
+			     the cluster moved to the band's LEFT, away from every other
+			     button, so the slider beside it says what is being reset.
+			     Inert at the resting scale, like the zoom buttons at their
+			     limits. -->
+			<button
+				class="btn btn--sm rp-reset"
+				type="button"
+				aria-label="Reset the zoom to its resting level"
+				title="Back to the resting zoom"
+				disabled={pv.scale === ZOOM_DEFAULT}
+				onclick={() => pv.reset()}
+			>
+				<Mark name="resetZoom" />
+				<span class="rp-band-label">Reset</span>
+			</button>
+			<div class="rp-zoom" role="group" aria-label="Zoom">
+				<button
+					class="btn btn--sm btn--icon"
+					type="button"
+					aria-label="Zoom out"
+					disabled={pv.scale <= ZOOM_MIN}
+					onclick={() => pv.zoomBy(-ZOOM_STEP)}><Mark name="zoomOut" size={18} /></button
+				>
+				<!-- ⚓ Nate 2026-09-14: the slider rides a glass plate of its own. Bare
+				     over the scene it read fine beside 26px steppers; once every band B
+				     control stands at the full control height the naked track is the
+				     one thing in the row without a ground. -->
+				<span class="rp-zoom-slider-plate">
+					<input
+						type="range"
+						min={ZOOM_MIN}
+						max={ZOOM_MAX}
+						step={ZOOM_STEP}
+						bind:value={pv.scale}
+						class="slider rp-zoom-slider"
+						aria-label="Zoom"
+						title="Zoom — pixels per second"
+					/>
+				</span>
+				<button
+					class="btn btn--sm btn--icon"
+					type="button"
+					aria-label="Zoom in"
+					disabled={pv.scale >= ZOOM_MAX}
+					onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="zoomIn" size={18} /></button
+				>
+			</div>
+		{/snippet}
+
 		<!-- ══ BAND B IS A 3-UP NOW (⚓ NATE 2026-08-12) ══════════════════════════
 		     "Move both the NOTES and the zoom slider and its +/- buttons to
 		     outside the band B's glass like MY ROSTER ∨ on the Team Builder — but
@@ -366,9 +434,9 @@
 		     ⚠ WHAT GOES IN THE RAIL IS THE READOUT, not nothing. Nate asked for
 		     the band to keep "extending to fill the distance", and an empty strip
 		     would do that — but the Total is the one thing here that is not a
-		     control, and a strip is exactly what a readout wants to sit on. The
-		     left zone is therefore empty and the rail takes the whole run from
-		     the content margin to the controls. -->
+		     control, and a strip is exactly what a readout wants to sit on.
+		     ↻ 2026-09-14: the left zone is no longer empty (see bandBLeft), so
+		     the rail runs from the zoom cluster to the layer plates. -->
 		{#snippet bandBCenter()}
 			<!-- What the chart is showing: how long the rotation runs. A readout,
 			     not a control — it leads band B the way the tabs lead band A. -->
@@ -381,52 +449,30 @@
 		{/snippet}
 
 		{#snippet bandBRight()}
-			<!-- ↻ ⚓ NATE 2026-08-17: THE ZOOM, AND NOTHING ELSE. This briefly meant
-			     the whole of band B's state — zoom, the notes panel and the two
-			     layers — which is a fair reading of "Reset view" and the wrong
-			     control: a scale is something you fiddle with and want back, while
-			     a panel and a layer are things you deliberately opened, and
-			     sweeping them away as a side effect of fixing your zoom does more
-			     than you asked. One button, one job, and the label says which.
-			     It sits left of the zoom group because that is what it undoes.
-			     Inert at the resting scale, like the zoom buttons at their
-			     limits. -->
-			<button
-				class="btn btn--sm rp-reset"
-				type="button"
-				aria-label="Reset the zoom to its resting level"
-				title="Back to the resting zoom"
-				disabled={pv.scale === ZOOM_DEFAULT}
-				onclick={() => pv.reset()}
-			>
-				<Mark name="resetZoom" />
-				<span class="rp-band-label">Reset zoom</span>
-			</button>
-			<div class="rp-zoom" role="group" aria-label="Zoom">
+			<!-- ══ HUMAN TIMING (2026-09-14) ═══════════════════════════════════
+			     Its own group, NOT a third layer plate: the layers change what the
+			     chart DRAWS, this changes what time the parse KEEPS. ⚓ Nate, over
+			     three tries: it sits FIRST in the right zone, ahead of Buffs — after
+			     the layers it split Auras from the Log, which belong together, and
+			     on the left beside the rail it read as part of the zoom cluster.
+			     Same laws as
+			     the layers — never disabled, nothing resets it, per taste
+			     (`siteSettings`), ⛔ never in the `?r=` codec — and a lit plate is
+			     the announcement that the chart is padded. What it does is set in
+			     Settings (a three-way choice, so it can never be lit and idle);
+			     the model and its authority live in `$lib/sim/humanTiming.ts`. -->
+			<div class="rp-layers" role="group" aria-label="Human timing">
 				<button
-					class="btn btn--sm btn--icon"
+					class="btn btn--sm"
+					class:is-active={$siteSettings.humanTiming}
 					type="button"
-					aria-label="Zoom out"
-					disabled={pv.scale <= ZOOM_MIN}
-					onclick={() => pv.zoomBy(-ZOOM_STEP)}><Mark name="minus" /></button
+					aria-pressed={$siteSettings.humanTiming}
+					title="Time the rotation as a person plays it: pad the inputs the game does not buffer, let animations finish. Configure in Settings."
+					onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
 				>
-				<input
-					type="range"
-					min={ZOOM_MIN}
-					max={ZOOM_MAX}
-					step={ZOOM_STEP}
-					bind:value={pv.scale}
-					class="slider rp-zoom-slider"
-					aria-label="Zoom"
-					title="Zoom — pixels per second"
-				/>
-				<button
-					class="btn btn--sm btn--icon"
-					type="button"
-					aria-label="Zoom in"
-					disabled={pv.scale >= ZOOM_MAX}
-					onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="plus" /></button
-				>
+					<Mark name="hand" />
+					<span class="rp-band-label">Human timing</span>
+				</button>
 			</div>
 			<!-- ══ THE LAYERS (2026-08-17) ══════════════════════════════════════
 			     What the chart draws besides ability timings. Band B is the VIEW,
@@ -727,26 +773,65 @@
 		gap: 0.2rem;
 	}
 
-	/* Track/thumb styling comes from the shared .slider (app.css). */
+	/* Track/thumb styling comes from the shared .slider (app.css). The PLATE is
+	   the same object the steppers either side of it are: a pane at the band's
+	   control height with the track centred in it. ⚠ Its ground is --surface,
+	   NOT --btn-face — in a 3-up zone every .btn is repainted to --surface (=
+	   --glass-panel via .ctx-glass; app.css "band--3up > .band-zone .btn"), and
+	   a first cut on --btn-face was visibly a different glass (⚓ Nate). */
+	.rp-zoom-slider-plate {
+		display: inline-flex;
+		align-items: center;
+		height: var(--band-ctrl-h);
+		padding: 0 0.65rem;
+		border-radius: var(--r-sm);
+		background: var(--surface);
+	}
 	.rp-zoom-slider {
 		width: 88px;
 	}
 
-	/* ══ THE FOLD (responsive round, 2026-09-05) ═══════════════════════════════
-	   Below BP.compact ($lib/breakpoints.ts — 40rem) band B's controls drop
-	   their WORDS and keep their MARKS, and the zoom loses its slider (−/+ step
-	   the same scale). This end zone is a fixed 564px — the planner's whole
-	   narrow-width problem once the bench is horizontal — and marks alone bring
-	   it to ~210px, which fits beside the Total readout down to 320.
+	/* ══ THE FOLD (responsive round, 2026-09-05; ↻ moved 2026-09-14) ═══════════
+	   Band B's controls drop their WORDS and keep their MARKS, and the zoom
+	   loses its slider (−/+ step the same scale). ↻ ⚓ Nate 2026-09-14: the fold
+	   is BP.wide ($lib/breakpoints.ts — 68rem), a rung minted for exactly this
+	   row, not BP.compact (40rem). The Human timing plate, the full-height
+	   steppers and the slider's plate took the full form to ~806px of band
+	   (zones 268 + 426, rail ~103 for the Total, gaps), and above BP.toolMin the
+	   band also gives up the bench COLUMN (~276), so the full form fits only
+	   from a ~1082 viewport — below it the Total spilled under the first
+	   right-zone plate (37px at 900, 24px at 1040). One monotonic fold at the
+	   rung beats a words-on window at 786–864 (bench row) that closes again at
+	   864: a reader widening a window should see the words arrive once.
+	   ⛔ Not a container query (layout containment would trap the plates'
+	   popovers).
 	   ⚠ The layer plates are NOT folded into a menu, and that ruling stands on
 	   a phone for the same reason it was made: a stripped chart must ANNOUNCE
 	   itself, and a lit mark announces exactly as a lit word does. What a
 	   reader loses is the word, and the `title`s still carry it.
 	   ⚠ Literal from the table, by necessity. */
-	@media (max-width: 40rem) {
+	@media (max-width: 68rem) {
 		.rp-band-label,
-		.rp-zoom-slider {
+		.rp-zoom-slider-plate {
 			display: none;
+		}
+	}
+	/* Below BP.compact (40rem) the marks-only row still wants ~354px of band
+	   and a 320 phone gives 288, so the Total spilled 20px under the Human
+	   timing plate on the very form Nate verified. Two things go: the Reset
+	   plate (the steppers still walk the scale back) and the Total's KEY (the
+	   number alone, beside the zoom, reads as the length). And the steppers,
+	   36px squares since the icon-height exception was withdrawn, narrow to
+	   28px plates (the 18px glyph keeps 5px a side) — without it the number
+	   spilled 10px at 320 again. Measured: at 320 the number ends 12px short
+	   of the rail's edge (2px into its padding), and clear of it from 340. */
+	@media (max-width: 40rem) {
+		.rp-reset,
+		.rp-total-key {
+			display: none;
+		}
+		.rp-zoom > .btn--icon {
+			min-width: calc(var(--band-ctrl-h) - 8px);
 		}
 	}
 

@@ -66,6 +66,19 @@
 		Where a kit's frame data hasn't been curated yet, the planner says so and falls back to generic
 		cast timings rather than inventing numbers.
 	</p>
+	<p>
+		<strong>Human timing.</strong> By default the chart is frame-perfect: every cancel lands on the
+		first frame the game allows, the way a macro plays. That is what the game permits, but it is not
+		how most rotations go, and a buff that runs out on the chart before it does in your hands is the
+		usual symptom. <em>Human timing</em> in the view bar times the rotation the way a person does. It
+		adds a few frames before every input the game does not buffer — a skill after a normal attack, an
+		aimed shot, the first press after a swap — and can let each animation finish instead of cancelling
+		it. A normal-attack string costs nothing extra, because the game queues the next swing for you. The
+		padding draws as a faint hatch on the active row so you can see where the time went; how many frames,
+		and which of the two adjustments apply, are set in Settings, where KQM's starting point of ten frames
+		is the default. It is your preference, not part of the rotation: a link you share opens frame-perfect
+		for whoever follows it.
+	</p>
 </section>
 
 <section>

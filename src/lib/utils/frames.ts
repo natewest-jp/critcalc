@@ -42,6 +42,28 @@ export const FPS = 60;
 export const framesOf = (seconds: number): number => Math.round(seconds * FPS);
 
 /**
+ * The fixed part of a character swap, in ms, on top of network latency.
+ *
+ * ⚓ KQM's measurement (TCL, "Frames" evidence page): **Swap Latency = Network
+ * Latency + 90 ms**, from ~75 data points (input appearance → HP-bar change), and
+ * stated there as a correction to BOTH the TCL's older `ping + 50` and gcsim's
+ * implied `2 × ping`. Until 2026-09-14 this planner shipped gcsim's form
+ * (`frames = ping × 0.12`), which agrees with the measurement only near 100 ms
+ * and is optimistic below it — at 20 ms it gave 2 frames where the measured swap
+ * is 7. ⛔ Not a knob: it is a measured constant of the game, not of the player.
+ */
+export const SWAP_BASE_MS = 90;
+
+/**
+ * Swap ping (ms, the value Genshin shows top-right) → swap-delay frames, the
+ * ONE conversion. `RotationTimeline` feeds the result to `parseNotation` as
+ * `swapFrames`; the Settings panel prints it beside the slider so the number a
+ * player sets and the number the chart uses cannot drift.
+ */
+export const swapFramesForPing = (pingMs: number): number =>
+	Math.round(((pingMs + SWAP_BASE_MS) / 1000) * FPS);
+
+/**
  * The keys `InitNormalCancelSlice` overrides with the hitmark. Everything else in
  * a normal's slice is the animation length.
  *
@@ -49,6 +71,16 @@ export const framesOf = (seconds: number): number => Math.round(seconds * FPS);
  * a plunge after a normal waits out the whole animation.
  */
 const HIT_KEYS: ReadonlySet<string> = new Set(['E', 'Q', 'D', 'J', 'swap']);
+
+/**
+ * Resolve with THIS key to get the animation length — the "no cancel" answer.
+ * It is literally the `anim` field's name, so `frameAt` finds it as an explicit
+ * entry and never consults the hitmark tier. Human timing's "full animations"
+ * is its one author (`$lib/sim/humanTiming.ts`).
+ */
+export const FULL_ANIMATION_KEY = 'anim' as const;
+/** What a resolver may be asked for: the next action, or the whole animation. */
+export type CancelKey = import('$lib/types/ability').ActionKey | typeof FULL_ANIMATION_KEY;
 
 /**
  * Resolve one entry of a FrameMap: how long until the given next action.

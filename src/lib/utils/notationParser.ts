@@ -49,6 +49,7 @@ import { computeTeamEnabledReactions, computeTeamFactionCounts } from '$lib/util
 import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
 import type { LoadoutEntry } from '$lib/stores';
 import { createSimContext } from '$lib/sim/context';
+import type { HumanTiming } from '$lib/sim/humanTiming';
 import type { ParsedRotation } from '$lib/sim/types';
 import { finalizeParse } from '$lib/sim/finalize';
 import { runRotation } from '$lib/sim/run';
@@ -113,7 +114,9 @@ export function parseNotation(
 	swapFrames = 8,
 	constellationLevels?: Record<string, number>,
 	loadoutMap?: Record<string, LoadoutEntry>,
-	teamCharacters?: (CharacterData | null)[]
+	teamCharacters?: (CharacterData | null)[],
+	/** Human timing (`$lib/sim/humanTiming.ts`). Omitted = frame-perfect. */
+	humanTiming?: HumanTiming | null
 ): ParsedRotation {
 	const raw = notation.trim();
 	if (!raw)
@@ -214,6 +217,7 @@ export function parseNotation(
 	// The sim's mutable state, in one place (`$lib/sim/context.ts`).
 	const ctx = createSimContext({
 		swapF: swapFrames,
+		humanTiming: humanTiming ?? null,
 		constellationLevels,
 		loadoutMap,
 		team: {

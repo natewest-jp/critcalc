@@ -23,6 +23,7 @@ const flags = $state<Record<Breakpoint, boolean>>({
 	compact: false,
 	roomy: false,
 	toolMin: false,
+	wide: false,
 	broad: false,
 	vast: false
 });

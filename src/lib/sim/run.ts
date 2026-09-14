@@ -66,7 +66,8 @@ import {
 	resolveNormalCastTime,
 	resolveStanceFields
 } from './resolve';
-import { expandBrackets, peekActionKey } from './tokens';
+import { expandBrackets, peekActionKey, peekHumanPadTarget } from './tokens';
+import { cancelKeyFor, padFramesAfter, type HumanPadAfter } from './humanTiming';
 import {
 	castKinds,
 	closeStateWindows,
@@ -207,6 +208,23 @@ export function runRotation(
 			eBars: [],
 			qBars: []
 		};
+
+		// Human timing: the incoming character's FIRST input is never buffered —
+		// "you have to wait until the new character appears" (KQM) — so the pad
+		// lands at the head of every turn but the first, INSIDE the track (the
+		// strip starts at the swap's end; the sliver is the wait before the first
+		// press). Ahead of `turnStart` on purpose: the pad is not the turn moving.
+		if (i > 0 && ctx.humanTiming && ctx.humanTiming.padFrames > 0) {
+			const pad = ctx.humanTiming.padFrames;
+			ctx.humanPads.push({
+				id: ctx.nextId(),
+				track,
+				start: clock.now,
+				duration: pad,
+				after: 'swap'
+			});
+			clock.advance(clock.now + pad);
+		}
 
 		// ⚓ The turn starts where the clock is. There is no second cursor:
 		// `clock.now` IS the rotation clock, and every advance below moves it.
@@ -388,6 +406,25 @@ export function runRotation(
 		// cdReset targets (Q-only), lastEText (E-only), and the no-ability
 		// fallbacks. `tok`/`j` are passed (not closed over) so the pipeline reads
 		// against its arguments, not the loop cursor.
+		// Human timing (`./humanTiming.ts`): the pad AFTER the action at token `j`,
+		// when the next input is one the game does not buffer. Called once per
+		// action, after its own advance, so the pad sits between the action's end
+		// and the next input's start and the id minted here sorts it there.
+		// ⚠️ `swapFollows` is the ONLY way a segment's last action learns whether a
+		// swap is real: `peekActionKey` says 'swap' at the end of EVERY segment,
+		// including the rotation's last, where nothing follows to be late for.
+		const swapFollows = i < segments.length - 1;
+		const humanPad = (prev: HumanPadAfter, j: number): void => {
+			const ht = ctx.humanTiming;
+			if (!ht) return;
+			const next = peekHumanPadTarget(expandedTokens, j, isBow, swapFollows);
+			if (next === null) return;
+			const pad = padFramesAfter(ht, prev, next, isBow);
+			if (pad <= 0) return;
+			ctx.humanPads.push({ id: ctx.nextId(), track, start: clock.now, duration: pad, after: prev });
+			clock.advance(clock.now + pad);
+		};
+
 		const handleCast = (kind: 'skill' | 'burst', tok: Token, j: number): void => {
 			const isBurst = kind === 'burst';
 			const ability = isBurst ? qAbility : eAbility;
@@ -538,7 +575,11 @@ export function runRotation(
 					queue = ctx.eChargeQueues.get(active.id)!;
 				}
 
-				const castTime = resolveEQCastTime(active, variant, nextKey);
+				const castTime = resolveEQCastTime(
+					active,
+					variant,
+					cancelKeyFor(ctx.humanTiming, kind, nextKey, isBow)
+				);
 				const {
 					cooldown: cd,
 					duration: dur,
@@ -983,6 +1024,7 @@ export function runRotation(
 				// the gauge in the order they happen. ⛔ Nothing that reads the cast's
 				// own decisions may be added below this line.
 				clock.advance(castEnd);
+				humanPad(kind, j);
 			} else if (isBurst) {
 				// No-ability fallback (Q): generic 15s CD.
 				// No resolved variant — key the abilityId by the bare charId.
@@ -1006,6 +1048,7 @@ export function runRotation(
 				charCasts.push(fallbackQ);
 				cs.qReadyAt = clock.now + FALLBACK_BURST_CD_F;
 				clock.advance(clock.now + Q_CAST_F);
+				humanPad('burst', j);
 			} else {
 				// No-ability fallback (E): single charge keyed by bare charId, 12s CD.
 				if (!ctx.eChargeQueues.has(char.id)) ctx.eChargeQueues.set(char.id, [0]);
@@ -1031,6 +1074,7 @@ export function runRotation(
 				charCasts.push(fallbackE);
 				queue[0] = clock.now + FALLBACK_SKILL_CD_F;
 				clock.advance(clock.now + E_CAST_F);
+				humanPad('skill', j);
 				lastEText = tok.text;
 			}
 		};
@@ -1122,7 +1166,11 @@ export function runRotation(
 					for (let k = 0; k < count; k++) {
 						const hitIndex = normalCounter % hits.length;
 						const hitNextKey: ActionKey = k < count - 1 ? 'N' : nextKey;
-						const castS = resolveNormalCastTime(hits, hitIndex, hitNextKey);
+						const castS = resolveNormalCastTime(
+							hits,
+							hitIndex,
+							cancelKeyFor(ctx.humanTiming, 'normal', hitNextKey, isBow)
+						);
 						const ev = emitAction({
 							action: 'normal',
 							label: t,
@@ -1202,6 +1250,7 @@ export function runRotation(
 							true
 						);
 					}
+					humanPad('normal', j);
 				} else if (/^C\d*$/.test(t) || (t === 'A' && isBow)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
 					// chargeFrames/chargeHits. Bow uses chargeHits, others use chargeFrames.
@@ -1235,7 +1284,12 @@ export function runRotation(
 						charConstellationLevel
 					);
 					const castS = activeNormal
-						? resolveChargeCastTime(activeNormal, t, nextKey, isBow)
+						? resolveChargeCastTime(
+								activeNormal,
+								t,
+								cancelKeyFor(ctx.humanTiming, 'charged', nextKey, isBow),
+								isBow
+							)
 						: null;
 					const blockStart = clock.now;
 					// Catalyst CAs, bow aimed shots (bar the C1 partial), and infused CAs
@@ -1256,6 +1310,7 @@ export function runRotation(
 						element: cElement
 					});
 					if (castS !== null) clock.advance(clock.now + castS);
+					humanPad('charged', j);
 					// Charged-opened transient state (Arkhe round, 2026-09-04): the
 					// action's END, the same instant the `normal` and `plunge` openers
 					// beside it use. Furina's Charged Attack TOGGLES `pneuma`, which is
@@ -1367,7 +1422,10 @@ export function runRotation(
 						: activeNormal?.plungeFrames;
 					const plungeFrames = plungeVariant?.frames ?? basePlunge;
 					if (plungeFrames) {
-						const castS = frameAt(plungeFrames, nextKey);
+						const castS = frameAt(
+							plungeFrames,
+							cancelKeyFor(ctx.humanTiming, 'plunge', nextKey, isBow)
+						);
 						const blockStart = clock.now;
 						// Catalyst / infused plunges (e.g. Xiao's Q-stance) are elemental —
 						// the shared infusion rule (actionElement.ts). An unresolvable plunge
@@ -1389,6 +1447,7 @@ export function runRotation(
 							element: pElement
 						});
 						clock.advance(clock.now + castS);
+						humanPad('plunge', j);
 						// Post-plunge transient state (sQ primitive): the plunge landing
 						// opens a short gating window — Varesa's plunge opens `apexDrive`
 						// (140f) during which `sQ` resolves to Volcano Kablam. Window
@@ -1452,6 +1511,7 @@ export function runRotation(
 						duration: DASH_FRAMES
 					});
 					clock.advance(clock.now + DASH_FRAMES);
+					humanPad(t === 'D' ? 'dash' : 'jump', j);
 				}
 			}
 		}
