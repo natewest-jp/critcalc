@@ -428,6 +428,29 @@
 					onclick={() => pv.zoomBy(ZOOM_STEP)}><Mark name="plus" /></button
 				>
 			</div>
+			<!-- ══ HUMAN TIMING (2026-09-14) ═══════════════════════════════════
+			     Its own group, NOT a third layer plate: the layers change what the
+			     chart DRAWS, this changes what time the parse KEEPS. ⚓ Nate: it
+			     sits BEFORE the layers, between the zoom and Buffs — after them it
+			     split Auras from the Log, which belong together. Same laws as
+			     the layers — never disabled, nothing resets it, per taste
+			     (`siteSettings`), ⛔ never in the `?r=` codec — and a lit plate is
+			     the announcement that the chart is padded. What it does is set in
+			     Settings (a three-way choice, so it can never be lit and idle);
+			     the model and its authority live in `$lib/sim/humanTiming.ts`. -->
+			<div class="rp-layers" role="group" aria-label="Human timing">
+				<button
+					class="btn btn--sm"
+					class:is-active={$siteSettings.humanTiming}
+					type="button"
+					aria-pressed={$siteSettings.humanTiming}
+					title="Time the rotation as a person plays it: pad the inputs the game does not buffer, let animations finish. Configure in Settings."
+					onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
+				>
+					<Mark name="hand" />
+					<span class="rp-band-label">Human</span>
+				</button>
+			</div>
 			<!-- ══ THE LAYERS (2026-08-17) ══════════════════════════════════════
 			     What the chart draws besides ability timings. Band B is the VIEW,
 			     so this is where they belong; ⛔ NOT the Settings modal, and ⛔ not
@@ -476,27 +499,6 @@
 				>
 					<Mark name="aura" />
 					<span class="rp-band-label">Auras</span>
-				</button>
-			</div>
-			<!-- ══ HUMAN TIMING (2026-09-14) ═══════════════════════════════════
-			     Its own group, NOT a third layer plate: the layers change what the
-			     chart DRAWS, this changes what time the parse KEEPS. Same laws as
-			     the layers — never disabled, nothing resets it, per taste
-			     (`siteSettings`), ⛔ never in the `?r=` codec — and a lit plate is
-			     the announcement that the chart is padded. What it does is set in
-			     Settings (a three-way choice, so it can never be lit and idle);
-			     the model and its authority live in `$lib/sim/humanTiming.ts`. -->
-			<div class="rp-layers" role="group" aria-label="Human timing">
-				<button
-					class="btn btn--sm"
-					class:is-active={$siteSettings.humanTiming}
-					type="button"
-					aria-pressed={$siteSettings.humanTiming}
-					title="Time the rotation as a person plays it: pad the inputs the game does not buffer, let animations finish. Configure in Settings."
-					onclick={() => siteSettings.setHumanTiming({ humanTiming: !$siteSettings.humanTiming })}
-				>
-					<Mark name="hand" />
-					<span class="rp-band-label">Human</span>
 				</button>
 			</div>
 			<!-- ══ THE ASIDE'S TWO PANELS (2026-08-17) ═════════════════════════

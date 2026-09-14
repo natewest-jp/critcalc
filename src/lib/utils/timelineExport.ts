@@ -83,6 +83,12 @@ import type { AuraKey } from '$lib/utils/gauge';
 // declaration text, so these stay literals and stay checked.
 // ↻ 2026-08-11: slate-900 merged with slate-950 (⚓ Nate — see the ramp in
 // app.css), so the chart's ground went #262c38 → #1f2635.
+/** 🎛️ The human-padding hatch (2026-09-14) — MIRRORS `.rp-input-block--pad` in
+ *  RotationTimeline: stroke width, alpha and period. Change both or neither. */
+const PAD_HATCH_W = 1;
+const PAD_HATCH_ALPHA = 0.14;
+const PAD_HATCH_PERIOD = 8;
+
 const CHART_BG = '#1f2635'; // --rp-chart-bg → --surface-well → --slate-900
 // ↻ 2026-08-10: both moved because --border did — the line roles dropped to the
 // two most transparent stops (--line-edge → --line-soft, ⚓ Nate), and these
@@ -814,16 +820,16 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						return;
 					} else if (kind === 'pad') {
 						// Human timing's padding — mirrors `.rp-input-block--pad`: a
-						// 135° hatch of 2px white at .22 on a 6px period, over the
-						// strip, no divider, no label.
+						// 135° hatch of PAD_HATCH_W px white at PAD_HATCH_ALPHA on a
+						// PAD_HATCH_PERIOD px period, over the strip, no divider, no label.
 						ctx!.save();
 						ctx!.beginPath();
 						ctx!.rect(bx, rowTop + 1, bw, snap.activeRowH - 2);
 						ctx!.clip();
-						ctx!.strokeStyle = 'rgba(255, 255, 255, 0.22)';
-						ctx!.lineWidth = 2;
+						ctx!.strokeStyle = `rgba(255, 255, 255, ${PAD_HATCH_ALPHA})`;
+						ctx!.lineWidth = PAD_HATCH_W;
 						const h = snap.activeRowH - 2;
-						for (let d = -h; d < bw + h; d += 6) {
+						for (let d = -h; d < bw + h; d += PAD_HATCH_PERIOD) {
 							ctx!.beginPath();
 							ctx!.moveTo(bx + d, rowTop + 1 + h);
 							ctx!.lineTo(bx + d + h, rowTop + 1);
