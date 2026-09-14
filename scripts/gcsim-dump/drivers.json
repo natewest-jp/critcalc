@@ -79,6 +79,13 @@
 		"_scored": "skill 4/6 (base 0/6)",
 		"states": { "inStance": [{ "action": "skill" }] }
 	},
+	"odette": {
+		"note": "Coda at Dawn's Tolling. gcsim has no separate entry point: a second Skill() inside the 394f recast window (`useSpecialSkill`) IS the Coda, and the dumper bypasses cooldowns, so the prereq is one skill cast.",
+		"_scored": "skill 1/1 (base: uncovered — no gcsl spelling for the sibling)",
+		"states": {
+			"codaWindow": [{ "action": "skill" }]
+		}
+	},
 	"raidenshogun": {
 		"note": "Musou Isshin.",
 		"_scored": "burst 4/5 (base 0/5)",

@@ -1906,14 +1906,14 @@ const FRAMELESS_EXEMPT = new Set([
 	'prune',
 	'sandrone',
 	'zibai',
-	// 7.0, ingested 2026-08-31. ⛔ gcsim has NOTHING for either — not on
+	// 7.0, ingested 2026-08-31. ⛔ gcsim has NOTHING for Alyosha — not on
 	// origin/main, not in any open PR, and a repo-wide PR search across all
 	// states returns only a 2022 typo fix. So Stage 4 is blocked: no FrameMaps,
-	// no `application[]`, no `chargedIcdWindow` (⚠️ Alyosha is a polearm, so
-	// that last one is a live question the moment gcsim ships him). Both apply
-	// their element provisionally at the cast until then.
+	// no `application[]`, no `chargedIcdWindow` (⚠️ he is a polearm, so that
+	// last one is a live question the moment gcsim ships him). He applies his
+	// element provisionally at the cast until then. (Odette and Prune left
+	// this list 2026-09-15 — gcsim main shipped both, #2749 / #2712.)
 	'alyosha',
-	'odette',
 	// Cryo Traveler, hand-built 2026-08-31 (⛔ the ingest generator refuses
 	// Travelers — element splits are hand-built). Its NORMAL frames are real,
 	// derived from a three-way census (six byte-identical Traveler JSONs, the
