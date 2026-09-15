@@ -264,6 +264,7 @@
 			"id": "columbina__passive__lunacys_lure",
 			"name": "Lunacy's Lure",
 			"abilityType": "passive",
+			"caveat": "Not modeled: the CRIT Rate stacks each Gravity Interference grants her — no bar draws for them.",
 			"effects": [
 				{
 					"type": "buff",
@@ -286,7 +287,8 @@
 			"description": "When triggering **Gravity Interference**, Columbina gains the Lunacy effect, increasing her CRIT Rate by 5% for 10s. This effect can be stacked up to 3 times.",
 			"_curatorNotes": [
 				"A1 (Ascension 1): gcsim asc.go a1OGravityTick — CR = 0.05 * min(stacks,3), 10s window refreshed on each Gravity Interference. Self-only; not a team buff.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Her received-buff row stays empty where a +5%/+10%/+15% CRIT Rate bar would sit — the effect is manual-trigger, so no bar draws at any point in the rotation. The pixel is the blank row; the second sentence only restates the Gravity cadence the skill caveat already establishes, so it is paying for column space twice. Category: expected-but-absent."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Her received-buff row stays empty where a +5%/+10%/+15% CRIT Rate bar would sit — the effect is manual-trigger, so no bar draws at any point in the rotation. The pixel is the blank row; the second sentence only restates the Gravity cadence the skill caveat already establishes, so it is paying for column space twice. Category: expected-but-absent.",
+				"↻ CAVEAT RESTORED 2026-09-15 (essential-characters T0; the interim Nate set in essential-characters §6.3 while `docs/stack-threshold-round.md` is open). The removal note below filed it expected-but-absent — the category name-the-pixel KEEPS — and since the Team Builder stopped deriving `manual` effects the same day, the blank is now undisclosed on both surfaces."
 			]
 		},
 		{
@@ -424,6 +426,7 @@
 			"name": "Not in Lone Splendor",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
+			"caveat": "Not modeled: her Max HP buff and the active character's ATK, EM or DEF bonus from each Gravity Interference — no bars draw for them.",
 			"effects": [
 				{
 					"type": "buff",
@@ -555,7 +558,8 @@
 			"_curatorNotes": [
 				"C2 re-authored 2026-07-14 (replaces flagged broken stub). gcsim cons.go c2Init/c2OnGravityTick: c2Buff HPP=0.4 (Lunar Brilliance +40% Max HP, 8s, self, applied on every Gravity Interference regardless of Moonsign). Active-char conversions gated on Moonsign level >=2 (teamFaction moonsign min:2): ATK += 0.01*MaxHP (ratio 1), EM += 0.0035*MaxHP (ratio 0.35), DEF += 0.01*MaxHP (ratio 1) — all flat stats scaling on Columbina's Max HP, 8s, mutually exclusive by dominant reaction. Elevate increment +7% (gcsim elevation[2]=0.085 cumulative; C1 1.5 + C2 7 = 8.5). +34% gravity rate (c2GravityRate) unmodeled — no gravity primitive.",
 				"NOTE: ability.ts stat-key JSDoc credits 'Columbina C2 per-reaction-element CRIT DMG' — that is actually C6 (CRIT DMG); C2 does ATK/EM/DEF conversions. Comment mislabel, not editable from this file.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Four authored buffs (self +40% Max HP, and active-target ATK/EM/DEF conversions) are all manual-trigger, so her row and the active character's row draw no bars where the game gives a stack of them every ~6s. The +34% Gravity accrual rate has no pixel at all — Gravity is not a bar, a meter or a marker anywhere in the tool, so a rate change to it cannot look wrong. Category: expected-but-absent."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Four authored buffs (self +40% Max HP, and active-target ATK/EM/DEF conversions) are all manual-trigger, so her row and the active character's row draw no bars where the game gives a stack of them every ~6s. The +34% Gravity accrual rate has no pixel at all — Gravity is not a bar, a meter or a marker anywhere in the tool, so a rate change to it cannot look wrong. Category: expected-but-absent.",
+				"↻ CAVEAT RESTORED 2026-09-15 (essential-characters T0; the interim Nate set in essential-characters §6.3 while `docs/stack-threshold-round.md` is open). The removal note below filed it expected-but-absent — the category name-the-pixel KEEPS — and since the Team Builder stopped deriving `manual` effects the same day, the blank is now undisclosed on both surfaces."
 			]
 		},
 		{
@@ -646,6 +650,7 @@
 			"name": "Through Darkness Led by Moonlight",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
+			"caveat": "Not modeled: the +80% CRIT DMG party members get for 8s after a Lunar reaction inside the Lunar Domain — no bar draws for it.",
 			"effects": [
 				{
 					"type": "buff",
@@ -683,7 +688,8 @@
 			"description": "For 8s after characters in the **Lunar Domain** trigger a Lunar reaction, based on the elements involved in the reaction, the CRIT DMG of the corresponding Elemental DMG done by all party members is increased by 80%. The CRIT DMG-increasing effects for the same Elemental Type do not stack.\n\nAll nearby party members' Lunar Reaction DMG is **elevated** by 7%.",
 			"_curatorNotes": [
 				"C6: gcsim cons.go c6Init — c6Buff CD=0.8 (+80% CRIT DMG) added per element bucket keyed by the triggering Lunar reaction (LC->Electro+Hydro, LB->Dendro+Hydro, LCr->Geo+Hydro), 8s, requires the burst's Lunar Domain react-bonus mod active. Authored as generic team critDmg 80 with caveat (element-specific critDmg stats would need runtime knowledge of which reaction fired). Elevate increment +7% (gcsim elevation[6]=0.20 cumulative).",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A +80% team CRIT DMG bar is the single largest buff in her kit and no bar draws — the effect is authored but manual-trigger. A C6 owner casting Q and seeing only the three Reaction Bonus rows would reasonably assume the tool has it covered. Trimmed only to drop the worked Lunar-Charged example, which is kit explanation and not needed to read the blank row. Category: expected-but-absent."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A +80% team CRIT DMG bar is the single largest buff in her kit and no bar draws — the effect is authored but manual-trigger. A C6 owner casting Q and seeing only the three Reaction Bonus rows would reasonably assume the tool has it covered. Trimmed only to drop the worked Lunar-Charged example, which is kit explanation and not needed to read the blank row. Category: expected-but-absent.",
+				"↻ CAVEAT RESTORED 2026-09-15 (essential-characters T0; the interim Nate set in essential-characters §6.3 while `docs/stack-threshold-round.md` is open). The removal note below filed it expected-but-absent — the category name-the-pixel KEEPS — and since the Team Builder stopped deriving `manual` effects the same day, the blank is now undisclosed on both surfaces. ⚠️ C6 is NOT a Gravity mechanic and is not waiting on that round: gcsim c6Init subscribes OnLunarCharged/OnLunarBloom/OnLunarCrystallize, requires the burst's react-bonus mod (burstBuffKey) to be active, and grants 8s AttackMods keyed per reaction to its elements — LC → Electro+Hydro, LB → Dendro+Hydro, LCr → Geo+Hydro. The stats exist (`electroCritDmg`, `hydroCritDmg`, `dendroCritDmg`, `geoCritDmg`), so the shape is four `onReaction` source-team buffs (Hydro on the three-reaction array, one element each), duration 8, refresh. ⛔ TRIED IN MEMORY AND NOT SHIPPED: the only gate available is `state: duringSummon`, which the onReaction buff pass cannot resolve (§1.G) — measured, `Columbina C > Fischl E Q > Barbara E` (no summon of hers at all) drew seven +80% bars. Without a burst-window gate it would claim the buff in every Lunar rotation. Unblocks with a resolvable summon/burst-window condition on that pass."
 			]
 		}
 	],
