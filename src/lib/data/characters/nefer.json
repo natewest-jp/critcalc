@@ -21,41 +21,37 @@
 				{
 					"name": "N1",
 					"frames": {
-						"anim": 10,
-						"N": 15,
-						"C": 40,
-						"swap": 10
+						"anim": 40,
+						"hit": 10,
+						"N": 15
 					}
 				},
 				{
 					"name": "N2",
 					"frames": {
-						"anim": 8,
-						"N": 20,
-						"C": 38,
-						"swap": 8
+						"anim": 38,
+						"hit": 8,
+						"N": 20
 					}
 				},
 				{
 					"name": "N3",
 					"frames": {
-						"anim": 26,
-						"N": 49,
-						"C": 62,
-						"swap": 26
+						"anim": 62,
+						"hit": 26,
+						"N": 49
 					}
 				},
 				{
 					"name": "N4",
 					"frames": {
-						"anim": 22,
-						"N": 51,
-						"swap": 22
+						"anim": 51,
+						"hit": 22
 					}
 				}
 			],
 			"chargeFrames": {
-				"anim": 28,
+				"anim": 72,
 				"N": 29,
 				"E": 48,
 				"Q": 48,
@@ -70,7 +66,8 @@
 				"Plunge: gcsim has HighPlungeAttack/LowPlungeAttack inline in attack.go (no plunge.go), but no plungeFrames extracted. Multipliers exist (high, low arrays) but no frame data in PR.",
 				"Phantasm Performance damage tags: 'Shade' hits are AttackTagDirectLunarBloom with UseEM and IgnoreDefPercent; 'Nefer' hits are AttackTagExtra (CA-tagged) with EM-FlatDmg + ATK-multiplier scaling. Multi-tag hit composition + UseEM mechanic both deferred.",
 				"[A7] The Slither state lasts up to 2.5s and consumes Stamina before the Charged Attack resolves into a basic release.",
-				"[A7] Phantasm Performance (the Shadow-Dance CA) deals Dendro/Lunar-Bloom DMG with 5 sub-hits (3 'Shade' Lunar-Bloom + 2 Nefer Dendro) at charge-relative frames [10, 15, 23, 24, 25], plus a C6 extra hit at frame 106. gcsim models the full action graph via ~10 nested helper functions in charge.go."
+				"[A7] Phantasm Performance (the Shadow-Dance CA) deals Dendro/Lunar-Bloom DMG with 5 sub-hits (3 'Shade' Lunar-Bloom + 2 Nefer Dendro) at charge-relative frames [10, 15, 23, 24, 25], plus a C6 extra hit at frame 106. gcsim models the full action graph via ~10 nested helper functions in charge.go.",
+				"↻ RE-SHAPED 2026-09-15 (essential-characters T0) from gcsim PR #2587 (unmerged, branch `nefer`, tip 563e06937). Every map was pre-L4b: `anim` held the HITMARK and `swap` repeated it, with no `hit` — so each swing's hit time was right only because `hit` fell back to an `anim` that happened to hold it, and every unlisted key resolved to the hitmark. InitNormalCancelSlice(hitmark, animLen): animLen 40/38/62/51, hitmarks 10/8/26/22 (N3's two queued hits are 10 and 26; `hit` is the last, the corpus convention), N overrides 15/20/49/51. ActionCharge equals the animation on N1–N3, so no explicit C. Walk overrides dropped (no token). chargeFrames `anim` 28 → 72: InitAbilSlice(72), and 28 was the swap override."
 			],
 			"sections": [
 				{
@@ -99,9 +96,17 @@
 			"behavior": "stance",
 			"duration": 9,
 			"terminatesOnSwap": true,
+			"application": [
+				{
+					"frame": 24,
+					"element": "dendro",
+					"units": 1
+				}
+			],
 			"frames": {
-				"anim": 25,
+				"anim": 52,
 				"N": 26,
+				"C": 29,
 				"Q": 38,
 				"D": 38,
 				"J": 38,
@@ -118,7 +123,8 @@
 				"behavior:stance with opensState:inStance maps Shadow Dance to the generic in-stance state. terminatesOnSwap:true — gcsim swapResetInit clears shadowDanceKey on swap-out.",
 				"Frames: skillFrames=InitAbilSlice(52), ActionAttack=26 ActionCharge=29 ActionDash/Burst=38 ActionJump=38 ActionSwap=25 ActionWalk=34. Per E-spec swap/N/Q/D/J.",
 				"Verdant Dew: skill cast spawns 'Verdant Dew' (player resource fueling Phantasm Performance CAs). Resource not modeled — Verdant Dew, Veil of Falsehood stacks, Phantasm Charges (3 per skill cast), and Seed-of-Deceit gadgets are all custom-stack-tracked in gcsim.",
-				"Constellation interactions: C2 grants 2 instant Veil stacks on each E cast (with Moonsign Gleam); C4 boosts Verdant Dew gain rate +25% while in Shadow Dance + applies team -20% Dendro RES (4.5s linger). Both Veil and Verdant Dew are deferred resources."
+				"Constellation interactions: C2 grants 2 instant Veil stacks on each E cast (with Moonsign Gleam); C4 boosts Verdant Dew gain rate +25% while in Shadow Dance + applies team -20% Dendro RES (4.5s linger). Both Veil and Verdant Dew are deferred resources.",
+				"↻ 2026-09-15 (essential-characters T0), from gcsim PR #2587 (unmerged, branch `nefer`, tip 563e06937): frames re-shaped — `anim` was 25 (the swap override) where skillFrames is InitAbilSlice(52), so E→P/walk were 27f short; ActionCharge 29 added. application: the cast hit is Dendro, Durability 25, ICDTagElementalArt at skillHitmark 24; with no list it applied a provisional Dendro at the cast instant."
 			],
 			"description": "A dance that dissolved dynasties, as chilling as a winter's night on the great sea of sand, yet lingering with the tenderness of moonlit gauze. Nefer charges forward, dealing AoE Dendro DMG and entering the **Shadow Dance** state.\nWhile in the Shadow Dance state, if you have at least 1 **Verdant Dew**, Nefer's Charged Attacks will be replaced with the special Charged Attack **Phantasm Performance**, which will not consume Stamina. When in the Shadow Dance state, Nefer's resistance to interruption is increased.\n\nTwo initial charges."
 		},
@@ -128,8 +134,20 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
+			"application": [
+				{
+					"frame": 26,
+					"element": "dendro",
+					"units": 1
+				},
+				{
+					"frame": 46,
+					"element": "dendro",
+					"units": 1
+				}
+			],
 			"frames": {
-				"anim": 118,
+				"anim": 131,
 				"N": 119,
 				"E": 119,
 				"D": 120,
@@ -146,7 +164,8 @@
 				"Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(60) drains 60 energy from teammates (entire personal energy bar).",
 				"burstAnimationLength=131. Q→Charge has two branches: 131 (basic CA) or 124 (Phantasm CA available) — not authored as separate frame entries; planner uses Q→Charge=131 default. Schema lacks per-state Q-cancel-frame variants.",
 				"[A7] Per-stack burst DMG bonus is sourced from the veil[0] scaling table at Talent Level 10 (also noted in the burst _curatorNotes as stacks × veil[0]).",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — \"Shown at the zero-stack base\" names nothing that is shown — the tool renders no damage numbers anywhere (constitution: visualize mechanics, never calculate verdicts), so a DMG bonus has no bar, no value and no place a reader could notice it missing. The burst pill's width, cooldown and energy are all unaffected by Veil stacks. Damage math is FROZEN and stays in `_curatorNotes`, where it already is. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — \"Shown at the zero-stack base\" names nothing that is shown — the tool renders no damage numbers anywhere (constitution: visualize mechanics, never calculate verdicts), so a DMG bonus has no bar, no value and no place a reader could notice it missing. The burst pill's width, cooldown and energy are all unaffected by Veil stacks. Damage math is FROZEN and stays in `_curatorNotes`, where it already is. Category: invisible-omission.",
+				"↻ 2026-09-15 (essential-characters T0), from gcsim PR #2587 (unmerged, branch `nefer`, tip 563e06937): `anim` 118 → 131 (burstAnimationLength; 118 was the swap override). application: two hits, Dendro 25 on ICDTagElementalBurst at 26 and 46 — both listed as the nominal schedule (contract C4); they share the standard counter, so the second is suppressed, which is gcsim's own result. The absent list had applied ONE provisional Dendro at the cast instant."
 			],
 			"description": "Grant \"revelation\" to the mysteries of the false through Thoth's true sight, dealing AoE Dendro DMG to opponents ahead. When unleashed, Nefer will consume all **Veils of Falsehood** to increase the DMG dealt by the current Elemental Burst."
 		}
@@ -208,6 +227,7 @@
 			"name": "Delusion Ensnares Reason",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
+			"caveat": "The −20% Dendro RES bar runs a flat 13.5s from the Skill; in game it ends 4.5s after Shadow Dance does, so leaving the field early ends it sooner.",
 			"effects": [
 				{
 					"type": "resShred",
@@ -228,7 +248,8 @@
 			],
 			"_curatorNotes": [
 				"C4 has two effects: (1) +25% Verdant Dew gain rate while Nefer on-field in Shadow Dance — not modeled (Verdant Dew not modeled). (2) -20% Dendro RES on enemies near Nefer while in Shadow Dance, lingering 4.5s after exit (270f c4ResShredLinger). Authored as resShred effect with onCast skill trigger + duration 13.5 (9s stance + 4.5s linger). Note: gcsim applies the resShred per-tick while on-field-in-stance; we author it as a single-window effect for the duration. Slight over-render if Nefer leaves the field mid-stance, but acceptable.",
-				"Also applies to Dendro RES of enemies; teammates' Dendro hits all benefit. This is one of Nefer's primary support contributions."
+				"Also applies to Dendro RES of enemies; teammates' Dendro hits all benefit. This is one of Nefer's primary support contributions.",
+				"Caveat added 2026-09-15 (essential-characters T0): the stance bar cuts on swap (terminatesOnSwap) while this shred cannot — a reader who swaps at 2s sees a 13.5s Dendro RES bar under a 2s stance. Visible-divergence."
 			],
 			"description": "When Nefer is on the field and in the **Shadow Dance** state, you will gain Verdant Dew 25% faster.\nAdditionally, while Nefer is in the Shadow Dance state, nearby opponents will have their Dendro RES decreased by 20%. When Nefer exits the Shadow Dance state or after she strays a certain distance away from the opponents, this effect will be removed after 4.5s."
 		},
