@@ -21,25 +21,22 @@
 				{
 					"name": "N1",
 					"frames": {
-						"anim": 17,
-						"N": 21,
-						"swap": 17
+						"anim": 21,
+						"hit": 17
 					}
 				},
 				{
 					"name": "N2",
 					"frames": {
-						"anim": 12,
-						"N": 26,
-						"swap": 12
+						"anim": 26,
+						"hit": 12
 					}
 				},
 				{
 					"name": "N3",
 					"frames": {
-						"anim": 27,
-						"N": 43,
-						"swap": 27
+						"anim": 43,
+						"hit": 27
 					}
 				}
 			],
@@ -64,7 +61,7 @@
 				}
 			],
 			"_curatorNotes": [
-				"Bow normals: 3-hit Physical chain. attackHitmarks=[17,12,27]; attackFrames built via InitNormalCancelSlice. No explicit ActionAttack overrides — N values default to animLen.",
+				"Bow normals: 3-hit Physical chain. attackHitmarks=[17,12,27]; attackFrames = InitNormalCancelSlice(hitmark, animLen) with animLen 21/26/43 and no overrides. ↻ RE-SHAPED 2026-09-15 (essential-characters T0): the maps were pre-L4b — `anim` held the HITMARK, `N` the animation — so every unlisted key (C, and the Human-timing 'Animations' value) resolved to the hitmark. InitNormalCancelSlice fills every slot with the animation and only Aim/E/Q/D/J/swap with the hitmark, which is exactly `{anim, hit}`. Source: gcsim PR #2596 (unmerged; branch `linnea`, attack.go unchanged at 1799e3953).",
 				"chargeHits[0] Aimed Shot: aimedFrames[0]=InitAbilSlice(23), Dash/Jump=15. Multiplier aim[lvl=10] Physical.",
 				"chargeHits[1] Fully-Charged Aimed Shot: aimedFrames[1]=InitAbilSlice(94), Dash/Jump=86. Multiplier fullaim[lvl=10] Geo.",
 				"Plunge frames not authored — Linnea has no plunge.go in gcsim source."
@@ -94,6 +91,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
+			"application": [],
 			"frames": {
 				"anim": 20,
 				"N": 20,
@@ -114,7 +112,7 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Lumi is shown as a 25s summon with no damage ticks.",
+			"caveat": "Lumi is shown as a 25s summon with no strikes, so the Geo she applies — and the Lunar-Crystallize it causes — is missing here.",
 			"_curatorNotes": [
 				"Skill cast: spawns Lumi after 36f (skillRecastDur). Lumi attacks at intervals defined by skillSuperInterval=[111, 63, 144] (Super Power form) or skillStandardInterval=340f (Standard Power form). Skill duration 25s (skillDur).",
 				"behavior:instant + summons[] is the layla/ineffa pattern. Lumi authored as a 25s stationary summon without effects (the variable-cadence multi-form attack pattern doesn't fit summonTick which assumes constant interval).",
@@ -126,7 +124,8 @@
 				"↻ 2026-08-18: the 'cast-only emission' premise the Moondrift note above was written on is DEAD (gauge round L0–L6). Reactions are produced by a real gauge fed by FOUR application sources — a cast's own `application[]`, N/C/P swings, summon damage-tick chains, and procs — and `lunarCrystallize` is emitted ALONGSIDE crystallize whenever 2+ Moonsign characters are in the slot roster (`src/lib/sim/reactionBridge.ts` `toReactions`, gated on `hasMoonsignTeam`, which `notationParser.ts:165` sets at moonsignCount >= 2). So the old sentence 'Lumi-attack-driven Moondrift Harmony isn't reachable in cast-only emission' names a scope that no longer exists. The residual is now purely a DATA gap and says nothing about emission: Lumi carries NO `summonTick` effects (summons[0] has no `effects` array), so her attacks put nothing into the gauge and cause no reaction. Why the cadence is still unauthored, and what it would take, is the next note.",
 				"[A7] Caveat detail (from prior caveat prose): Lumi's three forms and cadences — Super Power (Pound-Pound 111f / Heavy Overdrive 63f / Pound-Pound 144f cycle), Standard Power (Million Ton Crush at 50f then ~5.7s ticks), Ultimate Power (3 E-recasts within 0.6s each, firing Million Ton Crush). Rendered as a 25s stationary summon with no per-tick damage; the variable cadence + form transitions would need a per-summon sub-state machine that isn't available. Tap-E recast gated by skillRecastKey; not authored as a separate ability variant because the 3-tap → Million Ton Crush cadence doesn't fit chainStage cleanly.",
 				"↻ 2026-08-18 — WHAT AUTHORING LUMI'S TICKS WOULD NOW TAKE (turning the deferral above, and C1's deferred item (b), into a work item). Everything the E3 v1.5 deferral was waiting on exists: a summon `damage` effect on a `summonTick` trigger feeds the gauge through the live tick chain (`src/lib/sim/aura.ts`), carries its own `application[]` and may declare `icdGate`, and `summonTick.tickCap` (2026-08-18) bounds a series by COUNT. What still does not fit is the reason for the original deferral — `summonTick` has ONE constant `interval` per series, and Super Power cycles 111f / 63f / 144f. ⚠️ The 2026-08-18 conditional-cadence primitive does NOT solve this: it is two MUTUALLY EXCLUSIVE series selected by `conditions` (Aino under Ascendant Gleam, Ororon C4), not a sequence of phases within one form. ⚠️ Encoding the cycle as three series sharing one 318f period (firstTickDelay 111 / 174 / 318) is expressible but would be WRONG on ICD: the application clock key is `${char.id}:summon:${label}:${series.index}` (aura.ts, per SERIES on purpose — Furina's three Salon members measure as three gates), so three series take three independent counters where the game shares one, and Lumi would over-apply Geo. Untried and unmeasured; measure against gcsim before authoring.",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Lumi is shown as a 25s summon with no damage ticks. Her three power forms — and the repeated-Tap path into the Ultimate Power hit — are not modeled.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Lumi is shown as a 25s summon with no damage ticks. Her three power forms — and the repeated-Tap path into the Ultimate Power hit — are not modeled.\"",
+				"↻ 2026-09-15 (essential-characters T0). `application: []` — gcsim PR #2596 skill.go Skill() queues NO attack: the cast opens the 36f recast window and schedules Lumi, whose first Pound-Pound lands 114f from the cast. With no list the cast fell back to a provisional Geo at the cast instant, a pill with nothing behind it. Lumi's series is STILL not authored, and the reason is sharper than 'variable cadence': advanceSkillIndex resets to the constant 111f Pound-Pound (Geo 25 ×2, 16f apart, ICDTagElementalArt) ONLY while no Lunar-Crystallize construct stands, and the team that makes her kit work — a Hydro teammate — leaves Moondrifts standing after Lumi's first reacting pound, which switches Lumi to Pound(111)→Heavy(63, no Durability)→Pound(144). Authoring 111f would put Geo on the wrong cadence exactly where it matters. ⏭ The shape exists (the Aino pair: the same series twice with exclusive conditions); what is missing is a Condition that reads Moondrift presence, and the Moondrift gadget windows already exist (sim/fields.ts). The caveat now names the missing Geo rather than only the missing ticks."
 			],
 			"description": "Adventure with Lumi! Depending on how you Tap, Lumi attacks in different forms.\n\nTap\nLumi strikes in a **Super Power Form**, attacking nearby enemies continuously, dealing AoE Geo DMG. If there are Moondrifts nearby, Lumi will also deal AoE Geo DMG to nearby enemies, which will be considered Lunar-Crystallize Reaction DMG.\n\nContinuous Tapping\nTime to show what we're really capable of! After using her Elemental Skill, Linnea will feed Lumi sparkling gemstones when her Elemental Skill or Normal Attack is Tapped repeatedly. A full-bellied Lumi will strike in her **Ultimate Power Form**, dealing an especially powerful instance of AoE Geo DMG that is considered Lunar-Crystallize Reaction DMG, switching to **Standard Power Form**.\nAdditionally, tapping the Elemental Skill increases Linnea's interruption resistance."
 		},
@@ -136,6 +135,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
+			"application": [],
 			"frames": {
 				"anim": 108,
 				"N": 110,
@@ -155,7 +155,8 @@
 				"↻ 2026-08-18, two corrections to the reasoning above — the authored NUMBERS are unchanged and still produce the intended 1 + 5 ticks. (1) That loop is no longer the renderer's: `computeSummonTicks` / `collectSummonTicks` live parser-side in `src/lib/sim/summons.ts`, and since 2026-08-18 `finalize` walks them ONCE and stamps `TimelineWindow.ticks`, which the projection then reads (`src/lib/timeline/summonSubrows.ts`) — the ticks a reader counts and the ticks that fire are one computation now. Its bound is the window's FINAL end (recast/swap truncation already applied), not a literal `spawnAt + duration`. (2) The one-shot no longer has to be smuggled through the loop bound: `summonTick.tickCap` (2026-08-18) states the COUNT directly, so `tickCap: 1` would say what this means instead of relying on 13 ≥ 12. ⚠️ Leaving `interval: 13` is safe today, but it is a coincidence rather than a claim — anything that lengthens the Memo Heal Aura past 13s (a `durationModifiers` entry, a constellation extension) silently turns the one-shot into a repeating heal, where a cap would not. ⚠️ If the cap is ever authored, note that `collectSummonTicks` widens the walk by exactly ONE interval when a cap is present so the boundary tick lands; with `tickCap: 1` that is still one tick at spawn.",
 				"Burst frames: burstFrames=InitAbilSlice(110), ActionSkill=109 ActionSwap=108. Per Q-spec swap/N/E/D/J — N/D/J default to animLen=110.",
 				"Cooldown: SetCD(burst, 15*60). EnergyMax=60. ConsumeEnergy(5) drains 5 energy from teammates.",
-				"Q-after-E reset behavior not modeled: gcsim's burst either resets existing Lumi's duration OR enters Super Power if Lumi is absent, but the planner can't distinguish these states. Heal Effects render unconditionally on Q cast (they live on the Memo Heal Aura summon, not on Lumi); a Q after an active E still spawns a fresh Memo Heal Aura visually, while in-game it would just refresh Lumi's duration. The healing itself is correct since the burst's heal mechanic is independent of Lumi's form/state."
+				"Q-after-E reset behavior not modeled: gcsim's burst either resets existing Lumi's duration OR enters Super Power if Lumi is absent, but the planner can't distinguish these states. Heal Effects render unconditionally on Q cast (they live on the Memo Heal Aura summon, not on Lumi); a Q after an active E still spawns a fresh Memo Heal Aura visually, while in-game it would just refresh Lumi's duration. The healing itself is correct since the burst's heal mechanic is independent of Lumi's form/state.",
+				"`application: []` (2026-09-15): gcsim PR #2596 burst.go queues heals and a Lumi (re)summon at hitmark 92 and NO attack. The absent list applied a provisional Geo at the cast instant."
 			],
 			"description": "Even master adventurers need proper rest! Linnea summons Lumi to strike in **Super Power Form**, healing nearby party members. For a short duration, she will continuously heal nearby active party members based on Linnea's DEF.\nIf Lumi is already on the field when Linnea unleashes Elemental Burst, Lumi's active duration will be reset instead and her Strike Form will not change.",
 			"summons": [
