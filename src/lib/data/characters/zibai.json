@@ -33,11 +33,28 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"caveat": "In the Skill's mode, Normal and Charged Attacks deal Geo DMG. The timeline still treats them as Physical, so they apply no Geo and cause no reactions.",
 			"description": "Normal Attack\nPerforms up to 4 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
 			"_curatorNotes": [
-				"[A7] In-mode Normal/Charged Attacks deal Geo DMG that other infusions cannot override (kit detail; trimmed from the user caveat for length).",
+				"↻ 2026-09-15 (essential-characters T0): the in-mode Geo conversion is MODELLED now, by the state-gated sibling ability 'Golden Blade's Petaled Touch (Lunar Phase Shift)' below, so the caveat that said the timeline treats in-mode swings as Physical is retired. Out of the mode these swings are Physical, as authored here.",
 				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"In the Skill's mode, Normal and Charged Attacks become DEF-scaling Geo and the 4th Normal adds a Lunar-Crystallize instance. Neither the Geo conversion nor that extra hit is shown.\""
+			]
+		},
+		{
+			"id": "zibai__normal__lunar_phase_shift_strikes",
+			"name": "Golden Blade's Petaled Touch (Lunar Phase Shift)",
+			"input": ["N"],
+			"abilityType": "normal",
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"infusion": "geo",
+			"tags": [],
+			"description": "While in Lunar Phase Shift mode, Zibai's Normal Attacks and Charged Attacks will deal Geo DMG that cannot be overridden by other infusions.",
+			"_curatorNotes": [
+				"Authored 2026-09-15 (essential-characters T0) — the Durin dark-commit shape: a sibling normal gated on the skill's own stance (`state: inStance`), carrying `infusion: 'geo'`, which needs no tracking because the stance IS the window. Kit text (the skill's Lunar Phase Shift paragraph): 'Zibai's Normal Attacks and Charged Attacks will deal Geo DMG that cannot be overridden by other infusions'. `NormalAbility.infusion` covers the charged attack too.",
+				"Measured `Xingqiu E Q > Zibai E N4 C N4`: 1 → 5 lunarCrystallize events, the Moondrift field topped up and refreshed through Moondrift Harmony instead of lapsing at 10.92s.",
+				"⚠️ No `hits` — she is frameless (no gcsim source), so every in-mode swing uses the generic normal profile, exactly as the base ability does. The swing ELEMENT is the claim here, not its timing. The mode's DEF scaling and the 4th hit's extra Lunar-Crystallize instance are damage magnitude and not authored."
 			]
 		},
 		{
