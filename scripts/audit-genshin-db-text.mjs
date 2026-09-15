@@ -22,6 +22,17 @@
  *   node scripts/audit-genshin-db-text.mjs                 # vs the previous pin in git
  *   node scripts/audit-genshin-db-text.mjs --since 5.2.12  # vs an explicit version
  *   node scripts/audit-genshin-db-text.mjs --write         # + docs/curation/genshin-db-text-diff.md
+ *   node scripts/audit-genshin-db-text.mjs --names         # ONLY the corpus-names check (no network)
+ *
+ * ⚠️⚠️ THE SECOND GAP (2026-09-15): the differential above compares genshin-db with
+ * ITSELF, so prose that was never generated from genshin-db is invisible to it. Four
+ * of the seven element Travelers were hand-written in 2026-05 before the ingest
+ * existed and carried INVENTED passive and constellation names for four months —
+ * the generator refuses Travelers, so no scalar or text diff ever covered them, and
+ * the frames audit reads only frames. The names section below compares OUR corpus's
+ * passive and constellation NAMES against the installed genshin-db for every
+ * character, Travelers included, straight from the installed package (no network).
+ * A name that is not genshin-db's is prose that came from somewhere else.
  *
  * ⛔ REVIEW-CANDIDATE GENERATOR, NEVER A FIXER. A revised entry is a prompt to
  * re-read the kit and re-author deliberately; re-authoring is its own scoped
@@ -29,7 +40,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, existsSync } from 'node:fs';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -102,6 +113,80 @@ function loadVersion(version, scratch) {
 	return JSON.parse(readFileSync(join(dir, 'package', DATA_REL), 'utf8')).data.English;
 }
 
+// ── Corpus names vs the installed genshin-db ───────────────────────────────
+const CHAR_DIR = join(PROJECT_ROOT, 'src/lib/data/characters');
+/** Corpus id → genshin-db key: drop the underscores (`hu_tao` → `hutao`,
+ *  `traveler_geo` → `travelergeo`) — the same rule `gcsimKeyFor` uses for gcsim,
+ *  and genshin-db keys the seven Travelers `traveler<element>` too. */
+const gdbKeyFor = (id) => id.replace(/_/g, '');
+
+function namesReport(en) {
+	const rows = [];
+	const files = readdirSync(CHAR_DIR).filter((f) => f.endsWith('.json'));
+	let covered = 0;
+	for (const f of files) {
+		const c = JSON.parse(readFileSync(join(CHAR_DIR, f), 'utf8'));
+		const key = gdbKeyFor(c.id);
+		const t = en.talents[key];
+		const k = en.constellations[key];
+		if (!t || !k) {
+			rows.push({ id: c.id, what: '—', note: `no genshin-db entry under \`${key}\`` });
+			continue;
+		}
+		covered++;
+		const gdbPassives = ['passive1', 'passive2', 'passive3', 'passive4']
+			.map((p) => t[p]?.name)
+			.filter(Boolean);
+		for (const p of c.passives ?? []) {
+			if (!gdbPassives.includes(p.name))
+				rows.push({
+					id: c.id,
+					what: `passive \`${p.name}\``,
+					note: `genshin-db: ${gdbPassives.join(' · ')}`
+				});
+		}
+		for (const con of c.constellations ?? []) {
+			const want = k[`c${con.constellationLevel}`]?.name;
+			if (want && con.name !== want)
+				rows.push({
+					id: c.id,
+					what: `C${con.constellationLevel} \`${con.name}\``,
+					note: `genshin-db: \`${want}\``
+				});
+		}
+	}
+	return { rows, covered, total: files.length };
+}
+
+function renderNames(n) {
+	const L = [];
+	L.push(
+		`## 🔎 Corpus passive/constellation names vs installed genshin-db (${n.rows.length} divergent)`
+	);
+	L.push('');
+	L.push(
+		`**${n.covered}** of **${n.total}** corpus characters resolve to a genshin-db entry by id. ` +
+			'A name genshin-db does not know is prose that was not generated from it — the class that let four ' +
+			'Travelers carry invented talents from 2026-05-08 to 2026-09-15. ⚠️ Not every row is a defect: a ' +
+			'deliberate curator rename is one too, so read before you re-ingest.'
+	);
+	L.push('');
+	if (!n.rows.length)
+		L.push("✅ Every passive and constellation name in the corpus is genshin-db's.");
+	else {
+		L.push('| Character | Ours | genshin-db |');
+		L.push('| --- | --- | --- |');
+		for (const r of n.rows) L.push(`| \`${r.id}\` | ${r.what} | ${r.note} |`);
+	}
+	L.push('');
+	return L;
+}
+
+function installedData() {
+	return JSON.parse(readFileSync(join(PROJECT_ROOT, 'node_modules/genshin-db', DATA_REL), 'utf8'))
+		.data.English;
+}
+
 const count = (haystack, needle) =>
 	(haystack.match(new RegExp(needle.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&'), 'gi')) || []).length;
 
@@ -130,6 +215,16 @@ function compareFolder(oldF = {}, newF = {}) {
 	}
 	const removed = Object.keys(oldF).filter((k) => !(k in newF));
 	return { added, changed, removed };
+}
+
+if (argv.includes('--names')) {
+	const names = namesReport(installedData());
+	console.log(
+		[`# Corpus names vs genshin-db ${installedVersion()}`, '', ...renderNames(names)].join('\n')
+	);
+	// ⛔ Review candidates, never a gate: six of the first run's rows are the 7.0
+	// Witch's Revelation passives genshin-db 5.2.13 does not carry at all.
+	process.exit(0);
 }
 
 const scratch = mkdtempSync(join(tmpdir(), 'gdb-text-'));
@@ -201,6 +296,9 @@ try {
 		L.push('✅ No text changes between these versions.');
 		L.push('');
 	}
+	// ⚓ The names check rides every full report too, so a Traveler (which the
+	// differential above cannot see) is covered whenever the report is regenerated.
+	L.push(...renderNames(namesReport(newEn)));
 
 	const report = L.join('\n');
 	if (argv.includes('--write')) {
