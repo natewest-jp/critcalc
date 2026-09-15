@@ -115,13 +115,36 @@
 					"scaling": 4.8,
 					"stat": "hp",
 					"flat": 564.985
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "overloaded",
+						"source": "team"
+					},
+					"key": "overchargedBall",
+					"amount": 1,
+					"max": 1
+				},
+				{
+					"type": "consumeStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
+					"key": "overchargedBall",
+					"amount": "all"
 				}
 			],
 			"_curatorNotes": [
 				"Hold variant cooldownStartDelay is dynamic: hold+13 frames (base 13 at minimum hold). Hold frames are also dynamic: actual cancel frame = hold + base-offset; variant frames below record the base-offset slice values (minimum hold). C4 suppresses Hold cooldown for 2 uses or 6s after Q cast.",
 				"Heal authored 2026-07-12 as an onCast(skill) heal-over-time on the ability with target 'active' and duration:12 — Dori Alcazarzaray's Exactitude shape (periodic active-character heal window with no spawned entity; the schema has no non-summon tick-interval field, so the 2s cadence is documented here + surfaced via caveat rather than encoded). gcsim skill.go startSkillHealing → Core.Player.Heal(Target: Core.Player.Active()), Src = skillHpRegen[TalentLvlSkill]*MaxHP + skillHpFlat[TalentLvlSkill]. TL10 (index 9, chevreuse_gen.go): skillHpRegen[9]=0.048 → scaling 4.8% Max HP; skillHpFlat[9]=564.98486 → flat 564.985 (sidecar 'HP Regeneration Over Time' col 10 = '4.80% Max HP+565'). Value authored is per-tick — 6 ticks over the 12s window (skillHealInterval=120f=2s; first tick at 2s after CDStart via Tasks.Add(startSkillHealing, skillHealInterval); heal-status skillDur = 12*60+1f so the final tick lands on expiry). Heal fires on BOTH skillPress (skillHeal(skillPressCDStart=18)) and skillHold (skillHeal(cdStart=hold+13)) — not Hold-only. C4 retrigger refreshes the same skillHealKey status (durationType left default; single 12s window models the C0 canonical case).",
-				"Arkhe: Ousia 'Surging Blade' fires on skill hit with 10s ICD (600 frames), dealing Ousia-aligned Pyro DMG as Elemental Skill DMG. Not modeled — needs reviewer pass.",
-				"Overcharged Ball: Chevreuse gains 1 ball per nearby party Overloaded trigger (max 1). When active, Hold mode fires 'Short-Range Rapid Interdiction Fire [Overcharged]' instead of regular hold shot, dealing greater AoE Pyro DMG and consuming the ball; also triggers A4 (a4() queued at cdStart). Not modeled — needs reviewer pass.",
+				"Arkhe: Ousia 'Surging Blade' (10s ICD) — deliberately unmodelled: gcsim skill.go arkhe gives the attack Durability 0, so it reaches no gauge, and its damage magnitude is out of scope. Not work.",
+				"Overcharged Ball (2026-09-15): gcsim overchargedBallEventSub sets overChargedBall = true on EVERY OnOverload against an enemy (no actor check, a bool so max 1, no expiry), and skillHold spends it and queues a4 at cdStart. Authored as gainStacks overchargedBall (onReaction overloaded, source team, max 1; team-sourced grants accrue rotation-wide, so a teammate's Overload while Chevreuse is off field counts) + consumeStacks on the hE cast. Gains → snapshot → consumes, so A4's stacks gate on the same cast reads the ball before it is spent. The Overcharged shot's own hit (ICDTagNone, Pyro 25) lands on the same frame as the ordinary Hold shot's, so no separate application list is needed.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The blank after the E pill. The heal IS authored (`onCast`, target active, duration 12) but no non-summon heal reaches any lane, so her skill draws as an instant with a 15s tail and no 12s span or tick marks — while summon-hosted healers on the same screen (Bennett, Xilonen) do get marks. Rewritten to point at the missing window rather than at the mechanic, so the reader knows it is our rendering that is short. Category: expected-but-absent."
 			],
 			"variants": [
@@ -230,7 +253,8 @@
 			"name": "Vanguard's Coordinated Tactics",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Party composition condition (all party members must be Pyro or Electro with at least one of each) is not gated on the effect — the planner doesn't enforce the Pyro+Electro-only team requirement, so the shred renders whenever Overloaded fires."
+				"Party composition gate (2026-09-15, essential-characters T0): gcsim asc.go a1 sets onlyPyroElectro = count[Pyro] > 0 && count[Electro] > 0 && Pyro+Electro == len(chars), and subscribes nothing otherwise. Expressed as teamElementCount, which counts NON-HOLDER members: Chevreuse is Pyro, so 'at least one Pyro' is her; the gate is 'no teammate outside Pyro/Electro' AND 'at least one Electro teammate'. Before this the shred drew in any Overloading team.",
+				"source: 'team' — 'After a character triggers the Overloaded reaction' (gcsim subscribes to every OnEnemyDamage carrying AttackTagOverloadDamage, no actor check)."
 			],
 			"effects": [
 				{
@@ -243,7 +267,24 @@
 					},
 					"duration": 6,
 					"element": "electro",
-					"value": -40
+					"value": -40,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamElementCount",
+								"elements": ["hydro", "cryo", "anemo", "geo", "dendro"],
+								"comparison": "=",
+								"value": 0
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["electro"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
+					}
 				},
 				{
 					"type": "resShred",
@@ -255,7 +296,24 @@
 					},
 					"duration": 6,
 					"element": "pyro",
-					"value": -40
+					"value": -40,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamElementCount",
+								"elements": ["hydro", "cryo", "anemo", "geo", "dendro"],
+								"comparison": "=",
+								"value": 0
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["electro"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
+					}
 				}
 			],
 			"description": "When all party members are Pyro and Electro characters and there is at least one Pyro and one Electro character each in the party:\nChevreuse grants \"Coordinated Tactics\" to nearby party members: After a character triggers the Overloaded reaction, the Pyro and Electro RES of the opponent(s) affected by this Overloaded reaction will be decreased by 40% for 6s.\nThe \"Coordinated Tactics\" effect will be removed when the Elemental Types of the characters in the party do not meet the basic requirements for the Ascension Talent."
@@ -265,20 +323,84 @@
 			"name": "Vertical Force Coordination",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Scaling buff: ATK% = min(MaxHP / 1000 × 1%, 40%). value field deleted per recipe — reviewer to implement as BuffValue.scaling form with MaxHP source and 40% cap.",
-				"trigger: 'manual' inherited from generator. Probable trigger: onCast with condition ability='skill' and overcharged ball consumed (gcsim: a4() is queued at cdStart after overcharged-ball Hold E fires). Target scope: nearby Pyro and Electro party members — target: 'self' in current skeleton is incorrect. Reviewer to fix target (likely 'team' with element filter) and trigger."
+				"Authored 2026-09-15 (essential-characters T0; was a value-less manual skeleton). gcsim asc.go a4: ATK% = min(MaxHP/1000 × 1%, 40%) for 30s to every Pyro AND Electro party member, queued at the Overcharged Hold shot's cdStart. Value: BuffValue scaling hp, ratio 0.1 (1% per 1,000 HP is 0.1 percentage points per 100 HP), cap 40.",
+				"Gate: stacks overchargedBall >= 1 on the hE cast (the ball is granted on the skill; see its notes). The receiver is element-filtered and no Condition names a receiver's element, so it is two mutually exclusive effects on the team's composition: target team when no teammate is outside Pyro/Electro (then every member qualifies — exact), else target self (Chevreuse is Pyro). ⚠️ In a mixed team the self arm UNDER-claims — a Pyro/Electro teammate beside a non-Pyro/Electro one also gets the buff in game. Different pools (team vs self), so the stat-dedupe trap does not apply.",
+				"Timing: the bar opens at the cast; in game it lands at cdStart (hold + 13f), ~0.2s later."
 			],
 			"effects": [
 				{
 					"type": "buff",
-					"target": "self",
+					"target": "team",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
 					},
 					"duration": 30,
 					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "overchargedBall",
+								"min": 1
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["hydro", "cryo", "anemo", "geo", "dendro"],
+								"comparison": "=",
+								"value": 0
+							}
+						]
+					},
 					"source": "character",
 					"stat": "atk%",
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 0.1,
+						"cap": 40
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill",
+						"input": ["hE"]
+					},
+					"duration": 30,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "stacks",
+								"key": "overchargedBall",
+								"min": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "teamElementCount",
+									"elements": ["hydro", "cryo", "anemo", "geo", "dendro"],
+									"comparison": "=",
+									"value": 0
+								}
+							}
+						]
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": {
+						"type": "scaling",
+						"stat": "hp",
+						"ratio": 0.1,
+						"cap": 40
+					},
 					"snapshottable": false
 				}
 			],
@@ -292,9 +414,39 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. C1 restores 6 Energy to the active character (not Chevreuse) when they trigger Overloaded, once every 10s ICD (600 frames). Probable trigger: onReaction with reaction=overloaded, conditions: actor is active character, actor is not Chevreuse. Requires Coordinated Tactics (A1 party composition condition). gcsim: c1() in cons.go."
+				"Authored 2026-09-15 (essential-characters T0). gcsim cons.go c1: on OnOverload, skip Chevreuse's own, skip off-field actors, 10s ICD, +6 Energy to the actor; returns early unless onlyPyroElectro (A1's composition gate, carried here). source 'active' is the on-field half; ⚠️ 'not Chevreuse herself' has no Condition, so her own on-field Overloads are counted too. Energy has no planner surface; this is the Team Builder's energy facet."
 			],
-			"description": "When the active character with the \"Coordinated Tactics\" status (not including Chevreuse herself) triggers the Overloaded reaction, they will recover 6 Energy. This effect can be triggered once every 10s.\nYou must first unlock the Ascension Talent \"Vanguard's Coordinated Tactics.\""
+			"description": "When the active character with the \"Coordinated Tactics\" status (not including Chevreuse herself) triggers the Overloaded reaction, they will recover 6 Energy. This effect can be triggered once every 10s.\nYou must first unlock the Ascension Talent \"Vanguard's Coordinated Tactics.\"",
+			"effects": [
+				{
+					"type": "energy",
+					"target": "active",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "overloaded",
+						"source": "active"
+					},
+					"procCooldown": 10,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamElementCount",
+								"elements": ["hydro", "cryo", "anemo", "geo", "dendro"],
+								"comparison": "=",
+								"value": 0
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["electro"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
+					},
+					"amount": 6
+				}
+			]
 		},
 		{
 			"id": "chevreuse__constellation__sniper_induced_explosion",
