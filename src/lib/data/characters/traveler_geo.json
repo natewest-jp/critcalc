@@ -57,10 +57,10 @@
 			"cooldownStartDelay": 23,
 			"cooldownModifiers": [
 				{
-					"source": "A1: Frenzied Rockslide",
+					"source": "A1: Shattered Darkrock",
 					"type": "flat",
 					"value": -2,
-					"conditions": { "type": "ascension", "level": 1 }
+					"conditions": { "type": "ascension", "min": 1 }
 				}
 			],
 			"tags": ["summon"],
@@ -72,7 +72,7 @@
 					"mobility": "stationary",
 					"durationModifiers": [
 						{
-							"source": "C6: Aftershock",
+							"source": "C6: Everlasting Boulder",
 							"type": "flat",
 							"value": 10,
 							"conditions": { "type": "constellation", "level": 6 }
@@ -118,7 +118,7 @@
 					"mobility": "stationary",
 					"durationModifiers": [
 						{
-							"source": "C6: Aftershock",
+							"source": "C6: Everlasting Boulder",
 							"type": "flat",
 							"value": 5,
 							"conditions": { "type": "constellation", "level": 6 }
@@ -148,32 +148,94 @@
 	],
 	"passives": [
 		{
+			"id": "traveler_geo__passive__shattered_darkrock",
+			"name": "Shattered Darkrock",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"Authored on the skill as a cooldownModifiers entry (−2s at ascension ≥ 1); gcsim asc.go `a1` does the same (`skillCD -= 2*60`).",
+				"⚠️ Re-ingested 2026-09-15 from genshin-db: the 2026-05-08 hand-written entry filed this text under the A4's name (Frenzied Rockslide) and gated the modifier on `{type:'ascension', level:1}` — a key `evalCondition` never reads (it reads `min`), so the −2s never applied and the skill sat at 6s. The gate is `min: 1` now."
+			],
+			"description": "Reduces Starfell Sword's CD by 2s."
+		},
+		{
 			"id": "traveler_geo__passive__frenzied_rockslide",
 			"name": "Frenzied Rockslide",
 			"abilityType": "passive",
-			"_curatorNotes": [
-				"A1: Starfell Sword CD reduced by 2s. Authored on the skill via cooldownModifiers."
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"filter": {
+							"hitIndex": 4
+						}
+					},
+					"stat": "atk",
+					"scaling": 60,
+					"element": "geo"
+				}
 			],
-			"description": "Decreases Starfell Sword's CD by 2s."
-		},
-		{
-			"id": "traveler_geo__passive__resonant_waves",
-			"name": "Resonant Waves",
-			"abilityType": "passive",
 			"_curatorNotes": [
-				"A4: Wake of Earth shockwaves count as elemental crystals to form Crystallize shields if there are no Geo constructs nearby. Not modeled (Crystallize shielding mechanic is out of planner scope)."
+				"gcsim asc.go `a4`: an AttackTagNormal / ICDTagNone / Durability-25 Geo hit queued `a4Hitmark` (18f Aether, 20f Lumine) after the fifth swing's hitmark (`NormalCounter == NormalHitNum-1`). Authored as an onHit damage effect on the fifth swing (`filter.hitIndex: 4`, 0-based).",
+				"⛔ No `application[]`: normals carry none by rule, and the collapse's own Geo application is a second hit off one swing, which the swing model does not express. The gap is one Geo application per N5 — not modelled, not faked.",
+				"⚠️ Re-ingested 2026-09-15: the retired entry ('Resonant Waves', Crystallize shielding) was invented — this is the real A4."
 			],
-			"description": "Wake of Earth's shockwaves count as elemental crystals to form Crystallize shields if there are no Geo constructs nearby."
+			"description": "The final hit of a Normal Attack combo triggers a collapse, dealing 60% of ATK as AoE Geo DMG."
 		}
 	],
 	"constellations": [
 		{
-			"id": "traveler_geo__constellation__aftershock",
-			"name": "Aftershock",
+			"id": "traveler_geo__constellation__invincible_stonewall",
+			"name": "Invincible Stonewall",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "constellation",
+							"level": 6
+						}
+					},
+					"stat": "critRate",
+					"value": 10
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					},
+					"stat": "critRate",
+					"value": 10
+				}
+			],
+			"caveat": "Drawn for the whole field; in play it holds only while the active character stands inside the wall.",
 			"_curatorNotes": [
-				"C1: party members within Wake of Earth radius gain +10% CR + interrupt RES. Schema-fit: team buff with state:duringSummon condition gated on Wake of Earth wall summon. Not authored — duringSummon state isn't reliably entered for stationary-construct summons in the parser."
+				"gcsim cons.go `c1`: a 1s ticker for the wall's life (15 ticks, 20 at C6) that re-applies a 2s +10% CR mod to the ACTIVE character whenever the player is inside `burstArea`. Authored as an active-target onCast-burst buff for the wall's life — two mutually exclusive effects because the wall runs 15s below C6 and 20s at C6 (the summon carries that as a durationModifier, which an effect cannot read).",
+				"The interruption resistance has no pixel and is description-only. ⚠️ Re-ingested 2026-09-15: the retired entry was named 'Aftershock' and carried this text unauthored."
 			],
 			"description": "Party members within the radius of Wake of Earth have their CRIT Rate increased by 10% and have increased resistance against interruption."
 		},
@@ -183,9 +245,9 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"C2: when Starfell Sword Meteorite is destroyed (manually or by duration end), it explodes for an additional skill[lvl] = 248% ATK Geo at lvl=10. Construct-destruct trigger primitive missing; not authored."
+				"Fires when the meteorite is destroyed — by its timer or by an opponent — dealing the skill's own DMG again. No construct-destroyed primitive exists and the tool draws no damage numbers, so description-only. ⚠️ Re-ingested 2026-09-15: the retired entry stated a fixed 200% ATK; the real text ties it to Starfell Sword's own DMG."
 			],
-			"description": "When destroyed, Starfell Sword's Meteorite will deal 200% ATK as Geo DMG to nearby opponents."
+			"description": "When the meteorite created by Starfell Sword is destroyed, it will also explode, dealing additional AoE Geo DMG equal to the amount of damage dealt by Starfell Sword."
 		},
 		{
 			"id": "traveler_geo__constellation__will_of_the_rock",
@@ -195,29 +257,40 @@
 			"description": "Increases the Level of Wake of Earth by 3.\nMaximum upgrade level is 15."
 		},
 		{
-			"id": "traveler_geo__constellation__shoreline",
-			"name": "Shoreline",
+			"id": "traveler_geo__constellation__reaction_force",
+			"name": "Reaction Force",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"_curatorNotes": [
-				"C4: Wake of Earth regenerates +5 Energy per opponent hit, max 25 per cast. Per-hit energy-callback gating + max-cap state not authorable cleanly. Not authored."
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"amount": 5
+				}
 			],
-			"description": "The shockwave triggered by Wake of Earth regenerates 5 Energy for every opponent hit. A maximum of 25 Energy can be regenerated in this manner at any one time."
+			"_curatorNotes": [
+				"gcsim burst.go: the shockwave's callback tags each opponent once per cast and grants 5 Energy per tagged opponent, to five (25). Authored as the single-target case — one opponent, 5 Energy — at the cast. ⚠️ Re-ingested 2026-09-15: the retired entry was named 'Shoreline'."
+			],
+			"description": "The shockwave triggered by Wake of Earth regenerates 5 Energy for every opponent hit.\nA maximum of 25 Energy can be regenerated in this manner at any one time."
 		},
 		{
-			"id": "traveler_geo__constellation__rite_of_dispatch",
-			"name": "Rite of Dispatch",
+			"id": "traveler_geo__constellation__meteorite_impact",
+			"name": "Meteorite Impact",
 			"abilityType": "constellation",
 			"constellationLevel": 5,
 			"description": "Increases the Level of Starfell Sword by 3.\nMaximum upgrade level is 15."
 		},
 		{
-			"id": "traveler_geo__constellation__broken_rock_severed_waves",
-			"name": "Broken Rock, Severed Waves",
+			"id": "traveler_geo__constellation__everlasting_boulder",
+			"name": "Everlasting Boulder",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
 			"_curatorNotes": [
-				"2026-05-09 Quick Schema Wins: authored durationModifiers on both summons (Meteorite +10s and Wake of Earth Wall +5s, gated on constellation level 6)."
+				"Authored as durationModifiers on both summons (Meteorite +10s, Wake of Earth wall +5s), each carrying its own constellation gate; the C1 buff's 20s arm follows it. ⚠️ Re-ingested 2026-09-15: the retired entry was named 'Broken Rock, Severed Waves'."
 			],
 			"description": "The barrier created by Wake of Earth lasts 5s longer.\nThe meteorite created by Starfell Sword lasts 10s longer."
 		}
