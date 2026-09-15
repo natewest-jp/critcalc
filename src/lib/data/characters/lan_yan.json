@@ -101,8 +101,8 @@
 				"Three hit frames from gcsim ringHitmarks=[38, 62, 85]; not authored as hits[] because SkillAbility's schema only carries a single FrameMap. Reviewer may extend the schema to support per-hit timing on stance-fired skill abilities.",
 				"Cooldown 0: gcsim's reathermoonRings does not call SetCD. ActionReady override returns true for E during leapBackStatus regardless of base skill CD — the in-stance follow-up bypasses the 16s skill cooldown. Same applies to the in-stance E variant below.",
 				"A4 (anemo mastery): each ring hit gains FlatDmg += EM × 3.09. Scaling buff — value field omitted per recipe; reviewer to wire as BuffValue.scaling with scalingStat 'em'.",
-				"A1 (Pliant Wind): if the parent Detect hit triggered an elemental absorption (Pyro/Hydro/Electro/Cryo), each ring hit also fires a 'mixed' hit at 50% multiplier with the absorbed element (separate ICDGroup ICDGroupLanyanRingAttackMix, reset_timer=150). Recipe.md § 3.5 says don't author element-absorption-conditional damage; flagged here only.",
-				"C1 (Of Awakened Trees) extra hits at frames [38, 64, 90] when the absorbed element is non-Anemo. Same A1-conditional logic; not modeled, flagged on the C1 entry.",
+				"A1 (Four Sealing Divination Charms): if the parent Detect hit triggered an elemental absorption (Pyro/Hydro/Electro/Cryo), each ring hit also fires a 'mixed' hit at 50% multiplier with the absorbed element (separate ICDGroup ICDGroupLanyanRingAttackMix, reset_timer=150). Recipe.md § 3.5 says don't author element-absorption-conditional damage; flagged here only.",
+				"C1 (\"As One Might Stride Betwixt the Clouds\") extra hits at frames [38, 64, 90] when the absorbed element is non-Anemo. Same A1-conditional logic; not modeled, flagged on the C1 entry.",
 				"Casting this ability ends leapBackStatus (gcsim DeleteStatus(leapBackStatus) at top of reathermoonRings). The schema's stance window does not have an explicit 'in-stance ability ends stance' field; reviewer to handle in parser. The 1.1s stance duration on the base skill makes the practical impact small."
 			]
 		},
@@ -153,14 +153,14 @@
 				"Stance opens conditionally on detect-hit only. Frames above are gcsim's skillHitFrames (post-hit) — the standard rotation case. Miss-path cancel slice (skillMissFrames): swap=49, N=45, Q=46, D=47, J=47. Not authored as a separate ability; reviewer to flag a caveat for missed-detect rotations.",
 				"Hold parameter (0–610): shifts the detect hitmark to 7+hold and adds +hold frames to all cancel times. cooldownStartDelay = 4+hold. Min-hold (hold=0, the standard use) is captured here; max-hold cancel ≈ 80+610 = 690 frames. Not modelled; flag for hold-aware rotations.",
 				"Shield authored 2026-07-12 as a shield Effect (see effects[]): 12.5s lifetime, ShieldHP = shieldAmt[talentLvl] × TotalAtk + shieldFlat[talentLvl] (ATK-scaling — verified gcsim shield.go shieldHP()). Shield element type matches the absorbed element (defaults to Anemo); element is not a shield-Effect schema field, so it's noted here only.",
-				"C2 (Through Glistening Springs): on enemy hit by active char's normal attack while the shield is up, restores 40% of shield HP. ICD 2s. Not authored — schema has no 'on team-N hit while shield up' trigger; flagged on C2.",
-				"C6 (Of Hopes Fulfilled): Init() calls SetNumCharges(action.ActionSkill, 2), giving 2 skill charges at C6. Authored as chargeModifiers below.",
+				"C2 (\"Dance Vestments Billow Like Rainbow Jade\"): on enemy hit by active char's normal attack while the shield is up, restores 40% of shield HP. ICD 2s. Not authored — schema has no 'on team-N hit while shield up' trigger; flagged on C2.",
+				"C6 (\"Let Us Away on Sylphic Wing, the Silvered Ornaments to Ring\"): Init() calls SetNumCharges(action.ActionSkill, 2), giving 2 skill charges at C6. Authored as chargeModifiers below.",
 				"Stance duration of 1.1s is gcsim's leapBackDuration (66 frames). terminatesOnSwap inferred from the BLOCKED-draft notes (stance is brief enough that this rarely matters in practice).",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — in the modelled scenario. The tool's world is one stationary enemy you are engaging — every damage bar, every summon and every hit-gated effect in the corpus assumes the cast connects. The 12.5s shield bar is CORRECT for a landed cast, and the caveat's only content is \"if you whiff, you get nothing\", which is how the character works rather than something the screen gets wrong. Contrast Diona's kept shield caveat, which is about the drawn bar's LENGTH and absorption changing with paw count even when the cast lands. Category: kit-explanation."
 			],
 			"chargeModifiers": [
 				{
-					"source": "C6: Of Hopes Fulfilled",
+					"source": "C6: \"Let Us Away on Sylphic Wing, the Silvered Ornaments to Ring\"",
 					"type": "flat",
 					"value": 1,
 					"conditions": {
@@ -224,7 +224,7 @@
 				"Three hits at gcsim burstHitmarks=[30, 46, 51], all sharing the same AttackInfo (50U gauge anemo, ICDTagElementalBurst). Schema-typed as a single burst frames map per recipe; multi-hit timing flagged here.",
 				"J omitted: burstFrames = InitAbilSlice(100) // Q - Jump with no explicit ActionJump override — default 100 is AnimationLength, not a valid cancel frame.",
 				"A4 (Liquid Moon): each burst hit gains FlatDmg += EM × 7.74. Scaling buff — value field omitted per recipe; reviewer to wire as BuffValue.scaling with scalingStat 'em'.",
-				"C4 (Of Wisp-Lit Glow): on Q cast, all party members gain +60 EM for 12s. Authored on the C4 constellation entry."
+				"C4 (\"With Drakefalcon's Blood-Pearls Adorned\"): on Q cast, all party members gain +60 EM for 12s. Authored on the C4 constellation entry."
 			],
 			"application": [
 				{
@@ -245,57 +245,59 @@
 	],
 	"passives": [
 		{
-			"id": "lan_yan__passive__pliant_wind",
-			"name": "Pliant Wind",
+			"id": "lan_yan__passive__four_sealing_divination_charms",
+			"name": "Four Sealing Divination Charms",
 			"abilityType": "passive",
-			"description": "When the Detect hit of Swallow-Wisp Pinion Dance lands on an enemy, Lan Yan performs an elemental absorption check (Pyro / Hydro / Electro / Cryo). If an aura is present, the resulting Anemo shield gains that element type, and each Feathermoon Ring hit additionally fires a 50%-multiplier hit of the absorbed element (separate ICD group ICDGroupLanyanRingAttackMix).",
 			"_curatorNotes": [
-				"Element absorption — recipe.md § 3.5 says flag, don't author the per-element conditional damage. The mixed-element hits use ringHitmarks=[38, 62, 85] just like the base ring (separate ICD group; reset_timer=150).",
-				"Ascension level 1+. Not authored — schema lacks per-element absorption conditional triggers."
-			]
+				"⚠️ Re-ingested 2026-09-15 from genshin-db 5.2.13: the 2026-05 entry was hand-written with an invented name and curator-speak in place of the kit text; the mechanics (from gcsim) were right and are kept below.",
+				"Element absorption — gcsim asc.go `absorbA1`: a Pyro/Hydro/Electro/Cryo check at the dash's hit; on a hit the shield converts and every Feathermoon Ring hit fires a 50% hit of that element on `ringHitmarks` [38, 62, 85] in its own ICD group (`ICDGroupLanyanRingAttackMix`). ⛔ Not authored — the schema has no element-absorption conditional, and recipe.md § 3.5 says flag, don't author per-element damage."
+			],
+			"description": "When the dash from the Elemental Skill Swallow-Wisp Pinion Dance hits a target, if it interacts with Hydro/Pyro/Cryo/Electro, the Swallow-Wisp Shield will undergo Elemental Absorption, with the converted shield absorbing DMG from the corresponding element with 250% efficiency.\nAdditionally, if this use of Swallow-Wisp Pinion Dance causes the Swallow-Wisp Shield to undergo Elemental Absorption, the Feathermoon Rings that Lan Yan throws at her foes additionally deal Elemental DMG equal to 50% of the original in the corresponding Elemental Type. This DMG is considered Elemental Skill DMG."
 		},
 		{
-			"id": "lan_yan__passive__a_thousand_more_li",
-			"name": "A Thousand More Li",
+			"id": "lan_yan__passive__skyfeather_evilsubduing_charm",
+			"name": "Skyfeather Evil-Subduing Charm",
 			"abilityType": "passive",
-			"description": "Each Feathermoon Ring hit gains FlatDmg += EM × 3.09. Each Lustrous Moonrise burst hit gains FlatDmg += EM × 7.74.",
 			"_curatorNotes": [
-				"EM-scaling FlatDmg buffs on ring (×3.09) and burst (×7.74) hits. Per recipe — not authored; values dependent on runtime EM. Reviewer to wire as BuffValue.scaling with scalingStat 'em' once schema is settled.",
-				"Ascension level 4+. The A4 contributions stack with A1's mixed-element hits (which inherit FlatDmg too in gcsim) — flagged for completeness."
-			]
+				"⚠️ Re-ingested 2026-09-15 from genshin-db 5.2.13: the 2026-05 entry was hand-written with an invented name and curator-speak in place of the kit text; the mechanics (from gcsim) were right and are kept below.",
+				"EM-scaled FlatDmg on the ring (×3.09) and burst (×7.74) hits — damage magnitude, which the tool never draws; description-only."
+			],
+			"description": "The Elemental Skill Swallow-Wisp Pinion Dance and the Elemental Burst Lustrous Moonrise deal increased DMG equal to 309% and 774% of Lan Yan's Elemental Mastery respectively."
 		}
 	],
 	"constellations": [
 		{
-			"id": "lan_yan__constellation__of_awakened_trees",
-			"name": "Of Awakened Trees",
+			"id": "lan_yan__constellation__as_one_might_stride_betwixt_the_clouds",
+			"name": "\"As One Might Stride Betwixt the Clouds\"",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "When A1 (Pliant Wind) absorbs an element other than Anemo, Feathermoon Ring fires three additional mixed-element hits at frames 38, 64, 90 — same scaling as the base ring.",
 			"_curatorNotes": [
-				"C1 extra hits ride on the A1 absorption check; only fire when the absorbed element is not Anemo. Frames from gcsim c1Hitmarks=[38, 64, 90]. Not modelled — schema gap on element-absorption-conditional damage."
-			]
+				"⚠️ Re-ingested 2026-09-15 from genshin-db 5.2.13: the 2026-05 entry was hand-written with an invented name and curator-speak in place of the kit text; the mechanics (from gcsim) were right and are kept below.",
+				"One more Feathermoon Ring per absorbing cast — gcsim `c1Hitmarks` [38, 64, 90], same scaling as the base ring, only when the A1 absorbed a non-Anemo element. Not modelled: it rides the absorption check the schema cannot express."
+			],
+			"description": "After triggering the Elemental Absorption from the Ascension Talent \"Four Sealing Divination Charms,\" this instance of Lan Yan's Elemental Skill Swallow-Wisp Pinion Dance will produce another Feathermoon Ring when they are thrown at opponents.\nYou must first unlock the Ascension Talent \"Four Sealing Divination Charms.\""
 		},
 		{
-			"id": "lan_yan__constellation__through_glistening_springs",
-			"name": "Through Glistening Springs",
+			"id": "lan_yan__constellation__dance_vestments_billow_like_rainbow_jade",
+			"name": "\"Dance Vestments Billow Like Rainbow Jade\"",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "When the active character lands a normal attack while protected by Lan Yan's shield, the shield restores 40% of its DMG absorption value. Triggers at most once every 2s.",
 			"_curatorNotes": [
-				"Trigger: onHit by active char's normal attack while LanyanShield is up. ICD 2s (lanyan-c2-icd). Not authored — schema has no 'on team-N hit while shield up' trigger combined with 'restore shield by %'."
-			]
+				"⚠️ Re-ingested 2026-09-15 from genshin-db 5.2.13: the 2026-05 entry was hand-written with an invented name and curator-speak in place of the kit text; the mechanics (from gcsim) were right and are kept below.",
+				"gcsim cons.go `c2`: on the ACTIVE character's Normal Attack hit while the Swallow-Wisp Shield stands, restore 40% of the shield's absorption, once per 2s (`lanyan-c2-icd`). Not authored — the shield lane draws a span, not an absorption value, so there is no pixel for a restore."
+			],
+			"description": "While the Swallow-Wisp Shield is active, when your active party member's Normal Attacks deal DMG, 40% of the Shield's DMG absorption will be restored, up to its original maximum absorption. This effect can occur once every 2s."
 		},
 		{
-			"id": "lan_yan__constellation__of_lifted_pinions",
-			"name": "Of Lifted Pinions",
+			"id": "lan_yan__constellation__on_white_wings_pierce_through_cloud_and_fog",
+			"name": "\"On White Wings Pierce Through Cloud and Fog\"",
 			"abilityType": "constellation",
 			"constellationLevel": 3,
 			"description": "Increases the Level of Swallow-Wisp Pinion Dance by 3.\nMaximum upgrade level is 15."
 		},
 		{
-			"id": "lan_yan__constellation__of_wisp_lit_glow",
-			"name": "Of Wisp-Lit Glow",
+			"id": "lan_yan__constellation__with_drakefalcons_bloodpearls_adorned",
+			"name": "\"With Drakefalcon's Blood-Pearls Adorned\"",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"effects": [
@@ -313,27 +315,28 @@
 					"snapshottable": false
 				}
 			],
-			"description": "When Lan Yan casts Lustrous Moonrise, all party members gain 60 Elemental Mastery for 12s.",
 			"_curatorNotes": [
-				"Standard onCast buff. gcsim cons.go c4(): adds StatMod EM=60 to every party member with hitlag-aware base, 12s lifetime. Authored straightforwardly."
-			]
+				"gcsim cons.go `c4`: a 12s +60 EM StatMod on every party member at the burst. Authored as the standard onCast team buff."
+			],
+			"description": "After Lan Yan uses her Elemental Burst Lustrous Moonrise, the Elemental Mastery of all nearby party members increases by 60 for 12s."
 		},
 		{
-			"id": "lan_yan__constellation__of_grasping_fledglings",
-			"name": "Of Grasping Fledglings",
+			"id": "lan_yan__constellation__having_met_you_my_heart_is_gladdened",
+			"name": "\"Having Met You, My Heart is Gladdened\"",
 			"abilityType": "constellation",
 			"constellationLevel": 5,
 			"description": "Increases the Level of Lustrous Moonrise by 3.\nMaximum upgrade level is 15."
 		},
 		{
-			"id": "lan_yan__constellation__of_hopes_fulfilled",
-			"name": "Of Hopes Fulfilled",
+			"id": "lan_yan__constellation__let_us_away_on_sylphic_wing_the_silvered_ornaments_to_ring",
+			"name": "\"Let Us Away on Sylphic Wing, the Silvered Ornaments to Ring\"",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"description": "Swallow-Wisp Pinion Dance gains 1 additional charge (total 2). Other unmodeled effects per gcsim are typically scaling-buff related; review for newer game patches.",
 			"_curatorNotes": [
-				"C6 sets `c.SetNumCharges(action.ActionSkill, 2)` in Init(). Authored as a chargeModifier on the base skill (lan_yan__skill__swallow_wisp_pinion_dance). gcsim's c6 may include additional buff effects that should be re-checked against current in-game text on a future pass; the BLOCKED draft only captured the +1 charge."
-			]
+				"⚠️ Re-ingested 2026-09-15 from genshin-db 5.2.13: the 2026-05 entry was hand-written with an invented name and curator-speak in place of the kit text; the mechanics (from gcsim) were right and are kept below.",
+				"gcsim `SetNumCharges(ActionSkill, 2)` at C6. Authored as a chargeModifier on the base skill (lan_yan__skill__swallow_wisp_pinion_dance)."
+			],
+			"description": "Swallow-Wisp Pinion Dance gains 1 additional charge."
 		}
 	],
 	"meta": {
