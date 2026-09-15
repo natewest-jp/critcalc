@@ -18,7 +18,7 @@
 			"abilityType": "normal",
 			"tags": [],
 			"_curatorNotes": [
-				"Spirit Envoy Metamorphosis (deer state) is not modeled in schema. ↻ CORRECTED 2026-09-15 (essential-characters T0): the old note said chargeFrames records Spiritcall Prayer, the damaging CA — it does NOT. chargeFrames {anim 64, N 61, C/E/Q 63, J/swap 49} is byte-for-byte gcsim's deerFrames (charge.go), the TRANSFORMATION, and it is what the oracle captures for a bare `C` because deerStateReady starts true (lauma.go) — the first Charged Attack in any rotation enters the 10s deer state and hits nothing. The damaging Spiritcall Prayer is chargeFrames = InitAbilSlice(68) with every cancel key at chargeReleaseFrame 67 and its Dendro 25 hit at chargeHitmark 73; it is only reachable while the deer is on cooldown (4s after exit, A4 reduces it). ⚠️ The frames are therefore RIGHT for the first `C`; what is wrong is that a catalyst charged attack always applies its element here, so the transformation lands a phantom Dendro at its end — named in the caveat. Drawing two charged forms needs a cooldown-gated second charged attack (no primitive); ⛔ don't swap in the Spiritcall frames, which would be wrong for the common first press. D disabled in deer state (dash.go returns an error). Base duration 10s (C1 +5s).",
+				"⚓ `C` IS SPIRITCALL PRAYER, THE DAMAGING CHARGED ATTACK (Nate, 2026-09-15). Spirit Envoy Metamorphosis — the deer form — is exploration and long-distance traversal, not combat, so a `C` in a rotation means the attack, and the deer is deliberately NOT modelled (⛔ don't add a second charged form for it). gcsim charge.go: chargeFrames = InitAbilSlice(68) with ActionAttack/Skill/Burst/Dash/Jump/Swap at chargeReleaseFrame 67, and the Dendro 25 / ICDTagNone hit at chargeHitmark 73 — which lands AFTER the release, hence `hit` > the cancel keys. ⚠️⚠️ THE FRAMES AUDIT WILL FLAG THIS MAP AND IT IS AN ORACLE ARTEFACT: gcsim's `deerStateReady` starts true (lauma.go), so the dumper's bare `C` captures deerFrames ({anim 64, N 61, C/E/Q 63, J/swap 49}) — which is what this map held until today, and what a T0 pass briefly defended with a caveat. ⛔ Never let migrate-frames-shape resolve this row in gcsim's favour. D in deer state is disabled (dash.go), irrelevant here.",
 				"No plunge.go in gcsim character dir — plungeFrames not available."
 			],
 			"hits": [
@@ -47,15 +47,15 @@
 					}
 				}
 			],
-			"caveat": "A Charged Attack's first use turns Lauma into her Spirit Envoy form, which deals no damage — but the timeline still applies Dendro at the end of it.",
 			"chargeFrames": {
-				"anim": 64,
-				"N": 61,
-				"C": 63,
-				"E": 63,
-				"Q": 63,
-				"J": 49,
-				"swap": 49
+				"anim": 68,
+				"hit": 73,
+				"N": 67,
+				"E": 67,
+				"Q": 67,
+				"D": 67,
+				"J": 67,
+				"swap": 67
 			},
 			"sections": [
 				{
