@@ -7,11 +7,13 @@ do not edit by hand. Ground truth lives in `scripts/capability-expectations.mjs`
 This is the Team Builder curation backlog: each finding is a place where the
 capability facets would answer differently from the game.
 
-## Expected capability missing entirely (1)
+## Expected capability missing entirely (3)
 
 Highest priority — the facet answers "no" where the game says "yes".
 
-- **traveler_cryo** — expected offFieldDamage (C0) — nothing derives ⚠️check — Frostpierce Star follows the party for 12s (15s at C4) firing ice crystals at 38.51% ATK Cryo. EXPECTED TO SHOW AS A GAP: the firing interval is stated in no source (genshin-db 5.2.13 has no interval label, the Fandom talent page is a stub with empty Gameplay Notes, gcsim has no Cryo Traveler), so no summonTick series is authored and nothing derives. This entry is the backlog item — resolve it by authoring the cadence, never by deleting the expectation.
+- **gorou** — expected heal (C4) — nothing derives — C4 General’s Glory field heal
+- **traveler_hydro** — expected heal (C0) — nothing derives — RESOLVED 2026-07-28 (capability sweep): Spotless Waters droplet-pickup self-heal now authored (manual trigger, 7% max HP) after the stale-beta re-ingest; C6 Tides of Justice team heal (6% of receiver max HP, lowest-HP ally) also derives from C6
+- **sigewinne** — expected shield (C2) — nothing derives — CONFIRMED 2026-07-12: C2 Bubbly Shield (30% max HP, 250% hydro absorption); no shield below C2 (KQM quickguide)
 
 ## Constellation gate later than in-game (0)
 
@@ -31,11 +33,12 @@ Capability derives, but not from the ability that actually carries it in-game �
 
 - _none_
 
-## Derived but not in fixture (0)
+## Derived but not in fixture (2)
 
 Either a fixture blind spot (fine — extend the fixture) or a data artifact worth a look.
 
-- _none_
+- **columbina** — derives shield C1 — absent from fixture (fixture blind spot, or data artifact?)
+- **prune** — derives offFieldDamage(summon) C0 — absent from fixture (fixture blind spot, or data artifact?)
 
 ## Tag without effect (1)
 
@@ -55,24 +58,25 @@ Underivable until curated.
 
 - _none_
 
-## Frame-curated, zero capabilities (3)
+## Frame-curated, zero capabilities (8)
 
 Verify these kits genuinely offer nothing team-facing.
 
+- **alhaitham** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
+- **aloy** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 - **chasca** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
+- **kaveh** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
+- **ningguang** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
+- **sethos** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 - **tartaglia** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
-- **traveler_pyro** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
+- **wanderer** — frame-curated but zero capabilities derive — plausible for selfish DPS kits; verify
 
-## Uncurated stubs (9)
+## Uncurated stubs (5)
 
 Excluded from capability trust; shown honestly in the UI.
 
 - **alyosha** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **illuga** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **kachina** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **lohen** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **odette** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
-- **prune** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **sandrone** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **traveler_cryo** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"
 - **zibai** — uncurated stub (no frame data) — Team Builder shows it under "not yet curated"

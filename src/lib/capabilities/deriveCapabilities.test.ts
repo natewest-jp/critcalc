@@ -8,7 +8,6 @@ import {
 
 import bennett from '$lib/data/characters/bennett.json';
 import xianyun from '$lib/data/characters/xianyun.json';
-import charlotte from '$lib/data/characters/charlotte.json';
 import fischl from '$lib/data/characters/fischl.json';
 
 /** Minimal character wrapper — tests exercise the walker, not the full schema. */
@@ -326,12 +325,16 @@ describe('real corpus integration', () => {
 		expect(c4heal?.minConstellation).toBe(4);
 	});
 
-	it('Charlotte: constellation-hosted heal gates at C1 via constellationLevel', () => {
-		const caps = deriveCharacterCapabilities(charlotte as unknown as CharacterData);
+	// ⚠️ Was Charlotte's C1 until 2026-09-15: that heal is `trigger: 'manual'`, and
+	// the derivation skips `manual` now (the channel is being retired — a claim the
+	// planner never honoured must not be a Team Builder claim either). Fischl's C4
+	// heal is `onCast`, so it exercises the same positional gate.
+	it('Fischl: constellation-hosted heal gates at C4 via constellationLevel', () => {
+		const caps = deriveCharacterCapabilities(fischl as unknown as CharacterData);
 		const conHeal = caps.capabilities.find(
 			(c) => c.kind === 'heal' && c.source.section === 'constellation'
 		);
-		expect(conHeal?.minConstellation).toBe(1);
+		expect(conHeal?.minConstellation).toBe(4);
 	});
 
 	it('Fischl: Oz summon damage ticks derive offFieldDamage', () => {
