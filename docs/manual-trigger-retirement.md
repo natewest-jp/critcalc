@@ -1,6 +1,9 @@
 # Retiring the `manual` trigger — plan (2026-09-15)
 
-_Status: SPEC. ⚓ Nate's decision 2026-09-15: retire the channel._
+_Status: STEP 1 SHIPPED 2026-09-15 (`deriveCapabilities` skips `manual`;
+derived capabilities 783 → 669, 114 claims gone across 55 characters, 0 added —
+the census is in `essential-characters-2026-09-15.md` §6.6). Steps 2–3 open.
+⚓ Nate's decision 2026-09-15: retire the channel._
 
 ## 0. What it is and why now
 

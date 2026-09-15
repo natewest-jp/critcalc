@@ -250,6 +250,46 @@ probe, one commit per character. The engine rounds (§4, plus 6.2/6.3) are
 session after: the audit compares `anim`/`hit`; the TB skips `manual`; lint
 demands an explicit `source` on every `onReaction`.
 
+**6.6 ✅ The three hardenings and the Traveler re-ingest shipped, later the
+same day** (branch `curation/gcsim-sync-2026-09`). Measured:
+
+- **Audit compares `anim`/`hit`** — `frameMapDisagreements` in
+  `scripts/lib/gcsim-map.mjs` is the one rule (the migration's `toFrameMap`
+  derives `hit` by the same rule, so its output is what the audit accepts).
+  Disagreeing maps **35 → 71** (70 after the Pyro hold fix below); every new row is the class §1.E found by hand
+  (Furina CA 33→253, Nahida CA 65→69, Gaming Q 66→77, Nilou E 21→22 / WS1
+  31→33, Kinich's normals with no `hit`, Varesa N1, Hu Tao's plunges) plus ones
+  it did not (Kokomi's three hitmarks off by 2–3f, Lan Yan's every map, Chasca's
+  normals, Sigewinne's burst 245→129). ⛔ The migration was NOT re-run: §1.E's
+  artefact rows (Flins burst, Nilou WS2/WS3) are in the same table, and
+  re-migrating is a curation call per character.
+- **TB skips `manual`** — derived capabilities **783 → 669**, 114 claims gone
+  across 55 characters (86 buff · 17 heal · 9 energy · 2 shield), 0 added.
+  Wriothesley loses five (the fabricated +50% ATK among them), Columbina nine.
+  `capability-audit.md` 11 → 20 findings; the new rows are honest backlog
+  (Gorou C4 heal, Hydro Traveler's pickup heal and Sigewinne's C2 shield were
+  `manual`-hosted; Alhaitham / Aloy / Kaveh / Ningguang / Sethos / Wanderer read
+  "zero capabilities" because every claim they had was `manual`).
+  `deriveCapabilities.test.ts`'s Charlotte case moved to a non-`manual` subject.
+- **Lint B.12d demands `source` on every `onReaction`** — 28 effects were
+  unstated; each was read off its kit text: 16 `team` (Chevreuse A1 ×2, Citlali
+  A1 ×2 + C2 ×2, Clorinde C2, Collei A1, Flins C1, Ineffa C4 + C6, Lauma C1,
+  Nilou C2, Ororon A1, Mizuki C1 ×2 — gcsim confirms "the swirl source does not
+  matter"), 12 `self` (Fischl's Secret Rite ×2, Freminet C6, Illuga C1, Kazuha
+  A4 ×4, Sucrose A1, Tighnari C4, Cryo Traveler C1, Varka C4). Corpus parse
+  under the constellation-gating rotation: 250 of 252 digests byte-identical,
+  Citlali +2 windows at C0 and C6. Chevreuse in a Pyro/Electro team: **0 → 4**
+  shred windows. ⚠️ Clorinde C2, Ororon A1, Collei A1, Ineffa C6 and Mizuki C1
+  are `damage` effects with no `application[]`, so `team` is the honest reading
+  and still draws nothing — their fixes are the §2 rows, not this one.
+- **Traveler re-ingest** — see `traveler-prose-reingest.md` §3. 🐛 Two live
+  defects came out with it: the Geo A1's cooldown gate was authored
+  `{type:'ascension', level:1}` where `evalCondition` reads `min`, so the −2s
+  never applied (E 6s → 4s; the corpus's only such key), and the Pyro hold-E
+  `anim` was 77 for 81.
+- ⚠️ `probe-team-builder.mjs` no longer exists (retired with the probe drawer,
+  `8e883efe`) — CLAUDE.md's Probes line was stale.
+
 ---
 
 ## Appendix — the ten batch reports, verbatim
