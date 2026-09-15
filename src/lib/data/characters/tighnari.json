@@ -356,7 +356,8 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["burning", "bloom", "quicken", "spread"]
+						"reaction": ["burning", "bloom", "quicken", "spread"],
+						"source": "self"
 					},
 					"duration": 8,
 					"durationType": "fixed",

@@ -133,7 +133,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"] },
+					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"], "source": "team" },
 					"conditions": { "type": "state", "state": "duringSummon" },
 					"duration": 12,
 					"element": "hydro",
@@ -142,7 +142,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"] },
+					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"], "source": "team" },
 					"conditions": { "type": "state", "state": "duringSummon" },
 					"duration": 12,
 					"element": "pyro",
@@ -235,7 +235,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"] },
+					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"], "source": "team" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
@@ -250,7 +250,7 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"] },
+					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"], "source": "team" },
 					"conditions": {
 						"type": "all",
 						"conditions": [

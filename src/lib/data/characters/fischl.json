@@ -458,7 +458,8 @@
 					"source": "character",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "overloaded"
+						"reaction": "overloaded",
+						"source": "self"
 					},
 					"conditions": {
 						"type": "teamFaction",
@@ -477,7 +478,8 @@
 					"source": "character",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["electroCharged", "lunarCharged"]
+						"reaction": ["electroCharged", "lunarCharged"],
+						"source": "self"
 					},
 					"conditions": {
 						"type": "teamFaction",

@@ -261,7 +261,8 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl", "stellarSwirl"]
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl", "stellarSwirl"],
+						"source": "self"
 					},
 					"duration": 10,
 					"durationType": "refresh",

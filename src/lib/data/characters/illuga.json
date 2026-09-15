@@ -292,7 +292,8 @@
 							"cryoCrystallize",
 							"electroCrystallize",
 							"lunarCrystallize"
-						]
+						],
+						"source": "self"
 					},
 					"procCooldown": 15,
 					"amount": 12

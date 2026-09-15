@@ -200,7 +200,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "onReaction", "reaction": "frozen" },
+					"trigger": { "type": "onReaction", "reaction": "frozen", "source": "self" },
 					"duration": 6,
 					"durationType": "fixed",
 					"source": "character",

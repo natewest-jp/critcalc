@@ -310,7 +310,8 @@
 					"target": "self",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["stellarConduct", "stellarSwirl"]
+						"reaction": ["stellarConduct", "stellarSwirl"],
+						"source": "self"
 					},
 					"procCooldown": 0.5,
 					"amount": 5
@@ -318,7 +319,7 @@
 			],
 			"_curatorNotes": [
 				"\"Stellar Glimmer\" is the umbrella term for the two Stellar reactions, so the trigger lists both members rather than naming a family — the Reaction union stays per-reaction by design.",
-				"`source` is left at its default `'self'`: the text says \"when THEY deal Stellar Glimmer DMG\", the Traveler's own reaction damage, not the party's."
+				"`source: 'self'`, stated (lint B.12d demands it since 2026-09-15): the text says \"when THEY deal Stellar Glimmer DMG\", the Traveler's own reaction damage, not the party's."
 			],
 			"description": "The Traveler regenerates 5 Elemental Energy when they deal Stellar Glimmer DMG. This effect can trigger once every 0.5s."
 		},

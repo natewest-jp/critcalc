@@ -238,7 +238,8 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "overloaded"
+						"reaction": "overloaded",
+						"source": "team"
 					},
 					"duration": 6,
 					"element": "electro",
@@ -249,7 +250,8 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "overloaded"
+						"reaction": "overloaded",
+						"source": "team"
 					},
 					"duration": 6,
 					"element": "pyro",

@@ -297,7 +297,8 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"]
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl"],
+						"source": "team"
 					},
 					"conditions": {
 						"type": "all",
@@ -321,7 +322,8 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["stellarSwirl"]
+						"reaction": ["stellarSwirl"],
+						"source": "team"
 					},
 					"conditions": {
 						"type": "all",

@@ -230,7 +230,8 @@
 							"overloaded",
 							"electroSwirl",
 							"electroCrystallize"
-						]
+						],
+						"source": "team"
 					},
 					"duration": 15,
 					"scaling": 30,
