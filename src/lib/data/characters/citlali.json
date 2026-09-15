@@ -16,9 +16,33 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{ "name": "N1", "frames": { "anim": 38, "hit": 16, "N": 34, "C": 33 } },
-				{ "name": "N2", "frames": { "anim": 39, "hit": 16, "N": 37, "C": 37 } },
-				{ "name": "N3", "frames": { "anim": 52, "hit": 36, "N": 49, "C": 50 } }
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 38,
+						"hit": 16,
+						"N": 34,
+						"C": 33
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 39,
+						"hit": 16,
+						"N": 37,
+						"C": 37
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 52,
+						"hit": 36,
+						"N": 49,
+						"C": 50
+					}
+				}
 			],
 			"chargeFrames": {
 				"anim": 56,
@@ -55,7 +79,15 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": { "anim": 50, "N": 42, "C": 42, "Q": 41, "D": 49, "J": 49, "swap": 41 },
+			"frames": {
+				"anim": 50,
+				"N": 42,
+				"C": 42,
+				"Q": 41,
+				"D": 49,
+				"J": 49,
+				"swap": 41
+			},
 			"cooldown": 16,
 			"cooldownStartDelay": 18,
 			"tags": ["shield", "summon"],
@@ -69,10 +101,48 @@
 						{
 							"type": "damage",
 							"target": "enemy",
-							"trigger": { "type": "summonTick", "interval": 0.983 },
+							"trigger": {
+								"type": "summonTick",
+								"interval": 0.983,
+								"icdGate": {
+									"timer": 90,
+									"every": 2
+								}
+							},
 							"scaling": 30.64,
 							"stat": "atk",
 							"element": "cryo"
+						},
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "onHit",
+								"source": "self",
+								"filter": {
+									"abilityName": "Itzpapa"
+								},
+								"icdGate": "none"
+							},
+							"procCooldown": 8,
+							"conditions": {
+								"type": "constellation",
+								"level": 4
+							},
+							"scaling": 1800,
+							"stat": "em",
+							"element": "cryo",
+							"application": [
+								{
+									"frame": 57,
+									"element": "cryo",
+									"units": 1
+								}
+							],
+							"attribution": "Spiritvessel Skull (C4)",
+							"_curatorNotes": [
+								"C4 bonus Spiritvessel Skull, re-homed 2026-09-15 from a `manual` damage effect on the C4 entry (which reached no surface). gcsim cons.go c4SkullCB is the AttackCBFunc on every Frostfall Storm hit: 8s ICD status, then a Cryo / Durability 25 / ICDTagNone attack at spiritVesselSkullHitmark (57f). Hosted on Itzpapa so the summon's liveness arms it; `filter.abilityName: 'Itzpapa'` narrows the stream to Frostfall Storm ticks (a summon tick's abilityName is its label), and a proc never hears its own output. icdGate 'none' = ICDTagNone. The +16 Nightsoul / +8 Energy halves are resource, not modelled."
+							]
 						}
 					]
 				}
@@ -81,7 +151,10 @@
 				{
 					"type": "shield",
 					"target": "active",
-					"trigger": { "type": "onCast", "ability": "skill" },
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
 					"duration": 20,
 					"scaling": 1036.8,
 					"stat": "em",
@@ -93,14 +166,20 @@
 			"_curatorNotes": [
 				"Skill spawns two follows-player summons: Itzpapa (combat emitter) at frame 18 and the Opal Shield at frame 37. Authoring as instant + summons[] (not stance) because Citlali's normals don't change in Nightsoul — there's no in-stance N variant to gate.",
 				"Itzpapa's Opal Fire state requires 50+ Nightsoul points to enter, drains 8 points/sec while active, and ends when points hit 0. Per the constitution (windows not gauges), the resource pool is not modelled; the flat 20s window approximates 'maximum possible Itzpapa activity.'",
-				"Frostfall Storm tick (P3): gcsim itzpapaInterval=59f (=0.983s), Cryo damage scaling 30.64% ATK at TalentLvl 10. Ticks render for the full Itzpapa window — see caveat for the over-render note.",
+				"Frostfall Storm tick (P3): gcsim itzpapaInterval=59f (=0.983s), Cryo damage scaling 30.64% ATK at TalentLvl 10. Ticks render for the full Itzpapa window — see caveat for the over-render note. ↻ 2026-09-15: icdGate {timer 90, every 2} — gcsim tags the tick ICDTagCitlaliFrostfallStorm / ICDGroupCitlaliFrostfallStorm, reset 90f with sequence {1.0, 0.0} (pkg/core/attacks/icd_groups.dm.go), so every second tick applies; the 59f interval is under the 90f timer, so the counter never resets. ⚠️ The oracle never sees this stream (Nightsoul never reaches 50 in the isolated core), so no report would have proposed it.",
 				"Opal Shield authored 2026-07-12 as a shield effect (onCast skill, target 'active' — gcsim shield.go addShield sets Tmpl.Target -1 = protects the on-field character; forms at frame 37 per QueueCharTask(c.addShield, 37), matching the Opal Shield summon spawnsAt). Absorption at TalentLvl 10: 1036.8% of Citlali's EM + 3050.92 flat (sidecar 'Shield DMG Absorption' 10th column '1036.8% Elemental Mastery+3051'; gcsim shieldEM[9]=10.368, shieldFlat[9]=3050.9182). Duration 20s (sidecar 'Shield Duration' row; gcsim Expires = c.Core.F + 20*60). The 250% Cryo DMG-absorption efficiency and the brief self-Cryo application on placement (skill.go ApplySelfInfusion Cryo) are not modelled — no per-element shield-efficiency primitive, same as the Diona/Kaeya notes. The Opal Shield summon lane is retained alongside the effect (mirrors Thoma's Blazing Barrier summon + shield-effect pairing).",
 				"C6 Teoiztac removes the Opal Fire end condition (always active) and unlocks Cifra of the Secret Law stacks; not modelled.",
 				"[A7] Nightsoul starts at 24 after the cast and builds toward the 50-point Opal Fire threshold via team-Cryo application and the A4 Frozen/Melt Nightsoul regen. Per the constitution (windows, not gauges) the Nightsoul resource pool is not modeled; the flat 20s window approximates maximum possible Itzpapa activity.",
 				"↻ 2026-08-14 — the stand-in summon is retired. \"Opal Shield\" was a zero-effect `summons[]` entry whose only jobs were to give this instant cast a 20s active window and to put a labelled bar on the chart. Both now have their own field: `activeDuration` on the ability and `label` on the shield Effect, which the shield lane renders. `summons[]` is back to meaning a thing left in the world. Bar geometry is unchanged apart from the spawn offset, which the shield window never had."
 			],
 			"description": "Invoking secret pacts passed down by her tribe over the millennia, Citlali deploys an Opal Shield and calls forth \"Obsidian Tzitzimitl: Itzpapa,\" a creature that is (reputedly) terrifying beyond compare, dealing Nightsoul-aligned AoE Cryo DMG.\nThe Opal Shield's DMG absorption scales based on Citlali's Elemental Mastery, and absorbs Cryo DMG with 250% efficiency. When it is deployed, it will cause Citlali to briefly be affected by Cryo.\nAfter using this skill, Citlali gains 24 Nightsoul points and enters the Nightsoul's Blessing state.\n\nNightsoul's Blessing: Citlali\nWhen Itzpapa leaves the field, Citlali exits the Nightsoul's Blessing state.\n\nItzpapa\n·Itzpapa will follow the character.\n·If Citlali has at least 50 Nightsoul points, Itzpapa enters the Opal Fire state and continuously consumes Nightsoul points to whip up a Frostfall Storm that follows the character and attacks opponents within its AoE, dealing Nightsoul-aligned Cryo DMG.\n·When Citlali's Nightsoul points are fully depleted, Itzpapa's Opal Fire state also ends.",
-			"application": [{ "frame": 20, "element": "cryo", "units": 1 }]
+			"application": [
+				{
+					"frame": 20,
+					"element": "cryo",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "citlali__burst__edict_of_entwined_splendor",
@@ -108,7 +187,14 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
-			"frames": { "anim": 113, "N": 112, "C": 112, "E": 111, "D": 112, "swap": 110 },
+			"frames": {
+				"anim": 113,
+				"N": 112,
+				"C": 112,
+				"E": 111,
+				"D": 112,
+				"swap": 110
+			},
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
@@ -119,8 +205,16 @@
 			],
 			"description": "Summons \"allies\" from the starry skies and the vast earth, hurling forth an ice storm to bombard the area in front and deal Nightsoul-aligned AoE Cryo DMG. This restores a set amount of Nightsoul points for Citlali, and also summons a Spiritvessel Skull near a maximum of 3 opponents within the AoE, with 1 Skull for each opponent. Spiritvessel Skulls explode after some time, dealing Nightsoul-aligned AoE Cryo DMG and restoring a set amount of Nightsoul points for Citlali.",
 			"application": [
-				{ "frame": 118, "element": "cryo", "units": 2 },
-				{ "frame": 232, "element": "cryo", "units": 1 }
+				{
+					"frame": 118,
+					"element": "cryo",
+					"units": 2
+				},
+				{
+					"frame": 232,
+					"element": "cryo",
+					"units": 1
+				}
 			]
 		}
 	],
@@ -133,8 +227,15 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"], "source": "team" },
-					"conditions": { "type": "state", "state": "duringSummon" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["melt", "frozen"],
+						"source": "team"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
 					"duration": 12,
 					"element": "hydro",
 					"value": -20
@@ -142,8 +243,15 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"], "source": "team" },
-					"conditions": { "type": "state", "state": "duringSummon" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["melt", "frozen"],
+						"source": "team"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
 					"duration": 12,
 					"element": "pyro",
 					"value": -20
@@ -162,7 +270,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 90,
 					"stat": "em",
 					"element": "cryo"
@@ -170,7 +280,9 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "manual"
+					},
 					"scaling": 1200,
 					"stat": "em",
 					"element": "cryo"
@@ -193,8 +305,13 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"conditions": { "type": "constellation", "level": 1 },
+					"trigger": {
+						"type": "manual"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					},
 					"scaling": 200,
 					"stat": "em"
 				}
@@ -214,8 +331,13 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "passive" },
-					"conditions": { "type": "constellation", "level": 2 },
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"source": "character",
 					"stat": "em",
 					"value": 125,
@@ -224,8 +346,14 @@
 				{
 					"type": "buff",
 					"target": "team",
-					"trigger": { "type": "onState", "state": "shielded" },
-					"conditions": { "type": "constellation", "level": 2 },
+					"trigger": {
+						"type": "onState",
+						"state": "shielded"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
 					"source": "character",
 					"stat": "em",
 					"value": 250,
@@ -235,12 +363,22 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"], "source": "team" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["melt", "frozen"],
+						"source": "team"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "state", "state": "duringSummon" }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
 						]
 					},
 					"duration": 12,
@@ -250,12 +388,22 @@
 				{
 					"type": "resShred",
 					"target": "enemy",
-					"trigger": { "type": "onReaction", "reaction": ["melt", "frozen"], "source": "team" },
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["melt", "frozen"],
+						"source": "team"
+					},
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{ "type": "constellation", "level": 2 },
-							{ "type": "state", "state": "duringSummon" }
+							{
+								"type": "constellation",
+								"level": 2
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
 						]
 					},
 					"duration": 12,
@@ -281,19 +429,8 @@
 			"name": "Death Defier's Spirit Skull",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"conditions": { "type": "constellation", "level": 4 },
-					"scaling": 1800,
-					"stat": "em",
-					"element": "cryo"
-				}
-			],
 			"_curatorNotes": [
-				"Bonus skull from Frostfall Storm hits, 8s ICD. 1800% EM as Cryo damage on explosion. Modelled as a manual-triggered damage event; the 'spawned by Frostfall Storm hit' chain isn't expressible (P3 again — depends on summon-emitted damage)."
+				"↻ 2026-09-15: the skull is AUTHORED — as an onHit damage proc on Itzpapa's summon effects (see there), not here. A summon-hosted proc is armed by the summon's liveness; a constellation-hosted one has no window. It carries its own constellation condition because a summon effect is not gated by this entry."
 			],
 			"description": "While the Elemental Skill Dawnfrost Darkstar is active, when Itzpapa's Frostfall Storm hits opponents, an additional Obsidian Spiritvessel Skull will be summoned. When a Spiritvessel Skull summoned this way explodes, it deals 1800% of Citlali's Elemental Mastery as Nightsoul-aligned AoE Cryo DMG and restores 16 Nightsoul points and 8 Energy for Citlali. This effect can trigger once every 8s. This DMG is not considered Elemental Burst DMG."
 		},
