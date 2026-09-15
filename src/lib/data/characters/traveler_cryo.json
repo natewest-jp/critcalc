@@ -126,23 +126,11 @@
 							"scaling": 38.51,
 							"stat": "atk",
 							"element": "cryo"
-						},
-						{
-							"type": "damage",
-							"target": "enemy",
-							"trigger": {
-								"type": "summonTick",
-								"interval": 3,
-								"firstTickDelay": 1.3
-							},
-							"scaling": 38.51,
-							"stat": "atk",
-							"element": "cryo"
 						}
 					],
 					"_curatorNotes": [
 						"Source: gcsim DRAFT PR #2742 \"Add Cryo Traveler\" (Charlie-Zheng, head 46a15b390, 2026-09-06; count sheet credited to Kolibri). ⚠️ Its E/Q cancel slices are marked \"TODO: Placeholder using DMC frames\", so NO FrameMaps and NO application[] are taken from it and the character stays FRAMELESS_EXEMPT — but its skill.go states the crystal cadence the kit never did, and that is what is authored here (2026-09-15). Re-check every number when the PR lands.",
-						"Cadence (skill.go): the ticker first fires 60f after the cast and then every 180f (skillInterval = 3*60); each tick queues TWO crystals with hitmarks 5 and 8 plus the default 10f travel, so they land at +15 and +18 — authored as two series on one 3s cadence, first ticks 1.25s and 1.3s from the cast (spawnsAt 0), the Alyosha two-summons-one-cadence shape. Over the 12s Star that is 4 ticks / 8 crystals, 5 / 10 at C4 (gcsim status 12s + 60f + 180f at C4, ticker at 60,240,…,780 → 5 fires). Both crystals are ICDTagElementalArt / ICDGroupDefault → the standard gate, so no icdGate. Ice Crystal DMG 38.51% ATK at talent level 10 (sidecar).",
+						"Cadence (skill.go): the ticker first fires 60f after the cast and then every 180f (skillInterval = 3*60); each tick queues TWO crystals with hitmarks 5 and 8 plus the default 10f travel, landing at +15 and +18. ⚓ Authored as ONE series (first tick 1.25s from the cast, spawnsAt 0), ⛔ not two: the summon-tick ICD counter is keyed per SERIES (`aura.ts`, `${char.id}:summon:${label}:${series.index}`), so two series 3f apart applied Cryo TWICE per tick where gcsim's two crystals share one ICDTagElementalArt/Default counter and apply once — measured 8 applications per 12s Star as two series, 4 as one, gcsim 4. The second crystal survives as `gainStacks.amount: 2` on the Frostglow grant (two hits, two stacks). Cost: one tick marker per two-crystal volley. Over the 12s Star that is 4 ticks / 8 crystals, 5 / 10 at C4. Standard gate, so no icdGate. Ice Crystal DMG 38.51% ATK at talent level 10 (sidecar).",
 						"Not modelled: under Radiance: Stellar-Conduct the ticker stops and a crystal fires on each of the Traveler's own Normal/Charged/Plunging hits (0.2s ICD) — the proc registry needs an application frame the draft cannot give (the crystal travels)."
 					]
 				}
@@ -159,15 +147,15 @@
 						}
 					},
 					"key": "frostglow",
-					"amount": 1,
+					"amount": 2,
 					"max": 8,
 					"scope": "rotation",
 					"_curatorNotes": [
-						"Frostglow: +1 per ice-crystal hit, max 8 (skillStacksMax). Granted by the Star's synthesized tick hits on the Alyosha/Tugarin pattern (onHit skill + filter.abilityName), so the tick dispatchers can reach it — which requires scope rotation, and the kit agrees: the stacks live on the Traveler across swaps and only lapse 30s out of combat, so no lifetime is authored."
+						"Frostglow: +1 per ice-crystal hit, max 8 (skillStacksMax). The Star's tick is authored as ONE series standing for a two-crystal volley (see the summon's notes), so the grant is `amount: 2` per tick — 8 stacks after four ticks, as gcsim. Granted by the Star's synthesized tick hits on the Alyosha/Tugarin pattern (onHit skill + filter.abilityName), which requires scope rotation, and the kit agrees: the stacks live on the Traveler across swaps and only lapse 30s out of combat, so no lifetime is authored."
 					]
 				}
 			],
-			"caveat": "The Star's crystal ticks (two every 3s) come from gcsim's unreleased draft, not from the game text; the cast itself is still untimed.",
+			"caveat": "The Star's ticks come from gcsim's unreleased draft, not from the game text: each mark is one two-crystal volley every 3s, and the cast itself is still untimed.",
 			"_curatorNotes": [
 				"⚠️⚠️ THE ICE-CRYSTAL CADENCE IS THE ONE MISSING NUMBER, AND MOST OF THE UNAUTHORED KIT HANGS OFF IT. The talent says the Star \"periodically fires ice crystals\" and never says how often. Checked 2026-08-31: genshin-db 5.2.13 has no interval label (its combat2 attributes are Skill DMG / Ice Crystal DMG / Duration / CD only), the Fandom talent page is a {{Stub}} with its Gameplay Notes section commented out and empty, and gcsim has no Cryo Traveler at all. ⛔ So no summonTick series is authored — never fake timing — and the summon is a presence bar with no tick markers. Ice Crystal DMG is 38.51% ATK Cryo at talent level 10 and is ready to author the moment a cadence is stated.",
 				"⛔ THE Radiance: Stellar-Conduct BRANCH IS ALSO UNAUTHORED, and for a different reason. It IS fully specified — the Star stops firing on an interval and instead fires one crystal whenever the Traveler lands a Normal, Charged or Plunging attack, once every 0.2s — which is the coordinated-attack round's onHit damage-proc shape, summon-hosted so the Star's own liveness is the window. But `sim/procs.ts` registers a proc only when the effect carries a non-empty application[], and the crystal TRAVELS, so its frame offset is a measurement nobody has made. Authoring `frame: 0` would be inventing a travel time; authoring the effect without application[] would be inert data. Both halves of this series unblock together the moment gcsim ships the character.",
