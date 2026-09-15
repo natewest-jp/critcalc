@@ -201,6 +201,57 @@ the affected character through `parseNotation` after.
 
 ---
 
+## 6. Follow-up findings and decisions (2026-09-15, later the same day)
+
+Re-verified in-session after the compilation; ⚓ = Nate's call.
+
+**6.1 The Traveler prose defect is FOUR variants, not one.** All six element
+Travelers were hand-written in one commit (`a3cdc48a`, 2026-05-08) before the
+genshin-db ingest existed; frames came from gcsim, which carries no talent text,
+so the passive/constellation prose was written from memory. Checked against
+genshin-db 5.2.13: **Anemo, Hydro, Cryo correct; Geo 4/6 constellations + both
+passives wrong; Electro 4/6 + passives swapped; Dendro all 6 + both; Pyro all 6 +
+both.** Undetected because the generator refuses Travelers (so the scalar/text
+diffs never cover them) and the frames audit checks only frames; the July
+capability sweep flagged Pyro's real talents as absent and it was filed, not
+actioned. → Plan: `docs/curation/traveler-prose-reingest.md`.
+
+**6.2 `manual` — uncovered 2026-08-18, never dealt with.** The caveat-refresh
+round found the trigger reaches no surface (rubric N1), struck the old "add it
+manually" wording, and left the fork open in `caveat-open-items.md` §4. Two
+things then hid it: the ruthless pass deleted the caveats over those gaps, and
+nobody checked the Team Builder, whose `deriveCapabilities` never inspects
+triggers and still derives all 167 effects. ⚓ **Decision: retire the channel** —
+(1) the TB skips `manual` today, (2) lint refuses the trigger, (3) each of the 167
+is re-triggered where a real trigger fits or retired to description + note.
+→ Plan: `docs/manual-trigger-retirement.md`.
+
+**6.3 Columbina.** ⚓ **Option 3**: Gravity as a stack resource — a grant per team
+Lunar reaction, cap 60, the Interference effects fire when the threshold is
+reached. `onStack` exists in the Trigger union with NO reader, so this is a small
+engine round; option 1 (blank + restored caveats) is the interim.
+→ Plan: `docs/stack-threshold-round.md`.
+
+**6.4 Bennett and Faruzan.** ⚓ **Extend the buffs honestly.** gcsim re-applies
+Bennett's ATK buff (and C6's Pyro bonus + infusion) as a 126f mod on every field
+tick, so it runs to ~14.67s from the cast: author the three windows at **14.1s**
+(from the 34f hitmark) and say so in the notes; the field bar stays 12s because
+the buff genuinely outlives the field. Faruzan's Anemo DMG bonus and shred are
+240f pulses re-applied through the burst, so real coverage is **16.4s** at C0 /
+**23.1s** at C2 — author 16/22 for the buff and the shred (the polyhedron bar
+stays 12/18). ⚠️ The same "applies at intervals" class exists elsewhere
+(Shenhe's field shreds at C2, Gorou's linger); the systematic answer is a
+pulsed-reapplication primitive — queued in §4, not a blocker for these two.
+
+**6.5 Hand-off.** ⚓ The data-only backlog (§3) goes to **Opus 5 sessions, one
+tier per session**, briefed with this file + CLAUDE.md, rule: probe → write →
+probe, one commit per character. The engine rounds (§4, plus 6.2/6.3) are
+**Fable-led**. ⚠️ Before the first Opus tranche, three one-liners de-risk every
+session after: the audit compares `anim`/`hit`; the TB skips `manual`; lint
+demands an explicit `source` on every `onReaction`.
+
+---
+
 ## Appendix — the ten batch reports, verbatim
 
 ---
