@@ -110,6 +110,7 @@
 					"duration": 20,
 					"spawnsAt": 68,
 					"mobility": "stationary",
+					"terminatesOn": "recast",
 					"effects": [
 						{
 							"type": "damage",
@@ -182,6 +183,7 @@
 					"duration": 20,
 					"spawnsAt": 111,
 					"mobility": "stationary",
+					"terminatesOn": "recast",
 					"effects": [
 						{
 							"type": "damage",
@@ -200,12 +202,11 @@
 				}
 			],
 			"effects": [],
-			"caveat": "Already-active Birgitta is re-summoned at the new spot with her duration reset in game, but the timeline shows a second overlapping bar. Read overlap within 20s as one Birgitta, not two.",
 			"_curatorNotes": [
 				"Burst hit at hitmark=111f from cast: 1218.24% ATK Electro AoE elemental burst. summonBirgitta also fires at hitmark=111f.",
 				"Burst frames: burstFrames=InitAbilSlice(127), ActionSkill=127 ActionDash=105 ActionJump=106 ActionWalk=130 ActionSwap=126. Per Q-spec swap/N/E/D/J.",
 				"Cooldown: SetCD(burst, 15*60). ConsumeEnergy(4) drains 4 energy from teammates; not modelled.",
-				"Birgitta authored as a separate summon on the burst — discharge effect identical to skill-summoned Birgitta. In-game the burst RESETS the existing Birgitta's duration rather than spawning a second; the planner over-spawns when E and Q overlap. Trade-off documented in caveat."
+				"↻ 2026-09-15 (essential-characters T0): `terminatesOn: 'recast'` on BOTH Birgittas. The truncation key is characterId::label, which the skill's and the burst's Birgitta share, so a Q cuts the E's Birgitta at the new one's spawn and vice versa — one Birgitta at a time, as in game (the burst re-summons her at the new spot with her duration reset). Measured `Ineffa E Q`: two overlapping 20s bars and 22 Electro applications → a 1.13→2.38 stub (one tick, the Oz shape) and one 2.38→22.38 bar. The caveat that asked the reader to read the overlap as one Birgitta is retired with the overlap."
 			],
 			"description": "Through Multipurpose Smart Assistance Unit, **Birgitta**, Ineffa can use Rocket Punches to quickly clean up opponents! Shoots Birgitta into the fray, dealing AoE Electro DMG and allowing Birgitta to remain on the field.\n\nIf Birgitta is already on the field, having been summoned by Ineffa, this Skill will re-summon Birgitta at the target's location and reset her duration.",
 			"application": [
@@ -288,11 +289,35 @@
 						"cap": 50
 					},
 					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
+					"source": "character",
+					"stat": "lunarChargedDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 2.5,
+						"cap": 50
+					},
+					"snapshottable": false
 				}
 			],
 			"constellationLevel": 1,
 			"_curatorNotes": [
-				"Authored 2026-05-09 against the new lunarChargedDmgBonus stat. gcsim c1Init applies via AddReactBonusMod with status duration 20s on Optical Flow Shield Barrier activation (every E cast). Value is `unknown` form because the planner doesn't track Ineffa's runtime ATK. Trigger keyed on E cast — barrier activation is implicit in the E cast for canonical rotations."
+				"Authored 2026-05-09 against the new lunarChargedDmgBonus stat. gcsim c1Init applies via AddReactBonusMod with status duration 20s on Optical Flow Shield Barrier activation (every E cast). Value is `unknown` form because the planner doesn't track Ineffa's runtime ATK. Trigger keyed on E cast — barrier activation is implicit in the E cast for canonical rotations.",
+				"↻ 2026-09-15: a second arm on the BURST, gated C2. gcsim addShield calls c1OnShield on every Optical Flow Shield Barrier, and C2's c2OnBurst queues addShield at Q+37f — so at C1+C2 the burst refreshes Carrier Flow Composite too. Same stat and duration, so the two refresh-merge into one bar."
 			],
 			"description": "When Ineffa activates her Optical Flow Shield Barrier, all nearby party members will gain the Carrier Flow Composite effect for 20s: Increases Lunar-Charged DMG by 2.5% for every 100 ATK that Ineffa has, up to a maximum of 50%."
 		},
@@ -302,9 +327,25 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Two effects: (1) Punishment Edict — on Q hit, a marked enemy detonates after a delay (or on death) for 300% ATK Lunar-Charged Electro AoE. Trigger is enemy-death OR after-fixed-delay; schema doesn't have an enemy-death trigger primitive. The fixed-delay path could be authored as an afterDuration-style effect on the burst, but the proper gating on enemy-presence isn't modelable. Not authored. (2) Q grants nearby party Optical Flow Shield Barriers — team-wide shielding niche; not represented in the planner. Not authored."
+				"Two effects in the kit. (1) Punishment Edict — on Q hit a marked enemy detonates after a delay or on its death for 300% ATK Lunar-Charged; the enemy-death trigger has no primitive, so it is not authored. (2) AUTHORED 2026-09-15: the burst grants the Optical Flow Shield Barrier. gcsim cons.go c2OnBurst is QueueCharTask(c.addShield, 37) — the identical 20s barrier the skill grants (shield.go addShield: shieldAtk[lvl]×ATK + shieldFlat[lvl], Target -1 = the on-field character), so the effect copies the skill's shield with trigger.ability 'burst' (lint B.8a). The constellation-shield wire (53db108) is what lets a constellation-hosted shield reach the lane. 'Nearby party members' is the co-op plural (Nicole C2 precedent); single-player it is the active character."
 			],
-			"description": "After the Elemental Burst **Supreme Instruction: Cyclonic Exterminator** hits opponents, it will inflict the Punishment Edict status on one of those hit opponents: After a brief delay, or when this opponent is defeated, nearby opponents will take AoE Electro DMG equal to 300% of Ineffa's ATK. This DMG is considered Lunar-Charged DMG.\nAdditionally, when the Elemental Burst Supreme Instruction: Cyclonic Exterminator is unleashed, nearby party members will gain Optical Flow Shield Barriers."
+			"description": "After the Elemental Burst **Supreme Instruction: Cyclonic Exterminator** hits opponents, it will inflict the Punishment Edict status on one of those hit opponents: After a brief delay, or when this opponent is defeated, nearby opponents will take AoE Electro DMG equal to 300% of Ineffa's ATK. This DMG is considered Lunar-Charged DMG.\nAdditionally, when the Elemental Burst Supreme Instruction: Cyclonic Exterminator is unleashed, nearby party members will gain Optical Flow Shield Barriers.",
+			"effects": [
+				{
+					"type": "shield",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 20,
+					"durationType": "refresh",
+					"scaling": 398.13,
+					"stat": "atk",
+					"flat": 3050.92,
+					"label": "Optical Flow Shield Barrier"
+				}
+			]
 		},
 		{
 			"id": "ineffa__constellation__enhanced_emotion_emulator",
@@ -374,9 +415,9 @@
 			"_curatorNotes": [
 				"C6: when Ineffa has Carrier Flow Composite (c1Key active) AND a team Lunar-Charged proc fires, deal 135% ATK Lunar-Charged Electro AoE on Ineffa's location, 3.5s ICD (c6Init: c6IcdKey 3.5*60). Authored as a damage effect with onReaction:lunarCharged + procCooldown:3.5. It cannot gate on Carrier Flow Composite (no schema for tracking the C1 status). Flagged in caveat.",
 				"⚠️⚠️ 2026-08-18 — READ THIS BEFORE BELIEVING THE EFFECT IS LIVE. The note above reads as though the damage fires and only the C1 gating is missing. It does not fire at all, for TWO independent reasons, and the missing gate is the least of them. (1) NO `application[]`: `procEffects` in src/lib/sim/procs.ts is the one acceptance rule for a proc, and it drops any damage effect whose `application` is absent or empty — so this effect never reaches the proc registry, never emits an application, never draws a marker, and `damage` maps to no Team Builder capability either. It is one of the 17 application-less damage procs in the corpus, against 13 that work. (2) `lunarCharged` IS NEVER EMITTED: src/lib/sim/reactionBridge.ts states it explicitly (\"shatter, lunarBloom, lunarCharged and stellarSwirl stay unemitted\"), so even with an `application[]` the trigger has nothing to listen to. ⛔ Do not author `application[]` here expecting the effect to come alive — fixing (1) alone changes nothing while (2) stands.",
-				"⏭ Work-item shape, in order: lunarCharged has to become a reaction the gauge EMITS (reactionBridge is the one place that knows both vocabularies — it already applies lunarCrystallize and stellarConduct, which is the precedent to copy) BEFORE an `application[]` on this effect buys anything. The C1 gating is a third, separate blocker: procs are gated by authored `conditions`, and there is still no condition that says \"Carrier Flow Composite is active on Ineffa\". The caveat stays accurate throughout.",
 				"[A7] The C1 buff referenced in the C6 gating caveat is named Carrier Flow Composite (rendered as 'the C1 buff' for compression).",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — This is an off-field damage proc with no `application[]`, so the proc registry rejects it (rubric P3/D10) — there is no bar, no marker, no tick and no lane where a reader would look for it. It is also keyed to `lunarCharged`, which the gauge never emits (N12), so no Lunar-Charged marker draws either; the absence has no shape on screen. Constellation-gated on top, so it only ever reaches a C6 reader. The engineering truth belongs in the (already thorough) `_curatorNotes`, not in the 262px column. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — This is an off-field damage proc with no `application[]`, so the proc registry rejects it (rubric P3/D10) — there is no bar, no marker, no tick and no lane where a reader would look for it. It is also keyed to `lunarCharged`, which the gauge never emits (N12), so no Lunar-Charged marker draws either; the absence has no shape on screen. Constellation-gated on top, so it only ever reaches a C6 reader. The engineering truth belongs in the (already thorough) `_curatorNotes`, not in the 262px column. Category: invisible-omission.",
+				"↻ 2026-09-15 — the 2026-08-18 note's reason (2) is CLOSED: reactionBridge converts electroCharged → lunarCharged whenever an enabler is in the party (2026-08-31), and Ineffa is one. Reason (1) stands and is now PERMANENT rather than a work item: gcsim's C6 AttackInfo (cons.go) carries no Durability, so the hit applies nothing and ⛔ an `application[]` here would be wrong. The effect correctly reaches no gauge and draws nothing; only the Carrier Flow Composite gate would matter if a non-gauge surface for proc damage ever exists."
 			],
 			"description": "When Ineffa is affected by the Carrier Flow Composite effect, she will deal AoE Electro DMG equal to 135% of her ATK to opponents in the current active character's vicinity after nearby thunderclouds release bursts of lightning at opponents. This DMG is considered Lunar-Charged DMG. The aforementioned effect can trigger once every 3.5s."
 		}
