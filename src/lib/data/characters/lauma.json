@@ -18,8 +18,9 @@
 			"abilityType": "normal",
 			"tags": [],
 			"_curatorNotes": [
-				"Spirit Envoy Metamorphosis (deer state) is not modeled in schema. gcsim has separate deerFrames for state entry: swap=49, N=61, C=63, E=63, Q=63, J=49 (D disabled — dash.go returns error in deer state). Base duration=10s (C1 extends by 5s), 4s CD after exit (A4 reduces by up to 20% via EM scaling, max at 1000 EM). chargeFrames here records Spiritcall Prayer only — the damaging CA form active while Spirit Envoy CD is active. Reviewer to decide schema representation for deerFrames and the two-state cooldown mechanic.",
-				"No plunge.go in gcsim character dir — plungeFrames not available."
+				"⚓ `C` IS SPIRITCALL PRAYER, THE DAMAGING CHARGED ATTACK (Nate, 2026-09-15). Spirit Envoy Metamorphosis — the deer form — is exploration and long-distance traversal, not combat, so a `C` in a rotation means the attack, and the deer is deliberately NOT modelled (⛔ don't add a second charged form for it). gcsim charge.go: chargeFrames = InitAbilSlice(68) with ActionAttack/Skill/Burst/Dash/Jump/Swap at chargeReleaseFrame 67, and the Dendro 25 / ICDTagNone hit at chargeHitmark 73 — which lands AFTER the release, hence `hit` > the cancel keys. ⚠️⚠️ THE FRAMES AUDIT WILL FLAG THIS MAP AND IT IS AN ORACLE ARTEFACT: gcsim's `deerStateReady` starts true (lauma.go), so the dumper's bare `C` captures deerFrames ({anim 64, N 61, C/E/Q 63, J/swap 49}) — which is what this map held until today, and what a T0 pass briefly defended with a caveat. ⛔ Never let migrate-frames-shape resolve this row in gcsim's favour. D in deer state is disabled (dash.go), irrelevant here.",
+				"No plunge.go in gcsim character dir — plungeFrames not available.",
+				"🔖 BOOKMARKED (⚓ Nate, 2026-09-15): modelling BOTH charged forms. The source (kit text + gcsim charge.go): a `C` with the Envoy ready enters the deer (no damage); ANY action but walk/jump — or a swap — ends it (chargeInit), which starts a 4s cooldown (endDeerState; ×0.8 at A4's cap), and only during that cooldown is `C` Spiritcall Prayer. Shape if taken: the base normal's `C` = deerFrames and `actionOpensState.charged` opens a new cooldown State (⚠️ TWO edits — the State union AND characterLint's STATES set); a sibling normal gated on that state carries the Prayer chargeFrames (the Zibai/Durin state-gated-sibling shape). ⛔ Blocker to solve first: a catalyst charged attack ALWAYS applies its element and no field says a charged attack applies nothing, so the deer would draw a phantom Dendro. Until then every `C` is Prayer and the caveat names the gap. See essential-characters-2026-09-15.md §7."
 			],
 			"hits": [
 				{
@@ -48,13 +49,14 @@
 				}
 			],
 			"chargeFrames": {
-				"anim": 64,
-				"N": 61,
-				"C": 63,
-				"E": 63,
-				"Q": 63,
-				"J": 49,
-				"swap": 49
+				"anim": 68,
+				"hit": 73,
+				"N": 67,
+				"E": 67,
+				"Q": 67,
+				"D": 67,
+				"J": 67,
+				"swap": 67
 			},
 			"sections": [
 				{
@@ -73,7 +75,8 @@
 					"description": "Calling upon the might of Dendro, Lauma plunges towards the ground from mid-air, damaging all opponents in her path and dealing AoE Dendro DMG upon impact with the ground."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 3 attacks that deal Dendro DMG.\n\nCharged Attack\nLauma undergoes Spirit Envoy Metamorphosis, transforming into an envoy of the tranquil forest and consuming Stamina to charge forward for up to 10s. While in this state, Lauma's interruption resistance is increased, and she can consume additional Stamina to perform up to two consecutive jumps.\nWhen exiting the Spirit Envoy state, Spirit Envoy Metamorphosis will enter cooldown, during which time, Lauma's Charged Attack will be transformed into Spiritcall Prayer: Consumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of her after a short casting time.\n\nPlunging Attack\nCalling upon the might of Dendro, Lauma plunges towards the ground from mid-air, damaging all opponents in her path and dealing AoE Dendro DMG upon impact with the ground."
+			"description": "Normal Attack\nPerforms up to 3 attacks that deal Dendro DMG.\n\nCharged Attack\nLauma undergoes Spirit Envoy Metamorphosis, transforming into an envoy of the tranquil forest and consuming Stamina to charge forward for up to 10s. While in this state, Lauma's interruption resistance is increased, and she can consume additional Stamina to perform up to two consecutive jumps.\nWhen exiting the Spirit Envoy state, Spirit Envoy Metamorphosis will enter cooldown, during which time, Lauma's Charged Attack will be transformed into Spiritcall Prayer: Consumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of her after a short casting time.\n\nPlunging Attack\nCalling upon the might of Dendro, Lauma plunges towards the ground from mid-air, damaging all opponents in her path and dealing AoE Dendro DMG upon impact with the ground.",
+			"caveat": "Every Charged Attack is shown as Spiritcall Prayer; in game the first one becomes Spirit Envoy form, and Prayer is only available for a few seconds after leaving it."
 		},
 		{
 			"id": "lauma__skill__runo_dawnless_rest_of_karsikko",
@@ -104,7 +107,15 @@
 						"swap": 56
 					},
 					"_curatorNotes": [
-						"Hold variant requires ≥1 Verdant Dew (c.Core.Player.VerdantDew()); gcsim returns an error if VerdantDew=0. Verdant Dew is a team-level resource not yet modeled in the schema. D omitted — ActionDash not explicitly set in skillFrames[1]; stays at InitAbilSlice default 64 (AnimationLength)."
+						"Hold variant requires ≥1 Verdant Dew (c.Core.Player.VerdantDew()); gcsim returns an error if VerdantDew=0. Verdant Dew is a team-level resource not yet modeled in the schema. D omitted — ActionDash not explicitly set in skillFrames[1]; stays at InitAbilSlice default 64 (AnimationLength).",
+						"application authored 2026-09-15: gcsim skillHold queues 'Hymn of Eternal Rest (Hold)' — Dendro, Durability 25, ICDTagNone — at skillHoldHitmark 45; the Lunar-Bloom half (queued after the Dew consume at 29f) carries no Durability and applies nothing. With no list the variant inherited the Tap's frame-16 entry and applied 29 frames early. The oracle cannot check it: the dumper's driver fails with 'Cannot use Skill Hold without Dew'."
+					],
+					"application": [
+						{
+							"frame": 45,
+							"element": "dendro",
+							"units": 1
+						}
 					]
 				}
 			],
@@ -183,6 +194,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
+			"activeDuration": 15,
 			"frames": {
 				"anim": 115,
 				"N": 111,
@@ -197,7 +209,8 @@
 			"effects": [],
 			"_curatorNotes": [
 				"Pale Hymn: 18-stack EM-scaling buff (gained at paleHymnGainFrame=96 after cast). Individual stack durations 15s each. Stacks consumed when nearby party members deal Bloom/Hyperbloom/Burgeon/LunarBloom DMG (1 stack per enemy hit). FlatDmg per consumed stack: bloomDmgIncrease[L]×EM for Bloom-type reactions, lunarBloomDmgIncrease[L]×EM for LunarBloom. No entity spawned; Pale Hymn is a buff-stack on Lauma. burstKey status (15s) tracks the Moon Song interaction window. Reviewer to decide effect representation.",
-				"J omitted from frames — ActionJump not explicitly set in burstFrames init; stays at InitAbilSlice default 115 (AnimationLength). No initial burst damage queued in gcsim burst.go — burst only sets Pale Hymn stacks."
+				"J omitted from frames — ActionJump not explicitly set in burstFrames init; stays at InitAbilSlice default 115 (AnimationLength). No initial burst damage queued in gcsim burst.go — burst only sets Pale Hymn stacks.",
+				"activeDuration 15 (2026-09-15, essential-characters T0): the Pale Hymn window — gcsim burst.go AddStatus(paleHymnBurstKey, paleHymnDur = 15*60) at the 18-stack grant — so the burst draws the span its whole payload lives in instead of an instant pill. The per-stack reaction DMG is EM-scaled magnitude and stays out; stacks consumed early are not tracked, so the span is the stacks' longest life."
 			],
 			"description": "Let the wishes of all beings become as moonlight that bathes the earth. Lauma incants a sacred song of the far north, gaining 18 stacks of **Pale Hymn**.\nAdditionally, if Lauma uses her Elemental Burst while she has **Moon Song**, or she gains Moon Song within 15s of using her Elemental Burst, she will consume all Moon Song stacks and gain 6 stacks of Pale Hymn for every Moon Song stack consumed. This effect can only be triggered once for each Elemental Burst used, including the 15 seconds following its use.\n\nPale Hymn\nWhen nearby party members deal Bloom, Hyperbloom, Burgeon, or Lunar-Bloom DMG, 1 stack of Pale Hymn will be consumed and the DMG dealt will be increased based on Lauma's Elemental Mastery. If this DMG hits multiple opponents at once, then multiple stacks of Pale Hymn will be consumed, depending on how many opponents are hit.\nThe duration for each stack of Pale Hymn is counted independently.",
 			"application": []
@@ -309,9 +322,24 @@
 			"id": "lauma__constellation__nor_yearn_for_the_great_bears_might",
 			"name": "\"Nor Yearn for the Great Bear's Might\"",
 			"abilityType": "constellation",
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "skill",
+						"filter": {
+							"abilityName": "Frostgrove Sanctuary"
+						}
+					},
+					"procCooldown": 5,
+					"amount": 4
+				}
+			],
 			"constellationLevel": 4,
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. C4: when Frostgrove Sanctuary hits opponents, Lauma regains energy (c4RefundCB, 5s ICD via c4IcdKey). gcsim calls c.AddEnergy('lauma-c4', 5) but description says 4 Elemental Energy — discrepancy needs KQM verification."
+				"Authored 2026-09-15 (essential-characters T0). gcsim cons.go c4RefundCB rides the Frostgrove Sanctuary hits: 5s ICD status, AddEnergy. ⚠️ gcsim restores 5, the kit text says 4 — authored at the kit text's 4, since energy reaches no planner surface and a self-target refund derives no Team Builder facet either way. Filtered to the Sanctuary's ticks by abilityName (a summon tick's abilityName is its label)."
 			],
 			"description": "When attacks from the **Frostgrove Sanctuary** summoned by her Elemental Skill **Runo: Dawnless Rest of Karsikko** hit opponents, Lauma will regain 4 Elemental Energy. This effect can be triggered once every 5s."
 		},

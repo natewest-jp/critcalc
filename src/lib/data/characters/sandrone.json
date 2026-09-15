@@ -14,6 +14,7 @@
 			"name": "Formule Phenomenale: Self-Evident Proposition",
 			"input": ["N"],
 			"abilityType": "normal",
+			"caveat": "A Charged Attack summons Fagio, which keeps firing condensed beams in game — the timeline gives it no summon row and no ticks.",
 			"tags": [],
 			"sections": [
 				{
@@ -34,7 +35,8 @@
 			],
 			"description": "Normal Attack\nGenerates threads that control her weapon using formulae, performing up to 3 consecutive strikes.\n\nCharged Attack\nSummons the Facilitatrice Automatisee Generaliste Interactive et Omnitache, or \"Fagio,\" and switches it to **Decoding** mode: Unleashes a sweeping fire attack on enemies in front, as well as periodically fires condensed beams, dealing AoE Cryo DMG.\n**Radiance: Stellar Glimmer**: The condensed beams will instead deal AoE Cryo DMG that is considered the corresponding Stellar Glimmer reaction DMG.\nWhile in Decoding mode, Fagio's **Decoding Power** will continuously increase. Firing condensed beams will also further increase its Decoding Power.\nWhen Fagio's Decoding Power reaches the maximum of 100 points, it switches to Power Overdrive mode, in which it fires at opponents with longer intervals, dealing Cryo DMG. It will be unable to switch to Decoding mode at this time.\nWhen not in Decoding mode, Fagio's Decoding Power gradually decreases. When Sandrone is off-field, she will focus on maintaining Fagio, causing its Decoding Power to decrease at 300% the original rate.\nFagio exits Power Overdrive mode when its Decoding Power has decreased to under 50.\n\nPlunging Attack\nPlunges from midair to strike the ground below, dealing DMG to opponents along their path and causing AoE DMG on landing.",
 			"_curatorNotes": [
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A `C` token draws a bare charged-attack swing and NO summon-lane row. Fagio is a persistent mech that keeps firing — the summon lane with its tick marks is exactly where a Sandrone player looks after a Charged Attack, and it is empty. The 'Decoding Power' half is trimmed: a resource meter has no place on the timeline at all, so its absence misleads nobody. Category: expected-but-absent."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — A `C` token draws a bare charged-attack swing and NO summon-lane row. Fagio is a persistent mech that keeps firing — the summon lane with its tick marks is exactly where a Sandrone player looks after a Charged Attack, and it is empty. The 'Decoding Power' half is trimmed: a resource meter has no place on the timeline at all, so its absence misleads nobody. Category: expected-but-absent.",
+				"↻ CAVEAT RESTORED 2026-09-15 (essential-characters T0). The 2026-08-19 note above removed it as 'no pixel' while categorising it expected-but-absent — the category the name-the-pixel rule KEEPS. The pixel is the empty summon lane after a `C`. The beam cadence is still unstated in every source (no gcsim, no wiki interval), so Fagio stays unauthored."
 			]
 		},
 		{
@@ -46,7 +48,11 @@
 			"tags": [],
 			"effects": [],
 			"description": "With her impeccable, ladylike poise, Sandrone boards the Tea Party Tactical Assault Hovermech and hovers forward for 6s. During this time, Sandrone can control the travel direction of the craft. Pressing Sprint consumes 10 Stamina and launches her into an elegant high-speed hover mode, in which she will move even faster at the cost of 15 Stamina per second.\n\nWhen Sandrone starts hovering, if there are opponents nearby, she will also summon a Prismatic Resonance Cannon and fire 2 Prism Shots at any opponents who have yet to cool down, dealing Cryo DMG.\n**Radiance: Stellar Glimmer**: The second Prism Shot will instead deal Cryo DMG that is considered the corresponding Stellar Glimmer reaction DMG.\n\nWhen on the Tea Party Tactical Assault Hovermech, Sandrone will also elegantly and quietly repair Fagio, causing **Decoding Power** to swiftly decrease.",
-			"behavior": "instant"
+			"behavior": "instant",
+			"activeDuration": 6,
+			"_curatorNotes": [
+				"activeDuration 6 (2026-09-15, essential-characters T0): the kit text states the hovermech ride lasts 6s ('boards the Tea Party Tactical Assault Hovermech and hovers forward for 6s'), and the E had drawn as a bare instant. `activeDuration`, not `behavior: stance` — a stance would open `inStance` and claim a mode her normals and conditions read, which no source describes; the window is the only thing stated. With a 4s cooldown the bars overlap, which is the kit. No gcsim source (checked 2026-09-15), so no frames, no application[] and no Prismatic Resonance Cannon cadence: the two Prism Shots are a count with no timing."
+			]
 		},
 		{
 			"id": "sandrone__burst__formule_phenomenale_qed",
@@ -163,7 +169,7 @@
 				"↻ 7.0 RE-AUTHOR 2026-08-31 (genshin-db 5.2.13). HoYo generalised every \"Stellar-Conduct\" reference in this kit to \"Stellar Glimmer\" — the umbrella covering Stellar-Conduct AND Stellar Swirl — and split the numbers where the two differ. Descriptions re-synced from genshin-db; stats re-keyed to the umbrella family. C1 reads \"30% increased Stellar Glimmer reaction DMG\" (was Stellar-Conduct), so the bucket-5 stat moved to `stellarGlimmerReactionBonus`."
 			],
 			"description": "When in **Decoding** mode, Fagio's **Decoding Power** increases at a 50% lower rate, and all party members deal 30% increased Stellar Glimmer reaction DMG.",
-			"caveat": "The party-wide Stellar-Conduct bonus is shown always on; in game it only holds while Fagio is in Decoding mode."
+			"caveat": "The party-wide Stellar Glimmer bonus is shown always on; in game it only holds while Fagio is in Decoding mode."
 		},
 		{
 			"id": "sandrone__constellation__an_heiress_gazed_into_the_lookingglass",

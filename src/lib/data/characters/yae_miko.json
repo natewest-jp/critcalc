@@ -204,23 +204,9 @@
 			"id": "yae_miko__passive__enlightened_blessing",
 			"name": "Enlightened Blessing",
 			"abilityType": "passive",
-			"effects": [
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "em",
-					"snapshottable": false
-				}
-			],
 			"description": "Every point of Elemental Mastery Yae Miko possesses will increase Sesshou Sakura DMG by 0.15%.",
 			"_curatorNotes": [
-				"Scaling buff — value field deleted per recipe. The buff is 'Sesshou Sakura tick DMG +0.15% per EM point', applied as an AttackMod to AttackTagElementalArt only (gcsim a4 → AddAttackMod with `m[DmgP] = c.Stat(EM) * 0.0015`). The current `stat: 'em'` is incorrect — the buff increases DMG dealt by Sesshou Sakura ticks, not EM. Reviewer to: (a) change stat to a Sesshou-Sakura-specific dmgBonus or DmgP target, (b) wire as a scaling expression `value: { type: 'scaling', stat: 'em', ratio: 0.15 }`, (c) restrict the buff to elementalArt damage from Sesshou Sakura ticks only (not other ElementalArt sources).",
-				"Inherited manual trigger. Probable trigger: passive (always-on while character is on team). Not rewriting per recipe."
+				"Sesshou Sakura DMG +0.15% per point of EM — gcsim a4 AddAttackMod `m[DmgP] = c.Stat(EM) * 0.0015` on the Sesshou Sakura ticks. ↻ RETIRED to description 2026-09-15 (essential-characters T0; docs/manual-trigger-retirement.md step 3): the effect was a `manual` skeleton with no `value` and the wrong stat (`em`), so it reached no surface and claimed a buff that does not exist. What the passive does is damage magnitude, which is out of scope — nothing to draw, so nothing is authored and no caveat is owed."
 			]
 		},
 		{
@@ -298,7 +284,7 @@
 						"type": "onCast",
 						"ability": "skill"
 					},
-					"duration": 14,
+					"duration": 24,
 					"durationType": "refresh",
 					"source": "character",
 					"stat": "em",
@@ -308,7 +294,7 @@
 			],
 			"_curatorNotes": [
 				"[Stellar] Current-patch C2 addition, from the Fandom constellation infobox `buff` field (buffType Revelation, Fox's Mooncall, fetched 2026-07-29): 'when there are Sesshou Sakura in the field, Yae Miko's and your current active character's Elemental Mastery will also be increased by 60/90/120/200 points, depending on the level of the Sesshou Sakura.' PERMANENT — no Stellar-Conduct wording anywhere on the page, so no `teamEnablesReaction` gate.",
-				"[Stellar] Authored at the level-4 tier (200 EM) as the canonical assumption: at C2 a Sesshou Sakura starts at level 2 and rises with the count of co-existing totems, so the standard E E E opener reaches level 4 (see the skill's level-scaling note). There is no per-summon-count BuffValue shape, so the 60/90/120 tiers are stated in the caveat instead. Window = onCast skill + duration 14 (the totem lifetime), durationType refresh so re-planting extends it.",
+				"[Stellar] Authored at the level-4 tier (200 EM) as the canonical assumption: at C2 a Sesshou Sakura starts at level 2 and rises with the count of co-existing totems, so the standard E E E opener reaches level 4 (see the skill's level-scaling note). There is no per-summon-count BuffValue shape, so the 60/90/120 tiers are stated in the caveat instead. Window = onCast skill + duration 24 (the totem lifetime — ↻ 2026-09-15, was 14: it did not move with the skill summon when Edict of Cleansing took the Sesshou Sakura to 24s the same day, so the EM bar ended 10s before the totems it describes), durationType refresh so re-planting extends it.",
 				"[Stellar] target ['self','active'] mirrors 'Yae Miko's and your current active character's'; when Yae is the on-field character the two collapse onto one bar.",
 				"No effect authored for the base C2 clause. Three components: (a) starting level 1 → 2 (gcsim kitsuneTick: lvl += 1 when Cons >= 2), (b) max level 3 → 4 (raises sakuraLevelCheck cap implicitly via the level-scaling damage table), (c) detection radius 12.5 → 20 (yaemiko.go Init). All modify the Sesshou Sakura summon's own damage profile and detection AoE, which are not exposed as schema fields on the parent skill or summon. Reviewer to decide — likely needs a `summons[].damageModifiers` or similar."
 			]

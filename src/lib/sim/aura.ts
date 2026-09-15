@@ -809,8 +809,12 @@ export function scheduleSummonTicks(
 		// ⚠️ Bumped ONLY for a recast-terminating summon, mirroring finalize's
 		// truncation exactly: one without the flag spawning twice leaves both
 		// windows — and therefore both chains — alive.
-		if (summon.terminatesOn === 'recast')
-			ctx.summonChainGen.set(key, (ctx.summonChainGen.get(key) ?? 0) + 1);
+		if (summon.terminatesOn === 'recast') {
+			const prior = ctx.summonChainGen.get(key) ?? 0;
+			ctx.summonChainGen.set(key, prior + 1);
+			// ⚓ The prior chain lives until THIS spawn, where finalize cuts its window.
+			ctx.summonChainSupersededAt.set(`${key}#${prior}`, spawnAt);
+		}
 		const generation = ctx.summonChainGen.get(key) ?? 0;
 
 		/** The summon's end AS OF NOW — recomputed at every fire, never cached. */
@@ -835,6 +839,10 @@ export function scheduleSummonTicks(
 		/** Superseded by a recast? ⚓ Shared with the proc listener below so the
 		 *  two cannot disagree about which spawn is live. */
 		const isCurrent = (): boolean => (ctx.summonChainGen.get(key) ?? 0) === generation;
+		/** Still live at `at`? A superseded chain keeps firing until the
+		 *  superseding spawn — see `summonChainSupersededAt`. */
+		const liveAt = (at: number): boolean =>
+			isCurrent() || at < (ctx.summonChainSupersededAt.get(`${key}#${generation}`) ?? -Infinity);
 
 		// ⚓ The summon's own REACTION PROCS (mark-triggered round, 2026-08-17) —
 		// Fischl's A4 rides Oz. Armed here, beside the ticks, because this is where
@@ -916,7 +924,7 @@ export function scheduleSummonTicks(
 			const fire = (at: number): void => {
 				// Superseded by a recast, or the summon is gone. Either way the
 				// chain simply ends — ⛔ nothing has to cancel a scheduled task.
-				if (!isCurrent()) return;
+				if (!liveAt(at)) return;
 				if (at >= liveUntil()) return;
 				if (capReached()) return;
 				fired += 1;
@@ -1060,7 +1068,10 @@ export function handOffLineup(
 		held.variantLabel
 	)) {
 		const key = `${char.id}::${summon.label}`;
-		ctx.summonChainGen.set(key, (ctx.summonChainGen.get(key) ?? 0) + 1);
+		const prior = ctx.summonChainGen.get(key) ?? 0;
+		ctx.summonChainGen.set(key, prior + 1);
+		// The replacement spawns HERE, so the outgoing chain is live until now.
+		ctx.summonChainSupersededAt.set(`${key}#${prior}`, clock.now);
 	}
 
 	held.variantLabel = nextLabel;

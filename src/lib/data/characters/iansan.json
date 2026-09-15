@@ -19,32 +19,32 @@
 				{
 					"name": "N1",
 					"frames": {
-						"anim": 13,
+						"anim": 28,
+						"hit": 13,
 						"N": 22,
-						"C": 22,
-						"swap": 13
+						"C": 22
 					}
 				},
 				{
 					"name": "N2",
 					"frames": {
-						"anim": 16,
+						"anim": 31,
+						"hit": 16,
 						"N": 22,
-						"C": 25,
-						"swap": 16
+						"C": 25
 					}
 				},
 				{
 					"name": "N3",
 					"frames": {
-						"anim": 12,
-						"N": 41,
-						"swap": 12
+						"anim": 51,
+						"hit": 12,
+						"N": 41
 					}
 				}
 			],
 			"chargeFrames": {
-				"anim": 49,
+				"anim": 55,
 				"N": 49,
 				"E": 49,
 				"Q": 50,
@@ -56,7 +56,8 @@
 				"Out-of-NS polearm normals: 3-hit Physical chain. attackHitmarks=[13,16,12]; attackFrames built via InitNormalCancelSlice(hitmark, animLen).",
 				"Per-hit overrides: N1 ActionAttack=22/Charge=22; N2 ActionAttack=22/Charge=25; N3 ActionAttack=41/Charge=500 (illegal — final hit C key omitted per convention).",
 				"Charge: chargeFrames=InitAbilSlice(55), ActionAttack/Skill/Swap=49 ActionBurst=50 ActionDash/Jump=24 (chargeHitmark). Standard polearm CA shape. Multiplier charged[lvl=10]=198.22% Physical.",
-				"Plunge frames not authored — Iansan has no plunge.go in gcsim source."
+				"Plunge frames not authored — Iansan has no plunge.go in gcsim source.",
+				"↻ RE-SHAPED 2026-09-15 (essential-characters T0) from attack.go/charge.go (gcsim PR #2374, unmerged, branch `iansan`). The maps were pre-L4b: `anim` held the HITMARK and `swap` repeated it, with no `hit`. InitNormalCancelSlice(hitmark, animLen) is animLen 28/31/51 with hitmarks 13/16/12 and the ActionAttack/ActionCharge overrides above, so {anim, hit, N, C}; N3's ActionCharge 500 is gcsim's illegal-action sentinel and is dropped. ⚠️ The backlog's proposed anims (22/22/41) were the N overrides, not the animation. Base charge: InitAbilSlice(55) — `anim` was 49, the swap override."
 			],
 			"sections": [
 				{
@@ -91,32 +92,32 @@
 				{
 					"name": "N1",
 					"frames": {
-						"anim": 13,
+						"anim": 28,
+						"hit": 13,
 						"N": 22,
-						"C": 22,
-						"swap": 13
+						"C": 22
 					}
 				},
 				{
 					"name": "N2",
 					"frames": {
-						"anim": 16,
+						"anim": 31,
+						"hit": 16,
 						"N": 22,
-						"C": 25,
-						"swap": 16
+						"C": 25
 					}
 				},
 				{
 					"name": "N3",
 					"frames": {
-						"anim": 12,
-						"N": 41,
-						"swap": 12
+						"anim": 51,
+						"hit": 12,
+						"N": 41
 					}
 				}
 			],
 			"chargeFrames": {
-				"anim": 49,
+				"anim": 52,
 				"N": 51,
 				"E": 51,
 				"J": 50,
@@ -127,7 +128,8 @@
 				"Dual normal authored to switch chargeFrames during NS. Hits[] frames are identical to the base normal (N1-N3 don't change in NS); only chargeFrames swap to swiftFrames=InitAbilSlice(52) with ActionAttack/Skill=51 ActionJump=50 ActionSwap=49. Swift Stormflight hitmark=14f.",
 				"Authored as a normal-typed dual variant with state condition (varesa/cyno-shape). NO `infusion` field — base normals stay Physical even in NS; only the CA changes element.",
 				"fastSkill 5s post-skill window: gcsim auto-converts N → CA during this window even before NS exit. Schema can't gate on a per-cast post-action transient (apexDrive-equivalent gap). The state:nightsoulBlessing match covers the dominant case (NS active = CA replaced).",
-				"[A7] The Nightsoul Charged Attack (Swift Stormflight) is a single Electro stomp, 166.4% ATK at level 10, hitmark ~14 frames. Only the charge timing is authored on the in-Nightsoul variant (swiftFrames); no infusion field, so the empowered CA's Electro element is not carried and the base normals correctly stay Physical. Genuine gap retained in the rewrite: the 5s post-skill fastSkill window (Normal auto-converts to a free stomp) is not separately gated — apexDrive-equivalent per-cast transient-state gap; the state:nightsoulBlessing match covers the dominant case since NS is active during that window."
+				"[A7] The Nightsoul Charged Attack (Swift Stormflight) is a single Electro stomp, 166.4% ATK at level 10, hitmark ~14 frames. Only the charge timing is authored on the in-Nightsoul variant (swiftFrames); no infusion field, so the empowered CA's Electro element is not carried and the base normals correctly stay Physical. Genuine gap retained in the rewrite: the 5s post-skill fastSkill window (Normal auto-converts to a free stomp) is not separately gated — apexDrive-equivalent per-cast transient-state gap; the state:nightsoulBlessing match covers the dominant case since NS is active during that window.",
+				"↻ 2026-09-15: hits re-shaped with the base normal (identical slices); Swift Stormflight chargeFrames `anim` 49 → 52 — swiftFrames = InitAbilSlice(52) (gcsim PR #2374, unmerged, branch `iansan`); 49 is its swap override."
 			]
 		},
 		{
@@ -136,6 +138,13 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "stance",
+			"application": [
+				{
+					"frame": 21,
+					"element": "electro",
+					"units": 1
+				}
+			],
 			"duration": 9,
 			"opensState": "nightsoulBlessing",
 			"terminatesOnSwap": false,
@@ -173,7 +182,8 @@
 				"Cooldown: SetCD(skill, 16*60) at cast (NOT at stance end). Schema's stance + cooldown counts from cast frame, so phase-1/2 (active 9s) overlaps phase-3 (ghost CD 7s) — three-phase E bar renders correctly.",
 				"Frames: skillFrames=InitAbilSlice(43), ActionDash=31 ActionJump=32 ActionSwap=42. Per E-spec swap/N/Q/D/J — N, Q omitted overrides default to animLen=43.",
 				"terminatesOnSwap: false — gcsim allows Iansan to be off-field while NS is active (the burst Scale extends NS). Setting to false matches the off-field-while-Scale-up case; for the skill-only case (no burst), NS exits on its own timer regardless of swap. Acceptable simplification.",
-				"5s 'fastSkill' window after E cast: any N press auto-converts to Swift Stormflight CA. Not separately modeled — the state:nightsoulBlessing match on the in-NS normal variant covers the dominant case (NS is also active during fastSkill window)."
+				"5s 'fastSkill' window after E cast: any N press auto-converts to Swift Stormflight CA. Not separately modeled — the state:nightsoulBlessing match on the in-NS normal variant covers the dominant case (NS is also active during fastSkill window).",
+				"application (2026-09-15): skill.go queues Thunderbolt Rush — Electro, Durability 25, ICDTagNone — at skillHitmark 21 (gcsim PR #2374, unmerged, branch `iansan`). With no list it applied a provisional Electro at the cast instant."
 			],
 			"description": "Iansan charges forward a certain distance, dealing Nightsoul-aligned Electro DMG to all opponents in her path.\nAfter this Skill is used, Iansan will regain 54 Nightsoul points and enter the Nightsoul's Blessing state. Within 5s after this is done, using a Normal Attack will trigger 1 quick Swift Stormflight stomp from Iansan that will not consume Stamina.\n\nNightsoul's Blessing: Iansan\nContinuously consumes Nightsoul points. If she runs out, or uses this Skill again, her Nightsoul's Blessing state will end. It has the following properties:\n· Increases Iansan's Movement SPD.\n· Holding sprint will switch Iansan to Rushing Thunderbolt mode, greatly increasing her Movement SPD temporarily. In this mode, Iansan can make flying leaps using terrain, or consume additional Nightsoul points to move on water or liquid Phlogiston while being immune to DMG from the latter."
 		},
@@ -183,6 +193,13 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "instant",
+			"application": [
+				{
+					"frame": 34,
+					"element": "electro",
+					"units": 1
+				}
+			],
 			"frames": {
 				"anim": 69,
 				"N": 71,
@@ -237,18 +254,15 @@
 					"conditions": {
 						"type": "stacks",
 						"key": "nightsoul",
-						"min": 1,
-						"max": 41
+						"min": 42
 					},
 					"source": "character",
 					"stat": "atk",
 					"value": {
-						"type": "perStack",
-						"key": "nightsoul",
-						"per": {
-							"stat": "atk",
-							"ratio": 0.5
-						}
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 27,
+						"cap": 690
 					},
 					"snapshottable": false
 				},
@@ -264,15 +278,18 @@
 					"conditions": {
 						"type": "stacks",
 						"key": "nightsoul",
-						"min": 42
+						"min": 1,
+						"max": 41
 					},
 					"source": "character",
 					"stat": "atk",
 					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 27,
-						"cap": 690
+						"type": "perStack",
+						"key": "nightsoul",
+						"per": {
+							"stat": "atk",
+							"ratio": 0.5
+						}
 					},
 					"snapshottable": false
 				}
@@ -285,7 +302,9 @@
 				"Kinetic Energy Scale: 12s base duration extended +3s via C6 (durationModifier on the summon, gated on constellation level 6 → 15s effective). Follows active character. Authored as a summons[] entry with mobility:follows. While the Scale is up, Iansan's NS Blessing persists even if Iansan is off-field — the schema's terminatesOnSwap on the skill is set to false to align. Note: the parallel atk-buff effect's `duration: 12` field is not C6-gated and stays at 12s; in-game the buff window matches the Scale lifetime.",
 				"ATK buff threshold (E3 v2.x, 2026-05-11): highATK=27% ATK (constant) when NS≥42, else lowATK×NS=0.5%×NS. Modelled as TWO buff effects with mutually-exclusive `stacks` conditions on the `nightsoul` key (using the same gainStacks/drain machinery the +54 E grant feeds). NS=1..41 → perStack value with `per: { stat: atk, ratio: 0.5 }` (effective stacks × 0.5% × ATK). NS≥42 → scaling value 27% × ATK with cap 690. Cap rendering pass landed E3 v2.x (2026-05-11): the ≥42 tier's `scaling.cap` appends a `(cap 690)` suffix to the buff label (renderer can't clamp without recipient ATK); the perStack-tier cap is omitted since NS=41 × 0.5% × ATK > 690 needs ATK > 3370 — uncommon for support builds. Scaling-ratio display fix landed E3 v2.x (2026-05-11): formatter now treats `ratio` as percentage points directly (no `* 100` multiplier), matching how the corpus authors and how curators read game tooltips. The 27 here displays as '~27% atk' rather than the prior buggy '2700% atk'.",
 				"C2 enhancement (+30% ATK% when Iansan off-field) authored on the C2 constellation node 2026-05-09 with `state: offField` condition. The renderer resolves off-field per-segment so the buff only renders on non-Iansan segments.",
-				"C6 +3s duration: not authored as cooldownModifier-style — would need a duration modifier on summons[] which the schema doesn't support yet."
+				"C6 +3s duration: not authored as cooldownModifier-style — would need a duration modifier on summons[] which the schema doesn't support yet.",
+				"application (2026-09-15): burst.go queues the burst hit — Electro, Durability 25, ICDTagNone — at burstHitmark 34 (gcsim PR #2374, unmerged, branch `iansan`).",
+				"⚠️⚠️ TIER ORDER IS LOAD-BEARING (2026-09-15, essential-characters T0). The active-target buff pool dedupes by `stat` BEFORE it evaluates conditions (essential-characters §1.H — the trap CLAUDE.md names for `activeCharFaction`), so of these two `atk` tiers only the FIRST authored ever reaches evaluation. The <42 tier sat first, and the canonical E→Q reaches the Q at ~54 Nightsoul — measured `Iansan E C N3 Q`: NO ATK window at any constellation; her signature buff had never drawn in the rotation she is played in (the window an earlier audit read as 'correct' was C2's +20% ATK%). The ≥42 tier now sits first: E→Q draws the flat 27% (cap 690) bar, and a Q with no E before it (15 Nightsoul, the <42 tier) now draws NOTHING instead. ⛔ Don't reorder back; the real fix is the engine round that evaluates conditions before the dedupe, after which the order stops mattering."
 			],
 			"description": "Iansan's stomping foot shatters the very earth with \"Power,\" dealing Nightsoul-aligned AoE Electro DMG. She then whips out her \"Limited-Edition Kinetic Energy Scale (For Workouts).\"\nWhen this Skill is used, Iansan will gain 15 Nightsoul points and enter the Nightsoul's Blessing state.\nWhen the Kinetic Energy Scale leaves the field, Iansan's Nightsoul's Blessing state will end.\n\nKinetic Energy Scale\nThe Kinetic Energy Scale will follow the character around, boosting the ATK of your current active party member in different ways based on Iansan's Nightsoul points.\n· If Iansan has less than 42 Nightsoul points, the ATK bonus will be based on her Nightsoul points and ATK.\n· If Iansan has at least 42 Nightsoul points, the Kinetic Energy Scale will switch to the \"Ardent Support!\" state, in which the ATK bonus will be stronger and based on her ATK alone.\nAdditionally, the Scale will log the distance your current active character (excluding Iansan) has moved so long as it is active, restoring Nightsoul points to Iansan every second based on the distance moved in the previous second.\nThe Scale will disappear once her Nightsoul's Blessing state ends. It will also disappear after 1 second when you are not in a state of combat. While it is active, Iansan's Nightsoul's Blessing state will not end even if she is not on the field."
 		}
@@ -295,9 +314,30 @@
 			"id": "iansan__passive__enhanced_resistance_training",
 			"name": "Enhanced Resistance Training",
 			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "charged"
+					},
+					"duration": 15,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "state",
+						"state": "nightsoulBlessing"
+					},
+					"source": "character",
+					"stat": "atk%",
+					"value": 20,
+					"snapshottable": false
+				}
+			],
 			"_curatorNotes": [
 				"Precise Movement: triggered on Swift Stormflight hit (a1CB in charge.go), 15s self ATK +20%. Subsequently increases NS-restoration-via-Scale gain by +1 (default 1 → 2 with a1) or +4 if active char consumed/restored NS recently. Multiple gaps: (1) Swift Stormflight hit trigger isn't a clean onHit primitive (Swift is the empowered CA, but it's authored on the in-NS normal[1] chargeFrames and we don't have a per-CA-hit trigger); (2) the NS-gain modifier modifies the Scale's restore rate which itself isn't modelled; (3) the active-char-NS-state gate adds another runtime condition.",
-				"Effective at the +20% ATK level: Iansan gains a 15s self ATK buff after every Swift Stormflight hit. Could be authored as a self-target buff with onCast trigger... but onCast on which ability? The CA is on the normal entry which doesn't trigger onCast. This is the same gap as Yanfei A1's onHit trigger — flagged for future schema work."
+				"Effective at the +20% ATK level: Iansan gains a 15s self ATK buff after every Swift Stormflight hit. Could be authored as a self-target buff with onCast trigger... but onCast on which ability? The CA is on the normal entry which doesn't trigger onCast. This is the same gap as Yanfei A1's onHit trigger — flagged for future schema work.",
+				"↻ 2026-09-15 (essential-characters T0): the +20% ATK half is AUTHORED. The 'no clean trigger' reason above is stale — `Trigger.onHit.abilityType` accepts 'charged'. gcsim makeA1CB (gcsim PR #2374, unmerged, branch `iansan`) rides Swift Stormflight's hit (a1ATK: ATKP 0.2 for 15*60), and Swift Stormflight is what a Charged Attack IS inside Nightsoul Blessing, so: onHit charged, gated on the state, 15s. The 5s post-skill fastSkill path (a Normal becoming the stomp) is not modelled, as on the normal. The Nightsoul-restoration half stays unmodelled. At C2 the burst grants the same buff (the C2 entry); the two draw as their own windows."
 			],
 			"description": "After Swift Stormflight hits opponents, Iansan will gain the Precise Movement effect for 15s.\nDuring this time, her ATK is increased by 20%, and whenever she regains Nightsoul points through the Kinetic Energy Scale in her Elemental Burst, The Three Principles of Power, she will gain 1 extra Nightsoul point. Additionally, when your current active party member consumes or restores Nightsoul points, the extra Nightsoul points Iansan gains the next time she restores Nightsoul points via the Scale will be increased to 4. This effect can occur once every 2.8s.\n\"Precise Movement\" will expire when Iansan's Nightsoul's Blessing state ends."
 		},

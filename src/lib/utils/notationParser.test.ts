@@ -2272,8 +2272,11 @@ describe('parseNotation — lunarCrystallize gating', () => {
 
 	// ⚠️ A PYRO aura is the control, and it is the half the old suite got wrong:
 	// an enabler in the party does NOT make every crystallize lunar.
+	// ↻ 2026-09-15: Linnea's Geo comes from her fully-charged aimed shot (`C`),
+	// not her `E` — gcsim's Skill() queues no attack, so the E carries
+	// `application: []` and applies nothing (essential-characters T0).
 	it('enabler + pyro applicator: pyroCrystallize, and NO lunarCrystallize', () => {
-		const result = parseNotation('Diluc E > Linnea E', lookup, 8);
+		const result = parseNotation('Diluc E > Linnea C', lookup, 8);
 		const seen = new Set(reactionsOf(result.events).map((ev) => ev.reaction));
 		expect(seen.has('pyroCrystallize')).toBe(true);
 		expect(seen.has('lunarCrystallize')).toBe(false);
@@ -2281,7 +2284,7 @@ describe('parseNotation — lunarCrystallize gating', () => {
 
 	it('enabler + HYDRO applicator: lunarCrystallize REPLACES hydroCrystallize', () => {
 		// ⚓ ONE enabler suffices — Linnea alone, no second Moonsign member.
-		const result = parseNotation('Xingqiu E > Linnea E', lookup, 8);
+		const result = parseNotation('Xingqiu E > Linnea C', lookup, 8);
 		const seen = new Set(reactionsOf(result.events).map((ev) => ev.reaction));
 		expect(seen.has('lunarCrystallize')).toBe(true);
 		expect(seen.has('hydroCrystallize')).toBe(false);

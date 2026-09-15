@@ -274,6 +274,13 @@ export const EXPECTED = [
 	},
 	{ id: 'kuki_shinobu', kind: 'offFieldDamage', minCon: 0, fromAbilityType: 'skill' },
 	{
+		id: 'mavuika',
+		kind: 'offFieldDamage',
+		minCon: 0,
+		fromAbilityType: 'skill',
+		note: "Tap E's Rings of Searing Radiance: kit text 'follows the current active character and attacks nearby opponents'; gcsim skillRingTask checks only ring form + Nightsoul Blessing, no swap cancel (added 2026-09-15 with the Ring's summon)"
+	},
+	{
 		id: 'nahida',
 		kind: 'offFieldDamage',
 		minCon: 0,

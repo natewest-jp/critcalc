@@ -298,6 +298,23 @@ export type SimContext = {
 	 *  a summon without the flag spawning twice leaves both windows alive. */
 	summonChainGen: Map<string, number>;
 	/**
+	 * `${characterId}::${summonLabel}#${generation}` → the instant the NEXT
+	 * generation SPAWNS, i.e. where finalize cuts this generation's window.
+	 *
+	 * ⚓ The generation is bumped when the superseding cast is SCHEDULED, which is
+	 * its cast start — but finalize truncates the prior window at the new spawn
+	 * (`prev.end = spawnAt`), and a summon with a spawn delay leaves a gap between
+	 * the two. A tick of the old chain inside that gap drew a marker (the window
+	 * still covered it) and applied nothing (the chain was already retired):
+	 * Ineffa's `E Q` put a Birgitta tick at 1.83s on screen with no Electro behind
+	 * it, because her burst re-summons Birgitta 111f after the cast (essential-
+	 * characters T0, 2026-09-15). A fire therefore stays live until this instant.
+	 * ⛔ Don't move the bump itself to the spawn — the proc listener and the
+	 * lineup hand-off read the generation at the cast, and the new chain has to
+	 * know its own number when it is scheduled.
+	 */
+	summonChainSupersededAt: Map<string, number>;
+	/**
 	 * ⚓⚓ THE PARSE RECORDS WHERE A CAST'S LINEUP CHANGED; FINALIZE CUTS THE
 	 * WINDOW ON IT (Arkhe round, 2026-09-04). Keyed by the opening cast's event
 	 * id. An entry says "from `at`, this cast's summon is the one its `variantLabel`
@@ -427,6 +444,7 @@ export function createSimContext(input: SimContextInput): SimContext {
 		icdClocks: new Map(),
 		lastSwapOutAt: new Map(),
 		summonChainGen: new Map(),
+		summonChainSupersededAt: new Map(),
 		lineupChanges: new Map(),
 		followStateCasts: new Map(),
 		infusionWindows: [],
