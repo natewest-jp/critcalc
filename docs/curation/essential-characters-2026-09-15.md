@@ -287,6 +287,9 @@ same day** (branch `curation/gcsim-sync-2026-09`). Measured:
   `{type:'ascension', level:1}` where `evalCondition` reads `min`, so the −2s
   never applied (E 6s → 4s; the corpus's only such key), and the Pyro hold-E
   `anim` was 77 for 81.
+- **Lan Yan** — the names guard's first run found her passives and all six
+  constellations invented (the same class, outside the 65); re-ingested the
+  same day, mechanics kept.
 - ⚠️ `probe-team-builder.mjs` no longer exists (retired with the probe drawer,
   `8e883efe`) — CLAUDE.md's Probes line was stale.
 

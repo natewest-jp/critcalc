@@ -100,5 +100,6 @@ and constellation NAME against the installed genshin-db. Its first run: 15
 divergent rows. Six are the 7.0 Witch's Revelation passives genshin-db 5.2.13
 does not carry (Beidou, Cyno, Diona, Qiqi, Wriothesley, Yae Miko) — real, and why
 the check is a report, not a gate. ⚠️ **The other nine are Lan Yan: both passives
-and all six constellations diverge** — the same hand-written class, outside the
-essential-characters scope, queued for her own re-ingest.
+and all six constellations diverge** — the same hand-written class. ✅ Re-ingested the same day: names and
+descriptions from genshin-db, the gcsim-derived mechanics (C4 buff, C6 charge)
+kept verbatim. The guard now reports the six Witch's Revelation rows only.
