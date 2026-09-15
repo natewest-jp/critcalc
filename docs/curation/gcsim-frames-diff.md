@@ -8,7 +8,7 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **126** authored · **115** with a gcsim source
-- FrameMaps: **1119** authored · **990** matching gcsim exactly · **35** disagreeing · **94** uncovered
+- FrameMaps: **1119** authored · **955** matching gcsim exactly · **70** disagreeing · **94** uncovered
 - skill/burst application schedules observed: **281** · unobserved: **17**
 - summon tick streams cross-checked: **57**
 - hits carrying a measured gcsim ICD cadence: **2959** of **2959**
@@ -38,48 +38,83 @@ difference, per transition that currently falls back.
 
 Maps whose true `anim` exceeds the authored `swap`: **41** normal (median 24f), **391** E/Q (median 11f).
 
-## 2. FrameMaps that disagree (35)
+## 2. FrameMaps that disagree (70)
 
 ⚠️ C4b rules that gcsim is the source for all frame data, so these resolve in
 gcsim's favour — but each is listed so it is READ before it is written.
 
 | character | map | keys (ours → gcsim) |
 | --- | --- | --- |
-| arataki_itto | `arataki_itto__normal__fight_club_legend.chargeFrames` | D 89→51, J 89→51, swap 130→51 |
-| arataki_itto | `arataki_itto__normal__fight_club_legend_oni_king.chargeFrames` | D 89→51, J 89→51, swap 130→51 |
-| bennett | `bennett__skill__passion_overload.variants[h2E]` | J 240→340 |
-| chasca | `chasca__normal__phantom_feather_flurry.hits[0]` | N 17→22, swap 10→15 |
-| chasca | `chasca__normal__phantom_feather_flurry.hits[1]` | N 19→24, swap 8→13 |
-| chasca | `chasca__normal__phantom_feather_flurry.hits[2]` | N 36→41, swap 20→25 |
-| chasca | `chasca__normal__phantom_feather_flurry.hits[3]` | N 73→78, swap 39→44 |
-| chasca | `chasca__skill__spirit_reins_shadow_hunt.frames` | J 27→623, swap 37→623 |
-| chasca | `chasca__burst__soul_reapers_fatal_round.frames` | N 99→106, E 102→104, D 101→103, J 100→111, swap 98→111 |
-| flins | `flins__burst__ancient_ritual_cometh_the_night.frames` | N 102→53, E 103→53, D 103→51, J 103→50, swap 91→81 |
-| furina | `furina__normal__soloists_solicitation.chargeFrames` | C 47→253 |
-| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.hits[4]` | swap 28→26 |
+| albedo | `albedo__normal__favonius_bladework_weiss.hits[0]` | anim 14→23 |
+| albedo | `albedo__normal__favonius_bladework_weiss.hits[2]` | anim 32→41 |
+| albedo | `albedo__normal__favonius_bladework_weiss.hits[3]` | anim 34→36 |
+| albedo | `albedo__normal__favonius_bladework_weiss.hits[4]` | anim 27→62, hit —→27 |
+| aloy | `aloy__skill__frozen_wilds.frames` | anim 49→66 |
+| arataki_itto | `arataki_itto__normal__fight_club_legend.chargeFrames` | D 89→51, J 89→51, swap 130→51, anim 130→104, hit —→51 |
+| arataki_itto | `arataki_itto__normal__fight_club_legend_oni_king.chargeFrames` | D 89→51, J 89→51, swap 130→51, anim 130→104, hit —→51 |
+| bennett | `bennett__skill__passion_overload.variants[h2E]` | J 240→340, anim 337→343 |
+| chasca | `chasca__normal__phantom_feather_flurry.hits[0]` | N 17→22, swap 10→15, anim 10→32, hit —→15 |
+| chasca | `chasca__normal__phantom_feather_flurry.hits[1]` | N 19→24, swap 8→13, anim 8→34, hit —→13 |
+| chasca | `chasca__normal__phantom_feather_flurry.hits[2]` | N 36→41, swap 20→25, anim 20→58, hit —→25 |
+| chasca | `chasca__normal__phantom_feather_flurry.hits[3]` | N 73→78, swap 39→44, anim 39→78, hit —→44 |
+| chasca | `chasca__skill__spirit_reins_shadow_hunt.frames` | J 27→623, swap 37→623, anim 37→623 |
+| chasca | `chasca__burst__soul_reapers_fatal_round.frames` | N 99→106, E 102→104, D 101→103, J 100→111, swap 98→111, anim 98→111 |
+| dahlia | `dahlia__normal__favonius_bladework_ritual.hits[3]` | anim 62→71 |
+| escoffier | `escoffier__normal__kitchen_skills.hits[0]` | anim 17→22 |
+| escoffier | `escoffier__normal__kitchen_skills.hits[1]` | anim 21→30 |
+| flins | `flins__burst__ancient_ritual_cometh_the_night.frames` | N 102→53, E 103→53, D 103→51, J 103→50, swap 91→81, anim 91→81 |
+| furina | `furina__normal__soloists_solicitation.chargeFrames` | C 47→253, anim 33→253 |
+| gaming | `gaming__burst__suannis_gilded_dance.frames` | anim 66→77 |
+| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.hits[4]` | swap 28→26, anim 28→48, hit —→26 |
 | hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.chargeFrames` | E 53→60, Q 54→62, D 26→19, J 24→19 |
-| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.plungeFrames` | N 58→59, E 59→60, Q 59→60, J 74→76, swap 61→64 |
-| hu_tao | `hu_tao__normal__paramita_papilio.hits[4]` | N 36→37, swap 28→26 |
-| hu_tao | `hu_tao__normal__paramita_papilio.chargeFrames` | Q 33→62, D 3→19, J 3→19, swap 42→62 |
-| hu_tao | `hu_tao__normal__paramita_papilio.plungeFrames` | N 58→59, E 58→60, Q 58→60, swap 61→64 |
-| hu_tao | `hu_tao__normal__paramita_papilio.lowPlungeFrames` | E 58→59, Q 58→59 |
-| ifa | `ifa__skill__airborne_disease_prevention.frames` | swap 31→631 |
-| keqing | `keqing__skill__stellar_restoration_recast.frames` | N 42→36, D 16→21, J 16→21, swap 42→28 |
-| kinich | `kinich__normal__nightsun_style.hits[0]` | swap 47→21 |
-| kinich | `kinich__normal__nightsun_style.hits[1]` | swap 48→22 |
-| kinich | `kinich__normal__nightsun_style.hits[2]` | swap 79→44 |
-| lan_yan | `lan_yan__normal__normal_attack.plungeFrames` | N 56→58, E 56→59, Q 57→60, D 44→46 |
-| lan_yan | `lan_yan__skill__swallow_wisp_pinion_dance.frames` | N 33→45, E 33→49, Q 79→46, D 77→47, J 79→47, swap 80→49 |
-| nilou | `nilou__skill__whirling_steps_2.frames` | N 40→27, E 32→27, Q 40→33, D 36→26, J 37→27, swap 62→31 |
-| nilou | `nilou__skill__whirling_steps_3.frames` | D 57→26, J 57→27, swap 61→31 |
-| sigewinne | `sigewinne__burst__super_saturated_syringing.frames` | N 269→127, E 271→129, D 241→99, J 241→99, swap 245→103 |
-| tartaglia | `tartaglia__burst__havoc_obliteration_ranged.frames` | N 54→102, D 54→103, J 54→102, swap 53→101 |
-| tartaglia | `tartaglia__burst__havoc_obliteration_melee.frames` | N 102→54, E 102→55, J 102→54, swap 101→53 |
-| traveler_hydro | `traveler_hydro__skill__aquacrest_saber.variants[hE]` | N 81→396, Q 81→396, D 74→389, J 74→389, swap 90→405 |
-| varesa | `varesa__normal__by_the_horns.hits[0]` | N 33→27, C 23→17, swap 23→17 |
-| varesa | `varesa__normal__by_the_horns.plungeFrames` | N 40→39, C 47→40, E 40→39, Q 40→39, D 40→38, J 51→49, swap 37→39 |
-| yelan | `yelan__normal__stealthy_bowshot.chargeHits[0]` | D 15→86, J 15→86, swap 25→96 |
-| yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | N 140→96, D 129→85, J 129→85, swap 138→95 |
+| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.plungeFrames` | N 58→59, E 59→60, Q 59→60, J 74→76, swap 61→64, anim 61→76 |
+| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.lowPlungeFrames` | anim 61→75 |
+| hu_tao | `hu_tao__normal__paramita_papilio.hits[4]` | N 36→37, swap 28→26, anim 28→48, hit —→26 |
+| hu_tao | `hu_tao__normal__paramita_papilio.chargeFrames` | Q 33→62, D 3→19, J 3→19, swap 42→62, anim 42→62 |
+| hu_tao | `hu_tao__normal__paramita_papilio.plungeFrames` | N 58→59, E 58→60, Q 58→60, swap 61→64, anim 61→76 |
+| hu_tao | `hu_tao__normal__paramita_papilio.lowPlungeFrames` | E 58→59, Q 58→59, anim 61→75 |
+| ifa | `ifa__skill__airborne_disease_prevention.frames` | swap 31→631, anim 31→631 |
+| ineffa | `ineffa__burst__supreme_instruction_cyclonic_exterminator.frames` | anim 127→130 |
+| keqing | `keqing__skill__stellar_restoration.frames` | anim 28→37 |
+| keqing | `keqing__skill__stellar_restoration_recast.frames` | N 42→36, D 16→21, J 16→21, swap 42→28, anim 42→37 |
+| kinich | `kinich__normal__nightsun_style.hits[0]` | swap 47→21, hit —→21 |
+| kinich | `kinich__normal__nightsun_style.hits[1]` | swap 48→22, hit —→22 |
+| kinich | `kinich__normal__nightsun_style.hits[2]` | swap 79→44, hit —→44 |
+| lan_yan | `lan_yan__normal__normal_attack.hits[0]` | anim 11→30, hit —→11 |
+| lan_yan | `lan_yan__normal__normal_attack.hits[1]` | anim 37→46, hit —→37 |
+| lan_yan | `lan_yan__normal__normal_attack.hits[2]` | anim 21→53, hit —→21 |
+| lan_yan | `lan_yan__normal__normal_attack.hits[3]` | anim 40→63, hit —→40 |
+| lan_yan | `lan_yan__normal__normal_attack.chargeFrames` | anim 45→70 |
+| lan_yan | `lan_yan__normal__normal_attack.plungeFrames` | N 56→58, E 56→59, Q 57→60, D 44→46, anim 53→67 |
+| lan_yan | `lan_yan__skill__swallow_wisp_pinion_dance.frames` | N 33→45, E 33→49, Q 79→46, D 77→47, J 79→47, swap 80→49, anim 80→49 |
+| lan_yan | `lan_yan__burst__lustrous_moonrise.frames` | anim 75→100 |
+| nahida | `nahida__normal__akara.chargeFrames` | anim 65→69 |
+| nilou | `nilou__skill__dance_of_haftkarsvar.frames` | anim 21→22 |
+| nilou | `nilou__skill__whirling_steps_1.frames` | anim 31→33 |
+| nilou | `nilou__skill__whirling_steps_2.frames` | N 40→27, E 32→27, Q 40→33, D 36→26, J 37→27, swap 62→31, anim 62→33 |
+| nilou | `nilou__skill__whirling_steps_3.frames` | D 57→26, J 57→27, swap 61→31, anim 61→33 |
+| qiqi | `qiqi__skill__adeptus_art_herald_of_frost.frames` | anim 57→58 |
+| sangonomiya_kokomi | `sangonomiya_kokomi__normal__the_shape_of_water.hits[0]` | hit 4→2 |
+| sangonomiya_kokomi | `sangonomiya_kokomi__normal__the_shape_of_water.hits[1]` | hit 12→9 |
+| sangonomiya_kokomi | `sangonomiya_kokomi__normal__the_shape_of_water.hits[2]` | hit 28→26 |
+| sayu | `sayu__skill__yoohoo_art_fuuin_dash.frames` | anim 44→45 |
+| sigewinne | `sigewinne__normal__targeted_treatment.hits[2]` | anim 67→82 |
+| sigewinne | `sigewinne__burst__super_saturated_syringing.frames` | N 269→127, E 271→129, D 241→99, J 241→99, swap 245→103, anim 245→129 |
+| tartaglia | `tartaglia__burst__havoc_obliteration_ranged.frames` | N 54→102, D 54→103, J 54→102, swap 53→101, anim 53→103 |
+| tartaglia | `tartaglia__burst__havoc_obliteration_melee.frames` | N 102→54, E 102→55, J 102→54, swap 101→53, anim 101→55 |
+| traveler_anemo | `traveler_anemo__skill__palm_vortex.frames` | anim 74→76 |
+| traveler_hydro | `traveler_hydro__skill__aquacrest_saber.variants[hE]` | N 81→396, Q 81→396, D 74→389, J 74→389, swap 90→405, anim 90→405 |
+| varesa | `varesa__normal__by_the_horns.hits[0]` | N 33→27, C 23→17, swap 23→17, anim 23→43, hit —→17 |
+| varesa | `varesa__normal__by_the_horns.hits[1]` | anim 7→30, hit —→7 |
+| varesa | `varesa__normal__by_the_horns.hits[2]` | anim 33→59, hit —→33 |
+| varesa | `varesa__normal__by_the_horns.chargeFrames` | anim 139→143 |
+| varesa | `varesa__normal__by_the_horns.plungeFrames` | N 40→39, C 47→40, E 40→39, Q 40→39, D 40→38, J 51→49, swap 37→39, anim 37→77 |
+| varesa | `varesa__skill__riding_the_nightrainbow.frames` | anim 21→43 |
+| varesa | `varesa__burst__guardian_vent.frames` | anim 90→122 |
+| yelan | `yelan__normal__stealthy_bowshot.chargeHits[0]` | D 15→86, J 15→86, swap 25→96, anim 25→96 |
+| yun_jin | `yun_jin__skill__opening_flourish.frames` | anim 59→62 |
+| yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | anim 95→97 |
+| yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | N 140→96, D 129→85, J 129→85, swap 138→95, anim 138→97 |
 
 ## 3. Uncovered maps (94)
 

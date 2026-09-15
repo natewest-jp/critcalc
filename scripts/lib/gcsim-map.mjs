@@ -325,6 +325,45 @@ export function toFrameMap(slice, { normalStyle }) {
 	return out;
 }
 
+/**
+ * Where an authored FrameMap and a gcsim slice DISAGREE — the audit's mismatch rule.
+ *
+ * ⚓⚓ THE COMPARED SET IS THE ACTION KEYS **PLUS `anim` AND `hit`** (2026-09-15). Until
+ * then the audit compared `KEYS` alone, so a pre-L4b stand-in — `anim === swap`, with
+ * no `hit`, every cancel slot holding the OLD `swap` fallback — passed as "matching"
+ * whenever its overrides happened to agree, while the two fields that carry a
+ * normal's actual timing (its animation length and its hitmark) were never read.
+ * The essential-characters scoping (§1.E) found the class by hand on twelve
+ * characters — Nefer's every map, Linnea's and Iansan's normals, Cyno's inverted
+ * in-stance N5 (`{anim:40, N:62}` for `{anim:62, hit:40}`), Furina's charged attack
+ * at 33 for 253 — and a green audit row over every one of them.
+ *
+ * `anim` is compared wherever the corpus authors it (characterLint requires it).
+ * `hit` is compared on normal-style maps against the hitmark tier gcsim's own
+ * `InitNormalCancelSlice` leaves in the slice, derived by the SAME rule
+ * `toFrameMap` writes it by — so the migration's output is by construction what
+ * this comparison accepts. An E/Q slice has no such tier and `hit` is a lint error
+ * there, so it is not compared.
+ *
+ * ⚠️ Still over the keys the corpus ASSERTS for the action keys: an absent `D` is
+ * not a claim (see the migration's holdback note), so it is not a disagreement.
+ *
+ * Returns `[]` when the map agrees; otherwise one `"key ours→theirs"` per key, in
+ * report order.
+ */
+export function frameMapDisagreements(fm, slice, { normalStyle }) {
+	const out = [];
+	for (const k of KEYS) {
+		if (fm[k] !== undefined && fm[k] !== slice[k]) out.push(`${k} ${fm[k]}→${slice[k]}`);
+	}
+	if (fm.anim !== undefined && fm.anim !== slice.anim) out.push(`anim ${fm.anim}→${slice.anim}`);
+	if (normalStyle) {
+		const want = toFrameMap(slice, { normalStyle: true }).hit;
+		if (fm.hit !== want) out.push(`hit ${fm.hit ?? '—'}→${want ?? '—'}`);
+	}
+	return out;
+}
+
 /** Every key's RESOLVED value — the shape-independent reading of a FrameMap.
  *
  * ⚓ The migration's guards compare these, never the authored keys. A guard that looks
