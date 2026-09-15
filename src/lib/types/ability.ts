@@ -1034,6 +1034,41 @@ type TransientStateCommon = {
 	 *  state's own window and nothing else. A toggle that had to displace
 	 *  something in both directions would be two states, not one. */
 	consumes?: State[];
+	/**
+	 * Close the window at the START of the owner's next simulated ATTACK or CAST
+	 * (N, C, P, E, Q) — Lauma's Spirit Envoy form, which "any action but walk or
+	 * jump" ends (gcsim `chargeInit`'s `OnActionExec` hook).
+	 *
+	 * ⚓ Not D and not J (Nate, 2026-09-16): she dashes and jumps IN deer form, so
+	 * movement is not an exit. Not a wait, an unset, or a token we skip (`W`)
+	 * either — none of those is an input the game could react to. A swap is a
+	 * different edge and is `terminatesOnSwap`, authored beside this.
+	 *
+	 * ⚠️ The close is settled BEFORE the closing action resolves its own ability
+	 * (`settleOwnerStates` runs ahead of the state snapshot at every attack and
+	 * cast site), so the action that ends the window already sees the world
+	 * without it — which is what makes `Lauma C C` read as deer, then Prayer.
+	 */
+	terminatesOnAction?: true;
+	/**
+	 * When this window ENDS — by expiry, by `terminatesOnAction`, by a swap, or
+	 * by a later opener's `consumes` — open THIS window at that instant, once,
+	 * with the same provenance. A cooldown that starts when a form ends, said as
+	 * a window that opens when another closes (Lauma: `spiritEnvoy` →
+	 * `envoyCooldown`, the 4s during which her `C` is Spiritcall Prayer).
+	 *
+	 * ⚓ A NAMED state rather than a `cooldown` number, because the thing that
+	 * consumes it is a sibling ability's `conditions`, and a condition needs a
+	 * name to read. Not nestable: the chained window is `{state, duration}` and
+	 * carries no `onEnd` of its own.
+	 *
+	 * ⚠️ A silent expiry fires nothing, so an expired window's chain is
+	 * materialised LAZILY — at the owner's next settle point (attack, cast,
+	 * swap-out) or at finalize — with the start it always had (`rec.end`). Every
+	 * reader gets the same window; only the instant it was written differs.
+	 * ⛔ Refused on a toggle (lint): a toggle has no end.
+	 */
+	onEnd?: { state: State; duration: number };
 };
 
 export type TransientStateSpec =

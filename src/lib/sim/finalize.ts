@@ -36,6 +36,7 @@ import {
 	summonSpawnAt
 } from './summons';
 import { collectApplications, collectAuraSeries } from './aura';
+import { materialiseStateChains } from './states';
 import { deriveFieldWindows } from './fields';
 import { deriveGadgetWindows } from './gadgets';
 
@@ -151,6 +152,16 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	}
 
 	const windows: TimelineWindow[] = [];
+
+	// 1d. Chained state windows still pending (charged-forms round, 2026-09-16):
+	//     a window with `onEnd` whose owner never acted again after it closed
+	//     has had no settle point to write its chain at. Write it now — but only
+	//     if the end has actually come. A deer still standing when the rotation
+	//     stops has no cooldown yet, and a window that starts after the ruler
+	//     ends would be a claim about time the chart does not show.
+	for (const [charId, cs] of ctx.charStates) {
+		materialiseStateChains(ctx, cs, charId, totalDuration);
+	}
 
 	// 2. Stance windows → `state` windows named "inStance" (post-P4 #4 merge:
 	//    a stance is just a state with a source attached). Final ends —

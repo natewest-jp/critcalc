@@ -707,6 +707,49 @@ function lintAbility(
 				}
 			}
 		}
+		// (charged-forms round, 2026-09-16) `terminatesOnAction` is a flag with
+		// one setting, like `toggle`; `onEnd` is a `{state, duration}` pair and
+		// is refused on a toggle, which has no end to chain from.
+		const s2 = spec as { terminatesOnAction?: unknown; onEnd?: unknown };
+		if (s2.terminatesOnAction !== undefined && s2.terminatesOnAction !== true) {
+			push(
+				'strict',
+				'transient-state-spec',
+				`${where}.terminatesOnAction must be literally true when present`,
+				a.id
+			);
+		}
+		if (s2.onEnd !== undefined) {
+			const oe = s2.onEnd as { state?: unknown; duration?: unknown } | null;
+			if (s.toggle === true) {
+				push(
+					'strict',
+					'transient-state-spec',
+					`${where}.onEnd on a toggle: a toggle has no end to chain from`,
+					a.id
+				);
+			}
+			if (typeof oe !== 'object' || oe === null) {
+				push('strict', 'transient-state-spec', `${where}.onEnd must be an object`, a.id);
+			} else {
+				if (typeof oe.state !== 'string' || !STATES.has(oe.state)) {
+					push(
+						'strict',
+						'transient-state-spec',
+						`${where}.onEnd.state "${String(oe.state)}" is not a known State`,
+						a.id
+					);
+				}
+				if (typeof oe.duration !== 'number' || !isFinite(oe.duration) || oe.duration <= 0) {
+					push(
+						'strict',
+						'transient-state-spec',
+						`${where}.onEnd.duration must be a finite positive number of seconds`,
+						a.id
+					);
+				}
+			}
+		}
 	}
 
 	// ⚓⚓ (NEW, Arkhe round) `summonsFollowState` RE-RESOLVES AT STATE EDGES THE
