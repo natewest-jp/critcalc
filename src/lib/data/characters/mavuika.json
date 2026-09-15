@@ -102,6 +102,40 @@
 			"cooldown": 15,
 			"cooldownStartDelay": 18,
 			"tags": ["summon"],
+			"summons": [
+				{
+					"label": "Rings of Searing Radiance",
+					"duration": 12.4,
+					"spawnsAt": 0,
+					"durationModifiers": [
+						{
+							"source": "C1: The Night-Lord's Explication (Nightsoul max 80 → 120)",
+							"type": "flat",
+							"value": 6.2,
+							"conditions": {
+								"type": "constellation",
+								"level": 1
+							}
+						}
+					],
+					"mobility": "follows",
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 2,
+								"firstTickDelay": 2,
+								"icdGate": "none"
+							},
+							"scaling": 230.4,
+							"stat": "atk",
+							"element": "pyro"
+						}
+					]
+				}
+			],
 			"variants": [
 				{
 					"label": "Hold (Flamestrider)",
@@ -111,32 +145,32 @@
 					"duration": 9,
 					"terminatesOnSwap": true,
 					"opensState": "nightsoulBlessing",
+					"summons": [],
 					"application": [{ "frame": 16, "element": "pyro", "units": 1 }]
 				}
 			],
 			"effects": [],
-			"caveat": "Shown as a 9s Hold window; C1's larger Nightsoul pool extends it to ~13s, which is not modeled. Recasting to toggle Ring/Flamestrider form is also not modeled — a second press fires the standard Tap form instead.",
+			"caveat": "After Q the Ring's bar and Pyro ticks keep running, though in game the burst ends the Ring. C1 lengthens the Hold window to ~13s, not shown, and a second press is read as a new Tap.",
 			"_curatorNotes": [
 				"Hold-E migrated to a true variant-driven bike-NS opener (2026-05-08): variant overrides behavior → \"stance\", opensState → \"nightsoulBlessing\", terminatesOnSwap → true, duration → 9. Now possible since the parser is variant-aware for stance fields. The Tap form remains instant (no NS — ring-mode NS rendering would need full P1 multi-state to distinguish ring from bike inside NS).",
 				"Tap behavior: \"instant\" — gcsim skillFrames AnimationLength 28, ActionSwap 24. Hold uses skillFramesHold (AnimationLength 43, ActionSwap 34).",
 				"cooldown: 15 + cooldownStartDelay: 18 — gcsim SetCDWithDelay(skill, 15*60, 18) for both Tap and Hold; recast is skillRecastCD=60f and gated separately.",
-				"summon tag: gcsim Tap exits bike → ring (summons the Ring of Searing Radiance which orbits + ticks for 2s intervals during Nightsoul ring-state); Hold enters bike (summons Flamestrider). The Ring's per-tick Pyro damage (skillRing 230.4% ATK at TL10, 2s interval) is NOT authored as summons[].effects[] in v1 — Mavuika's simplified state model still doesn't render ring-mode NS (Tap stays instant). To render Ring ticks, the multi-state primitive (P1 full) would need to land first so we can distinguish ring-state vs bike-state inside NS.",
+				"summon tag + the Ring (↻ 2026-09-15, essential-characters T0): the Tap exits bike → ring and gcsim exitBike starts skillRingTask, a 2*60 re-queue firing 'Rings of Searing Radiance' — Pyro, Durability 25, ICDTagNone, skillRing 230.4% ATK at TL10 — while armamentState == ring and Nightsoul Blessing holds. Authored as a real summon (interval 2, firstTickDelay 2, icdGate none). Its six ticks had been smuggled into this skill's application[] at 120…720f, where the CAST's shared ICD counter ate three of them and no bar or marker explained the Pyro. Lifetime is DERIVED from gcsim, not stated by the kit: the Tap enters Nightsoul at MaxPoints (80), nightsoulPointReduceTask drains 0.5 per 6f (5/s) in ring form and each ring tick spends 3 more, so the pool empties at ~12.4s after the sixth tick (12.0s) — duration 12.4. C1 raises MaxPoints to 120 (cons.go), which by the same arithmetic empties at ~18.6s after nine ticks: the +6.2 durationModifier. ⚠️ The Burst calls enterBike and skillRingTask returns once armamentState != ring, so in game Q ENDS the Ring; `terminatesOn` is swap|recast only (essential-characters §1.M), so the bar runs on — named in the caveat. The Hold variant carries `summons: []` because a variant's summons REPLACE the base's and Hold enters bike, not ring.",
 				"Recast (skillRecast) toggles armament state inside NS without consuming the 15s skill CD: 1s recast CD instead. Authoring recast as a 3rd skill entry would require either a state condition or a dedicated input token; both have downsides (resolveActiveAbility doesn't filter by token; state distinction would require a new bike state). Skipped — flagged in caveat.",
 				"Hold variant frames default keys (N/C/E/Q at 43 = AnimationLength) encoded for accuracy; D/J at 42 are gcsim-explicit overrides.",
 				"skillBikeRefreshFrames (E pressed inside bike+NS via Sac proc or burst CD reset): swap=24, N=27, C=27, E=39 (default), Q=27, D=25, J=27. Not modelled — treats this rare path as the same Tap variant. Acceptable approximation.",
 				"skillRecastFramesToBike (recast Ring → Bike): swap=24, N=13, C=13, E=13, Q=13, D=12, J=13. skillRecastFramesToRing (recast Bike → Ring): swap=24, N=27, C=28, E=28, Q=28, D=37. Both not authored — see caveat.",
 				"[A7] The shown 9s Hold window equals the C0 Nightsoul drain rate (~9 pts/sec at 80 max points); C1 raises max Nightsoul to 120 (~13s effective).",
-				"[A7] Skill recast to toggle Ring/Flamestrider mode is unauthored — there is no apexDrive-like state to gate the recast frames, so a re-press falls back to the standard Tap variant."
+				"[A7] Skill recast to toggle Ring/Flamestrider mode is unauthored — there is no apexDrive-like state to gate the recast frames, so a re-press falls back to the standard Tap variant.",
+				"↻ 2026-09-15: caveat rewritten to lead with the Ring's post-Q ticks (the canonical E→Q opener shows them); the C1 Hold-window and recast halves are kept in shorter words."
 			],
 			"description": "Calling upon her authority over \"conflict,\" Mavuika summons the All-Fire Armaments passed down through the line of human Archons, dealing Nightsoul-aligned Pyro DMG.\nAfter using this, Mavuika's Nightsoul points are restored to max value, and she enters the Nightsoul's Blessing state.\n\nAll-Fire Armaments\nHas different forms when Tapped or Held.\n\nTap\n\"Divine Name Unleashed\": The All-Fire Armaments manifest as a Ring of Searing Radiance. The Ring follows the current active character and attacks nearby opponents at intervals, dealing Nightsoul-aligned Pyro DMG.\n\nHold\n\"Ancient Name Unbound\": The All-Fire Armaments manifest as a Flamestrider. In this state, Mavuika can ride the Flamestrider at high speed, or activate its hidden backup propulsion module to temporarily cross various terrain types and glide in mid-air. Mavuika's Normal, Charged, and Plunging Attacks will also be converted to deal Nightsoul-aligned Pyro DMG which cannot be overridden. When sprinting, she also deals Nightsoul-aligned Pyro DMG to opponents along her path.\n\nWhile in the Nightsoul's Blessing state, Tapping the Elemental Skill can switch the All-Fire Armaments' form. The Armaments will disappear once Mavuika's Nightsoul's Blessing state ends.",
 			"application": [
-				{ "frame": 16, "element": "pyro", "units": 1 },
-				{ "frame": 120, "element": "pyro", "units": 1 },
-				{ "frame": 240, "element": "pyro", "units": 1 },
-				{ "frame": 360, "element": "pyro", "units": 1 },
-				{ "frame": 480, "element": "pyro", "units": 1 },
-				{ "frame": 600, "element": "pyro", "units": 1 },
-				{ "frame": 720, "element": "pyro", "units": 1 }
+				{
+					"frame": 16,
+					"element": "pyro",
+					"units": 1
+				}
 			]
 		},
 		{
