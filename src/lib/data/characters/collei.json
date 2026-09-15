@@ -196,7 +196,8 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "burning"
+						"reaction": "burning",
+						"source": "team"
 					},
 					"duration": 3,
 					"scaling": 40,

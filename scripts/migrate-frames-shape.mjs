@@ -17,7 +17,17 @@
  * already-migrated corpus produces the same bytes — but it is not a maintenance tool:
  * the ongoing check is the audit.
  *
- * Usage:  node scripts/migrate-frames-shape.mjs [--write] [--char <id>]
+ * Usage:  node scripts/migrate-frames-shape.mjs [--write] [--char <id>] [--seed]
+ *
+ * `--seed` (2026-09-15, Stage 4 for a FRAMELESS character): the migration only ever
+ * rewrote maps that already existed, so a character with `hits: []` and no `frames`
+ * got nothing from it — and the ingest recipe's "the migration writes all three" was
+ * false for exactly the character it was written for. With `--seed`, every map slot
+ * the dumper has a covered reading for (N1…Nk, C, P, lP, E, Q — and a conditioned
+ * sibling via its driver row) is seeded EMPTY first, so the ordinary pass migrates it
+ * like any other map; a seed that ends the pass without a measured `anim` is deleted
+ * again, so nothing is created that gcsim did not read. ⛔ Variants are not seeded:
+ * a variant needs an `input`/`label`, which is authoring, not migration.
  */
 
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -71,9 +81,60 @@ const HOLDBACK_PATHS = {
  *  and Bennett's level-2 hold (240→340) without naming any of them. */
 const HOLDBACK_DELTA_F = 60;
 
+/**
+ * Seed an EMPTY FrameMap into every slot the dump has a covered reading for. Returns
+ * one `{ get, del }` handle per seed so the pass can delete what it could not fill.
+ *
+ * ⚓ Empty on purpose: the migration's holdback delta is measured over the keys the
+ * corpus ASSERTS, and an empty map asserts none, so a seed can never be held back for
+ * disagreeing with a value nobody authored. Bows are not seeded a `chargeFrames`
+ * (they carry `chargeHits[]`, a different shape) and no variant is created.
+ */
+function seedMissingMaps(char, byKey) {
+	const seeded = [];
+	const covered = (k) => {
+		const g = byKey.get(k);
+		return !!(g && !g.error && g.frames);
+	};
+	const isBow = char.weapon === 'bow';
+	for (const a of char.abilities ?? []) {
+		if (a.abilityType === 'normal') {
+			if (!(a.hits ?? []).length && covered('N1')) {
+				const hits = [];
+				for (let i = 1; covered(`N${i}`); i++) hits.push({ name: `N${i}`, frames: {} });
+				a.hits = hits;
+				seeded.push({
+					get: () =>
+						a.hits.every((h) => Number.isInteger(h.frames?.anim) && h.frames.anim > 0)
+							? a.hits[0].frames
+							: null,
+					del: () => (a.hits = [])
+				});
+			}
+			if (!a.chargeFrames && !isBow && covered('C')) {
+				a.chargeFrames = {};
+				seeded.push({ get: () => a.chargeFrames, del: () => delete a.chargeFrames });
+			}
+			if (!a.plungeFrames && covered('P')) {
+				a.plungeFrames = {};
+				seeded.push({ get: () => a.plungeFrames, del: () => delete a.plungeFrames });
+			}
+			if (!a.lowPlungeFrames && covered('lP')) {
+				a.lowPlungeFrames = {};
+				seeded.push({ get: () => a.lowPlungeFrames, del: () => delete a.lowPlungeFrames });
+			}
+		} else if ((a.abilityType === 'skill' || a.abilityType === 'burst') && !a.frames) {
+			a.frames = {};
+			seeded.push({ get: () => a.frames, del: () => delete a.frames });
+		}
+	}
+	return seeded;
+}
+
 async function main() {
 	const args = process.argv.slice(2);
 	const write = args.includes('--write');
+	const seed = args.includes('--seed');
 	const onlyIdx = args.indexOf('--char');
 	const only = onlyIdx >= 0 ? args[onlyIdx + 1] : null;
 
@@ -103,7 +164,15 @@ async function main() {
 	// into a 12,000-line one. Formatting here also makes the script idempotent, which
 	// is what lets it be re-run safely against an already-migrated corpus.
 	const prettierOptions = { ...(await resolveConfig(chars[0].file)), parser: 'json' };
-	const stats = { migrated: 0, preserved: 0, heldBack: 0, lowPlungeAdded: 0, files: 0 };
+	const stats = {
+		migrated: 0,
+		preserved: 0,
+		heldBack: 0,
+		lowPlungeAdded: 0,
+		seeded: 0,
+		seedDropped: 0,
+		files: 0
+	};
 	const held = [];
 
 	for (const c of chars) {
@@ -112,6 +181,10 @@ async function main() {
 		const cd = dump.characters[gk];
 		const byKey = new Map((cd?.abilities ?? []).map((a) => [a.key, a]));
 		const charHeld = HOLDBACK_CHARACTERS[c.data.id];
+
+		// `--seed`: create the empty slots BEFORE the maps are enumerated, so they are
+		// migrated by the same rule as every other map in this pass.
+		const seeded = seed && !charHeld ? seedMissingMaps(c.data, byKey) : [];
 
 		// The plunge split has to happen BEFORE the maps are enumerated, so the new
 		// `lowPlungeFrames` is migrated in the same pass as everything else.
@@ -210,6 +283,18 @@ async function main() {
 			else stats.migrated++;
 		}
 
+		// A seed the pass could not fill (no reading for that slot) is not data —
+		// `preserveFrameMap({})` writes `anim: 0`, which characterLint rejects and which
+		// would otherwise mark the character curated on nothing. Delete it again.
+		for (const sd of seeded) {
+			const fm = sd.get();
+			if (fm && Number.isInteger(fm.anim) && fm.anim > 0) stats.seeded++;
+			else {
+				sd.del();
+				stats.seedDropped++;
+			}
+		}
+
 		const next = await format(JSON.stringify(c.data), prettierOptions);
 		if (next !== c.raw) {
 			stats.files++;
@@ -220,6 +305,7 @@ async function main() {
 	process.stderr.write(
 		`${stats.migrated} migrated · ${stats.preserved} preserved (no gcsim reading) · ` +
 			`${stats.heldBack} held back · ${stats.lowPlungeAdded} lowPlungeFrames added · ` +
+			(seed ? `${stats.seeded} seeded · ${stats.seedDropped} seeds dropped (no reading) · ` : '') +
 			`${stats.files} files ${write ? 'written' : 'would change'}\n`
 	);
 	const byChar = new Map();

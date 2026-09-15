@@ -409,7 +409,8 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "bloom"
+						"reaction": "bloom",
+						"source": "team"
 					},
 					"duration": 10,
 					"element": "dendro",

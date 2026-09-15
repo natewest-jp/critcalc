@@ -37,6 +37,7 @@ import {
 	KEYS,
 	authoredMaps,
 	driverSetsFor,
+	frameMapDisagreements,
 	gcsimKeyFor,
 	loadDrivers,
 	prereqFor,
@@ -315,13 +316,11 @@ function main() {
 				});
 				continue;
 			}
-			const bad = KEYS.filter((k) => m.frames[k] !== undefined && m.frames[k] !== g.frames[k]);
+			// ⚓ The compared set includes `anim` and `hit` (2026-09-15) — see the rule's doc
+			// in gcsim-map.mjs for the class of stand-in a KEYS-only comparison waved through.
+			const bad = frameMapDisagreements(m.frames, g.frames, { normalStyle: m.normalStyle });
 			if (bad.length) {
-				mismatches.push({
-					id: char.id,
-					path: m.path,
-					keys: bad.map((k) => `${k} ${m.frames[k]}→${g.frames[k]}`)
-				});
+				mismatches.push({ id: char.id, path: m.path, keys: bad });
 			} else matched++;
 
 			// The reshape's payoff: which fallbacks fire today, and by how much.

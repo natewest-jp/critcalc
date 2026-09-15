@@ -20,25 +20,25 @@
 				{
 					"name": "N1",
 					"frames": {
-						"anim": 14,
-						"N": 30,
-						"swap": 14
+						"anim": 35,
+						"hit": 14,
+						"N": 30
 					}
 				},
 				{
 					"name": "N2",
 					"frames": {
-						"anim": 29,
-						"N": 48,
-						"swap": 29
+						"anim": 52,
+						"hit": 29,
+						"N": 48
 					}
 				},
 				{
 					"name": "N3",
 					"frames": {
-						"anim": 40,
-						"N": 88,
-						"swap": 40
+						"anim": 99,
+						"hit": 40,
+						"N": 88
 					}
 				}
 			],
@@ -55,10 +55,7 @@
 				{
 					"name": "Fully-Charged Aimed Shot",
 					"frames": {
-						"anim": 85,
-						"D": 85,
-						"J": 85,
-						"swap": 85
+						"anim": 85
 					}
 				}
 			],
@@ -96,12 +93,12 @@
 			"duration": 5.57,
 			"terminatesOnSwap": true,
 			"frames": {
-				"anim": 42,
-				"N": 42,
+				"anim": 48,
+				"N": 43,
+				"E": 42,
 				"Q": 42,
-				"D": 42,
-				"J": 42,
-				"swap": 42
+				"D": 41,
+				"swap": 41
 			},
 			"cooldown": 15.5,
 			"tags": [],
@@ -118,7 +115,14 @@
 				"[A7] Filled (full flask) vs unfilled drain differ only in DMG magnitude (212% vs 190.8% Anemo at lvl 10) — a damage-number distinction out of scope for the timeline.",
 				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"The stance is shown running its full duration; in game it ends sooner when you re-press E, attack, or fill the flask. Not modeled: the Moonsign Ascendant Gleam Meowball volley, which fires the absorbed element instead of Anemo.\""
 			],
-			"description": "Jahoda dashes toward her opponent, entering the Shadow Pursuit state upon contact. While in this state, Jahoda moves continuously and swiftly: If nearby opponents are affected by Pyro, Hydro, Electro, or Cryo, she will quietly convert her **Purr-loined Treasure Flask** to that element, gradually filling it. When the duration ends or the skill is used again, Jahoda drains the Purr-loined Treasure Flask and deals a single instance of Anemo DMG to nearby opponents. When the Purr-loined Treasure Flask is full, Jahoda immediately drains it, exiting the Shadow Pursuit state and dealing a more powerful instance of Anemo DMG.\nIf her dash fails to make contact with an opponent, Jahoda instead drops a Smoke Bomb at her location, dealing a single instance of Anemo DMG to nearby opponents.\n\nMoonsign: Ascendant Gleam: When the Purr-loined Treasure Flask becomes full, Jahoda will not immediately discharge it. Instead, for a short duration, she steadily consumes the stored element inside and periodically fires Fluffy Meowballs at nearby opponents, dealing DMG of the corresponding element stored in the Purr-loined Treasure Flask. When a Fluffy Meowball hits an opponent, Jahoda regenerates 2 Elemental Energy. This effect can be triggered once every 3.5s."
+			"description": "Jahoda dashes toward her opponent, entering the Shadow Pursuit state upon contact. While in this state, Jahoda moves continuously and swiftly: If nearby opponents are affected by Pyro, Hydro, Electro, or Cryo, she will quietly convert her **Purr-loined Treasure Flask** to that element, gradually filling it. When the duration ends or the skill is used again, Jahoda drains the Purr-loined Treasure Flask and deals a single instance of Anemo DMG to nearby opponents. When the Purr-loined Treasure Flask is full, Jahoda immediately drains it, exiting the Shadow Pursuit state and dealing a more powerful instance of Anemo DMG.\nIf her dash fails to make contact with an opponent, Jahoda instead drops a Smoke Bomb at her location, dealing a single instance of Anemo DMG to nearby opponents.\n\nMoonsign: Ascendant Gleam: When the Purr-loined Treasure Flask becomes full, Jahoda will not immediately discharge it. Instead, for a short duration, she steadily consumes the stored element inside and periodically fires Fluffy Meowballs at nearby opponents, dealing DMG of the corresponding element stored in the Purr-loined Treasure Flask. When a Fluffy Meowball hits an opponent, Jahoda regenerates 2 Elemental Energy. This effect can be triggered once every 3.5s.",
+			"application": [
+				{
+					"frame": 368,
+					"element": "anemo",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "jahoda__burst__hidden_aces_seven_tools_of_the_hunter",
@@ -127,7 +131,7 @@
 			"abilityType": "burst",
 			"behavior": "instant",
 			"frames": {
-				"anim": 36,
+				"anim": 55,
 				"N": 48,
 				"E": 53,
 				"D": 54,
@@ -175,7 +179,14 @@
 				"[A7] Unauthored robot damage tick: 172.66% ATK FlatDmg of the absorbed element, ~2.33s interval (140f base, ×0.9 with Cryo A1); needs summon onHit + element-absorption + Moonsign-team-state, all deferred primitives.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The robots' summon-lane row and its tick marks. `computeSummonTicks` accepts every `summonTick` effect, so the lane draws marks at the 1.45s HEAL cadence and only that — a Moonsign player sees one evenly-spaced series where the game runs a second ~2.33s damage series that would carry its own marks and its own aura applications. The caveat is anchored to exactly that row (\"Only the robots' healing is shown\") and warns the reader not to read the visible cadence as the robots' full output. Category: expected-but-absent."
 			],
-			"description": "Time to reveal those pocket aces! Jahoda retrieves 2 **Purrsonal Coordinated Assistance Robots** and deals a single instance of Anemo DMG to nearby opponents."
+			"description": "Time to reveal those pocket aces! Jahoda retrieves 2 **Purrsonal Coordinated Assistance Robots** and deals a single instance of Anemo DMG to nearby opponents.",
+			"application": [
+				{
+					"frame": 43,
+					"element": "anemo",
+					"units": 1
+				}
+			]
 		}
 	],
 	"passives": [
@@ -197,7 +208,7 @@
 			"caveat": "When a robot's heal lands on a character above 70% HP, that character also gains 100 EM for 6s — this boost isn't shown on the timeline.",
 			"_curatorNotes": [
 				"A4: When a Robot heal triggers on active char with HP > 70%, +100 EM to that char for 6s. Three deferred primitives: (1) per-heal-event trigger; (2) HP-state condition on target; (3) the 'lowest HP off-field char' additional heal that the same A4 mechanic also fires. Not authored. The original stub had a self+manual buff effect — removed; replaced with description-only entry.",
-				"Caveated (capability sweep 2026-07-28): still unmodelable — the trigger is a heal EVENT from the burst's summon (no heal-event trigger primitive; summonTick effects can't be conditioned on 'a heal landed'), and the 70% gate is on the HEALED target's HP while selfHpAbove/Below gate on the holder (only recipientHpBelow exists, no Above). Jahoda absent from the local gcsim checkout; kit text is the source."
+				"Caveated (capability sweep 2026-07-28): still unmodelable — the trigger is a heal EVENT from the burst's summon (no heal-event trigger primitive; summonTick effects can't be conditioned on 'a heal landed'), and the 70% gate is on the HEALED target's HP while selfHpAbove/Below gate on the holder (only recipientHpBelow exists, no Above). Jahoda absent from the local gcsim checkout; kit text is the source. ↻ 2026-09-15: gcsim main has him (#2538, frames doc fixed in #2770); FrameMaps and application[] re-migrated against ac2d76dde."
 			],
 			"description": "When a **Purrsonal Coordinated Assistance Robot** from the Elemental Burst Hidden Aces: Seven Tools of the Hunter triggers healing on an active team member, if that character's HP is above 70%, their Elemental Mastery will be increased by 100 for 6s."
 		}
@@ -255,7 +266,7 @@
 			"caveat": "When the flask fills, nearby Moonsign party members gain 5% CRIT Rate and 40% CRIT DMG for 20s — this buff isn't shown on the timeline.",
 			"_curatorNotes": [
 				"C6 (Moonsign Ascendant Gleam): when flask becomes full, all Moonsign characters in party gain +5% CR + +40% CD for 20s. The trigger is 'flask becomes full' which is a state-change inside the deferred flask system. Not authored — the original stub had two self-target manual-trigger buffs, removed since manual triggers don't render and the proper trigger primitive is missing.",
-				"Caveated (capability sweep 2026-07-28): the earlier removal stands — an onCast(skill) approximation would show a 20s team crit buff on every E, misstating a conditional late-window proc (the flask only fills when enemies carry Pyro/Hydro/Electro/Cryo auras during the stance, and the effect is additionally Moonsign-Ascendant-Gleam-gated). Kit text is the source; jahoda absent from the local gcsim checkout."
+				"Caveated (capability sweep 2026-07-28): the earlier removal stands — an onCast(skill) approximation would show a 20s team crit buff on every E, misstating a conditional late-window proc (the flask only fills when enemies carry Pyro/Hydro/Electro/Cryo auras during the stance, and the effect is additionally Moonsign-Ascendant-Gleam-gated). Kit text is the source; jahoda absent from the local gcsim checkout. ↻ 2026-09-15: gcsim main has him (#2538, frames doc fixed in #2770); FrameMaps and application[] re-migrated against ac2d76dde."
 			],
 			"description": "Moonsign: Ascendant Gleam: After the **Purr-loined Treasure Flask** from the Elemental Skill Savvy Strategy: Splitting the Spoils is full, nearby Moonsign characters in your party have their CRIT Rate increased by 5% and CRIT DMG increased by 40% for 20s."
 		}

@@ -32,7 +32,59 @@
 					"description": "Attacks opponents in her path while plunging from mid-air, then deals AoE DMG upon landing."
 				}
 			],
-			"description": "Normal Attack\nUnleashes a sword attack of up to 5 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash a dazzling slash on opponents in front of her.\n\nPlunging Attack\nAttacks opponents in her path while plunging from mid-air, then deals AoE DMG upon landing."
+			"description": "Normal Attack\nUnleashes a sword attack of up to 5 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash a dazzling slash on opponents in front of her.\n\nPlunging Attack\nAttacks opponents in her path while plunging from mid-air, then deals AoE DMG upon landing.",
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 25,
+						"hit": 9,
+						"N": 17
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 23,
+						"hit": 9,
+						"N": 19,
+						"C": 21
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 69,
+						"hit": 31,
+						"N": 54
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 85,
+						"hit": 15,
+						"N": 53,
+						"C": 73
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 70,
+						"hit": 15,
+						"N": 62
+					}
+				}
+			],
+			"chargeFrames": {
+				"anim": 83,
+				"E": 57,
+				"Q": 58,
+				"D": 30,
+				"J": 30,
+				"swap": 30
+			}
 		},
 		{
 			"id": "odette__skill__adagio_phantom_night_dancers",
@@ -59,8 +111,9 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 4,
-								"firstTickDelay": 2
+								"interval": 3.9,
+								"firstTickDelay": 2.233,
+								"icdGate": "none"
 							},
 							"scaling": 77.5,
 							"stat": "atk",
@@ -74,8 +127,9 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 4,
-								"firstTickDelay": 4
+								"interval": 3.9,
+								"firstTickDelay": 4.05,
+								"icdGate": "none"
 							},
 							"scaling": 92.6,
 							"stat": "atk",
@@ -84,6 +138,10 @@
 								"The \"Wing\" dance move — the same 4s cadence, offset by one move."
 							]
 						}
+					],
+					"spawnsAt": 23,
+					"_curatorNotes": [
+						"↻ 2026-09-15, measured against gcsim ac2d76dde: the dance alternates Plume → (109f) → Wing → (125f) → Plume, a 234f = 3.9s period per move (was authored 4s from kit text); both moves are ICDTagNone (icdGate none). Status length is 1262f (21.03s) in gcsim — duration kept at the kit's 20s. Tick counts match the oracle: skill 5 Plume + 5 Wing, burst 5 + 4."
 					]
 				}
 			],
@@ -94,8 +152,26 @@
 				"No `mobility` is authored. The Double \"dances a duet with her\" and the burst \"summons it to her side\", which suggests it neither strictly follows nor is strictly planted; nothing states it, so the field is left off rather than guessed.",
 				"The ability-level `duration: 20` the generator wrote was the Solo Dance Double Duration row. Moved onto the summon, where it is read.",
 				"Particle generation is 5 with a 12s internal cooldown, off either the Skill DMG or the Coda DoT (Fandom Gameplay Notes). No consumer today.",
-				"opensTransientState opens the 6s `codaWindow`, which is what makes the sibling ability \"Adagio: Coda at Dawn's Tolling\" resolve on the next E. See that ability's notes."
-			]
+				"opensTransientState opens the 6s `codaWindow`, which is what makes the sibling ability \"Adagio: Coda at Dawn's Tolling\" resolve on the next E. See that ability's notes.",
+				"FrameMaps + application[] written by scripts/migrate-frames-shape.mjs --seed / migrate-application-schema.mjs against gcsim main ac2d76dde (2026-09-13; counts credited in gcsim config.yml). Stage 4 landed 2026-09-15.",
+				"gcsim `SetCDWithDelay(15*60, 14)` → cooldownStartDelay 14. The E-Initial hit lands at 23f (1U); the Solo Dance Double is queued at 23f too, which is the summon's spawnsAt."
+			],
+			"frames": {
+				"anim": 42,
+				"N": 41,
+				"E": 41,
+				"Q": 41,
+				"D": 40,
+				"swap": 40
+			},
+			"application": [
+				{
+					"frame": 23,
+					"element": "cryo",
+					"units": 1
+				}
+			],
+			"cooldownStartDelay": 14
 		},
 		{
 			"id": "odette__skill__adagio_coda_at_dawns_tolling",
@@ -115,7 +191,32 @@
 				"A SEPARATE ABILITY ON THE SAME INPUT, gated on `codaWindow`, following Durin's Transmutation pattern rather than a variant. A variant would share the base skill's charge queue, so the base's own 15s cooldown — started by the very cast that opens the window — would block the Coda for the whole 6s it is supposed to be available. A distinct ability id gets its own queue and its own 15s clock, which is what the scaling table's separate \"Coda at Dawn's Tolling CD\" row describes.",
 				"⛔ It deliberately does NOT consume `codaWindow`. `consumesState` is a variant-only field and the only ability-level way to close a window is to open another one, which would mean inventing a state to stand for nothing. The cost is bounded: a THIRD E inside 6s resolves to the Coda again and waits on its cooldown. That is degenerate notation, and arguably what the game does too — the button is the Coda for those 6s.",
 				"No effects and no active window. Its DoT is three instances of AoE Cryo DMG (172.5% ATK at T10) before a finisher considered Stellar-Conduct or Stellar Swirl (550.37% / 825.55% ATK) — all of it the cast's own damage, which is frame territory, not effect territory. The duet's length is stated only as \"over time\"; ⛔ never invented, so no activeDuration is authored.",
-				"The tooltip's last paragraph — the Dance Double's two moves dealing ADDITIONAL Stellar Glimmer DMG after a Coda while she is in a Radiance state — is unauthored. It is extra damage on an existing tick series, and the tools draw no damage magnitude, so it has no surface to reach."
+				"The tooltip's last paragraph — the Dance Double's two moves dealing ADDITIONAL Stellar Glimmer DMG after a Coda while she is in a Radiance state — is unauthored. It is extra damage on an existing tick series, and the tools draw no damage magnitude, so it has no surface to reach.",
+				"FrameMaps + application[] written by scripts/migrate-frames-shape.mjs --seed / migrate-application-schema.mjs against gcsim main ac2d76dde (2026-09-13; counts credited in gcsim config.yml). Stage 4 landed 2026-09-15.",
+				"⚠️ application[] TRIMMED by hand after the migration: the dumper reaches the Coda only behind a skill-cast prerequisite (drivers.json `codaWindow`), so the capture also saw the PREREQUISITE's Solo Dance Double ticking through the horizon (114/223/348/…f) — the Furina stale-application class. Kept: the three Coda DoT hits (skillRecastDoTHitmarks 11/20/28, ICDGroupOdetteDanceDuo — a 3s / every-4 group, so only the first carries units). Dropped: the 62f final hit, which gcsim authors with NO Durability (a direct Stellar-Conduct hit) and which therefore applies nothing.",
+				"Not modelled: the Coda cancels the running dance tickers and restarts the Double with a Plume 52f after its final hit (gcsim skill.go skillRecast) — the mid-window hand-off. The Double keeps ticking on its original cadence here."
+			],
+			"frames": {
+				"anim": 76,
+				"N": 75,
+				"D": 74,
+				"J": 75,
+				"swap": 74
+			},
+			"application": [
+				{
+					"frame": 11,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 20,
+					"element": "cryo"
+				},
+				{
+					"frame": 28,
+					"element": "cryo"
+				}
 			]
 		},
 		{
@@ -158,8 +259,9 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 4,
-								"firstTickDelay": 2
+								"interval": 3.9,
+								"firstTickDelay": 4.2,
+								"icdGate": "none"
 							},
 							"scaling": 77.5,
 							"stat": "atk",
@@ -173,8 +275,9 @@
 							"target": "enemy",
 							"trigger": {
 								"type": "summonTick",
-								"interval": 4,
-								"firstTickDelay": 4
+								"interval": 3.9,
+								"firstTickDelay": 6.017,
+								"icdGate": "none"
 							},
 							"scaling": 92.6,
 							"stat": "atk",
@@ -183,6 +286,10 @@
 								"The \"Wing\" dance move — the same 4s cadence, offset by one move."
 							]
 						}
+					],
+					"spawnsAt": 1,
+					"_curatorNotes": [
+						"↻ 2026-09-15, measured against gcsim ac2d76dde: the dance alternates Plume → (109f) → Wing → (125f) → Plume, a 234f = 3.9s period per move (was authored 4s from kit text); both moves are ICDTagNone (icdGate none). Status length is 1262f (21.03s) in gcsim — duration kept at the kit's 20s. Tick counts match the oracle: skill 5 Plume + 5 Wing, burst 5 + 4."
 					]
 				}
 			],
@@ -190,7 +297,37 @@
 				"Snow Swan's Dream: +50% Stellar Glimmer reaction DMG for 20s (burst scaling rows \"Snow Swan's Dream Stellar Glimmer Reaction DMG Bonus\" and \"Snow Swan's Dream Duration\"). Bucket 5 — the wiki names the row \"Reaction DMG Bonus\", which is the Reaction Bonus bracket (additive with the EM bonus), not the Base DMG bracket Dance of Aurore feeds.",
 				"The burst summons or refreshes the SAME Solo Dance Double as the skill — same label, same 20s, same recast truncation. ⚠️ Both must carry `terminatesOn: 'recast'` or two live windows would overlap.",
 				"It opens the same 6s `codaWindow` the skill does (\"for 6s after unleashing the Elemental Burst … will be replaced with the special Elemental Skill\"), which is why that window is a transient state with two openers rather than a chain stage.",
-				"The three slashes (198.3% ATK ×3) and the final slash (306.5%) are the cast's own damage — frame territory."
+				"The three slashes (198.3% ATK ×3) and the final slash (306.5%) are the cast's own damage — frame territory.",
+				"FrameMaps + application[] written by scripts/migrate-frames-shape.mjs --seed / migrate-application-schema.mjs against gcsim main ac2d76dde (2026-09-13; counts credited in gcsim config.yml). Stage 4 landed 2026-09-15.",
+				"Four hits: three slashes at 112/128/140 (ICDTagElementalBurst, so the 2nd/3rd are nominal) and the final at 144. gcsim queues the Solo Dance Double at frame 1 (burstSummonFrame), which is why the burst summon's spawnsAt is 1 and its first Plume is 252f later."
+			],
+			"frames": {
+				"anim": 126,
+				"N": 108,
+				"E": 107,
+				"D": 108,
+				"J": 109,
+				"swap": 106
+			},
+			"application": [
+				{
+					"frame": 112,
+					"element": "cryo",
+					"units": 1
+				},
+				{
+					"frame": 128,
+					"element": "cryo"
+				},
+				{
+					"frame": 140,
+					"element": "cryo"
+				},
+				{
+					"frame": 144,
+					"element": "cryo",
+					"units": 1
+				}
 			]
 		}
 	],

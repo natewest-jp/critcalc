@@ -16,52 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"anim": 24,
-						"hit": 18,
-						"N": 19
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"anim": 27,
-						"hit": 12,
-						"N": 12
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"anim": 42,
-						"hit": 32,
-						"N": 40
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"anim": 35,
-						"hit": 23,
-						"N": 32
-					}
-				},
-				{
-					"name": "N5",
-					"frames": {
-						"anim": 60,
-						"hit": 21
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 24, "hit": 18, "N": 19 } },
+				{ "name": "N2", "frames": { "anim": 27, "hit": 12, "N": 12 } },
+				{ "name": "N3", "frames": { "anim": 42, "hit": 32, "N": 40 } },
+				{ "name": "N4", "frames": { "anim": 35, "hit": 23, "N": 32 } },
+				{ "name": "N5", "frames": { "anim": 60, "hit": 21 } }
 			],
-			"chargeFrames": {
-				"anim": 44,
-				"N": 66,
-				"Q": 67,
-				"swap": 45
-			},
+			"chargeFrames": { "anim": 68, "N": 66, "D": 38, "J": 38, "swap": 45 },
 			"sections": [
 				{
 					"type": "normal",
@@ -91,46 +52,13 @@
 			"name": "Swift Hunt",
 			"input": ["N"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
+			"conditions": { "type": "state", "state": "inStance" },
 			"infusion": "electro",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"anim": 18,
-						"E": 11,
-						"Q": 10,
-						"D": 8,
-						"J": 8,
-						"swap": 8
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"anim": 17,
-						"E": 10,
-						"Q": 10,
-						"D": 8,
-						"J": 8,
-						"swap": 8
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"anim": 20,
-						"E": 11,
-						"Q": 11,
-						"D": 9,
-						"J": 9,
-						"swap": 9
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 18, "E": 11, "Q": 10, "D": 8, "J": 8, "swap": 8 } },
+				{ "name": "N2", "frames": { "anim": 17, "E": 10, "Q": 10, "D": 8, "J": 8, "swap": 8 } },
+				{ "name": "N3", "frames": { "anim": 20, "E": 11, "Q": 11, "D": 9, "J": 9, "swap": 9 } }
 			],
 			"description": "Clorinde's normal-attack chain while in the Night Vigil stance. Replaces the standard 5-hit string with a 3-hit pistolet shot cycle. All hits deal Electro DMG that cannot be overridden by infusions, and Charged Attacks are disabled while in stance.",
 			"_curatorNotes": [
@@ -145,14 +73,7 @@
 			"name": "Hunter's Vigil",
 			"input": ["E"],
 			"abilityType": "skill",
-			"frames": {
-				"anim": 33,
-				"N": 31,
-				"E": 32,
-				"D": 6,
-				"J": 25,
-				"swap": 25
-			},
+			"frames": { "anim": 33, "N": 31, "E": 32, "D": 6, "J": 25, "swap": 25 },
 			"cooldown": 16,
 			"cooldownStartDelay": 6,
 			"duration": 7.5,
@@ -181,19 +102,8 @@
 			"name": "Impale the Night",
 			"input": ["E"],
 			"abilityType": "skill",
-			"conditions": {
-				"type": "state",
-				"state": "inStance"
-			},
-			"frames": {
-				"anim": 43,
-				"N": 24,
-				"E": 24,
-				"Q": 24,
-				"D": 25,
-				"J": 25,
-				"swap": 42
-			},
+			"conditions": { "type": "state", "state": "inStance" },
+			"frames": { "anim": 43, "N": 24, "E": 24, "Q": 24, "D": 25, "J": 25, "swap": 42 },
 			"cooldown": 0,
 			"description": "In-stance E variant. While Night Vigil is active, casting E performs a lunging strike (Impale the Night). DMG and healing scale with Clorinde's current Bond of Life percentage; at ≥100% BoL, the lunge becomes 'Impale the Night: Pact' (3-hit + heal).",
 			"behavior": "instant",
@@ -204,26 +114,14 @@
 				"No stanceExtension — Impale does not extend the Night Vigil window in gcsim.",
 				"C6 Glimbright Shade trigger: 'when Clorinde uses Impale the Night: Pact' is one of the C6 proc conditions — flagged on the C6 constellation, not authored here."
 			],
-			"application": [
-				{
-					"frame": 11,
-					"element": "electro",
-					"units": 1
-				}
-			]
+			"application": [{ "frame": 11, "element": "electro", "units": 1 }]
 		},
 		{
 			"id": "clorinde__burst__last_lightfall",
 			"name": "Last Lightfall",
 			"input": ["Q"],
 			"abilityType": "burst",
-			"frames": {
-				"anim": 128,
-				"N": 127,
-				"E": 127,
-				"D": 127,
-				"swap": 127
-			},
+			"frames": { "anim": 128, "N": 127, "E": 127, "D": 127, "swap": 127 },
 			"cooldown": 15,
 			"tags": [],
 			"energyCost": 60,
@@ -237,28 +135,11 @@
 				"Burst hitmarks (5-hit AoE): [97, 103, 109, 115, 121]. Single damage scalar per hit (burstDamage[talent]); recorded conceptually as one damage event in the planner."
 			],
 			"application": [
-				{
-					"frame": 97,
-					"element": "electro",
-					"units": 1
-				},
-				{
-					"frame": 103,
-					"element": "electro"
-				},
-				{
-					"frame": 109,
-					"element": "electro"
-				},
-				{
-					"frame": 115,
-					"element": "electro",
-					"units": 1
-				},
-				{
-					"frame": 121,
-					"element": "electro"
-				}
+				{ "frame": 97, "element": "electro", "units": 1 },
+				{ "frame": 103, "element": "electro" },
+				{ "frame": 109, "element": "electro" },
+				{ "frame": 115, "element": "electro", "units": 1 },
+				{ "frame": 121, "element": "electro" }
 			]
 		}
 	],
@@ -271,9 +152,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 15,
 					"scaling": 20,
 					"stat": "atk",
@@ -294,9 +173,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
@@ -321,9 +198,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 30,
 					"stat": "atk",
 					"element": "electro"
@@ -355,7 +230,8 @@
 							"overloaded",
 							"electroSwirl",
 							"electroCrystallize"
-						]
+						],
+						"source": "team"
 					},
 					"duration": 15,
 					"scaling": 30,
@@ -402,9 +278,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -415,9 +289,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
@@ -428,9 +300,7 @@
 				{
 					"type": "damage",
 					"target": "enemy",
-					"trigger": {
-						"type": "manual"
-					},
+					"trigger": { "type": "manual" },
 					"scaling": 200,
 					"stat": "atk",
 					"element": "electro"

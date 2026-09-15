@@ -260,7 +260,8 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "pyroSwirl"
+						"reaction": "pyroSwirl",
+						"source": "self"
 					},
 					"duration": 8,
 					"durationType": "refresh",
@@ -278,7 +279,8 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "hydroSwirl"
+						"reaction": "hydroSwirl",
+						"source": "self"
 					},
 					"duration": 8,
 					"durationType": "refresh",
@@ -296,7 +298,8 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["cryoSwirl", "stellarSwirl"]
+						"reaction": ["cryoSwirl", "stellarSwirl"],
+						"source": "self"
 					},
 					"duration": 8,
 					"durationType": "refresh",
@@ -314,7 +317,8 @@
 					"target": "team",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "electroSwirl"
+						"reaction": "electroSwirl",
+						"source": "self"
 					},
 					"duration": 8,
 					"durationType": "refresh",

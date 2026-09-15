@@ -33,7 +33,44 @@
 					"description": "Calling upon the power of Anemo, she plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 3 attacks by swinging the Banehunter Oathhammer, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and performs an upward hammer swing, dealing Anemo DMG to opponents in front.\n\nPlunging Attack\nCalling upon the power of Anemo, she plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground."
+			"description": "Normal Attack\nPerforms up to 3 attacks by swinging the Banehunter Oathhammer, dealing Anemo DMG.\n\nCharged Attack\nConsumes a certain amount of Stamina and performs an upward hammer swing, dealing Anemo DMG to opponents in front.\n\nPlunging Attack\nCalling upon the power of Anemo, she plunges towards the ground from mid-air, damaging all opponents in her path. Deals AoE Anemo DMG upon impact with the ground.",
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 47,
+						"hit": 19,
+						"N": 23
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 54,
+						"hit": 24,
+						"N": 49,
+						"C": 50
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 84,
+						"hit": 42,
+						"N": 63
+					}
+				}
+			],
+			"chargeFrames": {
+				"anim": 116,
+				"N": 96,
+				"C": 97,
+				"E": 97,
+				"Q": 97,
+				"D": 46,
+				"J": 46,
+				"swap": 95
+			}
 		},
 		{
 			"id": "prune__skill__ringadingding_hexhunter_chime",
@@ -47,10 +84,29 @@
 			"behavior": "instant",
 			"caveat": "The Tolling Rally team buff is shown after every skill hit; in game only the element-converted hammer, available for 6s after a Swirl, grants it.",
 			"_curatorNotes": [
-				"No gcsim source and no verified frame data — character stays frameless (FRAMELESS_EXEMPT). Skill CD 15s confirmed against sidecar. The Clang Clang conversion (204.6%→485.8% @T10 vs base 167.4%→397.7%) is a conditional alternate Press unlocked by a prior Swirl; not modelled as a separate AbilityVariant because the distinction is only decision-relevant with frame timing, which is unavailable. Base skill also generates 5 Anemo particles on first hit (KQM quickguide).",
+				"[superseded 2026-09-15 — gcsim shipped him] No gcsim source and no verified frame data — character stays frameless (FRAMELESS_EXEMPT). Skill CD 15s confirmed against sidecar. The Clang Clang conversion (204.6%→485.8% @T10 vs base 167.4%→397.7%) is a conditional alternate Press unlocked by a prior Swirl; not modelled as a separate AbilityVariant because the distinction is only decision-relevant with frame timing, which is unavailable. Base skill also generates 5 Anemo particles on first hit (KQM quickguide).",
 				"[A7] The converted follow-up form is 'Clang Clang! Witch-tribution Comes!'; the base cast and the converted form aren't modeled as separate variants because there is no verified frame data source for their hit timing (already in _curatorNotes).",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the stronger element-converted form gained for 6s after triggering Swirl, or its hit timing. That converted hit is what powers the team DMG buff (Tolling Rally).\""
-			]
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the stronger element-converted form gained for 6s after triggering Swirl, or its hit timing. That converted hit is what powers the team DMG buff (Tolling Rally).\"",
+				"FrameMaps + application[] written by scripts/migrate-frames-shape.mjs --seed / migrate-application-schema.mjs against gcsim main ac2d76dde (2026-09-13; counts credited in gcsim config.yml). Stage 4 landed 2026-09-15.",
+				"gcsim `SetCDWithDelay(15*60, 25)` → cooldownStartDelay 25. Not modelled: the recast \"Clang Clang! Witch-tribution Comes!\" (a second E inside the 364f window opened by a Swirl the chime caused, dealing the swirled element) — the dumper runs one character in an empty core, so the branch is unreachable and its skillConvertFrames (anim 82) are unmeasured for us."
+			],
+			"frames": {
+				"anim": 59,
+				"N": 56,
+				"E": 41,
+				"Q": 28,
+				"D": 28,
+				"J": 29,
+				"swap": 27
+			},
+			"application": [
+				{
+					"frame": 26,
+					"element": "anemo",
+					"units": 1
+				}
+			],
+			"cooldownStartDelay": 25
 		},
 		{
 			"id": "prune__burst__the_bell_tolls_the_hunt_is_on",
@@ -79,12 +135,48 @@
 								"level": 6
 							}
 						}
+					],
+					"spawnsAt": 57,
+					"effects": [
+						{
+							"type": "damage",
+							"target": "enemy",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.95,
+								"firstTickDelay": 1.333,
+								"icdGate": "none"
+							},
+							"scaling": 126.8,
+							"stat": "atk",
+							"element": "anemo",
+							"_curatorNotes": [
+								"Witchlure Bell DMG 126.8% ATK at talent level 10 (sidecar row, 10th column). Cadence from gcsim ac2d76dde burst.go: first bell at 137f from the cast, then every 117f; the burst status starts at 57f (spawnsAt) and runs 813−57f, so six bells land (137…722f) — matches the oracle 6/6. ICDTagNone → icdGate none."
+							]
+						}
 					]
 				}
 			],
 			"_curatorNotes": [
-				"Burst CD 18s, energy 70, Hunter-Seeker duration 12s all confirmed against sidecar. Witchlure Bell modelled as a follows-summon for its active-window lane. Its periodic AoE Anemo DMG (Witchlure Bell DMG 167.3% @T10) is NOT authored as a summonTick effect: no gcsim source and the official talent text states no interval (\"at intervals\"), so the tick cadence is unverifiable — authoring one would fake timing. Third-party build guides estimate ~2s, but that is not an official/gcsim value. Consequently the off-field DMG capability is currently under-claimed (summon tag present; summonTick damage withheld). Revisit if gcsim adds Prune. C6 extends the mode by 4s (durationModifier).",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Witchlure Bell's summon-lane bar, which carries NO tick marks while every other authored summon in the tool carries them. A player reading a 12s off-field damage window with a bare bar has to ask whether the bell hits at all; this says why the marks are absent and that the omission is honest (no gcsim source, no stated interval — authoring one would fake timing). Prose is already tight and pixel-first. Category: expected-but-absent."
+				"[superseded 2026-09-15 — gcsim shipped him] Burst CD 18s, energy 70, Hunter-Seeker duration 12s all confirmed against sidecar. Witchlure Bell modelled as a follows-summon for its active-window lane. Its periodic AoE Anemo DMG (Witchlure Bell DMG 167.3% @T10) is NOT authored as a summonTick effect: no gcsim source and the official talent text states no interval (\"at intervals\"), so the tick cadence is unverifiable — authoring one would fake timing. Third-party build guides estimate ~2s, but that is not an official/gcsim value. Consequently the off-field DMG capability is currently under-claimed (summon tag present; summonTick damage withheld). Revisit if gcsim adds Prune. C6 extends the mode by 4s (durationModifier).",
+				"[superseded 2026-09-15 — gcsim shipped him] ↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The Witchlure Bell's summon-lane bar, which carries NO tick marks while every other authored summon in the tool carries them. A player reading a 12s off-field damage window with a bare bar has to ask whether the bell hits at all; this says why the marks are absent and that the omission is honest (no gcsim source, no stated interval — authoring one would fake timing). Prose is already tight and pixel-first. Category: expected-but-absent.",
+				"FrameMaps + application[] written by scripts/migrate-frames-shape.mjs --seed / migrate-application-schema.mjs against gcsim main ac2d76dde (2026-09-13; counts credited in gcsim config.yml). Stage 4 landed 2026-09-15.",
+				"↻ 2026-09-15: the bell series IS authored now (gcsim shipped him). ⚠️ The earlier note quoted \"167.3% @T10\" — that is the level-15 column; talent level 10 is 126.8%. Not modelled: the bell picks the closest enemy within 10 units and skips a tick with none in range."
+			],
+			"frames": {
+				"anim": 82,
+				"N": 73,
+				"E": 72,
+				"D": 74,
+				"J": 73,
+				"swap": 71
+			},
+			"application": [
+				{
+					"frame": 34,
+					"element": "anemo",
+					"units": 1
+				}
 			]
 		}
 	],
@@ -342,7 +434,7 @@
 		"generatedAt": "2026-07-12T05:40:54.377Z"
 	},
 	"_curatorNotes": [
-		"Stages 1-3 effects-only curation 2026-07-14 (no gcsim source, no open PR — frames impossible; stays FRAMELESS_EXEMPT). Mechanics sourced from KQM quickguide + KQM TCL library + genshinguides + official talent text (genshin-db). CD/energy/duration cross-checked against docs/curation/talents/prune.json (all PASS). Team-facing capabilities: A4 Tolling Rally (team allDmgBonus, Prune-ATK-scaled), C6 flat ATK (self+active), burst Witchlure Bell (off-field summon). Known gap: bell tick cadence unverifiable → off-field DMG under-claimed (see burst _curatorNotes).",
+		"[superseded 2026-09-15 — gcsim main has Prune (#2712)] Stages 1-3 effects-only curation 2026-07-14 (no gcsim source, no open PR — frames impossible; stays FRAMELESS_EXEMPT). Mechanics sourced from KQM quickguide + KQM TCL library + genshinguides + official talent text (genshin-db). CD/energy/duration cross-checked against docs/curation/talents/prune.json (all PASS). Team-facing capabilities: A4 Tolling Rally (team allDmgBonus, Prune-ATK-scaled), C6 flat ATK (self+active), burst Witchlure Bell (off-field summon). Known gap: bell tick cadence unverifiable → off-field DMG under-claimed (see burst _curatorNotes).",
 		"Hexerei layer added 2026-07-29 (Luna VII): factions=['hexerei'] + Secret Rite from the Witch's Eve Rite passive 'Witchseeker's Vow'. Sole evidence is the Fandom wiki talent infobox (pageid 457454, MediaWiki API fetch) — Prune has no gcsim implementation, so no source backstop exists for these values. No permanent (ungated) kit patch found: the rite text describes only the two count-gated ATK buffs, and the Prune page's talent/constellation text shows no revised values, so no regular kit structure was touched.",
 		"↻ 7.0 (genshin-db 5.2.13, 2026-08-31): kit text rewritten from \"Swirl\" to \"Swirl or Stellar Swirl\", so `stellarSwirl` joins the trigger. ⚓ Needed because a Stellar Swirl enabler (Sandrone/Odette/Cryo Traveler) REPLACES every Cryo Swirl party-wide — without this the effect would go dark in those teams. ⛔ Only added where HoYo actually renamed the text: a buff on the base reaction is NOT a buff on the converted one, so characters whose text was left alone (Venti, Lohen) stay as-is.",
 		"AUTHORED 2026-08-31: \"every excess ATK point [above 2,000] increases that instance of DMG by 0.025%, up to a total of 50% max\" = 2.5% per 100 ATK. ⚓ ratio is VALUE PER 100 STAT UNITS (BuffValue JSDoc: contribution = (ratio/100) × stat), which is why a \"per 1% ER\" kit reads as ratio 40, not 0.4. Was an `unknown` placeholder pending `offset`."

@@ -78,6 +78,14 @@
 				{
 					"label": "LeaLotus Lamp",
 					"duration": 12,
+					"durationModifiers": [
+						{
+							"source": "C2: Green Resilience",
+							"type": "flat",
+							"value": 3,
+							"conditions": { "type": "constellation", "level": 2 }
+						}
+					],
 					"spawnsAt": 91,
 					"mobility": "stationary",
 					"effects": [
@@ -108,69 +116,161 @@
 	],
 	"passives": [
 		{
-			"id": "traveler_dendro__passive__lush_reaches",
-			"name": "Lush Reaches",
-			"abilityType": "passive",
-			"_curatorNotes": [
-				"A1: LeaLotus Lamp accumulates 1 stack/s while burst is active (max 12). On burst end, the Lamp explodes for burstExplode multiplier × stacks. No 'on-summon-end with stack multiplier' trigger primitive in schema — not authored."
-			],
-			"description": "When the Lamp is on the field, it accumulates Lamp Spirit, gaining 1 Lamp Spirit per second. When the Lamp is on the field for the maximum duration, the Lamp will detonate, dealing AoE Dendro DMG."
-		},
-		{
 			"id": "traveler_dendro__passive__verdant_overgrowth",
 			"name": "Verdant Overgrowth",
 			"abilityType": "passive",
-			"_curatorNotes": [
-				"A4: when the LeaLotus Lamp triggers Hyperbloom, Burgeon, or Bloom, +30% EM to the triggering character. Not authored — reaction-event-trigger gated on summon source not expressible."
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "constellation",
+							"level": 2
+						}
+					},
+					"stat": "em",
+					"value": {
+						"type": "ramping",
+						"startValue": 0,
+						"stepValue": 6,
+						"stepInterval": 1,
+						"cap": 60
+					}
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					},
+					"stat": "em",
+					"value": {
+						"type": "ramping",
+						"startValue": 0,
+						"stepValue": 6,
+						"stepInterval": 1,
+						"cap": 60
+					}
+				}
 			],
-			"description": "When the Lamp triggers Hyperbloom, Burgeon, or Bloom, party members within 12s gain +30% Elemental Mastery."
+			"caveat": "Drawn for the whole Lamp; in play it holds only while the active character stands inside its AoE.",
+			"_curatorNotes": [
+				"gcsim asc.go: `a1Stack` adds one Overflowing Lotuslight per second (cap 10) while the burst status lives, and `a1Buff` re-applies `6 × stacks` EM to the active character every 0.3s while the player is inside the Lamp's area. Authored as an active-target ramping EM buff — 0 → 60 in 6/s steps — for the Lamp's life; two arms because C2 lengthens the Lamp to 15s and an effect cannot read the summon's durationModifier.",
+				"⚠️ Re-ingested 2026-09-15 from genshin-db: the hand-written passives ('Lush Reaches', a Lamp-Spirit detonation; a 30% EM on Bloom) were invented. gcsim knows no detonation."
+			],
+			"description": "Lea Lotus Lamp will obtain one level of Overflowing Lotuslight every second it is on the field, increasing the Elemental Mastery of active character(s) within its AoE by 6. Overflowing Lotuslight has a maximum of 10 stacks."
+		},
+		{
+			"id": "traveler_dendro__passive__verdant_luxury",
+			"name": "Verdant Luxury",
+			"abilityType": "passive",
+			"_curatorNotes": [
+				"EM → +0.15% Razorgrass Blade DMG and +0.1% Surgent Manifestation DMG per point — damage magnitude, which the tool never draws; description-only. ⚠️ Re-ingested 2026-09-15: the retired entry carried invented Bloom-EM text under the A1's real name."
+			],
+			"description": "Every point of Elemental Mastery the Traveler possesses increases the DMG dealt by Razorgrass Blade by 0.15% and the DMG dealt by Surgent Manifestation by 0.1%."
 		}
 	],
 	"constellations": [
 		{
-			"id": "traveler_dendro__constellation__c1",
-			"name": "Verdant Overflow",
+			"id": "traveler_dendro__constellation__symbiotic_creeper",
+			"name": "Symbiotic Creeper",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "When Razorgrass Blade hits an opponent, all nearby party members regenerate 3.5 Energy. This effect can occur once every 5s."
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"amount": 3.5
+				}
+			],
+			"_curatorNotes": [
+				"gcsim cons.go `c1cb`: 3.5 Energy once per skill cast, on the first opponent hit. Authored at the cast. ⚠️ Re-ingested 2026-09-15: the retired entry ('Verdant Overflow', a 3.5-Energy TEAM refund every 5s) was invented."
+			],
+			"description": "After Razorgrass Blade hits an opponent, it will regenerate 3.5 Energy for the Traveler."
 		},
 		{
-			"id": "traveler_dendro__constellation__c2",
-			"name": "Verdant Tessera",
+			"id": "traveler_dendro__constellation__green_resilience",
+			"name": "Green Resilience",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
-			"description": "Surgent Manifestation gains 1 stack of Lamp Spirit when activated."
+			"_curatorNotes": [
+				"Authored as a durationModifiers entry on the burst's LeaLotus Lamp (12s → 15s) with its own constellation gate; the A1 ramp and the C6 bonus each carry a 15s arm for it. ⚠️ Re-ingested 2026-09-15: the retired entry ('Verdant Tessera') was invented."
+			],
+			"description": "Lea Lotus Lamp's duration is increased by 3s."
 		},
 		{
-			"id": "traveler_dendro__constellation__c3",
-			"name": "C3 Talent Boost",
+			"id": "traveler_dendro__constellation__whirling_weeds",
+			"name": "Whirling Weeds",
 			"abilityType": "constellation",
 			"constellationLevel": 3,
 			"description": "Increases the Level of Razorgrass Blade by 3.\nMaximum upgrade level is 15."
 		},
 		{
-			"id": "traveler_dendro__constellation__c4",
-			"name": "Sprouting Verdure",
+			"id": "traveler_dendro__constellation__treacle_grass",
+			"name": "Treacle Grass",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"description": "When the LeaLotus Lamp from Surgent Manifestation is destroyed, Hyperbloom, Burgeon, or Bloom reactions are triggered, the duration of the effect is increased by 6s."
+			"_curatorNotes": [
+				"+5 Lotuslight stacks on a Lotuslight Transfiguration (gcsim `c4`). The Transfiguration — the Lamp reacting with Hydro/Electro/Pyro — is unmodelled, so the ramp keeps its 1/s cadence. ⚠️ Re-ingested 2026-09-15: the retired entry ('Sprouting Verdure') was invented."
+			],
+			"description": "After the Lea Lotus Lamp triggers a Lotuslight Transfiguration, it will obtain 5 stacks of the Overflowing Lotuslight effect from the Ascension Talent \"Verdant Overgrowth.\"\nYou must first unlock the Ascension Talent \"Verdant Overgrowth.\""
 		},
 		{
-			"id": "traveler_dendro__constellation__c5",
-			"name": "C5 Talent Boost",
+			"id": "traveler_dendro__constellation__viridian_transience",
+			"name": "Viridian Transience",
 			"abilityType": "constellation",
 			"constellationLevel": 5,
 			"description": "Increases the Level of Surgent Manifestation by 3.\nMaximum upgrade level is 15."
 		},
 		{
-			"id": "traveler_dendro__constellation__c6",
-			"name": "Hopeful Inheritance",
+			"id": "traveler_dendro__constellation__withering_aggregation",
+			"name": "Withering Aggregation",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"_curatorNotes": [
-				"C6: while LeaLotus active, +30 EM team buff every 0.3s. Same A1-stack-deferred gap; not authored."
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 15,
+					"durationType": "fixed",
+					"stat": "dendroDmgBonus",
+					"value": 12
+				}
 			],
-			"description": "While the LeaLotus Lamp is active, increases the Elemental Mastery of all nearby party members."
+			"caveat": "Drawn for the whole Lamp; in play it holds only while the active character stands inside its AoE.",
+			"_curatorNotes": [
+				"gcsim cons.go `c6Buff`: +12% Dendro DMG re-applied to the active character inside the Lamp's area every 0.3s for its life. 15s outright — C6 is past C2, so the Lamp is always 15s here. The matching bonus for the Transfiguration element is unmodelled with the Transfiguration itself. ⚠️ Re-ingested 2026-09-15: the retired entry ('Hopeful Inheritance', a flat team EM tick) was invented."
+			],
+			"description": "The Dendro DMG Bonus of the character under the effect of Overflowing Lotuslight as created by the Lea Lotus Lamp is increased by 12%. If the Lamp has experienced a Lotuslight Transfiguration previously, the character will also gain 12% DMG Bonus for the corresponding element."
 		}
 	],
 	"meta": {

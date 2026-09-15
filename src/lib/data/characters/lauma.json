@@ -235,7 +235,8 @@
 					"target": "active",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "lunarBloom"
+						"reaction": "lunarBloom",
+						"source": "team"
 					},
 					"procCooldown": 1.9,
 					"scaling": 500,

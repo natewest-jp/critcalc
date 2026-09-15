@@ -84,6 +84,8 @@ authored keys, zero genuine strays (the 13 a name-based proxy flags are FrameMap
 
 ## 4. The `manual`-trigger cluster
 
+↻ **2026-09-15: the channel is being RETIRED** (⚓ Nate; `docs/manual-trigger-retirement.md`). Step 1 shipped — the Team Builder no longer derives a `manual` effect either, so the two surfaces agree that these draw nothing. The re-trigger/retire pass per effect is step 3.
+
 ⛔⛔ **`manual` reaches no surface and never did** — one occurrence in the codebase, its own type
 declaration (`types/ability.ts:649`); **167 effects across 69 characters** render nothing.
 

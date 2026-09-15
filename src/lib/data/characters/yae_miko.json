@@ -113,7 +113,7 @@
 			"summons": [
 				{
 					"label": "Sesshou Sakura",
-					"duration": 14,
+					"duration": 24,
 					"spawnsAt": 34,
 					"mobility": "stationary",
 					"effects": [
@@ -129,6 +129,9 @@
 							"stat": "atk",
 							"element": "electro"
 						}
+					],
+					"_curatorNotes": [
+						"↻ 2026-09-15: duration 14 → 24. The Witch's Revelation passive Edict of Cleansing (Fandom talent page, type \"Witch's Revelation Passive\") \"extends the duration of the Sesshou Sakura by 10s\"; gcsim implements it as `kitsuneDur + revelationBonusSkillDur()` = 900 + 600f, ON by default (`revelation` param defaults to 1, PR #2775 \"Yae Revelation\", frame count credited to charliex3000), and the dumper measures 8 Sesshou Sakura Ticks at 176f. The 2026-07-29 note below ruled the +10s unsupported because the SKILL page carries no buff field — it still does not; the extension lives on the new passive page, which did not exist then. Same treatment as Qiqi's Seven Sacred Treasures (a Revelation talent taken as unlocked, stated in the skill caveat)."
 					]
 				}
 			],
@@ -146,7 +149,8 @@
 				"Particle generation: 1 Electro particle per Sesshou Sakura tick that hits an enemy, ICD 2.5s (gcsim particleICDKey).",
 				"[Stellar] No current-patch change to this talent: the Fandom talent page for Yakan Evocation: Sesshou Sakura carries NO `buff` field (unlike her A1/C1/C2/C4/C6 pages), and its Change History still reads 2.5. game8's claimed '+10s Sesshou Sakura duration' is unsupported — the infobox `|duration = 14s`, the Talent Scaling `duration=14s` and the Gameplay Note ('5 strikes over their 14 seconds duration') all read 14s. The infobox's stray `|value5 = 15s` row contradicts its own duration field and is treated as a wiki typo, not evidence. Summon duration left at 14."
 			],
-			"application": []
+			"application": [],
+			"caveat": "The 24s Sesshou Sakura (8 strikes) assumes the Witch's Revelation talent Edict of Cleansing is unlocked; without it the totem lasts 14s and strikes 5 times."
 		},
 		{
 			"id": "yae_miko__burst__great_secret_art_tenko_kenshin",
@@ -217,6 +221,17 @@
 			"_curatorNotes": [
 				"Scaling buff — value field deleted per recipe. The buff is 'Sesshou Sakura tick DMG +0.15% per EM point', applied as an AttackMod to AttackTagElementalArt only (gcsim a4 → AddAttackMod with `m[DmgP] = c.Stat(EM) * 0.0015`). The current `stat: 'em'` is incorrect — the buff increases DMG dealt by Sesshou Sakura ticks, not EM. Reviewer to: (a) change stat to a Sesshou-Sakura-specific dmgBonus or DmgP target, (b) wire as a scaling expression `value: { type: 'scaling', stat: 'em', ratio: 0.15 }`, (c) restrict the buff to elementalArt damage from Sesshou Sakura ticks only (not other ElementalArt sources).",
 				"Inherited manual trigger. Probable trigger: passive (always-on while character is on team). Not rewriting per recipe."
+			]
+		},
+		{
+			"id": "yae_miko__passive__edict_of_cleansing",
+			"name": "Edict of Cleansing",
+			"abilityType": "passive",
+			"description": "Extends the duration of the Sesshou Sakura by 10s. When a nearby party member triggers a Superconduct or Stellar-Conduct reaction, the next instance of Sesshou Sakura lightning is enhanced as follows: DMG dealt is increased at 80% of Yae Miko's ATK. This effect can trigger once every 2.5s.\nRadiance: Stellar-Conduct: An enhanced Sesshou Sakura lightning bolt hit on an opponent will also cause an additional instance of Electro DMG at 200% of Yae Miko's ATK. This DMG is considered Stellar-Conduct DMG.\nAdditionally, when inside a Polestar Field, Yae Miko will enter the Radiance: Stellar-Conduct state.",
+			"caveat": "Assumes this talent is unlocked — the Sesshou Sakura always lasts 24s here.",
+			"_curatorNotes": [
+				"Witch's Revelation Passive (additional talent unlocked by the \"Witch's Revelation: Great Youkai's Instruction\" quest). Authored 2026-09-15 from the Fandom page \"Edict of Cleansing\" (Talent Infobox |info) and gcsim main ac2d76dde (stellar.go, PR #2775). Yae was the one Revelation holder missing her passive entry: Cyno/Diona/Qiqi/Wriothesley/Beidou/Mizuki got theirs on 2026-07-29 and hers was not on the wiki yet.",
+				"The +10s clause is modelled (skill summon duration 24, 8 ticks). No effects authored for the rest: the enhanced strike is a flat +80% ATK on the NEXT tick after a party Superconduct/Stellar-Conduct (2.5s ICD, `revelationEnhanceDMG`) — damage magnitude, out of scope; the Radiance extra 200% ATK hit has no Durability in gcsim (0U, \"Additional Stellar-Conduct\" gu 0U on the wiki) so it reaches no gauge and `sim/procs.ts` would not register an empty application[] anyway. The Polestar-Field Radiance clause is the unlock for the A1/C1 \"Radiance\" blocks already noted on those entries."
 			]
 		}
 	],

@@ -16,58 +16,13 @@
 			"abilityType": "normal",
 			"tags": [],
 			"hits": [
-				{
-					"name": "N1",
-					"frames": {
-						"anim": 40,
-						"hit": 21,
-						"N": 31,
-						"C": 31
-					}
-				},
-				{
-					"name": "N2",
-					"frames": {
-						"anim": 50,
-						"hit": 26,
-						"N": 42,
-						"C": 42
-					}
-				},
-				{
-					"name": "N3",
-					"frames": {
-						"anim": 59,
-						"hit": 39,
-						"N": 46,
-						"C": 47
-					}
-				},
-				{
-					"name": "N4",
-					"frames": {
-						"anim": 61,
-						"hit": 30,
-						"N": 60
-					}
-				}
+				{ "name": "N1", "frames": { "anim": 40, "hit": 21, "N": 31, "C": 31 } },
+				{ "name": "N2", "frames": { "anim": 50, "hit": 26, "N": 42, "C": 42 } },
+				{ "name": "N3", "frames": { "anim": 59, "hit": 39, "N": 46, "C": 47 } },
+				{ "name": "N4", "frames": { "anim": 61, "hit": 30, "N": 60 } }
 			],
-			"chargeFrames": {
-				"anim": 48,
-				"Q": 50,
-				"D": 40,
-				"J": 40,
-				"swap": 50
-			},
-			"plungeFrames": {
-				"anim": 83,
-				"N": 54,
-				"C": 55,
-				"E": 40,
-				"Q": 53,
-				"D": 41,
-				"swap": 65
-			},
+			"chargeFrames": { "anim": 99, "N": 98, "C": 98, "E": 98, "D": 79, "J": 79 },
+			"plungeFrames": { "anim": 83, "N": 54, "C": 55, "E": 40, "Q": 53, "D": 41, "swap": 65 },
 			"_curatorNotes": [
 				"Base normals are 4-hit physical claymore strikes (Ring mode, the default armament state). N3 lands 3 hits (hitmarks 28/33/39) and N2 lands 2 (14/26); per recipe, swap reflects the last hitmark only.",
 				"Inside Nightsoul Blessing (= Burst's Crucible of Death and Life window), N input routes to Flamestrider Strikes — separate normal ability gated on state: \"nightsoulBlessing\" with 5-hit Pyro chain.",
@@ -92,73 +47,22 @@
 				}
 			],
 			"description": "Normal Attack\nPerforms up to 4 consecutive claymore strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to perform an especially powerful Severing Splendor strike toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
-			"lowPlungeFrames": {
-				"anim": 80,
-				"N": 51,
-				"C": 52,
-				"E": 37,
-				"Q": 51,
-				"D": 37,
-				"swap": 62
-			}
+			"lowPlungeFrames": { "anim": 80, "N": 51, "C": 52, "E": 37, "Q": 51, "D": 37, "swap": 62 }
 		},
 		{
 			"id": "mavuika__normal__flamestrider_strikes",
 			"name": "Flamestrider Strikes",
 			"input": ["N1", "N2", "N3", "N4", "N5", "P"],
 			"abilityType": "normal",
-			"conditions": {
-				"type": "state",
-				"state": "nightsoulBlessing"
-			},
+			"conditions": { "type": "state", "state": "nightsoulBlessing" },
 			"infusion": "pyro",
 			"tags": [],
 			"hits": [
-				{
-					"name": "Flamestrider 1",
-					"frames": {
-						"anim": 39,
-						"hit": 19,
-						"N": 23,
-						"C": 33
-					}
-				},
-				{
-					"name": "Flamestrider 2",
-					"frames": {
-						"anim": 46,
-						"hit": 24,
-						"N": 32,
-						"C": 35
-					}
-				},
-				{
-					"name": "Flamestrider 3",
-					"frames": {
-						"anim": 50,
-						"hit": 31,
-						"N": 35,
-						"C": 40
-					}
-				},
-				{
-					"name": "Flamestrider 4",
-					"frames": {
-						"anim": 44,
-						"hit": 13,
-						"N": 27,
-						"C": 29
-					}
-				},
-				{
-					"name": "Flamestrider 5",
-					"frames": {
-						"anim": 70,
-						"hit": 37,
-						"N": 68,
-						"C": 64
-					}
-				}
+				{ "name": "Flamestrider 1", "frames": { "anim": 39, "hit": 19, "N": 23, "C": 33 } },
+				{ "name": "Flamestrider 2", "frames": { "anim": 46, "hit": 24, "N": 32, "C": 35 } },
+				{ "name": "Flamestrider 3", "frames": { "anim": 50, "hit": 31, "N": 35, "C": 40 } },
+				{ "name": "Flamestrider 4", "frames": { "anim": 44, "hit": 13, "N": 27, "C": 29 } },
+				{ "name": "Flamestrider 5", "frames": { "anim": 70, "hit": 37, "N": 68, "C": 64 } }
 			],
 			"plungeFrames": {
 				"anim": 80,
@@ -194,14 +98,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "instant",
-			"frames": {
-				"anim": 28,
-				"N": 18,
-				"C": 19,
-				"E": 19,
-				"Q": 18,
-				"swap": 24
-			},
+			"frames": { "anim": 28, "N": 18, "C": 19, "E": 19, "Q": 18, "swap": 24 },
 			"cooldown": 15,
 			"cooldownStartDelay": 18,
 			"tags": ["summon"],
@@ -209,23 +106,12 @@
 				{
 					"label": "Hold (Flamestrider)",
 					"input": ["hE"],
-					"frames": {
-						"anim": 43,
-						"D": 42,
-						"J": 42,
-						"swap": 34
-					},
+					"frames": { "anim": 43, "D": 42, "J": 42, "swap": 34 },
 					"behavior": "stance",
 					"duration": 9,
 					"terminatesOnSwap": true,
 					"opensState": "nightsoulBlessing",
-					"application": [
-						{
-							"frame": 16,
-							"element": "pyro",
-							"units": 1
-						}
-					]
+					"application": [{ "frame": 16, "element": "pyro", "units": 1 }]
 				}
 			],
 			"effects": [],
@@ -244,41 +130,13 @@
 			],
 			"description": "Calling upon her authority over \"conflict,\" Mavuika summons the All-Fire Armaments passed down through the line of human Archons, dealing Nightsoul-aligned Pyro DMG.\nAfter using this, Mavuika's Nightsoul points are restored to max value, and she enters the Nightsoul's Blessing state.\n\nAll-Fire Armaments\nHas different forms when Tapped or Held.\n\nTap\n\"Divine Name Unleashed\": The All-Fire Armaments manifest as a Ring of Searing Radiance. The Ring follows the current active character and attacks nearby opponents at intervals, dealing Nightsoul-aligned Pyro DMG.\n\nHold\n\"Ancient Name Unbound\": The All-Fire Armaments manifest as a Flamestrider. In this state, Mavuika can ride the Flamestrider at high speed, or activate its hidden backup propulsion module to temporarily cross various terrain types and glide in mid-air. Mavuika's Normal, Charged, and Plunging Attacks will also be converted to deal Nightsoul-aligned Pyro DMG which cannot be overridden. When sprinting, she also deals Nightsoul-aligned Pyro DMG to opponents along her path.\n\nWhile in the Nightsoul's Blessing state, Tapping the Elemental Skill can switch the All-Fire Armaments' form. The Armaments will disappear once Mavuika's Nightsoul's Blessing state ends.",
 			"application": [
-				{
-					"frame": 16,
-					"element": "pyro",
-					"units": 1
-				},
-				{
-					"frame": 120,
-					"element": "pyro",
-					"units": 1
-				},
-				{
-					"frame": 240,
-					"element": "pyro",
-					"units": 1
-				},
-				{
-					"frame": 360,
-					"element": "pyro",
-					"units": 1
-				},
-				{
-					"frame": 480,
-					"element": "pyro",
-					"units": 1
-				},
-				{
-					"frame": 600,
-					"element": "pyro",
-					"units": 1
-				},
-				{
-					"frame": 720,
-					"element": "pyro",
-					"units": 1
-				}
+				{ "frame": 16, "element": "pyro", "units": 1 },
+				{ "frame": 120, "element": "pyro", "units": 1 },
+				{ "frame": 240, "element": "pyro", "units": 1 },
+				{ "frame": 360, "element": "pyro", "units": 1 },
+				{ "frame": 480, "element": "pyro", "units": 1 },
+				{ "frame": 600, "element": "pyro", "units": 1 },
+				{ "frame": 720, "element": "pyro", "units": 1 }
 			]
 		},
 		{
@@ -287,15 +145,7 @@
 			"input": ["Q"],
 			"abilityType": "burst",
 			"behavior": "stance",
-			"frames": {
-				"anim": 141,
-				"N": 116,
-				"C": 116,
-				"E": 116,
-				"D": 116,
-				"J": 116,
-				"swap": 116
-			},
+			"frames": { "anim": 141, "N": 116, "C": 116, "E": 116, "D": 116, "J": 116, "swap": 116 },
 			"cooldown": 18,
 			"duration": 7,
 			"energyCost": 100,
@@ -316,13 +166,7 @@
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The surviving half names the Q bar's own width: the burst stance draws 7s where the real bike/Nightsoul time is ~8s, so the swap point a reader takes off the bar is a second early. The dropped half names a pixel that does not exist on the surface this caveat reaches — the planner prints energy cost NOWHERE (it is drawn only on the Team Builder's detail card and Compare lane, which have no caveat channel), and the planner gates no burst on energy at all, so her Q behaves exactly like everyone else's and nothing in the timeline looks wrong. Category: visible-divergence."
 			],
 			"description": "Let the people's inner voices reach the divine throne in the heavens.\nMavuika's Elemental Burst is not reliant on Energy, but instead, on \"Fighting Spirit.\"\n\nFighting Spirit\nWhen Mavuika has at least 50% Fighting Spirit, she can consume it all to unleash her Elemental Burst.\nMavuika can obtain Fighting Spirit via the following methods:\n· When in combat, Nightsoul points consumed by nearby party members are converted to Fighting Spirit.\n· When nearby party members' Normal Attacks hit opponents, Mavuika gains 1.5 Fighting Spirit. This can trigger once every 0.1s.\n\nAfter using this, Mavuika gains 10 Nightsoul points and enters the Nightsoul's Blessing state. Riding her Flamestrider high in the air, she uses a powerful Sunfell Slice against opponents on the ground, dealing Nightsoul-aligned AoE Pyro DMG and entering the \"Crucible of Death and Life\" state.\n\nCrucible of Death and Life\nDuring this time, Mavuika's various actions will no longer consume Nightsoul points, and her interruption resistance is increased. Also, the DMG dealt by Sunfell Slice and \"Ancient Name Unbound\"'s Normal and Charged Attacks is increased based on the amount of Fighting Spirit she has when using the Elemental Burst.\nCrucible of Death and Life will be canceled when Mavuika leaves the field.",
-			"application": [
-				{
-					"frame": 106,
-					"element": "pyro",
-					"units": 1
-				}
-			]
+			"application": [{ "frame": 106, "element": "pyro", "units": 1 }]
 		}
 	],
 	"passives": [
@@ -334,9 +178,7 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "onTeamNightsoulBurst"
-					},
+					"trigger": { "type": "onTeamNightsoulBurst" },
 					"duration": 10,
 					"durationType": "refresh",
 					"source": "character",
@@ -358,18 +200,12 @@
 				{
 					"type": "buff",
 					"target": "active",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
 					"duration": 20,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "allDmgBonus",
-					"value": {
-						"type": "decaying",
-						"startValue": 40
-					},
+					"value": { "type": "decaying", "startValue": 40 },
 					"snapshottable": false
 				}
 			],
@@ -405,20 +241,12 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 2
-							},
-							{
-								"type": "state",
-								"state": "nightsoulBlessing"
-							}
+							{ "type": "constellation", "level": 2 },
+							{ "type": "state", "state": "nightsoulBlessing" }
 						]
 					},
 					"source": "character",
@@ -429,85 +257,49 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 2
-							},
-							{
-								"type": "state",
-								"state": "nightsoulBlessing"
-							}
+							{ "type": "constellation", "level": 2 },
+							{ "type": "state", "state": "nightsoulBlessing" }
 						]
 					},
 					"source": "character",
 					"stat": "normalFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 60
-					},
+					"value": { "type": "scaling", "stat": "atk", "ratio": 60 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 2
-							},
-							{
-								"type": "state",
-								"state": "nightsoulBlessing"
-							}
+							{ "type": "constellation", "level": 2 },
+							{ "type": "state", "state": "nightsoulBlessing" }
 						]
 					},
 					"source": "character",
 					"stat": "chargeFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 90
-					},
+					"value": { "type": "scaling", "stat": "atk", "ratio": 90 },
 					"snapshottable": false
 				},
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": {
-						"type": "passive"
-					},
+					"trigger": { "type": "passive" },
 					"conditions": {
 						"type": "all",
 						"conditions": [
-							{
-								"type": "constellation",
-								"level": 2
-							},
-							{
-								"type": "state",
-								"state": "nightsoulBlessing"
-							}
+							{ "type": "constellation", "level": 2 },
+							{ "type": "state", "state": "nightsoulBlessing" }
 						]
 					},
 					"source": "character",
 					"stat": "burstFlatDmg",
-					"value": {
-						"type": "scaling",
-						"stat": "atk",
-						"ratio": 120
-					},
+					"value": { "type": "scaling", "stat": "atk", "ratio": 120 },
 					"snapshottable": false
 				}
 			],
@@ -554,14 +346,8 @@
 					"type": "resShred",
 					"shredStat": "def",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "burst"
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					},
+					"trigger": { "type": "onCast", "ability": "burst" },
+					"conditions": { "type": "constellation", "level": 6 },
 					"duration": 7,
 					"durationType": "fixed",
 					"value": -20
@@ -570,15 +356,8 @@
 					"type": "resShred",
 					"shredStat": "def",
 					"target": "enemy",
-					"trigger": {
-						"type": "onCast",
-						"ability": "skill",
-						"input": ["hE"]
-					},
-					"conditions": {
-						"type": "constellation",
-						"level": 6
-					},
+					"trigger": { "type": "onCast", "ability": "skill", "input": ["hE"] },
+					"conditions": { "type": "constellation", "level": 6 },
 					"duration": 9,
 					"durationType": "fixed",
 					"value": -20

@@ -402,7 +402,8 @@
 					"target": "self",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": "lunarCharged"
+						"reaction": "lunarCharged",
+						"source": "team"
 					},
 					"procCooldown": 5.5,
 					"conditions": {

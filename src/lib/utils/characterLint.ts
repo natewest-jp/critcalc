@@ -1876,6 +1876,23 @@ function lintEffect(
 				location
 			);
 		}
+		// (B.12d) `source` is REQUIRED (2026-09-15). Every reader defaults an absent
+		// source to `'self'` — only the HOLDER's reactions fire it — and the
+		// essential-characters scoping found that default silently wrong on the
+		// effects a reader looks for most: Chevreuse's A1 shred ("after a character
+		// triggers"), Citlali's A1 + C2 ("nearby party members"), Clorinde's C2,
+		// Ororon's Hypersense — all self-only, so in their canonical teams they drew
+		// NOTHING. An omission is invisible; a stated `'self'` is a claim the author
+		// made. So the field is demanded, and "who may fire this" is read off the
+		// kit text every time (docs/curation/essential-characters-2026-09-15.md §1.C).
+		if (src === undefined) {
+			push(
+				'strict',
+				'reaction-source-missing',
+				`onReaction trigger must state source ('self' | 'team' | 'active') — an absent source defaults to 'self' and that default has been wrong per kit text; say who may fire it`,
+				location
+			);
+		}
 
 		// (B.12b) armedFor — the MARK's lifetime in seconds, so a positive number.
 		const armedFor = eff.trigger.armedFor;

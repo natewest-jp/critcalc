@@ -215,7 +215,8 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onReaction",
-						"reaction": ["electroCharged", "lunarCharged"]
+						"reaction": ["electroCharged", "lunarCharged"],
+						"source": "team"
 					},
 					"procCooldown": 1.8,
 					"scaling": 160,

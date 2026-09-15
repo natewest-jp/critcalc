@@ -109,7 +109,7 @@
 					"label": "Hold",
 					"input": ["hE"],
 					"frames": {
-						"anim": 77,
+						"anim": 81,
 						"N": 61,
 						"Q": 59,
 						"D": 60,
@@ -209,72 +209,164 @@
 	],
 	"passives": [
 		{
-			"id": "traveler_pyro__passive__a1",
-			"name": "Resounding Battlecries",
+			"id": "traveler_pyro__passive__true_flame_of_incineration",
+			"name": "True Flame of Incineration",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"A1: when Traveler has ≥20 NS points, Blazing Threshold and Scorching Threshold radius increase from 0.5 → 3.0 (and 1.5 → 4.0). Conditional radius doesn't affect schema; not authored. Document for tooltip context."
+				"A larger Threshold AoE above 20 Nightsoul points — no pixel; description-only. ⚠️ Re-ingested 2026-09-15 from genshin-db: the hand-written passives ('Resounding Battlecries', 'Crackling Adversity') were invented, though this one's mechanic was right."
 			],
-			"description": "When the Traveler has 20 or more Nightsoul points, Blazing Threshold and Scorching Threshold's AoE is increased."
+			"description": "When the Traveler has over 20 Nightsoul points, the attack AoE of the Blazing and Scorching Thresholds from the Elemental Skill Flowfire Blade after they hit opponents is increased."
 		},
 		{
-			"id": "traveler_pyro__passive__a4",
-			"name": "Crackling Adversity",
+			"id": "traveler_pyro__passive__embers_unspent",
+			"name": "Embers Unspent",
 			"abilityType": "passive",
-			"_curatorNotes": [
-				"A4: when Traveler triggers a Pyro reaction (Burning, Vaporize, Melt, Overloaded, Burgeon), +30% Pyro DMG self for 5s. Could be authored as buff effect with onReaction trigger — multiple reactions accepted via Reaction[]; useful coverage. Skipped for terseness; flagged as authorable."
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": [
+							"burning",
+							"vaporize",
+							"melt",
+							"overloaded",
+							"burgeon",
+							"pyroSwirl",
+							"pyroCrystallize"
+						],
+						"source": "active"
+					},
+					"procCooldown": 12,
+					"conditions": {
+						"type": "state",
+						"state": "nightsoulBlessing"
+					},
+					"amount": 5
+				}
 			],
-			"description": "When the Traveler triggers a Pyro-related reaction, the Traveler's Pyro DMG is increased by 30% for 5s."
+			"_curatorNotes": [
+				"gcsim asc.go `a4Init`: 5 Energy when the ACTIVE character's attack triggers a Pyro-related reaction while the Traveler's Nightsoul's Blessing is up (the Thresholds live exactly that long), once per 12s — `source: 'active'` is the same rule Fischl's A4 states. The +4 Energy on a nearby party member's Nightsoul Burst has no trigger in the vocabulary and is description-only."
+			],
+			"description": "After the current active character inside a Blazing Threshold or Scorching Threshold triggers a Pyro-related reaction, the Traveler will regain 5 Energy. This can occur once every 12s. Additionally, when a nearby party member triggers a Nightsoul Burst, the Traveler will regain 4 Energy."
 		}
 	],
 	"constellations": [
 		{
-			"id": "traveler_pyro__constellation__c1",
-			"name": "Burning Resolve",
+			"id": "traveler_pyro__constellation__starfires_flowing_light",
+			"name": "Starfire's Flowing Light",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"description": "Increases the maximum Nightsoul points the Traveler can hold by 14."
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"stat": "allDmgBonus",
+					"value": 6
+				}
+			],
+			"caveat": "Shown for the full 12s; it ends when the Nightsoul state empties (about 6s unless the burst refreshes it). The extra 9% for a character in their own Nightsoul's Blessing is not drawn.",
+			"_curatorNotes": [
+				"gcsim cons.go `c1Init`: an attack mod on every party member — +6% DMG while they are ACTIVE and the Traveler's Nightsoul's Blessing (the Threshold) is up, +9% more if the receiver is in their own Nightsoul's Blessing. Authored as the 6% active-target bar for the Threshold's life; the +9% needs a receiver-side state no Condition expresses. ⚠️ Re-ingested 2026-09-15: the retired entry ('Burning Resolve', +14 Nightsoul cap) was invented."
+			],
+			"description": "While Blazing Threshold or Scorching Threshold are active, the current active character deals 6% increased DMG. If said character is in the Nightsoul's Blessing state, they will deal an additional 9% DMG."
 		},
 		{
-			"id": "traveler_pyro__constellation__c2",
-			"name": "Spreading Flames",
+			"id": "traveler_pyro__constellation__everlit_candle",
+			"name": "Ever-Lit Candle",
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"C2: on E cast, +30% ATK to active char for 8s. Authorable as buff effect with onCast skill + active target; skipped for terseness."
+				"Nightsoul point regeneration off party Pyro reactions inside 12s of the skill (gcsim `c2OnSkill`, two activations per cast). Nightsoul points are not modelled; description-only. ⚠️ Re-ingested 2026-09-15: the retired entry ('Spreading Flames', +30% ATK) was invented."
 			],
-			"description": "After using Flowfire Blade, the active character's ATK is increased by 30% for 8s."
+			"description": "Within 12s of using the Elemental Skill Flowfire Blade, after nearby party members trigger a Pyro-related reaction on an opponent, the Traveler will regain 14 Nightsoul points. Each use of Flowfire Blade will restore at most 28 Nightsoul points in this way."
 		},
 		{
-			"id": "traveler_pyro__constellation__c3",
-			"name": "C3 Talent Boost",
+			"id": "traveler_pyro__constellation__relayed_beacon",
+			"name": "Relayed Beacon",
 			"abilityType": "constellation",
 			"constellationLevel": 3,
 			"description": "Increases the Level of Flowfire Blade by 3.\nMaximum upgrade level is 15."
 		},
 		{
-			"id": "traveler_pyro__constellation__c4",
-			"name": "Brightening Embers",
+			"id": "traveler_pyro__constellation__ravaging_flame",
+			"name": "Ravaging Flame",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"_curatorNotes": [
-				"C4: +30% Plains Scorcher DMG when Traveler is in NS Blessing. Authorable with state:nightsoulBlessing condition; skipped for terseness."
+			"effects": [
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 9,
+					"durationType": "fixed",
+					"stat": "pyroDmgBonus",
+					"value": 20
+				}
 			],
-			"description": "Plains Scorcher's DMG is increased by 30% while in Nightsoul's Blessing."
+			"_curatorNotes": [
+				"gcsim cons.go `c4AddMod`, called from the burst: +20% Pyro DMG for 9s (hitlag-extended). ⚠️ Re-ingested 2026-09-15: the retired entry ('Brightening Embers', +30% burst DMG in Nightsoul) was invented."
+			],
+			"description": "After using the Elemental Burst Plains Scorcher, the Traveler gains 20% Pyro DMG Bonus for 9s."
 		},
 		{
-			"id": "traveler_pyro__constellation__c5",
-			"name": "C5 Talent Boost",
+			"id": "traveler_pyro__constellation__the_fire_inextinguishable",
+			"name": "The Fire Inextinguishable",
 			"abilityType": "constellation",
 			"constellationLevel": 5,
 			"description": "Increases the Level of Plains Scorcher by 3.\nMaximum upgrade level is 15."
 		},
 		{
-			"id": "traveler_pyro__constellation__c6",
-			"name": "Final Bloom",
+			"id": "traveler_pyro__constellation__the_sacred_flame_imperishable",
+			"name": "The Sacred Flame Imperishable",
 			"abilityType": "constellation",
 			"constellationLevel": 6,
-			"description": "Plains Scorcher's CRIT Rate is increased by 30%."
+			"effects": [
+				{
+					"type": "infuse",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"element": "pyro"
+				},
+				{
+					"type": "buff",
+					"source": "character",
+					"snapshottable": false,
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 12,
+					"durationType": "fixed",
+					"stat": "critDmg",
+					"value": 40
+				}
+			],
+			"caveat": "Shown for the full 12s; both end when the Nightsoul state empties. The +40% CRIT DMG applies to Normal, Charged and Plunging Attacks only.",
+			"_curatorNotes": [
+				"gcsim cons.go `c6Init`: Normal/Charged/Plunging attacks carrying the Nightsoul tag get +40% CRIT DMG, and in game those attacks are converted to Pyro while Nightsoul's Blessing is up. Authored as the Cryo Traveler's Ever-Keen Frost shape — an onCast-skill `infuse` for the state's 12s maximum — plus a self CRIT DMG bar over the same window (no attack-class CRIT stat exists; the caveat names the classes). ⚠️ Re-ingested 2026-09-15: the retired entry ('Final Bloom', +30% burst CRIT Rate) was invented."
+			],
+			"description": "While in the Nightsoul's Blessing state, the Traveler's Normal, Charged, and Plunging Attacks will be converted to Nightsoul-aligned Pyro DMG that cannot be overridden, and the CRIT DMG of these attacks is increased by 40%."
 		}
 	],
 	"meta": {

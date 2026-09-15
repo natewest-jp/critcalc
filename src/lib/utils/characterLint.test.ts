@@ -1900,28 +1900,28 @@ describe('roster-wide parse smoke test', () => {
 
 const FRAMELESS_EXEMPT = new Set([
 	'blank',
-	'illuga',
-	'kachina',
+	// Illuga and Kachina left 2026-09-15: frames from UNMERGED gcsim PRs
+	// (#2677 / #2697), provenance in their notes; re-run the writers on merge.
 	'lohen',
-	'prune',
 	'sandrone',
 	'zibai',
-	// 7.0, ingested 2026-08-31. ⛔ gcsim has NOTHING for either — not on
+	// 7.0, ingested 2026-08-31. ⛔ gcsim has NOTHING for Alyosha — not on
 	// origin/main, not in any open PR, and a repo-wide PR search across all
 	// states returns only a 2022 typo fix. So Stage 4 is blocked: no FrameMaps,
-	// no `application[]`, no `chargedIcdWindow` (⚠️ Alyosha is a polearm, so
-	// that last one is a live question the moment gcsim ships him). Both apply
-	// their element provisionally at the cast until then.
+	// no `application[]`, no `chargedIcdWindow` (⚠️ he is a polearm, so that
+	// last one is a live question the moment gcsim ships him). He applies his
+	// element provisionally at the cast until then. (Odette and Prune left
+	// this list 2026-09-15 — gcsim main shipped both, #2749 / #2712.)
 	'alyosha',
-	'odette',
 	// Cryo Traveler, hand-built 2026-08-31 (⛔ the ingest generator refuses
 	// Travelers — element splits are hand-built). Its NORMAL frames are real,
 	// derived from a three-way census (six byte-identical Traveler JSONs, the
 	// same attackHitmarks in all six gcsim traveler/common packages, identical
-	// genshin-db multipliers), but gcsim has NO Cryo Traveler — no
-	// internal/characters/traveler/cryo on origin/main, and a repo-wide PR
-	// search finds nothing — so its E/Q have no FrameMaps and Stage 4 is
-	// blocked, exactly as for alyosha and odette.
+	// genshin-db multipliers), but gcsim has no Cryo Traveler on main. The one
+	// source is DRAFT PR #2742 (2026-09-06), whose E/Q slices are literally
+	// "Placeholder using DMC frames" — so its E/Q still have no FrameMaps. What
+	// the draft DID state (2026-09-15) is the Frostpierce Star's cadence, which
+	// is authored; Stage 4 proper waits for the PR to land.
 	'traveler_cryo'
 ]);
 

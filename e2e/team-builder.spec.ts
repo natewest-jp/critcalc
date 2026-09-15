@@ -94,6 +94,11 @@ test.describe('roster and facets', () => {
 		expect(await gridNames(page), 'Bennett does both').toContain('Bennett');
 	});
 
+	// ⚠️ The C-gated healer was Gorou (C4) until 2026-09-15: that heal is `trigger:
+	// 'manual'`, which the Team Builder no longer derives (the channel is being
+	// retired — a claim the planner never draws is not a TB claim either). Fischl's
+	// C4 self-heal is `onCast` and her ONLY heal, so she is absent at C0 and present
+	// from C4 — the same shape. The e2e gate is what caught the swap; vitest could not.
 	test('the constellation lens widens capability gates', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
@@ -101,23 +106,23 @@ test.describe('roster and facets', () => {
 
 		await setConMode(page, 'C0');
 		const atC0 = await matchCount(page);
-		expect(await gridNames(page), 'Gorou heals only from C4').not.toContain('Gorou');
+		expect(await gridNames(page), 'Fischl heals only from C4').not.toContain('Fischl');
 
 		await setConMode(page, 'C6');
 		const atC6 = await matchCount(page);
 		expect(atC6, `C6 unlocks more healers than C0 (C0=${atC0} C6=${atC6})`).toBeGreaterThan(atC0);
-		expect(await gridNames(page), 'Gorou appears at C6').toContain('Gorou');
+		expect(await gridNames(page), 'Fischl appears at C6').toContain('Fischl');
 	});
 
 	test('"My roster" mode gates on your own constellations', async ({ page, seed }) => {
-		await seed({ constellations: { gorou: 4 } });
+		await seed({ constellations: { fischl: 4 } });
 		await openTool(page, '/team-builder');
 		await openRoster(page);
 		await facetChip(page, 'Heals').click();
 		await setConMode(page, 'My roster');
 
 		const names = await gridNames(page);
-		expect(names, 'your C4 Gorou now matches heal').toContain('Gorou');
+		expect(names, 'your C4 Fischl now matches heal').toContain('Fischl');
 		// Lauma's heal is C1-gated and she is owned at C0 by default, so she stays
 		// locked — the con-gated negative case. (Dori and Gaming graduated to C0
 		// healers when their base heals were authored.)
@@ -135,7 +140,7 @@ test.describe('detail card', () => {
 			if (r.url().includes('/chunks/') && r.url().endsWith('.js')) chunks.push(r.url());
 		});
 
-		await page.locator('.cc', { hasText: 'Gorou' }).first().locator('.cc-main').click();
+		await page.locator('.cc', { hasText: 'Fischl' }).first().locator('.cc-main').click();
 		await page.locator('.dc-panel').waitFor();
 		await page.locator('.dc-caps .dc-cap').first().waitFor();
 
@@ -145,7 +150,7 @@ test.describe('detail card', () => {
 		await expect(page.locator('.dc-backdrop')).toHaveCSS('position', 'fixed');
 
 		const caps = await page.locator('.dc-caps').innerText();
-		expect(caps, 'Gorou shows C4 heal provenance').toMatch(/Heal/);
+		expect(caps, 'Fischl shows C4 heal provenance').toMatch(/Heal/);
 		expect(caps).toMatch(/C4/);
 		expect(await page.locator('.dc-timing').innerText(), 'timing shows E cooldown').toMatch(/CD/);
 	});
@@ -153,7 +158,7 @@ test.describe('detail card', () => {
 	test('the constellation stepper persists and survives reload', async ({ page }) => {
 		await openTool(page, '/team-builder');
 		await openRoster(page);
-		await page.locator('.cc', { hasText: 'Gorou' }).first().locator('.cc-main').click();
+		await page.locator('.cc', { hasText: 'Fischl' }).first().locator('.cc-main').click();
 		await page.locator('.dc-panel').waitFor();
 
 		await page.locator('.dc-con-btn', { hasText: 'C4' }).click();
@@ -161,7 +166,7 @@ test.describe('detail card', () => {
 			(k) => JSON.parse(localStorage.getItem(k) ?? '{}'),
 			KEYS.constellations
 		);
-		expect(stored.gorou, 'stepper writes the constellations store').toBe(4);
+		expect(stored.fischl, 'stepper writes the constellations store').toBe(4);
 
 		await page.keyboard.press('Escape');
 		await expect(page.locator('.dc-panel'), 'Escape closes the card').toHaveCount(0);
@@ -170,7 +175,7 @@ test.describe('detail card', () => {
 		await openRoster(page);
 		await facetChip(page, 'Heals').click();
 		await setConMode(page, 'My roster');
-		expect(await gridNames(page), 'the constellation survived reload').toContain('Gorou');
+		expect(await gridNames(page), 'the constellation survived reload').toContain('Fischl');
 	});
 });
 
