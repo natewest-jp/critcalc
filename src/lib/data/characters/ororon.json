@@ -95,7 +95,34 @@
 			"cooldown": 15,
 			"cooldownStartDelay": 14,
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "damage",
+					"target": "enemy",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["electroCharged", "lunarCharged"],
+						"source": "team",
+						"armedFor": 15,
+						"icdGate": "none"
+					},
+					"procCooldown": 1.8,
+					"scaling": 160,
+					"stat": "atk",
+					"element": "electro",
+					"application": [
+						{
+							"frame": 12,
+							"element": "electro",
+							"units": 1
+						}
+					],
+					"_curatorNotes": [
+						"HYPERSENSE (A1, Nightshade Synesthesia) — re-homed here from the passive 2026-09-17 (T1 tranche), on Nahida's Tri-Karma shape. Where it was, it NEVER FIRED: `sim/procs.ts` arms a proc only from a resolved CAST ability or a summon, only with a non-empty `application[]`, and only with `armedFor` — the passive-hosted effect had none of the three. Measured before: `Ororon E Q > Xingqiu E Q > Fischl E` made four Electro-Charged reactions and zero Hypersense applications. gcsim `ororon/asc.go`: `hypersense(1.6, …)` queues an Electro hit at delay 12, Durability 25, ICDTagNone (so `icdGate: none`), behind a 1.8s status ICD (`procCooldown`). The EC/LC subscriptions carry NO actor filter, so his own reactions count too — `source: team`, not `others`.",
+						"⚠️ `armedFor: 15` APPROXIMATES a resource gate. In gcsim Hypersense spends 10 Nightsoul points, which he gains 5 at a time from teammates' Hydro/Electro hits for 15s after this skill (plus 40 per Nightsoul Burst, pool 80). The 15s window is where the points come from and his E cooldown is also 15s, so a played rotation keeps it armed; points banked past the window are not modelled. ⛔ The Nightsoul-aligned-DMG branch is still unmodelled (no primitive) — see the passive's notes."
+					]
+				}
+			],
 			"_curatorNotes": [
 				"3-bounce Spirit Orb (5 with C1 via c1ExtraBounce). Each bounce hits a separate enemy; not separately rendered (single E cast = single bar). The 15s post-skill window gates A1's Hydro/Electro Nightsoul-point gain — pure resource, not modelled."
 			],
@@ -209,23 +236,8 @@
 			"id": "ororon__passive__nightshade_synesthesia",
 			"name": "Nightshade Synesthesia",
 			"abilityType": "passive",
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": {
-						"type": "onReaction",
-						"reaction": ["electroCharged", "lunarCharged"],
-						"source": "team"
-					},
-					"procCooldown": 1.8,
-					"scaling": 160,
-					"stat": "atk",
-					"element": "electro"
-				}
-			],
 			"_curatorNotes": [
-				"Hypersense damage on Electro-Charged or Lunar-Charged reactions: 160% ATK Electro, 1.8s ICD. Modelled as a damage effect with onReaction trigger.",
+				"↻ MOVED 2026-09-17 (T1 tranche): the Hypersense damage effect now lives on the skill (`ororon__skill__nights_sling.effects[0]`) as a cast-armed `onReaction` proc with its own `application[]`. Authored here it reached no surface at all — no proc path reads a passive. Read that effect's notes for the source and the approximation.",
 				"Also gates 6s Nightsoul Blessing state on Ororon (10 NS consumed per trigger), but Ororon's Nightsoul state doesn't open any in-stance ability variant — so the state isn't authored on the schema. The Nightsoul resource flow (40 NS on Nightsoul Burst, 5 NS per teammate Hydro/Electro hit, max 80 pool) is internal accounting and not modelled per the constitution.",
 				"Nightsoul-aligned trigger (any teammate's Nightsoul-tagged DMG → Hypersense) isn't modelled — the schema doesn't have an 'onNightsoulHit' trigger primitive."
 			],
