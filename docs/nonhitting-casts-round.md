@@ -1,6 +1,6 @@
 # The non-hitting casts round — scope (2026-09-16)
 
-_Status: ✅ SHIPPED 2026-09-16 on `feat/nonhitting-casts` — two landings
+_Status: ✅ SHIPPED 2026-09-16, merged to main `3f62b5f3` — two landings
 (`a4612eb1` engine, `27c96a4a` data). The cast-side twin of
 `NormalAbility.nonHitting` (`docs/lauma-charged-forms-round.md` §7). The census
 in §1 was read from the local gcsim checkout by two agents and re-checked at
