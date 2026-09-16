@@ -1,10 +1,11 @@
 # The non-hitting casts round — scope (2026-09-16)
 
-_Status: SPEC, not started. The cast-side twin of `NormalAbility.nonHitting`
-(`docs/lauma-charged-forms-round.md` §7). Scoped the day Lauma merged; the
-census in §1 was read from the local gcsim checkout by two agents and re-checked
-at every doubtful row. ⚠️ §0–§5 are the plan; when the round ships, its record
-wins where they disagree._
+_Status: ✅ SHIPPED 2026-09-16 on `feat/nonhitting-casts` — two landings
+(`a4612eb1` engine, `27c96a4a` data). The cast-side twin of
+`NormalAbility.nonHitting` (`docs/lauma-charged-forms-round.md` §7). The census
+in §1 was read from the local gcsim checkout by two agents and re-checked at
+every doubtful row. ⚠️ §0–§5 are the plan; **§6 is the record and wins where
+they disagree.**_
 
 ## 0. The question
 
@@ -176,3 +177,51 @@ means every no-hit cast that used to trigger a rain-sword wave now does not — 
 LARGER reach than the buff table, and the right place to read the proc half).
 Everything else byte-identical at C0 and C6. Xiangling's C1 bar should read
 2.10s → 13.10s where it read 0.22s → 13.10s.
+
+## 6. The record (2026-09-16)
+
+Shipped as §3 described, with two things the spec did not say:
+
+- **`castLandsNoHit` resolves the variant from the cast event's own
+  `variantLabel`, never from an input match.** The first cut matched by input,
+  as `resolveCastContext` does, and took Kujou Sara's C2 variant at C0 because
+  the press token is the same on both — the test caught it. Absent
+  `variantLabel` means the base, the reading `findSummonsForBar` already takes.
+- **The consumer table in §2 was one short.** Sucrose's A4 (Mollis Favonius)
+  is `onHit` on `['skill','burst']` — an ARRAY — and the scan that built §2
+  matched a scalar. The digest found it: her Q no longer fires the team EM at
+  the cast, and the stormeye ticks still carry it. ⚓ A consumer census over
+  `trigger.abilityType` must accept the array form.
+
+**Measured** (corpus digest, 126 characters × C0/C6, each with a swap partner):
+the engine landing is byte-identical to main at 252/252; the data landing moves
+8 keys across 7 characters, every one a cast-anchored `onHit` window going away
+while its tick-anchored twin stays, or a new correct application:
+
+| character          | what moved                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------ |
+| xiangling @C6      | C1 shred starts at the first Guoba flame, **2.10s**, not the cast (0.22s)            |
+| emilie @C6         | C2 shred loses the cast anchor; the case's ticks keep it                             |
+| venti @C6          | C6 shreds from the first stormeye tick                                               |
+| traveler_anemo @C6 | C6 shred from the first tornado tick                                                 |
+| yoimiya @C6        | C1 self buff no longer fires at the E cast; her infused swings still do              |
+| sucrose @C0, @C6   | A4 team EM no longer fires at the Q cast (§6 above)                                  |
+| kujou_sara @C6     | **+3** Electro applications — the C2 Ambush at each press, where she applied nothing |
+
+No window gained anywhere else, no application lost anywhere. The proc half —
+an armed `onHit` damage proc no longer hearing a stance opener — does not show
+in the digest (its partners carry no such proc) and is pinned by the unit test.
+
+**Data.** 38 of the 40 casts flagged, each with a one-line provenance note; Kinich
+deferred to the Cannon retype (§4); Xingqiu left hitting (§4); Kujou Sara gains
+the `C2 Ambush` variant, the variant boolean's first use.
+
+**Guards.** Five cases in `sim/states.test.ts` (the file the Lauma round opened):
+cast-anchored shred present/absent, the `onCast` buff surviving, an armed team
+proc hearing nothing, the C2 re-enable with its application, the lint arms.
+Seeded negatives: the cast-site gate removed fails the proc case; the buff-pool
+gate removed fails the shred and variant cases.
+
+**Still open.** Kinich E (with §1.F); the state-gated sibling blind spot in
+`resolveCastPair` (Skirk's Extinction is invisible to the buff pools until
+§1.F); the editor tint, unchanged.
