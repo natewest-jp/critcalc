@@ -101,7 +101,44 @@
 			"terminatesOnSwap": true,
 			"opensState": "nightsoulBlessing",
 			"tags": [],
-			"effects": [],
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 5,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "swirlReactionBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 45
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 5,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "stellarSwirlReactionBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 4.5
+					},
+					"snapshottable": false
+				}
+			],
 			"durationExtensions": [
 				{
 					"trigger": {
@@ -120,9 +157,9 @@
 				"Drift cloud emits Cryo-tagged-no-actually-Anemo damage every ~0.75s (cloudHitInterval=45, cloudFirstHit=18) for the stance duration. P3 (Summon.effects[]) gap — flag and migrate when proposal lands.",
 				"↻ 2026-08-18: the P3 \"Summon.effects[] gap\" the note above asks for was RESOLVED, in a different shape — the drift cloud is authored as this ability's own `application[]` (8 anemo entries: frame 2 for the cast's AoE, then 45f apart = the gcsim cloudHitInterval), so the cloud's ELEMENT reaches the gauge and its swirls drive the A1 extension below. ⛔ Do not migrate it to `summons[]`: a summon means a thing LEFT IN THE WORLD, and Dreamdrifter is a stance whose span the E bar already draws. What genuinely remains unauthored is the cloud's DAMAGE cadence (no summon lane row, no tick marks) — that is the only half of this note still open.",
 				"A1 Bright Moon's Restless Voice authored 2026-05-10 (E3 v1.5): durationExtensions[] on the skill (Dreamdrifter stance), trigger onReaction swirl, +2.5s per fire, max 2, 0.3s ICD. ↻ 2026-08-18: the under-fire warning that used to close this note is RETIRED and all three of its clauses are dead. It read \"parser cast-only emission fires swirl on E and Q anemo casts; drift-cloud ticks and per-N anemo aren't modeled … pure-E or zero-Q rotations under-fire by 50%\". Today reactions come OUT OF A REAL GAUGE rather than being assumed at the cast (sim/aura.ts `offerApplication` → `emitReaction` → `dispatchOnReactionExtensions`); the drift-cloud hits ARE modelled, as this ability's `application[]` entries; and N/C/P swings apply in their own right. The extension fires off whichever of those applications actually swirls, under the cast's own ICD clock (standard 150f/every-3, so three of the eight cloud entries apply) — enough for both +2.5s fires whenever a swirlable aura is up, and correctly ZERO fires when the enemy carries none. ⚠️ The one bound that survives: only the character who CAUSED a reaction extends their own window (dispatchOnReactionExtensions is keyed to `src.characterId`), so a teammate's swirl inside Dreamdrifter never extends it — which MATCHES this kit (\"when Yumemizuki Mizuki triggers Swirl\") and is therefore not a divergence for her, unlike Collei's zone where it is one.",
-				"Swirl DMG team buff (EM-scaled) is the headline mechanic — gcsim adds it via AddReactBonusMod which we don't have a primitive for. Swirl-specific damage scaling per teammate's Swirl event isn't expressible. The Anemo character constitution treats this as a swirl modifier, not a flat buff, so a buff on swirl/anemoDmgBonus isn't quite right either.",
-				"[A7] In-game the Dreamdrifter stance blocks Normal/Charged; only Q, swap, dash, and re-press-E (which exits) are valid inputs. Base stance window is 5s. The tool does not gate invalid actions, so N/C typed during the window render as blocks that wouldn't fire in game.",
-				"[A7] A1 extension: +2.5s per swirl, max 2 (=+5s). ↻ 2026-08-18: the rest of this line — \"cast-only reaction emission … pure-E or zero-Q rotations under-fire by ~50%; per-N anemo hits and drift-cloud ticks aren't counted\" — was a duplicate of the A1 note above and is stale for the same reasons. Drift-cloud hits and swings both reach the gauge now; whether the extension fires depends on the enemy's aura, not on how many casts are in the rotation."
+				"↻ AUTHORED 2026-09-16 (T0.5) — and the blocker this note used to state was STALE. It read \"gcsim adds it via AddReactBonusMod which we don't have a primitive for\"; the 7.0 round minted exactly that primitive, because bucket-5 `*ReactionBonus` IS AddReactBonusMod. What was missing was a family-wide `swirlReactionBonus` Stat member, added in the same commit on the `stellarGlimmerReactionBonus` precedent — gcsim returns ONE number from a single switch arm over the four AttackTagSwirl* tags (skill.go:149-154), and the official talent row is likewise one row, \"Elemental Mastery-Based Swirl DMG Increase\". ⛔ It does not replace the per-flavour members: Diona's C6 names Cryo Swirl alone.",
+				"Values: swirlDMG[10] = 0.45 and gcsim computes `swirlDMG * EM * 0.01`, i.e. 0.45% per EM point = ratio 45 (⚓ `ratio` is per 100 STAT UNITS), which is the sidecar's \"0.45% per Point\" row verbatim. The Stellar half is stellarSwirlDMG[10] = 0.045 through the identical formula, so ratio 4.5 — a tenth of the base, authored as its own effect because it is its own Stat and its own reaction. ⚠️ The window is the stance's base 5s; the A1 extension (+2.5s ×2 per Swirl) moves the STANCE and not a buff window, the same split recorded on Cyno's burst EM this day.",
+				"⛔ Still not modeled here: the cloud runs on the WRONG ICD. gcsim gives it ICDGroupMizukiSkill (72f timer, sequence {1,0,0,0}) and the activation hit ICDTagNone, while all 8 `application[]` entries go through our standard 150f/every-3 cast counter — measured `Mizuki E Q` at C0 applies at f2/138/183/318 where gcsim applies at f2/48/138/228/318. The `IcdWindow` shape exists (summonTick.icdGate, chargedIcdWindow) but has no home on a cast's application[]; schema + engine."
 			],
 			"description": "Weaves memories of lovely dreams, entering a Dreamdrifter state where Yumemizuki Mizuki floats above the ground, and dealing 1 instance of AoE Anemo DMG to nearby opponents.\n\nDreamdrifter\n·While in the Dreamdrifter state, Yumemizuki Mizuki will continuously drift forward, dealing AoE Anemo DMG to nearby opponents at regular intervals.\n·During this time, Yumemizuki Mizuki can control her direction of drift, and the pick-up distance of Yumemi Style Special Snacks from the Elemental Burst Anraku Secret Spring Therapy will be increased.\n·Increases the Swirl DMG and Stellar Swirl reaction DMG that nearby party members deal based on Yumemizuki Mizuki's Elemental Mastery.\n·Dreamdrifter will end when Mizuki leaves the field or uses her Elemental Skill again.",
 			"application": [
@@ -265,14 +302,11 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "skill"
 					},
-					"duration": 4,
-					"durationType": "fixed",
-					"conditions": {
-						"type": "state",
-						"state": "nightsoulBlessing"
-					},
+					"duration": 5,
+					"durationType": "refresh",
 					"source": "character",
 					"stat": "em",
 					"value": 100,
@@ -280,9 +314,44 @@
 				}
 			],
 			"_curatorNotes": [
-				"+100 EM Mizuki for 4s when other party members hit with Pyro/Hydro/Cryo/Electro during Dreamdrifter (0.3s ICD). Modelled as a manual-triggered self buff gated on nightsoulBlessing state — leverages the new opensState mechanism so the buff only fires inside the actual Dreamdrifter window. The element-specific teammate-hit trigger isn't expressible (no elementHit trigger primitive); manual is the closest schema fit."
+				"+100 EM Mizuki for 4s when other party members hit with Pyro/Hydro/Cryo/Electro during Dreamdrifter (0.3s ICD). Modelled as a manual-triggered self buff gated on nightsoulBlessing state — leverages the new opensState mechanism so the buff only fires inside the actual Dreamdrifter window. The element-specific teammate-hit trigger isn't expressible (no elementHit trigger primitive); manual is the closest schema fit.",
+				"↻ trigger `manual` → `onCast skill`, 2026-09-16 (T0.5; manual-trigger-retirement step 3). The buff is REAL and was reaching no surface at all; it is now a self bar riding the Dreamdrifter window, with the approximation in the caveat. gcsim asc.go:85-110 is the true shape — subscribe to enemy damage, refuse the holder's own hits (ActorIndex == c.Index()), require the Dreamdrifter status, 0.3s ICD, +100 EM for 4s.",
+				"⛔ `onHit` with `source: 'others'` WAS TRIED AND MEASURED WRONG, 2026-09-16 — do not re-reach for it until the engine changes. No buff pool anchors a character's onHit effect on ANOTHER character's hit: the cast pool merges onCast and onHit and anchors both on the HOLDER'S OWN cast without consulting `trigger.source`, and the N/CA/P pools anchor on the holder's own swings. Measured `Yumemizuki Mizuki E Q > Xiangling E N1 N2 N3`: the bar fired off HER E and HER Q — the exact hits the talent excludes — and off none of Xiangling's. Nicole's A4 (`source: 'active'`) behaves the same way and is the corpus's only other character-hosted onHit buff with a non-self source. ⏭ Two engine pieces: a teammate-hit anchor for a character buff pool, and `trigger.source` honoured at the pools that exist.",
+				"⚠️ Even with that, the ELEMENT filter has no home: the talent names four elements and `TriggerFilter.element` takes one, so the faithful form would be four effects — and four effects means four independent procCooldown clocks where gcsim holds ONE shared 0.3s ICD (a4ICDKey). `damageType: 'elemental'` is the nearest single-clock form, and in a Mizuki team the excluded cases are rare: she is a Swirl amplifier, so her teammates are Pyro/Hydro/Cryo/Electro by construction."
 			],
-			"description": "While Yumemizuki Mizuki is in the Dreamdrifter state, when other nearby party members hit opponents with Pyro, Hydro, Cryo, or Electro attacks, her Elemental Mastery will increase by 100 for 4s."
+			"description": "While Yumemizuki Mizuki is in the Dreamdrifter state, when other nearby party members hit opponents with Pyro, Hydro, Cryo, or Electro attacks, her Elemental Mastery will increase by 100 for 4s.",
+			"caveat": "Shown for the whole Dreamdrifter window; in game a teammate has to land a Pyro, Hydro, Cryo or Electro hit for it, and it lasts 4s from the last one."
+		},
+		{
+			"id": "yumemizuki_mizuki__passive__vast_be_the_dream",
+			"name": "Vast Be the Dream",
+			"abilityType": "passive",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 5,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "em",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 10
+					},
+					"snapshottable": false
+				}
+			],
+			"_curatorNotes": [
+				"ADDED 2026-09-16 (T0.5). Mizuki's Witch's Revelation Passive, unlocked by the world quest \"Witch's Revelation: Instruction Beyond Dreams\". ⚠️⚠️ Wiki-only evidence, fetched verbatim from the Fandom Talent Infobox (`Vast Be the Dream`, utility tags Additive Base DMG Bonus / Elemental Mastery / Direct Stellar Swirl): genshin-db 5.2.13 carries NO Revelation passive for anyone — `extraPassives` is empty for every holder — so nothing in the ingest pipeline would ever have surfaced it. Same provenance as Wriothesley's and Cyno's.",
+				"Authored: the team EM half, verbatim \"while Yumemizuki Mizuki is in the Dreamdrifter state, the Elemental Mastery of nearby party characters is also increased by 10% of her Elemental Mastery\" — ratio 10, since ⚓ `ratio` is per 100 STAT UNITS. It is the only team EM bar she has. Window = the Dreamdrifter stance (onCast skill, 5s), the same span as the skill's own Swirl bonus.",
+				"⛔ NOT authored: the enhanced periodic tick (+1,000% of her EM on the next cloud hit after a Swirl, once per 2.5s) and its Radiance twin are damage magnitude; the \"Radiance: Stellar Swirl state for 8s when a nearby party member triggers a Stellar Swirl\" is a state with no surface and no authored consumer. Neither is a pixel."
+			],
+			"description": "When Yumemizuki Mizuki triggers a Swirl or Stellar Swirl reaction while in the Dreamdrifter state, the next instance of periodic AoE Anemo DMG she deals to nearby enemies during that same state will be increased by 1,000% of her Elemental Mastery. The aforementioned effect can trigger once every 2.5s.\nRadiance: Stellar Swirl: When Yumemizuki Mizuki deals to an opponent the above enhanced AoE Anemo DMG, she will also deal an additional instance of Anemo DMG at 1,000% of her Elemental Mastery. This DMG is considered Stellar Swirl reaction DMG.\n\nAdditionally, while Yumemizuki Mizuki is in the Dreamdrifter state, the Elemental Mastery of nearby party characters is also increased by 10% of her Elemental Mastery.\nYumemizuki Mizuki will also enter the Radiance: Stellar Swirl state for 8s when a nearby party member triggers a Stellar Swirl reaction."
 		}
 	],
 	"constellations": [
@@ -355,9 +424,84 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Per-EM damage bonus to teammates' Pyro/Hydro/Cryo/Electro DMG during Dreamdrifter (0.04% per EM, no cap mentioned). Not modellable cleanly — the buff is per-element-type and per-EM-point. Removed prior placeholder 0.04 EM stat buff which made no sense (the 0.04 was the per-EM ratio, not a stat value). Description-only."
+				"Per-EM damage bonus to teammates' Pyro/Hydro/Cryo/Electro DMG during Dreamdrifter (0.04% per EM, no cap mentioned). Not modellable cleanly — the buff is per-element-type and per-EM-point. Removed prior placeholder 0.04 EM stat buff which made no sense (the 0.04 was the per-EM ratio, not a stat value). Description-only.",
+				"↻ AUTHORED 2026-09-16 (T0.5). The note above (\"Not modellable cleanly — the buff is per-element-type and per-EM-point\") predates the `scaling` BuffValue being used for exactly this shape (Varka A1, Cryo Traveler A4): 0.04% per EM point is ratio 4, since ⚓ `ratio` is per 100 STAT UNITS. Four effects because the constellation names four DMG Bonus stats and each is its own Stat key — they share a trigger and a span, so they pool into one row. The window is the Dreamdrifter stance (onCast skill, 5s), which is what \"until the Dreamdrifter state ends\" means; the A1 extension moves the stance, not this."
 			],
-			"description": "When Yumemizuki Mizuki enters the Dreamdrifter state, every Elemental Mastery point she has will increase all nearby party members' Pyro, Hydro, Cryo, and Electro DMG Bonuses by 0.04% until the Dreamdrifter state ends."
+			"description": "When Yumemizuki Mizuki enters the Dreamdrifter state, every Elemental Mastery point she has will increase all nearby party members' Pyro, Hydro, Cryo, and Electro DMG Bonuses by 0.04% until the Dreamdrifter state ends.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 5,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "pyroDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 4
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 5,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "hydroDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 4
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 5,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "cryoDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 4
+					},
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 5,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "electroDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "em",
+						"ratio": 4
+					},
+					"snapshottable": false
+				}
+			]
 		},
 		{
 			"id": "yumemizuki_mizuki__constellation__till_dawns_moon_ends_night",

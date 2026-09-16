@@ -124,7 +124,11 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 0.975,
-								"firstTickDelay": 2.467
+								"firstTickDelay": 2.167,
+								"icdGate": {
+									"timer": 90,
+									"every": 6
+								}
 							},
 							"scaling": 216,
 							"stat": "atk",
@@ -143,75 +147,18 @@
 				"summonTick interval and firstTickDelay are recorded in seconds (not frames) to match the schema's existing P3 summonTick conventions; values rounded to 3 decimal places.",
 				"[A7] Hold mode (Off-the-Cuff Cookery) has no upstream simulation; only Tap (Cold Storage) is authored. Re-author if a substantive Hold-form kit difference lands upstream.",
 				"[A7] Surging Blade Arkhe-Ousia hit (~60% ATK per cast, 10s ICD) pulled from the user caveat: it fires once per cast, the persistent Cooking Mek ticks stand in for its damage flow, and the timeline does not draw damage hits anyway. Detail already in the existing curator notes.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The E bar itself. `hE` tokenizes fine and Escoffier authors no hold variant, so matchVariant falls back to the base ability — a hold cast draws the TAP form's 15s cooldown, its 35f cast and a \"Cooking Mek (Cold Storage)\" summon lane with 17 Cryo tick marks, none of which is the mode the player asked for. This is also the sanctioned use of the parent-ability caveat channel (N18: variants have no caveat field). Category: visible-divergence."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The E bar itself. `hE` tokenizes fine and Escoffier authors no hold variant, so matchVariant falls back to the base ability — a hold cast draws the TAP form's 15s cooldown, its 35f cast and a \"Cooking Mek (Cold Storage)\" summon lane with 17 Cryo tick marks, none of which is the mode the player asked for. This is also the sanctioned use of the parent-ability caveat channel (N18: variants have no caveat field). Category: visible-divergence.",
+				"↻ application[] TRIMMED TO THE CAST'S OWN HIT, 2026-09-16 (T0.5) — it was DOUBLE-FEEDING THE GAUGE. The entries from frame 153 on were the Frosty Parfait ticks (gcsim skillFirstTickDelay 148 + ceil(58.5 × i) + skillTravel 5), and the same stream is authored as the summon's `summonTick` below, so both ran on their own clocks: measured `Escoffier E` at C6 applied at 23, then PAIRS 41 frames apart — 171/212, 348/387, 525/563, 702/738 — where gcsim applies at an even 117f. ⚠️ docs/furina-arkhe-round.md §8 explicitly CLEARED this character on a phase test; the phase was wrong (see the firstTickDelay note), so the test could not see it.",
+				"⛔ Frame 83, the Surging Blade, is NOT an application and is gone with the rest: gcsim skill.go:73-84 gives it `Durability: 0`. It carried no `units` either, so it resolved to a provisional 1U — a phantom Cryo pip. ⚠️ This is the `[icd]`-vs-no-durability ambiguity the frames report warns about: the oracle cannot tell a suppressed hit from a zero-durability one.",
+				"⚠️ The initial hit and every parfait share ONE counter in gcsim (both are ICDTagElementalArt on ICDGroupEscoffierSkill); here the cast's application[] runs on our standard cast counter and the series on its own `icdGate`, two clocks. That is the corpus-wide per-cast-ICD gap, not something authorable at this site.",
+				"↻ firstTickDelay 2.467 → 2.167, 2026-09-16 (T0.5). gcsim's 148f is measured FROM THE CAST and the first parfait lands at 148 + travel 5 = 153f; `collectSummonTicks` starts at spawnAt + firstDelay and `spawnsAt` is 23, so the authored 2.467 (=148f) put every marker 18 frames late — 171/230/289 against gcsim's 153/212/270. The correct value is (148 + 5 − 23) / 60 = 2.167.",
+				"↻ icdGate {timer: 90, every: 6} AUTHORED 2026-09-16 (T0.5) — the series is NOT on the standard gate. Every parfait is ICDGroupEscoffierSkill, whose table entry is a 90f window with sequence {1,0,0,0,0,0} (pkg/core/attacks/icd_groups.dm.go:104,170), i.e. every sixth hit applies inside a 1.5s window; ours ran the default 150f / every-3. ⚠️ The ICD-group round missed it for Durin's reason: the frames report's oracle column is EMPTY here, because the dumper files the parfaits under the cast.",
+				"⏭ OPEN, a decision not an edit: gcsim runs skillTicks = 21 at 58.5f, i.e. a status of 148 + 20 × 58.5 = 1318f ≈ 21.97s, while the kit's (and our) summon duration is 20s, which yields 19 markers. `tickCap` cannot ADD ticks — it only bounds, widening by at most one interval — so recovering the last two needs the authored `duration` to grow, which would then make the summon bar disagree with the 20s the talent publishes. Left alone."
 			],
 			"description": "Behold the true meaning of \"cooking\"! Escoffier will demonstrate different cooking techniques when you Tap or Hold this skill, but rest assured, each of them is Fontaine's pride and joy.\n\nTap\nActivates her All-Spectrum Multi-Use Cooking Mek in its Cold Storage mode and deals AoE Cryo DMG to nearby opponents.\n\nCooking Mek: Cold Storage Mode\nFollows the current active character and fires Frosty Parfaits at nearby opponents at intervals, dealing Cryo DMG.\n\nArkhe: Ousia\nAt intervals, Escoffier will summon a Surging Blade when activating her Cooking Mek in Cold Storage mode, dealing Ousia-aligned AoE Cryo DMG.\n\nHold\nActivates her All-Spectrum Multi-Use Cooking Mek's Off-the-Cuff Cookery Mode.",
 			"application": [
 				{
 					"frame": 23,
-					"element": "cryo",
-					"units": 1
-				},
-				{
-					"frame": 83,
-					"element": "cryo"
-				},
-				{
-					"frame": 153,
-					"element": "cryo",
-					"units": 1
-				},
-				{
-					"frame": 212,
-					"element": "cryo"
-				},
-				{
-					"frame": 270,
-					"element": "cryo",
-					"units": 1
-				},
-				{
-					"frame": 329,
-					"element": "cryo"
-				},
-				{
-					"frame": 387,
-					"element": "cryo",
-					"units": 1
-				},
-				{
-					"frame": 446,
-					"element": "cryo"
-				},
-				{
-					"frame": 504,
-					"element": "cryo",
-					"units": 1
-				},
-				{
-					"frame": 563,
-					"element": "cryo"
-				},
-				{
-					"frame": 621,
-					"element": "cryo",
-					"units": 1
-				},
-				{
-					"frame": 680,
-					"element": "cryo"
-				},
-				{
-					"frame": 738,
-					"element": "cryo",
-					"units": 1
-				},
-				{
-					"frame": 797,
-					"element": "cryo"
-				},
-				{
-					"frame": 855,
 					"element": "cryo",
 					"units": 1
 				}
@@ -240,7 +187,8 @@
 						"ability": "burst"
 					},
 					"scaling": 309.6576,
-					"stat": "atk"
+					"stat": "atk",
+					"flat": 2372.936
 				}
 			],
 			"_curatorNotes": [
@@ -249,7 +197,8 @@
 				"Initial heal scaling: burstHealFlat[9] + burstHealPer[9] × ATK = 2372.936 + 309.6576% ATK at TL10. Schema's heal effect carries only the ATK-scaling component; flat-heal (2372.936) is dropped — a known schema gap (no mixed flat+scaling heal value form). The flat component is tier-relevant for low-ATK supports but secondary to the per-ATK contribution.",
 				"ConsumeEnergy(5) at end of burst — drains an additional 5 energy beyond the 60 cost (similar to Yanfei). Not modelled.",
 				"burstCD = 15s (burstCD[9]). cooldownStartDelay omitted: gcsim SetCD(burst, 15*60) is called immediately at cast, no delay.",
-				"Burst element is Cryo (attributes.Cryo); hits are AttackTagElementalBurst with ICDTagNone."
+				"Burst element is Cryo (attributes.Cryo); hits are AttackTagElementalBurst with ICDTagNone.",
+				"↻ `flat: 2372.936` AUTHORED 2026-09-16 (T0.5). The talent row is \"309.7% ATK + 2373\" and gcsim computes burstHealFlat[9] + burstHealPer[9] × TotalAtk. The old note called the mixed form \"a known schema gap\"; `flat?: number` is declared on the heal effect and Bennett and Qiqi both use it, so half this heal had simply been dropped."
 			],
 			"description": "Displaying her exceptional knife skills, Escoffier deals AoE Cryo DMG and restores HP to all nearby party members based on her ATK.",
 			"application": [
@@ -296,7 +245,115 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onHit",
-						"abilityType": "skill"
+						"abilityType": ["skill", "burst"]
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["hydro", "cryo"],
+						"comparison": "=",
+						"value": 0
+					},
+					"duration": 12,
+					"element": "cryo",
+					"value": -5
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["skill", "burst"]
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["hydro", "cryo"],
+						"comparison": "=",
+						"value": 0
+					},
+					"duration": 12,
+					"element": "hydro",
+					"value": -5
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["skill", "burst"]
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["hydro", "cryo"],
+						"comparison": "=",
+						"value": 1
+					},
+					"duration": 12,
+					"element": "cryo",
+					"value": -10
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["skill", "burst"]
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["hydro", "cryo"],
+						"comparison": "=",
+						"value": 1
+					},
+					"duration": 12,
+					"element": "hydro",
+					"value": -10
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["skill", "burst"]
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["hydro", "cryo"],
+						"comparison": "=",
+						"value": 2
+					},
+					"duration": 12,
+					"element": "cryo",
+					"value": -15
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["skill", "burst"]
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["hydro", "cryo"],
+						"comparison": "=",
+						"value": 2
+					},
+					"duration": 12,
+					"element": "hydro",
+					"value": -15
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": ["skill", "burst"]
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["hydro", "cryo"],
+						"comparison": ">=",
+						"value": 3
 					},
 					"duration": 12,
 					"element": "cryo",
@@ -307,21 +364,29 @@
 					"target": "enemy",
 					"trigger": {
 						"type": "onHit",
-						"abilityType": "skill"
+						"abilityType": ["skill", "burst"]
+					},
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["hydro", "cryo"],
+						"comparison": ">=",
+						"value": 3
 					},
 					"duration": 12,
 					"element": "hydro",
 					"value": -55
 				}
 			],
-			"caveat": "The shown shred assumes 4 Hydro or Cryo party members; with 1/2/3 members it is only 5%/10%/15%. In game it also applies on burst hits, not just the skill.",
 			"_curatorNotes": [
 				"A4 callback (makeA4CB) is attached to: skill initial hit, Surging Blade, Frosty Parfait ticks, and burst hit. All four hit paths apply both Cryo and Hydro shred.",
 				"Authored as 2 effects (Cryo, Hydro) at the 4-char-count value. 4-char value is the canonical Escoffier team build (e.g. Wriothesley + Citlali + Ayaka + Escoffier). ↻ Its old rider — \"the 5/10/15/55% scaling by char count isn't expressible, would require a 'team element count' condition primitive\" — is superseded; see the ↻ note below.",
 				"Trigger onHit ability=skill captures the dominant rotation (Escoffier E → swap → Q on a separate cycle). ↻ Its old rider — \"adding a second pair with ability=burst would render duplicate bars\" — is superseded; see the ↻ note below.",
 				"[A7] The -55% is authored as a fixed value; the 5/10/15/55 scaling by combined Hydro+Cryo member count is not expressed. ⚠️ This line used to add \"teamElementCount / perTeamCount are now wired\" — half right, and `perTeamCount` is the wrong half twice over: `resShred.value` is a plain `number`, not a `BuffValue`, so a `perTeamCount` value cannot be authored here at all; and where it CAN be authored the formatter only prints the per-member formula, never value × count (src/lib/timeline/buffDisplay.ts:74-82). `teamElementCount` is the one that works.",
 				"↻ 2026-08-18 — THREE DEFERRALS ON THIS PASSIVE ARE NOW UNBLOCKED. All three are authorable today; none is authored, and each is a separate decision, so ⛔ don't land them as one edit. (1) THE 5/10/15/55 LADDER. `teamElementCount` resolves definitively in this exact pool: `baseCtx` carries `teamElementCounts` (buffWindows.ts:360-364) and `resShredBase` evaluates each effect's conditions against it BEFORE `dedupResShredByElement` runs (:367-375, :448-451), so mutually-exclusive tiers are filtered down to the one matching tier and the dedupe then keeps it — this is NOT the tier-ladder trap that eats sibling `buff` effects (there the stat dedupe runs first). ⚠️ The map is HOLDER-EXCLUDED and Escoffier is Cryo, so the four rungs are excl-self counts 0/1/2/3, not 1/2/3/4 — the same excl-self trick Itto's C2 modifiers use. Cost: 8 effects (4 tiers × Cryo/Hydro) instead of 2. (2) SKILL + BURST ON ONE EFFECT. \"One effect can't combine Skill+Burst triggers\" is false — `Trigger.onHit.abilityType` takes an ARRAY (src/lib/types/ability.ts:510-516), and this character's own C6 already authors `['normal','charged','plunge']`. ⚠️ An array is not free: `getCharacterEffectsForOnHit` is called once per cast class, so `['skill','burst']` qualifies in BOTH pools and emits a 12s window at the E cast and another at the Q cast. (3) THAT IS NO LONGER \"duplicate bars\". Overlapping same-shape bars on one row refresh-MERGE into a single covered span since 2026-08-15 (src/lib/timeline/mergeRefreshedBars.ts, applied at teamBuffRows.ts:170) — identical stat and identical formatted value is the whole test, which two -55% cryo shreds pass. Non-overlapping casts stay two bars, which is correct rather than noisy. ⚠️ VERIFICATION BOUNDARY: the merge rule and both emit sites were read in source; an E-then-Q rotation was NOT rendered to confirm the two windows land on ONE row key rather than two. Check that before authoring (2).",
-				"[A7] Shred is authored only on the Skill-hit trigger. In typical E-then-swap-then-Q rotations the skill precedes the burst within the 12s window, so the shown window timing is practically correct — which is why (2) above is an accuracy improvement, not a bug fix."
+				"[A7] Shred is authored only on the Skill-hit trigger. In typical E-then-swap-then-Q rotations the skill precedes the burst within the 12s window, so the shown window timing is practically correct — which is why (2) above is an accuracy improvement, not a bug fix.",
+				"↻ DEFERRALS (1) AND (2) FROM THE 2026-08-18 NOTE ARE BOTH LANDED, 2026-09-16 (T0.5). The ladder is 8 effects — four mutually-exclusive `teamElementCount` rungs × Cryo/Hydro. ⚠️ gcsim indexes a4Shred by the Hydro+Cryo count INCLUDING Escoffier (a4Init counts every party member and he is Cryo), and `teamElementCount` is HOLDER-EXCLUDED, so the four rungs are excl-self 0/1/2/3 for gcsim's 1/2/3/4 — the same excl-self trick Itto's C2 modifiers use. ⚓ It works here and would NOT work on a `buff`: `resShredBase` evaluates each effect's conditions BEFORE `dedupResShredByElement`, where the stat dedupe for buffs runs first (§1.H).",
+				"↻ And the trigger is `abilityType: ['skill', 'burst']` — gcsim attaches makeA4CB to the skill's initial hit, the Surging Blade, every Frosty Parfait AND the burst hit (burst.go:40,47). ⚠️ The array qualifies in BOTH cast pools, so an E-then-Q rotation emits a 12s window at each; the 2026-08-18 note left \"do the two land on ONE row key?\" as its verification boundary, and it is now MEASURED — `Escoffier E Q` draws ONE row and one merged span, because `mergeRefreshedBars` fuses same-shape overlaps. Non-overlapping casts stay two bars, which is correct.",
+				"↻ The caveat is RETIRED with them: both of its sentences — \"assumes 4 Hydro or Cryo party members\" and \"in game it also applies on burst hits\" — describe divergences that no longer exist."
 			],
 			"description": "When there are 1/2/3/4 Hydro or Cryo characters in the party, Escoffier will decrease the Hydro RES and Cryo RES of any opponents hit by her Elemental Skill, Low-Temperature Cooking, or her Elemental Burst, Scoring Cuts, by 5%/10%/15%/55% for 12s."
 		}

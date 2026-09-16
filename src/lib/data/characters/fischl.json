@@ -123,7 +123,7 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 0.983,
-								"firstTickDelay": 1.067,
+								"firstTickDelay": 1.233,
 								"icdGate": {
 									"timer": 300,
 									"every": 4
@@ -212,7 +212,10 @@
 			],
 			"_curatorNotes": [
 				"Oz tick: gcsim ozTickInterval=59f (=0.983s), firstTick=64f post-spawn (=1.067s). Multiplier birdAtk at TalentLvl 10 = 159.84% ATK Electro. Per-tick damage authored as a `summonTick` effect on the summon (P3); the timeline renders one marker per tick on the summon bar.",
-				"A6 rigor 2026-07-12: scaling corrected 247.32 → 159.84 (gcsim birdAtk[9]=1.5984; genshin-db sidecar Oz's ATK DMG L10 159.8%). Prior 247.32 matched no Fischl multiplier at any level."
+				"A6 rigor 2026-07-12: scaling corrected 247.32 → 159.84 (gcsim birdAtk[9]=1.5984; genshin-db sidecar Oz's ATK DMG L10 159.8%). Prior 247.32 matched no Fischl multiplier at any level.",
+				"↻ firstTickDelay +10f on BOTH Ozes, 2026-09-16 (T0.5) — every tick marker was 10 frames early. gcsim queues each tick's damage with `c.ozTravel` (fischl.go:39, default 10) as the attack delay: `ozTick` fires at spawn + firstTick and then calls QueueAttackEvent(&ae, c.ozTravel), so the skill Oz's first DAMAGE lands at 18 + 64 + 10 = 92f and the burst Oz's at 1 + 63 + 10 = 74f. We authored the pre-travel 64f / 63f. New values 1.233 (74f) and 1.217 (73f) — measured against the frames report's own side-by-side, ours 82f vs gcsim 92f. The interval is untouched, so the whole series shifts by the travel time, which is what it does in game.",
+				"⚠️⚠️ THE TICK COUNT IS ONE SHORT AT THE BOUNDARY AND `tickCap` IS THE WRONG FIX — TRIED, MEASURED, REVERTED 2026-09-16. Pushing the series 10 frames later for the travel time cost the last tick: `Fischl E` is 9 markers at C0 and 11 at C6 where gcsim gives 10 and 12, and the regenerated frames report flags it outright (\"count 9→10\"). gcsim gates the TASK, not the damage — ozTick checks ozActiveKey at 82 + 59k, all ten inside the 600f status, and only then queues the damage at +10, so its last hit lands at 623 with the status already closed at 618. That is the boundary case tickCap exists for, and `tickCap: 10` + `tickCapScaling: 12` does produce 10 and 12.",
+				"⛔ It was reverted because the cap widens the window by ONE WHOLE INTERVAL (`limit = endAt + s.interval`, summons.ts), and Oz's window is routinely TRUNCATED by the burst recast — which is Fischl's standard rotation. Measured `Fischl E Q`: the skill Oz runs 18→44f and the cap let its first tick through at 92, a marker 48 frames PAST the end of its own bar, which `computeSummonSubrows` passes to the renderer unclipped. A visibly wrong pixel on the common rotation is worse than a missing one at the boundary of the rare uninterrupted one. ⏭ The engine nuance is that the one-interval widening is right for a NATURAL end and wrong for a truncated one; the walk cannot currently tell them apart."
 			],
 			"description": "Summons Oz. The night raven forged of darkness and lightning descends upon the land, dealing Electro DMG in a small AoE.\nFor the ability's duration, Oz will continuously attack nearby opponents with Freikugel.\n\nHold to adjust the location Oz will be summoned to.\nPress again any time during the ability's duration to once again summon him to Fischl's side.",
 			"application": [
@@ -265,7 +268,7 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 0.983,
-								"firstTickDelay": 1.05,
+								"firstTickDelay": 1.217,
 								"icdGate": {
 									"timer": 300,
 									"every": 4
@@ -462,9 +465,18 @@
 						"source": "self"
 					},
 					"conditions": {
-						"type": "teamFaction",
-						"faction": "hexerei",
-						"min": 2
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamFaction",
+								"faction": "hexerei",
+								"min": 2
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
+						]
 					},
 					"duration": 10,
 					"durationType": "refresh",
@@ -482,9 +494,18 @@
 						"source": "self"
 					},
 					"conditions": {
-						"type": "teamFaction",
-						"faction": "hexerei",
-						"min": 2
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamFaction",
+								"faction": "hexerei",
+								"min": 2
+							},
+							{
+								"type": "state",
+								"state": "duringSummon"
+							}
+						]
 					},
 					"duration": 10,
 					"durationType": "refresh",
@@ -493,6 +514,10 @@
 					"value": 90,
 					"snapshottable": false
 				}
+			],
+			"_curatorNotes": [
+				"↻ `duringSummon` ADDED to both gates, 2026-09-16 (T0.5) — and ⚠️⚠️ MEASURED INERT TODAY, which is why this note exists. gcsim asc.go:135-160: both the atkpHook and the emHook `return` when !StatusIsActive(ozActiveKey), so the Secret Rite needs Oz ON THE FIELD and ours drew off any Electro reaction Fischl triggered, Oz long gone. The condition is correct data about the mechanic, but a `state` gate is UNRESOLVABLE on the reaction buff pass and the projection drops only a definitive false — measured `Fischl E A ~13s > Klee E N1 N2 N3 > Fischl A A`: Oz dies at 10.30s and the 22.48s Overload still draws a 22.48→32.48s +22.5% ATK bar, before AND after this edit. ⛔ So don't read it as handled. It starts working the day §1.G (resolved states in the buff projections) lands, and until then the divergence is narrow: it needs Fischl herself to trigger an Electro reaction with Oz down, and her normals are Physical.",
+				"⛔ No caveat for it: lint E.28 refuses a caveat on a factionBonus effect, and the nearest ability-shaped host is the skill, where an entry about a faction bonus would be reading the wrong label. Filed here instead."
 			]
 		}
 	],

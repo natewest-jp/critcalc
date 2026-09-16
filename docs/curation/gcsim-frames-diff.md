@@ -8,8 +8,8 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **126** authored · **115** with a gcsim source
-- FrameMaps: **1123** authored · **958** matching gcsim exactly · **71** disagreeing · **94** uncovered
-- skill/burst application schedules observed: **281** · unobserved: **17**
+- FrameMaps: **1132** authored · **961** matching gcsim exactly · **72** disagreeing · **99** uncovered
+- skill/burst application schedules observed: **283** · unobserved: **17**
 - summon tick streams cross-checked: **58**
 - hits carrying a measured gcsim ICD cadence: **2972** of **2972**
 
@@ -25,20 +25,20 @@ difference, per transition that currently falls back.
 
 | transition | maps falling back | median understatement |
 | --- | --- | --- |
-| E/Q → P | 390 / 405 | 11f |
-| E/Q → C | 293 / 308 | 9f |
+| E/Q → P | 392 / 408 | 11f |
+| E/Q → C | 295 / 311 | 9f |
 | E/Q → Q | 168 / 178 | 3f |
 | E/Q → E | 136 / 144 | 3f |
-| E/Q → N | 128 / 131 | 3f |
-| E/Q → J | 103 / 104 | 14f |
+| E/Q → N | 129 / 132 | 3f |
+| E/Q → J | 105 / 106 | 14f |
 | E/Q → D | 56 / 59 | 3f |
 | normal → P | 41 / 45 | 24f |
 | normal → C | 14 / 18 | 27f |
 | normal → N | 11 / 12 | 23f |
 
-Maps whose true `anim` exceeds the authored `swap`: **41** normal (median 24f), **392** E/Q (median 11f).
+Maps whose true `anim` exceeds the authored `swap`: **41** normal (median 24f), **394** E/Q (median 11f).
 
-## 2. FrameMaps that disagree (71)
+## 2. FrameMaps that disagree (72)
 
 ⚠️ C4b rules that gcsim is the source for all frame data, so these resolve in
 gcsim's favour — but each is listed so it is READ before it is written.
@@ -52,7 +52,7 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | aloy | `aloy__skill__frozen_wilds.frames` | anim 49→66 |
 | arataki_itto | `arataki_itto__normal__fight_club_legend.chargeFrames` | D 89→51, J 89→51, swap 130→51, anim 130→104, hit —→51 |
 | arataki_itto | `arataki_itto__normal__fight_club_legend_oni_king.chargeFrames` | D 89→51, J 89→51, swap 130→51, anim 130→104, hit —→51 |
-| bennett | `bennett__skill__passion_overload.variants[h2E]` | J 240→340, anim 337→343 |
+| bennett | `bennett__skill__passion_overload.variants[h2E]` | D 171→231, J 174→340, anim 175→343 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[0]` | N 17→22, swap 10→15, anim 10→32, hit —→15 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[1]` | N 19→24, swap 8→13, anim 8→34, hit —→13 |
 | chasca | `chasca__normal__phantom_feather_flurry.hits[2]` | N 36→41, swap 20→25, anim 20→58, hit —→25 |
@@ -112,12 +112,13 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | varesa | `varesa__normal__by_the_horns.plungeFrames` | N 40→39, C 47→40, E 40→39, Q 40→39, D 40→38, J 51→49, swap 37→39, anim 37→77 |
 | varesa | `varesa__skill__riding_the_nightrainbow.frames` | anim 21→43 |
 | varesa | `varesa__burst__guardian_vent.frames` | anim 90→122 |
+| varka | `varka__skill__four_winds_ascension.frames` | N 55→49, E 56→44, Q 55→44, D 56→46, J 55→43, swap 68→49, anim 68→55 |
 | yelan | `yelan__normal__stealthy_bowshot.chargeHits[0]` | D 15→86, J 15→86, swap 25→96, anim 25→96 |
 | yun_jin | `yun_jin__skill__opening_flourish.frames` | anim 59→62 |
 | yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | anim 95→97 |
 | yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | N 140→96, D 129→85, J 129→85, swap 138→95, anim 138→97 |
 
-## 3. Uncovered maps (94)
+## 3. Uncovered maps (99)
 
 ⚠️ Uncovered is **not** the same as matching. A map here has no gcsim reading at
 all; the migration leaves it alone and it keeps `anim = swap`.
@@ -126,9 +127,9 @@ all; the migration leaves it alone and it keeps `anim = swap`.
 
 > iansan `iansan__normal__weighted_spike.hits[0]` · iansan `iansan__normal__weighted_spike.hits[1]` · iansan `iansan__normal__weighted_spike.hits[2]` · iansan `iansan__normal__weighted_spike.chargeFrames` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[0]` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[1]` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[2]` · iansan `iansan__normal__weighted_spike_swift_stormflight.chargeFrames` · iansan `iansan__skill__thunderbolt_rush.frames` · iansan `iansan__burst__the_three_principles_of_power.frames` · illuga `illuga__normal__oathkeepers_spear.hits[0]` · illuga `illuga__normal__oathkeepers_spear.hits[1]` · illuga `illuga__normal__oathkeepers_spear.hits[2]` · illuga `illuga__normal__oathkeepers_spear.hits[3]` · illuga `illuga__normal__oathkeepers_spear.chargeFrames` · illuga `illuga__skill__dawnbearing_songbird.frames` · illuga `illuga__skill__dawnbearing_songbird.variants[hE]` · illuga `illuga__burst__shadowless_reflection.frames` · kachina `kachina__normal__cragbiter.hits[0]` · kachina `kachina__normal__cragbiter.hits[1]` · kachina `kachina__normal__cragbiter.hits[2]` · kachina `kachina__normal__cragbiter.hits[3]` · kachina `kachina__normal__cragbiter.chargeFrames` · kachina `kachina__skill__go_go_turbo_twirly.frames` · kachina `kachina__burst__time_to_get_serious.frames` · linnea `linnea__normal__capture_protocol.hits[0]` · linnea `linnea__normal__capture_protocol.hits[1]` · linnea `linnea__normal__capture_protocol.hits[2]` · linnea `linnea__normal__capture_protocol.chargeHits[0]` · linnea `linnea__normal__capture_protocol.chargeHits[1]` · linnea `linnea__skill__countermeasure_lumis_battle_cry.frames` · linnea `linnea__burst__memo_survival_guide_in_extreme_conditions.frames` · nefer `nefer__normal__striking_serpent.hits[0]` · nefer `nefer__normal__striking_serpent.hits[1]` · nefer `nefer__normal__striking_serpent.hits[2]` · nefer `nefer__normal__striking_serpent.hits[3]` · nefer `nefer__normal__striking_serpent.chargeFrames` · nefer `nefer__skill__senet_strategy_dance_of_a_thousand_nights.frames` · nefer `nefer__burst__sacred_vow_true_eyes_phantasm.frames` · traveler_cryo `traveler_cryo__normal__foreign_frostglint.hits[0]` · traveler_cryo `traveler_cryo__normal__foreign_frostglint.hits[1]` · traveler_cryo `traveler_cryo__normal__foreign_frostglint.hits[2]` · traveler_cryo `traveler_cryo__normal__foreign_frostglint.hits[3]` · traveler_cryo `traveler_cryo__normal__foreign_frostglint.hits[4]` · traveler_cryo `traveler_cryo__normal__foreign_frostglint.chargeFrames`
 
-**no gcsim analogue** (19)
+**no gcsim analogue** (24)
 
-> chasca `chasca__normal__multitarget_fire_tap.hits[0]` · flins `flins__burst__ancient_ritual_cometh_the_night.variants[sQ]` · freminet `freminet__skill__pressurized_floe.variants[E]` · freminet `freminet__skill__pressurized_floe.variants[E]` · furina `furina__skill__salon_solitaire.variants[E]` · kaedehara_kazuha `kaedehara_kazuha__normal__garyuu_bladework.plungeVariants[After Hold E]` · kinich `kinich__skill__loop_shot.frames` · kinich `kinich__skill__scalespiker_cannon.frames` · lan_yan `lan_yan__skill__feathermoon_ring_n.frames` · lan_yan `lan_yan__skill__feathermoon_ring_e.frames` · lisa `lisa__skill__violet_arc.variants[E]` · varesa `varesa__normal__fiery_passion_strikes.hits[0]` · varesa `varesa__normal__fiery_passion_strikes.hits[1]` · varesa `varesa__normal__fiery_passion_strikes.hits[2]` · varesa `varesa__normal__fiery_passion_strikes.chargeFrames` · varesa `varesa__normal__fiery_passion_strikes.plungeFrames` · varesa `varesa__skill__fiery_passion_rush.frames` · varesa `varesa__burst__guardian_vent.variants[sQ]` · varka `varka__skill__windbound_execution.variants[E]`
+> chasca `chasca__normal__multitarget_fire_tap.hits[0]` · flins `flins__burst__ancient_ritual_cometh_the_night.variants[sQ]` · freminet `freminet__skill__pressurized_floe.variants[E]` · freminet `freminet__skill__pressurized_floe.variants[E]` · furina `furina__skill__salon_solitaire.variants[E]` · kaedehara_kazuha `kaedehara_kazuha__normal__garyuu_bladework.plungeVariants[After Hold E]` · kinich `kinich__skill__loop_shot.frames` · kinich `kinich__skill__scalespiker_cannon.frames` · lan_yan `lan_yan__skill__feathermoon_ring_n.frames` · lan_yan `lan_yan__skill__feathermoon_ring_e.frames` · lisa `lisa__skill__violet_arc.variants[E]` · varesa `varesa__normal__fiery_passion_strikes.hits[0]` · varesa `varesa__normal__fiery_passion_strikes.hits[1]` · varesa `varesa__normal__fiery_passion_strikes.hits[2]` · varesa `varesa__normal__fiery_passion_strikes.chargeFrames` · varesa `varesa__normal__fiery_passion_strikes.plungeFrames` · varesa `varesa__skill__fiery_passion_rush.frames` · varesa `varesa__burst__guardian_vent.variants[sQ]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[0]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[1]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[2]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[3]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[4]` · varka `varka__normal__favonius_bladework_sturm_und_drang.chargeFrames`
 
 **gcsim models one aimed shot per bow (no partial draw)** (12)
 
@@ -234,6 +235,7 @@ in the list) or a thing left in the world we have not modelled.
 | beidou | `beidou__burst__stormbreaker` | +28 electro (4U) |  |
 | bennett | `bennett__skill__passion_overload` | +16 pyro (2U) |  |
 | bennett | `bennett__skill__passion_overload · h1E` | +45 pyro (1U) · +57 pyro (1U) |  |
+| bennett | `bennett__skill__passion_overload · h2E` | +112 pyro (1U) · +121 pyro (1U) · +166 pyro (1U) |  |
 | bennett | `bennett__skill__passion_overload · h2E` | +112 pyro (1U) · +121 pyro (1U) · +166 pyro (1U) |  |
 | bennett | `bennett__burst__fantastic_voyage` | +37 pyro (2U) |  |
 | candace | `candace__skill__sacred_rite_herons_sanctum` | +16 hydro (1U) |  |
@@ -453,6 +455,7 @@ in the list) or a thing left in the world we have not modelled.
 | varesa | `varesa__burst__guardian_vent` | +88 electro (1U) |  |
 | varka | `varka__skill__windbound_execution` | +40 anemo (1U) |  |
 | varka | `varka__skill__windbound_execution · hE` | +40 anemo (1U) |  |
+| varka | `varka__skill__four_winds_ascension` | +40 anemo (1U) |  |
 | varka | `varka__burst__northwind_avatar` | +112 anemo (1U) · +131 anemo (1U) |  |
 | venti | `venti__skill__skyward_sonnet` | +51 anemo (2U) |  |
 | venti | `venti__skill__skyward_sonnet · hE` | +74 anemo (2U) |  |
@@ -505,6 +508,7 @@ from an absent list carries `--ui-provisional` (L6).
 - furina `furina__skill__salon_solitaire · E` — no gcsl spelling for this variant / no driver row for its state
 - kinich `kinich__skill__loop_shot` — no gcsl spelling for this variant / no driver row for its state
 - kinich `kinich__skill__scalespiker_cannon` — no gcsl spelling for this variant / no driver row for its state
+- kujou_sara `kujou_sara__skill__tengu_stormcall · E` — no gcsl spelling for this variant / no driver row for its state
 - lan_yan `lan_yan__skill__feathermoon_ring_n` — no gcsl spelling for this variant / no driver row for its state
 - lan_yan `lan_yan__skill__feathermoon_ring_e` — no gcsl spelling for this variant / no driver row for its state
 - lauma `lauma__skill__runo_dawnless_rest_of_karsikko · hE` — lauma: Cannot use Skill Hold without Dew
@@ -512,7 +516,6 @@ from an absent list carries `--ui-provisional` (L6).
 - tartaglia `tartaglia__skill__foul_legacy_recast` — applications: panic: unexpected charges less than 0
 - varesa `varesa__skill__fiery_passion_rush` — no gcsl spelling for this variant / no driver row for its state
 - varesa `varesa__burst__guardian_vent · sQ` — no gcsl spelling for this variant / no driver row for its state
-- varka `varka__skill__windbound_execution · E` — no gcsl spelling for this variant / no driver row for its state
 - xianyun `xianyun__skill__skyladder_2` — panic: unexpected charges less than 0
 - xianyun `xianyun__skill__skyladder_3` — panic: unexpected charges less than 0
 
@@ -556,9 +559,9 @@ which the pair alone cannot state.
 | durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 176f / 74f × 16 · 120f / first only | — | — |
 | emilie | `fragrance_extraction` | Lumidouce Case 106f / 90f × 14 · 120f / first only | Lumidouce Case (Level 1) 111f / 90f × 14 · 7/14 `standard` | 120f / first only |
 | emilie | `aromatic_explication` | Lumidouce Case (Level 3) 126f / 54f × 3 · `standard` | Lumidouce Case (Level 3) 126f / 36f × 4 ⚠️ irregular · 2/4 `standard`<br>Lumidouce Case (Level 1) 401f / 90f × 14 · 7/14 `standard` | 150f / every 3<br>120f / first only |
-| escoffier | `lowtemperature_cooking` | Cooking Mek (Cold Storage) 171f / 59f × 18 · `standard` | — | — |
-| fischl | `nightrider` | Oz 82f / 59f × 10 · 300f / every 4 | Oz (Skill) 92f / 59f × 10 · 3/10 `other` | 300f / every 4 |
-| fischl | `midnight_phantasmagoria` | Oz 64f / 59f × 10 · 300f / every 4 | Oz (Burst) 192f / 59f × 10 · 3/10 `other` | 300f / every 4 |
+| escoffier | `lowtemperature_cooking` | Cooking Mek (Cold Storage) 153f / 59f × 19 · 90f / every 6 | — | — |
+| fischl | `nightrider` | Oz 92f / 59f × 9 · 300f / every 4 | Oz (Skill) 92f / 59f × 10 · 3/10 `other` ⚠️ **count 9→10** | 300f / every 4 |
+| fischl | `midnight_phantasmagoria` | Oz 74f / 59f × 9 · 300f / every 4 | Oz (Burst) 192f / 59f × 10 · 3/10 `other` ⚠️ **count 9→10** | 300f / every 4 |
 | furina | `salon_solitaire` | Salon Solitaire 132f / 202f × 9 · 1800f / every 2<br>Salon Solitaire 110f / 98f × 18 · 1800f / every 2<br>Salon Solitaire 131f / 314f × 6 · `none` | — | — |
 | ganyu | `trail_of_the_qilin` | — | Ice Lotus 13f / 360f × 2 · 2/2 `either` | `none` |
 | gorou | `juuga_forward_unto_victory` | General's Glory 121f / 90f × 5 · `standard` | Crystal Collapse 122f / 90f × 5 · 3/5 `standard` | 150f / every 3 |

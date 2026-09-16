@@ -678,11 +678,19 @@ describe('parseNotation — cooldownStartsAtStanceEnd (stance-cooldown round, 20
 		expect(track.eBars[0].readyAt).toBe(framesOf(5) + 11);
 	});
 
-	it('an ability with no delay at all is untouched (Bennett)', () => {
-		// 5s base, less the 20% his ascension passive Rekindle takes off = 4.0.
+	it('an ability whose delay rides a cooldown MODIFIER is untouched (Bennett, 14f)', () => {
+		// 5s base, less the 20% his ascension passive Rekindle takes off = 4.0,
+		// then gcsim's SetCDWithDelay(..., 14).
+		//
+		// ↻ This case used to read "an ability with no delay at all" and expect
+		// a bare framesOf(4). Bennett gained his three real `cooldownStartDelay`s
+		// on 2026-09-16, and with them the corpus has NO curated skill or burst
+		// left that omits the field — so the zero-delay class this case was
+		// pinning is now empty, and what is worth pinning here instead is that a
+		// delay composes with a cooldown MODIFIER rather than replacing it.
 		const result = parseNotation('Bennett E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'bennett')!;
-		expect(track.eBars[0].readyAt).toBe(framesOf(4));
+		expect(track.eBars[0].readyAt).toBe(framesOf(4) + 14);
 	});
 });
 
@@ -2939,15 +2947,23 @@ describe('parseNotation — E cooldown wait re-resolves the active variant (swee
 	it('Skirk: drain decay owed over the cooldown wait is applied before the next grant', () => {
 		const skirk = skirkJson as unknown as CharacterData;
 		const lookup = (name: string): CharacterData | null => (name === 'Skirk' ? skirk : null);
-		// Second E waits out the 8s skill CD. Serpent's Subtlety drains 7/s
-		// while the stance (12.57s) is up, so the 45 granted at t=0 fully
-		// decays by t=8 and the second grant snapshots 45 — before the fix,
+		// Second E waits out the skill CD. Serpent's Subtlety drains 7/s while
+		// the stance (12.57s) is up, so the 45 granted at t=0 fully decays
+		// before the second cast and that grant snapshots 45 — before the fix,
 		// drain ran at the pre-wait cursor (0.5s of decay) and the grant
-		// re-anchored, snapshotting 86.5 phantom stacks.
+		// re-anchored, snapshotting 86.5 phantom stacks. ⚠️ The 86.5 does not
+		// depend on how long the wait is, so the seeded negative still fires
+		// at the later start below.
+		//
+		// ↻ The start moved 8s → 20.57s on 2026-09-16 when the skill gained
+		// `cooldownStartsAtStanceEnd` (gcsim starts the 8s clock in
+		// exitSkillState and refuses E while the stance is live). The wait is
+		// now stance (754f) + CD (480f); the drain claim this test exists for
+		// is unchanged.
 		const result = parseNotation('Skirk E E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'skirk')!;
 		expect(track.eBars).toHaveLength(2);
-		expect(track.eBars[1].start).toBe(framesOf(8));
+		expect(track.eBars[1].start).toBe(framesOf(12.57) + framesOf(8));
 		expect(track.eBars[1].stackContext?.get('serpentsSubtlety')).toBe(45);
 	});
 });
@@ -3304,17 +3320,33 @@ describe('parseNotation — variant conditions gate variant resolution (Varka re
 		).toBe(true);
 	});
 
-	it('a second E waits out the shared charge queue and resolves base (Four Winds residual)', () => {
-		// Residual gap (documented in varka.json): Four Winds' Ascension is a
-		// VARIANT of the one skill ability, so it shares the base 16s charge
-		// queue — by the time a second E is castable the 12s stance has expired
-		// and the variant's inStance condition fails. Reaching it needs a
-		// separate-ability re-author (Flins Northland Spearstorm pattern).
+	it("a second E in stance resolves Four Winds' Ascension on its own 11s clock", () => {
+		// ↻ 2026-09-16: this used to assert the RESIDUAL — Four Winds was a
+		// VARIANT of the one skill ability, so it shared the base's 16s charge
+		// queue and the second E landed at ~16.3s, by which time the 12s stance
+		// had expired and the variant could never be reached. It is a sibling
+		// ability now (Odette's Coda shape), so the second E is Four Winds, at
+		// its own 11s cooldown, inside the stance.
+		//
+		// ⚓ Diluc is in the notation for the `teamElementCount` half of the
+		// gate: `resolveActiveAbility` takes the same ConditionContext
+		// `matchVariant` does, and without it a team-composition term is
+		// unresolvable and the sibling can never win.
 		const result = parseNotation('Varka E E > Diluc E', lookup, 8);
 		const eBars = result.tracks[0].eBars;
 		expect(eBars[0].cooldown).toBe(framesOf(16)); // opener
-		expect(eBars[1].cooldown).toBe(framesOf(16)); // charge free at ~16.3s → stance over → base
-		expect(eBars[1].start).toBeGreaterThan(framesOf(12)); // waited past the stance window
+		expect(eBars[1].cooldown).toBe(framesOf(11)); // Four Winds' own clock
+		expect(eBars[1].start).toBeLessThan(framesOf(12)); // inside the stance
+	});
+
+	it('with no Pyro/Hydro/Electro/Cryo teammate the second E stays the base skill', () => {
+		// The other half of the same gate, and gcsim's own rule
+		// (`convertToFourWinds` requires a conversion element): alone, Varka's
+		// in-stance E is still Windbound Execution, so it waits the 16s queue.
+		const result = parseNotation('Varka E E', lookup, 8);
+		const eBars = result.tracks[0].eBars;
+		expect(eBars[1].cooldown).toBe(framesOf(16));
+		expect(eBars[1].start).toBeGreaterThan(framesOf(12));
 	});
 });
 

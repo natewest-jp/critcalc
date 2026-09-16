@@ -356,6 +356,112 @@ wrapping it is given), turning a 40-line edit into 300. Edit with
 
 ---
 
+## 8. The T0.5 tranche — record (2026-09-16, branch `curation/essential-t05`)
+
+§3's thirteen T0.5 items, one commit per character, each probed with
+`parseNotation` before and after. ⚠️ The record below wins over §3 and over
+the batch reports where they disagree — four of their readings were
+overturned at the source.
+
+| #   | character   | outcome                                                                                                                                                                                                                                                                                                                                                          |
+| --- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | flins       | ✅ Three `application[]` trims to the hits that carry `Durability` — tap E `[]`, burst → the initial hit alone, `sQ` `[]`. The phantom `lunarCharged` at 2.23s and its Thundercloud are gone. ⛔ The plunge item is CLOSED BY MEASUREMENT: there is no drawn block to retarget the caveat onto — a `P` emits no event, no block and no editor flag (§1.D).       |
+| 2   | cyno        | ✅ The burst's +100 EM (no bar existed anywhere); C2's base half as a Yanfei-shaped stack pair, measured ramping +10 → +50%; the in-stance N5 FrameMap un-inverted (`{anim 62, hit 40}`). ↻ The A1 caveat is RESTORED: the 2026-08-19 removal cited the 0U STARSAME bolt, and the BASE Duststalker Bolts carry Durability 25.                                    |
+| 3   | skirk       | ✅ `cooldownStartsAtStanceEnd`; two stale numbers. ⚠️ The report measured `hE E` and read its 8.00s recast as the defect — the hold never enters the skill state in gcsim and its plain 8s is CORRECT; the defect is in the TAP chain.                                                                                                                           |
+| 4   | varka       | ✅ An in-stance Anemo normal (his stance applied NOTHING — 0 → 5 applications on `E N5 C`); Four Winds promoted variant → sibling ability; Azure Fang's Oath as a stack pool feeding A4 ×2 and C6; A1 `manual` → `passive`. 🐛 Needed an engine fix first (`c6fcde56`).                                                                                          |
+| 5   | wriothesley | ✅ The fabricated `+50% ATK` deleted; the A4's blank lane filled with a stance-long bar; C1/C4/C6's `manual` effects retired or re-homed (C4's heal REPLACES A1's, so it is a `constellation` arm on both heal sites, not a second heal).                                                                                                                        |
+| 6   | mizuki      | ✅ Her headline Swirl buff, C2 ×4 and the missing `Vast Be the Dream` passive — one row, seven effects, where the TB showed no team buff at all. 🆕 `swirlReactionBonus` Stat (four files). ⛔ A4's `onHit source: 'others'` was TRIED AND MEASURED WRONG — see the engine queue below.                                                                          |
+| 7   | escoffier   | ✅ The gauge was DOUBLE-FED (the parfait stream was in `application[]` AND as a `summonTick`); `firstTickDelay` 2.467 → 2.167; `icdGate {90, every 6}`; the A4's 5/10/15/55 ladder, measured across team sizes; `['skill','burst']`; the burst heal's `flat`. ⚠️ `furina-arkhe-round.md` §8 had CLEARED this character on a phase test, and the phase was wrong. |
+| 8   | bennett     | ✅ The ATK/C6 windows 12 → 14.1 (⚓ Nate); `tickCap: 12`; the in-field `h2E` as a `duringSummon` variant (2.8s over-charge); three `cooldownStartDelay`s; `h2E`'s stand-in `anim`; plunge maps.                                                                                                                                                                  |
+| 9   | fischl      | ✅ Oz's `firstTickDelay` +10f on both (the travel time); the Secret Rite's `duringSummon` gate, authored and MEASURED INERT. ⛔ `tickCap` to recover the boundary tick was tried and REVERTED — see below.                                                                                                                                                       |
+| 10  | durin       | ✅ The White commit's `application[]` at hitmark 35; exactly one application moves, 15f → 50f.                                                                                                                                                                                                                                                                   |
+| 11  | prune       | ✅ A1's 1.2s shared swirl ICD; C2's window 12 → 13.55s, 17.55s at C6. ⚠️ The LENGTH is the right field, not the end time — the buff's anchor is `fieldStart` = 57, which is exactly gcsim's `burstStatusDelay`.                                                                                                                                                  |
+| 12  | qiqi        | ✅ A1's Incoming Healing bar and C2's base half, both self-declared "needs reviewer pass". ⚠️⚠️ A1 is authored from the KIT, not the oracle: gcsim's gate is INVERTED (`if StatusIsActive(skillBuffKey) { return }`).                                                                                                                                            |
+| 13  | illuga      | ✅ Nightingale's Song as a tracked pool. ⚠️ `source: 'active'`, not the report's `'others'` — gcsim's gate is the ACTIVE character, which includes Illuga. ⚠️⚠️ No pixel moves yet and the note says so; the truncation needs a primitive.                                                                                                                       |
+
+**Measured** (corpus differential against `main`, every character +
+`> Kaeya E N1 N2 N3 > Xingqiu E Q N1 N2 N3`, C0 and C6): **17 of 252**
+digests move, across nine characters — bennett, cyno, escoffier, fischl,
+flins, prune, varka, wriothesley, yumemizuki_mizuki. ⚠️ The digest is
+BLIND to four of the thirteen by construction and that is not evidence of
+no change: its probe rotation casts E and Q once (so Skirk's stance-end
+cooldown and Durin's White commit, which both need `E E`, cannot appear),
+it records no `readyAt`, it has no Geo partner for Illuga's pool, and a
+`trigger: 'passive'` buff creates no window for Qiqi's C2. Each of those
+four is measured at its own site instead.
+
+Gates: vitest 1861/1861, check, lint, build, and **e2e 73 + 73 green
+cross-engine** on `76299bf6` (⚠️ the run also printed the known upstream
+"worker-4 process did not exit" teardown line — two "N passed" lines are
+the gate, not the exit code). Reports regenerated (capability audit
+unchanged at 20; `data-outliers` loses Wriothesley's C1 `allDmgBonus 200`
+row with the effect).
+
+**Six parser/proc test expectations moved, and none of them changed what
+its test is for** — each carries a rider saying which number moved and
+why. Skirk's drain test (an incidental start constant, 8s → 20.57s); the
+Varka regression, rewritten from asserting Four Winds' UNREACHABILITY to
+asserting it is reached, plus a second case for the team that correctly
+does not get it; Bennett's "no delay at all" case, whose CLASS IS NOW
+EMPTY — after his three delays the corpus has no curated skill or burst
+that omits `cooldownStartDelay`; and four `procs.test.ts` arrays whose
+Oz-derived instants shift by exactly 0.17s.
+
+**⚠️ TWO NEW ORACLE ARTEFACTS, both created by this tranche and both noted
+at their sites.** Varka's Four Winds' Ascension and Bennett's in-field
+`h2E` now appear in `gcsim-frames-diff.md` as disagreeing, and in both
+cases the "gcsim" column is the OTHER form's slice — the base skill and
+the out-of-field hold. The dumper runs one character in an empty core and
+can reach neither branch, and `gcsim-map.mjs` pairs a capture to the first
+variant matching the input token. ⛔ A `migrate-frames-shape` run would
+corrupt both. Same class as the Flins burst and Nilou WS2/WS3 rows (§5).
+
+**Engine queue, sharpened by this tranche:**
+
+- **A character's `onHit` buff cannot be anchored on ANOTHER character's
+  hit.** The cast pool merges `onCast` and `onHit` and anchors both on the
+  HOLDER's own cast without consulting `trigger.source`; the N/CA/P pools
+  anchor on the holder's own swings. Measured on Mizuki's A4 — the bar
+  fired off her own E and Q, the exact hits the talent excludes.
+  Nicole's A4 (`source: 'active'`) is the other holder.
+- **A rotation-scoped stack pool is not drained by a teammate's hit.**
+  `dispatchConsumeStacksOnHit` writes through `poolsFor(...)` only when the
+  holder IS the hitter; any other holder writes to `CharState.onHitStacks`,
+  a different container from `rotationStacks`. Measured on Illuga with a
+  Zhongli partner: four Geo applications, pool untouched. Blocks
+  Nightingale's Song's window truncation.
+- **`tickCap`'s one-interval widening is right for a NATURAL end and wrong
+  for a TRUNCATED one.** Fischl's Oz is one tick short at the boundary
+  after the travel fix and `tickCap: 10` does recover it — but Oz's window
+  is routinely cut by the burst recast, and measured, the cap then drew a
+  marker 48 frames past the end of its own bar (`computeSummonSubrows`
+  does not clip). Reverted; the walk cannot currently tell the two ends
+  apart.
+- **§1.G — resolved states in the buff projections** gains Fischl's
+  Secret Rite (authored and inert), Qiqi's A1 and Durin's whole
+  state-gated surface, on top of its own list.
+- **A cast's `application[]` has no per-cast ICD override** — Mizuki's
+  drift cloud is on `ICDGroupMizukiSkill` (72f / `{1,0,0,0}`) and runs on
+  our standard cast counter.
+
+**⏭ Flagged for Nate:** Escoffier's A4 trigger is now
+`['skill','burst']`, which is correct against gcsim but draws TWO rows in
+an `E Q` rotation (`escoffier::char::E::resShred` and `::Q`), because the
+row key carries the cast class. Each row names the cast that applied it,
+which is the lane's own grammar, and the alternative is an under-claim
+patched by a caveat — but if the redundant second row reads badly in the
+common rotation, reverting the array is one line.
+
+⛔ Deliberately NOT done, each for a stated reason at its site: Escoffier's
+missing last two parfaits (needs a `duration` that would disagree with the
+talent); Illuga's `constellationScaling` display reader; Fischl's C1, A1
+and conditional burst-Oz spawn; Durin's C1 (one missing Stat key); Qiqi's
+Talisman heal and A4 proc chance; Prune's Witch-tribution recast (a
+transient state opened by a REACTION); Varka's per-hit Four Winds cooldown
+reduction and the conversion-element half of his in-stance normal.
+
+---
+
 ## Appendix — the ten batch reports, verbatim
 
 ---

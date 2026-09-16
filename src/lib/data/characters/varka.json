@@ -52,6 +52,82 @@
 			"description": "Normal Attack\nImitating an ancient knightly war-dance, Varka wields dual claymores to perform up to 5 consecutive strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to charge forward and perform an especially powerful dual blade slash toward the front.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 		},
 		{
+			"id": "varka__normal__favonius_bladework_sturm_und_drang",
+			"name": "Favonius Bladework: Dancing Radiance (Sturm und Drang)",
+			"input": ["N1", "N2", "N3", "N4", "N5", "C"],
+			"abilityType": "normal",
+			"infusion": "anemo",
+			"conditions": {
+				"type": "state",
+				"state": "inStance"
+			},
+			"tags": [],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 51,
+						"hit": 24,
+						"N": 28,
+						"C": 27
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 51,
+						"hit": 33,
+						"N": 34,
+						"C": 35
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 65,
+						"hit": 48,
+						"N": 60,
+						"C": 53
+					}
+				},
+				{
+					"name": "N4",
+					"frames": {
+						"anim": 52,
+						"hit": 29,
+						"N": 45,
+						"C": 33
+					}
+				},
+				{
+					"name": "N5",
+					"frames": {
+						"anim": 87,
+						"hit": 50,
+						"N": 78,
+						"C": 53
+					}
+				}
+			],
+			"chargeFrames": {
+				"anim": 81,
+				"N": 72,
+				"E": 73,
+				"Q": 72,
+				"D": 55,
+				"J": 55,
+				"swap": 63
+			},
+			"_curatorNotes": [
+				"The in-stance sibling, authored 2026-09-16 (T0.5). Frames are the base ability's by construction: gcsim's skillAttack()/skillCharge() reuse attackHitmarks/attackFrames/chargeHitmarks/chargeFrames unchanged, so only the element and the multipliers differ (this file's base-normal note 4 already recorded that).",
+				"⚓ ANEMO is the half we take, and the other half is a deliberate omission. gcsim attack.go:115-172 fires TWO hits per in-stance swing on two dedicated counters — ele = [conversionElem, Anemo], icdTag = [ICDTagVarkaNormalAttackElem, ICDTagVarkaNormalAttackWind] — and charge.go:95-140 does the same with the Extra pair. `infusion` is one element per ability, so one half has to go, and Anemo is the half his OWN kit reads: A4's Azure Fang's Oath, C4 and C6 all key off a Swirl, which is what the Anemo hit produces. Before this, all five swings plus the CA applied NOTHING (measured `Varka E N5 C` → 0 applications) and none of his three Swirl-keyed effects could fire off his own attacks.",
+				"⚠️ The conversion element is the party's, by priority Pyro > Hydro > Electro > Cryo (gcsim skill.go:72-81 getConversionElem), falling back to PHYSICAL when the team has none of the four — in which case Four Winds' Ascension is unavailable too (convertToFourWinds). Modelling that half would need one state-gated sibling per element with `not`-nested teamElementCount priority conditions, four abilities to draw a second pill on a lane that now has one.",
+				"⚠️ N1 IS THE EXCEPTION and is over-claimed by one pill: it has a single hit (attackHitmarks[0] = {19}) and the offset table gives that hit the CONVERSION element, not Anemo — offset is 1 only for N2 and N3, so the pairs run Anemo-first on N2/N3 and conversion-first on N4/N5. Every swing but N1 therefore does carry an Anemo hit. Our one-hit-per-swing model cannot gate a single index of a chain, and one swing in five reads better than five in five reading nothing.",
+				"ICD: both halves sit on ICDGroupDefault (the tags differ, not the group), so the Anemo stream is the ordinary 150f / {1,0,0} counter our `normal` and `charged` clocks already model. ⛔ No chargedIcdWindow — the in-stance CA is ICDTagVarkaExtraAttackWind on ICDGroupDefault, not ICDGroupPoleExtraAttack, and he is a claymore user in any case.",
+				"⛔ No `P` in input: gcsim has no plunge.go for him and he cannot plunge in Sturm und Drang. gcsim's +5f windup from idle/swap/jump/dash (and +14f for a CA not chained from an attack) is not modeled, as on the base ability."
+			]
+		},
+		{
 			"id": "varka__skill__windbound_execution",
 			"name": "Windbound Execution",
 			"input": ["E"],
@@ -68,27 +144,13 @@
 					"label": "Hold",
 					"input": ["hE"],
 					"cooldown": 8,
-					"application": [{ "frame": 40, "element": "anemo", "units": 1 }]
-				},
-				{
-					"label": "Four Winds' Ascension",
-					"input": ["E"],
-					"behavior": "instant",
-					"cooldown": 11,
-					"frames": { "anim": 68, "N": 55, "E": 56, "Q": 55, "D": 56, "J": 55, "swap": 68 },
-					"conditions": {
-						"type": "all",
-						"conditions": [
-							{ "type": "state", "state": "inStance" },
-							{
-								"type": "teamElementCount",
-								"elements": ["pyro", "hydro", "electro", "cryo"],
-								"comparison": ">=",
-								"value": 1
-							}
-						]
-					},
-					"effects": []
+					"application": [
+						{
+							"frame": 40,
+							"element": "anemo",
+							"units": 1
+						}
+					]
 				}
 			],
 			"tags": [],
@@ -104,11 +166,61 @@
 				"[A7] Caveat previously stated the in-stance special skill has 2 uses at 11s CD; the 2-use charge count is not separately tracked because the Four Winds' Ascension variant shares the base skill's 16s charge queue (residual already noted in _curatorNotes).",
 				"[Hexerei 2026-07-29] Secret Rite (count-gated): gcsim skill.go fourWindsCDRedCB + asc.go hexSkillCDReduction — each in-stance Normal Attack that hits an enemy cuts the Four Winds' Ascension cooldown by 0.5s, raised to 1.0s when Core.Player.GetHexereiCount() >= 2. One reduction per swing, max 15 per stance entry (fourWindsCDStacks, zeroed on stance entry); only skillAttack (in-stance NA) passes the callback — out-of-stance NAs and Charged Attacks do not. Cooldown modification is not expressible in the schema (deferred CD-modification queue), so the factionBonus carries an empty effects array: membership plus the Secret Rite text, no fake model.",
 				"[Hexerei 2026-07-29] No permanent (count-independent) patch on Varka: the only IsHexerei site is varka.go:43 (flag defaults on) feeding asc.go hexSkillCDReduction, which still returns 0.5s when the flag is on but fewer than 2 Hexerei are in the party — the whole enhancement is count-gated. No buff / energy / RES-shred / heal piece exists anywhere in the varka package (Hexerei appears at exactly 3 sites: varka.go:43, skill.go:194, asc.go:131-138).",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: Azure Devour, and the Four Winds' Ascension cooldown reduction from stance Normal Attacks (0.5s per hit, 1s with 2+ Hexerei). Four Winds itself can't be placed — a second E shares the base skill's cooldown, which isn't back up in the stance.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: Azure Devour, and the Four Winds' Ascension cooldown reduction from stance Normal Attacks (0.5s per hit, 1s with 2+ Hexerei). Four Winds itself can't be placed — a second E shares the base skill's cooldown, which isn't back up in the stance.\"",
+				"↻ CAVEAT REWRITTEN 2026-09-16 (T0.5): the sentence \"Four Winds' Ascension can't be placed\" is no longer true — it is a sibling ability with its own 11s clock now (see it below). The remaining two omissions keep their half of the sentence."
 			],
 			"description": "Manifest the true essence of Favonius Bladework with absolute power. Produces different effects depending on whether the skill is Tapped or Held.\n\nTap\nLeap forward and slash in one fluid motion, dealing AoE Anemo DMG and switching to **Sturm und Drang** mode.\nWhile in Sturm und Drang, Varka's Normal Attack and Charged Attack DMG is increased, and he cannot perform Plunging Attacks. Also, when performing Normal or Charged Attacks, Varka's dual-wielded claymores will deal corresponding Elemental DMG based on the Elemental Types of the characters in the party, respectively. This Elemental DMG cannot be overridden by infusions.\nAdditionally, when in Sturm und Drang, if there are Pyro, Hydro, Electro or Cryo characters in the party, Varka's Elemental Skill Windbound Execution will be converted to the special Elemental Skill, **Four Winds' Ascension**, dealing corresponding Elemental DMG and Anemo DMG. Additionally, Varka can also expend uses of the special Elemental Skill Four Winds' Ascension to perform a special Charged Attack, Azure Devour, that does not consume stamina to deal corresponding Elemental DMG and Anemo DMG.\n\nHold\nAfter charging for a while, leap forward. The duration of the charge will increase the distance of the leap.",
-			"caveat": "Four Winds' Ascension can't be placed: a second E shares the base skill's 16s cooldown, which isn't back up during the 12s stance. Azure Devour, the special in-stance Charged Attack, isn't modeled either.",
+			"caveat": "Not modeled: Azure Devour, the special in-stance Charged Attack, and the Four Winds' Ascension cooldown reduction from stance Normal Attacks.",
 			"application": [{ "frame": 40, "element": "anemo", "units": 1 }]
+		},
+		{
+			"id": "varka__skill__four_winds_ascension",
+			"name": "Four Winds' Ascension",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"conditions": {
+				"type": "all",
+				"conditions": [
+					{
+						"type": "state",
+						"state": "inStance"
+					},
+					{
+						"type": "teamElementCount",
+						"elements": ["pyro", "hydro", "electro", "cryo"],
+						"comparison": ">=",
+						"value": 1
+					}
+				]
+			},
+			"frames": {
+				"anim": 68,
+				"N": 55,
+				"E": 56,
+				"Q": 55,
+				"D": 56,
+				"J": 55,
+				"swap": 68
+			},
+			"cooldown": 11,
+			"tags": [],
+			"effects": [],
+			"_curatorNotes": [
+				"↻ PROMOTED from a skill VARIANT to a state-conditioned SIBLING ability, 2026-09-16 (T0.5) — Odette's Coda shape, which exists for this exact reason: a variant shares the base skill's charge queue, so this 11s cooldown was inert and a second E waited out Windbound Execution's 16s. Measured before: `Xiangling E > Varka E E` placed Four Winds at 16.65s, after the 12s stance had already expired, i.e. it could never be placed at all. resolveActiveAbility prefers a conditioned ability whose condition is definitively TRUE, so with no Pyro/Hydro/Electro/Cryo teammate the teamElementCount half is false and the E falls back to Windbound Execution — which is also gcsim's rule (convertToFourWinds requires conversionElem != Physical).",
+				"11s is the official talent table's \"Four Winds' Ascension CD\" row. ⛔ `charges` is deliberately NOT authored although gcsim calls SetNumCharges(ActionSpecialSkill, 2): gcsim's own stance-entry block (skill.go:105-118) then loops over every READY charge calling SetCD, and SetCD decrements AvailableCDCharge (internal/template/character/cooldown.go:45) — so entering Sturm und Drang consumes the charges rather than refreshing them, which cannot be reconciled with the kit text by reading alone. Authoring 2 would hand a player two immediate uses; one 11s clock is the number the game publishes. ⏭ Wants a gcsim run, not a source read.",
+				"Frames: specialSkillFrames = InitAbilSlice(68), ActionAttack(N)=55, ActionSkill(E)=56, ActionBurst(Q)=55, ActionDash(D)=75-19=56, ActionJump(J)=85-30=55, no ActionSwap override so swap=68. ActionCharge(C)=64 stays omitted with Azure Devour.",
+				"application: the Anemo half only. gcsim skill.go:134-157 fires two hits, fourWindsHitmark = [34, 43], elements [conversionElem, Anemo], both ICDTagNone with Durability 25 — so BOTH apply in game. The conversion element is party-dependent (priority Pyro > Hydro > Electro > Cryo), the same reason the in-stance normal takes only its Anemo half; see that ability's notes.",
+				"⛔ Not modeled here: the per-hit cooldown reduction (0.5s per in-stance Normal that hits, 1.0s with 2+ Hexerei, max 15 — gcsim fourWindsCDRedCB + hexSkillCDReduction), C1's extra use and doubled multiplier, and Azure Devour, the special in-stance Charged Attack that spends a use.",
+				"⚠️⚠️ ORACLE ARTEFACT — `gcsim-frames-diff.md` files this map as DISAGREEING (`N 55→49, E 56→44, Q 55→44, D 56→46, J 55→43, swap 68→49, anim 68→55`) and every one of those \"gcsim\" numbers is skillFrames, the BASE Windbound Execution's slice. Same for the application row (`+40 anemo`), which is the base skill's hitmark. The dumper casts E and gets the base, because `useSpecialSkill()` needs a Pyro/Hydro/Cryo/Electro teammate and a live Sturm und Drang and the dumper runs ONE character in an empty core. Our values are specialSkillFrames and fourWindsHitmark[1] read straight from skill.go:41-49,134-157. ⛔ DO NOT let `migrate-frames-shape.mjs` resolve these rows \"in gcsim's favour\" — it would give Four Winds the base skill's frames. Before the promotion the same rows sat harmlessly under \"not captured\"; they became comparable only because this is an ABILITY now rather than a variant. Same class as the Flins burst and Nilou WS2/WS3 artefacts."
+			],
+			"application": [
+				{
+					"frame": 43,
+					"element": "anemo",
+					"units": 1
+				}
+			]
 		},
 		{
 			"id": "varka__burst__northwind_avatar",
@@ -142,7 +254,9 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "passive"
+					},
 					"source": "character",
 					"stat": "anemoDmgBonus",
 					"value": { "type": "scaling", "stat": "atk", "ratio": 1, "cap": 25 },
@@ -159,7 +273,8 @@
 				"gcsim asc.go a1Init/a1UpdateBuff: a1Buff = min(TotalATK*0.1/1000, 0.25) applied to both AnemoP and the conversion element's DmgP; authored as anemoDmgBonus scaling{stat:atk, ratio:1, cap:25}. The matching-element half is omitted (which element depends on party priority Pyro>Hydro>Electro>Cryo).",
 				"The a1Multiplier (1.0/1.4/2.2 = deal 100%/140%/220% of original DMG on N/CA/Azure Devour/Four Winds) is a self DMG multiplier with no clean stat mapping and is composition-gated (2 Anemo and/or 2 same PHEC units); flagged, not authored.",
 				"This is the Ascension-1 passive (unlocks at Ascension 1).",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The authored buff carries `trigger: manual`, and a manual trigger reaches NO planner surface — no bar, no chip, no toggle (167 such effects corpus-wide). So an A1 Varka in a Pyro/Hydro/Electro/Cryo party sees no Anemo DMG Bonus anywhere, where every other always-on stat bonus in the tool chips or bars. The 140%/220% half is trimmed: it is a self DMG multiplier, a magnitude, with no bar shape at all. Category: expected-but-absent."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The authored buff carries `trigger: manual`, and a manual trigger reaches NO planner surface — no bar, no chip, no toggle (167 such effects corpus-wide). So an A1 Varka in a Pyro/Hydro/Electro/Cryo party sees no Anemo DMG Bonus anywhere, where every other always-on stat bonus in the tool chips or bars. The 140%/220% half is trimmed: it is a self DMG multiplier, a magnitude, with no bar shape at all. Category: expected-but-absent.",
+				"↻ trigger `manual` → `passive`, 2026-09-16 (T0.5; `docs/manual-trigger-retirement.md` step 3, re-trigger). gcsim asc.go:30-50 adds it as AddStatMod(NewBase(..., -1)) — a PERMANENT conditional stat mod, not a player toggle — so `passive` is the shape it always wanted. `manual` reaches no planner surface at all, which is why an A1 Varka in a Pyro/Hydro/Electro/Cryo party saw no Anemo DMG Bonus anywhere while every other always-on bonus in the tool draws. The teamElementCount gate is unchanged, and the matching-element half stays omitted (the element depends on party priority)."
 			],
 			"description": "When there are Pyro, Hydro, Electro or Cryo characters in the party, according to the aforementioned priority order of Elemental Types, every 1,000 points of Varka's ATK will grant Varka a 10% Anemo DMG Bonus and corresponding Elemental DMG Bonus (among the aforementioned Elemental Types, only one element can gain bonus DMG this way). Up to 25% bonus DMG can be gained this way. \n\nAdditionally, if there are at least 2 Anemo characters, or at least 2 characters of the same Element among Pyro, Hydro, Electro or Cryo in the party, the Normal Attacks, Charged Attacks, Special Charged Attack Azure Devour and the special Elemental Skill **Four Winds' Ascension** that Varka deals or unleashes while in the **Sturm und Drang** mode will deal 140% of their original DMG. If there are at least 2 Anemo characters and at least 2 other characters of the same element among Pyro, Hydro, Electro or Cryo present in the party at the same time, the aforementioned effect will be increased to 220%."
 		},
@@ -168,6 +283,19 @@
 			"name": "Wind's Vanguard",
 			"abilityType": "passive",
 			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": ["pyroSwirl", "hydroSwirl", "cryoSwirl", "electroSwirl", "stellarSwirl"],
+						"source": "team"
+					},
+					"key": "azureFangsOath",
+					"amount": 1,
+					"max": 4,
+					"lifetime": 8
+				},
 				{
 					"type": "buff",
 					"target": "self",
@@ -178,10 +306,19 @@
 					},
 					"duration": 8,
 					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "azureFangsOath",
+						"min": 1
+					},
 					"source": "character",
 					"stat": "normalDmgBonus",
-					"value": 7.5,
-					"stacks": { "maxStacks": 4, "durationModel": "shared" },
+					"value": {
+						"type": "perStack",
+						"key": "azureFangsOath",
+						"per": 7.5,
+						"maxStacks": 4
+					},
 					"snapshottable": false
 				},
 				{
@@ -194,10 +331,19 @@
 					},
 					"duration": 8,
 					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "azureFangsOath",
+						"min": 1
+					},
 					"source": "character",
 					"stat": "chargeDmgBonus",
-					"value": 7.5,
-					"stacks": { "maxStacks": 4, "durationModel": "shared" },
+					"value": {
+						"type": "perStack",
+						"key": "azureFangsOath",
+						"per": 7.5,
+						"maxStacks": 4
+					},
 					"snapshottable": false
 				}
 			],
@@ -205,7 +351,10 @@
 				"gcsim asc.go a4Init: swirl (Pyro/Hydro/Electro/Cryo) → a4Stacks up to 4, AddStatus(a4Key, 8*60) refreshes the single shared window; AttackMod adds DmgP = a4Stacks*0.075 to AttackTagNormal, AttackTagExtra, and AdditionalTagVarkaSpecial hits. Modeled as normalDmgBonus + chargeDmgBonus (charged tag = CA and Azure Devour); Four Winds' Ascension (skill tag + special tag) also benefits — noted in caveat. Per-source 1s ICD (a4ICDKey) not modeled.",
 				"This is the Ascension-4 passive (unlocks at Ascension 4).",
 				"[A7] The per-source 1s ICD (each character can grant at most 1 stack per second) is not enforced: the buff effects carry no procCooldown, so stacks can appear to build faster than the game allows (matches existing _curatorNotes 'Per-source 1s ICD (a4ICDKey) not modeled').",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Two buff bars DO draw on a party Swirl — Normal DMG Bonus and Charged DMG Bonus — and both print +7.5%. The effect declares `stacks: {maxStacks: 4}`, which nothing reads: a stackable buff draws as one undifferentiated bar with the per-stack value, so a Varka player who knows the talent gives up to +30% reads 7.5% and wonders why. That is the printed-value pixel. Both existing halves are trimmed away: the specials it 'also boosts' cannot be placed on the timeline in the first place (already caveated on the skill), and the 1s-per-source ICD changes no drawn value because no stack count is rendered. Category: visible-divergence."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Two buff bars DO draw on a party Swirl — Normal DMG Bonus and Charged DMG Bonus — and both print +7.5%. The effect declares `stacks: {maxStacks: 4}`, which nothing reads: a stackable buff draws as one undifferentiated bar with the per-stack value, so a Varka player who knows the talent gives up to +30% reads 7.5% and wonders why. That is the printed-value pixel. Both existing halves are trimmed away: the specials it 'also boosts' cannot be placed on the timeline in the first place (already caveated on the skill), and the 1s-per-source ICD changes no drawn value because no stack count is rendered. Category: visible-divergence.",
+				"↻ Azure Fang's Oath is a STACK RESOURCE now, 2026-09-16 (T0.5), on Neuvillette's Past Draconic Glories idiom: one `gainStacks` key (`azureFangsOath`, max 4, lifetime 8) on the swirl trigger, and the two buffs read it with `perStack`. It replaces `stacks: {maxStacks: 4, durationModel: 'shared'}`, which has NO READER anywhere — so both bars printed a flat +7.5% where the talent gives up to +30%, and the 2026-08-19 pass named exactly that printed value as the pixel.",
+				"⚠️ `lifetime` is PER-STACK and gcsim's pool is SHARED-REFRESH (asc.go:100-110: each swirl sets a4Stacks = min(n+1, 4) and re-arms AddStatus(a4Key, 8*60) for the whole pool, resetting to 1 if it had lapsed). We have no shared-duration stack model, so a stack here dies 8s after ITS OWN grant rather than 8s after the last swirl. Consequence: the pool saturates at 4 only while swirls land within ~2.67s of each other, and under-counts by one at slower rates — the safe direction, and still right in the team this character is built for. The alternative, omitting `lifetime`, makes the stacks immortal and over-counts after any gap. ⛔ Don't reach for `drain`: that is a continuous rate, not an expiry.",
+				"⚠️ The per-source 1s ICD (a4ICDKey, each character grants at most one stack a second) is still not enforced, and `procCooldown` would be the WRONG tool for it: ours is one clock per effect, so it would cap the pool at one stack per second across the whole party where gcsim caps it per granting character. Pair a gate with the stream we model (the Emilie rule) — ours is one event per reaction, and a global gate would under-count a multi-reactor team."
 			],
 			"description": "When nearby party members trigger a Swirl or Stellar Swirl reaction, Varka gains 1 stack of Azure Fang's Oath, increasing the DMG dealt by his Normal Attacks, Charged Attacks, special Charged Attack Azure Devour and special Elemental Skill **Four Winds' Ascension** by 7.5% for 8s. Max 4 stacks. Each character can grant Varka with 1 stack of Azure Fang's Oath every second this way."
 		}
@@ -301,17 +450,27 @@
 					},
 					"duration": 8,
 					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "azureFangsOath",
+						"min": 1
+					},
 					"source": "character",
 					"stat": "critDmg",
-					"value": 20,
-					"stacks": { "maxStacks": 4, "durationModel": "shared" },
+					"value": {
+						"type": "perStack",
+						"key": "azureFangsOath",
+						"per": 20,
+						"maxStacks": 4
+					},
 					"snapshottable": false
 				}
 			],
 			"_curatorNotes": [
 				"gcsim cons.go c6Init: adds CD (CRIT DMG) = a4Stacks*0.2 while Azure Fang's Oath stacks are present. Modeled on the same Swirl trigger / shared 8s window as Wind's Vanguard, value 20 per stack, maxStacks 4.",
 				"The C6 free-cast lines (tapping E after Four Winds without spending a charge → extra Azure Devour, and vice versa; c6FreeSkill/c6FreeCA, 3s windows) are self rotation-enablers, not modeled.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Free-recast windows are rotation plumbing for two actions that cannot be placed on the timeline at any constellation — the skill entry's caveat already tells the player Four Winds and Azure Devour are missing, so this adds a second disclosure of the same blank. C6's own drawn output (the CRIT DMG bar on the Swirl trigger) is unaffected by it. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Free-recast windows are rotation plumbing for two actions that cannot be placed on the timeline at any constellation — the skill entry's caveat already tells the player Four Winds and Azure Devour are missing, so this adds a second disclosure of the same blank. C6's own drawn output (the CRIT DMG bar on the Swirl trigger) is unaffected by it. Category: invisible-omission.",
+				"↻ perStack, 2026-09-16 (T0.5) — same defect and same fix as the A4 beside it: it printed a flat +20% where the constellation gives up to +80%. ⚓ It reads the A4's OWN pool and that is gcsim's structure, not a convenience: cons.go:115-133 is a permanent StatMod whose amount is a4Stacks * 0.2, returning nil at zero stacks — one resource, two readers. The pool is granted on the A4 passive, so it exists at every constellation level and the collection gate keeps this reader to C6."
 			],
 			"description": "**Sturm und Drang** is enhanced:\n· For a short time after unleashing the special Elemental Skill **Four Winds' Ascension**, Tapping on Varka's Elemental Skill or Holding his Normal Attack will not expend any uses of Four Winds' Ascension, and will perform one additional instance of the special Charged Attack, Azure Devour.\n· For a short time after performing the special Charged Attack Azure Devour, tap on Varka's Elemental Skill to unleash an additional instance of Four Winds' Ascension without expending any uses of Four Winds' Ascension.\nWhen triggering an additional special Charged Attack, Azure Devour, or unleashing an additional special Elemental Skill, Four Winds' Ascension, in this manner, the above effect cannot be triggered.\n\nAdditionally, the Azure Fang's Oath effect in Ascension Talent **Wind's Vanguard** is enhanced: Every stack of Azure Fang's Oath will increase Varka's CRIT DMG by 20%."
 		}

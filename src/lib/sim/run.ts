@@ -483,7 +483,8 @@ export function runRotation(
 								scanStates,
 								charConstellationLevel,
 								getChainIndexMap(ctx, char.id, clock.now),
-								stackState
+								stackState,
+								variantCtx
 							) ?? (ability as SkillAbility); // !isBurst branch: `ability` is the skill
 						// Initialize this ability's charge queue on first sight:
 						// all charges ready at t=0.
@@ -551,8 +552,15 @@ export function runRotation(
 				const chainIdx = getChainIndexMap(ctx, char.id, castStart);
 				// Resolve the active variant (chain-stage + state + stack aware).
 				const active =
-					resolveActiveAbility(char, kind, states, charConstellationLevel, chainIdx, stackState) ??
-					ability;
+					resolveActiveAbility(
+						char,
+						kind,
+						states,
+						charConstellationLevel,
+						chainIdx,
+						stackState,
+						variantCtx
+					) ?? ability;
 				// Both kinds resolve timing against the token text (hold/plunge E
 				// variants; sQ burst variants) — the variant match additionally
 				// honors variant `conditions` (sQ primitive), so an out-of-window
@@ -1153,7 +1161,10 @@ export function runRotation(
 						char,
 						'normal',
 						nStates,
-						charConstellationLevel
+						charConstellationLevel,
+						undefined,
+						undefined,
+						variantCtx
 					);
 					// Frameless normals (uncurated stubs with hits:[], Blank) ride the
 					// generic combo profile so swings get realistic per-position timing
@@ -1310,7 +1321,10 @@ export function runRotation(
 						char,
 						'normal',
 						chargedStates,
-						charConstellationLevel
+						charConstellationLevel,
+						undefined,
+						undefined,
+						variantCtx
 					);
 					const castS = activeNormal
 						? resolveChargeCastTime(
@@ -1448,7 +1462,10 @@ export function runRotation(
 						char,
 						'normal',
 						plungeStates,
-						charConstellationLevel
+						charConstellationLevel,
+						undefined,
+						undefined,
+						variantCtx
 					);
 					normalCounter = 0; // any non-normal action resets the NA string (gcsim semantics)
 					const plungeVariant = lastEText
