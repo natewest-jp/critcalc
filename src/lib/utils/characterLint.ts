@@ -1222,10 +1222,29 @@ function lintNormal(
 		}
 	}
 
-	// plungeFrames (HIGH plunge — the default) and lowPlungeFrames (`lP` only)
+	// (A.4c) specialChargeFrames — KQM's `sC`. ⛔ Meaningless on a bow (the token
+	// is a stance's substitute charged attack, and a bow's charge is `chargeHits`),
+	// and meaningless without an ordinary `chargeFrames` to be the substitute FOR.
+	if (a.specialChargeFrames) {
+		if (a.chargeHits) {
+			push(
+				'strict',
+				'invalid-frames',
+				'specialChargeFrames alongside chargeHits (a bow has no special charged attack)',
+				a.id
+			);
+		}
+		if (!a.chargeFrames) {
+			push('strict', 'missing-frames', 'specialChargeFrames without chargeFrames', a.id);
+		}
+	}
+
+	// plungeFrames (HIGH plunge — the default) and lowPlungeFrames (`lP` only),
+	// and specialChargeFrames (`sC`) — every one needs a positive `anim`.
 	for (const [field, fm] of [
 		['plungeFrames', a.plungeFrames],
-		['lowPlungeFrames', a.lowPlungeFrames]
+		['lowPlungeFrames', a.lowPlungeFrames],
+		['specialChargeFrames', a.specialChargeFrames]
 	] as const) {
 		if (!fm) continue;
 		if (!isPositiveInt(fm.anim)) {

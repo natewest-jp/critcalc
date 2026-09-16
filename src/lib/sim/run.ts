@@ -1321,7 +1321,7 @@ export function runRotation(
 						}
 					}
 					humanPad('normal', j);
-				} else if (/^C\d*$/.test(t) || (t === 'A' && isBow)) {
+				} else if (/^s?C\d*$/.test(t) || (t === 'A' && isBow)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
 					// chargeFrames/chargeHits. Bow uses chargeHits, others use chargeFrames.
 					//

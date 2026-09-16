@@ -1,6 +1,9 @@
-# Varka's two claymores — scope, 2026-09-16
+# Varka's two claymores — scope and record, 2026-09-16
 
-_Scoping only. Nothing here is authored. Written after the T0.5 tranche gave
+_⚠️ §0–§5 are the SCOPE, written before any of it was built; **§7 is the
+record** and wins where they disagree. §6's three questions are answered._
+
+_Original preamble: scoping only, nothing here is authored. Written after the T0.5 tranche gave
 Varka an in-stance Anemo normal and asked, in its own notes, what the other
 half would cost._
 
@@ -170,3 +173,113 @@ needed for the normals.
 3. **Is the burst worth fixing ahead of the rest?** Its first hit's element is a
    one-line correction once the conversion element is expressible, and it is
    wrong in every Varka team today.
+
+---
+
+## 7. The record (2026-09-16, branch `curation/varka-two-elements`)
+
+⚓ **Nate's three answers** (§6): a one-holder primitive is fine, "especially
+since Varka is a newer, meta-relevant character"; the **infused PHEC hand tints
+the input blocks**; and the burst goes in wherever it fits.
+
+### What shipped
+
+**`a0888cd9` — the two primitives, measured byte-identical corpus-wide**
+(252 digests, 0 moved, the digest now recording input-block elements too).
+
+- `ElementRef` — a field naming an element may name a literal or a
+  `teamElementPriority`, resolved at parse time off the same
+  `teamElementCounts` map the Conditions read. Live at `NormalAbility.infusion`,
+  `ElementalApplication.element` and `coInfusion`.
+- `NormalAbility.coInfusion` — the second claymore, on its own ICD counter
+  (`${char}:${tag}:co`), offered AFTER the primary at the same instant.
+
+⚠️⚠️ The ordering is the mechanic and it is now a documented contract at three
+sites. The plunge path is wired with **no holder and no possible one** — Varka
+is refused plunges in the stance that gives him two hands — so that the rule is
+one rule. Lint C.19b refuses `coInfusion` without `infusion`.
+
+**`594ac42e` — Varka's four sites.** The in-stance normal (right hand infuses,
+left is Anemo), Four Winds, the burst, and A1's conversion-element half as a
+four-rung ladder in `conditions` (⚓ a ladder and not a ref, because what varies
+there is the STAT KEY and no element expression reaches one).
+
+Measured `Xiangling E > Varka E N5 C N5 C`: applications **11 → 17**, swirls
+**4 → 6**, every one his own and paired right-then-left at one instant. ⚓ And
+it works with a teammate who applies nothing off-field: Xingqiu, Fischl and
+Kaeya teams each draw his A4 stacks where only Xiangling's Guoba could feed him
+before. Solo, the right hand stays Physical and he applies Anemo alone.
+
+### Two corrections this round makes to older notes
+
+🐛 **`CastAbility.noICD` IS read, and both CLAUDE.md and Fischl's curator note
+say it is not.** The ICD round's line — "only `NormalAbility.noICD` is read
+(Mualani alone); the skill/burst holders stay inert for a stated reason" —
+describes the SWING path and was never true of the cast path: `run.ts`'s own
+comment at the `emitReactionsAtCast` call names itself as its first reader, and
+eight characters already depend on it (cyno, fischl ×2, ganyu, kinich, lan_yan
+×2, xingqiu). Verified by probe before relying on it.
+
+↻ **T0.5's "⚓ ANEMO is the half we take" is superseded** — that was the right
+call with one element per ability, and the note is replaced rather than left to
+be found.
+
+### `sE` and `sC` — KQM's stance-special tokens
+
+⚓ Nate, reading KQM's Varka guide 2026-09-16: they write the two stance
+specials as **`sC`** and **`sE`** (`E N2 sC`, `E N2 sE`), the siblings of the
+`sQ` the tokenizer has carried since the post-P4 transient-state primitive.
+Both are wired.
+
+- **`sE`** classifies as an ordinary E — which ABILITY it lands on is still
+  `resolveActiveAbility` reading the state and the party, never the token. Four
+  Winds lists `['sE', 'E']` and ⚠️ **both spellings on purpose**: in game the
+  stance REPLACES Windbound Execution, so a plain `E` in Sturm und Drang really
+  is Four Winds, which is not Flins's case (his base Q stays castable behind
+  `sQ`). What listing `sE` buys is the eager index's `casts` — ⚠️ and that meant
+  widening `CAST_TOKEN_RE`, or the editor would have linted the token we are
+  telling people to type.
+- **`sC`** reads the new **`NormalAbility.specialChargeFrames`**. ⚓ FRAMES
+  ONLY, and that is the whole shape: Azure Devour's four hits are
+  `[conv, Anemo, conv, Anemo]` on the same `ICDTagVarkaExtraAttack` pair the
+  ordinary in-stance charged attack uses, so both claymores already come from
+  `infusion`/`coInfusion` and the animation is the only thing that differs.
+  ⚠️ It falls back to `chargeFrames` where an ability authors none — the
+  out-of-window `sQ` rule, so `Diluc sC` is his ordinary charge rather than an
+  unknown token.
+
+Measured: `Xiangling E > Varka E N2 sC` → 64f (Azure Devour), `… sE` → 68f
+(Four Winds), `… C` → 60f (the ordinary in-stance charge); out of stance both
+fall back; `N2sC` splits correctly concatenated; and the corpus is byte-identical
+apart from Varka. ⛔ Azure Devour still SPENDS a Four Winds use and the token
+draws the attack without the cost — see the pair below.
+
+### ⚠️⚠️ What is left, and why it is a PAIR rather than two edits
+
+**Four Winds' charges and its cooldown reduction cannot be landed
+separately, and landing the first alone would make the tool WORSE.**
+
+- The kit says "**Starts on cooldown** and has 2 maximum uses", which vindicates
+  gcsim's stance-entry block and retires the T0.5 note's doubt. Our charge queue
+  initialises every charge READY (`new Array(n).fill(0)`), so expressing it needs
+  a `startsOnCooldown` flag.
+- But the loop only closes because each in-stance Normal that HITS cuts the
+  11s cooldown by 0.5s (1.0s with 2+ Hexerei), up to 15 times per stance.
+- Today the tool says Four Winds is ready at t = 0 — too generous. With
+  `startsOnCooldown` and no reduction it would say 11s into a 12s stance — too
+  stingy, and further from a real rotation than the status quo. ⛔ So neither
+  ships alone.
+
+The reduction is its own round: `cooldownReduce` is declared in the schema with
+**no consumer anywhere in `src`** (its only occurrences are its own type
+declaration and one doc cross-reference; Raiden and Beidou author it inert, and
+`orphanedSchema.test.ts` cannot see it because it matches property ACCESS and
+this is a `type` VALUE). Wiring it means a new dispatcher on the hit stream that
+shifts a queued charge earlier, plus a per-stance proc cap, which is the
+`maxProcs` gap several other characters are waiting on.
+
+⛔ Also still out, each for its own reason: **Azure Devour** (a charged attack
+that spends a SKILL charge — no shape); **A1's 140%/220% multiplier** and
+**C2's 800% strike** (damage magnitude, out by the tool constitution);
+**within-swing hand ordering** and **N1's single hit** (a per-hit element model,
+not worth it for one swing in five).

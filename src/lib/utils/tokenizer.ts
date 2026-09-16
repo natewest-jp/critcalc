@@ -11,6 +11,12 @@
  *   character   — syntactically first token in a segment; may or may not be a
  *                 valid character name (semantic validation is the parser's job)
  *   separator   — '>' segment divider
+ *   sE          — KQM's SPECIAL Elemental Skill: the one a stance substitutes
+ *                 for the ordinary E (Varka's Four Winds' Ascension). Classifies
+ *                 as an E; which ability it lands on is state resolution.
+ *   sC          — KQM's SPECIAL Charged Attack (Varka's Azure Devour). Reads
+ *                 `NormalAbility.specialChargeFrames`, falling back to the
+ *                 ordinary charge when the resolved ability authors none.
  *   Q           — Q burst cast (Q, or the KQM short-burst sQ — Flins
  *                 Thunderous Symphony / Varesa Volcano Kablam)
  *   E           — E skill cast (any variant: E, hE, tE, h1E, h2E)
@@ -138,12 +144,16 @@ function classifyWord(text: string): TokenKind {
 	// Q variants: sQ is the KQM "short-Q" token (Flins Thunderous Symphony,
 	// Varesa Volcano Kablam) — same cast kind, variant-resolved by the parser.
 	if (text === 'Q' || text === 'sQ') return 'Q';
-	// E variants: optional prefix (t|p|h|h1|h2), optional suffix P
-	if (/^(?:t|p|h|h1|h2)?E$/.test(text)) return 'E';
+	// E variants: optional prefix (t|p|h|h1|h2), optional suffix P.
+	// ⚓ `sE` is KQM's token for a SPECIAL Elemental Skill — the one that
+	// replaces the ordinary E inside a stance (Varka's Four Winds' Ascension),
+	// the sibling of `sQ` above. It classifies as an ordinary E: which ability
+	// it lands on is the parser's state resolution, not the token's.
+	if (/^(?:t|p|h|h1|h2|s)?E$/.test(text)) return 'E';
 	// Known KQM label tokens
 	if (
 		/^N[1-9]?$/.test(text) || // normal attacks: N, N1–N9
-		/^C[1-9]?$/.test(text) || // charged attacks: C, C1–C9
+		/^s?C[1-9]?$/.test(text) || // charged attacks: C, C1–C9, and KQM's sC
 		text === 'A' || // aim
 		/^[lh]?P$/.test(text) || // plunge: P, hP, lP
 		text === 'D' || // dash
@@ -194,7 +204,7 @@ const ACTION_FIRST_CHARS = new Set('~[/{(QEhtlpsNCADJWP');
  * Always reset `lastIndex` to 0 before using `.exec()` in a loop.
  */
 const CONCAT_SPLIT_RE =
-	/~\?s|~(?:\d+(?:\.\d+)?|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|h1E|h2E|hE|tE|pE|hP|lP|sQ|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
+	/~\?s|~(?:\d+(?:\.\d+)?|\.\d+)s|(?:\d+(?:-\d+)?)?\[[^\]]*\](?:x\d+)?|\([^)]*\)|\{[a-z][a-zA-Z0-9_-]*:\d+\}|h1E|h2E|hE|tE|pE|sE|hP|lP|sQ|sC[1-9]?|N[1-9]?|C[1-9]?|[QEADJWP]|\/\S*|[^\s]/g;
 
 /**
  * Greedily split a concatenated action-token word into individual tokens.

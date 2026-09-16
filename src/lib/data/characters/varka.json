@@ -54,7 +54,7 @@
 		{
 			"id": "varka__normal__favonius_bladework_sturm_und_drang",
 			"name": "Favonius Bladework: Dancing Radiance (Sturm und Drang)",
-			"input": ["N1", "N2", "N3", "N4", "N5", "C"],
+			"input": ["N1", "N2", "N3", "N4", "N5", "C", "sC"],
 			"abilityType": "normal",
 			"infusion": {
 				"type": "teamElementPriority",
@@ -130,9 +130,20 @@
 				"⚓⚓ THE RIGHT HAND IS THE PRIMARY AND THAT IS LOAD-BEARING TWICE OVER. (1) It decides the ORDER the two are offered in, and measured against the gauge, conversion-then-Anemo at one instant swirls while Anemo-then-conversion produces nothing — so this ordering is what lets Varka SELF-ENABLE his own Swirl, which is what A4 (Azure Fang's Oath), C4 and C6 are all built on. Before this he could only swirl an aura someone else applied. (2) ⚓ Nate 2026-09-16: the infused PHEC hand is what tints the input block, and the block reads `infusion`.",
 				"⚠️ NO `fallback` on the right hand, unlike the burst's. gcsim skillAttack (attack.go:115-121) leaves `ele[0]` PHYSICAL when the party has no Pyro/Hydro/Electro/Cryo character and only swaps the ICD tag, so a partyless right hand applies nothing while the left is still Anemo — which is why `coInfusion` fires even when `infusion` resolves to nothing. The BURST does fall back to Anemo (burst.go:31-33), and that asymmetry is gcsim's, not a slip.",
 				"⚠️ N1 IS STILL OVER-CLAIMED BY ONE PILL and the reason is unchanged: it is a single hit (attackHitmarks[0] = {19}) carrying the CONVERSION element only, where our one-hit-per-swing model gives every swing both hands. ⚠️ gcsim also alternates which hand leads (offset 1 on N2/N3, so Anemo lands first there and swirls the PREVIOUS swing's aura); at the same frame we get the same swirl COUNT one swing earlier in phase. ⛔ Within-swing ordering is not expressible and is not worth a per-hit element model.",
-				"ICD: both halves are ICDGroupDefault on SEPARATE tags (ICDTagVarkaNormalAttackElem / …Wind for the normals, the ExtraAttack pair for the charged attack), which is what the engine's `:co` counter key reproduces. Two clocks started on the same swing stay in phase, so both hands apply on the same 1-in-3 swings — which is what makes the self-swirl land rather than alternate."
+				"ICD: both halves are ICDGroupDefault on SEPARATE tags (ICDTagVarkaNormalAttackElem / …Wind for the normals, the ExtraAttack pair for the charged attack), which is what the engine's `:co` counter key reproduces. Two clocks started on the same swing stay in phase, so both hands apply on the same 1-in-3 swings — which is what makes the self-swirl land rather than alternate.",
+				"⚓ `sC` IS AZURE DEVOUR (KQM's notation — ⚓ Nate 2026-09-16, reading their Varka guide, which writes the two stance specials as `sC` and `sE`). gcsim azureDevourFrames = InitAbilSlice(75), Attack 64, Charge 74, Skill 66, Burst 65, and Dash/Jump/Swap all azureDevourHitmarks[3] = 60. ⚓ FRAMES ONLY: its four hits are `[conv, Anemo, conv, Anemo]` on the same ICDTagVarkaExtraAttack pair the ordinary in-stance charged attack uses, so both claymores come from `infusion`/`coInfusion` and nothing else about it differs from a `C` in this tool. ⛔ NOT modelled: Azure Devour SPENDS a use of Four Winds' Ascension, and a charged attack that consumes a skill charge has no shape — the token draws the attack without the cost."
 			],
-			"coInfusion": "anemo"
+			"coInfusion": "anemo",
+			"specialChargeFrames": {
+				"anim": 75,
+				"N": 64,
+				"C": 74,
+				"E": 66,
+				"Q": 65,
+				"D": 60,
+				"J": 60,
+				"swap": 60
+			}
 		},
 		{
 			"id": "varka__skill__windbound_execution",
@@ -183,7 +194,7 @@
 		{
 			"id": "varka__skill__four_winds_ascension",
 			"name": "Four Winds' Ascension",
-			"input": ["E"],
+			"input": ["sE", "E"],
 			"abilityType": "skill",
 			"behavior": "instant",
 			"conditions": {
@@ -220,7 +231,8 @@
 				"application: the Anemo half only. gcsim skill.go:134-157 fires two hits, fourWindsHitmark = [34, 43], elements [conversionElem, Anemo], both ICDTagNone with Durability 25 — so BOTH apply in game. The conversion element is party-dependent (priority Pyro > Hydro > Electro > Cryo), the same reason the in-stance normal takes only its Anemo half; see that ability's notes.",
 				"⛔ Not modeled here: the per-hit cooldown reduction (0.5s per in-stance Normal that hits, 1.0s with 2+ Hexerei, max 15 — gcsim fourWindsCDRedCB + hexSkillCDReduction), C1's extra use and doubled multiplier, and Azure Devour, the special in-stance Charged Attack that spends a use.",
 				"⚠️⚠️ ORACLE ARTEFACT — `gcsim-frames-diff.md` files this map as DISAGREEING (`N 55→49, E 56→44, Q 55→44, D 56→46, J 55→43, swap 68→49, anim 68→55`) and every one of those \"gcsim\" numbers is skillFrames, the BASE Windbound Execution's slice. Same for the application row (`+40 anemo`), which is the base skill's hitmark. The dumper casts E and gets the base, because `useSpecialSkill()` needs a Pyro/Hydro/Cryo/Electro teammate and a live Sturm und Drang and the dumper runs ONE character in an empty core. Our values are specialSkillFrames and fourWindsHitmark[1] read straight from skill.go:41-49,134-157. ⛔ DO NOT let `migrate-frames-shape.mjs` resolve these rows \"in gcsim's favour\" — it would give Four Winds the base skill's frames. Before the promotion the same rows sat harmlessly under \"not captured\"; they became comparable only because this is an ABILITY now rather than a variant. Same class as the Flins burst and Nilou WS2/WS3 artefacts.",
-				"↻ BOTH HITS, 2026-09-16 — this replaces T0.5's Anemo-only entry. gcsim skill.go:134-157 fires `fourWindsHitmark = [34, 43]` with `ele = [conversionElem, Anemo]`, both `ICDTagNone` and Durability 25, and the kit says the same in words: \"AoE Elemental DMG … corresponding to the element of the claymore wielded in Varka's right hand, and AoE Anemo DMG\". `noICD: true` is that ICDTagNone — ⚓ and it is READ on a cast (run.ts's own comment at the emitReactionsAtCast call names itself as its first reader, and eight characters already rely on it); without it the per-cast counter would swallow the second entry. ⛔ No `fallback` on the right hand: with no PHEC teammate Four Winds is not available at all."
+				"↻ BOTH HITS, 2026-09-16 — this replaces T0.5's Anemo-only entry. gcsim skill.go:134-157 fires `fourWindsHitmark = [34, 43]` with `ele = [conversionElem, Anemo]`, both `ICDTagNone` and Durability 25, and the kit says the same in words: \"AoE Elemental DMG … corresponding to the element of the claymore wielded in Varka's right hand, and AoE Anemo DMG\". `noICD: true` is that ICDTagNone — ⚓ and it is READ on a cast (run.ts's own comment at the emitReactionsAtCast call names itself as its first reader, and eight characters already rely on it); without it the per-cast counter would swallow the second entry. ⛔ No `fallback` on the right hand: with no PHEC teammate Four Winds is not available at all.",
+				"⚓ `sE` is KQM's token for this (⚓ Nate 2026-09-16), the sibling of `sQ` and of `sC` on the normal beside it. ⚠️ BOTH spellings are listed on purpose and `sE` is not merely an alias: in game the stance REPLACES Windbound Execution, so a plain `E` in Sturm und Drang really is Four Winds, and refusing it would be wrong the way Flins's `sQ` is not (his base Q stays castable). The ability a token lands on is still decided by `resolveActiveAbility` from the state and the party, never by the input array — what listing `sE` buys is the eager index's `casts`, so the editor accepts it here and flags it on anyone else."
 			],
 			"application": [
 				{

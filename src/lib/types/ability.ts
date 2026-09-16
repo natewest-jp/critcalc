@@ -1919,6 +1919,26 @@ export type NormalAbility = AbilityCommon & {
 	/** Per-level charged hits for bow characters. Mutually exclusive with chargeFrames.
 	 *  Index 0 = C1 (partial); index 1 = C2 (full / Frostflake). */
 	chargeHits?: NormalHit[];
+	/**
+	 * Frames for KQM's **`sC`** token — a SPECIAL Charged Attack, the one a
+	 * stance substitutes for the ordinary one (Varka's Azure Devour, 2026-09-16).
+	 * The sibling of `sQ`, and of `sE` on the cast side.
+	 *
+	 * ⚓ FRAMES ONLY, and that is the whole point of the shape: Azure Devour
+	 * differs from the in-stance charged attack in its animation and nothing
+	 * else this tool models. Its element comes from the same `infusion` /
+	 * `coInfusion` pair the swings use, so a special charge lands both claymores
+	 * exactly as an ordinary in-stance one does.
+	 *
+	 * ⚠️ `sC` on an ability that does not author this falls back to
+	 * `chargeFrames`, the same rule an out-of-window `sQ` follows — a token the
+	 * data cannot honour takes the ordinary form rather than vanishing.
+	 *
+	 * ⛔ Not modelled: Azure Devour SPENDS a use of the special skill. A charged
+	 * attack that consumes a skill charge has no shape here, so the token draws
+	 * the attack without the cost.
+	 */
+	specialChargeFrames?: FrameMap;
 	/** HIGH-plunge frames, and the default. Covers the standalone `P` token, the
 	 *  explicit `hP`, and the `E P` path where no plungeVariant matches the
 	 *  preceding E token.
