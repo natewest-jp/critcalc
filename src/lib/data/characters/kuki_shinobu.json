@@ -162,10 +162,12 @@
 			],
 			"_curatorNotes": [
 				"HP-conditional duration: gcsim uses count=7 ticks (base, ~2s) or count=12 ticks (when HP ≤50%, ~4s from cast), interval=17 frames, burstStart=50. HP condition is not supported by durationModifiers schema (constellation-only). Reviewer to decide representation. gcsim comment notes '11 at low HP' but code sets 12.",
-				"Field tick damage authored 2026-08-17 as a summonTick damage effect on the Gyoei Narukami Kariyama Rite summon (see that effect's own notes). The cast itself lands no hit — application[] stays the empty positive statement; every hit belongs to the field."
+				"Field tick damage authored 2026-08-17 as a summonTick damage effect on the Gyoei Narukami Kariyama Rite summon (see that effect's own notes). The cast itself lands no hit — application[] stays the empty positive statement; every hit belongs to the field.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim kuki/burst.go:52-58 enumerates the seven ticks from f50 inside Burst() — the summon series."
 			],
 			"description": "Stabs an evil-excoriating blade into the ground, creating a field that cleanses the area of all that is foul, dealing continuous Electro DMG to opponents within its AoE based on Shinobu's Max HP.\nIf Shinobu's HP is less than or equal to 50% when this skill is used, the field will last longer.",
-			"application": []
+			"application": [],
+			"nonHitting": true
 		}
 	],
 	"passives": [

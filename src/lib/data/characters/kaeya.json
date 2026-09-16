@@ -128,13 +128,15 @@
 			],
 			"_curatorNotes": [
 				"C2 (Never-Ending Performance): duration extends +2.5s per kill during burst (max 15s, up to 3 extensions) — this is runtime-dynamic and cannot be represented as static durationModifiers. Reviewer to decide modeling approach.",
-				"gcsim burst frames ActionSkill (E) = 78 is AnimationLength default from InitAbilSlice(78) — not explicitly set, omitted."
+				"gcsim burst frames ActionSkill (E) = 78 is AnimationLength default from InitAbilSlice(78) — not explicitly set, omitted.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim kaeya/burst.go queues the icicle ticker at burstHitmark 53 — the Glacial Waltz series; the cast lands nothing of its own."
 			],
 			"tags": ["summon"],
 			"energyCost": 60,
 			"effects": [],
 			"description": "Coalescing the frost in the air, Kaeya summons 3 icicles that revolve around him.\nThese icicles will follow the character around and deal Cryo DMG to opponents in their path for the ability's duration.",
-			"application": []
+			"application": [],
+			"nonHitting": true
 		}
 	],
 	"passives": [

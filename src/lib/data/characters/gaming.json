@@ -98,7 +98,8 @@
 			"tags": [],
 			"effects": [],
 			"_curatorNotes": [
-				"Skill launches Gaming airborne; in gcsim the earliest cancel keys are ActionLowPlunge=23 and ActionHighPlunge=23 (redirected to specialPlunge when LastAction=Skill). These are non-standard frame keys not representable in the JSON FrameMap. Standard keys N, Q, D are not explicitly set (default to AnimationLength=64) and are omitted. The primary follow-up is the special plunge (Charmed Cloudstrider) at frame 23; see normal ability _curatorNotes for specialPlungeFrames values. Reviewer to determine how to represent E→P timing in the planner."
+				"Skill launches Gaming airborne; in gcsim the earliest cancel keys are ActionLowPlunge=23 and ActionHighPlunge=23 (redirected to specialPlunge when LastAction=Skill). These are non-standard frame keys not representable in the JSON FrameMap. Standard keys N, Q, D are not explicitly set (default to AnimationLength=64) and are omitted. The primary follow-up is the special plunge (Charmed Cloudstrider) at frame 23; see normal ability _curatorNotes for specialPlungeFrames values. Reviewer to determine how to represent E→P timing in the planner.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim gaming/skill.go:26-33 sets the CD only; damage is the follow-up plunge."
 			],
 			"description": "Pounces forward using the Wushou arts, leaping high into the air after coming into contact with a target or surface.\nAfter Gaming has used Bestial Ascent to rise into the air, if he immediately uses a Plunging Attack, he will use the especially powerful Plunging Attack: Charmed Cloudstrider instead.\n\nPlunging Attack: Charmed Cloudstrider\nThe DMG from Plunging Attacks caused by Bestial Ascent is converted to Pyro DMG that cannot be overridden by other elemental infusions. Upon landing, Gaming will consume a fixed amount of HP. Gaming's HP cannot be reduced below 10% by this method.\nCharmed Cloudstrider DMG is considered Plunging Attack DMG.",
 			"behavior": "instant",
@@ -108,7 +109,8 @@
 				"P": 23,
 				"swap": 63
 			},
-			"application": []
+			"application": [],
+			"nonHitting": true
 		},
 		{
 			"id": "gaming__burst__suannis_gilded_dance",

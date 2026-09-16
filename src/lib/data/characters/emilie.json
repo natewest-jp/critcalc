@@ -133,7 +133,11 @@
 					]
 				}
 			],
-			"application": []
+			"application": [],
+			"nonHitting": true,
+			"_curatorNotes": [
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim emilie/burst.go:35-70 queues only the Lv3 Lumidouce Case spawn at f96; its ticks (≈f126 on) are the summon series."
+			]
 		}
 	],
 	"passives": [

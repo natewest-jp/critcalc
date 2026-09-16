@@ -265,10 +265,12 @@
 				}
 			],
 			"_curatorNotes": [
-				"One-shot team heal authored 2026-07-12 at talent level 10. onCast (burst), target 'team' (gcsim burst.go Heal Target:-1 = all party members). TL10 bursthpp[9]=0.3168 → 31.68% Max HP + bursthp[9]=3727.7026 flat (sidecar 'Regeneration' col10 '31.7% Max HP+3728'). Heal fires at frame 77 (Tasks.Add delay 77); rendered at cast per the onCast convention. Healing Bonus (gcsim HealInfo.Bonus = Heal stat) is applied by the renderer, not authored here."
+				"One-shot team heal authored 2026-07-12 at talent level 10. onCast (burst), target 'team' (gcsim burst.go Heal Target:-1 = all party members). TL10 bursthpp[9]=0.3168 → 31.68% Max HP + bursthp[9]=3727.7026 flat (sidecar 'Regeneration' col10 '31.7% Max HP+3728'). Heal fires at frame 77 (Tasks.Add delay 77); rendered at cast per the onCast convention. Healing Bonus (gcsim HealInfo.Bonus = Heal stat) is applied by the renderer, not authored here.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim barbara/burst.go: a single heal at f77, no attack."
 			],
 			"description": "Heals your own party members and nearby teammates for a large amount of HP that scales with Barbara's Max HP.",
-			"application": []
+			"application": [],
+			"nonHitting": true
 		}
 	],
 	"passives": [

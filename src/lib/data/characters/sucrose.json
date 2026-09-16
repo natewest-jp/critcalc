@@ -228,10 +228,12 @@
 			"_curatorNotes": [
 				"Elemental Absorption: burst can absorb one of Hydro/Pyro/Cryo/Electro (once per use), adding elemental DMG ticks alongside the anemo ticks (every ~113 frames). Not modeled. Reviewer should decide how to represent absorption DMG in the effects row.",
 				"gcsim has a TODO comment: 'does sucrose burst snapshot?' — snapshotting behavior is unverified in source; snapshots field left unset for reviewer",
-				"[Hexerei] Large Wind Spirit DMG bonus is count-gated (gcsim internal/characters/sucrose/asc.go:143-175 hexOnBurst — IsHexerei && GetHexereiCount() >= 2), 0.0714285 DmgP for 20*60 frames, applied only to team members whose own IsHexerei is set. EffectTarget has no per-faction team subset, so it is authored target:'team' with the routing stated in the caveat. Same attack-tag restriction as the skill buff (no reaction DMG)."
+				"[Hexerei] Large Wind Spirit DMG bonus is count-gated (gcsim internal/characters/sucrose/asc.go:143-175 hexOnBurst — IsHexerei && GetHexereiCount() >= 2), 0.0714285 DmgP for 20*60 frames, applied only to team members whose own IsHexerei is set. EffectTarget has no per-faction team subset, so it is authored target:'team' with the routing stated in the caveat. Same attack-tag restriction as the skill buff (no reaction DMG).",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim sucrose/burst.go:77-78: the wind-field ticks from f137 (after the 65f animation) are the Large Wind Spirit series."
 			],
 			"description": "Sucrose hurls an unstable concoction that creates a Large Wind Spirit.\nWhile it persists, the Large Wind Spirit will continuously pull in surrounding opponents and objects, launch nearby opponents, and deal Anemo DMG.\n\nElemental Absorption\nIf the Wind Spirit comes into contact with Hydro/Pyro/Cryo/Electro energy, it will deal additional elemental DMG of that type.\nElemental Absorption may only occur once per use.",
-			"application": []
+			"application": [],
+			"nonHitting": true
 		}
 	],
 	"passives": [

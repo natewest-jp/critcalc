@@ -108,10 +108,12 @@
 				"Burst frames: burstFrames[0]=InitAbilSlice(58), ActionSwap=57. Per Q-spec swap/N/E/D/J — N/E/D/J default to animLen=58.",
 				"Cooldown: SetCD(burst, 1200f=20s). EnergyMax=80. ConsumeEnergy(2) drains 2 energy from teammates.",
 				"A1 (Lush Reaches): LeaLotus accumulates 1 stack per second on Lamp (max 12). On burst end, explodes for burstExplode[lvl] × stacks. A1 stack accumulation + on-end explosion not authored — no trigger primitive for 'on-summon-end-with-stack-multiplier'.",
-				"C6 (Hopeful Inheritance): A1 buff +30 EM to active party member during Lamp duration. Not authored — A1 stack mechanic deferred."
+				"C6 (Hopeful Inheritance): A1 buff +30 EM to active party member during Lamp duration. Not authored — A1 stack mechanic deferred.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim traveler/common/dendro/burst.go: the Lea Lotus Lamp gadget at f54 ticks on its own."
 			],
 			"description": "Forming a LeaLotus Lamp, the Traveler deals AoE Dendro DMG to opponents and uses the LeaLotus Lamp to deal continuous Dendro DMG to opponents within an AoE for the duration.",
-			"application": []
+			"application": [],
+			"nonHitting": true
 		}
 	],
 	"passives": [

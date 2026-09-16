@@ -210,10 +210,12 @@
 			"effects": [],
 			"_curatorNotes": [
 				"Shrine of Maya party-composition-dependent buffs not authored: (a) Pyro — while Nahida is within the field, Tri-Karma Purification DMG is increased (gcsim: burstTriKarmaDmgBonus[pyroCount-1][talentLevel] added as AttackMod on each 30-frame tick); (b) Electro — Tri-Karma Purification ICD interval reduced by burstTriKarmaCDReduction[electroCount-1][talentLevel]; (c) Hydro — field duration extended (see note below). All branch values require talent-level lookup tables; effects[] skeleton not authored — needs reviewer pass.",
-				"Shrine of Maya duration extension from Hydro characters: base 15s; extended by burstTriKarmaDurationExtend[hydroCount-1][talentLevel] when hydroCount > 0 (up to hydroCount=2). Extension is talent-level-scaled and team-comp-conditional — no matching durationModifiers condition type in schema. Generator's variants[] (Hydro Extension 8.5272s, Base 15s) removed; duration modeled as base 15s on summons[0]. Reviewer to add hydro extension once schema supports team-composition conditions."
+				"Shrine of Maya duration extension from Hydro characters: base 15s; extended by burstTriKarmaDurationExtend[hydroCount-1][talentLevel] when hydroCount > 0 (up to hydroCount=2). Extension is talent-level-scaled and team-comp-conditional — no matching durationModifiers condition type in schema. Generator's variants[] (Hydro Extension 8.5272s, Base 15s) removed; duration modeled as base 15s on summons[0]. Reviewer to add hydro extension once schema supports team-composition conditions.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim nahida/burst.go: the buff field only, no QueueAttack."
 			],
 			"description": "Manifests the Court of Dreams and expands the Shrine of Maya.\n\nWhen the Shrine of Maya field is unleashed, the following effects will be separately unleashed based on the Elemental Types present within the party.\n·Pyro: While Nahida remains within the Shrine of Maya, the DMG dealt by Tri-Karma Purification from \"All Schemes to Know\" is increased.\n·Electro: While Nahida remains within the Shrine of Maya, the interval between each Tri-Karma Purification from \"All Schemes to Know\" is decreased.\n·Hydro: The Shrine of Maya's duration is increased.\n\nIf there are at least 2 party members of the aforementioned Elemental Types present when the field is deployed, the aforementioned effects will be increased further.\n\nEven if Nahida is not on the field, these bonuses will still take effect so long as party members are within the Shrine of Maya.",
-			"application": []
+			"application": [],
+			"nonHitting": true
 		}
 	],
 	"passives": [
