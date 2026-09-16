@@ -390,9 +390,12 @@ it records no `readyAt`, it has no Geo partner for Illuga's pool, and a
 `trigger: 'passive'` buff creates no window for Qiqi's C2. Each of those
 four is measured at its own site instead.
 
-Gates: vitest 1861/1861, check, lint, build. Reports regenerated
-(capability audit unchanged at 20; `data-outliers` loses Wriothesley's
-C1 `allDmgBonus 200` row with the effect).
+Gates: vitest 1861/1861, check, lint, build, and **e2e 73 + 73 green
+cross-engine** on `76299bf6` (⚠️ the run also printed the known upstream
+"worker-4 process did not exit" teardown line — two "N passed" lines are
+the gate, not the exit code). Reports regenerated (capability audit
+unchanged at 20; `data-outliers` loses Wriothesley's C1 `allDmgBonus 200`
+row with the effect).
 
 **Six parser/proc test expectations moved, and none of them changed what
 its test is for** — each carries a rider saying which number moved and
