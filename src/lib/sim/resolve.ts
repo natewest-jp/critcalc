@@ -267,7 +267,19 @@ export function resolveActiveAbility<K extends Ability['abilityType']>(
 	resolvedStates: ReadonlySet<string>,
 	constellationLevel = 0,
 	chainIndex: ChainIndex = new Map(),
-	stacks?: ReadonlyMap<string, number>
+	stacks?: ReadonlyMap<string, number>,
+	/** Team scope for the sibling's own gate — the SAME context `matchVariant`
+	 *  takes, and for the same reason.
+	 *
+	 *  ⚓ Without it a `teamElementCount` / `teamFaction` term is UNRESOLVABLE,
+	 *  never definitively true, so an `all` containing one can never win and the
+	 *  cast silently falls back to the unconditioned base. That made a sibling
+	 *  ability strictly weaker than a variant at expressing the same gate —
+	 *  which is backwards, since a sibling is what you reach for precisely when
+	 *  a variant's shared charge queue is wrong (Odette's Coda, Varka's Four
+	 *  Winds' Ascension). Absent still means "cannot resolve a team term", the
+	 *  same fallback as before. */
+	context?: ConditionContext
 ): Extract<Ability, { abilityType: K }> | undefined {
 	const candidates = char.abilities.filter(
 		(a): a is Extract<Ability, { abilityType: K }> => a.abilityType === abilityType
@@ -282,7 +294,8 @@ export function resolveActiveAbility<K extends Ability['abilityType']>(
 				resolvedStates,
 				constellationLevel,
 				chainIndex,
-				stacks
+				stacks,
+				context
 			) === true
 	);
 	if (conditioned) return conditioned;
