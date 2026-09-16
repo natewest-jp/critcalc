@@ -201,15 +201,6 @@
 				</a>
 			{/each}
 		</nav>
-
-		<!-- The positioning line — the ONE quiet sentence on the landing that
-			 says what critcalc is (memory `project_landing_card_round`: a
-			 first-time visitor from Reddit used to see three instrument names
-			 and nothing else). Under the doors, on the ground; not a hero
-			 block. ↻ It sat ABOVE the cards in the display face at the group's
-			 width for one cut and read as a heading (⚓ Nate) — it is body
-			 sans, small, and below now. Copy is Nate's, same as the OG line. -->
-		<p class="tagline">Genshin theorycrafting, made visible</p>
 	</div>
 </div>
 
@@ -235,9 +226,8 @@
 		--card-h: calc(var(--card-w) * 1.8);
 		--gap: clamp(1rem, 2.6vw, 2.5rem);
 		--group-w: calc(3 * var(--card-w) + 2 * var(--gap));
-		/* The air between the doors and the two lines that caption them —
-		   the same above and below. */
-		--caption-gap: 1.75rem;
+		/* The air between the doors and the band that captions them. */
+		--caption-gap: 1.5rem;
 
 		position: absolute;
 		top: 0;
@@ -266,12 +256,11 @@
 
 	.heroes {
 		position: absolute;
-		/* Vertically: the group's own center sits a little above the frame's, so
-		   the cards clear the chrome and still plant their bottom points below
-		   the horizon (63% down the frame). ⚠️ Tuned for the old 1:2.58 plate;
-		   at 1:1.8 the bottom point lands ~70% down, and the portrait
-		   composition is a separate item regardless. */
-		top: 47%;
+		/* Vertically: dead centre (🎛️ ⚓ NATE 2026-09-16, 47% → 50% for the
+		   1:1.8 plate with the status band above it). The bottom points land
+		   ~73% down a 900px frame, past the horizon at ~63%, so the cards stand
+		   on the ground; the portrait composition is a separate item. */
+		top: 50%;
 		transform: translateY(-50%);
 		left: 0;
 		right: 0;
@@ -429,33 +418,43 @@
 		max-width: 100%;
 	}
 
-	/* ── The status line above and the tagline below ─────────────────────────
-	   Both hang off the card group's own edges (its centre is at 47%, its
-	   half-height is --card-h / 2) at the SAME distance, so the doors sit in
-	   equal air and the three pieces travel together through every clamp.
-	   Both are Plex Sans in sentence case with NORMAL tracking — the wide
+	/* ── The status band above the doors ─────────────────────────────────────
+	   Hangs off the card group's own top edge (its centre is at 50%, its
+	   half-height is --card-h / 2), so it travels with the cards through every
+	   clamp. Plex Sans in sentence case with NORMAL tracking — the wide
 	   tracking belongs to the uppercase kickers, and on body text it read
-	   loose. The ladder under the doors: names 22 Bitter semibold → tagline
-	   18 sans → status 16 sans → kickers 11 mono. */
+	   loose. The ladder: names 22 Bitter semibold → status 16 sans → kickers
+	   11 mono. ↻ A tagline under the doors was cut 2026-09-16 (⚓ Nate: it
+	   fits the OG card, the landing does not need it — if a sentence is ever
+	   needed here it should be a different one). */
 	.notices {
 		position: absolute;
 		left: 0;
 		right: 0;
-		bottom: calc(53% + var(--card-h) / 2 + var(--caption-gap));
+		bottom: calc(50% + var(--card-h) / 2 + var(--caption-gap));
 		margin: 0;
-		padding: 0 1rem;
+		padding: 0;
 		list-style: none;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
+		align-items: stretch;
 		gap: 0.5rem;
 	}
 
+	/* A BAND the width of the group, so its edges are the first and third
+	   card's edges and it reads as the doors' lintel rather than a toast. The
+	   well glass (.45) — a step lighter than the cards' plate, so the cards
+	   stay the densest thing on the page — with a gold hairline inset at the
+	   panel's own quiet alpha (`--inset-line`, the site's inset-frame rule). */
 	.notice {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: 0.15em;
+		padding: 0.6rem 1rem;
+		border-radius: 3px;
+		background: var(--glass-well);
+		box-shadow: inset 0 0 0 1px var(--inset-line);
 		font-family: var(--font-body);
 		font-size: var(--fs-xl);
 		line-height: var(--lh-snug);
@@ -475,30 +474,10 @@
 		text-wrap: balance;
 	}
 
-	/* The tagline: the one sentence under the doors, a step below the names
-	   and clearly a caption to them. */
-	.tagline {
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: calc(47% + var(--card-h) / 2 + var(--caption-gap));
-		margin: 0;
-		padding: 0 1rem;
-		text-align: center;
-		font-family: var(--font-body);
-		font-size: var(--fs-2xl);
-		font-weight: var(--fw-normal);
-		line-height: var(--lh-snug);
-		color: var(--chrome);
-		opacity: 0.85;
-		text-wrap: balance;
-	}
-
 	/* `compact` — 40rem, $lib/breakpoints.ts. The card names are ~13px on a
 	   phone, so the captions step down to stay subordinate to them. */
 	@media (max-width: 40rem) {
-		.notice,
-		.tagline {
+		.notice {
 			font-size: var(--fs-lg);
 		}
 	}

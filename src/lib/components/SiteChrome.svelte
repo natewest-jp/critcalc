@@ -225,7 +225,7 @@
 		justify-self: start;
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
+		gap: 0.35rem; /* 🎛️ ⚓ NATE 2026-09-16 */
 	}
 
 	/* The tag hugs the wordmark's top-right like a superscript: in flow (so
@@ -239,7 +239,7 @@
 	   Nate went back to the bare word. */
 	.chrome-beta {
 		position: relative;
-		top: -0.55em;
+		top: -0.5em; /* 🎛️ ⚓ NATE 2026-09-16 */
 		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-bold);
