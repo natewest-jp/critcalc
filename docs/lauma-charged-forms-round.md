@@ -1,8 +1,10 @@
 # The Lauma charged-forms round — scope (2026-09-16)
 
-_Status: SPEC, not started. Scoped at Nate's request after the essential-characters
-T0 tranche bookmarked "modelling both of Lauma's charged forms". ⚠️ §0–§8 are the
-plan; when the round ships, its record wins where they disagree._
+_Status: ✅ SHIPPED 2026-09-16 on `feat/lauma-charged-forms` — three landings
+(`4ea2998c` primitive 1, `943f6588` primitive 2, `c98cdf25` Lauma). Scoped at
+Nate's request after the essential-characters T0 tranche bookmarked "modelling
+both of Lauma's charged forms". ⚠️ §0–§8 are the plan; **§9 is the record and
+wins where they disagree.**_
 
 ## 0. The ask
 
@@ -357,3 +359,83 @@ Lauma without change.
    needs to distinguish the implicit end from the token.
 
 Gates per landing: vitest, check, lint, build. e2e before the merge only.
+
+## 9. The record (2026-09-16)
+
+Shipped as planned, in the planned order, with these differences from the spec:
+
+- **`terminatesOnAction` excludes D as well as J** (§6.3). The spec proposed
+  that a dash ends the deer; ⚓ Nate ruled that she dashes and jumps IN deer
+  form, so the settle runs at attacks and casts only (N, C, P, E, Q). The
+  `C D C` probe confirms the deer outlives the dash and ends at the second C.
+- **The expiry chain is LAZY, and finalize flushes it** — as §4.1 chose, plus
+  one rule the spec did not state: finalize materialises a pending chain only
+  when its start is at or before the rotation's end. A deer still standing when
+  the rotation stops has no cooldown yet, and a window that starts after the
+  ruler would be a claim about time the chart does not show.
+- **Pending chains are an INDEX on `CharState`**, not a scan of
+  `ctx.stateWindowRecs`: the settle runs at every attack and cast, and a walk
+  there would restore the quadratic `inferredStates` paid for.
+- **The swap-out site goes through `closeStateWindows`** now (the inline clamp
+  it replaced made the same two writes) and then runs only the chain step.
+
+**Measured.** The two engine landings were each byte-identical to main over the
+corpus digest (126 characters × C0/C6 with a swap partner, 252/252). The Lauma
+landing moves exactly `lauma@C0` and `lauma@C6`. All nine probes read as §5
+predicted:
+
+| notation                  | blocks                                      | applications                  | state windows                                  |
+| ------------------------- | ------------------------------------------- | ----------------------------- | ---------------------------------------------- |
+| `C C`                     | C untinted 63f · C dendro 67f               | Dendro @2.17s                 | spiritEnvoy [63,63) · envoyCooldown [63,303)   |
+| `C E C`                   | C untinted 63f · E · C dendro 67f @101      | Dendro @2.80s (+ Sanctuary)   | spiritEnvoy [63,63) · envoyCooldown [63,303)   |
+| `C ~12s C`                | C untinted 49f · C dendro 67f @769          | Dendro @13.93s                | spiritEnvoy [49,649) · envoyCooldown [649,889) |
+| `C ~15s C`                | C untinted 49f · C untinted 49f @949        | none                          | two deers, one cooldown                        |
+| `N1 C N1`                 | N1 · C untinted 61f · N1                    | Dendro @0.28s (the N1)        | spiritEnvoy [78,78) · envoyCooldown [78,318)   |
+| `C J C`                   | C untinted 49f · J · C dendro @70           | Dendro @2.28s                 | spiritEnvoy [49,70) · envoyCooldown [70,310)   |
+| `C D C`                   | C untinted 64f · D · C dendro @85           | Dendro @2.53s                 | spiritEnvoy [64,85) · envoyCooldown [85,325)   |
+| `C > Bennett E > Lauma C` | C untinted 49f · … · C dendro @106          | Pyro (Bennett), Dendro @2.88s | spiritEnvoy [49,49) · envoyCooldown [49,289)   |
+| `C C C C`                 | deer · Prayer 68f · Prayer 68f · Prayer 67f | three Dendro                  | one deer, one cooldown                         |
+
+The `C D C` deer is 64f (the D key falls to `anim`, gcsim having no dash in the
+state) and a Prayer followed by a Prayer is 68f (gcsim's `InitAbilSlice(68)` with
+no `ActionCharge` override — its `Frames(next)` special-cases only a following
+DEER at 67), both as the source says.
+
+**The frames audit.** The deer map now agrees with gcsim's bare `C` capture (no
+row — the T0 pass had to defend a Prayer map against it). Two things about the
+Prayer sibling's capture, both recorded at `drivers.json` and at the map:
+
+- ⚠️ **The deer-ender must be a BURST, not an attack.** An `attack` prerequisite
+  advances gcsim's normal counter, so the sibling's N1/N2/N3 captures came back
+  rotated by one — three false rows on the first run, gone with `burst` (no
+  summon ticking, no counter touched).
+- ⚠️ **`hit 73→67` is the audit's inference, and 73 is right.** `toFrameMap`
+  derives a normal-style map's `hit` as the value every cancel key shares — the
+  release tier, 67 — which is the hitmark for a swing built by
+  `InitNormalCancelSlice` and not for a slice built by `InitAbilSlice` plus
+  explicit keys; gcsim's `QueueAttack` is at `chargeHitmark = 73`. Inert at
+  runtime (every cancel key is explicit, so `frameAt` never falls to `hit`).
+  ⛔ Don't migrate it. The report was regenerated; the other rows that moved
+  are the T0 tranche's Mavuika ring and Citlali gate, authored after its last
+  write.
+
+**Guards.** `src/lib/sim/states.test.ts`, 15 cases on a synthetic form-taker
+(⚓ Nate-approved with the plan): the action-close, cast-close, lazy expiry,
+lapse, the dash/jump pair, swap-close with the cooldown off-field, the finalize
+flush, provenance, both lint arms, and the non-hitting class with an `onHit
+charged` listener so an absent hit has a consumer to be absent from. Three
+seeded negatives, each verified red: no charged-branch settle (four cases fail;
+`C E C` stays green because the cast site settles too), no finalize flush
+(exactly the no-follow-up expiry), constant-false at the charged `nonHitting`
+gate (three cases).
+
+**Retired.** The base normal's "every Charged Attack is shown as Spiritcall
+Prayer" caveat, replaced by the A4 one Nate asked for (§6.2). The T0 curator
+note defending the Prayer map against the oracle.
+
+**Still open, unchanged from §7:** the cast-side twin of `nonHitting` (a gcsim
+census of the 38 `application: []` casts — Xiangling's E, Venti's Q, Anemo
+Traveler's Q are likely; Emilie's E is not); §1.L's stance-CANCEL token; §1.M's
+summon-dies-on-cast; the editor tint. ⏱️ e2e was skipped on all three landings
+(parser + data, no browser-surface reach; last green at the human-timing merge
+`3818211`) and should run before the merge.
