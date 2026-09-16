@@ -462,6 +462,79 @@ reduction and the conversion-element half of his in-stance normal.
 
 ---
 
+## 9. The T1 tranche — record (2026-09-17, branch `curation/essential-t1`)
+
+§3's twelve T1 items, one commit per character, each probed with
+`parseNotation` before and after, plus two small engine prerequisites. ⚠️
+The record below wins over §3 and over the batch reports where they
+disagree — three §3 lines were changed or refused on measurement (Aino,
+Albedo, Xilonen).
+
+| #   | character  | outcome                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | ororon     | ✅ Hypersense re-homed from the passive onto the skill as a cast-armed `onReaction` proc (`armedFor 15`, 1U Electro at +12, `icdGate none`, `source team`). It had NEVER fired: no proc path reads a passive. Measured: four Electro-Charged reactions → procs at 2.05 / 4.40s, the 1.8s cooldown holding. `armedFor` approximates the Nightsoul-point gate (noted).                                                                       |
+| 2   | varesa     | ✅ `sQ` ignores the burst CD (`bypassesCooldown`, the kit's words; the old note copied gcsim's CD-charge gate) — `E Q C P sQ` fires Volcano Kablam at 4.53s instead of a base burst at 18.37s. Kablam and Fiery Rush `application[]`. E ends Apex Drive by opening 🆕 `followUpStrike` (5s, `consumes: [apexDrive]`; State union + lint, two edits). Every map re-transcribed (N1 with gcsim's 6f windup; `P` 77/81 on both chargeFrames). |
+| 3   | faruzan    | ✅ Buff + shred 16 / 22s (⚓ Nate §6.4; exact from the 54f anchor), C6's CRIT DMG 22s, burst `C: 61`.                                                                                                                                                                                                                                                                                                                                      |
+| 4   | nahida     | ✅ Shrine of Maya +6.0192 / +9.0288s by Hydro count (C1 counts one), A1's EM at field + 1s, C4 `manual` → `onCast skill` 25s, C2's two `manual` crits retired, CA `{anim 69, Q 64}`. 🐛 Needed an engine fix first (below).                                                                                                                                                                                                                |
+| 5   | kinich     | ✅ Loop Shot retyped as a state-gated normal (`infusion: dendro`) — which also makes Scalespiker Cannon reachable for the first time; Cannon `application` at 48, `anim` 135; `nonHitting` on the cold-open E in the SAME commit (per `nonhitting-casts-round.md` §4); C2 on `['skill','normal']` filtered Dendro; the burst's +1.7s as `durationExtensions`; base normals `{anim, hit}`. ⛔ A4's stack gain: no NB gainStacks dispatcher. |
+| 6   | arlecchino | ✅ `infusion: pyro` (always-on, caveated) — 0 → 4 swing/CA applications in `E N1 N2 N3 C Q`; C6 `manual` → `onCast skill` 20s; `units` on the 338f entry; stale note deleted.                                                                                                                                                                                                                                                              |
+| 7   | mualani    | ✅ `cooldownStartsAtStanceEnd` (`E N N N E` recasts at 12.00s, not 6.00); caveats for the 6s stance and the in-stance CA block; A4 + C1 `manual` skeletons retired.                                                                                                                                                                                                                                                                        |
+| 8   | albedo     | ✅ A `duringSummon` burst variant carrying the seven Fatal Blossoms (burst applications 1 → 3 through the per-cast gate); both plunge maps; normals re-transcribed. ⛔ The Silver Isotoma caveat is NOT restored — its removal was a Nate-approved 2026-08-19 call.                                                                                                                                                                        |
+| 9   | furina     | ✅ chargeFrames `{anim 253, C 253, …}` (the Arkhe toggle token); both plunge maps; C4 energy (TB parity).                                                                                                                                                                                                                                                                                                                                  |
+| 10  | xilonen    | ✅ Three plunge maps; a `Heal mode` burst variant (one hit); C1 as +45% on the stance (`EnterTimedBlessing(45, 9*60*1.45)` — the TIMER, not the drain) → 13.05s; the heal-ticks caveat retired. 🐛 Needed an engine fix first (below). ⛔ C2's permanent Geo shred: no surface draws a passive RES shred.                                                                                                                                  |
+| 11  | aino       | ✅ C1's +80 EM once. ⚠️ NOT §3's `target: active` — measured, it moves the double onto Aino's own field time; `teamExcludingSelf` and a target array both render as the same team row. The team arm alone is the single honest bar.                                                                                                                                                                                                        |
+| 12  | lohen      | ✅ A4 caveat naming a NEW pixel: the bar draws after Masterstroke ends (unresolvable `state` gate, §1.G). ⚠️ Flagged — the effect's previous caveat (its ROW) was removed by Nate 2026-08-19.                                                                                                                                                                                                                                              |
+
+**Two engine prerequisites, each measured alone before the authoring:**
+
+- `d71bca2a` **The received buff surface resolves `teamElementCount`** (`buffWindows.ts`
+  PASS B built one shared context with no element counts; now per holder).
+  250/252 byte-identical; Gorou moves and it is a CORRECTION — with Gorou the
+  only Geo member his banner drew all three Geo-count tiers, now DEF alone.
+- `64d22ae1` **A summon tick series resolves `teamElementCount`** (both
+  readers — finalize's marker walk and aura.ts's live chain — gain the
+  holder's counts in one shape). 252/252 byte-identical; Xilonen's heal ticks
+  8 → 0 in a Geo/Anemo team, still 8 in a qualifying one; Aino's cadence 21.
+
+**Measured** (corpus differential against the branch point, every character
+
+- `> Kaeya E N1 N2 N3 > Xingqiu E Q N1 N2 N3`, C0 and C6): **19 of 252**
+  digests move, across ten characters — aino, albedo, arlecchino, faruzan,
+  furina, gorou, kinich, nahida, varesa, xilonen. ⚠️ Blind by construction to
+  Ororon (no Electro-Charged in that team), Mualani (one E cast, no `readyAt`)
+  and Lohen (caveat only) — each measured at its own site.
+
+Gates: vitest 1861/1861, check, lint, build; e2e before the merge. Reports
+regenerated: frames disagreeing **72 → 58** (matching 961 → 982). Two T1
+rows remain and both are ORACLE ARTEFACTS noted at their maps — Faruzan's
+burst `C 61→71` (a bow's `C` is `ActionAim`; the dumper reads
+`ActionCharge`) and Varesa's plunge `anim 72→77` (the Xianyun slice).
+⛔ A `migrate-frames-shape` run would corrupt both.
+
+**One test expectation moved:** the notationParser test that pinned Varesa's
+Kablam to the shared burst CD is rewritten to assert the kit's behaviour
+(seeded negative: removing `bypassesCooldown` fails it).
+
+**Engine queue, sharpened by this tranche:**
+
+- **A `durationExtensions` moves the stance's end but not its `opensState`
+  companion.** Kinich's in-stance abilities were moved to an `inStance` gate
+  to dodge it; Mizuki's Dreamdrifter has the same shape.
+- **No `gainStacks` dispatcher listens to a team Nightsoul Burst** — Kinich's
+  A4 (Hunter's Experience) and Mualani's A4 stacks.
+- **No surface draws a `passive` RES shred** — Xilonen's C2 permanent Geo
+  Sampler.
+- **No condition names the RECEIVER** — Aino's C1 (gcsim: teammates only
+  while active) and the same `team`-vs-active shape on her C6.
+- **A normal's application lands at its cancel-resolved end** (§1.K) — now
+  visible on Kinich's Loop Shot and Arlecchino's newly-infused swings too.
+
+**⏭ Flagged for Nate:** Varesa's Kablam CD reading (kit over gcsim, reversing
+a curator note); Albedo's Silver Isotoma caveat stays removed; Lohen's new
+A4 caveat; Arlecchino's always-on Masque infusion.
+
+---
+
 ## Appendix — the ten batch reports, verbatim
 
 ---

@@ -27,6 +27,7 @@ import { computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { deriveBuffWindows } from '$lib/utils/buffWindows';
 import type { CastEvent, ReactionEvent, TimelineWindow } from '$lib/utils/rotationEvents';
 import type { SimContext } from './context';
+import type { ConditionContext } from './conditions';
 import type { CharacterTrack, InputBlock, ParsedRotation, TimelineBar } from './types';
 import {
 	collectSummonTicks,
@@ -246,9 +247,21 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// whose condition is unresolvable ABSTAINS. Built once, and handed to every
 	// summon-tick walk below so the markers a reader sees and the hits that fire
 	// are computed from the identical answer.
-	const tickCtx = {
-		teamFactionCounts: ctx.team.teamFactionCounts,
-		teamEnabledReactions: ctx.team.teamEnabledReactions
+	// ⚓ Per HOLDER since 2026-09-17: the element counts a `teamElementCount`
+	// gate reads are the summon owner's (`tickConditionCtx` in aura.ts builds
+	// the identical shape for the live chain).
+	const tickCtxCache = new Map<string, ConditionContext>();
+	const tickCtx = (holderId: string): ConditionContext => {
+		let c = tickCtxCache.get(holderId);
+		if (!c) {
+			c = {
+				teamFactionCounts: ctx.team.teamFactionCounts,
+				teamEnabledReactions: ctx.team.teamEnabledReactions,
+				teamElementCounts: ctx.team.teamElementCountsByHolder.get(holderId)
+			};
+			tickCtxCache.set(holderId, c);
+		}
+		return c;
 	};
 	const lastSummonWindowByKey = new Map<string, Extract<TimelineWindow, { kind: 'summon' }>>();
 	// The resolved `Summon` behind each emitted window, kept parser-private for
@@ -510,9 +523,14 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			ctx.stateGatedTicks.get(`${win.characterId}::${win.label}::${win.source}::${win.start}`) ??
 			[];
 		const ticks = [
-			...collectSummonTicks(summon, win.start, win.end, cLevel, () => true, tickCtx).map(
-				(t) => t.time
-			),
+			...collectSummonTicks(
+				summon,
+				win.start,
+				win.end,
+				cLevel,
+				() => true,
+				tickCtx(win.characterId)
+			).map((t) => t.time),
 			// ⚠️ Bounded by the FINAL span so a wave landing past the summon's end —
 			// or before a truncated window's start — is not drawn outside the bar.
 			...measured.filter((t) => t >= win.start && t < win.end)
@@ -525,7 +543,13 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 		const summon = summonByWindow.get(win);
 		if (!summon) continue;
 		const cLevel = ctx.constellationLevels?.[win.characterId] ?? 0;
-		for (const tick of computeSummonDamageTicks(summon, win.start, win.end, cLevel, tickCtx)) {
+		for (const tick of computeSummonDamageTicks(
+			summon,
+			win.start,
+			win.end,
+			cLevel,
+			tickCtx(win.characterId)
+		)) {
 			ctx.hitRecords.push({
 				characterId: win.characterId,
 				time: tick.time,

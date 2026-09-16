@@ -67,12 +67,32 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact, both based on Xilonen's DEF."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 3 rapid strikes.\n\nCharged Attack\nConsumes a fixed amount of Stamina and performs a forward kick.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact, both based on Xilonen's DEF."
+			"description": "Normal Attack\nPerforms up to 3 rapid strikes.\n\nCharged Attack\nConsumes a fixed amount of Stamina and performs a forward kick.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact, both based on Xilonen's DEF.",
+			"plungeFrames": {
+				"anim": 75,
+				"N": 62,
+				"E": 60,
+				"Q": 61,
+				"D": 50,
+				"J": 74,
+				"swap": 61
+			},
+			"lowPlungeFrames": {
+				"anim": 75,
+				"N": 59,
+				"E": 59,
+				"Q": 58,
+				"D": 47,
+				"swap": 60
+			},
+			"_curatorNotes": [
+				"Plunges from gcsim `plunge.go`, authored 2026-09-17 (T1 tranche): `plungeFrames` = highPlungeFrames (InitAbilSlice 75, hitmark 50), `lowPlungeFrames` (75, hitmark 47). Before, a `P` emitted nothing."
+			]
 		},
 		{
 			"id": "xilonen__normal__blade_roller",
 			"name": "Blade Roller",
-			"input": ["N1", "N2", "N3", "N4"],
+			"input": ["N1", "N2", "N3", "N4", "P"],
 			"abilityType": "normal",
 			"conditions": {
 				"type": "state",
@@ -116,8 +136,17 @@
 			],
 			"_curatorNotes": [
 				"Blade Roller is the in-stance N replacement (4 kicks instead of 3 sword strikes), gated by nightsoulBlessing state (opened by the skill's opensState field). DEF-scaling Geo damage (UseDef + IgnoreInfusion in gcsim); modelled via infusion: \"geo\" — DEF scaling itself isn't expressed in our schema.",
-				"No chargeFrames: the description explicitly says 'unable to use Charged Attacks' while in Blade Roller mode."
-			]
+				"No chargeFrames: the description explicitly says 'unable to use Charged Attacks' while in Blade Roller mode.",
+				"`plungeFrames` = gcsim `skillHighPlungeFrames` (InitAbilSlice 77, hitmark 39), the Nightsoul-state high plunge, Geo through this ability's infusion (plunge.go sets `ai.Element = Geo` in the blessing). Authored 2026-09-17; `P` was a silent no-op, and her A1 Nightsoul points come from Normal OR Plunging hits. No `lowPlungeFrames`: gcsim refuses a low plunge in the blessing."
+			],
+			"plungeFrames": {
+				"anim": 77,
+				"N": 55,
+				"E": 56,
+				"Q": 55,
+				"D": 39,
+				"swap": 57
+			}
 		},
 		{
 			"id": "xilonen__skill__yohuals_scratch",
@@ -235,7 +264,9 @@
 				"[A7] Skill CD starts at the stance end, not the cast — confirmed in words by the Fandom wiki's Yohual's Scratch Gameplay Notes ('The 7s cooldown starts once Xilonen's Nightsoul's Blessing state ends and not upon the Elemental Skill cast') and by gcsim, which puts SetCD(ActionSkill, 7*60) inside exitNightsoul(). Authored 2026-07-20 as cooldownStartDelay=540 (9s at 60fps); replaced 2026-08-15 with the explicit cooldownStartsAtStanceEnd flag, because 540f is indistinguishable from an animation offset and, being static, could not express an early exit. Early exit via E re-press remains unmodelled (⚓ Nate: players don't use it).",
 				"Source Sample RES shred authored 2026-07-28 (capability sweep): gcsim skill.go:101-108 applySamplerShred adds a ResistMod of -skillShred[TalentLvlSkill] per active sample element; xilonen_gen.go skillShred[9] = 0.36 (TL10); asc.go:75 sets the 3-sampler activation window to 15*60f. Five per-element effects, all onCast skill / 15s. In game the activation fires when her Nightsoul points hit max and are consumed (A1 Netotiliztli's Echoes) shortly after E, not at cast — onCast skill is the closest modelable trigger (surfaced in the caveat).",
 				"Sampler conversion (gcsim xilonen.go Init): one Geo sampler converts per non-Xilonen Pyro/Hydro/Cryo/Electro party MEMBER (samplersConverted++ each). teamElementCount excludes the holder by definition (ability.ts exclude-self semantic), so elements:[X] >= 1 gates each converted element exactly. The Geo effect's <=2 fallback models gcsim's 'geo remains if samplersConverted < 3' rule; the party-smaller-than-4 branch (geo also stays) is subsumed — with fewer than 4 members the converted count can never exceed 2, so the condition is automatically true.",
-				"Geo Sample additionally stays active the whole time she is in Nightsoul's Blessing (gcsim skill.go:111-133 activeGeoSampler re-applies every 60f while blading), and C2 makes it permanently active — the timeline shows only the 15s activation window, so extra Geo shred uptime is understated."
+				"Geo Sample additionally stays active the whole time she is in Nightsoul's Blessing (gcsim skill.go:111-133 activeGeoSampler re-applies every 60f while blading), and C2 makes it permanently active — the timeline shows only the 15s activation window, so extra Geo shred uptime is understated.",
+				"↻ C1 AUTHORED 2026-09-17 (T1 tranche) as a `percent` +45 `durationModifiers` gated on C1: gcsim `skill.go` enters the blessing with `EnterTimedBlessing(45, 9*60*nightsoulDurationMul())`, and `cons.go` returns 1.45 at C1 — so the TIMER, which is exactly what `duration: 9` already transcribes, is 13.05s. The point drain can still end it earlier, at both lengths; that is the same unmodelled early exit the 9s bar already carries. The C1 entry's old refusal ('the visible 9s window doesn't expand by a clean ratio') confused the drain with the timer.",
+				"⛔ C2's permanent Geo Sampler is NOT authored: gcsim's `c2()` runs `activeGeoSampler(-1)` at init, so the Geo shred holds for the whole fight (while ≤ 2 members convert a Sampler). No surface draws a `passive` RES shred — a C2 twin on `onCast skill` would have to invent a length. Needs a standing-debuff surface."
 			],
 			"description": "Let the rhythms of passion resound throughout the land! Xilonen switches to high-speed combat blading gear and rushes forward a certain distance before dealing Nightsoul-aligned Geo DMG based on her DEF.\nAfter using this, Xilonen will gain 45 Nightsoul points and enter the Nightsoul's Blessing state. In this state, she will shift to the Blade Roller mode.\n\nSource Samples\nXilonen has 3 Samplers with her that can generate different Soundscapes based on her other party members' Elemental Types, decreasing nearby opponents' corresponding Elemental RES while active.\nThe initial recorded Source Sample within each Sampler will be Geo, and for each party member who is Pyro/Hydro/Cryo/Electro, 1 Geo Sample will change to that corresponding Element.\nWhile Xilonen is in the Nightsoul's Blessing state, the Geo Source Sample she carries will always be active. After unlocking her Ascension Talent, \"Netotiliztli's Echoes,\" Xilonen can trigger said Ascension Talent's effects to regenerate Nightsoul points for herself. When her Nightsoul points hit the maximum, she will consume all her Nightsoul points and activate the 3 Source Samples she has on hand for 15s.\nWhen the Source Samples are active, nearby opponents' corresponding Elemental RES will decrease. Source Sample effects of the same Elemental Type cannot stack. Xilonen can trigger these effects even when off-field.\n\nNightsoul's Blessing: Xilonen\nContinuously consume Nightsoul points. When these points are depleted or if used again, this Nightsoul's Blessing state will end. This state has the following traits:\n·Switches to the Blade Roller mode, increasing Xilonen's Movement SPD and climbing speed, and she can perform high-speed leaps in Ocelot Form while climbing.\n·Xilonen's Nightsoul's Blessing has the following restrictions: When in this state, Xilonen's Nightsoul points have a 9s time limit. After this limit passes, her Nightsoul points will immediately expire.\n\nAfter Xilonen's Nightsoul points have expired while she is in the Nightsoul's Blessing state, she will no longer be able to generate Nightsoul points via the Ascension Talent \"Netotiliztli's Echoes.\"",
 			"application": [
@@ -243,6 +274,17 @@
 					"frame": 6,
 					"element": "geo",
 					"units": 1
+				}
+			],
+			"durationModifiers": [
+				{
+					"source": "C1: Sabbatical Phrase",
+					"type": "percent",
+					"value": 45,
+					"conditions": {
+						"type": "constellation",
+						"level": 1
+					}
 				}
 			]
 		},
@@ -292,13 +334,13 @@
 					]
 				}
 			],
-			"caveat": "The healing ticks always show, but in game they only fire with at least 2 Pyro, Hydro, Cryo, or Electro teammates.",
 			"_curatorNotes": [
 				"Burst has two modes based on samplersConverted (count of non-Xilonen teammates whose element is Pyro/Hydro/Cryo/Electro; gcsim xilonen.go Init()): <2 → 3 damage hits (initial 96f, Follow-Up Beats 128f/164f); ≥2 → single damage hit (96f) + 8 healing pulses (Ebullient Rhythm). The mode gate is authored as a teamElementCount condition (elements Pyro/Hydro/Cryo/Electro, ≥2) on the heal — this maps exactly onto gcsim's samplersConverted<2 branch. Supersedes the prior note that the mode 'isn't expressible as a condition'; teamElementCount resolves it at planner time (renders optimistically in the summon-tick path, which isn't passed team context — the caveat carries the real gate).",
 				"Ebullient Rhythm heal authored 2026-07-12 as a summonTick heal on a follows-mobility summon (Diona Drunken Mist / Kuki Grass Ring shape — the rhythm heals c.Core.Player.Active() and travels with the active char). gcsim burst.go burstHeal(): 8 pulses at frames {185,274,362,450,539,627,716,805}, gcsim comment '// every 1.5s'. Modelled as spawnsAt 185 (first pulse), firstTickDelay 0 (first tick lands at spawn), interval 1.5, duration 12 (sidecar 'Ebullient Rhythm Duration' = 12.0s) → 8 ticks under the strict-< window, matching gcsim's pulse count. Interval uses the canonical 1.5s; gcsim's 88-89f frame-rounding drifts the final tick ~10f, not modelled.",
 				"Heal per tick TL10: 187.2% DEF + 1101.71 flat (sidecar 'Continuous Healing' col 10 = '187.2% DEF+1102'; gcsim burstHealPer[9]=1.872, burstHealBase[9]=1101.7063). Target 'active' — gcsim sets hi.Target = c.Core.Player.Active() each pulse. Heal snapshots Xilonen's Healing Bonus (hi.Bonus = c.Stat(Heal)).",
 				"Initial burst AoE Geo DMG (281.3% DEF TL10, 96f) and the <2-mode Follow-Up Beats (also 281.3% DEF, 128f/164f) are rendered via the burst FrameMap, not authored as separate damage effects (corpus convention for cast damage). Burst remains behavior: instant — the periodic heal now lives on the summon rather than being described as queued cast events.",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"The heal always shows, but in game it only fires with at least 2 Pyro, Hydro, Cryo, or Electro teammates. With fewer, extra damage beats play instead and no healing happens.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"The heal always shows, but in game it only fires with at least 2 Pyro, Hydro, Cryo, or Electro teammates. With fewer, extra damage beats play instead and no healing happens.\"",
+				"↻ 2026-09-17 (T1 tranche): the `Heal mode` variant carries gcsim's `burstHeal` schedule — ONE Geo hit at 96 — gated on ≥ 2 Pyro/Hydro/Cryo/Electro members (`samplersConverted >= 2`, the same gate as the heal series); the base keeps `burstDamage`'s three (96 / 128 / 164, all Durability 25, `units` added to the last two, which drew a provisional foot). The extra two were ICD-suppressed in heal teams anyway, so the gauge does not move; the array just stops claiming hits that mode never makes. The heal series' own gate became resolvable the same day (`teamElementCount` in the tick context), so the burst caveat about heal ticks always showing is retired."
 			],
 			"description": "Activates the Phlogiston Stereo DJ Controller (Portable) at full power, dealing Nightsoul-aligned AoE Geo DMG based on Xilonen's DEF.\n\nAdditionally, she will trigger the following effects based on her different Source Samples:\n·If she has at least 2 Source Samples that have had their Elemental Types changed, Xilonen will play an Ebullient rhythm, healing nearby active characters at intervals based on her DEF.\n·If she has fewer than 2 Source Samples that have had their Elemental Types changed, Xilonen will start up an Ardent rhythm, which will play two additional beats that deal Nightsoul-aligned AoE Geo DMG based on her DEF.",
 			"application": [
@@ -309,11 +351,32 @@
 				},
 				{
 					"frame": 128,
-					"element": "geo"
+					"element": "geo",
+					"units": 1
 				},
 				{
 					"frame": 164,
-					"element": "geo"
+					"element": "geo",
+					"units": 1
+				}
+			],
+			"variants": [
+				{
+					"label": "Heal mode",
+					"input": ["Q"],
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["pyro", "hydro", "cryo", "electro"],
+						"comparison": ">=",
+						"value": 2
+					},
+					"application": [
+						{
+							"frame": 96,
+							"element": "geo",
+							"units": 1
+						}
+					]
 				}
 			]
 		}
@@ -360,7 +423,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"_curatorNotes": [
-				"Nightsoul timer +45% / consumption -30%. Not modelled as a durationModifier on the skill stance because the underlying mechanic is a draining resource pool — the visible 9s window doesn't expand by a clean ratio. Per-constitution (windows not gauges), this stays as description-only."
+				"↻ 2026-09-17: the +45% Nightsoul TIMER is modelled — see the skill's durationModifiers and note. The −30% consumption stays out (point drain is not tracked)."
 			],
 			"description": "Xilonen's Nightsoul point and Phlogiston consumption in her Nightsoul's Blessing state is decreased by 30%, and her Nightsoul point time limit is extended by 45%.\nAdditionally, when Xilonen's Source Samples are active, she can also increase nearby active characters' interruption resistance."
 		},

@@ -69,7 +69,11 @@
 				}
 			],
 			"chargeFrames": {
-				"anim": 65,
+				"anim": 69,
+				"N": 65,
+				"C": 65,
+				"E": 65,
+				"Q": 64,
 				"D": 21,
 				"J": 21,
 				"swap": 21
@@ -204,13 +208,89 @@
 					"label": "Shrine of Maya",
 					"duration": 15,
 					"spawnsAt": 66,
-					"mobility": "stationary"
+					"mobility": "stationary",
+					"durationModifiers": [
+						{
+							"source": "Illusory Heart: 1 Hydro party member",
+							"type": "flat",
+							"value": 6.0192,
+							"conditions": {
+								"type": "any",
+								"conditions": [
+									{
+										"type": "all",
+										"conditions": [
+											{
+												"type": "teamElementCount",
+												"elements": ["hydro"],
+												"comparison": "=",
+												"value": 1
+											},
+											{
+												"type": "not",
+												"condition": {
+													"type": "constellation",
+													"level": 1
+												}
+											}
+										]
+									},
+									{
+										"type": "all",
+										"conditions": [
+											{
+												"type": "teamElementCount",
+												"elements": ["hydro"],
+												"comparison": "=",
+												"value": 0
+											},
+											{
+												"type": "constellation",
+												"level": 1
+											}
+										]
+									}
+								]
+							}
+						},
+						{
+							"source": "Illusory Heart: 2 Hydro party members",
+							"type": "flat",
+							"value": 9.0288,
+							"conditions": {
+								"type": "any",
+								"conditions": [
+									{
+										"type": "teamElementCount",
+										"elements": ["hydro"],
+										"comparison": ">=",
+										"value": 2
+									},
+									{
+										"type": "all",
+										"conditions": [
+											{
+												"type": "teamElementCount",
+												"elements": ["hydro"],
+												"comparison": ">=",
+												"value": 1
+											},
+											{
+												"type": "constellation",
+												"level": 1
+											}
+										]
+									}
+								]
+							}
+						}
+					]
 				}
 			],
 			"effects": [],
 			"_curatorNotes": [
-				"Shrine of Maya party-composition-dependent buffs not authored: (a) Pyro — while Nahida is within the field, Tri-Karma Purification DMG is increased (gcsim: burstTriKarmaDmgBonus[pyroCount-1][talentLevel] added as AttackMod on each 30-frame tick); (b) Electro — Tri-Karma Purification ICD interval reduced by burstTriKarmaCDReduction[electroCount-1][talentLevel]; (c) Hydro — field duration extended (see note below). All branch values require talent-level lookup tables; effects[] skeleton not authored — needs reviewer pass.",
-				"Shrine of Maya duration extension from Hydro characters: base 15s; extended by burstTriKarmaDurationExtend[hydroCount-1][talentLevel] when hydroCount > 0 (up to hydroCount=2). Extension is talent-level-scaled and team-comp-conditional — no matching durationModifiers condition type in schema. Generator's variants[] (Hydro Extension 8.5272s, Base 15s) removed; duration modeled as base 15s on summons[0]. Reviewer to add hydro extension once schema supports team-composition conditions.",
+				"Shrine of Maya party-composition-dependent buffs not authored: (a) Pyro — while Nahida is within the field, Tri-Karma Purification DMG is increased (gcsim: burstTriKarmaDmgBonus[pyroCount-1][talentLevel] added as AttackMod on each 30-frame tick); (b) Electro — Tri-Karma Purification ICD interval reduced by burstTriKarmaCDReduction[electroCount-1][talentLevel]; (c) Hydro — field duration extended (AUTHORED 2026-09-17, see the summon's durationModifiers and the note below). All branch values require talent-level lookup tables; effects[] skeleton not authored — needs reviewer pass.",
+				"↻ HYDRO EXTENSION AUTHORED 2026-09-17 (T1 tranche) as two mutually exclusive `durationModifiers` on the summon: +6.0192s with one Hydro party member and +9.0288s with two (gcsim `burst.go` `dur += burstTriKarmaDurationExtend[hydroCount-1][TalentLvlBurst]`, `zz_nahida.dm.go` rows at index 9 = TL10), `hydroCount` capped at 2 and raised by 1 at C1 (`cons.go` c1). So: 0 Hydro → 15s (21.02s at C1), 1 → 21.02s (24.03s at C1), 2 → 24.03s. The old note said no condition could express it; `applyModifiers` has carried team scope since 2026-08-18. Measured before: `Nahida E Q > Xingqiu E Q` drew the Shrine 15s in the Hydro-bloom team, 6s short.",
 				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim nahida/burst.go: the buff field only, no QueueAttack."
 			],
 			"description": "Manifests the Court of Dreams and expands the Shrine of Maya.\n\nWhen the Shrine of Maya field is unleashed, the following effects will be separately unleashed based on the Elemental Types present within the party.\n·Pyro: While Nahida remains within the Shrine of Maya, the DMG dealt by Tri-Karma Purification from \"All Schemes to Know\" is increased.\n·Electro: While Nahida remains within the Shrine of Maya, the interval between each Tri-Karma Purification from \"All Schemes to Know\" is decreased.\n·Hydro: The Shrine of Maya's duration is increased.\n\nIf there are at least 2 party members of the aforementioned Elemental Types present when the field is deployed, the aforementioned effects will be increased further.\n\nEven if Nahida is not on the field, these bonuses will still take effect so long as party members are within the Shrine of Maya.",
@@ -224,7 +304,7 @@
 			"name": "Compassion Illuminated",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"2026-05-14 (canonicalAssumption primitive): consolidated 2 generator-artifact effects → 1 buff effect at the canonical-rotation peak. Real mechanic: +25% of the highest-EM teammate's EM granted to the active character in Shrine of Maya, cap +250 EM. Canonical assumption: Nahida is built to 1000+ EM (canonical Dendro investment), so 25% × 1000 = +250 EM → caps at +250. peer-stat-routing isn't expressible in the schema (would need a `highestTeamStat` BuffValue variant), so `value` is plain 250 + canonicalAssumption headlineValue=250 makes the assumption explicit. gcsim: calcA1Buff() at Q cast + applyA1() per 30-frame tick — modeled here as an onCast burst buff lasting the Shrine of Maya 15s window."
+				"2026-05-14 (canonicalAssumption primitive): consolidated 2 generator-artifact effects → 1 buff effect at the canonical-rotation peak. Real mechanic: +25% of the highest-EM teammate's EM granted to the active character in Shrine of Maya, cap +250 EM. Canonical assumption: Nahida is built to 1000+ EM (canonical Dendro investment), so 25% × 1000 = +250 EM → caps at +250. peer-stat-routing isn't expressible in the schema (would need a `highestTeamStat` BuffValue variant), so `value` is plain 250 + canonicalAssumption headlineValue=250 makes the assumption explicit. gcsim: calcA1Buff() at Q cast + applyA1() per 30-frame tick — modeled as onCast burst buffs lasting the Shrine's length plus 1s (see the effect note)."
 			],
 			"effects": [
 				{
@@ -234,15 +314,108 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 15,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",
 					"value": 250,
 					"snapshottable": false,
+					"duration": 25.03,
+					"conditions": {
+						"type": "any",
+						"conditions": [
+							{
+								"type": "teamElementCount",
+								"elements": ["hydro"],
+								"comparison": ">=",
+								"value": 2
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamElementCount",
+										"elements": ["hydro"],
+										"comparison": ">=",
+										"value": 1
+									},
+									{
+										"type": "constellation",
+										"level": 1
+									}
+								]
+							}
+						]
+					},
 					"_curatorNotes": [
-						"[cA-fold 2026-07-20] canonicalAssumption removed (type retired); its assumption text folded into the ability-level caveat. headlineValue equaled value (250)."
+						"↻ 2026-09-17 (T1 tranche): THREE mutually exclusive copies, one per Shrine of Maya length (15 / 21.02 / 24.03s by Hydro count, C1 adding one) — an Effect has no durationModifiers, so condition-gated duplicates are the wired expression (Faruzan's C2 pair). Each is the field's length PLUS 1s: gcsim `applyA1(60)` re-grants a 60-frame EM mod on every 30f field tick through the field's last frame, so the bonus outlives the Shrine by 1s — authored at its honest length per Nate's 2026-09-15 ruling.",
+						"⚠️⚠️ ORDER IS LOAD-BEARING: the active-target pool keeps the FIRST surviving effect per `stat`, so the gated copies come first and the UNCONDITIONED 15+1s copy last, as the else-branch. It is unconditioned on purpose — A1 always applies at one of the three lengths, and a gate on every copy made the Team Builder mark the +250 EM as team-conditional. ⚠️ Safe only because `teamElementCount` resolves definitively on the received surface (fixed the same day); in a context that cannot resolve it, the 2-Hydro copy survives and the bar reads long."
 					]
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 250,
+					"snapshottable": false,
+					"duration": 22.02,
+					"conditions": {
+						"type": "any",
+						"conditions": [
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamElementCount",
+										"elements": ["hydro"],
+										"comparison": "=",
+										"value": 1
+									},
+									{
+										"type": "not",
+										"condition": {
+											"type": "constellation",
+											"level": 1
+										}
+									}
+								]
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "teamElementCount",
+										"elements": ["hydro"],
+										"comparison": "=",
+										"value": 0
+									},
+									{
+										"type": "constellation",
+										"level": 1
+									}
+								]
+							}
+						]
+					}
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 250,
+					"snapshottable": false,
+					"duration": 16
 				}
 			],
 			"description": "When unleashing Illusory Heart, the Shrine of Maya will gain the following effects:\nThe Elemental Mastery of the active character within the field will be increased by 25% of the Elemental Mastery of the party member with the highest Elemental Mastery.\nYou can gain a maximum of 250 Elemental Mastery in this manner.",
@@ -298,7 +471,7 @@
 			"abilityType": "constellation",
 			"constellationLevel": 1,
 			"_curatorNotes": [
-				"No effects[] authored for C1. gcsim c1() increments pyroCount, electroCount, and hydroCount each by 1 at init, capped at 2. Effect: Shrine of Maya (Illusory Heart) behaves as if the party has one additional Pyro, Electro, and Hydro character simultaneously — unlocking or upgrading all three element-specific buffs. Not representable as a standard effect skeleton; reviewer to decide how to model this team-composition modifier."
+				"No effects[] authored for C1. gcsim c1() increments pyroCount, electroCount, and hydroCount each by 1 at init, capped at 2. Effect: Shrine of Maya (Illusory Heart) behaves as if the party has one additional Pyro, Electro, and Hydro character simultaneously — unlocking or upgrading all three element-specific buffs. Not representable as a standard effect skeleton; reviewer to decide how to model this team-composition modifier. ↻ 2026-09-17: the HYDRO half is modelled — the Shrine's durationModifiers and A1's three copies count C1 as one more Hydro member. The Pyro (Tri-Karma DMG, magnitude) and Electro (Tri-Karma interval, which never binds on measured reaction gaps) halves stay unauthored."
 			],
 			"description": "When the Shrine of Maya is unleashed and the Elemental Types of the party members are being tabulated, the count will add 1 to the number of Pyro, Electro, and Hydro characters respectively."
 		},
@@ -311,35 +484,11 @@
 				"Effect values wrong: gcsim C2 sets CR += 0.2 (+20% CRIT Rate) and CD = 1.0 (sets CRIT DMG to 100%, not adds) for Burning/Bloom/Hyperbloom/Burgeon/BountifulCore on Seed-marked enemies. Skeleton has value: 10 for both CR and CD — both are incorrect. Correct values: CR=20, CD=100.",
 				"Lunar-Bloom variant not authored: gcsim also handles AttackTagDirectLunarBloom separately (CR += 0.1, CD += 0.2 — additive, not set). This +10% CR and +20% CD for Lunar-Bloom is completely absent from the skeleton.",
 				"DEF shred authored (capability sweep 2026-07-28): gcsim internal/characters/nahida/cons.go:53-71 — AddDefMod -0.3, 480f = 8s, fired on event.OnQuicken/OnAggravate/OnSpread from any team member against Seed-marked enemies. Seed-of-Skandha enemy-mark state is not trackable; effect is unconditioned per the Citlali/Chevreuse/Durin onReaction-resShred precedent (Seeds are up whenever E has run) — Seed scope caveated on the ability.",
-				"Trigger: inherited 'manual' needs reviewer replacement. Actual trigger: onEnemyHit with AttackTag in {Burning, Bloom, Hyperbloom, Burgeon, BountifulCore, DirectLunarBloom} AND enemy has Seed of Skandha status. All apply to enemy target.",
+				"↻ RETIRED 2026-09-17 (T1 tranche, `manual` retirement): the two `manual` critRate 20 / critDmg 100 effects are deleted. They never drew (no surface reads `manual`) and were mis-shaped besides — self buffs standing in for an ENEMY-side property (reaction DMG can crit against Seed-marked opponents), so re-triggering them would have drawn a false +20% CRIT Rate bar on Nahida. Reaction CRIT is damage magnitude with no pixel. The prior values and the Lunar-Bloom half stay recorded in the notes above.",
 				"A6 rigor 2026-07-12: critRate value corrected 10 → 20, critDmg value corrected 10 → 100 (in-JSON description 'fixed at 20% and 100%' + gcsim cons.go c2(): CR += 0.2, CD = 1). Targeting/trigger rework (should be enemy reaction-crit, not self buff) and missing Lunar-Bloom effect still pending per notes above.",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The −30% DEF debuff bar. The resShred is deliberately authored unconditioned (the Seed mark is enemy state we cannot track), so the bar draws off any team Quicken/Aggravate/Spread — including a rotation where Nahida never casts E, or one where a teammate reacts on an unmarked target. The current wording reads as pure kit explanation and never says the bar is what is over-claiming; the rewrite names it. Placement on the C2 entry is correct — it is gated to readers who have C2. Category: approximation-disclosure."
 			],
 			"effects": [
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "critRate",
-					"value": 20,
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "manual"
-					},
-					"durationType": "fixed",
-					"source": "character",
-					"stat": "critDmg",
-					"value": 100,
-					"snapshottable": false
-				},
 				{
 					"type": "resShred",
 					"shredStat": "def",
@@ -368,15 +517,17 @@
 			"abilityType": "constellation",
 			"constellationLevel": 4,
 			"_curatorNotes": [
-				"Stack-dependent EM buff: gcsim c4() uses AddStatMod with permanent (-1) duration; the Amount function counts enemies within 30-radius with Seed of Skandha and returns EM = 80 + count*20 (count capped at 4). Full range: 1 enemy → 100 EM, 2 → 120, 3 → 140, 4+ → 160. Skeleton value: 100 is the 1-enemy minimum only. Not representable as a single flat value; reviewer to model as a stacking or dynamic buff."
+				"Stack-dependent EM buff: gcsim c4() uses AddStatMod with permanent (-1) duration; the Amount function counts enemies within 30-radius with Seed of Skandha and returns EM = 80 + count*20 (count capped at 4). Full range: 1 enemy → 100 EM, 2 → 120, 3 → 140, 4+ → 160. Skeleton value: 100 is the 1-enemy minimum only. Not representable as a single flat value; reviewer to model as a stacking or dynamic buff. ↻ RE-TRIGGERED 2026-09-17 (T1 tranche, `manual` retirement): `onCast skill`, 25s — the Seed of Skandha's lifetime (gcsim `skill.go` `AddStatus(skillMarkKey, 1500)`), the same window Tri-Karma's `armedFor` uses. gcsim's mod is permanent but returns nothing while no enemy is marked, so the Seed IS the window. Value 100 = one marked enemy, the tool's single-target frame."
 			],
 			"effects": [
 				{
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "skill"
 					},
+					"duration": 25,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "em",

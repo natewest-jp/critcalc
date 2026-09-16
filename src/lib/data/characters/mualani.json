@@ -84,7 +84,8 @@
 				"Marked as Prey + Shark Missile spread (up to 5 nearby marked enemies) not authored — additional damage instances triggered by bite-on-marked-enemy with diminishing multiplier.",
 				"Each press fires one bite (gcsim resets NormalCounter to 0); not a multi-hit string. Sharky's Bite has its own 1.8s cooldown (gcsim SetCDWithDelay on ActionAttack); not modelled at the normal-ability level.",
 				"Charged Attack is disabled in stance (gcsim NextQueueItemIsValid blocks ActionCharge during nightsoul); chargeFrames omitted."
-			]
+			],
+			"caveat": "A Charged Attack typed while she is surfing still draws a block, but in game she cannot use one during Nightsoul's Blessing."
 		},
 		{
 			"id": "mualani__skill__surfshark_wavebreaker",
@@ -102,14 +103,16 @@
 			"_curatorNotes": [
 				"Pattern 1 stance with N replacement (Tier B). Skill opens Nightsoul's Blessing; in-stance N is Sharky's Bite (separate normal ability with conditions.state inStance).",
 				"Stance gated by a Nightsoul resource pool: gcsim EnterBlessing(60) with MaxPoints=60, drained at 1 point per 6 frames (=10/sec) → 6s base duration with no movement. Dashes consume +10 each, dash-jumps +14 (the +24 figure in gcsim), jumps +2; Nightsoul also regenerates from A1 (Puffer pickup, +20) and C2 puffer interactions, so effective in-game uptime varies (~12s typical with active movement and Puffer pickups). Authored duration=6 reflects gcsim's no-movement baseline; reviewer to decide whether to model resource pool / regeneration.",
-				"Skill cooldown: gcsim sets the 6s cooldown only on stance cancel/exit (cancelNightsoul → SetCD(ActionSkill, 6*60)); no SetCDWithDelay on the cast itself. The CD effectively begins when the stance ends, not when E is pressed. Schema has no field to express \"CD starts on stance end\" — cooldown=6 is recorded but cooldownStartDelay omitted; reviewer to decide.",
+				"↻ `cooldownStartsAtStanceEnd: true` — 2026-09-17 (T1 tranche). gcsim sets the 6s cooldown ONLY in `cancelNightsoul` (skill.go `SetCD(ActionSkill, 6*60)`), which runs on point exhaustion, a re-press and a swap — never at the cast. The old line here said no field could express it; the flag shipped 2026-08-15 with Xilonen and Ifa (docs/stance-cooldown-round.md) and this note was never revisited. Measured before: `Mualani E N N N E` recast at 6.00s, while the stance itself ran to 6.00s.",
 				"Re-pressing E during stance cancels Nightsoul (gcsim Skill function early-returns with skillCancelFrames). Cancel frames: swap=11, N=7, Q=4, D=13, J=12. Not authored as a separate variant — cancel-press behavior cannot be expressed in current schema.",
 				"Stack-conditional N animation: see Sharky's Bite ability for the 3-stack Surging Bite variant flag.",
 				"Movement/dash/jump frame replacements while in stance (skillDashFrames, skillJumpFrames) not authored — schema does not represent stance-altered dash/jump; reviewer to decide.",
 				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim mualani/skill.go:83-126: Nightsoul state only; the Surfing Hit is an OnTick subscription and the damage is the bites."
 			],
 			"application": [],
-			"nonHitting": true
+			"nonHitting": true,
+			"cooldownStartsAtStanceEnd": true,
+			"caveat": "The Nightsoul's Blessing bar is drawn at its 6s no-movement length. In game Puffer pickups refill her Nightsoul points, so it often lasts longer."
 		},
 		{
 			"id": "mualani__burst__boomsharkalaka",
@@ -145,18 +148,9 @@
 			"id": "mualani__passive__natlans_greatest_guide",
 			"name": "Natlan's Greatest Guide",
 			"abilityType": "passive",
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 45,
-					"stat": "hp"
-				}
-			],
 			"description": "After a nearby party member triggers a Nightsoul Burst, Mualani will gain 1 stack of Wavechaser's Exploits, which lasts for 20s. Max 3 stacks. When she uses Boomsharka-laka, Mualani will clear all Wavechaser's Exploits stacks and increase the DMG of this Boomsharka-laka by 15%/30%/45% of her Max HP based on the number of stacks cleared.",
 			"_curatorNotes": [
-				"Inherited manual trigger. Likely a flat-DMG add on the burst conditioned on stack count, fired onCast with ability=burst. gcsim implementation: subscribes to OnNightsoulBurst (event from teammates) to grant 1 stack (cap 3, 20s lifetime); on Q cast, ai.FlatDmg += 0.15 * stacks * MaxHP and stacks reset. Authored scaling=45 reflects max-stack value; the 15/30/45 stack ladder cannot be expressed cleanly without a stacks field on damage effects. Reviewer to decide representation."
+				"↻ RETIRED 2026-09-17 (T1 tranche, `manual` retirement): the `manual` damage skeleton (scaling 45 HP) is deleted. It never drew, and what it described is damage magnitude with no pixel — stacks gained on a team Nightsoul Burst (cap 3, 20s), spent as FlatDmg on her burst (0.15 × stacks × Max HP, gcsim)."
 			]
 		}
 	],
@@ -166,18 +160,9 @@
 			"name": "The Leisurely \"Meztli\"...",
 			"abilityType": "constellation",
 			"constellationLevel": 1,
-			"effects": [
-				{
-					"type": "damage",
-					"target": "enemy",
-					"trigger": { "type": "manual" },
-					"scaling": 66,
-					"stat": "hp"
-				}
-			],
 			"description": "The DMG dealt by the first Sharky's Surging Bite after Mualani enters Nightsoul's Blessing and the Shark Missiles it triggers is increased by 66% of Mualani's Max HP. This instance of increased DMG is subject to the diminishing DMG rules of Surfshark Wavebreaker.\nIn addition, while out of combat, Mualani's Nightsoul's Blessing state consumes 30% less Phlogiston and Nightsoul points.",
 			"_curatorNotes": [
-				"Inherited manual trigger. Likely an onHit add to Sharky's Surging Bite (and the Shark Missiles it triggers) — gcsim: c.c1() returns 0.66 added to the bite multiplier on the first Surging Bite per Nightsoul instance, gated on c1Done flag (reset on stance entry). C6 removes the once-per-stance gate. Trigger is one-shot per stance; schema has no \"first-of-kind in stance\" condition. Reviewer to decide.",
+				"↻ RETIRED 2026-09-17 (T1 tranche, `manual` retirement): the `manual` damage skeleton (scaling 66 HP) is deleted. It never drew, and it is a multiplier added to the first Sharky's Surging Bite per Nightsoul (gcsim `c1()`; C6 removes the once-per-stance gate) — damage magnitude, no pixel.",
 				"The out-of-combat Nightsoul-consumption reduction is a resource-pool effect not modelled in schema."
 			]
 		},

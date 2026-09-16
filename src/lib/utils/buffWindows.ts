@@ -1289,7 +1289,31 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 	// ════════════════════════════════════════════════════════════════════
 
 	const procReadyAt = new Map<string, number>();
-	const receivedBaseCtx: ConditionContext = { teamFactionCounts, teamEnabledReactions };
+	/**
+	 * ⚓ PER HOLDER, and it carries the element counts (T1 tranche, 2026-09-17).
+	 * This was ONE shared context with no `teamElementCounts`, so a
+	 * `teamElementCount` gate on an active-target, self-reaction or NB buff was
+	 * UNRESOLVABLE on the received surface while the team surface (PASS A) and
+	 * the self pass resolved it — and because these pools dedupe by `stat`
+	 * right after this pre-filter, an unresolvable gate let the FIRST-authored
+	 * tier win in every team (§1.H). Measured on Nahida's A1, three EM copies
+	 * gated on the Shrine's Hydro count: the 0-Hydro copy drew in a 2-Hydro
+	 * team. ⚓ The fix is to SUPPLY the context (the `applyModifiers` law),
+	 * ⛔ never to reorder the dedupe here.
+	 */
+	const receivedCtxCache = new Map<string, ConditionContext>();
+	const receivedCtxOf = (holderId: string): ConditionContext => {
+		let ctx = receivedCtxCache.get(holderId);
+		if (!ctx) {
+			ctx = {
+				teamFactionCounts,
+				teamEnabledReactions,
+				teamElementCounts: teamElementCountsByHolder.get(holderId)
+			};
+			receivedCtxCache.set(holderId, ctx);
+		}
+		return ctx;
+	};
 
 	const processWeaponEffects = (
 		triggerType: 'onSwapOut' | 'onSwapIn',
@@ -1417,7 +1441,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							cLevel,
 							undefined,
 							undefined,
-							receivedBaseCtx
+							receivedCtxOf(char.id)
 						) === false
 					)
 						return false;
@@ -1447,7 +1471,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								cLevel,
 								undefined,
 								cast.stackContext,
-								receivedBaseCtx
+								receivedCtxOf(char.id)
 							) === false
 						)
 							return false;
@@ -1606,7 +1630,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							cLevel,
 							undefined,
 							undefined,
-							receivedBaseCtx
+							receivedCtxOf(char.id)
 						) === false
 					)
 						return false;
@@ -1626,7 +1650,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								cLevel,
 								undefined,
 								hit.stacks,
-								receivedBaseCtx
+								receivedCtxOf(char.id)
 							) === false
 						)
 							return false;
@@ -1741,7 +1765,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								cLevel,
 								undefined,
 								undefined,
-								receivedBaseCtx
+								receivedCtxOf(char.id)
 							) === false
 						)
 							return false;
@@ -1763,7 +1787,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 									cLevel,
 									undefined,
 									hit.stacks,
-									receivedBaseCtx
+									receivedCtxOf(char.id)
 								) === false
 							)
 								return false;
@@ -1858,7 +1882,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				char,
 				sourceTrack.characterId,
 				cLevel,
-				receivedBaseCtx,
+				receivedCtxOf(char.id),
 				(e) => e.type === 'buff' && isActiveTargetOnly(e.target)
 			)) {
 				// Sliced across on-field windows exactly like the cast path: the
@@ -2089,7 +2113,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							cLevel,
 							undefined,
 							undefined,
-							receivedBaseCtx
+							receivedCtxOf(char.id)
 						) === false
 					)
 						return false;
@@ -2132,7 +2156,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				char,
 				sourceTrack.characterId,
 				cLevel,
-				receivedBaseCtx,
+				receivedCtxOf(char.id),
 				(e) => e.type === 'buff' && e.target === 'self'
 			)) {
 				emit({

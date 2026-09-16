@@ -50,10 +50,12 @@
 				}
 			],
 			"chargeFrames": {
-				"anim": 33,
+				"anim": 253,
 				"N": 37,
-				"C": 47,
 				"E": 47,
+				"Q": 33,
+				"D": 33,
+				"J": 33,
 				"swap": 33
 			},
 			"actionOpensState": {
@@ -81,8 +83,27 @@
 			],
 			"description": "Starts in Ousia alignment; Charged Attack toggles Arkhe alignment and switches the active Salon Solitaire guest.\n\nCA windup: 11 frames shorter when canceled from NormalAttackState (gcsim handles dynamically). Base chargeFrames listed here assume standalone CA cast. CA primarily functions as an alignment toggle in practice.",
 			"_curatorNotes": [
-				"Arkhe toggle authored 2026-09-04 (Arkhe round, landing b). Furina's Charged Attack switches her Arkhe alignment, which decides which lineup her Elemental Skill summons. gcsim charge.go:59-75 flips a plain `c.arkhe` field at chargeHitmark - windup + 1 (33f, or 22f when chained off a normal); furina.go:61 initialises it to Ousia, so `pneuma` names the non-default half and its absence IS Ousia. Toggle rather than a timed window because nothing but another Charged Attack ever puts it back. NOT terminatesOnSwap: gcsim's field is a plain character field that survives swap-out, so the alignment you leave in is the one you return to. NOT MODELLED: the Arkhe bonus attacks the alignment also selects (Spiritbreath Thorn in Ousia, Surging Blade in Pneuma, 6s ICD each) — gcsim attack.go:67 gives them Durability 0, so they apply no element and have nothing to say on a timeline that does not print damage."
-			]
+				"Arkhe toggle authored 2026-09-04 (Arkhe round, landing b). Furina's Charged Attack switches her Arkhe alignment, which decides which lineup her Elemental Skill summons. gcsim charge.go:59-75 flips a plain `c.arkhe` field at chargeHitmark - windup + 1 (33f, or 22f when chained off a normal); furina.go:61 initialises it to Ousia, so `pneuma` names the non-default half and its absence IS Ousia. Toggle rather than a timed window because nothing but another Charged Attack ever puts it back. NOT terminatesOnSwap: gcsim's field is a plain character field that survives swap-out, so the alignment you leave in is the one you return to. NOT MODELLED: the Arkhe bonus attacks the alignment also selects (Spiritbreath Thorn in Ousia, Surging Blade in Pneuma, 6s ICD each) — gcsim attack.go:67 gives them Durability 0, so they apply no element and have nothing to say on a timeline that does not print damage.",
+				"↻ FRAMES 2026-09-17 (T1 tranche). chargeFrames transcribe gcsim charge.go: InitAbilSlice(253) with Attack 37, Skill 47 and Burst/Dash/Jump/Swap = the 33f hitmark — so `anim` and `C` are 253, not 33 and 47. The old map had the swap value as `anim`; that mattered little until the Arkhe round made the CA the token people type, and it made `C C` 3.4s short and every CA 0.55s under the Full-animations toggle. Plunges from plunge.go (high = `plungeFrames`, InitAbilSlice 76; low = `lowPlungeFrames`, 75); before, a `P` emitted nothing."
+			],
+			"plungeFrames": {
+				"anim": 76,
+				"N": 59,
+				"C": 55,
+				"E": 59,
+				"Q": 59,
+				"D": 47,
+				"swap": 63
+			},
+			"lowPlungeFrames": {
+				"anim": 75,
+				"N": 58,
+				"C": 56,
+				"E": 58,
+				"Q": 58,
+				"D": 46,
+				"swap": 60
+			}
 		},
 		{
 			"id": "furina__skill__salon_solitaire",
@@ -397,7 +418,25 @@
 			"name": "\"They Know Not Life, Who Dwelt in the Netherworld Not!\"",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"description": "When the Salon Members from Salon Solitaire hit an opponent, or the Singer of Many Waters restores HP to nearby active characters, Furina will restore 4 Energy. This effect can be triggered once every 5s."
+			"description": "When the Salon Members from Salon Solitaire hit an opponent, or the Singer of Many Waters restores HP to nearby active characters, Furina will restore 4 Energy. This effect can be triggered once every 5s.",
+			"effects": [
+				{
+					"type": "energy",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "constellation",
+						"level": 4
+					},
+					"amount": 4
+				}
+			],
+			"_curatorNotes": [
+				"Energy authored 2026-09-17 (T1 tranche) for Team Builder parity — Ororon's and Aino's C4 energy were authored and hers was not (capability-sweep: 'wiki attributes energy (C4) — nothing derives'). gcsim cons.go `c4energy`: +4 on a Salon Member hit or a Singer heal, 5s ICD. ⚠️ The trigger is `onCast skill` because both sources are that skill's summons and energy reaches no planner surface; the per-hit/per-heal cadence behind the 5s ICD is not modelled."
+			]
 		},
 		{
 			"id": "furina__constellation__his_name_i_now_know_it_is",

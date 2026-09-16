@@ -997,7 +997,14 @@ export type State =
 	 *  this state. ⚠️ A4 shortens the 4s by up to 20% with Elemental Mastery;
 	 *  not simulated (⚓ Nate: a caveat), so the last 0.8s of the window can be
 	 *  Prayer here and the deer in game. */
-	| 'envoyCooldown';
+	| 'envoyCooldown'
+	/** Varesa: Follow-Up Strike — 5s from either Elemental Skill (gcsim
+	 *  `skillStatus` = "follow-up", `AddStatus(…, 5*60)`). ⚓ Opened for its
+	 *  `consumes`: the skill ends Apex Drive ("Varesa will exit Apex Drive after
+	 *  using her Elemental Skill"), and an instant cast can close a state only by
+	 *  opening one (T1 tranche, 2026-09-17). ⚠️ Nothing reads it yet — gcsim turns
+	 *  a Normal Attack inside it into a Charged Attack, which is unmodelled. */
+	| 'followUpStrike';
 
 /**
  * Post-action transient state — a short named gating window opened by an

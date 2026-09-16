@@ -20,9 +20,9 @@
 				{
 					"name": "N1",
 					"frames": {
-						"anim": 14,
+						"anim": 23,
 						"hit": 12,
-						"C": 23
+						"N": 14
 					}
 				},
 				{
@@ -36,25 +36,24 @@
 				{
 					"name": "N3",
 					"frames": {
-						"anim": 32,
+						"anim": 41,
 						"hit": 17,
-						"C": 41
+						"N": 32
 					}
 				},
 				{
 					"name": "N4",
 					"frames": {
-						"anim": 34,
+						"anim": 36,
 						"hit": 17,
-						"C": 36
+						"N": 34
 					}
 				},
 				{
 					"name": "N5",
 					"frames": {
-						"anim": 27,
-						"N": 62,
-						"swap": 27
+						"anim": 62,
+						"hit": 27
 					}
 				}
 			],
@@ -67,7 +66,9 @@
 				"swap": 33
 			},
 			"_curatorNotes": [
-				"N5 swap=27 reflects the actual N5 hitmark; gcsim's attackFrames[4] passes attackHitmarks[3]=17 into InitNormalCancelSlice, which would cancel before the hit lands — likely a typo in the gcsim source (should be attackHitmarks[4]=27). Cross-checked against the FrameMap convention (final-hit swap = last hitmark)."
+				"↻ FRAMES RE-TRANSCRIBED 2026-09-17 (T1 tranche) from gcsim `attack.go`: each map is InitNormalCancelSlice(hitmark, anim) with one override — N1 {anim 23, hit 12, N 14}, N2 {22, 11, C 21}, N3 {41, 17, N 32}, N4 {36, 17, N 34}, N5 {62, 27}. The old maps had the N→N value as `anim` and the full animation as `C`, which resolved every key but `P` and the full-animation toggle the same way. The N5 typo the note below describes is FIXED upstream (`attackHitmarks[4]`).",
+				"N5 (historical): gcsim's attackFrames[4] used to pass attackHitmarks[3]=17 into InitNormalCancelSlice — a typo since corrected upstream; our swap=27 was the right reading.",
+				"Plunges from gcsim `plunge.go`: `plungeFrames` = highPlungeFrames InitAbilSlice(66) with Attack 44, Skill 43, Burst 42, Dash 39, Jump 61, Swap 47; `lowPlungeFrames` = InitAbilSlice(63) with 41/42/41/37/59/46. Before 2026-09-17 a `P` emitted nothing — the silent no-op — which matters because C4 is a plunge buff and he sits in Geo plunge teams."
 			],
 			"sections": [
 				{
@@ -86,7 +87,25 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"plungeFrames": {
+				"anim": 66,
+				"N": 44,
+				"E": 43,
+				"Q": 42,
+				"D": 39,
+				"J": 61,
+				"swap": 47
+			},
+			"lowPlungeFrames": {
+				"anim": 63,
+				"N": 41,
+				"E": 42,
+				"Q": 41,
+				"D": 37,
+				"J": 59,
+				"swap": 46
+			}
 		},
 		{
 			"id": "albedo__skill__abiogenesis_solar_isotoma",
@@ -177,7 +196,7 @@
 			"energyCost": 40,
 			"effects": [],
 			"_curatorNotes": [
-				"Burst fires in two phases: Tectonic Tide initial hit at frame 75, then up to 7 Fatal Blossoms starting at frame 145 (each 5 frames apart) — but only if Solar Isotoma is active. Both phases happen inside the cast animation so we author as instant; per-blossom timing is not separately rendered.",
+				"Burst fires in two phases: Tectonic Tide initial hit at frame 75, then 7 Fatal Blossoms at 145 + 5i — but only if Solar Isotoma is active. ↻ AUTHORED 2026-09-17 (T1 tranche) as the `With Solar Isotoma` variant, gated on `duringSummon` (Bennett's in-field h2E shape), whose `application[]` carries the initial hit plus the seven blossoms (gcsim `burst.go`: queued from the burstHitmark task at `fatalBlossomHitmark + i*5` = 145…175 from the cast, Geo, Durability 25, ICDTagElementalBurst — the same tag as the initial hit, so all eight walk one per-cast counter; measured, the standard gate lands 75 / 155 / 170). ⚠️ gcsim checks `skillActive` AT the 75f hitmark, the variant resolves at the cast; the two differ only for an Isotoma expiring inside those 75 frames. ⛔ The frames dump cannot see the blossoms (it runs one ability in an empty core, so `skillActive` is false) — its row for this burst looks complete and is not. Measured before: `Albedo E Q` applied Geo once from the burst.",
 				"Cancel frames (swap 93 / D 95 / J 94) reflect the full burst animation, not the initial hit at 75. Albedo can be swapped earlier in practice via the construct's queueing — gcsim's CanQueueAfter is burstFrames[ActionSwap]=93, treating that as the canonical animation length."
 			],
 			"description": "Under Albedo's command, Geo crystals surge and burst forth, dealing AoE Geo DMG in front of him.\nIf a Solar Isotoma created by Albedo himself is on the field, 7 Fatal Blossoms will be generated in the Solar Isotoma field, bursting violently into bloom and dealing AoE Geo DMG.\n\nTectonic Tide DMG and Fatal Blossom DMG will not generate Transient Blossoms.",
@@ -186,6 +205,58 @@
 					"frame": 75,
 					"element": "geo",
 					"units": 1
+				}
+			],
+			"variants": [
+				{
+					"label": "With Solar Isotoma",
+					"input": ["Q"],
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"application": [
+						{
+							"frame": 75,
+							"element": "geo",
+							"units": 1
+						},
+						{
+							"frame": 145,
+							"element": "geo",
+							"units": 1
+						},
+						{
+							"frame": 150,
+							"element": "geo",
+							"units": 1
+						},
+						{
+							"frame": 155,
+							"element": "geo",
+							"units": 1
+						},
+						{
+							"frame": 160,
+							"element": "geo",
+							"units": 1
+						},
+						{
+							"frame": 165,
+							"element": "geo",
+							"units": 1
+						},
+						{
+							"frame": 170,
+							"element": "geo",
+							"units": 1
+						},
+						{
+							"frame": 175,
+							"element": "geo",
+							"units": 1
+						}
+					]
 				}
 			]
 		}
