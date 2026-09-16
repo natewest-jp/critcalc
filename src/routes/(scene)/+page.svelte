@@ -256,11 +256,15 @@
 
 	.heroes {
 		position: absolute;
-		/* Vertically: dead centre (🎛️ ⚓ NATE 2026-09-16, 47% → 50% for the
-		   1:1.8 plate with the status band above it). The bottom points land
-		   ~73% down a 900px frame, past the horizon at ~63%, so the cards stand
-		   on the ground; the portrait composition is a separate item. */
-		top: 50%;
+		/* Vertically: the cards sit a little above centre so the GROUPING —
+		   cards plus the status band under them (~86px: gap + two lines) — is
+		   what centres. Between chrome and footer the frame's centre is 50%;
+		   the composite's centre is the cards' + 43px, so 46% puts it at ~51%
+		   on a 900px frame, and the bottom points land ~69% down, past the
+		   horizon at ~63%, so the cards still stand on the ground. ↻ 50% was
+		   right with the band ABOVE (⚓ Nate moved it below, 2026-09-16); the
+		   portrait composition is a separate item. */
+		top: 46%;
 		transform: translateY(-50%);
 		left: 0;
 		right: 0;
@@ -418,10 +422,11 @@
 		max-width: 100%;
 	}
 
-	/* ── The status band above the doors ─────────────────────────────────────
-	   Hangs off the card group's own top edge (its centre is at 50%, its
+	/* ── The status band under the doors ─────────────────────────────────────
+	   Hangs off the card group's own bottom edge (its centre is at 46%, its
 	   half-height is --card-h / 2), so it travels with the cards through every
-	   clamp. Plex Sans in sentence case with NORMAL tracking — the wide
+	   clamp. ↻ It sat above them for a cut; below, on the ground, it reads as
+	   the doors' footing rather than their lintel. Plex Sans in sentence case with NORMAL tracking — the wide
 	   tracking belongs to the uppercase kickers, and on body text it read
 	   loose. The ladder: names 22 Bitter semibold → status 16 sans → kickers
 	   11 mono. ↻ A tagline under the doors was cut 2026-09-16 (⚓ Nate: it
@@ -431,7 +436,7 @@
 		position: absolute;
 		left: 0;
 		right: 0;
-		bottom: calc(50% + var(--card-h) / 2 + var(--caption-gap));
+		top: calc(46% + var(--card-h) / 2 + var(--caption-gap));
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -444,25 +449,20 @@
 	/* A BAND that fades to nothing at both ends (⚓ Nate: a boxed band walled
 	   the cards in and took from the scene). Well glass (.45) — a step lighter
 	   than the cards' plate, so the cards stay the densest thing on the page —
-	   with NO edge at all: no hairline, no radius. It is wider than the group
-	   and MASKED over its outer quarter each side, so the solid plateau is
-	   about the group's width and the glass dissolves into the sky past the
-	   first and third card. A mask rather than a gradient fill so the fade is
-	   one ramp on one alpha (the scrollFade rule). Centred with a transform,
-	   which is fine here: the alpha is in the paint, not element opacity.
-	   Capped at the viewport so a phone never scrolls sideways for it. */
+	   with NO edge at all: no hairline, no radius. It is exactly the group's
+	   width (⚓ Nate) and MASKED over its outer 15% each side, so the glass
+	   dissolves toward the first and third card's outer edges; the plateau is
+	   ~70% of the group, about the width of the longer line, so the text sits
+	   on solid glass. A mask rather than a gradient fill so the fade is one
+	   ramp on one alpha (the scrollFade rule). */
 	.notice {
-		position: relative;
-		left: 50%;
-		width: min(135%, 100vw);
-		transform: translateX(-50%);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: 0.15em;
 		padding: 0.6rem 1rem;
 		background: var(--glass-well);
-		mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent);
+		mask-image: linear-gradient(to right, transparent, #000 15%, #000 85%, transparent);
 		font-family: var(--font-body);
 		font-size: var(--fs-xl);
 		line-height: var(--lh-snug);
