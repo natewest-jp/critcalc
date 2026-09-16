@@ -3275,15 +3275,23 @@ describe('parseNotation — sQ short-burst + transient-state primitive (2026-07-
 		expect(stateWindows(result, 'apexDrive')).toHaveLength(0);
 	});
 
-	it('Varesa: Kablam shares the burst CD slot — sQ right after Q waits out the 18s clock (apex expires → base resolves)', () => {
-		// Mirrors gcsim ActionReady: kablam requires the shared burst CD charge.
-		// Q writes 18s; the plunge's 2.33s apex window is long gone by the time
-		// the clock frees the slot, so the queued sQ resolves the full Vent.
-		const result = parseNotation('Varesa Q P sQ', lookup, 8);
+	it('Varesa: Kablam ignores the burst CD — sQ right after Q fires in the apex window, and the base clock survives', () => {
+		// ↻ REVERSED 2026-09-17 (T1 tranche). This test used to pin gcsim's
+		// ActionReady gate (Kablam needs the shared burst CD charge), under which
+		// `Q P sQ` waited out the 18s clock and resolved the BASE burst. The kit
+		// says the opposite — "While affected by Apex Drive, Varesa can ignore her
+		// Elemental Burst CD" — and gcsim's own rotations enter Fiery Passion by
+		// plunge, so its gate never bites there. The variant is `bypassesCooldown`
+		// now (the Flins shape): it neither waits for nor writes the burst clock.
+		const result = parseNotation('Varesa Q P sQ Q', lookup, 8);
 		const qBars = result.tracks[0].qBars;
-		expect(qBars).toHaveLength(2);
-		expect(qBars[1].start).toBe(framesOf(18));
-		expect(qBars[1].cooldown).toBe(framesOf(18));
+		expect(qBars).toHaveLength(3);
+		expect(qBars[1].label).toBe('sQ');
+		expect(qBars[1].start).toBeLessThan(framesOf(18));
+		expect(qBars[1].cooldown).toBe(framesOf(1));
+		// The base burst's 18s clock is untouched by the Kablam.
+		expect(qBars[2].start).toBe(framesOf(18));
+		expect(qBars[2].cooldown).toBe(framesOf(18));
 	});
 
 	it('Varesa: in-Fiery-Passion plunge opens apexDrive with a free burst slot → Kablam fires', () => {

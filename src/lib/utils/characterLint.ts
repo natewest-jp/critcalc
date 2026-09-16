@@ -223,7 +223,9 @@ const STATES = new Set([
 	'pneuma',
 	// Lauma's two charged forms (charged-forms round, 2026-09-16).
 	'spiritEnvoy',
-	'envoyCooldown'
+	'envoyCooldown',
+	// Varesa's Follow-Up Strike (T1 tranche, 2026-09-17).
+	'followUpStrike'
 ]);
 
 const ABILITY_TYPES = new Set(['normal', 'skill', 'burst', 'passive', 'constellation']);
