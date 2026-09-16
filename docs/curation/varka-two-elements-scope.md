@@ -210,6 +210,15 @@ it works with a teammate who applies nothing off-field: Xingqiu, Fischl and
 Kaeya teams each draw his A4 stacks where only Xiangling's Guoba could feed him
 before. Solo, the right hand stays Physical and he applies Anemo alone.
 
+### Gates
+
+vitest 1861/1861, check, lint, build, and **e2e 73 + 73 green cross-engine** on
+`2df2924c` (⚠️ the Chrome run also printed six of the known upstream
+"worker did not exit" teardown lines — two "N passed" lines are the gate, not
+the exit code). Corpus digest against the pre-primitive baseline: 252 digests,
+**2 moved**, both Varka — and the digest records input-block elements now, so
+the `sC`/`sE` blocks and the PHEC tint are inside what it compares.
+
 ### Two corrections this round makes to older notes
 
 🐛 **`CastAbility.noICD` IS read, and both CLAUDE.md and Fischl's curator note
