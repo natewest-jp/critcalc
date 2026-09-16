@@ -2939,15 +2939,23 @@ describe('parseNotation — E cooldown wait re-resolves the active variant (swee
 	it('Skirk: drain decay owed over the cooldown wait is applied before the next grant', () => {
 		const skirk = skirkJson as unknown as CharacterData;
 		const lookup = (name: string): CharacterData | null => (name === 'Skirk' ? skirk : null);
-		// Second E waits out the 8s skill CD. Serpent's Subtlety drains 7/s
-		// while the stance (12.57s) is up, so the 45 granted at t=0 fully
-		// decays by t=8 and the second grant snapshots 45 — before the fix,
+		// Second E waits out the skill CD. Serpent's Subtlety drains 7/s while
+		// the stance (12.57s) is up, so the 45 granted at t=0 fully decays
+		// before the second cast and that grant snapshots 45 — before the fix,
 		// drain ran at the pre-wait cursor (0.5s of decay) and the grant
-		// re-anchored, snapshotting 86.5 phantom stacks.
+		// re-anchored, snapshotting 86.5 phantom stacks. ⚠️ The 86.5 does not
+		// depend on how long the wait is, so the seeded negative still fires
+		// at the later start below.
+		//
+		// ↻ The start moved 8s → 20.57s on 2026-09-16 when the skill gained
+		// `cooldownStartsAtStanceEnd` (gcsim starts the 8s clock in
+		// exitSkillState and refuses E while the stance is live). The wait is
+		// now stance (754f) + CD (480f); the drain claim this test exists for
+		// is unchanged.
 		const result = parseNotation('Skirk E E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'skirk')!;
 		expect(track.eBars).toHaveLength(2);
-		expect(track.eBars[1].start).toBe(framesOf(8));
+		expect(track.eBars[1].start).toBe(framesOf(12.57) + framesOf(8));
 		expect(track.eBars[1].stackContext?.get('serpentsSubtlety')).toBe(45);
 	});
 });
