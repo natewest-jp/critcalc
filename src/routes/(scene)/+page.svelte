@@ -10,6 +10,19 @@
 		startSceneTransition
 	} from '$lib/landing/transition';
 	import { SILHOUETTES } from '$lib/landing/silhouettes';
+	import { currentAnnouncements, formatSince } from '$lib/landing/announcements';
+	import { onMount } from 'svelte';
+
+	// The banner's entries are filtered by DATE, and the first paint must be
+	// deterministic (SSR → hydrate): the prerender bakes the list as of build
+	// time, and the client re-filters once mounted, so an entry that expired
+	// between the build and the visit shows for one frame and then leaves —
+	// the safe direction. ⛔ Never filter with `new Date()` inline in the
+	// template; that is a hydration mismatch waiting for the first expiry.
+	let announcements = $state(currentAnnouncements());
+	onMount(() => {
+		announcements = currentAnnouncements();
+	});
 
 	// Card order = the task narrative (build team → plan rotation → reference
 	// shelf), matching the chrome switcher in toolChrome.ts left to right.
@@ -117,6 +130,14 @@
 	out:fade|global={{ duration: FADE_OUT_MS }}
 >
 	<div class="composition-inner">
+		<!-- The positioning line — the ONE quiet sentence on the landing that
+			 says what critcalc is (memory `project_landing_card_round`: a
+			 first-time visitor from Reddit used to see three instrument names
+			 and nothing else). Above the doors, read first; not a hero block,
+			 which would wreck the composition. Copy is draft until Nate's
+			 wording pass; it should echo the OG description in seo.ts. -->
+		<p class="tagline">Genshin Impact mechanics, made visible. No tier lists, no verdicts.</p>
+
 		<nav class="heroes" aria-label="critcalc tools">
 			{#each tools as tool (tool.id)}
 				{@const art = SILHOUETTES[tool.art.id]}
@@ -168,6 +189,24 @@
 				</a>
 			{/each}
 		</nav>
+
+		<!-- The announcement banner — "is this current?" answered under the
+			 cards, on the ground. Renders ONLY while an entry is live
+			 ($lib/landing/announcements.ts carries the rule and the expiry); an
+			 empty slot is worse than none, a stale one is worse than empty. The
+			 same dark glass as the cards with the same gold on it, so the strip
+			 reads as part of the set and not as a toast. -->
+		{#if announcements.length}
+			<ul class="notices" aria-label="Announcements">
+				{#each announcements as a (a.id)}
+					<li class="notice">
+						<span class="notice__text">{a.text}</span>
+						<span class="notice__rule" aria-hidden="true"></span>
+						<time class="notice__since" datetime={a.since}>{formatSince(a.since)}</time>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 	</div>
 </div>
 
@@ -382,6 +421,89 @@
 		/* All three names are single words, so nothing wraps; the label's own
 		   padding is the only constraint they need. */
 		max-width: 100%;
+	}
+
+	/* ── The line above and the strip below ─────────────────────────────────
+	   Both hang off the card group's own edges (its centre is at 47%, its
+	   half-height is --card-h / 2), so they travel with the cards through
+	   every clamp instead of being placed on the frame separately. */
+
+	/* Quiet: the chrome's voice (white), body face, one size down from base,
+	   slightly translucent — it is read on the way to the cards, not instead
+	   of them. Allowed to wrap on a phone. */
+	.tagline {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: calc(53% + var(--card-h) / 2 + 1.5rem);
+		margin: 0;
+		padding: 0 1rem;
+		text-align: center;
+		font-family: var(--font-body);
+		font-size: var(--fs-lg);
+		line-height: var(--lh-snug);
+		letter-spacing: var(--ls-wide);
+		color: var(--chrome);
+		opacity: 0.8;
+		/* On a phone it wraps; balanced, it breaks at the sentence, not at
+		   "No / tier lists". */
+		text-wrap: balance;
+	}
+
+	.notices {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: calc(47% + var(--card-h) / 2 + 1.5rem);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	/* One slim plate: the cards' glass, a gold hairline at its edge for the
+	   card's inset frame, and the text in the kicker's register. */
+	.notice {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.45rem 1rem;
+		border-radius: 3px;
+		background: var(--glass-plate);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+		font-family: var(--font-mono);
+		font-size: var(--fs-sm);
+		letter-spacing: var(--ls-wider);
+		text-transform: uppercase;
+		color: var(--accent);
+		white-space: nowrap;
+	}
+
+	.notice__rule {
+		display: block;
+		width: 1.25rem;
+		height: 1px;
+		background: var(--accent);
+		opacity: 0.6;
+	}
+
+	/* The date recedes: the fact is the text, the date is its provenance. */
+	.notice__since {
+		color: var(--chrome);
+		opacity: 0.7;
+		letter-spacing: var(--ls-wide);
+	}
+
+	/* `compact` — 40rem, $lib/breakpoints.ts. On a phone the strip sheds its
+	   date (decoration over meaning: "current to 7.0" is the fact). */
+	@media (max-width: 40rem) {
+		.notice__rule,
+		.notice__since {
+			display: none;
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {

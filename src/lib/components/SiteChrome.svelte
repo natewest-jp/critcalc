@@ -52,7 +52,31 @@
 		     🎛️ Gold, by Nate's ask 2026-09-16 (trying the accent first; a darker
 		     gold is the fallback) — ⚠ this overrides §8's "chrome-toned pill"
 		     and the block-not-word rule for this one mark, on his call. -->
-		<a class="chrome-beta" href={resolve('/contribute')} title="What beta means here">beta</a>
+		<a
+			class="chrome-beta"
+			href={resolve('/contribute')}
+			title="What beta means here"
+			aria-label="Beta"
+		>
+			<!-- A PILL WITH THE WORD SUBTRACTED: the gold is the pill, and the
+			     letters are holes in it that show the scene through. One rect
+			     masked by (white pill − black text). ⚠ This is the site's one
+			     <text> in an svg, and it is here because a knockout needs real
+			     glyphs, not a mark. The WebKit trap the marks rule records is
+			     dominant-baseline centring, so the baseline is stated as a
+			     number instead: Plex Mono's cap height is ~0.70em, so at 10px in
+			     a 16px pill the baseline sits at 8 + 3.5. Tracking adds a
+			     trailing space after the last glyph, hence the +0.5 on x. -->
+			<svg class="chrome-beta__pill" viewBox="0 0 42 16" width="42" height="16" aria-hidden="true">
+				<mask id="chromeBetaKnockout">
+					<rect width="42" height="16" rx="8" fill="#fff" />
+					<text class="chrome-beta__text" x="21.5" y="11.5" text-anchor="middle" fill="#000"
+						>BETA</text
+					>
+				</mask>
+				<rect width="42" height="16" rx="8" mask="url(#chromeBetaKnockout)" />
+			</svg>
+		</a>
 	</div>
 
 	<div class="chrome-center">{@render center?.()}</div>
@@ -232,27 +256,40 @@
 	   the grid track reserves its width — an absolute tag would let the tool
 	   switcher overlap it on a tight bar), lifted by `position: relative`,
 	   which moves paint alone and keeps it off the transform-placed list.
-	   Mono, tracked, the site's micro-label rung; the accent gold at the
-	   chrome's resting alpha, full on hover — the chrome state contract. */
+	   The pill rests at the chrome's alpha and goes full on hover — the
+	   chrome state contract — with the alpha on the FILL, not the element,
+	   for the same WebKit reason the glyph cluster carries fill-opacity. */
 	.chrome-beta {
 		position: relative;
 		top: -0.55em;
+		display: block;
+		line-height: 0;
+		text-decoration: none;
+	}
+
+	.chrome-beta:focus-visible {
+		outline: none;
+	}
+
+	.chrome-beta__pill {
+		display: block;
+		fill: var(--chrome-tag);
+		fill-opacity: 0.85;
+		transition: fill-opacity var(--t-quick);
+	}
+
+	.chrome-beta:hover .chrome-beta__pill,
+	.chrome-beta:focus-visible .chrome-beta__pill {
+		fill-opacity: 1;
+	}
+
+	/* The knockout's type: the site's micro-label rung, mono, tracked at
+	   --ls-wider (⚓ Nate). Set on the <text> so the mask sees the webfont. */
+	.chrome-beta__text {
 		font-family: var(--font-mono);
 		font-size: var(--fs-xs);
 		font-weight: var(--fw-semibold);
-		letter-spacing: var(--ls-widest);
-		text-transform: uppercase;
-		line-height: 1;
-		color: var(--accent);
-		text-decoration: none;
-		opacity: 0.85;
-		transition: opacity var(--t-quick);
-	}
-
-	.chrome-beta:hover,
-	.chrome-beta:focus-visible {
-		opacity: 1;
-		outline: none;
+		letter-spacing: var(--ls-wider);
 	}
 
 	.chrome-center {

@@ -1519,6 +1519,11 @@
 	--fill-rest: color-mix(in srgb, var(--chrome) 13%, transparent);
 	--fill-hover: color-mix(in srgb, var(--chrome) 20%, transparent);
 	--accent: var(--chrome);
+	/* The one gold thing in the bar: the BETA tag (⚓ Nate 2026-09-16, trying
+	   the accent's rung first; a darker gold is the fallback). Its own role
+	   because --accent is white in here by the rule above, and a component
+	   may not name the primitive. */
+	--chrome-tag: var(--gold-400);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
