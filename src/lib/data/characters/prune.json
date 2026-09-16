@@ -202,8 +202,10 @@
 					"stat": "atk",
 					"attribution": "A1: Verdict and Punishment",
 					"_curatorNotes": [
-						"A1 follow-up: during the Burst, when the Hunter-Seeker Witchlure Bell's hit triggers a Swirl, a Banehunter Oathhammer strikes for 150% ATK in the swirled element (Burst DMG). Trigger authored as a self Swirl during an active summon (the Bell). Element omitted — it matches the Swirl's converted element (pyro/hydro/cryo/electro), which is enemy-aura dependent and not fixed. No stated ICD in kit text; none authored."
-					]
+						"A1 follow-up: during the Burst, when the Hunter-Seeker Witchlure Bell's hit triggers a Swirl, a Banehunter Oathhammer strikes for 150% ATK in the swirled element (Burst DMG). Trigger authored as a self Swirl during an active summon (the Bell). Element omitted — it matches the Swirl's converted element (pyro/hydro/cryo/electro), which is enemy-aura dependent and not fixed. No stated ICD in kit text; none authored.",
+						"↻ procCooldown: 1.2 AUTHORED 2026-09-16 (T0.5) — the note above's \"No stated ICD in kit text; none authored\" is superseded by the source. gcsim asc.go:50-53 holds a1SwirlCheckICDKey for 1.2s and it is SHARED across all four swirl elements, so the hammer cannot answer two swirls of different elements inside the window. ⛔ Still not authorable: gcsim also narrows the trigger to `atk.Info.Abil == \"Witchlure Bell\"` (asc.go:46), i.e. only the BELL's swirls count, where ours fires off any swirl Prune triggers during any active summon of hers. There is no ability-name filter on an onReaction trigger."
+					],
+					"procCooldown": 1.2
 				}
 			],
 			"description": "During the Elemental Burst **The Bell Tolls! The Hunt Is On!**, after the Witchlure Bell in Hunter-Seeker mode deals DMG to an opponent, if this DMG triggers Swirl or Stellar Swirl in an opponent, it will also summon a **Banehunter Oathhammer** that will deal 150% of Prune's ATK as DMG to them, with the DMG Type matching the Elemental Conversion from the Swirl or Stellar Swirl. This DMG is considered Elemental Burst DMG."
@@ -282,22 +284,47 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 12,
+					"duration": 12.6,
 					"durationType": "refresh",
 					"source": "character",
 					"stat": "atk%",
 					"value": 10,
 					"snapshottable": false,
 					"attribution": "C2: Hunt the Witch",
-					"_curatorNotes": [
-						"C2 Hunt the Witch (self only): during the Burst's Hunter-Seeker mode, Prune gains +10% ATK, then +5% ATK per Witchlure Bell / converted Banehunter Oathhammer hit, up to +40% total. Authored at the +10% base floor over the 12s window (durationType refresh); the per-hit ramp to 40% is described in the caveat rather than faked as a time-based ramp. snapshottable:false pending confirmation. Feeds the ATK that powers Tolling Rally / C6."
-					]
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "constellation",
+							"level": 6
+						}
+					}
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 16.6,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "atk%",
+					"value": 10,
+					"snapshottable": false,
+					"attribution": "C2: Hunt the Witch",
+					"conditions": {
+						"type": "constellation",
+						"level": 6
+					}
 				}
 			],
 			"caveat": "Shown at her +10% starting ATK; in game each Witchlure Bell or converted hammer hit adds 5% more, up to 40%.",
 			"description": "During the Elemental Burst **The Bell Tolls! The Hunt Is On!**, when the Witchlure Bell is in Hunter-Seeker mode, Prune gains the Hunt the Witch effect: Prune's ATK increases by 10%, and when the Witchlure Bell and the **Banehunter Oathhammer** that has undergone Elemental Conversion hits an opponent, it further increases her ATK by 5%. Prune's ATK can be increased by up to 40% in this way.\nThe original instance of the above effect will be removed if \"The Bell Tolls! The Hunt Is On!\" is used again during this time.",
 			"_curatorNotes": [
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"During the burst, her ATK rises by 10%, then a further 5% each time the Witchlure Bell or a converted Banehunter Oathhammer hits, up to 40%. Shown at the 10% starting value.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"During the burst, her ATK rises by 10%, then a further 5% each time the Witchlure Bell or a converted Banehunter Oathhammer hits, up to 40%. Shown at the 10% starting value.\"",
+				"↻ THE WINDOW IS 13.55s, AND 17.55s AT C6 — 2026-09-16 (T0.5), where it was a flat 12 at every level. gcsim burst.go:26-52 computes `duration = 813 + c6BurstBonusDur()` (that bonus is 4*60) and then adds the status at frame 57 for `duration − 57`, so the mod ENDS at 813f = 13.55s at C0–C5 and 1053f = 17.55s at C6. Measured before: `Prune Q` at C6 drew the C2 bar 7.88→19.88s against a bell bar running to 23.88s — visibly mismatched, since the C6 +4s reached only the summon.",
+				"⚓ And the LENGTH is the right number here, not the end time, because the anchor already agrees: a cast's buff window starts at `fieldStart`, which is the summon's `summonActivatesAt` — 57 — and 57 is exactly gcsim's `burstStatusDelay`. So 756f (12.6s) and 996f (16.6s) land the ends on gcsim's 813f and 1053f to the frame. ⚠️ Measured, not assumed: an earlier draft authored the END times and drew 0.95→18.50s. Two mutually-exclusive `constellation` arms because `constellationScaling` reads only a gainStacks amount and a tick cap, never a duration."
 			]
 		},
 		{
