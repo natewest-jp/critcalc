@@ -289,9 +289,32 @@
 			"name": "Life-Prolonging Methods",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. A1: when the active char is under Herald of Frost and triggers any elemental reaction, they gain +20% IncomingHealingBonus for 8s. gcsim subscribes to all reaction events (ReactionEventStartDelim+1 through ReactionEventEndDelim) and checks skillBuffKey active (asc.go:a1()). Probable trigger: onReaction with condition that Herald of Frost is active; reaction list needs KQM verification."
+				"Effect not yet authored — needs reviewer pass. A1: when the active char is under Herald of Frost and triggers any elemental reaction, they gain +20% IncomingHealingBonus for 8s. gcsim subscribes to all reaction events (ReactionEventStartDelim+1 through ReactionEventEndDelim) and checks skillBuffKey active (asc.go:a1()). Probable trigger: onReaction with condition that Herald of Frost is active; reaction list needs KQM verification.",
+				"↻ AUTHORED 2026-09-16 (T0.5) — the \"needs reviewer pass\" above is closed. `incomingHealingBonus` already exists as a Stat and the trigger needed no new primitive: `reaction: 'any'` and `source: 'active'` are both in the union, and 'active' is the right one — gcsim requires atk.Info.ActorIndex == Player.ActiveChar().Index(), and 'team' would let the Herald's own swipes grant it.",
+				"⚠️⚠️ AUTHORED FROM THE KIT TEXT, NOT FROM gcsim, ON PURPOSE — gcsim's gate is INVERTED. `asc.go:19-22` opens with `if c.StatusIsActive(skillBuffKey) { return }`, i.e. it grants the bonus when the Herald of Frost is NOT out, where the talent says \"a character under the effects of Adeptus Art: Herald of Frost\". We author `state: duringSummon`, which is the kit. ⛔ Don't 'fix' this toward the oracle. ⚠️ The gate renders optimistically today (a `state` condition is unresolvable on the buff passes, §1.G), so the bar draws off any reaction the active character triggers whether or not the Herald is up."
 			],
-			"description": "When a character under the effects of Adeptus Art: Herald of Frost triggers an Elemental Reaction, their Incoming Healing Bonus is increased by 20% for 8s."
+			"description": "When a character under the effects of Adeptus Art: Herald of Frost triggers an Elemental Reaction, their Incoming Healing Bonus is increased by 20% for 8s.",
+			"effects": [
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onReaction",
+						"reaction": "any",
+						"source": "active"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"duration": 8,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "incomingHealingBonus",
+					"value": 20,
+					"snapshottable": false
+				}
+			]
 		},
 		{
 			"id": "qiqi__passive__a_glimpse_into_arcanum",
@@ -406,6 +429,36 @@
 						"type": "passive"
 					},
 					"conditions": {
+						"type": "enemyAffectedBy",
+						"element": "cryo"
+					},
+					"source": "character",
+					"stat": "normalDmgBonus",
+					"value": 15,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
+						"type": "enemyAffectedBy",
+						"element": "cryo"
+					},
+					"source": "character",
+					"stat": "chargeDmgBonus",
+					"value": 15,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"conditions": {
 						"type": "teamEnablesReaction",
 						"reaction": "stellarConduct"
 					},
@@ -417,7 +470,8 @@
 			],
 			"_curatorNotes": [
 				"Effect not yet authored — needs reviewer pass. C2: +15% DmgP on N/CA hits against enemies with Cryo or Frozen aura. Implemented in cons.go:c2() as AddAttackMod with permanent (-1) duration; checks e.AuraContains(Cryo, Frozen). No effects[] skeleton from generator. (Still unauthored after the 2026-07-29 Stellar round — out of scope; wireable later as normalDmgBonus + chargeDmgBonus effects gated on `enemyAffectedBy: cryo`.)",
-				"STELLAR ROUND 2026-07-29 — ATK effect ADDED. Enhanced (buff-field) text, Fandom 'Frozen to the Bone': 'Radiance: Stellar-Conduct: Qiqi's ATK is increased by 50%.' Self-facing stat buff → authored as atk% 50 (whole-number percentage-point convention), trigger 'passive' (always-on while the state holds; no duration in the talent text — never invented), gated on `teamEnablesReaction: stellarConduct`. Real gate is narrower (Radiance state = inside a Polestar Field); caveat says so. snapshottable false, matching the Flins C4 always-on atk% precedent."
+				"STELLAR ROUND 2026-07-29 — ATK effect ADDED. Enhanced (buff-field) text, Fandom 'Frozen to the Bone': 'Radiance: Stellar-Conduct: Qiqi's ATK is increased by 50%.' Self-facing stat buff → authored as atk% 50 (whole-number percentage-point convention), trigger 'passive' (always-on while the state holds; no duration in the talent text — never invented), gated on `teamEnablesReaction: stellarConduct`. Real gate is narrower (Radiance state = inside a Polestar Field); caveat says so. snapshottable false, matching the Flins C4 always-on atk% precedent.",
+				"↻ THE BASE HALF IS AUTHORED 2026-09-16 (T0.5) — the \"needs reviewer pass\" note above is closed, and the file's own reading of the shape was right. gcsim cons.go:29-50 is a permanent AttackMod adding 15% DmgP to AttackTagNormal and AttackTagExtra when `e.AuraContains(Cryo, Frozen)`, so it is `normalDmgBonus` + `chargeDmgBonus` gated on `enemyAffectedBy: cryo`. ⚓ One condition covers both of gcsim's aura checks: a Frozen enemy carries a Cryo aura, the same reading Kaeya's C2 records. ⚠️ `enemyAffectedBy` renders optimistically — it is a claim about enemy state the planner does not simulate — which is the standing price of the primitive and is why Chongyun and Kaeya carry it too."
 			],
 			"description": "Qiqi's Normal and Charged Attack DMG against opponents affected by Cryo is increased by 15%.",
 			"caveat": "The 50% ATK bonus also needs a Polestar Field, which is not shown, so it may appear when it would not be active in game."
