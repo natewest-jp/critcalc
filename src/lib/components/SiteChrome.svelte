@@ -32,10 +32,28 @@
 </script>
 
 <header class="site-chrome">
-	<a class="chrome-brand" href={resolve('/')} aria-label="critcalc.app home">
-		<img src="/critcalc-logo-white.svg" alt="" />
-		<span class="chrome-wordmark">critcalc.app</span>
-	</a>
+	<!-- The brand and its BETA tag share column 1. The tag is a SIBLING link,
+	     not a child — an anchor cannot nest in an anchor — so the two sit in
+	     one flex group that owns the grid cell. -->
+	<div class="chrome-brand-group">
+		<a class="chrome-brand" href={resolve('/')} aria-label="critcalc.app home">
+			<img src="/critcalc-logo-white.svg" alt="" />
+			<span class="chrome-wordmark">critcalc.app</span>
+		</a>
+		<!-- BETA (launch roadmap §8, ⚓ Nate): the site LOOKS like it has a team
+		     behind it, so a rough edge reads as "unreliable" rather than "one
+		     person's project, still moving" — the tag re-frames that jolt. It is
+		     a LINK, because a bare tag lowers expectations without giving anyone
+		     anywhere to go; the "what beta means here" note it should reach is
+		     not written yet (it belongs to the text pass), so it lands on
+		     Contribute, the page that already says how to report a problem.
+		     ⚠ It points at the SURFACE, never the data — the curation is the
+		     most rigorous part of the project and the linked note must say so.
+		     🎛️ Gold, by Nate's ask 2026-09-16 (trying the accent first; a darker
+		     gold is the fallback) — ⚠ this overrides §8's "chrome-toned pill"
+		     and the block-not-word rule for this one mark, on his call. -->
+		<a class="chrome-beta" href={resolve('/contribute')} title="What beta means here">beta</a>
+	</div>
 
 	<div class="chrome-center">{@render center?.()}</div>
 
@@ -184,7 +202,7 @@
 		pointer-events: none;
 	}
 
-	.chrome-brand,
+	.chrome-brand-group,
 	.chrome-center,
 	.chrome-actions {
 		pointer-events: auto;
@@ -202,8 +220,39 @@
 
 	   Naming the columns makes the placement independent of how many children
 	   happen to render, which is the property that was actually wanted here. */
-	.chrome-brand {
+	.chrome-brand-group {
 		grid-column: 1;
+		justify-self: start;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	/* The tag hugs the wordmark's top-right like a superscript: in flow (so
+	   the grid track reserves its width — an absolute tag would let the tool
+	   switcher overlap it on a tight bar), lifted by `position: relative`,
+	   which moves paint alone and keeps it off the transform-placed list.
+	   Mono, tracked, the site's micro-label rung; the accent gold at the
+	   chrome's resting alpha, full on hover — the chrome state contract. */
+	.chrome-beta {
+		position: relative;
+		top: -0.55em;
+		font-family: var(--font-mono);
+		font-size: var(--fs-xs);
+		font-weight: var(--fw-semibold);
+		letter-spacing: var(--ls-widest);
+		text-transform: uppercase;
+		line-height: 1;
+		color: var(--accent);
+		text-decoration: none;
+		opacity: 0.85;
+		transition: opacity var(--t-quick);
+	}
+
+	.chrome-beta:hover,
+	.chrome-beta:focus-visible {
+		opacity: 1;
+		outline: none;
 	}
 
 	.chrome-center {
@@ -545,4 +594,14 @@
 	/* (A reduced-motion block for the three chrome marks stood here. Retired
 	   2026-08-12 with the fold onto --t-quick — the band is zeroed at :root
 	   under the same query. See app.css § MOTION.) */
+
+	/* `compact` — 40rem, $lib/breakpoints.ts (the literal is written because
+	   custom properties do not work in media queries). The 320px bar fits its
+	   occupants with 1.2px to spare, so the tag is the one thing this form
+	   sheds: the wordmark stays, the tag goes. */
+	@media (max-width: 40rem) {
+		.chrome-beta {
+			display: none;
+		}
+	}
 </style>
