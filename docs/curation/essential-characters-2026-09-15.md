@@ -2101,7 +2101,7 @@ character in the batch; what is left is C1, A1 and two timing choices.
   gorou, ganyu, jahoda, sethos, ororon, sara, tartaglia, tighnari, yelan, yoimiya; amber, diona, sigewinne,
   venti are ExtraAttack). That is the same shape as the plunge and catalyst-CA censuses and wants its own
   measured round — but Fischl is the character it costs the most.
-- **[B] `noICD: true` on her skill and burst is inert data** — only `NormalAbility.noICD` is read.
+- **[B]** ~~`noICD: true` on her skill and burst is inert data — only `NormalAbility.noICD` is read.~~ 🐛 **WRONG, corrected 2026-09-16** (Varka's two claymores round): `CastAbility.noICD` IS read — a cast's `application[]` runs a PER-CAST counter in `resolveCastApplications` and this flag turns it off, which `run.ts`'s own comment at the `emitReactionsAtCast` call names itself as the first reader of. Her two casts author one application each, so the flag changes nothing FOR HER, which is how the claim survived; on a multi-entry list it is the difference between one application and all of them (Ganyu and Xingqiu both depend on it, and Varka's burst needed it).
 - **[B] No `plungeFrames`** (gcsim has none for bows; `P` falls back to the generic cast).
 
 ✅ Correctly _not_ authored: C2 (gcsim folds the 200% into the same hit's Mult — no extra application),
