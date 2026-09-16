@@ -125,10 +125,12 @@
 				{
 					"name": "N5",
 					"frames": {
-						"anim": 40,
-						"N": 62,
-						"swap": 40
-					}
+						"anim": 62,
+						"hit": 40
+					},
+					"_curatorNotes": [
+						"N5 frames corrected 2026-09-16 (T0.5): was {anim: 40, N: 62, swap: 40}, which inverted the pair and carried no hitmark. gcsim attack.go:124 is InitNormalCancelSlice(attackBHitmarks[4][0]=40, 62) with NO override, i.e. {anim: 62, hit: 40}. Since anim is the fallback for every unlisted key, an in-stance N5 into C/E/Q/D/J was resolving 40 frames instead of 62 (0.37s short each). The frames audit never caught it: gcsim-frames-diff.md files this map under \"not captured (N5@state-inStance)\". The other eight Cyno normal maps were re-derived against gcsim and all agree."
+					]
 				}
 			],
 			"chargeFrames": {
@@ -242,10 +244,29 @@
 			"_curatorNotes": [
 				"[A7] Burst base duration is 712f = 11.87s from cast start (~10s active after the burst animation).",
 				"[A7] Each in-stance Mortuary Rite (skill) cast extends the window +4s, max 2 (up to ~19.87s total), wired via durationExtensions[] with an onCast skill trigger — modeled correctly, so the removed caveat described working behavior rather than a gap.",
-				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim cyno/burst.go: stat mod + stance tasks, no QueueAttack."
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim cyno/burst.go: stat mod + stance tasks, no QueueAttack.",
+				"+100 EM self-buff AUTHORED 2026-09-16 (T0.5). The official talent table carries it as a named burst row (Elemental Mastery Bonus: 100, flat at every level) and gcsim burst.go:33-41 adds it as a 712f StatMod — Cyno's whole identity is an EM-scaled self-buffer and there was no bar for it anywhere. duration 11.87 = gcsim's 712f, the same number the stance already carries.",
+				"⚠️ In gcsim the EM mod and the stance are ONE object: StatusIsActive/ExtendStatus resolve to modIsActive/extendMod (pkg/core/player/character/mods.go:185,235) over the same burstKey, so skill.go:143's ExtendStatus(burstKey, 240) grows the EM with the window. Our durationExtensions reach the STANCE only (sim/extensions.ts moves a stance's end; a buff window's end comes from effect.duration in buffWindows and nothing extends it), so with two Mortuary Rites the stance reads 19.87s and the EM bar 11.87s. Not expressible with a wired primitive — durationModifiers belongs to summons and abilities, not to Effects — so it is caveated rather than authored."
 			],
 			"application": [],
-			"nonHitting": true
+			"nonHitting": true,
+			"effects": [
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 11.87,
+					"durationType": "refresh",
+					"source": "character",
+					"stat": "em",
+					"value": 100,
+					"snapshottable": false
+				}
+			],
+			"caveat": "The Elemental Mastery bonus is shown for the burst's base window; in game it runs as long as the stance, so each Mortuary Rite extends it by 4s as well."
 		}
 	],
 	"passives": [
@@ -258,8 +279,10 @@
 				"[Stellar 2026-07-29] PERMANENT half: the talent no longer says \"the Pactsworn Pathclearer state activated by Sacred Rite: Wolf's Swiftness\" - just \"in the Pactsworn Pathclearer state\", so Endseer also ticks inside the 6s skill-opened window (Fandom `buff` field, buffType Revelation). Fandom Gameplay Notes still give the cadence: Endseer every 4s, each lasting 1.4s.",
 				"[Stellar 2026-07-29] STELLAR-GATED half, NOT authored (damage magnitude): \"Radiance: Stellar-Conduct - When Judication is triggered, Cyno will instead fire 3 Duststalker Bolts - Starsame to his front, dealing Electro DMG at 200% of his ATK. This DMG is considered Stellar-Conduct DMG.\" Base bolts are 100% ATK; the Starsame bolts are 0U gauge (Fandom Advanced Properties) so they apply no aura, and their real output rides the Base Reaction Coefficient (1-2 by recorded Cryo/Electro hits), ruled unmodelable in docs/library/game/stellar-reactions.md.",
 				"[Stellar 2026-07-29] Wiki inconsistency noted, NOT acted on: the Talent Note transclusion on this page quotes the A4 normal-attack bonus as 125% of EM, while the Authority Over the Nine Bows page (and our authored effect) says 150%. Treated as a stale note; 150% kept.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Everything named is magnitude or an internal cadence: the +35% Secret Rite DMG bonus is a DMG% we never print, and the Duststalker Bolts are damage instances with no bar, no lane and no marker. Endseer itself is a 1.4s-every-4s internal window inside the burst stance that changes no bar's label, length or placement — the E token resolves to Mortuary Rite either way. The Starsame sentence is the same omission restated under a party condition, and the curator note records those bolts as 0U, so they cost the aura lane nothing either. Category: invisible-omission."
-			]
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Everything named is magnitude or an internal cadence: the +35% Secret Rite DMG bonus is a DMG% we never print, and the Duststalker Bolts are damage instances with no bar, no lane and no marker. Endseer itself is a 1.4s-every-4s internal window inside the burst stance that changes no bar's label, length or placement — the E token resolves to Mortuary Rite either way. The Starsame sentence is the same omission restated under a party condition, and the curator note records those bolts as 0U, so they cost the aura lane nothing either. Category: invisible-omission.",
+				"↻ CAVEAT RESTORED 2026-09-16 (T0.5), on the one half the 2026-08-19 removal got wrong. That note ended \"the curator note records those bolts as 0U, so they cost the aura lane nothing either\" — but 0U is the STARSAME bolt (the Stellar-Conduct upgrade), and the BASE Duststalker Bolts inherit the Mortuary Rite AttackInfo, Durability 25 included (gcsim skill.go:114-140). They are re-tagged ICDTagElementalArt / ICDGroupCynoBolt (timer 150f, sequence {1,0,0}), a counter separate from the cast's ICDTagNone, so exactly one of the three applies 1U Electro per Judication. Not authorable: Judication needs Endseer live (84f every 234f from burst+328f) at the instant the player casts the in-stance skill — an internal cadence crossed with player timing, which no gate primitive expresses. The +35% DMG bonus and the bolts' damage stay out as magnitude, which the rest of the removal note got right."
+			],
+			"caveat": "Not modeled: the Duststalker Bolts, fired when the skill is cast during Endseer. One of the three applies Electro, so the target's aura builds a little less than in game."
 		},
 		{
 			"id": "cyno__passive__authority_over_the_nine_bows",
@@ -376,6 +399,48 @@
 					"_curatorNotes": [
 						"↻ CAVEAT REMOVED 2026-08-18 (caveat refresh): effect-level caveat, no reader. Divergence retained here: shown at the full 80%; in game it stacks 5 × 16% on Normal and Charged hits (near-instant during the burst) and rides Together We Rise. ⏭ Move to the C2 entry-level caveat if it should warn."
 					]
+				},
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"source": "self"
+					},
+					"key": "homecomingOfSpirits",
+					"amount": 1,
+					"max": 5,
+					"lifetime": 4,
+					"_curatorNotes": [
+						"The C2 BASE half, authored 2026-09-16 (T0.5): +10% Electro DMG per Normal-Attack hit, 4s, max 5 (gcsim cons.go makeC2CB). Paired with the perStack buff beside it, on Yanfei's Scarlet Seal idiom.",
+						"procCooldown DELIBERATELY OMITTED though the kit states 0.1s. The gate exists to stop one multi-hit swing granting four stacks; our hit stream is one hit per swing (the documented per-swing approximation), and Cyno's swings are 20-35f apart, so the gate can never bite here and would only pair the number with gcsim's stream rather than ours (the Emilie rule). Consequence: our stacks ramp over five swings where the game reaches five almost at once - which is the direction that under-claims."
+					]
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onHit",
+						"abilityType": "normal",
+						"source": "self"
+					},
+					"duration": 4,
+					"durationType": "refresh",
+					"conditions": {
+						"type": "stacks",
+						"key": "homecomingOfSpirits",
+						"min": 1
+					},
+					"source": "character",
+					"stat": "electroDmgBonus",
+					"value": {
+						"type": "perStack",
+						"key": "homecomingOfSpirits",
+						"per": 10,
+						"maxStacks": 5
+					},
+					"snapshottable": false
 				}
 			],
 			"description": "When Cyno's Normal Attacks hit opponents, his Electro DMG Bonus will increase by 10% for 4s. This effect can be triggered once every 0.1s. Max 5 stacks.\n\nAdditionally, when characters affected by Together We Rise hit opponents with their Normal Attacks or Charged Attacks, their Stellar-Conduct DMG dealt is increased by 16%. This effect, which can trigger once every 0.1s, will remain active for the remaining duration of Together We Rise. Max 5 stacks.",
