@@ -45,6 +45,7 @@ import type {
 } from '$lib/types/ability';
 import {
 	getCooldownStartsAtStanceEnd,
+	castIsNonHitting,
 	getDefaultDamageTag,
 	getNormalHitDamageTag
 } from '$lib/types/ability';
@@ -998,7 +999,11 @@ export function runRotation(
 				// name + the cast's pre-consume stack snapshot. Skipped for
 				// element-less characters — preserving the legacy behavior where
 				// the reaction emitter's early-return also skipped the hit.
-				if (char.element) {
+				// ⚓ And skipped for a NON-HITTING cast (non-hitting casts round,
+				// 2026-09-16): a stance opener, a heal, a gadget spawn whose ticks
+				// carry their own hits. The one gate for the stack dispatchers, the
+				// artifact `onHit` branch and the damage-proc stream at once.
+				if (char.element && !castIsNonHitting(active, variant)) {
 					dispatchHit(
 						{
 							characterId: char.id,

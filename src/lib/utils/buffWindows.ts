@@ -58,6 +58,7 @@ import {
 	type FactionProvenance,
 	isActiveTargetOnly,
 	resolveCastContext,
+	castLandsNoHit,
 	targetsEnemy,
 	targetsTeamOrActive
 } from '$lib/utils/effectCollection';
@@ -460,6 +461,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			{
 				for (const cast of abCasts) {
 					const filterCtx = resolveCastContext(char, castType, cast);
+					// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
+					// 2026-09-16); its `onCast` effects in the same pool are untouched.
+					const castNoHit = castLandsNoHit(char, castType, cast);
 					for (const group of poolsFor(cast.label).qualified) {
 						const qualifiedEffects = group.effects;
 						if (qualifiedEffects.length === 0) continue;
@@ -477,6 +481,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							) {
 								return false;
 							}
+							if (effect.trigger.type === 'onHit' && castNoHit) return false;
 							if (effect.trigger.type === 'onHit' && filterCtx) {
 								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
 							}
@@ -561,6 +566,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			{
 				for (const cast of abCasts) {
 					const filterCtx = resolveCastContext(char, castType, cast);
+					// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
+					// 2026-09-16); its `onCast` effects in the same pool are untouched.
+					const castNoHit = castLandsNoHit(char, castType, cast);
 					for (const group of poolsFor(cast.label).resShred) {
 						const resShredStartPool = group.effects;
 						if (resShredStartPool.length === 0) continue;
@@ -577,6 +585,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								) === false
 							)
 								return false;
+							if (effect.trigger.type === 'onHit' && castNoHit) return false;
 							if (effect.trigger.type === 'onHit' && filterCtx) {
 								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
 							}
@@ -1423,6 +1432,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 
 			for (const cast of abCasts) {
 				const filterCtx = resolveCastContext(char, castType, cast);
+				// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
+				// 2026-09-16); its `onCast` effects in the same pool are untouched.
+				const castNoHit = castLandsNoHit(char, castType, cast);
 				for (const activeGroup of activeEffectsFor(cast.label)) {
 					const activeEffects = activeGroup.effects;
 					if (activeEffects.length === 0) continue;
@@ -1439,6 +1451,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							) === false
 						)
 							return false;
+						if (effect.trigger.type === 'onHit' && castNoHit) return false;
 						if (effect.trigger.type === 'onHit' && filterCtx) {
 							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
 						}
@@ -1940,6 +1953,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 
 			for (const cast of abCasts) {
 				const filterCtx = resolveCastContext(char, castType, cast);
+				// A non-hitting cast anchors no `onHit` effect (non-hitting casts round,
+				// 2026-09-16); its `onCast` effects in the same pool are untouched.
+				const castNoHit = castLandsNoHit(char, castType, cast);
 				for (const selfGroup of selfEffectsFor(cast.label)) {
 					const selfEffects = selfGroup.effects;
 					if (selfEffects.length === 0) continue;
@@ -1956,6 +1972,7 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							) === false
 						)
 							return false;
+						if (effect.trigger.type === 'onHit' && castNoHit) return false;
 						if (effect.trigger.type === 'onHit' && filterCtx) {
 							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
 						}

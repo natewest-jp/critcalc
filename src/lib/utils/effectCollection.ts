@@ -10,8 +10,13 @@
  */
 
 import type { InputBlock } from '$lib/utils/notationParser';
-import { getDefaultDamageTag, type DamageTag, type TriggerFilterContext } from '$lib/types/ability';
-import type { Ability, Effect, EffectTarget, Stat } from '$lib/types/ability';
+import {
+	castIsNonHitting,
+	getDefaultDamageTag,
+	type DamageTag,
+	type TriggerFilterContext
+} from '$lib/types/ability';
+import type { Ability, AbilityVariant, Effect, EffectTarget, Stat } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 
 /** Where on the character an effect came from, when that is a faction bonus
@@ -445,6 +450,47 @@ export function resolveBlockContext(
 		abilityName,
 		isCrit: true
 	};
+}
+
+/** The (ability, variant) pair backing a cast, by the SAME resolution
+ *  `resolveCastContext` uses: the unconditioned base ability, and the variant
+ *  whose `input` carries the cast's token. ⚠️ Blind to a state-gated SIBLING
+ *  (§1.F) — Skirk's in-stance burst resolves to Havoc: Ruin here. */
+function resolveCastPair(
+	char: CharacterData,
+	kind: 'skill' | 'burst',
+	cast: { variantLabel?: string | null }
+): { ability: Ability; variant: AbilityVariant | undefined } | null {
+	const candidates = char.abilities.filter((a) => a.abilityType === kind);
+	const ability = candidates.find((a) => a.conditions === undefined) ?? candidates[0];
+	if (!ability) return null;
+	// ⚓ THE PARSE ALREADY RESOLVED THE VARIANT, conditions included, and a
+	// `CastEvent` carries it as `variantLabel` — ABSENT when the base cast (the
+	// same reading `findSummonsForBar` takes through its `?? null`). ⛔ Never
+	// fall back to an input match here: the press token is the same on Kujou
+	// Sara's base E and her C2 variant, and an input match would take the
+	// variant at C0. A caller with no cast event in hand has no business asking.
+	const variant =
+		cast.variantLabel == null
+			? undefined
+			: (ability as { variants?: AbilityVariant[] }).variants?.find(
+					(v) => v.label === cast.variantLabel
+				);
+	return { ability, variant };
+}
+
+/** Did this cast land NO hit (non-hitting casts round, 2026-09-16)? The buff
+ *  derivation asks it beside `resolveCastContext` at every site that anchors
+ *  an `onHit skill|burst` effect on the cast event: such an effect on a
+ *  non-hitting cast is dropped, an `onCast` one on the same cast is not. */
+export function castLandsNoHit(
+	char: CharacterData | null | undefined,
+	kind: 'skill' | 'burst',
+	cast: { variantLabel?: string | null }
+): boolean {
+	if (!char) return false;
+	const pair = resolveCastPair(char, kind, cast);
+	return pair ? castIsNonHitting(pair.ability, pair.variant) : false;
 }
 
 /** Resolves the (ability, variant) pair backing a cast so the G filter can
