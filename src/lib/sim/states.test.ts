@@ -275,3 +275,112 @@ describe('a state that ends on the next action and chains (terminatesOnAction + 
 		).toMatch(/toggle/);
 	});
 });
+
+// ── the non-hitting action class ────────────────────────────────────────────
+
+/** The form-taker with an `onHit charged` shred, so a hit record — or its
+ *  absence — has a consumer to show up in. Shred windows are `debuff`-style
+ *  buff windows on the enemy; only their COUNT and START matter here. */
+const HIT_LISTENER = {
+	type: 'resShred',
+	target: 'enemy',
+	trigger: { type: 'onHit', abilityType: 'charged' },
+	duration: 6,
+	element: 'dendro',
+	value: -15
+};
+
+function listener(stub: CharacterData): CharacterData {
+	return {
+		...stub,
+		passives: [
+			{
+				id: 'stub__passive__listener',
+				name: 'Listener',
+				abilityType: 'passive',
+				effects: [HIT_LISTENER]
+			}
+		]
+	} as unknown as CharacterData;
+}
+
+const buffStarts = (r: ParsedRotation) =>
+	r.windows.filter((w) => w.kind === 'buff').map((w) => w.start);
+const chargedBlocks = (r: ParsedRotation) =>
+	r.tracks
+		.filter((t) => t.characterId === 'stub')
+		.flatMap((t) => t.inputBlocks.filter((b) => b.parts.join('') === 'C'))
+		.map((b) => [b.start, b.kind, b.element] as const);
+
+describe('a non-hitting action class (nonHitting)', () => {
+	it('the form C takes its frames and lands nothing: untinted block, no application, no hit', () => {
+		const r = parse('Stub C', listener(formTaker()));
+		// It happened — a 49f block (nothing follows, so the `swap` key).
+		expect(chargedBlocks(r)).toEqual([[0, 'normal', undefined]]);
+		// A catalyst charged attack would have applied 1U; this one applies nothing.
+		expect(r.applications).toEqual([]);
+		// And the onHit listener never heard a hit.
+		expect(buffStarts(r)).toEqual([]);
+	});
+
+	it('the attack C is an ordinary catalyst charged attack: tinted, applies, hits', () => {
+		const r = parse('Stub C C', listener(formTaker()));
+		expect(chargedBlocks(r)).toEqual([
+			[0, 'normal', undefined],
+			[63, 'elemental-normal', 'dendro']
+		]);
+		// One application, from the second C, at its end (63 + 67).
+		expect(r.applications.map((a) => [a.time, a.element])).toEqual([[130, 'dendro']]);
+		// One shred window, from the second C's hit.
+		expect(buffStarts(r)).toEqual([130]);
+	});
+
+	it('`normal` is per-ability: a non-hitting normal string lands nothing either', () => {
+		const stub = formTaker({ nonHitting: { normal: true, charged: true } });
+		const r = parse('Stub N1 N2', listener(stub));
+		const blocks = r.tracks[0].inputBlocks.filter((b) => b.kind !== 'pad');
+		expect(blocks.map((b) => [b.parts.join(''), b.kind, b.element])).toEqual([
+			['N1', 'normal', undefined],
+			['N2', 'normal', undefined]
+		]);
+		expect(r.applications).toEqual([]);
+		// Same rotation with the string hitting: both swings apply (a catalyst
+		// N string applies on swings 1 and 4 at the standard ICD — two swings
+		// stay inside the first application's budget, so exactly one lands).
+		const hitting = parse('Stub N1 N2', listener(formTaker()));
+		expect(hitting.applications.map((a) => a.element)).toEqual(['dendro']);
+	});
+
+	it('the flag is read off the RESOLVED ability, so a state-gated sibling decides for itself', () => {
+		// The attack sibling carries no `nonHitting`; the base does. `C ~12s C`
+		// resolves the second C to the sibling (inside the chained cooldown).
+		const r = parse('Stub C ~12s C', listener(formTaker()));
+		expect(chargedBlocks(r).map((b) => b[1])).toEqual(['normal', 'elemental-normal']);
+		expect(r.applications).toHaveLength(1);
+	});
+
+	it('lint: keys are action classes, values are literally true; an ICD window beside it warns', () => {
+		const issues = (nonHitting: unknown, extra: Record<string, unknown> = {}) =>
+			lintCharacter(formTaker({ nonHitting, ...extra })).filter(
+				(i) => i.check === 'non-hitting-shape'
+			);
+		expect(issues({ charged: true })).toEqual([]);
+		expect(
+			issues({ charged: false })
+				.map((i) => i.message)
+				.join('\n')
+		).toMatch(/literally true/);
+		expect(
+			issues({ dash: true })
+				.map((i) => i.message)
+				.join('\n')
+		).toMatch(/not an action class/);
+		expect(
+			issues(['charged'])
+				.map((i) => i.message)
+				.join('\n')
+		).toMatch(/object/);
+		const warn = issues({ charged: true }, { chargedIcdWindow: { timer: 30 } });
+		expect(warn.map((i) => i.severity)).toEqual(['warn']);
+	});
+});

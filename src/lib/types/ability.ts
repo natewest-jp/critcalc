@@ -1935,6 +1935,29 @@ export type NormalAbility = AbilityCommon & {
 		plunge?: TransientStateSpec;
 		charged?: TransientStateSpec;
 	};
+	/**
+	 * ⚓ A NON-HITTING ACTION CLASS (Lauma charged-forms round, 2026-09-16): this
+	 * ability's action of that class LANDS NO HIT — no element on the block, no
+	 * offer to the gauge, no hit record for any `onHit` consumer. The input still
+	 * takes its frames, still pads, still opens a transient state. First holder:
+	 * Lauma's Spirit Envoy Metamorphosis, a charged attack that turns her into a
+	 * deer.
+	 *
+	 * The POSITIVE claim — absent means the weapon rule applies (a catalyst
+	 * swing is elemental, a bow's aimed shot is elemental, a claymore swing is
+	 * physical). ⛔ Not folded into `resolveActionElement`: that rule is shared
+	 * with the editor's highlighter, which has no state machine and cannot know
+	 * which FORM a `C` resolved to, so a form-taker's `C` is tinted in the
+	 * editor and untinted on the chart — the same gap every timed infusion
+	 * already has there. `normal` is per-ABILITY, like `infusion`: a non-hitting
+	 * normal string is a sibling ability's, not a swing's. No holder yet.
+	 *
+	 * ⚠️ "Applies nothing" is NOT this. A cast's `application: []` says the hit
+	 * carries no gauge; it still lands (Emilie's E at Durability 0 fires her C2).
+	 * The cast-side twin of this flag — a cast whose animation queues no attack
+	 * at all — is a separate, gcsim-censused landing (the round's §7).
+	 */
+	nonHitting?: { normal?: true; charged?: true; plunge?: true };
 	/** Elemental infusion applied to N/C/P while this ability is active.
 	 *  Used on stance normals (e.g. Cyno's Pactsworn Pathclearer). */
 	infusion?: Element;

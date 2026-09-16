@@ -1121,6 +1121,42 @@ function lintNormal(
 		}
 	}
 
+	// (A.4c) `nonHitting` — a keyed object of action classes, each literally
+	// `true` (charged-forms round, 2026-09-16). A `chargedIcdWindow` beside a
+	// non-hitting charged attack is a gate on a swing that never applies.
+	const nh = (a as unknown as { nonHitting?: unknown }).nonHitting;
+	if (nh !== undefined) {
+		if (typeof nh !== 'object' || nh === null || Array.isArray(nh)) {
+			push('strict', 'non-hitting-shape', `nonHitting must be an object of action classes`, a.id);
+		} else {
+			for (const [k, v] of Object.entries(nh as Record<string, unknown>)) {
+				if (k !== 'normal' && k !== 'charged' && k !== 'plunge') {
+					push(
+						'strict',
+						'non-hitting-shape',
+						`nonHitting key "${k}" is not an action class (normal|charged|plunge)`,
+						a.id
+					);
+				} else if (v !== true) {
+					push(
+						'strict',
+						'non-hitting-shape',
+						`nonHitting.${k} must be literally true when present`,
+						a.id
+					);
+				}
+			}
+			if ((nh as { charged?: unknown }).charged === true && a.chargedIcdWindow) {
+				push(
+					'warn',
+					'non-hitting-shape',
+					`chargedIcdWindow on a non-hitting charged attack gates a swing that never applies`,
+					a.id
+				);
+			}
+		}
+	}
+
 	// (A.4) chargeFrames vs chargeHits mutually exclusive
 	if (a.chargeFrames && a.chargeHits) {
 		push(
