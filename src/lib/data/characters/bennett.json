@@ -80,7 +80,26 @@
 					"description": "Plunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
 				}
 			],
-			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact."
+			"description": "Normal Attack\nPerforms up to 5 rapid strikes.\n\nCharged Attack\nConsumes a certain amount of Stamina to unleash 2 rapid sword strikes.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.",
+			"plungeFrames": {
+				"anim": 68,
+				"N": 47,
+				"E": 46,
+				"Q": 47,
+				"D": 38,
+				"swap": 54
+			},
+			"lowPlungeFrames": {
+				"anim": 67,
+				"N": 45,
+				"E": 46,
+				"Q": 46,
+				"D": 36,
+				"swap": 53
+			},
+			"_curatorNotes": [
+				"Plunge maps AUTHORED 2026-09-16 (T0.5) from gcsim plunge.go:35-53 — high = InitAbilSlice(68) with Attack 47 / Skill 46 / Burst 47 / Dash 38 (= highPlungeHitmark) / Swap 54, low = InitAbilSlice(67) with 45 / 46 / 46 / 36 / 53. ⚓ L4b: `plungeFrames` is the HIGH plunge and takes `P` and `hP`; `lowPlungeFrames` is `lP` alone. Before this a typed `P` emitted NOTHING — no action event, no block, no time cost — which is §1.D's corpus-wide silence, and it was invisible to the frames reports because they list AUTHORED maps with no gcsim reading, so a map we never wrote never appears. ⛔ No `hit` key: a plunge is an InitAbilSlice, not a normal-cancel slice. ActionWalk (66/67) is dropped as everywhere else."
+			]
 		},
 		{
 			"id": "bennett__skill__passion_overload",
@@ -147,18 +166,55 @@
 							"element": "pyro",
 							"units": 1
 						}
+					],
+					"cooldownStartDelay": 43
+				},
+				{
+					"label": "Hold Lv.2 (in Inspiration Field)",
+					"input": ["h2E"],
+					"conditions": {
+						"type": "state",
+						"state": "duringSummon"
+					},
+					"frames": {
+						"anim": 175,
+						"D": 171,
+						"J": 174
+					},
+					"cooldown": 10,
+					"cooldownStartDelay": 110,
+					"application": [
+						{
+							"frame": 112,
+							"element": "pyro",
+							"units": 1
+						},
+						{
+							"frame": 121,
+							"element": "pyro",
+							"units": 1
+						},
+						{
+							"frame": 166,
+							"element": "pyro",
+							"units": 1
+						}
+					],
+					"_curatorNotes": [
+						"ADDED 2026-09-16 (T0.5). A4 Fearnaught Flynn's \"will not be launched\" half is a DIFFERENT ANIMATION, not just a flag: gcsim skill.go:57-62 selects skillFrames[4] — InitAbilSlice(175), Dash 171, Jump 174, Swap 175 — instead of skillFrames[3]'s 343 whenever a4NoLaunch() holds, which is Ascension ≥ 4 AND standing in his own Inspiration Field (asc.go:24-26). A `Q … h2E` rotation was over-charging by 343 − 175 = 168f ≈ 2.8s.",
+						"⚠️ ORDER IS LOAD-BEARING: `matchVariant` takes the FIRST variant whose input matches and whose conditions evaluate TRUE, so this conditioned form must sit BEFORE the unconditioned Hold Lv.2 below it. Reversed, the base would always win and this would be dead. `duringSummon` is inferred from the holder's own stationary persistent cast, which is what the Inspiration Field is.",
+						"⛔ `swap: 175` is omitted because it equals `anim`, which is the fallback for every unlisted key (L4b). Cooldown and hitmarks are unchanged from the base hold — gcsim sets the same 10s at cdDelay 110 on both paths and reuses skillHoldHitmarks[1]."
 					]
 				},
 				{
 					"label": "Hold Lv.2",
 					"input": ["h2E"],
 					"frames": {
-						"anim": 337,
-						"N": 343,
+						"anim": 343,
 						"E": 339,
 						"Q": 339,
 						"D": 231,
-						"J": 240,
+						"J": 340,
 						"swap": 337
 					},
 					"cooldown": 10,
@@ -178,7 +234,8 @@
 							"element": "pyro",
 							"units": 1
 						}
-					]
+					],
+					"cooldownStartDelay": 110
 				}
 			],
 			"tags": [],
@@ -189,6 +246,11 @@
 					"element": "pyro",
 					"units": 2
 				}
+			],
+			"cooldownStartDelay": 14,
+			"_curatorNotes": [
+				"↻ 2026-09-16 (T0.5): cooldownStartDelay authored on all three forms — press 14 (gcsim skill.go:111 SetCDWithDelay(..., 14)), hold-1 43, hold-2 110 (skill.go:206-224). Without them the ghost CD tail and the next E were early by up to 1.83s on hold-2.",
+				"↻ 2026-09-16 (T0.5): the h2E FrameMap's `anim` was 337 — a stand-in copied from `swap` — where gcsim's animation length is 343, and `J` was 240 where gcsim is 340 (the frames report filed that one as a §2 review candidate). `N: 343` is dropped with the fix, since it now equals `anim` and `anim` is the fallback for every unlisted key."
 			]
 		},
 		{
@@ -218,7 +280,8 @@
 							"trigger": {
 								"type": "summonTick",
 								"interval": 1,
-								"firstTickDelay": 1
+								"firstTickDelay": 1,
+								"tickCap": 12
 							},
 							"scaling": 10.8,
 							"stat": "hp",
@@ -236,7 +299,9 @@
 			"_curatorNotes": [
 				"Inspiration Field continuous heal authored 2026-07-12 as a summonTick heal on the field summon (Diona Drunken Mist / Kuki Grass Ring shape). gcsim burst.go applyBennettField: 12 heal ticks every 60f (1s), first heal at burstStartFrame+60 = t=1s relative to field spawn — the t=0 tick (firstTick=true) buffs ATK only and does not heal. Authored as interval 1 / firstTickDelay 1 over the 12s field (ticks t=1..12 = 12 ticks). Heal targets c.Core.Player.ActiveChar() -> target 'active'. TL10: bursthpp[9]=0.108 (10.8% Max HP) + bursthp[9]=1270.2417 flat (sidecar 'Continuous Regeneration Per Sec' col 10 = '10.80% Max HP+1270'). Engine-applied Healing Bonus (gcsim Bonus: hpplus = stats[Heal]) is not authored — it's the recipient's stat, not part of the base heal.",
 				"Heal fires only when the active recipient's HP is below 70% (gcsim: !firstTick && active.CurrentHPRatio() < 0.7; kit text says '<= 70%'). Authored with condition recipientHpBelow 70 — the closest primitive, since the recipient is target 'active'. Planner cannot simulate HP so this resolves null and the heal renders optimistically on every tick; the caveat surfaces the threshold. C1 (Grand Expectation) removes the HP restriction on the ATK BONUS only — the heal's <70% gate is unchanged by constellation (gcsim heal check is not constellation-gated).",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The 12 heal tick marks on the Inspiration Field bar AND the ATK buff bar drawn beside them. The heal tick carries `recipientHpBelow: 70` and the ATK buff carries `any(C1, selfHpAbove: 70)` — both HP conditions return null (N11) and both draw, so the screen shows healing and the ATK buff running together on the same character for the whole 12s, which the game never does. Category: approximation-disclosure."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The 12 heal tick marks on the Inspiration Field bar AND the ATK buff bar drawn beside them. The heal tick carries `recipientHpBelow: 70` and the ATK buff carries `any(C1, selfHpAbove: 70)` — both HP conditions return null (N11) and both draw, so the screen shows healing and the ATK buff running together on the same character for the whole 12s, which the game never does. Category: approximation-disclosure.",
+				"↻ THE BUFF WINDOWS ARE 14.1s, NOT 12 — 2026-09-16 (T0.5), ⚓ Nate's call 2026-09-15 (\"buffs re-applied per tick are authored at their HONEST length\"). gcsim does not grant one 12s statmod: burst.go re-applies a 126-frame one on EVERY field tick, at frames 34, 94, 154 … 754, so a character standing in the field keeps the ATK bonus (and at C1 its +20%, at C6 the Pyro DMG bonus and the infusion) until 754 + 126 = 880f. From the buff's own start at 34f that is 846f = 14.1s. Ours ran 0.57→12.57s, i.e. ~2.1s short — and the lingering tail is the thing Bennett rotations are BUILT around (\"leave the field, keep the buff\"), with nothing on screen or in a caveat saying it existed. ⚠️ The SUMMON's `duration` stays 12: the field itself really does last 12s, and only the buff outlives it.",
+				"↻ tickCap: 12 AUTHORED 2026-09-16 (T0.5). gcsim heals at 34 + 60k for k = 1..12, i.e. 94 … 754 — twelve ticks (the frame-34 tick buffs ATK and does not heal). Our half-open walk ends at the 12s window and drops the BOUNDARY tick, drawing eleven (94 … 694). This is exactly the tick-cap boundary rule: a cap widens the window by one interval so the last tick lands."
 			],
 			"description": "Bennett performs a jumping attack that deals Pyro DMG, creating an Inspiration Field.\n\nInspiration Field\n·If the health of a character within the AoE is equal to or falls below 70%, their health will continuously regenerate. The amount of HP restored scales off Bennett's Max HP.\n·If the health of a character within the AoE is higher than 70%, they gain an ATK Bonus that is based on Bennett's Base ATK.\n·Imbues characters within the AoE with Pyro.",
 			"effects": [
@@ -246,7 +311,7 @@
 					"trigger": {
 						"type": "onCast"
 					},
-					"duration": 12,
+					"duration": 14.1,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
@@ -315,7 +380,7 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 12,
+					"duration": 14.1,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk",
@@ -389,7 +454,7 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 12,
+					"duration": 14.1,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "pyroDmgBonus",
@@ -416,7 +481,7 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 12,
+					"duration": 14.1,
 					"durationType": "fixed",
 					"element": "pyro",
 					"conditions": {

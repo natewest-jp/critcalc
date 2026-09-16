@@ -678,11 +678,19 @@ describe('parseNotation — cooldownStartsAtStanceEnd (stance-cooldown round, 20
 		expect(track.eBars[0].readyAt).toBe(framesOf(5) + 11);
 	});
 
-	it('an ability with no delay at all is untouched (Bennett)', () => {
-		// 5s base, less the 20% his ascension passive Rekindle takes off = 4.0.
+	it('an ability whose delay rides a cooldown MODIFIER is untouched (Bennett, 14f)', () => {
+		// 5s base, less the 20% his ascension passive Rekindle takes off = 4.0,
+		// then gcsim's SetCDWithDelay(..., 14).
+		//
+		// ↻ This case used to read "an ability with no delay at all" and expect
+		// a bare framesOf(4). Bennett gained his three real `cooldownStartDelay`s
+		// on 2026-09-16, and with them the corpus has NO curated skill or burst
+		// left that omits the field — so the zero-delay class this case was
+		// pinning is now empty, and what is worth pinning here instead is that a
+		// delay composes with a cooldown MODIFIER rather than replacing it.
 		const result = parseNotation('Bennett E', lookup, 8);
 		const track = result.tracks.find((t) => t.characterId === 'bennett')!;
-		expect(track.eBars[0].readyAt).toBe(framesOf(4));
+		expect(track.eBars[0].readyAt).toBe(framesOf(4) + 14);
 	});
 });
 
