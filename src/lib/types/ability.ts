@@ -157,6 +157,13 @@ export type Stat =
 	// Wriothesley WR / Diona C6 (stellarConduct; Qiqi's also superConduct).
 	// Nate's ruling 2026-07-29: authorable — we visualize, we don't compute.
 	| 'superConductReactionBonus'
+	// Family-wide over the FOUR Swirl flavours, on the stellarGlimmer precedent
+	// above — the game's own talent row is "Elemental Mastery-Based Swirl DMG
+	// Increase", one number covering Pyro/Hydro/Cryo/Electro Swirl, and gcsim
+	// returns it from a single `AttackTagSwirl*` switch arm (Mizuki
+	// `skill.go:149-154`). ⛔ Not a replacement for the per-flavour members
+	// beside it: Diona's C6 names Cryo Swirl alone and must keep saying so.
+	| 'swirlReactionBonus'
 	| 'cryoSwirlReactionBonus'
 	| 'electroChargedReactionBonus'
 	| 'bloomReactionBonus'
