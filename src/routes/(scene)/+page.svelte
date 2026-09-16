@@ -135,8 +135,7 @@
 			 its fine print on the right, allowed two lines (⚓ Nate's layout).
 			 Renders ONLY while an entry is live ($lib/landing/announcements.ts
 			 carries the rule and the expiry); an empty slot is worse than none,
-			 a stale one is worse than empty. No plate — a hairline under the
-			 row is all the furniture it gets. -->
+			 a stale one is worse than empty. No plate and no rule. -->
 		{#if announcements.length}
 			<ul class="notices" aria-label="Announcements">
 				{#each announcements as a (a.id)}
@@ -445,17 +444,17 @@
 	}
 
 	/* Two columns the width of the group: the fact left, one line, gold; the
-	   fine print right, up to two lines, the chrome's voice. A hairline under
-	   the row is its only furniture. */
+	   fine print right, up to two lines, the chrome's voice. No rule under it
+	   (⚓ Nate). */
 	.notice {
 		display: flex;
 		justify-content: space-between;
 		align-items: flex-start;
 		gap: 1.5rem;
-		padding-bottom: 0.5rem;
-		border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
 		font-family: var(--font-body);
-		font-size: var(--fs-md);
+		/* 🎛️ --fs-md → --fs-2xl (⚓ Nate: the small-label rung was too small
+		   here), and the hairline under the row is gone with it. */
+		font-size: var(--fs-2xl);
 		line-height: var(--lh-snug);
 		letter-spacing: var(--ls-wide);
 	}
@@ -470,6 +469,7 @@
 	.notice__detail {
 		max-width: 50%;
 		text-align: right;
+		font-size: var(--fs-xl);
 		color: var(--chrome);
 		opacity: 0.75;
 		text-wrap: balance;
@@ -499,7 +499,8 @@
 		margin: 0;
 		text-align: center;
 		font-family: var(--font-body);
-		font-size: var(--fs-lg);
+		/* 🎛️ --fs-lg → --fs-3xl (⚓ Nate). */
+		font-size: var(--fs-3xl);
 		font-weight: var(--fw-medium);
 		line-height: var(--lh-snug);
 		letter-spacing: var(--ls-wide);
