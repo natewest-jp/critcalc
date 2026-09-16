@@ -1267,6 +1267,58 @@ function lintCastAbility(
 		}
 	}
 
+	// (A.6c) `nonHitting` on a cast (non-hitting casts round, 2026-09-16): the
+	// base takes a literal `true` and must state `application: []` beside it —
+	// two claims, both written; a variant takes a boolean, and either value
+	// needs the variant's own `application[]` (`true` an empty one, `false` a
+	// real list — the hit it re-enables must say when it lands).
+	if (a.abilityType === 'skill' || a.abilityType === 'burst') {
+		const nh = (a as unknown as { nonHitting?: unknown }).nonHitting;
+		if (nh !== undefined) {
+			if (nh !== true) {
+				push(
+					'strict',
+					'non-hitting-cast',
+					`nonHitting must be literally true on a cast ability`,
+					a.id
+				);
+			} else if (!Array.isArray(a.application) || a.application.length !== 0) {
+				push(
+					'strict',
+					'non-hitting-cast',
+					`nonHitting cast must author application: [] beside it (a cast that lands no hit applies nothing, and both claims are stated)`,
+					a.id
+				);
+			}
+		}
+		for (const v of a.variants ?? []) {
+			const vnh = (v as unknown as { nonHitting?: unknown }).nonHitting;
+			if (vnh === undefined) continue;
+			if (typeof vnh !== 'boolean') {
+				push(
+					'strict',
+					'non-hitting-cast',
+					`variant "${v.label}" nonHitting must be a boolean`,
+					a.id
+				);
+			} else if (!Array.isArray(v.application)) {
+				push(
+					'strict',
+					'non-hitting-cast',
+					`variant "${v.label}" nonHitting: ${vnh} needs the variant's own application[] (${vnh ? 'an empty one' : 'the hit it re-enables'})`,
+					a.id
+				);
+			} else if (vnh && v.application.length !== 0) {
+				push(
+					'strict',
+					'non-hitting-cast',
+					`variant "${v.label}" nonHitting: true with a non-empty application[]`,
+					a.id
+				);
+			}
+		}
+	}
+
 	// (A.6) application[] — the elemental hit schedule (gauge round L4c)
 	for (const [where, list] of [
 		[a.id, a.application],

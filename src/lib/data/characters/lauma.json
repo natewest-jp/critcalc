@@ -273,10 +273,12 @@
 			"_curatorNotes": [
 				"Pale Hymn: 18-stack EM-scaling buff (gained at paleHymnGainFrame=96 after cast). Individual stack durations 15s each. Stacks consumed when nearby party members deal Bloom/Hyperbloom/Burgeon/LunarBloom DMG (1 stack per enemy hit). FlatDmg per consumed stack: bloomDmgIncrease[L]×EM for Bloom-type reactions, lunarBloomDmgIncrease[L]×EM for LunarBloom. No entity spawned; Pale Hymn is a buff-stack on Lauma. burstKey status (15s) tracks the Moon Song interaction window. Reviewer to decide effect representation.",
 				"J omitted from frames — ActionJump not explicitly set in burstFrames init; stays at InitAbilSlice default 115 (AnimationLength). No initial burst damage queued in gcsim burst.go — burst only sets Pale Hymn stacks.",
-				"activeDuration 15 (2026-09-15, essential-characters T0): the Pale Hymn window — gcsim burst.go AddStatus(paleHymnBurstKey, paleHymnDur = 15*60) at the 18-stack grant — so the burst draws the span its whole payload lives in instead of an instant pill. The per-stack reaction DMG is EM-scaled magnitude and stays out; stacks consumed early are not tracked, so the span is the stacks' longest life."
+				"activeDuration 15 (2026-09-15, essential-characters T0): the Pale Hymn window — gcsim burst.go AddStatus(paleHymnBurstKey, paleHymnDur = 15*60) at the 18-stack grant — so the burst draws the span its whole payload lives in instead of an instant pill. The per-stack reaction DMG is EM-scaled magnitude and stays out; stacks consumed early are not tracked, so the span is the stacks' longest life.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim lauma/burst.go: one task at f96 granting Pale Hymn, no attack."
 			],
 			"description": "Let the wishes of all beings become as moonlight that bathes the earth. Lauma incants a sacred song of the far north, gaining 18 stacks of **Pale Hymn**.\nAdditionally, if Lauma uses her Elemental Burst while she has **Moon Song**, or she gains Moon Song within 15s of using her Elemental Burst, she will consume all Moon Song stacks and gain 6 stacks of Pale Hymn for every Moon Song stack consumed. This effect can only be triggered once for each Elemental Burst used, including the 15 seconds following its use.\n\nPale Hymn\nWhen nearby party members deal Bloom, Hyperbloom, Burgeon, or Lunar-Bloom DMG, 1 stack of Pale Hymn will be consumed and the DMG dealt will be increased based on Lauma's Elemental Mastery. If this DMG hits multiple opponents at once, then multiple stacks of Pale Hymn will be consumed, depending on how many opponents are hit.\nThe duration for each stack of Pale Hymn is counted independently.",
-			"application": []
+			"application": [],
+			"nonHitting": true
 		}
 	],
 	"passives": [

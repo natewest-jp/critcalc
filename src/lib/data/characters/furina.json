@@ -263,8 +263,10 @@
 					"_curatorNotes": [
 						"THE PNEUMA LINEUP (Arkhe round, landing b, 2026-09-04). Furina's E summons EITHER the three Salon Members (Ousia, the base ability) OR the Singer of Many Waters (Pneuma); gcsim skill.go:85-92 switches on c.arkhe and calls skillOusia XOR skillPneuma. A VARIANT rather than a sibling ability because both lineups share ONE 20s cooldown and one charge queue, and E-charge queues are keyed by ability id — two siblings would let her double-cast. (Odette's Coda took the sibling fork for the opposite reason: it needed to ESCAPE the shared queue.)",
 						"application: [] is the POSITIVE claim that this cast applies nothing, and it is literally true: skillPneuma queues no attack at all, while skillOusia queues the Ousia bubble (25 durability = 1U Hydro at frame 18). The Singer only heals. Measured, `Furina C E` produces ZERO elemental applications.",
-						"Frames from gcsim skill.go init(): skillFrames[pneuma] = InitAbilSlice(57), Attack 56, Charge 56, Dash 15, Jump 18, Swap 56 — about 3 frames longer than the Ousia set the base ability carries, which the previous [A7] note treated as interchangeable because there was no way to tell the two casts apart. NOT authored: gcsim's pneumaCDDelay of 10f (Ousia's is 0) — AbilityVariant has no cooldownStartDelay, and 10 frames on a 20s cooldown is below what the ghost tail can show."
-					]
+						"Frames from gcsim skill.go init(): skillFrames[pneuma] = InitAbilSlice(57), Attack 56, Charge 56, Dash 15, Jump 18, Swap 56 — about 3 frames longer than the Ousia set the base ability carries, which the previous [A7] note treated as interchangeable because there was no way to tell the two casts apart. NOT authored: gcsim's pneumaCDDelay of 10f (Ousia's is 0) — AbilityVariant has no cooldownStartDelay, and 10 frames on a 20s cooldown is below what the ghost tail can show.",
+						"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim furina/skill.go:96-106 → summonSinger: the Singer of Many Waters heals only. The Ousia base hits at f18 and stays as authored."
+					],
+					"nonHitting": true
 				}
 			]
 		},

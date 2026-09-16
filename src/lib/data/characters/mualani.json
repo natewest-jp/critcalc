@@ -105,9 +105,11 @@
 				"Skill cooldown: gcsim sets the 6s cooldown only on stance cancel/exit (cancelNightsoul → SetCD(ActionSkill, 6*60)); no SetCDWithDelay on the cast itself. The CD effectively begins when the stance ends, not when E is pressed. Schema has no field to express \"CD starts on stance end\" — cooldown=6 is recorded but cooldownStartDelay omitted; reviewer to decide.",
 				"Re-pressing E during stance cancels Nightsoul (gcsim Skill function early-returns with skillCancelFrames). Cancel frames: swap=11, N=7, Q=4, D=13, J=12. Not authored as a separate variant — cancel-press behavior cannot be expressed in current schema.",
 				"Stack-conditional N animation: see Sharky's Bite ability for the 3-stack Surging Bite variant flag.",
-				"Movement/dash/jump frame replacements while in stance (skillDashFrames, skillJumpFrames) not authored — schema does not represent stance-altered dash/jump; reviewer to decide."
+				"Movement/dash/jump frame replacements while in stance (skillDashFrames, skillJumpFrames) not authored — schema does not represent stance-altered dash/jump; reviewer to decide.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim mualani/skill.go:83-126: Nightsoul state only; the Surfing Hit is an OnTick subscription and the damage is the bites."
 			],
-			"application": []
+			"application": [],
+			"nonHitting": true
 		},
 		{
 			"id": "mualani__burst__boomsharkalaka",

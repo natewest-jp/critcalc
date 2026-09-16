@@ -147,10 +147,12 @@
 				"summonTick cadence from gcsim kitsune.go: interval = 176 frames = 2.933s (kitsune.go:171); first tick at frame 120 from cast start = 86 frames after spawn (spawnsAt 34) → firstTickDelay 1.433s (kitsune.go:28, tasks queued at 120-skillStart). Tick AttackTag/ICDTag ElementalArt — relevant for downstream reaction modeling.",
 				"Each E cast plants an independent totem with its own tick schedule — the per-cast summon bar with its own summonTick markers is the correct rendering.",
 				"Particle generation: 1 Electro particle per Sesshou Sakura tick that hits an enemy, ICD 2.5s (gcsim particleICDKey).",
-				"[Stellar] No current-patch change to this talent: the Fandom talent page for Yakan Evocation: Sesshou Sakura carries NO `buff` field (unlike her A1/C1/C2/C4/C6 pages), and its Change History still reads 2.5. game8's claimed '+10s Sesshou Sakura duration' is unsupported — the infobox `|duration = 14s`, the Talent Scaling `duration=14s` and the Gameplay Note ('5 strikes over their 14 seconds duration') all read 14s. The infobox's stray `|value5 = 15s` row contradicts its own duration field and is treated as a wiki typo, not evidence. Summon duration left at 14."
+				"[Stellar] No current-patch change to this talent: the Fandom talent page for Yakan Evocation: Sesshou Sakura carries NO `buff` field (unlike her A1/C1/C2/C4/C6 pages), and its Change History still reads 2.5. game8's claimed '+10s Sesshou Sakura duration' is unsupported — the infobox `|duration = 14s`, the Talent Scaling `duration=14s` and the Gameplay Note ('5 strikes over their 14 seconds duration') all read 14s. The infobox's stray `|value5 = 15s` row contradicts its own duration field and is treated as a wiki typo, not evidence. Summon duration left at 14.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim yaemiko/skill.go:28: the Sesshou Sakura gadget at f34 ticks on its own."
 			],
 			"application": [],
-			"caveat": "The 24s Sesshou Sakura (8 strikes) assumes the Witch's Revelation talent Edict of Cleansing is unlocked; without it the totem lasts 14s and strikes 5 times."
+			"caveat": "The 24s Sesshou Sakura (8 strikes) assumes the Witch's Revelation talent Edict of Cleansing is unlocked; without it the totem lasts 14s and strikes 5 times.",
+			"nonHitting": true
 		},
 		{
 			"id": "yae_miko__burst__great_secret_art_tenko_kenshin",

@@ -2115,6 +2115,22 @@ type SkillCommonFields = AbilityCommon & {
 	 *  positive statement that the cast applies nothing; an absent field means we have
 	 *  no reading. See {@link ElementalApplication}. */
 	application?: ElementalApplication[];
+	/**
+	 * ⚓ THE CAST LANDS NO HIT (non-hitting casts round, 2026-09-16 — the twin of
+	 * `NormalAbility.nonHitting`): its own animation queues no attack. No hit
+	 * record (so no `onHit` stack, artifact or proc consumer hears it), and the
+	 * buff derivation does not anchor an `onHit skill|burst` effect on the cast.
+	 * `onCast` effects, summons and their tick series are untouched — a
+	 * summon's ticks are the SERIES' hits, not the cast's, which is why Guoba's
+	 * cast is non-hitting while Guoba is not.
+	 *
+	 * ⚠️ NOT the same claim as `application: []`, which says the cast applies no
+	 * gauge — Emilie's E lands a Durability-0 hit and stays hitting. Lint demands
+	 * an explicit `application: []` beside this flag so both claims are stated.
+	 * A variant may override it with a boolean (Kujou Sara's C2 Ambush is a real
+	 * cast-time hit on a press that lands nothing at C0).
+	 */
+	nonHitting?: true;
 	/** Entities spawned by this cast with their own lifetimes. When present,
 	 *  these supersede the ability's own `duration` for active-window rendering. */
 	summons?: Summon[];
@@ -2253,6 +2269,22 @@ type BurstCommonFields = AbilityCommon & {
 	 *  positive statement that the cast applies nothing; an absent field means we have
 	 *  no reading. See {@link ElementalApplication}. */
 	application?: ElementalApplication[];
+	/**
+	 * ⚓ THE CAST LANDS NO HIT (non-hitting casts round, 2026-09-16 — the twin of
+	 * `NormalAbility.nonHitting`): its own animation queues no attack. No hit
+	 * record (so no `onHit` stack, artifact or proc consumer hears it), and the
+	 * buff derivation does not anchor an `onHit skill|burst` effect on the cast.
+	 * `onCast` effects, summons and their tick series are untouched — a
+	 * summon's ticks are the SERIES' hits, not the cast's, which is why Guoba's
+	 * cast is non-hitting while Guoba is not.
+	 *
+	 * ⚠️ NOT the same claim as `application: []`, which says the cast applies no
+	 * gauge — Emilie's E lands a Durability-0 hit and stays hitting. Lint demands
+	 * an explicit `application: []` beside this flag so both claims are stated.
+	 * A variant may override it with a boolean (Kujou Sara's C2 Ambush is a real
+	 * cast-time hit on a press that lands nothing at C0).
+	 */
+	nonHitting?: true;
 	/** Entities spawned by this cast with their own lifetimes. When present,
 	 *  these supersede the ability's own `duration` for active-window rendering. */
 	summons?: Summon[];
@@ -2378,6 +2410,11 @@ export type AbilityVariant = {
 	/** Overrides the base ability's `application[]`. ⚠️ REPLACES it, like every other
 	 *  variant array — a hold that lands different hits states all of them. */
 	application?: ElementalApplication[];
+	/** Overrides the base ability's `nonHitting`. A BOOLEAN here where the base
+	 *  takes a literal `true`, because a variant must be able to RE-ENABLE a hit
+	 *  the base withholds: Kujou Sara's press E lands nothing at C0 and a real
+	 *  Ambush at C2. Resolution is `variant.nonHitting ?? base.nonHitting`. */
+	nonHitting?: boolean;
 	/** Overrides the base ability's `durationExtensions[]`. */
 	durationExtensions?: DurationExtension[];
 	terminatesOnSwap?: boolean;
@@ -2526,6 +2563,15 @@ export function isStanceAbility(a: Ability | undefined): boolean {
  * this helper produces the *ability/variant-level* default that per-hit
  * tags can refine.
  */
+/** Does this (ability, variant) cast land NO hit? The variant's boolean wins
+ *  when present (non-hitting casts round, 2026-09-16). Only a skill or burst
+ *  can be non-hitting at the cast level; a normal ability answers per action
+ *  class through `NormalAbility.nonHitting` instead. */
+export function castIsNonHitting(ability: Ability, variant?: AbilityVariant): boolean {
+	if (ability.abilityType !== 'skill' && ability.abilityType !== 'burst') return false;
+	return variant?.nonHitting ?? ability.nonHitting ?? false;
+}
+
 export function getDefaultDamageTag(ability: Ability, variant?: AbilityVariant): DamageTag {
 	if (variant?.damageTag) return variant.damageTag;
 	if (ability.abilityType === 'normal') return 'normal';

@@ -123,7 +123,11 @@
 			"effects": [],
 			"description": "Unleashes a Celestial Dreamsphere that constantly fires Starlight Slugs at opponents within its AoE, dealing Cryo DMG.\nWhen a Starlight Slug hits, it will generate 1 Night Star for nearby Curtains of Slumber. Each Curtain of Slumber can gain 1 Night Star this way every 0.5s.",
 			"behavior": "instant",
-			"application": []
+			"application": [],
+			"nonHitting": true,
+			"_curatorNotes": [
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim layla/burst.go queues the Starlight Slugs from f114 — the Celestial Dreamsphere series."
+			]
 		}
 	],
 	"passives": [

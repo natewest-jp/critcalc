@@ -217,10 +217,12 @@
 				"'grouping' tag added (capability sweep 2026-07-28): the tornado pulls in objects and opponents (kit text, genshin-db combat3). Tag-only — no numeric effect, pull is part of the burst's hit window.",
 				"C6 note removed (capability sweep 2026-07-28): a stale note here claimed a +60% party RES buff on Swirl — not the live kit. The real C6 (Intertwined Winds, anemo resShred on burst hits) is authored on the constellation entry.",
 				"A6 rigor 2026-07-12: summon duration corrected 5.57 → 4.03 (gcsim burst.go). The renderer adds duration to spawnsAt=94 (endAt=spawnAt+duration), so 5.57s — gcsim's from-CAST status window (334f) mis-set as from-SPAWN — drew 12 tick markers for a 9-tick burst. Male status 336f − spawn 94f = 242f = 4.03s renders the correct 9 ticks (last tick 4.0s < 4.03s; strict-< needs >4.0).",
-				"[A7] The additional absorbed-element hit deals 50% of base Anemo DMG (varies by element); the tornado can absorb at any of its 9 ticks. Only the Anemo per-tick damage is shown as summon ticks."
+				"[A7] The additional absorbed-element hit deals 50% of base Anemo DMG (varies by element); the tornado can absorb at any of its 9 ticks. Only the Anemo per-tick damage is shown as summon ticks.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim traveler/common/anemo/burst.go:81: the tornado ticks from f94 are the Gust Surge series."
 			],
 			"description": "Aether/Lumine summons a swirling tornado that pulls enemies and objects toward itself, dealing continuous Anemo DMG. The tornado may absorb the elements of Hydro, Pyro, Cryo, or Electro it comes into contact with, dealing additional Elemental DMG of that type.",
-			"application": []
+			"application": [],
+			"nonHitting": true
 		}
 	],
 	"passives": [

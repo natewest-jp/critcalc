@@ -384,3 +384,200 @@ describe('a non-hitting action class (nonHitting)', () => {
 		expect(warn.map((i) => i.severity)).toEqual(['warn']);
 	});
 });
+
+// ── the non-hitting CAST (the twin, non-hitting casts round 2026-09-16) ─────
+
+/** A catalyst whose E lands no hit (a status opener), with three consumers
+ *  around it: a shred on `onHit skill` (must NOT draw from the cast), a buff on
+ *  `onCast skill` (must still draw), and a teammate whose burst arms an
+ *  `onHit` damage proc that listens to the whole team (must stay silent). A
+ *  C2-gated press variant re-enables the hit — Kujou Sara's shape. */
+function castStub(opts: { nonHitting?: boolean; c2Variant?: boolean } = {}): CharacterData {
+	return {
+		id: 'stub',
+		displayName: 'Stub',
+		element: 'dendro',
+		weapon: 'catalyst',
+		passives: [],
+		constellations: [
+			{
+				id: 'stub__constellation__c1',
+				name: 'C1 Shred',
+				abilityType: 'constellation',
+				constellationLevel: 1,
+				effects: [
+					{
+						type: 'resShred',
+						target: 'enemy',
+						trigger: { type: 'onHit', abilityType: 'skill' },
+						duration: 6,
+						element: 'dendro',
+						value: -15
+					}
+				]
+			}
+		],
+		abilities: [
+			{
+				id: 'stub__normal',
+				name: 'Stub Normal',
+				abilityType: 'normal',
+				input: ['N'],
+				hits: HITS
+			},
+			{
+				id: 'stub__skill',
+				name: 'Stub Skill',
+				abilityType: 'skill',
+				input: ['E'],
+				behavior: 'instant',
+				frames: { anim: 42, N: 38, C: 38, Q: 38, D: 37, J: 38, swap: 36 },
+				cooldown: 12,
+				effects: [
+					{
+						type: 'buff',
+						target: 'team',
+						trigger: { type: 'onCast', ability: 'skill' },
+						stat: 'atk%',
+						value: 20,
+						duration: 8
+					}
+				],
+				application: [],
+				...(opts.nonHitting ? { nonHitting: true } : {}),
+				...(opts.c2Variant
+					? {
+							variants: [
+								{
+									label: 'C2',
+									input: ['E'],
+									conditions: { type: 'constellation', level: 2 },
+									nonHitting: false,
+									application: [{ frame: 20, element: 'dendro', units: 1 }]
+								}
+							]
+						}
+					: {})
+			}
+		]
+	} as unknown as CharacterData;
+}
+
+/** The teammate: a burst that arms a team-wide `onHit` damage proc for 15s
+ *  (Beidou's Stormbreaker, widened to every ability class). */
+const PROC_MATE = {
+	id: 'mate',
+	displayName: 'Mate',
+	element: 'electro',
+	weapon: 'sword',
+	passives: [],
+	constellations: [],
+	abilities: [
+		{
+			id: 'mate__normal',
+			name: 'Mate Normal',
+			abilityType: 'normal',
+			input: ['N'],
+			hits: [{ name: 'N1', frames: { anim: 30, hit: 12 } }]
+		},
+		{
+			id: 'mate__burst',
+			name: 'Mate Burst',
+			abilityType: 'burst',
+			input: ['Q'],
+			behavior: 'instant',
+			frames: { anim: 60, swap: 50 },
+			cooldown: 20,
+			energyCost: 60,
+			effects: [
+				{
+					type: 'damage',
+					target: 'enemy',
+					trigger: { type: 'onHit', source: 'team', armedFor: 15 },
+					procCooldown: 1,
+					scaling: 100,
+					stat: 'atk',
+					element: 'electro',
+					application: [{ frame: 1, element: 'electro', units: 1 }]
+				}
+			],
+			// The arming burst is itself a status cast — non-hitting, so the only
+			// hit the proc can ever hear in these rotations is the stub's E.
+			nonHitting: true,
+			application: []
+		}
+	]
+} as unknown as CharacterData;
+
+function parseCast(notation: string, stub: CharacterData, cons: Record<string, number> = {}) {
+	const r = parseNotation(
+		notation,
+		(n) => (n === 'Stub' ? stub : n === 'Mate' ? PROC_MATE : null),
+		8,
+		cons,
+		undefined,
+		[stub, PROC_MATE]
+	);
+	expect(r.unknownTokens, notation).toEqual([]);
+	expect(r.events.filter((e) => e.kind === 'cast').length, notation).toBeGreaterThan(0);
+	return r;
+}
+type BuffW = Extract<ParsedRotation['windows'][number], { kind: 'buff' }>;
+const buffs = (r: ParsedRotation) => r.windows.filter((w): w is BuffW => w.kind === 'buff');
+const shreds = (r: ParsedRotation) => buffs(r).filter((w) => w.debuff === true);
+const teamBuffs = (r: ParsedRotation) => buffs(r).filter((w) => w.debuff !== true);
+
+describe('a non-hitting CAST (CastAbility.nonHitting)', () => {
+	it('a hitting E anchors its onHit shred on the cast; a non-hitting one does not', () => {
+		const hitting = parseCast('Stub E', castStub(), { stub: 1 });
+		expect(shreds(hitting).map((w) => w.start)).toEqual([0]);
+		const silent = parseCast('Stub E', castStub({ nonHitting: true }), { stub: 1 });
+		expect(shreds(silent)).toEqual([]);
+	});
+
+	it('the onCast buff in the same pool is untouched', () => {
+		const silent = parseCast('Stub E', castStub({ nonHitting: true }), { stub: 1 });
+		expect(teamBuffs(silent).map((w) => [w.start, w.end])).toEqual([[0, 480]]);
+	});
+
+	it('an armed team onHit damage proc does not hear a non-hitting cast', () => {
+		// The mate's burst arms the proc; the stub's E is the only hit on offer.
+		const hitting = parseCast('Mate Q > Stub E', castStub());
+		expect(hitting.applications.filter((a) => a.element === 'electro')).toHaveLength(1);
+		const silent = parseCast('Mate Q > Stub E', castStub({ nonHitting: true }));
+		expect(silent.applications.filter((a) => a.element === 'electro')).toEqual([]);
+	});
+
+	it('a variant can re-enable the hit — Kujou Sara at C2', () => {
+		const stub = castStub({ nonHitting: true, c2Variant: true });
+		const c0 = parseCast('Stub E', stub, { stub: 1 });
+		expect(shreds(c0)).toEqual([]);
+		expect(c0.applications).toEqual([]);
+		const c2 = parseCast('Stub E', stub, { stub: 2 });
+		expect(shreds(c2).map((w) => w.start)).toEqual([0]);
+		expect(c2.applications.map((a) => [a.time, a.element])).toEqual([[20, 'dendro']]);
+	});
+
+	it('lint: literally true, with application: [] beside it; a variant is a boolean with its own list', () => {
+		const issues = (mutate: (a: Record<string, unknown>) => void) => {
+			const c = castStub({ nonHitting: true, c2Variant: true });
+			mutate(c.abilities[1] as unknown as Record<string, unknown>);
+			return lintCharacter(c)
+				.filter((i) => i.check === 'non-hitting-cast')
+				.map((i) => i.message)
+				.join('\n');
+		};
+		expect(issues(() => {})).toBe('');
+		expect(issues((a) => (a.nonHitting = false))).toMatch(/literally true/);
+		expect(issues((a) => delete a.application)).toMatch(/application: \[\]/);
+		expect(issues((a) => (a.application = [{ frame: 1, element: 'dendro' }]))).toMatch(
+			/application: \[\]/
+		);
+		expect(issues((a) => delete (a.variants as Record<string, unknown>[])[0].application)).toMatch(
+			/re-enables/
+		);
+		expect(
+			issues((a) => ((a.variants as Record<string, unknown>[])[0].nonHitting = 'yes'))
+		).toMatch(/boolean/);
+	});
+});

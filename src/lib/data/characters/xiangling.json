@@ -146,7 +146,11 @@
 			],
 			"effects": [],
 			"description": "Summons Guoba, who will continuously breathe fire at opponents, dealing AoE Pyro DMG.",
-			"application": []
+			"application": [],
+			"nonHitting": true,
+			"_curatorNotes": [
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim xiangling/skill.go:50-59: the Guoba gadget at f13 shoots on its own; the cast lands nothing. Measured: the C1 shred now starts at the first flame (2.10s), not the cast (0.22s)."
+			]
 		},
 		{
 			"id": "xiangling__burst__pyronado",

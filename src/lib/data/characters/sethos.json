@@ -81,11 +81,13 @@
 			"tags": [],
 			"effects": [],
 			"_curatorNotes": [
-				"Changed behavior from 'stance' to 'instant' per recipe (stance reserved for Hu Tao/Cyno/Raiden/Furina + queue-flagged; Sethos is Tier A). Q grants an 8s self-buff 'Twilight Meditation' (burstBuffKey) that converts Normal Attacks to Electro Dusk Bolts (AttackTagExtra, ICDTagElementalBurst; DMG = ATK × burstEM[lvl] + burstEM[lvl] × EM, counted as Charged Attack DMG). Canceled when Sethos leaves the field (onCharacterSwap hook in sethos.go). Dusk Bolt EM scaling uses burstEM[] table (talent-level-gated). Reviewer to decide whether duration field or self-buff entry is warranted, and whether 'stance' should be reinstated given the N-replacement behavior."
+				"Changed behavior from 'stance' to 'instant' per recipe (stance reserved for Hu Tao/Cyno/Raiden/Furina + queue-flagged; Sethos is Tier A). Q grants an 8s self-buff 'Twilight Meditation' (burstBuffKey) that converts Normal Attacks to Electro Dusk Bolts (AttackTagExtra, ICDTagElementalBurst; DMG = ATK × burstEM[lvl] + burstEM[lvl] × EM, counted as Charged Attack DMG). Canceled when Sethos leaves the field (onCharacterSwap hook in sethos.go). Dusk Bolt EM scaling uses burstEM[] table (talent-level-gated). Reviewer to decide whether duration field or self-buff entry is warranted, and whether 'stance' should be reinstated given the N-replacement behavior.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim sethos/burst.go: buff only."
 			],
 			"behavior": "instant",
 			"description": "Perform a secret rite, entering the \"Twilight Meditation\" state, during which Sethos's Normal Attacks will be converted into enemy-piercing Dusk Bolts: Deal Electro DMG to opponents in its path, with DMG increased based on Sethos's Elemental Mastery.\nSethos cannot perform Aimed Shots while in this state.\nDMG dealt by Dusk Bolts is considered Charged Attack DMG.\nThis effect will be canceled when Sethos leaves the field.",
-			"application": []
+			"application": [],
+			"nonHitting": true
 		}
 	],
 	"passives": [

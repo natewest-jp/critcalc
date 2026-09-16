@@ -241,9 +241,11 @@
 			"behavior": "stance",
 			"_curatorNotes": [
 				"[A7] Burst base duration is 712f = 11.87s from cast start (~10s active after the burst animation).",
-				"[A7] Each in-stance Mortuary Rite (skill) cast extends the window +4s, max 2 (up to ~19.87s total), wired via durationExtensions[] with an onCast skill trigger — modeled correctly, so the removed caveat described working behavior rather than a gap."
+				"[A7] Each in-stance Mortuary Rite (skill) cast extends the window +4s, max 2 (up to ~19.87s total), wired via durationExtensions[] with an onCast skill trigger — modeled correctly, so the removed caveat described working behavior rather than a gap.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim cyno/burst.go: stat mod + stance tasks, no QueueAttack."
 			],
-			"application": []
+			"application": [],
+			"nonHitting": true
 		}
 	],
 	"passives": [

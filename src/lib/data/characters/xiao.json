@@ -253,9 +253,11 @@
 				"A1 (Conqueror of Evil: Tamer of Demons) DMG bonus is a self-buff that stacks 1→5 over 12s (5% per 3s) during the stance, capped at 25%. The inherited manual-trigger skeleton on the passive collapses this to a single +25%; reviewer to model the ramp.",
 				"Anemo conversion of N/C/P during the stance is handled in gcsim's Snapshot (forces a.Element = Anemo for AttackTagNormal / AttackTagExtra / AttackTagPlunge) and is represented here by the in-stance normal entry's infusion: anemo. Burst itself does not perform an absorption check (no aiAbs/absorbCheck in burst.go) — recipe §3.5 absorption flag does NOT apply to Xiao despite being listed alongside other anemo bursts.",
 				"[A7] Caveat HP-drain specifics (demoted, kept concise in the note above): 3.0%/2.5%/2.0% of current HP per second at talent levels 1/6/13 — drain decreases with talent level. Already fully captured in the A6 rigor 2026-07-12 curator note on this ability.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The tool has no HP state at all, and the drain does not shorten the burst in game either — the 15s stance bar we draw is the right length. Nothing on screen claims otherwise. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The tool has no HP state at all, and the drain does not shorten the burst in game either — the 15s stance bar we draw is the right length. Nothing on screen claims otherwise. Category: invisible-omission.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim xiao/burst.go: buff state + HP drain, no attack."
 			],
-			"application": []
+			"application": [],
+			"nonHitting": true
 		}
 	],
 	"passives": [

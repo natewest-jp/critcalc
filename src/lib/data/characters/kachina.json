@@ -140,8 +140,10 @@
 			"cooldownStartDelay": 10,
 			"_curatorNotes": [
 				"FrameMaps + application[] written by migrate-frames-shape --seed / migrate-application-schema against gcsim PR #2697 \"feat: add Kachina\" (head 72cff3530, 2026-07-25, UNMERGED — CHANGES_REQUESTED since 2026-08-12 and stale; counts credited to caramielle). May shift before merge; re-run the writers when it lands. ⚠️ Reviewers flagged that the mounted dash/charged frames are missing and the mount/dismount recast slice is a flat 30f, so neither is authored here.",
-				"⚠️ anim is a STAND-IN: the PR writes InitAbilSlice(733) — the Turbo Twirly's whole 12.2s lifetime, so gcsim's queue treats the mount as one long action (the Ifa 631-swap idiom). Painting a 733f cast bar would be wrong, so anim is the largest MEASURED cancel (J 57); N 56 / E 51 / Q 30 / D 55 / swap 44 are the PR's. SetCDWithDelay(skill CD, 10) → cooldownStartDelay 10. The cast itself applies nothing (application []); every Geo hit is the Twirly's."
-			]
+				"⚠️ anim is a STAND-IN: the PR writes InitAbilSlice(733) — the Turbo Twirly's whole 12.2s lifetime, so gcsim's queue treats the mount as one long action (the Ifa 631-swap idiom). Painting a 733f cast bar would be wrong, so anim is the largest MEASURED cancel (J 57); N 56 / E 51 / Q 30 / D 55 / swap 44 are the PR's. SetCDWithDelay(skill CD, 10) → cooldownStartDelay 10. The cast itself applies nothing (application []); every Geo hit is the Twirly's.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): PR #2697's own dump attributes the cast no hit; the slams are the Turbo Twirly series."
+			],
+			"nonHitting": true
 		},
 		{
 			"id": "kachina__burst__time_to_get_serious",

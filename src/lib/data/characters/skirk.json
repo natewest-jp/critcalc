@@ -199,7 +199,11 @@
 						"swap": 15
 					},
 					"behavior": "instant",
-					"application": []
+					"application": [],
+					"nonHitting": true,
+					"_curatorNotes": [
+						"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim skirk/skill.go:112-135: rift absorption + Serpent's Subtlety, no attack."
+					]
 				}
 			],
 			"tags": [],
@@ -244,10 +248,12 @@
 				"Native gcsim NextQueueItemIsValid: skill cannot be re-cast while inStance (skillKey active). Planner can't enforce this; the in-stance E-recast slot is unused.",
 				"A6 rigor 2026-07-12: Hold-E gainStacks amount corrected 18 → 45 (gcsim skill.go skillHold calls AddSerpentsSubtlety 45.0 — the skillHoldGainSS=18 constant is a frame delay/CD offset, not the grant; kit text 'Hold: Skirk gains 45 Serpent's Subtlety' confirms). Caveat + note references updated 18→45.",
 				"[A7] Hold-E void-rift absorption is not simulated but is covered by the A1 passive gadget-gap caveat, so it was dropped here. Tap-opens-inStance vs Hold-as-instant-grant branching is modeled correctly. Variable hold duration = gcsim p['hold'] param, max ~3s, unrepresented.",
-				"⏭ UNBLOCKED, NOT DONE — `gainStacks.scope: 'rotation'` exists since 2026-08-31 (summon-tick stacks round; Alyosha's `huntersMark` is its only author). Serpent's Subtlety is a meter on SKIRK that survives a swap in game, but its container here is the per-segment pool, which is why the E3 v2 hand-off records the operational limit \"structure E and Q in a single segment — a cross-segment Q after E loses the SS carry\". Declaring `scope: 'rotation'` on all three of this key's `gainStacks` effects would retire that. ⛔ NOT done in the same round, deliberately: SS is the corpus's one DRAIN-bearing key, and `drainAnchors` is ALREADY rotation-level while its pool is per-segment — `applyDrain`'s settle-after-state-ends regime has never had a resource to act on across a swap, so the interaction is unmeasured and wants its own before/after rather than a ride-along. ⚠️ Also re-check the burst's `consumeStacks: 'all'` and note 6's fails-open `min: 51` gate under the new scope before flipping it."
+				"⏭ UNBLOCKED, NOT DONE — `gainStacks.scope: 'rotation'` exists since 2026-08-31 (summon-tick stacks round; Alyosha's `huntersMark` is its only author). Serpent's Subtlety is a meter on SKIRK that survives a swap in game, but its container here is the per-segment pool, which is why the E3 v2 hand-off records the operational limit \"structure E and Q in a single segment — a cross-segment Q after E loses the SS carry\". Declaring `scope: 'rotation'` on all three of this key's `gainStacks` effects would retire that. ⛔ NOT done in the same round, deliberately: SS is the corpus's one DRAIN-bearing key, and `drainAnchors` is ALREADY rotation-level while its pool is per-segment — `applyDrain`'s settle-after-state-ends regime has never had a resource to act on across a swap, so the interaction is unmeasured and wants its own before/after rather than a ride-along. ⚠️ Also re-check the burst's `consumeStacks: 'all'` and note 6's fails-open `min: 51` gate under the new scope before flipping it.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim skirk/skill.go:57-66 → enterSkillState, no attack."
 			],
 			"description": "Imitates the combat style of \"The Foul.\" Produces different effects depending on whether you Tap or Hold.\n\nTap\nSkirk gains 45 **Serpent's Subtlety** and switches to **Seven-Phase Flash** mode.\n\nHold\nSkirk gains 45 Serpent's Subtlety and will continuously move at high speed. Her interruption resistance is increased in this state.\nDuring this time, Skirk can control her movement direction and move atop water. She can also use this Skill again to end rapid movement prematurely.",
-			"application": []
+			"application": [],
+			"nonHitting": true
 		},
 		{
 			"id": "skirk__burst__havoc_ruin",
@@ -387,10 +393,12 @@
 				"All Shall Wither: 12.5s buff (burstExtinctKey), 10-proc cap, 0.1s ICD per proc (burstICDKey). Each qualifying N hit gains +burstDMG[voids][lvl] DmgP. Not authored — schema has no per-NA proc-counted dmgBonus primitive (similar to the lacking onHit-from-summon trigger).",
 				"Void Rifts absorbed during cast: c.absorbVoidRifts() returns count 0-3, used to index burstDMG[voids][lvl] for All Shall Wither bonus. Void Rifts are A1-spawned by team Frozen/Superconduct/Cryo-Swirl/Cryo-Crystallize reactions — not modeled.",
 				"[A7] All Shall Wither has no matching primitive: per-normal-hit proc-counted bonus with a 10-proc cap plus Void-Rift-count scaling (0-3 rifts -> +0/+1/+2/+3, gcsim burstDMG[voids][lvl]). Correctly modeled and dropped: this variant consumes no SS and does not exit the stance.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The missing buff bar under the in-stance Q. In game this cast grants a named buff that lasts until Seven-Phase Flash ends; on the timeline the Q bar draws and the buff row stays empty — in the same lane where Skirk's A4 +70% Normal Attack bar does draw, so the blank reads as 'nothing happened'. Cut the Void-Rift scaling half: rift absorption is disclosed at Reason Beyond Reason and repeating it here is the third of four Void Rift mentions on one character. Category: expected-but-absent."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The missing buff bar under the in-stance Q. In game this cast grants a named buff that lasts until Seven-Phase Flash ends; on the timeline the Q bar draws and the buff row stays empty — in the same lane where Skirk's A4 +70% Normal Attack bar does draw, so the blank reads as 'nothing happened'. Cut the Void-Rift scaling half: rift absorption is disclosed at Reason Beyond Reason and repeating it here is the third of four Void Rift mentions on one character. Category: expected-but-absent.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim skirk/burst.go:129-146 BurstExtinction: the 10-empowered-normals buff, no attack. ⚠️ The buff pools cannot see this state-gated sibling (§1.F), so only the hit record and the proc stream move for it."
 			],
 			"description": "A special Elemental Burst that can be used even without consuming Serpent's Subtlety.\nAfter using it, Skirk will gain the \"All Shall Wither\" effect, which will last until Seven-Phase Flash ends. After unlocking the Ascension Talent **Reason Beyond Reason**, she can also absorb nearby Void Rifts.\nWhile \"All Shall Wither\" is active, every 0.1s, after Skirk's Normal Attack hits an opponent, that Normal Attack will deal increased DMG. If she absorbed any Void Rifts while using Havoc: Extinction, this Normal Attack's DMG will be further increased based on the number of Rifts absorbed.",
-			"application": []
+			"application": [],
+			"nonHitting": true
 		}
 	],
 	"passives": [

@@ -95,9 +95,11 @@
 			"_curatorNotes": [
 				"Stance duration = 10s (gcsim AddStatus(skillKey, 600+11, true) — 600 frames effective stance window after 11-frame cast delay).",
 				"terminatesOnSwap: true — gcsim onExit() subscribes to OnCharacterSwap and calls DeleteStatus(skillKey) when Yoimiya swaps off-field.",
-				"Skill-talent damage multiplier on in-stance N (1.617 → 3.823 across TL1–15) is reviewer-owned; flagged on the in-stance normal entry."
+				"Skill-talent damage multiplier on in-stance N (1.617 → 3.823 across TL1–15) is reviewer-owned; flagged on the in-stance normal entry.",
+				"nonHitting (non-hitting casts round, 2026-09-16 (docs/nonhitting-casts-round.md §1)): gcsim yoimiya/skill.go:28-42: the infusion status only."
 			],
-			"application": []
+			"application": [],
+			"nonHitting": true
 		},
 		{
 			"id": "yoimiya__burst__ryuukin_saxifrage",
