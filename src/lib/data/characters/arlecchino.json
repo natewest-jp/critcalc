@@ -110,7 +110,7 @@
 			"effects": [],
 			"description": "Normal Attack\nPerforms up to 6 consecutive spear strikes.\n\nCharged Attack\nConsumes a fixed amount of Stamina, dashing toward a nearby opponent and cleaving once.\nContinuously holding this button will cause Arlecchino to consume Stamina and engage in up to 5s of high-speed movement.\n\nPlunging Attack\nPlunges from mid-air to strike the ground below, damaging opponents along the path and dealing AoE DMG upon impact.\n\nMasque of the Red Death\nWhen Arlecchino has a Bond of Life equal to or greater than 30% of her Max HP, she will enter the \"Masque of the Red Death\" state, where her Normal, Charged, and Plunging Attacks will be converted to deal Pyro DMG. This cannot be overridden.\nWhen in the \"Masque of the Red Death\" state, Arlecchino's Normal Attacks will deal extra DMG to opponents on hit that scales off her ATK multiplied by a certain ratio of her current Bond of Life percentage. This will consume 7.5% of said current Bond of Life. Her Bond of Life can be consumed this way every 0.03s. When her Bond of Life is consumed in this manner, All Is Ash's CD will decrease by 0.8s.",
 			"_curatorNotes": [
-				"Masque of the Red Death (BoL ≥ 30% MaxHP) and its Pyro infusion + BoL-scaling FlatDmg on N hits are intentionally out of scope. Bond of Life is a damage-and-healing-tied resource that the planner can't track, so the downstream Pyro stance has no trigger we can detect — and gating ~18 N hits per mark by N-count consumption rather than time would need a new state model just to render an infusion tint. Genshin-db generator stub included a `manual` damage entry here (`scaling: 30, stat: hp, element: pyro`) for the Masque extra DMG; removed because it never fires (no trigger) and the values don't match gcsim anyway (true scaling is `(masque[talent] + c1Bonus) × (CurrentHPDebt / MaxHP) × TotalAtk`, BoL-on-ATK).",
+				"↻ MASQUE'S PYRO INFUSION AUTHORED 2026-09-17 (T1 tranche) as `infusion: pyro` on this ability — the Durin dark-commit shape. gcsim `attack.go` / `charge.go` / `plunge.go` set `ai.Element = Pyro` (with IgnoreInfusion) on every N, CA and plunge hit while `masque-of-the-red-death` is active, i.e. while her Bond of Life is ≥ 30% of Max HP. Bond of Life is still untracked, so the infusion is drawn ALWAYS ON: a played Arlecchino sits in Masque for essentially her whole field time, and before this every swing applied NOTHING (measured `Arlecchino E N1 N2 N3 C Q` → four Pyro applications, none from the six swings or the CA) — which also left her authored `chargedIcdWindow` unreachable. The over-claim is the opening swings before the first directive is absorbed; caveated. The BoL-scaled FlatDmg stays out of scope (damage magnitude). The generator's old `manual` Masque damage entry stays removed.",
 				"N4 has two hitmarks (24, 35); swap reflects the last hitmark per recipe convention. attackHitlagHaltFrame[3] = {0, 0} with attackDefHalt[3] = {true, false} — the second sub-hit cannot be defense-halted.",
 				"N6 ActionCharge = 55 is set explicitly in gcsim — included even though the recipe key-set table omits C on the final hit. Other final-hit polearm chars (Hu Tao) have ActionCharge = 500 sentinel and omit; arlecchino is real.",
 				"Charged-attack `early_cancel` param in gcsim allows cancelling the CA dash with D/J before hitmark (returns 13-windup frames), with a 12f post-N windup discount. Not modeled — schema has no per-cancel-action variant.",
@@ -130,7 +130,9 @@
 			},
 			"chargedIcdWindow": {
 				"timer": 30
-			}
+			},
+			"infusion": "pyro",
+			"caveat": "Her attacks are drawn as Pyro throughout, as if Masque of the Red Death were always active. In game they stay Physical until her Bond of Life reaches 30% of her Max HP."
 		},
 		{
 			"id": "arlecchino__skill__all_is_ash",
@@ -171,7 +173,8 @@
 				},
 				{
 					"frame": 338,
-					"element": "pyro"
+					"element": "pyro",
+					"units": 1
 				},
 				{
 					"frame": 638,
@@ -354,7 +357,8 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "skill"
 					},
 					"duration": 20,
 					"durationType": "fixed",
@@ -367,7 +371,8 @@
 					"type": "buff",
 					"target": "self",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "skill"
 					},
 					"duration": 20,
 					"durationType": "fixed",
@@ -379,8 +384,7 @@
 			],
 			"description": "The DMG of Balemoon Rising is increased by Arlecchino's ATK multiplied by 700% of Arlecchino's current Bond of Life percentage.\nFor 20s after Arlecchino uses All Is Ash, both her Normal Attacks and Elemental Burst gain 10% increased CRIT Rate and 70% increased CRIT DMG. This effect can be triggered up to once every 15s.",
 			"_curatorNotes": [
-				"Inherited `trigger: \"manual\"` on both critRate and critDmg buffs. Likely trigger: `onCast` of `ability: skill`, with 15s ICD (gcsim cons.go c6skill, c6IcdKey). 20s duration matches gcsim NewBaseWithHitlag(c6Key, 20*60).",
-				"**Generator value error:** the critRate skeleton above has `value: 70` — this is **wrong**. gcsim m[CR] = 0.1 (10%), not 70%. The 70 likely came from copying the critDmg value. Reviewer to fix to 10.",
+				"↻ RE-TRIGGERED 2026-09-17 (T1 tranche, `manual` retirement): `onCast skill`, 20s — gcsim `skill.go` queues `c6skill` at the skill's final hitmark, and `cons.go` grants CR 10% / CD 70% for 20s (`NewBaseWithHitlag(c6Key, 20*60)`) behind a 15s ICD, which her 30s skill cooldown never reaches. Before: zero windows of any kind at C6. (The 'value: 70' generator-error note was stale — the value has been 10 since the A6 pass — and is deleted.)",
 				"C6 buffs are restricted to AttackTagElementalBurst and AttackTagNormal in gcsim (cons.go c6skill switch). Schema may need a per-effect `ability` condition on the buff (similar to how some snapshottable buffs gate by ability tag). Not authored — current skeletons apply unconditionally to all damage.",
 				"C6 also adds FlatDmg to the burst hit: `c6Amount() = TotalAtk × 7.0 × (CurrentHPDebt / MaxHP)` at hitmark — scaling buff (BoL-runtime), not authored. Captured in burst _curatorNotes."
 			]
