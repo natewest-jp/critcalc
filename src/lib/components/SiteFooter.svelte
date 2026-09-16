@@ -39,7 +39,9 @@
 	.ftr__legal {
 		margin: 0 auto;
 		max-width: 62rem;
-		font-size: var(--fs-lg);
+		/* One line at a laptop width. 🎛️ Stepped down from --fs-lg (⚓ Nate
+		   2026-09-16): at 14px the sentence wrapped inside its 62rem measure. */
+		font-size: var(--fs-md);
 		line-height: var(--lh-snug);
 	}
 </style>

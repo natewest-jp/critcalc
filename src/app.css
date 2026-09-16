@@ -197,6 +197,12 @@
 	   stop IS that rung at an alpha, so it has to move with it or the well
 	   silently stops being the well. Star figure improved, 5.22 → 5.44:1. */
 	--glass-well: rgb(31 38 53 / 0.45); /* slate-900 — band B, recessed fields */
+	/* The landing's hero cards (2026-09-16). Same rung as the well, driven
+	   nearly opaque: the landing scene is BRIGHT and wears no dim, so a card
+	   has to hold gold text and a gold line against sky — .9 keeps a tenth of
+	   the scene (and the odd star) coming through to place it in the world.
+	   ⚓ NATE's number, tested in Affinity as rgb(31 38 53 / 0.9). */
+	--glass-plate: rgb(31 38 53 / 0.9); /* slate-900 — the landing cards */
 	/* HOVER IS DENSITY, NOT TINT (⚓ NATE 2026-08-10). The same rung as the panel
 	   with the alpha driven hard up, so hovering makes a pane MORE MATERIAL
 	   rather than washing it with a colour. Two things fall out that no tint can
@@ -1513,6 +1519,11 @@
 	--fill-rest: color-mix(in srgb, var(--chrome) 13%, transparent);
 	--fill-hover: color-mix(in srgb, var(--chrome) 20%, transparent);
 	--accent: var(--chrome);
+	/* The one gold thing in the bar: the BETA tag (⚓ Nate 2026-09-16, trying
+	   the accent's rung first; a darker gold is the fallback). Its own role
+	   because --accent is white in here by the rule above, and a component
+	   may not name the primitive. */
+	--chrome-tag: var(--gold-400);
 	--sel-fill: color-mix(in srgb, var(--accent) 20%, transparent);
 	--sel-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 	--accent-hover-fill: color-mix(in srgb, var(--accent) 14%, transparent);
