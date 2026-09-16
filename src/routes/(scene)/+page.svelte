@@ -130,13 +130,23 @@
 	out:fade|global={{ duration: FADE_OUT_MS }}
 >
 	<div class="composition-inner">
-		<!-- The positioning line — the ONE quiet sentence on the landing that
-			 says what critcalc is (memory `project_landing_card_round`: a
-			 first-time visitor from Reddit used to see three instrument names
-			 and nothing else). Above the doors, read first; not a hero block,
-			 which would wreck the composition. Copy is draft until Nate's
-			 wording pass; it should echo the OG description in seo.ts. -->
-		<p class="tagline">Genshin theorycrafting, made visible</p>
+		<!-- The announcements — "is this current?" answered ABOVE the cards, a
+			 dateline the width of the group: the fact on the left, one line;
+			 its fine print on the right, allowed two lines (⚓ Nate's layout).
+			 Renders ONLY while an entry is live ($lib/landing/announcements.ts
+			 carries the rule and the expiry); an empty slot is worse than none,
+			 a stale one is worse than empty. No plate — a hairline under the
+			 row is all the furniture it gets. -->
+		{#if announcements.length}
+			<ul class="notices" aria-label="Announcements">
+				{#each announcements as a (a.id)}
+					<li class="notice">
+						<span class="notice__text">{a.text}</span>
+						{#if a.detail}<span class="notice__detail">{a.detail}</span>{/if}
+					</li>
+				{/each}
+			</ul>
+		{/if}
 
 		<nav class="heroes" aria-label="critcalc tools">
 			{#each tools as tool (tool.id)}
@@ -190,23 +200,14 @@
 			{/each}
 		</nav>
 
-		<!-- The announcements — "is this current?" answered under the cards,
-			 on the ground. Renders ONLY while an entry is live
-			 ($lib/landing/announcements.ts carries the rule and the expiry); an
-			 empty slot is worse than none, a stale one is worse than empty.
-			 No plate (⚓ Nate — it read as a toast): a short gold rule, the
-			 fact in gold, its fine print in the chrome's voice beneath. -->
-		{#if announcements.length}
-			<ul class="notices" aria-label="Announcements">
-				{#each announcements as a (a.id)}
-					<li class="notice">
-						<span class="notice__rule" aria-hidden="true"></span>
-						<span class="notice__text">{a.text}</span>
-						{#if a.detail}<span class="notice__detail">{a.detail}</span>{/if}
-					</li>
-				{/each}
-			</ul>
-		{/if}
+		<!-- The positioning line — the ONE quiet sentence on the landing that
+			 says what critcalc is (memory `project_landing_card_round`: a
+			 first-time visitor from Reddit used to see three instrument names
+			 and nothing else). Under the doors, on the ground; not a hero
+			 block. ↻ It sat ABOVE the cards in the display face at the group's
+			 width for one cut and read as a heading (⚓ Nate) — it is body
+			 sans, small, and below now. Copy is Nate's, same as the OG line. -->
+		<p class="tagline">Genshin theorycrafting, made visible</p>
 	</div>
 </div>
 
@@ -423,85 +424,87 @@
 		max-width: 100%;
 	}
 
-	/* ── The line above and the notice below ────────────────────────────────
+	/* ── The dateline above and the line below ──────────────────────────────
 	   Both hang off the card group's own edges (its centre is at 47%, its
 	   half-height is --card-h / 2), so they travel with the cards through
-	   every clamp instead of being placed on the frame separately — and both
-	   are SIZED off the group's width (⚓ Nate: "about the same width as the
-	   three cards"), so they stay that width at every clamp too. The divisors
-	   are the line's own length in em: the tagline is ~36 characters of
-	   Bitter at ~0.5em each. */
-
-	/* The tagline: the display face in the chrome's voice, the width of the
-	   doors it announces. */
-	.tagline {
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: calc(53% + var(--card-h) / 2 + 1.25rem);
-		margin: 0;
-		text-align: center;
-		font-family: var(--font-display);
-		font-size: calc(var(--group-w) / 19);
-		font-weight: var(--fw-medium);
-		line-height: var(--lh-tight);
-		letter-spacing: var(--ls-tight);
-		color: var(--chrome);
-		opacity: 0.9;
-		white-space: nowrap;
-	}
+	   every clamp instead of being placed on the frame separately. Both are
+	   Plex Sans at the small-label rungs (⚓ Nate — the display face at the
+	   group's width was a heading, not a caption). */
 
 	.notices {
 		position: absolute;
 		left: 0;
 		right: 0;
-		top: calc(47% + var(--card-h) / 2 + 1.5rem);
+		bottom: calc(53% + var(--card-h) / 2 + 1rem);
 		margin: 0;
 		padding: 0;
 		list-style: none;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
+		gap: 0.5rem;
 	}
 
-	/* No plate. The fact in gold at a step under the tagline; the fine print
-	   in the chrome's voice, quieter, in the body face. */
+	/* Two columns the width of the group: the fact left, one line, gold; the
+	   fine print right, up to two lines, the chrome's voice. A hairline under
+	   the row is its only furniture. */
 	.notice {
 		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.45em;
-		text-align: center;
-		font-size: calc(var(--group-w) / 30);
-	}
-
-	.notice__rule {
-		display: block;
-		width: 2.5em;
-		height: 1px;
-		margin-bottom: 0.3em;
-		background: var(--accent);
-		opacity: 0.6;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 1.5rem;
+		padding-bottom: 0.5rem;
+		border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+		font-family: var(--font-body);
+		font-size: var(--fs-md);
+		line-height: var(--lh-snug);
+		letter-spacing: var(--ls-wide);
 	}
 
 	.notice__text {
-		font-family: var(--font-display);
+		flex: none;
 		font-weight: var(--fw-medium);
-		line-height: var(--lh-tight);
-		letter-spacing: var(--ls-tight);
 		color: var(--accent);
 		white-space: nowrap;
 	}
 
 	.notice__detail {
+		max-width: 50%;
+		text-align: right;
+		color: var(--chrome);
+		opacity: 0.75;
+		text-wrap: balance;
+	}
+
+	/* `compact` — 40rem, $lib/breakpoints.ts. On a phone the two columns
+	   cannot share 358px, so the row stacks, both lines left-aligned. */
+	@media (max-width: 40rem) {
+		.notice {
+			flex-direction: column;
+			gap: 0.15rem;
+		}
+
+		.notice__detail {
+			max-width: none;
+			text-align: left;
+		}
+	}
+
+	/* Quiet: the chrome's voice at .8, body sans a step above the notice,
+	   centred under the doors. */
+	.tagline {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: calc(47% + var(--card-h) / 2 + 1.25rem);
+		margin: 0;
+		text-align: center;
 		font-family: var(--font-body);
-		/* Floored: at a phone's group width 0.55em is ~6px. */
-		font-size: max(0.55em, var(--fs-sm));
+		font-size: var(--fs-lg);
+		font-weight: var(--fw-medium);
 		line-height: var(--lh-snug);
 		letter-spacing: var(--ls-wide);
 		color: var(--chrome);
-		opacity: 0.75;
+		opacity: 0.8;
 		text-wrap: balance;
 	}
 
