@@ -54,9 +54,12 @@
 		{
 			"id": "varka__normal__favonius_bladework_sturm_und_drang",
 			"name": "Favonius Bladework: Dancing Radiance (Sturm und Drang)",
-			"input": ["N1", "N2", "N3", "N4", "N5", "C"],
+			"input": ["N1", "N2", "N3", "N4", "N5", "C", "sC"],
 			"abilityType": "normal",
-			"infusion": "anemo",
+			"infusion": {
+				"type": "teamElementPriority",
+				"order": ["pyro", "hydro", "electro", "cryo"]
+			},
 			"conditions": {
 				"type": "state",
 				"state": "inStance"
@@ -120,12 +123,27 @@
 			},
 			"_curatorNotes": [
 				"The in-stance sibling, authored 2026-09-16 (T0.5). Frames are the base ability's by construction: gcsim's skillAttack()/skillCharge() reuse attackHitmarks/attackFrames/chargeHitmarks/chargeFrames unchanged, so only the element and the multipliers differ (this file's base-normal note 4 already recorded that).",
-				"⚓ ANEMO is the half we take, and the other half is a deliberate omission. gcsim attack.go:115-172 fires TWO hits per in-stance swing on two dedicated counters — ele = [conversionElem, Anemo], icdTag = [ICDTagVarkaNormalAttackElem, ICDTagVarkaNormalAttackWind] — and charge.go:95-140 does the same with the Extra pair. `infusion` is one element per ability, so one half has to go, and Anemo is the half his OWN kit reads: A4's Azure Fang's Oath, C4 and C6 all key off a Swirl, which is what the Anemo hit produces. Before this, all five swings plus the CA applied NOTHING (measured `Varka E N5 C` → 0 applications) and none of his three Swirl-keyed effects could fire off his own attacks.",
-				"⚠️ The conversion element is the party's, by priority Pyro > Hydro > Electro > Cryo (gcsim skill.go:72-81 getConversionElem), falling back to PHYSICAL when the team has none of the four — in which case Four Winds' Ascension is unavailable too (convertToFourWinds). Modelling that half would need one state-gated sibling per element with `not`-nested teamElementCount priority conditions, four abilities to draw a second pill on a lane that now has one.",
 				"⚠️ N1 IS THE EXCEPTION and is over-claimed by one pill: it has a single hit (attackHitmarks[0] = {19}) and the offset table gives that hit the CONVERSION element, not Anemo — offset is 1 only for N2 and N3, so the pairs run Anemo-first on N2/N3 and conversion-first on N4/N5. Every swing but N1 therefore does carry an Anemo hit. Our one-hit-per-swing model cannot gate a single index of a chain, and one swing in five reads better than five in five reading nothing.",
 				"ICD: both halves sit on ICDGroupDefault (the tags differ, not the group), so the Anemo stream is the ordinary 150f / {1,0,0} counter our `normal` and `charged` clocks already model. ⛔ No chargedIcdWindow — the in-stance CA is ICDTagVarkaExtraAttackWind on ICDGroupDefault, not ICDGroupPoleExtraAttack, and he is a claymore user in any case.",
-				"⛔ No `P` in input: gcsim has no plunge.go for him and he cannot plunge in Sturm und Drang. gcsim's +5f windup from idle/swap/jump/dash (and +14f for a CA not chained from an attack) is not modeled, as on the base ability."
-			]
+				"⛔ No `P` in input: gcsim has no plunge.go for him and he cannot plunge in Sturm und Drang. gcsim's +5f windup from idle/swap/jump/dash (and +14f for a CA not chained from an attack) is not modeled, as on the base ability.",
+				"↻ BOTH CLAYMOERS, 2026-09-16 — this replaces T0.5's \"Anemo is the half we take\". The Fandom Talent Infobox is explicit where the genshin-db description is a summary: the LEFT hand's DMG \"will be converted to Anemo DMG that cannot be overridden by other infusions\", and the RIGHT hand deals \"corresponding Elemental DMG … following the aforementioned priority order\" Pyro > Hydro > Electro > Cryo. `infusion` is the right hand (an ElementRef the party resolves) and `coInfusion` the left.",
+				"⚓⚓ THE RIGHT HAND IS THE PRIMARY AND THAT IS LOAD-BEARING TWICE OVER. (1) It decides the ORDER the two are offered in, and measured against the gauge, conversion-then-Anemo at one instant swirls while Anemo-then-conversion produces nothing — so this ordering is what lets Varka SELF-ENABLE his own Swirl, which is what A4 (Azure Fang's Oath), C4 and C6 are all built on. Before this he could only swirl an aura someone else applied. (2) ⚓ Nate 2026-09-16: the infused PHEC hand is what tints the input block, and the block reads `infusion`.",
+				"⚠️ NO `fallback` on the right hand, unlike the burst's. gcsim skillAttack (attack.go:115-121) leaves `ele[0]` PHYSICAL when the party has no Pyro/Hydro/Electro/Cryo character and only swaps the ICD tag, so a partyless right hand applies nothing while the left is still Anemo — which is why `coInfusion` fires even when `infusion` resolves to nothing. The BURST does fall back to Anemo (burst.go:31-33), and that asymmetry is gcsim's, not a slip.",
+				"⚠️ N1 IS STILL OVER-CLAIMED BY ONE PILL and the reason is unchanged: it is a single hit (attackHitmarks[0] = {19}) carrying the CONVERSION element only, where our one-hit-per-swing model gives every swing both hands. ⚠️ gcsim also alternates which hand leads (offset 1 on N2/N3, so Anemo lands first there and swirls the PREVIOUS swing's aura); at the same frame we get the same swirl COUNT one swing earlier in phase. ⛔ Within-swing ordering is not expressible and is not worth a per-hit element model.",
+				"ICD: both halves are ICDGroupDefault on SEPARATE tags (ICDTagVarkaNormalAttackElem / …Wind for the normals, the ExtraAttack pair for the charged attack), which is what the engine's `:co` counter key reproduces. Two clocks started on the same swing stay in phase, so both hands apply on the same 1-in-3 swings — which is what makes the self-swirl land rather than alternate.",
+				"⚓ `sC` IS AZURE DEVOUR (KQM's notation — ⚓ Nate 2026-09-16, reading their Varka guide, which writes the two stance specials as `sC` and `sE`). gcsim azureDevourFrames = InitAbilSlice(75), Attack 64, Charge 74, Skill 66, Burst 65, and Dash/Jump/Swap all azureDevourHitmarks[3] = 60. ⚓ FRAMES ONLY: its four hits are `[conv, Anemo, conv, Anemo]` on the same ICDTagVarkaExtraAttack pair the ordinary in-stance charged attack uses, so both claymores come from `infusion`/`coInfusion` and nothing else about it differs from a `C` in this tool. ⛔ NOT modelled: Azure Devour SPENDS a use of Four Winds' Ascension, and a charged attack that consumes a skill charge has no shape — the token draws the attack without the cost."
+			],
+			"coInfusion": "anemo",
+			"specialChargeFrames": {
+				"anim": 75,
+				"N": 64,
+				"C": 74,
+				"E": 66,
+				"Q": 65,
+				"D": 60,
+				"J": 60,
+				"swap": 60
+			}
 		},
 		{
 			"id": "varka__skill__windbound_execution",
@@ -176,7 +194,7 @@
 		{
 			"id": "varka__skill__four_winds_ascension",
 			"name": "Four Winds' Ascension",
-			"input": ["E"],
+			"input": ["sE", "E"],
 			"abilityType": "skill",
 			"behavior": "instant",
 			"conditions": {
@@ -212,15 +230,26 @@
 				"Frames: specialSkillFrames = InitAbilSlice(68), ActionAttack(N)=55, ActionSkill(E)=56, ActionBurst(Q)=55, ActionDash(D)=75-19=56, ActionJump(J)=85-30=55, no ActionSwap override so swap=68. ActionCharge(C)=64 stays omitted with Azure Devour.",
 				"application: the Anemo half only. gcsim skill.go:134-157 fires two hits, fourWindsHitmark = [34, 43], elements [conversionElem, Anemo], both ICDTagNone with Durability 25 — so BOTH apply in game. The conversion element is party-dependent (priority Pyro > Hydro > Electro > Cryo), the same reason the in-stance normal takes only its Anemo half; see that ability's notes.",
 				"⛔ Not modeled here: the per-hit cooldown reduction (0.5s per in-stance Normal that hits, 1.0s with 2+ Hexerei, max 15 — gcsim fourWindsCDRedCB + hexSkillCDReduction), C1's extra use and doubled multiplier, and Azure Devour, the special in-stance Charged Attack that spends a use.",
-				"⚠️⚠️ ORACLE ARTEFACT — `gcsim-frames-diff.md` files this map as DISAGREEING (`N 55→49, E 56→44, Q 55→44, D 56→46, J 55→43, swap 68→49, anim 68→55`) and every one of those \"gcsim\" numbers is skillFrames, the BASE Windbound Execution's slice. Same for the application row (`+40 anemo`), which is the base skill's hitmark. The dumper casts E and gets the base, because `useSpecialSkill()` needs a Pyro/Hydro/Cryo/Electro teammate and a live Sturm und Drang and the dumper runs ONE character in an empty core. Our values are specialSkillFrames and fourWindsHitmark[1] read straight from skill.go:41-49,134-157. ⛔ DO NOT let `migrate-frames-shape.mjs` resolve these rows \"in gcsim's favour\" — it would give Four Winds the base skill's frames. Before the promotion the same rows sat harmlessly under \"not captured\"; they became comparable only because this is an ABILITY now rather than a variant. Same class as the Flins burst and Nilou WS2/WS3 artefacts."
+				"⚠️⚠️ ORACLE ARTEFACT — `gcsim-frames-diff.md` files this map as DISAGREEING (`N 55→49, E 56→44, Q 55→44, D 56→46, J 55→43, swap 68→49, anim 68→55`) and every one of those \"gcsim\" numbers is skillFrames, the BASE Windbound Execution's slice. Same for the application row (`+40 anemo`), which is the base skill's hitmark. The dumper casts E and gets the base, because `useSpecialSkill()` needs a Pyro/Hydro/Cryo/Electro teammate and a live Sturm und Drang and the dumper runs ONE character in an empty core. Our values are specialSkillFrames and fourWindsHitmark[1] read straight from skill.go:41-49,134-157. ⛔ DO NOT let `migrate-frames-shape.mjs` resolve these rows \"in gcsim's favour\" — it would give Four Winds the base skill's frames. Before the promotion the same rows sat harmlessly under \"not captured\"; they became comparable only because this is an ABILITY now rather than a variant. Same class as the Flins burst and Nilou WS2/WS3 artefacts.",
+				"↻ BOTH HITS, 2026-09-16 — this replaces T0.5's Anemo-only entry. gcsim skill.go:134-157 fires `fourWindsHitmark = [34, 43]` with `ele = [conversionElem, Anemo]`, both `ICDTagNone` and Durability 25, and the kit says the same in words: \"AoE Elemental DMG … corresponding to the element of the claymore wielded in Varka's right hand, and AoE Anemo DMG\". `noICD: true` is that ICDTagNone — ⚓ and it is READ on a cast (run.ts's own comment at the emitReactionsAtCast call names itself as its first reader, and eight characters already rely on it); without it the per-cast counter would swallow the second entry. ⛔ No `fallback` on the right hand: with no PHEC teammate Four Winds is not available at all.",
+				"⚓ `sE` is KQM's token for this (⚓ Nate 2026-09-16), the sibling of `sQ` and of `sC` on the normal beside it. ⚠️ BOTH spellings are listed on purpose and `sE` is not merely an alias: in game the stance REPLACES Windbound Execution, so a plain `E` in Sturm und Drang really is Four Winds, and refusing it would be wrong the way Flins's `sQ` is not (his base Q stays castable). The ability a token lands on is still decided by `resolveActiveAbility` from the state and the party, never by the input array — what listing `sE` buys is the eager index's `casts`, so the editor accepts it here and flags it on anyone else."
 			],
 			"application": [
+				{
+					"frame": 34,
+					"element": {
+						"type": "teamElementPriority",
+						"order": ["pyro", "hydro", "electro", "cryo"]
+					},
+					"units": 1
+				},
 				{
 					"frame": 43,
 					"element": "anemo",
 					"units": 1
 				}
-			]
+			],
+			"noICD": true
 		},
 		{
 			"id": "varka__burst__northwind_avatar",
@@ -236,13 +265,27 @@
 			"_curatorNotes": [
 				"FrameMaps re-extracted 2026-07-29 from gcsim main (PR #2668 merged as 5d1ec8c79); post-merge timings replaced the PR-era values.",
 				"burst.go: burstFrames = InitAbilSlice(152) with ActionAttack(N)=137, ActionSkill(E)=138, ActionDash(D)=157-19=138, ActionJump(J)=167-30=137, ActionWalk=140, ActionSwap=136. burstHitmark=[112,131]; SetCD(ActionBurst, 15*60) = 15s CD (no delay); EnergyMax=60. Two Anemo/element slashes (337.0% + 181.4% ATK at talent L10); the first slash converts to the priority Pyro/Hydro/Electro/Cryo element if such a unit is in the party.",
-				"gcsim's internal Abil string 'Divine Maiden's Deliverance (Initial)' is a copy-paste placeholder; the real name is Northwind Avatar."
+				"gcsim's internal Abil string 'Divine Maiden's Deliverance (Initial)' is a copy-paste placeholder; the real name is Northwind Avatar.",
+				"🐛 THE BURST WAS WRONG IN THREE WAYS AT ONCE, all fixed 2026-09-16. gcsim burst.go:30-55 runs `burstHitmark = [112, 131]` over `ele = [conversionElem, Anemo]`, so (1) hit 0 is the RIGHT-HAND element and we authored Anemo — wrong in every party that has a Pyro/Hydro/Electro/Cryo character, i.e. every party this character is built for; (2) both hits are `ICDTagNone` and must apply, where (3) measured, our per-cast standard counter suppressed the second outright — `Varka Q` landed ONE application where the game lands two. ⚓ `fallback: 'anemo'` here and NOWHERE ELSE on this character: the burst is the one site gcsim gives an Anemo fallback (`if ele[0] == defaultConversionElement { ele[0] = Anemo }`), where the normals leave the right hand Physical."
 			],
 			"description": "In the name of the mightiest Knight of Boreas, unleash a powerful double slash attack toward the front, dealing 2 instances of Anemo DMG.\nIf there are Pyro, Hydro, Electro or Cryo characters in the party, the first slash will be converted to deal corresponding Elemental DMG according to the aforementioned priority order of Elemental Types.",
 			"application": [
-				{ "frame": 112, "element": "anemo", "units": 1 },
-				{ "frame": 131, "element": "anemo", "units": 1 }
-			]
+				{
+					"frame": 112,
+					"element": {
+						"type": "teamElementPriority",
+						"order": ["pyro", "hydro", "electro", "cryo"],
+						"fallback": "anemo"
+					},
+					"units": 1
+				},
+				{
+					"frame": 131,
+					"element": "anemo",
+					"units": 1
+				}
+			],
+			"noICD": true
 		}
 	],
 	"passives": [
@@ -259,13 +302,157 @@
 					},
 					"source": "character",
 					"stat": "anemoDmgBonus",
-					"value": { "type": "scaling", "stat": "atk", "ratio": 1, "cap": 25 },
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 1,
+						"cap": 25
+					},
 					"snapshottable": false,
 					"conditions": {
 						"type": "teamElementCount",
 						"elements": ["pyro", "hydro", "electro", "cryo"],
 						"comparison": ">=",
 						"value": 1
+					}
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "pyroDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 1,
+						"cap": 25
+					},
+					"snapshottable": false,
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["pyro"],
+						"comparison": ">=",
+						"value": 1
+					}
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "hydroDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 1,
+						"cap": 25
+					},
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamElementCount",
+								"elements": ["pyro"],
+								"comparison": "=",
+								"value": 0
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["hydro"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
+					}
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "electroDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 1,
+						"cap": 25
+					},
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamElementCount",
+								"elements": ["pyro"],
+								"comparison": "=",
+								"value": 0
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["hydro"],
+								"comparison": "=",
+								"value": 0
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["electro"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
+					}
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
+					"source": "character",
+					"stat": "cryoDmgBonus",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 1,
+						"cap": 25
+					},
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "teamElementCount",
+								"elements": ["pyro"],
+								"comparison": "=",
+								"value": 0
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["hydro"],
+								"comparison": "=",
+								"value": 0
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["electro"],
+								"comparison": "=",
+								"value": 0
+							},
+							{
+								"type": "teamElementCount",
+								"elements": ["cryo"],
+								"comparison": ">=",
+								"value": 1
+							}
+						]
 					}
 				}
 			],
@@ -274,7 +461,9 @@
 				"The a1Multiplier (1.0/1.4/2.2 = deal 100%/140%/220% of original DMG on N/CA/Azure Devour/Four Winds) is a self DMG multiplier with no clean stat mapping and is composition-gated (2 Anemo and/or 2 same PHEC units); flagged, not authored.",
 				"This is the Ascension-1 passive (unlocks at Ascension 1).",
 				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The authored buff carries `trigger: manual`, and a manual trigger reaches NO planner surface — no bar, no chip, no toggle (167 such effects corpus-wide). So an A1 Varka in a Pyro/Hydro/Electro/Cryo party sees no Anemo DMG Bonus anywhere, where every other always-on stat bonus in the tool chips or bars. The 140%/220% half is trimmed: it is a self DMG multiplier, a magnitude, with no bar shape at all. Category: expected-but-absent.",
-				"↻ trigger `manual` → `passive`, 2026-09-16 (T0.5; `docs/manual-trigger-retirement.md` step 3, re-trigger). gcsim asc.go:30-50 adds it as AddStatMod(NewBase(..., -1)) — a PERMANENT conditional stat mod, not a player toggle — so `passive` is the shape it always wanted. `manual` reaches no planner surface at all, which is why an A1 Varka in a Pyro/Hydro/Electro/Cryo party saw no Anemo DMG Bonus anywhere while every other always-on bonus in the tool draws. The teamElementCount gate is unchanged, and the matching-element half stays omitted (the element depends on party priority)."
+				"↻ trigger `manual` → `passive`, 2026-09-16 (T0.5; `docs/manual-trigger-retirement.md` step 3, re-trigger). gcsim asc.go:30-50 adds it as AddStatMod(NewBase(..., -1)) — a PERMANENT conditional stat mod, not a player toggle — so `passive` is the shape it always wanted. `manual` reaches no planner surface at all, which is why an A1 Varka in a Pyro/Hydro/Electro/Cryo party saw no Anemo DMG Bonus anywhere while every other always-on bonus in the tool draws. The teamElementCount gate is unchanged, and the matching-element half stays omitted (the element depends on party priority).",
+				"↻ THE CONVERSION-ELEMENT HALF IS AUTHORED 2026-09-16, closing the note above's \"the matching-element half is omitted (which element depends on party priority)\". gcsim asc.go:26-50 adds the SAME value to AnemoP and to the conversion element's DmgP from one a1Buff, so the four rungs carry the identical `scaling atk ratio 1 cap 25` the Anemo effect does. The priority is the ladder in `conditions`: Pyro on any Pyro teammate, Hydro on none-Pyro-and-a-Hydro, and so on — ⚠️ holder-excluded counts, which is free here because Varka is Anemo.",
+				"⚓ A LADDER IN CONDITIONS rather than an `ElementRef`, and the two are not interchangeable: a ref names an ELEMENT and what varies here is the STAT KEY (`pyroDmgBonus` vs `hydroDmgBonus` …), which no element expression reaches. ⚠️ Safe from the §1.H stat-dedupe trap precisely because the four are DIFFERENT stats — ⛔ don't collapse them toward one stat with a conditional value."
 			],
 			"description": "When there are Pyro, Hydro, Electro or Cryo characters in the party, according to the aforementioned priority order of Elemental Types, every 1,000 points of Varka's ATK will grant Varka a 10% Anemo DMG Bonus and corresponding Elemental DMG Bonus (among the aforementioned Elemental Types, only one element can gain bonus DMG this way). Up to 25% bonus DMG can be gained this way. \n\nAdditionally, if there are at least 2 Anemo characters, or at least 2 characters of the same Element among Pyro, Hydro, Electro or Cryo in the party, the Normal Attacks, Charged Attacks, Special Charged Attack Azure Devour and the special Elemental Skill **Four Winds' Ascension** that Varka deals or unleashes while in the **Sturm und Drang** mode will deal 140% of their original DMG. If there are at least 2 Anemo characters and at least 2 other characters of the same element among Pyro, Hydro, Electro or Cryo present in the party at the same time, the aforementioned effect will be increased to 220%."
 		},

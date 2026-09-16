@@ -1919,6 +1919,26 @@ export type NormalAbility = AbilityCommon & {
 	/** Per-level charged hits for bow characters. Mutually exclusive with chargeFrames.
 	 *  Index 0 = C1 (partial); index 1 = C2 (full / Frostflake). */
 	chargeHits?: NormalHit[];
+	/**
+	 * Frames for KQM's **`sC`** token — a SPECIAL Charged Attack, the one a
+	 * stance substitutes for the ordinary one (Varka's Azure Devour, 2026-09-16).
+	 * The sibling of `sQ`, and of `sE` on the cast side.
+	 *
+	 * ⚓ FRAMES ONLY, and that is the whole point of the shape: Azure Devour
+	 * differs from the in-stance charged attack in its animation and nothing
+	 * else this tool models. Its element comes from the same `infusion` /
+	 * `coInfusion` pair the swings use, so a special charge lands both claymores
+	 * exactly as an ordinary in-stance one does.
+	 *
+	 * ⚠️ `sC` on an ability that does not author this falls back to
+	 * `chargeFrames`, the same rule an out-of-window `sQ` follows — a token the
+	 * data cannot honour takes the ordinary form rather than vanishing.
+	 *
+	 * ⛔ Not modelled: Azure Devour SPENDS a use of the special skill. A charged
+	 * attack that consumes a skill charge has no shape here, so the token draws
+	 * the attack without the cost.
+	 */
+	specialChargeFrames?: FrameMap;
 	/** HIGH-plunge frames, and the default. Covers the standalone `P` token, the
 	 *  explicit `hP`, and the `E P` path where no plungeVariant matches the
 	 *  preceding E token.
@@ -1980,8 +2000,44 @@ export type NormalAbility = AbilityCommon & {
 	 */
 	nonHitting?: { normal?: true; charged?: true; plunge?: true };
 	/** Elemental infusion applied to N/C/P while this ability is active.
-	 *  Used on stance normals (e.g. Cyno's Pactsworn Pathclearer). */
-	infusion?: Element;
+	 *  Used on stance normals (e.g. Cyno's Pactsworn Pathclearer).
+	 *
+	 *  ⚓ An `ElementRef` object is an element the TEAM names (2026-09-16) —
+	 *  Varka's right-hand claymore, which is Pyro/Hydro/Electro/Cryo by party
+	 *  priority and PHYSICAL when the party has none of the four. */
+	infusion?: ElementRef;
+	/**
+	 * A SECOND element every swing of this ability lands, on its own ICD counter
+	 * (Varka's two claymores round, 2026-09-16).
+	 *
+	 * ⚓⚓ Varka is the only holder and a gcsim census says he is the only
+	 * candidate — the `ele := []attributes.Element{…}` idiom returns his four
+	 * files and nothing else. He dual-wields: the right-hand claymore carries
+	 * `infusion` and the LEFT hand carries this, so every in-stance swing lands
+	 * two elements on two dedicated counters (`ICDTagVarkaNormalAttackElem` /
+	 * `…Wind`, both on `ICDGroupDefault`).
+	 *
+	 * ⚠️⚠️ THE ORDER IS A CONTRACT, NOT A DETAIL. `infusion` is offered FIRST and
+	 * this second, at the same instant — and measured against the gauge, Pyro
+	 * then Anemo at one instant SWIRLS while Anemo then Pyro produces NOTHING
+	 * (the Anemo hits an empty target and dissipates). Varka self-enables his own
+	 * Swirl, which is what his three Swirl-keyed passives are built on, so
+	 * reversing the two fields would silently delete the mechanic.
+	 *
+	 * ⚠️ It applies even when `infusion` resolves to nothing — with no
+	 * Pyro/Hydro/Electro/Cryo teammate Varka's right hand is Physical and his
+	 * left is still Anemo.
+	 *
+	 * ⛔ It lands NO second hit record and NO second action event. One swing is
+	 * one hit is the documented per-swing approximation, and a second record
+	 * would double every `onHit` proc the swing feeds. What it adds is an
+	 * elemental application, which is the half the gauge reads.
+	 *
+	 * ⚠️ Both counters are keyed off the same swing and share the standard
+	 * cadence, so they stay in phase — both halves apply on the same 1-in-3
+	 * swings, which is what makes the self-swirl land rather than alternate.
+	 */
+	coInfusion?: ElementRef;
 	/** Element-application ICD bypass — the ability applies its element on EVERY
 	 *  hit (gcsim's `ICDTagNone`); omit for the standard 3-hit / 2.5s default.
 	 *  Forward-looking curation annotation: no consumer reads it yet (the planner
@@ -2073,11 +2129,53 @@ export type PlungeVariant = {
  * one owner in `resolveActionElement`. Summons carry none either — `interval` /
  * `firstTickDelay` already say when a summon applies.
  */
+/**
+ * An element a data field NAMES — either a literal, or one the TEAM's
+ * composition resolves (Varka's two claymores round, 2026-09-16).
+ *
+ * ⚓⚓ THE ONE MECHANIC IT EXISTS FOR: Varka's right-hand claymore deals "the
+ * corresponding Elemental DMG based on the Elemental Types of the characters in
+ * the party, following the aforementioned priority order" — Pyro > Hydro >
+ * Electro > Cryo. The element is therefore not a property of the ability, it is
+ * a property of who you brought, and it is the SAME element at four sites (the
+ * in-stance normal's infusion, Four Winds' Ascension, the burst, Azure Devour).
+ *
+ * ⚠️ Resolution is PARSE-TIME and definitive: it reads the same
+ * `teamElementCounts` map `teamElementCount` Conditions read, so it answers
+ * once for a rotation and never changes under it. With no context (the editor's
+ * highlighter, a renderer-side call with no team scope) it answers `undefined`,
+ * which every reader already treats as "physical / no infusion" — the same
+ * optimistic silence a timed infusion gets there.
+ *
+ * ⚠️ The count map is HOLDER-EXCLUDED, matching `teamElementCount`. gcsim's
+ * `getConversionElem` scans every party member including the holder; for the one
+ * holder that is the same answer, because Varka is Anemo and Anemo is not in any
+ * authored `order`. ⛔ Check that before giving this a second holder.
+ */
+export type ElementRef =
+	| Element
+	| {
+			type: 'teamElementPriority';
+			/** Elements in priority order — the FIRST one a non-holder party
+			 *  member carries wins. */
+			order: Element[];
+			/** The element when no member carries any of `order`. Omit for "the
+			 *  hit is physical / the ability is uninfused", which is Varka's
+			 *  in-stance right hand; his BURST instead falls back to Anemo, and
+			 *  that asymmetry is gcsim's, not a slip. */
+			fallback?: Element;
+	  };
+
 export type ElementalApplication = {
 	/** Frames (60fps) from cast start to the hitmark. */
 	frame: number;
-	/** ⛔ ABSENT MEANS PHYSICAL — the hit applies nothing. Never a default element. */
-	element?: Element;
+	/** ⛔ ABSENT MEANS PHYSICAL — the hit applies nothing. Never a default element.
+	 *
+	 *  ⚓ An `ElementRef` object here is an element the TEAM names (2026-09-16) —
+	 *  Varka's right-hand claymore. It resolves at parse time and an
+	 *  unresolvable one is treated exactly like an absent element: the hit
+	 *  applies nothing. */
+	element?: ElementRef;
 	/**
 	 * Gauge units, pre-tax — measured as gcsim's applied durability ÷ 25.
 	 * Authored since L5d, once the gauge that reads it existed (contract C3 split

@@ -24,8 +24,11 @@
 		>
 		is two hits), <code>C</code> charged, <code>A</code> a bow's aimed shot, <code>D</code> dash,
 		<code>J</code>
-		jump, and <code>&gt;</code> to separate swaps. Hold variants and short-burst forms are
-		recognized where a kit has them, and <code>~2s</code> waits where you want a deliberate pause.
+		jump, and <code>&gt;</code> to separate swaps. Hold variants are recognized where a kit has
+		them, as are the <strong>special forms</strong> a stance substitutes —
+		<code>sQ</code>
+		for a short burst, <code>sE</code> for a special skill and <code>sC</code> for a special charged
+		attack. <code>~2s</code> waits where you want a deliberate pause.
 	</p>
 	<p>
 		The composer underlines anything the timeline can't draw exactly as written, and there are two

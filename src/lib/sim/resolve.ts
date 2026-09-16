@@ -98,9 +98,15 @@ export function resolveChargeCastTime(
 		const index = charToken === 'C1' ? 0 : hits.length - 1;
 		return frameAt(hits[index].frames, nextKey);
 	} else {
+		// ⚓ KQM's `sC` is the SPECIAL charged attack a stance substitutes (Varka's
+		// Azure Devour). ⚠️ It falls back to the ordinary `chargeFrames` when the
+		// resolved ability authors none — the same rule an out-of-window `sQ`
+		// follows, because a token the data cannot honour should take the ordinary
+		// form rather than vanish.
+		const special = charToken.startsWith('s') ? ability.specialChargeFrames : undefined;
 		// Frameless (uncurated / Blank) → generic charge profile, so a charged
 		// attack advances the cursor realistically instead of by zero.
-		const frameMap = ability.chargeFrames ?? GENERIC_CHARGE_FRAMES;
+		const frameMap = special ?? ability.chargeFrames ?? GENERIC_CHARGE_FRAMES;
 		return frameAt(frameMap, nextKey);
 	}
 }

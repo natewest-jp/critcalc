@@ -58,7 +58,12 @@ import { createClock } from './clock';
 import type { SimContext } from './context';
 import type { CharacterTrack } from './types';
 import type { HitEvent } from './hits';
-import { matchVariant, resolveEffectiveCharges, type ConditionContext } from './conditions';
+import {
+	matchVariant,
+	resolveEffectiveCharges,
+	resolveElementRef,
+	type ConditionContext
+} from './conditions';
 import {
 	resolveAbilityTiming,
 	resolveActiveAbility,
@@ -932,7 +937,11 @@ export function runRotation(
 					states,
 					charConstellationLevel,
 					chainIdx,
-					stackState
+					stackState,
+					// ⚓ Team scope, for an `ElementRef` entry in `application[]` —
+					// Varka's right-hand claymore names its element through the party
+					// (2026-09-16). A literal entry never reads it.
+					variantCtx
 				);
 				// ⚓ Summon ticks apply their element too (gauge round L5e-b). Queued
 				// after the summonExt registration above so the chain reads the
@@ -1190,7 +1199,8 @@ export function runRotation(
 								t,
 								char.weapon,
 								char.element,
-								activeNormal?.infusion ?? infusionAt(ctx, char, clock.now)
+								resolveElementRef(activeNormal?.infusion, variantCtx) ??
+									infusionAt(ctx, char, clock.now)
 							);
 					// Per-swing action events sharing one blockId (the anchor = the
 					// first swing's id). `time` is the swing's pre-advance start.
@@ -1260,6 +1270,30 @@ export function runRotation(
 							charConstellationLevel,
 							stackState
 						);
+						// ⚓⚓ THE SECOND CLAYMORE (Varka's two claymores round,
+						// 2026-09-16). A swing with a `coInfusion` lands a second
+						// element on its own counter — offered AFTER the primary and at
+						// the same instant, which is the contract: measured, the
+						// conversion element then Anemo swirls and the reverse order
+						// produces nothing. ⛔ It lands no second hit record and no
+						// second action event; one swing is one hit.
+						const coN = resolveElementRef(activeNormal?.coInfusion, variantCtx);
+						if (coN && !nNonHitting) {
+							emitReactionsAtSwing(
+								ctx,
+								clock,
+								char,
+								'normal',
+								coN,
+								activeNormal?.noICD,
+								clock.now,
+								nStates,
+								charConstellationLevel,
+								stackState,
+								undefined,
+								'co'
+							);
+						}
 						// Parser-private per-swing hit (onHit wiring): swing-END time,
 						// per-hit damageTag override honored, combo index feeding
 						// filter.hitIndex. Dispatched AFTER the transient-state opener
@@ -1287,7 +1321,7 @@ export function runRotation(
 						}
 					}
 					humanPad('normal', j);
-				} else if (/^C\d*$/.test(t) || (t === 'A' && isBow)) {
+				} else if (/^s?C\d*$/.test(t) || (t === 'A' && isBow)) {
 					// Charged attack: resolve active normal (in-stance if applicable) for
 					// chargeFrames/chargeHits. Bow uses chargeHits, others use chargeFrames.
 					//
@@ -1351,7 +1385,8 @@ export function runRotation(
 								t,
 								char.weapon,
 								char.element,
-								activeNormal?.infusion ?? infusionAt(ctx, char, blockStart)
+								resolveElementRef(activeNormal?.infusion, variantCtx) ??
+									infusionAt(ctx, char, blockStart)
 							);
 					const chargedEv = emitAction({
 						action: 'charged',
@@ -1415,6 +1450,27 @@ export function runRotation(
 						stackState,
 						activeNormal?.chargedIcdWindow
 					);
+					// ⚓⚓ The second claymore on the charged attack — see the normal
+					// path for the ordering contract. gcsim gives the CA its own
+					// dedicated pair of counters (`ICDTagVarkaExtraAttack*`), which is
+					// what the separate `'co'` key reproduces.
+					const coC = resolveElementRef(activeNormal?.coInfusion, variantCtx);
+					if (coC && !cNonHitting) {
+						emitReactionsAtSwing(
+							ctx,
+							clock,
+							char,
+							'charged',
+							coC,
+							activeNormal?.noICD,
+							clock.now,
+							computeCurrentStates(clock.now),
+							charConstellationLevel,
+							stackState,
+							activeNormal?.chargedIcdWindow,
+							'co'
+						);
+					}
 					// Parser-private charged hit (onHit wiring): swing-END time. The
 					// abilityName carries the bow chargeHit sub-name (C1 → first
 					// entry, C → last) so `filter.abilityName: "Wreath Arrow"`
@@ -1499,7 +1555,8 @@ export function runRotation(
 									t,
 									char.weapon,
 									char.element,
-									activeNormal?.infusion ?? infusionAt(ctx, char, blockStart)
+									resolveElementRef(activeNormal?.infusion, variantCtx) ??
+										infusionAt(ctx, char, blockStart)
 								);
 						const plungeEv = emitAction({
 							action: 'plunge',
@@ -1544,6 +1601,28 @@ export function runRotation(
 							charConstellationLevel,
 							stackState
 						);
+						// ⚓ The second claymore on a plunge, for completeness of the
+						// class. ⛔ NO HOLDER and there cannot be one today: the only
+						// `coInfusion` author is Varka, who is refused plunges in the
+						// very stance that gives him two hands. Authored so the rule is
+						// one rule rather than two-thirds of one.
+						const coP = resolveElementRef(activeNormal?.coInfusion, variantCtx);
+						if (coP && !pNonHitting) {
+							emitReactionsAtSwing(
+								ctx,
+								clock,
+								char,
+								'plunge',
+								coP,
+								activeNormal?.noICD,
+								clock.now,
+								plungeStates,
+								charConstellationLevel,
+								stackState,
+								undefined,
+								'co'
+							);
+						}
 						// Parser-private plunge hit (onHit wiring): landing ≈ swing
 						// END. Dispatched after the transient-state opener (apexDrive
 						// is open to hit-gated conditions at the landing instant). A

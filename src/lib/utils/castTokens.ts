@@ -36,8 +36,15 @@ const TAP_SKILL_TOKENS = ['E', 'tE', 'pE'] as const;
 
 /** Every token shape the tokenizer classifies as an E or Q cast entry. Anything
  *  outside this — an `input: ['N1']` on a normal ability, a plunge variant's
- *  "After Hold E" — is not a cast entry and is filtered out below. */
-const CAST_TOKEN_RE = /^(?:t|p|h|h1|h2)?E$|^s?Q$/;
+ *  "After Hold E" — is not a cast entry and is filtered out below.
+ *
+ *  ⚓ `sE` joined it 2026-09-16 beside `sQ`: KQM writes a stance's SPECIAL
+ *  Elemental Skill that way (Varka's Four Winds' Ascension). ⚠️ It has to be
+ *  here or the editor lints the token it is telling people to type — `casts`
+ *  is built through this filter, and `notationFlags` warns on anything outside
+ *  it. `sC` is deliberately absent: a charged attack is not a cast entry, and
+ *  no `C`-family token is listed. */
+const CAST_TOKEN_RE = /^(?:t|p|h|h1|h2|s)?E$|^s?Q$/;
 
 /**
  * The distinct E/Q entry tokens `c` can perform, sorted.
