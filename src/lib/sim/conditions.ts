@@ -22,6 +22,7 @@ import type {
 	Condition,
 	CooldownModifier,
 	Element,
+	ElementRef,
 	Reaction,
 	SkillAbility
 } from '$lib/types/ability';
@@ -118,6 +119,36 @@ export type ConditionContext = {
  * and per-segment negated states. Both are optional; calls without them
  * preserve the prior null-return behavior.
  */
+/**
+ * The element an `ElementRef` names, or `undefined` when it names none
+ * (Varka's two claymores round, 2026-09-16).
+ *
+ * ⚓ A literal answers itself. A `teamElementPriority` walks its `order` and
+ * takes the FIRST element a non-holder party member carries — gcsim's
+ * `getConversionElem(Pyro, Hydro, Electro, Cryo)` — then `fallback`, then
+ * nothing.
+ *
+ * ⚠️ NO CONTEXT MEANS NO ELEMENT, deliberately, and that is NOT the optimistic
+ * rule the Conditions use. A Condition with no team scope answers `null` so its
+ * effect is not DROPPED; here there is nothing to drop — an unresolved element
+ * is a hit that applies nothing, which is already exactly what an absent
+ * `element` or `infusion` means at every reader. The editor's highlighter
+ * passes no context and leaves the swing untinted, the same silence every timed
+ * infusion already gets there.
+ */
+export function resolveElementRef(
+	ref: ElementRef | undefined,
+	context?: ConditionContext
+): Element | undefined {
+	if (ref === undefined) return undefined;
+	if (typeof ref === 'string') return ref;
+	const counts = context?.teamElementCounts;
+	if (counts) {
+		for (const e of ref.order) if ((counts.get(e) ?? 0) > 0) return e;
+	}
+	return ref.fallback;
+}
+
 export function evalCondition(
 	cond: Condition | undefined,
 	ascension: number,

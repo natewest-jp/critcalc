@@ -19,6 +19,7 @@ import type {
 	Condition,
 	Effect,
 	ElementalApplication,
+	ElementRef,
 	IcdWindow,
 	NormalAbility,
 	SkillAbility,
@@ -1237,10 +1238,42 @@ function lintNormal(
 		push('strict', 'missing-frames', 'lowPlungeFrames without plungeFrames', a.id);
 	}
 
-	// (C.19) infusion is valid Element
-	if (a.infusion !== undefined && !CHARACTER_ELEMENTS.has(a.infusion)) {
-		push('strict', 'invalid-element', `infusion "${a.infusion}" is not a valid Element`, a.id);
+	// (C.19) infusion is a valid Element, or a sound ElementRef
+	if (a.infusion !== undefined) {
+		const issue = elementRefIssue(a.infusion, CHARACTER_ELEMENTS);
+		if (issue) push('strict', 'invalid-element', `infusion: ${issue}`, a.id);
 	}
+	// (C.19b) coInfusion likewise — and ⚓ it is meaningless without a primary:
+	// the two fields are the two claymores, and one hand alone is just `infusion`.
+	if (a.coInfusion !== undefined) {
+		const issue = elementRefIssue(a.coInfusion, CHARACTER_ELEMENTS);
+		if (issue) push('strict', 'invalid-element', `coInfusion: ${issue}`, a.id);
+		if (a.infusion === undefined)
+			push('strict', 'invalid-element', 'coInfusion without infusion', a.id);
+	}
+}
+
+/**
+ * Shape check for an `ElementRef` (Varka's two claymores round, 2026-09-16) —
+ * a complaint, or `null` when the ref is sound.
+ *
+ * ⚠️ The literal is checked against the CALLER's element set, because the two
+ * callers do not share one: an infusion or a cast application must name a
+ * character element (Physical is not something you infuse), while a damage
+ * effect's application may name Physical.
+ */
+function elementRefIssue(ref: ElementRef, allowed: ReadonlySet<string>): string | null {
+	if (typeof ref === 'string') return allowed.has(ref) ? null : `"${ref}" is not a valid Element`;
+	if (ref.type !== 'teamElementPriority') return `unknown ElementRef type "${String(ref.type)}"`;
+	if (!Array.isArray(ref.order) || ref.order.length === 0)
+		return 'teamElementPriority needs a non-empty `order`';
+	for (const e of ref.order)
+		if (!CHARACTER_ELEMENTS.has(e)) return `teamElementPriority order has "${e}"`;
+	if (new Set(ref.order).size !== ref.order.length)
+		return 'teamElementPriority `order` repeats an element';
+	if (ref.fallback !== undefined && !allowed.has(ref.fallback))
+		return `teamElementPriority fallback "${ref.fallback}" is not a valid Element`;
+	return null;
 }
 
 function lintCastAbility(
@@ -1349,13 +1382,10 @@ function lintCastAbility(
 				);
 			}
 			last = e.frame;
-			if (e.element !== undefined && !CHARACTER_ELEMENTS.has(e.element)) {
-				push(
-					'strict',
-					'invalid-element',
-					`${where} application[${i}].element "${e.element}" is not a valid Element`,
-					a.id
-				);
+			const elIssue =
+				e.element === undefined ? null : elementRefIssue(e.element, CHARACTER_ELEMENTS);
+			if (elIssue) {
+				push('strict', 'invalid-element', `${where} application[${i}].element: ${elIssue}`, a.id);
 			}
 			// ↻ `units` is authored since L5d — its consumer, the gauge, landed at
 			// L5c (before then this rule REFUSED the field, which is the
@@ -2202,11 +2232,13 @@ function lintEffect(
 					location
 				);
 			}
-			if (app.element !== undefined && !DAMAGE_ELEMENTS.has(app.element)) {
+			const appElIssue =
+				app.element === undefined ? null : elementRefIssue(app.element, DAMAGE_ELEMENTS);
+			if (appElIssue) {
 				push(
 					'strict',
 					'effect-application-element-invalid',
-					`application[${i}].element "${app.element}" is not a valid Element`,
+					`application[${i}].element: ${appElIssue}`,
 					location
 				);
 			}

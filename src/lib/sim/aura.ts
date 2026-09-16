@@ -59,7 +59,12 @@ import { createGauge, type ElementId, type Gauge, type SeriesInterval } from '$l
 import { framesOf } from '$lib/utils/frames';
 import type { SimContext } from './context';
 import { Band, type Clock } from './clock';
-import { matchVariant, type ChainIndex, type ConditionContext } from './conditions';
+import {
+	matchVariant,
+	resolveElementRef,
+	type ChainIndex,
+	type ConditionContext
+} from './conditions';
 import { dispatchOnReactionExtensions } from './extensions';
 import {
 	applyRotationLifetimeExpiry,
@@ -359,7 +364,14 @@ function fireProc(ctx: SimContext, clock: Clock, l: ProcListener, time: number):
 		// physical swing follows. ⚠️ It still DEALT damage, which is why the
 		// stream notification below is outside this loop, and it spends no counter
 		// slot for the same reason a physical swing does not.
-		if (!app.element) continue;
+		// ⚓ An `ElementRef` resolves here too (2026-09-16), with NO team context —
+		// a `ProcListener` captures a moment and does not carry one. No proc
+		// authors a ref today (a proc's element is its own, not the party's), and
+		// one that did would fall to its `fallback` or to nothing, taking the
+		// physical branch above. ⏭ Give the listener a context before authoring
+		// the first one, rather than discovering it as silence.
+		const element = resolveElementRef(app.element);
+		if (!element) continue;
 		if (params) {
 			let icd = ctx.icdClocks.get(l.key);
 			if (!icd) {
@@ -371,7 +383,6 @@ function fireProc(ctx: SimContext, clock: Clock, l: ProcListener, time: number):
 			// hits counting in authored order rather than in scheduling order.
 			if (!icdApplies(icd, at, params).applies) continue;
 		}
-		const element = app.element;
 		clock.schedule(at, Band.LAND, () => {
 			offerApplication(ctx, clock, {
 				time: at,
@@ -517,7 +528,13 @@ export function resolveCastApplications(
 	char: CharacterData,
 	application: ElementalApplication[] | undefined,
 	castKind: 'skill' | 'burst',
-	abilityNoICD: boolean | undefined
+	abilityNoICD: boolean | undefined,
+	/** Team scope for an `ElementRef` entry — Varka's right-hand claymore
+	 *  (2026-09-16). ⚠️ Absent resolves a ref to NOTHING, and an entry with no
+	 *  element is dropped by the same filter a physical hit takes, which is the
+	 *  right silence: an element nobody can name applies nothing. A literal
+	 *  entry never reads this. */
+	context?: ConditionContext
 ): { frame: number; element: Element; units: number; provisionalUnits: boolean }[] {
 	if (!application) {
 		// Absent → the pre-L4d model, provisionally. See the amendment note below.
@@ -527,10 +544,11 @@ export function resolveCastApplications(
 	}
 	const elemental = [];
 	for (const a of application) {
-		if (a.element)
+		const element = resolveElementRef(a.element, context);
+		if (element)
 			elemental.push({
 				frame: a.frame,
-				element: a.element,
+				element,
 				units: a.units ?? DEFAULT_UNITS,
 				provisionalUnits: a.units === undefined
 			});
@@ -588,10 +606,12 @@ export function emitReactionsAtCast(
 	preStates: ReadonlySet<string>,
 	constellation: number,
 	chainIdx: ChainIndex,
-	stackState: Map<string, number>
+	stackState: Map<string, number>,
+	/** Team scope, for an `ElementRef` in `application[]`. */
+	context?: ConditionContext
 ): void {
 	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
-	for (const app of resolveCastApplications(char, application, castKind, abilityNoICD)) {
+	for (const app of resolveCastApplications(char, application, castKind, abilityNoICD, context)) {
 		const at = castTime + app.frame;
 		clock.schedule(at, Band.LAND, () => {
 			offerApplication(ctx, clock, {
@@ -645,14 +665,26 @@ export function emitReactionsAtSwing(
 	preStates: ReadonlySet<string>,
 	constellation: number,
 	stackState: Map<string, number>,
-	chargedIcdWindow?: IcdWindow
+	chargedIcdWindow?: IcdWindow,
+	/**
+	 * ⚓ The SECOND claymore (Varka's two claymores round, 2026-09-16) — a swing
+	 * that lands two elements calls this twice, and the second call passes
+	 * `'co'` so the two halves count on SEPARATE counters, as gcsim's
+	 * `ICDTagVarkaNormalAttackElem` / `…Wind` pair does.
+	 *
+	 * ⚠️⚠️ The caller must offer the PRIMARY first. Measured against the gauge,
+	 * conversion-then-Anemo at one instant swirls and Anemo-then-conversion
+	 * produces nothing, because the Anemo hits an empty target and dissipates.
+	 * Varka self-enables his own Swirl, so the order is the mechanic.
+	 */
+	hand?: 'co'
 ): void {
 	if (!element) return;
 	const params = resolveActionIcd(kind, char.weapon, abilityNoICD, chargedIcdWindow);
 	if (params) {
 		// ⚠️ Named `icd`, not `clock` — the rotation `Clock` is a parameter now
 		// (the reaction-proc dispatch needs it), and the two must not shadow.
-		const key = `${char.id}:${icdTagFor(kind)}`;
+		const key = `${char.id}:${icdTagFor(kind)}${hand ? `:${hand}` : ''}`;
 		let icd = ctx.icdClocks.get(key);
 		if (!icd) {
 			icd = createIcdClock();
