@@ -27,7 +27,7 @@ import { getPersistentBehavior } from '$lib/types/ability';
 import { framesOf } from '$lib/utils/frames';
 import type { CastEvent } from '$lib/utils/rotationEvents';
 import type { CharState } from './charState';
-import type { SimContext } from './context';
+import type { SimContext, StateWindowRec } from './context';
 import { DEFAULT_ASCENSION, evalCondition, type ChainIndex } from './conditions';
 import { findSummonsForBar } from './summons';
 
@@ -213,7 +213,7 @@ export function applyTransientState(
 	// `TimelineWindow.end` is asserted finite corpus-wide (notationParser.ir).
 	const stateEnd = spec.toggle === true ? Infinity : openAt + framesOf(spec.duration);
 	cs.states.set(spec.state, stateEnd);
-	ctx.stateWindowRecs.push({
+	const rec: StateWindowRec = {
 		characterId,
 		name: spec.state,
 		start: openAt,
@@ -223,9 +223,108 @@ export function applyTransientState(
 		// Only inStance windows carry `source` (IR invariant) — a transient
 		// that OPENS inStance (Cyno's skill-opened Pathclearer) must name
 		// its opener like a stance window; other transients stay bare.
-		source: spec.state === 'inStance' ? provenance.source : undefined
-	});
+		source: spec.state === 'inStance' ? provenance.source : undefined,
+		...(spec.onEnd !== undefined && spec.toggle !== true ? { onEnd: spec.onEnd } : {})
+	};
+	ctx.stateWindowRecs.push(rec);
 	if (spec.terminatesOnSwap) cs.statesTerminatingOnSwap.add(spec.state);
+	if (spec.terminatesOnAction) cs.statesTerminatingOnAction.add(spec.state);
+	if (rec.onEnd) cs.pendingChains.push(rec);
+}
+
+/**
+ * ⚓ SETTLE THE OWNER'S TRANSIENT STATES AT AN INPUT (Lauma charged-forms round,
+ * 2026-09-16). Runs at the START of every attack and cast of `characterId` —
+ * BEFORE the state snapshot that resolves the ability — and does two things in
+ * order:
+ *
+ *   1. closes every live state flagged `terminatesOnAction` at `now`
+ *      (`closeActionTerminatedStates`);
+ *   2. writes the chained window of every pending `onEnd` record whose end is
+ *      now known and past (`materialiseStateChains`).
+ *
+ * The order is the `Lauma C C` case: the second `C` ends the deer, which opens
+ * the cooldown, which is what the second `C` then resolves against — Prayer.
+ *
+ * ⛔ Not called from a dash or a jump (⚓ Nate: she dashes and jumps IN deer
+ * form), not from a wait, and not from `computeCurrentStates`, which is a pure
+ * reader with a dozen callers that must not mutate. The swap-out site calls
+ * only step 2 — a swap is `terminatesOnSwap`'s edge, not this one.
+ */
+export function settleOwnerStates(
+	ctx: SimContext,
+	cs: CharState,
+	characterId: string,
+	now: number
+): void {
+	closeActionTerminatedStates(ctx, cs, characterId, now);
+	materialiseStateChains(ctx, cs, characterId, now);
+}
+
+/** Step 1 of `settleOwnerStates`: the owner acted, so every window flagged
+ *  `terminatesOnAction` closes at this instant. One that already expired on its
+ *  own is simply forgotten — the flag set is a set of LIVE flags, re-added by
+ *  the next opener, exactly as `statesTerminatingOnSwap` is cleared at the
+ *  swap-out. */
+export function closeActionTerminatedStates(
+	ctx: SimContext,
+	cs: CharState,
+	characterId: string,
+	now: number
+): void {
+	if (cs.statesTerminatingOnAction.size === 0) return;
+	for (const name of cs.statesTerminatingOnAction) {
+		closeStateWindows(ctx, cs, characterId, name, now);
+	}
+	cs.statesTerminatingOnAction.clear();
+}
+
+/**
+ * Step 2 of `settleOwnerStates`, and the only writer of a chained window. For
+ * every pending `onEnd` record whose `end <= now`, open `onEnd.state` from that
+ * end for `onEnd.duration` seconds, with the opener's provenance, and drop the
+ * record from the pending list.
+ *
+ * ⚓ The window's START is the record's END — never `now`. `now` is merely when
+ * the parse got round to writing it: after an action-close the two coincide,
+ * after an expiry `now` is the next input and the cooldown has already been
+ * running. Materialising late is harmless because nothing can move `rec.end`
+ * once it is past: a clamp only ever moves an end EARLIER, and only from an
+ * end still in the future.
+ *
+ * ⚠️ Opening REFRESHES like every other opener (a fresh record, the live end
+ * replaced) — and the chained window is registered with no flags of its own,
+ * because its spec is `{state, duration}` and nothing else. A cooldown keeps
+ * running off-field; that is the game's rule for Lauma's Envoy and the reason
+ * the chained window does not inherit `terminatesOnSwap`.
+ */
+export function materialiseStateChains(
+	ctx: SimContext,
+	cs: CharState,
+	characterId: string,
+	now: number
+): void {
+	if (cs.pendingChains.length === 0) return;
+	let kept = 0;
+	for (let i = 0; i < cs.pendingChains.length; i++) {
+		const rec = cs.pendingChains[i];
+		if (!(rec.end <= now) || rec.onEnd === undefined) {
+			cs.pendingChains[kept++] = rec;
+			continue;
+		}
+		const start = rec.end;
+		const end = start + framesOf(rec.onEnd.duration);
+		cs.states.set(rec.onEnd.state, end);
+		ctx.stateWindowRecs.push({
+			characterId,
+			name: rec.onEnd.state,
+			start,
+			end,
+			sourceCastId: rec.sourceCastId,
+			sourceActionId: rec.sourceActionId
+		});
+	}
+	cs.pendingChains.length = kept;
 }
 
 export type CastKinds = { scanned: number; hasSkill: boolean; hasBurst: boolean };

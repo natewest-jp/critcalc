@@ -64,6 +64,11 @@
 		"_scored": "skill 3/3 (base 0/3)",
 		"states": { "inStance": [{ "action": "skill" }] }
 	},
+	"lauma": {
+		"note": "Spiritcall Prayer. gcsim's `deerStateReady` starts true, so a bare `C` is the DEER (the base map, non-hitting); the Prayer needs the deer entered and then ENDED — any action but walk/jump ends it — after which `C` is the attack for 4s. ⚠️ The ender is a BURST, not an attack: an `attack` step advances gcsim's normal counter, so the sibling's N1/N2/N3 captures came back rotated by one (3 false rows). The burst leaves no summon ticking and touches no counter. The surviving `hit 73→67` row is the audit's cancel-tier inference, not gcsim's `chargeHitmark` (73) — read it, don't migrate it.",
+		"_scored": "charge+burst 4/5 (charge+attack 1/5 — the attack rotates the combo; base: uncovered — a bare C is the deer)",
+		"states": { "envoyCooldown": [{ "action": "charge" }, { "action": "burst" }] }
+	},
 	"mavuika": {
 		"note": "Flamestrider. ⚠️ Her BURST scores the same 5/5 — it also opens the ring — but hold-E is the cast the corpus models, so that is the row.",
 		"_scored": "hold-skill 5/5 (base 0/4)",

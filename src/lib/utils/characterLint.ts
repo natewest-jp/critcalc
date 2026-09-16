@@ -218,7 +218,10 @@ const STATES = new Set([
 	// ⛔ Adding a State member is TWO edits; the suite cannot tell you when the
 	// character that needs it is frameless.
 	'codaWindow',
-	'pneuma'
+	'pneuma',
+	// Lauma's two charged forms (charged-forms round, 2026-09-16).
+	'spiritEnvoy',
+	'envoyCooldown'
 ]);
 
 const ABILITY_TYPES = new Set(['normal', 'skill', 'burst', 'passive', 'constellation']);
@@ -707,6 +710,49 @@ function lintAbility(
 				}
 			}
 		}
+		// (charged-forms round, 2026-09-16) `terminatesOnAction` is a flag with
+		// one setting, like `toggle`; `onEnd` is a `{state, duration}` pair and
+		// is refused on a toggle, which has no end to chain from.
+		const s2 = spec as { terminatesOnAction?: unknown; onEnd?: unknown };
+		if (s2.terminatesOnAction !== undefined && s2.terminatesOnAction !== true) {
+			push(
+				'strict',
+				'transient-state-spec',
+				`${where}.terminatesOnAction must be literally true when present`,
+				a.id
+			);
+		}
+		if (s2.onEnd !== undefined) {
+			const oe = s2.onEnd as { state?: unknown; duration?: unknown } | null;
+			if (s.toggle === true) {
+				push(
+					'strict',
+					'transient-state-spec',
+					`${where}.onEnd on a toggle: a toggle has no end to chain from`,
+					a.id
+				);
+			}
+			if (typeof oe !== 'object' || oe === null) {
+				push('strict', 'transient-state-spec', `${where}.onEnd must be an object`, a.id);
+			} else {
+				if (typeof oe.state !== 'string' || !STATES.has(oe.state)) {
+					push(
+						'strict',
+						'transient-state-spec',
+						`${where}.onEnd.state "${String(oe.state)}" is not a known State`,
+						a.id
+					);
+				}
+				if (typeof oe.duration !== 'number' || !isFinite(oe.duration) || oe.duration <= 0) {
+					push(
+						'strict',
+						'transient-state-spec',
+						`${where}.onEnd.duration must be a finite positive number of seconds`,
+						a.id
+					);
+				}
+			}
+		}
 	}
 
 	// ⚓⚓ (NEW, Arkhe round) `summonsFollowState` RE-RESOLVES AT STATE EDGES THE
@@ -1075,6 +1121,42 @@ function lintNormal(
 				`chargedIcdWindow.every must be a positive integer when present (got ${a.chargedIcdWindow.every}); omit it to mean "only the first hit of the window applies"`,
 				a.id
 			);
+		}
+	}
+
+	// (A.4c) `nonHitting` — a keyed object of action classes, each literally
+	// `true` (charged-forms round, 2026-09-16). A `chargedIcdWindow` beside a
+	// non-hitting charged attack is a gate on a swing that never applies.
+	const nh = (a as unknown as { nonHitting?: unknown }).nonHitting;
+	if (nh !== undefined) {
+		if (typeof nh !== 'object' || nh === null || Array.isArray(nh)) {
+			push('strict', 'non-hitting-shape', `nonHitting must be an object of action classes`, a.id);
+		} else {
+			for (const [k, v] of Object.entries(nh as Record<string, unknown>)) {
+				if (k !== 'normal' && k !== 'charged' && k !== 'plunge') {
+					push(
+						'strict',
+						'non-hitting-shape',
+						`nonHitting key "${k}" is not an action class (normal|charged|plunge)`,
+						a.id
+					);
+				} else if (v !== true) {
+					push(
+						'strict',
+						'non-hitting-shape',
+						`nonHitting.${k} must be literally true when present`,
+						a.id
+					);
+				}
+			}
+			if ((nh as { charged?: unknown }).charged === true && a.chargedIcdWindow) {
+				push(
+					'warn',
+					'non-hitting-shape',
+					`chargedIcdWindow on a non-hitting charged attack gates a swing that never applies`,
+					a.id
+				);
+			}
 		}
 	}
 

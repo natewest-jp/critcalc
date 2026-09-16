@@ -24,6 +24,7 @@
 
 import type { CastAbility, DurationExtension } from '$lib/types/ability';
 import type { CastEvent } from '$lib/utils/rotationEvents';
+import type { StateWindowRec } from './context';
 
 /** Active stance window for a character. Present iff a stance E/Q has ever been
  *  cast (never cleared — swap-close only clamps `end`, mirroring the old
@@ -97,6 +98,16 @@ export type CharState = {
 	 *  time at segment end, independently of any stance window (a stance's own
 	 *  terminatesOnSwap clamp covers its opensState companion separately). */
 	statesTerminatingOnSwap: Set<string>;
+	/** Transient states flagged `terminatesOnAction` — closed at the START of
+	 *  this character's next attack or cast by `settleOwnerStates` (Lauma's deer;
+	 *  charged-forms round, 2026-09-16). ⛔ Not by a dash or a jump. */
+	statesTerminatingOnAction: Set<string>;
+	/** Window records carrying an `onEnd` whose chained window has not been
+	 *  written yet. ⚓ An INDEX, not a scan: `settleOwnerStates` runs at every
+	 *  attack and cast, and walking `ctx.stateWindowRecs` there would restore the
+	 *  quadratic `inferredStates` paid for (a run of 16,000 Cyno bursts opens
+	 *  16,000 transient windows). A record leaves the list the moment it chains. */
+	pendingChains: StateWindowRec[];
 	/** Skill/burst chain-stage positions (Diluc E1→E2→E3). */
 	chains: Map<'skill' | 'burst', { index: number; expiresAt: number }>;
 	/** Active summon-extension owner, or undefined. */
@@ -163,6 +174,8 @@ export function createCharState(): CharState {
 		sacProcReadyAt: 0,
 		states: new Map(),
 		statesTerminatingOnSwap: new Set(),
+		statesTerminatingOnAction: new Set(),
+		pendingChains: [],
 		chains: new Map(),
 		shields: [],
 		shieldEndProcCooldown: new Map(),

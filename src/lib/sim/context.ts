@@ -60,6 +60,11 @@ export type StateWindowRec = {
 	 *  transient's state is `inStance` (the IR invariant: every inStance
 	 *  window knows its opener — Cyno's skill-opened 6s Pathclearer). */
 	source?: 'skill' | 'burst';
+	/** The spec's `onEnd`, carried on the record so the chain can be
+	 *  materialised whenever the end becomes known (Lauma charged-forms round,
+	 *  2026-09-16). Consumed once: the record leaves `CharState.pendingChains`
+	 *  when its chained window is written. */
+	onEnd?: { state: string; duration: number };
 };
 
 export type ShieldWindowRec = {

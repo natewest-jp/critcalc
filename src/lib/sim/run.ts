@@ -73,7 +73,9 @@ import {
 	closeStateWindows,
 	holderStatesAt,
 	inferredStates,
-	applyTransientState
+	applyTransientState,
+	materialiseStateChains,
+	settleOwnerStates
 } from './states';
 import {
 	applyDrain,
@@ -523,6 +525,12 @@ export function runRotation(
 				// the active variant so any condition reading stackState sees
 				// decayed/expired values.
 				dispatchShieldEnds(ctx, castStart);
+				// The cast is an input: close what ends on one and write what chains
+				// from it, BEFORE the snapshot this cast resolves against (Lauma's
+				// deer ends at the E that follows it). ⚠️ At `castStart`, the
+				// post-wait instant — a deer waited through an E cooldown ends when
+				// the E fires, not when the player pressed it.
+				settleOwnerStates(ctx, cs, char.id, castStart);
 				const states = computeCurrentStates(castStart);
 				applyDrain(ctx, char, castStart, states, stackState);
 				applyLifetimeExpiry(char, castStart, stackState, stackInstances);
@@ -1132,6 +1140,9 @@ export function runRotation(
 					// Active normal ability is resolved per-token to handle mid-segment
 					// stance transitions (e.g. Cyno Q → in-stance normals).
 					const count = t.length > 1 ? parseInt(t.slice(1)) : 1;
+					// An attack is an input: settle action-ended states and their
+					// chains before the snapshot (charged-forms round, 2026-09-16).
+					settleOwnerStates(ctx, cs, char.id, clock.now);
 					const nStates = computeCurrentStates(clock.now);
 					const activeNormal = resolveActiveAbility(
 						char,
@@ -1153,13 +1164,18 @@ export function runRotation(
 					// a Bennett C6 pyro infusion). Resolved once per TOKEN, at the
 					// token's start — the same altitude `activeNormal` is resolved at,
 					// so a swing's drawn element and its reaction cannot disagree.
-					const nElement = resolveActionElement(
-						'normal',
-						t,
-						char.weapon,
-						char.element,
-						activeNormal?.infusion ?? infusionAt(ctx, char, clock.now)
-					);
+					// ⚓ A non-hitting normal string lands nothing (charged-forms round,
+					// 2026-09-16): no element, and no hit record below.
+					const nNonHitting = activeNormal?.nonHitting?.normal === true;
+					const nElement = nNonHitting
+						? undefined
+						: resolveActionElement(
+								'normal',
+								t,
+								char.weapon,
+								char.element,
+								activeNormal?.infusion ?? infusionAt(ctx, char, clock.now)
+							);
 					// Per-swing action events sharing one blockId (the anchor = the
 					// first swing's id). `time` is the swing's pre-advance start.
 					let anchorId: number | undefined;
@@ -1233,22 +1249,26 @@ export function runRotation(
 						// filter.hitIndex. Dispatched AFTER the transient-state opener
 						// so a state the swing itself opens is visible to hit-gated
 						// conditions. Per-swing = one hit (multi-hit swings are not
-						// curated — see the HitEvent decl).
-						dispatchHit(
-							{
-								characterId: char.id,
-								time: clock.now,
-								abilityType: 'normal',
-								element: nElement,
-								damageTag: hits?.[hitIndex]
-									? getNormalHitDamageTag(hits[hitIndex], 'normal')
-									: 'normal',
-								abilityName: activeNormal?.name,
-								hitIndex,
-								sourceEventId: ev.id
-							},
-							true
-						);
+						// curated — see the HitEvent decl). ⛔ None at all for a
+						// non-hitting string: a physical swing is a hit with no element,
+						// a non-hitting one is not a hit.
+						if (!nNonHitting) {
+							dispatchHit(
+								{
+									characterId: char.id,
+									time: clock.now,
+									abilityType: 'normal',
+									element: nElement,
+									damageTag: hits?.[hitIndex]
+										? getNormalHitDamageTag(hits[hitIndex], 'normal')
+										: 'normal',
+									abilityName: activeNormal?.name,
+									hitIndex,
+									sourceEventId: ev.id
+								},
+								true
+							);
+						}
 					}
 					humanPad('normal', j);
 				} else if (/^C\d*$/.test(t) || (t === 'A' && isBow)) {
@@ -1274,6 +1294,10 @@ export function runRotation(
 					// ⚓ ONE snapshot, taken BEFORE the action: it resolves the ability
 					// AND gates the charged opener below, so the two cannot disagree
 					// about the state the swing started in (Arkhe round).
+					// ⚓ And the settle runs BEFORE the snapshot (charged-forms round,
+					// 2026-09-16): a `C` that ends Lauma's deer opens her cooldown and
+					// then resolves against it — `C C` is deer, then Prayer.
+					settleOwnerStates(ctx, cs, char.id, clock.now);
 					const chargedStates = computeCurrentStates(clock.now);
 					// Explicit annotation: the chargeHits read in the hit block below
 					// otherwise forms a TS7022 inference cycle through this initializer.
@@ -1294,13 +1318,22 @@ export function runRotation(
 					const blockStart = clock.now;
 					// Catalyst CAs, bow aimed shots (bar the C1 partial), and infused CAs
 					// are elemental — the shared infusion rule (actionElement.ts).
-					const cElement = resolveActionElement(
-						'charged',
-						t,
-						char.weapon,
-						char.element,
-						activeNormal?.infusion ?? infusionAt(ctx, char, blockStart)
-					);
+					// ⚓ A NON-HITTING charged attack (charged-forms round, 2026-09-16):
+					// Lauma's deer takes its 63 frames, opens her form, and lands
+					// nothing — no element (the block projects untinted, no pill in
+					// the aura lane), no gauge offer (`emitReactionsAtSwing` returns
+					// on a missing element), and no hit record below. Read off the
+					// RESOLVED ability, so the Prayer sibling's `C` hits as it should.
+					const cNonHitting = activeNormal?.nonHitting?.charged === true;
+					const cElement = cNonHitting
+						? undefined
+						: resolveActionElement(
+								'charged',
+								t,
+								char.weapon,
+								char.element,
+								activeNormal?.infusion ?? infusionAt(ctx, char, blockStart)
+							);
 					const chargedEv = emitAction({
 						action: 'charged',
 						label: t,
@@ -1367,7 +1400,8 @@ export function runRotation(
 					// abilityName carries the bow chargeHit sub-name (C1 → first
 					// entry, C → last) so `filter.abilityName: "Wreath Arrow"`
 					// substring-matches — mirrors resolveBlockContext's rule.
-					{
+					// ⛔ No record at all for a non-hitting charged attack.
+					if (!cNonHitting) {
 						let cAbilityName: string | undefined = activeNormal?.name;
 						const chargeHits: NormalHit[] | undefined = activeNormal?.chargeHits;
 						if (chargeHits?.length && cAbilityName) {
@@ -1403,6 +1437,7 @@ export function runRotation(
 					// actually perform, so it keeps the plain name and the bare token).
 					// The low map falls back to the high one, because gcsim models only one
 					// plunge for three of our authors and none at all for Venti and Wanderer.
+					settleOwnerStates(ctx, cs, char.id, clock.now);
 					const plungeStates = computeCurrentStates(clock.now);
 					const activeNormal = resolveActiveAbility(
 						char,
@@ -1431,13 +1466,19 @@ export function runRotation(
 						// the shared infusion rule (actionElement.ts). An unresolvable plunge
 						// (no frames) emits NO action event, matching the no-block legacy
 						// behavior.
-						const pElement = resolveActionElement(
-							'plunge',
-							t,
-							char.weapon,
-							char.element,
-							activeNormal?.infusion ?? infusionAt(ctx, char, blockStart)
-						);
+						// ⚓ A non-hitting plunge lands nothing (charged-forms round,
+						// 2026-09-16) — declared for completeness of the class, no
+						// holder yet.
+						const pNonHitting = activeNormal?.nonHitting?.plunge === true;
+						const pElement = pNonHitting
+							? undefined
+							: resolveActionElement(
+									'plunge',
+									t,
+									char.weapon,
+									char.element,
+									activeNormal?.infusion ?? infusionAt(ctx, char, blockStart)
+								);
 						const plungeEv = emitAction({
 							action: 'plunge',
 							label: t,
@@ -1484,19 +1525,21 @@ export function runRotation(
 						// Parser-private plunge hit (onHit wiring): landing ≈ swing
 						// END. Dispatched after the transient-state opener (apexDrive
 						// is open to hit-gated conditions at the landing instant). A
-						// frameless plunge emits no action event and no hit.
-						dispatchHit(
-							{
-								characterId: char.id,
-								time: clock.now,
-								abilityType: 'plunge',
-								element: pElement,
-								damageTag: 'plunge',
-								abilityName: activeNormal?.name,
-								sourceEventId: plungeEv.id
-							},
-							true
-						);
+						// frameless plunge emits no action event and no hit; a
+						// non-hitting one emits the event and no hit.
+						if (!pNonHitting)
+							dispatchHit(
+								{
+									characterId: char.id,
+									time: clock.now,
+									abilityType: 'plunge',
+									element: pElement,
+									damageTag: 'plunge',
+									abilityName: activeNormal?.name,
+									sourceEventId: plungeEv.id
+								},
+								true
+							);
 					}
 					lastEText = null;
 				} else if (t === 'D' || t === 'J') {
@@ -1543,20 +1586,19 @@ export function runRotation(
 		// of any stance window (Flins symphonyWindow — gcsim's exit-field hook
 		// deletes the status). Clamp the live end + the IR records, then clear
 		// the flag set (mirrors the stance terminatesOnSwap=false reset).
+		// ⚓ Through `closeStateWindows`, the ONE off edge (charged-forms round,
+		// 2026-09-16): the inline clamp it replaced made the same two writes.
 		if (i < segments.length - 1 && cs.statesTerminatingOnSwap.size > 0) {
 			for (const name of cs.statesTerminatingOnSwap) {
-				const end = cs.states.get(name);
-				if (end !== undefined && end > clock.now) {
-					cs.states.set(name, clock.now);
-					for (const rec of ctx.stateWindowRecs) {
-						if (rec.characterId === char.id && rec.name === name && rec.end > clock.now) {
-							rec.end = clock.now;
-						}
-					}
-				}
+				closeStateWindows(ctx, cs, char.id, name, clock.now);
 			}
 			cs.statesTerminatingOnSwap.clear();
 		}
+		// A window this swap just closed may chain into another (Lauma's deer →
+		// its cooldown, which keeps running off-field). Step 2 of the settle
+		// only: a swap is not an action, so nothing flagged `terminatesOnAction`
+		// closes here on its own account.
+		if (i < segments.length - 1) materialiseStateChains(ctx, cs, char.id, clock.now);
 
 		if (i < segments.length - 1 && cs.stance) {
 			if (cs.stance.terminatesOnSwap === true) {

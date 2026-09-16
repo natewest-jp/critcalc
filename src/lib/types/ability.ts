@@ -976,7 +976,21 @@ export type State =
 	 *  It gates the Pneuma VARIANT of Salon Solitaire, which is the whole point:
 	 *  the alignment at the instant of the cast decides whether the E summons
 	 *  the three Salon Members or the Singer of Many Waters. */
-	| 'pneuma';
+	| 'pneuma'
+	/** Lauma: Spirit Envoy Metamorphosis — the DEER (charged-forms round,
+	 *  2026-09-16). Opened by a Charged Attack with the Envoy ready; 10s, ended
+	 *  by her next attack or cast (`terminatesOnAction`) or a swap
+	 *  (`terminatesOnSwap`); ⚓ NOT by a dash or a jump — she moves in deer form
+	 *  (Nate). The one non-hitting action in the corpus. gcsim
+	 *  `lauma-spirit-envoy`. */
+	| 'spiritEnvoy'
+	/** Lauma: Spirit Envoy Metamorphosis is on COOLDOWN — 4s from the deer's
+	 *  end (`onEnd` of `spiritEnvoy`; gcsim `endDeerState`), during which her
+	 *  Charged Attack is Spiritcall Prayer, the sibling normal ability gated on
+	 *  this state. ⚠️ A4 shortens the 4s by up to 20% with Elemental Mastery;
+	 *  not simulated (⚓ Nate: a caveat), so the last 0.8s of the window can be
+	 *  Prayer here and the deer in game. */
+	| 'envoyCooldown';
 
 /**
  * Post-action transient state — a short named gating window opened by an
@@ -1034,6 +1048,41 @@ type TransientStateCommon = {
 	 *  state's own window and nothing else. A toggle that had to displace
 	 *  something in both directions would be two states, not one. */
 	consumes?: State[];
+	/**
+	 * Close the window at the START of the owner's next simulated ATTACK or CAST
+	 * (N, C, P, E, Q) — Lauma's Spirit Envoy form, which "any action but walk or
+	 * jump" ends (gcsim `chargeInit`'s `OnActionExec` hook).
+	 *
+	 * ⚓ Not D and not J (Nate, 2026-09-16): she dashes and jumps IN deer form, so
+	 * movement is not an exit. Not a wait, an unset, or a token we skip (`W`)
+	 * either — none of those is an input the game could react to. A swap is a
+	 * different edge and is `terminatesOnSwap`, authored beside this.
+	 *
+	 * ⚠️ The close is settled BEFORE the closing action resolves its own ability
+	 * (`settleOwnerStates` runs ahead of the state snapshot at every attack and
+	 * cast site), so the action that ends the window already sees the world
+	 * without it — which is what makes `Lauma C C` read as deer, then Prayer.
+	 */
+	terminatesOnAction?: true;
+	/**
+	 * When this window ENDS — by expiry, by `terminatesOnAction`, by a swap, or
+	 * by a later opener's `consumes` — open THIS window at that instant, once,
+	 * with the same provenance. A cooldown that starts when a form ends, said as
+	 * a window that opens when another closes (Lauma: `spiritEnvoy` →
+	 * `envoyCooldown`, the 4s during which her `C` is Spiritcall Prayer).
+	 *
+	 * ⚓ A NAMED state rather than a `cooldown` number, because the thing that
+	 * consumes it is a sibling ability's `conditions`, and a condition needs a
+	 * name to read. Not nestable: the chained window is `{state, duration}` and
+	 * carries no `onEnd` of its own.
+	 *
+	 * ⚠️ A silent expiry fires nothing, so an expired window's chain is
+	 * materialised LAZILY — at the owner's next settle point (attack, cast,
+	 * swap-out) or at finalize — with the start it always had (`rec.end`). Every
+	 * reader gets the same window; only the instant it was written differs.
+	 * ⛔ Refused on a toggle (lint): a toggle has no end.
+	 */
+	onEnd?: { state: State; duration: number };
 };
 
 export type TransientStateSpec =
@@ -1900,6 +1949,29 @@ export type NormalAbility = AbilityCommon & {
 		plunge?: TransientStateSpec;
 		charged?: TransientStateSpec;
 	};
+	/**
+	 * ⚓ A NON-HITTING ACTION CLASS (Lauma charged-forms round, 2026-09-16): this
+	 * ability's action of that class LANDS NO HIT — no element on the block, no
+	 * offer to the gauge, no hit record for any `onHit` consumer. The input still
+	 * takes its frames, still pads, still opens a transient state. First holder:
+	 * Lauma's Spirit Envoy Metamorphosis, a charged attack that turns her into a
+	 * deer.
+	 *
+	 * The POSITIVE claim — absent means the weapon rule applies (a catalyst
+	 * swing is elemental, a bow's aimed shot is elemental, a claymore swing is
+	 * physical). ⛔ Not folded into `resolveActionElement`: that rule is shared
+	 * with the editor's highlighter, which has no state machine and cannot know
+	 * which FORM a `C` resolved to, so a form-taker's `C` is tinted in the
+	 * editor and untinted on the chart — the same gap every timed infusion
+	 * already has there. `normal` is per-ABILITY, like `infusion`: a non-hitting
+	 * normal string is a sibling ability's, not a swing's. No holder yet.
+	 *
+	 * ⚠️ "Applies nothing" is NOT this. A cast's `application: []` says the hit
+	 * carries no gauge; it still lands (Emilie's E at Durability 0 fires her C2).
+	 * The cast-side twin of this flag — a cast whose animation queues no attack
+	 * at all — is a separate, gcsim-censused landing (the round's §7).
+	 */
+	nonHitting?: { normal?: true; charged?: true; plunge?: true };
 	/** Elemental infusion applied to N/C/P while this ability is active.
 	 *  Used on stance normals (e.g. Cyno's Pactsworn Pathclearer). */
 	infusion?: Element;
