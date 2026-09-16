@@ -10,7 +10,7 @@
 		startSceneTransition
 	} from '$lib/landing/transition';
 	import { SILHOUETTES } from '$lib/landing/silhouettes';
-	import { currentAnnouncements, formatSince } from '$lib/landing/announcements';
+	import { currentAnnouncements } from '$lib/landing/announcements';
 	import { onMount } from 'svelte';
 
 	// The banner's entries are filtered by DATE, and the first paint must be
@@ -136,7 +136,7 @@
 			 and nothing else). Above the doors, read first; not a hero block,
 			 which would wreck the composition. Copy is draft until Nate's
 			 wording pass; it should echo the OG description in seo.ts. -->
-		<p class="tagline">Genshin Impact mechanics, made visible. No tier lists, no verdicts.</p>
+		<p class="tagline">Genshin theorycrafting, made visible</p>
 
 		<nav class="heroes" aria-label="critcalc tools">
 			{#each tools as tool (tool.id)}
@@ -190,19 +190,19 @@
 			{/each}
 		</nav>
 
-		<!-- The announcement banner — "is this current?" answered under the
-			 cards, on the ground. Renders ONLY while an entry is live
+		<!-- The announcements — "is this current?" answered under the cards,
+			 on the ground. Renders ONLY while an entry is live
 			 ($lib/landing/announcements.ts carries the rule and the expiry); an
-			 empty slot is worse than none, a stale one is worse than empty. The
-			 same dark glass as the cards with the same gold on it, so the strip
-			 reads as part of the set and not as a toast. -->
+			 empty slot is worse than none, a stale one is worse than empty.
+			 No plate (⚓ Nate — it read as a toast): a short gold rule, the
+			 fact in gold, its fine print in the chrome's voice beneath. -->
 		{#if announcements.length}
 			<ul class="notices" aria-label="Announcements">
 				{#each announcements as a (a.id)}
 					<li class="notice">
-						<span class="notice__text">{a.text}</span>
 						<span class="notice__rule" aria-hidden="true"></span>
-						<time class="notice__since" datetime={a.since}>{formatSince(a.since)}</time>
+						<span class="notice__text">{a.text}</span>
+						{#if a.detail}<span class="notice__detail">{a.detail}</span>{/if}
 					</li>
 				{/each}
 			</ul>
@@ -423,31 +423,32 @@
 		max-width: 100%;
 	}
 
-	/* ── The line above and the strip below ─────────────────────────────────
+	/* ── The line above and the notice below ────────────────────────────────
 	   Both hang off the card group's own edges (its centre is at 47%, its
 	   half-height is --card-h / 2), so they travel with the cards through
-	   every clamp instead of being placed on the frame separately. */
+	   every clamp instead of being placed on the frame separately — and both
+	   are SIZED off the group's width (⚓ Nate: "about the same width as the
+	   three cards"), so they stay that width at every clamp too. The divisors
+	   are the line's own length in em: the tagline is ~36 characters of
+	   Bitter at ~0.5em each. */
 
-	/* Quiet: the chrome's voice (white), body face, one size down from base,
-	   slightly translucent — it is read on the way to the cards, not instead
-	   of them. Allowed to wrap on a phone. */
+	/* The tagline: the display face in the chrome's voice, the width of the
+	   doors it announces. */
 	.tagline {
 		position: absolute;
 		left: 0;
 		right: 0;
-		bottom: calc(53% + var(--card-h) / 2 + 1.5rem);
+		bottom: calc(53% + var(--card-h) / 2 + 1.25rem);
 		margin: 0;
-		padding: 0 1rem;
 		text-align: center;
-		font-family: var(--font-body);
-		font-size: var(--fs-lg);
-		line-height: var(--lh-snug);
-		letter-spacing: var(--ls-wide);
+		font-family: var(--font-display);
+		font-size: calc(var(--group-w) / 19);
+		font-weight: var(--fw-medium);
+		line-height: var(--lh-tight);
+		letter-spacing: var(--ls-tight);
 		color: var(--chrome);
-		opacity: 0.8;
-		/* On a phone it wraps; balanced, it breaks at the sentence, not at
-		   "No / tier lists". */
-		text-wrap: balance;
+		opacity: 0.9;
+		white-space: nowrap;
 	}
 
 	.notices {
@@ -461,49 +462,47 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.5rem;
+		gap: 1rem;
 	}
 
-	/* One slim plate: the cards' glass, a gold hairline at its edge for the
-	   card's inset frame, and the text in the kicker's register. */
+	/* No plate. The fact in gold at a step under the tagline; the fine print
+	   in the chrome's voice, quieter, in the body face. */
 	.notice {
-		display: inline-flex;
+		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: 0.75rem;
-		padding: 0.45rem 1rem;
-		border-radius: 3px;
-		background: var(--glass-plate);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
-		font-family: var(--font-mono);
-		font-size: var(--fs-sm);
-		letter-spacing: var(--ls-wider);
-		text-transform: uppercase;
-		color: var(--accent);
-		white-space: nowrap;
+		gap: 0.45em;
+		text-align: center;
+		font-size: calc(var(--group-w) / 30);
 	}
 
 	.notice__rule {
 		display: block;
-		width: 1.25rem;
+		width: 2.5em;
 		height: 1px;
+		margin-bottom: 0.3em;
 		background: var(--accent);
 		opacity: 0.6;
 	}
 
-	/* The date recedes: the fact is the text, the date is its provenance. */
-	.notice__since {
-		color: var(--chrome);
-		opacity: 0.7;
-		letter-spacing: var(--ls-wide);
+	.notice__text {
+		font-family: var(--font-display);
+		font-weight: var(--fw-medium);
+		line-height: var(--lh-tight);
+		letter-spacing: var(--ls-tight);
+		color: var(--accent);
+		white-space: nowrap;
 	}
 
-	/* `compact` — 40rem, $lib/breakpoints.ts. On a phone the strip sheds its
-	   date (decoration over meaning: "current to 7.0" is the fact). */
-	@media (max-width: 40rem) {
-		.notice__rule,
-		.notice__since {
-			display: none;
-		}
+	.notice__detail {
+		font-family: var(--font-body);
+		/* Floored: at a phone's group width 0.55em is ~6px. */
+		font-size: max(0.55em, var(--fs-sm));
+		line-height: var(--lh-snug);
+		letter-spacing: var(--ls-wide);
+		color: var(--chrome);
+		opacity: 0.75;
+		text-wrap: balance;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

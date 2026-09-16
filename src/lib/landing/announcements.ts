@@ -13,10 +13,10 @@
 
 export interface Announcement {
 	id: string;
-	/** The one line the banner shows. */
+	/** The headline — the fact. */
 	text: string;
-	/** Small, after the text — when this became true. */
-	since: string;
+	/** One quieter line under it, optional — the fact's fine print. */
+	detail?: string;
 	/** The banner stops showing this entry at local midnight on this date. */
 	expires: string;
 	href?: string;
@@ -26,7 +26,10 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
 	{
 		id: 'current-7-0',
 		text: 'Data current to Genshin Impact 7.0',
-		since: '2026-09-16',
+		// ⚠️ Keep this in step with FRAMELESS_EXEMPT (characterLint.test.ts):
+		// "in the works" means a kit authored but waiting on gcsim frames, so
+		// the planner times it with generic cast lengths.
+		detail: 'Odette curated in full · Alyosha and the Cryo Traveler in the works',
 		expires: '2026-10-28'
 	}
 ];
@@ -34,13 +37,4 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
 /** The entries still live at `now` — an expiry is exclusive of its own day. */
 export function currentAnnouncements(now: Date = new Date()): Announcement[] {
 	return ANNOUNCEMENTS.filter((a) => now < new Date(`${a.expires}T00:00:00`));
-}
-
-/** `2026-09-16` → `Sep 16, 2026`, for the banner's date. */
-export function formatSince(iso: string): string {
-	return new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric'
-	});
 }
