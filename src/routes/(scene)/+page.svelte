@@ -441,20 +441,28 @@
 		gap: 0.5rem;
 	}
 
-	/* A BAND the width of the group, so its edges are the first and third
-	   card's edges and it reads as the doors' lintel rather than a toast. The
-	   well glass (.45) — a step lighter than the cards' plate, so the cards
-	   stay the densest thing on the page — with a gold hairline inset at the
-	   panel's own quiet alpha (`--inset-line`, the site's inset-frame rule). */
+	/* A BAND that fades to nothing at both ends (⚓ Nate: a boxed band walled
+	   the cards in and took from the scene). Well glass (.45) — a step lighter
+	   than the cards' plate, so the cards stay the densest thing on the page —
+	   with NO edge at all: no hairline, no radius. It is wider than the group
+	   and MASKED over its outer quarter each side, so the solid plateau is
+	   about the group's width and the glass dissolves into the sky past the
+	   first and third card. A mask rather than a gradient fill so the fade is
+	   one ramp on one alpha (the scrollFade rule). Centred with a transform,
+	   which is fine here: the alpha is in the paint, not element opacity.
+	   Capped at the viewport so a phone never scrolls sideways for it. */
 	.notice {
+		position: relative;
+		left: 50%;
+		width: min(135%, 100vw);
+		transform: translateX(-50%);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: 0.15em;
 		padding: 0.6rem 1rem;
-		border-radius: 3px;
 		background: var(--glass-well);
-		box-shadow: inset 0 0 0 1px var(--inset-line);
+		mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent);
 		font-family: var(--font-body);
 		font-size: var(--fs-xl);
 		line-height: var(--lh-snug);
