@@ -3312,17 +3312,33 @@ describe('parseNotation — variant conditions gate variant resolution (Varka re
 		).toBe(true);
 	});
 
-	it('a second E waits out the shared charge queue and resolves base (Four Winds residual)', () => {
-		// Residual gap (documented in varka.json): Four Winds' Ascension is a
-		// VARIANT of the one skill ability, so it shares the base 16s charge
-		// queue — by the time a second E is castable the 12s stance has expired
-		// and the variant's inStance condition fails. Reaching it needs a
-		// separate-ability re-author (Flins Northland Spearstorm pattern).
+	it("a second E in stance resolves Four Winds' Ascension on its own 11s clock", () => {
+		// ↻ 2026-09-16: this used to assert the RESIDUAL — Four Winds was a
+		// VARIANT of the one skill ability, so it shared the base's 16s charge
+		// queue and the second E landed at ~16.3s, by which time the 12s stance
+		// had expired and the variant could never be reached. It is a sibling
+		// ability now (Odette's Coda shape), so the second E is Four Winds, at
+		// its own 11s cooldown, inside the stance.
+		//
+		// ⚓ Diluc is in the notation for the `teamElementCount` half of the
+		// gate: `resolveActiveAbility` takes the same ConditionContext
+		// `matchVariant` does, and without it a team-composition term is
+		// unresolvable and the sibling can never win.
 		const result = parseNotation('Varka E E > Diluc E', lookup, 8);
 		const eBars = result.tracks[0].eBars;
 		expect(eBars[0].cooldown).toBe(framesOf(16)); // opener
-		expect(eBars[1].cooldown).toBe(framesOf(16)); // charge free at ~16.3s → stance over → base
-		expect(eBars[1].start).toBeGreaterThan(framesOf(12)); // waited past the stance window
+		expect(eBars[1].cooldown).toBe(framesOf(11)); // Four Winds' own clock
+		expect(eBars[1].start).toBeLessThan(framesOf(12)); // inside the stance
+	});
+
+	it('with no Pyro/Hydro/Electro/Cryo teammate the second E stays the base skill', () => {
+		// The other half of the same gate, and gcsim's own rule
+		// (`convertToFourWinds` requires a conversion element): alone, Varka's
+		// in-stance E is still Windbound Execution, so it waits the 16s queue.
+		const result = parseNotation('Varka E E', lookup, 8);
+		const eBars = result.tracks[0].eBars;
+		expect(eBars[1].cooldown).toBe(framesOf(16));
+		expect(eBars[1].start).toBeGreaterThan(framesOf(12));
 	});
 });
 
