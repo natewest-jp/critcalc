@@ -130,12 +130,15 @@
 	out:fade|global={{ duration: FADE_OUT_MS }}
 >
 	<div class="composition-inner">
-		<!-- The announcements — "is this current?" answered ABOVE the cards, a
-			 dateline the width of the group: the fact on the left, one line;
-			 its fine print on the right, allowed two lines (⚓ Nate's layout).
-			 Renders ONLY while an entry is live ($lib/landing/announcements.ts
-			 carries the rule and the expiry); an empty slot is worse than none,
-			 a stale one is worse than empty. No plate and no rule. -->
+		<!-- The status line — "is this current?" answered ABOVE the cards, ONE
+			 centred stack on the page's own axis (everything on the landing is
+			 symmetric about the card group; a left/right split was tried and
+			 was the one thing off-axis). The version in gold on its own line,
+			 its fine print in the chrome's voice beneath — two lines BY DESIGN,
+			 because one line of ~100 characters is the group's whole width at a
+			 laptop and wraps mid-phrase the moment it is short of it. Renders ONLY while an entry is live
+			 ($lib/landing/announcements.ts carries the rule and the expiry); an
+			 empty slot is worse than none, a stale one is worse than empty. -->
 		{#if announcements.length}
 			<ul class="notices" aria-label="Announcements">
 				{#each announcements as a (a.id)}
@@ -232,6 +235,9 @@
 		--card-h: calc(var(--card-w) * 1.8);
 		--gap: clamp(1rem, 2.6vw, 2.5rem);
 		--group-w: calc(3 * var(--card-w) + 2 * var(--gap));
+		/* The air between the doors and the two lines that caption them —
+		   the same above and below. */
+		--caption-gap: 1.75rem;
 
 		position: absolute;
 		top: 0;
@@ -423,90 +429,78 @@
 		max-width: 100%;
 	}
 
-	/* ── The dateline above and the line below ──────────────────────────────
+	/* ── The status line above and the tagline below ─────────────────────────
 	   Both hang off the card group's own edges (its centre is at 47%, its
-	   half-height is --card-h / 2), so they travel with the cards through
-	   every clamp instead of being placed on the frame separately. Both are
-	   Plex Sans at the small-label rungs (⚓ Nate — the display face at the
-	   group's width was a heading, not a caption). */
-
+	   half-height is --card-h / 2) at the SAME distance, so the doors sit in
+	   equal air and the three pieces travel together through every clamp.
+	   Both are Plex Sans in sentence case with NORMAL tracking — the wide
+	   tracking belongs to the uppercase kickers, and on body text it read
+	   loose. The ladder under the doors: names 22 Bitter semibold → tagline
+	   18 sans → status 16 sans → kickers 11 mono. */
 	.notices {
 		position: absolute;
 		left: 0;
 		right: 0;
-		bottom: calc(53% + var(--card-h) / 2 + 1rem);
+		bottom: calc(53% + var(--card-h) / 2 + var(--caption-gap));
 		margin: 0;
-		padding: 0;
+		padding: 0 1rem;
 		list-style: none;
 		display: flex;
 		flex-direction: column;
+		align-items: center;
 		gap: 0.5rem;
 	}
 
-	/* Two columns the width of the group: the fact left, one line, gold; the
-	   fine print right, up to two lines, the chrome's voice. No rule under it
-	   (⚓ Nate). */
 	.notice {
 		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		gap: 1.5rem;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.15em;
 		font-family: var(--font-body);
-		/* 🎛️ --fs-md → --fs-2xl (⚓ Nate: the small-label rung was too small
-		   here), and the hairline under the row is gone with it. */
-		font-size: var(--fs-2xl);
+		font-size: var(--fs-xl);
 		line-height: var(--lh-snug);
-		letter-spacing: var(--ls-wide);
+		text-align: center;
+		color: var(--chrome);
 	}
 
+	/* The fact is gold and a weight up; the fine print recedes. */
 	.notice__text {
-		flex: none;
 		font-weight: var(--fw-medium);
 		color: var(--accent);
 		white-space: nowrap;
 	}
 
 	.notice__detail {
-		max-width: 50%;
-		text-align: right;
-		font-size: var(--fs-xl);
-		color: var(--chrome);
 		opacity: 0.75;
 		text-wrap: balance;
 	}
 
-	/* `compact` — 40rem, $lib/breakpoints.ts. On a phone the two columns
-	   cannot share 358px, so the row stacks, both lines left-aligned. */
-	@media (max-width: 40rem) {
-		.notice {
-			flex-direction: column;
-			gap: 0.15rem;
-		}
-
-		.notice__detail {
-			max-width: none;
-			text-align: left;
-		}
-	}
-
-	/* Quiet: the chrome's voice at .8, body sans a step above the notice,
-	   centred under the doors. */
+	/* The tagline: the one sentence under the doors, a step below the names
+	   and clearly a caption to them. */
 	.tagline {
 		position: absolute;
 		left: 0;
 		right: 0;
-		top: calc(47% + var(--card-h) / 2 + 1.25rem);
+		top: calc(47% + var(--card-h) / 2 + var(--caption-gap));
 		margin: 0;
+		padding: 0 1rem;
 		text-align: center;
 		font-family: var(--font-body);
-		/* 🎛️ --fs-lg → --fs-3xl (⚓ Nate). */
-		font-size: var(--fs-3xl);
-		font-weight: var(--fw-medium);
+		font-size: var(--fs-2xl);
+		font-weight: var(--fw-normal);
 		line-height: var(--lh-snug);
-		letter-spacing: var(--ls-wide);
 		color: var(--chrome);
-		opacity: 0.8;
+		opacity: 0.85;
 		text-wrap: balance;
+	}
+
+	/* `compact` — 40rem, $lib/breakpoints.ts. The card names are ~13px on a
+	   phone, so the captions step down to stay subordinate to them. */
+	@media (max-width: 40rem) {
+		.notice,
+		.tagline {
+			font-size: var(--fs-lg);
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
