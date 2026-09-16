@@ -276,7 +276,10 @@ describe('Nahida — Tri-Karma Purification, end to end', () => {
 		const procs = appsOf('Nahida E Q > Fischl E Q > Fischl N3', 'nahida')
 			.filter(([, u]) => u === 1.5)
 			.map(([t]) => t);
-		expect(procs).toEqual([3.2, 8.28]);
+		// ↻ Retimed 2026-09-16 (T0.5): Oz's `firstTickDelay` gained gcsim's
+		// `ozTravel` (10 frames), which every tick's damage carries, so every
+		// Oz-derived instant below moves by exactly 0.17s and nothing else does.
+		expect(procs).toEqual([3.2, 8.45]);
 		for (let i = 1; i < procs.length; i++)
 			expect(procs[i] - procs[i - 1]).toBeGreaterThanOrEqual(2.5);
 	});
@@ -300,8 +303,11 @@ describe('Fischl — A4 Thundering Retribution, end to end', () => {
 		// ↻ The tick times moved 2026-08-17 (ICD-group round b authored
 		// ICDGroupFischl, 300f / every 4th): 7.25 and 13.15 are gone and 8.23 is
 		// new. ⚓ WHAT THE TEST IS FOR DID NOT MOVE — one A4, at Fischl's own hit.
+		// ↻ Retimed 2026-09-16 (T0.5): Oz's `firstTickDelay` gained gcsim's
+		// `ozTravel` (10 frames), which every tick's damage carries, so every
+		// Oz-derived instant below moves by exactly 0.17s and nothing else does.
 		expect(fischlApps('Nahida E Q > Fischl E Q > Fischl N3')).toEqual([
-			3.15, 3.22, 3.53, 4.3, 8.23, 10.2
+			3.15, 3.22, 3.53, 4.47, 8.4, 10.37
 		]);
 	});
 
@@ -317,8 +323,11 @@ describe('Fischl — A4 Thundering Retribution, end to end', () => {
 		// decayed by then and there is no aura left to electro-charge. A proc is a
 		// consequence of a reaction, so a rule that changes applications changes
 		// this list twice over.
+		// ↻ Retimed 2026-09-16 (T0.5): Oz's `firstTickDelay` gained gcsim's
+		// `ozTravel` (10 frames), which every tick's damage carries, so every
+		// Oz-derived instant below moves by exactly 0.17s and nothing else does.
 		expect(fischlApps('Barbara E > Fischl E Q > Barbara N3')).toEqual([
-			1.65, 1.72, 2.03, 2.58, 2.8, 3.12, 6.73, 8.7, 9.12
+			1.65, 1.72, 2.03, 2.58, 2.97, 3.12, 6.9, 8.87, 9.12
 		]);
 	});
 
@@ -426,7 +435,10 @@ describe('onHit damage procs — the coordinated attack that answers damage', ()
 		const eye = appsOf('Fischl E > Raiden E ~12s', 'raiden_shogun')
 			.map(([t]) => t)
 			.filter((t) => t !== 1.68);
-		expect(eye).toEqual([0.92, 3.42, 6.37, 9.32]);
+		// ↻ Retimed 2026-09-16 (T0.5): Oz's `firstTickDelay` gained gcsim's
+		// `ozTravel` (10 frames), which every tick's damage carries, so every
+		// Oz-derived instant below moves by exactly 0.17s and nothing else does.
+		expect(eye).toEqual([0.92, 3.58, 6.53, 9.48]);
 		// Every gap is the standard window, which is what the absent gate says.
 		for (let i = 1; i < eye.length; i++) expect(eye[i] - eye[i - 1]).toBeGreaterThan(2.4);
 	});
