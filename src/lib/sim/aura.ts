@@ -742,13 +742,23 @@ export function emitReactionsAtSwing(
 /** The team facts a `summonTick` condition can be gated on — ⚓ the ONE shape,
  *  shared with `finalize`'s marker walk so the two cannot answer differently.
  *  Aino's burst ticks at 0.7s instead of 1.5s under `teamFaction: moonsign >= 2`. */
-function tickConditionCtx(ctx: SimContext): {
+function tickConditionCtx(
+	ctx: SimContext,
+	holderId: string
+): {
 	teamFactionCounts: ReadonlyMap<string, number>;
 	teamEnabledReactions: ReadonlySet<string>;
+	teamElementCounts: ReadonlyMap<Element, number> | undefined;
 } {
+	// ⚓ The HOLDER's element counts too (T1 tranche, 2026-09-17). Without them a
+	// `teamElementCount` gate on a tick series was unresolvable, and a series
+	// abstains only on a definitive false — Xilonen's burst heal (≥ 2 Pyro/Hydro/
+	// Cryo/Electro members) drew all 8 ticks in a Geo/Anemo team. Per holder,
+	// the same map the parse's cast-time resolution and the buff passes read.
 	return {
 		teamFactionCounts: ctx.team.teamFactionCounts,
-		teamEnabledReactions: ctx.team.teamEnabledReactions
+		teamEnabledReactions: ctx.team.teamEnabledReactions,
+		teamElementCounts: ctx.team.teamElementCountsByHolder.get(holderId)
 	};
 }
 
@@ -910,7 +920,7 @@ export function scheduleSummonTicks(
 			summon,
 			cLevel,
 			(e) => e.type === 'damage',
-			tickConditionCtx(ctx)
+			tickConditionCtx(ctx, char.id)
 		)) {
 			const element = (series.effect as Extract<Effect, { type: 'damage' }>).element;
 			// ⛔ A physical (element-less) tick applies nothing and must not reach an
@@ -942,7 +952,7 @@ export function scheduleSummonTicks(
 			// ⚠️ `fired` is per SERIES per SPAWN, which is what the closure already
 			// scopes — a recast builds a new chain and starts its own count, exactly
 			// as a recast restarts the walk.
-			const cap = tickCapOf(series.effect, cLevel, tickConditionCtx(ctx));
+			const cap = tickCapOf(series.effect, cLevel, tickConditionCtx(ctx, char.id));
 			let fired = 0;
 			// ⚠️ A cap lets the BOUNDARY tick through and no further: the window
 			// widens by one interval only when a cap is authored, mirroring
