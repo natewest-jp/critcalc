@@ -976,7 +976,21 @@ export type State =
 	 *  It gates the Pneuma VARIANT of Salon Solitaire, which is the whole point:
 	 *  the alignment at the instant of the cast decides whether the E summons
 	 *  the three Salon Members or the Singer of Many Waters. */
-	| 'pneuma';
+	| 'pneuma'
+	/** Lauma: Spirit Envoy Metamorphosis — the DEER (charged-forms round,
+	 *  2026-09-16). Opened by a Charged Attack with the Envoy ready; 10s, ended
+	 *  by her next attack or cast (`terminatesOnAction`) or a swap
+	 *  (`terminatesOnSwap`); ⚓ NOT by a dash or a jump — she moves in deer form
+	 *  (Nate). The one non-hitting action in the corpus. gcsim
+	 *  `lauma-spirit-envoy`. */
+	| 'spiritEnvoy'
+	/** Lauma: Spirit Envoy Metamorphosis is on COOLDOWN — 4s from the deer's
+	 *  end (`onEnd` of `spiritEnvoy`; gcsim `endDeerState`), during which her
+	 *  Charged Attack is Spiritcall Prayer, the sibling normal ability gated on
+	 *  this state. ⚠️ A4 shortens the 4s by up to 20% with Elemental Mastery;
+	 *  not simulated (⚓ Nate: a caveat), so the last 0.8s of the window can be
+	 *  Prayer here and the deer in game. */
+	| 'envoyCooldown';
 
 /**
  * Post-action transient state — a short named gating window opened by an

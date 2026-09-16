@@ -8,10 +8,10 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **126** authored · **115** with a gcsim source
-- FrameMaps: **1119** authored · **955** matching gcsim exactly · **70** disagreeing · **94** uncovered
+- FrameMaps: **1123** authored · **958** matching gcsim exactly · **71** disagreeing · **94** uncovered
 - skill/burst application schedules observed: **281** · unobserved: **17**
-- summon tick streams cross-checked: **57**
-- hits carrying a measured gcsim ICD cadence: **2959** of **2959**
+- summon tick streams cross-checked: **58**
+- hits carrying a measured gcsim ICD cadence: **2972** of **2972**
 
 ⛔ **No gcsim source (11)** — cannot be oracled at all, and nothing here may be written to them:
 
@@ -25,8 +25,8 @@ difference, per transition that currently falls back.
 
 | transition | maps falling back | median understatement |
 | --- | --- | --- |
-| E/Q → P | 389 / 404 | 11f |
-| E/Q → C | 292 / 307 | 9f |
+| E/Q → P | 390 / 405 | 11f |
+| E/Q → C | 293 / 308 | 9f |
 | E/Q → Q | 168 / 178 | 3f |
 | E/Q → E | 136 / 144 | 3f |
 | E/Q → N | 128 / 131 | 3f |
@@ -36,9 +36,9 @@ difference, per transition that currently falls back.
 | normal → C | 14 / 18 | 27f |
 | normal → N | 11 / 12 | 23f |
 
-Maps whose true `anim` exceeds the authored `swap`: **41** normal (median 24f), **391** E/Q (median 11f).
+Maps whose true `anim` exceeds the authored `swap`: **41** normal (median 24f), **392** E/Q (median 11f).
 
-## 2. FrameMaps that disagree (70)
+## 2. FrameMaps that disagree (71)
 
 ⚠️ C4b rules that gcsim is the source for all frame data, so these resolve in
 gcsim's favour — but each is listed so it is READ before it is written.
@@ -88,6 +88,7 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | lan_yan | `lan_yan__normal__normal_attack.plungeFrames` | N 56→58, E 56→59, Q 57→60, D 44→46, anim 53→67 |
 | lan_yan | `lan_yan__skill__swallow_wisp_pinion_dance.frames` | N 33→45, E 33→49, Q 79→46, D 77→47, J 79→47, swap 80→49, anim 80→49 |
 | lan_yan | `lan_yan__burst__lustrous_moonrise.frames` | anim 75→100 |
+| lauma | `lauma__normal__spiritcall_prayer.chargeFrames` | hit 73→67 |
 | nahida | `nahida__normal__akara.chargeFrames` | anim 65→69 |
 | nilou | `nilou__skill__dance_of_haftkarsvar.frames` | anim 21→22 |
 | nilou | `nilou__skill__whirling_steps_1.frames` | anim 31→33 |
@@ -356,7 +357,7 @@ in the list) or a thing left in the world we have not modelled.
 | lynette | `lynette__burst__magic_trick_astonishing_shift` | +18 anemo (1U) | 11× Bogglecat Box |
 | lyney | `lyney__skill__bewildering_lights` | +18 pyro (1U) |  |
 | lyney | `lyney__burst__wondrous_trick_miracle_parade` | +112 pyro (1U) · +288 pyro (1U) · +563 pyro (1U) |  |
-| mavuika | `mavuika__skill__the_named_moment` | +16 pyro (1U) · +120 pyro (1U) · +240 pyro (1U) · +360 pyro (1U) · +480 pyro (1U) · +600 pyro (1U) · +720 pyro (1U) | ⚠️ regular, no authored summon: Rings of Searing Radiance ×6/120f |
+| mavuika | `mavuika__skill__the_named_moment` | +16 pyro (1U) | 6× Rings of Searing Radiance |
 | mavuika | `mavuika__skill__the_named_moment · hE` | +16 pyro (1U) |  |
 | mavuika | `mavuika__burst__hour_of_burning_skies` | +106 pyro (1U) |  |
 | mika | `mika__skill__starfrost_swirl` | +18 cryo (1U) |  |
@@ -547,7 +548,7 @@ which the pair alone cannot state.
 | amber | `fiery_rain` | Fiery Rain 84f / 12f × 9 · 60f / every 3 | Fiery Rain 84f / 12f × 18 · 13/18 `other` ⚠️ **count 9→18** | 60f / every 3 |
 | baizhu | `holistic_revivification` | Pulsing Clarity 252f / 146f × 5 · `none` | — | — |
 | chiori | `fluttering_hasode` | Tamoto 55f / 216f × 5 · 114f / first only | Fluttering Hasode (Tamato) 60f / 216f × 5 · 4/5 `other` | 114f / first only |
-| citlali | `dawnfrost_darkstar` | Itzpapa 77f / 59f × 20 · `standard` | — | — |
+| citlali | `dawnfrost_darkstar` | Itzpapa 77f / 59f × 20 · 90f / every 2 | — | — |
 | collei | `trumpcard_kitty` | Cuilein-Anbar 68f / 30f × 11 · 180f / first only | Trump-Card Kitty (Leap) 68f / 30f × 12 · 2/12 `other` ⚠️ **count 11→12** | 180f / first only |
 | columbina | `eternal_tides` | Gravity Ripple 138f / 117f × 12 · `none` | Skill (DoT) 138f / 117f × 12 · 12/12 `none` | `none` |
 | diona | `signature_mix` | Drunken Mist 178f / 120f × 6 · `standard` | Signature Mix (Tick) 178f / 120f × 6 · 3/6 `standard` | 150f / every 3 |
@@ -572,6 +573,7 @@ which the pair alone cannot state.
 | layla | `dream_of_the_starstream_shaker` | Celestial Dreamsphere 114f / 90f × 8 · `standard` | Starlight Slug 114f / 90f × 8 · 4/8 `standard` | 150f / every 3 |
 | lisa | `lightning_rose` | Lightning Rose 119f / 30f × 30 · `standard` | Lightning Rose (Tick) 119f / 30f × 30 · 12/30 `standard` | 150f / every 3 |
 | lynette | `magic_trick_astonishing_shift` | Bogglecat Box 136f / 59f × 11 · `standard` | Bogglecat Box 136f / 59f × 11 · 4/11 `standard` | 150f / every 3 |
+| mavuika | `the_named_moment` | Rings of Searing Radiance 120f / 120f × 6 · `none` | Rings of Searing Radiance 120f / 120f × 6 · 6/6 `none` | `none` |
 | mona | `mirror_reflection_of_doom` | Phantom 86f / 59f × 4 `cap` · `standard` | Mirror Reflection of Doom (Tick) 86f / 59f × 4 · 2/4 `standard` | 150f / every 3 |
 | navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support 163f / 42f × 17 · 720f / every 3 | Cannon Fire Support 163f / 42f × 17 · 6/17 `other` | 720f / every 3 |
 | ningguang | `jade_screen` | — | Jade Screen 17f / —f × 1 · 1/1 `either` | `none` |

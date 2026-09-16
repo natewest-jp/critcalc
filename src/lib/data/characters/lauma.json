@@ -18,9 +18,91 @@
 			"abilityType": "normal",
 			"tags": [],
 			"_curatorNotes": [
-				"⚓ `C` IS SPIRITCALL PRAYER, THE DAMAGING CHARGED ATTACK (Nate, 2026-09-15). Spirit Envoy Metamorphosis — the deer form — is exploration and long-distance traversal, not combat, so a `C` in a rotation means the attack, and the deer is deliberately NOT modelled (⛔ don't add a second charged form for it). gcsim charge.go: chargeFrames = InitAbilSlice(68) with ActionAttack/Skill/Burst/Dash/Jump/Swap at chargeReleaseFrame 67, and the Dendro 25 / ICDTagNone hit at chargeHitmark 73 — which lands AFTER the release, hence `hit` > the cancel keys. ⚠️⚠️ THE FRAMES AUDIT WILL FLAG THIS MAP AND IT IS AN ORACLE ARTEFACT: gcsim's `deerStateReady` starts true (lauma.go), so the dumper's bare `C` captures deerFrames ({anim 64, N 61, C/E/Q 63, J/swap 49}) — which is what this map held until today, and what a T0 pass briefly defended with a caveat. ⛔ Never let migrate-frames-shape resolve this row in gcsim's favour. D in deer state is disabled (dash.go), irrelevant here.",
-				"No plunge.go in gcsim character dir — plungeFrames not available.",
-				"🔖 BOOKMARKED (⚓ Nate, 2026-09-15): modelling BOTH charged forms. The source (kit text + gcsim charge.go): a `C` with the Envoy ready enters the deer (no damage); ANY action but walk/jump — or a swap — ends it (chargeInit), which starts a 4s cooldown (endDeerState; ×0.8 at A4's cap), and only during that cooldown is `C` Spiritcall Prayer. Shape if taken: the base normal's `C` = deerFrames and `actionOpensState.charged` opens a new cooldown State (⚠️ TWO edits — the State union AND characterLint's STATES set); a sibling normal gated on that state carries the Prayer chargeFrames (the Zibai/Durin state-gated-sibling shape). ⛔ Blocker to solve first: a catalyst charged attack ALWAYS applies its element and no field says a charged attack applies nothing, so the deer would draw a phantom Dendro. Until then every `C` is Prayer and the caveat names the gap. See essential-characters-2026-09-15.md §7."
+				"⚓ BOTH CHARGED FORMS ARE MODELLED (charged-forms round, 2026-09-16 — docs/lauma-charged-forms-round.md). This ability's `C` is SPIRIT ENVOY METAMORPHOSIS, the deer: gcsim charge.go `deerFrames` = InitAbilSlice(64) with ActionAttack 61, ActionCharge/Skill/Burst 63, ActionSwap/Jump 49 (the transformation frame); no D key because dash.go refuses the dash in deer form (D falls to `anim`). It lands NO HIT — `nonHitting.charged` — and opens `spiritEnvoy` for 10s (deerDur 600f; C1's +5s is not modelled), ended by her next attack or cast (`terminatesOnAction`; gcsim chargeInit's OnActionExec hook ends it on anything but walk/jump) or a swap (`terminatesOnSwap`; the OnCharacterSwap hook). ⚓ Nate: neither a dash nor a jump ends it — she moves in deer form. When it ends, `onEnd` opens `envoyCooldown` for 4s (endDeerState: `4 * 60 * a4SpiritEnvoyCooldownReduction()`), and while THAT runs `C` resolves to the Spiritcall Prayer sibling ability below. gcsim's `deerStateReady` starts true (lauma.go), so the first `C` of any rotation is the deer, as here.",
+				"Not modelled, deliberately: the A4 cooldown reduction (−0.02%/EM, floor ×0.8 at 1000 EM — our modifiers carry no EM term; ⚓ Nate: a caveat, not a simulation); C1's +5s deer duration and −40% Stamina; the burst's `burstDeerFrame` (Q→C cancels at 115 when the deer is ready, 110 otherwise — a cancel key cannot depend on which `C` follows; 5f). The Prayer's own `Frames(next)` returns chargeReleaseFrame (67) for a following deer, identical to its table, so nothing is lost there.",
+				"The frames audit: the dumper's bare `C` capture IS the deer (deerStateReady starts true), so this map now agrees with the oracle where the T0 pass had to defend a Prayer map against it — measured 2026-09-16, no row for it. The Prayer sibling is reached through drivers.json `states.envoyCooldown` = charge (deer), burst (ends it; ⚠️ an `attack` ender rotates gcsim's normal counter and produced three false N1–N3 rows) — then the captured `C` is Prayer.",
+				"No plunge.go in gcsim character dir — plungeFrames not available."
+			],
+			"hits": [
+				{
+					"name": "N1",
+					"frames": {
+						"anim": 29,
+						"hit": 14,
+						"C": 17
+					}
+				},
+				{
+					"name": "N2",
+					"frames": {
+						"anim": 33,
+						"hit": 11,
+						"C": 19
+					}
+				},
+				{
+					"name": "N3",
+					"frames": {
+						"anim": 38,
+						"hit": 16,
+						"C": 33
+					}
+				}
+			],
+			"chargeFrames": {
+				"anim": 64,
+				"N": 61,
+				"C": 63,
+				"E": 63,
+				"Q": 63,
+				"J": 49,
+				"swap": 49
+			},
+			"nonHitting": { "charged": true },
+			"actionOpensState": {
+				"charged": {
+					"state": "spiritEnvoy",
+					"duration": 10,
+					"terminatesOnAction": true,
+					"terminatesOnSwap": true,
+					"onEnd": { "state": "envoyCooldown", "duration": 4 }
+				}
+			},
+			"sections": [
+				{
+					"type": "normal",
+					"title": "Normal Attack",
+					"description": "Performs up to 3 attacks that deal Dendro DMG."
+				},
+				{
+					"type": "charged",
+					"title": "Charged Attack",
+					"description": "Lauma undergoes Spirit Envoy Metamorphosis, transforming into an envoy of the tranquil forest and consuming Stamina to charge forward for up to 10s. While in this state, Lauma's interruption resistance is increased, and she can consume additional Stamina to perform up to two consecutive jumps.\nWhen exiting the Spirit Envoy state, Spirit Envoy Metamorphosis will enter cooldown, during which time, Lauma's Charged Attack will be transformed into Spiritcall Prayer: Consumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of her after a short casting time."
+				},
+				{
+					"type": "plunging",
+					"title": "Plunging Attack",
+					"description": "Calling upon the might of Dendro, Lauma plunges towards the ground from mid-air, damaging all opponents in her path and dealing AoE Dendro DMG upon impact with the ground."
+				}
+			],
+			"description": "Normal Attack\nPerforms up to 3 attacks that deal Dendro DMG.\n\nCharged Attack\nLauma undergoes Spirit Envoy Metamorphosis, transforming into an envoy of the tranquil forest and consuming Stamina to charge forward for up to 10s. While in this state, Lauma's interruption resistance is increased, and she can consume additional Stamina to perform up to two consecutive jumps.\nWhen exiting the Spirit Envoy state, Spirit Envoy Metamorphosis will enter cooldown, during which time, Lauma's Charged Attack will be transformed into Spiritcall Prayer: Consumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of her after a short casting time.\n\nPlunging Attack\nCalling upon the might of Dendro, Lauma plunges towards the ground from mid-air, damaging all opponents in her path and dealing AoE Dendro DMG upon impact with the ground.",
+			"caveat": "Spiritcall Prayer is available for 4s after Spirit Envoy form ends here; with high Elemental Mastery that window is up to 0.8s shorter in game, so a late Charged Attack may enter Spirit Envoy form instead."
+		},
+		{
+			"id": "lauma__normal__spiritcall_prayer",
+			"name": "Spiritcall Prayer",
+			"input": ["N"],
+			"abilityType": "normal",
+			"conditions": {
+				"type": "state",
+				"state": "envoyCooldown"
+			},
+			"tags": [],
+			"description": "Spiritcall Prayer\nWhile Spirit Envoy Metamorphosis is on cooldown, Lauma's Charged Attack consumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of her after a short casting time.",
+			"_curatorNotes": [
+				"The ATTACK half of Lauma's Charged Attack (charged-forms round, 2026-09-16): a state-gated sibling normal ability on `envoyCooldown` — the Zibai/Durin shape — that `resolveActiveAbility` prefers over Peregrination of Linnunrata while the cooldown runs. The N1–N3 hits are copied from the base because a sibling REPLACES it for every action class while its gate holds (Durin's dark form is the precedent), so her normal string must travel with it.",
+				"chargeFrames = gcsim charge.go `chargeFrames` = InitAbilSlice(68) with ActionAttack/Skill/Burst/Dash/Jump/Swap at chargeReleaseFrame 67; the Dendro 25 / ICDTagNone hit at chargeHitmark 73 lands AFTER the release, hence `hit` > the cancel keys. ⚠️ THE FRAMES AUDIT REPORTS `hit 73→67` AND 73 IS RIGHT: `toFrameMap` infers a normal-style map's `hit` as the value every cancel key shares (67, the release tier), which is the hitmark tier for a swing built by InitNormalCancelSlice but not for a slice built by InitAbilSlice + explicit keys; gcsim's QueueAttack is at chargeHitmark 73. Inert at runtime either way — every cancel key is explicit, so `frameAt` never falls to `hit` — ⛔ don't migrate it. ICDTagNone is what the catalyst rule in resolveActionIcd already gives a charged attack, so no `chargedIcdWindow`. Scaling: charge[TalentLvlAttack] (zz_lauma.dm.go), not authored — a charged attack's damage is not a data field here.",
+				"⚠️ Gated on `envoyCooldown` ALONE, not on `any(spiritEnvoy, envoyCooldown)`: `settleOwnerStates` closes the deer BEFORE the snapshot a `C` resolves against, so a `C` during the deer already reads the cooldown (gcsim: `deerStateReady` is false while the deer stands, so that `C` is Prayer there too) — and a single-state gate is what keeps the frames audit able to reach this map (gcsim-map's prereqFor resolves one `state` condition through drivers.json)."
 			],
 			"hits": [
 				{
@@ -57,26 +139,7 @@
 				"D": 67,
 				"J": 67,
 				"swap": 67
-			},
-			"sections": [
-				{
-					"type": "normal",
-					"title": "Normal Attack",
-					"description": "Performs up to 3 attacks that deal Dendro DMG."
-				},
-				{
-					"type": "charged",
-					"title": "Charged Attack",
-					"description": "Lauma undergoes Spirit Envoy Metamorphosis, transforming into an envoy of the tranquil forest and consuming Stamina to charge forward for up to 10s. While in this state, Lauma's interruption resistance is increased, and she can consume additional Stamina to perform up to two consecutive jumps.\nWhen exiting the Spirit Envoy state, Spirit Envoy Metamorphosis will enter cooldown, during which time, Lauma's Charged Attack will be transformed into Spiritcall Prayer: Consumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of her after a short casting time."
-				},
-				{
-					"type": "plunging",
-					"title": "Plunging Attack",
-					"description": "Calling upon the might of Dendro, Lauma plunges towards the ground from mid-air, damaging all opponents in her path and dealing AoE Dendro DMG upon impact with the ground."
-				}
-			],
-			"description": "Normal Attack\nPerforms up to 3 attacks that deal Dendro DMG.\n\nCharged Attack\nLauma undergoes Spirit Envoy Metamorphosis, transforming into an envoy of the tranquil forest and consuming Stamina to charge forward for up to 10s. While in this state, Lauma's interruption resistance is increased, and she can consume additional Stamina to perform up to two consecutive jumps.\nWhen exiting the Spirit Envoy state, Spirit Envoy Metamorphosis will enter cooldown, during which time, Lauma's Charged Attack will be transformed into Spiritcall Prayer: Consumes a certain amount of Stamina to deal AoE Dendro DMG to opponents in front of her after a short casting time.\n\nPlunging Attack\nCalling upon the might of Dendro, Lauma plunges towards the ground from mid-air, damaging all opponents in her path and dealing AoE Dendro DMG upon impact with the ground.",
-			"caveat": "Every Charged Attack is shown as Spiritcall Prayer; in game the first one becomes Spirit Envoy form, and Prayer is only available for a few seconds after leaving it."
+			}
 		},
 		{
 			"id": "lauma__skill__runo_dawnless_rest_of_karsikko",

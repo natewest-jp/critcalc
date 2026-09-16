@@ -218,7 +218,10 @@ const STATES = new Set([
 	// ⛔ Adding a State member is TWO edits; the suite cannot tell you when the
 	// character that needs it is frameless.
 	'codaWindow',
-	'pneuma'
+	'pneuma',
+	// Lauma's two charged forms (charged-forms round, 2026-09-16).
+	'spiritEnvoy',
+	'envoyCooldown'
 ]);
 
 const ABILITY_TYPES = new Set(['normal', 'skill', 'burst', 'passive', 'constellation']);
