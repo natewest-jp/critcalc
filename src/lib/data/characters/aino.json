@@ -274,23 +274,6 @@
 			"effects": [
 				{
 					"type": "buff",
-					"target": "self",
-					"trigger": {
-						"type": "onCast"
-					},
-					"duration": 15,
-					"durationType": "fixed",
-					"conditions": {
-						"type": "constellation",
-						"level": 1
-					},
-					"source": "character",
-					"stat": "em",
-					"value": 80,
-					"snapshottable": false
-				},
-				{
-					"type": "buff",
 					"target": "team",
 					"trigger": {
 						"type": "onCast"
@@ -308,8 +291,9 @@
 				}
 			],
 			"_curatorNotes": [
-				"C1: on E or Q cast, +80 EM to Aino self AND +80 EM to team for 15s. gcsim c1Init applies the buff on c1OnSkillBurst (called from both Skill and Burst). Authored as two separate effects with onCast trigger and no `ability` field — fires for both skill and burst per curation convention. duration:15 matches the c1Key status.",
-				"Description says 'effects do not stack' — both buffs share a 15s window but neither overrides the other on re-cast. Schema's durationType:fixed handles this acceptably."
+				"C1: on E or Q cast, +80 EM for 15s. gcsim c1Init builds two mods off one `c1Key` status (called from both Skill and Burst): a SELF mod, and a mod on every OTHER member that returns nothing unless that member is ACTIVE — so Aino gets +80 once and each teammate gets +80 only while on field. duration:15 matches the c1Key status.",
+				"↻ ONE `team` ARM, 2026-09-17 (T1 tranche). It was authored as a `self` +80 AND a `team` +80, and the team arm INCLUDES the caster, so Aino drew +80 twice (a team-lane bar and her own received bar). Tried and measured: `target: active` (gcsim's teammate gate) moves the double onto Aino's own field time, because the per-receiver slice gives her +80 on top of the self arm; `teamExcludingSelf` and a `['self','active']` array both render as the same team row. No condition can name the RECEIVER, so the honest single bar is the team arm alone — right for Aino, and still optimistic for an OFF-field teammate, as it always was.",
+				"Description says 'effects do not stack' — re-casts refresh one 15s window rather than adding."
 			],
 			"description": "After Aino uses her Elemental Skill **Musecatcher** or her Elemental Burst **Precision Hydronic Cooler**, her Elemental Mastery will be increased by 80. The Elemental Mastery of other nearby active party members will be increased by 80 for 15s.\n\nThe Elemental Mastery-increasing effects of this Constellation do not stack."
 		},
