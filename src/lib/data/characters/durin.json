@@ -206,7 +206,15 @@
 				"The White commit, reachable via a second E during `transmuting` (resolveActiveAbility prefers this conditioned skill; separate ability id → separate charge queue, so the base 12s clock is untouched — gcsim: recast sets no CD and ActionReady bypasses the CD check while the window is active). cooldown: 0 mirrors that.",
 				"Frames = gcsim skill.go skillRecastWhiteFrames (InitAbilSlice(83); ActionSwap=48, ActionAttack=62, ActionSkill=53, ActionBurst=50, ActionDash=46, ActionJump=47). Deals 190.1% ATK Pyro at T10 (skillWhite[9]=1.9008), hitmark 35f — frame-represented, not authored as an effect.",
 				"opensTransientState opens `whiteForm` (30s, gcsim AddStatus(whiteKey, 30*60)) and consumes transmuting + darkForm (gcsim DeleteStatus(skillWindowKey)/(blackKey)). whiteForm gates nothing directly (the White burst is the unconditioned default) but is tracked for gcsim fidelity and so the Dark commit's `consumes` displacement is visible on the timeline.",
-				"[A7] Caveat removed as working behavior: the recast is a separate ability (cooldown 0, own charge queue) so the base 12s CD, set by the first press, is shown ticking through the recast — correctly modeled, no divergence."
+				"[A7] Caveat removed as working behavior: the recast is a separate ability (cooldown 0, own charge queue) so the base 12s CD, set by the first press, is shown ticking through the recast — correctly modeled, no divergence.",
+				"application[] AUTHORED 2026-09-16 (T0.5). gcsim skillRecastWhite (skill.go:75-90) queues 190.1% ATK Pyro with Durability 25 at skillWhiteHitmarks = 35. The field was absent, so the parse fell back to the character's element AT THE CAST and flagged it provisional — measured 'Durin E E Q' drew 0.25pyro? , 35 frames early and wearing the --ui-provisional foot. ⚠️ The oracle cannot reach this cast (the dumper panics on 'unexpected charges less than 0'), so the number is a source read — the same way the sibling Dark burst's were derived."
+			],
+			"application": [
+				{
+					"frame": 35,
+					"element": "pyro",
+					"units": 1
+				}
 			]
 		},
 		{
