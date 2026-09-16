@@ -18,7 +18,7 @@ fixture-only). Sanity counts per category group:
 - grouping: wiki 10 characters / ours 10
 - infuse: wiki 10 characters / ours 7
 - interruptionRes: wiki 45 characters / ours 1
-- energy: wiki 73 characters / ours 25
+- energy: wiki 73 characters / ours 26
 - revival: wiki 4 characters
 - offField: wiki 74 characters
 
@@ -76,7 +76,7 @@ No revive primitive exists (Tier-2 freeze) — each of these should carry a cave
 
 - _none_
 
-## Candidates (wiki category broader than our kind) (100)
+## Candidates (wiki category broader than our kind) (99)
 
 Appendix — wiki-has/we-don’t for superset categories (energy incl. particles, self-infusions, self interruption res). Judgment required; most are fine.
 
@@ -106,7 +106,6 @@ Appendix — wiki-has/we-don’t for superset categories (energy incl. particles
 - **flins** — wiki attributes interruptionRes ("Ancient Rite: Arcane Light") — nothing derives
 - **freminet** — wiki attributes energy ("Penguins and the Land of Plenty" [C2]) — nothing derives
 - **freminet** — wiki attributes interruptionRes ("Shadowhunter's Ambush") — nothing derives
-- **furina** — wiki attributes energy (""They Know Not Life, Who Dwelt in the Netherworld Not!"" [C4]) — nothing derives
 - **gaming** — wiki attributes energy ("Soar Across Mountains" [C4]) — nothing derives
 - **gaming** — wiki attributes interruptionRes ("Suanni's Gilded Dance") — nothing derives
 - **hu_tao** — wiki attributes interruptionRes ("Guide to Afterlife", "Butterfly's Embrace" [C6]) — nothing derives
