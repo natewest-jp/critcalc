@@ -130,6 +130,7 @@
 			"frames": {
 				"anim": 71,
 				"N": 61,
+				"C": 61,
 				"E": 61,
 				"D": 61,
 				"J": 63,
@@ -165,7 +166,7 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 12,
+					"duration": 16,
 					"element": "anemo",
 					"value": -30,
 					"conditions": {
@@ -183,7 +184,7 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 18,
+					"duration": 22,
 					"element": "anemo",
 					"value": -30,
 					"conditions": {
@@ -198,7 +199,7 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 12,
+					"duration": 16,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "anemoDmgBonus",
@@ -219,7 +220,7 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 18,
+					"duration": 22,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "anemoDmgBonus",
@@ -236,6 +237,7 @@
 				"Effects authored 2026-07-12: Perfidious Wind's Bale (Anemo RES -30%, fixed across talent levels per burst table) and Prayerful Wind's Benefit (Anemo DMG Bonus 32.4% at talent lvl 10, burst table row 'Anemo DMG Bonus'; applies to all party members incl. off-field per KQM TCL). Both are re-applied by each Whirlwind Pulse (~every 2s, 4s per application) for the polyhedron's 12s lifetime — authored as a single 12s onCast window matching the C6 effect's precedent. Approximation: the final pulse's ~4s tail past polyhedron expiry is not modeled; C2's +6s polyhedron extension extends effective buff/shred coverage to ~18s but Effect.duration has no modifier field — not modeled.",
 				"Prayerful Wind's Benefit is dynamic (does not snapshot Faruzan's stats; KQM TCL) → snapshottable: false.",
 				"Burst duration: 745 frames (base) + 360 frames at C2. 745/60=12.42s rounded to 12s (in-game description). C2 adds 6s → 18s total at C2.",
+				"↻ THE BUFF AND SHRED WINDOWS ARE 16s / 22s, NOT 12 / 18 — 2026-09-17 (T1 tranche), ⚓ Nate's call 2026-09-15 (\"buffs re-applied per tick are authored at their HONEST length\", the Bennett precedent). gcsim `faruzan/burst.go` never grants a 12s statmod: `buffFunc` re-applies a 240-frame Anemo DMG Bonus at 43 + every 239f through 43 + duration (745f, 1105f at C2), with a last refresh AT 43 + duration, so the bonus runs to 1028f from the cast (1388f at C2). The shred is the same shape — the initial hit at 54 and a Whirlwind Pulse at 43 + 137 + 120k, each a 240f ResistMod — and runs to 1020f (1380f). From this window's own anchor (the 54f spawn) that is 16.2s / 16.1s at C0 and 22.2s / 22.1s at C2. Ours ran 12/18, ~4.2s SHORT at every constellation, on the two bars that are Faruzan's entire on-screen content. ⚠️ The SUMMON's `duration` stays 12 (+6 at C2): the polyhedron really does expire there, and only its buff outlives it. The 2026-07-12 note (\"the final pulse's ~4s tail … is not modeled\") and the [A7b] note's 12s-vs-18s pairing describe the BEFORE.",
 				"[A7b] C2 effect durations AUTHORED 2026-07-20 (Nate implement-first): shred + buff each split into a 12s not-C2 / 18s C2-gated pair matching the summon's durationModifiers (+6 at C2) — Effect has no durationModifiers field, so condition-gated duplicates are the wired expression. Buff/shred coverage now tracks the polyhedron at both C0 and C2; the planned A7b caveat (12s-vs-18s contradiction) became unnecessary. Residual approximation, deliberate: buffs are pulse-granted in game (re-applied per Whirlwind Pulse, 4s each) but drawn as one continuous window — same class as other onCast simplifications."
 			],
 			"description": "Faruzan deploys a Dazzling Polyhedron that unleashes a Whirlwind Pulse and deals AoE Anemo DMG.\nWhile the Dazzling Polyhedron persists, it will continuously move along a triangular path. Once it reaches each corner of that triangular path, it will unleash 1 more Whirlwind Pulse.\n\nWhirlwind Pulse\n·When the Whirlwind Pulse is unleashed, it will apply Perfidious Wind's Bale to nearby opponents, decreasing their Anemo RES.\n·The Whirlwind Pulse will also apply Prayerful Wind's Benefit to all nearby party members when it is unleashed, granting them an Anemo DMG Bonus.",
@@ -337,7 +339,7 @@
 						"type": "onCast",
 						"ability": "burst"
 					},
-					"duration": 12,
+					"duration": 22,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "critDmg",
@@ -346,7 +348,7 @@
 				}
 			],
 			"_curatorNotes": [
-				"Migrated to onCast burst 2026-05-09 (F1). Target corrected from 'self' to 'team' — c6Buff iterates all chars. Duration 12s matches the base Prayerful Wind window; gcsim's per-tick refresh (240f hitlag) aggregates to the same window length.",
+				"Migrated to onCast burst 2026-05-09 (F1). Target corrected from 'self' to 'team' — c6Buff iterates all chars. ↻ Duration 22s (2026-09-17, T1): `c6Buff` is applied inside the burst's `buffFunc` with the same 240f life, so it runs exactly as long as the Anemo DMG Bonus — 22s from the spawn, since C6 implies C2. The old 12 only drew right because it pooled into the burst's window.",
 				"G dependency: gcsim filters the +40% CD to Anemo DMG only (element-conditional). The current authoring renders as a generic +40% CD during the burst, which over-credits non-Anemo hits — sub-ability/element filter (G) needed for fidelity.",
 				"C6 also triggers a Pressurized Collapse every 3s (ICD=180 frames) when the active character deals DMG while under Prayerful Wind's Benefit. This proc mechanic is not modeled in effects[]; needs the active-char-hit trigger primitive.",
 				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"The CRIT DMG buff is shown as if it boosts all DMG; in game it only applies to Anemo DMG. Not modeled: the extra Pressurized Collapse triggered by the active character's hits.\""
