@@ -2085,6 +2085,21 @@ export type NormalAbility = AbilityCommon & {
 	 * the self-infusers. See docs/icd-group-round.md.
 	 */
 	chargedIcdWindow?: IcdWindow;
+	/**
+	 * ⚓ The positive claim that this character CANNOT BUFFER an input after a
+	 * Charged Attack (2026-09-17) — Human timing pads the next N/C instead of
+	 * treating it as a stored input. Absent = the default rule in
+	 * `sim/humanTiming.ts`, which lets a swing's next swing through.
+	 *
+	 * ⚠️ PER CHARACTER, NOT A RULE, and that is measured in sources rather than
+	 * assumed: KQM's frames page states buffering only AFTER NORMAL attacks, the
+	 * Raiden guide calls her N3C / N1C combos "input buffered or button-mashed",
+	 * and the Lohen quick guide says "you cannot buffer inputs after a Charged
+	 * Attack, so the cancel timing is quite precise". ⛔ Author it only from a
+	 * source that says so for THAT character. Read off any normal ability of
+	 * the character (it describes the character's input handling, not a form).
+	 */
+	noBufferAfterCharged?: true;
 	tags?: AbilityTag[];
 };
 
