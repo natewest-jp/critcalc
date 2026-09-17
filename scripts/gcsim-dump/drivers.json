@@ -55,9 +55,9 @@
 		"states": { "inStance": [{ "action": "skill" }] }
 	},
 	"hutao": {
-		"note": "Paramita Papilio — frames identical to the base reading.",
-		"_scored": "base 4/6, no prereq improves it",
-		"states": { "inStance": [] }
+		"note": "Paramita Papilio. ↻ 2026-09-17: the prerequisite was empty on the belief that the stance frames equal the base; they do not (ppChargeFrames 42 vs 62, N6 hit 27 vs 23), and the empty driver manufactured four false rows.",
+		"_scored": "skill — reproduces the authored Paramita maps exactly",
+		"states": { "inStance": [{ "action": "skill" }] }
 	},
 	"kamisatoayato": {
 		"note": "Takimeguri Kanka.",

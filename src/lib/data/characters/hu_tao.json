@@ -51,10 +51,9 @@
 				{
 					"name": "N5",
 					"frames": {
-						"anim": 28,
-						"N": 37,
-						"C": 48,
-						"swap": 28
+						"anim": 48,
+						"hit": 26,
+						"N": 37
 					}
 				},
 				{
@@ -68,19 +67,17 @@
 			"chargeFrames": {
 				"anim": 62,
 				"N": 57,
-				"E": 53,
-				"Q": 54,
-				"D": 26,
-				"J": 24,
+				"E": 60,
+				"D": 19,
+				"J": 19,
 				"swap": 62
 			},
 			"plungeFrames": {
-				"anim": 61,
-				"N": 58,
-				"E": 59,
-				"Q": 59,
-				"J": 74,
-				"swap": 61
+				"anim": 76,
+				"N": 59,
+				"E": 60,
+				"Q": 60,
+				"swap": 64
 			},
 			"sections": [
 				{
@@ -103,12 +100,13 @@
 			"_curatorNotes": [
 				"N5 has two hitmarks (16, 26); swap reflects the last hitmark per recipe convention.",
 				"N6 C-cancel is illegal in gcsim (ActionCharge = 500 with TODO comment); omitted.",
-				"Base charged-attack hitmark = 19 (gcsim). High plunge variants exist in gcsim but are not represented per recipe.",
-				"gcsim restricts plunge to AirborneXianyun-launched only — this is a sim limitation, not an in-game one. plungeFrames sourced from gcsim's lowPlungeFrames; in-game any post-jump plunge works.",
-				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing."
+				"Base charged-attack hitmark = 19 (gcsim).",
+				"gcsim restricts plunge to AirborneXianyun-launched only — this is a sim limitation, not an in-game one.",
+				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing.",
+				"↻ RE-TRANSCRIBED 2026-09-17 (T1.5) — the L4b HIGH/LOW split had never been applied here, and the audit could not see `anim`/`hit` until 2026-09-15. `plungeFrames` is now gcsim's HIGH plunge (highPlungeFrames: InitAbilSlice(76), N 59, E/Q 60, swap 64) where it held the low plunge's numbers; `lowPlungeFrames` anim 61 → 75 (InitAbilSlice(75)). chargeFrames: E 53 → 60 (charge.go assigns ActionSkill twice, 57 then 60), Q 54 → the 62 anim (no Burst override), D/J 26/24 → 19 (chargeHitmark). N5 {anim 48, hit 26, N 37} = InitNormalCancelSlice(26, 48) — it carried the pre-L4b anim === swap stand-in (28)."
 			],
 			"lowPlungeFrames": {
-				"anim": 61,
+				"anim": 75,
 				"N": 58,
 				"E": 59,
 				"Q": 59,
@@ -166,17 +164,16 @@
 				{
 					"name": "N5",
 					"frames": {
-						"anim": 28,
-						"N": 36,
-						"C": 48,
-						"swap": 28
+						"anim": 48,
+						"hit": 26,
+						"N": 36
 					}
 				},
 				{
 					"name": "N6",
 					"frames": {
 						"anim": 72,
-						"hit": 23
+						"hit": 27
 					}
 				}
 			],
@@ -188,22 +185,23 @@
 				"swap": 42
 			},
 			"plungeFrames": {
-				"anim": 61,
-				"N": 58,
-				"E": 58,
-				"Q": 58,
-				"swap": 61
+				"anim": 77,
+				"N": 60,
+				"E": 59,
+				"Q": 59,
+				"swap": 63
 			},
 			"description": "Hu Tao's normal-attack combo while in the Paramita Papilio stance. The 6-hit string and base frame timings match the standard combo, but all hits are converted to Pyro DMG and benefit from Paramita Papilio's flat ATK bonus.",
 			"_curatorNotes": [
 				"Frame deltas vs base normal: N5 N-cancel 36 (vs 37); N6 swap 27 (vs 23). PP chargeFrames hitmark = 3 (vs 19 base).",
-				"Plunge frames sourced from gcsim's lowPlungeFramesB (Paramita variant). gcsim does not set ActionDash or ActionJump on lowPlungeFramesB — D and J omitted per recipe rule. Plunges deal Pyro DMG with IgnoreInfusion in gcsim.",
+				"Plunge frames: `plungeFrames` is gcsim's highPlungeFramesB (InitAbilSlice(77), N 60, E/Q 59, swap 63) and `lowPlungeFrames` its lowPlungeFramesB (InitAbilSlice(75), N/E/Q 58, swap 61) — ↻ 2026-09-17 (T1.5): both held the low plunge's numbers with anim 61. gcsim sets no Dash/Jump on either. Plunges deal Pyro DMG with IgnoreInfusion in gcsim.",
 				"[A7] Charged-attack dash/jump cancel windows are position-dependent: N1→D=1, N2→D=4, N3–N5→D=2–3 frames; the authored chargeFrames reflect a standalone CA cast.",
 				"Charged-attack element-application ICD: gcsim charge.go tags it ICDTagExtraAttack / ICDGroupPoleExtraAttack, whose reset timer is 30f (0.5s) with only the first hit of each window applying (pkg/core/attacks/icd_groups.dm.go). Authored as chargedIcdWindow rather than a weapon-type rule in resolveActionIcd: the census is 16 of 19 oracled polearm users, and Xiao, Raiden and Emilie sit on the default. Reachable only while the swing is infused - bare, a polearm charged attack is Physical and applies nothing.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Nominally the charged-attack block's cancel edge — but the authored D/J values are 3 frames against an in-game 1–4, so the divergence is 1–3 frames (~0.02–0.05s). At default zoom that is well under a pixel and at ZOOM_MAX it is a few px on a block nobody reads for D/J cancels. No player writing `N1 C` ever sees this. It also sits on an ability that fires the caveat for every Paramita cast (there is no per-variant caveat channel), so it pays a permanent line in a 262px column for an imperceptible edge. Category: approximation-disclosure."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Nominally the charged-attack block's cancel edge — but the authored D/J values are 3 frames against an in-game 1–4, so the divergence is 1–3 frames (~0.02–0.05s). At default zoom that is well under a pixel and at ZOOM_MAX it is a few px on a block nobody reads for D/J cancels. No player writing `N1 C` ever sees this. It also sits on an ability that fires the caveat for every Paramita cast (there is no per-variant caveat channel), so it pays a permanent line in a 262px column for an imperceptible edge. Category: approximation-disclosure.",
+				"↻ 2026-09-17 (T1.5): N5 {anim 48, hit 26, N 36} (was the anim === swap stand-in, 28) and N6 `hit` 23 → 27 (ppAttackHitmarks[5]). The Paramita charged map was already exact. ⚠️ The frames report's Paramita rows were ORACLE ARTEFACTS until drivers.json gave `inStance` its skill prerequisite the same day — with an empty prerequisite the dumper captured the BASE normal and diffed this ability against it."
 			],
 			"lowPlungeFrames": {
-				"anim": 61,
+				"anim": 75,
 				"N": 58,
 				"E": 58,
 				"Q": 58,
