@@ -145,4 +145,18 @@ describe('fuseNestedBars', () => {
 		);
 		expect(mergeRefreshedBars([...first, ...second])).toHaveLength(2);
 	});
+	// ⚓ Kazuha's C2: +200 EM to the active character AND to himself, "do not
+	// stack" — on his own row the active slice (cut at his swap-out) and the
+	// self half (the field's length) are one line, and the slice's end draws no
+	// seam because nothing the bar still lists ends there.
+	it('collapses an identical grant to one line, the longer instance, and keeps no seam for it', () => {
+		type DurBar = ReturnType<typeof bar> & { duration?: number; seams?: number[] };
+		const slice: DurBar = { ...bar(82, 200, fx('em', '+200')), duration: 569 };
+		const self: DurBar = { ...bar(82, 651, fx('em', '+200')), duration: 569 };
+		const out = fuseNestedBars([slice, self]);
+		expect(out).toHaveLength(1);
+		expect(out[0].end).toBe(651);
+		expect(out[0].effects).toEqual([{ stat: 'em', displayValue: '+200' }]);
+		expect(out[0].seams).toBeUndefined();
+	});
 });

@@ -112,22 +112,40 @@ export function fuseNestedBars<T extends MergeableBar>(
 			continue;
 		}
 		const longest = group.reduce((a, b) => (b.end > a.end ? b : a));
-		const seams = [...new Set(group.map((b) => b.end).filter((e) => e !== longest.end))].sort(
-			(a, b) => a - b
-		);
 		// ⚠ The note is the effect's OWN length, which on the received surface is
 		// the bar's `duration` and NOT `end − start`: a slice ends where the
 		// receiver leaves the field (Iansan's ATK on her own row is 0.58s of a
 		// 12s buff), and a note reading "0.58s" would describe the swap, not the
 		// mechanic. Two parts can also share a span and still differ in length —
 		// both cut by one swap-out — so the notes key on length, the seams on end.
+		//
+		// ⚓ AN IDENTICAL GRANT IS ONE ROW, AND ITS END IS A SEAM ONLY IF IT SURVIVES.
+		// A kit can say the same thing twice from one cast — Kazuha's C2 gives
+		// +200 EM to the active character AND to himself, "do not stack" — so on
+		// his own row the active slice (cut at his swap-out) and the self half
+		// (the field's length) print one line, the longer instance wins, and the
+		// slice's end draws no seam because nothing the bar still lists ends there.
 		const lengthOf = (b: T) => b.duration ?? b.end - b.start;
-		const lengths = new Set(group.map(lengthOf));
+		const kept = new Map<string, { effect: MergedEffectDisplay; length: number; end: number }>();
+		for (const b of group) {
+			for (const effect of b.effects) {
+				const key = `${effect.stat}::${effect.displayValue}`;
+				const cur = kept.get(key);
+				const len = lengthOf(b);
+				if (!cur || len > cur.length || (len === cur.length && b.end > cur.end))
+					kept.set(key, { effect, length: len, end: b.end });
+			}
+		}
+		const rows = [...kept.values()];
+		const lengths = new Set(rows.map((r) => r.length));
 		const maxLength = Math.max(...lengths);
 		const effects =
 			lengths.size > 1
-				? group.flatMap((b) => b.effects.map((e) => ({ ...e, note: fmtSecs(lengthOf(b)) })))
-				: group.flatMap((b) => b.effects);
+				? rows.map((r) => ({ ...r.effect, note: fmtSecs(r.length) }))
+				: rows.map((r) => r.effect);
+		const seams = [...new Set(rows.map((r) => r.end).filter((e) => e !== longest.end))].sort(
+			(a, b) => a - b
+		);
 		out.push({
 			...longest,
 			...(longest.duration !== undefined ? { duration: maxLength } : {}),
