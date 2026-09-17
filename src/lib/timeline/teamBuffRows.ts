@@ -25,7 +25,7 @@ import {
 	formatResShredDisplayValue,
 	resShredDisplayStat
 } from './buffDisplay';
-import { mergeRefreshedBars } from './mergeRefreshedBars';
+import { fuseNestedBars, mergeRefreshedBars } from './mergeRefreshedBars';
 
 // Re-exported for renderer convenience (the template types against these).
 export type { TeamBuffBar, TeamBuffSubrow };
@@ -206,9 +206,16 @@ export function projectTeamBuffRows(
 	// ⚠️ Only bars carrying a count are held out, which is why the field's SHRED
 	// still merges into one span across the whole presence: −40% is flat, so its
 	// tiles are one debuff stated four times.
+	//
+	// ⚓ FUSE FIRST, THEN MERGE (pool round, 2026-09-17): the parts of one cast
+	// share a start and become one seamed bar; a ledger bar is held out of the
+	// fuse for the same reason it is held out of the merge.
 	return [...rowMap].map(([key, row]) => ({
 		...row,
-		bars: mergeRefreshedBars(row.bars, (a, b) => a.stacks === undefined && b.stacks === undefined),
+		bars: mergeRefreshedBars(
+			fuseNestedBars(row.bars, (b) => b.stacks === undefined),
+			(a, b) => a.stacks === undefined && b.stacks === undefined
+		),
 		key
 	}));
 }

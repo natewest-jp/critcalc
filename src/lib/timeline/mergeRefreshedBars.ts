@@ -28,6 +28,11 @@
  * stack-scaled buff at 2 stacks vs 3, or a cast whose conditions qualified a
  * different effect set. Today an edge means "a bar starts here" and is nearly
  * always noise; after this it means "the buff CHANGED here".
+ *
+ * ↻ 2026-09-17 (pool round): ONE interior seam now exists, and it is that
+ * meaning drawn on purpose — `fuseNestedBars` below fuses the parts of one
+ * cast into one bar with a seam where a SHORTER part ends. It is not a refresh
+ * seam; see its note.
  */
 
 import type { MergedEffectDisplay } from './types';
@@ -37,6 +42,10 @@ type MergeableBar = {
 	start: number;
 	end: number;
 	effects: MergedEffectDisplay[];
+	seams?: number[];
+	/** The received surface's own length of the buff (frames), which a slice's
+	 *  `end − start` is not. */
+	duration?: number;
 };
 
 /** Two bars say the same thing iff their display effects match pairwise. The
@@ -47,8 +56,86 @@ type MergeableBar = {
 function sameDisplay(a: MergeableBar, b: MergeableBar): boolean {
 	if (a.effects.length !== b.effects.length) return false;
 	return a.effects.every(
-		(e, i) => e.stat === b.effects[i].stat && e.displayValue === b.effects[i].displayValue
+		(e, i) =>
+			e.stat === b.effects[i].stat &&
+			e.displayValue === b.effects[i].displayValue &&
+			e.note === b.effects[i].note
 	);
+}
+
+/** Frames → seconds for a seamed effect's note, the same rounding the tooltip
+ *  footer uses (754f prints 12.57, not 12.566…). */
+const fmtSecs = (frames: number): string => `${Number((frames / 60).toFixed(2))}s`;
+
+/**
+ * ⚓ THE PARTS OF ONE CAST ARE ONE BAR WITH A SEAM (pool round, 2026-09-17).
+ *
+ * `deriveBuffWindows` emits one window per (provenance, duration) — a cast
+ * granting a 12s ATK and a 15s ATK% is two windows from one start — and both
+ * land in one row because the row key is the source. Drawn as two bars they
+ * overlap from the same left edge and the shorter vanishes under the longer's
+ * label. So bars that share a START in one row fuse here into ONE bar running
+ * to the longest end, with a lit seam at each inner end and every effect
+ * carrying its own length as a `note` (⚓ Nate 2026-09-17; the fallback, if the
+ * seam does not read, is one row per duration).
+ *
+ * ⚓ This is the merge law's seam, not a violation of it. "No interior seams"
+ * refuses a seam at a REFRESH, where it would re-encode the cast marker one row
+ * up; a seam here says the buff CHANGED — one of its stats ended — which is
+ * exactly what the law says a surviving edge means.
+ *
+ * ⛔ A seamed bar never refresh-merges (see `mergeRefreshedBars`): a compound
+ * re-applied before it expires would need its inner seams re-placed at the new
+ * ends, and two lit leading edges say the same thing honestly.
+ *
+ * `canFuse` is the consumer's gate, checked over the whole same-start group —
+ * one refusal keeps every bar in the group separate. The received surface
+ * refuses envelopes (a ramp's gradient is drawn over the bar's span, and a
+ * fused span is the longest part's); the team surface refuses ledger bars.
+ */
+export function fuseNestedBars<T extends MergeableBar>(
+	bars: T[],
+	canFuse?: (b: T) => boolean
+): T[] {
+	if (bars.length < 2) return bars;
+	const byStart = new Map<number, T[]>();
+	for (const b of bars) {
+		const g = byStart.get(b.start);
+		if (g) g.push(b);
+		else byStart.set(b.start, [b]);
+	}
+	if (byStart.size === bars.length) return bars;
+	const out: T[] = [];
+	for (const group of byStart.values()) {
+		if (group.length === 1 || (canFuse && !group.every(canFuse))) {
+			out.push(...group);
+			continue;
+		}
+		const longest = group.reduce((a, b) => (b.end > a.end ? b : a));
+		const seams = [...new Set(group.map((b) => b.end).filter((e) => e !== longest.end))].sort(
+			(a, b) => a - b
+		);
+		// ⚠ The note is the effect's OWN length, which on the received surface is
+		// the bar's `duration` and NOT `end − start`: a slice ends where the
+		// receiver leaves the field (Iansan's ATK on her own row is 0.58s of a
+		// 12s buff), and a note reading "0.58s" would describe the swap, not the
+		// mechanic. Two parts can also share a span and still differ in length —
+		// both cut by one swap-out — so the notes key on length, the seams on end.
+		const lengthOf = (b: T) => b.duration ?? b.end - b.start;
+		const lengths = new Set(group.map(lengthOf));
+		const maxLength = Math.max(...lengths);
+		const effects =
+			lengths.size > 1
+				? group.flatMap((b) => b.effects.map((e) => ({ ...e, note: fmtSecs(lengthOf(b)) })))
+				: group.flatMap((b) => b.effects);
+		out.push({
+			...longest,
+			...(longest.duration !== undefined ? { duration: maxLength } : {}),
+			effects,
+			...(seams.length > 0 ? { seams } : {})
+		});
+	}
+	return out;
 }
 
 /**
@@ -78,6 +165,8 @@ export function mergeRefreshedBars<T extends MergeableBar>(
 		if (
 			open &&
 			bar.start <= open.end &&
+			!open.seams?.length &&
+			!bar.seams?.length &&
 			sameDisplay(open, bar) &&
 			(canMerge === undefined || canMerge(open, bar))
 		) {

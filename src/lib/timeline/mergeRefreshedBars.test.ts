@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { mergeRefreshedBars } from './mergeRefreshedBars';
+import { fuseNestedBars, mergeRefreshedBars } from './mergeRefreshedBars';
 import type { MergedEffectDisplay } from './types';
 
 const fx = (stat: string, displayValue = '+20%'): MergedEffectDisplay[] =>
@@ -68,5 +68,81 @@ describe('mergeRefreshedBars', () => {
 		const input = [bar(0, 12), bar(8, 20)];
 		mergeRefreshedBars(input);
 		expect(input[0].end).toBe(12);
+	});
+});
+
+// ── fuseNestedBars — the pool round's seam (2026-09-17) ──────────────────────
+//
+// `deriveBuffWindows` emits one window per (provenance, duration); the parts of
+// one cast share a START and must draw as ONE bar with a seam at each inner end.
+describe('fuseNestedBars', () => {
+	type SeamBar = ReturnType<typeof bar> & { seams?: number[] };
+	const seamed = (start: number, parts: Array<[number, MergedEffectDisplay[]]>): SeamBar[] =>
+		parts.map(([end, effects]) => ({ start, end, effects }));
+
+	it('fuses same-start bars into one bar running to the longest end, seamed at the inner end', () => {
+		const out = fuseNestedBars(
+			seamed(0, [
+				[720, fx('atk')],
+				[900, fx('atk%', '+30%')]
+			])
+		);
+		expect(out).toHaveLength(1);
+		expect(out[0].start).toBe(0);
+		expect(out[0].end).toBe(900);
+		expect(out[0].seams).toEqual([720]);
+	});
+
+	it('annotates every effect of a seamed bar with its OWN length', () => {
+		const out = fuseNestedBars(
+			seamed(60, [
+				[780, fx('atk')],
+				[960, fx('atk%', '+30%')]
+			])
+		);
+		expect(out[0].effects.map((e) => e.note)).toEqual(['12s', '15s']);
+	});
+
+	it('same start, same end — one bar, no seam, no notes', () => {
+		const out = fuseNestedBars(
+			seamed(0, [
+				[720, fx('atk')],
+				[720, fx('em', '+80')]
+			])
+		);
+		expect(out).toHaveLength(1);
+		expect(out[0].seams).toBeUndefined();
+		expect(out[0].effects.map((e) => e.stat)).toEqual(['atk', 'em']);
+		expect(out[0].effects.every((e) => e.note === undefined)).toBe(true);
+	});
+
+	it('leaves bars with different starts alone', () => {
+		const bars = [bar(0, 720), bar(900, 1620)];
+		expect(fuseNestedBars(bars)).toEqual(bars);
+	});
+
+	it('honours the caller gate over the WHOLE group — one refusal keeps every bar separate', () => {
+		type EnvBar = ReturnType<typeof bar> & { rampParams?: object };
+		const a: EnvBar = { ...bar(0, 720), rampParams: { duration: 720 } };
+		const b: EnvBar = bar(0, 900, fx('atk%', '+30%'));
+		expect(fuseNestedBars([a, b], (x) => x.rampParams === undefined)).toHaveLength(2);
+	});
+
+	// ⛔ A compound re-applied before it expires would need its seams re-placed;
+	// two lit leading edges say it honestly instead.
+	it('⛔ a seamed bar never refresh-merges', () => {
+		const first = fuseNestedBars(
+			seamed(0, [
+				[720, fx('atk')],
+				[900, fx('atk%', '+30%')]
+			])
+		);
+		const second = fuseNestedBars(
+			seamed(600, [
+				[1320, fx('atk')],
+				[1500, fx('atk%', '+30%')]
+			])
+		);
+		expect(mergeRefreshedBars([...first, ...second])).toHaveLength(2);
 	});
 });

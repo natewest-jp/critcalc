@@ -14,12 +14,23 @@ export type SlottedTrack = CharacterTrack & { slotIdx: number };
 export type BuffEffect = Extract<Effect, { type: 'buff' }>;
 export type ResShredEffect = Extract<Effect, { type: 'resShred' }>;
 
-export type MergedEffectDisplay = { stat: Stat; displayValue: string };
+export type MergedEffectDisplay = {
+	stat: Stat;
+	displayValue: string;
+	/** This effect's OWN length, printed beside its value — set only on a
+	 *  SEAMED bar (`fuseNestedBars`), where the parts of one cast run to
+	 *  different ends and the bar's footer can state only the longest. */
+	note?: string;
+};
 
 export type TeamBuffBar = {
 	start: number;
 	end: number;
 	effects: MergedEffectDisplay[];
+	/** Absolute frames where a SHORTER part of this bar ends — one cast whose
+	 *  effects run to different lengths is one bar with a lit seam at each inner
+	 *  end (pool round, 2026-09-17). Absent = no seam. */
+	seams?: number[];
 	/** The Polestar Field's recorded-hit count for this grant cycle — the number
 	 *  that set the bar's value. ⚠️ Carried OUTSIDE `effects` on purpose: it is
 	 *  not a stat, and putting it in the display list would make it part of the
@@ -67,6 +78,8 @@ export type CharReceivedBuffBar = {
 	isMutuallyExclusive: boolean;
 	procCooldown?: number;
 	duration: number;
+	/** See `TeamBuffBar.seams`. */
+	seams?: number[];
 	buffStart?: number; // set when rampParams or decayParams is present, for gradient offset
 	rampParams?: RampParams;
 	decayParams?: DecayParams;
