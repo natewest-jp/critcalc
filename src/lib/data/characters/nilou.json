@@ -124,7 +124,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"frames": {
-				"anim": 21,
+				"anim": 22,
 				"N": 19,
 				"E": 19,
 				"D": 17,
@@ -165,7 +165,8 @@
 				"Stance ends on SD3 / WS3 in-game; the schema's `behavior: \"stance\"` + `duration: 10` does not directly model 'ends on third step'. terminatesOnSwap=true reflects gcsim onExitField clearing Pirouette + Lunar Prayer on swap.",
 				"C1 extension (+6s) on Tranquility Aura is authored as a durationModifier on the summon. C1 also adds +65% Luminous Illusion DMG (SD3 multiplier) — flagged on the C1 entry, not on the base since it's variant-conditional.",
 				"Nilou is not implementable as a Tier B stance character without losing fidelity to the underlying state machine: shared step counter between SD and WS, two distinct end-states (Lunar Prayer vs Tranquility Aura), and the gating of E during Lunar Prayer. The current draft captures the dominant E E E E rotation cleanly and flags the rest.",
-				"[A7] The Tranquility Aura is authored on the base skill so the canonical E-E-E-E rotation (initial cast → WS1 → WS2 → WS3) displays correctly even though in-game it spawns only after WS3 — rationale already covered in existing notes. The dropped second short-rotation example was 'E E swap'. Lunar Prayer begins 8s after a Sword Dance combo."
+				"[A7] The Tranquility Aura is authored on the base skill so the canonical E-E-E-E rotation (initial cast → WS1 → WS2 → WS3) displays correctly even though in-game it spawns only after WS3 — rationale already covered in existing notes. The dropped second short-rotation example was 'E E swap'. Lunar Prayer begins 8s after a Sword Dance combo.",
+				"anim 21 → 22 (2026-09-17, T1.5): gcsim skill.go skillFrames = InitAbilSlice(22); 21 is its swap override, and the frames audit could not see an `anim` until 2026-09-15."
 			],
 			"application": [
 				{
@@ -185,7 +186,7 @@
 				"state": "inStance"
 			},
 			"frames": {
-				"anim": 31,
+				"anim": 33,
 				"N": 27,
 				"E": 27,
 				"D": 26,
@@ -199,12 +200,14 @@
 			"_curatorNotes": [
 				"Pattern 3 multi-stage skill chain (diluc-shape). All three Whirling Steps entries (WS1/WS2/WS3) share the same `input: [\"E\"]` and `conditions: { state: \"inStance\" }`. The planner's parser will resolve the first matching ability for each in-stance E press, which means in-game gcsim's `skillStep` advances WS1 → WS2 → WS3 but the planner currently picks WS1 each time. Frame data is captured for reviewer to wire chain-state in a future schema extension.",
 				"Frames: gcsim whirlingStepsFrames[0] = InitAbilSlice(33) with overrides ActionAttack=27, ActionSkill=27, ActionDash=26, ActionJump=27, ActionSwap=31. Hit at whirlingStepsHitMarks[0] = 21.",
-				"Cooldown 0: gcsim does not call SetCD inside WhirlingSteps. ActionReady override grants E availability during Pirouette regardless of base 18s skill CD."
+				"Cooldown 0: gcsim does not call SetCD inside WhirlingSteps. ActionReady override grants E availability during Pirouette regardless of base 18s skill CD.",
+				"Whirling Steps 1 (2026-09-17, T1.5): anim 31 → 33 (InitAbilSlice(33)). application at frame 21 with units 1 — gcsim whirlingStepsHitMarks = [21, 29, 43], Durability 25. All three steps carried WS1's frame 21 and no units. ⛔ The frames report's WS2/WS3 rows diff against WS1's slice (three abilities share one input + state, so one dump key) and are ORACLE ARTEFACTS — WS2 matches gcsim exactly. ⚠️ WS2/WS3 are unreachable from notation until sibling abilities can resolve past the first match."
 			],
 			"application": [
 				{
 					"frame": 21,
-					"element": "hydro"
+					"element": "hydro",
+					"units": 1
 				}
 			]
 		},
@@ -232,12 +235,14 @@
 			"description": "Second step of Whirling Steps — second E press during Pirouette. Single Hydro hit at frame 29 (multiplier whirlingSteps[1]).",
 			"_curatorNotes": [
 				"Frames: gcsim whirlingStepsFrames[1] = InitAbilSlice(62) with overrides ActionAttack=40, ActionSkill=32, ActionBurst=40, ActionDash=36, ActionJump=37. Hit at whirlingStepsHitMarks[1] = 29. Note swap=62 (no override) — the WS2 cancel slice keeps the InitAbilSlice default.",
-				"Same parser-broken caveat as WS1: this entry is not selected by the parser; WS1 wins for all in-stance E presses currently. Reviewer to add chain-state condition once schema supports it."
+				"Same parser-broken caveat as WS1: this entry is not selected by the parser; WS1 wins for all in-stance E presses currently. Reviewer to add chain-state condition once schema supports it.",
+				"Whirling Steps 2 (2026-09-17, T1.5): application at frame 29 with units 1 — gcsim whirlingStepsHitMarks = [21, 29, 43], Durability 25. All three steps carried WS1's frame 21 and no units. ⛔ The frames report's WS2/WS3 rows diff against WS1's slice (three abilities share one input + state, so one dump key) and are ORACLE ARTEFACTS — WS2 matches gcsim exactly. ⚠️ WS2/WS3 are unreachable from notation until sibling abilities can resolve past the first match."
 			],
 			"application": [
 				{
-					"frame": 21,
-					"element": "hydro"
+					"frame": 29,
+					"element": "hydro",
+					"units": 1
 				}
 			]
 		},
@@ -251,7 +256,7 @@
 				"state": "inStance"
 			},
 			"frames": {
-				"anim": 61,
+				"anim": 63,
 				"D": 57,
 				"J": 57,
 				"swap": 61
@@ -264,12 +269,14 @@
 				"Frames: gcsim whirlingStepsFrames[2] = InitAbilSlice(63) with overrides ActionDash=57, ActionJump=57, ActionSwap=61. ActionAttack/Skill/Burst not overridden — those keys default to AnimationLength (63) and are omitted per recipe. Hit at whirlingStepsHitMarks[2] = 43.",
 				"Tranquility Aura DOES NOT spawn from this ability entry — it is authored on the base E (Dance of Haftkarsvar) so the simulation renders for the canonical \"E E E E\" rotation regardless of which WS variant the parser selects. See base E _curatorNotes for the timing rationale.",
 				"Same parser-broken caveat as WS1/WS2: this entry is not currently selected by the parser. Frame data captured for future wire-up.",
-				"C4 trigger: c4cb() in gcsim cons.go fires when SD3 (skillStep == 2) lands an enemy hit during Pirouette — that path is the SwordDance variant, not WhirlingSteps. So C4's energy + burst-damage buff is gated by Sword Dance N3, not WS3. Authored on C4 entry."
+				"C4 trigger: c4cb() in gcsim cons.go fires when SD3 (skillStep == 2) lands an enemy hit during Pirouette — that path is the SwordDance variant, not WhirlingSteps. So C4's energy + burst-damage buff is gated by Sword Dance N3, not WS3. Authored on C4 entry.",
+				"Whirling Steps 3 (2026-09-17, T1.5): anim 61 → 63 (InitAbilSlice(63)). application at frame 43 with units 1 — gcsim whirlingStepsHitMarks = [21, 29, 43], Durability 25. All three steps carried WS1's frame 21 and no units. ⛔ The frames report's WS2/WS3 rows diff against WS1's slice (three abilities share one input + state, so one dump key) and are ORACLE ARTEFACTS — WS2 matches gcsim exactly. ⚠️ WS2/WS3 are unreachable from notation until sibling abilities can resolve past the first match."
 			],
 			"application": [
 				{
-					"frame": 21,
-					"element": "hydro"
+					"frame": 43,
+					"element": "hydro",
+					"units": 1
 				}
 			]
 		},
