@@ -2047,8 +2047,9 @@ export type NormalAbility = AbilityCommon & {
 	coInfusion?: ElementRef;
 	/** Element-application ICD bypass — the ability applies its element on EVERY
 	 *  hit (gcsim's `ICDTagNone`); omit for the standard 3-hit / 2.5s default.
-	 *  Forward-looking curation annotation: no consumer reads it yet (the planner
-	 *  is deliberately "windows not gauges"). See docs/library/game/icd.md. */
+	 *  Read by the parser's ICD clocks: at every normal/charged/plunge swing on
+	 *  a normal ability, and by the per-cast counter on a skill/burst (L4d).
+	 *  See docs/library/game/icd.md. */
 	noICD?: boolean;
 	/**
 	 * ⚓ A MEASURED non-standard element-application window for this character's
@@ -2234,8 +2235,9 @@ type SkillCommonFields = AbilityCommon & {
 	snapshots?: boolean;
 	/** Element-application ICD bypass — the ability applies its element on EVERY
 	 *  hit (gcsim's `ICDTagNone`); omit for the standard 3-hit / 2.5s default.
-	 *  Forward-looking curation annotation: no consumer reads it yet (the planner
-	 *  is deliberately "windows not gauges"). See docs/library/game/icd.md. */
+	 *  Read by the parser's ICD clocks: at every normal/charged/plunge swing on
+	 *  a normal ability, and by the per-cast counter on a skill/burst (L4d).
+	 *  See docs/library/game/icd.md. */
 	noICD?: boolean;
 	tags?: AbilityTag[];
 	/** When this cast's own hits LAND, and what they apply. ⚓ An empty array is the
@@ -2388,8 +2390,9 @@ type BurstCommonFields = AbilityCommon & {
 	snapshots?: boolean;
 	/** Element-application ICD bypass — the ability applies its element on EVERY
 	 *  hit (gcsim's `ICDTagNone`); omit for the standard 3-hit / 2.5s default.
-	 *  Forward-looking curation annotation: no consumer reads it yet (the planner
-	 *  is deliberately "windows not gauges"). See docs/library/game/icd.md. */
+	 *  Read by the parser's ICD clocks: at every normal/charged/plunge swing on
+	 *  a normal ability, and by the per-cast counter on a skill/burst (L4d).
+	 *  See docs/library/game/icd.md. */
 	noICD?: boolean;
 	tags?: AbilityTag[];
 	/** When this cast's own hits LAND, and what they apply. ⚓ An empty array is the
