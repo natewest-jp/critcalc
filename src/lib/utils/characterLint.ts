@@ -1478,6 +1478,74 @@ function lintCastAbility(
 		}
 	}
 
+	// (D.27c) A cast's `icdGate` window shape — FRAMES, not seconds (the
+	// cast-side twin of A.4b and D.27b, cast-icd-gate round 2026-09-17).
+	//
+	// ⚠️⚠️ THE SAME UNIT TRAP, and here the neighbour is `application[].frame`,
+	// which IS in frames — so the trap is subtler: a curator copying a
+	// `summonTick.interval` of 1.5 (seconds) gets a 1.5-FRAME window, which
+	// reads as "every hit applies". gcsim's smallest real group timer is 6.
+	// ⛔ `noICD` and `icdGate` together is a contradiction: one says no clock,
+	// the other names one. And a gate on a cast with NO `application[]` gates
+	// nothing — the absent-list fallback applies once at the cast.
+	if (a.icdGate) {
+		if (!isPositiveInt(a.icdGate.timer) || a.icdGate.timer < 6) {
+			push(
+				'strict',
+				'cast-icd-gate-invalid',
+				`icdGate.timer on ${a.id} must be a positive integer of FRAMES (got ${a.icdGate.timer}); gcsim's smallest group timer is 6`,
+				a.id
+			);
+		}
+		if (a.icdGate.every !== undefined && !isPositiveInt(a.icdGate.every)) {
+			push(
+				'strict',
+				'cast-icd-gate-invalid',
+				`icdGate.every on ${a.id} must be a positive integer when present (got ${a.icdGate.every}); omit it to mean "only the first hit of the window applies"`,
+				a.id
+			);
+		}
+		if (a.noICD) {
+			push(
+				'strict',
+				'cast-icd-gate-invalid',
+				`${a.id} authors both noICD and icdGate — one says no clock, the other names one; keep one`,
+				a.id
+			);
+		}
+		if (!a.application || a.application.length < 2) {
+			push(
+				'strict',
+				'cast-icd-gate-invalid',
+				`${a.id} authors icdGate but its application[] has fewer than two entries — a window gates nothing there`,
+				a.id
+			);
+		}
+	}
+	// (D.27c, cont.) An entry-level `noICD` says "this ONE hit is on no counter";
+	// beside the ability's own `noICD` it says nothing, and on a one-entry list
+	// there is no counter to be off.
+	for (const form of [a, ...(a.variants ?? [])]) {
+		const entries = form.application ?? [];
+		if (!entries.some((e) => e.noICD)) continue;
+		if (a.noICD) {
+			push(
+				'strict',
+				'cast-icd-gate-invalid',
+				`${a.id} marks an application entry noICD while the ability is already noICD — drop the entry flag`,
+				a.id
+			);
+		}
+		if (entries.length < 2) {
+			push(
+				'strict',
+				'cast-icd-gate-invalid',
+				`${a.id} marks its only application entry noICD — with one hit there is no counter to be off; use the ability's noICD`,
+				a.id
+			);
+		}
+	}
+
 	// (D.21) cooldownStartsAtStanceEnd is exclusive with cooldownStartDelay.
 	// The two mean different things — a stance-end CLOCK vs. an animation-frame
 	// offset — and authoring both leaves the reader (and the parser's readyAt

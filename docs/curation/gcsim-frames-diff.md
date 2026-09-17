@@ -177,295 +177,319 @@ burst is evenly spaced too and belongs to the cast. **⚠️ regular, no authore
 summon** flags the ambiguous ones for a human — either a multi-hit cast (author it
 in the list) or a thing left in the world we have not modelled.
 
-| character | ability | cast applications | recurring streams |
-| --- | --- | --- | --- |
-| aino | `aino__skill__musecatcher` | +15 hydro (1U) · +33 hydro [icd] |  |
-| aino | `aino__burst__precision_hydronic_cooler` | **—** | 10× Cool Your Jets Ducky |
-| albedo | `albedo__skill__abiogenesis_solar_isotoma` | +25 geo (1U) |  |
-| albedo | `albedo__burst__rite_of_progeniture_tectonic_tide` | +75 geo (1U) |  |
-| albedo | `albedo__burst__rite_of_progeniture_tectonic_tide · Q` | +75 geo (1U) |  |
-| alhaitham | `alhaitham__skill__universality_an_elaboration_on_form` | +19 dendro (1U) |  |
-| alhaitham | `alhaitham__skill__universality_an_elaboration_on_form · hE` | +28 dendro (1U) |  |
-| alhaitham | `alhaitham__burst__particular_field_fetters_of_phenomena` | +94 dendro (1U) · +115 dendro [icd] · +136 dendro [icd] · +157 dendro (1U) | ⚠️ regular, no authored summon: Particular Field: Fetters of Phenomena ×4/21f |
-| aloy | `aloy__skill__frozen_wilds` | +25 cryo (1U) · +31 cryo (1U) · +37 cryo [icd] |  |
-| aloy | `aloy__burst__prophecies_of_dawn` | +100 cryo (2U) |  |
-| amber | `amber__skill__explosive_puppet` | **—** | 1× Baron Bunny |
-| amber | `amber__burst__fiery_rain` | **—** | 18× Fiery Rain |
-| arataki_itto | `arataki_itto__skill__masatsu_zetsugi_akaushi_burst` | +18 geo (1U) |  |
-| arataki_itto | `arataki_itto__burst__royal_descent_behold_itto_the_evil` | **—** |  |
-| arlecchino | `arlecchino__skill__all_is_ash` | +17 pyro (1U) · +38 pyro (1U) · +338 pyro [icd] · +638 pyro (1U) |  |
-| arlecchino | `arlecchino__burst__balemoon_rising` | +110 pyro (1U) |  |
-| baizhu | `baizhu__skill__universal_diagnosis` | +13 dendro (1U) · +61 dendro [icd] · +109 dendro [icd] | ⚠️ regular, no authored summon: Universal Diagnosis ×3/48f |
-| baizhu | `baizhu__burst__holistic_revivification` | +252 dendro (1U) · +398 dendro (1U) · +544 dendro (1U) · +690 dendro (1U) · +836 dendro (1U) · +988 dendro (1U) |  |
-| barbara | `barbara__skill__let_the_show_begin` | +3 hydro (1U) · +42 hydro [icd] · +78 hydro [icd] · +93 hydro (1U) · +183 hydro (1U) · +273 hydro [icd] · +363 hydro (1U) · +453 hydro [icd] · +543 hydro (1U) · +633 hydro [icd] · +723 hydro (1U) · +813 hydro [icd] · +903 hydro (1U) | ⚠️ regular, no authored summon: Let the Show Begin♪ (Melody Loop) ×11/90f |
-| barbara | `barbara__burst__shining_miracle` | **—** |  |
-| beidou | `beidou__skill__tidecaller` | +23 electro (2U) |  |
-| beidou | `beidou__skill__tidecaller · hE` | +23 electro (2U) |  |
-| beidou | `beidou__burst__stormbreaker` | +28 electro (4U) |  |
-| bennett | `bennett__skill__passion_overload` | +16 pyro (2U) |  |
-| bennett | `bennett__skill__passion_overload · h1E` | +45 pyro (1U) · +57 pyro (1U) |  |
-| bennett | `bennett__skill__passion_overload · h2E` | +112 pyro (1U) · +121 pyro (1U) · +166 pyro (1U) |  |
-| bennett | `bennett__skill__passion_overload · h2E` | +112 pyro (1U) · +121 pyro (1U) · +166 pyro (1U) |  |
-| bennett | `bennett__burst__fantastic_voyage` | +37 pyro (2U) |  |
-| candace | `candace__skill__sacred_rite_herons_sanctum` | +16 hydro (1U) |  |
-| candace | `candace__skill__sacred_rite_herons_sanctum · hE` | +91 hydro (1U) |  |
-| candace | `candace__burst__sacred_rite_wagtails_tide` | +33 hydro (1U) |  |
-| charlotte | `charlotte__skill__framing_freezing_point_composition` | +31 cryo (1U) · +121 cryo (1U) · +211 cryo [icd] · +301 cryo (1U) · +391 cryo [icd] | ⚠️ regular, no authored summon: Snappy Silhouette Mark ×4/90f |
-| charlotte | `charlotte__skill__framing_freezing_point_composition · ?` | +31 cryo (1U) · +121 cryo (1U) · +211 cryo [icd] · +301 cryo (1U) · +391 cryo [icd] | ⚠️ regular, no authored summon: Snappy Silhouette Mark ×4/90f |
-| charlotte | `charlotte__skill__framing_freezing_point_composition · ?` | +31 cryo (1U) · +121 cryo (1U) · +211 cryo [icd] · +301 cryo (1U) · +391 cryo [icd] | ⚠️ regular, no authored summon: Snappy Silhouette Mark ×4/90f |
-| charlotte | `charlotte__skill__framing_freezing_point_composition · hE` | +112 cryo (1U) · +202 cryo (1U) · +292 cryo [icd] · +382 cryo (1U) · +472 cryo [icd] · +562 cryo (1U) · +652 cryo [icd] · +742 cryo (1U) · +832 cryo [icd] | ⚠️ regular, no authored summon: Focused Impression Mark ×8/90f |
-| charlotte | `charlotte__burst__still_photo_comprehensive_confirmation` | +53 cryo (2U) · +95 cryo (1U) · +119 cryo [icd] · +143 cryo [icd] · +166 cryo [icd] · +179 cryo (1U) · +203 cryo [icd] · +226 cryo [icd] · +249 cryo [icd] |  |
-| chasca | `chasca__skill__spirit_reins_shadow_hunt` | +3 anemo (1U) |  |
-| chasca | `chasca__burst__soul_reapers_fatal_round` | +96 anemo (1U) · +103 anemo (1U) · +139 anemo [icd] · +147 anemo (1U) · +153 anemo [icd] · +157 anemo (1U) · +160 anemo [icd] |  |
-| chevreuse | `chevreuse__skill__shortrange_rapid_interdiction_fire` | +25 pyro (1U) · +59 pyro [icd] |  |
-| chevreuse | `chevreuse__skill__shortrange_rapid_interdiction_fire · hE` | +19 pyro (1U) · +55 pyro [icd] |  |
-| chevreuse | `chevreuse__burst__ring_of_bursting_grenades` | +59 pyro (2U) · +83 pyro (1U) · +92 pyro [icd] · +92 pyro [icd] · +101 pyro (1U) · +101 pyro (1U) · +110 pyro [icd] · +110 pyro [icd] · +119 pyro [icd] |  |
-| chiori | `chiori__skill__fluttering_hasode` | +21 geo (1U) | 5× Fluttering Hasode (Tamato) |
-| chiori | `chiori__skill__fluttering_hasode · hE` | +37 geo (1U) | 5× Fluttering Hasode (Tamato) |
-| chiori | `chiori__burst__hiyoku_twin_blades` | +92 geo (2U) |  |
-| chongyun | `chongyun__skill__spirit_blade_chonghuas_layered_frost` | +36 cryo (2U) · +655 cryo (1U) |  |
-| chongyun | `chongyun__skill__spirit_blade_chonghuas_layered_frost · ?` | +36 cryo (2U) · +655 cryo (1U) |  |
-| chongyun | `chongyun__skill__spirit_blade_chonghuas_layered_frost · ?` | +36 cryo (2U) · +655 cryo (1U) |  |
-| chongyun | `chongyun__burst__spirit_blade_cloudparting_star` | +50 cryo (1U) · +59 cryo (1U) · +67 cryo (1U) |  |
-| citlali | `citlali__skill__dawnfrost_darkstar` | +20 cryo (1U) |  |
-| citlali | `citlali__burst__edict_of_entwined_splendor` | +118 cryo (2U) · +232 cryo (1U) |  |
-| clorinde | `clorinde__skill__hunters_vigil` | **—** |  |
-| clorinde | `clorinde__skill__impale_the_night` | +11 electro (1U) |  |
-| clorinde | `clorinde__burst__last_lightfall` | +97 electro (1U) · +103 electro [icd] · +109 electro [icd] · +115 electro (1U) · +121 electro [icd] | ⚠️ regular, no authored summon: Last Lightfall ×5/6f |
-| collei | `collei__skill__floral_brush` | +34 dendro (1U) · +138 dendro (1U) |  |
-| collei | `collei__burst__trumpcard_kitty` | +25 dendro (1U) | 12× Trump-Card Kitty (Leap) |
-| columbina | `columbina__skill__eternal_tides` | +21 hydro (1U) | 12× Skill (DoT) |
-| columbina | `columbina__burst__moonlit_melancholy` | +110 hydro (2U) |  |
-| cyno | `cyno__skill__secret_rite_chasmic_soulfarer` | +21 electro (1U) |  |
-| cyno | `cyno__skill__mortuary_rite` | +28 electro (1U) |  |
-| cyno | `cyno__burst__sacred_rite_wolfs_swiftness` | **—** |  |
-| dahlia | `dahlia__skill__immersive_ordinance` | +27 hydro (1U) |  |
-| dahlia | `dahlia__skill__immersive_ordinance · hE` | +27 hydro (1U) |  |
-| dahlia | `dahlia__burst__radiant_psalter` | +30 hydro (2U) |  |
-| dehya | `dehya__skill__indomitable_flame` | +20 pyro (1U) |  |
-| dehya | `dehya__skill__ranging_flame` | +40 pyro (1U) |  |
-| dehya | `dehya__burst__leonine_bite` | +105 pyro (1U) · +155 pyro [icd] · +205 pyro [icd] · +255 pyro (1U) · +305 pyro [icd] · +355 pyro [icd] · +401 pyro (1U) | ⚠️ regular, no authored summon: Flame-Mane's Fist ×6/50f |
-| diluc | `diluc__skill__searing_onslaught_e1` | +24 pyro (1U) |  |
-| diluc | `diluc__skill__searing_onslaught_e2` | +28 pyro (1U) |  |
-| diluc | `diluc__skill__searing_onslaught_e3` | +46 pyro (1U) |  |
-| diluc | `diluc__burst__dawn` | +101 pyro (2U) · +112 pyro [icd] · +124 pyro [icd] |  |
-| diona | `diona__skill__icy_paws` | +10 cryo (1U) · +11 cryo [icd] |  |
-| diona | `diona__skill__icy_paws · hE` | +34 cryo (1U) · +35 cryo [icd] · +36 cryo [icd] · +37 cryo (1U) · +38 cryo [icd] | ⚠️ regular, no authored summon: Icy Paw ×5/1f |
-| diona | `diona__burst__signature_mix` | +58 cryo (1U) | 6× Signature Mix (Tick) |
-| dori | `dori__skill__spiritwarding_lamp_troubleshooter_cannon` | +26 electro (1U) · +72 electro [icd] · +85 electro [icd] |  |
-| dori | `dori__burst__alcazarzarays_exactitude` | +28 electro (1U) · +52 electro [icd] · +76 electro [icd] · +100 electro [icd] · +124 electro [icd] · +148 electro [icd] · +172 electro [icd] · +196 electro [icd] · +220 electro (1U) · +244 electro [icd] · +268 electro [icd] · +292 electro [icd] · +316 electro [icd] · +340 electro [icd] · +364 electro [icd] · +388 electro [icd] · +412 electro (1U) · +436 electro [icd] · +460 electro [icd] · +484 electro [icd] · +508 electro [icd] · +532 electro [icd] · +556 electro [icd] · +580 electro [icd] · +604 electro (1U) · +628 electro [icd] · +652 electro [icd] · +676 electro [icd] · +700 electro [icd] · +724 electro [icd] · +748 electro [icd] · +772 electro [icd] | ⚠️ regular, no authored summon: Alcazarzaray's Exactitude: Connector DMG ×32/24f |
-| durin | `durin__skill__binary_form_convergence_and_division` | **—** |  |
-| durin | `durin__burst__principle_of_purity_as_the_light_shifts` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] | 20× Dragon of White Flame |
-| durin | `durin__burst__principle_of_darkness_as_the_stars_smolder` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] · +156 pyro (1U) · +214 pyro [icd] · +273 pyro (1U) · +332 pyro [icd] · +391 pyro (1U) · +450 pyro [icd] · +508 pyro (1U) · +567 pyro [icd] · +626 pyro (1U) · +685 pyro [icd] · +744 pyro (1U) · +802 pyro [icd] · +861 pyro (1U) · +920 pyro [icd] · +979 pyro (1U) · +1038 pyro [icd] · +1096 pyro (1U) · +1155 pyro [icd] · +1214 pyro (1U) · +1273 pyro [icd] |  |
-| emilie | `emilie__skill__fragrance_extraction` | +37 dendro (1U) · +62 dendro [icd] | 14× Lumidouce Case (Level 1) |
-| emilie | `emilie__burst__aromatic_explication` | +126 dendro (1U) · +162 dendro [icd] · +180 dendro [icd] · +234 dendro (1U) | 14× Lumidouce Case (Level 1) |
-| escoffier | `escoffier__skill__lowtemperature_cooking` | +23 cryo (1U) · +83 cryo [icd] · +153 cryo (1U) · +212 cryo [icd] · +270 cryo (1U) · +329 cryo [icd] · +387 cryo (1U) · +446 cryo [icd] · +504 cryo (1U) · +563 cryo [icd] · +621 cryo (1U) · +680 cryo [icd] · +738 cryo (1U) · +797 cryo [icd] · +855 cryo (1U) · +914 cryo [icd] · +972 cryo (1U) · +1031 cryo [icd] · +1089 cryo (1U) · +1148 cryo [icd] · +1206 cryo (1U) · +1265 cryo [icd] · +1323 cryo (1U) |  |
-| escoffier | `escoffier__burst__scoring_cuts` | +92 cryo (2U) |  |
-| eula | `eula__skill__icetide_vortex` | +20 cryo (1U) |  |
-| eula | `eula__skill__icetide_vortex · hE` | +49 cryo (1U) |  |
-| eula | `eula__burst__glacial_illumination` | +100 cryo (2U) · +600 physical |  |
-| faruzan | `faruzan__skill__wind_realm_of_nasamjnin` | +14 anemo (1U) |  |
-| faruzan | `faruzan__burst__the_winds_secret_ways` | +54 anemo (1U) |  |
-| fischl | `fischl__skill__nightrider` | +38 electro (1U) | 10× Oz (Skill) |
-| fischl | `fischl__burst__midnight_phantasmagoria` | +18 electro (1U) | 10× Oz (Burst) |
-| flins | `flins__skill__ancient_rite_arcane_light` | +19 electro [icd] |  |
-| flins | `flins__skill__northland_spearstorm` | +23 electro (1U) |  |
-| flins | `flins__burst__ancient_ritual_cometh_the_night` | +93 electro (1U) · +110 electro [icd] · +119 electro [icd] · +164 electro [icd] |  |
-| freminet | `freminet__skill__pressurized_floe` | +29 cryo (1U) · +62 cryo [icd] |  |
-| freminet | `freminet__burst__shadowhunters_ambush` | +44 cryo (1U) |  |
-| furina | `furina__skill__salon_solitaire` | +18 hydro (1U) · +110 hydro (1U) · +131 hydro (1U) · +137 hydro (1U) · +209 hydro [icd] · +307 hydro (1U) · +336 hydro [icd] · +405 hydro [icd] · +445 hydro (1U) · +498 hydro (1U) · +540 hydro (1U) · +595 hydro [icd] · +693 hydro (1U) · +744 hydro [icd] · +760 hydro (1U) · +792 hydro [icd] · +891 hydro (1U) · +936 hydro (1U) · +985 hydro [icd] · +1072 hydro (1U) · +1087 hydro (1U) · +1139 hydro [icd] · +1184 hydro [icd] · +1278 hydro (1U) · +1347 hydro (1U) · +1378 hydro [icd] · +1384 hydro (1U) · +1477 hydro (1U) · +1546 hydro [icd] · +1576 hydro [icd] · +1669 hydro (1U) · +1700 hydro (1U) · +1749 hydro (1U) |  |
-| furina | `furina__burst__let_the_people_rejoice` | +98 hydro (1U) |  |
-| gaming | `gaming__skill__bestial_ascent` | **—** |  |
-| gaming | `gaming__burst__suannis_gilded_dance` | +60 pyro (1U) |  |
-| ganyu | `ganyu__skill__trail_of_the_qilin` | **—** | 2× Ice Lotus |
-| ganyu | `ganyu__burst__celestial_shower` | +130 cryo (1U) · +220 cryo [icd] · +310 cryo (1U) · +346 cryo [icd] · +400 cryo [icd] · +454 cryo (1U) · +490 cryo (1U) · +580 cryo [icd] · +670 cryo (1U) · +706 cryo [icd] · +760 cryo [icd] · +796 cryo (1U) · +850 cryo (1U) · +940 cryo [icd] |  |
-| gorou | `gorou__skill__inuzaka_allround_defense` | +34 geo (1U) |  |
-| gorou | `gorou__burst__juuga_forward_unto_victory` | +31 geo (1U) | 5× Crystal Collapse |
-| hu_tao | `hu_tao__skill__guide_to_afterlife` | +14 physical |  |
-| hu_tao | `hu_tao__burst__spirit_soother` | +66 pyro (2U) |  |
-| ifa | `ifa__skill__airborne_disease_prevention` | **—** |  |
-| ifa | `ifa__burst__compound_sedation_field` | +41 anemo (1U) |  |
-| ineffa | `ineffa__skill__cleaning_mode_carrier_frequency` | +26 electro (1U) | 10× Birgitta |
-| ineffa | `ineffa__burst__supreme_instruction_cyclonic_exterminator` | +111 electro (1U) | 10× Birgitta |
-| jahoda | `jahoda__skill__savvy_strategy_splitting_the_spoils` | +368 anemo (1U) |  |
-| jahoda | `jahoda__burst__hidden_aces_seven_tools_of_the_hunter` | +43 anemo (1U) |  |
-| jean | `jean__skill__gale_blade` | +21 anemo (2U) |  |
-| jean | `jean__burst__dandelion_breeze` | +40 anemo (2U) · +55 anemo (2U) · +640 anemo (2U) |  |
-| kaedehara_kazuha | `kaedehara_kazuha__skill__chihayaburu` | +10 anemo (1U) |  |
-| kaedehara_kazuha | `kaedehara_kazuha__skill__chihayaburu · hE` | +33 anemo (2U) |  |
-| kaedehara_kazuha | `kaedehara_kazuha__burst__kazuha_slash` | +82 anemo (2U) | 5× Kazuha Slash (DoT) |
-| kaeya | `kaeya__skill__frostgnaw` | +28 cryo (2U) |  |
-| kaeya | `kaeya__burst__glacial_waltz` | **—** | 13× Glacial Waltz |
-| kamisato_ayaka | `kamisato_ayaka__skill__kamisato_art_hyouka` | +33 cryo (2U) |  |
-| kamisato_ayaka | `kamisato_ayaka__burst__kamisato_art_soumetsu` | +104 cryo (1U) · +119 cryo [icd] · +134 cryo [icd] · +149 cryo (1U) · +164 cryo [icd] · +179 cryo [icd] · +194 cryo (1U) · +209 cryo [icd] · +224 cryo [icd] · +239 cryo (1U) · +254 cryo (1U) · +269 cryo [icd] · +284 cryo [icd] · +299 cryo (1U) · +314 cryo [icd] · +329 cryo [icd] · +344 cryo (1U) · +359 cryo [icd] · +374 cryo [icd] · +404 cryo (1U) | ⚠️ regular, no authored summon: Soumetsu (Cutting) ×19/15f |
-| kamisato_ayato | `kamisato_ayato__skill__kamisato_art_kyouka` | +35 hydro (1U) |  |
-| kamisato_ayato | `kamisato_ayato__burst__kamisato_art_suiyuu` | +139 hydro (1U) · +229 hydro [icd] · +319 hydro (1U) · +409 hydro [icd] · +469 hydro (1U) · +499 hydro [icd] · +589 hydro [icd] · +679 hydro (1U) · +769 hydro [icd] · +859 hydro (1U) · +949 hydro [icd] · +1039 hydro (1U) · +1129 hydro [icd] · +1189 hydro (1U) |  |
-| kaveh | `kaveh__skill__artistic_ingenuity` | +35 dendro (1U) |  |
-| kaveh | `kaveh__burst__painted_dome` | +36 dendro (2U) |  |
-| keqing | `keqing__skill__stellar_restoration` | +25 electro (1U) |  |
-| keqing | `keqing__skill__stellar_restoration_recast` | +16 electro (2U) |  |
-| keqing | `keqing__burst__starward_sword` | +56 electro (1U) · +82 electro [icd] · +93 electro [icd] · +104 electro (1U) · +115 electro [icd] · +126 electro [icd] · +137 electro (1U) · +148 electro [icd] · +159 electro [icd] · +197 electro (1U) | ⚠️ regular, no authored summon: Starward Sword (Consecutive Slash) ×8/11f |
-| kinich | `kinich__skill__canopy_hunter_riding_high` | **—** |  |
-| kinich | `kinich__burst__hail_to_the_almighty_dragonlord` | +161 dendro (1U) · +253 dendro [icd] · +403 dendro (1U) · +553 dendro (1U) · +703 dendro (1U) · +848 dendro [icd] · +993 dendro (1U) |  |
-| kirara | `kirara__skill__meowteor_kick` | +14 dendro (1U) |  |
-| kirara | `kirara__burst__secret_art_surprise_dispatch` | +38 dendro (2U) · +180 dendro (1U) · +180 dendro (1U) · +800 dendro (1U) · +818 dendro [icd] · +836 dendro [icd] · +854 dendro (1U) |  |
-| klee | `klee__skill__jumpy_dumpty` | +71 pyro (1U) · +240 pyro (1U) · +240 pyro (1U) |  |
-| klee | `klee__burst__sparks_n_splash` | +186 pyro (1U) · +198 pyro [icd] · +210 pyro [icd] · +294 pyro (1U) · +306 pyro [icd] · +306 pyro [icd] · +318 pyro (1U) · +318 pyro (1U) · +401 pyro (1U) · +413 pyro [icd] · +425 pyro (1U) · +425 pyro (1U) · +503 pyro [icd] · +515 pyro (1U) · +515 pyro (1U) · +527 pyro [icd] · +527 pyro [icd] · +610 pyro (1U) · +622 pyro [icd] · +634 pyro (1U) · +634 pyro (1U) · +718 pyro [icd] · +730 pyro (1U) · +730 pyro (1U) · +742 pyro [icd] |  |
-| kujou_sara | `kujou_sara__skill__tengu_stormcall` | **—** |  |
-| kujou_sara | `kujou_sara__burst__subjugation_koukou_sendou` | +51 electro (1U) · +100 electro (1U) · +100 electro (1U) · +100 electro (1U) · +100 electro (1U) |  |
-| kuki_shinobu | `kuki_shinobu__skill__sanctifying_ring` | +11 electro (1U) | 8× Grass Ring of Sanctification |
-| kuki_shinobu | `kuki_shinobu__burst__gyoei_narukami_kariyama_rite` | **—** | 7× Gyoei Narukami Kariyama Rite |
-| lan_yan | `lan_yan__skill__swallow_wisp_pinion_dance` | +7 physical |  |
-| lan_yan | `lan_yan__burst__lustrous_moonrise` | +30 anemo (2U) · +46 anemo [icd] · +51 anemo [icd] |  |
-| lauma | `lauma__skill__runo_dawnless_rest_of_karsikko` | +16 dendro (1U) | 8× Frostgrove Sanctuary |
-| lauma | `lauma__burst__runo_all_hearts_become_the_beating_moon` | **—** |  |
-| layla | `layla__skill__nights_of_formal_focus` | +32 cryo (1U) · +450 cryo (1U) · +475 cryo [icd] · +499 cryo [icd] · +524 cryo [icd] |  |
-| layla | `layla__burst__dream_of_the_starstream_shaker` | **—** | 8× Starlight Slug |
-| lisa | `lisa__skill__violet_arc` | +22 electro (1U) |  |
-| lisa | `lisa__skill__violet_arc · hE` | +117 electro (2U) |  |
-| lisa | `lisa__burst__lightning_rose` | +56 electro [icd] | 30× Lightning Rose (Tick) |
-| lynette | `lynette__skill__enigmatic_feint` | +28 anemo (1U) · +58 anemo [icd] |  |
-| lynette | `lynette__skill__enigmatic_feint · hE` | +51 anemo (1U) · +79 anemo [icd] |  |
-| lynette | `lynette__burst__magic_trick_astonishing_shift` | +18 anemo (1U) | 11× Bogglecat Box |
-| lyney | `lyney__skill__bewildering_lights` | +18 pyro (1U) |  |
-| lyney | `lyney__burst__wondrous_trick_miracle_parade` | +112 pyro (1U) · +288 pyro (1U) · +563 pyro (1U) |  |
-| mavuika | `mavuika__skill__the_named_moment` | +16 pyro (1U) | 6× Rings of Searing Radiance |
-| mavuika | `mavuika__skill__the_named_moment · hE` | +16 pyro (1U) |  |
-| mavuika | `mavuika__burst__hour_of_burning_skies` | +106 pyro (1U) |  |
-| mika | `mika__skill__starfrost_swirl` | +18 cryo (1U) |  |
-| mika | `mika__skill__starfrost_swirl · hE` | +15 cryo (1U) |  |
-| mika | `mika__burst__skyfeather_song` | **—** |  |
-| mona | `mona__skill__mirror_reflection_of_doom` | +329 hydro (1U) | 4× Mirror Reflection of Doom (Tick) |
-| mona | `mona__skill__mirror_reflection_of_doom · hE` | +344 hydro (1U) | 4× Mirror Reflection of Doom (Tick) |
-| mona | `mona__burst__stellaris_phantasm` | +107 hydro (1U) · +587 physical · +588 hydro (2U) |  |
-| mualani | `mualani__skill__surfshark_wavebreaker` | **—** |  |
-| mualani | `mualani__burst__boomsharkalaka` | +178 hydro (1U) |  |
-| nahida | `nahida__skill__all_schemes_to_know` | +13 dendro (1U) |  |
-| nahida | `nahida__skill__all_schemes_to_know · hE` | +33 dendro (1U) |  |
-| nahida | `nahida__burst__illusory_heart` | **—** |  |
-| navia | `navia__skill__ceremonial_crystalshot` | +20 geo (1U) · +75 geo [icd] |  |
-| navia | `navia__skill__ceremonial_crystalshot · hE` | +50 geo (1U) · +105 geo [icd] |  |
-| navia | `navia__burst__as_the_sunlit_skys_singing_salute` | +104 geo (2U) | 17× Cannon Fire Support |
-| neuvillette | `neuvillette__skill__o_tears_i_shall_repay` | +23 hydro (1U) · +60 hydro [icd] |  |
-| neuvillette | `neuvillette__burst__o_tides_i_have_returned` | +95 hydro (1U) · +135 hydro [icd] · +154 hydro [icd] |  |
-| nicole | `nicole__skill__revelation_uncreated_light` | +9 pyro (1U) |  |
-| nicole | `nicole__burst__revelation_ladder_of_divine_ascent` | +108 pyro (1U) |  |
-| nilou | `nilou__skill__dance_of_haftkarsvar` | +16 hydro (1U) |  |
-| nilou | `nilou__skill__whirling_steps_1` | +21 hydro [icd] |  |
-| nilou | `nilou__skill__whirling_steps_2` | +21 hydro [icd] |  |
-| nilou | `nilou__skill__whirling_steps_3` | +21 hydro [icd] |  |
-| nilou | `nilou__burst__dance_of_abzendegi_distant_dreams_listening_spring` | +91 hydro (1U) · +212 hydro (1U) |  |
-| ningguang | `ningguang__skill__jade_screen` | **—** | 1× Jade Screen |
-| ningguang | `ningguang__burst__starshatter` | +62 geo (2U) · +97 geo [icd] · +106 geo [icd] · +110 geo (2U) · +116 geo [icd] · +124 geo [icd] |  |
-| noelle | `noelle__skill__breastplate` | +14 geo (2U) |  |
-| noelle | `noelle__burst__sweeping_time` | +24 geo (1U) · +65 geo [icd] |  |
-| odette | `odette__skill__adagio_phantom_night_dancers` | +23 cryo (1U) | 10× "Plume" Dance Move, "Wing" Dance Move |
-| odette | `odette__skill__adagio_coda_at_dawns_tolling` | +11 cryo (1U) · +20 cryo [icd] · +28 cryo [icd] · +62 cryo [icd] · +114 cryo (1U) · +223 cryo (1U) · +348 cryo (1U) · +457 cryo (1U) · +582 cryo (1U) · +691 cryo (1U) · +816 cryo (1U) · +925 cryo (1U) · +1050 cryo (1U) · +1159 cryo (1U) | ⚠️ regular, no authored summon: "Plume" Dance Move ×5/234f, "Wing" Dance Move ×5/234f |
-| odette | `odette__burst__presto_bluebird_finale` | +112 cryo (1U) · +128 cryo [icd] · +140 cryo [icd] · +144 cryo (1U) | 9× "Plume" Dance Move, "Wing" Dance Move |
-| ororon | `ororon__skill__nights_sling` | +41 electro (1U) |  |
-| ororon | `ororon__burst__dark_voices_echo` | +36 electro (1U) | 9× Soundwave Collision DMG |
-| prune | `prune__skill__ringadingding_hexhunter_chime` | +26 anemo (1U) |  |
-| prune | `prune__burst__the_bell_tolls_the_hunt_is_on` | +34 anemo (1U) | 6× Witchlure Bell |
-| qiqi | `qiqi__skill__adeptus_art_herald_of_frost` | +32 cryo (1U) · +96 cryo [icd] · +231 cryo (1U) · +291 cryo [icd] · +426 cryo (1U) · +486 cryo [icd] · +621 cryo (1U) · +681 cryo [icd] · +816 cryo (1U) · +876 cryo [icd] |  |
-| qiqi | `qiqi__burst__adeptus_art_preserver_of_fortune` | +40 physical | 1× Fortune-Preserving Talisman |
-| raiden_shogun | `raiden_shogun__skill__transcendence_baleful_omen` | +51 electro (1U) |  |
-| raiden_shogun | `raiden_shogun__burst__secret_art_musou_shinsetsu` | +98 electro (2U) |  |
-| razor | `razor__skill__claw_and_thunder` | +32 electro (1U) |  |
-| razor | `razor__skill__claw_and_thunder · hE` | +55 electro (1U) |  |
-| razor | `razor__burst__lightning_fang` | +32 electro (2U) |  |
-| rosaria | `rosaria__skill__ravaging_confession` | +24 cryo (1U) · +38 cryo (1U) |  |
-| rosaria | `rosaria__burst__rites_of_termination` | +15 cryo (1U) · +56 cryo (1U) | 4× Rites of Termination (DoT) |
-| sangonomiya_kokomi | `sangonomiya_kokomi__skill__kurages_oath` | **—** | 7× Bake-Kurage |
-| sangonomiya_kokomi | `sangonomiya_kokomi__burst__nereids_ascension` | +49 hydro (2U) |  |
-| sayu | `sayu__skill__yoohoo_art_fuuin_dash` | +7 anemo (1U) · +25 anemo (1U) |  |
-| sayu | `sayu__skill__yoohoo_art_fuuin_dash · hE` | +18 anemo (1U) · +68 anemo (1U) |  |
-| sayu | `sayu__burst__yoohoo_art_mujina_flurry` | +12 anemo (1U) | 6× Muji-Muji Daruma |
-| sethos | `sethos__skill__ancient_rite_the_thundering_sands` | +13 electro (1U) |  |
-| sethos | `sethos__burst__secret_rite_twilight_shadowpiercer` | **—** |  |
-| shenhe | `shenhe__skill__spring_spirit_summoning` | +4 cryo (1U) |  |
-| shenhe | `shenhe__skill__spring_spirit_summoning · hE` | +33 cryo (2U) |  |
-| shenhe | `shenhe__burst__divine_maidens_deliverance` | +129 cryo (1U) · +159 cryo [icd] · +246 cryo [icd] · +278 cryo (1U) · +363 cryo (1U) · +397 cryo [icd] · +480 cryo [icd] · +510 cryo (1U) · +597 cryo (1U) · +629 cryo [icd] · +714 cryo [icd] · +748 cryo (1U) |  |
-| shikanoin_heizou | `shikanoin_heizou__skill__heartstopper_strike` | +20 anemo (2U) |  |
-| shikanoin_heizou | `shikanoin_heizou__skill__heartstopper_strike · hE` | +200 anemo (2U) |  |
-| shikanoin_heizou | `shikanoin_heizou__burst__windmuster_kick` | +34 physical · +34 anemo (1U) |  |
-| sigewinne | `sigewinne__skill__rebound_hydrotherapy` | +75 hydro [icd] | 5× Rebound Hydrotherapy |
-| sigewinne | `sigewinne__skill__rebound_hydrotherapy · h1E` | +106 hydro [icd] | 5× Rebound Hydrotherapy |
-| sigewinne | `sigewinne__skill__rebound_hydrotherapy · h2E` | +130 hydro [icd] | 5× Rebound Hydrotherapy |
-| sigewinne | `sigewinne__burst__super_saturated_syringing` | +99 hydro (1U) · +124 hydro [icd] · +149 hydro [icd] · +174 hydro [icd] · +199 hydro [icd] · +224 hydro (1U) | ⚠️ regular, no authored summon: Super Saturated Syringing ×6/25f |
-| skirk | `skirk__skill__havoc_warp` | **—** |  |
-| skirk | `skirk__skill__havoc_warp · hE` | **—** |  |
-| skirk | `skirk__burst__havoc_ruin` | +109 cryo (1U) · +111 cryo [icd] · +114 cryo [icd] · +125 cryo (1U) · +135 cryo [icd] · +158 cryo [icd] |  |
-| skirk | `skirk__burst__havoc_extinction` | **—** |  |
-| sucrose | `sucrose__skill__astable_anemohypostasis_creation_6308` | +42 anemo (1U) |  |
-| sucrose | `sucrose__burst__forbidden_creation_isomer_75_type_ii` | **—** | 3× Forbidden Creation-Isomer 75/Type II |
-| tartaglia | `tartaglia__skill__foul_legacy_raging_tide` | +16 hydro (2U) |  |
-| tartaglia | `tartaglia__burst__havoc_obliteration_ranged` | +70 hydro (2U) |  |
-| tartaglia | `tartaglia__burst__havoc_obliteration_melee` | +69 hydro (2U) |  |
-| thoma | `thoma__skill__blazing_blessing` | +11 pyro (1U) |  |
-| thoma | `thoma__burst__crimson_ooyoroi` | +40 pyro (2U) |  |
-| tighnari | `tighnari__skill__vijnanaphala_mine` | +20 dendro (1U) |  |
-| tighnari | `tighnari__burst__fashioners_tanglevine_shaft` | +112 dendro (1U) · +117 dendro [icd] · +120 dendro [icd] · +121 dendro (1U) · +126 dendro [icd] · +128 dendro [icd] · +147 dendro (1U) · +153 dendro [icd] · +160 dendro [icd] · +161 dendro (1U) · +171 dendro [icd] · +175 dendro [icd] |  |
-| traveler_anemo | `traveler_anemo__skill__palm_vortex` | +34 anemo (1U) |  |
-| traveler_anemo | `traveler_anemo__skill__palm_vortex · hE` | +31 anemo (1U) · +46 anemo [icd] · +66 anemo [icd] · +81 anemo (1U) · +96 anemo [icd] · +111 anemo [icd] · +116 anemo (1U) | ⚠️ regular, no authored summon: Palm Vortex Max Cutting (Hold) ×4/15f |
-| traveler_anemo | `traveler_anemo__burst__gust_surge` | **—** | 9× Gust Surge |
-| traveler_dendro | `traveler_dendro__skill__razorgrass_blade` | +28 dendro (1U) |  |
-| traveler_dendro | `traveler_dendro__burst__surgent_manifestation` | **—** | 8× Lea Lotus Lamp |
-| traveler_electro | `traveler_electro__skill__lightning_blade` | +21 electro (1U) |  |
-| traveler_electro | `traveler_electro__burst__bellowing_thunder` | +37 electro (1U) |  |
-| traveler_geo | `traveler_geo__skill__starfell_sword` | +62 geo (2U) |  |
-| traveler_geo | `traveler_geo__skill__starfell_sword · hE` | +62 geo (2U) |  |
-| traveler_geo | `traveler_geo__burst__wake_of_earth` | **—** | 4× Wake of Earth |
-| traveler_hydro | `traveler_hydro__skill__aquacrest_saber` | +25 hydro (1U) · +70 hydro [icd] |  |
-| traveler_hydro | `traveler_hydro__skill__aquacrest_saber · hE` | +61 hydro (1U) · +76 hydro [icd] · +91 hydro [icd] · +106 hydro [icd] · +121 hydro [icd] · +136 hydro [icd] · +151 hydro (1U) · +166 hydro [icd] · +181 hydro [icd] · +196 hydro [icd] · +211 hydro [icd] · +226 hydro [icd] · +241 hydro (1U) · +256 hydro [icd] · +271 hydro [icd] · +286 hydro [icd] · +301 hydro [icd] · +316 hydro [icd] · +331 hydro (1U) · +346 hydro [icd] · +361 hydro [icd] · +372 hydro (1U) · +376 hydro [icd] · +418 hydro [icd] | ⚠️ regular, no authored summon: Dewdrop (Hold) ×22/15f |
-| traveler_hydro | `traveler_hydro__burst__rising_waters` | +34 hydro (1U) |  |
-| traveler_pyro | `traveler_pyro__skill__flowfire_blade` | +24 pyro (1U) · +90 pyro [icd] · +156 pyro [icd] · +222 pyro (1U) · +288 pyro [icd] · +354 pyro [icd] | ⚠️ regular, no authored summon: Blazing Threshold DMG ×6/66f |
-| traveler_pyro | `traveler_pyro__skill__flowfire_blade · hE` | +50 pyro (1U) · +62 pyro (1U) |  |
-| traveler_pyro | `traveler_pyro__burst__plains_scorcher` | +40 pyro (1U) |  |
-| varesa | `varesa__skill__riding_the_nightrainbow` | +5 electro (1U) |  |
-| varesa | `varesa__burst__guardian_vent` | +88 electro (1U) |  |
-| varka | `varka__skill__windbound_execution` | +40 anemo (1U) |  |
-| varka | `varka__skill__windbound_execution · hE` | +40 anemo (1U) |  |
-| varka | `varka__skill__four_winds_ascension` | +40 anemo (1U) |  |
-| varka | `varka__burst__northwind_avatar` | +112 anemo (1U) · +131 anemo (1U) |  |
-| venti | `venti__skill__skyward_sonnet` | +51 anemo (2U) |  |
-| venti | `venti__skill__skyward_sonnet · hE` | +74 anemo (2U) |  |
-| venti | `venti__burst__winds_grand_ode` | **—** | 20× Wind's Grand Ode |
-| wanderer | `wanderer__skill__hanega_song_of_the_wind` | +2 anemo (1U) |  |
-| wanderer | `wanderer__burst__kyougen_five_ceremonial_plays` | +92 anemo (1U) · +98 anemo [icd] · +104 anemo [icd] · +110 anemo (1U) · +116 anemo [icd] | ⚠️ regular, no authored summon: Kyougen: Five Ceremonial Plays ×5/6f |
-| wriothesley | `wriothesley__skill__icefang_rush` | **—** |  |
-| wriothesley | `wriothesley__burst__darkgold_wolfbite` | +99 cryo (1U) · +104 cryo [icd] · +109 cryo [icd] · +114 cryo (1U) · +119 cryo [icd] · +160 cryo [icd] | ⚠️ regular, no authored summon: Darkgold Wolfbite ×5/5f |
-| xiangling | `xiangling__skill__guoba_attack` | **—** | 4× Guoba |
-| xiangling | `xiangling__burst__pyronado` | +18 pyro (1U) · +33 pyro [icd] · +57 pyro [icd] | 9× Pyronado |
-| xianyun | `xianyun__skill__skyladder_1` | +3 anemo [icd] |  |
-| xianyun | `xianyun__burst__stars_gather_at_dusk` | +75 anemo (1U) |  |
-| xiao | `xiao__skill__lemniscatic_wind_cycling` | +4 anemo (1U) |  |
-| xiao | `xiao__burst__bane_of_all_evil` | **—** |  |
-| xilonen | `xilonen__skill__yohuals_scratch` | +6 geo (1U) |  |
-| xilonen | `xilonen__burst__ocelotlicue_point` | +96 geo (1U) · +128 geo [icd] · +164 geo [icd] |  |
-| xilonen | `xilonen__burst__ocelotlicue_point · Q` | +96 geo (1U) · +128 geo [icd] · +164 geo [icd] |  |
-| xingqiu | `xingqiu__skill__guhua_sword_fatal_rainscreen` | +12 hydro (1U) · +31 hydro (1U) | 7× Xingqiu Orbital |
-| xingqiu | `xingqiu__burst__guhua_sword_raincutter` | **—** | 7× Xingqiu Orbital |
-| xinyan | `xinyan__skill__sweeping_fervor` | +15 pyro (1U) |  |
-| xinyan | `xinyan__burst__riff_revolution` | +22 physical · +57 pyro (1U) · +74 pyro [icd] · +91 pyro [icd] · +108 pyro (1U) · +125 pyro [icd] · +142 pyro [icd] · +159 pyro (1U) | ⚠️ regular, no authored summon: Riff Revolution (DoT) ×7/17f |
-| yae_miko | `yae_miko__skill__yakan_evocation_sesshou_sakura` | **—** | 8× Sesshou Sakura Tick |
-| yae_miko | `yae_miko__burst__great_secret_art_tenko_kenshin` | +100 electro (1U) |  |
-| yanfei | `yanfei__skill__signed_edict` | +32 pyro (1U) |  |
-| yanfei | `yanfei__burst__done_deal` | +24 pyro (2U) |  |
-| yaoyao | `yaoyao__skill__raphanus_sky_cluster` | **—** | 10× Radish (Skill) |
-| yaoyao | `yaoyao__burst__moonjade_descent` | +16 dendro (1U) · +145 dendro (1U) · +203 dendro [icd] · +205 dendro [icd] · +262 dendro (1U) · +263 dendro [icd] · +265 dendro [icd] · +322 dendro [icd] · +323 dendro [icd] · +325 dendro [icd] |  |
-| yelan | `yelan__skill__lingering_lifeline` | +36 hydro (1U) |  |
-| yelan | `yelan__burst__depthclarion_dice` | +76 hydro (2U) |  |
-| yoimiya | `yoimiya__skill__niwabi_firedance` | **—** |  |
-| yoimiya | `yoimiya__burst__ryuukin_saxifrage` | +75 pyro (2U) |  |
-| yumemizuki_mizuki | `yumemizuki_mizuki__skill__aisa_utamakura_pilgrimage` | +2 anemo (1U) · +48 anemo (1U) · +93 anemo [icd] · +138 anemo (1U) · +183 anemo [icd] · +228 anemo (1U) · +273 anemo [icd] · +318 anemo (1U) | ⚠️ regular, no authored summon: Dreamdrifter Continuous Attack ×7/45f |
-| yumemizuki_mizuki | `yumemizuki_mizuki__burst__anraku_secret_spring_therapy` | +93 anemo (2U) | 8× Munen Shockwave |
-| yun_jin | `yun_jin__skill__opening_flourish` | +13 geo (2U) |  |
-| yun_jin | `yun_jin__skill__opening_flourish · hE` | +50 geo (2U) |  |
-| yun_jin | `yun_jin__skill__opening_flourish · hE` | +50 geo (2U) |  |
-| yun_jin | `yun_jin__burst__cliffbreakers_banner` | +35 geo (2U) |  |
-| zhongli | `zhongli__skill__dominus_lapidis` | +24 geo (2U) | 15× Stone Stele (Tick) |
-| zhongli | `zhongli__skill__dominus_lapidis · hE` | +48 geo (1U) · +48 geo [icd] | 15× Stone Stele (Tick) |
-| zhongli | `zhongli__burst__planet_befall` | +101 geo (4U) |  |
+`gcsim cadence` is the cast stream's own ICD group (window / period), read off
+gcsim's tables the way §5 reads a tick series' — ⚠️ it is the RULE, not the applied
+count; §4b lists the casts whose rule the schema default does not reproduce.
+
+| character | ability | cast applications | recurring streams | gcsim cadence |
+| --- | --- | --- | --- | --- |
+| aino | `aino__skill__musecatcher` | +15 hydro (1U) · +33 hydro [icd] |  | 150f / every 3 |
+| aino | `aino__burst__precision_hydronic_cooler` | **—** | 10× Cool Your Jets Ducky |  |
+| albedo | `albedo__skill__abiogenesis_solar_isotoma` | +25 geo (1U) |  | `none` |
+| albedo | `albedo__burst__rite_of_progeniture_tectonic_tide` | +75 geo (1U) |  | 150f / every 3 |
+| albedo | `albedo__burst__rite_of_progeniture_tectonic_tide · Q` | +75 geo (1U) |  | 150f / every 3 |
+| alhaitham | `alhaitham__skill__universality_an_elaboration_on_form` | +19 dendro (1U) |  | `none` |
+| alhaitham | `alhaitham__skill__universality_an_elaboration_on_form · hE` | +28 dendro (1U) |  | `none` |
+| alhaitham | `alhaitham__burst__particular_field_fetters_of_phenomena` | +94 dendro (1U) · +115 dendro [icd] · +136 dendro [icd] · +157 dendro (1U) | ⚠️ regular, no authored summon: Particular Field: Fetters of Phenomena ×4/21f | 150f / every 3 |
+| aloy | `aloy__skill__frozen_wilds` | +25 cryo (1U) · +31 cryo (1U) · +37 cryo [icd] |  | `none` |
+| aloy | `aloy__burst__prophecies_of_dawn` | +100 cryo (2U) |  | 150f / every 3 |
+| amber | `amber__skill__explosive_puppet` | **—** | 1× Baron Bunny |  |
+| amber | `amber__burst__fiery_rain` | **—** | 18× Fiery Rain |  |
+| arataki_itto | `arataki_itto__skill__masatsu_zetsugi_akaushi_burst` | +18 geo (1U) |  | 150f / every 3 |
+| arataki_itto | `arataki_itto__burst__royal_descent_behold_itto_the_evil` | **—** |  |  |
+| arlecchino | `arlecchino__skill__all_is_ash` | +17 pyro (1U) · +38 pyro (1U) · +338 pyro [icd] · +638 pyro (1U) |  | 600f / every 3 ⚠️ **mixed** |
+| arlecchino | `arlecchino__burst__balemoon_rising` | +110 pyro (1U) |  | `none` |
+| baizhu | `baizhu__skill__universal_diagnosis` | +13 dendro (1U) · +61 dendro [icd] · +109 dendro [icd] | ⚠️ regular, no authored summon: Universal Diagnosis ×3/48f | 150f / every 3 |
+| baizhu | `baizhu__burst__holistic_revivification` | +252 dendro (1U) · +398 dendro (1U) · +544 dendro (1U) · +690 dendro (1U) · +836 dendro (1U) · +988 dendro (1U) |  | `none` |
+| barbara | `barbara__skill__let_the_show_begin` | +3 hydro (1U) · +42 hydro [icd] · +78 hydro [icd] · +93 hydro (1U) · +183 hydro (1U) · +273 hydro [icd] · +363 hydro (1U) · +453 hydro [icd] · +543 hydro (1U) · +633 hydro [icd] · +723 hydro (1U) · +813 hydro [icd] · +903 hydro (1U) | ⚠️ regular, no authored summon: Let the Show Begin♪ (Melody Loop) ×11/90f | 150f / every 3 |
+| barbara | `barbara__burst__shining_miracle` | **—** |  |  |
+| beidou | `beidou__skill__tidecaller` | +23 electro (2U) |  | `none` |
+| beidou | `beidou__skill__tidecaller · hE` | +23 electro (2U) |  | `none` |
+| beidou | `beidou__burst__stormbreaker` | +28 electro (4U) |  | `none` |
+| bennett | `bennett__skill__passion_overload` | +16 pyro (2U) |  | `none` |
+| bennett | `bennett__skill__passion_overload · h1E` | +45 pyro (1U) · +57 pyro (1U) |  | `none` |
+| bennett | `bennett__skill__passion_overload · h2E` | +112 pyro (1U) · +121 pyro (1U) · +166 pyro (1U) |  | `none` |
+| bennett | `bennett__skill__passion_overload · h2E` | +112 pyro (1U) · +121 pyro (1U) · +166 pyro (1U) |  | `none` |
+| bennett | `bennett__burst__fantastic_voyage` | +37 pyro (2U) |  | `none` |
+| candace | `candace__skill__sacred_rite_herons_sanctum` | +16 hydro (1U) |  | `none` |
+| candace | `candace__skill__sacred_rite_herons_sanctum · hE` | +91 hydro (1U) |  | `none` |
+| candace | `candace__burst__sacred_rite_wagtails_tide` | +33 hydro (1U) |  | `none` |
+| charlotte | `charlotte__skill__framing_freezing_point_composition` | +31 cryo (1U) · +121 cryo (1U) · +211 cryo [icd] · +301 cryo (1U) · +391 cryo [icd] | ⚠️ regular, no authored summon: Snappy Silhouette Mark ×4/90f | 150f / every 3 ⚠️ **mixed** |
+| charlotte | `charlotte__skill__framing_freezing_point_composition · ?` | +31 cryo (1U) · +121 cryo (1U) · +211 cryo [icd] · +301 cryo (1U) · +391 cryo [icd] | ⚠️ regular, no authored summon: Snappy Silhouette Mark ×4/90f | 150f / every 3 ⚠️ **mixed** |
+| charlotte | `charlotte__skill__framing_freezing_point_composition · ?` | +31 cryo (1U) · +121 cryo (1U) · +211 cryo [icd] · +301 cryo (1U) · +391 cryo [icd] | ⚠️ regular, no authored summon: Snappy Silhouette Mark ×4/90f | 150f / every 3 ⚠️ **mixed** |
+| charlotte | `charlotte__skill__framing_freezing_point_composition · hE` | +112 cryo (1U) · +202 cryo (1U) · +292 cryo [icd] · +382 cryo (1U) · +472 cryo [icd] · +562 cryo (1U) · +652 cryo [icd] · +742 cryo (1U) · +832 cryo [icd] | ⚠️ regular, no authored summon: Focused Impression Mark ×8/90f | 150f / every 3 ⚠️ **mixed** |
+| charlotte | `charlotte__burst__still_photo_comprehensive_confirmation` | +53 cryo (2U) · +95 cryo (1U) · +119 cryo [icd] · +143 cryo [icd] · +166 cryo [icd] · +179 cryo (1U) · +203 cryo [icd] · +226 cryo [icd] · +249 cryo [icd] |  | `none` |
+| chasca | `chasca__skill__spirit_reins_shadow_hunt` | +3 anemo (1U) |  | `none` |
+| chasca | `chasca__burst__soul_reapers_fatal_round` | +96 anemo (1U) · +103 anemo (1U) · +139 anemo [icd] · +147 anemo (1U) · +153 anemo [icd] · +157 anemo (1U) · +160 anemo [icd] |  | `none` |
+| chevreuse | `chevreuse__skill__shortrange_rapid_interdiction_fire` | +25 pyro (1U) · +59 pyro [icd] |  | `none` |
+| chevreuse | `chevreuse__skill__shortrange_rapid_interdiction_fire · hE` | +19 pyro (1U) · +55 pyro [icd] |  | `none` |
+| chevreuse | `chevreuse__burst__ring_of_bursting_grenades` | +59 pyro (2U) · +83 pyro (1U) · +92 pyro [icd] · +92 pyro [icd] · +101 pyro (1U) · +101 pyro (1U) · +110 pyro [icd] · +110 pyro [icd] · +119 pyro [icd] |  | `none` |
+| chiori | `chiori__skill__fluttering_hasode` | +21 geo (1U) | 5× Fluttering Hasode (Tamato) | 114f / first only |
+| chiori | `chiori__skill__fluttering_hasode · hE` | +37 geo (1U) | 5× Fluttering Hasode (Tamato) | 114f / first only |
+| chiori | `chiori__burst__hiyoku_twin_blades` | +92 geo (2U) |  | `none` |
+| chongyun | `chongyun__skill__spirit_blade_chonghuas_layered_frost` | +36 cryo (2U) · +655 cryo (1U) |  | 150f / every 3 ⚠️ **mixed** |
+| chongyun | `chongyun__skill__spirit_blade_chonghuas_layered_frost · ?` | +36 cryo (2U) · +655 cryo (1U) |  | 150f / every 3 ⚠️ **mixed** |
+| chongyun | `chongyun__skill__spirit_blade_chonghuas_layered_frost · ?` | +36 cryo (2U) · +655 cryo (1U) |  | 150f / every 3 ⚠️ **mixed** |
+| chongyun | `chongyun__burst__spirit_blade_cloudparting_star` | +50 cryo (1U) · +59 cryo (1U) · +67 cryo (1U) |  | `none` |
+| citlali | `citlali__skill__dawnfrost_darkstar` | +20 cryo (1U) |  | `none` |
+| citlali | `citlali__burst__edict_of_entwined_splendor` | +118 cryo (2U) · +232 cryo (1U) |  | `none` |
+| clorinde | `clorinde__skill__hunters_vigil` | **—** |  |  |
+| clorinde | `clorinde__skill__impale_the_night` | +11 electro (1U) |  | 150f / every 3 |
+| clorinde | `clorinde__burst__last_lightfall` | +97 electro (1U) · +103 electro [icd] · +109 electro [icd] · +115 electro (1U) · +121 electro [icd] | ⚠️ regular, no authored summon: Last Lightfall ×5/6f | 150f / every 3 |
+| collei | `collei__skill__floral_brush` | +34 dendro (1U) · +138 dendro (1U) |  | `none` |
+| collei | `collei__burst__trumpcard_kitty` | +25 dendro (1U) | 12× Trump-Card Kitty (Leap) | 180f / first only |
+| columbina | `columbina__skill__eternal_tides` | +21 hydro (1U) | 12× Skill (DoT) | `none` |
+| columbina | `columbina__burst__moonlit_melancholy` | +110 hydro (2U) |  | `none` |
+| cyno | `cyno__skill__secret_rite_chasmic_soulfarer` | +21 electro (1U) |  | `none` |
+| cyno | `cyno__skill__mortuary_rite` | +28 electro (1U) |  | `none` |
+| cyno | `cyno__burst__sacred_rite_wolfs_swiftness` | **—** |  |  |
+| dahlia | `dahlia__skill__immersive_ordinance` | +27 hydro (1U) |  | `none` |
+| dahlia | `dahlia__skill__immersive_ordinance · hE` | +27 hydro (1U) |  | `none` |
+| dahlia | `dahlia__burst__radiant_psalter` | +30 hydro (2U) |  | `none` |
+| dehya | `dehya__skill__indomitable_flame` | +20 pyro (1U) |  | `none` |
+| dehya | `dehya__skill__ranging_flame` | +40 pyro (1U) |  | `none` |
+| dehya | `dehya__burst__leonine_bite` | +105 pyro (1U) · +155 pyro [icd] · +205 pyro [icd] · +255 pyro (1U) · +305 pyro [icd] · +355 pyro [icd] · +401 pyro (1U) | ⚠️ regular, no authored summon: Flame-Mane's Fist ×6/50f | 150f / every 3 ⚠️ **mixed** |
+| diluc | `diluc__skill__searing_onslaught_e1` | +24 pyro (1U) |  | `none` |
+| diluc | `diluc__skill__searing_onslaught_e2` | +28 pyro (1U) |  | `none` |
+| diluc | `diluc__skill__searing_onslaught_e3` | +46 pyro (1U) |  | `none` |
+| diluc | `diluc__burst__dawn` | +101 pyro (2U) · +112 pyro [icd] · +124 pyro [icd] |  | 300f / every 5 |
+| diona | `diona__skill__icy_paws` | +10 cryo (1U) · +11 cryo [icd] |  | 150f / every 3 |
+| diona | `diona__skill__icy_paws · hE` | +34 cryo (1U) · +35 cryo [icd] · +36 cryo [icd] · +37 cryo (1U) · +38 cryo [icd] | ⚠️ regular, no authored summon: Icy Paw ×5/1f | 150f / every 3 |
+| diona | `diona__burst__signature_mix` | +58 cryo (1U) | 6× Signature Mix (Tick) | 150f / every 3 |
+| dori | `dori__skill__spiritwarding_lamp_troubleshooter_cannon` | +26 electro (1U) · +72 electro [icd] · +85 electro [icd] |  | 150f / every 3 |
+| dori | `dori__burst__alcazarzarays_exactitude` | +28 electro (1U) · +52 electro [icd] · +76 electro [icd] · +100 electro [icd] · +124 electro [icd] · +148 electro [icd] · +172 electro [icd] · +196 electro [icd] · +220 electro (1U) · +244 electro [icd] · +268 electro [icd] · +292 electro [icd] · +316 electro [icd] · +340 electro [icd] · +364 electro [icd] · +388 electro [icd] · +412 electro (1U) · +436 electro [icd] · +460 electro [icd] · +484 electro [icd] · +508 electro [icd] · +532 electro [icd] · +556 electro [icd] · +580 electro [icd] · +604 electro (1U) · +628 electro [icd] · +652 electro [icd] · +676 electro [icd] · +700 electro [icd] · +724 electro [icd] · +748 electro [icd] · +772 electro [icd] | ⚠️ regular, no authored summon: Alcazarzaray's Exactitude: Connector DMG ×32/24f | 180f / first only |
+| durin | `durin__skill__binary_form_convergence_and_division` | **—** |  |  |
+| durin | `durin__burst__principle_of_purity_as_the_light_shifts` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] | 20× Dragon of White Flame | 150f / every 3 |
+| durin | `durin__burst__principle_of_darkness_as_the_stars_smolder` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] · +156 pyro (1U) · +214 pyro [icd] · +273 pyro (1U) · +332 pyro [icd] · +391 pyro (1U) · +450 pyro [icd] · +508 pyro (1U) · +567 pyro [icd] · +626 pyro (1U) · +685 pyro [icd] · +744 pyro (1U) · +802 pyro [icd] · +861 pyro (1U) · +920 pyro [icd] · +979 pyro (1U) · +1038 pyro [icd] · +1096 pyro (1U) · +1155 pyro [icd] · +1214 pyro (1U) · +1273 pyro [icd] |  | 150f / every 3 ⚠️ **mixed** |
+| emilie | `emilie__skill__fragrance_extraction` | +37 dendro (1U) · +62 dendro [icd] | 14× Lumidouce Case (Level 1) | `none` |
+| emilie | `emilie__burst__aromatic_explication` | +126 dendro (1U) · +162 dendro [icd] · +180 dendro [icd] · +234 dendro (1U) | 14× Lumidouce Case (Level 1) | 150f / every 3 |
+| escoffier | `escoffier__skill__lowtemperature_cooking` | +23 cryo (1U) · +83 cryo [icd] · +153 cryo (1U) · +212 cryo [icd] · +270 cryo (1U) · +329 cryo [icd] · +387 cryo (1U) · +446 cryo [icd] · +504 cryo (1U) · +563 cryo [icd] · +621 cryo (1U) · +680 cryo [icd] · +738 cryo (1U) · +797 cryo [icd] · +855 cryo (1U) · +914 cryo [icd] · +972 cryo (1U) · +1031 cryo [icd] · +1089 cryo (1U) · +1148 cryo [icd] · +1206 cryo (1U) · +1265 cryo [icd] · +1323 cryo (1U) |  | 90f / first only ⚠️ **mixed** |
+| escoffier | `escoffier__burst__scoring_cuts` | +92 cryo (2U) |  | `none` |
+| eula | `eula__skill__icetide_vortex` | +20 cryo (1U) |  | `none` |
+| eula | `eula__skill__icetide_vortex · hE` | +49 cryo (1U) |  | `none` |
+| eula | `eula__burst__glacial_illumination` | +100 cryo (2U) · +600 physical |  | `none` |
+| faruzan | `faruzan__skill__wind_realm_of_nasamjnin` | +14 anemo (1U) |  | `none` |
+| faruzan | `faruzan__burst__the_winds_secret_ways` | +54 anemo (1U) |  | `none` |
+| fischl | `fischl__skill__nightrider` | +38 electro (1U) | 10× Oz (Skill) | `none` |
+| fischl | `fischl__burst__midnight_phantasmagoria` | +18 electro (1U) | 10× Oz (Burst) | 300f / every 4 |
+| flins | `flins__skill__ancient_rite_arcane_light` | +19 electro [icd] |  | `none` |
+| flins | `flins__skill__northland_spearstorm` | +23 electro (1U) |  | `none` |
+| flins | `flins__burst__ancient_ritual_cometh_the_night` | +93 electro (1U) · +110 electro [icd] · +119 electro [icd] · +164 electro [icd] |  | `none` |
+| freminet | `freminet__skill__pressurized_floe` | +29 cryo (1U) · +62 cryo [icd] |  | 150f / every 3 ⚠️ **mixed** |
+| freminet | `freminet__burst__shadowhunters_ambush` | +44 cryo (1U) |  | `none` |
+| furina | `furina__skill__salon_solitaire` | +18 hydro (1U) · +110 hydro (1U) · +131 hydro (1U) · +137 hydro (1U) · +209 hydro [icd] · +307 hydro (1U) · +336 hydro [icd] · +405 hydro [icd] · +445 hydro (1U) · +498 hydro (1U) · +540 hydro (1U) · +595 hydro [icd] · +693 hydro (1U) · +744 hydro [icd] · +760 hydro (1U) · +792 hydro [icd] · +891 hydro (1U) · +936 hydro (1U) · +985 hydro [icd] · +1072 hydro (1U) · +1087 hydro (1U) · +1139 hydro [icd] · +1184 hydro [icd] · +1278 hydro (1U) · +1347 hydro (1U) · +1378 hydro [icd] · +1384 hydro (1U) · +1477 hydro (1U) · +1546 hydro [icd] · +1576 hydro [icd] · +1669 hydro (1U) · +1700 hydro (1U) · +1749 hydro (1U) |  | `none` |
+| furina | `furina__burst__let_the_people_rejoice` | +98 hydro (1U) |  | `none` |
+| gaming | `gaming__skill__bestial_ascent` | **—** |  |  |
+| gaming | `gaming__burst__suannis_gilded_dance` | +60 pyro (1U) |  | 150f / every 3 |
+| ganyu | `ganyu__skill__trail_of_the_qilin` | **—** | 2× Ice Lotus |  |
+| ganyu | `ganyu__burst__celestial_shower` | +130 cryo (1U) · +220 cryo [icd] · +310 cryo (1U) · +346 cryo [icd] · +400 cryo [icd] · +454 cryo (1U) · +490 cryo (1U) · +580 cryo [icd] · +670 cryo (1U) · +706 cryo [icd] · +760 cryo [icd] · +796 cryo (1U) · +850 cryo (1U) · +940 cryo [icd] |  | 150f / every 3 |
+| gorou | `gorou__skill__inuzaka_allround_defense` | +34 geo (1U) |  | `none` |
+| gorou | `gorou__burst__juuga_forward_unto_victory` | +31 geo (1U) | 5× Crystal Collapse | `none` |
+| hu_tao | `hu_tao__skill__guide_to_afterlife` | +14 physical |  | `none` |
+| hu_tao | `hu_tao__burst__spirit_soother` | +66 pyro (2U) |  | `none` |
+| ifa | `ifa__skill__airborne_disease_prevention` | **—** |  |  |
+| ifa | `ifa__burst__compound_sedation_field` | +41 anemo (1U) |  | `none` |
+| ineffa | `ineffa__skill__cleaning_mode_carrier_frequency` | +26 electro (1U) | 10× Birgitta | `none` |
+| ineffa | `ineffa__burst__supreme_instruction_cyclonic_exterminator` | +111 electro (1U) | 10× Birgitta | `none` |
+| jahoda | `jahoda__skill__savvy_strategy_splitting_the_spoils` | +368 anemo (1U) |  | 150f / every 3 |
+| jahoda | `jahoda__burst__hidden_aces_seven_tools_of_the_hunter` | +43 anemo (1U) |  | `none` |
+| jean | `jean__skill__gale_blade` | +21 anemo (2U) |  | `none` |
+| jean | `jean__burst__dandelion_breeze` | +40 anemo (2U) · +55 anemo (2U) · +640 anemo (2U) |  | `none` |
+| kaedehara_kazuha | `kaedehara_kazuha__skill__chihayaburu` | +10 anemo (1U) |  | `none` |
+| kaedehara_kazuha | `kaedehara_kazuha__skill__chihayaburu · hE` | +33 anemo (2U) |  | `none` |
+| kaedehara_kazuha | `kaedehara_kazuha__burst__kazuha_slash` | +82 anemo (2U) | 5× Kazuha Slash (DoT) | `none` |
+| kaeya | `kaeya__skill__frostgnaw` | +28 cryo (2U) |  | `none` |
+| kaeya | `kaeya__burst__glacial_waltz` | **—** | 13× Glacial Waltz |  |
+| kamisato_ayaka | `kamisato_ayaka__skill__kamisato_art_hyouka` | +33 cryo (2U) |  | 150f / every 3 |
+| kamisato_ayaka | `kamisato_ayaka__burst__kamisato_art_soumetsu` | +104 cryo (1U) · +119 cryo [icd] · +134 cryo [icd] · +149 cryo (1U) · +164 cryo [icd] · +179 cryo [icd] · +194 cryo (1U) · +209 cryo [icd] · +224 cryo [icd] · +239 cryo (1U) · +254 cryo (1U) · +269 cryo [icd] · +284 cryo [icd] · +299 cryo (1U) · +314 cryo [icd] · +329 cryo [icd] · +344 cryo (1U) · +359 cryo [icd] · +374 cryo [icd] · +404 cryo (1U) | ⚠️ regular, no authored summon: Soumetsu (Cutting) ×19/15f | 150f / every 3 |
+| kamisato_ayato | `kamisato_ayato__skill__kamisato_art_kyouka` | +35 hydro (1U) |  | 150f / every 3 |
+| kamisato_ayato | `kamisato_ayato__burst__kamisato_art_suiyuu` | +139 hydro (1U) · +229 hydro [icd] · +319 hydro (1U) · +409 hydro [icd] · +469 hydro (1U) · +499 hydro [icd] · +589 hydro [icd] · +679 hydro (1U) · +769 hydro [icd] · +859 hydro (1U) · +949 hydro [icd] · +1039 hydro (1U) · +1129 hydro [icd] · +1189 hydro (1U) |  | 150f / every 3 |
+| kaveh | `kaveh__skill__artistic_ingenuity` | +35 dendro (1U) |  | `none` |
+| kaveh | `kaveh__burst__painted_dome` | +36 dendro (2U) |  | `none` |
+| keqing | `keqing__skill__stellar_restoration` | +25 electro (1U) |  | `none` |
+| keqing | `keqing__skill__stellar_restoration_recast` | +16 electro (2U) |  | 150f / every 3 |
+| keqing | `keqing__burst__starward_sword` | +56 electro (1U) · +82 electro [icd] · +93 electro [icd] · +104 electro (1U) · +115 electro [icd] · +126 electro [icd] · +137 electro (1U) · +148 electro [icd] · +159 electro [icd] · +197 electro (1U) | ⚠️ regular, no authored summon: Starward Sword (Consecutive Slash) ×8/11f | 150f / every 3 |
+| kinich | `kinich__skill__canopy_hunter_riding_high` | **—** |  |  |
+| kinich | `kinich__burst__hail_to_the_almighty_dragonlord` | +161 dendro (1U) · +253 dendro [icd] · +403 dendro (1U) · +553 dendro (1U) · +703 dendro (1U) · +848 dendro [icd] · +993 dendro (1U) |  | 150f / every 3 |
+| kirara | `kirara__skill__meowteor_kick` | +14 dendro (1U) |  | `none` |
+| kirara | `kirara__burst__secret_art_surprise_dispatch` | +38 dendro (2U) · +180 dendro (1U) · +180 dendro (1U) · +800 dendro (1U) · +818 dendro [icd] · +836 dendro [icd] · +854 dendro (1U) |  | `none` |
+| klee | `klee__skill__jumpy_dumpty` | +71 pyro (1U) · +240 pyro (1U) · +240 pyro (1U) |  | 150f / every 3 |
+| klee | `klee__burst__sparks_n_splash` | +186 pyro (1U) · +198 pyro [icd] · +210 pyro [icd] · +294 pyro (1U) · +306 pyro [icd] · +306 pyro [icd] · +318 pyro (1U) · +318 pyro (1U) · +401 pyro (1U) · +413 pyro [icd] · +425 pyro (1U) · +425 pyro (1U) · +503 pyro [icd] · +515 pyro (1U) · +515 pyro (1U) · +527 pyro [icd] · +527 pyro [icd] · +610 pyro (1U) · +622 pyro [icd] · +634 pyro (1U) · +634 pyro (1U) · +718 pyro [icd] · +730 pyro (1U) · +730 pyro (1U) · +742 pyro [icd] |  | 150f / every 3 |
+| kujou_sara | `kujou_sara__skill__tengu_stormcall` | **—** |  |  |
+| kujou_sara | `kujou_sara__burst__subjugation_koukou_sendou` | +51 electro (1U) · +100 electro (1U) · +100 electro (1U) · +100 electro (1U) · +100 electro (1U) |  | `none` |
+| kuki_shinobu | `kuki_shinobu__skill__sanctifying_ring` | +11 electro (1U) | 8× Grass Ring of Sanctification | 150f / every 3 |
+| kuki_shinobu | `kuki_shinobu__burst__gyoei_narukami_kariyama_rite` | **—** | 7× Gyoei Narukami Kariyama Rite |  |
+| lan_yan | `lan_yan__skill__swallow_wisp_pinion_dance` | +7 physical |  | `none` |
+| lan_yan | `lan_yan__burst__lustrous_moonrise` | +30 anemo (2U) · +46 anemo [icd] · +51 anemo [icd] |  | 150f / every 3 |
+| lauma | `lauma__skill__runo_dawnless_rest_of_karsikko` | +16 dendro (1U) | 8× Frostgrove Sanctuary | `none` |
+| lauma | `lauma__burst__runo_all_hearts_become_the_beating_moon` | **—** |  |  |
+| layla | `layla__skill__nights_of_formal_focus` | +32 cryo (1U) · +450 cryo (1U) · +475 cryo [icd] · +499 cryo [icd] · +524 cryo [icd] |  | `none` |
+| layla | `layla__burst__dream_of_the_starstream_shaker` | **—** | 8× Starlight Slug |  |
+| lisa | `lisa__skill__violet_arc` | +22 electro (1U) |  | 150f / every 3 |
+| lisa | `lisa__skill__violet_arc · hE` | +117 electro (2U) |  | `none` |
+| lisa | `lisa__burst__lightning_rose` | +56 electro [icd] | 30× Lightning Rose (Tick) | `none` |
+| lynette | `lynette__skill__enigmatic_feint` | +28 anemo (1U) · +58 anemo [icd] |  | `none` |
+| lynette | `lynette__skill__enigmatic_feint · hE` | +51 anemo (1U) · +79 anemo [icd] |  | `none` |
+| lynette | `lynette__burst__magic_trick_astonishing_shift` | +18 anemo (1U) | 11× Bogglecat Box | 150f / every 3 |
+| lyney | `lyney__skill__bewildering_lights` | +18 pyro (1U) |  | `none` |
+| lyney | `lyney__burst__wondrous_trick_miracle_parade` | +112 pyro (1U) · +288 pyro (1U) · +563 pyro (1U) |  | `none` |
+| mavuika | `mavuika__skill__the_named_moment` | +16 pyro (1U) | 6× Rings of Searing Radiance | `none` |
+| mavuika | `mavuika__skill__the_named_moment · hE` | +16 pyro (1U) |  | `none` |
+| mavuika | `mavuika__burst__hour_of_burning_skies` | +106 pyro (1U) |  | `none` |
+| mika | `mika__skill__starfrost_swirl` | +18 cryo (1U) |  | `none` |
+| mika | `mika__skill__starfrost_swirl · hE` | +15 cryo (1U) |  | 150f / every 3 |
+| mika | `mika__burst__skyfeather_song` | **—** |  |  |
+| mona | `mona__skill__mirror_reflection_of_doom` | +329 hydro (1U) | 4× Mirror Reflection of Doom (Tick) | `none` |
+| mona | `mona__skill__mirror_reflection_of_doom · hE` | +344 hydro (1U) | 4× Mirror Reflection of Doom (Tick) | `none` |
+| mona | `mona__burst__stellaris_phantasm` | +107 hydro (1U) · +587 physical · +588 hydro (2U) |  | 150f / every 3 ⚠️ **mixed** |
+| mualani | `mualani__skill__surfshark_wavebreaker` | **—** |  |  |
+| mualani | `mualani__burst__boomsharkalaka` | +178 hydro (1U) |  | `none` |
+| nahida | `nahida__skill__all_schemes_to_know` | +13 dendro (1U) |  | `none` |
+| nahida | `nahida__skill__all_schemes_to_know · hE` | +33 dendro (1U) |  | `none` |
+| nahida | `nahida__burst__illusory_heart` | **—** |  |  |
+| navia | `navia__skill__ceremonial_crystalshot` | +20 geo (1U) · +75 geo [icd] |  | `none` |
+| navia | `navia__skill__ceremonial_crystalshot · hE` | +50 geo (1U) · +105 geo [icd] |  | `none` |
+| navia | `navia__burst__as_the_sunlit_skys_singing_salute` | +104 geo (2U) | 17× Cannon Fire Support | `none` |
+| neuvillette | `neuvillette__skill__o_tears_i_shall_repay` | +23 hydro (1U) · +60 hydro [icd] |  | `none` |
+| neuvillette | `neuvillette__burst__o_tides_i_have_returned` | +95 hydro (1U) · +135 hydro [icd] · +154 hydro [icd] |  | 150f / every 3 |
+| nicole | `nicole__skill__revelation_uncreated_light` | +9 pyro (1U) |  | `none` |
+| nicole | `nicole__burst__revelation_ladder_of_divine_ascent` | +108 pyro (1U) |  | `none` |
+| nilou | `nilou__skill__dance_of_haftkarsvar` | +16 hydro (1U) |  | 150f / every 3 |
+| nilou | `nilou__skill__whirling_steps_1` | +21 hydro [icd] |  | 150f / every 3 |
+| nilou | `nilou__skill__whirling_steps_2` | +21 hydro [icd] |  | 150f / every 3 |
+| nilou | `nilou__skill__whirling_steps_3` | +21 hydro [icd] |  | 150f / every 3 |
+| nilou | `nilou__burst__dance_of_abzendegi_distant_dreams_listening_spring` | +91 hydro (1U) · +212 hydro (1U) |  | `none` |
+| ningguang | `ningguang__skill__jade_screen` | **—** | 1× Jade Screen |  |
+| ningguang | `ningguang__burst__starshatter` | +62 geo (2U) · +97 geo [icd] · +106 geo [icd] · +110 geo (2U) · +116 geo [icd] · +124 geo [icd] |  | 150f / every 3 |
+| noelle | `noelle__skill__breastplate` | +14 geo (2U) |  | 150f / every 3 |
+| noelle | `noelle__burst__sweeping_time` | +24 geo (1U) · +65 geo [icd] |  | 150f / every 3 |
+| odette | `odette__skill__adagio_phantom_night_dancers` | +23 cryo (1U) | 10× "Plume" Dance Move, "Wing" Dance Move | `none` |
+| odette | `odette__skill__adagio_coda_at_dawns_tolling` | +11 cryo (1U) · +20 cryo [icd] · +28 cryo [icd] · +62 cryo [icd] · +114 cryo (1U) · +223 cryo (1U) · +348 cryo (1U) · +457 cryo (1U) · +582 cryo (1U) · +691 cryo (1U) · +816 cryo (1U) · +925 cryo (1U) · +1050 cryo (1U) · +1159 cryo (1U) | ⚠️ regular, no authored summon: "Plume" Dance Move ×5/234f, "Wing" Dance Move ×5/234f | 180f / first only ⚠️ **mixed** |
+| odette | `odette__burst__presto_bluebird_finale` | +112 cryo (1U) · +128 cryo [icd] · +140 cryo [icd] · +144 cryo (1U) | 9× "Plume" Dance Move, "Wing" Dance Move | 150f / every 3 |
+| ororon | `ororon__skill__nights_sling` | +41 electro (1U) |  | 150f / every 3 |
+| ororon | `ororon__burst__dark_voices_echo` | +36 electro (1U) | 9× Soundwave Collision DMG | `none` |
+| prune | `prune__skill__ringadingding_hexhunter_chime` | +26 anemo (1U) |  | `none` |
+| prune | `prune__burst__the_bell_tolls_the_hunt_is_on` | +34 anemo (1U) | 6× Witchlure Bell | `none` |
+| qiqi | `qiqi__skill__adeptus_art_herald_of_frost` | +32 cryo (1U) · +96 cryo [icd] · +231 cryo (1U) · +291 cryo [icd] · +426 cryo (1U) · +486 cryo [icd] · +621 cryo (1U) · +681 cryo [icd] · +816 cryo (1U) · +876 cryo [icd] |  | 150f / every 3 |
+| qiqi | `qiqi__burst__adeptus_art_preserver_of_fortune` | +40 physical | 1× Fortune-Preserving Talisman | `none` |
+| raiden_shogun | `raiden_shogun__skill__transcendence_baleful_omen` | +51 electro (1U) |  | `none` |
+| raiden_shogun | `raiden_shogun__burst__secret_art_musou_shinsetsu` | +98 electro (2U) |  | 150f / every 3 |
+| razor | `razor__skill__claw_and_thunder` | +32 electro (1U) |  | `none` |
+| razor | `razor__skill__claw_and_thunder · hE` | +55 electro (1U) |  | `none` |
+| razor | `razor__burst__lightning_fang` | +32 electro (2U) |  | `none` |
+| rosaria | `rosaria__skill__ravaging_confession` | +24 cryo (1U) · +38 cryo (1U) |  | `none` |
+| rosaria | `rosaria__burst__rites_of_termination` | +15 cryo (1U) · +56 cryo (1U) | 4× Rites of Termination (DoT) | `none` |
+| sangonomiya_kokomi | `sangonomiya_kokomi__skill__kurages_oath` | **—** | 7× Bake-Kurage |  |
+| sangonomiya_kokomi | `sangonomiya_kokomi__burst__nereids_ascension` | +49 hydro (2U) |  | 150f / every 3 |
+| sayu | `sayu__skill__yoohoo_art_fuuin_dash` | +7 anemo (1U) · +25 anemo (1U) |  | 150f / every 3 ⚠️ **mixed** |
+| sayu | `sayu__skill__yoohoo_art_fuuin_dash · hE` | +18 anemo (1U) · +68 anemo (1U) |  | 150f / every 3 ⚠️ **mixed** |
+| sayu | `sayu__burst__yoohoo_art_mujina_flurry` | +12 anemo (1U) | 6× Muji-Muji Daruma | `none` |
+| sethos | `sethos__skill__ancient_rite_the_thundering_sands` | +13 electro (1U) |  | `none` |
+| sethos | `sethos__burst__secret_rite_twilight_shadowpiercer` | **—** |  |  |
+| shenhe | `shenhe__skill__spring_spirit_summoning` | +4 cryo (1U) |  | `none` |
+| shenhe | `shenhe__skill__spring_spirit_summoning · hE` | +33 cryo (2U) |  | `none` |
+| shenhe | `shenhe__burst__divine_maidens_deliverance` | +129 cryo (1U) · +159 cryo [icd] · +246 cryo [icd] · +278 cryo (1U) · +363 cryo (1U) · +397 cryo [icd] · +480 cryo [icd] · +510 cryo (1U) · +597 cryo (1U) · +629 cryo [icd] · +714 cryo [icd] · +748 cryo (1U) |  | 150f / every 3 |
+| shikanoin_heizou | `shikanoin_heizou__skill__heartstopper_strike` | +20 anemo (2U) |  | `none` |
+| shikanoin_heizou | `shikanoin_heizou__skill__heartstopper_strike · hE` | +200 anemo (2U) |  | `none` |
+| shikanoin_heizou | `shikanoin_heizou__burst__windmuster_kick` | +34 physical · +34 anemo (1U) |  | `none` |
+| sigewinne | `sigewinne__skill__rebound_hydrotherapy` | +75 hydro [icd] | 5× Rebound Hydrotherapy | `none` |
+| sigewinne | `sigewinne__skill__rebound_hydrotherapy · h1E` | +106 hydro [icd] | 5× Rebound Hydrotherapy | `none` |
+| sigewinne | `sigewinne__skill__rebound_hydrotherapy · h2E` | +130 hydro [icd] | 5× Rebound Hydrotherapy | `none` |
+| sigewinne | `sigewinne__burst__super_saturated_syringing` | +99 hydro (1U) · +124 hydro [icd] · +149 hydro [icd] · +174 hydro [icd] · +199 hydro [icd] · +224 hydro (1U) | ⚠️ regular, no authored summon: Super Saturated Syringing ×6/25f | 114f / first only |
+| skirk | `skirk__skill__havoc_warp` | **—** |  |  |
+| skirk | `skirk__skill__havoc_warp · hE` | **—** |  |  |
+| skirk | `skirk__burst__havoc_ruin` | +109 cryo (1U) · +111 cryo [icd] · +114 cryo [icd] · +125 cryo (1U) · +135 cryo [icd] · +158 cryo [icd] |  | 150f / every 3 |
+| skirk | `skirk__burst__havoc_extinction` | **—** |  |  |
+| sucrose | `sucrose__skill__astable_anemohypostasis_creation_6308` | +42 anemo (1U) |  | `none` |
+| sucrose | `sucrose__burst__forbidden_creation_isomer_75_type_ii` | **—** | 3× Forbidden Creation-Isomer 75/Type II |  |
+| tartaglia | `tartaglia__skill__foul_legacy_raging_tide` | +16 hydro (2U) |  | `none` |
+| tartaglia | `tartaglia__burst__havoc_obliteration_ranged` | +70 hydro (2U) |  | `none` |
+| tartaglia | `tartaglia__burst__havoc_obliteration_melee` | +69 hydro (2U) |  | `none` |
+| thoma | `thoma__skill__blazing_blessing` | +11 pyro (1U) |  | `none` |
+| thoma | `thoma__burst__crimson_ooyoroi` | +40 pyro (2U) |  | `none` |
+| tighnari | `tighnari__skill__vijnanaphala_mine` | +20 dendro (1U) |  | `none` |
+| tighnari | `tighnari__burst__fashioners_tanglevine_shaft` | +112 dendro (1U) · +117 dendro [icd] · +120 dendro [icd] · +121 dendro (1U) · +126 dendro [icd] · +128 dendro [icd] · +147 dendro (1U) · +153 dendro [icd] · +160 dendro [icd] · +161 dendro (1U) · +171 dendro [icd] · +175 dendro [icd] |  | 150f / every 3 |
+| traveler_anemo | `traveler_anemo__skill__palm_vortex` | +34 anemo (1U) |  | 150f / every 3 |
+| traveler_anemo | `traveler_anemo__skill__palm_vortex · hE` | +31 anemo (1U) · +46 anemo [icd] · +66 anemo [icd] · +81 anemo (1U) · +96 anemo [icd] · +111 anemo [icd] · +116 anemo (1U) | ⚠️ regular, no authored summon: Palm Vortex Max Cutting (Hold) ×4/15f | 150f / every 3 |
+| traveler_anemo | `traveler_anemo__burst__gust_surge` | **—** | 9× Gust Surge |  |
+| traveler_dendro | `traveler_dendro__skill__razorgrass_blade` | +28 dendro (1U) |  | `none` |
+| traveler_dendro | `traveler_dendro__burst__surgent_manifestation` | **—** | 8× Lea Lotus Lamp |  |
+| traveler_electro | `traveler_electro__skill__lightning_blade` | +21 electro (1U) |  | 150f / every 3 |
+| traveler_electro | `traveler_electro__burst__bellowing_thunder` | +37 electro (1U) |  | `none` |
+| traveler_geo | `traveler_geo__skill__starfell_sword` | +62 geo (2U) |  | 150f / every 3 |
+| traveler_geo | `traveler_geo__skill__starfell_sword · hE` | +62 geo (2U) |  | 150f / every 3 |
+| traveler_geo | `traveler_geo__burst__wake_of_earth` | **—** | 4× Wake of Earth |  |
+| traveler_hydro | `traveler_hydro__skill__aquacrest_saber` | +25 hydro (1U) · +70 hydro [icd] |  | `none` |
+| traveler_hydro | `traveler_hydro__skill__aquacrest_saber · hE` | +61 hydro (1U) · +76 hydro [icd] · +91 hydro [icd] · +106 hydro [icd] · +121 hydro [icd] · +136 hydro [icd] · +151 hydro (1U) · +166 hydro [icd] · +181 hydro [icd] · +196 hydro [icd] · +211 hydro [icd] · +226 hydro [icd] · +241 hydro (1U) · +256 hydro [icd] · +271 hydro [icd] · +286 hydro [icd] · +301 hydro [icd] · +316 hydro [icd] · +331 hydro (1U) · +346 hydro [icd] · +361 hydro [icd] · +372 hydro (1U) · +376 hydro [icd] · +418 hydro [icd] | ⚠️ regular, no authored summon: Dewdrop (Hold) ×22/15f | 90f / first only ⚠️ **mixed** |
+| traveler_hydro | `traveler_hydro__burst__rising_waters` | +34 hydro (1U) |  | 480f / every 4 |
+| traveler_pyro | `traveler_pyro__skill__flowfire_blade` | +24 pyro (1U) · +90 pyro [icd] · +156 pyro [icd] · +222 pyro (1U) · +288 pyro [icd] · +354 pyro [icd] | ⚠️ regular, no authored summon: Blazing Threshold DMG ×6/66f | 150f / every 3 |
+| traveler_pyro | `traveler_pyro__skill__flowfire_blade · hE` | +50 pyro (1U) · +62 pyro (1U) |  | 150f / every 3 |
+| traveler_pyro | `traveler_pyro__burst__plains_scorcher` | +40 pyro (1U) |  | `none` |
+| varesa | `varesa__skill__riding_the_nightrainbow` | +5 electro (1U) |  | 150f / every 3 |
+| varesa | `varesa__burst__guardian_vent` | +88 electro (1U) |  | `none` |
+| varka | `varka__skill__windbound_execution` | +40 anemo (1U) |  | `none` |
+| varka | `varka__skill__windbound_execution · hE` | +40 anemo (1U) |  | `none` |
+| varka | `varka__skill__four_winds_ascension` | +40 anemo (1U) |  | `none` |
+| varka | `varka__burst__northwind_avatar` | +112 anemo (1U) · +131 anemo (1U) |  | `none` |
+| venti | `venti__skill__skyward_sonnet` | +51 anemo (2U) |  | `none` |
+| venti | `venti__skill__skyward_sonnet · hE` | +74 anemo (2U) |  | `none` |
+| venti | `venti__burst__winds_grand_ode` | **—** | 20× Wind's Grand Ode |  |
+| wanderer | `wanderer__skill__hanega_song_of_the_wind` | +2 anemo (1U) |  | `none` |
+| wanderer | `wanderer__burst__kyougen_five_ceremonial_plays` | +92 anemo (1U) · +98 anemo [icd] · +104 anemo [icd] · +110 anemo (1U) · +116 anemo [icd] | ⚠️ regular, no authored summon: Kyougen: Five Ceremonial Plays ×5/6f | 150f / every 3 |
+| wriothesley | `wriothesley__skill__icefang_rush` | **—** |  |  |
+| wriothesley | `wriothesley__burst__darkgold_wolfbite` | +99 cryo (1U) · +104 cryo [icd] · +109 cryo [icd] · +114 cryo (1U) · +119 cryo [icd] · +160 cryo [icd] | ⚠️ regular, no authored summon: Darkgold Wolfbite ×5/5f | 150f / every 3 ⚠️ **mixed** |
+| xiangling | `xiangling__skill__guoba_attack` | **—** | 4× Guoba |  |
+| xiangling | `xiangling__burst__pyronado` | +18 pyro (1U) · +33 pyro [icd] · +57 pyro [icd] | 9× Pyronado | 150f / every 3 |
+| xianyun | `xianyun__skill__skyladder_1` | +3 anemo [icd] |  | `none` |
+| xianyun | `xianyun__burst__stars_gather_at_dusk` | +75 anemo (1U) |  | `none` |
+| xiao | `xiao__skill__lemniscatic_wind_cycling` | +4 anemo (1U) |  | 6f / first only |
+| xiao | `xiao__burst__bane_of_all_evil` | **—** |  |  |
+| xilonen | `xilonen__skill__yohuals_scratch` | +6 geo (1U) |  | 150f / every 3 |
+| xilonen | `xilonen__burst__ocelotlicue_point` | +96 geo (1U) · +128 geo [icd] · +164 geo [icd] |  | 150f / every 3 |
+| xilonen | `xilonen__burst__ocelotlicue_point · Q` | +96 geo (1U) · +128 geo [icd] · +164 geo [icd] |  | 150f / every 3 |
+| xingqiu | `xingqiu__skill__guhua_sword_fatal_rainscreen` | +12 hydro (1U) · +31 hydro (1U) | 7× Xingqiu Orbital | `none` |
+| xingqiu | `xingqiu__burst__guhua_sword_raincutter` | **—** | 7× Xingqiu Orbital |  |
+| xinyan | `xinyan__skill__sweeping_fervor` | +15 pyro (1U) |  | `none` |
+| xinyan | `xinyan__burst__riff_revolution` | +22 physical · +57 pyro (1U) · +74 pyro [icd] · +91 pyro [icd] · +108 pyro (1U) · +125 pyro [icd] · +142 pyro [icd] · +159 pyro (1U) | ⚠️ regular, no authored summon: Riff Revolution (DoT) ×7/17f | `none` |
+| yae_miko | `yae_miko__skill__yakan_evocation_sesshou_sakura` | **—** | 8× Sesshou Sakura Tick |  |
+| yae_miko | `yae_miko__burst__great_secret_art_tenko_kenshin` | +100 electro (1U) |  | `none` |
+| yanfei | `yanfei__skill__signed_edict` | +32 pyro (1U) |  | `none` |
+| yanfei | `yanfei__burst__done_deal` | +24 pyro (2U) |  | `none` |
+| yaoyao | `yaoyao__skill__raphanus_sky_cluster` | **—** | 10× Radish (Skill) |  |
+| yaoyao | `yaoyao__burst__moonjade_descent` | +16 dendro (1U) · +145 dendro (1U) · +203 dendro [icd] · +205 dendro [icd] · +262 dendro (1U) · +263 dendro [icd] · +265 dendro [icd] · +322 dendro [icd] · +323 dendro [icd] · +325 dendro [icd] |  | `none` |
+| yelan | `yelan__skill__lingering_lifeline` | +36 hydro (1U) |  | `none` |
+| yelan | `yelan__burst__depthclarion_dice` | +76 hydro (2U) |  | `none` |
+| yoimiya | `yoimiya__skill__niwabi_firedance` | **—** |  |  |
+| yoimiya | `yoimiya__burst__ryuukin_saxifrage` | +75 pyro (2U) |  | 150f / every 3 |
+| yumemizuki_mizuki | `yumemizuki_mizuki__skill__aisa_utamakura_pilgrimage` | +2 anemo (1U) · +48 anemo (1U) · +93 anemo [icd] · +138 anemo (1U) · +183 anemo [icd] · +228 anemo (1U) · +273 anemo [icd] · +318 anemo (1U) | ⚠️ regular, no authored summon: Dreamdrifter Continuous Attack ×7/45f | `none` |
+| yumemizuki_mizuki | `yumemizuki_mizuki__burst__anraku_secret_spring_therapy` | +93 anemo (2U) | 8× Munen Shockwave | `none` |
+| yun_jin | `yun_jin__skill__opening_flourish` | +13 geo (2U) |  | `none` |
+| yun_jin | `yun_jin__skill__opening_flourish · hE` | +50 geo (2U) |  | `none` |
+| yun_jin | `yun_jin__skill__opening_flourish · hE` | +50 geo (2U) |  | `none` |
+| yun_jin | `yun_jin__burst__cliffbreakers_banner` | +35 geo (2U) |  | 150f / every 3 |
+| zhongli | `zhongli__skill__dominus_lapidis` | +24 geo (2U) | 15× Stone Stele (Tick) | 150f / every 3 |
+| zhongli | `zhongli__skill__dominus_lapidis · hE` | +48 geo (1U) · +48 geo [icd] | 15× Stone Stele (Tick) | 150f / every 3 |
+| zhongli | `zhongli__burst__planet_befall` | +101 geo (4U) |  | `none` |
+
+### 4b. Casts whose measured cadence is neither standard nor none
+
+⚓ The cast-side twin of §5b (cast-icd-gate round, 2026-09-17). Each row is a
+skill/burst whose cast hits run on a real gcsim group the schema default (2.5 s /
+every 3rd hit) does not reproduce, and whose `application[]` has at least two
+entries — with one entry there is nothing to gate. `authored` is what the data
+says today (`noICD`, an `icdGate`, or the default); ⛔ this report never writes it.
+
+⚠️ A row is a REVIEW CANDIDATE — pair the gate with the stream OUR `application[]`
+MODELS (one entry may be several gcsim hits; a Durability-0 hit is not an entry).
+
+| character | ability | applied/total | gcsim cadence | authored |
+| --- | --- | --- | --- | --- |
+| arlecchino | `arlecchino__skill__all_is_ash` | 3/4 | 600f / every 3 ⚠️ **mixed** | ✅ authored |
+| diluc | `diluc__burst__dawn` | 1/3 | 300f / every 5 | ✅ authored |
+| dori | `dori__burst__alcazarzarays_exactitude` | 4/32 | 180f / first only | ✅ authored |
+| odette | `odette__skill__adagio_coda_at_dawns_tolling` | 11/14 | 180f / first only ⚠️ **mixed** | ✅ authored |
+| sigewinne | `sigewinne__burst__super_saturated_syringing` | 2/6 | 114f / first only | ✅ authored |
+| traveler_hydro | `traveler_hydro__skill__aquacrest_saber · hE` | 5/24 | 90f / first only ⚠️ **mixed** | ✅ authored |
 
 ### No observed schedule (16)
 

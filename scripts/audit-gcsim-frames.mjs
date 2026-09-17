@@ -376,7 +376,21 @@ function main() {
 					continue;
 				}
 				const split = splitApplications(g.applications ?? [], t.node.summons?.length ? t.node : a);
-				applicationRows.push({ id: char.id, path: t.path, key: t.key, ...split });
+				// ⚓ The cast stream's own cadence (cast-icd-gate round, 2026-09-17):
+				// the same `streamIcd` / `icdGateFor` the summon cross-check uses, over
+				// the CAST hits — read off gcsim's group tables, never inferred from the
+				// applied count. `node` is the authored form, for §4b's `authored` column.
+				const castIcd = streamIcd(split.cast);
+				applicationRows.push({
+					id: char.id,
+					path: t.path,
+					key: t.key,
+					node: t.node,
+					ability: a,
+					castIcd,
+					castGate: icdGateFor(castIcd),
+					...split
+				});
 			}
 			// Summon cadence cross-check.
 			//
@@ -597,8 +611,12 @@ function renderReport(d) {
 	p('summon** flags the ambiguous ones for a human — either a multi-hit cast (author it');
 	p('in the list) or a thing left in the world we have not modelled.');
 	p();
-	p('| character | ability | cast applications | recurring streams |');
-	p('| --- | --- | --- | --- |');
+	p("`gcsim cadence` is the cast stream's own ICD group (window / period), read off");
+	p("gcsim's tables the way §5 reads a tick series' — ⚠️ it is the RULE, not the applied");
+	p('count; §4b lists the casts whose rule the schema default does not reproduce.');
+	p();
+	p('| character | ability | cast applications | recurring streams | gcsim cadence |');
+	p('| --- | --- | --- | --- | --- |');
 	for (const r of d.applicationRows) {
 		const fmt = (xs) =>
 			xs.length
@@ -614,9 +632,49 @@ function renderReport(d) {
 			: r.regular.length
 				? `⚠️ regular, no authored summon: ${r.regular.join(', ')}`
 				: '';
-		p(`| ${r.id} | \`${r.path}\` | ${fmt(r.cast)} | ${ticks} |`);
+		p(
+			`| ${r.id} | \`${r.path}\` | ${fmt(r.cast)} | ${ticks} | ${r.cast.length ? fmtIcd(r.castIcd) : ''} |`
+		);
 	}
 	p();
+	// --- 4b: casts on a non-default group ------------------------------------
+	p('### 4b. Casts whose measured cadence is neither standard nor none');
+	p();
+	p('⚓ The cast-side twin of §5b (cast-icd-gate round, 2026-09-17). Each row is a');
+	p('skill/burst whose cast hits run on a real gcsim group the schema default (2.5 s /');
+	p('every 3rd hit) does not reproduce, and whose `application[]` has at least two');
+	p('entries — with one entry there is nothing to gate. `authored` is what the data');
+	p('says today (`noICD`, an `icdGate`, or the default); ⛔ this report never writes it.');
+	p();
+	p('⚠️ A row is a REVIEW CANDIDATE — pair the gate with the stream OUR `application[]`');
+	p('MODELS (one entry may be several gcsim hits; a Durability-0 hit is not an entry).');
+	p();
+	const castWork = [];
+	for (const r of d.applicationRows) {
+		if (!r.castGate || r.castGate === 'standard' || r.castGate === 'none') continue;
+		const authoredApp = r.node.application ?? r.ability.application;
+		if (!authoredApp || authoredApp.length < 2) continue;
+		const claim = r.ability.noICD ? 'none' : (r.ability.icdGate ?? 'standard');
+		castWork.push({
+			id: r.id,
+			path: r.path,
+			n: r.cast.length,
+			applied: r.cast.filter((x) => x.applied).length,
+			icd: r.castIcd,
+			state: gateAgrees(claim, r.castGate) ? '✅ authored' : `⛔ ${fmtGate(claim)}`
+		});
+	}
+	if (!castWork.length) {
+		p('_None — every measured cast stream with two or more authored entries is standard or none._');
+		p();
+	} else {
+		p('| character | ability | applied/total | gcsim cadence | authored |');
+		p('| --- | --- | --- | --- | --- |');
+		for (const w of castWork) {
+			p(`| ${w.id} | \`${w.path}\` | ${w.applied}/${w.n} | ${fmtIcd(w.icd)} | ${w.state} |`);
+		}
+		p();
+	}
 	if (d.noApplication.length) {
 		p(`### No observed schedule (${d.noApplication.length})`);
 		p();

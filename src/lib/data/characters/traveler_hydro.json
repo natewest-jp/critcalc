@@ -210,7 +210,8 @@
 						{
 							"frame": 372,
 							"element": "hydro",
-							"units": 1
+							"units": 1,
+							"noICD": true
 						},
 						{
 							"frame": 376,
@@ -232,7 +233,8 @@
 				"A4 (Clear Waters): Hold-E HP consumed accumulates +45% as Torrent Surge FlatDmg, max 5000 bonus DMG. Not authored — composite scaling on HP-drained-amount. gcsim skill.go:321-332 (drain 0.04*CurrentHP per Dewdrop, a4Bonus += drain*0.45).",
 				"Capability sweep 2026-07-28: deleted stale beta note 'C4 (Tide Tributary): +20% Hydro DMG on E cast' — the release C4 is 'Pouring Descent' (Aquacrest Aegis shield), authored on the constellation entry. Description refreshed to genshin-db 5.2.12 combat2 text (beta '22 Dewdrops' wording replaced).",
 				"[A7] Original caveat: each Dewdrop's per-hit flat damage scales with Max HP via dewdropBonus[lvl]; the HP-cost-per-tick combined with per-hit flat-DMG-on-Max-HP scaling does not fit a single-scaling damage effect, which is why per-tick damage and HP costs are left unmodeled and only the frame variant is authored.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — and the closing claim is now stale. The Hold variant authors a full 24-entry `application[]` running out to frame 418, so the aura lane DOES pip the Dewdrop channel — 'only the cast is shown' reads as false the moment the lane is on. What is genuinely absent is per-tick DAMAGE (never rendered for anyone) and the HP cost (the sim carries no HP state at all, tool-wide). Neither shortens a bar, moves a marker or blanks a lane the tool otherwise fills. Category: invisible-omission."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — and the closing claim is now stale. The Hold variant authors a full 24-entry `application[]` running out to frame 418, so the aura lane DOES pip the Dewdrop channel — 'only the cast is shown' reads as false the moment the lane is on. What is genuinely absent is per-tick DAMAGE (never rendered for anyone) and the HP cost (the sim carries no HP state at all, tool-wide). Neither shortens a bar, moves a marker or blanks a lane the tool otherwise fills. Category: invisible-omission.",
+				"✅ `icdGate` { timer 90 } (first hit of each window) authored 2026-09-17 (cast-icd-gate round; read off gcsim's group tables via the frames audit's §4b, ⛔ never inferred from an applied count). `ICDGroupTravelerDewdrop` (90f, first only) on the hold's Dewdrop stream; the 24 entries at 15f used to apply every third. The finale (+372) is on gcsim's DEFAULT group with a counter of its own, so it applies once whatever the stream does — carried as an entry-level `noICD`, the one-hit approximation of a separate counter."
 			],
 			"description": "Unleashes a torrent that can cleanse the world.\n\nPress\nSends a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\n\nHold\nEnter Aiming Mode and constantly fire off Dewdrops in the direction in which you are aiming, dealing Hydro DMG to opponents they hit.\nWhen the skill ends, it will send a Torrent Surge forward that will deal Hydro DMG to opponents it comes into contact with.\nSuffusion: When using the Hold configuration of this skill, if the Traveler's HP is higher than 50%, the DMG dealt by Dewdrops will increase based on the Traveler's Max HP, and the Traveler will lose a fixed amount of HP every second.\n\nArkhe: Pneuma\nAt certain intervals, after using Torrent Surge, this skill will unleash a Spiritbreath Thorn that pierces opponents, dealing Pneuma-aligned Hydro DMG.",
 			"application": [
@@ -245,7 +247,10 @@
 					"frame": 70,
 					"element": "hydro"
 				}
-			]
+			],
+			"icdGate": {
+				"timer": 90
+			}
 		},
 		{
 			"id": "traveler_hydro__burst__rising_waters",

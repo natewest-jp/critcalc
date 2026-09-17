@@ -2211,6 +2211,18 @@ export type ElementalApplication = {
 	 * the list itself.
 	 */
 	units?: number;
+	/**
+	 * ⚓ THIS HIT IS ON NO COUNTER (cast-icd-gate round, 2026-09-17): gcsim's
+	 * `ICDTagNone` on ONE hit of a cast whose other hits share a group. It applies
+	 * always and spends no slot of the cast's counter — Arlecchino's All Is Ash is
+	 * the case: the Spike and the Blood-Debt ticks run on a 600f group while the
+	 * Cleave between them is untagged, so no single `icdGate` can say both.
+	 * ⚠️ Also the approximation for a lone hit on its OWN group inside a cast
+	 * (the Hydro Traveler's hold finale on the default group): one hit on a
+	 * counter of its own applies once, which is what "always" says for one hit.
+	 * ⛔ Redundant beside the ability's own `noICD` (lint D.27c).
+	 */
+	noICD?: true;
 };
 
 /** Fields shared by all skill behavior variants. */
@@ -2239,6 +2251,24 @@ type SkillCommonFields = AbilityCommon & {
 	 *  a normal ability, and by the per-cast counter on a skill/burst (L4d).
 	 *  See docs/library/game/icd.md. */
 	noICD?: boolean;
+	/**
+	 * ⚓ A MEASURED non-standard element-application window for this cast's
+	 * `application[]` (the cast-side twin of `NormalAbility.chargedIcdWindow` and
+	 * `summonTick.icdGate`; cast-icd-gate round, 2026-09-17). Absent = the
+	 * standard 2.5 s / every-third-hit default; `noICD` is the "every hit
+	 * applies" half and wins when both are set. Read by `resolveCastApplications`
+	 * through the same `icdParamsFor` translation the other two use, so the
+	 * three shapes cannot drift.
+	 *
+	 * ⚠️ `timer` is in FRAMES — lint D.27c holds the unit. ⚠️⚠️ Pair the gate
+	 * with the stream OUR `application[]` models, never with the character (the
+	 * Emilie rule): a cast's list is the NOMINAL schedule and one entry may be
+	 * several gcsim hits. ⛔ Never inferred from an applied COUNT — an applied
+	 * count says only THAT the default is wrong, never what is right; author
+	 * from the audit's `gcsim cadence` column (`ICDGroupResetTimer` /
+	 * `ICDGroupEleApplicationSequence`, read off the live `AttackInfo`).
+	 */
+	icdGate?: IcdWindow;
 	tags?: AbilityTag[];
 	/** When this cast's own hits LAND, and what they apply. ⚓ An empty array is the
 	 *  positive statement that the cast applies nothing; an absent field means we have
@@ -2394,6 +2424,24 @@ type BurstCommonFields = AbilityCommon & {
 	 *  a normal ability, and by the per-cast counter on a skill/burst (L4d).
 	 *  See docs/library/game/icd.md. */
 	noICD?: boolean;
+	/**
+	 * ⚓ A MEASURED non-standard element-application window for this cast's
+	 * `application[]` (the cast-side twin of `NormalAbility.chargedIcdWindow` and
+	 * `summonTick.icdGate`; cast-icd-gate round, 2026-09-17). Absent = the
+	 * standard 2.5 s / every-third-hit default; `noICD` is the "every hit
+	 * applies" half and wins when both are set. Read by `resolveCastApplications`
+	 * through the same `icdParamsFor` translation the other two use, so the
+	 * three shapes cannot drift.
+	 *
+	 * ⚠️ `timer` is in FRAMES — lint D.27c holds the unit. ⚠️⚠️ Pair the gate
+	 * with the stream OUR `application[]` models, never with the character (the
+	 * Emilie rule): a cast's list is the NOMINAL schedule and one entry may be
+	 * several gcsim hits. ⛔ Never inferred from an applied COUNT — an applied
+	 * count says only THAT the default is wrong, never what is right; author
+	 * from the audit's `gcsim cadence` column (`ICDGroupResetTimer` /
+	 * `ICDGroupEleApplicationSequence`, read off the live `AttackInfo`).
+	 */
+	icdGate?: IcdWindow;
 	tags?: AbilityTag[];
 	/** When this cast's own hits LAND, and what they apply. ⚓ An empty array is the
 	 *  positive statement that the cast applies nothing; an absent field means we have

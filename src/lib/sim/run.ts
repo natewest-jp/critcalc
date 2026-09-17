@@ -951,6 +951,9 @@ export function runRotation(
 					// ⛔ Not variant-overridable — `AbilityVariant` has no `noICD`, and
 					// adding one would author a field with no data behind it.
 					active.noICD,
+					// The cast's measured window (cast-icd-gate round, 2026-09-17) — same
+					// resolution as `noICD` beside it, for the same reason.
+					active.icdGate,
 					states,
 					charConstellationLevel,
 					chainIdx,

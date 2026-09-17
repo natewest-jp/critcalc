@@ -126,13 +126,18 @@
 				"Generator stub had top-level `duration: 8` (matching the infusion duration). Removed per recipe — behavior:'instant' bursts do not carry a top-level duration. Reviewer to author the infusion as a self-buff once the schema mechanism for infusion windows is settled.",
 				"burstHitmark=100 is the strike-firing frame. The schema has no hitmark-on-burst field; the value is captured here as `summons[0].spawnsAt` (the Phoenix is the entity that carries the strike + DoT + explosion).",
 				"ActionDash is not explicitly overridden on burstFrames (defaults to 140 / animation length); D omitted per recipe. ActionBurst, ActionCharge — not applicable on burst frames.",
-				"Particle generation: burst does not generate particles in gcsim."
+				"Particle generation: burst does not generate particles in gcsim.",
+				"✅ `icdGate` { timer 300, every 5 } authored 2026-09-17 (cast-icd-gate round; read off gcsim's group tables via the frames audit's §4b, ⛔ never inferred from an applied count). `ICDGroupDiluc` (300f, applies every 5th hit). ⚠️ Byte-identical on the three authored entries (+101 applies, +112/+124 suppressed either way) — authored for the rule, and so a fourth entry would be gated right."
 			],
 			"application": [
 				{ "frame": 101, "element": "pyro", "units": 2 },
 				{ "frame": 112, "element": "pyro" },
 				{ "frame": 124, "element": "pyro" }
-			]
+			],
+			"icdGate": {
+				"timer": 300,
+				"every": 5
+			}
 		}
 	],
 	"passives": [
