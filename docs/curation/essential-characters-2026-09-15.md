@@ -625,6 +625,13 @@ build; e2e before the merge.
 - The **passive chip strip lists tiers without evaluating conditions** (Navia's
   A4, caveated).
 
+**⚓ Nate's calls (same day):** every divergence above is confirmed — Diona C2's
+splash shield is NOT simulated (co-op), and the Kazuha, Neuvillette, Clorinde,
+Chiori and Beidou readings stand. The cast-pool FIRST-effect-length defect is
+**not** to be fixed ad hoc: the engine round that takes it SCOPES it first (the
+census of mixed-duration pools, and the options for two unequal bars sharing a
+row), and the resolution is decided from that scope.
+
 ---
 
 ## Appendix — the ten batch reports, verbatim

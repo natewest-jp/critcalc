@@ -54,6 +54,18 @@ verify each):
 PERCENTAGE extension, a third shape neither branch covers**) · `dehya C6` ·
 `furina C2` · `ifa C4` · `shikanoin_heizou C2` · `xingqiu C4`
 
+### 3a. Addenda from the T1.5 tranche (2026-09-17)
+
+- **`emilie C4` is DONE, and not by this round's mechanism.** Its Level 3 Case is
+  the burst's `summons[0]`, and `summons[0].durationModifiers` with a
+  `constellation` condition already works (the Xiangling C4 shape). ⚠️ Only
+  `summons[0]` reads them — check each FLAT entry for that before building
+  anything: some may already be authorable.
+- **`chiori C2` is a FOURTH shape, not on the list: a summon that EXISTS only at a
+  constellation** (the Kinu, every 3s for 10s after the burst — fully specified in
+  her C2 note). Authored today it would draw a lane at C0. `Summon.conditions`
+  would gate it directly, which makes it this round's cleanest test case.
+
 ## 4. Definition of done
 
 - `Summon.conditions?: Condition` on the type, with JSDoc naming the gated-pair
