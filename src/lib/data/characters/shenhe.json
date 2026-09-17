@@ -153,6 +153,139 @@
 							},
 							"snapshottable": false,
 							"attribution": "Icy Quill (Hold: 15s)"
+						},
+						{
+							"type": "buff",
+							"target": "team",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 15,
+							"durationType": "fixed",
+							"source": "character",
+							"stat": "chargeFlatDmg",
+							"value": {
+								"type": "scaling",
+								"stat": "atk",
+								"ratio": 82.2
+							},
+							"snapshottable": false,
+							"attribution": "Icy Quill (Hold: 15s)"
+						},
+						{
+							"type": "buff",
+							"target": "team",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 15,
+							"durationType": "fixed",
+							"source": "character",
+							"stat": "plungeFlatDmg",
+							"value": {
+								"type": "scaling",
+								"stat": "atk",
+								"ratio": 82.2
+							},
+							"snapshottable": false,
+							"attribution": "Icy Quill (Hold: 15s)"
+						},
+						{
+							"type": "buff",
+							"target": "team",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 15,
+							"durationType": "fixed",
+							"source": "character",
+							"stat": "skillFlatDmg",
+							"value": {
+								"type": "scaling",
+								"stat": "atk",
+								"ratio": 82.2
+							},
+							"snapshottable": false,
+							"attribution": "Icy Quill (Hold: 15s)"
+						},
+						{
+							"type": "buff",
+							"target": "team",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 15,
+							"durationType": "fixed",
+							"source": "character",
+							"stat": "burstFlatDmg",
+							"value": {
+								"type": "scaling",
+								"stat": "atk",
+								"ratio": 82.2
+							},
+							"snapshottable": false,
+							"attribution": "Icy Quill (Hold: 15s)"
+						},
+						{
+							"type": "buff",
+							"target": "team",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 15,
+							"durationType": "fixed",
+							"source": "character",
+							"stat": "normalDmgBonus",
+							"value": 15,
+							"snapshottable": false,
+							"conditions": {
+								"type": "ascension",
+								"min": 4
+							},
+							"attribution": "A4: Spirit Communion Seal"
+						},
+						{
+							"type": "buff",
+							"target": "team",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 15,
+							"durationType": "fixed",
+							"source": "character",
+							"stat": "chargeDmgBonus",
+							"value": 15,
+							"snapshottable": false,
+							"conditions": {
+								"type": "ascension",
+								"min": 4
+							},
+							"attribution": "A4: Spirit Communion Seal"
+						},
+						{
+							"type": "buff",
+							"target": "team",
+							"trigger": {
+								"type": "onCast",
+								"ability": "skill"
+							},
+							"duration": 15,
+							"durationType": "fixed",
+							"source": "character",
+							"stat": "plungeDmgBonus",
+							"value": 15,
+							"snapshottable": false,
+							"conditions": {
+								"type": "ascension",
+								"min": 4
+							},
+							"attribution": "A4: Spirit Communion Seal"
 						}
 					],
 					"_curatorNotes": [
@@ -188,15 +321,130 @@
 					},
 					"snapshottable": false,
 					"attribution": "Icy Quill (Press: 10s)"
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "chargeFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 82.2
+					},
+					"snapshottable": false,
+					"attribution": "Icy Quill (Press: 10s)"
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "plungeFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 82.2
+					},
+					"snapshottable": false,
+					"attribution": "Icy Quill (Press: 10s)"
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "skillFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 82.2
+					},
+					"snapshottable": false,
+					"attribution": "Icy Quill (Press: 10s)"
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "burstFlatDmg",
+					"value": {
+						"type": "scaling",
+						"stat": "atk",
+						"ratio": 82.2
+					},
+					"snapshottable": false,
+					"attribution": "Icy Quill (Press: 10s)"
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "skillDmgBonus",
+					"value": 15,
+					"snapshottable": false,
+					"conditions": {
+						"type": "ascension",
+						"min": 4
+					},
+					"attribution": "A4: Spirit Communion Seal"
+				},
+				{
+					"type": "buff",
+					"target": "team",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 10,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "burstDmgBonus",
+					"value": 15,
+					"snapshottable": false,
+					"conditions": {
+						"type": "ascension",
+						"min": 4
+					},
+					"attribution": "A4: Spirit Communion Seal"
 				}
 			],
 			"_curatorNotes": [
 				"Icy Quill mechanic: Shenhe's E applies Icy Quill to all party members (Press: 5 stacks/10s; Hold: 7 stacks/15s). On each Cryo DMG hit from a party member, 1 stack is consumed and flat DMG equal to (skillpp multiplier × Shenhe's current ATK) is added — this is an ATK-scaling buff. [A7b] AUTHORED 2026-07-20 (implement-first, verifier-specced): team normalFlatDmg buff scaling 82.2% of the caster's ATK (sidecar 'DMG Bonus' row, TL10), Press 10s on the base effects / Hold 15s on the hE variant — the Escoffier C2 / Yun Jin single-class shape (Cryo-only filter and 5/7-quill consumption not enforced; surfaced in the caveat). C6 exempts Normal and Charged Attack Cryo hits from consuming stacks.",
-				"Spirit Communion Seal (A4) buff applied after E cast is authored on the A4 passive — see Spirit Communion Seal below."
+				"Spirit Communion Seal (A4) lives HERE and on the hE variant, not on the passive (2026-09-17, T1.5): a passive cannot tell a press from a hold, and a variant's `effects` REPLACE the base's, so the split is free. gcsim asc.go: press → +15% Elemental Skill/Burst DMG to every party member for 10s; hold → +15% Normal/Charged/Plunging DMG for 15s.",
+				"Icy Quill on all five `*FlatDmg` classes (2026-09-17, T1.5; was `normalFlatDmg` only, which read as 'my burst is not buffed'). gcsim quillDamageMod adds the flat DMG to any Cryo hit — normal, charged, plunge, skill, hold skill and burst. The team row pools the five stats and A4 into one bar per cast."
 			],
 			"description": "The frosted dew, silvery and dense, shall exorcise all demons.\nGrants all nearby party members the Icy Quill effect and deals Cryo DMG in different ways based on whether it is pressed or held.\n\nPress\nRushes forward together with a Talisman Spirit, dealing Cryo DMG to opponents along the path.\n\nHold\nCommands the Talisman Spirit to deal AoE Cryo DMG.\n\nIcy Quill\nWhen Normal, Charged, and Plunging Attacks, Elemental Skills, and Elemental Bursts deal Cryo DMG to opponents, the DMG dealt is increased based on Shenhe's current ATK.\n\nThe Icy Quill's effects will be cleared once its duration ends or after being triggered a certain number of times. When held rather than pressed, the Icy Quill's effect lasts longer and can be triggered more times.\nWhen one Cryo DMG instance strikes multiple opponents, the effect is triggered multiple times based on the number of opponents hit. The number of times the effect is triggered is calculated independently for each party member with the Icy Quill.",
 			"behavior": "instant",
-			"caveat": "Shown for the full duration; in game each Cryo hit consumes 1 of 5 quills (7 if held), and only Cryo DMG gets the bonus.",
+			"caveat": "Shown for the full duration; in game each Cryo hit consumes 1 of 5 quills (7 if held), except Normal and Charged Attacks at C6. Only Cryo DMG gets the bonus.",
 			"application": [
 				{
 					"frame": 4,
@@ -249,7 +497,14 @@
 					},
 					"duration": 12,
 					"element": "cryo",
-					"value": -15
+					"value": -15,
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "constellation",
+							"level": 2
+						}
+					}
 				},
 				{
 					"type": "resShred",
@@ -260,12 +515,49 @@
 					},
 					"duration": 12,
 					"element": "physical",
-					"value": -15
+					"value": -15,
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "constellation",
+							"level": 2
+						}
+					}
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 18,
+					"element": "cryo",
+					"value": -15,
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
+				},
+				{
+					"type": "resShred",
+					"target": "enemy",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 18,
+					"element": "physical",
+					"value": -15,
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
 				}
 			],
 			"_curatorNotes": [
 				"Burst ActionSkill (E) defaults to InitAbilSlice value (100); gcsim labels this '// Q -> E' on the InitAbilSlice(100) line but makes no explicit ActionSkill assignment. Omitted per recipe rule. Reviewer to verify if E=100 was intentional.",
-				"Cryo + Physical RES shred authored 2026-07-28 (capability sweep): gcsim burst.go:113-122 applies both ResistMods (Value -burstrespp[TalentLvlBurst], re-applied every 18f to enemies inside the Talisman Spirit Field); shenhe_gen.go burstrespp[9] = 0.15 (TL10). Duration 12 = base field lifetime, onCast-burst-field shape per Jean C4 lands_of_dandelion. C2 extends the field — and thus shred uptime — to 18s (modeled on the summon's durationModifier; the effects keep the base 12s window). Shred only affects enemies inside the field; corpus-standard approximation.",
+				"Cryo + Physical RES shred authored 2026-07-28 (capability sweep): gcsim burst.go:113-122 applies both ResistMods (Value -burstrespp[TalentLvlBurst], re-applied every 18f to enemies inside the Talisman Spirit Field); shenhe_gen.go burstrespp[9] = 0.15 (TL10). Duration 12 = base field lifetime, onCast-burst-field shape per Jean C4 lands_of_dandelion. ↻ 2026-09-17 (T1.5): C2 extends the field to 18s and the shreds with it (gcsim re-applies them for the whole extended burstDuration) — a C2-gated 18s pair beside the 12s pair, since an Effect has no durationModifiers. Shred only affects enemies inside the field; corpus-standard approximation.",
 				"Deific Embrace (A1) cryo DMG bonus for active char within field is authored on the A1 passive, not here."
 			],
 			"description": "Unleashes the power of the Talisman Spirit, allowing it to roam free in this plane, dealing AoE Cryo DMG.\nThe Talisman Spirit then creates a field that decreases the Cryo RES and Physical RES of opponents within it. It also deals periodic Cryo DMG to opponents within the field.",
@@ -336,19 +628,64 @@
 			"effects": [
 				{
 					"type": "buff",
-					"target": "team",
+					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
+					"duration": 12,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "cryoDmgBonus",
 					"value": 15,
-					"snapshottable": false
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "not",
+								"condition": {
+									"type": "constellation",
+									"level": 2
+								}
+							}
+						]
+					}
+				},
+				{
+					"type": "buff",
+					"target": "active",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 18,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "cryoDmgBonus",
+					"value": 15,
+					"snapshottable": false,
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "ascension",
+								"min": 1
+							},
+							{
+								"type": "constellation",
+								"level": 2
+							}
+						]
+					}
 				}
 			],
 			"_curatorNotes": [
-				"Inherited trigger: manual. Probable trigger: periodic presence check within Q field (gcsim ticks every 18f / 0.3s; buff applied when player is within burstArea, duration per tick = 36f = 0.6s). Target is the active character only — generator emitted target: 'team' but gcsim applies to active char alone. Reviewer to correct target and determine trigger authoring."
+				"`manual` → `onCast burst`, `target: active` (2026-09-17, T1.5; was `manual` + `team`, which drew nothing and claimed the party). gcsim burst.go ticks every 18f while the field lives and gives the ACTIVE character inside it 15% Cryo DMG for 36f — so the bar is the field's life on whoever is on field (standing in the field is assumed). 12s, or 18s at C2 as a C2-gated twin; the constellation gate resolves before the active pass's stat dedupe, so the pair cannot collide."
 			],
 			"description": "An active character within the field created by Divine Maiden's Deliverance gains 15% Cryo DMG Bonus."
 		},
@@ -357,7 +694,7 @@
 			"name": "Spirit Communion Seal",
 			"abilityType": "passive",
 			"_curatorNotes": [
-				"Effects not yet authored — needs reviewer pass. Two conditional branches: (a) Press E: +15% Elemental Skill and Elemental Burst DMG to all party members for 10s (gcsim: DmgP=0.15 on AttackTagElementalArt/ElementalArtHold/ElementalBurst, 10*60 duration); (b) Hold E: +15% Normal/Charged/Plunge Attack DMG to all party members for 15s (gcsim: DmgP=0.15 on AttackTagNormal/Extra/Plunge, 15*60 duration). Both are team-wide DmgP buffs triggered on Shenhe's E cast. Reviewer to decide how to author the press/hold conditional branch split."
+				"Authored on the SKILL (base effects = press, hE variant = hold), 2026-09-17 (T1.5) — see the skill's notes. A passive cannot tell the two casts apart."
 			],
 			"description": "After Shenhe uses Spring Spirit Summoning, she will grant all nearby party members the following effects:\n· Press: Elemental Skill and Elemental Burst DMG increased by 15% for 10s.\n· Hold: Normal, Charged, and Plunging Attack DMG increased by 15% for 15s."
 		}
@@ -381,10 +718,12 @@
 			"effects": [
 				{
 					"type": "buff",
-					"target": "team",
+					"target": "active",
 					"trigger": {
-						"type": "manual"
+						"type": "onCast",
+						"ability": "burst"
 					},
+					"duration": 18,
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "cryoCritDmg",
@@ -393,8 +732,8 @@
 				}
 			],
 			"_curatorNotes": [
-				"Inherited trigger: manual. Probable trigger: same periodic field-presence check as A1 (gcsim: c.c2(active, buffDuration) called in the same 18f tick loop alongside A1). Condition: active char within Q field; effect applies only to Cryo DMG (gcsim: if ae.Info.Element != attributes.Cryo return nil). Target is active character only — generator emitted target: 'team'. Duration per tick: 36f = 0.6s. Migrated to cryoCritDmg 2026-05-09 (Stat union now expresses element-specific CRIT DMG). Reviewer to correct target and determine trigger authoring.",
-				"C2 also extends Divine Maiden's Deliverance duration by 6s (gcsim: burstDuration += 6*60 if cons >= 2). Authored as durationModifiers[] on the burst summon."
+				"`manual` → `onCast burst`, `target: active`, 18s (2026-09-17, T1.5; was `manual` + `team`). gcsim c2(active, buffDuration) runs in the same 18f field tick as A1, Cryo hits only (`cryoCritDmg`). C2 is the constellation that makes the field 18s, so the buff is never shorter.",
+				"C2 also extends Divine Maiden's Deliverance duration by 6s (gcsim: burstDuration += 6*60 if cons >= 2). Authored as durationModifiers[] on the burst summon, and on the burst's C2-gated shred pair."
 			],
 			"description": "Divine Maiden's Deliverance lasts for 6 seconds longer. Active characters within the skill's field deal 15% increased Cryo CRIT DMG."
 		},
