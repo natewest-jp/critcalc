@@ -215,6 +215,35 @@
 							"scaling": 110.34,
 							"stat": "def",
 							"element": "geo"
+						},
+						{
+							"type": "heal",
+							"target": "active",
+							"trigger": {
+								"type": "summonTick",
+								"interval": 1.5
+							},
+							"conditions": {
+								"type": "all",
+								"conditions": [
+									{
+										"type": "constellation",
+										"level": 4
+									},
+									{
+										"type": "teamElementCount",
+										"elements": ["geo"],
+										"comparison": ">=",
+										"value": 1
+									}
+								]
+							},
+							"scaling": 50,
+							"stat": "def",
+							"_curatorNotes": [
+								"C4 Lapping Hound (2026-09-17, T1.5; was a `manual` heal on the C4 entry that reached nothing). gcsim burst.go: at C4 with geoCharCount > 1 (Impregnable or Crunch) gorouBurstHealField heals the ACTIVE character for 50% of Gorou's DEF (snapshotted at the burst), first at 90f and every 90f while General's Glory lives — the Crystal Collapse cadence exactly. teamElementCount excludes the holder, so `geo >= 1` is 'a second Geo member'.",
+								"⚠️ Same cadence as the damage series, so the lane draws two markers per tick — the open L5e duplicate-marker class (damage + heal on one cadence). No tickCap to mirror: the damage series has none."
+							]
 						}
 					]
 				}
@@ -290,7 +319,8 @@
 					"element": "geo",
 					"units": 1
 				}
-			]
+			],
+			"caveat": "The War Banner and its buffs keep drawing through General's Glory. In game this burst destroys the banner, and no new one appears until Glory ends."
 		}
 	],
 	"passives": [
@@ -386,21 +416,10 @@
 			"name": "Lapping Hound: Warm as Water",
 			"abilityType": "constellation",
 			"constellationLevel": 4,
-			"effects": [
-				{
-					"type": "heal",
-					"target": "active",
-					"trigger": {
-						"type": "manual"
-					},
-					"scaling": 50,
-					"stat": "def",
-					"_curatorNotes": [
-						"Inherited manual trigger. In gcsim: periodic heal every 1.5s (90 frames) during Q, only when General's Glory is in Impregnable (≥2 Geo chars) or Crunch (3 Geo chars) state. Heal = 50% of Gorou's DEF snapshotted at first tick (c.healFieldStats.TotalDEF() * 0.5). Target: active character. Reviewer: consider periodic onField trigger during Q with Geo-count condition."
-					]
-				}
-			],
-			"description": "When General's Glory is in the \"Impregnable\" or \"Crunch\" states, it will also heal active characters within its AoE by 50% of Gorou's own DEF every 1.5s."
+			"description": "When General's Glory is in the \"Impregnable\" or \"Crunch\" states, it will also heal active characters within its AoE by 50% of Gorou's own DEF every 1.5s.",
+			"_curatorNotes": [
+				"Authored on the General's Glory summon as a gated heal tick series (2026-09-17, T1.5) — see its note. The `manual` heal here drew nothing."
+			]
 		},
 		{
 			"id": "gorou__constellation__striking_hound_thunderous_force",
@@ -418,7 +437,8 @@
 				"C6 authored as three mutually-exclusive geoCritDmg tiers keyed to the banner state at cast: +10% (Standing Firm, 1 Geo → 0 non-Gorou Geo), +20% (Impregnable, = 1), +40% (Crunch, >= 2). trigger.ability omitted intentionally so the buff fires on both E and Q casts (Kazuha-C6 / Escoffier-C1 convention; lint 'trigger-ability-missing' warn acceptable).",
 				"Explicit constellation-level-6 condition included: dispatchers gate constellation-node effects via effect conditions, not the node's constellationLevel (Escoffier C1 precedent).",
 				"In-game 'cannot stack; takes reference from the last instance triggered' — overlapping E and Q windows render as separate 12s bars; last-cast-wins replacement is not modeled. Element-specific crit stat authored snapshottable: false per Escoffier C1 cryoCritDmg precedent.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Two overlapping 12s Geo CRIT DMG bars — one on the \"Gorou Skill\" row and one on the \"Gorou Burst\" row. `trigger.ability` is deliberately omitted so `collectOnCastEffects` fires the effect for BOTH casts, and `teamBuffRows` keys character cast rows by ability class (`${charId}::char::${AB_LABEL}`), so the two windows land on DIFFERENT rows and the refresh-merge cannot collapse them. In game the buff explicitly \"cannot stack and takes reference from the last instance\" — one bar, refreshed. Two bars read as two instances. Category: visible-divergence."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — Two overlapping 12s Geo CRIT DMG bars — one on the \"Gorou Skill\" row and one on the \"Gorou Burst\" row. `trigger.ability` is deliberately omitted so `collectOnCastEffects` fires the effect for BOTH casts, and `teamBuffRows` keys character cast rows by ability class (`${charId}::char::${AB_LABEL}`), so the two windows land on DIFFERENT rows and the refresh-merge cannot collapse them. In game the buff explicitly \"cannot stack and takes reference from the last instance\" — one bar, refreshed. Two bars read as two instances. Category: visible-divergence.",
+				"↻ CAVEAT RESTORED 2026-09-17 (T1.5, essential-characters §3): the removal above filed its own pixel as `visible-divergence` — two overlapping bars on two rows where the game has one refreshed instance — so it fails the ruthless pass's own test rather than passing it."
 			],
 			"description": "For 12s after using Inuzaka All-Round Defense or Juuga: Forward Unto Victory, increases the CRIT DMG of all nearby party members' Geo DMG based on the buff level of the skill's field at the time of use:\n· \"Standing Firm\": +10%\n· \"Impregnable\": +20%\n· \"Crunch\": +40%\n\nThis effect cannot stack and will take reference from the last instance of the effect that is triggered.",
 			"effects": [
@@ -506,7 +526,8 @@
 					"value": 40,
 					"snapshottable": false
 				}
-			]
+			],
+			"caveat": "Each cast draws its own bar, on the Skill and Burst rows. In game the buff does not stack, and only the latest instance applies."
 		}
 	],
 	"meta": {
