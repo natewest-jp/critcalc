@@ -254,7 +254,8 @@
 			"description": "For each Pyro/Electro/Cryo/Hydro party member, Navia gains 20% increased ATK. This effect can stack up to 2 times.",
 			"_curatorNotes": [
 				"`manual` → `passive`, as two tiers (2026-09-17, T1.5). gcsim asc.go a4: a permanent 0.2 × min(2, count of Pyro/Electro/Cryo/Hydro party members) ATK% mod set at init. teamElementCount counts non-holder members and Navia is Geo, so the count is exactly gcsim's. ⚠️ Both tiers share `stat: atk%` and the passes dedupe by stat BEFORE conditions — the ≥2 tier is authored FIRST and the two conditions are mutually exclusive, the Iansan mitigation."
-			]
+			],
+			"caveat": "Both tiers are listed as always active; in game Navia gets +20% ATK with one Pyro, Electro, Cryo or Hydro party member and +40% with two."
 		}
 	],
 	"constellations": [
