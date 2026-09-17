@@ -66,8 +66,11 @@
 					"input": ["hE"],
 					"frames": { "anim": 71, "N": 70, "D": 54, "J": 54, "swap": 69 },
 					"application": [
-						{ "frame": 50, "element": "geo", "units": 1 },
-						{ "frame": 105, "element": "geo" }
+						{
+							"frame": 50,
+							"element": "geo",
+							"units": 1
+						}
 					]
 				}
 			],
@@ -77,11 +80,15 @@
 				"Hold variant is parametric: all cancel frame values increase by hold duration (internal hold = p[\"hold\"]-1, capped at 240f). Max internal hold = 240f (skillMaxHoldDuration=241, subtract 1). At max hold all frame values +240f. cooldownStartDelay for Hold = firingTime = skillHoldCDStart(41) + internal_hold; schema gap: AbilityVariant has no cooldownStartDelay field — reviewer to extend schema if needed.",
 				"Removed generator duration:300 — Crystal Shrapnel stack duration is a resource mechanic (gcsim comment: 'way too long to bother'), not a summon or persistent ability window.",
 				"Removed generator tags:[\"summon\"] — the skill fires projectiles and spawns no persistent summon entity.",
-				"Surging Blade (Arkhe: Ousia): delayed one-shot proc registered at 28f after cast, damage at +36f (total 64f from cast). ICD: 7s (arkheICDKey). Not a persistent summon — no summons[] entry authored."
+				"Surging Blade (Arkhe: Ousia): delayed one-shot proc registered at 28f after cast, damage at +36f (total 64f from cast). ICD: 7s (arkheICDKey). Not a persistent summon — no summons[] entry authored.",
+				"Surging Blade applies NOTHING (2026-09-17, T1.5): gcsim skill.go surgingBlade is `Durability: 0`, so its +75 (tap) and +105 (hold) entries are gone from both `application` lists. They had been masked only by the per-cast ICD counter suppressing the second entry — the frames report's `[icd]` tag cannot tell that from a no-Durability hit."
 			],
 			"application": [
-				{ "frame": 20, "element": "geo", "units": 1 },
-				{ "frame": 75, "element": "geo" }
+				{
+					"frame": 20,
+					"element": "geo",
+					"units": 1
+				}
 			]
 		},
 		{
@@ -143,7 +150,63 @@
 			"abilityType": "passive",
 			"description": "For 4s after using Ceremonial Crystalshot, the DMG dealt by Navia's Normal Attacks, Charged Attacks, and Plunging Attacks will be converted into Geo DMG which cannot be overridden by other Elemental infusions, and the DMG dealt by Navia's Normal Attacks, Charged Attacks, and Plunging Attacks will be increased by 40%.",
 			"_curatorNotes": [
-				"No effects skeleton in generator. A1 grants: geo infusion overriding all other elemental infusions + 40% DMG bonus to N/C/P for 4s after each E cast. gcsim implements in Snapshot() via a1Key status (duration 60×4f). Reviewer to author: infuse effect (type:\"infuse\", element:\"geo\") and buff effect (stat needs decision — likely allDmgBonus scoped to N/C/P, or separate normalFlatDmg etc.)."
+				"AUTHORED 2026-09-17 (T1.5). gcsim navia.go Snapshot(): while a1Key is live, Normal/Extra/Plunge attacks take `ai.Element = Geo` and +40% DMG; asc.go sets a1Key for 60*4 frames at the skill's firingTime (11f tap, 41f + hold). An `infuse` plus the per-class DMG bonuses, the Kazuha C6 shape. Before this every swing she made was Physical and applied nothing, so a Navia rotation made no Crystallize off her own normals.",
+				"⚠️ 'cannot be overridden by other Elemental infusions': our infusion rule is NEWEST grant wins, so a Bennett C6 or Candace burst cast inside the 4s would take the swing. The window opens at the cast rather than the firing time (11f / 41f+)."
+			],
+			"effects": [
+				{
+					"type": "infuse",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 4,
+					"durationType": "fixed",
+					"element": "geo"
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 4,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "normalDmgBonus",
+					"value": 40,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 4,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "chargeDmgBonus",
+					"value": 40,
+					"snapshottable": false
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"duration": 4,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "plungeDmgBonus",
+					"value": 40,
+					"snapshottable": false
+				}
 			]
 		},
 		{
@@ -154,17 +217,43 @@
 				{
 					"type": "buff",
 					"target": "self",
-					"trigger": { "type": "manual" },
+					"trigger": {
+						"type": "passive"
+					},
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "atk%",
+					"value": 40,
+					"snapshottable": false,
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["pyro", "electro", "cryo", "hydro"],
+						"comparison": ">=",
+						"value": 2
+					}
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "passive"
+					},
 					"durationType": "fixed",
 					"source": "character",
 					"stat": "atk%",
 					"value": 20,
-					"snapshottable": false
+					"snapshottable": false,
+					"conditions": {
+						"type": "teamElementCount",
+						"elements": ["pyro", "electro", "cryo", "hydro"],
+						"comparison": "=",
+						"value": 1
+					}
 				}
 			],
 			"description": "For each Pyro/Electro/Cryo/Hydro party member, Navia gains 20% increased ATK. This effect can stack up to 2 times.",
 			"_curatorNotes": [
-				"Inherited manual trigger. In gcsim: permanent stat mod (NewBase, duration=-1) set once on init as 0.2 × min(2, count_of_Pyro/Electro/Cryo/Hydro party members). Likely trigger type: 'passive' (always-on, not event-driven). Value:20 represents one stack; max effective value is 40% (2 stacks). Stacking mechanic needs reviewer decision — may require stacks field or separate per-member effect entries."
+				"`manual` → `passive`, as two tiers (2026-09-17, T1.5). gcsim asc.go a4: a permanent 0.2 × min(2, count of Pyro/Electro/Cryo/Hydro party members) ATK% mod set at init. teamElementCount counts non-holder members and Navia is Geo, so the count is exactly gcsim's. ⚠️ Both tiers share `stat: atk%` and the passes dedupe by stat BEFORE conditions — the ≥2 tier is authored FIRST and the two conditions are mutually exclusive, the Iansan mitigation."
 			]
 		}
 	],
