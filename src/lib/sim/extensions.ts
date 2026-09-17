@@ -20,6 +20,7 @@ import type { DurationExtension, Reaction } from '$lib/types/ability';
 import { getDurationExtensions } from '$lib/types/ability';
 import { framesOf } from '$lib/utils/frames';
 import type { SimContext } from './context';
+import type { CharState, StanceRecord } from './charState';
 import {
 	DEFAULT_ASCENSION,
 	evalCondition,
@@ -72,10 +73,29 @@ export function dispatchOnCastExtensions(
 		if (ext.procCooldown !== undefined && castTime - lastFire < framesOf(ext.procCooldown))
 			continue;
 		const delta = framesOf(ext.delta);
-		st.end += delta;
-		st.ownerUptime += delta;
+		extendStance(ctx.getCharState(charId), st, delta);
 		counts.set(idx, used + 1);
 		lastFires.set(idx, castTime);
+	}
+}
+
+/**
+ * ⚓ THE ONE WAY A STANCE GROWS (small-fix bundle, 2026-09-17). Both dispatchers
+ * — the onCast one above and the reaction one below — used to do `st.end +=
+ * delta` inline, and neither moved the COMPANION state `opensState` opened
+ * alongside `inStance`. So an extended stance ran on while
+ * `nightsoulBlessing` expired at the original end, and every ability gated on
+ * the companion (⛔ not on `inStance`) went dark for the extension. Measured:
+ * Kinich's burst extends Canopy Hunter 600 → 702 with the Blessing still ending
+ * at 600; Mizuki's swirls 346 → 646 likewise. Live gate and IR record move
+ * together, so the chart and the parse agree.
+ */
+function extendStance(cs: CharState, st: StanceRecord, delta: number): void {
+	st.end += delta;
+	st.ownerUptime += delta;
+	if (st.companion) {
+		cs.states.set(st.companion.name, st.end);
+		st.companion.rec.end = st.end;
 	}
 }
 
@@ -136,10 +156,9 @@ export function dispatchOnReactionExtensions(
 	// summon path below.
 	const st = cs.stance;
 	if (st && st.end > castTime) {
-		dispatch(getDurationExtensions(st.ownerAbility), st.extCounts, st.extLastFire, (delta) => {
-			st.end += delta;
-			st.ownerUptime += delta;
-		});
+		dispatch(getDurationExtensions(st.ownerAbility), st.extCounts, st.extLastFire, (delta) =>
+			extendStance(cs, st, delta)
+		);
 	}
 
 	// Summon window: walk summons[0].durationExtensions[] when active

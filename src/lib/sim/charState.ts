@@ -62,6 +62,13 @@ export type StanceRecord = {
 	extCounts: Map<number, number>;
 	/** Per-durationExtensions[]-index last-fire cursor (reset each window open). */
 	extLastFire: Map<number, number>;
+	/** The named state this stance opened alongside `inStance` (`opensState`,
+	 *  e.g. `nightsoulBlessing`) — its live entry in `cs.states` and its IR
+	 *  record, so an extension that moves the stance's end moves the companion
+	 *  with it (small-fix bundle, 2026-09-17). ⚠️ Until then an extended stance
+	 *  ran on while its companion expired at the original end, and every
+	 *  ability gated on the companion went dark for the extension. */
+	companion?: { name: string; rec: { end: number } };
 };
 
 /** Active summon-bound durationExtensions[] owner (E3 v1.5). Registered when a

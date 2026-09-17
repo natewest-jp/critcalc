@@ -821,13 +821,18 @@ export function runRotation(
 					// no source-less duplicate shadows the extension-adjusted one.
 					if (stance.opensState && stance.opensState !== 'inStance') {
 						cs.states.set(stance.opensState, endTime);
-						ctx.stateWindowRecs.push({
+						const companionRec = {
 							characterId: char.id,
 							name: stance.opensState,
 							start: castStart,
 							end: endTime,
 							sourceCastId: castId
-						});
+						};
+						ctx.stateWindowRecs.push(companionRec);
+						// ⚓ Kept on the stance so a duration extension moves BOTH ends —
+						// see `StanceRecord.companion`. The swap-close clamp below already
+						// walks `cs.states` and the recs, so only the extension needed this.
+						cs.stance.companion = { name: stance.opensState, rec: companionRec };
 					}
 				} else if (active.behavior === 'instant' && active.opensTransientState) {
 					// Post-action transient state (sQ primitive): an instant cast
