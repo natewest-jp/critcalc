@@ -395,11 +395,29 @@
 						"type": "constellation",
 						"level": 2
 					}
+				},
+				{
+					"type": "buff",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "burst"
+					},
+					"duration": 9.48,
+					"durationType": "fixed",
+					"source": "character",
+					"stat": "em",
+					"value": 200,
+					"snapshottable": false,
+					"conditions": {
+						"type": "constellation",
+						"level": 2
+					}
 				}
 			],
 			"_curatorNotes": [
 				"9.48s (2026-09-17, T1.5; was 8). gcsim cons.go c2 ticks every 30f from frame 81 while burstStatus lives and each tick gives a 60f +200 EM mod; the last tick is at 591f (the status ends at 608) and its mod runs to 651f — 569f = 9.48s from the field's spawn at 82f, the honest length of a buff re-applied per tick (the Bennett/Faruzan ruling).",
-				"⏸️ The SELF half is NOT authored, and it is real: each tick also gives the mod to Kazuha himself when he is not the active character (`if active.Base.Key != c.Base.Key`), which is the EM his A4 scales off. A `target: 'self'` twin was authored and measured, and it POOLS with his C6 self buffs (onCast, 5s) into one window whose length is taken from the pool's FIRST effect — so C6's 5s drew 9.48s. That is an engine defect in every cast pool (it already cuts Iansan's C2 on the receiver), queued in essential-characters §10; author the twin after it lands."
+				"✅ The SELF half authored 2026-09-17 (the buff-pool round): each tick also gives the mod to Kazuha himself when he is not the active character (`if active.Base.Key != c.Base.Key`), which is the EM his A4 scales off — a `target: self` twin at the same 9.48s. It used to POOL with his C6 self buffs (onCast, 5s) into one window whose length came from the pool's FIRST effect, so C6's 5s drew 9.48s; the pool now emits one window per duration, and on his own row the active slice and the self half print ONE +200 EM line (the fuse collapses an identical grant, which is what \"do not stack\" means on the chart)."
 			]
 		},
 		{
