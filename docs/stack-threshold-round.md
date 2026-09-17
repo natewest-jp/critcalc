@@ -58,3 +58,31 @@ possibly only consumer at launch, which is fine: she is T0.
   bar and A1 CRIT bar drawing from that instant, applications in Electro.
 - Corpus byte-identical elsewhere at C0 and C6.
 - Interim (until the round): restore the C1/C2/C6 caveats deleted 2026-08-19.
+
+## 4. Read against gcsim, 2026-09-17 — ⏸️ HELD for another session (⚓ Nate)
+
+Three decisions the plan above did not settle, found by reading
+`~/Code/gcsim/internal/characters/columbina/{skill,asc,cons}.go`:
+
+- **The Interference hit is Durability 0** (`ICDTagNone`, `Durability: 0`): it
+  applies NOTHING to the gauge. The fire is a MARKER and its buffs, not an
+  application — a marker in the aura lane, or a lane row?
+- **C6 is not tick-fired.** gcsim subscribes to `OnSpecialReactionAttack` and
+  adds +80% CRIT DMG to a Lunar reaction hit when the attacker holds a status
+  the Lunar reaction hooks set; authoring it as an 8s team buff on the fire
+  would over-claim. Caveat this round, or model the status?
+- **The fire's element** is the kind with the most Gravity, with a
+  team-composition tie-break; Gravity accrues 10/s (× C2's rate) while a 2s
+  status is live, opened by any Lunar reaction or Lunar-tagged hit, only
+  while the Lunar Domain is up. One key + "the last Lunar reaction's kind"
+  is the simple, stated approximation; three keys + a max is exact but needs
+  `onStack` to read several keys.
+
+Settled by reading: A1 (10s CRIT mod), C1 (per kind: Lunar-Charged +6 energy
+to the active character / Lunar-Crystallize a 12% Max HP Rainsea Shield for
+8s / Lunar-Bloom interruption resistance) and C2 (8s mods) fire from the tick.
+Implementation shape: the threshold check sits right after
+`dispatchGainStacksOnReaction` in `sim/aura.ts` (the reaction settle point)
+and at the cast/hit/tick settle points; the fire pushes a new IR event kind
+(`stackThreshold`), consumes the pool, and `buffWindows` anchors `onStack`
+buffs on those events the way NB buffs anchor on `nbBars`.

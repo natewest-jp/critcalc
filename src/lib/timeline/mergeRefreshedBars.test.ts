@@ -159,4 +159,33 @@ describe('fuseNestedBars', () => {
 		expect(out[0].effects).toEqual([{ stat: 'em', displayValue: '+200' }]);
 		expect(out[0].seams).toBeUndefined();
 	});
+	// ⚓ Nate 2026-09-17: on Iansan's own row her slice of the active-target ATK
+	// stops where SHE swaps out — a cut, not an end — and drew a seam at 0.6s.
+	it('⛔ draws no seam where a slice was CUT by a swap, only at a natural end', () => {
+		type SliceBar = ReturnType<typeof bar> & {
+			duration?: number;
+			naturalEnd?: number;
+			seams?: number[];
+		};
+		// Iansan's own row: her ATK slice 77–112 (cut at her swap-out; the buff runs to 797)
+		// beside her 15s self ATK% 77–977.
+		const cut: SliceBar = { ...bar(77, 112, fx('atk', '~27%')), duration: 720, naturalEnd: 797 };
+		const self: SliceBar = { ...bar(77, 977, fx('atk%', '+20%')), duration: 900 };
+		const out = fuseNestedBars([cut, self]);
+		expect(out).toHaveLength(1);
+		expect(out[0].seams).toBeUndefined();
+		expect(out[0].effects.map((e) => e.note)).toEqual(['12s', '15s']);
+		// Kaeya's row: the same ATK ran to its natural end on him — the seam stays.
+		const natural: SliceBar = {
+			...bar(183, 797, fx('atk', '~27%')),
+			duration: 720,
+			naturalEnd: 797
+		};
+		const other: SliceBar = {
+			...bar(183, 977, fx('atk%', '+30%')),
+			duration: 900,
+			naturalEnd: 977
+		};
+		expect(fuseNestedBars([natural, other])[0].seams).toEqual([797]);
+	});
 });

@@ -80,6 +80,11 @@ export type CharReceivedBuffBar = {
 	duration: number;
 	/** See `TeamBuffBar.seams`. */
 	seams?: number[];
+	/** Where this slice's buff ENDS ON ITS OWN (`buffStart + duration`), which a
+	 *  slice cut at the receiver's swap-out never reaches. ⚓ A seam is drawn
+	 *  only at a natural end: a slice that stops because its receiver left the
+	 *  field is a fact the swap connector one row up already states. */
+	naturalEnd?: number;
 	buffStart?: number; // set when rampParams or decayParams is present, for gradient offset
 	rampParams?: RampParams;
 	decayParams?: DecayParams;

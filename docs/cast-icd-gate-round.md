@@ -39,14 +39,14 @@ marked **mixed** is two groups under one ability; that is what the per-entry
 
 ## 3. Authored (six), each verified hit for hit at its site
 
-| cast                                | gcsim group                              | gate                            | before → after (applications)                                    |
-| ----------------------------------- | ---------------------------------------- | ------------------------------- | ---------------------------------------------------------------- |
-| Arlecchino, All Is Ash              | `ArlecchinoElementalArt` 600f every 3; the Cleave `ICDTagNone` | `{600, every 3}` + entry +38 `noICD` | 17 · 638 (Cleave lost) → 17 · 38 · 638, +338 suppressed — §1.A's "we do the reverse" closed |
-| Dori, Alcazarzaray's Exactitude     | `DoriBurst` 180f first only              | `{180}`                         | every third of 32 (11) → +28 · +220 · +412 · +604                |
-| Sigewinne, Super Saturated Syringing | `SigewinneBurst` 114f first only         | `{114}`                         | +99 · +174 → +99 · +224                                          |
-| Hydro Traveler, Aquacrest Saber (hold) | `TravelerDewdrop` 90f first only; the finale on the default group | `{90}` + entry +372 `noICD` | every third of 24 → +61 · +151 · +241 · +331 · +372            |
-| Diluc, Dawn                         | `Diluc` 300f every 5                     | `{300, every 5}`                | byte-identical on three entries (the rule, for a fourth)         |
-| Odette, Coda at Dawn's Tolling      | `OdetteDanceDuo` 180f first only         | `{180}`                         | byte-identical on three entries                                  |
+| cast                                   | gcsim group                                                       | gate                                 | before → after (applications)                                                               |
+| -------------------------------------- | ----------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| Arlecchino, All Is Ash                 | `ArlecchinoElementalArt` 600f every 3; the Cleave `ICDTagNone`    | `{600, every 3}` + entry +38 `noICD` | 17 · 638 (Cleave lost) → 17 · 38 · 638, +338 suppressed — §1.A's "we do the reverse" closed |
+| Dori, Alcazarzaray's Exactitude        | `DoriBurst` 180f first only                                       | `{180}`                              | every third of 32 (11) → +28 · +220 · +412 · +604                                           |
+| Sigewinne, Super Saturated Syringing   | `SigewinneBurst` 114f first only                                  | `{114}`                              | +99 · +174 → +99 · +224                                                                     |
+| Hydro Traveler, Aquacrest Saber (hold) | `TravelerDewdrop` 90f first only; the finale on the default group | `{90}` + entry +372 `noICD`          | every third of 24 → +61 · +151 · +241 · +331 · +372                                         |
+| Diluc, Dawn                            | `Diluc` 300f every 5                                              | `{300, every 5}`                     | byte-identical on three entries (the rule, for a fourth)                                    |
+| Odette, Coda at Dawn's Tolling         | `OdetteDanceDuo` 180f first only                                  | `{180}`                              | byte-identical on three entries                                                             |
 
 Corpus digest: **2 of 252** move (dori@C0/C6) — the others reach one E and
 one Q where the digest cannot tell. §4b reads ✅ authored on all six after

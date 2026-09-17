@@ -1668,8 +1668,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								effects: useSegList ? segEffects : part,
 								stackContext: cast.stackContext,
 								duration: buffEnd - buffStart,
-								...(rampParams ? { buffStart, rampParams } : {}),
-								...(decayParams ? { buffStart, decayParams } : {}),
+								// ⚓ The buff's own start, so the projection can tell a slice cut at a
+								// swap from one that ran to its natural end (seam rule, 2026-09-17).
+								buffStart,
+								...(rampParams ? { rampParams } : {}),
+								...(decayParams ? { decayParams } : {}),
 								sourceCastId: cast.id,
 								source: { type: 'character', trigger: 'cast', abilityClass: castType }
 							});
@@ -1779,6 +1782,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								effects: useSegList ? segEffects : part,
 								stackContext: hit.stacks,
 								duration: buffEnd - buffStart,
+								// ⚓ The buff's own start, so the projection can tell a slice cut at a
+								// swap from one that ran to its natural end (seam rule, 2026-09-17).
+								buffStart,
 								sourceActionId: hit.sourceEventId,
 								source: { type: 'character', trigger: 'block', abilityClass: blockClass }
 							});
@@ -1922,6 +1928,9 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 									effects: segEffects.length !== part.length ? segEffects : part,
 									stackContext: hit.stacks,
 									duration: buffEnd - buffStart,
+									// ⚓ The buff's own start, so the projection can tell a slice cut at a
+									// swap from one that ran to its natural end (seam rule, 2026-09-17).
+									buffStart,
 									// ⚓ The same `source` the CAST pool stamps, so the tick
 									// windows land in the cast's row and `mergeRefreshedBars`
 									// fuses them at the projection.

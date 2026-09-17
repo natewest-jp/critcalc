@@ -83,6 +83,7 @@ export function projectCharReceivedBuffRows(
 			isMutuallyExclusive: w.isMutuallyExclusive ?? false,
 			...(w.procCooldown !== undefined ? { procCooldown: w.procCooldown } : {}),
 			duration: w.duration!,
+			...(w.buffStart !== undefined ? { naturalEnd: w.buffStart + w.duration! } : {}),
 			...(w.rampParams ? { buffStart: w.buffStart!, rampParams: w.rampParams } : {}),
 			...(w.decayParams ? { buffStart: w.buffStart!, decayParams: w.decayParams } : {})
 		};

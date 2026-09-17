@@ -46,6 +46,9 @@ type MergeableBar = {
 	/** The received surface's own length of the buff (frames), which a slice's
 	 *  `end − start` is not. */
 	duration?: number;
+	/** Where the buff ends on its own (`CharReceivedBuffBar.naturalEnd`); a
+	 *  slice ending before it was CUT by a swap and draws no seam. */
+	naturalEnd?: number;
 };
 
 /** Two bars say the same thing iff their display effects match pairwise. The
@@ -126,14 +129,24 @@ export function fuseNestedBars<T extends MergeableBar>(
 		// (the field's length) print one line, the longer instance wins, and the
 		// slice's end draws no seam because nothing the bar still lists ends there.
 		const lengthOf = (b: T) => b.duration ?? b.end - b.start;
-		const kept = new Map<string, { effect: MergedEffectDisplay; length: number; end: number }>();
+		// ⚓ A SEAM ONLY AT A NATURAL END (⚓ Nate 2026-09-17, on Iansan's own row):
+		// her slice of the active-target ATK stops where SHE swaps out, and a
+		// seam there marks the swap, which the connector one row up already
+		// draws. The same rule the tick cap got the same day — a cut is not an
+		// end. A bar with no `naturalEnd` (the team surface, a self buff) ends
+		// naturally by construction.
+		const naturalEndOf = (b: T) => b.end >= (b.naturalEnd ?? b.end);
+		const kept = new Map<
+			string,
+			{ effect: MergedEffectDisplay; length: number; end: number; natural: boolean }
+		>();
 		for (const b of group) {
 			for (const effect of b.effects) {
 				const key = `${effect.stat}::${effect.displayValue}`;
 				const cur = kept.get(key);
 				const len = lengthOf(b);
 				if (!cur || len > cur.length || (len === cur.length && b.end > cur.end))
-					kept.set(key, { effect, length: len, end: b.end });
+					kept.set(key, { effect, length: len, end: b.end, natural: naturalEndOf(b) });
 			}
 		}
 		const rows = [...kept.values()];
@@ -143,9 +156,9 @@ export function fuseNestedBars<T extends MergeableBar>(
 			lengths.size > 1
 				? rows.map((r) => ({ ...r.effect, note: fmtSecs(r.length) }))
 				: rows.map((r) => r.effect);
-		const seams = [...new Set(rows.map((r) => r.end).filter((e) => e !== longest.end))].sort(
-			(a, b) => a - b
-		);
+		const seams = [
+			...new Set(rows.filter((r) => r.natural && r.end !== longest.end).map((r) => r.end))
+		].sort((a, b) => a - b);
 		out.push({
 			...longest,
 			...(longest.duration !== undefined ? { duration: maxLength } : {}),
