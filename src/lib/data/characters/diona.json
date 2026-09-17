@@ -332,7 +332,8 @@
 			"abilityType": "constellation",
 			"constellationLevel": 2,
 			"_curatorNotes": [
-				"Effect not yet authored — needs reviewer pass. C2: +15% Icy Paws DMG (Elemental Art DMG bonus via AddAttackMod checking AttackTagElementalArt in gcsim) and +15% shield DMG Absorption. Additionally creates a splash shield for nearby party members at 50% of Icy Paws shield absorption for 5s on paw hit. Multiple effects needed; reviewer to author."
+				"C2: +15% Icy Paws DMG (Elemental Art DMG bonus via AddAttackMod checking AttackTagElementalArt in gcsim) and +15% shield DMG Absorption — damage and absorption magnitude, no bar to move.",
+				"⛔ The 5s splash shield is CO-OP and stays unmodelled (2026-09-17, T1.5; ⚓ the Nicole C2 ruling, Kirara C2 is the house form). It goes to \"OTHER nearby characters ON THE FIELD\": in single-player the only character on the field is the one who cast the paws, and \"other\" excludes her — the plural only has members when several players each field a character. gcsim implements no splash shield. The essential-characters backlog (§3 T1.5) filed it as authorable; authoring it would draw a second shield bar the single-player game never grants."
 			],
 			"description": "Increases Icy Paws' DMG by 15%, and increases its shield's DMG Absorption by 15%.\nAdditionally, when paws hit their targets, creates a shield for other nearby characters on the field with 50% of the Icy Paws shield's DMG Absorption for 5s."
 		},
