@@ -231,5 +231,11 @@ export function resolveActionIcd(
 	// swing handed a charged window would be gated by a number nobody measured
 	// for it.
 	if (kind === 'charged' && authored) return icdParamsFor(authored);
+	// ⚓ The cast-side twin (cast-icd-gate round, 2026-09-17): `CastAbility.icdGate`
+	// reaches here from `resolveCastApplications`, one translation for all three
+	// authored shapes. A normal swing still cannot carry a window — no field
+	// names one, and the gcsim censuses that set the two blanket rules above
+	// are about swings.
+	if ((kind === 'skill' || kind === 'burst') && authored) return icdParamsFor(authored);
 	return STANDARD_ICD_FRAMES;
 }

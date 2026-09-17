@@ -529,6 +529,9 @@ export function resolveCastApplications(
 	application: ElementalApplication[] | undefined,
 	castKind: 'skill' | 'burst',
 	abilityNoICD: boolean | undefined,
+	/** The cast's measured non-standard window (`CastAbility.icdGate`), if any —
+	 *  translated by `icdParamsFor`, the same as the charged and tick shapes. */
+	abilityIcdGate: IcdWindow | undefined,
 	/** Team scope for an `ElementRef` entry — Varka's right-hand claymore
 	 *  (2026-09-16). ⚠️ Absent resolves a ref to NOTHING, and an entry with no
 	 *  element is dropped by the same filter a physical hit takes, which is the
@@ -550,13 +553,17 @@ export function resolveCastApplications(
 				frame: a.frame,
 				element,
 				units: a.units ?? DEFAULT_UNITS,
-				provisionalUnits: a.units === undefined
+				provisionalUnits: a.units === undefined,
+				noICD: a.noICD === true
 			});
 	}
-	const params = resolveActionIcd(castKind, char.weapon, abilityNoICD);
+	const params = resolveActionIcd(castKind, char.weapon, abilityNoICD, abilityIcdGate);
 	if (!params) return elemental;
 	const clock = createIcdClock();
-	return elemental.filter((a) => icdApplies(clock, a.frame, params).applies);
+	// ⚓ An entry on NO counter (`ElementalApplication.noICD`) applies and spends
+	// no slot — it never reaches the clock, so the cast's other hits count as if
+	// it were not there, which is what gcsim's `ICDTagNone` on one hit means.
+	return elemental.filter((a) => a.noICD || icdApplies(clock, a.frame, params).applies);
 }
 
 /**
@@ -603,6 +610,7 @@ export function emitReactionsAtCast(
 	castTime: number,
 	application: ElementalApplication[] | undefined,
 	abilityNoICD: boolean | undefined,
+	abilityIcdGate: IcdWindow | undefined,
 	preStates: ReadonlySet<string>,
 	constellation: number,
 	chainIdx: ChainIndex,
@@ -611,7 +619,14 @@ export function emitReactionsAtCast(
 	context?: ConditionContext
 ): void {
 	const stacks = stackState.size > 0 ? new Map(stackState) : undefined;
-	for (const app of resolveCastApplications(char, application, castKind, abilityNoICD, context)) {
+	for (const app of resolveCastApplications(
+		char,
+		application,
+		castKind,
+		abilityNoICD,
+		abilityIcdGate,
+		context
+	)) {
 		const at = castTime + app.frame;
 		clock.schedule(at, Band.LAND, () => {
 			offerApplication(ctx, clock, {
