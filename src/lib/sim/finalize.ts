@@ -23,7 +23,6 @@
 import type { Element, Summon } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import { framesOf } from '$lib/utils/frames';
-import { computeTeamFactionCounts } from '$lib/utils/teamComposition';
 import { deriveBuffWindows } from '$lib/utils/buffWindows';
 import type { CastEvent, ReactionEvent, TimelineWindow } from '$lib/utils/rotationEvents';
 import type { SimContext } from './context';
@@ -401,9 +400,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// typed in the notation, and the NB clock is a team-wide mechanic) and
 	// falls back to the notation-derived team for Node scripts and tests.
 	{
-		const nbTeam = ctx.team.slotRoster
-			? ctx.team.slotRoster.filter((c): c is CharacterData => c != null)
-			: ctx.team.teamChars;
+		const nbTeam = ctx.team.rosterChars;
 		const natlanCount = nbTeam.filter((c) => c.region === 'Natlan').length;
 		if (natlanCount > 0) {
 			const nbCd = framesOf(natlanCount >= 3 ? 9 : natlanCount === 2 ? 12 : 18);
@@ -598,27 +595,15 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 	// context prefers the slot roster (same rule as the NB pass); the
 	// element-count/faction maps mirror the renderer's construction exactly.
 	{
-		const buffTeam = ctx.team.slotRoster
-			? ctx.team.slotRoster.filter((c): c is CharacterData => c != null)
-			: ctx.team.teamChars;
-		const buffFactionCounts = ctx.team.slotRoster
-			? computeTeamFactionCounts(ctx.team.slotRoster)
-			: ctx.team.teamFactionCounts;
-		let buffElementCounts: ReadonlyMap<string, ReadonlyMap<Element, number>> = ctx.team
+		// ⚓ ONE ROSTER (small-fix bundle, 2026-09-17): the parser counts every
+		// team fact over `ctx.team.rosterChars`, so the maps are read straight
+		// off the context. This block used to rebuild them from the slot roster —
+		// a second construction of the same facts, keyed only by slot holders, so
+		// a fifth name had no entry here and one on the parse side.
+		const buffTeam = ctx.team.rosterChars;
+		const buffFactionCounts = ctx.team.teamFactionCounts;
+		const buffElementCounts: ReadonlyMap<string, ReadonlyMap<Element, number>> = ctx.team
 			.teamElementCountsByHolder;
-		if (ctx.team.slotRoster) {
-			const m = new Map<string, Map<Element, number>>();
-			for (const holder of buffTeam) {
-				const counts = new Map<Element, number>();
-				for (const other of buffTeam) {
-					if (other.id === holder.id) continue;
-					if (!other.element) continue;
-					counts.set(other.element, (counts.get(other.element) ?? 0) + 1);
-				}
-				m.set(holder.id, counts);
-			}
-			buffElementCounts = m;
-		}
 		const charById = new Map<string, CharacterData>();
 		for (const c of [...ctx.team.teamChars, ...buffTeam]) charById.set(c.id, c);
 		const buffWindows = deriveBuffWindows({
