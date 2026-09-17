@@ -8,10 +8,10 @@ and `scripts/migrate-frames-shape.mjs` is what writes. See `docs/gauge-round-L4.
 ## Coverage
 
 - characters: **126** authored · **115** with a gcsim source
-- FrameMaps: **1140** authored · **982** matching gcsim exactly · **58** disagreeing · **100** uncovered
-- skill/burst application schedules observed: **285** · unobserved: **16**
+- FrameMaps: **1142** authored · **994** matching gcsim exactly · **47** disagreeing · **101** uncovered
+- skill/burst application schedules observed: **287** · unobserved: **16**
 - summon tick streams cross-checked: **58**
-- hits carrying a measured gcsim ICD cadence: **2972** of **2972**
+- hits carrying a measured gcsim ICD cadence: **2985** of **2985**
 
 ⛔ **No gcsim source (11)** — cannot be oracled at all, and nothing here may be written to them:
 
@@ -25,20 +25,20 @@ difference, per transition that currently falls back.
 
 | transition | maps falling back | median understatement |
 | --- | --- | --- |
-| E/Q → P | 398 / 414 | 11f |
-| E/Q → C | 299 / 315 | 9f |
-| E/Q → Q | 167 / 177 | 3f |
-| E/Q → E | 135 / 143 | 3f |
-| E/Q → N | 128 / 131 | 3f |
-| E/Q → J | 109 / 110 | 14f |
-| E/Q → D | 55 / 58 | 3f |
-| normal → P | 37 / 38 | 24f |
-| normal → C | 13 / 14 | 26f |
-| normal → N | 11 / 12 | 23f |
+| E/Q → P | 398 / 415 | 11f |
+| E/Q → C | 299 / 316 | 9f |
+| E/Q → Q | 168 / 179 | 3f |
+| E/Q → E | 134 / 143 | 3f |
+| E/Q → N | 128 / 132 | 3f |
+| E/Q → J | 111 / 112 | 14f |
+| E/Q → D | 56 / 58 | 3f |
+| normal → P | 34 / 37 | 24f |
+| normal → C | 12 / 15 | 26f |
+| normal → N | 10 / 13 | 23f |
 
-Maps whose true `anim` exceeds the authored `swap`: **37** normal (median 24f), **401** E/Q (median 11f).
+Maps whose true `anim` exceeds the authored `swap`: **34** normal (median 24f), **401** E/Q (median 11f).
 
-## 2. FrameMaps that disagree (58)
+## 2. FrameMaps that disagree (47)
 
 ⚠️ C4b rules that gcsim is the source for all frame data, so these resolve in
 gcsim's favour — but each is listed so it is READ before it is written.
@@ -60,15 +60,6 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | escoffier | `escoffier__normal__kitchen_skills.hits[1]` | anim 21→30 |
 | faruzan | `faruzan__burst__the_winds_secret_ways.frames` | C 61→71 |
 | flins | `flins__burst__ancient_ritual_cometh_the_night.frames` | N 102→53, E 103→53, D 103→51, J 103→50, swap 91→81, anim 91→81 |
-| gaming | `gaming__burst__suannis_gilded_dance.frames` | anim 66→77 |
-| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.hits[4]` | swap 28→26, anim 28→48, hit —→26 |
-| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.chargeFrames` | E 53→60, Q 54→62, D 26→19, J 24→19 |
-| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.plungeFrames` | N 58→59, E 59→60, Q 59→60, J 74→76, swap 61→64, anim 61→76 |
-| hu_tao | `hu_tao__normal__secret_spear_of_wangsheng.lowPlungeFrames` | anim 61→75 |
-| hu_tao | `hu_tao__normal__paramita_papilio.hits[4]` | N 36→37, swap 28→26, anim 28→48, hit —→26 |
-| hu_tao | `hu_tao__normal__paramita_papilio.chargeFrames` | Q 33→62, D 3→19, J 3→19, swap 42→62, anim 42→62 |
-| hu_tao | `hu_tao__normal__paramita_papilio.plungeFrames` | N 58→59, E 58→60, Q 58→60, swap 61→64, anim 61→76 |
-| hu_tao | `hu_tao__normal__paramita_papilio.lowPlungeFrames` | E 58→59, Q 58→59, anim 61→75 |
 | ifa | `ifa__skill__airborne_disease_prevention.frames` | swap 31→631, anim 31→631 |
 | ineffa | `ineffa__burst__supreme_instruction_cyclonic_exterminator.frames` | anim 127→130 |
 | keqing | `keqing__skill__stellar_restoration.frames` | anim 28→37 |
@@ -82,10 +73,9 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | lan_yan | `lan_yan__skill__swallow_wisp_pinion_dance.frames` | N 33→45, E 33→49, Q 79→46, D 77→47, J 79→47, swap 80→49, anim 80→49 |
 | lan_yan | `lan_yan__burst__lustrous_moonrise.frames` | anim 75→100 |
 | lauma | `lauma__normal__spiritcall_prayer.chargeFrames` | hit 73→67 |
-| nilou | `nilou__skill__dance_of_haftkarsvar.frames` | anim 21→22 |
-| nilou | `nilou__skill__whirling_steps_1.frames` | anim 31→33 |
+| neuvillette | `neuvillette__normal__as_water_seeks_equilibrium.chargeFrames` | C 69→53, E 26→23, Q 27→23, D 25→23, J 26→23, swap 58→50, anim 87→74 |
 | nilou | `nilou__skill__whirling_steps_2.frames` | N 40→27, E 32→27, Q 40→33, D 36→26, J 37→27, swap 62→31, anim 62→33 |
-| nilou | `nilou__skill__whirling_steps_3.frames` | D 57→26, J 57→27, swap 61→31, anim 61→33 |
+| nilou | `nilou__skill__whirling_steps_3.frames` | D 57→26, J 57→27, swap 61→31, anim 63→33 |
 | qiqi | `qiqi__skill__adeptus_art_herald_of_frost.frames` | anim 57→58 |
 | sangonomiya_kokomi | `sangonomiya_kokomi__normal__the_shape_of_water.hits[0]` | hit 4→2 |
 | sangonomiya_kokomi | `sangonomiya_kokomi__normal__the_shape_of_water.hits[1]` | hit 12→9 |
@@ -99,12 +89,11 @@ gcsim's favour — but each is listed so it is READ before it is written.
 | traveler_hydro | `traveler_hydro__skill__aquacrest_saber.variants[hE]` | N 81→396, Q 81→396, D 74→389, J 74→389, swap 90→405, anim 90→405 |
 | varesa | `varesa__normal__by_the_horns.plungeFrames` | N 40→39, C 47→40, E 40→39, Q 40→39, D 40→38, J 51→49, swap 37→39, anim 72→77 |
 | varka | `varka__skill__four_winds_ascension.frames` | N 55→49, E 56→44, Q 55→44, D 56→46, J 55→43, swap 68→49, anim 68→55 |
-| yelan | `yelan__normal__stealthy_bowshot.chargeHits[0]` | D 15→86, J 15→86, swap 25→96, anim 25→96 |
 | yun_jin | `yun_jin__skill__opening_flourish.frames` | anim 59→62 |
 | yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | anim 95→97 |
 | yun_jin | `yun_jin__skill__opening_flourish.variants[hE]` | N 140→96, D 129→85, J 129→85, swap 138→95, anim 138→97 |
 
-## 3. Uncovered maps (100)
+## 3. Uncovered maps (101)
 
 ⚠️ Uncovered is **not** the same as matching. A map here has no gcsim reading at
 all; the migration leaves it alone and it keeps `anim = swap`.
@@ -113,13 +102,13 @@ all; the migration leaves it alone and it keeps `anim = swap`.
 
 > iansan `iansan__normal__weighted_spike.hits[0]` · iansan `iansan__normal__weighted_spike.hits[1]` · iansan `iansan__normal__weighted_spike.hits[2]` · iansan `iansan__normal__weighted_spike.chargeFrames` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[0]` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[1]` · iansan `iansan__normal__weighted_spike_swift_stormflight.hits[2]` · iansan `iansan__normal__weighted_spike_swift_stormflight.chargeFrames` · iansan `iansan__skill__thunderbolt_rush.frames` · iansan `iansan__burst__the_three_principles_of_power.frames` · illuga `illuga__normal__oathkeepers_spear.hits[0]` · illuga `illuga__normal__oathkeepers_spear.hits[1]` · illuga `illuga__normal__oathkeepers_spear.hits[2]` · illuga `illuga__normal__oathkeepers_spear.hits[3]` · illuga `illuga__normal__oathkeepers_spear.chargeFrames` · illuga `illuga__skill__dawnbearing_songbird.frames` · illuga `illuga__skill__dawnbearing_songbird.variants[hE]` · illuga `illuga__burst__shadowless_reflection.frames` · kachina `kachina__normal__cragbiter.hits[0]` · kachina `kachina__normal__cragbiter.hits[1]` · kachina `kachina__normal__cragbiter.hits[2]` · kachina `kachina__normal__cragbiter.hits[3]` · kachina `kachina__normal__cragbiter.chargeFrames` · kachina `kachina__skill__go_go_turbo_twirly.frames` · kachina `kachina__burst__time_to_get_serious.frames` · linnea `linnea__normal__capture_protocol.hits[0]` · linnea `linnea__normal__capture_protocol.hits[1]` · linnea `linnea__normal__capture_protocol.hits[2]` · linnea `linnea__normal__capture_protocol.chargeHits[0]` · linnea `linnea__normal__capture_protocol.chargeHits[1]` · linnea `linnea__skill__countermeasure_lumis_battle_cry.frames` · linnea `linnea__burst__memo_survival_guide_in_extreme_conditions.frames` · nefer `nefer__normal__striking_serpent.hits[0]` · nefer `nefer__normal__striking_serpent.hits[1]` · nefer `nefer__normal__striking_serpent.hits[2]` · nefer `nefer__normal__striking_serpent.hits[3]` · nefer `nefer__normal__striking_serpent.chargeFrames` · nefer `nefer__skill__senet_strategy_dance_of_a_thousand_nights.frames` · nefer `nefer__burst__sacred_vow_true_eyes_phantasm.frames` · traveler_cryo `traveler_cryo__normal__foreign_frostglint.hits[0]` · traveler_cryo `traveler_cryo__normal__foreign_frostglint.hits[1]` · traveler_cryo `traveler_cryo__normal__foreign_frostglint.hits[2]` · traveler_cryo `traveler_cryo__normal__foreign_frostglint.hits[3]` · traveler_cryo `traveler_cryo__normal__foreign_frostglint.hits[4]` · traveler_cryo `traveler_cryo__normal__foreign_frostglint.chargeFrames`
 
-**no gcsim analogue** (25)
+**no gcsim analogue** (26)
 
-> chasca `chasca__normal__multitarget_fire_tap.hits[0]` · flins `flins__burst__ancient_ritual_cometh_the_night.variants[sQ]` · freminet `freminet__skill__pressurized_floe.variants[E]` · freminet `freminet__skill__pressurized_floe.variants[E]` · furina `furina__skill__salon_solitaire.variants[E]` · kaedehara_kazuha `kaedehara_kazuha__normal__garyuu_bladework.plungeVariants[After Hold E]` · kinich `kinich__normal__loop_shot.hits[0]` · kinich `kinich__normal__loop_shot.hits[1]` · kinich `kinich__skill__scalespiker_cannon.frames` · lan_yan `lan_yan__skill__feathermoon_ring_n.frames` · lan_yan `lan_yan__skill__feathermoon_ring_e.frames` · lisa `lisa__skill__violet_arc.variants[E]` · varesa `varesa__normal__fiery_passion_strikes.hits[0]` · varesa `varesa__normal__fiery_passion_strikes.hits[1]` · varesa `varesa__normal__fiery_passion_strikes.hits[2]` · varesa `varesa__normal__fiery_passion_strikes.chargeFrames` · varesa `varesa__normal__fiery_passion_strikes.plungeFrames` · varesa `varesa__skill__fiery_passion_rush.frames` · varesa `varesa__burst__guardian_vent.variants[sQ]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[0]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[1]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[2]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[3]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[4]` · varka `varka__normal__favonius_bladework_sturm_und_drang.chargeFrames`
+> chasca `chasca__normal__multitarget_fire_tap.hits[0]` · flins `flins__burst__ancient_ritual_cometh_the_night.variants[sQ]` · freminet `freminet__skill__pressurized_floe.variants[E]` · freminet `freminet__skill__pressurized_floe.variants[E]` · furina `furina__skill__salon_solitaire.variants[E]` · kaedehara_kazuha `kaedehara_kazuha__normal__garyuu_bladework.plungeVariants[After Press E]` · kaedehara_kazuha `kaedehara_kazuha__normal__garyuu_bladework.plungeVariants[After Hold E]` · kinich `kinich__normal__loop_shot.hits[0]` · kinich `kinich__normal__loop_shot.hits[1]` · kinich `kinich__skill__scalespiker_cannon.frames` · lan_yan `lan_yan__skill__feathermoon_ring_n.frames` · lan_yan `lan_yan__skill__feathermoon_ring_e.frames` · lisa `lisa__skill__violet_arc.variants[E]` · varesa `varesa__normal__fiery_passion_strikes.hits[0]` · varesa `varesa__normal__fiery_passion_strikes.hits[1]` · varesa `varesa__normal__fiery_passion_strikes.hits[2]` · varesa `varesa__normal__fiery_passion_strikes.chargeFrames` · varesa `varesa__normal__fiery_passion_strikes.plungeFrames` · varesa `varesa__skill__fiery_passion_rush.frames` · varesa `varesa__burst__guardian_vent.variants[sQ]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[0]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[1]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[2]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[3]` · varka `varka__normal__favonius_bladework_sturm_und_drang.hits[4]` · varka `varka__normal__favonius_bladework_sturm_und_drang.chargeFrames`
 
-**gcsim models one aimed shot per bow (no partial draw)** (12)
+**gcsim models one aimed shot per bow (no partial draw)** (14)
 
-> aloy `aloy__normal__rapid_fire.chargeHits[0]` · amber `amber__normal__sharpshooter.chargeHits[0]` · chasca `chasca__normal__phantom_feather_flurry.chargeHits[0]` · diona `diona__normal__ktzlein_style.chargeHits[0]` · gorou `gorou__normal__ripping_fang_fletching.chargeHits[0]` · jahoda `jahoda__normal__strike_while_the_arrows_hot.chargeHits[0]` · ororon `ororon__normal__spiritvessel_snapshot.chargeHits[0]` · sigewinne `sigewinne__normal__targeted_treatment.chargeHits[0]` · tighnari `tighnari__normal__khanda_barrierbuster.chargeHits[0]` · venti `venti__normal__divine_marksmanship.chargeHits[0]` · yoimiya `yoimiya__normal__firework_flareup.chargeHits[0]` · yoimiya `yoimiya__normal__firework_flareup_niwabi.chargeHits[0]`
+> aloy `aloy__normal__rapid_fire.chargeHits[0]` · amber `amber__normal__sharpshooter.chargeHits[0]` · chasca `chasca__normal__phantom_feather_flurry.chargeHits[0]` · diona `diona__normal__ktzlein_style.chargeHits[0]` · gorou `gorou__normal__ripping_fang_fletching.chargeHits[0]` · jahoda `jahoda__normal__strike_while_the_arrows_hot.chargeHits[0]` · lyney `lyney__normal__card_force_translocation.chargeHits[0]` · ororon `ororon__normal__spiritvessel_snapshot.chargeHits[0]` · sigewinne `sigewinne__normal__targeted_treatment.chargeHits[0]` · tighnari `tighnari__normal__khanda_barrierbuster.chargeHits[0]` · venti `venti__normal__divine_marksmanship.chargeHits[0]` · yelan `yelan__normal__stealthy_bowshot.chargeHits[0]` · yoimiya `yoimiya__normal__firework_flareup.chargeHits[0]` · yoimiya `yoimiya__normal__firework_flareup_niwabi.chargeHits[0]`
 
 **gcsim models no distinct hold for this character (its hold slice IS the tap)** (3)
 
@@ -140,10 +129,6 @@ all; the migration leaves it alone and it keeps `anim = swap`.
 **ifa: action high_plunge not implemented** (1)
 
 > ifa `ifa__normal__rite_of_dispelling_winds.plungeFrames`
-
-**no gcsim analogue for "Prop Arrow"** (1)
-
-> lyney `lyney__normal__card_force_translocation.chargeHits[2]`
 
 **no gcsim analogue for "Shadowpiercing Shot"** (1)
 
@@ -172,10 +157,6 @@ all; the migration leaves it alone and it keeps `anim = swap`.
 **only plunge after using jump** (1)
 
 > xiao `xiao__normal__yaksha_mask.plungeFrames`
-
-**no gcsim analogue for "Breakthrough Barb"** (1)
-
-> yelan `yelan__normal__stealthy_bowshot.chargeHits[2]`
 
 ## 4. Proposed application schedules
 
@@ -219,6 +200,7 @@ in the list) or a thing left in the world we have not modelled.
 | barbara | `barbara__skill__let_the_show_begin` | +3 hydro (1U) · +42 hydro [icd] · +78 hydro [icd] · +93 hydro (1U) · +183 hydro (1U) · +273 hydro [icd] · +363 hydro (1U) · +453 hydro [icd] · +543 hydro (1U) · +633 hydro [icd] · +723 hydro (1U) · +813 hydro [icd] · +903 hydro (1U) | ⚠️ regular, no authored summon: Let the Show Begin♪ (Melody Loop) ×11/90f |
 | barbara | `barbara__burst__shining_miracle` | **—** |  |
 | beidou | `beidou__skill__tidecaller` | +23 electro (2U) |  |
+| beidou | `beidou__skill__tidecaller · hE` | +23 electro (2U) |  |
 | beidou | `beidou__burst__stormbreaker` | +28 electro (4U) |  |
 | bennett | `bennett__skill__passion_overload` | +16 pyro (2U) |  |
 | bennett | `bennett__skill__passion_overload · h1E` | +45 pyro (1U) · +57 pyro (1U) |  |
@@ -239,6 +221,7 @@ in the list) or a thing left in the world we have not modelled.
 | chevreuse | `chevreuse__skill__shortrange_rapid_interdiction_fire · hE` | +19 pyro (1U) · +55 pyro [icd] |  |
 | chevreuse | `chevreuse__burst__ring_of_bursting_grenades` | +59 pyro (2U) · +83 pyro (1U) · +92 pyro [icd] · +92 pyro [icd] · +101 pyro (1U) · +101 pyro (1U) · +110 pyro [icd] · +110 pyro [icd] · +119 pyro [icd] |  |
 | chiori | `chiori__skill__fluttering_hasode` | +21 geo (1U) | 5× Fluttering Hasode (Tamato) |
+| chiori | `chiori__skill__fluttering_hasode · hE` | +37 geo (1U) | 5× Fluttering Hasode (Tamato) |
 | chiori | `chiori__burst__hiyoku_twin_blades` | +92 geo (2U) |  |
 | chongyun | `chongyun__skill__spirit_blade_chonghuas_layered_frost` | +36 cryo (2U) · +655 cryo (1U) |  |
 | chongyun | `chongyun__skill__spirit_blade_chonghuas_layered_frost · ?` | +36 cryo (2U) · +655 cryo (1U) |  |
@@ -275,7 +258,7 @@ in the list) or a thing left in the world we have not modelled.
 | durin | `durin__burst__principle_of_purity_as_the_light_shifts` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] | 20× Dragon of White Flame |
 | durin | `durin__burst__principle_of_darkness_as_the_stars_smolder` | +97 pyro (1U) · +121 pyro [icd] · +154 pyro [icd] · +156 pyro (1U) · +214 pyro [icd] · +273 pyro (1U) · +332 pyro [icd] · +391 pyro (1U) · +450 pyro [icd] · +508 pyro (1U) · +567 pyro [icd] · +626 pyro (1U) · +685 pyro [icd] · +744 pyro (1U) · +802 pyro [icd] · +861 pyro (1U) · +920 pyro [icd] · +979 pyro (1U) · +1038 pyro [icd] · +1096 pyro (1U) · +1155 pyro [icd] · +1214 pyro (1U) · +1273 pyro [icd] |  |
 | emilie | `emilie__skill__fragrance_extraction` | +37 dendro (1U) · +62 dendro [icd] | 14× Lumidouce Case (Level 1) |
-| emilie | `emilie__burst__aromatic_explication` | **—** | 18× Lumidouce Case (Level 3), Lumidouce Case (Level 1) |
+| emilie | `emilie__burst__aromatic_explication` | +126 dendro (1U) · +162 dendro [icd] · +180 dendro [icd] · +234 dendro (1U) | 14× Lumidouce Case (Level 1) |
 | escoffier | `escoffier__skill__lowtemperature_cooking` | +23 cryo (1U) · +83 cryo [icd] · +153 cryo (1U) · +212 cryo [icd] · +270 cryo (1U) · +329 cryo [icd] · +387 cryo (1U) · +446 cryo [icd] · +504 cryo (1U) · +563 cryo [icd] · +621 cryo (1U) · +680 cryo [icd] · +738 cryo (1U) · +797 cryo [icd] · +855 cryo (1U) · +914 cryo [icd] · +972 cryo (1U) · +1031 cryo [icd] · +1089 cryo (1U) · +1148 cryo [icd] · +1206 cryo (1U) · +1265 cryo [icd] · +1323 cryo (1U) |  |
 | escoffier | `escoffier__burst__scoring_cuts` | +92 cryo (2U) |  |
 | eula | `eula__skill__icetide_vortex` | +20 cryo (1U) |  |
@@ -537,15 +520,15 @@ which the pair alone cannot state.
 | amber | `explosive_puppet` | — | Baron Bunny 530f / —f × 1 · 1/1 `either` | `none` |
 | amber | `fiery_rain` | Fiery Rain 84f / 12f × 9 · 60f / every 3 | Fiery Rain 84f / 12f × 18 · 13/18 `other` ⚠️ **count 9→18** | 60f / every 3 |
 | baizhu | `holistic_revivification` | Pulsing Clarity 252f / 146f × 5 · `none` | — | — |
-| chiori | `fluttering_hasode` | Tamoto 55f / 216f × 5 · 114f / first only | Fluttering Hasode (Tamato) 60f / 216f × 5 · 4/5 `other` | 114f / first only |
+| chiori | `fluttering_hasode` | Tamoto 60f / 216f × 5 · 114f / first only | Fluttering Hasode (Tamato) 60f / 216f × 5 · 4/5 `other` | 114f / first only |
 | citlali | `dawnfrost_darkstar` | Itzpapa 77f / 59f × 20 · 90f / every 2 | — | — |
 | collei | `trumpcard_kitty` | Cuilein-Anbar 68f / 30f × 11 · 180f / first only | Trump-Card Kitty (Leap) 68f / 30f × 12 · 2/12 `other` ⚠️ **count 11→12** | 180f / first only |
 | columbina | `eternal_tides` | Gravity Ripple 138f / 117f × 12 · `none` | Skill (DoT) 138f / 117f × 12 · 12/12 `none` | `none` |
 | diona | `signature_mix` | Drunken Mist 178f / 120f × 6 · `standard` | Signature Mix (Tick) 178f / 120f × 6 · 3/6 `standard` | 150f / every 3 |
 | durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame 156f / 59f × 20 · 90f / first only | Dragon of White Flame 156f / 59f × 20 · 10/20 `other` | 90f / first only |
 | durin | `principle_of_darkness_as_the_stars_smolder` | Dragon of Dark Decay 176f / 74f × 16 · 120f / first only | — | — |
-| emilie | `fragrance_extraction` | Lumidouce Case 106f / 90f × 14 · 120f / first only | Lumidouce Case (Level 1) 111f / 90f × 14 · 7/14 `standard` | 120f / first only |
-| emilie | `aromatic_explication` | Lumidouce Case (Level 3) 126f / 54f × 3 · `standard` | Lumidouce Case (Level 3) 126f / 36f × 4 ⚠️ irregular · 2/4 `standard`<br>Lumidouce Case (Level 1) 401f / 90f × 14 · 7/14 `standard` | 150f / every 3<br>120f / first only |
+| emilie | `fragrance_extraction` | Lumidouce Case 111f / 90f × 14 · 120f / first only | Lumidouce Case (Level 1) 111f / 90f × 14 · 7/14 `standard` | 120f / first only |
+| emilie | `aromatic_explication` | Lumidouce Case 126f / 54f × 3 · `standard`<br>Lumidouce Case 401f / 90f × 14 · 120f / first only | Lumidouce Case (Level 1) 401f / 90f × 14 · 7/14 `standard` | 120f / first only |
 | escoffier | `lowtemperature_cooking` | Cooking Mek (Cold Storage) 153f / 59f × 19 · 90f / every 6 | — | — |
 | fischl | `nightrider` | Oz 92f / 59f × 9 · 300f / every 4 | Oz (Skill) 92f / 59f × 10 · 3/10 `other` ⚠️ **count 9→10** | 300f / every 4 |
 | fischl | `midnight_phantasmagoria` | Oz 74f / 59f × 9 · 300f / every 4 | Oz (Burst) 192f / 59f × 10 · 3/10 `other` ⚠️ **count 9→10** | 300f / every 4 |
@@ -554,7 +537,7 @@ which the pair alone cannot state.
 | gorou | `juuga_forward_unto_victory` | General's Glory 121f / 90f × 5 · `standard` | Crystal Collapse 122f / 90f × 5 · 3/5 `standard` | 150f / every 3 |
 | ineffa | `cleaning_mode_carrier_frequency` | Birgitta 110f / 120f × 10 · `none` | Birgitta 110f / 119f × 10 · 10/10 `none` | `none` |
 | ineffa | `supreme_instruction_cyclonic_exterminator` | Birgitta 153f / 120f × 10 · `none` | Birgitta 153f / 119f × 10 · 10/10 `none` | `none` |
-| kaedehara_kazuha | `kazuha_slash` | Autumn Whirlwind 140f / 117f × 5 `cap` · `none` | Kazuha Slash (DoT) 140f / 117f × 5 · 5/5 `none` | `none` |
+| kaedehara_kazuha | `kazuha_slash` | Autumn Whirlwind 140f / 117f × 5 · `none` | Kazuha Slash (DoT) 140f / 117f × 5 · 5/5 `none` | `none` |
 | kaeya | `glacial_waltz` | Glacial Waltz 53f / 40f × 13 `cap` · `standard` | Glacial Waltz 53f / 40f × 13 · 7/13 `standard` | 150f / every 3 |
 | kinich | `hail_to_the_almighty_dragonlord` | Ajaw 253f / 147f × 6 · `standard` | — | — |
 | kuki_shinobu | `sanctifying_ring` | Grass Ring of Sanctification 113f / 90f × 8 `cap` · `standard` | Grass Ring of Sanctification 115f / 90f × 8 · 4/8 `standard` | 150f / every 3 |
@@ -614,7 +597,7 @@ the cadence and drops the cap.
 | collei | `trumpcard_kitty` | Trump-Card Kitty (Leap) | 2/12 `other` | 180f / first only | ✅ authored |
 | durin | `principle_of_purity_as_the_light_shifts` | Dragon of White Flame | 10/20 `other` | 90f / first only | ✅ authored |
 | emilie | `fragrance_extraction` | Lumidouce Case (Level 1) | 7/14 `standard` | 120f / first only | ✅ authored |
-| emilie | `aromatic_explication` | Lumidouce Case (Level 1) | 7/14 `standard` | 120f / first only | ⚠️ pair by eye (1 authored / 2 observed) — currently `standard` |
+| emilie | `aromatic_explication` | Lumidouce Case (Level 1) | 7/14 `standard` | 120f / first only | ⚠️ pair by eye (2 authored / 1 observed) — currently — |
 | fischl | `nightrider` | Oz (Skill) | 3/10 `other` | 300f / every 4 | ✅ authored |
 | fischl | `midnight_phantasmagoria` | Oz (Burst) | 3/10 `other` | 300f / every 4 | ✅ authored |
 | navia | `as_the_sunlit_skys_singing_salute` | Cannon Fire Support | 6/17 `other` | 720f / every 3 | ✅ authored |

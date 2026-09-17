@@ -19,7 +19,13 @@
 		"does not change the frames — read them off the base capture.' Hu Tao, Wriothesley,",
 		"Xiao, Yoimiya and Durin's dark form are all like that, and Arataki Itto scores",
 		"strictly WORSE with a prereq than without one. ⛔ Leaving them out instead would",
-		"file them as UNCOVERED, which is a different and untrue claim."
+		"file them as UNCOVERED, which is a different and untrue claim.",
+		"",
+		"`aim` (2026-09-17) is the one row kind that is NOT a state: which of our named",
+		"`chargeHits` entries gcsim's `A` (default hold) and `hA` (hold 1 = AimParamLv1,",
+		"the fully-charged shot for most bows) describe, for a bow whose DEFAULT aimed",
+		"shot is kit-specific. gcsim-map.mjs otherwise reads A != hA as 'hA is the partial",
+		"draw', which is Ganyu and Sethos and is wrong for these."
 	],
 
 	"_unresolved": {
@@ -68,6 +74,10 @@
 		"note": "Spiritcall Prayer. gcsim's `deerStateReady` starts true, so a bare `C` is the DEER (the base map, non-hitting); the Prayer needs the deer entered and then ENDED — any action but walk/jump ends it — after which `C` is the attack for 4s. ⚠️ The ender is a BURST, not an attack: an `attack` step advances gcsim's normal counter, so the sibling's N1/N2/N3 captures came back rotated by one (3 false rows). The burst leaves no summon ticking and touches no counter. The surviving `hit 73→67` row is the audit's cancel-tier inference, not gcsim's `chargeHitmark` (73) — read it, don't migrate it.",
 		"_scored": "charge+burst 4/5 (charge+attack 1/5 — the attack rotates the combo; base: uncovered — a bare C is the deer)",
 		"states": { "envoyCooldown": [{ "action": "charge" }, { "action": "burst" }] }
+	},
+	"lyney": {
+		"note": "Aimed shots. Default hold is AimParamLv2 = the Prop Arrow; hold 1 is the fully-charged shot.",
+		"aim": { "A": "Prop Arrow", "hA": "Fully-Charged Aimed Shot" }
 	},
 	"mavuika": {
 		"note": "Flamestrider. ⚠️ Her BURST scores the same 5/5 — it also opens the ring — but hold-E is the cast the corpus models, so that is the row.",
@@ -125,6 +135,10 @@
 		"note": "Nightsoul / Source Samples.",
 		"_scored": "skill 4/4 (base 0/3)",
 		"states": { "nightsoulBlessing": [{ "action": "skill" }] }
+	},
+	"yelan": {
+		"note": "Aimed shots. `A` reads the Breakthrough Barb (taken whenever it is ready, and it is at time 0); hold 1 is the fully-charged shot.",
+		"aim": { "A": "Breakthrough Barb", "hA": "Fully-Charged Aimed Shot" }
 	},
 	"yoimiya": {
 		"note": "Niwabi Enshou — frames identical to the base reading.",

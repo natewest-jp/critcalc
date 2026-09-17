@@ -198,9 +198,30 @@ export function authoredMaps(char, drv, dumped) {
 			const chargeHits = a.chargeHits ?? [];
 			let fullIdx = chargeHits.findIndex((h) => named(h) === 'fully-charged aimed shot');
 			if (fullIdx < 0) fullIdx = chargeHits.length - 1;
+			// ⚓⚓ A DECLARED PAIRING WINS (drivers.json `aim`, 2026-09-17). `hA` is `hold: 1` —
+			// gcsim's AimParamLv1, "fully charged aimshot for most bow characters" — and `A`
+			// is the character's DEFAULT hold. The detection above reads `A` ≠ `hA` as "`hA`
+			// is the partial draw", which is right for Ganyu (default Lv2 Frostflake) and
+			// Sethos, and WRONG for a bow whose default is a kit-specific shot: Lyney's Prop
+			// Arrow (default Lv2) and Yelan's Breakthrough Barb (taken whenever ready), where
+			// `hA` is the fully-charged shot. Guessed, it filed both corrected maps as
+			// disagreements and would have MIGRATED the full shot's numbers into the partial
+			// slot. ⛔ Not detectable from the captures without pairing by VALUE, so it is
+			// declared per character, by entry NAME.
+			const declared = drv?.aim;
 			chargeHits.forEach((h, i) => {
 				const isPartial = named(h) === 'aimed shot';
-				const key = i === fullIdx ? 'A' : isPartial && partialKey ? partialKey : null;
+				const key = declared
+					? named(h) === String(declared.A ?? '').toLowerCase()
+						? 'A'
+						: named(h) === String(declared.hA ?? '').toLowerCase()
+							? 'hA'
+							: null
+					: i === fullIdx
+						? 'A'
+						: isPartial && partialKey
+							? partialKey
+							: null;
 				out.push({
 					group: `chargeHits[${i}]`,
 					path: `${a.id}.chargeHits[${i}]`,
