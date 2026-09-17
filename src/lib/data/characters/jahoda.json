@@ -90,7 +90,7 @@
 			"input": ["E"],
 			"abilityType": "skill",
 			"behavior": "stance",
-			"duration": 5.57,
+			"duration": 6.07,
 			"terminatesOnSwap": true,
 			"frames": {
 				"anim": 48,
@@ -105,15 +105,16 @@
 			"effects": [],
 			"caveat": "The stance is shown running its full duration; in game it ends sooner when you re-press E, attack, or fill the flask.",
 			"_curatorNotes": [
-				"Tap E (out-of-stance): dash + enter Shadow Pursuit at +30f (skillWindup). Max stance duration = shadowPursuitMaxDuration=334f = 5.57s. behavior:stance + opensState:inStance + terminatesOnSwap:true matches the swap-exit case.",
-				"Cooldown: SetCD(skill, skillCD+skillWindup) = (15+0.5)*60 = 15.5s starting at stance end (called inside cancelPursuit). With behavior:stance + duration:5.57 + cooldown:15.5, the parser counts cooldown after duration ends — total cycle = 5.57s stance + 15.5s cd = 21.07s.",
+				"Tap E (out-of-stance): dash + enter Shadow Pursuit at +30f (skillWindup), which runs shadowPursuitMaxDuration = 334f FROM THERE — so the stance ends 364f after the cast. ↻ 2026-09-17 (T1.5): `duration` is 6.07 (364f), the windup plus the stance, so the window ENDS where gcsim's does and the cooldown tail below ends on the right frame; the bar's first 0.5s is the dash. It was 5.57, which put both ends 0.5s early. behavior:stance + opensState:inStance + terminatesOnSwap:true matches the swap-exit case.",
+				"Cooldown: gcsim cancelPursuit calls SetCD(skill, skillCD + skillWindup) = (15 + 0.5) × 60 = 930f at STANCE END. ↻ 2026-09-17 (T1.5): this note used to claim the parser already counted the cooldown after the stance — measured, it counted from the cast (`Jahoda E ~25s E` → readyAt 15.50s). `cooldownStartsAtStanceEnd: true` makes it so: 364 + 930 = 1294f, a 21.57s cycle. The 15.5 against genshin-db's 15 is gcsim's windup term, recorded in GDB_CD_KNOWN_WRONG.",
 				"Frames: skillFrames=InitAbilSlice(12+30=42) — no explicit overrides, all keys=42. Per E-spec swap/N/Q/D/J authored uniformly.",
-				"Flask absorption: during stance, scans every 29f (fillFlaskInterval) for Pyro/Hydro/Electro/Cryo aura on enemy; first match locks the flask element, subsequent matches of same element fill the gauge by 25 each (max 100). Flask state isn't modeled.",
+				"Flask absorption: during stance, scans every 30f (gcsim flaskFillInterval) for Pyro/Hydro/Electro/Cryo aura on enemy; first match locks the flask element, and each later scan fills the gauge by 20 (flaskFillValue), or 10 (flaskFillWeakValue) for an aura that is not the locked element (max 100). Flask state isn't modeled. (↻ 2026-09-17: corrected from '29f' and 'by 25 each'.)",
 				"On stance exit (re-press E or NA/Aim or duration-end): drainFlask fires either filledFlask (212% Anemo at lvl=10) if gauge=100, or unfilledFlask (190.8% Anemo at lvl=10). Single-element absorption + gauge tracking are deferred primitives.",
 				"Moonsign Ascendant Gleam: with full flask, Meowballs fire instead of unfilled drain — 10 ticks at firstMeowballFirstHitmark=129f + meowballHitmarkInterval=116f intervals, each 128% of absorbed-element ATK. Each hit grants +2 Energy (3.5s ICD). Not authored; team-element-resolution + meowball volley both deferred.",
 				"[A7] Early-exit stance ends (re-press E / N or Aim action / flask-full discharge) would need an afterAction-style trigger primitive the current schema lacks; only the max-duration end (behavior:stance + duration 5.57 + terminatesOnSwap) is authored.",
 				"[A7] Filled (full flask) vs unfilled drain differ only in DMG magnitude (212% vs 190.8% Anemo at lvl 10) — a damage-number distinction out of scope for the timeline.",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"The stance is shown running its full duration; in game it ends sooner when you re-press E, attack, or fill the flask. Not modeled: the Moonsign Ascendant Gleam Meowball volley, which fires the absorbed element instead of Anemo.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"The stance is shown running its full duration; in game it ends sooner when you re-press E, attack, or fill the flask. Not modeled: the Moonsign Ascendant Gleam Meowball volley, which fires the absorbed element instead of Anemo.\"",
+				"↻ 2026-09-15: gcsim main has her (#2538, frames doc fixed in #2770); FrameMaps and application[] re-migrated against ac2d76dde."
 			],
 			"description": "Jahoda dashes toward her opponent, entering the Shadow Pursuit state upon contact. While in this state, Jahoda moves continuously and swiftly: If nearby opponents are affected by Pyro, Hydro, Electro, or Cryo, she will quietly convert her **Purr-loined Treasure Flask** to that element, gradually filling it. When the duration ends or the skill is used again, Jahoda drains the Purr-loined Treasure Flask and deals a single instance of Anemo DMG to nearby opponents. When the Purr-loined Treasure Flask is full, Jahoda immediately drains it, exiting the Shadow Pursuit state and dealing a more powerful instance of Anemo DMG.\nIf her dash fails to make contact with an opponent, Jahoda instead drops a Smoke Bomb at her location, dealing a single instance of Anemo DMG to nearby opponents.\n\nMoonsign: Ascendant Gleam: When the Purr-loined Treasure Flask becomes full, Jahoda will not immediately discharge it. Instead, for a short duration, she steadily consumes the stored element inside and periodically fires Fluffy Meowballs at nearby opponents, dealing DMG of the corresponding element stored in the Purr-loined Treasure Flask. When a Fluffy Meowball hits an opponent, Jahoda regenerates 2 Elemental Energy. This effect can be triggered once every 3.5s.",
 			"application": [
@@ -122,7 +123,8 @@
 					"element": "anemo",
 					"units": 1
 				}
-			]
+			],
+			"cooldownStartsAtStanceEnd": true
 		},
 		{
 			"id": "jahoda__burst__hidden_aces_seven_tools_of_the_hunter",
@@ -177,7 +179,8 @@
 				"C4 (+4 Energy on robot element absorption): would need an absorption-event trigger; not authored.",
 				"C6 (Moonsign Gleam: when flask full, +5% CR / +40% CD to all Moonsign party for 20s): caveated on the C6 node below — the originally-authored buffs were removed because the flask-full trigger sits inside the deferred flask system (stale cross-reference corrected, capability sweep 2026-07-28).",
 				"[A7] Unauthored robot damage tick: 172.66% ATK FlatDmg of the absorbed element, ~2.33s interval (140f base, ×0.9 with Cryo A1); needs summon onHit + element-absorption + Moonsign-team-state, all deferred primitives.",
-				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The robots' summon-lane row and its tick marks. `computeSummonTicks` accepts every `summonTick` effect, so the lane draws marks at the 1.45s HEAL cadence and only that — a Moonsign player sees one evenly-spaced series where the game runs a second ~2.33s damage series that would carry its own marks and its own aura applications. The caveat is anchored to exactly that row (\"Only the robots' healing is shown\") and warns the reader not to read the visible cadence as the robots' full output. Category: expected-but-absent."
+				"↻ CAVEAT REMOVED 2026-08-19 (ruthless pass, Nate-approved): no pixel — The robots' summon-lane row and its tick marks. `computeSummonTicks` accepts every `summonTick` effect, so the lane draws marks at the 1.45s HEAL cadence and only that — a Moonsign player sees one evenly-spaced series where the game runs a second ~2.33s damage series that would carry its own marks and its own aura applications. The caveat is anchored to exactly that row (\"Only the robots' healing is shown\") and warns the reader not to read the visible cadence as the robots' full output. Category: expected-but-absent.",
+				"↻ 2026-09-15: gcsim main has her (#2538, frames doc fixed in #2770); FrameMaps and application[] re-migrated against ac2d76dde."
 			],
 			"description": "Time to reveal those pocket aces! Jahoda retrieves 2 **Purrsonal Coordinated Assistance Robots** and deals a single instance of Anemo DMG to nearby opponents.",
 			"application": [
@@ -197,7 +200,8 @@
 			"_curatorNotes": [
 				"A1: Robot enhancement based on highest-count team element (Pyro: +30% robot DMG, Hydro: +20% heal, Electro: +1 robot count, Cryo: -10% interval). Determined at Init time from team composition. With C2 + Moonsign Gleam, also applies the second-highest element's enhancement (up to 2 active).",
 				"Each enhancement modifies a robot system field (robotAi.FlatDmg, robotHi.Src, robotCount, robotHitmarkInterval) — none are exposed as Effects in our schema. The robot system itself is partially authored on the burst as a summon with a heal effect; the A1 enhancements scale that heal/damage but in an element-resolved-at-init manner that doesn't fit any current trigger primitive.",
-				"Not authored — flagged. Effective gameplay: a Pyro-heavy team gets stronger robot damage; Hydro-heavy gets stronger heals; Electro gets a third robot; Cryo gets faster ticks. Document in user-facing release notes when buff rendering for Jahoda lands."
+				"Not authored — flagged. Effective gameplay: a Pyro-heavy team gets stronger robot damage; Hydro-heavy gets stronger heals; Electro gets a third robot; Cryo gets faster ticks. Document in user-facing release notes when buff rendering for Jahoda lands.",
+				"↻ 2026-09-17 (T1.5): of the four branches only Electro (+1 robot) and Cryo (−10% interval) change anything drawable, and both act on robotCount / robotHitmarkInterval — the robots' DAMAGE series, which is unauthored. gcsim's healInterval is a constant 87f, so the heal tick markers the lane draws are correct under every A1 branch."
 			],
 			"description": "When your team has at least one Pyro, Hydro, Electro, or Cryo character, the **Purrsonal Coordinated Assistance Robots** from the Elemental Burst Hidden Aces: Seven Tools of the Hunter will be enhanced based on the number of characters of each corresponding element.\nJahoda secretly keeps track of these characters. Among them, the element with the highest number of characters determines the enhancement effect:\n· Pyro: Purrsonal Coordinated Assistance Robots deal 130% of their original DMG.\n· Hydro: Purrsonal Coordinated Assistance Robots heal for 120% of their original healing amount.\n· Electro: The number of Purrsonal Coordinated Assistance Robots increases by one.\n· Cryo: The attack interval of Purrsonal Coordinated Assistance Robots is reduced by 10%.\n\nIf there's a tie between elements, the order of priority that determines which enhancement takes effect is: Pyro, Hydro, Electro, then Cryo. Only one elemental effect can initially be triggered."
 		},
@@ -208,7 +212,7 @@
 			"caveat": "When a robot's heal lands on a character above 70% HP, that character also gains 100 EM for 6s — this boost isn't shown on the timeline.",
 			"_curatorNotes": [
 				"A4: When a Robot heal triggers on active char with HP > 70%, +100 EM to that char for 6s. Three deferred primitives: (1) per-heal-event trigger; (2) HP-state condition on target; (3) the 'lowest HP off-field char' additional heal that the same A4 mechanic also fires. Not authored. The original stub had a self+manual buff effect — removed; replaced with description-only entry.",
-				"Caveated (capability sweep 2026-07-28): still unmodelable — the trigger is a heal EVENT from the burst's summon (no heal-event trigger primitive; summonTick effects can't be conditioned on 'a heal landed'), and the 70% gate is on the HEALED target's HP while selfHpAbove/Below gate on the holder (only recipientHpBelow exists, no Above). Jahoda absent from the local gcsim checkout; kit text is the source. ↻ 2026-09-15: gcsim main has him (#2538, frames doc fixed in #2770); FrameMaps and application[] re-migrated against ac2d76dde."
+				"Caveated (capability sweep 2026-07-28): still unmodelable — the trigger is a heal EVENT from the burst's summon (no heal-event trigger primitive; summonTick effects can't be conditioned on 'a heal landed'), and the 70% gate is on the HEALED target's HP while selfHpAbove/Below gate on the holder (only recipientHpBelow exists, no Above). Jahoda absent from the local gcsim checkout; kit text is the source. (Frames/application provenance moved to the skill and burst notes 2026-09-17.)"
 			],
 			"description": "When a **Purrsonal Coordinated Assistance Robot** from the Elemental Burst Hidden Aces: Seven Tools of the Hunter triggers healing on an active team member, if that character's HP is above 70%, their Elemental Mastery will be increased by 100 for 6s."
 		}
@@ -266,7 +270,7 @@
 			"caveat": "When the flask fills, nearby Moonsign party members gain 5% CRIT Rate and 40% CRIT DMG for 20s — this buff isn't shown on the timeline.",
 			"_curatorNotes": [
 				"C6 (Moonsign Ascendant Gleam): when flask becomes full, all Moonsign characters in party gain +5% CR + +40% CD for 20s. The trigger is 'flask becomes full' which is a state-change inside the deferred flask system. Not authored — the original stub had two self-target manual-trigger buffs, removed since manual triggers don't render and the proper trigger primitive is missing.",
-				"Caveated (capability sweep 2026-07-28): the earlier removal stands — an onCast(skill) approximation would show a 20s team crit buff on every E, misstating a conditional late-window proc (the flask only fills when enemies carry Pyro/Hydro/Electro/Cryo auras during the stance, and the effect is additionally Moonsign-Ascendant-Gleam-gated). Kit text is the source; jahoda absent from the local gcsim checkout. ↻ 2026-09-15: gcsim main has him (#2538, frames doc fixed in #2770); FrameMaps and application[] re-migrated against ac2d76dde."
+				"Caveated (capability sweep 2026-07-28): the earlier removal stands — an onCast(skill) approximation would show a 20s team crit buff on every E, misstating a conditional late-window proc (the flask only fills when enemies carry Pyro/Hydro/Electro/Cryo auras during the stance, and the effect is additionally Moonsign-Ascendant-Gleam-gated). Kit text is the source; jahoda absent from the local gcsim checkout. (Frames/application provenance moved to the skill and burst notes 2026-09-17.)"
 			],
 			"description": "Moonsign: Ascendant Gleam: After the **Purr-loined Treasure Flask** from the Elemental Skill Savvy Strategy: Splitting the Spoils is full, nearby Moonsign characters in your party have their CRIT Rate increased by 5% and CRIT DMG increased by 40% for 20s."
 		}

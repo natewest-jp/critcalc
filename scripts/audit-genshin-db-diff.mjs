@@ -76,6 +76,10 @@ const GDB_CD_KNOWN_WRONG = new Map([
 	[
 		'flins__burst__ancient_ritual_cometh_the_night',
 		'gcsim burst.go SetCD 15*60=15s (verified 2026-07-16)'
+	],
+	[
+		'jahoda__skill__savvy_strategy_splitting_the_spoils',
+		'gcsim skill.go cancelPursuit SetCD(skillCD+skillWindup) = 15*60+30 = 15.5s, started at stance end (verified 2026-09-17)'
 	]
 ]);
 
