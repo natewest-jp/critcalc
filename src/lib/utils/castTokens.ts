@@ -67,3 +67,15 @@ export function declaredCastTokens(c: Pick<CharacterData, 'abilities'>): string[
 	}
 	return [...out].filter((t) => CAST_TOKEN_RE.test(t)).sort();
 }
+
+/** Whether `c` carries a MEASURED plunge — a `plungeFrames` (or a plunge
+ *  variant) on any normal ability. Absent, the parser draws `P` with
+ *  `GENERIC_PLUNGE_FRAMES` and the editor flags it provisional (2026-09-17).
+ *  Index-time fact (`CharacterIndexEntry.plunge`), same reason as `casts`. */
+export function hasPlungeFrames(c: Pick<CharacterData, 'abilities'>): boolean {
+	return (c.abilities ?? []).some(
+		(a) =>
+			a.abilityType === 'normal' &&
+			(a.plungeFrames !== undefined || (a.plungeVariants?.length ?? 0) > 0)
+	);
+}

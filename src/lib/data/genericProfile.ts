@@ -53,3 +53,22 @@ export const GENERIC_SKILL = { castAnim: 44, cooldown: 12 } as const;
 
 /** Burst: cast animation (frames) + cooldown (seconds) + energy cost. */
 export const GENERIC_BURST = { castAnim: 95, cooldown: 15, energy: 60 } as const;
+
+/** Plunge (the HIGH plunge, `P`/`hP`): per-key medians over the 52 authored
+ *  `plungeFrames` maps (2026-09-17). ⚓ A STAND-IN for the 74 characters with no
+ *  measured plunge: a `P` on one of them used to emit NOTHING — zero time, no
+ *  block, no application, and every later action shifted earlier — which was
+ *  indistinguishable from a typo (essential-characters §1.D). ⚓ Nate: it is
+ *  PROVISIONAL, not refused — the parser takes it and the editor squiggles it,
+ *  the same register a frameless E or Q gets. ⛔ Never author these into a
+ *  character; the notation lint keys on `plungeFrames` being ABSENT. */
+export const GENERIC_PLUNGE_FRAMES: FrameMap = {
+	anim: 77,
+	N: 58,
+	C: 52,
+	E: 58,
+	Q: 58,
+	D: 46,
+	J: 76,
+	swap: 63
+};
