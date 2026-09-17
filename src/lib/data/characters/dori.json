@@ -84,7 +84,8 @@
 				"Heal/energy target 'active': gcsim heals c.Core.Player.Active() and adds energy to ActiveChar each tick — the Jinni re-connects to whoever is on field, so post-cast swaps redirect the heal/energy to the new active character (wiki-confirmed 'connects to a nearby character'). Ticks are suppressed if the active char leaves the burst area; not modelled.",
 				"Heal snapshots Dori's Healing Bonus at cast (gcsim: Bonus: snap.Stats[attributes.Heal] from cast-time snapshot); Max HP scaling reads live MaxHP per tick.",
 				"Connected-character electro self-infusion: gcsim source has TODO comment ('TODO: find actual duration') on ApplySelfInfusion call — actual duration uncertain. Not modeled.",
-				"D cancel frame omitted: ActionDash remains at animation-length default (58 frames) after InitAbilSlice — no explicit ActionDash assignment in burst.go."
+				"D cancel frame omitted: ActionDash remains at animation-length default (58 frames) after InitAbilSlice — no explicit ActionDash assignment in burst.go.",
+				"✅ `icdGate` { timer 180 } (first hit of each window) authored 2026-09-17 (cast-icd-gate round; read off gcsim's group tables via the frames audit's §4b, ⛔ never inferred from an applied count). `ICDGroupDoriBurst` (180f, only the first hit applies). The 32 Connector entries at 24f used to apply every third (11 applications); gcsim applies at +28, +220, +412, +604 and so do we now."
 			],
 			"tags": ["heal"],
 			"effects": [
@@ -139,7 +140,10 @@
 				{ "frame": 724, "element": "electro" },
 				{ "frame": 748, "element": "electro" },
 				{ "frame": 772, "element": "electro" }
-			]
+			],
+			"icdGate": {
+				"timer": 180
+			}
 		}
 	],
 	"passives": [

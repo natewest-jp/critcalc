@@ -158,7 +158,8 @@
 				"Behavior changed from `persistent` to `instant` per recipe; original generator stub had `behavior: \"persistent\"` with `duration: 30` and `tags: [\"summon\"]` — all removed. Blood-Debt Directives are enemy-attached debuffs (similar to Hu Tao Blood Blossom or Mona Omen), not caster-side stance or summon entities. Directives have a 30s lifetime and tick every 5s for up to 2 instances of skillSigil DMG (skillSigil[8] = 0.5406 talent 9). Reviewer to model directives once schema supports enemy-attached debuffs with periodic damage callbacks.",
 				"Skill ticks: Spike hit at frame 17 (mult skillSpike[talent], skillSpike[8] = 0.25228), Final cleave hit at frame 38 (mult skillFinal[talent], skillFinal[8] = 2.27052). Both Pyro. Particle generation: 5 Pyro particles via particleCB on cleave hit, 0.3s ICD.",
 				"BoL economy on cast: a 35s `directiveLimitKey` window opens at finalHitmark+1, capping BoL gain to 1.45 × MaxHP (gcsim skillDebtMax). Directives absorbed via CA or Q grant 0.65 × MaxHP each (1.30 with A1 upgrade after 5s, or initialDirectiveLevel = 2 with C2). Recasting E within the 35s window resets the counter. Not authored — schema has no BoL-grant or directive-absorb encoder.",
-				"Skill cooldown 30s with 16-frame delay (gcsim `c.SetCDWithDelay(action.ActionSkill, 30*60, 16)`)."
+				"Skill cooldown 30s with 16-frame delay (gcsim `c.SetCDWithDelay(action.ActionSkill, 30*60, 16)`).",
+				"✅ `icdGate` { timer 600, every 3 } authored 2026-09-17 (cast-icd-gate round; read off gcsim's group tables via the frames audit's §4b, ⛔ never inferred from an applied count). `ICDGroupArlecchinoElementalArt` (600f, 1-0-0 sequence): the Spike (+17) and the Blood-Debt Directive ticks (+338, +638) share it; the Cleave (+38) is `ICDTagNone` in gcsim and carries an entry-level `noICD` — it applies always and spends no slot. Standard drew 17/338✗/638 and dropped the Cleave; gcsim lands 17, 38, 638 and suppresses 338, and so do we now."
 			],
 			"application": [
 				{
@@ -169,7 +170,8 @@
 				{
 					"frame": 38,
 					"element": "pyro",
-					"units": 1
+					"units": 1,
+					"noICD": true
 				},
 				{
 					"frame": 338,
@@ -181,7 +183,11 @@
 					"element": "pyro",
 					"units": 1
 				}
-			]
+			],
+			"icdGate": {
+				"timer": 600,
+				"every": 3
+			}
 		},
 		{
 			"id": "arlecchino__burst__balemoon_rising",

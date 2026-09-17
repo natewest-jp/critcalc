@@ -194,7 +194,8 @@
 				"The tooltip's last paragraph — the Dance Double's two moves dealing ADDITIONAL Stellar Glimmer DMG after a Coda while she is in a Radiance state — is unauthored. It is extra damage on an existing tick series, and the tools draw no damage magnitude, so it has no surface to reach.",
 				"FrameMaps + application[] written by scripts/migrate-frames-shape.mjs --seed / migrate-application-schema.mjs against gcsim main ac2d76dde (2026-09-13; counts credited in gcsim config.yml). Stage 4 landed 2026-09-15.",
 				"⚠️ application[] TRIMMED by hand after the migration: the dumper reaches the Coda only behind a skill-cast prerequisite (drivers.json `codaWindow`), so the capture also saw the PREREQUISITE's Solo Dance Double ticking through the horizon (114/223/348/…f) — the Furina stale-application class. Kept: the three Coda DoT hits (skillRecastDoTHitmarks 11/20/28, ICDGroupOdetteDanceDuo — a 3s / every-4 group, so only the first carries units). Dropped: the 62f final hit, which gcsim authors with NO Durability (a direct Stellar-Conduct hit) and which therefore applies nothing.",
-				"Not modelled: the Coda cancels the running dance tickers and restarts the Double with a Plume 52f after its final hit (gcsim skill.go skillRecast) — the mid-window hand-off. The Double keeps ticking on its original cadence here."
+				"Not modelled: the Coda cancels the running dance tickers and restarts the Double with a Plume 52f after its final hit (gcsim skill.go skillRecast) — the mid-window hand-off. The Double keeps ticking on its original cadence here.",
+				"✅ `icdGate` { timer 180 } (first hit of each window) authored 2026-09-17 (cast-icd-gate round; read off gcsim's group tables via the frames audit's §4b, ⛔ never inferred from an applied count). `ICDGroupOdetteDanceDuo` (180f, first only) on the Coda's own hits. ⚠️ Byte-identical on the three authored entries (+11 applies, +20/+28 suppressed either way). The Stellar-Conduct Coda variant is `ICDTagNone` in gcsim and is not authored here."
 			],
 			"frames": {
 				"anim": 76,
@@ -217,7 +218,10 @@
 					"frame": 28,
 					"element": "cryo"
 				}
-			]
+			],
+			"icdGate": {
+				"timer": 180
+			}
 		},
 		{
 			"id": "odette__burst__presto_bluebird_finale",
