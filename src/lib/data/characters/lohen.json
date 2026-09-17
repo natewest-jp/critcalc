@@ -59,6 +59,27 @@
 						"state": "inStance"
 					},
 					"delta": 1.65
+				},
+				{
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "all",
+						"conditions": [
+							{
+								"type": "constellation",
+								"level": 6
+							},
+							{
+								"type": "state",
+								"state": "inStance"
+							}
+						]
+					},
+					"delta": 1.25,
+					"procCooldown": 7
 				}
 			],
 			"description": "As he searches for weaknesses, Lohen switches to **Masterstroke** mode. While in this state:\n· Lohen can actively accumulate **Joy**, using it to unleash the special Elemental Skill **Etched Into Bone and Soul**.\n· Nearby party members can accumulate **Will to Win** for Lohen, increasing the DMG dealt by Etched Into Bone and Soul.\nLohen can unleash Etched Into Bone and Soul up to 3 times while in Masterstroke mode, after which, he will no longer be able to accumulate Joy.",
@@ -76,7 +97,6 @@
 					"element": "cryo"
 				}
 			],
-			"caveat": "Not modeled: the special Elemental Skill Etched Into Bone and Soul — there is no token for it, so the casts a Lohen player makes inside Masterstroke draw nothing.",
 			"_curatorNotes": [
 				"No gcsim source (not on main, no open PR as of 2026-07-14) — frames impossible; Lohen stays in FRAMELESS_EXEMPT. Stages 1–3 only.",
 				"Masterstroke = a stance (behavior: stance, terminatesOnSwap true) verified by web sources: mode ends when Lohen leaves the field and resets Joy / Will to Win to 0. Base duration 13.0s (sidecar 'Masterstroke' row, talent-level-invariant).",
@@ -85,7 +105,106 @@
 				"Cryo application ICD (~6 instances per 5s on empowered attacks) not modeled — no frames. Mechanics source: KQM quickguide.",
 				"[Hexerei] The Secret Rite (see factionBonuses) also triggers when the special Elemental Skill Etched Into Bone and Soul HITS an opponent. That special skill is not an authored ability (no ability id, no Joy model), so only the Burst trigger path is modeled; the hit path is unmodelable, not omitted by choice. Source: KQM quickguide (https://keqingmains.com/q/lohen-quickguide/), fetched 2026-07-29.",
 				"[A7] Rewrite dropped the working-behavior description of the modeled stance (Masterstroke 13s; behavior:'stance' + terminatesOnSwap) and the modeled Cryo self-infusion. Also dropped the sourcing detail that nearby teammates build Will to Win for Lohen (already covered in _curatorNotes) — the resource itself is retained in the rewrite as a not-modeled on-field resource.",
-				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the special skill Etched Into Bone and Soul and the Joy / Will to Win resources — on-field mechanics the timeline doesn't show.\""
+				"↻ CAVEAT TRIMMED 2026-08-19 (ruthless pass): kept only the on-screen half. Full prior text: \"Not modeled: the special skill Etched Into Bone and Soul and the Joy / Will to Win resources — on-field mechanics the timeline doesn't show.\"",
+				"↻ 2026-09-17: Etched Into Bone and Soul is now an ability (`lohen__skill__etched_into_bone_and_soul`), and the caveat that said it had no token is retired. C6's '+1.25s when the next special hits, once every 7s' is the second `durationExtensions` entry — `onCast skill` gated on C6 and `inStance` (the cold-open cast is never in stance), `procCooldown: 7`. Approximation: C6 arms it off a special hit or an in-Masterstroke burst; every special after the first is preceded by one, so only the 7s ICD binds in practice."
+			]
+		},
+		{
+			"id": "lohen__skill__etched_into_bone_and_soul",
+			"name": "Etched Into Bone and Soul",
+			"input": ["E"],
+			"abilityType": "skill",
+			"behavior": "instant",
+			"cooldown": 0,
+			"conditions": {
+				"type": "all",
+				"conditions": [
+					{
+						"type": "state",
+						"state": "inStance"
+					},
+					{
+						"type": "any",
+						"conditions": [
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "not",
+										"condition": {
+											"type": "constellation",
+											"level": 6
+										}
+									},
+									{
+										"type": "stacks",
+										"key": "etchedCasts",
+										"min": 0,
+										"max": 2
+									}
+								]
+							},
+							{
+								"type": "all",
+								"conditions": [
+									{
+										"type": "constellation",
+										"level": 6
+									},
+									{
+										"type": "stacks",
+										"key": "etchedCasts",
+										"min": 0,
+										"max": 4
+									}
+								]
+							}
+						]
+					}
+				]
+			},
+			"tags": [],
+			"effects": [
+				{
+					"type": "gainStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "state",
+						"state": "inStance"
+					},
+					"key": "etchedCasts",
+					"amount": 1,
+					"max": 5
+				},
+				{
+					"type": "consumeStacks",
+					"target": "self",
+					"trigger": {
+						"type": "onCast",
+						"ability": "skill"
+					},
+					"conditions": {
+						"type": "not",
+						"condition": {
+							"type": "state",
+							"state": "inStance"
+						}
+					},
+					"key": "etchedCasts",
+					"amount": "all"
+				}
+			],
+			"caveat": "Each cast is drawn where it is typed. In game it needs 100 Joy first, which takes about six Normal or Charged Attack hits inside Masterstroke.",
+			"_curatorNotes": [
+				"AUTHORED 2026-09-17 (⚓ Nate asked whether it could be supported before frames exist — it can). The special Elemental Skill a Lohen player casts inside Masterstroke; KQM writes it as a plain `E` (`E 2[N1C] E/Q 4[N1C] E 5[N1C] E`), so it is a state-gated SIBLING skill on `inStance` — Kinich's Scalespiker Cannon / Cyno's Mortuary Rite shape — and resolution prefers the conditioned sibling, so the unconditioned base Unforeseen Strike resolves only when this one does not (out of Masterstroke, or past the cast cap).",
+				"Source: Fandom `Unforeseen Strike` talent page (MediaWiki API, 2026-09-17). Joy: +17 per Normal/Charged hit in Masterstroke, once every 0.1s, max 100; 'Once Joy reaches its max limit, Lohen's Elemental Skill Unforeseen Strike will be replaced with the special Elemental Skill Etched Into Bone and Soul.' Up to 3 casts per Masterstroke (C6: +2). Advanced Properties: DMG A/B/C, 1U, Elemental Skill ICD.",
+				"⚓ THE CAST CAP IS A STACK COUNTER, and it is what makes a fourth in-stance `E` fall back to Unforeseen Strike (on its 18s cooldown) instead of drawing a fourth special. `etchedCasts` gains 1 on a skill cast made INSIDE Masterstroke and is cleared by a skill cast made OUTSIDE it — both gated on the cast's pre-state, because `onCast` cannot tell two `E` abilities apart (the Odette Coda finding). This ability resolves while the count is ≤ 2 (≤ 4 at C6); gains → snapshot → consumes means the gate reads the count BEFORE this cast's gain. Measured: C0 `… E … E Q … E … E` → three specials, the fourth resolves the base; C6 → five. Segment scope is right: Masterstroke ends on swap.",
+				"⛔ Joy is NOT tracked: the cast is drawn wherever `E` is typed inside Masterstroke (the user asserts full Joy by typing it, the Kinich Cannon convention) — caveated. ⛔ No frames and no `application[]`: there is no gcsim source, so the cast takes the frameless fallback and applies Cryo at its start, flagged provisional. ⛔ cooldown 0: the kit states none; Joy is the gate.",
+				"⛔ Still not reachable from this hit: the Hexerei Secret Rite ('or hitting an opponent with … Etched Into Bone and Soul') — a buff gated on `state: inStance` cannot tell this cast from the base on the cast buff pass (§1.G), so authoring it would draw the rite off the cold-open E too."
 			]
 		},
 		{
@@ -295,7 +414,7 @@
 			"_curatorNotes": [
 				"Hexerei Secret Rite authored 2026-07-29 from the KQM quickguide (https://keqingmains.com/q/lohen-quickguide/) — no gcsim source exists for Lohen, so the count gate (>=2 Hexerei) comes from the wave brief, not from a GetHexereiCount() check.",
 				"+40% Normal AND Charged Attack DMG for 6s, SELF only — split into two effects because `stat` is scalar. Modeled as a dmg-bonus stat buff (an authorable stat in the vocabulary, cf. Ayato C1 / Yun Jin C2), not as a raw damage multiplier.",
-				"Two gates in the kit are NOT expressible: (a) Will to Win >= 50% of max — Will to Win is an unmodeled internal resource, so the buff fires unconditionally on cast and the threshold is surfaced in the Burst caveat; (b) the Etched Into Bone and Soul hit trigger — that special skill has no authored ability. Only the Burst trigger path is modeled.",
+				"Two gates in the kit are NOT expressible: (a) Will to Win >= 50% of max — Will to Win is an unmodeled internal resource, so the buff fires unconditionally on cast and the threshold is surfaced in the Burst caveat; (b) the Etched Into Bone and Soul hit trigger — ↻ the special skill IS an ability since 2026-09-17, but a `state` gate cannot separate it from the cold-open E on the cast buff pass (§1.G). Only the Burst trigger path is modeled.",
 				"No Masterstroke (state:inStance) condition added: the kit text gates the Secret Rite on Will to Win, not on Masterstroke mode.",
 				"KQM confirms Lohen grants no other team buffs, shreds, heals, or energy beyond the already-authored A4 Flippant Masterpiece (+15% ATK) and C2 (+200 EM) — nothing else added, nothing duplicated. No permanent (ungated) current-patch kit patches found for Lohen."
 			]
