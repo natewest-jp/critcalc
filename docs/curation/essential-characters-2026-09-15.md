@@ -543,6 +543,90 @@ buffer), so Human timing keeps its default and gained
 
 ---
 
+## 10. The T1.5 tranche — record (2026-09-17, branch `curation/essential-t15`)
+
+§3's twenty-two T1.5 items, one commit per character, each probed with
+`parseNotation` before and after, plus one small engine prerequisite and one
+tooling fix. ⚠️ The record below wins over §3 and over the batch reports —
+**six** readings were overturned or refused on measurement (Kazuha's plunge
+arithmetic, Neuvillette's C1, Clorinde's C6, Chiori's C2, Diona's C2, and
+Beidou's A4 blocker the other way round), and one item (Pyro Traveler) had
+already shipped with the 09-15 re-ingest.
+
+| #   | character     | outcome                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | klee          | ✅ C6's `onCast.ability` named the burst by its in-game NAME — the only non-`skill`/`burst` value in the corpus, read by no lint — so the 25s team Pyro bar never drew.                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2   | emilie        | ✅ The +62f Spiritbreath Thorn (Durability 0) is gone. ⚓ **Recast truncation keys on the summon LABEL**, so the burst's Level 3 Case now shares the E Case's label and both carry `terminatesOn: recast` — the E Case is stowed at the burst's spawn instead of ticking through it — and the Case the burst leaves behind (306f, 22s) is the burst's second summon, deliberately unflagged (a flag would cut the Level 3 Case at C4). Both 22s series gain the 5f travel. C4 +2s and its 0.6s re-target twin series (3 → 8 hits); C6 as a Dendro `infuse` with its 12s ICD. Two caveats. |
+| 3   | xiangling     | ✅ C6 `manual` → `onCast burst`, 14s — the window anchors at the Pyronado's SPAWN, so 14 is exact. Two `units`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 4   | navia         | ✅ A1's 4s Geo `infuse` + N/C/P +40% (one pooled bar): applications 2 → 6 in `E N1 N2 N3 hE N1 N2`. A4 `manual` → two exclusive `passive` tiers, ≥2 first, caveated because the chip strip lists both. Surging Blade (Durability 0) entries gone. ⛔ Crystal Shrapnel not authored — nothing that reads it reaches a surface.                                                                                                                                                                                                                                                             |
+| 5   | shenhe        | ✅ A4's press/hold split on the skill's base effects and its `hE` variant; Icy Quill on all five `*FlatDmg` classes (pools into one bar with A4); A1 + C2 `manual`/`team` → `onCast burst` on the ACTIVE character, 12s / 18s at C2; the RES shreds 18s at C2 as a gated pair.                                                                                                                                                                                                                                                                                                            |
+| 6   | zhongli       | ✅ C2's Jade Shield + shreds on the burst; Petrification drawn as `persistent` with `summonActivatesAt: 101` (the Ayaka Soumetsu shape — ⛔ an `activeDuration` + accessor change was built and DROPPED for it); stele `spawnsAt 24`; press `cooldownStartDelay 22`; hold's Stele (Initial) `units: 2`. ⚠️ The hold variant needed `summonActivatesAt: 0` pinned: with `summons: []` it fell through to the base stele's new spawn and slid its shreds 24f off its shield.                                                                                                                |
+| 7   | traveler_pyro | ✔ Already shipped with the 09-15 re-ingest (prose + hE `anim 81`). No change.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 8   | jahoda        | ✅ `cooldownStartsAtStanceEnd` (a note had claimed the parser already did it — measured, it did not) and `duration` 5.57 → 6.07 (the 30f windup + gcsim's 334f), so readyAt 930 → 1294. Note fixes; `GDB_CD_KNOWN_WRONG` entry.                                                                                                                                                                                                                                                                                                                                                           |
+| 9   | kazuha        | ✅ A press-E plunge variant (gcsim plungePressFrames) and the hold's `anim` 61; Autumn Whirlwind 8 → 8.78s (gcsim's 527f status), retiring the now-redundant `tickCap`; C2's active EM 8 → 9.48s (re-applied per 0.5s tick). ⚠️ The report's "E P Q runs ~18f long" was wrong: measured, 2f SHORT. ⏸️ C2's SELF half held — see the engine queue.                                                                                                                                                                                                                                         |
+| 10  | nilou         | ✅ WS2/WS3 applications at 29 / 43 (were WS1's 21) with `units` on all three; `anim` 22 / 33 / 63. ⛔ The frames report's WS2/WS3 rows remain oracle artefacts; WS2/WS3 remain unreachable (sibling resolution).                                                                                                                                                                                                                                                                                                                                                                          |
+| 11  | chiori        | ✅ A1 Tailoring as a 5s Geo `infuse` (the DEFAULT branch; swing applications 0 → 4); an `hE` variant (88 / 44 / 87, sweep at 37, Tamoto at 34); A4's C1 branch; Tamoto first hit at +41f; `duration` 17 (talent table over gcsim's 17.5, the Zhongli-stele precedent). ⛔ C2's Kinu is fully specified but a summon cannot be constellation-gated — for the summon-conditions round.                                                                                                                                                                                                      |
+| 12  | yelan         | ✅ C2's extra arrow as a C2-gated `whileNormalAttacking` damage effect (the Fischl C6 shape, `interval 2`, `icdGate none`; +4 applications); `chargeHits[1]` 96/86; C4 caveat.                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 13  | hu_tao        | ✅ Both normals' `plungeFrames` are now the HIGH plunge (L4b had never been applied) and both low plunges `anim` 75; base charge E 60 / Q 62 / D-J 19; N5 `{48, 26}` on both; Paramita N6 `hit 27`. ⚓ `drivers.json`'s empty `inStance` prerequisite was the source of four false rows — with `[{action: skill}]` the oracle reads **20 of 20** maps matching.                                                                                                                                                                                                                           |
+| 14  | lyney         | ✅ `noICD` (both aimed shots are ICDTagNone; `C C` applies 1 → 2) and the three `chargeHits` re-slotted (23 / 80 / 111).                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| 15  | neuvillette   | ✅ `C` is gcsim's short-CA slice (87 / 69 / 26 / 27 / 25 / 26 / 58) — what the caveat already claimed. ⚠️⚠️ The shipped map was an EJ **closure capture artefact** (the dumper samples `chargeLegalEvalLeft = 0`), and the report now shows this map as disagreeing: that row is the artefact. Skill +60f (Durability 0) gone. ⛔ C1's "free stack" is NOT authorable: `onSwapIn` reaches weapon buffs only. ⛔ A1's tiers still collide (§1.H).                                                                                                                                          |
+| 16  | clorinde      | ✅ C2 gains `stellarConduct` (gcsim subscribes OnStellarConduct — positive evidence, not subsumption); no pixel yet (no `application[]`). ⛔ C6's CR/CD NOT authored: gcsim grants it only on the stance-OPENING press, and `onCast skill` cannot tell that from Impale the Night (both `E`, both skill); the Lohen cast-counter cannot hide the first Impale because the stack snapshot precedes consumes.                                                                                                                                                                               |
+| 17  | gaming        | ✅ burst `anim` 66 → 77 (+ D 66); the `manual` `buff hp% 50` is gcsim's heal, 30% Max HP, and the ability carries the `heal` tag.                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 18  | beidou        | ✅ An `hE` variant (gcsim shares the slice) carrying A4 (+15% N/CA DMG, 10s). ⚓ **A variant's `effects` REPLACE the base's, so a tap draws no A4 bar** — the batch report thought hold-gating needed the P1 `onCast.input` fix first. C1's shield `target` → `active` (gcsim `Target: -1`).                                                                                                                                                                                                                                                                                              |
+| 19  | gorou         | ✅ C4's heal as a gated tick series on General's Glory (paired markers — the L5e duplicate-marker class); burst caveat for the destroyed banner; C6's caveat restored (its removal note had filed the pixel as a visible divergence). ⚠️ The capability audit's "heal effect without tag" row on his burst is EXPECTED — a tag would claim a C0 heal.                                                                                                                                                                                                                                     |
+| 20  | diona         | ⛔ **NOT authored — flagged for Nate.** The C2 splash shield goes to "other nearby characters ON THE FIELD", which in single-player is nobody: the Nicole C2 co-op ruling (Kirara C2 is the house form). Note rewritten.                                                                                                                                                                                                                                                                                                                                                                  |
+| 21  | venti         | ✅ Burst absorption caveat (Anemo Traveler wording). C6's element-less shred retired: an absent element means ALL-Elemental, so every C6 burst drew −20% All Elemental RES — the Anemo Traveler C6 form (Anemo drawn, absorbed caveated) replaces it.                                                                                                                                                                                                                                                                                                                                     |
+| 22  | xingqiu       | ✅ C2 `abilityType: burst` (the bare `onHit` also fired off the E) + a caveat for the missing per-wave refresh; C6's stale "normals aren't simulated" reason corrected.                                                                                                                                                                                                                                                                                                                                                                                                                   |
+
+**The engine prerequisite, measured alone:** `f502d01c` **an `infuse` effect
+honours its `procCooldown`** (Emilie C6's 12s ICD). Byte-identical — none of the
+five existing holders carries one.
+
+**The tooling fix:** `0632e8d5` **`drivers.json` declares Lyney's and Yelan's
+aimed-shot pairing** (`aim`). `hA` is `hold: 1` = AimParamLv1, the FULL shot for
+most bows; `gcsim-map.mjs` read `A ≠ hA` as "hA is the partial", which is Ganyu
+and Sethos and is wrong for a bow whose default is a kit shot. It filed both
+corrected maps as disagreements and would have migrated the full shot into the
+partial slot. ⚠️ A "has a third entry" rule was tried first and misfired on
+Sethos — hence declared, by name.
+
+**Measured** (corpus differential against the branch point, every character +
+`> Kaeya E N1 N2 N3 > Xingqiu E Q N1 N2 N3`, C0 and C6): **25 of 252** digests
+move, across fifteen characters — beidou, chiori, emilie, hu_tao, jahoda,
+kazuha, klee, navia, neuvillette, shenhe, venti, xiangling, xingqiu, yelan,
+zhongli. ⚠️ Blind by construction to Nilou (WS2/WS3 unreachable), Lyney (one
+`C`), Gaming (a heal draws no window), Gorou's C4 (no second Geo member),
+Clorinde (no pixel), Diona (note only) — each measured at its own site.
+
+Reports regenerated: frames disagreeing **58 → 47** (matching 982 → 994;
+Hu Tao ×8, Gaming, Nilou ×2, Yelan gone; Neuvillette's artefact row new);
+capability audit "missing entirely" 3 → 2; sweep heal 36 → 38 and infuse
+7 → 10 characters; outliers 19 → 18. Gates: vitest 1863/1863, check, lint,
+build; e2e before the merge.
+
+**Engine queue, sharpened by this tranche:**
+
+- ⚠️⚠️ **A cast buff pool takes its length from its FIRST effect**
+  (`framesOf(barEffects[0].duration!)`, ~15 sites in `buffWindows.ts`). Live
+  today: Iansan's C2 `atk%` (15s) is cut to 12s on the receiver slice
+  (`Iansan E Q > Xiangling N1 N2` at C6). It blocks Kazuha's C2 self twin,
+  which pooled with his 5s C6 and drew it 9.48s. Static census of concurrent
+  mixed durations: Iansan (active), Skirk C2 (self), Kazuha (self, held). ⚠️ The
+  fix carries a ROW decision — two unequal bars from one source share one
+  received row — so it wants Nate.
+- **An `onCast` trigger cannot bind to one ability** when two skill abilities
+  share an input (Clorinde's stance press vs Impale; the Lohen counter's
+  snapshot-before-consume order cannot rescue it).
+- **No stack dispatcher listens to `onSwapIn`** (Neuvillette C1's free stack).
+- **A summon cannot be constellation-gated** (Chiori C2's Kinu — add to the
+  summon-conditions round's list).
+- **A stance reads its summon's duration** (Nilou's Pirouette draws 12s / 18s
+  at C1 where it is 10s) — unchanged, from the batch report.
+- The **passive chip strip lists tiers without evaluating conditions** (Navia's
+  A4, caveated).
+
+---
+
 ## Appendix — the ten batch reports, verbatim
 
 ---
