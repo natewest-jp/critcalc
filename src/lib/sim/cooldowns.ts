@@ -21,7 +21,7 @@ import { framesOf } from '$lib/utils/frames';
 import { getWeaponById } from '$lib/data/weaponLookup';
 import type { SimContext } from './context';
 import { findChainStage } from './conditions';
-import { unlockedConstellations } from '$lib/utils/effectCollection';
+import { effectSourcesAtConstellation } from '$lib/utils/effectCollection';
 
 // ---------------------------------------------------------------------------
 // Weapon cdReset helper
@@ -78,6 +78,13 @@ export function getCharacterCdResetTargets(
 	// FUTURE non-entry-level condition is judged by, and on a constellation
 	// entry it is pure duplication of the field (0 of 133 name a different
 	// level). See docs/constellation-gating-plan.md.
+	// ⚓ THE ONE WALK (small-fix bundle, 2026-09-17). This used to be
+	// `[...passives, ...unlockedConstellations]` — a bespoke surface walk the
+	// constellation-gating ruling forbids, and one that SKIPPED `char.abilities`,
+	// so a cdReset hosted on the burst itself never fired: Freminet's
+	// Shadowhunter's Ambush authored `resets: skill` since the effect existed and
+	// reset nothing, and Arlecchino's Balemoon Rising ("clearing the CD of All
+	// Is Ash") could not be authored at all.
 	const sources: Array<{
 		effects?: {
 			type: string;
@@ -86,7 +93,7 @@ export function getCharacterCdResetTargets(
 			resets?: string;
 			conditions?: Condition;
 		}[];
-	}> = [...(char.passives ?? []), ...unlockedConstellations(char, constellationLevel)];
+	}> = effectSourcesAtConstellation(char, constellationLevel);
 	for (const node of sources) {
 		const effects = node.effects ?? [];
 		for (const eff of effects) {

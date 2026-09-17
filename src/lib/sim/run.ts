@@ -39,6 +39,7 @@ import type { CharacterData } from '$lib/types/character';
 import type {
 	Ability,
 	ActionKey,
+	FrameMap,
 	NormalAbility,
 	NormalHit,
 	SkillAbility
@@ -52,7 +53,12 @@ import {
 import { STACK_ASSERT_RE, type Token } from '$lib/utils/tokenizer';
 import { resolveActionElement } from '$lib/utils/actionElement';
 import { FPS, frameAt, framesOf } from '$lib/utils/frames';
-import { GENERIC_NORMAL_HITS, GENERIC_SKILL, GENERIC_BURST } from '$lib/data/genericProfile';
+import {
+	GENERIC_NORMAL_HITS,
+	GENERIC_SKILL,
+	GENERIC_BURST,
+	GENERIC_PLUNGE_FRAMES
+} from '$lib/data/genericProfile';
 import type { ActionEvent, CastEvent } from '$lib/utils/rotationEvents';
 import { createClock } from './clock';
 import type { SimContext } from './context';
@@ -821,13 +827,18 @@ export function runRotation(
 					// no source-less duplicate shadows the extension-adjusted one.
 					if (stance.opensState && stance.opensState !== 'inStance') {
 						cs.states.set(stance.opensState, endTime);
-						ctx.stateWindowRecs.push({
+						const companionRec = {
 							characterId: char.id,
 							name: stance.opensState,
 							start: castStart,
 							end: endTime,
 							sourceCastId: castId
-						});
+						};
+						ctx.stateWindowRecs.push(companionRec);
+						// ⚓ Kept on the stance so a duration extension moves BOTH ends —
+						// see `StanceRecord.companion`. The swap-close clamp below already
+						// walks `cs.states` and the recs, so only the extension needed this.
+						cs.stance.companion = { name: stance.opensState, rec: companionRec };
 					}
 				} else if (active.behavior === 'instant' && active.opensTransientState) {
 					// Post-action transient state (sQ primitive): an instant cast
@@ -908,7 +919,8 @@ export function runRotation(
 					char,
 					kind,
 					castStart,
-					timingLabel,
+					active,
+					variant,
 					states,
 					charConstellationLevel,
 					chainIdx,
@@ -1535,11 +1547,28 @@ export function runRotation(
 							)
 						: undefined;
 					const isLowPlunge = t === 'lP';
-					const basePlunge = isLowPlunge
-						? (activeNormal?.lowPlungeFrames ?? activeNormal?.plungeFrames)
-						: activeNormal?.plungeFrames;
-					const plungeFrames = plungeVariant?.frames ?? basePlunge;
-					if (plungeFrames) {
+					const plungeFramesOf = (n: typeof activeNormal): FrameMap | undefined =>
+						isLowPlunge ? (n?.lowPlungeFrames ?? n?.plungeFrames) : n?.plungeFrames;
+					// ⚠️ A STANCE FORM RARELY AUTHORS ITS OWN PLUNGE (Ayato's Shunsuiken,
+					// Wanderer's Kuugo, Wriothesley's Chilling Penalty carry none while
+					// their base normals do), and the plunge is the base kit's move, so
+					// the base normal's frames come before the generic profile.
+					const baseNormal = char.abilities.find(
+						(a): a is NormalAbility => a.abilityType === 'normal' && a.conditions === undefined
+					);
+					const basePlunge =
+						plungeFramesOf(activeNormal) ??
+						(baseNormal !== activeNormal ? plungeFramesOf(baseNormal) : undefined);
+					// ⚓ A PLUNGE WITH NO MEASURED FRAMES IS A STAND-IN, NOT A NO-OP
+					// (small-fix bundle, 2026-09-17; ⚓ Nate: provisional). 80 of 126
+					// characters have no `plungeFrames`, and a `P` on them used to emit
+					// nothing at all — zero time, no block, no application — so every
+					// later action shifted earlier and the text and the chart disagreed
+					// in silence. The generic profile stands in, the same way a
+					// frameless E or Q already draws with generic timing, and the editor
+					// squiggles the token (`notationFlags`, off the index's `plunge`).
+					const plungeFrames = plungeVariant?.frames ?? basePlunge ?? GENERIC_PLUNGE_FRAMES;
+					{
 						const castS = frameAt(
 							plungeFrames,
 							cancelKeyFor(ctx.humanTiming, 'plunge', nextKey, isBow)

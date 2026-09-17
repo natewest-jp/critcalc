@@ -338,6 +338,19 @@ export type TimelineWindow =
 			 * Absent on every summon that has no such series.
 			 */
 			ticks?: number[];
+			/**
+			 * Where this summon WOULD have ended on its own — spawn + lifetime,
+			 * extensions applied, no swap, recast or flip truncation (small-fix
+			 * bundle, 2026-09-17). `end < naturalEnd` says the window was CUT.
+			 *
+			 * ⚓ The one reader is the tick cap's boundary widening: an authored
+			 * `tickCap` lets the tick landing exactly on `end` through, because
+			 * gcsim's status-gated chains land it — but that argument is about a
+			 * NATURAL end. A window cut by a recast or a swap has no boundary tick
+			 * to land; widening it drew one marker past the cut, and the live
+			 * chain applied it.
+			 */
+			naturalEnd?: number;
 	  } & WindowProvenance)
 	/** A tracked shield's span (cast → scheduled expiry). */
 	| ({

@@ -162,6 +162,14 @@ export type InfusionWindow = {
 export type TeamContext = {
 	/** Distinct characters named in the notation, in first-appearance order. */
 	teamChars: CharacterData[];
+	/** ⚓ THE ROSTER every team fact is counted over (small-fix bundle,
+	 *  2026-09-17): the slot roster when the caller supplied a non-empty one,
+	 *  else `teamChars`. `teamEnabledReactions`, `teamFactionCounts` and the
+	 *  per-holder element counts are all derived from THIS list — ⛔ never
+	 *  rebuild one of them from `slotRoster` or `teamChars` downstream; finalize
+	 *  used to, and a fifth name in the notation counted toward Nahida's Dendro
+	 *  tally on one surface and not another. */
+	rosterChars: CharacterData[];
 	teamEnabledReactions: ReadonlySet<string>;
 	teamFactionCounts: ReadonlyMap<string, number>;
 	/** Per-holder element counts, holder excluded (mirrors the renderer). */

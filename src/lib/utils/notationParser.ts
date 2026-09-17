@@ -164,13 +164,25 @@ export function parseNotation(
 		teamChars.push(c);
 	}
 
-	// Reactions the party enables (Stellar model). Prefers the SLOT roster:
-	// an enabler's mere presence in the party converts the base reaction
-	// (Sandrone in slot 4 with zero casts still turns every Superconduct into
-	// Stellar-Conduct), so the segment roster is only the no-slots fallback.
-	const teamEnabledReactions = teamCharacters
-		? computeTeamEnabledReactions(teamCharacters)
-		: computeTeamEnabledReactions(teamChars);
+	// ⚓ ONE ROSTER FOR EVERY TEAM FACT (small-fix bundle, 2026-09-17). The
+	// party is the SLOT roster when the caller hands one in: an enabler's mere
+	// presence converts the base reaction (Sandrone in slot 4 with zero casts
+	// still turns every Superconduct into Stellar-Conduct), and by the same
+	// token a slot-holder who never casts still counts toward a teammate's
+	// element and faction gates. The segment roster is the no-slots fallback.
+	// ⚠️ Until now `teamEnabledReactions` read the slots while the faction and
+	// element counts read the SEGMENTS, so a fifth name in the notation (no
+	// slot, provisional) counted toward Nahida's Dendro tally while the slot
+	// roster said the team was four. The two agree whenever the notation and
+	// the slots agree, which since notation-as-single-truth is every case but
+	// that one.
+	// ⚠️ An EMPTY slot list reads as "no roster given", not as an empty party:
+	// an empty count map is unresolvable to every `teamElementCount` gate and
+	// lets the first-authored tier win (measured: Skirk's A4 drew +5% at three
+	// Cryo/Hydro teammates).
+	const slotChars = teamCharacters?.filter((c): c is CharacterData => c !== null) ?? [];
+	const rosterChars: CharacterData[] = slotChars.length > 0 ? slotChars : teamChars;
+	const teamEnabledReactions = computeTeamEnabledReactions(rosterChars);
 
 	// Shared holder-constellation map for the onHit dispatchers (the reaction
 	// dispatch sites build theirs inline per fire — left untouched).
@@ -203,11 +215,13 @@ export function parseNotation(
 	// definitively parser-side (Varka Four Winds' Ascension needs an elemental
 	// teammate). Mirrors the renderer's per-holder maps: faction counts are
 	// whole-team, element counts exclude the holder.
-	const teamFactionCounts = computeTeamFactionCounts(teamChars);
+	// ⚠️ Counted over the ROSTER; keyed for every parsed HOLDER (a fifth name
+	// still needs an entry to resolve its own gates against the four).
+	const teamFactionCounts = computeTeamFactionCounts(rosterChars);
 	const teamElementCountsByHolder = new Map<string, Map<Element, number>>();
 	for (const holder of teamChars) {
 		const counts = new Map<Element, number>();
-		for (const other of teamChars) {
+		for (const other of rosterChars) {
 			if (other.id === holder.id || !other.element) continue;
 			counts.set(other.element, (counts.get(other.element) ?? 0) + 1);
 		}
@@ -222,6 +236,7 @@ export function parseNotation(
 		loadoutMap,
 		team: {
 			teamChars,
+			rosterChars,
 			teamEnabledReactions,
 			teamFactionCounts,
 			teamElementCountsByHolder,

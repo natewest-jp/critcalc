@@ -92,8 +92,15 @@ function approximateCastMessage(name: string, token: string, casts: readonly str
 /** Tokens the linter has an opinion about: the E/Q casts, plus the two `label`
  *  tokens the planner may not be able to draw (`A`, `W`). */
 function isLintable(tok: Token): boolean {
-	return tok.kind === 'E' || tok.kind === 'Q' || (tok.kind === 'label' && /^[AW]$/.test(tok.text));
+	return (
+		tok.kind === 'E' ||
+		tok.kind === 'Q' ||
+		(tok.kind === 'label' && (/^[AW]$/.test(tok.text) || PLUNGE_TOKEN_RE.test(tok.text)))
+	);
 }
+
+/** `P`, `hP`, `lP` — the tokenizer's plunge class. */
+const PLUNGE_TOKEN_RE = /^[lh]?P$/;
 
 /** The lintable tokens inside one segment, including the ones hiding inside a
  *  bracket repeat group. Optional `(...)` groups and `/Q` alternatives are
@@ -189,6 +196,21 @@ export function flagNotation(notation: string): NotationFlag[] {
 					text: tok.text,
 					reason: 'unsupported-token',
 					message: `Only a bow can take an aimed shot — ${entry.displayName} wields a ${entry.weapon ?? 'melee weapon'}.`
+				});
+				continue;
+			}
+			// A plunge on a character with no MEASURED plunge is drawn with the
+			// generic profile (⚓ Nate 2026-09-17: provisional, not refused) — the
+			// same register a frameless E or Q gets. `lP` reads `lowPlungeFrames`
+			// and falls back to `plungeFrames`, so one index fact covers all three.
+			if (PLUNGE_TOKEN_RE.test(tok.text)) {
+				if (entry.plunge) continue;
+				flags.push({
+					from: tok.from,
+					to: tok.to,
+					text: tok.text,
+					reason: 'approximate-cast',
+					message: `${entry.displayName}'s plunge isn't measured yet — drawn with generic timing.`
 				});
 				continue;
 			}

@@ -118,6 +118,10 @@ export type CharacterIndexEntry = Pick<
 	 *  that says so cannot wait for a lazy payload. Empty = an uncurated stub
 	 *  with no skill or burst ability at all. */
 	casts: string[];
+	/** Whether the kit carries a MEASURED plunge (`castTokens.hasPlungeFrames`).
+	 *  Absent frames, a `P` draws with `GENERIC_PLUNGE_FRAMES` and the editor
+	 *  flags it provisional — eager for the same reason as `casts`. */
+	plunge: boolean;
 	/** Distinct reactions the kit gates on via `teamEnablesReaction`
 	 *  conditions — derived at index generation. A character with
 	 *  `stellarConduct` here carries Stellar-conditional buffs without being

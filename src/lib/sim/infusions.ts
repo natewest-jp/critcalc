@@ -24,10 +24,10 @@
  * still there when you swap back inside the 12s).
  */
 
-import type { Element } from '$lib/types/ability';
+import type { AbilityVariant, CastAbility, Element } from '$lib/types/ability';
 import type { CharacterData } from '$lib/types/character';
 import { framesOf } from '$lib/utils/frames';
-import { getCharacterEffectsForCast } from '$lib/utils/effectCollection';
+import { getNonAbilityEffectsForCast } from '$lib/utils/effectCollection';
 import type { SimContext } from './context';
 import {
 	DEFAULT_ASCENSION,
@@ -54,14 +54,27 @@ export function registerInfusionsOnCast(
 	char: CharacterData,
 	castKind: 'skill' | 'burst',
 	castTime: number,
-	castLabel: string,
+	activeAbility: CastAbility,
+	variant: AbilityVariant | undefined,
 	states: ReadonlySet<string>,
 	constellation: number,
 	chainIdx: ChainIndex,
 	stackState: Map<string, number>,
 	holderCtx: ConditionContext
 ): void {
-	for (const fx of getCharacterEffectsForCast(char, constellation, castKind, castLabel)) {
+	// ⚓ THE RESOLVED ABILITY'S OWN EFFECTS + THE NON-ABILITY SURFACE, the shield
+	// registrar's shape (small-fix bundle, 2026-09-17). ⛔ NOT
+	// `getCharacterEffectsForCast`: that walks EVERY ability of this cast's type,
+	// so a sibling's `infuse` registered on every cast of the other — Lohen's
+	// Unforeseen Strike carries the 13s Cryo self-infusion, and each in-stance
+	// Etched Into Bone and Soul cast re-opened it, running the infusion past the
+	// stance it belongs to. The caller has already resolved which ability this
+	// cast is; a variant's `effects` REPLACE the base's.
+	const effects = [
+		...(variant?.effects ?? activeAbility.effects ?? []),
+		...getNonAbilityEffectsForCast(char, constellation, castKind)
+	];
+	for (const fx of effects) {
 		if (fx.type !== 'infuse') continue;
 		if (fx.duration === undefined || fx.duration <= 0) continue;
 		const targets = Array.isArray(fx.target) ? fx.target : [fx.target];

@@ -197,9 +197,18 @@ export function collectSummonTicks(
 	endAt: number,
 	cLevel: number,
 	accept: (effect: Effect) => boolean,
-	context?: ConditionContext
+	context?: ConditionContext,
+	/** The summon's UNTRUNCATED end (`TimelineWindow.naturalEnd`). Absent =
+	 *  treat `endAt` as natural, the pre-2026-09-17 behaviour. */
+	naturalEnd?: number
 ): { time: number; effect: Effect }[] {
 	const ticks: { time: number; effect: Effect }[] = [];
+	// ⚓ A CUT WINDOW HAS NO BOUNDARY TICK (small-fix bundle, 2026-09-17). The
+	// widening below exists because gcsim's status-gated chains land the tick
+	// on a NATURAL expiry; a window a recast, a swap or an Arkhe flip ended
+	// early stops where it was cut. ⚠️ `aura.ts`'s live chain applies the same
+	// test — ⛔ the two must agree, or a marker draws that applies nothing.
+	const endIsNatural = naturalEnd === undefined || endAt >= naturalEnd;
 	for (const s of summonTickSeries(summon, cLevel, accept, context)) {
 		// ⚓ THE CAP IS A BOUND ON TOP OF THE WINDOW, never instead of it — a series
 		// stops at whichever comes first. ⚠️ The single exception is the BOUNDARY
@@ -208,7 +217,7 @@ export function collectSummonTicks(
 		// `duration + hitmark + 1`, and that `+ 1` is deliberate). An authored cap
 		// widens the window by exactly ONE tick to say so, and ⛔ by no more.
 		const cap = tickCapOf(s.effect, cLevel, context);
-		const limit = cap === null ? endAt : endAt + s.interval;
+		const limit = cap === null || !endIsNatural ? endAt : endAt + s.interval;
 		let n = 0;
 		for (let t = spawnAt + s.firstDelay; t < limit; t += s.interval) {
 			if (cap !== null && n >= cap) break;
