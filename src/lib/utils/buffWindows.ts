@@ -155,6 +155,62 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 		return groups;
 	};
 
+	// ⚓⚓ ONE WINDOW PER (PROVENANCE, DURATION) — the pool round, 2026-09-17.
+	//
+	// Every cast-shaped site used to compute its span from `barEffects[0]`, so a
+	// pool holding a 12s ATK buff and a 15s ATK% buff drew BOTH to whichever was
+	// authored first (measured: Iansan's C2 +ATK% cut 15 → 12s on the receiver;
+	// Skirk's C2 +ATK% cut 12.5 → 2.6s on herself). The faction split above is
+	// the precedent — a pool is one span, so anything that changes the span
+	// splits the pool — and the artifact `onHit` branch already partitions by
+	// `(debuff, duration)` for the same reason. This is that rule for every
+	// site: after the per-event filter, split the survivors by `duration`
+	// (first-seen order, so ids and the row order stay deterministic) and emit
+	// one window per part. Two parts from one cast share one ROW (the row key
+	// is the source), and the projection draws them as ONE bar with a SEAM
+	// where the shorter part ends (⚓ Nate 2026-09-17; fallback: one row per
+	// duration).
+	//
+	// ⚓⚓ AND THE STAT DEDUPE MOVES AFTER THE PER-EVENT CONDITIONS (§1.H). It
+	// ran at pool construction, where a `stacks` gate is unresolvable (the
+	// stack snapshot is the CAST's, or the HIT's), so tiers of one stat
+	// collapsed to whichever was authored first — Neuvillette A1, Navia A4,
+	// Varesa A1 — and Iansan's tier ORDER was load-bearing. Now the per-event
+	// pass evaluates every tier with the event's snapshot, and the dedupe keeps
+	// the first SURVIVOR. ⚠️ Strictly a superset of the old rule: where a gate is
+	// still unresolvable at the event (a `state` gate, §1.G) the first-authored
+	// tier still wins, exactly as before. ⚠️ The received-surface note that
+	// said "supply the context, never reorder the dedupe" was about a gate the
+	// CONTEXT could answer (team element counts); a stack gate is answerable
+	// only per event, and this is the ordering that lets it be.
+	const dedupByStat = <T extends BuffEffect>(effects: readonly T[]): T[] => {
+		const seen = new Set<string>();
+		return effects.filter((effect) => {
+			if (seen.has(effect.stat)) return false;
+			seen.add(effect.stat);
+			return true;
+		});
+	};
+	/** Splits a per-event effect list by `duration`, first-seen order. Every
+	 *  effect that reaches this has a duration (the pool prefilters demand one),
+	 *  so `part[0].duration!` is the part's span. */
+	const partitionByDuration = <T extends Effect>(effects: readonly T[]): T[][] => {
+		if (effects.length < 2) return effects.length ? [[...effects]] : [];
+		const parts: T[][] = [];
+		const byDur = new Map<number, T[]>();
+		for (const fx of effects) {
+			const d = (fx as { duration?: number }).duration ?? -1;
+			let p = byDur.get(d);
+			if (!p) {
+				p = [];
+				byDur.set(d, p);
+				parts.push(p);
+			}
+			p.push(fx);
+		}
+		return parts;
+	};
+
 	const emit = (w: Omit<BuffWindow, 'kind' | 'id'>): BuffWindow => {
 		// ⚠ Only the CHARACTER sites can carry provenance. Artifact and weapon
 		// windows are built from the loadout, not from the character's effect
@@ -425,14 +481,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				resShred: Array<{ prov?: FactionProvenance; effects: ResShredEffect[] }>;
 				afterDuration: Array<{ prov?: FactionProvenance; effects: Effect[] }>;
 			};
-			const dedupByStat = (effects: BuffEffect[]): BuffEffect[] => {
-				const seen = new Set<string>();
-				return effects.filter((effect) => {
-					if (seen.has(effect.stat)) return false;
-					seen.add(effect.stat);
-					return true;
-				});
-			};
+			// ⚠️ The pools are UNDEDUPED (pool round): the stat / element dedupe
+			// runs per cast, after that cast's conditions — see `dedupByStat`.
 			const poolCache = new Map<string, CastPools>();
 			const poolsFor = (label: string): CastPools => {
 				const hit = poolCache.get(label);
@@ -442,14 +492,8 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					...getCharacterEffectsForOnHit(char, cLevel, castType, label)
 				];
 				const built: CastPools = {
-					qualified: byProvenance(merged.filter(universalPool)).map((g) => ({
-						prov: g.prov,
-						effects: dedupByStat(g.effects)
-					})),
-					resShred: byProvenance(merged.filter(resShredBase)).map((g) => ({
-						prov: g.prov,
-						effects: dedupResShredByElement(g.effects)
-					})),
+					qualified: byProvenance(merged.filter(universalPool)),
+					resShred: byProvenance(merged.filter(resShredBase)),
 					afterDuration: byProvenance(
 						getCharacterEffectsForAfterDuration(char, cLevel, castType, label)
 					)
@@ -467,46 +511,48 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					for (const group of poolsFor(cast.label).qualified) {
 						const qualifiedEffects = group.effects;
 						if (qualifiedEffects.length === 0) continue;
-						const barEffects = qualifiedEffects.filter((effect) => {
-							if (
-								evalCondition(
-									effect.conditions,
-									4,
-									new Set(),
-									cLevel,
-									undefined,
-									cast.stackContext,
-									baseCtx
-								) === false
-							) {
-								return false;
-							}
-							if (effect.trigger.type === 'onHit' && castNoHit) return false;
-							if (effect.trigger.type === 'onHit' && filterCtx) {
-								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
-							}
-							return true;
-						});
-						if (barEffects.length === 0) continue;
-						const buffStart = cast.fieldStart;
-						const buffEnd = buffStart + framesOf(barEffects[0].duration!);
-						emit({
-							characterId: track.characterId,
-							start: buffStart,
-							end: buffEnd,
-							effects: barEffects,
-							stackContext: cast.stackContext,
-							sourceCastId: cast.id,
-							source: { type: 'character', trigger: 'cast', abilityClass: castType }
-						});
+						const barEffects = dedupByStat(
+							qualifiedEffects.filter((effect) => {
+								if (
+									evalCondition(
+										effect.conditions,
+										4,
+										new Set(),
+										cLevel,
+										undefined,
+										cast.stackContext,
+										baseCtx
+									) === false
+								) {
+									return false;
+								}
+								if (effect.trigger.type === 'onHit' && castNoHit) return false;
+								if (effect.trigger.type === 'onHit' && filterCtx) {
+									if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+								}
+								return true;
+							})
+						);
+						for (const part of partitionByDuration(barEffects)) {
+							const buffStart = cast.fieldStart;
+							const buffEnd = buffStart + framesOf(part[0].duration!);
+							emit({
+								characterId: track.characterId,
+								start: buffStart,
+								end: buffEnd,
+								effects: part,
+								stackContext: cast.stackContext,
+								sourceCastId: cast.id,
+								source: { type: 'character', trigger: 'cast', abilityClass: castType }
+							});
+						}
 					}
 				}
 			}
 
 			// ── afterDuration buffs ──
-			const qualifiedAfterFor = (effects: Effect[]): BuffEffect[] => {
-				const seenStatsAfter = new Set<string>();
-				return effects.filter((effect): effect is BuffEffect => {
+			const qualifiedAfterFor = (effects: Effect[]): BuffEffect[] =>
+				effects.filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (!targetsTeamOrActive(effect.target)) return false;
 					if (isActiveTargetOnly(effect.target)) return false;
@@ -523,41 +569,41 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						) === false
 					)
 						return false;
-					if (seenStatsAfter.has(effect.stat)) return false;
-					seenStatsAfter.add(effect.stat);
 					return true;
 				});
-			};
 			{
 				for (const cast of abCasts) {
 					for (const group of poolsFor(cast.label).afterDuration) {
 						const qualifiedEffectsAfter = qualifiedAfterFor(group.effects);
 						if (qualifiedEffectsAfter.length === 0) continue;
-						const barEffects = qualifiedEffectsAfter.filter(
-							(effect) =>
-								evalCondition(
-									effect.conditions,
-									4,
-									new Set(),
-									cLevel,
-									undefined,
-									cast.stackContext,
-									baseCtx
-								) !== false
+						const barEffects = dedupByStat(
+							qualifiedEffectsAfter.filter(
+								(effect) =>
+									evalCondition(
+										effect.conditions,
+										4,
+										new Set(),
+										cLevel,
+										undefined,
+										cast.stackContext,
+										baseCtx
+									) !== false
+							)
 						);
-						if (barEffects.length === 0) continue;
-						const buffStart = afterDurationStart(cast);
-						const buffEnd = buffStart + framesOf(barEffects[0].duration!);
-						emit({
-							characterId: track.characterId,
-							start: buffStart,
-							end: buffEnd,
-							effects: barEffects,
-							stackContext: cast.stackContext,
-							poolFirstEffect: qualifiedEffectsAfter[0],
-							sourceCastId: cast.id,
-							source: { type: 'character', trigger: 'afterDuration', abilityClass: castType }
-						});
+						for (const part of partitionByDuration(barEffects)) {
+							const buffStart = afterDurationStart(cast);
+							const buffEnd = buffStart + framesOf(part[0].duration!);
+							emit({
+								characterId: track.characterId,
+								start: buffStart,
+								end: buffEnd,
+								effects: part,
+								stackContext: cast.stackContext,
+								poolFirstEffect: qualifiedEffectsAfter[0],
+								sourceCastId: cast.id,
+								source: { type: 'character', trigger: 'afterDuration', abilityClass: castType }
+							});
+						}
 					}
 				}
 			}
@@ -572,38 +618,41 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					for (const group of poolsFor(cast.label).resShred) {
 						const resShredStartPool = group.effects;
 						if (resShredStartPool.length === 0) continue;
-						const barEffects = resShredStartPool.filter((effect) => {
-							if (
-								evalCondition(
-									effect.conditions,
-									4,
-									new Set(),
-									cLevel,
-									undefined,
-									cast.stackContext,
-									baseCtx
-								) === false
-							)
-								return false;
-							if (effect.trigger.type === 'onHit' && castNoHit) return false;
-							if (effect.trigger.type === 'onHit' && filterCtx) {
-								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
-							}
-							return true;
-						});
-						if (barEffects.length === 0) continue;
-						const buffStart = cast.fieldStart;
-						const buffEnd = buffStart + framesOf(barEffects[0].duration!);
-						emit({
-							characterId: track.characterId,
-							start: buffStart,
-							end: buffEnd,
-							debuff: true,
-							effects: barEffects,
-							poolFirstEffect: resShredStartPool[0],
-							sourceCastId: cast.id,
-							source: { type: 'character', trigger: 'cast', abilityClass: castType }
-						});
+						const barEffects = dedupResShredByElement(
+							resShredStartPool.filter((effect) => {
+								if (
+									evalCondition(
+										effect.conditions,
+										4,
+										new Set(),
+										cLevel,
+										undefined,
+										cast.stackContext,
+										baseCtx
+									) === false
+								)
+									return false;
+								if (effect.trigger.type === 'onHit' && castNoHit) return false;
+								if (effect.trigger.type === 'onHit' && filterCtx) {
+									if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+								}
+								return true;
+							})
+						);
+						for (const part of partitionByDuration(barEffects)) {
+							const buffStart = cast.fieldStart;
+							const buffEnd = buffStart + framesOf(part[0].duration!);
+							emit({
+								characterId: track.characterId,
+								start: buffStart,
+								end: buffEnd,
+								debuff: true,
+								effects: part,
+								poolFirstEffect: resShredStartPool[0],
+								sourceCastId: cast.id,
+								source: { type: 'character', trigger: 'cast', abilityClass: castType }
+							});
+						}
 					}
 				}
 			}
@@ -613,18 +662,19 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				for (const cast of abCasts) {
 					for (const group of poolsFor(cast.label).afterDuration) {
 						const resShredEndPool = dedupResShredByElement(group.effects.filter(resShredBase));
-						if (resShredEndPool.length === 0) continue;
-						const buffStart = afterDurationStart(cast);
-						const buffEnd = buffStart + framesOf(resShredEndPool[0].duration!);
-						emit({
-							characterId: track.characterId,
-							start: buffStart,
-							end: buffEnd,
-							debuff: true,
-							effects: [...resShredEndPool],
-							sourceCastId: cast.id,
-							source: { type: 'character', trigger: 'afterDuration', abilityClass: castType }
-						});
+						for (const part of partitionByDuration(resShredEndPool)) {
+							const buffStart = afterDurationStart(cast);
+							const buffEnd = buffStart + framesOf(part[0].duration!);
+							emit({
+								characterId: track.characterId,
+								start: buffStart,
+								end: buffEnd,
+								debuff: true,
+								effects: part,
+								sourceCastId: cast.id,
+								source: { type: 'character', trigger: 'afterDuration', abilityClass: castType }
+							});
+						}
 					}
 				}
 			}
@@ -644,125 +694,135 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			// and a mixed pool would have a Secret Rite silently extending the
 			// span of the base kit's bar.
 			for (const blockGroup of byProvenance(onHitBlockEffects)) {
-				const seenStats = new Set<string>();
-				const qualifiedEffects = blockGroup.effects
-					.filter((effect): effect is BuffEffect => {
-						if (effect.type !== 'buff') return false;
-						if (!targetsTeamOrActive(effect.target)) return false;
-						if (isActiveTargetOnly(effect.target)) return false;
-						if (effect.duration == null) return false;
-						if (
-							evalCondition(
-								effect.conditions,
-								4,
-								new Set(),
-								cLevel,
-								undefined,
-								undefined,
-								baseCtx
-							) === false
-						)
-							return false;
-						return true;
-					})
-					.filter((effect) => {
-						if (seenStats.has(effect.stat)) return false;
-						seenStats.add(effect.stat);
-						return true;
-					});
+				const qualifiedEffects = blockGroup.effects.filter((effect): effect is BuffEffect => {
+					if (effect.type !== 'buff') return false;
+					if (!targetsTeamOrActive(effect.target)) return false;
+					if (isActiveTargetOnly(effect.target)) return false;
+					if (effect.duration == null) return false;
+					if (
+						evalCondition(
+							effect.conditions,
+							4,
+							new Set(),
+							cLevel,
+							undefined,
+							undefined,
+							baseCtx
+						) === false
+					)
+						return false;
+					return true;
+				});
 				if (qualifiedEffects.length > 0) {
-					let lastWin: BuffWindow | undefined;
+					// ⚠️ The refresh-in-place window is PER PART (keyed by duration):
+					// a hit that fires a 4s part and a 10s part keeps two open windows,
+					// each refreshed by the next hit that fires its own shape.
+					const lastWinByDur = new Map<number, BuffWindow>();
 					for (const hit of hitsForTrack(ti, blockClass)) {
 						const filterCtx = hitFilterCtx(hit);
-						const barEffects = qualifiedEffects.filter((effect) => {
+						const barEffects = dedupByStat(
+							qualifiedEffects.filter((effect) => {
+								if (
+									evalCondition(
+										effect.conditions,
+										4,
+										new Set(),
+										cLevel,
+										undefined,
+										hit.stacks,
+										baseCtx
+									) === false
+								) {
+									return false;
+								}
+								if (effect.trigger.type === 'onHit') {
+									if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+								}
+								return true;
+							})
+						);
+						for (const part of partitionByDuration(barEffects)) {
+							const buffStart = hit.time;
+							const buffEnd = buffStart + framesOf(part[0].duration!);
+							const lastWin = lastWinByDur.get(part[0].duration!);
 							if (
-								evalCondition(
-									effect.conditions,
-									4,
-									new Set(),
-									cLevel,
-									undefined,
-									hit.stacks,
-									baseCtx
-								) === false
+								lastWin &&
+								buffStart <= lastWin.end &&
+								sameEffects(lastWin.effects, part) &&
+								sameStacks(lastWin.stackContext, hit.stacks)
 							) {
-								return false;
+								lastWin.end = buffEnd;
+								continue;
 							}
-							if (effect.trigger.type === 'onHit') {
-								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
-							}
-							return true;
-						});
-						if (barEffects.length === 0) continue;
-						const buffStart = hit.time;
-						const buffEnd = buffStart + framesOf(barEffects[0].duration!);
-						if (
-							lastWin &&
-							buffStart <= lastWin.end &&
-							sameEffects(lastWin.effects, barEffects) &&
-							sameStacks(lastWin.stackContext, hit.stacks)
-						) {
-							lastWin.end = buffEnd;
-							continue;
+							lastWinByDur.set(
+								part[0].duration!,
+								emit({
+									characterId: track.characterId,
+									start: buffStart,
+									end: buffEnd,
+									effects: part,
+									stackContext: hit.stacks,
+									sourceActionId: hit.sourceEventId,
+									source: { type: 'character', trigger: 'block', abilityClass: blockClass }
+								})
+							);
 						}
-						lastWin = emit({
-							characterId: track.characterId,
-							start: buffStart,
-							end: buffEnd,
-							effects: barEffects,
-							stackContext: hit.stacks,
-							sourceActionId: hit.sourceEventId,
-							source: { type: 'character', trigger: 'block', abilityClass: blockClass }
-						});
 					}
 				}
 
-				const resShredBlockPool = dedupResShredByElement(blockGroup.effects.filter(resShredBase));
+				const resShredBlockPool = blockGroup.effects.filter(resShredBase);
 				if (resShredBlockPool.length > 0) {
-					let lastWin: BuffWindow | undefined;
+					const lastWinByDur = new Map<number, BuffWindow>();
 					for (const hit of hitsForTrack(ti, blockClass)) {
 						const filterCtx = hitFilterCtx(hit);
-						const barEffects = resShredBlockPool.filter((effect) => {
+						const barEffects = dedupResShredByElement(
+							resShredBlockPool.filter((effect) => {
+								if (
+									evalCondition(
+										effect.conditions,
+										4,
+										new Set(),
+										cLevel,
+										undefined,
+										hit.stacks,
+										baseCtx
+									) === false
+								)
+									return false;
+								if (effect.trigger.type === 'onHit') {
+									if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+								}
+								return true;
+							})
+						);
+						for (const part of partitionByDuration(barEffects)) {
+							const buffStart = hit.time;
+							const buffEnd = buffStart + framesOf(part[0].duration!);
+							const lastWin = lastWinByDur.get(part[0].duration!);
 							if (
-								evalCondition(
-									effect.conditions,
-									4,
-									new Set(),
-									cLevel,
-									undefined,
-									hit.stacks,
-									baseCtx
-								) === false
-							)
-								return false;
-							if (effect.trigger.type === 'onHit') {
-								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+								lastWin &&
+								buffStart <= lastWin.end &&
+								sameEffects(lastWin.effects, part) &&
+								sameStacks(lastWin.stackContext, hit.stacks)
+							) {
+								lastWin.end = buffEnd;
+								continue;
 							}
-							return true;
-						});
-						if (barEffects.length === 0) continue;
-						const buffStart = hit.time;
-						const buffEnd = buffStart + framesOf(barEffects[0].duration!);
-						if (
-							lastWin &&
-							buffStart <= lastWin.end &&
-							sameEffects(lastWin.effects, barEffects) &&
-							sameStacks(lastWin.stackContext, hit.stacks)
-						) {
-							lastWin.end = buffEnd;
-							continue;
+							lastWinByDur.set(
+								part[0].duration!,
+								emit({
+									characterId: track.characterId,
+									start: buffStart,
+									end: buffEnd,
+									debuff: true,
+									effects: part,
+									stackContext: hit.stacks,
+									poolFirstEffect: resShredBlockPool[0],
+									sourceActionId: hit.sourceEventId,
+									source: { type: 'character', trigger: 'block', abilityClass: blockClass }
+								})
+							);
 						}
-						lastWin = emit({
-							characterId: track.characterId,
-							start: buffStart,
-							end: buffEnd,
-							debuff: true,
-							effects: barEffects,
-							stackContext: hit.stacks,
-							poolFirstEffect: resShredBlockPool[0],
-							sourceActionId: hit.sourceEventId,
-							source: { type: 'character', trigger: 'block', abilityClass: blockClass }
-						});
 					}
 				}
 			}
@@ -817,10 +877,11 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						// are shared shapes and the narrowing keeps that honest.
 						const emitPass = <T extends BuffEffect | ResShredEffect>(
 							pool: T[],
-							debuff: boolean
+							debuff: boolean,
+							dedup: (fired: T[]) => T[]
 						): void => {
 							if (pool.length === 0) return;
-							let lastWin: BuffWindow | undefined;
+							const lastWinByDur = new Map<number, BuffWindow>();
 							for (const hit of classHits) {
 								if (
 									!pool.some(
@@ -831,76 +892,77 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 								)
 									continue;
 								const filterCtx = hitFilterCtx(hit);
-								const barEffects = pool.filter((effect) => {
-									if (effect.trigger.type !== 'onHit') return false;
-									if (!onHitTriggerMatches(effect.trigger, hit, track.characterId)) return false;
+								const barEffects = dedup(
+									pool.filter((effect) => {
+										if (effect.trigger.type !== 'onHit') return false;
+										if (!onHitTriggerMatches(effect.trigger, hit, track.characterId)) return false;
+										if (
+											evalCondition(
+												effect.conditions,
+												4,
+												new Set(),
+												cLevel,
+												undefined,
+												hit.stacks,
+												baseCtx
+											) === false
+										)
+											return false;
+										return evalTriggerFilter(effect.trigger.filter, filterCtx);
+									})
+								);
+								for (const part of partitionByDuration(barEffects)) {
+									const buffStart = hit.time;
+									const buffEnd = buffStart + framesOf(part[0].duration!);
+									const lastWin = lastWinByDur.get(part[0].duration!);
 									if (
-										evalCondition(
-											effect.conditions,
-											4,
-											new Set(),
-											cLevel,
-											undefined,
-											hit.stacks,
-											baseCtx
-										) === false
-									)
-										return false;
-									return evalTriggerFilter(effect.trigger.filter, filterCtx);
-								});
-								if (barEffects.length === 0) continue;
-								const buffStart = hit.time;
-								const buffEnd = buffStart + framesOf(barEffects[0].duration!);
-								if (
-									lastWin &&
-									buffStart <= lastWin.end &&
-									sameEffects(lastWin.effects, barEffects) &&
-									sameStacks(lastWin.stackContext, hit.stacks)
-								) {
-									lastWin.end = buffEnd;
-									continue;
+										lastWin &&
+										buffStart <= lastWin.end &&
+										sameEffects(lastWin.effects, part) &&
+										sameStacks(lastWin.stackContext, hit.stacks)
+									) {
+										lastWin.end = buffEnd;
+										continue;
+									}
+									lastWinByDur.set(
+										part[0].duration!,
+										emit({
+											characterId: track.characterId,
+											start: buffStart,
+											end: buffEnd,
+											debuff: debuff || undefined,
+											effects: part,
+											stackContext: hit.stacks,
+											poolFirstEffect: debuff ? pool[0] : undefined,
+											sourceCastId: hit.sourceEventId >= 0 ? hit.sourceEventId : undefined,
+											source: { type: 'character', trigger: 'cast', abilityClass: castType }
+										})
+									);
 								}
-								lastWin = emit({
-									characterId: track.characterId,
-									start: buffStart,
-									end: buffEnd,
-									debuff: debuff || undefined,
-									effects: barEffects,
-									stackContext: hit.stacks,
-									poolFirstEffect: debuff ? pool[0] : undefined,
-									sourceCastId: hit.sourceEventId >= 0 ? hit.sourceEventId : undefined,
-									source: { type: 'character', trigger: 'cast', abilityClass: castType }
-								});
 							}
 						};
-						const seenTickStats = new Set<string>();
 						emitPass(
-							tickGroup.effects
-								.filter((effect): effect is BuffEffect => {
-									if (effect.type !== 'buff') return false;
-									if (!targetsTeamOrActive(effect.target)) return false;
-									if (isActiveTargetOnly(effect.target)) return false;
-									if (effect.duration == null) return false;
-									return (
-										evalCondition(
-											effect.conditions,
-											4,
-											new Set(),
-											cLevel,
-											undefined,
-											undefined,
-											baseCtx
-										) !== false
-									);
-								})
-								.filter((effect) => {
-									if (seenTickStats.has(effect.stat)) return false;
-									seenTickStats.add(effect.stat);
-									return true;
-								}),
-							false
+							tickGroup.effects.filter((effect): effect is BuffEffect => {
+								if (effect.type !== 'buff') return false;
+								if (!targetsTeamOrActive(effect.target)) return false;
+								if (isActiveTargetOnly(effect.target)) return false;
+								if (effect.duration == null) return false;
+								return (
+									evalCondition(
+										effect.conditions,
+										4,
+										new Set(),
+										cLevel,
+										undefined,
+										undefined,
+										baseCtx
+									) !== false
+								);
+							}),
+							false,
+							dedupByStat
 						);
-						emitPass(dedupResShredByElement(tickGroup.effects.filter(resShredBase)), true);
+						emitPass(tickGroup.effects.filter(resShredBase), true, dedupResShredByElement);
 					}
 				}
 			}
@@ -995,15 +1057,15 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					seenStatsNB.add(effect.stat);
 					return true;
 				});
-				if (qualifiedEffectsNB.length > 0) {
+				for (const part of partitionByDuration(qualifiedEffectsNB)) {
 					for (const nb of nbBars) {
 						const buffStart = nb.start;
-						const buffEnd = buffStart + framesOf(qualifiedEffectsNB[0].duration!);
+						const buffEnd = buffStart + framesOf(part[0].duration!);
 						emit({
 							characterId: track.characterId,
 							start: buffStart,
 							end: buffEnd,
-							effects: qualifiedEffectsNB,
+							effects: part,
 							source: { type: 'character', trigger: 'nightsoulBurst' }
 						});
 					}
@@ -1036,23 +1098,25 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 
 				for (const [abilityClass, casts] of castSets) {
 					for (const cast of casts) {
-						const buffStart = cast.fieldStart;
-						const buffEnd = buffStart + framesOf(effects[0].duration!);
-						emit({
-							characterId: track.characterId,
-							start: buffStart,
-							end: buffEnd,
-							effects,
-							stackContext: cast.stackContext,
-							sourceCastId: cast.id,
-							source: {
-								type: 'artifact',
-								setId: artifactSetId,
-								trigger: 'cast',
-								triggerKey: triggerKey as 'any' | 'skill' | 'burst',
-								abilityClass
-							}
-						});
+						for (const part of partitionByDuration(effects)) {
+							const buffStart = cast.fieldStart;
+							const buffEnd = buffStart + framesOf(part[0].duration!);
+							emit({
+								characterId: track.characterId,
+								start: buffStart,
+								end: buffEnd,
+								effects: part,
+								stackContext: cast.stackContext,
+								sourceCastId: cast.id,
+								source: {
+									type: 'artifact',
+									setId: artifactSetId,
+									trigger: 'cast',
+									triggerKey: triggerKey as 'any' | 'skill' | 'burst',
+									abilityClass
+								}
+							});
+						}
 					}
 				}
 			}
@@ -1425,7 +1489,6 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			): Array<{ prov?: FactionProvenance; effects: BuffEffect[] }> => {
 				const hit = activeCache.get(label);
 				if (hit) return hit;
-				const seenStats = new Set<string>();
 				const built = [
 					...getCharacterEffectsForCast(char, cLevel, castType, label),
 					...getCharacterEffectsForOnHit(char, cLevel, castType, label)
@@ -1445,8 +1508,6 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						) === false
 					)
 						return false;
-					if (seenStats.has(effect.stat)) return false;
-					seenStats.add(effect.stat);
 					return true;
 				});
 				const grouped = byProvenance(built);
@@ -1462,150 +1523,157 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				for (const activeGroup of activeEffectsFor(cast.label)) {
 					const activeEffects = activeGroup.effects;
 					if (activeEffects.length === 0) continue;
-					const barEffects = activeEffects.filter((effect) => {
-						if (
-							evalCondition(
-								effect.conditions,
-								4,
-								new Set(),
-								cLevel,
-								undefined,
-								cast.stackContext,
-								receivedCtxOf(char.id)
-							) === false
-						)
-							return false;
-						if (effect.trigger.type === 'onHit' && castNoHit) return false;
-						if (effect.trigger.type === 'onHit' && filterCtx) {
-							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
-						}
-						return true;
-					});
-					if (barEffects.length === 0) continue;
-					const firstValue = barEffects[0].value;
-					const rampParams =
-						typeof firstValue === 'object' && 'type' in firstValue && firstValue.type === 'ramping'
-							? {
-									startValue: firstValue.startValue,
-									stepValue: firstValue.stepValue,
-									stepInterval: framesOf(firstValue.stepInterval),
-									cap: firstValue.cap
-								}
-							: undefined;
-					const decayParams =
-						typeof firstValue === 'object' && 'type' in firstValue && firstValue.type === 'decaying'
-							? {
-									startValue: firstValue.startValue,
-									endValue: firstValue.endValue ?? 0,
-									duration: framesOf(barEffects[0].duration!)
-								}
-							: undefined;
-					const buffStart = cast.fieldStart;
-					const buffEnd = buffStart + framesOf(barEffects[0].duration!);
-
-					// ⚓ HOW LONG THE RECEIVER HAS BEEN ON FIELD (Nicole, 2026-08-18).
-					// `onFieldDelay` shifts each segment's START and leaves the buff's
-					// own end alone, so a receiver who swaps in with less than the
-					// delay left in the window gets nothing — which is the mechanic:
-					// Nicole "observes" whoever is active and upgrades them once they
-					// have STAYED. ⚠️ Read off `barEffects[0]`, the same slot every
-					// other span field here comes from.
-					const delaySpec = barEffects[0].onFieldDelay;
-					const segments: Array<{
-						receiverId: string;
-						segStart: number;
-						segEnd: number;
-						/** ⚓ THE TRACK's index, not the segment's — see the `isLast` note. */
-						trackIdx: number;
-					}> = [];
-					for (let rti = 0; rti < tracks.length; rti++) {
-						const receiverTrack = tracks[rti];
-						// ⚓ The waiver is evaluated against the RECEIVER, answerable here
-						// for the same reason `activeCharFaction` is — this is the one
-						// scope where the receiver is concrete. ⚠️ Only a definitive TRUE
-						// waives: an unresolvable condition leaves the wait standing,
-						// because a delay that vanishes when we cannot answer would
-						// over-claim uptime.
-						const waived =
-							delaySpec?.waivedWhen !== undefined &&
-							evalCondition(delaySpec.waivedWhen, 4, new Set(), cLevel, undefined, undefined, {
-								teamFactionCounts,
-								activeCharFactions: new Set<string>(
-									getCharacter(receiverTrack.characterId)?.factions ?? []
-								),
-								receiverWeapon: getCharacter(receiverTrack.characterId)?.weapon
-							}) === true;
-						const delayF = delaySpec && !waived ? framesOf(delaySpec.seconds) : 0;
-						const segStart = Math.max(buffStart, receiverTrack.activeStart + delayF);
-						const segEnd = Math.min(buffEnd, receiverTrack.activeEnd);
-						if (segEnd <= segStart) continue;
-						segments.push({
-							receiverId: receiverTrack.characterId,
-							segStart,
-							segEnd,
-							trackIdx: rti
-						});
-					}
-
-					for (let si = 0; si < segments.length; si++) {
-						const { receiverId, segStart, segEnd, trackIdx } = segments[si];
-						// ⚓ "STILL ON FIELD AT THE END", not "the last segment that
-						// survived". The extension to `buffEnd` exists because nobody
-						// swaps away from the final track — so it belongs to the LAST
-						// TRACK, and reading it off the segment array was only ever right
-						// while every track produced a segment.
-						// ⚠️ `onFieldDelay` broke that: a receiver who swaps in with less
-						// than the delay left gets no segment at all, which promoted the
-						// PREVIOUS receiver to "last" and ran their buff to the window's
-						// end — straight through a swap-out that had already happened.
-						const isLast = trackIdx === tracks.length - 1;
-						const sourceIsActive = receiverId === sourceTrack.characterId;
-						const segResolved = new Set<string>([sourceIsActive ? 'onField' : 'offField']);
-						const segNegated = new Set<string>([sourceIsActive ? 'offField' : 'onField']);
-						const receiverChar = getCharacter(receiverId);
-						const activeCharFactions = new Set<string>(receiverChar?.factions ?? []);
-						const segCtx: ConditionContext = {
-							teamFactionCounts,
-							negatedStates: segNegated,
-							activeCharFactions,
-							// ⚓ Same structural claim `activeCharFactions` makes: a
-							// per-segment slice is the one scope where the RECEIVER is
-							// concrete, so it is the one scope where a `weaponType`
-							// condition can be answered. Bennett C6's Pyro DMG bonus is
-							// the only buff in the corpus that asks (infusion round,
-							// 2026-08-15) — it stops drawing for a bow or catalyst
-							// receiver, which is what the talent says.
-							receiverWeapon: receiverChar?.weapon
-						};
-
-						const segEffects = barEffects.filter(
-							(effect) =>
+					const barEffects = dedupByStat(
+						activeEffects.filter((effect) => {
+							if (
 								evalCondition(
 									effect.conditions,
 									4,
-									segResolved,
+									new Set(),
 									cLevel,
 									undefined,
 									cast.stackContext,
-									segCtx
-								) !== false
-						);
-						if (segEffects.length === 0) continue;
-						const useSegList = segEffects.length !== barEffects.length;
+									receivedCtxOf(char.id)
+								) === false
+							)
+								return false;
+							if (effect.trigger.type === 'onHit' && castNoHit) return false;
+							if (effect.trigger.type === 'onHit' && filterCtx) {
+								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+							}
+							return true;
+						})
+					);
+					for (const part of partitionByDuration(barEffects)) {
+						const firstValue = part[0].value;
+						const rampParams =
+							typeof firstValue === 'object' &&
+							'type' in firstValue &&
+							firstValue.type === 'ramping'
+								? {
+										startValue: firstValue.startValue,
+										stepValue: firstValue.stepValue,
+										stepInterval: framesOf(firstValue.stepInterval),
+										cap: firstValue.cap
+									}
+								: undefined;
+						const decayParams =
+							typeof firstValue === 'object' &&
+							'type' in firstValue &&
+							firstValue.type === 'decaying'
+								? {
+										startValue: firstValue.startValue,
+										endValue: firstValue.endValue ?? 0,
+										duration: framesOf(part[0].duration!)
+									}
+								: undefined;
+						const buffStart = cast.fieldStart;
+						const buffEnd = buffStart + framesOf(part[0].duration!);
 
-						emit({
-							characterId: sourceTrack.characterId,
-							receiverId,
-							start: segStart,
-							end: isLast ? buffEnd : segEnd,
-							effects: useSegList ? segEffects : barEffects,
-							stackContext: cast.stackContext,
-							duration: buffEnd - buffStart,
-							...(rampParams ? { buffStart, rampParams } : {}),
-							...(decayParams ? { buffStart, decayParams } : {}),
-							sourceCastId: cast.id,
-							source: { type: 'character', trigger: 'cast', abilityClass: castType }
-						});
+						// ⚓ HOW LONG THE RECEIVER HAS BEEN ON FIELD (Nicole, 2026-08-18).
+						// `onFieldDelay` shifts each segment's START and leaves the buff's
+						// own end alone, so a receiver who swaps in with less than the
+						// delay left in the window gets nothing — which is the mechanic:
+						// Nicole "observes" whoever is active and upgrades them once they
+						// have STAYED. ⚠️ Read off `part[0]`, the same slot every
+						// other span field here comes from.
+						const delaySpec = part[0].onFieldDelay;
+						const segments: Array<{
+							receiverId: string;
+							segStart: number;
+							segEnd: number;
+							/** ⚓ THE TRACK's index, not the segment's — see the `isLast` note. */
+							trackIdx: number;
+						}> = [];
+						for (let rti = 0; rti < tracks.length; rti++) {
+							const receiverTrack = tracks[rti];
+							// ⚓ The waiver is evaluated against the RECEIVER, answerable here
+							// for the same reason `activeCharFaction` is — this is the one
+							// scope where the receiver is concrete. ⚠️ Only a definitive TRUE
+							// waives: an unresolvable condition leaves the wait standing,
+							// because a delay that vanishes when we cannot answer would
+							// over-claim uptime.
+							const waived =
+								delaySpec?.waivedWhen !== undefined &&
+								evalCondition(delaySpec.waivedWhen, 4, new Set(), cLevel, undefined, undefined, {
+									teamFactionCounts,
+									activeCharFactions: new Set<string>(
+										getCharacter(receiverTrack.characterId)?.factions ?? []
+									),
+									receiverWeapon: getCharacter(receiverTrack.characterId)?.weapon
+								}) === true;
+							const delayF = delaySpec && !waived ? framesOf(delaySpec.seconds) : 0;
+							const segStart = Math.max(buffStart, receiverTrack.activeStart + delayF);
+							const segEnd = Math.min(buffEnd, receiverTrack.activeEnd);
+							if (segEnd <= segStart) continue;
+							segments.push({
+								receiverId: receiverTrack.characterId,
+								segStart,
+								segEnd,
+								trackIdx: rti
+							});
+						}
+
+						for (let si = 0; si < segments.length; si++) {
+							const { receiverId, segStart, segEnd, trackIdx } = segments[si];
+							// ⚓ "STILL ON FIELD AT THE END", not "the last segment that
+							// survived". The extension to `buffEnd` exists because nobody
+							// swaps away from the final track — so it belongs to the LAST
+							// TRACK, and reading it off the segment array was only ever right
+							// while every track produced a segment.
+							// ⚠️ `onFieldDelay` broke that: a receiver who swaps in with less
+							// than the delay left gets no segment at all, which promoted the
+							// PREVIOUS receiver to "last" and ran their buff to the window's
+							// end — straight through a swap-out that had already happened.
+							const isLast = trackIdx === tracks.length - 1;
+							const sourceIsActive = receiverId === sourceTrack.characterId;
+							const segResolved = new Set<string>([sourceIsActive ? 'onField' : 'offField']);
+							const segNegated = new Set<string>([sourceIsActive ? 'offField' : 'onField']);
+							const receiverChar = getCharacter(receiverId);
+							const activeCharFactions = new Set<string>(receiverChar?.factions ?? []);
+							const segCtx: ConditionContext = {
+								teamFactionCounts,
+								negatedStates: segNegated,
+								activeCharFactions,
+								// ⚓ Same structural claim `activeCharFactions` makes: a
+								// per-segment slice is the one scope where the RECEIVER is
+								// concrete, so it is the one scope where a `weaponType`
+								// condition can be answered. Bennett C6's Pyro DMG bonus is
+								// the only buff in the corpus that asks (infusion round,
+								// 2026-08-15) — it stops drawing for a bow or catalyst
+								// receiver, which is what the talent says.
+								receiverWeapon: receiverChar?.weapon
+							};
+
+							const segEffects = part.filter(
+								(effect) =>
+									evalCondition(
+										effect.conditions,
+										4,
+										segResolved,
+										cLevel,
+										undefined,
+										cast.stackContext,
+										segCtx
+									) !== false
+							);
+							if (segEffects.length === 0) continue;
+							const useSegList = segEffects.length !== part.length;
+
+							emit({
+								characterId: sourceTrack.characterId,
+								receiverId,
+								start: segStart,
+								end: isLast ? buffEnd : segEnd,
+								effects: useSegList ? segEffects : part,
+								stackContext: cast.stackContext,
+								duration: buffEnd - buffStart,
+								...(rampParams ? { buffStart, rampParams } : {}),
+								...(decayParams ? { buffStart, decayParams } : {}),
+								sourceCastId: cast.id,
+								source: { type: 'character', trigger: 'cast', abilityClass: castType }
+							});
+						}
 					}
 				}
 			}
@@ -1617,7 +1685,6 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			const onHitBlockList = getCharacterEffectsForOnHit(char, cLevel, blockClass);
 			if (onHitBlockList.length === 0) continue;
 			for (const blockGroup of byProvenance(onHitBlockList)) {
-				const seenStats = new Set<string>();
 				const activeEffects = blockGroup.effects.filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (!isActiveTargetOnly(effect.target)) return false;
@@ -1634,87 +1701,88 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						) === false
 					)
 						return false;
-					if (seenStats.has(effect.stat)) return false;
-					seenStats.add(effect.stat);
 					return true;
 				});
 				if (activeEffects.length === 0) continue;
 				for (const hit of hitsForTrack(sti, blockClass)) {
 					const filterCtx = hitFilterCtx(hit);
-					const barEffects = activeEffects.filter((effect) => {
-						if (
-							evalCondition(
-								effect.conditions,
-								4,
-								new Set(),
-								cLevel,
-								undefined,
-								hit.stacks,
-								receivedCtxOf(char.id)
-							) === false
-						)
-							return false;
-						if (effect.trigger.type === 'onHit') {
-							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
-						}
-						return true;
-					});
-					if (barEffects.length === 0) continue;
-					const buffStart = hit.time;
-					const buffEnd = buffStart + framesOf(barEffects[0].duration!);
-					const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
-					for (const receiverTrack of tracks) {
-						const segStart = Math.max(buffStart, receiverTrack.activeStart);
-						const segEnd = Math.min(buffEnd, receiverTrack.activeEnd);
-						if (segEnd <= segStart) continue;
-						segments.push({ receiverId: receiverTrack.characterId, segStart, segEnd });
-					}
-					for (let si = 0; si < segments.length; si++) {
-						const { receiverId, segStart, segEnd } = segments[si];
-						const isLast = si === segments.length - 1;
-						const sourceIsActive = receiverId === sourceTrack.characterId;
-						const segResolved = new Set<string>([sourceIsActive ? 'onField' : 'offField']);
-						const segNegated = new Set<string>([sourceIsActive ? 'offField' : 'onField']);
-						const receiverChar = getCharacter(receiverId);
-						const activeCharFactions = new Set<string>(receiverChar?.factions ?? []);
-						const segCtx: ConditionContext = {
-							teamFactionCounts,
-							negatedStates: segNegated,
-							activeCharFactions,
-							// ⚓ Same structural claim `activeCharFactions` makes: a
-							// per-segment slice is the one scope where the RECEIVER is
-							// concrete, so it is the one scope where a `weaponType`
-							// condition can be answered. Bennett C6's Pyro DMG bonus is
-							// the only buff in the corpus that asks (infusion round,
-							// 2026-08-15) — it stops drawing for a bow or catalyst
-							// receiver, which is what the talent says.
-							receiverWeapon: receiverChar?.weapon
-						};
-						const segEffects = barEffects.filter(
-							(effect) =>
+					const barEffects = dedupByStat(
+						activeEffects.filter((effect) => {
+							if (
 								evalCondition(
 									effect.conditions,
 									4,
-									segResolved,
+									new Set(),
 									cLevel,
 									undefined,
 									hit.stacks,
-									segCtx
-								) !== false
-						);
-						if (segEffects.length === 0) continue;
-						const useSegList = segEffects.length !== barEffects.length;
-						emit({
-							characterId: sourceTrack.characterId,
-							receiverId,
-							start: segStart,
-							end: isLast ? buffEnd : segEnd,
-							effects: useSegList ? segEffects : barEffects,
-							stackContext: hit.stacks,
-							duration: buffEnd - buffStart,
-							sourceActionId: hit.sourceEventId,
-							source: { type: 'character', trigger: 'block', abilityClass: blockClass }
-						});
+									receivedCtxOf(char.id)
+								) === false
+							)
+								return false;
+							if (effect.trigger.type === 'onHit') {
+								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+							}
+							return true;
+						})
+					);
+					for (const part of partitionByDuration(barEffects)) {
+						const buffStart = hit.time;
+						const buffEnd = buffStart + framesOf(part[0].duration!);
+						const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
+						for (const receiverTrack of tracks) {
+							const segStart = Math.max(buffStart, receiverTrack.activeStart);
+							const segEnd = Math.min(buffEnd, receiverTrack.activeEnd);
+							if (segEnd <= segStart) continue;
+							segments.push({ receiverId: receiverTrack.characterId, segStart, segEnd });
+						}
+						for (let si = 0; si < segments.length; si++) {
+							const { receiverId, segStart, segEnd } = segments[si];
+							const isLast = si === segments.length - 1;
+							const sourceIsActive = receiverId === sourceTrack.characterId;
+							const segResolved = new Set<string>([sourceIsActive ? 'onField' : 'offField']);
+							const segNegated = new Set<string>([sourceIsActive ? 'offField' : 'onField']);
+							const receiverChar = getCharacter(receiverId);
+							const activeCharFactions = new Set<string>(receiverChar?.factions ?? []);
+							const segCtx: ConditionContext = {
+								teamFactionCounts,
+								negatedStates: segNegated,
+								activeCharFactions,
+								// ⚓ Same structural claim `activeCharFactions` makes: a
+								// per-segment slice is the one scope where the RECEIVER is
+								// concrete, so it is the one scope where a `weaponType`
+								// condition can be answered. Bennett C6's Pyro DMG bonus is
+								// the only buff in the corpus that asks (infusion round,
+								// 2026-08-15) — it stops drawing for a bow or catalyst
+								// receiver, which is what the talent says.
+								receiverWeapon: receiverChar?.weapon
+							};
+							const segEffects = part.filter(
+								(effect) =>
+									evalCondition(
+										effect.conditions,
+										4,
+										segResolved,
+										cLevel,
+										undefined,
+										hit.stacks,
+										segCtx
+									) !== false
+							);
+							if (segEffects.length === 0) continue;
+							const useSegList = segEffects.length !== part.length;
+							emit({
+								characterId: sourceTrack.characterId,
+								receiverId,
+								start: segStart,
+								end: isLast ? buffEnd : segEnd,
+								effects: useSegList ? segEffects : part,
+								stackContext: hit.stacks,
+								duration: buffEnd - buffStart,
+								sourceActionId: hit.sourceEventId,
+								source: { type: 'character', trigger: 'block', abilityClass: blockClass }
+							});
+						}
 					}
 				}
 			}
@@ -1752,7 +1820,6 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				const onHitTickList = getCharacterEffectsForOnHit(char, cLevel, castType);
 				if (onHitTickList.length === 0) continue;
 				for (const tickGroup of byProvenance(onHitTickList)) {
-					const seenStats = new Set<string>();
 					const activeEffects = tickGroup.effects.filter((effect): effect is BuffEffect => {
 						if (effect.type !== 'buff') return false;
 						if (!isActiveTargetOnly(effect.target)) return false;
@@ -1769,97 +1836,99 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 							) === false
 						)
 							return false;
-						if (seenStats.has(effect.stat)) return false;
-						seenStats.add(effect.stat);
 						return true;
 					});
 					if (activeEffects.length === 0) continue;
 					for (const hit of classHits) {
 						const filterCtx = hitFilterCtx(hit);
-						const barEffects = activeEffects.filter((effect) => {
-							if (effect.trigger.type !== 'onHit') return false;
-							if (!onHitTriggerMatches(effect.trigger, hit, sourceTrack.characterId)) return false;
-							if (
-								evalCondition(
-									effect.conditions,
-									4,
-									new Set(),
-									cLevel,
-									undefined,
-									hit.stacks,
-									receivedCtxOf(char.id)
-								) === false
-							)
-								return false;
-							return evalTriggerFilter(effect.trigger.filter, filterCtx);
-						});
-						if (barEffects.length === 0) continue;
-						const buffStart = hit.time;
-						const buffEnd = buffStart + framesOf(barEffects[0].duration!);
-						// Sliced across on-field windows exactly like the cast and
-						// per-swing paths — the buff follows whoever is active, so one
-						// activation becomes one window per receiver it covers.
-						const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
-						for (let rti = 0; rti < tracks.length; rti++) {
-							const receiverTrack = tracks[rti];
-							// ⚓⚓ THE LAST TRACK RUNS TO INFINITY, and this pass is the
-							// first that needed saying so. Every other active-target site
-							// anchors at a CAST or a SWING, which is inside a track by
-							// construction; a summon TICK is the first anchor that can
-							// land after the notation's last action — `Alyosha E Q` is
-							// 2.32s long and Tugarin mauls until 14.73s. Clamping to the
-							// last track's `activeEnd` drew nothing at all there.
-							// ⚠️ It is the same claim the `isLast ? buffEnd` clamp below
-							// already makes (the last covered receiver keeps the buff to
-							// its natural end) — nobody swaps away after the rotation
-							// stops. ⛔ Not `totalDuration`: the summon lane already draws
-							// past it, so a buff its ticks raise must be allowed to too.
-							const trackEnd = rti === tracks.length - 1 ? Infinity : receiverTrack.activeEnd;
-							const segStart = Math.max(buffStart, receiverTrack.activeStart);
-							const segEnd = Math.min(buffEnd, trackEnd);
-							if (segEnd <= segStart) continue;
-							segments.push({ receiverId: receiverTrack.characterId, segStart, segEnd });
-						}
-						for (let si = 0; si < segments.length; si++) {
-							const { receiverId, segStart, segEnd } = segments[si];
-							const isLast = si === segments.length - 1;
-							const sourceIsActive = receiverId === sourceTrack.characterId;
-							const segResolved = new Set<string>([sourceIsActive ? 'onField' : 'offField']);
-							const segNegated = new Set<string>([sourceIsActive ? 'offField' : 'onField']);
-							const receiverChar = getCharacter(receiverId);
-							const segCtx: ConditionContext = {
-								teamFactionCounts,
-								negatedStates: segNegated,
-								activeCharFactions: new Set<string>(receiverChar?.factions ?? []),
-								receiverWeapon: receiverChar?.weapon
-							};
-							const segEffects = barEffects.filter(
-								(effect) =>
+						const barEffects = dedupByStat(
+							activeEffects.filter((effect) => {
+								if (effect.trigger.type !== 'onHit') return false;
+								if (!onHitTriggerMatches(effect.trigger, hit, sourceTrack.characterId))
+									return false;
+								if (
 									evalCondition(
 										effect.conditions,
 										4,
-										segResolved,
+										new Set(),
 										cLevel,
 										undefined,
 										hit.stacks,
-										segCtx
-									) !== false
-							);
-							if (segEffects.length === 0) continue;
-							emit({
-								characterId: sourceTrack.characterId,
-								receiverId,
-								start: segStart,
-								end: isLast ? buffEnd : segEnd,
-								effects: segEffects.length !== barEffects.length ? segEffects : barEffects,
-								stackContext: hit.stacks,
-								duration: buffEnd - buffStart,
-								// ⚓ The same `source` the CAST pool stamps, so the tick
-								// windows land in the cast's row and `mergeRefreshedBars`
-								// fuses them at the projection.
-								sourceCastId: hit.sourceEventId >= 0 ? hit.sourceEventId : undefined,
-								source: { type: 'character', trigger: 'cast', abilityClass: castType }
-							});
+										receivedCtxOf(char.id)
+									) === false
+								)
+									return false;
+								return evalTriggerFilter(effect.trigger.filter, filterCtx);
+							})
+						);
+						for (const part of partitionByDuration(barEffects)) {
+							const buffStart = hit.time;
+							const buffEnd = buffStart + framesOf(part[0].duration!);
+							// Sliced across on-field windows exactly like the cast and
+							// per-swing paths — the buff follows whoever is active, so one
+							// activation becomes one window per receiver it covers.
+							const segments: Array<{ receiverId: string; segStart: number; segEnd: number }> = [];
+							for (let rti = 0; rti < tracks.length; rti++) {
+								const receiverTrack = tracks[rti];
+								// ⚓⚓ THE LAST TRACK RUNS TO INFINITY, and this pass is the
+								// first that needed saying so. Every other active-target site
+								// anchors at a CAST or a SWING, which is inside a track by
+								// construction; a summon TICK is the first anchor that can
+								// land after the notation's last action — `Alyosha E Q` is
+								// 2.32s long and Tugarin mauls until 14.73s. Clamping to the
+								// last track's `activeEnd` drew nothing at all there.
+								// ⚠️ It is the same claim the `isLast ? buffEnd` clamp below
+								// already makes (the last covered receiver keeps the buff to
+								// its natural end) — nobody swaps away after the rotation
+								// stops. ⛔ Not `totalDuration`: the summon lane already draws
+								// past it, so a buff its ticks raise must be allowed to too.
+								const trackEnd = rti === tracks.length - 1 ? Infinity : receiverTrack.activeEnd;
+								const segStart = Math.max(buffStart, receiverTrack.activeStart);
+								const segEnd = Math.min(buffEnd, trackEnd);
+								if (segEnd <= segStart) continue;
+								segments.push({ receiverId: receiverTrack.characterId, segStart, segEnd });
+							}
+							for (let si = 0; si < segments.length; si++) {
+								const { receiverId, segStart, segEnd } = segments[si];
+								const isLast = si === segments.length - 1;
+								const sourceIsActive = receiverId === sourceTrack.characterId;
+								const segResolved = new Set<string>([sourceIsActive ? 'onField' : 'offField']);
+								const segNegated = new Set<string>([sourceIsActive ? 'offField' : 'onField']);
+								const receiverChar = getCharacter(receiverId);
+								const segCtx: ConditionContext = {
+									teamFactionCounts,
+									negatedStates: segNegated,
+									activeCharFactions: new Set<string>(receiverChar?.factions ?? []),
+									receiverWeapon: receiverChar?.weapon
+								};
+								const segEffects = part.filter(
+									(effect) =>
+										evalCondition(
+											effect.conditions,
+											4,
+											segResolved,
+											cLevel,
+											undefined,
+											hit.stacks,
+											segCtx
+										) !== false
+								);
+								if (segEffects.length === 0) continue;
+								emit({
+									characterId: sourceTrack.characterId,
+									receiverId,
+									start: segStart,
+									end: isLast ? buffEnd : segEnd,
+									effects: segEffects.length !== part.length ? segEffects : part,
+									stackContext: hit.stacks,
+									duration: buffEnd - buffStart,
+									// ⚓ The same `source` the CAST pool stamps, so the tick
+									// windows land in the cast's row and `mergeRefreshedBars`
+									// fuses them at the projection.
+									sourceCastId: hit.sourceEventId >= 0 ? hit.sourceEventId : undefined,
+									source: { type: 'character', trigger: 'cast', abilityClass: castType }
+								});
+							}
 						}
 					}
 				}
@@ -1946,7 +2015,6 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			): Array<{ prov?: FactionProvenance; effects: BuffEffect[] }> => {
 				const cached = selfCache.get(label);
 				if (cached) return cached;
-				const seenStats = new Set<string>();
 				const built = [
 					...getCharacterEffectsForCast(char, cLevel, castType, label),
 					...getCharacterEffectsForOnHit(char, cLevel, castType, label)
@@ -1966,8 +2034,6 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						) === false
 					)
 						return false;
-					if (seenStats.has(effect.stat)) return false;
-					seenStats.add(effect.stat);
 					return true;
 				});
 				const grouped = byProvenance(built);
@@ -1983,39 +2049,42 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				for (const selfGroup of selfEffectsFor(cast.label)) {
 					const selfEffects = selfGroup.effects;
 					if (selfEffects.length === 0) continue;
-					const barEffects = selfEffects.filter((effect) => {
-						if (
-							evalCondition(
-								effect.conditions,
-								4,
-								selfResolved,
-								cLevel,
-								undefined,
-								cast.stackContext,
-								selfCtx
-							) === false
-						)
-							return false;
-						if (effect.trigger.type === 'onHit' && castNoHit) return false;
-						if (effect.trigger.type === 'onHit' && filterCtx) {
-							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
-						}
-						return true;
-					});
-					if (barEffects.length === 0) continue;
-					const buffStart = cast.fieldStart;
-					const buffEnd = buffStart + framesOf(barEffects[0].duration!);
-					emit({
-						characterId: sourceTrack.characterId,
-						receiverId: sourceTrack.characterId,
-						start: buffStart,
-						end: buffEnd,
-						effects: barEffects,
-						stackContext: cast.stackContext,
-						duration: buffEnd - buffStart,
-						sourceCastId: cast.id,
-						source: { type: 'character', trigger: 'cast', abilityClass: castType }
-					});
+					const barEffects = dedupByStat(
+						selfEffects.filter((effect) => {
+							if (
+								evalCondition(
+									effect.conditions,
+									4,
+									selfResolved,
+									cLevel,
+									undefined,
+									cast.stackContext,
+									selfCtx
+								) === false
+							)
+								return false;
+							if (effect.trigger.type === 'onHit' && castNoHit) return false;
+							if (effect.trigger.type === 'onHit' && filterCtx) {
+								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+							}
+							return true;
+						})
+					);
+					for (const part of partitionByDuration(barEffects)) {
+						const buffStart = cast.fieldStart;
+						const buffEnd = buffStart + framesOf(part[0].duration!);
+						emit({
+							characterId: sourceTrack.characterId,
+							receiverId: sourceTrack.characterId,
+							start: buffStart,
+							end: buffEnd,
+							effects: part,
+							stackContext: cast.stackContext,
+							duration: buffEnd - buffStart,
+							sourceCastId: cast.id,
+							source: { type: 'character', trigger: 'cast', abilityClass: castType }
+						});
+					}
 				}
 			}
 		}
@@ -2033,7 +2102,6 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 			const onHitBlockSelf = getCharacterEffectsForOnHit(char, cLevel, blockClass);
 			if (onHitBlockSelf.length === 0) continue;
 			for (const selfBlockGroup of byProvenance(onHitBlockSelf)) {
-				const seenStats = new Set<string>();
 				const selfEffects = selfBlockGroup.effects.filter((effect): effect is BuffEffect => {
 					if (effect.type !== 'buff') return false;
 					if (effect.target !== 'self') return false;
@@ -2050,8 +2118,6 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 						) === false
 					)
 						return false;
-					if (seenStats.has(effect.stat)) return false;
-					seenStats.add(effect.stat);
 					return true;
 				});
 				if (selfEffects.length === 0) continue;
@@ -2060,38 +2126,41 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 				// bonus sees her pre-consume seal count at the CA hit.
 				for (const hit of hitsForTrack(sti, blockClass)) {
 					const filterCtx = hitFilterCtx(hit);
-					const barEffects = selfEffects.filter((effect) => {
-						if (
-							evalCondition(
-								effect.conditions,
-								4,
-								selfResolvedBlock,
-								cLevel,
-								undefined,
-								hit.stacks,
-								selfCtxBlock
-							) === false
-						)
-							return false;
-						if (effect.trigger.type === 'onHit') {
-							if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
-						}
-						return true;
-					});
-					if (barEffects.length === 0) continue;
-					const buffStart = hit.time;
-					const buffEnd = buffStart + framesOf(barEffects[0].duration!);
-					emit({
-						characterId: sourceTrack.characterId,
-						receiverId: sourceTrack.characterId,
-						start: buffStart,
-						end: buffEnd,
-						effects: barEffects,
-						stackContext: hit.stacks,
-						duration: buffEnd - buffStart,
-						sourceActionId: hit.sourceEventId,
-						source: { type: 'character', trigger: 'block', abilityClass: blockClass }
-					});
+					const barEffects = dedupByStat(
+						selfEffects.filter((effect) => {
+							if (
+								evalCondition(
+									effect.conditions,
+									4,
+									selfResolvedBlock,
+									cLevel,
+									undefined,
+									hit.stacks,
+									selfCtxBlock
+								) === false
+							)
+								return false;
+							if (effect.trigger.type === 'onHit') {
+								if (!evalTriggerFilter(effect.trigger.filter, filterCtx)) return false;
+							}
+							return true;
+						})
+					);
+					for (const part of partitionByDuration(barEffects)) {
+						const buffStart = hit.time;
+						const buffEnd = buffStart + framesOf(part[0].duration!);
+						emit({
+							characterId: sourceTrack.characterId,
+							receiverId: sourceTrack.characterId,
+							start: buffStart,
+							end: buffEnd,
+							effects: part,
+							stackContext: hit.stacks,
+							duration: buffEnd - buffStart,
+							sourceActionId: hit.sourceEventId,
+							source: { type: 'character', trigger: 'block', abilityClass: blockClass }
+						});
+					}
 				}
 			}
 		}
@@ -2121,16 +2190,16 @@ export function deriveBuffWindows(input: BuffWindowInput): BuffWindow[] {
 					seenStatsNB.add(effect.stat);
 					return true;
 				});
-				if (selfEffectsNB.length > 0) {
+				for (const part of partitionByDuration(selfEffectsNB)) {
 					for (const nb of nbBars) {
 						const buffStart = nb.start;
-						const buffEnd = buffStart + framesOf(selfEffectsNB[0].duration!);
+						const buffEnd = buffStart + framesOf(part[0].duration!);
 						emit({
 							characterId: sourceTrack.characterId,
 							receiverId: sourceTrack.characterId,
 							start: buffStart,
 							end: buffEnd,
-							effects: selfEffectsNB,
+							effects: part,
 							duration: buffEnd - buffStart,
 							source: { type: 'character', trigger: 'nightsoulBurst' }
 						});

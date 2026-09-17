@@ -12,7 +12,9 @@
 	// label from the stat maps) or a plain prose label rendered as-is —
 	// MergedEffectDisplay (stat: Stat) is assignable to it, and callers like
 	// the resonance chips can pass prose rows ("Stamina cost").
-	export type TooltipEffectRow = { stat: string; displayValue: string };
+	/** `note` is the effect's OWN length on a seamed bar ("12s" beside a value
+	 *  whose bar runs 15s) — see `fuseNestedBars`. */
+	export type TooltipEffectRow = { stat: string; displayValue: string; note?: string };
 
 	export type BuffTooltipData = {
 		sourceLabel: string;
@@ -81,6 +83,7 @@
 			{/if}
 			<span class="bt-stat">{labelFor(fx.stat)}</span>
 			<span class="bt-value">{fx.displayValue}</span>
+			{#if fx.note}<span class="bt-note">{fx.note}</span>{/if}
 		</div>
 	{/each}
 	{#if tip.duration != null || tip.procCooldown != null}
@@ -162,6 +165,13 @@
 		font-size: var(--fs-sm);
 		color: #90b4d0;
 		font-weight: var(--fw-semibold);
+		white-space: nowrap;
+	}
+	/* A seamed bar's per-effect length — the footer's register (muted, small),
+	   because it is the same kind of fact the footer states for the whole bar. */
+	.bt-note {
+		font-size: var(--fs-xs);
+		color: var(--muted);
 		white-space: nowrap;
 	}
 	.bt-footer {

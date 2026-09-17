@@ -947,10 +947,19 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 						icon ? images.get(icon) : undefined,
 						next ? x(next.start) : undefined
 					);
+					drawSeams(bar.seams, rowTop, snap.buffRowH);
 				});
 			});
 		});
 	});
+
+	/** A seamed bar's inner ends (pool round, 2026-09-17) — the leading edge's
+	 *  ink at each, mirroring `.rp-buff-seam`. */
+	function drawSeams(seams: number[] | undefined, py: number, ph: number) {
+		if (!seams?.length) return;
+		ctx!.fillStyle = BAR_EDGE;
+		for (const s of seams) ctx!.fillRect(x(s), py, 2, ph);
+	}
 
 	// Lane bar helper (team buff / proc / received): flat fill + optional icon +
 	// label, filling its row.
@@ -1118,6 +1127,7 @@ export async function renderTimelinePng(snap: TimelineSnapshot): Promise<Blob> {
 					icon ? images.get(icon) : undefined,
 					next ? x(next.start) : undefined
 				);
+				drawSeams(bar.seams, rowTop, snap.buffRowH);
 			});
 		});
 	}

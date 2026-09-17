@@ -20,7 +20,7 @@ import type {
 	MergedEffectDisplay
 } from './types';
 import { formatBuffDisplayValue } from './buffDisplay';
-import { mergeRefreshedBars } from './mergeRefreshedBars';
+import { fuseNestedBars, mergeRefreshedBars } from './mergeRefreshedBars';
 
 export type { CharReceivedBuffBar, CharReceivedBuffSubrow };
 
@@ -110,10 +110,15 @@ export function projectCharReceivedBuffRows(
 	// because it has no envelopes. `duration` and `procCooldown` feed the
 	// tooltip and `isMutuallyExclusive` changes what it says, so bars that
 	// disagree on any of them stay separate rather than have one silently win.
+	//
+	// ⚓ FUSE FIRST, THEN MERGE (pool round, 2026-09-17): the parts of one cast
+	// share a start and become one seamed bar. An envelope bar is held out of
+	// the fuse — its gradient is drawn over the bar's span, and a fused span is
+	// the longest part's, not the ramping one's.
 	return [...rowMap.values()].map((row) => ({
 		...row,
 		bars: mergeRefreshedBars(
-			row.bars,
+			fuseNestedBars(row.bars, (b) => b.rampParams === undefined && b.decayParams === undefined),
 			(a, b) =>
 				a.rampParams === undefined &&
 				b.rampParams === undefined &&

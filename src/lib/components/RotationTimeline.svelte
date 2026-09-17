@@ -2797,6 +2797,12 @@
 													style:max-width={labelCapPx(g, recRow.bars[bi + 1], !!icon)}
 													>{bar.sourceLabel}</span
 												>
+												{#each bar.seams ?? [] as seam (seam)}
+													<i
+														class="rp-buff-seam"
+														style:left="{barGeom(seam, 0).left - g.left - 2}px"
+													></i>
+												{/each}
 											</div>
 										{/each}
 									</div>
@@ -2866,6 +2872,12 @@
 															style:max-width={labelCapPx(g, subrow.bars[bi + 1], !!icon)}
 															>{subrow.sourceLabel}</span
 														>
+														{#each bar.seams ?? [] as seam (seam)}
+															<i
+																class="rp-buff-seam"
+																style:left="{barGeom(seam, 0).left - g.left - 2}px"
+															></i>
+														{/each}
 													</div>
 												{/each}
 											</div>
@@ -3601,6 +3613,20 @@
 		overflow: hidden;
 		z-index: 2;
 		min-width: 2px;
+	}
+	/* ⚓ THE SEAM — where a SHORTER part of one cast's buff ends (pool round,
+	   2026-09-17). Same ink as the leading edge, because it is the same
+	   statement: "the buff changed here". Placed in the bar's padding box (the
+	   2px border is subtracted by the caller), clipped by the bar's overflow.
+	   ⚠ Paint alpha, not element opacity — the bar is left/width-placed inside a
+	   scroller, and the sub-pixel laws apply the day that layer ever animates. */
+	.rp-buff-seam {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 2px;
+		background: rgb(255 255 255 / 0.3);
+		pointer-events: none;
 	}
 	/* ⛔ THE DEBUFF VARIANT IS GONE (⚓ NATE 2026-08-11). It carried its own fill
 	   through three colour schemes — dire, then --debuff-fill, then a cool
