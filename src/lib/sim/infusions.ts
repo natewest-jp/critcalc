@@ -85,6 +85,14 @@ export function registerInfusionsOnCast(
 			holderCtx
 		);
 		if (holderVerdict === false) continue;
+		// The grant's own ICD — a cast inside it opens nothing. ⚠️ Stamped only
+		// when a window actually opens, so a cast the conditions refused does not
+		// start the clock.
+		if (typeof fx.procCooldown === 'number' && fx.procCooldown > 0) {
+			const last = ctx.infusionProcAt.get(fx);
+			if (last !== undefined && castTime - last < framesOf(fx.procCooldown)) continue;
+			ctx.infusionProcAt.set(fx, castTime);
+		}
 		ctx.infusionWindows.push({
 			holderId: char.id,
 			holderConstellation: constellation,
