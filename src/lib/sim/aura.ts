@@ -960,7 +960,24 @@ export function scheduleSummonTicks(
 			// lands that tick and our half-open walk does not.
 			// ⚓ Recomputed per call, never cached — `endNow()` is live, because a
 			// duration extension or a swap-out can move the end mid-chain.
-			const liveUntil = (): number => (cap === null ? endNow() : endNow() + series.interval);
+			// ⚓ A CUT WINDOW HAS NO BOUNDARY TICK (small-fix bundle, 2026-09-17):
+			// the widening is for a NATURAL expiry, which gcsim's status-gated chain
+			// lands; a swap-out that ended this summon early (`endNow()` below the
+			// untruncated end) leaves nothing to land. A recast never reaches here
+			// — `liveAt` stops a superseded chain at the superseding spawn. Mirrors
+			// `collectSummonTicks`'s `naturalEnd` test; ⛔ the two must agree.
+			const untruncatedEnd = (): number =>
+				summonEndAt({
+					spawnAt,
+					barUptime: extRec ? extRec.ownerUptime : castEvent.uptime,
+					summon,
+					index
+				});
+			const liveUntil = (): number => {
+				const end = endNow();
+				if (cap === null || end < untruncatedEnd()) return end;
+				return end + series.interval;
+			};
 			const capReached = (): boolean => cap !== null && fired >= cap;
 
 			const fire = (at: number): void => {

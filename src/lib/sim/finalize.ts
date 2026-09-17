@@ -312,6 +312,7 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 			];
 			// The shared window's end, taken ONCE from the first occupant's geometry.
 			let sharedEnd = Infinity;
+			let sharedUntruncated = Infinity;
 			spans.forEach((span, si) => {
 				// One window PER SUMMON. Emitted in authored order so the primary
 				// keeps the id it has always had and the extras land after it — the
@@ -335,6 +336,8 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 							swapOutAt
 						});
 						if (si === 0 && i === 0) sharedEnd = naturalEnd;
+						if (si === 0 && i === 0)
+							sharedUntruncated = summonEndAt({ spawnAt, barUptime: bar.uptime, summon, index: i });
 						// ⚓ A LATER OCCUPANT INHERITS THE REMAINING DURATION, it does not start a
 						// fresh lifetime — so its end is the SHARED end, not its own `duration`.
 						// And every occupant is cut short by the flip that replaced it.
@@ -355,12 +358,20 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 						// pushes can interleave out of order with a summon tick's.
 						// ⚠️ Bounded by `[spawnAt, endAt)` so a landing whose travel carried it
 						// past the summon's end is not drawn outside the bar.
+						// ⚓ The UNTRUNCATED end — no swap (`swapOutAt` omitted), and the
+						// recast/flip cuts below never touch it. `naturalEnd` above is
+						// misnamed for this purpose: it already carries the swap.
+						const untruncatedEnd =
+							span.from === null
+								? summonEndAt({ spawnAt, barUptime: bar.uptime, summon, index: i })
+								: sharedUntruncated;
 						const win: Extract<TimelineWindow, { kind: 'summon' }> = {
 							kind: 'summon',
 							characterId: track.characterId,
 							label: summon.label,
 							start: spawnAt,
 							end: endAt,
+							naturalEnd: untruncatedEnd,
 							source: kind,
 							sourceCastId: ctx.castIdByBar.get(bar)
 						};
@@ -526,7 +537,8 @@ export function finalizeParse(ctx: SimContext, totalDuration: number): ParsedRot
 				win.end,
 				cLevel,
 				() => true,
-				tickCtx(win.characterId)
+				tickCtx(win.characterId),
+				win.naturalEnd
 			).map((t) => t.time),
 			// ⚠️ Bounded by the FINAL span so a wave landing past the summon's end —
 			// or before a truncated window's start — is not drawn outside the bar.
