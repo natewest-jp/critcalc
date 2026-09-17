@@ -15,6 +15,14 @@
  * nothing at those transitions and everything at the others. From the same page:
  *   - "Most Normal and Charged Attacks can be buffered, but Bow Charged Attacks
  *     cannot." The next N or C pressed DURING a swing is queued → no human gap.
+ *     ⚠️ That sentence says a CA can BE buffered (pressed during a normal); the
+ *     page never says what is stored AFTER a CA. We extend "a swing stores the
+ *     next swing" to a CA, which KQM's Raiden guide supports ("can be input
+ *     buffered or button-mashed" over her N3C / N1C combos) — and ⚓ it is NOT
+ *     universal: Lohen's quick guide says "you cannot buffer inputs after a
+ *     Charged Attack". A character like that carries
+ *     `NormalAbility.noBufferAfterCharged` (2026-09-17). ⛔ Don't flip the
+ *     default without a source that speaks for most characters.
  *   - "Any action after Normal Attacks (except the next Normal Attack or Charged
  *     Attack) can't be buffered because it will cancel the Normal Attack
  *     immediately when the action is input." So N → E/Q/D/J/swap is TIMED by
@@ -76,14 +84,17 @@ export type HumanPadAfter =
  * Does the game STORE the input for `next` while `prev` is still running?
  * Only a swing stores anything, and only the next swing (N, or C off a
  * non-bow). ⚠️ A bow's C is its aimed shot — `peekActionKey` maps `A` to `C`
- * on a bow, and KQM says that one cannot be buffered.
+ * on a bow, and KQM says that one cannot be buffered. `chargedBuffers: false`
+ * is a character that stores nothing after a Charged Attack (Lohen).
  */
 export function isBufferedTransition(
 	prev: HumanPadAfter,
 	next: ActionKey,
-	isBow: boolean
+	isBow: boolean,
+	chargedBuffers = true
 ): boolean {
 	if (prev !== 'normal' && prev !== 'charged') return false;
+	if (prev === 'charged' && !chargedBuffers) return false;
 	if (next === 'N') return true;
 	if (next === 'C') return !isBow;
 	return false;
@@ -94,10 +105,11 @@ export function cancelKeyFor(
 	ht: HumanTiming | null,
 	prev: HumanPadAfter,
 	next: ActionKey,
-	isBow: boolean
+	isBow: boolean,
+	chargedBuffers = true
 ): CancelKey {
 	if (!ht?.fullAnimations) return next;
-	return isBufferedTransition(prev, next, isBow) ? next : FULL_ANIMATION_KEY;
+	return isBufferedTransition(prev, next, isBow, chargedBuffers) ? next : FULL_ANIMATION_KEY;
 }
 
 /** Frames of human padding after `prev` when `next` follows it (0 = none). */
@@ -105,8 +117,9 @@ export function padFramesAfter(
 	ht: HumanTiming | null,
 	prev: HumanPadAfter,
 	next: ActionKey,
-	isBow: boolean
+	isBow: boolean,
+	chargedBuffers = true
 ): number {
 	if (!ht || ht.padFrames <= 0) return 0;
-	return isBufferedTransition(prev, next, isBow) ? 0 : ht.padFrames;
+	return isBufferedTransition(prev, next, isBow, chargedBuffers) ? 0 : ht.padFrames;
 }

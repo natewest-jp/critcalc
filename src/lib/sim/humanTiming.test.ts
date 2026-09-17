@@ -52,6 +52,15 @@ describe('the transition rule', () => {
 		expect(isBufferedTransition('normal', 'C', true)).toBe(false);
 		expect(isBufferedTransition('normal', 'N', true)).toBe(true);
 	});
+	it('a character that stores nothing after a charged attack pads the next swing', () => {
+		// ⚓ Lohen (KQM quick guide: "you cannot buffer inputs after a Charged
+		// Attack"). ⚠️ Per character, not a rule — Raiden's guide says her CA
+		// combos buffer — so the default stays and the exception is data.
+		expect(isBufferedTransition('charged', 'N', false, false)).toBe(false);
+		expect(isBufferedTransition('charged', 'C', false, false)).toBe(false);
+		expect(isBufferedTransition('normal', 'C', false, false)).toBe(true);
+		expect(padFramesAfter(PAD, 'charged', 'N', false, false)).toBe(10);
+	});
 	it('nothing but a swing stores anything', () => {
 		for (const prev of ['skill', 'burst', 'plunge', 'dash', 'jump', 'swap'] as const) {
 			expect(isBufferedTransition(prev, 'N', false)).toBe(false);
@@ -77,6 +86,10 @@ describe('where a pad may land', () => {
 	it('not before a charged attack — unless the character is a bow', () => {
 		expect(pads('Xiangling N1 C', PAD)).toEqual([]);
 		expect(pads('Fischl N1 A', PAD)).toEqual([[0, expect.any(Number), 'normal']]);
+	});
+	it('after a charged attack only for a character that cannot buffer there', () => {
+		expect(pads('Xiangling N1 C N1', PAD)).toEqual([]);
+		expect(pads('Lohen N1 C N1', PAD)).toEqual([[0, expect.any(Number), 'charged']]);
 	});
 	it('after a skill, and at the head of every turn but the first', () => {
 		const p = pads('Xiangling E > Bennett E', PAD);

@@ -277,6 +277,11 @@ export function runRotation(
 		};
 
 		const isBow = char.weapon === 'bow';
+		// Human timing: a character whose kit stores no input after a Charged
+		// Attack (`NormalAbility.noBufferAfterCharged`, Lohen) pads the next swing.
+		const chargedBuffers = !char.abilities.some(
+			(a) => a.abilityType === 'normal' && a.noBufferAfterCharged === true
+		);
 		// Tracks which hit in the combo sequence the next N token refers to.
 		// Reset at segment start and when a stance opens (mid-segment Q cast).
 		let normalCounter = 0;
@@ -427,7 +432,7 @@ export function runRotation(
 			if (!ht) return;
 			const next = peekHumanPadTarget(expandedTokens, j, isBow, swapFollows);
 			if (next === null) return;
-			const pad = padFramesAfter(ht, prev, next, isBow);
+			const pad = padFramesAfter(ht, prev, next, isBow, chargedBuffers);
 			if (pad <= 0) return;
 			ctx.humanPads.push({ id: ctx.nextId(), track, start: clock.now, duration: pad, after: prev });
 			clock.advance(clock.now + pad);
@@ -1364,7 +1369,7 @@ export function runRotation(
 						? resolveChargeCastTime(
 								activeNormal,
 								t,
-								cancelKeyFor(ctx.humanTiming, 'charged', nextKey, isBow),
+								cancelKeyFor(ctx.humanTiming, 'charged', nextKey, isBow, chargedBuffers),
 								isBow
 							)
 						: null;
