@@ -86,6 +86,14 @@ tooltip prints the note in the footer's register.
   row the active slice and the self half print once, no seam at his swap-out.
 - Guards: an envelope bar (ramp/decay) is held out of the fuse on the received
   surface; a ledger bar on the team surface.
+- ↻ **A seam only at a NATURAL end** (⚓ Nate, later the same day, reading
+  Iansan's own row: her slice of the active-target ATK stops where SHE swaps
+  out, and a seam there marks the swap the connector already draws). The
+  sliced received sites stamp `buffStart`; the projection derives
+  `naturalEnd`; a part cut short of it draws no seam (`d4afc713`).
+
+⚓ **Nate judged the seam on screen (2026-09-17): it stands.** He read three
+effects under one bar on the active row and confirmed the row.
 
 Verified on the production build in headless Chrome (`Iansan E Q > Xiangling
 N1 N2 N3 > Kaeya E N1 N2` at C6): one "Iansan Q" bar per receiver, the seam at
