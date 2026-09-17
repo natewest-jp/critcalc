@@ -529,9 +529,17 @@ Kablam to the shared burst CD is rewritten to assert the kit's behaviour
 - **A normal's application lands at its cancel-resolved end** (§1.K) — now
   visible on Kinich's Loop Shot and Arlecchino's newly-infused swings too.
 
-**⏭ Flagged for Nate:** Varesa's Kablam CD reading (kit over gcsim, reversing
-a curator note); Albedo's Silver Isotoma caveat stays removed; Lohen's new
-A4 caveat; Arlecchino's always-on Masque infusion.
+**⚓ Nate's calls on the flags (same day):** Varesa's Kablam ignoring the
+burst CD — confirmed (it is her special burst, and the kit says so).
+Arlecchino's always-on Masque infusion — confirmed (skilled play holds it
+near 100%, and without it her reactions are not represented at all). Albedo's
+Silver Isotoma caveat — stays removed. Lohen's A4 caveat — kept, and extended
+to say the bar is drawn team-wide while only Lohen and the reacting character
+get it. ⚓ And from Lohen's KQM guide, "you cannot buffer inputs after a
+Charged Attack": checked for universality and found PER CHARACTER (KQM's frames
+page states buffering only after normals; the Raiden guide says her CA combos
+buffer), so Human timing keeps its default and gained
+`NormalAbility.noBufferAfterCharged`, Lohen its one holder (`cba0d157`).
 
 ---
 
